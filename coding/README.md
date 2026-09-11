@@ -46,7 +46,7 @@ yarn install && yarn build
 cd packages/scoria && npm pack --pack-destination /tmp
 
 cd ~/your/project
-npx --package=/tmp/scoria-0.1.0.tgz -- scoria
+npx --package=/tmp/scoria-0.0.1.tgz -- scoria
 ```
 
 ソースを直接叩くこともできる。
