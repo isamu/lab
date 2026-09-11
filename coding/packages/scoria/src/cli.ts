@@ -1,11 +1,15 @@
 import { relative } from "node:path";
+
+const SCORIA_VERSION = "0.1.0";
 import { assay } from "./run.ts";
 import { detectConfig, writeConfig, CONFIG_FILENAME, type ScoriaConfig } from "./config.ts";
 import { isLang, messagesFor, type Lang } from "./messages.ts";
 import type { Report } from "./report.ts";
 import { renderExplain, renderReport } from "./render.ts";
 import { renderGithubSummary } from "./summary.ts";
-import { appendFile } from "node:fs/promises";
+import { renderSarif } from "./sarif.ts";
+import { appendFile, mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { applyFixes, diagnose, renderDoctor } from "./doctor.ts";
 import { changedTools, readBaseline, writeBaseline } from "./baseline.ts";
 import { diffReports, type ReportDiff } from "./diff.ts";
@@ -24,6 +28,7 @@ interface Options {
   readonly write: boolean;
   readonly fix: boolean;
   readonly summary: boolean;
+  readonly sarif: string | undefined;
   readonly lang: Lang | undefined;
 }
 
@@ -35,7 +40,8 @@ const valueAfter = (argv: readonly string[], flag: string): string | undefined =
 const parse = (argv: readonly string[]): Options => {
   const explain = valueAfter(argv, "--explain");
   const lang = valueAfter(argv, "--lang");
-  const consumed = new Set([explain, lang]);
+  const sarif = valueAfter(argv, "--sarif");
+  const consumed = new Set([explain, lang, sarif]);
   const positional = argv.filter((arg) => !arg.startsWith("--") && !consumed.has(arg));
   const first = positional[0];
   const command = isCommand(first) ? first : "assay";
@@ -48,6 +54,7 @@ const parse = (argv: readonly string[]): Options => {
     write: !argv.includes("--no-write"),
     fix: argv.includes("--fix"),
     summary: !argv.includes("--no-summary"),
+    sarif,
     lang: isLang(lang) ? lang : undefined,
   };
 };
@@ -93,6 +100,13 @@ const writeGithubSummary = async (report: Report, lang: Lang, enabled: boolean, 
   await appendFile(path, renderGithubSummary(report, lang, diff), "utf8");
 };
 
+/** GitHub code scanning reads SARIF, which puts each finding inline on the changed lines. */
+const writeSarif = async (report: Report, path: string | undefined): Promise<void> => {
+  if (path === undefined) return;
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, renderSarif(report, SCORIA_VERSION), "utf8");
+};
+
 export const main = async (argv: readonly string[]): Promise<void> => {
   const options = parse(argv);
   if (options.command === "init") {
@@ -119,6 +133,7 @@ export const main = async (argv: readonly string[]): Promise<void> => {
       : { diff: diffReports(baseline.report, report), since: baseline.createdAt, rebaseline: changedTools(baseline.report, report) };
   const notice = await freezeIfNeeded(options.target, loaded.frozen, options.write, lang);
   await writeGithubSummary(report, lang, options.summary, comparison?.diff);
+  await writeSarif(report, options.sarif);
   if (options.json) {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     return;

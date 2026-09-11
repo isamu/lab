@@ -115,6 +115,27 @@ scrolls; the summary lands on the page a reviewer is already looking at. It need
 
 Pass `--no-summary` to turn it off.
 
+### Findings on the Security tab and inline on the diff
+
+```yaml
+- name: scoria
+  run: npx -y scoria --sarif scoria.sarif
+
+- uses: github/codeql-action/upload-sarif@v4
+  with:
+    sarif_file: scoria.sarif
+    category: scoria
+  # needs: permissions: security-events: write
+```
+
+`--sarif` writes SARIF 2.1.0. Uploading it puts each finding on the repository's **Security** tab
+and, more usefully, **inline on the changed lines of a pull request** — where the person who wrote
+the line is already looking. A score in a log is something you have to go and read; a comment on the
+line is not.
+
+Rule ids are namespaced as `scoria/<probe>/<rule>`, so they cannot collide with an upload from the
+same tool run directly.
+
 ## Output
 
 ```text

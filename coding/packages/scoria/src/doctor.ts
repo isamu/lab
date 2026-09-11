@@ -27,7 +27,7 @@ export const diagnose = async (target: string): Promise<Diagnosis> => {
   const root = resolve(target);
   const configFiles = await collectConfigFiles(root);
   const typescript = isTypeScriptProject(await readPackageJson(root));
-  return { root, gaps: [...configGaps(configFiles, typescript), ...ciGaps(configFiles, typescript)] };
+  return { root, gaps: [...configGaps(configFiles, typescript), ...ciGaps(root, configFiles, typescript)] };
 };
 
 const appendGitignore = async (root: string): Promise<string> => {
