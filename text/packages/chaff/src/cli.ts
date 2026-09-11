@@ -10,6 +10,7 @@ import { collectTargets } from "./files.ts";
 import { BASELINE_FILE, fingerprint, readBaseline, splitByBaseline, writeBaseline } from "./baseline.ts";
 import { applySuppressions } from "./stet.ts";
 import { renderSuppressions, type PerFile } from "./render/suppressions.ts";
+import { clock, describeChange, snapshotOf, watchPaths, type Snapshot } from "./watch.ts";
 import { frontMatterGenre, guessGenre } from "./genre.ts";
 import { GENRES, runInit } from "./init.ts";
 import { loadRules } from "./rule-load.ts";
@@ -36,6 +37,7 @@ const USAGE = `chaff — 文章の読みにくいところを見つけます。�
   --compact         エンジニア向けの 1 行形式
   --experimental    試験中の rule も動かす
   --show-baseline   棚上げした分も含めて全部見る
+  --watch           保存のたびに見直し、変わったところだけ出す
 
 この箇所だけ黙らせる:  <!-- stet: rule-id — 理由 -->
 
@@ -121,6 +123,39 @@ const lint = async (targets: readonly string[], argv: readonly string[]): Promis
   results.filter((result) => result.outcome.findings.length > 0 || paths.length === 1).forEach((result) => console.log(result.text));
   renderSummary(results.map((result) => result.outcome)).forEach((line) => console.log(line));
   return results.some((result) => result.outcome.findings.some((finding) => finding.severity === "error")) ? 1 : 0;
+};
+
+/**
+ * 書いている最中は、全件を出し直されても何が変わったのか分からない。
+ * 差分だけを出す。workflow spec §11。
+ */
+const runWatch = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
+  const paths = collectTargets(targets);
+  if (paths.length === 0) {
+    console.error(`Markdown が 1 つも見つかりませんでした: ${targets.join(", ")}`);
+    return 1;
+  }
+  const config = readConfig();
+  const seen = new Map<string, Snapshot>();
+  const once = async (path: string, first: boolean): Promise<void> => {
+    const result = await inspect(path, config, argv);
+    const after = snapshotOf(result.outcome.findings);
+    const before = seen.get(path) ?? {};
+    seen.set(path, after);
+    if (first) return;
+    const change = describeChange(before, after);
+    console.log(`${clock()}  ${path}  ${change ?? "変わりませんでした"}`);
+  };
+  await Promise.all(paths.map((path) => once(path, true)));
+  const totals = [...seen.values()].reduce((sum, snapshot) => sum + Object.values(snapshot).reduce((inner, count) => inner + count, 0), 0);
+  console.log(`\n  ${paths.length} ファイルを見ています。いまの指摘は ${totals} 件です。`);
+  console.log("  保存するたびに、変わったところだけ出します。止めるには Ctrl-C。\n");
+  const stop = watchPaths(paths, (path) => void once(path, false));
+  process.on("SIGINT", () => {
+    stop();
+    process.exit(0);
+  });
+  return new Promise(() => undefined);
 };
 
 const explain = (ruleId: string | undefined): number => {
@@ -220,5 +255,5 @@ export const main = async (argv: readonly string[]): Promise<number> => {
   const handler = HANDLERS[first];
   if (handler !== undefined) return handler(argv);
   const targets = (first === "lint" ? argv.slice(1) : argv).filter((arg) => !arg.startsWith("--"));
-  return lint(targets, argv);
+  return argv.includes("--watch") ? runWatch(targets, argv) : lint(targets, argv);
 };
