@@ -72,7 +72,22 @@ npx chaff explain bold-density そのルールの意図と根拠を読む
 npx chaff genres               ジャンルの一覧
 npx chaff baseline docs/       いまある指摘を棚上げする
 npx chaff suppressions docs/   stet で黙らせている指摘を数える
+npx chaff article.md --watch   保存のたびに、変わったところだけ出す
 ```
+
+## 書いている最中
+
+```
+$ npx chaff article.md --watch
+
+  1 ファイルを見ています。いまの指摘は 2 件です。
+  保存するたびに、変わったところだけ出します。止めるには Ctrl-C。
+
+18:26:43  article.md  ✓ 2 → 1 件   (-1 bold-density)
+18:26:45  article.md  ✗ 1 → 2 件   (+1 closing-cliche)
+```
+
+全件を出し直されると、何が変わったのか分からなくなる。差分だけを出す。
 
 `node_modules` `dist` `build` `coverage` は見ない。対象が 1 つも見つからなければ**失敗にする**（「CI は通っているが何も検証していない」状態を作らないため）。
 
@@ -143,7 +158,7 @@ AI に設定を書かせるときは `npx chaff rules --json` を渡す。今の
 
 ## まだ無いもの
 
-L3 品詞解析 / L4 意味の検査（`checks.yaml`）/ `eval` / `--watch`。
+L3 品詞解析 / L4 意味の検査（`checks.yaml`）/ `eval`。
 
 ## 構成
 
