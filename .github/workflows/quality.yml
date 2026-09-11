@@ -1,0 +1,56 @@
+# Measures the whole repository with scoria — both workspaces, on every change.
+#
+# Separate from scoria-ci.yml, which tests scoria itself and only runs when coding/ changes. This
+# one has no paths filter: a change anywhere can move the numbers, and a quality report that only
+# appears for some changes is one nobody learns to expect.
+#
+# Each workspace is measured on its own rather than the repository root, because knip and tsc need
+# a package to resolve against. Measuring from the root loses two of the five dimensions.
+name: quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: install coding
+        run: yarn install --frozen-lockfile
+        working-directory: coding
+
+      - name: install text
+        run: yarn install --frozen-lockfile
+        working-directory: text
+
+      # Built from the commit under review, never the published version.
+      - name: build scoria
+        run: yarn build
+        working-directory: coding
+
+      - name: measure coding
+        run: node packages/scoria/bin/scoria.js .
+        working-directory: coding
+
+      - name: measure text
+        run: node ../coding/packages/scoria/bin/scoria.js .
+        working-directory: text
+
+      # The job summary renders on the run page but no API exposes it, so a run that silently wrote
+      # nothing would look identical to one that worked. The byte count puts the answer in the log.
+      - name: confirm the job summary was written
+        run: wc -c "$GITHUB_STEP_SUMMARY"

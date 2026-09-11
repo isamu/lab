@@ -3,6 +3,7 @@ import type { DimensionReport, Report } from "./report.ts";
 import { tallyWarnings } from "./report.ts";
 import { messagesFor, type Lang, type Messages } from "./messages.ts";
 import type { ReportDiff } from "./diff.ts";
+import { basename } from "node:path";
 
 /**
  * The report as GitHub-flavoured Markdown, for `$GITHUB_STEP_SUMMARY`.
@@ -14,6 +15,9 @@ import type { ReportDiff } from "./diff.ts";
 
 const BAR_CELLS = 10;
 const MAX_FINDINGS = 20;
+const MAX_MOVERS = 8;
+/** A mover that rounds to zero is noise; reporting it as movement is worse than silence. */
+const MOVER_FLOOR = 0.05;
 const FULL = "█";
 const EMPTY = "░";
 
@@ -26,12 +30,19 @@ const bar = (score: number): string => {
 const confidenceCell = (dimension: DimensionReport): string =>
   dimension.confidence === "high" ? "high" : `**${dimension.confidence}** — ${dimension.confidenceReason}`;
 
-const signed = (value: number): string => (value > 0 ? `+${value.toFixed(0)}` : value.toFixed(0));
+/** Dimension deltas read as whole points; a mover is shown to one decimal, as the terminal does. */
+const signedWhole = (value: number): string => (value > 0 ? `+${value.toFixed(0)}` : value.toFixed(0));
 
+const signed = (value: number): string => (value > 0 ? `+${value.toFixed(1)}` : value.toFixed(1));
+
+/**
+ * A delta that rounds to zero is not a change. Rendering it as `-0 ⚠` reports a regression that
+ * did not happen, which is worse than saying nothing.
+ */
 const deltaCell = (dimension: DimensionReport, diff: ReportDiff | undefined): string => {
   const found = diff?.dimensions.find((entry) => entry.dimension === dimension.dimension);
-  if (found === undefined || found.delta === 0) return "";
-  return found.delta > 0 ? `**${signed(found.delta)}**` : `**${signed(found.delta)}** ⚠`;
+  if (found === undefined || Math.round(found.delta) === 0) return "";
+  return found.delta > 0 ? `**${signedWhole(found.delta)}**` : `**${signedWhole(found.delta)}** ⚠`;
 };
 
 const dimensionRow = (dimension: DimensionReport, diff: ReportDiff | undefined): string => {
@@ -41,7 +52,10 @@ const dimensionRow = (dimension: DimensionReport, diff: ReportDiff | undefined):
 };
 
 const movedBlock = (diff: ReportDiff | undefined, messages: Messages): readonly string[] => {
-  const movers = (diff?.movers ?? []).toSorted((a, b) => Math.abs(b.points) - Math.abs(a.points)).slice(0, 8);
+  const movers = (diff?.movers ?? [])
+    .filter((mover) => Math.abs(mover.points) >= MOVER_FLOOR)
+    .toSorted((a, b) => Math.abs(b.points) - Math.abs(a.points))
+    .slice(0, MAX_MOVERS);
   if (movers.length === 0) return [];
   return ["", `**${messages.whatMoved}**`, "", ...movers.map((m) => `- \`${signed(m.points)}\` ${m.dimension} — ${m.metric}: ${m.from} → ${m.to}`)];
 };
@@ -100,7 +114,7 @@ const skippedBlock = (report: Report, messages: Messages): readonly string[] => 
 export const renderGithubSummary = (report: Report, lang: Lang, diff?: ReportDiff): string => {
   const messages = messagesFor(lang);
   return [
-    `## scoria — ${report.overall.score.toFixed(0)} / 100`,
+    `## scoria · ${basename(report.root)} — ${report.overall.score.toFixed(0)} / 100`,
     "",
     `\`${report.stacks.join(" · ")}\` · ${messages.profileLabel}: ${report.profile} · ` +
       `${messages.filesLine(report.size.files, report.size.sloc, report.size.testSloc)}`,

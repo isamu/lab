@@ -3,12 +3,14 @@
     "schemaVersion": 1,
     "root": "/Users/isamu/ss/llm/lab/coding",
     "profile": "app",
-    "stacks": ["ts"],
+    "stacks": [
+      "ts"
+    ],
     "complete": true,
     "size": {
       "files": 58,
-      "sloc": 2770,
-      "testSloc": 1489
+      "sloc": 2794,
+      "testSloc": 1508
     },
     "dimensions": [
       {
@@ -157,7 +159,7 @@
       {
         "dimension": "readability",
         "status": "experimental",
-        "score": 99.7477,
+        "score": 99.7077,
         "coverage": 1,
         "metrics": [
           {
@@ -176,12 +178,12 @@
                 "value": 159
               },
               {
-                "file": "packages/scoria/src/probes/suppression-scan.ts",
+                "file": "packages/scoria/src/render.ts",
                 "value": 152
               },
               {
-                "file": "packages/scoria/src/render.ts",
-                "value": 150
+                "file": "packages/scoria/src/probes/suppression-scan.ts",
+                "value": 152
               },
               {
                 "file": "packages/scoria/src/messages.ts",
@@ -217,14 +219,14 @@
           },
           {
             "metric": "jscpd.duplicated_lines_pct",
-            "value": 0.08,
+            "value": 0.1,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 10
             },
             "weight": 0.2,
-            "points": 19.84,
+            "points": 19.8,
             "topContributors": [
               {
                 "file": "test/test_file_shape.ts",
@@ -393,10 +395,10 @@
       "knip": "6.35.1"
     },
     "overall": {
-      "score": 97.8368,
+      "score": 97.8288,
       "scoredDimensions": 5,
       "comparable": false
     }
   },
-  "createdAt": "2026-09-11T18:50:39.422Z"
+  "createdAt": "2026-09-11T19:31:09.422Z"
 }

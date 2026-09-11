@@ -14,6 +14,16 @@ import { rankByFile, relativeTo, skippedResult } from "./shared.ts";
  */
 
 const MIN_TOKENS = "50";
+
+/**
+ * Duplication is about code, so JSON, Markdown and text are out of scope.
+ *
+ * scoria's own artifacts are excluded for a sharper reason: `.scoria/baseline.json` is a record of
+ * the previous run, and counting it means recording a baseline changes the next measurement. A
+ * tool that perturbs what it measures cannot produce a time series.
+ */
+const FORMATS = "typescript,tsx,javascript,jsx,vue";
+const IGNORED = ["**/.scoria/**", "**/node_modules/**", "**/dist/**", "**/lib/**", "**/build/**"].join(",");
 const MAX_FINDINGS = 20;
 
 interface Clone {
@@ -74,7 +84,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const bin = resolveBin("jscpd", "jscpd");
   if (bin === undefined) return skippedResult("jscpd", "jscpd is not installed alongside scoria", started);
   const out = join(tmpdir(), `scoria-jscpd-${String(process.pid)}-${String(Date.now())}`);
-  const args = [ctx.root, "--silent", "--min-tokens", MIN_TOKENS, "--reporters", "json", "--output", out];
+  const args = [ctx.root, "--silent", "--min-tokens", MIN_TOKENS, "--format", FORMATS, "--ignore", IGNORED, "--reporters", "json", "--output", out];
   const execution = await ctx.execNode(bin, args);
   const text = await ctx.readText(join(out, "jscpd-report.json"));
   const parsed = text === undefined ? undefined : parse(text);
