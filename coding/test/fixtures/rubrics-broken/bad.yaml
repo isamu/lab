@@ -1,0 +1,9 @@
+id: broken
+status: experimental
+metrics:
+  - metric: file-shape.sloc_p95
+    scale: { good: 0, bad: 10 }
+    weight: 0.4
+  - metric: file-shape.god_file_count
+    scale: { good: 0, bad: 10 }
+    weight: 0.4

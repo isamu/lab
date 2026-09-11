@@ -1,0 +1,54 @@
+name: scoria ci
+
+on:
+  pull_request:
+    paths: ["coding/**", ".github/workflows/scoria-ci.yml"]
+  push:
+    branches: [main]
+    paths: ["coding/**", ".github/workflows/scoria-ci.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: coding
+
+jobs:
+  ci:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - run: yarn install --frozen-lockfile
+
+      - name: format:check
+        run: yarn format:check
+
+      - name: lint
+        run: yarn lint
+
+      - name: typecheck
+        run: yarn typecheck
+
+      - name: build
+        run: yarn build
+
+      - name: test
+        run: yarn test
+
+      # 自分自身を測る。scoria が測るべき性質は scoria のコードにも当てはまる。
+      # 公開版ではなく、いま review 中のコミットから作った dist で走らせる。
+      - name: scoria on itself
+        run: node packages/scoria/bin/scoria.js .

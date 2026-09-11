@@ -1,0 +1,25 @@
+{
+  "name": "@scoria/stack-ts",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "peerDependencies": {
+    "scoria": "*"
+  },
+  "devDependencies": {
+    "scoria": "0.0.0"
+  }
+}

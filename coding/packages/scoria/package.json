@@ -1,0 +1,37 @@
+{
+  "name": "scoria",
+  "version": "0.0.0",
+  "description": "Code quality assay harness for TypeScript and JavaScript",
+  "license": "MIT",
+  "author": "isamu",
+  "type": "module",
+  "bin": {
+    "scoria": "./bin/scoria.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./plugin": {
+      "types": "./src/plugin.ts",
+      "import": "./dist/plugin.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "rubrics",
+    "bin"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@scoria/stack-ts": "0.0.0",
+    "yaml": "^2.9.0"
+  }
+}

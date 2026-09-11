@@ -1,0 +1,8 @@
+# Windows は既定で CRLF に checkout するため、Prettier の `endOfLine: "lf"` が
+# リポジトリの全ファイルを未整形として報告する。Windows runner でだけ落ちる CI になる。
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary

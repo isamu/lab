@@ -1,0 +1,24 @@
+# spec §15。抑制債務そのものを 1 次元として測る。
+#
+# source と test を分けるのは実測に基づく。graphai の `as any` 94 件のうち 69 件が test 配下で、
+# テストの `as any` はモックのために正当なことが多い。
+# したがって source の密度を主指標にし、test は小さい重みにとどめる。
+id: integrity
+status: experimental
+
+metrics:
+  - metric: suppression-scan.source_per_kloc
+    scale: { good: 0, bad: 5 }
+    weight: 0.5
+
+  # 抑制そのものは悪ではない。説明の無い抑制が問題（spec §15.3）。
+  - metric: suppression-scan.unreasoned_ratio
+    scale: { good: 0, bad: 1 }
+    weight: 0.3
+
+  - metric: suppression-scan.test_count
+    scale: { good: 0, bad: 200 }
+    weight: 0.2
+
+# integrity 自身の confidence は他の次元に従属しない（spec §21.1 の表では "—"）。
+confidence_from: []
