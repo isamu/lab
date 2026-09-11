@@ -1,0 +1,28 @@
+id: max-sentence-length
+layer: L1
+status: stable
+how_to_find: sentence-length
+severity: warning
+
+name:
+  ja: 一文が長すぎる
+  en: Sentence too long
+
+why:
+  ja: 長い文は、読んでいるうちに主語を見失います。
+  en: In a long sentence the reader loses the subject before reaching the verb.
+
+message:
+  ja: この文は {count} 文字あります（{limit} 文字まで）
+  en: "This sentence runs {count} words (limit {limit})"
+
+how_to_fix:
+  ja: 接続助詞のところで 2 文に割ってください。それだけで読めるようになります。
+  en: Split it in two at the conjunction.
+
+# 単位は adapter の lengthUnit。日本語は文字、英語は語。spec §7。
+levels:
+  ja: { strict: 70, normal: 100, relaxed: 140 }
+  en: { strict: 18, normal: 25, relaxed: 35 }
+
+use_for: [blog, business]

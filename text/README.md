@@ -10,30 +10,78 @@ npx chaff article.md
 
 ## いまどこまで動くか
 
-歩く骨格まで。言語の判定と文の分割が動き、rule はまだ 1 つも実装されていない。
+L1 rule が 5 本。設定ファイルも API key も言語指定も要らない。
 
 ```
-$ node packages/chaff/bin/chaff.js chaff-workflow-spec.md
+$ npx chaff article.md
 
-chaff-workflow-spec.md   日本語   本文から推定 (0.45)
+article.md   blog/tech · 日本語   ジャンルは既定から
 
-  193 文 / 平均 90 文字
-  いちばん長い文: 858 文字  (2630 文字目から)
+─── 5 行目 ───────────────────────────────────────────────
 
-  まだ rule は実装されていません。文章は書き換えていません。
+    キャッシュの仕組みについて説明します。
+
+  ⚠  見出しの繰り返し
+
+     見出し「キャッシュの仕組み」を直後の文がほぼそのまま繰り返しています
+     見出しで言ったことを次の文が繰り返すと、読者はそこで何も受け取れません。
+
+     → 見出しが約束したことの中身から書き始めてください。
+
+     このルールをゆるめる:  npx chaff relax heading-echo
+
+──────────────────────────────────────────────────────────
+
+  注意 1 件   すべて機械による判定です
+              （同じ文章なら何度実行しても同じ結果になります）
+
+  文章は書き換えていません。直すのは書いた人です。
 ```
 
-Markdown をまだ解析していないので、コードブロックも本文として数えている。MVP（issue #2）で直す。
+| rule | 見るもの |
+| --- | --- |
+| `bold-density` | 1 節あたりの太字の数 |
+| `max-sentence-length` | 一文の長さ（日本語は文字、英語は語） |
+| `heading-echo` | 見出しを直後の文が繰り返していないか |
+| `repeated-sentence-head` | 同じ書き出しの連続 |
+| `sentence-rhythm` | 文の長さの単調さ（experimental。既定では動かない） |
+
+## 設定は 4 つの言葉だけ
+
+数字は書かない。`chaff.yaml` を開かずにコマンドでも変えられる。
+
+```bash
+npx chaff relax bold-density --why "図の説明で太字を多用するため"
+```
+
+```yaml
+rules:
+  # 太字の使いすぎ
+  # 太字は読者の目を止める道具です。多用すると、どこも目立たなくなります。
+  bold-density: relaxed # 2026-09-11 図の説明で太字を多用するため / isamu
+```
+
+説明コメントは自動で入り、既存のコメントは壊さない。既に理由があるものを変えるときは `--why` が要る。古い理由が新しい値に残ると履歴が嘘になるため。
+
+AI に設定を書かせるときは `npx chaff rules --json` を渡す。今の値・使える値・なぜ今 off なのか・変更コマンドが 1 つに入っている。
+
+## まだ無いもの
+
+L2 語彙表 / L3 品詞解析 / L4 意味の検査（`checks.yaml`）/ `baseline` / `suppressions` / `eval` / `--watch`。
 
 ## 構成
 
 ```
 text/                      yarn workspaces のルート
   packages/chaff           core。npm 名 chaff
+    rules/*.yaml           rule 定義。分岐も式も書かない
     src/plugin.ts          contract（型のみ。実装を持たない）
-    src/detect-language.ts アダプタを読む前の言語の当て推量
-    src/detect.ts          言語の推定
-    src/adapter-load.ts    アダプタの実行時解決
+    src/document.ts        Markdown → ProseDocument
+    src/mask.ts            非 prose を同じ長さの空白で覆う
+    src/levels.ts          4 語 → 数値
+    src/detectors/         rule 定義の how_to_find が引く
+    src/config/            chaff.yaml の読み書き
+    src/render/            出力（既定 / --compact / --json）
     src/cli.ts
   packages/lang-ja         @chaff/lang-ja。文分割（Tier 0）
   packages/lang-en         @chaff/lang-en。文分割（Tier 0）

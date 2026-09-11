@@ -36,12 +36,21 @@
   "files": [
     "dist",
     "src",
-    "bin"
+    "bin",
+    "rules"
   ],
   "engines": {
     "node": ">=24"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "mdast-util-from-markdown": "^2.0.3",
+    "mdast-util-frontmatter": "^2.0.1",
+    "mdast-util-gfm-table": "^2.0.0",
+    "micromark-extension-frontmatter": "^2.0.0",
+    "micromark-extension-gfm-table": "^2.1.1",
+    "yaml": "^2.9.0"
   }
 }
