@@ -1,0 +1,30 @@
+id: sentence-rhythm
+# 「AI 生成は文の長さが揃う」は未検証の仮説。corpus 評価まで既定では動かさない。spec §26-4。
+status: experimental
+layer: L1
+how_to_find: sentence-rhythm
+severity: warning
+
+name:
+  ja: 文の長さが単調
+  en: Monotonous sentence rhythm
+
+why:
+  ja: どの文も同じ長さだと、読者は途中で読むリズムを失います。
+  en: When every sentence is the same length, the reader loses the rhythm.
+
+message:
+  ja: 文の長さのばらつきが {count}%（{limit}% 以上ほしい）
+  en: "Sentence length varies by only {count}% (want {limit}%)"
+
+how_to_fix:
+  ja: 短い文をいくつか混ぜてください。1 文を 2 つに割るだけで変わります。
+  en: Mix in short sentences. Splitting one in two is enough.
+
+# 文長の変動係数を 100 分率で持つ。下回ったら指摘する。
+levels:
+  strict: 35
+  normal: 30
+  relaxed: 20
+
+use_for: [blog]

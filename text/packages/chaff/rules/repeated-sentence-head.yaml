@@ -1,0 +1,28 @@
+id: repeated-sentence-head
+layer: L1
+status: stable
+how_to_find: repeated-head
+severity: warning
+
+name:
+  ja: 同じ書き出しの連続
+  en: Repeated sentence opening
+
+why:
+  ja: 同じ書き出しが続くと、読者は文の切れ目を見失って読み飛ばします。
+  en: Identical openings blur the boundary between sentences.
+
+message:
+  ja: 「{head}」で始まる文が {count} 続いています（{limit} まで）
+  en: '{count} sentences in a row open with "{head}" (limit {limit})'
+
+how_to_fix:
+  ja: 語順を変えるか、1 文を前の文に繋げてください。
+  en: Reorder, or fold one sentence into the one before it.
+
+levels:
+  strict: 2
+  normal: 3
+  relaxed: 4
+
+use_for: [blog, business]

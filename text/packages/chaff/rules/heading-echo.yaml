@@ -1,0 +1,30 @@
+id: heading-echo
+layer: L1
+status: stable
+how_to_find: heading-echo
+severity: warning
+
+name:
+  ja: 見出しの繰り返し
+  en: Heading echoed
+
+why:
+  ja: 見出しで言ったことを次の文が繰り返すと、読者はそこで何も受け取れません。
+  en: When the first sentence repeats the heading, the reader gains nothing by reading on.
+
+message:
+  ja: 見出し「{heading}」を直後の文がほぼそのまま繰り返しています
+  en: The first sentence repeats the heading "{heading}"
+
+how_to_fix:
+  ja: 見出しが約束したことの中身から書き始めてください。
+  en: Start from what the heading promised, not from the heading itself.
+
+# 見出しの文字 3-gram のうち、直後の文に現れた割合（包含率）。100 分率で持つ。
+# Jaccard ではない理由は detectors/heading-echo.ts を参照。
+levels:
+  strict: 45
+  normal: 60
+  relaxed: 75
+
+use_for: [blog, business]
