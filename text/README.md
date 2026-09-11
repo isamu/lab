@@ -1,5 +1,7 @@
 # chaff
 
+[![npm](https://img.shields.io/npm/v/chaff)](https://www.npmjs.com/package/chaff)
+
 文章の読みにくいところを見つける道具。**文章は書き換えない。** 直すのは書いた人。
 
 `coding/` の scoria がコードの品質を測るのに対して、こちらは文章の品質を測る。
@@ -174,9 +176,9 @@ text/                      yarn workspaces のルート
     src/config/            chaff.yaml の読み書き
     src/render/            出力（既定 / --compact / --json）
     src/cli.ts
-  packages/lang-ja         @chaff/lang-ja。文分割と語彙表
+  packages/lang-ja         chaff-lang-ja。文分割と語彙表
     lexicons/*.yaml        L2 の語彙。ここだけが言語別
-  packages/lang-en         @chaff/lang-en。同上
+  packages/lang-en         chaff-lang-en。同上
   test/                    node:test
 ```
 

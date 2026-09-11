@@ -1,6 +1,6 @@
 import type { LanguageAdapter } from "./plugin.ts";
 
-const ADAPTER_PACKAGE: Readonly<Record<string, string>> = { ja: "@chaff/lang-ja", en: "@chaff/lang-en" };
+const ADAPTER_PACKAGE: Readonly<Record<string, string>> = { ja: "chaff-lang-ja", en: "chaff-lang-en" };
 
 const isAdapter = (value: unknown): value is LanguageAdapter => {
   if (typeof value !== "object" || value === null) return false;
