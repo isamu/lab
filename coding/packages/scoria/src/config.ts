@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { isRecord, readPackageJson } from "./package-json.ts";
 import { detectStacks } from "./stacks/index.ts";
+import { isLang, type Lang } from "./messages.ts";
 
 export const CONFIG_FILENAME = "scoria.config.json";
 
@@ -11,6 +12,14 @@ export interface ScoriaConfig {
   readonly profile: Profile;
   readonly stacks: readonly string[];
   readonly mode: "report";
+  /** Language of the terminal output. Machine output stays English (see messages.ts). */
+  readonly lang: Lang;
+}
+
+/** Stacks the config and the current detection disagree about. Formatted by the renderer. */
+export interface Drift {
+  readonly added: readonly string[];
+  readonly missing: readonly string[];
 }
 
 export type ConfigSource = "config-file" | "package-json" | "detected";
@@ -18,10 +27,10 @@ export type ConfigSource = "config-file" | "package-json" | "detected";
 export interface LoadedConfig {
   readonly config: ScoriaConfig;
   readonly source: ConfigSource;
-  /** 設定が凍結されているか。検出のままの run は baseline にできない（spec §9.2）。 */
+  /** Whether the config is frozen. A run on bare detection cannot become a baseline (spec §9.2). */
   readonly frozen: boolean;
-  /** 設定と、いま検出した結果のずれ。勝手に追随しない。 */
-  readonly drift: readonly string[];
+  /** Where the config and current detection disagree. Never followed silently. */
+  readonly drift: Drift;
 }
 
 const isStringArray = (value: unknown): value is readonly string[] => Array.isArray(value) && value.every((entry) => typeof entry === "string");
@@ -30,7 +39,8 @@ const isProfile = (value: unknown): value is Profile => value === "app" || value
 
 const toConfig = (raw: unknown): ScoriaConfig | undefined => {
   if (!isRecord(raw) || !isProfile(raw["profile"]) || !isStringArray(raw["stacks"])) return undefined;
-  return { profile: raw["profile"], stacks: raw["stacks"], mode: "report" };
+  const lang = raw["lang"];
+  return { profile: raw["profile"], stacks: raw["stacks"], mode: "report", lang: isLang(lang) ? lang : "en" };
 };
 
 const detectProfile = (pkg: unknown): Profile => {
@@ -44,6 +54,7 @@ export const detectConfig = async (root: string): Promise<ScoriaConfig> => ({
   profile: detectProfile(await readPackageJson(root)),
   stacks: await detectStacks(root),
   mode: "report",
+  lang: "en",
 });
 
 const readConfigFile = async (root: string): Promise<ScoriaConfig | undefined> => {
@@ -55,18 +66,19 @@ const readConfigFile = async (root: string): Promise<ScoriaConfig | undefined> =
   }
 };
 
-const driftOf = (config: ScoriaConfig, detected: readonly string[]): readonly string[] => {
-  const added = detected.filter((id) => !config.stacks.includes(id)).map((id) => `${id} が増えています`);
-  const gone = config.stacks.filter((id) => !detected.includes(id)).map((id) => `${id} が見つかりません`);
-  return [...added, ...gone];
-};
+const driftOf = (config: ScoriaConfig, detected: readonly string[]): Drift => ({
+  added: detected.filter((id) => !config.stacks.includes(id)),
+  missing: config.stacks.filter((id) => !detected.includes(id)),
+});
 
 export const loadConfig = async (root: string): Promise<LoadedConfig> => {
   const detected = await detectConfig(root);
   const fromFile = await readConfigFile(root);
   const fromPackage = toConfig((await readPackageJson(root))?.["scoria"]);
   const stored = fromFile ?? fromPackage;
-  if (stored === undefined) return { config: detected, source: "detected", frozen: false, drift: [] };
+  if (stored === undefined) {
+    return { config: detected, source: "detected", frozen: false, drift: { added: [], missing: [] } };
+  }
   return {
     config: stored,
     source: fromFile === undefined ? "package-json" : "config-file",

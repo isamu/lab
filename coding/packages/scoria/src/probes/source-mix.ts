@@ -3,13 +3,13 @@ import { slocOf } from "../files.ts";
 import { isUntypedSource } from "../stacks/ts.ts";
 
 /**
- * TypeScript プロジェクトに残っている .js / .jsx を数える。
+ * Counts the .js / .jsx left in a TypeScript project.
  *
- * `.js` のままのファイルは、型検査をファイル単位で丸ごと回避している。
- * `@ts-nocheck` を書くのと効果は同じで、しかもコード上に痕跡が残らない。
+ * A file that stays .js skips the type checker at file granularity. The effect is the same as
+ * writing `@ts-nocheck`, except nothing in the code records that it happened.
  *
- * typescript を持たない repo では警告しない。JavaScript のプロジェクトに
- * 「TypeScript にしろ」と言うのはこの probe の仕事ではない。
+ * Projects without TypeScript are not warned. Telling a JavaScript project to adopt TypeScript
+ * is not this probe's job.
  */
 
 const TOP_CONTRIBUTORS = 5;
@@ -21,7 +21,7 @@ const toFinding = (file: SourceFile): Finding => ({
   severity: "warning",
   file: file.path,
   line: 1,
-  message: "型検査の対象外です。.ts / .tsx にしてください",
+  message: "not type-checked; rename to .ts / .tsx",
   probe: "source-mix",
   dimension: "type-safety",
   tier: 0,
@@ -63,6 +63,8 @@ export const sourceMix: Probe = {
   tier: 0,
   declares: ["source-mix.untyped_file_ratio", "source-mix.untyped_sloc_ratio", "source-mix.untyped_file_count", "source-mix.typed_file_count"],
   detect: (ctx) =>
-    Promise.resolve(ctx.project.typescript ? { kind: "ok" } : { kind: "skipped", reason: "typescript が依存にありません。JS プロジェクトには適用しません" }),
+    Promise.resolve(
+      ctx.project.typescript ? { kind: "ok" } : { kind: "skipped", reason: "typescript is not a dependency; not applicable to a JavaScript project" },
+    ),
   run: (ctx) => Promise.resolve(assess(ctx)),
 };

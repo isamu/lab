@@ -2,9 +2,9 @@ import type { FileKind, StackAdapter, StackDetection } from "../plugin.ts";
 import { readPackageJson, hasDependency } from "../package-json.ts";
 
 /**
- * react は .tsx / .jsx の扱いを ts stack と共有するため、分類には何も足さない。
- * 独立した stack として持つのは、検出結果を設定に凍結するためと、
- * 今後 UI 次元の probe（design token、component shape）が react 固有の知識を要するため。
+ * React shares .tsx / .jsx handling with the ts stack, so it adds nothing to classification.
+ * It exists as its own stack so detection can be frozen into the config, and because the coming
+ * UI-dimension probes (design tokens, component shape) will need React-specific knowledge.
  */
 const classify = (): FileKind => "ignored";
 

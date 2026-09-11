@@ -35,7 +35,7 @@ const parseRubric = (source: string, text: string): Rubric => {
   };
 };
 
-/** weight の合計が 1 でないと Σ points == score が崩れ、movers の加法性（spec §26.3）が壊れる。 */
+/** If weights do not sum to 1, Σ points == score breaks, and with it the additivity of movers (spec §26.3). */
 const assertWeightsSumToOne = (rubric: Rubric, source: string): void => {
   const sum = rubric.metrics.reduce((acc, m) => acc + m.weight, 0);
   if (Math.abs(sum - 1) > WEIGHT_EPSILON) {
@@ -44,8 +44,8 @@ const assertWeightsSumToOne = (rubric: Rubric, source: string): void => {
 };
 
 /**
- * rubric が参照する metric id がどの probe の declares にも無い場合、その metric は静かに 0 点になる。
- * 最も見つけにくい壊れ方なので、起動時に落とす（spec §26.2）。
+ * A rubric referencing a metric no probe declares scores a silent zero for it — the hardest
+ * failure to notice — so it is rejected at startup (spec §26.2).
  */
 export const assertMetricsAreDeclared = (rubrics: readonly Rubric[], declared: ReadonlySet<string>): void => {
   const missing = rubrics.flatMap((r) => r.metrics.filter((m) => !declared.has(m.metric)).map((m) => `${r.id} -> ${m.metric}`));

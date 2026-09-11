@@ -32,8 +32,9 @@ const readLines = async (root: string, relativePath: string): Promise<readonly s
 };
 
 /**
- * 走査・読み込み・分類を core が一度だけ行い、probe には分類済みのものだけを渡す。
- * probe が生のパスを受け取らないので、classify を迂回した種別判定が書けない（spec §8）。
+ * Walking, reading and classification happen once, in the core; probes only ever see the result.
+ * Because a probe never receives a raw path, a kind check that bypasses classify cannot be
+ * written (spec §8).
  */
 export const collectFiles = async (root: string, stacks: readonly StackAdapter[]): Promise<readonly SourceFile[]> => {
   const classify = composeClassify(stacks);
@@ -53,5 +54,5 @@ export const collectFiles = async (root: string, stacks: readonly StackAdapter[]
 
 export const slocOf = (file: SourceFile): number => file.lines.filter((line) => line.trim() !== "").length;
 
-/** 密度の分母は source だけ。test を分母に入れると、テストを足すだけで密度が下がる（spec §16.3）。 */
+/** Only source counts toward the denominator. Including tests would let adding tests dilute any density (spec §16.3). */
 export const sourceSloc = (files: readonly SourceFile[]): number => files.filter((file) => file.kind === "source").reduce((sum, file) => sum + slocOf(file), 0);

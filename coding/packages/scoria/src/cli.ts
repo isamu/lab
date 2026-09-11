@@ -1,6 +1,7 @@
 import { relative } from "node:path";
 import { assay } from "./run.ts";
 import { detectConfig, writeConfig, CONFIG_FILENAME, type ScoriaConfig } from "./config.ts";
+import { isLang, messagesFor, type Lang } from "./messages.ts";
 import { renderExplain, renderReport } from "./render.ts";
 
 interface Options {
@@ -9,6 +10,7 @@ interface Options {
   readonly json: boolean;
   readonly explain: string | undefined;
   readonly write: boolean;
+  readonly lang: Lang | undefined;
 }
 
 const valueAfter = (argv: readonly string[], flag: string): string | undefined => {
@@ -18,53 +20,67 @@ const valueAfter = (argv: readonly string[], flag: string): string | undefined =
 
 const parse = (argv: readonly string[]): Options => {
   const explain = valueAfter(argv, "--explain");
-  const positional = argv.filter((arg) => !arg.startsWith("--") && arg !== explain);
+  const lang = valueAfter(argv, "--lang");
+  const consumed = [explain, lang];
+  const positional = argv.filter((arg) => !arg.startsWith("--") && !consumed.includes(arg));
   const command = positional[0] === "init" ? "init" : "assay";
   const target = (command === "init" ? positional[1] : positional[0]) ?? ".";
-  return { command, target, json: argv.includes("--json"), explain, write: !argv.includes("--no-write") };
+  return {
+    command,
+    target,
+    json: argv.includes("--json"),
+    explain,
+    write: !argv.includes("--no-write"),
+    lang: isLang(lang) ? lang : undefined,
+  };
 };
 
 const describe = (config: ScoriaConfig): string => `profile: ${config.profile} · stacks: ${config.stacks.join(", ")}`;
 
-/** 対象が cwd の外なら絶対パスのほうが読みやすい。`../../..` が並ぶのを避ける。 */
+/** An absolute path reads better than a chain of `..` when the target is outside the cwd. */
 const displayPath = (path: string): string => {
   const fromHere = relative(process.cwd(), path);
   return fromHere === "" || fromHere.startsWith("..") ? path : fromHere;
 };
 
-const runInit = async (target: string): Promise<void> => {
-  const config = await detectConfig(target);
+const runInit = async (target: string, lang: Lang): Promise<void> => {
+  const messages = messagesFor(lang);
+  const detected = await detectConfig(target);
+  const config: ScoriaConfig = { ...detected, lang };
   const path = await writeConfig(target, config);
-  process.stdout.write(`\n${displayPath(path)} を書きました\n  ${describe(config)}\n\n`);
-  process.stdout.write("検出結果はここで凍結されます。依存が増えても勝手に追随しません。\n");
-  process.stdout.write("測り方が run ごとに変わると、時系列の比較が成立しないためです。\n\n");
+  const lines = ["", messages.wroteConfig(displayPath(path)), `  ${describe(config)}`, "", ...messages.frozenNote, ""];
+  process.stdout.write(`${lines.join("\n")}\n`);
 };
 
 /**
- * 設定が無いまま測ると、依存が 1 つ増えただけでスコアが飛ぶ（spec §9.2）。
- * 最初の実行で検出結果を書き出して凍結する。CI では書かない。
+ * Measuring without a config means one added dependency can move the score (spec §9.2).
+ * The first run writes the detection out and freezes it. Nothing is written under CI.
  */
-const freezeIfNeeded = async (target: string, frozen: boolean, write: boolean): Promise<string | undefined> => {
+const freezeIfNeeded = async (target: string, frozen: boolean, write: boolean, lang: Lang): Promise<string | undefined> => {
+  const messages = messagesFor(lang);
   if (frozen) return undefined;
-  if (!write || process.env["CI"] === "true") return "設定がありません。検出したまま測っています（凍結されていません）";
-  const config = await detectConfig(target);
-  await writeConfig(target, config);
-  return `${CONFIG_FILENAME} を作成しました（${describe(config)}）。commit してください`;
+  if (!write || process.env["CI"] === "true") return messages.notFrozen;
+  const detected = await detectConfig(target);
+  await writeConfig(target, { ...detected, lang });
+  return messages.createdConfig(CONFIG_FILENAME, describe(detected));
 };
 
 export const main = async (argv: readonly string[]): Promise<void> => {
   const options = parse(argv);
   if (options.command === "init") {
-    await runInit(options.target);
+    await runInit(options.target, options.lang ?? "en");
     return;
   }
   const { report, loaded } = await assay(options.target);
-  const notice = await freezeIfNeeded(options.target, loaded.frozen, options.write);
+  const lang = options.lang ?? loaded.config.lang;
+  const notice = await freezeIfNeeded(options.target, loaded.frozen, options.write, lang);
   if (options.json) {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     return;
   }
   process.stdout.write(
-    options.explain === undefined ? renderReport(report, { source: loaded.source, drift: loaded.drift, notice }) : renderExplain(report, options.explain),
+    options.explain === undefined
+      ? renderReport(report, { source: loaded.source, drift: loaded.drift, notice, lang })
+      : renderExplain(report, options.explain, lang),
   );
 };

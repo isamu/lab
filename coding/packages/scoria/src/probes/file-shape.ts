@@ -3,10 +3,11 @@ import { slocOf } from "../files.ts";
 import { maximum, percentile, total } from "../stats.ts";
 
 /**
- * ファイルと関数の大きさ（spec §13.1）。
+ * The size of files (spec §13.1).
  *
- * 平均ではなく percentile と最大値を見る。実測では mulmoterminal と graphai の median がどちらも 63 行で、
- * median はまったく弁別しなかった。信号は p95（261 と 331）と最大値（622 と 1129）に出る。
+ * Percentiles and the maximum, never the mean. Measured on two maintained repositories the median
+ * was 63 lines in both, so the median discriminates nothing; the signal is in p95 (261 and 331)
+ * and the maximum (622 and 1129).
  */
 
 const GOD_FILE_LINES = 500;
@@ -31,7 +32,7 @@ const toFinding = ({ file, sloc }: Measured): Finding => ({
   severity: "warning",
   file: file.path,
   line: 1,
-  message: `${sloc} 行あります（上限 ${GOD_FILE_LINES}）`,
+  message: `${sloc} lines (limit ${GOD_FILE_LINES})`,
   probe: "file-shape",
   dimension: "readability",
   tier: 0,

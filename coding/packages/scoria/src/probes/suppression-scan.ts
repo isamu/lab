@@ -4,31 +4,47 @@ import { perKiloLines } from "../stats.ts";
 import { viewOf } from "../source-view.ts";
 
 /**
- * 抑制債務を数える（spec §15）。
+ * Counts suppression debt (spec §15).
  *
- * source と test を分けるのは実測に基づく。graphai の `as any` 94 件のうち 69 件が test 配下で、
- * テストの `as any` はモックのために正当なことが多い。総数で数えると source の 25 件が埋もれる。
+ * Source and test are counted separately, and that split is not cosmetic: measured on a real
+ * repository, 69 of 94 `as any` occurrences were in test files, where mocking makes them
+ * legitimate. A single total buries the 25 that are in source.
  */
 
 const MIN_REASON_CHARS = 8;
 const TOP_CONTRIBUTORS = 5;
 
 const CODE_PATTERNS = [
-  { rule: "as-any", pattern: /\bas\s+(any|unknown\s+as)\b/, message: "型を迂回しています" },
-  { rule: "test-skip", pattern: /\b(it|test|describe)\.(skip|only|todo)\b/, message: "テストが skip / only / todo になっています" },
+  { rule: "as-any", pattern: /\bas\s+(any|unknown\s+as)\b/, message: "bypasses the type checker" },
+  {
+    rule: "test-skip",
+    pattern: /\b(it|test|describe)\.(skip|only|todo)\b/,
+    message: "test is skipped, focused, or marked todo",
+  },
 ] as const;
 
 /**
- * ディレクティブはコメントの先頭にあるときだけ効く。
- * 先頭を要求しないと、ディレクティブを説明している散文コメントが実物として数えられる。
- * 実際にこのファイル自身の説明コメントが 2 件数えられた。
+ * A directive only takes effect at the start of a comment. Without that anchor, prose that
+ * merely discusses a directive is counted as the real thing — this file's own explanatory
+ * comments were counted twice before the anchor was added.
  */
 const DIRECTIVE_PATTERNS = [
-  // TypeScript にはルール名を書く欄が無いので、ディレクティブより後ろが理由。
-  { rule: "ts-directive", pattern: /^@ts-(ignore|expect-error|nocheck)\b/, reason: "trailing", message: "TypeScript の検査を抑制しています" },
-  // eslint はディレクティブの直後にルール名を書く。理由は `--` 以降という規約であり、
-  // ルール名を理由と数えると `eslint-disable-next-line no-console` が正当化されてしまう。
-  { rule: "eslint-disable", pattern: /^eslint-disable(-next-line|-line)?\b/, reason: "separator", message: "eslint の指摘を抑制しています" },
+  // TypeScript has no field for rule names, so whatever follows the directive is the reason.
+  {
+    rule: "ts-directive",
+    pattern: /^@ts-(ignore|expect-error|nocheck)\b/,
+    reason: "trailing",
+    message: "suppresses a TypeScript check",
+  },
+  // ESLint puts rule names right after the directive and reserves `--` for the description.
+  // Counting a rule name as a reason would mean `eslint-disable-next-line no-console`
+  // justifies itself, which makes the whole measurement meaningless.
+  {
+    rule: "eslint-disable",
+    pattern: /^eslint-disable(-next-line|-line)?\b/,
+    reason: "separator",
+    message: "suppresses an ESLint rule",
+  },
 ] as const;
 
 const COMMENT_MARKERS = /^[\s*/]*/;
@@ -43,7 +59,7 @@ interface Hit {
   readonly message: string;
 }
 
-/** 抑制そのものは悪ではない。説明の無い抑制が問題（spec §15.3）。 */
+/** A suppression is not wrong in itself. An unexplained one is (spec §15.3). */
 const reasonOf = (comment: string, token: string, style: "trailing" | "separator"): string => {
   const separated = comment.split("--").slice(1).join("--").trim();
   if (separated.length > 0) return separated;
@@ -53,8 +69,8 @@ const reasonOf = (comment: string, token: string, style: "trailing" | "separator
 };
 
 /**
- * `as any` の理由は、同じ行の末尾コメントか、直前の行コメントに書く。
- * 直前の行を無条件に認めると、JSDoc を持つ関数の `as any` がすべて「理由あり」になる。
+ * The reason for an `as any` belongs on the same line or on a line comment directly above it.
+ * Accepting any preceding line would mark every `as any` inside a documented function as explained.
  */
 const reasonComment = (file: SourceFile, comments: readonly string[], index: number): string => {
   const sameLine = commentBody(comments[index] ?? "").trim();
@@ -65,24 +81,24 @@ const reasonComment = (file: SourceFile, comments: readonly string[], index: num
 
 const codeHits = (file: SourceFile, code: readonly string[], comments: readonly string[]): readonly Hit[] =>
   code.flatMap((line, index) =>
-    CODE_PATTERNS.filter((p) => p.pattern.test(line)).map((p) => ({
-      rule: p.rule,
+    CODE_PATTERNS.filter((pattern) => pattern.pattern.test(line)).map((pattern) => ({
+      rule: pattern.rule,
       file: file.path,
       line: index + 1,
-      reasoned: p.rule === "as-any" && reasonComment(file, comments, index).length >= MIN_REASON_CHARS,
-      message: p.message,
+      reasoned: pattern.rule === "as-any" && reasonComment(file, comments, index).length >= MIN_REASON_CHARS,
+      message: pattern.message,
     })),
   );
 
 const directiveHits = (file: SourceFile, comments: readonly string[]): readonly Hit[] =>
   comments.flatMap((line, index) => {
     const body = commentBody(line);
-    return DIRECTIVE_PATTERNS.filter((p) => p.pattern.test(body)).map((p) => ({
-      rule: p.rule,
+    return DIRECTIVE_PATTERNS.filter((pattern) => pattern.pattern.test(body)).map((pattern) => ({
+      rule: pattern.rule,
       file: file.path,
       line: index + 1,
-      reasoned: reasonOf(body, p.pattern.exec(body)?.[0] ?? "", p.reason).length >= MIN_REASON_CHARS,
-      message: p.message,
+      reasoned: reasonOf(body, pattern.pattern.exec(body)?.[0] ?? "", pattern.reason).length >= MIN_REASON_CHARS,
+      message: pattern.message,
     }));
   });
 
@@ -105,7 +121,7 @@ const toFinding = (hit: Hit): Finding => ({
   severity: "error",
   file: hit.file,
   line: hit.line,
-  message: `${hit.message}。理由が書かれていません`,
+  message: `${hit.message}, with no reason given`,
   probe: "suppression-scan",
   dimension: "integrity",
   tier: 0,
@@ -115,8 +131,8 @@ const ratio = (part: number, whole: number): number => (whole === 0 ? 0 : Number
 
 const assess = (ctx: ProbeContext): ProbeResult => {
   const started = Date.now();
-  const sourceHits = ctx.files.filter((f) => f.kind === "source").flatMap(scanFile);
-  const testHits = ctx.files.filter((f) => f.kind === "test").flatMap(scanFile);
+  const sourceHits = ctx.files.filter((file) => file.kind === "source").flatMap(scanFile);
+  const testHits = ctx.files.filter((file) => file.kind === "test").flatMap(scanFile);
   const unreasoned = sourceHits.filter((hit) => !hit.reasoned);
   const contributors = contributorsOf(sourceHits);
   const sloc = sourceSloc(ctx.files);
@@ -126,7 +142,12 @@ const assess = (ctx: ProbeContext): ProbeResult => {
     metrics: [
       { id: "suppression-scan.source_count", value: sourceHits.length, unit: "count", topContributors: contributors },
       { id: "suppression-scan.test_count", value: testHits.length, unit: "count" },
-      { id: "suppression-scan.source_per_kloc", value: perKiloLines(sourceHits.length, sloc), unit: "per_kloc", topContributors: contributors },
+      {
+        id: "suppression-scan.source_per_kloc",
+        value: perKiloLines(sourceHits.length, sloc),
+        unit: "per_kloc",
+        topContributors: contributors,
+      },
       { id: "suppression-scan.unreasoned_source_count", value: unreasoned.length, unit: "count" },
       { id: "suppression-scan.unreasoned_ratio", value: ratio(unreasoned.length, sourceHits.length), unit: "ratio" },
     ],
@@ -148,6 +169,6 @@ export const suppressionScan: Probe = {
     "suppression-scan.unreasoned_source_count",
     "suppression-scan.unreasoned_ratio",
   ],
-  detect: (ctx) => Promise.resolve(ctx.files.some((f) => f.kind === "source") ? { kind: "ok" } : { kind: "absent", reason: "no source files" }),
+  detect: (ctx) => Promise.resolve(ctx.files.some((file) => file.kind === "source") ? { kind: "ok" } : { kind: "absent", reason: "no source files" }),
   run: (ctx) => Promise.resolve(assess(ctx)),
 };

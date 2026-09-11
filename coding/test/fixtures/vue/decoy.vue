@@ -1,8 +1,8 @@
 <template>
-  <!-- このテンプレートは probe を誤らせるための囮。ここから 1 件も検出されてはいけない。 -->
+  <!-- A decoy template. Nothing here may be reported. -->
   <div class="wrapper" data-note="eslint-disable-next-line no-console">
-    <p>don't use as any here — これはただの本文です</p>
-    <a :href="'https://example.com//path'">@ts-ignore と書いてあるだけのリンク</a>
+    <p>don't use as any here — this is just body text</p>
+    <a :href="'https://example.com//path'">a link that merely mentions @ts-ignore</a>
     <span>{{ label }}</span>
   </div>
 </template>
@@ -15,7 +15,7 @@ const label = computed(() => String(props.value));
 </script>
 
 <style scoped>
-/* as any / eslint-disable をコメントに含む style ブロック */
+/* a style block whose comment mentions as any and eslint-disable */
 .wrapper {
   color: red;
 }

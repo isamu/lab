@@ -9,10 +9,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 export const fixturePath = (...parts: readonly string[]): string => join(here, "fixtures", ...parts);
 
 /**
- * fixture を SourceFile として読む。classify は通さない。
- * fixture は test/ 配下にあるので classify に掛けると全部 "test" になり、
- * source を対象にする probe が何も見なくなる。
- * codeLines だけは拡張子に応じた adapter に任せる（.vue の script 抽出がそこにある）。
+ * Reads a fixture as a SourceFile without going through classify: fixtures live under test/, so
+ * classify would call every one of them "test" and probes that look at source would see nothing.
+ * codeLines is still delegated to the owning adapter, because .vue script extraction lives there.
  */
 export const loadFixture = async (relative: string, kind: FileKind = "source"): Promise<SourceFile> => {
   const lines = (await readFile(fixturePath(relative), "utf8")).split("\n");

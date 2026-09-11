@@ -13,14 +13,14 @@ const classify = (relativePath: string): FileKind => {
 const blank = (text: string): string => " ".repeat(text.length);
 
 /**
- * SFC のうち `<script>` の中身だけを残す。
+ * Keeps only the contents of `<script>` in a single-file component.
  *
- * `<template>` を JavaScript として走査すると、HTML 属性の引用符や本文のアポストロフィが
- * 文字列の開始と誤認され、その後ろのコードが隠れる。`<style>` も同じ。
- * 行番号を保つため、外した部分は同じ長さの空白にする。
+ * Scanning a `<template>` as JavaScript makes HTML attribute quotes and apostrophes in body text
+ * open string literals, hiding the code that follows; `<style>` has the same problem.
+ * Removed regions become spaces of equal length so line numbers survive.
  */
 export const scriptLinesOnly = (lines: readonly string[]): readonly string[] => {
-  // 行を順に見て `<script>` の内外を切り替えるので、状態だけ再代入する。
+  // Walking lines to track whether we are inside `<script>`, so only this flag is reassigned.
   let inScript = false;
   return lines.map((line) => {
     const open = SCRIPT_OPEN.exec(line);

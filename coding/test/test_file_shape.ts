@@ -5,7 +5,7 @@ import { contextOf, loadFixture } from "./helpers.ts";
 
 const metricOf = (metrics: readonly { id: string; value: number }[], id: string): number => metrics.find((m) => m.id === id)?.value ?? -1;
 
-test("大きなファイルを god file として報告する", async () => {
+test("reports a large file as a god file", async () => {
   const big = await loadFixture("file-shape/big.ts");
   const result = await fileShape.run(contextOf([big]));
   assert.equal(metricOf(result.metrics, "file-shape.god_file_count"), 1);
@@ -14,21 +14,21 @@ test("大きなファイルを god file として報告する", async () => {
   assert.equal(result.findings[0]?.dimension, "readability");
 });
 
-test("小さいファイルは god file にならない", async () => {
+test("a small file is not a god file", async () => {
   const small = await loadFixture("file-shape/small.ts");
   const result = await fileShape.run(contextOf([small]));
   assert.equal(metricOf(result.metrics, "file-shape.god_file_count"), 0);
   assert.deepEqual(result.findings, []);
 });
 
-test("test ファイルは分母にも分子にも入らない", async () => {
+test("test files count toward neither numerator nor denominator", async () => {
   const big = await loadFixture("file-shape/big.ts", "test");
   const result = await fileShape.run(contextOf([big]));
   assert.equal(metricOf(result.metrics, "file-shape.source_file_count"), 0);
   assert.equal(metricOf(result.metrics, "file-shape.source_sloc"), 0);
 });
 
-test("p95 は最大値に引きずられない", async () => {
+test("p95 is not dragged by the maximum", async () => {
   const big = await loadFixture("file-shape/big.ts");
   const small = await loadFixture("file-shape/small.ts");
   const many = [small, small, small, small, small, small, small, small, small, small, small, small, small, small, small, small, small, small, small, big];

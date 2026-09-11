@@ -1,17 +1,18 @@
 /**
- * ソースを「コードだけの見え方」と「コメントだけの見え方」に分ける。
+ * Splits a source file into a code-only view and a comment-only view.
  *
- * 抑制の種類によって見るべき場所が違う。
- *   `as any` / `it.skip`           コードにしか現れない。コメントや文字列で一致してはならない
- *   `@ts-ignore` / eslint-disable  ディレクティブなので、必ずコメントの中にある
+ * Where a suppression can legitimately appear depends on its kind:
+ *   `as any` / `it.skip`           only ever in code; must not match in comments or strings
+ *   `@ts-ignore` / eslint-disable  directives, so always inside a comment
  *
- * 行を素朴に走査すると、この probe 自身の説明コメントや正規表現リテラルが抑制として数えられる。
- * 実際に最初の実行で 4 件の誤検知が出た。
+ * Scanning lines naively counts this probe's own explanatory comments and regex literals as
+ * suppressions. The first run against this repository produced four such false positives.
  *
- * 一つの正規表現で全種類を交互に並べるより、開き記号から閉じ記号まで進めるスキャナのほうが正確で安い。
- * 文字列の中の `//` をコメントと誤認しないことが、単純な正規表現との差になる。
+ * A scanner that walks from an opening token to its close is both more accurate and cheaper than
+ * one regex alternating over every case. The difference that matters is not mistaking `//` inside
+ * a string for the start of a comment.
  *
- * 行番号を保つため、除外した範囲は空白で置き換える。改行はそのまま残す。
+ * Excluded ranges are replaced with spaces so line numbers survive; newlines are kept.
  */
 
 type Kind = "code" | "comment" | "string";
@@ -48,9 +49,9 @@ export interface SourceView {
 const openerAt = (text: string, index: number): Token | undefined =>
   OPENING_CHARACTERS.has(text[index] ?? "") ? TOKENS.find((token) => text.startsWith(token.open, index)) : undefined;
 
-/** 閉じ記号の直後の位置を返す。閉じないまま終わったら末尾。 */
+/** The index just past the closing token, or the end of the text if it never closes. */
 const closeOf = (text: string, token: Token, from: number): number => {
-  // 文字ごとに進める走査なので、cursor だけは再代入する。
+  // A character scanner, so the cursor is the one thing that is reassigned.
   let cursor = from;
   while (cursor < text.length) {
     if (token.escapes && text[cursor] === "\\") {

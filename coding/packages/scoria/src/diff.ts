@@ -1,10 +1,10 @@
 import type { Report } from "./report.ts";
 
 /**
- * 差分の帰属。scale を線形に固定した理由そのもの（spec §16.2）。
+ * Delta attribution — the whole reason the scale is kept linear (spec §16.2).
  *
- * 不変条件: ある次元の movers の points の合計は、その次元の delta に一致する。
- * scale に非線形を入れた瞬間にこれは崩れる。設計判断を守るテストとして test_diff.ts が検査する。
+ * Invariant: for any dimension, the points of its movers sum to that dimension's delta.
+ * Introducing a non-linear scale breaks it immediately, which is why test_diff.ts pins it.
  */
 
 export interface Mover {

@@ -36,8 +36,8 @@ const collectMetrics = (results: readonly ProbeResult[]): ReadonlyMap<string, nu
   new Map(results.flatMap((r) => r.metrics).map((m: Metric) => [m.id, m.value]));
 
 /**
- * 抑制が多い repo では、他の probe の測定値そのものが信用できない（spec §15.4）。
- * 減点するだけでなく、その次元の confidence を下げる。
+ * Where suppressions are dense, the other probes' measurements are themselves untrustworthy
+ * (spec §15.4). So suppressions do not merely deduct points; they lower the dimension's confidence.
  */
 const confidenceOf = (rubric: Rubric, values: ReadonlyMap<string, number>, sloc: number): DimensionReport["confidence"] => {
   const density = perKiloLines(
