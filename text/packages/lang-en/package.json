@@ -1,5 +1,5 @@
 {
-  "name": "chaff-lang-en",
+  "name": "@chaff-lang/en",
   "version": "0.0.1",
   "description": "English language adapter for chaff",
   "license": "MIT",
@@ -34,5 +34,8 @@
     "url": "git+https://github.com/isamu/lab.git",
     "directory": "text/packages/lang-en"
   },
-  "homepage": "https://github.com/isamu/lab/tree/main/text"
+  "homepage": "https://github.com/isamu/lab/tree/main/text",
+  "publishConfig": {
+    "access": "public"
+  }
 }
