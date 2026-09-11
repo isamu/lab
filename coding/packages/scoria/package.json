@@ -6,7 +6,7 @@
   "author": "isamu",
   "type": "module",
   "bin": {
-    "scoria": "./bin/scoria.js"
+    "scoria": "bin/scoria.js"
   },
   "exports": {
     ".": {
