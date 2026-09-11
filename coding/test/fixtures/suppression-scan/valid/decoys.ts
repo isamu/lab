@@ -1,9 +1,9 @@
-// この fixture は「probe が誤検知しやすい正常なコード」を集めたもの (spec §26.1)。
-// ここから 1 件でも検出されたら probe が壊れている。
+// Correct code that is easy to false-positive on (spec §26.1).
+// A single detection here means the probe is broken.
 
 /**
- * このコメントは @ts-ignore と eslint-disable と as any について説明している。
- * 散文がディレクティブを話題にしているだけで、どれも実際の抑制ではない。
+ * This comment discusses @ts-ignore, eslint-disable and as any.
+ * It is prose about directives, not a single actual suppression.
  */
 
 export const PATTERNS = {
@@ -14,10 +14,10 @@ export const PATTERNS = {
 
 export const describeSuppression = (kind: string): string => {
   const label = kind === "ts" ? "@ts-ignore" : "eslint-disable-next-line";
-  return `${label} は理由なしでは使わないこと`;
+  return `${label} must never be used without a reason`;
 };
 
-// as const は型アサーションではあるが、型を迂回しないので抑制ではない。
+// `as const` is a type assertion but bypasses nothing, so it is not a suppression.
 export const LEVELS = ["low", "medium", "high"] as const;
 
 export const isRecord = (value: unknown): value is Record<string, unknown> =>

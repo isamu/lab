@@ -1,9 +1,12 @@
 import type { Finding } from "./plugin.ts";
 import type { DimensionReport, Report } from "./report.ts";
+import type { Drift } from "./config.ts";
+import { messagesFor, type Lang, type Messages } from "./messages.ts";
+import { padEndWide, padStartWide } from "./width.ts";
 
 const NAME_WIDTH = 20;
 const SCORE_WIDTH = 6;
-const RULE_WIDTH = 22;
+const RULE_WIDTH = 24;
 const LOCATION_WIDTH = 44;
 const METRIC_WIDTH = 40;
 const VALUE_WIDTH = 10;
@@ -12,8 +15,18 @@ const POINTS_WIDTH = 8;
 const MAX_FINDINGS = 8;
 const SEPARATOR = "─".repeat(62);
 
-const pad = (text: string, width: number): string => text.padEnd(width);
-const padStart = (text: string, width: number): string => text.padStart(width);
+export interface RenderContext {
+  readonly source: string;
+  readonly drift: Drift;
+  readonly notice: string | undefined;
+  readonly lang: Lang;
+}
+
+const pad = padEndWide;
+const padStart = padStartWide;
+
+/** The rule id is the join between the machine-readable message and the translated one. */
+const displayMessage = (finding: Finding, messages: Messages): string => messages.ruleMessages[finding.rule] ?? finding.message;
 
 const confidenceCell = (dimension: DimensionReport): string =>
   dimension.confidence === "high" ? "high" : `${dimension.confidence}   ${dimension.confidenceReason}`;
@@ -21,87 +34,84 @@ const confidenceCell = (dimension: DimensionReport): string =>
 const dimensionRow = (dimension: DimensionReport): string =>
   `  ${pad(dimension.dimension, NAME_WIDTH)}${padStart(dimension.score.toFixed(0), SCORE_WIDTH)}   ${confidenceCell(dimension)}`;
 
-const findingRow = (finding: Finding): string => {
+const findingRow = (finding: Finding, messages: Messages): string => {
   const location = `${finding.file}:${finding.line}`;
-  return `  ${pad(location, LOCATION_WIDTH)} ${pad(finding.rule, RULE_WIDTH)} ${finding.message}`;
+  return `  ${pad(location, LOCATION_WIDTH)} ${pad(finding.rule, RULE_WIDTH)} ${displayMessage(finding, messages)}`;
 };
 
 const probeNotes = (report: Report): readonly string[] =>
-  report.probes.filter((p) => p.status.kind !== "ok").map((p) => `  ${p.status.kind.padEnd(8)} ${p.probe}  ${"reason" in p.status ? p.status.reason : ""}`);
+  report.probes
+    .filter((probe) => probe.status.kind !== "ok")
+    .map((probe) => `  ${probe.status.kind.padEnd(8)} ${probe.probe}  ${"reason" in probe.status ? probe.status.reason : ""}`);
 
-export interface RenderContext {
-  readonly source: string;
-  readonly drift: readonly string[];
-  readonly notice: string | undefined;
-}
-
-const header = (report: Report, context: RenderContext): readonly string[] => [
+const header = (report: Report, context: RenderContext, messages: Messages): readonly string[] => [
   "",
-  `${report.root}  [${report.stacks.join(" · ")}]  profile: ${report.profile}`,
-  `${report.size.files} files · ${report.size.sloc} sloc · ${report.size.testSloc} test sloc   config: ${context.source}`,
+  `${report.root}  [${report.stacks.join(" · ")}]  ${messages.profileLabel}: ${report.profile}`,
+  `${messages.filesLine(report.size.files, report.size.sloc, report.size.testSloc)}   ${messages.configLabel}: ${context.source}`,
   "",
 ];
 
-const driftSection = (context: RenderContext): readonly string[] =>
-  context.drift.length === 0
-    ? []
-    : ["detection drift", ...context.drift.map((line) => `  ${line}`), "  取り込むなら `scoria init`（baseline の取り直しが要ります）", ""];
+const table = (report: Report, messages: Messages): readonly string[] => [
+  `  ${pad(messages.dimension, NAME_WIDTH)}${padStart(messages.score, SCORE_WIDTH)}   ${messages.confidence}`,
+  `  ${SEPARATOR}`,
+  ...report.dimensions.map(dimensionRow),
+  `  ${SEPARATOR}`,
+  `  ${pad(messages.overall, NAME_WIDTH)}${padStart(report.overall.score.toFixed(0), SCORE_WIDTH)}   ${messages.notComparable}`,
+  "",
+];
 
-const warningSection = (report: Report): readonly string[] => {
+const findingsSection = (report: Report, messages: Messages): readonly string[] => {
+  const errors = report.findings.filter((finding) => finding.severity === "error");
+  if (errors.length === 0) return [];
+  const shown = errors.slice(0, MAX_FINDINGS).map((finding) => findingRow(finding, messages));
+  const rest = errors.length > MAX_FINDINGS ? [`  ${messages.more(errors.length - MAX_FINDINGS)}`] : [];
+  return [messages.findingsAtError(errors.length), ...shown, ...rest, ""];
+};
+
+const warningSection = (report: Report, messages: Messages): readonly string[] => {
   const warnings = report.findings.filter((finding) => finding.severity === "warning");
   if (warnings.length === 0) return [];
   const byRule = new Map<string, number>();
   warnings.forEach((finding) => byRule.set(finding.rule, (byRule.get(finding.rule) ?? 0) + 1));
-  const rows = [...byRule.entries()].map(([rule, count]) => `  ${pad(rule, RULE_WIDTH)} ${count} 件`);
-  return [`${warnings.length} warnings`, ...rows, ""];
+  const rows = [...byRule.entries()].map(([rule, count]) => `  ${pad(rule, RULE_WIDTH)} ${count}`);
+  return [messages.warnings(warnings.length), ...rows, ""];
 };
 
-const table = (report: Report): readonly string[] => [
-  `  ${pad("Dimension", NAME_WIDTH)}${padStart("Score", SCORE_WIDTH)}   Confidence`,
-  `  ${SEPARATOR}`,
-  ...report.dimensions.map(dimensionRow),
-  `  ${SEPARATOR}`,
-  `  ${pad("Overall", NAME_WIDTH)}${padStart(report.overall.score.toFixed(0), SCORE_WIDTH)}   not comparable across repos`,
-  "",
-];
-
-const findingsSection = (report: Report): readonly string[] => {
-  const errors = report.findings.filter((f) => f.severity === "error");
-  if (errors.length === 0) return [];
-  const shown = errors.slice(0, MAX_FINDINGS).map(findingRow);
-  const rest = errors.length > MAX_FINDINGS ? [`  … ${errors.length - MAX_FINDINGS} more`] : [];
-  return [`${errors.length} findings at severity error`, ...shown, ...rest, ""];
+const driftSection = (context: RenderContext, messages: Messages): readonly string[] => {
+  const lines = [...context.drift.added.map((id) => `  ${messages.stackAdded(id)}`), ...context.drift.missing.map((id) => `  ${messages.stackMissing(id)}`)];
+  return lines.length === 0 ? [] : [messages.detectionDrift, ...lines, `  ${messages.driftHint}`, ""];
 };
 
 export const renderReport = (report: Report, context: RenderContext): string => {
+  const messages = messagesFor(context.lang);
   const notes = probeNotes(report);
-  const lines = [
-    ...header(report, context),
-    ...table(report),
-    ...findingsSection(report),
-    ...warningSection(report),
-    ...driftSection(context),
-    ...(notes.length > 0 ? ["probes not scored", ...notes, ""] : []),
+  return [
+    ...header(report, context, messages),
+    ...table(report, messages),
+    ...findingsSection(report, messages),
+    ...warningSection(report, messages),
+    ...driftSection(context, messages),
+    ...(notes.length > 0 ? [messages.probesNotScored, ...notes, ""] : []),
     ...(context.notice === undefined ? [] : [context.notice, ""]),
-    "overall は各次元の単純平均です。profile 別の重み (spec §10) は未実装。",
-    "mode: report — この実行は何もゲートしません (spec §17.2)。",
+    messages.meanNote,
+    messages.reportModeNote,
     "",
-  ];
-  return lines.join("\n");
+  ].join("\n");
 };
 
-export const renderExplain = (report: Report, dimension: string): string => {
-  const found = report.dimensions.find((d) => d.dimension === dimension);
+export const renderExplain = (report: Report, dimension: string, lang: Lang): string => {
+  const messages = messagesFor(lang);
+  const found = report.dimensions.find((entry) => entry.dimension === dimension);
   if (found === undefined) {
-    return `unknown dimension: ${dimension}\nknown: ${report.dimensions.map((d) => d.dimension).join(", ")}\n`;
+    return `${messages.unknownDimension(dimension, report.dimensions.map((entry) => entry.dimension).join(", "))}\n`;
   }
-  const rows = found.metrics.map((m) => {
-    const scale = `${m.scale.good} → ${m.scale.bad}`;
-    return `  ${pad(m.metric, METRIC_WIDTH)}${padStart(m.value.toFixed(2), VALUE_WIDTH)}   ${padStart(scale, SCALE_WIDTH)}${padStart(m.points.toFixed(1), POINTS_WIDTH)}`;
+  const rows = found.metrics.map((metric) => {
+    const scale = `${metric.scale.good} → ${metric.scale.bad}`;
+    return `  ${pad(metric.metric, METRIC_WIDTH)}${padStart(metric.value.toFixed(2), VALUE_WIDTH)}   ${padStart(scale, SCALE_WIDTH)}${padStart(metric.points.toFixed(1), POINTS_WIDTH)}`;
   });
   return [
     "",
-    `${found.dimension}  ${found.score.toFixed(0)}   status: ${found.status}   confidence: ${found.confidence}`,
+    `${found.dimension}  ${found.score.toFixed(0)}   status: ${found.status}   ${messages.confidence}: ${found.confidence}`,
     "",
     `  ${pad("metric", METRIC_WIDTH)}${padStart("value", VALUE_WIDTH)}   ${padStart("scale", SCALE_WIDTH)}${padStart("pts", POINTS_WIDTH)}`,
     `  ${SEPARATOR}`,

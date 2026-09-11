@@ -1,13 +1,13 @@
-# spec §11 の type-safety 次元のうち、Tier 0 で測れる部分。
+# The part of the type-safety dimension (spec §11) that Tier 0 can reach.
 #
-# tsc による型エラーの計数は Tier 1（ビルドが要る）なので、ここにはまだ無い。
-# いま見ているのは「そもそも型検査の対象になっているか」だけ。
+# Counting type errors with tsc is Tier 1 because it needs a build, so it is not here yet.
+# What this measures is only whether the code is subject to the type checker at all.
 id: type-safety
 status: experimental
 
 metrics:
-  # .js のままのファイルは型検査をファイル単位で回避している。
-  # 行数で見るのは、小さな設定ファイルが多数あっても点が落ちないようにするため。
+  # A file left as .js skips the type checker at file granularity.
+  # Weighted by lines so that a handful of small config files does not dominate the score.
   - metric: source-mix.untyped_sloc_ratio
     scale: { good: 0, bad: 0.5 }
     weight: 0.7

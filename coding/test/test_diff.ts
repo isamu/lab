@@ -35,10 +35,10 @@ const resultWith = (p95: number, godFiles: number): ProbeResult => ({
 const reportWith = (p95: number, godFiles: number) => buildReport(".", files, [resultWith(p95, godFiles)], rubrics);
 
 /**
- * scale を線形に固定した理由そのもの (spec §16.2, §26.3)。
- * 非線形を入れた瞬間にこのテストが落ちる。設計判断を守るために置いている。
+ * The whole reason the scale is kept linear (spec §16.2, §26.3).
+ * Introducing a non-linear curve fails this test immediately; it exists to defend that decision.
  */
-test("movers の points の合計は dimension の delta に一致する", () => {
+test("mover points sum to the dimension delta", () => {
   const diff = diffReports(reportWith(200, 2), reportWith(400, 5));
   const delta = diff.dimensions.find((d) => d.dimension === "readability")?.delta ?? 0;
   const sum = diff.movers.filter((m) => m.dimension === "readability").reduce((acc, m) => acc + m.points, 0);
@@ -46,7 +46,7 @@ test("movers の points の合計は dimension の delta に一致する", () =>
   assert.ok(delta < 0);
 });
 
-test("改善したときも加法性が保たれる", () => {
+test("additivity holds for improvements too", () => {
   const diff = diffReports(reportWith(600, 9), reportWith(180, 1));
   const delta = diff.dimensions.find((d) => d.dimension === "readability")?.delta ?? 0;
   const sum = diff.movers.reduce((acc, m) => acc + m.points, 0);
@@ -54,7 +54,7 @@ test("改善したときも加法性が保たれる", () => {
   assert.ok(delta > 0);
 });
 
-test("動かなかった metric は movers に出ない", () => {
+test("a metric that did not move is absent from movers", () => {
   const diff = diffReports(reportWith(200, 3), reportWith(400, 3));
   assert.deepEqual(
     diff.movers.map((m) => m.metric),
@@ -62,7 +62,7 @@ test("動かなかった metric は movers に出ない", () => {
   );
 });
 
-test("差分が無ければ movers は空", () => {
+test("no change means no movers", () => {
   const diff = diffReports(reportWith(200, 3), reportWith(200, 3));
   assert.deepEqual(diff.movers, []);
 });

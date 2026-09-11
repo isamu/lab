@@ -1,23 +1,27 @@
 # scoria
 
-TypeScript / JavaScript のコード品質を、既存ツールの機械証拠から定量化し、時系列の変化として提示するハーネス。
+A code quality assay harness for TypeScript and JavaScript.
 
-設計仕様: [scoria-spec.md](./scoria-spec.md)
+It collects machine evidence about a repository, normalises it through a fixed rubric, and reports
+per-dimension scores — so that improvement and regression are visible over time.
 
-まだ **歩く骨格**（issue #5）。probe は 3 本で、外部ツールの統合も baseline も入っていない。
+Design spec (Japanese): [scoria-spec.md](./scoria-spec.md) · 日本語の README: [README.ja.md](./README.ja.md)
 
-## 使う
+This is still a **walking skeleton**: three probes, no external tool integration, and every
+dimension is `experimental`.
 
-### 1. 対象リポジトリで npx（npm 公開後）
+## Use it
+
+### In your project, with npx
 
 ```bash
-cd ~/your/project
+cd your-project
 npx scoria
 ```
 
-引数なしならカレントディレクトリを測る。
+With no argument it measures the current directory.
 
-### 2. package.json に入れる
+### As a package script
 
 ```bash
 yarn add --dev scoria
@@ -35,59 +39,54 @@ yarn add --dev scoria
 yarn quality
 ```
 
-### 3. 手元のソースから試す（npm 公開前）
+### From source, before publishing
 
-このリポジトリを clone して、tarball を作って対象リポジトリで実行する。
-対象リポジトリには何もインストールされない。
+Build a tarball and run it in the target repository. Nothing is installed there.
 
 ```bash
 cd lab/coding
 yarn install && yarn build
 cd packages/scoria && npm pack --pack-destination /tmp
 
-cd ~/your/project
+cd your-project
 npx --package=/tmp/scoria-0.0.1.tgz -- scoria
 ```
 
-ソースを直接叩くこともできる。
+## Configuration
 
-```bash
-node ~/ss/llm/lab/coding/packages/scoria/bin/scoria.js ~/your/project
-```
-
-## 設定
-
-初回の実行で `scoria.config.json` を作る。明示的に作るなら `scoria init`。
+The first run writes `scoria.config.json`. To create it explicitly, run `scoria init`.
 
 ```json
 {
   "profile": "app",
   "stacks": ["vue", "ts"],
-  "mode": "report"
+  "mode": "report",
+  "lang": "en"
 }
 ```
 
-`profile` と `stacks` は `package.json` から検出する（vue / nuxt → vue、react / next → react、bin → cli、
-公開される exports → library）。
+`profile` and `stacks` are detected from `package.json`: vue / nuxt → vue, react / next → react,
+`bin` → cli, published `exports` → library.
 
-**検出結果はここで凍結される。** 依存が増えても勝手に追随せず、ずれたときは detection drift として報告するだけ。
-測り方が run ごとに変わると時系列の比較が成立しないため（spec §9.2）。取り込むなら `scoria init` を打ち直す。
+**Detection is frozen there.** Adding a dependency does not silently change it; a disagreement is
+reported as detection drift and nothing more. A measurement that changes between runs cannot be
+compared over time (spec §9.2). Run `scoria init` again to adopt a change deliberately.
 
-`package.json` の `scoria` キーに同じ形で書いてもよい。
+The same object may live under a `scoria` key in `package.json` instead.
 
-`CI=true` の環境では設定ファイルを書かない。凍結されていないことを警告するだけ。
+Nothing is written when `CI=true`; the run only reports that the detection is not frozen.
 
-## CI に入れる
+## In CI
 
 ```yaml
 - name: scoria
   run: npx -y scoria
 ```
 
-`mode: report` が既定なので **CI を落とさない**。スコアと指摘が出るだけ。
-劣化でゲートする ratchet は未実装（spec §17）。
+`mode: report` is the default, so **this never fails a build**. It prints scores and findings.
+Ratchet gating on regression is not implemented yet (spec §17).
 
-## 出力
+## Output
 
 ```text
 /Users/isamu/ss/ownplate  [vue · ts]  profile: app
@@ -102,43 +101,64 @@ node ~/ss/llm/lab/coding/packages/scoria/bin/scoria.js ~/your/project
   Overall                 66   not comparable across repos
 
 8 findings at severity error
-  src/components/CustomerInfo.vue:108   eslint-disable-no-reason  理由が書かれていません
+  src/components/CustomerInfo.vue:108  eslint-disable-no-reason  suppresses an ESLint rule, with no reason given
 
 63 warnings
-  god-file               21 件
-  untyped-source         42 件
+  god-file                 21
+  untyped-source           42
 ```
 
-**スコアは repo 間で比較できない。** 正規化の仕方も、有効な probe も、プロジェクト自身の基準の厳しさも
-repo ごとに違う。意味があるのは同じ repo の時系列の変化だけで、report JSON はこれを
-`"comparable": false` として構造に持つ（spec §3.3）。
+**Scores are not comparable across repositories.** Normalisation, the set of active probes, and the
+strictness of a project's own gates all differ. Only the time series within one repository means
+anything, and the report JSON carries `"comparable": false` to say so (spec §3.3). No badge output
+is provided.
 
 ```bash
-scoria --json                  # report JSON
-scoria --explain readability   # 点の内訳と、何を直せば何点上がるか
-scoria --no-write              # 設定ファイルを作らない
+scoria --json                  # the report as JSON
+scoria --explain readability   # the breakdown, and what a fix is worth
+scoria --no-write              # do not create a config file
+scoria --lang ja               # Japanese terminal output
 ```
 
-## いま測っているもの
+Terminal output is translatable; the JSON report is not. `Finding.message` stays English so that
+downstream tooling reads one stable vocabulary, and the rule id joins the two.
 
-| probe              | dimension   | 何を見るか                                                                                |
-| ------------------ | ----------- | ----------------------------------------------------------------------------------------- |
-| `suppression-scan` | integrity   | `as any` / `@ts-ignore` / `eslint-disable` / `it.skip`。理由の無いものだけを error にする |
-| `file-shape`       | readability | ファイル行数の p95 / 最大 / 500 行超の数                                                  |
-| `source-mix`       | type-safety | TypeScript プロジェクトに残った `.js` / `.jsx`                                            |
+## What it measures today
 
-対応スタック: `ts`（`.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs`）、`vue`（SFC の `<script>` だけを走査）、`react`。
+| probe              | dimension   | what it looks at                                                                                  |
+| ------------------ | ----------- | ------------------------------------------------------------------------------------------------- |
+| `suppression-scan` | integrity   | `as any`, `@ts-ignore`, `eslint-disable`, `it.skip`. Only the ones without a reason become errors |
+| `file-shape`       | readability | p95 and maximum file length, and the count over 500 lines                                         |
+| `source-mix`       | type-safety | `.js` / `.jsx` remaining in a TypeScript project                                                  |
 
-## まだ無いもの
+Stacks: `ts` (`.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs`), `vue` (only the SFC
+`<script>` block is scanned), `react`.
 
-外部 probe（eslint / knip / dependency-cruiser / jscpd）、baseline と ratchet、Tier 1 以上、
-GitHub Action、SARIF、較正。すべての dimension は `experimental` で、scale の `good` / `bad` は暫定値。
+### Two decisions worth knowing about
 
-## 開発
+**An ESLint rule name is not a reason.** Only text after `--` counts, following ESLint's own
+convention. Accepting the rule name would mean `eslint-disable-next-line no-console` justifies
+itself, and the measurement would mean nothing.
+
+**Suppressions lower confidence, not just score.** ESLint reporting zero warnings while 60
+`eslint-disable` comments are present does not mean the code is readable; it means the dimension
+was not measured. That is reported as `confidence: low` (spec §15.4).
+
+## Not here yet
+
+External probes (eslint, knip, dependency-cruiser, jscpd), baseline and ratchet gating, tiers above
+0, a GitHub Action, SARIF output, and calibration. Every threshold is provisional.
+
+## Development
 
 ```bash
 yarn format:check && yarn lint && yarn typecheck && yarn build && yarn test
 ```
 
-lint は `~/ss/llm/ever-better` の段に合わせている。`noInlineConfig` が有効なので `eslint-disable` は書けない。
-scoria は抑制債務を測るツールであり、自分の抑制がゼロであることに意味がある。
+Lint is set to the bar used by [ever-better](https://github.com/isamu/ever-better): type-aware
+`typescript-eslint`, SonarJS, and `noInlineConfig`, which means `eslint-disable` cannot be written
+here at all. scoria measures suppression debt; having none of its own is the point.
+
+## License
+
+MIT

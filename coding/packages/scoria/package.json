@@ -22,7 +22,8 @@
     "dist",
     "src",
     "rubrics",
-    "bin"
+    "bin",
+    "README.ja.md"
   ],
   "engines": {
     "node": ">=24"

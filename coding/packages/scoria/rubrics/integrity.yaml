@@ -1,8 +1,8 @@
-# spec §15。抑制債務そのものを 1 次元として測る。
+# spec §15. Suppression debt as a dimension of its own.
 #
-# source と test を分けるのは実測に基づく。graphai の `as any` 94 件のうち 69 件が test 配下で、
-# テストの `as any` はモックのために正当なことが多い。
-# したがって source の密度を主指標にし、test は小さい重みにとどめる。
+# Source and test are separated on evidence: of graphai's 94 `as any` occurrences, 69 were in
+# test files, where mocking makes them legitimate. So source density is the primary signal and
+# test carries only a small weight.
 id: integrity
 status: experimental
 
@@ -11,7 +11,7 @@ metrics:
     scale: { good: 0, bad: 5 }
     weight: 0.5
 
-  # 抑制そのものは悪ではない。説明の無い抑制が問題（spec §15.3）。
+  # A suppression is not wrong in itself; an unexplained one is (spec §15.3).
   - metric: suppression-scan.unreasoned_ratio
     scale: { good: 0, bad: 1 }
     weight: 0.3
@@ -20,5 +20,5 @@ metrics:
     scale: { good: 0, bad: 200 }
     weight: 0.2
 
-# integrity 自身の confidence は他の次元に従属しない（spec §21.1 の表では "—"）。
+# Integrity's own confidence does not depend on another dimension (spec §21.1 shows it as "—").
 confidence_from: []

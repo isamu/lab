@@ -1,8 +1,8 @@
 /**
  * scoria plugin contract — spec §8.
  *
- * このファイルは型だけを持つ。実装を足さないこと。
- * probe と stack adapter はここだけに依存し、core の内部を知らない。
+ * Types only. Do not add implementation here.
+ * Probes and stack adapters depend on this file alone and know nothing of the core internals.
  */
 
 export type Tier = 0 | 1 | 2 | 3 | 4 | 5;
@@ -17,8 +17,8 @@ export interface Contributor {
 }
 
 /**
- * probe が返す 1 本の測定値。点ではない（spec §6.2）。
- * 0-100 の正規化は rubric の仕事であり、probe が行うと閾値が probe に埋まる。
+ * One measurement a probe returns. Not a score (spec §6.2).
+ * Normalising to 0-100 is the rubric's job; doing it in a probe buries the threshold in code.
  */
 export interface Metric {
   readonly id: string;
@@ -28,9 +28,9 @@ export interface Metric {
 }
 
 /**
- * absent と skipped を分けるのは、テストが 1 本も無い repo が満点を取るのを防ぐため（spec §18）。
- * absent はそのプロジェクトが本来持つべきものが無い状態で、0 点として採点する。
- * skipped は scoria 側の都合で測れなかった状態で、採点しない。
+ * absent and skipped are kept apart so that a repository with no tests at all cannot score full
+ * marks (spec §18). absent means the project is missing something it ought to have, and scores 0.
+ * skipped means scoria could not measure it, and is not scored at all.
  */
 export type ProbeStatus =
   { readonly kind: "ok" } | { readonly kind: "absent"; readonly reason: string } | { readonly kind: "skipped"; readonly reason: string };
@@ -58,29 +58,29 @@ export interface ProbeResult {
 export type FileKind = "source" | "test" | "config" | "generated" | "ignored";
 
 /**
- * probe には分類済みのファイルだけを渡す。生のパスは渡さない。
- * spec §8 は probe が classify 以外でファイル種別を判定することを禁じているが、
- * それを静的検査で守るのではなく、契約の形で守る。
+ * Probes receive classified files, never raw paths.
+ * Spec §8 forbids a probe from deciding file kinds by any route other than classify; rather than
+ * policing that with a static check, the contract makes the violation unwritable.
  */
 export interface SourceFile {
   readonly path: string;
   readonly kind: FileKind;
-  /** 原文の行。行番号と、ファイルの大きさを測るのに使う。 */
+  /** The original lines. Used for line numbers and for measuring file size. */
   readonly lines: readonly string[];
   /**
-   * JavaScript / TypeScript として解釈してよい部分だけを残し、それ以外を空白にした行。
-   * 行番号は lines と一致する。
+   * The same lines with everything that is not JavaScript/TypeScript blanked out.
+   * Line numbers stay aligned with `lines`.
    *
-   * .vue の `<template>` や `<style>` を JS として走査すると、HTML 属性の引用符や
-   * 本文のアポストロフィが文字列の開始と誤認され、その後ろのコードが隠れる。
-   * どこが JS なのかを知っているのは stack adapter だけなので、core が collect 時に確定させる。
+   * Scanning a .vue `<template>` or `<style>` as JS makes HTML attribute quotes and apostrophes
+   * in body text open string literals, hiding the code that follows. Only the stack adapter knows
+   * which regions are JS, so the core settles this once at collection time.
    */
   readonly codeLines: readonly string[];
 }
 
-/** 検出で分かったプロジェクトの性質。probe が stack adapter を直接触らずに済むようにする。 */
+/** What detection established about the project, so probes never touch a stack adapter directly. */
 export interface ProjectFacts {
-  /** typescript が devDependencies にあるか。.js を警告してよいかの判断に使う。 */
+  /** Whether typescript is a dependency. Decides whether warning about .js is appropriate. */
   readonly typescript: boolean;
   readonly stacks: readonly string[];
 }
@@ -105,7 +105,7 @@ export interface Probe {
   readonly id: string;
   readonly apiVersion: 1;
   readonly tier: Tier;
-  /** この probe が出しうる metric id。rubric の静的検証に使う（spec §26.2） */
+  /** The metric ids this probe can emit. Used to validate rubrics statically (spec §26.2). */
   readonly declares: readonly string[];
   readonly detect: (ctx: ProbeContext) => Promise<ProbeStatus>;
   readonly run: (ctx: ProbeContext) => Promise<ProbeResult>;
@@ -122,8 +122,8 @@ export interface StackAdapter {
   readonly id: string;
   readonly apiVersion: 1;
   readonly detect: (root: string) => Promise<StackDetection>;
-  /** 自分が扱わないパスには "ignored" を返す。core が adapter 順に試し、最初の非 ignored を採る。 */
+  /** Return "ignored" for paths this adapter does not own. The core takes the first non-ignored result. */
   readonly classify: (relativePath: string) => FileKind;
-  /** JS として解釈してよい範囲を残した行を返す。省略時は原文をそのまま使う。 */
+  /** Returns the lines with only the JS-interpretable regions kept. Omit to use the lines as they are. */
   readonly codeLinesOf?: (lines: readonly string[]) => readonly string[];
 }

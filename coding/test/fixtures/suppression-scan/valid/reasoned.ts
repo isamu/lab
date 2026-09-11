@@ -1,4 +1,4 @@
-// 理由の書かれた抑制は減点しない (spec §15.3)。
+// A suppression with a reason is not penalised (spec §15.3).
 
 interface Client {
   request: (path: string) => Promise<string>;
@@ -10,6 +10,6 @@ export const call = async (client: Client): Promise<string> => {
 };
 
 export const parse = (raw: unknown): number => {
-  const value = raw as any; // 外部 JSON の形が実行時まで決まらないため、ここだけ迂回する
+  const value = raw as any; // the shape of this external JSON is unknown until runtime
   return Number(value.count);
 };

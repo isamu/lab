@@ -22,8 +22,8 @@ const execFileAsync = promisify(execFile);
 export const PROBES: readonly Probe[] = [suppressionScan, fileShape, sourceMix];
 
 /**
- * 外部コマンドの起動を core が持つ。probe が直接 spawn すると、版数の記録も
- * タイムアウトも core を通らなくなる（spec §8, §19.3）。
+ * The core owns process spawning. A probe that spawns directly takes both version recording and
+ * timeouts out of the core's hands (spec §8, §19.3).
  */
 const makeExec =
   (cwd: string): Exec =>
@@ -53,7 +53,7 @@ const runProbe = async (probe: Probe, ctx: ProbeContext): Promise<ProbeResult> =
 
 const rubricDirectory = (): string => join(dirname(fileURLToPath(import.meta.url)), "..", "rubrics");
 
-/** ALL_STACKS の順を保つ。composeClassify は先に一致した adapter を採るので、.vue を ts より先に置く。 */
+/** Keeps ALL_STACKS order: composeClassify takes the first match, so vue must precede ts. */
 const resolveStacks = (ids: readonly string[]): readonly StackAdapter[] => {
   const chosen = ALL_STACKS.filter((stack) => ids.includes(stack.id));
   return chosen.some((stack) => stack.id === "ts") ? chosen : [...chosen, stackTs];

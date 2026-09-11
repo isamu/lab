@@ -11,7 +11,7 @@ const files = [
 
 const metricOf = (metrics: readonly { id: string; value: number }[], id: string): number => metrics.find((m) => m.id === id)?.value ?? -1;
 
-test(".js を warning として報告し、.ts は報告しない", async () => {
+test("reports .js as a warning and leaves .ts alone", async () => {
   const result = await sourceMix.run(contextOf(files));
   assert.equal(result.findings.length, 1);
   assert.equal(result.findings[0]?.file, "src/legacy.js");
@@ -19,20 +19,20 @@ test(".js を warning として報告し、.ts は報告しない", async () => 
   assert.equal(result.findings[0]?.dimension, "type-safety");
 });
 
-test("型付きと型無しの比を出す", async () => {
+test("reports the typed to untyped ratio", async () => {
   const result = await sourceMix.run(contextOf(files));
   assert.equal(metricOf(result.metrics, "source-mix.untyped_file_count"), 1);
   assert.equal(metricOf(result.metrics, "source-mix.typed_file_count"), 2);
   assert.ok(Math.abs(metricOf(result.metrics, "source-mix.untyped_file_ratio") - 1 / 3) < 1e-3);
 });
 
-/** JavaScript のプロジェクトに「TypeScript にしろ」と言うのはこの probe の仕事ではない。 */
-test("typescript を持たない repo では skipped になる", async () => {
+/** Telling a JavaScript project to adopt TypeScript is not this probe's job. */
+test("a repository without typescript is skipped", async () => {
   const status = await sourceMix.detect(contextOf(files, { typescript: false, stacks: ["ts"] }));
   assert.equal(status.kind, "skipped");
 });
 
-test(".tsx は型付きとして数える", async () => {
+test("counts .tsx as typed", async () => {
   const withTsx = [sourceFile("src/App.tsx", ["export const App = () => null;"])];
   const result = await sourceMix.run(contextOf(withTsx));
   assert.equal(metricOf(result.metrics, "source-mix.untyped_file_count"), 0);

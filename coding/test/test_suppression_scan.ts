@@ -5,14 +5,14 @@ import { contextOf, loadFixture } from "./helpers.ts";
 
 const metricOf = (metrics: readonly { id: string; value: number }[], id: string): number => metrics.find((m) => m.id === id)?.value ?? -1;
 
-test("誤検知しやすい正常なコードから 1 件も出さない", async () => {
+test("reports nothing for correct code that is easy to false-positive on", async () => {
   const file = await loadFixture("suppression-scan/valid/decoys.ts");
   const result = await suppressionScan.run(contextOf([file]));
   assert.deepEqual(result.findings, []);
   assert.equal(metricOf(result.metrics, "suppression-scan.source_count"), 0);
 });
 
-test("理由の書かれた抑制は数えるが、findings にはしない", async () => {
+test("a reasoned suppression is counted but is not a finding", async () => {
   const file = await loadFixture("suppression-scan/valid/reasoned.ts");
   const result = await suppressionScan.run(contextOf([file]));
   assert.equal(metricOf(result.metrics, "suppression-scan.source_count"), 2);
@@ -20,7 +20,7 @@ test("理由の書かれた抑制は数えるが、findings にはしない", as
   assert.deepEqual(result.findings, []);
 });
 
-test("理由の無い抑制は error の finding になる", async () => {
+test("an unreasoned suppression becomes an error finding", async () => {
   const file = await loadFixture("suppression-scan/invalid/unreasoned.ts");
   const result = await suppressionScan.run(contextOf([file]));
   assert.equal(metricOf(result.metrics, "suppression-scan.unreasoned_source_count"), 3);
@@ -29,7 +29,7 @@ test("理由の無い抑制は error の finding になる", async () => {
   assert.ok(result.findings.every((f) => f.dimension === "integrity"));
 });
 
-test("test 配下の抑制は source と分けて数える", async () => {
+test("suppressions under test are counted apart from source", async () => {
   const source = await loadFixture("suppression-scan/invalid/unreasoned.ts", "source");
   const spec = await loadFixture("suppression-scan/invalid/unreasoned.ts", "test");
   const result = await suppressionScan.run(contextOf([source, spec]));
@@ -37,7 +37,7 @@ test("test 配下の抑制は source と分けて数える", async () => {
   assert.equal(metricOf(result.metrics, "suppression-scan.test_count"), 3);
 });
 
-test("source が無ければ absent。skipped ではない", async () => {
+test("no source means absent, not skipped", async () => {
   const spec = await loadFixture("suppression-scan/invalid/unreasoned.ts", "test");
   const status = await suppressionScan.detect(contextOf([spec]));
   assert.equal(status.kind, "absent");

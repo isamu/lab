@@ -1,8 +1,8 @@
 /**
- * metric の生値を点に変換する。線形 + clamp に固定する（spec §16.2）。
+ * Turns raw metric values into points. Linear and clamped, deliberately (spec §16.2).
  *
- * 非線形なカーブを入れると「この 1 件を直すと何点上がるか」が説明できなくなり、
- * 差分の帰属（movers）も加法的に分解できなくなる。精度より説明可能性を採る判断。
+ * A non-linear curve makes "what is fixing this one thing worth?" unanswerable and stops the
+ * delta attribution (movers) from decomposing additively. Explainability is chosen over accuracy.
  */
 
 export type RubricStatus = "experimental" | "stable" | "deprecated";
@@ -43,8 +43,8 @@ export interface ScoredDimension {
 const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
 
 /**
- * good と bad はどちらが大きくてもよい。
- * coverage のように「高いほど良い」metric は good > bad で書く。
+ * `good` may be either side of `bad`.
+ * A higher-is-better metric such as coverage is written with good > bad.
  */
 export const scoreMetric = (value: number, scale: Scale): number => {
   const span = scale.bad - scale.good;
