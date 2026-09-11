@@ -31,8 +31,14 @@ const displayMessage = (finding: Finding, messages: Messages): string => message
 const confidenceCell = (dimension: DimensionReport): string =>
   dimension.confidence === "high" ? "high" : `${dimension.confidence}   ${dimension.confidenceReason}`;
 
-const dimensionRow = (dimension: DimensionReport): string =>
-  `  ${pad(dimension.dimension, NAME_WIDTH)}${padStart(dimension.score.toFixed(0), SCORE_WIDTH)}   ${confidenceCell(dimension)}`;
+/** A dimension nothing could be measured in shows a dash, never a number standing in for it. */
+const scoreCell = (score: number | undefined): string => (score === undefined ? "—" : score.toFixed(0));
+
+const coverageNote = (dimension: DimensionReport, messages: Messages): string =>
+  dimension.coverage >= 1 ? "" : `   ${messages.partlyMeasured(Math.round(dimension.coverage * 100))}`;
+
+const dimensionRow = (dimension: DimensionReport, messages: Messages): string =>
+  `  ${pad(dimension.dimension, NAME_WIDTH)}${padStart(scoreCell(dimension.score), SCORE_WIDTH)}   ${confidenceCell(dimension)}${coverageNote(dimension, messages)}`;
 
 const findingRow = (finding: Finding, messages: Messages): string => {
   const location = `${finding.file}:${finding.line}`;
@@ -54,9 +60,9 @@ const header = (report: Report, context: RenderContext, messages: Messages): rea
 const table = (report: Report, messages: Messages): readonly string[] => [
   `  ${pad(messages.dimension, NAME_WIDTH)}${padStart(messages.score, SCORE_WIDTH)}   ${messages.confidence}`,
   `  ${SEPARATOR}`,
-  ...report.dimensions.map(dimensionRow),
+  ...report.dimensions.map((dimension) => dimensionRow(dimension, messages)),
   `  ${SEPARATOR}`,
-  `  ${pad(messages.overall, NAME_WIDTH)}${padStart(report.overall.score.toFixed(0), SCORE_WIDTH)}   ${messages.notComparable}`,
+  `  ${pad(messages.overall, NAME_WIDTH)}${padStart(report.overall.score.toFixed(0), SCORE_WIDTH)}   ${messages.notComparable} (${messages.fromDimensions(report.overall.scoredDimensions)})`,
   "",
 ];
 
@@ -120,13 +126,13 @@ export const renderExplain = (report: Report, dimension: string, lang: Lang): st
   );
   return [
     "",
-    `${found.dimension}  ${found.score.toFixed(0)}   status: ${found.status}   ${messages.confidence}: ${found.confidence}`,
+    `${found.dimension}  ${scoreCell(found.score)}   status: ${found.status}   ${messages.confidence}: ${found.confidence}`,
     "",
     `  ${pad("metric", METRIC_WIDTH)}${padStart("value", VALUE_WIDTH)}   ${padStart("scale", SCALE_WIDTH)}${padStart("pts", POINTS_WIDTH)}`,
     `  ${SEPARATOR}`,
     ...rows,
     `  ${SEPARATOR}`,
-    `  ${pad("", METRIC_WIDTH)}${padStart("", VALUE_WIDTH)}   ${padStart("", SCALE_WIDTH)}${padStart(found.score.toFixed(1), POINTS_WIDTH)}`,
+    `  ${pad("", METRIC_WIDTH)}${padStart("", VALUE_WIDTH)}   ${padStart("", SCALE_WIDTH)}${padStart(found.score === undefined ? "—" : found.score.toFixed(1), POINTS_WIDTH)}`,
     ...contributors,
     "",
     `  ${found.confidenceReason}`,

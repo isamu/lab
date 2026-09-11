@@ -1,5 +1,6 @@
 import type { Contributor, Finding, Metric, ProbeResult, ProbeStatus, SourceFile } from "./plugin.ts";
-import type { Rubric, ScoredDimension, ScoredMetric } from "./rubric.ts";
+import type { MetricState, Rubric, ScoredDimension, ScoredMetric } from "./rubric.ts";
+import type { Probe } from "./plugin.ts";
 import { scoreDimension } from "./rubric.ts";
 import { slocOf } from "./files.ts";
 import { perKiloLines } from "./stats.ts";
@@ -29,11 +30,33 @@ export interface Report {
   readonly dimensions: readonly DimensionReport[];
   readonly findings: readonly Finding[];
   readonly probes: readonly ProbeReport[];
-  readonly overall: { readonly score: number; readonly comparable: false };
+  readonly overall: {
+    readonly score: number;
+    /** How many dimensions the mean came from. A mean of two is not a mean of five. */
+    readonly scoredDimensions: number;
+    readonly comparable: false;
+  };
 }
 
 const collectMetrics = (results: readonly ProbeResult[]): ReadonlyMap<string, number> =>
   new Map(results.flatMap((r) => r.metrics).map((m: Metric) => [m.id, m.value]));
+
+/**
+ * Every metric a rubric can reference, with why it has no value when it has none (spec §18.1).
+ * A probe that did not run emits no metrics, so the state has to come from the probe's status.
+ */
+const collectStates = (results: readonly ProbeResult[], probes: readonly Probe[]): ReadonlyMap<string, MetricState> => {
+  const states = new Map<string, MetricState>();
+  results.flatMap((r) => r.metrics).forEach((m) => states.set(m.id, { kind: "ok", value: m.value }));
+  const statusOf = new Map(results.map((r) => [r.probe, r.status]));
+  probes.forEach((probe) =>
+    probe.declares.forEach((id) => {
+      if (states.has(id)) return;
+      states.set(id, statusOf.get(probe.id)?.kind === "absent" ? { kind: "absent" } : { kind: "skipped" });
+    }),
+  );
+  return states;
+};
 
 /**
  * Probes record which files drove a value; the rubric only turns numbers into points. Carrying the
@@ -85,12 +108,14 @@ export const buildReport = (
   results: readonly ProbeResult[],
   rubrics: readonly Rubric[],
   meta: ReportMeta = DEFAULT_META,
+  probes: readonly Probe[] = [],
 ): Report => {
   const values = collectMetrics(results);
+  const states = collectStates(results, probes);
   const contributors = collectContributors(results);
   const sloc = slocOfKind(files, "source");
   const dimensions = rubrics.map((rubric) => {
-    const scored = scoreDimension(rubric, values);
+    const scored = scoreDimension(rubric, states);
     return {
       ...scored,
       metrics: withContributors(scored.metrics, contributors),
@@ -108,6 +133,10 @@ export const buildReport = (
     dimensions,
     findings: results.flatMap((r) => r.findings),
     probes: results.map((r) => ({ probe: r.probe, status: r.status })),
-    overall: { score: mean(dimensions.map((d) => d.score)), comparable: false },
+    overall: {
+      score: mean(dimensions.flatMap((d) => (d.score === undefined ? [] : [d.score]))),
+      scoredDimensions: dimensions.filter((d) => d.score !== undefined).length,
+      comparable: false,
+    },
   };
 };

@@ -24,8 +24,11 @@ const bar = (score: number): string => {
 const confidenceCell = (dimension: DimensionReport): string =>
   dimension.confidence === "high" ? "high" : `**${dimension.confidence}** — ${dimension.confidenceReason}`;
 
-const dimensionRow = (dimension: DimensionReport): string =>
-  `| ${dimension.dimension} | ${dimension.score.toFixed(0)} | \`${bar(dimension.score)}\` | ${confidenceCell(dimension)} |`;
+const dimensionRow = (dimension: DimensionReport): string => {
+  const score = dimension.score;
+  const cells = score === undefined ? ["—", "—"] : [score.toFixed(0), `\`${bar(score)}\``];
+  return `| ${dimension.dimension} | ${cells[0]} | ${cells[1]} | ${confidenceCell(dimension)} |`;
+};
 
 const findingRow = (finding: Finding, messages: Messages): string =>
   `| \`${finding.file}:${finding.line}\` | ${finding.rule} | ${messages.ruleMessages[finding.rule] ?? finding.message} |`;

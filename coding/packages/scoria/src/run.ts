@@ -80,7 +80,7 @@ export const assay = async (target: string, probes: readonly Probe[] = PROBES): 
   const ctx: ProbeContext = { root, files, configFiles, project, exec: makeExec(root) };
   const results = await Promise.all(probes.map((probe) => runProbe(probe, ctx)));
   return {
-    report: buildReport(root, files, results, rubrics, { profile: loaded.config.profile, stacks: loaded.config.stacks }),
+    report: buildReport(root, files, results, rubrics, { profile: loaded.config.profile, stacks: loaded.config.stacks }, probes),
     files,
     rubrics,
     loaded,

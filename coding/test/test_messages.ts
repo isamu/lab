@@ -16,6 +16,7 @@ const report: Report = {
       dimension: "integrity",
       status: "experimental",
       score: 50,
+      coverage: 1,
       metrics: [],
       confidence: "high",
       confidenceReason: "0 suppressions in scope",
@@ -34,7 +35,7 @@ const report: Report = {
     },
   ],
   probes: [{ probe: "suppression-scan", status: { kind: "ok" } }],
-  overall: { score: 50, comparable: false },
+  overall: { score: 50, scoredDimensions: 1, comparable: false },
 };
 
 const context = { source: "detected", drift: { added: [], missing: [] }, notice: undefined };
