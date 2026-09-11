@@ -2,6 +2,44 @@
 
 Newest first.
 
+## 0.0.3 — 2026-09-11
+
+Readable output: `explain` names the file to fix, and CI renders a table instead of a wall of text.
+
+### Added
+
+- **The GitHub Actions job summary.** The report is written to `GITHUB_STEP_SUMMARY` when the
+  variable is set, rendering as a table with a bar per dimension and collapsible lists of findings
+  and warnings. A CI log is a wall of text nobody scrolls; the summary appears on the run page and
+  in the pull request's checks tab, which is where a reviewer already is.
+  It needs no token and no `permissions:` block — the runner provides the file — so unlike a sticky
+  pull request comment it also works on pull requests from forks. `--no-summary` opts out.
+- **`--explain` names the files behind a metric.** Probes already recorded which files drove a
+  value, but the report dropped it, so a dimension could be reported as costing 30 points without
+  saying where. Spec §22.2 had `topContributors` in the report format all along; now it is wired.
+
+### Changed
+
+- **`README.ja.md` is a rewrite rather than a translation.** It had leaned on terms that assume the
+  spec — dimension, probe, integrity, suppression, percentile — without explaining any of them. It
+  is now organised around what someone does (run it, read the screen, decide what to fix first),
+  with tables mapping every identifier that appears in the output to plain language.
+- **Both READMEs gained a section on reading a report**, stating the two things most likely to be
+  misread: a score is only comparable to the same repository's own history, and a high score with
+  low confidence means the dimension was not measured rather than that the code is good.
+
+### Known limitation, now documented
+
+`file-shape` counts lines without asking what is in them, so a 2,673-line table of templates is
+penalised exactly like a 2,673-line module of logic. Observed on a real repository, where a `data/`
+directory drove the readability score. Both READMEs say so; the probe is unchanged pending
+calibration.
+
+### Merged pull requests
+
+- #15 — contributor files in `explain`, plain-language Japanese README, reading guide in both
+- #17 — GitHub Actions job summary
+
 ## 0.0.2 — 2026-09-11
 
 English output, Vue and TSX support, and a diagnostic mode.
