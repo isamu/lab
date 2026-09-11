@@ -7,9 +7,11 @@ import { applyLevel } from "./config/write.ts";
 import { buildDocument } from "./document.ts";
 import { guessLanguage } from "./detect.ts";
 import { collectTargets } from "./files.ts";
+import { BASELINE_FILE, fingerprint, readBaseline, splitByBaseline, writeBaseline } from "./baseline.ts";
+import { applySuppressions } from "./stet.ts";
+import { renderSuppressions, type PerFile } from "./render/suppressions.ts";
 import { frontMatterGenre, guessGenre } from "./genre.ts";
 import { GENRES, runInit } from "./init.ts";
-import { isLevel } from "./levels.ts";
 import { loadRules } from "./rule-load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
@@ -27,10 +29,15 @@ const USAGE = `chaff — 文章の読みにくいところを見つけます。�
   chaff explain <rule>           そのルールの意図と根拠を読む
   chaff genres                   ジャンルの一覧
   chaff rules --json             いまの設定を JSON で出す（AI に渡す用）
+  chaff baseline <dir>           いまある指摘を棚上げする（既存の repo に入れるとき）
+  chaff suppressions <dir>       stet で黙らせている指摘を数える
   chaff relax|strict|off <rule> [--why "理由"]
 
-  --compact        エンジニア向けの 1 行形式
-  --experimental   試験中の rule も動かす
+  --compact         エンジニア向けの 1 行形式
+  --experimental    試験中の rule も動かす
+  --show-baseline   棚上げした分も含めて全部見る
+
+この箇所だけ黙らせる:  <!-- stet: rule-id — 理由 -->
 
 値は strict / normal / relaxed / off の 4 つから選びます。
 `;
@@ -42,8 +49,6 @@ const resolveGenre = (path: string, source: string, config: Config): { genre: st
   const guess = guessGenre(path, source, frontMatterGenre(source));
   return guess === undefined ? { genre: "blog/tech", from: "既定" } : { genre: guess.genre, from: guess.from };
 };
-
-const CHANGE: Readonly<Record<string, Level>> = { relax: "relaxed", strict: "strict", off: "off" };
 
 const findRule = (rules: readonly RuleDefinition[], id: string | undefined): RuleDefinition | undefined => rules.find((rule) => rule.id === id);
 
@@ -64,17 +69,39 @@ const flag = (argv: readonly string[], name: string): string | undefined => {
   return at === -1 ? undefined : argv[at + 1];
 };
 
-const lintOne = async (path: string, config: Config, argv: readonly string[]): Promise<{ text: string; outcome: FileOutcome }> => {
+type Inspected = { readonly text: string; readonly outcome: FileOutcome; readonly perFile: PerFile; readonly all: readonly string[] };
+
+const headerFor = (path: string, genre: string, from: string, language: string, shelved: number, hushed: number): string => {
+  const shelf = shelved > 0 ? `   棚上げ ${shelved} 件` : "";
+  const stet = hushed > 0 ? `   stet ${hushed} 件` : "";
+  return `${path}   ${genre} \u00b7 ${language === "ja" ? "日本語" : "英語"}   ジャンルは${from}から${shelf}${stet}`;
+};
+
+const inspect = async (path: string, config: Config, argv: readonly string[]): Promise<Inspected> => {
   const source = await readFile(path, "utf8");
   const language = config.language ?? guessLanguage(source).language;
   const adapter = await loadAdapter(language);
   const { genre, from } = resolveGenre(path, source, config);
   const doc = buildDocument(path, source, adapter);
   const rules = loadRules(language);
-  const result = runRules(doc, rules, config.rules, config.experimental || argv.includes("--experimental"), genre);
-  const header = `${path}   ${genre} · ${language === "ja" ? "日本語" : "英語"}   ジャンルは${from}から`;
+  const raw = runRules(doc, rules, config.rules, config.experimental || argv.includes("--experimental"), genre);
+  // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
+  const applied = applySuppressions(
+    source,
+    raw.findings,
+    doc.sections.map((section) => section.span),
+  );
+  const baseline = argv.includes("--show-baseline") ? undefined : readBaseline(join(process.cwd(), BASELINE_FILE));
+  const split = splitByBaseline(path, applied.kept, baseline);
+  const result = { ...raw, findings: split.fresh };
+  const header = headerFor(path, genre, from, language, split.shelved, applied.suppressed.length);
   const text = argv.includes("--compact") ? renderCompact(header, result, rules, language) : renderFriendly(header, result, rules, language);
-  return { text, outcome: { path, findings: result.findings, notRun: result.skipped.length } };
+  return {
+    text,
+    outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
+    perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless },
+    all: applied.kept.map((finding) => fingerprint(path, finding)),
+  };
 };
 
 const lint = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
@@ -90,7 +117,7 @@ const lint = async (targets: readonly string[], argv: readonly string[]): Promis
     console.error(`言語 "${language}" のアダプタがありません。`);
     return 1;
   }
-  const results = await Promise.all(paths.map((path) => lintOne(path, config, argv)));
+  const results = await Promise.all(paths.map((path) => inspect(path, config, argv)));
   results.filter((result) => result.outcome.findings.length > 0 || paths.length === 1).forEach((result) => console.log(result.text));
   renderSummary(results.map((result) => result.outcome)).forEach((line) => console.log(line));
   return results.some((result) => result.outcome.findings.some((finding) => finding.severity === "error")) ? 1 : 0;
@@ -117,7 +144,72 @@ const unitOf = (ruleId: string, language: string): string => {
   return language === "ja" ? "文字" : "語";
 };
 
-const COMMANDS = new Set(["init", "genres", "explain", "rules", "relax", "strict", "off"]);
+const runBaseline = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
+  const paths = collectTargets(targets.length > 0 ? targets : ["."]);
+  if (paths.length === 0) {
+    console.error("Markdown が 1 つも見つかりませんでした。");
+    return 1;
+  }
+  const config = readConfig();
+  const results = await Promise.all(paths.map((path) => inspect(path, config, [...argv, "--show-baseline"])));
+  const entries = results.flatMap((result) => result.all);
+  const file = join(process.cwd(), BASELINE_FILE);
+  writeBaseline(file, entries);
+  console.log(
+    [
+      "",
+      `  ${paths.length} ファイルを走査しました。`,
+      "",
+      `  ${entries.length} 件の指摘を ${BASELINE_FILE} に記録しました。`,
+      "  以後、これらは報告されません。新しく増えたものだけが出ます。",
+      "",
+      `  ${BASELINE_FILE} を commit してください。`,
+      "",
+    ].join("\n"),
+  );
+  return 0;
+};
+
+const runSuppressions = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
+  const paths = collectTargets(targets.length > 0 ? targets : ["."]);
+  const config = readConfig();
+  const results = await Promise.all(paths.map((path) => inspect(path, config, [...argv, "--show-baseline"])));
+  console.log(renderSuppressions(results.map((result) => result.perFile)));
+  return 0;
+};
+
+type Handler = (argv: readonly string[]) => number | Promise<number>;
+
+/** `--` で始まらない引数。対象のパス。 */
+const positional = (argv: readonly string[]): string[] => argv.slice(1).filter((arg) => !arg.startsWith("--"));
+
+const showRules = (): number => {
+  const config = readConfig();
+  const language = config.language ?? "ja";
+  console.log(rulesJson(loadRules(language), config, language, config.genre ?? "blog/tech"));
+  return 0;
+};
+
+const showGenres = (): number => {
+  console.log(["", "  使えるジャンル:", ...GENRES.map((genre) => `    ${genre}`), "", "  chaff.yaml の genre に書くか、--genre で指定します。", ""].join("\n"));
+  return 0;
+};
+
+/** 分岐を数珠つなぎにせず表にする。足すときに main を太らせない。 */
+const HANDLERS: Readonly<Record<string, Handler>> = {
+  init: (argv) => {
+    runInit(process.cwd(), flag(argv, "--genre") ?? "blog/tech").forEach((line) => console.log(line));
+    return 0;
+  },
+  genres: showGenres,
+  rules: showRules,
+  explain: (argv) => explain(argv[1]),
+  baseline: (argv) => runBaseline(positional(argv), argv),
+  suppressions: (argv) => runSuppressions(positional(argv), argv),
+  relax: (argv) => changeSetting("relaxed", argv[1], flag(argv, "--why")),
+  strict: (argv) => changeSetting("strict", argv[1], flag(argv, "--why")),
+  off: (argv) => changeSetting("off", argv[1], flag(argv, "--why")),
+};
 
 export const main = async (argv: readonly string[]): Promise<number> => {
   const first = argv[0];
@@ -125,25 +217,8 @@ export const main = async (argv: readonly string[]): Promise<number> => {
     console.log(USAGE);
     return first === undefined ? 1 : 0;
   }
-  if (first === "init") {
-    runInit(process.cwd(), flag(argv, "--genre") ?? "blog/tech").forEach((line) => console.log(line));
-    return 0;
-  }
-  if (first === "genres") {
-    console.log(
-      ["", "  使えるジャンル:", ...GENRES.map((genre) => `    ${genre}`), "", "  chaff.yaml の genre に書くか、--genre で指定します。", ""].join("\n"),
-    );
-    return 0;
-  }
-  if (first === "explain") return explain(argv[1]);
-  if (first === "rules") {
-    const config = readConfig();
-    const language = config.language ?? "ja";
-    console.log(rulesJson(loadRules(language), config, language, config.genre ?? "blog/tech"));
-    return 0;
-  }
-  const change = CHANGE[first];
-  if (change !== undefined && isLevel(change)) return changeSetting(change, argv[1], flag(argv, "--why"));
-  const targets = (first === "lint" ? argv.slice(1) : argv).filter((arg) => !arg.startsWith("--") && !COMMANDS.has(arg));
+  const handler = HANDLERS[first];
+  if (handler !== undefined) return handler(argv);
+  const targets = (first === "lint" ? argv.slice(1) : argv).filter((arg) => !arg.startsWith("--"));
   return lint(targets, argv);
 };

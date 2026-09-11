@@ -54,9 +54,57 @@ npx chaff docs/ README.md      ディレクトリもファイルも glob も混�
 npx chaff init                 chaff.yaml を作る
 npx chaff explain bold-density そのルールの意図と根拠を読む
 npx chaff genres               ジャンルの一覧
+npx chaff baseline docs/       いまある指摘を棚上げする
+npx chaff suppressions docs/   stet で黙らせている指摘を数える
 ```
 
 `node_modules` `dist` `build` `coverage` は見ない。対象が 1 つも見つからなければ**失敗にする**（「CI は通っているが何も検証していない」状態を作らないため）。
+
+## 指摘されたら、道は 3 つ
+
+どれを選んでもよい。3 つ目があることが大事で、これが無いと「うるさいから使わない」で終わる。
+
+| 道 | どんなとき | やること |
+| --- | --- | --- |
+| **直す** | 指摘がもっともなとき | 文章を書き直す |
+| **この箇所だけ黙らせる** | 指摘は正しいが、ここは意図的なとき | `<!-- stet: rule-id — 理由 -->` |
+| **ルールを変える** | 自分たちの方針に合わないとき | `npx chaff relax rule-id --why "理由"` |
+
+抑制の範囲は 3 つ。
+
+```markdown
+<!-- stet: bold-density — 用語集なので意図的 -->          直後の箇所だけ
+<!-- stet-section: bold-density — 一覧なので -->          次の見出しまで
+<!-- stet-file: ai-tell, rule-of-three — 引用が多い -->   ファイル全体
+```
+
+同じルールを何度も黙らせているなら、それは 3 つ目を選ぶべきサイン。`chaff suppressions` が数えて教える。
+
+```
+$ npx chaff suppressions docs/
+
+  抑制されている指摘: 6 件
+
+  bold-density                6 件  ← 設定の見直しを検討してください
+      docs/g1.md, docs/g2.md, docs/g3.md ほか 3 ファイル
+      理由: 用語集なので太字が多いのは意図的
+      ルールごとゆるめる: npx chaff relax bold-density --why "..."
+
+  理由が書かれていない抑制: 1 件
+      docs/x.md
+```
+
+## 既にある文書に入れる
+
+記事が 200 本ある repo に入れると数千件出る。全部直してから始めることは誰にもできない。
+
+```bash
+npx chaff baseline docs/       いまある指摘を棚上げする
+```
+
+以後、棚上げしたものは報告されず、**新しく増えたものだけ**が出る。`.chaff-baseline.json` を commit すれば、チーム全員が同じ地点から始められる。
+
+行番号ではなく内容で同定するので、前後に段落を足しても棚上げは剥がれない。棚上げ分も見たいときは `--show-baseline`。
 
 ## 設定は 4 つの言葉だけ
 
@@ -79,7 +127,7 @@ AI に設定を書かせるときは `npx chaff rules --json` を渡す。今の
 
 ## まだ無いもの
 
-L2 語彙表 / L3 品詞解析 / L4 意味の検査（`checks.yaml`）/ `baseline` / `suppressions` / `eval` / `--watch`。
+L2 語彙表 / L3 品詞解析 / L4 意味の検査（`checks.yaml`）/ `eval` / `--watch`。
 
 ## 構成
 
