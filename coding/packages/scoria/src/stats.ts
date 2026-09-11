@@ -1,6 +1,6 @@
 /** Distribution summaries. The mean is avoided because many small files hide the huge ones (spec §13.1). */
 
-const ascending = (values: readonly number[]): readonly number[] => [...values].sort((a, b) => a - b);
+const ascending = (values: readonly number[]): readonly number[] => values.toSorted((a, b) => a - b);
 
 /** Nearest-rank. `q` is 0..1. */
 export const percentile = (values: readonly number[], q: number): number => {

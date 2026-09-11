@@ -22,8 +22,8 @@ const measure = (files: readonly SourceFile[]): readonly Measured[] =>
   files.filter((file) => file.kind === "source").map((file) => ({ file, sloc: slocOf(file) }));
 
 const largest = (measured: readonly Measured[]): readonly Contributor[] =>
-  [...measured]
-    .sort((a, b) => b.sloc - a.sloc)
+  measured
+    .toSorted((a, b) => b.sloc - a.sloc)
     .slice(0, TOP_CONTRIBUTORS)
     .map(({ file, sloc }) => ({ file: file.path, value: sloc }));
 

@@ -11,7 +11,7 @@ import { collectFiles } from "./files.ts";
 import { collectConfigFiles } from "./config-files.ts";
 import { assertMetricsAreDeclared, loadRubrics } from "./rubric-load.ts";
 import { buildReport, type Report } from "./report.ts";
-import { ALL_STACKS, stackById, stackTs } from "./stacks/index.ts";
+import { ALL_STACKS, stackTs } from "./stacks/index.ts";
 import { isTypeScriptProject } from "./stacks/ts.ts";
 import { isRecord, readPackageJson } from "./package-json.ts";
 import { suppressionScan } from "./probes/suppression-scan.ts";
@@ -133,5 +133,3 @@ export const assay = async (target: string, probes: readonly Probe[] = PROBES): 
     loaded,
   };
 };
-
-export { stackById };

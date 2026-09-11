@@ -50,7 +50,7 @@ const eslintGaps = (files: readonly ConfigFile[]): readonly Gap[] => {
         severity: "error",
         title: "No ESLint configuration",
         detail:
-          "readability is being measured against scoria's fallback, not against your standard. " + "The score is not wrong so much as about a different thing.",
+          "Nothing in this project enforces a lint rule. scoria measures against its own ruleset either way, but a project with none of its own has nothing it holds itself to.",
         fixable: false,
       },
     ];

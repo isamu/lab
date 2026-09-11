@@ -28,7 +28,7 @@ test("reports nothing for decoys in template and style", async () => {
 test("finds suppressions inside script at the original line numbers", async () => {
   const file = await loadFixture("vue/suppressed.vue");
   const result = await suppressionScan.run(contextOf([file]));
-  const rules = result.findings.map((finding) => finding.rule).sort((a, b) => a.localeCompare(b));
+  const rules = result.findings.map((finding) => finding.rule).toSorted((a, b) => a.localeCompare(b));
   assert.deepEqual(rules, ["as-any-no-reason", "eslint-disable-no-reason"]);
   const eslintFinding = result.findings.find((finding) => finding.rule === "eslint-disable-no-reason");
   assert.equal(eslintFinding?.line, 7);

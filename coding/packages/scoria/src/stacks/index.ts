@@ -1,11 +1,10 @@
 import type { FileKind, StackAdapter } from "../plugin.ts";
+export { stackTs } from "./ts.ts";
 import { stackTs } from "./ts.ts";
 import { stackVue } from "./vue.ts";
 import { stackReact } from "./react.ts";
 
 export const ALL_STACKS: readonly StackAdapter[] = [stackVue, stackReact, stackTs];
-
-export const stackById = (id: string): StackAdapter | undefined => ALL_STACKS.find((stack) => stack.id === id);
 
 /** Picks the stacks that apply to a repository from its package.json. ts is always included. */
 export const detectStacks = async (root: string): Promise<readonly string[]> => {
@@ -22,5 +21,3 @@ export const composeClassify =
 /** The adapter that owns a path. codeLinesOf only applies to files that adapter owns, so ownership is settled first. */
 export const ownerOf = (stacks: readonly StackAdapter[], relativePath: string): StackAdapter | undefined =>
   stacks.find((stack) => stack.classify(relativePath) !== "ignored");
-
-export { stackTs, stackVue, stackReact };

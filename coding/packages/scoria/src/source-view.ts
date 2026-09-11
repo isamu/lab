@@ -82,7 +82,7 @@ const spansOf = (text: string): readonly Span[] => {
 };
 
 const kindsOf = (text: string): readonly Kind[] => {
-  const kinds: Kind[] = new Array<Kind>(text.length).fill("code");
+  const kinds: Kind[] = Array.from({ length: text.length }, (): Kind => "code");
   spansOf(text).forEach((span) => kinds.fill(span.kind, span.start, span.end));
   return kinds;
 };

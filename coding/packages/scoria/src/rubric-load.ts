@@ -56,7 +56,7 @@ export const assertMetricsAreDeclared = (rubrics: readonly Rubric[], declared: R
 
 export const loadRubrics = async (directory: string): Promise<readonly Rubric[]> => {
   const entries = await readdir(directory);
-  const files = entries.filter((name) => name.endsWith(".yaml")).sort((a, b) => a.localeCompare(b));
+  const files = entries.filter((name) => name.endsWith(".yaml")).toSorted((a, b) => a.localeCompare(b));
   return Promise.all(
     files.map(async (name) => {
       const source = join(directory, name);

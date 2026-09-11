@@ -48,7 +48,10 @@ jobs:
       - name: test
         run: yarn test
 
-      # 自分自身を測る。scoria が測るべき性質は scoria のコードにも当てはまる。
-      # 公開版ではなく、いま review 中のコミットから作った dist で走らせる。
+      # scoria measures itself. What it asks of other repositories applies to its own code, and
+      # the run uses the dist built from the commit under review rather than the published version.
+      #
+      # The config and baseline are committed, so this reports what moved rather than a bare score,
+      # and writes the table into the run's job summary. It never fails the build.
       - name: scoria on itself
         run: node packages/scoria/bin/scoria.js .

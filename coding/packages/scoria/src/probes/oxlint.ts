@@ -1,8 +1,9 @@
-import type { Contributor, Finding, Probe, ProbeContext, ProbeResult } from "../plugin.ts";
+import type { Finding, Probe, ProbeContext, ProbeResult } from "../plugin.ts";
 import { sourceSloc } from "../files.ts";
 import { perKiloLines } from "../stats.ts";
 import { resolveBin } from "../bin-resolve.ts";
 import { isRecord } from "../package-json.ts";
+import { rankByFile, relativeTo, skippedResult } from "./shared.ts";
 
 /**
  * Lints the target with scoria's own ruleset (spec §3.2).
@@ -21,7 +22,6 @@ import { isRecord } from "../package-json.ts";
  */
 const DENIED = ["correctness"];
 const WARNED = ["suspicious", "perf"];
-const TOP_CONTRIBUTORS = 5;
 const MAX_FINDINGS = 40;
 
 interface Diagnostic {
@@ -71,20 +71,6 @@ const parse = (stdout: string): readonly Diagnostic[] => {
 /** `eslint(no-await-in-loop)` and `unicorn(no-array-sort)` — the plugin prefix is not the rule. */
 const ruleOf = (code: string): string => code.replace(/^[a-z-]+\(/, "").replace(/\)$/, "");
 
-const relativeTo = (root: string, file: string): string => (file.startsWith(`${root}/`) ? file.slice(root.length + 1) : file);
-
-const contributorsOf = (root: string, diagnostics: readonly Diagnostic[]): readonly Contributor[] => {
-  const byFile = new Map<string, number>();
-  diagnostics.forEach((entry) => {
-    const file = relativeTo(root, entry.filename);
-    byFile.set(file, (byFile.get(file) ?? 0) + 1);
-  });
-  return [...byFile.entries()]
-    .map(([file, value]) => ({ file, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, TOP_CONTRIBUTORS);
-};
-
 const toFinding = (root: string, diagnostic: Diagnostic): Finding => ({
   rule: `oxlint/${ruleOf(diagnostic.code)}`,
   severity: diagnostic.severity === "error" ? "error" : "warning",
@@ -99,16 +85,7 @@ const toFinding = (root: string, diagnostic: Diagnostic): Finding => ({
 const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const started = Date.now();
   const bin = resolveBin("oxlint", "oxlint");
-  if (bin === undefined) {
-    return {
-      probe: "oxlint",
-      status: { kind: "skipped", reason: "oxlint is not installed alongside scoria" },
-      metrics: [],
-      findings: [],
-      toolVersions: {},
-      durationMs: Date.now() - started,
-    };
-  }
+  if (bin === undefined) return skippedResult("oxlint", "oxlint is not installed alongside scoria", started);
   const args = [...DENIED.flatMap((category) => ["-D", category]), ...WARNED.flatMap((category) => ["-W", category]), "--format", "json", ctx.root];
   const result = await ctx.execNode(bin, args);
   const diagnostics = parse(result.stdout);
@@ -122,7 +99,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
         id: "oxlint.violations_per_kloc",
         value: perKiloLines(diagnostics.length, sloc),
         unit: "per_kloc",
-        topContributors: contributorsOf(ctx.root, diagnostics),
+        topContributors: rankByFile(diagnostics.map((entry) => ({ file: relativeTo(ctx.root, entry.filename), weight: 1 }))),
       },
       { id: "oxlint.violations", value: diagnostics.length, unit: "count" },
       { id: "oxlint.errors_per_kloc", value: perKiloLines(errors.length, sloc), unit: "per_kloc" },

@@ -43,7 +43,7 @@ const assess = (ctx: ProbeContext): ProbeResult => {
         unit: "ratio",
         topContributors: untyped
           .map((file) => ({ file: file.path, value: slocOf(file) }))
-          .sort((a, b) => b.value - a.value)
+          .toSorted((a, b) => b.value - a.value)
           .slice(0, TOP_CONTRIBUTORS),
       },
       { id: "source-mix.untyped_sloc_ratio", value: ratio(untypedSloc, totalSloc), unit: "ratio" },
