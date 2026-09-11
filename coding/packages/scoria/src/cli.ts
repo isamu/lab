@@ -2,7 +2,10 @@ import { relative } from "node:path";
 import { assay } from "./run.ts";
 import { detectConfig, writeConfig, CONFIG_FILENAME, type ScoriaConfig } from "./config.ts";
 import { isLang, messagesFor, type Lang } from "./messages.ts";
+import type { Report } from "./report.ts";
 import { renderExplain, renderReport } from "./render.ts";
+import { renderGithubSummary } from "./summary.ts";
+import { appendFile } from "node:fs/promises";
 import { applyFixes, diagnose, renderDoctor } from "./doctor.ts";
 
 interface Options {
@@ -12,6 +15,7 @@ interface Options {
   readonly explain: string | undefined;
   readonly write: boolean;
   readonly fix: boolean;
+  readonly summary: boolean;
   readonly lang: Lang | undefined;
 }
 
@@ -35,6 +39,7 @@ const parse = (argv: readonly string[]): Options => {
     explain,
     write: !argv.includes("--no-write"),
     fix: argv.includes("--fix"),
+    summary: !argv.includes("--no-summary"),
     lang: isLang(lang) ? lang : undefined,
   };
 };
@@ -69,6 +74,17 @@ const freezeIfNeeded = async (target: string, frozen: boolean, write: boolean, l
   return messages.createdConfig(CONFIG_FILENAME, describe(detected));
 };
 
+/**
+ * A CI log is a wall of text nobody scrolls. GitHub renders the step summary on the run page, so
+ * the table lands where a reviewer already is. Writing the file is all it takes — no token, no
+ * `permissions:` block.
+ */
+const writeGithubSummary = async (report: Report, lang: Lang, enabled: boolean): Promise<void> => {
+  const path = process.env["GITHUB_STEP_SUMMARY"];
+  if (!enabled || path === undefined || path === "") return;
+  await appendFile(path, renderGithubSummary(report, lang), "utf8");
+};
+
 export const main = async (argv: readonly string[]): Promise<void> => {
   const options = parse(argv);
   if (options.command === "init") {
@@ -84,6 +100,7 @@ export const main = async (argv: readonly string[]): Promise<void> => {
   const { report, loaded } = await assay(options.target);
   const lang = options.lang ?? loaded.config.lang;
   const notice = await freezeIfNeeded(options.target, loaded.frozen, options.write, lang);
+  await writeGithubSummary(report, lang, options.summary);
   if (options.json) {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     return;

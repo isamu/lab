@@ -105,3 +105,24 @@ test("explain carries the files that drove a metric", async () => {
   const metric = built.dimensions[0]?.metrics[0];
   assert.deepEqual(metric?.topContributors, [{ file: "src/big.ts", value: 2673 }]);
 });
+
+test("the GitHub summary renders a table with a bar per dimension", async () => {
+  const { renderGithubSummary } = await import("../packages/scoria/src/summary.ts");
+  const markdown = renderGithubSummary(report, "en");
+  assert.match(markdown, /^## scoria — 50 \/ 100$/m);
+  assert.match(markdown, /\| integrity \| 50 \| `█████░░░░░` \| high \|/);
+  assert.match(markdown, /<details><summary>1 findings at severity error<\/summary>/);
+  assert.match(markdown, /src\/a\.ts:3/);
+});
+
+test("the GitHub summary follows the language too", async () => {
+  const { renderGithubSummary } = await import("../packages/scoria/src/summary.ts");
+  assert.match(renderGithubSummary(report, "ja"), /型を迂回しています/);
+});
+
+/** Silence would look identical to a clean repository, so the note is not optional. */
+test("the GitHub summary always states that scores are not comparable", async () => {
+  const { renderGithubSummary } = await import("../packages/scoria/src/summary.ts");
+  assert.match(renderGithubSummary(report, "en"), /not comparable across repositories/);
+  assert.match(renderGithubSummary(report, "ja"), /他のリポジトリと比べられません/);
+});
