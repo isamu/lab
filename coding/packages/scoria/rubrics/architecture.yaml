@@ -1,0 +1,24 @@
+# Code and dependencies nothing reaches (spec §13.4).
+#
+# Unused exports are what a generated codebase accumulates: each one was reachable when it was
+# written, and nothing removes it when the caller changes. Needs the target installed, so on a
+# repository without node_modules this dimension reports as unmeasurable rather than perfect
+# (spec §18.1).
+id: architecture
+status: experimental
+
+metrics:
+  - metric: knip.unused_exports
+    scale: { good: 0, bad: 60 }
+    weight: 0.4
+
+  - metric: knip.unused_files
+    scale: { good: 0, bad: 20 }
+    weight: 0.35
+
+  - metric: knip.unused_dependencies
+    scale: { good: 0, bad: 10 }
+    weight: 0.25
+
+confidence_from:
+  - suppression-scan.source_count

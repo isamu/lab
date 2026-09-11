@@ -10,11 +10,17 @@ metrics:
   # Weighted by lines so that a handful of small config files does not dominate the score.
   - metric: source-mix.untyped_sloc_ratio
     scale: { good: 0, bad: 0.5 }
-    weight: 0.7
+    weight: 0.3
 
   - metric: source-mix.untyped_file_ratio
     scale: { good: 0, bad: 0.5 }
-    weight: 0.3
+    weight: 0.2
+
+  # Errors from the project's own tsc, which is the only check that means anything about its types.
+  # Tier 1: skipped, not zero, where the project is not installed.
+  - metric: tsc.type_errors_per_kloc
+    scale: { good: 0, bad: 2 }
+    weight: 0.5
 
 confidence_from:
   - suppression-scan.source_count
