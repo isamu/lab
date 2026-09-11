@@ -125,11 +125,83 @@ scoria --lang ja               # Japanese terminal output
 Terminal output is translatable; the JSON report is not. `Finding.message` stays English so that
 downstream tooling reads one stable vocabulary, and the rule id joins the two.
 
+## Reading the report
+
+**Read the Confidence column before the Score column.** `medium` or `low` means the dimension was
+measured through suppressions, so the number describes the measurement as much as the code. A
+readability of 88 with 60 `eslint-disable` comments in scope is not a readable codebase; it is an
+unmeasured one.
+
+**A single run tells you little.** The score exists to watch one repository's own trend, and the
+first run is only the baseline. Comparing it to another project's number is meaningless.
+
+**Then ask what is costing you points**, which is what `explain` is for:
+
+```text
+$ scoria --explain readability
+
+  metric                                       value            scale     pts
+  ──────────────────────────────────────────────────────────────
+  file-shape.sloc_p95                         353.00        150 → 800    34.4
+  file-shape.max_file_sloc                   2673.00       300 → 2000     0.0
+  file-shape.god_file_count                     7.00           0 → 20    13.0
+  ──────────────────────────────────────────────────────────────
+                                                                         47.4
+
+  largest contributors to file-shape.sloc_p95
+        2673  src/data/scriptTemplates.ts
+        1403  src/data/markdownStyles.ts
+```
+
+`max_file_sloc` scored **0.0 of a possible 30** — the value is past the far end of its scale, so it
+is the single largest lever in this dimension, and the contributor list names the file. Because the
+scale is linear and clamped, the points column is directly the answer to "what is fixing this
+worth?".
+
+**`findings at severity error` are the actionable ones.** They are all suppressions with no stated
+reason: either write the reason — `-- why` after an ESLint rule name, prose after
+`@ts-expect-error` — or remove the suppression. Warnings are counted by rule rather than listed,
+because a hundred `untyped-source` lines is one decision, not a hundred.
+
+**`config: detected`** means the run was not frozen: scoria detected the stack rather than reading a
+committed config. Commit `scoria.config.json` so later runs measure the same way.
+
+### A caveat worth knowing
+
+`file-shape` counts lines without asking what is in them, so a 2,673-line table of templates is
+penalised exactly like a 2,673-line module of logic. The two are not equally hard to read. Until
+this is calibrated, treat a large `data/` file as a known false positive rather than a finding.
+
+## Diagnosing the setup
+
+`scoria doctor` reports the gaps in the gates a project sets for itself — no ESLint config, no
+`test` script, `strict` off, CI that never runs `typecheck`, a step that swallows its failure.
+These are not style opinions: each one makes some other score read better than the repository
+deserves, which is why they also feed the `integrity` dimension.
+
+```text
+4 gaps in the gates this project sets for itself
+
+  ! No `typecheck` script
+      CI cannot run what package.json does not define, so nothing enforces typecheck.
+      fixable with --fix
+
+  × 1 step swallows their failure
+      `continue-on-error: true` or `|| true` makes a job green whatever it found.
+```
+
+`--fix` applies only repairs with exactly one correct outcome — appending `node_modules/` to
+`.gitignore`, adding `"typecheck": "tsc --noEmit"` when TypeScript is present. Choosing a lint
+configuration for someone is a judgement, so it is reported and left alone. Installing the
+toolchain itself is what [ever-better](https://github.com/isamu/ever-better) is for.
+
 ## What it measures today
 
 | probe              | dimension   | what it looks at                                                                                  |
 | ------------------ | ----------- | ------------------------------------------------------------------------------------------------- |
 | `suppression-scan` | integrity   | `as any`, `@ts-ignore`, `eslint-disable`, `it.skip`. Only the ones without a reason become errors |
+| `config-integrity` | integrity   | ESLint config present, `strict` on, required scripts defined                                      |
+| `ci-integrity`     | integrity   | CI runs lint / typecheck / build / test, and does not swallow failures                            |
 | `file-shape`       | readability | p95 and maximum file length, and the count over 500 lines                                         |
 | `source-mix`       | type-safety | `.js` / `.jsx` remaining in a TypeScript project                                                  |
 
