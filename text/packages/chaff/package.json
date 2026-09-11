@@ -1,0 +1,47 @@
+{
+  "name": "chaff",
+  "version": "0.0.0",
+  "description": "Prose validation harness. Finds what is hard to read, and never rewrites it for you.",
+  "keywords": [
+    "lint",
+    "prose",
+    "writing",
+    "textlint",
+    "style-guide",
+    "japanese",
+    "ci"
+  ],
+  "homepage": "https://github.com/isamu/lab/tree/main/text",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isamu/lab.git",
+    "directory": "text/packages/chaff"
+  },
+  "license": "MIT",
+  "author": "isamu",
+  "type": "module",
+  "bin": {
+    "chaff": "./bin/chaff.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./plugin": {
+      "types": "./src/plugin.ts",
+      "import": "./dist/plugin.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "bin"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  }
+}
