@@ -87,7 +87,7 @@ const directiveHits = (file: SourceFile, comments: readonly string[]): readonly 
   });
 
 export const scanFile = (file: SourceFile): readonly Hit[] => {
-  const { code, comments } = viewOf(file.lines);
+  const { code, comments } = viewOf(file.codeLines);
   return [...codeHits(file, code, comments), ...directiveHits(file, comments)];
 };
 

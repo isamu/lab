@@ -1,0 +1,20 @@
+# spec §11 の type-safety 次元のうち、Tier 0 で測れる部分。
+#
+# tsc による型エラーの計数は Tier 1（ビルドが要る）なので、ここにはまだ無い。
+# いま見ているのは「そもそも型検査の対象になっているか」だけ。
+id: type-safety
+status: experimental
+
+metrics:
+  # .js のままのファイルは型検査をファイル単位で回避している。
+  # 行数で見るのは、小さな設定ファイルが多数あっても点が落ちないようにするため。
+  - metric: source-mix.untyped_sloc_ratio
+    scale: { good: 0, bad: 0.5 }
+    weight: 0.7
+
+  - metric: source-mix.untyped_file_ratio
+    scale: { good: 0, bad: 0.5 }
+    weight: 0.3
+
+confidence_from:
+  - suppression-scan.source_count

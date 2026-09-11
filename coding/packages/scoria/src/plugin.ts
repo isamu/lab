@@ -65,7 +65,24 @@ export type FileKind = "source" | "test" | "config" | "generated" | "ignored";
 export interface SourceFile {
   readonly path: string;
   readonly kind: FileKind;
+  /** 原文の行。行番号と、ファイルの大きさを測るのに使う。 */
   readonly lines: readonly string[];
+  /**
+   * JavaScript / TypeScript として解釈してよい部分だけを残し、それ以外を空白にした行。
+   * 行番号は lines と一致する。
+   *
+   * .vue の `<template>` や `<style>` を JS として走査すると、HTML 属性の引用符や
+   * 本文のアポストロフィが文字列の開始と誤認され、その後ろのコードが隠れる。
+   * どこが JS なのかを知っているのは stack adapter だけなので、core が collect 時に確定させる。
+   */
+  readonly codeLines: readonly string[];
+}
+
+/** 検出で分かったプロジェクトの性質。probe が stack adapter を直接触らずに済むようにする。 */
+export interface ProjectFacts {
+  /** typescript が devDependencies にあるか。.js を警告してよいかの判断に使う。 */
+  readonly typescript: boolean;
+  readonly stacks: readonly string[];
 }
 
 export interface ExecResult {
@@ -79,6 +96,7 @@ export type Exec = (command: string, args: readonly string[]) => Promise<ExecRes
 export interface ProbeContext {
   readonly root: string;
   readonly files: readonly SourceFile[];
+  readonly project: ProjectFacts;
   readonly exec: Exec;
 }
 
@@ -104,5 +122,8 @@ export interface StackAdapter {
   readonly id: string;
   readonly apiVersion: 1;
   readonly detect: (root: string) => Promise<StackDetection>;
+  /** 自分が扱わないパスには "ignored" を返す。core が adapter 順に試し、最初の非 ignored を採る。 */
   readonly classify: (relativePath: string) => FileKind;
+  /** JS として解釈してよい範囲を残した行を返す。省略時は原文をそのまま使う。 */
+  readonly codeLinesOf?: (lines: readonly string[]) => readonly string[];
 }

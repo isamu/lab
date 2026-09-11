@@ -9,7 +9,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "yarn workspace @scoria/stack-ts build && yarn workspace scoria build",
+    "build": "yarn workspace scoria build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
