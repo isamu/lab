@@ -1,0 +1,25 @@
+# spec §16.1。scale の good / bad は較正前のため status は experimental。
+#
+# sloc_p95 の good: 150 は spec の値をそのまま使っている。
+# スパイクの実測では、よくメンテされた repo の p95 は 261 (graphai) と 331 (mulmoterminal) で、
+# この scale では 72〜83 点になる。実測に寄せるべきかは issue #5 の「決めること」。
+# 勝手に直さず、spec を single source of truth にしている。
+id: readability
+status: experimental
+
+metrics:
+  - metric: file-shape.sloc_p95
+    scale: { good: 150, bad: 800 }
+    weight: 0.5
+
+  - metric: file-shape.max_file_sloc
+    scale: { good: 300, bad: 2000 }
+    weight: 0.3
+
+  - metric: file-shape.god_file_count
+    scale: { good: 0, bad: 20 }
+    weight: 0.2
+
+# 抑制が多い repo では readability の測定そのものが信用できない（spec §15.4）。
+confidence_from:
+  - suppression-scan.source_count
