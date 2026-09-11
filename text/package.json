@@ -10,13 +10,15 @@
   },
   "scripts": {
     "build": "yarn workspace @chaffjs/lang-ja build && yarn workspace @chaffjs/lang-en build && yarn workspace chaffjs build",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "duplication": "npx --yes jscpd@4 . --format typescript,javascript --ignore \"**/node_modules/**,**/dist/**,**/*.d.ts\" --reporters console",
+    "example": "node packages/chaff/bin/chaff.js examples/ --compact",
+    "example:friendly": "node packages/chaff/bin/chaff.js examples/",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test \"test/test_*.ts\"",
     "knip": "knip",
-    "duplication": "npx --yes jscpd@4 . --format typescript,javascript --ignore \"**/node_modules/**,**/dist/**,**/*.d.ts\" --reporters console"
+    "lint": "eslint .",
+    "test": "node --test \"test/test_*.ts\"",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

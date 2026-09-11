@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { parse } from "yaml";
 import { isLevel } from "../levels.ts";
 import type { Level } from "../plugin.ts";
+import type { PathRule } from "./by-path.ts";
 
 export const CONFIG_FILE = "chaff.yaml";
 
@@ -13,6 +15,9 @@ export type Config = {
   readonly path: string | undefined;
   readonly aiModel: string;
   readonly confidenceThreshold: number;
+  /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
+  readonly byPath: readonly PathRule[];
+  readonly baseDir: string;
 };
 
 /** 判定の質が誤検知に直結するので、既定は最上位のモデル。cost は絞り込みで削る。spec §14。 */
@@ -26,6 +31,8 @@ export const EMPTY: Config = {
   path: undefined,
   aiModel: DEFAULT_MODEL,
   confidenceThreshold: 0.7,
+  byPath: [],
+  baseDir: process.cwd(),
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -36,6 +43,22 @@ const rulesOf = (raw: unknown): Record<string, Level> => {
 };
 
 const str = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
+
+/** files は 1 つの文字列でも配列でも書ける。 */
+const globsOf = (value: unknown): string[] => {
+  if (typeof value === "string") return [value];
+  return Array.isArray(value) ? value.map((entry) => String(entry)) : [];
+};
+
+const toPathRule = (raw: unknown): PathRule | undefined => {
+  if (!isRecord(raw)) return undefined;
+  const files = raw["files"];
+  const globs = globsOf(files);
+  if (globs.length === 0) return undefined;
+  return { files: globs, genre: str(raw["genre"]), language: str(raw["language"]) };
+};
+
+const byPathOf = (raw: unknown): PathRule[] => (Array.isArray(raw) ? raw.map(toPathRule).filter((rule) => rule !== undefined) : []);
 
 /** 設定ファイルが無くても動く。あっても、既定から変えたものだけが書かれている。spec §18。 */
 export const loadConfig = (path: string): Config => {
@@ -49,5 +72,7 @@ export const loadConfig = (path: string): Config => {
     path,
     aiModel: str(raw["ai_model"]) ?? DEFAULT_MODEL,
     confidenceThreshold: typeof raw["confidence_threshold"] === "number" ? raw["confidence_threshold"] : 0.7,
+    byPath: byPathOf(raw["by_path"]),
+    baseDir: dirname(path),
   };
 };
