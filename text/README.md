@@ -216,6 +216,37 @@ AI に設定を書かせるときは `npx chaffjs rules --json` を渡す。今�
 
 L3 品詞解析 / `eval`（corpus による閾値の較正）。
 
+## 実文書で試す
+
+[examples/](./examples/) に、実際に公開した記事と社内文書を置いてあります。作り物ではない文章に対して何が出るかを、すぐ確かめられます。
+
+```bash
+yarn example              この場所の文書を全部（1 行形式）
+yarn example:friendly     既定の出力で
+```
+
+| ディレクトリ | 中身 |
+| --- | --- |
+| `blog-ja/` | 技術記事 3 本 |
+| `blog-en/` | 英語の技術記事 2 本 |
+| `business-ja/` | 会の文書 3 本 |
+
+CI でも毎回かけています。指摘の数では落としません（文章の好みの問題なので）が、**実文書で chaff が最後まで動かなければ落ちます**。
+
+## パスごとに設定を変える
+
+```yaml
+genre: blog/tech
+
+by_path:
+  - files: ["business-ja/**/*.md"]
+    genre: business/report
+  - files: ["blog-en/**/*.md"]
+    language: en
+```
+
+後に書いたものが勝ちます。照合は**設定ファイルのある場所からの相対**なので、どこで実行しても結果が変わりません。
+
 ## 構成
 
 ```
@@ -230,6 +261,7 @@ text/                      yarn workspaces のルート
     src/config/            chaff.yaml の読み書き
     src/render/            出力（既定 / --compact / --json）
     src/cli.ts
+  examples/                実文書。CI でもここにかける
   packages/lang-ja         @chaffjs/lang-ja。文分割と語彙表
     lexicons/*.yaml        L2 の語彙。ここだけが言語別
   packages/lang-en         @chaffjs/lang-en。同上

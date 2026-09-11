@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { loadAdapter, packageFor } from "./adapter-load.ts";
 import { CONFIG_FILE, EMPTY, loadConfig, type Config } from "./config/load.ts";
+import { applyByPath } from "./config/by-path.ts";
 import { applyLevel } from "./config/write.ts";
 import { buildDocument } from "./document.ts";
 import { guessLanguage } from "./detect.ts";
@@ -52,6 +53,9 @@ const USAGE = `chaff — 文章の読みにくいところを見つけます。�
 const readConfig = (): Config => (existsSync(join(process.cwd(), CONFIG_FILE)) ? loadConfig(join(process.cwd(), CONFIG_FILE)) : EMPTY);
 
 const resolveGenre = (path: string, source: string, config: Config): { genre: string; from: string } => {
+  // パスごとの上書きが最優先。「全体はこう、ここだけは違う」を書けるようにする。
+  const override = applyByPath(config.byPath, config.baseDir, path);
+  if (override.genre !== undefined) return { genre: override.genre, from: `${CONFIG_FILE} の by_path` };
   if (config.genre !== undefined) return { genre: config.genre, from: CONFIG_FILE };
   const guess = guessGenre(path, source, frontMatterGenre(source));
   return guess === undefined ? { genre: "blog/tech", from: "既定" } : { genre: guess.genre, from: guess.from };
@@ -86,7 +90,7 @@ const headerFor = (path: string, genre: string, from: string, language: string, 
 
 const inspect = async (path: string, config: Config, argv: readonly string[]): Promise<Inspected> => {
   const source = await readFile(path, "utf8");
-  const language = config.language ?? guessLanguage(source).language;
+  const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
   const adapter = await loadAdapter(language);
   const { genre, from } = resolveGenre(path, source, config);
   const doc = buildDocument(path, source, adapter);
@@ -174,7 +178,7 @@ const judgeAll = async (
   Promise.all(
     paths.map(async (path) => {
       const source = await readFile(path, "utf8");
-      const language = config.language ?? guessLanguage(source).language;
+      const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
       const doc = buildDocument(path, source, adapter);
       const { genre } = resolveGenre(path, source, config);

@@ -54,3 +54,25 @@ jobs:
       # 自分の仕様書を自分で読ませる。動かなくなったらここで落ちる。
       - name: chaff on its own spec
         run: node packages/chaff/bin/chaff.js chaff-spec.md
+
+      # 実際に公開した記事と社内文書にかける。作り物では通るのに実文書で壊れる、
+      # という状態に気づくため。指摘の数は文章の好みの問題なので落とさない。
+      # 最後まで動かなかったときだけ落とす。
+      - name: chaff on real documents
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -uo pipefail
+          yarn --silent example > examples-report.txt 2>&1 || true
+          cat examples-report.txt
+          if ! grep -q 'ファイルを見て' examples-report.txt; then
+            echo "::error::chaff が実文書で最後まで動きませんでした"
+            exit 1
+          fi
+          {
+            echo '## chaff on real documents'
+            echo
+            echo '```'
+            cat examples-report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,15 @@
+# examples/ 用の設定。
+#
+# 実際の記事と社内文書を置いてあります。ここで chaff を動かすと、
+# 作り物ではない文章に対して何が出るかが分かります。
+#
+#   npx chaffjs examples/            この場所の Markdown を全部
+#   npx chaffjs examples/blog-ja/    日本語のブログだけ
+
+genre: blog/tech
+
+by_path:
+  - files: ["blog-en/**/*.md"]
+    language: en
+  - files: ["business-ja/**/*.md"]
+    genre: business/report
