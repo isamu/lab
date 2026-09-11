@@ -1,13 +1,13 @@
 # chaff
 
-[![npm](https://img.shields.io/npm/v/chaff)](https://www.npmjs.com/package/chaff)
+[![npm](https://img.shields.io/npm/v/chaffjs)](https://www.npmjs.com/package/chaffjs)
 
 文章の読みにくいところを見つける道具。**文章は書き換えない。** 直すのは書いた人。
 
 `coding/` の scoria がコードの品質を測るのに対して、こちらは文章の品質を測る。
 
 ```bash
-npx chaff article.md
+npx chaffjs article.md
 ```
 
 ## いまどこまで動くか
@@ -15,7 +15,7 @@ npx chaff article.md
 L1 rule が 5 本。設定ファイルも API key も言語指定も要らない。
 
 ```
-$ npx chaff article.md
+$ npx chaffjs article.md
 
 article.md   blog/tech · 日本語   ジャンルは既定から
 
@@ -30,7 +30,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
      → 見出しが約束したことの中身から書き始めてください。
 
-     このルールをゆるめる:  npx chaff relax heading-echo
+     このルールをゆるめる:  npx chaffjs relax heading-echo
 
 ──────────────────────────────────────────────────────────
 
@@ -54,7 +54,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 後ろの 3 本は **L2**。検出器は共通で、語彙表だけが言語別にある。日本語でも英語でも同じ rule が動く。
 
 ```
-$ npx chaff en.md --compact
+$ npx chaffjs en.md --compact
 
   3:67   warning "it is important to note that" emphasises without saying anything
                  empty-intensifier
@@ -67,20 +67,20 @@ $ npx chaff en.md --compact
 ## 使いはじめ
 
 ```bash
-npx chaff .                    この場所の Markdown を全部見る
-npx chaff docs/ README.md      ディレクトリもファイルも glob も混ぜてよい
-npx chaff init                 chaff.yaml を作る
-npx chaff explain bold-density そのルールの意図と根拠を読む
-npx chaff genres               ジャンルの一覧
-npx chaff baseline docs/       いまある指摘を棚上げする
-npx chaff suppressions docs/   stet で黙らせている指摘を数える
-npx chaff article.md --watch   保存のたびに、変わったところだけ出す
+npx chaffjs .                    この場所の Markdown を全部見る
+npx chaffjs docs/ README.md      ディレクトリもファイルも glob も混ぜてよい
+npx chaffjs init                 chaff.yaml を作る
+npx chaffjs explain bold-density そのルールの意図と根拠を読む
+npx chaffjs genres               ジャンルの一覧
+npx chaffjs baseline docs/       いまある指摘を棚上げする
+npx chaffjs suppressions docs/   stet で黙らせている指摘を数える
+npx chaffjs article.md --watch   保存のたびに、変わったところだけ出す
 ```
 
 ## 書いている最中
 
 ```
-$ npx chaff article.md --watch
+$ npx chaffjs article.md --watch
 
   1 ファイルを見ています。いまの指摘は 2 件です。
   保存するたびに、変わったところだけ出します。止めるには Ctrl-C。
@@ -101,7 +101,7 @@ $ npx chaff article.md --watch
 | --- | --- | --- |
 | **直す** | 指摘がもっともなとき | 文章を書き直す |
 | **この箇所だけ黙らせる** | 指摘は正しいが、ここは意図的なとき | `<!-- stet: rule-id — 理由 -->` |
-| **ルールを変える** | 自分たちの方針に合わないとき | `npx chaff relax rule-id --why "理由"` |
+| **ルールを変える** | 自分たちの方針に合わないとき | `npx chaffjs relax rule-id --why "理由"` |
 
 抑制の範囲は 3 つ。
 
@@ -114,14 +114,14 @@ $ npx chaff article.md --watch
 同じルールを何度も黙らせているなら、それは 3 つ目を選ぶべきサイン。`chaff suppressions` が数えて教える。
 
 ```
-$ npx chaff suppressions docs/
+$ npx chaffjs suppressions docs/
 
   抑制されている指摘: 6 件
 
   bold-density                6 件  ← 設定の見直しを検討してください
       docs/g1.md, docs/g2.md, docs/g3.md ほか 3 ファイル
       理由: 用語集なので太字が多いのは意図的
-      ルールごとゆるめる: npx chaff relax bold-density --why "..."
+      ルールごとゆるめる: npx chaffjs relax bold-density --why "..."
 
   理由が書かれていない抑制: 1 件
       docs/x.md
@@ -132,7 +132,7 @@ $ npx chaff suppressions docs/
 記事が 200 本ある repo に入れると数千件出る。全部直してから始めることは誰にもできない。
 
 ```bash
-npx chaff baseline docs/       いまある指摘を棚上げする
+npx chaffjs baseline docs/       いまある指摘を棚上げする
 ```
 
 以後、棚上げしたものは報告されず、**新しく増えたものだけ**が出る。`.chaff-baseline.json` を commit すれば、チーム全員が同じ地点から始められる。
@@ -144,7 +144,7 @@ npx chaff baseline docs/       いまある指摘を棚上げする
 数字は書かない。`chaff.yaml` を開かずにコマンドでも変えられる。
 
 ```bash
-npx chaff relax bold-density --why "図の説明で太字を多用するため"
+npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
 ```
 
 ```yaml
@@ -156,7 +156,7 @@ rules:
 
 説明コメントは自動で入り、既存のコメントは壊さない。既に理由があるものを変えるときは `--why` が要る。古い理由が新しい値に残ると履歴が嘘になるため。
 
-AI に設定を書かせるときは `npx chaff rules --json` を渡す。今の値・使える値・なぜ今 off なのか・変更コマンドが 1 つに入っている。
+AI に設定を書かせるときは `npx chaffjs rules --json` を渡す。今の値・使える値・なぜ今 off なのか・変更コマンドが 1 つに入っている。
 
 ## まだ無いもの
 
@@ -176,9 +176,9 @@ text/                      yarn workspaces のルート
     src/config/            chaff.yaml の読み書き
     src/render/            出力（既定 / --compact / --json）
     src/cli.ts
-  packages/lang-ja         @chaff-lang/ja。文分割と語彙表
+  packages/lang-ja         @chaffjs/lang-ja。文分割と語彙表
     lexicons/*.yaml        L2 の語彙。ここだけが言語別
-  packages/lang-en         @chaff-lang/en。同上
+  packages/lang-en         @chaffjs/lang-en。同上
   test/                    node:test
 ```
 

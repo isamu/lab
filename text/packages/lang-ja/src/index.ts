@@ -1,6 +1,6 @@
 import { split, SentenceSplitterSyntax } from "sentence-splitter";
 import { loadLexicons } from "./lexicons.ts";
-import type { LanguageAdapter, Segmentation, Sentence, Span } from "chaff/plugin";
+import type { LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
 
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
 

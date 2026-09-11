@@ -1,8 +1,9 @@
 {
-  "name": "chaff",
+  "name": "chaffjs",
   "version": "0.0.1",
   "description": "Prose validation harness. Finds what is hard to read, and never rewrites it for you.",
   "keywords": [
+    "chaff",
     "lint",
     "prose",
     "writing",
@@ -21,6 +22,7 @@
   "author": "isamu",
   "type": "module",
   "bin": {
+    "chaffjs": "./bin/chaff.js",
     "chaff": "./bin/chaff.js"
   },
   "exports": {
@@ -49,8 +51,8 @@
     "prepack": "yarn build"
   },
   "dependencies": {
-    "@chaff-lang/en": "0.0.1",
-    "@chaff-lang/ja": "0.0.1",
+    "@chaffjs/lang-en": "0.0.1",
+    "@chaffjs/lang-ja": "0.0.1",
     "mdast-util-from-markdown": "^2.0.3",
     "mdast-util-frontmatter": "^2.0.1",
     "mdast-util-gfm-table": "^2.0.0",
