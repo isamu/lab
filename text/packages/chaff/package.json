@@ -1,6 +1,6 @@
 {
   "name": "chaff",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Prose validation harness. Finds what is hard to read, and never rewrites it for you.",
   "keywords": [
     "lint",
@@ -34,18 +34,23 @@
     }
   },
   "files": [
-    "dist",
-    "src",
+    "LICENSE",
+    "README.md",
     "bin",
-    "rules"
+    "dist",
+    "rules",
+    "src"
   ],
   "engines": {
     "node": ">=24"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "yarn build"
   },
   "dependencies": {
+    "chaff-lang-en": "0.0.1",
+    "chaff-lang-ja": "0.0.1",
     "mdast-util-from-markdown": "^2.0.3",
     "mdast-util-frontmatter": "^2.0.1",
     "mdast-util-gfm-table": "^2.0.0",

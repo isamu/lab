@@ -1,6 +1,6 @@
 {
-  "name": "@chaff/lang-en",
-  "version": "0.0.0",
+  "name": "chaff-lang-en",
+  "version": "0.0.1",
   "description": "English language adapter for chaff",
   "license": "MIT",
   "author": "isamu",
@@ -12,24 +12,27 @@
     }
   },
   "files": [
+    "LICENSE",
+    "README.md",
     "dist",
-    "src",
-    "lexicons"
+    "lexicons",
+    "src"
   ],
   "engines": {
     "node": ">=24"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "yarn build"
   },
   "dependencies": {
     "sentence-splitter": "^5.0.1",
     "yaml": "^2.9.0"
   },
-  "peerDependencies": {
-    "chaff": "*"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isamu/lab.git",
+    "directory": "text/packages/lang-en"
   },
-  "devDependencies": {
-    "chaff": "0.0.0"
-  }
+  "homepage": "https://github.com/isamu/lab/tree/main/text"
 }

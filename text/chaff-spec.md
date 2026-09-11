@@ -111,13 +111,15 @@ npx chaff article.md
 
 ```text
 chaff                  harness core（npx の入口）
-@chaff/lang-ja
-@chaff/lang-en
-@chaff/business
-@chaff/blog
+chaff-lang-ja          言語アダプタ
+chaff-lang-en
+chaff-business         genre pack（未実装）
+chaff-blog
 ```
 
-`chaff` は 2026-09-08 時点で npm 未取得。実装着手前に取得すること。
+`@chaff` scope は 2019 年から別人が所有しているため使えない。eslint や textlint と
+同じく、プレフィックス付きの非 scope 名にする。第三者のアダプタも `chaff-lang-ko`
+のように名乗れる。
 
 ### 0.1 検討して外した候補
 
@@ -276,30 +278,30 @@ chaff                  harness core
   言語検出
   CLI (lint / test / eval / explain / init / setup)
 
-@chaff/lang-ja         日本語アダプタ
+chaff-lang-ja         日本語アダプタ
   文分割 / 分節 / 形態素解析ブリッジ
   ja lexicon (L2)
   ja 固有 detector (L3)
   textlint ja rule への dispatch
 
-@chaff/lang-en         英語アダプタ
+chaff-lang-en         英語アダプタ
   文分割 / トークナイズ / 品詞タグ
   en lexicon (L2)
   en 固有 detector (L3)
 
-@chaff/business        ビジネス文書 genre pack
+chaff-business        ビジネス文書 genre pack
   profile (proposal / report / email / press-release / meeting-notes)
   business 固有の L1 rule と L4 rubric
   required-sections の見出し定義（言語別）
 
-@chaff/blog            ブログ genre pack
+chaff-blog            ブログ genre pack
   profile (tech / essay / owned-media)
   blog 固有の L1 rule と L4 rubric
 ```
 
 genre pack を core から分ける理由は前版と同じ。リリースサイクルが違い（core の rule model は安定させたいが threshold は calibration のたびに動く）、依存が違い（genre pack は adapter に依存しない）、ジャンルを並列に増やせるため。
 
-`@chaff/business` と `@chaff/blog` は **adapter に依存しない**。これが四層モデルの帰結であり、「ビジネス文書の書き方」が言語を越えて共通であるという主張でもある。
+`chaff-business` と `chaff-blog` は **adapter に依存しない**。これが四層モデルの帰結であり、「ビジネス文書の書き方」が言語を越えて共通であるという主張でもある。
 
 ---
 
@@ -513,7 +515,7 @@ prose                     共通の下敷き
 profile は言語を知らないが、閾値だけは言語別に持つ必要がある（§7 `lengthUnit`）。
 
 ```yaml
-# @chaff/blog/profiles/blog.tech.yaml
+# chaff-blog/profiles/blog.tech.yaml
 id: blog/tech
 extends: blog
 
@@ -661,7 +663,7 @@ weighted phrase-match  各エントリの weight を合算し、文書スコア�
 lexicon の形式:
 
 ```yaml
-# @chaff/lang-en/lexicons/ai-tell.yaml
+# chaff-lang-en/lexicons/ai-tell.yaml
 id: ai-tell
 language: en
 entries:
@@ -677,7 +679,7 @@ entries:
 ```
 
 ```yaml
-# @chaff/lang-ja/lexicons/ai-tell.yaml
+# chaff-lang-ja/lexicons/ai-tell.yaml
 id: ai-tell
 language: ja
 entries:
@@ -971,7 +973,7 @@ npx chaff          core のみ
 3 の取得を暗黙に行わない。次を表示して同意を取る。
 
 ```text
-chaff needs @chaff/lang-ja and @chaff/blog (2.9 MB).
+chaff needs chaff-lang-ja and chaff-blog (2.9 MB).
 Install? [Y/n]
 ```
 
@@ -1454,9 +1456,9 @@ core の plugin API 確定（§6）
 言語検出（§8）
 L1 universal detector 16 本
 L2 照合エンジン 4 種
-@chaff/lang-ja  Tier 0（規則ベース文分割 + budoux + ja lexicon）
-@chaff/business  profile と required-sections
-@chaff/blog      profile
+chaff-lang-ja  Tier 0（規則ベース文分割 + budoux + ja lexicon）
+chaff-business  profile と required-sections
+chaff-blog      profile
 textlint dispatch（§15.1）
 JSON / text output
 GitHub Actions
@@ -1467,7 +1469,7 @@ GitHub Actions
 目標: 言語軸が本当に直交していることを、2 つ目の adapter で証明する。
 
 ```text
-@chaff/lang-en  Tier 0 / Tier 1
+chaff-lang-en  Tier 0 / Tier 1
 en lexicon（L2 を 11 本）
 en 固有 L3 detector
 L1 rule が両言語で同一結果になることの検証（§23）
