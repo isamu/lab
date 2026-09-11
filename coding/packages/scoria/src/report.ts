@@ -1,5 +1,5 @@
-import type { Finding, Metric, ProbeResult, ProbeStatus, SourceFile } from "./plugin.ts";
-import type { Rubric, ScoredDimension } from "./rubric.ts";
+import type { Contributor, Finding, Metric, ProbeResult, ProbeStatus, SourceFile } from "./plugin.ts";
+import type { Rubric, ScoredDimension, ScoredMetric } from "./rubric.ts";
 import { scoreDimension } from "./rubric.ts";
 import { slocOf } from "./files.ts";
 import { perKiloLines } from "./stats.ts";
@@ -34,6 +34,19 @@ export interface Report {
 
 const collectMetrics = (results: readonly ProbeResult[]): ReadonlyMap<string, number> =>
   new Map(results.flatMap((r) => r.metrics).map((m: Metric) => [m.id, m.value]));
+
+/**
+ * Probes record which files drove a value; the rubric only turns numbers into points. Carrying the
+ * contributors through is what lets `explain` answer "where", not just "how much".
+ */
+const collectContributors = (results: readonly ProbeResult[]): ReadonlyMap<string, readonly Contributor[]> =>
+  new Map(results.flatMap((r) => r.metrics).flatMap((m: Metric) => (m.topContributors === undefined ? [] : [[m.id, m.topContributors] as const])));
+
+const withContributors = (metrics: readonly ScoredMetric[], contributors: ReadonlyMap<string, readonly Contributor[]>): readonly ScoredMetric[] =>
+  metrics.map((metric) => {
+    const found = contributors.get(metric.metric);
+    return found === undefined ? metric : { ...metric, topContributors: found };
+  });
 
 /**
  * Where suppressions are dense, the other probes' measurements are themselves untrustworthy
@@ -74,12 +87,17 @@ export const buildReport = (
   meta: ReportMeta = DEFAULT_META,
 ): Report => {
   const values = collectMetrics(results);
+  const contributors = collectContributors(results);
   const sloc = slocOfKind(files, "source");
-  const dimensions = rubrics.map((rubric) => ({
-    ...scoreDimension(rubric, values),
-    confidence: confidenceOf(rubric, values, sloc),
-    confidenceReason: reasonOf(rubric, values),
-  }));
+  const dimensions = rubrics.map((rubric) => {
+    const scored = scoreDimension(rubric, values);
+    return {
+      ...scored,
+      metrics: withContributors(scored.metrics, contributors),
+      confidence: confidenceOf(rubric, values, sloc),
+      confidenceReason: reasonOf(rubric, values),
+    };
+  });
   return {
     schemaVersion: 1,
     root,

@@ -109,6 +109,15 @@ export const renderExplain = (report: Report, dimension: string, lang: Lang): st
     const scale = `${metric.scale.good} → ${metric.scale.bad}`;
     return `  ${pad(metric.metric, METRIC_WIDTH)}${padStart(metric.value.toFixed(2), VALUE_WIDTH)}   ${padStart(scale, SCALE_WIDTH)}${padStart(metric.points.toFixed(1), POINTS_WIDTH)}`;
   });
+  const contributors = found.metrics.flatMap((metric) =>
+    metric.topContributors === undefined || metric.topContributors.length === 0
+      ? []
+      : [
+          "",
+          `  ${messages.topContributors(metric.metric)}`,
+          ...metric.topContributors.map((entry) => `    ${padStart(String(entry.value), 8)}  ${entry.file}`),
+        ],
+  );
   return [
     "",
     `${found.dimension}  ${found.score.toFixed(0)}   status: ${found.status}   ${messages.confidence}: ${found.confidence}`,
@@ -118,6 +127,7 @@ export const renderExplain = (report: Report, dimension: string, lang: Lang): st
     ...rows,
     `  ${SEPARATOR}`,
     `  ${pad("", METRIC_WIDTH)}${padStart("", VALUE_WIDTH)}   ${padStart("", SCALE_WIDTH)}${padStart(found.score.toFixed(1), POINTS_WIDTH)}`,
+    ...contributors,
     "",
     `  ${found.confidenceReason}`,
     "",
