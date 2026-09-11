@@ -2,6 +2,75 @@
 
 Newest first.
 
+## 0.1.0 — 2026-09-11
+
+The external tools, and the baseline that makes improvement and regression visible — the thing the
+tool was for.
+
+### The core decision reversed
+
+The spec said scoria measures a project against **its own** gates, and ran the project's ESLint to
+do it. That was wrong: a repository that turns off every rule then scores perfectly. It is the same
+"buying the scorer" failure the `integrity` dimension exists to catch, and it was let through in
+every dimension except integrity — writing one `eslint-disable` lowered the score, while disabling
+that rule in config did nothing.
+
+scoria now brings its own standard. **"CI's lint is green but scoria is low" is not a defect; it is
+the finding.** The report always says which standard it measured against.
+
+### Added
+
+- **`oxlint`** — 133 rules from scoria's own ruleset, feeding `correctness` and `readability`.
+  Chosen over ESLint because the ruleset must not depend on the target's node_modules: it runs
+  standalone, parses `.ts` / `.tsx` / `.js` / `.jsx` / `.vue` itself, and covers 313 files in 1.8s.
+- **`tsc`** — type errors from the **project's own** TypeScript. The single exception to the rule
+  above, because a type check is only meaningful against that project's tsconfig and installed types.
+- **`knip`** — unused files, exports and dependencies, as a new `architecture` dimension.
+- **`jscpd`** — copy-paste duplication.
+- **`scoria baseline`** — records a run to `.scoria/baseline.json`; later runs report what moved,
+  naming the metric and what it cost. Tool versions are recorded with it, so a score that falls
+  because a linter gained rules is reported as needing a fresh baseline rather than as decay.
+- The GitHub job summary gained a delta column and the movers list.
+
+Five dimensions now have something behind them. Before this, `readability` was file sizes and
+`type-safety` was a `.js` count; the names promised far more than they delivered.
+
+### Fixed
+
+Four bugs, each of which made a repository look better than it is.
+
+- **Unmeasured dimensions scored full marks.** The contract distinguished ok / absent / skipped but
+  the scoring did not: a missing value became 0, and for a lower-is-better metric 0 is perfect. A
+  directory with no source, no eslint and no CI scored 90/100 with two dimensions at 100 and marked
+  high confidence. `absent` now scores 0, `skipped` is excluded with the weights renormalised, and a
+  dimension with nothing measurable reports no score rather than a number standing in for one.
+- **`ctx.exec` discarded stdout on a non-zero exit** — which is exactly when a linter has something
+  to report. Every external probe returned nothing until this was found.
+- **`knip` without node_modules** resolves nothing and reports nothing, which read as a clean
+  repository. It now requires the project to be installed and reports skipped otherwise.
+- **Windows would have been broken.** Every tool scoria drives ships its bin as a
+  `#!/usr/bin/env node` script, and Windows does not honour a shebang. No CI job covered that path —
+  the Windows runner exercises scoria's own gates, not scoria measuring a repository. Tools now run
+  through the Node already executing.
+
+### Changed
+
+- The install is about 25 MB, against a spec budget of 5 MB written when scoria used the project's
+  ESLint. Shipping our own linter costs 12 MB for oxlint's platform binary alone. The budget is now
+  30 MB, stated with the measurements, rather than held by declining to measure.
+
+### Merged pull requests
+
+- #27 — the spec revision: §3.2 reversed, §3.2.1 and §18.1 added, §12.1 rewritten from measurements
+- #28 — absent and skipped scored rather than treated as zero
+- #30 — oxlint, jscpd, tsc, knip, baseline and delta, and the Windows fix
+
+### Still provisional
+
+Every scale. Correctness lands at 48-83 and readability at 31-89 across three real repositories,
+and nothing is calibrated. Ratchet gating, `dependency-cruiser`, coverage and mutation testing, and
+SARIF output are not here.
+
 ## 0.0.3 — 2026-09-11
 
 Readable output: `explain` names the file to fix, and CI renders a table instead of a wall of text.
