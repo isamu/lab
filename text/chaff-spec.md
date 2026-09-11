@@ -1055,7 +1055,7 @@ experimental: false            # experimental rule を既定で有効にする�
 
 ### 18.1 rule の値は 4 語
 
-利用者が数値を書かなくて済むように、rule の値は 4 語から選ぶ。
+設定に数値を書かせない。次の 4 つから選ぶ。
 
 ```text
 strict    きびしく見る
