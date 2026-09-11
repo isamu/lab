@@ -554,7 +554,7 @@ profile が持つのは既定の `levels` であり、利用者の `chaff.yaml` 
 | id | 見るもの | genre | 既定 severity |
 | --- | --- | --- | --- |
 | `bold-density` | 1 セクションあたりの強調数 | 両方 | warning |
-| `heading-echo` | 見出しと直後の文の character trigram Jaccard | 両方 | warning |
+| `heading-echo` | 見出しの character trigram が直後の文に現れた割合 | 両方 | warning |
 | `section-length-uniformity` | セクション長の変動係数 | blog | info |
 | `sentence-rhythm` | 文長の変動係数の下限 | blog | warning |
 | `paragraph-length-variance` | 段落長の変動係数 | blog | info |
@@ -573,6 +573,20 @@ profile が持つのは既定の `levels` であり、利用者の `chaff.yaml` 
 設計上の注意:
 
 `heading-echo` と `ngram-repetition` は **character n-gram** を使う。word n-gram にすると `wordSplit` capability を要求することになり L2 に落ちる。character trigram なら日本語でも英語でも同じ実装で動き、精度も実用的。
+
+`heading-echo` の重なりは **Jaccard ではなく包含率**（見出しの trigram のうち、直後の文に現れたものの割合）で測る。実装して測るまで Jaccard と書いていたが、いちばん典型的な反復を取り逃すことが分かった。
+
+```text
+見出し    ## キャッシュの仕組み
+直後の文  キャッシュの仕組みについて説明します。
+
+Jaccard  44%   見出しを丸ごと含んでいるのに、文が長いぶん下がる
+包含率   100%  見出しの trigram が全部現れている
+```
+
+この rule が測りたいのは「見出しのどれだけが繰り返されたか」であって、両者がどれだけ似ているかではない。見出しを丸ごと含んだうえで説明を続ける文は、文が長いというだけで Jaccard が下がる。
+
+短い見出しは偶然の一致で 100% になるため、trigram が 4 つ未満（おおむね 6 文字未満）の見出しは見ない。
 
 `required-sections` の見出し定義は genre pack が言語別に持つ。
 
