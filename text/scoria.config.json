@@ -1,0 +1,8 @@
+{
+  "profile": "app",
+  "stacks": [
+    "ts"
+  ],
+  "mode": "report",
+  "lang": "en"
+}

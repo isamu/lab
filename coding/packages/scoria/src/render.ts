@@ -33,6 +33,7 @@ export interface RenderContext {
 }
 
 const MAX_MOVERS = 6;
+const MOVER_FLOOR = 0.05;
 
 const signed = (value: number): string => (value > 0 ? `+${value.toFixed(1)}` : value.toFixed(1));
 
@@ -43,7 +44,8 @@ const signed = (value: number): string => (value > 0 ? `+${value.toFixed(1)}` : 
 const movedSection = (context: RenderContext, messages: Messages): readonly string[] => {
   const comparison = context.comparison;
   if (comparison === undefined) return [messages.noBaseline, ""];
-  const movers = comparison.diff.movers.toSorted((a, b) => Math.abs(b.points) - Math.abs(a.points));
+  // A mover that rounds to zero is noise; reporting it as movement is worse than silence.
+  const movers = comparison.diff.movers.filter((mover) => Math.abs(mover.points) >= MOVER_FLOOR).toSorted((a, b) => Math.abs(b.points) - Math.abs(a.points));
   if (movers.length === 0) return [];
   const rows = movers.slice(0, MAX_MOVERS).map((mover) => {
     const change = `${mover.from} → ${mover.to}`;

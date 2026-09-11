@@ -1,3 +1,8 @@
 dist/
 node_modules/
 test/fixtures/
+
+# scoria writes these, and JSON.stringify always expands arrays while Prettier collapses short ones.
+# Leaving them formatted means the two rewrite the file in turn on every run.
+.scoria/
+scoria.config.json

@@ -1,0 +1,761 @@
+{
+  "report": {
+    "schemaVersion": 1,
+    "root": "/Users/isamu/ss/llm/lab/text",
+    "profile": "app",
+    "stacks": [
+      "ts"
+    ],
+    "complete": true,
+    "size": {
+      "files": 58,
+      "sloc": 2091,
+      "testSloc": 940
+    },
+    "dimensions": [
+      {
+        "dimension": "architecture",
+        "status": "experimental",
+        "score": 91,
+        "coverage": 1,
+        "metrics": [
+          {
+            "metric": "knip.unused_exports",
+            "value": 6,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 60
+            },
+            "weight": 0.4,
+            "points": 36,
+            "topContributors": [
+              {
+                "file": "packages/chaff/src/files.ts",
+                "value": 1
+              },
+              {
+                "file": "packages/chaff/src/levels.ts",
+                "value": 1
+              },
+              {
+                "file": "packages/chaff/src/config/load.ts",
+                "value": 1
+              },
+              {
+                "file": "packages/chaff/src/render/semantic.ts",
+                "value": 1
+              },
+              {
+                "file": "packages/chaff/src/render/rules-json.ts",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "metric": "knip.unused_files",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 20
+            },
+            "weight": 0.35,
+            "points": 35
+          },
+          {
+            "metric": "knip.unused_dependencies",
+            "value": 2,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 10
+            },
+            "weight": 0.25,
+            "points": 20
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "0 suppressions in scope"
+      },
+      {
+        "dimension": "correctness",
+        "status": "experimental",
+        "score": 60,
+        "coverage": 1,
+        "metrics": [
+          {
+            "metric": "oxlint.errors_per_kloc",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 3
+            },
+            "weight": 0.6,
+            "points": 60
+          },
+          {
+            "metric": "oxlint.violations_per_kloc",
+            "value": 9.0866,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 8
+            },
+            "weight": 0.4,
+            "points": 0,
+            "topContributors": [
+              {
+                "file": "packages/chaff/src/files.ts",
+                "value": 2
+              },
+              {
+                "file": "packages/chaff/src/mask.ts",
+                "value": 2
+              },
+              {
+                "file": "packages/chaff/src/watch.ts",
+                "value": 2
+              },
+              {
+                "file": "packages/chaff/src/run.ts",
+                "value": 1
+              },
+              {
+                "file": "packages/chaff/src/stet.ts",
+                "value": 1
+              }
+            ]
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "0 suppressions in scope"
+      },
+      {
+        "dimension": "integrity",
+        "status": "experimental",
+        "score": 95.8325,
+        "coverage": 1,
+        "metrics": [
+          {
+            "metric": "suppression-scan.source_per_kloc",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 5
+            },
+            "weight": 0.3,
+            "points": 30,
+            "topContributors": []
+          },
+          {
+            "metric": "suppression-scan.unreasoned_ratio",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 1
+            },
+            "weight": 0.2,
+            "points": 20
+          },
+          {
+            "metric": "suppression-scan.test_count",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 200
+            },
+            "weight": 0.1,
+            "points": 10
+          },
+          {
+            "metric": "config-integrity.gap_ratio",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 0.6
+            },
+            "weight": 0.25,
+            "points": 25
+          },
+          {
+            "metric": "ci-integrity.gap_ratio",
+            "value": 0.1667,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 0.6
+            },
+            "weight": 0.15,
+            "points": 10.8325
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "no suppression signal wired"
+      },
+      {
+        "dimension": "readability",
+        "status": "experimental",
+        "score": 86.5029,
+        "coverage": 1,
+        "metrics": [
+          {
+            "metric": "file-shape.sloc_p95",
+            "value": 106,
+            "state": "ok",
+            "scale": {
+              "good": 150,
+              "bad": 800
+            },
+            "weight": 0.3,
+            "points": 30,
+            "topContributors": [
+              {
+                "file": "packages/chaff/src/cli.ts",
+                "value": 305
+              },
+              {
+                "file": "packages/chaff/src/document.ts",
+                "value": 138
+              },
+              {
+                "file": "packages/chaff/src/plugin.ts",
+                "value": 106
+              },
+              {
+                "file": "packages/chaff/src/judge.ts",
+                "value": 97
+              },
+              {
+                "file": "packages/chaff/src/run-semantic.ts",
+                "value": 97
+              }
+            ]
+          },
+          {
+            "metric": "file-shape.max_file_sloc",
+            "value": 305,
+            "state": "ok",
+            "scale": {
+              "good": 300,
+              "bad": 2000
+            },
+            "weight": 0.2,
+            "points": 19.9412
+          },
+          {
+            "metric": "file-shape.god_file_count",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 20
+            },
+            "weight": 0.15,
+            "points": 15
+          },
+          {
+            "metric": "jscpd.duplicated_lines_pct",
+            "value": 1.04,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 10
+            },
+            "weight": 0.2,
+            "points": 17.92,
+            "topContributors": [
+              {
+                "file": "packages/lang-en/src/lexicons.ts",
+                "value": 29
+              },
+              {
+                "file": "test/test_sentence_split_en.ts",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "metric": "oxlint.violations_per_kloc",
+            "value": 9.0866,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 12
+            },
+            "weight": 0.15,
+            "points": 3.6417,
+            "topContributors": [
+              {
+                "file": "packages/chaff/src/files.ts",
+                "value": 2
+              },
+              {
+                "file": "packages/chaff/src/mask.ts",
+                "value": 2
+              },
+              {
+                "file": "packages/chaff/src/watch.ts",
+                "value": 2
+              },
+              {
+                "file": "packages/chaff/src/run.ts",
+                "value": 1
+              },
+              {
+                "file": "packages/chaff/src/stet.ts",
+                "value": 1
+              }
+            ]
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "0 suppressions in scope"
+      },
+      {
+        "dimension": "type-safety",
+        "status": "experimental",
+        "score": 63.1405,
+        "coverage": 1,
+        "metrics": [
+          {
+            "metric": "source-mix.untyped_sloc_ratio",
+            "value": 0.0014,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 0.5
+            },
+            "weight": 0.3,
+            "points": 29.916
+          },
+          {
+            "metric": "source-mix.untyped_file_ratio",
+            "value": 0.0227,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 0.5
+            },
+            "weight": 0.2,
+            "points": 19.092,
+            "topContributors": [
+              {
+                "file": "packages/chaff/bin/chaff.js",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "metric": "tsc.type_errors_per_kloc",
+            "value": 1.4347,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 2
+            },
+            "weight": 0.5,
+            "points": 14.1325
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "0 suppressions in scope"
+      }
+    ],
+    "findings": [
+      {
+        "rule": "untyped-source",
+        "severity": "warning",
+        "file": "packages/chaff/bin/chaff.js",
+        "line": 1,
+        "message": "not type-checked; rename to .ts / .tsx",
+        "probe": "source-mix",
+        "dimension": "type-safety",
+        "tier": 0
+      },
+      {
+        "rule": "ci-swallowed-failures",
+        "severity": "error",
+        "file": ".github/workflows",
+        "line": 1,
+        "message": "1 step swallows their failure",
+        "probe": "ci-integrity",
+        "dimension": "integrity",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/run.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/prefer-set-has",
+        "severity": "warning",
+        "file": "packages/chaff/src/files.ts",
+        "line": 1,
+        "message": "should be a `Set`, and use `.has()` to check existence or non-existence.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/files.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/mask.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/mask.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-map-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/stet.ts",
+        "line": 1,
+        "message": "Spreading to modify object properties in `map` calls is inefficient",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/consistent-function-scoping",
+        "severity": "warning",
+        "file": "test/test_stet_and_baseline.ts",
+        "line": 1,
+        "message": "Function `tmpFile` does not capture any variables from its parent scope",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/config/load.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/watch.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/watch.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/baseline.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/consistent-function-scoping",
+        "severity": "warning",
+        "file": "test/test_semantic.ts",
+        "line": 1,
+        "message": "Function `write` does not capture any variables from its parent scope",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/lang-ja/src/lexicons.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/lang-en/src/lexicons.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/lang-ja/src/index.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/render/suppressions.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/run-semantic.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/detectors/repeated-head.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/rule-load.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "duplicated-block",
+        "severity": "warning",
+        "file": "packages/lang-en/src/lexicons.ts",
+        "line": 1,
+        "message": "29 duplicated lines",
+        "probe": "jscpd",
+        "dimension": "readability",
+        "tier": 0
+      },
+      {
+        "rule": "duplicated-block",
+        "severity": "warning",
+        "file": "test/test_sentence_split_en.ts",
+        "line": 19,
+        "message": "10 duplicated lines",
+        "probe": "jscpd",
+        "dimension": "readability",
+        "tier": 0
+      },
+      {
+        "rule": "tsc/TS2307",
+        "severity": "error",
+        "file": "packages/chaff/src/judge.ts",
+        "line": 5,
+        "message": "Cannot find module '@anthropic-ai/sdk' or its corresponding type declarations.",
+        "probe": "tsc",
+        "dimension": "type-safety",
+        "tier": 1
+      },
+      {
+        "rule": "tsc/TS18046",
+        "severity": "error",
+        "file": "packages/chaff/src/judge.ts",
+        "line": 90,
+        "message": "'error' is of type 'unknown'.",
+        "probe": "tsc",
+        "dimension": "type-safety",
+        "tier": 1
+      },
+      {
+        "rule": "tsc/TS2307",
+        "severity": "error",
+        "file": "test/test_judge.ts",
+        "line": 6,
+        "message": "Cannot find module '@anthropic-ai/sdk' or its corresponding type declarations.",
+        "probe": "tsc",
+        "dimension": "type-safety",
+        "tier": 1
+      },
+      {
+        "rule": "unused-export",
+        "severity": "warning",
+        "file": "packages/chaff/src/files.ts",
+        "line": 1,
+        "message": "`byPath` is exported but never imported",
+        "probe": "knip",
+        "dimension": "architecture",
+        "tier": 1
+      },
+      {
+        "rule": "unused-export",
+        "severity": "warning",
+        "file": "packages/chaff/src/levels.ts",
+        "line": 1,
+        "message": "`LEVELS` is exported but never imported",
+        "probe": "knip",
+        "dimension": "architecture",
+        "tier": 1
+      },
+      {
+        "rule": "unused-export",
+        "severity": "warning",
+        "file": "packages/chaff/src/config/load.ts",
+        "line": 1,
+        "message": "`DEFAULT_MODEL` is exported but never imported",
+        "probe": "knip",
+        "dimension": "architecture",
+        "tier": 1
+      },
+      {
+        "rule": "unused-export",
+        "severity": "warning",
+        "file": "packages/chaff/src/render/semantic.ts",
+        "line": 1,
+        "message": "`aiBanner` is exported but never imported",
+        "probe": "knip",
+        "dimension": "architecture",
+        "tier": 1
+      },
+      {
+        "rule": "unused-export",
+        "severity": "warning",
+        "file": "packages/chaff/src/render/rules-json.ts",
+        "line": 1,
+        "message": "`levelsForCli` is exported but never imported",
+        "probe": "knip",
+        "dimension": "architecture",
+        "tier": 1
+      },
+      {
+        "rule": "unused-export",
+        "severity": "warning",
+        "file": "packages/chaff/src/render/text.ts",
+        "line": 1,
+        "message": "`fill` is exported but never imported",
+        "probe": "knip",
+        "dimension": "architecture",
+        "tier": 1
+      }
+    ],
+    "probes": [
+      {
+        "probe": "suppression-scan",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "file-shape",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "source-mix",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "config-integrity",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "ci-integrity",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "oxlint",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "jscpd",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "tsc",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "knip",
+        "status": {
+          "kind": "ok"
+        }
+      }
+    ],
+    "toolVersions": {
+      "oxlint": "Version: 1.82.0",
+      "jscpd": "4.3.0",
+      "typescript": "6.0.3",
+      "knip": "6.35.1"
+    },
+    "overall": {
+      "score": 79.2952,
+      "scoredDimensions": 5,
+      "comparable": false
+    }
+  },
+  "createdAt": "2026-09-11T19:31:10.978Z"
+}

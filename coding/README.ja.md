@@ -310,6 +310,16 @@ GitHub Actions では、実行結果のページの **ジョブサマリー** �
 
 CI の中（`CI=true`）では設定ファイルを書きません。
 
+プロジェクトが JSON にも Prettier をかけている場合は、`.prettierignore` に次を足してください。
+
+```
+.scoria/
+scoria.config.json
+```
+
+scoria は `JSON.stringify` で書くので配列が常に展開されますが、Prettier は短い配列を 1 行に畳みます。
+整形対象にすると、実行のたびに両者が交互に書き換え合います。
+
 ## そのほか
 
 ```bash

@@ -96,3 +96,23 @@ test("jscpd reads the percentage and clones out of its report", async () => {
   assert.equal(metricOf(result.metrics, "jscpd.duplicated_lines_pct"), 2.13);
   assert.equal(result.findings[0]?.file, "src/a.ts");
 });
+
+/**
+ * `.scoria/baseline.json` is a record of the previous run. Counting it means recording a baseline
+ * changes the next measurement, and a tool that perturbs what it measures has no time series.
+ */
+test("jscpd is told to ignore scoria's own artifacts and non-code formats", async () => {
+  const seen: string[][] = [];
+  const exec = (_command: string, args: readonly string[]): Promise<{ stdout: string; stderr: string; code: number }> => {
+    seen.push([...args]);
+    return Promise.resolve({ stdout: "", stderr: "", code: 0 });
+  };
+  await jscpd.run(contextWith(files, { exec }));
+  const args = seen[0] ?? [];
+  const ignored = args[args.indexOf("--ignore") + 1] ?? "";
+  assert.match(ignored, /\.scoria/);
+  assert.match(ignored, /node_modules/);
+  const formats = args[args.indexOf("--format") + 1] ?? "";
+  assert.doesNotMatch(formats, /json|markdown/);
+  assert.match(formats, /typescript/);
+});
