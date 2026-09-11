@@ -2,6 +2,82 @@
 
 Newest first.
 
+## 0.1.0 — 2026-09-12
+
+`chaff test` — the half of the tool that reads meaning. 0.0.1 could only measure what a machine can
+count; this release adds checks that require reading the text, judged by Claude.
+
+📦 [`chaffjs@0.1.0`](https://www.npmjs.com/package/chaffjs/v/0.1.0) ·
+[`@chaffjs/lang-ja@0.1.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.1.0) ·
+[`@chaffjs/lang-en@0.1.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.1.0)
+
+### The semantic layer (#34)
+
+Three built-in rules, plus `checks.yaml` for checks written in plain language.
+
+| rule | what it checks |
+| --- | --- |
+| `risk-disclosure` | a proposal states its risks |
+| `empty-conclusion` | the closing adds something beyond a summary of the body |
+| `unsourced-number` | a number claiming an effect carries its basis |
+
+Output separates the two kinds of judgement under their own headings, because a reader who does not
+know a finding can move between runs will be whipsawed by a false positive. Only AI findings carry a
+confidence figure, and each one names two ways out: silence this spot, or relax the rule.
+
+### The whole document is never sent
+
+Two stages. A deterministic filter narrows the text first; only what survives is read. **An L4 rule
+without a filter cannot be registered** — without that constraint every article would cost a
+full-document read.
+
+`risk-disclosure` is skipped entirely when a heading already names risk. `empty-conclusion` only
+fires when the last section contains no number, code or link. `unsourced-number` only fires when a
+number and an effect verb share a sentence carrying no basis.
+
+The first test to fail while building that filter is the reason the design exists:
+
+```
+Headcount fell 40% after adoption (Apr–Jun 2026, year over year).
+```
+
+The sentence carries its basis and was still being queued for the model — "year over year" was not
+recognised as evidence. Catching that is exactly what stage one is for.
+
+Identical questions hit `.chaff-cache/` on the second run, so repeated CI runs cost nothing.
+
+### Credentials are checked before the call, not after
+
+With no credentials the SDK throws a plain `Error` — not `AuthenticationError`, not `APIError` — so
+the failure cannot be identified by type afterwards. chaff now checks the documented resolution order
+first (`ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, identity tokens, the `ant auth login` profile).
+Looking only at `ANTHROPIC_API_KEY` would tell someone who authenticated with `ant auth login` that
+they have no key.
+
+### The verdict shape is fixed
+
+`output_config.format` constrains the response to `{violated, confidence, reason}`; free text is
+never parsed after the fact. Findings below the confidence threshold (0.7 by default) drop to `info`.
+The system prompt says: when in doubt, do not flag — a false positive costs more than a miss.
+
+### Fixed
+
+`chaff lint` claimed "no detector" for semantic rules. It now says they run under `chaff test`.
+
+Two regexes were rewritten: `\d+\s*(?:%|倍|…)` backtracks on `\s*`, and the evidence-marker
+alternation exceeded the complexity limit — it is a word list now.
+
+### Note
+
+Runtime dependencies grew from 2.6 MB to 11.8 MB (the Anthropic SDK), still inside the 15 MB budget
+the spec sets for `npx`.
+
+### Not in this release
+
+L3 (part-of-speech rules), `eval` (threshold calibration against a corpus), and the conversion of
+`checks.yaml`'s natural-language `look_at` into an actual filter — user checks currently pass the
+whole document.
+
 ## 0.0.1 — 2026-09-12
 
 First release. `npx chaffjs article.md` finds what is hard to read, with no install, no API key and
