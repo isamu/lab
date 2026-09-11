@@ -22,13 +22,17 @@ const tree = (): string => {
 
 describe("検査対象の集め方", () => {
   it("ディレクトリを再帰的にたどる", () => {
+    // 集合として比べる。順序はロケールで変わるので、ここで固定してはいけない。
     const root = tree();
-    assert.deepEqual(
-      collectTargets([root])
-        .map((path) => basename(path))
-        .sort((left, right) => left.localeCompare(right)),
-      ["README.md", "one.md", "two.markdown"],
-    );
+    assert.deepEqual(new Set(collectTargets([root]).map((path) => basename(path))), new Set(["README.md", "one.md", "two.markdown"]));
+  });
+
+  it("入力の順序が違っても、出力の順序は同じになる", () => {
+    // 指摘の並びは CI のログにも baseline にも入る。機械やロケールで揺れてはいけない。
+    const root = tree();
+    const a = collectTargets([join(root, "docs"), join(root, "README.md")]);
+    const b = collectTargets([join(root, "README.md"), join(root, "docs")]);
+    assert.deepEqual(a, b);
   });
 
   it("node_modules と dist を見ない", () => {
