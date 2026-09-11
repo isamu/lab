@@ -70,3 +70,38 @@ test("a rule with no translation falls back to the English message", () => {
   const messages = messagesFor("ja");
   assert.equal(messages.ruleMessages["no-such-rule"], undefined);
 });
+
+test("explain carries the files that drove a metric", async () => {
+  const { buildReport } = await import("../packages/scoria/src/report.ts");
+  const built = buildReport(
+    "demo-repo",
+    [],
+    [
+      {
+        probe: "file-shape",
+        status: { kind: "ok" },
+        metrics: [
+          {
+            id: "file-shape.sloc_p95",
+            value: 300,
+            unit: "lines",
+            topContributors: [{ file: "src/big.ts", value: 2673 }],
+          },
+        ],
+        findings: [],
+        toolVersions: {},
+        durationMs: 0,
+      },
+    ],
+    [
+      {
+        id: "readability",
+        status: "experimental",
+        metrics: [{ metric: "file-shape.sloc_p95", scale: { good: 150, bad: 800 }, weight: 1 }],
+        confidenceFrom: [],
+      },
+    ],
+  );
+  const metric = built.dimensions[0]?.metrics[0];
+  assert.deepEqual(metric?.topContributors, [{ file: "src/big.ts", value: 2673 }]);
+});

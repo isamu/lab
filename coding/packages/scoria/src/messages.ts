@@ -38,6 +38,7 @@ export interface Messages {
   readonly unknownDimension: (name: string, known: string) => string;
   readonly stackAdded: (id: string) => string;
   readonly stackMissing: (id: string) => string;
+  readonly topContributors: (metric: string) => string;
   readonly doctorClean: string;
   readonly doctorFound: (count: number) => string;
   readonly doctorApplied: string;
@@ -75,6 +76,7 @@ const en: Messages = {
   unknownDimension: (name, known) => `unknown dimension: ${name}\nknown: ${known}`,
   stackAdded: (id) => `${id} appeared in package.json but is not in the config`,
   stackMissing: (id) => `${id} is in the config but no longer detected`,
+  topContributors: (metric) => `largest contributors to ${metric}`,
   doctorClean: "No gaps found in the project's own gates.",
   doctorFound: (count) => `${count} ${count === 1 ? "gap" : "gaps"} in the gates this project sets for itself`,
   doctorApplied: "applied",
@@ -109,6 +111,7 @@ const ja: Messages = {
   unknownDimension: (name, known) => `不明な次元: ${name}\n既知: ${known}`,
   stackAdded: (id) => `${id} が package.json にありますが、設定に含まれていません`,
   stackMissing: (id) => `${id} が設定にありますが、検出されません`,
+  topContributors: (metric) => `${metric} に効いているファイル`,
   doctorClean: "プロジェクト自身のゲートに抜けはありません。",
   doctorFound: (count) => `プロジェクトが自分に課しているゲートの抜けが ${count} 件`,
   doctorApplied: "適用しました",

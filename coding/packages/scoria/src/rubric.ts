@@ -5,6 +5,8 @@
  * delta attribution (movers) from decomposing additively. Explainability is chosen over accuracy.
  */
 
+import type { Contributor } from "./plugin.ts";
+
 export type RubricStatus = "experimental" | "stable" | "deprecated";
 
 export interface Scale {
@@ -31,6 +33,8 @@ export interface ScoredMetric {
   readonly scale: Scale;
   readonly weight: number;
   readonly points: number;
+  /** Which files drove this value. Without it a score says what is wrong but not where. */
+  readonly topContributors?: readonly Contributor[];
 }
 
 export interface ScoredDimension {

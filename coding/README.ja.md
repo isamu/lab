@@ -1,56 +1,233 @@
 # scoria
 
-TypeScript / JavaScript のコード品質を、既存ツールの機械証拠から定量化し、**時系列の変化**として提示するハーネス。
+コードの状態を点数にして、**前より良くなったか悪くなったか**を見えるようにするツールです。
 
-設計仕様: [scoria-spec.md](./scoria-spec.md) · English: [README.md](./README.md)
+English: [README.md](./README.md) · 設計の詳細: [scoria-spec.md](./scoria-spec.md)
 
-まだ **歩く骨格**。probe は 3 本で、外部ツールの統合も baseline も入っておらず、全 dimension が `experimental`。
+まだ作りかけです。見ている項目は 5 つだけで、履歴との比較もまだできません。
 
-## 使う
+## 何をしてくれるの
 
-### 対象リポジトリで npx
+コードを読んで、こういうものを数えます。
+
+- エラーを黙らせている箇所（`as any`、`@ts-ignore`、`eslint-disable` など）
+- 大きすぎるファイル
+- TypeScript のプロジェクトに残っている `.js` ファイル
+- チェックの仕組みそのものの抜け（eslint の設定がない、CI がテストを回していない など）
+
+そして 0〜100 の点を出します。
+
+## 使ってみる
+
+インストールは要りません。プロジェクトのフォルダで次を打つだけです。
 
 ```bash
-cd your-project
+cd 自分のプロジェクト
 npx scoria
 ```
 
-引数なしならカレントディレクトリを測る。
-
-### package.json のスクリプトに入れる
+日本語で表示したいときは `--lang ja` を付けます。
 
 ```bash
-yarn add --dev scoria
+npx scoria --lang ja
 ```
 
-```json
-{
-  "scripts": {
-    "quality": "scoria"
-  }
-}
+## 出てきた画面の見方
+
+```text
+/path/to/your-project  [vue · ts]  profile: app
+458 files · 59120 sloc · 1456 test sloc   config: config-file
+
+  Dimension            Score   Confidence
+  ──────────────────────────────────────────────────────────────
+  integrity               79   high
+  readability             30   high
+  type-safety             90   high
+  ──────────────────────────────────────────────────────────────
+  Overall                 66   not comparable across repos
+
+8 findings at severity error
+  src/components/CustomerInfo.vue:108  eslint-disable-no-reason  理由のない eslint の抑制
+
+63 warnings
+  god-file                 21
+  untyped-source           42
 ```
+
+上から順に。
+
+**1 行目** は測った場所です。`[vue · ts]` は「Vue と TypeScript のプロジェクトだと判断した」という意味。
+
+**2 行目** は規模です。`sloc` は空行を除いたコードの行数。
+
+**真ん中の表** が本体です。3 つの観点で点を出しています。
+
+| 名前          | 平たく言うと                                   |
+| ------------- | ---------------------------------------------- |
+| `integrity`   | エラーをどれだけ黙らせているか。少ないほど高い |
+| `readability` | ファイルが大きくなりすぎていないか             |
+| `type-safety` | 型のチェックがちゃんと効いているか             |
+
+`Overall` は 3 つの平均です。おまけ程度に見てください。
+
+**`Confidence`（信頼度）は点より先に見てください。** ここが `medium` や `low` のときは、
+その点自体があまり当てになりません。理由は次に書きます。
+
+**下の 2 つ** が具体的な指摘です。`findings` は直すべき箇所で、ファイルと行番号まで出ます。
+`warnings` は軽い指摘で、件数だけ出ます。
+
+## 気をつけてほしいこと
+
+### 他のプロジェクトと点を比べても意味がありません
+
+測り方も、動いているチェックも、そのプロジェクトが自分に課している基準の厳しさも違うからです。
+
+**点は、同じプロジェクトの変化を見るためのものです。** 初回の実行はただの出発点だと思ってください。
+
+### 点が高い = 良い、とは限りません
+
+たとえば eslint の警告が 0 件でも、`eslint-disable` が 60 箇所あれば、
+それは「きれいなコード」ではなく「**eslint を黙らせているので分からない**」だけです。
+
+こういうときに `Confidence` が `medium` や `low` になります。
+**点が高くて信頼度が低いときは、良いのではなく分かっていない**と読んでください。
+
+## で、何をすればいいの
+
+### 1. まず error の指摘を見る
+
+`findings at severity error` に出るのは、全部「**理由が書かれていない抑制**」です。
+
+やることは 2 つに 1 つ。理由を書くか、抑制をやめるかです。
+
+```ts
+// eslint-disable-next-line no-console -- CLI の出力なので console を使う
+// @ts-expect-error 上流の型に stream 版の定義がない (nodejs/undici#3421)
+```
+
+eslint の場合、**理由は `--` のあとに書きます**。ルール名（`no-console` など）は理由として数えません。
+ルール名を書くだけで許されるなら、この計測に意味がなくなってしまうからです。
+
+### 2. 点の内訳を見る
+
+どこを直せば何点上がるのかは `--explain` で分かります。
+
+```text
+$ npx scoria --explain readability --lang ja
+
+  metric                                       value            scale     pts
+  ──────────────────────────────────────────────────────────────
+  file-shape.sloc_p95                         353.00        150 → 800    34.4
+  file-shape.max_file_sloc                   2673.00       300 → 2000     0.0
+  file-shape.god_file_count                     7.00           0 → 20    13.0
+  ──────────────────────────────────────────────────────────────
+                                                                         47.4
+
+  file-shape.sloc_p95 に効いているファイル
+        2673  src/data/scriptTemplates.ts
+        1403  src/data/markdownStyles.ts
+```
+
+- `value` が実際の数値、`scale` が「この数値なら満点 / この数値なら 0 点」の基準、`pts` が今もらえている点です。
+- 2 行目の `max_file_sloc`（一番大きいファイルの行数）は **30 点満点で 0 点**。基準の外まで振り切っています。
+  つまり**ここを直すのが一番効きます**。
+- 原因のファイルは下の一覧が名前で教えてくれます。2,673 行のファイルが 1 つあります。
+- 点の計算は単純な比例なので、**`pts` の列がそのまま「直したら何点上がるか」になります**。
+
+### 3. 設定ファイルを commit する
+
+`config: detected` と出ていたら、設定ファイルを読まずにその場で判断して測った、という意味です。
+
+初回の実行で `scoria.config.json` が作られているので、これを commit してください。
+次からは毎回同じ測り方になり、点の変化がコードの変化だけを表すようになります。
+
+## 設定の抜けを診てもらう
 
 ```bash
-yarn quality
+npx scoria doctor
 ```
 
-### 公開前のソースから試す
+「このプロジェクトが**本来やっているはずのチェック**」の抜けを教えてくれます。
 
-tarball を作って対象リポジトリで実行する。対象リポジトリには何もインストールされない。
+```text
+4 gaps in the gates this project sets for itself
+
+  ! No `typecheck` script
+      CI cannot run what package.json does not define, so nothing enforces typecheck.
+      fixable with --fix
+
+  × 1 step swallows their failure
+      `continue-on-error: true` or `|| true` makes a job green whatever it found.
+```
+
+たとえばこういうものです。
+
+- eslint の設定ファイルがない
+- `test` や `typecheck` のスクリプトが書かれていない
+- `strict` が off になっている
+- CI がテストを回していない
+- CI に `|| true` があって、失敗しても緑になる
+
+これは好みの問題ではありません。**どれも他の点を実際より良く見せてしまいます**。
+だから `integrity` の点にも反映されます。
 
 ```bash
-cd lab/coding
-yarn install && yarn build
-cd packages/scoria && npm pack --pack-destination /tmp
-
-cd your-project
-npx --package=/tmp/scoria-0.0.2.tgz -- scoria --lang ja
+npx scoria doctor --fix
 ```
 
-## 設定
+`--fix` が直すのは、**答えが 1 つしかないものだけ**です。
 
-初回の実行で `scoria.config.json` を作る。明示的に作るなら `scoria init`。
+- `.gitignore` に `node_modules/` を足す
+- TypeScript を使っているのに `typecheck` スクリプトがなければ足す
+
+eslint の設定を代わりに選ぶような、判断が要ることはしません。報告するだけです。
+ツールの導入そのものをやってほしい場合は [ever-better](https://github.com/isamu/ever-better) を使ってください。
+
+## 知っておいてほしい弱点
+
+**大きなデータファイルが不当に減点されます。**
+
+`file-shape` は中身を見ずに行数だけを数えます。
+なので 2,673 行のテンプレート集が、2,673 行のロジックと同じだけ減点されます。
+この 2 つは読みにくさが全然違います。
+
+調整が済むまで、`data/` の下にある大きなファイルは「誤検知」と思って構いません。
+
+## 見ている項目の一覧
+
+| 項目               | 観点        | 見ているもの                                                                                |
+| ------------------ | ----------- | ------------------------------------------------------------------------------------------- |
+| `suppression-scan` | integrity   | `as any` / `@ts-ignore` / `eslint-disable` / `it.skip`。理由がないものだけを error にします |
+| `config-integrity` | integrity   | eslint の設定はあるか、`strict` は on か、必要なスクリプトはあるか                          |
+| `ci-integrity`     | integrity   | CI が lint / typecheck / build / test を回しているか、失敗を握りつぶしていないか            |
+| `file-shape`       | readability | ファイルの大きさ（上位 5% の大きさ、最大値、500 行超の本数）                                |
+| `source-mix`       | type-safety | TypeScript のプロジェクトに残っている `.js` / `.jsx`                                        |
+
+指摘に出てくる名前の意味です。
+
+| 名前                       | 意味                                                 |
+| -------------------------- | ---------------------------------------------------- |
+| `as-any-no-reason`         | 理由なしに `as any` で型をすり抜けている             |
+| `ts-directive-no-reason`   | 理由なしに `@ts-ignore` などで型チェックを止めている |
+| `eslint-disable-no-reason` | 理由なしに eslint の指摘を消している                 |
+| `test-skip-no-reason`      | テストが `skip` / `only` / `todo` のままになっている |
+| `god-file`                 | ファイルが大きすぎる（500 行超）                     |
+| `untyped-source`           | `.js` のままなので型チェックされていない             |
+
+対応しているのは TypeScript / JavaScript（`.ts` `.tsx` `.js` `.jsx` など）、
+Vue（`.vue` の `<script>` の中だけ見ます）、React です。
+
+## CI に入れる
+
+```yaml
+- name: scoria
+  run: npx -y scoria
+```
+
+**CI は落ちません。** 点と指摘を表示するだけです。
+悪くなったら止める、という機能はまだありません。
+
+## 設定ファイル
 
 ```json
 {
@@ -61,81 +238,34 @@ npx --package=/tmp/scoria-0.0.2.tgz -- scoria --lang ja
 }
 ```
 
-`profile` と `stacks` は `package.json` から検出する（vue / nuxt → vue、react / next → react、
-`bin` → cli、公開される `exports` → library）。
+`package.json` を見て自動で判断します
+（vue や nuxt があれば vue、react や next があれば react、`bin` があれば cli、公開用の `exports` があれば library）。
 
-**検出結果はここで凍結される。** 依存が増えても勝手に追随せず、ずれたときは detection drift として報告するだけ。
-測り方が run ごとに変わると時系列の比較が成立しないため（spec §9.2）。取り込むなら `scoria init` を打ち直す。
+**一度判断したら固定します。** あとからパッケージが増えても勝手に変えません。
 
-同じ形を `package.json` の `scoria` キーに書いてもよい。
+毎回判断し直すと、パッケージを 1 つ足しただけで点が大きく動いてしまい、
+「良くなったか悪くなったか」が分からなくなるからです。
+ずれたときは教えてくれるので、取り込みたければ `scoria init` を打ち直してください。
 
-`CI=true` の環境では設定ファイルを書かず、凍結されていないことを警告するだけ。
+CI の中（`CI=true`）では設定ファイルを書きません。
 
-## CI に入れる
-
-```yaml
-- name: scoria
-  run: npx -y scoria
-```
-
-`mode: report` が既定なので **CI を落とさない**。スコアと指摘が出るだけ。
-劣化でゲートする ratchet は未実装（spec §17）。
-
-## 出力
-
-```text
-/Users/isamu/ss/ownplate  [vue · ts]  profile: app
-458 ファイル · 59120 sloc · テスト 1456 sloc   設定: config-file
-
-  次元                スコア   信頼度
-  ──────────────────────────────────────────────────────────────
-  integrity               79   high
-  readability             30   high
-  type-safety             90   high
-  ──────────────────────────────────────────────────────────────
-  総合                    66   repo 間では比較できません
-```
-
-**スコアは repo 間で比較できない。** 正規化の仕方も、有効な probe も、プロジェクト自身の基準の厳しさも
-repo ごとに違う。意味があるのは同じ repo の時系列の変化だけで、report JSON はこれを
-`"comparable": false` として構造に持つ（spec §3.3）。バッジは提供しない。
+## そのほか
 
 ```bash
-scoria doctor                  # プロジェクト自身のゲートの抜けを診る
-scoria doctor --fix            # 曖昧さの無い修正だけを適用する
-scoria --json                  # report JSON
-scoria --explain readability   # 点の内訳と、何を直せば何点上がるか
-scoria --no-write              # 設定ファイルを作らない
-scoria --lang ja               # 端末出力を日本語に
+npx scoria --json         # 結果を JSON で出す
+npx scoria --no-write     # 設定ファイルを作らない
+npx scoria init           # 設定ファイルだけ作る
 ```
 
-端末の出力は翻訳されるが、機械向けの出力はされない。`Finding.message` は英語のままで、
-下流のツールが 1 つの語彙を読めるようにしてある。両者は rule id で結ばれる。
+画面の表示は日本語にできますが、JSON の中身は英語のままです。
+あとから機械で処理するとき、言葉が揺れると困るためです。
 
-## いま測っているもの
+## まだできないこと
 
-| probe              | dimension   | 何を見るか                                                                                |
-| ------------------ | ----------- | ----------------------------------------------------------------------------------------- |
-| `suppression-scan` | integrity   | `as any` / `@ts-ignore` / `eslint-disable` / `it.skip`。理由の無いものだけを error にする |
-| `file-shape`       | readability | ファイル行数の p95 / 最大 / 500 行超の数                                                  |
-| `source-mix`       | type-safety | TypeScript プロジェクトに残った `.js` / `.jsx`                                            |
+eslint / knip などの既存ツールとの連携、履歴と比べて悪化を検出すること、
+テストを実行して測ること、GitHub Action、点の基準の調整。
 
-対応スタック: `ts`（`.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs`）、
-`vue`（SFC の `<script>` だけを走査）、`react`。
-
-### 知っておく価値のある 2 つの判断
-
-**eslint のルール名は理由ではない。** eslint 自身の規約どおり `--` 以降だけを理由とする。
-ルール名を理由と数えると `eslint-disable-next-line no-console` が自分自身を正当化してしまい、
-測定が丸ごと無意味になる。
-
-**抑制はスコアだけでなく信頼度を下げる。** eslint の警告が 0 件でも `eslint-disable` が 60 箇所あれば、
-そのコードが読みやすいのではなく、その次元が測れていない。これを `confidence: low` として報告する（spec §15.4）。
-
-## まだ無いもの
-
-外部 probe（eslint / knip / dependency-cruiser / jscpd）、baseline と ratchet、Tier 1 以上、
-GitHub Action、SARIF、較正。すべての閾値は暫定値。
+**点の基準はすべて暫定です。** どの観点もまだ実験段階だと思ってください。
 
 ## 開発
 
@@ -143,9 +273,9 @@ GitHub Action、SARIF、較正。すべての閾値は暫定値。
 yarn format:check && yarn lint && yarn typecheck && yarn build && yarn test
 ```
 
-lint は [ever-better](https://github.com/isamu/ever-better) の段に合わせている。
-type-aware な typescript-eslint、SonarJS、そして `noInlineConfig` — つまりこのリポジトリでは
-`eslint-disable` が一切書けない。scoria は抑制債務を測るツールであり、自分の抑制がゼロであることに意味がある。
+lint は [ever-better](https://github.com/isamu/ever-better) と同じ厳しさにしてあります。
+このリポジトリでは `eslint-disable` が 1 つも書けません。
+抑制の量を測るツールなので、自分の抑制がゼロであることに意味があります。
 
 ## ライセンス
 
