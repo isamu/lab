@@ -114,6 +114,8 @@ anything, and the report JSON carries `"comparable": false` to say so (spec §3.
 is provided.
 
 ```bash
+scoria doctor                  # gaps in the gates this project sets for itself
+scoria doctor --fix            # apply the unambiguous repairs
 scoria --json                  # the report as JSON
 scoria --explain readability   # the breakdown, and what a fix is worth
 scoria --no-write              # do not create a config file

@@ -93,9 +93,19 @@ export interface ExecResult {
 
 export type Exec = (command: string, args: readonly string[]) => Promise<ExecResult>;
 
+/**
+ * A configuration file the core read for probes that judge the project's own gates.
+ * Only a bounded, known set is collected; probes never walk the tree themselves.
+ */
+export interface ConfigFile {
+  readonly path: string;
+  readonly text: string;
+}
+
 export interface ProbeContext {
   readonly root: string;
   readonly files: readonly SourceFile[];
+  readonly configFiles: readonly ConfigFile[];
   readonly project: ProjectFacts;
   readonly exec: Exec;
 }

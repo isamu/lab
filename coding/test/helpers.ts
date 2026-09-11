@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import type { FileKind, ProbeContext, ProjectFacts, SourceFile } from "../packages/scoria/src/plugin.ts";
+import type { ConfigFile, FileKind, ProbeContext, ProjectFacts, SourceFile } from "../packages/scoria/src/plugin.ts";
 import { ALL_STACKS, ownerOf } from "../packages/scoria/src/stacks/index.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -28,9 +28,10 @@ export const sourceFile = (path: string, lines: readonly string[], kind: FileKin
 
 const DEFAULT_PROJECT: ProjectFacts = { typescript: true, stacks: ["ts"] };
 
-export const contextOf = (files: readonly SourceFile[], project: ProjectFacts = DEFAULT_PROJECT): ProbeContext => ({
+export const contextOf = (files: readonly SourceFile[], project: ProjectFacts = DEFAULT_PROJECT, configFiles: readonly ConfigFile[] = []): ProbeContext => ({
   root: fixturePath(),
   files,
+  configFiles,
   project,
   exec: () => Promise.resolve({ stdout: "", stderr: "exec is not available in tests", code: 1 }),
 });
