@@ -5,7 +5,7 @@
 `lint` が布の繊維くずを名前にしているのと同じで、`chaff` は籾殻。取り除くべきものの名を負っています。
 
 ```bash
-npx chaff article.md
+npx chaffjs article.md
 ```
 
 インストールも、AI の利用登録も、言語の指定も要りません。
@@ -38,7 +38,7 @@ npx chaff article.md
 
      → 本当に強調したい 1〜2 箇所だけ残して、ほかは普通の文にしてください
 
-     このルールをゆるめる:  npx chaff relax bold-density
+     このルールをゆるめる:  npx chaffjs relax bold-density
 ```
 
 ## 指摘されたら、道は 3 つ
@@ -47,27 +47,27 @@ npx chaff article.md
 | --- | --- | --- |
 | 直す | 指摘がもっともなとき | 文章を書き直す |
 | この箇所だけ黙らせる | 指摘は正しいが、ここは意図的なとき | `<!-- stet: rule-id — 理由 -->` |
-| ルールを変える | 自分たちの方針に合わないとき | `npx chaff relax rule-id --why "理由"` |
+| ルールを変える | 自分たちの方針に合わないとき | `npx chaffjs relax rule-id --why "理由"` |
 
 ## 主なコマンド
 
 ```bash
-npx chaff .                     この場所の Markdown を全部
-npx chaff article.md --watch    保存のたびに、変わったところだけ出す
-npx chaff init                  chaff.yaml を作る
-npx chaff explain bold-density  ルールの意図と根拠を読む
-npx chaff baseline docs/        既にある指摘を棚上げする
-npx chaff suppressions docs/    stet で黙らせている指摘を数える
-npx chaff rules --json          いまの設定を JSON で出す（AI に渡す用）
+npx chaffjs .                     この場所の Markdown を全部
+npx chaffjs article.md --watch    保存のたびに、変わったところだけ出す
+npx chaffjs init                  chaff.yaml を作る
+npx chaffjs explain bold-density  ルールの意図と根拠を読む
+npx chaffjs baseline docs/        既にある指摘を棚上げする
+npx chaffjs suppressions docs/    stet で黙らせている指摘を数える
+npx chaffjs rules --json          いまの設定を JSON で出す（AI に渡す用）
 ```
 
 設定は `strict` / `normal` / `relaxed` / `off` の 4 語から選ぶだけで、数字は要りません。
 
 ## 言語
 
-日本語と英語。言語は本文から自動で判定します。アダプタ（`@chaff-lang/ja` / `@chaff-lang/en`）は同梱されているので、別に入れる必要はありません。
+日本語と英語。言語は本文から自動で判定します。アダプタ（`@chaffjs/lang-ja` / `@chaffjs/lang-en`）は同梱されているので、別に入れる必要はありません。
 
-新しい言語のアダプタは誰でも出せます。公式は `@chaff-lang/<言語>`、第三者は `chaff-lang-<言語>` と名乗ってください（`@typescript-eslint/*` と `eslint-plugin-*` の関係と同じです）。
+新しい言語のアダプタは誰でも出せます。公式は `@chaffjs/<言語>`、第三者は `chaff-lang-<言語>` と名乗ってください（`@typescript-eslint/*` と `eslint-plugin-*` の関係と同じです）。
 
 ## ドキュメント
 

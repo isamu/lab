@@ -94,7 +94,7 @@ chaff.yaml          「うちではこう見てほしい」という設定
 この名前は **`lint` とまったく同じ命名論理**による。lint は布から出る繊維くずであり、ESLint はそれを名前にしている。linter は「取り除くべきカス」の名を負う道具である、という慣習がすでにある。自然言語版がその慣習を継ぐなら chaff になる。
 
 ```bash
-npx chaff article.md
+npx chaffjs article.md
 ```
 
 選定の根拠:
@@ -111,8 +111,8 @@ npx chaff article.md
 
 ```text
 chaff                  harness core（npx の入口）
-@chaff-lang/ja         公式の言語アダプタ
-@chaff-lang/en
+@chaffjs/lang-ja         公式の言語アダプタ
+@chaffjs/lang-en
 chaff-lang-ko          第三者のアダプタは非 scope で名乗る
 ```
 
@@ -123,13 +123,13 @@ chaff-lang-ko          第三者のアダプタは非 scope で名乗る
 
 | | 名前 | 誰が出すか |
 | --- | --- | --- |
-| 公式アダプタ | `@chaff-lang/<言語>` | この repo |
+| 公式アダプタ | `@chaffjs/<言語>` | この repo |
 | 第三者アダプタ | `chaff-lang-<言語>` | 誰でも |
 
 scope 側は名前を押さえられ、非 scope 側は誰でも参入できる。どちらか一方だけを
 選ぶと、名前を取られるか、第三者が名乗れなくなるかのどちらかになる。
 
-genre pack（`business` / `blog`）は言語ではないので `@chaff-lang` には入らない。
+genre pack（`business` / `blog`）は言語ではないので `@chaffjs` には入らない。
 実装するときに `chaff-business` を取るか、別の scope を作るかを決める。
 
 ### 0.1 検討して外した候補
@@ -162,7 +162,7 @@ genre pack（`business` / `blog`）は言語ではないので `@chaff-lang` に
 最終形:
 
 ```bash
-npx chaff lint article.md
+npx chaffjs lint article.md
 ```
 
 インストール不要、API key 不要、言語の指定不要（自動検出）。これを設計の最優先制約とする（§17）。
@@ -289,13 +289,13 @@ chaff                  harness core
   言語検出
   CLI (lint / test / eval / explain / init / setup)
 
-@chaff-lang/ja         日本語アダプタ
+@chaffjs/lang-ja         日本語アダプタ
   文分割 / 分節 / 形態素解析ブリッジ
   ja lexicon (L2)
   ja 固有 detector (L3)
   textlint ja rule への dispatch
 
-@chaff-lang/en         英語アダプタ
+@chaffjs/lang-en         英語アダプタ
   文分割 / トークナイズ / 品詞タグ
   en lexicon (L2)
   en 固有 detector (L3)
@@ -674,7 +674,7 @@ weighted phrase-match  各エントリの weight を合算し、文書スコア�
 lexicon の形式:
 
 ```yaml
-# @chaff-lang/en/lexicons/ai-tell.yaml
+# @chaffjs/lang-en/lexicons/ai-tell.yaml
 id: ai-tell
 language: en
 entries:
@@ -690,7 +690,7 @@ entries:
 ```
 
 ```yaml
-# @chaff-lang/ja/lexicons/ai-tell.yaml
+# @chaffjs/lang-ja/lexicons/ai-tell.yaml
 id: ai-tell
 language: ja
 entries:
@@ -919,7 +919,7 @@ npm 上の実測値（2026-09-08 時点、`dist.unpackedSize`）:
 | `budoux` 0.9.1 | 2.7 MB |
 | `textlint` 15.8.0 | 0.24 MB |
 
-日本語辞書を同梱すると `npx chaff` の初回ダウンロードが数十 MB になり、「1 コマンドで試せる」という前提が崩れる。既存 spec が挙げる SudachiPy は Python 依存であり、npx 単体ではさらに成立しない。
+日本語辞書を同梱すると `npx chaffjs` の初回ダウンロードが数十 MB になり、「1 コマンドで試せる」という前提が崩れる。既存 spec が挙げる SudachiPy は Python 依存であり、npx 単体ではさらに成立しない。
 
 そこで tier を adapter の capability として一般化する。
 
@@ -947,7 +947,7 @@ Tier 0 だけで rule の 36 本中 27 本（75%）が動く。これは制約�
 
 ## 17. npx で動かすための設計
 
-最終目標は `npx chaff lint article.md` の一発実行。
+最終目標は `npx chaffjs lint article.md` の一発実行。
 
 ### 17.1 予算
 
@@ -965,12 +965,12 @@ Tier 0 だけで rule の 36 本中 27 本（75%）が動く。これは制約�
 ### 17.2 既定の依存構成
 
 ```text
-npx chaff          core のみ
+npx chaffjs          core のみ
   adapter と genre pack は optionalDependencies ではなく、
   実行時に必要になったものだけを npx が解決する
 ```
 
-問題は、`npx chaff article.md` の時点ではまだ言語もジャンルも分からないこと。そこで core は次の順で動く。
+問題は、`npx chaffjs article.md` の時点ではまだ言語もジャンルも分からないこと。そこで core は次の順で動く。
 
 ```text
 1. core だけを起動する
@@ -984,7 +984,7 @@ npx chaff          core のみ
 3 の取得を暗黙に行わない。次を表示して同意を取る。
 
 ```text
-chaff needs @chaff-lang/ja and chaff-blog (2.9 MB).
+chaff needs @chaffjs/lang-ja and chaff-blog (2.9 MB).
 Install? [Y/n]
 ```
 
@@ -1006,7 +1006,7 @@ capability 不足や adapter 不在で rule が走らなかった場合、成功
 ```text
 3 rules skipped (require POS tagging)
   agentless-passive, double-keigo, taigen-dome-in-prose
-  run `npx chaff setup ja` to enable
+  run `npx chaffjs setup ja` to enable
 
 1 rule unsupported for language "ko"
   oxford-comma-consistency
@@ -1136,26 +1136,26 @@ experimental な rule を 2 件、設定により有効にしています: padde
 ## 19. CLI と出力例
 
 ```bash
-npx chaff article.md                   # 引数がファイルだけなら lint と同じ
-npx chaff lint article.md              # deterministic のみ（L1 / L2 / L3）
-npx chaff test article.md              # L4 を含む
-npx chaff eval corpus/ja/blog/         # rule の評価と閾値 sweep
-npx chaff explain sentence-rhythm      # rule の意図と根拠
-npx chaff init
-npx chaff setup ja                     # 品詞解析器の取得
+npx chaffjs article.md                   # 引数がファイルだけなら lint と同じ
+npx chaffjs lint article.md              # deterministic のみ（L1 / L2 / L3）
+npx chaffjs test article.md              # L4 を含む
+npx chaffjs eval corpus/ja/blog/         # rule の評価と閾値 sweep
+npx chaffjs explain sentence-rhythm      # rule の意図と根拠
+npx chaffjs init
+npx chaffjs setup ja                     # 品詞解析器の取得
 
 # 設定を変える（chaff.yaml を開かずに済む）
-npx chaff relax bold-density --why "図の説明で太字を多用するため"
-npx chaff strict excessive-hedging --why "..."
-npx chaff off ai-tell --why "..."
-npx chaff words add "巻き取る" --instead "引き継ぐ"
-npx chaff checks add                   # 対話で L4 の検査を 1 つ足す
+npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
+npx chaffjs strict excessive-hedging --why "..."
+npx chaffjs off ai-tell --why "..."
+npx chaffjs words add "巻き取る" --instead "引き継ぐ"
+npx chaffjs checks add                   # 対話で L4 の検査を 1 つ足す
 
 # 状態を見る
-npx chaff rules --json                 # AI に渡す。現在値・使える値・変更方法（§19.3）
-npx chaff schema                       # chaff.yaml の JSON Schema
-npx chaff suppressions                 # stet の集計と設定変更の提案
-npx chaff baseline docs/               # 既存の指摘を棚上げする
+npx chaffjs rules --json                 # AI に渡す。現在値・使える値・変更方法（§19.3）
+npx chaffjs schema                       # chaff.yaml の JSON Schema
+npx chaffjs suppressions                 # stet の集計と設定変更の提案
+npx chaffjs baseline docs/               # 既存の指摘を棚上げする
 ```
 
 ### 19.1 既定の出力は非エンジニア向け
@@ -1170,7 +1170,7 @@ npx chaff baseline docs/               # 既存の指摘を棚上げする
 ```
 
 ```text
-$ npx chaff article.md
+$ npx chaffjs article.md
 
 article.md   ブログ記事（技術） · 日本語
              ルールは既定のまま（設定ファイルはありません）
@@ -1190,7 +1190,7 @@ article.md   ブログ記事（技術） · 日本語
      → 本当に強調したい 1〜2 箇所だけ残して、ほかは普通の文に
        してください
 
-     このルールをゆるめる:  npx chaff relax bold-density
+     このルールをゆるめる:  npx chaffjs relax bold-density
 
 
 ─────────────────────────────────────────────────────────
@@ -1198,10 +1198,10 @@ article.md   ブログ記事（技術） · 日本語
   注意 3 件
 
   意味を見る検査は動かしていません。動かすには:
-      npx chaff test article.md          （API key が要ります）
+      npx chaffjs test article.md          （API key が要ります）
 
   ほかに 7 つのルールが、まだ試験中のため止まっています:
-      npx chaff lint article.md --experimental
+      npx chaffjs lint article.md --experimental
 ```
 
 rule の id は「ゆるめる」コマンドの中にだけ出す。非エンジニアが最初に読むのは `name` であり、`bold-density` ではない。
@@ -1209,7 +1209,7 @@ rule の id は「ゆるめる」コマンドの中にだけ出す。非エン�
 ### 19.2 `--compact` がエンジニア向け
 
 ```text
-$ npx chaff lint article.md --compact
+$ npx chaffjs lint article.md --compact
 
 article.md  [ja · blog/tech]
 
@@ -1242,7 +1242,7 @@ AI に設定を書かせるとき、これを渡せば推測せずに書ける�
     }
   ],
   "how_to_change": {
-    "by_command": ["npx chaff relax <rule-id> --why \"<理由>\""],
+    "by_command": ["npx chaffjs relax <rule-id> --why \"<理由>\""],
     "by_file": "chaff.yaml の rules に <rule-id>: <level> を足す"
   }
 }
@@ -1422,10 +1422,10 @@ CI:
 
 ```yaml
 - name: prose lint
-  run: npx chaff lint docs/ --changed-only --yes
+  run: npx chaffjs lint docs/ --changed-only --yes
 
 - name: prose semantic test
-  run: npx chaff test docs/ --changed-only --yes
+  run: npx chaffjs test docs/ --changed-only --yes
   env:
     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
@@ -1460,14 +1460,14 @@ tests/
 
 ### Phase 1 — npx で動く Tier 0 / lang-ja
 
-目標: `npx chaff lint article.md` が品詞解析も API key もなしで動く。
+目標: `npx chaffjs lint article.md` が品詞解析も API key もなしで動く。
 
 ```text
 core の plugin API 確定（§6）
 言語検出（§8）
 L1 universal detector 16 本
 L2 照合エンジン 4 種
-@chaff-lang/ja  Tier 0（規則ベース文分割 + budoux + ja lexicon）
+@chaffjs/lang-ja  Tier 0（規則ベース文分割 + budoux + ja lexicon）
 chaff-business  profile と required-sections
 chaff-blog      profile
 textlint dispatch（§15.1）
@@ -1480,7 +1480,7 @@ GitHub Actions
 目標: 言語軸が本当に直交していることを、2 つ目の adapter で証明する。
 
 ```text
-@chaff-lang/en  Tier 0 / Tier 1
+@chaffjs/lang-en  Tier 0 / Tier 1
 en lexicon（L2 を 11 本）
 en 固有 L3 detector
 L1 rule が両言語で同一結果になることの検証（§23）

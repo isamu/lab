@@ -20,7 +20,7 @@ chaff が何をする道具かは [chaff-spec.md](./chaff-spec.md) の冒頭に�
 ファイルを指定して実行するだけ。インストールも、AI の利用登録も要らない。
 
 ```
-npx chaff article.md
+npx chaffjs article.md
 ```
 
 日本語か英語か、ブログか提案書かは、中身を見て自動で判断する。判断した結果は必ず 1 行目に出るので、外れていたら分かる。
@@ -44,7 +44,7 @@ npx chaff article.md
      → 本当に強調したい 1〜2 箇所だけ残して、ほかは普通の文に
        してください
 
-     このルールをゆるめる:  npx chaff relax bold-density
+     このルールをゆるめる:  npx chaffjs relax bold-density
 ```
 
 **文章は書き換えられない。** 直すのは書いた人。
@@ -62,7 +62,7 @@ npx chaff article.md
 3 つ目は、コマンド 1 行でできる。理由も一緒に記録される。
 
 ```
-npx chaff relax bold-density --why "図の説明で太字を多用するため"
+npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
 ```
 
 同じルールで「黙らせる」を何度もやっていると、それは 3 つ目を選ぶべきサイン。chaff がそれを見つけて教えてくれる。
@@ -169,8 +169,8 @@ chaff は (c) を一級の応答として設計する。§7 がこの spec の�
 
 | # | 誰が | 何のために | 最初に使うもの |
 | --- | --- | --- | --- |
-| 1 | 個人が記事を書く | 公開前に自分の癖を見る | `npx chaff article.md` |
-| 2 | 個人が提案書を書く | 出す前に抜けを見つける | `npx chaff proposal.md`（required-sections） |
+| 1 | 個人が記事を書く | 公開前に自分の癖を見る | `npx chaffjs article.md` |
+| 2 | 個人が提案書を書く | 出す前に抜けを見つける | `npx chaffjs proposal.md`（required-sections） |
 | 3 | チームが文書を保守する | 規範を共有し、CI で守る | `chaff init` と `chaff.yaml` の commit |
 | 4 | AI に書かせた文章を見る | 生成物の癖を検出する | 複合シグナル（`ai-generated-composite`） |
 
@@ -183,10 +183,10 @@ chaff は (c) を一級の応答として設計する。§7 がこの spec の�
 ## 4. ライフサイクル全体
 
 ```text
-  ①  試す        npx chaff article.md              設定なし。所要 1 分
+  ①  試す        npx chaffjs article.md              設定なし。所要 1 分
        │
        v
-  ②  決める      npx chaff init                    規範を選ぶ。所要 10 分
+  ②  決める      npx chaffjs init                    規範を選ぶ。所要 10 分
        │
        v
   ③  書く        エディタ + chaff lint --watch      日常
@@ -218,7 +218,7 @@ chaff は (c) を一級の応答として設計する。§7 がこの spec の�
 ## 5. ① 試す — 設定を書く前に価値を出す
 
 ```bash
-npx chaff article.md
+npx chaffjs article.md
 ```
 
 この一回で満たすべき条件:
@@ -236,7 +236,7 @@ npx chaff article.md
 出力:
 
 ```text
-$ npx chaff article.md
+$ npx chaffjs article.md
 
 article.md  [ja · blog/tech]  言語は本文から推定 (0.97) / ジャンルはパスから推定
 
@@ -256,8 +256,8 @@ article.md  [ja · blog/tech]  言語は本文から推定 (0.97) / ジャンル
 
 experimental な 7 rule は既定で無効です。--experimental で有効化できます。
 
-  npx chaff explain sentence-rhythm   このルールの意図と根拠を読む
-  npx chaff init                      規範を固定して、チームで共有する
+  npx chaffjs explain sentence-rhythm   このルールの意図と根拠を読む
+  npx chaffjs init                      規範を固定して、チームで共有する
 ```
 
 ### 5.1 推定が外れたとき
@@ -265,8 +265,8 @@ experimental な 7 rule は既定で無効です。--experimental で有効化�
 推定を 1 行目に出す理由は、外れたことにユーザーが気づけるようにするため。外れていた場合の回復手段を同じ行から辿れること。
 
 ```bash
-npx chaff article.md --genre business/proposal
-npx chaff article.md --lang en
+npx chaffjs article.md --genre business/proposal
+npx chaffjs article.md --lang en
 ```
 
 推定に失敗した場合は、推測して走らせずに止める。
@@ -277,10 +277,10 @@ article.md  ジャンルを推定できませんでした
   パス、front matter、内容のいずれからも判定できません。
   指定してください:
 
-    npx chaff article.md --genre blog/tech
-    npx chaff article.md --genre business/report
+    npx chaffjs article.md --genre blog/tech
+    npx chaffjs article.md --genre business/report
 
-  一覧は npx chaff genres
+  一覧は npx chaffjs genres
 ```
 
 ---
@@ -290,7 +290,7 @@ article.md  ジャンルを推定できませんでした
 対話で聞くのは 3 つだけ。それ以外は既定値で埋め、あとから直させる。
 
 ```text
-$ npx chaff init
+$ npx chaffjs init
 
 1. ここに置く文書は主に何ですか？
    > ブログ記事 (blog)
@@ -314,8 +314,8 @@ $ npx chaff init
   .gitignore          .chaff-cache/ を追記しました
 
 次:
-  npx chaff lint .           全体を見る
-  npx chaff baseline .       既存文書の指摘を一旦棚上げする（§8）
+  npx chaffjs lint .           全体を見る
+  npx chaffjs baseline .       既存文書の指摘を一旦棚上げする（§8）
 ```
 
 ### 6.1 `chaff.yaml` は人が読めるものであること
@@ -333,7 +333,7 @@ $ npx chaff init
 #
 # 値は strict / normal / relaxed / off から選びます。
 # コマンドでも変えられます:
-#   npx chaff relax bold-density --why "図の説明で太字を多用するため"
+#   npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
 
 $schema: https://chaff.dev/schema/v1.json
 
@@ -423,7 +423,7 @@ rules:
 `chaff.yaml` を開かずに、コマンドでも変えられる。理由と rule の説明がコメントとして自動で入る。
 
 ```bash
-npx chaff relax bold-density --why "図の説明で太字を多用するため"
+npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
 ```
 
 ```yaml
@@ -445,7 +445,7 @@ npx chaff relax bold-density --why "図の説明で太字を多用するため"
 段階が無い場合の応答:
 
 ```text
-$ npx chaff strict padded-intro
+$ npx chaffjs strict padded-intro
 
 padded-intro に strict はありません。normal と同じ設定です。
 設定は変更しませんでした。
@@ -456,7 +456,7 @@ padded-intro に strict はありません。normal と同じ設定です。
 同じ rule に対して抑制が積み上がったら、それは (b) ではなく (c) のサインである。chaff がこれを検出して提案する。
 
 ```bash
-$ npx chaff suppressions
+$ npx chaffjs suppressions
 
 抑制されている指摘: 23 件
 
@@ -495,7 +495,7 @@ $ npx chaff suppressions
 実務で最大の壁。記事が 200 本ある repo に入れると 4000 件出る。全部直してから導入することは誰にもできない。
 
 ```bash
-$ npx chaff baseline docs/
+$ npx chaffjs baseline docs/
 
 docs/ を走査しました。
 
@@ -524,9 +524,9 @@ docs/ を走査しました。
 | baseline は行番号ではなく内容ハッシュで持つ | 前後の編集で baseline が崩れないようにする |
 
 ```bash
-npx chaff lint docs/                 # baseline との差分だけ
-npx chaff lint docs/ --show-baseline # 棚上げ分も含めて全部見る
-npx chaff baseline --prune           # 直った分を baseline から落とす
+npx chaffjs lint docs/                 # baseline との差分だけ
+npx chaffjs lint docs/ --show-baseline # 棚上げ分も含めて全部見る
+npx chaffjs baseline --prune           # 直った分を baseline から落とす
 ```
 
 ---
@@ -551,7 +551,7 @@ npx chaff baseline --prune           # 直った分を baseline から落とす
 `chaff explain` は rule の意図を出力するので、これを使って規範ドキュメントを生成できる。
 
 ```bash
-npx chaff explain --all --format markdown > STYLE.generated.md
+npx chaffjs explain --all --format markdown > STYLE.generated.md
 ```
 
 ### 9.2 レビューでの分担
@@ -571,10 +571,10 @@ chaff が見る          構造、統計、語彙、そして rubric で書け�
 
 ```yaml
 - name: prose lint
-  run: npx chaff lint docs/ --changed-only --yes
+  run: npx chaffjs lint docs/ --changed-only --yes
 
 - name: prose semantic test
-  run: npx chaff test docs/ --changed-only --yes
+  run: npx chaffjs test docs/ --changed-only --yes
   env:
     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
@@ -603,7 +603,7 @@ no-mixed-desumasu      文体の混在
 ## 11. ③ 書いている最中の体験
 
 ```bash
-npx chaff lint article.md --watch
+npx chaffjs lint article.md --watch
 ```
 
 保存のたびに再検証する。出力は差分だけを出す。
@@ -636,7 +636,7 @@ watching article.md
 既定の閾値は一般的な corpus で決めたもので、そのチームには合わないことがある。
 
 ```bash
-$ npx chaff eval docs/ --rule sentence-rhythm
+$ npx chaffjs eval docs/ --rule sentence-rhythm
 
 docs/ の 212 文書に sentence-rhythm を適用しました。
 

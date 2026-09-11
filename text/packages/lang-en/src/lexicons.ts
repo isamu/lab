@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parse } from "yaml";
-import type { Lexicon, LexiconEntry } from "chaff/plugin";
+import type { Lexicon, LexiconEntry } from "chaffjs/plugin";
 
 const DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "lexicons");
 

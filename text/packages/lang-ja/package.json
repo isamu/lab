@@ -1,5 +1,5 @@
 {
-  "name": "@chaff-lang/ja",
+  "name": "@chaffjs/lang-ja",
   "version": "0.0.1",
   "description": "Japanese language adapter for chaff",
   "license": "MIT",
