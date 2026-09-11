@@ -150,25 +150,57 @@ scoria が持たないもの   構文解析、型検査、検査規則そのも�
 例外は §13 と §14 の一部で、既存ツールに相当物が無いもの（抑制債務の計数、design token 逸脱、
 コメント質）だけを scoria が直接測る。これらは AST を要さず、ファイル走査で足りる範囲に限る。
 
-### 3.2 scoria が測るのは「プロジェクト自身のゲート」である
+### 3.2 scoria は自分の基準を持ち込む
 
-**scoria は自前の eslint config を持ち込まない。プロジェクトが持っている eslint をそのまま起動する。**
+**2026-09-11 改訂。初版はこの逆を書いていた。**
 
-これを外すと致命的なことが起きる。scoria が独自基準で採点すると、
-プロジェクトの CI の lint は緑なのに scoria の readability は 40 点、という状態が生まれる。
-この食い違いを一度でも起こすと、以後そのスコアは誰にも信じられない。
+初版の §3.2 は「scoria が測るのはプロジェクト自身のゲートである」とし、
+プロジェクトの eslint をそのまま起動して、その基準に照らして測ると定めていた。
+理由は「CI の lint は緑なのに scoria は 40 点」という食い違いを避けるためだった。
+
+**これは誤りだった。** プロジェクト自身の基準だけで測ると、
+**ルールを全部切った repo が満点を取る。**
+
+これは §15 の integrity がまさに捕まえようとしている「採点者の買収」そのものであり、
+初版はそれを integrity 以外のすべての次元で素通りさせていた。
+`eslint-disable` を 1 行書くと integrity が下がるのに、
+eslint の設定でそのルールごと切ると何も起きない、という非対称が生まれていた。
+
+したがって:
 
 ```text
-原則   プロジェクトが設定した基準に照らして、そのプロジェクトがどれだけ守れているかを測る
-帰結   基準そのものの妥当性は、integrity 次元（§15）が別に測る
+原則   scoria は自分の基準を持ち込み、その基準に照らして測る
+帰結   「CI の lint は緑なのに scoria は低い」は不具合ではなく、報告すべき事実である
+       ただし、どちらの基準で測ったかは常に明示する
 ```
 
-プロジェクトが eslint を設定していない場合は scoria の既定 preset を使うが、
-その事実をレポートに明示し、スコアの confidence を下げる。
+プロジェクト側の基準との差そのものにも意味がある。
+「あなたの設定は scoria が見ている検査のうち N 個を無効にしている」は integrity の入力になる。
+ただし rule の名前空間が揃わないため、比較の実装方法は未決とする（§30）。
 
-```text
-readability 62  (confidence: low — project has no eslint config; scoria default preset used)
-```
+### 3.2.1 持ち込む基準は相手の node_modules に依存してはならない
+
+この原則には実装上の帰結がある。**プロジェクトの node_modules を当てにできない。**
+`npx scoria` は install していないディレクトリでも動く必要があり、
+プロジェクトの eslint に相乗りすると、その設定とプラグインに縛られる。
+
+実測（2026-09-11）:
+
+| ツール               | 相手の install | .vue         | 速度                | 備考                                         |
+| -------------------- | -------------- | ------------ | ------------------- | -------------------------------------------- |
+| `oxlint` 1.82.0      | **不要**       | **直接読む** | 313 ファイル 1.8 秒 | 133 rule（correctness + suspicious + perf）  |
+| `jscpd` 4            | **不要**       | 対応         | 186 ファイルで即時  | 重複 2.13% を検出                            |
+| `knip`               | 必要           | —            | 未計測              | 依存解決にプロジェクトの install が要る      |
+| `dependency-cruiser` | 必要           | —            | 未計測              | 設定ファイル必須。加えて解決情報が要る       |
+| `tsc --noEmit`       | 必要           | —            | 未計測              | プロジェクトの typescript と tsconfig を使う |
+
+したがって **lint は eslint ではなく oxlint で持ち込む。**
+Rust 実装で単体で動き、`.ts` `.tsx` `.js` `.jsx` `.vue` を自前で解析し、
+プロジェクトの設定にもプラグインにも依存しない。
+型情報を使う検査はできないが、それは Tier 1 の `tsc` が担う。
+
+この判断は scoria 自身の lint（type-aware な typescript-eslint、§28 参照）とは別である。
+自分のソースを厳しく保つことと、他人のリポジトリをどこでも測れることは要求が違う。
 
 ### 3.3 スコアは repo 間で比較できない
 
@@ -582,35 +614,57 @@ Mutation 10 / セキュリティ 10 / ドキュメント 10 / UI 10 / CI 5）を
 
 ### 12.1 外部ツールを起動するもの
 
-| probe            | 外部ツール                      | 主な metric                                                      |
-| ---------------- | ------------------------------- | ---------------------------------------------------------------- |
-| `eslint`         | プロジェクトの eslint（§3.2）   | `warnings_per_kloc`, `errors_per_kloc`, `rule_hits{rule}`        |
-| `eslint-sonarjs` | eslint-plugin-sonarjs           | `cognitive_complexity_p95`, `smells_per_kloc`                    |
-| `knip`           | knip                            | `unused_files`, `unused_exports`, `unused_deps`, `unlisted_deps` |
-| `depcruise`      | dependency-cruiser              | `circular_count`, `orphan_count`, `layer_violations`             |
-| `jscpd`          | jscpd                           | `duplicated_lines_pct`, `duplicated_blocks`                      |
-| `tsc-strict`     | プロジェクトの typescript       | `type_errors`, `strict_flags_enabled`                            |
-| `audit`          | npm / yarn audit                | `vuln_high`, `vuln_critical`, `vuln_fixable`                     |
-| `publint`        | publint / @arethetypeswrong/cli | `packaging_errors`, `type_resolution_errors`                     |
+**2026-09-11 改訂。** §3.2.1 の方針転換により、起動するツールと層の切り方を実測で決め直した。
+層を分ける軸は、**相手のリポジトリが install 済みである必要があるか**である。
 
-版数の実測（2026-09-11 時点、`dist.unpackedSize`）:
+#### Tier 0 — 相手の install を必要としない
 
-| package                             | version | unpacked |
-| ----------------------------------- | ------- | -------- |
-| `eslint`                            | 10.10.0 | 2.93 MB  |
-| `typescript`                        | 7.0.2   | 2.50 MB  |
-| `eslint-plugin-sonarjs`             | 4.2.0   | 3.93 MB  |
-| `knip`                              | 6.35.1  | 1.93 MB  |
-| `dependency-cruiser`                | 18.2.0  | 1.01 MB  |
-| `jscpd`                             | 5.2.0   | 0.01 MB  |
-| `madge`                             | 8.0.0   | 0.11 MB  |
-| `publint`                           | 0.3.24  | 0.12 MB  |
-| `@arethetypeswrong/cli`             | 0.18.5  | 0.06 MB  |
-| `@stryker-mutator/core`             | 10.0.0  | 1.22 MB  |
-| `@microsoft/eslint-formatter-sarif` | 3.1.0   | 0.01 MB  |
+`npx scoria` がどんなディレクトリでも動くのは、この層だけで一通りの点が出るからである。
 
-`eslint` と `typescript` は §3.2 によりプロジェクトのものを使うため、scoria の配布サイズには乗らない。
-乗るのは knip / dependency-cruiser / jscpd で、合計 3 MB 弱。§19 の予算はこれを前提にする。
+| probe    | 外部ツール    | 主な metric                                                       | 次元                      |
+| -------- | ------------- | ----------------------------------------------------------------- | ------------------------- |
+| `oxlint` | oxlint 1.82.0 | `violations_per_kloc`, `by_category{correctness,suspicious,perf}` | readability, correctness  |
+| `jscpd`  | jscpd 4       | `duplicated_lines_pct`, `clone_count`                             | readability, architecture |
+
+`oxlint` は eslint の代わりである（§3.2.1）。Rust 実装で単体で動き、
+`.ts` `.tsx` `.js` `.jsx` `.vue` を自前で解析する。
+`-D correctness -D suspicious -D perf` で 133 rule が有効になる。
+
+実測（2026-09-11）:
+
+| 対象              | ファイル数 | 指摘 |                     時間 |
+| ----------------- | ---------: | ---: | -----------------------: |
+| ownplate/src      |        313 |   48 | 1.8 秒（npx の解決込み） |
+| mulmocast-cli/src |        178 |   73 |                        — |
+| mulmoterminal/src |        364 |   63 |                        — |
+
+`jscpd` も単体で動く。mulmocast-cli/src で 31 clone / 重複率 2.13% を検出した。
+
+#### Tier 1 — 相手の install が必要
+
+CI では `yarn install` が先に走っているので、この層も使える。
+install されていないディレクトリでは `skipped` になり、§18.1 に従って採点から外れる。
+
+| probe        | 外部ツール                | 主な metric                                     | 次元         |
+| ------------ | ------------------------- | ----------------------------------------------- | ------------ |
+| `tsc-strict` | プロジェクトの typescript | `type_errors`, `strict_flags_enabled`           | type-safety  |
+| `knip`       | knip                      | `unused_files`, `unused_exports`, `unused_deps` | architecture |
+| `depcruise`  | dependency-cruiser        | `circular_count`, `orphan_count`                | architecture |
+
+`tsc` だけはプロジェクトのものを使う。型検査は tsconfig と依存の型定義が揃って初めて成立し、
+scoria が自分の tsconfig を持ち込んでも、そのプロジェクトの型を検査したことにならないため。
+**§3.2 の例外はここだけである。**
+
+`dependency-cruiser` は設定ファイルが無いと起動しない。scoria が自分の設定を持ち込む（§3.2 と整合）。
+
+#### 版数の実測（2026-09-11 時点、`dist.unpackedSize`）
+
+| package              | version | unpacked |
+| -------------------- | ------- | -------- |
+| `oxlint`             | 1.82.0  | 2.41 MB  |
+| `jscpd`              | 5.2.0   | 0.01 MB  |
+| `knip`               | 6.35.1  | 1.93 MB  |
+| `dependency-cruiser` | 18.2.0  | 1.01 MB  |
 
 **外部ツールの CLI フラグを spec に書かない。** 版数で動くうえ、spec が腐る原因になる。
 probe adapter が吸収すべき責務であり、spec が定めるのは §8 の contract だけとする。
@@ -1113,6 +1167,52 @@ skipped   環境が足りず測れなかった = 採点しない。confidence �
 ```
 
 `skipped` を含む run は overall を出すが、`"complete": false` を付ける。
+
+### 18.1 採点は 3 状態を区別しなければならない
+
+**2026-09-11 追記。実装がこれを守っておらず、実害が出ていた。**
+
+初版は probe の 3 状態を契約で定めたが、**採点側がそれを見ていなかった。**
+metric の値が無いとき `?? 0` で 0 として扱い、低いほど良い指標では 0 が満点になる。
+
+実測した壊れ方:
+
+```text
+ソースファイル 0 件、eslint 設定なし、CI なしのディレクトリ
+
+  integrity               71   high
+  readability            100   high      ← source が無いのに満点
+  type-safety            100   high      ← 判定を skip したのに満点
+  Overall                 90
+```
+
+しかも `high`（信頼できる）と表示される。**間違っている方向が最悪である。**
+これは §18 の冒頭が「テストが 1 本も無い repo が満点を取るのを防ぐため」と書いた失敗そのもの。
+
+採点の規則を明示する。
+
+```text
+ok       値を scale に通して点にする
+
+absent   そのプロジェクトが本来持つべきものが無い
+         → その metric は 0 点。重みはそのまま。
+         例: source が 1 つも無い、テストが 1 つも無い
+
+skipped  scoria 側の都合で測れなかった
+         → その metric を採点から外し、残りの重みを再正規化する
+         → 次元に「何割を測れたか」(coverage) を出し、confidence を下げる
+         例: プロジェクトに typescript が無くて型検査ができない
+             外部ツールの取得を断られた
+```
+
+**skipped を 0 点にしてはならない。** 測れなかったことを罰するのは、
+「scoria がインストールに失敗した repo は品質が低い」と言うのと同じ。
+
+**absent を非採点にしてもならない。** 持つべきものが無いのは、そのプロジェクトの状態である。
+
+次元の coverage が 0（全 metric が skipped）なら、その次元は点を出さず `—` とする。
+`Overall` はそのとき、点の出た次元だけの平均とし、何次元から計算したかを併記する。
+
 `--strict` で skipped を error に昇格できる（chaff §17.4 と同じ）。
 
 ---
