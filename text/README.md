@@ -46,6 +46,18 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 | `repeated-sentence-head` | 同じ書き出しの連続 |
 | `sentence-rhythm` | 文の長さの単調さ（experimental。既定では動かない） |
 
+## 使いはじめ
+
+```bash
+npx chaff .                    この場所の Markdown を全部見る
+npx chaff docs/ README.md      ディレクトリもファイルも glob も混ぜてよい
+npx chaff init                 chaff.yaml を作る
+npx chaff explain bold-density そのルールの意図と根拠を読む
+npx chaff genres               ジャンルの一覧
+```
+
+`node_modules` `dist` `build` `coverage` は見ない。対象が 1 つも見つからなければ**失敗にする**（「CI は通っているが何も検証していない」状態を作らないため）。
+
 ## 設定は 4 つの言葉だけ
 
 数字は書かない。`chaff.yaml` を開かずにコマンドでも変えられる。

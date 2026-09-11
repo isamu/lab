@@ -1,6 +1,7 @@
 import type { Finding, RuleDefinition } from "../plugin.ts";
 import type { RunResult } from "../run.ts";
 import { MARK, localized, messageOf } from "./text.ts";
+import { tally } from "./summary.ts";
 
 const RULE = 60;
 const QUOTE_LIMIT = 120;
@@ -33,16 +34,6 @@ const block = (finding: Finding, rule: RuleDefinition, language: string): string
   `     このルールをゆるめる:  npx chaff relax ${finding.rule}`,
   "",
 ];
-
-const tally = (findings: readonly Finding[]): string => {
-  const count = (severity: string): number => findings.filter((finding) => finding.severity === severity).length;
-  const parts = [
-    count("error") > 0 ? `エラー ${count("error")} 件` : undefined,
-    count("warning") > 0 ? `注意 ${count("warning")} 件` : undefined,
-    count("info") > 0 ? `参考 ${count("info")} 件` : undefined,
-  ].filter((part) => part !== undefined);
-  return parts.length === 0 ? "指摘はありません" : parts.join("、");
-};
 
 export const renderFriendly = (header: string, result: RunResult, rules: readonly RuleDefinition[], language: string): string => {
   const byId = new Map(rules.map((rule) => [rule.id, rule]));
