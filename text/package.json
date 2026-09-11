@@ -9,7 +9,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "yarn workspace chaff-lang-ja build && yarn workspace chaff-lang-en build && yarn workspace chaff build",
+    "build": "yarn workspace @chaff-lang/ja build && yarn workspace @chaff-lang/en build && yarn workspace chaff build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",

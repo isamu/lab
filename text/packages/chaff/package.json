@@ -49,8 +49,8 @@
     "prepack": "yarn build"
   },
   "dependencies": {
-    "chaff-lang-en": "0.0.1",
-    "chaff-lang-ja": "0.0.1",
+    "@chaff-lang/en": "0.0.1",
+    "@chaff-lang/ja": "0.0.1",
     "mdast-util-from-markdown": "^2.0.3",
     "mdast-util-frontmatter": "^2.0.1",
     "mdast-util-gfm-table": "^2.0.0",

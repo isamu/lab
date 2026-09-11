@@ -176,9 +176,9 @@ text/                      yarn workspaces のルート
     src/config/            chaff.yaml の読み書き
     src/render/            出力（既定 / --compact / --json）
     src/cli.ts
-  packages/lang-ja         chaff-lang-ja。文分割と語彙表
+  packages/lang-ja         @chaff-lang/ja。文分割と語彙表
     lexicons/*.yaml        L2 の語彙。ここだけが言語別
-  packages/lang-en         chaff-lang-en。同上
+  packages/lang-en         @chaff-lang/en。同上
   test/                    node:test
 ```
 
