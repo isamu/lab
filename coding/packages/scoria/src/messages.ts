@@ -38,6 +38,10 @@ export interface Messages {
   readonly unknownDimension: (name: string, known: string) => string;
   readonly stackAdded: (id: string) => string;
   readonly stackMissing: (id: string) => string;
+  readonly baselineWritten: (path: string) => string;
+  readonly whatMoved: string;
+  readonly noBaseline: string;
+  readonly rebaselineNeeded: (tools: string) => string;
   readonly partlyMeasured: (percent: number) => string;
   readonly fromDimensions: (count: number) => string;
   readonly notComparableLong: string;
@@ -79,6 +83,10 @@ const en: Messages = {
   unknownDimension: (name, known) => `unknown dimension: ${name}\nknown: ${known}`,
   stackAdded: (id) => `${id} appeared in package.json but is not in the config`,
   stackMissing: (id) => `${id} is in the config but no longer detected`,
+  baselineWritten: (path) => `wrote ${path}. Commit it, and later runs will report the change since.`,
+  whatMoved: "What moved",
+  noBaseline: "No baseline yet. `scoria baseline` records this run, and later runs report the change since.",
+  rebaselineNeeded: (tools) => `${tools} changed version since the baseline; those moves are not regressions`,
   partlyMeasured: (percent) => `only ${percent}% of this dimension could be measured`,
   fromDimensions: (count) => `mean of ${count}`,
   notComparableLong:
@@ -119,6 +127,10 @@ const ja: Messages = {
   unknownDimension: (name, known) => `不明な次元: ${name}\n既知: ${known}`,
   stackAdded: (id) => `${id} が package.json にありますが、設定に含まれていません`,
   stackMissing: (id) => `${id} が設定にありますが、検出されません`,
+  baselineWritten: (path) => `${path} を書きました。commit すれば、次からは前回との差が出ます。`,
+  whatMoved: "動いたもの",
+  noBaseline: "baseline がありません。`scoria baseline` でこの実行を記録すると、次から差が出ます。",
+  rebaselineNeeded: (tools) => `${tools} の版数が baseline から変わっています。その分の増減は劣化ではありません`,
   partlyMeasured: (percent) => `この軸は ${percent}% しか測れていません`,
   fromDimensions: (count) => `${count} 軸の平均`,
   notComparableLong:

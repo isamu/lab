@@ -1,6 +1,7 @@
 import type { Finding } from "./plugin.ts";
 import type { DimensionReport, Report } from "./report.ts";
 import { messagesFor, type Lang, type Messages } from "./messages.ts";
+import type { ReportDiff } from "./diff.ts";
 
 /**
  * The report as GitHub-flavoured Markdown, for `$GITHUB_STEP_SUMMARY`.
@@ -24,10 +25,24 @@ const bar = (score: number): string => {
 const confidenceCell = (dimension: DimensionReport): string =>
   dimension.confidence === "high" ? "high" : `**${dimension.confidence}** — ${dimension.confidenceReason}`;
 
-const dimensionRow = (dimension: DimensionReport): string => {
+const signed = (value: number): string => (value > 0 ? `+${value.toFixed(0)}` : value.toFixed(0));
+
+const deltaCell = (dimension: DimensionReport, diff: ReportDiff | undefined): string => {
+  const found = diff?.dimensions.find((entry) => entry.dimension === dimension.dimension);
+  if (found === undefined || found.delta === 0) return "";
+  return found.delta > 0 ? `**${signed(found.delta)}**` : `**${signed(found.delta)}** ⚠`;
+};
+
+const dimensionRow = (dimension: DimensionReport, diff: ReportDiff | undefined): string => {
   const score = dimension.score;
   const cells = score === undefined ? ["—", "—"] : [score.toFixed(0), `\`${bar(score)}\``];
-  return `| ${dimension.dimension} | ${cells[0]} | ${cells[1]} | ${confidenceCell(dimension)} |`;
+  return `| ${dimension.dimension} | ${cells[0]} | ${deltaCell(dimension, diff)} | ${cells[1]} | ${confidenceCell(dimension)} |`;
+};
+
+const movedBlock = (diff: ReportDiff | undefined, messages: Messages): readonly string[] => {
+  const movers = [...(diff?.movers ?? [])].sort((a, b) => Math.abs(b.points) - Math.abs(a.points)).slice(0, 8);
+  if (movers.length === 0) return [];
+  return ["", `**${messages.whatMoved}**`, "", ...movers.map((m) => `- \`${signed(m.points)}\` ${m.dimension} — ${m.metric}: ${m.from} → ${m.to}`)];
 };
 
 const findingRow = (finding: Finding, messages: Messages): string =>
@@ -82,7 +97,7 @@ const skippedBlock = (report: Report, messages: Messages): readonly string[] => 
   ];
 };
 
-export const renderGithubSummary = (report: Report, lang: Lang): string => {
+export const renderGithubSummary = (report: Report, lang: Lang, diff?: ReportDiff): string => {
   const messages = messagesFor(lang);
   return [
     `## scoria — ${report.overall.score.toFixed(0)} / 100`,
@@ -90,9 +105,10 @@ export const renderGithubSummary = (report: Report, lang: Lang): string => {
     `\`${report.stacks.join(" · ")}\` · ${messages.profileLabel}: ${report.profile} · ` +
       `${messages.filesLine(report.size.files, report.size.sloc, report.size.testSloc)}`,
     "",
-    `| ${messages.dimension} | ${messages.score} | | ${messages.confidence} |`,
-    "| --- | ---: | --- | --- |",
-    ...report.dimensions.map(dimensionRow),
+    `| ${messages.dimension} | ${messages.score} | Δ | | ${messages.confidence} |`,
+    "| --- | ---: | ---: | --- | --- |",
+    ...report.dimensions.map((dimension) => dimensionRow(dimension, diff)),
+    ...movedBlock(diff, messages),
     ...findingsBlock(report, messages),
     ...warningsBlock(report, messages),
     ...skippedBlock(report, messages),

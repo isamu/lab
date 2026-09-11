@@ -26,7 +26,7 @@ export const sourceFile = (path: string, lines: readonly string[], kind: FileKin
   codeLines: lines,
 });
 
-const DEFAULT_PROJECT: ProjectFacts = { typescript: true, stacks: ["ts"] };
+const DEFAULT_PROJECT: ProjectFacts = { typescript: true, installed: true, stacks: ["ts"] };
 
 export const contextOf = (files: readonly SourceFile[], project: ProjectFacts = DEFAULT_PROJECT, configFiles: readonly ConfigFile[] = []): ProbeContext => ({
   root: fixturePath(),
@@ -34,4 +34,31 @@ export const contextOf = (files: readonly SourceFile[], project: ProjectFacts = 
   configFiles,
   project,
   exec: () => Promise.resolve({ stdout: "", stderr: "exec is not available in tests", code: 1 }),
+  execNode: () => Promise.resolve({ stdout: "", stderr: "exec is not available in tests", code: 1 }),
+  readText: () => Promise.resolve(undefined),
+});
+
+export interface ContextOverrides {
+  readonly project?: ProjectFacts;
+  readonly configFiles?: readonly ConfigFile[];
+  readonly exec?: ProbeContext["exec"];
+  readonly execNode?: ProbeContext["execNode"];
+  readonly readText?: ProbeContext["readText"];
+  readonly root?: string;
+}
+
+/** Canned tool output, so a probe's parsing is tested without installing the tool. */
+export const execReturning =
+  (stdout: string, code = 0): ProbeContext["exec"] =>
+  (_command, args) =>
+    Promise.resolve(args.includes("--version") ? { stdout: "9.9.9", stderr: "", code: 0 } : { stdout, stderr: "", code });
+
+export const contextWith = (files: readonly SourceFile[], overrides: ContextOverrides = {}): ProbeContext => ({
+  root: overrides.root ?? fixturePath(),
+  files,
+  configFiles: overrides.configFiles ?? [],
+  project: overrides.project ?? { typescript: true, installed: true, stacks: ["ts"] },
+  exec: overrides.exec ?? (() => Promise.resolve({ stdout: "", stderr: "no exec in tests", code: 1 })),
+  execNode: overrides.exec ?? (() => Promise.resolve({ stdout: "", stderr: "no exec in tests", code: 1 })),
+  readText: overrides.readText ?? (() => Promise.resolve(undefined)),
 });

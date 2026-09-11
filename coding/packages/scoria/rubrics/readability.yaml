@@ -10,15 +10,26 @@ status: experimental
 metrics:
   - metric: file-shape.sloc_p95
     scale: { good: 150, bad: 800 }
-    weight: 0.5
+    weight: 0.3
 
   - metric: file-shape.max_file_sloc
     scale: { good: 300, bad: 2000 }
-    weight: 0.3
+    weight: 0.2
 
   - metric: file-shape.god_file_count
     scale: { good: 0, bad: 20 }
+    weight: 0.15
+
+  # Duplication is the shape a requirement takes when it is met twice without either author
+  # knowing about the other. Measured at 2.13% on a maintained repository.
+  - metric: jscpd.duplicated_lines_pct
+    scale: { good: 0, bad: 10 }
     weight: 0.2
+
+  # Smells and slow patterns from scoria's own ruleset, not the project's (spec §3.2).
+  - metric: oxlint.violations_per_kloc
+    scale: { good: 0, bad: 12 }
+    weight: 0.15
 
 # Where suppressions are dense, readability is not high — it is unmeasured (spec §15.4).
 confidence_from:

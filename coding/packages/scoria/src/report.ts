@@ -30,6 +30,8 @@ export interface Report {
   readonly dimensions: readonly DimensionReport[];
   readonly findings: readonly Finding[];
   readonly probes: readonly ProbeReport[];
+  /** Versions of the external tools, so a score drop caused by an upgrade is not read as decay. */
+  readonly toolVersions: Readonly<Record<string, string>>;
   readonly overall: {
     readonly score: number;
     /** How many dimensions the mean came from. A mean of two is not a mean of five. */
@@ -90,6 +92,10 @@ const reasonOf = (rubric: Rubric, values: ReadonlyMap<string, number>): string =
   return rubric.confidenceFrom.length === 0 ? "no suppression signal wired" : `${count} suppressions in scope`;
 };
 
+/** One flat map of every tool version any probe reported, for the rebaseline check (spec §17.3). */
+const mergedToolVersions = (results: readonly ProbeResult[]): Readonly<Record<string, string>> =>
+  Object.fromEntries(results.flatMap((result) => Object.entries(result.toolVersions)));
+
 const slocOfKind = (files: readonly SourceFile[], kind: SourceFile["kind"]): number =>
   files.filter((f) => f.kind === kind).reduce((sum, f) => sum + slocOf(f), 0);
 
@@ -133,6 +139,7 @@ export const buildReport = (
     dimensions,
     findings: results.flatMap((r) => r.findings),
     probes: results.map((r) => ({ probe: r.probe, status: r.status })),
+    toolVersions: mergedToolVersions(results),
     overall: {
       score: mean(dimensions.flatMap((d) => (d.score === undefined ? [] : [d.score]))),
       scoredDimensions: dimensions.filter((d) => d.score !== undefined).length,

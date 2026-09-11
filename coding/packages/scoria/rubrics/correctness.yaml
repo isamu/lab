@@ -1,0 +1,22 @@
+# Violations of scoria's own ruleset, not the project's (spec §3.2).
+#
+# oxlint at `-D correctness -D suspicious -D perf` enables 133 rules and runs without the target's
+# node_modules, which is what makes bringing our own standard possible at all (spec §3.2.1).
+#
+# Scales are provisional. Measured on three maintained repositories at 313-364 files each, the
+# violation count landed between 48 and 73; the per-kloc figures below come from those runs.
+id: correctness
+status: experimental
+
+metrics:
+  # An error-severity rule is one oxlint considers a probable defect, not a style preference.
+  - metric: oxlint.errors_per_kloc
+    scale: { good: 0, bad: 3 }
+    weight: 0.6
+
+  - metric: oxlint.violations_per_kloc
+    scale: { good: 0, bad: 8 }
+    weight: 0.4
+
+confidence_from:
+  - suppression-scan.source_count

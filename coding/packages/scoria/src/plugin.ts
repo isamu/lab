@@ -82,6 +82,13 @@ export interface SourceFile {
 export interface ProjectFacts {
   /** Whether typescript is a dependency. Decides whether warning about .js is appropriate. */
   readonly typescript: boolean;
+  /**
+   * Whether the target's dependencies are installed.
+   *
+   * Tier 1 tools resolve the import graph, and without node_modules they resolve nothing and
+   * report nothing — which reads as a clean repository. They must report skipped instead.
+   */
+  readonly installed: boolean;
   readonly stacks: readonly string[];
 }
 
@@ -92,6 +99,24 @@ export interface ExecResult {
 }
 
 export type Exec = (command: string, args: readonly string[]) => Promise<ExecResult>;
+
+/**
+ * Runs a Node script — every tool scoria drives is one.
+ *
+ * Their bins are `#!/usr/bin/env node` scripts, and Windows does not honour a shebang, so
+ * executing the path directly works on Unix and fails on Windows. Running them through the same
+ * Node that is already executing removes the question, and needs no shell.
+ */
+export type ExecNode = (script: string, args: readonly string[]) => Promise<ExecResult>;
+
+/**
+ * Reads a file a probe itself produced — a tool's report written to a scratch directory.
+ *
+ * Probes must not import fs (spec §26.2): the rule stops them deciding file kinds behind
+ * classify's back. Reading back the output of a command they just ran is a different act, and
+ * the core owns it so the rule can stay absolute.
+ */
+export type ReadText = (path: string) => Promise<string | undefined>;
 
 /**
  * A configuration file the core read for probes that judge the project's own gates.
@@ -108,6 +133,8 @@ export interface ProbeContext {
   readonly configFiles: readonly ConfigFile[];
   readonly project: ProjectFacts;
   readonly exec: Exec;
+  readonly execNode: ExecNode;
+  readonly readText: ReadText;
 }
 
 export interface Probe {
