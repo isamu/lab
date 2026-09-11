@@ -86,6 +86,25 @@ Nothing is written when `CI=true`; the run only reports that the detection is no
 `mode: report` is the default, so **this never fails a build**. It prints scores and findings.
 Ratchet gating on regression is not implemented yet (spec §17).
 
+On GitHub Actions the report is also written to the run's **job summary**, where it renders as a
+table with a bar per dimension and collapsible lists of findings. A CI log is a wall of text nobody
+scrolls; the summary lands on the page a reviewer is already looking at. It needs no token and no
+`permissions:` block — the runner provides a file, and scoria appends to it.
+
+```markdown
+## scoria — 63 / 100
+
+`vue · ts` · profile: app · 458 files · 59120 sloc · 1456 test sloc
+
+| Dimension   | Score |              | Confidence |
+| ----------- | ----: | ------------ | ---------- |
+| integrity   |    67 | `███████░░░` | high       |
+| readability |    30 | `███░░░░░░░` | high       |
+| type-safety |    90 | `█████████░` | high       |
+```
+
+Pass `--no-summary` to turn it off.
+
 ## Output
 
 ```text
