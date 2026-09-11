@@ -38,6 +38,11 @@ export interface Messages {
   readonly unknownDimension: (name: string, known: string) => string;
   readonly stackAdded: (id: string) => string;
   readonly stackMissing: (id: string) => string;
+  readonly doctorClean: string;
+  readonly doctorFound: (count: number) => string;
+  readonly doctorApplied: string;
+  readonly doctorFixHint: (count: number) => string;
+  readonly doctorScopeNote: string;
   readonly ruleMessages: Readonly<Record<string, string>>;
 }
 
@@ -70,6 +75,11 @@ const en: Messages = {
   unknownDimension: (name, known) => `unknown dimension: ${name}\nknown: ${known}`,
   stackAdded: (id) => `${id} appeared in package.json but is not in the config`,
   stackMissing: (id) => `${id} is in the config but no longer detected`,
+  doctorClean: "No gaps found in the project's own gates.",
+  doctorFound: (count) => `${count} ${count === 1 ? "gap" : "gaps"} in the gates this project sets for itself`,
+  doctorApplied: "applied",
+  doctorFixHint: (count) => `${count} more can be applied with \`scoria doctor --fix\``,
+  doctorScopeNote: "Only unambiguous repairs are applied. Installing a toolchain is a judgement call and is left to you.",
   ruleMessages: {},
 };
 
@@ -99,6 +109,11 @@ const ja: Messages = {
   unknownDimension: (name, known) => `不明な次元: ${name}\n既知: ${known}`,
   stackAdded: (id) => `${id} が package.json にありますが、設定に含まれていません`,
   stackMissing: (id) => `${id} が設定にありますが、検出されません`,
+  doctorClean: "プロジェクト自身のゲートに抜けはありません。",
+  doctorFound: (count) => `プロジェクトが自分に課しているゲートの抜けが ${count} 件`,
+  doctorApplied: "適用しました",
+  doctorFixHint: (count) => `残り ${count} 件は \`scoria doctor --fix\` で適用できます`,
+  doctorScopeNote: "曖昧さの無い修正だけを適用します。ツールチェインの導入は判断が要るので行いません。",
   ruleMessages: {
     "as-any-no-reason": "型を迂回しています。理由が書かれていません",
     "ts-directive-no-reason": "TypeScript の検査を抑制しています。理由が書かれていません",

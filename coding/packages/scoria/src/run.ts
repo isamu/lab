@@ -7,6 +7,7 @@ import type { Rubric } from "./rubric.ts";
 import type { LoadedConfig } from "./config.ts";
 import { loadConfig } from "./config.ts";
 import { collectFiles } from "./files.ts";
+import { collectConfigFiles } from "./config-files.ts";
 import { assertMetricsAreDeclared, loadRubrics } from "./rubric-load.ts";
 import { buildReport, type Report } from "./report.ts";
 import { ALL_STACKS, stackById, stackTs } from "./stacks/index.ts";
@@ -15,11 +16,13 @@ import { readPackageJson } from "./package-json.ts";
 import { suppressionScan } from "./probes/suppression-scan.ts";
 import { fileShape } from "./probes/file-shape.ts";
 import { sourceMix } from "./probes/source-mix.ts";
+import { configIntegrity } from "./probes/config-integrity.ts";
+import { ciIntegrity } from "./probes/ci-integrity.ts";
 
 const EXEC_TIMEOUT_MS = 120_000;
 const execFileAsync = promisify(execFile);
 
-export const PROBES: readonly Probe[] = [suppressionScan, fileShape, sourceMix];
+export const PROBES: readonly Probe[] = [suppressionScan, fileShape, sourceMix, configIntegrity, ciIntegrity];
 
 /**
  * The core owns process spawning. A probe that spawns directly takes both version recording and
@@ -72,8 +75,9 @@ export const assay = async (target: string, probes: readonly Probe[] = PROBES): 
   const rubrics = await loadRubrics(rubricDirectory());
   assertMetricsAreDeclared(rubrics, new Set(probes.flatMap((probe) => probe.declares)));
   const files = await collectFiles(root, resolveStacks(loaded.config.stacks));
+  const configFiles = await collectConfigFiles(root);
   const project = { typescript: isTypeScriptProject(await readPackageJson(root)), stacks: loaded.config.stacks };
-  const ctx: ProbeContext = { root, files, project, exec: makeExec(root) };
+  const ctx: ProbeContext = { root, files, configFiles, project, exec: makeExec(root) };
   const results = await Promise.all(probes.map((probe) => runProbe(probe, ctx)));
   return {
     report: buildReport(root, files, results, rubrics, { profile: loaded.config.profile, stacks: loaded.config.stacks }),

@@ -3,13 +3,15 @@ import { assay } from "./run.ts";
 import { detectConfig, writeConfig, CONFIG_FILENAME, type ScoriaConfig } from "./config.ts";
 import { isLang, messagesFor, type Lang } from "./messages.ts";
 import { renderExplain, renderReport } from "./render.ts";
+import { applyFixes, diagnose, renderDoctor } from "./doctor.ts";
 
 interface Options {
-  readonly command: "assay" | "init";
+  readonly command: "assay" | "init" | "doctor";
   readonly target: string;
   readonly json: boolean;
   readonly explain: string | undefined;
   readonly write: boolean;
+  readonly fix: boolean;
   readonly lang: Lang | undefined;
 }
 
@@ -23,14 +25,16 @@ const parse = (argv: readonly string[]): Options => {
   const lang = valueAfter(argv, "--lang");
   const consumed = [explain, lang];
   const positional = argv.filter((arg) => !arg.startsWith("--") && !consumed.includes(arg));
-  const command = positional[0] === "init" ? "init" : "assay";
-  const target = (command === "init" ? positional[1] : positional[0]) ?? ".";
+  const first = positional[0];
+  const command = first === "init" || first === "doctor" ? first : "assay";
+  const target = (command === "assay" ? positional[0] : positional[1]) ?? ".";
   return {
     command,
     target,
     json: argv.includes("--json"),
     explain,
     write: !argv.includes("--no-write"),
+    fix: argv.includes("--fix"),
     lang: isLang(lang) ? lang : undefined,
   };
 };
@@ -69,6 +73,12 @@ export const main = async (argv: readonly string[]): Promise<void> => {
   const options = parse(argv);
   if (options.command === "init") {
     await runInit(options.target, options.lang ?? "en");
+    return;
+  }
+  if (options.command === "doctor") {
+    const diagnosis = await diagnose(options.target);
+    const applied = options.fix ? await applyFixes(diagnosis) : [];
+    process.stdout.write(renderDoctor(diagnosis, applied, options.lang ?? "en"));
     return;
   }
   const { report, loaded } = await assay(options.target);

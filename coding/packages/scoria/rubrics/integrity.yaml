@@ -1,24 +1,38 @@
-# spec §15. Suppression debt as a dimension of its own.
+# spec §15. Suppression debt and gate integrity as one dimension.
 #
-# Source and test are separated on evidence: of graphai's 94 `as any` occurrences, 69 were in
-# test files, where mocking makes them legitimate. So source density is the primary signal and
-# test carries only a small weight.
+# Source and test suppressions are separated on evidence: of graphai's 94 `as any` occurrences,
+# 69 were in test files, where mocking makes them legitimate. So source density is the primary
+# signal and test carries only a small weight.
+#
+# The config and CI gaps belong here rather than in their own dimension because they are the same
+# thing one level up: a rule turned off, a script never written, a job that swallows its failure —
+# each removes a check without leaving a mark in the code.
 id: integrity
 status: experimental
 
 metrics:
   - metric: suppression-scan.source_per_kloc
     scale: { good: 0, bad: 5 }
-    weight: 0.5
+    weight: 0.3
 
   # A suppression is not wrong in itself; an unexplained one is (spec §15.3).
   - metric: suppression-scan.unreasoned_ratio
     scale: { good: 0, bad: 1 }
-    weight: 0.3
+    weight: 0.2
 
   - metric: suppression-scan.test_count
     scale: { good: 0, bad: 200 }
-    weight: 0.2
+    weight: 0.1
+
+  # No ESLint config, no strict mode, no lint script: the standards themselves are missing.
+  - metric: config-integrity.gap_ratio
+    scale: { good: 0, bad: 0.6 }
+    weight: 0.25
+
+  # A gate nothing runs enforces nothing.
+  - metric: ci-integrity.gap_ratio
+    scale: { good: 0, bad: 0.6 }
+    weight: 0.15
 
 # Integrity's own confidence does not depend on another dimension (spec §21.1 shows it as "—").
 confidence_from: []

@@ -101,6 +101,8 @@ repo ごとに違う。意味があるのは同じ repo の時系列の変化だ
 `"comparable": false` として構造に持つ（spec §3.3）。バッジは提供しない。
 
 ```bash
+scoria doctor                  # プロジェクト自身のゲートの抜けを診る
+scoria doctor --fix            # 曖昧さの無い修正だけを適用する
 scoria --json                  # report JSON
 scoria --explain readability   # 点の内訳と、何を直せば何点上がるか
 scoria --no-write              # 設定ファイルを作らない
