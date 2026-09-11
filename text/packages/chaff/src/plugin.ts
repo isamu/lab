@@ -118,6 +118,8 @@ export type RuleDefinition = {
   readonly levels: LevelTable;
   readonly how_to_find: string;
   readonly word_list: string | undefined;
+  /** L4 のみ。LLM に渡す決まり。言語別。 */
+  readonly what_to_check: Localized | undefined;
   readonly where: string | undefined;
   readonly use_for: readonly string[];
   readonly severity: Severity;

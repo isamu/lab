@@ -11,9 +11,22 @@ export type Config = {
   readonly rules: Readonly<Record<string, Level>>;
   readonly experimental: boolean;
   readonly path: string | undefined;
+  readonly aiModel: string;
+  readonly confidenceThreshold: number;
 };
 
-export const EMPTY: Config = { genre: undefined, language: undefined, rules: {}, experimental: false, path: undefined };
+/** 判定の質が誤検知に直結するので、既定は最上位のモデル。cost は絞り込みで削る。spec §14。 */
+export const DEFAULT_MODEL = "claude-opus-5";
+
+export const EMPTY: Config = {
+  genre: undefined,
+  language: undefined,
+  rules: {},
+  experimental: false,
+  path: undefined,
+  aiModel: DEFAULT_MODEL,
+  confidenceThreshold: 0.7,
+};
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -34,5 +47,7 @@ export const loadConfig = (path: string): Config => {
     rules: rulesOf(raw["rules"]),
     experimental: raw["experimental"] === true,
     path,
+    aiModel: str(raw["ai_model"]) ?? DEFAULT_MODEL,
+    confidenceThreshold: typeof raw["confidence_threshold"] === "number" ? raw["confidence_threshold"] : 0.7,
   };
 };

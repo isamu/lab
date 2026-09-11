@@ -1,0 +1,37 @@
+id: empty-conclusion
+layer: L4
+status: stable
+how_to_find: empty-conclusion
+severity: warning
+
+name:
+  ja: 結びに中身がない
+  en: Empty conclusion
+
+why:
+  ja: 本文を繰り返すだけの結びは、読者に何も残しません。
+  en: A closing that only restates the body leaves the reader with nothing.
+
+message:
+  ja: "{reason}"
+  en: "{reason}"
+
+how_to_fix:
+  ja: 本文で分かったことのうち、いちばん持ち帰ってほしい 1 つを書いてください。
+  en: Name the one thing you want the reader to take away.
+
+what_to_check:
+  ja: |
+    文書の結びに、本文の要約以外のものがあること。
+    新しい主張、判断、次にすべきこと、読者への問いのいずれかがあればよい。
+    本文に書いたことを並べ直しているだけなら、決まりに反する。
+  en: |
+    The closing must contain something beyond a summary of the body — a new
+    claim, a judgement, a next step, or a question to the reader.
+
+levels:
+  strict: error
+  normal: warning
+  relaxed: info
+
+use_for: [blog]
