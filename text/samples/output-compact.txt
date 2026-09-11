@@ -1,0 +1,13 @@
+$ npx chaff lint article.md --compact
+
+article.md  [ja · blog/tech]
+
+   3:1   warning  「近年、AIの活用が注目されています」は水増しの導入です
+                  padded-intro
+  41:12  warning  太字がこのセクションに 6 箇所あります (上限 2)
+                  bold-density
+  58:1   warning  文長の変動係数 0.18 (下限 0.30)。文の長さが単調です
+                  sentence-rhythm
+
+3 warnings
+7 rules disabled (experimental), 9 rules skipped (semantic, no API key)

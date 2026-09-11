@@ -1,0 +1,89 @@
+{
+  "_note": "npx chaff rules --json の出力。AI に設定を書かせるときは、まずこれを渡す。今の値・使える値・数値との対応・なぜ今 off なのか・変えるコマンドが全部入っているので、AI は推測せずに書ける。",
+  "schema_version": 1,
+  "config_schema": "https://chaff.dev/schema/v1.json",
+  "config_file": "chaff.yaml",
+  "detected": {
+    "genre": "blog/tech",
+    "language": "ja",
+    "language_from": "content"
+  },
+  "values_you_can_use": ["strict", "normal", "relaxed", "off"],
+  "values_note": "この 4 語のかわりに数字を直接書いてもよい。4 語のほうを勧める。",
+  "rules": [
+    {
+      "id": "bold-density",
+      "layer": "L1",
+      "status": "stable",
+      "name": { "ja": "太字の使いすぎ", "en": "Too much bold" },
+      "why": { "ja": "太字は読者の目を止める道具です。多用すると、どこも目立たなくなります。" },
+      "use_for": ["blog", "business"],
+      "languages": ["*"],
+      "needs": {},
+      "your_setting": { "level": "relaxed", "from": "chaff.yaml:24", "why": "図の説明で太字を多用するため" },
+      "now": { "level": "relaxed", "limit": 4, "level_name": "warning" },
+      "levels": { "strict": 1, "normal": 2, "relaxed": 4 },
+      "what_it_counts": "bold spans per section"
+    },
+    {
+      "id": "padded-intro",
+      "layer": "L2",
+      "status": "experimental",
+      "name": { "ja": "水増しの導入", "en": "Padded opening" },
+      "why": { "ja": "どの記事にも当てはまる書き出しは、読者に次を読む理由を与えません。" },
+      "use_for": ["blog"],
+      "languages": ["ja", "en"],
+      "needs": { "word_list": "padded-intro" },
+      "your_setting": null,
+      "now": { "level": "off", "why_off": "experimental な rule は既定で動かさない", "turn_on_with": "npx chaff lint --experimental" },
+      "levels": { "strict": 1, "normal": 1, "relaxed": 3 },
+      "what_it_counts": "matches in the opening"
+    },
+    {
+      "id": "agentless-passive",
+      "layer": "L3",
+      "status": "stable",
+      "name": { "ja": "主語のない受動態", "en": "Agentless passive" },
+      "why": { "ja": "「〜が実施されます」は、誰がやるのかが消えます。" },
+      "use_for": ["business"],
+      "languages": ["ja", "en"],
+      "needs": { "word_types": true },
+      "your_setting": null,
+      "now": { "level": "off", "why_off": "品詞解析が未設定", "turn_on_with": "npx chaff setup ja" },
+      "levels": { "strict": 1, "normal": 3, "relaxed": 6 },
+      "what_it_counts": "matches per document"
+    },
+    {
+      "id": "risk-disclosure",
+      "layer": "L4",
+      "status": "stable",
+      "name": { "ja": "リスクが書かれていない", "en": "No risk disclosed" },
+      "why": { "ja": "提案を読む人は、うまくいく話だけでは判断できません。" },
+      "use_for": ["business"],
+      "languages": ["*"],
+      "needs": { "api_key": true },
+      "your_setting": null,
+      "now": { "level": "off", "why_off": "API key が未設定" },
+      "levels": { "strict": "error", "normal": "warning", "relaxed": "info" },
+      "what_it_counts": "whole document"
+    }
+  ],
+  "your_checks": [
+    {
+      "name": "提案書にリスクが書かれている",
+      "from": "checks.yaml:24",
+      "layer": "L4",
+      "use_for": ["business/proposal"],
+      "look_at": "whole document",
+      "now": { "level": "off", "why_off": "API key が未設定" }
+    }
+  ],
+  "how_to_change": {
+    "by_command": [
+      "npx chaff relax <rule-id> --why \"<理由>\"",
+      "npx chaff strict <rule-id> --why \"<理由>\"",
+      "npx chaff off <rule-id> --why \"<理由>\""
+    ],
+    "by_file": "chaff.yaml の rules に <rule-id>: <level> を足す。既定のままのものは書かない。"
+  }
+}

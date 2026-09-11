@@ -1,0 +1,36 @@
+# 太字の使いすぎ（L1: 言語を問わず動く）
+#
+# rule 定義はこの形だけです。分岐も式も書きません。
+# 数えかたは how_to_find に任せ、ここは「何を、いくつまで、なぜ」だけを書きます。
+
+id: bold-density
+layer: L1
+status: stable
+
+name:
+  ja: 太字の使いすぎ
+  en: Too much bold
+
+why:
+  ja: 太字は読者の目を止める道具です。多用すると、どこも目立たなくなります。
+  en: Bold marks what matters. Used everywhere, it marks nothing.
+
+how_to_find: count-per-section
+count: strong                 # Markdown の ** ** 部分
+
+# 設定ファイルの 4 つの言葉が、ここで数値になる。
+# 利用者は数値を知らなくてよく、書きたい人は chaff.yaml に数値を直接書ける。
+levels:
+  strict: 1
+  normal: 2
+  relaxed: 4
+
+message:
+  ja: このセクションに太字が {count} 箇所あります（{limit} 箇所まで）
+  en: "{count} bold spans in this section (limit {limit})"
+
+how_to_fix:
+  ja: 本当に強調したい 1〜2 箇所だけ残して、ほかは普通の文にしてください。
+  en: Keep one or two, unbold the rest.
+
+use_for: [blog, business]

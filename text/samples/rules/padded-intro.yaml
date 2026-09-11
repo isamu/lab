@@ -1,0 +1,34 @@
+# 水増しの導入（L2: 語彙表だけが言語別）
+
+id: padded-intro
+layer: L2
+status: experimental          # corpus で評価するまで既定では動かさない
+
+name:
+  ja: 水増しの導入
+  en: Padded opening
+
+why:
+  ja: どの記事にも当てはまる書き出しは、読者に次を読む理由を与えません。
+  en: An opening that fits any article gives the reader no reason to continue.
+
+how_to_find: phrase-match
+where: 冒頭2段落              # 位置を限定する。本文中の同じ表現は見ない
+word_list: padded-intro       # 語彙は言語ごとに @chaff/lang-* が持つ
+
+# 意味のある段階は 2 つしかないので、2 つだけ書く。
+# 未定義の段階（ここでは strict）は normal に落ちる。
+# chaff strict padded-intro は「normal と同じです」と告げて何もしない。
+levels:
+  normal: 1                   # 1 つでも指摘する
+  relaxed: 3                  # 3 つ以上で指摘する
+
+message:
+  ja: 「{matched}」は、どの記事にも当てはまる書き出しです
+  en: "\"{matched}\" is an opening that fits any article"
+
+how_to_fix:
+  ja: 具体的な状況か、この記事だけの主張から始めてください。
+  en: Start from a concrete situation, or from the claim only this piece makes.
+
+use_for: [blog]
