@@ -76,7 +76,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const started = Date.now();
   const bin = resolveBinFrom(ctx.root, "typescript", "tsc");
   if (bin === undefined) return empty("the project has no installed typescript", started);
-  const result = await ctx.exec(bin, ["--noEmit", "--pretty", "false"]);
+  const result = await ctx.execNode(bin, ["--noEmit", "--pretty", "false"]);
   const errors = parse(`${result.stdout}\n${result.stderr}`);
   const sloc = sourceSloc(ctx.files);
   return {
@@ -87,7 +87,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
       { id: "tsc.type_errors_per_kloc", value: perKiloLines(errors.length, sloc), unit: "per_kloc" },
     ],
     findings: errors.slice(0, MAX_FINDINGS).map(toFinding),
-    toolVersions: { typescript: (await ctx.exec(bin, ["--version"])).stdout.trim().replace("Version ", "") },
+    toolVersions: { typescript: (await ctx.execNode(bin, ["--version"])).stdout.trim().replace("Version ", "") },
     durationMs: Date.now() - started,
   };
 };

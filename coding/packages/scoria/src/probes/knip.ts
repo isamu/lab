@@ -101,7 +101,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const started = Date.now();
   const bin = resolveBin("knip", "knip");
   if (bin === undefined) return empty("knip is not installed alongside scoria", started);
-  const result = await ctx.exec(bin, ["--reporter", "json", "--no-progress", "--no-exit-code"]);
+  const result = await ctx.execNode(bin, ["--reporter", "json", "--no-progress", "--no-exit-code"]);
   const unused = parse(result.stdout);
   if (unused === undefined) return empty("knip produced no readable report", started);
   return {
@@ -118,7 +118,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
       { id: "knip.unused_dependencies", value: unused.dependencies.length, unit: "count" },
     ],
     findings: findingsOf(unused).slice(0, MAX_FINDINGS),
-    toolVersions: { knip: (await ctx.exec(bin, ["--version"])).stdout.trim() },
+    toolVersions: { knip: (await ctx.execNode(bin, ["--version"])).stdout.trim() },
     durationMs: Date.now() - started,
   };
 };

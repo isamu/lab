@@ -110,7 +110,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
     };
   }
   const args = [...DENIED.flatMap((category) => ["-D", category]), ...WARNED.flatMap((category) => ["-W", category]), "--format", "json", ctx.root];
-  const result = await ctx.exec(bin, args);
+  const result = await ctx.execNode(bin, args);
   const diagnostics = parse(result.stdout);
   const sloc = sourceSloc(ctx.files);
   const errors = diagnostics.filter((entry) => entry.severity === "error");
@@ -128,7 +128,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
       { id: "oxlint.errors_per_kloc", value: perKiloLines(errors.length, sloc), unit: "per_kloc" },
     ],
     findings: diagnostics.slice(0, MAX_FINDINGS).map((entry) => toFinding(ctx.root, entry)),
-    toolVersions: { oxlint: (await ctx.exec(bin, ["--version"])).stdout.trim() },
+    toolVersions: { oxlint: (await ctx.execNode(bin, ["--version"])).stdout.trim() },
     durationMs: Date.now() - started,
   };
 };

@@ -98,7 +98,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   if (bin === undefined) return empty("jscpd is not installed alongside scoria", started);
   const out = join(tmpdir(), `scoria-jscpd-${String(process.pid)}-${String(Date.now())}`);
   const args = [ctx.root, "--silent", "--min-tokens", MIN_TOKENS, "--reporters", "json", "--output", out];
-  const run_ = await ctx.exec(bin, args);
+  const run_ = await ctx.execNode(bin, args);
   const text = await ctx.readText(join(out, "jscpd-report.json"));
   const parsed = text === undefined ? undefined : parse(text);
   // jscpd writes no report when it finds nothing. That is zero duplication, not a failed run.
@@ -118,7 +118,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
         { id: "jscpd.clone_count", value: report.clones.length, unit: "count" },
       ],
       findings: report.clones.slice(0, MAX_FINDINGS).map((clone) => toFinding(ctx.root, clone)),
-      toolVersions: { jscpd: (await ctx.exec(bin, ["--version"])).stdout.trim() },
+      toolVersions: { jscpd: (await ctx.execNode(bin, ["--version"])).stdout.trim() },
       durationMs: Date.now() - started,
     };
   }

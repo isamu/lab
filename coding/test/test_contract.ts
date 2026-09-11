@@ -52,3 +52,19 @@ test("a rubric referencing an undeclared metric fails at startup", () => {
 test("a rubric whose weights do not sum to 1 fails to load", async () => {
   await assert.rejects(loadRubrics(join(here, "fixtures", "rubrics-broken")), /weights must sum to 1/);
 });
+
+/**
+ * Every tool scoria drives is a `#!/usr/bin/env node` script, and Windows does not honour a
+ * shebang. Executing the resolved path directly works on Unix and fails there, and no CI job
+ * measures that path, so the rule is checked here instead.
+ */
+test("probes run tools through execNode, never by executing the path directly", async () => {
+  const offenders = (await probeSources()).filter((source) => /ctx\.exec\(bin/.test(source.text)).map((source) => source.name);
+  assert.deepEqual(offenders, []);
+});
+
+test("a probe that resolves a binary also uses execNode", async () => {
+  const resolving = (await probeSources()).filter((source) => source.text.includes("resolveBin"));
+  assert.ok(resolving.length > 0, "expected at least one probe to drive an external tool");
+  resolving.forEach((source) => assert.match(source.text, /ctx\.execNode\(/, `${source.name} resolves a bin but never runs it through execNode`));
+});

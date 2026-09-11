@@ -3,7 +3,7 @@ import { access, readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
-import type { Exec, ExecResult, Probe, ProbeContext, ProbeResult, ReadText, SourceFile, StackAdapter } from "./plugin.ts";
+import type { Exec, ExecNode, ExecResult, Probe, ProbeContext, ProbeResult, ReadText, SourceFile, StackAdapter } from "./plugin.ts";
 import type { Rubric } from "./rubric.ts";
 import type { LoadedConfig } from "./config.ts";
 import { loadConfig } from "./config.ts";
@@ -54,6 +54,11 @@ const isInstalled = (root: string): Promise<boolean> =>
     () => true,
     () => false,
   );
+
+const makeExecNode =
+  (exec: Exec): ExecNode =>
+  (script, args) =>
+    exec(process.execPath, [script, ...args]);
 
 const readText: ReadText = (path) =>
   readFile(path, "utf8").then(
@@ -118,7 +123,8 @@ export const assay = async (target: string, probes: readonly Probe[] = PROBES): 
     installed: await isInstalled(root),
     stacks: loaded.config.stacks,
   };
-  const ctx: ProbeContext = { root, files, configFiles, project, exec: makeExec(root), readText };
+  const exec = makeExec(root);
+  const ctx: ProbeContext = { root, files, configFiles, project, exec, execNode: makeExecNode(exec), readText };
   const results = await Promise.all(probes.map((probe) => runProbe(probe, ctx)));
   return {
     report: buildReport(root, files, results, rubrics, { profile: loaded.config.profile, stacks: loaded.config.stacks }, probes),

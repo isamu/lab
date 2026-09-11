@@ -101,6 +101,15 @@ export interface ExecResult {
 export type Exec = (command: string, args: readonly string[]) => Promise<ExecResult>;
 
 /**
+ * Runs a Node script — every tool scoria drives is one.
+ *
+ * Their bins are `#!/usr/bin/env node` scripts, and Windows does not honour a shebang, so
+ * executing the path directly works on Unix and fails on Windows. Running them through the same
+ * Node that is already executing removes the question, and needs no shell.
+ */
+export type ExecNode = (script: string, args: readonly string[]) => Promise<ExecResult>;
+
+/**
  * Reads a file a probe itself produced — a tool's report written to a scratch directory.
  *
  * Probes must not import fs (spec §26.2): the rule stops them deciding file kinds behind
@@ -124,6 +133,7 @@ export interface ProbeContext {
   readonly configFiles: readonly ConfigFile[];
   readonly project: ProjectFacts;
   readonly exec: Exec;
+  readonly execNode: ExecNode;
   readonly readText: ReadText;
 }
 
