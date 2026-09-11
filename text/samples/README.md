@@ -12,20 +12,107 @@
 
 ---
 
+## 読むまえに: 2 つの軸
+
+サンプルを読むとき、どの検査にも次の 2 つが付いている。混ざると設計を読み違える。
+
+### 軸 1 — 誰が判定するか
+
+| | 判定するもの | API key | 速さ | 同じ入力で同じ結果になるか |
+| --- | --- | --- | --- | --- |
+| **機械** | 数え上げ、文字列照合、文書構造、統計 | 不要 | 速い（1 文書 数十 ms） | **なる** |
+| **AI** | 意味、文脈、主張の成立 | 要る | 遅い（1 候補 1〜3 秒） | ならない。confidence が付く |
+
+機械で判定できるものを AI に聞かない。これが仕様の最重要原則（[nlh spec §22](../natural-language-validation-harness-spec.md) の deterministic first）。
+
+いま `lint` が動かすのは機械だけ。AI は `test` でのみ動き、key が無ければ黙って飛ばさず「飛ばした」と報告する。
+
+### 軸 2 — chaff が何をするか
+
+| | すること | 誰が文章を直すか |
+| --- | --- | --- |
+| **検出** | 場所を指摘する | — |
+| **提案** | 直しかたを文字列で見せる | **人** |
+| **置換** | **しない** | — |
+
+**chaff は文章を書き換えない。** 一文字も触らない（[chaff-spec §25](../chaff-spec.md)）。
+
+`lexicons/team.yaml` の `instead:` や `spelling:` の `use:` は、置換ではなく**提案の文面**である。ここを読み違えやすいので注記しておく。
+
+```yaml
+words_to_avoid:
+  - word: 巻き取る
+    instead: 引き継ぐ / 担当する      # ← これは「こう直してください」という表示文であって、
+                                      #    chaff が書き換えるわけではない
+```
+
+自動で置き換えない理由は 3 つ。
+
+```text
+同じ表現でも意図的なことがある   引用文の原文を改変できない
+文脈を壊すことがある             前後の係り受けが変わる
+誤検知がある                     置換された誤検知は、指摘された誤検知より直しにくい
+```
+
+### 出力でも 2 軸が見える
+
+読む人が「これは揺れる判定か」を知らないと、AI の誤検知に振り回される。`test` の出力は機械と AI を見出しで分ける（[output-test-example.txt](./output-test-example.txt)）。
+
+```text
+═══ 機械による判定 ═══════════════════════════════
+    同じ文章なら何度実行しても同じ結果になります
+
+═══ AI による判定 ════════════════════════════════
+    文章の意味を読んでいます。実行するたび結果が変わることが
+    あります。おかしいと思ったら、そのまま無視して構いません。
+
+    118 文のうち 4 文を読みました（残りは機械が対象外と判断）
+```
+
+AI の指摘にだけ「確からしさ」を出し、納得できないときの逃げ道を 2 つ添える。
+
+```text
+  ⚠  数字の根拠がありません            確からしさ 0.88
+
+     この指摘が違うと思ったら:
+       この箇所だけ黙らせる    <!-- stet: unsourced-number — 理由 -->
+       ルールごとゆるめる      npx chaff relax unsourced-number
+```
+
+どちらの出力も末尾に「文章は書き換えていません。直すのは書いた人です」と出す。
+
+---
+
 ## ファイル
 
-| ファイル | 誰が書くか | 何のため |
-| --- | --- | --- |
-| [chaff.yaml](./chaff.yaml) | 人 | 個人ブログ。既定から変えた 2 行だけ |
-| [chaff.team-business.yaml](./chaff.team-business.yaml) | 人 | チームの社内文書。フル |
-| [checks.yaml](./checks.yaml) | 人（非エンジニア） | 自然文で書く検査 |
-| [lexicons/team.yaml](./lexicons/team.yaml) | 人（非エンジニア） | 社内語・略語・表記ゆれ |
-| [rules/bold-density.yaml](./rules/bold-density.yaml) | 開発者 | L1 の rule 定義 |
-| [rules/padded-intro.yaml](./rules/padded-intro.yaml) | 開発者 | L2 の rule 定義 |
-| [rules/risk-disclosure.yaml](./rules/risk-disclosure.yaml) | 開発者 | L4（意味を見る）の rule 定義 |
-| [output-example.txt](./output-example.txt) | — | 非エンジニア向けの出力 |
-| [output-compact.txt](./output-compact.txt) | — | エンジニア向けの出力 |
-| [rules-for-ai.json](./rules-for-ai.json) | — | AI に渡す現在の状態 |
+| ファイル | 誰が書くか | 判定 | chaff がすること |
+| --- | --- | --- | --- |
+| [chaff.yaml](./chaff.yaml) | 人 | — | 設定。個人ブログ。既定から変えた 2 行だけ |
+| [chaff.team-business.yaml](./chaff.team-business.yaml) | 人 | — | 設定。チームの社内文書。フル |
+| [checks.yaml](./checks.yaml) | 人（非エンジニア） | **AI** | 検出 + 提案 |
+| [lexicons/team.yaml](./lexicons/team.yaml) | 人（非エンジニア） | **機械**（文字列照合） | 検出 + 提案（置換はしない） |
+| [rules/bold-density.yaml](./rules/bold-density.yaml) | 開発者 | **機械**（数え上げ） | 検出 + 提案 |
+| [rules/padded-intro.yaml](./rules/padded-intro.yaml) | 開発者 | **機械**（語彙照合） | 検出 + 提案 |
+| [rules/risk-disclosure.yaml](./rules/risk-disclosure.yaml) | 開発者 | **AI**（rubric 判定） | 検出 + 提案 |
+| [output-example.txt](./output-example.txt) | — | — | 出力。`lint`（機械のみ） |
+| [output-test-example.txt](./output-test-example.txt) | — | — | 出力。`test`（機械 + AI を分けて表示） |
+| [output-compact.txt](./output-compact.txt) | — | — | 出力。エンジニア向け |
+| [rules-for-ai.json](./rules-for-ai.json) | — | — | AI に渡す現在の状態 |
+
+`rules-for-ai.json` の「AI」は判定ではなく**設定を書かせる相手**のこと。軸 1 の AI とは別物。
+
+### rule 定義のどこを見れば分かるか
+
+`layer` が軸 1 を決める。
+
+```text
+layer: L1    機械。文書構造と統計だけ。言語を問わず動く
+layer: L2    機械。語彙表との照合。語彙だけが言語別
+layer: L3    機械。品詞解析が要る。setup が済んでいないと飛ばされる
+layer: L4    AI。rubric で判定する。API key が要る
+```
+
+`how_to_fix` があることが軸 2 を決める。全 rule が持ち、**表示するだけ**である。
 
 ---
 
