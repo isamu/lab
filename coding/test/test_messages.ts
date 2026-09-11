@@ -128,3 +128,24 @@ test("the GitHub summary always states that scores are not comparable", async ()
   assert.match(renderGithubSummary(report, "en"), /not comparable across repositories/);
   assert.match(renderGithubSummary(report, "ja"), /他のリポジトリと比べられません/);
 });
+
+test("SARIF carries one rule per distinct finding and a location for each result", async () => {
+  const { renderSarif } = await import("../packages/scoria/src/sarif.ts");
+  const text = renderSarif(report, "0.1.0");
+  assert.match(text, /"version": "2\.1\.0"/);
+  assert.match(text, /"name": "scoria"/);
+  assert.match(text, /"ruleId": "scoria\/suppression-scan\/as-any-no-reason"/);
+  assert.match(text, /"uri": "src\/a\.ts"/);
+  assert.match(text, /"startLine": 3/);
+  // One result and one rule: the rule table is deduplicated, the results are not.
+  assert.equal((text.match(/"ruleId"/g) ?? []).length, 1);
+  assert.equal((text.match(/"shortDescription"/g) ?? []).length, 1);
+});
+
+/** SARIF has no `info`; an informational finding must map to `note` or the upload is rejected. */
+test("SARIF maps severities onto the three levels it defines", async () => {
+  const { renderSarif } = await import("../packages/scoria/src/sarif.ts");
+  const informational = { ...report, findings: report.findings.map((f) => ({ ...f, severity: "info" as const })) };
+  assert.match(renderSarif(informational, "0.1.0"), /"level": "note"/);
+  assert.match(renderSarif(report, "0.1.0"), /"level": "error"/);
+});

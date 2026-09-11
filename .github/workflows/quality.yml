@@ -15,6 +15,9 @@ on:
 
 permissions:
   contents: read
+  # Uploading SARIF puts each finding on the Security tab and inline on a pull request's changed
+  # lines, which is where the person who wrote the line is already looking.
+  security-events: write
 
 jobs:
   measure:
@@ -48,12 +51,28 @@ jobs:
       # nothing would look identical to one that worked.
       - name: measure coding
         run: |
-          node packages/scoria/bin/scoria.js .
+          node packages/scoria/bin/scoria.js . --sarif ../scoria-coding.sarif
           echo "summary bytes: $(wc -c < "$GITHUB_STEP_SUMMARY")"
         working-directory: coding
 
       - name: measure text
         run: |
-          node ../coding/packages/scoria/bin/scoria.js .
+          node ../coding/packages/scoria/bin/scoria.js . --sarif ../scoria-text.sarif
           echo "summary bytes: $(wc -c < "$GITHUB_STEP_SUMMARY")"
         working-directory: text
+
+      # Each upload needs its own category, or the second replaces the first. checkout_path tells
+      # GitHub which directory the paths in the file are relative to.
+      - name: upload coding findings
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: scoria-coding.sarif
+          category: scoria-coding
+          checkout_path: ${{ github.workspace }}/coding
+
+      - name: upload text findings
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: scoria-text.sarif
+          category: scoria-text
+          checkout_path: ${{ github.workspace }}/text

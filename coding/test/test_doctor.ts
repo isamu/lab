@@ -53,7 +53,7 @@ test("asks for a typecheck script only in a TypeScript project", () => {
 });
 
 test("reports the absence of any CI workflow as an error", () => {
-  const gaps = ciGaps([{ path: "package.json", text: "{}" }], false);
+  const gaps = ciGaps("/repo", [{ path: "package.json", text: "{}" }], false);
   assert.deepEqual(ids(gaps), ["ci-missing"]);
   assert.equal(gaps[0]?.severity, "error");
 });
@@ -61,12 +61,12 @@ test("reports the absence of any CI workflow as an error", () => {
 /** A job that swallows its failure is green whatever it found. */
 test("reports steps that swallow their failure", () => {
   const files = [{ path: ".github/workflows/ci.yml", text: "steps:\n  - run: yarn lint && yarn build && yarn test || true\n" }];
-  assert.ok(ids(ciGaps(files, false)).includes("ci-swallowed-failures"));
+  assert.ok(ids(ciGaps("/repo", files, false)).includes("ci-swallowed-failures"));
 });
 
 test("does not report steps CI actually runs", () => {
   const files = [{ path: ".github/workflows/ci.yml", text: "steps:\n  - run: yarn lint\n  - run: yarn build\n  - run: yarn test\n" }];
-  assert.deepEqual(ids(ciGaps(files, false)), []);
+  assert.deepEqual(ids(ciGaps("/repo", files, false)), []);
 });
 
 test("--fix appends node_modules to .gitignore", async () => {

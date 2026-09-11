@@ -288,6 +288,25 @@ GitHub Actions では、実行結果のページの **ジョブサマリー** �
 
 いらない場合は `--no-summary` を付けてください。
 
+### Security タブと差分行への表示
+
+```yaml
+- name: scoria
+  run: npx -y scoria --sarif scoria.sarif
+
+- uses: github/codeql-action/upload-sarif@v4
+  with:
+    sarif_file: scoria.sarif
+    category: scoria
+  # permissions に security-events: write が必要です
+```
+
+`--sarif` は SARIF 2.1.0 を書きます。アップロードすると、指摘がリポジトリの **Security タブ**と、
+さらに **PR の変更行にインライン**で出ます。その行を書いた本人がすでに見ている場所に出る、というのが要点です。
+ログの中の点数はわざわざ見に行く必要がありますが、行のコメントはそうではありません。
+
+ルール名は `scoria/<probe>/<rule>` の形にしてあるので、同じツールを直接動かした結果とぶつかりません。
+
 ## 設定ファイル
 
 ```json
