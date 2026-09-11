@@ -58,6 +58,40 @@ describe("ProseDocument の組み立て", () => {
     );
   });
 
+  it("表のセルの中の太字は数えない", () => {
+    // ラベルであって強調ではない。「読者の目を止める道具」という理屈が当てはまらない。
+    const doc = build("## 表\n\n| 道 | いつ |\n| --- | --- |\n| **直す** | A |\n| **黙らせる** | B |\n| **変える** | C |");
+    assert.deepEqual(
+      doc.sections.map((section) => section.strongCount),
+      [0],
+    );
+  });
+
+  it("見出しの中の太字も数えない", () => {
+    const doc = build("## **強い**見出し\n\n本文です。");
+    assert.deepEqual(
+      doc.sections.map((section) => section.strongCount),
+      [0],
+    );
+  });
+
+  it("コードブロックの中の ** も数えない", () => {
+    const doc = build("## 節\n\n```\n**a** **b** **c**\n```\n\n本文です。");
+    assert.deepEqual(
+      doc.sections.map((section) => section.strongCount),
+      [0],
+    );
+  });
+
+  it("表のある節でも、本文の太字は数える", () => {
+    // 表を除いた結果、本文まで数え落とさないこと。
+    const doc = build("## 節\n\n本文で **強調** します。\n\n| a | b |\n| --- | --- |\n| **x** | y |");
+    assert.deepEqual(
+      doc.sections.map((section) => section.strongCount),
+      [1],
+    );
+  });
+
   it("見出しの前の導入部も節として扱う", () => {
     const doc = build("導入の文です。\n\n## 節\n\n節の文です。");
     assert.equal(doc.sections.length, 2);

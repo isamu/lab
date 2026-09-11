@@ -80,12 +80,21 @@ const headingsOf = (root: Node, source: string): Heading[] => {
   return found;
 };
 
-const strongSpans = (root: Node): Span[] => {
+const startsInside = (span: Span, regions: readonly Span[]): boolean => regions.some((region) => span.start >= region.start && span.start < region.end);
+
+/**
+ * 本文の強調だけを数える。
+ *
+ * 表のセルや見出しの中の太字はラベルであって強調ではない。
+ * 「太字は読者の目を止める道具」という bold-density の理屈が当てはまらない。
+ * 「本文でないもの」の定義は覆う範囲（collectMasks）に 1 つだけ置き、ここはそれを使う。
+ */
+const strongSpans = (root: Node, masked: readonly Span[]): Span[] => {
   const found: Span[] = [];
   walk(root, (node) => {
     if (node.type !== "strong") return;
     const span = spanOf(node);
-    if (span !== undefined) found.push(span);
+    if (span !== undefined && !startsInside(span, masked)) found.push(span);
   });
   return found;
 };
@@ -140,14 +149,15 @@ const sectionsOf = (headings: readonly Heading[], sentences: readonly Sentence[]
 
 export const buildDocument = (path: string, source: string, adapter: LanguageAdapter): ProseDocument => {
   const root = parse(source);
-  const prose = maskSpans(source, collectMasks(root));
+  const masked = collectMasks(root);
+  const prose = maskSpans(source, masked);
   const sentences = sentencesOf(prose, paragraphSpans(root), adapter);
   return {
     path,
     source,
     language: adapter.id,
     lengthUnit: adapter.capabilities.lengthUnit,
-    sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root), source.length),
+    sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root, masked), source.length),
     sentences,
     lexicons: adapter.lexicons,
   };
