@@ -42,15 +42,18 @@ jobs:
         run: yarn build
         working-directory: coding
 
+      # The byte count is printed inside the same step on purpose: GITHUB_STEP_SUMMARY is a
+      # per-step file, so checking it from a later step measures that step's own empty one. The
+      # summary renders on the run page and no API exposes it, so without this a run that wrote
+      # nothing would look identical to one that worked.
       - name: measure coding
-        run: node packages/scoria/bin/scoria.js .
+        run: |
+          node packages/scoria/bin/scoria.js .
+          echo "summary bytes: $(wc -c < "$GITHUB_STEP_SUMMARY")"
         working-directory: coding
 
       - name: measure text
-        run: node ../coding/packages/scoria/bin/scoria.js .
+        run: |
+          node ../coding/packages/scoria/bin/scoria.js .
+          echo "summary bytes: $(wc -c < "$GITHUB_STEP_SUMMARY")"
         working-directory: text
-
-      # The job summary renders on the run page but no API exposes it, so a run that silently wrote
-      # nothing would look identical to one that worked. The byte count puts the answer in the log.
-      - name: confirm the job summary was written
-        run: wc -c "$GITHUB_STEP_SUMMARY"
