@@ -22,6 +22,8 @@ export interface ProbeReport {
 export interface Report {
   readonly schemaVersion: 1;
   readonly root: string;
+  readonly profile: string;
+  readonly stacks: readonly string[];
   readonly complete: boolean;
   readonly size: { readonly files: number; readonly sloc: number; readonly testSloc: number };
   readonly dimensions: readonly DimensionReport[];
@@ -57,7 +59,20 @@ const slocOfKind = (files: readonly SourceFile[], kind: SourceFile["kind"]): num
 
 const mean = (values: readonly number[]): number => (values.length === 0 ? 0 : Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(4)));
 
-export const buildReport = (root: string, files: readonly SourceFile[], results: readonly ProbeResult[], rubrics: readonly Rubric[]): Report => {
+export interface ReportMeta {
+  readonly profile: string;
+  readonly stacks: readonly string[];
+}
+
+const DEFAULT_META: ReportMeta = { profile: "app", stacks: ["ts"] };
+
+export const buildReport = (
+  root: string,
+  files: readonly SourceFile[],
+  results: readonly ProbeResult[],
+  rubrics: readonly Rubric[],
+  meta: ReportMeta = DEFAULT_META,
+): Report => {
   const values = collectMetrics(results);
   const sloc = slocOfKind(files, "source");
   const dimensions = rubrics.map((rubric) => ({
@@ -68,6 +83,8 @@ export const buildReport = (root: string, files: readonly SourceFile[], results:
   return {
     schemaVersion: 1,
     root,
+    profile: meta.profile,
+    stacks: meta.stacks,
     complete: results.every((r) => r.status.kind !== "skipped"),
     size: { files: files.length, sloc, testSloc: slocOfKind(files, "test") },
     dimensions,

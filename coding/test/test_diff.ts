@@ -4,6 +4,7 @@ import { diffReports } from "../packages/scoria/src/diff.ts";
 import { buildReport } from "../packages/scoria/src/report.ts";
 import type { Rubric } from "../packages/scoria/src/rubric.ts";
 import type { ProbeResult, SourceFile } from "../packages/scoria/src/plugin.ts";
+import { sourceFile } from "./helpers.ts";
 
 const rubrics: readonly Rubric[] = [
   {
@@ -17,7 +18,7 @@ const rubrics: readonly Rubric[] = [
   },
 ];
 
-const files: readonly SourceFile[] = [{ path: "a.ts", kind: "source", lines: ["const a = 1;"] }];
+const files: readonly SourceFile[] = [sourceFile("a.ts", ["const a = 1;"])];
 
 const resultWith = (p95: number, godFiles: number): ProbeResult => ({
   probe: "file-shape",

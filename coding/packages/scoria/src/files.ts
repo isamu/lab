@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
-import type { FileKind, SourceFile } from "./plugin.ts";
+import type { SourceFile, StackAdapter } from "./plugin.ts";
+import { composeClassify, ownerOf } from "./stacks/index.ts";
 
 const MAX_BYTES = 2_000_000;
 
@@ -34,20 +35,23 @@ const readLines = async (root: string, relativePath: string): Promise<readonly s
  * 走査・読み込み・分類を core が一度だけ行い、probe には分類済みのものだけを渡す。
  * probe が生のパスを受け取らないので、classify を迂回した種別判定が書けない（spec §8）。
  */
-export const collectFiles = async (root: string, classify: (relativePath: string) => FileKind): Promise<readonly SourceFile[]> => {
+export const collectFiles = async (root: string, stacks: readonly StackAdapter[]): Promise<readonly SourceFile[]> => {
+  const classify = composeClassify(stacks);
   const paths: string[] = [];
   await walk(root, root, paths);
-  const candidates = paths.map((path) => ({ path, kind: classify(path) })).filter((f) => f.kind !== "ignored");
+  const candidates = paths.map((path) => ({ path, kind: classify(path) })).filter((file) => file.kind !== "ignored");
   const loaded = await Promise.all(
     candidates.map(async ({ path, kind }) => {
       const lines = await readLines(root, path);
-      return lines === undefined ? undefined : { path, kind, lines };
+      if (lines === undefined) return undefined;
+      const codeLinesOf = ownerOf(stacks, path)?.codeLinesOf;
+      return { path, kind, lines, codeLines: codeLinesOf === undefined ? lines : codeLinesOf(lines) };
     }),
   );
-  return loaded.filter((f): f is SourceFile => f !== undefined);
+  return loaded.filter((file): file is SourceFile => file !== undefined);
 };
 
 export const slocOf = (file: SourceFile): number => file.lines.filter((line) => line.trim() !== "").length;
 
 /** 密度の分母は source だけ。test を分母に入れると、テストを足すだけで密度が下がる（spec §16.3）。 */
-export const sourceSloc = (files: readonly SourceFile[]): number => files.filter((f) => f.kind === "source").reduce((sum, f) => sum + slocOf(f), 0);
+export const sourceSloc = (files: readonly SourceFile[]): number => files.filter((file) => file.kind === "source").reduce((sum, file) => sum + slocOf(file), 0);

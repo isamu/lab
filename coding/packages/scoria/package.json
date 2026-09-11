@@ -1,6 +1,6 @@
 {
   "name": "scoria",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Code quality assay harness for TypeScript and JavaScript",
   "license": "MIT",
   "author": "isamu",
@@ -28,10 +28,10 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@scoria/stack-ts": "0.0.0",
     "yaml": "^2.9.0"
   }
 }

@@ -561,7 +561,7 @@ Mutation 10 / セキュリティ 10 / ドキュメント 10 / UI 10 / CI 5）を
 
 | dimension        | 何を測るか                       | 主な probe                                        | Tier  |
 | ---------------- | -------------------------------- | ------------------------------------------------- | ----- |
-| `type-safety`    | 型がどれだけ機能しているか       | tsc-strict, tsconfig-integrity                    | 1     |
+| `type-safety`    | 型がどれだけ機能しているか       | source-mix, tsc-strict, tsconfig-integrity        | 0 / 1 |
 | `readability`    | 読んで理解できる形か             | eslint, jscpd, file-shape, comment-quality        | 0     |
 | `architecture`   | 構造と依存が壊れていないか       | knip, dependency-cruiser, jscpd                   | 0     |
 | `test-coverage`  | どれだけ実行されているか         | test-presence, coverage                           | 2     |
@@ -630,6 +630,7 @@ adapter は起動した実バージョンを `toolVersions` に記録する義�
 | `readme-contract`  | `has_sections{...}`, `cli_flags_documented_ratio`                                       | §13 |
 | `ui-token`         | `raw_color_count`, `raw_spacing_cardinality`, `inline_style_count`, `style_block_count` | §14 |
 | `component-shape`  | `props_count_p95`, `near_duplicate_components`                                          | §14 |
+| `source-mix`       | `untyped_file_ratio`, `untyped_sloc_ratio`, `untyped_file_count`                        | §15 |
 | `secret-scan`      | `hardcoded_secret_candidates`                                                           | —   |
 | `test-presence`    | `modules_without_test_ratio`                                                            | —   |
 
@@ -803,6 +804,25 @@ ci-integrity（ワークフロー）
   || true で握りつぶしている step の数
 ```
 
+### 15.2.1 計数は FileKind ごとに分ける
+
+**実測による追補。** 総数で数えると嘘になる。
+
+graphai の `as any` 94 件のうち **69 件（73%）が test 配下**だった。
+テストの `as any` はモックのために正当なことが多く、source の 25 件が総数に埋もれる。
+
+したがって `suppression-scan` は `StackAdapter.classify` の結果ごとに分けて数え、
+rubric は source の密度を主指標に、test には小さい重みだけを与える。
+
+### 15.2.2 `.js` は型検査のファイル単位の抑制である
+
+TypeScript プロジェクトに残っている `.js` / `.jsx` は、型検査を丸ごと回避している。
+`@ts-nocheck` と効果は同じで、しかもコード上に痕跡が残らない。
+`source-mix` probe がこれを数え、`type-safety` 次元に効かせる。
+
+**typescript を依存に持たない repo では測らない**（`skipped`）。
+JavaScript のプロジェクトに「TypeScript にしろ」と言うのは、この probe の仕事ではない。
+
 ### 15.3 理由の有無で扱いを変える
 
 抑制そのものは悪ではない。**説明の無い抑制**が問題である。
@@ -821,7 +841,11 @@ const res = await client.request(opts);
 
 これは減点する。
 
-判定は「同一行または直前行に、ディレクティブ以外の自然文が一定文字数以上あるか」で行う。
+判定はディレクティブの種類で分ける。**eslint はルール名を理由と数えてはならない。**
+`// eslint-disable-next-line no-console` の `no-console` を理由とみなすと、
+ルール名を書くだけで正当化され、integrity の測定が丸ごと無意味になる。
+eslint の規約どおり `--` 以降だけを理由とし、ルール名欄を持たない TypeScript のディレクティブだけ、
+ディレクティブより後ろを理由とみなす。
 `// @ts-expect-error fix later` のような無内容な理由は通ってしまうが、
 これを機械で弾こうとすると誤検知が支配的になる。**Tier 4 の judge が理由の質を見る**役割分担にする（§24）。
 
