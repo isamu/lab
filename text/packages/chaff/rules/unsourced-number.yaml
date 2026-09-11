@@ -1,0 +1,40 @@
+id: unsourced-number
+layer: L4
+status: stable
+how_to_find: unsourced-number
+severity: warning
+
+name:
+  ja: 数字の根拠がない
+  en: Number without a source
+
+why:
+  ja: 根拠のない数字は、読む人が確かめられません。
+  en: A number the reader cannot check is not evidence.
+
+message:
+  ja: "{reason}"
+  en: "{reason}"
+
+how_to_fix:
+  ja: 「(2026年4-6月、対前年同期、n=120)」のように括弧で添えてください。
+  en: Add the basis in parentheses — period, comparison, sample size.
+
+what_to_check:
+  ja: |
+    効果を主張する数値について、次のいずれかが同じ文か近くにあること。
+      ・どう計算したか
+      ・いつと比べたか
+      ・母数がいくつか
+    どれも無ければ、決まりに反する。
+    一般に知られた事実の引用や、仕様として決まっている値は対象外とする。
+  en: |
+    A number claiming an effect must carry at least one of: how it was
+    computed, what it is compared against, or the sample size.
+
+levels:
+  strict: error
+  normal: warning
+  relaxed: info
+
+use_for: [business]

@@ -36,6 +36,10 @@ export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], s
     .map((rule) => rule.id);
   const outcome = applicable.reduce<{ findings: Finding[]; skipped: Skipped[] }>(
     (acc, rule) => {
+      // L4 は意味を読む検査。chaff test が扱う。ここで「検出器が無い」と言わせない。
+      if (rule.layer === "L4") {
+        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: "意味を読む検査のため（npx chaff test で動きます）" }] };
+      }
       const level = levelFor(rule, settings, experimental);
       if (level === "off") {
         const why = rule.status === "experimental" && settings[rule.id] === undefined ? "まだ試験中のため" : "設定で止めているため";

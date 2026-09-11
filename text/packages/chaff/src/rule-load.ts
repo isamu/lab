@@ -10,15 +10,25 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 
 const isLocalized = (value: unknown): value is Record<string, string> => isRecord(value) && Object.values(value).every((entry) => typeof entry === "string");
 
+const SEVERITY_BY_NAME: Readonly<Record<string, number>> = { info: 1, warning: 2, error: 3 };
+
+/** L4 は件数ではなく深刻度を段で持つ。error/warning/info を数に写して同じ器に入れる。 */
+const asNumber = (entry: unknown): number | undefined => {
+  if (typeof entry === "number") return entry;
+  return typeof entry === "string" ? SEVERITY_BY_NAME[entry] : undefined;
+};
+
 const isLevelTable = (value: unknown): value is LevelTable =>
-  isRecord(value) && Object.entries(value).every(([key, entry]) => ["strict", "normal", "relaxed"].includes(key) && typeof entry === "number");
+  isRecord(value) && Object.entries(value).every(([key, entry]) => ["strict", "normal", "relaxed"].includes(key) && asNumber(entry) !== undefined);
 
 /** 言語別の levels を、その言語のぶんだけに平坦化する。単位が言語で違う rule のため。 */
+const normalize = (table: LevelTable): LevelTable => Object.fromEntries(Object.entries(table).map(([key, entry]) => [key, asNumber(entry) ?? 0]));
+
 const flattenLevels = (raw: unknown, language: string): LevelTable | undefined => {
-  if (isLevelTable(raw)) return raw;
+  if (isLevelTable(raw)) return normalize(raw);
   if (!isRecord(raw)) return undefined;
   const forLanguage = raw[language] ?? raw["default"];
-  return isLevelTable(forLanguage) ? forLanguage : undefined;
+  return isLevelTable(forLanguage) ? normalize(forLanguage) : undefined;
 };
 
 const SEVERITIES: readonly Severity[] = ["error", "warning", "info"];
@@ -65,6 +75,7 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     levels,
     how_to_find: String(raw["how_to_find"]),
     word_list: typeof raw["word_list"] === "string" ? raw["word_list"] : undefined,
+    what_to_check: isLocalized(raw["what_to_check"]) ? raw["what_to_check"] : undefined,
     where: typeof raw["where"] === "string" ? raw["where"] : undefined,
     use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],
     severity: isSeverity(raw["severity"]) ? raw["severity"] : "warning",

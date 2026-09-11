@@ -1,0 +1,41 @@
+id: risk-disclosure
+layer: L4
+status: stable
+how_to_find: risk-disclosure
+severity: warning
+
+name:
+  ja: リスクが書かれていない
+  en: No risk disclosed
+
+why:
+  ja: 提案を読む人は、うまくいく話だけでは判断できません。
+  en: A reader cannot decide from the upside alone.
+
+message:
+  ja: "{reason}"
+  en: "{reason}"
+
+how_to_fix:
+  ja: 「リスク」または「懸念」の節を足してください。
+  en: Add a section naming the risks.
+
+what_to_check:
+  ja: |
+    提案を行っている文書に、次のいずれかが書かれていること。
+      ・その施策のリスク
+      ・想定される副作用
+      ・実施しなかった場合の影響
+    いまの課題の記述は、リスクとしては数えない。
+    提案をしていない文書（報告・議事録・説明）は、この決まりの対象外とする。
+  en: |
+    For a document making a proposal, at least one of: risks of the action,
+    expected side effects, or the cost of not acting. A description of the
+    current problem does not count. Documents that make no proposal are out of scope.
+
+levels:
+  strict: error
+  normal: warning
+  relaxed: info
+
+use_for: [business]

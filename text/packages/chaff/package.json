@@ -51,6 +51,7 @@
     "prepack": "yarn build"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
     "@chaffjs/lang-en": "0.0.1",
     "@chaffjs/lang-ja": "0.0.1",
     "mdast-util-from-markdown": "^2.0.3",
