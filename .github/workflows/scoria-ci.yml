@@ -55,3 +55,8 @@ jobs:
       # and writes the table into the run's job summary. It never fails the build.
       - name: scoria on itself
         run: node packages/scoria/bin/scoria.js .
+
+      # The job summary is rendered on the run page but is not exposed by any API, so its absence
+      # would be invisible from outside. Printing the size makes the mechanism observable in the log.
+      - name: confirm the job summary was written
+        run: wc -c "$GITHUB_STEP_SUMMARY"
