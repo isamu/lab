@@ -1,6 +1,5 @@
 import { relative } from "node:path";
 
-const SCORIA_VERSION = "0.1.0";
 import { assay } from "./run.ts";
 import { detectConfig, writeConfig, CONFIG_FILENAME, type ScoriaConfig } from "./config.ts";
 import { isLang, messagesFor, type Lang } from "./messages.ts";
@@ -8,6 +7,7 @@ import type { Report } from "./report.ts";
 import { renderExplain, renderReport } from "./render.ts";
 import { renderGithubSummary } from "./summary.ts";
 import { renderSarif } from "./sarif.ts";
+import { SCORIA_VERSION } from "./version.ts";
 import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { applyFixes, diagnose, renderDoctor } from "./doctor.ts";
