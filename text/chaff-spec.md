@@ -3,6 +3,7 @@
 言語に依存しない文章検証ハーネス。ビジネス文書とブログ記事を第一の対象とする。
 
 前提仕様: [natural-language-validation-harness-spec.md](./natural-language-validation-harness-spec.md)
+利用者側の仕様: [chaff-workflow-spec.md](./chaff-workflow-spec.md)（導入・執筆・検証・規範の更新の流れ）
 
 本 spec は [business-blog-harness-spec.md](./business-blog-harness-spec.md) を置き換える。前版は日本語専用として設計していたが、rule を層に分けた結果、日本語に本質的に依存するのは全体の 1/5 程度であることが分かったため、言語を直交軸として切り出した。
 
@@ -267,16 +268,24 @@ rule 定義は必要な capability を宣言する。
 
 ```yaml
 agentless-passive:
-  description: 主語のない受動態
   layer: L3
+  name:
+    ja: 主語のない受動態
+    en: Agentless passive
+  why:
+    ja: 「〜が実施されます」は、誰がやるのかが消えます。
+  how_to_fix:
+    ja: 動作の主体を主語にしてください。
   requires:
     pos: true
   implementedBy:
     ja: ja/agentless-passive
     en: en/agentless-passive
-  severity:
-    business: warning
-    blog: info
+  levels:
+    strict: 1
+    normal: 3
+    relaxed: 6
+  use_for: [business]
 ```
 
 `implementedBy` に文書の言語のエントリがなければ、その rule は `unsupported` として報告される。`requires` を満たさなければ `skipped` として報告される。いずれも silent pass にはしない（§17.4）。
@@ -354,6 +363,35 @@ profile は言語別の閾値を持つ（§9）。
 
 英語は Tier 0 と Tier 1 の差が小さい。日本語は形態素解析辞書のサイズが npx 体験に直撃するため差が大きい（§16）。
 
+### 7.2 文分割は adapter の責務である（実測）
+
+`sentence-splitter@5.0.1` を日英で実行して確かめた結果を記録する。`sentence-rhythm` と `max-sentence-length` は文長に直接依存するため、分割の誤りはそのまま指標を動かす。
+
+英語は既定で正しく分割できた。`Dr.` `e.g.` `U.S.` `$3.50` をいずれも文末と誤認しない。
+
+日本語は誤分割する。
+
+```text
+入力  「本当に？」と聞かれたが、Dr. 田中は，答えなかった。
+既定  「本当に？」と聞かれたが、Dr.   ← ここで切れる
+      田中は，答えなかった。
+```
+
+`AbbrMarker` の `language` を差し替えても直らない。原因は略語の保護ではなく、`.` を文末と見なすこと自体にある。
+
+日本語の文末は `。！？` に限られるため、adapter 側の後処理で解決する。
+
+```text
+規則  直前の断片が「。！？」（および閉じ括弧）で終わっていなければ、次と結合する
+```
+
+この後処理を入れて、略語・小数・URL・英文混在・鍵括弧内の句点の 4 ケースがいずれも期待どおりになることを確認した。
+
+ここから 2 つが従う。
+
+1. **文分割を共通ユーティリティにしてはならない。** adapter が持つ（§6 の `segment`）。言語ごとに終端の定義が違う。
+2. 断片を結合するとき、`raw` の連結ではなく元文字列のオフセットを使う。空白ノードが落ちて文長が 1 文字ずれる。
+
 ---
 
 ## 8. 言語検出
@@ -405,18 +443,18 @@ extends: blog
 
 rules:
   max-sentence-length:
-    by_language:
-      ja: { max: 100, unit: char }
-      en: { max: 25,  unit: word }
-      default: { max: 25, unit: word }
+    levels:
+      ja: { strict: 70, normal: 100, relaxed: 140 }   # 単位は char
+      en: { strict: 18, normal: 25,  relaxed: 35 }    # 単位は word
 
   concrete-evidence-density:
-    severity: warning
-    min_evidence_per_section: 1
+    levels:
+      normal: 1        # セクションあたり具体物 1 つ以上
 
-  first-person-experience:
-    enabled: false
+  first-person-experience: off
 ```
+
+profile が持つのは既定の `levels` であり、利用者の `chaff.yaml` はそこに 4 語で上書きをかける（§18.1）。
 
 初期閾値（calibration 前の暫定値。§21 で更新する）:
 
@@ -465,7 +503,10 @@ rules:
 ```yaml
 required-sections:
   layer: L1
-  severity: error
+  levels:
+    strict: error
+    normal: error
+    relaxed: warning
   sections:
     business/proposal:
       ja:
@@ -565,13 +606,13 @@ entries:
 ```yaml
 unsourced-number:
   layer: L2
-  detector: pattern-cooccurrence
-  scope: sentence
+  how_to_find: pattern-cooccurrence
+  where: sentence
   require:
-    - lexicon: numeric-expression     # 言語別。数値の書式が違う
-    - lexicon: effect-verb            # 向上/改善/削減 | improve/reduce/increase
+    - word_list: numeric-expression   # 言語別。数値の書式が違う
+    - word_list: effect-verb          # 向上/改善/削減 | improve/reduce/increase
   exclude:
-    - lexicon: evidence-marker        # 出典/調査/n= | source/survey/n=
+    - word_list: evidence-marker      # 出典/調査/n= | source/survey/n=
   then: candidate_for_semantic        # L4 judge に渡す（§14）
 ```
 
@@ -625,9 +666,9 @@ adapter が detector ごと提供する。rule id は言語間で共有し、実
 ```yaml
 no-em-dash:
   layer: L1
-  severity:
-    ja: warning        # 日本語組版でダッシュは扱いが難しい
-    en: info           # 英語では正当な用法が多い。ただし現在は AI tell としても強い
+  levels:
+    ja: { normal: warning }   # 日本語組版でダッシュは扱いが難しい
+    en: { normal: info }      # 英語では正当な用法が多い。ただし現在は AI tell としても強い
 ```
 
 英語における em dash の多用は、2026 年時点で最も知られた AI 生成のシグナルの一つ。ただし人間の熟練した書き手も多用するため、単独では info とし、複合シグナル（§20.2）で扱う。
@@ -655,8 +696,11 @@ rubric は adapter ではなく genre pack が持つ。ビジネス文書の規�
 ```yaml
 risk-disclosure:
   layer: L4
-  severity: warning
-  rubric:
+  levels:
+    strict: error
+    normal: warning
+    relaxed: info
+  what_to_check:
     ja: |
       提案を行っている文書について、次のいずれかが本文に存在すること。
       施策のリスク、想定される副作用、不採用時の影響。
@@ -871,133 +915,258 @@ capability 不足や adapter 不在で rule が走らなかった場合、成功
 
 ## 18. 設定ファイル
 
+キーは平易な英語に統一する。値は書き手の言語で書く。設定ファイルの形が言語ごとに変わってはならない（§3 の言語直交性）。
+
 ```yaml
-# .chaff.yaml
+# chaff.yaml
+$schema: https://chaff.dev/schema/v1.json
+
 genre: blog/tech
 # language: ja        # 省略時は自動検出（§8）
 
-overrides:
+by_path:
   - files: ["proposals/**/*.md"]
     genre: business/proposal
-  - files: ["minutes/**/*.md"]
-    genre: business/meeting-notes
   - files: ["docs/en/**/*.md"]
     language: en
 
+# 既定から変えたものだけを書く。書かなければ既定で動く。
 rules:
-  ai-tell:
-    severity: off
-  bold-density:
-    max_per_section: 3
-  internal-jargon:
-    lexicon: ./lexicons/our-company.yaml
+  bold-density: relaxed
+  ai-tell: off
 
-semantic:
-  enabled: true
-  model: claude-sonnet-5
-  confidence_threshold: 0.7
-  cache: .chaff-cache
+checks: ./checks.yaml          # 利用者が自然文で足す検査（§18.3）
 
-strict: false          # skip を error に昇格するか
-experimental: false    # experimental rule を有効にするか（§22）
+word_lists:
+  - ./lexicons/team.yaml
+
+ai_checks: true                # L4。API key が無ければ自動で skip
+ai_model: claude-sonnet-5
+
+stet_needs_reason: true
+strict: false                  # skip を error に昇格するか
+experimental: false            # experimental rule を既定で有効にするか（§22）
 ```
 
-`chaff init` でこのファイルと `lexicons/` の雛形を生成する。
+`chaff init` でこのファイルと `lexicons/` の雛形を生成し、`.gitignore` に `.chaff-cache/` を追記する。
+
+### 18.1 rule の値は 4 語
+
+利用者が数値を書かなくて済むように、rule の値は 4 語から選ぶ。
+
+```text
+strict    きびしく見る
+normal    ふつう（既定）
+relaxed   ゆるく見る
+off       見ない
+```
+
+数値との対応は rule 定義の `levels` が持つ（§18.2）。数値や severity を直接書くこともできる。
+
+**段階が 4 つない rule がある。** `padded-intro` のように、意味のある設定が 2 つしかないものは `levels` に 2 つだけ書く。未定義の段階は `normal` に落ちる。
+
+```yaml
+levels:
+  normal: 1
+  relaxed: 3
+# strict は未定義 -> normal と同じ
+```
+
+このとき `chaff strict padded-intro` は、設定を書き換える前に無効化であることを告げる。
+
+```text
+padded-intro に strict はありません。normal と同じ設定です。
+設定は変更しませんでした。
+```
+
+### 18.2 rule 定義に必須のフィールド
+
+利用者向けの表示（§19）を成立させるため、すべての rule は次を持つ。欠けている rule は読み込み時に拒否する。
+
+| フィールド | 用途 |
+| --- | --- |
+| `name` | 指摘の見出し。言語別 |
+| `why` | なぜ問題か。言語別 |
+| `how_to_fix` | どうすればいいか。言語別 |
+| `message` | 検出内容。`{count}` などを埋める |
+| `levels` | 4 語と数値の対応。2 つ以上 |
+| `use_for` | 対象ジャンル |
+| `status` | `experimental` / `stable` / `deprecated` |
+
+`message` だけでは、非エンジニアは何が悪いのか分からない。`why` と `how_to_fix` を必須にするのはそのため。
+
+### 18.3 利用者が自然文で足す検査
+
+`checks.yaml` に書いたものは L4 rule として扱う。キーは英語、中身は書き手の言語。
+
+```yaml
+checks:
+  - name: 数字には根拠がある
+    use_for: business
+    check: |
+      効果を主張する数値について、算出根拠・対象期間・比較対象の
+      いずれかが本文にあること。
+    look_at: 数値と「向上」「削減」などの語が同じ文にあるところ
+    level: normal
+    how_to_fix: 「(2026年4-6月、対前年同期、n=120)」のように括弧で添えてください。
+```
+
+`look_at` は §14 の candidate filter にあたる。自然文で書かれたものを絞り込み条件に変換する方法は未決（§26）。
+
+### 18.4 experimental と明示設定の優先順位
+
+**明示設定は status の既定に勝つ。**
+
+```text
+rule が experimental で、chaff.yaml に記載がない    -> 動かない
+rule が experimental で、chaff.yaml に normal と記載 -> 動く
+```
+
+利用者が名指しで有効にしたものを、status を理由に黙って無効にしない。ただし、そうした rule がある場合は実行のたびに一度報告する。
+
+```text
+experimental な rule を 2 件、設定により有効にしています: padded-intro, rule-of-three
+```
 
 ---
 
 ## 19. CLI と出力例
 
 ```bash
+npx chaff article.md                   # 引数がファイルだけなら lint と同じ
 npx chaff lint article.md              # deterministic のみ（L1 / L2 / L3）
-npx chaff test article.md              # L4 semantic を含む
-npx chaff eval corpus/ja/blog/         # rule の評価
-npx chaff explain concrete-evidence-density
+npx chaff test article.md              # L4 を含む
+npx chaff eval corpus/ja/blog/         # rule の評価と閾値 sweep
+npx chaff explain sentence-rhythm      # rule の意図と根拠
 npx chaff init
-npx chaff setup ja                     # 形態素解析器の取得
-npx chaff setup en
+npx chaff setup ja                     # 品詞解析器の取得
+
+# 設定を変える（chaff.yaml を開かずに済む）
+npx chaff relax bold-density --why "図の説明で太字を多用するため"
+npx chaff strict excessive-hedging --why "..."
+npx chaff off ai-tell --why "..."
+npx chaff words add "巻き取る" --instead "引き継ぐ"
+npx chaff checks add                   # 対話で L4 の検査を 1 つ足す
+
+# 状態を見る
+npx chaff rules --json                 # AI に渡す。現在値・使える値・変更方法（§19.3）
+npx chaff schema                       # chaff.yaml の JSON Schema
+npx chaff suppressions                 # stet の集計と設定変更の提案
+npx chaff baseline docs/               # 既存の指摘を棚上げする
 ```
 
-lint 出力:
+### 19.1 既定の出力は非エンジニア向け
+
+1 件につき 4 つを出す。どれが欠けても、書いた人は動けない。
 
 ```text
-$ npx chaff lint article.md
+該当箇所の引用       どこの話か
+何が起きているか     name + message
+なぜ問題か           why
+どうすればいいか     how_to_fix
+```
 
-article.md  [ja · blog/tech]  language detected from content (0.97)
+```text
+$ npx chaff article.md
+
+article.md   ブログ記事（技術） · 日本語
+             ルールは既定のまま（設定ファイルはありません）
+
+
+─── 41 行目 ─────────────────────────────────────────────
+
+    ここで **重要** なのは **キャッシュの寿命** です。**TTL** を
+    **短く** すると **整合性** は保てますが **負荷** が上がります。
+
+  ⚠  太字の使いすぎ
+
+     このセクションに太字が 6 箇所あります（2 箇所まで）。
+     太字は読者の目を止める道具です。多用すると、どこも目立たなく
+     なります。
+
+     → 本当に強調したい 1〜2 箇所だけ残して、ほかは普通の文に
+       してください
+
+     このルールをゆるめる:  npx chaff relax bold-density
+
+
+─────────────────────────────────────────────────────────
+
+  注意 3 件
+
+  意味を見る検査は動かしていません。動かすには:
+      npx chaff test article.md          （API key が要ります）
+
+  ほかに 7 つのルールが、まだ試験中のため止まっています:
+      npx chaff lint article.md --experimental
+```
+
+rule の id は「ゆるめる」コマンドの中にだけ出す。非エンジニアが最初に読むのは `name` であり、`bold-density` ではない。
+
+### 19.2 `--compact` がエンジニア向け
+
+```text
+$ npx chaff lint article.md --compact
+
+article.md  [ja · blog/tech]
 
    3:1   warning  「近年、AIの活用が注目されています」は水増しの導入です
                   padded-intro
-
-  24:1   warning  見出し「キャッシュの仕組み」を直後の文がほぼ反復しています
-                  heading-echo
-
   41:12  warning  太字がこのセクションに 6 箇所あります (上限 2)
                   bold-density
 
-  58:1   warning  文長の変動係数 0.18 (下限 0.30)。文の長さが単調です
-                  sentence-rhythm
-
-  71:1   info     3 項目の箇条書きが 5 個中 5 個です
-                  rule-of-three
-
-  92:1   warning  セクション「まとめ」に数値・コード・リンク・引用がありません
-                  concrete-evidence-density
-
-5 warnings, 1 info
-2 rules skipped (require POS tagging): agentless-passive, taigen-dome-in-prose
-  run `npx chaff setup ja` to enable
+2 warnings
+7 rules disabled (experimental), 9 rules skipped (semantic, no API key)
 ```
 
-英語文書:
+`--format json` と `--format lsp` も持つ（§11 の LSP 要件）。
 
-```text
-$ npx chaff lint proposal.md
+### 19.3 `chaff rules --json` は AI のための入口
 
-proposal.md  [en · business/proposal]  language from front matter
+AI に設定を書かせるとき、これを渡せば推測せずに書ける。現在値、使える値、数値との対応、なぜ今 off なのか、変更コマンドまでが 1 つに入る。
 
-   1:1   error    required section missing: risk | tradeoff
-                  required-sections
-
-  14:3   warning  "It is important to note that" adds no information
-                  empty-intensifier
-
-  22:1   warning  agentless passive: "a decision was made"
-                  agentless-passive
-
-  31:8   warning  nominalization: "conduct an evaluation" -> "evaluate"
-                  nominalization
-
-  47:1   info     em dash used 11 times in 620 words
-                  no-em-dash
-
-1 error, 3 warnings, 1 info
+```json
+{
+  "values_you_can_use": ["strict", "normal", "relaxed", "off"],
+  "rules": [
+    {
+      "id": "bold-density",
+      "name": { "ja": "太字の使いすぎ" },
+      "why": { "ja": "太字は読者の目を止める道具です。..." },
+      "your_setting": { "level": "relaxed", "from": "chaff.yaml:24", "why": "図の説明で..." },
+      "now": { "level": "relaxed", "limit": 4 },
+      "levels": { "strict": 1, "normal": 2, "relaxed": 4 }
+    }
+  ],
+  "how_to_change": {
+    "by_command": ["npx chaff relax <rule-id> --why \"<理由>\""],
+    "by_file": "chaff.yaml の rules に <rule-id>: <level> を足す"
+  }
+}
 ```
 
-test 出力:
+### 19.4 設定の書き戻しはコメントを壊さない
 
-```text
-$ npx chaff test proposal.md
+`chaff relax` などは `chaff.yaml` を機械的に書き換えるが、既存のコメントを保持する。設定ファイルがチームの規範そのものである以上（workflow spec §9）、コメントが失われることは規範が失われることに等しい。
 
-proposal.md  [ja · business/proposal]
+書き戻しの規約:
 
-deterministic  (L1: 16, L2: 11, L3: 8)
-  ✓ required-sections
-  ✓ no-mixed-desumasu
-  ✗ conclusion-first        結論が 7 段落目にあります (上限 3 文以内)
-  ✗ undefined-acronym       "SLA" が初出時に展開されていません
+| 規約 | 理由 |
+| --- | --- |
+| 既存のコメントをすべて保持する | 規範の履歴が消える |
+| 新しい rule には `name` と `why` をコメントとして自動で添える | 設定ファイルを開いた人が rule を調べずに済む |
+| 理由は `# YYYY-MM-DD 理由 / @who` の形で値の後ろに置く | 誰がいつなぜ変えたかを残す |
+| **すでに理由があるものを変えるときは `--why` を必須にする** | 古い理由が新しい値に付いたまま残ると、履歴が嘘になる |
 
-semantic       (4 candidates from 118 sentences, 2 cached)
-  ✗ unsourced-number        confidence 0.88
-      「導入により工数が 40% 削減されます」
-      40% の算出根拠、対象期間、比較対象が本文にありません
+最後の規約がないと、次が起きる。
 
-  ✗ risk-disclosure         confidence 0.74
-      提案の不採用時の影響と、導入に伴うリスクが述べられていません
+```yaml
+# 変更前
+bold-density: relaxed      # 2026-09-11 図の説明で太字を多用するため / @isamu
 
-  ✓ actionable-ask
-  ✓ causal-mechanism
-
-2 errors, 2 warnings
+# chaff strict bold-density を --why なしで実行した場合（禁止する）
+bold-density: strict       # 2026-09-11 図の説明で太字を多用するため / @isamu
+                           #            ^ きびしくした理由になっていない
 ```
 
 ---
@@ -1033,7 +1202,8 @@ semantic       (4 candidates from 118 sentences, 2 cached)
 ```yaml
 ai-generated-composite:
   layer: L1
-  severity: warning
+  levels:
+    normal: warning
   requires:
     min_signals: 3
     from:
@@ -1267,3 +1437,4 @@ FP dashboard
 4. **`section-length-uniformity` と `sentence-rhythm` の仮説検証。** 「AI 生成記事は節の長さと文の長さが揃う」は未検証の仮説。corpus 評価の結果次第では rule ごと落とす。
 5. **日本語の品詞解析器。** `@sglkc/kuromoji`（18.3 MB）を setup で取得するか、budoux（2.7 MB）による分節で済ませる rule 設計に寄せるか。
 6. **英語 adapter の Tier 既定。** en は品詞解析が軽いため Tier 1 を既定にできる可能性がある。Phase 2 で計測してから決める。
+7. **`checks.yaml` の `look_at` を絞り込み条件にどう変換するか。** 自然文で書かれた「どこを見るか」を §14 の candidate filter に落とす必要がある。案は 2 つ。`chaff checks add` の対話で AI が条件を作って確認を取るか、書かれなければ文書全体を対象にしてコストを警告するか。前者は精度が読めず、後者は §14 の原則を緩める。

@@ -1,0 +1,53 @@
+# chaff.yaml — how we want our team documents checked
+#
+# 変更するときは理由を書いてください。半年後の自分が判断できるように。
+# 値の意味は npx chaff explain <ルール名> で読めます。
+
+$schema: https://chaff.dev/schema/v1.json
+
+genre: business/report
+
+# パスごとに種類を変える
+by_path:
+  - files: ["proposals/**/*.md"]
+    genre: business/proposal
+  - files: ["minutes/**/*.md"]
+    genre: business/meeting-notes
+  - files: ["press/**/*.md"]
+    genre: business/press-release
+  - files: ["docs/en/**/*.md"]
+    language: en          # 言語は普通は自動検出。ここだけ固定する
+
+rules:
+  # 主語のない受動態
+  # 「〜が実施されます」は、誰がやるのかが消えます。
+  agentless-passive: strict     # 2026-04-01 責任の所在を明確にする方針 / 全社合意
+
+  # ヘッジの重ねすぎ
+  # 「〜かと思われる可能性もあります」は、何も言っていないのと同じです。
+  excessive-hedging: strict     # 2026-04-01 同上
+
+  # 社内語
+  internal-jargon: strict       # 2026-04-01 社外に出る文書があるため
+
+  # 一文の長さ
+  # 既定より少しゆるめ。契約条項を引用することが多いため。
+  max-sentence-length: relaxed  # 2026-06-12 契約文の引用が多い / @legal
+
+  # 文長のリズム
+  # 報告書に文章のリズムは求めない。
+  sentence-rhythm: off          # 2026-04-01 ブログ向けのルールのため
+
+# 自分たちで足したチェック
+checks: ./checks.yaml
+
+# 社内語・略語の辞書
+word_lists:
+  - ./lexicons/team.yaml
+
+# 意味を見る検査。API key が無ければ自動で skip されます。
+ai_checks: true
+ai_model: claude-sonnet-5
+
+# 抑制コメント <!-- stet: ... --> に理由を必須にする
+stet_needs_reason: true

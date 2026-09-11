@@ -1,0 +1,47 @@
+# リスクが書かれていない（L4: 意味を見る。LLM が判定する）
+#
+# 意味を見る rule も、形は L1 と同じです。
+# 違うのは what_to_check と look_at があることだけ。
+
+id: risk-disclosure
+layer: L4
+status: stable
+
+name:
+  ja: リスクが書かれていない
+  en: No risk disclosed
+
+why:
+  ja: 提案を読む人は、うまくいく話だけでは判断できません。
+  en: A reader cannot decide from the upside alone.
+
+# 全文を LLM に渡さないための絞り込み。これが無い L4 rule は登録できない。
+look_at:
+  where: document
+  skip_if: 見出しに「リスク」「懸念」「デメリット」がある
+
+what_to_check:
+  ja: |
+    提案を行っている文書に、次のいずれかがあること。
+      ・その施策のリスク
+      ・想定される副作用
+      ・実施しなかった場合の影響
+    いまの課題の記述は、リスクとしては数えない。
+  en: |
+    For a document making a proposal, at least one of:
+    risks of the action, expected side effects, or the cost of not acting.
+    A description of the current problem does not count.
+
+levels:
+  strict: error
+  normal: warning
+  relaxed: info
+
+message:
+  ja: 提案に対するリスクや、実施しなかった場合の影響が書かれていません
+  en: The proposal states no risk and no cost of inaction
+
+how_to_fix:
+  ja: 「リスク」または「懸念」の節を足してください。
+
+use_for: [business]

@@ -1,0 +1,44 @@
+# team.yaml — words our team uses
+#
+# 単語を並べるだけです。正規表現は書かなくて構いません。
+#
+#   npx chaff words add "巻き取る" --instead "引き継ぐ"
+
+# 社外に出る文書では使わない言葉
+words_to_avoid:
+  - word: よしなに
+    instead: 具体的に何をしてほしいか書いてください
+  - word: 巻き取る
+    instead: 引き継ぐ / 担当する
+  - word: ペライチ
+    instead: 一枚資料 / サマリー
+  - word: 温度感
+    instead: 優先度 / 緊急度
+  - word: 握る
+    instead: 合意する
+
+# 初出で説明が要る略語。full を書いておくと、書き忘れを検出できます。
+short_forms:
+  - short: SLA
+    full: Service Level Agreement
+  - short: PRD
+    full: Product Requirements Document
+  - short: ARR
+    full: Annual Recurring Revenue
+  - short: QBR
+    full: Quarterly Business Review
+
+# 表記を揃えたい言葉。use が正しいほう、not は見つけたら指摘するもの。
+spelling:
+  - use: サーバー
+    not: [サーバ, server]
+  - use: ユーザー
+    not: [ユーザ, User]
+  - use: お客様
+    not: [お客さま, 顧客]
+
+# 辞書に無い語として扱わないもの（製品名・人名など）
+known_words:
+  - MulmoCast
+  - GraphAI
+  - Receptron
