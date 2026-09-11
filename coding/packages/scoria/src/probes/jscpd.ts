@@ -1,8 +1,9 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Contributor, Finding, Probe, ProbeContext, ProbeResult } from "../plugin.ts";
+import type { Finding, Probe, ProbeContext, ProbeResult } from "../plugin.ts";
 import { resolveBin } from "../bin-resolve.ts";
 import { isRecord } from "../package-json.ts";
+import { rankByFile, relativeTo, skippedResult } from "./shared.ts";
 
 /**
  * Copy-paste duplication (spec §13).
@@ -13,7 +14,6 @@ import { isRecord } from "../package-json.ts";
  */
 
 const MIN_TOKENS = "50";
-const TOP_CONTRIBUTORS = 5;
 const MAX_FINDINGS = 20;
 
 interface Clone {
@@ -58,20 +58,6 @@ const parse = (text: string): Report | undefined => {
   }
 };
 
-const relativeTo = (root: string, file: string): string => (file.startsWith(`${root}/`) ? file.slice(root.length + 1) : file);
-
-const contributorsOf = (root: string, clones: readonly Clone[]): readonly Contributor[] => {
-  const byFile = new Map<string, number>();
-  clones.forEach((clone) => {
-    const file = relativeTo(root, clone.file);
-    byFile.set(file, (byFile.get(file) ?? 0) + clone.lines);
-  });
-  return [...byFile.entries()]
-    .map(([file, value]) => ({ file, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, TOP_CONTRIBUTORS);
-};
-
 const toFinding = (root: string, clone: Clone): Finding => ({
   rule: "duplicated-block",
   severity: "warning",
@@ -83,27 +69,18 @@ const toFinding = (root: string, clone: Clone): Finding => ({
   tier: 0,
 });
 
-const empty = (reason: string, started: number): ProbeResult => ({
-  probe: "jscpd",
-  status: { kind: "skipped", reason },
-  metrics: [],
-  findings: [],
-  toolVersions: {},
-  durationMs: Date.now() - started,
-});
-
 const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const started = Date.now();
   const bin = resolveBin("jscpd", "jscpd");
-  if (bin === undefined) return empty("jscpd is not installed alongside scoria", started);
+  if (bin === undefined) return skippedResult("jscpd", "jscpd is not installed alongside scoria", started);
   const out = join(tmpdir(), `scoria-jscpd-${String(process.pid)}-${String(Date.now())}`);
   const args = [ctx.root, "--silent", "--min-tokens", MIN_TOKENS, "--reporters", "json", "--output", out];
-  const run_ = await ctx.execNode(bin, args);
+  const execution = await ctx.execNode(bin, args);
   const text = await ctx.readText(join(out, "jscpd-report.json"));
   const parsed = text === undefined ? undefined : parse(text);
   // jscpd writes no report when it finds nothing. That is zero duplication, not a failed run.
-  const report = parsed ?? (run_.code === 0 ? { percentage: 0, clones: [] } : undefined);
-  if (report === undefined) return empty("jscpd produced no readable report", started);
+  const report = parsed ?? (execution.code === 0 ? { percentage: 0, clones: [] } : undefined);
+  if (report === undefined) return skippedResult("jscpd", "jscpd produced no readable report", started);
   {
     return {
       probe: "jscpd",
@@ -113,7 +90,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
           id: "jscpd.duplicated_lines_pct",
           value: report.percentage,
           unit: "pct",
-          topContributors: contributorsOf(ctx.root, report.clones),
+          topContributors: rankByFile(report.clones.map((clone) => ({ file: relativeTo(ctx.root, clone.file), weight: clone.lines }))),
         },
         { id: "jscpd.clone_count", value: report.clones.length, unit: "count" },
       ],

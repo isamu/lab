@@ -2,6 +2,7 @@ import type { Contributor, Finding, Probe, ProbeContext, ProbeResult, SourceFile
 import { sourceSloc } from "../files.ts";
 import { perKiloLines } from "../stats.ts";
 import { viewOf } from "../source-view.ts";
+import { rankByFile } from "./shared.ts";
 
 /**
  * Counts suppression debt (spec §15).
@@ -12,7 +13,6 @@ import { viewOf } from "../source-view.ts";
  */
 
 const MIN_REASON_CHARS = 8;
-const TOP_CONTRIBUTORS = 5;
 
 const CODE_PATTERNS = [
   { rule: "as-any", pattern: /\bas\s+(any|unknown\s+as)\b/, message: "bypasses the type checker" },
@@ -102,18 +102,13 @@ const directiveHits = (file: SourceFile, comments: readonly string[]): readonly 
     }));
   });
 
-export const scanFile = (file: SourceFile): readonly Hit[] => {
+const scanFile = (file: SourceFile): readonly Hit[] => {
   const { code, comments } = viewOf(file.codeLines);
   return [...codeHits(file, code, comments), ...directiveHits(file, comments)];
 };
 
 const contributorsOf = (hits: readonly Hit[]): readonly Contributor[] => {
-  const byFile = new Map<string, number>();
-  hits.forEach((hit) => byFile.set(hit.file, (byFile.get(hit.file) ?? 0) + 1));
-  return [...byFile.entries()]
-    .map(([file, value]) => ({ file, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, TOP_CONTRIBUTORS);
+  return rankByFile(hits.map((hit) => ({ file: hit.file, weight: 1 })));
 };
 
 const toFinding = (hit: Hit): Finding => ({

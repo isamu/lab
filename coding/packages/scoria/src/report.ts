@@ -5,6 +5,13 @@ import { scoreDimension } from "./rubric.ts";
 import { slocOf } from "./files.ts";
 import { perKiloLines } from "./stats.ts";
 
+/** Warning counts by rule. A hundred untyped files is one decision, not a hundred findings. */
+export const tallyWarnings = (report: Report): readonly (readonly [string, number])[] => {
+  const byRule = new Map<string, number>();
+  report.findings.filter((finding) => finding.severity === "warning").forEach((finding) => byRule.set(finding.rule, (byRule.get(finding.rule) ?? 0) + 1));
+  return [...byRule.entries()];
+};
+
 export type Confidence = "high" | "medium" | "low";
 
 const MEDIUM_ABOVE = 0.5;

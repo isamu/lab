@@ -6,14 +6,14 @@ const TYPED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts"];
 const UNTYPED_EXTENSIONS = [".js", ".jsx", ".mjs", ".cjs"];
 const CONFIG_STEMS = ["eslint.config", "vite.config", "vitest.config", "rollup.config", "jest.config", "tsup.config"];
 
-export const SOURCE_EXTENSIONS = [...TYPED_EXTENSIONS, ...UNTYPED_EXTENSIONS];
+const SOURCE_EXTENSIONS = [...TYPED_EXTENSIONS, ...UNTYPED_EXTENSIONS];
 
 export const isUntypedSource = (relativePath: string): boolean => UNTYPED_EXTENSIONS.some((extension) => relativePath.endsWith(extension));
 
 const isConfigName = (name: string): boolean =>
   name.endsWith(".config.ts") || name.endsWith(".config.js") || CONFIG_STEMS.some((stem) => name.startsWith(stem));
 
-export const classify = (relativePath: string): FileKind => {
+const classify = (relativePath: string): FileKind => {
   const name = basenameOf(relativePath);
   if (isIgnoredPath(relativePath)) return "ignored";
   if (!SOURCE_EXTENSIONS.some((extension) => name.endsWith(extension))) return "ignored";

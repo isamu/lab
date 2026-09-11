@@ -1,6 +1,6 @@
 import type { FileKind, StackAdapter, StackDetection } from "../plugin.ts";
 import { readPackageJson, hasDependency } from "../package-json.ts";
-import { basenameOf, isIgnoredPath, isTestPath } from "./paths.ts";
+import { isIgnoredPath, isTestPath } from "./paths.ts";
 
 const SCRIPT_OPEN = /<script\b[^>]*>/i;
 const SCRIPT_CLOSE = /<\/script\s*>/i;
@@ -53,5 +53,3 @@ export const stackVue: StackAdapter = {
   classify,
   codeLinesOf: scriptLinesOnly,
 };
-
-export const vueBasename = basenameOf;

@@ -58,7 +58,7 @@ const moversOf = (previous: Report, current: Report, dimension: string): readonl
       };
     })
     .filter((mover) => mover.points !== 0)
-    .sort((a, b) => a.points - b.points);
+    .toSorted((a, b) => a.points - b.points);
 };
 
 export const diffReports = (previous: Report, current: Report): ReportDiff => {

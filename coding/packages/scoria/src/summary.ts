@@ -1,5 +1,6 @@
 import type { Finding } from "./plugin.ts";
 import type { DimensionReport, Report } from "./report.ts";
+import { tallyWarnings } from "./report.ts";
 import { messagesFor, type Lang, type Messages } from "./messages.ts";
 import type { ReportDiff } from "./diff.ts";
 
@@ -40,7 +41,7 @@ const dimensionRow = (dimension: DimensionReport, diff: ReportDiff | undefined):
 };
 
 const movedBlock = (diff: ReportDiff | undefined, messages: Messages): readonly string[] => {
-  const movers = [...(diff?.movers ?? [])].sort((a, b) => Math.abs(b.points) - Math.abs(a.points)).slice(0, 8);
+  const movers = (diff?.movers ?? []).toSorted((a, b) => Math.abs(b.points) - Math.abs(a.points)).slice(0, 8);
   if (movers.length === 0) return [];
   return ["", `**${messages.whatMoved}**`, "", ...movers.map((m) => `- \`${signed(m.points)}\` ${m.dimension} — ${m.metric}: ${m.from} → ${m.to}`)];
 };
@@ -66,17 +67,16 @@ const findingsBlock = (report: Report, messages: Messages): readonly string[] =>
 };
 
 const warningsBlock = (report: Report, messages: Messages): readonly string[] => {
-  const warnings = report.findings.filter((finding) => finding.severity === "warning");
-  if (warnings.length === 0) return [];
-  const byRule = new Map<string, number>();
-  warnings.forEach((finding) => byRule.set(finding.rule, (byRule.get(finding.rule) ?? 0) + 1));
+  const tally = tallyWarnings(report);
+  if (tally.length === 0) return [];
+  const total = tally.reduce((sum, [, count]) => sum + count, 0);
   return [
     "",
-    `<details><summary>${messages.warnings(warnings.length)}</summary>`,
+    `<details><summary>${messages.warnings(total)}</summary>`,
     "",
     "| rule | count |",
     "| --- | ---: |",
-    ...[...byRule.entries()].sort((a, b) => b[1] - a[1]).map(([rule, count]) => `| ${rule} | ${count} |`),
+    ...tally.toSorted((a, b) => b[1] - a[1]).map(([rule, count]) => `| ${rule} | ${count} |`),
     "",
     "</details>",
   ];

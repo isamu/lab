@@ -12,9 +12,9 @@ import { diffReports, type ReportDiff } from "./diff.ts";
 
 type Command = "assay" | "init" | "doctor" | "baseline";
 
-const COMMANDS: readonly Command[] = ["init", "doctor", "baseline"];
+const COMMANDS = new Set<string>(["init", "doctor", "baseline"]);
 
-const isCommand = (value: string | undefined): value is Command => COMMANDS.some((entry) => entry === value);
+const isCommand = (value: string | undefined): value is Command => value !== undefined && COMMANDS.has(value);
 
 interface Options {
   readonly command: Command;
@@ -35,8 +35,8 @@ const valueAfter = (argv: readonly string[], flag: string): string | undefined =
 const parse = (argv: readonly string[]): Options => {
   const explain = valueAfter(argv, "--explain");
   const lang = valueAfter(argv, "--lang");
-  const consumed = [explain, lang];
-  const positional = argv.filter((arg) => !arg.startsWith("--") && !consumed.includes(arg));
+  const consumed = new Set([explain, lang]);
+  const positional = argv.filter((arg) => !arg.startsWith("--") && !consumed.has(arg));
   const first = positional[0];
   const command = isCommand(first) ? first : "assay";
   const target = (command === "assay" ? positional[0] : positional[1]) ?? ".";

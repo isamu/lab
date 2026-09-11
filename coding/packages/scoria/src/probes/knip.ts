@@ -1,6 +1,7 @@
-import type { Contributor, Finding, Probe, ProbeContext, ProbeResult } from "../plugin.ts";
+import type { Finding, Probe, ProbeContext, ProbeResult } from "../plugin.ts";
 import { resolveBin } from "../bin-resolve.ts";
 import { isRecord } from "../package-json.ts";
+import { rankByFile, skippedResult } from "./shared.ts";
 
 /**
  * Code and dependencies nothing reaches (spec §13.4).
@@ -10,7 +11,6 @@ import { isRecord } from "../package-json.ts";
  * graph, so it needs the target installed — Tier 1.
  */
 
-const TOP_CONTRIBUTORS = 5;
 const MAX_FINDINGS = 30;
 
 interface Unused {
@@ -56,15 +56,6 @@ const parse = (stdout: string): Unused | undefined => {
   }
 };
 
-const contributorsOf = (unused: Unused): readonly Contributor[] => {
-  const byFile = new Map<string, number>();
-  unused.exports.forEach((entry) => byFile.set(entry.file, (byFile.get(entry.file) ?? 0) + 1));
-  return [...byFile.entries()]
-    .map(([file, value]) => ({ file, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, TOP_CONTRIBUTORS);
-};
-
 const findingsOf = (unused: Unused): readonly Finding[] => [
   ...unused.files.map((file) => ({
     rule: "unused-file",
@@ -88,22 +79,13 @@ const findingsOf = (unused: Unused): readonly Finding[] => [
   })),
 ];
 
-const empty = (reason: string, started: number): ProbeResult => ({
-  probe: "knip",
-  status: { kind: "skipped", reason },
-  metrics: [],
-  findings: [],
-  toolVersions: {},
-  durationMs: Date.now() - started,
-});
-
 const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const started = Date.now();
   const bin = resolveBin("knip", "knip");
-  if (bin === undefined) return empty("knip is not installed alongside scoria", started);
+  if (bin === undefined) return skippedResult("knip", "knip is not installed alongside scoria", started);
   const result = await ctx.execNode(bin, ["--reporter", "json", "--no-progress", "--no-exit-code"]);
   const unused = parse(result.stdout);
-  if (unused === undefined) return empty("knip produced no readable report", started);
+  if (unused === undefined) return skippedResult("knip", "knip produced no readable report", started);
   return {
     probe: "knip",
     status: { kind: "ok" },
@@ -113,7 +95,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
         id: "knip.unused_exports",
         value: unused.exports.length,
         unit: "count",
-        topContributors: contributorsOf(unused),
+        topContributors: rankByFile(unused.exports.map((entry) => ({ file: entry.file, weight: 1 }))),
       },
       { id: "knip.unused_dependencies", value: unused.dependencies.length, unit: "count" },
     ],

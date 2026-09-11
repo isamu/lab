@@ -3,6 +3,7 @@ import { sourceSloc } from "../files.ts";
 import { perKiloLines } from "../stats.ts";
 import { resolveBinFrom } from "../bin-resolve.ts";
 import { findConfig } from "../config-files.ts";
+import { skippedResult } from "./shared.ts";
 
 /**
  * Type errors, from the project's own TypeScript (spec §12.1).
@@ -63,19 +64,10 @@ const toFinding = (error: TypeError): Finding => ({
   tier: 1,
 });
 
-const empty = (reason: string, started: number): ProbeResult => ({
-  probe: "tsc",
-  status: { kind: "skipped", reason },
-  metrics: [],
-  findings: [],
-  toolVersions: {},
-  durationMs: Date.now() - started,
-});
-
 const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const started = Date.now();
   const bin = resolveBinFrom(ctx.root, "typescript", "tsc");
-  if (bin === undefined) return empty("the project has no installed typescript", started);
+  if (bin === undefined) return skippedResult("tsc", "the project has no installed typescript", started);
   const result = await ctx.execNode(bin, ["--noEmit", "--pretty", "false"]);
   const errors = parse(`${result.stdout}\n${result.stderr}`);
   const sloc = sourceSloc(ctx.files);

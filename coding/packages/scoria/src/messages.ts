@@ -8,7 +8,7 @@
 
 export type Lang = "en" | "ja";
 
-export const LANGS: readonly Lang[] = ["en", "ja"];
+const LANGS: readonly Lang[] = ["en", "ja"];
 
 export const isLang = (value: unknown): value is Lang => LANGS.some((lang) => lang === value);
 
