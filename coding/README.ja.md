@@ -195,13 +195,54 @@ eslint の設定を代わりに選ぶような、判断が要ることはしま�
 
 ## 見ている項目の一覧
 
-| 項目               | 観点        | 見ているもの                                                                                |
-| ------------------ | ----------- | ------------------------------------------------------------------------------------------- |
-| `suppression-scan` | integrity   | `as any` / `@ts-ignore` / `eslint-disable` / `it.skip`。理由がないものだけを error にします |
-| `config-integrity` | integrity   | eslint の設定はあるか、`strict` は on か、必要なスクリプトはあるか                          |
-| `ci-integrity`     | integrity   | CI が lint / typecheck / build / test を回しているか、失敗を握りつぶしていないか            |
-| `file-shape`       | readability | ファイルの大きさ（上位 5% の大きさ、最大値、500 行超の本数）                                |
-| `source-mix`       | type-safety | TypeScript のプロジェクトに残っている `.js` / `.jsx`                                        |
+| 項目               | 観点                     | 見ているもの                                                                                |
+| ------------------ | ------------------------ | ------------------------------------------------------------------------------------------- |
+| `oxlint`           | correctness, readability | **scoria 自身のルール** 133 個。相手に何もインストールしなくても動きます                    |
+| `tsc`              | type-safety              | **プロジェクト自身の** TypeScript が出す型エラー                                            |
+| `knip`             | architecture             | どこからも参照されていないファイル・export・依存                                            |
+| `jscpd`            | readability              | コピペの重複                                                                                |
+| `suppression-scan` | integrity                | `as any` / `@ts-ignore` / `eslint-disable` / `it.skip`。理由がないものだけを error にします |
+| `config-integrity` | integrity                | eslint の設定はあるか、`strict` は on か、必要なスクリプトはあるか                          |
+| `ci-integrity`     | integrity                | CI が lint / typecheck / build / test を回しているか、失敗を握りつぶしていないか            |
+| `file-shape`       | readability              | ファイルの大きさ（上位 5% の大きさ、最大値、500 行超の本数）                                |
+| `source-mix`       | type-safety              | TypeScript のプロジェクトに残っている `.js` / `.jsx`                                        |
+
+### 測る基準は「あなたの設定」ではなく scoria のものです
+
+プロジェクト自身の lint 設定は緩いかもしれません。そこだけを基準にすると、
+**ルールを全部切ったリポジトリが満点を取ります**。
+これは `integrity` が捕まえようとしている問題そのものなので、
+他の観点では scoria のルール（oxlint の 133 個）で測り、そう明記します。
+
+ですから「CI の lint は緑なのに scoria は低い」は不具合ではありません。それが指摘です。
+
+`tsc` だけは例外です。型チェックはそのプロジェクトの tsconfig と型定義が揃って初めて意味を持つので、
+プロジェクト自身のものを動かします。
+
+### プロジェクトの install が要る項目があります
+
+`tsc` と `knip` は import の関係をたどるので `node_modules` が要ります。
+無い場合は **skip** と報告し、その観点は「何割測れたか」を出します。
+**誰も見ていないものを満点にはしません。**
+
+## 変化を追う
+
+```bash
+npx scoria baseline      # 今回の結果を記録する
+git add .scoria/baseline.json
+```
+
+次回から差が出ます。
+
+```text
+動いたもの
+    -30.0  integrity      suppression-scan.source_per_kloc   0 → 975
+    -20.0  integrity      suppression-scan.unreasoned_ratio  0 → 1
+```
+
+どの指標がどれだけ動いたかを名指しします。
+ツールを更新するとルールが増えて点が下がりますが、それは劣化ではありません。
+scoria は baseline にツールの版数を記録しておき、その場合はそう報告します。
 
 指摘に出てくる名前の意味です。
 
@@ -282,8 +323,8 @@ npx scoria init           # 設定ファイルだけ作る
 
 ## まだできないこと
 
-eslint / knip などの既存ツールとの連携、履歴と比べて悪化を検出すること、
-テストを実行して測ること、GitHub Action、点の基準の調整。
+悪化したら CI を落とす仕組み、`dependency-cruiser`、テストのカバレッジと mutation、
+SARIF 出力、点の基準の調整。
 
 **点の基準はすべて暫定です。** どの観点もまだ実験段階だと思ってください。
 

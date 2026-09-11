@@ -1,6 +1,7 @@
 import type { Finding } from "./plugin.ts";
 import type { DimensionReport, Report } from "./report.ts";
 import type { Drift } from "./config.ts";
+import type { ReportDiff } from "./diff.ts";
 import { messagesFor, type Lang, type Messages } from "./messages.ts";
 import { padEndWide, padStartWide } from "./width.ts";
 
@@ -15,12 +16,41 @@ const POINTS_WIDTH = 8;
 const MAX_FINDINGS = 8;
 const SEPARATOR = "─".repeat(62);
 
+export interface Comparison {
+  readonly diff: ReportDiff;
+  readonly since: string;
+  /** Tools whose version changed, whose movement is not a regression (spec §17.3). */
+  readonly rebaseline: readonly string[];
+}
+
 export interface RenderContext {
   readonly source: string;
   readonly drift: Drift;
   readonly notice: string | undefined;
   readonly lang: Lang;
+  readonly comparison?: Comparison | undefined;
 }
+
+const MAX_MOVERS = 6;
+
+const signed = (value: number): string => (value > 0 ? `+${value.toFixed(1)}` : value.toFixed(1));
+
+/**
+ * The point of the tool is the direction of travel, so the movers name the metric that moved and
+ * by how much. The scale being linear is what lets the points be read as "what this was worth".
+ */
+const movedSection = (context: RenderContext, messages: Messages): readonly string[] => {
+  const comparison = context.comparison;
+  if (comparison === undefined) return [messages.noBaseline, ""];
+  const movers = [...comparison.diff.movers].sort((a, b) => Math.abs(b.points) - Math.abs(a.points));
+  if (movers.length === 0) return [];
+  const rows = movers.slice(0, MAX_MOVERS).map((mover) => {
+    const change = `${mover.from} → ${mover.to}`;
+    return `  ${padStart(signed(mover.points), 7)}  ${pad(mover.dimension, 14)} ${pad(mover.metric, 34)} ${change}`;
+  });
+  const note = comparison.rebaseline.length === 0 ? [] : [`  ${messages.rebaselineNeeded(comparison.rebaseline.join(", "))}`];
+  return [messages.whatMoved, ...rows, ...note, ""];
+};
 
 const pad = padEndWide;
 const padStart = padStartWide;
@@ -94,6 +124,7 @@ export const renderReport = (report: Report, context: RenderContext): string => 
   return [
     ...header(report, context, messages),
     ...table(report, messages),
+    ...movedSection(context, messages),
     ...findingsSection(report, messages),
     ...warningSection(report, messages),
     ...driftSection(context, messages),

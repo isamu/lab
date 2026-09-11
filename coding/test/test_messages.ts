@@ -35,6 +35,7 @@ const report: Report = {
     },
   ],
   probes: [{ probe: "suppression-scan", status: { kind: "ok" } }],
+  toolVersions: {},
   overall: { score: 50, scoredDimensions: 1, comparable: false },
 };
 
@@ -111,7 +112,7 @@ test("the GitHub summary renders a table with a bar per dimension", async () => 
   const { renderGithubSummary } = await import("../packages/scoria/src/summary.ts");
   const markdown = renderGithubSummary(report, "en");
   assert.match(markdown, /^## scoria — 50 \/ 100$/m);
-  assert.match(markdown, /\| integrity \| 50 \| `█████░░░░░` \| high \|/);
+  assert.match(markdown, /\| integrity \| 50 \|\s*\| `█████░░░░░` \| high \|/);
   assert.match(markdown, /<details><summary>1 findings at severity error<\/summary>/);
   assert.match(markdown, /src\/a\.ts:3/);
 });

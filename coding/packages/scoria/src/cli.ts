@@ -7,9 +7,17 @@ import { renderExplain, renderReport } from "./render.ts";
 import { renderGithubSummary } from "./summary.ts";
 import { appendFile } from "node:fs/promises";
 import { applyFixes, diagnose, renderDoctor } from "./doctor.ts";
+import { changedTools, readBaseline, writeBaseline } from "./baseline.ts";
+import { diffReports, type ReportDiff } from "./diff.ts";
+
+type Command = "assay" | "init" | "doctor" | "baseline";
+
+const COMMANDS: readonly Command[] = ["init", "doctor", "baseline"];
+
+const isCommand = (value: string | undefined): value is Command => COMMANDS.some((entry) => entry === value);
 
 interface Options {
-  readonly command: "assay" | "init" | "doctor";
+  readonly command: Command;
   readonly target: string;
   readonly json: boolean;
   readonly explain: string | undefined;
@@ -30,7 +38,7 @@ const parse = (argv: readonly string[]): Options => {
   const consumed = [explain, lang];
   const positional = argv.filter((arg) => !arg.startsWith("--") && !consumed.includes(arg));
   const first = positional[0];
-  const command = first === "init" || first === "doctor" ? first : "assay";
+  const command = isCommand(first) ? first : "assay";
   const target = (command === "assay" ? positional[0] : positional[1]) ?? ".";
   return {
     command,
@@ -79,10 +87,10 @@ const freezeIfNeeded = async (target: string, frozen: boolean, write: boolean, l
  * the table lands where a reviewer already is. Writing the file is all it takes — no token, no
  * `permissions:` block.
  */
-const writeGithubSummary = async (report: Report, lang: Lang, enabled: boolean): Promise<void> => {
+const writeGithubSummary = async (report: Report, lang: Lang, enabled: boolean, diff?: ReportDiff): Promise<void> => {
   const path = process.env["GITHUB_STEP_SUMMARY"];
   if (!enabled || path === undefined || path === "") return;
-  await appendFile(path, renderGithubSummary(report, lang), "utf8");
+  await appendFile(path, renderGithubSummary(report, lang, diff), "utf8");
 };
 
 export const main = async (argv: readonly string[]): Promise<void> => {
@@ -99,15 +107,25 @@ export const main = async (argv: readonly string[]): Promise<void> => {
   }
   const { report, loaded } = await assay(options.target);
   const lang = options.lang ?? loaded.config.lang;
+  if (options.command === "baseline") {
+    const path = await writeBaseline(options.target, report);
+    process.stdout.write(`\n${messagesFor(lang).baselineWritten(displayPath(path))}\n\n`);
+    return;
+  }
+  const baseline = await readBaseline(options.target);
+  const comparison =
+    baseline === undefined
+      ? undefined
+      : { diff: diffReports(baseline.report, report), since: baseline.createdAt, rebaseline: changedTools(baseline.report, report) };
   const notice = await freezeIfNeeded(options.target, loaded.frozen, options.write, lang);
-  await writeGithubSummary(report, lang, options.summary);
+  await writeGithubSummary(report, lang, options.summary, comparison?.diff);
   if (options.json) {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     return;
   }
   process.stdout.write(
     options.explain === undefined
-      ? renderReport(report, { source: loaded.source, drift: loaded.drift, notice, lang })
+      ? renderReport(report, { source: loaded.source, drift: loaded.drift, notice, lang, comparison })
       : renderExplain(report, options.explain, lang),
   );
 };

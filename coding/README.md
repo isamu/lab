@@ -216,13 +216,53 @@ toolchain itself is what [ever-better](https://github.com/isamu/ever-better) is 
 
 ## What it measures today
 
-| probe              | dimension   | what it looks at                                                                                  |
-| ------------------ | ----------- | ------------------------------------------------------------------------------------------------- |
-| `suppression-scan` | integrity   | `as any`, `@ts-ignore`, `eslint-disable`, `it.skip`. Only the ones without a reason become errors |
-| `config-integrity` | integrity   | ESLint config present, `strict` on, required scripts defined                                      |
-| `ci-integrity`     | integrity   | CI runs lint / typecheck / build / test, and does not swallow failures                            |
-| `file-shape`       | readability | p95 and maximum file length, and the count over 500 lines                                         |
-| `source-mix`       | type-safety | `.js` / `.jsx` remaining in a TypeScript project                                                  |
+| probe              | dimension                | what it looks at                                                                                  |
+| ------------------ | ------------------------ | ------------------------------------------------------------------------------------------------- |
+| `oxlint`           | correctness, readability | 133 rules from **scoria's own ruleset**, not the project's. Needs nothing installed in the target |
+| `tsc`              | type-safety              | Type errors from the **project's own** TypeScript — the one tool that must be theirs              |
+| `knip`             | architecture             | Files, exports and dependencies nothing reaches                                                   |
+| `jscpd`            | readability              | Copy-paste duplication                                                                            |
+| `suppression-scan` | integrity                | `as any`, `@ts-ignore`, `eslint-disable`, `it.skip`. Only the ones without a reason become errors |
+| `config-integrity` | integrity                | ESLint config present, `strict` on, required scripts defined                                      |
+| `ci-integrity`     | integrity                | CI runs lint / typecheck / build / test, and does not swallow failures                            |
+| `file-shape`       | readability              | p95 and maximum file length, and the count over 500 lines                                         |
+| `source-mix`       | type-safety              | `.js` / `.jsx` remaining in a TypeScript project                                                  |
+
+### scoria measures against its own standard, not yours
+
+A project's own linter config may be lax, and measuring only against it means **a repository that
+turns off every rule scores perfectly**. That is the same failure the `integrity` dimension exists
+to catch, so the other dimensions use scoria's ruleset (oxlint, 133 rules) and say so.
+
+"CI's lint is green but scoria is low" is therefore not a defect. It is the finding.
+
+`tsc` is the single exception: a type check is only meaningful against the project's own tsconfig
+and installed type definitions, so scoria runs theirs.
+
+### Some checks need the project installed
+
+`tsc` and `knip` resolve the import graph, so they need `node_modules`. Where it is missing they
+report **skipped**, and the dimension says how much of it could be measured — never a perfect score
+for something nobody looked at.
+
+## Tracking change over time
+
+```bash
+scoria baseline      # record this run
+git add .scoria/baseline.json
+```
+
+Later runs report the difference:
+
+```text
+What moved
+    -30.0  integrity      suppression-scan.source_per_kloc   0 → 975
+    -20.0  integrity      suppression-scan.unreasoned_ratio  0 → 1
+```
+
+Each mover names the metric that moved and what it cost. Upgrading one of the tools adds rules and
+the score falls, which is not a regression — scoria records tool versions in the baseline and says
+so rather than reporting decay.
 
 Stacks: `ts` (`.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs`), `vue` (only the SFC
 `<script>` block is scanned), `react`.
@@ -239,8 +279,9 @@ was not measured. That is reported as `confidence: low` (spec §15.4).
 
 ## Not here yet
 
-External probes (eslint, knip, dependency-cruiser, jscpd), baseline and ratchet gating, tiers above
-0, a GitHub Action, SARIF output, and calibration. Every threshold is provisional.
+Ratchet gating (failing CI on regression), `dependency-cruiser`, test coverage and mutation
+testing, SARIF output, and calibration. **Every threshold is still provisional** and every dimension
+is `experimental`.
 
 ## Development
 
