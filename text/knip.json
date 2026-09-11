@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["test/test_*.ts"],
+      "project": ["test/**/*.ts"]
+    },
+    "packages/chaff": { "project": ["src/**/*.ts"] },
+    "packages/lang-ja": { "project": ["src/**/*.ts"] },
+    "packages/lang-en": { "project": ["src/**/*.ts"] }
+  },
+  "rules": {
+    "exports": "warn",
+    "types": "warn",
+    "files": "warn",
+    "dependencies": "warn",
+    "devDependencies": "warn",
+    "unlisted": "warn",
+    "binaries": "warn"
+  }
+}

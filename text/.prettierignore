@@ -1,0 +1,5 @@
+node_modules/
+dist/
+# 手で整形した仕様書とサンプル。表・枠線・端末出力の見本を prettier に崩されると読めなくなる。
+*.md
+samples/

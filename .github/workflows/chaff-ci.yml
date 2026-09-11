@@ -1,0 +1,56 @@
+# chaff（text/）のゲート。scoria-ci.yml と同じ形で、対象ディレクトリだけが違う。
+# paths で切っているので、coding/ だけを触る PR では走らない。
+name: chaff ci
+
+on:
+  pull_request:
+    paths: ["text/**", ".github/workflows/chaff-ci.yml"]
+  push:
+    branches: [main]
+    paths: ["text/**", ".github/workflows/chaff-ci.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: text
+
+jobs:
+  ci:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - run: yarn install --frozen-lockfile
+
+      - name: format:check
+        run: yarn format:check
+
+      - name: lint
+        run: yarn lint
+
+      - name: typecheck
+        run: yarn typecheck
+
+      - name: build
+        run: yarn build
+
+      - name: test
+        run: yarn test
+
+      # 公開版ではなく、いま review 中のコミットから作った dist で走らせる。
+      # 自分の仕様書を自分で読ませる。動かなくなったらここで落ちる。
+      - name: chaff on its own spec
+        run: node packages/chaff/bin/chaff.js chaff-spec.md
