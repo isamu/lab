@@ -32,7 +32,18 @@ const resultWith = (p95: number, godFiles: number): ProbeResult => ({
   durationMs: 0,
 });
 
-const reportWith = (p95: number, godFiles: number) => buildReport(".", files, [resultWith(p95, godFiles)], rubrics);
+const reportWith = (p95: number, godFiles: number) =>
+  buildReport(".", files, [resultWith(p95, godFiles)], rubrics, undefined, [
+    {
+      kind: "probe",
+      id: "file-shape",
+      apiVersion: 1,
+      tier: 0,
+      declares: ["file-shape.sloc_p95", "file-shape.god_file_count"],
+      detect: () => Promise.resolve({ kind: "ok" }),
+      run: () => Promise.resolve(resultWith(p95, godFiles)),
+    },
+  ]);
 
 /**
  * The whole reason the scale is kept linear (spec §16.2, §26.3).
