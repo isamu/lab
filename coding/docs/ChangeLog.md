@@ -2,6 +2,46 @@
 
 Newest first.
 
+## 0.1.1 — 2026-09-12
+
+Findings reach GitHub's Security tab and the lines of a pull request.
+
+### Added
+
+- **`--sarif <path>`** writes SARIF 2.1.0. Uploading it with `github/codeql-action/upload-sarif`
+  puts every finding on the repository's Security tab and, more usefully, **inline on the changed
+  lines of a pull request** — where the person who wrote the line is already looking. A score in a
+  log is something you have to go and read; a comment on the line is not.
+  Rule ids are namespaced `scoria/<probe>/<rule>` so they cannot collide with an upload from the
+  same tool run directly, and `info` maps to SARIF's `note`, the only level it has for that.
+
+### Fixed
+
+- **`ci-integrity` reported a directory as a location.** `.github/workflows` is not a file GitHub
+  can open, and a SARIF location has to be. Workflows also live at the repository root, which is
+  above the measured directory in a monorepo, and a location outside the uploaded tree matches
+  nothing — those findings now report against `package.json` with the workflow named in the message.
+- **jscpd counted scoria's own output as duplication.** It scanned every format including JSON, so
+  `.scoria/baseline.json` registered as duplicated code: **recording a baseline changed the next
+  measurement**, which leaves no time series at all. Duplication is now measured on source formats
+  with scoria's artifacts excluded.
+- **A delta that rounds to zero rendered as `-0 ⚠`**, reporting a regression that did not happen.
+- **Both summary tables were titled `scoria`** with nothing to say which workspace each described.
+- **The version in SARIF was a constant in the source.** It is read from the manifest now; a stale
+  one would attribute findings to a release that never produced them.
+
+### Note for adopters
+
+If the project formats JSON with Prettier, add `.scoria/` and `scoria.config.json` to
+`.prettierignore`. scoria writes them with `JSON.stringify`, which always expands arrays, while
+Prettier collapses short ones — left formatted, the two rewrite the file in turn on every run.
+
+### Merged pull requests
+
+- #33 — acting on what scoria says about scoria: overall 84 → 98, warnings 37 → 2
+- #36 — measuring the whole repository on every change, both workspaces
+- #39 — SARIF output
+
 ## 0.1.0 — 2026-09-11
 
 The external tools, and the baseline that makes improvement and regression visible — the thing the
