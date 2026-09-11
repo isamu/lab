@@ -16,6 +16,11 @@ export type Segmentation = {
 
 export type LengthUnit = "char" | "word";
 
+/** L2 の語彙表。detector は共通で、これだけが言語別。spec §11。 */
+export type LexiconEntry = { readonly pattern: string; readonly weight?: number | undefined };
+
+export type Lexicon = readonly LexiconEntry[];
+
 /**
  * rule は required な capability を宣言し、満たされなければ skip される。
  * 日本語の品詞解析が 18MB の辞書を要することを、この一枚で吸収する。spec §16。
@@ -37,6 +42,8 @@ export type LanguageAdapter = {
   /** この言語である確からしさ。0..1。 */
   readonly detect: (source: string) => number;
   readonly segment: (text: string) => Segmentation;
+  /** L2 rule が word_list で引く。アダプタが自分の言語のぶんだけを持つ。 */
+  readonly lexicons: Readonly<Record<string, Lexicon>>;
 };
 
 // ───────── 文書モデルと rule ─────────
@@ -64,6 +71,8 @@ export type ProseDocument = {
   readonly lengthUnit: LengthUnit;
   readonly sections: readonly Section[];
   readonly sentences: readonly Sentence[];
+  /** アダプタが持つ語彙表。detector は言語を知らずにこれを引く。 */
+  readonly lexicons: Readonly<Record<string, Lexicon>>;
 };
 
 export type Severity = "error" | "warning" | "info";
@@ -80,7 +89,13 @@ export type Finding = {
 };
 
 /** rule 定義が threshold を渡す。数値は 4 語から解決済み。 */
-export type DetectorOptions = { readonly limit: number };
+export type DetectorOptions = {
+  readonly limit: number;
+  /** L2 のみ。rule 定義の word_list から解決した語彙表。 */
+  readonly lexicon?: Lexicon | undefined;
+  /** 見る範囲。opening は冒頭 2 段落、closing は最後の節、whole は全体。 */
+  readonly where?: string | undefined;
+};
 
 export type Detector = (doc: ProseDocument, options: DetectorOptions) => Finding[];
 
@@ -102,6 +117,8 @@ export type RuleDefinition = {
    *  言語別の閾値を持つ rule（max-sentence-length）は、読み込み時に言語で平坦化済み。 */
   readonly levels: LevelTable;
   readonly how_to_find: string;
+  readonly word_list: string | undefined;
+  readonly where: string | undefined;
   readonly use_for: readonly string[];
   readonly severity: Severity;
 };

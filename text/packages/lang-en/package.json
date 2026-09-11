@@ -13,7 +13,8 @@
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "lexicons"
   ],
   "engines": {
     "node": ">=24"
@@ -22,7 +23,8 @@
     "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "sentence-splitter": "^5.0.1"
+    "sentence-splitter": "^5.0.1",
+    "yaml": "^2.9.0"
   },
   "peerDependencies": {
     "chaff": "*"

@@ -1,0 +1,30 @@
+id: closing-cliche
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: closing-cliche
+where: closing
+severity: warning
+
+name:
+  ja: 定型の結び
+  en: Cliched closing
+
+why:
+  ja: 「いかがでしたか」で終わる記事は、読者に何も残しません。結びは最後の主張の場所です。
+  en: A closing that only thanks the reader leaves nothing behind.
+
+message:
+  ja: 「{matched}」で締めています
+  en: 'Closes with "{matched}"'
+
+how_to_fix:
+  ja: 本文で分かったことのうち、いちばん持ち帰ってほしい 1 つを書いてください。
+  en: Name the one thing you want the reader to take away.
+
+levels:
+  strict: 1
+  normal: 1
+  relaxed: 2
+
+use_for: [blog]

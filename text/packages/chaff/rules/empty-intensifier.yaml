@@ -1,0 +1,29 @@
+id: empty-intensifier
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: empty-intensifier
+severity: warning
+
+name:
+  ja: 空虚な強調
+  en: Empty intensifier
+
+why:
+  ja: 「非常に重要」は、何がどう重要なのかを言っていません。強調した気になるだけです。
+  en: '"Extremely important" does not say what matters or why. It only feels emphatic.'
+
+message:
+  ja: 「{matched}」は、中身を言わずに強調だけしています
+  en: '"{matched}" emphasises without saying anything'
+
+how_to_fix:
+  ja: 何がどう重要なのかを書いてください。書けないなら、その一文は落とせます。
+  en: Say what matters and why. If you cannot, the sentence can go.
+
+levels:
+  strict: 1
+  normal: 1
+  relaxed: 3
+
+use_for: [blog, business]

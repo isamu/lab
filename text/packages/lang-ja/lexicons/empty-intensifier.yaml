@@ -1,0 +1,13 @@
+# 空虚な強調。程度を言っているようで、何も言っていない表現。
+id: empty-intensifier
+language: ja
+entries:
+  - pattern: 非常に重要
+  - pattern: 極めて重要
+  - pattern: きわめて重要
+  - pattern: 大変重要
+  - pattern: とても重要
+  - pattern: 最も重要なのは
+  - pattern: 言うまでもなく
+  - pattern: 不可欠です
+  - pattern: 欠かせません

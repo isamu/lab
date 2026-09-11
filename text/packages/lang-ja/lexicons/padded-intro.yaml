@@ -1,0 +1,12 @@
+# 水増しの導入。どの記事にも当てはまる書き出し。
+id: padded-intro
+language: ja
+entries:
+  - pattern: 近年
+  - pattern: 昨今
+  - pattern: 注目されています
+  - pattern: 注目を集めています
+  - pattern: 重要性が高まっています
+  - pattern: 方も多いのではないでしょうか
+  - pattern: ではないでしょうか
+  - pattern: 皆さんは

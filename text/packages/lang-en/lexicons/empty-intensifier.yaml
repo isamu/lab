@@ -1,0 +1,9 @@
+id: empty-intensifier
+language: en
+entries:
+  - pattern: it is important to note that
+  - pattern: it is worth noting that
+  - pattern: needless to say
+  - pattern: extremely important
+  - pattern: absolutely critical
+  - pattern: crucial to understand

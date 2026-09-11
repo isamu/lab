@@ -1,0 +1,10 @@
+# 定型の結び。読者に何も残さない締め。
+id: closing-cliche
+language: ja
+entries:
+  - pattern: いかがでしたか
+  - pattern: いかがでしょうか
+  - pattern: まとめると
+  - pattern: 最後までお読みいただき
+  - pattern: 参考になれば幸いです
+  - pattern: ぜひ試してみてください

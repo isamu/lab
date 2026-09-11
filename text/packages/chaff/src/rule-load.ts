@@ -64,6 +64,8 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     message: localizedOf(raw["message"]),
     levels,
     how_to_find: String(raw["how_to_find"]),
+    word_list: typeof raw["word_list"] === "string" ? raw["word_list"] : undefined,
+    where: typeof raw["where"] === "string" ? raw["where"] : undefined,
     use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],
     severity: isSeverity(raw["severity"]) ? raw["severity"] : "warning",
   };

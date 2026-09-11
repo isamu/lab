@@ -4,6 +4,7 @@ import { sentenceLength } from "./sentence-length.ts";
 import { headingEcho } from "./heading-echo.ts";
 import { repeatedHead } from "./repeated-head.ts";
 import { sentenceRhythm } from "./sentence-rhythm.ts";
+import { phraseMatch } from "./phrase-match.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -12,4 +13,5 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "heading-echo": headingEcho,
   "repeated-head": repeatedHead,
   "sentence-rhythm": sentenceRhythm,
+  "phrase-match": phraseMatch,
 };
