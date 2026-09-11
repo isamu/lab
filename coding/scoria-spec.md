@@ -26,14 +26,14 @@ npx scoria
 
 選定の根拠:
 
-| 基準 | 評価 |
-| --- | --- |
-| 比喩 | 「鉱石から価値を取り出したあとに残るもの」。コードベースに対して測りたいものと一致する |
-| 命名の系統 | lint（繊維）→ chaff（農）→ scoria（冶金）。lab の 2 本のハーネスが同じ論理で並ぶ |
-| 意味の適合 | 滓を名指すだけで「ツールが直す」を含意しない。検出と修正の分離（chaff §25）と矛盾しない |
+| 基準         | 評価                                                                                          |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| 比喩         | 「鉱石から価値を取り出したあとに残るもの」。コードベースに対して測りたいものと一致する        |
+| 命名の系統   | lint（繊維）→ chaff（農）→ scoria（冶金）。lab の 2 本のハーネスが同じ論理で並ぶ              |
+| 意味の適合   | 滓を名指すだけで「ツールが直す」を含意しない。検出と修正の分離（chaff §25）と矛盾しない       |
 | 採点との相性 | 製錬・試金の語彙圏にあるため、grade / assay / baseline といった周辺語がそのまま設計語彙になる |
-| npm | `scoria` も `@scoria` scope も 2026-09-11 時点で未取得。実装着手前に取得すること |
-| 既知のリスク | 火山学の用語（火山礫）でもある。また一般的な英単語ではないため、初見で意味が伝わらない |
+| npm          | `scoria` も `@scoria` scope も 2026-09-11 時点で未取得。実装着手前に取得すること              |
+| 既知のリスク | 火山学の用語（火山礫）でもある。また一般的な英単語ではないため、初見で意味が伝わらない        |
 
 パッケージ名前空間:
 
@@ -50,18 +50,18 @@ scoria                 harness core（npx の入口）
 
 記録として残す。同じ検討を繰り返さないため。npm の取得状況は 2026-09-11 時点の実測値。
 
-| 候補 | 状態 | 外した理由 |
-| --- | --- | --- |
-| `dross` | 空き | 意味・長さ（5 文字 1 音節）ともに最適で、最後まで残った。語感が強すぎる（「お前のコードはかすだ」と読める）ため見送り。取得はしておく価値がある |
-| `assay` | 取得済み（2013 年） | 「試金＝鉱石の品位を分析して数値を出すこと」は本ツールの定義そのもの。名前として最良だったが取れない |
-| `swarf` | 取得済み | 切削くず。冶金・機械加工の語族で適合するが、既存パッケージが React 関連の別物 |
-| `slag` | — | 鉱滓としては scoria と同義だが、英国俗語で女性への侮蔑語。採用しない |
-| `touchstone` / `hallmark` / `karat` / `gauge` / `proof` / `grade` | 取得済み | 試金石・純度証明の刻印。意味は良いがいずれも取得済み |
-| `crucible` | — | Atlassian Crucible（コードレビュー製品）と衝突。chaff spec §0.1 で既に却下済み |
-| `cupel` | 空き | 灰吹き皿（試金で貴金属を分離する器）。意味は正確だが難読で、初見の推測が効かない |
-| `fineness` | 空き | 金属の純度。「高いほど良い」方向の名前であり、lint 系の「取り除くべきものを名指す」命名から外れる |
-| `millscale` | 空き | 黒皮（熱間圧延で表面にできる酸化スケール）。2 語に見えるうえ意味が遠い |
-| 説明的な複合語全般 | — | `codequality` `quality-harness` `vibecheck` ほか。定着した開発ツール名はほぼ 4〜8 文字の具体名詞であり、説明的な複合語はこの型から外れる（chaff §0.1 と同じ論理） |
+| 候補                                                              | 状態                | 外した理由                                                                                                                                                        |
+| ----------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dross`                                                           | 空き                | 意味・長さ（5 文字 1 音節）ともに最適で、最後まで残った。語感が強すぎる（「お前のコードはかすだ」と読める）ため見送り。取得はしておく価値がある                   |
+| `assay`                                                           | 取得済み（2013 年） | 「試金＝鉱石の品位を分析して数値を出すこと」は本ツールの定義そのもの。名前として最良だったが取れない                                                              |
+| `swarf`                                                           | 取得済み            | 切削くず。冶金・機械加工の語族で適合するが、既存パッケージが React 関連の別物                                                                                     |
+| `slag`                                                            | —                   | 鉱滓としては scoria と同義だが、英国俗語で女性への侮蔑語。採用しない                                                                                              |
+| `touchstone` / `hallmark` / `karat` / `gauge` / `proof` / `grade` | 取得済み            | 試金石・純度証明の刻印。意味は良いがいずれも取得済み                                                                                                              |
+| `crucible`                                                        | —                   | Atlassian Crucible（コードレビュー製品）と衝突。chaff spec §0.1 で既に却下済み                                                                                    |
+| `cupel`                                                           | 空き                | 灰吹き皿（試金で貴金属を分離する器）。意味は正確だが難読で、初見の推測が効かない                                                                                  |
+| `fineness`                                                        | 空き                | 金属の純度。「高いほど良い」方向の名前であり、lint 系の「取り除くべきものを名指す」命名から外れる                                                                 |
+| `millscale`                                                       | 空き                | 黒皮（熱間圧延で表面にできる酸化スケール）。2 語に見えるうえ意味が遠い                                                                                            |
+| 説明的な複合語全般                                                | —                   | `codequality` `quality-harness` `vibecheck` ほか。定着した開発ツール名はほぼ 4〜8 文字の具体名詞であり、説明的な複合語はこの型から外れる（chaff §0.1 と同じ論理） |
 
 ---
 
@@ -124,13 +124,13 @@ npx 一発で動くことを最優先制約にする  chaff §17
 
 変えるもの:
 
-| chaff | scoria | 理由 |
-| --- | --- | --- |
-| detector を自前で書く | detector は既存ツール。scoria は書かない | コードには成熟した linter がある。散文には無かった（§3） |
+| chaff                        | scoria                                                         | 理由                                                                  |
+| ---------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------- |
+| detector を自前で書く        | detector は既存ツール。scoria は書かない                       | コードには成熟した linter がある。散文には無かった（§3）              |
 | 単一スコアを non-goal にする | 単一スコアを出す。ただし repo 間で比較不能なものとして定義する | 「改善・劣化が分かる」ことが要求。ただし §16 の制約下でのみ意味を持つ |
-| 言語軸（ja / en） | Stack 軸（ts / react / vue / node） | 同じ位置にある直交軸。adapter で吸収する構造も同じ |
-| Genre 軸（business / blog） | Profile 軸（app / library / cli） | どの rule が適用されるかを決める軸。同じ役割 |
-| Layer（L1〜L4、言語依存度） | Tier（0〜5、コストと再現性） | scoria では言語依存度より **実行コスト** が階層の軸になる（§5） |
+| 言語軸（ja / en）            | Stack 軸（ts / react / vue / node）                            | 同じ位置にある直交軸。adapter で吸収する構造も同じ                    |
+| Genre 軸（business / blog）  | Profile 軸（app / library / cli）                              | どの rule が適用されるかを決める軸。同じ役割                          |
+| Layer（L1〜L4、言語依存度）  | Tier（0〜5、コストと再現性）                                   | scoria では言語依存度より **実行コスト** が階層の軸になる（§5）       |
 
 ---
 
@@ -361,7 +361,7 @@ export type Tier = 0 | 1 | 2 | 3 | 4 | 5;
 
 /** probe が返す 1 本の測定値。点ではない（§6.2） */
 export interface Metric {
-  readonly id: string;              // "eslint.warnings_per_kloc"
+  readonly id: string; // "eslint.warnings_per_kloc"
   readonly value: number;
   readonly unit: "count" | "ratio" | "per_kloc" | "ms" | "bytes" | "pct";
   /** この値に寄与した上位ファイル。差分の説明に使う（§22） */
@@ -371,7 +371,7 @@ export interface Metric {
 /** probe が動いたかどうかの 3 状態。§18 で厳密に区別する */
 export type ProbeStatus =
   | { readonly kind: "ok" }
-  | { readonly kind: "absent"; readonly reason: string }   // 対象が存在しない = 0 点
+  | { readonly kind: "absent"; readonly reason: string } // 対象が存在しない = 0 点
   | { readonly kind: "skipped"; readonly reason: string }; // 環境が足りない = 採点しない
 
 export interface ProbeResult {
@@ -409,7 +409,7 @@ export interface Probe {
 
 export interface StackAdapter {
   readonly kind: "stack";
-  readonly id: string;              // "react"
+  readonly id: string; // "react"
   readonly apiVersion: 1;
   /** package.json / 設定ファイルからの検出。confidence を返す（§9） */
   readonly detect: (root: string) => Promise<{ matched: boolean; confidence: number; evidence: string[] }>;
@@ -421,8 +421,7 @@ export interface StackAdapter {
   readonly designTokenSource?: (root: string) => Promise<TokenSource | undefined>;
 }
 
-export type FileKind =
-  | "source" | "test" | "story" | "config" | "generated" | "script" | "type-only" | "ignored";
+export type FileKind = "source" | "test" | "story" | "config" | "generated" | "script" | "type-only" | "ignored";
 ```
 
 制約:
@@ -498,41 +497,41 @@ detection drift
 
 profile はどの dimension が適用され、どの重みを持つかを決める。
 
-| profile | 適用しない dimension | 特徴 |
-| --- | --- | --- |
-| `app` | packaging | ui-consistency の重みが高い。public API の概念が無い |
-| `library` | ui-consistency | packaging（publint / attw）と documentation の重みが高い。**public export は未使用ではない** |
-| `cli` | ui-consistency | packaging を軽く適用。documentation は README の CLI 例と実装の一致を重く見る |
-| `monorepo-package` | — | 親の設定を継承し、パッケージ単位で採点する（§10.2） |
+| profile            | 適用しない dimension | 特徴                                                                                         |
+| ------------------ | -------------------- | -------------------------------------------------------------------------------------------- |
+| `app`              | packaging            | ui-consistency の重みが高い。public API の概念が無い                                         |
+| `library`          | ui-consistency       | packaging（publint / attw）と documentation の重みが高い。**public export は未使用ではない** |
+| `cli`              | ui-consistency       | packaging を軽く適用。documentation は README の CLI 例と実装の一致を重く見る                |
+| `monorepo-package` | —                    | 親の設定を継承し、パッケージ単位で採点する（§10.2）                                          |
 
 profile ごとの重み（暫定値。calibration 前のため全体が `experimental`。§25）:
 
 ```yaml
 # profiles/app.yaml
 weights:
-  type-safety:      15
-  readability:      15
-  architecture:     15
-  test-coverage:    10
-  test-efficacy:    10
-  security:         10
-  documentation:     5
-  ui-consistency:   10
-  integrity:        10
+  type-safety: 15
+  readability: 15
+  architecture: 15
+  test-coverage: 10
+  test-efficacy: 10
+  security: 10
+  documentation: 5
+  ui-consistency: 10
+  integrity: 10
 ```
 
 ```yaml
 # profiles/library.yaml
 weights:
-  type-safety:      15
-  readability:      15
-  architecture:     15
-  test-coverage:    10
-  test-efficacy:    10
-  security:         10
-  documentation:    10
-  packaging:         5
-  integrity:        10
+  type-safety: 15
+  readability: 15
+  architecture: 15
+  test-coverage: 10
+  test-efficacy: 10
+  security: 10
+  documentation: 10
+  packaging: 5
+  integrity: 10
 ```
 
 `app` の配点は元の要求（Correctness 15 / 読みやすさ 15 / アーキテクチャ 15 / テスト 10 /
@@ -560,18 +559,18 @@ Mutation 10 / セキュリティ 10 / ドキュメント 10 / UI 10 / CI 5）を
 
 9 次元。`packaging` は library / cli profile のみ。
 
-| dimension | 何を測るか | 主な probe | Tier |
-| --- | --- | --- | --- |
-| `type-safety` | 型がどれだけ機能しているか | tsc-strict, tsconfig-integrity | 1 |
-| `readability` | 読んで理解できる形か | eslint, jscpd, file-shape, comment-quality | 0 |
-| `architecture` | 構造と依存が壊れていないか | knip, dependency-cruiser, jscpd | 0 |
-| `test-coverage` | どれだけ実行されているか | test-presence, coverage | 2 |
-| `test-efficacy` | テストが本当に壊れを検出するか | mutation | 2 |
-| `security` | 既知の危険があるか | audit, secret-scan, eslint-security | 0 |
-| `documentation` | 説明が存在し、実装と合っているか | readme-contract, comment-quality, judge:doc-drift | 0 / 4 |
-| `ui-consistency` | 見た目の決定が一貫しているか | ui-token, component-shape, axe | 0 / 3 |
-| `packaging` | 配布物として正しいか | publint, attw, cross-platform-ci | 1 |
-| `integrity` | 測定そのものが信用できるか | suppression-scan, config-integrity, ci-integrity | 0 |
+| dimension        | 何を測るか                       | 主な probe                                        | Tier  |
+| ---------------- | -------------------------------- | ------------------------------------------------- | ----- |
+| `type-safety`    | 型がどれだけ機能しているか       | tsc-strict, tsconfig-integrity                    | 1     |
+| `readability`    | 読んで理解できる形か             | eslint, jscpd, file-shape, comment-quality        | 0     |
+| `architecture`   | 構造と依存が壊れていないか       | knip, dependency-cruiser, jscpd                   | 0     |
+| `test-coverage`  | どれだけ実行されているか         | test-presence, coverage                           | 2     |
+| `test-efficacy`  | テストが本当に壊れを検出するか   | mutation                                          | 2     |
+| `security`       | 既知の危険があるか               | audit, secret-scan, eslint-security               | 0     |
+| `documentation`  | 説明が存在し、実装と合っているか | readme-contract, comment-quality, judge:doc-drift | 0 / 4 |
+| `ui-consistency` | 見た目の決定が一貫しているか     | ui-token, component-shape, axe                    | 0 / 3 |
+| `packaging`      | 配布物として正しいか             | publint, attw, cross-platform-ci                  | 1     |
+| `integrity`      | 測定そのものが信用できるか       | suppression-scan, config-integrity, ci-integrity  | 0     |
 
 `integrity` は他と性質が違う。詳細は §15。
 
@@ -583,32 +582,32 @@ Mutation 10 / セキュリティ 10 / ドキュメント 10 / UI 10 / CI 5）を
 
 ### 12.1 外部ツールを起動するもの
 
-| probe | 外部ツール | 主な metric |
-| --- | --- | --- |
-| `eslint` | プロジェクトの eslint（§3.2） | `warnings_per_kloc`, `errors_per_kloc`, `rule_hits{rule}` |
-| `eslint-sonarjs` | eslint-plugin-sonarjs | `cognitive_complexity_p95`, `smells_per_kloc` |
-| `knip` | knip | `unused_files`, `unused_exports`, `unused_deps`, `unlisted_deps` |
-| `depcruise` | dependency-cruiser | `circular_count`, `orphan_count`, `layer_violations` |
-| `jscpd` | jscpd | `duplicated_lines_pct`, `duplicated_blocks` |
-| `tsc-strict` | プロジェクトの typescript | `type_errors`, `strict_flags_enabled` |
-| `audit` | npm / yarn audit | `vuln_high`, `vuln_critical`, `vuln_fixable` |
-| `publint` | publint / @arethetypeswrong/cli | `packaging_errors`, `type_resolution_errors` |
+| probe            | 外部ツール                      | 主な metric                                                      |
+| ---------------- | ------------------------------- | ---------------------------------------------------------------- |
+| `eslint`         | プロジェクトの eslint（§3.2）   | `warnings_per_kloc`, `errors_per_kloc`, `rule_hits{rule}`        |
+| `eslint-sonarjs` | eslint-plugin-sonarjs           | `cognitive_complexity_p95`, `smells_per_kloc`                    |
+| `knip`           | knip                            | `unused_files`, `unused_exports`, `unused_deps`, `unlisted_deps` |
+| `depcruise`      | dependency-cruiser              | `circular_count`, `orphan_count`, `layer_violations`             |
+| `jscpd`          | jscpd                           | `duplicated_lines_pct`, `duplicated_blocks`                      |
+| `tsc-strict`     | プロジェクトの typescript       | `type_errors`, `strict_flags_enabled`                            |
+| `audit`          | npm / yarn audit                | `vuln_high`, `vuln_critical`, `vuln_fixable`                     |
+| `publint`        | publint / @arethetypeswrong/cli | `packaging_errors`, `type_resolution_errors`                     |
 
 版数の実測（2026-09-11 時点、`dist.unpackedSize`）:
 
-| package | version | unpacked |
-| --- | --- | --- |
-| `eslint` | 10.10.0 | 2.93 MB |
-| `typescript` | 7.0.2 | 2.50 MB |
-| `eslint-plugin-sonarjs` | 4.2.0 | 3.93 MB |
-| `knip` | 6.35.1 | 1.93 MB |
-| `dependency-cruiser` | 18.2.0 | 1.01 MB |
-| `jscpd` | 5.2.0 | 0.01 MB |
-| `madge` | 8.0.0 | 0.11 MB |
-| `publint` | 0.3.24 | 0.12 MB |
-| `@arethetypeswrong/cli` | 0.18.5 | 0.06 MB |
-| `@stryker-mutator/core` | 10.0.0 | 1.22 MB |
-| `@microsoft/eslint-formatter-sarif` | 3.1.0 | 0.01 MB |
+| package                             | version | unpacked |
+| ----------------------------------- | ------- | -------- |
+| `eslint`                            | 10.10.0 | 2.93 MB  |
+| `typescript`                        | 7.0.2   | 2.50 MB  |
+| `eslint-plugin-sonarjs`             | 4.2.0   | 3.93 MB  |
+| `knip`                              | 6.35.1  | 1.93 MB  |
+| `dependency-cruiser`                | 18.2.0  | 1.01 MB  |
+| `jscpd`                             | 5.2.0   | 0.01 MB  |
+| `madge`                             | 8.0.0   | 0.11 MB  |
+| `publint`                           | 0.3.24  | 0.12 MB  |
+| `@arethetypeswrong/cli`             | 0.18.5  | 0.06 MB  |
+| `@stryker-mutator/core`             | 10.0.0  | 1.22 MB  |
+| `@microsoft/eslint-formatter-sarif` | 3.1.0   | 0.01 MB  |
 
 `eslint` と `typescript` は §3.2 によりプロジェクトのものを使うため、scoria の配布サイズには乗らない。
 乗るのは knip / dependency-cruiser / jscpd で、合計 3 MB 弱。§19 の予算はこれを前提にする。
@@ -621,18 +620,18 @@ adapter は起動した実バージョンを `toolVersions` に記録する義�
 
 既存ツールに相当物が無く、かつ AST を要さずファイル走査で足りるもの。
 
-| probe | 主な metric | 節 |
-| --- | --- | --- |
-| `suppression-scan` | `as_any`, `ts_ignore_unreasoned`, `eslint_disable`, `test_skip`, `empty_catch` | §15 |
-| `config-integrity` | `strict_disabled`, `rules_turned_off`, `coverage_excludes`, `duplicate_configs` | §15 |
-| `ci-integrity` | `has_lint_job`, `has_typecheck_job`, `has_test_job`, `continue_on_error_count` | §15 |
-| `file-shape` | `sloc_p95`, `max_file_sloc`, `fn_length_p95`, `god_file_count` | §13 |
-| `comment-quality` | `comment_density`, `what_comment_ratio`, `stale_todo_count` | §13 |
-| `readme-contract` | `has_sections{...}`, `cli_flags_documented_ratio` | §13 |
-| `ui-token` | `raw_color_count`, `raw_spacing_cardinality`, `inline_style_count`, `style_block_count` | §14 |
-| `component-shape` | `props_count_p95`, `near_duplicate_components` | §14 |
-| `secret-scan` | `hardcoded_secret_candidates` | — |
-| `test-presence` | `modules_without_test_ratio` | — |
+| probe              | 主な metric                                                                             | 節  |
+| ------------------ | --------------------------------------------------------------------------------------- | --- |
+| `suppression-scan` | `as_any`, `ts_ignore_unreasoned`, `eslint_disable`, `test_skip`, `empty_catch`          | §15 |
+| `config-integrity` | `strict_disabled`, `rules_turned_off`, `coverage_excludes`, `duplicate_configs`         | §15 |
+| `ci-integrity`     | `has_lint_job`, `has_typecheck_job`, `has_test_job`, `continue_on_error_count`          | §15 |
+| `file-shape`       | `sloc_p95`, `max_file_sloc`, `fn_length_p95`, `god_file_count`                          | §13 |
+| `comment-quality`  | `comment_density`, `what_comment_ratio`, `stale_todo_count`                             | §13 |
+| `readme-contract`  | `has_sections{...}`, `cli_flags_documented_ratio`                                       | §13 |
+| `ui-token`         | `raw_color_count`, `raw_spacing_cardinality`, `inline_style_count`, `style_block_count` | §14 |
+| `component-shape`  | `props_count_p95`, `near_duplicate_components`                                          | §14 |
+| `secret-scan`      | `hardcoded_secret_candidates`                                                           | —   |
+| `test-presence`    | `modules_without_test_ratio`                                                            | —   |
 
 ---
 
@@ -881,7 +880,7 @@ dimension ごとに、どの metric をどの scale で点に変換するかを 
 ```yaml
 # dimensions/readability.yaml
 id: readability
-status: experimental          # calibration 前（§25）
+status: experimental # calibration 前（§25）
 metrics:
   - metric: eslint.warnings_per_kloc
     scale: { good: 0, bad: 20 }
@@ -979,12 +978,12 @@ scoria が提供しないもの
   "commit": "abc1234",
   "frozen": true,
   "profile": "app",
-  "stacks": ["ts", "react", "node-server"],   // 凍結された検出結果（§9.2）
+  "stacks": ["ts", "react", "node-server"], // 凍結された検出結果（§9.2）
   "configHash": "sha256:...",
   "size": { "files": 214, "sloc": 18422 },
   "dimensions": { "readability": 74, "integrity": 68 },
   "metrics": { "eslint.warnings_per_kloc": 8.1 },
-  "toolVersions": { "eslint": "10.10.0", "typescript": "7.0.2", "knip": "6.35.1" }
+  "toolVersions": { "eslint": "10.10.0", "typescript": "7.0.2", "knip": "6.35.1" },
 }
 ```
 
@@ -1098,15 +1097,15 @@ skipped   環境が足りず測れなかった = 採点しない。confidence �
 
 ### 19.1 予算
 
-| 項目 | 目標 |
-| --- | --- |
-| 初回 `npx scoria`（Tier 0、キャッシュなし） | 30 秒以内で起動し測定を始める |
-| `scoria` core + 依存の unpacked size | 5 MB 以内 |
-| Tier 0 の測定（18,000 sloc の TS プロジェクト） | 60 秒以内 |
-| Tier 0 + Tier 1 | 3 分以内 |
-| 2 回目以降（scoria cache あり、変更ファイルのみ） | 10 秒以内 |
-| Tier 0 の外部通信 | なし（`audit` のみ例外。オフラインでは skipped） |
-| API key | Tier 4 以外は不要 |
+| 項目                                              | 目標                                             |
+| ------------------------------------------------- | ------------------------------------------------ |
+| 初回 `npx scoria`（Tier 0、キャッシュなし）       | 30 秒以内で起動し測定を始める                    |
+| `scoria` core + 依存の unpacked size              | 5 MB 以内                                        |
+| Tier 0 の測定（18,000 sloc の TS プロジェクト）   | 60 秒以内                                        |
+| Tier 0 + Tier 1                                   | 3 分以内                                         |
+| 2 回目以降（scoria cache あり、変更ファイルのみ） | 10 秒以内                                        |
+| Tier 0 の外部通信                                 | なし（`audit` のみ例外。オフラインでは skipped） |
+| API key                                           | Tier 4 以外は不要                                |
 
 `eslint` と `typescript` をプロジェクトのものに委ねる設計（§3.2）が、この予算の前提である。
 両者を同梱すると 5.4 MB が乗り、かつ版数がプロジェクトとずれて結果が食い違う。
@@ -1201,18 +1200,18 @@ export default defineConfig({
   mode: "ratchet",
   tolerance: 1.0,
 
-  tiers: [0, 1],                       // MVP の既定。2 以上は明示的に有効化する
+  tiers: [0, 1], // MVP の既定。2 以上は明示的に有効化する
 
-  ui: { tokenPolicy: "strict" },       // §14.1
+  ui: { tokenPolicy: "strict" }, // §14.1
 
   dimensions: {
-    documentation: { weight: 10 },     // profile の既定重みを上書き
+    documentation: { weight: 10 }, // profile の既定重みを上書き
     "ui-consistency": { enabled: false },
   },
 
   probes: {
     jscpd: { minTokens: 70 },
-    knip: { config: "knip.json" },     // プロジェクト側の設定を明示
+    knip: { config: "knip.json" }, // プロジェクト側の設定を明示
   },
 
   ignore: ["src/generated/**", "packages/legacy/**"],
@@ -1339,7 +1338,7 @@ finding   個別の指摘（file / line / rule / severity）。SARIF にして P
   "commit": "def5678",
   "baselineCommit": "abc1234",
   "frozen": true,
-  "complete": false,                 // skipped probe があるため（§18）
+  "complete": false, // skipped probe があるため（§18）
   "profile": "app",
   "stacks": ["ts", "react", "node-server"],
   "tiers": [0, 1],
@@ -1352,37 +1351,48 @@ finding   個別の指摘（file / line / rule / severity）。SARIF にして P
       "status": "experimental",
       "confidence": "low",
       "confidenceReason": "38 suppressions in scope (2.1/kloc)",
-      "ratcheted": false,            // confidence low のため除外（§17.2）
+      "ratcheted": false, // confidence low のため除外（§17.2）
       "metrics": [
-        { "id": "eslint.warnings_per_kloc", "value": 11.4, "baseline": 8.1,
-          "scale": { "good": 0, "bad": 20 }, "weight": 0.30, "points": 13.2, "delta": -3.0,
-          "topContributors": [ { "file": "src/pricing/quote.ts", "value": 22 } ] }
-      ]
-    }
+        {
+          "id": "eslint.warnings_per_kloc",
+          "value": 11.4,
+          "baseline": 8.1,
+          "scale": { "good": 0, "bad": 20 },
+          "weight": 0.3,
+          "points": 13.2,
+          "delta": -3.0,
+          "topContributors": [{ "file": "src/pricing/quote.ts", "value": 22 }],
+        },
+      ],
+    },
   },
 
   "movers": [
-    { "dimension": "test-coverage", "metric": "coverage.line_pct",
-      "from": 68, "to": 51, "points": -9.0,
-      "attribution": "src/pricing/** added without tests (1,204 sloc)" }
+    {
+      "dimension": "test-coverage",
+      "metric": "coverage.line_pct",
+      "from": 68,
+      "to": 51,
+      "points": -9.0,
+      "attribution": "src/pricing/** added without tests (1,204 sloc)",
+    },
   ],
 
   "integrity": {
-    "suppressions": { "as_any": 12, "ts_ignore": 8, "ts_expect_error_unreasoned": 4,
-                      "eslint_disable": 26, "test_skip": 2, "empty_catch": 1 },
+    "suppressions": { "as_any": 12, "ts_ignore": 8, "ts_expect_error_unreasoned": 4, "eslint_disable": 26, "test_skip": 2, "empty_catch": 1 },
     "newSinceBaseline": 6,
-    "newWithoutReason": 3
+    "newWithoutReason": 3,
   },
 
   "probes": [
     { "probe": "mutation", "status": { "kind": "absent", "reason": "tier 2 not enabled" } },
-    { "probe": "publint",  "status": { "kind": "skipped", "reason": "profile app" } }
+    { "probe": "publint", "status": { "kind": "skipped", "reason": "profile app" } },
   ],
 
   "toolVersions": { "eslint": "10.10.0", "typescript": "7.0.2", "knip": "6.35.1" },
   "rebaselineRequired": [],
 
-  "overall": { "score": 63, "delta": -2, "comparable": false }
+  "overall": { "score": 63, "delta": -2, "comparable": false },
 }
 ```
 
@@ -1437,7 +1447,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0              # baseline との比較に履歴が要る
+          fetch-depth: 0 # baseline との比較に履歴が要る
           persist-credentials: false
       - uses: actions/setup-node@v7
         with: { node-version: 22, cache: yarn }
@@ -1459,18 +1469,19 @@ mode に従って exit code を返す
 ### 23.2 PR コメント
 
 ```markdown
-### scoria  63 / 100  (-2)
+### scoria 63 / 100 (-2)
 
-| Dimension | Score | Δ | Confidence |
-|---|---:|---:|---|
-| Type safety | 82 | ±0 | medium |
-| Readability | 71 | **-3** | low ⚠ |
-| Architecture | 64 | +2 | high |
-| Test coverage | 41 | **-9** | high |
-| Security | 95 | ±0 | high |
-| Integrity | 62 | **-6** | — |
+| Dimension     | Score |      Δ | Confidence |
+| ------------- | ----: | -----: | ---------- |
+| Type safety   |    82 |     ±0 | medium     |
+| Readability   |    71 | **-3** | low ⚠      |
+| Architecture  |    64 |     +2 | high       |
+| Test coverage |    41 | **-9** | high       |
+| Security      |    95 |     ±0 | high       |
+| Integrity     |    62 | **-6** | —          |
 
 **What moved**
+
 - `-9.0` test-coverage — `src/pricing/**` を 1,204 sloc 足してテストがありません
 - `-6.0` integrity — 抑制が 6 件増え、うち 3 件に理由がありません
 - `+2.0` architecture — 循環依存 3 → 1
@@ -1480,6 +1491,7 @@ mode に従って exit code を返す
 - `src/pricing/quote.ts:118` — `as any` on API response
 - `src/pricing/quote.ts:141` — `@ts-expect-error` without a reason
 - `src/pricing/index.ts:12` — new module, no test file
+
 </details>
 
 <sub>mode: report — このコメントは CI を落としません。スコアは repo 間で比較できません。</sub>
@@ -1497,7 +1509,7 @@ Tier 0 と 1 は secrets を要さないため fork PR でも動く。
 
 ```yaml
 on:
-  schedule: [{ cron: "0 17 * * *" }]   # UTC
+  schedule: [{ cron: "0 17 * * *" }] # UTC
 ```
 
 Tier 2 以上（mutation、browser）は nightly に置く。
@@ -1694,14 +1706,14 @@ probe の改修で意図しない指標変動が起きたことを検出する�
 
 いずれも 2026-09-11 時点の確認。
 
-| 既存 | 何をするか | scoria との違い |
-| --- | --- | --- |
-| **MegaLinter** / super-linter | 多数の linter を 1 つの Action でまとめて実行する（`mega-linter-runner` 10.1.0） | 実行は統合するが、**採点も差分も無い**。出力は linter ごとのログのまま |
-| **betterer**（`@betterer/cli` 6.0.0-alpha.1） | 結果のスナップショットを取り、悪化したら落とす | ratchet の考え方そのもの。ただし**何を測るかは利用者が自分で書く**。統合も採点もしない。scoria の §17 はここから来ている |
-| **SonarQube / SonarCloud** | 次元別の指標、Quality Gate、Clean as You Code（新規コードのみ判定） | 最も機能が近い。サーバ運用が要り、多言語汎用で、**プロジェクト自身の eslint ではなく Sonar の基準で測る**（§3.2 と逆）。scoria は npx 一発と TS/JS 特化で差別化する |
-| **CodeScene** | git 履歴から変更頻度 × 複雑度、Code Health 1〜10 | 履歴の分析は scoria も Tier 0 で行うが、**スコアではなく「人への問い」として出す**（§24.2） |
-| **Codecov** | coverage の差分を PR コメントに出す | 1 指標に対する差分提示の体験の手本。scoria はそれを 9 次元に広げたものと言える |
-| **qlty** | 複数の linter を束ねる統合 CLI（npm 配布ではない） | 統合の方向は近い。採点・baseline・AI 層は持たない |
+| 既存                                          | 何をするか                                                                       | scoria との違い                                                                                                                                                     |
+| --------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **MegaLinter** / super-linter                 | 多数の linter を 1 つの Action でまとめて実行する（`mega-linter-runner` 10.1.0） | 実行は統合するが、**採点も差分も無い**。出力は linter ごとのログのまま                                                                                              |
+| **betterer**（`@betterer/cli` 6.0.0-alpha.1） | 結果のスナップショットを取り、悪化したら落とす                                   | ratchet の考え方そのもの。ただし**何を測るかは利用者が自分で書く**。統合も採点もしない。scoria の §17 はここから来ている                                            |
+| **SonarQube / SonarCloud**                    | 次元別の指標、Quality Gate、Clean as You Code（新規コードのみ判定）              | 最も機能が近い。サーバ運用が要り、多言語汎用で、**プロジェクト自身の eslint ではなく Sonar の基準で測る**（§3.2 と逆）。scoria は npx 一発と TS/JS 特化で差別化する |
+| **CodeScene**                                 | git 履歴から変更頻度 × 複雑度、Code Health 1〜10                                 | 履歴の分析は scoria も Tier 0 で行うが、**スコアではなく「人への問い」として出す**（§24.2）                                                                         |
+| **Codecov**                                   | coverage の差分を PR コメントに出す                                              | 1 指標に対する差分提示の体験の手本。scoria はそれを 9 次元に広げたものと言える                                                                                      |
+| **qlty**                                      | 複数の linter を束ねる統合 CLI（npm 配布ではない）                               | 統合の方向は近い。採点・baseline・AI 層は持たない                                                                                                                   |
 
 scoria が新しく主張するのは次の 4 点に絞られる。
 
