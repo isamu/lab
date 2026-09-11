@@ -74,6 +74,16 @@ compared over time (spec §9.2). Run `scoria init` again to adopt a change delib
 
 The same object may live under a `scoria` key in `package.json` instead.
 
+If the project runs Prettier over JSON, add these to `.prettierignore`:
+
+```
+.scoria/
+scoria.config.json
+```
+
+scoria writes them with `JSON.stringify`, which always expands arrays, while Prettier collapses
+short ones. Formatting them means the two rewrite the file in turn on every run.
+
 Nothing is written when `CI=true`; the run only reports that the detection is not frozen.
 
 ## In CI

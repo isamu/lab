@@ -3,3 +3,8 @@ dist/
 # 手で整形した仕様書とサンプル。表・枠線・端末出力の見本を prettier に崩されると読めなくなる。
 *.md
 samples/
+
+# scoria writes these, and JSON.stringify always expands arrays while Prettier collapses short ones.
+# Leaving them formatted means the two rewrite the file in turn on every run.
+.scoria/
+scoria.config.json
