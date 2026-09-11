@@ -45,6 +45,22 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 | `heading-echo` | 見出しを直後の文が繰り返していないか |
 | `repeated-sentence-head` | 同じ書き出しの連続 |
 | `sentence-rhythm` | 文の長さの単調さ（experimental。既定では動かない） |
+| `empty-intensifier` | 「非常に重要」など、中身を言わない強調 |
+| `padded-intro` | 「近年〜が注目されています」型の書き出し（冒頭限定） |
+| `closing-cliche` | 「いかがでしたか」型の結び（最後の節限定） |
+
+後ろの 3 本は **L2**。検出器は共通で、語彙表だけが言語別にある。日本語でも英語でも同じ rule が動く。
+
+```
+$ npx chaff en.md --compact
+
+  3:67   warning "it is important to note that" emphasises without saying anything
+                 empty-intensifier
+  3:1    warning "in today's fast-paced world" is an opening that fits any article
+                 padded-intro
+  11:1   warning Closes with "in conclusion"
+                 closing-cliche
+```
 
 ## 使いはじめ
 
@@ -127,7 +143,7 @@ AI に設定を書かせるときは `npx chaff rules --json` を渡す。今の
 
 ## まだ無いもの
 
-L2 語彙表 / L3 品詞解析 / L4 意味の検査（`checks.yaml`）/ `eval` / `--watch`。
+L3 品詞解析 / L4 意味の検査（`checks.yaml`）/ `eval` / `--watch`。
 
 ## 構成
 
@@ -143,8 +159,9 @@ text/                      yarn workspaces のルート
     src/config/            chaff.yaml の読み書き
     src/render/            出力（既定 / --compact / --json）
     src/cli.ts
-  packages/lang-ja         @chaff/lang-ja。文分割（Tier 0）
-  packages/lang-en         @chaff/lang-en。文分割（Tier 0）
+  packages/lang-ja         @chaff/lang-ja。文分割と語彙表
+    lexicons/*.yaml        L2 の語彙。ここだけが言語別
+  packages/lang-en         @chaff/lang-en。同上
   test/                    node:test
 ```
 

@@ -1,4 +1,5 @@
 import { split, SentenceSplitterSyntax } from "sentence-splitter";
+import { loadLexicons } from "./lexicons.ts";
 import type { LanguageAdapter, Segmentation, Sentence, Span } from "chaff/plugin";
 
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
@@ -57,5 +58,6 @@ export const adapter: LanguageAdapter = {
     if (total === 0) return 0;
     return [...source.matchAll(JAPANESE)].length / total;
   },
+  lexicons: loadLexicons(),
   segment: (text: string): Segmentation => ({ sentences: merge(text, rawSpans(text)) }),
 };

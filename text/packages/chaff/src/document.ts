@@ -149,5 +149,6 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
     lengthUnit: adapter.capabilities.lengthUnit,
     sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root), source.length),
     sentences,
+    lexicons: adapter.lexicons,
   };
 };

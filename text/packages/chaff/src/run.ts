@@ -43,7 +43,16 @@ export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], s
       }
       const detector = DETECTORS[rule.how_to_find];
       if (detector === undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: `検出器 ${rule.how_to_find} がないため` }] };
-      const found = detector(doc, { limit: resolve(rule, level).limit }).map((finding) => place(starts, { ...finding, severity: rule.severity }));
+      const options = {
+        limit: resolve(rule, level).limit,
+        lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
+        where: rule.where,
+      };
+      // 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
+      if (rule.word_list !== undefined && options.lexicon === undefined) {
+        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: `${doc.language} の語彙表 ${rule.word_list} が無いため` }] };
+      }
+      const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: rule.severity }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };
     },
     { findings: [], skipped: [] },

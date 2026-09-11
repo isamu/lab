@@ -1,0 +1,30 @@
+id: padded-intro
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: padded-intro
+where: opening
+severity: warning
+
+name:
+  ja: 水増しの導入
+  en: Padded opening
+
+why:
+  ja: どの記事にも当てはまる書き出しは、読者に次を読む理由を与えません。
+  en: An opening that fits any article gives the reader no reason to continue.
+
+message:
+  ja: 「{matched}」は、どの記事にも当てはまる書き出しです
+  en: '"{matched}" is an opening that fits any article'
+
+how_to_fix:
+  ja: 具体的な状況か、この記事だけの主張から始めてください。
+  en: Start from a concrete situation, or from the claim only this piece makes.
+
+levels:
+  strict: 1
+  normal: 1
+  relaxed: 2
+
+use_for: [blog]
