@@ -44,6 +44,8 @@ interface Span {
 export interface SourceView {
   readonly code: readonly string[];
   readonly comments: readonly string[];
+  /** String literals, where a CLI flag a program accepts actually lives. */
+  readonly strings: readonly string[];
 }
 
 const openerAt = (text: string, index: number): Token | undefined =>
@@ -96,5 +98,5 @@ const project = (text: string, kinds: readonly Kind[], want: Kind): readonly str
 export const viewOf = (lines: readonly string[]): SourceView => {
   const text = lines.join("\n");
   const kinds = kindsOf(text);
-  return { code: project(text, kinds, "code"), comments: project(text, kinds, "comment") };
+  return { code: project(text, kinds, "code"), comments: project(text, kinds, "comment"), strings: project(text, kinds, "string") };
 };

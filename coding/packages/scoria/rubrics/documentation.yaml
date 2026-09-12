@@ -1,0 +1,36 @@
+# spec §11: does an explanation exist, and does it still match the code?
+#
+# Two of the three metrics the spec lists are deliberately absent. `what_comment_ratio` needs to
+# tell a comment that explains *why* from one that repeats *what*, and a wrong answer there punishes
+# the comments worth keeping. `comment_density` is reported but not scored: too few comments and too
+# many are both bad, and a linear scale (§16.2) would have to call one end good.
+id: documentation
+status: experimental
+
+# A README is the one piece of documentation every kind of project has, so its absence is the
+# heaviest single thing here. Binary: 1 or 0.
+metrics:
+  - metric: readme-contract.has_readme
+    scale: { good: 1, bad: 0 }
+    weight: 0.35
+
+  # 120 words is roughly "what it is, how to install it, how to run it". Below 30 is a placeholder.
+  - metric: readme-contract.readme_words
+    scale: { good: 120, bad: 30 }
+    weight: 0.2
+
+  # The half that rots. Adding a flag and documenting it are separate acts and only one ships.
+  # Skipped entirely where the program accepts no flags, so it never scores a library as if it did.
+  - metric: readme-contract.documented_flag_ratio
+    scale: { good: 1, bad: 0.5 }
+    weight: 0.25
+
+  # An unfinished marker is a note to a reader that the code is not what it should be. Two per
+  # thousand lines is a codebase carrying its own backlog inline.
+  - metric: comment-quality.marker_per_kloc
+    density: true
+    scale: { good: 0, bad: 2 }
+    weight: 0.2
+
+confidence_from:
+  - suppression-scan.source_count

@@ -28,6 +28,8 @@ import { audit } from "./probes/audit.ts";
 import { testPresence } from "./probes/test-presence.ts";
 import { coverage } from "./probes/coverage.ts";
 import { circular } from "./probes/circular.ts";
+import { readmeContract } from "./probes/readme-contract.ts";
+import { commentQuality } from "./probes/comment-quality.ts";
 
 const EXEC_TIMEOUT_MS = 120_000;
 const MAX_OUTPUT_BYTES = 64 * 1024 * 1024;
@@ -47,6 +49,8 @@ export const PROBES: readonly Probe[] = [
   testPresence,
   coverage,
   circular,
+  readmeContract,
+  commentQuality,
 ];
 
 /**
