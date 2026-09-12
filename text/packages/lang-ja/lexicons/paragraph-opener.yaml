@@ -1,0 +1,12 @@
+# 段落の先頭に立つ接続詞。続くと、どの段落も前の付け足しに見える。
+id: paragraph-opener
+language: ja
+entries:
+  - pattern: また
+  - pattern: さらに
+  - pattern: そして
+  - pattern: しかし
+  - pattern: ただし
+  - pattern: なお
+  - pattern: 一方
+  - pattern: つまり

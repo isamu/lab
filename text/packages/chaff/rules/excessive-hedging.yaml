@@ -1,0 +1,26 @@
+id: excessive-hedging
+layer: L2
+status: experimental
+how_to_find: hedging-density
+word_list: excessive-hedging
+severity: warning
+
+name:
+  ja: 逃げの表現が多い
+  en: Too much hedging
+
+why:
+  ja: 断言を避けるほど、読み手は何が決まったのか分からなくなります。1 つなら慎重さですが、重なると誰も責任を取らない文書になります。
+  en: The more the text avoids claiming, the less the reader can tell what was decided. One hedge is caution; many mean nobody is accountable.
+
+message:
+  ja: 「{matched}」など、逃げの表現が 1000 語あたり {density} 個あります（{limit} 個まで）
+  en: '"{matched}" and other hedges: {density} per 1000 words (limit {limit})'
+
+how_to_fix:
+  ja: 言い切れるものは言い切ってください。言い切れないなら、何が分かれば言い切れるのかを書いてください。
+  en: Commit where you can. Where you cannot, say what you would need to know.
+
+levels: { strict: 3, normal: 6, relaxed: 12 }
+
+use_for: [business, blog, technical]

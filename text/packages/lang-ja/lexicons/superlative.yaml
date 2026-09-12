@@ -1,0 +1,12 @@
+# 最上級。何と比べて最上なのかが要る。
+id: superlative
+language: ja
+entries:
+  - pattern: 最も
+  - pattern: 最高
+  - pattern: 最速
+  - pattern: 最大
+  - pattern: 世界初
+  - pattern: 業界初
+  - pattern: 唯一の
+  - pattern: 圧倒的

@@ -1,0 +1,12 @@
+# Conjunctions that open a paragraph. A run of them makes every paragraph an afterthought.
+id: paragraph-opener
+language: en
+entries:
+  - pattern: also
+  - pattern: moreover
+  - pattern: furthermore
+  - pattern: however
+  - pattern: additionally
+  - pattern: in addition
+  - pattern: that said
+  - pattern: on the other hand

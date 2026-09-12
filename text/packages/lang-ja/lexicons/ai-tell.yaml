@@ -1,0 +1,21 @@
+# AI 生成の signal。1 つでは何も言えないので重みを足し合わせる。
+# 単独で「AI が書いた」とは言わない。spec §20.2。
+id: ai-tell
+language: ja
+entries:
+  - pattern: 現代社会において
+    weight: 0.9
+  - pattern: 急速に変化する
+    weight: 0.7
+  - pattern: 重要な役割を果たし
+    weight: 0.8
+  - pattern: と言えるでしょう
+    weight: 0.6
+  - pattern: 様々な要因が
+    weight: 0.6
+  - pattern: 大きな可能性を秘め
+    weight: 0.8
+  - pattern: 深く掘り下げ
+    weight: 0.7
+  - pattern: ぜひ参考にしてみてください
+    weight: 0.7

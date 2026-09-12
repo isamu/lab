@@ -328,6 +328,21 @@ doc.md   全 6 文のうち 5 箇所を送ります（API は呼んでいませ�
 | `undefined-acronym` | 略語が説明なしで出てこないか |
 | `concrete-evidence-density` | 数値もコードもリンクも無い節 |
 
+## 言い回しを見る rule
+
+語彙表だけが言語別で、rule は共通です。新しい言語は語彙表を書けば動きます。
+
+| rule | 何を見るか |
+| --- | --- |
+| `excessive-hedging` | 逃げの表現の密度 |
+| `cushion-phrase-density` | クッション言葉の密度 |
+| `unqualified-superlative` | 比べる相手のない最上級 |
+| `repeated-conjunction` | 段落が接続詞で始まり続けていないか |
+| `ai-tell` | 生成文にありがちな言い回し（重み付き） |
+
+`ai-tell` は**単独で「AI が書いた」とは言いません**。どれも 1 つでは普通の日本語なので、
+重みを足し合わせた点だけを出します。
+
 ## まだ無いもの
 
 短縮形の一貫性（`contraction-consistency`）。ジャンルごとの閾値。

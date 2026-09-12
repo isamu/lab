@@ -706,16 +706,19 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | id | detector | genre | 既定 severity |
 | --- | --- | --- | --- |
 | `empty-intensifier` | phrase-match | 両方 | warning |
-| `excessive-hedging` | phrase-density + 近接共起 | business | warning |
-| `cushion-phrase-density` | phrase-density | business | info |
-| `unqualified-superlative` | phrase-match + 限定句の不在 | business | warning |
+| `excessive-hedging` ✅ | phrase-density + 近接共起 | business | warning |
+| `cushion-phrase-density` ✅ | phrase-density | business | info |
+| `unqualified-superlative` ✅ | phrase-match + 限定句の不在 | business | warning |
 | `unsourced-number` | pattern-cooccurrence | business | warning |
 | `internal-jargon` | phrase-match（ユーザー辞書） | business | warning |
-| `repeated-conjunction` | 段落先頭の語彙照合 | 両方 | warning |
-| `ai-tell` | weighted phrase-match | blog | info |
+| `repeated-conjunction` ✅ | 段落先頭の語彙照合 | 両方 | warning |
+| `ai-tell` ✅ | weighted phrase-match | blog | info |
 | `padded-intro` | phrase-match（冒頭限定） | blog | warning |
 | `closing-cliche` | phrase-match（末尾限定） | blog | warning |
 | `proper-noun-density` | 未知語率 | blog | info |
+
+`internal-jargon`（利用者の辞書）と `proper-noun-density`（未知語率）は未実装。
+前者は語彙表を利用者が書く仕組みが、後者は辞書か品詞解析が要る。
 
 共通 detector は 4 種類しかない。
 

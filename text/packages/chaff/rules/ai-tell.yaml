@@ -1,0 +1,27 @@
+id: ai-tell
+layer: L2
+status: experimental
+how_to_find: ai-tell
+word_list: ai-tell
+severity: info
+
+name:
+  ja: 生成文にありがちな言い回し
+  en: Phrasing common in generated text
+
+why:
+  ja: どれも単独では普通の日本語です。重なったときだけ意味があるので、重みを足し合わせて出しています。これだけで「AI が書いた」とは言えません。
+  en: Each is ordinary on its own. Only the pile-up means anything, so the weights are summed. This alone never says the text was generated.
+
+message:
+  ja: 「{word}」が揃っています（点 {density}、{limit} まで）
+  en: '"{word}" appear together (score {density}, limit {limit})'
+
+how_to_fix:
+  ja: 自分の言葉に置き換えてください。置き換えられないなら、その段落は無くても通るかもしれません。
+  en: Put it in your own words. If you cannot, the paragraph may not be needed.
+
+# 重みの合計を 10 倍した点。0.9 の言い回しが 2 つで 18。
+levels: { strict: 10, normal: 18, relaxed: 30 }
+
+use_for: [blog, business]

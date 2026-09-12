@@ -1,0 +1,26 @@
+id: cushion-phrase-density
+layer: L2
+status: experimental
+how_to_find: cushion-density
+word_list: cushion-phrase
+severity: info
+
+name:
+  ja: クッション言葉が多い
+  en: Too many softeners
+
+why:
+  ja: 1 つなら礼儀ですが、重なるほど本題が遠ざかります。読み手は用件を探して読み進めることになります。
+  en: One softener is courtesy. Several push the point further away, and the reader has to hunt for it.
+
+message:
+  ja: 「{matched}」など、クッション言葉が 1000 語あたり {density} 個あります（{limit} 個まで）
+  en: '"{matched}" and other softeners: {density} per 1000 words (limit {limit})'
+
+how_to_fix:
+  ja: 最初の 1 つだけ残して、あとは用件を先に書いてください。
+  en: Keep the first one. Lead with the request after that.
+
+levels: { strict: 2, normal: 5, relaxed: 10 }
+
+use_for: [business]

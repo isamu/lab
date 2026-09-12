@@ -1,0 +1,26 @@
+id: repeated-conjunction
+layer: L2
+status: experimental
+how_to_find: repeated-conjunction
+word_list: paragraph-opener
+severity: warning
+
+name:
+  ja: 段落が同じ調子で始まり続ける
+  en: Paragraphs keep opening the same way
+
+why:
+  ja: 接続詞で始まる段落は 1 つなら流れを作りますが、続くとどの段落も前の付け足しに見えて、話がどこへ向かっているのか分からなくなります。
+  en: One paragraph opening with a conjunction carries the flow. A run of them makes every paragraph an afterthought.
+
+message:
+  ja: 接続詞で始まる段落が {count} 続いています（{limit} まで）
+  en: "{count} paragraphs in a row open with a conjunction (limit {limit})"
+
+how_to_fix:
+  ja: どれか 1 つを残して、他は言いたいことから始めてください。
+  en: Keep one. Start the others with what you want to say.
+
+levels: { strict: 1, normal: 2, relaxed: 4 }
+
+use_for: [business, blog, technical]
