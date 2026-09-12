@@ -42,6 +42,7 @@ export interface Messages {
   readonly whatMoved: string;
   readonly noBaseline: string;
   readonly rebaselineNeeded: (tools: string) => string;
+  readonly rubricChanged: (dimensions: string) => string;
   readonly partlyMeasured: (percent: number) => string;
   readonly fromDimensions: (count: number) => string;
   readonly notComparableLong: string;
@@ -87,6 +88,7 @@ const en: Messages = {
   whatMoved: "What moved",
   noBaseline: "No baseline yet. `scoria baseline` records this run, and later runs report the change since.",
   rebaselineNeeded: (tools) => `${tools} changed version since the baseline; those moves are not regressions`,
+  rubricChanged: (dimensions) => `${dimensions}: this run measured different metrics than the baseline, so no change is reported`,
   partlyMeasured: (percent) => `only ${percent}% of this dimension could be measured`,
   fromDimensions: (count) => `mean of ${count}`,
   notComparableLong:
@@ -131,6 +133,7 @@ const ja: Messages = {
   whatMoved: "動いたもの",
   noBaseline: "baseline がありません。`scoria baseline` でこの実行を記録すると、次から差が出ます。",
   rebaselineNeeded: (tools) => `${tools} の版数が baseline から変わっています。その分の増減は劣化ではありません`,
+  rubricChanged: (dimensions) => `${dimensions}: baseline とは測っている項目が違うため、増減は出していません`,
   partlyMeasured: (percent) => `この軸は ${percent}% しか測れていません`,
   fromDimensions: (count) => `${count} 軸の平均`,
   notComparableLong:

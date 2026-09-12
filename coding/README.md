@@ -307,6 +307,11 @@ Each mover names the metric that moved and what it cost. Upgrading one of the to
 the score falls, which is not a regression — scoria records tool versions in the baseline and says
 so rather than reporting decay.
 
+Upgrading scoria itself is a different case again. A release that adds a metric changes what a
+dimension is made of, so the old and the new score are not measurements of the same thing —
+subtracting them would credit the release as an improvement. Those dimensions report `—` and no
+movers until you record a new baseline.
+
 Stacks: `ts` (`.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs`), `vue` (only the SFC
 `<script>` block is scanned), `react`.
 
