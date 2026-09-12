@@ -1,0 +1,29 @@
+id: no-mixed-desumasu
+layer: L3
+status: experimental
+how_to_find: sentence-ending
+word_list: polite-ending
+requires: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: 文末の調子が混ざっている
+  en: Mixed sentence-ending register
+
+why:
+  ja: ですます調とである調が混ざると、読み手は「誰に向けた文書か」を掴み損ねます。どちらが正しいかではなく、1 つの文書で揃っているかの問題です。
+  en: Mixing polite and plain endings leaves the reader unsure who the document addresses. Neither register is wrong; consistency within one document is the point.
+
+message:
+  ja: この文だけ他と文末の調子が違います（文書の中で {count} 文）
+  en: "This sentence's ending register differs from the rest ({count} in this document)"
+
+how_to_fix:
+  ja: 多いほうに揃えてください。少数派のほうを直すのが、いちばん手数が少なくて済みます。
+  en: Match the majority. Rewriting the minority is the smallest change.
+
+# 少数派が何文までなら「混在」と見るか。これを超えたら、混在ではなく別の文体と判断して黙る。
+levels: { strict: 5, normal: 3, relaxed: 1 }
+
+use_for: [blog, business, technical]

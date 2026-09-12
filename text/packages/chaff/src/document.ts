@@ -209,6 +209,7 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
     capabilities: adapter.capabilities,
     sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root, blocks), source.length),
     sentences,
+    listSpans: spansOfType(root, "listItem"),
     lexicons: adapter.lexicons,
   };
 };

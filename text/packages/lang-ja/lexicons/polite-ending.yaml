@@ -1,0 +1,10 @@
+# ですます調の文末。これを含む文を「ですます」と見る。
+id: polite-ending
+language: ja
+entries:
+  - pattern: です
+  - pattern: ます
+  - pattern: ません
+  - pattern: でしょう
+  - pattern: ください
+  - pattern: ございます

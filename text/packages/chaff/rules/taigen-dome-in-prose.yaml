@@ -1,0 +1,27 @@
+id: taigen-dome-in-prose
+layer: L3
+status: experimental
+how_to_find: noun-ending
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 体言止めが続いている
+  en: Too many noun-ending sentences
+
+why:
+  ja: 体言止めは 1 つなら効きますが、続くと文が途中で切れたように読めます。箇条書きでは普通の書きかたなので、本文だけを見ています。
+  en: One noun-ending sentence lands. Several in a row read as unfinished. Bullet lists are excluded, where the form is normal.
+
+message:
+  ja: 本文に体言止めが {count} 文あります（{limit} 文まで）
+  en: "{count} sentences end on a noun in the body text (limit {limit})"
+
+how_to_fix:
+  ja: 述語を足してください。「〜が課題。」を「〜が課題です。」に。
+  en: Add the predicate.
+
+levels: { strict: 2, normal: 4, relaxed: 8 }
+
+use_for: [blog, business, technical]
