@@ -1,0 +1,26 @@
+id: max-kanji-continuous
+layer: L3
+status: experimental
+how_to_find: kanji-run
+languages: [ja]
+severity: warning
+
+name:
+  ja: 漢字が続きすぎている
+  en: Long run of kanji
+
+why:
+  ja: 漢字が続くと、どこで語が切れるのか読み手が探すことになります。「情報処理推進機構認定試験」は 12 字あり、区切りが見えません。
+  en: A long unbroken run of kanji forces the reader to hunt for word boundaries.
+
+message:
+  ja: 「{word}」は漢字が {count} 字続いています（{limit} 字まで）
+  en: '"{word}" runs {count} kanji together (limit {limit})'
+
+how_to_fix:
+  ja: ひらがなを 1 つ挟むか、助詞で割ってください。「情報処理推進機構の認定試験」に。
+  en: Break it with a particle or kana.
+
+levels: { strict: 6, normal: 8, relaxed: 12 }
+
+use_for: [blog, business, technical]

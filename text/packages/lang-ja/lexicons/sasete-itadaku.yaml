@@ -1,0 +1,7 @@
+# 「させていただく」。1 度なら丁寧だが、重なると誰の判断なのかが消える。
+id: sasete-itadaku
+language: ja
+entries:
+  - pattern: させていただ
+  - pattern: させて頂
+  - pattern: させて戴

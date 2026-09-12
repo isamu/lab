@@ -245,9 +245,19 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `no-doubled-joshi` | 「弊社の新製品の販売の計画」のような入れ子（ja） |
 | `taigen-dome-in-prose` | 本文の体言止めが続く（ja） |
 
+品詞が要らない日本語の rule も 5 本あります（`--experimental` で動きます）。
+
+| rule | 何を見るか |
+| --- | --- |
+| `double-keigo` | 二重敬語（おっしゃられました） |
+| `sasete-itadaku` | 「させていただく」の重なり |
+| `hiragana-fukushi` | 表外漢字の副詞（殆ど・勿論） |
+| `max-kanji-continuous` | 漢字の連続（情報処理推進機構認定試験） |
+| `no-nakaguro-parallel` | 1 文に中黒の並列が何組も入る |
+
 ## まだ無いもの
 
-二重敬語、副詞のひらがな化、漢字の連続。英語固有の rule もこれからです。
+英語固有の rule。
 
 ## 実文書で試す
 

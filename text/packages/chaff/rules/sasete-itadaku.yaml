@@ -1,0 +1,27 @@
+id: sasete-itadaku
+layer: L3
+status: experimental
+how_to_find: phrase-match
+word_list: sasete-itadaku
+languages: [ja]
+severity: info
+
+name:
+  ja: 「させていただく」が多い
+  en: Overused humble form
+
+why:
+  ja: 1 度なら丁寧ですが、重なると誰の判断で何をするのかが消えます。「検討させていただきます」は、検討するのかしないのかを言っていません。
+  en: Once it is polite. Repeated, it hides whose decision it is and what will actually happen.
+
+message:
+  ja: 「{matched}」が文書内に {count} 回あります（{limit} 回まで）
+  en: '"{matched}" appears {count} times in this document (limit {limit})'
+
+how_to_fix:
+  ja: 主語を立てて言い切ってください。「検討させていただきます」を「来週までに結論を出します」に。
+  en: Name the actor and commit. "We will look into it" becomes "we will decide by Friday".
+
+levels: { strict: 1, normal: 3, relaxed: 6 }
+
+use_for: [business, blog]

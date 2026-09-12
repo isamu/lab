@@ -1,0 +1,27 @@
+id: double-keigo
+layer: L3
+status: experimental
+how_to_find: phrase-match
+word_list: double-keigo
+languages: [ja]
+severity: warning
+
+name:
+  ja: 二重敬語
+  en: Doubled honorific
+
+why:
+  ja: 1 つの動詞に同じ種類の敬語を二重にかけた形です。丁寧さは増えず、読み手には不自然に映ります。
+  en: The same kind of honorific applied twice to one verb. It does not read as more polite, only as awkward.
+
+message:
+  ja: 「{matched}」は敬語が二重になっています
+  en: '"{matched}" applies the honorific twice'
+
+how_to_fix:
+  ja: どちらか一方にしてください。「おっしゃられました」は「おっしゃいました」で足ります。
+  en: Keep one. "Said" with a single honorific is enough.
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business]

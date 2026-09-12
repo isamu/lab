@@ -1,0 +1,17 @@
+# 二重敬語。1 つの動詞に同じ種類の敬語を二重にかけた形。
+#
+# 「ご説明させていただきます」のように議論の分かれるものは入れない。
+# 割れる形を入れると、rule ごと無視される。
+id: double-keigo
+language: ja
+entries:
+  - pattern: おっしゃられ
+  - pattern: ご覧になられ
+  - pattern: お読みになられ
+  - pattern: お聞きになられ
+  - pattern: お見えになられ
+  - pattern: お帰りになられ
+  - pattern: お召し上がりになら
+  - pattern: 拝見させていただ
+  - pattern: お伺いさせていただ
+  - pattern: 拝読させていただ
