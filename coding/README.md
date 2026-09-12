@@ -136,6 +136,26 @@ line is not.
 Rule ids are namespaced as `scoria/<probe>/<rule>`, so they cannot collide with an upload from the
 same tool run directly.
 
+### A badge, without running a server
+
+```yaml
+- run: npx -y scoria --badge-json scoria.json
+```
+
+`--badge-json` writes the JSON a [shields.io endpoint badge](https://shields.io/badges/endpoint-badge)
+reads. Publish that file anywhere public — committing it to an orphan branch of the same repository
+is enough — and point shields at it:
+
+```markdown
+![scoria](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/OWNER/REPO/badges/scoria.json)
+```
+
+No server, no gist, no token beyond `GITHUB_TOKEN`. The badge reads `scoria · <dir>` and
+`97 · this repo only`, and **its colour is the direction of travel, not the score**: green when no
+dimension fell since the baseline, orange when one did, blue when there is no baseline yet. Colouring
+by the number would claim that 90 means the same thing in every repository, which is the one thing
+this tool refuses to say.
+
 ## Output
 
 ```text

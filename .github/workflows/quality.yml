@@ -51,13 +51,13 @@ jobs:
       # nothing would look identical to one that worked.
       - name: measure coding
         run: |
-          node packages/scoria/bin/scoria.js . --sarif ../scoria-coding.sarif
+          node packages/scoria/bin/scoria.js . --sarif ../scoria-coding.sarif --badge-json ../scoria-coding.json
           echo "summary bytes: $(wc -c < "$GITHUB_STEP_SUMMARY")"
         working-directory: coding
 
       - name: measure text
         run: |
-          node ../coding/packages/scoria/bin/scoria.js . --sarif ../scoria-text.sarif
+          node ../coding/packages/scoria/bin/scoria.js . --sarif ../scoria-text.sarif --badge-json ../scoria-text.json
           echo "summary bytes: $(wc -c < "$GITHUB_STEP_SUMMARY")"
         working-directory: text
 
@@ -76,3 +76,48 @@ jobs:
           sarif_file: scoria-text.sarif
           category: scoria-text
           checkout_path: ${{ github.workspace }}/text
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: scoria-badges
+          path: |
+            scoria-coding.json
+            scoria-text.json
+
+  # A separate job so `contents: write` is never held while the measurement itself runs, and never
+  # on a pull request. The badges branch is orphaned: it carries two files and none of the history.
+  badge:
+    needs: measure
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: scoria-badges
+          path: badges
+
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          path: repo
+
+      # The token goes in the push URL rather than into the checkout's git config, so no later step
+      # inherits the ability to write to the repository.
+      - name: publish the badge endpoints
+        working-directory: repo
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # A refspec whose source does not exist is noisy on stderr and means only "first run".
+          git fetch origin badges:badges 2>/dev/null || git switch --orphan badges
+          git switch badges
+          cp ../badges/scoria-coding.json ../badges/scoria-text.json .
+          git add scoria-coding.json scoria-text.json
+          git diff --cached --quiet && echo "badges unchanged" && exit 0
+          git commit -m "chore: scoria badges for ${GITHUB_SHA}"
+          git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" badges

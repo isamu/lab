@@ -323,6 +323,27 @@ GitHub Actions では、実行結果のページの **ジョブサマリー** �
 
 ルール名は `scoria/<probe>/<rule>` の形にしてあるので、同じツールを直接動かした結果とぶつかりません。
 
+### サーバを立てずにバッジを出す
+
+```yaml
+- run: npx -y scoria --badge-json scoria.json
+```
+
+`--badge-json` は [shields.io の endpoint バッジ](https://shields.io/badges/endpoint-badge)が読む
+JSON を書きます。そのファイルを公開された場所に置けば（同じリポジトリの orphan ブランチに
+commit するだけで十分です）、あとは shields に URL を渡すだけです。
+
+```markdown
+![scoria](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/OWNER/REPO/badges/scoria.json)
+```
+
+サーバも gist も要りません。トークンも `GITHUB_TOKEN` だけです。
+バッジには `scoria · <ディレクトリ名>` と `97 · this repo only` が出ます。
+**色は点数の高さではなく、前回からの増減で決まります。** baseline から下がった観点が無ければ緑、
+あれば橙、baseline がまだ無ければ青です。
+点数の高さで色を変えると「どのリポジトリでも 90 は緑」という意味になってしまい、
+それはこのツールが唯一言わないと決めていることだからです。
+
 ## 設定ファイル
 
 ```json
