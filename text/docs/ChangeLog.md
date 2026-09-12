@@ -2,6 +2,92 @@
 
 Newest first.
 
+## 0.4.0 — 2026-09-13
+
+Three rules whose content **chaff does not hold**. It reads what the team wrote in `chaff.yaml` and
+nothing else. Rules: 39 → 42, which completes the L1/L2 catalog.
+
+📦 [`chaffjs@0.4.0`](https://www.npmjs.com/package/chaffjs/v/0.4.0)
+
+`@chaffjs/lang-ja` and `@chaffjs/lang-en` stay at 0.3.0. Nothing in them changed, so they were not
+republished.
+
+### Rules the team writes (#77)
+
+```yaml
+jargon:            # words that only work inside
+  - 横展開
+  - 握る
+  - 巻き取
+
+required_sections: # headings this kind of document needs
+  - リスク
+  - 費用
+```
+
+```
+1:1   error   「リスク、費用」の見出しがありません
+5:1   warning 「横展開」は社内でしか通じないかもしれません（そういう語が 3 箇所）
+```
+
+Which words are internal, and which sections a proposal must have, differ by organisation.
+**A tool that decides this for you gets switched off by everyone it decided wrong for.**
+
+With nothing listed, these rules say nothing. They also never ask to be filled in: a linter that
+nags about its own configuration is one more thing to ignore.
+
+### Matching what people actually write
+
+Teams list the dictionary form (`握る`). Documents contain the inflected one (`握った`). The first
+implementation compared surfaces and matched neither, which the first run showed immediately.
+
+Matching is now on the **surface or the lemma**. With part-of-speech available the inflected form is
+caught; without it the surface still works. The rule therefore declares no capability requirement —
+it degrades rather than disappearing.
+
+Compound verbs stay out of reach. They split into morphemes, so the dictionary form is never present:
+
+```
+巻き取ります → 巻き[巻く] + 取り[取る]
+```
+
+A stem (`巻き取`) matches on the surface, and the rule's own `how_to_fix` says so. Someone who lists
+a word that never fires can see why without reading the source.
+
+### `required-sections` does not police wording
+
+Matching is by substring, so `リスク` is satisfied by a heading called 「リスクと対策」. The team
+decides which sections exist; how they are phrased belongs to the writer.
+
+It is the only rule defaulting to `error`. Every other finding is a matter of taste; this one is a
+decision the team already made and then did not keep.
+
+The spec had this list living in genre packs, per language. That design is still in the spec,
+alongside the reason it was not taken.
+
+### `proper-noun-density` needed no dictionary
+
+The spec called for an unknown-word rate, which is why the rule had been deferred. Part-of-speech
+analysis arrived in 0.3.0, and counting `PROPN` turns out to be enough.
+
+```
+1000 語あたり 71 個の固有名詞があります（40 個まで）
+```
+
+A run of product and company names hides the shape of a sentence. It hides it from anyone who does
+not already know the names, which is exactly what the author cannot see.
+
+### Still open
+
+`contraction-consistency` needs `Lexicon` to express a pair ("don't" ↔ "do not"). Widening that
+contract can wait for a second rule that needs it.
+
+`list-length-variance` stays dropped. Measured across 27 real bullet lists the coefficient of
+variation runs 11–56% with a median of 21: **bullet lists are supposed to be uniform**. Lowering the
+threshold until the rule went quiet would not have taught it anything.
+
+`chaff test` has still never completed a round trip against a live API.
+
 ## 0.3.0 — 2026-09-13
 
 The largest release so far. **25 rules become 39.** Part-of-speech analysis arrives with nothing to
