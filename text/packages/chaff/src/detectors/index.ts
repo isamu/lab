@@ -11,6 +11,7 @@ import { doubledParticle, nounEnding } from "./token-shape.ts";
 import { kanjiRun, middleDot } from "./char-shape.ts";
 import { adverbDensity, conjunctionRun, expletive, oxfordComma, titleCaseMix } from "./en-shape.ts";
 import { paragraphLength, paragraphVariance, preambleLength, ruleOfThree, sectionUniformity } from "./structure.ts";
+import { concreteEvidence, emojiDensity, ngramRepetition, undefinedAcronym } from "./signals.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -36,4 +37,8 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "section-uniformity": sectionUniformity,
   "rule-of-three": ruleOfThree,
   "preamble-length": preambleLength,
+  "emoji-density": emojiDensity,
+  "ngram-repetition": ngramRepetition,
+  "undefined-acronym": undefinedAcronym,
+  "concrete-evidence": concreteEvidence,
 };

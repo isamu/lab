@@ -1,0 +1,25 @@
+id: concrete-evidence-density
+layer: L1
+status: experimental
+how_to_find: concrete-evidence
+severity: info
+
+name:
+  ja: 具体物のない節がある
+  en: Section with nothing concrete
+
+why:
+  ja: 数値もコードもリンクも無い節は、読み終えても持ち帰るものがありません。抽象的な説明だけが残ります。
+  en: A section with no number, no code and no link leaves the reader with nothing to take away.
+
+message:
+  ja: 「{word}」の節に数値もコードもリンクもありません（そういう節が {count}/{total}）
+  en: 'Section "{word}" has no number, code or link ({count} of {total} sections)'
+
+how_to_fix:
+  ja: 実例を 1 つ足してください。書けないなら、その節は他の節に畳めるかもしれません。
+  en: Add one example. If you cannot, the section may belong inside another one.
+
+levels: { strict: 1, normal: 3, relaxed: 6 }
+
+use_for: [blog, business, technical]

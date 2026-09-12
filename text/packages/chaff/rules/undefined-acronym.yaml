@@ -1,0 +1,25 @@
+id: undefined-acronym
+layer: L1
+status: experimental
+how_to_find: undefined-acronym
+severity: info
+
+name:
+  ja: 略語が説明なしで出てくる
+  en: Acronym never expanded
+
+why:
+  ja: 略語は読む人によって指すものが違います。社内で通じても、半年後の自分や別の部署には通じません。
+  en: An acronym means different things to different readers. What is obvious inside one team is not obvious outside it.
+
+message:
+  ja: 「{word}」が説明なしで使われています（説明のない略語 {count} 個）
+  en: '"{word}" is used without an expansion ({count} such acronyms)'
+
+how_to_fix:
+  ja: 初出のところで括弧に入れて展開してください。「CI（継続的インテグレーション）」のように。
+  en: Expand it in brackets at first use.
+
+levels: { strict: 1, normal: 3, relaxed: 6 }
+
+use_for: [business, technical]
