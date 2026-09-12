@@ -90,6 +90,24 @@ test("knip counts unused files, exports and dependencies", async () => {
  * Run without a config on a monorepo, knip walks generated output and calls it unused: 573 files
  * in graphai against the 450 scoria classifies as source at all.
  */
+/**
+ * A count against a fixed anchor scores a large repository worse for being large
+ * (docs/calibration.md), so the rubric weighs shares of the file count. The counts stay reported.
+ */
+test("knip reports unused files and exports as shares of the repository", async () => {
+  const report = JSON.stringify({
+    issues: [
+      { file: "a.ts", files: [{ name: "src/dead.ts" }], exports: [], dependencies: [] },
+      { file: "src/live.ts", files: [], exports: [{ name: "gone" }], dependencies: [] },
+    ],
+  });
+  const scope = [sourceFile("src/dead.ts", ["export const a = 1;"]), sourceFile("src/live.ts", ["export const gone = 1;"])];
+  const result = await knip.run(contextWith(scope, { exec: execReturning(report) }));
+  assert.equal(metricOf(result.metrics, "knip.unused_files"), 1);
+  assert.equal(metricOf(result.metrics, "knip.unused_file_ratio"), 0.5);
+  assert.equal(metricOf(result.metrics, "knip.unused_export_ratio"), 0.5);
+});
+
 test("knip findings outside scoria's own file set do not count", async () => {
   const report = JSON.stringify({
     issues: [

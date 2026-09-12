@@ -8,12 +8,20 @@ id: architecture
 status: experimental
 
 metrics:
-  - metric: knip.unused_exports
-    scale: { good: 0, bad: 60 }
+  # Shares of the repository's files, not counts of them (docs/calibration.md). A count against a
+  # fixed anchor scores a large repository worse for being large: measured across 49 repositories,
+  # `unused_exports` correlated +0.63 with source lines and this share +0.30; `unused_files` +0.30
+  # and this share -0.07. The counts are still reported, and are what the findings name.
+  #
+  # bad 0.2 is one dead export per five files. The corpus median is 0.03 and its p90 0.18.
+  - metric: knip.unused_export_ratio
+    scale: { good: 0, bad: 0.2 }
     weight: 0.3
 
-  - metric: knip.unused_files
-    scale: { good: 0, bad: 20 }
+  # bad 0.3 is a third of the tree unreachable, which is not a codebase with dead corners but a
+  # codebase with a live corner. Corpus median 0.15, p75 0.33.
+  - metric: knip.unused_file_ratio
+    scale: { good: 0, bad: 0.3 }
     weight: 0.25
 
   - metric: knip.unused_dependencies
@@ -22,6 +30,10 @@ metrics:
 
   # knip finds code nothing reaches; a cycle is code tangled together, which is invisible to it.
   # One cycle is a smell, five is a structure that cannot be taken apart.
+  #
+  # Left as a count deliberately. Dividing it by the file count leaves the correlation with size
+  # exactly where it was (+0.33 either way), so that correlation is a property of the corpus —
+  # larger codebases really are more tangled — and normalising would hide it rather than fix it.
   - metric: circular.cycle_count
     scale: { good: 0, bad: 8 }
     weight: 0.25

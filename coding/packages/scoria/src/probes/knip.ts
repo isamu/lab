@@ -94,6 +94,14 @@ const findingsOf = (unused: Unused): readonly Finding[] => [
   })),
 ];
 
+/**
+ * Counted against the repository's file count rather than reported raw (docs/calibration.md).
+ * A count with a fixed anchor scores a large repository worse for being large: `unused_files`
+ * correlated +0.30 with size across 49 repositories and the share of files −0.07, and
+ * `unused_exports` +0.63 against +0.30. Both counts are still reported; the rubric weighs these.
+ */
+const share = (part: number, whole: number): number => (whole === 0 ? 0 : Number((part / whole).toFixed(4)));
+
 const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const started = Date.now();
   const bin = resolveBin("knip", "knip");
@@ -107,6 +115,8 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
     status: { kind: "ok" },
     metrics: [
       { id: "knip.unused_files", value: unused.files.length, unit: "count" },
+      { id: "knip.unused_file_ratio", value: share(unused.files.length, ctx.files.length), unit: "ratio" },
+      { id: "knip.unused_export_ratio", value: share(unused.exports.length, ctx.files.length), unit: "ratio" },
       {
         id: "knip.unused_exports",
         value: unused.exports.length,
@@ -126,7 +136,7 @@ export const knip: Probe = {
   id: "knip",
   apiVersion: 1,
   tier: 1,
-  declares: ["knip.unused_files", "knip.unused_exports", "knip.unused_dependencies"],
+  declares: ["knip.unused_files", "knip.unused_exports", "knip.unused_dependencies", "knip.unused_file_ratio", "knip.unused_export_ratio"],
   detect: (ctx) => {
     if (!ctx.files.some((file) => file.kind === "source")) {
       return Promise.resolve({ kind: "absent", reason: "no source files" });
