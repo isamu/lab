@@ -2,7 +2,7 @@
 
 コードの状態を点数にして、**前より良くなったか悪くなったか**を見えるようにするツールです。
 
-English: [README.md](./README.md) · 設計の詳細: [scoria-spec.md](./scoria-spec.md)
+English: [README.md](./README.md) · 設計の詳細: [scoria-spec.md](https://github.com/isamu/lab/blob/main/coding/scoria-spec.md)
 
 まだ作りかけです。見ている項目は 5 つだけで、履歴との比較もまだできません。
 
