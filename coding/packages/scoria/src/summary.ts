@@ -3,7 +3,6 @@ import type { DimensionReport, Report } from "./report.ts";
 import { tallyWarnings } from "./report.ts";
 import { messagesFor, type Lang, type Messages } from "./messages.ts";
 import type { ReportDiff } from "./diff.ts";
-import { basename } from "node:path";
 
 /**
  * The report as GitHub-flavoured Markdown, for `$GITHUB_STEP_SUMMARY`.
@@ -122,7 +121,7 @@ const skippedBlock = (report: Report, messages: Messages): readonly string[] => 
 export const renderGithubSummary = (report: Report, lang: Lang, diff?: ReportDiff): string => {
   const messages = messagesFor(lang);
   return [
-    `## scoria · ${basename(report.root)} — ${report.overall.score.toFixed(0)} / 100`,
+    `## scoria · ${report.label} — ${report.overall.score.toFixed(0)} / 100`,
     "",
     `\`${report.stacks.join(" · ")}\` · ${messages.profileLabel}: ${report.profile} · ` +
       `${messages.filesLine(report.size.files, report.size.sloc, report.size.testSloc)}`,

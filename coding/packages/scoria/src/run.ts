@@ -2,10 +2,10 @@ import { execFile } from "node:child_process";
 import { access, readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import type { Exec, ExecNode, ExecResult, Probe, ProbeContext, ProbeResult, ReadText, SourceFile, StackAdapter } from "./plugin.ts";
 import type { Rubric } from "./rubric.ts";
-import type { LoadedConfig } from "./config.ts";
+import type { LoadedConfig, ScoriaConfig } from "./config.ts";
 import { loadConfig } from "./config.ts";
 import { collectFiles } from "./files.ts";
 import { collectConfigFiles } from "./config-files.ts";
@@ -14,6 +14,7 @@ import { buildReport, type Report } from "./report.ts";
 import { ALL_STACKS, stackTs } from "./stacks/index.ts";
 import { isTypeScriptProject } from "./stacks/ts.ts";
 import { isRecord, readPackageJson } from "./package-json.ts";
+import { nameFor, readRepoJson } from "./repo-json.ts";
 import { suppressionScan } from "./probes/suppression-scan.ts";
 import { fileShape } from "./probes/file-shape.ts";
 import { sourceMix } from "./probes/source-mix.ts";
@@ -136,9 +137,38 @@ export interface Assay {
   readonly loaded: LoadedConfig;
 }
 
-export const assay = async (target: string, probes: readonly Probe[] = PROBES, excluded: readonly string[] = []): Promise<Assay> => {
+/**
+ * `repo.json` §10.1: a project's name is its own `repo.json`, then the parent's inline entry, then
+ * the ecosystem manifest, then the directory. Never the parent document's own name — five packages
+ * all called "acme platform" is worse than five called by their directories.
+ */
+const labelFor = async (root: string, parent: string | undefined): Promise<string | undefined> => {
+  const own = await readRepoJson(root);
+  if (parent === undefined) return own.name ?? nameOf(await readPackageJson(root));
+  const declared = nameFor(own, await readRepoJson(parent), toPosix(relative(parent, root)));
+  return declared ?? nameOf(await readPackageJson(root));
+};
+
+const nameOf = (pkg: unknown): string | undefined => {
+  const name = isRecord(pkg) ? pkg["name"] : undefined;
+  return typeof name === "string" && name !== "" ? name : undefined;
+};
+
+const toPosix = (value: string): string => value.split(sep).join("/");
+
+export interface AssayContext {
+  /** Directories inside the target that belong to a nested project (`repo.json` §9.4). */
+  readonly excluded?: readonly string[];
+  /** The invocation root, when this target is one of several it named. */
+  readonly parent?: string | undefined;
+  /** What the run was configured with at the invocation root. */
+  readonly base?: ScoriaConfig | undefined;
+}
+
+export const assay = async (target: string, probes: readonly Probe[] = PROBES, context: AssayContext = {}): Promise<Assay> => {
+  const { excluded = [], parent, base } = context;
   const root = resolve(target);
-  const loaded = await loadConfig(root);
+  const loaded = await loadConfig(root, base);
   const rubrics = await loadRubrics(rubricDirectory());
   assertMetricsAreDeclared(rubrics, new Set(probes.flatMap((probe) => probe.declares)));
   const files = await collectFiles(
@@ -153,11 +183,12 @@ export const assay = async (target: string, probes: readonly Probe[] = PROBES, e
     packageManager: await detectPackageManager(root),
     stacks: loaded.config.stacks,
   };
+  const label = await labelFor(root, parent);
   const exec = makeExec(root);
   const ctx: ProbeContext = { root, files, configFiles, project, exec, execNode: makeExecNode(exec), readText, excluded };
   const results = await Promise.all(probes.map((probe) => runProbe(probe, ctx)));
   return {
-    report: buildReport(root, files, results, rubrics, { profile: loaded.config.profile, stacks: loaded.config.stacks }, probes),
+    report: buildReport(root, files, results, rubrics, { profile: loaded.config.profile, stacks: loaded.config.stacks, label }, probes),
     files,
     rubrics,
     loaded,

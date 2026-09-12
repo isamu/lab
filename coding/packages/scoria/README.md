@@ -332,6 +332,34 @@ dimension is made of, so the old and the new score are not measurements of the s
 subtracting them would credit the release as an improvement. Those dimensions report `—` and no
 movers until you record a new baseline.
 
+### `repo.json`
+
+If the repository has a [`repo.json`](https://github.com/repos-json/repos-json) — the open file with
+which a repository says what it is — scoria reads three things from it, and you can skip configuring
+them twice:
+
+```json
+{
+  "name": "acme platform",
+  "projects": [{ "path": "apps/web", "name": "storefront" }, "apps/api"],
+  "extensions": { "scoria": { "mode": "ratchet" } }
+}
+```
+
+- **`projects`** supplies the targets. A monorepo that declares its units needs no scoria config at
+  all.
+- **`name`** is what the report and the badge call each project — its own `repo.json` first, then the
+  parent's entry for it, then its `package.json`, then the directory. Never the repository's own
+  name: five packages called "acme platform" is worse than five called by their directories (§10.1).
+- **`extensions.scoria`** holds settings, and states only what differs — the rest is detected. The
+  invocation root's settings carry down to each project, so `mode` is set once.
+
+`scoria.config.json` still wins over all of it: `repo.json` is what a repository says to every tool,
+not an override of what you told this one (§10).
+
+**`color` is deliberately not read.** The badge's colour is the direction of travel since the
+baseline, and taking it from the repository would let a repository paint its own regression green.
+
 ### Monorepos, and repositories holding more than one project
 
 scoria measures **one directory** and does not wander below it. Every tool it drives is rooted at
