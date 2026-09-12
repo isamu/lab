@@ -1,0 +1,34 @@
+# Contractions and the long forms that say the same thing.
+#
+# Neither is wrong. The rule only asks whether one document picks one and keeps it.
+id: contraction
+language: en
+entries:
+  - pattern: "don't"
+    instead_of: do not
+  - pattern: "doesn't"
+    instead_of: does not
+  - pattern: "didn't"
+    instead_of: did not
+  - pattern: "can't"
+    instead_of: cannot
+  - pattern: "won't"
+    instead_of: will not
+  - pattern: "isn't"
+    instead_of: is not
+  - pattern: "aren't"
+    instead_of: are not
+  - pattern: "wasn't"
+    instead_of: was not
+  - pattern: "it's"
+    instead_of: it is
+  - pattern: "we're"
+    instead_of: we are
+  - pattern: "they're"
+    instead_of: they are
+  - pattern: "you're"
+    instead_of: you are
+  - pattern: "we'll"
+    instead_of: we will
+  - pattern: "we've"
+    instead_of: we have

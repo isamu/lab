@@ -122,3 +122,44 @@ export const aiTell: Detector = (doc, options): Finding[] => {
     },
   ];
 };
+
+/**
+ * 同じことを言う 2 つの書きかたが、1 つの文書で混ざっているか。
+ *
+ * **どちらが正しいかは決めない。** 短縮形を使うかどうかは文体の選択で、
+ * 立場を取ると方針の違う書き手に rule ごと無視される。spec §12.3。
+ *
+ * 語彙表は対を持つ（`pattern` と `instead_of`）。片方だけを数えても、
+ * 意図した硬い文体なのか不統一なのかが分からない。
+ */
+/**
+ * 語の境界で照合する。部分一致だと「it isn't」が「it is」を含んでしまい、
+ * 短縮形を使っている文が「使っていない」側に数えられる。
+ */
+const containsWord = (text: string, word: string): boolean => new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}\\b`, "u").test(text);
+
+export const contractionMix: Detector = (doc, options): Finding[] => {
+  const pairs = (options.lexicon ?? []).flatMap((entry) => (entry.instead_of === undefined ? [] : [{ short: entry.pattern, long: entry.instead_of }]));
+  const body = doc.sentences.map((sentence) => sentence.text.toLowerCase()).join(" ");
+  const used = pairs.filter((pair) => containsWord(body, pair.short.toLowerCase()));
+  const spelled = pairs.filter((pair) => containsWord(body, pair.long.toLowerCase()));
+  // 片方しか無ければ一貫している。両方あるときだけ、少数派を指摘する。
+  if (used.length === 0 || spelled.length === 0) return [];
+  const minorityIsShort = used.length <= spelled.length;
+  const few = minorityIsShort ? used : spelled;
+  if (few.length > options.limit) return [];
+  const wanted = few.map((pair) => (minorityIsShort ? pair.short : pair.long).toLowerCase());
+  const hits = doc.sentences.flatMap((sentence) => {
+    const text = sentence.text.toLowerCase();
+    const matched = wanted.find((word) => containsWord(text, word));
+    return matched === undefined ? [] : [{ sentence, matched }];
+  });
+  return hits.map((hit) => ({
+    rule: "contraction-consistency",
+    severity: "info",
+    line: 0,
+    column: 0,
+    quote: hit.sentence.text.trim(),
+    values: { matched: hit.matched, count: few.length, limit: options.limit, offset: hit.sentence.span.start },
+  }));
+};

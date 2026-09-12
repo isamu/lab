@@ -876,15 +876,25 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `oxford-comma-consistency` ✅ | 文書内での一貫性（有無自体は問わない） | pos |
 | `sentence-initial-conjunction-run` ✅ | And / But / So で始まる文の連続 | - |
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
-| `contraction-consistency` | 短縮形の使用が文書内で一貫しているか | - |
+| `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
 
 英語固有 rule は「どちらが正しいか」を決めず、**文書内の一貫性**だけを見るものを優先する。Oxford comma の是非のようにスタイルガイドで割れる論点に立場を取ると、rule が使われなくなる。
 
-`contraction-consistency` だけ実装していない。**単語 1 つの照合では、意図した硬い文体と不統一を区別できない**。
-"do not" は "don't" の展開かもしれないし、その文だけ強調しているのかもしれない。
-区別するには「don't ↔ do not」のような**対**を語彙表に持つ必要があるが、`Lexicon` は
-`{ pattern, weight }` しか持たず、対を表せない。契約を広げる価値があるかは、他に対を要する rule が
-出てから判断する。
+`contraction-consistency` は**対**を要する。「do not」が「don't」の展開なのか、
+その文だけ硬く書いたのかは、片方だけ数えても分からない。
+
+`LexiconEntry` に `instead_of` を足した。
+
+```yaml
+- pattern: "don't"
+  instead_of: do not
+```
+
+照合は**語の境界**で行う。部分一致だと「it isn't」が「it is」を含み、
+短縮形を使っている文が「使っていない」側に数えられる。
+
+日本語の表記ゆれ（「下さい / ください」）は同じ形に見えるが、短縮形とは別の話なので
+この rule には入れない。`languages: [en]`。
 
 ### 12.4 記号
 

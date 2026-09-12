@@ -32,7 +32,11 @@ export type Segmentation = {
 export type LengthUnit = "char" | "word";
 
 /** L2 の語彙表。detector は共通で、これだけが言語別。spec §11。 */
-export type LexiconEntry = { readonly pattern: string; readonly weight?: number | undefined };
+/**
+ * `instead_of` は「同じことを言う別の書きかた」。文体の一貫性を見る rule が使う。
+ * 2 つの書きかたのどちらが正しいかは決めず、**1 つの文書で混ざっていないか**だけを見る。
+ */
+export type LexiconEntry = { readonly pattern: string; readonly weight?: number | undefined; readonly instead_of?: string | undefined };
 
 export type Lexicon = readonly LexiconEntry[];
 
