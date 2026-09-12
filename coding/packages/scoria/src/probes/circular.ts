@@ -40,11 +40,15 @@ const toFinding = (cycle: readonly string[]): Finding => ({
   tier: 1,
 });
 
+/** madge's `--exclude` is a regular expression, so a directory name has to be quoted into one. */
+const escapeForRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const started = Date.now();
   const bin = resolveBin("madge", "madge");
   if (bin === undefined) return skippedResult("circular", "madge is not installed alongside scoria", started);
-  const result = await ctx.execNode(bin, ["--circular", "--json", "--extensions", EXTENSIONS, ctx.root]);
+  const excluded = ctx.excluded.length === 0 ? [] : ["--exclude", `^(${ctx.excluded.map(escapeForRegExp).join("|")})/`];
+  const result = await ctx.execNode(bin, ["--circular", "--json", "--extensions", EXTENSIONS, ...excluded, ctx.root]);
   const cycles = parse(result.stdout);
   if (cycles === undefined) return skippedResult("circular", "madge produced no readable report", started);
   return {

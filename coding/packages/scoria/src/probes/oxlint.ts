@@ -86,7 +86,8 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const started = Date.now();
   const bin = resolveBin("oxlint", "oxlint");
   if (bin === undefined) return skippedResult("oxlint", "oxlint is not installed alongside scoria", started);
-  const args = [...DENIED.flatMap((category) => ["-D", category]), ...WARNED.flatMap((category) => ["-W", category]), "--format", "json", ctx.root];
+  const ignored = ctx.excluded.flatMap((dir) => ["--ignore-pattern", `${dir}/**`]);
+  const args = [...DENIED.flatMap((category) => ["-D", category]), ...WARNED.flatMap((category) => ["-W", category]), ...ignored, "--format", "json", ctx.root];
   const result = await ctx.execNode(bin, args);
   const diagnostics = parse(result.stdout);
   const sloc = sourceSloc(ctx.files);

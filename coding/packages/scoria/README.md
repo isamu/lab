@@ -356,12 +356,27 @@ So scoria does not guess where the boundaries are. Name them:
 ```
 
 Each target is measured as if scoria had been run inside it — its own config, its own baseline, its
-own report. Globs are relative to the config, match directories only, and never match
-`node_modules`. With no `targets`, scoria measures exactly the directory it was pointed at, which is
-what every config written before this already meant.
+own report. With no `targets`, scoria measures exactly the directory it was pointed at, which is what
+every config written before this already meant.
 
-A glob that matches nothing **fails the run**. Measuring zero directories and reporting success is
-the one outcome nobody would notice was wrong.
+**The rules are [`repo.json` §9](https://github.com/repos-json/repos-json)'s, not scoria's**, so a
+repository that declares its units once is read the same way by every tool that reads them:
+
+- `.` names the repository root — `[".", "functions"]` is the shape ownplate has.
+- A wildcard is a segment that is exactly `*`. `**` and a partial segment like `we*` are not defined
+  by that version of the format, so scoria refuses them and says so rather than guessing at a glob
+  dialect.
+- Directories only, never a name beginning with `.`, never `node_modules` or `vendor`.
+- Matches sort by UTF-16 code unit, not by locale. Two tools listing the same packages in two orders
+  is what that rule prevents.
+- Declaration order is kept. One directory is one project however many entries name it, and the
+  first naming it takes its place.
+- **A project's extent is its directory minus the directories of any nested projects.** Without
+  this, `[".", "functions"]` counts `functions/` twice. scoria excludes them from its own file
+  collection and passes them on to the tools that walk a whole directory (oxlint, jscpd, madge).
+
+Whatever is dropped is reported, with the reason. Nothing resolving at all **fails the run** —
+measuring zero directories and reporting success is the one outcome nobody would notice was wrong.
 
 With more than one target, `--sarif` and `--badge-json` get the directory name inserted
 (`scoria.sarif` → `scoria.web.sarif`), so the targets do not overwrite each other.

@@ -54,6 +54,8 @@ export interface Messages {
   readonly gateSizeChange: (dimension: string, percent: number) => string;
   readonly gateAcceptGains: string;
   readonly noTargetsMatched: (patterns: string) => string;
+  readonly targetProblems: string;
+  readonly targetProblem: (kind: string, pattern: string) => string;
   readonly measuring: (target: string) => string;
   readonly partlyMeasured: (percent: number) => string;
   readonly fromDimensions: (count: number) => string;
@@ -112,6 +114,17 @@ const en: Messages = {
   gateSizeChange: (dimension, percent) => `${dimension}: the repository changed size by ${percent}%, so its density metrics measure a different denominator`,
   gateAcceptGains: "Improved. `scoria baseline` records this run as the new floor.",
   noTargetsMatched: (patterns) => `No directory matched ${patterns}. Fix "targets" in scoria.config.json, or remove it to measure this directory.`,
+  targetProblems: "Targets dropped",
+  targetProblem: (kind, pattern) => {
+    const why: Record<string, string> = {
+      "unsupported-pattern": "not a path repo.json §9.2 defines — a segment is either a name or exactly `*`",
+      "outside-repository": "resolves outside the repository",
+      "no-match": "matched no directory",
+      missing: "no such directory",
+      duplicate: "already named by an earlier entry",
+    };
+    return `${pattern}: ${why[kind] ?? kind}`;
+  },
   measuring: (target) => `── ${target}`,
   partlyMeasured: (percent) => `only ${percent}% of this dimension could be measured`,
   fromDimensions: (count) => `mean of ${count}`,
@@ -170,6 +183,17 @@ const ja: Messages = {
   gateAcceptGains: "改善しています。`scoria baseline` で今回の値を新しい下限として記録できます。",
   noTargetsMatched: (patterns) =>
     `${patterns} に一致するディレクトリがありません。scoria.config.json の "targets" を直すか、消せばこのディレクトリを測ります。`,
+  targetProblems: "対象から外したもの",
+  targetProblem: (kind, pattern) => {
+    const why: Record<string, string> = {
+      "unsupported-pattern": "repo.json §9.2 が定める書き方ではありません（各 segment は名前か `*` そのものだけ）",
+      "outside-repository": "リポジトリの外を指しています",
+      "no-match": "一致するディレクトリがありません",
+      missing: "そのディレクトリがありません",
+      duplicate: "前のエントリが既に指しています",
+    };
+    return `${pattern}: ${why[kind] ?? kind}`;
+  },
   measuring: (target) => `── ${target}`,
   partlyMeasured: (percent) => `この軸は ${percent}% しか測れていません`,
   fromDimensions: (count) => `${count} 軸の平均`,

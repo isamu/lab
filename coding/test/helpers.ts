@@ -36,6 +36,7 @@ export const contextOf = (files: readonly SourceFile[], project: ProjectFacts = 
   exec: () => Promise.resolve({ stdout: "", stderr: "exec is not available in tests", code: 1 }),
   execNode: () => Promise.resolve({ stdout: "", stderr: "exec is not available in tests", code: 1 }),
   readText: () => Promise.resolve(undefined),
+  excluded: [],
 });
 
 export interface ContextOverrides {
@@ -45,6 +46,7 @@ export interface ContextOverrides {
   readonly execNode?: ProbeContext["execNode"];
   readonly readText?: ProbeContext["readText"];
   readonly root?: string;
+  readonly excluded?: readonly string[];
 }
 
 /** Canned tool output, so a probe's parsing is tested without installing the tool. */
@@ -61,4 +63,5 @@ export const contextWith = (files: readonly SourceFile[], overrides: ContextOver
   exec: overrides.exec ?? (() => Promise.resolve({ stdout: "", stderr: "no exec in tests", code: 1 })),
   execNode: overrides.execNode ?? overrides.exec ?? (() => Promise.resolve({ stdout: "", stderr: "no exec in tests", code: 1 })),
   readText: overrides.readText ?? (() => Promise.resolve(undefined)),
+  excluded: overrides.excluded ?? [],
 });
