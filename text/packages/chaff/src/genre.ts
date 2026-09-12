@@ -1,12 +1,19 @@
 export type GenreGuess = { readonly genre: string; readonly from: string };
 
+/**
+ * 仕様書・README は「読ませる文章」ではなく「間違えさせない文章」。
+ * 書き出しのつかみもリズムも要らない。技術文書として別に見る。
+ */
 const BY_PATH: readonly (readonly [RegExp, string])[] = [
+  [/(^|\/)readme\.md$/iu, "technical/readme"],
+  [/spec[^/]*\.md$/iu, "technical/spec"],
+  [/(^|\/)(spec|specs)\//iu, "technical/spec"],
   [/(^|\/)(proposals?|teian)\//iu, "business/proposal"],
   [/(^|\/)(minutes|gijiroku)\//iu, "business/meeting-notes"],
   [/(^|\/)(press|pr)\//iu, "business/press-release"],
   [/(^|\/)(reports?)\//iu, "business/report"],
   [/(^|\/)(blog|posts?|articles?)\//iu, "blog/tech"],
-  [/(^|\/)docs?\//iu, "blog/tech"],
+  [/(^|\/)docs?\//iu, "technical/readme"],
 ];
 
 /**

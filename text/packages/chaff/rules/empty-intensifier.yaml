@@ -26,4 +26,4 @@ levels:
   normal: 1
   relaxed: 3
 
-use_for: [blog, business]
+use_for: [blog, business, technical]

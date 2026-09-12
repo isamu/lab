@@ -65,6 +65,8 @@ export const runInit = (dir: string, genre: string): string[] => {
 };
 
 export const GENRES: readonly string[] = [
+  "technical/spec",
+  "technical/readme",
   "blog/tech",
   "blog/essay",
   "blog/owned-media",

@@ -233,6 +233,22 @@ yarn example:friendly     既定の出力で
 
 CI でも毎回かけています。指摘の数では落としません（文章の好みの問題なので）が、**実文書で chaff が最後まで動かなければ落ちます**。
 
+## ジャンル
+
+文書の種類で、動く rule が変わります。仕様書に「つかみ」も「締め」も要りません。
+
+| ジャンル | 何を見ないか |
+| --- | --- |
+| `technical/spec` `technical/readme` | 水増しの導入 / 定型の結び / 文のリズム |
+| `blog/tech` `blog/essay` `blog/owned-media` | — |
+| `business/proposal` `business/report` ほか | ブログ向けの rule |
+
+判定はパスと内容から自動で行い、1 行目に根拠つきで出ます。`README.md`、`*-spec.md`、`docs/` は技術文書として見ます。
+
+```
+chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
+```
+
 ## 閾値を手元の文書で測り直す
 
 既定の閾値は一般論です。自分たちの文章に合っているかは、測らないと分かりません。
