@@ -197,3 +197,26 @@ export const concreteEvidence: Detector = (doc, options): Finding[] => {
     },
   }));
 };
+
+/**
+ * ダッシュの多用。英語では正当な用法が多いが、2026 年時点で最も知られた生成文のシグナルでもある。
+ * 日本語の組版ではそもそも扱いが難しい。どちらが正しいかは severity の言語別指定で分ける。spec §12.4。
+ */
+const DASH = /[\u2014\u2015\u2013]/gu;
+
+export const dashDensity: Detector = (doc, options): Finding[] => {
+  const hits = findIn(doc, DASH);
+  const first = hits[0];
+  const rate = density(doc, hits.length);
+  if (wordsOf(doc) < FLOOR[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];
+  return [
+    {
+      rule: "no-em-dash",
+      severity: "info",
+      line: 0,
+      column: 0,
+      quote: first.sentence.text.trim(),
+      values: { count: hits.length, density: rate, limit: options.limit, offset: first.offset },
+    },
+  ];
+};

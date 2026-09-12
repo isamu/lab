@@ -86,6 +86,7 @@ describe("満たせない要求は黙って通さない", () => {
       what_to_check: undefined,
       where: undefined,
       requires: ["telepathy"],
+      from: [],
       languages: undefined,
       use_for: ["business"],
       severity: "warning",

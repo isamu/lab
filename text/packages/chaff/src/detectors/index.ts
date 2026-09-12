@@ -11,7 +11,7 @@ import { doubledParticle, nounEnding } from "./token-shape.ts";
 import { kanjiRun, middleDot } from "./char-shape.ts";
 import { adverbDensity, conjunctionRun, expletive, oxfordComma, titleCaseMix } from "./en-shape.ts";
 import { paragraphLength, paragraphVariance, preambleLength, ruleOfThree, sectionUniformity } from "./structure.ts";
-import { concreteEvidence, emojiDensity, ngramRepetition, undefinedAcronym } from "./signals.ts";
+import { concreteEvidence, dashDensity, emojiDensity, ngramRepetition, undefinedAcronym } from "./signals.ts";
 import { aiTell, cushionDensity, hedgingDensity, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 
@@ -40,6 +40,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "rule-of-three": ruleOfThree,
   "preamble-length": preambleLength,
   "emoji-density": emojiDensity,
+  "dash-density": dashDensity,
   "ngram-repetition": ngramRepetition,
   "undefined-acronym": undefinedAcronym,
   "concrete-evidence": concreteEvidence,

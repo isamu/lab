@@ -59,6 +59,29 @@ const place = (starts: readonly number[], finding: Finding): Finding => {
   return { ...finding, line: at.line, column: at.column };
 };
 
+/**
+ * 複合シグナル。他の rule の結果を読むので、detector の形には収まらない。run の二段目。spec §20.2。
+ *
+ * 1 本ずつでは何も言えないものが揃ったときだけ、1 件にまとめて出す。
+ * 元の指摘は消さない。`padded-intro` のように単独でも正しい指摘が混ざっており、
+ * まとめるために消すと本物の指摘が見えなくなる。
+ */
+const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: number, starts: readonly number[]): Finding[] => {
+  const fired = rule.from.filter((id) => found.some((finding) => finding.rule === id));
+  if (fired.length < limit) return [];
+  const first = found.find((finding) => fired.includes(finding.rule));
+  return [
+    place(starts, {
+      rule: rule.id,
+      severity: rule.severity,
+      line: 0,
+      column: 0,
+      quote: first?.quote ?? "",
+      values: { word: fired.join("、"), count: fired.length, limit, offset: first === undefined ? 0 : Number(first.values["offset"] ?? 0) },
+    }),
+  ];
+};
+
 export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], settings: Settings, experimental: boolean, genre: string): RunResult => {
   const starts = lineStarts(doc.source);
   const applicable = forGenre(rules, genre);
@@ -78,6 +101,8 @@ export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], s
         const why = rule.status === "experimental" && settings[rule.id] === undefined ? "まだ試験中のため" : "設定で止めているため";
         return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why }] };
       }
+      // 複合シグナルは二段目で扱う。一段目では「検出器が無い」と言わせない。
+      if (rule.from.length > 0) return acc;
       const detector = DETECTORS[rule.how_to_find];
       if (detector === undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: `検出器 ${rule.how_to_find} がないため` }] };
       const options = {
@@ -94,5 +119,9 @@ export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], s
     },
     { findings: [], skipped: [] },
   );
-  return { ...outcome, findings: [...outcome.findings].sort((left, right) => left.line - right.line), forcedExperimental: forced };
+  const composites = applicable
+    .filter((rule) => rule.from.length > 0 && levelFor(rule, settings, experimental) !== "off")
+    .flatMap((rule) => compositeOf(rule, outcome.findings, resolve(rule, levelFor(rule, settings, experimental), genre).limit, starts));
+  const all = [...outcome.findings, ...composites];
+  return { ...outcome, findings: [...all].sort((left, right) => left.line - right.line), forcedExperimental: forced };
 };

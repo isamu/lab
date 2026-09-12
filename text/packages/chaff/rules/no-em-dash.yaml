@@ -1,0 +1,32 @@
+id: no-em-dash
+layer: L1
+status: experimental
+how_to_find: dash-density
+
+# 記号の許容度は言語で違う。英語では正当な用法が多く、日本語の組版では扱いが難しい。spec §12.4。
+severity:
+  ja: warning
+  en: info
+
+name:
+  ja: ダッシュが多い
+  en: Too many dashes
+
+why:
+  ja: 日本語の組版でダッシュは扱いが難しく、環境によって長さも見えかたも変わります。読点や括弧で書けることが多いです。
+  en: In English a dash is a legitimate tool, and a heavy hand with it is also one of the better-known marks of generated text. On its own it says little; it counts toward the composite signal.
+
+message:
+  ja: 1000 字あたり {density} 個のダッシュがあります（{limit} 個まで）
+  en: "{density} dashes per 1000 words (limit {limit})"
+
+how_to_fix:
+  ja: 読点か括弧に置き換えてください。挟み込みなら括弧、言い換えなら読点が読みやすいです。
+  en: A comma or a pair of brackets usually reads better.
+
+# 1000 あたりの個数。英語は許容度が高いので緩い。
+levels:
+  ja: { strict: 1, normal: 3, relaxed: 8 }
+  en: { strict: 3, normal: 8, relaxed: 20 }
+
+use_for: [blog, business, technical]

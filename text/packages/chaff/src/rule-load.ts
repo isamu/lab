@@ -63,10 +63,21 @@ const missingFields = (raw: Record<string, unknown>, levels: LevelTable | undefi
   ...(levels?.normal === undefined ? ["levels.normal"] : []),
   ...(typeof raw["how_to_find"] === "string" ? [] : ["how_to_find"]),
   ...(Array.isArray(raw["use_for"]) ? [] : ["use_for"]),
-  ...(isSeverity(raw["severity"]) ? [] : ["severity"]),
+  ...(isSeverity(raw["severity"]) || isRecord(raw["severity"]) ? [] : ["severity"]),
 ];
 
 const localizedOf = (value: unknown): Record<string, string> => (isLocalized(value) ? value : {});
+
+/**
+ * severity も言語別に書ける。levels と同じ畳みかた。
+ * 記号の許容度は言語で大きく違う（ダッシュは英語では普通、日本語の組版では扱いが難しい）。
+ */
+const severityOf = (raw: unknown, language: string): Severity => {
+  if (isSeverity(raw)) return raw;
+  if (!isRecord(raw)) return "warning";
+  const picked: unknown = raw[language] ?? raw["default"];
+  return isSeverity(picked) ? picked : "warning";
+};
 
 const stringList = (value: unknown): string[] | undefined => (Array.isArray(value) ? value.map((entry) => String(entry)) : undefined);
 
@@ -91,9 +102,10 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     what_to_check: isLocalized(raw["what_to_check"]) ? raw["what_to_check"] : undefined,
     where: typeof raw["where"] === "string" ? raw["where"] : undefined,
     requires: stringList(raw["requires"]) ?? [],
+    from: stringList(raw["from"]) ?? [],
     languages: stringList(raw["languages"]),
     use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],
-    severity: isSeverity(raw["severity"]) ? raw["severity"] : "warning",
+    severity: severityOf(raw["severity"], language),
   };
 };
 

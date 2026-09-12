@@ -1,0 +1,36 @@
+id: ai-generated-composite
+layer: L1
+status: experimental
+how_to_find: composite
+severity: warning
+
+# 単独では何も言えない signal。揃ったときだけ意味がある。spec §20.2。
+from:
+  - ai-tell
+  - rule-of-three
+  - section-length-uniformity
+  - sentence-rhythm
+  - padded-intro
+  - closing-cliche
+  - no-em-dash
+
+name:
+  ja: 生成文の特徴がそろっている
+  en: Several signals of generated text together
+
+why:
+  ja: ここに挙げた特徴は、どれも 1 つでは普通の文章に出ます。同じ文書で 3 つ以上そろったときだけ意味を持ちます。**これでも「AI が書いた」とは言えません。** 読み直す場所の目印です。
+  en: Each of these appears in ordinary writing on its own. Only three or more in one document mean anything. **Even then it does not say the text was generated.** It marks a place to reread.
+
+message:
+  ja: 「{word}」が同じ文書にそろっています（{count} 種、{limit} 種から）
+  en: '"{word}" occur together in this document ({count} signals, {limit} needed)'
+
+how_to_fix:
+  ja: 自分が書きたかったことが残っているか、通して読み直してください。個々の指摘を 1 つずつ直すより、段落ごと書き直すほうが早いことがあります。
+  en: Read it through and check your own point is still there. Rewriting a paragraph is often faster than fixing each finding.
+
+# 何種そろったら出すか。spec §20.2 は 3。
+levels: { strict: 2, normal: 3, relaxed: 5 }
+
+use_for: [blog, business]
