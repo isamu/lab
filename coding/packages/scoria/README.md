@@ -275,21 +275,23 @@ toolchain itself is what [ever-better](https://github.com/isamu/ever-better) is 
 
 ## What it measures today
 
-| probe              | dimension                | what it looks at                                                                                  |
-| ------------------ | ------------------------ | ------------------------------------------------------------------------------------------------- |
-| `oxlint`           | correctness, readability | 133 rules from **scoria's own ruleset**, not the project's. Needs nothing installed in the target |
-| `tsc`              | type-safety              | Type errors from the **project's own** TypeScript — the one tool that must be theirs              |
-| `knip`             | architecture             | Files, exports and dependencies nothing reaches                                                   |
-| `jscpd`            | readability              | Copy-paste duplication                                                                            |
-| `audit`            | security                 | Known vulnerabilities, from the project's own package manager                                     |
-| `circular`         | architecture             | Import cycles — code tangled together, which unused-code analysis cannot see                      |
-| `test-presence`    | test-coverage            | How much test code there is, relative to the code under test                                      |
-| `coverage`         | test-coverage            | Line, branch and function coverage, read from a report the project already produced               |
-| `suppression-scan` | integrity                | `as any`, `@ts-ignore`, `eslint-disable`, `it.skip`. Only the ones without a reason become errors |
-| `config-integrity` | integrity                | ESLint config present, `strict` on, required scripts defined                                      |
-| `ci-integrity`     | integrity                | CI runs lint / typecheck / build / test, and does not swallow failures                            |
-| `file-shape`       | readability              | p95 and maximum file length, and the count over 500 lines                                         |
-| `source-mix`       | type-safety              | `.js` / `.jsx` remaining in a TypeScript project                                                  |
+| probe              | dimension                | what it looks at                                                                                    |
+| ------------------ | ------------------------ | --------------------------------------------------------------------------------------------------- |
+| `oxlint`           | correctness, readability | 133 rules from **scoria's own ruleset**, not the project's. Needs nothing installed in the target   |
+| `tsc`              | type-safety              | Type errors from the **project's own** TypeScript — the one tool that must be theirs                |
+| `knip`             | architecture             | Files, exports and dependencies nothing reaches                                                     |
+| `jscpd`            | readability              | Copy-paste duplication                                                                              |
+| `audit`            | security                 | Known vulnerabilities, from the project's own package manager                                       |
+| `circular`         | architecture             | Import cycles — code tangled together, which unused-code analysis cannot see                        |
+| `test-presence`    | test-coverage            | How much test code there is, relative to the code under test                                        |
+| `readme-contract`  | documentation            | Whether a README exists, how much it says, and whether it still lists the flags the program accepts |
+| `comment-quality`  | documentation            | Markers left in the code — TODO, FIXME, XXX, HACK — and comment density, reported but not scored    |
+| `coverage`         | test-coverage            | Line, branch and function coverage, read from a report the project already produced                 |
+| `suppression-scan` | integrity                | `as any`, `@ts-ignore`, `eslint-disable`, `it.skip`. Only the ones without a reason become errors   |
+| `config-integrity` | integrity                | ESLint config present, `strict` on, required scripts defined                                        |
+| `ci-integrity`     | integrity                | CI runs lint / typecheck / build / test, and does not swallow failures                              |
+| `file-shape`       | readability              | p95 and maximum file length, and the count over 500 lines                                           |
+| `source-mix`       | type-safety              | `.js` / `.jsx` remaining in a TypeScript project                                                    |
 
 ### scoria measures against its own standard, not yours
 

@@ -209,6 +209,8 @@ eslint の設定を代わりに選ぶような、判断が要ることはしま�
 | `audit`            | security                 | 既知の脆弱性。プロジェクト自身のパッケージマネージャに聞きます                              |
 | `circular`         | architecture             | 循環依存。「使われていないコード」とは別の壊れ方で、knip には見えません                     |
 | `test-presence`    | test-coverage            | テストコードの量（対象コードとの比）                                                        |
+| `readme-contract`  | documentation            | README があるか、どれだけ書いてあるか、いま受け取るフラグがそこに載っているか               |
+| `comment-quality`  | documentation            | コードに残った TODO / FIXME / XXX / HACK。コメント密度は記録のみで採点しません              |
 | `coverage`         | test-coverage            | 行・分岐・関数のカバレッジ。プロジェクトが出力済みのレポートを読みます                      |
 | `suppression-scan` | integrity                | `as any` / `@ts-ignore` / `eslint-disable` / `it.skip`。理由がないものだけを error にします |
 | `config-integrity` | integrity                | eslint の設定はあるか、`strict` は on か、必要なスクリプトはあるか                          |
