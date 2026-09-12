@@ -13,16 +13,18 @@ why:
   en: Bold marks what matters. Used everywhere, it marks nothing.
 
 message:
-  ja: このセクションに太字が {count} 箇所あります（{limit} 箇所まで）
-  en: "{count} bold spans in this section (limit {limit})"
+  ja: このセクションは {chars} 字に太字が {bolds} 箇所あります（1000 字あたり {limit} 箇所まで）
+  en: "{bolds} bold spans in {chars} characters (limit {limit} per 1000)"
 
 how_to_fix:
   ja: 本当に強調したい 1〜2 箇所だけ残して、ほかは普通の文にしてください。
   en: Keep one or two, unbold the rest.
 
+# 1000 字あたりの太字の数。件数ではなく密度で測る。
+# 件数で数えると節が長いほど当たるので、読者が受け取る印象と合わない。
 levels:
-  strict: 1
-  normal: 2
-  relaxed: 4
+  strict: 10
+  normal: 20
+  relaxed: 40
 
 use_for: [blog, business]
