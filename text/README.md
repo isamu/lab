@@ -323,6 +323,10 @@ doc.md   全 6 文のうち 5 箇所を送ります（API は呼んでいませ�
 | `section-length-uniformity` | 節の長さが揃いすぎていないか |
 | `rule-of-three` | 箇条書きが 3 項目ばかりになっていないか |
 | `preamble-length` | 本題に入るまでが長くないか |
+| `ngram-repetition` | 同じ言い回しの繰り返し |
+| `emoji-density` | 絵文字の密度 |
+| `undefined-acronym` | 略語が説明なしで出てこないか |
+| `concrete-evidence-density` | 数値もコードもリンクも無い節 |
 
 ## まだ無いもの
 

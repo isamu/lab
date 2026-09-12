@@ -583,15 +583,15 @@ by_genre:
 | `sentence-rhythm` | 文長の変動係数の下限 | blog | warning |
 | `paragraph-length-variance` ✅ | 段落長の変動係数 | blog | info |
 | `repeated-sentence-head` | 同じ先頭 N 文字で始まる文の連続 | 両方 | warning |
-| `ngram-repetition` | character n-gram の反復 | 両方 | warning |
+| `ngram-repetition` ✅ | character n-gram の反復 | 両方 | warning |
 | `rule-of-three` ✅ | 3 項目の箇条書きが占める割合 | blog | info |
-| `concrete-evidence-density` | 数値・コード・リンク・引用の密度 | blog | warning |
+| `concrete-evidence-density` ✅ | 数値・コード・リンク・引用の密度 | blog | warning |
 | `max-sentence-length` | 文長 | 両方 | warning |
 | `max-paragraph-length` ✅ | 段落あたり文数 | 両方 | warning |
 | `required-sections` | 必須見出しの有無 | business | error |
 | `preamble-length` ✅ | 本題前の段落数 | business | warning |
-| `undefined-acronym` | 略語の初出時の展開 | business | warning |
-| `emoji-density` | 絵文字・装飾記号の密度 | blog | info |
+| `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
+| `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
 | ~~`list-length-variance`~~ | 箇条書き項目の長さのばらつき | 落とした（下記） | info |
 
 設計上の注意:
@@ -653,7 +653,35 @@ detector は言語を知らず、profile から渡された正規表現の配列
 
 セクション内の具体物が 0 のとき、そのセクションだけを L4 judge の候補に渡す（§14）。全文を LLM に渡さずに済む。前版では「未知語（固有名詞の近似）」も数えていたが、これは辞書を要するため L2 に移した。
 
-### 10.1 `list-length-variance` を落とした理由
+### 10.1 n-gram は「名前」を数えない
+
+`ngram-repetition` を実文書にかけると、上位は言い回しではなく**固有名詞と識別子**だった。
+
+```
+"AGENTS.m"       8 回
+"シンギュラリティ"  11 回
+"ではありません。"  8 回   ← これだけが言い回し
+```
+
+名前は繰り返して当たり前で、指摘しても直せない。**言い回しは、その言語の「つなぎ」を含む**。
+日本語ならひらがな、英語なら語の切れ目。どちらを見るかは adapter が宣言する `lengthUnit` で決める。
+
+ひらがなを持たない `char` 単位の言語が来たら、この見分けは効かなくなる。
+そのときは判定を adapter 側へ移す（`Voice=Pass` と同じ形）。
+
+**n-gram は文をまたいで数えない。** またぐと「す。シンギュラリ」のように、
+前の文の終わりと名前が繋がって言い回しに見える。
+
+### 10.2 密度の床は単位で分ける
+
+密度を見る rule は短い文書を測らない。1 個で「1000 あたり 100」になるため。
+**床の値は言語で分ける。** 英語の 200 語と日本語の 200 文字では長さが桁で違う。
+
+```ts
+const FLOOR = { word: 200, char: 500 };
+```
+
+### 10.3 `list-length-variance` を落とした理由
 
 実文書の箇条書き 27 個（3 項目以上）で変動係数を測った。
 

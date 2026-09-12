@@ -1,0 +1,25 @@
+id: ngram-repetition
+layer: L1
+status: experimental
+how_to_find: ngram-repetition
+severity: info
+
+name:
+  ja: 同じ言い回しの繰り返し
+  en: Repeated phrasing
+
+why:
+  ja: 同じ言い回しが何度も出ると、読み手は新しいことが書かれていないと感じます。文字の並びで見ているので、どの言語でも同じように効きます。
+  en: The same phrasing again and again reads as nothing new being said. Measured on character n-grams, so it works the same in any language.
+
+message:
+  ja: 「{word}」が {count} 回出てきます（{limit} 回まで）
+  en: '"{word}" appears {count} times (limit {limit})'
+
+how_to_fix:
+  ja: 2 回目以降を言い換えるか、まとめて 1 度にしてください。
+  en: Rephrase the repeats, or say it once.
+
+levels: { strict: 3, normal: 5, relaxed: 9 }
+
+use_for: [blog, business, technical]
