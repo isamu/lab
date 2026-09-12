@@ -1,5 +1,6 @@
 import OpenAI from "openai";
-import type { Judge, Prompt } from "./types.ts";
+import { toFailure } from "./types.ts";
+import type { Failure, Judge, Prompt } from "./types.ts";
 
 export type OpenAIResponse = { readonly choices: readonly { readonly message: { readonly content: string | null } }[] };
 
@@ -13,6 +14,13 @@ export const DEFAULT_MODEL = "gpt-5";
 export const hasCredentials = (): boolean => (process.env["OPENAI_API_KEY"] ?? "").length > 0;
 
 export const isAuthFailure = (error: unknown): boolean => error instanceof OpenAI.APIError && error.status === 401;
+
+/** API が返した失敗だけを拾う。ネットワーク断やコードの誤りは、握りつぶさずそのまま投げる。 */
+export const describeFailure = (error: unknown): Failure | undefined => {
+  if (!(error instanceof OpenAI.APIError)) return undefined;
+  const raw: { status: unknown; message: unknown } = error;
+  return toFailure(raw);
+};
 
 /**
  * 同じ JSON schema をそのまま使う。包みかたが違うだけで、返させる形は provider で変えない。

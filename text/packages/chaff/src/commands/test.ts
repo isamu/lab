@@ -7,12 +7,13 @@ import { guessLanguage } from "../detect.ts";
 import { collectTargets } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
 import { CHECKS_FILE, loadChecks, type UserCheck } from "../checks.ts";
-import { CACHE_DIR, credentialHint, hasCredentials, isAuthFailure } from "../judge.ts";
+import { CACHE_DIR, credentialHint, describeFailure, hasCredentials } from "../judge.ts";
 import { ENV_FILE, loadEnvFile } from "../env.ts";
 import { planSemantic, runSemantic } from "../run-semantic.ts";
 import { MACHINE_BANNER, renderPlan, renderSemantic } from "../render/semantic.ts";
 import type { Config } from "../config/load.ts";
 import type { Finding, RuleDefinition } from "../plugin.ts";
+import type { Failure } from "../backends/types.ts";
 
 export type TestContext = {
   readonly config: Config;
@@ -99,8 +100,17 @@ export const runTest = async (targets: readonly string[], argv: readonly string[
   const notRun = (why: string, what: string): string =>
     ["", `  意味を読む検査は動かしていません。${why}`, `  ${what}`, `  ${where}。`, "  機械による判定はすべて動いています。", ""].join("\n");
   const noCredentials = notRun(`${config.aiBackend} の認証情報がありません。`, credentialHint(config.aiBackend));
-  // 鍵はあるのに弾かれたときに「ありません」と言うと、設定済みの鍵をもう一度設定しに行かせる。
-  const rejected = notRun(`${config.aiBackend} が鍵を受け付けませんでした（401）。`, "鍵が正しいか、その provider のものかを確かめてください。");
+  /**
+   * API が返した失敗を人の言葉にする。生のスタックトレースを人に見せない。
+   * 鍵はあるのに弾かれたときに「ありません」と言うと、設定済みの鍵をもう一度設定しに行かせる。
+   * 残高切れも同じで、「鍵を確かめてください」と言われても鍵は正しい。
+   */
+  const failed = (failure: Failure): string => {
+    if (failure.kind === "auth")
+      return notRun(`${config.aiBackend} が鍵を受け付けませんでした（${failure.status ?? "?"}）。`, "鍵が正しいか、その provider のものかを確かめてください。");
+    if (failure.kind === "quota") return notRun(`${config.aiBackend} の残高か上限に達しました（${failure.status ?? "?"}）。`, failure.message);
+    return notRun(`${config.aiBackend} が ${failure.status ?? "?"} を返しました。`, failure.message);
+  };
   if (argv.includes("--dry-run")) {
     await dryRun(paths, config, checks, resolveGenre, envFile);
     return machineOnly;
@@ -117,8 +127,10 @@ export const runTest = async (targets: readonly string[], argv: readonly string[
     confidenceThreshold: config.confidenceThreshold,
   };
   const semantic = await judgeAll(paths, config, checks, options, resolveGenre).catch((error: unknown) => {
-    if (!isAuthFailure(config.aiBackend, error)) throw error;
-    console.log(rejected);
+    // API が返した失敗だけを受け止める。ネットワーク断やコードの誤りは握りつぶさない。
+    const failure = describeFailure(config.aiBackend, error);
+    if (failure === undefined) throw error;
+    console.log(failed(failure));
     return undefined;
   });
   if (semantic === undefined) return machineOnly;

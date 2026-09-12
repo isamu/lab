@@ -5,7 +5,7 @@ import * as anthropic from "./backends/anthropic.ts";
 import * as openai from "./backends/openai.ts";
 import type { AnthropicClient } from "./backends/anthropic.ts";
 import type { OpenAIClient } from "./backends/openai.ts";
-import type { BackendName, Judge, JsonSchema } from "./backends/types.ts";
+import type { BackendName, Failure, Judge, JsonSchema } from "./backends/types.ts";
 
 export const CACHE_DIR = ".chaff-cache";
 
@@ -83,6 +83,9 @@ export const hasCredentials = (backend: BackendName): boolean => (backend === "o
 
 export const isAuthFailure = (backend: BackendName, error: unknown): boolean =>
   backend === "openai" ? openai.isAuthFailure(error) : anthropic.isAuthFailure(error);
+
+export const describeFailure = (backend: BackendName, error: unknown): Failure | undefined =>
+  backend === "openai" ? openai.describeFailure(error) : anthropic.describeFailure(error);
 
 export const credentialHint = (backend: BackendName): string => (backend === "openai" ? openai.SETUP_HINT : anthropic.SETUP_HINT);
 
