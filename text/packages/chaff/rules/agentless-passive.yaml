@@ -1,0 +1,28 @@
+id: agentless-passive
+layer: L3
+status: experimental
+how_to_find: agentless-passive
+word_list: agent-marker
+requires: [pos]
+severity: warning
+
+name:
+  ja: 誰がしたのか書かれていない
+  en: Passive with no actor
+
+why:
+  ja: 受動のまま動作主を書かないと、誰が決めたのか・誰がやるのかが文から消えます。読み手は責任の所在をたどれません。
+  en: A passive without an actor removes the person from the sentence. The reader cannot tell who decided, or who will act.
+
+message:
+  ja: この文は「{word}」と受け身で書かれていますが、誰がしたのかがありません
+  en: 'This sentence is passive ("{word}") but never says who did it'
+
+how_to_fix:
+  ja: 主語を立てて能動にしてください。「決定されました」を「運営チームが決定しました」に。誰かを名指せないなら、書けない理由のほうが問題かもしれません。
+  en: Name the actor and make it active. "It was decided" becomes "the steering group decided". If you cannot name anyone, the reason you cannot is the real finding.
+
+# 1 文に受け身がいくつまで許されるか。1 は「1 つでも指摘する」。
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business]

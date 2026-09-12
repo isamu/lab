@@ -58,6 +58,8 @@ const missingFields = (raw: Record<string, unknown>, levels: LevelTable | undefi
 
 const localizedOf = (value: unknown): Record<string, string> => (isLocalized(value) ? value : {});
 
+const stringList = (value: unknown): string[] | undefined => (Array.isArray(value) ? value.map((entry) => String(entry)) : undefined);
+
 const toRule = (raw: unknown, language: string, file: string): RuleDefinition => {
   if (!isRecord(raw)) throw new Error(`${file}: rule は object であること`);
   const levels = flattenLevels(raw["levels"], language);
@@ -77,6 +79,8 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     word_list: typeof raw["word_list"] === "string" ? raw["word_list"] : undefined,
     what_to_check: isLocalized(raw["what_to_check"]) ? raw["what_to_check"] : undefined,
     where: typeof raw["where"] === "string" ? raw["where"] : undefined,
+    requires: stringList(raw["requires"]) ?? [],
+    languages: stringList(raw["languages"]),
     use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],
     severity: isSeverity(raw["severity"]) ? raw["severity"] : "warning",
   };

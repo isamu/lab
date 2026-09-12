@@ -7,6 +7,7 @@ import { collectTargets } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
 import { evaluate } from "../eval.ts";
 import { renderEval } from "../render/eval.ts";
+import { neededBy } from "../run.ts";
 import type { Config } from "../config/load.ts";
 
 export type Context = {
@@ -32,7 +33,9 @@ export const runEval = async (targets: readonly string[], argv: readonly string[
       const source = await readFile(path, "utf8");
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
-      return { doc: buildDocument(path, source, adapter), language, genre: resolveGenre(path, source, config).genre };
+      const { genre } = resolveGenre(path, source, config);
+      await adapter.prepare?.(neededBy(loadRules(language), config.rules, config.experimental, genre, language));
+      return { doc: buildDocument(path, source, adapter), language, genre };
     }),
   );
   const language = docs[0]?.language ?? "ja";

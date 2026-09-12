@@ -1,6 +1,7 @@
 import { split, SentenceSplitterSyntax } from "sentence-splitter";
 import { loadLexicons } from "./lexicons.ts";
-import type { LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
+import { isReady, predicateOnly, prepare, tokenize } from "./pos.ts";
+import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
 
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
 
@@ -45,17 +46,34 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] =>
     }, [])
     .map((span) => ({ span, text: source.slice(span.start, span.end) }));
 
+/**
+ * token の span は文ではなく、segment に渡した文字列を基準にする。文の span と同じ座標系。
+ * 文ごとに解析して足し戻すのではなく、一度解析して文へ配る。同じ文字列を二度読まない。
+ */
+const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] => {
+  const tokens = tokenize(source);
+  if (tokens === undefined) return [...sentences];
+  return sentences.map((sentence) => ({
+    ...sentence,
+    // 述語かどうかは文の中でしか決まらないので、文へ配ってから印を落とす。
+    tokens: predicateOnly(tokens.filter((token) => token.span.start >= sentence.span.start && token.span.end <= sentence.span.end)),
+  }));
+};
+
 export const adapter: LanguageAdapter = {
   kind: "language",
   id: "ja",
   apiVersion: 1,
   capabilities: {
     sentenceSplit: true,
-    // budoux も形態素解析も、まだ繋いでいない。spec §16 の Tier 0。
-    wordSplit: false,
-    pos: false,
-    lemma: false,
+    // 「払えばできる」の宣言。実際に払うのは prepare。辞書の初期化に 1.5 秒かかる。
+    wordSplit: true,
+    pos: true,
+    lemma: true,
     lengthUnit: "char",
+  },
+  prepare: async (need: AdapterNeeds): Promise<void> => {
+    if (need.pos) await prepare();
   },
   detect: (source: string): number => {
     const total = [...source.matchAll(COUNTABLE)].length;
@@ -63,5 +81,8 @@ export const adapter: LanguageAdapter = {
     return [...source.matchAll(JAPANESE)].length / total;
   },
   lexicons: loadLexicons(),
-  segment: (text: string): Segmentation => ({ sentences: merge(text, rawSpans(text)) }),
+  segment: (text: string): Segmentation => {
+    const sentences = merge(text, rawSpans(text));
+    return { sentences: isReady() ? withTokens(text, sentences) : sentences };
+  },
 };

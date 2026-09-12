@@ -124,14 +124,17 @@ const paragraphSpans = (root: Node): Span[] => {
  * 覆った表やコードブロックを越えて次の句点まで飲み込む。段落は文が跨がない境界なので、
  * ここで切れば構造的に起きない。
  */
+const shift = (span: Span, by: number): Span => ({ start: by + span.start, end: by + span.end });
+
 const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: LanguageAdapter): Sentence[] =>
   paragraphs.flatMap((paragraph) =>
     adapter
       .segment(prose.slice(paragraph.start, paragraph.end))
       .sentences.filter((sentence) => sentence.text.trim().length > 0)
       .map((sentence) => ({
-        span: { start: paragraph.start + sentence.span.start, end: paragraph.start + sentence.span.end },
+        span: shift(sentence.span, paragraph.start),
         text: sentence.text,
+        ...(sentence.tokens === undefined ? {} : { tokens: sentence.tokens.map((token) => ({ ...token, span: shift(token.span, paragraph.start) })) }),
       })),
   );
 
@@ -163,6 +166,7 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
     source,
     language: adapter.id,
     lengthUnit: adapter.capabilities.lengthUnit,
+    capabilities: adapter.capabilities,
     sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root, masked), source.length),
     sentences,
     lexicons: adapter.lexicons,

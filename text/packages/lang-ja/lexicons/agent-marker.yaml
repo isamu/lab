@@ -1,0 +1,8 @@
+# 動作主を示す語。受動文にこれがあれば、誰がしたのかは書かれている。
+id: agent-marker
+language: ja
+entries:
+  - pattern: によって
+  - pattern: により
+  - pattern: による
+  - pattern: から
