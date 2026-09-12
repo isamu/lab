@@ -1680,7 +1680,7 @@ L2 照合エンジン 4 種
 chaff-business  profile と required-sections
 chaff-blog      profile
 textlint dispatch（§15.1）
-JSON / text output
+JSON / text / SARIF output
 GitHub Actions
 ```
 

@@ -78,3 +78,37 @@ jobs:
           # scoria 側と同じ category にすると互いの結果を上書きする。
           sarif_file: text/report/jscpd-sarif.json
           category: jscpd-chaff
+
+  prose:
+    name: Prose Scan (chaff)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write # SARIF の upload に要る
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn build
+
+      # 指摘の数では落とさない。文章の好みの問題なので。
+      # 落ちるのは chaff が最後まで動かなかったときだけ。
+      - name: Run chaff on its own documents
+        run: |
+          set -euo pipefail
+          node packages/chaff/bin/chaff.js . README.md --compact --sarif report/chaff.sarif || true
+          test -s report/chaff.sarif
+
+      - name: Upload SARIF to Code Scanning
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: text/report/chaff.sarif
+          category: chaff-prose

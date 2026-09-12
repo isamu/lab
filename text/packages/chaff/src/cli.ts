@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { loadAdapter, packageFor } from "./adapter-load.ts";
 import { CONFIG_FILE, EMPTY, loadConfig, type Config } from "./config/load.ts";
 import { applyByPath } from "./config/by-path.ts";
@@ -21,6 +21,8 @@ import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
 import { renderFriendly } from "./render/friendly.ts";
 import { rulesJson } from "./render/rules-json.ts";
+import { renderSarif } from "./render/sarif.ts";
+import { VERSION } from "./version.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRules } from "./run.ts";
 import type { Level, RuleDefinition } from "./plugin.ts";
@@ -45,6 +47,7 @@ const USAGE = `chaff — 文章の読みにくいところを見つけます。�
   --show-baseline   棚上げした分も含めて全部見る
   --watch           保存のたびに見直し、変わったところだけ出す
   --dry-run         test で、何を AI に送るかだけを見る（API を呼びません）
+  --sarif <path>    指摘を SARIF で書き出す（GitHub の PR の行に出すため）
 
 この箇所だけ黙らせる:  <!-- stet: rule-id — 理由 -->
 
@@ -81,7 +84,15 @@ const flag = (argv: readonly string[], name: string): string | undefined => {
   return at === -1 ? undefined : argv[at + 1];
 };
 
-type Inspected = { readonly text: string; readonly outcome: FileOutcome; readonly perFile: PerFile; readonly all: readonly string[] };
+type Inspected = {
+  readonly text: string;
+  readonly rules: readonly RuleDefinition[];
+  /** ファイルごとの言語。by_path で 1 つの repo に 2 言語が混ざる。 */
+  readonly language: string;
+  readonly outcome: FileOutcome;
+  readonly perFile: PerFile;
+  readonly all: readonly string[];
+};
 
 const headerFor = (path: string, genre: string, from: string, language: string, shelved: number, hushed: number): string => {
   const shelf = shelved > 0 ? `   棚上げ ${shelved} 件` : "";
@@ -112,10 +123,28 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const text = argv.includes("--compact") ? renderCompact(header, result, rules, language) : renderFriendly(header, result, rules, language);
   return {
     text,
+    rules,
+    language,
     outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
     perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless },
     all: applied.kept.map((finding) => fingerprint(path, finding)),
   };
+};
+
+/**
+ * 指摘を PR の変更行に出すための出口。--sarif <path> を書いたときだけ作る。
+ * 端末の出力は変えない。CI で上げるためのファイルが増えるだけ。
+ */
+const writeSarif = (results: readonly Inspected[], argv: readonly string[]): void => {
+  const path = flag(argv, "--sarif");
+  if (path === undefined) return;
+  // 文言はファイルの言語で描く。by_path で 1 つの repo に 2 言語が混ざるため。
+  const located = results.flatMap((result) =>
+    result.outcome.findings.map((finding) => ({ path: result.outcome.path, finding, language: result.language, rules: result.rules })),
+  );
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, renderSarif(located, VERSION), "utf8");
+  console.log(`\n  SARIF を書きました: ${path}（${located.length} 件）`);
 };
 
 const lint = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
@@ -132,6 +161,7 @@ const lint = async (targets: readonly string[], argv: readonly string[]): Promis
     return 1;
   }
   const results = await Promise.all(paths.map((path) => inspect(path, config, argv)));
+  writeSarif(results, argv);
   results.filter((result) => result.outcome.findings.length > 0 || paths.length === 1).forEach((result) => console.log(result.text));
   renderSummary(results.map((result) => result.outcome)).forEach((line) => console.log(line));
   return results.some((result) => result.outcome.findings.some((finding) => finding.severity === "error")) ? 1 : 0;
