@@ -2,6 +2,159 @@
 
 Newest first.
 
+## 0.5.0 — 2026-09-13
+
+Findings reach the pull request. 17 of 42 rules now run by default, against a written bar that
+requires evidence from real documents. A wider corpus and an external review found eleven defects,
+one of them in a rule that had shipped since 0.0.1.
+
+📦 [`chaffjs@0.5.0`](https://www.npmjs.com/package/chaffjs/v/0.5.0) ·
+[`@chaffjs/lang-ja@0.5.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.5.0) ·
+[`@chaffjs/lang-en@0.5.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.5.0)
+
+### SARIF (#86)
+
+```bash
+npx chaffjs . --sarif report/chaff.sarif
+```
+
+Uploaded to GitHub code scanning, a finding lands on the changed line of the pull request, where the
+person who wrote it is already looking. A finding in a log has to be gone and fetched.
+
+Each rule ships its rationale and its fix with the message, so opening a finding tells you what to do
+about it. Pointing at a problem without that leaves the writer nowhere to go.
+
+Two things were fixed while building it.
+
+The message was rendered in the config's language, not the file's, so English documents carried
+Japanese text. `by_path` puts two languages in one repository, so the language has to come from
+the file.
+
+The version was also nearly written as a constant. scoria did exactly that in its 0.1.1 and shipped
+findings attributed to a release that never produced them.
+
+### The bar for running by default (#92)
+
+The default surface was 10 rules of 42. Moving a rule there now requires:
+
+1. it fired on the 20 published articles in `examples/`
+2. the findings were read one by one and judged correct
+3. `chaff eval` puts it under the 5% false-positive target
+
+**A rule that has never fired does not qualify.** Working on a synthetic fixture proves it is not
+broken. It does not prove it should speak by default, and zero findings does not tell a good rule
+from a broken one.
+
+Seven rules passed. Three were held back by it.
+
+`agentless-passive` is right four times in five, which is not enough for a default.
+`title-case-consistency` and `contraction-consistency` miss the eval target at every threshold, and
+ignoring your own instrument is not an option.
+
+`eval` itself was measuring rules that could never run — it checked `use_for` but not `languages`,
+`requires` or `from`. Sweeping a rule that cannot fire makes "zero at every threshold" look like
+careful writing.
+
+### What eleven articles showed that two did not (#91)
+
+The English corpus went from 281 lines to 3328. `heading-echo`, `stable` since 0.0.1, was firing on
+**72.7%** of it.
+
+```
+"ToolsAgent"           → "GraphAI provides ToolsAgent components that use LLMs to dynamically invoke…"
+"Cinematic Animations" → "In addition to slide-based presentations, you can create cinematic effects…"
+```
+
+The heading's words are present and the sentence adds a great deal. The rule's own reasoning — the
+reader gains nothing by reading on — does not hold here. It now measures what is left once the
+heading is removed: six words in English, twenty characters in Japanese.
+
+It was also comparing case-sensitively, so `Generating` and `generated` were different words and real
+echoes went unreported.
+
+Bare `https://…` URLs were never masked either. Without the GFM autolink extension mdast leaves them
+as plain text, so a heading matched identifiers inside a link.
+
+At two articles all of this looked fine.
+
+### Rules the team writes (#77 shipped in 0.4.0, extended here)
+
+```yaml
+jargon:            [横展開, 握る, 巻き取]
+required_sections: [リスク, 費用]
+```
+
+chaff holds no list of its own. Which words are internal, and which sections a proposal must have,
+differ by organisation. **A tool that decides that for you gets switched off by everyone it decided
+wrong for.** With nothing listed these rules say nothing, and they never ask to be filled in.
+
+### Composite signals and `no-em-dash` (#88)
+
+`ai-generated-composite` fires only when three or more weak signals coincide, and still does not say
+the text was generated — it marks a place to reread. It **adds** a finding rather than replacing the
+contributing ones, because two of the seven inputs are stable warnings that stand on their own.
+
+It reads other rules' results, so it runs as a second pass rather than as a detector.
+
+`no-em-dash` carries a different severity per language. `warning` in Japanese, where the typography
+is awkward. `info` in English, where the dash is a legitimate tool. It is also one of the
+better-known marks of generated text.
+
+Severity can now be written per language anywhere, reusing the fold that `levels` already had.
+
+### `contraction-consistency` (#89)
+
+The last entry in the spec's rule catalog. It needed `Lexicon` to express a pair.
+
+```yaml
+- pattern: "don't"
+  instead_of: do not
+```
+
+Counting one side alone cannot tell a deliberately formal register from an inconsistency. Matching is
+on word boundaries: `it isn't` contains `it is`, and substring matching put contraction-using
+sentences in the "spelled out" column.
+
+### Eleven defects found by review (#94, #95, #96)
+
+`codex` was pointed at the whole tree and reported nine. Every one was reproduced before being fixed,
+and one was reproduced and then declined.
+
+**Offsets were wrong after any emoji.** chaff covers non-prose with same-length spaces so offsets stay
+aligned with the source; everything else rests on that. A `u`-flagged regex matches by code point, so
+a surrogate pair became one space and the document shrank by one. The line table counted the same way.
+Every finding after an emoji pointed one character off — and `emoji-density` had just made emoji-heavy
+documents a likely target.
+
+**Three things returned zero instead of failing.** An adapter could declare `pos: true`, return no
+tokens, and quietly answer "no passives here" for all nine POS rules. An adapter with `apiVersion: 2`
+loaded.
+
+An L4 rule with a typo'd filter name fell through to whole-document. It sent the entire document to
+the model, straight past the two-stage design that exists to prevent that.
+
+**Four detection errors.** Predicate detection read past the comma, so `仕様は変更され、担当者が確認した。`
+reported nothing. The most ordinary English acronym form, `Continuous Integration (CI)`, was not
+recognised as an expansion. A conjunction between "was" and the participle broke passive detection.
+One heading of each style was called "the minority".
+
+One was left alone. `was fully and finally approved` is missed because the tagger labels `approved`
+VBD rather than VBN; accepting VBD would make `The team was here and approved it` a passive. The
+limitation is recorded where the next reader will find it.
+
+A malformed rule file also used to crash without naming the file.
+
+### Breaking
+
+- Eleven more rules run without `--experimental`, so existing users see findings they did not before.
+- `heading-echo` reports differently in both languages.
+- All three packages move to 0.5.0; the adapters were at 0.3.0.
+
+### Not in this release
+
+`chaff test` has still never completed a round trip against a live API. Authentication, 401 and 429
+are confirmed against the real service; the account had no credits.
+
 ## 0.4.0 — 2026-09-13
 
 Three rules whose content **chaff does not hold**. It reads what the team wrote in `chaff.yaml` and
