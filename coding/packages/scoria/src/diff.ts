@@ -45,14 +45,23 @@ const scoreOf = (report: Report, dimension: string): number | undefined => repor
 const metricsOf = (report: Report, dimension: string): ReadonlySet<string> =>
   new Set((report.dimensions.find((d) => d.dimension === dimension)?.metrics ?? []).map((m) => m.metric));
 
+/** How much of the dimension's weight was scored. Points are normalised over it (spec §18.1). */
+const coverageOf = (report: Report, dimension: string): number | undefined => report.dimensions.find((d) => d.dimension === dimension)?.coverage;
+
 /**
  * Adding a metric to a rubric moves every score in its dimension without a line of the target
  * changing. Subtracting the two numbers anyway credits the release as an improvement: scoria's own
  * `security` dimension read `+100` the first time it existed, and `audit.critical` was reported as
  * the largest single gain at `0 → 0`. Two runs measuring different metrics are not comparable.
+ *
+ * The same is true when a probe starts or stops producing a value, even with the rubric untouched.
+ * Points are normalised over the measurable weight, so a metric that was carrying a dimension alone
+ * loses most of its points the moment another one joins it. When `coverage` first produced a
+ * report, `test_to_source_ratio` rose from 0.499 to 0.57 and was reported as `-69.8`.
  */
 const isComparable = (previous: Report, current: Report, dimension: string): boolean => {
   if (scoreOf(previous, dimension) === undefined || scoreOf(current, dimension) === undefined) return false;
+  if (coverageOf(previous, dimension) !== coverageOf(current, dimension)) return false;
   const before = metricsOf(previous, dimension);
   const after = metricsOf(current, dimension);
   return before.size === after.size && [...before].every((metric) => after.has(metric));

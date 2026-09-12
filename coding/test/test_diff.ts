@@ -101,6 +101,24 @@ test("an unchanged rubric still reports its movers", () => {
 });
 
 /** A dimension that had no score has nothing to subtract from; `score ?? 0` would invent one. */
+/**
+ * Points are normalised over the measurable weight, so a metric carrying a dimension alone loses
+ * most of its points the moment another one starts producing a value. When `coverage` first read a
+ * report, `test_to_source_ratio` rose from 0.499 to 0.57 and was reported as `-69.8`.
+ */
+test("a dimension whose measurable weight changed is not comparable", () => {
+  const before = reportWith(200, 3);
+  const after = reportWith(200, 3);
+  const narrowed = {
+    ...before,
+    dimensions: before.dimensions.map((entry) => ({ ...entry, coverage: 0.3 })),
+  };
+  const diff = diffReports(narrowed, after);
+  assert.equal(diff.dimensions.find((d) => d.dimension === "readability")?.delta, undefined);
+  assert.deepEqual(diff.movers, []);
+  assert.deepEqual(diff.notComparable, ["readability"]);
+});
+
 test("a dimension nothing could be measured in is not comparable", () => {
   const unmeasured = buildReport(".", files, [], rubricOf(BOTH_METRICS), undefined, []);
   const diff = diffReports(unmeasured, reportWith(200, 3));
