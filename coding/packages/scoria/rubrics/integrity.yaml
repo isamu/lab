@@ -12,6 +12,7 @@ status: experimental
 
 metrics:
   - metric: suppression-scan.source_per_kloc
+    density: true
     scale: { good: 0, bad: 5 }
     weight: 0.3
 

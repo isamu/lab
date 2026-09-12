@@ -43,6 +43,16 @@ export interface Messages {
   readonly noBaseline: string;
   readonly rebaselineNeeded: (tools: string) => string;
   readonly rubricChanged: (dimensions: string) => string;
+  readonly gateFailed: string;
+  readonly gatePassed: string;
+  readonly gateDimension: (dimension: string, from: string, to: string) => string;
+  readonly gateSuppression: (from: number, to: number) => string;
+  readonly gateFinding: (rule: string, file: string) => string;
+  readonly gateNotGated: string;
+  readonly gateLowConfidence: (dimension: string) => string;
+  readonly gateToolVersion: (dimension: string, tools: string) => string;
+  readonly gateSizeChange: (dimension: string, percent: number) => string;
+  readonly gateAcceptGains: string;
   readonly partlyMeasured: (percent: number) => string;
   readonly fromDimensions: (count: number) => string;
   readonly notComparableLong: string;
@@ -89,6 +99,16 @@ const en: Messages = {
   noBaseline: "No baseline yet. `scoria baseline` records this run, and later runs report the change since.",
   rebaselineNeeded: (tools) => `${tools} changed version since the baseline; those moves are not regressions`,
   rubricChanged: (dimensions) => `${dimensions}: this run measured different metrics than the baseline, so no change is reported`,
+  gateFailed: "Ratchet: this run is below its baseline",
+  gatePassed: "Ratchet: nothing fell below the baseline",
+  gateDimension: (dimension, from, to) => `${dimension} fell from ${from} to ${to}`,
+  gateSuppression: (from, to) => `unexplained suppressions rose from ${from} to ${to}`,
+  gateFinding: (rule, file) => `new ${rule} in ${file}`,
+  gateNotGated: "Regressed, but not gated",
+  gateLowConfidence: (dimension) => `${dimension}: confidence is low, so the number is about the measurement`,
+  gateToolVersion: (dimension, tools) => `${dimension}: ${tools} changed version, which adds rules rather than defects`,
+  gateSizeChange: (dimension, percent) => `${dimension}: the repository changed size by ${percent}%, so its density metrics measure a different denominator`,
+  gateAcceptGains: "Improved. `scoria baseline` records this run as the new floor.",
   partlyMeasured: (percent) => `only ${percent}% of this dimension could be measured`,
   fromDimensions: (count) => `mean of ${count}`,
   notComparableLong:
@@ -134,6 +154,16 @@ const ja: Messages = {
   noBaseline: "baseline がありません。`scoria baseline` でこの実行を記録すると、次から差が出ます。",
   rebaselineNeeded: (tools) => `${tools} の版数が baseline から変わっています。その分の増減は劣化ではありません`,
   rubricChanged: (dimensions) => `${dimensions}: baseline とは測っている項目が違うため、増減は出していません`,
+  gateFailed: "ratchet: baseline より下がっています",
+  gatePassed: "ratchet: baseline を下回ったものはありません",
+  gateDimension: (dimension, from, to) => `${dimension} が ${from} から ${to} に下がりました`,
+  gateSuppression: (from, to) => `理由のない抑制が ${from} から ${to} に増えました`,
+  gateFinding: (rule, file) => `${file} に ${rule} が新しく出ました`,
+  gateNotGated: "下がっていますが、ゲートはしていません",
+  gateLowConfidence: (dimension) => `${dimension}: confidence が low なので、この数字は測定のほうの話です`,
+  gateToolVersion: (dimension, tools) => `${dimension}: ${tools} の版数が変わっています。増えたのはルールであって欠陥ではありません`,
+  gateSizeChange: (dimension, percent) => `${dimension}: リポジトリの規模が ${percent}% 変わったので、密度の指標は別の分母を測っています`,
+  gateAcceptGains: "改善しています。`scoria baseline` で今回の値を新しい下限として記録できます。",
   partlyMeasured: (percent) => `この軸は ${percent}% しか測れていません`,
   fromDimensions: (count) => `${count} 軸の平均`,
   notComparableLong:

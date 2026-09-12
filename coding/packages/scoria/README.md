@@ -332,6 +332,34 @@ dimension is made of, so the old and the new score are not measurements of the s
 subtracting them would credit the release as an improvement. Those dimensions report `—` and no
 movers until you record a new baseline.
 
+### Failing the build on a regression
+
+By default scoria gates nothing: it reports and exits 0. A tool that turns CI red on the day it is
+installed is one nobody keeps. Once the baseline has settled, opt in:
+
+```json
+{ "mode": "ratchet" }
+```
+
+The run then exits 1 when a dimension falls more than a point below its baseline, when an
+unexplained suppression is added, or when a finding at `error` severity appears in a file that did
+not have one.
+
+**What it refuses to gate matters as much as what it gates.** Three regressions are reported and
+not failed, each named in the output under _Regressed, but not gated_:
+
+|                                            | why                                                                                |
+| ------------------------------------------ | ---------------------------------------------------------------------------------- |
+| the dimension's confidence is `low`        | the number is about the measurement, not the code                                  |
+| a tool changed version                     | a linter upgrade adds rules, not defects — gating it teaches a team not to upgrade |
+| the repository changed size by 20% or more | density metrics are measuring a different denominator                              |
+
+A regression that is silently excluded is indistinguishable from no regression, so they are printed
+either way.
+
+`mode` lives in the committed config rather than behind a flag: turning the gate on is policy, and
+policy should show up in a diff.
+
 Stacks: `ts` (`.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs`), `vue` (only the SFC
 `<script>` block is scanned), `react`.
 

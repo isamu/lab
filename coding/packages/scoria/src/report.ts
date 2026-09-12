@@ -25,6 +25,12 @@ export interface DimensionReport extends ScoredDimension {
 export interface ProbeReport {
   readonly probe: string;
   readonly status: ProbeStatus;
+  /**
+   * The tools this probe ran. The merged `toolVersions` cannot say which probe a version belongs
+   * to, and the ratchet needs exactly that: `yarn` changing version must exempt `security` and
+   * nothing else (spec §17.3).
+   */
+  readonly tools: readonly string[];
 }
 
 export interface Report {
@@ -35,6 +41,11 @@ export interface Report {
   readonly complete: boolean;
   readonly size: { readonly files: number; readonly sloc: number; readonly testSloc: number };
   readonly dimensions: readonly DimensionReport[];
+  /**
+   * Every metric value a probe produced, including those no rubric scores (spec §17.1). A stored
+   * score cannot answer "what moved"; the gate also needs values the rubrics do not weigh.
+   */
+  readonly metrics: Readonly<Record<string, number>>;
   readonly findings: readonly Finding[];
   readonly probes: readonly ProbeReport[];
   /** Versions of the external tools, so a score drop caused by an upgrade is not read as decay. */
@@ -144,8 +155,9 @@ export const buildReport = (
     complete: results.every((r) => r.status.kind !== "skipped"),
     size: { files: files.length, sloc, testSloc: slocOfKind(files, "test") },
     dimensions,
+    metrics: Object.fromEntries(values),
     findings: results.flatMap((r) => r.findings),
-    probes: results.map((r) => ({ probe: r.probe, status: r.status })),
+    probes: results.map((r) => ({ probe: r.probe, status: r.status, tools: Object.keys(r.toolVersions) })),
     toolVersions: mergedToolVersions(results),
     overall: {
       score: mean(dimensions.flatMap((d) => (d.score === undefined ? [] : [d.score]))),

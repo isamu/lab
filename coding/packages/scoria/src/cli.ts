@@ -1,7 +1,7 @@
 import { relative } from "node:path";
 
 import { assay } from "./run.ts";
-import { detectConfig, writeConfig, CONFIG_FILENAME, type ScoriaConfig } from "./config.ts";
+import { detectConfig, writeConfig, CONFIG_FILENAME, type LoadedConfig, type Mode, type ScoriaConfig } from "./config.ts";
 import { isLang, messagesFor, type Lang } from "./messages.ts";
 import type { Report } from "./report.ts";
 import { renderExplain, renderReport } from "./render.ts";
@@ -14,6 +14,7 @@ import { dirname } from "node:path";
 import { applyFixes, diagnose, renderDoctor } from "./doctor.ts";
 import { changedTools, readBaseline, writeBaseline } from "./baseline.ts";
 import { diffReports, type ReportDiff } from "./diff.ts";
+import { judge, type Verdict } from "./gate.ts";
 
 type Command = "assay" | "init" | "doctor" | "baseline";
 
@@ -118,6 +119,12 @@ const writeBadge = async (report: Report, path: string | undefined, diff: Report
   await writeFile(path, `${JSON.stringify(badgeEndpoint(report, diff), null, 2)}\n`, "utf8");
 };
 
+/** A run with no baseline has nothing to ratchet against, so it reports and passes. */
+const gateOf = (mode: Mode, baseline: Report | undefined, report: Report): Verdict | undefined => {
+  if (mode !== "ratchet" || baseline === undefined) return undefined;
+  return judge(baseline, report, changedTools(baseline, report));
+};
+
 export const main = async (argv: readonly string[]): Promise<void> => {
   const options = parse(argv);
   if (options.command === "init") {
@@ -137,22 +144,29 @@ export const main = async (argv: readonly string[]): Promise<void> => {
     process.stdout.write(`\n${messagesFor(lang).baselineWritten(displayPath(path))}\n\n`);
     return;
   }
+  await runAssay(options, report, loaded, lang);
+};
+
+const runAssay = async (options: Options, report: Report, loaded: LoadedConfig, lang: Lang): Promise<void> => {
   const baseline = await readBaseline(options.target);
   const comparison =
     baseline === undefined
       ? undefined
       : { diff: diffReports(baseline.report, report), since: baseline.createdAt, rebaseline: changedTools(baseline.report, report) };
+  const verdict = gateOf(loaded.config.mode, baseline?.report, report);
   const notice = await freezeIfNeeded(options.target, loaded.frozen, options.write, lang);
   await writeGithubSummary(report, lang, options.summary, comparison?.diff);
   await writeSarif(report, options.sarif);
   await writeBadge(report, options.badge, comparison?.diff);
+  // Non-zero only under `mode: ratchet`. The default mode reports and exits 0 (spec §17.2).
+  if (verdict?.failed === true) process.exitCode = 1;
   if (options.json) {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     return;
   }
   process.stdout.write(
     options.explain === undefined
-      ? renderReport(report, { source: loaded.source, drift: loaded.drift, notice, lang, comparison })
+      ? renderReport(report, { source: loaded.source, drift: loaded.drift, notice, lang, comparison, verdict })
       : renderExplain(report, options.explain, lang),
   );
 };

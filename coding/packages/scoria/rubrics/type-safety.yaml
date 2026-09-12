@@ -19,6 +19,7 @@ metrics:
   # Errors from the project's own tsc, which is the only check that means anything about its types.
   # Tier 1: skipped, not zero, where the project is not installed.
   - metric: tsc.type_errors_per_kloc
+    density: true
     scale: { good: 0, bad: 2 }
     weight: 0.5
 

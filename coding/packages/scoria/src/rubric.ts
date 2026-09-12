@@ -18,6 +18,12 @@ export interface MetricRule {
   readonly metric: string;
   readonly scale: Scale;
   readonly weight: number;
+  /**
+   * Normalised by repository size, so it moves when the denominator does. The ratchet stops gating
+   * these when the repository changed size sharply (spec §17.2) — the unit lives here rather than
+   * being inferred from the metric's name, which is a naming convention and not a contract.
+   */
+  readonly density?: boolean;
 }
 
 export interface Rubric {
@@ -46,6 +52,7 @@ export interface ScoredMetric {
   readonly weight: number;
   /** Already normalised over the measurable weight, so the points of a dimension sum to its score. */
   readonly points: number;
+  readonly density?: boolean;
   readonly topContributors?: readonly Contributor[];
 }
 
@@ -89,6 +96,7 @@ export const scoreDimension = (rubric: Rubric, states: ReadonlyMap<string, Metri
       state: state.kind,
       scale: rule.scale,
       weight: rule.weight,
+      ...(rule.density === true ? { density: true } : {}),
       points: coverage === 0 ? 0 : round(rawPoints(state, rule) / coverage),
     };
   });

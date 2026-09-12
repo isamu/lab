@@ -13,7 +13,11 @@ const isStatus = (value: unknown): value is RubricStatus => typeof value === "st
 const isScale = (value: unknown): value is Scale => isRecord(value) && typeof value["good"] === "number" && typeof value["bad"] === "number";
 
 const isMetricRule = (value: unknown): value is MetricRule =>
-  isRecord(value) && typeof value["metric"] === "string" && typeof value["weight"] === "number" && isScale(value["scale"]);
+  isRecord(value) &&
+  typeof value["metric"] === "string" &&
+  typeof value["weight"] === "number" &&
+  isScale(value["scale"]) &&
+  (value["density"] === undefined || typeof value["density"] === "boolean");
 
 const isStringArray = (value: unknown): value is readonly string[] => Array.isArray(value) && value.every((v) => typeof v === "string");
 
