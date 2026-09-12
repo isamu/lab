@@ -34,7 +34,11 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] =>
   spans
     .reduce<Span[]>((acc, span) => {
       const last = acc.at(-1);
-      if (last !== undefined && isOpen(source.slice(last.start, last.end))) {
+      // 断片の「間」に改行があれば繋がない。結合は「Dr. 田中」のような行の途中の
+      // 誤分割を閉じるためのもので、行またぎは要らない。またぐと、引用ブロックの
+      // 英文と訳文のように別の行のものまで 1 文に繋がる。
+      const acrossLines = last !== undefined && source.slice(last.end, span.start).includes("\n");
+      if (last !== undefined && !acrossLines && isOpen(source.slice(last.start, last.end))) {
         return [...acc.slice(0, -1), { start: last.start, end: span.end }];
       }
       return [...acc, span];

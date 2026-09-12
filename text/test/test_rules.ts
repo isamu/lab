@@ -47,6 +47,12 @@ describe("max-sentence-length", () => {
     // 誤検知しやすい正常な文章。これを数えると全ての技術記事が落ちる。
     assert.ok(!idsFor(`短い文です。\n\n\`\`\`\n${"x".repeat(300)}\n\`\`\``).includes("max-sentence-length"));
   });
+  it("valid: URL を覆った空白を長さに数えない", () => {
+    // 覆った部分は同じ長さの空白になる。そのまま数えると URL 1 つで「245 文字」になる。
+    const link = `短い文です。[記事](https://example.com/${"a".repeat(200)}) を見てください。`;
+    assert.ok(!idsFor(link).includes("max-sentence-length"));
+  });
+
   it("valid: 長い表の行は文ではない", () => {
     assert.ok(!idsFor(`短い文です。\n\n| ${"あ".repeat(200)} | b |\n| --- | --- |\n| 1 | 2 |`).includes("max-sentence-length"));
   });

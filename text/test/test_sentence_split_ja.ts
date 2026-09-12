@@ -44,6 +44,13 @@ describe("日本語の文分割", () => {
     });
   });
 
+  it("行をまたいでは結合しない", () => {
+    // 結合は行の途中の誤分割（Dr. 田中）を閉じるためのもの。行をまたぐと、
+    // 別の行にある英文と訳文まで 1 文に繋がる。
+    const source = "英語の文が here ends with a period.\n日本語の訳文です。";
+    assert.equal(adapter.segment(source).sentences.length, 2);
+  });
+
   it("空文字でも落ちない", () => {
     assert.deepEqual(textsOf(""), []);
   });
