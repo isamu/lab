@@ -1,6 +1,6 @@
 id: no-doubled-joshi
 layer: L3
-status: experimental
+status: stable
 how_to_find: doubled-particle
 word_list: nesting-particle
 requires: [pos]

@@ -63,9 +63,21 @@ const recommend = (rule: RuleDefinition, sweep: readonly Point[], total: number)
   return strictest;
 };
 
+/**
+ * lint で動かない rule は掃引しない。
+ * 動かないものの閾値を測ると、「どの閾値でも 0 件」が「よく校正されている」に見える。
+ */
+const measurable = (rule: RuleDefinition, docs: readonly ProseDocument[], genre: string, language: string): boolean => {
+  if (rule.layer === "L4" || !rule.use_for.some((target) => genre.startsWith(target))) return false;
+  if (rule.languages !== undefined && !rule.languages.includes(language)) return false;
+  if (rule.from.length > 0) return false;
+  const capabilities = docs[0]?.capabilities;
+  return !rule.requires.some((need) => (need === "lemma" ? capabilities?.lemma : capabilities?.pos) !== true);
+};
+
 export const evaluate = (docs: readonly ProseDocument[], rules: readonly RuleDefinition[], genre: string, language: string): RuleReport[] =>
   rules
-    .filter((rule) => rule.layer !== "L4" && rule.use_for.some((target) => genre.startsWith(target)))
+    .filter((rule) => measurable(rule, docs, genre, language))
     .map((rule) => {
       const sweep = candidates(rule).map((limit) => countAt(docs, rule, limit));
       const current = rule.levels.normal ?? 1;

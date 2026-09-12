@@ -47,14 +47,21 @@ describe("解析器を読むまで tokens は無い", () => {
   });
 
   it("要求する rule が 1 本も無ければ pos を読まない", () => {
-    assert.equal(neededBy(RULES, {}, false, "blog/tech", "ja").pos, false);
+    // 品詞を要求する rule を全部止めた状態。
+    const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos")).map((rule) => [rule.id, "off" as const]));
+    assert.equal(neededBy(RULES, off, true, "blog/tech", "ja").pos, false);
   });
 
-  it("要求する rule が動くときだけ pos を読む", () => {
-    // agentless-passive は experimental かつ business 限定。
-    assert.equal(neededBy(RULES, {}, true, "business/report", "ja").pos, true);
-    assert.equal(neededBy(RULES, {}, false, "business/report", "ja").pos, false);
-    assert.equal(neededBy(RULES, { "agentless-passive": "normal" }, false, "business/report", "ja").pos, true);
+  it("stable な rule が要求していれば、既定でも読む", () => {
+    // taigen-dome-in-prose は stable なので、--experimental なしでも動く。
+    assert.equal(neededBy(RULES, {}, false, "blog/tech", "ja").pos, true);
+  });
+
+  it("experimental な rule は、名指しで有効にしたときだけ数に入る", () => {
+    // agentless-passive は experimental。止めたほかの pos rule と合わせて確かめる。
+    const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos")).map((rule) => [rule.id, "off" as const]));
+    assert.equal(neededBy(RULES, off, true, "business/report", "ja").pos, false);
+    assert.equal(neededBy(RULES, { ...off, "agentless-passive": "normal" }, false, "business/report", "ja").pos, true);
   });
 });
 
