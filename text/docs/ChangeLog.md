@@ -2,6 +2,145 @@
 
 Newest first.
 
+## 0.2.0 — 2026-09-12
+
+Calibration. 0.0.1 and 0.1.0 built the rules; this release measures whether they are right, against
+real published documents. On a corpus of 8 real articles (1525 lines), findings went from **63 to
+17**. Every one of the 46 that disappeared was a false positive.
+
+📦 [`chaffjs@0.2.0`](https://www.npmjs.com/package/chaffjs/v/0.2.0) ·
+[`@chaffjs/lang-ja@0.2.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.2.0) ·
+[`@chaffjs/lang-en@0.2.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.2.0)
+
+### Bold in tables and headings is not emphasis (#38)
+
+Found by running the published 0.1.0 on chaff's own specifications. A table whose first column is
+bold labels was reported as "3 bold spans in this section (2 allowed)".
+
+The rule's own rationale — bold stops the reader's eye, so using it everywhere stops nothing — does
+not apply to a table cell label. Bold inside headings and code blocks is excluded for the same
+reason. On the specs this alone cut findings from 14 to 1.
+
+Still reported, and deliberately: a list whose items open with a bold lead-in. That one is a matter
+of taste, and the answer to it is `relax`, not a change to the rule.
+
+### `examples/` — real documents in the repository (#40)
+
+Building rules against invented examples means the false positives are found by users. Eight
+published documents now live in the repository: three Japanese technical articles and two English
+ones from zenn.dev/singularity, three organisational documents from singularitysociety.org.
+
+```bash
+yarn example              # compact
+yarn example:friendly     # the default output
+```
+
+CI runs them on every push. It never fails on the number of findings, because prose is a matter of
+taste. It fails only when chaff does not finish, judged by whether the summary line appears.
+
+`by_path` was implemented in the same PR because splitting the examples into three genres required
+it. It had been in the spec since the beginning and was never built.
+
+```yaml
+by_path:
+  - files: ["business/**/*.md"]
+    genre: business/report
+  - files: ["blog-en/**/*.md"]
+    language: en
+```
+
+Later entries win. Globs are matched relative to the config file, so the result does not depend on
+the directory the command is run from. The first bug in it: `**/` has to match **zero** directories,
+or `docs/**/*.md` misses `docs/a.md`.
+
+### `chaff eval` — thresholds measured against your own writing (#42)
+
+Default thresholds are a general guess. Whether they fit a particular team's writing is a question
+that has to be measured, and #40 supplied the corpus to measure against.
+
+```
+  太字の使いすぎ   (bold-density)
+
+        17     2 文書 ( 66.7%)   指摘   2 件   1万字あたり 0.8
+        20     1 文書 ( 33.3%)   指摘   1 件   1万字あたり 0.4  ← 現在
+        25     0 文書 (  0.0%)   指摘   0 件   1万字あたり 0.0  ← 推奨
+```
+
+The standard applied is spec §21's own. The corpus is writing a human wrote and published, so a rule
+that fires across it has a threshold that does not match reality. The target is a hit rate below 5%.
+
+It **never rewrites the config**. A calibration is an answer about one corpus, not a truth — the
+proposal is printed and the decision stays with the person.
+
+It earned its place the day it landed by reporting that `bold-density` missed the target *at every
+threshold*, and that the rule itself was likely wrong. Which it was:
+
+### `bold-density` counts density, not occurrences (#44)
+
+```
+  1095 chars / 2 bold   →  "few" by count      actually 1 per 548 chars (sparse)
+   557 chars / 9 bold   →  "many" by count     actually 1 per  62 chars (dense)
+```
+
+Counting per section means a long section is always guilty — the opposite of what the reader
+perceives. The rule had been named `bold-density` from the start; the implementation was the thing
+that was wrong.
+
+It now measures spans per 1000 characters (`strict 10 / normal 20 / relaxed 40`). Sections under 200
+characters are not measured at all, because 1 span in 43 characters computes to "23 per 1000" and the
+density becomes noise. Findings on the corpus: 32 → 1.
+
+### Sentence length measured as the reader reads it (#46)
+
+`max-sentence-length` was 38 of 44 findings on the corpus. Reading them showed most were not long
+sentences at all. Three separate causes:
+
+**Masked whitespace was counted.** Non-prose is covered with spaces of the same length, so that
+offsets stay aligned. Counting those spaces made a sentence holding one URL measure 245 characters.
+The reader reads 104. The measurement lived in four call sites and is now in `measure.ts`.
+
+**Fragments were merged across line breaks.** The merge exists to close mis-splits *within* a line
+(`Dr. 田中`). Crossing a line break joined the English and the Japanese halves of a blockquote into
+one 134-character "sentence".
+
+**Blockquotes were counted as the writer's own prose.** They are masked now, alongside code and
+tables. chaff can say "split this in two", and nobody can do that to a quotation. Pointing at text
+the writer cannot change leaves them nowhere to go. The longest "sentences" in the corpus were
+English quotations measured against the Japanese threshold.
+
+Findings: 44 → 17, `max-sentence-length` 38 → 10. What remains is 104–128 characters and genuinely
+long.
+
+### `technical` — a specification is not a blog post (#47)
+
+chaff's own specs were detected as `blog/tech`. The original nlh spec had a `technical` profile;
+chaff had only business and blog.
+
+A spec or a README is written to prevent misunderstanding, not to be read for pleasure. It needs no
+hook, no closing and no rhythm: `padded-intro`, `closing-cliche`, `sentence-rhythm` and
+`empty-conclusion` do not run. `max-sentence-length`, `heading-echo`, `bold-density`,
+`empty-intensifier` and `repeated-sentence-head` do. Ambiguity is worse in a specification than
+anywhere else.
+
+<!-- stet: empty-intensifier — quoting the phrase the rule catches -->
+
+And "extremely important" in a spec is emptier than it is in an article.
+
+Detected from `README.md`, `*-spec.md`, `spec/` and `docs/`.
+
+### Breaking
+
+- `docs/` is detected as `technical/readme` instead of `blog/tech`. A team keeping user-facing
+  articles in `docs/` will find the blog rules stop running there.
+- `bold-density` thresholds changed meaning: occurrences per section → spans per 1000 characters.
+  Any numeric value set by hand has to be re-read.
+
+### Not in this release
+
+Per-genre thresholds are still missing. Genre selects only *which* rules run, not their numbers,
+where spec §9 gives a profile its own thresholds. Also absent: L3 part-of-speech rules, and the
+conversion of `checks.yaml`'s natural-language `look_at` into a real candidate filter.
+
 ## 0.1.0 — 2026-09-12
 
 `chaff test` — the half of the tool that reads meaning. 0.0.1 could only measure what a machine can
