@@ -292,6 +292,25 @@ OPENAI_API_KEY=sk-...
 **Claude のサブスクリプション（Claude Code の Pro / Max）は使えません。** API は別勘定で、
 認証情報の置き場も違います（`~/.claude` と `~/.config/anthropic`）。
 
+## 指摘を PR の行に出す
+
+```bash
+npx chaffjs . --sarif report/chaff.sarif
+```
+
+SARIF 2.1.0 で書き出します。GitHub の code scanning に上げると、**PR の変更行に直接出ます**。
+
+```yaml
+- name: Upload SARIF to Code Scanning
+  uses: github/codeql-action/upload-sarif@v4
+  with:
+    sarif_file: report/chaff.sarif
+    category: chaff-prose
+```
+
+ログの中の指摘は読みに行かないと見えませんが、行の上の指摘は書いた本人の目の前にあります。
+「なぜ直すのか」と「どう直すのか」も一緒に上げるので、指摘を開けば直しかたまで読めます。
+
 ## 何が AI に送られるかを、送る前に見る
 
 意味を読む検査（`chaff test`）は文書全体を送りません。決定的な絞り込みを通した分だけを送ります。
