@@ -19,9 +19,12 @@ interface Unused {
   readonly dependencies: readonly string[];
 }
 
-const stringsOf = (value: unknown): readonly string[] => (Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : []);
-
-/** knip's JSON reporter emits one issue object per file, with named buckets inside it. */
+/**
+ * knip's JSON reporter emits one issue object per file, with named buckets inside it. A bucket
+ * entry is either a bare string or `{ name }`, and which one varies by bucket: `files` uses the
+ * object form. Reading only strings is why `unused_files` was zero across all 49 repositories of
+ * the calibration corpus while knip itself reported plenty.
+ */
 const namesIn = (issue: Record<string, unknown>, bucket: string): readonly string[] => {
   const entries = issue[bucket];
   if (!Array.isArray(entries)) return [];
@@ -38,13 +41,25 @@ const issuesIn = (parsed: unknown): unknown => {
   return isRecord(parsed) ? parsed["issues"] : undefined;
 };
 
+/**
+ * knip's view of a repository is not scoria's. Run without a config on a monorepo it walks
+ * everything — generated TypeDoc bundles, VitePress config, docs assets — and calls it unused:
+ * 573 files in graphai, against 450 that scoria classifies as source at all. Only what scoria
+ * itself measures can score, or the metric reports the size of the untracked output directory.
+ */
+const withinScope = (unused: Unused, known: ReadonlySet<string>): Unused => ({
+  files: unused.files.filter((file) => known.has(file)),
+  exports: unused.exports.filter((entry) => known.has(entry.file)),
+  dependencies: unused.dependencies,
+});
+
 const parse = (stdout: string): Unused | undefined => {
   try {
     const issues = issuesIn(JSON.parse(stdout));
     if (!Array.isArray(issues)) return undefined;
     const records = issues.filter(isRecord);
     return {
-      files: records.flatMap((issue) => stringsOf(issue["files"])),
+      files: records.flatMap((issue) => namesIn(issue, "files")),
       exports: records.flatMap((issue) => {
         const file = typeof issue["file"] === "string" ? issue["file"] : "";
         return namesIn(issue, "exports").map((name) => ({ file, name }));
@@ -84,8 +99,9 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const bin = resolveBin("knip", "knip");
   if (bin === undefined) return skippedResult("knip", "knip is not installed alongside scoria", started);
   const result = await ctx.execNode(bin, ["--reporter", "json", "--no-progress", "--no-exit-code"]);
-  const unused = parse(result.stdout);
-  if (unused === undefined) return skippedResult("knip", "knip produced no readable report", started);
+  const parsed = parse(result.stdout);
+  if (parsed === undefined) return skippedResult("knip", "knip produced no readable report", started);
+  const unused = withinScope(parsed, new Set(ctx.files.map((file) => file.path)));
   return {
     probe: "knip",
     status: { kind: "ok" },
