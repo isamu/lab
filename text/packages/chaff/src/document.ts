@@ -49,8 +49,37 @@ const linkChrome = (node: Node): Span[] => {
   ];
 };
 
-const collectMasks = (root: Node): Span[] => {
-  const spans: Span[] = [];
+/**
+ * 強調の記号（`**` `*` `_` `~~`）だけを覆う。囲まれた文字は本文なので残す。
+ *
+ * 残すと解析器が `**。` を 1 語の名詞として拾い、文の終わりが消える。
+ * 実文書で「文末が名詞」の誤検知を追って見つけた。文長にも同じだけ効いている。
+ */
+const MARKER = /^[*_~]+/u;
+
+const emphasisChrome = (node: Node, source: string): Span[] => {
+  const whole = spanOf(node);
+  if (whole === undefined) return [];
+  const width = MARKER.exec(source.slice(whole.start, whole.end))?.[0].length ?? 0;
+  if (width === 0) return [];
+  return [
+    { start: whole.start, end: whole.start + width },
+    { start: whole.end - width, end: whole.end },
+  ];
+};
+
+const EMPHASIS = new Set(["strong", "emphasis", "delete"]);
+
+/**
+ * `:::note` `:::` のようなディレクティブ。Zenn・Docusaurus・VitePress が使う記法で、
+ * 標準の Markdown には無いため段落として解析される。囲みの指定であって文章ではない。
+ */
+const DIRECTIVE = /^:::[^\n]*/gmu;
+
+const directiveSpans = (source: string): Span[] => [...source.matchAll(DIRECTIVE)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+
+const collectMasks = (root: Node, source: string): Span[] => {
+  const spans: Span[] = [...directiveSpans(source)];
   walk(root, (node) => {
     if (node.type === "link" || node.type === "linkReference") {
       spans.push(...linkChrome(node));
@@ -59,6 +88,14 @@ const collectMasks = (root: Node): Span[] => {
     if (!NOT_PROSE.has(node.type) && node.type !== "heading") return;
     const span = spanOf(node);
     if (span !== undefined) spans.push(span);
+  });
+  return spans;
+};
+
+const emphasisSpans = (root: Node, source: string): Span[] => {
+  const spans: Span[] = [];
+  walk(root, (node) => {
+    if (EMPHASIS.has(node.type)) spans.push(...emphasisChrome(node, source));
   });
   return spans;
 };
@@ -107,10 +144,10 @@ const strongSpans = (root: Node, masked: readonly Span[]): Span[] => {
 
 const within = (span: Span, from: number, to: number): boolean => span.start >= from && span.start < to;
 
-const paragraphSpans = (root: Node): Span[] => {
+const spansOfType = (root: Node, type: string): Span[] => {
   const found: Span[] = [];
   walk(root, (node) => {
-    if (node.type !== "paragraph") return;
+    if (node.type !== type) return;
     const span = spanOf(node);
     if (span !== undefined) found.push(span);
   });
@@ -158,16 +195,19 @@ const sectionsOf = (headings: readonly Heading[], sentences: readonly Sentence[]
 
 export const buildDocument = (path: string, source: string, adapter: LanguageAdapter): ProseDocument => {
   const root = parse(source);
-  const masked = collectMasks(root);
+  // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
+  // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
+  const blocks = collectMasks(root, source);
+  const masked = [...blocks, ...emphasisSpans(root, source)];
   const prose = maskSpans(source, masked);
-  const sentences = sentencesOf(prose, paragraphSpans(root), adapter);
+  const sentences = sentencesOf(prose, spansOfType(root, "paragraph"), adapter);
   return {
     path,
     source,
     language: adapter.id,
     lengthUnit: adapter.capabilities.lengthUnit,
     capabilities: adapter.capabilities,
-    sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root, masked), source.length),
+    sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root, blocks), source.length),
     sentences,
     lexicons: adapter.lexicons,
   };
