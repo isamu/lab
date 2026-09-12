@@ -113,11 +113,19 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # A refspec whose source does not exist is noisy on stderr and means only "first run".
-          git fetch origin badges:badges 2>/dev/null || git switch --orphan badges
-          git switch badges
+          # An orphan branch has no ref until its first commit, so it cannot be switched to by
+          # name — only the fetched case needs the second switch. A refspec whose source does not
+          # exist is also noisy on stderr, and means only "first run".
+          if git fetch origin badges:badges 2>/dev/null; then
+            git switch badges
+          else
+            git switch --orphan badges
+          fi
           cp ../badges/scoria-coding.json ../badges/scoria-text.json .
           git add scoria-coding.json scoria-text.json
-          git diff --cached --quiet && echo "badges unchanged" && exit 0
+          if git diff --cached --quiet; then
+            echo "badges unchanged"
+            exit 0
+          fi
           git commit -m "chore: scoria badges for ${GITHUB_SHA}"
           git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" badges
