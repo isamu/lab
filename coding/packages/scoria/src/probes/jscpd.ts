@@ -84,7 +84,8 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const bin = resolveBin("jscpd", "jscpd");
   if (bin === undefined) return skippedResult("jscpd", "jscpd is not installed alongside scoria", started);
   const out = join(tmpdir(), `scoria-jscpd-${String(process.pid)}-${String(Date.now())}`);
-  const args = [ctx.root, "--silent", "--min-tokens", MIN_TOKENS, "--format", FORMATS, "--ignore", IGNORED, "--reporters", "json", "--output", out];
+  const ignored = [IGNORED, ...ctx.excluded.map((dir) => `${dir}/**`)].join(",");
+  const args = [ctx.root, "--silent", "--min-tokens", MIN_TOKENS, "--format", FORMATS, "--ignore", ignored, "--reporters", "json", "--output", out];
   const execution = await ctx.execNode(bin, args);
   const text = await ctx.readText(join(out, "jscpd-report.json"));
   const parsed = text === undefined ? undefined : parse(text);

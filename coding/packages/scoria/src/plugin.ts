@@ -142,6 +142,12 @@ export interface ProbeContext {
   readonly exec: Exec;
   readonly execNode: ExecNode;
   readonly readText: ReadText;
+  /**
+   * Directories inside `root` that belong to a nested project, and so are not this one's extent
+   * (`repo.json` §9.4). Relative to `root`, POSIX-separated. A probe that drives a tool over the
+   * whole directory has to pass these on, or it measures the nested project's files as well.
+   */
+  readonly excluded: readonly string[];
 }
 
 export interface Probe {

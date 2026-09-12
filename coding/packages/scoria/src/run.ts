@@ -136,12 +136,16 @@ export interface Assay {
   readonly loaded: LoadedConfig;
 }
 
-export const assay = async (target: string, probes: readonly Probe[] = PROBES): Promise<Assay> => {
+export const assay = async (target: string, probes: readonly Probe[] = PROBES, excluded: readonly string[] = []): Promise<Assay> => {
   const root = resolve(target);
   const loaded = await loadConfig(root);
   const rubrics = await loadRubrics(rubricDirectory());
   assertMetricsAreDeclared(rubrics, new Set(probes.flatMap((probe) => probe.declares)));
-  const files = await collectFiles(root, resolveStacks(loaded.config.stacks));
+  const files = await collectFiles(
+    root,
+    resolveStacks(loaded.config.stacks),
+    excluded.map((dir) => join(root, dir)),
+  );
   const configFiles = await collectConfigFiles(root);
   const project = {
     typescript: isTypeScriptProject(await readPackageJson(root)),
@@ -150,7 +154,7 @@ export const assay = async (target: string, probes: readonly Probe[] = PROBES): 
     stacks: loaded.config.stacks,
   };
   const exec = makeExec(root);
-  const ctx: ProbeContext = { root, files, configFiles, project, exec, execNode: makeExecNode(exec), readText };
+  const ctx: ProbeContext = { root, files, configFiles, project, exec, execNode: makeExecNode(exec), readText, excluded };
   const results = await Promise.all(probes.map((probe) => runProbe(probe, ctx)));
   return {
     report: buildReport(root, files, results, rubrics, { profile: loaded.config.profile, stacks: loaded.config.stacks }, probes),

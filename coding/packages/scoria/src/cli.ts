@@ -1,6 +1,6 @@
 import { basename, dirname, relative, resolve } from "node:path";
 
-import { assay } from "./run.ts";
+import { assay, PROBES } from "./run.ts";
 import { detectConfig, loadConfig, writeConfig, CONFIG_FILENAME, type LoadedConfig, type Mode, type ScoriaConfig } from "./config.ts";
 import { isLang, messagesFor, type Lang } from "./messages.ts";
 import type { Report } from "./report.ts";
@@ -14,7 +14,7 @@ import { applyFixes, diagnose, renderDoctor } from "./doctor.ts";
 import { changedTools, readBaseline, writeBaseline } from "./baseline.ts";
 import { diffReports, type ReportDiff } from "./diff.ts";
 import { judge, type Verdict } from "./gate.ts";
-import { expandTargets, NoTargetsMatched } from "./targets.ts";
+import { nestedWithin, resolveTargets, type TargetSet } from "./targets.ts";
 
 type Command = "assay" | "init" | "doctor" | "baseline";
 
@@ -129,9 +129,9 @@ const gateOf = (mode: Mode, baseline: Report | undefined, report: Report): Verdi
  * One report per directory the config names, each measured as if scoria had been run inside it.
  * Only the invocation root's `targets` apply — a config inside a target does not nominate more.
  */
-const targetsOf = async (options: Options): Promise<readonly string[]> => {
+const targetsOf = async (options: Options): Promise<TargetSet> => {
   const { config } = await loadConfig(options.target);
-  return expandTargets(resolve(options.target), config.targets);
+  return resolveTargets(resolve(options.target), config.targets);
 };
 
 /** With several targets, one output path would have each overwrite the last. */
@@ -141,8 +141,11 @@ const perTarget = (path: string | undefined, target: string, many: boolean): str
   return cut <= 0 ? `${path}.${basename(target)}` : `${path.slice(0, cut)}.${basename(target)}${path.slice(cut)}`;
 };
 
-const measureOne = async (options: Options, target: string, many: boolean): Promise<void> => {
-  const { report, loaded } = await assay(target);
+const measureOne = async (options: Options, target: string, siblings: readonly string[]): Promise<void> => {
+  const many = siblings.length > 1;
+  // repo.json §9.4: a project's extent is its directory minus the directories of nested projects.
+  const excluded = nestedWithin(target, siblings).map((nested) => relative(target, nested));
+  const { report, loaded } = await assay(target, PROBES, excluded);
   const lang = options.lang ?? loaded.config.lang;
   if (options.command === "baseline") {
     const path = await writeBaseline(target, report);
@@ -164,23 +167,21 @@ export const main = async (argv: readonly string[]): Promise<void> => {
     process.stdout.write(renderDoctor(diagnosis, applied, options.lang ?? "en"));
     return;
   }
-  const targets = await resolvedTargets(options);
-  if (targets === undefined) return;
-  for (const target of targets) {
-    if (targets.length > 1 && !options.json) process.stdout.write(`\n${messagesFor(options.lang ?? "en").measuring(displayPath(target))}\n`);
-    await measureOne(options, target, targets.length > 1);
+  const messages = messagesFor(options.lang ?? "en");
+  const { paths, problems } = await targetsOf(options);
+  // repo.json §11.3: what was dropped is reported. Silence reads as "nothing was dropped".
+  if (problems.length > 0) {
+    process.stderr.write(`${messages.targetProblems}\n`);
+    problems.forEach((problem) => process.stderr.write(`  ${messages.targetProblem(problem.kind, problem.pattern)}\n`));
   }
-};
-
-/** A pattern matching nothing is a typo. Measuring zero directories and exiting 0 hides it. */
-const resolvedTargets = async (options: Options): Promise<readonly string[] | undefined> => {
-  try {
-    return await targetsOf(options);
-  } catch (cause) {
-    if (!(cause instanceof NoTargetsMatched)) throw cause;
-    process.stderr.write(`${messagesFor(options.lang ?? "en").noTargetsMatched(cause.patterns.join(", "))}\n`);
+  if (paths.length === 0) {
+    process.stderr.write(`${messages.noTargetsMatched(problems.map((problem) => problem.pattern).join(", "))}\n`);
     process.exitCode = 1;
-    return undefined;
+    return;
+  }
+  for (const target of paths) {
+    if (paths.length > 1 && !options.json) process.stdout.write(`\n${messages.measuring(displayPath(target))}\n`);
+    await measureOne(options, target, paths);
   }
 };
 

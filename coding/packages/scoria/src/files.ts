@@ -7,14 +7,14 @@ const MAX_BYTES = 2_000_000;
 
 const toPosix = (value: string): string => value.split(sep).join("/");
 
-const walk = async (root: string, directory: string, found: string[]): Promise<void> => {
+const walk = async (root: string, directory: string, found: string[], exclude: ReadonlySet<string>): Promise<void> => {
   const entries = await readdir(directory, { withFileTypes: true });
   await Promise.all(
     entries.map(async (entry) => {
       const full = join(directory, entry.name);
       if (entry.isDirectory()) {
-        if (entry.name === "node_modules" || entry.name.startsWith(".")) return;
-        await walk(root, full, found);
+        if (entry.name === "node_modules" || entry.name.startsWith(".") || exclude.has(full)) return;
+        await walk(root, full, found, exclude);
         return;
       }
       if (entry.isFile()) found.push(toPosix(relative(root, full)));
@@ -36,10 +36,10 @@ const readLines = async (root: string, relativePath: string): Promise<readonly s
  * Because a probe never receives a raw path, a kind check that bypasses classify cannot be
  * written (spec §8).
  */
-export const collectFiles = async (root: string, stacks: readonly StackAdapter[]): Promise<readonly SourceFile[]> => {
+export const collectFiles = async (root: string, stacks: readonly StackAdapter[], exclude: readonly string[] = []): Promise<readonly SourceFile[]> => {
   const classify = composeClassify(stacks);
   const paths: string[] = [];
-  await walk(root, root, paths);
+  await walk(root, root, paths, new Set(exclude));
   const candidates = paths.map((path) => ({ path, kind: classify(path) })).filter((file) => file.kind !== "ignored");
   const loaded = await Promise.all(
     candidates.map(async ({ path, kind }) => {
