@@ -152,15 +152,43 @@ standard behind it is defensible.
 - **`test-presence.test_to_source_ratio`: 18 zero, 15 full marks, little in between.** Repositories
   either have tests or do not. That bimodality looks like the world rather than the scale.
 
-## What to do about it
+## Acting on Finding 1: rates, where rates help
 
-Findings 1 and 2 are not scale problems and cannot be fixed by moving anchors:
+The obvious answer to a size-dependent count is to score a rate instead. Measured one metric at a
+time, that turns out to be true of half of them:
 
-1. The size-dependent metrics should be scored as **rates** — a share of files, or a count per
-   thousand lines — the way `suppression-scan` and `oxlint` already are. The counts stay as
-   reported metrics; what changes is which of them a rubric weighs.
-2. `coverage` needs either a wider search for a report, or an honest statement in the README that
-   it will almost never fire.
+| metric                      | ρ as a count | ρ as a share of the file count |
+| --------------------------- | -----------: | -----------------------------: |
+| `knip.unused_files`         |        +0.30 |                      **−0.07** |
+| `knip.unused_exports`       |        +0.63 |                      **+0.30** |
+| `file-shape.god_file_count` |        +0.68 |                          +0.58 |
+| `circular.cycle_count`      |        +0.33 |                          +0.33 |
+
+For the first two the count was the problem, and the share fixes it. For the other two, dividing by
+the file count leaves the correlation where it was — **the correlation is a property of the corpus,
+not of the metric.** Larger codebases here really do carry proportionally more oversized files and
+more tangles. Normalising those would hide a finding rather than correct a measurement, so they
+stay counts.
+
+So `architecture` now weighs `knip.unused_export_ratio` and `knip.unused_file_ratio`. Measuring the
+whole corpus again with them:
+
+| dimension             | ρ before |   ρ after | median before | median after |
+| --------------------- | -------: | --------: | ------------: | -----------: |
+| `architecture`        |    −0.48 | **−0.19** |            86 |           75 |
+| `readability`         |    −0.53 |     −0.53 |            71 |           71 |
+| every other dimension |          | unchanged |               |    unchanged |
+
+`architecture` stops mostly measuring size. Its median falls eleven points, because a count with a
+fixed anchor was generous to small repositories — a repository with four unused files out of six
+scored 80, and now scores 0.
+
+`readability` is left as it was. Its −0.53 is the corpus, not the scale.
+
+## Still to do: Finding 2
+
+`coverage` needs either a wider search for a report, or an honest statement in the README that it
+will almost never fire. Untouched here.
 
 Both are behaviour changes and belong in their own pull requests, argued against this page.
 
