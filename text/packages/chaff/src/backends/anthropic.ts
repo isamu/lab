@@ -5,7 +5,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { toFailure } from "./types.ts";
 import type { Failure, Judge, Prompt } from "./types.ts";
 
-export type AnthropicResponse = { readonly content: readonly { readonly type: string; readonly text?: string | undefined }[] };
+type AnthropicResponse = { readonly content: readonly { readonly type: string; readonly text?: string | undefined }[] };
 
 /** judge が使うのは messages.create だけ。最小の面だけを要求する。テストで差し替えられる。 */
 export type AnthropicClient = { readonly messages: { readonly create: (params: Anthropic.MessageCreateParamsNonStreaming) => Promise<AnthropicResponse> } };
@@ -26,7 +26,7 @@ export const DEFAULT_MODEL = "claude-opus-5";
  */
 const ENV_KEYS = ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_IDENTITY_TOKEN", "ANTHROPIC_IDENTITY_TOKEN_FILE"];
 
-export const configDir = (): string => process.env["ANTHROPIC_CONFIG_DIR"] ?? join(homedir(), ".config", "anthropic");
+const configDir = (): string => process.env["ANTHROPIC_CONFIG_DIR"] ?? join(homedir(), ".config", "anthropic");
 
 export const hasCredentials = (profileDir: string = configDir()): boolean =>
   ENV_KEYS.some((name) => (process.env[name] ?? "").length > 0) || existsSync(profileDir);

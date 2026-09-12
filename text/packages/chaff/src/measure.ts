@@ -13,7 +13,7 @@ export const proseText = (sentence: Sentence): string => sentence.text.replace(/
 
 export const charLength = (sentence: Sentence): number => sentence.text.replace(/\s+/gu, "").length;
 
-export const wordLength = (sentence: Sentence): number =>
+const wordLength = (sentence: Sentence): number =>
   proseText(sentence)
     .split(" ")
     .filter((word) => word.length > 0).length;

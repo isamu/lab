@@ -12,7 +12,7 @@ export type Judge = (prompt: Prompt) => Promise<string>;
 
 export type BackendName = "anthropic" | "openai";
 
-export const BACKENDS: readonly BackendName[] = ["anthropic", "openai"];
+const BACKENDS: readonly BackendName[] = ["anthropic", "openai"];
 
 export const isBackend = (value: unknown): value is BackendName => BACKENDS.some((name) => name === value);
 

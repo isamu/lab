@@ -29,7 +29,7 @@ export type Config = {
 
 /** 判定の質が誤検知に直結するので、既定は最上位のモデル。cost は絞り込みで削る。spec §14。 */
 /** 既定は Anthropic。openai にすると判定役だけが替わり、rule も判定の形も変わらない。 */
-export const DEFAULT_BACKEND: BackendName = "anthropic";
+const DEFAULT_BACKEND: BackendName = "anthropic";
 
 export const EMPTY: Config = {
   genre: undefined,

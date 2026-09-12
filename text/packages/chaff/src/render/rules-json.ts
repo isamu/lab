@@ -1,6 +1,6 @@
 import { definedLevels, resolve } from "../levels.ts";
 import type { Config } from "../config/load.ts";
-import type { Level, RuleDefinition } from "../plugin.ts";
+import type { RuleDefinition } from "../plugin.ts";
 
 const now = (rule: RuleDefinition, config: Config, genre: string): Record<string, unknown> => {
   const explicit = config.rules[rule.id];
@@ -53,5 +53,3 @@ export const rulesJson = (rules: readonly RuleDefinition[], config: Config, lang
     null,
     2,
   );
-
-export const levelsForCli = (): readonly Level[] => ["strict", "normal", "relaxed", "off"];

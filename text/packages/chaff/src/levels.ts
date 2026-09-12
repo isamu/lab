@@ -1,6 +1,6 @@
 import type { Level, LevelTable, RuleDefinition } from "./plugin.ts";
 
-export const LEVELS: readonly Level[] = ["strict", "normal", "relaxed", "off"];
+const LEVELS: readonly Level[] = ["strict", "normal", "relaxed", "off"];
 
 export const isLevel = (value: unknown): value is Level => typeof value === "string" && LEVELS.some((level) => level === value);
 
