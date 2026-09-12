@@ -81,7 +81,7 @@ export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], s
       const detector = DETECTORS[rule.how_to_find];
       if (detector === undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: `検出器 ${rule.how_to_find} がないため` }] };
       const options = {
-        limit: resolve(rule, level).limit,
+        limit: resolve(rule, level, genre).limit,
         lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
         where: rule.where,
       };

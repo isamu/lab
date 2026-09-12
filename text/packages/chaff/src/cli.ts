@@ -179,7 +179,7 @@ const explain = (ruleId: string | undefined): number => {
     return 1;
   }
   const current = config.rules[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
-  console.log(renderExplain(rule, current, language, unitOf(rule.id, language)));
+  console.log(renderExplain(rule, current, language, unitOf(rule.id, language), config.genre));
   return 0;
 };
 
