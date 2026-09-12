@@ -30,6 +30,7 @@ const USAGE = `chaff — 文章の読みにくいところを見つけます。�
   chaff <file|dir|glob>...       検査する（設定も API key も要りません）
   chaff .                        この場所の Markdown を全部
   chaff test <file|dir>...       意味を読む検査も動かす（API key が要ります）
+                                 判定役は chaff.yaml の ai_backend で選びます
   chaff init                     chaff.yaml を作る
   chaff eval <dir>               手元の文書で閾値を測り直す
   chaff explain <rule>           そのルールの意図と根拠を読む

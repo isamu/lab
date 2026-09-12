@@ -267,6 +267,23 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 
 後ろの 2 本は**どちらが正しいかを決めません**。1 つの文書で揃っているかだけを見て、少数派を指摘します。
 
+## 判定役は Anthropic でも OpenAI でも
+
+意味を読む検査の判定役は差し替えられます。**rule も、返させる形も変わりません。**
+
+```yaml
+ai_backend: openai     # 既定は anthropic
+ai_model: gpt-5
+```
+
+| backend | 認証 | 既定モデル |
+| --- | --- | --- |
+| `anthropic` | `ANTHROPIC_API_KEY`、または `ant auth login` | `claude-opus-5` |
+| `openai` | `OPENAI_API_KEY` | `gpt-5` |
+
+**Claude のサブスクリプション（Claude Code の Pro / Max）は使えません。** API は別勘定で、
+認証情報の置き場も違います（`~/.claude` と `~/.config/anthropic`）。
+
 ## 何が AI に送られるかを、送る前に見る
 
 意味を読む検査（`chaff test`）は文書全体を送りません。決定的な絞り込みを通した分だけを送ります。

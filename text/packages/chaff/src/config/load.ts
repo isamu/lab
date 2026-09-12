@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { parse } from "yaml";
 import { isLevel } from "../levels.ts";
+import { defaultModel } from "../judge.ts";
+import { isBackend, type BackendName } from "../backends/types.ts";
 import type { Level } from "../plugin.ts";
 import type { PathRule } from "./by-path.ts";
 
@@ -9,6 +11,7 @@ export const CONFIG_FILE = "chaff.yaml";
 
 export type Config = {
   readonly genre: string | undefined;
+  readonly aiBackend: BackendName;
   readonly language: string | undefined;
   readonly rules: Readonly<Record<string, Level>>;
   readonly experimental: boolean;
@@ -21,7 +24,8 @@ export type Config = {
 };
 
 /** 判定の質が誤検知に直結するので、既定は最上位のモデル。cost は絞り込みで削る。spec §14。 */
-export const DEFAULT_MODEL = "claude-opus-5";
+/** 既定は Anthropic。openai にすると判定役だけが替わり、rule も判定の形も変わらない。 */
+export const DEFAULT_BACKEND: BackendName = "anthropic";
 
 export const EMPTY: Config = {
   genre: undefined,
@@ -29,7 +33,8 @@ export const EMPTY: Config = {
   rules: {},
   experimental: false,
   path: undefined,
-  aiModel: DEFAULT_MODEL,
+  aiBackend: DEFAULT_BACKEND,
+  aiModel: defaultModel(DEFAULT_BACKEND),
   confidenceThreshold: 0.7,
   byPath: [],
   baseDir: process.cwd(),
@@ -64,13 +69,16 @@ const byPathOf = (raw: unknown): PathRule[] => (Array.isArray(raw) ? raw.map(toP
 export const loadConfig = (path: string): Config => {
   const raw: unknown = parse(readFileSync(path, "utf8"));
   if (!isRecord(raw)) return { ...EMPTY, path };
+  const declared: unknown = raw["ai_backend"];
+  const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;
   return {
     genre: str(raw["genre"]),
     language: str(raw["language"]),
     rules: rulesOf(raw["rules"]),
     experimental: raw["experimental"] === true,
     path,
-    aiModel: str(raw["ai_model"]) ?? DEFAULT_MODEL,
+    aiBackend: backend,
+    aiModel: str(raw["ai_model"]) ?? defaultModel(backend),
     confidenceThreshold: typeof raw["confidence_threshold"] === "number" ? raw["confidence_threshold"] : 0.7,
     byPath: byPathOf(raw["by_path"]),
     baseDir: dirname(path),

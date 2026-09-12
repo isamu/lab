@@ -7,7 +7,7 @@ import { guessLanguage } from "../detect.ts";
 import { collectTargets } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
 import { CHECKS_FILE, loadChecks, type UserCheck } from "../checks.ts";
-import { CACHE_DIR, hasCredentials, isAuthFailure } from "../judge.ts";
+import { CACHE_DIR, credentialHint, hasCredentials, isAuthFailure } from "../judge.ts";
 import { planSemantic, runSemantic } from "../run-semantic.ts";
 import { MACHINE_BANNER, renderPlan, renderSemantic } from "../render/semantic.ts";
 import type { Config } from "../config/load.ts";
@@ -54,7 +54,8 @@ const dryRun = async (paths: readonly string[], config: Config, checks: readonly
   );
   plans.forEach(({ path, jobs, sentences }) => console.log(renderPlan(path, jobs, sentences).join("\n")));
   const total = plans.reduce((sum, plan) => sum + plan.jobs.reduce((count, job) => count + job.candidates.length, 0), 0);
-  console.log(["", "─".repeat(60), "", `  合計 ${total} 箇所を送ります。--dry-run なので API は呼んでいません。`, ""].join("\n"));
+  const where = `${config.aiBackend} / ${config.aiModel}（認証${hasCredentials(config.aiBackend) ? "あり" : "なし"}）`;
+  console.log(["", "─".repeat(60), "", `  合計 ${total} 箇所を送ります。--dry-run なので API は呼んでいません。`, `  送り先: ${where}`, ""].join("\n"));
 };
 
 /**
@@ -76,8 +77,8 @@ export const runTest = async (targets: readonly string[], argv: readonly string[
   const machineOnly = results.some((result) => result.outcome.findings.some((finding) => finding.severity === "error")) ? 1 : 0;
   const noCredentials = [
     "",
-    "  意味を読む検査は動かしていません。Anthropic の認証情報がありません。",
-    "  ANTHROPIC_API_KEY を設定するか、ant auth login を実行してください。",
+    `  意味を読む検査は動かしていません。${config.aiBackend} の認証情報がありません。`,
+    `  ${credentialHint(config.aiBackend)}`,
     "  機械による判定はすべて動いています。",
     "",
   ].join("\n");
@@ -86,13 +87,18 @@ export const runTest = async (targets: readonly string[], argv: readonly string[
     return machineOnly;
   }
   // 呼んでから落ちるのを待たない。認証が無いときの SDK の例外は型で判別できない。
-  if (!hasCredentials()) {
+  if (!hasCredentials(config.aiBackend)) {
     console.log(noCredentials);
     return machineOnly;
   }
-  const options = { model: config.aiModel, cacheDir: join(process.cwd(), CACHE_DIR), confidenceThreshold: config.confidenceThreshold };
+  const options = {
+    model: config.aiModel,
+    backend: config.aiBackend,
+    cacheDir: join(process.cwd(), CACHE_DIR),
+    confidenceThreshold: config.confidenceThreshold,
+  };
   const semantic = await judgeAll(paths, config, checks, options, resolveGenre).catch((error: unknown) => {
-    if (!isAuthFailure(error)) throw error;
+    if (!isAuthFailure(config.aiBackend, error)) throw error;
     console.log(noCredentials);
     return undefined;
   });

@@ -47,6 +47,8 @@ word_lists:
 
 # 意味を見る検査。API key が無ければ自動で skip されます。
 ai_checks: true
+# 判定役。anthropic（既定）か openai。rule も判定の形も変わりません。
+ai_backend: anthropic
 ai_model: claude-sonnet-5
 
 # 抑制コメント <!-- stet: ... --> に理由を必須にする

@@ -1012,6 +1012,38 @@ eval と calibration の専用経路としてなら価値があるが、lint の
 
 最終目標は `npx chaffjs lint article.md` の一発実行。
 
+### 16.4 判定役は差し替えられる
+
+L4 の判定役は provider ごとに違うが、**違うのは要求の包みかただけ**である。
+
+```
+共通   決まり（rubric）/ 候補 / JSON schema / 確からしさの丸め / キャッシュ
+別     どの API に、どういう形で渡すか
+```
+
+`{violated, confidence, reason}` を返させる JSON schema は provider をまたいで同じものを使う。
+**返させる形が provider で変わると、provider を替えたときに判定の意味まで変わる。**
+
+| backend | 構造化出力 | 認証 | 既定モデル |
+| --- | --- | --- | --- |
+| `anthropic`（既定） | `output_config.format` | `ANTHROPIC_API_KEY` / `ant auth login` | `claude-opus-5` |
+| `openai` | `response_format.json_schema` | `OPENAI_API_KEY` | `gpt-5` |
+
+```yaml
+ai_backend: openai
+ai_model: gpt-5
+```
+
+**Claude のサブスクリプション（Claude Code の Pro / Max）は使えない。** SDK が解決するのは
+API key / auth token / Console の OAuth プロファイル（`~/.config/anthropic`）/ OIDC federation の
+4 つで、Claude Code の認証情報（`~/.claude`）はそのいずれでもない。API は別勘定である。
+
+`claude` CLI を判定役にすれば購読で動くが、**1 判定に 46,906 トークンかかる**（実測）。
+Claude Code は自前の system prompt とツール定義を毎回積むため、本文 2 トークンの判定に
+その全部が乗る。API 経由の 1 件およそ 500 トークンに対して 100 倍近い。採らない。
+
+---
+
 ### 17.1 予算
 
 | 項目 | 目標 |
@@ -1111,6 +1143,7 @@ word_lists:
   - ./lexicons/team.yaml
 
 ai_checks: true                # L4。API key が無ければ自動で skip
+ai_backend: anthropic    # anthropic（既定）か openai
 ai_model: claude-sonnet-5
 
 stet_needs_reason: true
