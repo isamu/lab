@@ -579,20 +579,20 @@ by_genre:
 | --- | --- | --- | --- |
 | `bold-density` | 1 セクションあたりの強調数 | 両方 | warning |
 | `heading-echo` | 見出しの character trigram が直後の文に現れた割合 | 両方 | warning |
-| `section-length-uniformity` | セクション長の変動係数 | blog | info |
+| `section-length-uniformity` ✅ | セクション長の変動係数 | blog | info |
 | `sentence-rhythm` | 文長の変動係数の下限 | blog | warning |
-| `paragraph-length-variance` | 段落長の変動係数 | blog | info |
+| `paragraph-length-variance` ✅ | 段落長の変動係数 | blog | info |
 | `repeated-sentence-head` | 同じ先頭 N 文字で始まる文の連続 | 両方 | warning |
 | `ngram-repetition` | character n-gram の反復 | 両方 | warning |
-| `rule-of-three` | 3 項目の箇条書きが占める割合 | blog | info |
+| `rule-of-three` ✅ | 3 項目の箇条書きが占める割合 | blog | info |
 | `concrete-evidence-density` | 数値・コード・リンク・引用の密度 | blog | warning |
 | `max-sentence-length` | 文長 | 両方 | warning |
-| `max-paragraph-length` | 段落あたり文数 | 両方 | warning |
+| `max-paragraph-length` ✅ | 段落あたり文数 | 両方 | warning |
 | `required-sections` | 必須見出しの有無 | business | error |
-| `preamble-length` | 本題前の段落数 | business | warning |
+| `preamble-length` ✅ | 本題前の段落数 | business | warning |
 | `undefined-acronym` | 略語の初出時の展開 | business | warning |
 | `emoji-density` | 絵文字・装飾記号の密度 | blog | info |
-| `list-length-variance` | 箇条書き項目の長さのばらつき | business | info |
+| ~~`list-length-variance`~~ | 箇条書き項目の長さのばらつき | 落とした（下記） | info |
 
 設計上の注意:
 
@@ -652,6 +652,22 @@ detector は言語を知らず、profile から渡された正規表現の配列
 ```
 
 セクション内の具体物が 0 のとき、そのセクションだけを L4 judge の候補に渡す（§14）。全文を LLM に渡さずに済む。前版では「未知語（固有名詞の近似）」も数えていたが、これは辞書を要するため L2 に移した。
+
+### 10.1 `list-length-variance` を落とした理由
+
+実文書の箇条書き 27 個（3 項目以上）で変動係数を測った。
+
+```
+CV%  11 13 15 15 15 18 18 19 19 19 19 20 21 21 23 24 24 25 26 28 33 34 34 37 40 45 56
+中央値 21
+```
+
+**箇条書きは揃うのが普通だった。** 並列の項目を同じ重さで並べるのが箇条書きなので、
+長さが近いことは「埋めるために足した」証拠にならない。
+
+閾値を 10% 未満まで下げれば黙るが、それは**黙らせるために閾値を動かす**ことであって、
+rule が何かを見分けられるようになるわけではない。段落と節の変動係数は残す
+（人が書いた文書で 30〜98% とばらけており、揃っている文書を見分けられる）。
 
 ---
 

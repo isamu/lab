@@ -1,0 +1,25 @@
+id: max-paragraph-length
+layer: L1
+status: experimental
+how_to_find: paragraph-length
+severity: warning
+
+name:
+  ja: 段落が長すぎる
+  en: Paragraph too long
+
+why:
+  ja: 1 段落に文を詰めると、読み手はどこで息継ぎしていいか分からなくなります。
+  en: A dense paragraph gives the reader nowhere to pause.
+
+message:
+  ja: この段落は {count} 文あります（{limit} 文まで）
+  en: This paragraph runs {count} sentences (limit {limit})
+
+how_to_fix:
+  ja: 話題の変わり目で段落を割ってください。
+  en: Split it where the topic turns.
+
+levels: { strict: 3, normal: 5, relaxed: 8 }
+
+use_for: [blog, business, technical]

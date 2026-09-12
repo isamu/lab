@@ -83,6 +83,11 @@ export type Section = {
   readonly firstSentence: Sentence | undefined;
 };
 
+export type Paragraph = { readonly span: Span; readonly sentences: readonly Sentence[] };
+
+/** 箇条書き 1 つ。項目は項目の文字数で持つ。長さのばらつきしか見ないため。 */
+export type BulletList = { readonly span: Span; readonly items: readonly number[] };
+
 /**
  * detector に渡る唯一の入り口。core が I/O を済ませてから呼ぶ。
  * detector は純関数で、fs / network / clock に触れない。spec §6。
@@ -98,6 +103,10 @@ export type ProseDocument = {
   readonly sentences: readonly Sentence[];
   /** 箇条書きの範囲。体言止めのように、箇条書きでは普通で本文では困る形が見る。 */
   readonly listSpans: readonly Span[];
+  /** 段落。文をいくつ載せているかと、長さのばらつきを見る rule が使う。 */
+  readonly paragraphs: readonly Paragraph[];
+  /** 箇条書き 1 つ。項目の数と長さのばらつきを見る rule が使う。 */
+  readonly lists: readonly BulletList[];
   /** アダプタが持つ語彙表。detector は言語を知らずにこれを引く。 */
   readonly lexicons: Readonly<Record<string, Lexicon>>;
 };

@@ -10,6 +10,7 @@ import { sentenceEnding } from "./sentence-ending.ts";
 import { doubledParticle, nounEnding } from "./token-shape.ts";
 import { kanjiRun, middleDot } from "./char-shape.ts";
 import { adverbDensity, conjunctionRun, expletive, oxfordComma, titleCaseMix } from "./en-shape.ts";
+import { paragraphLength, paragraphVariance, preambleLength, ruleOfThree, sectionUniformity } from "./structure.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -30,4 +31,9 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "conjunction-run": conjunctionRun,
   "title-case-mix": titleCaseMix,
   "oxford-comma": oxfordComma,
+  "paragraph-length": paragraphLength,
+  "paragraph-variance": paragraphVariance,
+  "section-uniformity": sectionUniformity,
+  "rule-of-three": ruleOfThree,
+  "preamble-length": preambleLength,
 };
