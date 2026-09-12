@@ -19,9 +19,12 @@ interface Unused {
   readonly dependencies: readonly string[];
 }
 
-const stringsOf = (value: unknown): readonly string[] => (Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : []);
-
-/** knip's JSON reporter emits one issue object per file, with named buckets inside it. */
+/**
+ * knip's JSON reporter emits one issue object per file, with named buckets inside it. A bucket
+ * entry is either a bare string or `{ name }`, and which one varies by bucket: `files` uses the
+ * object form. Reading only strings is why `unused_files` was zero across all 49 repositories of
+ * the calibration corpus while knip itself reported plenty.
+ */
 const namesIn = (issue: Record<string, unknown>, bucket: string): readonly string[] => {
   const entries = issue[bucket];
   if (!Array.isArray(entries)) return [];
@@ -44,7 +47,7 @@ const parse = (stdout: string): Unused | undefined => {
     if (!Array.isArray(issues)) return undefined;
     const records = issues.filter(isRecord);
     return {
-      files: records.flatMap((issue) => stringsOf(issue["files"])),
+      files: records.flatMap((issue) => namesIn(issue, "files")),
       exports: records.flatMap((issue) => {
         const file = typeof issue["file"] === "string" ? issue["file"] : "";
         return namesIn(issue, "exports").map((name) => ({ file, name }));

@@ -80,6 +80,26 @@ test("knip counts unused files, exports and dependencies", async () => {
   assert.equal(metricOf(result.metrics, "knip.unused_dependencies"), 1);
 });
 
+/**
+ * knip's own output, which is what it actually emits: `files` entries are `{ name }`, not strings.
+ * The fixture above was written from an assumption and passed while the parser read no file at all
+ * — `unused_files` was zero across every one of the 49 repositories measured for calibration.
+ */
+test("knip's real output shape wraps each unused file in an object", async () => {
+  const report = JSON.stringify({
+    issues: [
+      { file: "a.ts", files: [{ name: "src/orphan.ts" }], exports: [], dependencies: [] },
+      { file: "b.ts", files: [{ name: "src/stray.ts" }], exports: [], dependencies: [] },
+    ],
+  });
+  const result = await knip.run(contextWith(files, { exec: execReturning(report) }));
+  assert.equal(metricOf(result.metrics, "knip.unused_files"), 2);
+  assert.deepEqual(
+    result.findings.filter((finding) => finding.rule === "unused-file").map((finding) => finding.file),
+    ["src/orphan.ts", "src/stray.ts"],
+  );
+});
+
 /** jscpd writes no report when it finds nothing. That is zero duplication, not a failed run. */
 test("jscpd reports zero duplication rather than failing when there are no clones", async () => {
   const result = await jscpd.run(contextWith(files, { exec: execReturning("", 0) }));
