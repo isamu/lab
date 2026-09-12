@@ -1,0 +1,26 @@
+id: oxford-comma-consistency
+layer: L3
+status: experimental
+how_to_find: oxford-comma
+languages: [en]
+severity: info
+
+name:
+  ja: 並列の読点が揃っていない
+  en: Oxford comma use is inconsistent
+
+why:
+  ja: 最後の and の前に読点を打つかは、スタイルガイドで割れます。どちらが正しいかは決めません。1 つの文書で混ざっていると、読み手は項目の切れ目を毎回読み直すことになります。
+  en: Whether to put a comma before the final "and" is a style-guide split. Neither is wrong. Mixed within one document, the reader re-parses every list.
+
+message:
+  ja: この文だけ並列の読点の打ちかたが他と違います（文書の中で {count} 文）
+  en: "This list punctuates differently from the rest ({count} in this document)"
+
+how_to_fix:
+  ja: 多いほうに揃えてください。
+  en: Match the majority.
+
+levels: { strict: 3, normal: 2, relaxed: 1 }
+
+use_for: [blog, business, technical]

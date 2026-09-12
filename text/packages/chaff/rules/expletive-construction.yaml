@@ -1,0 +1,27 @@
+id: expletive-construction
+layer: L3
+status: experimental
+how_to_find: expletive
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: 主語を後ろへ押しやる書き出し
+  en: Expletive construction
+
+why:
+  ja: "There is / It is ... that は、主語を後ろへ押しやって誰が何をするのかを消します。"
+  en: '"There is" and "it is ... that" push the subject to the back and drop who does what.'
+
+message:
+  ja: '"{word} is ..." の形が文書内に {count} 回あります（{limit} 回まで）'
+  en: '"{word} is ..." appears {count} times (limit {limit})'
+
+how_to_fix:
+  ja: 主語を前に出してください。"There is a need to review" を "The board must review" に。
+  en: Put the subject first. "There is a need to review" becomes "the board must review".
+
+levels: { strict: 1, normal: 3, relaxed: 6 }
+
+use_for: [blog, business]

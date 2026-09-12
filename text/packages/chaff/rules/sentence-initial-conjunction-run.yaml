@@ -1,0 +1,27 @@
+id: sentence-initial-conjunction-run
+layer: L3
+status: experimental
+how_to_find: conjunction-run
+word_list: sentence-opener
+languages: [en]
+severity: info
+
+name:
+  ja: 接続詞で始まる文が続いている
+  en: Run of sentences opening with a conjunction
+
+why:
+  ja: 接続詞で始まる文は 1 つなら効きますが、続くとどの文も前の文の付け足しに見えて、何が主張なのかが分からなくなります。
+  en: One sentence opening with "And" or "But" lands. A run of them makes every sentence read as an afterthought.
+
+message:
+  ja: 接続詞で始まる文が {count} 文続いています（{limit} 文まで）
+  en: "{count} sentences in a row open with a conjunction (limit {limit})"
+
+how_to_fix:
+  ja: どれか 1 つを残して、他は前の文に繋ぐか独立させてください。
+  en: Keep one. Join the others to the previous sentence, or let them stand alone.
+
+levels: { strict: 1, normal: 2, relaxed: 4 }
+
+use_for: [blog, business]

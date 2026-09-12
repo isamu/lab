@@ -7,7 +7,7 @@ import type { Sentence, Token } from "./plugin.ts";
  * 表題行が混ざる。文として数えると、文書全体を分母にする rule がそこで狂う。
  * 終止符で終わることを条件にすると、そのほとんどが落ちる。
  */
-const ENDS = /[。．！？!?][")）」』\s]*$/u;
+const ENDS = /[。．.！？!?][")）」』\s]*$/u;
 
 export const isClosed = (sentence: Sentence): boolean => ENDS.test(sentence.text);
 

@@ -774,14 +774,20 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 
 | id | 内容 | requires |
 | --- | --- | --- |
-| `adverb-overuse` | -ly 副詞の密度 | pos |
-| `expletive-construction` | there is / there are / it is ... that | pos |
-| `oxford-comma-consistency` | 文書内での一貫性（有無自体は問わない） | - |
-| `sentence-initial-conjunction-run` | And / But / So で始まる文の連続 | - |
+| `adverb-overuse` ✅ | -ly 副詞の密度 | pos |
+| `expletive-construction` ✅ | there is / there are / it is ... that | pos |
+| `oxford-comma-consistency` ✅ | 文書内での一貫性（有無自体は問わない） | pos |
+| `sentence-initial-conjunction-run` ✅ | And / But / So で始まる文の連続 | - |
+| `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` | 短縮形の使用が文書内で一貫しているか | - |
-| `title-case-consistency` | 見出しの大文字化規則の一貫性 | - |
 
 英語固有 rule は「どちらが正しいか」を決めず、**文書内の一貫性**だけを見るものを優先する。Oxford comma の是非のようにスタイルガイドで割れる論点に立場を取ると、rule が使われなくなる。
+
+`contraction-consistency` だけ実装していない。**単語 1 つの照合では、意図した硬い文体と不統一を区別できない**。
+"do not" は "don't" の展開かもしれないし、その文だけ強調しているのかもしれない。
+区別するには「don't ↔ do not」のような**対**を語彙表に持つ必要があるが、`Lexicon` は
+`{ pattern, weight }` しか持たず、対を表せない。契約を広げる価値があるかは、他に対を要する rule が
+出てから判断する。
 
 ### 12.4 記号
 

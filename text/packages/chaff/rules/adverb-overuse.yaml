@@ -1,0 +1,28 @@
+id: adverb-overuse
+layer: L3
+status: experimental
+how_to_find: adverb-density
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: -ly 副詞が多い
+  en: Too many -ly adverbs
+
+why:
+  ja: -ly 副詞は、動詞が弱いことの目印になります。"walked quickly" より "hurried" のほうが短く、絵が見えます。
+  en: An -ly adverb usually marks a weak verb. "Hurried" is shorter and sharper than "walked quickly".
+
+message:
+  ja: 1000 語あたり {density} 個の -ly 副詞があります（{limit} 個まで）
+  en: "{density} -ly adverbs per 1000 words (limit {limit})"
+
+how_to_fix:
+  ja: 副詞ごと動詞に畳んでください。"said loudly" を "shouted" に。
+  en: Fold the adverb into the verb. "Said loudly" becomes "shouted".
+
+# 1000 語あたりの個数。件数で数えると長い文書ほど当たる（bold-density と同じ）。
+levels: { strict: 10, normal: 15, relaxed: 25 }
+
+use_for: [blog, business]

@@ -255,9 +255,21 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `max-kanji-continuous` | 漢字の連続（情報処理推進機構認定試験） |
 | `no-nakaguro-parallel` | 1 文に中黒の並列が何組も入る |
 
+英語固有の rule も 5 本あります。
+
+| rule | 何を見るか |
+| --- | --- |
+| `adverb-overuse` | -ly 副詞の密度 |
+| `expletive-construction` | There is / It is ... that |
+| `sentence-initial-conjunction-run` | And / But / So で始まる文の連続 |
+| `title-case-consistency` | 見出しの大文字化が文書内で揃っているか |
+| `oxford-comma-consistency` | 並列の読点が文書内で揃っているか |
+
+後ろの 2 本は**どちらが正しいかを決めません**。1 つの文書で揃っているかだけを見て、少数派を指摘します。
+
 ## まだ無いもの
 
-英語固有の rule。
+短縮形の一貫性（`contraction-consistency`）。ジャンルごとの閾値。
 
 ## 実文書で試す
 
