@@ -9,6 +9,19 @@ const indent = (text: string, pad: string): string[] => text.split("\n").map((li
 
 export const MACHINE_BANNER = ["", `═══ 機械による判定 ${"═".repeat(RULE - 18)}`, "    同じ文章なら何度実行しても同じ結果になります", ""];
 
+/**
+ * 自分の書いた検査が、どこまで絞り込めたかを見せる。
+ * 絞り込めないまま全文を読んでいることに気づけないと、遅さの原因が分からない。
+ */
+const narrowingLines = (result: SemanticResult): string[] =>
+  result.narrowed.flatMap(({ name, narrowing }) => {
+    if (narrowing.words.length === 0 && !narrowing.needsNumber) {
+      return [`    ${name}: 見るところを絞れず、全文を読みました`, `      look_at に「」で語を書くと、その語を含む文だけになります`];
+    }
+    const what = [...narrowing.words.map((word) => `「${word}」`), ...(narrowing.needsNumber ? ["数字"] : [])].join(" ");
+    return [`    ${name}: ${what} を含む ${narrowing.kept} 文だけを読みました（全 ${narrowing.total} 文）`];
+  });
+
 export const aiBanner = (result: SemanticResult): string[] => [
   "",
   `═══ AI による判定 ${"═".repeat(RULE - 17)}`,
@@ -16,6 +29,7 @@ export const aiBanner = (result: SemanticResult): string[] => [
   "    あります。おかしいと思ったら、そのまま無視して構いません。",
   "",
   `    ${result.sentencesSeen} 文のうち ${result.asked} 箇所を読みました（残りは機械が対象外と判断）`,
+  ...narrowingLines(result),
   "",
 ];
 

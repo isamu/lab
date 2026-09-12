@@ -1,6 +1,7 @@
 import { severityOf, type UserCheck } from "./checks.ts";
 import { ask, type JudgeOptions } from "./judge.ts";
 import { FILTERS, type Candidate } from "./semantic.ts";
+import { narrow, type Narrowing } from "./look-at.ts";
 import { localized } from "./render/text.ts";
 import type { Finding, Level, ProseDocument, RuleDefinition, Severity } from "./plugin.ts";
 import { lineStarts, placeOf } from "./position.ts";
@@ -10,6 +11,8 @@ export type SemanticResult = {
   readonly skipped: readonly { rule: string; why: string }[];
   readonly asked: number;
   readonly sentencesSeen: number;
+  /** 利用者の検査が、どこまで絞り込めたか。絞り込めていないものを黙って通さない。 */
+  readonly narrowed: readonly { readonly name: string; readonly narrowing: Narrowing }[];
 };
 
 type Job = {
@@ -19,6 +22,7 @@ type Job = {
   readonly howToFix: string;
   readonly severity: Severity;
   readonly candidates: readonly Candidate[];
+  readonly narrowing?: Narrowing;
 };
 
 const filterFor = (name: string | undefined): (typeof FILTERS)[string] => FILTERS[name ?? "whole-document"] ?? FILTERS["whole-document"] ?? (() => []);
@@ -52,15 +56,19 @@ const builtInJobs = (doc: ProseDocument, rules: readonly RuleDefinition[], setti
 const userJobs = (doc: ProseDocument, checks: readonly UserCheck[], genre: string): Job[] =>
   checks
     .filter((check) => check.level !== "off" && check.use_for.some((target) => genre.startsWith(target)))
-    .map((check) => ({
-      rule: check.id,
-      name: check.name,
-      // look_at は自然文なので、まだ絞り込みに変換できない。文書全体を渡す。spec §26-7。
-      rubric: check.look_at === undefined ? check.check : `${check.check}\n\n見るところ: ${check.look_at}`,
-      howToFix: check.how_to_fix,
-      severity: severityOf(check.level),
-      candidates: filterFor("whole-document")(doc),
-    }));
+    .map((check) => {
+      // look_at の括弧の中を取り出して絞り込む。取り出せなければ文書全体。spec §14。
+      const { candidates, narrowing } = narrow(doc, check.look_at, filterFor("whole-document"));
+      return {
+        rule: check.id,
+        name: check.name,
+        rubric: check.look_at === undefined ? check.check : `${check.check}\n\n見るところ: ${check.look_at}`,
+        howToFix: check.how_to_fix,
+        severity: severityOf(check.level),
+        candidates,
+        narrowing,
+      };
+    });
 
 const findingOf = (job: Job, candidate: Candidate, reason: string, confidence: number, threshold: number, starts: readonly number[]): Finding => {
   const at = placeOf(starts, candidate.offset);
@@ -103,5 +111,6 @@ export const runSemantic = async (
     skipped,
     asked: live.reduce((sum, job) => sum + job.candidates.length, 0),
     sentencesSeen: doc.sentences.length,
+    narrowed: jobs.flatMap((job) => (job.narrowing === undefined ? [] : [{ name: job.name, narrowing: job.narrowing }])),
   };
 };
