@@ -119,6 +119,21 @@ test("a dimension whose measurable weight changed is not comparable", () => {
   assert.deepEqual(diff.notComparable, ["readability"]);
 });
 
+/**
+ * A dimension neither run could measure has nothing to say. Reporting it as not comparable puts a
+ * line in every run for something that will never have a number — a repository with no components
+ * would be told `ui-consistency` is unmeasurable for ever.
+ */
+test("a dimension neither run measured is silent, not reported as incomparable", () => {
+  const blank = (report: ReturnType<typeof reportWith>) => ({
+    ...report,
+    dimensions: report.dimensions.map((entry) => ({ ...entry, score: undefined, coverage: 0 })),
+  });
+  const diff = diffReports(blank(reportWith(200, 3)), blank(reportWith(200, 3)));
+  assert.deepEqual(diff.notComparable, []);
+  assert.equal(diff.dimensions.find((d) => d.dimension === "readability")?.delta, undefined);
+});
+
 test("a dimension nothing could be measured in is not comparable", () => {
   const unmeasured = buildReport(".", files, [], rubricOf(BOTH_METRICS), undefined, []);
   const diff = diffReports(unmeasured, reportWith(200, 3));

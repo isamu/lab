@@ -59,6 +59,14 @@ const coverageOf = (report: Report, dimension: string): number | undefined => re
  * loses most of its points the moment another one joins it. When `coverage` first produced a
  * report, `test_to_source_ratio` rose from 0.499 to 0.57 and was reported as `-69.8`.
  */
+/**
+ * A dimension neither run could measure has nothing to compare and nothing to report. Calling it
+ * "not comparable" puts a line in every run for something that will never have a number — a
+ * repository with no components says `ui-consistency` is unmeasurable on every run, for ever.
+ */
+const isUnmeasured = (previous: Report, current: Report, dimension: string): boolean =>
+  scoreOf(previous, dimension) === undefined && scoreOf(current, dimension) === undefined;
+
 const isComparable = (previous: Report, current: Report, dimension: string): boolean => {
   if (scoreOf(previous, dimension) === undefined || scoreOf(current, dimension) === undefined) return false;
   if (coverageOf(previous, dimension) !== coverageOf(current, dimension)) return false;
@@ -102,6 +110,6 @@ export const diffReports = (previous: Report, current: Report): ReportDiff => {
   return {
     dimensions: names.map((dimension) => deltaOf(previous, current, dimension)),
     movers: comparable.flatMap((dimension) => moversOf(previous, current, dimension)),
-    notComparable: names.filter((dimension) => !comparable.includes(dimension)),
+    notComparable: names.filter((dimension) => !comparable.includes(dimension) && !isUnmeasured(previous, current, dimension)),
   };
 };
