@@ -1,6 +1,6 @@
 id: concrete-evidence-density
 layer: L1
-status: experimental
+status: stable
 how_to_find: concrete-evidence
 severity: info
 

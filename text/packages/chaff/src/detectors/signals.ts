@@ -49,13 +49,16 @@ export const emojiDensity: Detector = (doc, options): Finding[] => {
  * 同じ言い回しの繰り返し。character n-gram で見るので、語の区切りが要らない。
  * spec §10 が n-gram を選んだのはこのためで、新しい言語でそのまま動く。
  */
-const GRAM = 8;
+/**
+ * 窓の幅は単位で分ける。同じ 8 文字でも、日本語では 4〜5 形態素だが英語では 1 語半にしかならない。
+ * 実文書（英語 11 本）で 8 文字にしたら、上位は " generat"（generate）のような**語の断片**だった。
+ */
+const GRAM = { char: 8, word: 20 };
 
-/** 短い n-gram は偶然一致する。8 文字は「〜することができます」のような言い回しの長さ。 */
-const countGrams = (text: string): Map<string, number> => {
+const countGrams = (text: string, width: number): Map<string, number> => {
   const counts = new Map<string, number>();
-  Array.from({ length: Math.max(0, text.length - GRAM + 1) }).forEach((_, index) => {
-    const gram = text.slice(index, index + GRAM);
+  Array.from({ length: Math.max(0, text.length - width + 1) }).forEach((_, index) => {
+    const gram = text.slice(index, index + width);
     counts.set(gram, (counts.get(gram) ?? 0) + 1);
   });
   return counts;
@@ -69,7 +72,7 @@ const countGrams = (text: string): Map<string, number> => {
  * どちらを見るかは adapter が宣言する単位で決める。ひらがなを持たない char 単位の言語が
  * 来たら、この見分けは効かなくなる（そのときは adapter 側に判定を移す）。
  */
-const CONNECTIVE = { char: /[ぁ-ゖ]/u, word: / /u };
+const CONNECTIVE = { char: /[ぁ-ゖ]/u, word: /\S \S.*\S \S/u };
 
 const isPhrasing = (gram: string, unit: ProseDocument["lengthUnit"]): boolean => CONNECTIVE[unit].test(gram);
 
@@ -78,7 +81,7 @@ const gramsOf = (doc: ProseDocument): Map<string, number> => {
   const counts = new Map<string, number>();
   doc.sentences.forEach((sentence) => {
     const text = doc.lengthUnit === "char" ? proseText(sentence).replace(/\s+/gu, "") : proseText(sentence);
-    countGrams(text).forEach((count, gram) => counts.set(gram, (counts.get(gram) ?? 0) + count));
+    countGrams(text, GRAM[doc.lengthUnit]).forEach((count, gram) => counts.set(gram, (counts.get(gram) ?? 0) + count));
   });
   return counts;
 };

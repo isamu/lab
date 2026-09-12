@@ -1,6 +1,6 @@
 id: ngram-repetition
 layer: L1
-status: experimental
+status: stable
 how_to_find: ngram-repetition
 severity: info
 

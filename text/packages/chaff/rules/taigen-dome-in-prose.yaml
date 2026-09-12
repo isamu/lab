@@ -1,6 +1,6 @@
 id: taigen-dome-in-prose
 layer: L3
-status: experimental
+status: stable
 how_to_find: noun-ending
 requires: [pos]
 languages: [ja]

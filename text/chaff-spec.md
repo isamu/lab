@@ -1614,6 +1614,23 @@ Precision / Recall
 
 ---
 
+### 21.1 昇格の条件
+
+`experimental` から `stable`（既定で動く）へ移す条件は 3 つ。**実文書で発火したこと**を要る。
+
+1. `examples/` の実文書で発火した
+2. 出た指摘を読んで、正しいと判断できた
+3. `chaff eval` の目標（誤検知率 5% 未満）を満たしている
+
+**一度も発火していない rule は昇格させない。** 合成した文書で動くことは「壊れていない」証拠であって、
+「既定で出してよい」証拠ではない。0 件は、良い rule と壊れた rule を見分けない。
+
+`agentless-passive` は 1 と 3 を満たすが 2 で止めている。実文書 5 件中 4 件が真で、
+残る 1 件は「れる・られる」の多義（§26-6）。**8 割は既定で出すには足りない。**
+
+`title-case-consistency` と `contraction-consistency` は 3 で止めている。eval が
+「どの閾値でも目標を満たさない」と言っている。
+
 ## 22. Rule Status と CI
 
 ```text
@@ -1742,7 +1759,7 @@ L4 rule 9 本と言語別 rubric
 ```text
 corpus manifest と取得スクリプト
 eval と threshold sweep
-言語別の experimental -> stable 昇格
+言語別の experimental -> stable 昇格（条件は §21.1）
 FP dashboard
 ```
 

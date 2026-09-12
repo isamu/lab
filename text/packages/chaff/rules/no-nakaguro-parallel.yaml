@@ -1,6 +1,6 @@
 id: no-nakaguro-parallel
 layer: L3
-status: experimental
+status: stable
 how_to_find: middle-dot
 languages: [ja]
 severity: info
