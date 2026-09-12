@@ -6,6 +6,11 @@ English: [README.md](./README.md) · 設計の詳細: [scoria-spec.md](https://g
 
 まだ作りかけです。見ている項目は 5 つだけで、履歴との比較もまだできません。
 
+すべての観点は `status: experimental` のままです。点数のものさし（scale）は当て推量で置かれたもので、
+[docs/calibration.md](https://github.com/isamu/lab/blob/main/coding/docs/calibration.md) が
+その最初の実測です — 49リポジトリを測って、各ものさしが実際に何を主張しているか、
+そしてアンカーを動かしても直らない2つの問題を記録しています。
+
 ## 何をしてくれるの
 
 コードを読んで、こういうものを数えます。
