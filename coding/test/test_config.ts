@@ -41,7 +41,7 @@ test("without a config the run is not frozen", async () => {
 
 test("a written config is read back and the run becomes frozen", async () => {
   const root = await projectWith({ private: true, dependencies: { vue: "^3" } });
-  await writeConfig(root, { profile: "app", stacks: ["ts"], mode: "report", lang: "en" });
+  await writeConfig(root, { profile: "app", stacks: ["ts"], mode: "report", targets: [], lang: "en" });
   const loaded = await loadConfig(root);
   assert.equal(loaded.frozen, true);
   assert.equal(loaded.source, "config-file");
@@ -53,7 +53,7 @@ test("a written config is read back and the run becomes frozen", async () => {
 /** Following detection silently means one added dependency moves the score (spec §9.2). */
 test("disagreement is reported as drift and never followed", async () => {
   const root = await projectWith({ private: true, dependencies: { vue: "^3" } });
-  await writeConfig(root, { profile: "app", stacks: ["ts"], mode: "report", lang: "en" });
+  await writeConfig(root, { profile: "app", stacks: ["ts"], mode: "report", targets: [], lang: "en" });
   const loaded = await loadConfig(root);
   assert.deepEqual(loaded.config.stacks, ["ts"]);
   assert.deepEqual(loaded.drift.added, ["vue"]);

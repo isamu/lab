@@ -528,6 +528,52 @@ detection drift
 
 ---
 
+### 9.3 測る対象のディレクトリ
+
+scoria は**指定された1ディレクトリだけ**を測る。勝手に下に潜らない。
+
+駆動するツールはどれも「1つのルート」に紐づいている。`tsc` は渡された tsconfig を読み、
+`audit` は1つの lockfile を読み、`knip` は1つの依存グラフを解決する。
+2つのプロジェクトを含む repo に向けると、**ツール系は外側だけを見て、ファイル系は両方を数える**。
+
+```text
+ownplate
+  src/         Vue アプリ       ルートの tsconfig / lockfile
+  functions/   Firebase Functions   独自の tsconfig / package.json / yarn.lock
+
+  ルートから測ったとき
+    tsc          0 errors   ← src/ しか見ていない。functions/ の 93 ファイルは未チェック
+    audit        high 3     ← functions/yarn.lock の high 4 / moderate 19 が見えていない
+    file 系      両方を集計  ← 分母だけ全体
+```
+
+分母が全体で分子が半分という、いちばん悪い組み合わせになる。
+
+境界を推測しない。**設定で明示させる。**
+
+```jsonc
+{
+  "targets": ["packages/*", "agents/*"], // モノレポ
+}
+```
+
+```jsonc
+{
+  "targets": [".", "functions"], // 2つのデプロイ単位を持つ repo
+}
+```
+
+- glob は設定ファイルからの相対。ディレクトリにのみマッチする（`node_modules` は除外）。
+- 各 target は**そこで scoria を起動したのと同じ**ように測る。設定も baseline も target ごと。
+- `targets` が無ければ、指定されたディレクトリ1つだけ。既存の設定はすべてこの意味のままである。
+- 入れ子は1段だけ。target の中の設定が更に target を指名することはできない。
+- **どれにも一致しない glob はエラー**（exit 1）。0ディレクトリを測って成功と報告するのは、
+  誰も間違いに気づけない唯一の結末だから。
+- target が複数あるとき、`--sarif` / `--badge-json` の出力先にはディレクトリ名が挿入される
+  （`scoria.sarif` → `scoria.web.sarif`）。1つのときは変わらない。
+
+---
+
 ## 10. Project Profile
 
 profile はどの dimension が適用され、どの重みを持つかを決める。

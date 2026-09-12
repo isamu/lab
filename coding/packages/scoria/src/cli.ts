@@ -1,7 +1,7 @@
-import { relative } from "node:path";
+import { basename, dirname, relative, resolve } from "node:path";
 
 import { assay } from "./run.ts";
-import { detectConfig, writeConfig, CONFIG_FILENAME, type LoadedConfig, type Mode, type ScoriaConfig } from "./config.ts";
+import { detectConfig, loadConfig, writeConfig, CONFIG_FILENAME, type LoadedConfig, type Mode, type ScoriaConfig } from "./config.ts";
 import { isLang, messagesFor, type Lang } from "./messages.ts";
 import type { Report } from "./report.ts";
 import { renderExplain, renderReport } from "./render.ts";
@@ -10,11 +10,11 @@ import { renderSarif } from "./sarif.ts";
 import { badgeEndpoint } from "./badge.ts";
 import { SCORIA_VERSION } from "./version.ts";
 import { appendFile, mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
 import { applyFixes, diagnose, renderDoctor } from "./doctor.ts";
 import { changedTools, readBaseline, writeBaseline } from "./baseline.ts";
 import { diffReports, type ReportDiff } from "./diff.ts";
 import { judge, type Verdict } from "./gate.ts";
+import { expandTargets, NoTargetsMatched } from "./targets.ts";
 
 type Command = "assay" | "init" | "doctor" | "baseline";
 
@@ -125,6 +125,33 @@ const gateOf = (mode: Mode, baseline: Report | undefined, report: Report): Verdi
   return judge(baseline, report, changedTools(baseline, report));
 };
 
+/**
+ * One report per directory the config names, each measured as if scoria had been run inside it.
+ * Only the invocation root's `targets` apply — a config inside a target does not nominate more.
+ */
+const targetsOf = async (options: Options): Promise<readonly string[]> => {
+  const { config } = await loadConfig(options.target);
+  return expandTargets(resolve(options.target), config.targets);
+};
+
+/** With several targets, one output path would have each overwrite the last. */
+const perTarget = (path: string | undefined, target: string, many: boolean): string | undefined => {
+  if (path === undefined || !many) return path;
+  const cut = path.lastIndexOf(".");
+  return cut <= 0 ? `${path}.${basename(target)}` : `${path.slice(0, cut)}.${basename(target)}${path.slice(cut)}`;
+};
+
+const measureOne = async (options: Options, target: string, many: boolean): Promise<void> => {
+  const { report, loaded } = await assay(target);
+  const lang = options.lang ?? loaded.config.lang;
+  if (options.command === "baseline") {
+    const path = await writeBaseline(target, report);
+    process.stdout.write(`\n${messagesFor(lang).baselineWritten(displayPath(path))}\n\n`);
+    return;
+  }
+  await runAssay({ ...options, target, sarif: perTarget(options.sarif, target, many), badge: perTarget(options.badge, target, many) }, report, loaded, lang);
+};
+
 export const main = async (argv: readonly string[]): Promise<void> => {
   const options = parse(argv);
   if (options.command === "init") {
@@ -137,14 +164,24 @@ export const main = async (argv: readonly string[]): Promise<void> => {
     process.stdout.write(renderDoctor(diagnosis, applied, options.lang ?? "en"));
     return;
   }
-  const { report, loaded } = await assay(options.target);
-  const lang = options.lang ?? loaded.config.lang;
-  if (options.command === "baseline") {
-    const path = await writeBaseline(options.target, report);
-    process.stdout.write(`\n${messagesFor(lang).baselineWritten(displayPath(path))}\n\n`);
-    return;
+  const targets = await resolvedTargets(options);
+  if (targets === undefined) return;
+  for (const target of targets) {
+    if (targets.length > 1 && !options.json) process.stdout.write(`\n${messagesFor(options.lang ?? "en").measuring(displayPath(target))}\n`);
+    await measureOne(options, target, targets.length > 1);
   }
-  await runAssay(options, report, loaded, lang);
+};
+
+/** A pattern matching nothing is a typo. Measuring zero directories and exiting 0 hides it. */
+const resolvedTargets = async (options: Options): Promise<readonly string[] | undefined> => {
+  try {
+    return await targetsOf(options);
+  } catch (cause) {
+    if (!(cause instanceof NoTargetsMatched)) throw cause;
+    process.stderr.write(`${messagesFor(options.lang ?? "en").noTargetsMatched(cause.patterns.join(", "))}\n`);
+    process.exitCode = 1;
+    return undefined;
+  }
 };
 
 const runAssay = async (options: Options, report: Report, loaded: LoadedConfig, lang: Lang): Promise<void> => {
