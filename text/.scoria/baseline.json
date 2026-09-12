@@ -1,45 +1,45 @@
 {
   "report": {
     "schemaVersion": 1,
-    "root": "/Users/isamu/ss/llm/lab/text",
+    "root": "/private/tmp/claude-501/-Users-isamu-ss-llm-lab-coding/a61d777d-32f0-4b34-aaf9-d39dceb55871/scratchpad/basewt/text",
     "profile": "app",
     "stacks": [
       "ts"
     ],
-    "complete": true,
+    "complete": false,
     "size": {
-      "files": 58,
-      "sloc": 2091,
-      "testSloc": 940
+      "files": 71,
+      "sloc": 2842,
+      "testSloc": 1399
     },
     "dimensions": [
       {
         "dimension": "architecture",
         "status": "experimental",
-        "score": 91,
+        "score": 92.5,
         "coverage": 1,
         "metrics": [
           {
             "metric": "knip.unused_exports",
-            "value": 6,
+            "value": 7,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 60
             },
-            "weight": 0.4,
-            "points": 36,
+            "weight": 0.3,
+            "points": 26.5,
             "topContributors": [
+              {
+                "file": "packages/chaff/src/config/load.ts",
+                "value": 1
+              },
               {
                 "file": "packages/chaff/src/files.ts",
                 "value": 1
               },
               {
                 "file": "packages/chaff/src/levels.ts",
-                "value": 1
-              },
-              {
-                "file": "packages/chaff/src/config/load.ts",
                 "value": 1
               },
               {
@@ -60,8 +60,8 @@
               "good": 0,
               "bad": 20
             },
-            "weight": 0.35,
-            "points": 35
+            "weight": 0.25,
+            "points": 25
           },
           {
             "metric": "knip.unused_dependencies",
@@ -71,8 +71,19 @@
               "good": 0,
               "bad": 10
             },
+            "weight": 0.2,
+            "points": 16
+          },
+          {
+            "metric": "circular.cycle_count",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 8
+            },
             "weight": 0.25,
-            "points": 20
+            "points": 25
           }
         ],
         "confidence": "high",
@@ -97,7 +108,7 @@
           },
           {
             "metric": "oxlint.violations_per_kloc",
-            "value": 9.0866,
+            "value": 10.5559,
             "state": "ok",
             "scale": {
               "good": 0,
@@ -107,7 +118,7 @@
             "points": 0,
             "topContributors": [
               {
-                "file": "packages/chaff/src/files.ts",
+                "file": "test/test_by_path.ts",
                 "value": 2
               },
               {
@@ -119,12 +130,12 @@
                 "value": 2
               },
               {
-                "file": "packages/chaff/src/run.ts",
-                "value": 1
+                "file": "packages/chaff/src/files.ts",
+                "value": 2
               },
               {
-                "file": "packages/chaff/src/stet.ts",
-                "value": 1
+                "file": "test/test_eval.ts",
+                "value": 2
               }
             ]
           }
@@ -201,12 +212,12 @@
       {
         "dimension": "readability",
         "status": "experimental",
-        "score": 86.5029,
+        "score": 84.9851,
         "coverage": 1,
         "metrics": [
           {
             "metric": "file-shape.sloc_p95",
-            "value": 106,
+            "value": 134,
             "state": "ok",
             "scale": {
               "good": 150,
@@ -217,36 +228,36 @@
             "topContributors": [
               {
                 "file": "packages/chaff/src/cli.ts",
-                "value": 305
+                "value": 247
               },
               {
                 "file": "packages/chaff/src/document.ts",
-                "value": 138
+                "value": 190
               },
               {
                 "file": "packages/chaff/src/plugin.ts",
-                "value": 106
+                "value": 134
               },
               {
-                "file": "packages/chaff/src/judge.ts",
-                "value": 97
+                "file": "packages/lang-ja/src/pos.ts",
+                "value": 129
               },
               {
-                "file": "packages/chaff/src/run-semantic.ts",
-                "value": 97
+                "file": "packages/lang-en/src/pos.ts",
+                "value": 110
               }
             ]
           },
           {
             "metric": "file-shape.max_file_sloc",
-            "value": 305,
+            "value": 247,
             "state": "ok",
             "scale": {
               "good": 300,
               "bad": 2000
             },
             "weight": 0.2,
-            "points": 19.9412
+            "points": 20
           },
           {
             "metric": "file-shape.god_file_count",
@@ -261,38 +272,42 @@
           },
           {
             "metric": "jscpd.duplicated_lines_pct",
-            "value": 1.04,
+            "value": 0.91,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 10
             },
             "weight": 0.2,
-            "points": 17.92,
+            "points": 18.18,
             "topContributors": [
               {
                 "file": "packages/lang-en/src/lexicons.ts",
                 "value": 29
               },
               {
+                "file": "packages/chaff/src/commands/eval.ts",
+                "value": 13
+              },
+              {
                 "file": "test/test_sentence_split_en.ts",
-                "value": 10
+                "value": 7
               }
             ]
           },
           {
             "metric": "oxlint.violations_per_kloc",
-            "value": 9.0866,
+            "value": 10.5559,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 12
             },
             "weight": 0.15,
-            "points": 3.6417,
+            "points": 1.8051,
             "topContributors": [
               {
-                "file": "packages/chaff/src/files.ts",
+                "file": "test/test_by_path.ts",
                 "value": 2
               },
               {
@@ -304,12 +319,12 @@
                 "value": 2
               },
               {
-                "file": "packages/chaff/src/run.ts",
-                "value": 1
+                "file": "packages/chaff/src/files.ts",
+                "value": 2
               },
               {
-                "file": "packages/chaff/src/stet.ts",
-                "value": 1
+                "file": "test/test_eval.ts",
+                "value": 2
               }
             ]
           }
@@ -318,32 +333,129 @@
         "confidenceReason": "0 suppressions in scope"
       },
       {
+        "dimension": "security",
+        "status": "experimental",
+        "score": 100,
+        "coverage": 1,
+        "metrics": [
+          {
+            "metric": "audit.critical",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 1
+            },
+            "weight": 0.4,
+            "points": 40
+          },
+          {
+            "metric": "audit.high",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 5
+            },
+            "weight": 0.35,
+            "points": 35
+          },
+          {
+            "metric": "audit.moderate",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 20
+            },
+            "weight": 0.25,
+            "points": 25
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "no suppression signal wired"
+      },
+      {
+        "dimension": "test-coverage",
+        "status": "experimental",
+        "score": 98.2889,
+        "coverage": 0.3,
+        "metrics": [
+          {
+            "metric": "test-presence.test_to_source_ratio",
+            "value": 0.4923,
+            "state": "ok",
+            "scale": {
+              "good": 0.5,
+              "bad": 0.05
+            },
+            "weight": 0.3,
+            "points": 98.2889
+          },
+          {
+            "metric": "coverage.line_pct",
+            "value": 0,
+            "state": "skipped",
+            "scale": {
+              "good": 90,
+              "bad": 40
+            },
+            "weight": 0.3,
+            "points": 0
+          },
+          {
+            "metric": "coverage.branch_pct",
+            "value": 0,
+            "state": "skipped",
+            "scale": {
+              "good": 85,
+              "bad": 30
+            },
+            "weight": 0.25,
+            "points": 0
+          },
+          {
+            "metric": "coverage.function_pct",
+            "value": 0,
+            "state": "skipped",
+            "scale": {
+              "good": 90,
+              "bad": 40
+            },
+            "weight": 0.15,
+            "points": 0
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "0 suppressions in scope"
+      },
+      {
         "dimension": "type-safety",
         "status": "experimental",
-        "score": 63.1405,
+        "score": 99.178,
         "coverage": 1,
         "metrics": [
           {
             "metric": "source-mix.untyped_sloc_ratio",
-            "value": 0.0014,
+            "value": 0.0011,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 0.5
             },
             "weight": 0.3,
-            "points": 29.916
+            "points": 29.934
           },
           {
             "metric": "source-mix.untyped_file_ratio",
-            "value": 0.0227,
+            "value": 0.0189,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 0.5
             },
             "weight": 0.2,
-            "points": 19.092,
+            "points": 19.244,
             "topContributors": [
               {
                 "file": "packages/chaff/bin/chaff.js",
@@ -353,14 +465,14 @@
           },
           {
             "metric": "tsc.type_errors_per_kloc",
-            "value": 1.4347,
+            "value": 0,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 2
             },
             "weight": 0.5,
-            "points": 14.1325
+            "points": 50
           }
         ],
         "confidence": "high",
@@ -381,17 +493,217 @@
       {
         "rule": "ci-swallowed-failures",
         "severity": "error",
-        "file": ".github/workflows",
+        "file": "package.json",
         "line": 1,
-        "message": "1 step swallows their failure",
+        "message": "2 steps swallow their failure",
         "probe": "ci-integrity",
         "dimension": "integrity",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/detectors/repeated-head.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/consistent-function-scoping",
+        "severity": "warning",
+        "file": "test/test_by_path.ts",
+        "line": 1,
+        "message": "Function `hit` does not capture any variables from its parent scope",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/consistent-function-scoping",
+        "severity": "warning",
+        "file": "test/test_by_path.ts",
+        "line": 1,
+        "message": "Function `write` does not capture any variables from its parent scope",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/consistent-function-scoping",
+        "severity": "warning",
+        "file": "test/test_semantic.ts",
+        "line": 1,
+        "message": "Function `write` does not capture any variables from its parent scope",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/consistent-function-scoping",
+        "severity": "warning",
+        "file": "test/test_stet_and_baseline.ts",
+        "line": 1,
+        "message": "Function `tmpFile` does not capture any variables from its parent scope",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/consistent-function-scoping",
+        "severity": "warning",
+        "file": "test/test_genre.ts",
+        "line": 1,
+        "message": "Function `forGenre` does not capture any variables from its parent scope",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/consistent-function-scoping",
+        "severity": "warning",
+        "file": "test/test_rules.ts",
+        "line": 1,
+        "message": "Function `padded` does not capture any variables from its parent scope",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/lang-en/src/lexicons.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/lang-ja/src/index.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/lang-ja/src/lexicons.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/rule-load.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/run-semantic.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/mask.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/mask.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
         "tier": 0
       },
       {
         "rule": "oxlint/no-array-sort",
         "severity": "warning",
         "file": "packages/chaff/src/run.ts",
+        "line": 1,
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-reverse",
+        "severity": "warning",
+        "file": "packages/lang-en/src/pos.ts",
+        "line": 1,
+        "message": "Use `Array#toReversed()` instead of `Array#reverse()`.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/config/load.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-map-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/document.ts",
+        "line": 1,
+        "message": "Spreading to modify object properties in `map` calls is inefficient",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/config/by-path.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-accumulating-spread",
+        "severity": "warning",
+        "file": "packages/chaff/src/watch.ts",
+        "line": 1,
+        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-array-sort",
+        "severity": "warning",
+        "file": "packages/chaff/src/watch.ts",
         "line": 1,
         "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
         "probe": "oxlint",
@@ -421,7 +733,7 @@
       {
         "rule": "oxlint/no-array-sort",
         "severity": "warning",
-        "file": "packages/chaff/src/mask.ts",
+        "file": "packages/chaff/src/baseline.ts",
         "line": 1,
         "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
         "probe": "oxlint",
@@ -429,11 +741,11 @@
         "tier": 0
       },
       {
-        "rule": "oxlint/no-accumulating-spread",
+        "rule": "oxlint/no-array-sort",
         "severity": "warning",
-        "file": "packages/chaff/src/mask.ts",
+        "file": "packages/chaff/src/eval.ts",
         "line": 1,
-        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
         "probe": "oxlint",
         "dimension": "correctness",
         "tier": 0
@@ -444,96 +756,6 @@
         "file": "packages/chaff/src/stet.ts",
         "line": 1,
         "message": "Spreading to modify object properties in `map` calls is inefficient",
-        "probe": "oxlint",
-        "dimension": "correctness",
-        "tier": 0
-      },
-      {
-        "rule": "oxlint/consistent-function-scoping",
-        "severity": "warning",
-        "file": "test/test_stet_and_baseline.ts",
-        "line": 1,
-        "message": "Function `tmpFile` does not capture any variables from its parent scope",
-        "probe": "oxlint",
-        "dimension": "correctness",
-        "tier": 0
-      },
-      {
-        "rule": "oxlint/no-accumulating-spread",
-        "severity": "warning",
-        "file": "packages/chaff/src/config/load.ts",
-        "line": 1,
-        "message": "Do not spread accumulators in Array.prototype.reduce()",
-        "probe": "oxlint",
-        "dimension": "correctness",
-        "tier": 0
-      },
-      {
-        "rule": "oxlint/no-accumulating-spread",
-        "severity": "warning",
-        "file": "packages/chaff/src/watch.ts",
-        "line": 1,
-        "message": "Do not spread accumulators in Array.prototype.reduce()",
-        "probe": "oxlint",
-        "dimension": "correctness",
-        "tier": 0
-      },
-      {
-        "rule": "oxlint/no-array-sort",
-        "severity": "warning",
-        "file": "packages/chaff/src/watch.ts",
-        "line": 1,
-        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
-        "probe": "oxlint",
-        "dimension": "correctness",
-        "tier": 0
-      },
-      {
-        "rule": "oxlint/no-array-sort",
-        "severity": "warning",
-        "file": "packages/chaff/src/baseline.ts",
-        "line": 1,
-        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
-        "probe": "oxlint",
-        "dimension": "correctness",
-        "tier": 0
-      },
-      {
-        "rule": "oxlint/consistent-function-scoping",
-        "severity": "warning",
-        "file": "test/test_semantic.ts",
-        "line": 1,
-        "message": "Function `write` does not capture any variables from its parent scope",
-        "probe": "oxlint",
-        "dimension": "correctness",
-        "tier": 0
-      },
-      {
-        "rule": "oxlint/no-accumulating-spread",
-        "severity": "warning",
-        "file": "packages/lang-ja/src/lexicons.ts",
-        "line": 1,
-        "message": "Do not spread accumulators in Array.prototype.reduce()",
-        "probe": "oxlint",
-        "dimension": "correctness",
-        "tier": 0
-      },
-      {
-        "rule": "oxlint/no-accumulating-spread",
-        "severity": "warning",
-        "file": "packages/lang-en/src/lexicons.ts",
-        "line": 1,
-        "message": "Do not spread accumulators in Array.prototype.reduce()",
-        "probe": "oxlint",
-        "dimension": "correctness",
-        "tier": 0
-      },
-      {
-        "rule": "oxlint/no-accumulating-spread",
-        "severity": "warning",
-        "file": "packages/lang-ja/src/index.ts",
-        "line": 1,
-        "message": "Do not spread accumulators in Array.prototype.reduce()",
         "probe": "oxlint",
         "dimension": "correctness",
         "tier": 0
@@ -551,7 +773,7 @@
       {
         "rule": "oxlint/no-array-sort",
         "severity": "warning",
-        "file": "packages/chaff/src/run-semantic.ts",
+        "file": "test/test_eval.ts",
         "line": 1,
         "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
         "probe": "oxlint",
@@ -559,23 +781,43 @@
         "tier": 0
       },
       {
-        "rule": "oxlint/no-accumulating-spread",
+        "rule": "oxlint/prefer-set-has",
         "severity": "warning",
-        "file": "packages/chaff/src/detectors/repeated-head.ts",
+        "file": "test/test_eval.ts",
         "line": 1,
-        "message": "Do not spread accumulators in Array.prototype.reduce()",
+        "message": "should be a `Set`, and use `.has()` to check existence or non-existence.",
         "probe": "oxlint",
         "dimension": "correctness",
         "tier": 0
       },
       {
-        "rule": "oxlint/no-array-sort",
+        "rule": "oxlint/no-map-spread",
         "severity": "warning",
-        "file": "packages/chaff/src/rule-load.ts",
+        "file": "packages/lang-en/src/index.ts",
         "line": 1,
-        "message": "Use `Array#toSorted()` instead of `Array#sort()`.",
+        "message": "Spreading to modify object properties in `map` calls is inefficient",
         "probe": "oxlint",
         "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "duplicated-block",
+        "severity": "warning",
+        "file": "packages/chaff/src/commands/eval.ts",
+        "line": 23,
+        "message": "7 duplicated lines",
+        "probe": "jscpd",
+        "dimension": "readability",
+        "tier": 0
+      },
+      {
+        "rule": "duplicated-block",
+        "severity": "warning",
+        "file": "packages/chaff/src/commands/eval.ts",
+        "line": 31,
+        "message": "6 duplicated lines",
+        "probe": "jscpd",
+        "dimension": "readability",
         "tier": 0
       },
       {
@@ -593,39 +835,19 @@
         "severity": "warning",
         "file": "test/test_sentence_split_en.ts",
         "line": 19,
-        "message": "10 duplicated lines",
+        "message": "7 duplicated lines",
         "probe": "jscpd",
         "dimension": "readability",
         "tier": 0
       },
       {
-        "rule": "tsc/TS2307",
-        "severity": "error",
-        "file": "packages/chaff/src/judge.ts",
-        "line": 5,
-        "message": "Cannot find module '@anthropic-ai/sdk' or its corresponding type declarations.",
-        "probe": "tsc",
-        "dimension": "type-safety",
-        "tier": 1
-      },
-      {
-        "rule": "tsc/TS18046",
-        "severity": "error",
-        "file": "packages/chaff/src/judge.ts",
-        "line": 90,
-        "message": "'error' is of type 'unknown'.",
-        "probe": "tsc",
-        "dimension": "type-safety",
-        "tier": 1
-      },
-      {
-        "rule": "tsc/TS2307",
-        "severity": "error",
-        "file": "test/test_judge.ts",
-        "line": 6,
-        "message": "Cannot find module '@anthropic-ai/sdk' or its corresponding type declarations.",
-        "probe": "tsc",
-        "dimension": "type-safety",
+        "rule": "unused-export",
+        "severity": "warning",
+        "file": "packages/chaff/src/config/load.ts",
+        "line": 1,
+        "message": "`DEFAULT_MODEL` is exported but never imported",
+        "probe": "knip",
+        "dimension": "architecture",
         "tier": 1
       },
       {
@@ -651,16 +873,6 @@
       {
         "rule": "unused-export",
         "severity": "warning",
-        "file": "packages/chaff/src/config/load.ts",
-        "line": 1,
-        "message": "`DEFAULT_MODEL` is exported but never imported",
-        "probe": "knip",
-        "dimension": "architecture",
-        "tier": 1
-      },
-      {
-        "rule": "unused-export",
-        "severity": "warning",
         "file": "packages/chaff/src/render/semantic.ts",
         "line": 1,
         "message": "`aiBanner` is exported but never imported",
@@ -674,6 +886,16 @@
         "file": "packages/chaff/src/render/rules-json.ts",
         "line": 1,
         "message": "`levelsForCli` is exported but never imported",
+        "probe": "knip",
+        "dimension": "architecture",
+        "tier": 1
+      },
+      {
+        "rule": "unused-export",
+        "severity": "warning",
+        "file": "packages/chaff/src/measure.ts",
+        "line": 1,
+        "message": "`wordLength` is exported but never imported",
         "probe": "knip",
         "dimension": "architecture",
         "tier": 1
@@ -743,19 +965,46 @@
         "status": {
           "kind": "ok"
         }
+      },
+      {
+        "probe": "audit",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "test-presence",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "coverage",
+        "status": {
+          "kind": "skipped",
+          "reason": "no coverage report; scoria does not run the project's tests"
+        }
+      },
+      {
+        "probe": "circular",
+        "status": {
+          "kind": "ok"
+        }
       }
     ],
     "toolVersions": {
       "oxlint": "Version: 1.82.0",
       "jscpd": "4.3.0",
       "typescript": "6.0.3",
-      "knip": "6.35.1"
+      "knip": "6.35.1",
+      "yarn": "1.22.22",
+      "madge": "8.0.0"
     },
     "overall": {
-      "score": 79.2952,
-      "scoredDimensions": 5,
+      "score": 90.1121,
+      "scoredDimensions": 7,
       "comparable": false
     }
   },
-  "createdAt": "2026-09-11T19:31:10.978Z"
+  "createdAt": "2026-09-12T03:16:53.707Z"
 }
