@@ -41,6 +41,18 @@ const issuesIn = (parsed: unknown): unknown => {
   return isRecord(parsed) ? parsed["issues"] : undefined;
 };
 
+/**
+ * knip's view of a repository is not scoria's. Run without a config on a monorepo it walks
+ * everything — generated TypeDoc bundles, VitePress config, docs assets — and calls it unused:
+ * 573 files in graphai, against 450 that scoria classifies as source at all. Only what scoria
+ * itself measures can score, or the metric reports the size of the untracked output directory.
+ */
+const withinScope = (unused: Unused, known: ReadonlySet<string>): Unused => ({
+  files: unused.files.filter((file) => known.has(file)),
+  exports: unused.exports.filter((entry) => known.has(entry.file)),
+  dependencies: unused.dependencies,
+});
+
 const parse = (stdout: string): Unused | undefined => {
   try {
     const issues = issuesIn(JSON.parse(stdout));
@@ -87,8 +99,9 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const bin = resolveBin("knip", "knip");
   if (bin === undefined) return skippedResult("knip", "knip is not installed alongside scoria", started);
   const result = await ctx.execNode(bin, ["--reporter", "json", "--no-progress", "--no-exit-code"]);
-  const unused = parse(result.stdout);
-  if (unused === undefined) return skippedResult("knip", "knip produced no readable report", started);
+  const parsed = parse(result.stdout);
+  if (parsed === undefined) return skippedResult("knip", "knip produced no readable report", started);
+  const unused = withinScope(parsed, new Set(ctx.files.map((file) => file.path)));
   return {
     probe: "knip",
     status: { kind: "ok" },
