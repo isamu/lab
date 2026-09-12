@@ -183,6 +183,7 @@ const explain = (ruleId: string | undefined): number => {
 
 /** 閾値の単位。explain で「4 とは何の 4 か」を示すため。 */
 const unitOf = (ruleId: string, language: string): string => {
+  if (ruleId === "bold-density") return "1000 字あたりの箇所数";
   if (ruleId !== "max-sentence-length") return "回";
   return language === "ja" ? "文字" : "語";
 };

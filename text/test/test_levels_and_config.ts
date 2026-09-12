@@ -23,23 +23,23 @@ const tmpConfig = (body?: string): string => {
 describe("4 語と数値の対応", () => {
   it("4 語がそれぞれの数値になる", () => {
     const bold = ruleOf("bold-density");
-    assert.equal(resolve(bold, "strict").limit, 1);
-    assert.equal(resolve(bold, "normal").limit, 2);
-    assert.equal(resolve(bold, "relaxed").limit, 4);
+    assert.equal(resolve(bold, "strict").limit, 10);
+    assert.equal(resolve(bold, "normal").limit, 20);
+    assert.equal(resolve(bold, "relaxed").limit, 40);
     assert.equal(resolve(bold, "off").level, "off");
   });
 
   it("段が定義されていなければ normal に落ち、落ちたことを伝える", () => {
     // 意味のある段が 2 つしかない rule のため。spec §18.1。
-    const partial = { ...ruleOf("bold-density"), levels: { normal: 2, relaxed: 4 } };
+    const partial = { ...ruleOf("bold-density"), levels: { normal: 20, relaxed: 40 } };
     const got = resolve(partial, "strict");
     assert.equal(got.level, "normal");
-    assert.equal(got.limit, 2);
+    assert.equal(got.limit, 20);
     assert.equal(got.fellBackToNormal, true);
   });
 
   it("実際に区別できる段だけを列挙する", () => {
-    const partial = { ...ruleOf("bold-density"), levels: { normal: 2, relaxed: 4 } };
+    const partial = { ...ruleOf("bold-density"), levels: { normal: 20, relaxed: 40 } };
     assert.deepEqual(definedLevels(partial), ["normal", "relaxed", "off"]);
   });
 });
@@ -89,7 +89,7 @@ describe("設定の書き戻し", () => {
 
   it("段が定義されていない level を指定したら、書き換えずに告げる", () => {
     const path = tmpConfig();
-    const partial = { ...ruleOf("bold-density"), levels: { normal: 2, relaxed: 4 } };
+    const partial = { ...ruleOf("bold-density"), levels: { normal: 20, relaxed: 40 } };
     const outcome = applyLevel(path, partial, "strict", "きびしく", "ja", "isamu");
     assert.equal(outcome.ok, false);
     assert.match(outcome.message, /normal と同じ/u);

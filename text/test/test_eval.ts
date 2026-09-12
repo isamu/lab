@@ -15,11 +15,12 @@ const reportFor = (id: string, sources: readonly string[]) =>
     "ja",
   )[0];
 
-const bold = (count: number): string => {
-  const runs = Array.from({ length: count }, (__x, index) => `**${index}**`).join(" と ");
-  return `## 節\n\n${runs} です。`;
+/** bold-density は密度で測るので、節の長さも与える。短すぎる節は対象外。 */
+const bold = (count: number, chars = 300): string => {
+  const runs = Array.from({ length: count }, (__x, index) => `**${index}**`).join("");
+  return `## 節\n\n${runs}${"あ".repeat(chars)}。`;
 };
-const clean = "## 節\n\n短い文です。これも短い。";
+const clean = `## 節\n\n${"あ".repeat(400)}。これも短い。`;
 
 describe("閾値の掃引", () => {
   it("閾値を上げるほど指摘が減る", () => {
@@ -36,7 +37,7 @@ describe("閾値の掃引", () => {
   it("rule 自身の段を必ず含む", () => {
     // 掃引の点が rule の段とずれていると、「いまの設定」を表に示せない。
     const limits = reportFor("bold-density", [clean])?.sweep.map((point) => point.limit) ?? [];
-    [1, 2, 4].forEach((level) => assert.ok(limits.includes(level), `${level} が掃引に無い: ${limits.join(",")}`));
+    [10, 20, 40].forEach((level) => assert.ok(limits.includes(level), `${level} が掃引に無い: ${limits.join(",")}`));
   });
 
   it("文字数あたりの密度も出す", () => {
@@ -55,7 +56,7 @@ describe("推奨の出しかた", () => {
 
   it("どの閾値でも目標を満たさなければ推奨を出さない", () => {
     // 嘘の推奨を出すより、rule 自体を疑わせるほうがよい。
-    const report = reportFor("bold-density", [bold(20)]);
+    const report = reportFor("bold-density", [bold(60, 250)]);
     assert.equal(report?.recommended, undefined);
   });
 

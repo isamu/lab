@@ -13,11 +13,22 @@ const idsFor = (source: string, experimental = false): string[] =>
 const sentences = (count: number, size: number): string => Array.from({ length: count }, () => `${"あ".repeat(size)}。`).join("");
 
 describe("bold-density", () => {
-  it("invalid: 1 節に太字が 3 つある", () => {
-    assert.ok(idsFor("## 節\n\n**a** と **b** と **c** です。").includes("bold-density"));
+  // 密度で測る。短い節は対象外（200 字未満）。
+  const padded = (bolds: number, chars: number): string => {
+    const runs = Array.from({ length: bolds }, (__x, index) => `**${index}**`).join("");
+    return `## 節\n\n${runs}${"あ".repeat(chars)}。`;
+  };
+
+  it("invalid: 1000 字あたり 20 箇所を超える", () => {
+    assert.ok(idsFor(padded(10, 300)).includes("bold-density"));
   });
-  it("valid: 2 つまでは指摘しない", () => {
-    assert.ok(!idsFor("## 節\n\n**a** と **b** です。").includes("bold-density"));
+  it("valid: 同じ太字の数でも、節が長ければ指摘しない", () => {
+    // 件数で数えていたときは、長い節ほど当たっていた。読者の印象と逆だった。
+    assert.ok(!idsFor(padded(10, 2000)).includes("bold-density"));
+  });
+  it("valid: 短い節は測らない", () => {
+    // 43 字に 1 箇所で「1000 字あたり 23」になる。密度が暴れる。
+    assert.ok(!idsFor("## 節\n\n**a** です。").includes("bold-density"));
   });
   it("valid: コードブロックの ** は太字ではない", () => {
     // 誤検知しやすい正常な文章。Markdown 以外の ** を太字と数えない。
