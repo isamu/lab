@@ -8,8 +8,8 @@ import { collectTargets } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
 import { CHECKS_FILE, loadChecks, type UserCheck } from "../checks.ts";
 import { CACHE_DIR, hasCredentials, isAuthFailure } from "../judge.ts";
-import { runSemantic } from "../run-semantic.ts";
-import { MACHINE_BANNER, renderSemantic } from "../render/semantic.ts";
+import { planSemantic, runSemantic } from "../run-semantic.ts";
+import { MACHINE_BANNER, renderPlan, renderSemantic } from "../render/semantic.ts";
 import type { Config } from "../config/load.ts";
 import type { Finding, RuleDefinition } from "../plugin.ts";
 
@@ -40,6 +40,23 @@ const judgeAll = async (
     }),
   );
 
+/** API を呼ばずに、何が送られるかだけを出す。鍵が無くても二段構えの 1 段目を確かめられる。 */
+const dryRun = async (paths: readonly string[], config: Config, checks: readonly UserCheck[], resolveGenre: TestContext["resolveGenre"]): Promise<void> => {
+  const plans = await Promise.all(
+    paths.map(async (path) => {
+      const source = await readFile(path, "utf8");
+      const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
+      const adapter = await loadAdapter(language);
+      const doc = buildDocument(path, source, adapter);
+      const { genre } = resolveGenre(path, source, config);
+      return { path, jobs: planSemantic(doc, loadRules(language), checks, config.rules, genre), sentences: doc.sentences.length };
+    }),
+  );
+  plans.forEach(({ path, jobs, sentences }) => console.log(renderPlan(path, jobs, sentences).join("\n")));
+  const total = plans.reduce((sum, plan) => sum + plan.jobs.reduce((count, job) => count + job.candidates.length, 0), 0);
+  console.log(["", "─".repeat(60), "", `  合計 ${total} 箇所を送ります。--dry-run なので API は呼んでいません。`, ""].join("\n"));
+};
+
 /**
  * 機械と AI を見出しで分けて出す。読む人が「これは揺れる判定か」を知らないと、
  * AI の誤検知に振り回される。workflow spec §7、samples/README の軸 2。
@@ -64,6 +81,10 @@ export const runTest = async (targets: readonly string[], argv: readonly string[
     "  機械による判定はすべて動いています。",
     "",
   ].join("\n");
+  if (argv.includes("--dry-run")) {
+    await dryRun(paths, config, checks, resolveGenre);
+    return machineOnly;
+  }
   // 呼んでから落ちるのを待たない。認証が無いときの SDK の例外は型で判別できない。
   if (!hasCredentials()) {
     console.log(noCredentials);

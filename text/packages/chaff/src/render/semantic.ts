@@ -1,6 +1,6 @@
 import type { Finding, RuleDefinition } from "../plugin.ts";
 import type { UserCheck } from "../checks.ts";
-import type { SemanticResult } from "../run-semantic.ts";
+import type { Job as Plan, SemanticResult } from "../run-semantic.ts";
 import { MARK, localized } from "./text.ts";
 
 const RULE = 60;
@@ -72,3 +72,26 @@ export const renderSemantic = (result: SemanticResult, rules: readonly RuleDefin
   ...result.findings.flatMap((finding) => block(finding, nameOf(finding.rule, rules, checks, language))),
   ...(result.skipped.length > 0 ? [`  ${result.skipped.length} 件の検査は、見るところが無いため動いていません。`, ""] : []),
 ];
+
+/**
+ * 何が送られるのかを、API を呼ばずに見せる。`chaff test --dry-run`。
+ *
+ * 鍵が無い環境でも二段構えの 1 段目まで確かめられる。全文が送られようとしていることに
+ * 請求書で気づくのでは遅い。spec §14。
+ */
+const howNarrowed = (job: Plan): string => {
+  const narrowing = job.narrowing;
+  if (narrowing === undefined) return "機械で絞り込み済み";
+  const quoted = narrowing.words.map((word) => `「${word}」`);
+  const parts = narrowing.needsNumber ? [...quoted, "数字"] : quoted;
+  if (parts.length === 0) return "絞り込めず全文";
+  return `${parts.join(" ")} を含む文`;
+};
+
+export const renderPlan = (path: string, jobs: readonly Plan[], sentences: number): string[] => {
+  const asked = jobs.reduce((sum, job) => sum + job.candidates.length, 0);
+  const lines = jobs.map((job) => `    ${String(job.candidates.length).padStart(3)} 箇所  ${job.name}  （${howNarrowed(job)}）`);
+  const first = jobs.find((job) => job.candidates.length > 0);
+  const sample = first === undefined ? [] : ["", "  最初の 1 件に送る文章:", "", ...indent(String(first.candidates[0]?.text ?? "").slice(0, 300), "    ")];
+  return ["", `${path}   全 ${sentences} 文のうち ${asked} 箇所を送ります（API は呼んでいません）`, "", ...lines, ...sample, ""];
+};
