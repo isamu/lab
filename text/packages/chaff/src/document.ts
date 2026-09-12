@@ -13,8 +13,14 @@ type Node = {
   readonly children?: readonly Node[] | undefined;
 };
 
-/** 本文として数えないもの。コードは文章ではなく、表は文章の形をしていない。 */
-const NOT_PROSE = new Set(["code", "inlineCode", "html", "yaml", "toml", "table", "thematicBreak", "definition", "image", "imageReference"]);
+/**
+ * 本文として数えないもの。
+ *
+ * コードは文章ではなく、表は文章の形をしていない。
+ * **引用は自分の文章ではない。** chaff が言えるのは「2 文に割ってください」までで、
+ * 引用文にそれはできない。直せないものを指摘しても、書いた人は動けない。
+ */
+const NOT_PROSE = new Set(["code", "inlineCode", "html", "yaml", "toml", "table", "blockquote", "thematicBreak", "definition", "image", "imageReference"]);
 
 const spanOf = (node: Node): Span | undefined => {
   const start = node.position?.start.offset;

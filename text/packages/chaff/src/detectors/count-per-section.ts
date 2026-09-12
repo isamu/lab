@@ -1,3 +1,4 @@
+import { charLength, proseText } from "../measure.ts";
 import type { Detector, Finding, Section } from "../plugin.ts";
 
 /** これより短い節では密度が暴れる。43 字に 1 箇所で「1000 字あたり 23」になる。 */
@@ -5,7 +6,7 @@ const MIN_CHARS = 200;
 
 const PER = 1000;
 
-const charsOf = (section: Section): number => section.sentences.reduce((sum, sentence) => sum + sentence.text.trim().length, 0);
+const charsOf = (section: Section): number => section.sentences.reduce((sum, sentence) => sum + charLength(sentence), 0);
 
 /**
  * 節あたりの「密度」を見る。件数ではない。
@@ -27,7 +28,7 @@ export const countPerSection: Detector = (doc, options): Finding[] =>
       line: 0,
       column: 0,
       // 節全体を引くと段落をまたいで読めなくなる。最初の文だけ見せて場所を示す。
-      quote: section.firstSentence?.text.trim() ?? "",
+      quote: section.firstSentence === undefined ? "" : proseText(section.firstSentence),
       values: {
         count: density,
         limit: options.limit,

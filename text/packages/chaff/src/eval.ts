@@ -1,4 +1,5 @@
 import { DETECTORS } from "./detectors/index.ts";
+import { charLength } from "./measure.ts";
 import type { ProseDocument, RuleDefinition } from "./plugin.ts";
 
 /**
@@ -50,7 +51,7 @@ const countAt = (docs: readonly ProseDocument[], rule: RuleDefinition, limit: nu
     return detector(doc, { limit, lexicon, where: rule.where }).length;
   });
   const findings = perDoc.reduce((sum, count) => sum + count, 0);
-  const chars = docs.reduce((sum, doc) => sum + doc.sentences.reduce((inner, sentence) => inner + sentence.text.length, 0), 0);
+  const chars = docs.reduce((sum, doc) => sum + doc.sentences.reduce((inner, sentence) => inner + charLength(sentence), 0), 0);
   return { limit, findings, documents: perDoc.filter((count) => count > 0).length, per10k: chars === 0 ? 0 : (findings / chars) * 10000 };
 };
 

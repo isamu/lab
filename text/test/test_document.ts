@@ -23,6 +23,20 @@ describe("ProseDocument の組み立て", () => {
     assert.deepEqual(texts(source), ["前置きの文。", "後の文。"]);
   });
 
+  it("引用を本文として数えない", () => {
+    // 引用は自分の文章ではない。「2 文に割ってください」と言えない相手を指摘しない。
+    const source = ["前置きの文。", "", "> 引用された長い文がここにあります。これも引用の続きです。", "", "後の文。"].join("\n");
+    assert.deepEqual(texts(source), ["前置きの文。", "後の文。"]);
+  });
+
+  it("引用の中の太字も数えない", () => {
+    const doc = build("## 節\n\n> **a** と **b** と **c** です。\n\n本文です。");
+    assert.deepEqual(
+      doc.sections.map((section) => section.strongCount),
+      [0],
+    );
+  });
+
   it("front matter を本文として数えない", () => {
     const source = ["---", "title: テスト", "lang: ja", "---", "", "本文の文です。"].join("\n");
     assert.deepEqual(texts(source), ["本文の文です。"]);
