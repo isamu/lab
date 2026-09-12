@@ -4,6 +4,7 @@ import type { Probe } from "./plugin.ts";
 import { scoreDimension } from "./rubric.ts";
 import { slocOf } from "./files.ts";
 import { perKiloLines } from "./stats.ts";
+import { basename } from "node:path";
 
 /** Warning counts by rule. A hundred untyped files is one decision, not a hundred findings. */
 export const tallyWarnings = (report: Report): readonly (readonly [string, number])[] => {
@@ -36,6 +37,8 @@ export interface ProbeReport {
 export interface Report {
   readonly schemaVersion: 1;
   readonly root: string;
+  /** What to call what was measured: `repo.json` §10.1, falling back to the directory name. */
+  readonly label: string;
   readonly profile: string;
   readonly stacks: readonly string[];
   readonly complete: boolean;
@@ -122,6 +125,7 @@ const mean = (values: readonly number[]): number => (values.length === 0 ? 0 : N
 export interface ReportMeta {
   readonly profile: string;
   readonly stacks: readonly string[];
+  readonly label?: string | undefined;
 }
 
 const DEFAULT_META: ReportMeta = { profile: "app", stacks: ["ts"] };
@@ -150,6 +154,7 @@ export const buildReport = (
   return {
     schemaVersion: 1,
     root,
+    label: meta.label ?? basename(root),
     profile: meta.profile,
     stacks: meta.stacks,
     complete: results.every((r) => r.status.kind !== "skipped"),

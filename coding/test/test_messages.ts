@@ -7,6 +7,7 @@ import type { Report } from "../packages/scoria/src/report.ts";
 const report: Report = {
   schemaVersion: 1,
   root: "demo-repo",
+  label: "demo-repo",
   profile: "app",
   stacks: ["ts"],
   complete: true,

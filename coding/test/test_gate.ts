@@ -40,6 +40,7 @@ interface ReportOptions {
 const reportOf = (dimensions: readonly DimensionReport[], options: ReportOptions = {}): Report => ({
   schemaVersion: 1,
   root: "/repo",
+  label: "repo",
   profile: "app",
   stacks: ["ts"],
   complete: true,

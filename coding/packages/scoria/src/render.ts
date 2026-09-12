@@ -33,6 +33,8 @@ export interface RenderContext {
   readonly comparison?: Comparison | undefined;
   /** Present only under `mode: ratchet`; its absence is what says the run gated nothing. */
   readonly verdict?: Verdict | undefined;
+  /** What the run was configured to do, so the note can say it even when there is no verdict. */
+  readonly mode?: string | undefined;
 }
 
 const MAX_MOVERS = 6;
@@ -80,8 +82,9 @@ const exemptionLine = (exemption: Exemption, messages: Messages): string => {
  * The exemptions are printed whether or not the run failed. A regression that was deliberately not
  * gated, shown nowhere, reads as no regression at all — and then the gate is quietly lying.
  */
-const gateSection = (verdict: Verdict | undefined, messages: Messages): readonly string[] => {
-  if (verdict === undefined) return [messages.reportModeNote, ""];
+const gateSection = (verdict: Verdict | undefined, messages: Messages, mode: string | undefined): readonly string[] => {
+  // A ratchet with no baseline gates nothing, but saying "mode: report" for it is simply untrue.
+  if (verdict === undefined) return [mode === "ratchet" ? messages.ratchetNoBaseline : messages.reportModeNote, ""];
   const failures = verdict.failed
     ? [messages.gateFailed, ...verdict.reasons.map((reason) => `  ${reasonLine(reason, messages)}`), ""]
     : [messages.gatePassed, ""];
@@ -164,7 +167,7 @@ export const renderReport = (report: Report, context: RenderContext): string => 
     ...(context.notice === undefined ? [] : [context.notice, ""]),
     messages.meanNote,
     "",
-    ...gateSection(context.verdict, messages),
+    ...gateSection(context.verdict, messages, context.mode),
   ].join("\n");
 };
 

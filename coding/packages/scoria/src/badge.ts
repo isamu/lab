@@ -1,4 +1,3 @@
-import { basename } from "node:path";
 import type { Report } from "./report.ts";
 import type { ReportDiff } from "./diff.ts";
 
@@ -39,7 +38,7 @@ export const badgeEndpoint = (report: Report, diff?: ReportDiff): BadgeEndpoint 
   const measured = report.overall.scoredDimensions > 0;
   return {
     schemaVersion: 1,
-    label: `scoria · ${basename(report.root)}`,
+    label: `scoria · ${report.label}`,
     message: measured ? `${report.overall.score.toFixed(0)} · this repo only` : "not measured",
     color: measured ? colorOf(diff) : NOTHING_MEASURED,
   };

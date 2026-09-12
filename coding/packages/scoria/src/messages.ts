@@ -54,6 +54,7 @@ export interface Messages {
   readonly gateSizeChange: (dimension: string, percent: number) => string;
   readonly gateAcceptGains: string;
   readonly noTargetsMatched: (patterns: string) => string;
+  readonly ratchetNoBaseline: string;
   readonly targetProblems: string;
   readonly targetProblem: (kind: string, pattern: string) => string;
   readonly measuring: (target: string) => string;
@@ -114,6 +115,7 @@ const en: Messages = {
   gateSizeChange: (dimension, percent) => `${dimension}: the repository changed size by ${percent}%, so its density metrics measure a different denominator`,
   gateAcceptGains: "Improved. `scoria baseline` records this run as the new floor.",
   noTargetsMatched: (patterns) => `No directory matched ${patterns}. Fix "targets" in scoria.config.json, or remove it to measure this directory.`,
+  ratchetNoBaseline: "mode: ratchet — nothing to gate against yet. `scoria baseline` records the floor.",
   targetProblems: "Targets dropped",
   targetProblem: (kind, pattern) => {
     const why: Record<string, string> = {
@@ -183,6 +185,7 @@ const ja: Messages = {
   gateAcceptGains: "改善しています。`scoria baseline` で今回の値を新しい下限として記録できます。",
   noTargetsMatched: (patterns) =>
     `${patterns} に一致するディレクトリがありません。scoria.config.json の "targets" を直すか、消せばこのディレクトリを測ります。`,
+  ratchetNoBaseline: "mode: ratchet — まだ比較する baseline がありません。`scoria baseline` で下限を記録してください。",
   targetProblems: "対象から外したもの",
   targetProblem: (kind, pattern) => {
     const why: Record<string, string> = {

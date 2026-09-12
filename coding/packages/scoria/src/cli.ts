@@ -129,9 +129,9 @@ const gateOf = (mode: Mode, baseline: Report | undefined, report: Report): Verdi
  * One report per directory the config names, each measured as if scoria had been run inside it.
  * Only the invocation root's `targets` apply — a config inside a target does not nominate more.
  */
-const targetsOf = async (options: Options): Promise<TargetSet> => {
+const targetsOf = async (options: Options): Promise<{ readonly targets: TargetSet; readonly base: ScoriaConfig }> => {
   const { config } = await loadConfig(options.target);
-  return resolveTargets(resolve(options.target), config.targets);
+  return { targets: await resolveTargets(resolve(options.target), config.targets), base: config };
 };
 
 /** With several targets, one output path would have each overwrite the last. */
@@ -141,11 +141,11 @@ const perTarget = (path: string | undefined, target: string, many: boolean): str
   return cut <= 0 ? `${path}.${basename(target)}` : `${path.slice(0, cut)}.${basename(target)}${path.slice(cut)}`;
 };
 
-const measureOne = async (options: Options, target: string, siblings: readonly string[]): Promise<void> => {
+const measureOne = async (options: Options, target: string, siblings: readonly string[], base: ScoriaConfig): Promise<void> => {
   const many = siblings.length > 1;
   // repo.json §9.4: a project's extent is its directory minus the directories of nested projects.
   const excluded = nestedWithin(target, siblings).map((nested) => relative(target, nested));
-  const { report, loaded } = await assay(target, PROBES, excluded);
+  const { report, loaded } = await assay(target, PROBES, { excluded, parent: many ? resolve(options.target) : undefined, base });
   const lang = options.lang ?? loaded.config.lang;
   if (options.command === "baseline") {
     const path = await writeBaseline(target, report);
@@ -168,7 +168,10 @@ export const main = async (argv: readonly string[]): Promise<void> => {
     return;
   }
   const messages = messagesFor(options.lang ?? "en");
-  const { paths, problems } = await targetsOf(options);
+  const {
+    targets: { paths, problems },
+    base,
+  } = await targetsOf(options);
   // repo.json §11.3: what was dropped is reported. Silence reads as "nothing was dropped".
   if (problems.length > 0) {
     process.stderr.write(`${messages.targetProblems}\n`);
@@ -181,7 +184,7 @@ export const main = async (argv: readonly string[]): Promise<void> => {
   }
   for (const target of paths) {
     if (paths.length > 1 && !options.json) process.stdout.write(`\n${messages.measuring(displayPath(target))}\n`);
-    await measureOne(options, target, paths);
+    await measureOne(options, target, paths, base);
   }
 };
 
@@ -204,7 +207,7 @@ const runAssay = async (options: Options, report: Report, loaded: LoadedConfig, 
   }
   process.stdout.write(
     options.explain === undefined
-      ? renderReport(report, { source: loaded.source, drift: loaded.drift, notice, lang, comparison, verdict })
+      ? renderReport(report, { source: loaded.source, drift: loaded.drift, notice, lang, comparison, verdict, mode: loaded.config.mode })
       : renderExplain(report, options.explain, lang),
   );
 };

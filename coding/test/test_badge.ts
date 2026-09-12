@@ -7,6 +7,7 @@ import type { ReportDiff } from "../packages/scoria/src/diff.ts";
 const reportOf = (score: number, scoredDimensions: number): Report => ({
   schemaVersion: 1,
   root: "/home/someone/projects/ownplate",
+  label: "ownplate",
   profile: "app",
   stacks: ["ts"],
   complete: true,

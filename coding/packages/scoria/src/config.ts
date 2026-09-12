@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { isRecord, readPackageJson } from "./package-json.ts";
+import { readRepoJson } from "./repo-json.ts";
 import { detectStacks } from "./stacks/index.ts";
 import { isLang, type Lang } from "./messages.ts";
 
@@ -40,7 +41,7 @@ export interface Drift {
   readonly missing: readonly string[];
 }
 
-export type ConfigSource = "config-file" | "package-json" | "detected";
+export type ConfigSource = "config-file" | "repo-json" | "package-json" | "detected";
 
 export interface LoadedConfig {
   readonly config: ScoriaConfig;
@@ -57,19 +58,27 @@ const isProfile = (value: unknown): value is Profile => value === "app" || value
 
 const isMode = (value: unknown): value is Mode => value === "report" || value === "ratchet";
 
-const toConfig = (raw: unknown): ScoriaConfig | undefined => {
-  if (!isRecord(raw) || !isProfile(raw["profile"]) || !isStringArray(raw["stacks"])) return undefined;
+/**
+ * `base` fills in what a source does not state. A `repo.json` extension saying only
+ * `{ "targets": [...] }` is the point of the field: a repository should not have to restate its
+ * stacks to say where its units are.
+ */
+const toConfig = (raw: unknown, base?: ScoriaConfig): ScoriaConfig | undefined => {
+  if (!isRecord(raw)) return undefined;
+  const profile = isProfile(raw["profile"]) ? raw["profile"] : base?.profile;
+  const stacks = isStringArray(raw["stacks"]) ? raw["stacks"] : base?.stacks;
+  if (profile === undefined || stacks === undefined) return undefined;
   const lang = raw["lang"];
   const mode = raw["mode"];
   const targets = raw["targets"];
-  return {
-    profile: raw["profile"],
-    stacks: raw["stacks"],
-    mode: isMode(mode) ? mode : "report",
-    targets: isStringArray(targets) ? targets : [],
-    lang: isLang(lang) ? lang : "en",
-  };
+  return { profile, stacks, mode: modeOf(mode, base), targets: targetsOf(targets, base), lang: langOf(lang, base) };
 };
+
+const modeOf = (value: unknown, base: ScoriaConfig | undefined): Mode => (isMode(value) ? value : (base?.mode ?? "report"));
+
+const targetsOf = (value: unknown, base: ScoriaConfig | undefined): readonly string[] => (isStringArray(value) ? value : (base?.targets ?? []));
+
+const langOf = (value: unknown, base: ScoriaConfig | undefined): Lang => (isLang(value) ? value : (base?.lang ?? "en"));
 
 const detectProfile = (pkg: unknown): Profile => {
   if (!isRecord(pkg)) return "app";
@@ -100,20 +109,40 @@ const driftOf = (config: ScoriaConfig, detected: readonly string[]): Drift => ({
   missing: config.stacks.filter((id) => !detected.includes(id)),
 });
 
-export const loadConfig = async (root: string): Promise<LoadedConfig> => {
-  const detected = await detectConfig(root);
-  const fromFile = await readConfigFile(root);
-  const fromPackage = toConfig((await readPackageJson(root))?.["scoria"]);
-  const stored = fromFile ?? fromPackage;
-  if (stored === undefined) {
+/**
+ * `repo.json` §10: a consumer's own per-repository configuration sits above what the repository says
+ * to every tool, and `repo.json` in turn beats the ecosystem manifest — it was written for this.
+ */
+const sourcesOf = async (root: string, detected: ScoriaConfig): Promise<readonly (readonly [ConfigSource, ScoriaConfig | undefined])[]> => {
+  const repoJson = await readRepoJson(root);
+  // §9: `projects` is what the repository tells every tool, so it is where targets come from when
+  // scoria has not been told otherwise.
+  const declared = { ...detected, targets: repoJson.projects.map((entry) => entry.path) };
+  const fromRepoJson = toConfig(repoJson.extensions["scoria"], declared);
+  return [
+    ["config-file", await readConfigFile(root)],
+    ["repo-json", fromRepoJson ?? (repoJson.projects.length > 0 ? declared : undefined)],
+    ["package-json", toConfig((await readPackageJson(root))?.["scoria"])],
+  ];
+};
+
+/**
+ * `base` is what the run was configured with at the invocation root. A target states what it wants
+ * to differ; everything else it inherits, so `mode: ratchet` set once at the root is not silently
+ * ignored by every directory it names. `targets` is never inherited — that would recurse.
+ */
+export const loadConfig = async (root: string, base?: ScoriaConfig): Promise<LoadedConfig> => {
+  const inherited = base === undefined ? undefined : { ...base, targets: [] };
+  const detected = { ...(await detectConfig(root)), ...(inherited === undefined ? {} : { mode: inherited.mode, lang: inherited.lang }) };
+  const found = (await sourcesOf(root, detected)).find(([, config]) => config !== undefined);
+  if (found === undefined) {
     return { config: detected, source: "detected", frozen: false, drift: { added: [], missing: [] } };
   }
-  return {
-    config: stored,
-    source: fromFile === undefined ? "package-json" : "config-file",
-    frozen: true,
-    drift: driftOf(stored, detected.stacks),
-  };
+  const [source, config] = found;
+  if (config === undefined) {
+    return { config: detected, source: "detected", frozen: false, drift: { added: [], missing: [] } };
+  }
+  return { config, source, frozen: true, drift: driftOf(config, detected.stacks) };
 };
 
 export const writeConfig = async (root: string, config: ScoriaConfig): Promise<string> => {
