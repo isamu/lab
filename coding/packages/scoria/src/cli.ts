@@ -7,6 +7,7 @@ import type { Report } from "./report.ts";
 import { renderExplain, renderReport } from "./render.ts";
 import { renderGithubSummary } from "./summary.ts";
 import { renderSarif } from "./sarif.ts";
+import { badgeEndpoint } from "./badge.ts";
 import { SCORIA_VERSION } from "./version.ts";
 import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
@@ -29,6 +30,7 @@ interface Options {
   readonly fix: boolean;
   readonly summary: boolean;
   readonly sarif: string | undefined;
+  readonly badge: string | undefined;
   readonly lang: Lang | undefined;
 }
 
@@ -41,7 +43,8 @@ const parse = (argv: readonly string[]): Options => {
   const explain = valueAfter(argv, "--explain");
   const lang = valueAfter(argv, "--lang");
   const sarif = valueAfter(argv, "--sarif");
-  const consumed = new Set([explain, lang, sarif]);
+  const badge = valueAfter(argv, "--badge-json");
+  const consumed = new Set([explain, lang, sarif, badge]);
   const positional = argv.filter((arg) => !arg.startsWith("--") && !consumed.has(arg));
   const first = positional[0];
   const command = isCommand(first) ? first : "assay";
@@ -55,6 +58,7 @@ const parse = (argv: readonly string[]): Options => {
     fix: argv.includes("--fix"),
     summary: !argv.includes("--no-summary"),
     sarif,
+    badge,
     lang: isLang(lang) ? lang : undefined,
   };
 };
@@ -107,6 +111,13 @@ const writeSarif = async (report: Report, path: string | undefined): Promise<voi
   await writeFile(path, renderSarif(report, SCORIA_VERSION), "utf8");
 };
 
+/** Published somewhere public, this is all a shields.io endpoint badge needs — no server. */
+const writeBadge = async (report: Report, path: string | undefined, diff: ReportDiff | undefined): Promise<void> => {
+  if (path === undefined) return;
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, `${JSON.stringify(badgeEndpoint(report, diff), null, 2)}\n`, "utf8");
+};
+
 export const main = async (argv: readonly string[]): Promise<void> => {
   const options = parse(argv);
   if (options.command === "init") {
@@ -134,6 +145,7 @@ export const main = async (argv: readonly string[]): Promise<void> => {
   const notice = await freezeIfNeeded(options.target, loaded.frozen, options.write, lang);
   await writeGithubSummary(report, lang, options.summary, comparison?.diff);
   await writeSarif(report, options.sarif);
+  await writeBadge(report, options.badge, comparison?.diff);
   if (options.json) {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     return;

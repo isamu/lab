@@ -2,7 +2,9 @@ export type { Finding, Metric, Probe, ProbeContext, ProbeResult, ProbeStatus, So
 export type { Rubric, Scale, ScoredDimension, ScoredMetric } from "./rubric.ts";
 export type { Report, DimensionReport, Confidence } from "./report.ts";
 export type { Mover, ReportDiff } from "./diff.ts";
+export type { BadgeEndpoint } from "./badge.ts";
 export { assay, PROBES } from "./run.ts";
 export { diffReports } from "./diff.ts";
+export { badgeEndpoint } from "./badge.ts";
 export { scoreMetric, scoreDimension } from "./rubric.ts";
 export { renderReport, renderExplain } from "./render.ts";

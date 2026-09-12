@@ -212,8 +212,11 @@ Rust 実装で単体で動き、`.ts` `.tsx` `.js` `.jsx` `.vue` を自前で解
 意味がないもの    repo 間の絶対値の比較、バッジ、ランキング
 ```
 
-これを **データ構造に埋め込む**。report JSON は `"comparable": false` を必ず持ち、
-scoria はスコアバッジを生成する機能を提供しない（§29 Non-goals）。
+これを **データ構造に埋め込む**。report JSON は `"comparable": false` を必ず持つ。
+バッジは出せるが（§21、§29）、**比較できるもののふりをさせない**。
+文言に `this repo only` を含め、色は水準ではなく baseline からの増減で決める。
+水準で色が変わるバッジは「どの repo でも 90 は緑」という普遍スケールの主張であり、
+それはこの節が否定しているものそのものである。
 
 この制約を受け入れる代わりに、時系列の変化については強い保証を与える。
 そのための仕組みが baseline / ratchet / rebaseline（§17）である。
@@ -1035,7 +1038,7 @@ report JSON に必ず入れる
   "overall": { "score": 63, "delta": -2, "comparable": false }
 
 scoria が提供しないもの
-  スコアバッジ、shields.io 連携、repo ランキング、公開ダッシュボード
+  repo ランキング、公開ダッシュボード、スコアの水準で色が変わるバッジ
 ```
 
 `comparable: false` を構造に埋めるのは、後から誰かがこの JSON でバッジを作ろうとしたときに、
@@ -1375,6 +1378,7 @@ npx scoria enable mutation      # Tier 2 の probe を有効化
 npx scoria doctor               # probe の実行可否と版数を診断
 npx scoria --json               # report JSON を stdout に
 npx scoria --sarif out.sarif    # finding を SARIF に
+npx scoria --badge-json b.json  # shields.io endpoint 用の JSON を書く（§3.3）
 ```
 
 ### 21.1 通常の出力
@@ -1949,7 +1953,9 @@ experimental → stable の昇格
 
 ## 29. Non-goals
 
-- **repo 間のスコア比較。** バッジ、shields.io 連携、ランキング、公開ダッシュボードを提供しない（§3.3）。
+- **repo 間のスコア比較。** ランキングと公開ダッシュボードを提供しない（§3.3）。
+  バッジは `--badge-json` で shields.io endpoint 用の JSON を書くところまで。
+  文言に `this repo only` を、色に増減を載せる。**スコアの水準で色を変えない。**
 - **自動修正。** 検出と修正の分離を維持する（chaff §25 と同じ）。`--fix` は提供しない。
   既存ツールの `--fix` を scoria から呼ぶこともしない。
 - **新しい lint ルールを作ること。** §3.1。内製 probe は既存ツールに相当物が無いものに限る。
