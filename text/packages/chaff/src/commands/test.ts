@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { loadAdapter } from "../adapter-load.ts";
 import { applyByPath } from "../config/by-path.ts";
-import { buildDocument } from "../document.ts";
+import { buildDocument, teamRules } from "../document.ts";
 import { guessLanguage } from "../detect.ts";
 import { collectTargets } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
@@ -35,7 +35,7 @@ const judgeAll = async (
       const source = await readFile(path, "utf8");
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
-      const doc = buildDocument(path, source, adapter);
+      const doc = buildDocument(path, source, adapter, teamRules(config));
       const { genre } = resolveGenre(path, source, config);
       const rules = loadRules(language);
       return { path, outcome: await runSemantic(doc, rules, checks, config.rules, genre, options), rules, language };
@@ -55,7 +55,7 @@ const dryRun = async (
       const source = await readFile(path, "utf8");
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
-      const doc = buildDocument(path, source, adapter);
+      const doc = buildDocument(path, source, adapter, teamRules(config));
       const { genre } = resolveGenre(path, source, config);
       return { path, jobs: planSemantic(doc, loadRules(language), checks, config.rules, genre), sentences: doc.sentences.length };
     }),

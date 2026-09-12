@@ -588,7 +588,7 @@ by_genre:
 | `concrete-evidence-density` ✅ | 数値・コード・リンク・引用の密度 | blog | warning |
 | `max-sentence-length` | 文長 | 両方 | warning |
 | `max-paragraph-length` ✅ | 段落あたり文数 | 両方 | warning |
-| `required-sections` | 必須見出しの有無 | business | error |
+| `required-sections` ✅ | 必須見出しの有無 | business | error |
 | `preamble-length` ✅ | 本題前の段落数 | business | warning |
 | `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
@@ -612,7 +612,21 @@ Jaccard  44%   見出しを丸ごと含んでいるのに、文が長いぶん�
 
 短い見出しは偶然の一致で 100% になるため、trigram が 4 つ未満（おおむね 6 文字未満）の見出しは見ない。
 
-`required-sections` の見出し定義は genre pack が言語別に持つ。
+`required-sections` の見出し定義は、**chaff も genre pack も持たない。利用者が `chaff.yaml` に書く。**
+
+```yaml
+required_sections:
+  - リスク
+  - 費用
+```
+
+初版は genre pack が言語別に持つ設計で、下のような既定の一覧を想定していた。
+実装では採らなかった。**何の節が必須かは組織ごとに違い、chaff が決めると合わない組織で
+rule ごと切られる。** 書いていなければ何も言わない。
+
+照合は部分一致で、見出しの文言までは縛らない（`リスク` は「リスクと対策」に当たる）。
+
+以下は初版の案。残してあるのは、既定を持たせたくなったときの出発点として。
 
 ```yaml
 required-sections:
@@ -653,7 +667,34 @@ detector は言語を知らず、profile から渡された正規表現の配列
 
 セクション内の具体物が 0 のとき、そのセクションだけを L4 judge の候補に渡す（§14）。全文を LLM に渡さずに済む。前版では「未知語（固有名詞の近似）」も数えていたが、これは辞書を要するため L2 に移した。
 
-### 10.1 n-gram は「名前」を数えない
+### 10.1 チームが決める rule
+
+3 つの rule は、**chaff が中身を持たない**。チームが `chaff.yaml` に書いたものだけを見る。
+
+```yaml
+jargon:            # 社内でしか通じない語
+  - 横展開
+  - 握る
+  - 巻き取
+
+required_sections: # この種類の文書に無いと困る見出し
+  - リスク
+  - 費用
+```
+
+何が社内用語かも、何の節が必須かも、組織ごとに違う。**chaff が決めると、決めた内容が合わない組織で
+rule ごと切られる。** 書いていなければ何も言わない（「用語を登録してください」とも言わない）。
+
+`internal-jargon` は**表層でも原形でも当てる**。利用者は辞書形で書く（「握る」）が、本文は活用している
+（「握った」）。品詞解析があれば原形で当たり、無くても表層で当たるので、capability は要求しない。
+
+複合動詞は形態素に割れるため原形が現れない（「巻き取ります」→ 巻き[巻く] + 取り[取る]）。
+語幹で書けば表層で当たる。how_to_fix にそう書いてある。
+
+`proper-noun-density` は spec の初版で「未知語率」としていたが、**品詞解析があれば PROPN を
+数えるだけで足りる**。辞書を別に持つ必要はない。
+
+### 10.2 n-gram は「名前」を数えない
 
 `ngram-repetition` を実文書にかけると、上位は言い回しではなく**固有名詞と識別子**だった。
 
@@ -672,7 +713,7 @@ detector は言語を知らず、profile から渡された正規表現の配列
 **n-gram は文をまたいで数えない。** またぐと「す。シンギュラリ」のように、
 前の文の終わりと名前が繋がって言い回しに見える。
 
-### 10.2 密度の床は単位で分ける
+### 10.3 密度の床は単位で分ける
 
 密度を見る rule は短い文書を測らない。1 個で「1000 あたり 100」になるため。
 **床の値は言語で分ける。** 英語の 200 語と日本語の 200 文字では長さが桁で違う。
@@ -681,7 +722,7 @@ detector は言語を知らず、profile から渡された正規表現の配列
 const FLOOR = { word: 200, char: 500 };
 ```
 
-### 10.3 `list-length-variance` を落とした理由
+### 10.4 `list-length-variance` を落とした理由
 
 実文書の箇条書き 27 個（3 項目以上）で変動係数を測った。
 
@@ -710,15 +751,12 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `cushion-phrase-density` ✅ | phrase-density | business | info |
 | `unqualified-superlative` ✅ | phrase-match + 限定句の不在 | business | warning |
 | `unsourced-number` | pattern-cooccurrence | business | warning |
-| `internal-jargon` | phrase-match（ユーザー辞書） | business | warning |
+| `internal-jargon` ✅ | phrase-match（ユーザー辞書） | business | warning |
 | `repeated-conjunction` ✅ | 段落先頭の語彙照合 | 両方 | warning |
 | `ai-tell` ✅ | weighted phrase-match | blog | info |
 | `padded-intro` | phrase-match（冒頭限定） | blog | warning |
 | `closing-cliche` | phrase-match（末尾限定） | blog | warning |
-| `proper-noun-density` | 未知語率 | blog | info |
-
-`internal-jargon`（利用者の辞書）と `proper-noun-density`（未知語率）は未実装。
-前者は語彙表を利用者が書く仕組みが、後者は辞書か品詞解析が要る。
+| `proper-noun-density` ✅ | 固有名詞の密度 | blog | info |
 
 共通 detector は 4 種類しかない。
 

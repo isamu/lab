@@ -216,7 +216,18 @@ const listsOf = (root: Node, source: string): BulletList[] => {
   return found;
 };
 
-export const buildDocument = (path: string, source: string, adapter: LanguageAdapter): ProseDocument => {
+/** チームが chaff.yaml に書いたもの。語彙表と同じ器に入れて、detector には出所を見せない。 */
+export type TeamRules = { readonly jargon: readonly string[]; readonly requiredSections: readonly string[] };
+
+const EMPTY_TEAM: TeamRules = { jargon: [], requiredSections: [] };
+
+/** Config から取り出す。document は Config の形を知らない。 */
+export const teamRules = (config: { readonly jargon: readonly string[]; readonly requiredSections: readonly string[] }): TeamRules => ({
+  jargon: config.jargon,
+  requiredSections: config.requiredSections,
+});
+
+export const buildDocument = (path: string, source: string, adapter: LanguageAdapter, team: TeamRules = EMPTY_TEAM): ProseDocument => {
   const root = parse(source);
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
   // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
@@ -237,6 +248,7 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
     listSpans: listItems,
     paragraphs: paragraphsOf(paragraphSpans, sentences, listItems),
     lists: listsOf(root, source),
-    lexicons: adapter.lexicons,
+    lexicons: { ...adapter.lexicons, "internal-jargon": team.jargon.map((pattern) => ({ pattern })) },
+    requiredSections: team.requiredSections,
   };
 };

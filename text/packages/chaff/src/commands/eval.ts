@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { loadAdapter } from "../adapter-load.ts";
 import { applyByPath } from "../config/by-path.ts";
-import { buildDocument } from "../document.ts";
+import { buildDocument, teamRules } from "../document.ts";
 import { guessLanguage } from "../detect.ts";
 import { collectTargets } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
@@ -35,7 +35,7 @@ export const runEval = async (targets: readonly string[], argv: readonly string[
       const adapter = await loadAdapter(language);
       const { genre } = resolveGenre(path, source, config);
       await adapter.prepare?.(neededBy(loadRules(language), config.rules, config.experimental, genre, language));
-      return { doc: buildDocument(path, source, adapter), language, genre };
+      return { doc: buildDocument(path, source, adapter, teamRules(config)), language, genre };
     }),
   );
   const language = docs[0]?.language ?? "ja";

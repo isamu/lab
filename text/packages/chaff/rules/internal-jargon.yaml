@@ -1,0 +1,27 @@
+id: internal-jargon
+layer: L2
+status: experimental
+how_to_find: internal-jargon
+word_list: internal-jargon
+severity: warning
+
+name:
+  ja: 社内でしか通じない言葉
+  en: Words that only work inside
+
+why:
+  ja: 社内で通じる言葉は、外の人にも半年後の自分にも通じません。何が社内用語かはチームごとに違うので、chaff.yaml の jargon に自分で並べてください。並べていなければ何も言いません。
+  en: A word that works inside one team does not work outside it, or six months later. Which words those are differs by team, so list them under `jargon` in chaff.yaml. With nothing listed, this rule says nothing.
+
+message:
+  ja: 「{matched}」は社内でしか通じないかもしれません（そういう語が {count} 箇所）
+  en: '"{matched}" may only work inside ({count} such words)'
+
+how_to_fix:
+  ja: 初出のところで普通の言葉に言い換えるか、括弧で説明を添えてください。jargon には辞書形（握る）でも語幹（巻き取）でも書けますが、複合動詞は語幹のほうが確実です。
+  en: Use ordinary words, or explain it in brackets at first use. Entries can be dictionary forms or stems; for compound verbs a stem is safer.
+
+# チームが並べた語なので、1 つでも指摘する。並べた時点で「使わない」と決めている。
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, blog, technical]

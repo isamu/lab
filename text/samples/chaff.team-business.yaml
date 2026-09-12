@@ -48,6 +48,18 @@ word_lists:
 # 意味を見る検査。API key が無ければ自動で skip されます。
 ai_checks: true
 # 判定役。anthropic（既定）か openai。rule も判定の形も変わりません。
+# 社内でしか通じない語。chaff は語を持ちません。ここに並べたものだけを見ます。
+jargon:
+  - 横展開
+  - 握る
+  - 巻き取
+  - えいや
+
+# この種類の文書に無いと困る見出し。同じく、ここに書いたものだけを見ます。
+required_sections:
+  - リスク
+  - 費用
+
 ai_backend: anthropic
 ai_model: claude-sonnet-5
 

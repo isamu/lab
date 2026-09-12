@@ -1,0 +1,26 @@
+id: proper-noun-density
+layer: L3
+status: experimental
+how_to_find: proper-noun-density
+requires: [pos]
+severity: info
+
+name:
+  ja: 固有名詞が多い
+  en: Too many proper nouns
+
+why:
+  ja: 製品名・社名・人名が続くと、それを知らない読者は文の骨組みを見失います。知っている人には読めるので、書いた本人には気づきにくいところです。
+  en: A run of product, company and person names hides the shape of the sentence from anyone who does not already know them. It reads fine to the person who wrote it.
+
+message:
+  ja: 1000 語あたり {density} 個の固有名詞があります（{limit} 個まで）
+  en: "{density} proper nouns per 1000 words (limit {limit})"
+
+how_to_fix:
+  ja: 2 度目からは「その製品」「そのチーム」のように受けてください。初出で何者かを一言添えると、知らない人も読めます。
+  en: After first use, refer back to it. One phrase saying what it is lets a stranger keep reading.
+
+levels: { strict: 20, normal: 40, relaxed: 80 }
+
+use_for: [blog, business, technical]
