@@ -15,7 +15,7 @@ import { isRecord } from "./package-json.ts";
  * baseline; taking it from the repository would let a repository paint its own regression green.
  */
 
-export const REPO_JSON = "repo.json";
+const REPO_JSON = "repo.json";
 
 export interface ProjectEntry {
   readonly path: string;

@@ -96,7 +96,13 @@ Nothing is written when `CI=true`; the run only reports that the detection is no
 `mode: report` is the default, so **this never fails a build**. It prints scores and findings.
 Ratchet gating on regression is not implemented yet (spec §17).
 
-On GitHub Actions the report is also written to the run's **job summary**, where it renders as a
+On GitHub Actions the report is also written to the run's **job summary**, opening with a bar chart.
+GitHub renders a mermaid fence wherever it renders Markdown, the step summary included, so the chart
+costs no image, no artifact and no third party. Bars are this run; the line is the baseline, drawn
+only where the two measured the same metrics. The table stays underneath, because a chart cannot
+carry confidence or say why a dimension went unmeasured.
+
+The report renders there as a
 table with a bar per dimension and collapsible lists of findings. A CI log is a wall of text nobody
 scrolls; the summary lands on the page a reviewer is already looking at. It needs no token and no
 `permissions:` block — the runner provides a file, and scoria appends to it.
