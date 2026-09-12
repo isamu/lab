@@ -146,14 +146,21 @@ const COMMON = new Set([
 /**
  * 展開は略語の**すぐ隣**にあるときだけ認める。
  * 60 文字も見ると、同じ文のどこかに括弧があるだけで「説明済み」になり、1 件も出なくなる。
+ *
+ * 認めるのは 2 つの形。どちらも実際によく書かれる。
+ *   CI（継続的インテグレーション）   略語のあとに括弧
+ *   Continuous Integration (CI)      括弧の中が略語
  */
-const AFTER = /^\s*[(（]/u;
-const BEFORE = /[)）]\s*$/u;
+const OPENS = /^\s*[(（]/u;
+const CLOSES = /^\s*[)）]/u;
+const OPENED = /[(（]\s*$/u;
 
 const isExpanded = (body: string, acronym: string): boolean => {
   const at = body.indexOf(acronym);
   if (at === -1) return false;
-  return AFTER.test(body.slice(at + acronym.length, at + acronym.length + 3)) || BEFORE.test(body.slice(Math.max(0, at - 3), at));
+  const after = body.slice(at + acronym.length, at + acronym.length + 3);
+  const before = body.slice(Math.max(0, at - 3), at);
+  return OPENS.test(after) || (OPENED.test(before) && CLOSES.test(after));
 };
 
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {

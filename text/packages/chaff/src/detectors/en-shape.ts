@@ -134,7 +134,8 @@ export const titleCaseMix: Detector = (doc, options): Finding[] => {
   const title = judged.filter((entry) => entry.title).length;
   const minorityIsTitle = title <= judged.length - title;
   const few = minorityIsTitle ? title : judged.length - title;
-  if (few === 0 || few > options.limit) return [];
+  // 同数なら少数派は無い。どちらかを「他と違う」と呼ぶのは、選びかたが恣意的になる。
+  if (few === 0 || few * 2 === judged.length || few > options.limit) return [];
   return judged
     .filter((entry) => entry.title === minorityIsTitle)
     .map(({ section }) => ({
@@ -173,7 +174,8 @@ export const oxfordComma: Detector = (doc, options): Finding[] => {
   const withComma = judged.filter((entry) => entry.oxford).length;
   const minorityUsesComma = withComma <= judged.length - withComma;
   const few = minorityUsesComma ? withComma : judged.length - withComma;
-  if (few === 0 || few > options.limit) return [];
+  // 同数なら少数派は無い。
+  if (few === 0 || few * 2 === judged.length || few > options.limit) return [];
   return judged
     .filter((entry) => entry.oxford === minorityUsesComma)
     .map(({ sentence }) => ({
