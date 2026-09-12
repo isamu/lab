@@ -1,16 +1,17 @@
 {
   "report": {
     "schemaVersion": 1,
-    "root": "/private/tmp/claude-501/-Users-isamu-ss-llm-lab-coding/a61d777d-32f0-4b34-aaf9-d39dceb55871/scratchpad/basewt/coding",
+    "root": "/private/tmp/claude-501/-Users-isamu-ss-llm-lab-coding/a61d777d-32f0-4b34-aaf9-d39dceb55871/scratchpad/rebase2wt/coding",
+    "label": "scoria-monorepo",
     "profile": "app",
     "stacks": [
       "ts"
     ],
     "complete": false,
     "size": {
-      "files": 66,
-      "sloc": 3339,
-      "testSloc": 1666
+      "files": 82,
+      "sloc": 4341,
+      "testSloc": 2497
     },
     "dimensions": [
       {
@@ -20,24 +21,23 @@
         "coverage": 1,
         "metrics": [
           {
-            "metric": "knip.unused_exports",
+            "metric": "knip.unused_export_ratio",
             "value": 0,
             "state": "ok",
             "scale": {
               "good": 0,
-              "bad": 60
+              "bad": 0.2
             },
             "weight": 0.3,
-            "points": 30,
-            "topContributors": []
+            "points": 30
           },
           {
-            "metric": "knip.unused_files",
+            "metric": "knip.unused_file_ratio",
             "value": 0,
             "state": "ok",
             "scale": {
               "good": 0,
-              "bad": 20
+              "bad": 0.3
             },
             "weight": 0.25,
             "points": 25
@@ -71,7 +71,7 @@
       {
         "dimension": "correctness",
         "status": "experimental",
-        "score": 100,
+        "score": 90.7855,
         "coverage": 1,
         "metrics": [
           {
@@ -83,18 +83,97 @@
               "bad": 3
             },
             "weight": 0.6,
+            "density": true,
             "points": 60
           },
           {
             "metric": "oxlint.violations_per_kloc",
-            "value": 0,
+            "value": 1.8429,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 8
             },
             "weight": 0.4,
-            "points": 40,
+            "density": true,
+            "points": 30.7855,
+            "topContributors": [
+              {
+                "file": "test/test_coverage.ts",
+                "value": 2
+              },
+              {
+                "file": "packages/scoria/src/targets.ts",
+                "value": 2
+              },
+              {
+                "file": "test/test_diff.ts",
+                "value": 2
+              },
+              {
+                "file": "packages/scoria/src/cli.ts",
+                "value": 1
+              },
+              {
+                "file": "packages/scoria/src/probes/swallow.ts",
+                "value": 1
+              }
+            ]
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "0 suppressions in scope"
+      },
+      {
+        "dimension": "documentation",
+        "status": "experimental",
+        "score": 59,
+        "coverage": 1,
+        "metrics": [
+          {
+            "metric": "readme-contract.has_readme",
+            "value": 1,
+            "state": "ok",
+            "scale": {
+              "good": 1,
+              "bad": 0
+            },
+            "weight": 0.35,
+            "points": 35
+          },
+          {
+            "metric": "readme-contract.readme_words",
+            "value": 48,
+            "state": "ok",
+            "scale": {
+              "good": 120,
+              "bad": 30
+            },
+            "weight": 0.2,
+            "points": 4
+          },
+          {
+            "metric": "readme-contract.documented_flag_ratio",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 1,
+              "bad": 0.5
+            },
+            "weight": 0.25,
+            "points": 0
+          },
+          {
+            "metric": "comment-quality.marker_per_kloc",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 2
+            },
+            "weight": 0.2,
+            "density": true,
+            "points": 20,
             "topContributors": []
           }
         ],
@@ -116,6 +195,7 @@
               "bad": 5
             },
             "weight": 0.3,
+            "density": true,
             "points": 30,
             "topContributors": []
           },
@@ -170,45 +250,45 @@
       {
         "dimension": "readability",
         "status": "experimental",
-        "score": 99.6815,
+        "score": 95.6795,
         "coverage": 1,
         "metrics": [
           {
             "metric": "file-shape.sloc_p95",
-            "value": 153,
+            "value": 182,
             "state": "ok",
             "scale": {
               "good": 150,
               "bad": 800
             },
             "weight": 0.3,
-            "points": 29.8615,
+            "points": 28.5231,
             "topContributors": [
               {
-                "file": "packages/scoria/src/probes/config-integrity.ts",
-                "value": 159
+                "file": "packages/scoria/src/messages.ts",
+                "value": 215
               },
               {
-                "file": "packages/scoria/src/plugin.ts",
-                "value": 153
+                "file": "packages/scoria/src/cli.ts",
+                "value": 193
+              },
+              {
+                "file": "packages/scoria/src/run.ts",
+                "value": 182
               },
               {
                 "file": "packages/scoria/src/render.ts",
-                "value": 153
+                "value": 181
               },
               {
-                "file": "packages/scoria/src/probes/suppression-scan.ts",
-                "value": 152
-              },
-              {
-                "file": "packages/scoria/src/messages.ts",
-                "value": 151
+                "file": "packages/scoria/src/plugin.ts",
+                "value": 159
               }
             ]
           },
           {
             "metric": "file-shape.max_file_sloc",
-            "value": 159,
+            "value": 215,
             "state": "ok",
             "scale": {
               "good": 300,
@@ -230,15 +310,23 @@
           },
           {
             "metric": "jscpd.duplicated_lines_pct",
-            "value": 0.09,
+            "value": 0.27,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 10
             },
             "weight": 0.2,
-            "points": 19.82,
+            "points": 19.46,
             "topContributors": [
+              {
+                "file": "test/test_diff.ts",
+                "value": 11
+              },
+              {
+                "file": "test/test_documentation.ts",
+                "value": 7
+              },
               {
                 "file": "test/test_file_shape.ts",
                 "value": 6
@@ -247,15 +335,37 @@
           },
           {
             "metric": "oxlint.violations_per_kloc",
-            "value": 0,
+            "value": 1.8429,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 12
             },
             "weight": 0.15,
-            "points": 15,
-            "topContributors": []
+            "density": true,
+            "points": 12.6964,
+            "topContributors": [
+              {
+                "file": "test/test_coverage.ts",
+                "value": 2
+              },
+              {
+                "file": "packages/scoria/src/targets.ts",
+                "value": 2
+              },
+              {
+                "file": "test/test_diff.ts",
+                "value": 2
+              },
+              {
+                "file": "packages/scoria/src/cli.ts",
+                "value": 1
+              },
+              {
+                "file": "packages/scoria/src/probes/swallow.ts",
+                "value": 1
+              }
+            ]
           }
         ],
         "confidence": "high",
@@ -307,52 +417,52 @@
       {
         "dimension": "test-coverage",
         "status": "experimental",
-        "score": 99.7778,
-        "coverage": 0.3,
+        "score": 95.8675,
+        "coverage": 1,
         "metrics": [
           {
             "metric": "test-presence.test_to_source_ratio",
-            "value": 0.499,
+            "value": 0.5752,
             "state": "ok",
             "scale": {
               "good": 0.5,
               "bad": 0.05
             },
             "weight": 0.3,
-            "points": 99.7778
+            "points": 30
           },
           {
             "metric": "coverage.line_pct",
-            "value": 0,
-            "state": "skipped",
+            "value": 93.06,
+            "state": "ok",
             "scale": {
               "good": 90,
               "bad": 40
             },
             "weight": 0.3,
-            "points": 0
+            "points": 30
           },
           {
             "metric": "coverage.branch_pct",
-            "value": 0,
-            "state": "skipped",
+            "value": 81.71,
+            "state": "ok",
             "scale": {
               "good": 85,
               "bad": 30
             },
             "weight": 0.25,
-            "points": 0
+            "points": 23.5045
           },
           {
             "metric": "coverage.function_pct",
-            "value": 0,
-            "state": "skipped",
+            "value": 81.21,
+            "state": "ok",
             "scale": {
               "good": 90,
               "bad": 40
             },
             "weight": 0.15,
-            "points": 0
+            "points": 12.363
           }
         ],
         "confidence": "high",
@@ -361,30 +471,30 @@
       {
         "dimension": "type-safety",
         "status": "experimental",
-        "score": 99.038,
+        "score": 99.19,
         "coverage": 1,
         "metrics": [
           {
             "metric": "source-mix.untyped_sloc_ratio",
-            "value": 0.0009,
+            "value": 0.0007,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 0.5
             },
             "weight": 0.3,
-            "points": 29.946
+            "points": 29.958
           },
           {
             "metric": "source-mix.untyped_file_ratio",
-            "value": 0.0227,
+            "value": 0.0192,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 0.5
             },
             "weight": 0.2,
-            "points": 19.092,
+            "points": 19.232,
             "topContributors": [
               {
                 "file": "packages/scoria/bin/scoria.js",
@@ -401,13 +511,118 @@
               "bad": 2
             },
             "weight": 0.5,
+            "density": true,
             "points": 50
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "0 suppressions in scope"
+      },
+      {
+        "dimension": "ui-consistency",
+        "status": "experimental",
+        "coverage": 0,
+        "metrics": [
+          {
+            "metric": "ui-token.color_cardinality",
+            "value": 0,
+            "state": "skipped",
+            "scale": {
+              "good": 20,
+              "bad": 120
+            },
+            "weight": 0.3,
+            "points": 0
+          },
+          {
+            "metric": "ui-token.spacing_cardinality",
+            "value": 0,
+            "state": "skipped",
+            "scale": {
+              "good": 10,
+              "bad": 60
+            },
+            "weight": 0.3,
+            "points": 0
+          },
+          {
+            "metric": "ui-token.inline_style_per_kloc",
+            "value": 0,
+            "state": "skipped",
+            "scale": {
+              "good": 0,
+              "bad": 10
+            },
+            "weight": 0.2,
+            "density": true,
+            "points": 0
+          },
+          {
+            "metric": "ui-token.style_block_ratio",
+            "value": 0,
+            "state": "skipped",
+            "scale": {
+              "good": 0,
+              "bad": 0.6
+            },
+            "weight": 0.2,
+            "points": 0
           }
         ],
         "confidence": "high",
         "confidenceReason": "0 suppressions in scope"
       }
     ],
+    "metrics": {
+      "suppression-scan.source_count": 0,
+      "suppression-scan.test_count": 5,
+      "suppression-scan.source_per_kloc": 0,
+      "suppression-scan.unreasoned_source_count": 0,
+      "suppression-scan.unreasoned_ratio": 0,
+      "file-shape.sloc_p95": 182,
+      "file-shape.max_file_sloc": 215,
+      "file-shape.god_file_count": 0,
+      "file-shape.source_file_count": 52,
+      "file-shape.source_sloc": 4341,
+      "source-mix.untyped_file_ratio": 0.0192,
+      "source-mix.untyped_sloc_ratio": 0.0007,
+      "source-mix.untyped_file_count": 1,
+      "source-mix.typed_file_count": 51,
+      "config-integrity.gap_ratio": 0,
+      "config-integrity.gap_count": 0,
+      "ci-integrity.gap_ratio": 0.1667,
+      "ci-integrity.gap_count": 1,
+      "ci-integrity.workflow_count": 4,
+      "oxlint.violations_per_kloc": 1.8429,
+      "oxlint.violations": 8,
+      "oxlint.errors_per_kloc": 0,
+      "jscpd.duplicated_lines_pct": 0.27,
+      "jscpd.clone_count": 3,
+      "tsc.type_errors": 0,
+      "tsc.type_errors_per_kloc": 0,
+      "knip.unused_files": 0,
+      "knip.unused_file_ratio": 0,
+      "knip.unused_export_ratio": 0,
+      "knip.unused_exports": 0,
+      "knip.unused_dependencies": 3,
+      "audit.critical": 0,
+      "audit.high": 0,
+      "audit.moderate": 0,
+      "audit.low": 0,
+      "test-presence.test_to_source_ratio": 0.5752,
+      "test-presence.test_sloc": 2497,
+      "test-presence.test_file_count": 29,
+      "coverage.line_pct": 93.06,
+      "coverage.branch_pct": 81.71,
+      "coverage.function_pct": 81.21,
+      "circular.cycle_count": 0,
+      "readme-contract.has_readme": 1,
+      "readme-contract.readme_words": 48,
+      "readme-contract.documented_flag_ratio": 0,
+      "comment-quality.marker_per_kloc": 0,
+      "comment-quality.marker_count": 0,
+      "comment-quality.comment_density": 0.2122
+    },
     "findings": [
       {
         "rule": "untyped-source",
@@ -430,6 +645,86 @@
         "tier": 0
       },
       {
+        "rule": "oxlint/no-await-in-loop",
+        "severity": "warning",
+        "file": "test/test_coverage.ts",
+        "line": 1,
+        "message": "Unexpected `await` inside a loop.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-await-in-loop",
+        "severity": "warning",
+        "file": "test/test_coverage.ts",
+        "line": 1,
+        "message": "Unexpected `await` inside a loop.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-await-in-loop",
+        "severity": "warning",
+        "file": "packages/scoria/src/cli.ts",
+        "line": 1,
+        "message": "Unexpected `await` inside a loop.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-await-in-loop",
+        "severity": "warning",
+        "file": "packages/scoria/src/targets.ts",
+        "line": 1,
+        "message": "Unexpected `await` inside a loop.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-map-spread",
+        "severity": "warning",
+        "file": "packages/scoria/src/targets.ts",
+        "line": 1,
+        "message": "Spreading to modify array elements in `map` calls is inefficient",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/no-map-spread",
+        "severity": "warning",
+        "file": "test/test_diff.ts",
+        "line": 1,
+        "message": "Spreading to modify object properties in `map` calls is inefficient",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/consistent-function-scoping",
+        "severity": "warning",
+        "file": "test/test_diff.ts",
+        "line": 1,
+        "message": "Function `blank` does not capture any variables from its parent scope",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
+        "rule": "oxlint/prefer-array-find",
+        "severity": "warning",
+        "file": "packages/scoria/src/probes/swallow.ts",
+        "line": 1,
+        "message": "Prefer `find` over filtering and accessing the first result.",
+        "probe": "oxlint",
+        "dimension": "correctness",
+        "tier": 0
+      },
+      {
         "rule": "duplicated-block",
         "severity": "warning",
         "file": "test/test_file_shape.ts",
@@ -438,6 +733,36 @@
         "probe": "jscpd",
         "dimension": "readability",
         "tier": 0
+      },
+      {
+        "rule": "duplicated-block",
+        "severity": "warning",
+        "file": "test/test_documentation.ts",
+        "line": 4,
+        "message": "7 duplicated lines",
+        "probe": "jscpd",
+        "dimension": "readability",
+        "tier": 0
+      },
+      {
+        "rule": "duplicated-block",
+        "severity": "warning",
+        "file": "test/test_diff.ts",
+        "line": 116,
+        "message": "11 duplicated lines",
+        "probe": "jscpd",
+        "dimension": "readability",
+        "tier": 0
+      },
+      {
+        "rule": "undocumented-flags",
+        "severity": "warning",
+        "file": "README.md",
+        "line": 1,
+        "message": "8 flags are accepted but not in the README: --explain, --lang, --sarif, --badge-json, --json",
+        "probe": "readme-contract",
+        "dimension": "documentation",
+        "tier": 0
       }
     ],
     "probes": [
@@ -445,80 +770,126 @@
         "probe": "suppression-scan",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": []
       },
       {
         "probe": "file-shape",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": []
       },
       {
         "probe": "source-mix",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": []
       },
       {
         "probe": "config-integrity",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": []
       },
       {
         "probe": "ci-integrity",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": []
       },
       {
         "probe": "oxlint",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": [
+          "oxlint"
+        ]
       },
       {
         "probe": "jscpd",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": [
+          "jscpd"
+        ]
       },
       {
         "probe": "tsc",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": [
+          "typescript"
+        ]
       },
       {
         "probe": "knip",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": [
+          "knip"
+        ]
       },
       {
         "probe": "audit",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": [
+          "yarn"
+        ]
       },
       {
         "probe": "test-presence",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": []
       },
       {
         "probe": "coverage",
         "status": {
-          "kind": "skipped",
-          "reason": "no coverage report; scoria does not run the project's tests"
-        }
+          "kind": "ok"
+        },
+        "tools": []
       },
       {
         "probe": "circular",
         "status": {
           "kind": "ok"
-        }
+        },
+        "tools": [
+          "madge"
+        ]
+      },
+      {
+        "probe": "readme-contract",
+        "status": {
+          "kind": "ok"
+        },
+        "tools": []
+      },
+      {
+        "probe": "comment-quality",
+        "status": {
+          "kind": "ok"
+        },
+        "tools": []
+      },
+      {
+        "probe": "ui-token",
+        "status": {
+          "kind": "skipped",
+          "reason": "no .vue, .tsx or .jsx files"
+        },
+        "tools": []
       }
     ],
     "toolVersions": {
@@ -530,10 +901,10 @@
       "madge": "8.0.0"
     },
     "overall": {
-      "score": 98.2971,
-      "scoredDimensions": 7,
+      "score": 91.2631,
+      "scoredDimensions": 8,
       "comparable": false
     }
   },
-  "createdAt": "2026-09-12T03:16:50.675Z"
+  "createdAt": "2026-09-12T23:20:42.226Z"
 }
