@@ -2,6 +2,189 @@
 
 Newest first.
 
+## 0.3.0 — 2026-09-13
+
+The largest release so far. **25 rules become 39.** Part-of-speech analysis arrives with nothing to
+install, thresholds follow the genre, and the LLM judge takes a second provider.
+
+📦 [`chaffjs@0.3.0`](https://www.npmjs.com/package/chaffjs/v/0.3.0) ·
+[`@chaffjs/lang-ja@0.3.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.3.0) ·
+[`@chaffjs/lang-en@0.3.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.3.0)
+
+### Part-of-speech, with nothing to install (#52)
+
+The spec had put the Japanese dictionary behind an opt-in (`chaff setup`). It weighs 18 MB and the
+budget said 15. The budget was removed, so the machinery that existed to satisfy it went too.
+
+Four analysers were run on Node 24 before choosing. `lindera-js` is the smallest at 9.1 MB and still
+had to go. It is a wasm-pack **bundler** target with no `main` or `exports`, so Node cannot resolve
+it. `wink-pos-tagger` reports 0.14 MB on npm and pulls 13 MB through `wink-lexicon`. The package
+figure alone would have picked the wrong one.
+
+What survives the removal is the **time** budget, which is why capability and payment are separate:
+
+```
+capabilities.pos = true     what the adapter can do if asked
+adapter.prepare()           what it costs. 2.2s, and only when a rule needs it
+```
+
+A lint with no such rule takes 0.22s; with them, 0.50s. A rule that cannot run says why rather than
+reporting zero findings.
+
+`agentless-passive` has **one rule definition for both languages**. Japanese れる/られる and English
+be + past participle look nothing alike, but they hide the same thing: who acted. The adapter folds
+that judgement into a UD feature (`Voice=Pass`), so the detector never learns a language.
+
+The rule was wrong twice before it was right. It first flagged 14 spots in real documents, 10 of them
+noise. A passive that modifies a noun ("開催される BootCamp") names a thing rather than hides an actor.
+The fix went into the core detector, and **English broke**. "No noun follows" is a fact about Japanese
+word order; English runs the other way. Moving the judgement into the adapter made both correct.
+
+### Fourteen L1/L2 rules, and three that were measured and dropped (#72, #73, #74)
+
+| layer | rules |
+| --- | --- |
+| L1 structure | `max-paragraph-length` `paragraph-length-variance` `section-length-uniformity` `rule-of-three` `preamble-length` |
+| L1 signals | `ngram-repetition` `emoji-density` `undefined-acronym` `concrete-evidence-density` |
+| L2 lexicon | `excessive-hedging` `cushion-phrase-density` `unqualified-superlative` `repeated-conjunction` `ai-tell` |
+
+`list-length-variance` was measured across 27 real bullet lists: coefficient of variation median 21%,
+range 11–56. The first threshold flagged **more than half of what humans wrote**. Bullet lists are
+supposed to be uniform — that is what a list is for. Lowering the threshold until it went quiet would
+have silenced the rule without teaching it to tell good writing from bad. Dropped, with the numbers.
+
+`contraction-consistency` needs to know "don't" and "do not" are one word in two registers. `Lexicon`
+holds `{pattern, weight}` and cannot express a pair; widening the contract can wait for a second rule
+that needs it.
+
+`ai-tell` is the first rule to use `weight`. Each phrase is ordinary alone, so only the sum is
+reported. Both the message and the rationale say it is never a verdict on its own.
+
+### Japanese and English L3 (#57, #58, #59)
+
+Nine Japanese rules and five English ones. The first three Japanese rules were reported as unshippable
+and then shipped, because two of the three diagnoses were wrong.
+
+"Nested の cannot be told from parallel の without dependency parsing" was false: **punctuation
+separates them**. The first implementation collected particles and ignored the commas between them.
+
+```
+3  弊社の新製品の販売の計画                            fires
+1  サービスの運営や、ドキュメントの作成、イベントの運営   does not
+```
+
+"Where 体言止め is acceptable is a matter of taste" was also too strong. The false positives were
+dependent nouns (名詞,非自立) — 「回るのか。」 is a question, not a noun-ending sentence — and that is
+decided mechanically.
+
+What remained was not about the rules at all. Things that parse as paragraphs are not always
+sentences: a bare name under a heading, a citation line, a title. `no-mixed-desumasu` reported exactly
+three false positives in one document, and that document held exactly three fragments. "Is this a
+sentence" now lives in one file, because writing it per rule means one definition of "not prose" per
+rule.
+
+English rules avoid taking sides where style guides disagree: `title-case-consistency` and
+`oxford-comma-consistency` only ask whether one document is consistent with itself.
+
+### Thresholds follow the genre (#60)
+
+```
+business/email   warning この文は 76 文字あります（70 文字まで）
+blog/tech        0 findings
+blog/essay       0 findings
+```
+
+The same sentence. The spec put these numbers in profile files. They went next to the rule instead,
+because a threshold separated from its rationale is a number that drifts.
+
+`explain` and `rules --json` both say when a value came from the genre. Showing the default would make
+a correct setting look broken, and `rules --json` is what an AI reads to write the config.
+
+### `ai_backend` — Anthropic or OpenAI (#64)
+
+```yaml
+ai_backend: openai
+ai_model: gpt-5
+```
+
+What differs between providers is the envelope. The JSON schema producing `{violated, confidence,
+reason}` is shared, because a verdict that changes shape when you change vendor is a verdict that
+changes meaning. Both shapes were read out of the installed SDK types rather than recalled.
+
+**A Claude subscription does not work here.** The SDK resolves an API key, an auth token, a Console
+OAuth profile, or OIDC federation. Claude Code's credentials (`~/.claude`) are none of those.
+Driving the `claude` CLI as the judge was measured, not assumed. **46,906 tokens for one verdict**,
+because Claude Code carries its own system prompt and tool definitions into every call. Roughly a
+hundred times the API path.
+
+### `.env`, and telling apart three ways of failing (#67, #68)
+
+Keys can live in `.env`, read through Node's own loader with no dependency. **The shell still wins**,
+so a different key can be tried without editing anything.
+
+Both fixes in this area came from running against a live API, and neither was reachable from a stub.
+
+A key that is present but rejected used to report "no credentials found", sending the reader back to
+set a key they had already set. A 429 used to arrive as a Node stack trace. Only 401 was caught, so
+"you have no credits remaining" came out as a core dump. Failures are sorted into auth / quota /
+other, each saying what to do next. The provider's own text is passed through, because translating it
+would drop the billing URL.
+
+`.env` was also not in `.gitignore`, and neither was `.env~`, which held a real key.
+
+### `--dry-run` and `look_at` (#61, #62)
+
+```
+doc.md   全 6 文のうち 5 箇所を送ります（API は呼んでいません）
+
+      1 箇所  リスクが書かれていない  （機械で絞り込み済み）
+      2 箇所  依頼には期限と担当がある  （「お願いします」 「ご確認ください」 を含む文）
+      1 箇所  議事録に決定事項がある  （絞り込めず全文）
+```
+
+Never sending the whole document has been a principle since 0.1.0. This is the first release where it
+can be verified, and **without an API key**.
+
+Until now `look_at` was prose that nothing could act on, so every user-written check sent the whole
+document. Writers quote the words they mean, so the quotes are the filter — no model, no dialogue,
+nothing inferred. What cannot be narrowed still goes whole, and the output says so with the fix on the
+next line.
+
+### Fixed
+
+`**` was never masked. The analyser read `**。` as one noun, the sentence lost its terminator and
+swallowed the next one. Emphasis markers are covered now; the emphasised words stay.
+Findings on the example corpus fell from 19 to 18.
+
+`bold-density` rose instead. 18 bold spans had been adding 72 characters of markup to their own
+denominator.
+
+`isClosed` had no ASCII period, so **no English sentence was ever "finished"**. Written for the
+Japanese rules and never exercised in English, it surfaced when an English rule shipped and fired
+nothing.
+
+`repeated-sentence-head` compared six characters in every language, so English output quoted
+`"Wecont"`. It compares three words where the unit is words, which also removed a false positive on a
+URL.
+
+A malformed rule file crashed without naming the file. `:::` directives (Zenn, Docusaurus, VitePress)
+counted as prose.
+
+### Breaking
+
+- Runtime dependencies grow by about 40 MB. The spec's size budget is gone; the time budget stays,
+  which is why the dictionary loads only when a rule needs it.
+- `repeated-sentence-head` reports differently in English.
+- `bold-density` counts more on heavily emphasised text.
+- `docs/` was already `technical/readme` as of 0.2.0; no genre changes in this release.
+
+### Not in this release
+
+`chaff test` has still never completed a round trip against a live API. Authentication, 401 and 429
+are confirmed against the real service, but the account had no credits. Tracked separately.
+`internal-jargon`, `proper-noun-density` and `required-sections` each need machinery that does not
+exist yet.
+
 ## 0.2.0 — 2026-09-12
 
 Calibration. 0.0.1 and 0.1.0 built the rules; this release measures whether they are right, against
