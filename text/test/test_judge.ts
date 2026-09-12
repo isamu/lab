@@ -4,10 +4,11 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
-import { ask, credentialHint, hasCredentials, isAuthFailure, type Ask } from "../packages/chaff/src/judge.ts";
+import { ask, credentialHint, describeFailure, hasCredentials, isAuthFailure, type Ask } from "../packages/chaff/src/judge.ts";
 import type { AnthropicClient } from "../packages/chaff/src/backends/anthropic.ts";
 import type { OpenAIClient } from "../packages/chaff/src/backends/openai.ts";
 import type OpenAI from "openai";
+import OpenAIModule from "openai";
 import { hasCredentials as hasAnthropicCredentials } from "../packages/chaff/src/backends/anthropic.ts";
 
 type Call = Anthropic.MessageCreateParamsNonStreaming;
@@ -205,5 +206,32 @@ describe("判定役の差し替え", () => {
         else process.env[name] = value;
       });
     }
+  });
+});
+
+describe("API が返した失敗の分類", () => {
+  /** 実際に走らせて見つけた。429 は認証の失敗ではないので、素通りしてスタックトレースになっていた。 */
+  it("401 は auth、429 は quota、その他は api", () => {
+    const headers = new Headers();
+    assert.equal(describeFailure("anthropic", new Anthropic.AuthenticationError(401, undefined, "unauthorized", headers))?.kind, "auth");
+    assert.equal(describeFailure("anthropic", new Anthropic.RateLimitError(429, undefined, "slow down", headers))?.kind, "quota");
+    assert.equal(describeFailure("anthropic", new Anthropic.InternalServerError(500, undefined, "boom", headers))?.kind, "api");
+  });
+
+  it("openai でも同じ分類になる", () => {
+    const headers = new Headers();
+    assert.equal(describeFailure("openai", new OpenAIModule.AuthenticationError(401, undefined, "unauthorized", headers))?.kind, "auth");
+    assert.equal(describeFailure("openai", new OpenAIModule.RateLimitError(429, undefined, "no credits", headers))?.kind, "quota");
+  });
+
+  it("API の失敗でないものは拾わない。握りつぶすと原因が消える", () => {
+    // ネットワーク断やコードの誤りまで「鍵を確かめてください」と言わせない。
+    assert.equal(describeFailure("openai", new Error("ECONNREFUSED")), undefined);
+    assert.equal(describeFailure("anthropic", new TypeError("x is not a function")), undefined);
+  });
+
+  it("provider 自身の文言を残す。残高切れは鍵の問題ではない", () => {
+    const failure = describeFailure("openai", new OpenAIModule.RateLimitError(429, undefined, "You have no credits remaining.", new Headers()));
+    assert.match(failure?.message ?? "", /no credits/u);
   });
 });

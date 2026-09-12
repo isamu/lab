@@ -2,7 +2,8 @@ import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
-import type { Judge, Prompt } from "./types.ts";
+import { toFailure } from "./types.ts";
+import type { Failure, Judge, Prompt } from "./types.ts";
 
 export type AnthropicResponse = { readonly content: readonly { readonly type: string; readonly text?: string | undefined }[] };
 
@@ -32,6 +33,13 @@ export const hasCredentials = (profileDir: string = configDir()): boolean =>
 
 export const isAuthFailure = (error: unknown): boolean =>
   error instanceof Anthropic.AuthenticationError || (error instanceof Anthropic.APIError && error.status === 401);
+
+/** API が返した失敗だけを拾う。ネットワーク断やコードの誤りは、握りつぶさずそのまま投げる。 */
+export const describeFailure = (error: unknown): Failure | undefined => {
+  if (!(error instanceof Anthropic.APIError)) return undefined;
+  const raw: { status: unknown; message: unknown } = error;
+  return toFailure(raw);
+};
 
 export const judge =
   (client?: AnthropicClient): Judge =>
