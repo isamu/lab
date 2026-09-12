@@ -1,0 +1,5 @@
+# Words that name the actor. A passive carrying one of these says who did it.
+id: agent-marker
+language: en
+entries:
+  - pattern: " by "

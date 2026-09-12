@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "sentence-splitter": "^5.0.1",
+    "wink-pos-tagger": "^2.2.2",
     "yaml": "^2.9.0"
   },
   "repository": {

@@ -443,14 +443,13 @@ profile は言語別の閾値を持つ（§9）。
 
 ### 7.1 MVP で実装する adapter
 
-| adapter | sentenceSplit | wordSplit | pos | lengthUnit |
-| --- | --- | --- | --- | --- |
-| `lang-ja` Tier 0 | 規則ベース（句点・改行・括弧） | budoux（任意） | false | char |
-| `lang-ja` Tier 1 | 同上 | 形態素解析 | true | char |
-| `lang-en` Tier 0 | 規則ベース（略語辞書つき） | 空白 + 句読点 | false | word |
-| `lang-en` Tier 1 | 同上 | 同上 | true | word |
+| adapter | sentenceSplit | wordSplit | pos | 解析器 | lengthUnit |
+| --- | --- | --- | --- | --- | --- |
+| `lang-ja` | 規則ベース（句点・改行・括弧） | 形態素解析 | true | `@sglkc/kuromoji` | char |
+| `lang-en` | 規則ベース（略語辞書つき） | 空白 + 句読点 | true | `wink-pos-tagger` | word |
 
-英語は Tier 0 と Tier 1 の差が小さい。日本語は形態素解析辞書のサイズが npx 体験に直撃するため差が大きい（§16）。
+`pos: true` は「払えばできる」の宣言であって「もう払った」ではない。実際の読み込みは `prepare`（§16.1）。
+初期化は ja が 2.2 秒、en が 0.13 秒。動く rule が品詞を要求しなければ、どちらも読まない。
 
 ### 7.2 文分割は adapter の責務である（実測）
 
@@ -729,12 +728,18 @@ adapter が detector ごと提供する。rule id は言語間で共有し、実
 
 | id | ja の detector | en の detector | genre |
 | --- | --- | --- | --- |
-| `agentless-passive` | 助動詞「れる/られる」の受動用法かつ動作主なし | AUX + VERB(past participle) かつ by 句なし | business |
+| `agentless-passive` ✅ | 助動詞「れる/られる」の受動用法かつ動作主なし | AUX + VERB(past participle) かつ by 句なし | business |
 | `nominalization` | サ変名詞 + 「を行う/を実施する」 | 動詞由来名詞 + 軽動詞（make / conduct / perform） | business |
 | `sentence-fragment` | 述語のない文 | 定動詞のない文 | 両方 |
 | `list-parallelism` | 項目末尾の品詞の混在 | 項目先頭の品詞の混在 | business |
 
 `agentless-passive` と `nominalization` は Orwell の "Politics and the English Language" が挙げる悪癖と、日本語ビジネス文書で責任の所在が曖昧になる現象が同一のものであることを示す例。rule として一本化する価値がある。
+
+✅ は実装済み。`agentless-passive` は **rule 定義・message・why・how_to_fix を 1 つしか持たない**。
+言語で違うのは、アダプタが付ける `Voice=Pass` と、語彙表の動作主の語（によって / by）だけ。
+これが四層モデルの主張そのもので、ここが 2 本に割れたら L3 の設計は間違っている。
+
+rule は `requires: [pos]` を宣言する。満たせない言語では理由付きで skip される（§16.1）。
 
 ### 12.2 日本語固有
 
@@ -906,42 +911,66 @@ MVP では `write-good` と `retext` 系の rule を評価し、載るものだ�
 
 ---
 
-## 16. Analyzer Tier
+## 16. 品詞解析
 
-L3 rule の多くは `pos` capability を要求する。しかし品詞解析の導入コストは言語で大きく違い、日本語では npx 体験に直撃する。
+L3 rule の多くは `pos` capability を要求する。日本語の品詞解析には辞書が要り、それが 18MB ある。
 
-npm 上の実測値（2026-09-08 時点、`dist.unpackedSize`）:
+npm 上の実測値（2026-09-12 時点、Node 24 ESM で実際に動かした）:
 
-| package | unpacked size |
-| --- | --- |
-| `kuromoji` 0.1.2 | 41.3 MB |
-| `@sglkc/kuromoji` 1.1.0 | 18.3 MB |
-| `budoux` 0.9.1 | 2.7 MB |
-| `textlint` 15.8.0 | 0.24 MB |
+| package | npm の unpacked | 依存込み（実測） | license | ESM で動くか | 初期化 | 解析 |
+| --- | ---: | ---: | --- | --- | ---: | ---: |
+| `@sglkc/kuromoji` 1.1.0 | 18.3 MB | 27 MB | Apache-2.0（辞書は mecab-ipadic） | `createRequire` で可 | 2.2 s | 1 ms |
+| `kuromoji` 0.1.2 | 41.3 MB | — | Apache-2.0 | 未検証 | — | — |
+| `lindera-js` 0.1.4 | 9.1 MB | — | MIT | **不可** | — | — |
+| `wink-pos-tagger` 2.2.2 | 0.14 MB | 13 MB | MIT | `createRequire` で可 | 0.13 s | 3 ms |
 
-日本語辞書を同梱すると `npx chaffjs` の初回ダウンロードが数十 MB になり、「1 コマンドで試せる」という前提が崩れる。既存 spec が挙げる SudachiPy は Python 依存であり、npx 単体ではさらに成立しない。
+**「依存込み」の列を分けてあるのは、`wink-pos-tagger` 単体の 0.14 MB が実態を表さないため。**
+本体は小さいが `wink-lexicon` を引き、そこで 13 MB になる。package 単体の数字だけで選ぶと外す。
 
-そこで tier を adapter の capability として一般化する。
+`lindera-js` は wasm-pack の bundler target で、`import * as wasm from "./lindera_js_bg.wasm"` を含む。
+`main`/`exports` が無く `module` しか持たないため Node が解決できない。サイズは魅力だが npx 単体では成立しない。
+
+**採用: ja は `@sglkc/kuromoji`、en は `wink-pos-tagger`。どちらも依存として同梱する。**
+
+### 16.1 宣言と支払いを分ける
+
+以前の版はここに Tier を置き、`pos` を既定で `false` にして `chaff setup <lang>` による
+opt-in にしていた。辞書を同梱すると npx の初回取得が数十 MB になる、というサイズの制約が根拠だった。
+その制約は外した（§17.1）ので、Tier の機構は作る理由が無い。
+
+代わりに残るのは**時間**の制約である。辞書の初期化は 2 秒かかり、これは lint 全体より長い。
+
+そこで capability を 2 つに割る。
 
 ```text
-Tier 0   pos: false     既定。npx 即実行
-           lang-ja  規則ベースの文分割。budoux は任意
-           lang-en  規則ベースの文分割と空白トークナイズ
-           動く rule  L1 全部 + L2 全部 + L4 全部
-
-Tier 1   pos: true      opt-in
-           chaff setup <lang>  で解析器を ~/.cache/chaff/ に取得
-           動く rule  L3 を含む全部
-
-Tier 2   高精度         任意。eval と calibration 専用
-           lang-ja  SudachiPy (Python)
-           lang-en  spaCy (Python)
-           lint の常用パスには入れない
+capabilities.pos = true     「払えばできる」の宣言。rule の requires はこれと突き合わせる
+adapter.prepare()           実際に払う。動く rule が 1 本も要求しなければ呼ばれない
 ```
 
-Tier 0 だけで rule の 36 本中 27 本（75%）が動く。これは制約ではなく設計目標であり、§10 の character n-gram 採用や §11 の proxy 方式はこの目標から導かれている。
+`Sentence.tokens` は `prepare` を済ませたときだけ入る。入っていないことと
+「品詞の無い文」を混ぜない。要求を満たせない rule は理由付きで skip し、黙って通さない。
 
-英語は Tier 0 と Tier 1 の差が小さく、辞書サイズの問題もないため、`lang-en` は Tier 1 を既定にできる可能性がある。MVP では計測してから決める。
+```
+no-doubled-joshi   この言語では品詞解析が使えないため
+```
+
+### 16.2 detector に言語を見せない
+
+`Token.pos` は UPOS に統一する。IPADIC も Penn Treebank も、アダプタが自分の中で UPOS へ寄せる。
+品詞だけでは足りないものは UD の FEATS（`Voice=Pass` など）に畳んでから渡す。
+
+受動がその例。日本語の「れる/られる」と英語の be + 過去分詞は形が全く違うが、
+**どちらも「動作主が書かれていない」という同じ問題を作る**。アダプタが `Voice=Pass` を付け、
+detector はそれだけを見る。動作主の語（によって / by）は L2 と同じ語彙表から引く。
+
+言語ごとに違うものがもう一つある。日本語は修飾が名詞の前に来るので「後ろに名詞が無ければ述語」
+と言えるが、英語は語順が逆でこれが成立しない。**語順に依存する判断はアダプタから出さない。**
+（実文書で測ったところ、名詞を修飾する受動を数えていたぶんが指摘の 7 割を占めていた。§21）
+
+### 16.3 より高精度な解析
+
+`lang-ja` の SudachiPy、`lang-en` の spaCy は、いずれも Python 依存で npx 単体では成立しない。
+eval と calibration の専用経路としてなら価値があるが、lint の常用パスには入れない。
 
 ---
 
@@ -953,14 +982,18 @@ Tier 0 だけで rule の 36 本中 27 本（75%）が動く。これは制約�
 
 | 項目 | 目標 |
 | --- | --- |
-| 初回 `npx`（キャッシュなし、Tier 0） | 10 秒以内 |
-| パッケージと依存の合計 unpacked size（core + adapter 1 つ + genre pack 1 つ、Tier 0） | 15 MB 以内 |
-| 5000 字 Markdown 1 本の lint | 500 ms 以内 |
-| 2 回目以降の起動（npm cache あり） | 2 秒以内 |
+| 5000 字 Markdown 1 本の lint（品詞を要求する rule なし） | 500 ms 以内 |
+| 同（品詞を要求する rule あり） | 3 秒以内 |
 | `lint` の外部通信 | なし |
 | `lint` の API key | 不要 |
 
-`textlint` 本体が 0.24 MB、rule 群が各数十 KB なので Tier 0 の予算は現実的。品詞解析器を外に出すことがこの予算を成立させている。
+**サイズの目標は置かない。** 以前の版は「core + adapter 1 つで 15 MB 以内」を掲げ、
+そこから品詞解析器を外に出す設計（§16 の Tier）と `@anthropic-ai/sdk` の遅延読み込みを導いていた。
+どちらも、数 MB のために機構を足して経路を増やす取引になっていた。予算のほうを降ろす。
+
+**時間の目標は残す。** サイズは 1 度だけ払うが、時間は実行のたびに払うため。
+これが §16.1 で「宣言」と「支払い」を分けている理由で、
+動く rule が品詞を要求しないときは辞書を読まない。
 
 ### 17.2 既定の依存構成
 
@@ -1458,7 +1491,7 @@ tests/
 
 ## 24. MVP と Roadmap
 
-### Phase 1 — npx で動く Tier 0 / lang-ja
+### Phase 1 — npx で動く lang-ja
 
 目標: `npx chaffjs lint article.md` が品詞解析も API key もなしで動く。
 
@@ -1467,7 +1500,7 @@ core の plugin API 確定（§6）
 言語検出（§8）
 L1 universal detector 16 本
 L2 照合エンジン 4 種
-@chaffjs/lang-ja  Tier 0（規則ベース文分割 + budoux + ja lexicon）
+@chaffjs/lang-ja  規則ベース文分割 + ja lexicon
 chaff-business  profile と required-sections
 chaff-blog      profile
 textlint dispatch（§15.1）
@@ -1480,7 +1513,7 @@ GitHub Actions
 目標: 言語軸が本当に直交していることを、2 つ目の adapter で証明する。
 
 ```text
-@chaffjs/lang-en  Tier 0 / Tier 1
+@chaffjs/lang-en  規則ベース文分割 + en lexicon
 en lexicon（L2 を 11 本）
 en 固有 L3 detector
 L1 rule が両言語で同一結果になることの検証（§23）
@@ -1489,11 +1522,12 @@ genre pack を一切変更せずに en が動くことの確認
 
 Phase 2 が genre pack の変更を必要としたら、四層モデルの切り分けが間違っている。これは設計の検証点として意図的に置く。
 
-### Phase 3 — Tier 1（品詞解析）
+### Phase 3 — 品詞解析
 
 ```text
-chaff setup <lang> による解析器取得
-UPOS への写像
+解析器を依存として同梱（ja kuromoji / en wink）
+UPOS と FEATS への写像
+requires と prepare（§16.1）
 L3 rule（ja 8 本 / en 6 本）
 skip と unsupported の表示（§17.4）
 ```
@@ -1538,6 +1572,6 @@ FP dashboard
 2. **`nlh` との関係。** 既存 spec を本 spec で置き換えるのか、`nlh` を概念仕様として残すのか。
 3. **`lang-en` を MVP に含めるか。** 本 spec は Phase 2 に置いているが、言語軸が直交している証明は早いほうがよく、Phase 1 と同時に着手する選択もある。ただし en の corpus calibration まで含めると MVP が倍になる。
 4. **`section-length-uniformity` と `sentence-rhythm` の仮説検証。** 「AI 生成記事は節の長さと文の長さが揃う」は未検証の仮説。corpus 評価の結果次第では rule ごと落とす。
-5. **日本語の品詞解析器。** `@sglkc/kuromoji`（18.3 MB）を setup で取得するか、budoux（2.7 MB）による分節で済ませる rule 設計に寄せるか。
-6. **英語 adapter の Tier 既定。** en は品詞解析が軽いため Tier 1 を既定にできる可能性がある。Phase 2 で計測してから決める。
+5. **「〜に委ねられる」を動作主ありと見なせるか。** 助詞「に」は動作主も対象も示すため、語彙表に入れると誤検知が増える。区別には係り受け解析が要る。実文書での `agentless-passive` の誤検知 1/5 はこれ。
+6. **れる・られるの多義。** 受動・可能・尊敬・自発を形だけでは区別できない。アダプタは「受動の形」として印を付け、断定しない。corpus で誤検知率を測ってから status を stable にする。
 7. **`checks.yaml` の `look_at` を絞り込み条件にどう変換するか。** 自然文で書かれた「どこを見るか」を §14 の candidate filter に落とす必要がある。案は 2 つ。`chaff checks add` の対話で AI が条件を作って確認を取るか、書かれなければ文書全体を対象にしてコストを警告するか。前者は精度が読めず、後者は §14 の原則を緩める。

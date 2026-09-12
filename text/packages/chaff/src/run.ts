@@ -1,6 +1,6 @@
 import { DETECTORS } from "./detectors/index.ts";
 import { resolve } from "./levels.ts";
-import type { Finding, Level, ProseDocument, RuleDefinition } from "./plugin.ts";
+import type { AdapterNeeds, Finding, Level, ProseDocument, RuleDefinition } from "./plugin.ts";
 import { lineStarts, placeOf } from "./position.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
@@ -22,6 +22,37 @@ const levelFor = (rule: RuleDefinition, settings: Settings, experimental: boolea
   return "normal";
 };
 
+const CAPABILITY_NAME: Readonly<Record<string, string>> = { pos: "品詞解析", lemma: "原形" };
+
+/** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
+const has = (capabilities: ProseDocument["capabilities"], need: string): boolean => {
+  if (need === "pos") return capabilities.pos;
+  if (need === "lemma") return capabilities.lemma;
+  return false;
+};
+
+/** 要求を満たさない rule は動かせない。満たさないまま動かすと「指摘 0 件」が保証に見える。 */
+const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
+  if (rule.languages !== undefined && !rule.languages.includes(doc.language)) return `${doc.language} 向けの rule ではないため`;
+  const missing = rule.requires.find((need) => !has(doc.capabilities, need));
+  if (missing === undefined) return undefined;
+  return `この言語では${CAPABILITY_NAME[missing] ?? missing}が使えないため`;
+};
+
+const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] =>
+  rules.filter((rule) => rule.use_for.some((target) => genre.startsWith(target)));
+
+/**
+ * 解析器の初期化に払う代金を決める。動く rule が 1 本も要求しないなら読み込まない。
+ * capabilities は「払えばできる」の宣言なので、ここでは見ない。
+ */
+export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, experimental: boolean, genre: string, language: string): AdapterNeeds => ({
+  pos: forGenre(rules, genre)
+    .filter((rule) => rule.layer !== "L4" && levelFor(rule, settings, experimental) !== "off")
+    .filter((rule) => rule.languages === undefined || rule.languages.includes(language))
+    .some((rule) => rule.requires.includes("pos") || rule.requires.includes("lemma")),
+});
+
 const place = (starts: readonly number[], finding: Finding): Finding => {
   const offset = finding.values["offset"];
   const at = placeOf(starts, typeof offset === "number" ? offset : 0);
@@ -30,7 +61,7 @@ const place = (starts: readonly number[], finding: Finding): Finding => {
 
 export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], settings: Settings, experimental: boolean, genre: string): RunResult => {
   const starts = lineStarts(doc.source);
-  const applicable = rules.filter((rule) => rule.use_for.some((target) => genre.startsWith(target)));
+  const applicable = forGenre(rules, genre);
   const forced = applicable
     .filter((rule) => rule.status === "experimental" && settings[rule.id] !== undefined && settings[rule.id] !== "off")
     .map((rule) => rule.id);
@@ -40,6 +71,8 @@ export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], s
       if (rule.layer === "L4") {
         return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: "意味を読む検査のため（npx chaff test で動きます）" }] };
       }
+      const blocked = unmet(rule, doc);
+      if (blocked !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: blocked }] };
       const level = levelFor(rule, settings, experimental);
       if (level === "off") {
         const why = rule.status === "experimental" && settings[rule.id] === undefined ? "まだ試験中のため" : "設定で止めているため";

@@ -3,10 +3,25 @@
 
 export type Span = { readonly start: number; readonly end: number };
 
-export type Sentence = { readonly span: Span; readonly text: string };
+/**
+ * tokens は adapter が prepare 済みのときだけ入る。無いことと「品詞が無い文」を混ぜない。
+ * token の span は文の span と同じ座標系（segment に渡した文字列の先頭が 0）。
+ * 2 つの基準を混ぜると、ずれたときに どちらが悪いか分からなくなる。
+ */
+export type Sentence = { readonly span: Span; readonly text: string; readonly tokens?: readonly Token[] };
 
-/** 品詞は Universal Dependencies の UPOS に統一する。アダプタ独自の体系を露出させない。 */
-export type Token = { readonly span: Span; readonly surface: string; readonly pos: string; readonly lemma?: string };
+/**
+ * 品詞は Universal Dependencies の UPOS に統一する。アダプタ独自の体系を露出させない。
+ * features は UD の FEATS。「受動か」のように品詞だけでは足りず、かつ言語ごとに
+ * 見え方が違うものを、アダプタが自分の言語の知識で畳んでここに置く。例: Voice=Pass。
+ */
+export type Token = {
+  readonly span: Span;
+  readonly surface: string;
+  readonly pos: string;
+  readonly lemma?: string;
+  readonly features?: Readonly<Record<string, string>>;
+};
 
 export type Segmentation = {
   readonly sentences: readonly Sentence[];
@@ -33,6 +48,9 @@ export type AdapterCapabilities = {
   readonly lengthUnit: LengthUnit;
 };
 
+/** prepare に渡す要求。動く rule が要らないものの代金を払わせない。 */
+export type AdapterNeeds = { readonly pos: boolean };
+
 export type LanguageAdapter = {
   readonly kind: "language";
   /** BCP 47 の primary subtag。"ja" / "en"。 */
@@ -41,6 +59,11 @@ export type LanguageAdapter = {
   readonly capabilities: AdapterCapabilities;
   /** この言語である確からしさ。0..1。 */
   readonly detect: (source: string) => number;
+  /**
+   * 解析器の読み込み。capabilities は「払えばできる」の宣言で、prepare が「払う」。
+   * 日本語の辞書は初期化に 1.5 秒かかるので、要求されたときだけ呼ぶ。
+   */
+  readonly prepare?: (need: AdapterNeeds) => Promise<void>;
   readonly segment: (text: string) => Segmentation;
   /** L2 rule が word_list で引く。アダプタが自分の言語のぶんだけを持つ。 */
   readonly lexicons: Readonly<Record<string, Lexicon>>;
@@ -69,6 +92,8 @@ export type ProseDocument = {
   readonly source: string;
   readonly language: string;
   readonly lengthUnit: LengthUnit;
+  /** rule の requires を突き合わせる先。満たさない rule は理由付きで skip する。 */
+  readonly capabilities: AdapterCapabilities;
   readonly sections: readonly Section[];
   readonly sentences: readonly Sentence[];
   /** アダプタが持つ語彙表。detector は言語を知らずにこれを引く。 */
@@ -121,6 +146,10 @@ export type RuleDefinition = {
   /** L4 のみ。LLM に渡す決まり。言語別。 */
   readonly what_to_check: Localized | undefined;
   readonly where: string | undefined;
+  /** adapter に要る capability。"pos" / "lemma"。満たさなければ動かさない。spec §16。 */
+  readonly requires: readonly string[];
+  /** 動かす言語。未指定は全言語。「ですます調」のように言語に固有の rule が使う。 */
+  readonly languages: readonly string[] | undefined;
   readonly use_for: readonly string[];
   readonly severity: Severity;
 };

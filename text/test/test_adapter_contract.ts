@@ -16,9 +16,17 @@ describe("LanguageAdapter の契約", () => {
         assert.equal(target.capabilities.sentenceSplit, true);
       });
 
-      it("MVP では品詞解析を持たない（Tier 0）", () => {
-        // spec §16。持つようになったら、この期待を変えるより先に setup の導線を用意すること。
-        assert.equal(target.capabilities.pos, false);
+      it("品詞解析を宣言し、それを払う prepare を持つ", () => {
+        // capabilities は「払えばできる」の宣言。片方だけだと、要求を満たせるのに
+        // 満たさない（prepare 無し）か、宣言なしに読み込む（capability 無し）になる。
+        assert.equal(target.capabilities.pos, true);
+        assert.equal(typeof target.prepare, "function");
+      });
+
+      it("要求されなければ解析器を読まない", async () => {
+        // この file は一度も pos を要求しない。要求しないまま読み込まれていたら tokens が入る。
+        await target.prepare?.({ pos: false });
+        assert.equal(target.segment("これは文です。 This is a sentence.").sentences[0]?.tokens, undefined);
       });
 
       it("core からアダプタ名を引ける", () => {

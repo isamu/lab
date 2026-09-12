@@ -22,7 +22,7 @@ import { renderExplain } from "./render/explain.ts";
 import { renderFriendly } from "./render/friendly.ts";
 import { rulesJson } from "./render/rules-json.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
-import { runRules } from "./run.ts";
+import { neededBy, runRules } from "./run.ts";
 import type { Level, RuleDefinition } from "./plugin.ts";
 
 const USAGE = `chaff — 文章の読みにくいところを見つけます。文章は書き換えません。
@@ -92,9 +92,11 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
   const adapter = await loadAdapter(language);
   const { genre, from } = resolveGenre(path, source, config);
-  const doc = buildDocument(path, source, adapter);
   const rules = loadRules(language);
-  const raw = runRules(doc, rules, config.rules, config.experimental || argv.includes("--experimental"), genre);
+  const experimental = config.experimental || argv.includes("--experimental");
+  await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
+  const doc = buildDocument(path, source, adapter);
+  const raw = runRules(doc, rules, config.rules, experimental, genre);
   // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
   const applied = applySuppressions(
     source,
