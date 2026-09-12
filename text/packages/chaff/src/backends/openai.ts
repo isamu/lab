@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { toFailure } from "./types.ts";
 import type { Failure, Judge, Prompt } from "./types.ts";
 
-export type OpenAIResponse = { readonly choices: readonly { readonly message: { readonly content: string | null } }[] };
+type OpenAIResponse = { readonly choices: readonly { readonly message: { readonly content: string | null } }[] };
 
 /** judge が使うのは chat.completions.create だけ。最小の面だけを要求する。 */
 export type OpenAIClient = {

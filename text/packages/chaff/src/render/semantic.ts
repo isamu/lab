@@ -22,7 +22,7 @@ const narrowingLines = (result: SemanticResult): string[] =>
     return [`    ${name}: ${what} を含む ${narrowing.kept} 文だけを読みました（全 ${narrowing.total} 文）`];
   });
 
-export const aiBanner = (result: SemanticResult): string[] => [
+const aiBanner = (result: SemanticResult): string[] => [
   "",
   `═══ AI による判定 ${"═".repeat(RULE - 17)}`,
   "    文章の意味を読んでいます。実行するたび結果が変わることが",

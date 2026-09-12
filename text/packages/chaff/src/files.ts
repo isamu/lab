@@ -26,7 +26,7 @@ const expand = (target: string): string[] => {
  * ロケールを明示する。既定のロケールに任せると、同じ入力でも機械によって順序が変わる。
  * 指摘の並びは CI のログにも baseline にも入るので、順序が揺れてはいけない。
  */
-export const byPath = (left: string, right: string): number => left.localeCompare(right, "en");
+const byPath = (left: string, right: string): number => left.localeCompare(right, "en");
 
 export const collectTargets = (targets: readonly string[]): string[] => {
   const found = targets.flatMap(expand).filter((path) => !isSkipped(path));
