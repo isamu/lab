@@ -1,0 +1,45 @@
+# spec §14: are the visual decisions taken once, or once per component?
+#
+# Cardinality, not count. A design system converges spacing on a few values — 4, 8, 12, 16 — while
+# a codebase written a component at a time accumulates 5, 7, 13, 17, 23. Counting occurrences would
+# measure how much UI there is; counting distinct values separates growth from disorder, which is
+# what docs/calibration.md found the count-based metrics could not do.
+#
+# A repository with no components skips this dimension entirely and reports `—` (§18.1). It is the
+# dimension most dependent on a project's own conventions, so it is scored loosely on purpose.
+id: ui-consistency
+status: experimental
+
+metrics:
+  # A palette, including shades and states, is a few dozen values. Past a hundred distinct colours
+  # nobody is choosing from a palette.
+  #
+  # Six UI projects measured: five carry 0 to 14 distinct colours, one carries 201 — spread across
+  # ordinary components, 34 in one of them, not gathered in a theme file.
+  - metric: ui-token.color_cardinality
+    scale: { good: 20, bad: 120 }
+    weight: 0.3
+
+  # 4 / 8 / 12 / 16 / 24 / 32 is six. Forty distinct spacing values is not a scale, it is a habit.
+  # The same six projects: 2 to 21, and 89 in the one that also carries 201 colours.
+  - metric: ui-token.spacing_cardinality
+    scale: { good: 10, bad: 60 }
+    weight: 0.3
+
+  # An inline style is a decision that cannot be shared, reused or overridden from one place. One
+  # every hundred lines of UI is no longer an exception, it is how the codebase is written.
+  # Measured across six UI projects: 0.4 to 2.3 per kloc, so `bad: 20` scored every one of them
+  # above 88 and told them apart not at all.
+  - metric: ui-token.inline_style_per_kloc
+    density: true
+    scale: { good: 0, bad: 10 }
+    weight: 0.2
+
+  # A style block silently stops applying when a component's template has a fragment root, which is
+  # the failure a utility class does not have.
+  - metric: ui-token.style_block_ratio
+    scale: { good: 0, bad: 0.6 }
+    weight: 0.2
+
+confidence_from:
+  - suppression-scan.source_count

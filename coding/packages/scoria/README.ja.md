@@ -209,6 +209,7 @@ eslint の設定を代わりに選ぶような、判断が要ることはしま�
 | `audit`            | security                 | 既知の脆弱性。プロジェクト自身のパッケージマネージャに聞きます                              |
 | `circular`         | architecture             | 循環依存。「使われていないコード」とは別の壊れ方で、knip には見えません                     |
 | `test-presence`    | test-coverage            | テストコードの量（対象コードとの比）                                                        |
+| `ui-token`         | ui-consistency           | コンポーネントが使っている色と余白の**種類数**、インラインスタイル、style ブロック          |
 | `readme-contract`  | documentation            | README があるか、どれだけ書いてあるか、いま受け取るフラグがそこに載っているか               |
 | `comment-quality`  | documentation            | コードに残った TODO / FIXME / XXX / HACK。コメント密度は記録のみで採点しません              |
 | `coverage`         | test-coverage            | 行・分岐・関数のカバレッジ。プロジェクトが出力済みのレポートを読みます                      |
