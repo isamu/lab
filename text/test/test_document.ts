@@ -144,3 +144,19 @@ describe("ProseDocument の組み立て", () => {
     assert.deepEqual(build("").sections, []);
   });
 });
+
+describe("裸の URL", () => {
+  it("本文として数えない", () => {
+    // GFM の autolink 拡張を入れていないので mdast ではただのテキストになる。
+    // 残すと、見出しと URL の中の識別子が一致して「見出しの繰り返し」と読まれる。
+    const [text] = texts("参照は https://example.com/mulmo_script_validator です。");
+    assert.ok(!(text ?? "").includes("mulmo_script"));
+    assert.match(text ?? "", /^参照は\s+です。$/u);
+  });
+
+  it("リンクの表示文字は残す", () => {
+    const [text] = texts("参照は [説明](https://example.com/x) です。");
+    assert.match(text ?? "", /説明/u);
+    assert.ok(!(text ?? "").includes("example.com"));
+  });
+});

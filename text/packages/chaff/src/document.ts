@@ -76,7 +76,17 @@ const EMPHASIS = new Set(["strong", "emphasis", "delete"]);
  */
 const DIRECTIVE = /^:::[^\n]*/gmu;
 
-const directiveSpans = (source: string): Span[] => [...source.matchAll(DIRECTIVE)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+/**
+ * `https://…` をそのまま書いた URL。GFM の autolink 拡張を入れていないので mdast では
+ * ただのテキストになり、本文として残る。残すと、見出しと URL の中の識別子が一致して
+ * 「見出しの繰り返し」と読まれる。表示される文字も本文ではない。
+ */
+const BARE_URL = /https?:\/\/[^\s)<>"'\]]+/gu;
+
+const matchSpans = (source: string, pattern: RegExp): Span[] =>
+  [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+
+const directiveSpans = (source: string): Span[] => [...matchSpans(source, DIRECTIVE), ...matchSpans(source, BARE_URL)];
 
 const collectMasks = (root: Node, source: string): Span[] => {
   const spans: Span[] = [...directiveSpans(source)];

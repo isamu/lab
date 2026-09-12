@@ -88,3 +88,21 @@ describe("concrete-evidence-density", () => {
     assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
   });
 });
+
+describe("heading-echo の絞り込み", () => {
+  const echoed = (source: string): boolean => idsFor(source, "blog/tech").includes("heading-echo");
+
+  it("invalid: 見出しを繰り返して何も足さない", () => {
+    assert.ok(echoed("## キャッシュの仕組み\n\nキャッシュの仕組みについて説明します。"));
+  });
+
+  it("valid: 見出しの語を含んでいても、中身を足していれば指摘しない", () => {
+    // 実文書（英語 11 本）で測ったら、この条件なしでは 72.7% の文書が該当した。
+    const source = "## ToolsAgent\n\nGraphAI provides ToolsAgent components that use LLMs to dynamically invoke agents from natural language input.";
+    assert.ok(!idsFor(source, "blog/tech", en).includes("heading-echo"));
+  });
+
+  it("英語でも短い繰り返しは拾う", () => {
+    assert.ok(idsFor("## Generating Output\n\nVarious outputs can be generated:", "blog/tech", en).includes("heading-echo"));
+  });
+});
