@@ -3,6 +3,7 @@ import type { DimensionReport, Report } from "./report.ts";
 import { tallyWarnings } from "./report.ts";
 import { messagesFor, type Lang, type Messages } from "./messages.ts";
 import type { ReportDiff } from "./diff.ts";
+import { renderChart } from "./chart.ts";
 
 /**
  * The report as GitHub-flavoured Markdown, for `$GITHUB_STEP_SUMMARY`.
@@ -126,6 +127,7 @@ export const renderGithubSummary = (report: Report, lang: Lang, diff?: ReportDif
     `\`${report.stacks.join(" · ")}\` · ${messages.profileLabel}: ${report.profile} · ` +
       `${messages.filesLine(report.size.files, report.size.sloc, report.size.testSloc)}`,
     "",
+    ...renderChart(report, diff),
     `| ${messages.dimension} | ${messages.score} | Δ | | ${messages.confidence} |`,
     "| --- | ---: | ---: | --- | --- |",
     ...report.dimensions.map((dimension) => dimensionRow(dimension, diff)),
