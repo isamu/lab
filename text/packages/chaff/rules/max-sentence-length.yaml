@@ -25,4 +25,4 @@ levels:
   ja: { strict: 70, normal: 100, relaxed: 140 }
   en: { strict: 18, normal: 25, relaxed: 35 }
 
-use_for: [blog, business]
+use_for: [blog, business, technical]
