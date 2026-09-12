@@ -163,6 +163,8 @@ export type RuleDefinition = {
   readonly where: string | undefined;
   /** adapter に要る capability。"pos" / "lemma"。満たさなければ動かさない。spec §16。 */
   readonly requires: readonly string[];
+  /** 複合シグナル。ここに並べた rule のうち何本が出たかを見る。spec §20.2。 */
+  readonly from: readonly string[];
   /** 動かす言語。未指定は全言語。「ですます調」のように言語に固有の rule が使う。 */
   readonly languages: readonly string[] | undefined;
   readonly use_for: readonly string[];

@@ -888,7 +888,9 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 
 ### 12.4 記号
 
-`no-em-dash` は記号なので L1 に置けるが、許容度が言語で大きく違うため genre profile 側で言語別 severity を持つ。
+`no-em-dash` ✅ は記号なので L1 に置けるが、許容度が言語で大きく違うため **rule が言語別 severity を持つ**。
+genre profile ではなく rule 側に置いたのは、`levels` が既に言語別に書ける仕組みを持っており、
+severity にも同じ畳みかたを通すだけで済んだため。
 
 ```yaml
 no-em-dash:
@@ -1509,7 +1511,13 @@ bold-density: strict       # 2026-09-11 図の説明で太字を多用するた�
 
 ### 20.2 複合シグナル
 
-`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` / `no-em-dash` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に 1 件の warning に集約する。個別に 20 件の info を出すより読みやすく、誤検知に強い。
+✅ 実装済み。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` / `no-em-dash` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に 1 件の warning を足す。
+
+**元の指摘は消さない。** spec の初版は「集約する」としていたが、`from` に並ぶ 7 本のうち
+`padded-intro` と `closing-cliche` は stable な warning で、単独でも正しい指摘である。
+まとめるために消すと、本物の指摘が見えなくなる。
+
+複合シグナルは他の rule の**結果**を読むので、detector の形には収まらない。run の二段目として扱う。
 
 ```yaml
 ai-generated-composite:
