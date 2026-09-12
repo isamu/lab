@@ -113,6 +113,32 @@ describe("ProseDocument の組み立て", () => {
     assert.equal(doc.sections[0]?.depth, 0);
   });
 
+  it("強調の記号は本文に数えない。囲まれた文字は残す", () => {
+    // 読み手が読むのは「強調」の 2 文字で、`**` の 4 文字ではない。
+    const [plain] = texts("これは強調です。");
+    const [marked] = texts("これは**強調**です。");
+    assert.equal(marked?.replace(/\s/gu, ""), plain);
+  });
+
+  it("強調で終わる文が、次の文を飲み込まない", () => {
+    // `**。` は解析器に 1 語として読まれ、文の終わりが消える。記号を覆うことで閉じる。
+    assert.equal(texts("これは**大事です**。次の文です。").length, 2);
+  });
+
+  it("強調の記号を覆っても、太字そのものは数える", () => {
+    // 記号を「覆った場所」と同じ集合にすると、太字が自分の記号に覆われて 1 つも数えられなくなる。
+    const doc = build("## 節\n\n本文で **強調** します。");
+    assert.deepEqual(
+      doc.sections.map((section) => section.strongCount),
+      [1],
+    );
+  });
+
+  it("::: のディレクティブは本文ではない", () => {
+    // Zenn / Docusaurus / VitePress の囲み記法。標準 Markdown に無く、段落として解析される。
+    assert.deepEqual(texts(":::message\n中の文です。\n:::"), ["中の文です。"]);
+  });
+
   it("空文書でも落ちない", () => {
     assert.deepEqual(texts(""), []);
     assert.deepEqual(build("").sections, []);
