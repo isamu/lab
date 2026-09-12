@@ -6,3 +6,6 @@ dist/
 .env
 .env*
 !.env.example
+
+# Coverage output. scoria reads it when it is there; nothing should commit it.
+coverage/

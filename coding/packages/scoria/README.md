@@ -304,11 +304,28 @@ and installed type definitions, so scoria runs theirs.
 
 ### scoria does not run your tests
 
-Coverage is read from a report the project already produced — `coverage/coverage-summary.json`,
-which Vitest, Jest and nyc all emit. A suite can take minutes, touch a database, need credentials,
-or leave state behind; a quality tool that triggers all that as a side effect of being asked for a
-number is not one anyone runs twice. Without a report, coverage reports skipped and `test-presence`
-still answers the blunter question.
+Coverage is read from a report the project already produced. A suite can take minutes, touch a
+database, need credentials, or leave state behind; a quality tool that triggers all that as a side
+effect of being asked for a number is not one anyone runs twice.
+
+Two formats are read, in this order:
+
+| file                             | written by                                                                        |
+| -------------------------------- | --------------------------------------------------------------------------------- |
+| `coverage/coverage-summary.json` | Istanbul's `json-summary` — Vitest, Jest and nyc, when asked for it               |
+| `coverage/lcov.info`             | most coverage tools by default, and Node's own runner with `--test-reporter=lcov` |
+
+**So run the tests with coverage before scoria**, or the dimension rests on `test-presence` alone
+and says so:
+
+```yaml
+- run: yarn test:coverage # writes coverage/lcov.info
+- run: npx -y scoria
+```
+
+Coverage output is gitignored almost everywhere. Across the 49 repositories in
+[docs/calibration.md](https://github.com/isamu/lab/blob/main/coding/docs/calibration.md) not one
+carried a report of any kind, so in practice this probe fires only where CI produces one first.
 
 ### Some checks need the project installed
 

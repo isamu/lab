@@ -230,10 +230,29 @@ eslint の設定を代わりに選ぶような、判断が要ることはしま�
 
 ### テストは実行しません
 
-カバレッジは、プロジェクトがすでに出力したレポート（`coverage/coverage-summary.json`。Vitest / Jest / nyc が出します）を読みます。
+カバレッジは、プロジェクトがすでに出力したレポートを読みます。
 テストは数分かかることも、DB に触ることも、認証情報を要することも、状態を残すこともあります。
 点数を聞かれただけでそれを引き起こすツールは、二度と実行してもらえません。
-レポートが無ければ skip とし、`test-presence` がより粗い問いに答えます。
+
+読む形式は2つ、この順です。
+
+| ファイル                         | 誰が書くか                                                                             |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| `coverage/coverage-summary.json` | Istanbul の `json-summary`。Vitest / Jest / nyc に指定すれば出ます                     |
+| `coverage/lcov.info`             | 多くのツールが既定で出します。Node の test runner も `--test-reporter=lcov` で出せます |
+
+**なので scoria の前にカバレッジ付きでテストを走らせてください。** 走らせなければ、
+この観点は `test-presence` だけで支えられ、そう表示されます。
+
+```yaml
+- run: yarn test:coverage # coverage/lcov.info を書き出す
+- run: npx -y scoria
+```
+
+カバレッジ出力はほぼ必ず gitignore されます。
+[docs/calibration.md](https://github.com/isamu/lab/blob/main/coding/docs/calibration.md)
+の49リポジトリには1本もレポートがありませんでした。
+つまりこのプローブは、CI が先にレポートを作る場合にだけ動きます。
 
 ### プロジェクトの install が要る項目があります
 

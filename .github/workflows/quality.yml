@@ -49,6 +49,12 @@ jobs:
       # per-step file, so checking it from a later step measures that step's own empty one. The
       # summary renders on the run page and no API exposes it, so without this a run that wrote
       # nothing would look identical to one that worked.
+      # scoria reads a coverage report; it never runs the tests itself. Without this step the
+      # test-coverage dimension rests on test-presence alone and says so.
+      - name: coverage for coding
+        run: mkdir -p coverage && yarn test:coverage
+        working-directory: coding
+
       - name: measure coding
         run: |
           node packages/scoria/bin/scoria.js . --sarif ../scoria-coding.sarif --badge-json ../scoria-coding.json
