@@ -10,14 +10,20 @@ status: experimental
 metrics:
   - metric: knip.unused_exports
     scale: { good: 0, bad: 60 }
-    weight: 0.4
+    weight: 0.3
 
   - metric: knip.unused_files
     scale: { good: 0, bad: 20 }
-    weight: 0.35
+    weight: 0.25
 
   - metric: knip.unused_dependencies
     scale: { good: 0, bad: 10 }
+    weight: 0.2
+
+  # knip finds code nothing reaches; a cycle is code tangled together, which is invisible to it.
+  # One cycle is a smell, five is a structure that cannot be taken apart.
+  - metric: circular.cycle_count
+    scale: { good: 0, bad: 8 }
     weight: 0.25
 
 confidence_from:

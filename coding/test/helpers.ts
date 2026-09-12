@@ -26,7 +26,7 @@ export const sourceFile = (path: string, lines: readonly string[], kind: FileKin
   codeLines: lines,
 });
 
-const DEFAULT_PROJECT: ProjectFacts = { typescript: true, installed: true, stacks: ["ts"] };
+const DEFAULT_PROJECT: ProjectFacts = { typescript: true, installed: true, packageManager: "yarn", stacks: ["ts"] };
 
 export const contextOf = (files: readonly SourceFile[], project: ProjectFacts = DEFAULT_PROJECT, configFiles: readonly ConfigFile[] = []): ProbeContext => ({
   root: fixturePath(),
@@ -57,8 +57,8 @@ export const contextWith = (files: readonly SourceFile[], overrides: ContextOver
   root: overrides.root ?? fixturePath(),
   files,
   configFiles: overrides.configFiles ?? [],
-  project: overrides.project ?? { typescript: true, installed: true, stacks: ["ts"] },
+  project: overrides.project ?? { typescript: true, installed: true, packageManager: "yarn", stacks: ["ts"] },
   exec: overrides.exec ?? (() => Promise.resolve({ stdout: "", stderr: "no exec in tests", code: 1 })),
-  execNode: overrides.exec ?? (() => Promise.resolve({ stdout: "", stderr: "no exec in tests", code: 1 })),
+  execNode: overrides.execNode ?? overrides.exec ?? (() => Promise.resolve({ stdout: "", stderr: "no exec in tests", code: 1 })),
   readText: overrides.readText ?? (() => Promise.resolve(undefined)),
 });

@@ -89,6 +89,13 @@ export interface ProjectFacts {
    * report nothing — which reads as a clean repository. They must report skipped instead.
    */
   readonly installed: boolean;
+  /**
+   * Which package manager's lockfile is present, or undefined for neither.
+   *
+   * Detected from the file's existence rather than its contents: a lockfile runs to megabytes, and
+   * `npm audit` cannot read a yarn.lock, so asking the wrong one reports nothing rather than zero.
+   */
+  readonly packageManager: "npm" | "yarn" | undefined;
   readonly stacks: readonly string[];
 }
 

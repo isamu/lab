@@ -1,0 +1,38 @@
+# Whether the code is tested, and how far.
+#
+# Two questions at different costs. `test-presence` needs nothing and answers the blunt one — a
+# repository with no tests scores zero here rather than going unmeasured. `coverage` reads a report
+# the project already produced, and is skipped where there is none, because scoria does not run
+# anyone's test suite to get a number.
+#
+# Neither says whether the tests assert anything. Matching test files to modules by name was tried
+# and dropped: it reported 81% of a repository with 88 passing tests as untested, because its tests
+# are organised by concern rather than one per module.
+#
+# The coverage scales run the other way round: higher is better, so good > bad.
+id: test-coverage
+status: experimental
+
+metrics:
+  # Higher is better, so good > bad. Half as much test code as source is a well-tested repository;
+  # a twentieth is a repository with a few tests written once.
+  - metric: test-presence.test_to_source_ratio
+    scale: { good: 0.5, bad: 0.05 }
+    weight: 0.3
+
+  - metric: coverage.line_pct
+    scale: { good: 90, bad: 40 }
+    weight: 0.3
+
+  # Branches are where the untested cases hide; a line can be covered by a test that never varies
+  # the condition on it.
+  - metric: coverage.branch_pct
+    scale: { good: 85, bad: 30 }
+    weight: 0.25
+
+  - metric: coverage.function_pct
+    scale: { good: 90, bad: 40 }
+    weight: 0.15
+
+confidence_from:
+  - suppression-scan.source_count

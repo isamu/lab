@@ -35,6 +35,7 @@
   "dependencies": {
     "jscpd": "^4.0.5",
     "knip": "^6.35.1",
+    "madge": "^8.0.0",
     "oxlint": "^1.82.0",
     "yaml": "^2.9.0"
   }

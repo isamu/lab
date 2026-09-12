@@ -67,7 +67,7 @@ test("tsc is skipped where the project has no tsconfig", async () => {
 
 /** Without node_modules knip resolves nothing and reports nothing, which reads as clean. */
 test("knip is skipped where the project is not installed", async () => {
-  const status = await knip.detect(contextWith(files, { project: { typescript: true, installed: false, stacks: ["ts"] } }));
+  const status = await knip.detect(contextWith(files, { project: { typescript: true, installed: false, packageManager: "yarn", stacks: ["ts"] } }));
   assert.equal(status.kind, "skipped");
   assert.match("reason" in status ? status.reason : "", /not installed/);
 });
@@ -115,4 +115,77 @@ test("jscpd is told to ignore scoria's own artifacts and non-code formats", asyn
   const formats = args[args.indexOf("--format") + 1] ?? "";
   assert.doesNotMatch(formats, /json|markdown/);
   assert.match(formats, /typescript/);
+});
+
+test("audit reads yarn's line-delimited summary", async () => {
+  const { audit } = await import("../packages/scoria/src/probes/audit.ts");
+  const output = [
+    JSON.stringify({ type: "auditAdvisory", data: {} }),
+    JSON.stringify({ type: "auditSummary", data: { vulnerabilities: { critical: 1, high: 3, moderate: 6, low: 0 } } }),
+  ].join("\n");
+  const result = await audit.run(contextWith(files, { exec: execReturning(output, 1) }));
+  assert.equal(metricOf(result.metrics, "audit.critical"), 1);
+  assert.equal(metricOf(result.metrics, "audit.high"), 3);
+  assert.equal(metricOf(result.metrics, "audit.moderate"), 6);
+});
+
+test("audit reads npm's single object", async () => {
+  const { audit } = await import("../packages/scoria/src/probes/audit.ts");
+  const output = JSON.stringify({ metadata: { vulnerabilities: { critical: 0, high: 2, moderate: 0, low: 4 } } });
+  const project = { typescript: true, installed: true, packageManager: "npm" as const, stacks: ["ts"] };
+  const result = await audit.run(contextWith(files, { exec: execReturning(output, 1), project }));
+  assert.equal(metricOf(result.metrics, "audit.high"), 2);
+  assert.equal(metricOf(result.metrics, "audit.low"), 4);
+});
+
+/** `npm audit` cannot read a yarn.lock and vice versa; asking the wrong one reports nothing. */
+test("audit is skipped where there is no lockfile", async () => {
+  const { audit } = await import("../packages/scoria/src/probes/audit.ts");
+  const project = { typescript: true, installed: true, packageManager: undefined, stacks: ["ts"] };
+  const status = await audit.detect(contextWith(files, { project }));
+  assert.equal(status.kind, "skipped");
+});
+
+test("coverage reads istanbul's json-summary", async () => {
+  const { coverage } = await import("../packages/scoria/src/probes/coverage.ts");
+  const report = JSON.stringify({ total: { lines: { pct: 82.5 }, branches: { pct: 61 }, functions: { pct: 90 } } });
+  const result = await coverage.run(contextWith(files, { readText: () => Promise.resolve(report) }));
+  assert.equal(metricOf(result.metrics, "coverage.line_pct"), 82.5);
+  assert.equal(metricOf(result.metrics, "coverage.branch_pct"), 61);
+});
+
+/** Running a project's suite to get a number is invasive; without a report the answer is skipped. */
+test("coverage is skipped rather than assumed when no report exists", async () => {
+  const { coverage } = await import("../packages/scoria/src/probes/coverage.ts");
+  const result = await coverage.run(contextWith(files));
+  assert.equal(result.status.kind, "skipped");
+  assert.match("reason" in result.status ? result.status.reason : "", /does not run/);
+});
+
+test("test-presence counts lines rather than matching file names", async () => {
+  const { testPresence } = await import("../packages/scoria/src/probes/test-presence.ts");
+  const withTests = [
+    sourceFile("src/a.ts", ["const a = 1;", "const b = 2;", "const c = 3;", "const d = 4;"]),
+    sourceFile("test/anything.ts", ["assert(a);", "assert(b);"], "test"),
+  ];
+  const result = await testPresence.run(contextWith(withTests));
+  assert.equal(metricOf(result.metrics, "test-presence.test_to_source_ratio"), 0.5);
+});
+
+test("test-presence reports zero for a repository with no tests", async () => {
+  const { testPresence } = await import("../packages/scoria/src/probes/test-presence.ts");
+  const result = await testPresence.run(contextWith(files));
+  assert.equal(metricOf(result.metrics, "test-presence.test_to_source_ratio"), 0);
+});
+
+test("circular reports each cycle with the path round it", async () => {
+  const { circular } = await import("../packages/scoria/src/probes/circular.ts");
+  const output = JSON.stringify([
+    ["a.ts", "b.ts", "c.ts"],
+    ["x.ts", "y.ts"],
+  ]);
+  const result = await circular.run(contextWith(files, { exec: execReturning(output, 1) }));
+  assert.equal(metricOf(result.metrics, "circular.cycle_count"), 2);
+  assert.equal(result.findings[0]?.file, "a.ts");
+  assert.match(result.findings[0]?.message ?? "", /a\.ts → b\.ts → c\.ts → a\.ts/);
 });

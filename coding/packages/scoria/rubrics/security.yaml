@@ -1,0 +1,24 @@
+# Known vulnerabilities in the dependency tree, from the package manager's own audit.
+#
+# The scales are steep on purpose. A critical advisory is not a quality gradient — one is enough to
+# say the dependency tree needs attention today — so a single critical takes the metric to zero.
+#
+# Needs the network. Offline it reports skipped and is excluded from the score rather than read as
+# a clean tree (spec §18.1).
+id: security
+status: experimental
+
+metrics:
+  - metric: audit.critical
+    scale: { good: 0, bad: 1 }
+    weight: 0.4
+
+  - metric: audit.high
+    scale: { good: 0, bad: 5 }
+    weight: 0.35
+
+  - metric: audit.moderate
+    scale: { good: 0, bad: 20 }
+    weight: 0.25
+
+confidence_from: []
