@@ -12,6 +12,7 @@ import { kanjiRun, middleDot } from "./char-shape.ts";
 import { adverbDensity, conjunctionRun, expletive, oxfordComma, titleCaseMix } from "./en-shape.ts";
 import { paragraphLength, paragraphVariance, preambleLength, ruleOfThree, sectionUniformity } from "./structure.ts";
 import { concreteEvidence, emojiDensity, ngramRepetition, undefinedAcronym } from "./signals.ts";
+import { aiTell, cushionDensity, hedgingDensity, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -41,4 +42,9 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "ngram-repetition": ngramRepetition,
   "undefined-acronym": undefinedAcronym,
   "concrete-evidence": concreteEvidence,
+  "hedging-density": hedgingDensity,
+  "cushion-density": cushionDensity,
+  "unqualified-superlative": unqualifiedSuperlative,
+  "repeated-conjunction": repeatedConjunction,
+  "ai-tell": aiTell,
 };

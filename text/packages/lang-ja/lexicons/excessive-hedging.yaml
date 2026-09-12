@@ -1,0 +1,12 @@
+# 逃げの表現。断言を避けるほど、読み手は何が決まったのか分からなくなる。
+id: excessive-hedging
+language: ja
+entries:
+  - pattern: かもしれません
+  - pattern: と思われます
+  - pattern: のような気がします
+  - pattern: 可能性があります
+  - pattern: 場合があります
+  - pattern: 一概には言えません
+  - pattern: と考えられます
+  - pattern: ではないでしょうか

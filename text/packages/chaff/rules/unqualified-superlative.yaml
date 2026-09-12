@@ -1,0 +1,26 @@
+id: unqualified-superlative
+layer: L2
+status: experimental
+how_to_find: unqualified-superlative
+word_list: superlative
+severity: warning
+
+name:
+  ja: 比べる相手のない最上級
+  en: Superlative with nothing to compare
+
+why:
+  ja: 「最も速い」だけでは、何と比べて最もなのかがありません。比較対象も条件も無い最上級は、読み手に確かめようがありません。
+  en: '"The fastest" without saying than what leaves the reader nothing to check.'
+
+message:
+  ja: 「{matched}」に比べる相手がありません（そういう言い方が {count} 箇所）
+  en: '"{matched}" has nothing to compare against ({count} such claims)'
+
+how_to_fix:
+  ja: 比較対象か条件を添えてください。「社内の 3 案のうち最も速い」のように。
+  en: Name the comparison. "The fastest of the three options we tried."
+
+levels: { strict: 1, normal: 2, relaxed: 4 }
+
+use_for: [business, blog]

@@ -1,0 +1,11 @@
+# Softeners. One is courtesy. Several push the point further away.
+id: cushion-phrase
+language: en
+entries:
+  - pattern: if you don't mind
+  - pattern: sorry to bother
+  - pattern: just wanted to
+  - pattern: i was wondering if
+  - pattern: when you get a chance
+  - pattern: no rush but
+  - pattern: apologies for

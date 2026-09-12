@@ -1,0 +1,21 @@
+# Signals of generated text. One says nothing, so the weights are summed.
+# Never a verdict on its own. spec §20.2.
+id: ai-tell
+language: en
+entries:
+  - pattern: delve into
+    weight: 0.9
+  - pattern: in today's fast-paced world
+    weight: 0.9
+  - pattern: tapestry
+    weight: 0.6
+  - pattern: it's not just
+    weight: 0.7
+  - pattern: plays a crucial role
+    weight: 0.8
+  - pattern: navigate the complexities
+    weight: 0.8
+  - pattern: a testament to
+    weight: 0.7
+  - pattern: unlock the potential
+    weight: 0.8

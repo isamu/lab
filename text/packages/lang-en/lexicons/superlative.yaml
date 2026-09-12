@@ -1,0 +1,11 @@
+# Superlatives. They need something to be superlative against.
+id: superlative
+language: en
+entries:
+  - pattern: the best
+  - pattern: the fastest
+  - pattern: the most
+  - pattern: world-first
+  - pattern: industry-leading
+  - pattern: unmatched
+  - pattern: unparalleled

@@ -1,0 +1,12 @@
+# クッション言葉。1 つなら礼儀だが、重なると本題が遠ざかる。
+id: cushion-phrase
+language: ja
+entries:
+  - pattern: お忙しいところ
+  - pattern: 恐れ入りますが
+  - pattern: 差し支えなければ
+  - pattern: もしよろしければ
+  - pattern: ご多忙のところ
+  - pattern: 大変恐縮ですが
+  - pattern: 念のため
+  - pattern: 取り急ぎ

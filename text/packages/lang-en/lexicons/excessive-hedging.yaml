@@ -1,0 +1,12 @@
+# Hedges. Avoiding a claim leaves the reader unsure what was decided.
+id: excessive-hedging
+language: en
+entries:
+  - pattern: it may be
+  - pattern: it could be
+  - pattern: it seems
+  - pattern: arguably
+  - pattern: to some extent
+  - pattern: in some cases
+  - pattern: it is possible that
+  - pattern: one might argue
