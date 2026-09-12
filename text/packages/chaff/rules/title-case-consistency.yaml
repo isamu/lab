@@ -1,0 +1,26 @@
+id: title-case-consistency
+layer: L3
+status: experimental
+how_to_find: title-case-mix
+languages: [en]
+severity: info
+
+name:
+  ja: 見出しの大文字化が揃っていない
+  en: Heading capitalisation is inconsistent
+
+why:
+  ja: Title Case と sentence case のどちらが正しいかは決めません。1 つの文書で混ざっていると、見出しの階層が変わったように見えます。
+  en: Neither Title Case nor sentence case is wrong. Mixed within one document, the headings look like they change level.
+
+message:
+  ja: この見出しだけ他と大文字化の流儀が違います（文書の中で {count} 個）
+  en: "This heading's capitalisation differs from the rest ({count} in this document)"
+
+how_to_fix:
+  ja: 多いほうに揃えてください。
+  en: Match the majority.
+
+levels: { strict: 3, normal: 2, relaxed: 1 }
+
+use_for: [blog, business, technical]

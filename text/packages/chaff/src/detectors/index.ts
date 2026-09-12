@@ -9,6 +9,7 @@ import { agentlessPassive } from "./agentless-passive.ts";
 import { sentenceEnding } from "./sentence-ending.ts";
 import { doubledParticle, nounEnding } from "./token-shape.ts";
 import { kanjiRun, middleDot } from "./char-shape.ts";
+import { adverbDensity, conjunctionRun, expletive, oxfordComma, titleCaseMix } from "./en-shape.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -24,4 +25,9 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "doubled-particle": doubledParticle,
   "kanji-run": kanjiRun,
   "middle-dot": middleDot,
+  "adverb-density": adverbDensity,
+  expletive: expletive,
+  "conjunction-run": conjunctionRun,
+  "title-case-mix": titleCaseMix,
+  "oxford-comma": oxfordComma,
 };

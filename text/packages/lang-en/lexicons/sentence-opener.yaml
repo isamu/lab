@@ -1,0 +1,10 @@
+# Conjunctions that open a sentence. One is fine; a run of them makes every
+# sentence read as an afterthought to the last.
+id: sentence-opener
+language: en
+entries:
+  - pattern: And
+  - pattern: But
+  - pattern: So
+  - pattern: Yet
+  - pattern: Also
