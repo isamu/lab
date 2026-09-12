@@ -1,3 +1,8 @@
 node_modules/
 dist/
 *.tsbuildinfo
+
+# API key。コミットしない。
+.env
+.env.*
+!.env.example

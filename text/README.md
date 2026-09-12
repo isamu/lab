@@ -281,6 +281,14 @@ ai_model: gpt-5
 | `anthropic` | `ANTHROPIC_API_KEY`、または `ant auth login` | `claude-opus-5` |
 | `openai` | `OPENAI_API_KEY` | `gpt-5` |
 
+鍵は `.env` に書いても読みます。**シェルの環境変数のほうが勝ちます**（一時的に別の鍵で試せます）。
+
+```
+OPENAI_API_KEY=sk-...
+```
+
+`.env` は `.gitignore` に入れてください。`chaff init` が作る `.gitignore` には入っています。
+
 **Claude のサブスクリプション（Claude Code の Pro / Max）は使えません。** API は別勘定で、
 認証情報の置き場も違います（`~/.claude` と `~/.config/anthropic`）。
 

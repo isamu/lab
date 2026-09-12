@@ -26,7 +26,8 @@ genre: ${genre}
 rules:
 `;
 
-const GITIGNORE_LINE = ".chaff-cache/";
+/** 判定のキャッシュと、鍵を書くファイル。どちらも commit しない。 */
+const GITIGNORE_LINES = [".chaff-cache/", ".env", ".env.*"];
 
 type Written = { readonly path: string; readonly note: string };
 
@@ -36,13 +37,15 @@ const writeIfAbsent = (path: string, body: string, note: string): Written | unde
   return { path, note };
 };
 
-/** judge のキャッシュは commit しない。init が .gitignore に足す。 */
+/** 判定のキャッシュと .env は commit しない。init が .gitignore に足す。 */
 const ensureGitignore = (dir: string): Written | undefined => {
   const path = join(dir, ".gitignore");
-  if (!existsSync(path)) return writeIfAbsent(path, `${GITIGNORE_LINE}\n`, "作成しました");
-  if (readFileSync(path, "utf8").includes(GITIGNORE_LINE)) return undefined;
-  appendFileSync(path, `${GITIGNORE_LINE}\n`, "utf8");
-  return { path, note: `${GITIGNORE_LINE} を追記しました` };
+  if (!existsSync(path)) return writeIfAbsent(path, `${GITIGNORE_LINES.join("\n")}\n`, "作成しました");
+  const body = readFileSync(path, "utf8");
+  const missing = GITIGNORE_LINES.filter((line) => !body.split("\n").includes(line));
+  if (missing.length === 0) return undefined;
+  appendFileSync(path, `${missing.join("\n")}\n`, "utf8");
+  return { path, note: `${missing.join(" と ")} を追記しました` };
 };
 
 export const runInit = (dir: string, genre: string): string[] => {
