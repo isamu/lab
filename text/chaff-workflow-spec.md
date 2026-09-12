@@ -353,6 +353,7 @@ word_lists:
   - ./lexicons/team.yaml
 
 ai_checks: true
+ai_backend: anthropic    # anthropic（既定）か openai
 ai_model: claude-sonnet-5
 ```
 

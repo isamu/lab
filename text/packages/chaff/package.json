@@ -59,6 +59,7 @@
     "mdast-util-gfm-table": "^2.0.0",
     "micromark-extension-frontmatter": "^2.0.0",
     "micromark-extension-gfm-table": "^2.1.1",
+    "openai": "^7.15.0",
     "yaml": "^2.9.0"
   }
 }
