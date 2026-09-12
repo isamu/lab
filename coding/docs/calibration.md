@@ -185,10 +185,31 @@ scored 80, and now scores 0.
 
 `readability` is left as it was. Its −0.53 is the corpus, not the scale.
 
-## Still to do: Finding 2
+## Acting on Finding 2: the probe worked; there was nothing to read
 
-`coverage` needs either a wider search for a report, or an honest statement in the README that it
-will almost never fire. Untouched here.
+"0 of 49" turned out to say less about the probe than it looked. Checking the corpus again:
+
+|                                         | repositories |
+| --------------------------------------- | -----------: |
+| carrying a `coverage/` directory at all |      0 of 49 |
+| with a script that produces coverage    |      5 of 49 |
+| whose CI mentions coverage              |      4 of 49 |
+
+Coverage output is gitignored everywhere, and the corpus was measured by pointing scoria at
+checkouts without running anything. So the honest reading is not "the probe is broken" but "there
+was never a report to read", and this page's first framing overstated it.
+
+The probe had still never been observed to produce a value, so it was run against one: given a
+report, all three metrics appear and `test-coverage` goes from 30% measured to fully measured.
+
+What was wrong is narrower and real. It read only `coverage/coverage-summary.json`, which most
+tools emit **only when asked** — Jest and Vitest write lcov by default and `json-summary` on
+request. `coverage/lcov.info` is now read too, which is what Node's own test runner writes with
+`--test-reporter=lcov`. Verified against this repository's own report: lines 92.5%, functions
+79.94%, branches 80.44%, matching an independent count of the same file.
+
+This repository's CI now produces coverage before measuring, so its `test-coverage` is the first in
+the corpus to be measured in full.
 
 Both are behaviour changes and belong in their own pull requests, argued against this page.
 

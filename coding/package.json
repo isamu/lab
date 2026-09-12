@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test \"test/test_*.ts\""
+    "test": "node --test \"test/test_*.ts\"",
+    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info \"test/test_*.ts\""
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
