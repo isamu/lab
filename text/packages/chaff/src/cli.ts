@@ -12,10 +12,8 @@ import { BASELINE_FILE, fingerprint, readBaseline, splitByBaseline, writeBaselin
 import { applySuppressions } from "./stet.ts";
 import { renderSuppressions, type PerFile } from "./render/suppressions.ts";
 import { clock, describeChange, snapshotOf, watchPaths, type Snapshot } from "./watch.ts";
-import { CHECKS_FILE, loadChecks, type UserCheck } from "./checks.ts";
-import { CACHE_DIR, hasCredentials, isAuthFailure } from "./judge.ts";
-import { runSemantic } from "./run-semantic.ts";
-import { MACHINE_BANNER, renderSemantic } from "./render/semantic.ts";
+import { runEval } from "./commands/eval.ts";
+import { runTest } from "./commands/test.ts";
 import { frontMatterGenre, guessGenre } from "./genre.ts";
 import { GENRES, runInit } from "./init.ts";
 import { loadRules } from "./rule-load.ts";
@@ -33,6 +31,7 @@ const USAGE = `chaff — 文章の読みにくいところを見つけます。�
   chaff .                        この場所の Markdown を全部
   chaff test <file|dir>...       意味を読む検査も動かす（API key が要ります）
   chaff init                     chaff.yaml を作る
+  chaff eval <dir>               手元の文書で閾値を測り直す
   chaff explain <rule>           そのルールの意図と根拠を読む
   chaff genres                   ジャンルの一覧
   chaff rules --json             いまの設定を JSON で出す（AI に渡す用）
@@ -167,74 +166,6 @@ const runWatch = async (targets: readonly string[], argv: readonly string[]): Pr
   return new Promise(() => undefined);
 };
 
-type Judged = { path: string; outcome: Awaited<ReturnType<typeof runSemantic>>; rules: RuleDefinition[]; language: string };
-
-const judgeAll = async (
-  paths: readonly string[],
-  config: Config,
-  checks: readonly UserCheck[],
-  options: Parameters<typeof runSemantic>[5],
-): Promise<Judged[]> =>
-  Promise.all(
-    paths.map(async (path) => {
-      const source = await readFile(path, "utf8");
-      const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
-      const adapter = await loadAdapter(language);
-      const doc = buildDocument(path, source, adapter);
-      const { genre } = resolveGenre(path, source, config);
-      const rules = loadRules(language);
-      return { path, outcome: await runSemantic(doc, rules, checks, config.rules, genre, options), rules, language };
-    }),
-  );
-
-/**
- * 機械と AI を見出しで分けて出す。読む人が「これは揺れる判定か」を知らないと、
- * AI の誤検知に振り回される。workflow spec §7、samples/README の軸 2。
- */
-const test = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
-  const paths = collectTargets(targets.length > 0 ? targets : ["."]);
-  if (paths.length === 0) {
-    console.error(`Markdown が 1 つも見つかりませんでした: ${targets.join(", ")}`);
-    return 1;
-  }
-  const config = readConfig();
-  const checks = loadChecks(join(process.cwd(), CHECKS_FILE));
-  const results = await Promise.all(paths.map((path) => inspect(path, config, argv)));
-  results.forEach((result) => {
-    console.log(result.text.replace(/\n/u, `\n${MACHINE_BANNER.join("\n")}`));
-  });
-  const machineOnly = results.some((result) => result.outcome.findings.some((finding) => finding.severity === "error")) ? 1 : 0;
-  const noCredentials = [
-    "",
-    "  意味を読む検査は動かしていません。Anthropic の認証情報がありません。",
-    "  ANTHROPIC_API_KEY を設定するか、ant auth login を実行してください。",
-    "  機械による判定はすべて動いています。",
-    "",
-  ].join("\n");
-  // 呼んでから落ちるのを待たない。認証が無いときの SDK の例外は型で判別できない。
-  if (!hasCredentials()) {
-    console.log(noCredentials);
-    return machineOnly;
-  }
-  const options = { model: config.aiModel, cacheDir: join(process.cwd(), CACHE_DIR), confidenceThreshold: config.confidenceThreshold };
-  const semantic = await judgeAll(paths, config, checks, options).catch((error: unknown) => {
-    if (!isAuthFailure(error)) throw error;
-    console.log(noCredentials);
-    return undefined;
-  });
-  if (semantic === undefined) return machineOnly;
-  semantic.forEach((entry) => {
-    if (entry.outcome.findings.length === 0 && entry.outcome.asked === 0) return;
-    console.log([`${entry.path}`, ...renderSemantic(entry.outcome, entry.rules, checks, entry.language)].join("\n"));
-  });
-  const machine = results.flatMap((result) => result.outcome.findings);
-  const ai = semantic.flatMap((entry) => entry.outcome.findings);
-  console.log(
-    ["", "─".repeat(60), "", `  機械 ${machine.length} 件 / AI ${ai.length} 件`, "  文章は書き換えていません。直すのは書いた人です。", ""].join("\n"),
-  );
-  return [...machine, ...ai].some((finding) => finding.severity === "error") ? 1 : 0;
-};
-
 const explain = (ruleId: string | undefined): number => {
   const config = readConfig();
   const language = config.language ?? "ja";
@@ -316,7 +247,8 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   genres: showGenres,
   rules: showRules,
   explain: (argv) => explain(argv[1]),
-  test: (argv) => test(positional(argv), argv),
+  eval: (argv) => runEval(positional(argv), argv, { config: readConfig(), resolveGenre, flag }),
+  test: (argv) => runTest(positional(argv), argv, { config: readConfig(), resolveGenre, inspect }),
   baseline: (argv) => runBaseline(positional(argv), argv),
   suppressions: (argv) => runSuppressions(positional(argv), argv),
   relax: (argv) => changeSetting("relaxed", argv[1], flag(argv, "--why")),
