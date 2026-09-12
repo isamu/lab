@@ -1,0 +1,25 @@
+id: rule-of-three
+layer: L1
+status: experimental
+how_to_find: rule-of-three
+severity: info
+
+name:
+  ja: 3 項目の箇条書きばかり
+  en: Everything comes in threes
+
+why:
+  ja: 3 つ並べると収まりがよいので、言いたいことが 2 つでも 4 つでも 3 つにされます。
+  en: Three items feel complete, so two become three and four become three.
+
+message:
+  ja: 箇条書き {total} 個のうち {count} 個が 3 項目です（{limit}% まで）
+  en: "{count} of {total} lists have exactly three items ({limit}% allowed)"
+
+how_to_fix:
+  ja: 数を合わせるために足した項目を消してください。2 つで足りるなら 2 つで。
+  en: Drop the item you added to reach three.
+
+levels: { strict: 50, normal: 70, relaxed: 90 }
+
+use_for: [blog]

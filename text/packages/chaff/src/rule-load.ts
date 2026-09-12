@@ -97,8 +97,20 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
   };
 };
 
+/**
+ * 読めない rule ファイルは、どれが何で読めないかを言う。
+ * yaml の例外をそのまま投げると、スタックトレースだけが出てファイル名が出ない。
+ */
+const parseRule = (dir: string, file: string): unknown => {
+  try {
+    return parse(readFileSync(join(dir, file), "utf8"));
+  } catch (error) {
+    throw new Error(`${file} を読めません: ${error instanceof Error ? error.message.split("\n")[0] : String(error)}`, { cause: error });
+  }
+};
+
 export const loadRules = (language: string, dir: string = RULES_DIR): RuleDefinition[] =>
   readdirSync(dir)
     .filter((file) => file.endsWith(".yaml"))
     .sort((left, right) => left.localeCompare(right, "en"))
-    .map((file) => toRule(parse(readFileSync(join(dir, file), "utf8")), language, file));
+    .map((file) => toRule(parseRule(dir, file), language, file));

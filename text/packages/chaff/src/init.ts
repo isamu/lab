@@ -27,7 +27,7 @@ rules:
 `;
 
 /** 判定のキャッシュと、鍵を書くファイル。どちらも commit しない。 */
-const GITIGNORE_LINES = [".chaff-cache/", ".env", ".env.*"];
+const GITIGNORE_LINES = [".chaff-cache/", ".env*"];
 
 type Written = { readonly path: string; readonly note: string };
 

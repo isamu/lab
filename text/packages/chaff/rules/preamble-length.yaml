@@ -1,0 +1,25 @@
+id: preamble-length
+layer: L1
+status: experimental
+how_to_find: preamble-length
+severity: info
+
+name:
+  ja: 本題に入るまでが長い
+  en: Too long before the point
+
+why:
+  ja: 業務文書の読み手は結論を探しに来ています。最初の見出しまでに段落が重なると、探す手間だけが増えます。
+  en: A reader of a business document is looking for the decision. Paragraphs before the first heading only delay it.
+
+message:
+  ja: 最初の見出しまでに {count} 段落あります（{limit} 段落まで）
+  en: "{count} paragraphs before the first heading (limit {limit})"
+
+how_to_fix:
+  ja: 結論を先に書くか、前置きを見出しの下へ移してください。
+  en: Put the conclusion first, or move the preamble under a heading.
+
+levels: { strict: 1, normal: 2, relaxed: 4 }
+
+use_for: [business]

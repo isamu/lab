@@ -1,0 +1,25 @@
+id: section-length-uniformity
+layer: L1
+status: experimental
+how_to_find: section-uniformity
+severity: info
+
+name:
+  ja: 節の長さが揃いすぎている
+  en: Section lengths are too uniform
+
+why:
+  ja: 見出しごとに機械的に埋めると、節の長さが揃います。書くことの量は節ごとに違うはずです。
+  en: Filling every heading to the same size is what a template does, not what a writer does.
+
+message:
+  ja: 節の長さのばらつきが {variance}% しかありません（{limit}% 以上ほしい）
+  en: Section length varies by only {variance}% (want at least {limit}%)
+
+how_to_fix:
+  ja: 書くことの少ない節は短いままにしてください。
+  en: Let the thin sections stay thin.
+
+levels: { strict: 45, normal: 35, relaxed: 25 }
+
+use_for: [blog]

@@ -312,6 +312,18 @@ doc.md   全 6 文のうち 5 箇所を送ります（API は呼んでいませ�
 自分で書いた検査（`checks.yaml`）は、`look_at` の「」の中の語で絞り込まれます。
 絞り込めなかったものは全文を送るので、そのことも出します。
 
+## 文書の形を見る rule
+
+言語も鍵も要りません。
+
+| rule | 何を見るか |
+| --- | --- |
+| `max-paragraph-length` | 1 段落に文を詰めすぎていないか |
+| `paragraph-length-variance` | 段落の長さが揃いすぎていないか |
+| `section-length-uniformity` | 節の長さが揃いすぎていないか |
+| `rule-of-three` | 箇条書きが 3 項目ばかりになっていないか |
+| `preamble-length` | 本題に入るまでが長くないか |
+
 ## まだ無いもの
 
 短縮形の一貫性（`contraction-consistency`）。ジャンルごとの閾値。

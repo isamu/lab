@@ -4,5 +4,5 @@ dist/
 
 # API key。コミットしない。
 .env
-.env.*
+.env*
 !.env.example

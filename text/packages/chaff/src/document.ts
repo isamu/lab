@@ -4,7 +4,7 @@ import { gfmTableFromMarkdown } from "mdast-util-gfm-table";
 import { frontmatter } from "micromark-extension-frontmatter";
 import { frontmatterFromMarkdown } from "mdast-util-frontmatter";
 import { maskSpans } from "./mask.ts";
-import type { LanguageAdapter, ProseDocument, Section, Sentence, Span } from "./plugin.ts";
+import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
 type Node = {
@@ -193,6 +193,29 @@ const sectionsOf = (headings: readonly Heading[], sentences: readonly Sentence[]
     });
 };
 
+const paragraphsOf = (spans: readonly Span[], sentences: readonly Sentence[], listSpans: readonly Span[]): Paragraph[] =>
+  spans
+    // 箇条書きの中の段落は「段落」として数えない。項目 1 つを 1 段落と読むと、
+    // 段落あたりの文数も長さのばらつきも、箇条書きの多い文書で壊れる。
+    .filter((span) => !listSpans.some((list) => span.start >= list.start && span.start < list.end))
+    .map((span) => ({ span, sentences: sentences.filter((sentence) => within(sentence.span, span.start, span.end)) }));
+
+/** 箇条書きは list ノードの直下の項目を数える。入れ子の項目は内側の list のものとして数える。 */
+const listsOf = (root: Node, source: string): BulletList[] => {
+  const found: BulletList[] = [];
+  walk(root, (node) => {
+    if (node.type !== "list") return;
+    const span = spanOf(node);
+    if (span === undefined) return;
+    const items = (node.children ?? []).flatMap((child) => {
+      const item = spanOf(child);
+      return child.type === "listItem" && item !== undefined ? [source.slice(item.start, item.end).replace(/\s+/gu, "").length] : [];
+    });
+    if (items.length > 0) found.push({ span, items });
+  });
+  return found;
+};
+
 export const buildDocument = (path: string, source: string, adapter: LanguageAdapter): ProseDocument => {
   const root = parse(source);
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
@@ -200,7 +223,9 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
   const blocks = collectMasks(root, source);
   const masked = [...blocks, ...emphasisSpans(root, source)];
   const prose = maskSpans(source, masked);
-  const sentences = sentencesOf(prose, spansOfType(root, "paragraph"), adapter);
+  const paragraphSpans = spansOfType(root, "paragraph");
+  const listItems = spansOfType(root, "listItem");
+  const sentences = sentencesOf(prose, paragraphSpans, adapter);
   return {
     path,
     source,
@@ -209,7 +234,9 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
     capabilities: adapter.capabilities,
     sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root, blocks), source.length),
     sentences,
-    listSpans: spansOfType(root, "listItem"),
+    listSpans: listItems,
+    paragraphs: paragraphsOf(paragraphSpans, sentences, listItems),
+    lists: listsOf(root, source),
     lexicons: adapter.lexicons,
   };
 };

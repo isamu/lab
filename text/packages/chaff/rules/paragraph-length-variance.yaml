@@ -1,0 +1,25 @@
+id: paragraph-length-variance
+layer: L1
+status: experimental
+how_to_find: paragraph-variance
+severity: info
+
+name:
+  ja: 段落の長さが揃いすぎている
+  en: Paragraph lengths are too uniform
+
+why:
+  ja: 人が書くと、言いたいことの重さで段落の長さは揺れます。揃いすぎは、埋めるために長さを合わせた跡です。
+  en: When a person writes, paragraph length follows what matters. Uniform length is the mark of filling a shape.
+
+message:
+  ja: 段落の長さのばらつきが {variance}% しかありません（{limit}% 以上ほしい）
+  en: Paragraph length varies by only {variance}% (want at least {limit}%)
+
+how_to_fix:
+  ja: 短くできる段落を短くしてください。全部を同じ長さにしないこと。
+  en: Let the short ones be short.
+
+levels: { strict: 40, normal: 30, relaxed: 20 }
+
+use_for: [blog]
