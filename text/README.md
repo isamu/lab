@@ -264,6 +264,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `sentence-initial-conjunction-run` | And / But / So で始まる文の連続 |
 | `title-case-consistency` | 見出しの大文字化が文書内で揃っているか |
 | `oxford-comma-consistency` | 並列の読点が文書内で揃っているか |
+| `contraction-consistency` | 短縮形の使いかたが文書内で揃っているか |
 
 後ろの 2 本は**どちらが正しいかを決めません**。1 つの文書で揃っているかだけを見て、少数派を指摘します。
 
@@ -398,8 +399,8 @@ required_sections: # この種類の文書に無いと困る見出し
 
 ## まだ無いもの
 
-短縮形の一貫性（`contraction-consistency`）。`Lexicon` が「don't ↔ do not」のような対を
-表せないため、契約を広げる価値が出るまで保留しています。
+spec の rule catalog はすべて実装しました。閾値の多くはまだ実文書で測れていません
+（`npx chaffjs eval <dir>` で手元の文書に合わせられます）。
 
 ## 実文書で試す
 

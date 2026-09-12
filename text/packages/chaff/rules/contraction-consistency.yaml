@@ -1,0 +1,28 @@
+id: contraction-consistency
+layer: L2
+status: experimental
+how_to_find: contraction-mix
+word_list: contraction
+languages: [en]
+severity: info
+
+name:
+  ja: 短縮形の使いかたが揃っていない
+  en: Contraction use is inconsistent
+
+why:
+  ja: 短縮形を使うかどうかは文体の選択で、どちらが正しいかは決めません。1 つの文書で混ざっていると、読み手は文ごとに距離感を測り直すことになります。
+  en: Whether to use contractions is a choice of register, and neither is wrong. Mixed within one document, the reader re-measures the distance sentence by sentence.
+
+message:
+  ja: 「{matched}」だけ他と書きかたが違います（そういう書きかたが {count} 種）
+  en: '"{matched}" is written differently from the rest of the document'
+
+how_to_fix:
+  ja: 多いほうに揃えてください。
+  en: Match the majority.
+
+# 少数派が何種までなら「混在」と見るか。これを超えたら混在ではなく、そういう文体。
+levels: { strict: 4, normal: 2, relaxed: 1 }
+
+use_for: [blog, business, technical]

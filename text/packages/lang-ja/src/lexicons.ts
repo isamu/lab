@@ -11,7 +11,12 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 const toEntry = (raw: unknown): LexiconEntry | undefined => {
   if (!isRecord(raw) || typeof raw["pattern"] !== "string") return undefined;
   const weight = raw["weight"];
-  return { pattern: raw["pattern"], weight: typeof weight === "number" ? weight : undefined };
+  const instead = raw["instead_of"];
+  return {
+    pattern: raw["pattern"],
+    weight: typeof weight === "number" ? weight : undefined,
+    instead_of: typeof instead === "string" ? instead : undefined,
+  };
 };
 
 /**
