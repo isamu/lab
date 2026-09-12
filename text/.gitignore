@@ -3,3 +3,8 @@ dist/
 *.tsbuildinfo
 report/
 .chaff-cache/
+
+# API key。コミットしない。
+.env
+.env.*
+!.env.example
