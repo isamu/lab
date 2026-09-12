@@ -43,6 +43,7 @@ const USAGE = `chaff — 文章の読みにくいところを見つけます。�
   --experimental    試験中の rule も動かす
   --show-baseline   棚上げした分も含めて全部見る
   --watch           保存のたびに見直し、変わったところだけ出す
+  --dry-run         test で、何を AI に送るかだけを見る（API を呼びません）
 
 この箇所だけ黙らせる:  <!-- stet: rule-id — 理由 -->
 

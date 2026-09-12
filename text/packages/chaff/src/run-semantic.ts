@@ -15,7 +15,7 @@ export type SemanticResult = {
   readonly narrowed: readonly { readonly name: string; readonly narrowing: Narrowing }[];
 };
 
-type Job = {
+export type Job = {
   readonly rule: string;
   readonly name: string;
   readonly rubric: string;
@@ -86,6 +86,18 @@ const findingOf = (job: Job, candidate: Candidate, reason: string, confidence: n
 
 export type SemanticOptions = JudgeOptions & { readonly confidenceThreshold: number };
 
+/**
+ * 何を問い合わせるかを決めるところまで。API を呼ばない。
+ * 鍵が無くても「何が送られるのか」を確かめられるようにするため、run から切り出してある。
+ */
+export const planSemantic = (
+  doc: ProseDocument,
+  rules: readonly RuleDefinition[],
+  checks: readonly UserCheck[],
+  settings: Readonly<Record<string, Level>>,
+  genre: string,
+): Job[] => [...builtInJobs(doc, rules, settings, genre), ...userJobs(doc, checks, genre)];
+
 export const runSemantic = async (
   doc: ProseDocument,
   rules: readonly RuleDefinition[],
@@ -94,7 +106,7 @@ export const runSemantic = async (
   genre: string,
   options: SemanticOptions,
 ): Promise<SemanticResult> => {
-  const jobs = [...builtInJobs(doc, rules, settings, genre), ...userJobs(doc, checks, genre)];
+  const jobs = planSemantic(doc, rules, checks, settings, genre);
   const starts = lineStarts(doc.source);
   const skipped = jobs.filter((job) => job.candidates.length === 0).map((job) => ({ rule: job.rule, why: "見るところが無かったため" }));
   const live = jobs.filter((job) => job.candidates.length > 0);
