@@ -7,7 +7,14 @@ import type { Span } from "./plugin.ts";
  * 切り出して繋ぐのではなく覆うのは、オフセットを元文字列と一致させ続けるため。
  * 行・列の計算も、引用して見せる範囲も、これで元の位置のまま使える。
  */
-const blankOut = (text: string): string => text.replace(/[^\n]/gu, " ");
+/**
+ * 空白は**元の文字と同じ UTF-16 長**にする。
+ *
+ * `u` 付きの正規表現は 1 文字（コードポイント）ずつ当たるので、絵文字のような
+ * サロゲートペアを空白 1 つに置き換えると文字列が 1 だけ縮む。mdast のオフセットは
+ * UTF-16 単位なので、そこから先の指摘がすべて 1 ずれる。
+ */
+const blankOut = (text: string): string => text.replace(/[^\n]/gu, (char) => " ".repeat(char.length));
 
 const merge = (spans: readonly Span[]): Span[] =>
   [...spans]
