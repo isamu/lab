@@ -58,15 +58,24 @@ test("reports the absence of any CI workflow as an error", () => {
   assert.equal(gaps[0]?.severity, "error");
 });
 
+const stepLines = (scripts: readonly string[]): string => scripts.map((script) => `      - run: ${script}\n`).join("");
+
+/** The shape a workflow actually has: steps live under a job, and a bare `steps:` is not one. */
+const workflowRunning = (...scripts: readonly string[]): readonly { readonly path: string; readonly text: string }[] => [
+  {
+    path: ".github/workflows/ci.yml",
+    text: `name: CI\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n${stepLines(scripts)}`,
+  },
+];
+
 /** A job that swallows its failure is green whatever it found. */
 test("reports steps that swallow their failure", () => {
-  const files = [{ path: ".github/workflows/ci.yml", text: "steps:\n  - run: yarn lint && yarn build && yarn test || true\n" }];
+  const files = workflowRunning("yarn lint && yarn build && yarn test || true");
   assert.ok(ids(ciGaps("/repo", files, false)).includes("ci-swallowed-failures"));
 });
 
 test("does not report steps CI actually runs", () => {
-  const files = [{ path: ".github/workflows/ci.yml", text: "steps:\n  - run: yarn lint\n  - run: yarn build\n  - run: yarn test\n" }];
-  assert.deepEqual(ids(ciGaps("/repo", files, false)), []);
+  assert.deepEqual(ids(ciGaps("/repo", workflowRunning("yarn lint", "yarn build", "yarn test"), false)), []);
 });
 
 test("--fix appends node_modules to .gitignore", async () => {

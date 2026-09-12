@@ -2,6 +2,7 @@ import type { Finding, Probe, ProbeContext, ProbeResult, ConfigFile } from "../p
 import { workflowsOf } from "../config-files.ts";
 import { relativeTo } from "./shared.ts";
 import type { Gap } from "./config-integrity.ts";
+import { swallowedFailures } from "./swallow.ts";
 
 /** A gap plus the file it was found in, so a finding points at something that exists. */
 interface LocatedGap {
@@ -26,11 +27,8 @@ const missingSteps = (text: string, typescript: boolean): readonly string[] => {
   return wanted.filter((step) => !new RegExp(`\\b${step}\\b`).test(text));
 };
 
-const countMatches = (text: string, pattern: RegExp): number => [...text.matchAll(pattern)].length;
-
 const WORKFLOW_ROOT = ".github/workflows";
 
-/** Which workflow swallows a failure, so the finding lands on a line someone can open. */
 /**
  * A finding has to point at a file inside the tree being measured, because that is what a SARIF
  * upload matches against. Workflows live at the repository root, which is above the measured
@@ -42,9 +40,6 @@ const locate = (root: string, workflow: string | undefined): string => {
   const inside = relativeTo(root, workflow);
   return inside.startsWith("..") || inside === workflow ? "package.json" : inside;
 };
-
-const swallowingWorkflow = (workflows: readonly ConfigFile[]): ConfigFile | undefined =>
-  workflows.find((file) => /continue-on-error:\s*true/.test(file.text) || /\|\|\s*true/.test(file.text)) ?? workflows[0];
 
 const locatedCiGaps = (root: string, files: readonly ConfigFile[], typescript: boolean): readonly LocatedGap[] => {
   const workflows = workflowsOf(files);
@@ -74,18 +69,18 @@ const locatedCiGaps = (root: string, files: readonly ConfigFile[], typescript: b
       fixable: false,
     },
   }));
-  const swallowed = countMatches(text, /continue-on-error:\s*true/g) + countMatches(text, /\|\|\s*true/g);
+  const swallowed = swallowedFailures(workflows);
   const swallowGaps =
-    swallowed === 0
+    swallowed.count === 0
       ? []
       : [
           {
-            file: locate(root, swallowingWorkflow(workflows)?.path),
+            file: locate(root, swallowed.file ?? workflows[0]?.path),
             gap: {
               id: "ci-swallowed-failures",
               severity: "error" as const,
-              title: `${swallowed} ${swallowed === 1 ? "step swallows" : "steps swallow"} their failure`,
-              detail: `\`continue-on-error: true\` or \`|| true\` makes a job green whatever it found (${swallowingWorkflow(workflows)?.path ?? WORKFLOW_ROOT}).`,
+              title: `${swallowed.count} ${swallowed.count === 1 ? "step swallows" : "steps swallow"} their failure`,
+              detail: `\`continue-on-error: true\`, or \`|| true\` with nothing judging what it captured, makes a job green whatever it found (${swallowed.file ?? WORKFLOW_ROOT}).`,
               fixable: false,
             },
           },
