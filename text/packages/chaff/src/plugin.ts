@@ -96,6 +96,8 @@ export type ProseDocument = {
   readonly capabilities: AdapterCapabilities;
   readonly sections: readonly Section[];
   readonly sentences: readonly Sentence[];
+  /** 箇条書きの範囲。体言止めのように、箇条書きでは普通で本文では困る形が見る。 */
+  readonly listSpans: readonly Span[];
   /** アダプタが持つ語彙表。detector は言語を知らずにこれを引く。 */
   readonly lexicons: Readonly<Record<string, Lexicon>>;
 };

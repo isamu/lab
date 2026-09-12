@@ -95,6 +95,14 @@ const PASSIVE_LEMMA = new Set(["れる", "られる"]);
 
 const isPassive = (morpheme: Morpheme): boolean => morpheme.pos === "動詞" && morpheme.pos_detail_1 === "接尾" && PASSIVE_LEMMA.has(morpheme.basic_form);
 
+/**
+ * 非自立名詞（の・こと・もの・ため・はず）。品詞は名詞だが、単独では何も指さない。
+ * 「回るのか。」の「の」を体言止めと読むと、疑問文が全部ひっかかる。
+ *
+ * UD の FEATS は言語ごとの拡張を認めているので、そこに畳む。UPOS は NOUN のまま。
+ */
+const isDependentNoun = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "非自立";
+
 const state: { pending: Promise<Tokenizer> | undefined; ready: Tokenizer | undefined } = { pending: undefined, ready: undefined };
 
 const build = async (): Promise<Tokenizer> =>
@@ -124,8 +132,14 @@ const toToken = (morpheme: Morpheme): Token => ({
   // UD の日本語では「れる/られる」は AUX。IPADIC の「動詞,接尾」をそこへ寄せる。
   pos: isPassive(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
   ...(morpheme.basic_form === "*" ? {} : { lemma: morpheme.basic_form }),
-  ...(isPassive(morpheme) ? { features: { Voice: "Pass" } } : {}),
+  ...featuresOf(morpheme),
 });
+
+const featuresOf = (morpheme: Morpheme): { features?: Readonly<Record<string, string>> } => {
+  if (isPassive(morpheme)) return { features: { Voice: "Pass" } };
+  if (isDependentNoun(morpheme)) return { features: { NounType: "Dependent" } };
+  return {};
+};
 
 /**
  * 名詞を修飾しているだけの受動から印を外す。「使用されるフレームワーク」

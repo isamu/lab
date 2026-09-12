@@ -745,14 +745,25 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 
 | id | 内容 | requires |
 | --- | --- | --- |
-| `no-mixed-desumasu` | ですます調とである調の混在 | pos |
+| `no-mixed-desumasu` ✅ | ですます調とである調の混在 | pos |
+| `taigen-dome-in-prose` ✅ | 箇条書き外の体言止め | pos |
+| `no-doubled-joshi` ✅ | 名詞を繋ぐ助詞の入れ子 | pos |
 | `double-keigo` | 二重敬語 | pos |
 | `sasete-itadaku` | 「させていただく」の密度 | - |
-| `taigen-dome-in-prose` | 箇条書き外の体言止め | pos |
 | `no-nakaguro-parallel` | 中黒の並列使用 | - |
-| `no-doubled-joshi` | 助詞の連続 | pos |
 | `hiragana-fukushi` | 副詞のひらがな化 | pos |
 | `max-kanji-continuous` | 漢字の連続 | - |
+
+実装した 3 本は、いずれも**最初の版が実文書で 0〜30% の精度しか出なかった**。
+共通する原因が 2 つあり、どちらも rule ではなく「何を文と見るか」の問題だった。
+
+- **段落として解析されるものに、文でないものが混ざる。** 見出しの下の名前だけの行、引用の出典行、
+  表題行。文書全体を分母にする rule はここで狂う。終止符で終わることを条件にすると、ほとんどが落ちる
+- **助詞をまとめて数えると、読める形まで当たる。** 「A も B も C も」の並列と
+  「コピーして持っていって」の連用は何重に続いても読める。入れ子を作る助詞だけを語彙表で絞る
+
+「これは文か」の判定は `sentence-shape.ts` に 1 つ置く。rule ごとに書くと、rule の数だけ
+「文でないもの」の定義が増える。
 
 ### 12.3 英語固有
 

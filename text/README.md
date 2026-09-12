@@ -236,9 +236,18 @@ npx chaffjs report.md --experimental
 no-doubled-joshi   この言語では品詞解析が使えないため
 ```
 
+品詞を見る rule は今のところ 4 本です。
+
+| rule | 何を見るか |
+| --- | --- |
+| `agentless-passive` | 受け身で、誰がしたのか書かれていない（ja / en） |
+| `no-mixed-desumasu` | ですます調とである調の混在（ja） |
+| `no-doubled-joshi` | 「弊社の新製品の販売の計画」のような入れ子（ja） |
+| `taigen-dome-in-prose` | 本文の体言止めが続く（ja） |
+
 ## まだ無いもの
 
-L3 rule は `agentless-passive` 1 本だけ。ですます調の混在、助詞の連続、二重敬語などはこれからです。
+二重敬語、副詞のひらがな化、漢字の連続。英語固有の rule もこれからです。
 
 ## 実文書で試す
 

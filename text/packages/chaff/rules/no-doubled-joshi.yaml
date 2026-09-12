@@ -1,0 +1,28 @@
+id: no-doubled-joshi
+layer: L3
+status: experimental
+how_to_find: doubled-particle
+word_list: nesting-particle
+requires: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: 同じ助詞が入れ子で続いている
+  en: Nested repeated particle
+
+why:
+  ja: 「弊社の新製品の販売の計画」のように同じ助詞が読点を挟まずに続くと、どれがどれに係るのか読み手が追えなくなります。読点で区切られた並列は数えていません。
+  en: When the same particle repeats without a break, the reader cannot tell which phrase attaches to which. Items separated by punctuation are not counted.
+
+message:
+  ja: 「{word}」が読点を挟まずに {count} 回続いています（{limit} 回まで）
+  en: '"{word}" repeats {count} times with no break (limit {limit})'
+
+how_to_fix:
+  ja: 文を割るか、係り先を言い換えてください。「弊社の新製品の販売の計画」を「弊社が新製品を販売する計画」に。
+  en: Split the sentence, or rephrase so the attachment is explicit.
+
+levels: { strict: 1, normal: 2, relaxed: 3 }
+
+use_for: [blog, business, technical]
