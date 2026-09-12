@@ -81,7 +81,14 @@ export const upos = (tag: string): string => (PUNCTUATION.has(tag) ? "PUNCT" : (
  * 受動は be + 過去分詞。過去分詞だけでは完了形（has reviewed）と見分けられないので、
  * 直前の be を見る。間に副詞が挟まる（was quickly approved）ぶんだけ遡る。
  */
-const ADVERB_TAGS = new Set(["RB", "RBR", "RBS"]);
+/**
+ * be と過去分詞の間に立てるもの。副詞と、副詞をつなぐ接続詞（was fully and carefully reviewed）。
+ *
+ * これでも拾えない形がある。`was fully and finally approved` では wink が `approved` を
+ * VBN ではなく **VBD** と付けるため、そもそも過去分詞として見えない。解析器の限界で、
+ * VBD も受動と見なすと `The team was here and approved it` まで受動になる。直さない。
+ */
+const SKIPPABLE = new Set(["RB", "RBR", "RBS", "CC", ","]);
 
 const BE = new Set(["be", "am", "is", "are", "was", "were", "been", "being"]);
 
@@ -90,7 +97,7 @@ const isBe = (entry: Tagged): boolean => BE.has(entry.lemma ?? entry.value.toLow
 const isPassive = (tagged: readonly Tagged[], at: number): boolean => {
   if (tagged[at]?.pos !== "VBN") return false;
   const before = tagged.slice(0, at).reverse();
-  const head = before.find((entry) => !ADVERB_TAGS.has(entry.pos));
+  const head = before.find((entry) => !SKIPPABLE.has(entry.pos));
   return head !== undefined && isBe(head);
 };
 

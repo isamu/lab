@@ -148,13 +148,23 @@ const featuresOf = (morpheme: Morpheme): { features?: Readonly<Record<string, st
  *
  * 日本語は修飾が名詞の前に来るので「後ろに名詞が無い」で述語だと言える。
  * 英語は語順が逆なので、この判断は英語のアダプタには持ち込めない。
+ *
+ * 見るのは**同じ節の中**だけ。読点をまたぐと、「仕様は変更され、担当者が確認した。」の
+ * 「担当者」が後ろの名詞として数えられ、述語の受動が修飾と判定されて消える。
  */
 const NOMINAL = new Set(["NOUN", "PROPN", "PRON"]);
+
+/** 節の終わり。読点・句点でいったん切れる。 */
+const BREAK = new Set(["、", "，", ",", "。", "．", "."]);
+
+const clauseEnd = (tokens: readonly Token[], from: number): number =>
+  tokens.find((token) => token.span.start >= from && BREAK.has(token.surface))?.span.start ?? Number.MAX_SAFE_INTEGER;
 
 export const predicateOnly = (tokens: readonly Token[]): Token[] =>
   tokens.map((token) => {
     if (token.features?.["Voice"] !== "Pass") return token;
-    const modifiesNoun = tokens.some((other) => other.span.start >= token.span.end && NOMINAL.has(other.pos));
+    const end = clauseEnd(tokens, token.span.end);
+    const modifiesNoun = tokens.some((other) => other.span.start >= token.span.end && other.span.end <= end && NOMINAL.has(other.pos));
     if (!modifiesNoun) return token;
     return { span: token.span, surface: token.surface, pos: token.pos, ...(token.lemma === undefined ? {} : { lemma: token.lemma }) };
   });
