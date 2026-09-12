@@ -11,6 +11,7 @@ const report: Report = {
   stacks: ["ts"],
   complete: true,
   size: { files: 2, sloc: 10, testSloc: 4 },
+  metrics: {},
   dimensions: [
     {
       dimension: "integrity",
@@ -34,7 +35,7 @@ const report: Report = {
       tier: 0,
     },
   ],
-  probes: [{ probe: "suppression-scan", status: { kind: "ok" } }],
+  probes: [{ probe: "suppression-scan", status: { kind: "ok" }, tools: [] }],
   toolVersions: {},
   overall: { score: 50, scoredDimensions: 1, comparable: false },
 };

@@ -3,6 +3,7 @@ import type { DimensionReport, Report } from "./report.ts";
 import { tallyWarnings } from "./report.ts";
 import type { Drift } from "./config.ts";
 import type { Mover, ReportDiff } from "./diff.ts";
+import type { Exemption, GateReason, Verdict } from "./gate.ts";
 import { messagesFor, type Lang, type Messages } from "./messages.ts";
 import { padEndWide, padStartWide } from "./width.ts";
 
@@ -30,6 +31,8 @@ export interface RenderContext {
   readonly notice: string | undefined;
   readonly lang: Lang;
   readonly comparison?: Comparison | undefined;
+  /** Present only under `mode: ratchet`; its absence is what says the run gated nothing. */
+  readonly verdict?: Verdict | undefined;
 }
 
 const MAX_MOVERS = 6;
@@ -60,6 +63,31 @@ const movedSection = (context: RenderContext, messages: Messages): readonly stri
 
 const pad = padEndWide;
 const padStart = padStartWide;
+
+const reasonLine = (reason: GateReason, messages: Messages): string => {
+  if (reason.kind === "dimension") return messages.gateDimension(reason.dimension, reason.from.toFixed(0), reason.to.toFixed(0));
+  if (reason.kind === "suppression") return messages.gateSuppression(reason.from, reason.to);
+  return messages.gateFinding(reason.rule, reason.file);
+};
+
+const exemptionLine = (exemption: Exemption, messages: Messages): string => {
+  if (exemption.kind === "low-confidence") return messages.gateLowConfidence(exemption.dimension);
+  if (exemption.kind === "tool-version") return messages.gateToolVersion(exemption.dimension, exemption.tools.join(", "));
+  return messages.gateSizeChange(exemption.dimension, exemption.percent);
+};
+
+/**
+ * The exemptions are printed whether or not the run failed. A regression that was deliberately not
+ * gated, shown nowhere, reads as no regression at all — and then the gate is quietly lying.
+ */
+const gateSection = (verdict: Verdict | undefined, messages: Messages): readonly string[] => {
+  if (verdict === undefined) return [messages.reportModeNote, ""];
+  const failures = verdict.failed
+    ? [messages.gateFailed, ...verdict.reasons.map((reason) => `  ${reasonLine(reason, messages)}`), ""]
+    : [messages.gatePassed, ""];
+  if (verdict.exemptions.length === 0) return failures;
+  return [...failures, messages.gateNotGated, ...verdict.exemptions.map((exemption) => `  ${exemptionLine(exemption, messages)}`), ""];
+};
 
 /** The rule id is the join between the machine-readable message and the translated one. */
 const displayMessage = (finding: Finding, messages: Messages): string => messages.ruleMessages[finding.rule] ?? finding.message;
@@ -135,8 +163,8 @@ export const renderReport = (report: Report, context: RenderContext): string => 
     ...(notes.length > 0 ? [messages.probesNotScored, ...notes, ""] : []),
     ...(context.notice === undefined ? [] : [context.notice, ""]),
     messages.meanNote,
-    messages.reportModeNote,
     "",
+    ...gateSection(context.verdict, messages),
   ].join("\n");
 };
 

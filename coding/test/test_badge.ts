@@ -12,6 +12,7 @@ const reportOf = (score: number, scoredDimensions: number): Report => ({
   complete: true,
   size: { files: 1, sloc: 1, testSloc: 0 },
   dimensions: [],
+  metrics: {},
   findings: [],
   probes: [],
   toolVersions: {},

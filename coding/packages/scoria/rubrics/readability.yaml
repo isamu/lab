@@ -28,6 +28,7 @@ metrics:
 
   # Smells and slow patterns from scoria's own ruleset, not the project's (spec §3.2).
   - metric: oxlint.violations_per_kloc
+    density: true
     scale: { good: 0, bad: 12 }
     weight: 0.15
 

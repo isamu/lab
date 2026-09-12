@@ -8,10 +8,19 @@ export const CONFIG_FILENAME = "scoria.config.json";
 
 export type Profile = "app" | "library" | "cli";
 
+/**
+ * What a run does with what it found (spec §17.2). `report` gates nothing and is where every
+ * repository starts; `ratchet` fails the run when a dimension falls below its baseline.
+ *
+ * This is policy, not output, so it lives in the committed config rather than behind a flag —
+ * turning the gate on is a decision a reviewer should see in a diff.
+ */
+export type Mode = "report" | "ratchet";
+
 export interface ScoriaConfig {
   readonly profile: Profile;
   readonly stacks: readonly string[];
-  readonly mode: "report";
+  readonly mode: Mode;
   /** Language of the terminal output. Machine output stays English (see messages.ts). */
   readonly lang: Lang;
 }
@@ -37,10 +46,13 @@ const isStringArray = (value: unknown): value is readonly string[] => Array.isAr
 
 const isProfile = (value: unknown): value is Profile => value === "app" || value === "library" || value === "cli";
 
+const isMode = (value: unknown): value is Mode => value === "report" || value === "ratchet";
+
 const toConfig = (raw: unknown): ScoriaConfig | undefined => {
   if (!isRecord(raw) || !isProfile(raw["profile"]) || !isStringArray(raw["stacks"])) return undefined;
   const lang = raw["lang"];
-  return { profile: raw["profile"], stacks: raw["stacks"], mode: "report", lang: isLang(lang) ? lang : "en" };
+  const mode = raw["mode"];
+  return { profile: raw["profile"], stacks: raw["stacks"], mode: isMode(mode) ? mode : "report", lang: isLang(lang) ? lang : "en" };
 };
 
 const detectProfile = (pkg: unknown): Profile => {
