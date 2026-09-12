@@ -748,11 +748,16 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `no-mixed-desumasu` ✅ | ですます調とである調の混在 | pos |
 | `taigen-dome-in-prose` ✅ | 箇条書き外の体言止め | pos |
 | `no-doubled-joshi` ✅ | 名詞を繋ぐ助詞の入れ子 | pos |
-| `double-keigo` | 二重敬語 | pos |
-| `sasete-itadaku` | 「させていただく」の密度 | - |
-| `no-nakaguro-parallel` | 中黒の並列使用 | - |
-| `hiragana-fukushi` | 副詞のひらがな化 | pos |
-| `max-kanji-continuous` | 漢字の連続 | - |
+| `double-keigo` ✅ | 二重敬語 | - |
+| `sasete-itadaku` ✅ | 「させていただく」の密度 | - |
+| `no-nakaguro-parallel` ✅ | 中黒の並列 | - |
+| `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
+| `max-kanji-continuous` ✅ | 漢字の連続 | - |
+
+`double-keigo` と `hiragana-fukushi` は spec の初版で `pos` を要求するとしていたが、
+**語彙表で足りる**。品詞から二重敬語を組み立てるより、割れない形だけを列挙するほうが精度が高い。
+「ご説明させていただきます」のように二重敬語かで議論の分かれる形は入れない。
+割れる形を入れると rule ごと無視される（§12.3 の方針）。
 
 実装した 3 本は、いずれも**最初の版が実文書で 0〜30% の精度しか出なかった**。
 共通する原因が 2 つあり、どちらも rule ではなく「何を文と見るか」の問題だった。

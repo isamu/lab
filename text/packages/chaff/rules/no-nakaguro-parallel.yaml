@@ -1,0 +1,27 @@
+id: no-nakaguro-parallel
+layer: L3
+status: experimental
+how_to_find: middle-dot
+languages: [ja]
+severity: info
+
+name:
+  ja: 中黒で並べすぎている
+  en: Too many items joined by middle dots
+
+why:
+  ja: 中黒の並列は 1 組なら読めますが、1 文に何組も入ると、どの項目がどの組に属するのか追えなくなります。実文書では 1 文 4 個までは普通に読めていました。
+  en: One run of middle dots reads fine. Several runs in one sentence make it impossible to tell which item belongs to which group.
+
+message:
+  ja: この文に中黒が {count} 個あります（{limit} 個まで）
+  en: "{count} middle dots in this sentence (limit {limit})"
+
+how_to_fix:
+  ja: 文を割るか、箇条書きにしてください。組の切れ目がはっきりします。
+  en: Use commas, or turn it into a bullet list.
+
+# 実文書の分布から。1 文 4 個までは読める。
+levels: { strict: 3, normal: 5, relaxed: 8 }
+
+use_for: [blog, business, technical]

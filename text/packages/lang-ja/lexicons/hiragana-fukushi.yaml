@@ -1,0 +1,17 @@
+# ひらがなで書く副詞。漢字が表外、または公用文でかな書きと決まっているもの。
+#
+# 「既に」「全く」のように漢字でも公用文で認められるものは入れない。
+# どちらが正しいかで割れる語を入れると、rule ごと無視される。
+id: hiragana-fukushi
+language: ja
+entries:
+  - pattern: 殆ど
+  - pattern: 尤も
+  - pattern: 勿論
+  - pattern: 丁度
+  - pattern: 沢山
+  - pattern: 何故
+  - pattern: 予め
+  - pattern: 暫く
+  - pattern: 些か
+  - pattern: 頗る

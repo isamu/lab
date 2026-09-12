@@ -1,0 +1,27 @@
+id: hiragana-fukushi
+layer: L3
+status: experimental
+how_to_find: phrase-match
+word_list: hiragana-fukushi
+languages: [ja]
+severity: info
+
+name:
+  ja: 副詞は ひらがなで
+  en: Adverb better in kana
+
+why:
+  ja: 表外漢字の副詞は、読める人と読めない人が分かれます。ひらがなで書けば誰でも読めて、意味は変わりません。公用文でかな書きと決まっているものだけを見ています。
+  en: Adverbs written with rare kanji split readers into those who can read them and those who cannot. Kana costs nothing.
+
+message:
+  ja: 「{matched}」は ひらがなで書くのが読みやすいです
+  en: '"{matched}" reads more easily in kana'
+
+how_to_fix:
+  ja: かなに開いてください。「殆ど」は「ほとんど」、「勿論」は「もちろん」。
+  en: Write it in kana.
+
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [blog, business, technical]
