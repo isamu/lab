@@ -253,6 +253,10 @@ toolchain itself is what [ever-better](https://github.com/isamu/ever-better) is 
 | `tsc`              | type-safety              | Type errors from the **project's own** TypeScript — the one tool that must be theirs              |
 | `knip`             | architecture             | Files, exports and dependencies nothing reaches                                                   |
 | `jscpd`            | readability              | Copy-paste duplication                                                                            |
+| `audit`            | security                 | Known vulnerabilities, from the project's own package manager                                     |
+| `circular`         | architecture             | Import cycles — code tangled together, which unused-code analysis cannot see                      |
+| `test-presence`    | test-coverage            | How much test code there is, relative to the code under test                                      |
+| `coverage`         | test-coverage            | Line, branch and function coverage, read from a report the project already produced               |
 | `suppression-scan` | integrity                | `as any`, `@ts-ignore`, `eslint-disable`, `it.skip`. Only the ones without a reason become errors |
 | `config-integrity` | integrity                | ESLint config present, `strict` on, required scripts defined                                      |
 | `ci-integrity`     | integrity                | CI runs lint / typecheck / build / test, and does not swallow failures                            |
@@ -269,6 +273,14 @@ to catch, so the other dimensions use scoria's ruleset (oxlint, 133 rules) and s
 
 `tsc` is the single exception: a type check is only meaningful against the project's own tsconfig
 and installed type definitions, so scoria runs theirs.
+
+### scoria does not run your tests
+
+Coverage is read from a report the project already produced — `coverage/coverage-summary.json`,
+which Vitest, Jest and nyc all emit. A suite can take minutes, touch a database, need credentials,
+or leave state behind; a quality tool that triggers all that as a side effect of being asked for a
+number is not one anyone runs twice. Without a report, coverage reports skipped and `test-presence`
+still answers the blunter question.
 
 ### Some checks need the project installed
 

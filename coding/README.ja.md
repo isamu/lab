@@ -201,6 +201,10 @@ eslint の設定を代わりに選ぶような、判断が要ることはしま�
 | `tsc`              | type-safety              | **プロジェクト自身の** TypeScript が出す型エラー                                            |
 | `knip`             | architecture             | どこからも参照されていないファイル・export・依存                                            |
 | `jscpd`            | readability              | コピペの重複                                                                                |
+| `audit`            | security                 | 既知の脆弱性。プロジェクト自身のパッケージマネージャに聞きます                              |
+| `circular`         | architecture             | 循環依存。「使われていないコード」とは別の壊れ方で、knip には見えません                     |
+| `test-presence`    | test-coverage            | テストコードの量（対象コードとの比）                                                        |
+| `coverage`         | test-coverage            | 行・分岐・関数のカバレッジ。プロジェクトが出力済みのレポートを読みます                      |
 | `suppression-scan` | integrity                | `as any` / `@ts-ignore` / `eslint-disable` / `it.skip`。理由がないものだけを error にします |
 | `config-integrity` | integrity                | eslint の設定はあるか、`strict` は on か、必要なスクリプトはあるか                          |
 | `ci-integrity`     | integrity                | CI が lint / typecheck / build / test を回しているか、失敗を握りつぶしていないか            |
@@ -218,6 +222,13 @@ eslint の設定を代わりに選ぶような、判断が要ることはしま�
 
 `tsc` だけは例外です。型チェックはそのプロジェクトの tsconfig と型定義が揃って初めて意味を持つので、
 プロジェクト自身のものを動かします。
+
+### テストは実行しません
+
+カバレッジは、プロジェクトがすでに出力したレポート（`coverage/coverage-summary.json`。Vitest / Jest / nyc が出します）を読みます。
+テストは数分かかることも、DB に触ることも、認証情報を要することも、状態を残すこともあります。
+点数を聞かれただけでそれを引き起こすツールは、二度と実行してもらえません。
+レポートが無ければ skip とし、`test-presence` がより粗い問いに答えます。
 
 ### プロジェクトの install が要る項目があります
 

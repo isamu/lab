@@ -23,12 +23,30 @@ import { oxlint } from "./probes/oxlint.ts";
 import { jscpd } from "./probes/jscpd.ts";
 import { tsc } from "./probes/tsc.ts";
 import { knip } from "./probes/knip.ts";
+import { audit } from "./probes/audit.ts";
+import { testPresence } from "./probes/test-presence.ts";
+import { coverage } from "./probes/coverage.ts";
+import { circular } from "./probes/circular.ts";
 
 const EXEC_TIMEOUT_MS = 120_000;
 const MAX_OUTPUT_BYTES = 64 * 1024 * 1024;
 const execFileAsync = promisify(execFile);
 
-export const PROBES: readonly Probe[] = [suppressionScan, fileShape, sourceMix, configIntegrity, ciIntegrity, oxlint, jscpd, tsc, knip];
+export const PROBES: readonly Probe[] = [
+  suppressionScan,
+  fileShape,
+  sourceMix,
+  configIntegrity,
+  ciIntegrity,
+  oxlint,
+  jscpd,
+  tsc,
+  knip,
+  audit,
+  testPresence,
+  coverage,
+  circular,
+];
 
 /**
  * The core owns process spawning. A probe that spawns directly takes both version recording and
@@ -49,16 +67,23 @@ const failedResult = (cause: unknown): ExecResult => {
   };
 };
 
-const isInstalled = (root: string): Promise<boolean> =>
-  access(join(root, "node_modules")).then(
+const exists = (path: string): Promise<boolean> =>
+  access(path).then(
     () => true,
     () => false,
   );
+
+const isInstalled = (root: string): Promise<boolean> => exists(join(root, "node_modules"));
 
 const makeExecNode =
   (exec: Exec): ExecNode =>
   (script, args) =>
     exec(process.execPath, [script, ...args]);
+
+const detectPackageManager = async (root: string): Promise<"npm" | "yarn" | undefined> => {
+  if (await exists(join(root, "yarn.lock"))) return "yarn";
+  return (await exists(join(root, "package-lock.json"))) ? "npm" : undefined;
+};
 
 const readText: ReadText = (path) =>
   readFile(path, "utf8").then(
@@ -121,6 +146,7 @@ export const assay = async (target: string, probes: readonly Probe[] = PROBES): 
   const project = {
     typescript: isTypeScriptProject(await readPackageJson(root)),
     installed: await isInstalled(root),
+    packageManager: await detectPackageManager(root),
     stacks: loaded.config.stacks,
   };
   const exec = makeExec(root);

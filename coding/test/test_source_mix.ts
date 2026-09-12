@@ -28,7 +28,7 @@ test("reports the typed to untyped ratio", async () => {
 
 /** Telling a JavaScript project to adopt TypeScript is not this probe's job. */
 test("a repository without typescript is skipped", async () => {
-  const status = await sourceMix.detect(contextOf(files, { typescript: false, installed: true, stacks: ["ts"] }));
+  const status = await sourceMix.detect(contextOf(files, { typescript: false, installed: true, packageManager: "yarn", stacks: ["ts"] }));
   assert.equal(status.kind, "skipped");
 });
 
