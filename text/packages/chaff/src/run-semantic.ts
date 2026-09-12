@@ -25,7 +25,11 @@ export type Job = {
   readonly narrowing?: Narrowing;
 };
 
-const filterFor = (name: string | undefined): (typeof FILTERS)[string] => FILTERS[name ?? "whole-document"] ?? FILTERS["whole-document"] ?? (() => []);
+/**
+ * 知らない絞り込みを文書全体に落とさない。spec §14 は「絞り込みを持たない L4 rule は
+ * 登録できない」と決めている。落とすと、**書いていない範囲が黙って LLM に送られる**。
+ */
+const filterFor = (name: string | undefined): (typeof FILTERS)[string] | undefined => FILTERS[name ?? "whole-document"];
 
 const SEVERITY_BY_VALUE: readonly Severity[] = ["info", "info", "warning", "error"];
 
@@ -41,6 +45,9 @@ const builtInJobs = (doc: ProseDocument, rules: readonly RuleDefinition[], setti
     .flatMap((rule) => {
       const rubric = rule.what_to_check === undefined ? undefined : localized(rule.what_to_check, doc.language);
       if (rubric === undefined || rubric.length === 0) return [];
+      // 絞り込みが無い rule は動かさない。黙って落とさず、下の skipped に出す。
+      const filter = filterFor(rule.how_to_find);
+      if (filter === undefined) return [];
       return [
         {
           rule: rule.id,
@@ -48,7 +55,7 @@ const builtInJobs = (doc: ProseDocument, rules: readonly RuleDefinition[], setti
           rubric,
           howToFix: localized(rule.how_to_fix, doc.language),
           severity: severityFromLevel(rule, settings[rule.id] ?? "normal"),
-          candidates: filterFor(rule.how_to_find)(doc),
+          candidates: filter(doc),
         },
       ];
     });
@@ -58,7 +65,7 @@ const userJobs = (doc: ProseDocument, checks: readonly UserCheck[], genre: strin
     .filter((check) => check.level !== "off" && check.use_for.some((target) => genre.startsWith(target)))
     .map((check) => {
       // look_at の括弧の中を取り出して絞り込む。取り出せなければ文書全体。spec §14。
-      const { candidates, narrowing } = narrow(doc, check.look_at, filterFor("whole-document"));
+      const { candidates, narrowing } = narrow(doc, check.look_at, FILTERS["whole-document"] ?? (() => []));
       return {
         rule: check.id,
         name: check.name,
@@ -108,7 +115,10 @@ export const runSemantic = async (
 ): Promise<SemanticResult> => {
   const jobs = planSemantic(doc, rules, checks, settings, genre);
   const starts = lineStarts(doc.source);
-  const skipped = jobs.filter((job) => job.candidates.length === 0).map((job) => ({ rule: job.rule, why: "見るところが無かったため" }));
+  const unfiltered = rules
+    .filter((rule) => rule.layer === "L4" && rule.use_for.some((target) => genre.startsWith(target)) && filterFor(rule.how_to_find) === undefined)
+    .map((rule) => ({ rule: rule.id, why: `絞り込み ${rule.how_to_find} が無いため（文書全体は送りません）` }));
+  const skipped = [...jobs.filter((job) => job.candidates.length === 0).map((job) => ({ rule: job.rule, why: "見るところが無かったため" })), ...unfiltered];
   const live = jobs.filter((job) => job.candidates.length > 0);
   const answers = await Promise.all(
     live.flatMap((job) =>

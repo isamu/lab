@@ -31,12 +31,22 @@ const has = (capabilities: ProseDocument["capabilities"], need: string): boolean
   return false;
 };
 
+/**
+ * 宣言だけでなく、実際に token が来ているかも見る。
+ *
+ * `capabilities.pos: true` と言いながら token を返さないアダプタでも、rule は
+ * `sentence.tokens ?? []` を見るので**例外にならず、指摘 0 件で終わる**。
+ * 0 件は「問題なし」と見分けがつかない。
+ */
+const hasTokens = (doc: ProseDocument): boolean => doc.sentences.length === 0 || doc.sentences.some((sentence) => sentence.tokens !== undefined);
+
 /** 要求を満たさない rule は動かせない。満たさないまま動かすと「指摘 0 件」が保証に見える。 */
 const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
   if (rule.languages !== undefined && !rule.languages.includes(doc.language)) return `${doc.language} 向けの rule ではないため`;
   const missing = rule.requires.find((need) => !has(doc.capabilities, need));
-  if (missing === undefined) return undefined;
-  return `この言語では${CAPABILITY_NAME[missing] ?? missing}が使えないため`;
+  if (missing !== undefined) return `この言語では${CAPABILITY_NAME[missing] ?? missing}が使えないため`;
+  if (rule.requires.length > 0 && !hasTokens(doc)) return "アダプタが品詞を返さなかったため";
+  return undefined;
 };
 
 const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] =>
