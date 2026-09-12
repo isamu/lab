@@ -6,17 +6,14 @@ import type { Rubric } from "../packages/scoria/src/rubric.ts";
 import type { ProbeResult, SourceFile } from "../packages/scoria/src/plugin.ts";
 import { sourceFile } from "./helpers.ts";
 
-const rubrics: readonly Rubric[] = [
-  {
-    id: "readability",
-    status: "experimental",
-    metrics: [
-      { metric: "file-shape.sloc_p95", scale: { good: 150, bad: 800 }, weight: 0.7 },
-      { metric: "file-shape.god_file_count", scale: { good: 0, bad: 20 }, weight: 0.3 },
-    ],
-    confidenceFrom: [],
-  },
+const rubricOf = (metrics: Rubric["metrics"]): readonly Rubric[] => [{ id: "readability", status: "experimental", metrics, confidenceFrom: [] }];
+
+const BOTH_METRICS: Rubric["metrics"] = [
+  { metric: "file-shape.sloc_p95", scale: { good: 150, bad: 800 }, weight: 0.7 },
+  { metric: "file-shape.god_file_count", scale: { good: 0, bad: 20 }, weight: 0.3 },
 ];
+
+const ONE_METRIC: Rubric["metrics"] = [{ metric: "file-shape.sloc_p95", scale: { good: 150, bad: 800 }, weight: 1 }];
 
 const files: readonly SourceFile[] = [sourceFile("a.ts", ["const a = 1;"])];
 
@@ -32,18 +29,20 @@ const resultWith = (p95: number, godFiles: number): ProbeResult => ({
   durationMs: 0,
 });
 
-const reportWith = (p95: number, godFiles: number) =>
-  buildReport(".", files, [resultWith(p95, godFiles)], rubrics, undefined, [
-    {
-      kind: "probe",
-      id: "file-shape",
-      apiVersion: 1,
-      tier: 0,
-      declares: ["file-shape.sloc_p95", "file-shape.god_file_count"],
-      detect: () => Promise.resolve({ kind: "ok" }),
-      run: () => Promise.resolve(resultWith(p95, godFiles)),
-    },
-  ]);
+const probeFor = (p95: number, godFiles: number) => ({
+  kind: "probe" as const,
+  id: "file-shape",
+  apiVersion: 1 as const,
+  tier: 0 as const,
+  declares: ["file-shape.sloc_p95", "file-shape.god_file_count"],
+  detect: () => Promise.resolve({ kind: "ok" as const }),
+  run: () => Promise.resolve(resultWith(p95, godFiles)),
+});
+
+const reportUnder = (metrics: Rubric["metrics"], p95: number, godFiles: number) =>
+  buildReport(".", files, [resultWith(p95, godFiles)], rubricOf(metrics), undefined, [probeFor(p95, godFiles)]);
+
+const reportWith = (p95: number, godFiles: number) => reportUnder(BOTH_METRICS, p95, godFiles);
 
 /**
  * The whole reason the scale is kept linear (spec §16.2, §26.3).
@@ -76,4 +75,35 @@ test("a metric that did not move is absent from movers", () => {
 test("no change means no movers", () => {
   const diff = diffReports(reportWith(200, 3), reportWith(200, 3));
   assert.deepEqual(diff.movers, []);
+});
+
+/**
+ * Adding a metric moves the dimension without the target changing, so the two numbers are not
+ * measurements of the same thing. scoria's own `security` dimension read `+100` the first time it
+ * existed, with `audit.critical` reported as the largest gain at `0 → 0`.
+ */
+test("a dimension the rubric changed under reports no delta and no movers", () => {
+  const diff = diffReports(reportUnder(ONE_METRIC, 200, 3), reportUnder(BOTH_METRICS, 200, 3));
+  assert.equal(diff.dimensions.find((d) => d.dimension === "readability")?.delta, undefined);
+  assert.deepEqual(diff.movers, []);
+  assert.deepEqual(diff.notComparable, ["readability"]);
+});
+
+test("dropping a metric is just as incomparable as adding one", () => {
+  const diff = diffReports(reportUnder(BOTH_METRICS, 200, 3), reportUnder(ONE_METRIC, 200, 3));
+  assert.deepEqual(diff.notComparable, ["readability"]);
+});
+
+test("an unchanged rubric still reports its movers", () => {
+  const diff = diffReports(reportWith(200, 3), reportWith(400, 3));
+  assert.deepEqual(diff.notComparable, []);
+  assert.equal(diff.movers.length, 1);
+});
+
+/** A dimension that had no score has nothing to subtract from; `score ?? 0` would invent one. */
+test("a dimension nothing could be measured in is not comparable", () => {
+  const unmeasured = buildReport(".", files, [], rubricOf(BOTH_METRICS), undefined, []);
+  const diff = diffReports(unmeasured, reportWith(200, 3));
+  assert.equal(diff.dimensions.find((d) => d.dimension === "readability")?.delta, undefined);
+  assert.deepEqual(diff.notComparable, ["readability"]);
 });

@@ -2,7 +2,7 @@ import type { Finding } from "./plugin.ts";
 import type { DimensionReport, Report } from "./report.ts";
 import { tallyWarnings } from "./report.ts";
 import type { Drift } from "./config.ts";
-import type { ReportDiff } from "./diff.ts";
+import type { Mover, ReportDiff } from "./diff.ts";
 import { messagesFor, type Lang, type Messages } from "./messages.ts";
 import { padEndWide, padStartWide } from "./width.ts";
 
@@ -41,18 +41,21 @@ const signed = (value: number): string => (value > 0 ? `+${value.toFixed(1)}` : 
  * The point of the tool is the direction of travel, so the movers name the metric that moved and
  * by how much. The scale being linear is what lets the points be read as "what this was worth".
  */
+const noteLine = (subjects: readonly string[], phrase: (joined: string) => string): readonly string[] =>
+  subjects.length === 0 ? [] : [`  ${phrase(subjects.join(", "))}`];
+
+const moverRow = (mover: Mover): string =>
+  `  ${padStart(signed(mover.points), 7)}  ${pad(mover.dimension, 14)} ${pad(mover.metric, 34)} ${mover.from} → ${mover.to}`;
+
 const movedSection = (context: RenderContext, messages: Messages): readonly string[] => {
   const comparison = context.comparison;
   if (comparison === undefined) return [messages.noBaseline, ""];
   // A mover that rounds to zero is noise; reporting it as movement is worse than silence.
   const movers = comparison.diff.movers.filter((mover) => Math.abs(mover.points) >= MOVER_FLOOR).toSorted((a, b) => Math.abs(b.points) - Math.abs(a.points));
-  if (movers.length === 0) return [];
-  const rows = movers.slice(0, MAX_MOVERS).map((mover) => {
-    const change = `${mover.from} → ${mover.to}`;
-    return `  ${padStart(signed(mover.points), 7)}  ${pad(mover.dimension, 14)} ${pad(mover.metric, 34)} ${change}`;
-  });
-  const note = comparison.rebaseline.length === 0 ? [] : [`  ${messages.rebaselineNeeded(comparison.rebaseline.join(", "))}`];
-  return [messages.whatMoved, ...rows, ...note, ""];
+  const rows = movers.slice(0, MAX_MOVERS).map(moverRow);
+  const notes = [...noteLine(comparison.rebaseline, messages.rebaselineNeeded), ...noteLine(comparison.diff.notComparable, messages.rubricChanged)];
+  if (rows.length === 0 && notes.length === 0) return [];
+  return [messages.whatMoved, ...rows, ...notes, ""];
 };
 
 const pad = padEndWide;

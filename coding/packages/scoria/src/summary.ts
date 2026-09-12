@@ -41,7 +41,10 @@ const signed = (value: number): string => (value > 0 ? `+${value.toFixed(1)}` : 
  */
 const deltaCell = (dimension: DimensionReport, diff: ReportDiff | undefined): string => {
   const found = diff?.dimensions.find((entry) => entry.dimension === dimension.dimension);
-  if (found === undefined || Math.round(found.delta) === 0) return "";
+  if (found === undefined) return "";
+  // A dash, not a blank: blank is how a dimension that held still reads, and this one is unknown.
+  if (found.delta === undefined) return "—";
+  if (Math.round(found.delta) === 0) return "";
   return found.delta > 0 ? `**${signedWhole(found.delta)}**` : `**${signedWhole(found.delta)}** ⚠`;
 };
 
@@ -58,6 +61,11 @@ const movedBlock = (diff: ReportDiff | undefined, messages: Messages): readonly 
     .slice(0, MAX_MOVERS);
   if (movers.length === 0) return [];
   return ["", `**${messages.whatMoved}**`, "", ...movers.map((m) => `- \`${signed(m.points)}\` ${m.dimension} — ${m.metric}: ${m.from} → ${m.to}`)];
+};
+
+const notComparableBlock = (diff: ReportDiff | undefined, messages: Messages): readonly string[] => {
+  const names = diff?.notComparable ?? [];
+  return names.length === 0 ? [] : ["", `_${messages.rubricChanged(names.join(", "))}_`];
 };
 
 const findingRow = (finding: Finding, messages: Messages): string =>
@@ -123,6 +131,7 @@ export const renderGithubSummary = (report: Report, lang: Lang, diff?: ReportDif
     "| --- | ---: | ---: | --- | --- |",
     ...report.dimensions.map((dimension) => dimensionRow(dimension, diff)),
     ...movedBlock(diff, messages),
+    ...notComparableBlock(diff, messages),
     ...findingsBlock(report, messages),
     ...warningsBlock(report, messages),
     ...skippedBlock(report, messages),
