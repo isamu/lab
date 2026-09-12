@@ -332,6 +332,40 @@ dimension is made of, so the old and the new score are not measurements of the s
 subtracting them would credit the release as an improvement. Those dimensions report `—` and no
 movers until you record a new baseline.
 
+### Monorepos, and repositories holding more than one project
+
+scoria measures **one directory** and does not wander below it. Every tool it drives is rooted at
+one place: `tsc` reads the tsconfig it is given, `audit` reads one lockfile, `knip` resolves one
+dependency graph. Point it at a repository holding two projects and the tools see the outer one
+while the file probes count both — the denominator is the whole repository and the numerator is
+half of it.
+
+ownplate is the shape: `src/` is a Vue app under the root tsconfig and lockfile, `functions/` is
+Firebase Functions with its own tsconfig, package.json and **its own yarn.lock**. Measured from the
+root, `tsc` reported zero errors without looking at `functions/`'s 93 files, and `audit` missed its
+4 high and 19 moderate advisories entirely.
+
+So scoria does not guess where the boundaries are. Name them:
+
+```json
+{ "targets": [".", "functions"] }
+```
+
+```json
+{ "targets": ["packages/*", "agents/*"] }
+```
+
+Each target is measured as if scoria had been run inside it — its own config, its own baseline, its
+own report. Globs are relative to the config, match directories only, and never match
+`node_modules`. With no `targets`, scoria measures exactly the directory it was pointed at, which is
+what every config written before this already meant.
+
+A glob that matches nothing **fails the run**. Measuring zero directories and reporting success is
+the one outcome nobody would notice was wrong.
+
+With more than one target, `--sarif` and `--badge-json` get the directory name inserted
+(`scoria.sarif` → `scoria.web.sarif`), so the targets do not overwrite each other.
+
 ### Failing the build on a regression
 
 By default scoria gates nothing: it reports and exits 0. A tool that turns CI red on the day it is

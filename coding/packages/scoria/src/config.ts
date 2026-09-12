@@ -21,6 +21,15 @@ export interface ScoriaConfig {
   readonly profile: Profile;
   readonly stacks: readonly string[];
   readonly mode: Mode;
+  /**
+   * Directories to measure, as globs relative to this config (spec §9.3). Each is measured on its
+   * own, with its own config and its own baseline. Empty means "the directory scoria was pointed
+   * at", which is what a single-project repository wants.
+   *
+   * Only the invocation root's targets are honoured: a config found inside a target does not get
+   * to name targets of its own.
+   */
+  readonly targets: readonly string[];
   /** Language of the terminal output. Machine output stays English (see messages.ts). */
   readonly lang: Lang;
 }
@@ -52,7 +61,14 @@ const toConfig = (raw: unknown): ScoriaConfig | undefined => {
   if (!isRecord(raw) || !isProfile(raw["profile"]) || !isStringArray(raw["stacks"])) return undefined;
   const lang = raw["lang"];
   const mode = raw["mode"];
-  return { profile: raw["profile"], stacks: raw["stacks"], mode: isMode(mode) ? mode : "report", lang: isLang(lang) ? lang : "en" };
+  const targets = raw["targets"];
+  return {
+    profile: raw["profile"],
+    stacks: raw["stacks"],
+    mode: isMode(mode) ? mode : "report",
+    targets: isStringArray(targets) ? targets : [],
+    lang: isLang(lang) ? lang : "en",
+  };
 };
 
 const detectProfile = (pkg: unknown): Profile => {
@@ -66,6 +82,7 @@ export const detectConfig = async (root: string): Promise<ScoriaConfig> => ({
   profile: detectProfile(await readPackageJson(root)),
   stacks: await detectStacks(root),
   mode: "report",
+  targets: [],
   lang: "en",
 });
 

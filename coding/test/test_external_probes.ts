@@ -74,10 +74,49 @@ test("knip is skipped where the project is not installed", async () => {
 
 test("knip counts unused files, exports and dependencies", async () => {
   const report = JSON.stringify([{ file: "src/dead.ts", exports: [{ name: "unusedThing" }], dependencies: ["left-pad"] }, { files: ["src/orphan.ts"] }]);
-  const result = await knip.run(contextWith(files, { exec: execReturning(report) }));
+  const scope = [sourceFile("src/dead.ts", ["export const unusedThing = 1;"]), sourceFile("src/orphan.ts", ["export const orphan = 1;"])];
+  const result = await knip.run(contextWith(scope, { exec: execReturning(report) }));
   assert.equal(metricOf(result.metrics, "knip.unused_exports"), 1);
   assert.equal(metricOf(result.metrics, "knip.unused_files"), 1);
   assert.equal(metricOf(result.metrics, "knip.unused_dependencies"), 1);
+});
+
+/**
+ * knip's own output, which is what it actually emits: `files` entries are `{ name }`, not strings.
+ * The fixture above was written from an assumption and passed while the parser read no file at all
+ * — `unused_files` was zero across every one of the 49 repositories measured for calibration.
+ */
+/**
+ * Run without a config on a monorepo, knip walks generated output and calls it unused: 573 files
+ * in graphai against the 450 scoria classifies as source at all.
+ */
+test("knip findings outside scoria's own file set do not count", async () => {
+  const report = JSON.stringify({
+    issues: [
+      { file: "a.ts", files: [{ name: "src/a.ts" }], exports: [], dependencies: [] },
+      { file: "b.ts", files: [{ name: "docs/apiDoc/assets/main.js" }], exports: [], dependencies: [] },
+      { file: "docs/apiDoc/assets/search.js", files: [], exports: [{ name: "gone" }], dependencies: [] },
+    ],
+  });
+  const result = await knip.run(contextWith([sourceFile("src/a.ts", ["export const a = 1;"])], { exec: execReturning(report) }));
+  assert.equal(metricOf(result.metrics, "knip.unused_files"), 1);
+  assert.equal(metricOf(result.metrics, "knip.unused_exports"), 0);
+});
+
+test("knip's real output shape wraps each unused file in an object", async () => {
+  const report = JSON.stringify({
+    issues: [
+      { file: "a.ts", files: [{ name: "src/orphan.ts" }], exports: [], dependencies: [] },
+      { file: "b.ts", files: [{ name: "src/stray.ts" }], exports: [], dependencies: [] },
+    ],
+  });
+  const scope = [sourceFile("src/orphan.ts", ["export const a = 1;"]), sourceFile("src/stray.ts", ["export const b = 2;"])];
+  const result = await knip.run(contextWith(scope, { exec: execReturning(report) }));
+  assert.equal(metricOf(result.metrics, "knip.unused_files"), 2);
+  assert.deepEqual(
+    result.findings.filter((finding) => finding.rule === "unused-file").map((finding) => finding.file),
+    ["src/orphan.ts", "src/stray.ts"],
+  );
 });
 
 /** jscpd writes no report when it finds nothing. That is zero duplication, not a failed run. */

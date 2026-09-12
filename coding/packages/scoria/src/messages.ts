@@ -53,6 +53,8 @@ export interface Messages {
   readonly gateToolVersion: (dimension: string, tools: string) => string;
   readonly gateSizeChange: (dimension: string, percent: number) => string;
   readonly gateAcceptGains: string;
+  readonly noTargetsMatched: (patterns: string) => string;
+  readonly measuring: (target: string) => string;
   readonly partlyMeasured: (percent: number) => string;
   readonly fromDimensions: (count: number) => string;
   readonly notComparableLong: string;
@@ -109,6 +111,8 @@ const en: Messages = {
   gateToolVersion: (dimension, tools) => `${dimension}: ${tools} changed version, which adds rules rather than defects`,
   gateSizeChange: (dimension, percent) => `${dimension}: the repository changed size by ${percent}%, so its density metrics measure a different denominator`,
   gateAcceptGains: "Improved. `scoria baseline` records this run as the new floor.",
+  noTargetsMatched: (patterns) => `No directory matched ${patterns}. Fix "targets" in scoria.config.json, or remove it to measure this directory.`,
+  measuring: (target) => `── ${target}`,
   partlyMeasured: (percent) => `only ${percent}% of this dimension could be measured`,
   fromDimensions: (count) => `mean of ${count}`,
   notComparableLong:
@@ -164,6 +168,9 @@ const ja: Messages = {
   gateToolVersion: (dimension, tools) => `${dimension}: ${tools} の版数が変わっています。増えたのはルールであって欠陥ではありません`,
   gateSizeChange: (dimension, percent) => `${dimension}: リポジトリの規模が ${percent}% 変わったので、密度の指標は別の分母を測っています`,
   gateAcceptGains: "改善しています。`scoria baseline` で今回の値を新しい下限として記録できます。",
+  noTargetsMatched: (patterns) =>
+    `${patterns} に一致するディレクトリがありません。scoria.config.json の "targets" を直すか、消せばこのディレクトリを測ります。`,
+  measuring: (target) => `── ${target}`,
   partlyMeasured: (percent) => `この軸は ${percent}% しか測れていません`,
   fromDimensions: (count) => `${count} 軸の平均`,
   notComparableLong:
