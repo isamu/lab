@@ -1,22 +1,22 @@
 {
   "report": {
     "schemaVersion": 1,
-    "root": "/Users/isamu/ss/llm/lab/coding",
+    "root": "/private/tmp/claude-501/-Users-isamu-ss-llm-lab-coding/a61d777d-32f0-4b34-aaf9-d39dceb55871/scratchpad/basewt/coding",
     "profile": "app",
     "stacks": [
       "ts"
     ],
-    "complete": true,
+    "complete": false,
     "size": {
-      "files": 58,
-      "sloc": 2794,
-      "testSloc": 1508
+      "files": 66,
+      "sloc": 3339,
+      "testSloc": 1666
     },
     "dimensions": [
       {
         "dimension": "architecture",
         "status": "experimental",
-        "score": 95,
+        "score": 94,
         "coverage": 1,
         "metrics": [
           {
@@ -27,8 +27,8 @@
               "good": 0,
               "bad": 60
             },
-            "weight": 0.4,
-            "points": 40,
+            "weight": 0.3,
+            "points": 30,
             "topContributors": []
           },
           {
@@ -39,19 +39,30 @@
               "good": 0,
               "bad": 20
             },
-            "weight": 0.35,
-            "points": 35
+            "weight": 0.25,
+            "points": 25
           },
           {
             "metric": "knip.unused_dependencies",
-            "value": 2,
+            "value": 3,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 10
             },
+            "weight": 0.2,
+            "points": 14
+          },
+          {
+            "metric": "circular.cycle_count",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 8
+            },
             "weight": 0.25,
-            "points": 20
+            "points": 25
           }
         ],
         "confidence": "high",
@@ -159,27 +170,31 @@
       {
         "dimension": "readability",
         "status": "experimental",
-        "score": 99.7077,
+        "score": 99.6815,
         "coverage": 1,
         "metrics": [
           {
             "metric": "file-shape.sloc_p95",
-            "value": 152,
+            "value": 153,
             "state": "ok",
             "scale": {
               "good": 150,
               "bad": 800
             },
             "weight": 0.3,
-            "points": 29.9077,
+            "points": 29.8615,
             "topContributors": [
               {
                 "file": "packages/scoria/src/probes/config-integrity.ts",
                 "value": 159
               },
               {
+                "file": "packages/scoria/src/plugin.ts",
+                "value": 153
+              },
+              {
                 "file": "packages/scoria/src/render.ts",
-                "value": 152
+                "value": 153
               },
               {
                 "file": "packages/scoria/src/probes/suppression-scan.ts",
@@ -187,11 +202,7 @@
               },
               {
                 "file": "packages/scoria/src/messages.ts",
-                "value": 148
-              },
-              {
-                "file": "packages/scoria/src/plugin.ts",
-                "value": 146
+                "value": 151
               }
             ]
           },
@@ -219,14 +230,14 @@
           },
           {
             "metric": "jscpd.duplicated_lines_pct",
-            "value": 0.1,
+            "value": 0.09,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 10
             },
             "weight": 0.2,
-            "points": 19.8,
+            "points": 19.82,
             "topContributors": [
               {
                 "file": "test/test_file_shape.ts",
@@ -251,32 +262,129 @@
         "confidenceReason": "0 suppressions in scope"
       },
       {
+        "dimension": "security",
+        "status": "experimental",
+        "score": 100,
+        "coverage": 1,
+        "metrics": [
+          {
+            "metric": "audit.critical",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 1
+            },
+            "weight": 0.4,
+            "points": 40
+          },
+          {
+            "metric": "audit.high",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 5
+            },
+            "weight": 0.35,
+            "points": 35
+          },
+          {
+            "metric": "audit.moderate",
+            "value": 0,
+            "state": "ok",
+            "scale": {
+              "good": 0,
+              "bad": 20
+            },
+            "weight": 0.25,
+            "points": 25
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "no suppression signal wired"
+      },
+      {
+        "dimension": "test-coverage",
+        "status": "experimental",
+        "score": 99.7778,
+        "coverage": 0.3,
+        "metrics": [
+          {
+            "metric": "test-presence.test_to_source_ratio",
+            "value": 0.499,
+            "state": "ok",
+            "scale": {
+              "good": 0.5,
+              "bad": 0.05
+            },
+            "weight": 0.3,
+            "points": 99.7778
+          },
+          {
+            "metric": "coverage.line_pct",
+            "value": 0,
+            "state": "skipped",
+            "scale": {
+              "good": 90,
+              "bad": 40
+            },
+            "weight": 0.3,
+            "points": 0
+          },
+          {
+            "metric": "coverage.branch_pct",
+            "value": 0,
+            "state": "skipped",
+            "scale": {
+              "good": 85,
+              "bad": 30
+            },
+            "weight": 0.25,
+            "points": 0
+          },
+          {
+            "metric": "coverage.function_pct",
+            "value": 0,
+            "state": "skipped",
+            "scale": {
+              "good": 90,
+              "bad": 40
+            },
+            "weight": 0.15,
+            "points": 0
+          }
+        ],
+        "confidence": "high",
+        "confidenceReason": "0 suppressions in scope"
+      },
+      {
         "dimension": "type-safety",
         "status": "experimental",
-        "score": 98.854,
+        "score": 99.038,
         "coverage": 1,
         "metrics": [
           {
             "metric": "source-mix.untyped_sloc_ratio",
-            "value": 0.0011,
+            "value": 0.0009,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 0.5
             },
             "weight": 0.3,
-            "points": 29.934
+            "points": 29.946
           },
           {
             "metric": "source-mix.untyped_file_ratio",
-            "value": 0.027,
+            "value": 0.0227,
             "state": "ok",
             "scale": {
               "good": 0,
               "bad": 0.5
             },
             "weight": 0.2,
-            "points": 18.92,
+            "points": 19.092,
             "topContributors": [
               {
                 "file": "packages/scoria/bin/scoria.js",
@@ -314,9 +422,9 @@
       {
         "rule": "ci-swallowed-failures",
         "severity": "error",
-        "file": ".github/workflows",
+        "file": "package.json",
         "line": 1,
-        "message": "1 step swallows their failure",
+        "message": "2 steps swallow their failure",
         "probe": "ci-integrity",
         "dimension": "integrity",
         "tier": 0
@@ -386,19 +494,46 @@
         "status": {
           "kind": "ok"
         }
+      },
+      {
+        "probe": "audit",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "test-presence",
+        "status": {
+          "kind": "ok"
+        }
+      },
+      {
+        "probe": "coverage",
+        "status": {
+          "kind": "skipped",
+          "reason": "no coverage report; scoria does not run the project's tests"
+        }
+      },
+      {
+        "probe": "circular",
+        "status": {
+          "kind": "ok"
+        }
       }
     ],
     "toolVersions": {
       "oxlint": "Version: 1.82.0",
       "jscpd": "4.3.0",
       "typescript": "6.0.3",
-      "knip": "6.35.1"
+      "knip": "6.35.1",
+      "yarn": "1.22.22",
+      "madge": "8.0.0"
     },
     "overall": {
-      "score": 97.8288,
-      "scoredDimensions": 5,
+      "score": 98.2971,
+      "scoredDimensions": 7,
       "comparable": false
     }
   },
-  "createdAt": "2026-09-11T19:31:09.422Z"
+  "createdAt": "2026-09-12T03:16:50.675Z"
 }
