@@ -30,6 +30,7 @@ import { coverage } from "./probes/coverage.ts";
 import { circular } from "./probes/circular.ts";
 import { readmeContract } from "./probes/readme-contract.ts";
 import { commentQuality } from "./probes/comment-quality.ts";
+import { uiToken } from "./probes/ui-token.ts";
 
 const EXEC_TIMEOUT_MS = 120_000;
 const MAX_OUTPUT_BYTES = 64 * 1024 * 1024;
@@ -51,6 +52,7 @@ export const PROBES: readonly Probe[] = [
   circular,
   readmeContract,
   commentQuality,
+  uiToken,
 ];
 
 /**

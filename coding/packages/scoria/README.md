@@ -284,6 +284,7 @@ toolchain itself is what [ever-better](https://github.com/isamu/ever-better) is 
 | `audit`            | security                 | Known vulnerabilities, from the project's own package manager                                       |
 | `circular`         | architecture             | Import cycles — code tangled together, which unused-code analysis cannot see                        |
 | `test-presence`    | test-coverage            | How much test code there is, relative to the code under test                                        |
+| `ui-token`         | ui-consistency           | How many _distinct_ colours and spacing values the components use, inline styles, and style blocks  |
 | `readme-contract`  | documentation            | Whether a README exists, how much it says, and whether it still lists the flags the program accepts |
 | `comment-quality`  | documentation            | Markers left in the code — TODO, FIXME, XXX, HACK — and comment density, reported but not scored    |
 | `coverage`         | test-coverage            | Line, branch and function coverage, read from a report the project already produced                 |
