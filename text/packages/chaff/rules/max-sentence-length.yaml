@@ -25,4 +25,26 @@ levels:
   ja: { strict: 70, normal: 100, relaxed: 140 }
   en: { strict: 18, normal: 25, relaxed: 35 }
 
+# ジャンルで読まれかたが違う。spec §9 の初期値。
+# 社内メールの 1 文と随筆の 1 文に同じ上限を課すと、どちらかが必ず間違う。
+by_genre:
+  business/email:
+    ja: { strict: 50, normal: 70, relaxed: 100 }
+    en: { strict: 12, normal: 18, relaxed: 25 }
+  business/meeting-notes:
+    ja: { strict: 60, normal: 80, relaxed: 110 }
+    en: { strict: 14, normal: 20, relaxed: 28 }
+  business/proposal:
+    ja: { strict: 65, normal: 90, relaxed: 125 }
+    en: { strict: 16, normal: 22, relaxed: 30 }
+  business/press-release:
+    ja: { strict: 65, normal: 90, relaxed: 125 }
+    en: { strict: 16, normal: 22, relaxed: 30 }
+  blog/essay:
+    ja: { strict: 100, normal: 140, relaxed: 180 }
+    en: { strict: 25, normal: 35, relaxed: 45 }
+  blog/owned-media:
+    ja: { strict: 65, normal: 90, relaxed: 125 }
+    en: { strict: 16, normal: 22, relaxed: 30 }
+
 use_for: [blog, business, technical]

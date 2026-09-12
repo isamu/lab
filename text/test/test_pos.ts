@@ -80,6 +80,7 @@ describe("満たせない要求は黙って通さない", () => {
       how_to_fix: {},
       message: {},
       levels: { normal: 1 },
+      by_genre: {},
       how_to_find: "sentence-length",
       word_list: undefined,
       what_to_check: undefined,

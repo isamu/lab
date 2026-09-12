@@ -31,6 +31,16 @@ const flattenLevels = (raw: unknown, language: string): LevelTable | undefined =
   return isLevelTable(forLanguage) ? normalize(forLanguage) : undefined;
 };
 
+/** ジャンル別の上書きも、言語別の levels と同じ形で書ける。読めないものは黙って落とさず捨てる。 */
+const genreTables = (raw: unknown, language: string): Readonly<Record<string, LevelTable>> => {
+  if (!isRecord(raw)) return {};
+  const entries = Object.entries(raw).flatMap(([genre, table]) => {
+    const flattened = flattenLevels(table, language);
+    return flattened === undefined ? [] : [[genre, flattened] as const];
+  });
+  return Object.fromEntries(entries);
+};
+
 const SEVERITIES: readonly Severity[] = ["error", "warning", "info"];
 const isSeverity = (value: unknown): value is Severity => SEVERITIES.some((entry) => entry === value);
 
@@ -75,6 +85,7 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     how_to_fix: localizedOf(raw["how_to_fix"]),
     message: localizedOf(raw["message"]),
     levels,
+    by_genre: genreTables(raw["by_genre"], language),
     how_to_find: String(raw["how_to_find"]),
     word_list: typeof raw["word_list"] === "string" ? raw["word_list"] : undefined,
     what_to_check: isLocalized(raw["what_to_check"]) ? raw["what_to_check"] : undefined,

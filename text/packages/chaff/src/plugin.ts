@@ -143,6 +143,8 @@ export type RuleDefinition = {
   /** 4 語と数値の対応。2 つ以上。未定義の段は normal に落ちる。spec §18.1。
    *  言語別の閾値を持つ rule（max-sentence-length）は、読み込み時に言語で平坦化済み。 */
   readonly levels: LevelTable;
+  /** ジャンル別の上書き。"business" は business/* 全部に効き、"business/email" が勝つ。spec §9。 */
+  readonly by_genre: Readonly<Record<string, LevelTable>>;
   readonly how_to_find: string;
   readonly word_list: string | undefined;
   /** L4 のみ。LLM に渡す決まり。言語別。 */

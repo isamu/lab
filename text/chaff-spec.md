@@ -524,25 +524,37 @@ prose                     共通の下敷き
 
 profile は言語を知らないが、閾値だけは言語別に持つ必要がある（§7 `lengthUnit`）。
 
+### 9.1 閾値は rule 側に置く
+
+初版はジャンル別の閾値を profile 側のファイル（`chaff-blog/profiles/blog.tech.yaml`）に置く形にしていたが、
+**実装では rule のファイルに `by_genre` として置いた**。
+
 ```yaml
-# chaff-blog/profiles/blog.tech.yaml
-id: blog/tech
-extends: blog
+# rules/max-sentence-length.yaml
+levels:
+  ja: { strict: 70, normal: 100, relaxed: 140 }
+  en: { strict: 18, normal: 25,  relaxed: 35 }
 
-rules:
-  max-sentence-length:
-    levels:
-      ja: { strict: 70, normal: 100, relaxed: 140 }   # 単位は char
-      en: { strict: 18, normal: 25,  relaxed: 35 }    # 単位は word
-
-  concrete-evidence-density:
-    levels:
-      normal: 1        # セクションあたり具体物 1 つ以上
-
-  first-person-experience: off
+by_genre:
+  business/email:
+    ja: { strict: 50, normal: 70, relaxed: 100 }
+  blog/essay:
+    ja: { strict: 100, normal: 140, relaxed: 180 }
 ```
 
-profile が持つのは既定の `levels` であり、利用者の `chaff.yaml` はそこに 4 語で上書きをかける（§18.1）。
+理由は 2 つ。
+
+- **rule の理由と数字が離れると、数字だけが動く。** なぜ 70 なのかは `why` の隣にあるべきで、
+  別ファイルに置くと「この数字は何だったか」を辿るのに 2 ファイル要る
+- **profile パッケージの仕組みがまだ無い。** ジャンルはいま文字列でしかなく、
+  パッケージとして配る話（§15）と閾値の話を同時に持ち込む必要はない
+
+ジャンルは `/` で階層になっており、**細かいほうが勝つ**。`business/email` の文書に対して
+`business/email` → `business` → 既定の `levels` の順に探す。
+
+`by_genre` に段が欠けていれば、そのジャンルの `normal` に落ちる（§18.1 と同じ規則）。
+
+利用者の `chaff.yaml` は、解決した数字に 4 語で上書きをかける。
 
 初期閾値（calibration 前の暫定値。§21 で更新する）:
 
