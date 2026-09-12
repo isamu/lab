@@ -18,6 +18,10 @@ export type Config = {
   readonly path: string | undefined;
   readonly aiModel: string;
   readonly confidenceThreshold: number;
+  /** チームの言葉。社内でしか通じない語を、チームが自分で並べる。 */
+  readonly jargon: readonly string[];
+  /** この種類の文書に無いと困る見出し。チームが自分で決める。 */
+  readonly requiredSections: readonly string[];
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
   readonly byPath: readonly PathRule[];
   readonly baseDir: string;
@@ -36,6 +40,8 @@ export const EMPTY: Config = {
   aiBackend: DEFAULT_BACKEND,
   aiModel: defaultModel(DEFAULT_BACKEND),
   confidenceThreshold: 0.7,
+  jargon: [],
+  requiredSections: [],
   byPath: [],
   baseDir: process.cwd(),
 };
@@ -63,6 +69,9 @@ const toPathRule = (raw: unknown): PathRule | undefined => {
   return { files: globs, genre: str(raw["genre"]), language: str(raw["language"]) };
 };
 
+/** 利用者が書く語の並び。空白だけのものは落とす。 */
+const wordsOf = (raw: unknown): string[] => (Array.isArray(raw) ? raw.map((entry) => String(entry).trim()).filter((entry) => entry.length > 0) : []);
+
 const byPathOf = (raw: unknown): PathRule[] => (Array.isArray(raw) ? raw.map(toPathRule).filter((rule) => rule !== undefined) : []);
 
 /** 設定ファイルが無くても動く。あっても、既定から変えたものだけが書かれている。spec §18。 */
@@ -80,6 +89,8 @@ export const loadConfig = (path: string): Config => {
     aiBackend: backend,
     aiModel: str(raw["ai_model"]) ?? defaultModel(backend),
     confidenceThreshold: typeof raw["confidence_threshold"] === "number" ? raw["confidence_threshold"] : 0.7,
+    jargon: wordsOf(raw["jargon"]),
+    requiredSections: wordsOf(raw["required_sections"]),
     byPath: byPathOf(raw["by_path"]),
     baseDir: dirname(path),
   };

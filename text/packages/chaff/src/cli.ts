@@ -5,7 +5,7 @@ import { loadAdapter, packageFor } from "./adapter-load.ts";
 import { CONFIG_FILE, EMPTY, loadConfig, type Config } from "./config/load.ts";
 import { applyByPath } from "./config/by-path.ts";
 import { applyLevel } from "./config/write.ts";
-import { buildDocument } from "./document.ts";
+import { buildDocument, teamRules } from "./document.ts";
 import { guessLanguage } from "./detect.ts";
 import { collectTargets } from "./files.ts";
 import { BASELINE_FILE, fingerprint, readBaseline, splitByBaseline, writeBaseline } from "./baseline.ts";
@@ -97,7 +97,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const rules = loadRules(language);
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
-  const doc = buildDocument(path, source, adapter);
+  const doc = buildDocument(path, source, adapter, teamRules(config));
   const raw = runRules(doc, rules, config.rules, experimental, genre);
   // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
   const applied = applySuppressions(

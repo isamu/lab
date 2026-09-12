@@ -13,6 +13,7 @@ import { adverbDensity, conjunctionRun, expletive, oxfordComma, titleCaseMix } f
 import { paragraphLength, paragraphVariance, preambleLength, ruleOfThree, sectionUniformity } from "./structure.ts";
 import { concreteEvidence, emojiDensity, ngramRepetition, undefinedAcronym } from "./signals.ts";
 import { aiTell, cushionDensity, hedgingDensity, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
+import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -47,4 +48,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "unqualified-superlative": unqualifiedSuperlative,
   "repeated-conjunction": repeatedConjunction,
   "ai-tell": aiTell,
+  "internal-jargon": internalJargon,
+  "required-sections": requiredSections,
+  "proper-noun-density": properNounDensity,
 };

@@ -1,0 +1,26 @@
+id: required-sections
+layer: L1
+status: experimental
+how_to_find: required-sections
+severity: error
+
+name:
+  ja: 必要な見出しが無い
+  en: A required heading is missing
+
+why:
+  ja: 「提案書にはリスクの節がある」のような取り決めは、組織ごとに違います。chaff は必須の見出しを持たず、chaff.yaml の required_sections に書かれた取り決めを守れているかだけを見ます。書いていなければ何も言いません。
+  en: '"A proposal has a risk section" is a decision each team makes. chaff holds no list of its own; it only checks the one written under `required_sections` in chaff.yaml. With nothing written, this rule says nothing.'
+
+message:
+  ja: 「{word}」の見出しがありません
+  en: 'No heading for "{word}"'
+
+how_to_fix:
+  ja: その見出しを足してください。要らないと思うなら、chaff.yaml の required_sections から外すのが筋です。
+  en: Add the heading. If it is not needed, the honest fix is to remove it from `required_sections`.
+
+# 何個足りなければ指摘するか。1 は「1 つでも足りなければ」。
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, blog, technical]
