@@ -2,6 +2,65 @@
 
 Newest first.
 
+## 0.2.0 — 2026-09-12
+
+Three more of the things the tool was asked to measure, and a badge that refuses to be comparable.
+
+### Added
+
+- **`security`** — the `audit` probe asks the project's own package manager for known advisories.
+  Which one is decided by the lockfile: `npm audit` cannot read a `yarn.lock` and reports nothing
+  rather than failing, which would have read as a clean tree. The scales are steep on purpose —
+  one critical takes that metric to zero.
+- **`test-coverage`** — `test-presence` always, `coverage` where the project already produced a
+  report. **scoria does not run your tests.** A suite can take minutes, touch a database, need
+  credentials, or leave state behind, and a tool that triggers that as a side effect of being asked
+  for a number is not one anyone runs twice. With no report, coverage is `skipped` and the
+  dimension says how much of it could be measured — never a perfect score for something nobody
+  looked at.
+- **`circular`** joins knip under `architecture`. knip finds code nothing reaches; a cycle is code
+  tangled together, which is invisible to it. madge rather than dependency-cruiser, which resolved
+  nothing on real repositories even given a config and a tsconfig. The cost is dependency-cruiser's
+  layer rules, which madge cannot express.
+- **`--badge-json <path>`** writes the JSON a shields.io endpoint badge reads. Publish it anywhere
+  public — an orphan branch of the same repository is enough — and the badge needs no server, no
+  gist, and no token beyond `GITHUB_TOKEN`. The message carries `97 · this repo only` because a
+  badge travels without the README that would have explained it, and **the colour is the direction
+  of travel, never the level**: green when no dimension fell since the baseline, orange when one
+  did, blue when there is no baseline. Colouring by the number would assert that 90 means the same
+  thing in every repository, which is the one claim this tool exists to refuse.
+
+### Fixed
+
+- **A rubric change was reported as an improvement.** A metric the baseline never had was treated
+  as `from: 0, points: 0`, so the whole of a new metric's points read as a gain — this release's own
+  `security` dimension would have shown `+100`, with `audit.critical` as the largest single mover
+  at `0 → 0`, and `architecture` as a regression because a new metric had renormalised the other
+  weights down. A dimension is now comparable only when both runs scored it and both measured the
+  same set of metrics; otherwise no delta is claimed, no movers are emitted, and the run says which
+  dimensions and why.
+- **A dimension nothing could be measured in read as having scored zero**, so a probe becoming
+  runnable showed as `+100`.
+
+### Note for adopters
+
+Upgrading to this release changes what four dimensions are made of, so the first run after it will
+report those as `—` rather than inventing a change. Run `scoria baseline` once and commit it.
+
+### Still provisional
+
+Every scale remains uncalibrated and every rubric is `experimental`. A badge makes that more
+visible, not less true: the number is this repository's own, and holding it against another
+project's means nothing.
+
+### Merged pull requests
+
+- #43 — security, test coverage, and circular dependencies
+- #45 — no change reported when the rubric changed underneath
+- #51 — a badge that refuses to be comparable
+- #53 — the badges branch cannot be switched to before it exists
+- #56 — both baselines re-recorded
+
 ## 0.1.1 — 2026-09-12
 
 Findings reach GitHub's Security tab and the lines of a pull request.

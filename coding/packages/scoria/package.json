@@ -1,6 +1,6 @@
 {
   "name": "scoria",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Code quality assay harness for TypeScript and JavaScript",
   "license": "MIT",
   "author": "isamu",
@@ -38,5 +38,24 @@
     "madge": "^8.0.0",
     "oxlint": "^1.82.0",
     "yaml": "^2.9.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isamu/lab.git",
+    "directory": "coding/packages/scoria"
+  },
+  "homepage": "https://github.com/isamu/lab/tree/main/coding/packages/scoria#readme",
+  "bugs": {
+    "url": "https://github.com/isamu/lab/issues"
+  },
+  "keywords": [
+    "code-quality",
+    "static-analysis",
+    "typescript",
+    "vue",
+    "react",
+    "ci",
+    "sarif",
+    "lint"
+  ]
 }
