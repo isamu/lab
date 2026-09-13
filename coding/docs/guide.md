@@ -78,6 +78,62 @@ that an average of a few does not look like an average of all.
 silenced errors — `as any`, `@ts-ignore`, `eslint-disable` — and the number is as much about the
 silencing as about the code. **Read the confidence before the score.**
 
+## What it reads
+
+### The files
+
+It walks the directory you point it at and **never leaves it**. Along the way it skips, by name:
+
+```text
+node_modules   .git   dist   lib   build   coverage   .next   out   .turbo   .output
+```
+
+and every directory whose name begins with a dot. What is left is sorted into four kinds:
+
+| kind      | what it is                                                                                                | counted as                    |
+| --------- | --------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| source    | `.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs`, and `.vue`                                         | the code being judged         |
+| test      | anything under `test/ tests/ __tests__/ __mocks__/ e2e/ spec/`, or named `*.test.*`, `*.spec.*`, `test_*` | the tests, weighed separately |
+| config    | `*.config.ts`, `*.config.js`, `eslint.config.*`, `vite.config.*`, and friends                             | neither                       |
+| generated | `*.d.ts`, `*.min.js`                                                                                      | neither                       |
+
+Anything else — Markdown, JSON, images, CSS — is not read as code. A file over 2 MB is skipped.
+
+For a `.vue` file only the `<script>` block is treated as code; the template and styles are read
+separately, by the UI check, which is the one place a colour in a template matters.
+
+### The settings
+
+It also looks for these at the root, and reads them to see what the project holds itself to:
+
+```text
+package.json   tsconfig.json   jsconfig.json   eslint.config.*   .eslintrc*
+.prettierrc*   .gitignore   knip.json   vitest.config.ts   jest.config.js
+```
+
+and for `.github/workflows/*.yml` — climbing up to four directories if the workflows live above
+the one being measured, as they do in a monorepo.
+
+Reading them is not the same as being graded by them. `tsconfig.json` is passed to the TypeScript
+compiler because type checking has to use the project's own settings. The rest is read to ask a
+different question: **does this project have gates, and does CI run them?** A repository with no
+lint config and no CI scores badly for that, whatever its lint config would have said.
+
+### What each part is looked at for
+
+| what it reads                                   | what it asks                                                                                     |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| every source file                               | how big the files are, how much is duplicated, how much is untyped, how many errors are silenced |
+| the same files, comments only                   | markers left behind: TODO, FIXME, XXX, HACK                                                      |
+| `.vue` `.tsx` `.jsx`, whole                     | how many distinct colours and spacing values, inline styles, style blocks                        |
+| test files                                      | how much test code there is, against the code it covers                                          |
+| `tsconfig.json` + your installed TypeScript     | type errors                                                                                      |
+| your lockfile + your package manager            | known advisories                                                                                 |
+| the import graph                                | files and exports nothing reaches, modules importing in circles                                  |
+| `README.md`                                     | whether it exists, how much it says, whether it lists the flags the code accepts                 |
+| config files and workflows                      | whether the project's own gates exist and whether CI runs them                                   |
+| `coverage/lcov.info` or `coverage-summary.json` | coverage, if the project already made a report                                                   |
+
 ## Getting the whole picture
 
 The first run above measured seven of nine. Two commands change that:
@@ -183,6 +239,58 @@ across 49 real repositories to find out what they actually do — that work is w
 not the same as knowing it is right.
 
 So: use the trend, argue with the findings, and treat the absolute number as a rough sketch.
+
+## When it does not run
+
+### `Cannot read <path>`
+
+The directory is not there, or the path is wrong. scoria never leaves the directory it is pointed
+at, so a relative path is relative to where you are standing.
+
+### It printed a report, but half of it says `—`
+
+That is not an error. Dependencies are not installed, so the checks that trace imports and run the
+type checker had nothing to work with. `npm install` and run it again.
+
+### `No directory matched …`
+
+A `targets` glob matched nothing. The patterns are literal directory names or a segment that is
+exactly `*` — `packages/*` works, `packages/we*` and `**/src` are not supported and are reported
+rather than guessed at. Exits 1, on purpose: measuring zero directories and reporting success is
+the one outcome nobody notices is wrong.
+
+### A check says "skipped"
+
+Every skipped check prints its reason under **probes not scored**, and the reasons are mundane:
+
+| it says                                      | do this                                                       |
+| -------------------------------------------- | ------------------------------------------------------------- |
+| the project's dependencies are not installed | `npm install`                                                 |
+| the project has no installed typescript      | install it, or accept that type errors go unchecked           |
+| no lockfile to audit                         | there is nothing to audit against                             |
+| no coverage report                           | run your tests with coverage first, if you want that measured |
+| no `.vue`, `.tsx` or `.jsx` files            | there is no UI to be consistent about                         |
+
+A skipped check is excluded from the score rather than counted as zero, and the dimension says how
+much of it was measured.
+
+### It left a `scoria.config.json` behind
+
+It writes one on the first run in a directory with no config, recording what it detected so later
+runs measure the same way. If you were only trying it out, delete the file — or pass `--no-write`,
+which never creates one.
+
+### It is slow, or it hangs
+
+The first `npx scoria` downloads the package; twenty to thirty seconds is normal. After that a
+small repository takes a second or two and a large one under a minute. If it stalls much longer,
+the cause is almost always one of the tools it drives on a very large tree — try `--json` to see
+which checks completed, and each check has a two-minute ceiling of its own.
+
+### It crashed with something else
+
+That is a bug, and worth reporting with the output. A measurement tool that falls over is annoying;
+one that reports something untrue is worse, so both are worth hearing about.
 
 ## When something looks wrong
 
