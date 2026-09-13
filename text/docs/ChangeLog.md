@@ -34,9 +34,9 @@ Seventeen findings on chaff's own specifications, gone.
 これを設計の最優先制約とする（§17）。
 ```
 
-The predicate is とする, not 17. Specifications hang cross-references off the end of sentences, so
-counting them put the end of every sentence inside a bracket. `taigen-dome-in-prose` then read the
-lot as noun-ending prose. 87 sentences became 60.
+The predicate is とする, not 17. Specifications hang cross-references off the end of sentences.
+Counting them put the end of every sentence inside a bracket, and `taigen-dome-in-prose` read the lot
+as noun-ending prose. 87 sentences became 60.
 
 A sentence with nothing left once the bracket is removed keeps it, because there the bracket is the
 content.
