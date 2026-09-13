@@ -275,7 +275,8 @@ be + past participle look nothing alike, but they hide the same thing: who acted
 that judgement into a UD feature (`Voice=Pass`), so the detector never learns a language.
 
 The rule was wrong twice before it was right. It first flagged 14 spots in real documents, 10 of them
-noise. A passive that modifies a noun ("開催される BootCamp") names a thing rather than hides an actor.
+noise. A passive that modifies a noun ("開催される BootCamp") names a thing; it hides no actor.
+
 The fix went into the core detector, and **English broke**. "No noun follows" is a fact about Japanese
 word order; English runs the other way. Moving the judgement into the adapter made both correct.
 
@@ -351,7 +352,8 @@ reason}` is shared, because a verdict that changes shape when you change vendor 
 changes meaning. Both shapes were read out of the installed SDK types rather than recalled.
 
 **A Claude subscription does not work here.** The SDK resolves an API key, an auth token, a Console
-OAuth profile, or OIDC federation. Claude Code's credentials (`~/.claude`) are none of those.
+OAuth profile, or OIDC federation. Claude Code's credentials live in `~/.claude` and are none of those.
+
 Driving the `claude` CLI as the judge was measured, not assumed. **46,906 tokens for one verdict**,
 because Claude Code carries its own system prompt and tool definitions into every call. Roughly a
 hundred times the API path.
@@ -494,7 +496,7 @@ that fires across it has a threshold that does not match reality. The target is 
 It **never rewrites the config**. A calibration is an answer about one corpus, not a truth — the
 proposal is printed and the decision stays with the person.
 
-It earned its place the day it landed by reporting that `bold-density` missed the target *at every
+It earned its place the day it landed. It reported that `bold-density` missed the target *at every
 threshold*, and that the rule itself was likely wrong. Which it was:
 
 ### `bold-density` counts density, not occurrences (#44)
@@ -582,8 +584,8 @@ Three built-in rules, plus `checks.yaml` for checks written in plain language.
 | `empty-conclusion` | the closing adds something beyond a summary of the body |
 | `unsourced-number` | a number claiming an effect carries its basis |
 
-Output separates the two kinds of judgement under their own headings, because a reader who does not
-know a finding can move between runs will be whipsawed by a false positive. Only AI findings carry a
+Output separates the two kinds of judgement under their own headings. A reader who does not know a
+finding can move between runs will be whipsawed by a false positive. Only AI findings carry a
 confidence figure, and each one names two ways out: silence this spot, or relax the rule.
 
 ### The whole document is never sent
@@ -635,9 +637,9 @@ the spec sets for `npx`.
 
 ### Not in this release
 
-L3 (part-of-speech rules), `eval` (threshold calibration against a corpus), and the conversion of
-`checks.yaml`'s natural-language `look_at` into an actual filter — user checks currently pass the
-whole document.
+L3 (part-of-speech rules) and `eval` (threshold calibration against a corpus) are absent. So is the
+conversion of `checks.yaml`'s natural-language `look_at` into an actual filter, so user checks
+currently pass the whole document.
 
 ## 0.0.1 — 2026-09-12
 
@@ -656,8 +658,8 @@ no language flag — and never rewrites the text.
 The first real code was the sentence splitting, because `sentence-rhythm` and `max-sentence-length`
 take sentence length as input and a bad split moves the metric directly. English needs no help from
 `sentence-splitter`: `Dr.`, `e.g.`, `U.S.` and `$3.50` are all handled. Japanese is broken by the
-same library — it treats `.` as a terminator and splits `、Dr. 田中は` in two, and the `AbbrMarker`
-option does not fix it because the cause is not abbreviation protection. Japanese sentences end in
+same library, which treats `.` as a terminator and splits `、Dr. 田中は` in two. The `AbbrMarker`
+option does not fix it, because the cause is not abbreviation protection. Japanese sentences end in
 `。！？`, so the adapter joins any fragment that does not.
 
 Cross-package imports are types only. Adapters do not depend on chaff's values and run on their own.
@@ -699,9 +701,9 @@ a separate test asserts that output order does not depend on input order.
 
 ### Answering a finding: `stet`, `baseline`, `suppressions` (#21)
 
-Of the three ways to answer a finding, the second was missing. Without it, a finding that is right in
-general but deliberate in one spot leaves only "switch the rule off", and that accumulates until the
-whole tool is ignored.
+Of the three ways to answer a finding, the second was missing. A finding that is right in general but
+deliberate in one spot then leaves only "switch the rule off". That accumulates until the whole tool
+is ignored.
 
 ```markdown
 <!-- stet: bold-density — a glossary, so the bold is deliberate -->
@@ -715,7 +717,7 @@ Suppression applies forward only; reaching backwards would silently widen what i
 without fixing everything first. Findings are identified by content hash rather than line number, so
 adding a paragraph does not unshelve them.
 
-`suppressions` is the bridge from the second answer to the third: silencing the same rule five times
+`suppressions` is the bridge from the second answer to the third. Silencing the same rule five times
 means the standard, not the text, is what does not fit.
 
 ### L2: the lexicon layer (#23)
@@ -727,14 +729,14 @@ This validated the four-layer model. The spec had set it as a checkpoint: if add
 requires changing the genre packs, the split is wrong. The same three rules ran in English with no
 change to the rule definitions or the detector — only the lexicon was swapped.
 
-`where` narrows the scope, because the same phrase means different things in different places: a
-closing cliche in the middle of a piece is just an ordinary connective.
+`where` narrows the scope, because the same phrase means different things in different places.
+A closing cliche in the middle of a piece is just an ordinary connective.
 
 ### `--watch` (#24)
 
 Reprinting every finding on each save makes it impossible to see what changed. Only the difference is
-printed. When one rule loses a finding and another gains one the total is unchanged, and marking that
-as an improvement would be a lie, so the check mark appears only when the count falls.
+printed. When one rule loses a finding and another gains one, the total is unchanged. Marking that as
+an improvement would be a lie, so the check mark appears only when the count falls.
 
 ### Publishing (#25, #26, #29)
 

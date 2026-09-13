@@ -38,6 +38,15 @@ describe("ngram-repetition", () => {
     assert.ok(idsFor(source).includes("ngram-repetition"));
   });
 
+  it("valid: 用語に助詞が 1 つ付いただけのものは数えない", () => {
+    // 「detectorは」は仕様書で繰り返して当たり前の用語。本物の言い回しはひらがなをもっと含む。
+    const source = `# 見出し\n\n${"detectorは純関数である。detectorは fs に触れない。".repeat(6)}${BULK}`;
+    const worst = runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, true, "business/report").findings.find(
+      (finding) => finding.rule === "ngram-repetition",
+    );
+    assert.ok(!String(worst?.values["word"] ?? "").includes("etector"));
+  });
+
   it("valid: 固有名詞の繰り返しは数えない", () => {
     // 実文書で測ったら、上位は「AGENTS.m」「シンギュラリティ」のような名前だった。
     const source = `# 見出し\n\n${"シンギュラリティソサエティが主催します。".repeat(8)}${BULK}`;

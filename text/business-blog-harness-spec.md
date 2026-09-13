@@ -341,7 +341,7 @@ required-sections:
 | `rule-of-three` | statistical | info | 並列と箇条書きが常に 3 項目になる傾向 |
 | `heading-echo` | structural | warning | 見出しの文言を直後の文がほぼそのまま反復する |
 
-`ai-tell` は severity を info 固定とし、単独では CI を落とさない。既存 spec §16 の calibration 方針に従い、`natural-japanese` が「最後に」を人間 48 回 / AI 2 回として検出対象から外したのと同じ手続きで語彙を選別する。初期辞書はあくまで候補であり、corpus 評価前は experimental 扱い（§18）。
+`ai-tell` は severity を info 固定とし、単独では CI を落とさない。既存 spec §16 の calibration 方針に従い、`natural-japanese` が「最後に」を人間 48 回 / AI 2 回として検出対象から外したのと同じ手続きで語彙を選別する。初期辞書はあくまで候補であり、corpus 評価前は experimental として扱う（§18）。
 
 `heading-echo` は deterministic に実装できる。見出しテキストと直後の文の bigram Jaccard 係数が閾値（既定 0.6）を超えたら report する。
 
@@ -370,7 +370,7 @@ required-sections:
 | `lead-promise-kept` | semantic | info | リード文で提示した問いに本文が答えている |
 | `first-person-experience` | statistical | info | 一人称の体験記述の不在（essay profile のみ） |
 
-`concrete-evidence-density` は semantic な「具体例がない」を deterministic に近似する proxy であり、本 pack の中心的なアイデアの一つ。次を数える。
+`concrete-evidence-density` は semantic な「具体例がない」を deterministic に近似する proxy であり、本 pack の中心的なアイデアの一つになっている。次を数える。
 
 ```text
 具体物 =
@@ -396,7 +396,7 @@ required-sections:
 
 ## 9. Shared Rule
 
-business と blog の両方で有効にする rule。core が既に持つものは再利用し、本 pack では profile ごとの severity と threshold だけを与える。
+business と blog の両方で有効にする rule を指す。core が既に持つものは再利用し、本 pack では profile ごとの severity と threshold だけを与える。
 
 | id | 出所 | 備考 |
 | --- | --- | --- |
@@ -542,7 +542,7 @@ Tier 0 だけで本 spec の rule の約 8 割が動くように rule を設計�
 | `lint` の外部通信 | なし |
 | `lint` の API key | 不要 |
 
-`textlint` 本体が 0.24 MB、rule 群が各数十 KB なので、Tier 0 の予算は現実的。形態素解析辞書を外に出すことがこの予算を成立させている（§12）。
+`textlint` 本体が 0.24 MB、rule 群が各数十 KB なので、Tier 0 の予算は現実的といえる。形態素解析辞書を外に出すことがこの予算を成立させている（§12）。
 
 ### 13.2 2 つの入り口
 
@@ -695,7 +695,7 @@ semantic  (4 candidates from 118 sentences, 2 cached)
 
 ## 16. Finding Format の拡張
 
-core の finding format（既存 spec §10）をそのまま使う。本 pack が追加を要求するのは 2 フィールドのみ。
+既存 spec §10 が定める形をそのまま使い、本 pack が足すのは 2 フィールドだけである。
 
 ```json
 {
@@ -714,7 +714,7 @@ core の finding format（既存 spec §10）をそのまま使う。本 pack �
 - `profile`: どの規範で判定されたか。ジャンル別 pack では必須。
 - `signals`: 同一範囲で同時発火した弱いシグナルの一覧。
 
-`signals` は複合シグナルのための最小の仕組み。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に「AI 生成の疑い」として 1 件の warning に集約する。個別に 20 件の info を出すより読みやすく、かつ誤検知に強い。
+`signals` は、複合シグナルを作るための最小の仕組みである。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に「AI 生成の疑い」として 1 件の warning に集約する。個別に 20 件の info を出すより読みやすく、かつ誤検知に強い。
 
 集約ルール自体も rule として定義する。
 
