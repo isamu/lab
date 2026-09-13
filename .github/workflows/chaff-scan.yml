@@ -36,15 +36,22 @@ jobs:
 
       - run: yarn install --frozen-lockfile
 
+      # knip exits non-zero when it finds something, and this step reports rather than gates — so
+      # the exit code is captured and shown, not discarded. A step that hides whether its tool ran
+      # at all cannot be told from one whose tool found nothing.
       - name: Run knip
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          report=$(yarn --silent knip; echo "exit:$?")
+          status=${report##*exit:}
           {
             echo '## knip (chaff)'
             echo
             echo '```'
-            yarn --silent knip || true
+            echo "${report%exit:*}"
             echo '```'
+            echo
+            echo "knip exited ${status}."
           } >> "$GITHUB_STEP_SUMMARY"
 
   duplication:

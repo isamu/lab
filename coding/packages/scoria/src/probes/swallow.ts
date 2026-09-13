@@ -35,7 +35,7 @@ const IGNORES = /\|\|\s*true\b/;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
-export const stepsOf = (workflow: unknown): readonly Record<string, unknown>[] => {
+const stepsOf = (workflow: unknown): readonly Record<string, unknown>[] => {
   const jobs = isRecord(workflow) ? workflow["jobs"] : undefined;
   if (!isRecord(jobs)) return [];
   return Object.values(jobs).flatMap((job) => {
@@ -74,7 +74,7 @@ export interface Swallowed {
 }
 
 export const swallowedFailures = (workflows: readonly ConfigFile[]): Swallowed => {
-  const counted = workflows.map((file) => ({ file, count: countIn(file) }));
-  const worst = counted.filter((entry) => entry.count > 0);
-  return { count: counted.reduce((sum, entry) => sum + entry.count, 0), file: worst[0]?.file.path };
+  const counted = workflows.map((file) => ({ path: file.path, count: countIn(file) }));
+  const worst = counted.find((entry) => entry.count > 0);
+  return { count: counted.reduce((sum, entry) => sum + entry.count, 0), file: worst?.path };
 };
