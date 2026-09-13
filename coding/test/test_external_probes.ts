@@ -82,6 +82,25 @@ test("knip counts unused files, exports and dependencies", async () => {
 });
 
 /**
+ * Returning an empty diagnostic list for a crashed run reported a clean repository whenever the
+ * tool that measures correctness failed — and scored full marks for it. A clean run prints
+ * `{ "diagnostics": [], "number_of_files": 1, ... }`, so the two are distinguishable.
+ */
+test("oxlint output that is not a report is skipped, not read as clean", async () => {
+  for (const output of ["", "error: unknown option", "null", "{}"]) {
+    const result = await oxlint.run(contextWith(files, { exec: execReturning(output) }));
+    assert.equal(result.status.kind, "skipped", `for ${JSON.stringify(output)}`);
+  }
+});
+
+test("oxlint finding nothing is a report of nothing", async () => {
+  const clean = JSON.stringify({ diagnostics: [], number_of_files: 1 });
+  const result = await oxlint.run(contextWith(files, { exec: execReturning(clean) }));
+  assert.equal(result.status.kind, "ok");
+  assert.equal(metricOf(result.metrics, "oxlint.violations"), 0);
+});
+
+/**
  * knip's own output, which is what it actually emits: `files` entries are `{ name }`, not strings.
  * The fixture above was written from an assumption and passed while the parser read no file at all
  * — `unused_files` was zero across every one of the 49 repositories measured for calibration.

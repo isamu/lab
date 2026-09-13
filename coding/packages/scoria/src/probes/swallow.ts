@@ -1,6 +1,20 @@
 import { parse } from "yaml";
 import type { ConfigFile } from "../plugin.ts";
 
+/** What a step actually runs: its shell script, plus the action it calls. */
+export const commandsIn = (files: readonly ConfigFile[]): readonly string[] =>
+  files.flatMap((file) => {
+    try {
+      return stepsOf(parse(file.text)).flatMap((step) => {
+        const script = typeof step["run"] === "string" ? [step["run"]] : [];
+        const action = typeof step["uses"] === "string" ? [step["uses"]] : [];
+        return [...script, ...action];
+      });
+    } catch {
+      return [];
+    }
+  });
+
 /**
  * Which CI steps really swallow their failure (spec §15).
  *
@@ -21,7 +35,7 @@ const IGNORES = /\|\|\s*true\b/;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
-const stepsOf = (workflow: unknown): readonly Record<string, unknown>[] => {
+export const stepsOf = (workflow: unknown): readonly Record<string, unknown>[] => {
   const jobs = isRecord(workflow) ? workflow["jobs"] : undefined;
   if (!isRecord(jobs)) return [];
   return Object.values(jobs).flatMap((job) => {

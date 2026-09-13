@@ -52,10 +52,27 @@ test("asks for a typecheck script only in a TypeScript project", () => {
   assert.ok(!ids(configGaps(files, false)).includes("script-typecheck"));
 });
 
-test("reports the absence of any CI workflow as an error", () => {
+/**
+ * No workflow is not one gap. Counting it as one left a repository with no CI at all scoring a gap
+ * ratio of 0.17 — better than one that has CI and is missing four of six checks.
+ */
+test("no CI workflow means every gate is missing, not one gap", () => {
   const gaps = ciGaps("/repo", [{ path: "package.json", text: "{}" }], false);
-  assert.deepEqual(ids(gaps), ["ci-missing"]);
+  assert.deepEqual(ids(gaps), ["ci-missing", "ci-step-lint", "ci-step-build", "ci-step-test"]);
   assert.equal(gaps[0]?.severity, "error");
+});
+
+/** A job named "test" runs nothing. The word has to appear in something a step executes. */
+test("a gate is run only when a step runs it", () => {
+  const named = [
+    {
+      path: ".github/workflows/ci.yml",
+      text: "name: test\non: [push]\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n",
+    },
+  ];
+  assert.ok(ids(ciGaps("/repo", named, false)).includes("ci-step-test"));
+  const run = workflowRunning("yarn lint", "yarn build", "yarn test");
+  assert.ok(!ids(ciGaps("/repo", run, false)).includes("ci-step-test"));
 });
 
 const stepLines = (scripts: readonly string[]): string => scripts.map((script) => `      - run: ${script}\n`).join("");
