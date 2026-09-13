@@ -34,10 +34,19 @@ const FLAG = /--[a-z][a-z0-9-]{1,30}/g;
  */
 const READS_ARGV = /\bargv\b/;
 
+/**
+ * A file that both parses its own arguments and launches another program contributes that
+ * program's options too. scoria's own cli.ts does not, but a smaller CLI commonly does, and
+ * demanding the README document another tool's flags is the false positive this whole search has
+ * been narrowing away from.
+ */
+const SPAWNS = /\b(?:execFile|execFileSync|spawnSync?|exec)\s*\(/;
+
 const flagsIn = (files: readonly { readonly codeLines: readonly string[] }[]): ReadonlySet<string> => {
   const found = files.flatMap((file) => {
     const view = viewOf(file.codeLines);
-    if (!READS_ARGV.test(view.code.join("\n"))) return [];
+    const code = view.code.join("\n");
+    if (!READS_ARGV.test(code) || SPAWNS.test(code)) return [];
     return [...view.strings.join("\n").matchAll(FLAG)].map((match) => match[0]);
   });
   return new Set(found);

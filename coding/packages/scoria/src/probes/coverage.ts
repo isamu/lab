@@ -23,14 +23,18 @@ const LCOV_REPORTS = ["coverage/lcov.info", "lcov.info"];
 
 interface Percentages {
   readonly lines: number;
-  readonly branches: number;
-  readonly functions: number;
+  readonly branches: number | undefined;
+  readonly functions: number | undefined;
 }
 
-const pctOf = (raw: unknown): number => {
-  if (!isRecord(raw)) return 0;
+/**
+ * `undefined` where the section is absent, because substituting 0 turns a partial report into a
+ * measurement of zero coverage — a real number, badly wrong, from a file that never said it.
+ */
+const pctOf = (raw: unknown): number | undefined => {
+  if (!isRecord(raw)) return undefined;
   const pct = raw["pct"];
-  return typeof pct === "number" ? pct : 0;
+  return typeof pct === "number" ? pct : undefined;
 };
 
 const parse = (text: string): Percentages | undefined => {
@@ -38,11 +42,10 @@ const parse = (text: string): Percentages | undefined => {
     const parsed: unknown = JSON.parse(text);
     const total = isRecord(parsed) ? parsed["total"] : undefined;
     if (!isRecord(total)) return undefined;
-    return {
-      lines: pctOf(total["lines"]),
-      branches: pctOf(total["branches"]),
-      functions: pctOf(total["functions"]),
-    };
+    const lines = pctOf(total["lines"]);
+    // Without a line percentage there is no report here, whatever else the object carries.
+    if (lines === undefined) return undefined;
+    return { lines, branches: pctOf(total["branches"]), functions: pctOf(total["functions"]) };
   } catch {
     return undefined;
   }
@@ -90,10 +93,12 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   return {
     probe: "coverage",
     status: { kind: "ok" },
+    // A section the report does not carry is emitted as nothing, so the rubric skips it rather
+    // than scoring a zero the report never claimed (spec §18.1).
     metrics: [
       { id: "coverage.line_pct", value: percentages.lines, unit: "pct" },
-      { id: "coverage.branch_pct", value: percentages.branches, unit: "pct" },
-      { id: "coverage.function_pct", value: percentages.functions, unit: "pct" },
+      ...(percentages.branches === undefined ? [] : [{ id: "coverage.branch_pct", value: percentages.branches, unit: "pct" as const }]),
+      ...(percentages.functions === undefined ? [] : [{ id: "coverage.function_pct", value: percentages.functions, unit: "pct" as const }]),
     ],
     findings: [],
     toolVersions: {},

@@ -81,6 +81,24 @@ test("a file without branches does not inflate branch coverage", async () => {
   assert.equal(metrics["coverage.line_pct"], 100);
 });
 
+/**
+ * Substituting zero for an absent section turns a partial report into a measurement of zero
+ * coverage — a real number, badly wrong, from a file that never said it.
+ */
+test("a section the report does not carry is emitted as nothing, not as zero", async () => {
+  const partial = JSON.stringify({ total: { lines: { pct: 82 } } });
+  const metrics = await metricsOf(await repoWith({ "coverage/coverage-summary.json": partial }));
+  assert.equal(metrics["coverage.line_pct"], 82);
+  assert.equal(metrics["coverage.branch_pct"], undefined);
+  assert.equal(metrics["coverage.function_pct"], undefined);
+});
+
+test("a report with no line percentage is not a report", async () => {
+  const root = await repoWith({ "coverage/coverage-summary.json": JSON.stringify({ total: { branches: { pct: 50 } } }) });
+  const result = await coverage.run(contextWith(files, { root, readText }));
+  assert.equal(result.status.kind, "skipped");
+});
+
 test("json-summary wins where both are present", async () => {
   const metrics = await metricsOf(await repoWith({ "coverage/coverage-summary.json": SUMMARY, "coverage/lcov.info": LCOV }));
   assert.equal(metrics["coverage.line_pct"], 82);

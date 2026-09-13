@@ -19,8 +19,20 @@ export const rankByFile = (entries: readonly { readonly file: string; readonly w
     .slice(0, TOP_CONTRIBUTORS);
 };
 
-/** A path is only useful relative to the repository being measured. */
-export const relativeTo = (root: string, file: string): string => (file.startsWith(`${root}/`) ? file.slice(root.length + 1) : file);
+/**
+ * A path is only useful relative to the repository being measured.
+ *
+ * Separators are normalised first: on Windows an external tool returns `C:\\repo\\src\\a.ts` while
+ * `root` came from `path.resolve`, and comparing the two verbatim leaves every finding carrying an
+ * absolute path — a location no SARIF upload can match and no reader can open.
+ */
+const toPosix = (value: string): string => value.split("\\").join("/");
+
+export const relativeTo = (root: string, file: string): string => {
+  const base = toPosix(root);
+  const path = toPosix(file);
+  return path.startsWith(`${base}/`) ? path.slice(base.length + 1) : path;
+};
 
 export const skippedResult = (probe: string, reason: string, started: number): ProbeResult => ({
   probe,

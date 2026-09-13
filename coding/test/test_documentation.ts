@@ -55,6 +55,16 @@ test("flags a program passes to another program are not its own", async () => {
   assert.equal(valueOf(result.metrics, "readme-contract.documented_flag_ratio"), 1);
 });
 
+/**
+ * A file that both parses its own arguments and launches another program contributes that
+ * program's options too, which is the false positive the whole search has been narrowing away from.
+ */
+test("a file that reads argv and also spawns a tool contributes no flags", async () => {
+  const files = [sourceFile("src/cli.ts", ['const flag = argv.includes("--verbose");', 'execFile("jscpd", ["--min-tokens", "50"]);'])];
+  const result = await readmeContract.run(contextWith(files, { readText: readmeOf("# Thing") }));
+  assert.equal(valueOf(result.metrics, "readme-contract.documented_flag_ratio"), undefined);
+});
+
 test("a flag named only in a comment is not a flag the program accepts", async () => {
   const files = [sourceFile("src/cli.ts", ["// pass --verbose to argv one day", "const n = process.argv.length;"])];
   const result = await readmeContract.run(contextWith(files, { readText: readmeOf("# Thing") }));

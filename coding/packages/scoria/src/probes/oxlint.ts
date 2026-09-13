@@ -54,17 +54,24 @@ const toDiagnostic = (raw: unknown): Diagnostic | undefined =>
       }
     : undefined;
 
-const parse = (stdout: string): readonly Diagnostic[] => {
+/**
+ * `undefined` where the output is not a report, and an empty array where it is a report of nothing.
+ * Returning `[]` for both reported a clean repository whenever oxlint crashed, ran out of memory or
+ * printed a usage error — the tool that measures correctness failing silently and scoring full
+ * marks for it. A clean run prints `{ "diagnostics": [], "number_of_files": 1, ... }`, so the two
+ * are distinguishable.
+ */
+const parse = (stdout: string): readonly Diagnostic[] | undefined => {
   try {
     const parsed: unknown = JSON.parse(stdout);
     const diagnostics = isRecord(parsed) ? parsed["diagnostics"] : undefined;
-    if (!Array.isArray(diagnostics)) return [];
+    if (!Array.isArray(diagnostics)) return undefined;
     return diagnostics.flatMap((entry) => {
       const diagnostic = toDiagnostic(entry);
       return diagnostic === undefined ? [] : [diagnostic];
     });
   } catch {
-    return [];
+    return undefined;
   }
 };
 
@@ -90,6 +97,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const args = [...DENIED.flatMap((category) => ["-D", category]), ...WARNED.flatMap((category) => ["-W", category]), ...ignored, "--format", "json", ctx.root];
   const result = await ctx.execNode(bin, args);
   const diagnostics = parse(result.stdout);
+  if (diagnostics === undefined) return skippedResult("oxlint", "oxlint produced no readable report", started);
   const sloc = sourceSloc(ctx.files);
   const errors = diagnostics.filter((entry) => entry.severity === "error");
   return {

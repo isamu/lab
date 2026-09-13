@@ -2,7 +2,7 @@ import type { Finding, Probe, ProbeContext, ProbeResult, ConfigFile } from "../p
 import { workflowsOf } from "../config-files.ts";
 import { relativeTo } from "./shared.ts";
 import type { Gap } from "./config-integrity.ts";
-import { swallowedFailures } from "./swallow.ts";
+import { commandsIn, swallowedFailures } from "./swallow.ts";
 
 /** A gap plus the file it was found in, so a finding points at something that exists. */
 interface LocatedGap {
@@ -20,11 +20,15 @@ interface LocatedGap {
 const EXPECTED_STEPS = ["lint", "typecheck", "build", "test"];
 const CHECKS = 6;
 
-const combinedText = (workflows: readonly ConfigFile[]): string => workflows.map((file) => file.text).join("\n");
-
-const missingSteps = (text: string, typescript: boolean): readonly string[] => {
+/**
+ * A gate counts as run only if some step runs it. Searching the whole file for the word instead
+ * counted a job named "test", a comment mentioning lint, or an action input that happened to
+ * contain the word — reporting CI as complete when nothing executes the project's gates.
+ */
+const missingSteps = (workflows: readonly ConfigFile[], typescript: boolean): readonly string[] => {
   const wanted = typescript ? EXPECTED_STEPS : EXPECTED_STEPS.filter((step) => step !== "typecheck");
-  return wanted.filter((step) => !new RegExp(`\\b${step}\\b`).test(text));
+  const commands = commandsIn(workflows).join("\n");
+  return wanted.filter((step) => !new RegExp(`\\b${step}\\b`).test(commands));
 };
 
 const WORKFLOW_ROOT = ".github/workflows";
@@ -41,25 +45,39 @@ const locate = (root: string, workflow: string | undefined): string => {
   return inside.startsWith("..") || inside === workflow ? "package.json" : inside;
 };
 
+/**
+ * No workflow is not one gap. Every gate is missing, and counting it as one left a repository with
+ * no CI at all scoring a gap ratio of 0.17 — better than one that has CI and is missing four of
+ * six checks.
+ */
+const noWorkflowGaps = (typescript: boolean): readonly LocatedGap[] => [
+  {
+    file: "package.json",
+    gap: {
+      id: "ci-missing",
+      severity: "error",
+      title: "No CI workflow",
+      detail: "Nothing runs the gates on a pull request, so nothing stops a regression from merging.",
+      fixable: false,
+    },
+  },
+  ...missingSteps([], typescript).map((step) => ({
+    file: "package.json",
+    gap: {
+      id: `ci-step-${step}`,
+      severity: "warning" as const,
+      title: `CI does not run \`${step}\``,
+      detail: "There is no workflow at all.",
+      fixable: false,
+    },
+  })),
+];
+
 const locatedCiGaps = (root: string, files: readonly ConfigFile[], typescript: boolean): readonly LocatedGap[] => {
   const workflows = workflowsOf(files);
-  if (workflows.length === 0) {
-    return [
-      {
-        file: "package.json",
-        gap: {
-          id: "ci-missing",
-          severity: "error",
-          title: "No CI workflow",
-          detail: "Nothing runs the gates on a pull request, so nothing stops a regression from merging.",
-          fixable: false,
-        },
-      },
-    ];
-  }
-  const text = combinedText(workflows);
+  if (workflows.length === 0) return noWorkflowGaps(typescript);
   const anyWorkflow = locate(root, workflows[0]?.path);
-  const stepGaps = missingSteps(text, typescript).map((step) => ({
+  const stepGaps = missingSteps(workflows, typescript).map((step) => ({
     file: anyWorkflow,
     gap: {
       id: `ci-step-${step}`,
