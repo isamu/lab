@@ -74,6 +74,8 @@ runs scoria over both workspaces and writes the report into the run's job summar
 
 ## Reading further
 
+- **[docs/guide.md](docs/guide.md) — start here** ([日本語](docs/guide.ja.md)): what it is, how to
+  run it, and how to read what it says
 - [packages/scoria/README.md](packages/scoria/README.md) — the full documentation
   ([日本語](packages/scoria/README.ja.md))
 - [scoria-spec.md](scoria-spec.md) — the design, in Japanese, including the decisions that were

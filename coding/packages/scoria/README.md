@@ -2,6 +2,9 @@
 
 A code quality assay harness for TypeScript and JavaScript.
 
+**New here?** [The guide](https://github.com/isamu/lab/blob/main/coding/docs/guide.md) walks through
+running it and reading what it says ([日本語](https://github.com/isamu/lab/blob/main/coding/docs/guide.ja.md)).
+
 It collects machine evidence about a repository, normalises it through a fixed rubric, and reports
 per-dimension scores — so that improvement and regression are visible over time.
 
