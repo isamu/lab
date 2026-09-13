@@ -2,6 +2,110 @@
 
 Newest first.
 
+## 0.3.0 — 2026-09-13
+
+Two more dimensions, a gate, and three separate ways the report was saying something untrue.
+
+### Added
+
+- **`mode: ratchet`** fails the run when a dimension falls more than a point below its baseline,
+  when an unexplained suppression is added, or when an `error` finding appears in a file that did
+  not have one. The default stays `report`, which gates nothing. What it refuses to gate matters as
+  much: a dimension whose confidence is `low`, one whose tool changed version, and density metrics
+  once the repository changed size by a fifth — each reported under _Regressed, but not gated_,
+  because a regression silently excluded is indistinguishable from no regression.
+- **`targets`** names the directories to measure, as globs, when a repository holds more than one
+  project. The rules are [`repo.json` §9](https://github.com/repos-json/repos-json)'s rather than
+  scoria's, so a repository that declares its units once is read the same way by every tool that
+  reads them — including the rule that a project's extent is its directory _minus_ the directories
+  of any nested projects. Measured from the root, ownplate's `tsc` reported zero errors without
+  looking at `functions/`'s 93 files and its `audit` missed 4 high and 19 moderate advisories.
+- **`repo.json` is read** where a repository has one: `projects` supplies the targets, `name` is
+  what the report and badge call each project, and `extensions.scoria` holds settings. `color` is
+  deliberately not read — the badge's colour is the direction of travel, and taking it from the
+  repository would let a repository paint its own regression green.
+- **`documentation`** — whether a README exists, how much it says, and whether it still lists the
+  flags the program accepts. Adding a flag and documenting it are two separate acts and only one is
+  needed to ship.
+- **`ui-consistency`** — how many _distinct_ colours and spacing values the components use, not how
+  many occurrences. A design system converges spacing on 4, 8, 12, 16; a codebase written a
+  component at a time accumulates 5, 7, 13, 17, 23. Across six UI projects, five carried at most 14
+  colours and one carried 201.
+- **The job summary opens with a chart.** GitHub renders a mermaid fence wherever it renders
+  Markdown, so it costs no image, no artifact and no third party.
+- **`--badge-json`** writes a shields.io endpoint badge, needing no server.
+- **Coverage reads lcov** as well as `json-summary`. Most tools emit lcov by default and
+  `json-summary` only when asked, so the probe had been looking for the file a project is least
+  likely to have — it had never once produced a value in 49 repositories.
+
+### Fixed
+
+- **A rubric change was reported as an improvement.** A metric the baseline never had counted as
+  `from: 0`, so the whole of a new metric's points read as a gain: `security` would have shown
+  `+100` the first time it existed, with `audit.critical` the largest mover at `0 → 0`. Two runs
+  that measured different metrics are no longer compared — nor are two that measured different
+  _amounts_ of the same dimension, which reported `test_to_source_ratio` as `-69.8` while its value
+  improved.
+- **knip's unused files were never counted.** Its JSON emits `files` as `{ name }` objects and the
+  parser read only strings, so the metric reported clean in all 49 repositories. Un-silencing it
+  then over-reported — 573 files in one monorepo against the 450 scoria classifies as source — so
+  knip's findings are now intersected with what scoria itself measures.
+- **oxlint failing reported a clean repository.** An empty diagnostic list meant both "found
+  nothing" and "crashed"; unreadable output is now `skipped`.
+- **A CI gate counted as run if the word appeared anywhere in the workflow file** — a job named
+  `test`, a comment, an action input. Steps are parsed now. And **no CI at all scored better than
+  bad CI**: one gap against a denominator of six.
+- **`|| true` is not always a swallowed failure.** Capturing output from a command that exits
+  non-zero and then judging it is the opposite, and the scan was reporting an `error` against a
+  step stricter than most.
+- **A partial coverage report became a measurement of zero.** Absent sections are emitted as
+  nothing and the rubric skips them.
+- **Reported paths kept their absolute form on Windows.**
+
+### Changed
+
+- `architecture` weighs **shares** of the repository's files rather than counts. Measured across 49
+  repositories, `knip.unused_exports` correlated +0.63 with repository size and the share +0.30;
+  `unused_files` +0.30 and the share −0.07. The dimension's correlation with size fell from −0.48
+  to −0.19 and its corpus median from 86 to 75 — a count with a fixed anchor was generous to small
+  repositories. `god_file_count` and `circular.cycle_count` stay counts: normalising them leaves
+  the correlation exactly where it was, so that correlation is the corpus, not the metric.
+
+### Note for adopters
+
+`documentation` and `ui-consistency` are new and `architecture`'s metrics changed, so the first run
+after this reports those as `—` rather than inventing a change. Run `scoria baseline` once and
+commit it. A repository with no `.vue`, `.tsx` or `.jsx` files reports `ui-consistency` as `—`
+permanently, which is correct and says so.
+
+### Still provisional
+
+Every scale is still `experimental`. [docs/calibration.md](calibration.md) is the first measurement
+of what they do — 49 repositories, what each scale asserts, and the two findings that moving an
+anchor would not have fixed. It made them known, not right.
+
+[docs/the-original-list.md](the-original-list.md) records every tool the project was asked for and
+whether it is measured or closed with a reason. Mutation testing, Playwright, axe, Lighthouse and an
+AI reviewer are closed.
+
+### Merged pull requests
+
+- #65 — `mode: ratchet`
+- #66 — knip's unused files were never counted
+- #69, #75 — `targets`, then conformed to `repo.json` §9
+- #78 — read `repo.json`
+- #80 — the job summary opens with a chart
+- #81 — `|| true` is not always a swallowed failure
+- #82 — calibration against 49 repositories
+- #83 — `architecture` weighs shares, not counts
+- #84 — coverage reads lcov, and CI produces one
+- #85, #93 — a dimension whose measurable weight changed is not comparable
+- #87 — the `documentation` dimension
+- #90 — the `ui-consistency` dimension, and mutation ruled out
+- #99 — six ways the report could be wrong, from a codex review
+- #100 — close the original list
+- #102 — answer what scoria says about this repository
+
 ## 0.2.0 — 2026-09-12
 
 Three more of the things the tool was asked to measure, and a badge that refuses to be comparable.
