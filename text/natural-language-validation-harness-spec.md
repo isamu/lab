@@ -71,7 +71,7 @@
 
 https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d
 
-自然言語で記述された文章規範。
+自然言語で記述された文章規範を指す。
 
 以下のような内容はルール化しやすい。
 
@@ -89,7 +89,7 @@ https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d
 
 https://github.com/coji/natural-japanese
 
-AI が生成した日本語の不自然さを検出・修正する Agent Skill。
+AI が生成した日本語の不自然さを検出・修正する Agent Skill である。
 
 特徴:
 
@@ -108,7 +108,7 @@ AI が生成した日本語の不自然さを検出・修正する Agent Skill�
 
 > 検出は機械、判断は人間または Agent
 
-という分離。
+という形で分離する。
 
 ---
 
@@ -132,7 +132,7 @@ AI が生成した日本語の不自然さを検出・修正する Agent Skill�
 この段落には複数の独立した論点を含めない
 ```
 
-は意味理解が必要。
+は意味理解を必要とする。
 
 そのため、ルールを種類別に扱う必要がある。
 
@@ -178,7 +178,7 @@ Test
 CI
 ```
 
-という変換が必要。
+という変換を要する。
 
 ---
 
@@ -200,9 +200,9 @@ CI
 - warning
 - info
 
-の severity が必要。
+の severity を要する。
 
-また、ルールによってはジャンル別 threshold が必要。
+また、ルールによってはジャンル別 threshold を要する。
 
 ---
 
@@ -291,7 +291,7 @@ Natural Language Harness
 
 Rule は原則として問題を指摘する。
 
-自動修正は別機能。
+自動修正は別機能とする。
 
 理由:
 
@@ -468,13 +468,13 @@ TypeScript だけで完結させたい場合は別 analyzer も検討可能だ�
 - regression test
 - threshold
 
-特に semantic rule の executor として利用可能。
+特に semantic rule の executor として利用できる。
 
 ---
 
 ### 7.4 Custom TypeScript Harness
 
-プロジェクト全体の orchestrator。
+プロジェクト全体の orchestrator にあたる。
 
 担当:
 
@@ -692,7 +692,7 @@ nlh eval corpus/
 
 ### explain
 
-Rule の説明。
+Rule の説明を指す。
 
 ```bash
 nlh explain paragraph-single-topic
@@ -854,7 +854,7 @@ profiles:
 
 ## 16. Calibration
 
-自然言語ルールでは誤検知測定が重要。
+自然言語ルールでは誤検知の測定が重要になる。
 
 以下の corpus を用意する。
 
@@ -1077,7 +1077,7 @@ LLM に聞かない。
 - latency
 - CI stability
 
-の観点から最重要。
+の観点から最も重い。
 
 ---
 

@@ -1,6 +1,6 @@
 # chaff — Prose Validation Harness Spec
 
-言語に依存しない文章検証ハーネス。ビジネス文書とブログ記事を第一の対象とする。
+言語に依存しない文章検証ハーネスである。ビジネス文書とブログ記事を第一の対象とする。
 
 前提仕様: [natural-language-validation-harness-spec.md](./natural-language-validation-harness-spec.md)
 利用者側の仕様: [chaff-workflow-spec.md](./chaff-workflow-spec.md)（導入・執筆・検証・規範の更新の流れ）
@@ -17,7 +17,7 @@
 
 ### ひとことで言うと
 
-文章の読みにくいところを、コンピューターが自動で見つけてくれる道具。
+文章の読みにくいところを、コンピューターが自動で見つけてくれる道具です。
 
 ### 何を見つけるのか
 
@@ -89,7 +89,7 @@ chaff.yaml          「うちではこう見てほしい」という設定
 
 ## 0. 名前について
 
-`chaff` は籾殻。脱穀したあとに残る、栄養のない外皮のこと。
+`chaff` は籾殻を指す。脱穀したあとに残る、栄養のない外皮のこと。
 
 この名前は **`lint` とまったく同じ命名論理**による。lint は布から出る繊維くずであり、ESLint はそれを名前にしている。linter は「取り除くべきカス」の名を負う道具である、という慣習がすでにある。自然言語版がその慣習を継ぐなら chaff になる。
 
@@ -148,7 +148,7 @@ genre pack（`business` / `blog`）は言語ではないので `@chaffjs` には
 | `nutgraph` | 米ジャーナリズムの内輪語。global 方針と噛み合わない |
 | 日本語ローマ字全般 | `suikou` `toishi` `migaku` ほか。global 方針により対象外 |
 
-4 文字の英単語は npm でほぼ枯れている。`taut` `pare` `cull` `crux` `pith` `gist` `nib` `kern` `widow` `orphan` `sift` `winnow` はいずれも取得済み。この帯で空いていて実用に耐えたのは `chaff` `quoin` `ibid` のみだった。
+4 文字の英単語は npm でほぼ枯れている。`taut` `pare` `cull` `crux` `pith` `gist` `nib` `kern` `widow` `orphan` `sift` `winnow` はいずれも取得済みである。この帯で空いていて実用に耐えたのは `chaff` `quoin` `ibid` のみだった。
 
 ---
 
@@ -165,7 +165,7 @@ genre pack（`business` / `blog`）は言語ではないので `@chaffjs` には
 npx chaffjs lint article.md
 ```
 
-インストール不要、API key 不要、言語の指定不要（自動検出）。これを設計の最優先制約とする（§17）。
+インストールも API key も言語の指定も要らない（言語は自動検出する）。これを設計の最優先制約とする（§17）。
 
 ---
 
@@ -243,7 +243,7 @@ rule "excessive-hedging"
 
 ## 4. Rule の四層モデル
 
-言語依存の度合いで rule を四層に分ける。これが本 spec の中核。
+言語依存の度合いで rule を四層に分ける。これが本 spec の中核である。
 
 ```text
 L1  Universal Detector          言語知識ゼロ
@@ -310,7 +310,10 @@ chaff-blog            ブログ genre pack
   blog 固有の L1 rule と L4 rubric
 ```
 
-genre pack を core から分ける理由は前版と同じ。リリースサイクルが違い（core の rule model は安定させたいが threshold は calibration のたびに動く）、依存が違い（genre pack は adapter に依存しない）、ジャンルを並列に増やせるため。
+genre pack を core から分ける理由は前版と同じである。
+
+まずリリースサイクルが違う。core の rule model は安定させたいが、threshold は calibration のたびに動く。
+依存も違い、genre pack は adapter に依存しない。分けておけば、ジャンルを並列に増やせる。
 
 `chaff-business` と `chaff-blog` は **adapter に依存しない**。これが四層モデルの帰結であり、「ビジネス文書の書き方」が言語を越えて共通であるという主張でもある。
 
@@ -449,7 +452,7 @@ profile は言語別の閾値を持つ（§9）。
 | `lang-en` | 規則ベース（略語辞書つき） | 空白 + 句読点 | true | `wink-pos-tagger` | word |
 
 `pos: true` は「払えばできる」の宣言であって「もう払った」ではない。実際の読み込みは `prepare`（§16.1）。
-初期化は ja が 2.2 秒、en が 0.13 秒。動く rule が品詞を要求しなければ、どちらも読まない。
+初期化にかかる時間は ja が 2.2 秒、en が 0.13 秒である。動く rule が品詞を要求しなければ、どちらも読まない。
 
 ### 7.2 文分割は adapter の責務である（実測）
 
@@ -596,7 +599,7 @@ by_genre:
 
 設計上の注意:
 
-`heading-echo` と `ngram-repetition` は **character n-gram** を使う。word n-gram にすると `wordSplit` capability を要求することになり L2 に落ちる。character trigram なら日本語でも英語でも同じ実装で動き、精度も実用的。
+`heading-echo` と `ngram-repetition` は **character n-gram** を使う。word n-gram にすると `wordSplit` capability を要求することになり L2 に落ちる。character trigram なら日本語でも英語でも同じ実装で動き、精度も実用に足りる。
 
 `heading-echo` の重なりは **Jaccard ではなく包含率**（見出しの trigram のうち、直後の文に現れたものの割合）で測る。実装して測るまで Jaccard と書いていたが、いちばん典型的な反復を取り逃すことが分かった。
 
@@ -626,7 +629,7 @@ rule ごと切られる。** 書いていなければ何も言わない。
 
 照合は部分一致で、見出しの文言までは縛らない（`リスク` は「リスクと対策」に当たる）。
 
-以下は初版の案。残してあるのは、既定を持たせたくなったときの出発点として。
+以下は初版の案である。残してあるのは、既定を持たせたくなったときの出発点として。
 
 ```yaml
 required-sections:
@@ -655,7 +658,7 @@ required-sections:
 
 detector は言語を知らず、profile から渡された正規表現の配列を照合するだけ。
 
-`concrete-evidence-density` は「具体例がない」という semantic な指摘を deterministic に近似する proxy であり、本 spec の中心的な仕掛けの一つ。数える対象は次のとおり。
+`concrete-evidence-density` は「具体例がない」という semantic な指摘を deterministic に近似する proxy であり、本 spec の中心的な仕掛けの一つになっている。数える対象は次のとおり。
 
 **`technical` では動かさない。** 実装時に `blog` から `business` と `technical` へ広げたが、
 自分の仕様書にかけたら 17 件出て、中身は「error」「warning」「Phase 1」のような**定義の節**だった。
@@ -710,7 +713,7 @@ rule ごと切られる。** 書いていなければ何も言わない（「用
 ```
 
 名前は繰り返して当たり前で、指摘しても直せない。**言い回しは、その言語の「つなぎ」を含む**。
-日本語ならひらがな、英語なら語の切れ目。どちらを見るかは adapter が宣言する `lengthUnit` で決める。
+日本語ならひらがな、英語なら語の切れ目がそれにあたる。どちらを見るかは adapter が宣言する `lengthUnit` で決める。
 
 ひらがなを持たない `char` 単位の言語が来たら、この見分けは効かなくなる。
 そのときは判定を adapter 側へ移す（`Voice=Pass` と同じ形）。
@@ -835,9 +838,9 @@ adapter が detector ごと提供する。rule id は言語間で共有し、実
 | `sentence-fragment` | 述語のない文 | 定動詞のない文 | 両方 |
 | `list-parallelism` | 項目末尾の品詞の混在 | 項目先頭の品詞の混在 | business |
 
-`agentless-passive` と `nominalization` は Orwell の "Politics and the English Language" が挙げる悪癖と、日本語ビジネス文書で責任の所在が曖昧になる現象が同一のものであることを示す例。rule として一本化する価値がある。
+`agentless-passive` と `nominalization` は Orwell の "Politics and the English Language" が挙げる悪癖と、日本語ビジネス文書で責任の所在が曖昧になる現象が、同一のものであることを示している。rule として一本化する価値がある。
 
-✅ は実装済み。`agentless-passive` は **rule 定義・message・why・how_to_fix を 1 つしか持たない**。
+✅ は実装済みを表す。`agentless-passive` は **rule 定義・message・why・how_to_fix を 1 つしか持たない**。
 言語で違うのは、アダプタが付ける `Voice=Pass` と、語彙表の動作主の語（によって / by）だけ。
 これが四層モデルの主張そのもので、ここが 2 本に割れたら L3 の設計は間違っている。
 
@@ -915,13 +918,13 @@ no-em-dash:
     en: { normal: info }      # 英語では正当な用法が多い。ただし現在は AI tell としても強い
 ```
 
-英語における em dash の多用は、2026 年時点で最も知られた AI 生成のシグナルの一つ。ただし人間の熟練した書き手も多用するため、単独では info とし、複合シグナル（§20.2）で扱う。
+英語における em dash の多用は、2026 年時点で最も知られた AI 生成のシグナルの一つである。ただし人間の熟練した書き手も多用するため、単独では info とし、複合シグナル（§20.2）で扱う。
 
 ---
 
 ## 13. Rule Catalog — L4 Semantic
 
-LLM judge が判定する。rubric を言語別に持つ以外は言語非依存。
+LLM judge が判定する。rubric を言語別に持つ以外は言語に依存しない。
 
 | id | genre | severity | rubric の要点 |
 | --- | --- | --- | --- |
@@ -1095,7 +1098,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 `Token.pos` は UPOS に統一する。IPADIC も Penn Treebank も、アダプタが自分の中で UPOS へ寄せる。
 品詞だけでは足りないものは UD の FEATS（`Voice=Pass` など）に畳んでから渡す。
 
-受動がその例。日本語の「れる/られる」と英語の be + 過去分詞は形が全く違うが、
+受動がその例である。日本語の「れる/られる」と英語の be + 過去分詞は形が全く違うが、
 **どちらも「動作主が書かれていない」という同じ問題を作る**。アダプタが `Voice=Pass` を付け、
 detector はそれだけを見る。動作主の語（によって / by）は L2 と同じ語彙表から引く。
 
@@ -1112,7 +1115,7 @@ eval と calibration の専用経路としてなら価値があるが、lint の
 
 ## 17. npx で動かすための設計
 
-最終目標は `npx chaffjs lint article.md` の一発実行。
+最終目標は `npx chaffjs lint article.md` の一発で動くことである。
 
 ### 16.4 判定役は差し替えられる
 
@@ -1302,7 +1305,7 @@ padded-intro に strict はありません。normal と同じ設定です。
 
 ### 18.3 利用者が自然文で足す検査
 
-`checks.yaml` に書いたものは L4 rule として扱う。キーは英語、中身は書き手の言語。
+`checks.yaml` に書いたものは L4 rule として扱う。キーは英語で書き、中身は書き手の言語で書く。
 
 ```yaml
 checks:

@@ -19,4 +19,22 @@ export const hasParticle = (sentence: Sentence): boolean => (sentence.tokens ?? 
 
 const SKIP = new Set(["PUNCT", "PART", "SYM"]);
 
-export const lastContent = (sentence: Sentence): Token | undefined => [...(sentence.tokens ?? [])].reverse().find((token) => !SKIP.has(token.pos));
+/**
+ * 文末の括弧は、文の終わりではなく添え物。
+ *
+ * 「これを最優先制約とする（§17）。」の述語は「とする」であって「17」ではない。
+ * 仕様書は相互参照を括弧で添えるので、これを数えると文末が全部そこになる。
+ */
+const TRAILING = /[(（][^(（]*[)）][\s。．！？!?]*$/u;
+
+const beforeTrailing = (sentence: Sentence): readonly Token[] => {
+  const tokens = sentence.tokens ?? [];
+  const match = TRAILING.exec(sentence.text);
+  if (match?.index === undefined) return tokens;
+  const cut = sentence.span.start + match.index;
+  const kept = tokens.filter((token) => token.span.end <= cut);
+  // 括弧を外したら何も残らない文は、括弧そのものが中身。そのまま見る。
+  return kept.length === 0 ? tokens : kept;
+};
+
+export const lastContent = (sentence: Sentence): Token | undefined => [...beforeTrailing(sentence)].reverse().find((token) => !SKIP.has(token.pos));

@@ -72,7 +72,12 @@ const countGrams = (text: string, width: number): Map<string, number> => {
  * どちらを見るかは adapter が宣言する単位で決める。ひらがなを持たない char 単位の言語が
  * 来たら、この見分けは効かなくなる（そのときは adapter 側に判定を移す）。
  */
-const CONNECTIVE = { char: /[ぁ-ゖ]/u, word: /\S \S.*\S \S/u };
+/**
+ * つなぎが 1 つでは足りない。「detectorは」は用語に助詞が 1 つ付いただけで、
+ * 繰り返して当たり前の**用語**であって言い回しではない。
+ * 実文書で測ると、本物の言い回しはひらがなを 7 つ前後含み、用語＋助詞は 1〜2 だった。
+ */
+const CONNECTIVE = { char: /[ぁ-ゖ].*[ぁ-ゖ].*[ぁ-ゖ]/u, word: /\S \S.*\S \S/u };
 
 const isPhrasing = (gram: string, unit: ProseDocument["lengthUnit"]): boolean => CONNECTIVE[unit].test(gram);
 
