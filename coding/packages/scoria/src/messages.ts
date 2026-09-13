@@ -55,6 +55,7 @@ export interface Messages {
   readonly gateAcceptGains: string;
   readonly noTargetsMatched: (patterns: string) => string;
   readonly ratchetNoBaseline: string;
+  readonly cannotRead: (path: string) => string;
   readonly targetProblems: string;
   readonly targetProblem: (kind: string, pattern: string) => string;
   readonly measuring: (target: string) => string;
@@ -116,6 +117,7 @@ const en: Messages = {
   gateAcceptGains: "Improved. `scoria baseline` records this run as the new floor.",
   noTargetsMatched: (patterns) => `No directory matched ${patterns}. Fix "targets" in scoria.config.json, or remove it to measure this directory.`,
   ratchetNoBaseline: "mode: ratchet — nothing to gate against yet. `scoria baseline` records the floor.",
+  cannotRead: (path) => `Cannot read ${path}. Check the path, or run scoria from inside the repository.`,
   targetProblems: "Targets dropped",
   targetProblem: (kind, pattern) => {
     const why: Record<string, string> = {
@@ -186,6 +188,7 @@ const ja: Messages = {
   noTargetsMatched: (patterns) =>
     `${patterns} に一致するディレクトリがありません。scoria.config.json の "targets" を直すか、消せばこのディレクトリを測ります。`,
   ratchetNoBaseline: "mode: ratchet — まだ比較する baseline がありません。`scoria baseline` で下限を記録してください。",
+  cannotRead: (path) => `${path} を読めません。パスを確認するか、リポジトリの中で実行してください。`,
   targetProblems: "対象から外したもの",
   targetProblem: (kind, pattern) => {
     const why: Record<string, string> = {

@@ -1,6 +1,7 @@
 import { basename, dirname, relative, resolve } from "node:path";
 
 import { assay, PROBES } from "./run.ts";
+import { isRecord } from "./package-json.ts";
 import { detectConfig, loadConfig, writeConfig, CONFIG_FILENAME, type LoadedConfig, type Mode, type ScoriaConfig } from "./config.ts";
 import { isLang, messagesFor, type Lang } from "./messages.ts";
 import type { Report } from "./report.ts";
@@ -185,6 +186,22 @@ export const main = async (argv: readonly string[]): Promise<void> => {
   for (const target of paths) {
     if (paths.length > 1 && !options.json) process.stdout.write(`\n${messages.measuring(displayPath(target))}\n`);
     await measureOne(options, target, paths, base);
+  }
+};
+
+/**
+ * A directory that cannot be read is the error a first run actually hits — a typo, or a name that
+ * does not exist. Node's own rejection prints a stack trace, which tells the reader to debug scoria
+ * rather than to check what they typed.
+ */
+export const run = async (argv: readonly string[]): Promise<void> => {
+  const options = parse(argv);
+  try {
+    await main(argv);
+  } catch (cause) {
+    if (!isRecord(cause) || cause["code"] !== "ENOENT") throw cause;
+    process.stderr.write(`${messagesFor(options.lang ?? "en").cannotRead(displayPath(resolve(options.target)))}\n`);
+    process.exitCode = 1;
   }
 };
 
