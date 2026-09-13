@@ -1,6 +1,6 @@
 {
   "name": "chaffjs",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Prose validation harness. Finds what is hard to read, and never rewrites it for you.",
   "keywords": [
     "chaff",
