@@ -7,6 +7,13 @@ per-dimension scores — so that improvement and regression are visible over tim
 
 Design spec (Japanese): [scoria-spec.md](https://github.com/isamu/lab/blob/main/coding/scoria-spec.md) · 日本語の README: [README.ja.md](./README.ja.md)
 
+### What it does not do
+
+It does not run your application, or your tests, or a model over your code. Mutation testing,
+Playwright, axe, Lighthouse and an AI reviewer were all on the original list and all are closed with
+reasons — [docs/the-original-list.md](https://github.com/isamu/lab/blob/main/coding/docs/the-original-list.md)
+records every item of that list and what happened to it.
+
 Every rubric still says `status: experimental`, and it means it: the scales were guesses.
 [docs/calibration.md](https://github.com/isamu/lab/blob/main/coding/docs/calibration.md) is the
 first measurement of what they do — 49 repositories, what each scale asserts, and the two things
