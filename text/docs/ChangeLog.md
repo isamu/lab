@@ -2,6 +2,69 @@
 
 Newest first.
 
+## 0.5.1 — 2026-09-13
+
+A patch. Nothing new runs; three things stop being reported. All three were found by pointing chaff
+at its own documents through the SARIF output that 0.5.0 added.
+
+📦 [`chaffjs@0.5.1`](https://www.npmjs.com/package/chaffjs/v/0.5.1)
+
+`@chaffjs/lang-ja` and `@chaffjs/lang-en` stay at 0.5.0. Nothing in them changed.
+
+### The output found its own mistakes (#101, #104)
+
+In a terminal the 45 findings on chaff's own repository were lines nobody scrolled to. On the Security
+tab the breakdown was readable, and the largest entry turned out to be the tool's own error rather
+than the documents'.
+
+### `concrete-evidence-density` asked specifications for numbers (#101)
+
+A section headed `error`, saying what `error` means, needs no number, no code and no link. The rule's
+reasoning — nothing to take away — does not describe a definition.
+
+The spec had scoped this rule to `blog`. The implementation widened it to `business` and `technical`,
+and only the `business` half was ever justified in writing. `technical` is out again. `business`
+stays, where a section of principles with nothing concrete in it really is a problem.
+
+Seventeen findings on chaff's own specifications, gone.
+
+### A trailing cross-reference is not the end of the sentence (#104)
+
+```
+これを設計の最優先制約とする（§17）。
+```
+
+The predicate is とする, not 17. Specifications hang cross-references off the end of sentences, so
+counting them put the end of every sentence inside a bracket. `taigen-dome-in-prose` then read the
+lot as noun-ending prose. 87 sentences became 60.
+
+A sentence with nothing left once the bracket is removed keeps it, because there the bracket is the
+content.
+
+### A term with one particle is not a phrase (#104)
+
+```
+7  "etectorは"     ← detectorは
+5  "はadapter"
+4  "adapterを"
+```
+
+`ngram-repetition` accepted any eight-character window containing one hiragana as phrasing. A
+technical term with a particle attached clears that bar, and a specification repeats its terms on
+purpose.
+
+Measured on real documents, genuine phrasing carries around seven hiragana; a term plus a particle
+carries one or two. The bar is three. The true positive that motivated the rule (`ではありません。`,
+eight times) still reports.
+
+### Also
+
+chaff's own documents now pass chaff. Sixty noun-ending sentences were given predicates, one long
+sentence was split, and the rule count in the README was wrong (42 where there are 45).
+
+`examples/` was left alone. Those are published articles, and rewriting them would destroy the one
+thing they are there for.
+
 ## 0.5.0 — 2026-09-13
 
 Findings reach the pull request. 17 of 42 rules now run by default, against a written bar that
