@@ -83,6 +83,13 @@ describe("concrete-evidence-density", () => {
     assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
   });
 
+  it("仕様書では動かさない。定義の節に具体物は要らない", () => {
+    // 「error とは何か」のような節は、数値もコードも無くて当たり前。
+    const sections = ["error", "warning", "info", "Phase 1"].map((name) => `## ${name}\n\n抽象的な説明です。考えかたを述べます。理念を語ります。`).join("\n\n");
+    assert.ok(!idsFor(`# 仕様\n\n${sections}`, "technical/spec").includes("concrete-evidence-density"));
+    assert.ok(idsFor(`# 表題\n\n${sections}`, "business/report").includes("concrete-evidence-density"));
+  });
+
   it("文の少ない節は測らない", () => {
     const sections = ["一", "二", "三", "四"].map((name) => `## ${name}\n\n一言だけ。`).join("\n\n");
     assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));

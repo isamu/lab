@@ -9,7 +9,7 @@ name:
   en: Section with nothing concrete
 
 why:
-  ja: 数値もコードもリンクも無い節は、読み終えても持ち帰るものがありません。抽象的な説明だけが残ります。
+  ja: 数値もコードもリンクも無い節は、読み終えても持ち帰るものがありません。抽象的な説明だけが残ります。仕様書では「error とは何か」のような定義の節が普通にあるので、technical では動かしません。
   en: A section with no number, no code and no link leaves the reader with nothing to take away.
 
 message:
@@ -22,4 +22,4 @@ how_to_fix:
 
 levels: { strict: 1, normal: 3, relaxed: 6 }
 
-use_for: [blog, business, technical]
+use_for: [blog, business]

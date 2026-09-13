@@ -657,6 +657,11 @@ detector は言語を知らず、profile から渡された正規表現の配列
 
 `concrete-evidence-density` は「具体例がない」という semantic な指摘を deterministic に近似する proxy であり、本 spec の中心的な仕掛けの一つ。数える対象は次のとおり。
 
+**`technical` では動かさない。** 実装時に `blog` から `business` と `technical` へ広げたが、
+自分の仕様書にかけたら 17 件出て、中身は「error」「warning」「Phase 1」のような**定義の節**だった。
+仕様書の定義に数値もコードも要らないので、rule の理屈（読み終えても持ち帰るものがない）が当てはまらない。
+`business` は残す（理念を語る節に具体物が無いのは、業務文書でこそ問題になる）。
+
 ```text
 具体物 =
     数値表現
