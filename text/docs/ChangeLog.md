@@ -2,7 +2,16 @@
 
 Newest first.
 
-## Unreleased
+## 0.8.0 — 2026-09-28
+
+What an English user's first run and four real statutes showed: chaff now speaks English to an English
+document, reads the way statutes are actually written without false positives, and ships a Claude Code skill.
+
+📦 [`chaffjs@0.8.0`](https://www.npmjs.com/package/chaffjs/v/0.8.0) ·
+[`@chaffjs/lang-ja@0.7.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.7.0)
+
+`@chaffjs/lang-ja` is 0.7.0 (the statute patterns live in it) and `chaffjs` depends on exactly that version.
+`@chaffjs/lang-en` stays at 0.6.0; only its README changed.
 
 ### The structure rules read real statutes (#130)
 
