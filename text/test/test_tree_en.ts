@@ -72,6 +72,14 @@ describe("an English contract as a tree", () => {
     assert.deepEqual(targets, ["1.a.ii", "4"]);
   });
 
+  it("does not read a reference inside Markdown inline code", () => {
+    const tree = treeOf(lines("# Notes", "", "Use `Section 99.1(a)` in examples, but see Section 2."), true);
+    assert.deepEqual(
+      tree.children[0]?.children.map((node) => node.attrs["target"]),
+      ["2"],
+    );
+  });
+
   it("counts “shall not” once, not also as “shall”", () => {
     const markers = treeOf("The Buyer shall not assign.").children.map((node) => node.attrs["marker"]);
     assert.deepEqual(markers, ["shall not"]);

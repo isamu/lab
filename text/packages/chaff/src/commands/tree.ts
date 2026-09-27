@@ -47,6 +47,16 @@ const printTree = async (path: string, argv: readonly string[], context: TreeCon
 };
 
 /**
+ * 1 つずつ、渡された順に処理する。前のファイルが終わってから次を始めるので、出力の順が入れ替わらない。
+ * 失敗したファイルがあっても残りは処理し、1 つでも失敗していれば false を返す。
+ */
+export const inOrder = async (paths: readonly string[], each: (path: string) => Promise<boolean>): Promise<boolean> =>
+  paths.reduce<Promise<boolean>>(async (previous, path) => {
+    const earlier = await previous;
+    return (await each(path)) && earlier;
+  }, Promise.resolve(true));
+
+/**
  * 文書を番地の付いた木にして出す。S 式は人と AI が読むため、JSON は機械が読むため。
  * 書き換えはしない。Markdown でない .txt（見出しの無い契約書）も、行頭の番号で木にする。
  */
@@ -56,6 +66,6 @@ export const runTree = async (paths: readonly string[], argv: readonly string[],
     console.error(USAGE);
     return 1;
   }
-  const printed = await paths.reduce<Promise<boolean>>(async (all, path) => (await printTree(path, argv, context)) && (await all), Promise.resolve(true));
+  const printed = await inOrder(paths, (path) => printTree(path, argv, context));
   return printed ? 0 : 1;
 };

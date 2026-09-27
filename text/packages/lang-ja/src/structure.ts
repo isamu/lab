@@ -34,9 +34,13 @@ const SPACE = "[ \\t\\u3000]";
 const ARTICLE = new RegExp(`^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
 const PARAGRAPH = new RegExp(`^${SPACE}*第(?<n>${NUMBER})項(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
 const ITEM = new RegExp(`^${SPACE}*第(?<n>${NUMBER})号(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
-/** 法令の項と号は、全角空白を挟んで番号だけで書く（「２」「一」）。条の中でだけ読む。本文の「3 人で」を項にしない。 */
-const BARE_PARAGRAPH = new RegExp(`^${SPACE}*(?<n>[0-9０-９]{1,3})${SPACE}+(?<rest>\\S.*)$`, "u");
-const BARE_ITEM = new RegExp(`^${SPACE}*(?<n>[一二三四五六七八九十]{1,3})${SPACE}+(?<rest>\\S.*)$`, "u");
+/**
+ * 法令の項と号は、番号だけを行頭に置き、全角空白で本文と区切る（「２」「一」）。条の中でだけ読む。
+ * 半角数字や漢数字に半角空白が続くだけなら本文として扱う。「3 人で」「一 人で」を項や号にしない。
+ */
+const BARE_PARAGRAPH = new RegExp(`^${SPACE}*(?<n>[0-9]{1,3})\\u3000+(?<rest>\\S.*)$`, "u");
+const BARE_FULLWIDTH_PARAGRAPH = new RegExp(`^${SPACE}*(?<n>[０-９]{1,3})${SPACE}+(?<rest>\\S.*)$`, "u");
+const BARE_ITEM = new RegExp(`^${SPACE}*(?<n>[一二三四五六七八九十]{1,3})\\u3000+(?<rest>\\S.*)$`, "u");
 const PAREN_ITEM = new RegExp(`^${SPACE}*[（(](?<n>[0-9０-９]{1,3})[）)]${SPACE}*(?<rest>\\S.*)$`, "u");
 
 /** 「第3条（支払）」の括弧の中が見出し。括弧が無ければ、条は後ろ全部を、項・号は本文なので空を見出しにする。 */
@@ -80,6 +84,7 @@ const ITEM_SHAPES: readonly ItemShape[] = [
   { pattern: PARAGRAPH, depth: () => 2, label: (n) => `第${n}項`, needsArticle: false },
   { pattern: ITEM, depth: () => 3, label: (n) => `第${n}号`, needsArticle: false },
   { pattern: BARE_PARAGRAPH, depth: () => 2, label: (n) => n, needsArticle: true },
+  { pattern: BARE_FULLWIDTH_PARAGRAPH, depth: () => 2, label: (n) => n, needsArticle: true },
   { pattern: BARE_ITEM, depth: () => 3, label: (n) => n, needsArticle: true },
   { pattern: PAREN_ITEM, depth: parenDepth, label: (n) => `（${toHalfWidth(n)}）`, needsArticle: false },
 ];

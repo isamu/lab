@@ -263,8 +263,8 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
   };
 };
 
-/** 番号を探してはいけない範囲。コードの中の「第3条」は条ではない。 */
-const OPAQUE = ["code", "html", "yaml", "toml"];
+/** 番号を探してはいけない範囲。コードの中の「第3条」は条ではなく、参照でもない。 */
+const OPAQUE = ["code", "inlineCode", "html", "yaml", "toml"];
 
 /** 構造を読むための Markdown の手がかり。見出しと、中を読まない範囲。 */
 export const markdownOutline = (source: string): { readonly headings: readonly Heading[]; readonly opaque: readonly Span[] } => {

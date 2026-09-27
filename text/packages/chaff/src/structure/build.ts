@@ -1,5 +1,6 @@
 import { markdownOutline, type Heading } from "../document.ts";
-import type { Mention, NumberedLine, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
+import { maskSpans } from "../mask.ts";
+import type { Mention, NumberedLine, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { linesOf, type Line } from "./lines.ts";
 import { dottedNumber } from "./universal.ts";
 
@@ -122,8 +123,6 @@ const freeze = (draft: Draft): StructureNode => ({
 
 export type StructureInput = { readonly path: string; readonly source: string; readonly language: string; readonly markdown: boolean };
 
-const insideAny = (offset: number, regions: readonly Span[]): boolean => regions.some((region) => offset >= region.start && offset < region.end);
-
 /** 見出しのある行を、行番号から引けるようにする。 */
 const headingsByLine = (lines: readonly Line[], headings: readonly Heading[]): Map<number, Heading> =>
   new Map(
@@ -154,14 +153,14 @@ const readLine = (state: State, patterns: StructurePatterns, line: Line, heading
  * Markdown では見出しとコードの範囲を使い、.txt は行頭の番号だけで組む。
  */
 export const buildStructure = (input: StructureInput, patterns: StructurePatterns): StructureNode => {
-  const lines = linesOf(input.source);
   const outline = input.markdown ? markdownOutline(input.source) : { headings: [], opaque: [] };
+  // コードは同じ長さの空白で覆ってから読む。コードブロックの行は空になって飛ばされ、
+  // 文中の `第99条` は参照として拾われない。位置は元の文書のまま。
+  const lines = linesOf(maskSpans(input.source, outline.opaque));
   const headings = headingsByLine(lines, outline.headings);
   const doc = draftOf("doc", "", { text: "", start: 0, number: 1 }, { path: input.path, language: input.language });
   doc.end = input.source.length;
   const state: State = { stack: [{ draft: doc, rank: 0 }], headingCounts: [] };
-  lines
-    .filter((line) => line.text.trim() !== "" && !insideAny(line.start, outline.opaque))
-    .forEach((line) => readLine(state, patterns, line, headings.get(line.number)));
+  lines.filter((line) => line.text.trim() !== "").forEach((line) => readLine(state, patterns, line, headings.get(line.number)));
   return freeze(doc);
 };

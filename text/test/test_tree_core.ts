@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildStructure } from "../packages/chaff/src/structure/build.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
 import { linesOf } from "../packages/chaff/src/structure/lines.ts";
-import { treeTargets } from "../packages/chaff/src/commands/tree.ts";
+import { inOrder, treeTargets } from "../packages/chaff/src/commands/tree.ts";
 import type { Mention, NumberedLine, StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
 
 /**
@@ -105,5 +105,31 @@ describe("linesOf", () => {
 describe("chaff tree の引数", () => {
   it("--format と --language の値はファイルとして読まない", () => {
     assert.deepEqual(treeTargets(["tree", "a.md", "--format", "sexp", "b.txt", "--language", "ja"]), ["a.md", "b.txt"]);
+  });
+});
+
+describe("inOrder", () => {
+  const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+  it("finishes each file before starting the next, whatever each one takes", async () => {
+    const events: string[] = [];
+    const slowFirst: Readonly<Record<string, number>> = { a: 30, b: 0, c: 10 };
+    await inOrder(["a", "b", "c"], async (path) => {
+      events.push(`start ${path}`);
+      await delay(slowFirst[path] ?? 0);
+      events.push(`end ${path}`);
+      return true;
+    });
+    assert.deepEqual(events, ["start a", "end a", "start b", "end b", "start c", "end c"]);
+  });
+
+  it("keeps going after a failure, and reports it", async () => {
+    const seen: string[] = [];
+    const ok = await inOrder(["a", "b", "c"], (path) => {
+      seen.push(path);
+      return Promise.resolve(path !== "b");
+    });
+    assert.equal(ok, false);
+    assert.deepEqual(seen, ["a", "b", "c"]);
   });
 });

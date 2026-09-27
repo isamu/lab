@@ -63,15 +63,28 @@ describe("日本語の契約書を木にする", () => {
     );
   });
 
-  it("番号だけの「２　」「一　」は条の中でだけ項・号と読む", () => {
+  it("番号だけの項・号は、全角空白で区切ったときに条の中でだけ読む", () => {
+    const itemsIn = (...rows: string[]) =>
+      treeOf(lines("第5条", ...rows))
+        .children[0]?.children.filter((node) => node.kind === "item")
+        .map((node) => node.address);
     assert.deepEqual(
-      treeOf("3 人で作業する。").children.map((node) => node.kind),
+      treeOf("3\u3000作業する。").children.map((node) => node.kind),
       [],
     );
-    assert.deepEqual(
-      treeOf(lines("第5条", "3 人で作業する。")).children[0]?.children.map((node) => node.address),
-      ["5.3"],
-    );
+    assert.deepEqual(itemsIn("3\u3000本文"), ["5.3"]);
+    assert.deepEqual(itemsIn("３ 本文"), ["5.3"]);
+    assert.deepEqual(itemsIn("一\u3000本文"), ["5.1"]);
+  });
+
+  it("半角空白で続く「3 人で」「一 人で」は条の中でも本文", () => {
+    assert.deepEqual(treeOf(lines("第5条", "3 人で作業する。", "一 人で行う。")).children[0]?.children, []);
+  });
+
+  it("Markdown のインラインコードの中の条は、参照にも見出しにもしない", () => {
+    const tree = treeOf(lines("# API", "", "本文では `第99条` という文字列を例に使う。", "", "`第9条` の書き方の例", "", "第3条を参照する。"), true);
+    const kinds = tree.children[0]?.children.map((node) => [node.kind, node.attrs["target"]]);
+    assert.deepEqual(kinds, [["reference", "3"]]);
   });
 
   it("漢数字・全角数字・枝番号を番地にする", () => {
