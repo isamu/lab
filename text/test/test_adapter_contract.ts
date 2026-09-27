@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { loadAdapter, packageFor, packagesFor } from "../packages/chaff/src/adapter-load.ts";
+import { isAbsent, loadAdapter, packageFor, packagesFor } from "../packages/chaff/src/adapter-load.ts";
 
 const adapters: readonly LanguageAdapter[] = [ja, en];
 
@@ -90,6 +90,28 @@ describe("LanguageAdapter の契約", () => {
     };
     await assert.rejects(loadAdapter("zh", broken), SyntaxError);
     assert.deepEqual(tried, ["@chaffjs/lang-zh"]);
+  });
+
+  it("入っている公式が依存を見つけられないときは、入っていないことにせず、そのまま失敗する", async () => {
+    const tried: string[] = [];
+    const depMissing = (specifier: string): Promise<unknown> => {
+      tried.push(specifier);
+      return Promise.reject(notFound("wink-pos-tagger"));
+    };
+    await assert.rejects(loadAdapter("zh", depMissing), /Cannot find package 'wink-pos-tagger'/u);
+    assert.deepEqual(tried, ["@chaffjs/lang-zh"]);
+  });
+
+  it("最後の候補が依存を見つけられないときも、「入っていない」ではなく元の失敗を出す", async () => {
+    const importer = (specifier: string): Promise<unknown> => Promise.reject(specifier === "chaff-lang-zh" ? notFound("some-dependency") : notFound(specifier));
+    await assert.rejects(loadAdapter("zh", importer), /Cannot find package 'some-dependency'/u);
+  });
+
+  it("入っていないかどうかは、探した名前が文言にあるかで決める", () => {
+    assert.equal(isAbsent(notFound("@chaffjs/lang-zh"), "@chaffjs/lang-zh"), true);
+    assert.equal(isAbsent(notFound("wink-pos-tagger"), "@chaffjs/lang-zh"), false);
+    assert.equal(isAbsent(new Error("Cannot find package '@chaffjs/lang-zh'"), "@chaffjs/lang-zh"), false);
+    assert.equal(isAbsent("x", "@chaffjs/lang-zh"), false);
   });
 
   it("第三者のものも、LanguageAdapter の形でなければ断る", async () => {

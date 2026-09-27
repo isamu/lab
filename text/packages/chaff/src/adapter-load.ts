@@ -70,7 +70,12 @@ export const packagesFor = (language: string): readonly string[] => {
 
 export type Importer = (specifier: string) => Promise<unknown>;
 
-const isMissing = (err: unknown): boolean => err instanceof Error && "code" in err && err.code === "ERR_MODULE_NOT_FOUND";
+/**
+ * そのパッケージ自体が入っていないときだけ真。入っているパッケージが自分の依存を見つけられないときも同じ
+ * ERR_MODULE_NOT_FOUND になるので、Node の文言が探した名前を挙げているかで分ける。
+ */
+export const isAbsent = (err: unknown, specifier: string): boolean =>
+  err instanceof Error && "code" in err && err.code === "ERR_MODULE_NOT_FOUND" && err.message.includes(`'${specifier}'`);
 
 /** 入っている最初のものを読む。入っていないのは次へ。入っていて壊れているものは、次へ行かずにそのまま投げる。 */
 const importFirst = async (specifiers: readonly string[], language: string, importer: Importer): Promise<{ specifier: string; module: unknown }> => {
@@ -79,7 +84,7 @@ const importFirst = async (specifiers: readonly string[], language: string, impo
   try {
     return { specifier: first, module: await importer(first) };
   } catch (err) {
-    if (!isMissing(err)) throw err;
+    if (!isAbsent(err, first)) throw err;
     if (rest.length > 0) return importFirst(rest, language, importer);
     const all = packagesFor(language);
     throw new Error(`言語 ${language} のパッケージが入っていません（${all.join(" か ")}。npm i -D ${all[0] ?? first}）`, { cause: err });
