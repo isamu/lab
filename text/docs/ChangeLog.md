@@ -2,6 +2,16 @@
 
 Newest first.
 
+## Unreleased
+
+### Report a wrong or missed finding from your own document (#133)
+
+`npx chaffjs feedback <file> --rule <rule-id> [--line N]` (a wrong finding) or `--missed --line N` (something
+chaff should have said) writes an issue draft to `.chaff-feedback.md`: chaff's version, Node and OS, the
+document's language and genre, the finding and its message, and only the lines around it — never the whole
+document — plus `chaff.yaml` when there is one. It prints `gh issue create …` and a prefilled link, and sends
+nothing itself. The Claude Code skill points an agent to it when the person disagrees with a finding.
+
 ## 0.8.0 — 2026-09-28
 
 What an English user's first run and four real statutes showed: chaff now speaks English to an English

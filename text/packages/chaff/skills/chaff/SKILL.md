@@ -17,10 +17,14 @@ npx chaffjs . --compact            # two lines per finding: line:col severity me
 npx chaffjs <file> --experimental  # also the experimental rules
 ```
 
-A run exits 1 when a finding is an `error`, and also when it could not check anything (no file to check, an
-unknown `--genre`, no package for the language) — so a clean exit means the files were checked. After the findings comes the list of rules that did not run, and why (the default output only; `--compact`
-gives just their number): read it before saying a document is clean. A run over several files prints only the files that have findings, so to call one file clean,
-run chaff on that file alone and read its list.
+A run exits 1 when a finding is an `error`. It also exits 1 when it could not check anything: no file to
+check, an unknown `--genre`, no package for the language. So a clean exit means the files were checked.
+
+After the findings comes the list of rules that did not run, and why. Only the default output shows it;
+`--compact` gives just their number. Read it before saying a document is clean.
+
+A run over several files prints only the files that have findings. To call one file clean, run chaff on that
+file alone and read its list.
 
 ## For each finding, choose one of three
 
@@ -52,6 +56,20 @@ relaxing a rule.
   terms defined twice.
 - `npx chaffjs cite <source> <quotes.json>` checks that quotations (`[{ "address", "quote" }]`) are really in
   the source; exit 1 if any is not. Use it to back every quotation you put in an answer or a summary.
+
+## When chaff is wrong
+
+If a finding is wrong for the text (a false positive), or chaff missed something it should catch, draft a report
+for the chaff project:
+
+```sh
+npx chaffjs feedback <file> --rule <rule-id> [--line N]   # a wrong finding
+npx chaffjs feedback <file> --missed --line N             # something missed
+```
+
+It writes `.chaff-feedback.md` — version, OS, the finding, and only a few lines around it — and prints how to
+send it (`gh issue create …` or a link). It sends nothing. Show the draft to the person and let them decide; their
+document may be private.
 
 ## Do not
 
