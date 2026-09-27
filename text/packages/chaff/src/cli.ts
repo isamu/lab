@@ -27,7 +27,7 @@ import { VERSION } from "./version.ts";
 import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
 import { citeTargets, runCite } from "./commands/cite.ts";
 import { runSkill } from "./commands/skill.ts";
-import { runFeedback } from "./commands/feedback.ts";
+import { runFeedback, settingsOf } from "./commands/feedback.ts";
 import { homedir } from "node:os";
 import { ruleProblems } from "./config/rule-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
@@ -308,6 +308,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
       version: VERSION,
       runtime: `Node ${process.version} · ${process.platform} ${process.arch}`,
       flag,
+      settingsOf: (ruleIds) => settingsOf(config, ruleIds),
       check: async (path) => {
         const inspected = await inspect(path, config, [...argv, "--show-baseline"]);
         return { findings: inspected.outcome.findings, rules: inspected.rules, language: inspected.language, genre: inspected.genre };

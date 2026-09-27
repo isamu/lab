@@ -426,7 +426,7 @@ npx chaffjs feedback a.md --rule max-sentence-length --line 42   誤った指摘
 npx chaffjs feedback a.md --missed --line 42                     見逃し
 ```
 
-版・OS・指摘と、その前後の数行だけを `.chaff-feedback.md` に書き、送り方（`gh issue create` かリンク）を示します。**chaff は何も送りません。** 文書の全体は載せないので、読んでから送るかを決めてください。報告は、そのまま試験と修正になります。
+版・OS・一つの指摘と、その前後の 2 行ずつ、`chaff.yaml` のその rule の設定だけを `.chaff-feedback.md` に書き、送り方（`gh issue create`、または題だけを載せたリンク）を示します。**chaff は何も送りません。** 文書の全体は載せないので、読んでから送るかを決めてください。`chaff.yaml` 全体も載せたいときは `--with-config` を付けます。報告は、そのまま試験と修正になります。
 
 ## 言い回しを見る rule
 

@@ -7,10 +7,11 @@ Newest first.
 ### Report a wrong or missed finding from your own document (#133)
 
 `npx chaffjs feedback <file> --rule <rule-id> [--line N]` (a wrong finding) or `--missed --line N` (something
-chaff should have said) writes an issue draft to `.chaff-feedback.md`: chaff's version, Node and OS, the
-document's language and genre, the finding and its message, and only the lines around it — never the whole
-document — plus `chaff.yaml` when there is one. It prints `gh issue create …` and a prefilled link, and sends
-nothing itself. The Claude Code skill points an agent to it when the person disagrees with a finding.
+chaff should have said) writes an issue draft to `.chaff-feedback.md`: chaff's version, Node and OS, the file
+name, language and genre, one finding and its message, only the two lines on each side of it — never the whole
+document — and the reported rule's own setting in `chaff.yaml` (all of it only with `--with-config`). When a rule
+has several findings in the file, `--line` picks one. It prints a shell-safe `gh issue create …` and a link that
+carries the title only, and sends nothing itself. The Claude Code skill points an agent to it when the person disagrees with a finding.
 
 ## 0.8.0 — 2026-09-28
 

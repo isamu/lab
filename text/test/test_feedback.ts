@@ -5,9 +5,20 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { excerptsAround } from "../packages/chaff/src/feedback/excerpt.ts";
 import { feedbackDraft, type FeedbackInput } from "../packages/chaff/src/feedback/draft.ts";
-import { FEEDBACK_FILE, runFeedback, type Checked, type FeedbackContext } from "../packages/chaff/src/commands/feedback.ts";
+import {
+  FEEDBACK_FILE,
+  MAX_TITLE_LENGTH,
+  runFeedback,
+  settingsOf,
+  shellQuoted,
+  titleLine,
+  type Checked,
+  type FeedbackContext,
+} from "../packages/chaff/src/commands/feedback.ts";
+import { execFileSync } from "node:child_process";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import type { Finding } from "../packages/chaff/src/plugin.ts";
+import type { Config } from "../packages/chaff/src/config/load.ts";
 
 const DOC = Array.from({ length: 12 }, (_, index) => `line ${String(index + 1)}`).join("\n");
 
@@ -77,12 +88,41 @@ describe("報告の下書き", () => {
   });
 });
 
+describe("chaff.yaml から載せる設定", () => {
+  it("報告する rule の行だけ。数の上限は段階より先", () => {
+    const config: Pick<Config, "rules" | "limits"> = {
+      rules: { "max-sentence-length": "normal", "bold-density": "off" },
+      limits: { "max-sentence-length": 260 },
+    };
+    assert.equal(settingsOf(config, ["max-sentence-length", "max-sentence-length"]), "rules:\n  max-sentence-length: 260");
+    assert.equal(settingsOf(config, ["bold-density"]), "rules:\n  bold-density: off");
+    assert.equal(settingsOf(config, ["heading-echo"]), undefined);
+  });
+});
+
+describe("送り方の表示", () => {
+  it("題は一行に、長ければ切り詰める", () => {
+    assert.equal(titleLine("a\n b\tc"), "a b c");
+    const long = titleLine("x".repeat(500));
+    assert.equal(long.length, MAX_TITLE_LENGTH);
+    assert.ok(long.endsWith("…"));
+  });
+
+  it("シェルに渡す題は、何を含んでもそのまま読まれる", () => {
+    const titles = ["plain", "it's", "$(touch /tmp/pwned)", "`id`", '"quoted" $HOME \\ back', "'''"];
+    titles.forEach((title) => {
+      assert.equal(execFileSync("/bin/sh", ["-c", `printf %s ${shellQuoted(title)}`], { encoding: "utf8" }), title);
+    });
+  });
+});
+
 describe("chaff feedback", () => {
   const rules = loadRules("ja");
   const finding = (rule: string, line: number): Finding => ({ rule, severity: "warning", line, column: 1, quote: "", values: { length: 102, limit: 100 } });
   const run = async (argv: readonly string[], findings: readonly Finding[] = [finding("max-sentence-length", 5)]) => {
     const cwd = mkdtempSync(join(tmpdir(), "chaff-feedback-"));
     writeFileSync(join(cwd, "a.md"), DOC);
+    writeFileSync(join(cwd, "chaff.yaml"), "jargon:\n  - 社外秘の語\nrules:\n  max-sentence-length: relaxed\n");
     const out: string[] = [];
     const saved = { log: console.log, error: console.error };
     console.log = (...parts: unknown[]) => {
@@ -100,6 +140,7 @@ describe("chaff feedback", () => {
         return at === -1 ? undefined : args[at + 1];
       },
       check: () => Promise.resolve(checked),
+      settingsOf: (ids) => (ids.includes("max-sentence-length") ? "rules:\n  max-sentence-length: relaxed" : undefined),
     };
     try {
       const targets = argv.filter((arg, index) => !arg.startsWith("--") && !["--rule", "--line"].includes(argv[index - 1] ?? ""));
@@ -120,9 +161,38 @@ describe("chaff feedback", () => {
     assert.equal(result.code, 0);
     assert.ok(existsSync(join(result.cwd, FEEDBACK_FILE)));
     assert.match(readFileSync(join(result.cwd, FEEDBACK_FILE), "utf8"), /line 5/u);
-    assert.match(result.out, /gh issue create -R isamu\/lab --title "False positive: max-sentence-length/u);
+    assert.match(result.out, /gh issue create -R isamu\/lab --title 'False positive: max-sentence-length/u);
     assert.match(result.out, /https:\/\/github\.com\/isamu\/lab\/issues\/new\?title=/u);
+    // The link carries the title only: document lines never go into a URL.
+    assert.doesNotMatch(result.out, /&body=/u);
+    const draft = readFileSync(join(result.cwd, FEEDBACK_FILE), "utf8");
+    assert.match(draft, /max-sentence-length: relaxed/u);
+    assert.doesNotMatch(draft, /社外秘の語/u);
     assert.match(result.out, /has not sent anything/u);
+  });
+
+  it("--with-config を付けたときだけ chaff.yaml 全体を載せる", async () => {
+    const result = await run(["a.md", "--rule", "max-sentence-length", "--with-config"]);
+    assert.match(readFileSync(join(result.cwd, FEEDBACK_FILE), "utf8"), /社外秘の語/u);
+  });
+
+  it("一つの rule の指摘がいくつもあれば、--line で一つ選ばせる", async () => {
+    const several = [finding("max-sentence-length", 2), finding("max-sentence-length", 9)];
+    const result = await run(["a.md", "--rule", "max-sentence-length"], several);
+    assert.equal(result.code, 1);
+    assert.match(result.out, /Pick one with --line/u);
+    assert.equal((await run(["a.md", "--rule", "max-sentence-length", "--line", "9"], several)).code, 0);
+  });
+
+  it("文書に無い行番号は断る", async () => {
+    const outcomes = await ["0", "-3", "13"].reduce<Promise<{ code: number; out: string }[]>>(async (previous, line) => {
+      const done = await previous;
+      return [...done, await run(["a.md", "--missed", "--line", line], [])];
+    }, Promise.resolve([]));
+    outcomes.forEach((result) => {
+      assert.equal(result.code, 1);
+      assert.match(result.out, /from 1 to 12/u);
+    });
   });
 
   it("見逃しは --line が要る", async () => {

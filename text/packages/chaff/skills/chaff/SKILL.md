@@ -67,9 +67,11 @@ npx chaffjs feedback <file> --rule <rule-id> [--line N]   # a wrong finding
 npx chaffjs feedback <file> --missed --line N             # something missed
 ```
 
-It writes `.chaff-feedback.md` — version, OS, the finding, and only a few lines around it — and prints how to
-send it (`gh issue create …` or a link). It sends nothing. Show the draft to the person and let them decide; their
-document may be private.
+It writes `.chaff-feedback.md`: chaff's version, Node and OS, the file name, the one finding, the two lines on
+each side of it, and the reported rule's setting in `chaff.yaml` (all of `chaff.yaml` only with `--with-config`).
+When a rule has several findings in the file, add `--line` to pick one. It prints how to send the draft
+(`gh issue create …`, or a link that carries the title only). It sends nothing. Show the draft to the person and let
+them decide; their document may be private.
 
 ## Do not
 
