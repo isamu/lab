@@ -35,6 +35,11 @@ that is not in the document), `numbering-gap` (Article 5 right after Article 3, 
 and `duplicate-definition` (the same term defined twice). They work on `.txt` contracts as well as
 Markdown, and a language whose adapter cannot read structure skips them with a reason.
 
+`chaff cite <source> <claims.json>` checks an answer's citations against the source: each
+`{ "address", "quote" }` must name an address in the tree and quote text written within it. A quote from
+the wrong place reports where it actually is; a changed number or a paraphrase is not found. Line breaks
+and full-width characters are ignored. Any failed citation exits 1.
+
 An adapter that chaff does not bundle is now looked up as `@chaffjs/lang-<language>`. A language can
 be added by installing its package, without changing core.
 
