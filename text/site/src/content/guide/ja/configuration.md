@@ -185,8 +185,8 @@ required_sections: # この種類の文書に無いと困る見出し
 
 どちらも試験中なので、使うときは `rules` に `internal-jargon` と `required-sections` の強さも書きます。
 
-`required_sections` は、既定の重さが `error` の唯一のルールです。
-ほかの指摘は好みの問題ですが、これはチームが決めたのに守られなかったことを表すからです。
+`required_sections` の既定の重さは `error` です。
+好みの問題ではなく、チームが決めたのに守られなかったことを表すからです。
 
 ## パスごとに変える
 

@@ -178,6 +178,8 @@ $ npx chaffjs genres
   chaff.yaml の genre に書くか、--genre で指定します。
 ```
 
+画面には `--genre` とありますが、0.7.0 で `--genre` が効くのは `chaff init` だけです。
+検査のジャンルを決めるには、`chaff.yaml` の `genre` に書きます。
 それぞれがどんな文書かは、[設定](./configuration) の表にあります。
 
 ## いまある指摘を棚上げする
