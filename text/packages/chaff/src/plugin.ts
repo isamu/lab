@@ -82,8 +82,8 @@ export type LanguageAdapter = {
  * 入れ子と番地を決めるのは core。core は番号の書き方を知らない。
  */
 export type NumberedLine = {
-  readonly kind: "article" | "item";
-  /** 入れ子の深さ。条が 1、項が 2、号が 3 のように、言語パッケージが決める。 */
+  readonly kind: "chapter" | "article" | "item";
+  /** 入れ子の深さ。条が 1、項が 2、号が 3 のように、言語パッケージが決める。条より外の編・章・節は 0 以下。 */
   readonly depth: number;
   /** 番地の部品。"3"、"4.2"、"a"。 */
   readonly number: string;
@@ -117,9 +117,16 @@ export type StructurePatterns = {
   readonly obligations: (text: string) => readonly Mention[];
   /** 数量。attrs.value に数、attrs.unit に単位。 */
   readonly quantities: (text: string) => readonly Mention[];
+  /** 日付。attrs.value に "2024-04-01"・"2024-04"・"04-01"・"2024" のどれか。無い言語は日付を読まない。 */
+  readonly dates?: (text: string) => readonly Mention[];
+  /**
+   * 「1.5 倍」「2.5 days」の 1.5 は通し番号ではない。番号と後ろの文字列を渡し、後ろが単位なら true。
+   * 数字と点だけの通し番号は core が言語を問わず読むので、それを数量と見分けられるのは言語パッケージだけ。
+   */
+  readonly countedAfter?: (number: string, rest: string) => boolean;
 };
 
-export type StructureKind = "doc" | "section" | "article" | "item" | "definition" | "reference" | "obligation" | "quantity";
+export type StructureKind = "doc" | "section" | "chapter" | "article" | "item" | "definition" | "reference" | "obligation" | "quantity" | "date";
 
 /** 番地の付いた木の節点。すべて元の文書の位置（UTF-16）と行を持つ。 */
 export type StructureNode = {

@@ -1,31 +1,8 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
+import { parseJapaneseNumber, toHalfWidth } from "./numbers.ts";
+import { countedAfter, dates, quantities } from "./quantities.ts";
 
 // 契約書・規程・法令の番号の書き方。core は番号の書き方を知らず、ここで読んだものを入れ子にする。
-
-const DIGIT: Readonly<Record<string, number>> = { 〇: 0, 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
-const PLACE: Readonly<Record<string, number>> = { 十: 10, 百: 100, 千: 1000 };
-
-const FULLWIDTH_ZERO = 0xff10;
-const toHalfWidth = (text: string): string => text.replace(/[０-９]/gu, (char) => String(char.charCodeAt(0) - FULLWIDTH_ZERO));
-
-/**
- * 番号を数にする。全角数字は半角に、漢数字は位取りで読む（十二 = 12、二十一 = 21、百五 = 105、一〇 = 10）。
- * 読めないものは undefined。番号を読み違えると番地が変わり、参照先が無いという誤りを作ってしまう。
- */
-export const parseJapaneseNumber = (text: string): number | undefined => {
-  const half = toHalfWidth(text);
-  if (/^\d+$/u.test(half)) return Number(half);
-  if (!/^[〇一二三四五六七八九十百千]+$/u.test(text)) return undefined;
-  const { total, current } = [...text].reduce(
-    (acc, char) => {
-      const place = PLACE[char];
-      if (place !== undefined) return { total: acc.total + (acc.current === 0 ? 1 : acc.current) * place, current: 0 };
-      return { total: acc.total, current: acc.current * 10 + (DIGIT[char] ?? 0) };
-    },
-    { total: 0, current: 0 },
-  );
-  return total + current;
-};
 
 const NUMBER = "[0-9０-９〇一二三四五六七八九十百千]{1,6}";
 const SPACE = "[ \\t\\u3000]";
@@ -47,7 +24,8 @@ const PAREN_ITEM = new RegExp(`^${SPACE}*[（(](?<n>[0-9０-９]{1,3})[）)]${SP
 const headingOf = (rest: string, whole: boolean): string => {
   const trimmed = rest.trim();
   const bracketed = /^[（(](?<title>[^）)]{1,40})[）)]\s*$/u.exec(trimmed)?.groups?.["title"];
-  return bracketed ?? (whole ? trimmed : "");
+  // 法令の「第三条 事業者は、…。」は見出しの無い条で、後ろは本文。文を見出しにしない。
+  return bracketed ?? (whole && !trimmed.includes("。") ? trimmed : "");
 };
 
 const numberOf = (text: string | undefined): string | undefined => {
@@ -99,7 +77,28 @@ const item = (line: string, context: NumberingContext): NumberedLine | undefined
     return { kind: "item", depth: shape.depth(context), number, absolute: false, label: shape.label(groups["n"] ?? ""), heading: headingOf(rest, false), rest };
   }, undefined);
 
-const numbered = (line: string, context: NumberingContext): NumberedLine | undefined => article(line) ?? item(line, context);
+/**
+ * 条より外のまとまり。法令は章の番号を編ごとに、節の番号を章ごとに振り直すので、
+ * 章と節は親の番地に続ける（第2編第1章 → pt2.ch1、その第3節 → pt2.ch1.3）。条は通し番号のまま。
+ */
+const CHAPTER = new RegExp(`^${SPACE}*第(?<n>${NUMBER})(?<unit>[編章節])(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
+const CHAPTER_SHAPES: Readonly<Record<string, { readonly depth: number; readonly prefix: string }>> = {
+  編: { depth: -2, prefix: "pt" },
+  章: { depth: -1, prefix: "ch" },
+  節: { depth: 0, prefix: "" },
+};
+
+const chapter = (line: string): NumberedLine | undefined => {
+  const groups = CHAPTER.exec(line)?.groups;
+  const number = numberOf(groups?.["n"]);
+  const shape = CHAPTER_SHAPES[groups?.["unit"] ?? ""];
+  if (groups === undefined || number === undefined || shape === undefined) return undefined;
+  const rest = (groups["rest"] ?? "").trim();
+  const label = `第${groups["n"] ?? ""}${groups["unit"] ?? ""}`;
+  return { kind: "chapter", depth: shape.depth, number: shape.prefix + number, absolute: false, label, heading: headingOf(rest, true), rest };
+};
+
+const numbered = (line: string, context: NumberingContext): NumberedLine | undefined => chapter(line) ?? article(line) ?? item(line, context);
 
 /** 正規表現の一致を Mention にする。g フラグ付きのものだけを渡す。 */
 const mentions = (
@@ -135,11 +134,16 @@ const MARKERS: readonly (readonly [string, "must" | "must-not" | "may"])[] = [
   ["なければならない", "must"],
   ["してはならない", "must-not"],
   ["てはならない", "must-not"],
+  ["なければなりません", "must"],
+  ["てはなりません", "must-not"],
+  ["てはいけません", "must-not"],
+  ["てはいけない", "must-not"],
   ["義務を負う", "must"],
   ["ものとする", "must"],
   ["禁止する", "must-not"],
   ["することができる", "may"],
   ["ことができる", "may"],
+  ["ことができます", "may"],
 ];
 
 /** 語が現れる位置を全部。再帰や配列の広げ直しをしないので、長い文書でも線形で終わる。 */
@@ -167,24 +171,4 @@ const obligations = (text: string): Mention[] => {
   return kept.sort((left, right) => left.start - right.start);
 };
 
-/**
- * 数量は「数字の並び」を探してから、直後が単位かを見る。数字と単位を 1 つの正規表現に詰めると、
- * 後戻りが爆発しうる形になる（sonarjs/super-linear-regex）。単位は長いものから当てる。
- */
-const NUMBER_RUN = /[0-9０-９][0-9０-９.,]{0,15}|[〇一二三四五六七八九十百千]{1,8}/gu;
-const UNITS = ["営業日", "パーセント", "か月", "ヶ月", "カ月", "箇月", "週間", "時間", "万円", "日", "年", "分", "円", "%", "％"];
-
-const valueOf = (run: string): number | undefined => {
-  const raw = toHalfWidth(run).replace(/,/gu, "");
-  return /^\d+(?:\.\d+)?$/u.test(raw) ? Number(raw) : parseJapaneseNumber(run);
-};
-
-const quantities = (text: string): Mention[] =>
-  [...text.matchAll(NUMBER_RUN)].flatMap((match) => {
-    const after = match.index + match[0].length;
-    const unit = UNITS.find((candidate) => text.startsWith(candidate, after));
-    const value = valueOf(match[0]);
-    return unit === undefined || value === undefined ? [] : [{ start: match.index, end: after + unit.length, attrs: { value, unit } }];
-  });
-
-export const structure: StructurePatterns = { numbered, definitions, references, obligations, quantities };
+export const structure: StructurePatterns = { numbered, definitions, references, obligations, quantities, dates, countedAfter };

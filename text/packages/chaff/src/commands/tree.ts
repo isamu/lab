@@ -52,6 +52,8 @@ const printTree = async (path: string, argv: readonly string[], context: TreeCon
     console.error(`${path}: 言語 ${language} のパッケージは文書の構造を読めません（structure がありません）`);
     return false;
   }
+  // 日本語は形態素で数量と日付を読む。解析器が無ければ単位の表で読むので、木は作れる。
+  await adapter.prepare?.({ pos: true });
   const tree = buildStructure({ path, source, language, markdown: MARKDOWN.includes(extname(path).toLowerCase()) }, adapter.structure);
   console.log(context.flag(argv, "--format") === "json" ? JSON.stringify(tree, null, 2) : toSexp(tree));
   return true;

@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { parseJapaneseNumber } from "../packages/lang-ja/src/structure.ts";
+import { parseJapaneseNumber } from "../packages/lang-ja/src/numbers.ts";
 import { buildStructure } from "../packages/chaff/src/structure/build.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
 import type { StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
@@ -82,7 +82,15 @@ describe("日本語の契約書を木にする", () => {
   });
 
   it("半角空白で続く「3 人で」「一 人で」は条の中でも本文", () => {
-    assert.deepEqual(treeOf(lines("第5条", "3 人で作業する。", "一 人で行う。")).children[0]?.children, []);
+    // 項や号にはならない。空白を挟んでも「人」は助数詞なので、数量としては読む。
+    const children = treeOf(lines("第5条", "3 人で作業する。", "一 人で行う。")).children[0]?.children ?? [];
+    assert.deepEqual(
+      children.map((node) => [node.kind, node.attrs["value"]]),
+      [
+        ["quantity", 3],
+        ["quantity", 1],
+      ],
+    );
   });
 
   it("Markdown のインラインコードの中の条は、参照にも見出しにもしない", () => {

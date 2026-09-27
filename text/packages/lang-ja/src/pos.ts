@@ -176,3 +176,33 @@ export const tokenize = (text: string): Token[] | undefined => {
     .filter(isMorpheme)
     .map(toToken);
 };
+
+/**
+ * 構造を読むときに使う、IPADIC の細分類まで持った形態素。助数詞（名詞,接尾,助数詞）は
+ * 二段目の細分類にしか現れないので、UPOS に寄せた token からは読めない。
+ */
+export type Morph = {
+  readonly start: number;
+  readonly end: number;
+  readonly surface: string;
+  readonly pos: string;
+  readonly detail1: string;
+  readonly detail2: string;
+};
+
+const detail2Of = (value: unknown): string => {
+  const record: Record<string, unknown> = isRecord(value) ? { ...value } : {};
+  const detail = record["pos_detail_2"];
+  return typeof detail === "string" ? detail : "*";
+};
+
+/** 解析器を読み込んでいなければ undefined。呼ぶ側は、形態素なしの読み方に戻る。 */
+export const morphemes = (text: string): Morph[] | undefined => {
+  const tokenizer = state.ready;
+  if (tokenizer === undefined) return undefined;
+  return toArray(callMethod(tokenizer, "tokenize", [text])).flatMap((raw) => {
+    if (!isMorpheme(raw)) return [];
+    const start = raw.word_position - 1;
+    return [{ start, end: start + raw.surface_form.length, surface: raw.surface_form, pos: raw.pos, detail1: raw.pos_detail_1, detail2: detail2Of(raw) }];
+  });
+};

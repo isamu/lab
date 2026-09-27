@@ -1,6 +1,6 @@
 import { markdownOutline, type Heading } from "../document.ts";
 import { maskSpans } from "../mask.ts";
-import type { Mention, NumberedLine, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
+import type { Mention, NumberedLine, NumberingContext, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
 import { dottedNumber } from "./universal.ts";
 
@@ -99,7 +99,14 @@ const LEAVES: readonly { readonly kind: StructureKind; readonly find: (patterns:
   { kind: "reference", find: (patterns, text) => patterns.references(text) },
   { kind: "obligation", find: (patterns, text) => patterns.obligations(text) },
   { kind: "quantity", find: (patterns, text) => patterns.quantities(text) },
+  { kind: "date", find: (patterns, text) => patterns.dates?.(text) ?? [] },
 ];
+
+/** 言語を問わない通し番号。後ろが単位なら数量なので番号にしない。 */
+const universalNumber = (patterns: StructurePatterns, text: string, context: NumberingContext): NumberedLine | undefined => {
+  const dotted = dottedNumber(text, context);
+  return dotted !== undefined && patterns.countedAfter?.(dotted.number, dotted.rest) === true ? undefined : dotted;
+};
 
 /** 行の中の定義・参照・義務・数量を、いま開いている最も内側の節点の子にする。 */
 const addLeaves = (state: State, patterns: StructurePatterns, line: Line, text: string, offset: number): void => {
@@ -154,7 +161,7 @@ const readLine = (state: State, patterns: StructurePatterns, line: Line, heading
   const text = heading === undefined ? line.text : atxText(line.text);
   const openNumbers = state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered]));
   const context = { open: openNumbers, isHeading: heading !== undefined };
-  const numbered = patterns.numbered(text, context) ?? dottedNumber(text, context);
+  const numbered = patterns.numbered(text, context) ?? universalNumber(patterns, text, context);
   // 番号付きの見出しも見出しの通し番号を進める。進めないと、その下の「### 詳細」が前の見出しの番地を名乗る。
   if (numbered !== undefined && heading !== undefined) headingAddress(state, heading.depth);
   if (numbered !== undefined) openNumbered(state, line, numbered, heading?.depth);
