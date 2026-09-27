@@ -52,6 +52,38 @@ describe("日本語の契約書", () => {
     it(name, () => assert.deepEqual(check(ja, CONTRACT, [citation]), [expected]));
   });
 
+  it("半角カナの濁点や結合文字も、一文字として揃えて比べる", () => {
+    const source = lines("第1条（名称）", "名称はガイドとバスとする。");
+    assert.deepEqual(
+      check(ja, source, [
+        { address: "1", quote: "ｶﾞｲﾄﾞ" },
+        { address: "1", quote: "ハ\u3099ス" },
+      ]),
+      [
+        ["ok", undefined],
+        ["ok", undefined],
+      ],
+    );
+  });
+
+  it("附則が第1条から振り直しても、どちらの第1条に書いてあれば一致", () => {
+    const source = lines("第1条（目的）", "本規程は業務を定める。", "附則", "第1条（施行）", "本規程は令和6年4月1日から施行する。");
+    assert.deepEqual(
+      check(ja, source, [
+        { address: "1", quote: "本規程は業務を定める" },
+        { address: "1", quote: "令和6年4月1日から施行する" },
+      ]),
+      [
+        ["ok", undefined],
+        ["ok", undefined],
+      ],
+    );
+  });
+
+  it("隣り合う項にまたがる引用は、両方を含む条の範囲なら一致", () => {
+    assert.deepEqual(check(ja, CONTRACT, [{ address: "2", quote: "支払わなければならない。２　支払が遅れたときは" }]), [["ok", undefined]]);
+  });
+
   it("互換文字（㈱）も NFKC で揃えて比べる", () => {
     assert.deepEqual(check(ja, lines("第1条（当事者）", "委託者は(株)アルファとする。"), [{ address: "1", quote: "㈱アルファ" }]), [["ok", undefined]]);
   });
@@ -72,9 +104,23 @@ describe("an English contract", () => {
     ["quoted from the wrong item", { address: "2.a", quote: "1.5 percent" }, ["quote-elsewhere", "2.b"]],
     ["a changed number", { address: "2.a", quote: "within 60 days" }, ["quote-not-found", undefined]],
     ["an address that does not exist", { address: "2.c", quote: "anything" }, ["missing-address", undefined]],
+    ["a quote running past the end of the item it names", { address: "2.a", quote: "30 days. (b) Late amounts" }, ["quote-elsewhere", "2"]],
+    ["a quote starting before the item it names", { address: "2.b", quote: "30 days. (b) Late amounts" }, ["quote-elsewhere", "2"]],
   ];
   cases.forEach(([name, citation, expected]) => {
     it(name, () => assert.deepEqual(check(en, source, [citation]), [expected]));
+  });
+});
+
+describe("a quote written in more than one place", () => {
+  it("reports the first place it appears", () => {
+    const source = lines("第1条（甲）", "期限は月末とする。", "第2条（乙）", "本文。", "第3条（丙）", "期限は月末とする。");
+    assert.deepEqual(check(ja, source, [{ address: "2", quote: "期限は月末とする" }]), [["quote-elsewhere", "1"]]);
+  });
+
+  it("is ok when the address it names is one of them", () => {
+    const source = lines("第1条（甲）", "期限は月末とする。", "第2条（乙）", "本文。", "第3条（丙）", "期限は月末とする。");
+    assert.deepEqual(check(ja, source, [{ address: "3", quote: "期限は月末とする" }]), [["ok", undefined]]);
   });
 });
 
@@ -96,6 +142,14 @@ describe("Markdown headings without numbers", () => {
         ["quote-elsewhere", "h1.2"],
       ],
     );
+  });
+});
+
+describe("code in a manual is part of its section", () => {
+  // 木がコードを覆うのは、コードの中の「Section 9」を番号や参照と読まないため。コードがその節の中身であることは変わらない。
+  it("a quoted command inside a code block counts for its section", () => {
+    const manual = lines("# Guide", "", "## Install", "", "Run this:", "", "```sh", "npm install chaffjs", "```");
+    assert.deepEqual(check(en, manual, [{ address: "h1.1", quote: "npm install chaffjs" }], true), [["ok", undefined]]);
   });
 });
 
