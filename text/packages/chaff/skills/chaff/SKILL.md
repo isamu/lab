@@ -12,13 +12,13 @@ English documents both work; the language is detected per file.
 ## Run it
 
 ```sh
-npx chaffjs <file|dir|glob>...     # human-readable, one block per finding
+npx chaffjs <file|dir|glob>...     # human-readable, one block per finding (a folder or glob picks up .md / .markdown / .mdx; name a .txt file directly)
 npx chaffjs . --compact            # two lines per finding: line:col severity message, then the rule id
 npx chaffjs <file> --experimental  # also the experimental rules
 ```
 
-The exit code is 1 only when a finding is an `error`. A run that finds no Markdown fails rather than passing
-silently. After the findings comes the list of rules that did not run, and why (the default output only; `--compact`
+A run exits 1 when a finding is an `error`, and also when it could not check anything (no file to check, an
+unknown `--genre`, no package for the language) — so a clean exit means the files were checked. After the findings comes the list of rules that did not run, and why (the default output only; `--compact`
 gives just their number): read it before saying a document is clean. A run over several files prints only the files that have findings, so to call one file clean,
 run chaff on that file alone and read its list.
 
@@ -35,7 +35,8 @@ relaxing a rule.
 
 ## Tune chaff.yaml
 
-- `npx chaffjs init` writes a commented `chaff.yaml` (and adds `.chaff-cache/` and `.env*` to `.gitignore`).
+- `npx chaffjs init` writes a commented `chaff.yaml` when there is none (an existing one is left as it is), and
+  adds `.chaff-cache/` and `.env*` to `.gitignore`.
 - `npx chaffjs rules --json` prints every rule with its levels, the setting in effect (`now`) and why a rule is
   off. Read it instead of guessing rule names or limits.
 - A level is `strict` / `normal` / `relaxed` / `off`; when even `relaxed` is too tight, a positive number is the
