@@ -2,46 +2,78 @@
 
 Newest first.
 
-## Unreleased
+## 0.6.0 — 2026-09-27
 
-### `chaff tree`: a document as a tree with addresses (#109)
+Documents with structure — contracts, statutes, specifications, manuals — become a tree with addresses,
+and three things that tree makes checkable now run: references to provisions that are not there,
+numbering that skips or repeats, and answers whose citations are not in the source. chaff still only
+reports; nothing is rewritten.
+
+📦 [`chaffjs@0.6.0`](https://www.npmjs.com/package/chaffjs/v/0.6.0) ·
+[`@chaffjs/lang-ja@0.6.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.6.0) ·
+[`@chaffjs/lang-en@0.6.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.6.0)
+
+All three packages ship at 0.6.0 and `chaffjs` depends on exactly that version of both adapters: the
+adapters gained `structure`, and an older adapter would leave `chaff tree` refusing Japanese and English.
+
+### `chaff tree`: a document as a tree with addresses (#110)
 
 Contracts, specifications and manuals have structure that a reader navigates by: Article 3,
-paragraph 2, item (a). `chaff tree <file>` now prints that structure as an S-expression, or as JSON with
+paragraph 2, item (a). `chaff tree <file>` prints that structure as an S-expression, or as JSON with
 `--format json`. It shows sections, numbered articles and items, and the definitions,
 cross-references, obligations and quantities inside them. Addresses are normalised: 第3条第2項 is `3.2`,
 and Section 4.2(a) is `4.2.a`. A reference carries the same address form as the tree, so its target can be looked up.
 
-It reads `.txt` as well as Markdown, because contracts rarely come with headings. It only reports;
-nothing is rewritten.
+It reads `.txt` as well as Markdown, because contracts rarely come with headings. Code blocks and inline
+code are never read as numbers or references.
 
 How a language numbers its articles lives in the adapter (`structure`, an optional field; the API stays
 at version 1). Japanese and English ship with it. A language without one is refused with a reason
-rather than answered with an empty tree.
+rather than answered with an empty tree. An adapter that chaff does not bundle is looked up as
+`@chaffjs/lang-<language>`, so a language can be added by installing its package.
 
-**Release note:** `@chaffjs/lang-ja` and `@chaffjs/lang-en` gain `structure` here, and the published 0.5.0
-adapters do not have it. The release that ships this must publish both adapters under a new version and
-make `chaffjs` depend on exactly that version. Otherwise an install from npm pairs `chaff tree` with the old
-adapters, and it refuses Japanese and English.
+### Japanese by morphology, chapters and dates (#111)
 
 Parts, chapters and sections (第1編・第2章・第3節, PART I, CHAPTER 2) nest above articles, and dates are
 read as leaves (`2024年4月1日` and `April 1, 2024` are both `2024-04-01`). Japanese quantities are read by
 morphological analysis: a number followed by a counter is a quantity, so 8割 and 5件 are read without a
 unit table. A dotted number followed by a unit (`1.5 倍`, `2.5 days`) is an amount, not section 1.5.
-Mid-sentence "May" is the month, not the permission.
+Mid-sentence "May" is the month, not the permission. Fifteen sample documents in Japanese and English
+(contracts, terms, work rules, statutes, specifications, manuals, papers, and prose that must not be
+misread) are compared whole against trees that were read and checked by hand.
 
-Three experimental lint rules read that tree: `dangling-reference` (a reference to an article or section
-that is not in the document), `numbering-gap` (Article 5 right after Article 3, two paragraphs numbered 2)
-and `duplicate-definition` (the same term defined twice). They work on `.txt` contracts as well as
-Markdown, and a language whose adapter cannot read structure skips them with a reason.
+### Structure rules (#112)
 
-`chaff cite <source> <claims.json>` checks an answer's citations against the source: each
-`{ "address", "quote" }` must name an address in the tree and quote text written within it. A quote from
-the wrong place reports where it actually is; a changed number or a paraphrase is not found. Line breaks
-and full-width characters are ignored. Any failed citation exits 1.
+Three experimental lint rules read the tree:
 
-An adapter that chaff does not bundle is now looked up as `@chaffjs/lang-<language>`. A language can
-be added by installing its package, without changing core.
+- `dangling-reference` — a reference to an article or section that is not in the document. A reference
+  naming another document (民法第709条, Section 9 of the Master Agreement) is not looked up, and
+  第4条第1項 resolves to article 4 when its first paragraph carries no number, as Japanese statutes write it.
+- `numbering-gap` — Article 5 right after Article 3, two paragraphs numbered 2. Only siblings are
+  compared, so Section 101 / 201 across chapters is fine; a list restarting at 1 begins a new sequence.
+- `duplicate-definition` — the same term defined twice. Whether the two definitions conflict is not
+  decided; the second place and the first line are shown.
+
+They work on `.txt` contracts as well as Markdown, a language whose adapter cannot read structure skips
+them with a reason, the tree is built only when one of them runs, and `chaff eval` does not calibrate
+them for a language that cannot run them.
+
+### Long documents (#113)
+
+Finding a finding's line no longer scans every line for every finding. A long contract with many
+findings was paying lines × findings.
+
+### `chaff cite`: check an answer's citations (#114)
+
+`chaff cite <source> <claims.json>` checks citations `[{ "address", "quote" }]` against the source: the
+address must be in the tree and the quote written within it. A quote from the wrong place reports where
+it actually is; a changed number or a paraphrase is not found. Whitespace and line breaks are ignored
+and characters compared under NFKC per grapheme (３０ = 30, ｶﾞ = ガ). Code in a section can be quoted.
+Any failed citation exits 1, so an answer can be checked like a unit test.
+
+### Guide (#107, #108)
+
+A guide in English and Japanese, including what chaff reads and what to do when it will not run.
 
 ## 0.5.1 — 2026-09-13
 
