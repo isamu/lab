@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### A Claude Code skill ships with chaff
+
+`npx chaffjs skill` writes `.claude/skills/chaff/SKILL.md` in the current folder (`--global` writes it under
+`~/.claude/skills/`), so Claude Code knows how to run chaff, read a finding, choose between fixing the text,
+`stet` and changing the rule, and tune `chaff.yaml` through `rules --json` and `relax --why`. Running it again
+updates the skill; a copy that differs — perhaps edited by hand — is kept unless `--force` is given. The skill is
+in the npm package under `skills/`.
+
 ### chaff speaks English to an English document (#123)
 
 The screen around the findings was Japanese whatever the document: the divider, "relax this rule", the
