@@ -41,6 +41,7 @@
     "bin",
     "dist",
     "rules",
+    "skills",
     "src"
   ],
   "engines": {

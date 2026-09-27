@@ -26,6 +26,8 @@ import { renderSarif } from "./render/sarif.ts";
 import { VERSION } from "./version.ts";
 import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
 import { citeTargets, runCite } from "./commands/cite.ts";
+import { runSkill } from "./commands/skill.ts";
+import { homedir } from "node:os";
 import { ruleProblems } from "./config/rule-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRules } from "./run.ts";
@@ -295,7 +297,11 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   relax: (argv) => changeSetting("relaxed", argv[1], flag(argv, "--why")),
   strict: (argv) => changeSetting("strict", argv[1], flag(argv, "--why")),
   off: (argv) => changeSetting("off", argv[1], flag(argv, "--why")),
+  skill: (argv) => runSkill(argv, { cwd: process.cwd(), home: homedir(), ui: hostLanguage(readConfig().language, process.env) }),
 };
+
+/** Every subcommand. Anything else on the command line is a file to check. */
+export const COMMANDS: readonly string[] = Object.keys(HANDLERS);
 
 export const main = async (argv: readonly string[]): Promise<number> => {
   const first = argv[0];
