@@ -229,6 +229,8 @@ describe("English: a reference into another document is not looked up here", () 
     ["As provided in Section 9 of the Master Agreement.", []],
     ["Under Section 5 of the Securities Act of 1933, sales are restricted.", []],
     ["See Section 12 of the Code of Federal Regulations.", []],
+    ["Disclosures follow Section 5 of the Act.", []],
+    ["Taxes are withheld under Section 1441 of the Code.", []],
     ["See Section 9 of this Agreement.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
     ["See Section 9 of the Agreement.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
     ["See Section 9 of each party's obligations.", [["dangling-reference", { label: "Section 9", target: "9" }]]],

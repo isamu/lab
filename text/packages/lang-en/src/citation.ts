@@ -2,8 +2,11 @@
 
 const OF = /^,? of (?:the )?/u;
 const CAPITALISED = /^[A-Z][\w'’-]*/u;
-/** How a document names itself. "Section 3 of the Agreement" in an agreement means this one. */
-const SELF = new Set(["Agreement", "Contract", "Terms", "Policy", "Act", "Regulation", "Regulations", "Code"]);
+/**
+ * How a document names itself. "Section 3 of the Agreement" in an agreement means this one.
+ * "the Act" and "the Code" are left out: a statute calls itself "this Act", and a contract's "the Act" is a law it cites.
+ */
+const SELF = new Set(["Agreement", "Contract", "Terms", "Policy"]);
 /** Words that may sit inside a title: "Code of Federal Regulations". */
 const JOINERS = new Set(["of", "and", "for", "on"]);
 const MAX_WORDS = 8;
