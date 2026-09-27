@@ -110,7 +110,8 @@ describe("送り方の表示", () => {
     assert.ok(long.endsWith("…"));
   });
 
-  it("シェルに渡す題は、何を含んでもそのまま読まれる", () => {
+  // Windows には /bin/sh が無い。題の引用符は POSIX のシェル向けなので、確かめられるのはそこだけ。
+  it("シェルに渡す題は、何を含んでもそのまま読まれる", { skip: process.platform === "win32" ? "no /bin/sh on Windows" : false }, () => {
     const titles = ["plain", "it's", "$(touch /tmp/pwned)", "`id`", '"quoted" $HOME \\ back', "'''"];
     titles.forEach((title) => {
       assert.equal(execFileSync("/bin/sh", ["-c", `printf %s ${shellQuoted(title)}`], { encoding: "utf8" }), title);
