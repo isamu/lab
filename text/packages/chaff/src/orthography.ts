@@ -1,22 +1,46 @@
 // 表記のそろい。書き方の決まりのうち、文字だけで決まるもの。
 
-/**
- * avoid が現れる位置のうち、use の一部として現れたものを除いたもの。
- * 「ユーザ」を避けて「ユーザー」と書く決まりのとき、「ユーザー」の中の「ユーザ」は指摘しない。
- */
-export const occurrencesOutside = (text: string, avoid: string, use: string): number[] => {
-  if (avoid === "") return [];
-  const covered: [number, number][] = [];
-  if (use !== "") for (let at = text.indexOf(use); at !== -1; at = text.indexOf(use, at + 1)) covered.push([at, at + use.length]);
-  const found: number[] = [];
-  for (let at = text.indexOf(avoid); at !== -1; at = text.indexOf(avoid, at + avoid.length)) {
-    const end = at + avoid.length;
-    if (!covered.some(([start, stop]) => start <= at && end <= stop)) found.push(at);
+const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+
+/** text の中で word が現れる [始まり, 終わり) を、左から順に。大文字小文字を区別しないときは i で探す（位置は元の文字列のまま）。 */
+const spansOf = (text: string, word: string, ignoreCase: boolean): [number, number][] => {
+  const pattern = new RegExp(escapeRegExp(word), ignoreCase ? "giu" : "gu");
+  const found: [number, number][] = [];
+  for (let match = pattern.exec(text); match !== null; match = pattern.exec(text)) {
+    found.push([match.index, match.index + match[0].length]);
+    // 重なって現れるものも拾う。次は 1 つ先から探す。
+    pattern.lastIndex = match.index + 1;
   }
   return found;
 };
 
-/** 英字は向きを問わない。数字は前と後ろを分ける。「を 3回」のように、前は空けて助数詞とは詰めるのが普通だから。 */
+/**
+ * avoid が現れる位置のうち、use の一部として現れたものを除いたもの。
+ * 「ユーザ」を避けて「ユーザー」と書く決まりのとき、「ユーザー」の中の「ユーザ」は指摘しない。
+ * 大文字小文字は区別しない（文頭の「E-mail」も「e-mail」）。ただし二つが大文字小文字だけ違う組
+ * （「Javascript」→「JavaScript」）は、それ自体が大文字小文字の決まりなので区別して探す。
+ */
+export const occurrencesOutside = (text: string, avoid: string, use: string): number[] => {
+  if (avoid === "") return [];
+  const ignoreCase = avoid.toLowerCase() !== use.toLowerCase();
+  const covered = use === "" ? [] : spansOf(text, use, ignoreCase);
+  const found: number[] = [];
+  // covered は始まりの順に並ぶ。始まりが at 以前のものの終わりの最大が end 以上なら、どれかに収まっている。
+  let next = 0;
+  let reach = -1;
+  let at = 0;
+  for (const [start, end] of spansOf(text, avoid, ignoreCase)) {
+    if (start < at) continue;
+    while (next < covered.length && (covered[next]?.[0] ?? Infinity) <= start) {
+      reach = Math.max(reach, covered[next]?.[1] ?? -1);
+      next += 1;
+    }
+    if (reach < end) found.push(start);
+    at = end;
+  }
+  return found;
+};
+
 export type SpacingKind = "letter" | "before-digit" | "after-digit";
 export type Boundary = { readonly offset: number; readonly kind: SpacingKind; readonly spaced: boolean };
 

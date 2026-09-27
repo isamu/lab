@@ -22,6 +22,11 @@ describe("occurrencesOutside", () => {
     ["ああああ", "ああ", "あ", [0, 2]],
     ["abc", "", "x", []],
     ["サーバーサーバー", "サーバー", "", [0, 4]],
+    ["E-mail me by e-mail, or email.", "e-mail", "email", [0, 13]],
+    ["Javascript and JavaScript", "Javascript", "JavaScript", [0]],
+    ["JAVASCRIPT", "Javascript", "JavaScript", []],
+    ["C++ and c++", "C++", "C", [0, 8]],
+    ["use (x) not [x]", "[x]", "(x)", [12]],
   ];
   cases.forEach(([text, avoid, use, expected]) => {
     it(`${text}: ${avoid} → ${use}`, () => assert.deepEqual(occurrencesOutside(text, avoid, use), expected));
