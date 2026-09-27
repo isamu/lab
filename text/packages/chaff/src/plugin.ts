@@ -100,6 +100,8 @@ export type NumberedLine = {
    * 枝番号（第3条の2）は並びの外なので付けない。読み方を知っているのは言語パッケージだけなので、core は計算しない。
    */
   readonly ordinal?: number | undefined;
+  /** 一行で番号の範囲をまとめるとき（「第四十三条から第五十五条まで 削除」）の最後の位置。次の番号はここから数える。 */
+  readonly ordinalTo?: number | undefined;
 };
 
 /** 番号を読むときに見える周り。「(i)」がローマ数字か英字かは、開いている番号で決まる。 */
@@ -144,6 +146,10 @@ export type StructureNode = {
   readonly children: readonly StructureNode[];
   /** 番号付きのまとまりの、並びの中の位置（NumberedLine.ordinal）。S 式には出さない。 */
   readonly ordinal?: number;
+  /** 番号付きのまとまりの深さ（NumberedLine.depth）。項と号のように、同じ親の下で別の並びを分ける。S 式には出さない。 */
+  readonly level?: number;
+  /** 範囲をまとめた行の最後の位置（NumberedLine.ordinalTo）。S 式には出さない。 */
+  readonly ordinalTo?: number;
 };
 
 // ───────── 文書モデルと rule ─────────

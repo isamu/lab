@@ -4,6 +4,25 @@ Newest first.
 
 ## Unreleased
 
+### The structure rules read real statutes (#130)
+
+Four statutes from the e-Gov law API — 労働基準法, 個人情報の保護に関する法律, 民法, 会社法 — are now in the repository
+(`corpus/laws/`, public domain under Article 13 of the Copyright Act), and a test requires the structure rules to
+find nothing in them, since a statute in force is consistent. On the first run they reported hundreds of false
+positives; each pattern is now read the way a statute writes it:
+
+- items (一, 二) of an unnumbered first paragraph are addressed `article.1.item`, so they no longer collide with
+  paragraph 2, and paragraphs and items are separate numbering sequences;
+- an old statute's unnumbered later paragraphs (a line indented with a full-width space) are paragraphs;
+- deleted articles written as a range (「第四十三条から第五十五条まで　削除」, 「第五百十六条及び第五百十七条　削除」);
+- references into another statute written with its number (「…法（昭和二十三年法律第百二十号）第三条」), and the
+  references that continue such a list (「…第百条第一項、第百一条、第百二条の二」), even past a parenthetical;
+- references inside 「」, which in a statute quote the text of another (読み替え);
+- definitions scoped to their article (「前項に規定する『反対株主』とは」).
+
+`yarn corpus:fetch` refreshes the statutes from e-Gov; `yarn corpus` prints what the structure rules find in them.
+In `chaff tree`, an item directly under an article is now `3.1.1` rather than `3.1`.
+
 ### A Claude Code skill ships with chaff
 
 `npx chaffjs skill` writes `.claude/skills/chaff/SKILL.md` in the current folder (`--global` writes it under

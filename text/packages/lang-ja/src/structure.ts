@@ -10,6 +10,11 @@ const SPACE = "[ \\t\\u3000]";
 
 /** 見出しとして読めるのは、番号の直後が空白・括弧・行末のとき。「第3条に定める」は本文。 */
 const ARTICLE = new RegExp(`^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
+/** 「第四十三条から第五十五条まで 削除」「第五百十六条及び第五百十七条 削除」。削られた条を一行でまとめる法令の書き方。 */
+const ARTICLE_RANGE = new RegExp(
+  `^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?(?:から第(?<m>${NUMBER})条(?:の(?<msub>${NUMBER}))?まで|及び第(?<m2>${NUMBER})条(?:の(?<msub2>${NUMBER}))?)(?<rest>(?:${SPACE}|（|\\().*|)$`,
+  "u",
+);
 const PARAGRAPH = new RegExp(`^${SPACE}*第(?<n>${NUMBER})項(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
 const ITEM = new RegExp(`^${SPACE}*第(?<n>${NUMBER})号(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
 /**
@@ -41,6 +46,35 @@ const PAREN_LABEL = /^（\d+）$/u;
 const parenDepth = (context: NumberingContext): number =>
   [...context.open].reverse().find((open) => PAREN_LABEL.test(open.label))?.depth ?? (context.open.at(-1)?.depth ?? 0) + 1;
 
+/**
+ * 条の範囲の行は、最初の条の番地を持ち、並びの位置は範囲の最後まで進める。中の条は番地を持たない。
+ * 後ろ（「削除」）だけを読むので、範囲の両端を参照として拾わない。
+ */
+const articleRange = (line: string): NumberedLine | undefined => {
+  const groups = ARTICLE_RANGE.exec(line)?.groups;
+  const first = numberOf(groups?.["n"]);
+  const last = numberOf(groups?.["m"] ?? groups?.["m2"]);
+  if (groups === undefined || first === undefined || last === undefined) return undefined;
+  const sub = numberOf(groups["sub"]);
+  const branched = groups["sub"] !== undefined || (groups["msub"] ?? groups["msub2"]) !== undefined;
+  const rest = (groups["rest"] ?? "").trim();
+  const label = line
+    .trim()
+    .slice(0, line.trim().length - rest.length)
+    .trim();
+  return {
+    kind: "article",
+    depth: 1,
+    number: sub === undefined ? first : `${first}-${sub}`,
+    absolute: true,
+    label,
+    heading: headingOf(rest, true),
+    rest,
+    ordinal: branched ? undefined : Number(first),
+    ordinalTo: branched ? undefined : Number(last),
+  };
+};
+
 const article = (line: string): NumberedLine | undefined => {
   const groups = ARTICLE.exec(line)?.groups;
   const main = numberOf(groups?.["n"]);
@@ -63,6 +97,10 @@ const article = (line: string): NumberedLine | undefined => {
   };
 };
 
+/** 項と号の深さ。法令の第 1 項は番号を持たないので、条の直下の号は第 1 項の号。 */
+const PARAGRAPH_DEPTH = 2;
+const ITEM_DEPTH = 3;
+
 type ItemShape = {
   readonly pattern: RegExp;
   readonly depth: (context: NumberingContext) => number;
@@ -71,13 +109,20 @@ type ItemShape = {
 };
 
 const ITEM_SHAPES: readonly ItemShape[] = [
-  { pattern: PARAGRAPH, depth: () => 2, label: (n) => `第${n}項`, needsArticle: false },
-  { pattern: ITEM, depth: () => 3, label: (n) => `第${n}号`, needsArticle: false },
-  { pattern: BARE_PARAGRAPH, depth: () => 2, label: (n) => n, needsArticle: true },
-  { pattern: BARE_FULLWIDTH_PARAGRAPH, depth: () => 2, label: (n) => n, needsArticle: true },
-  { pattern: BARE_ITEM, depth: () => 3, label: (n) => n, needsArticle: true },
+  { pattern: PARAGRAPH, depth: () => PARAGRAPH_DEPTH, label: (n) => `第${n}項`, needsArticle: false },
+  { pattern: ITEM, depth: () => ITEM_DEPTH, label: (n) => `第${n}号`, needsArticle: false },
+  { pattern: BARE_PARAGRAPH, depth: () => PARAGRAPH_DEPTH, label: (n) => n, needsArticle: true },
+  { pattern: BARE_FULLWIDTH_PARAGRAPH, depth: () => PARAGRAPH_DEPTH, label: (n) => n, needsArticle: true },
+  { pattern: BARE_ITEM, depth: () => ITEM_DEPTH, label: (n) => n, needsArticle: true },
   { pattern: PAREN_ITEM, depth: parenDepth, label: (n) => `（${toHalfWidth(n)}）`, needsArticle: false },
 ];
+
+/**
+ * 号が条の直下に来たら、番号の無い第 1 項の中にある。番地を「条.1.号」にして、「第十二条第一項第一号」（12.1.1）と
+ * 「第十二条第二項」（12.2）がぶつからないようにする。
+ */
+const inFirstParagraph = (context: NumberingContext, depth: number): boolean =>
+  depth === ITEM_DEPTH && [...context.open].reverse().find((open) => open.depth < ITEM_DEPTH)?.kind === "article";
 
 const item = (line: string, context: NumberingContext): NumberedLine | undefined =>
   ITEM_SHAPES.reduce<NumberedLine | undefined>((found, shape) => {
@@ -87,7 +132,9 @@ const item = (line: string, context: NumberingContext): NumberedLine | undefined
     if (groups === undefined || number === undefined) return undefined;
     const rest = (groups["rest"] ?? "").trim();
     const label = shape.label(groups["n"] ?? "");
-    return { kind: "item", depth: shape.depth(context), number, absolute: false, label, heading: headingOf(rest, false), rest, ordinal: Number(number) };
+    const depth = shape.depth(context);
+    const address = inFirstParagraph(context, depth) ? `1.${number}` : number;
+    return { kind: "item", depth, number: address, absolute: false, label, heading: headingOf(rest, false), rest, ordinal: Number(number) };
   }, undefined);
 
 /**
@@ -120,23 +167,54 @@ const chapter = (line: string): NumberedLine | undefined => {
   };
 };
 
-const numbered = (line: string, context: NumberingContext): NumberedLine | undefined => chapter(line) ?? article(line) ?? item(line, context);
+/**
+ * 古い法令は第 2 項以降にも番号を振らず、全角空白で字下げした行を新しい項にする。条の中で、号でもない字下げの行を、
+ * 開いている項の次の項（無ければ第 2 項）として読む。番号付きの項（「２」）がある条では、字下げは使われない。
+ */
+const OLD_STYLE_PARAGRAPH = /^\u3000(?<rest>\S.*)$/u;
+
+const unnumberedParagraph = (line: string, context: NumberingContext): NumberedLine | undefined => {
+  if (!insideArticle(context)) return undefined;
+  const rest = OLD_STYLE_PARAGRAPH.exec(line)?.groups?.["rest"];
+  if (rest === undefined) return undefined;
+  const previous = [...context.open].reverse().find((open) => open.depth === PARAGRAPH_DEPTH);
+  if (previous !== undefined && previous.label !== "") return undefined;
+  const number = String((previous === undefined ? 1 : Number(previous.number)) + 1);
+  return { kind: "item", depth: PARAGRAPH_DEPTH, number, absolute: false, label: "", heading: "", rest: rest.trim(), ordinal: Number(number) };
+};
+
+const numbered = (line: string, context: NumberingContext): NumberedLine | undefined =>
+  chapter(line) ?? articleRange(line) ?? article(line) ?? item(line, context) ?? unnumberedParagraph(line, context);
 
 /** 正規表現の一致を Mention にする。g フラグ付きのものだけを渡す。 */
 const mentions = (
   pattern: RegExp,
   text: string,
-  attrs: (groups: Readonly<Record<string, string | undefined>>, whole: string) => Mention["attrs"] | undefined,
+  attrs: (groups: Readonly<Record<string, string | undefined>>, whole: string, start: number) => Mention["attrs"] | undefined,
 ): Mention[] =>
   [...text.matchAll(pattern)].flatMap((match) => {
-    const found = attrs(match.groups ?? {}, match[0]);
+    const found = attrs(match.groups ?? {}, match[0], match.index);
     return found === undefined ? [] : [{ start: match.index, end: match.index + match[0].length, attrs: found }];
   });
 
 const DEFINITIONS = [/以下「(?<term>[^「」\n]{1,40})」という/gu, /「(?<term>[^「」\n]{1,40})」とは/gu];
 
+/**
+ * 範囲を限った定義。「この条において『X』とは」「前項に規定する『X』とは」は、その条や項の中だけの定義で、
+ * 別の条で同じ語を定義し直すのは誤りではない。scope: "local" を付け、重なりの rule に比べさせない。
+ */
+const THIS_PART = /この[条項号款目節章編](?:及び[^、。]{1,20})?において$/u;
+const NEARBY_PART = /[前次同](?:各)?[項条号]に規定する$/u;
+const scopedLocally = (before: string): boolean => THIS_PART.test(before) || NEARBY_PART.test(before);
+
 const definitions = (text: string): Mention[] =>
-  DEFINITIONS.flatMap((pattern) => mentions(pattern, text, (groups) => (groups["term"] === undefined ? undefined : { term: groups["term"] })));
+  DEFINITIONS.flatMap((pattern) =>
+    mentions(pattern, text, (groups, _whole, start) => {
+      if (groups["term"] === undefined) return undefined;
+      const local = scopedLocally(text.slice(Math.max(0, start - 30), start));
+      return { term: groups["term"], ...(local ? { scope: "local" } : {}) };
+    }),
+  );
 
 const REFERENCE = new RegExp(`第(?<a>${NUMBER})条(?:の(?<s>${NUMBER}))?(?:第(?<p>${NUMBER})項)?(?:第(?<i>${NUMBER})号)?`, "gu");
 
@@ -145,21 +223,93 @@ const REFERENCE = new RegExp(`第(?<a>${NUMBER})条(?:の(?<s>${NUMBER}))?(?:第
  * 法令は第 1 項に番号を振らないので、「第4条第1項」は番号付きの 4.1 が無ければ第4条そのものを指す。その行き先を fallback に入れる。
  * 「民法第709条」のように他の文書の名前が前にあれば、その名前を document に入れる。この文書の木では引かない。
  */
-const references = (text: string): Mention[] =>
-  [...text.matchAll(REFERENCE)].flatMap((match) => {
+/**
+ * 他の文書の参照に続く並び（「民事訴訟法第百条第一項、第百一条、第百二条の二」）は、同じ文書の条を指す。
+ * 間が読点・接続の語・号や項の断片・括弧書きだけなら、前の参照の文書を引き継ぐ。
+ */
+const CONNECTORS = /及び|並びに|若しくは|又は|から|まで|ただし書|前段|後段|[、，\s]/gu;
+const FRAGMENT = new RegExp(`第${NUMBER}[項号](?:の${NUMBER})*`, "gu");
+const PARENTHESES = /（[^（）]*）/gu;
+
+/** 間の文字列が、接続の語・読点・項や号の断片・括弧書きだけでできているか。 */
+const isContinuation = (gap: string): boolean => gap.replace(PARENTHESES, "").replace(FRAGMENT, "").replace(CONNECTORS, "") === "";
+
+/** 「」の中は別の文書の言葉（法令の読み替えの「とあるのは『…』」）。そこにある番地は、この文書のものではない。 */
+const quotedSpans = (text: string): readonly (readonly [number, number])[] => {
+  type Scan = { readonly depth: number; readonly start: number; readonly spans: readonly (readonly [number, number])[] };
+  const scanned = [...text].reduce<Scan & { readonly at: number }>(
+    (state, char) => {
+      const next = state.at + char.length;
+      if (char === "「") return { ...state, at: next, depth: state.depth + 1, start: state.depth === 0 ? state.at : state.start };
+      if (char !== "」" || state.depth === 0) return { ...state, at: next };
+      const depth = state.depth - 1;
+      const span: readonly [number, number] = [state.start, state.at];
+      return { ...state, at: next, depth, spans: depth === 0 ? [...state.spans, span] : state.spans };
+    },
+    { at: 0, depth: 0, start: 0, spans: [] },
+  );
+  return scanned.spans;
+};
+
+const QUOTED = "（引用の中）";
+
+/**
+ * 「第12条第1項」→ 12.1、「第3条の2」→ 3-2。番地の付け方は木と同じにする。
+ * 法令は第 1 項に番号を振らないので、「第4条第1項」は番号付きの 4.1 が無ければ第4条そのものを指す。その行き先を fallback に入れる。
+ * 「民法第709条」のように他の文書の名前が前にあれば、その名前を document に入れる。この文書の木では引かない。
+ */
+/** at より前で開いたまま閉じていない括弧の数。 */
+const depthAfter = (depth: number, char: string): number => {
+  if (char === "（") return depth + 1;
+  return char === "）" ? Math.max(0, depth - 1) : depth;
+};
+
+const parenDepthAt = (text: string, at: number): number => [...text.slice(0, at)].reduce(depthAfter, 0);
+
+/** 間に挟まった括弧書き（中に参照があっても）を外す。入れ子は内側から外す。 */
+const withoutClosedParentheses = (gap: string): string => {
+  const once = gap.replace(PARENTHESES, "");
+  return once === gap ? gap : withoutClosedParentheses(once);
+};
+
+/**
+ * 「第12条第1項」→ 12.1、「第3条の2」→ 3-2。番地の付け方は木と同じにする。
+ * 法令は第 1 項に番号を振らないので、「第4条第1項」は番号付きの 4.1 が無ければ第4条そのものを指す。その行き先を fallback に入れる。
+ */
+const addressOfReference = (
+  groups: Readonly<Record<string, string | undefined>>,
+): { readonly target: string; readonly fallback: string | undefined } | undefined => {
+  const main = numberOf(groups["a"]);
+  if (main === undefined) return undefined;
+  const sub = numberOf(groups["s"]);
+  const article = sub === undefined ? main : `${main}-${sub}`;
+  const item = numberOf(groups["i"]);
+  // 「第二条第一号」は第 1 項の号。項を書かずに号を指すのは、項が一つしかない条。
+  const paragraph = numberOf(groups["p"]) ?? (item === undefined ? undefined : "1");
+  const target = [article, paragraph, item].filter((part) => part !== undefined).join(".");
+  return { target, fallback: paragraph === "1" && item === undefined ? article : undefined };
+};
+
+const references = (text: string): Mention[] => {
+  const quoted = quotedSpans(text);
+  // 括弧書きの中の参照（「（同法第五十九条において準用する場合を含む。）」）は、外の並びを切らない。並びは括弧の深さごとに持つ。
+  const chains = new Map<number, { readonly end: number; readonly document: string | undefined }>();
+  return [...text.matchAll(REFERENCE)].flatMap((match) => {
     const groups = match.groups ?? {};
-    const main = numberOf(groups["a"]);
-    if (main === undefined) return [];
-    const sub = numberOf(groups["s"]);
-    const article = sub === undefined ? main : `${main}-${sub}`;
-    const paragraph = numberOf(groups["p"]);
-    const item = numberOf(groups["i"]);
-    const target = [article, paragraph, item].filter((part) => part !== undefined).join(".");
-    const fallback = paragraph === "1" ? [article, item].filter((part) => part !== undefined).join(".") : undefined;
-    const document = citedDocument(text, match.index);
+    const address = addressOfReference(groups);
+    if (address === undefined) return [];
+    const { target, fallback } = address;
+    const depth = parenDepthAt(text, match.index);
+    const previous = chains.get(depth);
+    const inherited =
+      previous?.document !== undefined && isContinuation(withoutClosedParentheses(text.slice(previous.end, match.index))) ? previous.document : undefined;
+    const inQuote = quoted.some(([start, end]) => match.index > start && match.index < end) ? QUOTED : undefined;
+    const document = citedDocument(text, match.index) ?? inherited ?? inQuote;
+    chains.set(depth, { end: match.index + match[0].length, document });
     const attrs = { target, label: match[0], ...(fallback === undefined ? {} : { fallback }), ...(document === undefined ? {} : { document }) };
     return [{ start: match.index, end: match.index + match[0].length, attrs }];
   });
+};
 
 /** 長いものから探し、重なったら先に見つけたものを残す。「しなければならない」を「なければならない」と二重に数えない。 */
 const MARKERS: readonly (readonly [string, "must" | "must-not" | "may"])[] = [

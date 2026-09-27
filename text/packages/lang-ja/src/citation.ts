@@ -47,7 +47,19 @@ const nameBefore = (text: string, at: number, char: RegExp): string => {
   return text.slice(start, at);
 };
 
-export const citedDocument = (text: string, at: number): string | undefined => {
+/**
+ * 法令は題名の後に公布の番号を括弧で添える（「国家行政組織法（昭和二十三年法律第百二十号）第三条」）。
+ * 括弧を飛ばして、その前の題名を読む。
+ */
+const LAW_NUMBER_NOTE = /（(?:明治|大正|昭和|平成|令和)[^（）]{1,24}号）$/u;
+
+const beforeLawNumber = (text: string, at: number): number => {
+  const note = LAW_NUMBER_NOTE.exec(text.slice(Math.max(0, at - 40), at));
+  return note === null ? at : at - note[0].length;
+};
+
+export const citedDocument = (text: string, reference: number): string | undefined => {
+  const at = beforeLawNumber(text, reference);
   const plain = nameBefore(text, at, NAME_CHAR);
   const name = plain === LAW_TITLE_END ? nameBefore(text, at, TITLE_CHAR) : plain;
   const kind = DOCUMENT_KINDS.find((candidate) => name.endsWith(candidate));

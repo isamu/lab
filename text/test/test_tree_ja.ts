@@ -78,7 +78,8 @@ describe("日本語の契約書を木にする", () => {
     );
     assert.deepEqual(itemsIn("3\u3000本文"), ["5.3"]);
     assert.deepEqual(itemsIn("３ 本文"), ["5.3"]);
-    assert.deepEqual(itemsIn("一\u3000本文"), ["5.1"]);
+    // 条の直下の号は、番号の無い第 1 項の号（第五条第一項第一号）。
+    assert.deepEqual(itemsIn("一\u3000本文"), ["5.1.1"]);
   });
 
   it("半角空白で続く「3 人で」「一 人で」は条の中でも本文", () => {

@@ -49,15 +49,18 @@ export const danglingReferences = (tree: StructureNode): StructureIssue[] => {
 /** 同じ語の二度目以降の定義。どちらが正しいかは決めず、両方の場所を示す。 */
 export const duplicateDefinitions = (tree: StructureNode): StructureIssue[] => {
   const first = new Map<string, StructureNode>();
-  return inDocumentOrder(tree)
-    .filter((node) => node.kind === "definition")
-    .flatMap((node) => {
-      const term = textOf(node, "term");
-      const earlier = first.get(term);
-      if (earlier === undefined) {
-        first.set(term, node);
-        return [];
-      }
-      return [{ offset: node.span.start, values: { term, first: earlier.line } }];
-    });
+  return (
+    inDocumentOrder(tree)
+      // 範囲を限った定義（この条において「X」とは）は、別の条での定義し直しが正しい書き方。
+      .filter((node) => node.kind === "definition" && node.attrs["scope"] !== "local")
+      .flatMap((node) => {
+        const term = textOf(node, "term");
+        const earlier = first.get(term);
+        if (earlier === undefined) {
+          first.set(term, node);
+          return [];
+        }
+        return [{ offset: node.span.start, values: { term, first: earlier.line } }];
+      })
+  );
 };

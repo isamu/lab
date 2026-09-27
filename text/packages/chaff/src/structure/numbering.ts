@@ -3,17 +3,21 @@ import { inDocumentOrder, type StructureIssue } from "./issues.ts";
 
 const labelOf = (node: StructureNode): string => String(node.attrs["label"] ?? node.address);
 
-type Ordered = { readonly node: StructureNode; readonly ordinal: number };
+type Ordered = { readonly node: StructureNode; readonly ordinal: number; readonly last: number };
 
-/** 同じ親の子のうち、番号の付いたものを種類ごとに分ける。条と項は別の並び。 */
+/**
+ * 同じ親の子のうち、番号の付いたものを種類と深さごとに分ける。条と項は別の並び、項と号も別の並び。
+ * 法令の第 1 項は番号が無いので、その号（一、二）と第 2 項（２）は同じ条の直下に並ぶ。深さで分けないと「二の次が２」に見える。
+ */
 const sequencesOf = (parent: StructureNode): Ordered[][] => {
   const groups = new Map<string, Ordered[]>();
   parent.children.forEach((node) => {
     if (node.ordinal === undefined) return;
+    const key = `${node.kind}/${String(node.level ?? "")}`;
     // 配列を作り直さずに足す。条が何千もある法令で二乗にしない。
-    const group = groups.get(node.kind) ?? [];
-    group.push({ node, ordinal: node.ordinal });
-    groups.set(node.kind, group);
+    const group = groups.get(key) ?? [];
+    group.push({ node, ordinal: node.ordinal, last: node.ordinalTo ?? node.ordinal });
+    groups.set(key, group);
   });
   return [...groups.values()];
 };
@@ -23,11 +27,12 @@ const breaksIn = (sequence: readonly Ordered[]): StructureIssue[] =>
   sequence.flatMap((current, index) => {
     const previous = sequence[index - 1];
     // 1 に戻ったら新しい並び。一つの条に (a)(b) の箇条書きが二つある、附則が第1条から振り直す、のどちらも誤りではない。
-    if (previous === undefined || current.ordinal === previous.ordinal + 1 || current.ordinal === 1) return [];
+    // 範囲をまとめた行（第四十三条から第五十五条まで）の次は、範囲の最後から数える。
+    if (previous === undefined || current.ordinal === previous.last + 1 || current.ordinal === 1) return [];
     return [
       {
         offset: current.node.span.start,
-        values: { previous: labelOf(previous.node), label: labelOf(current.node), expected: previous.ordinal + 1, found: current.ordinal },
+        values: { previous: labelOf(previous.node), label: labelOf(current.node), expected: previous.last + 1, found: current.ordinal },
       },
     ];
   });

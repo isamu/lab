@@ -7,9 +7,9 @@
     (definition :term "成果物" :line 9))
   (article "3" :heading "業務" :label "第3条" :line 11
     (obligation :marker "なければならない" :type "must" :line 12)
-    (item "3.1" :label "一" :line 13)
-    (item "3.2" :label "二" :line 14)
-    (item "3.3" :label "三" :line 15))
+    (item "3.1.1" :label "一" :line 13)
+    (item "3.1.2" :label "二" :line 14)
+    (item "3.1.3" :label "三" :line 15))
   (article "4" :heading "委託料" :label "第4条" :line 17
     (quantity :unit "円" :value 500000 :line 18)
     (item "4.2" :label "２" :line 19
