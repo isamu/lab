@@ -22,7 +22,7 @@ export type Boundary = { readonly offset: number; readonly kind: SpacingKind; re
 
 const JAPANESE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/u;
 const LETTER = /[A-Za-z]/u;
-const DIGIT = /[0-9]/u;
+const DIGIT = /\d/u;
 
 /** Latin 側の字の種類。digitSide は、その数字が日本語の右（前に日本語）か左（後ろに日本語）か。 */
 const kindOf = (char: string | undefined, digitSide: "before-digit" | "after-digit"): SpacingKind | undefined => {
@@ -33,13 +33,17 @@ const kindOf = (char: string | undefined, digitSide: "before-digit" | "after-dig
 
 const isJapanese = (char: string | undefined): boolean => char !== undefined && JAPANESE.test(char);
 
+/** japanese が日本語の字のとき、other の英字・数字の種類。 */
+const latinBeside = (japanese: string | undefined, other: string | undefined, digitSide: "before-digit" | "after-digit"): SpacingKind | undefined =>
+  isJapanese(japanese) ? kindOf(other, digitSide) : undefined;
+
 /** 日本語の字の隣にある英字・数字との境目。間が半角空白 1 つなら「空けている」、何も無ければ「詰めている」。 */
 const boundaryAt = (chars: readonly string[], index: number): Omit<Boundary, "offset"> | undefined => {
   const [left, right, after] = [chars[index], chars[index + 1], chars[index + 2]];
-  const touching = isJapanese(left) ? kindOf(right, "before-digit") : isJapanese(right) ? kindOf(left, "after-digit") : undefined;
+  const touching = latinBeside(left, right, "before-digit") ?? latinBeside(right, left, "after-digit");
   if (touching !== undefined) return { kind: touching, spaced: false };
   if (right !== " ") return undefined;
-  const spaced = isJapanese(left) ? kindOf(after, "before-digit") : isJapanese(after) ? kindOf(left, "after-digit") : undefined;
+  const spaced = latinBeside(left, after, "before-digit") ?? latinBeside(after, left, "after-digit");
   return spaced === undefined ? undefined : { kind: spaced, spaced: true };
 };
 
