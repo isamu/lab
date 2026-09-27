@@ -1,0 +1,59 @@
+// Fetches the documents in corpus/manifest.json. Statutes come from the e-Gov law API (v2) and are written to
+// corpus/laws/<id>.txt with the revision they came from, so a test run never touches the network.
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { lawText } from "./law-text.ts";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus");
+const TIMEOUT_MS = 120_000;
+const PAUSE_MS = 1_000;
+
+type Entry = { readonly id: string; readonly title: string; readonly source: string; readonly lawId?: string; readonly redistribute: boolean };
+
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isEntry = (value: unknown): value is Entry =>
+  isRecord(value) &&
+  typeof value["id"] === "string" &&
+  typeof value["title"] === "string" &&
+  typeof value["source"] === "string" &&
+  typeof value["redistribute"] === "boolean";
+
+const fetchJson = async (url: string): Promise<unknown> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+    return await response.json();
+  } catch (err) {
+    throw new Error(`${url}: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+const fetchLaw = async (entry: Entry): Promise<void> => {
+  const url = `https://laws.e-gov.go.jp/api/2/law_data/${entry.lawId ?? ""}?law_full_text_format=xml`;
+  const data = await fetchJson(url);
+  if (!isRecord(data) || typeof data["law_full_text"] !== "string") throw new Error(`${url}: no law_full_text`);
+  const info = data["revision_info"];
+  const revision = isRecord(info) && typeof info["law_revision_id"] === "string" ? info["law_revision_id"] : "";
+  const xml = Buffer.from(data["law_full_text"], "base64").toString("utf8");
+  const out = join(ROOT, "laws", `${entry.id}.txt`);
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, lawText(xml));
+  writeFileSync(join(ROOT, "laws", `${entry.id}.revision`), `${revision}\n`);
+  console.log(`${entry.id}  ${entry.title}  ${revision}`);
+};
+
+const manifest: unknown = JSON.parse(readFileSync(join(ROOT, "manifest.json"), "utf8"));
+const entries = isRecord(manifest) && Array.isArray(manifest["documents"]) ? manifest["documents"].filter(isEntry) : [];
+const only = process.argv.slice(2);
+const chosen = entries.filter((entry) => entry.source === "e-gov" && (only.length === 0 || only.includes(entry.id)));
+await chosen.reduce<Promise<void>>(async (previous, entry) => {
+  await previous;
+  await fetchLaw(entry);
+  await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
+}, Promise.resolve());

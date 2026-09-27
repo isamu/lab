@@ -13,8 +13,8 @@
         (item "3.2" :label "２" :line 14
           (obligation :marker "てはならない" :type "must-not" :line 14)))
       (article "3-2" :label "第三条の二" :line 16
-        (item "3-2.1" :label "一" :line 17)
-        (item "3-2.2" :label "二" :line 18))))
+        (item "3-2.1.1" :label "一" :line 17)
+        (item "3-2.1.2" :label "二" :line 18))))
   (chapter "pt2" :heading "罰則" :label "第二編" :line 20
     (chapter "pt2.ch1" :heading "罰則" :label "第一章" :line 21
       (article "10" :label "第十条" :line 23

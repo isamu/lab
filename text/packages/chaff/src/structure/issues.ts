@@ -34,30 +34,49 @@ const resolves = (node: StructureNode, addresses: ReadonlySet<string>): boolean 
 
 /**
  * 参照の番地が木に無い。他の文書の名前が付いた参照（民法第709条、Section 9 of the Master Agreement）は引かない。
- * 番号付きのまとまりを 1 つも持たない文書も見ない。他の文書を指しているだけかもしれない。
+ * 条を 1 つも持たない文書も見ない。他の文書を指しているだけかもしれない。
  */
 export const danglingReferences = (tree: StructureNode): StructureIssue[] => {
   const nodes = inDocumentOrder(tree);
+  // 参照は条を指す。条を一つも持たない文書（契約書に付ける承諾書のひな形など）の「契約書第6条」は、別の文書の条。
+  if (!nodes.some((node) => node.kind === "article")) return [];
   const addresses = new Set(nodes.filter((node) => NUMBERED.includes(node.kind)).map((node) => node.address));
-  if (addresses.size === 0) return [];
   return nodes
     .filter((node) => node.kind === "reference" && node.attrs["document"] === undefined)
     .filter((node) => !resolves(node, addresses))
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
 };
 
-/** 同じ語の二度目以降の定義。どちらが正しいかは決めず、両方の場所を示す。 */
+type Definition = { readonly node: StructureNode; readonly article: string };
+
+/** 定義を文書の順に、それが置かれた条の番地と一緒に並べる。範囲を限った定義は、その条の中でだけ比べるため。 */
+const definitionsInOrder = (tree: StructureNode): Definition[] => {
+  const found: Definition[] = [];
+  const pending: Definition[] = [{ node: tree, article: "" }];
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (current === undefined) break;
+    if (current.node.kind === "definition") found.push(current);
+    const article = current.node.kind === "article" ? current.node.address : current.article;
+    [...current.node.children].reverse().forEach((child) => pending.push({ node: child, article }));
+  }
+  return found;
+};
+
+/**
+ * 同じ語の二度目以降の定義。どちらが正しいかは決めず、両方の場所を示す。
+ * 範囲を限った定義（この条において「X」とは）は、同じ条の中でだけ比べる。別の条で定義し直すのは正しい書き方。
+ */
 export const duplicateDefinitions = (tree: StructureNode): StructureIssue[] => {
   const first = new Map<string, StructureNode>();
-  return inDocumentOrder(tree)
-    .filter((node) => node.kind === "definition")
-    .flatMap((node) => {
-      const term = textOf(node, "term");
-      const earlier = first.get(term);
-      if (earlier === undefined) {
-        first.set(term, node);
-        return [];
-      }
-      return [{ offset: node.span.start, values: { term, first: earlier.line } }];
-    });
+  return definitionsInOrder(tree).flatMap(({ node, article }) => {
+    const term = textOf(node, "term");
+    const key = node.attrs["scope"] === "local" ? `${article}\u0000${term}` : term;
+    const earlier = first.get(key);
+    if (earlier === undefined) {
+      first.set(key, node);
+      return [];
+    }
+    return [{ offset: node.span.start, values: { term, first: earlier.line } }];
+  });
 };

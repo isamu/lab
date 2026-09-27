@@ -12,9 +12,9 @@
         (item "3.2" :label "２" :line 16
           (quantity :unit "分" :value 60 :line 16)))
       (article "4" :heading "休日" :label "第4条" :line 18
-        (item "4.1" :label "一" :line 20)
-        (item "4.2" :label "二" :line 21)
-        (item "4.3" :label "三" :line 22
+        (item "4.1.1" :label "一" :line 20)
+        (item "4.1.2" :label "二" :line 21)
+        (item "4.1.3" :label "三" :line 22
           (date :value "12-29" :line 22)
           (date :value "01-03" :line 22))))
     (chapter "ch2.2" :heading "休暇" :label "第2節" :line 24

@@ -15,6 +15,8 @@ type Draft = {
   readonly attrs: Readonly<Record<string, string | number>>;
   readonly children: Draft[];
   readonly ordinal?: number | undefined;
+  readonly level?: number | undefined;
+  readonly ordinalTo?: number | undefined;
 };
 
 /** 開いている節点。rank の大きいものほど内側。 */
@@ -88,7 +90,12 @@ const openNumbered = (state: State, line: Line, numbered: NumberedLine, headingD
   const rank = headingDepth ?? NUMBERED_RANK + numbered.depth;
   // 番地は、自分と同じか内側を閉じてから決める。閉じる前だと、同じ深さの前の条を親と取り違える。
   while (state.stack.length > 1 && top(state).rank >= rank) state.stack.pop();
-  const draft = { ...draftOf(numbered.kind, addressOf(state, numbered), line, attrs), ordinal: numbered.ordinal };
+  const draft = {
+    ...draftOf(numbered.kind, addressOf(state, numbered), line, attrs),
+    ordinal: numbered.ordinal,
+    level: numbered.depth,
+    ordinalTo: numbered.ordinalTo,
+  };
   open(state, { draft, rank, numbered });
 };
 
@@ -136,6 +143,8 @@ const freeze = (draft: Draft): StructureNode => ({
   attrs: draft.attrs,
   children: draft.children.map(freeze),
   ...(draft.ordinal === undefined ? {} : { ordinal: draft.ordinal }),
+  ...(draft.level === undefined ? {} : { level: draft.level }),
+  ...(draft.ordinalTo === undefined ? {} : { ordinalTo: draft.ordinalTo }),
 });
 
 /** Markdown から取った手がかり。見出しと、中を読まない範囲（コード）。.txt はどちらも空。 */

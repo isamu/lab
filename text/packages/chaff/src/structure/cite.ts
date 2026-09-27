@@ -100,7 +100,9 @@ export const checkCitations = (source: string, tree: StructureNode, citations: r
   const whole = normalize(source);
   const starts = lineStarts(source);
   return citations.map((citation): CitationResult => {
-    const candidates = byAddress.get(citation.address) ?? [];
+    // 第 1 項に番号の無い書き方では、「12.1」は第12条そのもの。参照の fallback と同じに読む。
+    const firstParagraph = citation.address.endsWith(".1") ? byAddress.get(citation.address.slice(0, -2)) : undefined;
+    const candidates = byAddress.get(citation.address) ?? firstParagraph ?? [];
     const first = candidates[0];
     if (first === undefined) return { citation, status: "missing-address" };
     const key = normalize(citation.quote).text;

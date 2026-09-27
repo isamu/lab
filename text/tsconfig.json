@@ -19,5 +19,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["packages/*/src/**/*.ts", "test/**/*.ts", "eslint.config.js"]
+  "include": ["packages/*/src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts", "eslint.config.js"]
 }
