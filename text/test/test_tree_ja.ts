@@ -48,7 +48,7 @@ describe("日本語の契約書を木にする", () => {
         '    (quantity :unit "日" :value 30 :line 7)',
         '    (obligation :marker "なければならない" :type "must" :line 7)',
         '    (item "3.2" :label "２" :line 8',
-        '      (reference :label "第12条第1項" :target "12.1" :line 8)',
+        '      (reference :fallback "12" :label "第12条第1項" :target "12.1" :line 8)',
         '      (item "3.2.1" :label "一" :line 9)',
         '      (item "3.2.2" :label "二" :line 10))))',
       ),

@@ -8,7 +8,9 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import type { Finding, LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { Finding, LanguageAdapter, StructurePatterns } from "../packages/chaff/src/plugin.ts";
+import { citedDocument } from "../packages/lang-ja/src/citation.ts";
+import { citedDocumentAfter } from "../packages/lang-en/src/citation.ts";
 
 // 参照先が無い・番号の抜け・二重定義。誤検出しやすい正常な文書と、誤りのある文書を対にする（spec §23）。
 
@@ -185,5 +187,108 @@ describe("the sample documents (test/fixtures/structure)", () => {
         const key = `${language}/${name}`;
         it(key, () => assert.deepEqual(found(adapter, readFileSync(join(ROOT, key), "utf8"), name), EXPECTED[key] ?? []));
       });
+  });
+});
+
+describe("日本語: 他の文書の条を指す参照は、この文書では引かない", () => {
+  const numbered = (sentence: string): string => lines("第1条（目的）", sentence, "第2条（定義）", "本文");
+  const cases: readonly (readonly [string, readonly Found[]])[] = [
+    ["民法第709条に基づき賠償する。", []],
+    ["個人情報保護法第3条の規定による。", []],
+    ["同法第5条を準用する。", []],
+    ["就業規則第12条に従う。", []],
+    ["個人情報の保護に関する法律第3条による。", []],
+    ["本契約第9条に定める。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+    ["当規約第9条に定める。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+    ["契約第9条に定める。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+    ["甲は第9条に定める。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+  ];
+  cases.forEach(([sentence, expected]) => {
+    it(sentence, () => assert.deepEqual(found(ja, numbered(sentence)), expected));
+  });
+
+  const names: readonly (readonly [string, string | undefined])[] = [
+    ["民法第709条", "民法"],
+    ["会社法施行規則第3条", "会社法施行規則"],
+    ["個人情報の保護に関する法律第3条", "個人情報の保護に関する法律"],
+    ["この点は、法律第3条", undefined],
+    ["ガイドライン第2条", undefined],
+    ["社内ガイドライン第2条", "社内ガイドライン"],
+    ["本法第3条", undefined],
+    ["この契約第3条", undefined],
+    ["第3条", undefined],
+  ];
+  names.forEach(([text, expected]) => {
+    it(`citedDocument: ${text} → ${String(expected)}`, () => assert.equal(citedDocument(text, text.lastIndexOf("第")), expected));
+  });
+});
+
+describe("English: a reference into another document is not looked up here", () => {
+  const numbered = (sentence: string): string => lines("Section 1 Scope", sentence, "Section 2 Fees", "text");
+  const cases: readonly (readonly [string, readonly Found[]])[] = [
+    ["As provided in Section 9 of the Master Agreement.", []],
+    ["Under Section 5 of the Securities Act of 1933, sales are restricted.", []],
+    ["See Section 12 of the Code of Federal Regulations.", []],
+    ["See Section 9 of this Agreement.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+    ["See Section 9 of the Agreement.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+    ["See Section 9 of each party's obligations.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+  ];
+  cases.forEach(([sentence, expected]) => {
+    it(sentence, () => assert.deepEqual(found(en, numbered(sentence)), expected));
+  });
+
+  it("citedDocumentAfter stops the title at punctuation", () => {
+    const text = "Section 9 of the Master Agreement. Payment is due.";
+    assert.equal(citedDocumentAfter(text, "Section 9".length), "Master Agreement");
+  });
+});
+
+describe("the first paragraph without a number is a Japanese convention, not an English one", () => {
+  it("English Section 4.1 is missing when only Section 4 exists", () => {
+    assert.deepEqual(found(en, lines("Section 4 Payment", "text", "Section 5 Late fees", "See Section 4.1.")), [
+      ["dangling-reference", { label: "Section 4.1", target: "4.1" }],
+    ]);
+  });
+});
+
+describe("two lists under one parent", () => {
+  it("English (a)(b), a paragraph, then (a)(b) again", () => {
+    assert.deepEqual(found(en, lines("Section 1 Terms", "(a) one", "(b) two", "The Buyer may also:", "(a) three", "(b) four")), []);
+  });
+
+  it("日本語の（1）（2）が二組", () => {
+    assert.deepEqual(found(ja, lines("第1条（手続）", "申込みは次による。", "（1）書面", "（2）電子", "取消しは次による。", "（1）書面", "（2）電子")), []);
+  });
+
+  it("附則が第1条から振り直す", () => {
+    assert.deepEqual(found(ja, lines("第1条（目的）", "本文", "第2条（施行）", "本文", "附則", "第1条（経過措置）", "本文")), []);
+  });
+});
+
+describe("the tree is built only when a structure rule reads it", () => {
+  const counting = (): { adapter: LanguageAdapter; calls: () => number } => {
+    const base = en.structure;
+    if (base === undefined) throw new Error("lang-en has no structure");
+    let count = 0;
+    const patterns: StructurePatterns = {
+      ...base,
+      numbered: (line, context) => {
+        count += 1;
+        return base.numbered(line, context);
+      },
+    };
+    return { adapter: { ...en, structure: patterns }, calls: () => count };
+  };
+
+  it("does not build it when the structure rules are off", () => {
+    const { adapter, calls } = counting();
+    runRules(buildDocument("c.txt", "Section 1 Scope\nSee Section 9.", adapter), loadRules("en"), {}, false, "business/contract");
+    assert.equal(calls(), 0);
+  });
+
+  it("builds it once when they run", () => {
+    const { adapter, calls } = counting();
+    runRules(buildDocument("c.txt", "Section 1 Scope\nSee Section 9.", adapter), loadRules("en"), {}, true, "business/contract");
+    assert.equal(calls(), 2);
   });
 });

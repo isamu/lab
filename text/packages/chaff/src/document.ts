@@ -6,7 +6,7 @@ import { frontmatterFromMarkdown } from "mdast-util-frontmatter";
 import { maskSpans } from "./mask.ts";
 import { buildTree, NO_OUTLINE, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
-import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span } from "./plugin.ts";
+import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
 type Node = {
@@ -249,6 +249,9 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
   const paragraphSpans = spansOfType(root, "paragraph");
   const listItems = spansOfType(root, "listItem");
   const sentences = sentencesOf(prose, paragraphSpans, adapter);
+  const patterns = adapter.structure;
+  // null は「作ったが構造を読めない言語だった」、undefined は「まだ作っていない」。
+  const tree: { value: StructureNode | null | undefined } = { value: undefined };
   return {
     path,
     source,
@@ -262,11 +265,14 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
     lists: listsOf(root, source),
     lexicons: { ...adapter.lexicons, "internal-jargon": team.jargon.map((pattern) => ({ pattern })) },
     requiredSections: team.requiredSections,
-    // 構造の rule（参照先が無い・番号の抜け）が読む木。構造を読めない言語では undefined で、その rule は理由付きで止まる。
-    structure:
-      adapter.structure === undefined
-        ? undefined
-        : buildTree({ path, source, language: adapter.id, outline: isMarkdownPath(path) ? outlineOf(root, source) : NO_OUTLINE }, adapter.structure),
+    // 構造の rule（参照先が無い・番号の抜け）が読む木。どの rule も読まなければ作らない。何万行の契約書で、他の rule の lint に代金を払わせない。
+    get structure(): StructureNode | undefined {
+      tree.value ??=
+        patterns === undefined
+          ? null
+          : buildTree({ path, source, language: adapter.id, outline: isMarkdownPath(path) ? outlineOf(root, source) : NO_OUTLINE }, patterns);
+      return tree.value ?? undefined;
+    },
   };
 };
 

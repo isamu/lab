@@ -1,4 +1,5 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
+import { citedDocumentAfter } from "./citation.ts";
 
 // Contracts, specifications and statutes in English. core nests what this reads; it does not know
 // how English numbers its articles.
@@ -181,13 +182,18 @@ const subdivisions = (text: string, from: number): { readonly parts: readonly st
   return { parts, end };
 };
 
-/** "Section 4.2(a)" → 4.2.a, "Article III" → 3. The same addresses the tree gives. */
+/**
+ * "Section 4.2(a)" → 4.2.a, "Article III" → 3. The same addresses the tree gives.
+ * "Section 9 of the Master Agreement" carries the other document's name, and is not looked up in this tree.
+ */
 const references = (text: string): Mention[] =>
   [...text.matchAll(REFERENCE)].flatMap((match) => {
     const main = numberOf(match.groups?.["n"]);
     if (main === undefined) return [];
     const { parts, end } = subdivisions(text, match.index + match[0].length);
-    return [{ start: match.index, end, attrs: { target: [main, ...parts].join("."), label: text.slice(match.index, end) } }];
+    const document = citedDocumentAfter(text, end);
+    const attrs = { target: [main, ...parts].join("."), label: text.slice(match.index, end), ...(document === undefined ? {} : { document }) };
+    return [{ start: match.index, end, attrs }];
   });
 
 /** Longest first, and never inside a word: "shall not" is not also "shall", "mayor" is not "may". */

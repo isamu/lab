@@ -26,19 +26,23 @@ const textOf = (node: StructureNode, key: string): string => {
 };
 
 /**
- * 日本語の法令は第 1 項に番号を振らない。「第4条第1項」は、第4条があり、番号付きの 4.1 が無ければ本文の第 1 項を指す。
- * 4.1 が番号付きで書かれていれば、普通の番地として引ける。
+ * 参照がこの文書のどこかを指しているか。fallback は言語パッケージが付ける別の行き先で、
+ * 日本語の「第4条第1項」は、番号の無い第 1 項を持つ第4条を指しうる。
  */
-const unnumberedFirst = (target: string, addresses: ReadonlySet<string>): boolean => target.endsWith(".1") && addresses.has(target.slice(0, -".1".length));
+const resolves = (node: StructureNode, addresses: ReadonlySet<string>): boolean =>
+  addresses.has(textOf(node, "target")) || (node.attrs["fallback"] !== undefined && addresses.has(textOf(node, "fallback")));
 
-/** 参照の番地が木に無い。番号付きのまとまりを 1 つも持たない文書は、他の文書を指しているだけかもしれないので見ない。 */
+/**
+ * 参照の番地が木に無い。他の文書の名前が付いた参照（民法第709条、Section 9 of the Master Agreement）は引かない。
+ * 番号付きのまとまりを 1 つも持たない文書も見ない。他の文書を指しているだけかもしれない。
+ */
 export const danglingReferences = (tree: StructureNode): StructureIssue[] => {
   const nodes = inDocumentOrder(tree);
   const addresses = new Set(nodes.filter((node) => NUMBERED.includes(node.kind)).map((node) => node.address));
   if (addresses.size === 0) return [];
   return nodes
-    .filter((node) => node.kind === "reference")
-    .filter((node) => !addresses.has(textOf(node, "target")) && !unnumberedFirst(textOf(node, "target"), addresses))
+    .filter((node) => node.kind === "reference" && node.attrs["document"] === undefined)
+    .filter((node) => !resolves(node, addresses))
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
 };
 
