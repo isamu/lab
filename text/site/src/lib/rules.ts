@@ -1,15 +1,16 @@
-// The rule reference is built from chaff's own rule files, so it cannot say anything chaff does not ship.
-import { parse } from "yaml";
+// The rule reference is read with chaff's own loader, once per language, so every level, severity and
+// status on the site is the one chaff uses.
+import { resolve } from "node:path";
+import { loadRules } from "../../../packages/chaff/src/rule-load.ts";
+import type { RuleDefinition } from "../../../packages/chaff/src/plugin.ts";
 import type { Lang } from "./i18n";
-
-const LEVEL_NAMES: readonly string[] = ["strict", "normal", "relaxed"];
 
 export type Localized = Record<Lang, string>;
 
 export type Rule = {
   readonly id: string;
-  readonly layer: string;
-  readonly status: "stable" | "experimental";
+  readonly layer: RuleDefinition["layer"];
+  readonly status: RuleDefinition["status"];
   readonly severity: Localized;
   readonly languages: readonly Lang[];
   readonly name: Localized;
@@ -20,49 +21,47 @@ export type Rule = {
   readonly useFor: readonly string[];
 };
 
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
+// astro build runs in text/site.
+const RULES_DIR = resolve(process.cwd(), "..", "packages", "chaff", "rules");
+const LEVEL_NAMES = ["strict", "normal", "relaxed"] satisfies readonly (keyof RuleDefinition["levels"])[];
+const SEVERITY_BY_NUMBER: Readonly<Record<number, string>> = { 1: "info", 2: "warning", 3: "error" };
 
-const localized = (value: unknown, file: string, field: string): Localized => {
-  if (typeof value === "string") return { ja: value, en: value };
-  if (isRecord(value) && typeof value["ja"] === "string" && typeof value["en"] === "string") return { ja: value["ja"], en: value["en"] };
-  throw new Error(`${file}: ${field} must be a string or { ja, en }`);
-};
+/** L4 keeps its levels as severities, which chaff counts as 1-3; show them as the words the rule file uses. */
+const levelText = (definition: RuleDefinition, value: number): string =>
+  definition.layer === "L4" ? (SEVERITY_BY_NUMBER[value] ?? String(value)) : String(value);
 
-const text = (value: unknown): string => (typeof value === "number" || typeof value === "string" ? String(value) : JSON.stringify(value));
+const levelsOf = (definition: RuleDefinition): readonly (readonly [string, string])[] =>
+  LEVEL_NAMES.flatMap((level): (readonly [string, string])[] => {
+    const value = definition.levels[level];
+    return value === undefined ? [] : [[level, levelText(definition, value)]];
+  });
 
-/** One level's threshold as written: a number, a word, or one per language. */
-const levelFor = (value: unknown, lang: Lang): string => (isRecord(value) && lang in value ? text(value[lang]) : text(value));
+const text = (localized: Readonly<Record<string, string>>, lang: Lang): string => localized[lang] ?? localized["en"] ?? "";
 
-const levelsOf = (value: unknown): Rule["levels"] => {
-  const entries = (lang: Lang): (readonly [string, string])[] =>
-    isRecord(value)
-      ? LEVEL_NAMES.filter((level) => level in value).map((level): readonly [string, string] => [level, levelFor(value[level], lang)])
-      : [];
-  return { ja: entries("ja"), en: entries("en") };
-};
+const byLanguage: Record<Lang, readonly RuleDefinition[]> = { ja: loadRules("ja", RULES_DIR), en: loadRules("en", RULES_DIR) };
 
-const ruleOf = (file: string, source: string): Rule => {
-  const raw: unknown = parse(source);
-  if (!isRecord(raw) || typeof raw["id"] !== "string" || typeof raw["layer"] !== "string") throw new Error(`${file}: not a rule`);
-  const languages = Array.isArray(raw["languages"]) ? raw["languages"].filter((lang): lang is Lang => lang === "ja" || lang === "en") : [];
+const ruleOf = (ja: RuleDefinition): Rule => {
+  const en = byLanguage.en.find((candidate) => candidate.id === ja.id);
+  if (en === undefined) throw new Error(`${ja.id}: chaff loads it for Japanese but not for English`);
+  const languages = (ja.languages ?? ["ja", "en"]).filter((lang): lang is Lang => lang === "ja" || lang === "en");
+  const localized = (field: "name" | "why" | "message" | "how_to_fix"): Localized => ({
+    ja: text(ja[field], "ja"),
+    en: text(en[field], "en"),
+  });
   return {
-    id: raw["id"],
-    layer: raw["layer"],
-    status: raw["status"] === "stable" ? "stable" : "experimental",
-    severity: localized(raw["severity"], file, "severity"),
-    languages: languages.length > 0 ? languages : ["ja", "en"],
-    name: localized(raw["name"], file, "name"),
-    why: localized(raw["why"], file, "why"),
-    message: localized(raw["message"], file, "message"),
-    howToFix: localized(raw["how_to_fix"], file, "how_to_fix"),
-    levels: levelsOf(raw["levels"]),
-    useFor: Array.isArray(raw["use_for"]) ? raw["use_for"].map(String) : [],
+    id: ja.id,
+    layer: ja.layer,
+    status: ja.status,
+    severity: { ja: ja.severity, en: en.severity },
+    languages,
+    name: localized("name"),
+    why: localized("why"),
+    message: localized("message"),
+    howToFix: localized("how_to_fix"),
+    levels: { ja: levelsOf(ja), en: levelsOf(en) },
+    useFor: ja.use_for,
   };
 };
 
-const files = import.meta.glob<string>("../../../packages/chaff/rules/*.yaml", { query: "?raw", import: "default", eager: true });
-
 /** Every rule chaff ships, by layer and then by id. */
-export const rules: readonly Rule[] = Object.entries(files)
-  .map(([file, source]) => ruleOf(file, source))
-  .sort((a, b) => a.layer.localeCompare(b.layer) || a.id.localeCompare(b.id));
+export const rules: readonly Rule[] = byLanguage.ja.map(ruleOf).sort((a, b) => a.layer.localeCompare(b.layer) || a.id.localeCompare(b.id));

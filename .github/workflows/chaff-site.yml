@@ -3,10 +3,10 @@ name: chaff site
 
 on:
   pull_request:
-    paths: ["text/site/**", "text/packages/chaff/rules/**", ".github/workflows/chaff-site.yml"]
+    paths: ["text/site/**", "text/packages/chaff/rules/**", "text/packages/chaff/src/rule-load.ts", ".github/workflows/chaff-site.yml"]
   push:
     branches: [main]
-    paths: ["text/site/**", "text/packages/chaff/rules/**", ".github/workflows/chaff-site.yml"]
+    paths: ["text/site/**", "text/packages/chaff/rules/**", "text/packages/chaff/src/rule-load.ts", ".github/workflows/chaff-site.yml"]
 
 permissions:
   contents: read
@@ -27,6 +27,11 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
+
+      # The rule reference is read with chaff's own loader (packages/chaff/src/rule-load.ts), which needs chaff's dependencies.
+      - name: install chaff
+        working-directory: text
+        run: yarn install --frozen-lockfile
 
       - run: yarn install --frozen-lockfile
 
