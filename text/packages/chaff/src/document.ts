@@ -3,6 +3,7 @@ import { gfmTable } from "micromark-extension-gfm-table";
 import { gfmTableFromMarkdown } from "mdast-util-gfm-table";
 import { frontmatter } from "micromark-extension-frontmatter";
 import { frontmatterFromMarkdown } from "mdast-util-frontmatter";
+import { atxHeadingText, headingText } from "./heading-text.ts";
 import { maskSpans } from "./mask.ts";
 import { buildTree, NO_OUTLINE, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
@@ -130,7 +131,10 @@ const headingsOf = (root: Node, source: string): Heading[] => {
     if (node.type !== "heading") return;
     const span = spanOf(node);
     const depth = typeof node === "object" && "depth" in node && typeof node.depth === "number" ? node.depth : 1;
-    if (span !== undefined) found.push({ depth, text: textOf(node, source).trim(), start: span.start, end: span.end });
+    if (span === undefined) return;
+    // ATX（行頭が #）なら閉じの # も外す。setext の見出しの末尾の # は言葉なので残す。
+    const read = source.startsWith("#", span.start) ? atxHeadingText : headingText;
+    found.push({ depth, text: read(textOf(node, source)), start: span.start, end: span.end });
   });
   return found;
 };

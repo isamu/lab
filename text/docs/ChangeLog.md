@@ -12,6 +12,12 @@ counts as `normal` and `chaff rules --json` shows the number in effect. A rule n
 (usually a typo) and a value it cannot read are now reported on standard error by `lint` and
 `rules --json`, instead of being dropped while the writer believes the setting applies.
 
+### Heading attributes are not part of the heading
+
+A heading that carries a kramdown or pandoc attribute list (`## Install {#install}`, `## Notes {: .note}`)
+is now read without it. `heading-echo` missed a sentence that merely repeats such a heading, and the tree
+put `{#a3}` into an article's heading. Braces that are words (`## {name} の設定`) are kept.
+
 ## 0.6.0 — 2026-09-27
 
 Documents with structure — contracts, statutes, specifications, manuals — become a tree with addresses,
