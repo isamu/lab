@@ -1,0 +1,12 @@
+---
+type Props = { tone: "neutral" | "warn" };
+const { tone } = Astro.props;
+const tones = {
+  neutral: "border-zinc-300 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400",
+  warn: "border-amber-400 text-amber-700 dark:border-amber-600 dark:text-amber-400",
+};
+---
+
+<span class={`inline-block rounded border px-1.5 py-0.5 font-mono text-xs ${tones[tone]}`}>
+  <slot />
+</span>

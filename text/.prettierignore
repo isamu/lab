@@ -8,3 +8,6 @@ samples/
 # Leaving them formatted means the two rewrite the file in turn on every run.
 .scoria/
 scoria.config.json
+
+# The documentation site has its own Prettier setup (with the Astro plugin) and its own CI.
+site/
