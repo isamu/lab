@@ -39,6 +39,7 @@ describe("日本語の契約書", () => {
     ["番地と引用文が合う", { address: "2", quote: "検収後30日以内に委託料を支払わなければならない" }, ["ok", undefined]],
     ["項の中の文", { address: "2.2", quote: "年3%の遅延損害金" }, ["ok", undefined]],
     ["条を指せば、その項の文も条の範囲", { address: "2", quote: "年3%の遅延損害金" }, ["ok", undefined]],
+    ["番号の無い第 1 項（2.1）は、第2条そのもの", { address: "2.1", quote: "検収後30日以内に委託料を支払わなければならない" }, ["ok", undefined]],
     ["全角数字と改行で書き写しても一致", { address: "2", quote: "検収後３０日以内に\n委託料を支払わなければならない。" }, ["ok", undefined]],
     ["引用文が別の条にある", { address: "3", quote: "検収後30日以内" }, ["quote-elsewhere", "2"]],
     ["引用文がいちばん内側の番地で示される", { address: "1", quote: "遅延損害金" }, ["quote-elsewhere", "2.2"]],

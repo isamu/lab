@@ -29,13 +29,17 @@ const firstChild = (node: Node, tag: string): Node | undefined => childrenOf(nod
 const TITLES = new Set(["PartTitle", "ChapterTitle", "SectionTitle", "SubsectionTitle", "DivisionTitle"]);
 const SKIPPED = new Set(["TOC", "SupplProvision", "LawNum", "EnactStatement", "Preamble"]);
 
-const itemLines = (paragraph: Node): string[] =>
-  childrenOf(paragraph)
-    .filter((child) => tagOf(child) === "Item")
-    .flatMap((item) => {
-      const title = firstChild(item, "ItemTitle");
-      const sentence = firstChild(item, "ItemSentence");
-      return [`${title === undefined ? "" : textOf(title)}\u3000${sentence === undefined ? "" : textOf(sentence)}`];
+/** An item and its nested subitems (イ, (1), ...), each on its own line: Item → Subitem1 → Subitem2 → ... */
+const SUBITEM = /^Subitem\d+$/u;
+
+const nestedLines = (parent: Node): string[] =>
+  childrenOf(parent)
+    .filter((child) => tagOf(child) === "Item" || SUBITEM.test(tagOf(child)))
+    .flatMap((child) => {
+      const tag = tagOf(child);
+      const title = firstChild(child, `${tag}Title`);
+      const sentence = firstChild(child, `${tag}Sentence`);
+      return [`${headOf(title)}\u3000${headOf(sentence)}`, ...nestedLines(child)];
     });
 
 /** The article title on the first paragraph, the paragraph number on the others; empty when there is none. */
@@ -50,7 +54,7 @@ const articleLines = (article: Node): string[] => {
     const sentence = firstChild(paragraph, "ParagraphSentence");
     const head = headOf(index === 0 ? title : number);
     // An old statute leaves the later paragraphs unnumbered; they start with a full-width space instead.
-    return [`${head}\u3000${sentence === undefined ? "" : textOf(sentence)}`, ...itemLines(paragraph)];
+    return [`${head}\u3000${sentence === undefined ? "" : textOf(sentence)}`, ...nestedLines(paragraph)];
   });
   const withoutParagraphs = paragraphs.length === 0 && title !== undefined ? [textOf(title)] : [];
   return [...(caption === undefined ? [] : [textOf(caption)]), ...body, ...withoutParagraphs, ""];

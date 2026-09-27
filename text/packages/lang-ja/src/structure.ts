@@ -168,7 +168,7 @@ const chapter = (line: string): NumberedLine | undefined => {
 };
 
 /**
- * 古い法令は第 2 項以降にも番号を振らず、全角空白で字下げした行を新しい項にする。条の中で、号でもない字下げの行を、
+ * 古い法令は第 2 項以降にも番号を振らず、全角空白で字下げした行を新しい項にする。条の行に本文が続く条の中で、号でもない字下げの行を、
  * 開いている項の次の項（無ければ第 2 項）として読む。番号付きの項（「２」）がある条では、字下げは使われない。
  */
 const OLD_STYLE_PARAGRAPH = /^\u3000(?<rest>\S.*)$/u;
@@ -177,6 +177,9 @@ const unnumberedParagraph = (line: string, context: NumberingContext): NumberedL
   if (!insideArticle(context)) return undefined;
   const rest = OLD_STYLE_PARAGRAPH.exec(line)?.groups?.["rest"];
   if (rest === undefined) return undefined;
+  // 条の行に本文が続く書き方（「第三十四条 使用者は、…。」）のときだけ。契約書の「第1条（目的）」の次の字下げの行は、第 1 項の本文。
+  const article = [...context.open].reverse().find((open) => open.kind === "article");
+  if (article === undefined || article.heading !== "" || article.rest === "") return undefined;
   const previous = [...context.open].reverse().find((open) => open.depth === PARAGRAPH_DEPTH);
   if (previous !== undefined && previous.label !== "") return undefined;
   const number = String((previous === undefined ? 1 : Number(previous.number)) + 1);
@@ -234,24 +237,36 @@ const PARENTHESES = /（[^（）]*）/gu;
 /** 間の文字列が、接続の語・読点・項や号の断片・括弧書きだけでできているか。 */
 const isContinuation = (gap: string): boolean => gap.replace(PARENTHESES, "").replace(FRAGMENT, "").replace(CONNECTORS, "") === "";
 
-/** 「」の中は別の文書の言葉（法令の読み替えの「とあるのは『…』」）。そこにある番地は、この文書のものではない。 */
-const quotedSpans = (text: string): readonly (readonly [number, number])[] => {
-  type Scan = { readonly depth: number; readonly start: number; readonly spans: readonly (readonly [number, number])[] };
-  const scanned = [...text].reduce<Scan & { readonly at: number }>(
-    (state, char) => {
-      const next = state.at + char.length;
-      if (char === "「") return { ...state, at: next, depth: state.depth + 1, start: state.depth === 0 ? state.at : state.start };
-      if (char !== "」" || state.depth === 0) return { ...state, at: next };
-      const depth = state.depth - 1;
-      const span: readonly [number, number] = [state.start, state.at];
-      return { ...state, at: next, depth, spans: depth === 0 ? [...state.spans, span] : state.spans };
-    },
-    { at: 0, depth: 0, start: 0, spans: [] },
-  );
-  return scanned.spans;
-};
+const SUBSTITUTION = "とあるのは";
+const SUBSTITUTED = "（読み替えの中）";
 
-const QUOTED = "（引用の中）";
+/** 行を一度だけ読んで、位置ごとの括弧の深さと、読み替えの「」の中かどうかを出す。参照ごとに行を読み直さない。 */
+type LineMap = { readonly depth: Int32Array; readonly substituted: Uint8Array };
+
+/**
+ * 読み替え（「『X』とあるのは『Y』と読み替える」）の「」の中の番地は、読み替える先の法令のもの。
+ * ほかの「」（定義した語、引用）はこの文書の言葉なので、その中の参照もこの文書の参照として扱う。
+ */
+const isSubstitution = (text: string, start: number, end: number): boolean =>
+  text.startsWith(SUBSTITUTION, end + 1) || text.slice(Math.max(0, start - SUBSTITUTION.length), start) === SUBSTITUTION;
+
+const lineMapOf = (text: string): LineMap => {
+  const depth = new Int32Array(text.length + 1);
+  const substituted = new Uint8Array(text.length + 1);
+  const opens: number[] = [];
+  const open = { parentheses: 0 };
+  text.split("").forEach((char, at) => {
+    depth[at] = open.parentheses;
+    if (char === "「") opens.push(at);
+    if (char === "」") {
+      const start = opens.pop();
+      if (start !== undefined && opens.length === 0 && isSubstitution(text, start, at)) substituted.fill(1, start, at + 1);
+    }
+    if (char === "（") open.parentheses += 1;
+    if (char === "）") open.parentheses = Math.max(0, open.parentheses - 1);
+  });
+  return { depth, substituted };
+};
 
 /**
  * 「第12条第1項」→ 12.1、「第3条の2」→ 3-2。番地の付け方は木と同じにする。
@@ -259,13 +274,6 @@ const QUOTED = "（引用の中）";
  * 「民法第709条」のように他の文書の名前が前にあれば、その名前を document に入れる。この文書の木では引かない。
  */
 /** at より前で開いたまま閉じていない括弧の数。 */
-const depthAfter = (depth: number, char: string): number => {
-  if (char === "（") return depth + 1;
-  return char === "）" ? Math.max(0, depth - 1) : depth;
-};
-
-const parenDepthAt = (text: string, at: number): number => [...text.slice(0, at)].reduce(depthAfter, 0);
-
 /** 間に挟まった括弧書き（中に参照があっても）を外す。入れ子は内側から外す。 */
 const withoutClosedParentheses = (gap: string): string => {
   const once = gap.replace(PARENTHESES, "");
@@ -291,7 +299,7 @@ const addressOfReference = (
 };
 
 const references = (text: string): Mention[] => {
-  const quoted = quotedSpans(text);
+  const map = lineMapOf(text);
   // 括弧書きの中の参照（「（同法第五十九条において準用する場合を含む。）」）は、外の並びを切らない。並びは括弧の深さごとに持つ。
   const chains = new Map<number, { readonly end: number; readonly document: string | undefined }>();
   return [...text.matchAll(REFERENCE)].flatMap((match) => {
@@ -299,11 +307,11 @@ const references = (text: string): Mention[] => {
     const address = addressOfReference(groups);
     if (address === undefined) return [];
     const { target, fallback } = address;
-    const depth = parenDepthAt(text, match.index);
+    const depth = map.depth[match.index] ?? 0;
     const previous = chains.get(depth);
     const inherited =
       previous?.document !== undefined && isContinuation(withoutClosedParentheses(text.slice(previous.end, match.index))) ? previous.document : undefined;
-    const inQuote = quoted.some(([start, end]) => match.index > start && match.index < end) ? QUOTED : undefined;
+    const inQuote = map.substituted[match.index] === 1 ? SUBSTITUTED : undefined;
     const document = citedDocument(text, match.index) ?? inherited ?? inQuote;
     chains.set(depth, { end: match.index + match[0].length, document });
     const attrs = { target, label: match[0], ...(fallback === undefined ? {} : { fallback }), ...(document === undefined ? {} : { document }) };
