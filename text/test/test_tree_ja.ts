@@ -18,6 +18,10 @@ const body = (source: string, markdown = false): string => toSexp(treeOf(source,
 
 const lines = (...rows: string[]): string => rows.join("\n");
 
+const addresses = (node: StructureNode): string[] => [...(node.address === "" ? [] : [node.address]), ...node.children.flatMap(addresses)];
+
+const leafKinds = (node: StructureNode): string[] => [...(node.address === "" && node.kind !== "doc" ? [node.kind] : []), ...node.children.flatMap(leafKinds)];
+
 describe("日本語の契約書を木にする", () => {
   it("条・項・号の入れ子、番地、定義・参照・義務・数量", () => {
     const source = lines(
@@ -85,6 +89,12 @@ describe("日本語の契約書を木にする", () => {
     const tree = treeOf(lines("# API", "", "本文では `第99条` という文字列を例に使う。", "", "`第9条` の書き方の例", "", "第3条を参照する。"), true);
     const kinds = tree.children[0]?.children.map((node) => [node.kind, node.attrs["target"]]);
     assert.deepEqual(kinds, [["reference", "3"]]);
+  });
+
+  it("見出しの中のインラインコードの条も、参照にも見出しにもしない", () => {
+    const tree = treeOf(lines("# 規約", "", "## `第99条` の書き方", "", "## 第3条（支払）"), true);
+    assert.deepEqual(addresses(tree), ["h1", "h1.1", "3"]);
+    assert.deepEqual(leafKinds(tree), []);
   });
 
   it("漢数字・全角数字・枝番号を番地にする", () => {

@@ -87,6 +87,15 @@ describe("an English contract as a tree", () => {
     assert.equal(reference?.attrs["target"], "1.a.a.a.a");
   });
 
+  it("does not read a reference inside inline code in a heading", () => {
+    const tree = treeOf(lines("# Using `Section 99` in docs", "", "## Section 2 Terms"), true);
+    assert.deepEqual(addresses(tree), ["h1", "2"]);
+    assert.deepEqual(
+      tree.children[0]?.children.filter((node) => node.kind === "reference"),
+      [],
+    );
+  });
+
   it("counts “shall not” once, not also as “shall”", () => {
     const markers = treeOf("The Buyer shall not assign.").children.map((node) => node.attrs["marker"]);
     assert.deepEqual(markers, ["shall not"]);

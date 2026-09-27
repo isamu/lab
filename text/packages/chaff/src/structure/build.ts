@@ -57,28 +57,34 @@ const nearestNumbered = (state: State): Frame | undefined => [...state.stack].re
 
 const nearestSection = (state: State): Frame | undefined => [...state.stack].reverse().find((frame) => frame.draft.kind === "section");
 
-/** 条番号や 4.2 はそれだけで番地になる。項・号・(a) は親の番地に続ける。親が無ければ節の中の番号とする。 */
+/**
+ * 条番号や 4.2 はそれだけで番地になる。項・号・(a) は親の番地に続ける。親が無ければ節の中の番号とする。
+ * 呼ぶ前に自分と同じか内側の rank は閉じてあるので、残っている番号付きの節点が親。
+ */
 const addressOf = (state: State, numbered: NumberedLine): string => {
   if (numbered.absolute) return numbered.number;
   const parent = nearestNumbered(state);
-  if (parent !== undefined && parent.rank < NUMBERED_RANK + numbered.depth) return `${parent.draft.address}.${numbered.number}`;
+  if (parent !== undefined) return `${parent.draft.address}.${numbered.number}`;
   const section = nearestSection(state);
   return section === undefined ? numbered.number : `${section.draft.address}/${numbered.number}`;
 };
 
+/** 飛ばした深さは 0 と数える。「# A」の直後の「### C」は h1.0.1。番地に空の部品を作らない。 */
 const headingAddress = (state: State, depth: number): string => {
   state.headingCounts[depth - 1] = (state.headingCounts[depth - 1] ?? 0) + 1;
   state.headingCounts.fill(0, depth);
-  return `h${state.headingCounts
-    .slice(0, depth)
-    .map((count) => String(count))
-    .join(".")}`;
+  const counts = Array.from({ length: depth }, (_, index) => state.headingCounts[index] ?? 0);
+  return `h${counts.map((count) => String(count)).join(".")}`;
 };
 
-const openNumbered = (state: State, line: Line, numbered: NumberedLine): void => {
+/**
+ * 見出しに書いた番号（「## 第3条」）は、見出しの深さで入れ子にする。本文の番号は見出しの内側に入る。
+ * 見出しの深さを捨てると、「## 第3条」の下の「### 詳細」が条の外に出てしまう。
+ */
+const openNumbered = (state: State, line: Line, numbered: NumberedLine, headingDepth: number | undefined): void => {
   const attrs = { label: numbered.label, ...(numbered.heading === "" ? {} : { heading: numbered.heading }) };
-  const rank = NUMBERED_RANK + numbered.depth;
-  // 番地は閉じる前に決める。閉じると、同じ深さの前の条が親に見えてしまう。
+  const rank = headingDepth ?? NUMBERED_RANK + numbered.depth;
+  // 番地は、自分と同じか内側を閉じてから決める。閉じる前だと、同じ深さの前の条を親と取り違える。
   while (state.stack.length > 1 && top(state).rank >= rank) state.stack.pop();
   open(state, { draft: draftOf(numbered.kind, addressOf(state, numbered), line, attrs), rank, numbered });
 };
@@ -134,12 +140,24 @@ const headingsByLine = (lines: readonly Line[], headings: readonly Heading[]): M
     }),
   );
 
+/** 見出しの行から「#」の印を外した文字列。コードを覆った後の行から取るので、見出しの中のコードも読まない。 */
+const atxText = (text: string): string => {
+  const body = text
+    .trim()
+    .replace(/^#{1,6}(?=[ \t]|$)/u, "")
+    .trim();
+  const closing = body.search(/[ \t]#+$/u);
+  return (closing === -1 ? body : body.slice(0, closing)).trim();
+};
+
 const readLine = (state: State, patterns: StructurePatterns, line: Line, heading: Heading | undefined): void => {
-  const text = heading?.text ?? line.text;
+  const text = heading === undefined ? line.text : atxText(line.text);
   const openNumbers = state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered]));
   const context = { open: openNumbers, isHeading: heading !== undefined };
   const numbered = patterns.numbered(text, context) ?? dottedNumber(text, context);
-  if (numbered !== undefined) openNumbered(state, line, numbered);
+  // 番号付きの見出しも見出しの通し番号を進める。進めないと、その下の「### 詳細」が前の見出しの番地を名乗る。
+  if (numbered !== undefined && heading !== undefined) headingAddress(state, heading.depth);
+  if (numbered !== undefined) openNumbered(state, line, numbered, heading?.depth);
   else if (heading !== undefined) openSection(state, line, heading);
   extend(state, line.start + line.text.length);
   // 番号付きの行は番号の後ろだけを読む。「第3条（支払）」の「第3条」を自分への参照として拾わない。

@@ -69,6 +69,22 @@ describe("木を作る core", () => {
     assert.deepEqual(addresses(treeOf(["# A", "## B", "## C", "# D", "## E"].join("\n"), true)), ["h1", "h1.1", "h1.2", "h2", "h2.1"]);
   });
 
+  it("飛ばした見出しの深さは 0 と数え、番地に空の部品を作らない", () => {
+    assert.deepEqual(addresses(treeOf(["# A", "### C", "## D"].join("\n"), true)), ["h1", "h1.0.1", "h1.1"]);
+  });
+
+  it("見出しに書いた番号は見出しの深さで入れ子にし、見出しの通し番号も進める", () => {
+    const tree = treeOf(["# 規約", "## 前文", "## §3 支払", "### 詳細", "## §4 解除"].join("\n"), true);
+    assert.deepEqual(
+      tree.children[0]?.children.map((node) => [node.address, node.children.map((child) => child.address)]),
+      [
+        ["h1.1", []],
+        ["3", ["h1.2.1"]],
+        ["4", []],
+      ],
+    );
+  });
+
   it("本文の「1. 」は箇条書きのまま、見出しの「1. 」と「4.2 」は番号として読む", () => {
     assert.deepEqual(addresses(treeOf(["# Guide", "1. step one", "## 2. Setup", "4.2 Details"].join("\n"), true)), ["h1", "2", "4.2"]);
   });
