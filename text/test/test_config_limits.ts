@@ -9,6 +9,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules, type Settings } from "../packages/chaff/src/run.ts";
 import { rulesJson } from "../packages/chaff/src/render/rules-json.ts";
+import { evaluate } from "../packages/chaff/src/eval.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { main } from "../packages/chaff/src/cli.ts";
 
@@ -22,7 +23,6 @@ const configFrom = (yaml: string) => {
 };
 
 const RULES = loadRules("ja");
-const KNOWN = RULES.map((rule) => rule.id);
 
 describe("rules written as numbers", () => {
   it("reads a positive number as normal, with that limit", () => {
@@ -52,11 +52,11 @@ describe("rules written as numbers", () => {
 
 describe("ruleProblems", () => {
   it("says nothing when every setting is a known rule with a readable value", () => {
-    assert.deepEqual(ruleProblems(configFrom("rules:\n  max-sentence-length: 200\n  bold-density: off\n"), KNOWN), []);
+    assert.deepEqual(ruleProblems(configFrom("rules:\n  max-sentence-length: 200\n  bold-density: off\n"), RULES), []);
   });
 
   it("names a rule chaff does not have, however it was written", () => {
-    const problems = ruleProblems(configFrom("rules:\n  max-sentense-length: relaxed\n  bold-densty: 30\n  heading-ecko: maybe\n"), KNOWN);
+    const problems = ruleProblems(configFrom("rules:\n  max-sentense-length: relaxed\n  bold-densty: 30\n  heading-ecko: maybe\n"), RULES);
     assert.equal(problems.length, 3);
     ["max-sentense-length", "bold-densty", "heading-ecko"].forEach((id) =>
       assert.ok(
@@ -67,7 +67,7 @@ describe("ruleProblems", () => {
   });
 
   it("names an unreadable value on a rule it knows", () => {
-    const problems = ruleProblems(configFrom("rules:\n  max-sentence-length: strcit\n"), KNOWN);
+    const problems = ruleProblems(configFrom("rules:\n  max-sentence-length: strcit\n"), RULES);
     assert.deepEqual(problems.length, 1);
     assert.ok(problems[0]?.includes('max-sentence-length の値 "strcit" は読めません'));
   });
@@ -119,8 +119,12 @@ describe("through the CLI", () => {
     const out: string[] = [];
     const err: string[] = [];
     const saved = { log: console.log, error: console.error, cwd: process.cwd() };
-    console.log = (...args: unknown[]) => void out.push(args.join(" "));
-    console.error = (...args: unknown[]) => void err.push(args.join(" "));
+    console.log = (...args: unknown[]) => {
+      out.push(args.join(" "));
+    };
+    console.error = (...args: unknown[]) => {
+      err.push(args.join(" "));
+    };
     process.chdir(dir);
     try {
       const code = await main(["a.md", "--compact"]);
@@ -164,5 +168,47 @@ describe("a numeric limit on a composite rule", () => {
 
   it("stays quiet when the number asks for more", () => {
     assert.equal(compositesWith(3), 0);
+  });
+});
+
+describe("a number on a rule that reads meaning (L4)", () => {
+  const semantic = RULES.find((rule) => rule.layer === "L4");
+  if (semantic === undefined) throw new Error("no L4 rule to test with");
+
+  it("is reported, since such a rule has no threshold", () => {
+    const problems = ruleProblems(configFrom(`rules:\n  ${semantic.id}: 3\n`), RULES);
+    assert.ok(
+      problems.some((problem) => problem.includes(`${semantic.id} は意味を読む検査なので数値の上限はありません`)),
+      problems.join("\n"),
+    );
+  });
+
+  it("is not shown as a limit by rules --json", () => {
+    const config = configFrom(`rules:\n  ${semantic.id}: 3\n`);
+    const parsed: unknown = JSON.parse(rulesJson(RULES, config, "ja", "business/proposal"));
+    const rules = typeof parsed === "object" && parsed !== null && "rules" in parsed && Array.isArray(parsed.rules) ? parsed.rules : [];
+    const rule: unknown = rules.find((entry: unknown) => typeof entry === "object" && entry !== null && "id" in entry && entry.id === semantic.id);
+    assert.ok(typeof rule === "object" && rule !== null);
+    const now: unknown = "now" in rule ? rule.now : undefined;
+    assert.ok(typeof now === "object" && now !== null);
+    assert.notEqual("limit" in now ? now.limit : undefined, 3);
+    assert.equal("set_as" in now, false);
+    assert.deepEqual("your_setting" in rule ? rule.your_setting : undefined, { level: "normal", from: config.path });
+  });
+});
+
+describe("chaff eval measures from the limit in effect", () => {
+  const docs = [buildDocument("a.md", "# 手順\n\n設定を開きます。項目を選びます。\n", ja)];
+  const sentenceRule = RULES.filter((rule) => rule.id === "max-sentence-length");
+
+  it("marks a numeric limit as current and sweeps it", () => {
+    const [report] = evaluate(docs, sentenceRule, "technical/readme", "ja", { "max-sentence-length": 777 });
+    assert.equal(report?.current, 777);
+    assert.ok(report?.sweep.some((point) => point.limit === 777));
+  });
+
+  it("keeps normal as current without one", () => {
+    const [report] = evaluate(docs, sentenceRule, "technical/readme", "ja");
+    assert.equal(report?.current, sentenceRule[0]?.levels.normal);
   });
 });

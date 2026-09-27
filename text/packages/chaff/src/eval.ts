@@ -35,11 +35,12 @@ const stricterIsHigher = (rule: RuleDefinition): boolean => (rule.levels.strict 
 const MULTIPLIERS = [0.5, 0.7, 0.85, 1, 1.25, 1.5, 2, 3];
 
 /** rule 自身が持つ段を基点に掃引する。rule ごとに単位が違うので、倍率で散らす。 */
-const candidates = (rule: RuleDefinition): number[] => {
+const candidates = (rule: RuleDefinition, current: number): number[] => {
   const base = rule.levels.normal ?? 1;
   const fromLevels = [rule.levels.strict, rule.levels.normal, rule.levels.relaxed].filter((value) => value !== undefined);
   const scaled = MULTIPLIERS.map((factor) => Math.max(1, Math.round(base * factor)));
-  return [...new Set([...fromLevels, ...scaled])].sort((left, right) => left - right);
+  // 数値で決めた上限は、段の表に無くても掃引に入れる。入れないと「現在」の行が出ない。
+  return [...new Set([...fromLevels, ...scaled, current])].sort((left, right) => left - right);
 };
 
 const countAt = (docs: readonly ProseDocument[], rule: RuleDefinition, limit: number): Point => {
@@ -84,12 +85,22 @@ const measurable = (rule: RuleDefinition, docs: readonly ProseDocument[], genre:
   return rule.requires.every((need) => meets(need, docs));
 };
 
-export const evaluate = (docs: readonly ProseDocument[], rules: readonly RuleDefinition[], genre: string, language: string): RuleReport[] =>
+/**
+ * limits は chaff.yaml に数値で書いた上限。書いてあれば、それが lint で効いている「現在」の値。
+ * 段の言葉（relaxed など）で書いた設定は、これまでどおり normal の値を「現在」とする。
+ */
+export const evaluate = (
+  docs: readonly ProseDocument[],
+  rules: readonly RuleDefinition[],
+  genre: string,
+  language: string,
+  limits: Readonly<Record<string, number>> = {},
+): RuleReport[] =>
   rules
     .filter((rule) => measurable(rule, docs, genre, language))
     .map((rule) => {
-      const sweep = candidates(rule).map((limit) => countAt(docs, rule, limit));
-      const current = rule.levels.normal ?? 1;
+      const current = limits[rule.id] ?? rule.levels.normal ?? 1;
+      const sweep = candidates(rule, current).map((limit) => countAt(docs, rule, limit));
       return {
         rule: rule.id,
         name: rule.name[language] ?? rule.id,

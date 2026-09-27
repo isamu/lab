@@ -154,10 +154,7 @@ const writeSarif = (results: readonly Inspected[], argv: readonly string[]): voi
 
 /** 効いていない設定は、結果の前に一度だけ言う。標準エラーに出すので、JSON や SARIF の出力は汚さない。 */
 const warnRuleProblems = (config: Config, language: string): void => {
-  ruleProblems(
-    config,
-    loadRules(language).map((rule) => rule.id),
-  ).forEach((problem) => console.error(`chaff: ${problem}`));
+  ruleProblems(config, loadRules(language)).forEach((problem) => console.error(`chaff: ${problem}`));
 };
 
 const lint = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {

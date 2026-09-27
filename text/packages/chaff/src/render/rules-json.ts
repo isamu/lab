@@ -5,7 +5,7 @@ import type { RuleDefinition } from "../plugin.ts";
 const now = (rule: RuleDefinition, config: Config, genre: string): Record<string, unknown> => {
   const explicit = config.rules[rule.id];
   if (explicit === "off") return { level: "off", why_off: "設定で止めている" };
-  const limit = config.limits[rule.id];
+  const limit = rule.layer === "L4" ? undefined : config.limits[rule.id];
   if (limit !== undefined) return { level: "normal", limit, set_as: "number" };
   if (explicit !== undefined) return { level: explicit, limit: resolve(rule, explicit, genre).limit };
   if (rule.status === "experimental" && !config.experimental) {
@@ -17,7 +17,7 @@ const now = (rule: RuleDefinition, config: Config, genre: string): Record<string
 const yourSetting = (rule: RuleDefinition, config: Config): Record<string, unknown> | null => {
   const level = config.rules[rule.id];
   if (level === undefined) return null;
-  const limit = config.limits[rule.id];
+  const limit = rule.layer === "L4" ? undefined : config.limits[rule.id];
   return limit === undefined ? { level, from: config.path } : { level, limit, from: config.path };
 };
 
