@@ -16,6 +16,7 @@ import { runEval } from "./commands/eval.ts";
 import { runTest } from "./commands/test.ts";
 import { frontMatterGenre, guessGenre } from "./genre.ts";
 import { GENRES, runInit } from "./init.ts";
+import { targetsOf } from "./cli-args.ts";
 import { loadRules } from "./rule-load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
@@ -49,6 +50,7 @@ const USAGE = `chaff — 文章の読みにくいところを見つけます。�
 
   --compact         エンジニア向けの 1 行形式
   --experimental    試験中の rule も動かす
+  --genre <ジャンル>  この実行だけジャンルを決める（chaff.yaml より優先）
   --show-baseline   棚上げした分も含めて全部見る
   --watch           保存のたびに見直し、変わったところだけ出す
   --dry-run         test で、何を AI に送るかだけを見る（API を呼びません）
@@ -61,8 +63,10 @@ const USAGE = `chaff — 文章の読みにくいところを見つけます。�
 
 const readConfig = (): Config => (existsSync(join(process.cwd(), CONFIG_FILE)) ? loadConfig(join(process.cwd(), CONFIG_FILE)) : EMPTY);
 
-const resolveGenre = (path: string, source: string, config: Config): { genre: string; from: string } => {
-  // パスごとの上書きが最優先。「全体はこう、ここだけは違う」を書けるようにする。
+const resolveGenre = (path: string, source: string, config: Config, cliGenre?: string): { genre: string; from: string } => {
+  // コマンドで指定したものが最優先。その実行だけの指定だから、設定より強い。
+  if (cliGenre !== undefined) return { genre: cliGenre, from: "--genre" };
+  // パスごとの上書きが次。「全体はこう、ここだけは違う」を書けるようにする。
   const override = applyByPath(config.byPath, config.baseDir, path);
   if (override.genre !== undefined) return { genre: override.genre, from: `${CONFIG_FILE} の by_path` };
   if (config.genre !== undefined) return { genre: config.genre, from: CONFIG_FILE };
@@ -109,7 +113,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const source = await readFile(path, "utf8");
   const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
   const adapter = await loadAdapter(language);
-  const { genre, from } = resolveGenre(path, source, config);
+  const { genre, from } = resolveGenre(path, source, config, flag(argv, "--genre"));
   const rules = loadRules(language);
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
@@ -271,7 +275,7 @@ const runSuppressions = async (targets: readonly string[], argv: readonly string
 type Handler = (argv: readonly string[]) => number | Promise<number>;
 
 /** `--` で始まらない引数。対象のパス。 */
-const positional = (argv: readonly string[]): string[] => argv.slice(1).filter((arg) => !arg.startsWith("--"));
+const positional = (argv: readonly string[]): string[] => targetsOf(argv.slice(1));
 
 const showRules = (): number => {
   const config = readConfig();
@@ -314,6 +318,11 @@ export const main = async (argv: readonly string[]): Promise<number> => {
   }
   const handler = HANDLERS[first];
   if (handler !== undefined) return handler(argv);
-  const targets = (first === "lint" ? argv.slice(1) : argv).filter((arg) => !arg.startsWith("--"));
+  const targets = targetsOf(first === "lint" ? argv.slice(1) : argv);
+  const cliGenre = flag(argv, "--genre");
+  if (cliGenre !== undefined && !GENRES.includes(cliGenre)) {
+    console.error(`ジャンル "${cliGenre}" はありません。npx chaff genres で一覧が出ます。`);
+    return 1;
+  }
   return argv.includes("--watch") ? runWatch(targets, argv) : lint(targets, argv);
 };
