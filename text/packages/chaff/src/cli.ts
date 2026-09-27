@@ -192,6 +192,7 @@ const runWatch = async (targets: readonly string[], argv: readonly string[]): Pr
     return 1;
   }
   const config = readConfig();
+  warnRuleProblems(config, config.language ?? "ja");
   const seen = new Map<string, Snapshot>();
   const once = async (path: string, first: boolean): Promise<void> => {
     const result = await inspect(path, config, argv);

@@ -7,9 +7,10 @@ import { loadConfig } from "../packages/chaff/src/config/load.ts";
 import { ruleProblems } from "../packages/chaff/src/config/rule-problems.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
+import { runRules, type Settings } from "../packages/chaff/src/run.ts";
 import { rulesJson } from "../packages/chaff/src/render/rules-json.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { main } from "../packages/chaff/src/cli.ts";
 
 // 段階の 4 語では足りないときに、rule の上限を数値で書ける。書いたのに効いていない設定は黙って捨てない。
 
@@ -106,5 +107,62 @@ describe("rules --json shows the limit in effect", () => {
     assert.ok(typeof rule === "object" && rule !== null);
     assert.deepEqual("now" in rule ? rule.now : undefined, { level: "normal", limit: 260, set_as: "number" });
     assert.deepEqual("your_setting" in rule ? rule.your_setting : undefined, { level: "normal", limit: 260, from: config.path });
+  });
+});
+
+describe("through the CLI", () => {
+  const LONG_SENTENCE = `${"設定の手順は画面の右上にあるボタンを押してから開く一覧の中で目的の項目を選び、".repeat(5)}保存します。`;
+  const lintIn = async (yaml: string): Promise<{ code: number; out: string; err: string }> => {
+    const dir = mkdtempSync(join(tmpdir(), "chaff-cli-"));
+    writeFileSync(join(dir, "chaff.yaml"), yaml);
+    writeFileSync(join(dir, "a.md"), `# 手順\n\n${LONG_SENTENCE}\n`);
+    const out: string[] = [];
+    const err: string[] = [];
+    const saved = { log: console.log, error: console.error, cwd: process.cwd() };
+    console.log = (...args: unknown[]) => void out.push(args.join(" "));
+    console.error = (...args: unknown[]) => void err.push(args.join(" "));
+    process.chdir(dir);
+    try {
+      const code = await main(["a.md", "--compact"]);
+      return { code, out: out.join("\n"), err: err.join("\n") };
+    } finally {
+      process.chdir(saved.cwd);
+      console.log = saved.log;
+      console.error = saved.error;
+    }
+  };
+
+  it("passes the numeric limit to the run", async () => {
+    const loose = await lintIn("genre: technical/readme\nlanguage: ja\nrules:\n  max-sentence-length: 250\n");
+    const tight = await lintIn("genre: technical/readme\nlanguage: ja\nrules:\n  max-sentence-length: 150\n");
+    assert.ok(!loose.out.includes("文が長"), loose.out);
+    assert.notEqual(loose.out, tight.out);
+  });
+
+  it("warns on stderr about a misspelt rule, and still lints", async () => {
+    const result = await lintIn("genre: technical/readme\nlanguage: ja\nrules:\n  max-sentense-length: 250\n");
+    assert.ok(result.err.includes("max-sentense-length というルールはありません"), result.err);
+    assert.ok(result.out.includes("a.md"), result.out);
+  });
+});
+
+describe("a numeric limit on a composite rule", () => {
+  // 材料の 2 本（文の長さ・段落の長さ）は上限を小さくして必ず出す。合成の rule は「何本出たら」を上限に持つ。
+  const base = RULES.find((rule) => rule.id === "max-sentence-length");
+  if (base === undefined) throw new Error("max-sentence-length is missing");
+  const composite = { ...base, id: "both-long", how_to_find: "", from: ["max-sentence-length", "max-paragraph-length"], levels: { normal: 2 } };
+  const compositesWith = (limit: number): number => {
+    const doc = buildDocument("a.md", "# 手順\n\n設定を開きます。項目を選びます。保存します。\n", ja);
+    const limits = { "max-sentence-length": 3, "max-paragraph-length": 1, "both-long": limit };
+    const settings: Settings = { "max-sentence-length": "normal", "max-paragraph-length": "normal", "both-long": "normal" };
+    return runRules(doc, [...RULES, composite], settings, false, "technical/readme", limits).findings.filter((finding) => finding.rule === "both-long").length;
+  };
+
+  it("fires when as many rules fired as the number asks", () => {
+    assert.equal(compositesWith(2), 1);
+  });
+
+  it("stays quiet when the number asks for more", () => {
+    assert.equal(compositesWith(3), 0);
   });
 });
