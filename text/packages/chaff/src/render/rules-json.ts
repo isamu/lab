@@ -5,11 +5,20 @@ import type { RuleDefinition } from "../plugin.ts";
 const now = (rule: RuleDefinition, config: Config, genre: string): Record<string, unknown> => {
   const explicit = config.rules[rule.id];
   if (explicit === "off") return { level: "off", why_off: "設定で止めている" };
+  const limit = config.limits[rule.id];
+  if (limit !== undefined) return { level: "normal", limit, set_as: "number" };
   if (explicit !== undefined) return { level: explicit, limit: resolve(rule, explicit, genre).limit };
   if (rule.status === "experimental" && !config.experimental) {
     return { level: "off", why_off: "experimental な rule は既定で動かさない", turn_on_with: `npx chaff lint --experimental` };
   }
   return { level: "normal", limit: resolve(rule, "normal", genre).limit };
+};
+
+const yourSetting = (rule: RuleDefinition, config: Config): Record<string, unknown> | null => {
+  const level = config.rules[rule.id];
+  if (level === undefined) return null;
+  const limit = config.limits[rule.id];
+  return limit === undefined ? { level, from: config.path } : { level, limit, from: config.path };
 };
 
 /** ジャンルで数字が変わる rule があるので、いま効いている表と既定の表の両方を出す。 */
@@ -42,7 +51,7 @@ export const rulesJson = (rules: readonly RuleDefinition[], config: Config, lang
         use_for: rule.use_for,
         ...levelsOf(rule, genre),
         levels_you_can_set: definedLevels(rule),
-        your_setting: config.rules[rule.id] === undefined ? null : { level: config.rules[rule.id], from: config.path },
+        your_setting: yourSetting(rule, config),
         now: now(rule, config, genre),
       })),
       how_to_change: {
