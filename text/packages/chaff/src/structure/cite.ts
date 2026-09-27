@@ -32,10 +32,10 @@ const normalize = (source: string): Normalized => {
   const index: number[] = [];
   [...GRAPHEMES.segment(source)].forEach(({ segment, index: at }) => {
     if (WHITESPACE.test(segment)) return;
-    [...segment.normalize("NFKC")].forEach((part) => {
-      text.push(part);
-      index.push(at);
-    });
+    // 位置の表は UTF-16 の単位で持つ。検索（indexOf）がその単位で数えるので、絵文字のような 2 単位の文字でもずれない。
+    const normalized = segment.normalize("NFKC");
+    text.push(normalized);
+    index.push(...Array.from({ length: normalized.length }, () => at));
   });
   return { text: text.join(""), index };
 };

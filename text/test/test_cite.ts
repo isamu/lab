@@ -165,6 +165,26 @@ describe("Markdown headings without numbers", () => {
   });
 });
 
+describe("characters outside the basic plane", () => {
+  const source = lines("Section 1 Setup", "Pair with A 👩‍💻 B before you start.", "Section 2 Use", "Run the tool 😀 twice.");
+  it("an emoji quote inside its section", () => {
+    assert.deepEqual(check(en, source, [{ address: "1", quote: "A 👩‍💻 B" }]), [["ok", undefined]]);
+  });
+
+  it("a quote after an emoji keeps its place", () => {
+    assert.deepEqual(
+      check(en, source, [
+        { address: "2", quote: "😀 twice" },
+        { address: "1", quote: "tool 😀 twice" },
+      ]),
+      [
+        ["ok", undefined],
+        ["quote-elsewhere", "2"],
+      ],
+    );
+  });
+});
+
 describe("code in a manual is part of its section", () => {
   // 木がコードを覆うのは、コードの中の「Section 9」を番号や参照と読まないため。コードがその節の中身であることは変わらない。
   it("a quoted command inside a code block counts for its section", () => {
