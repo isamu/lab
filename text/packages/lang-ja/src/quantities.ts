@@ -57,7 +57,10 @@ const runEnd = (morphs: readonly Morph[], index: number): number => {
 /** 「第3条」の 3 は番号で、数量ではない。 */
 const isOrdinal = (morph: Morph | undefined): boolean => morph?.surface === "第";
 
-const isSpace = (morph: Morph | undefined): morph is Morph => morph?.surface === " ";
+/** 数と単位のあいだに置かれうる空白 1 文字。構造の型（structure.ts の SPACE）と同じく、全角空白とタブも含む。 */
+const GAP = new Set([" ", "\t", "\u3000"]);
+
+const isSpace = (morph: Morph | undefined): morph is Morph => morph !== undefined && GAP.has(morph.surface);
 
 /**
  * 「1.5 倍」の「倍」は、数とのあいだに空白があると解析器が普通の名詞と読む。
@@ -100,7 +103,7 @@ const NUMBER_RUN = /[0-9０-９][0-9０-９.,]{0,15}|[〇一二三四五六七�
 const countedByTable = (text: string): Counted[] =>
   [...text.matchAll(NUMBER_RUN)].flatMap((match) => {
     // 形態素の経路と同じく、数と単位のあいだの空白 1 つは詰めて読む。
-    const after = match.index + match[0].length + (text[match.index + match[0].length] === " " ? 1 : 0);
+    const after = match.index + match[0].length + (GAP.has(text[match.index + match[0].length] ?? "") ? 1 : 0);
     const unit = UNITS.find((candidate) => text.startsWith(candidate, after));
     const value = parseJapaneseNumber(toHalfWidth(match[0]));
     const ordinal = text[match.index - 1] === "第";

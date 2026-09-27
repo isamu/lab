@@ -252,15 +252,18 @@ const withoutTrailingPunctuation = (run: string): string => {
   return run.slice(0, end);
 };
 
+/** One space or tab may sit between a number and its unit or currency. */
+const isGap = (char: string | undefined): boolean => char === " " || char === "\t";
+
 const unitAfter = (text: string, from: number): string | undefined => {
-  const gap = text[from] === " " ? 1 : 0;
+  const gap = isGap(text[from]) ? 1 : 0;
   const unit = UNITS.find((candidate) => text.startsWith(candidate, from + gap) && !isWordChar(text[from + gap + candidate.length]));
   return unit;
 };
 
 /** The currency just before the number, allowing one space. Looks back a few characters, never at the whole line. */
 const currencyBefore = (text: string, at: number): string | undefined => {
-  const end = text[at - 1] === " " ? at - 1 : at;
+  const end = isGap(text[at - 1]) ? at - 1 : at;
   return CURRENCIES.find((currency) => text.startsWith(currency, end - currency.length));
 };
 
