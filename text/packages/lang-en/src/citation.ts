@@ -1,6 +1,21 @@
 // A reference into another document: "Section 9 of the Master Agreement" is not this document's Section 9.
 
-const OF = /^,? of (?:the )?/u;
+const OF = /^,? of (?:the |that |those )?/u;
+/** "section 4(2)(a) (exception to liability …) of the Damages (Scotland) Act 2011": the gloss sits between the number and the name. */
+const GLOSS = /^ \([^()]{1,100}\)/u;
+const CONNECTOR = /^(?:,? (?:to|and|or)|,) /u;
+const LISTED_NUMBER = /^\d{1,3}[A-Z]{0,2}(?:\([a-z0-9]{1,4}\))*|^(?:\([a-z0-9]{1,4}\))+/u;
+
+/** "Article 58(2)(c) to (g) and (j) of the UK GDPR": the list runs on to the name that governs all of it. */
+const listEnd = (rest: string): number => {
+  let end = 0;
+  for (;;) {
+    const connector = CONNECTOR.exec(rest.slice(end))?.[0];
+    const number = connector === undefined ? undefined : LISTED_NUMBER.exec(rest.slice(end + connector.length))?.[0];
+    if (connector === undefined || number === undefined) return end;
+    end += connector.length + number.length;
+  }
+};
 const CAPITALISED = /^[A-Z][\w'’-]*/u;
 /**
  * How a document names itself. "Section 3 of the Agreement" in an agreement means this one.
@@ -31,10 +46,12 @@ const titleWords = (rest: string): string[] => {
  * "of this Agreement" and "of the Agreement" are this document; "of the Master Agreement" is another.
  */
 export const citedDocumentAfter = (text: string, end: number): string | undefined => {
-  const rest = text.slice(end, end + 120);
-  const of = OF.exec(rest);
+  const rest = text.slice(end, end + 200);
+  const afterList = listEnd(rest);
+  const listed = afterList + (GLOSS.exec(rest.slice(afterList))?.[0].length ?? 0);
+  const of = OF.exec(rest.slice(listed));
   if (of === null) return undefined;
-  const words = titleWords(rest.slice(of[0].length));
+  const words = titleWords(rest.slice(listed + of[0].length));
   if (words.length === 0) return undefined;
   const name = words.join(" ");
   return words.length === 1 && SELF.has(name) ? undefined : name;

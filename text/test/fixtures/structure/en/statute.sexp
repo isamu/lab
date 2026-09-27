@@ -16,5 +16,5 @@
   (chapter "pt2" :heading "ENFORCEMENT" :label "Part II" :line 17
     (chapter "pt2.ch1" :heading "PENALTIES" :label "Chapter 1" :line 18
       (article "301" :heading "Penalty" :label "Section 301" :line 20
-        (reference :label "Section 201(b)" :target "201.b" :line 21)
+        (reference :label "Section 201(b)" :numbering "section" :target "201.b" :line 21)
         (quantity :unit "$" :value 10000 :line 21)))))

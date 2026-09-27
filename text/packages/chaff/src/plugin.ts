@@ -93,6 +93,11 @@ export type NumberedLine = {
   readonly label: string;
   /** 番号に続く見出し。「第3条（支払）」の「支払」。本文しか無ければ空。 */
   readonly heading: string;
+  /**
+   * 番号に付いた語（"section"、"article"）。英米の文書は Section と Article を別のものとして使うので、
+   * 参照の attrs.numbering と比べて、この文書に無い種類の番号への参照（Section で組んだ法令の中の "Article 6"）を見分ける。
+   */
+  readonly numbering?: string | undefined;
   /** 番号の後ろの文字列全部。定義や参照はここから探す。 */
   readonly rest: string;
   /**
@@ -124,6 +129,11 @@ export type StructurePatterns = {
   readonly obligations: (text: string) => readonly Mention[];
   /** 数量。attrs.value に数、attrs.unit に単位。 */
   readonly quantities: (text: string) => readonly Mention[];
+  /**
+   * 「In this section—」のように、この後の定義はいま開いている条の中でだけ通じると宣言する行なら true。
+   * その条の定義に scope: "local" が付く。定義の並びが次の行から始まるので、定義の行だけを見ても分からない。
+   */
+  readonly opensDefinitionScope?: (text: string) => boolean;
   /** 日付。attrs.value に "2024-04-01"・"2024-04"・"04-01"・"2024" のどれか。無い言語は日付を読まない。 */
   readonly dates?: (text: string) => readonly Mention[];
   /**
@@ -150,6 +160,8 @@ export type StructureNode = {
   readonly level?: number;
   /** 範囲をまとめた行の最後の位置（NumberedLine.ordinalTo）。S 式には出さない。 */
   readonly ordinalTo?: number;
+  /** 番号に付いた語（NumberedLine.numbering）。S 式には出さない。 */
+  readonly numbering?: string;
 };
 
 // ───────── 文書モデルと rule ─────────

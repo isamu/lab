@@ -1,0 +1,944 @@
+PART I Arbitration pursuant to an arbitration agreement
+
+Section 1 General principles.
+The provisions of this Part are founded on the following principles, and shall be construed accordingly—
+(a) the object of arbitration is to obtain the fair resolution of disputes by an impartial tribunal without unnecessary delay or expense;
+(b) the parties should be free to agree how their disputes are resolved, subject only to such safeguards as are necessary in the public interest;
+(c) in matters governed by this Part the court should not intervene except as provided by this Part.
+
+Section 2 Scope of application of provisions.
+(1) The provisions of this Part apply where the seat of the arbitration is in England and Wales or Northern Ireland.
+(2) The following sections apply even if the seat of the arbitration is outside England and Wales or Northern Ireland or no seat has been designated or determined—
+(za) section 6A (law applicable to arbitration agreement),
+(a) sections 9 to 11 (stay of legal proceedings, &c.), and
+(b) section 66 (enforcement of arbitral awards).
+(3) The powers conferred by the following sections apply even if the seat of the arbitration is outside England and Wales or Northern Ireland or no seat has been designated or determined—
+(a) section 43 (securing the attendance of witnesses), and
+(b) section 44 (court powers exercisable in support of arbitral proceedings);
+but the court may refuse to exercise any such power if, in the opinion of the court, the fact that the seat of the arbitration is outside England and Wales or Northern Ireland, or that when designated or determined the seat is likely to be outside England and Wales or Northern Ireland, makes it inappropriate to do so.
+(4) The court may exercise a power conferred by any provision of this Part not mentioned in subsection (2) or (3) for the purpose of supporting the arbitral process where—
+(a) no seat of the arbitration has been designated or determined, and
+(b) by reason of a connection with England and Wales or Northern Ireland the court is satisfied that it is appropriate to do so.
+(5) Section 7 (separability of arbitration agreement) and section 8 (death of a party) apply where the law applicable to the arbitration agreement is the law of England and Wales or Northern Ireland even if the seat of the arbitration is outside England and Wales or Northern Ireland or has not been designated or determined.
+
+Section 3 The seat of the arbitration.
+In this Part “the seat of the arbitration” means the juridical seat of the arbitration designated—
+(a) by the parties to the arbitration agreement, or
+(b) by any arbitral or other institution or person vested by the parties with powers in that regard, or
+(c) by the arbitral tribunal if so authorised by the parties,
+or determined, in the absence of any such designation, having regard to the parties’ agreement and all the relevant circumstances.
+
+Section 4 Mandatory and non-mandatory provisions.
+(1) The mandatory provisions of this Part are listed in Schedule 1 and have effect notwithstanding any agreement to the contrary.
+(2) The other provisions of this Part (the “non-mandatory provisions”) allow the parties to make their own arrangements by agreement but provide rules which apply in the absence of such agreement.
+(3) The parties may make such arrangements by agreeing to the application of institutional rules or providing any other means by which a matter may be decided.
+(4) It is immaterial whether or not the law applicable to the parties’ agreement is the law of England and Wales or, as the case may be, Northern Ireland.
+(5) The choice of a law other than the law of England and Wales or Northern Ireland as the applicable law in respect of a matter provided for by a non-mandatory provision of this Part is equivalent to an agreement making provision about that matter.
+
+Section 5 Agreements to be in writing.
+(1) The provisions of this Part apply only where the arbitration agreement is in writing, and any other agreement between the parties as to any matter is effective for the purposes of this Part only if in writing.
+(2) There is an agreement in writing—
+(a) if the agreement is made in writing (whether or not it is signed by the parties),
+(b) if the agreement is made by exchange of communications in writing, or
+(c) if the agreement is evidenced in writing.
+(3) Where parties agree otherwise than in writing by reference to terms which are in writing, they make an agreement in writing.
+(4) An agreement is evidenced in writing if an agreement made otherwise than in writing is recorded by one of the parties, or by a third party, with the authority of the parties to the agreement.
+(5) An exchange of written submissions in arbitral or legal proceedings in which the existence of an agreement otherwise than in writing is alleged by one party against another party and not denied by the other party in his response constitutes as between those parties an agreement in writing to the effect alleged.
+(6) References in this Part to anything being written or in writing include its being recorded by any means.
+
+Section 6 Definition of arbitration agreement.
+(1) In this Part an “arbitration agreement” means an agreement to submit to arbitration present or future disputes (whether they are contractual or not).
+(2) The reference in an agreement to a written form of arbitration clause or to a document containing an arbitration clause constitutes an arbitration agreement if the reference is such as to make that clause part of the agreement.
+
+Section 6A Law applicable to arbitration agreement
+(1) The law applicable to an arbitration agreement is—
+(a) the law that the parties expressly agree applies to the arbitration agreement, or
+(b) where no such agreement is made, the law of the seat of the arbitration in question.
+(2) For the purposes of subsection (1), agreement between the parties that a particular law applies to an agreement of which the arbitration agreement forms a part does not constitute express agreement that that law also applies to the arbitration agreement.
+(3) Subsection (1) does not apply to an arbitration agreement derived from a standing offer to submit disputes to arbitration where the offer is contained in—
+(a) a treaty, or
+(b) legislation of a country or territory outside the United Kingdom.
+(4) In this section—
+“legislation” includes any provision of a legislative character;
+“treaty” includes any international agreement (and any protocol or annex to a treaty or international agreement).
+
+Section 7 Separability of arbitration agreement.
+Unless otherwise agreed by the parties, an arbitration agreement which forms or was intended to form part of another agreement (whether or not in writing) shall not be regarded as invalid, non-existent or ineffective because that other agreement is invalid, or did not come into existence or has become ineffective, and it shall for that purpose be treated as a distinct agreement.
+
+Section 8 Whether agreement discharged by death of a party.
+(1) Unless otherwise agreed by the parties, an arbitration agreement is not discharged by the death of a party and may be enforced by or against the personal representatives of that party.
+(2) Subsection (1) does not affect the operation of any enactment or rule of law by virtue of which a substantive right or obligation is extinguished by death.
+
+Section 9 Stay of legal proceedings.
+(1) A party to an arbitration agreement against whom legal proceedings are brought (whether by way of claim or counterclaim) in respect of a matter which under the agreement is to be referred to arbitration may (upon notice to the other parties to the proceedings) apply to the court in which the proceedings have been brought to stay the proceedings so far as they concern that matter.
+(2) An application may be made notwithstanding that the matter is to be referred to arbitration only after the exhaustion of other dispute resolution procedures.
+(3) An application may not be made by a person before taking the appropriate procedural step (if any) to acknowledge the legal proceedings against him or after he has taken any step in those proceedings to answer the substantive claim.
+(4) On an application under this section the court shall grant a stay unless satisfied that the arbitration agreement is null and void, inoperative, or incapable of being performed.
+(5) If the court refuses to stay the legal proceedings, any provision that an award is a condition precedent to the bringing of legal proceedings in respect of any matter is of no effect in relation to those proceedings.
+
+Section 10 Reference of interpleader issue to arbitration.
+(1) Where in legal proceedings relief by way of interpleader is granted and any issue between the claimants is one in respect of which there is an arbitration agreement between them, the court granting the relief shall direct that the issue be determined in accordance with the agreement unless the circumstances are such that proceedings brought by a claimant in respect of the matter would not be stayed.
+(2) Where subsection (1) applies but the court does not direct that the issue be determined in accordance with the arbitration agreement, any provision that an award is a condition precedent to the bringing of legal proceedings in respect of any matter shall not affect the determination of that issue by the court.
+
+Section 11 Retention of security where Admiralty proceedings stayed.
+(1) Where Admiralty proceedings are stayed on the ground that the dispute in question should be submitted to arbitration, the court granting the stay may, if in those proceedings property has been arrested or bail or other security has been given to prevent or obtain release from arrest—
+(a) order that the property arrested be retained as security for the satisfaction of any award given in the arbitration in respect of that dispute, or
+(b) order that the stay of those proceedings be conditional on the provision of equivalent security for the satisfaction of any such award.
+(2) Subject to any provision made by rules of court and to any necessary modifications, the same law and practice shall apply in relation to property retained in pursuance of an order as would apply if it were held for the purposes of proceedings in the court making the order.
+
+Section 12 Power of court to extend time for beginning arbitral proceedings, &c.
+(1) Where an arbitration agreement to refer future disputes to arbitration provides that a claim shall be barred, or the claimant’s right extinguished, unless the claimant takes within a time fixed by the agreement some step—
+(a) to begin arbitral proceedings, or
+(b) to begin other dispute resolution procedures which must be exhausted before arbitral proceedings can be begun,
+the court may by order extend the time for taking that step.
+(2) Any party to the arbitration agreement may apply for such an order (upon notice to the other parties), but only after a claim has arisen and after exhausting any available arbitral process for obtaining an extension of time.
+(3) The court shall make an order only if satisfied—
+(a) that the circumstances are such as were outside the reasonable contemplation of the parties when they agreed the provision in question, and that it would be just to extend the time, or
+(b) that the conduct of one party makes it unjust to hold the other party to the strict terms of the provision in question.
+(4) The court may extend the time for such period and on such terms as it thinks fit, and may do so whether or not the time previously fixed (by agreement or by a previous order) has expired.
+(5) An order under this section does not affect the operation of the Limitation Acts (see section 13).
+(6) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 13 Application of Limitation Acts.
+(1) The Limitation Acts apply to arbitral proceedings as they apply to legal proceedings.
+(2) The court may order that in computing the time prescribed by the Limitation Acts for the commencement of proceedings (including arbitral proceedings) in respect of a dispute which was the subject matter—
+(a) of an award which the court orders to be set aside or declares to be of no effect, or
+(b) of the affected part of an award which the court orders to be set aside in part, or declares to be in part of no effect,
+the period between the commencement of the arbitration and the date of the order referred to in paragraph (a) or (b) shall be excluded.
+(3) In determining for the purposes of the Limitation Acts when a cause of action accrued, any provision that an award is a condition precedent to the bringing of legal proceedings in respect of a matter to which an arbitration agreement applies shall be disregarded.
+(4) In this Part “the Limitation Acts” means—
+(a) in England and Wales, the Limitation Act 1980, the Foreign Limitation Periods Act 1984 and any other enactment (whenever passed) relating to the limitation of actions;
+(b) in Northern Ireland, the Limitation (Northern Ireland) Order 1989, the Foreign Limitation Periods (Northern Ireland) Order 1985 and any other enactment (whenever passed) relating to the limitation of actions.
+
+Section 14 Commencement of arbitral proceedings.
+(1) The parties are free to agree when arbitral proceedings are to be regarded as commenced for the purposes of this Part and for the purposes of the Limitation Acts.
+(2) If there is no such agreement the following provisions apply.
+(3) Where the arbitrator is named or designated in the arbitration agreement, arbitral proceedings are commenced in respect of a matter when one party serves on the other party or parties a notice in writing requiring him or them to submit that matter to the person so named or designated.
+(4) Where the arbitrator or arbitrators are to be appointed by the parties, arbitral proceedings are commenced in respect of a matter when one party serves on the other party or parties notice in writing requiring him or them to appoint an arbitrator or to agree to the appointment of an arbitrator in respect of that matter.
+(5) Where the arbitrator or arbitrators are to be appointed by a person other than a party to the proceedings, arbitral proceedings are commenced in respect of a matter when one party gives notice in writing to that person requesting him to make the appointment in respect of that matter.
+
+Section 15 The arbitral tribunal.
+(1) The parties are free to agree on the number of arbitrators to form the tribunal and whether there is to be a chairman or umpire.
+(2) Unless otherwise agreed by the parties, an agreement that the number of arbitrators shall be two or any other even number shall be understood as requiring the appointment of an additional arbitrator as chairman of the tribunal.
+(3) If there is no agreement as to the number of arbitrators, the tribunal shall consist of a sole arbitrator.
+
+Section 16 Procedure for appointment of arbitrators.
+(1) The parties are free to agree on the procedure for appointing the arbitrator or arbitrators, including the procedure for appointing any chairman or umpire.
+(2) If or to the extent that there is no such agreement, the following provisions apply.
+(3) If the tribunal is to consist of a sole arbitrator, the parties shall jointly appoint the arbitrator not later than 28 days after service of a request in writing by either party to do so.
+(4) If the tribunal is to consist of two arbitrators, each party shall appoint one arbitrator not later than 14 days after service of a request in writing by either party to do so.
+(5) If the tribunal is to consist of three arbitrators—
+(a) each party shall appoint one arbitrator not later than 14 days after service of a request in writing by either party to do so, and
+(b) the two so appointed shall forthwith appoint a third arbitrator as the chairman of the tribunal.
+(6) If the tribunal is to consist of two arbitrators and an umpire—
+(a) each party shall appoint one arbitrator not later than 14 days after service of a request in writing by either party to do so, and
+(b) the two so appointed may appoint an umpire at any time after they themselves are appointed and shall do so before any substantive hearing or forthwith if they cannot agree on a matter relating to the arbitration.
+(7) In any other case (in particular, if there are more than two parties) section 18 applies as in the case of a failure of the agreed appointment procedure.
+
+Section 17 Power in case of default to appoint sole arbitrator.
+(1) Unless the parties otherwise agree, where each of two parties to an arbitration agreement is to appoint an arbitrator and one party (“the party in default”) refuses to do so, or fails to do so within the time specified, the other party, having duly appointed his arbitrator, may give notice in writing to the party in default that he proposes to appoint his arbitrator to act as sole arbitrator.
+(2) If the party in default does not within 7 clear days of that notice being given—
+(a) make the required appointment, and
+(b) notify the other party that he has done so,
+the other party may appoint his arbitrator as sole arbitrator whose award shall be binding on both parties as if he had been so appointed by agreement.
+(3) Where a sole arbitrator has been appointed under subsection (2), the party in default may (upon notice to the appointing party) apply to the court which may set aside the appointment.
+(4) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 18 Failure of appointment procedure.
+(1) The parties are free to agree what is to happen in the event of a failure of the procedure for the appointment of the arbitral tribunal.
+(2) If or to the extent that there is no such agreement any party to the arbitration agreement may (upon notice to the other parties) apply to the court to exercise its powers under this section.
+(3) Those powers are—
+(a) to give directions as to the making of any necessary appointments;
+(b) to direct that the tribunal shall be constituted by such appointments (or any one or more of them) as have been made;
+(c) to revoke any appointments already made;
+(d) to make any necessary appointments itself.
+(4) An appointment made by the court under this section has effect as if made with the agreement of the parties.
+(5) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 19 Court to have regard to agreed qualifications.
+In deciding whether to exercise, and in considering how to exercise, any of its powers under section 16 (procedure for appointment of arbitrators) or section 18 (failure of appointment procedure), the court shall have due regard to any agreement of the parties as to the qualifications required of the arbitrators.
+
+Section 20 Chairman.
+(1) Where the parties have agreed that there is to be a chairman, they are free to agree what the functions of the chairman are to be in relation to the making of decisions, orders and awards.
+(2) If or to the extent that there is no such agreement, the following provisions apply.
+(3) Decisions, orders and awards shall be made by all or a majority of the arbitrators (including the chairman).
+(4) The view of the chairman shall prevail in relation to a decision, order or award in respect of which there is neither unanimity nor a majority under subsection (3).
+
+Section 21 Umpire.
+(1) Where the parties have agreed that there is to be an umpire, they are free to agree what the functions of the umpire are to be, and in particular—
+(a) whether he is to attend the proceedings, and
+(b) when he is to replace the other arbitrators as the tribunal with power to make decisions, orders and awards.
+(2) If or to the extent that there is no such agreement, the following provisions apply.
+(3) The umpire shall attend the proceedings and be supplied with the same documents and other materials as are supplied to the other arbitrators.
+(4) Decisions, orders and awards shall be made by the other arbitrators unless and until they cannot agree on a matter relating to the arbitration.
+(5) If the arbitrators cannot agree but fail to give notice of that fact, or if any of them fails to join in the giving of notice, any party to the arbitral proceedings may (upon notice to the other parties and to the tribunal) apply to the court which may order that the umpire shall replace the other arbitrators as the tribunal with power to make decisions, orders and awards as if he were sole arbitrator.
+(6) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 22 Decision-making where no chairman or umpire.
+(1) Where the parties agree that there shall be two or more arbitrators with no chairman or umpire, the parties are free to agree how the tribunal is to make decisions, orders and awards.
+(2) If there is no such agreement, decisions, orders and awards shall be made by all or a majority of the arbitrators.
+
+Section 23 Revocation of arbitrator’s authority.
+(1) The parties are free to agree in what circumstances the authority of an arbitrator may be revoked.
+(2) If or to the extent that there is no such agreement the following provisions apply.
+(3) The authority of an arbitrator may not be revoked except—
+(a) by the parties acting jointly, or
+(b) by an arbitral or other institution or person vested by the parties with powers in that regard.
+(4) Revocation of the authority of an arbitrator by the parties acting jointly must be agreed in writing unless the parties also agree (whether or not in writing) to terminate the arbitration agreement.
+(5) Nothing in this section affects the power of the court—
+(a) to revoke an appointment under section 18 (powers exercisable in case of failure of appointment procedure), or
+(b) to remove an arbitrator on the grounds specified in section 24.
+
+Section 23A Impartiality: duty of disclosure
+(1) An individual who has been approached by a person in connection with the individual’s possible appointment as an arbitrator must, as soon as reasonably practical, disclose to the person any relevant circumstances of which the individual is, or becomes, aware.
+(2) An arbitrator must, as soon as reasonably practical, disclose to the parties to the arbitral proceedings any relevant circumstances of which the arbitrator is, or becomes, aware.
+(3) For the purposes of this section—
+(a) “relevant circumstances”, in relation to an individual, are circumstances that might reasonably give rise to justifiable doubts as to the individual’s impartiality in relation to the proceedings, or potential proceedings, concerned, and
+(b) an individual is to be treated as being aware of circumstances of which the individual ought reasonably to be aware.
+
+Section 24 Power of court to remove arbitrator.
+(1) A party to arbitral proceedings may (upon notice to the other parties, to the arbitrator concerned and to any other arbitrator) apply to the court to remove an arbitrator on any of the following grounds—
+(a) that circumstances exist that give rise to justifiable doubts as to his impartiality;
+(b) that he does not possess the qualifications required by the arbitration agreement;
+(c) that he is physically or mentally incapable of conducting the proceedings or there are justifiable doubts as to his capacity to do so;
+(d) that he has refused or failed—
+(i) properly to conduct the proceedings, or
+(ii) to use all reasonable despatch in conducting the proceedings or making an award,
+and that substantial injustice has been or will be caused to the applicant.
+(2) If there is an arbitral or other institution or person vested by the parties with power to remove an arbitrator, the court shall not exercise its power of removal unless satisfied that the applicant has first exhausted any available recourse to that institution or person.
+(3) The arbitral tribunal may continue the arbitral proceedings and make an award while an application to the court under this section is pending.
+(4) Where the court removes an arbitrator, it may make such order as it thinks fit with respect to his entitlement (if any) to fees or expenses, or the repayment of any fees or expenses already paid.
+(5) The arbitrator concerned is entitled to appear and be heard by the court before it makes any order under this section.
+(5A) The court may not order the arbitrator to pay costs in proceedings under this section unless any act or omission of the arbitrator in connection with the proceedings is shown to have been in bad faith.
+(6) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 25 Resignation of arbitrator: entitlement to fees or expenses.
+(1) The parties are free to agree with an arbitrator as to the consequences of his resignation as regards—
+(a) his entitlement (if any) to fees or expenses,...
+(b) ................................
+(2) If or to the extent that there is no such agreement the following provisions apply.
+(3) Where an arbitrator resigns, a relevant person may (upon notice to the other relevant persons) apply to the court to make such order as it thinks fit with respect to the arbitrator’s entitlement (if any) to fees or expenses or the repayment of any fees or expenses already paid.
+(4) For the purposes of subsection (3), each of the parties and the arbitrator is a “relevant person”.
+(5) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 26 Death of arbitrator or person appointing him.
+(1) The authority of an arbitrator is personal and ceases on his death.
+(2) Unless otherwise agreed by the parties, the death of the person by whom an arbitrator was appointed does not revoke the arbitrator’s authority.
+
+Section 27 Filling of vacancy, &c.
+(1) Where an arbitrator ceases to hold office, the parties are free to agree—
+(a) whether and if so how the vacancy is to be filled,
+(b) whether and if so to what extent the previous proceedings should stand, and
+(c) what effect (if any) his ceasing to hold office has on any appointment made by him (alone or jointly).
+(2) If or to the extent that there is no such agreement, the following provisions apply.
+(3) The provisions of sections 16 (procedure for appointment of arbitrators) and 18 (failure of appointment procedure) apply in relation to the filling of the vacancy as in relation to an original appointment.
+(4) The tribunal (when reconstituted) shall determine whether and if so to what extent the previous proceedings should stand.
+(5) His ceasing to hold office does not affect any appointment by him (alone or jointly) of another arbitrator, in particular any appointment of a chairman or umpire.
+
+Section 28 Joint and several liability of parties to arbitrators for fees and expenses.
+(1) The parties are jointly and severally liable to pay to the arbitrators such reasonable fees and expenses (if any) as are appropriate in the circumstances.
+(2) Any party may apply to the court (upon notice to the other parties and to the arbitrators) which may order that the amount of the arbitrators’ fees and expenses shall be considered and adjusted by such means and upon such terms as it may direct.
+(3) If the application is made after any amount has been paid to the arbitrators by way of fees or expenses, the court may order the repayment of such amount (if any) as is shown to be excessive, but shall not do so unless it is shown that it is reasonable in the circumstances to order repayment.
+(4) The above provisions have effect subject to any order of the court under section 24(4) or 25(3) (order as to entitlement to fees or expenses in case of removal or resignation of arbitrator).
+(5) Nothing in this section affects any liability of a party to any other party to pay all or any of the costs of the arbitration (see sections 59 to 65) or any contractual right of an arbitrator to payment of his fees and expenses.
+(6) In this section references to arbitrators include an arbitrator who has ceased to act and an umpire who has not replaced the other arbitrators.
+
+Section 29 Immunity of arbitrator.
+(1) An arbitrator is not liable for anything done or omitted in the discharge or purported discharge of his functions as arbitrator unless the act or omission is shown to have been in bad faith (and see section 24(5A) (immunity in respect of costs of proceedings for removal)).
+(2) Subsection (1) applies to an employee or agent of an arbitrator as it applies to the arbitrator himself.
+(3) ................................
+(4) An arbitrator’s resignation does not give rise to any liability for the arbitrator unless it is shown that the resignation was, in all the circumstances, unreasonable.
+(5) But subsection (4) is subject to—
+(a) agreement reached between the parties and the arbitrator as mentioned in section 25(1)(a);
+(b) an order made under section 25(3).
+
+Section 30 Competence of tribunal to rule on its own jurisdiction.
+(1) Unless otherwise agreed by the parties, the arbitral tribunal may rule on its own substantive jurisdiction, that is, as to—
+(a) whether there is a valid arbitration agreement,
+(b) whether the tribunal is properly constituted, and
+(c) what matters have been submitted to arbitration in accordance with the arbitration agreement.
+(2) Any such ruling may be challenged by any available arbitral process of appeal or review or in accordance with the provisions of this Part.
+
+Section 31 Objection to substantive jurisdiction of tribunal.
+(1) An objection that the arbitral tribunal lacks substantive jurisdiction at the outset of the proceedings must be raised by a party not later than the time he takes the first step in the proceedings to contest the merits of any matter in relation to which he challenges the tribunal’s jurisdiction.
+(2) Any objection during the course of the arbitral proceedings that the arbitral tribunal is exceeding its substantive jurisdiction must be made as soon as possible after the matter alleged to be beyond its jurisdiction is raised.
+(3) The arbitral tribunal may admit an objection later than the time specified in subsection (1) or (2) if it considers the delay justified.
+(4) Where an objection is duly taken to the tribunal’s substantive jurisdiction and the tribunal has power to rule on its own jurisdiction, it may—
+(a) rule on the matter in an award as to jurisdiction, or
+(b) deal with the objection in its award on the merits.
+(5) The tribunal may in any case, and shall if the parties so agree, stay proceedings whilst an application is made to the court under section 32 (determination of preliminary point of jurisdiction).
+
+Section 32 Determination of preliminary point of jurisdiction.
+(1) The court may, on the application of a party to arbitral proceedings (upon notice to the other parties), determine any question as to the substantive jurisdiction of the tribunal.
+(1A) An application under this section must not be considered to the extent that it is in respect of a question on which the tribunal has already ruled.
+(2) An application under this section shall not be considered unless—
+(a) it is made with the agreement in writing of all the other parties to the proceedings, or
+(b) it is made with the permission of the tribunal...
+(3) ................................
+(4) Unless otherwise agreed by the parties, the arbitral tribunal may continue the arbitral proceedings and make an award while an application to the court under this section is pending.
+(5) Unless the court gives leave, no appeal lies from a decision of the court whether either condition specified in subsection (2) is met.
+(6) The decision of the court on the question of jurisdiction shall be treated as a judgment of the court for the purposes of an appeal.
+
+Section 33 General duty of the tribunal.
+(1) The tribunal shall—
+(a) act fairly and impartially as between the parties, giving each party a reasonable opportunity of putting his case and dealing with that of his opponent, and
+(b) adopt procedures suitable to the circumstances of the particular case, avoiding unnecessary delay or expense, so as to provide a fair means for the resolution of the matters falling to be determined.
+(2) The tribunal shall comply with that general duty in conducting the arbitral proceedings, in its decisions on matters of procedure and evidence and in the exercise of all other powers conferred on it.
+
+Section 34 Procedural and evidential matters.
+(1) It shall be for the tribunal to decide all procedural and evidential matters, subject to the right of the parties to agree any matter.
+(2) Procedural and evidential matters include—
+(a) when and where any part of the proceedings is to be held;
+(b) the language or languages to be used in the proceedings and whether translations of any relevant documents are to be supplied;
+(c) whether any and if so what form of written statements of claim and defence are to be used, when these should be supplied and the extent to which such statements can be later amended;
+(d) whether any and if so which documents or classes of documents should be disclosed between and produced by the parties and at what stage;
+(e) whether any and if so what questions should be put to and answered by the respective parties and when and in what form this should be done;
+(f) whether to apply strict rules of evidence (or any other rules) as to the admissibility, relevance or weight of any material (oral, written or other) sought to be tendered on any matters of fact or opinion, and the time, manner and form in which such material should be exchanged and presented;
+(g) whether and to what extent the tribunal should itself take the initiative in ascertaining the facts and the law;
+(h) whether and to what extent there should be oral or written evidence or submissions.
+(3) The tribunal may fix the time within which any directions given by it are to be complied with, and may if it thinks fit extend the time so fixed (whether or not it has expired).
+
+Section 35 Consolidation of proceedings and concurrent hearings.
+(1) The parties are free to agree—
+(a) that the arbitral proceedings shall be consolidated with other arbitral proceedings, or
+(b) that concurrent hearings shall be held,
+on such terms as may be agreed.
+(2) Unless the parties agree to confer such power on the tribunal, the tribunal has no power to order consolidation of proceedings or concurrent hearings.
+
+Section 36 Legal or other representation.
+Unless otherwise agreed by the parties, a party to arbitral proceedings may be represented in the proceedings by a lawyer or other person chosen by him.
+
+Section 37 Power to appoint experts, legal advisers or assessors.
+(1) Unless otherwise agreed by the parties—
+(a) the tribunal may—
+(i) appoint experts or legal advisers to report to it and the parties, or
+(ii) appoint assessors to assist it on technical matters,
+and may allow any such expert, legal adviser or assessor to attend the proceedings; and
+(b) the parties shall be given a reasonable opportunity to comment on any information, opinion or advice offered by any such person.
+(2) The fees and expenses of an expert, legal adviser or assessor appointed by the tribunal for which the arbitrators are liable are expenses of the arbitrators for the purposes of this Part.
+
+Section 38 General powers exercisable by the tribunal.
+(1) The parties are free to agree on the powers exercisable by the arbitral tribunal for the purposes of and in relation to the proceedings.
+(2) Unless otherwise agreed by the parties the tribunal has the following powers.
+(3) The tribunal may order a claimant to provide security for the costs of the arbitration.
+(4) The tribunal may give directions in relation to any property which is the subject of the proceedings or as to which any question arises in the proceedings, and which is owned by or is in the possession of a party to the proceedings—
+(a) for the inspection, photographing, preservation, custody or detention of the property by the tribunal, an expert or a party, or
+(b) ordering that samples be taken from, or any observation be made of or experiment conducted upon, the property.
+(5) The tribunal may direct that a party or witness shall be examined on oath or affirmation, and may for that purpose administer any necessary oath or take any necessary affirmation.
+(6) The tribunal may give directions to a party for the preservation for the purposes of the proceedings of any evidence in his custody or control.
+
+Section 39 Power to make provisional awards.
+(1) The parties are free to agree that the tribunal shall have power to order on a provisional basis any relief which it would have power to grant in a final award.
+(2) This includes, for instance, making—
+(a) a provisional order for the payment of money or the disposition of property as between the parties, or
+(b) an order to make an interim payment on account of the costs of the arbitration.
+(3) Any such order shall be subject to the tribunal’s final adjudication; and the tribunal’s final award, on the merits or as to costs, shall take account of any such order.
+(4) Unless the parties agree to confer such power on the tribunal, the tribunal has no such power.
+
+Section 39A Power to make award on summary basis
+(1) Unless the parties otherwise agree, the arbitral tribunal may, on an application made by a party to the proceedings (upon notice to the other parties), make an award on a summary basis in relation to a claim, or a particular issue arising in a claim, if the tribunal considers that—
+(a) a party has no real prospect of succeeding on the claim or issue, or
+(b) a party has no real prospect of succeeding in the defence of the claim or issue.
+(2) For the purposes of subsection (1), an arbitral tribunal makes an award “on a summary basis” in relation to a claim or issue if the tribunal has exercised its power under section 34(1) (to decide all procedural and evidential matters) with a view to expediting the proceedings on the claim or issue.
+(3) Before exercising its power under section 34(1) as mentioned in subsection (2), an arbitral tribunal must afford the parties a reasonable opportunity to make representations to the tribunal.
+
+Section 40 General duty of parties.
+(1) The parties shall do all things necessary for the proper and expeditious conduct of the arbitral proceedings.
+(2) This includes—
+(a) complying without delay with any determination of the tribunal as to procedural or evidential matters, or with any order or directions of the tribunal, and
+(b) where appropriate, taking without delay any necessary steps to obtain a decision of the court on a preliminary question of jurisdiction or law (see sections 32 and 45).
+
+Section 41 Powers of tribunal in case of party’s default.
+(1) The parties are free to agree on the powers of the tribunal in case of a party’s failure to do something necessary for the proper and expeditious conduct of the arbitration.
+(2) Unless otherwise agreed by the parties, the following provisions apply.
+(3) If the tribunal is satisfied that there has been inordinate and inexcusable delay on the part of the claimant in pursuing his claim and that the delay—
+(a) gives rise, or is likely to give rise, to a substantial risk that it is not possible to have a fair resolution of the issues in that claim, or
+(b) has caused, or is likely to cause, serious prejudice to the respondent,
+the tribunal may make an award dismissing the claim.
+(4) If without showing sufficient cause a party—
+(a) fails to attend or be represented at an oral hearing of which due notice was given, or
+(b) where matters are to be dealt with in writing, fails after due notice to submit written evidence or make written submissions,
+the tribunal may continue the proceedings in the absence of that party or, as the case may be, without any written evidence or submissions on his behalf, and may make an award on the basis of the evidence before it.
+(5) If without showing sufficient cause a party fails to comply with any order or directions of the tribunal, the tribunal may make a peremptory order to the same effect, prescribing such time for compliance with it as the tribunal considers appropriate.
+(6) If a claimant fails to comply with a peremptory order of the tribunal to provide security for costs, the tribunal may make an award dismissing his claim.
+(7) If a party fails to comply with any other kind of peremptory order of the tribunal, then, without prejudice to section 42 (enforcement by court of... peremptory orders), the tribunal may do any of the following—
+(a) direct that the party in default shall not be entitled to rely upon any allegation or material which was the subject matter of the order;
+(b) draw such adverse inferences from the act of non-compliance as the circumstances justify;
+(c) proceed to an award on the basis of such materials as have been properly provided to it;
+(d) make such order as it thinks fit as to the payment of costs of the arbitration incurred in consequence of the non-compliance.
+
+Section 41A Emergency arbitrators
+(1) This section applies where—
+(a) the parties have agreed to the application of rules that provide for the appointment of an individual as an emergency arbitrator, and
+(b) an emergency arbitrator has been appointed pursuant to those rules.
+(2) Unless otherwise agreed by the parties, if without showing sufficient cause a party fails to comply with any order or directions of the emergency arbitrator, the emergency arbitrator may make a peremptory order to the same effect, prescribing such time for compliance with it as the emergency arbitrator considers appropriate.
+
+Section 42 Enforcement of peremptory orders of tribunal or emergency arbitrator.
+(1) Unless otherwise agreed by the parties, the court may make an order requiring a party to comply with a peremptory order made by the tribunal or (as the case may be) the emergency arbitrator.
+(2) An application for an order under this section may be made—
+(a) by the tribunal or the emergency arbitrator (upon notice to the parties),
+(b) by a party to the arbitral proceedings with the permission of the tribunal or the emergency arbitrator (and upon notice to the other parties), or
+(c) where the parties have agreed that the powers of the court under this section shall be available.
+(3) The court shall not act unless it is satisfied that the applicant has exhausted any available arbitral process in respect of failure to comply with the peremptory order.
+(4) No order shall be made under this section unless the court is satisfied that the person to whom the peremptory order was directed has failed to comply with it within the time prescribed in the order or, if no time was prescribed, within a reasonable time.
+(5) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 43 Securing the attendance of witnesses.
+(1) A party to arbitral proceedings may use the same court procedures as are available in relation to legal proceedings to secure the attendance before the tribunal of a witness in order to give oral testimony or to produce documents or other material evidence.
+(2) This may only be done with the permission of the tribunal or the agreement of the other parties.
+(3) The court procedures may only be used if—
+(a) the witness is in the United Kingdom, and
+(b) the arbitral proceedings are being conducted in England and Wales or, as the case may be, Northern Ireland.
+(4) A person shall not be compelled by virtue of this section to produce any document or other material evidence which he could not be compelled to produce in legal proceedings.
+
+Section 44 Court powers exercisable in support of arbitral proceedings.
+(1) Unless otherwise agreed by the parties, the court has for the purposes of and in relation to arbitral proceedings the same power of making orders (whether in relation to a party or any other person) about the matters listed below as it has for the purposes of and in relation to legal proceedings.
+(2) Those matters are—
+(a) the taking of the evidence of witnesses;
+(b) the preservation of evidence;
+(c) making orders relating to property which is the subject of the proceedings or as to which any question arises in the proceedings—
+(i) for the inspection, photographing, preservation, custody or detention of the property, or
+(ii) ordering that samples be taken from, or any observation be made of or experiment conducted upon, the property;
+and for that purpose authorising any person to enter any premises in the possession or control of a party to the arbitration;
+(d) the sale of any goods the subject of the proceedings;
+(e) the granting of an interim injunction or the appointment of a receiver.
+(3) If the case is one of urgency, the court may, on the application of a party or proposed party to the arbitral proceedings, make such orders as it thinks necessary for the purpose of preserving evidence or assets.
+(4) If the case is not one of urgency, the court may act only on the application of a party to the arbitral proceedings made with—
+(a) the permission of the tribunal or (as the case may be) the emergency arbitrator, or
+(b) the agreement in writing of the other parties.
+(4A) An application under subsection (4) may be made only upon notice to the other parties and to the tribunal or the emergency arbitrator.
+(5) In any case the court shall act only if or to the extent that the arbitral tribunal or the emergency arbitrator, and any arbitral or other institution or person vested by the parties with power in that regard, has no power or is unable for the time being to act effectively.
+(6) If the court so orders, an order made by it under this section shall cease to have effect in whole or in part on the order of the tribunal, the emergency arbitrator or of any such arbitral or other institution or person having power to act in relation to the subject-matter of the order.
+(6A) Subject to subsection (7), an appeal lies from a decision of the court under this section.
+(7) The leave of the court is required for any such appeal by a party or proposed party to the arbitral proceedings.
+
+Section 45 Determination of preliminary point of law.
+(1) Unless otherwise agreed by the parties, the court may on the application of a party to arbitral proceedings (upon notice to the other parties) determine any question of law arising in the course of the proceedings which the court is satisfied substantially affects the rights of one or more of the parties.
+(2) An application under this section shall not be considered unless—
+(a) it is made with the agreement of all the other parties to the proceedings, or
+(b) it is made with the permission of the tribunal...
+(3) The application shall identify the question of law to be determined....
+(4) Unless otherwise agreed by the parties, the arbitral tribunal may continue the arbitral proceedings and make an award while an application to the court under this section is pending.
+(5) Unless the court gives leave, no appeal lies from a decision of the court whether either condition specified in subsection (2) is met.
+(6) The decision of the court on the question of law shall be treated as a judgment of the court for the purposes of an appeal.
+
+Section 46 Rules applicable to substance of dispute.
+(1) The arbitral tribunal shall decide the dispute—
+(a) in accordance with the law chosen by the parties as applicable to the substance of the dispute, or
+(b) if the parties so agree, in accordance with such other considerations as are agreed by them or determined by the tribunal.
+(2) For this purpose the choice of the laws of a country shall be understood to refer to the substantive laws of that country and not its conflict of laws rules.
+(3) If or to the extent that there is no such choice or agreement, the tribunal shall apply the law determined by the conflict of laws rules which it considers applicable.
+
+Section 47 Awards on different issues, &c.
+(1) Unless otherwise agreed by the parties, the tribunal may make more than one award at different times on different aspects of the matters to be determined.
+(2) The tribunal may, in particular, make an award relating—
+(a) to an issue affecting the whole claim, or
+(b) to a part only of the claims or cross-claims submitted to it for decision.
+(3) If the tribunal does so, it shall specify in its award the issue, or the claim or part of a claim, which is the subject matter of the award.
+
+Section 48 Remedies.
+(1) The parties are free to agree on the powers exercisable by the arbitral tribunal as regards remedies.
+(2) Unless otherwise agreed by the parties, the tribunal has the following powers.
+(3) The tribunal may make a declaration as to any matter to be determined in the proceedings.
+(4) The tribunal may order the payment of a sum of money, in any currency.
+(5) The tribunal has the same powers as the court—
+(a) to order a party to do or refrain from doing anything;
+(b) to order specific performance of a contract (other than a contract relating to land);
+(c) to order the rectification, setting aside or cancellation of a deed or other document.
+
+Section 49 Interest.
+(1) The parties are free to agree on the powers of the tribunal as regards the award of interest.
+(2) Unless otherwise agreed by the parties the following provisions apply.
+(3) The tribunal may award simple or compound interest from such dates, at such rates and with such rests as it considers meets the justice of the case—
+(a) on the whole or part of any amount awarded by the tribunal, in respect of any period up to the date of the award;
+(b) on the whole or part of any amount claimed in the arbitration and outstanding at the commencement of the arbitral proceedings but paid before the award was made, in respect of any period up to the date of payment.
+(4) The tribunal may award simple or compound interest from the date of the award (or any later date) until payment, at such rates and with such rests as it considers meets the justice of the case, on the outstanding amount of any award (including any award of interest under subsection (3) and any award as to costs).
+(5) References in this section to an amount awarded by the tribunal include an amount payable in consequence of a declaratory award by the tribunal.
+(6) The above provisions do not affect any other power of the tribunal to award interest.
+
+Section 50 Extension of time for making award.
+(1) Where the time for making an award is limited by or in pursuance of the arbitration agreement, then, unless otherwise agreed by the parties, the court may in accordance with the following provisions by order extend that time.
+(2) An application for an order under this section may be made—
+(a) by the tribunal (upon notice to the parties), or
+(b) by any party to the proceedings (upon notice to the tribunal and the other parties),
+but only after exhausting any available arbitral process for obtaining an extension of time.
+(3) The court shall only make an order if satisfied that a substantial injustice would otherwise be done.
+(4) The court may extend the time for such period and on such terms as it thinks fit, and may do so whether or not the time previously fixed (by or under the agreement or by a previous order) has expired.
+(5) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 51 Settlement.
+(1) If during arbitral proceedings the parties settle the dispute, the following provisions apply unless otherwise agreed by the parties.
+(2) The tribunal shall terminate the substantive proceedings and, if so requested by the parties and not objected to by the tribunal, shall record the settlement in the form of an agreed award.
+(3) An agreed award shall state that it is an award of the tribunal and shall have the same status and effect as any other award on the merits of the case.
+(4) The following provisions of this Part relating to awards (sections 52 to 58) apply to an agreed award.
+(5) Unless the parties have also settled the matter of the payment of the costs of the arbitration, the provisions of this Part relating to costs (sections 59 to 65) continue to apply.
+
+Section 52 Form of award.
+(1) The parties are free to agree on the form of an award.
+(2) If or to the extent that there is no such agreement, the following provisions apply.
+(3) The award shall be in writing signed by all the arbitrators or all those assenting to the award.
+(4) The award shall contain the reasons for the award unless it is an agreed award or the parties have agreed to dispense with reasons.
+(5) The award shall state the seat of the arbitration and the date when the award is made.
+
+Section 53 Place where award treated as made.
+Unless otherwise agreed by the parties, where the seat of the arbitration is in England and Wales or Northern Ireland, any award in the proceedings shall be treated as made there, regardless of where it was signed, despatched or delivered to any of the parties.
+
+Section 54 Date of award.
+(1) Unless otherwise agreed by the parties, the tribunal may decide what is to be taken to be the date on which the award was made.
+(2) In the absence of any such decision, the date of the award shall be taken to be the date on which it is signed by the arbitrator or, where more than one arbitrator signs the award, by the last of them.
+
+Section 55 Notification of award.
+(1) The parties are free to agree on the requirements as to notification of the award to the parties.
+(2) If there is no such agreement, the award shall be notified to the parties by service on them of copies of the award, which shall be done without delay after the award is made.
+(3) Nothing in this section affects section 56 (power to withhold award in case of non-payment).
+
+Section 56 Power to withhold award in case of non-payment.
+(1) The tribunal may refuse to deliver an award to the parties except upon full payment of the fees and expenses of the arbitrators.
+(2) If the tribunal refuses on that ground to deliver an award, a party to the arbitral proceedings may (upon notice to the other parties and the tribunal) apply to the court, which may order that—
+(a) the tribunal shall deliver the award on the payment into court by the applicant of the fees and expenses demanded, or such lesser amount as the court may specify,
+(b) the amount of the fees and expenses properly payable shall be determined by such means and upon such terms as the court may direct, and
+(c) out of the money paid into court there shall be paid out such fees and expenses as may be found to be properly payable and the balance of the money (if any) shall be paid out to the applicant.
+(3) For this purpose the amount of fees and expenses properly payable is the amount the applicant is liable to pay under section 28 or any agreement relating to the payment of the arbitrators.
+(4) No application to the court may be made where there is any available arbitral process for appeal or review of the amount of the fees or expenses demanded.
+(5) References in this section to arbitrators include an arbitrator who has ceased to act and an umpire who has not replaced the other arbitrators.
+(6) The above provisions of this section also apply in relation to any arbitral or other institution or person vested by the parties with powers in relation to the delivery of the tribunal’s award.
+(7) The leave of the court is required for any appeal from a decision of the court under this section.
+(8) Nothing in this section shall be construed as excluding an application under section 28 where payment has been made to the arbitrators in order to obtain the award.
+
+Section 57 Correction of award or additional award.
+(1) The parties are free to agree on the powers of the tribunal to correct an award or make an additional award.
+(2) If or to the extent there is no such agreement, the following provisions apply.
+(3) The tribunal may on its own initiative or on the application of a party—
+(a) correct an award so as to remove any clerical mistake or error arising from an accidental slip or omission or clarify or remove any ambiguity in the award, or
+(b) make an additional award in respect of any claim (including a claim for interest or costs) which was presented to the tribunal but was not dealt with in the award.
+(4) Any application for the exercise of those powers must be made within 28 days of the date of the award or such longer period as the parties may agree.
+(5) Any correction of an award shall be made within 28 days of the date the application was received by the tribunal or, where the correction is made by the tribunal on its own initiative, within 28 days of the date of the award or, in either case, such longer period as the parties may agree.
+(6) Any additional award shall be made within 56 days of the date of the original award or such longer period as the parties may agree.
+(7) Any correction of an award shall form part of the award.
+
+Section 58 Effect of award.
+(1) Unless otherwise agreed by the parties, an award made by the tribunal pursuant to an arbitration agreement is final and binding both on the parties and on any persons claiming through or under them.
+(2) This does not affect the right of a person to challenge the award by any available arbitral process of appeal or review or in accordance with the provisions of this Part.
+
+Section 59 Costs of the arbitration.
+(1) References in this Part to the costs of the arbitration are to—
+(a) the arbitrators’ fees and expenses,
+(b) the fees and expenses of any arbitral institution concerned, and
+(c) the legal or other costs of the parties.
+(2) Any such reference includes the costs of or incidental to any proceedings to determine the amount of the recoverable costs of the arbitration (see section 63).
+
+Section 60 Agreement to pay costs in any event.
+An agreement which has the effect that a party is to pay the whole or part of the costs of the arbitration in any event is only valid if made after the dispute in question has arisen.
+
+Section 61 Award of costs.
+(1) The tribunal may make an award allocating the costs of the arbitration as between the parties....
+(1A) It is irrelevant for the purposes of subsection (1) whether the tribunal has ruled, or a court has held, that the tribunal has no substantive jurisdiction or has exceeded its substantive jurisdiction.
+(2) ... The tribunal shall award costs on the general principle that costs should follow the event except where it appears to the tribunal that in the circumstances this is not appropriate in relation to the whole or part of the costs.
+(3) Subsections (1), (1A) and (2) are subject to any agreement of the parties.
+
+Section 62 Effect of agreement or award about costs.
+Unless the parties otherwise agree, any obligation under an agreement between them as to how the costs of the arbitration are to be borne, or under an award allocating the costs of the arbitration, extends only to such costs as are recoverable.
+
+Section 63 The recoverable costs of the arbitration.
+(1) The parties are free to agree what costs of the arbitration are recoverable.
+(2) If or to the extent there is no such agreement, the following provisions apply.
+(3) The tribunal may determine by award the recoverable costs of the arbitration on such basis as it thinks fit.
+(4) If the tribunal does not determine the recoverable costs of the arbitration, any party to the arbitral proceedings may apply to the court (upon notice to the other parties) which may—
+(a) determine the recoverable costs of the arbitration on such basis as it thinks fit, or
+(b) order that they shall be determined by such means and upon such terms as it may specify.
+(5) Unless the tribunal or the court determines otherwise—
+(a) the recoverable costs of the arbitration shall be determined on the basis that there shall be allowed a reasonable amount in respect of all costs reasonably incurred, and
+(b) any doubt as to whether costs were reasonably incurred or were reasonable in amount shall be resolved in favour of the paying party.
+(6) The above provisions have effect subject to section 64 (recoverable fees and expenses of arbitrators).
+(7) Nothing in this section affects any right of the arbitrators, any expert, legal adviser or assessor appointed by the tribunal, or any arbitral institution, to payment of their fees and expenses.
+
+Section 64 Recoverable fees and expenses of arbitrators.
+(1) Unless otherwise agreed by the parties, the recoverable costs of the arbitration shall include in respect of the fees and expenses of the arbitrators only such reasonable fees and expenses as are appropriate in the circumstances.
+(2) If there is any question as to what reasonable fees and expenses are appropriate in the circumstances, and the matter is not already before the court on an application under section 63(4), the court may on the application of any party (upon notice to the other parties)—
+(a) determine the matter, or
+(b) order that it be determined by such means and upon such terms as the court may specify.
+(3) Subsection (1) has effect subject to any order of the court under section 24(4) or 25(3) (order as to entitlement to fees or expenses in case of removal or resignation of arbitrator).
+(4) Nothing in this section affects any right of the arbitrator to payment of his fees and expenses.
+
+Section 65 Power to limit recoverable costs.
+(1) Unless otherwise agreed by the parties, the tribunal may direct that the recoverable costs of the arbitration, or of any part of the arbitral proceedings, shall be limited to a specified amount.
+(2) Any direction may be made or varied at any stage, but this must be done sufficiently in advance of the incurring of costs to which it relates, or the taking of any steps in the proceedings which may be affected by it, for the limit to be taken into account.
+
+Section 66 Enforcement of the award.
+(1) An award made by the tribunal pursuant to an arbitration agreement may, by leave of the court, be enforced in the same manner as a judgment or order of the court to the same effect.
+(2) Where leave is so given, judgment may be entered in terms of the award.
+(3) Leave to enforce an award shall not be given where, or to the extent that, the person against whom it is sought to be enforced shows that the tribunal lacked substantive jurisdiction to make the award.
+(4) Nothing in this section affects the recognition or enforcement of an award under any other enactment or rule of law, in particular under Part II of the Arbitration Act 1950 (enforcement of awards under Geneva Convention) or the provisions of Part III of this Act relating to the recognition and enforcement of awards under the New York Convention or by an action on the award.
+
+Section 67 Challenging the award: substantive jurisdiction.
+(1) A party to arbitral proceedings may (upon notice to the other parties and to the tribunal) apply to the court—
+(a) challenging any award of the arbitral tribunal as to its substantive jurisdiction; or
+(b) challenging an award made by the tribunal on the merits because the tribunal did not have substantive jurisdiction.
+(2) The arbitral tribunal may continue the arbitral proceedings and make a further award while an application to the court under this section is pending in relation to an award as to jurisdiction.
+(3) On an application under this section, the court may by order—
+(a) confirm the award,
+(b) vary the award,
+(c) remit the award to the tribunal, in whole or in part, for reconsideration,
+(d) set aside the award, in whole or in part, or
+(e) declare the award to be of no effect, in whole or in part.
+(3A) The court must not exercise its power to set aside or to declare an award to be of no effect, in whole or in part, unless it is satisfied that it would be inappropriate to remit the matters in question to the tribunal for reconsideration.
+(3B) Rules of court about the procedure to be followed on an application under this section may, in particular, include provision within subsection (3C) in relation to a case where the application—
+(a) relates to an objection as to the arbitral tribunal’s substantive jurisdiction on which the tribunal has already ruled, and
+(b) is made by a party that took part in the arbitral proceedings.
+(3C) Provision is within this subsection if it provides that subject to the court ruling otherwise in the interests of justice—
+(a) a ground for the objection that was not raised before the arbitral tribunal must not be raised before the court unless the applicant shows that, at the time the applicant took part in the proceedings, the applicant did not know and could not with reasonable diligence have discovered the ground;
+(b) evidence that was not put before the tribunal must not be considered by the court unless the applicant shows that, at the time the applicant took part in the proceedings, the applicant could not with reasonable diligence have put the evidence before the tribunal;
+(c) evidence that was heard by the tribunal must not be re-heard by the court.
+(3D) Subsection (3B) does not limit the generality of the power to make rules of court.
+(4) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 68 Challenging the award: serious irregularity.
+(1) A party to arbitral proceedings may (upon notice to the other parties and to the tribunal) apply to the court challenging an award in the proceedings on the ground of serious irregularity affecting the tribunal, the proceedings or the award.
+(2) Serious irregularity means an irregularity of one or more of the following kinds which the court considers has caused or will cause substantial injustice to the applicant—
+(a) failure by the tribunal to comply with section 33 (general duty of tribunal);
+(b) the tribunal exceeding its powers (otherwise than by exceeding its substantive jurisdiction: see section 67);
+(c) failure by the tribunal to conduct the proceedings in accordance with the procedure agreed by the parties;
+(d) failure by the tribunal to deal with all the issues that were put to it;
+(e) any arbitral or other institution or person vested by the parties with powers in relation to the proceedings or the award exceeding its powers;
+(f) uncertainty or ambiguity as to the effect of the award;
+(g) the award being obtained by fraud or the award or the way in which it was procured being contrary to public policy;
+(h) failure to comply with the requirements as to the form of the award; or
+(i) any irregularity in the conduct of the proceedings or in the award which is admitted by the tribunal or by any arbitral or other institution or person vested by the parties with powers in relation to the proceedings or the award.
+(3) If there is shown to be serious irregularity affecting the tribunal, the proceedings or the award, the court may—
+(a) remit the award to the tribunal, in whole or in part, for reconsideration,
+(b) set the award aside in whole or in part, or
+(c) declare the award to be of no effect, in whole or in part.
+(4) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 69 Appeal on point of law.
+(1) Unless otherwise agreed by the parties, a party to arbitral proceedings may (upon notice to the other parties and to the tribunal) appeal to the court on a question of law arising out of an award made in the proceedings.
+(2) An appeal shall not be brought under this section except—
+(a) with the agreement of all the other parties to the proceedings, or
+(b) with the leave of the court.
+(3) Leave to appeal shall be given only if the court is satisfied—
+(a) that the determination of the question will substantially affect the rights of one or more of the parties,
+(b) that the question is one which the tribunal was asked to determine,
+(c) that, on the basis of the findings of fact in the award—
+(i) the decision of the tribunal on the question is obviously wrong, or
+(ii) the question is one of general public importance and the decision of the tribunal is at least open to serious doubt, and
+(d) that, despite the agreement of the parties to resolve the matter by arbitration, it is just and proper in all the circumstances for the court to determine the question.
+(4) An application for leave to appeal under this section shall identify the question of law to be determined and state the grounds on which it is alleged that leave to appeal should be granted.
+(5) The court shall determine an application for leave to appeal under this section without a hearing unless it appears to the court that a hearing is required.
+(6) The leave of the court is required for any appeal from a decision of the court under this section to grant or refuse leave to appeal.
+(7) On an appeal under this section the court may by order—
+(a) confirm the award,
+(b) vary the award,
+(c) remit the award to the tribunal, in whole or in part, for reconsideration in the light of the court’s determination, or
+(d) set aside the award in whole or in part.
+(8) The decision of the court on an appeal under this section shall be treated as a judgment of the court for the purposes of a further appeal.
+
+Section 70 Challenge or appeal: supplementary provisions.
+(1) The following provisions apply to an application or appeal under section 67, 68 or 69.
+(2) An application or appeal may not be brought if the applicant or appellant has not first exhausted—
+(a) any available arbitral process of appeal or review, and
+(b) any available recourse under section 57 (correction of award or additional award).
+(3) Any application or appeal must be brought within 28 days of the applicable date.
+(3A) In subsection (3), “the applicable date” means—
+(a) in a case where there has been any arbitral process of appeal or review, the date when the applicant or appellant was notified of the result of that process;
+(b) in a case where the tribunal has, under section 57, made a material correction to an award or has made a material additional award, the date of the correction or additional award;
+(c) in a case where a material application for a correction to an award or for an additional award has been made to the tribunal under section 57 and the tribunal has decided not to grant the application, the date when the applicant or appellant was notified of that decision;
+(d) in any other case, the date of the award.
+(3B) For the purposes of subsection (3A)—
+(a) a correction to an award,
+(b) an additional award, or
+(c) an application under section 57,
+is “material” if any matter to which it relates is material to the application or appeal under section 67, 68 or 69.
+(4) If on an application or appeal it appears to the court that the award—
+(a) does not contain the tribunal’s reasons, or
+(b) does not set out the tribunal’s reasons in sufficient detail to enable the court properly to consider the application or appeal,
+the court may order the tribunal to state the reasons for its award in sufficient detail for that purpose.
+(5) Where the court makes an order under subsection (4), it may make such further order as it thinks fit with respect to any additional costs of the arbitration resulting from its order.
+(6) The court may order the applicant or appellant to provide security for the costs of the application or appeal, and may direct that the application or appeal be dismissed if the order is not complied with.
+(7) The court may order that any money payable under the award shall be brought into court or otherwise secured pending the determination of the application or appeal, and may direct that the application or appeal be dismissed if the order is not complied with.
+(8) The court may grant leave to appeal subject to conditions to the same or similar effect as an order under subsection (6) or (7).
+(9) In this section, a reference to available recourse, or to anything done, under section 57 includes a reference to available recourse, or to anything equivalent done, pursuant to agreement reached between the parties as mentioned in section 57(1).
+
+Section 71 Challenge or appeal: effect of order of court.
+(1) The following provisions have effect where the court makes an order under section 67, 68 or 69 with respect to an award.
+(2) Where the award is varied, the variation has effect as part of the tribunal’s award.
+(3) Where the award is remitted to the tribunal, in whole or in part, for reconsideration, the tribunal shall make a fresh award in respect of the matters remitted within three months of the date of the order for remission or such longer or shorter period as the court may direct.
+(4) Where the award is set aside or declared to be of no effect, in whole or in part, the court may also order that any provision that an award is a condition precedent to the bringing of legal proceedings in respect of a matter to which the arbitration agreement applies, is of no effect as regards the subject matter of the award or, as the case may be, the relevant part of the award.
+
+Section 72 Saving for rights of person who takes no part in proceedings.
+(1) A person alleged to be a party to arbitral proceedings but who takes no part in the proceedings may question—
+(a) whether there is a valid arbitration agreement,
+(b) whether the tribunal is properly constituted, or
+(c) what matters have been submitted to arbitration in accordance with the arbitration agreement,
+by proceedings in the court for a declaration or injunction or other appropriate relief.
+(2) He also has the same right as a party to the arbitral proceedings to challenge an award—
+(a) by an application under section 67 on the ground of lack of substantive jurisdiction in relation to him, or
+(b) by an application under section 68 on the ground of serious irregularity (within the meaning of that section) affecting him;
+and section 70(2) (duty to exhaust arbitral procedures) does not apply in his case.
+
+Section 73 Loss of right to object.
+(1) If a party to arbitral proceedings takes part, or continues to take part, in the proceedings without making, either forthwith or within such time as is allowed by the arbitration agreement or the tribunal or by any provision of this Part, any objection—
+(a) that the tribunal lacks substantive jurisdiction,
+(b) that the proceedings have been improperly conducted,
+(c) that there has been a failure to comply with the arbitration agreement or with any provision of this Part, or
+(d) that there has been any other irregularity affecting the tribunal or the proceedings,
+he may not raise that objection later, before the tribunal or the court, unless he shows that, at the time he took part or continued to take part in the proceedings, he did not know and could not with reasonable diligence have discovered the grounds for the objection.
+(2) Where the arbitral tribunal rules that it has substantive jurisdiction and a party to arbitral proceedings who could have questioned that ruling—
+(a) by any available arbitral process of appeal or review, or
+(b) by challenging the award,
+does not do so, or does not do so within the time allowed by the arbitration agreement or any provision of this Part, he may not object later to the tribunal’s substantive jurisdiction on any ground which was the subject of that ruling.
+
+Section 74 Immunity of arbitral institutions, &c.
+(1) An arbitral or other institution or person designated or requested by the parties to appoint or nominate an arbitrator is not liable for anything done or omitted in the discharge or purported discharge of that function unless the act or omission is shown to have been in bad faith.
+(2) An arbitral or other institution or person by whom an arbitrator is appointed or nominated is not liable, by reason of having appointed or nominated him, for anything done or omitted by the arbitrator (or his employees or agents) in the discharge or purported discharge of his functions as arbitrator.
+(3) The above provisions apply to an employee or agent of an arbitral or other institution or person as they apply to the institution or person himself.
+
+Section 75 Charge to secure payment of solicitors’ costs.
+The powers of the court to make declarations and orders under section 73 of the Solicitors Act 1974 or Article 71H of the Solicitors (Northern Ireland) Order 1976 (power to charge property recovered in the proceedings with the payment of solicitors’ costs) may be exercised in relation to arbitral proceedings as if those proceedings were proceedings in the court.
+
+Section 76 Service of notices, &c.
+(1) The parties are free to agree on the manner of service of any notice or other document required or authorised to be given or served in pursuance of the arbitration agreement or for the purposes of the arbitral proceedings.
+(2) If or to the extent that there is no such agreement the following provisions apply.
+(3) A notice or other document may be served on a person by any effective means.
+(4) If a notice or other document is addressed, pre-paid and delivered by post—
+(a) to the addressee’s last known principal residence or, if he is or has been carrying on a trade, profession or business, his last known principal business address, or
+(b) where the addressee is a body corporate, to the body’s registered or principal office,
+it shall be treated as effectively served.
+(5) This section does not apply to the service of documents for the purposes of legal proceedings, for which provision is made by rules of court.
+(6) References in this Part to a notice or other document include any form of communication in writing and references to giving or serving a notice or other document shall be construed accordingly.
+
+Section 77 Powers of court in relation to service of documents.
+(1) This section applies where service of a document on a person in the manner agreed by the parties, or in accordance with provisions of section 76 having effect in default of agreement, is not reasonably practicable.
+(2) Unless otherwise agreed by the parties, the court may make such order as it thinks fit—
+(a) for service in such manner as the court may direct, or
+(b) dispensing with service of the document.
+(3) Any party to the arbitration agreement may apply for an order, but only after exhausting any available arbitral process for resolving the matter.
+(4) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 78 Reckoning periods of time.
+(1) The parties are free to agree on the method of reckoning periods of time for the purposes of any provision agreed by them or any provision of this Part having effect in default of such agreement.
+(2) If or to the extent there is no such agreement, periods of time shall be reckoned in accordance with the following provisions.
+(3) Where the act is required to be done within a specified period after or from a specified date, the period begins immediately after that date.
+(4) Where the act is required to be done a specified number of clear days after a specified date, at least that number of days must intervene between the day on which the act is done and that date.
+(5) Where the period is a period of seven days or less which would include a Saturday, Sunday or a public holiday in the place where anything which has to be done within the period falls to be done, that day shall be excluded.
+
+Section 79 Power of court to extend time limits relating to arbitral proceedings.
+(1) Unless the parties otherwise agree, the court may by order extend any time limit agreed by them in relation to any matter relating to the arbitral proceedings or specified in any provision of this Part having effect in default of such agreement.
+(2) An application for an order may be made—
+(a) by any party to the arbitral proceedings (upon notice to the other parties and to the tribunal), or
+(b) by the arbitral tribunal (upon notice to the parties).
+(3) The court shall not exercise its power to extend a time limit unless it is satisfied—
+(a) that any available recourse to the tribunal, or to any arbitral or other institution or person vested by the parties with power in that regard, has first been exhausted, and
+(b) that a substantial injustice would otherwise be done.
+(4) The court’s power under this section may be exercised whether or not the time has already expired.
+(5) An order under this section may be made on such terms as the court thinks fit.
+(6) The leave of the court is required for any appeal from a decision of the court under this section.
+
+Section 80 Notice and other requirements in connection with legal proceedings.
+(1) References in this Part to an application, appeal or other step in relation to legal proceedings being taken “upon notice” to the other parties to the arbitral proceedings, or to the tribunal, are to such notice of the originating process as is required by rules of court and do not impose any separate requirement.
+(2) Rules of court shall be made—
+(a) requiring such notice to be given as indicated by any provision of this Part, and
+(b) as to the manner, form and content of any such notice.
+(3) Subject to any provision made by rules of court, a requirement to give notice to the tribunal of legal proceedings shall be construed—
+(a) if there is more than one arbitrator, as a requirement to give notice to each of them; and
+(b) if the tribunal is not fully constituted, as a requirement to give notice to any arbitrator who has been appointed.
+(4) References in this Part to making an application or appeal to the court within a specified period are to the issue within that period of the appropriate originating process in accordance with rules of court.
+(5) Where any provision of this Part requires an application or appeal to be made to the court within a specified time, the rules of court relating to the reckoning of periods, the extending or abridging of periods, and the consequences of not taking a step within the period prescribed by the rules, apply in relation to that requirement.
+(6) Provision may be made by rules of court amending the provisions of this Part—
+(a) with respect to the time within which any application or appeal to the court must be made,
+(b) so as to keep any provision made by this Part in relation to arbitral proceedings in step with the corresponding provision of rules of court applying in relation to proceedings in the court, or
+(c) so as to keep any provision made by this Part in relation to legal proceedings in step with the corresponding provision of rules of court applying generally in relation to proceedings in the court.
+(7) Nothing in this section affects the generality of the power to make rules of court.
+
+Section 81 Saving for certain matters governed by common law.
+(1) Nothing in this Part shall be construed as excluding the operation of any rule of law consistent with the provisions of this Part, in particular, any rule of law as to—
+(a) matters which are not capable of settlement by arbitration;
+(b) the effect of an oral arbitration agreement; or
+(c) the refusal of recognition or enforcement of an arbitral award on grounds of public policy.
+(2) Nothing in this Act shall be construed as reviving any jurisdiction of the court to set aside or remit an award on the ground of errors of fact or law on the face of the award.
+
+Section 82 Minor definitions.
+(1) In this Part—
+“arbitrator”, unless the context otherwise requires, includes an umpire;
+“available arbitral process”, in relation to any matter, includes any process of appeal to or review by an arbitral or other institution or person vested by the parties with powers in relation to that matter;
+“claimant”, unless the context otherwise requires, includes a counterclaimant, and related expressions shall be construed accordingly;
+“dispute” includes any difference;
+“emergency arbitrator” means an individual appointed as mentioned in section 41A(1);
+“enactment” includes an enactment contained in Northern Ireland legislation;
+“legal proceedings” means civil proceedings in England and Wales in the High Court or the county court or in Northern Ireland in the High Court or a county court;
+“peremptory order” means an order made under section 41(5) or 41A(2), or made in exercise of any corresponding power conferred by the parties;
+“premises” includes land, buildings, moveable structures, vehicles, vessels, aircraft and hovercraft;
+“question of law” means— for a court in England and Wales, a question of the law of England and Wales, and for a court in Northern Ireland, a question of the law of Northern Ireland;
+“substantive jurisdiction”, in relation to an arbitral tribunal, refers to the matters specified in section 30(1)(a) to (c), and references to the tribunal exceeding its substantive jurisdiction shall be construed accordingly.
+(2) References in this Part to a party to an arbitration agreement include any person claiming under or through a party to the agreement.
+
+Section 83 Index of defined expressions: Part I.
+In this Part the expressions listed below are defined or otherwise explained by the provisions indicated—
+
+Section 84 Transitional provisions.
+(1) The provisions of this Part do not apply to arbitral proceedings commenced before the date on which this Part comes into force.
+(2) They apply to arbitral proceedings commenced on or after that date under an arbitration agreement whenever made.
+(3) The above provisions have effect subject to any transitional provision made by an order under section 109(2) (power to include transitional provisions in commencement order).
+
+PART II Other provisions relating to arbitration
+
+Section 85 Modification of Part I in relation to domestic arbitration agreement.
+................................
+
+Section 86 Staying of legal proceedings.
+................................
+
+Section 87 Effectiveness of agreement to exclude court’s jurisdiction.
+................................
+
+Section 88 Power to repeal or amend sections 85 to 87.
+................................
+
+Section 89 Application of unfair terms regulations to consumer arbitration agreements.
+(1) The following sections extend the application of Part 2 (unfair terms) of the Consumer Rights Act 2015 in relation to a term which constitutes an arbitration agreement.
+(2) In those sections “the Part” means Part 2 (unfair terms) of the Consumer Rights Act 2015.
+(3) Those sections apply whatever the law applicable to the arbitration agreement.
+
+Section 90 Part applies where consumer is a legal person
+The Part applies where the consumer is a legal person as it applies where the consumer is an individual.
+
+Section 91 Arbitration agreement unfair where modest amount sought.
+(1) A term which constitutes an arbitration agreement is unfair for the purposes of the Part so far as it relates to a claim for a pecuniary remedy which does not exceed the amount specified by order for the purposes of this section.
+(2) Orders under this section may make different provision for different cases and for different purposes.
+(3) The power to make orders under this section is exercisable—
+(a) for England and Wales, by the Secretary of State with the concurrence of the Lord Chancellor,
+(b) for Scotland, by the Secretary of State..., and
+(c) for Northern Ireland, by the Department of Economic Development for Northern Ireland with the concurrence of the Lord Chancellor.
+(4) Any such order for England and Wales or Scotland shall be made by statutory instrument which shall be subject to annulment in pursuance of a resolution of either House of Parliament.
+(5) Any such order for Northern Ireland shall be a statutory rule for the purposes of the Statutory Rules (Northern Ireland) Order 1979 and shall be subject to negative resolution, within the meaning of section 41(6) of the Interpretation Act (Northern Ireland) 1954.
+
+Section 92 Exclusion of Part I in relation to small claims arbitration in the county court.
+Nothing in Part I of this Act applies to arbitration under section 64 of the County Courts Act 1984.
+
+Section 93 Appointment of judges as arbitrators.
+(1) An eligible High Court judge or an official referee may, if in all the circumstances he thinks fit, accept appointment as a sole arbitrator or as umpire by or by virtue of an arbitration agreement.
+(2) An eligible High Court judge shall not do so unless the Lord Chief Justice has informed him that, having regard to the state of business in the High Court and the Crown Court, he can be made available.
+(3) An official referee shall not do so unless the Lord Chief Justice has informed him that, having regard to the state of official referees’ business, he can be made available.
+(4) The fees payable for the services of an eligible High Court judge or official referee as arbitrator or umpire shall be taken in the High Court.
+(4A) The Lord Chief Justice may nominate a senior judge (as defined in section 109(5) of the Constitutional Reform Act 2005) to exercise functions of the Lord Chief Justice under this section.
+(5) In this section—
+“arbitration agreement” has the same meaning as in Part I;...
+“eligible High Court judge” means— a puisne judge of the High Court, or a person acting as a judge of the High Court under or by virtue of section 9(1) of the Senior Courts Act 1981;
+“official referee” means a person nominated under section 68(1)(a) of the Senior Courts Act 1981 to deal with official referees’ business.
+(6) The provisions of Part I of this Act apply to arbitration before a person appointed under this section with the modifications specified in Schedule 2.
+
+Section 94 Application of Part I to statutory arbitrations.
+(1) The provisions of Part I apply to every arbitration under an enactment (a “statutory arbitration”), whether the enactment was passed or made before or after the commencement of this Act, subject to the adaptations and exclusions specified in sections 95 to 98.
+(2) The provisions of Part I do not apply to a statutory arbitration if or to the extent that their application—
+(a) is inconsistent with the provisions of the enactment concerned, with any rules or procedure authorised or recognised by it, or
+(b) is excluded by any other enactment.
+(3) In this section and the following provisions of this Part “enactment”—
+(a) in England and Wales, includes an enactment contained in subordinate legislation within the meaning of the Interpretation Act 1978;
+(b) in Northern Ireland, means a statutory provision within the meaning of section 1(f) of the Interpretation Act (Northern Ireland) 1954.
+
+Section 95 General adaptation of provisions in relation to statutory arbitrations.
+(1) The provisions of Part I apply to a statutory arbitration—
+(a) as if the arbitration were pursuant to an arbitration agreement and as if the enactment were that agreement, and
+(b) as if the persons by and against whom a claim subject to arbitration in pursuance of the enactment may be or has been made were parties to that agreement.
+(2) Every statutory arbitration shall be taken to have its seat in England and Wales or, as the case may be, in Northern Ireland.
+
+Section 96 Specific adaptations of provisions in relation to statutory arbitrations.
+(1) The following provisions of Part I apply to a statutory arbitration with the following adaptations.
+(2) In section 30(1) (competence of tribunal to rule on its own jurisdiction), the reference in paragraph (a) to whether there is a valid arbitration agreement shall be construed as a reference to whether the enactment applies to the dispute or difference in question.
+(3) Section 35 (consolidation of proceedings and concurrent hearings) applies only so as to authorise the consolidation of proceedings, or concurrent hearings in proceedings, under the same enactment.
+(4) Section 46 (rules applicable to substance of dispute) applies with the omission of subsection (1)(b) (determination in accordance with considerations agreed by parties).
+
+Section 97 Provisions excluded from applying to statutory arbitrations.
+The following provisions of Part I do not apply in relation to a statutory arbitration—
+(a) section 8 (whether agreement discharged by death of a party);
+(b) section 12 (power of court to extend agreed time limits);
+(c) sections 9(5), 10(2) and 71(4) (restrictions on effect of provision that award condition precedent to right to bring legal proceedings).
+
+Section 98 Power to make further provision by regulations.
+(1) The Secretary of State may make provision by regulations for adapting or excluding any provision of Part I in relation to statutory arbitrations in general or statutory arbitrations of any particular description.
+(2) The power is exercisable whether the enactment concerned is passed or made before or after the commencement of this Act.
+(3) Regulations under this section shall be made by statutory instrument which shall be subject to annulment in pursuance of a resolution of either House of Parliament.
+
+PART III Recognition and enforcement of certain foreign awards
+
+Section 99 Continuation of Part II of the Arbitration Act 1950.
+Part II of the Arbitration Act 1950 (enforcement of certain foreign awards) continues to apply in relation to foreign awards within the meaning of that Part which are not also New York Convention awards.
+
+Section 100 New York Convention awards.
+(1) In this Part a “New York Convention award” means an award made, in pursuance of an arbitration agreement, in the territory of a state (other than the United Kingdom) which is a party to the New York Convention.
+(2) For the purposes of subsection (1) and of the provisions of this Part relating to such awards—
+(a) “arbitration agreement” means an arbitration agreement in writing, and
+(b) an award shall be treated as made at the seat of the arbitration, regardless of where it was signed, despatched or delivered to any of the parties.
+(3) If Her Majesty by Order in Council declares that a state specified in the Order is a party to the New York Convention, or is a party in respect of any territory so specified, the Order shall, while in force, be conclusive evidence of that fact.
+(4) In this section “the New York Convention” means the Convention on the Recognition and Enforcement of Foreign Arbitral Awards adopted by the United Nations Conference on International Commercial Arbitration on 10th June 1958.
+
+Section 101 Recognition and enforcement of awards.
+(1) A New York Convention award shall be recognised as binding on the persons as between whom it was made, and may accordingly be relied on by those persons by way of defence, set-off or otherwise in any legal proceedings in England and Wales or Northern Ireland.
+(2) A New York Convention award may, by leave of the court, be enforced in the same manner as a judgment or order of the court to the same effect.
+(3) Where leave is so given, judgment may be entered in terms of the award.
+
+Section 102 Evidence to be produced by party seeking recognition or enforcement.
+(1) A party seeking the recognition or enforcement of a New York Convention award must produce—
+(a) the duly authenticated original award or a duly certified copy of it, and
+(b) the original arbitration agreement or a duly certified copy of it.
+(2) If the award or agreement is in a foreign language, the party must also produce a translation of it certified by an official or sworn translator or by a diplomatic or consular agent.
+
+Section 103 Refusal of recognition or enforcement.
+(1) Recognition or enforcement of a New York Convention award shall not be refused except in the following cases.
+(2) Recognition or enforcement of the award may be refused if the person against whom it is invoked proves—
+(a) that a party to the arbitration agreement was (under the law applicable to him) under some incapacity;
+(b) that the arbitration agreement was not valid under the law to which the parties subjected it or, failing any indication thereon, under the law of the country where the award was made;
+(c) that he was not given proper notice of the appointment of the arbitrator or of the arbitration proceedings or was otherwise unable to present his case;
+(d) that the award deals with a difference not contemplated by or not falling within the terms of the submission to arbitration or contains decisions on matters beyond the scope of the submission to arbitration (but see subsection (4));
+(e) that the composition of the arbitral tribunal or the arbitral procedure was not in accordance with the agreement of the parties or, failing such agreement, with the law of the country in which the arbitration took place;
+(f) that the award has not yet become binding on the parties, or has been set aside or suspended by a competent authority of the country in which, or under the law of which, it was made.
+(3) Recognition or enforcement of the award may also be refused if the award is in respect of a matter which is not capable of settlement by arbitration, or if it would be contrary to public policy to recognise or enforce the award.
+(4) An award which contains decisions on matters not submitted to arbitration may be recognised or enforced to the extent that it contains decisions on matters submitted to arbitration which can be separated from those on matters not so submitted.
+(5) Where an application for the setting aside or suspension of the award has been made to such a competent authority as is mentioned in subsection (2)(f), the court before which the award is sought to be relied upon may, if it considers it proper, adjourn the decision on the recognition or enforcement of the award.
+
+Section 104 Saving for other bases of recognition or enforcement.
+Nothing in the preceding provisions of this Part affects any right to rely upon or enforce a New York Convention award at common law or under section 66.
+
+PART IV General provisions
+
+Section 105 Meaning of “the court”: jurisdiction of High Court and county court.
+(1) In this Act “the court” in relation to England and Wales means the High Court or the county court and in relation to Northern Ireland means the High Court or a county court, subject to the following provisions.
+(2) The Lord Chancellor may by order make provision—
+(za) allocating proceedings under this Act in England and Wales to the High Court or the county court;
+(a) allocating proceedings under this Act in Northern Ireland to the High Court or to county courts; or
+(b) specifying proceedings under this Act which may be commenced or taken only in the High Court or in the county court or (as the case may be) a county court.
+(3) The Lord Chancellor may by order make provision requiring proceedings of any specified description under this Act in relation to which a county court in Northern Ireland has jurisdiction to be commenced or taken in one or more specified county courts.
+(3A) The Lord Chancellor must consult the Lord Chief Justice of England and Wales or the Lord Chief Justice of Northern Ireland (as the case may be) before making an order under this section.
+(3B) The Lord Chief Justice of England and Wales may nominate a judicial office holder (as defined in section 109(4) of the Constitutional Reform Act 2005) to exercise his functions under this section.
+(3C) The Lord Chief Justice of Northern Ireland may nominate any of the following to exercise his functions under this section—
+(a) the holder of one of the offices listed in Schedule 1 to the Justice (Northern Ireland) Act 2002;
+(b) a Lord Justice of Appeal (as defined in section 88 of that Act).
+(4) An order under this section—
+(a) may differentiate between categories of proceedings by reference to such criteria as the Lord Chancellor sees fit to specify, and
+(b) may make such incidental or transitional provision as the Lord Chancellor considers necessary or expedient.
+(5) An order under this section for England and Wales shall be made by statutory instrument which shall be subject to annulment in pursuance of a resolution of either House of Parliament.
+(6) An order under this section for Northern Ireland shall be a statutory rule for the purposes of the Statutory Rules (Northern Ireland) Order 1979 which shall be subject to negative resolution (within the meaning of section 41(6) of the Interpretation Act (Northern Ireland) 1954).
+
+Section 106 Crown application.
+(1) Part I of this Act applies to any arbitration agreement to which Her Majesty, either in right of the Crown or of the Duchy of Lancaster or otherwise, or the Duke of Cornwall, is a party.
+(2) Where Her Majesty is party to an arbitration agreement otherwise than in right of the Crown, Her Majesty shall be represented for the purposes of any arbitral proceedings—
+(a) where the agreement was entered into by Her Majesty in right of the Duchy of Lancaster, by the Chancellor of the Duchy or such person as he may appoint, and
+(b) in any other case, by such person as Her Majesty may appoint in writing under the Royal Sign Manual.
+(3) Where the Duke of Cornwall is party to an arbitration agreement, he shall be represented for the purposes of any arbitral proceedings by such person as he may appoint.
+(4) References in Part I to a party or the parties to the arbitration agreement or to arbitral proceedings shall be construed, where subsection (2) or (3) applies, as references to the person representing Her Majesty or the Duke of Cornwall.
+
+Section 107 Consequential amendments and repeals.
+(1) The enactments specified in Schedule 3 are amended in accordance with that Schedule, the amendments being consequential on the provisions of this Act.
+(2) The enactments specified in Schedule 4 are repealed to the extent specified.
+
+Section 108 Extent.
+(1) The provisions of this Act extend to England and Wales and, except as mentioned below, to Northern Ireland.
+(2) The following provisions of Part II do not extend to Northern Ireland—
+(3) Sections 89, 90 and 91 (consumer arbitration agreements) extend to Scotland and the provisions of Schedules 3 and 4 (consequential amendments and repeals) extend to Scotland so far as they relate to enactments which so extend, subject as follows.
+(4) The repeal of the Arbitration Act 1975 extends only to England and Wales and Northern Ireland.
+
+Section 109 Commencement.
+(1) The provisions of this Act come into force on such day as the Secretary of State may appoint by order made by statutory instrument, and different days may be appointed for different purposes.
+(2) An order under subsection (1) may contain such transitional provisions as appear to the Secretary of State to be appropriate.
+
+Section 110 Short title.
+This Act may be cited as the Arbitration Act 1996.

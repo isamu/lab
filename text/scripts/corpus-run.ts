@@ -3,9 +3,11 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { structureFindings, type CorpusFinding } from "./corpus-findings.ts";
+import { corpusLanguages, structureFindings, type CorpusFinding } from "./corpus-findings.ts";
 
-const LAWS = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus", "laws");
+const CORPUS = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus");
+const LAWS = join(CORPUS, "laws");
+const languages = corpusLanguages(JSON.parse(readFileSync(join(CORPUS, "manifest.json"), "utf8")));
 const verbose = process.argv.includes("--verbose");
 
 const summaryOf = (findings: readonly CorpusFinding[]): string => {
@@ -17,7 +19,7 @@ const summaryOf = (findings: readonly CorpusFinding[]): string => {
 const files = readdirSync(LAWS).filter((file) => file.endsWith(".txt"));
 await files.reduce<Promise<void>>(async (previous, file) => {
   await previous;
-  const findings = await structureFindings(file, readFileSync(join(LAWS, file), "utf8"));
+  const findings = await structureFindings(file, readFileSync(join(LAWS, file), "utf8"), languages.get(file) ?? "ja");
   console.log(`${file}  ${summaryOf(findings)}`);
   if (verbose) findings.forEach((finding) => console.log(`  ${String(finding.line)}  ${finding.rule}  ${finding.message}`));
 }, Promise.resolve());

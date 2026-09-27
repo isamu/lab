@@ -2,6 +2,25 @@
 
 Newest first.
 
+## Unreleased
+
+### The structure rules read English statutes
+
+Three UK Acts from legislation.gov.uk — the Data Protection Act 2018, the Consumer Rights Act 2015 and the
+Arbitration Act 1996 — join the corpus (Open Government Licence v3.0), and the corpus test now covers each
+document in its own language. The English adapter reads them without false positives:
+
+- lowercase references (`section 86(7)`) are read, as statutes write them;
+- a list of references ending in another law's name (`Article 58(2)(c) to (g) and (j) of the UK GDPR`,
+  `sections 5(7), 29(2) and 9 of …`), a gloss before the name (`section 4(2)(a) (exception …) of the … Act`),
+  and `of that Act` all point into the other law, as do references inside a gloss after such a reference;
+- a document numbered by Sections is not searched for an `Article` it cites (a reference whose numbering word never
+  heads a line is into another document). References carry the word as `:numbering` in `chaff tree`;
+- definitions after `In this section—`, `In this Part, …` or `This section applies where …` hold only in that
+  section, and `"X" has the meaning given in …` points at a definition instead of making one.
+
+For adapter authors: `StructurePatterns.opensDefinitionScope` and `NumberedLine.numbering` are new and optional.
+
 ## 0.8.0 — 2026-09-28
 
 What an English user's first run and four real statutes showed: chaff now speaks English to an English
