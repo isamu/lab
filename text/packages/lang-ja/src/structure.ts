@@ -1,5 +1,6 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
 import { parseJapaneseNumber, toHalfWidth } from "./numbers.ts";
+import { citedDocument } from "./citation.ts";
 import { countedAfter, dates, quantities } from "./quantities.ts";
 
 // 契約書・規程・法令の番号の書き方。core は番号の書き方を知らず、ここで読んだものを入れ子にする。
@@ -48,7 +49,18 @@ const article = (line: string): NumberedLine | undefined => {
   const branch = groups["sub"] === undefined ? "" : "の" + groups["sub"];
   const label = `第${groups["n"] ?? ""}条${branch}`;
   const rest = (groups["rest"] ?? "").trim();
-  return { kind: "article", depth: 1, number: sub === undefined ? main : `${main}-${sub}`, absolute: true, label, heading: headingOf(rest, true), rest };
+  // 枝番号の条（第3条の2）は並びの外。第3条の次が第4条であることを乱さない。
+  const ordinal = sub === undefined ? Number(main) : undefined;
+  return {
+    kind: "article",
+    depth: 1,
+    number: sub === undefined ? main : `${main}-${sub}`,
+    absolute: true,
+    label,
+    heading: headingOf(rest, true),
+    rest,
+    ordinal,
+  };
 };
 
 type ItemShape = {
@@ -74,7 +86,8 @@ const item = (line: string, context: NumberingContext): NumberedLine | undefined
     const number = numberOf(groups?.["n"]);
     if (groups === undefined || number === undefined) return undefined;
     const rest = (groups["rest"] ?? "").trim();
-    return { kind: "item", depth: shape.depth(context), number, absolute: false, label: shape.label(groups["n"] ?? ""), heading: headingOf(rest, false), rest };
+    const label = shape.label(groups["n"] ?? "");
+    return { kind: "item", depth: shape.depth(context), number, absolute: false, label, heading: headingOf(rest, false), rest, ordinal: Number(number) };
   }, undefined);
 
 /**
@@ -95,7 +108,16 @@ const chapter = (line: string): NumberedLine | undefined => {
   if (groups === undefined || number === undefined || shape === undefined) return undefined;
   const rest = (groups["rest"] ?? "").trim();
   const label = `第${groups["n"] ?? ""}${groups["unit"] ?? ""}`;
-  return { kind: "chapter", depth: shape.depth, number: shape.prefix + number, absolute: false, label, heading: headingOf(rest, true), rest };
+  return {
+    kind: "chapter",
+    depth: shape.depth,
+    number: shape.prefix + number,
+    absolute: false,
+    label,
+    heading: headingOf(rest, true),
+    rest,
+    ordinal: Number(number),
+  };
 };
 
 const numbered = (line: string, context: NumberingContext): NumberedLine | undefined => chapter(line) ?? article(line) ?? item(line, context);
@@ -118,14 +140,25 @@ const definitions = (text: string): Mention[] =>
 
 const REFERENCE = new RegExp(`第(?<a>${NUMBER})条(?:の(?<s>${NUMBER}))?(?:第(?<p>${NUMBER})項)?(?:第(?<i>${NUMBER})号)?`, "gu");
 
-/** 「第12条第1項」→ 12.1、「第3条の2」→ 3-2。番地の付け方は木と同じにする。 */
+/**
+ * 「第12条第1項」→ 12.1、「第3条の2」→ 3-2。番地の付け方は木と同じにする。
+ * 法令は第 1 項に番号を振らないので、「第4条第1項」は番号付きの 4.1 が無ければ第4条そのものを指す。その行き先を fallback に入れる。
+ * 「民法第709条」のように他の文書の名前が前にあれば、その名前を document に入れる。この文書の木では引かない。
+ */
 const references = (text: string): Mention[] =>
-  mentions(REFERENCE, text, (groups, whole) => {
+  [...text.matchAll(REFERENCE)].flatMap((match) => {
+    const groups = match.groups ?? {};
     const main = numberOf(groups["a"]);
-    if (main === undefined) return undefined;
+    if (main === undefined) return [];
     const sub = numberOf(groups["s"]);
-    const rest = [numberOf(groups["p"]), numberOf(groups["i"])].filter((part) => part !== undefined);
-    return { target: [sub === undefined ? main : `${main}-${sub}`, ...rest].join("."), label: whole };
+    const article = sub === undefined ? main : `${main}-${sub}`;
+    const paragraph = numberOf(groups["p"]);
+    const item = numberOf(groups["i"]);
+    const target = [article, paragraph, item].filter((part) => part !== undefined).join(".");
+    const fallback = paragraph === "1" ? [article, item].filter((part) => part !== undefined).join(".") : undefined;
+    const document = citedDocument(text, match.index);
+    const attrs = { target, label: match[0], ...(fallback === undefined ? {} : { fallback }), ...(document === undefined ? {} : { document }) };
+    return [{ start: match.index, end: match.index + match[0].length, attrs }];
   });
 
 /** 長いものから探し、重なったら先に見つけたものを残す。「しなければならない」を「なければならない」と二重に数えない。 */

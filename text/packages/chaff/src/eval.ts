@@ -63,6 +63,16 @@ const recommend = (rule: RuleDefinition, sweep: readonly Point[], total: number)
   return strictest;
 };
 
+/** lint と同じ要求の読み方。知らない要求は満たさないものとする。pos に読み替えると、動かない rule を測ってしまう。 */
+const meets = (need: string, docs: readonly ProseDocument[]): boolean => {
+  const capabilities = docs[0]?.capabilities;
+  if (need === "pos") return capabilities?.pos === true;
+  if (need === "lemma") return capabilities?.lemma === true;
+  // 木は adapter が structure を持つときだけ作れる。無いまま測ると、どの閾値でも 0 件になる。
+  if (need === "structure") return docs.length > 0 && docs.every((doc) => doc.structure !== undefined);
+  return false;
+};
+
 /**
  * lint で動かない rule は掃引しない。
  * 動かないものの閾値を測ると、「どの閾値でも 0 件」が「よく校正されている」に見える。
@@ -71,8 +81,7 @@ const measurable = (rule: RuleDefinition, docs: readonly ProseDocument[], genre:
   if (rule.layer === "L4" || !rule.use_for.some((target) => genre.startsWith(target))) return false;
   if (rule.languages !== undefined && !rule.languages.includes(language)) return false;
   if (rule.from.length > 0) return false;
-  const capabilities = docs[0]?.capabilities;
-  return !rule.requires.some((need) => (need === "lemma" ? capabilities?.lemma : capabilities?.pos) !== true);
+  return rule.requires.every((need) => meets(need, docs));
 };
 
 export const evaluate = (docs: readonly ProseDocument[], rules: readonly RuleDefinition[], genre: string, language: string): RuleReport[] =>

@@ -1,9 +1,9 @@
 import { readFile } from "node:fs/promises";
-import { extname } from "node:path";
 import { loadAdapter } from "../adapter-load.ts";
 import { applyByPath } from "../config/by-path.ts";
 import { guessLanguage } from "../detect.ts";
-import { buildStructure } from "../structure/build.ts";
+import { isMarkdownPath } from "../structure/markdown-path.ts";
+import { buildStructure } from "../structure/of.ts";
 import { toSexp } from "../structure/sexp.ts";
 import type { Config } from "../config/load.ts";
 
@@ -12,7 +12,6 @@ export type TreeContext = {
   readonly flag: (argv: readonly string[], name: string) => string | undefined;
 };
 
-const MARKDOWN = [".md", ".markdown", ".mdx"];
 const FORMATS = ["sexp", "json"];
 
 const USAGE = "使い方: chaff tree <file>... [--format sexp|json] [--language ja|en|…]";
@@ -54,7 +53,7 @@ const printTree = async (path: string, argv: readonly string[], context: TreeCon
   }
   // 日本語は形態素で数量と日付を読む。解析器が無ければ単位の表で読むので、木は作れる。
   await adapter.prepare?.({ pos: true });
-  const tree = buildStructure({ path, source, language, markdown: MARKDOWN.includes(extname(path).toLowerCase()) }, adapter.structure);
+  const tree = buildStructure({ path, source, language, markdown: isMarkdownPath(path) }, adapter.structure);
   console.log(context.flag(argv, "--format") === "json" ? JSON.stringify(tree, null, 2) : toSexp(tree));
   return true;
 };

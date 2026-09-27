@@ -1,6 +1,6 @@
-import { markdownOutline, type Heading } from "../document.ts";
+import type { Heading } from "../document.ts";
 import { maskSpans } from "../mask.ts";
-import type { Mention, NumberedLine, NumberingContext, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
+import type { Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
 import { dottedNumber } from "./universal.ts";
 
@@ -13,6 +13,7 @@ type Draft = {
   readonly line: number;
   readonly attrs: Readonly<Record<string, string | number>>;
   readonly children: Draft[];
+  readonly ordinal?: number | undefined;
 };
 
 /** 開いている節点。rank の大きいものほど内側。 */
@@ -86,7 +87,8 @@ const openNumbered = (state: State, line: Line, numbered: NumberedLine, headingD
   const rank = headingDepth ?? NUMBERED_RANK + numbered.depth;
   // 番地は、自分と同じか内側を閉じてから決める。閉じる前だと、同じ深さの前の条を親と取り違える。
   while (state.stack.length > 1 && top(state).rank >= rank) state.stack.pop();
-  open(state, { draft: draftOf(numbered.kind, addressOf(state, numbered), line, attrs), rank, numbered });
+  const draft = { ...draftOf(numbered.kind, addressOf(state, numbered), line, attrs), ordinal: numbered.ordinal };
+  open(state, { draft, rank, numbered });
 };
 
 const openSection = (state: State, line: Line, heading: Heading): void => {
@@ -132,9 +134,15 @@ const freeze = (draft: Draft): StructureNode => ({
   line: draft.line,
   attrs: draft.attrs,
   children: draft.children.map(freeze),
+  ...(draft.ordinal === undefined ? {} : { ordinal: draft.ordinal }),
 });
 
-export type StructureInput = { readonly path: string; readonly source: string; readonly language: string; readonly markdown: boolean };
+/** Markdown から取った手がかり。見出しと、中を読まない範囲（コード）。.txt はどちらも空。 */
+export type Outline = { readonly headings: readonly Heading[]; readonly opaque: readonly Span[] };
+
+export const NO_OUTLINE: Outline = { headings: [], opaque: [] };
+
+export type StructureInput = { readonly path: string; readonly source: string; readonly language: string; readonly outline: Outline };
 
 /** 見出しのある行を、行番号から引けるようにする。見出しごとに全行を探し直さない。 */
 const headingsByLine = (lines: readonly Line[], headings: readonly Heading[]): Map<number, Heading> =>
@@ -177,8 +185,8 @@ const readLine = (state: State, patterns: StructurePatterns, line: Line, heading
  * 文書を番地の付いた木にする。番号の書き方は言語パッケージが読み、ここは入れ子と番地だけを決める。
  * Markdown では見出しとコードの範囲を使い、.txt は行頭の番号だけで組む。
  */
-export const buildStructure = (input: StructureInput, patterns: StructurePatterns): StructureNode => {
-  const outline = input.markdown ? markdownOutline(input.source) : { headings: [], opaque: [] };
+export const buildTree = (input: StructureInput, patterns: StructurePatterns): StructureNode => {
+  const outline = input.outline;
   // コードは同じ長さの空白で覆ってから読む。コードブロックの行は空になって飛ばされ、
   // 文中の `第99条` は参照として拾われない。位置は元の文書のまま。
   const lines = linesOf(maskSpans(input.source, outline.opaque));

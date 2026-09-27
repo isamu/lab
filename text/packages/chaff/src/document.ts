@@ -4,7 +4,9 @@ import { gfmTableFromMarkdown } from "mdast-util-gfm-table";
 import { frontmatter } from "micromark-extension-frontmatter";
 import { frontmatterFromMarkdown } from "mdast-util-frontmatter";
 import { maskSpans } from "./mask.ts";
-import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span } from "./plugin.ts";
+import { buildTree, NO_OUTLINE, type Outline } from "./structure/build.ts";
+import { isMarkdownPath } from "./structure/markdown-path.ts";
+import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
 type Node = {
@@ -247,6 +249,9 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
   const paragraphSpans = spansOfType(root, "paragraph");
   const listItems = spansOfType(root, "listItem");
   const sentences = sentencesOf(prose, paragraphSpans, adapter);
+  const patterns = adapter.structure;
+  // null は「作ったが構造を読めない言語だった」、undefined は「まだ作っていない」。
+  const tree: { value: StructureNode | null | undefined } = { value: undefined };
   return {
     path,
     source,
@@ -260,14 +265,24 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
     lists: listsOf(root, source),
     lexicons: { ...adapter.lexicons, "internal-jargon": team.jargon.map((pattern) => ({ pattern })) },
     requiredSections: team.requiredSections,
+    // 構造の rule（参照先が無い・番号の抜け）が読む木。どの rule も読まなければ作らない。何万行の契約書で、他の rule の lint に代金を払わせない。
+    get structure(): StructureNode | undefined {
+      tree.value ??=
+        patterns === undefined
+          ? null
+          : buildTree({ path, source, language: adapter.id, outline: isMarkdownPath(path) ? outlineOf(root, source) : NO_OUTLINE }, patterns);
+      return tree.value ?? undefined;
+    },
   };
 };
 
 /** 番号を探してはいけない範囲。コードの中の「第3条」は条ではなく、参照でもない。 */
 const OPAQUE = ["code", "inlineCode", "html", "yaml", "toml"];
 
+const outlineOf = (root: Node, source: string): Outline => ({
+  headings: headingsOf(root, source),
+  opaque: OPAQUE.flatMap((type) => spansOfType(root, type)),
+});
+
 /** 構造を読むための Markdown の手がかり。見出しと、中を読まない範囲。 */
-export const markdownOutline = (source: string): { readonly headings: readonly Heading[]; readonly opaque: readonly Span[] } => {
-  const root = parse(source);
-  return { headings: headingsOf(root, source), opaque: OPAQUE.flatMap((type) => spansOfType(root, type)) };
-};
+export const markdownOutline = (source: string): Outline => outlineOf(parse(source), source);

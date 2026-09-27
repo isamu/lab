@@ -4,6 +4,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { evaluate, TARGET_HIT_RATE } from "../packages/chaff/src/eval.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 const RULES = loadRules("ja");
 const docs = (sources: readonly string[]) => sources.map((source, index) => buildDocument(`d${index}.md`, source, ja));
@@ -85,5 +86,34 @@ describe("対象の絞り込み", () => {
 
   it("目標は 5%", () => {
     assert.equal(TARGET_HIT_RATE, 0.05);
+  });
+});
+
+describe("構造の rule", () => {
+  const STRUCTURE_RULES = ["dangling-reference", "numbering-gap", "duplicate-definition"];
+  const contract = "第1条（目的）\n第12条に定める。\n第2条（定義）\n本文";
+  const measuredWith = (adapter: LanguageAdapter): string[] =>
+    evaluate([buildDocument("c.txt", contract, adapter)], RULES, "business/contract", "ja")
+      .map((report) => report.rule)
+      .filter((id) => STRUCTURE_RULES.includes(id));
+
+  it("構造を読める言語では測る", () => {
+    assert.deepEqual(
+      measuredWith(ja).sort((left, right) => left.localeCompare(right, "en")),
+      [...STRUCTURE_RULES].sort((left, right) => left.localeCompare(right, "en")),
+    );
+  });
+
+  it("構造を読めない言語では測らない（どの閾値でも 0 件を、校正済みに見せない）", () => {
+    const blind: LanguageAdapter = {
+      kind: ja.kind,
+      id: ja.id,
+      apiVersion: ja.apiVersion,
+      capabilities: ja.capabilities,
+      detect: ja.detect,
+      segment: ja.segment,
+      lexicons: ja.lexicons,
+    };
+    assert.deepEqual(measuredWith(blind), []);
   });
 });
