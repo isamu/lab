@@ -87,7 +87,13 @@ const importFirst = async (specifiers: readonly string[], language: string, impo
     if (!isAbsent(err, first)) throw err;
     if (rest.length > 0) return importFirst(rest, language, importer);
     const all = packagesFor(language);
-    throw new Error(`言語 ${language} のパッケージが入っていません（${all.join(" か ")}。npm i -D ${all[0] ?? first}）`, { cause: err });
+    const install = `npm i -D ${all[0] ?? first}`;
+    // Only the requested language is known here; a Japanese message for Japanese, English for any other.
+    const message =
+      language === "ja"
+        ? `言語 ${language} のパッケージが入っていません（${all.join(" か ")}。${install}）`
+        : `No package for language ${language} is installed (${all.join(" or ")}; ${install})`;
+    throw new Error(message, { cause: err });
   }
 };
 
@@ -101,6 +107,11 @@ export const loadAdapter = async (language: string, importer: Importer = (specif
   if (typeof module !== "object" || module === null) throw new Error(`${specifier} did not export a module`);
   const candidate = pickExport(module);
   const broken = checkAdapter(candidate);
-  if (broken !== undefined || !isAdapter(candidate)) throw new Error(`${specifier} が LanguageAdapter を export していません: ${broken ?? ""}`);
+  if (broken !== undefined || !isAdapter(candidate)) {
+    const why = broken ?? "";
+    throw new Error(
+      language === "ja" ? `${specifier} が LanguageAdapter を export していません: ${why}` : `${specifier} does not export a LanguageAdapter: ${why}`,
+    );
+  }
   return candidate;
 };

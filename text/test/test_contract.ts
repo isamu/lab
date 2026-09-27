@@ -38,7 +38,7 @@ describe("契約を満たさないものを黙って通さない", () => {
     };
     const result = runRules(buildDocument("t.md", "There are many reasons. It really matters.", untaggedEnglish), loadRules("en"), {}, false, "blog/tech");
     ["adverb-overuse", "expletive-construction"].forEach((id) => {
-      assert.equal(result.skipped.find((entry) => entry.rule === id)?.why, "まだ試験中のため");
+      assert.equal(result.skipped.find((entry) => entry.rule === id)?.why, "still experimental");
     });
   });
 

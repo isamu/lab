@@ -1,4 +1,4 @@
-export type GenreGuess = { readonly genre: string; readonly from: string };
+export type GenreGuess = { readonly genre: string; readonly from: "front-matter" | "path" | "content" };
 
 /**
  * 仕様書・README は「読ませる文章」ではなく「間違えさせない文章」。
@@ -27,11 +27,11 @@ const BY_CONTENT: readonly (readonly [RegExp, string])[] = [
 ];
 
 export const guessGenre = (path: string, source: string, front: string | undefined): GenreGuess | undefined => {
-  if (front !== undefined) return { genre: front, from: "front matter" };
+  if (front !== undefined) return { genre: front, from: "front-matter" };
   const byPath = BY_PATH.find(([pattern]) => pattern.test(path));
-  if (byPath !== undefined) return { genre: byPath[1], from: "パス" };
+  if (byPath !== undefined) return { genre: byPath[1], from: "path" };
   const byContent = BY_CONTENT.find(([pattern]) => pattern.test(source));
-  if (byContent !== undefined) return { genre: byContent[1], from: "内容" };
+  if (byContent !== undefined) return { genre: byContent[1], from: "content" };
   return undefined;
 };
 

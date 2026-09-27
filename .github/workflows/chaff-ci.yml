@@ -65,7 +65,7 @@ jobs:
           set -uo pipefail
           yarn --silent example > examples-report.txt 2>&1 || true
           cat examples-report.txt
-          if ! grep -q 'ファイルを見て' examples-report.txt; then
+          if ! grep -qE 'ファイルを見て|files checked' examples-report.txt; then
             echo "::error::chaff が実文書で最後まで動きませんでした"
             exit 1
           fi

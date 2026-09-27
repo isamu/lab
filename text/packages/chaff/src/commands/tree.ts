@@ -7,15 +7,35 @@ import { buildStructure } from "../structure/of.ts";
 import { toSexp } from "../structure/sexp.ts";
 import type { Config } from "../config/load.ts";
 import type { StructureNode } from "../plugin.ts";
+import type { Texts, UiLanguage } from "../ui.ts";
 
 export type TreeContext = {
   readonly config: Config;
   readonly flag: (argv: readonly string[], name: string) => string | undefined;
+  /** The language chaff speaks in here. Japanese when left out. */
+  readonly ui?: UiLanguage;
 };
 
-const FORMATS = ["sexp", "json"];
+const TEXT: Texts<{
+  readonly usage: string;
+  readonly unreadable: (path: string, why: string) => string;
+  readonly noStructure: (path: string, language: string) => string;
+}> = {
+  ja: {
+    usage: "使い方: chaff tree <file>... [--format sexp|json] [--language ja|en|…]",
+    unreadable: (path, why) => `${path} を読めませんでした: ${why}`,
+    noStructure: (path, language) => `${path}: 言語 ${language} のパッケージは文書の構造を読めません（structure がありません）`,
+  },
+  en: {
+    usage: "usage: chaff tree <file>... [--format sexp|json] [--language ja|en|…]",
+    unreadable: (path, why) => `Could not read ${path}: ${why}`,
+    noStructure: (path, language) => `${path}: the ${language} package cannot read a document's structure (it has no structure)`,
+  },
+};
 
-const USAGE = "使い方: chaff tree <file>... [--format sexp|json] [--language ja|en|…]";
+export const treeText = (context: TreeContext): (typeof TEXT)["ja"] => TEXT[context.ui ?? "ja"];
+
+const FORMATS = ["sexp", "json"];
 
 /** 値を取るフラグ。その次の引数は値で、対象のファイルではない。 */
 const VALUED = ["--format", "--language"];
@@ -23,11 +43,11 @@ const VALUED = ["--format", "--language"];
 export const treeTargets = (argv: readonly string[]): string[] =>
   argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.includes(all[index - 1] ?? ""));
 
-export const readSource = async (path: string): Promise<string | undefined> => {
+export const readSource = async (path: string, context: TreeContext): Promise<string | undefined> => {
   try {
     return await readFile(path, "utf8");
   } catch (err) {
-    console.error(`${path} を読めませんでした: ${err instanceof Error ? err.message : String(err)}`);
+    console.error(treeText(context).unreadable(path, err instanceof Error ? err.message : String(err)));
     return undefined;
   }
 };
@@ -49,12 +69,12 @@ export type SourceTree = { readonly source: string; readonly tree: StructureNode
  * chaff tree と chaff cite が同じ木を見るように、ここを一つにしておく。
  */
 export const readTree = async (path: string, argv: readonly string[], context: TreeContext): Promise<SourceTree | undefined> => {
-  const source = await readSource(path);
+  const source = await readSource(path, context);
   if (source === undefined) return undefined;
   const language = treeLanguage(path, source, argv, context);
   const adapter = await loadAdapter(language);
   if (adapter.structure === undefined) {
-    console.error(`${path}: 言語 ${language} のパッケージは文書の構造を読めません（structure がありません）`);
+    console.error(treeText(context).noStructure(path, language));
     return undefined;
   }
   // 日本語は形態素で数量と日付を読む。解析器が無ければ単位の表で読むので、木は作れる。
@@ -86,7 +106,7 @@ export const inOrder = async (paths: readonly string[], each: (path: string) => 
 export const runTree = async (paths: readonly string[], argv: readonly string[], context: TreeContext): Promise<number> => {
   const format = context.flag(argv, "--format") ?? "sexp";
   if (paths.length === 0 || !FORMATS.includes(format)) {
-    console.error(USAGE);
+    console.error(treeText(context).usage);
     return 1;
   }
   const printed = await inOrder(paths, (path) => printTree(path, argv, context));

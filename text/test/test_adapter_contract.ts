@@ -51,7 +51,7 @@ describe("LanguageAdapter の契約", () => {
   });
 
   it("入っていない言語は、探した名前と入れ方を添えて断る", async () => {
-    await assert.rejects(loadAdapter("xq"), /xq のパッケージが入っていません（@chaffjs\/lang-xq か chaff-lang-xq。npm i -D @chaffjs\/lang-xq）/u);
+    await assert.rejects(loadAdapter("xq"), /No package for language xq is installed \(@chaffjs\/lang-xq or chaff-lang-xq; npm i -D @chaffjs\/lang-xq\)/u);
   });
 
   it("探す順は、公式の @chaffjs/lang-<言語>、次に第三者の chaff-lang-<言語>。同梱の言語は表のものだけ", () => {
@@ -117,7 +117,7 @@ describe("LanguageAdapter の契約", () => {
   it("第三者のものも、LanguageAdapter の形でなければ断る", async () => {
     await assert.rejects(
       loadAdapter("zh", fakeImporter({ "chaff-lang-zh": { default: { kind: "language" } } }, [])),
-      /chaff-lang-zh が LanguageAdapter を export していません/u,
+      /chaff-lang-zh does not export a LanguageAdapter/u,
     );
   });
 });
