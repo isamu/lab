@@ -2,6 +2,8 @@ import { DETECTORS } from "./detectors/index.ts";
 import { resolve } from "./levels.ts";
 import type { AdapterNeeds, Finding, Level, ProseDocument, RuleDefinition } from "./plugin.ts";
 import { lineStarts, placeOf } from "./position.ts";
+import { REASONS, type Reasons } from "./reasons.ts";
+import { uiLanguageOf } from "./ui.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
 
@@ -22,7 +24,7 @@ const levelFor = (rule: RuleDefinition, settings: Settings, experimental: boolea
   return "normal";
 };
 
-const CAPABILITY_NAME: Readonly<Record<string, string>> = { pos: "品詞解析", lemma: "原形" };
+const reasonsFor = (doc: ProseDocument): Reasons => REASONS[uiLanguageOf(doc.language)];
 
 /** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
 const has = (capabilities: ProseDocument["capabilities"], need: string): boolean => {
@@ -42,9 +44,9 @@ const hasTokens = (doc: ProseDocument): boolean => doc.sentences.length === 0 ||
 
 /** 要求を満たさない rule は動かせない。満たさないまま動かすと「指摘 0 件」が保証に見える。 */
 const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
-  if (rule.languages !== undefined && !rule.languages.includes(doc.language)) return `${doc.language} 向けの rule ではないため`;
+  if (rule.languages !== undefined && !rule.languages.includes(doc.language)) return reasonsFor(doc).otherLanguage(doc.language);
   const missing = rule.requires.filter((need) => need !== "structure").find((need) => !has(doc.capabilities, need));
-  if (missing !== undefined) return `この言語では${CAPABILITY_NAME[missing] ?? missing}が使えないため`;
+  if (missing !== undefined) return reasonsFor(doc).noCapability(missing);
   return undefined;
 };
 
@@ -53,7 +55,7 @@ const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => 
  * 先に聞くと、止めている rule まで「アダプタが品詞を返さなかった」と、違う理由で出る。
  */
 const untagged = (rule: RuleDefinition, doc: ProseDocument): string | undefined =>
-  rule.requires.some((need) => need === "pos" || need === "lemma") && !hasTokens(doc) ? "アダプタが品詞を返さなかったため" : undefined;
+  rule.requires.some((need) => need === "pos" || need === "lemma") && !hasTokens(doc) ? reasonsFor(doc).noTags : undefined;
 
 const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] =>
   rules.filter((rule) => rule.use_for.some((target) => genre.startsWith(target)));
@@ -120,13 +122,13 @@ export const runRules = (
     (acc, rule) => {
       // L4 は意味を読む検査。chaff test が扱う。ここで「検出器が無い」と言わせない。
       if (rule.layer === "L4") {
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: "意味を読む検査のため（npx chaff test で動きます）" }] };
+        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).semantic }] };
       }
       const blocked = unmet(rule, doc);
       if (blocked !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: blocked }] };
       const level = levelFor(rule, settings, experimental);
       if (level === "off") {
-        const why = rule.status === "experimental" && settings[rule.id] === undefined ? "まだ試験中のため" : "設定で止めているため";
+        const why = rule.status === "experimental" && settings[rule.id] === undefined ? reasonsFor(doc).experimental : reasonsFor(doc).turnedOff;
         return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why }] };
       }
       const noTags = untagged(rule, doc);
@@ -134,12 +136,13 @@ export const runRules = (
       // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
       // 段階を見た後で聞く。doc.structure は触れたときに木を作るので、止めている rule のために作らない。
       if (rule.requires.includes("structure") && doc.structure === undefined) {
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: `${doc.language} のパッケージは文書の構造を読めないため` }] };
+        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noStructure(doc.language) }] };
       }
       // 複合シグナルは二段目で扱う。一段目では「検出器が無い」と言わせない。
       if (rule.from.length > 0) return acc;
       const detector = DETECTORS[rule.how_to_find];
-      if (detector === undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: `検出器 ${rule.how_to_find} がないため` }] };
+      if (detector === undefined)
+        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noDetector(rule.how_to_find) }] };
       const options = {
         limit: limitFor(rule, level, genre, limits),
         lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
@@ -147,7 +150,7 @@ export const runRules = (
       };
       // 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
       if (rule.word_list !== undefined && options.lexicon === undefined) {
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: `${doc.language} の語彙表 ${rule.word_list} が無いため` }] };
+        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noLexicon(doc.language, rule.word_list) }] };
       }
       const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: rule.severity }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };

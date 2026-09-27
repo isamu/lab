@@ -2,8 +2,41 @@ import type { Finding, RuleDefinition } from "../plugin.ts";
 import type { RunResult } from "../run.ts";
 import { MARK, localized, messageOf } from "./text.ts";
 import { tally } from "./summary.ts";
+import { uiLanguageOf, type Texts } from "../ui.ts";
 
 const RULE = 60;
+
+const TEXT: Texts<{
+  readonly line: (n: number) => string;
+  readonly relax: string;
+  readonly machine: string;
+  readonly deterministic: string;
+  readonly untouched: string;
+  readonly forced: (n: number, ids: string) => string;
+  readonly notRun: (n: number) => string;
+  readonly because: (why: string) => string;
+}> = {
+  ja: {
+    line: (n) => `${n} 行目`,
+    relax: "このルールをゆるめる",
+    machine: "すべて機械による判定です",
+    deterministic: "              （同じ文章なら何度実行しても同じ結果になります）",
+    untouched: "文章は書き換えていません。直すのは書いた人です。",
+    forced: (n, ids) => `試験中の rule を ${n} 件、設定により有効にしています: ${ids}`,
+    notRun: (n) => `${n} 件の rule は動いていません:`,
+    because: (why) => `（${why}）`,
+  },
+  en: {
+    line: (n) => `line ${n}`,
+    relax: "Relax this rule",
+    machine: "All judged by machine",
+    deterministic: "              (the same text gives the same result every time)",
+    untouched: "The text was not changed. Fixing it is the writer's job.",
+    forced: (n, ids) => `${n} experimental rule${n === 1 ? "" : "s"} turned on in the settings: ${ids}`,
+    notRun: (n) => `${n} rule${n === 1 ? "" : "s"} did not run:`,
+    because: (why) => ` (${why})`,
+  },
+};
 const QUOTE_LIMIT = 120;
 
 const indent = (text: string, pad: string): string[] => text.split("\n").map((line) => `${pad}${line}`);
@@ -21,7 +54,8 @@ const quoteOf = (finding: Finding): string[] => {
  */
 const block = (finding: Finding, rule: RuleDefinition, language: string): string[] => [
   "",
-  `─── ${finding.line} 行目 ${"─".repeat(Math.max(0, RULE - String(finding.line).length - 8))}`,
+  // "12 行目" and "line 12" take the same width on a terminal, so the rule ends in the same column in both.
+  `─── ${TEXT[uiLanguageOf(language)].line(finding.line)} ${"─".repeat(Math.max(0, RULE - String(finding.line).length - 8))}`,
   ...quoteOf(finding),
   "",
   `  ${MARK[finding.severity] ?? "·"}  ${localized(rule.name, language)}`,
@@ -31,7 +65,7 @@ const block = (finding: Finding, rule: RuleDefinition, language: string): string
   "",
   ...indent(`→ ${localized(rule.how_to_fix, language)}`, "     "),
   "",
-  `     このルールをゆるめる:  npx chaff relax ${finding.rule}`,
+  `     ${TEXT[uiLanguageOf(language)].relax}:  npx chaff relax ${finding.rule}`,
   "",
 ];
 
@@ -41,22 +75,20 @@ export const renderFriendly = (header: string, result: RunResult, rules: readonl
     const rule = byId.get(finding.rule);
     return rule === undefined ? [] : block(finding, rule, language);
   });
+  const text = TEXT[uiLanguageOf(language)];
   const notes = [
     "",
     "─".repeat(RULE),
     "",
-    `  ${tally(result.findings)}   すべて機械による判定です`,
-    "              （同じ文章なら何度実行しても同じ結果になります）",
+    `  ${tally(result.findings, uiLanguageOf(language))}   ${text.machine}`,
+    text.deterministic,
     "",
-    "  文章は書き換えていません。直すのは書いた人です。",
+    `  ${text.untouched}`,
   ];
-  const forced =
-    result.forcedExperimental.length > 0
-      ? ["", `  試験中の rule を ${result.forcedExperimental.length} 件、設定により有効にしています: ${result.forcedExperimental.join(", ")}`]
-      : [];
+  const forced = result.forcedExperimental.length > 0 ? ["", `  ${text.forced(result.forcedExperimental.length, result.forcedExperimental.join(", "))}`] : [];
   const skipped =
     result.skipped.length > 0
-      ? ["", `  ${result.skipped.length} 件の rule は動いていません:`, ...result.skipped.map((entry) => `      ${entry.rule}（${entry.why}）`)]
+      ? ["", `  ${text.notRun(result.skipped.length)}`, ...result.skipped.map((entry) => `      ${entry.rule}${text.because(entry.why)}`)]
       : [];
   return ["", header, ...blocks, ...notes, ...forced, ...skipped, ""].join("\n");
 };

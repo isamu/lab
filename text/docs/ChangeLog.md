@@ -4,6 +4,21 @@ Newest first.
 
 ## Unreleased
 
+### chaff speaks English to an English document (#123)
+
+The screen around the findings was Japanese whatever the document: the divider, "relax this rule", the
+summary, the list of rules that did not run, the header. It now follows the document's language — Japanese for
+a Japanese document, English for any other — and a run over several files ends with one summary in their
+language, or in the terminal's when they differ.
+
+Output that is not about one document — `--help`, `genres`, `init` (and the `chaff.yaml` it writes), `explain`,
+`relax` / `strict` / `off`, `rules --json`, `baseline`, `suppressions`, `tree`, `cite` and the warnings about
+settings — follows `language` in `chaff.yaml`, then the terminal's locale (`LC_ALL`, `LC_MESSAGES`, `LANG`),
+then English. `explain`, `rules --json` and `relax` used to assume Japanese when `chaff.yaml` named no
+language; they now use the same choice, so an English user sees limits counted in words.
+
+Not yet in English: `chaff test` (the checks that read meaning) and `chaff eval`.
+
 ### The reason a rule did not run, and `--genre` for a check (#123)
 
 An experimental rule that needs parts of speech (`adverb-overuse`, `expletive-construction`) was listed as

@@ -1,7 +1,21 @@
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import type { Texts, UiLanguage } from "./ui.ts";
 
-const CONFIG = (genre: string): string => `# chaff.yaml — このチームの文章規範
+const TEXT: Texts<{
+  readonly config: (genre: string) => string;
+  readonly created: string;
+  readonly appended: (lines: readonly string[]) => string;
+  readonly configNote: string;
+  readonly exists: string;
+  readonly createdHeading: string;
+  readonly genreChosen: (genre: string) => string;
+  readonly genreList: string;
+  readonly next: string;
+  readonly nextCheck: string;
+}> = {
+  ja: {
+    config: (genre) => `# chaff.yaml — このチームの文章規範
 #
 # ここに書くのは「既定から変えたもの」だけです。書かなければ既定で動きます。
 # このファイルを消しても chaff は動きます。
@@ -24,7 +38,53 @@ genre: ${genre}
 
 # 既定から変えたものだけを書く。
 rules:
-`;
+`,
+    created: "作成しました",
+    appended: (lines) => `${lines.join(" と ")} を追記しました`,
+    configNote: "規範の宣言。commit してください",
+    exists: "chaff.yaml は既にあります。変更していません。",
+    createdHeading: "作成しました:",
+    genreChosen: (genre) => `ジャンルは ${genre} にしました。違う場合は chaff.yaml の genre を直してください。`,
+    genreList: "  一覧: npx chaff genres",
+    next: "次:",
+    nextCheck: "  npx chaff .            この場所の Markdown を全部見る",
+  },
+  en: {
+    config: (genre) => `# chaff.yaml — this team's writing rules
+#
+# Write only what differs from the defaults; anything left out uses the default.
+# chaff still runs if this file is deleted.
+#
+# A level is one of four words. No numbers needed.
+#
+#   strict    check closely
+#   normal    the default
+#   relaxed   check loosely
+#   off       do not check
+#
+# Commands change it too, and leave the reason as a comment.
+#
+#   npx chaff relax bold-density --why "figure captions use a lot of bold"
+#   npx chaff explain bold-density        read what the rule is for
+#   npx chaff rules --json                give this to an AI that writes the settings
+
+# The kind of document kept here.
+genre: ${genre}
+
+# Only what differs from the defaults.
+rules:
+`,
+    created: "created",
+    appended: (lines) => `added ${lines.join(" and ")}`,
+    configNote: "the team's rules; commit it",
+    exists: "chaff.yaml already exists. Nothing was changed.",
+    createdHeading: "Created:",
+    genreChosen: (genre) => `The genre is ${genre}. If that is wrong, change genre in chaff.yaml.`,
+    genreList: "  List: npx chaff genres",
+    next: "Next:",
+    nextCheck: "  npx chaff .            check every Markdown file here",
+  },
+};
 
 /** 判定のキャッシュと、鍵を書くファイル。どちらも commit しない。 */
 const GITIGNORE_LINES = [".chaff-cache/", ".env*"];
@@ -38,31 +98,30 @@ const writeIfAbsent = (path: string, body: string, note: string): Written | unde
 };
 
 /** 判定のキャッシュと .env は commit しない。init が .gitignore に足す。 */
-const ensureGitignore = (dir: string): Written | undefined => {
+const ensureGitignore = (dir: string, text: (typeof TEXT)["ja"]): Written | undefined => {
   const path = join(dir, ".gitignore");
-  if (!existsSync(path)) return writeIfAbsent(path, `${GITIGNORE_LINES.join("\n")}\n`, "作成しました");
+  if (!existsSync(path)) return writeIfAbsent(path, `${GITIGNORE_LINES.join("\n")}\n`, text.created);
   const body = readFileSync(path, "utf8");
   const missing = GITIGNORE_LINES.filter((line) => !body.split("\n").includes(line));
   if (missing.length === 0) return undefined;
   appendFileSync(path, `${missing.join("\n")}\n`, "utf8");
-  return { path, note: `${missing.join(" と ")} を追記しました` };
+  return { path, note: text.appended(missing) };
 };
 
-export const runInit = (dir: string, genre: string): string[] => {
-  const made = [writeIfAbsent(join(dir, "chaff.yaml"), CONFIG(genre), "規範の宣言。commit してください"), ensureGitignore(dir)].filter(
-    (entry) => entry !== undefined,
-  );
-  if (made.length === 0) return ["chaff.yaml は既にあります。変更していません。"];
+export const runInit = (dir: string, genre: string, ui: UiLanguage = "ja"): string[] => {
+  const text = TEXT[ui];
+  const made = [writeIfAbsent(join(dir, "chaff.yaml"), text.config(genre), text.configNote), ensureGitignore(dir, text)].filter((entry) => entry !== undefined);
+  if (made.length === 0) return [text.exists];
   return [
     "",
-    "作成しました:",
+    text.createdHeading,
     ...made.map((entry) => `  ${entry.path}  ${entry.note}`),
     "",
-    `ジャンルは ${genre} にしました。違う場合は chaff.yaml の genre を直してください。`,
-    "  一覧: npx chaff genres",
+    text.genreChosen(genre),
+    text.genreList,
     "",
-    "次:",
-    "  npx chaff .            この場所の Markdown を全部見る",
+    text.next,
+    text.nextCheck,
     "",
   ];
 };

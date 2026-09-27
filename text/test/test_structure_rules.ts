@@ -161,7 +161,8 @@ describe("a language whose adapter cannot read structure", () => {
     const skipped = result.skipped.filter((entry) => STRUCTURE_RULES.includes(entry.rule));
     const byName = (left: string, right: string): number => left.localeCompare(right, "en");
     assert.deepEqual(skipped.map((entry) => entry.rule).sort(byName), [...STRUCTURE_RULES].sort(byName));
-    assert.ok(skipped.every((entry) => entry.why.includes("構造を読めない")));
+    // An English document is told why in English.
+    assert.ok(skipped.every((entry) => entry.why.includes("cannot read a document's structure")));
   });
 
   it("stays off unless experimental rules are on", () => {
