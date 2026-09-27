@@ -92,7 +92,19 @@ const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: num
   ];
 };
 
-export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], settings: Settings, experimental: boolean, genre: string): RunResult => {
+/** chaff.yaml の rules に数値で書いた上限。段階の表より先に効く。 */
+export type Limits = Readonly<Record<string, number>>;
+
+const limitFor = (rule: RuleDefinition, level: Level, genre: string, limits: Limits): number => limits[rule.id] ?? resolve(rule, level, genre).limit;
+
+export const runRules = (
+  doc: ProseDocument,
+  rules: readonly RuleDefinition[],
+  settings: Settings,
+  experimental: boolean,
+  genre: string,
+  limits: Limits = {},
+): RunResult => {
   const starts = lineStarts(doc.source);
   const applicable = forGenre(rules, genre);
   const forced = applicable
@@ -121,7 +133,7 @@ export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], s
       const detector = DETECTORS[rule.how_to_find];
       if (detector === undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: `検出器 ${rule.how_to_find} がないため` }] };
       const options = {
-        limit: resolve(rule, level, genre).limit,
+        limit: limitFor(rule, level, genre, limits),
         lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
         where: rule.where,
       };
@@ -136,7 +148,7 @@ export const runRules = (doc: ProseDocument, rules: readonly RuleDefinition[], s
   );
   const composites = applicable
     .filter((rule) => rule.from.length > 0 && levelFor(rule, settings, experimental) !== "off")
-    .flatMap((rule) => compositeOf(rule, outcome.findings, resolve(rule, levelFor(rule, settings, experimental), genre).limit, starts));
+    .flatMap((rule) => compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental), genre, limits), starts));
   const all = [...outcome.findings, ...composites];
   return { ...outcome, findings: [...all].sort((left, right) => left.line - right.line), forcedExperimental: forced };
 };

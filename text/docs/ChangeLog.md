@@ -4,6 +4,20 @@ Newest first.
 
 ## Unreleased
 
+### A rule's limit can be a number, and a setting that does nothing is reported
+
+When the four levels are not enough — a style whose model sentences run past the loosest level —
+`chaff.yaml` can give a rule its limit as a positive number (`max-sentence-length: 260`); the level
+counts as `normal` and `chaff rules --json` shows the number in effect. A rule name chaff does not know
+(usually a typo) and a value it cannot read are now reported on standard error by `lint` and
+`rules --json`, instead of being dropped while the writer believes the setting applies.
+
+### Heading attributes are not part of the heading
+
+A heading that carries a kramdown or pandoc attribute list (`## Install {#install}`, `## Notes {: .note}`)
+is now read without it. `heading-echo` missed a sentence that merely repeats such a heading, and the tree
+put `{#a3}` into an article's heading. Braces that are words (`## {name} の設定`) are kept.
+
 ### Two orthography rules
 
 - `preferred-term` — the team lists spellings under `prefer` in chaff.yaml (`サーバー: サーバ`), and each

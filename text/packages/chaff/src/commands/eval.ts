@@ -58,6 +58,7 @@ export const runEval = async (targets: readonly string[], argv: readonly string[
         rules,
         genre,
         language,
+        config.limits,
       ),
       docs.length,
       paths.length,

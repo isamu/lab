@@ -14,6 +14,10 @@ export type Config = {
   readonly aiBackend: BackendName;
   readonly language: string | undefined;
   readonly rules: Readonly<Record<string, Level>>;
+  /** rules に数値で書いた上限。段階の 4 語では足りないときに、その rule の数値を直接決める。段階は normal として扱う。 */
+  readonly limits: Readonly<Record<string, number>>;
+  /** rules に書かれていたが読めなかった値。黙って捨てると、書いた設定が効いていないことに気づけない。 */
+  readonly unreadableRules: readonly { readonly id: string; readonly value: string }[];
   readonly experimental: boolean;
   readonly path: string | undefined;
   readonly aiModel: string;
@@ -37,6 +41,8 @@ export const EMPTY: Config = {
   genre: undefined,
   language: undefined,
   rules: {},
+  limits: {},
+  unreadableRules: [],
   experimental: false,
   path: undefined,
   aiBackend: DEFAULT_BACKEND,
@@ -51,10 +57,28 @@ export const EMPTY: Config = {
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
+const isLimit = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value) && value > 0;
+
+/** 段階の 4 語はそのまま、数値の上限は normal として読む。上限そのものは limitsOf が持つ。 */
 const rulesOf = (raw: unknown): Record<string, Level> => {
   if (!isRecord(raw)) return {};
-  return Object.entries(raw).reduce<Record<string, Level>>((acc, [id, value]) => (isLevel(value) ? { ...acc, [id]: value } : acc), {});
+  return Object.fromEntries(
+    Object.entries(raw).flatMap(([id, value]): [string, Level][] => {
+      if (isLevel(value)) return [[id, value]];
+      return isLimit(value) ? [[id, "normal"]] : [];
+    }),
+  );
 };
+
+const limitsOf = (raw: unknown): Record<string, number> =>
+  isRecord(raw) ? Object.fromEntries(Object.entries(raw).flatMap(([id, value]): [string, number][] => (isLimit(value) ? [[id, value]] : []))) : {};
+
+const unreadableOf = (raw: unknown): { id: string; value: string }[] =>
+  isRecord(raw)
+    ? Object.entries(raw)
+        .filter(([, value]) => !isLevel(value) && !isLimit(value))
+        .map(([id, value]) => ({ id, value: JSON.stringify(value) ?? String(value) }))
+    : [];
 
 const str = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
 
@@ -99,6 +123,8 @@ export const loadConfig = (path: string): Config => {
     genre: str(raw["genre"]),
     language: str(raw["language"]),
     rules: rulesOf(raw["rules"]),
+    limits: limitsOf(raw["rules"]),
+    unreadableRules: unreadableOf(raw["rules"]),
     experimental: raw["experimental"] === true,
     path,
     aiBackend: backend,
