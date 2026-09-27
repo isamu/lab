@@ -45,9 +45,15 @@ const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => 
   if (rule.languages !== undefined && !rule.languages.includes(doc.language)) return `${doc.language} 向けの rule ではないため`;
   const missing = rule.requires.filter((need) => need !== "structure").find((need) => !has(doc.capabilities, need));
   if (missing !== undefined) return `この言語では${CAPABILITY_NAME[missing] ?? missing}が使えないため`;
-  if (rule.requires.some((need) => need === "pos" || need === "lemma") && !hasTokens(doc)) return "アダプタが品詞を返さなかったため";
   return undefined;
 };
+
+/**
+ * 品詞は、動かす rule があるときだけ用意する（neededBy）。だから「品詞が無い」は、段階を見た後でしか言えない。
+ * 先に聞くと、止めている rule まで「アダプタが品詞を返さなかった」と、違う理由で出る。
+ */
+const untagged = (rule: RuleDefinition, doc: ProseDocument): string | undefined =>
+  rule.requires.some((need) => need === "pos" || need === "lemma") && !hasTokens(doc) ? "アダプタが品詞を返さなかったため" : undefined;
 
 const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] =>
   rules.filter((rule) => rule.use_for.some((target) => genre.startsWith(target)));
@@ -123,6 +129,8 @@ export const runRules = (
         const why = rule.status === "experimental" && settings[rule.id] === undefined ? "まだ試験中のため" : "設定で止めているため";
         return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why }] };
       }
+      const noTags = untagged(rule, doc);
+      if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
       // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
       // 段階を見た後で聞く。doc.structure は触れたときに木を作るので、止めている rule のために作らない。
       if (rule.requires.includes("structure") && doc.structure === undefined) {

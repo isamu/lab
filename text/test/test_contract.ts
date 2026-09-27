@@ -8,6 +8,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { runSemantic } from "../packages/chaff/src/run-semantic.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { checkAdapter } from "../packages/chaff/src/adapter-load.ts";
 import type { LanguageAdapter, RuleDefinition } from "../packages/chaff/src/plugin.ts";
 
@@ -28,6 +29,32 @@ describe("契約を満たさないものを黙って通さない", () => {
     const skipped = result.skipped.find((entry) => entry.rule === "agentless-passive");
     assert.match(skipped?.why ?? "", /品詞を返さなかった/u);
     assert.ok(!result.findings.some((finding) => finding.rule === "agentless-passive"));
+  });
+
+  it("止めている試験中の rule は、品詞が無くても「試験中」と言う（品詞は動かす rule のためにしか用意しない）", () => {
+    const untaggedEnglish: LanguageAdapter = {
+      ...en,
+      segment: (text) => ({ sentences: en.segment(text).sentences.map(({ span, text: body }) => ({ span, text: body })) }),
+    };
+    const result = runRules(buildDocument("t.md", "There are many reasons. It really matters.", untaggedEnglish), loadRules("en"), {}, false, "blog/tech");
+    ["adverb-overuse", "expletive-construction"].forEach((id) => {
+      assert.equal(result.skipped.find((entry) => entry.rule === id)?.why, "まだ試験中のため");
+    });
+  });
+
+  it("設定で止めた品詞の rule は「設定で止めている」と言う", () => {
+    const untaggedJapanese: LanguageAdapter = {
+      ...ja,
+      segment: (text) => ({ sentences: ja.segment(text).sentences.map(({ span, text: body }) => ({ span, text: body })) }),
+    };
+    const result = runRules(
+      buildDocument("t.md", "一定の協力が求められます。", untaggedJapanese),
+      loadRules("ja"),
+      { "agentless-passive": "off" },
+      true,
+      "business/report",
+    );
+    assert.equal(result.skipped.find((entry) => entry.rule === "agentless-passive")?.why, "設定で止めているため");
   });
 
   it("絞り込みの無い L4 rule は動かさず、理由を出す", async () => {

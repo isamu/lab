@@ -1,0 +1,40 @@
+---
+import { render } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import { LANGS, href, isLang, otherLang } from "../../../lib/i18n";
+import { guidePages, titleOf } from "../../../lib/guide";
+
+export const getStaticPaths = async () =>
+  (await Promise.all(LANGS.map(guidePages))).flat().map((page) => ({ params: { lang: page.lang, slug: page.slug }, props: { page } }));
+
+const { lang } = Astro.params;
+if (!isLang(lang)) throw new Error(`unknown language ${String(lang)}`);
+const { page } = Astro.props;
+const { Content } = await render(page.entry);
+const pages = await guidePages(lang);
+const counterpart = (await guidePages(otherLang(lang))).some((other) => other.slug === page.slug);
+---
+
+<Base lang={lang} title={titleOf(page.entry)} path={`guide/${page.slug}`} otherPath={counterpart ? `guide/${page.slug}` : ""}>
+  <div class="grid gap-8 md:grid-cols-[12rem_1fr]">
+    <nav class="text-sm">
+      <ul class="space-y-1">
+        {pages.map((other) => (
+          <li>
+            <a
+              href={href(`${lang}/guide/${other.slug}`)}
+              class={
+                other.slug === page.slug ? "font-semibold" : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+              }
+            >
+              {titleOf(other.entry)}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <article class="min-w-0 leading-relaxed [&_a]:text-blue-700 [&_a]:underline dark:[&_a]:text-blue-400 [&_code]:font-mono [&_code]:text-[0.9em] [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mt-10 [&_h2]:text-xl [&_h2]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4 [&_pre]:mt-4 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:bg-zinc-100 [&_pre]:p-4 [&_pre]:text-sm dark:[&_pre]:bg-zinc-900 [&_table]:mt-4 [&_table]:text-sm [&_td]:border-t [&_td]:border-zinc-200 [&_td]:py-1 [&_td]:pr-4 dark:[&_td]:border-zinc-800 [&_th]:py-1 [&_th]:pr-4 [&_th]:text-left [&_ul]:mt-4">
+      <Content />
+    </article>
+  </div>
+</Base>
