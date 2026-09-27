@@ -2,6 +2,20 @@
 
 Newest first.
 
+## Unreleased
+
+### The reason a rule did not run, and `--genre` for a check (#123)
+
+An experimental rule that needs parts of speech (`adverb-overuse`, `expletive-construction`) was listed as
+not run because "the adapter returned no parts of speech". The real reason was that it is experimental and
+off: the tagger is only prepared for rules that run. The missing-tags reason is now given only after the
+rule's level has been checked, so it says "still experimental" (or "turned off in the settings").
+
+`--genre <genre>` now sets the genre for a check, as `chaff genres` has always said; before, only `init`
+read it. It wins over `chaff.yaml` for that run, the header says the genre came from `--genre`, and an
+unknown genre stops with the way to list them. It reaches `test` and `eval` too, and an unknown genre is refused before any command runs. The value after
+`--genre`, `--sarif` or `--rule` is no longer taken for a file to check.
+
 ## 0.7.0 — 2026-09-27
 
 What building a house style from real model texts showed chaff was missing: a way to keep a rule when the
