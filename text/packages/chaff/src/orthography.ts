@@ -88,14 +88,15 @@ const ORDINAL_PREFIX = "第";
 
 const isOrdinalRun = (chars: readonly string[], index: number): boolean => {
   let first = index;
-  while (first > 0 && DIGIT.test(chars[first - 1] ?? "")) first -= 1;
+  while (first > 0 && /[\d.]/u.test(chars[first - 1] ?? "")) first -= 1;
   const before = chars[first - 1] === " " ? first - 2 : first - 1;
   return chars[before] === ORDINAL_PREFIX;
 };
 
 const boundaryAt = (chars: readonly string[], index: number): Omit<Boundary, "offset"> | undefined => {
   const [left, right, after] = [chars[index], chars[index + 1], chars[index + 2]];
-  if (left === ORDINAL_PREFIX || (DIGIT.test(left ?? "") && isOrdinalRun(chars, index))) return undefined;
+  const numberAfterPrefix = left === ORDINAL_PREFIX && DIGIT.test((right === " " ? after : right) ?? "");
+  if (numberAfterPrefix || (DIGIT.test(left ?? "") && isOrdinalRun(chars, index))) return undefined;
   const touching = latinBeside(left, right, "before-digit") ?? leftRunBeside(chars, index, right);
   if (touching !== undefined) return { kind: touching, spaced: false };
   if (right !== " ") return undefined;
