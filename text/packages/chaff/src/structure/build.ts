@@ -1,5 +1,5 @@
 import type { Heading } from "../document.ts";
-import { atxHeadingText } from "../heading-text.ts";
+import { atxHeadingText, headingText } from "../heading-text.ts";
 import { maskSpans } from "../mask.ts";
 import type { Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
@@ -157,16 +157,18 @@ const headingsByLine = (lines: readonly Line[], headings: readonly Heading[]): M
   );
 
 /** 見出しの行から「#」の印を外した文字列。コードを覆った後の行から取るので、見出しの中のコードも読まない。 */
-const atxText = (text: string): string => {
-  const body = text
-    .trim()
-    .replace(/^#{1,6}(?=[ \t]|$)/u, "")
-    .trim();
-  return atxHeadingText(body);
+/**
+ * 見出しの行から見出しの言葉を取る。コードを覆った後の行から取るので、見出しの中のコードも読まない。
+ * ATX（行頭が #）なら印と閉じの # を外す。setext（下線で書く見出し）の末尾の # は言葉なので残す。
+ */
+const headingLineText = (text: string): string => {
+  const line = text.trim();
+  if (!line.startsWith("#")) return headingText(line);
+  return atxHeadingText(line.replace(/^#{1,6}(?=[ \t]|$)/u, "").trim());
 };
 
 const readLine = (state: State, patterns: StructurePatterns, line: Line, heading: Heading | undefined): void => {
-  const text = heading === undefined ? line.text : atxText(line.text);
+  const text = heading === undefined ? line.text : headingLineText(line.text);
   const openNumbers = state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered]));
   const context = { open: openNumbers, isHeading: heading !== undefined };
   const numbered = patterns.numbered(text, context) ?? universalNumber(patterns, text, context);

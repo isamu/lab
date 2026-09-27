@@ -60,6 +60,16 @@ describe("closing hashes before the attributes", () => {
     assert.deepEqual(headings("Price ##\n========\n\ntext\n"), ["Price ##"]);
   });
 
+  it("the tree keeps a setext heading's trailing hashes as well", () => {
+    if (en.structure === undefined) throw new Error("no structure");
+    const tree = buildStructure(
+      { path: "a.md", source: "Guide\n=====\n\nSection 2 Price ##\n-----------------\n\ntext\n", language: "en", markdown: true },
+      en.structure,
+    );
+    const article = tree.children[0]?.children.find((node) => node.kind === "article");
+    assert.equal(article?.attrs["heading"], "Price ##");
+  });
+
   it("the tree's numbered heading too", () => {
     if (ja.structure === undefined) throw new Error("no structure");
     const tree = buildStructure(
