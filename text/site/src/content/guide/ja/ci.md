@@ -39,7 +39,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
       - run: npx -y chaffjs . --sarif report/chaff.sarif
       - name: Upload SARIF to Code Scanning
         uses: github/codeql-action/upload-sarif@v4
