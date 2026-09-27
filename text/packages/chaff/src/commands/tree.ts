@@ -6,6 +6,7 @@ import { isMarkdownPath } from "../structure/markdown-path.ts";
 import { buildStructure } from "../structure/of.ts";
 import { toSexp } from "../structure/sexp.ts";
 import type { Config } from "../config/load.ts";
+import type { StructureNode } from "../plugin.ts";
 
 export type TreeContext = {
   readonly config: Config;
@@ -22,7 +23,7 @@ const VALUED = ["--format", "--language"];
 export const treeTargets = (argv: readonly string[]): string[] =>
   argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.includes(all[index - 1] ?? ""));
 
-const readSource = async (path: string): Promise<string | undefined> => {
+export const readSource = async (path: string): Promise<string | undefined> => {
   try {
     return await readFile(path, "utf8");
   } catch (err) {
@@ -41,20 +42,30 @@ export const treeLanguage = (path: string, source: string, argv: readonly string
   context.config.language ??
   guessLanguage(source).language;
 
-/** 1 ファイルを木にして出す。読めない・言語パッケージが構造を読めないときは、黙らずに言って失敗にする。 */
-const printTree = async (path: string, argv: readonly string[], context: TreeContext): Promise<boolean> => {
+export type SourceTree = { readonly source: string; readonly tree: StructureNode };
+
+/**
+ * 1 ファイルを読んで木にする。読めない・言語パッケージが構造を読めないときは、黙らずに言って undefined を返す。
+ * chaff tree と chaff cite が同じ木を見るように、ここを一つにしておく。
+ */
+export const readTree = async (path: string, argv: readonly string[], context: TreeContext): Promise<SourceTree | undefined> => {
   const source = await readSource(path);
-  if (source === undefined) return false;
+  if (source === undefined) return undefined;
   const language = treeLanguage(path, source, argv, context);
   const adapter = await loadAdapter(language);
   if (adapter.structure === undefined) {
     console.error(`${path}: 言語 ${language} のパッケージは文書の構造を読めません（structure がありません）`);
-    return false;
+    return undefined;
   }
   // 日本語は形態素で数量と日付を読む。解析器が無ければ単位の表で読むので、木は作れる。
   await adapter.prepare?.({ pos: true });
-  const tree = buildStructure({ path, source, language, markdown: isMarkdownPath(path) }, adapter.structure);
-  console.log(context.flag(argv, "--format") === "json" ? JSON.stringify(tree, null, 2) : toSexp(tree));
+  return { source, tree: buildStructure({ path, source, language, markdown: isMarkdownPath(path) }, adapter.structure) };
+};
+
+const printTree = async (path: string, argv: readonly string[], context: TreeContext): Promise<boolean> => {
+  const read = await readTree(path, argv, context);
+  if (read === undefined) return false;
+  console.log(context.flag(argv, "--format") === "json" ? JSON.stringify(read.tree, null, 2) : toSexp(read.tree));
   return true;
 };
 

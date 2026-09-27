@@ -194,6 +194,10 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
   const doc = draftOf("doc", "", { text: "", start: 0, number: 1 }, { path: input.path, language: input.language });
   doc.end = input.source.length;
   const state: State = { stack: [{ draft: doc, rank: 0 }], headingCounts: [] };
-  lines.filter((line) => line.text.trim() !== "").forEach((line) => readLine(state, patterns, line, headings.get(line.number)));
+  lines.forEach((line) => {
+    if (line.text.trim() !== "") readLine(state, patterns, line, headings.get(line.number));
+    // コードの行は覆って読まないが、開いている節の中身ではある。節の最後にコードブロックがあっても、範囲をそこまで伸ばす。
+    else if (input.source.slice(line.start, line.start + line.text.length).trim() !== "") extend(state, line.start + line.text.length);
+  });
   return freeze(doc);
 };
