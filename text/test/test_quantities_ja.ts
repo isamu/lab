@@ -1,0 +1,93 @@
+import { before, describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { prepare } from "../packages/lang-ja/src/pos.ts";
+import { countedAfter, dates, quantities } from "../packages/lang-ja/src/quantities.ts";
+
+// 形態素で読む数量と日付。このファイルは解析器を読み込んでから試す（表の経路は test_tree_ja.ts が試す）。
+
+type Attr = number | string | undefined;
+
+const quantityOf = (text: string): [Attr, Attr][] => quantities(text).map((mention) => [mention.attrs["value"], mention.attrs["unit"]]);
+
+const dateOf = (text: string): Attr[] => dates(text).map((mention) => mention.attrs["value"]);
+
+before(async () => prepare());
+
+describe("数量（助数詞を品詞で読む）", () => {
+  const cases: readonly (readonly [string, readonly (readonly [number, string])[]])[] = [
+    ["検収後30日以内に支払う。", [[30, "日"]]],
+    [
+      "1日8時間、1週40時間とする。",
+      [
+        [1, "日"],
+        [8, "時間"],
+        [1, "週"],
+        [40, "時間"],
+      ],
+    ],
+    ["休憩時間は60分とする。", [[60, "分"]]],
+    ["所定労働日の8割以上出勤した者", [[8, "割"]]],
+    ["6か月間継続勤務した者", [[6, "か月"]]],
+    ["委託料として金50万円を支払う。", [[500000, "円"]]],
+    ["百万円以下の罰金に処する。", [[1000000, "円"]]],
+    ["約1万件の契約書を用いた。", [[10000, "件"]]],
+    ["精度は95.2%に向上した。", [[95.2, "%"]]],
+    ["処理時間を0.5倍に短縮した。", [[0.5, "倍"]]],
+    ["全角の３０日でも読む。", [[30, "日"]]],
+    ["空白を挟んだ 1.5 倍も数量として読む。", [[1.5, "倍"]]],
+    ["全角空白を挟んだ 1.5\u3000倍も読む。", [[1.5, "倍"]]],
+    ["タブを挟んだ 30\t日も読む。", [[30, "日"]]],
+    ["一年以下の懲役", [[1, "年"]]],
+    ["十二人で分担した。", [[12, "人"]]],
+  ];
+  cases.forEach(([text, expected]) => {
+    it(text, () => assert.deepEqual(quantityOf(text), expected));
+  });
+});
+
+describe("数量ではないもの", () => {
+  const cases: readonly string[] = ["第3条に定める業務", "第十条の規定", "数字の無い文。", "3つ目の案", "第一印象は大切だ。", "文字の 3 と 4 を並べる。"];
+  cases.forEach((text) => {
+    it(text, () => assert.deepEqual(quantityOf(text), []));
+  });
+});
+
+describe("日付（年・月・日をまとめる）", () => {
+  const cases: readonly (readonly [string, readonly string[]])[] = [
+    ["2024年4月1日から2025年3月31日まで", ["2024-04-01", "2025-03-31"]],
+    ["2024年4月に開始する。", ["2024-04"]],
+    ["12月29日から1月3日まで", ["12-29", "01-03"]],
+    ["2023年に公開した。", ["2023"]],
+    ["２０２４年４月１日", ["2024-04-01"]],
+  ];
+  cases.forEach(([text, expected]) => {
+    it(text, () => assert.deepEqual(dateOf(text), expected));
+  });
+
+  it("日付にした年月日は、数量として二重に数えない", () => {
+    assert.deepEqual(quantityOf("2024年4月1日から30日間"), [[30, "日間"]]);
+  });
+
+  it("1000 より小さい年は期間として数量に残す", () => {
+    assert.deepEqual(dateOf("3年間有効とする。"), []);
+    assert.deepEqual(quantityOf("3年で満了する。"), [[3, "年"]]);
+  });
+
+  it("年と月のあいだに別の語があれば一つの日付にしない", () => {
+    assert.deepEqual(dateOf("2024年の4月1日"), ["2024", "04-01"]);
+  });
+});
+
+describe("countedAfter（通し番号か数量か）", () => {
+  const cases: readonly (readonly [string, string, boolean])[] = [
+    ["1.5", "倍になった。", true],
+    ["2.5", "日かかる。", true],
+    ["3.2", "%の増加", true],
+    ["4.2", "設定", false],
+    ["1.1", "目的", false],
+    ["2.1", "注文の登録", false],
+  ];
+  cases.forEach(([number, rest, expected]) => {
+    it(`${number} ${rest} → ${String(expected)}`, () => assert.equal(countedAfter(number, rest), expected));
+  });
+});

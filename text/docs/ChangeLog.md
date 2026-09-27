@@ -24,6 +24,12 @@ adapters do not have it. The release that ships this must publish both adapters 
 make `chaffjs` depend on exactly that version. Otherwise an install from npm pairs `chaff tree` with the old
 adapters, and it refuses Japanese and English.
 
+Parts, chapters and sections (第1編・第2章・第3節, PART I, CHAPTER 2) nest above articles, and dates are
+read as leaves (`2024年4月1日` and `April 1, 2024` are both `2024-04-01`). Japanese quantities are read by
+morphological analysis: a number followed by a counter is a quantity, so 8割 and 5件 are read without a
+unit table. A dotted number followed by a unit (`1.5 倍`, `2.5 days`) is an amount, not section 1.5.
+Mid-sentence "May" is the month, not the permission.
+
 An adapter that chaff does not bundle is now looked up as `@chaffjs/lang-<language>`. A language can
 be added by installing its package, without changing core.
 

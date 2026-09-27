@@ -1,0 +1,28 @@
+MASTER SERVICES AGREEMENT
+
+This Agreement is made on April 1, 2024 between Alpha Inc. (the "Customer") and Beta LLC (the "Provider").
+
+ARTICLE I. DEFINITIONS
+Section 1.1 Definitions
+"Services" means the services described in Schedule A.
+"Deliverables" means the work product delivered under Section 3.2.
+
+ARTICLE II. SERVICES
+Section 2.1 Performance
+(a) The Provider shall perform the Services with reasonable care.
+(b) The Provider may use subcontractors only with the Customer's consent.
+Section 2.2 Term
+This Agreement ends on March 31, 2025 unless renewed under Section 5.1.
+
+ARTICLE III. FEES
+Section 3.1 Fees
+The Customer shall pay $5,000 per month.
+Section 3.2 Payment
+(a) Invoices are due within 30 days of receipt.
+(i) Late amounts bear interest at 1.5 percent per month.
+(ii) The Customer shall not withhold payment of undisputed amounts.
+(b) The Provider must deliver the Deliverables before payment is due.
+
+ARTICLE IV. TERMINATION
+Section 4.1 Termination for Cause
+Either party may terminate this Agreement if the other breaches Section 3.2(a)(ii) and fails to cure within 15 business days.

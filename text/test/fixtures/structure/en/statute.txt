@@ -1,0 +1,21 @@
+PART I GENERAL PROVISIONS
+CHAPTER 1 PRELIMINARY
+
+Section 101 Short title
+This Act may be cited as the Data Handling Act.
+
+Section 102 Definitions
+In this Act, "personal data" means information relating to an identified person.
+
+CHAPTER 2 DUTIES
+
+Section 201 Duty of care
+(a) A controller shall keep personal data secure.
+(b) A controller shall not retain personal data for more than 5 years.
+(1) This subsection does not apply to archives.
+
+PART II ENFORCEMENT
+CHAPTER 1 PENALTIES
+
+Section 301 Penalty
+A person who breaches Section 201(b) is liable to a fine not exceeding $10,000.

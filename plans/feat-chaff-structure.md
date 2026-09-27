@@ -56,6 +56,8 @@ adapter に任意の `structure` を足す。任意なので `apiVersion` は 1 
 ## 段階（PR を分ける）
 
 1. **木**: 型・言語パッケージの型（ja / en）・木を作る処理・`chaff tree`・`.txt`・言語パッケージの読み込みを開く。
+1b. **形態素・章・日付**: 日本語の数量を助数詞の品詞で読む、編・章・節と PART・CHAPTER、日付の葉、
+   「1.5 倍」を通し番号にしない `countedAfter`、日英の見本と人が確かめた期待の木。
 2. **構造の規則**: `dangling-reference`、`numbering-gap`、`conflicting-definition`。あわせて指摘の JSON 出力（spec §19.2）。
 3. **`chaff cite`**: 回答の引用（番地と引用文）が原文の木に実在し、引用文が一致するかを確かめる。
    spec §25 の「原文との対応は対象外」を改める。書き換えはしない（§25 のまま）。
