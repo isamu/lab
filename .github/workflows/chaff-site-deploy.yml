@@ -5,7 +5,13 @@ name: chaff site deploy
 on:
   push:
     branches: [main]
-    paths: ["text/site/**", "text/packages/chaff/rules/**", "text/packages/chaff/src/rule-load.ts", ".github/workflows/chaff-site-deploy.yml"]
+    paths:
+      - "text/site/**"
+      - "text/packages/chaff/rules/**"
+      - "text/packages/chaff/src/**"
+      - "text/packages/chaff/package.json"
+      - "text/yarn.lock"
+      - ".github/workflows/chaff-site-deploy.yml"
   workflow_dispatch:
 
 permissions:
@@ -41,8 +47,6 @@ jobs:
       - name: build
         working-directory: text/site
         run: yarn build
-
-      - uses: actions/configure-pages@v6
 
       - uses: actions/upload-pages-artifact@v5
         with:
