@@ -200,31 +200,37 @@ describe("大きな文書", () => {
   });
 });
 
-describe("linesOf と lineNumberAt を素直な実装と比べる", () => {
-  // 行と位置は木の全部が頼る。書き直した二つを、読んで分かる実装と生成した入力で突き合わせる。
-  const pieces = ["", "a", "bc", "\r", " ", "第3条"];
-  const sources = pieces.flatMap((first) =>
-    pieces.flatMap((second) => pieces.flatMap((third) => ["\n", "\r\n"].map((newline) => [first, second, third].join(newline)))),
-  );
+// 行と位置は木の全部が頼る。書き直した二つを、読んで分かる実装と生成した入力で突き合わせる。
+const PIECES = ["", "a", "bc", "\r", " ", "第3条"];
 
-  const reference = (source: string) =>
-    source.split("\n").map((raw, index, all) => ({
-      text: raw.replace(/\r$/u, ""),
-      start: all.slice(0, index).reduce((sum, part) => sum + part.length + 1, 0),
-      number: index + 1,
-    }));
+/** 3 つの断片を \n か \r\n でつないだ、すべての組み合わせ。 */
+const generatedSources = (): string[] => {
+  const triples = PIECES.flatMap((first) => PIECES.flatMap((second) => PIECES.map((third) => [first, second, third])));
+  return triples.flatMap((parts) => ["\n", "\r\n"].map((newline) => parts.join(newline)));
+};
+
+const referenceLines = (source: string) =>
+  source.split("\n").map((raw, index, all) => ({
+    text: raw.replace(/\r$/u, ""),
+    start: all.slice(0, index).reduce((sum, part) => sum + part.length + 1, 0),
+    number: index + 1,
+  }));
+
+/** 文書と、その中のすべての位置（末尾の次も含む）。 */
+const everyOffset = (sources: readonly string[]): { readonly source: string; readonly offset: number }[] =>
+  sources.flatMap((source) => Array.from({ length: source.length + 1 }, (_, offset) => ({ source, offset })));
+
+describe("linesOf と lineNumberAt を素直な実装と比べる", () => {
+  const sources = generatedSources();
 
   it("行の分け方が同じ", () => {
-    sources.forEach((source) => assert.deepEqual(linesOf(source), reference(source), JSON.stringify(source)));
+    sources.forEach((source) => assert.deepEqual(linesOf(source), referenceLines(source), JSON.stringify(source)));
   });
 
   it("どの位置についても、含む行が同じ", () => {
-    sources.forEach((source) => {
-      const lines = linesOf(source);
-      Array.from({ length: source.length + 1 }, (_, offset) => offset).forEach((offset) => {
-        const expected = reference(source).find((line) => offset >= line.start && offset <= line.start + line.text.length)?.number;
-        assert.equal(lineNumberAt(lines, offset), expected, `${JSON.stringify(source)} @${String(offset)}`);
-      });
+    everyOffset(sources).forEach(({ source, offset }) => {
+      const expected = referenceLines(source).find((line) => offset >= line.start && offset <= line.start + line.text.length)?.number;
+      assert.equal(lineNumberAt(linesOf(source), offset), expected, `${JSON.stringify(source)} @${String(offset)}`);
     });
   });
 });
