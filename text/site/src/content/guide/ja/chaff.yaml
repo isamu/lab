@@ -1,0 +1,15 @@
+genre: technical/readme
+language: ja
+
+rules:
+  max-sentence-length: 85
+  max-paragraph-length: 4
+  max-kanji-continuous: strict
+  repeated-sentence-head: strict
+  no-mixed-desumasu: strict
+  latin-spacing: normal
+  preferred-term: normal
+
+prefer:
+  APIキー: API key
+  API キー: API key
