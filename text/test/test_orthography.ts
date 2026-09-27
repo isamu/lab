@@ -39,6 +39,10 @@ describe("latinBoundaries", () => {
     ["Node.js 22 以上", ["after-digit:spaced"]],
     ["3日で終わる", ["after-digit:touching"]],
     ["を 3回", ["before-digit:spaced", "after-digit:touching"]],
+    ["3GBの容量", ["after-digit:touching"]],
+    ["10ms 待つ", ["after-digit:spaced"]],
+    ["v1.2の変更", ["after-digit:touching"]],
+    ["SmartHRの設定", ["letter:touching"]],
     ["APIを呼ぶ", ["letter:touching"]],
     ["API を呼ぶ", ["letter:spaced"]],
     ["を API で", ["letter:spaced", "letter:spaced"]],
@@ -141,6 +145,10 @@ describe("latin-spacing", () => {
   it("counts the space before a digit apart from the space after it", () => {
     assert.deepEqual(spacing("# 使い方\n\nAPI を 3回呼び、JSON を 5回受け取る。\n"), []);
     assert.deepEqual(spacing("# 使い方\n\n3回呼び、5回待ち、10 回で止める。\n"), ["前の数字:空けています"]);
+  });
+
+  it("does not read a unit after a number as a Latin word", () => {
+    assert.deepEqual(spacing("# 使い方\n\nAPI を呼び、JSON を返し、ID を保存し、3GBの容量を使う。\n"), []);
   });
 
   it("on relaxed, one odd place is not enough", () => {

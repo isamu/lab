@@ -12,7 +12,8 @@ Newest first.
 - `latin-spacing` (Japanese) — whether Japanese and Latin letters or digits are separated by a space is a
   choice either way; mixing both in one document is what this reports, pointing at whichever the document
   uses less. Letters, the space before a digit and the space after one are counted separately, since
-  `を 3回` (space before the number, none before its counter) is ordinary.
+  `を 3回` (space before the number, none before its counter) is ordinary. A unit written after a number
+  (`3GBの`, `10ms 待つ`) counts with the number, not as a Latin word.
 
 Both are experimental, so a style turns them on in chaff.yaml.
 

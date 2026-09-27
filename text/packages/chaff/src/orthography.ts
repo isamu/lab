@@ -62,12 +62,30 @@ const latinBeside = (japanese: string | undefined, other: string | undefined, di
   isJapanese(japanese) ? kindOf(other, digitSide) : undefined;
 
 /** 日本語の字の隣にある英字・数字との境目。間が半角空白 1 つなら「空けている」、何も無ければ「詰めている」。 */
+const ALPHANUMERIC = /[A-Za-z0-9.]/u;
+
+/**
+ * 日本語の左にある英数字の並びの、先頭の字。「3GBの」の「GB」は数量の単位で、並びは数字で始まる。
+ * そうした並びと日本語の境目は、英字の空け方ではなく数字の後ろの空け方として数える（「3回」と同じ）。
+ */
+const runStart = (chars: readonly string[], last: number): string | undefined => {
+  let first = last;
+  while (first > 0 && ALPHANUMERIC.test(chars[first - 1] ?? "")) first -= 1;
+  return chars[first];
+};
+
+/** 左の並びの種類。数字で始まる並び（3GB、10ms）は数字として扱う。 */
+const leftRunBeside = (chars: readonly string[], last: number, japanese: string | undefined): SpacingKind | undefined => {
+  const kind = latinBeside(japanese, chars[last], "after-digit");
+  return kind === "letter" && DIGIT.test(runStart(chars, last) ?? "") ? "after-digit" : kind;
+};
+
 const boundaryAt = (chars: readonly string[], index: number): Omit<Boundary, "offset"> | undefined => {
   const [left, right, after] = [chars[index], chars[index + 1], chars[index + 2]];
-  const touching = latinBeside(left, right, "before-digit") ?? latinBeside(right, left, "after-digit");
+  const touching = latinBeside(left, right, "before-digit") ?? leftRunBeside(chars, index, right);
   if (touching !== undefined) return { kind: touching, spaced: false };
   if (right !== " ") return undefined;
-  const spaced = latinBeside(left, after, "before-digit") ?? latinBeside(after, left, "after-digit");
+  const spaced = latinBeside(left, after, "before-digit") ?? leftRunBeside(chars, index, after);
   return spaced === undefined ? undefined : { kind: spaced, spaced: true };
 };
 
