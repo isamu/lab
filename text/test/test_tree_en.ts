@@ -101,6 +101,17 @@ describe("an English contract as a tree", () => {
     assert.deepEqual(markers, ["shall not"]);
   });
 
+  it("reads a currency right before the number, with or without one space", () => {
+    assert.deepEqual(
+      treeOf("Pay $1,000 or USD 500 or €20 and 3 more.").children.map((node) => [node.attrs["value"], node.attrs["unit"]]),
+      [
+        [1000, "$"],
+        [500, "USD"],
+        [20, "€"],
+      ],
+    );
+  });
+
   it("does not take a bare number without a unit or currency as a quantity", () => {
     assert.deepEqual(
       treeOf("There are 3 parties and 12 months of support.").children.map((node) => [node.attrs["value"], node.attrs["unit"]]),

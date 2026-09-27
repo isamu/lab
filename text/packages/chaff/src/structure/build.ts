@@ -1,7 +1,7 @@
 import { markdownOutline, type Heading } from "../document.ts";
 import { maskSpans } from "../mask.ts";
 import type { Mention, NumberedLine, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
-import { linesOf, type Line } from "./lines.ts";
+import { lineNumberAt, linesOf, type Line } from "./lines.ts";
 import { dottedNumber } from "./universal.ts";
 
 /** 組み立て中の節点。できあがったら StructureNode に固める。 */
@@ -129,13 +129,13 @@ const freeze = (draft: Draft): StructureNode => ({
 
 export type StructureInput = { readonly path: string; readonly source: string; readonly language: string; readonly markdown: boolean };
 
-/** 見出しのある行を、行番号から引けるようにする。 */
+/** 見出しのある行を、行番号から引けるようにする。見出しごとに全行を探し直さない。 */
 const headingsByLine = (lines: readonly Line[], headings: readonly Heading[]): Map<number, Heading> =>
   new Map(
     headings.flatMap((heading) => {
-      const line = lines.find((candidate) => heading.start >= candidate.start && heading.start <= candidate.start + candidate.text.length);
-      if (line === undefined) return [];
-      const entry: [number, Heading] = [line.number, heading];
+      const number = lineNumberAt(lines, heading.start);
+      if (number === undefined) return [];
+      const entry: [number, Heading] = [number, heading];
       return [entry];
     }),
   );

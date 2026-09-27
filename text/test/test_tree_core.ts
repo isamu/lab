@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { buildStructure } from "../packages/chaff/src/structure/build.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
-import { linesOf } from "../packages/chaff/src/structure/lines.ts";
+import { lineNumberAt, linesOf } from "../packages/chaff/src/structure/lines.ts";
 import { inOrder, treeLanguage, treeTargets } from "../packages/chaff/src/commands/tree.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import type { Mention, NumberedLine, StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
@@ -171,5 +171,60 @@ describe("chaff tree の言語", () => {
 
   it("設定が無ければ中身から推定する", () => {
     assert.equal(treeLanguage("/x/a.txt", "The Buyer shall pay within 30 days.", ["tree"], { ...context, config: EMPTY }), "en");
+  });
+});
+
+describe("大きな文書", () => {
+  // 旧実装は行ごとに配列を作り直し、見出しごとに全行を探していたので、この大きさで数十秒かかった。
+  // 負荷のかかった CI でも落ちないよう、上限は線形の実装の何十倍も緩くしてある。
+  const GENEROUS_MS = 5000;
+
+  const timed = (build: () => StructureNode): { readonly ms: number; readonly tree: StructureNode } => {
+    const started = performance.now();
+    const tree = build();
+    return { ms: performance.now() - started, tree };
+  };
+
+  it("何万行の .txt も線形で木にする", () => {
+    const source = Array.from({ length: 60_000 }, (_, index) => (index % 100 === 0 ? `§${String(index / 100 + 1)} part` : "- 1 text ->§1")).join("\n");
+    const { ms, tree } = timed(() => treeOf(source));
+    assert.equal(tree.children.length, 600);
+    assert.ok(ms < GENEROUS_MS, `${String(Math.round(ms))} ms`);
+  });
+
+  it("見出しが何万ある Markdown も線形で木にする", () => {
+    const source = Array.from({ length: 30_000 }, (_, index) => `## Heading ${String(index)}`).join("\n");
+    const { ms, tree } = timed(() => treeOf(source, true));
+    assert.equal(tree.children.length, 30_000);
+    assert.ok(ms < GENEROUS_MS, `${String(Math.round(ms))} ms`);
+  });
+});
+
+describe("linesOf と lineNumberAt を素直な実装と比べる", () => {
+  // 行と位置は木の全部が頼る。書き直した二つを、読んで分かる実装と生成した入力で突き合わせる。
+  const pieces = ["", "a", "bc", "\r", " ", "第3条"];
+  const sources = pieces.flatMap((first) =>
+    pieces.flatMap((second) => pieces.flatMap((third) => ["\n", "\r\n"].map((newline) => [first, second, third].join(newline)))),
+  );
+
+  const reference = (source: string) =>
+    source.split("\n").map((raw, index, all) => ({
+      text: raw.replace(/\r$/u, ""),
+      start: all.slice(0, index).reduce((sum, part) => sum + part.length + 1, 0),
+      number: index + 1,
+    }));
+
+  it("行の分け方が同じ", () => {
+    sources.forEach((source) => assert.deepEqual(linesOf(source), reference(source), JSON.stringify(source)));
+  });
+
+  it("どの位置についても、含む行が同じ", () => {
+    sources.forEach((source) => {
+      const lines = linesOf(source);
+      Array.from({ length: source.length + 1 }, (_, offset) => offset).forEach((offset) => {
+        const expected = reference(source).find((line) => offset >= line.start && offset <= line.start + line.text.length)?.number;
+        assert.equal(lineNumberAt(lines, offset), expected, `${JSON.stringify(source)} @${String(offset)}`);
+      });
+    });
   });
 });

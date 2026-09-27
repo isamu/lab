@@ -231,7 +231,11 @@ const unitAfter = (text: string, from: number): string | undefined => {
   return unit;
 };
 
-const currencyBefore = (text: string, at: number): string | undefined => CURRENCIES.find((currency) => text.slice(0, at).trimEnd().endsWith(currency));
+/** The currency just before the number, allowing one space. Looks back a few characters, never at the whole line. */
+const currencyBefore = (text: string, at: number): string | undefined => {
+  const end = text[at - 1] === " " ? at - 1 : at;
+  return CURRENCIES.find((currency) => text.startsWith(currency, end - currency.length));
+};
 
 const quantities = (text: string): Mention[] =>
   [...text.matchAll(NUMBER_RUN)].flatMap((match) => {
