@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { loadAdapter, packageFor } from "../packages/chaff/src/adapter-load.ts";
+import { loadAdapter, packageFor, packagesFor } from "../packages/chaff/src/adapter-load.ts";
 
 const adapters: readonly LanguageAdapter[] = [ja, en];
 
@@ -50,7 +50,52 @@ describe("LanguageAdapter の契約", () => {
     ["", "../ja", "JA", "chinese", "zh-TW"].forEach((language) => assert.equal(packageFor(language), undefined, language));
   });
 
-  it("入っていない言語は、入れ方を添えて断る", async () => {
-    await assert.rejects(loadAdapter("xq"), /@chaffjs\/lang-xq が入っていません/u);
+  it("入っていない言語は、探した名前と入れ方を添えて断る", async () => {
+    await assert.rejects(loadAdapter("xq"), /xq のパッケージが入っていません（@chaffjs\/lang-xq か chaff-lang-xq。npm i -D @chaffjs\/lang-xq）/u);
+  });
+
+  it("探す順は、公式の @chaffjs/lang-<言語>、次に第三者の chaff-lang-<言語>。同梱の言語は表のものだけ", () => {
+    assert.deepEqual(packagesFor("zh"), ["@chaffjs/lang-zh", "chaff-lang-zh"]);
+    assert.deepEqual(packagesFor("ja"), ["@chaffjs/lang-ja"]);
+    assert.deepEqual(packagesFor("en"), ["@chaffjs/lang-en"]);
+    ["", "../ja", "JA", "chinese", "zh-TW"].forEach((language) => assert.deepEqual(packagesFor(language), [], language));
+  });
+
+  const notFound = (specifier: string): Error => Object.assign(new Error(`Cannot find package '${specifier}'`), { code: "ERR_MODULE_NOT_FOUND" });
+  const fakeImporter =
+    (installed: Readonly<Record<string, unknown>>, tried: string[]) =>
+    (specifier: string): Promise<unknown> => {
+      tried.push(specifier);
+      return specifier in installed ? Promise.resolve(installed[specifier]) : Promise.reject(notFound(specifier));
+    };
+
+  it("公式が無ければ chaff-lang-<言語> を読む", async () => {
+    const tried: string[] = [];
+    const adapter = await loadAdapter("zh", fakeImporter({ "chaff-lang-zh": { adapter: { ...ja, id: "zh" } } }, tried));
+    assert.equal(adapter.id, "zh");
+    assert.deepEqual(tried, ["@chaffjs/lang-zh", "chaff-lang-zh"]);
+  });
+
+  it("公式があれば第三者は見ない", async () => {
+    const tried: string[] = [];
+    await loadAdapter("zh", fakeImporter({ "@chaffjs/lang-zh": { default: { ...ja, id: "zh" } }, "chaff-lang-zh": {} }, tried));
+    assert.deepEqual(tried, ["@chaffjs/lang-zh"]);
+  });
+
+  it("入っていて壊れている公式は、第三者に逃げずにそのまま失敗する", async () => {
+    const tried: string[] = [];
+    const broken = (specifier: string): Promise<unknown> => {
+      tried.push(specifier);
+      return Promise.reject(new SyntaxError("Unexpected token"));
+    };
+    await assert.rejects(loadAdapter("zh", broken), SyntaxError);
+    assert.deepEqual(tried, ["@chaffjs/lang-zh"]);
+  });
+
+  it("第三者のものも、LanguageAdapter の形でなければ断る", async () => {
+    await assert.rejects(
+      loadAdapter("zh", fakeImporter({ "chaff-lang-zh": { default: { kind: "language" } } }, [])),
+      /chaff-lang-zh が LanguageAdapter を export していません/u,
+    );
   });
 });

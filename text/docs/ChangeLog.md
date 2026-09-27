@@ -2,6 +2,15 @@
 
 Newest first.
 
+## Unreleased
+
+### Third-party language packages are loaded (#122)
+
+The READMEs have always said an official adapter is `@chaffjs/lang-<lang>` and a third-party one is
+`chaff-lang-<lang>`, but chaff only ever tried the first, so a third-party package was never loaded. chaff
+now tries `@chaffjs/lang-<lang>` and then `chaff-lang-<lang>`. An installed package that fails to load is
+reported as it is, without falling through to the next; when neither is installed, the message names both.
+
 ## 0.7.0 — 2026-09-27
 
 What building a house style from real model texts showed chaff was missing: a way to keep a rule when the
