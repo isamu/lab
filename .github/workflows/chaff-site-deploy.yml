@@ -1,0 +1,67 @@
+# chaff のドキュメントサイト（text/site）を GitHub Pages に出す。https://isamu.github.io/lab/
+# 検査は chaff-site.yml が PR で済ませている。ここは main に入ったものを作って置くだけ。
+name: chaff site deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "text/site/**"
+      - "text/packages/chaff/rules/**"
+      - "text/packages/chaff/src/**"
+      - "text/packages/chaff/package.json"
+      - "text/yarn.lock"
+      - ".github/workflows/chaff-site-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 同時に 2 つ出すと、後から始まったものが先に終わって古い版が残ることがある。
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      # The rule reference is read with chaff's own loader, which needs chaff's dependencies.
+      - name: install chaff
+        working-directory: text
+        run: yarn install --frozen-lockfile
+
+      - name: install site
+        working-directory: text/site
+        run: yarn install --frozen-lockfile
+
+      - name: build
+        working-directory: text/site
+        run: yarn build
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: text/site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

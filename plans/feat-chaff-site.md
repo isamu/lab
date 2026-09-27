@@ -21,7 +21,7 @@ chaff を使う人が、入り方・設定・ルール一つ一つの意味を�
    - Markdown の段落の中の改行は空白になるので、日本語どうしの改行は取り除く（`src/lib/joinCjkLines.ts`、remark の手順）
    - もう一方の言語にまだ無いページでは、言語の切り替えはその言語のトップに行く。手引きが無い言語では、上の「手引き」を出さない
    - 英語: 次に書く
-3. GitHub Pages への公開（リポジトリで Pages を有効にする必要がある）
+3. GitHub Pages への公開: `.github/workflows/chaff-site-deploy.yml` が main に入ったサイトを作って置く。リポジトリの Pages は「GitHub Actions から」に設定する
 
 ## 確かめ方
 
