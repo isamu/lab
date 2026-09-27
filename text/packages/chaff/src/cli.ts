@@ -27,6 +27,7 @@ import { VERSION } from "./version.ts";
 import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
 import { citeTargets, runCite } from "./commands/cite.ts";
 import { runSkill } from "./commands/skill.ts";
+import { runFeedback, settingsOf } from "./commands/feedback.ts";
 import { homedir } from "node:os";
 import { ruleProblems } from "./config/rule-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
@@ -82,6 +83,7 @@ type Inspected = {
   readonly rules: readonly RuleDefinition[];
   /** ファイルごとの言語。by_path で 1 つの repo に 2 言語が混ざる。 */
   readonly language: string;
+  readonly genre: string;
   readonly outcome: FileOutcome;
   readonly perFile: PerFile;
   readonly all: readonly string[];
@@ -118,6 +120,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
     text,
     rules,
     language,
+    genre,
     outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
     perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless },
     all: applied.kept.map((finding) => fingerprint(path, finding)),
@@ -297,6 +300,21 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   relax: (argv) => changeSetting("relaxed", argv[1], flag(argv, "--why")),
   strict: (argv) => changeSetting("strict", argv[1], flag(argv, "--why")),
   off: (argv) => changeSetting("off", argv[1], flag(argv, "--why")),
+  feedback: (argv) => {
+    const config = readConfig();
+    return runFeedback(positional(argv), argv, {
+      cwd: process.cwd(),
+      ui: hostLanguage(config.language, process.env),
+      version: VERSION,
+      runtime: `Node ${process.version} · ${process.platform} ${process.arch}`,
+      flag,
+      settingsOf: (ruleIds) => settingsOf(config, ruleIds),
+      check: async (path) => {
+        const inspected = await inspect(path, config, [...argv, "--show-baseline"]);
+        return { findings: inspected.outcome.findings, rules: inspected.rules, language: inspected.language, genre: inspected.genre };
+      },
+    });
+  },
   skill: (argv) => runSkill(argv, { cwd: process.cwd(), home: homedir(), ui: hostLanguage(readConfig().language, process.env) }),
 };
 

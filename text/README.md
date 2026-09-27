@@ -86,6 +86,7 @@ npx chaffjs rules --json         いまの設定を JSON で出す（AI に設�
 npx chaffjs tree contract.txt    文書を番地の付いた木にする（条・項・定義・参照）
 npx chaffjs cite 原文 引用.json  引用が原文にあるかを確かめる
 npx chaffjs skill                Claude Code の skill を入れる
+npx chaffjs feedback a.md --rule max-sentence-length --line 42   誤った指摘を報告する下書きを作る
 ```
 
 `--genre business/email` でその実行だけのジャンルを決め、`--experimental` で試験中の rule も動かす。
@@ -415,6 +416,17 @@ npx chaffjs skill --global     ~/.claude/skills/chaff/ に入れる
 ```
 
 Claude Code が chaff の使い方（かけ方、指摘の読み方、直す・`stet`・`relax --why` の選び方、`rules --json` での設定、`tree` と `cite`）を知っている状態になります。もう一度実行すると新しい版に入れ替えます。手で直したかもしれない、中身の違うファイルは `--force` を付けないと置き換えません。
+
+## 指摘が誤っているとき
+
+自分の文書で chaff が誤った指摘をした、または言うべきことを言わなかったときは、報告の下書きを作れます。
+
+```bash
+npx chaffjs feedback a.md --rule max-sentence-length --line 42   誤った指摘
+npx chaffjs feedback a.md --missed --line 42                     見逃し
+```
+
+版・OS・一つの指摘と、その前後の 2 行ずつ、`chaff.yaml` のその rule の設定だけを `.chaff-feedback.md` に書き、送り方（`gh issue create`、または題だけを載せたリンク）を示します。**chaff は何も送りません。** 文書の全体は載せないので、読んでから送るかを決めてください。`chaff.yaml` 全体も載せたいときは `--with-config` を付けます。報告は、そのまま試験と修正になります。
 
 ## 言い回しを見る rule
 
