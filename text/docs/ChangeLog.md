@@ -2,9 +2,17 @@
 
 Newest first.
 
-## Unreleased
+## 0.7.0 — 2026-09-27
 
-### A rule's limit can be a number, and a setting that does nothing is reported
+What building a house style from real model texts showed chaff was missing: a way to keep a rule when the
+models run past its loosest level, notice of settings that do nothing, headings read without their
+attributes, and two orthography rules a style needs.
+
+📦 [`chaffjs@0.7.0`](https://www.npmjs.com/package/chaffjs/v/0.7.0)
+
+`@chaffjs/lang-ja` and `@chaffjs/lang-en` stay at 0.6.0. Nothing in them changed.
+
+### A rule's limit can be a number, and a setting that does nothing is reported (#115)
 
 When the four levels are not enough — a style whose model sentences run past the loosest level —
 `chaff.yaml` can give a rule its limit as a positive number (`max-sentence-length: 260`); the level
@@ -12,13 +20,13 @@ counts as `normal` and `chaff rules --json` shows the number in effect. A rule n
 (usually a typo) and a value it cannot read are now reported on standard error by `lint` and
 `rules --json`, instead of being dropped while the writer believes the setting applies.
 
-### Heading attributes are not part of the heading
+### Heading attributes are not part of the heading (#116)
 
 A heading that carries a kramdown or pandoc attribute list (`## Install {#install}`, `## Notes {: .note}`)
 is now read without it. `heading-echo` missed a sentence that merely repeats such a heading, and the tree
 put `{#a3}` into an article's heading. Braces that are words (`## {name} の設定`) are kept.
 
-### Two orthography rules
+### Two orthography rules (#117)
 
 - `preferred-term` — the team lists spellings under `prefer` in chaff.yaml (`サーバー: サーバ`), and each
   avoided spelling is reported with the one to use. An avoided spelling that is part of the preferred one
