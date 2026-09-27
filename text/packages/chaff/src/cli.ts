@@ -74,6 +74,12 @@ const resolveGenre = (path: string, source: string, config: Config, cliGenre?: s
   return guess === undefined ? { genre: "blog/tech", from: "既定" } : { genre: guess.genre, from: guess.from };
 };
 
+/** resolveGenre with this run's --genre, for the commands that take it as a dependency. */
+const genreFrom =
+  (argv: readonly string[]) =>
+  (path: string, source: string, config: Config): { genre: string; from: string } =>
+    resolveGenre(path, source, config, flag(argv, "--genre"));
+
 const findRule = (rules: readonly RuleDefinition[], id: string | undefined): RuleDefinition | undefined => rules.find((rule) => rule.id === id);
 
 const changeSetting = (command: Level, ruleId: string | undefined, why: string | undefined): number => {
@@ -299,10 +305,10 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   genres: showGenres,
   rules: showRules,
   explain: (argv) => explain(argv[1]),
-  eval: (argv) => runEval(positional(argv), argv, { config: readConfig(), resolveGenre, flag }),
+  eval: (argv) => runEval(positional(argv), argv, { config: readConfig(), resolveGenre: genreFrom(argv), flag }),
   tree: (argv) => runTree(treeTargets(argv), argv, { config: readConfig(), flag }),
   cite: (argv) => runCite(citeTargets(argv), argv, { config: readConfig(), flag }),
-  test: (argv) => runTest(positional(argv), argv, { config: readConfig(), resolveGenre, inspect }),
+  test: (argv) => runTest(positional(argv), argv, { config: readConfig(), resolveGenre: genreFrom(argv), inspect }),
   baseline: (argv) => runBaseline(positional(argv), argv),
   suppressions: (argv) => runSuppressions(positional(argv), argv),
   relax: (argv) => changeSetting("relaxed", argv[1], flag(argv, "--why")),
@@ -316,13 +322,13 @@ export const main = async (argv: readonly string[]): Promise<number> => {
     console.log(USAGE);
     return first === undefined ? 1 : 0;
   }
-  const handler = HANDLERS[first];
-  if (handler !== undefined) return handler(argv);
-  const targets = targetsOf(first === "lint" ? argv.slice(1) : argv);
   const cliGenre = flag(argv, "--genre");
   if (cliGenre !== undefined && !GENRES.includes(cliGenre)) {
     console.error(`ジャンル "${cliGenre}" はありません。npx chaff genres で一覧が出ます。`);
     return 1;
   }
+  const handler = HANDLERS[first];
+  if (handler !== undefined) return handler(argv);
+  const targets = targetsOf(first === "lint" ? argv.slice(1) : argv);
   return argv.includes("--watch") ? runWatch(targets, argv) : lint(targets, argv);
 };

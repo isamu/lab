@@ -13,8 +13,8 @@ rule's level has been checked, so it says "still experimental" (or "turned off i
 
 `--genre <genre>` now sets the genre for a check, as `chaff genres` has always said; before, only `init`
 read it. It wins over `chaff.yaml` for that run, the header says the genre came from `--genre`, and an
-unknown genre stops with the way to list them. The value after `--genre`, `--sarif`, `--why` or `--format`
-is no longer taken for a file to check.
+unknown genre stops with the way to list them. It reaches `test` and `eval` too, and an unknown genre is refused before any command runs. The value after
+`--genre`, `--sarif` or `--rule` is no longer taken for a file to check.
 
 ## 0.7.0 — 2026-09-27
 
