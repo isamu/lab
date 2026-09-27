@@ -107,6 +107,11 @@ export const loadAdapter = async (language: string, importer: Importer = (specif
   if (typeof module !== "object" || module === null) throw new Error(`${specifier} did not export a module`);
   const candidate = pickExport(module);
   const broken = checkAdapter(candidate);
-  if (broken !== undefined || !isAdapter(candidate)) throw new Error(`${specifier} が LanguageAdapter を export していません: ${broken ?? ""}`);
+  if (broken !== undefined || !isAdapter(candidate)) {
+    const why = broken ?? "";
+    throw new Error(
+      language === "ja" ? `${specifier} が LanguageAdapter を export していません: ${why}` : `${specifier} does not export a LanguageAdapter: ${why}`,
+    );
+  }
   return candidate;
 };

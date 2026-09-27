@@ -71,6 +71,7 @@ export type CliText = {
   readonly genreSource: Readonly<Record<GenreSource, string>>;
   readonly header: (path: string, genre: string, language: string, from: string, shelved: number, hushed: number) => string;
   readonly noMarkdown: (targets: string) => string;
+  readonly noMarkdownHere: string;
   readonly noAdapter: (language: string) => string;
   readonly unknownGenre: (genre: string) => string;
   readonly unknownRule: (id: string) => string;
@@ -104,6 +105,7 @@ export const CLI_TEXT: Texts<CliText> = {
         "",
       ),
     noMarkdown: (targets) => `Markdown が 1 つも見つかりませんでした: ${targets}`,
+    noMarkdownHere: "Markdown が 1 つも見つかりませんでした。",
     noAdapter: (language) => `言語 "${language}" のアダプタがありません。`,
     unknownGenre: (genre) => `ジャンル "${genre}" はありません。npx chaff genres で一覧が出ます。`,
     unknownRule: (id) => `${id} というルールはありません。npx chaff rules --json で一覧が出ます。`,
@@ -147,6 +149,7 @@ export const CLI_TEXT: Texts<CliText> = {
     header: (path, genre, language, from, shelved, hushed) =>
       [`${path}   ${genre} · ${language}   genre from ${from}`, shelved > 0 ? `   ${shelved} shelved` : "", hushed > 0 ? `   ${hushed} stet` : ""].join(""),
     noMarkdown: (targets) => `No Markdown files found: ${targets}`,
+    noMarkdownHere: "No Markdown files found.",
     noAdapter: (language) => `No language package for "${language}".`,
     unknownGenre: (genre) => `There is no genre "${genre}". npx chaff genres lists them.`,
     unknownRule: (id) => `There is no rule named ${id}. npx chaff rules --json lists them.`,

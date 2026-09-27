@@ -115,6 +115,11 @@ describe("画面の言語", () => {
     assert.match(readFileSync(path, "utf8"), /this team's writing rules/u);
   });
 
+  it("baseline で Markdown が無いときの断りは、日本語では以前の文言のまま", async () => {
+    assert.match((await runIn({}, ["baseline"], "ja_JP.UTF-8")).err, /^Markdown が 1 つも見つかりませんでした。$/u);
+    assert.match((await runIn({}, ["baseline"], "en_US.UTF-8")).err, /^No Markdown files found\.$/u);
+  });
+
   it("無いジャンルの断りも端末の言語", async () => {
     const result = await runIn({ "a.md": EN }, ["a.md", "--genre", "novel"], "en_US.UTF-8");
     assert.equal(result.code, 1);

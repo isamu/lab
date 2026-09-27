@@ -230,7 +230,7 @@ const runBaseline = async (targets: readonly string[], argv: readonly string[]):
   const paths = collectTargets(targets.length > 0 ? targets : ["."]);
   const config = readConfig();
   if (paths.length === 0) {
-    console.error(hostText(config).noMarkdown(targets.join(", ")));
+    console.error(hostText(config).noMarkdownHere);
     return 1;
   }
   const results = await Promise.all(paths.map((path) => inspect(path, config, [...argv, "--show-baseline"])));

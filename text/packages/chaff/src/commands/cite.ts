@@ -36,6 +36,7 @@ export const parseCitations = (text: string, ui: UiLanguage = "ja"): ParsedCitat
 
 type CiteText = {
   readonly usage: string;
+  readonly quoted: (text: string) => string;
   readonly notJson: (why: string) => string;
   readonly notArray: string;
   readonly badEntry: (n: number) => string;
@@ -44,6 +45,7 @@ type CiteText = {
 
 const TEXT: Texts<CiteText> = {
   ja: {
+    quoted: (text) => `「${text}」`,
     usage: "使い方: chaff cite <原文> <引用.json> [--format text|json] [--language ja|en|…]",
     notJson: (why) => `JSON として読めません: ${why}`,
     notArray: '引用は配列で渡してください: [{ "address": "3.2", "quote": "…" }]',
@@ -57,6 +59,7 @@ const TEXT: Texts<CiteText> = {
     },
   },
   en: {
+    quoted: (text) => ` "${text}"`,
     usage: "usage: chaff cite <source> <quotes.json> [--format text|json] [--language ja|en|…]",
     notJson: (why) => `Not valid JSON: ${why}`,
     notArray: 'Give the quotations as an array: [{ "address": "3.2", "quote": "…" }]',
@@ -75,7 +78,7 @@ const describe = (result: CitationResult, text: CiteText): string => {
   const mark = result.status === "ok" ? "✓" : "✗";
   const oneLine = result.citation.quote.replace(/\s+/gu, " ").trim();
   const quote = oneLine.length > QUOTE_WIDTH ? `${oneLine.slice(0, QUOTE_WIDTH)}…` : oneLine;
-  return `${mark} ${result.citation.address}「${quote}」: ${text.results[result.status](result)}`;
+  return `${mark} ${result.citation.address}${text.quoted(quote)}: ${text.results[result.status](result)}`;
 };
 
 /**

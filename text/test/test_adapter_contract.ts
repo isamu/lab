@@ -117,7 +117,7 @@ describe("LanguageAdapter の契約", () => {
   it("第三者のものも、LanguageAdapter の形でなければ断る", async () => {
     await assert.rejects(
       loadAdapter("zh", fakeImporter({ "chaff-lang-zh": { default: { kind: "language" } } }, [])),
-      /chaff-lang-zh が LanguageAdapter を export していません/u,
+      /chaff-lang-zh does not export a LanguageAdapter/u,
     );
   });
 });
