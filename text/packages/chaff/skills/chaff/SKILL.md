@@ -13,13 +13,13 @@ English documents both work; the language is detected per file.
 
 ```sh
 npx chaffjs <file|dir|glob>...     # human-readable, one block per finding
-npx chaffjs . --compact            # one line per finding: line:col severity message / rule id
+npx chaffjs . --compact            # two lines per finding: line:col severity message, then the rule id
 npx chaffjs <file> --experimental  # also the experimental rules
 ```
 
 The exit code is 1 only when a finding is an `error`. A run that finds no Markdown fails rather than passing
-silently. After the findings comes the list of rules that did not run, and why: read it before saying a
-document is clean. A run over several files prints only the files that have findings, so to call one file clean,
+silently. After the findings comes the list of rules that did not run, and why (the default output only; `--compact`
+gives just their number): read it before saying a document is clean. A run over several files prints only the files that have findings, so to call one file clean,
 run chaff on that file alone and read its list.
 
 ## For each finding, choose one of three
