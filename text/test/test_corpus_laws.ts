@@ -3,20 +3,22 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { structureFindings } from "../scripts/corpus-findings.ts";
+import { corpusLanguages, structureFindings } from "../scripts/corpus-findings.ts";
 import { lawText } from "../scripts/law-text.ts";
 
 // 施行中の法令は、条・項・号の番号と参照が整っている。構造の rule が何か言えば、それは chaff の誤り。
 // 法令は corpus/laws/ に置いてある（yarn corpus:fetch で取り直す。著作権法第13条により法令は自由に使える）。
 
-const LAWS = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus", "laws");
+const CORPUS = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus");
+const LAWS = join(CORPUS, "laws");
+const languages = corpusLanguages(JSON.parse(readFileSync(join(CORPUS, "manifest.json"), "utf8")));
 
 describe("実際の法令に、構造の rule は何も言わない", () => {
   readdirSync(LAWS)
     .filter((file) => file.endsWith(".txt"))
     .forEach((file) => {
       it(file, async () => {
-        const findings = await structureFindings(file, readFileSync(join(LAWS, file), "utf8"));
+        const findings = await structureFindings(file, readFileSync(join(LAWS, file), "utf8"), languages.get(file) ?? "ja");
         assert.deepEqual(
           findings.map((finding) => `${String(finding.line)} ${finding.rule} ${finding.message}`),
           [],

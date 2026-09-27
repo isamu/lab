@@ -17,6 +17,7 @@ type Draft = {
   readonly ordinal?: number | undefined;
   readonly level?: number | undefined;
   readonly ordinalTo?: number | undefined;
+  readonly numbering?: string | undefined;
 };
 
 /** 開いている節点。rank の大きいものほど内側。 */
@@ -32,6 +33,8 @@ type State = {
   readonly stack: Frame[];
   /** 見出しの深さごとの通し番号。番号の無い見出しの番地 h2.1 を作る。 */
   readonly headingCounts: number[];
+  /** opensDefinitionScope の行を含んだ条。ここに入る定義はその条の中でだけ比べる。 */
+  readonly scopedArticles: Set<Draft>;
 };
 
 const draftOf = (kind: StructureKind, address: string, line: Line, attrs: Readonly<Record<string, string | number>>): Draft => ({
@@ -95,6 +98,7 @@ const openNumbered = (state: State, line: Line, numbered: NumberedLine, headingD
     ordinal: numbered.ordinal,
     level: numbered.depth,
     ordinalTo: numbered.ordinalTo,
+    numbering: numbered.numbering,
   };
   open(state, { draft, rank, numbered });
 };
@@ -119,13 +123,31 @@ const universalNumber = (patterns: StructurePatterns, text: string, context: Num
 };
 
 /** 行の中の定義・参照・義務・数量を、いま開いている最も内側の節点の子にする。 */
+const enclosingArticle = (state: State): Draft | undefined => [...state.stack].reverse().find((frame) => frame.draft.kind === "article")?.draft;
+
+const scopeOf = (state: State, patterns: StructurePatterns, text: string): Readonly<Record<string, string>> => {
+  const article = enclosingArticle(state);
+  if (article === undefined) return {};
+  if (patterns.opensDefinitionScope?.(text) === true) state.scopedArticles.add(article);
+  return state.scopedArticles.has(article) ? { scope: "local" } : {};
+};
+
 const addLeaves = (state: State, patterns: StructurePatterns, line: Line, text: string, offset: number): void => {
   const parent = top(state).draft;
+  const scope = scopeOf(state, patterns, text);
   const leaves = LEAVES.flatMap(({ kind, find }) =>
     find(patterns, text).map((mention) => ({ kind, start: line.start + offset + mention.start, end: line.start + offset + mention.end, attrs: mention.attrs })),
   ).sort((left, right) => left.start - right.start);
   leaves.forEach((leaf) =>
-    parent.children.push({ kind: leaf.kind, address: "", start: leaf.start, end: leaf.end, line: line.number, attrs: leaf.attrs, children: [] }),
+    parent.children.push({
+      kind: leaf.kind,
+      address: "",
+      start: leaf.start,
+      end: leaf.end,
+      line: line.number,
+      attrs: leaf.kind === "definition" ? { ...leaf.attrs, ...scope } : leaf.attrs,
+      children: [],
+    }),
   );
 };
 
@@ -145,6 +167,7 @@ const freeze = (draft: Draft): StructureNode => ({
   ...(draft.ordinal === undefined ? {} : { ordinal: draft.ordinal }),
   ...(draft.level === undefined ? {} : { level: draft.level }),
   ...(draft.ordinalTo === undefined ? {} : { ordinalTo: draft.ordinalTo }),
+  ...(draft.numbering === undefined ? {} : { numbering: draft.numbering }),
 });
 
 /** Markdown から取った手がかり。見出しと、中を読まない範囲（コード）。.txt はどちらも空。 */
@@ -203,7 +226,7 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
   const headings = headingsByLine(lines, outline.headings);
   const doc = draftOf("doc", "", { text: "", start: 0, number: 1 }, { path: input.path, language: input.language });
   doc.end = input.source.length;
-  const state: State = { stack: [{ draft: doc, rank: 0 }], headingCounts: [] };
+  const state: State = { stack: [{ draft: doc, rank: 0 }], headingCounts: [], scopedArticles: new Set() };
   lines.forEach((line) => {
     if (line.text.trim() !== "") readLine(state, patterns, line, headings.get(line.number));
     // コードの行は覆って読まないが、開いている節の中身ではある。節の最後にコードブロックがあっても、範囲をそこまで伸ばす。

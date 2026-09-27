@@ -6,7 +6,7 @@
     (article "1.1" :heading "Definitions" :label "Section 1.1" :line 6
       (definition :term "Services" :line 7)
       (definition :term "Deliverables" :line 8)
-      (reference :label "Section 3.2" :target "3.2" :line 8)))
+      (reference :label "Section 3.2" :numbering "section" :target "3.2" :line 8)))
   (article "2" :heading "SERVICES" :label "Article II" :line 10
     (article "2.1" :heading "Performance" :label "Section 2.1" :line 11
       (item "2.1.a" :label "(a)" :line 12
@@ -15,7 +15,7 @@
         (obligation :marker "may" :type "may" :line 13)))
     (article "2.2" :heading "Term" :label "Section 2.2" :line 14
       (date :value "2025-03-31" :line 15)
-      (reference :label "Section 5.1" :target "5.1" :line 15)))
+      (reference :label "Section 5.1" :numbering "section" :target "5.1" :line 15)))
   (article "3" :heading "FEES" :label "Article III" :line 17
     (article "3.1" :heading "Fees" :label "Section 3.1" :line 18
       (obligation :marker "shall" :type "must" :line 19)
@@ -32,5 +32,5 @@
   (article "4" :heading "TERMINATION" :label "Article IV" :line 26
     (article "4.1" :heading "Termination for Cause" :label "Section 4.1" :line 27
       (obligation :marker "may" :type "may" :line 28)
-      (reference :label "Section 3.2(a)(ii)" :target "3.2.a.ii" :line 28)
+      (reference :label "Section 3.2(a)(ii)" :numbering "section" :target "3.2.a.ii" :line 28)
       (quantity :unit "business days" :value 15 :line 28))))

@@ -41,8 +41,15 @@ export const danglingReferences = (tree: StructureNode): StructureIssue[] => {
   // 参照は条を指す。条を一つも持たない文書（契約書に付ける承諾書のひな形など）の「契約書第6条」は、別の文書の条。
   if (!nodes.some((node) => node.kind === "article")) return [];
   const addresses = new Set(nodes.filter((node) => NUMBERED.includes(node.kind)).map((node) => node.address));
+  // Section で組んだ法令が "Articles 13 to 21 of the UK GDPR" と別の文書の Article を名指ししていれば、名の無い "Article 6(3)" もそちら。
+  // 名指しがあれば、名の無い "Article 9" が書き間違いか向こうの条かは区別できないので黙る。名指しが無い文書では報告する。
+  const numbering = (node: StructureNode): unknown => node.attrs["numbering"];
+  const numberings = new Set(nodes.flatMap((node) => (node.kind === "article" && node.numbering !== undefined ? [node.numbering] : [])));
+  const citedElsewhere = new Set(nodes.filter((node) => node.kind === "reference" && node.attrs["document"] !== undefined).map(numbering));
+  const otherNumbering = (node: StructureNode): boolean =>
+    numberings.size > 0 && typeof numbering(node) === "string" && !numberings.has(String(numbering(node))) && citedElsewhere.has(numbering(node));
   return nodes
-    .filter((node) => node.kind === "reference" && node.attrs["document"] === undefined)
+    .filter((node) => node.kind === "reference" && node.attrs["document"] === undefined && !otherNumbering(node))
     .filter((node) => !resolves(node, addresses))
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
 };

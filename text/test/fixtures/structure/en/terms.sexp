@@ -10,4 +10,4 @@
         (obligation :marker "must not" :type "must-not" :line 14)))
     (article "3" :heading "Fees" :label "3" :line 16
       (quantity :unit "$" :value 9.99 :line 18)
-      (reference :label "Section 2" :target "2" :line 18))))
+      (reference :label "Section 2" :numbering "section" :target "2" :line 18))))
