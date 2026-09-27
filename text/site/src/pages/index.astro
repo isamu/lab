@@ -1,0 +1,17 @@
+---
+import { href } from "../lib/i18n";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${href("ja")}`} />
+    <title>chaff</title>
+  </head>
+  <body>
+    <p>
+      <a href={href("ja")}>日本語</a> / <a href={href("en")}>English</a>
+    </p>
+  </body>
+</html>

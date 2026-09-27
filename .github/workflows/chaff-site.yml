@@ -1,0 +1,40 @@
+# chaff のドキュメントサイト（text/site）。ルールの一覧は packages/chaff/rules から作るので、そこが変わっても走らせる。
+name: chaff site
+
+on:
+  pull_request:
+    paths: ["text/site/**", "text/packages/chaff/rules/**", ".github/workflows/chaff-site.yml"]
+  push:
+    branches: [main]
+    paths: ["text/site/**", "text/packages/chaff/rules/**", ".github/workflows/chaff-site.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: text/site
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - run: yarn install --frozen-lockfile
+
+      - name: format:check
+        run: yarn format:check
+
+      - name: typecheck
+        run: yarn typecheck
+
+      - name: build
+        run: yarn build

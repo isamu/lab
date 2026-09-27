@@ -7,7 +7,7 @@ import prettierRecommended from "eslint-plugin-prettier/recommended";
 // chaff は文章の抑制債務を測る道具なので、自分のコードに抑制が無いことに意味がある。
 // 段は ~/ss/llm/ever-better から取っている。coding/ の scoria と同じ構成。
 export default tseslint.config(
-  { ignores: ["**/dist/**", "**/node_modules/**", "test/fixtures/**"] },
+  { ignores: ["**/dist/**", "**/node_modules/**", "test/fixtures/**", "site/**"] },
 
   {
     linterOptions: {

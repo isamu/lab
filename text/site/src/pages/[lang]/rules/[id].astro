@@ -1,0 +1,75 @@
+---
+import Base from "../../../layouts/Base.astro";
+import Badge from "../../../components/Badge.astro";
+import { LANGS, href, isLang, t, term } from "../../../lib/i18n";
+import { rules } from "../../../lib/rules";
+
+export const getStaticPaths = () => LANGS.flatMap((lang) => rules.map((rule) => ({ params: { lang, id: rule.id } })));
+
+const { lang, id } = Astro.params;
+if (!isLang(lang)) throw new Error(`unknown language ${String(lang)}`);
+const rule = rules.find((candidate) => candidate.id === id);
+if (!rule) throw new Error(`unknown rule ${String(id)}`);
+const facts = [
+  [t(lang, "layer"), rule.layer],
+  [t(lang, "status"), t(lang, rule.status)],
+  [t(lang, "severity"), term(lang, rule.severity[lang])],
+  [t(lang, "languages"), rule.languages.length === 2 ? t(lang, "allLanguages") : rule.languages.join(", ")],
+  [t(lang, "usedFor"), rule.useFor.join(", ")],
+];
+---
+
+<Base lang={lang} title={rule.name[lang]} path={`rules/${rule.id}`} description={rule.why[lang]}>
+  <p>
+    <a href={href(`${lang}/rules`)} class="text-sm text-blue-700 underline dark:text-blue-400">
+      {t(lang, "backToRules")}
+    </a>
+  </p>
+  <h1 class="mt-4 text-3xl font-bold">{rule.name[lang]}</h1>
+  <p class="mt-1 flex items-center gap-2 font-mono text-sm text-zinc-600 dark:text-zinc-400">
+    {rule.id}
+    {rule.status === "experimental" && <Badge tone="warn">{t(lang, "experimental")}</Badge>}
+  </p>
+  {rule.status === "experimental" && <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "experimentalNote")}</p>}
+
+  <dl class="mt-6 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
+    {facts.map(([label, value]) => (
+      <>
+        <dt class="text-zinc-500">{label}</dt>
+        <dd>{value}</dd>
+      </>
+    ))}
+  </dl>
+
+  <h2 class="mt-8 text-xl font-semibold">{t(lang, "why")}</h2>
+  <p class="mt-2 leading-relaxed">{rule.why[lang]}</p>
+
+  <h2 class="mt-8 text-xl font-semibold">{t(lang, "message")}</h2>
+  <p class="mt-2 rounded bg-zinc-100 p-3 font-mono text-sm dark:bg-zinc-900">{rule.message[lang]}</p>
+
+  <h2 class="mt-8 text-xl font-semibold">{t(lang, "howToFix")}</h2>
+  <p class="mt-2 leading-relaxed">{rule.howToFix[lang]}</p>
+
+  {rule.levels[lang].length > 0 && (
+    <>
+      <h2 class="mt-8 text-xl font-semibold">{t(lang, "levels")}</h2>
+      <table class="mt-2 text-sm">
+        <tbody>
+          {rule.levels[lang].map(([level, value]) => (
+            <tr>
+              <th class="py-1 pr-6 text-left font-mono font-normal text-zinc-500">{level}</th>
+              <td class="py-1 font-mono">{value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )}
+
+  <p class="mt-10 text-xs text-zinc-500">
+    {t(lang, "source")}:
+    <a href={`https://github.com/isamu/lab/blob/main/text/packages/chaff/rules/${rule.id}.yaml`} class="underline">
+      packages/chaff/rules/{rule.id}.yaml
+    </a>
+  </p>
+</Base>

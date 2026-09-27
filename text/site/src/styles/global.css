@@ -1,0 +1,2 @@
+/* The one stylesheet: Tailwind itself. Every page and component is styled with utilities. */
+@import "tailwindcss";
