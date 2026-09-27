@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { buildStructure } from "../packages/chaff/src/structure/build.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
 import { linesOf } from "../packages/chaff/src/structure/lines.ts";
-import { inOrder, treeTargets } from "../packages/chaff/src/commands/tree.ts";
+import { inOrder, treeLanguage, treeTargets } from "../packages/chaff/src/commands/tree.ts";
+import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import type { Mention, NumberedLine, StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
 
 /**
@@ -131,5 +132,28 @@ describe("inOrder", () => {
     });
     assert.equal(ok, false);
     assert.deepEqual(seen, ["a", "b", "c"]);
+  });
+});
+
+describe("chaff tree の言語", () => {
+  const context = {
+    config: { ...EMPTY, language: "ja", baseDir: "/repo", byPath: [{ files: ["docs/en/**/*.txt"], genre: undefined, language: "en" }] },
+    flag: (argv: readonly string[], name: string) => {
+      const at = argv.indexOf(name);
+      return at === -1 ? undefined : argv[at + 1];
+    },
+  };
+
+  it("lint と同じく by_path を全体の言語より先に見る", () => {
+    assert.equal(treeLanguage("/repo/docs/en/contract.txt", "第1条", ["tree"], context), "en");
+    assert.equal(treeLanguage("/repo/docs/ja/contract.txt", "Section 1", ["tree"], context), "ja");
+  });
+
+  it("--language はどれよりも先に効く", () => {
+    assert.equal(treeLanguage("/repo/docs/en/contract.txt", "", ["tree", "--language", "zh"], context), "zh");
+  });
+
+  it("設定が無ければ中身から推定する", () => {
+    assert.equal(treeLanguage("/x/a.txt", "The Buyer shall pay within 30 days.", ["tree"], { ...context, config: EMPTY }), "en");
   });
 });

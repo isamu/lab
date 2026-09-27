@@ -124,12 +124,23 @@ const definitions = (text: string): Mention[] =>
 const REFERENCE = /\b(?:Sections?|Articles?|§) ?(?<n>\d{1,3}(?:\.\d{1,3}){0,5}|[IVXLC]{1,7})\b/gu;
 const SUBDIVISION = /^\((?<p>[a-z0-9]{1,4})\)/u;
 
-/** "(a)(ii)" のような続きの括弧を、正規表現を複雑にせずに一つずつ読む。 */
+/** "(a)(ii)(3)" is as deep as a reference goes; more parentheses are text, not a deeper address. */
+const MAX_SUBDIVISIONS = 4;
+
+/**
+ * "(a)(ii)" のような続きの括弧を、正規表現を複雑にせずに一つずつ読む。
+ * 再帰にしないのは、括弧が延々と続く行でスタックを使い切らないため。
+ */
 const subdivisions = (text: string, from: number): { readonly parts: readonly string[]; readonly end: number } => {
-  const part = SUBDIVISION.exec(text.slice(from))?.groups?.["p"];
-  if (part === undefined) return { parts: [], end: from };
-  const rest = subdivisions(text, from + part.length + 2);
-  return { parts: [part, ...rest.parts], end: rest.end };
+  const parts: string[] = [];
+  let end = from;
+  while (parts.length < MAX_SUBDIVISIONS) {
+    const part = SUBDIVISION.exec(text.slice(end, end + 6))?.groups?.["p"];
+    if (part === undefined) break;
+    parts.push(part);
+    end += part.length + 2;
+  }
+  return { parts, end };
 };
 
 /** "Section 4.2(a)" → 4.2.a, "Article III" → 3. The same addresses the tree gives. */
@@ -155,21 +166,32 @@ const MARKERS: readonly (readonly [string, "must" | "must-not" | "may"])[] = [
 
 const isWordChar = (char: string | undefined): boolean => char !== undefined && /[\p{L}\p{N}_]/u.test(char);
 
-const wordAt = (lower: string, word: string, from: number): number[] => {
-  const at = lower.indexOf(word, from);
-  if (at === -1) return [];
-  const bounded = !isWordChar(lower[at - 1]) && !isWordChar(lower[at + word.length]);
-  return bounded ? [at, ...wordAt(lower, word, at + word.length)] : wordAt(lower, word, at + 1);
+/** Every whole-word occurrence. A loop, not recursion: a line with thousands of "may" must not exhaust the stack. */
+const wordAt = (lower: string, word: string): number[] => {
+  const found: number[] = [];
+  for (let at = lower.indexOf(word); at !== -1; at = lower.indexOf(word, at + 1)) {
+    if (!isWordChar(lower[at - 1]) && !isWordChar(lower[at + word.length])) found.push(at);
+  }
+  return found;
 };
 
+/**
+ * Longest marker first; a hit that overlaps one already kept is dropped. Overlap is checked with a mark
+ * per character, not by comparing every pair, which would go quadratic on a line with thousands of markers.
+ */
 const obligations = (text: string): Mention[] => {
   const lower = text.toLowerCase();
-  return MARKERS.reduce<Mention[]>((found, [marker, type]) => {
-    const fresh = wordAt(lower, marker, 0)
-      .map((start) => ({ start, end: start + marker.length, attrs: { marker, type } }))
-      .filter((mention) => !found.some((kept) => mention.start < kept.end && kept.start < mention.end));
-    return [...found, ...fresh];
-  }, []).sort((left, right) => left.start - right.start);
+  const taken = new Uint8Array(text.length);
+  const kept: Mention[] = [];
+  MARKERS.forEach(([marker, type]) => {
+    wordAt(lower, marker).forEach((start) => {
+      const end = start + marker.length;
+      if (taken.subarray(start, end).some((mark) => mark === 1)) return;
+      taken.fill(1, start, end);
+      kept.push({ start, end, attrs: { marker, type } });
+    });
+  });
+  return kept.sort((left, right) => left.start - right.start);
 };
 
 /** Find the number first, then look at what is right before (a currency) and right after (a unit). */
@@ -197,7 +219,11 @@ const UNITS = [
 const CURRENCIES = ["USD", "EUR", "$", "€", "£"];
 
 /** "30." の終わりの点は文の終わり。数の一部にしない。 */
-const withoutTrailingPunctuation = (run: string): string => (run.endsWith(".") || run.endsWith(",") ? withoutTrailingPunctuation(run.slice(0, -1)) : run);
+const withoutTrailingPunctuation = (run: string): string => {
+  let end = run.length;
+  while (end > 0 && (run[end - 1] === "." || run[end - 1] === ",")) end -= 1;
+  return run.slice(0, end);
+};
 
 const unitAfter = (text: string, from: number): string | undefined => {
   const gap = text[from] === " " ? 1 : 0;

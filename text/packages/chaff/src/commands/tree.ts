@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { extname } from "node:path";
 import { loadAdapter } from "../adapter-load.ts";
+import { applyByPath } from "../config/by-path.ts";
 import { guessLanguage } from "../detect.ts";
 import { buildStructure } from "../structure/build.ts";
 import { toSexp } from "../structure/sexp.ts";
@@ -31,11 +32,21 @@ const readSource = async (path: string): Promise<string | undefined> => {
   }
 };
 
+/**
+ * 言語の決め方は lint / test / eval と同じ。そのファイルの by_path、全体の language、中身からの推定の順で、
+ * その前に --language を置く。混在するリポジトリで、英語の契約書を日本語として読まないため。
+ */
+export const treeLanguage = (path: string, source: string, argv: readonly string[], context: TreeContext): string =>
+  context.flag(argv, "--language") ??
+  applyByPath(context.config.byPath, context.config.baseDir, path).language ??
+  context.config.language ??
+  guessLanguage(source).language;
+
 /** 1 ファイルを木にして出す。読めない・言語パッケージが構造を読めないときは、黙らずに言って失敗にする。 */
 const printTree = async (path: string, argv: readonly string[], context: TreeContext): Promise<boolean> => {
   const source = await readSource(path);
   if (source === undefined) return false;
-  const language = context.flag(argv, "--language") ?? context.config.language ?? guessLanguage(source).language;
+  const language = treeLanguage(path, source, argv, context);
   const adapter = await loadAdapter(language);
   if (adapter.structure === undefined) {
     console.error(`${path}: 言語 ${language} のパッケージは文書の構造を読めません（structure がありません）`);

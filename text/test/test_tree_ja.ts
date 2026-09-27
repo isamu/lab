@@ -111,6 +111,12 @@ describe("日本語の契約書を木にする", () => {
     );
   });
 
+  it("義務の語が何万あっても、長い方で一度ずつ数えて返る", () => {
+    const leaves = treeOf("支払わなければならない。".repeat(20_000)).children.filter((node) => node.kind === "obligation");
+    assert.equal(leaves.length, 20_000);
+    assert.ok(leaves.every((node) => node.attrs["marker"] === "なければならない"));
+  });
+
   it("義務の語は長い方で一度だけ数える", () => {
     const leaves = treeOf("支払わなければならない。").children.filter((node) => node.kind === "obligation");
     assert.deepEqual(

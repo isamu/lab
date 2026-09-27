@@ -80,6 +80,13 @@ describe("an English contract as a tree", () => {
     );
   });
 
+  it("returns on a line with thousands of markers or parentheses instead of exhausting the stack", () => {
+    const markers = treeOf(`The Buyer ${"may ".repeat(20_000)}pay.`).children.filter((node) => node.kind === "obligation");
+    assert.equal(markers.length, 20_000);
+    const reference = treeOf(`See Section 1${"(a)".repeat(20_000)}.`).children[0];
+    assert.equal(reference?.attrs["target"], "1.a.a.a.a");
+  });
+
   it("counts “shall not” once, not also as “shall”", () => {
     const markers = treeOf("The Buyer shall not assign.").children.map((node) => node.attrs["marker"]);
     assert.deepEqual(markers, ["shall not"]);

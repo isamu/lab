@@ -142,19 +142,30 @@ const MARKERS: readonly (readonly [string, "must" | "must-not" | "may"])[] = [
   ["ことができる", "may"],
 ];
 
-const occurrences = (text: string, word: string): number[] =>
-  text
-    .split(word)
-    .slice(0, -1)
-    .reduce<number[]>((acc, part, index) => [...acc, (index === 0 ? 0 : (acc[index - 1] ?? 0) + word.length) + part.length], []);
+/** 語が現れる位置を全部。再帰や配列の広げ直しをしないので、長い文書でも線形で終わる。 */
+const occurrences = (text: string, word: string): number[] => {
+  const found: number[] = [];
+  for (let at = text.indexOf(word); at !== -1; at = text.indexOf(word, at + word.length)) found.push(at);
+  return found;
+};
 
-const obligations = (text: string): Mention[] =>
-  MARKERS.reduce<Mention[]>((found, [marker, type]) => {
-    const fresh = occurrences(text, marker)
-      .map((start) => ({ start, end: start + marker.length, attrs: { marker, type } }))
-      .filter((mention) => !found.some((kept) => mention.start < kept.end && kept.start < mention.end));
-    return [...found, ...fresh];
-  }, []).sort((left, right) => left.start - right.start);
+/**
+ * 長い語から当て、すでに取った文字に重なるものは捨てる。重なりは文字ごとの印で見る。
+ * 見つけたもの同士を総当たりで比べると、同じ語が何万もある文書で二乗に遅くなる。
+ */
+const obligations = (text: string): Mention[] => {
+  const taken = new Uint8Array(text.length);
+  const kept: Mention[] = [];
+  MARKERS.forEach(([marker, type]) => {
+    occurrences(text, marker).forEach((start) => {
+      const end = start + marker.length;
+      if (taken.subarray(start, end).some((mark) => mark === 1)) return;
+      taken.fill(1, start, end);
+      kept.push({ start, end, attrs: { marker, type } });
+    });
+  });
+  return kept.sort((left, right) => left.start - right.start);
+};
 
 /**
  * 数量は「数字の並び」を探してから、直後が単位かを見る。数字と単位を 1 つの正規表現に詰めると、
