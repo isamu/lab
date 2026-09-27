@@ -5,7 +5,7 @@ import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { buildStructure } from "../packages/chaff/src/structure/build.ts";
+import { buildStructure } from "../packages/chaff/src/structure/of.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 

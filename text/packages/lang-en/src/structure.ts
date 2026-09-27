@@ -40,7 +40,17 @@ const headed = (pattern: RegExp, line: string, label: (n: string) => string): Nu
   const number = numberOf(groups?.["n"]);
   const heading = titleOf(groups?.["rest"] ?? "");
   if (groups === undefined || number === undefined || heading === undefined) return undefined;
-  return { kind: "article", depth: number.split(".").length, number, absolute: true, label: label(groups["n"] ?? ""), heading, rest: heading };
+  const parts = number.split(".");
+  return {
+    kind: "article",
+    depth: parts.length,
+    number,
+    absolute: true,
+    label: label(groups["n"] ?? ""),
+    heading,
+    rest: heading,
+    ordinal: Number(parts.at(-1)),
+  };
 };
 
 type Style = "letter" | "roman" | "digit";
@@ -83,14 +93,25 @@ const depthFor = (style: Style, context: NumberingContext): number => {
   return sibling?.depth ?? (context.open.at(-1)?.depth ?? 0) + 1;
 };
 
+const LETTER_BEFORE_A = "a".charCodeAt(0) - 1;
+
+/** "(b)" は 2 番目、"(ii)" も 2 番目。二文字以上の英字（"(aa)"）は並びが決まらないので付けない。 */
+const ordinalOf = (raw: string, style: Style): number | undefined => {
+  if (style === "digit") return Number(raw);
+  if (style === "roman") return parseRoman(raw);
+  return raw.length === 1 ? raw.charCodeAt(0) - LETTER_BEFORE_A : undefined;
+};
+
 const lettered = (line: string, context: NumberingContext): NumberedLine | undefined => {
   const groups = LETTERED.exec(line)?.groups;
   const raw = groups?.["n"];
   if (groups === undefined || raw === undefined) return undefined;
+  const style = styleOf(raw, context);
   // 番地は書かれたままの "ii" を使う。参照「Section 4.2(a)(ii)」も同じ形で書かれるので、そのまま引ける。
   return {
     kind: "item",
-    depth: depthFor(styleOf(raw, context), context),
+    depth: depthFor(style, context),
+    ordinal: ordinalOf(raw, style),
     number: raw,
     absolute: false,
     label: `(${raw})`,
@@ -108,7 +129,8 @@ const chapter = (pattern: RegExp, line: string, depth: number, prefix: string, w
   const number = numberOf(groups?.["n"]);
   const heading = titleOf(groups?.["rest"] ?? "");
   if (groups === undefined || number === undefined || heading === undefined) return undefined;
-  return { kind: "chapter", depth, number: prefix + number, absolute: false, label: `${word} ${groups["n"] ?? ""}`, heading, rest: heading };
+  const label = `${word} ${groups["n"] ?? ""}`;
+  return { kind: "chapter", depth, number: prefix + number, absolute: false, label, heading, rest: heading, ordinal: Number(number) };
 };
 
 const numbered = (line: string, context: NumberingContext): NumberedLine | undefined =>

@@ -95,6 +95,11 @@ export type NumberedLine = {
   readonly heading: string;
   /** 番号の後ろの文字列全部。定義や参照はここから探す。 */
   readonly rest: string;
+  /**
+   * 並びの中の位置。第三条は 3、(ii) は 2、(b) は 2、4.2 は 2。番号の抜けを見る rule が比べる。
+   * 枝番号（第3条の2）は並びの外なので付けない。読み方を知っているのは言語パッケージだけなので、core は計算しない。
+   */
+  readonly ordinal?: number | undefined;
 };
 
 /** 番号を読むときに見える周り。「(i)」がローマ数字か英字かは、開いている番号で決まる。 */
@@ -137,6 +142,8 @@ export type StructureNode = {
   readonly line: number;
   readonly attrs: Readonly<Record<string, string | number>>;
   readonly children: readonly StructureNode[];
+  /** 番号付きのまとまりの、並びの中の位置（NumberedLine.ordinal）。S 式には出さない。 */
+  readonly ordinal?: number;
 };
 
 // ───────── 文書モデルと rule ─────────
@@ -181,6 +188,8 @@ export type ProseDocument = {
   readonly lexicons: Readonly<Record<string, Lexicon>>;
   /** この種類の文書に無いと困る見出し。チームが chaff.yaml で決める。 */
   readonly requiredSections: readonly string[];
+  /** 番地の付いた木（§27）。adapter が structure を持たない言語では無い。 */
+  readonly structure: StructureNode | undefined;
 };
 
 export type Severity = "error" | "warning" | "info";

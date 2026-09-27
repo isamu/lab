@@ -1,0 +1,27 @@
+id: dangling-reference
+layer: L3
+status: experimental
+how_to_find: dangling-reference
+requires: [structure]
+severity: error
+
+name:
+  ja: 参照先が無い
+  en: Reference to a missing provision
+
+why:
+  ja: 「第12条に定める」のような参照は、その条が文書に無ければ読み手を行き止まりにします。条を消したり番号を振り直したりしたときに、参照だけが古い番号のまま残ることがよくあります。chaff は文書を番地の付いた木にして（chaff tree）、参照の番地が木にあるかを見ます。
+  en: A reference such as "as set out in Section 12" leaves the reader at a dead end when that section is not in the document. It usually happens when a provision is deleted or renumbered and the reference keeps the old number. chaff builds the document's tree of addresses (chaff tree) and checks that each reference's address is in it.
+
+message:
+  ja: 「{label}」（番地 {target}）はこの文書にありません
+  en: '"{label}" (address {target}) is not in this document'
+
+how_to_fix:
+  ja: 正しい番号に直すか、参照を消してください。他の文書を指しているなら、「民法第3条」のように文書名を添えると読み手に伝わります。
+  en: Fix the number or remove the reference. If it points into another document, name that document so the reader knows where to look.
+
+# 何件あれば指摘するか。1 は「1 件でもあれば」。
+levels: { strict: 1, normal: 1, relaxed: 1 }
+
+use_for: [business, technical, blog]

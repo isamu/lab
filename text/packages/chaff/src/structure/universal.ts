@@ -17,5 +17,5 @@ export const dottedNumber = (line: string, context: NumberingContext): NumberedL
   const depth = number.split(".").length;
   if (depth < 2 && !context.isHeading) return undefined;
   const rest = groups?.["rest"]?.trim() ?? "";
-  return { kind: "article", depth, number, absolute: true, label: number, heading: rest, rest };
+  return { kind: "article", depth, number, absolute: true, label: number, heading: rest, rest, ordinal: Number(number.split(".").at(-1)) };
 };

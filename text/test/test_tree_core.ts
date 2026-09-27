@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { buildStructure } from "../packages/chaff/src/structure/build.ts";
+import { buildStructure } from "../packages/chaff/src/structure/of.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
 import { lineNumberAt, linesOf } from "../packages/chaff/src/structure/lines.ts";
 import { inOrder, treeLanguage, treeTargets } from "../packages/chaff/src/commands/tree.ts";

@@ -48,7 +48,18 @@ const article = (line: string): NumberedLine | undefined => {
   const branch = groups["sub"] === undefined ? "" : "の" + groups["sub"];
   const label = `第${groups["n"] ?? ""}条${branch}`;
   const rest = (groups["rest"] ?? "").trim();
-  return { kind: "article", depth: 1, number: sub === undefined ? main : `${main}-${sub}`, absolute: true, label, heading: headingOf(rest, true), rest };
+  // 枝番号の条（第3条の2）は並びの外。第3条の次が第4条であることを乱さない。
+  const ordinal = sub === undefined ? Number(main) : undefined;
+  return {
+    kind: "article",
+    depth: 1,
+    number: sub === undefined ? main : `${main}-${sub}`,
+    absolute: true,
+    label,
+    heading: headingOf(rest, true),
+    rest,
+    ordinal,
+  };
 };
 
 type ItemShape = {
@@ -74,7 +85,8 @@ const item = (line: string, context: NumberingContext): NumberedLine | undefined
     const number = numberOf(groups?.["n"]);
     if (groups === undefined || number === undefined) return undefined;
     const rest = (groups["rest"] ?? "").trim();
-    return { kind: "item", depth: shape.depth(context), number, absolute: false, label: shape.label(groups["n"] ?? ""), heading: headingOf(rest, false), rest };
+    const label = shape.label(groups["n"] ?? "");
+    return { kind: "item", depth: shape.depth(context), number, absolute: false, label, heading: headingOf(rest, false), rest, ordinal: Number(number) };
   }, undefined);
 
 /**
@@ -95,7 +107,16 @@ const chapter = (line: string): NumberedLine | undefined => {
   if (groups === undefined || number === undefined || shape === undefined) return undefined;
   const rest = (groups["rest"] ?? "").trim();
   const label = `第${groups["n"] ?? ""}${groups["unit"] ?? ""}`;
-  return { kind: "chapter", depth: shape.depth, number: shape.prefix + number, absolute: false, label, heading: headingOf(rest, true), rest };
+  return {
+    kind: "chapter",
+    depth: shape.depth,
+    number: shape.prefix + number,
+    absolute: false,
+    label,
+    heading: headingOf(rest, true),
+    rest,
+    ordinal: Number(number),
+  };
 };
 
 const numbered = (line: string, context: NumberingContext): NumberedLine | undefined => chapter(line) ?? article(line) ?? item(line, context);

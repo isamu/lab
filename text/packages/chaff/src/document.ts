@@ -4,6 +4,8 @@ import { gfmTableFromMarkdown } from "mdast-util-gfm-table";
 import { frontmatter } from "micromark-extension-frontmatter";
 import { frontmatterFromMarkdown } from "mdast-util-frontmatter";
 import { maskSpans } from "./mask.ts";
+import { buildTree, NO_OUTLINE, type Outline } from "./structure/build.ts";
+import { isMarkdownPath } from "./structure/markdown-path.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
@@ -260,14 +262,21 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
     lists: listsOf(root, source),
     lexicons: { ...adapter.lexicons, "internal-jargon": team.jargon.map((pattern) => ({ pattern })) },
     requiredSections: team.requiredSections,
+    // 構造の rule（参照先が無い・番号の抜け）が読む木。構造を読めない言語では undefined で、その rule は理由付きで止まる。
+    structure:
+      adapter.structure === undefined
+        ? undefined
+        : buildTree({ path, source, language: adapter.id, outline: isMarkdownPath(path) ? outlineOf(root, source) : NO_OUTLINE }, adapter.structure),
   };
 };
 
 /** 番号を探してはいけない範囲。コードの中の「第3条」は条ではなく、参照でもない。 */
 const OPAQUE = ["code", "inlineCode", "html", "yaml", "toml"];
 
+const outlineOf = (root: Node, source: string): Outline => ({
+  headings: headingsOf(root, source),
+  opaque: OPAQUE.flatMap((type) => spansOfType(root, type)),
+});
+
 /** 構造を読むための Markdown の手がかり。見出しと、中を読まない範囲。 */
-export const markdownOutline = (source: string): { readonly headings: readonly Heading[]; readonly opaque: readonly Span[] } => {
-  const root = parse(source);
-  return { headings: headingsOf(root, source), opaque: OPAQUE.flatMap((type) => spansOfType(root, type)) };
-};
+export const markdownOutline = (source: string): Outline => outlineOf(parse(source), source);

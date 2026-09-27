@@ -30,6 +30,11 @@ morphological analysis: a number followed by a counter is a quantity, so 8割 an
 unit table. A dotted number followed by a unit (`1.5 倍`, `2.5 days`) is an amount, not section 1.5.
 Mid-sentence "May" is the month, not the permission.
 
+Three experimental lint rules read that tree: `dangling-reference` (a reference to an article or section
+that is not in the document), `numbering-gap` (Article 5 right after Article 3, two paragraphs numbered 2)
+and `duplicate-definition` (the same term defined twice). They work on `.txt` contracts as well as
+Markdown, and a language whose adapter cannot read structure skips them with a reason.
+
 An adapter that chaff does not bundle is now looked up as `@chaffjs/lang-<language>`. A language can
 be added by installing its package, without changing core.
 

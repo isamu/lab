@@ -43,9 +43,11 @@ const hasTokens = (doc: ProseDocument): boolean => doc.sentences.length === 0 ||
 /** 要求を満たさない rule は動かせない。満たさないまま動かすと「指摘 0 件」が保証に見える。 */
 const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
   if (rule.languages !== undefined && !rule.languages.includes(doc.language)) return `${doc.language} 向けの rule ではないため`;
-  const missing = rule.requires.find((need) => !has(doc.capabilities, need));
+  // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
+  if (rule.requires.includes("structure") && doc.structure === undefined) return `${doc.language} のパッケージは文書の構造を読めないため`;
+  const missing = rule.requires.filter((need) => need !== "structure").find((need) => !has(doc.capabilities, need));
   if (missing !== undefined) return `この言語では${CAPABILITY_NAME[missing] ?? missing}が使えないため`;
-  if (rule.requires.length > 0 && !hasTokens(doc)) return "アダプタが品詞を返さなかったため";
+  if (rule.requires.some((need) => need === "pos" || need === "lemma") && !hasTokens(doc)) return "アダプタが品詞を返さなかったため";
   return undefined;
 };
 

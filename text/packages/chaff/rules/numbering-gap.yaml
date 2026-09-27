@@ -1,0 +1,26 @@
+id: numbering-gap
+layer: L3
+status: experimental
+how_to_find: numbering-gap
+requires: [structure]
+severity: error
+
+name:
+  ja: 番号の抜け・重なり
+  en: Skipped or repeated number
+
+why:
+  ja: 第3条の次が第5条、(a) の次が (c)、同じ第2項が二つ。番号が飛ぶか重なると、読み手は何かが消えたのか、参照がどちらを指すのかを判断できません。同じ親の中で並ぶ番号だけを比べます。枝番号（第3条の2）は並びの外として扱います。
+  en: Article 5 right after Article 3, (c) right after (a), two paragraphs numbered 2. A reader cannot tell whether something was removed, or which one a reference means. Only numbers side by side under the same parent are compared.
+
+message:
+  ja: 「{previous}」の次が「{label}」です（{expected} 番目のはず）
+  en: '"{label}" follows "{previous}" (expected number {expected})'
+
+how_to_fix:
+  ja: 番号を振り直してください。削った条を欠番として残すなら、「第4条（削除）」のように番号だけを残すと読み手に伝わります。
+  en: Renumber. If a provision was removed on purpose, keep its number with a note such as "Section 4 [Deleted]".
+
+levels: { strict: 1, normal: 1, relaxed: 1 }
+
+use_for: [business, technical, blog]

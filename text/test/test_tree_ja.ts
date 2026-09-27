@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { parseJapaneseNumber } from "../packages/lang-ja/src/numbers.ts";
-import { buildStructure } from "../packages/chaff/src/structure/build.ts";
+import { buildStructure } from "../packages/chaff/src/structure/of.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
 import type { StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
 
