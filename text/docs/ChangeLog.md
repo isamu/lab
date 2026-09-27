@@ -19,6 +19,11 @@ How a language numbers its articles lives in the adapter (`structure`, an option
 at version 1). Japanese and English ship with it. A language without one is refused with a reason
 rather than answered with an empty tree.
 
+**Release note:** `@chaffjs/lang-ja` and `@chaffjs/lang-en` gain `structure` here, and the published 0.5.0
+adapters do not have it. The release that ships this must publish both adapters under a new version and
+make `chaffjs` depend on exactly that version. Otherwise an install from npm pairs `chaff tree` with the old
+adapters, and it refuses Japanese and English.
+
 An adapter that chaff does not bundle is now looked up as `@chaffjs/lang-<language>`. A language can
 be added by installing its package, without changing core.
 
