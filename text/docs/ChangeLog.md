@@ -2,6 +2,31 @@
 
 Newest first.
 
+## Unreleased
+
+### `chaff tree`: a document as a tree with addresses (#109)
+
+Contracts, specifications and manuals have structure that a reader navigates by: Article 3,
+paragraph 2, item (a). `chaff tree <file>` now prints that structure as an S-expression, or as JSON with
+`--format json`. It shows sections, numbered articles and items, and the definitions,
+cross-references, obligations and quantities inside them. Addresses are normalised: 第3条第2項 is `3.2`,
+and Section 4.2(a) is `4.2.a`. A reference carries the same address form as the tree, so its target can be looked up.
+
+It reads `.txt` as well as Markdown, because contracts rarely come with headings. It only reports;
+nothing is rewritten.
+
+How a language numbers its articles lives in the adapter (`structure`, an optional field; the API stays
+at version 1). Japanese and English ship with it. A language without one is refused with a reason
+rather than answered with an empty tree.
+
+**Release note:** `@chaffjs/lang-ja` and `@chaffjs/lang-en` gain `structure` here, and the published 0.5.0
+adapters do not have it. The release that ships this must publish both adapters under a new version and
+make `chaffjs` depend on exactly that version. Otherwise an install from npm pairs `chaff tree` with the old
+adapters, and it refuses Japanese and English.
+
+An adapter that chaff does not bundle is now looked up as `@chaffjs/lang-<language>`. A language can
+be added by installing its package, without changing core.
+
 ## 0.5.1 — 2026-09-13
 
 A patch. Nothing new runs; three things stop being reported. All three were found by pointing chaff

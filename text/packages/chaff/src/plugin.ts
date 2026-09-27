@@ -71,6 +71,65 @@ export type LanguageAdapter = {
   readonly segment: (text: string) => Segmentation;
   /** L2 rule が word_list で引く。アダプタが自分の言語のぶんだけを持つ。 */
   readonly lexicons: Readonly<Record<string, Lexicon>>;
+  /** 文書の構造を読む型。無い言語では `chaff tree` がそう言って止まる。 */
+  readonly structure?: StructurePatterns;
+};
+
+// ───────── 文書の構造 ─────────
+
+/**
+ * 行頭の番号 1 つ。「第3条」「２」「(a)」を読むのは言語パッケージで、
+ * 入れ子と番地を決めるのは core。core は番号の書き方を知らない。
+ */
+export type NumberedLine = {
+  readonly kind: "article" | "item";
+  /** 入れ子の深さ。条が 1、項が 2、号が 3 のように、言語パッケージが決める。 */
+  readonly depth: number;
+  /** 番地の部品。"3"、"4.2"、"a"。 */
+  readonly number: string;
+  /** true なら number だけで番地が決まる（条番号、4.2 のような通し番号）。false なら親の番地に続ける。 */
+  readonly absolute: boolean;
+  /** 書かれたままの番号。「第3条」「Section 4.2」。 */
+  readonly label: string;
+  /** 番号に続く見出し。「第3条（支払）」の「支払」。本文しか無ければ空。 */
+  readonly heading: string;
+  /** 番号の後ろの文字列全部。定義や参照はここから探す。 */
+  readonly rest: string;
+};
+
+/** 番号を読むときに見える周り。「(i)」がローマ数字か英字かは、開いている番号で決まる。 */
+export type NumberingContext = {
+  readonly open: readonly NumberedLine[];
+  /** Markdown の見出しの行か。本文の「1. 」は箇条書きで、見出しの「1. 」は章番号。 */
+  readonly isHeading: boolean;
+};
+
+/** 行の中で見つけたもの。start / end は渡した文字列の中の位置。 */
+export type Mention = { readonly start: number; readonly end: number; readonly attrs: Readonly<Record<string, string | number>> };
+
+export type StructurePatterns = {
+  readonly numbered: (line: string, context: NumberingContext) => NumberedLine | undefined;
+  /** 定義。attrs.term に定義された語。 */
+  readonly definitions: (text: string) => readonly Mention[];
+  /** 参照。attrs.target に正規化した番地（"12.1"）、attrs.label に書かれたまま。 */
+  readonly references: (text: string) => readonly Mention[];
+  /** 義務・禁止・許可。attrs.marker に語、attrs.type に must / must-not / may。 */
+  readonly obligations: (text: string) => readonly Mention[];
+  /** 数量。attrs.value に数、attrs.unit に単位。 */
+  readonly quantities: (text: string) => readonly Mention[];
+};
+
+export type StructureKind = "doc" | "section" | "article" | "item" | "definition" | "reference" | "obligation" | "quantity";
+
+/** 番地の付いた木の節点。すべて元の文書の位置（UTF-16）と行を持つ。 */
+export type StructureNode = {
+  readonly kind: StructureKind;
+  /** 節・条・項の番地。"3.2"、見出しは "h2.1"。定義や参照のような葉は空。 */
+  readonly address: string;
+  readonly span: Span;
+  readonly line: number;
+  readonly attrs: Readonly<Record<string, string | number>>;
+  readonly children: readonly StructureNode[];
 };
 
 // ───────── 文書モデルと rule ─────────

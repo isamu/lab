@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { packageFor } from "../packages/chaff/src/adapter-load.ts";
+import { loadAdapter, packageFor } from "../packages/chaff/src/adapter-load.ts";
 
 const adapters: readonly LanguageAdapter[] = [ja, en];
 
@@ -40,7 +40,17 @@ describe("LanguageAdapter の契約", () => {
     });
   });
 
-  it("未知の言語にはアダプタが無い", () => {
-    assert.equal(packageFor("ko"), undefined);
+  it("同梱していない言語は @chaffjs/lang-<言語> を探す", () => {
+    // 利用者が lang-zh を書いて入れれば、core を変えずにその言語で動く。
+    assert.equal(packageFor("zh"), "@chaffjs/lang-zh");
+    assert.equal(packageFor("ko"), "@chaffjs/lang-ko");
+  });
+
+  it("言語の名前として読めないものには、パッケージを探さない", () => {
+    ["", "../ja", "JA", "chinese", "zh-TW"].forEach((language) => assert.equal(packageFor(language), undefined, language));
+  });
+
+  it("入っていない言語は、入れ方を添えて断る", async () => {
+    await assert.rejects(loadAdapter("xq"), /@chaffjs\/lang-xq が入っていません/u);
   });
 });

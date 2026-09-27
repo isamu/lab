@@ -23,6 +23,7 @@ import { renderFriendly } from "./render/friendly.ts";
 import { rulesJson } from "./render/rules-json.ts";
 import { renderSarif } from "./render/sarif.ts";
 import { VERSION } from "./version.ts";
+import { runTree, treeTargets } from "./commands/tree.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRules } from "./run.ts";
 import type { Level, RuleDefinition } from "./plugin.ts";
@@ -37,6 +38,7 @@ const USAGE = `chaff — 文章の読みにくいところを見つけます。�
   chaff eval <dir>               手元の文書で閾値を測り直す
   chaff explain <rule>           そのルールの意図と根拠を読む
   chaff genres                   ジャンルの一覧
+  chaff tree <file> [--format sexp|json]  文書を番地の付いた木にする（条・項・定義・参照）
   chaff rules --json             いまの設定を JSON で出す（AI に渡す用）
   chaff baseline <dir>           いまある指摘を棚上げする（既存の repo に入れるとき）
   chaff suppressions <dir>       stet で黙らせている指摘を数える
@@ -283,6 +285,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   rules: showRules,
   explain: (argv) => explain(argv[1]),
   eval: (argv) => runEval(positional(argv), argv, { config: readConfig(), resolveGenre, flag }),
+  tree: (argv) => runTree(treeTargets(argv), argv, { config: readConfig(), flag }),
   test: (argv) => runTest(positional(argv), argv, { config: readConfig(), resolveGenre, inspect }),
   baseline: (argv) => runBaseline(positional(argv), argv),
   suppressions: (argv) => runSuppressions(positional(argv), argv),

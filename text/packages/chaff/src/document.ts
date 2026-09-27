@@ -120,7 +120,7 @@ const textOf = (node: Node, source: string): string => {
   return parts.join("");
 };
 
-type Heading = { readonly depth: number; readonly text: string; readonly start: number; readonly end: number };
+export type Heading = { readonly depth: number; readonly text: string; readonly start: number; readonly end: number };
 
 const headingsOf = (root: Node, source: string): Heading[] => {
   const found: Heading[] = [];
@@ -261,4 +261,13 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
     lexicons: { ...adapter.lexicons, "internal-jargon": team.jargon.map((pattern) => ({ pattern })) },
     requiredSections: team.requiredSections,
   };
+};
+
+/** 番号を探してはいけない範囲。コードの中の「第3条」は条ではなく、参照でもない。 */
+const OPAQUE = ["code", "inlineCode", "html", "yaml", "toml"];
+
+/** 構造を読むための Markdown の手がかり。見出しと、中を読まない範囲。 */
+export const markdownOutline = (source: string): { readonly headings: readonly Heading[]; readonly opaque: readonly Span[] } => {
+  const root = parse(source);
+  return { headings: headingsOf(root, source), opaque: OPAQUE.flatMap((type) => spansOfType(root, type)) };
 };
