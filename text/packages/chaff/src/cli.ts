@@ -25,6 +25,7 @@ import { renderSarif } from "./render/sarif.ts";
 import { VERSION } from "./version.ts";
 import { runTree, treeTargets } from "./commands/tree.ts";
 import { citeTargets, runCite } from "./commands/cite.ts";
+import { ruleProblems } from "./config/rule-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRules } from "./run.ts";
 import type { Level, RuleDefinition } from "./plugin.ts";
@@ -113,7 +114,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
   const doc = buildDocument(path, source, adapter, teamRules(config));
-  const raw = runRules(doc, rules, config.rules, experimental, genre);
+  const raw = runRules(doc, rules, config.rules, experimental, genre, config.limits);
   // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
   const applied = applySuppressions(
     source,
@@ -151,6 +152,11 @@ const writeSarif = (results: readonly Inspected[], argv: readonly string[]): voi
   console.log(`\n  SARIF を書きました: ${path}（${located.length} 件）`);
 };
 
+/** 効いていない設定は、結果の前に一度だけ言う。標準エラーに出すので、JSON や SARIF の出力は汚さない。 */
+const warnRuleProblems = (config: Config, language: string): void => {
+  ruleProblems(config, loadRules(language)).forEach((problem) => console.error(`chaff: ${problem}`));
+};
+
 const lint = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
   const paths = collectTargets(targets);
   if (paths.length === 0) {
@@ -164,6 +170,7 @@ const lint = async (targets: readonly string[], argv: readonly string[]): Promis
     console.error(`言語 "${language}" のアダプタがありません。`);
     return 1;
   }
+  warnRuleProblems(config, language);
   const results = await Promise.all(paths.map((path) => inspect(path, config, argv)));
   writeSarif(results, argv);
   results.filter((result) => result.outcome.findings.length > 0 || paths.length === 1).forEach((result) => console.log(result.text));
@@ -182,6 +189,7 @@ const runWatch = async (targets: readonly string[], argv: readonly string[]): Pr
     return 1;
   }
   const config = readConfig();
+  warnRuleProblems(config, config.language ?? "ja");
   const seen = new Map<string, Snapshot>();
   const once = async (path: string, first: boolean): Promise<void> => {
     const result = await inspect(path, config, argv);
@@ -268,6 +276,7 @@ const positional = (argv: readonly string[]): string[] => argv.slice(1).filter((
 const showRules = (): number => {
   const config = readConfig();
   const language = config.language ?? "ja";
+  warnRuleProblems(config, language);
   console.log(rulesJson(loadRules(language), config, language, config.genre ?? "blog/tech"));
   return 0;
 };
