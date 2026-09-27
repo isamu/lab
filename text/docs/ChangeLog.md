@@ -21,6 +21,11 @@ document in its own language. The English adapter reads them without false posit
 
 For adapter authors: `StructurePatterns.opensDefinitionScope` and `NumberedLine.numbering` are new and optional.
 
+### `latin-spacing` no longer counts article numbers
+
+`第3条` and `第4条第2項` are how an address is written, not a spacing choice. They were counted, so a page citing many
+articles made its ordinary spaced `2 か所` look like the odd one out. A number right after `第` is now not counted.
+
 ## 0.8.0 — 2026-09-28
 
 What an English user's first run and four real statutes showed: chaff now speaks English to an English
