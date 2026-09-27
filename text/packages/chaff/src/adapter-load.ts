@@ -50,7 +50,24 @@ const pickExport = (module: object): unknown => {
   return isAdapter(record["adapter"]) ? record["adapter"] : record["default"];
 };
 
-export const packageFor = (language: string): string | undefined => ADAPTER_PACKAGE[language];
+/**
+ * 同梱の言語は表から、それ以外は `@chaffjs/lang-<言語>` を探す。
+ * 利用者が lang-zh のようなパッケージを書いて入れれば、core を変えずにその言語で動く。
+ */
+const LANGUAGE_ID = /^[a-z]{2,3}$/u;
+
+export const packageFor = (language: string): string | undefined =>
+  ADAPTER_PACKAGE[language] ?? (LANGUAGE_ID.test(language) ? `@chaffjs/lang-${language}` : undefined);
+
+const importAdapter = async (specifier: string, language: string): Promise<unknown> => {
+  try {
+    return await import(specifier);
+  } catch (err) {
+    const missing = err instanceof Error && "code" in err && err.code === "ERR_MODULE_NOT_FOUND";
+    if (missing) throw new Error(`言語 ${language} のパッケージ ${specifier} が入っていません（npm i -D ${specifier}）`, { cause: err });
+    throw err;
+  }
+};
 
 /**
  * アダプタは「必要になったものだけ」を実行時に解決する。spec §17.2。
@@ -60,7 +77,7 @@ export const packageFor = (language: string): string | undefined => ADAPTER_PACK
 export const loadAdapter = async (language: string): Promise<LanguageAdapter> => {
   const specifier = packageFor(language);
   if (specifier === undefined) throw new Error(`no adapter for language "${language}"`);
-  const module: unknown = await import(specifier);
+  const module = await importAdapter(specifier, language);
   if (typeof module !== "object" || module === null) throw new Error(`${specifier} did not export a module`);
   const candidate = pickExport(module);
   const broken = checkAdapter(candidate);
