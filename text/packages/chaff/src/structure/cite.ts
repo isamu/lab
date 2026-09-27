@@ -13,7 +13,7 @@ export type CitationResult = {
   readonly status: CitationStatus;
   /** 引用文が原文で見つかった位置の、いちばん内側の番地。quote-elsewhere のとき、本当はどこに書いてあるか。 */
   readonly foundAt?: string;
-  /** 引用文が見つかった行。 */
+  /** 引用文が見つかった行。引用文が空なら、番地の行。 */
   readonly line?: number;
 };
 
@@ -42,18 +42,26 @@ const normalize = (source: string): Normalized => {
 
 type Occurrence = { readonly start: number; readonly last: number };
 
-/** key が現れる位置を全部、元の文字列の位置で。start は最初の文字、last は最後の文字の位置。 */
-const occurrencesOf = (whole: Normalized, key: string): Occurrence[] => {
-  // 空の key は indexOf がどこまでも位置を返し、終わらなくなる。
-  if (key === "") return [];
-  const found: Occurrence[] = [];
-  for (let at = whole.text.indexOf(key); at !== -1; at = whole.text.indexOf(key, at + 1)) {
-    found.push({ start: whole.index[at] ?? 0, last: whole.index[at + key.length - 1] ?? 0 });
-  }
-  return found;
-};
-
 const within = (node: StructureNode, occurrence: Occurrence): boolean => node.span.start <= occurrence.start && occurrence.last < node.span.end;
+
+type Located = { readonly holding?: Occurrence; readonly earliest?: Occurrence };
+
+/**
+ * key が現れる位置を上から順に見て、候補の番地に収まるものが見つかった時点で止める。見つからなければ最初の位置を返す。
+ * 全部を配列に溜めない。「の」のような短い引用が長い原文に何百万回現れても、覚えるのは二つだけ。
+ * 次は 1 文字先から探す。重なって現れる引用（「ああ」の中の「ああ」）も、どの位置も見落とさない。
+ */
+const locate = (whole: Normalized, key: string, candidates: readonly StructureNode[]): Located => {
+  // 空の key は indexOf がどこまでも位置を返し、終わらなくなる。
+  if (key === "") return {};
+  let earliest: Occurrence | undefined;
+  for (let at = whole.text.indexOf(key); at !== -1; at = whole.text.indexOf(key, at + 1)) {
+    const occurrence = { start: whole.index[at] ?? 0, last: whole.index[at + key.length - 1] ?? 0 };
+    earliest ??= occurrence;
+    if (candidates.some((node) => within(node, occurrence))) return { holding: occurrence, earliest };
+  }
+  return earliest === undefined ? {} : { earliest };
+};
 
 type Addressed = { readonly node: StructureNode; readonly depth: number };
 
@@ -97,10 +105,8 @@ export const checkCitations = (source: string, tree: StructureNode, citations: r
     if (first === undefined) return { citation, status: "missing-address" };
     const key = normalize(citation.quote).text;
     if (key === "") return { citation, status: "ok", line: first.line };
-    const occurrences = occurrencesOf(whole, key);
-    const holder = candidates.find((node) => occurrences.some((occurrence) => within(node, occurrence)));
-    if (holder !== undefined) return { citation, status: "ok", line: holder.line };
-    const earliest = occurrences[0];
+    const { holding, earliest } = locate(whole, key, candidates);
+    if (holding !== undefined) return { citation, status: "ok", line: placeOf(starts, holding.start).line };
     if (earliest === undefined) return { citation, status: "quote-not-found" };
     const foundAt = innermostHolding(nodes, earliest);
     const line = placeOf(starts, earliest.start).line;

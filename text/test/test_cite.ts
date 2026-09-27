@@ -112,6 +112,26 @@ describe("an English contract", () => {
   });
 });
 
+describe("the line reported for a citation", () => {
+  const linesOf = (citations: readonly Citation[]): (number | undefined)[] => {
+    if (ja.structure === undefined) throw new Error("no structure");
+    const tree = buildStructure({ path: "c", source: CONTRACT, language: "ja", markdown: false }, ja.structure);
+    return checkCitations(CONTRACT, tree, citations).map((result) => result.line);
+  };
+
+  it("is the quote's own line when it matches, not the article's", () => {
+    assert.deepEqual(linesOf([{ address: "2", quote: "年3%の遅延損害金" }]), [5]);
+  });
+
+  it("is the line where the quote actually is when it is elsewhere", () => {
+    assert.deepEqual(linesOf([{ address: "3", quote: "年3%の遅延損害金" }]), [5]);
+  });
+
+  it("is the address's line when the quote is empty", () => {
+    assert.deepEqual(linesOf([{ address: "3", quote: "" }]), [6]);
+  });
+});
+
 describe("a quote written in more than one place", () => {
   it("reports the first place it appears", () => {
     const source = lines("第1条（甲）", "期限は月末とする。", "第2条（乙）", "本文。", "第3条（丙）", "期限は月末とする。");
