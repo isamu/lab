@@ -13,6 +13,8 @@ export type FeedbackInput = {
   readonly language: string;
   readonly genre: string;
   readonly findings: readonly ReportedFinding[];
+  /** The line the person reported: the finding's line, or for a miss the line they named. */
+  readonly line: number;
   readonly excerpts: readonly Excerpt[];
   readonly config: string | undefined;
 };
@@ -73,11 +75,8 @@ const fence = (content: string, language = ""): string => {
 export const feedbackDraft = (input: FeedbackInput, ui: UiLanguage): FeedbackDraft => {
   const text = TEXT[ui];
   const first = input.findings[0];
-  const firstLine = input.excerpts[0]?.from ?? 0;
   const title =
-    input.kind === "false-positive" && first !== undefined
-      ? text.titleFalse(first.rule, first.message)
-      : text.titleMissed(input.fileName, first?.line ?? firstLine);
+    input.kind === "false-positive" && first !== undefined ? text.titleFalse(first.rule, first.message) : text.titleMissed(input.fileName, input.line);
   const body = [
     text.what[input.kind],
     "",

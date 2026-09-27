@@ -58,6 +58,7 @@ const input = (overrides: Partial<FeedbackInput> = {}): FeedbackInput => ({
   language: "ja",
   genre: "blog/tech",
   findings: [{ rule: "max-sentence-length", line: 5, message: "この文は 102 文字あります（100 文字まで）" }],
+  line: 5,
   excerpts: excerptsAround(DOC, [5]),
   config: undefined,
   ...overrides,
@@ -75,7 +76,8 @@ describe("報告の下書き", () => {
   });
 
   it("見逃し: 題にファイルと行", () => {
-    assert.equal(feedbackDraft(input({ kind: "missed", findings: [] }), "en").title, "Missed: a.md line 3");
+    // The reported line, not the first line of the excerpt around it.
+    assert.equal(feedbackDraft(input({ kind: "missed", findings: [], line: 5 }), "en").title, "Missed: a.md line 5");
   });
 
   it("chaff.yaml があれば載せる", () => {
@@ -193,6 +195,11 @@ describe("chaff feedback", () => {
       assert.equal(result.code, 1);
       assert.match(result.out, /from 1 to 12/u);
     });
+  });
+
+  it("見逃しの題は、名指しした行", async () => {
+    const result = await run(["a.md", "--missed", "--line", "5"], []);
+    assert.match(result.out, /Missed: a\.md line 5/u);
   });
 
   it("見逃しは --line が要る", async () => {

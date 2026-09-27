@@ -198,6 +198,7 @@ export const runFeedback = async (targets: readonly string[], argv: readonly str
       language: checked.language,
       genre: checked.genre,
       findings,
+      line: lines[0] ?? 0,
       excerpts: excerptsAround(source, lines),
       config: wholeConfig ?? context.settingsOf(findings.map((finding) => finding.rule)),
     },
