@@ -47,6 +47,22 @@ describe("skill を入れる", () => {
     assert.equal(readFileSync(target, "utf8"), "A");
   });
 
+  it("書けないときは、どこに書けなかったかを言って 1 で終わる", () => {
+    const blocked = temp();
+    writeFileSync(join(blocked, ".claude"), "a file where the folder should be");
+    const saved = console.error;
+    const said: string[] = [];
+    console.error = (...parts: unknown[]) => {
+      said.push(parts.join(" "));
+    };
+    try {
+      assert.equal(runSkill(["skill"], { cwd: blocked, home: temp(), ui: "en" }), 1);
+    } finally {
+      console.error = saved;
+    }
+    assert.match(said.join("\n"), /^Could not write the skill to .*SKILL\.md: /u);
+  });
+
   it("置き場所は .claude/skills/chaff/SKILL.md", () => {
     assert.equal(skillTarget("/p"), join("/p", ".claude", "skills", "chaff", "SKILL.md"));
   });

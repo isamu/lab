@@ -43,12 +43,30 @@ const TEXT: Texts<Readonly<Record<SkillOutcome["status"], (path: string) => stri
   },
 };
 
+const FAILED: Texts<(path: string, why: string) => string> = {
+  ja: (path, why) => `skill を ${path} に書けませんでした: ${why}`,
+  en: (path, why) => `Could not write the skill to ${path}: ${why}`,
+};
+
+/** The outcome, or why the file system refused. */
+const attempt = (install: () => SkillOutcome): SkillOutcome | { readonly failure: string } => {
+  try {
+    return install();
+  } catch (err) {
+    return { failure: err instanceof Error ? err.message : String(err) };
+  }
+};
+
 export type SkillContext = { readonly cwd: string; readonly home: string; readonly ui: UiLanguage };
 
 /** `chaff skill [--global] [--force]`: installs or updates the skill. Exit 1 when a differing file was kept. */
 export const runSkill = (argv: readonly string[], context: SkillContext): number => {
   const target = skillTarget(argv.includes("--global") ? context.home : context.cwd);
-  const outcome = installSkill(readFileSync(SKILL_SOURCE, "utf8"), target, argv.includes("--force"));
+  const outcome = attempt(() => installSkill(readFileSync(SKILL_SOURCE, "utf8"), target, argv.includes("--force")));
+  if ("failure" in outcome) {
+    console.error(FAILED[context.ui](target, outcome.failure));
+    return 1;
+  }
   const say = TEXT[context.ui][outcome.status](outcome.path);
   if (outcome.status === "kept") console.error(say);
   else console.log(say);
