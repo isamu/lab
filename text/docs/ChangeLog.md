@@ -18,6 +18,19 @@ A heading that carries a kramdown or pandoc attribute list (`## Install {#instal
 is now read without it. `heading-echo` missed a sentence that merely repeats such a heading, and the tree
 put `{#a3}` into an article's heading. Braces that are words (`## {name} の設定`) are kept.
 
+### Two orthography rules
+
+- `preferred-term` — the team lists spellings under `prefer` in chaff.yaml (`サーバー: サーバ`), and each
+  avoided spelling is reported with the one to use. An avoided spelling that is part of the preferred one
+  (`ユーザ` inside `ユーザー`) is not. With nothing listed it says nothing.
+- `latin-spacing` (Japanese) — whether Japanese and Latin letters or digits are separated by a space is a
+  choice either way; mixing both in one document is what this reports, pointing at whichever the document
+  uses less. Letters, the space before a digit and the space after one are counted separately, since
+  `を 3回` (space before the number, none before its counter) is ordinary. A unit written after a number
+  (`3GBの`, `10ms 待つ`) counts with the number, not as a Latin word.
+
+Both are experimental, so a style turns them on in chaff.yaml.
+
 ## 0.6.0 — 2026-09-27
 
 Documents with structure — contracts, statutes, specifications, manuals — become a tree with addresses,

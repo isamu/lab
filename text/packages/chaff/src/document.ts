@@ -233,13 +233,23 @@ const listsOf = (root: Node, source: string): BulletList[] => {
 };
 
 /** チームが chaff.yaml に書いたもの。語彙表と同じ器に入れて、detector には出所を見せない。 */
-export type TeamRules = { readonly jargon: readonly string[]; readonly requiredSections: readonly string[] };
+export type TeamRules = {
+  readonly jargon: readonly string[];
+  readonly requiredSections: readonly string[];
+  /** { 使わない書き方: 使う書き方 }。preferred-term が語彙表として読む。 */
+  readonly prefer?: Readonly<Record<string, string>>;
+};
 
 const EMPTY_TEAM: TeamRules = { jargon: [], requiredSections: [] };
 
 /** Config から取り出す。document は Config の形を知らない。 */
-export const teamRules = (config: { readonly jargon: readonly string[]; readonly requiredSections: readonly string[] }): TeamRules => ({
+export const teamRules = (config: {
+  readonly jargon: readonly string[];
+  readonly requiredSections: readonly string[];
+  readonly prefer?: Readonly<Record<string, string>>;
+}): TeamRules => ({
   jargon: config.jargon,
+  prefer: config.prefer ?? {},
   requiredSections: config.requiredSections,
 });
 
@@ -267,7 +277,12 @@ export const buildDocument = (path: string, source: string, adapter: LanguageAda
     listSpans: listItems,
     paragraphs: paragraphsOf(paragraphSpans, sentences, listItems),
     lists: listsOf(root, source),
-    lexicons: { ...adapter.lexicons, "internal-jargon": team.jargon.map((pattern) => ({ pattern })) },
+    lexicons: {
+      ...adapter.lexicons,
+      "internal-jargon": team.jargon.map((pattern) => ({ pattern })),
+      // 使わない書き方を pattern に、使う書き方を instead_of に置く。語彙表の「同じことの別の書き方」と同じ向き。
+      "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => ({ pattern, instead_of: use })),
+    },
     requiredSections: team.requiredSections,
     // 構造の rule（参照先が無い・番号の抜け）が読む木。どの rule も読まなければ作らない。何万行の契約書で、他の rule の lint に代金を払わせない。
     get structure(): StructureNode | undefined {
