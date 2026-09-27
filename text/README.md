@@ -2,7 +2,13 @@
 
 [![npm](https://img.shields.io/npm/v/chaffjs)](https://www.npmjs.com/package/chaffjs)
 
-文章の読みにくいところを見つける道具。**文章は書き換えない。** 直すのは書いた人。
+文章の読みにくいところを見つける道具。**文章は書き換えない。** 直すのは書いた人。日本語と英語の文書をそのまま見る。
+
+**手引きとルールの一覧:** https://isamu.github.io/lab/ja/ （English: https://isamu.github.io/lab/en/）
+
+> chaff finds what makes writing hard to read — in Japanese and English — and never rewrites the text. On an
+> English document it speaks English. The guide and the reference of every rule are at
+> https://isamu.github.io/lab/en/.
 
 `coding/` の scoria がコードの品質を測るのに対して、こちらは文章の品質を測る。
 
@@ -12,7 +18,8 @@ npx chaffjs article.md
 
 ## いまどこまで動くか
 
-L1 rule が 5 本。設定ファイルも API key も言語指定も要らない。
+設定ファイルも API key も言語指定も要らない。ルールの一覧と、それぞれの理由・直し方・段階は
+[サイトのルールのページ](https://isamu.github.io/lab/ja/rules/) にある（ルールの定義ファイルから作っているので、ずれない）。
 
 ```
 $ npx chaffjs article.md
@@ -75,7 +82,21 @@ npx chaffjs genres               ジャンルの一覧
 npx chaffjs baseline docs/       いまある指摘を棚上げする
 npx chaffjs suppressions docs/   stet で黙らせている指摘を数える
 npx chaffjs article.md --watch   保存のたびに、変わったところだけ出す
+npx chaffjs rules --json         いまの設定を JSON で出す（AI に設定を書かせるときに渡す）
+npx chaffjs tree contract.txt    文書を番地の付いた木にする（条・項・定義・参照）
+npx chaffjs cite 原文 引用.json  引用が原文にあるかを確かめる
+npx chaffjs skill                Claude Code の skill を入れる
 ```
+
+`--genre business/email` でその実行だけのジャンルを決め、`--experimental` で試験中の rule も動かす。
+
+## 画面の言語
+
+指摘の画面は、文書の言語で出る。日本語の文書には日本語で、それ以外の文書には英語で。いくつものファイルを見たときの締めの行は、そろっていればその言語、混ざっていれば下の決まりに従う。
+
+文書に結び付かない出力（`--help`、`genres`、`init`、`explain`、`relax`、`rules --json`、設定の警告など）は、`chaff.yaml` の `language`、無ければ端末のロケール（`LC_ALL`、`LC_MESSAGES`、`LANG`）、それも無ければ英語で出る。CI のように端末のロケールが `C` の所で日本語にしたいときは、`chaff.yaml` に `language: ja` を書く。
+
+`explain` と `rules --json` の数字は、その言語の数え方になる（日本語は文字、英語は語）。
 
 ## 書いている最中
 
@@ -193,9 +214,9 @@ npx chaffjs baseline docs/       いまある指摘を棚上げする
 
 行番号ではなく内容で同定するので、前後に段落を足しても棚上げは剥がれない。棚上げ分も見たいときは `--show-baseline`。
 
-## 設定は 4 つの言葉だけ
+## 設定はまず 4 つの言葉で
 
-数字は書かない。`chaff.yaml` を開かずにコマンドでも変えられる。
+`strict` / `normal` / `relaxed` / `off` から選ぶ。`chaff.yaml` を開かずにコマンドでも変えられる。
 
 ```bash
 npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
@@ -211,6 +232,26 @@ rules:
 説明コメントは自動で入り、既存のコメントは壊さない。既に理由があるものを変えるときは `--why` が要る。古い理由が新しい値に残ると履歴が嘘になるため。
 
 AI に設定を書かせるときは `npx chaffjs rules --json` を渡す。今の値・使える値・なぜ今 off なのか・変更コマンドが 1 つに入っている。
+
+4 つの言葉で足りないとき（手本にした文章の一文が `relaxed` より長い、など）は、上限を正の数で書ける。`off` にすると何も見なくなるが、数なら見続ける。その rule は `normal` として扱われ、`rules --json` の `now` にいま効いている数が出る。
+
+```yaml
+rules:
+  max-sentence-length: 260
+```
+
+チームで決めた表記は `prefer:` に「避ける綴り: 使う綴り」で書き、`preferred-term` を動かす。英字や数字の前後に空白を入れるかどうかが文書の中で混ざっているのは `latin-spacing`（日本語）が見る。どちらも試験中なので、`rules:` に名前を書いて動かす。
+
+```yaml
+rules:
+  preferred-term: normal
+  latin-spacing: normal
+prefer:
+  サーバー: サーバ
+  e-mail: email
+```
+
+知らない rule 名（たいていは綴り違い）と読めない値は、検査と `rules --json` が標準エラーに出す。黙って捨てると、効いていない設定を効いていると思い込むため。
 
 ## 品詞を見る rule
 
@@ -236,7 +277,7 @@ npx chaffjs report.md --experimental
 no-doubled-joshi   この言語では品詞解析が使えないため
 ```
 
-品詞を見る rule は今のところ 4 本です。
+品詞を見る rule:
 
 | rule | 何を見るか |
 | --- | --- |
@@ -245,7 +286,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `no-doubled-joshi` | 「弊社の新製品の販売の計画」のような入れ子（ja） |
 | `taigen-dome-in-prose` | 本文の体言止めが続く（ja） |
 
-品詞が要らない日本語の rule も 5 本あります。
+品詞が要らない日本語の rule:
 
 | rule | 何を見るか |
 | --- | --- |
@@ -254,8 +295,9 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `hiragana-fukushi` | 表外漢字の副詞（殆ど・勿論） |
 | `max-kanji-continuous` | 漢字の連続（情報処理推進機構認定試験） |
 | `no-nakaguro-parallel` | 1 文に中黒の並列が何組も入る |
+| `latin-spacing` | 英字・数字の前後の空白の有無が文書の中で混ざる（試験中） |
 
-英語固有の rule も 5 本あります。
+英語固有の rule:
 
 | rule | 何を見るか |
 | --- | --- |
@@ -266,7 +308,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `oxford-comma-consistency` | 並列の読点が文書内で揃っているか |
 | `contraction-consistency` | 短縮形の使いかたが文書内で揃っているか |
 
-後ろの 2 本は**どちらが正しいかを決めません**。1 つの文書で揃っているかだけを見て、少数派を指摘します。
+揃っているかを見る rule は**どちらが正しいかを決めません**。1 つの文書で揃っているかだけを見て、少数派を指摘します。
 
 ## 判定役は Anthropic でも OpenAI でも
 
@@ -348,9 +390,35 @@ doc.md   全 6 文のうち 5 箇所を送ります（API は呼んでいませ�
 | `undefined-acronym` | 略語が説明なしで出てこないか |
 | `concrete-evidence-density` | 数値もコードもリンクも無い節 |
 
+## 条文や仕様の構造を見る
+
+契約書・規程・仕様書のように番号の付いた文書は、番地の付いた木として読めます。`.txt` の契約書も読みます。
+
+```bash
+npx chaffjs tree contract.txt                  S 式で出す（人と AI が読む）
+npx chaffjs tree contract.txt --format json    JSON で出す
+```
+
+第3条第2項は `3.2`、Section 4.2(a) は `4.2.a` という番地になります。試験中の構造の rule が、存在しない条への参照（`dangling-reference`）、番号の抜け（`numbering-gap`）、同じ語の二重の定義（`duplicate-definition`）を見ます。
+
+```bash
+npx chaffjs cite contract.txt quotes.json
+```
+
+`quotes.json` は `[{ "address": "4.2", "quote": "…" }]`。回答や要約の引用が原文のその番地に本当にあるかを確かめ、一つでも無ければ 1 で終わります。AI の回答を単体試験のように検査できます。chaff は確かめるだけで、書き換えません。
+
+## Claude Code の skill
+
+```bash
+npx chaffjs skill              このフォルダの .claude/skills/chaff/ に入れる
+npx chaffjs skill --global     ~/.claude/skills/chaff/ に入れる
+```
+
+Claude Code が chaff の使い方（かけ方、指摘の読み方、直す・`stet`・`relax --why` の選び方、`rules --json` での設定、`tree` と `cite`）を知っている状態になります。もう一度実行すると新しい版に入れ替えます。手で直したかもしれない、中身の違うファイルは `--force` を付けないと置き換えません。
+
 ## 言い回しを見る rule
 
-語彙表だけが言語別で、rule は共通です。新しい言語は語彙表を書けば動きます。
+語彙表だけが言語別で、rule は共通です。
 
 | rule | 何を見るか |
 | --- | --- |
@@ -399,11 +467,11 @@ required_sections: # この種類の文書に無いと困る見出し
 
 ## 既定で動く rule と、そうでない rule
 
-45 本のうち **17 本が既定で動きます**。残りは `--experimental` が要ります。
+一部の rule だけが既定で動きます。残りは試験中で、`--experimental` か `chaff.yaml` の `rules:` に名前を書くと動きます。どれが動いているかは `npx chaffjs rules --json` の `now` と、画面の最後の「動いていない rule」の一覧で分かります。
 
 既定に入れる条件は 3 つで、**実文書で発火したこと**が要ります。
 
-1. 実際に公開された文書（`examples/`、20 本）で発火した
+1. 実際に公開された文書（`examples/`）で発火した
 2. 出た指摘を読んで、正しいと判断できた
 3. `npx chaffjs eval` の目標（誤検知率 5% 未満）を満たしている
 
@@ -426,9 +494,9 @@ yarn example:friendly     既定の出力で
 
 | ディレクトリ | 中身 |
 | --- | --- |
-| `blog-ja/` | 技術記事 3 本 |
-| `blog-en/` | 英語の技術記事 2 本 |
-| `business-ja/` | 会の文書 3 本 |
+| `blog-ja/` | 日本語の技術記事 |
+| `blog-en/` | 英語の技術記事 |
+| `business-ja/` | 会の文書 |
 
 CI でも毎回かけています。指摘の数では落としません（文章の好みの問題なので）が、**実文書で chaff が最後まで動かなければ落ちます**。
 
@@ -443,6 +511,7 @@ CI でも毎回かけています。指摘の数では落としません（文�
 | `business/proposal` `business/report` ほか | ブログ向けの rule |
 
 判定はパスと内容から自動で行い、1 行目に根拠つきで出ます。`README.md`、`*-spec.md`、`docs/` は技術文書として見ます。
+`chaff.yaml` の `genre` で決めるか、その実行だけなら `--genre` で決めます（`chaff.yaml` より優先）。
 
 ```
 chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
@@ -493,7 +562,7 @@ by_path:
 
 ```
 text/                      yarn workspaces のルート
-  packages/chaff           core。npm 名 chaff
+  packages/chaff           core。npm 名 chaffjs
     rules/*.yaml           rule 定義。分岐も式も書かない
     src/plugin.ts          contract（型のみ。実装を持たない）
     src/document.ts        Markdown → ProseDocument
@@ -503,14 +572,18 @@ text/                      yarn workspaces のルート
     src/config/            chaff.yaml の読み書き
     src/render/            出力（既定 / --compact / --json）
     src/cli.ts
+    skills/chaff/SKILL.md  npx chaffjs skill が入れる Claude Code の skill
   examples/                実文書。CI でもここにかける
   packages/lang-ja         @chaffjs/lang-ja。文分割と語彙表
     lexicons/*.yaml        L2 の語彙。ここだけが言語別
   packages/lang-en         @chaffjs/lang-en。同上
+  site/                    ドキュメントサイト（Astro）。https://isamu.github.io/lab/
   test/                    node:test
 ```
 
 パッケージ間の import は**型だけ**にする。アダプタは chaff の値に依存せず、単体で動く。
+
+同梱していない言語は、`@chaffjs/lang-<言語>`、無ければ `chaff-lang-<言語>` を探して読む。公式は `@chaffjs/lang-<言語>`、第三者は `chaff-lang-<言語>` と名乗る。語彙表だけでは足りず、文の区切り方などを持つ言語パッケージが要る。
 
 ## 仕様
 

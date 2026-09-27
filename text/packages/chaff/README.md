@@ -10,6 +10,9 @@ npx chaffjs article.md
 
 インストールも、AI の利用登録も、言語の指定も要りません。
 
+> chaff finds what makes writing hard to read — in Japanese and English — and never rewrites the text. On an
+> English document it speaks English. Guide and rule reference: https://isamu.github.io/lab/en/
+
 ## 何を見つけるか
 
 誤字脱字ではなく、文章の組み立てを見ます。
@@ -59,18 +62,22 @@ npx chaffjs explain bold-density  ルールの意図と根拠を読む
 npx chaffjs baseline docs/        既にある指摘を棚上げする
 npx chaffjs suppressions docs/    stet で黙らせている指摘を数える
 npx chaffjs rules --json          いまの設定を JSON で出す（AI に渡す用）
+npx chaffjs tree contract.txt     文書を番地の付いた木にする（条・項・定義・参照）
+npx chaffjs cite 原文 引用.json   引用が原文にあるかを確かめる
+npx chaffjs skill                 Claude Code の skill を入れる（--global でホームに）
 ```
 
-設定は `strict` / `normal` / `relaxed` / `off` の 4 語から選ぶだけで、数字は要りません。
+設定は `strict` / `normal` / `relaxed` / `off` の 4 語から選びます。それで足りないときは上限を数で書けます（`max-sentence-length: 260`）。
 
 ## 言語
 
-日本語と英語。言語は本文から自動で判定します。アダプタ（`@chaffjs/lang-ja` / `@chaffjs/lang-en`）は同梱されているので、別に入れる必要はありません。
+日本語と英語。言語は本文から自動で判定し、指摘の画面もその言語で出ます。アダプタ（`@chaffjs/lang-ja` / `@chaffjs/lang-en`）は同梱されているので、別に入れる必要はありません。
 
-新しい言語のアダプタは誰でも出せます。公式は `@chaffjs/lang-<言語>`、第三者は `chaff-lang-<言語>` と名乗ってください（`@typescript-eslint/*` と `eslint-plugin-*` の関係と同じです）。
+新しい言語のアダプタは誰でも出せます。公式は `@chaffjs/lang-<言語>`、第三者は `chaff-lang-<言語>` と名乗ってください（`@typescript-eslint/*` と `eslint-plugin-*` の関係と同じです）。chaff は公式、第三者の順に探して読みます。
 
 ## ドキュメント
 
-https://github.com/isamu/lab/tree/main/text
+- 手引きとルールの一覧: https://isamu.github.io/lab/ja/ （English: https://isamu.github.io/lab/en/）
+- リポジトリ: https://github.com/isamu/lab/tree/main/text
 
 MIT
