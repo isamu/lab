@@ -67,7 +67,7 @@ npx chaffjs rules --json          いまの設定を JSON で出す（AI に渡�
 
 日本語と英語。言語は本文から自動で判定します。アダプタ（`@chaffjs/lang-ja` / `@chaffjs/lang-en`）は同梱されているので、別に入れる必要はありません。
 
-新しい言語のアダプタは誰でも出せます。公式は `@chaffjs/<言語>`、第三者は `chaff-lang-<言語>` と名乗ってください（`@typescript-eslint/*` と `eslint-plugin-*` の関係と同じです）。
+新しい言語のアダプタは誰でも出せます。公式は `@chaffjs/lang-<言語>`、第三者は `chaff-lang-<言語>` と名乗ってください（`@typescript-eslint/*` と `eslint-plugin-*` の関係と同じです）。
 
 ## ドキュメント
 

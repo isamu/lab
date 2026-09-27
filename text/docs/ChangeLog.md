@@ -16,6 +16,13 @@ read it. It wins over `chaff.yaml` for that run, the header says the genre came 
 unknown genre stops with the way to list them. It reaches `test` and `eval` too, and an unknown genre is refused before any command runs. The value after
 `--genre`, `--sarif` or `--rule` is no longer taken for a file to check.
 
+### Third-party language packages are loaded (#122)
+
+The READMEs have always said an official adapter is `@chaffjs/lang-<lang>` and a third-party one is
+`chaff-lang-<lang>`, but chaff only ever tried the first, so a third-party package was never loaded. chaff
+now tries `@chaffjs/lang-<lang>` and then `chaff-lang-<lang>`. An installed package that fails to load is
+reported as it is, without falling through to the next; when neither is installed, the message names both.
+
 ## 0.7.0 — 2026-09-27
 
 What building a house style from real model texts showed chaff was missing: a way to keep a rule when the

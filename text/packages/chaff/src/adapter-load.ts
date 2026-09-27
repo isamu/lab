@@ -59,13 +59,35 @@ const LANGUAGE_ID = /^[a-z]{2,3}$/u;
 export const packageFor = (language: string): string | undefined =>
   ADAPTER_PACKAGE[language] ?? (LANGUAGE_ID.test(language) ? `@chaffjs/lang-${language}` : undefined);
 
-const importAdapter = async (specifier: string, language: string): Promise<unknown> => {
+/**
+ * 探す順。公式（`@chaffjs/lang-<言語>`）が先で、無ければ第三者の `chaff-lang-<言語>`。
+ * `@typescript-eslint/*` と `eslint-plugin-*` の分け方と同じで、README にもそう書いてある。同梱の言語は表のものだけ。
+ */
+export const packagesFor = (language: string): readonly string[] => {
+  if (ADAPTER_PACKAGE[language] !== undefined) return [ADAPTER_PACKAGE[language]];
+  return LANGUAGE_ID.test(language) ? [`@chaffjs/lang-${language}`, `chaff-lang-${language}`] : [];
+};
+
+export type Importer = (specifier: string) => Promise<unknown>;
+
+/**
+ * そのパッケージ自体が入っていないときだけ真。入っているパッケージが自分の依存を見つけられないときも同じ
+ * ERR_MODULE_NOT_FOUND になるので、Node の文言が探した名前を挙げているかで分ける。
+ */
+export const isAbsent = (err: unknown, specifier: string): boolean =>
+  err instanceof Error && "code" in err && err.code === "ERR_MODULE_NOT_FOUND" && err.message.includes(`'${specifier}'`);
+
+/** 入っている最初のものを読む。入っていないのは次へ。入っていて壊れているものは、次へ行かずにそのまま投げる。 */
+const importFirst = async (specifiers: readonly string[], language: string, importer: Importer): Promise<{ specifier: string; module: unknown }> => {
+  const [first, ...rest] = specifiers;
+  if (first === undefined) throw new Error(`no adapter for language "${language}"`);
   try {
-    return await import(specifier);
+    return { specifier: first, module: await importer(first) };
   } catch (err) {
-    const missing = err instanceof Error && "code" in err && err.code === "ERR_MODULE_NOT_FOUND";
-    if (missing) throw new Error(`言語 ${language} のパッケージ ${specifier} が入っていません（npm i -D ${specifier}）`, { cause: err });
-    throw err;
+    if (!isAbsent(err, first)) throw err;
+    if (rest.length > 0) return importFirst(rest, language, importer);
+    const all = packagesFor(language);
+    throw new Error(`言語 ${language} のパッケージが入っていません（${all.join(" か ")}。npm i -D ${all[0] ?? first}）`, { cause: err });
   }
 };
 
@@ -74,10 +96,8 @@ const importAdapter = async (specifier: string, language: string): Promise<unkno
  * core だけで起動し、文字種で言語を当ててから、その言語のアダプタを読む。
  * 全言語を静的に import すると、使わない言語のぶんまで npx の初回取得が膨らむ。
  */
-export const loadAdapter = async (language: string): Promise<LanguageAdapter> => {
-  const specifier = packageFor(language);
-  if (specifier === undefined) throw new Error(`no adapter for language "${language}"`);
-  const module = await importAdapter(specifier, language);
+export const loadAdapter = async (language: string, importer: Importer = (specifier) => import(specifier)): Promise<LanguageAdapter> => {
+  const { specifier, module } = await importFirst(packagesFor(language), language, importer);
   if (typeof module !== "object" || module === null) throw new Error(`${specifier} did not export a module`);
   const candidate = pickExport(module);
   const broken = checkAdapter(candidate);
