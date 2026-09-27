@@ -261,6 +261,127 @@ describe("English: finds the errors", () => {
   });
 });
 
+describe("English: how a statute is written, with no false alarm", () => {
+  const act = (...rows: string[]): string => lines("Section 1 Scope", "text", "Section 2 Definitions", ...rows);
+  const cases: readonly (readonly [string, string])[] = [
+    ["a list of references that ends in the name of another law", act("Under Article 58(2)(c) to (g) and (j) of the UK GDPR.")],
+    ["a list of section references into another law", act("See sections 5(7), 29(2) and 9 of the Data Protection Act 2018.")],
+    ["a comma list of references into another law", act("Articles 6(3), 8A(3)(e) and 23(1) of the UK GDPR.")],
+    ["a gloss between the reference and the law it is in", act("as mentioned in section 4(2)(a) (exception to liability) of the Damages (Scotland) Act 2011.")],
+    ["“of that Act”", act("Section 123 of that Act is amended.")],
+    [
+      "references in a gloss after a reference into another law",
+      act("In section 120(3) of the Communications Act 2003 (conditions under section 120 or an order under section 122) omit “or”."),
+    ],
+    [
+      "an Article reference in an Act numbered by sections that cites the Articles of another law",
+      act("Articles 13 to 21 of the UK GDPR apply.", "the power in Article 23(1) to restrict obligations."),
+    ],
+    [
+      "a term defined again in another section after “In this section—”",
+      lines("Section 1 Scope", "In this section—", "“review period” means 3 years;", "Section 2 Review", "In this section—", "“review period” means 5 years;"),
+    ],
+    [
+      "a term defined again after “In this Part, …” on the same line",
+      lines("Section 1 A", "In this Part, “the seller” means A.", "Section 2 B", "In this Part, “the seller” means B."),
+    ],
+    [
+      "“This section applies where a person (“the seller”)”",
+      lines(
+        "Section 1 A",
+        "This section applies where a person (“the seller”) sells.",
+        "Section 2 B",
+        "This section applies where a person (“the seller”) re-sells.",
+      ),
+    ],
+    [
+      "“has the meaning given in” points at a definition",
+      lines("“data” means facts.", "Section 1 A", "“data” has the meaning given in section 3 of the Data Protection Act 2018."),
+    ],
+  ];
+  cases.forEach(([name, source]) => {
+    it(name, () => assert.deepEqual(found(en, source), []));
+  });
+});
+
+describe("English: the statute allowances do not hide real errors", () => {
+  it("a lowercase section reference to a section that is not there", () => {
+    assert.deepEqual(found(en, lines("Section 1 Scope", "text", "Section 2 Fees", "See section 9(2).")), [
+      ["dangling-reference", { label: "section 9(2)", target: "9.2" }],
+    ]);
+  });
+
+  it("a reference after a gloss that closed is into this document again", () => {
+    const source = lines("Section 1 Scope", "section 120 of the Communications Act 2003 (see section 5) applies, and so does section 9.");
+    assert.deepEqual(found(en, source), [["dangling-reference", { label: "section 9", target: "9" }]]);
+  });
+
+  it("an Article reference in a document numbered by articles", () => {
+    assert.deepEqual(found(en, lines("Article 1 Scope", "text", "Article 2 Fees", "See Article 9.")), [
+      ["dangling-reference", { label: "Article 9", target: "9" }],
+    ]);
+  });
+
+  it("a term defined twice in one scoped section", () => {
+    const source = lines("Section 1 Scope", "In this section—", "“review period” means 3 years;", "“review period” means 5 years;");
+    assert.deepEqual(found(en, source), [["duplicate-definition", { term: "review period", first: 3 }]]);
+  });
+
+  it("a term defined twice in sections that do not scope their definitions", () => {
+    const source = lines("Section 1 A", "“the seller” means A.", "Section 2 B", "“the seller” means B.");
+    assert.deepEqual(found(en, source), [["duplicate-definition", { term: "the seller", first: 2 }]]);
+  });
+
+  it("an Article reference in a contract numbered by sections that names no Article-numbered document", () => {
+    assert.deepEqual(found(en, lines("Section 1 Scope", "text", "Section 2 Fees", "See Article 9.")), [
+      ["dangling-reference", { label: "Article 9", target: "9" }],
+    ]);
+  });
+
+  it("a reference in a second parenthesis, after the gloss of another law closed", () => {
+    const source = lines("Section 1 Scope", "(see section 120 of the Communications Act 2003) and (see section 9).");
+    assert.deepEqual(found(en, source), [["dangling-reference", { label: "section 9", target: "9" }]]);
+  });
+
+  it("a reference two parentheses deep, after the gloss of another law closed", () => {
+    const source = lines("Section 1 Scope", "(see section 120 of the Communications Act 2003) and (as in (section 9)).");
+    assert.deepEqual(found(en, source), [["dangling-reference", { label: "section 9", target: "9" }]]);
+  });
+
+  it("an Article reference in a document numbered by articles that also cites another law's Articles", () => {
+    const source = lines("Article 1 Scope", "Article 5 of the GDPR applies.", "Article 2 Fees", "See Article 9.");
+    assert.deepEqual(found(en, source), [["dangling-reference", { label: "Article 9", target: "9" }]]);
+  });
+
+  it("“This section applies” scopes only a party named in parentheses, not a “means” definition on the same line", () => {
+    const source = lines(
+      "Section 1 A",
+      "This section applies to sales. “Services” means A.",
+      "Section 2 B",
+      "This section applies to resales. “Services” means B.",
+    );
+    assert.deepEqual(found(en, source), [["duplicate-definition", { term: "Services", first: 2 }]]);
+  });
+
+  it("“This section applies” on another line does not scope a definition", () => {
+    const source = lines(
+      "Section 1 A",
+      "This section applies to sales.",
+      "“the seller” means A.",
+      "Section 2 B",
+      "This section applies to resales.",
+      "“the seller” means B.",
+    );
+    assert.deepEqual(found(en, source), [["duplicate-definition", { term: "the seller", first: 3 }]]);
+  });
+
+  it("a list with no law named after it stays in this document", () => {
+    assert.deepEqual(found(en, lines("Section 1 Scope", "text", "Section 2 Fees", "See Sections 9, 1 and 2.")), [
+      ["dangling-reference", { label: "Sections 9", target: "9" }],
+    ]);
+  });
+});
+
 describe("Markdown: headings carry the numbers", () => {
   it("a dotted section skipped in the headings", () => {
     const source = lines("# 1 Intro", "", "## 1.1 Scope", "", "## 1.3 Terms", "", "See 1.2.");

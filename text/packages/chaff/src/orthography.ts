@@ -80,8 +80,23 @@ const leftRunBeside = (chars: readonly string[], last: number, japanese: string 
   return kind === "letter" && DIGIT.test(runStart(chars, last) ?? "") ? "after-digit" : kind;
 };
 
+/**
+ * 「第3条」「第4条第2項」の数字は番地の書き方で、空けるか詰めるかの好みではない。数えると、条番号の多い文書では
+ * 「2 か所」のような普通の書き方のほうが少数に見えてしまう。「第」のすぐ後ろの数字の並びは、両側とも数えない。
+ */
+const ORDINAL_PREFIX = "第";
+
+const isOrdinalRun = (chars: readonly string[], index: number): boolean => {
+  let first = index;
+  while (first > 0 && /[\d.]/u.test(chars[first - 1] ?? "")) first -= 1;
+  const before = chars[first - 1] === " " ? first - 2 : first - 1;
+  return chars[before] === ORDINAL_PREFIX;
+};
+
 const boundaryAt = (chars: readonly string[], index: number): Omit<Boundary, "offset"> | undefined => {
   const [left, right, after] = [chars[index], chars[index + 1], chars[index + 2]];
+  const numberAfterPrefix = left === ORDINAL_PREFIX && DIGIT.test((right === " " ? after : right) ?? "");
+  if (numberAfterPrefix || (DIGIT.test(left ?? "") && isOrdinalRun(chars, index))) return undefined;
   const touching = latinBeside(left, right, "before-digit") ?? leftRunBeside(chars, index, right);
   if (touching !== undefined) return { kind: touching, spaced: false };
   if (right !== " ") return undefined;
