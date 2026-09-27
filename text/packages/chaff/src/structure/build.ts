@@ -1,5 +1,5 @@
 import type { Heading } from "../document.ts";
-import { headingText } from "../heading-text.ts";
+import { atxHeadingText } from "../heading-text.ts";
 import { maskSpans } from "../mask.ts";
 import type { Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
@@ -162,8 +162,7 @@ const atxText = (text: string): string => {
     .trim()
     .replace(/^#{1,6}(?=[ \t]|$)/u, "")
     .trim();
-  const closing = body.search(/[ \t]#+$/u);
-  return headingText(closing === -1 ? body : body.slice(0, closing));
+  return atxHeadingText(body);
 };
 
 const readLine = (state: State, patterns: StructurePatterns, line: Line, heading: Heading | undefined): void => {

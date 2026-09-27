@@ -13,3 +13,14 @@ export const headingText = (raw: string): string => {
   const isAttributes = inner.startsWith("#") || inner.startsWith(".") || inner.startsWith(":");
   return isAttributes ? trimmed.slice(0, open).trim() : trimmed;
 };
+
+/**
+ * ATX 見出し（`## 見出し ##`）の言葉。属性を外してから、閉じの `#` を外す。
+ * `## Install ## {#install}` は閉じの `#` の後ろに属性があるので、この順でないと `##` が言葉に残る。
+ * 下線で書く見出し（setext）には使わない。そちらの末尾の `##` は本当に言葉の一部。
+ */
+export const atxHeadingText = (content: string): string => {
+  const withoutAttributes = headingText(content);
+  const closing = withoutAttributes.search(/(?:^|[ \t])#+$/u);
+  return (closing === -1 ? withoutAttributes : withoutAttributes.slice(0, closing)).trim();
+};

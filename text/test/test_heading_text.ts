@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { headingText } from "../packages/chaff/src/heading-text.ts";
+import { atxHeadingText, headingText } from "../packages/chaff/src/heading-text.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -29,6 +29,44 @@ describe("headingText", () => {
   ];
   cases.forEach(([raw, expected]) => {
     it(`${JSON.stringify(raw)} → ${JSON.stringify(expected)}`, () => assert.equal(headingText(raw), expected));
+  });
+});
+
+describe("atxHeadingText", () => {
+  const cases: readonly (readonly [string, string])[] = [
+    ["Install ## {#install}", "Install"],
+    ["Install ##", "Install"],
+    ["Install {#install}", "Install"],
+    ["C# basics", "C# basics"],
+    ["Issue #12", "Issue #12"],
+    ["##", ""],
+  ];
+  cases.forEach(([content, expected]) => {
+    it(`${JSON.stringify(content)} → ${JSON.stringify(expected)}`, () => assert.equal(atxHeadingText(content), expected));
+  });
+});
+
+describe("closing hashes before the attributes", () => {
+  const headings = (source: string): string[] =>
+    buildDocument("a.md", source, en)
+      .sections.map((section) => section.heading)
+      .filter((heading) => heading !== "");
+
+  it("reads `## Install ## {#install}` as Install", () => {
+    assert.deepEqual(headings("# Guide\n\n## Install ## {#install}\n\ntext\n"), ["Guide", "Install"]);
+  });
+
+  it("keeps a setext heading's trailing hashes, which are its words", () => {
+    assert.deepEqual(headings("Price ##\n========\n\ntext\n"), ["Price ##"]);
+  });
+
+  it("the tree's numbered heading too", () => {
+    if (ja.structure === undefined) throw new Error("no structure");
+    const tree = buildStructure(
+      { path: "a.md", source: "# 規約\n\n## 第3条（支払） ## {#a3}\n\n甲は支払う。\n", language: "ja", markdown: true },
+      ja.structure,
+    );
+    assert.equal(tree.children[0]?.children.find((node) => node.kind === "article")?.attrs["heading"], "支払");
   });
 });
 
