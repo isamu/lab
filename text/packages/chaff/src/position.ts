@@ -12,7 +12,27 @@ export const lineStarts = (source: string): number[] => {
   return starts;
 };
 
+/**
+ * offset を含む行。starts は昇順なので二分探索で引く。指摘が何千もある長い文書で、指摘ごとに全行をなめない。
+ * offset より前に行頭が無ければ（負の値、NaN）先頭の行とする。
+ */
+const lineIndexOf = (starts: readonly number[], offset: number): number => {
+  let low = 0;
+  let high = starts.length - 1;
+  let found = 0;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    if ((starts[middle] ?? Number.POSITIVE_INFINITY) <= offset) {
+      found = middle;
+      low = middle + 1;
+    } else {
+      high = middle - 1;
+    }
+  }
+  return found;
+};
+
 export const placeOf = (starts: readonly number[], offset: number): Place => {
-  const index = starts.reduce((best, start, at) => (start <= offset ? at : best), 0);
+  const index = lineIndexOf(starts, offset);
   return { line: index + 1, column: offset - (starts[index] ?? 0) + 1 };
 };

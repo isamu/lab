@@ -44,3 +44,28 @@ describe("オフセットは UTF-16 単位で揃える", () => {
     assert.match(source.split("\n")[(padded?.line ?? 1) - 1] ?? "", /近年/u);
   });
 });
+
+describe("placeOf over generated documents", () => {
+  // 性質: offset を含む行は、行頭が offset 以下のもののうち最後の行。行頭より前（負、NaN）は 1 行目。
+  const expectedLine = (starts: readonly number[], offset: number): number => starts.reduce((line, start, index) => (start <= offset ? index + 1 : line), 1);
+  const PIECES = ["", "a", "\n", "\n\n", "あ", "😀", "\r\n", "abc\n"];
+  const SEED = 20260927;
+
+  it(`agrees with the property on every line boundary (seed ${String(SEED)})`, () => {
+    let seed = SEED;
+    const next = (): number => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return seed / 2147483648;
+    };
+    Array.from({ length: 500 }).forEach(() => {
+      const source = Array.from({ length: Math.floor(next() * 30) }, () => PIECES[Math.floor(next() * PIECES.length)] ?? "").join("");
+      const starts = lineStarts(source);
+      const offsets = [-1, 0, Number.NaN, source.length, source.length + 3, ...starts.flatMap((start) => [start - 1, start, start + 1])];
+      offsets.forEach((offset) => {
+        const place = placeOf(starts, offset);
+        assert.equal(place.line, expectedLine(starts, offset), `${JSON.stringify(source)} @ ${String(offset)}`);
+        assert.equal(Object.is(place.column, offset - (starts[place.line - 1] ?? 0) + 1), true);
+      });
+    });
+  });
+});
