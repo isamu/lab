@@ -1,0 +1,27 @@
+id: preferred-term
+layer: L2
+status: experimental
+how_to_find: preferred-term
+word_list: preferred-term
+severity: warning
+
+name:
+  ja: チームの表記と違う
+  en: Not the team's spelling
+
+why:
+  ja: 同じものを「サーバー」とも「サーバ」とも書くと、読み手は別のものかと迷い、検索でも片方を取りこぼします。どちらに寄せるかはチームごとに違うので、chaff.yaml の prefer に「使わない書き方」と「使う書き方」の組を自分で並べてください。並べていなければ何も言いません。
+  en: Writing the same thing two ways ("e-mail" and "email") makes a reader wonder whether they differ, and a search misses one of them. Which way wins is the team's choice, so list pairs (the spelling to avoid, then the one to use) under `prefer` in chaff.yaml. With nothing listed, this rule says nothing.
+
+message:
+  ja: 「{matched}」は「{preferred}」と書きます
+  en: 'Write "{preferred}", not "{matched}"'
+
+how_to_fix:
+  ja: 「{preferred}」に直してください。固有名詞など、そのままにすべき箇所なら stet で理由を添えて黙らせます。
+  en: Change it to "{preferred}". Where it must stay (a product's own name, a quotation), silence it with stet and the reason.
+
+# チームが並べた書き方なので、1 つでも指摘する。並べた時点で「使わない」と決めている。
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, blog, technical]

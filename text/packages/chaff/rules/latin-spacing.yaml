@@ -1,0 +1,27 @@
+id: latin-spacing
+layer: L3
+status: experimental
+how_to_find: latin-spacing
+languages: [ja]
+severity: warning
+
+name:
+  ja: 英数字の前後の空白がそろっていない
+  en: Spacing around Latin text is inconsistent
+
+why:
+  ja: 日本語と英字・数字のあいだを空けるか詰めるかは、どちらでも読めます。困るのは一つの文書の中で混ざることで、読み手には違いに意味があるように見えます。chaff はどちらが正しいかを決めず、文書の中で少ないほうを指摘します。英字と、数字の前、数字の後ろは別々に数えます。「を 3回」のように、数字の前は空けて助数詞とは詰める書き方がふつうにあるからです。
+  en: Whether to put a space between Japanese and Latin letters or digits is a choice either way. What reads badly is mixing both in one document, which suggests the difference means something. chaff does not decide which is right; it points at whichever the document uses less. Letters, the space before a digit and the space after one are counted separately, since spacing before a number but not before its counter is common.
+
+message:
+  ja: "日本語と{kind}のあいだを{style}（この文書はふつう{usual}。{of} 箇所のうち {count} 箇所が違う）"
+  en: "Spacing between Japanese and {kind} differs here ({count} of {of})"
+
+how_to_fix:
+  ja: 文書の多いほうの書き方に合わせてください。チームで決めているなら、STYLE.md に書いておくと迷いません。
+  en: Match the way the rest of the document does it. If the team has decided, write it in the style guide.
+
+# 何箇所違えば指摘するか。1 は「1 箇所でも混ざっていれば」。
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, blog, technical]

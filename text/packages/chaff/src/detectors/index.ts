@@ -14,6 +14,7 @@ import { paragraphLength, paragraphVariance, preambleLength, ruleOfThree, sectio
 import { concreteEvidence, dashDensity, emojiDensity, ngramRepetition, undefinedAcronym } from "./signals.ts";
 import { aiTell, contractionMix, cushionDensity, hedgingDensity, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
+import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { danglingReference, duplicateDefinition, numberingGap } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -54,6 +55,8 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "internal-jargon": internalJargon,
   "required-sections": requiredSections,
   "proper-noun-density": properNounDensity,
+  "preferred-term": preferredTerm,
+  "latin-spacing": latinSpacing,
   "dangling-reference": danglingReference,
   "numbering-gap": numberingGap,
   "duplicate-definition": duplicateDefinition,

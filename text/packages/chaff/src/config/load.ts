@@ -20,6 +20,8 @@ export type Config = {
   readonly confidenceThreshold: number;
   /** チームの言葉。社内でしか通じない語を、チームが自分で並べる。 */
   readonly jargon: readonly string[];
+  /** チームの表記。{ 使わない書き方: 使う書き方 }。「サーバー」ではなく「サーバ」、のように。 */
+  readonly prefer: Readonly<Record<string, string>>;
   /** この種類の文書に無いと困る見出し。チームが自分で決める。 */
   readonly requiredSections: readonly string[];
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
@@ -41,6 +43,7 @@ export const EMPTY: Config = {
   aiModel: defaultModel(DEFAULT_BACKEND),
   confidenceThreshold: 0.7,
   jargon: [],
+  prefer: {},
   requiredSections: [],
   byPath: [],
   baseDir: process.cwd(),
@@ -72,6 +75,18 @@ const toPathRule = (raw: unknown): PathRule | undefined => {
 /** 利用者が書く語の並び。空白だけのものは落とす。 */
 const wordsOf = (raw: unknown): string[] => (Array.isArray(raw) ? raw.map((entry) => String(entry).trim()).filter((entry) => entry.length > 0) : []);
 
+/** 両側とも空でない文字列の対だけを読む。同じ語どうし（「サーバ: サーバ」）は何も言えないので捨てる。 */
+const preferOf = (raw: unknown): Record<string, string> =>
+  isRecord(raw)
+    ? Object.fromEntries(
+        Object.entries(raw).flatMap(([avoid, use]): [string, string][] => {
+          const from = avoid.trim();
+          const to = typeof use === "string" ? use.trim() : "";
+          return from !== "" && to !== "" && from !== to ? [[from, to]] : [];
+        }),
+      )
+    : {};
+
 const byPathOf = (raw: unknown): PathRule[] => (Array.isArray(raw) ? raw.map(toPathRule).filter((rule) => rule !== undefined) : []);
 
 /** 設定ファイルが無くても動く。あっても、既定から変えたものだけが書かれている。spec §18。 */
@@ -90,6 +105,7 @@ export const loadConfig = (path: string): Config => {
     aiModel: str(raw["ai_model"]) ?? defaultModel(backend),
     confidenceThreshold: typeof raw["confidence_threshold"] === "number" ? raw["confidence_threshold"] : 0.7,
     jargon: wordsOf(raw["jargon"]),
+    prefer: preferOf(raw["prefer"]),
     requiredSections: wordsOf(raw["required_sections"]),
     byPath: byPathOf(raw["by_path"]),
     baseDir: dirname(path),

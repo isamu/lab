@@ -677,7 +677,7 @@ detector は言語を知らず、profile から渡された正規表現の配列
 
 ### 10.1 チームが決める rule
 
-3 つの rule は、**chaff が中身を持たない**。チームが `chaff.yaml` に書いたものだけを見る。
+4 つの rule は、**chaff が中身を持たない**。チームが `chaff.yaml` に書いたものだけを見る。
 
 ```yaml
 jargon:            # 社内でしか通じない語
@@ -688,7 +688,14 @@ jargon:            # 社内でしか通じない語
 required_sections: # この種類の文書に無いと困る見出し
   - リスク
   - 費用
+
+prefer:            # チームの表記。使わない書き方: 使う書き方
+  サーバー: サーバ
+  ユーザ: ユーザー
 ```
+
+`preferred-term` は「使う書き方」の一部として現れた「使わない書き方」を数えない（「ユーザー」の中の「ユーザ」）。
+両側が同じ組、空の側がある組は読まない。
 
 何が社内用語かも、何の節が必須かも、組織ごとに違う。**chaff が決めると、決めた内容が合わない組織で
 rule ごと切られる。** 書いていなければ何も言わない（「用語を登録してください」とも言わない）。
@@ -760,6 +767,7 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `unqualified-superlative` ✅ | phrase-match + 限定句の不在 | business | warning |
 | `unsourced-number` | pattern-cooccurrence | business | warning |
 | `internal-jargon` ✅ | phrase-match（ユーザー辞書） | business | warning |
+| `preferred-term` | チームの表記（`prefer`） | 両方 | warning |
 | `repeated-conjunction` ✅ | 段落先頭の語彙照合 | 両方 | warning |
 | `ai-tell` ✅ | weighted phrase-match | blog | info |
 | `padded-intro` | phrase-match（冒頭限定） | blog | warning |
