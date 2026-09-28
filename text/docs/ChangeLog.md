@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `total-mismatch` adds a table column of bare numbers (#170)
+
+A table column whose cells hold only numbers, with the unit in its header (`| Room | Hours booked |`), is now added up
+against its total row. It is added only when every cell above the total is a number and the total is larger than each
+item. A column headed with %, or holding only same-width numbers written without commas (years, IDs), is left alone,
+as is a column mixing bare numbers and amounts with a unit; lists are read as before. A negative total is shown with its
+sign.
+
 ### English sentences end after a number (#170)
 
 "We opened in 2026. We shipped in May." is now two sentences. sentence-splitter read any number followed by a period
