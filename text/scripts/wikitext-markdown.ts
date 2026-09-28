@@ -80,6 +80,8 @@ const RENDERERS: Readonly<Record<string, (params: Params) => string>> = {
  * "Airport, but", and "a {{x}} b" becomes "a b". Spaces the writer typed ("Wait ... then") are left as they are.
  */
 const DROPPED = "\uE000";
+/** Drops next to each other, with or without spaces between, are one drop. */
+const DROPPED_SPACED = /\uE000[ \t]+(?=\uE000)/gu;
 const DROPPED_RUN = /\uE000{2,}/gu;
 const DROPPED_GAP = /[ \t]?\uE000(?:([,.;:!?)])|[ \t])/gu;
 
@@ -121,6 +123,7 @@ const inlineText = (text: string): string =>
       .replace(/<\/?[a-z][^>]*>/giu, "")
       .replace(/'{2,5}/gu, ""),
   )
+    .replace(DROPPED_SPACED, "")
     .replace(DROPPED_RUN, DROPPED)
     .replace(DROPPED_GAP, (_gap: string, after: string | undefined) => after ?? " ")
     .replace(/\uE000/gu, "");
