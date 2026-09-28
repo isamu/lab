@@ -1,4 +1,5 @@
 import { loadLexicons } from "./lexicons.ts";
+import { unmarkNumberStops } from "./number-stop.ts";
 import { sentenceSpans } from "./sentence-split.ts";
 import { structure } from "./structure.ts";
 import { isReady, prepare, tokenize } from "./pos.ts";
@@ -23,8 +24,8 @@ const withTokens = (sentence: Sentence): Sentence => {
 };
 
 /**
- * 英語は sentence-splitter の既定で足りる。"Dr." "e.g." "U.S." "$3.50" を
- * いずれも文末と誤認しない。日本語のような後処理は要らない。spec §7.2。
+ * 英語は sentence-splitter の既定にほぼ任せる。"Dr." "e.g." "U.S." "$3.50" を
+ * いずれも文末と誤認しない。前処理は、行の途中の番号を箇条書きと読ませないことだけ。spec §7.2。
  */
 export const adapter: LanguageAdapter = {
   kind: "language",
@@ -51,7 +52,7 @@ export const adapter: LanguageAdapter = {
   lexicons: loadLexicons(),
   structure,
   segment: (text: string): Segmentation => {
-    const sentences: Sentence[] = sentenceSpans(text).map((span) => ({ span, text: text.slice(span.start, span.end) }));
+    const sentences: Sentence[] = sentenceSpans(unmarkNumberStops(text)).map((span) => ({ span, text: text.slice(span.start, span.end) }));
     return { sentences: isReady() ? sentences.map(withTokens) : sentences };
   },
 };

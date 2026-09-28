@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### English sentences end after a number (#170)
+
+"We opened in 2026. We shipped in May." is now two sentences. sentence-splitter read any number followed by a period
+as a list number and never ended a sentence there, so `max-sentence-length` reported long sentences that were two, and
+per-paragraph sentence counts came out low. A number that starts its line ("1. First item"), or is followed by a
+lowercase word, is still not a sentence end.
+
 ### `concrete-evidence-density` counts numbers written in kanji (#170)
 
 A section that gives `二割`, `十五分`, `一件` or `一万円` now counts as holding a concrete number, like one with digits.
