@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### Relative references are read and checked, in a statute (#138)
+
+With the `statute` profile, `前条` `次項` `同号` `本条` `前各項` `前二項` `前条第二項` and an address written without
+its article (`第一項`, `第二号`) get an address from where they are written, so `dangling-reference` checks them like
+`第二十条第一項`. `前・次` count within the same article or paragraph (articles across the whole document); `同` is the
+last address named at that depth, so `前項` does not change what `同条` means. A bare address continues a list
+(`第三十三条第七項若しくは第九項`, `第二十七条（第四項を除き、第五項…）`). Inside a 読み替え quote they are not read,
+and one that cannot be placed (the `前条` of the first article, one after `別表第一第一号`) is left out rather than
+guessed. The words, units and list joiners are all in the profile's `relative` section. A reference into another law
+written with an abbreviation in its law-number note (`…（平成十三年法律第百四十号。以下「X」という。）第二条`) is now read
+as that law's.
+
 ### A caption line before an article is its heading, in a statute (#138)
 
 A statute puts an article's caption on the line above it (`（解雇の予告）` then `第二十条　…`). With the `statute`
