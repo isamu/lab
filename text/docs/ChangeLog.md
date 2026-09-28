@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` knows more common acronyms (#170)
+
+Acronyms most readers know without an expansion — DNS, IP, TCP, SSH, TLS, UTF, PC, IT, SDK, PNG, GB, CEO, US, EU and
+similar — are no longer reported. Field and in-house acronyms (KEP, SIG, EMEA, APAC) still are. Found on the Kubernetes
+docs and the GitLab Handbook in the corpus.
+
 ### `max-kanji-continuous` does not count a postal address (#170)
 
 An address such as 東京都港区新橋二丁目 is written the only way it can be, so it is no longer reported as a long run of
