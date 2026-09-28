@@ -9,7 +9,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import type { Finding, LanguageAdapter, StructurePatterns } from "../packages/chaff/src/plugin.ts";
-import { citedDocument } from "../packages/lang-ja/src/citation.ts";
+import { citationVocabulary, citedDocument } from "../packages/lang-ja/src/citation.ts";
 import { citedDocumentAfter } from "../packages/lang-en/src/citation.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 
@@ -480,7 +480,14 @@ describe("日本語: 他の文書の条を指す参照は、この文書では�
     ["第3条", undefined],
   ];
   names.forEach(([text, expected]) => {
-    it(`citedDocument: ${text} → ${String(expected)}`, () => assert.equal(citedDocument(text, text.lastIndexOf("第")), expected));
+    it(`citedDocument: ${text} → ${String(expected)}`, () =>
+      assert.equal(citedDocument(text, text.lastIndexOf("第"), citationVocabulary(ja.lexicons)), expected));
+  });
+
+  it("文書の種類の語は、語彙表の並びによらず長いものから当てる。「法律」だけの名前は「法」の文書にしない", () => {
+    const shortFirst = citationVocabulary({ "document-kind": [{ pattern: "法" }, { pattern: "法律" }] });
+    assert.deepEqual(shortFirst.kinds, ["法律", "法"]);
+    assert.equal(citedDocument("法律第3条", "法律".length, shortFirst), undefined);
   });
 });
 

@@ -1,0 +1,26 @@
+# 文書の種類を表す語。名前がこれで終われば、その直後の「第N条」はその文書の条（「民法第709条」「契約書第6条」）。
+# 名前が種類の語だけ（「契約第3条」）なら、どの文書か決まらないので他の文書にしない。長いものから当てる。
+id: document-kind
+language: ja
+entries:
+  - pattern: ガイドライン
+  - pattern: 契約書
+  - pattern: 法律
+  - pattern: 条例
+  - pattern: 条約
+  - pattern: 契約
+  - pattern: 規約
+  - pattern: 規程
+  - pattern: 規則
+  - pattern: 約款
+  - pattern: 細則
+  - pattern: 要綱
+  - pattern: 要領
+  - pattern: 指針
+  - pattern: 基準
+  - pattern: 協定
+  - pattern: 覚書
+  - pattern: 告示
+  - pattern: 通達
+  - pattern: 法
+  - pattern: 令

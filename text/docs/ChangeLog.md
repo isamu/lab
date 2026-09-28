@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### lang-ja reads other documents' names from word lists (#151)
+
+The words that make another document's name (`民法第709条`, `契約書第6条`) — the kinds of document, the law titles that
+contain kana, the promulgation note after a title, and 本/当 for this document — moved from lang-ja's code into its word
+lists (`document-kind`, `kana-title-kind`, `name-note`, `self-prefix`). They stay in the language package, not the
+`statute` profile, because contracts and other documents cite laws too. Output is unchanged.
+
 ### Old-style paragraphs come from the statute profile (#151)
 
 Old statutes number no paragraph after the first; an indented line inside an article whose line carries body text is
