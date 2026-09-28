@@ -40,6 +40,16 @@ describe("L3 日本語", () => {
       assert.ok(!idsFor("運用を始めます。手順を作ります。効果は測定しません。準備は十分でした。").includes("no-mixed-desumasu"));
     });
 
+    it("valid: 文の途中の丁寧語（引用、連体）は文末の調子ではない", () => {
+      assert.ok(!idsFor("運用を始める。手順を作る。本文では「ご覧ください」という表現を使う。効果を測定する。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始める。手順を作る。作成してくださいという表示を出す。効果を測定する。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始める。手順を作る。「確認します」と書いた欄を置く。効果を測定する。").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: 文末の終助詞と添えた括弧の手前を見る（でしたか・です（§3））", () => {
+      assert.ok(!idsFor("運用を始めます。手順を作ります。準備は十分でしたか。この件は重要です（§3）。").includes("no-mixed-desumasu"));
+    });
+
     it("invalid: である調の中の「〜ください」は、ですます調として少数派になる", () => {
       assert.ok(idsFor("運用を始める。手順を作る。効果は来期に測定する。詳しくは手順書をご覧ください。").includes("no-mixed-desumasu"));
     });
