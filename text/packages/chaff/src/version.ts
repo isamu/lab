@@ -8,7 +8,25 @@ import { dirname, join } from "node:path";
  */
 const MANIFEST = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
 
-const versionOf = (raw: unknown): string =>
-  typeof raw === "object" && raw !== null && "version" in raw && typeof raw.version === "string" ? raw.version : "0.0.0";
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
-export const VERSION = versionOf(JSON.parse(readFileSync(MANIFEST, "utf8")));
+const versionOf = (raw: unknown): string => (isRecord(raw) && typeof raw["version"] === "string" ? raw["version"] : "0.0.0");
+
+const BUNDLED = /^@chaffjs\/lang-/u;
+
+/**
+ * `chaff --version` の行。chaffjs と、同梱の言語パッケージ。chaffjs は言語パッケージをちょうどの版で依存に書くので、manifest がそのまま答え。
+ */
+export const versionLines = (raw: unknown): string[] => {
+  const dependencies = isRecord(raw) && isRecord(raw["dependencies"]) ? raw["dependencies"] : {};
+  const bundled = Object.entries(dependencies)
+    .filter((entry): entry is [string, string] => BUNDLED.test(entry[0]) && typeof entry[1] === "string")
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([name, version]) => `${name} ${version}`);
+  return [`chaffjs ${versionOf(raw)}`, ...bundled];
+};
+
+const manifest: unknown = JSON.parse(readFileSync(MANIFEST, "utf8"));
+
+export const VERSION = versionOf(manifest);
+export const VERSION_LINES = versionLines(manifest);

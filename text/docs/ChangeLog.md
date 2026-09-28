@@ -12,6 +12,11 @@ definition, joined sentences, a mixed register, nested 「の」, a dropped acro
 chaff finds near their line and what it reports on the clean samples, against `test/fixtures/bench/expected.txt`
 (`yarn bench --update` accepts a change).
 
+### `chaff --version` (#174)
+
+`chaff --version` (or `-v`) prints the version of chaffjs and of the language packages it bundles, one per line, and
+exits 0. Before, `--version` was taken for a file to check.
+
 ### A plain-text specification's top-level sections are read (#170)
 
 In a `.txt` document written like an RFC, a top-level heading such as `5.  Security Considerations` (a number, a dot,

@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { targetsOf } from "../packages/chaff/src/cli-args.ts";
 import { main } from "../packages/chaff/src/cli.ts";
+import { versionLines } from "../packages/chaff/src/version.ts";
 
 describe("検査するものの取り出し", () => {
   const cases: readonly (readonly [string, readonly string[], readonly string[]])[] = [
@@ -96,5 +97,31 @@ describe("--genre で、この実行のジャンルを決める", () => {
     assert.equal(result.code, 1);
     assert.match(result.err, /business\/novel/u);
     assert.match(result.err, /chaff genres/u);
+  });
+});
+
+describe("--version", () => {
+  it("chaffjs と、同梱の言語パッケージ（@chaffjs/lang-*）の版を名前順に並べる。ほかの依存は出さない", () => {
+    const manifest = { version: "1.2.3", dependencies: { yaml: "^2.9.0", "@chaffjs/lang-ja": "0.9.0", "@chaffjs/lang-en": "0.8.0" } };
+    assert.deepEqual(versionLines(manifest), ["chaffjs 1.2.3", "@chaffjs/lang-en 0.8.0", "@chaffjs/lang-ja 0.9.0"]);
+  });
+
+  it("版や依存の書き方が読めなければ、読めるものだけ", () => {
+    assert.deepEqual(versionLines({ dependencies: { "@chaffjs/lang-ja": 9 } }), ["chaffjs 0.0.0"]);
+    assert.deepEqual(versionLines(undefined), ["chaffjs 0.0.0"]);
+  });
+
+  ["--version", "-v"].forEach((flag) => {
+    it(`${flag} は版を出して 0 で終わる。ファイルとして探さない`, async () => {
+      const printed: string[] = [];
+      const log = console.log;
+      console.log = (line: unknown) => printed.push(String(line));
+      try {
+        assert.equal(await main([flag]), 0);
+      } finally {
+        console.log = log;
+      }
+      assert.match(printed.join("\n"), /^chaffjs \d+\.\d+\.\d+\n@chaffjs\/lang-en \S+\n@chaffjs\/lang-ja \S+$/u);
+    });
   });
 });
