@@ -181,8 +181,24 @@ const weekdayAfter = (text: string, end: number): number | undefined => {
   return written === undefined ? undefined : WEEKDAY_CHARS.indexOf(written);
 };
 
+/** 元号の最初の年の前年（令和1年 = 2019 年）。元号で書いた日付を西暦の日付にする。 */
+const ERA_BASE: Readonly<Record<string, number>> = { 令和: 2018, 平成: 1988, 昭和: 1925, 大正: 1911, 明治: 1867 };
+const ERA_BEFORE = /(?<era>令和|平成|昭和|大正|明治)$/u;
+/** 月の付いた日付の年を直す。年だけ（「昭和二十二年法律」）は 1000 に届かないので、はじめから日付でなく期間の数量。 */
+const ERA_DATE = /^(?<year>\d{1,2})-(?<rest>.+)$/u;
+
+const inWesternYear = (text: string, date: Mention): Mention => {
+  const parts = ERA_DATE.exec(String(date.attrs["value"]))?.groups;
+  const era = ERA_BEFORE.exec(text.slice(Math.max(0, date.start - 2), date.start))?.groups?.["era"];
+  const base = era === undefined ? undefined : ERA_BASE[era];
+  if (parts === undefined || era === undefined || base === undefined) return date;
+  const value = `${String(base + Number(parts["year"]))}-${parts["rest"] ?? ""}`;
+  return { ...date, start: date.start - era.length, attrs: { ...date.attrs, value } };
+};
+
 export const dates = (text: string): Mention[] =>
-  toDates(counted(text)).dates.map((date) => {
+  toDates(counted(text)).dates.map((found) => {
+    const date = inWesternYear(text, found);
     const weekday = weekdayAfter(text, date.end);
     return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
   });

@@ -48,6 +48,15 @@ describe("日本語: 日付のすぐ後ろの曜日", () => {
     assert.deepEqual(weekdays(ja, "2026年10月1日 木曜日"), [4]);
   });
 
+  it("元号で書いた日付も西暦にして比べる。年だけの元号は数量のまま", () => {
+    assert.deepEqual(
+      (ja.structure?.dates?.("令和8年10月1日（木）") ?? []).map((mention) => [mention.attrs["value"], mention.attrs["weekday"]]),
+      [["2026-10-01", 4]],
+    );
+    assert.deepEqual(found("# 旅程\n\n令和8年10月1日（金）に出発する。", ja, "ja"), ["2026-10-01:金曜日:木曜日"]);
+    assert.deepEqual(ja.structure?.dates?.("昭和二十二年法律第四十九号") ?? [], []);
+  });
+
   it("曜日でないもの（木村さん、木の机）は読まない", () => {
     assert.deepEqual(weekdays(ja, "2026年10月1日、木村さんが来る"), [undefined]);
     assert.deepEqual(weekdays(ja, "2026年10月1日（木の机を運ぶ）"), [undefined]);
@@ -72,8 +81,10 @@ describe("English: the weekday beside a date", () => {
     assert.deepEqual(weekdays(en, "Thursday, October 1, 2026"), [4]);
   });
 
-  it("not a weekday: a verb, a day word far away, a possessive", () => {
+  it("not a weekday: a verb, a day word far away, a possessive, the next sentence, a range", () => {
     assert.deepEqual(weekdays(en, "We met on Monday. On 1 October 2026 we left."), [undefined]);
+    assert.deepEqual(weekdays(en, "On 2 October 2026, Sat down with the team."), [undefined]);
+    assert.deepEqual(weekdays(en, "The fair runs 1-3 October 2026 (Thursday)."), [undefined]);
     assert.deepEqual(weekdays(en, "Held 2 October 2026, Tuesday's notes attached."), [undefined]);
     assert.deepEqual(weekdays(en, "May 2026 was busy."), [undefined]);
   });

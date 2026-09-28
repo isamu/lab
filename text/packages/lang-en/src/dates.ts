@@ -65,8 +65,10 @@ const WEEKDAYS: readonly RegExp[] = [
 ];
 const DAY_WORD = "[A-Z][a-z]{2,8}";
 const WEEKDAY_BEFORE = new RegExp(`(?<day>${DAY_WORD})\\.?,?\\s+$`, "u");
-/** After the date, the day word must end there: "(Thursday)" or "Thursday," but not "Tuesday's meeting". */
-const WEEKDAY_AFTER = new RegExp(`^,?\\s*\\(?(?<day>${DAY_WORD})\\)?(?=[\\s,.;:)]|$)`, "u");
+/** After the date, only a weekday in parentheses: "(Thursday)". A bare word there may start the next sentence ("Sat down"). */
+const WEEKDAY_AFTER = new RegExp(`^,?\\s*\\((?<day>${DAY_WORD})\\)`, "u");
+/** The end of a range, "1-3 October 2026": a weekday beside it could belong to either end, so it is not read. */
+const RANGE_BEFORE = /\d\s*[-–—]\s*$/u;
 
 const weekdayOf = (word: string | undefined): number | undefined => {
   const index = word === undefined ? -1 : WEEKDAYS.findIndex((pattern) => pattern.test(word));
@@ -75,6 +77,7 @@ const weekdayOf = (word: string | undefined): number | undefined => {
 
 /** The weekday written right before or after a date. Sunday is 0. */
 const withWeekday = (text: string, date: Mention): Mention => {
+  if (RANGE_BEFORE.test(text.slice(Math.max(0, date.start - 6), date.start))) return date;
   const before = weekdayOf(WEEKDAY_BEFORE.exec(text.slice(Math.max(0, date.start - 16), date.start))?.groups?.["day"]);
   const weekday = before ?? weekdayOf(WEEKDAY_AFTER.exec(text.slice(date.end, date.end + 16))?.groups?.["day"]);
   return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
