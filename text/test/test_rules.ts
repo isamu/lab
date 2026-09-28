@@ -81,6 +81,26 @@ describe("repeated-sentence-head", () => {
     // 誤検知しやすい正常な文章。「はい。」の連続を反復と呼ばない。
     assert.ok(!idsFor("はい。はい。はい。はい。はい。").includes("repeated-sentence-head"));
   });
+  it("valid: 箇条書きの項目は同じ形で並べるもの。数えない（SRE NEXT 定款の目的の並び）", () => {
+    const list = ["- SRE に関するカンファレンスを開く。", "- SRE に関する勉強会を開く。", "- SRE に関する記事を出す。", "- SRE に関する調査をする。"].join(
+      "\n",
+    );
+    assert.ok(!idsFor(`# 目的\n\n${list}\n`).includes("repeated-sentence-head"));
+  });
+  it("箇条書きをまたいで、前後の地の文を一つの連なりにしない", () => {
+    const source = ["そしてこれは一です。そしてこれは二です。", "", "- 項目。", "", "そしてこれは三です。そしてこれは四です。"].join("\n");
+    assert.ok(!idsFor(source).includes("repeated-sentence-head"));
+  });
+  it("文を持たない項目（画像だけ）の箇条書きでも、前後の地の文を一つの連なりにしない", () => {
+    const source = ["そしてこれは一です。そしてこれは二です。", "", "- ![図](a.png)", "", "そしてこれは三です。そしてこれは四です。"].join("\n");
+    assert.ok(!idsFor(source).includes("repeated-sentence-head"));
+  });
+  it("invalid: 一つの項目の中の段落で続くなら数える（項目をまたぐのとは違う）", () => {
+    assert.ok(idsFor("- 導入です。そしてこれは一です。そしてこれは二です。そしてこれは三です。そしてこれは四です。").includes("repeated-sentence-head"));
+  });
+  it("invalid: 地の文の段落の中なら、これまでどおり数える", () => {
+    assert.ok(idsFor("- 項目。\n\nそしてこれは一です。そしてこれは二です。そしてこれは三です。そしてこれは四です。").includes("repeated-sentence-head"));
+  });
 });
 
 describe("sentence-rhythm", () => {

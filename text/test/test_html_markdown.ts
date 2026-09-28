@@ -55,12 +55,38 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(html), "# Report\n\n## Summary\n\n### Detail\n\nText.\n");
   });
 
+  it("main 要素があればその中だけを読み、無ければページ全体を読む", () => {
+    const html = '<header><a href="/">ホーム</a><p>サイト名</p></header><main id="main"><h1>第1回検討会</h1><p>議事要旨。</p></main><div><p>所在地</p></div>';
+    assert.equal(htmlToMarkdown(html), "# 第1回検討会\n\n議事要旨。\n");
+    assert.equal(htmlToMarkdown("<div><h1>報告</h1><p>本文。</p></div>"), "# 報告\n\n本文。\n");
+    assert.equal(htmlToMarkdown('<script>const tpl = "<main>";</script><main><p>本文。</p></main>'), "本文。\n");
+  });
+
+  it("aside・footer・form (検索窓) を落とす", () => {
+    const html =
+      '<form action="/search"><label for="q">サイト内検索</label><input id="q"></form><h1>計画</h1><p>本文。</p>' +
+      "<aside><p>関連ページ</p></aside><footer><p>© 2024 Example Office</p></footer>";
+    assert.equal(htmlToMarkdown(html), "# 計画\n\n本文。\n");
+  });
+
+  it("リンクだけの項目から成る一覧 (メニュー) はページ外へのリンクでも落とし、文の混じる一覧は残す", () => {
+    const html =
+      '<ul><li><a href="/about">紹介</a></li><li><a href="/news">報道</a><ul><li><a href="/news/2024">2024年</a></li></ul></li></ul>' +
+      '<p>本文。</p><ul><li><a href="/a.pdf">資料1</a>（PDF）</li></ul>';
+    assert.equal(htmlToMarkdown(html), "本文。\n\n- 資料1（PDF）\n");
+  });
+
+  it("XML 宣言は本文にしない", () => {
+    assert.equal(htmlToMarkdown('<?xml version="1.0" encoding="Shift_JIS"?><html><body><p>本文。</p></body></html>'), "本文。\n");
+  });
+
   it("脚注の上付き番号は落とし、ほかの上付き文字は残す", () => {
     assert.equal(htmlToMarkdown('<p>Costs rose.<sup><a href="#fn1" name="ifn1">1</a></sup> The 25<sup>th</sup> year.</p>'), "Costs rose. The 25th year.\n");
   });
 
   it("タグを外してから文字参照を戻すので、書かれた < > は文字のまま", () => {
     assert.equal(htmlToMarkdown("<p>If a &lt; b &amp;&amp; c&gt;d &mdash; &#x41;&#66;</p>"), "If a < b && c>d — AB\n");
+    assert.equal(htmlToMarkdown("<p>&larr; &uarr; &rarr; &darr;</p>"), "← ↑ → ↓\n");
   });
 });
 

@@ -13,6 +13,20 @@ heading. New self-written samples in both languages cover a press release, an em
 table of figures, a README and a blog post. A mistake is planted only where its rule runs (its languages and genres),
 and the bench passes the team's jargon and required sections as `chaff.yaml` would.
 
+### Japanese government reports, minutes, plans and specifications in the corpus (#170)
+
+The corpus now holds pages from 総務省's 情報通信白書 (URL only) and デジタル庁's annual report, council minutes, policy
+plans and data specifications (committed under 公共データ利用規約（第1.0版）with attribution). `yarn corpus:fetch` reads a
+page in the encoding it declares (Shift_JIS as well as UTF-8), and the HTML conversion reads only `<main>` when there is
+one and drops asides, footers, forms, XML declarations and lists made only of links.
+
+### `repeated-sentence-head` leaves list items alone (#170)
+
+Items of a list are written in parallel on purpose (`1. SRE に関するカンファレンス…`, `2. SRE に関する…`, "Take a look
+at …"), so a run of sentences opening the same way no longer continues from one item to the next. Prose before and
+after a list does not join into one run either. Inside one item's paragraph, or in running prose, runs are reported as
+before.
+
 ### `ngram-repetition` counts phrasing, not the name of the subject (#170)
 
 A long report naturally repeats its subject (`state and local tax`, `the HTTP status code`, `the Disclosing Party`), and
