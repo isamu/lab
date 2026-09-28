@@ -1,6 +1,8 @@
 import type { Heading } from "../document.ts";
 import { atxHeadingText, headingText } from "../heading-text.ts";
 import { addressSpans } from "../address-chain.ts";
+import { relativeMentions } from "./relative-find.ts";
+import { resolveRelative } from "./relative-resolve.ts";
 import { maskSpans } from "../mask.ts";
 import type { DocumentProfile, Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
@@ -118,11 +120,22 @@ const outsideAddresses = (mentions: readonly Mention[], text: string, profile: D
   return spans.length === 0 ? mentions : mentions.filter((mention) => !spans.some((span) => span.start <= mention.start && mention.end <= span.end));
 };
 
+/** 番地を名指しした参照（第百五十七条第一項）の一部は、相対の参照ではない。 */
+const withoutAbsolute = (relative: readonly Mention[], absolute: readonly Mention[]): readonly Mention[] =>
+  relative.filter((mention) => !absolute.some((other) => mention.start < other.end && other.start < mention.end));
+
 type LeafFinder = (patterns: StructurePatterns, text: string, profile: DocumentProfile | undefined) => readonly Mention[];
 
 const LEAVES: readonly { readonly kind: StructureKind; readonly find: LeafFinder }[] = [
   { kind: "definition", find: (patterns, text) => patterns.definitions(text) },
   { kind: "reference", find: (patterns, text) => patterns.references(text) },
+  {
+    kind: "reference",
+    find: (patterns, text, profile) => {
+      const absolute = patterns.references(text);
+      return withoutAbsolute(relativeMentions(text, profile, patterns.number, absolute), absolute);
+    },
+  },
   { kind: "obligation", find: (patterns, text) => patterns.obligations(text) },
   { kind: "quantity", find: (patterns, text, profile) => outsideAddresses(patterns.quantities(text), text, profile) },
   { kind: "date", find: (patterns, text) => patterns.dates?.(text) ?? [] },
@@ -275,5 +288,7 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
     // コードの行は覆って読まないが、開いている節の中身ではある。節の最後にコードブロックがあっても、範囲をそこまで伸ばす。
     else if (input.source.slice(line.start, line.start + line.text.length).trim() !== "") extend(state, line.start + line.text.length);
   });
-  return freeze(doc);
+  const tree = freeze(doc);
+  const relative = input.profile?.relative;
+  return relative === undefined ? tree : resolveRelative(tree, relative.implicitFirst);
 };

@@ -1,4 +1,4 @@
-import type { DocumentProfile } from "../plugin.ts";
+import type { DocumentProfile, RelativeVocabulary } from "../plugin.ts";
 
 /** profiles/*.yaml を一つ読んだもの。言語ごとの中身と、内容から選ぶための形を持つ。 */
 export type ProfileDefinition = {
@@ -27,6 +27,46 @@ const detectOf = (value: unknown): ProfileDetect | undefined => {
   return { line: value["line"], minLines: typeof minLines === "number" && minLines > 0 ? minLines : 1 };
 };
 
+const unitsOf = (value: unknown): Record<string, number> =>
+  isRecord(value) ? Object.fromEntries(Object.entries(value).filter((entry): entry is [string, number] => entry[0] !== "" && Number.isInteger(entry[1]))) : {};
+
+const asideOf = (value: unknown): RelativeVocabulary["aside"] => {
+  if (!isRecord(value)) return undefined;
+  const [open, close] = [text(value["open"]), text(value["close"])];
+  return open === undefined || close === undefined ? undefined : { open, close };
+};
+
+/** 括弧の開き・閉じと、目印が一つも無ければ読まない。 */
+const substitutionOf = (value: unknown): RelativeVocabulary["substitution"] => {
+  if (!isRecord(value)) return undefined;
+  const [open, close] = [text(value["open"]), text(value["close"])];
+  const [after, before] = [strings(value["after"]), strings(value["before"])];
+  return open === undefined || close === undefined || after.length + before.length === 0 ? undefined : { open, close, after, before };
+};
+
+/** 単位が一つも無ければ読まない。何を指すのか決められない。 */
+const relativeOf = (value: unknown): RelativeVocabulary | undefined => {
+  if (!isRecord(value)) return undefined;
+  const units = unitsOf(value["units"]);
+  if (Object.keys(units).length === 0) return undefined;
+  return {
+    before: strings(value["before"]),
+    after: strings(value["after"]),
+    same: strings(value["same"]),
+    current: strings(value["current"]),
+    every: strings(value["every"]),
+    count: text(value["count"]) ?? "(?!)",
+    units,
+    suffixPrefix: text(value["suffix_prefix"]) ?? "",
+    implicitFirst: typeof value["implicit_first"] === "string" ? units[value["implicit_first"]] : undefined,
+    notAfter: text(value["not_after"]),
+    substitution: substitutionOf(value["substitution"]),
+    inside: strings(value["inside"]).filter((unit) => units[unit] !== undefined),
+    joiners: strings(value["joiners"]),
+    aside: asideOf(value["aside"]),
+  };
+};
+
 const LANGUAGE_KEYS = new Set(["id", "name", "why", "detect"]);
 
 const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, DocumentProfile> =>
@@ -37,7 +77,8 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
         const section = isRecord(value) ? value : {};
         const addressEnd = text(section["address_end"]);
         const caption = text(section["caption"]);
-        return [language, { id, addresses: strings(section["addresses"]), connectives: strings(section["connectives"]), addressEnd, caption }];
+        const relative = relativeOf(section["relative"]);
+        return [language, { id, addresses: strings(section["addresses"]), connectives: strings(section["connectives"]), addressEnd, caption, relative }];
       }),
   );
 

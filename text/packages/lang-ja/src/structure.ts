@@ -363,4 +363,7 @@ const obligations = (text: string): Mention[] => {
   return kept.sort((left, right) => left.start - right.start);
 };
 
-export const structure: StructurePatterns = { numbered, definitions, references, obligations, quantities, dates, countedAfter };
+/** 「二十二」「２」を数にする。相対の参照（前二項・前条第二項）を core が読むときに使う。 */
+const number = (text: string): number | undefined => parseJapaneseNumber(toHalfWidth(text));
+
+export const structure: StructurePatterns = { numbered, definitions, references, obligations, quantities, dates, countedAfter, number };

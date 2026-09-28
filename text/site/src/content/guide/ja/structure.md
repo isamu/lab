@@ -156,6 +156,8 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
 
   1:1     info    「場合においては、」が 7 回出てきます（5 回まで）
                   ngram-repetition
+  6:82    error   「第三号」（番地 21.1.3）はこの文書にありません
+                  dangling-reference
   6:39    warning この文は 125 文字あります（100 文字まで）
                   max-sentence-length
   9:1     error   「二」の次が「四」です（3 番目のはず）
@@ -167,11 +169,12 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
   15:2    warning この文は 101 文字あります（100 文字まで）
                   max-sentence-length
 
-6 findings, 7 rules not run
+7 findings, 7 rules not run
 
 ```
 
-`error` の 2 件が、変えた 2 か所です。9 行目は号の抜け、13 行目は文書に無い条への参照です。
+`error` の 3 件は、変えた 2 か所から出ています。9 行目は号の抜けで、6 行目は抜けた第三号を指す参照です。
+13 行目は、文書に無い条への参照です。
 `warning` と `info` は読みやすさの指摘で、法令の書き方としては長い文も繰り返しも普通です。
 法令の構造だけを確かめるときは、`error` の行を見ます。
 
