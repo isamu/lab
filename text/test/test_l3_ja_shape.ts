@@ -47,6 +47,7 @@ describe("L3 日本語 — 文字と語彙", () => {
 
     it("invalid: 番地に見えても語が続けば番地ではない", () => {
       assert.ok(idsFor("第十項目標管理制度導入を進めます。").includes("max-kanji-continuous"));
+      assert.ok(idsFor("第五条中央銀行本店の決定です。").includes("max-kanji-continuous"));
     });
   });
 
