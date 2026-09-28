@@ -8,16 +8,31 @@ import { proseText } from "../measure.ts";
  */
 const KANJI_RUN = /[一-鿿]+/gu;
 
-const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined): string =>
-  [...maskAddresses(proseText(sentence), profile).matchAll(KANJI_RUN)].reduce((longest, match) => (match[0].length > longest.length ? match[0] : longest), "");
+/** 漢字の連なりの全体が、言語パッケージの語彙表（unsplittable）の書き方か。住所のように、漢字が続いても割れないもの。 */
+const isUnsplittable = (run: string, patterns: readonly RegExp[]): boolean => patterns.some((pattern) => pattern.test(run));
+
+const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, unsplittable: readonly RegExp[]): string =>
+  [...maskAddresses(proseText(sentence), profile).matchAll(KANJI_RUN)]
+    .map((match) => match[0])
+    .filter((run) => !isUnsplittable(run, unsplittable))
+    .reduce((longest, run) => (run.length > longest.length ? run : longest), "");
+
+const compiled = new Map<string, RegExp>();
+/** 連なりの全体に当てる。一部だけ当たるもの（住所の後ろに別の語が続く）は割れない書き方ではない。 */
+const patternOf = (source: string): RegExp => {
+  const found = compiled.get(source) ?? new RegExp(`^(?:${source})$`, "u");
+  compiled.set(source, found);
+  return found;
+};
 
 /**
  * 漢字が続くと、どこで語が切れるのか読み手が探すことになる。
  * 「情報処理推進機構認定試験」は 12 字。ひらがなを 1 つ挟むだけで読める。
  */
-export const kanjiRun: Detector = (doc, options): Finding[] =>
-  doc.sentences
-    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile) }))
+export const kanjiRun: Detector = (doc, options): Finding[] => {
+  const unsplittable = (doc.lexicons["unsplittable"] ?? []).map((entry) => patternOf(entry.pattern));
+  return doc.sentences
+    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile, unsplittable) }))
     .filter(({ run }) => run.length > options.limit)
     .map(({ sentence, run }) => ({
       rule: "max-kanji-continuous",
@@ -27,6 +42,7 @@ export const kanjiRun: Detector = (doc, options): Finding[] =>
       quote: sentence.text.trim(),
       values: { word: run, count: run.length, limit: options.limit, offset: sentence.span.start },
     }));
+};
 
 const MIDDLE_DOT = /・/gu;
 

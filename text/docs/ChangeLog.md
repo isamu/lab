@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### `max-kanji-continuous` does not count a postal address (#170)
+
+An address such as 東京都港区新橋二丁目 is written the only way it can be, so it is no longer reported as a long run of
+kanji. lang-ja names what cannot be split in a new word list, `unsplittable`; a run of kanji is exempt only when the whole run matches, starting with a prefecture, or a
+city, ward, town or village ending in 丁目. Other long compounds (東京都知事選挙管理委員会事務局) are still reported.
+
 ### `no-mixed-desumasu` counts 「〜ください」 as polite (#170)
 
 「〜ください」 was read by its dictionary form 「くださる」, which is not in the polite word list, so a polite document
