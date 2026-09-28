@@ -79,6 +79,53 @@ describe("undefined-acronym", () => {
   it("誰でも分かる略語は見ない", () => {
     assert.ok(!idsFor(`# 連絡\n\nURL と API と JSON と HTML と CSS を直します。${BULK}`).includes("undefined-acronym"));
   });
+
+  // Kubernetes の文書と GitLab Handbook で指摘されていた、通信・機器・役職の略語。見慣れない略語 2 つ（閾値の 1 つ手前）に足して、数えないことを確かめる。
+  [
+    "DNS",
+    "IP",
+    "TCP",
+    "UDP",
+    "SSH",
+    "SSL",
+    "TLS",
+    "VPN",
+    "LAN",
+    "UTF",
+    "ASCII",
+    "PC",
+    "IT",
+    "SDK",
+    "IDE",
+    "PNG",
+    "JPEG",
+    "GIF",
+    "SVG",
+    "QR",
+    "GPS",
+    "SNS",
+    "TV",
+    "KB",
+    "MB",
+    "GB",
+    "TB",
+    "CEO",
+    "CTO",
+    "CFO",
+    "US",
+    "UK",
+    "EU",
+    "UN",
+    "DNA",
+  ].forEach((acronym) => {
+    it(`よく知られた略語 ${acronym} は数えない`, () => {
+      assert.ok(!idsFor(`# 連絡\n\nSRE と SLO と ${acronym} を確かめます。${BULK}`).includes("undefined-acronym"));
+    });
+  });
+
+  it("invalid: 分野や社内でしか通じない略語は、よく知られた略語と並んでも指摘する", () => {
+    assert.ok(idsFor(`# 連絡\n\nDNS と KEP と SIG と EMEA と APAC を確かめます。${BULK}`).includes("undefined-acronym"));
+  });
 });
 
 describe("concrete-evidence-density", () => {
