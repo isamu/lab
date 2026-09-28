@@ -136,9 +136,19 @@ const toToken = (morpheme: Morpheme, start: number): Token => ({
   ...featuresOf(morpheme),
 });
 
+/**
+ * 数（名詞,数）。UPOS では名詞に寄せるので、数であることは UD の NumType=Card で渡す。
+ * 決まった言い回し（二人三脚、三日坊主、一人ひとり、十分）は辞書が一語として持つので、数にはならない。
+ */
+const NUMERAL_TEXT = /^[〇一二三四五六七八九十百千万億兆0-9０-９.,．，]+$/u;
+
+/** 「数年」「何人」の「数」「何」も名詞,数だが、決まった数ではない。数字の文字でできたものだけ。 */
+const isNumeral = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "数" && NUMERAL_TEXT.test(morpheme.surface_form);
+
 const featuresOf = (morpheme: Morpheme): { features?: Readonly<Record<string, string>> } => {
   if (isPassive(morpheme)) return { features: { Voice: "Pass" } };
   if (isDependentNoun(morpheme)) return { features: { NounType: "Dependent" } };
+  if (isNumeral(morpheme)) return { features: { NumType: "Card" } };
   return {};
 };
 

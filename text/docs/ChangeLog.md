@@ -17,6 +17,32 @@ subject split from its verb do not make items.
 Japanese, a passive that only modifies a noun is not reported, while `The decision was made.` still is. English
 past participles now also carry `VerbForm=Part`.
 
+### `total-mismatch` adds a table column of bare numbers (#170)
+
+A table column whose cells hold only numbers, with the unit in its header (`| Room | Hours booked |`), is now added up
+against its total row. It is added only when every cell above the total is a number and the total is larger than each
+item. A column headed with %, or holding only same-width numbers written without commas (years, IDs), is left alone,
+as is a column mixing bare numbers and amounts with a unit; lists are read as before. A negative total is shown with its
+sign.
+
+### English sentences end after a number (#170)
+
+"We opened in 2026. We shipped in May." is now two sentences. sentence-splitter read any number followed by a period
+as a list number and never ended a sentence there, so `max-sentence-length` reported long sentences that were two, and
+per-paragraph sentence counts came out low. A number that starts its line ("1. First item"), or is followed by a
+lowercase word, is still not a sentence end.
+
+### `concrete-evidence-density` counts numbers written in kanji (#170)
+
+A section that gives `二割`, `十五分`, `一件` or `一万円` now counts as holding a concrete number, like one with digits.
+lang-ja marks a word its morphological analysis reads as a number (IPADIC 名詞,数, written in number characters) with the
+UD feature `NumType=Card`, and the rule looks for that feature in any language. Set phrases the dictionary holds as one
+word (一人ひとり, 二人三脚, 三日坊主, 十分) are not numbers, and neither are 数年 or 何人.
+
+A rule can now declare `uses: [pos]`: part-of-speech tagging is prepared when such a rule runs, but unlike
+`requires`, the rule still runs without it. `concrete-evidence-density` and `ngram-repetition` use it, so their
+morphology-based judgement no longer depends on some other tagging rule happening to be on.
+
 ### `yarn bench` plants mistakes for more rules, in more kinds of document (#170)
 
 The seeded-mistake benchmark now also plants a joined paragraph, a heading echoed by its first sentence, heavy bold,

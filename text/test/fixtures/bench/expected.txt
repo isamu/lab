@@ -14,7 +14,7 @@ hiragana-fukushi                6      6       0             0
 internal-jargon                12     12       0             0
 latin-spacing                   1      1       0             0
 max-kanji-continuous            5      5       0             0
-max-paragraph-length            9      8       1             0
+max-paragraph-length            9      9       0             0
 max-sentence-length            11     11       0             0
 no-doubled-joshi               13     13       0             0
 no-em-dash                      8      8       0             0
@@ -25,7 +25,7 @@ oxford-comma-consistency        2      2       0             0
 required-sections              20     20       0             0
 sasete-itadaku                  3      3       0             0
 title-case-consistency          7      7       0             0
-total-mismatch                  8      7       1             0
+total-mismatch                  8      8       0             0
 undefined-acronym               2      1       1             0
 ja/blog  clean sample  clean
 ja/design  clean sample  clean
@@ -186,7 +186,7 @@ en/email  emoji-decorated  found
 en/email  commas-dashed  found
 en/email  jargon-used  found
 en/email  expletives  found
-en/figures  item-dropped  missed
+en/figures  item-dropped  found
 en/figures  sentences-joined  found
 en/figures  paragraphs-joined  found
 en/figures  heading-echoed  found
@@ -218,7 +218,7 @@ en/policy  number-skipped  found
 en/policy  defined-twice  found
 en/press  weekday-shift  found
 en/press  sentences-joined  found
-en/press  paragraphs-joined  missed
+en/press  paragraphs-joined  found
 en/press  heading-echoed  found
 en/press  bold-heavy  found
 en/press  emoji-decorated  found

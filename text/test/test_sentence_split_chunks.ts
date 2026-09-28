@@ -5,6 +5,7 @@ import { chunksOf as chunksOfJa, sentenceSpans as sentenceSpansJa } from "../pac
 import { chunksOf as chunksOfEn, sentenceSpans as sentenceSpansEn } from "../packages/lang-en/src/sentence-split.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { unmarkNumberStops } from "../packages/lang-en/src/number-stop.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import type { Span } from "../packages/chaff/src/plugin.ts";
 
@@ -61,6 +62,8 @@ const FRAGMENTS = [
   "section",
   "Yahoo!",
   "1.",
+  "2026.",
+  "We",
   "No.",
   "vs.",
   " ",
@@ -114,6 +117,16 @@ describe("文の分割は切れ目ごとに渡しても変わらない", () => {
     });
   });
 
+  // 英語のアダプタは、行の途中の番号を替えてから分割器に渡す。比べる相手も替えた後の文字列を丸ごと渡した分割器。
+  it(`英語のアダプタの文は、番号を替えた文字列を分割器に一度に渡したときと同じ（seed ${String(SEED)}）`, () => {
+    generated(SEED, CASES).forEach((text) => {
+      const unmarked = unmarkNumberStops(text);
+      assert.equal(unmarked.length, text.length, JSON.stringify(text));
+      const spans = en.segment(text).sentences.map((sentence) => sentence.span);
+      assert.deepEqual(spans, wholeSpans(unmarked), JSON.stringify(text));
+    });
+  });
+
   it("括弧を含む文が続く段落、複数行の段落、箇条書き、コードブロックでも同じ", () => {
     const texts = [
       "これは（注）文です。".repeat(50),
@@ -131,10 +144,10 @@ describe("文の分割は切れ目ごとに渡しても変わらない", () => {
     const paragraphStart = source.indexOf("これは");
     const expected = wholeSpans("これは（注）文です。".repeat(20)).map((span) => ({ start: span.start + paragraphStart, end: span.end + paragraphStart }));
     assert.deepEqual(spans.slice(0, expected.length), expected);
-    const english = "The Act (as amended) applies. The court (or a judge) may order it.\nIt ends here.";
+    const english = "The Act (as amended) applies. The court (or a judge) may order it.\nIt ends in 2026. Then it stops.";
     assert.deepEqual(
       en.segment(english).sentences.map((sentence) => sentence.span),
-      wholeSpans(english),
+      wholeSpans(unmarkNumberStops(english)),
     );
   });
 });

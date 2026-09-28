@@ -46,10 +46,21 @@ describe("解析器を読むまで tokens は無い", () => {
     assert.equal(ja.segment("これは文です。").sentences[0]?.tokens, undefined);
   });
 
-  it("要求する rule が 1 本も無ければ pos を読まない", () => {
-    // 品詞を要求する rule を全部止めた状態。
-    const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos")).map((rule) => [rule.id, "off" as const]));
+  it("要求する rule も使う rule も 1 本も無ければ pos を読まない", () => {
+    // 品詞を要求する rule と、使えるなら使う rule を全部止めた状態。
+    const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos") || rule.uses.includes("pos")).map((rule) => [rule.id, "off" as const]));
     assert.equal(neededBy(RULES, off, true, "blog/tech", "ja").pos, false);
+  });
+
+  it("使えるなら使う rule（uses: [pos]）だけが動いていても、pos を読む", () => {
+    const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos") || rule.uses.includes("pos")).map((rule) => [rule.id, "off" as const]));
+    assert.equal(neededBy(RULES, { ...off, "concrete-evidence-density": "normal" }, false, "business/report", "ja").pos, true);
+    assert.deepEqual(
+      RULES.filter((rule) => rule.uses.includes("pos"))
+        .map((rule) => rule.id)
+        .sort((left, right) => left.localeCompare(right)),
+      ["concrete-evidence-density", "ngram-repetition"],
+    );
   });
 
   it("stable な rule が要求していれば、既定でも読む", () => {
@@ -59,7 +70,7 @@ describe("解析器を読むまで tokens は無い", () => {
 
   it("experimental な rule は、名指しで有効にしたときだけ数に入る", () => {
     // agentless-passive は experimental。止めたほかの pos rule と合わせて確かめる。
-    const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos")).map((rule) => [rule.id, "off" as const]));
+    const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos") || rule.uses.includes("pos")).map((rule) => [rule.id, "off" as const]));
     assert.equal(neededBy(RULES, off, true, "business/report", "ja").pos, false);
     assert.equal(neededBy(RULES, { ...off, "agentless-passive": "normal" }, false, "business/report", "ja").pos, true);
   });
@@ -93,6 +104,7 @@ describe("満たせない要求は黙って通さない", () => {
       what_to_check: undefined,
       where: undefined,
       requires: ["telepathy"],
+      uses: [],
       from: [],
       languages: undefined,
       use_for: ["business"],
