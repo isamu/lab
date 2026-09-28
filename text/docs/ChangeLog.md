@@ -6,12 +6,17 @@ Newest first.
 
 ### `yarn bench` measures what chaff misses (#170)
 
-A seeded-mistake benchmark. Self-written samples in Japanese and English (an itinerary, a quote, minutes, a design doc,
-requirements, a policy with numbered articles, a casual note) get one planted mistake at a time — a wrong weekday, two
-rows swapped, an item dropped from a total, a broken reference, a skipped number, a term defined twice, two sentences
-joined, a mixed register, three 「の」 in a row, a dropped acronym expansion. The run counts, per rule, which planted
-mistakes chaff finds near their line and what it reports on the clean samples, and compares the result with
-`test/fixtures/bench/expected.txt` (`yarn bench --update` accepts a change).
+Self-written samples in Japanese and English (itinerary, quote, minutes, design doc, requirements, policy, note) get one
+planted mistake at a time: a wrong weekday, swapped rows, a dropped item, a broken reference, a skipped number, a second
+definition, joined sentences, a mixed register, nested 「の」, a dropped acronym expansion. Per rule, it counts which ones
+chaff finds near their line and what it reports on the clean samples, against `test/fixtures/bench/expected.txt`
+(`yarn bench --update` accepts a change).
+
+### A plain-text specification's top-level sections are read (#170)
+
+In a `.txt` document written like an RFC, a top-level heading such as `5.  Security Considerations` (a number, a dot,
+two spaces and a short title that is not a sentence) is now a section, so `See Section 5` finds it. Markdown documents
+are unchanged: a one-level number there is still a section only in a heading. Found on RFC 9457 in the corpus.
 
 ### lang-ja reads 「1.2 万円」 as 12000 yen (#170)
 
