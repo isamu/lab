@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `yarn bench` plants mistakes for more rules, in more kinds of document (#170)
+
+The seeded-mistake benchmark now also plants a joined paragraph, a heading echoed by its first sentence, heavy bold,
+emoji and dashes, team jargon, a dropped required section, glued kanji, a middle-dot list, doubled honorifics,
+overused 「させていただく」, kanji adverbs, agentless passives, expletive openings, a flipped Oxford comma and a recased
+heading. New self-written samples in both languages cover a press release, an email, a proposal, a report with a
+table of figures, a README and a blog post. A mistake is planted only where its rule runs (its languages and genres),
+and the bench passes the team's jargon and required sections as `chaff.yaml` would.
+
 ### Japanese government reports, minutes, plans and specifications in the corpus (#170)
 
 The corpus now holds pages from 総務省's 情報通信白書 (URL only) and デジタル庁's annual report, council minutes, policy

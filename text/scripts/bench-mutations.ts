@@ -2,48 +2,32 @@
 // Pure and deterministic: the same sample always gets the same mistake at the same place (the first or the largest
 // candidate, never a random one).
 
-/** A sample with one planted mistake, and the 1-based line it is on. */
-export type Plant = { readonly source: string; readonly line: number };
-
-/** What a mutation needs to know about the run: the sentence limit of the sample's genre. */
-export type PlantContext = { readonly sentenceLimit: number };
+import {
+  isJapanese,
+  isPoliteDocument,
+  isProse,
+  isRow,
+  linesOf,
+  lowerFirst,
+  replaceLine,
+  rewriteFirst,
+  splitSentences,
+  type Plant,
+  type PlantContext,
+} from "./bench-text.ts";
+import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinParagraphs } from "./bench-mutations-layout.ts";
+import { doubleHonorific, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa } from "./bench-mutations-ja.ts";
+import { expletives, flipFirstList, flipLastHeading, passiveEn } from "./bench-mutations-en.ts";
 
 export type Mutation = {
   readonly id: string;
   /** The rule that exists to find this mistake. */
   readonly rule: string;
   readonly languages: readonly string[];
+  /** "document" when the rule reports on the whole document rather than on a line: any finding of it counts. */
+  readonly reportsOn?: "document";
   /** undefined when the sample has nothing to plant this mistake in. */
   readonly plant: (source: string, context: PlantContext) => Plant | undefined;
-};
-
-type Found = { readonly index: number; readonly line: string };
-
-const linesOf = (source: string): string[] => source.split("\n");
-
-const isHeading = (line: string): boolean => line.startsWith("#");
-const isTableRow = (line: string): boolean => line.trimStart().startsWith("|");
-const isListItem = (line: string): boolean => /^\s*[-*]\s/u.test(line);
-const isRow = (line: string): boolean => isTableRow(line) || isListItem(line);
-/** 見出しと表を除いた、文を書く行。箇条書きは文として読む。 */
-const isProse = (line: string): boolean => line.trim() !== "" && !isHeading(line) && !isTableRow(line);
-
-const replaceLine = (lines: readonly string[], index: number, line: string): string => lines.map((old, at) => (at === index ? line : old)).join("\n");
-
-const firstLine = (lines: readonly string[], test: (line: string) => boolean): Found | undefined => {
-  const index = lines.findIndex(test);
-  const line = lines[index];
-  return line === undefined ? undefined : { index, line };
-};
-
-/** 1 行を書き換える。書き換えられない行（undefined）なら植えない。 */
-const rewriteFirst = (source: string, test: (line: string) => boolean, rewrite: (line: string) => string | undefined): Plant | undefined => {
-  const lines = linesOf(source);
-  const found = firstLine(lines, test);
-  const line = found === undefined ? undefined : rewrite(found.line);
-  return found === undefined || line === undefined || line === found.line
-    ? undefined
-    : { source: replaceLine(lines, found.index, line), line: found.index + 1 };
 };
 
 // --- date-weekday-mismatch ---
@@ -110,14 +94,18 @@ const isItemRow = (line: string): boolean => isRow(line) && !isSeparator(line) &
 
 const blockStart = (lines: readonly string[], index: number): number => (index > 0 && isRow(lines[index - 1] ?? "") ? blockStart(lines, index - 1) : index);
 
+// 内訳が一つしか残らない合計は、足し算として確かめようがない。消した後に二つ残るときだけ植える。
+const MIN_ITEMS = 3;
+
 /** 合計の上の内訳から最初の一行を消す。合計は直さないので、内訳ひとつぶん合わなくなる。 */
 export const dropItem = (source: string): Plant | undefined => {
   const lines = linesOf(source);
   const total = lines.findIndex(isTotalRow);
   if (total < 0) return undefined;
   const start = blockStart(lines, total);
+  const items = lines.slice(start, total).filter(isItemRow).length;
   const item = lines.slice(start, total).findIndex(isItemRow);
-  if (item < 0) return undefined;
+  if (item < 0 || items < MIN_ITEMS) return undefined;
   return { source: lines.filter((_, at) => at !== start + item).join("\n"), line: total };
 };
 
@@ -206,8 +194,6 @@ export const defineTwice = (source: string): Plant | undefined => {
 
 type Pair = { readonly index: number; readonly at: number; readonly length: number; readonly sentences: readonly string[] };
 
-const isJapanese = (text: string): boolean => /[ぁ-んァ-ヶ一-龠]/u.test(text);
-const splitSentences = (line: string): string[] => (isJapanese(line) ? line.split(/(?<=。)/u) : line.split(/(?<=[.!?])\s+(?=[A-Z])/u));
 const sentenceLength = (sentence: string): number => (isJapanese(sentence) ? [...sentence.trim()].length : sentence.trim().split(/\s+/u).length);
 
 const pairsOf = (line: string, index: number): Pair[] => {
@@ -219,8 +205,6 @@ const pairsOf = (line: string, index: number): Pair[] => {
     sentences,
   }));
 };
-
-const lowerFirst = (sentence: string): string => (/^[A-Z][a-z]/u.test(sentence) ? `${sentence.charAt(0).toLowerCase()}${sentence.slice(1)}` : sentence);
 
 const joinTwo = (first: string, second: string): string =>
   isJapanese(first) ? `${first.replace(/。$/u, "、")}${second}` : `${first.replace(/[.!?]$/u, ",")} and ${lowerFirst(second)}`;
@@ -235,7 +219,8 @@ export const joinSentences = (source: string, context: PlantContext): Plant | un
   const lines = linesOf(source);
   const pairs = lines.flatMap((line, index) => (isProse(line) && !isRow(line) ? pairsOf(line, index) : []));
   const longest = pairs.reduce<Pair | undefined>((best, pair) => (best === undefined || pair.length > best.length ? pair : best), undefined);
-  return longest === undefined || longest.length <= context.sentenceLimit
+  const limit = context.limits["max-sentence-length"];
+  return longest === undefined || limit === undefined || longest.length <= limit
     ? undefined
     : { source: replaceLine(lines, longest.index, joinedLine(longest)), line: longest.index + 1 };
 };
@@ -249,16 +234,6 @@ const PLAIN_ENDING = new RegExp(`${STEM}(する|した|である)。`, "u");
 const POLITE_ENDING_AFTER_STEM = new RegExp(`${STEM}(します|しました|です)。`, "u");
 const TO_POLITE: Readonly<Record<string, string>> = { する: "します", した: "しました", である: "です" };
 const TO_PLAIN: Readonly<Record<string, string>> = { します: "する", しました: "した", です: "である" };
-const POLITE_ENDING = /(?:です|ます|ました|でした|ません|ください)。/gu;
-
-/** 本文の文末で、丁寧な文末が半分より多いか。 */
-export const isPoliteDocument = (source: string): boolean => {
-  const body = linesOf(source).filter(isProse).join("\n");
-  const polite = body.match(POLITE_ENDING)?.length ?? 0;
-  const all = body.match(/。/gu)?.length ?? 0;
-  return polite * 2 > all;
-};
-
 const plantEnding = (source: string, ending: RegExp, swaps: Readonly<Record<string, string>>): Plant | undefined =>
   rewriteFirst(
     source,
@@ -394,4 +369,21 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "gloss-dropped", rule: "undefined-acronym", languages: ["ja", "en"], plant: dropGloss },
   { id: "latin-spaced", rule: "latin-spacing", languages: ["ja"], plant: spaceLatin },
   { id: "contracted", rule: "contraction-consistency", languages: ["en"], plant: contract },
+  { id: "paragraphs-joined", rule: "max-paragraph-length", languages: ["ja", "en"], plant: joinParagraphs },
+  { id: "heading-echoed", rule: "heading-echo", languages: ["ja", "en"], plant: echoHeading },
+  { id: "bold-heavy", rule: "bold-density", languages: ["ja", "en"], plant: boldSection },
+  { id: "emoji-decorated", rule: "emoji-density", languages: ["ja", "en"], plant: decorate },
+  { id: "commas-dashed", rule: "no-em-dash", languages: ["ja", "en"], plant: dashes },
+  { id: "jargon-used", rule: "internal-jargon", languages: ["ja", "en"], plant: jargon },
+  { id: "section-dropped", rule: "required-sections", languages: ["ja", "en"], reportsOn: "document", plant: dropSection },
+  { id: "kanji-glued", rule: "max-kanji-continuous", languages: ["ja"], plant: glueKanji },
+  { id: "commas-dotted", rule: "no-nakaguro-parallel", languages: ["ja"], plant: dotList },
+  { id: "keigo-doubled", rule: "double-keigo", languages: ["ja"], plant: doubleHonorific },
+  { id: "humble-overused", rule: "sasete-itadaku", languages: ["ja"], plant: humbleForms },
+  { id: "adverb-kanji", rule: "hiragana-fukushi", languages: ["ja"], plant: kanjiAdverb },
+  { id: "passive-ja", rule: "agentless-passive", languages: ["ja"], plant: passiveJa },
+  { id: "passive-en", rule: "agentless-passive", languages: ["en"], plant: passiveEn },
+  { id: "expletives", rule: "expletive-construction", languages: ["en"], plant: expletives },
+  { id: "oxford-flipped", rule: "oxford-comma-consistency", languages: ["en"], plant: flipFirstList },
+  { id: "heading-recased", rule: "title-case-consistency", languages: ["en"], plant: flipLastHeading },
 ];

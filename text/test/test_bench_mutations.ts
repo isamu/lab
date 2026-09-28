@@ -7,7 +7,6 @@ import {
   defineTwice,
   dropGloss,
   dropItem,
-  isPoliteDocument,
   joinSentences,
   nestNo,
   nextNumber,
@@ -17,13 +16,13 @@ import {
   skipLastNumber,
   spaceLatin,
   swapDatedRows,
-  type Plant,
 } from "../scripts/bench-mutations.ts";
+import { isPoliteDocument, type Plant } from "../scripts/bench-text.ts";
 
 // yarn bench の植える誤り。どの行に何を植えたかを、短い自作の文書で固定する。
 
 const lines = (...rows: string[]): string => rows.join("\n");
-const LIMITS = { sentenceLimit: 25 };
+const LIMITS = { limits: { "max-sentence-length": 25 } };
 
 /** 植えた行の中身と行番号。 */
 const at = (plant: Plant | undefined): readonly [number, string] | undefined =>
@@ -57,13 +56,17 @@ describe("swapDatedRows", () => {
 
 describe("dropItem", () => {
   it("表の最初の内訳を消し、合計の行を指す", () => {
-    const source = lines("| Item | Amount |", "| --- | --- |", "| A | $100 |", "| B | $200 |", "| Total | $300 |");
-    assert.deepEqual(at(dropItem(source)), [4, "| Total | $300 |"]);
+    const source = lines("| Item | Amount |", "| --- | --- |", "| A | $100 |", "| B | $200 |", "| C | $300 |", "| Total | $600 |");
+    assert.deepEqual(at(dropItem(source)), [5, "| Total | $600 |"]);
     assert.equal(dropItem(source)?.source.includes("| A |"), false);
   });
 
+  it("消すと内訳が一つしか残らない合計には植えない", () => {
+    assert.equal(dropItem(lines("| A | $100 |", "| B | $200 |", "| Total | $300 |")), undefined);
+  });
+
   it("箇条書きの合計も。日本語の合計の語", () => {
-    assert.deepEqual(at(dropItem(lines("- 設計: 100円", "- 実装: 200円", "- 合計: 300円"))), [2, "- 合計: 300円"]);
+    assert.deepEqual(at(dropItem(lines("- 設計: 100円", "- 実装: 200円", "- 試験: 50円", "- 合計: 350円"))), [3, "- 合計: 350円"]);
   });
 
   it("合計の無い文書、内訳の無い合計には植えない", () => {
@@ -117,13 +120,13 @@ describe("joinSentences", () => {
   });
 
   it("日本語は句点を読点にしてつなぐ", () => {
-    const plant = joinSentences("あいうえおかきくけこ。さしすせそたちつてと。", { sentenceLimit: 20 });
+    const plant = joinSentences("あいうえおかきくけこ。さしすせそたちつてと。", { limits: { "max-sentence-length": 20 } });
     assert.deepEqual(at(plant), [1, "あいうえおかきくけこ、さしすせそたちつてと。"]);
   });
 
   it("つないだ長さが上限ちょうどなら植えず、一語でも超えれば植える", () => {
-    assert.equal(joinSentences(`${eleven} ${fifteen}`, { sentenceLimit: 26 }), undefined);
-    assert.equal(joinSentences(`${eleven} ${fifteen}`, { sentenceLimit: 25 })?.line, 1);
+    assert.equal(joinSentences(`${eleven} ${fifteen}`, { limits: { "max-sentence-length": 26 } }), undefined);
+    assert.equal(joinSentences(`${eleven} ${fifteen}`, { limits: { "max-sentence-length": 25 } })?.line, 1);
   });
 
   it("つないでも上限に届かなければ植えない。見出しと表の行はつながない", () => {
