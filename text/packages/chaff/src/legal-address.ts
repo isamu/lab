@@ -8,12 +8,11 @@ const ADDRESS_UNIT = "[条項号章節款目編]";
 const ADDRESS = `第${KANJI_NUMERAL}${ADDRESS_UNIT}(?:の${KANJI_NUMERAL})*`;
 
 /**
- * 番地の後ろには、法令が番地に付ける語（各号・及び・本文・後段 …）が続き、その先は漢字以外か次の番地で終わる。
- * 「第一条件」「第十項目」「第五条中央銀行」は番地ではなく普通の語なので、そう終わらないときは番地として扱わない。
+ * 番地は、法令が番地に付ける語（各号・及び・本文・後段 …）を挟んで続き、全体が漢字以外で終わる。
+ * 「第一条件」「第五条中央銀行」「第五条第五項中央銀行」は番地の後ろに普通の語が続くので、番地として扱わない。
  */
-const CONNECTIVE = "各号|各項|及|又|若|並|中|本文|前段|後段|但書|同条|乃至";
-const ADDRESS_ENDS = `(?:${CONNECTIVE})*(?:[^\\p{Script=Han}]|$|${ADDRESS})`;
+const CONNECTIVE = `(?:各号|各項|及|又|若|並|中|本文|前段|後段|但書|同条|乃至)*`;
+const ADDRESS_CHAIN = new RegExp(`${ADDRESS}(?:${CONNECTIVE}${ADDRESS})*${CONNECTIVE}(?=[^\\p{Script=Han}]|$)`, "gu");
+const ADDRESS_IN_CHAIN = new RegExp(ADDRESS, "gu");
 
-const LEGAL_ADDRESS = new RegExp(`${ADDRESS}(?=${ADDRESS_ENDS})`, "gu");
-
-export const maskLegalAddresses = (text: string): string => text.replace(LEGAL_ADDRESS, " ");
+export const maskLegalAddresses = (text: string): string => text.replace(ADDRESS_CHAIN, (chain) => chain.replace(ADDRESS_IN_CHAIN, " "));
