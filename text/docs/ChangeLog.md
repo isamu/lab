@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### `oxford-comma-consistency` judges only real lists (#170)
+
+An introductory comma (`After the review, the team fixed the bug and shipped it.`) or a comma joining two clauses is
+no longer read as a list. A sentence counts only when at least two comma-separated items come before the final
+and / or and share the shape of the item after it; commas inside parentheses, adjectives stacked before a noun and a
+subject split from its verb do not make items.
+
+### `agentless-passive` leaves English passives in relative clauses alone (#170)
+
+`the report that was published last week` describes the report; it does not hide who acted in the sentence. As in
+Japanese, a passive that only modifies a noun is not reported, while `The decision was made.` still is. English
+past participles now also carry `VerbForm=Part`.
+
 ### `max-kanji-continuous` recognises an address by morphology (#170)
 
 The regular-expression list that told an address (東京都港区新橋二丁目) from a long compound is replaced by morphological
