@@ -1,0 +1,11 @@
+# The names of the days, Sunday first. Used to say which day a date really falls on.
+id: weekday
+language: en
+entries:
+  - pattern: Sunday
+  - pattern: Monday
+  - pattern: Tuesday
+  - pattern: Wednesday
+  - pattern: Thursday
+  - pattern: Friday
+  - pattern: Saturday

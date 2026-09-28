@@ -171,7 +171,51 @@ const toDates = (items: readonly Counted[]): { readonly dates: Mention[]; readon
 export const quantities = (text: string): Mention[] =>
   toDates(counted(text)).rest.map((item) => ({ start: item.start, end: item.end, attrs: { value: item.value, unit: item.unit } }));
 
-export const dates = (text: string): Mention[] => toDates(counted(text)).dates;
+/** 日付のすぐ後ろに書いた曜日（「2026年10月1日（木）」「10月1日 木曜日」）。日曜日が 0。 */
+const WEEKDAY_CHARS = "日月火水木金土";
+const WEEKDAY_AFTER = /^[ \t\u3000]*(?:[（(](?<paren>[日月火水木金土])(?:曜日?)?[）)]|(?<word>[日月火水木金土])曜日)/u;
+
+const weekdayAfter = (text: string, end: number): number | undefined => {
+  const groups = WEEKDAY_AFTER.exec(text.slice(end))?.groups;
+  const written = groups?.["paren"] ?? groups?.["word"];
+  return written === undefined ? undefined : WEEKDAY_CHARS.indexOf(written);
+};
+
+/** 元号の最初の年の前年（令和1年 = 2019 年）。元号で書いた日付を西暦の日付にする。 */
+const ERA_BASE: Readonly<Record<string, number>> = { 令和: 2018, 平成: 1988, 昭和: 1925, 大正: 1911, 明治: 1867 };
+const ERA_BEFORE = /(?<era>令和|平成|昭和|大正|明治)$/u;
+/** 月の付いた日付の年を直す。年だけ（「昭和二十二年法律」）は 1000 に届かないので、はじめから日付でなく期間の数量。 */
+const ERA_DATE = /^(?<year>\d{1,2})-(?<rest>.+)$/u;
+
+/** 「令和元年10月1日」: 元年は数として読めないので、年の無い 10-01 になっている。その前の「元号 + 元年」を 1 年として足す。 */
+const FIRST_YEAR_BEFORE = /(?<era>令和|平成|昭和|大正|明治)元年$/u;
+const MONTH_DAY = /^\d{2}-\d{2}$/u;
+
+const inFirstEraYear = (text: string, date: Mention): Mention | undefined => {
+  if (!MONTH_DAY.test(String(date.attrs["value"]))) return undefined;
+  const found = FIRST_YEAR_BEFORE.exec(text.slice(Math.max(0, date.start - 4), date.start));
+  const base = found?.groups?.["era"] === undefined ? undefined : ERA_BASE[found.groups["era"]];
+  if (found === null || base === undefined) return undefined;
+  return { ...date, start: date.start - found[0].length, attrs: { ...date.attrs, value: `${String(base + 1)}-${String(date.attrs["value"])}` } };
+};
+
+const inWesternYear = (text: string, date: Mention): Mention => {
+  const first = inFirstEraYear(text, date);
+  if (first !== undefined) return first;
+  const parts = ERA_DATE.exec(String(date.attrs["value"]))?.groups;
+  const era = ERA_BEFORE.exec(text.slice(Math.max(0, date.start - 2), date.start))?.groups?.["era"];
+  const base = era === undefined ? undefined : ERA_BASE[era];
+  if (parts === undefined || era === undefined || base === undefined) return date;
+  const value = `${String(base + Number(parts["year"]))}-${parts["rest"] ?? ""}`;
+  return { ...date, start: date.start - era.length, attrs: { ...date.attrs, value } };
+};
+
+export const dates = (text: string): Mention[] =>
+  toDates(counted(text)).dates.map((found) => {
+    const date = inWesternYear(text, found);
+    const weekday = weekdayAfter(text, date.end);
+    return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
+  });
 
 /**
  * 「1.5 倍になった。」の 1.5 は章番号ではない。番号と続く語のあいだの空白を詰めて読み直し、

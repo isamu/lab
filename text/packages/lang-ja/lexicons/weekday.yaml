@@ -1,0 +1,11 @@
+# 曜日の名前。日曜日から順に並べる。日付と曜日の食い違いを言うときに、この名前で書く。
+id: weekday
+language: ja
+entries:
+  - pattern: 日曜日
+  - pattern: 月曜日
+  - pattern: 火曜日
+  - pattern: 水曜日
+  - pattern: 木曜日
+  - pattern: 金曜日
+  - pattern: 土曜日

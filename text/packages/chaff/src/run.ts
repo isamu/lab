@@ -33,6 +33,17 @@ const reasonsFor = (doc: ProseDocument): Reasons => REASONS[uiLanguageOf(doc.lan
  * 構造の rule が動けない理由。木を作れない言語か、番号の行を読めなかった文書。
  * 読めなかった文書で「参照先が無い」が 0 件なのは、確かめた結果ではないので、読めなかったと言う。
  */
+/**
+ * 木を読む rule の要求。structure は番号の並びを読む（読めなかった文書では動かない）。dates は木の日付だけを読むので、
+ * 番号を読めなかった文書でも動く。どちらも capability ではなく、adapter が木を作れるかで決まる。
+ */
+const TREE_NEEDS: ReadonlySet<string> = new Set(["structure", "dates"]);
+
+const treeNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
+  if (rule.requires.includes("structure")) return treeProblem(doc);
+  return rule.requires.includes("dates") && doc.structure === undefined ? reasonsFor(doc).noStructure(doc.language) : undefined;
+};
+
 const treeProblem = (doc: ProseDocument): string | undefined => {
   if (doc.structure === undefined) return reasonsFor(doc).noStructure(doc.language);
   const unread = unreadOf(doc);
@@ -69,7 +80,7 @@ const hasTokens = (doc: ProseDocument): boolean => doc.sentences.length === 0 ||
 /** 要求を満たさない rule は動かせない。満たさないまま動かすと「指摘 0 件」が保証に見える。 */
 const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
   if (rule.languages !== undefined && !rule.languages.includes(doc.language)) return reasonsFor(doc).otherLanguage(doc.language);
-  const missing = rule.requires.filter((need) => need !== "structure").find((need) => !has(doc.capabilities, need));
+  const missing = rule.requires.filter((need) => !TREE_NEEDS.has(need)).find((need) => !has(doc.capabilities, need));
   if (missing !== undefined) return reasonsFor(doc).noCapability(missing);
   return undefined;
 };
@@ -159,7 +170,7 @@ export const runRules = (
       if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
       // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
       // 段階を見た後で聞く。doc.structure は触れたときに木を作るので、止めている rule のために作らない。
-      const noTree = rule.requires.includes("structure") ? treeProblem(doc) : undefined;
+      const noTree = treeNeed(rule, doc);
       if (noTree !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTree }] };
       // 複合シグナルは二段目で扱う。一段目では「検出器が無い」と言わせない。
       if (rule.from.length > 0) return acc;
