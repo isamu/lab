@@ -1,6 +1,6 @@
 denkiyagi-ryohi-kitei  heading-echo 1
 denkiyagi-shugyo-kisoku  agentless-passive 3, heading-echo 3, max-kanji-continuous 19, max-sentence-length 7, ngram-repetition 1, no-doubled-joshi 4, repeated-sentence-head 3
-entaku-rb-4  agentless-passive 9, latin-spacing 1, no-mixed-desumasu 2
+entaku-rb-4  agentless-passive 9, latin-spacing 1, no-mixed-desumasu 1
 entaku-rb-5  no-mixed-desumasu 1
 genai-web-api  latin-spacing 6
 genai-web-procedure  latin-spacing 29, max-sentence-length 1, proper-noun-density 1, undefined-acronym 4
