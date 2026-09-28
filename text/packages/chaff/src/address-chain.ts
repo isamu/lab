@@ -1,4 +1,4 @@
-import type { DocumentProfile } from "./plugin.ts";
+import type { DocumentProfile, Span } from "./plugin.ts";
 
 /**
  * 番地は、つなぎの語（各号・及び・本文 …）を挟んで続く。番地とつなぎの並び全体を一つとして探す。
@@ -32,4 +32,15 @@ export const maskAddresses = (text: string, profile: DocumentProfile | undefined
   if (!compiled.has(profile)) compiled.set(profile, compile(profile, ENDS_BEFORE_KANJI));
   const patterns = compiled.get(profile);
   return patterns === undefined ? text : text.replace(patterns.chain, (chain) => chain.replace(patterns.address, " "));
+};
+
+const addressPatterns = new WeakMap<DocumentProfile, RegExp | undefined>();
+
+/** 番地の範囲。つなぎの語や後ろの文字は見ない。数量が番地の中にあるかを確かめるため。 */
+export const addressSpans = (text: string, profile: DocumentProfile | undefined): Span[] => {
+  if (profile === undefined) return [];
+  if (!addressPatterns.has(profile))
+    addressPatterns.set(profile, profile.addresses.length === 0 ? undefined : new RegExp(`(?:${profile.addresses.join("|")})`, "gu"));
+  const pattern = addressPatterns.get(profile);
+  return pattern === undefined ? [] : [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 };
