@@ -69,7 +69,10 @@ describe("the structure rules say they could not read the document", () => {
     const rules = loadRules("en").filter((rule) => ["dangling-reference", "numbering-gap", "duplicate-definition"].includes(rule.id));
     const result = runRules(buildDocument("c.txt", INDENTED, en), rules, {}, true, "business/report");
     assert.deepEqual(result.findings, []);
-    assert.deepEqual(result.skipped.map((skipped) => skipped.rule).sort(), ["dangling-reference", "duplicate-definition", "numbering-gap"]);
+    assert.deepEqual(
+      result.skipped.map((skipped) => skipped.rule).sort((left, right) => left.localeCompare(right)),
+      ["dangling-reference", "duplicate-definition", "numbering-gap"],
+    );
     assert.ok(result.skipped.every((skipped) => skipped.why.includes("5 clause numbers")));
   });
 });
