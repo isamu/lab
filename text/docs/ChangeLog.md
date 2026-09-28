@@ -11,6 +11,14 @@ plans and data specifications (committed under 公共データ利用規約（第
 page in the encoding it declares (Shift_JIS as well as UTF-8), and the HTML conversion reads only `<main>` when there is
 one and drops asides, footers, forms, XML declarations and lists made only of links.
 
+### `ngram-repetition` counts phrasing, not the name of the subject (#170)
+
+A long report naturally repeats its subject (`state and local tax`, `the HTTP status code`, `the Disclosing Party`), and
+that was reported as repeated phrasing. With part-of-speech tagging, a repeated phrase now counts only if the part of
+the sentence it covers holds a verb or an auxiliary (`ることができます`, `it is important to`). In English a verb right
+before a noun or adjective is a modifier (`the upcoming fiscal year`), not a predicate. Without tagging, the rule
+behaves as before. Found across the corpus's reports, RFCs and contracts.
+
 ### The corpus's wikitext conversion closes the gaps left by dropped templates (#170)
 
 A Wikivoyage template the converter drops no longer leaves a space before punctuation (`Airport , but`) or a double

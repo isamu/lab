@@ -1,6 +1,7 @@
 import { proseText } from "../measure.ts";
 import { wordsOf } from "./structure.ts";
-import type { Detector, Finding, ProseDocument, Sentence } from "../plugin.ts";
+import { compacted, placeOf } from "./gram-place.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Token } from "../plugin.ts";
 
 const PER = 1000;
 
@@ -91,13 +92,44 @@ const gramsOf = (doc: ProseDocument): Map<string, number> => {
   return counts;
 };
 
+/** 数えたときと同じ形の文。char 単位では空白を詰めてから数えている。 */
+const gramText = (sentence: Sentence, unit: ProseDocument["lengthUnit"]): string => compacted(sentence.text, unit).text;
+
+/** 動詞と助動詞。言い回し（ることができます、it is important to）にはこれが入り、主題の名前（state and local tax）には入らない。 */
+const PREDICATE_POS = new Set(["VERB", "AUX"]);
+
+const NOUNS = new Set(["NOUN", "PROPN", "ADJ"]);
+
+/**
+ * 英語で名詞のすぐ前の動詞は、名詞を飾る語（形容詞を挟んでも同じ）（the upcoming fiscal year、the Disclosing Party、the borrow checker）で、
+ * 述語ではない。日本語の名詞の前の動詞（〜にあるコンポーネント）は言い回しの一部になるので、word 単位だけで見る。
+ */
+const modifiesNoun = (tokens: readonly Token[], index: number, unit: ProseDocument["lengthUnit"]): boolean =>
+  unit === "word" && tokens[index]?.pos === "VERB" && NOUNS.has(tokens[index + 1]?.pos ?? "");
+
+/**
+ * 語句が文の中で占める範囲に、動詞か助動詞があるか。範囲で見る。文字で探すと、同じ文の別の所の動詞「use」が、語句の中の名詞「use」に当たる。
+ * 品詞が無ければ見分けられないので、これまでどおり言い回しとして数える。
+ */
+const hasPredicate = (gram: string, sentence: Sentence, unit: ProseDocument["lengthUnit"]): boolean => {
+  if (sentence.tokens === undefined) return true;
+  const place = placeOf(compacted(sentence.text, unit), gram);
+  if (place === undefined) return true;
+  const [start, end] = [sentence.span.start + place.start, sentence.span.start + place.end];
+  const tokens = sentence.tokens;
+  return tokens.some((token, index) => PREDICATE_POS.has(token.pos) && token.span.start < end && start < token.span.end && !modifiesNoun(tokens, index, unit));
+};
+
 export const ngramRepetition: Detector = (doc, options): Finding[] => {
   if (wordsOf(doc) < FLOOR[doc.lengthUnit]) return [];
+  const sentenceWith = (gram: string): Sentence | undefined => doc.sentences.find((sentence) => gramText(sentence, doc.lengthUnit).includes(gram));
   const worst = [...gramsOf(doc).entries()]
-    .filter(([gram]) => isPhrasing(gram, doc.lengthUnit))
-    .reduce<{ gram: string; count: number }>((best, [gram, count]) => (count > best.count ? { gram, count } : best), { gram: "", count: 0 });
-  if (worst.count <= options.limit) return [];
-  const at = doc.sentences.find((sentence) => sentence.text.includes(worst.gram));
+    .filter(([gram, count]) => count > options.limit && isPhrasing(gram, doc.lengthUnit))
+    .sort(([, left], [, right]) => right - left)
+    .map(([gram, count]) => ({ gram, count, at: sentenceWith(gram) }))
+    .find(({ gram, at }) => at === undefined || hasPredicate(gram, at, doc.lengthUnit));
+  if (worst === undefined) return [];
+  const at = worst.at;
   return [
     {
       rule: "ngram-repetition",
