@@ -44,6 +44,14 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(doc("- A: $100", "- B: $200", "- Subtotal: $300", "- C: $50", "- D: $50", "- Subtotal: $100", "- Total: $400")), []);
   });
 
+  it("a grand total of subtotal rows alone is their sum, not the last one", () => {
+    const table = (total: string): string =>
+      doc("| Part | Amount |", "| --- | --- |", "| Subtotal: A | $300 |", "| Subtotal: B | $100 |", `| Grand total | ${total} |`);
+    assert.deepEqual(found(table("$400")), []);
+    assert.deepEqual(found(table("$100")), ["$100≠$400"]);
+    assert.deepEqual(found(doc("- Subtotal: $300", "- Total: $999")), []);
+  });
+
   it("a subtotal that is wrong is pointed out before the total that uses it", () => {
     assert.deepEqual(found(doc("- A: $100", "- B: $200", "- Subtotal: $310", "- Tax: $31", "- Total: $341")), ["$310≠$300"]);
   });

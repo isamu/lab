@@ -102,13 +102,18 @@ const windowAbove = (entries: readonly Entry[], cell: Cell): RowsAbove | undefin
   return above;
 };
 
-/** 足し方の候補: 上の項目すべて（小計を並べた総計もこれ）、最後の合計より後の項目、最後の合計にその後の項目。 */
+/** 足し方の候補: 上の項目すべて（小計を並べた総計もこれ）、最後の合計より後の項目、最後の合計にその後の項目。項目が無ければ小計の和だけ。 */
 const candidateSums = (above: RowsAbove): number[] => {
+  if (above.parts.length === 0) return [sumOf(above.totals)];
   const last = above.totals.at(-1);
   return [sumOf(above.parts), sumOf(above.sinceLast), ...(last === undefined ? [] : [last + sumOf(above.sinceLast)])];
 };
 
-const reportedSum = (above: RowsAbove): number => (above.totals.at(-1) ?? 0) + sumOf(above.sinceLast);
+/** 項目が無く小計だけが並ぶ表は、小計の和。 */
+const reportedSum = (above: RowsAbove): number => (above.parts.length === 0 ? sumOf(above.totals) : (above.totals.at(-1) ?? 0) + sumOf(above.sinceLast));
+
+/** 和と呼べるだけの行があるか。項目が二つ以上か、項目が無く小計が二つ以上。 */
+const enoughRows = (above: RowsAbove): boolean => above.parts.length >= MIN_PARTS || (above.parts.length === 0 && above.totals.length >= MIN_PARTS);
 
 /** 和は、合計の行と同じ小数の桁で見せる（$10,160.00 なら $10,260.00）。端数があれば 2 桁。 */
 const formatCents = (cents: number, written: string): string => {
@@ -138,7 +143,7 @@ const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue
     return entry.amounts.flatMap((total) => {
       const writtenCents = valueIn(entry, total);
       const above = windowAbove(entries.slice(0, index), total);
-      if (typeof writtenCents !== "number" || above === undefined || above.parts.length < MIN_PARTS || candidateSums(above).includes(writtenCents)) return [];
+      if (typeof writtenCents !== "number" || above === undefined || !enoughRows(above) || candidateSums(above).includes(writtenCents)) return [];
       return [{ offset: total.offset, values: shownAmounts(source, total, reportedSum(above)) }];
     });
   });
