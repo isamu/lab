@@ -50,6 +50,12 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(idsFor("埼玉県市町村総合事務組合に問い合わせる。").includes("max-kanji-continuous"));
       assert.ok(idsFor("大阪府市町村振興協会資料を確認する。").includes("max-kanji-continuous"));
       assert.ok(idsFor("東京都港区政策経営部に届ける。").includes("max-kanji-continuous"));
+      // 数と単位だけの連なりは、地名で始まらないので住所ではない。
+      assert.ok(idsFor("三百二十五万四千八百人が参加した。").includes("max-kanji-continuous"));
+      // 地名を並べただけのものは住所ではない（地名が単位を挟まずに続く）。
+      assert.ok(idsFor("東京大阪名古屋福岡に展開します。").includes("max-kanji-continuous"));
+      // 数の後ろが助数詞でない語なら住所ではない。
+      assert.ok(idsFor("東京都港区新橋二政策に届ける。").includes("max-kanji-continuous"));
     });
 
     it("覆った箇所の空白をまたいで繋がない", () => {

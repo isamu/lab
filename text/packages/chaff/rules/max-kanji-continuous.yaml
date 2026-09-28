@@ -2,6 +2,8 @@ id: max-kanji-continuous
 layer: L3
 status: experimental
 how_to_find: kanji-run
+# 品詞があれば、住所（地名と数だけでできた連なり）を数えない。無くても文字だけで動く。
+uses: [pos]
 languages: [ja]
 severity: warning
 
