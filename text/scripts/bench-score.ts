@@ -17,10 +17,14 @@ export type Outcome = {
 
 export type RuleRow = { readonly rule: string; readonly planted: number; readonly found: number; readonly missed: number; readonly falseAlarms: number };
 
-const isNear = (finding: Located, planted: Located): boolean => finding.rule === planted.rule && Math.abs(finding.line - planted.line) <= NEAR_LINES;
+/** Where a mistake was planted: a line, or "document" for a rule that reports on the whole document. */
+export type Planted = { readonly rule: string; readonly line: number | "document" };
 
-/** One planted mistake: found when its rule reports at or next to the planted line. */
-export const outcomeOf = (sample: string, mutation: string, planted: Located, findings: readonly Located[]): Outcome => {
+const isNear = (finding: Located, planted: Planted): boolean =>
+  finding.rule === planted.rule && (planted.line === "document" || Math.abs(finding.line - planted.line) <= NEAR_LINES);
+
+/** One planted mistake: found when its rule reports at or next to the planted line, or anywhere for a "document" plant. */
+export const outcomeOf = (sample: string, mutation: string, planted: Planted, findings: readonly Located[]): Outcome => {
   const found = findings.some((finding) => isNear(finding, planted));
   const elsewhere = found ? [] : findings.filter((finding) => finding.rule === planted.rule).map((finding) => finding.line);
   return { sample, mutation, rule: planted.rule, found, elsewhere };

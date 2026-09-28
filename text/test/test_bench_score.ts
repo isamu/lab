@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { cleanLine, falseAlarms, formatTable, outcomeLine, outcomeOf, ruleTable, summaryChanges, type Outcome } from "../scripts/bench-score.ts";
+import { cleanLine, falseAlarms, formatTable, outcomeLine, outcomeOf, ruleTable, summaryChanges, type Outcome, type Planted } from "../scripts/bench-score.ts";
 
 // yarn bench の数え方。植えた誤りを見つけたか、rule ごとの表、前回との違い。
 
@@ -26,6 +26,15 @@ describe("outcomeOf", () => {
       ]).elsewhere,
       [],
     );
+  });
+});
+
+describe("outcomeOf (document)", () => {
+  it("文書全体に言う rule は、どの行で言っても見つけた。別の rule では見逃し", () => {
+    const document: Planted = { rule: "required-sections", line: "document" };
+    assert.equal(outcomeOf("ja/a", "m", document, [{ rule: "required-sections", line: 1 }]).found, true);
+    assert.deepEqual(outcomeOf("ja/a", "m", document, [{ rule: "heading-echo", line: 1 }]).elsewhere, []);
+    assert.equal(outcomeOf("ja/a", "m", document, []).found, false);
   });
 });
 

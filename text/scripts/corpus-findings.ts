@@ -14,12 +14,22 @@ export type CorpusFinding = { readonly rule: string; readonly line: number; read
 
 const ADAPTERS: Readonly<Record<string, LanguageAdapter>> = { ja, en };
 
-const findingsWith = async (path: string, source: string, language: string, only: (id: string) => boolean, genre: string): Promise<CorpusFinding[]> => {
+/** What a team writes in chaff.yaml for the team rules: jargon and required_sections. */
+export type TeamWords = { readonly jargon: readonly string[]; readonly requiredSections: readonly string[] };
+
+const findingsWith = async (
+  path: string,
+  source: string,
+  language: string,
+  only: (id: string) => boolean,
+  genre: string,
+  team: TeamWords = EMPTY,
+): Promise<CorpusFinding[]> => {
   const adapter = ADAPTERS[language];
   if (adapter === undefined) throw new Error(`no adapter for ${language}`);
   await adapter.prepare?.({ pos: true });
   const rules = loadRules(language).filter((rule) => only(rule.id));
-  const result = runRules(buildDocument(path, source, adapter, teamRules(EMPTY), profileFor(EMPTY, path, source, language)), rules, {}, true, genre);
+  const result = runRules(buildDocument(path, source, adapter, teamRules(team), profileFor(EMPTY, path, source, language)), rules, {}, true, genre);
   const byId = new Map(rules.map((rule) => [rule.id, rule]));
   return result.findings.flatMap((finding) => {
     const rule = byId.get(finding.rule);
@@ -31,9 +41,9 @@ const findingsWith = async (path: string, source: string, language: string, only
 export const structureFindings = async (path: string, source: string, language = "ja"): Promise<CorpusFinding[]> =>
   findingsWith(path, source, language, (id) => STRUCTURE_RULES.includes(id), "technical/spec");
 
-/** Every rule's findings on one document of the given genre, as if --experimental. */
-export const allFindings = async (path: string, source: string, language: string, genre: string): Promise<CorpusFinding[]> =>
-  findingsWith(path, source, language, () => true, genre);
+/** Every rule's findings on one document of the given genre, as if --experimental, with the team's words when given. */
+export const allFindings = async (path: string, source: string, language: string, genre: string, team?: TeamWords): Promise<CorpusFinding[]> =>
+  findingsWith(path, source, language, () => true, genre, team);
 
 /** The manifest's language for each committed document, by file name. */
 export const corpusLanguages = (manifest: unknown): ReadonlyMap<string, string> => {

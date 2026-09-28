@@ -1,12 +1,16 @@
 // Seeded-mistake benchmark. Plants one mistake at a time in the self-written samples of test/fixtures/bench/<lang>/,
 // runs every rule (as with --experimental) for the sample's genre, and counts which planted mistakes chaff finds.
+// A mistake is planted only where its rule runs: in the rule's languages and a genre in its use_for. The team's words
+// (jargon, required_sections) are passed as chaff.yaml would pass them.
 // The corpus measures false positives; this measures misses. The summary is compared with
 // test/fixtures/bench/expected.txt, and --update rewrites that file.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { allFindings, type CorpusFinding } from "./corpus-findings.ts";
-import { MUTATIONS, type Mutation, type PlantContext } from "./bench-mutations.ts";
+import { allFindings, type CorpusFinding, type TeamWords } from "./corpus-findings.ts";
+import { MUTATIONS, type Mutation } from "./bench-mutations.ts";
+import type { PlantContext } from "./bench-text.ts";
+import { TEAM_JARGON, requiredSectionsOf } from "./bench-mutations-layout.ts";
 import { cleanLine, falseAlarms, formatTable, outcomeLine, outcomeOf, ruleTable, summaryChanges, type Outcome } from "./bench-score.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { resolve } from "../packages/chaff/src/levels.ts";
@@ -26,6 +30,12 @@ const GENRES: Readonly<Record<string, string>> = {
   requirements: "technical/spec",
   policy: "business/policy",
   note: "business/note",
+  press: "business/press-release",
+  email: "business/email",
+  proposal: "business/proposal",
+  figures: "business/report",
+  readme: "technical/readme",
+  blog: "blog/tech",
 };
 
 type Sample = { readonly name: string; readonly language: string; readonly genre: string; readonly path: string; readonly source: string };
@@ -45,13 +55,18 @@ const samplesOf = (language: string): Sample[] =>
       };
     });
 
-const contextOf = (sample: Sample): PlantContext => {
-  const rule = loadRules(sample.language).find((definition) => definition.id === "max-sentence-length");
-  if (rule === undefined) throw new Error("max-sentence-length is not a rule any more");
-  return { sentenceLimit: resolve(rule, "normal", sample.genre).limit };
-};
+const contextOf = (sample: Sample): PlantContext => ({
+  limits: Object.fromEntries(loadRules(sample.language).map((rule) => [rule.id, resolve(rule, "normal", sample.genre).limit])),
+});
 
-const findingsOf = async (sample: Sample, source: string): Promise<CorpusFinding[]> => allFindings(sample.path, source, sample.language, sample.genre);
+/** Whether chaff runs the rule on this sample at all: its languages, and a genre in its use_for. */
+const runsOn = (sample: Sample, id: string): boolean =>
+  loadRules(sample.language).some((rule) => rule.id === id && rule.use_for.some((target) => sample.genre.startsWith(target)));
+
+const teamOf = (sample: Sample): TeamWords => ({ jargon: TEAM_JARGON, requiredSections: requiredSectionsOf(sample.source) });
+
+const findingsOf = async (sample: Sample, source: string): Promise<CorpusFinding[]> =>
+  allFindings(sample.path, source, sample.language, sample.genre, teamOf(sample));
 
 const plantedOutcome = async (sample: Sample, mutation: Mutation): Promise<Outcome | undefined> => {
   const plant = mutation.plant(sample.source, contextOf(sample));
@@ -59,16 +74,19 @@ const plantedOutcome = async (sample: Sample, mutation: Mutation): Promise<Outco
   const findings = await findingsOf(sample, plant.source);
   if (verbose)
     findings.filter((finding) => finding.rule === mutation.rule).forEach((finding) => console.log(`    ${String(finding.line)}  ${finding.message}`));
-  return outcomeOf(sample.name, mutation.id, { rule: mutation.rule, line: plant.line }, findings);
+  return outcomeOf(sample.name, mutation.id, { rule: mutation.rule, line: mutation.reportsOn ?? plant.line }, findings);
 };
 
 const outcomesOf = async (sample: Sample): Promise<Outcome[]> =>
-  MUTATIONS.filter((mutation) => mutation.languages.includes(sample.language)).reduce<Promise<Outcome[]>>(async (previous, mutation) => {
-    const outcomes = await previous;
-    const outcome = await plantedOutcome(sample, mutation);
-    if (outcome !== undefined && verbose) console.log(outcomeLine(outcome));
-    return outcome === undefined ? outcomes : [...outcomes, outcome];
-  }, Promise.resolve([]));
+  MUTATIONS.filter((mutation) => mutation.languages.includes(sample.language) && runsOn(sample, mutation.rule)).reduce<Promise<Outcome[]>>(
+    async (previous, mutation) => {
+      const outcomes = await previous;
+      const outcome = await plantedOutcome(sample, mutation);
+      if (outcome !== undefined && verbose) console.log(outcomeLine(outcome));
+      return outcome === undefined ? outcomes : [...outcomes, outcome];
+    },
+    Promise.resolve([]),
+  );
 
 type Measured = { readonly outcomes: readonly Outcome[]; readonly clean: readonly CorpusFinding[]; readonly cleanLine: string };
 
