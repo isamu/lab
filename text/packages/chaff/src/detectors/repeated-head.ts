@@ -19,6 +19,10 @@ const containerOf = (sentence: Sentence, lists: readonly Span[]): number =>
 
 type Run = { readonly head: string; readonly container: number; readonly members: readonly Sentence[] };
 
+/** 前の文と今の文のあいだで、箇条書きの項目が始まっているか。文を持たない項目（画像だけの - ![図](a.png)）も連なりを切る。 */
+const listBetween = (previous: Sentence | undefined, sentence: Sentence, lists: readonly Span[]): boolean =>
+  previous !== undefined && lists.some((item) => item.start >= previous.span.end && item.start < sentence.span.start);
+
 /**
  * 連なりは同じ入れ物の中でだけ続く。箇条書きの項目どうしは同じ形で並べるのが書き方そのもの（「1. SRE に関する…」「2. SRE に関する…」）で、
  * 項目をまたぐと切る。一つの項目の中の段落や、地の文の中では、これまでどおり数える。箇条書きの前後の地の文も、箇条書きで切れる。
@@ -30,7 +34,8 @@ const runsOf = (sentences: readonly Sentence[], unit: LengthUnit, lists: readonl
     const last = acc.at(-1);
     // 短すぎる書き出しは「同じ」と言えない。単位ぶん揃って初めて連なりと見る。
     const full = unit === "char" ? head.length === HEAD_CHARS : head.split(" ").length === HEAD_WORDS;
-    if (last !== undefined && last.head === head && last.container === container && full) {
+    const joins = last !== undefined && last.head === head && last.container === container && !listBetween(last.members.at(-1), sentence, lists);
+    if (last !== undefined && joins && full) {
       return [...acc.slice(0, -1), { head, container, members: [...last.members, sentence] }];
     }
     return [...acc, { head, container, members: [sentence] }];

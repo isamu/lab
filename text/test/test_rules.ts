@@ -91,6 +91,10 @@ describe("repeated-sentence-head", () => {
     const source = ["そしてこれは一です。そしてこれは二です。", "", "- 項目。", "", "そしてこれは三です。そしてこれは四です。"].join("\n");
     assert.ok(!idsFor(source).includes("repeated-sentence-head"));
   });
+  it("文を持たない項目（画像だけ）の箇条書きでも、前後の地の文を一つの連なりにしない", () => {
+    const source = ["そしてこれは一です。そしてこれは二です。", "", "- ![図](a.png)", "", "そしてこれは三です。そしてこれは四です。"].join("\n");
+    assert.ok(!idsFor(source).includes("repeated-sentence-head"));
+  });
   it("invalid: 一つの項目の中の段落で続くなら数える（項目をまたぐのとは違う）", () => {
     assert.ok(idsFor("- 導入です。そしてこれは一です。そしてこれは二です。そしてこれは三です。そしてこれは四です。").includes("repeated-sentence-head"));
   });
