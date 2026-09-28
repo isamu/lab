@@ -1,0 +1,176 @@
+# Getting started
+
+chaff finds the places in a text that are hard to read. It never rewrites anything; fixing is the writer's job.
+Start by running it once on something you wrote.
+
+```bash
+npx chaffjs article.md
+```
+
+## Run it on your own writing
+
+No settings file, no API key and no language setting are needed. Give it a file and it reads it.
+
+```bash
+npx chaffjs article.md           check this file
+npx chaffjs .                    check every Markdown file here
+npx chaffjs docs/ README.md      mix directories, files and globs
+```
+
+`node_modules`, `dist`, `build` and `coverage` are skipped.
+If nothing is found to check, the run fails.
+That way a run that checked nothing never looks like a pass.
+
+## Reading the screen
+
+With no findings, it looks like this.
+
+```
+$ npx chaffjs article.md
+
+article.md   blog/tech · English   genre from the default
+
+────────────────────────────────────────────────────────────
+
+  No findings   All judged by machine
+              (the same text gives the same result every time)
+
+  The text was not changed. Fixing it is the writer's job.
+
+  33 rules did not run:
+      adverb-overuse (still experimental)
+      ai-generated-composite (still experimental)
+      ai-tell (still experimental)
+      contraction-consistency (still experimental)
+      dangling-reference (still experimental)
+      duplicate-definition (still experimental)
+      emoji-density (still experimental)
+      empty-conclusion (it reads meaning; npx chaff test runs it)
+      excessive-hedging (still experimental)
+      expletive-construction (still experimental)
+      hiragana-fukushi (not a rule for en)
+      internal-jargon (still experimental)
+      latin-spacing (not a rule for en)
+      max-kanji-continuous (not a rule for en)
+      no-doubled-joshi (not a rule for en)
+      no-em-dash (still experimental)
+      no-mixed-desumasu (not a rule for en)
+      no-nakaguro-parallel (not a rule for en)
+      numbering-gap (still experimental)
+      oxford-comma-consistency (still experimental)
+      paragraph-length-variance (still experimental)
+      preferred-term (still experimental)
+      proper-noun-density (still experimental)
+      repeated-conjunction (still experimental)
+      required-sections (still experimental)
+      rule-of-three (still experimental)
+      sasete-itadaku (not a rule for en)
+      section-length-uniformity (still experimental)
+      sentence-initial-conjunction-run (still experimental)
+      sentence-rhythm (still experimental)
+      taigen-dome-in-prose (not a rule for en)
+      title-case-consistency (still experimental)
+      unqualified-superlative (still experimental)
+
+```
+
+With findings, each one gets its own block. This is a run on a real article.
+
+```
+$ npx chaffjs sample.md
+
+sample.md   blog/tech · English   genre from the default
+
+─── line 21 ──────────────────────────────────────────────────
+
+    If you imagine MCP, it’s easier to understand: a ToolsAgent is an agent that allows an LLM to call functions (Agents) by…
+
+  ⚠  Sentence too long
+
+     This sentence runs 31 words (limit 25)
+     In a long sentence the reader loses the subject before reaching the verb.
+
+     → Split it in two at the conjunction.
+
+     Relax this rule:  npx chaff relax max-sentence-length
+
+
+─── line 21 ──────────────────────────────────────────────────
+
+    Internally, it passes the tools schema to an OpenAI LLM agent, then dynamically calls the appropriate agent(s) within Gr…
+
+  ⚠  Sentence too long
+
+     This sentence runs 27 words (limit 25)
+     In a long sentence the reader loses the subject before reaching the verb.
+
+     → Split it in two at the conjunction.
+
+     Relax this rule:  npx chaff relax max-sentence-length
+
+
+─── line 142 ─────────────────────────────────────────────────
+
+    Set the tools schema in agentFunctionInfo.
+
+  ⚠  Heading echoed
+
+     The first sentence repeats the heading "agentFunctionInfo"
+     When the first sentence repeats the heading, the reader gains nothing by reading on.
+
+     → Start from what the heading promised, not from the heading itself.
+
+     Relax this rule:  npx chaff relax heading-echo
+```
+
+From top to bottom, the screen says:
+
+| Part of the screen | What it means |
+| --- | --- |
+| First line | The file, its genre, its language, and where the genre came from |
+| `─── line 21 ───` | One finding starts here; the number is the line |
+| The indented sentence | The sentence the finding is about |
+| `⚠` and `·` | How serious the finding is, followed by its title |
+| The two lines under the title | What is happening, and why it is hard to read |
+| The line starting with `→` | How to fix it |
+| Relax this rule | The command that adjusts that rule for your team |
+| The count at the end | How many findings, and that all of them were judged by machine |
+| Rules that did not run | The rules not used this time, each with the reason |
+
+The same text gives the same result every time.
+Rules that did not run are listed with their reasons, so you can see what was checked and what was not.
+
+The screen says `npx chaff relax`; when you type it yourself, type `npx chaffjs relax`.
+This guide writes commands the way you type them, as `npx chaffjs`.
+
+## Three ways to respond to a finding
+
+Any of them is fine.
+
+| Way | When | What to do |
+| --- | --- | --- |
+| Fix it | The finding is right | Rewrite the text |
+| Silence this spot | The finding is right, but here it is on purpose | Write `<!-- stet: rule-id — reason -->` |
+| Change the rule | It does not fit how your team writes | Type `npx chaffjs relax rule-id --why "reason"` |
+
+The third one matters.
+Without a way to change the rule, "too noisy, stop using it" is where it ends.
+
+## Choosing what to silence
+
+`stet` marks a finding as intended. It is written as a Markdown comment, so readers never see it.
+There are three reaches to choose from.
+
+| Written as | Silences |
+| --- | --- |
+| `<!-- stet: bold-density — a glossary, on purpose -->` | The next spot only |
+| `<!-- stet-section: bold-density — a list -->` | Up to the next heading |
+| `<!-- stet-file: ai-tell, rule-of-three — mostly quotations -->` | The whole file |
+
+Write the reason after `—`, so whoever reads it later can see why it was silenced.
+If you keep silencing the same rule, it is time to change the rule instead.
+
+## What to read next
+
+- To fit rule strength and genre to your team, read [Configuration](./configuration).
+- Every command and option is listed in [Commands](./commands).
