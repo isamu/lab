@@ -352,6 +352,31 @@ describe("concrete-evidence-density", () => {
     assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
   });
 
+  it("valid: 漢数字で書いた数（二割、十五分、三人）も具体的な数", async () => {
+    await ja.prepare?.({ pos: true });
+    const amounts = ["二割", "十五分", "三人", "百件"];
+    const sections = amounts.map((amount, index) => `## 節${String(index)}\n\n参加は${amount}でした。実例を挙げます。結果を示します。`).join("\n\n");
+    assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
+  });
+
+  it("invalid: 言い回しの中の漢字（一人ひとり、十分、二人三脚）は数ではない", async () => {
+    await ja.prepare?.({ pos: true });
+    // 辞書が一語として持つ言い回し。「誰一人」「万人」は辞書でも数と単位に分かれるので、ここには入れない。
+    const words = ["一人ひとりに届けます", "十分に検討します", "数年かけて進めます", "何人かで止めます"];
+    const idioms = ["三日坊主になりません", "百人一首を読みます", "十人十色の考えです", "一緒に考えます"];
+    const sections = words.map((word, index) => `## 節${String(index)}\n\n${word}。考えかたを述べます。理念を語ります。`).join("\n\n");
+    assert.ok(idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
+    const idiomSections = idioms.map((word, index) => `## 節${String(index)}\n\n${word}。考えかたを述べます。理念を語ります。`).join("\n\n");
+    assert.ok(idsFor(`# 表題\n\n${idiomSections}`).includes("concrete-evidence-density"));
+  });
+
+  it("valid: 単位の後ろに語が続く数（二割程度、三日間、五年後）や、一件・一万円も数える", async () => {
+    await ja.prepare?.({ pos: true });
+    const amounts = ["二割程度", "三日間", "一件", "一万円"];
+    const sections = amounts.map((amount, index) => `## 節${String(index)}\n\n期間は${amount}です。実例を挙げます。結果を示します。`).join("\n\n");
+    assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
+  });
+
   it("仕様書では動かさない。定義の節に具体物は要らない", () => {
     // 「error とは何か」のような節は、数値もコードも無くて当たり前。
     const sections = ["error", "warning", "info", "Phase 1"].map((name) => `## ${name}\n\n抽象的な説明です。考えかたを述べます。理念を語ります。`).join("\n\n");
