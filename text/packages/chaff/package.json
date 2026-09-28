@@ -1,6 +1,6 @@
 {
   "name": "chaffjs",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Prose validation harness. Finds what is hard to read, and never rewrites it for you.",
   "keywords": [
     "chaff",
@@ -54,8 +54,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
-    "@chaffjs/lang-en": "0.6.0",
-    "@chaffjs/lang-ja": "0.7.0",
+    "@chaffjs/lang-en": "0.7.0",
+    "@chaffjs/lang-ja": "0.8.0",
     "mdast-util-from-markdown": "^2.0.3",
     "mdast-util-frontmatter": "^2.0.1",
     "mdast-util-gfm-table": "^2.0.0",
