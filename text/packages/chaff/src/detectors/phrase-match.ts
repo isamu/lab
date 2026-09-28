@@ -1,4 +1,5 @@
-import type { Detector, Finding, ProseDocument, Sentence } from "../plugin.ts";
+import type { Detector, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
+import { entryIn } from "./lexicon-match.ts";
 
 /** 冒頭は先頭 2 段落ぶん。「どの記事にも当てはまる書き出し」は冒頭にあるときだけ問題。 */
 const OPENING_SENTENCES = 4;
@@ -15,10 +16,10 @@ const inScope = (doc: ProseDocument, where: string | undefined): readonly Senten
 
 type Hit = { readonly sentence: Sentence; readonly matched: string };
 
-const hitsIn = (sentences: readonly Sentence[], patterns: readonly string[]): Hit[] =>
+const hitsIn = (sentences: readonly Sentence[], lexicon: Lexicon): Hit[] =>
   sentences.flatMap((sentence) => {
-    const matched = patterns.find((pattern) => sentence.text.toLowerCase().includes(pattern.toLowerCase()));
-    return matched === undefined ? [] : [{ sentence, matched }];
+    const matched = lexicon.find((entry) => entryIn(sentence, entry));
+    return matched === undefined ? [] : [{ sentence, matched: matched.pattern }];
   });
 
 /**
@@ -26,9 +27,9 @@ const hitsIn = (sentences: readonly Sentence[], patterns: readonly string[]): Hi
  * これが L2 の全体像で、新しい言語は語彙表を書くだけで動く。
  */
 export const phraseMatch: Detector = (doc, options): Finding[] => {
-  const patterns = (options.lexicon ?? []).map((entry) => entry.pattern);
-  if (patterns.length === 0) return [];
-  const hits = hitsIn(inScope(doc, options.where), patterns);
+  const lexicon = options.lexicon ?? [];
+  if (lexicon.length === 0) return [];
+  const hits = hitsIn(inScope(doc, options.where), lexicon);
   if (hits.length < options.limit) return [];
   return hits.map((hit) => ({
     rule: "",

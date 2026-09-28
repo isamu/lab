@@ -3,6 +3,7 @@ layer: L2
 status: experimental
 how_to_find: hedging-density
 word_list: excessive-hedging
+uses: [pos]
 severity: warning
 
 name:

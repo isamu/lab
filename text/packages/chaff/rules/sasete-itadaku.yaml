@@ -3,6 +3,7 @@ layer: L3
 status: experimental
 how_to_find: phrase-match
 word_list: sasete-itadaku
+uses: [pos]
 languages: [ja]
 severity: info
 

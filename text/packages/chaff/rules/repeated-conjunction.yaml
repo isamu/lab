@@ -3,6 +3,7 @@ layer: L2
 status: experimental
 how_to_find: repeated-conjunction
 word_list: paragraph-opener
+uses: [pos]
 severity: warning
 
 name:

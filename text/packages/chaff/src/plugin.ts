@@ -36,7 +36,13 @@ export type LengthUnit = "char" | "word";
  * `instead_of` は「同じことを言う別の書きかた」。文体の一貫性を見る rule が使う。
  * 2 つの書きかたのどちらが正しいかは決めず、**1 つの文書で混ざっていないか**だけを見る。
  */
-export type LexiconEntry = { readonly pattern: string; readonly weight?: number | undefined; readonly instead_of?: string | undefined };
+export type LexiconEntry = {
+  readonly pattern: string;
+  readonly weight?: number | undefined;
+  readonly instead_of?: string | undefined;
+  /** pattern を adapter が語に分けたもの。品詞が読めるときだけ core が入れる。語彙表を書く側は書かない。 */
+  readonly tokens?: readonly Token[] | undefined;
+};
 
 export type Lexicon = readonly LexiconEntry[];
 

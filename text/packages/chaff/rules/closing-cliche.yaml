@@ -3,6 +3,7 @@ layer: L2
 status: stable
 how_to_find: phrase-match
 word_list: closing-cliche
+uses: [pos]
 where: closing
 severity: warning
 

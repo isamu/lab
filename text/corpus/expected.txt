@@ -2,7 +2,7 @@
 18f-engineering-code-review  max-sentence-length 1, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
 18f-engineering-on-call  max-sentence-length 15, oxford-comma-consistency 1
 18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 7, expletive-construction 5, max-paragraph-length 1, max-sentence-length 43, oxford-comma-consistency 1, preamble-length 1, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
-18f-handbook-projects-in-distress  agentless-passive 17, max-paragraph-length 1, max-sentence-length 28, proper-noun-density 1, undefined-acronym 6
+18f-handbook-projects-in-distress  agentless-passive 17, max-paragraph-length 1, max-sentence-length 28, proper-noun-density 1, undefined-acronym 6, unqualified-superlative 2
 18f-handbook-travel  agentless-passive 22, contraction-consistency 1, max-sentence-length 14, preamble-length 1, proper-noun-density 1, title-case-consistency 2, undefined-acronym 5
 bonterms-cloud-terms  agentless-passive 21, max-paragraph-length 5, max-sentence-length 73, ngram-repetition 1, proper-noun-density 1, undefined-acronym 3
 cisa-scuba-teams  bold-density 9, contraction-consistency 4, max-paragraph-length 2, max-sentence-length 35, ngram-repetition 1, numbering-gap 1, proper-noun-density 1, undefined-acronym 6

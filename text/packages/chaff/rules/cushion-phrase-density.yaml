@@ -3,6 +3,7 @@ layer: L2
 status: experimental
 how_to_find: cushion-density
 word_list: cushion-phrase
+uses: [pos]
 severity: info
 
 name:
