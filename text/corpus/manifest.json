@@ -1,5 +1,5 @@
 {
-  "note": "Real documents chaff is run on. Japanese statutes are public domain (Copyright Act of Japan, Article 13). UK Acts are under the Open Government Licence v3.0 (contains public sector information licensed under the OGL, from legislation.gov.uk). Both are committed; anything that may not be redistributed is listed with redistribute: false and only cached locally. Documents of other kinds (source \"url\") are fetched from a pinned URL: committed under docs/ when their license allows it (redistribute: true), otherwise only the URL is kept and the text goes to the git-ignored .cache/.",
+  "note": "Real documents chaff is run on. Japanese statutes are public domain (Copyright Act of Japan, Article 13). UK Acts are under the Open Government Licence v3.0 (contains public sector information licensed under the OGL, from legislation.gov.uk). Both are committed; anything that may not be redistributed is listed with redistribute: false and only cached locally. Documents of other kinds (source \"url\") are fetched from a pinned URL: committed under docs/ when their license allows it (redistribute: true), otherwise only the URL is kept and the text goes to the git-ignored .cache/. A source that is not Markdown or plain text names its \"format\" (\"wikitext\" or \"html\") and is stored converted to Markdown.",
   "documents": [
     {
       "id": "rouki",
@@ -256,6 +256,192 @@
       "url": "https://raw.githubusercontent.com/digital-go-jp/genai-web/e86155d7a6cf9d28ece962787f3f7c4da219f2b2/docs/AI%E3%82%A2%E3%83%97%E3%83%AA%E7%99%BB%E9%8C%B2%E6%89%8B%E9%A0%86%E6%9B%B8.md",
       "license": "See repository LICENSE.md (URL only)",
       "redistribute": false
+    },
+    {
+      "id": "crs-rl32781-salt",
+      "title": "CRS RL32781: Federal Deductibility of State and Local Taxes",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://www.everycrsreport.com/files/2026-09-25_RL32781_2acd6567b119bfb16bb5cd93cd9cee1a29c10cd2.html",
+      "license": "Public domain (work of the US federal government)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "crs-r47585-subcontracting",
+      "title": "CRS R47585: An Overview of Small Business Subcontracting: In Brief",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://www.everycrsreport.com/files/2026-03-26_R47585_41f3e468f09545598d5d56d33275d44603f42bfd.html",
+      "license": "Public domain (work of the US federal government)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "crs-r47235-budget-timeline",
+      "title": "CRS R47235: The Congressional Budget Process Timeline",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://www.everycrsreport.com/files/2025-07-29_R47235_2a65b2380bd1a41c2c649f76320f8a9ab02671bb.html",
+      "license": "Public domain (work of the US federal government)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "cisa-scuba-teams",
+      "title": "CISA M365 Secure Configuration Baseline for Teams",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/cisagov/ScubaGear/8bbaf7573d90d6efb9aa0d40c662bb58f1204171/PowerShell/ScubaGear/baselines/teams.md",
+      "license": "CC0-1.0, with portions adapted from Microsoft docs under CC-BY-4.0 (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "fprime-buffermanager-sdd",
+      "title": "F Prime Svc::BufferManager: requirements and design",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/nasa/fprime/0d60d5a4fb6d5567d8f513a401c49b6db4e0c51a/Svc/BufferManager/docs/sdd.md",
+      "license": "Apache-2.0",
+      "redistribute": false
+    },
+    {
+      "id": "rfc3693-geopriv-requirements",
+      "title": "RFC 3693: Geopriv Requirements",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://www.rfc-editor.org/rfc/rfc3693.txt",
+      "license": "IETF Trust (BCP 78)",
+      "redistribute": false
+    },
+    {
+      "id": "commonpaper-mutual-nda",
+      "title": "Common Paper Mutual NDA 1.0: Standard Terms",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/CommonPaper/Mutual-NDA/2a3068b6c0ab6015c440f541d5b215bc3ac2f4cb/Mutual-NDA.md",
+      "license": "CC-BY-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "commonpaper-csa",
+      "title": "Common Paper Cloud Service Agreement: Standard Terms",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/CommonPaper/CSA/002966564f9d128de3cdf683b4586d3fd00bf1a5/CSA.md",
+      "license": "CC-BY-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "bonterms-cloud-terms",
+      "title": "Bonterms Cloud Terms",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/Bonterms/Cloud-Terms/df13f512c3bd923cc09cc2dae918812f876ea6e9/Cloud-Terms.md",
+      "license": "CC-BY-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "wikivoyage-magnificent-mile",
+      "title": "Wikivoyage: Along the Magnificent Mile",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "en",
+      "url": "https://en.wikivoyage.org/w/index.php?oldid=4844000&action=raw",
+      "license": "CC-BY-SA-4.0",
+      "redistribute": false,
+      "format": "wikitext"
+    },
+    {
+      "id": "wikivoyage-belgian-coast-tram",
+      "title": "Wikivoyage: Belgian coast by tram",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "en",
+      "url": "https://en.wikivoyage.org/w/index.php?oldid=5348758&action=raw",
+      "license": "CC-BY-SA-4.0",
+      "redistribute": false,
+      "format": "wikitext"
+    },
+    {
+      "id": "wikivoyage-loop-art-tour",
+      "title": "Wikivoyage: Loop Art Tour",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "en",
+      "url": "https://en.wikivoyage.org/w/index.php?oldid=4894484&action=raw",
+      "license": "CC-BY-SA-4.0",
+      "redistribute": false,
+      "format": "wikitext"
+    },
+    {
+      "id": "18f-handbook-one-on-ones",
+      "title": "TTS Handbook: One-on-Ones",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/GSA-TTS/handbook/c220f93896b39e9e4ab0f486a1d5bf346ac06e3e/pages/18f/how-18f-works/one-on-ones.md",
+      "license": "CC0-1.0 (US government work, public domain)",
+      "redistribute": true
+    },
+    {
+      "id": "18f-handbook-projects-in-distress",
+      "title": "TTS Handbook: Projects in distress",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/GSA-TTS/handbook/c220f93896b39e9e4ab0f486a1d5bf346ac06e3e/pages/18f/projects-partners/projects-in-distress.md",
+      "license": "CC0-1.0 (US government work, public domain)",
+      "redistribute": true
+    },
+    {
+      "id": "18f-handbook-travel",
+      "title": "TTS Handbook: Travel guide, 3. Travel",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/GSA-TTS/handbook/c220f93896b39e9e4ab0f486a1d5bf346ac06e3e/pages/travel-and-leave/travel-and-leave-policies/travel-guide-3-travel.md",
+      "license": "CC0-1.0 (US government work, public domain)",
+      "redistribute": true
+    },
+    {
+      "id": "18f-engineering-code-review",
+      "title": "18F Engineering Guide: Code review",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/18F/development-guide/8df7e990d969ec1e3708ecdb07a4bd5740c168d6/_pages/code-review.md",
+      "license": "CC0-1.0 (US government work, public domain)",
+      "redistribute": true
+    },
+    {
+      "id": "18f-engineering-on-call",
+      "title": "18F Engineering Guide: On-call",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/18F/development-guide/8df7e990d969ec1e3708ecdb07a4bd5740c168d6/_pages/on-call.md",
+      "license": "CC0-1.0 (US government work, public domain)",
+      "redistribute": true
+    },
+    {
+      "id": "18f-content-voice-and-tone",
+      "title": "18F Content Guide: Voice and tone",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/18F/content-guide/1b1723d3d5b8f91d92c16487c88b56265dc0ec3a/_pages/our-style/voice-and-tone.md",
+      "license": "CC0-1.0 (US government work, public domain)",
+      "redistribute": true
     }
   ]
 }

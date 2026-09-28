@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### The corpus has English reports, requirements, contracts, itineraries and internal docs (#170)
+
+`yarn corpus` now also runs on CRS reports, requirement and design documents (a CISA baseline, an F Prime SDD, a
+requirements RFC), standard contracts (Common Paper, Bonterms), Wikivoyage itineraries, and 18F handbook and guide
+pages. Public-domain ones are committed; the others keep only a pinned URL. A manifest entry can name its source
+`"format"` (`wikitext` or `html`); `yarn corpus:fetch` stores such a source converted to Markdown.
+
 ### lang-ja reads 「1.2 万円」 as 12000 yen (#170)
 
 A number written with a space before 万, 億 or 兆 (`1.2 万円`, `26.7 万行`, `3 億円`) was read as two numbers, so the
