@@ -159,7 +159,7 @@ const widerScope = (state: State, patterns: StructurePatterns, text: string): Dr
 };
 
 /** 範囲を宣言した行を持つまとまり。条の中なら条、条の外（Markdown の見出しの下、Part の直下）なら開いている一番内側のもの。 */
-const holderOf = (state: State): Draft => enclosingArticle(state) ?? state.stack[0]!.draft;
+const holderOf = (state: State): Draft => enclosingArticle(state) ?? top(state).draft;
 
 /**
  * 定義の範囲。範囲を宣言した行（In this section— / In this Part—）を含むまとまりの定義が対象。宣言が Part なら、比べるのは
@@ -173,7 +173,7 @@ const scopeOf = (state: State, patterns: StructurePatterns, text: string): Reado
     if (wider !== undefined) state.widerScopes.set(holder, wider);
   }
   if (!state.scopedArticles.has(holder)) return {};
-  const within = state.widerScopes.get(holder);
+  const within = state.widerScopes.get(holder) ?? (holder.kind === "article" ? undefined : holder);
   return within === undefined ? { scope: "local" } : { scope: "local", within: within.address };
 };
 
