@@ -64,6 +64,15 @@ describe("unreadStructure", () => {
   });
 });
 
+describe("code is not text", () => {
+  it("clause numbers inside a Markdown code block do not mark the document unread", () => {
+    const rules = loadRules("en").filter((rule) => rule.id === "dangling-reference");
+    const source = lines("# Notes", "", "```", ...INDENTED.split("\n"), "```", "", "Nothing numbered here.");
+    const result = runRules(buildDocument("c.md", source, en), rules, {}, true, "business/report");
+    assert.ok(!result.skipped.some((skipped) => skipped.why.includes("clause numbers")), JSON.stringify(result.skipped));
+  });
+});
+
 describe("the structure rules say they could not read the document", () => {
   it("lists the reason instead of reporting nothing", () => {
     const rules = loadRules("en").filter((rule) => ["dangling-reference", "numbering-gap", "duplicate-definition"].includes(rule.id));

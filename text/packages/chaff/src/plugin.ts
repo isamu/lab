@@ -276,6 +276,8 @@ export type ProseDocument = {
   readonly structure: StructureNode | undefined;
   /** 文書の種類（法令など）。選ばれなければ無い。 */
   readonly profile?: DocumentProfile | undefined;
+  /** 本文でないもの（コード・HTML・強調の印）を同じ長さの空白で覆った source。位置は source と同じ。 */
+  readonly prose?: string | undefined;
 };
 
 export type Severity = "error" | "warning" | "info";

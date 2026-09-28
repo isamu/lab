@@ -4,6 +4,7 @@ import type { AdapterNeeds, Finding, Level, ProseDocument, RuleDefinition } from
 import { lineStarts, placeOf } from "./position.ts";
 import { REASONS, type Reasons } from "./reasons.ts";
 import { unreadStructure, type Unread } from "./structure/unread.ts";
+import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { uiLanguageOf } from "./ui.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
@@ -37,11 +38,14 @@ const treeProblem = (doc: ProseDocument): string | undefined => {
   return unread === undefined ? undefined : reasonsFor(doc).unreadStructure(unread.clauses, unread.units);
 };
 
+/** 木が読んだのと同じ本文。Markdown はコードを覆ったもの、.txt はそのまま（.txt の字下げはコードではない）。 */
+const textTheTreeRead = (doc: ProseDocument): string => (isMarkdownPath(doc.path) ? (doc.prose ?? doc.source) : doc.source);
+
 const unreadByDocument = new WeakMap<ProseDocument, Unread | undefined>();
 
 /** 文書ごとに一度だけ数える。構造の rule が三つあっても、本文を三度なめない。 */
 const unreadOf = (doc: ProseDocument): Unread | undefined => {
-  if (!unreadByDocument.has(doc)) unreadByDocument.set(doc, doc.structure === undefined ? undefined : unreadStructure(doc.source, doc.structure));
+  if (!unreadByDocument.has(doc)) unreadByDocument.set(doc, doc.structure === undefined ? undefined : unreadStructure(textTheTreeRead(doc), doc.structure));
   return unreadByDocument.get(doc);
 };
 

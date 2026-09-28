@@ -299,6 +299,7 @@ export const buildDocument = (
       return tree.value ?? undefined;
     },
     profile,
+    prose,
   };
 };
 
