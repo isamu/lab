@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### A document whose numbered clauses could not be read says so (#140)
+
+Contracts taken out of PDFs often have their clauses indented deeper than a numbered line, or run into the text,
+so the tree held almost none of them and the structure rules reported nothing — which read as "checked and fine".
+When the text has at least five clause numbers (`11.3. Liability Cap`, or `1.   TERM` at the start of a line) and the
+tree read fewer than a quarter of them, `dangling-reference`, `numbering-gap` and `duplicate-definition` are listed as
+not run, with both counts. On the 509 SEC-filed contracts of CUAD (not committed), 141 are now reported this way; none of
+the committed documents is.
+
 ### English: a definition "In this Part" is compared within the Part (#140)
 
 Definitions after `In this Part—` were held to their own section, so a word defined twice inside one Part, in two

@@ -3,6 +3,7 @@ import { resolve } from "./levels.ts";
 import type { AdapterNeeds, Finding, Level, ProseDocument, RuleDefinition } from "./plugin.ts";
 import { lineStarts, placeOf } from "./position.ts";
 import { REASONS, type Reasons } from "./reasons.ts";
+import { unreadStructure, type Unread } from "./structure/unread.ts";
 import { uiLanguageOf } from "./ui.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
@@ -25,6 +26,24 @@ const levelFor = (rule: RuleDefinition, settings: Settings, experimental: boolea
 };
 
 const reasonsFor = (doc: ProseDocument): Reasons => REASONS[uiLanguageOf(doc.language)];
+
+/**
+ * 構造の rule が動けない理由。木を作れない言語か、番号の行を読めなかった文書。
+ * 読めなかった文書で「参照先が無い」が 0 件なのは、確かめた結果ではないので、読めなかったと言う。
+ */
+const treeProblem = (doc: ProseDocument): string | undefined => {
+  if (doc.structure === undefined) return reasonsFor(doc).noStructure(doc.language);
+  const unread = unreadOf(doc);
+  return unread === undefined ? undefined : reasonsFor(doc).unreadStructure(unread.clauses, unread.units);
+};
+
+const unreadByDocument = new WeakMap<ProseDocument, Unread | undefined>();
+
+/** 文書ごとに一度だけ数える。構造の rule が三つあっても、本文を三度なめない。 */
+const unreadOf = (doc: ProseDocument): Unread | undefined => {
+  if (!unreadByDocument.has(doc)) unreadByDocument.set(doc, doc.structure === undefined ? undefined : unreadStructure(doc.source, doc.structure));
+  return unreadByDocument.get(doc);
+};
 
 /** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
 const has = (capabilities: ProseDocument["capabilities"], need: string): boolean => {
@@ -135,9 +154,8 @@ export const runRules = (
       if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
       // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
       // 段階を見た後で聞く。doc.structure は触れたときに木を作るので、止めている rule のために作らない。
-      if (rule.requires.includes("structure") && doc.structure === undefined) {
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noStructure(doc.language) }] };
-      }
+      const noTree = rule.requires.includes("structure") ? treeProblem(doc) : undefined;
+      if (noTree !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTree }] };
       // 複合シグナルは二段目で扱う。一段目では「検出器が無い」と言わせない。
       if (rule.from.length > 0) return acc;
       const detector = DETECTORS[rule.how_to_find];
