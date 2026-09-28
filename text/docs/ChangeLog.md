@@ -2,6 +2,13 @@
 
 Newest first.
 
+## Unreleased
+
+### English reads bracketed citation tags as another document (#170)
+
+A reference written with a citation tag in capitals, as RFCs cite, is no longer looked up in this document:
+`Section 15 of [HTTP]`, `[HTTP], Section 12.1`, `[URI], Section 5`. Found by running chaff on RFC 9457 in the corpus.
+
 ## 0.10.0 — 2026-09-28
 
 Consistency and arithmetic: three experimental rules check what a schedule or a quote says against itself — a weekday

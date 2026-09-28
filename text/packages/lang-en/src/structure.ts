@@ -1,5 +1,5 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
-import { citedDocumentAfter } from "./citation.ts";
+import { citedDocumentAfter, citedDocumentBefore } from "./citation.ts";
 import { membersAfter } from "./reference-list.ts";
 import { parseRoman } from "./roman.ts";
 import { dates } from "./dates.ts";
@@ -202,7 +202,7 @@ const references = (text: string): Mention[] => {
     if (main === undefined) return [];
     const { parts, end } = subdivisions(text, match.index + match[0].length);
     advance(gloss, text, match.index);
-    const cited = citedDocumentAfter(text, end);
+    const cited = citedDocumentAfter(text, end) ?? citedDocumentBefore(text, match.index);
     const document = cited ?? glossedDocument(gloss);
     gloss.scanned = Math.max(gloss.scanned, end);
     if (cited !== undefined) gloss.anchors.push({ document: cited, depth: gloss.depth });

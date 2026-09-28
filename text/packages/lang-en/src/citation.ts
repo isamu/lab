@@ -43,6 +43,19 @@ export const listMembers = (rest: string, plural: boolean): ListMember[] =>
     .filter((member) => plural || MEMBER_END.test(rest.slice(member.end)))
     .map(({ start, text }) => ({ start, text }));
 
+/**
+ * A citation tag in brackets, as RFCs cite: "[HTTP]", "[URI]", "[RFC8126]". Capitals and digits only, so a bracketed
+ * word of a contract ("[Company]", "[Reserved]") is not taken for another document and still has to exist here.
+ */
+const TAG = "(?<tag>[A-Z][A-Z0-9]{1,30})";
+const TAG_AFTER = new RegExp(`^\\[${TAG}\\]`, "u");
+/** "[HTTP], Section 12.1": the tag written just before the reference. */
+const TAG_BEFORE = new RegExp(`\\[${TAG}\\],?\\s?$`, "u");
+
+/** The document cited by a tag just before a reference, as in "see [HTTP], Section 12.1". */
+export const citedDocumentBefore = (text: string, start: number): string | undefined =>
+  TAG_BEFORE.exec(text.slice(Math.max(0, start - 40), start))?.groups?.["tag"];
+
 const CAPITALISED = /^[A-Z][\w'’-]*/u;
 /**
  * How a document names itself. "Section 3 of the Agreement" in an agreement means this one.
@@ -78,6 +91,8 @@ export const citedDocumentAfter = (text: string, end: number): string | undefine
   const listed = afterList + (GLOSS.exec(rest.slice(afterList))?.[0].length ?? 0);
   const of = OF.exec(rest.slice(listed));
   if (of === null) return undefined;
+  const tag = TAG_AFTER.exec(rest.slice(listed + of[0].length))?.groups?.["tag"];
+  if (tag !== undefined) return tag;
   const words = titleWords(rest.slice(listed + of[0].length));
   if (words.length === 0) return undefined;
   const name = words.join(" ");
