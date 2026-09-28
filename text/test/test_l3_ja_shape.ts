@@ -46,6 +46,8 @@ describe("L3 日本語 — 文字と語彙", () => {
     it("invalid: 都道府県や丁目が無い長い語、住所の後ろに続く長い語は数える", () => {
       assert.ok(idsFor("東京都知事選挙管理委員会事務局に問い合わせる。").includes("max-kanji-continuous"));
       assert.ok(idsFor("新宿区役所総務部総務課長に届ける。").includes("max-kanji-continuous"));
+      assert.ok(idsFor("埼玉県市町村総合事務組合に問い合わせる。").includes("max-kanji-continuous"));
+      assert.ok(idsFor("大阪府市町村振興協会資料を確認する。").includes("max-kanji-continuous"));
     });
 
     it("覆った箇所の空白をまたいで繋がない", () => {
