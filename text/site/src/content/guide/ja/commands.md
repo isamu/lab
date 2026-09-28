@@ -59,7 +59,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
   344:1   warning この文は 129 文字あります（100 文字まで）
                   max-sentence-length
 
-6 findings, 33 rules not run
+指摘 6 件、動いていない rule 33 件
 ```
 
 最後の行は、指摘の数と、動かなかったルールの数です。
@@ -75,8 +75,8 @@ $ npx chaffjs article.md --watch
   1 ファイルを見ています。いまの指摘は 2 件です。
   保存するたびに、変わったところだけ出します。止めるには Ctrl-C。
 
-17:42:04  article.md  ✓ 2 → 1 件   (-1 bold-density)
-17:42:07  article.md  ✗ 1 → 2 件   (+1 closing-cliche)
+08:21:41  article.md  ✓ 2 → 1 件   (-1 bold-density)
+08:21:44  article.md  ✗ 1 → 2 件   (+1 closing-cliche)
 ```
 
 `✓` は指摘が減ったこと、`✗` は増えたことを表します。
@@ -209,7 +209,7 @@ $ npx chaffjs docs/ --compact
 docs/a.md   technical/readme · 日本語   ジャンルはパスから   棚上げ 1 件
 
 
-0 findings, 22 rules not run
+指摘 0 件、動いていない rule 22 件
 ```
 
 棚上げした分も見たいときは、`--show-baseline` を付けます。
@@ -222,7 +222,7 @@ docs/a.md   technical/readme · 日本語   ジャンルはパスから
   3:1     warning この文は 108 文字あります（100 文字まで）
                   max-sentence-length
 
-1 finding, 22 rules not run
+指摘 1 件、動いていない rule 22 件
 ```
 
 CI に入れるときの使いかたは、[CI](./ci) で説明します。
