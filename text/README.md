@@ -79,6 +79,7 @@ npx chaffjs docs/ README.md      ディレクトリもファイルも glob も�
 npx chaffjs init                 chaff.yaml を作る
 npx chaffjs explain bold-density そのルールの意図と根拠を読む
 npx chaffjs genres               ジャンルの一覧
+npx chaffjs --version            chaffjs と言語パッケージの版
 npx chaffjs baseline docs/       いまある指摘を棚上げする
 npx chaffjs suppressions docs/   stet で黙らせている指摘を数える
 npx chaffjs article.md --watch   保存のたびに、変わったところだけ出す

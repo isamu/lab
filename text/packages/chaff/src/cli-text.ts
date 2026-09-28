@@ -12,6 +12,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff test <file|dir>...       意味を読む検査も動かす（API key が要ります）
                                  判定役は chaff.yaml の ai_backend で選びます
   chaff init                     chaff.yaml を作る
+  chaff --version                chaffjs と言語パッケージの版
   chaff eval <dir>               手元の文書で閾値を測り直す
   chaff explain <rule>           そのルールの意図と根拠を読む
   chaff genres                   ジャンルの一覧
@@ -45,6 +46,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff test <file|dir>...       also run the checks that read meaning (needs an API key)
                                  the judge is chosen by ai_backend in chaff.yaml
   chaff init                     create chaff.yaml
+  chaff --version                the version of chaffjs and its language packages
   chaff eval <dir>               re-measure the limits on your own documents
   chaff explain <rule>           read what a rule is for and why
   chaff genres                   list the genres

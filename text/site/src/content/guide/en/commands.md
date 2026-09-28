@@ -14,6 +14,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs init` | Creates `chaff.yaml` |
 | `npx chaffjs explain <rule>` | Shows what a rule is for, and why |
 | `npx chaffjs genres` | Lists the genres |
+| `npx chaffjs --version` | Prints the version of chaffjs and of its bundled language packages |
 | `npx chaffjs rules --json` | The current settings as JSON, to give to an AI |
 | `npx chaffjs relax\|strict\|off <rule>` | Changes a rule's level, with `--why "reason"` |
 | `npx chaffjs baseline <dir>` | Shelves today's findings |
