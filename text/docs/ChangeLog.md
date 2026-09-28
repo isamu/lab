@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### Japanese government reports, minutes, plans and specifications in the corpus (#170)
+
+The corpus now holds pages from 総務省's 情報通信白書 (URL only) and デジタル庁's annual report, council minutes, policy
+plans and data specifications (committed under 公共データ利用規約（第1.0版）with attribution). `yarn corpus:fetch` reads a
+page in the encoding it declares (Shift_JIS as well as UTF-8), and the HTML conversion reads only `<main>` when there is
+one and drops asides, footers, forms, XML declarations and lists made only of links.
+
 ### `repeated-sentence-head` leaves list items alone (#170)
 
 Items of a list are written in parallel on purpose (`1. SRE に関するカンファレンス…`, `2. SRE に関する…`, "Take a look

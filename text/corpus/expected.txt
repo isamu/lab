@@ -11,6 +11,16 @@ commonpaper-mutual-nda  agentless-passive 9, max-sentence-length 13, proper-noun
 crs-r47235-budget-timeline  agentless-passive 32, max-paragraph-length 4, max-sentence-length 82, ngram-repetition 1, proper-noun-density 1
 crs-r47585-subcontracting  agentless-passive 24, contraction-consistency 1, heading-echo 1, max-paragraph-length 1, max-sentence-length 87, ngram-repetition 1, proper-noun-density 1, undefined-acronym 5, unqualified-superlative 2
 crs-rl32781-salt  agentless-passive 31, max-paragraph-length 5, max-sentence-length 108, ngram-repetition 1, proper-noun-density 1, undefined-acronym 5
+da-agile-review-4  agentless-passive 4, max-sentence-length 13, no-mixed-desumasu 1
+da-ai-advisory-board-1  agentless-passive 18, heading-echo 1, latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 9, max-sentence-length 30, no-doubled-joshi 2, no-mixed-desumasu 1, sasete-itadaku 4, taigen-dome-in-prose 1, undefined-acronym 11
+da-annual-report-2024  agentless-passive 1, concrete-evidence-density 5, heading-echo 1, max-sentence-length 1, ngram-repetition 1, preamble-length 1
+da-area-data-map-format  clean
+da-area-data-model  latin-spacing 5, max-sentence-length 5, repeated-sentence-head 1, undefined-acronym 3
+da-data-strategy  agentless-passive 1, empty-intensifier 1, max-kanji-continuous 2, max-sentence-length 4, preamble-length 1
+da-legal-practice  heading-echo 1, latin-spacing 4, max-kanji-continuous 2, max-sentence-length 6, preamble-length 1, repeated-sentence-head 1
+da-machine-readability-output-format  latin-spacing 12, no-mixed-desumasu 1
+da-priority-policy-program  agentless-passive 1, max-kanji-continuous 1, no-doubled-joshi 1, preamble-length 1, undefined-acronym 3
+da-service-design-guidelines-2  agentless-passive 24, concrete-evidence-density 4, dangling-reference 1, latin-spacing 28, max-kanji-continuous 3, max-sentence-length 31, no-doubled-joshi 1, no-mixed-desumasu 1, undefined-acronym 7
 denkiyagi-ryohi-kitei  heading-echo 1
 denkiyagi-shugyo-kisoku  agentless-passive 3, heading-echo 3, max-kanji-continuous 19, max-sentence-length 7, ngram-repetition 1, no-doubled-joshi 4
 entaku-rb-4  agentless-passive 9, latin-spacing 1, no-mixed-desumasu 1
@@ -28,6 +38,9 @@ rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 83, ng
 rfc9457  max-sentence-length 56, proper-noun-density 1, undefined-acronym 22
 rust-lang-minutes-2022-11-22  agentless-passive 4, contraction-consistency 2, max-sentence-length 3, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
 rust-rfc-2094-nll  heading-echo 3, max-paragraph-length 11, max-sentence-length 120, ngram-repetition 1, proper-noun-density 1, undefined-acronym 19
+soumu-wp-r06-ai-booms  agentless-passive 1, latin-spacing 5, max-sentence-length 2, preamble-length 1, undefined-acronym 3
+soumu-wp-r06-ai-rules-japan  agentless-passive 5, latin-spacing 9, max-sentence-length 6, no-doubled-joshi 1, preamble-length 1
+soumu-wp-r06-misinformation  agentless-passive 9, latin-spacing 11, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, preamble-length 1, taigen-dome-in-prose 1, undefined-acronym 14
 sre-next-bunsho-kanri  agentless-passive 2
 sre-next-teikan  heading-echo 1, max-sentence-length 2, no-doubled-joshi 2, no-mixed-desumasu 1
 wikivoyage-belgian-coast-tram  expletive-construction 5, max-paragraph-length 19, max-sentence-length 47, proper-noun-density 1

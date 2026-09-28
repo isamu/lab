@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { lawText } from "./law-text.ts";
 import { ukText } from "./uk-text.ts";
 import { docEntries, docPath, storedText, type DocEntry } from "./corpus-docs.ts";
+import { decodeFetched } from "./fetched-text.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus");
 const TIMEOUT_MS = 120_000;
@@ -38,7 +39,7 @@ const fetchText = async (url: string): Promise<string> => {
   try {
     const response = await fetch(url, { signal: controller.signal });
     if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-    return await response.text();
+    return decodeFetched(new Uint8Array(await response.arrayBuffer()), response.headers.get("content-type"));
   } catch (err) {
     throw new Error(`${url}: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
   } finally {
