@@ -58,7 +58,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
   344:1   warning この文は 129 文字あります（100 文字まで）
                   max-sentence-length
 
-6 findings, 30 rules not run
+6 findings, 33 rules not run
 ```
 
 最後の行は、指摘の数と、動かなかったルールの数です。
@@ -74,8 +74,8 @@ $ npx chaffjs article.md --watch
   1 ファイルを見ています。いまの指摘は 2 件です。
   保存するたびに、変わったところだけ出します。止めるには Ctrl-C。
 
-18:26:43  article.md  ✓ 2 → 1 件   (-1 bold-density)
-18:26:45  article.md  ✗ 1 → 2 件   (+1 closing-cliche)
+17:42:04  article.md  ✓ 2 → 1 件   (-1 bold-density)
+17:42:07  article.md  ✗ 1 → 2 件   (+1 closing-cliche)
 ```
 
 `✓` は指摘が減ったこと、`✗` は増えたことを表します。
@@ -142,7 +142,7 @@ bold-density を relaxed にしました（…/chaff.yaml）
 rules:
   # 太字の使いすぎ
   # 太字は読者の目を止める道具です。多用すると、どこも目立たなくなります。
-  bold-density: relaxed # 2026-09-27 図の説明で太字を多用するため / isamu
+  bold-density: relaxed # 2026-09-28 図の説明で太字を多用するため / isamu
 ```
 
 `chaff.yaml` にもともと書いてあったコメントは壊しません。
@@ -152,7 +152,7 @@ rules:
 ```
 $ npx chaffjs off bold-density
 bold-density には既に理由が書かれています:
-  2026-09-27 図の説明で太字を多用するため / isamu
+  2026-09-28 図の説明で太字を多用するため / isamu
 値を変えるときは --why で新しい理由を書いてください。
 ```
 
@@ -208,7 +208,7 @@ $ npx chaffjs docs/ --compact
 docs/a.md   technical/readme · 日本語   ジャンルはパスから   棚上げ 1 件
 
 
-0 findings, 19 rules not run
+0 findings, 22 rules not run
 ```
 
 棚上げした分も見たいときは、`--show-baseline` を付けます。
@@ -218,10 +218,10 @@ $ npx chaffjs docs/ --show-baseline --compact
 
 docs/a.md   technical/readme · 日本語   ジャンルはパスから
 
-  3:1     warning この文は 106 文字あります（100 文字まで）
+  3:1     warning この文は 108 文字あります（100 文字まで）
                   max-sentence-length
 
-1 findings, 19 rules not run
+1 finding, 22 rules not run
 ```
 
 CI に入れるときの使いかたは、[CI](./ci) で説明します。
@@ -234,12 +234,12 @@ CI に入れるときの使いかたは、[CI](./ci) で説明します。
 ```
 $ npx chaffjs suppressions docs/
 
-  抑制されている指摘: 6 件
+  抑制されている指摘: 7 件
 
-  bold-density                6 件  ← 設定の見直しを検討してください
-      docs/g1.md, docs/g2.md, docs/g3.md ほか 3 ファイル
+  bold-density                7 件  ← 設定の見直しを検討してください
+      docs/g1.md, docs/g2.md, docs/g3.md ほか 4 ファイル
       理由: 用語集なので太字が多いのは意図的
-      ルールごとゆるめる: npx chaffjs relax bold-density --why "..."
+      ルールごとゆるめる: npx chaff relax bold-density --why "..."
 
   理由が書かれていない抑制: 1 件
       docs/x.md
