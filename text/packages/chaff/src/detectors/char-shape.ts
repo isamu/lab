@@ -1,4 +1,5 @@
 import type { Detector, Finding, Sentence } from "../plugin.ts";
+import { maskLegalAddresses } from "../legal-address.ts";
 import { proseText } from "../measure.ts";
 
 /**
@@ -8,7 +9,7 @@ import { proseText } from "../measure.ts";
 const KANJI_RUN = /[一-鿿]+/gu;
 
 const longestKanji = (sentence: Sentence): string =>
-  [...proseText(sentence).matchAll(KANJI_RUN)].reduce((longest, match) => (match[0].length > longest.length ? match[0] : longest), "");
+  [...maskLegalAddresses(proseText(sentence)).matchAll(KANJI_RUN)].reduce((longest, match) => (match[0].length > longest.length ? match[0] : longest), "");
 
 /**
  * 漢字が続くと、どこで語が切れるのか読み手が探すことになる。
