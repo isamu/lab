@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### Word lists are matched by words and their base forms (#170)
+
+The rules that read a word list (`sasete-itadaku`, `double-keigo`, `excessive-hedging`, `cushion-phrase-density`,
+`padded-intro`, `closing-cliche`, `empty-intensifier`, `unqualified-superlative`, `ai-tell`, `hiragana-fukushi`,
+`repeated-conjunction`) now split each entry with the same morphological analyser as the document and match it
+word by word instead of as a substring. A verb or auxiliary written in its base form matches every conjugation
+(させていただく matches させていただきました); a form written inflected matches only that form ("could" does not match
+"can"). An entry no longer matches inside another word (また in またいで, 念のため in 概念のため, 最大 in 最大限,
+"in addition" in "gain additional"), and a phrase broken across a line is found. The entries that were cut short to
+catch every ending (させていただ, おっしゃられ) are written in their base form. The rules declare `uses: [pos]`; without
+the analyser they match the text as before.
+
 ### `max-kanji-continuous` recognises an address by morphology (#170)
 
 The regular-expression list that told an address (東京都港区新橋二丁目) from a long compound is replaced by morphological

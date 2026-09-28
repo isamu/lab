@@ -5,13 +5,13 @@
 id: double-keigo
 language: ja
 entries:
-  - pattern: おっしゃられ
-  - pattern: ご覧になられ
-  - pattern: お読みになられ
-  - pattern: お聞きになられ
-  - pattern: お見えになられ
-  - pattern: お帰りになられ
-  - pattern: お召し上がりになら
-  - pattern: 拝見させていただ
-  - pattern: お伺いさせていただ
-  - pattern: 拝読させていただ
+  - pattern: おっしゃられる
+  - pattern: ご覧になられる
+  - pattern: お読みになられる
+  - pattern: お聞きになられる
+  - pattern: お見えになられる
+  - pattern: お帰りになられる
+  - pattern: お召し上がりになられる
+  - pattern: 拝見させていただく
+  - pattern: お伺いさせていただく
+  - pattern: 拝読させていただく

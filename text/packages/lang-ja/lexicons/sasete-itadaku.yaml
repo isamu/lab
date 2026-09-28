@@ -2,6 +2,6 @@
 id: sasete-itadaku
 language: ja
 entries:
-  - pattern: させていただ
-  - pattern: させて頂
-  - pattern: させて戴
+  - pattern: させていただく
+  - pattern: させて頂く
+  - pattern: させて戴く

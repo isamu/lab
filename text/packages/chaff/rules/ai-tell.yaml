@@ -3,6 +3,7 @@ layer: L2
 status: experimental
 how_to_find: ai-tell
 word_list: ai-tell
+uses: [pos]
 severity: info
 
 name:

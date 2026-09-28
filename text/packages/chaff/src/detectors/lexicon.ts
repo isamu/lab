@@ -1,7 +1,7 @@
 import { joinWords } from "./word-list.ts";
-import { proseText } from "../measure.ts";
 import { wordsOf } from "./structure.ts";
-import type { Detector, Finding, ProseDocument, Sentence } from "../plugin.ts";
+import type { Detector, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
+import { entryIn, entryOpens } from "./lexicon-match.ts";
 
 const PER = 1000;
 
@@ -10,11 +10,8 @@ const FLOOR = { word: 200, char: 500 };
 
 type Hit = { readonly sentence: Sentence; readonly matched: string };
 
-const hitsFor = (doc: ProseDocument, patterns: readonly string[]): Hit[] =>
-  doc.sentences.flatMap((sentence) => {
-    const text = sentence.text.toLowerCase();
-    return patterns.filter((pattern) => text.includes(pattern.toLowerCase())).map((matched) => ({ sentence, matched }));
-  });
+const hitsFor = (doc: ProseDocument, lexicon: Lexicon): Hit[] =>
+  doc.sentences.flatMap((sentence) => lexicon.filter((entry) => entryIn(sentence, entry)).map((entry) => ({ sentence, matched: entry.pattern })));
 
 /**
  * 単位長あたりの出現率。件数で数えると長い文書ほど当たる（bold-density と同じ）。
@@ -23,8 +20,7 @@ const hitsFor = (doc: ProseDocument, patterns: readonly string[]): Hit[] =>
 const densityRule =
   (rule: string): Detector =>
   (doc, options): Finding[] => {
-    const patterns = (options.lexicon ?? []).map((entry) => entry.pattern);
-    const hits = hitsFor(doc, patterns);
+    const hits = hitsFor(doc, options.lexicon ?? []);
     const length = wordsOf(doc);
     const rate = length === 0 ? 0 : Math.round((hits.length / length) * PER);
     const first = hits[0];
@@ -49,8 +45,7 @@ export const cushionDensity = densityRule("cushion-phrase-density");
 const QUALIFIER = /\d|より|に比べ|のうち|among|than|compared|based on|according/iu;
 
 export const unqualifiedSuperlative: Detector = (doc, options): Finding[] => {
-  const patterns = (options.lexicon ?? []).map((entry) => entry.pattern);
-  const bare = hitsFor(doc, patterns).filter((hit) => !QUALIFIER.test(hit.sentence.text));
+  const bare = hitsFor(doc, options.lexicon ?? []).filter((hit) => !QUALIFIER.test(hit.sentence.text));
   if (bare.length < options.limit) return [];
   return bare.map((hit) => ({
     rule: "unqualified-superlative",
@@ -62,10 +57,10 @@ export const unqualifiedSuperlative: Detector = (doc, options): Finding[] => {
   }));
 };
 
-const openerOf = (doc: ProseDocument, patterns: readonly string[]): (string | undefined)[] =>
+const openerOf = (doc: ProseDocument, lexicon: Lexicon): (string | undefined)[] =>
   doc.paragraphs.map((paragraph) => {
-    const head = paragraph.sentences[0]?.text.trim().toLowerCase() ?? "";
-    return patterns.find((pattern) => head.startsWith(pattern.toLowerCase()));
+    const head = paragraph.sentences[0];
+    return head === undefined ? undefined : lexicon.find((entry) => entryOpens(head, entry))?.pattern;
   });
 
 /**
@@ -73,8 +68,7 @@ const openerOf = (doc: ProseDocument, patterns: readonly string[]): (string | un
  * 前の段落の付け足しに見えて、話がどこへ向かっているのか分からなくなる。
  */
 export const repeatedConjunction: Detector = (doc, options): Finding[] => {
-  const patterns = (options.lexicon ?? []).map((entry) => entry.pattern);
-  const openers = openerOf(doc, patterns);
+  const openers = openerOf(doc, options.lexicon ?? []);
   const runs = openers.reduce<{ runs: number[][]; current: number[] }>(
     (acc, opener, index) => {
       if (opener === undefined) return { runs: [...acc.runs, acc.current], current: [] };
@@ -106,11 +100,10 @@ export const repeatedConjunction: Detector = (doc, options): Finding[] => {
  * 単独で断じない。§20.2 の複合シグナルの入口で、これだけで「AI が書いた」とは言わない。
  */
 export const aiTell: Detector = (doc, options): Finding[] => {
-  const weights = new Map((options.lexicon ?? []).map((entry) => [entry.pattern.toLowerCase(), entry.weight ?? 1]));
-  const body = doc.sentences.map(proseText).join(" ").toLowerCase();
-  const found = [...weights.entries()].filter(([pattern]) => body.includes(pattern));
-  const score = Math.round(found.reduce((sum, [, weight]) => sum + weight, 0) * 10);
-  const first = doc.sentences.find((sentence) => found.some(([pattern]) => sentence.text.toLowerCase().includes(pattern)));
+  const entries = [...new Map((options.lexicon ?? []).map((entry) => [entry.pattern.toLowerCase(), entry])).values()];
+  const found = entries.filter((entry) => doc.sentences.some((sentence) => entryIn(sentence, entry)));
+  const score = Math.round(found.reduce((sum, entry) => sum + (entry.weight ?? 1), 0) * 10);
+  const first = doc.sentences.find((sentence) => found.some((entry) => entryIn(sentence, entry)));
   if (first === undefined || score <= options.limit) return [];
   return [
     {
@@ -121,7 +114,7 @@ export const aiTell: Detector = (doc, options): Finding[] => {
       quote: first.text.trim(),
       values: {
         word: joinWords(
-          found.map(([pattern]) => pattern),
+          found.map((entry) => entry.pattern.toLowerCase()),
           doc.language,
         ),
         count: found.length,

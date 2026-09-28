@@ -8,6 +8,7 @@ import { maskSpans } from "./mask.ts";
 import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { pageFurniture, textOutline } from "./page-furniture.ts";
+import { tokenizedLexicons } from "./lexicon-tokens.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
@@ -271,6 +272,13 @@ export const buildDocument = (
   const paragraphSpans = spansOfType(root, "paragraph");
   const listItems = spansOfType(root, "listItem");
   const sentences = sentencesOf(prose, paragraphSpans, adapter);
+  const lexicons = {
+    ...adapter.lexicons,
+    "internal-jargon": team.jargon.map((pattern) => ({ pattern })),
+    // 使わない書き方を pattern に、使う書き方を instead_of に置く。語彙表の「同じことの別の書き方」と同じ向き。
+    "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => ({ pattern, instead_of: use })),
+  };
+  const tagged = sentences.some((sentence) => sentence.tokens !== undefined);
   const patterns = adapter.structure;
   // null は「作ったが構造を読めない言語だった」、undefined は「まだ作っていない」。
   const tree: { value: StructureNode | null | undefined } = { value: undefined };
@@ -285,12 +293,7 @@ export const buildDocument = (
     listSpans: listItems,
     paragraphs: paragraphsOf(paragraphSpans, sentences, listItems),
     lists: listsOf(root, source),
-    lexicons: {
-      ...adapter.lexicons,
-      "internal-jargon": team.jargon.map((pattern) => ({ pattern })),
-      // 使わない書き方を pattern に、使う書き方を instead_of に置く。語彙表の「同じことの別の書き方」と同じ向き。
-      "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => ({ pattern, instead_of: use })),
-    },
+    lexicons: tagged ? tokenizedLexicons(lexicons, adapter) : lexicons,
     requiredSections: team.requiredSections,
     // 構造の rule（参照先が無い・番号の抜け）が読む木。どの rule も読まなければ作らない。何万行の契約書で、他の rule の lint に代金を払わせない。
     get structure(): StructureNode | undefined {

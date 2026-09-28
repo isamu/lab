@@ -59,7 +59,22 @@ describe("解析器を読むまで tokens は無い", () => {
       RULES.filter((rule) => rule.uses.includes("pos"))
         .map((rule) => rule.id)
         .sort((left, right) => left.localeCompare(right)),
-      ["concrete-evidence-density", "max-kanji-continuous", "ngram-repetition"],
+      [
+        "ai-tell",
+        "closing-cliche",
+        "concrete-evidence-density",
+        "cushion-phrase-density",
+        "double-keigo",
+        "empty-intensifier",
+        "excessive-hedging",
+        "hiragana-fukushi",
+        "max-kanji-continuous",
+        "ngram-repetition",
+        "padded-intro",
+        "repeated-conjunction",
+        "sasete-itadaku",
+        "unqualified-superlative",
+      ],
     );
   });
 
