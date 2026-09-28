@@ -112,7 +112,10 @@ const inlineText = (text: string): string =>
       .replace(/<br\s*\/?>/giu, " ")
       .replace(/<\/?[a-z][^>]*>/giu, "")
       .replace(/'{2,5}/gu, ""),
-  );
+  )
+    // A dropped template leaves a gap: "Airport {{IATA|OST}}, but" becomes "Airport , but". Close it.
+    .replace(/[ \t]{2,}/gu, " ")
+    .replace(/[ \t]([,.;:!?)])/gu, "$1");
 
 const LIST_MARK: Readonly<Record<string, string>> = { "*": "- ", "#": "1. " };
 

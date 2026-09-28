@@ -27,7 +27,7 @@ describe("wikitextToMarkdown: リンクと強調", () => {
   it("[[行き先|表示]] は表示、[[行き先]] は行き先、外部リンクはラベルだけ", () => {
     assert.equal(
       wikitextToMarkdown("Take the [[Harbor Line|harbour tram]] to [[Old Town]] and see [https://example.com/map the map] [https://example.com/x]."),
-      "Take the harbour tram to Old Town and see the map .\n",
+      "Take the harbour tram to Old Town and see the map.\n",
     );
   });
 
@@ -65,6 +65,12 @@ describe("wikitextToMarkdown: テンプレート", () => {
     assert.equal(wikitextToMarkdown("{{Pagebanner|a.jpg|star=yes}}\nA day out.{{related|Walks}}"), "A day out.\n");
     assert.equal(wikitextToMarkdown("Open {{Marker|name=X"), "Open {{Marker|name=X\n");
     assert.equal(wikitextToMarkdown("Open {{ then {{EUR|3}} and [[Old Town]]."), "Open {{ then €3 and Old Town.\n");
+  });
+
+  it("落としたテンプレートの跡の空白は詰める（句読点の前、続いた空白）", () => {
+    assert.equal(wikitextToMarkdown("The Harbor Airport {{IATA|HBR}}, but mostly cargo."), "The Harbor Airport, but mostly cargo.\n");
+    assert.equal(wikitextToMarkdown("Call {{phone|+1 555}} (free) or write."), "Call (free) or write.\n");
+    assert.equal(wikitextToMarkdown("A tram ( {{icon|x}} line 1) runs."), "A tram ( line 1) runs.\n");
   });
 });
 

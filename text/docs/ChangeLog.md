@@ -4,6 +4,11 @@ Newest first.
 
 ## Unreleased
 
+### The corpus's wikitext conversion closes the gaps left by dropped templates (#170)
+
+A Wikivoyage template the converter drops no longer leaves a space before punctuation (`Airport , but`) or a double
+space in the text chaff reads.
+
 ### `undefined-acronym` no longer counts shouting, requirement words, identifiers or licence names (#170)
 
 A run of capitalised words (a disclaimer, “AS IS”), the RFC 2119 words (MUST, SHOULD, MAY …), identifiers joined to
