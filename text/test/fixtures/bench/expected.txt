@@ -1,6 +1,6 @@
 rule                     planted  found  missed  false alarms
 contraction-consistency        1      1       0             0
-dangling-reference             6      4       2             0
+dangling-reference             6      6       0             0
 date-order                     4      4       0             0
 date-weekday-mismatch          6      6       0             0
 duplicate-definition           4      4       0             0
@@ -25,7 +25,7 @@ en/note  clean sample  clean
 en/policy  clean sample  clean
 en/quote  clean sample  clean
 en/requirements  clean sample  clean
-ja/design  reference-broken  missed
+ja/design  reference-broken  found
 ja/design  number-skipped  found
 ja/design  defined-twice  found
 ja/design  polite-in-plain  found
@@ -53,7 +53,7 @@ ja/quote  weekday-shift  found
 ja/quote  item-dropped  found
 ja/quote  plain-in-polite  found
 ja/quote  no-nested  found
-ja/requirements  reference-broken  missed
+ja/requirements  reference-broken  found
 ja/requirements  number-skipped  found
 ja/requirements  polite-in-plain  found
 ja/requirements  no-nested  found

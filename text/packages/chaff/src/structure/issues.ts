@@ -32,6 +32,10 @@ const textOf = (node: StructureNode, key: string): string => {
 const resolves = (node: StructureNode, addresses: ReadonlySet<string>): boolean =>
   addresses.has(textOf(node, "target")) || (node.attrs["fallback"] !== undefined && addresses.has(textOf(node, "fallback")));
 
+/** 見出しの下の章（h1/ch9）は、見出しの番地を除いた ch9 でも指せる。本文の「第9章」は見出しの番地を書かない。 */
+const addressesOf = (node: StructureNode): string[] =>
+  node.kind === "chapter" && node.address.includes("/") ? [node.address, node.address.slice(node.address.lastIndexOf("/") + 1)] : [node.address];
+
 /**
  * 参照の番地が木に無い。他の文書の名前が付いた参照（民法第709条、Section 9 of the Master Agreement）は引かない。
  * 条を 1 つも持たない文書も見ない。他の文書を指しているだけかもしれない。
@@ -40,7 +44,7 @@ export const danglingReferences = (tree: StructureNode): StructureIssue[] => {
   const nodes = inDocumentOrder(tree);
   // 参照は条を指す。条を一つも持たない文書（契約書に付ける承諾書のひな形など）の「契約書第6条」は、別の文書の条。
   if (!nodes.some((node) => node.kind === "article")) return [];
-  const addresses = new Set(nodes.filter((node) => NUMBERED.includes(node.kind)).map((node) => node.address));
+  const addresses = new Set(nodes.filter((node) => NUMBERED.includes(node.kind)).flatMap(addressesOf));
   // Section で組んだ法令が "Articles 13 to 21 of the UK GDPR" と別の文書の Article を名指ししていれば、名の無い "Article 6(3)" もそちら。
   // 名指しがあれば、名の無い "Article 9" が書き間違いか向こうの条かは区別できないので黙る。名指しが無い文書では報告する。
   const numbering = (node: StructureNode): unknown => node.attrs["numbering"];

@@ -3,6 +3,7 @@ import { parseJapaneseNumber, toHalfWidth } from "./numbers.ts";
 import { citationVocabulary, citedDocument } from "./citation.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { countedAfter, dates, quantities } from "./quantities.ts";
+import { sectionReferences, sectionVocabulary } from "./section-reference.ts";
 
 // 契約書・規程・法令の番号の書き方。core は番号の書き方を知らず、ここで読んだものを入れ子にする。
 
@@ -261,10 +262,14 @@ const addressOfReference = (
   return { target, fallback: paragraph === "1" && item === undefined ? article : undefined };
 };
 
-/** 他の文書の名前を読む語。語彙表から一度だけ作る。 */
-const CITATION = citationVocabulary(loadLexicons());
+/** 他の文書の名前を読む語と、章・節の番地でない言い方。語彙表から一度だけ作る。 */
+const LEXICONS = loadLexicons();
+const CITATION = citationVocabulary(LEXICONS);
+const SECTIONS = sectionVocabulary(LEXICONS);
 
-const references = (text: string): Mention[] => {
+const sectionsOf = (text: string): Mention[] => sectionReferences(text, SECTIONS, (at) => citedDocument(text, at, CITATION));
+
+const articleReferences = (text: string): Mention[] => {
   const depths = depthsOf(text);
   // 括弧書きの中の参照（「（同法第五十九条において準用する場合を含む。）」）は、外の並びを切らない。並びは括弧の深さごとに持つ。
   const chains = new Map<number, { readonly end: number; readonly document: string | undefined }>();
@@ -282,6 +287,14 @@ const references = (text: string): Mention[] => {
     const attrs = { target, label: match[0], ...(fallback === undefined ? {} : { fallback }), ...(document === undefined ? {} : { document }) };
     return [{ start: match.index, end: match.index + match[0].length, attrs }];
   });
+};
+
+const references = (text: string): Mention[] => [...articleReferences(text), ...sectionsOf(text)].sort((left, right) => left.start - right.start);
+
+/** 「3.2節」の 3.2 は節の番地で、節の数ではない。 */
+const quantitiesOutsideSections = (text: string): Mention[] => {
+  const sections = sectionsOf(text);
+  return quantities(text).filter((quantity) => !sections.some((section) => quantity.start < section.end && section.start < quantity.end));
 };
 
 /** 長いものから探し、重なったら先に見つけたものを残す。「しなければならない」を「なければならない」と二重に数えない。 */
@@ -330,4 +343,13 @@ const obligations = (text: string): Mention[] => {
 /** 「二十二」「２」を数にする。相対の参照（前二項・前条第二項）を core が読むときに使う。 */
 const number = (text: string): number | undefined => parseJapaneseNumber(toHalfWidth(text));
 
-export const structure: StructurePatterns = { numbered, definitions, references, obligations, quantities, dates, countedAfter, number };
+export const structure: StructurePatterns = {
+  numbered,
+  definitions,
+  references,
+  obligations,
+  quantities: quantitiesOutsideSections,
+  dates,
+  countedAfter,
+  number,
+};

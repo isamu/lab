@@ -1,0 +1,18 @@
+# 番号の後ろの章・節・項で始まるが、単位ではない語（3.2節約・3項目）か、数を数える言い方（3章構成・3章からなる）。
+id: not-section-after
+language: ja
+entries:
+  - pattern: 節約
+  - pattern: 節電
+  - pattern: 節水
+  - pattern: 節税
+  - pattern: 節減
+  - pattern: 節度
+  - pattern: 節目
+  - pattern: 節分
+  - pattern: 項目
+  - pattern: 章立て
+  - pattern: 章構成
+  - pattern: 章分
+  - pattern: 章から成
+  - pattern: 章からな
