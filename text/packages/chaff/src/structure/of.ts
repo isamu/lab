@@ -21,6 +21,7 @@ export const buildStructure = (input: SourceInput, patterns: StructurePatterns):
       source: input.source,
       language: input.language,
       outline: input.markdown ? markdownOutline(input.source) : NO_OUTLINE,
+      markdown: input.markdown,
       profile: input.profile,
     },
     patterns,

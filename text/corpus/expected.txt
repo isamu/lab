@@ -11,7 +11,7 @@ k8s-overview-ja  latin-spacing 1, max-paragraph-length 1, max-sentence-length 3,
 kep-2214-indexed-job  max-sentence-length 16, ngram-repetition 1, proper-noun-density 1, undefined-acronym 6
 pep-0008  heading-echo 4, max-sentence-length 47, ngram-repetition 1, proper-noun-density 1, undefined-acronym 8
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
-rfc9457  dangling-reference 5, max-sentence-length 56, ngram-repetition 1, proper-noun-density 1, undefined-acronym 30
+rfc9457  max-sentence-length 56, ngram-repetition 1, proper-noun-density 1, undefined-acronym 30
 rust-lang-minutes-2022-11-22  agentless-passive 4, contraction-consistency 2, max-sentence-length 3, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
 rust-rfc-2094-nll  heading-echo 3, max-paragraph-length 11, max-sentence-length 120, ngram-repetition 1, proper-noun-density 1, undefined-acronym 22
 sre-next-bunsho-kanri  agentless-passive 2
