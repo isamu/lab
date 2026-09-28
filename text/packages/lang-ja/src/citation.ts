@@ -51,10 +51,14 @@ const nameBefore = (text: string, at: number, char: RegExp): string => {
  * 法令は題名の後に公布の番号を括弧で添える（「国家行政組織法（昭和二十三年法律第百二十号）第三条」）。
  * 括弧を飛ばして、その前の題名を読む。
  */
-const LAW_NUMBER_NOTE = /（(?:明治|大正|昭和|平成|令和)[^（）]{1,24}号）$/u;
+/** 番号に略称を添えることもある（「（平成十三年法律第百四十号。以下この章において「独立行政法人等情報公開法」という。）」）。 */
+const LAW_NUMBER_NOTE = /（(?:明治|大正|昭和|平成|令和)[^（）]{1,24}号(?:。以下[^（）]{1,60}という。)?）$/u;
+
+/** 公布の番号と略称の括弧が収まる長さ。後ろ向きに読む長さを抑える。 */
+const MAX_NOTE_LENGTH = 100;
 
 const beforeLawNumber = (text: string, at: number): number => {
-  const note = LAW_NUMBER_NOTE.exec(text.slice(Math.max(0, at - 40), at));
+  const note = LAW_NUMBER_NOTE.exec(text.slice(Math.max(0, at - MAX_NOTE_LENGTH), at));
   return note === null ? at : at - note[0].length;
 };
 
