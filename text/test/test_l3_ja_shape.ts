@@ -44,6 +44,10 @@ describe("L3 日本語 — 文字と語彙", () => {
       // 個人情報保護法第六十条。番地で切れたあとの「独立行政法人等情報公開法」は 12 字。
       assert.ok(idsFor("独立行政法人等情報公開法第五条に規定する不開示情報").includes("max-kanji-continuous"));
     });
+
+    it("invalid: 番地に見えても語が続けば番地ではない", () => {
+      assert.ok(idsFor("第十項目標管理制度導入を進めます。").includes("max-kanji-continuous"));
+    });
   });
 
   describe("no-nakaguro-parallel", () => {
