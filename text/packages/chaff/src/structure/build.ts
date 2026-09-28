@@ -36,8 +36,10 @@ type State = {
   readonly stack: Frame[];
   /** 見出しの深さごとの通し番号。番号の無い見出しの番地 h2.1 を作る。 */
   readonly headingCounts: number[];
-  /** opensDefinitionScope の行を含んだ条。ここに入る定義はその条の中でだけ比べる。 */
+  /** opensDefinitionScope の行を含んだ条。ここに入る定義は範囲の中でだけ比べる。 */
   readonly scopedArticles: Set<Draft>;
+  /** 範囲が条より広い（「In this Part—」）条と、その広いまとまり。その条の定義は、広いまとまりの中で比べる。 */
+  readonly widerScopes: Map<Draft, Draft>;
   readonly profile: DocumentProfile | undefined;
   /** 見出しだけの行（文書の種類の caption）の行番号と、その言葉。すぐ次の行の条が見出しに使う。 */
   readonly captions: Map<number, string>;
@@ -150,11 +152,27 @@ const universalNumber = (patterns: StructurePatterns, text: string, context: Num
 /** 行の中の定義・参照・義務・数量を、いま開いている最も内側の節点の子にする。 */
 const enclosingArticle = (state: State): Draft | undefined => [...state.stack].reverse().find((frame) => frame.draft.kind === "article")?.draft;
 
+/** 条より広い範囲（「In this Part」）なら、その深さの開いているまとまり。開いていなければ（Part の見出しの無い文書）無い。 */
+const widerScope = (state: State, patterns: StructurePatterns, text: string): Draft | undefined => {
+  const depth = patterns.definitionScopeDepth?.(text);
+  return depth === undefined ? undefined : [...state.stack].reverse().find((frame) => frame.numbered?.depth === depth)?.draft;
+};
+
+/**
+ * 定義の範囲。範囲を宣言した行（In this section— / In this Part—）を含む条の定義が対象。宣言が Part なら、比べるのは
+ * その Part の中（within に番地を残す）。宣言の無い条の定義は、今までどおり文書全体で比べる。
+ */
 const scopeOf = (state: State, patterns: StructurePatterns, text: string): Readonly<Record<string, string>> => {
   const article = enclosingArticle(state);
   if (article === undefined) return {};
-  if (patterns.opensDefinitionScope?.(text) === true) state.scopedArticles.add(article);
-  return state.scopedArticles.has(article) ? { scope: "local" } : {};
+  if (patterns.opensDefinitionScope?.(text) === true) {
+    state.scopedArticles.add(article);
+    const wider = widerScope(state, patterns, text);
+    if (wider !== undefined) state.widerScopes.set(article, wider);
+  }
+  if (!state.scopedArticles.has(article)) return {};
+  const wider = state.widerScopes.get(article);
+  return wider === undefined ? { scope: "local" } : { scope: "local", within: wider.address };
 };
 
 const addLeaves = (state: State, patterns: StructurePatterns, line: Line, text: string, offset: number): void => {
@@ -282,7 +300,14 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
   const attrs = { path: input.path, language: input.language, ...(input.profile === undefined ? {} : { profile: input.profile.id }) };
   const doc = draftOf("doc", "", { text: "", start: 0, number: 1 }, attrs);
   doc.end = input.source.length;
-  const state: State = { stack: [{ draft: doc, rank: 0 }], headingCounts: [], scopedArticles: new Set(), profile: input.profile, captions: new Map() };
+  const state: State = {
+    stack: [{ draft: doc, rank: 0 }],
+    headingCounts: [],
+    scopedArticles: new Set(),
+    widerScopes: new Map(),
+    profile: input.profile,
+    captions: new Map(),
+  };
   lines.forEach((line) => {
     if (line.text.trim() !== "") readLine(state, patterns, line, headings.get(line.number));
     // コードの行は覆って読まないが、開いている節の中身ではある。節の最後にコードブロックがあっても、範囲をそこまで伸ばす。

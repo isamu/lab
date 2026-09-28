@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### English: a definition "In this Part" is compared within the Part (#140)
+
+Definitions after `In this Part—` were held to their own section, so a word defined twice inside one Part, in two
+sections, went unreported. They are now compared within the Part (`In this Chapter` within the Chapter); two Parts
+may still define the same word. Definitions in sections that declare no scope are compared across the document, as
+before. A document with no Part heading keeps the section as the scope.
+
+For adapter authors: `StructurePatterns.definitionScopeDepth` is new and optional (the depth of the unit a scope
+line covers).
+
 ### English: every member of a reference list is checked (#140)
 
 In `Sections 1, 2 and 9`, only `Sections 1` was a reference, so a missing Section 9 went unnoticed. Each member is now
