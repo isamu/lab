@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `total-mismatch`: a total that is not the sum of its items (#142)
+
+A new experimental rule. In a list or a table, a line starting with a total word (`合計`, `小計`, `Total`, `Subtotal`)
+is compared with the amounts above it in the same unit and column, and a total that matches no way of adding them up
+is an `error` (`The total $1,600.50 is not the sum of the amounts above it ($1,500.50)`). A subtotal followed by tax
+and a total, and a grand total of subtotals, are accepted. Discounts written `-$50` or `▲50,000円` are taken away.
+Amounts in parentheses, a column with another unit, and a line with two amounts in one column leave the total
+unjudged. The total words are a `total-label` word list in each language package.
+
 ### Sentence splitting stays fast on one long paragraph (#141)
 
 A long paragraph with no blank lines (a `.txt` file, a long list) no longer makes sentence splitting slow down with
@@ -14,7 +23,7 @@ this is checked against the splitter itself over generated text in `test/test_se
 ### `date-order`: a date out of order in a schedule (#142)
 
 A new experimental rule. In consecutive list items or table rows that each hold one date, a date that goes against
-the direction of the rest is a `warning` (`2026-04-15 comes after 2026-05-01, which is later`). The direction is taken
+the direction of the rest is a `warning` (`2026-04-15 breaks the order of the dates around it (after 2026-05-01)`). The direction is taken
 from most of the steps, so a newest-first history is a right order; a sequence with as many steps each way, a line
 with two dates, dates of different precision, and dates in running text are not judged. It reads the dates the language
 packages already normalise, so it works the same in any language.

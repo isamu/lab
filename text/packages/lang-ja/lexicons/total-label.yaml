@@ -1,0 +1,9 @@
+# 合計の行を示す語。行の最初（表なら最初の列）にこの語があれば、その行の金額を上の金額の和と比べる。
+id: total-label
+language: ja
+entries:
+  - pattern: 合計
+  - pattern: 小計
+  - pattern: 総計
+  - pattern: 総額
+  - pattern: 計
