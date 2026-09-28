@@ -1,0 +1,22 @@
+id: statute
+
+name:
+  ja: 法令
+  en: Statute
+
+why:
+  ja: 法令は条・項・号の番地を漢数字で書き（第二十二条第二項）、各号・及び・本文のような語で番地をつなぎます。番地は割れない一つの単位で、漢字の連なりとして数えません。
+  en: A statute writes its addresses in kanji numerals (第二十二条第二項) and joins them with words such as 各号, 及び or 本文. An address is one unit that cannot be broken up, and is not counted as a run of kanji.
+
+# 設定（chaff.yaml の profile / by_path）が無いときに、内容から選ぶ。この形の行が min_lines 行以上あれば法令として読む。
+detect:
+  ja:
+    line: "^第[〇一二三四五六七八九十百千]+条(?:の[〇一二三四五六七八九十百千]+)*[　 ]"
+    min_lines: 3
+
+ja:
+  # 番地の書き方。第 + 漢数字 + 単位、枝番号（の二）が続いてもよい。
+  addresses:
+    - "第[〇一二三四五六七八九十百千]+[条項号章節款目編](?:の[〇一二三四五六七八九十百千]+)*"
+  # 番地と番地のあいだ、番地の後ろに付く語。ここに無い語が続けば、番地ではなく普通の語（第一条件、第五条中央銀行）。
+  connectives: [各号, 各項, 及, 又, 若, 並, 中, 本文, 前段, 後段, 但書, 同条, 乃至]

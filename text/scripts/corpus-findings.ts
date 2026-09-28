@@ -5,6 +5,7 @@ import { buildDocument, teamRules } from "../packages/chaff/src/document.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
+import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
 
 export const STRUCTURE_RULES: readonly string[] = ["dangling-reference", "numbering-gap", "duplicate-definition"];
@@ -19,7 +20,7 @@ export const structureFindings = async (path: string, source: string, language =
   if (adapter === undefined) throw new Error(`no adapter for ${language}`);
   await adapter.prepare?.({ pos: true });
   const rules = loadRules(language).filter((rule) => STRUCTURE_RULES.includes(rule.id));
-  const result = runRules(buildDocument(path, source, adapter, teamRules(EMPTY)), rules, {}, true, "technical/spec");
+  const result = runRules(buildDocument(path, source, adapter, teamRules(EMPTY), profileFor(EMPTY, path, source, language)), rules, {}, true, "technical/spec");
   const byId = new Map(rules.map((rule) => [rule.id, rule]));
   return result.findings.flatMap((finding) => {
     const rule = byId.get(finding.rule);

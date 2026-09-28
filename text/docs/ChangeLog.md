@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### Document profiles: knowledge of a document type lives in YAML (#146)
+
+What is true only of one kind of document now lives in `packages/chaff/profiles/*.yaml`, not in code. The first
+profile is `statute` (Japanese). It holds the address grammar that `max-kanji-continuous` skips (#139): the pattern
+of `第二十二条第二項` and the words that join addresses. A profile is chosen by `by_path` → `profile`, then
+`profile:` in `chaff.yaml`, then the profile's own `detect` pattern (for `statute`, three or more lines shaped like
+`第一条　`). `profile: none` turns it off, and `chaff tree` shows the choice as `:profile`. A Japanese document that is
+not a statute no longer has its addresses skipped; name the profile to get that.
+
 ### `前二項` and `前三条` are not quantities (#138)
 
 A statute's `前二項` means "the two preceding paragraphs": an address, not the quantity 2 項. A number after `前`

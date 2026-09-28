@@ -1,5 +1,5 @@
-import type { Detector, Finding, Sentence } from "../plugin.ts";
-import { maskLegalAddresses } from "../legal-address.ts";
+import type { Detector, DocumentProfile, Finding, Sentence } from "../plugin.ts";
+import { maskAddresses } from "../address-chain.ts";
 import { proseText } from "../measure.ts";
 
 /**
@@ -8,8 +8,8 @@ import { proseText } from "../measure.ts";
  */
 const KANJI_RUN = /[一-鿿]+/gu;
 
-const longestKanji = (sentence: Sentence): string =>
-  [...maskLegalAddresses(proseText(sentence)).matchAll(KANJI_RUN)].reduce((longest, match) => (match[0].length > longest.length ? match[0] : longest), "");
+const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined): string =>
+  [...maskAddresses(proseText(sentence), profile).matchAll(KANJI_RUN)].reduce((longest, match) => (match[0].length > longest.length ? match[0] : longest), "");
 
 /**
  * 漢字が続くと、どこで語が切れるのか読み手が探すことになる。
@@ -17,7 +17,7 @@ const longestKanji = (sentence: Sentence): string =>
  */
 export const kanjiRun: Detector = (doc, options): Finding[] =>
   doc.sentences
-    .map((sentence) => ({ sentence, run: longestKanji(sentence) }))
+    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile) }))
     .filter(({ run }) => run.length > options.limit)
     .map(({ sentence, run }) => ({
       rule: "max-kanji-continuous",

@@ -187,6 +187,18 @@ export type BulletList = { readonly span: Span; readonly items: readonly number[
  * detector に渡る唯一の入り口。core が I/O を済ませてから呼ぶ。
  * detector は純関数で、fs / network / clock に触れない。spec §6。
  */
+/**
+ * 文書の種類の知識（法令の番地の書き方など）。コードは種類を知らず、profiles/*.yaml に書いたものを読む。
+ * 言語ごとに一つに絞ったもの。正規表現は文字列のまま持ち、使う側が組み立てる。
+ */
+export type DocumentProfile = {
+  readonly id: string;
+  /** 番地の書き方。漢字の連なりにも、数量にも数えない。 */
+  readonly addresses: readonly string[];
+  /** 番地と番地のあいだ、番地の後ろに付く語。 */
+  readonly connectives: readonly string[];
+};
+
 export type ProseDocument = {
   readonly path: string;
   readonly source: string;
@@ -208,6 +220,8 @@ export type ProseDocument = {
   readonly requiredSections: readonly string[];
   /** 番地の付いた木（§27）。adapter が structure を持たない言語では無い。 */
   readonly structure: StructureNode | undefined;
+  /** 文書の種類（法令など）。選ばれなければ無い。 */
+  readonly profile?: DocumentProfile | undefined;
 };
 
 export type Severity = "error" | "warning" | "info";

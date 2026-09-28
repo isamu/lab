@@ -9,6 +9,7 @@ import { evaluate } from "../eval.ts";
 import { renderEval } from "../render/eval.ts";
 import { neededBy } from "../run.ts";
 import type { Config } from "../config/load.ts";
+import { profileFor } from "../profile/for-file.ts";
 
 export type Context = {
   readonly config: Config;
@@ -35,7 +36,7 @@ export const runEval = async (targets: readonly string[], argv: readonly string[
       const adapter = await loadAdapter(language);
       const { genre } = resolveGenre(path, source, config);
       await adapter.prepare?.(neededBy(loadRules(language), config.rules, config.experimental, genre, language));
-      return { doc: buildDocument(path, source, adapter, teamRules(config)), language, genre };
+      return { doc: buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language)), language, genre };
     }),
   );
   const language = docs[0]?.language ?? "ja";

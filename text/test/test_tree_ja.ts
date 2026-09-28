@@ -4,6 +4,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { parseJapaneseNumber } from "../packages/lang-ja/src/numbers.ts";
 import { buildStructure } from "../packages/chaff/src/structure/of.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
+import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 import type { StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
 
 const patterns = (): StructurePatterns => {
@@ -153,6 +154,19 @@ describe("日本語の契約書を木にする", () => {
         '      (obligation :marker "ものとする" :type "must" :line 5))))',
       ),
     );
+  });
+});
+
+describe("文書の種類（profile）", () => {
+  const statute = loadProfiles().find((definition) => definition.id === "statute")?.languages["ja"];
+
+  it("選ばれた種類を doc の :profile に出す。選ばれなければ出さない", () => {
+    const source = lines("第一条　目的を定める。", "第二条　定義を定める。");
+    assert.match(
+      toSexp(buildStructure({ path: "c.txt", source, language: "ja", markdown: false, profile: statute }, patterns())),
+      /^\(doc .*:profile "statute"/u,
+    );
+    assert.doesNotMatch(toSexp(treeOf(source)), /:profile/u);
   });
 });
 

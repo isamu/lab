@@ -4,11 +4,18 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
+import type { DocumentProfile } from "../packages/chaff/src/plugin.ts";
 
 const RULES = loadRules("ja");
 
-const idsFor = (source: string): string[] =>
-  runRules(buildDocument("t.md", source, ja), RULES, {}, true, "business/report").findings.map((finding) => finding.rule);
+const idsFor = (source: string, profile?: DocumentProfile): string[] =>
+  runRules(buildDocument("t.md", source, ja, undefined, profile), RULES, {}, true, "business/report").findings.map((finding) => finding.rule);
+
+const statute = loadProfiles().find((definition) => definition.id === "statute")?.languages["ja"];
+if (statute === undefined) throw new Error("profiles/statute.yaml has no ja section");
+
+const inStatute = (source: string): string[] => idsFor(source, statute);
 
 describe("L3 日本語 — 文字と語彙", () => {
   before(async () => {
@@ -34,21 +41,25 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(!idsFor("`情報処理`と`推進機構`の話です。").includes("max-kanji-continuous"));
     });
 
+    it("法令の種類を選ばなければ、番地も漢字の連なりに数える", () => {
+      assert.ok(idsFor("第二百三十六条第一項第七号に掲げる事項についての定めがある場合").includes("max-kanji-continuous"));
+    });
+
     it("valid: 法令の番地は漢字の連なりに数えない", () => {
       // 会社法第二百三十八条。番地を数えると「第二百三十六条第一項第七号」で 13 字になる。
-      assert.ok(!idsFor("第二百三十六条第一項第七号に掲げる事項についての定めがある場合").includes("max-kanji-continuous"));
-      assert.ok(!idsFor("第五十二条の二第一項の規定により発起人の負う義務").includes("max-kanji-continuous"));
+      assert.ok(!inStatute("第二百三十六条第一項第七号に掲げる事項についての定めがある場合").includes("max-kanji-continuous"));
+      assert.ok(!inStatute("第五十二条の二第一項の規定により発起人の負う義務").includes("max-kanji-continuous"));
     });
 
     it("invalid: 番地の前後の長い複合語は指摘する", () => {
       // 個人情報保護法第六十条。番地で切れたあとの「独立行政法人等情報公開法」は 12 字。
-      assert.ok(idsFor("独立行政法人等情報公開法第五条に規定する不開示情報").includes("max-kanji-continuous"));
+      assert.ok(inStatute("独立行政法人等情報公開法第五条に規定する不開示情報").includes("max-kanji-continuous"));
     });
 
     it("invalid: 番地に見えても語が続けば番地ではない", () => {
-      assert.ok(idsFor("第十項目標管理制度導入を進めます。").includes("max-kanji-continuous"));
-      assert.ok(idsFor("第五条中央銀行本店の決定です。").includes("max-kanji-continuous"));
-      assert.ok(idsFor("第五条第五項中央銀行です。").includes("max-kanji-continuous"));
+      assert.ok(inStatute("第十項目標管理制度導入を進めます。").includes("max-kanji-continuous"));
+      assert.ok(inStatute("第五条中央銀行本店の決定です。").includes("max-kanji-continuous"));
+      assert.ok(inStatute("第五条第五項中央銀行です。").includes("max-kanji-continuous"));
     });
   });
 

@@ -40,6 +40,7 @@
     "README.md",
     "bin",
     "dist",
+    "profiles",
     "rules",
     "skills",
     "src"

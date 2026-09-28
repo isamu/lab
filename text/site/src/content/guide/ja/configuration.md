@@ -85,6 +85,28 @@ chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
 一覧は `npx chaffjs genres` でも見られます。
 言語も自動で決まり、`language` に `ja` か `en` を書けば固定できます。
 
+## 文書の種類を決める
+
+法令のように、書き方に決まりのある文書があります。
+法令は番地を「第二十二条第二項」と漢数字で書くので、これを漢字の続けすぎと数えると誤りになります。
+そうした種類ごとの知識は、chaff に同梱した設定ファイル（`profiles/*.yaml`）に書いてあり、選ばれた文書にだけ効きます。
+いま同梱しているのは、日本語の法令（`statute`）です。
+
+書かなければ、内容から決まります。「第一条　」のように条で始まる行が 3 行以上あれば、法令として読みます。
+決まった種類は、`chaff tree` の 1 行目に出ます。
+
+```
+$ npx chaffjs tree draft.txt
+(doc :language "ja" :path "draft.txt" :profile "statute" :line 1
+```
+
+違うときは `profile` に書きます。`none` と書くと、内容からも選びません。
+パスごとに変えるときは、`by_path` にも `profile` を書けます。
+
+```yaml
+profile: statute
+```
+
 ## ルールの強さを変える
 
 ルールの強さは、`rules` の下に 4 つの言葉で書きます。
@@ -200,6 +222,8 @@ by_path:
     genre: business/report
   - files: ["blog-en/**/*.md"]
     language: en
+  - files: ["laws/**/*.txt"]
+    profile: statute
 ```
 
 後に書いたものが勝ちます。照合は設定ファイルのある場所からの相対です。

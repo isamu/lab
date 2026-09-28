@@ -1,8 +1,14 @@
 import { markdownOutline } from "../document.ts";
-import type { StructureNode, StructurePatterns } from "../plugin.ts";
+import type { DocumentProfile, StructureNode, StructurePatterns } from "../plugin.ts";
 import { buildTree, NO_OUTLINE } from "./build.ts";
 
-export type SourceInput = { readonly path: string; readonly source: string; readonly language: string; readonly markdown: boolean };
+export type SourceInput = {
+  readonly path: string;
+  readonly source: string;
+  readonly language: string;
+  readonly markdown: boolean;
+  readonly profile?: DocumentProfile | undefined;
+};
 
 /**
  * 文字列から木を作る。Markdown なら見出しとコードの範囲を先に取る。
@@ -10,6 +16,12 @@ export type SourceInput = { readonly path: string; readonly source: string; read
  */
 export const buildStructure = (input: SourceInput, patterns: StructurePatterns): StructureNode =>
   buildTree(
-    { path: input.path, source: input.source, language: input.language, outline: input.markdown ? markdownOutline(input.source) : NO_OUTLINE },
+    {
+      path: input.path,
+      source: input.source,
+      language: input.language,
+      outline: input.markdown ? markdownOutline(input.source) : NO_OUTLINE,
+      profile: input.profile,
+    },
     patterns,
   );
