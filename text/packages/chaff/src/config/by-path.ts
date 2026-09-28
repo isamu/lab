@@ -1,6 +1,11 @@
 import { relative, sep } from "node:path";
 
-export type PathRule = { readonly files: readonly string[]; readonly genre: string | undefined; readonly language: string | undefined };
+export type PathRule = {
+  readonly files: readonly string[];
+  readonly genre: string | undefined;
+  readonly language: string | undefined;
+  readonly profile?: string | undefined;
+};
 
 /**
  * glob を正規表現にする。使うのは 3 つだけ。
@@ -36,12 +41,15 @@ export const matches = (glob: string, base: string, path: string): boolean => to
  * 後に書いたものが勝つ。上から順に当て、最後に当たったものを使う。
  * 「全体はこう、ここだけは違う」と書けるようにするため。
  */
-export const applyByPath = (rules: readonly PathRule[], base: string, path: string): { genre?: string; language?: string } =>
-  rules.reduce<{ genre?: string; language?: string }>((acc, rule) => {
+type PathSettings = { genre?: string; language?: string; profile?: string };
+
+export const applyByPath = (rules: readonly PathRule[], base: string, path: string): PathSettings =>
+  rules.reduce<PathSettings>((acc, rule) => {
     if (!rule.files.some((glob) => matches(glob, base, path))) return acc;
     return {
       ...acc,
       ...(rule.genre === undefined ? {} : { genre: rule.genre }),
       ...(rule.language === undefined ? {} : { language: rule.language }),
+      ...(rule.profile === undefined ? {} : { profile: rule.profile }),
     };
   }, {});

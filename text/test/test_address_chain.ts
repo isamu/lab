@@ -1,10 +1,17 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { maskLegalAddresses } from "../packages/chaff/src/legal-address.ts";
+import { maskAddresses } from "../packages/chaff/src/address-chain.ts";
+import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
+import type { DocumentProfile } from "../packages/chaff/src/plugin.ts";
 
-// 法令の番地（第二十二条第二項）は漢字の連なりに数えず、区切りとして扱う。
+// 番地（第二十二条第二項）は漢字の連なりに数えず、区切りとして扱う。書き方は同梱の profiles/statute.yaml が持つ。
 
-describe("maskLegalAddresses", () => {
+const statute = loadProfiles().find((definition) => definition.id === "statute")?.languages["ja"];
+if (statute === undefined) throw new Error("profiles/statute.yaml has no ja section");
+
+const maskLegalAddresses = (text: string): string => maskAddresses(text, statute);
+
+describe("maskAddresses — 法令（statute）", () => {
   const cases: readonly (readonly [string, string])[] = [
     ["第二十二条第二項", "  "],
     ["第二百三十六条第一項第七号", "   "],
@@ -58,5 +65,28 @@ describe("maskLegalAddresses", () => {
     it(`番地のあとに「${follower}」が続いても番地として扱う`, () => {
       assert.equal(maskLegalAddresses(`第二条第一項${follower}`), `  ${follower}`);
     });
+  });
+});
+
+describe("maskAddresses — 種類の知識はコードに無い", () => {
+  const section: DocumentProfile = { id: "toy", addresses: ["§[0-9]+"], connectives: ["及"] };
+
+  it("種類を選ばなければ、番地に見えても何もしない", () => {
+    assert.equal(maskAddresses("第二十二条第二項", undefined), "第二十二条第二項");
+  });
+
+  it("番地の書き方の無い種類は、何もしない", () => {
+    assert.equal(maskAddresses("第二十二条第二項", { id: "empty", addresses: [], connectives: [] }), "第二十二条第二項");
+  });
+
+  it("別の種類の番地は、その種類の書き方で読む", () => {
+    assert.equal(maskAddresses("§12及§13の定め", section), " 及 の定め");
+    assert.equal(maskAddresses("第二十二条", section), "第二十二条");
+  });
+
+  it("つなぎの語の中の記号は、正規表現として読まない", () => {
+    assert.equal(maskAddresses("§1.§2", { id: "dot", addresses: ["§[0-9]+"], connectives: ["."] }), " . ");
+    // 「.」を正規表現のまま入れると「漢」までつなぎと読み、§1 を番地にしてしまう。
+    assert.equal(maskAddresses("§1漢§2", { id: "dot", addresses: ["§[0-9]+"], connectives: ["."] }), "§1漢 ");
   });
 });

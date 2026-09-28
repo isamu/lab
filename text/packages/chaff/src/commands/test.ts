@@ -14,6 +14,7 @@ import { MACHINE_BANNER, renderPlan, renderSemantic } from "../render/semantic.t
 import type { Config } from "../config/load.ts";
 import type { Finding, RuleDefinition } from "../plugin.ts";
 import type { Failure } from "../backends/types.ts";
+import { profileFor } from "../profile/for-file.ts";
 
 export type TestContext = {
   readonly config: Config;
@@ -35,7 +36,7 @@ const judgeAll = async (
       const source = await readFile(path, "utf8");
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
-      const doc = buildDocument(path, source, adapter, teamRules(config));
+      const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language));
       const { genre } = resolveGenre(path, source, config);
       const rules = loadRules(language);
       return { path, outcome: await runSemantic(doc, rules, checks, config.rules, genre, options), rules, language };
@@ -55,7 +56,7 @@ const dryRun = async (
       const source = await readFile(path, "utf8");
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
-      const doc = buildDocument(path, source, adapter, teamRules(config));
+      const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language));
       const { genre } = resolveGenre(path, source, config);
       return { path, jobs: planSemantic(doc, loadRules(language), checks, config.rules, genre), sentences: doc.sentences.length };
     }),

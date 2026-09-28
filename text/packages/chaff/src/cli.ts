@@ -35,6 +35,7 @@ import { neededBy, runRules } from "./run.ts";
 import type { Level, RuleDefinition } from "./plugin.ts";
 import { CLI_TEXT, type CliText, type GenreSource } from "./cli-text.ts";
 import { hostLanguage, uiLanguageOf, type UiLanguage } from "./ui.ts";
+import { profileFor } from "./profile/for-file.ts";
 
 /** Text for output that is not about one document. */
 const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.language, process.env)];
@@ -103,7 +104,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const rules = loadRules(language);
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
-  const doc = buildDocument(path, source, adapter, teamRules(config));
+  const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language));
   const raw = runRules(doc, rules, config.rules, experimental, genre, config.limits);
   // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
   const applied = applySuppressions(

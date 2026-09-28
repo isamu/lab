@@ -11,6 +11,8 @@ export const CONFIG_FILE = "chaff.yaml";
 
 export type Config = {
   readonly genre: string | undefined;
+  /** 文書の種類（profiles/*.yaml の id）。none なら内容からも選ばない。 */
+  readonly profile: string | undefined;
   readonly aiBackend: BackendName;
   readonly language: string | undefined;
   readonly rules: Readonly<Record<string, Level>>;
@@ -39,6 +41,7 @@ const DEFAULT_BACKEND: BackendName = "anthropic";
 
 export const EMPTY: Config = {
   genre: undefined,
+  profile: undefined,
   language: undefined,
   rules: {},
   limits: {},
@@ -93,7 +96,7 @@ const toPathRule = (raw: unknown): PathRule | undefined => {
   const files = raw["files"];
   const globs = globsOf(files);
   if (globs.length === 0) return undefined;
-  return { files: globs, genre: str(raw["genre"]), language: str(raw["language"]) };
+  return { files: globs, genre: str(raw["genre"]), language: str(raw["language"]), profile: str(raw["profile"]) };
 };
 
 /** 利用者が書く語の並び。空白だけのものは落とす。 */
@@ -121,6 +124,7 @@ export const loadConfig = (path: string): Config => {
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;
   return {
     genre: str(raw["genre"]),
+    profile: str(raw["profile"]),
     language: str(raw["language"]),
     rules: rulesOf(raw["rules"]),
     limits: limitsOf(raw["rules"]),

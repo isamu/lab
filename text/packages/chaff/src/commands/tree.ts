@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { loadAdapter } from "../adapter-load.ts";
 import { applyByPath } from "../config/by-path.ts";
+import { profileFor } from "../profile/for-file.ts";
 import { guessLanguage } from "../detect.ts";
 import { isMarkdownPath } from "../structure/markdown-path.ts";
 import { buildStructure } from "../structure/of.ts";
@@ -79,7 +80,8 @@ export const readTree = async (path: string, argv: readonly string[], context: T
   }
   // 日本語は形態素で数量と日付を読む。解析器が無ければ単位の表で読むので、木は作れる。
   await adapter.prepare?.({ pos: true });
-  return { source, tree: buildStructure({ path, source, language, markdown: isMarkdownPath(path) }, adapter.structure) };
+  const profile = profileFor(context.config, path, source, language);
+  return { source, tree: buildStructure({ path, source, language, markdown: isMarkdownPath(path), profile }, adapter.structure) };
 };
 
 const printTree = async (path: string, argv: readonly string[], context: TreeContext): Promise<boolean> => {

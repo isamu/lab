@@ -1,7 +1,7 @@
 import type { Heading } from "../document.ts";
 import { atxHeadingText, headingText } from "../heading-text.ts";
 import { maskSpans } from "../mask.ts";
-import type { Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
+import type { DocumentProfile, Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
 import { dottedNumber } from "./universal.ts";
 
@@ -175,7 +175,13 @@ export type Outline = { readonly headings: readonly Heading[]; readonly opaque: 
 
 export const NO_OUTLINE: Outline = { headings: [], opaque: [] };
 
-export type StructureInput = { readonly path: string; readonly source: string; readonly language: string; readonly outline: Outline };
+export type StructureInput = {
+  readonly path: string;
+  readonly source: string;
+  readonly language: string;
+  readonly outline: Outline;
+  readonly profile?: DocumentProfile | undefined;
+};
 
 /** 見出しのある行を、行番号から引けるようにする。見出しごとに全行を探し直さない。 */
 const headingsByLine = (lines: readonly Line[], headings: readonly Heading[]): Map<number, Heading> =>
@@ -224,7 +230,8 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
   // 文中の `第99条` は参照として拾われない。位置は元の文書のまま。
   const lines = linesOf(maskSpans(input.source, outline.opaque));
   const headings = headingsByLine(lines, outline.headings);
-  const doc = draftOf("doc", "", { text: "", start: 0, number: 1 }, { path: input.path, language: input.language });
+  const attrs = { path: input.path, language: input.language, ...(input.profile === undefined ? {} : { profile: input.profile.id }) };
+  const doc = draftOf("doc", "", { text: "", start: 0, number: 1 }, attrs);
   doc.end = input.source.length;
   const state: State = { stack: [{ draft: doc, rank: 0 }], headingCounts: [], scopedArticles: new Set() };
   lines.forEach((line) => {
