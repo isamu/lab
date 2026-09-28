@@ -80,6 +80,8 @@ describe("an English contract as a tree", () => {
       ...node.children.flatMap(ordinals),
     ];
     assert.deepEqual(ordinals(treeOf(source)), [undefined, 1, 2, undefined, 3]);
+    const targets = (patterns().references("See section 82(A1)(b) and section 82(2A).") ?? []).map((mention) => mention.attrs["target"]);
+    assert.deepEqual(targets, ["82.A1.b", "82.2A"]);
   });
 
   it("reads (i) as a roman numeral under (a), and as a letter after (h)", () => {

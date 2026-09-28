@@ -179,7 +179,10 @@ const definitions = (text: string): Mention[] =>
   );
 
 const REFERENCE = /(?<word>\b[Ss]ections?|\b[Aa]rticles?|§) ?(?<n>\d{1,3}(?:\.\d{1,3}){0,5}|[IVXLC]{1,7})\b/gu;
-const SUBDIVISION = /^\((?<p>[a-z0-9]{1,4})\)/u;
+/** "(a)", "(ii)", "(3)", and an inserted "(A1)" or "(2A)": the same labels the tree reads. */
+const SUBDIVISION = new RegExp(`^\\((?<p>[a-z0-9]{1,4}|${INSERTED})\\)`, "u");
+/** The longest label, with its parentheses: "(ZZ999)". */
+const MAX_SUBDIVISION_LENGTH = 7;
 
 /** "(a)(ii)(3)" is as deep as a reference goes; more parentheses are text, not a deeper address. */
 const MAX_SUBDIVISIONS = 4;
@@ -192,7 +195,7 @@ const subdivisions = (text: string, from: number): { readonly parts: readonly st
   const parts: string[] = [];
   let end = from;
   while (parts.length < MAX_SUBDIVISIONS) {
-    const part = SUBDIVISION.exec(text.slice(end, end + 6))?.groups?.["p"];
+    const part = SUBDIVISION.exec(text.slice(end, end + MAX_SUBDIVISION_LENGTH))?.groups?.["p"];
     if (part === undefined) break;
     parts.push(part);
     end += part.length + 2;
