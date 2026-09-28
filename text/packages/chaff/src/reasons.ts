@@ -9,6 +9,7 @@ export type Reasons = {
   readonly experimental: string;
   readonly turnedOff: string;
   readonly noStructure: (language: string) => string;
+  readonly unreadStructure: (clauses: number, units: number) => string;
   readonly noDetector: (name: string) => string;
   readonly noLexicon: (language: string, list: string) => string;
 };
@@ -27,6 +28,8 @@ export const REASONS: Texts<Reasons> = {
     experimental: "まだ試験中のため",
     turnedOff: "設定で止めているため",
     noStructure: (language) => `${language} のパッケージは文書の構造を読めないため`,
+    unreadStructure: (clauses, units) =>
+      `条項の番号が本文に ${String(clauses)} 個あるのに、番号として読めたのは ${String(units)} 個のため（深い字下げや、行が本文につながった文書）`,
     noDetector: (name) => `検出器 ${name} がないため`,
     noLexicon: (language, list) => `${language} の語彙表 ${list} が無いため`,
   },
@@ -38,6 +41,8 @@ export const REASONS: Texts<Reasons> = {
     experimental: "still experimental",
     turnedOff: "turned off in the settings",
     noStructure: (language) => `the ${language} package cannot read a document's structure`,
+    unreadStructure: (clauses, units) =>
+      `the text has ${String(clauses)} clause numbers but only ${String(units)} were read as numbered lines (deep indents, or lines run into the text)`,
     noDetector: (name) => `no detector named ${name}`,
     noLexicon: (language, list) => `the ${language} package has no word list ${list}`,
   },
