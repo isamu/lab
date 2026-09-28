@@ -23,7 +23,6 @@ gitlab-values  agentless-passive 96, bold-density 1, concrete-evidence-density 5
 k8s-overview-en  contraction-consistency 1, max-sentence-length 9, proper-noun-density 1, repeated-sentence-head 1, undefined-acronym 4
 k8s-overview-ja  latin-spacing 1, max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kep-2214-indexed-job  max-sentence-length 16, ngram-repetition 1, proper-noun-density 1, undefined-acronym 6
-pep-0008  heading-echo 4, max-sentence-length 47, ngram-repetition 1, proper-noun-density 1, undefined-acronym 8
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 83, ngram-repetition 1, proper-noun-density 1, undefined-acronym 50
 rfc9457  max-sentence-length 56, ngram-repetition 1, proper-noun-density 1, undefined-acronym 30
