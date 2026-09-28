@@ -37,4 +37,20 @@ const beforeTrailing = (sentence: Sentence): readonly Token[] => {
   return kept.length === 0 ? tokens : kept;
 };
 
+/** 閉じた引用。文がこれで終われば、文末は引用した文のもので、書き手の文末ではない。 */
+const CLOSING_QUOTES = ["」", "』", "\u201d"];
+
+/**
+ * 文末の語: 句読点・終助詞・添えた括弧を除いた後ろから、助動詞の連なりと、その前の述語一つ。
+ * 「測定しません」なら「し・ませ・ん」、「十分でしたか」なら「十分・でし・た」。文の途中の引用（「ご覧ください」という）は入らない。
+ * 引用で終わる文（画面には「確認します。」。）は、書き手の文末が無いので空。
+ */
+export const endingTokens = (sentence: Sentence): Token[] => {
+  const reversed = [...beforeTrailing(sentence)].reverse();
+  const last = reversed.findIndex((token) => !SKIP.has(token.pos));
+  if (last === -1 || reversed.slice(0, last).some((token) => CLOSING_QUOTES.some((quote) => token.surface.includes(quote)))) return [];
+  const head = reversed.findIndex((token, index) => index >= last && token.pos !== "AUX");
+  return reversed.slice(last, head === -1 ? reversed.length : head + 1).reverse();
+};
+
 export const lastContent = (sentence: Sentence): Token | undefined => [...beforeTrailing(sentence)].reverse().find((token) => !SKIP.has(token.pos));

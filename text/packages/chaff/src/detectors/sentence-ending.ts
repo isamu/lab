@@ -1,4 +1,4 @@
-import { hasPredicate, isClosed } from "../sentence-shape.ts";
+import { endingTokens, hasPredicate, isClosed } from "../sentence-shape.ts";
 import type { Detector, Finding, Sentence } from "../plugin.ts";
 
 /**
@@ -11,10 +11,14 @@ import type { Detector, Finding, Sentence } from "../plugin.ts";
  * 述語を持たないものは文として数えない。見出しの下の `MaaSサービス` のような
  * 名前だけの行がそのまま「である調」の少数派になり、実文書の誤検知はすべてこれだった。
  */
-const isSentence = (sentence: Sentence): boolean => isClosed(sentence) && hasPredicate(sentence);
+const isSentence = (sentence: Sentence): boolean => isClosed(sentence) && hasPredicate(sentence) && endingTokens(sentence).length > 0;
 
+/**
+ * 文末の語だけを見る。文の途中の引用（「ご覧ください」という表現を使う。）は文末の調子ではない。
+ * 書いた形でも原形でも当てる。「ください」の原形は「くださる」で、原形だけを見ると丁寧な文末を見落とす。
+ */
 const isPolite = (sentence: Sentence, polite: readonly string[]): boolean =>
-  (sentence.tokens ?? []).some((token) => polite.includes(token.lemma ?? token.surface));
+  endingTokens(sentence).some((token) => polite.includes(token.surface) || (token.lemma !== undefined && polite.includes(token.lemma)));
 
 export const sentenceEnding: Detector = (doc, options): Finding[] => {
   const polite = (options.lexicon ?? []).map((entry) => entry.pattern);

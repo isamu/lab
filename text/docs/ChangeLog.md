@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `no-mixed-desumasu` counts 「〜ください」 as polite (#170)
+
+「〜ください」 was read by its dictionary form 「くださる」, which is not in the polite word list, so a polite document
+ending with 「詳しくは〜をご覧ください。」 had those sentences reported as the odd ones out, and a plain document hid a
+polite 「〜してください。」. A sentence ending is now matched by how it is written as well as by its dictionary form, and
+only the ending is read: a polite phrase quoted mid-sentence (「ご覧ください」という表現を使う。) no longer makes a plain
+sentence polite. Found on the Kubernetes Japanese docs in the corpus.
+
 ### lang-ja places words where they are written (#170)
 
 kuromoji's word positions drift after a cluster of symbols (`)、`, `**、`) or an emoji, so from there on every word in

@@ -31,6 +31,35 @@ describe("L3 日本語", () => {
       assert.ok(!idsFor("運用を始める。手順を作る。効果は来期に測定する。").includes("no-mixed-desumasu"));
     });
 
+    it("valid: 「〜ください」は ですます調（原形は「くださる」でも、書いた形で当てる）", () => {
+      // Kubernetes の日本語の文書の末尾の「〜をご覧ください。」が、少数派として指摘されていた。
+      assert.ok(!idsFor("運用を始めます。手順を作ります。効果は来期に測定します。詳しくは手順書をご覧ください。").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: 「〜しません」「〜でした」は原形（ます・です）で当てる", () => {
+      assert.ok(!idsFor("運用を始めます。手順を作ります。効果は測定しません。準備は十分でした。").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: 文の途中の丁寧語（引用、連体）は文末の調子ではない", () => {
+      assert.ok(!idsFor("運用を始める。手順を作る。本文では「ご覧ください」という表現を使う。効果を測定する。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始める。手順を作る。作成してくださいという表示を出す。効果を測定する。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始める。手順を作る。「確認します」と書いた欄を置く。効果を測定する。").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: 引用で終わる文は、引用の中の文末で判定しない", () => {
+      assert.ok(!idsFor("運用を始める。手順を作る。画面には「確認します。」。効果を測定する。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始める。手順を作る。表示は『完了しました』。効果を測定する。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始めます。手順を作ります。表示は『完了した』。効果を測定します。").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: 文末の終助詞と添えた括弧の手前を見る（でしたか・です（§3））", () => {
+      assert.ok(!idsFor("運用を始めます。手順を作ります。準備は十分でしたか。この件は重要です（§3）。").includes("no-mixed-desumasu"));
+    });
+
+    it("invalid: である調の中の「〜ください」は、ですます調として少数派になる", () => {
+      assert.ok(idsFor("運用を始める。手順を作る。効果は来期に測定する。詳しくは手順書をご覧ください。").includes("no-mixed-desumasu"));
+    });
+
     it("valid: 述語を持たない断片は文として数えない", () => {
       // 見出しの下の名前だけの行。実文書の誤検知はすべてこれだった。
       assert.ok(!idsFor("運用を始めます。手順を作ります。研修も予定しています。\n\nMaaSサービス\n\nWeb3").includes("no-mixed-desumasu"));
