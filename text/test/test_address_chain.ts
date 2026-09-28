@@ -11,6 +11,12 @@ if (statute === undefined) throw new Error("profiles/statute.yaml has no ja sect
 
 const maskLegalAddresses = (text: string): string => maskAddresses(text, statute);
 
+/** 止まらなければ落とす。同じ位置を読み続けると、テストが終わらない。 */
+const LOOP_TIMEOUT_MS = 5000;
+
+/** 再帰で読むとスタックが尽きる長さ。 */
+const LONG_CHAIN = 20000;
+
 describe("maskAddresses — 法令（statute）", () => {
   const cases: readonly (readonly [string, string])[] = [
     ["第二十二条第二項", "  "],
@@ -38,7 +44,7 @@ describe("maskAddresses — 法令（statute）", () => {
     ["第五条若年雇用", "第五条若年雇用"],
     ["第五条及川研究所", "第五条及川研究所"],
     ["第五条各項目標", "第五条各項目標"],
-    ["第五十二条の二中央銀行", " の二中央銀行"],
+    ["第五十二条の二中央銀行", "第五十二条の二中央銀行"],
     ["第五条第三者委員会", "第五条第三者委員会"],
     ["第一項各号又は", " 各号又は"],
     ["同条第一項本文中", "同条 本文中"],
@@ -87,6 +93,37 @@ describe("maskAddresses — 種類の知識はコードに無い", () => {
   it("つなぎの語の中の記号は、正規表現として読まない", () => {
     assert.equal(maskAddresses("§1.§2", { id: "dot", addresses: ["§[0-9]+"], connectives: ["."] }), " . ");
     // 「.」を正規表現のまま入れると「漢」までつなぎと読み、§1 を番地にしてしまう。
-    assert.equal(maskAddresses("§1漢§2", { id: "dot", addresses: ["§[0-9]+"], connectives: ["."] }), "§1漢 ");
+    assert.equal(maskAddresses("§1漢§2", { id: "dot", addresses: ["§[0-9]+"], connectives: ["."], addressEnd: "[^\\p{Script=Han}]|$" }), "§1漢 ");
+  });
+
+  it("番地は当たったとおりに一度だけ取り、後ろに合わせて縮めない", () => {
+    const end = { connectives: [], addressEnd: "$" };
+    assert.equal(maskAddresses("AB", { id: "long-first", addresses: ["AB", "A"], ...end }), " ");
+    // 正規表現は左の候補から当てる。短い「A」が先なら、その位置の番地は「A」で、後ろの「B」が決まりに合わない。
+    assert.equal(maskAddresses("AB", { id: "short-first", addresses: ["A", "AB"], ...end }), "AB");
+  });
+
+  it("並びは、後ろの決まりを満たす最も長い切れ目まで", () => {
+    const profile = { id: "cut", addresses: ["§[0-9]+"], connectives: ["及"], addressEnd: "[^\\p{Script=Han}]|$" };
+    // 「§」は漢字でないので、「及」の後ろが切れ目になる。§2 は後ろに漢字が続くので番地ではない。
+    assert.equal(maskAddresses("§1及§2漢", profile), " 及§2漢");
+    assert.equal(maskAddresses("§1及§2", profile), " 及 ");
+    assert.equal(maskAddresses("§1及び", profile), " 及び");
+    assert.equal(maskAddresses("§1。§2漢§3", profile), " 。§2漢 ");
+  });
+
+  it("空にも当たる書き方（利用者が書いた [0-9]*）でも止まり、空の一致は番地にしない", { timeout: LOOP_TIMEOUT_MS }, () => {
+    assert.equal(maskAddresses("a12b", { id: "empty", addresses: ["[0-9]*"], connectives: [] }), "a b");
+    assert.equal(maskAddresses("😀12😀", { id: "empty", addresses: ["[0-9]*"], connectives: [] }), "😀 😀");
+  });
+
+  it("並びがどれだけ長くても読み切る", () => {
+    const long = "a".repeat(LONG_CHAIN);
+    assert.equal(maskAddresses(long, { id: "long", addresses: ["a"], connectives: [] }), " ".repeat(LONG_CHAIN));
+  });
+
+  it("並びの後ろの決まり（address_end）が無ければ、どこで終わっても番地", () => {
+    assert.equal(maskAddresses("§1漢", { id: "loose", addresses: ["§[0-9]+"], connectives: [] }), " 漢");
+    assert.equal(maskAddresses("§1漢", { id: "strict", addresses: ["§[0-9]+"], connectives: [], addressEnd: "$" }), "§1漢");
   });
 });

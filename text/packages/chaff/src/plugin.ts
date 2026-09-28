@@ -197,6 +197,8 @@ export type DocumentProfile = {
   readonly addresses: readonly string[];
   /** 番地と番地のあいだ、番地の後ろに付く語。 */
   readonly connectives: readonly string[];
+  /** 番地の並びのすぐ後ろに来てよい文字（正規表現）。無ければどこで終わってもよい。 */
+  readonly addressEnd?: string | undefined;
 };
 
 export type ProseDocument = {

@@ -32,7 +32,8 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
       .filter(([key, value]) => !LANGUAGE_KEYS.has(key) && isRecord(value))
       .map(([language, value]) => {
         const section = isRecord(value) ? value : {};
-        return [language, { id, addresses: strings(section["addresses"]), connectives: strings(section["connectives"]) }];
+        const addressEnd = typeof section["address_end"] === "string" && section["address_end"] !== "" ? section["address_end"] : undefined;
+        return [language, { id, addresses: strings(section["addresses"]), connectives: strings(section["connectives"]), addressEnd }];
       }),
   );
 

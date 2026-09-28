@@ -2,6 +2,17 @@ import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
 import { countedAfter, dates, quantities } from "../packages/lang-ja/src/quantities.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
+import { buildStructure } from "../packages/chaff/src/structure/of.ts";
+import type { StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
+
+const patterns = (): StructurePatterns => {
+  if (ja.structure === undefined) throw new Error("lang-ja has no structure");
+  return ja.structure;
+};
+
+const lines = (...rows: string[]): string => rows.join("\n");
 
 // 形態素で読む数量と日付。このファイルは解析器を読み込んでから試す（表の経路は test_tree_ja.ts が試す）。
 
@@ -49,17 +60,7 @@ describe("数量（助数詞を品詞で読む）", () => {
 });
 
 describe("数量ではないもの", () => {
-  const cases: readonly string[] = [
-    "第3条に定める業務",
-    "第十条の規定",
-    "数字の無い文。",
-    "3つ目の案",
-    "第一印象は大切だ。",
-    "文字の 3 と 4 を並べる。",
-    "前二項の証明書には",
-    "前三条の規定",
-    "前二号に掲げる者",
-  ];
+  const cases: readonly string[] = ["第3条に定める業務", "第十条の規定", "数字の無い文。", "3つ目の案", "第一印象は大切だ。", "文字の 3 と 4 を並べる。"];
   cases.forEach((text) => {
     it(text, () => assert.deepEqual(quantityOf(text), []));
   });
@@ -102,5 +103,41 @@ describe("countedAfter（通し番号か数量か）", () => {
   ];
   cases.forEach(([number, rest, expected]) => {
     it(`${number} ${rest} → ${String(expected)}`, () => assert.equal(countedAfter(number, rest), expected));
+  });
+});
+
+describe("文書の種類（profile）が決める番地の中の数は、数量ではない", () => {
+  const statute = loadProfiles().find((definition) => definition.id === "statute")?.languages["ja"];
+
+  const quantitiesIn = (source: string, profile: typeof statute): string[] => {
+    const collect = (node: StructureNode): string[] => [
+      ...(node.kind === "quantity" ? [`${String(node.attrs["value"])}${String(node.attrs["unit"])}`] : []),
+      ...node.children.flatMap(collect),
+    ];
+    return collect(buildStructure({ path: "c.txt", source, language: "ja", markdown: false, profile }, patterns()));
+  };
+
+  it("法令では「前二項」「前三条」は番地で、数量ではない。「前二年」は数量", () => {
+    // 労働基準法 第二十二条第三項。
+    const source = lines("第二十二条　前二項の証明書には、前三条の規定により前二年の分を記入する。");
+    assert.deepEqual(quantitiesIn(source, statute), ["2年"]);
+  });
+
+  it("番地の後ろに語が続けば番地ではなく、数量のまま", () => {
+    assert.deepEqual(quantitiesIn(lines("第二十二条　前二項中央銀行について定める。"), statute), ["2項"]);
+    assert.deepEqual(quantitiesIn(lines("第二十二条　前二項目標管理制度導入を進める。"), statute), ["2項"]);
+  });
+
+  it("種類を選ばなければ、「前二項」も数量として読む", () => {
+    assert.deepEqual(quantitiesIn(lines("第二十二条　前二項の証明書には、記入してはならない。"), undefined), ["2項"]);
+  });
+
+  it("番地と数量がちょうど重なれば、数量ではない（種類の中身はコードに無い）", () => {
+    const toy = { id: "toy", addresses: ["三十日"], connectives: [] };
+    assert.deepEqual(quantitiesIn(lines("第二十条　少くとも三十日前にその予告をしなければならない。"), toy), []);
+  });
+
+  it("番地の外にある数量は、法令でも数量", () => {
+    assert.deepEqual(quantitiesIn(lines("第二十条　少くとも三十日前にその予告をしなければならない。"), statute), ["30日"]);
   });
 });

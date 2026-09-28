@@ -1,5 +1,6 @@
 import type { Heading } from "../document.ts";
 import { atxHeadingText, headingText } from "../heading-text.ts";
+import { addressSpans } from "../address-chain.ts";
 import { maskSpans } from "../mask.ts";
 import type { DocumentProfile, Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
@@ -35,6 +36,7 @@ type State = {
   readonly headingCounts: number[];
   /** opensDefinitionScope の行を含んだ条。ここに入る定義はその条の中でだけ比べる。 */
   readonly scopedArticles: Set<Draft>;
+  readonly profile: DocumentProfile | undefined;
 };
 
 const draftOf = (kind: StructureKind, address: string, line: Line, attrs: Readonly<Record<string, string | number>>): Draft => ({
@@ -108,11 +110,19 @@ const openSection = (state: State, line: Line, heading: Heading): void => {
   open(state, { draft: draftOf("section", headingAddress(state, heading.depth), line, { heading: heading.text }), rank: heading.depth });
 };
 
-const LEAVES: readonly { readonly kind: StructureKind; readonly find: (patterns: StructurePatterns, text: string) => readonly Mention[] }[] = [
+/** 番地（文書の種類が決める「前二項」など）の中の数は、数量ではない。 */
+const outsideAddresses = (mentions: readonly Mention[], text: string, profile: DocumentProfile | undefined): readonly Mention[] => {
+  const spans = addressSpans(text, profile);
+  return spans.length === 0 ? mentions : mentions.filter((mention) => !spans.some((span) => span.start <= mention.start && mention.end <= span.end));
+};
+
+type LeafFinder = (patterns: StructurePatterns, text: string, profile: DocumentProfile | undefined) => readonly Mention[];
+
+const LEAVES: readonly { readonly kind: StructureKind; readonly find: LeafFinder }[] = [
   { kind: "definition", find: (patterns, text) => patterns.definitions(text) },
   { kind: "reference", find: (patterns, text) => patterns.references(text) },
   { kind: "obligation", find: (patterns, text) => patterns.obligations(text) },
-  { kind: "quantity", find: (patterns, text) => patterns.quantities(text) },
+  { kind: "quantity", find: (patterns, text, profile) => outsideAddresses(patterns.quantities(text), text, profile) },
   { kind: "date", find: (patterns, text) => patterns.dates?.(text) ?? [] },
 ];
 
@@ -136,7 +146,12 @@ const addLeaves = (state: State, patterns: StructurePatterns, line: Line, text: 
   const parent = top(state).draft;
   const scope = scopeOf(state, patterns, text);
   const leaves = LEAVES.flatMap(({ kind, find }) =>
-    find(patterns, text).map((mention) => ({ kind, start: line.start + offset + mention.start, end: line.start + offset + mention.end, attrs: mention.attrs })),
+    find(patterns, text, state.profile).map((mention) => ({
+      kind,
+      start: line.start + offset + mention.start,
+      end: line.start + offset + mention.end,
+      attrs: mention.attrs,
+    })),
   ).sort((left, right) => left.start - right.start);
   leaves.forEach((leaf) =>
     parent.children.push({
@@ -233,7 +248,7 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
   const attrs = { path: input.path, language: input.language, ...(input.profile === undefined ? {} : { profile: input.profile.id }) };
   const doc = draftOf("doc", "", { text: "", start: 0, number: 1 }, attrs);
   doc.end = input.source.length;
-  const state: State = { stack: [{ draft: doc, rank: 0 }], headingCounts: [], scopedArticles: new Set() };
+  const state: State = { stack: [{ draft: doc, rank: 0 }], headingCounts: [], scopedArticles: new Set(), profile: input.profile };
   lines.forEach((line) => {
     if (line.text.trim() !== "") readLine(state, patterns, line, headings.get(line.number));
     // コードの行は覆って読まないが、開いている節の中身ではある。節の最後にコードブロックがあっても、範囲をそこまで伸ばす。

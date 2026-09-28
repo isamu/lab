@@ -15,9 +15,9 @@ not a statute no longer has its addresses skipped; name the profile to get that.
 
 ### `前二項` and `前三条` are not quantities (#138)
 
-A statute's `前二項` means "the two preceding paragraphs": an address, not the quantity 2 項. A number after `前`
-followed by a statute unit (`条 項 号 章 節 款 目 編`) is no longer read as a quantity. `前二年` (the previous two years)
-still is.
+A statute's `前二項` means "the two preceding paragraphs": an address, not the quantity 2 項. The `statute` profile
+lists `前` + kanji numeral + a statute unit (`条 項 号 章 節 款 目 編`) as an address, and a number inside any profile
+address is not a quantity. `前二年` (the previous two years) still is. Without a profile, `前二項` is read as 2 項.
 
 ### `max-kanji-continuous` does not count legal addresses (#139)
 
