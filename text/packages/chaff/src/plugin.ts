@@ -141,6 +141,8 @@ export type StructurePatterns = {
    * 数字と点だけの通し番号は core が言語を問わず読むので、それを数量と見分けられるのは言語パッケージだけ。
    */
   readonly countedAfter?: (number: string, rest: string) => boolean;
+  /** 数の書き方（「二十二」「3」）を数にする。相対の参照の「前二項」「前条第二項」が使う。 */
+  readonly number?: (text: string) => number | undefined;
 };
 
 export type StructureKind = "doc" | "section" | "chapter" | "article" | "item" | "definition" | "reference" | "obligation" | "quantity" | "date";
@@ -204,6 +206,46 @@ export type DocumentProfile = {
    * すぐ次の行の条が見出しを持たなければ、その条の見出しになる。
    */
   readonly caption?: string | undefined;
+  /** 前条・同項のように、書いた場所から番地が決まる参照の読み方。無ければ読まない。 */
+  readonly relative?: RelativeVocabulary | undefined;
+};
+
+/**
+ * 相対の参照の語彙。語の意味（一つ前・一つ後・直前に引いたもの・今いるところ）はコードが知り、どの語がそれに当たるかは種類が決める。
+ * units は単位の語から木の深さ（NumberedLine.depth）への対応。
+ */
+export type RelativeVocabulary = {
+  readonly before: readonly string[];
+  readonly after: readonly string[];
+  readonly same: readonly string[];
+  readonly current: readonly string[];
+  /** 「前各項」の「各」。一つ前だけでなく、前の全部。 */
+  readonly every: readonly string[];
+  /** 「前二項」の「二」のような、いくつ分かの数の書き方（正規表現）。数は言語パッケージの number が読む。 */
+  readonly count: string;
+  readonly units: Readonly<Record<string, number>>;
+  /** 「前条第二項」の「第」。後ろに続く番地の書き出し。 */
+  readonly suffixPrefix: string;
+  /**
+   * 最初のものに番号を振らない深さ（法令の項）。あれば「第二条第一号」は 2.1.1、「第四条第一項」は第四条そのものでもある。
+   */
+  readonly implicitFirst: number | undefined;
+  /** すぐ前に来てはいけない文字（正規表現）。「事前条件」の「前条」を参照にしない。 */
+  readonly notAfter: string | undefined;
+  /**
+   * 読み替え（「『前条』とあるのは『…』」）の括弧。中の前条・同項は読み替える先の文の言葉で、ここからは決められないので読まない。
+   * 閉じの直後に after、開きの直前に before のどれかがあるものだけ。
+   */
+  readonly substitution: { readonly open: string; readonly close: string; readonly after: readonly string[]; readonly before: readonly string[] } | undefined;
+  /** 条を書かずにこの単位で始まる番地（法令の「第一項」「第二号」）は、書いた場所を含むまとまりの中を指す。 */
+  readonly inside: readonly string[];
+  /**
+   * 並びをつなぐもの（正規表現。及び・若しくは・から・、・枝番号の「の二」）。すぐ前の参照とのあいだがこれとつなぎの語（connectives）と
+   * 閉じた括弧だけなら、条を書かない番地はその参照の続き。「第三十三条第七項若しくは第九項」の「第九項」は第三十三条の第九項。
+   */
+  readonly joiners: readonly string[];
+  /** 括弧書き（「（…）」）の開きと閉じ。並びの途中に挟まっても、並びを切らない。 */
+  readonly aside: { readonly open: string; readonly close: string } | undefined;
 };
 
 export type ProseDocument = {

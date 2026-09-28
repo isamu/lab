@@ -42,10 +42,53 @@ describe("parseProfile", () => {
       name: { ja: "試し" },
       detect: { ja: { line: "^A", minLines: 2 } },
       languages: {
-        ja: { id: "t", addresses: ["A"], connectives: ["及"], addressEnd: "$", caption: "^（(.+)）$" },
-        en: { id: "t", addresses: ["B"], connectives: [], addressEnd: undefined, caption: undefined },
+        ja: { id: "t", addresses: ["A"], connectives: ["及"], addressEnd: "$", caption: "^（(.+)）$", relative: undefined },
+        en: { id: "t", addresses: ["B"], connectives: [], addressEnd: undefined, caption: undefined, relative: undefined },
       },
     });
+  });
+
+  it("相対の参照の語彙を読む。単位の無いものは読まず、単位に無い語は落とす", () => {
+    const relative = parseProfile({
+      id: "t",
+      ja: {
+        relative: {
+          before: ["前"],
+          same: ["同"],
+          every: ["各"],
+          count: "[一二]+",
+          units: { 条: 1, 項: 2, 変: "x" },
+          suffix_prefix: "第",
+          implicit_first: "項",
+          not_after: "\\p{Script=Han}",
+          substitution: { open: "「", close: "」", after: ["とあるのは"] },
+          inside: ["項", "款"],
+          joiners: ["及び"],
+          aside: { open: "（", close: "）" },
+        },
+      },
+    })?.languages["ja"]?.relative;
+    assert.deepEqual(relative, {
+      before: ["前"],
+      after: [],
+      same: ["同"],
+      current: [],
+      every: ["各"],
+      count: "[一二]+",
+      units: { 条: 1, 項: 2 },
+      suffixPrefix: "第",
+      implicitFirst: 2,
+      notAfter: "\\p{Script=Han}",
+      substitution: { open: "「", close: "」", after: ["とあるのは"], before: [] },
+      inside: ["項"],
+      joiners: ["及び"],
+      aside: { open: "（", close: "）" },
+    });
+    assert.equal(parseProfile({ id: "t", ja: { relative: { before: ["前"], units: {} } } })?.languages["ja"]?.relative, undefined);
+    assert.equal(
+      parseProfile({ id: "t", ja: { relative: { units: { 条: 1 }, substitution: { open: "「", close: "」" } } } })?.languages["ja"]?.relative?.substitution,
+      undefined,
+    );
   });
 
   it("id の無いもの、形の違うものは読まない", () => {
