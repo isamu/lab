@@ -166,10 +166,10 @@ const strongSpans = (root: Node, masked: readonly Span[]): Span[] => {
 
 const within = (span: Span, from: number, to: number): boolean => span.start >= from && span.start < to;
 
-const spansOfType = (root: Node, type: string): Span[] => {
+const spansOfType = (root: Node, type: string, keep: (node: Node) => boolean = () => true): Span[] => {
   const found: Span[] = [];
   walk(root, (node) => {
-    if (node.type !== type) return;
+    if (node.type !== type || !keep(node)) return;
     const span = spanOf(node);
     if (span !== undefined) found.push(span);
   });
@@ -274,7 +274,8 @@ export const buildDocument = (
   const blocks = [...collectMasks(root, source, anchors), ...(isMarkdownPath(path) ? [] : pageFurniture(source))];
   const masked = [...blocks, ...emphasisSpans(root, source)];
   const prose = maskSpans(source, masked);
-  const paragraphSpans = spansOfType(root, "paragraph");
+  // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。
+  const paragraphSpans = spansOfType(root, "paragraph", (node) => !isInPageNavigation(node, anchors));
   const listItems = spansOfType(root, "listItem");
   const sentences = sentencesOf(prose, paragraphSpans, adapter);
   const lexicons = {

@@ -157,6 +157,19 @@ describe("ProseDocument: ページの案内を本文として数えない", () =
     assert.deepEqual(texts(source, en), ["Guide", "Site", "Read the summary first."]);
   });
 
+  it("ページの案内は段落として数えない", () => {
+    const source = ["# 表題", "", "[一](#一) | [二](#二)", "", "前置きの文。", "", "## 一", "", "本文の文。", "", "[▲ 目次に戻る](#目次)"].join("\n");
+    const paragraphs = buildDocument("t.md", source, ja).paragraphs.map((paragraph) => source.slice(paragraph.span.start, paragraph.span.end));
+    assert.deepEqual(paragraphs, ["前置きの文。", "本文の文。"]);
+  });
+
+  it("ページの案内の中の太字は強調として数えず、本文にも残さない", () => {
+    const source = ["本文の**強調**。", "", "**[▲ 目次に戻る](#目次)**", "", "**[▲ 目次に戻る][toc]**", "", "[toc]: #目次"].join("\n");
+    const doc = buildDocument("t.md", source, ja);
+    assert.equal(doc.sections[0]?.strongCount, 1);
+    assert.equal(doc.prose?.includes("目次に戻る"), false);
+  });
+
   it("目次の箇条書きは箇条書きとして数えない。他の箇条書きは数える", () => {
     const head = ["- [一](#一)", "- [二](#二)", "- [三](#三)", "", "本文の文。", ""].join("\n");
     const lists = buildDocument("t.md", `${head}\n${["- 一つ目", "- 二つ目", "- 三つ目"].join("\n")}`, ja).lists;
