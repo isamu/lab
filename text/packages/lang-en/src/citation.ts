@@ -6,16 +6,37 @@ const GLOSS = /^ \([^()]{1,100}\)/u;
 const CONNECTOR = /^(?:,? (?:to|and|or)|,) /u;
 const LISTED_NUMBER = /^\d{1,3}[A-Z]{0,2}(?:\([a-z0-9]{1,4}\))*|^(?:\([a-z0-9]{1,4}\))+/u;
 
-/** "Article 58(2)(c) to (g) and (j) of the UK GDPR": the list runs on to the name that governs all of it. */
-const listEnd = (rest: string): number => {
+/**
+ * A listed number is a reference only where the list goes on or ends: "Sections 1, 2 and 9 of" or "Section 3 and 4." —
+ * not "Section 3 and 4 days", where the 4 counts days.
+ */
+const MEMBER_END = /^(?:$|[,;.:)]|\s(?:to|and|or|of)\b|\s\()/u;
+
+export type ListMember = { readonly start: number; readonly text: string };
+
+/** Every number listed after a reference, with where it ends. `start` is from the start of `rest`. */
+const listed = (rest: string): (ListMember & { readonly end: number })[] => {
+  const found: (ListMember & { end: number })[] = [];
   let end = 0;
   for (;;) {
     const connector = CONNECTOR.exec(rest.slice(end))?.[0];
     const number = connector === undefined ? undefined : LISTED_NUMBER.exec(rest.slice(end + connector.length))?.[0];
-    if (connector === undefined || number === undefined) return end;
-    end += connector.length + number.length;
+    if (connector === undefined || number === undefined) return found;
+    const start = end + connector.length;
+    end = start + number.length;
+    found.push({ start, text: number, end });
   }
 };
+
+/** "Article 58(2)(c) to (g) and (j) of the UK GDPR": the list runs on to the name that governs all of it. */
+const listEnd = (rest: string): number => listed(rest).at(-1)?.end ?? 0;
+
+/** The members after a reference, "2" and "9" in "Sections 1, 2 and 9". */
+export const listMembers = (rest: string): ListMember[] =>
+  listed(rest)
+    .filter((member) => MEMBER_END.test(rest.slice(member.end)))
+    .map(({ start, text }) => ({ start, text }));
+
 const CAPITALISED = /^[A-Z][\w'’-]*/u;
 /**
  * How a document names itself. "Section 3 of the Agreement" in an agreement means this one.
