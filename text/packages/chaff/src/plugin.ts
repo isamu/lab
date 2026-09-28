@@ -213,6 +213,11 @@ export type DocumentProfile = {
   readonly caption?: string | undefined;
   /** 前条・同項のように、書いた場所から番地が決まる参照の読み方。無ければ読まない。 */
   readonly relative?: RelativeVocabulary | undefined;
+  /**
+   * 番号を書かない単位（古い法令の第 2 項以降）。indent で始まる行を、inside の種類の単位の中の、depth の深さの次の単位にする。
+   * inside の単位の行に、番号の後ろの本文が続くときだけ。
+   */
+  readonly unnumbered?: { readonly indent: string; readonly inside: string; readonly depth: number } | undefined;
 };
 
 /**

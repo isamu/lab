@@ -7,6 +7,7 @@ import { maskSpans } from "../mask.ts";
 import type { DocumentProfile, Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
 import { dottedNumber } from "./universal.ts";
+import { unnumberedUnit, type OpenUnit } from "./unnumbered.ts";
 
 /** 組み立て中の節点。できあがったら StructureNode に固める。 */
 type Draft = {
@@ -24,7 +25,7 @@ type Draft = {
 };
 
 /** 開いている節点。rank の大きいものほど内側。 */
-type Frame = { readonly draft: Draft; readonly rank: number; readonly numbered?: NumberedLine | undefined };
+type Frame = { readonly draft: Draft; readonly rank: number; readonly numbered?: NumberedLine | undefined; readonly bodyOnLine?: boolean };
 
 /**
  * 見出しは深さ 1〜6 を rank にする。番号のまとまりは必ず見出しの内側に入るので、
@@ -96,7 +97,7 @@ const headingAddress = (state: State, depth: number): string => {
  * 見出しに書いた番号（「## 第3条」）は、見出しの深さで入れ子にする。本文の番号は見出しの内側に入る。
  * 見出しの深さを捨てると、「## 第3条」の下の「### 詳細」が条の外に出てしまう。
  */
-const openNumbered = (state: State, line: Line, numbered: NumberedLine, headingDepth: number | undefined): void => {
+const openNumbered = (state: State, line: Line, numbered: NumberedLine, headingDepth: number | undefined, bodyOnLine: boolean): void => {
   const attrs = { label: numbered.label, ...(numbered.heading === "" ? {} : { heading: numbered.heading }) };
   const rank = headingDepth ?? NUMBERED_RANK + numbered.depth;
   // 番地は、自分と同じか内側を閉じてから決める。閉じる前だと、同じ深さの前の条を親と取り違える。
@@ -108,7 +109,7 @@ const openNumbered = (state: State, line: Line, numbered: NumberedLine, headingD
     ordinalTo: numbered.ordinalTo,
     numbering: numbered.numbering,
   };
-  open(state, { draft, rank, numbered });
+  open(state, { draft, rank, numbered, bodyOnLine });
 };
 
 const openSection = (state: State, line: Line, heading: Heading): void => {
@@ -265,6 +266,16 @@ const captionOf = (profile: DocumentProfile | undefined, text: string): string |
   return words === "" ? undefined : words;
 };
 
+const openUnits = (state: State): OpenUnit[] =>
+  state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [{ numbered: frame.numbered, bodyOnLine: frame.bodyOnLine === true }]));
+
+/** 言語の番号の読み方、文書の種類の番号を書かない単位、言語を問わない通し番号の順に読む。 */
+const numberedLine = (state: State, patterns: StructurePatterns, text: string, context: NumberingContext): NumberedLine | undefined =>
+  patterns.numbered(text, context) ?? unnumberedUnit(text, openUnits(state), state.profile?.unnumbered) ?? universalNumber(patterns, text, context);
+
+/** 番号の後ろが見出しでなく本文か。前の行から見出しが付く前の、行そのもので決める。 */
+const carriesBody = (found: NumberedLine | undefined): boolean => found !== undefined && found.heading === "" && found.rest !== "";
+
 /** 見出しの無い条のすぐ前の行が見出しだけの行なら、それを条の見出しにする。 */
 const withCaption = (state: State, line: Line, numbered: NumberedLine | undefined): NumberedLine | undefined => {
   const caption = numbered?.kind === "article" && numbered.heading === "" ? state.captions.get(line.number - 1) : undefined;
@@ -275,12 +286,13 @@ const readLine = (state: State, patterns: StructurePatterns, line: Line, heading
   const text = heading === undefined ? line.text : headingLineText(line.text);
   const openNumbers = state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered]));
   const context = { open: openNumbers, isHeading: heading !== undefined };
-  const numbered = withCaption(state, line, patterns.numbered(text, context) ?? universalNumber(patterns, text, context));
+  const found = numberedLine(state, patterns, text, context);
+  const numbered = withCaption(state, line, found);
   const caption = numbered === undefined && heading === undefined ? captionOf(state.profile, text) : undefined;
   if (caption !== undefined) state.captions.set(line.number, caption);
   // 番号付きの見出しも見出しの通し番号を進める。進めないと、その下の「### 詳細」が前の見出しの番地を名乗る。
   if (numbered !== undefined && heading !== undefined) headingAddress(state, heading.depth);
-  if (numbered !== undefined) openNumbered(state, line, numbered, heading?.depth);
+  if (numbered !== undefined) openNumbered(state, line, numbered, heading?.depth, carriesBody(found));
   else if (heading !== undefined) openSection(state, line, heading);
   extend(state, line.start + line.text.length);
   // 番号付きの行は番号の後ろだけを読む。「第3条（支払）」の「第3条」を自分への参照として拾わない。

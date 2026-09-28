@@ -197,6 +197,24 @@ describe("文書の種類（profile）", () => {
     assert.deepEqual(addresses(statuteTree(DISMISSAL, statute)), ["20", "20.2", "21"]);
   });
 
+  it("番号を書かない項の読み方は文書の種類が決める。種類が無ければ、字下げの行は第 1 項の本文", () => {
+    assert.deepEqual(addresses(statuteTree(DISMISSAL, undefined)), ["20", "21"]);
+    const tabs = { id: "tabs", addresses: [], connectives: [], unnumbered: { indent: "\t", inside: "article", depth: 2 } };
+    assert.deepEqual(addresses(statuteTree(lines("第二十条　本文。", "\t次の項。", "\t次の次の項。"), tabs)), ["20", "20.2", "20.3"]);
+    assert.deepEqual(addresses(statuteTree(DISMISSAL, tabs)), ["20", "21"]);
+  });
+
+  it("条の行が見出しだけの条や、番号の後ろが空の条では、字下げの行は項にならない", () => {
+    assert.deepEqual(addresses(statuteTree(lines("第二十条（予告）", "　本文。"), statute)), ["20"]);
+    assert.deepEqual(addresses(statuteTree(lines("第二十条", "　本文。"), statute)), ["20"]);
+    assert.deepEqual(addresses(statuteTree(lines("第二十条　本文。", "　 空白で始まる行。"), statute)), ["20"]);
+  });
+
+  it("字下げの行が「4.2 」で始まっても、言語を問わない通し番号より先に項として読む", () => {
+    const tabs = { id: "tabs", addresses: [], connectives: [], unnumbered: { indent: "\t", inside: "article", depth: 2 } };
+    assert.deepEqual(addresses(statuteTree(lines("第二十条　本文。", "\t4.2 次の項。"), tabs)), ["20", "20.2"]);
+  });
+
   it("空行を挟んだ見出し、見出しを持つ条、条でない行には付けない", () => {
     assert.deepEqual(articleHeadings(statuteTree(lines("（解雇の予告）", "", "第二十条　使用者は、予告をしなければならない。"), statute)), ["20:"]);
     assert.deepEqual(articleHeadings(statuteTree(lines("（前文）", "第1条（目的）"), statute)), ["1:目的"]);
