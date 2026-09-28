@@ -1,11 +1,13 @@
 // Fetches the documents in corpus/manifest.json. Japanese statutes come from the e-Gov law API (v2), UK Acts from
 // legislation.gov.uk; each is written to corpus/laws/<id>.txt with the revision it came from, so a test run never
-// touches the network.
+// touches the network. Documents of other kinds come from a pinned URL: committed under corpus/docs/ when they may be
+// redistributed, otherwise into the git-ignored corpus/.cache/.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { lawText } from "./law-text.ts";
 import { ukText } from "./uk-text.ts";
+import { docEntries, docPath, type DocEntry } from "./corpus-docs.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus");
 const TIMEOUT_MS = 120_000;
@@ -67,6 +69,13 @@ const fetchUkAct = async (entry: Entry): Promise<void> => {
   console.log(`${entry.id}  ${entry.title}  ${modified}`);
 };
 
+const fetchDoc = async (doc: DocEntry): Promise<void> => {
+  const out = docPath(ROOT, doc);
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, await fetchText(doc.url));
+  console.log(`${doc.id}  ${doc.title}  ${doc.redistribute ? "committed" : "cached"}`);
+};
+
 const FETCHERS: Readonly<Record<string, (entry: Entry) => Promise<void>>> = { "e-gov": fetchLaw, "legislation.gov.uk": fetchUkAct };
 
 const manifest: unknown = JSON.parse(readFileSync(join(ROOT, "manifest.json"), "utf8"));
@@ -76,5 +85,11 @@ const chosen = entries.filter((entry) => FETCHERS[entry.source] !== undefined &&
 await chosen.reduce<Promise<void>>(async (previous, entry) => {
   await previous;
   await FETCHERS[entry.source]?.(entry);
+  await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
+}, Promise.resolve());
+const docs = docEntries(manifest).filter((doc) => only.length === 0 || only.includes(doc.id));
+await docs.reduce<Promise<void>>(async (previous, doc) => {
+  await previous;
+  await fetchDoc(doc);
   await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
 }, Promise.resolve());

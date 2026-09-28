@@ -8,3 +8,6 @@ report/
 .env
 .env*
 !.env.example
+
+# yarn corpus:fetch の文書のうち、再配布できないもの（URL だけを corpus/manifest.json に持つ）。
+corpus/.cache/
