@@ -267,29 +267,34 @@ const LEXICONS = loadLexicons();
 const CITATION = citationVocabulary(LEXICONS);
 const SECTIONS = sectionVocabulary(LEXICONS);
 
-const sectionsOf = (text: string): Mention[] => sectionReferences(text, SECTIONS, (at) => citedDocument(text, at, CITATION));
+const sectionsOf = (text: string): Mention[] => sectionReferences(text, SECTIONS);
 
-const articleReferences = (text: string): Mention[] => {
+const articlesOf = (text: string): Mention[] =>
+  [...text.matchAll(REFERENCE)].flatMap((match) => {
+    const address = addressOfReference(match.groups ?? {});
+    if (address === undefined) return [];
+    const { target, fallback } = address;
+    const attrs = { target, label: match[0], ...(fallback === undefined ? {} : { fallback }) };
+    return [{ start: match.index, end: match.index + match[0].length, attrs }];
+  });
+
+/** 条の参照と章・節の参照を文書の順に並べ、他の文書の名前を付ける。「民法第3章及び第4章」の第4章も民法の章。 */
+const references = (text: string): Mention[] => {
   const depths = depthsOf(text);
   // 括弧書きの中の参照（「（同法第五十九条において準用する場合を含む。）」）は、外の並びを切らない。並びは括弧の深さごとに持つ。
   const chains = new Map<number, { readonly end: number; readonly document: string | undefined }>();
-  return [...text.matchAll(REFERENCE)].flatMap((match) => {
-    const groups = match.groups ?? {};
-    const address = addressOfReference(groups);
-    if (address === undefined) return [];
-    const { target, fallback } = address;
-    const depth = depths[match.index] ?? 0;
-    const previous = chains.get(depth);
-    const inherited =
-      previous?.document !== undefined && isContinuation(withoutClosedParentheses(text.slice(previous.end, match.index))) ? previous.document : undefined;
-    const document = citedDocument(text, match.index, CITATION) ?? inherited;
-    chains.set(depth, { end: match.index + match[0].length, document });
-    const attrs = { target, label: match[0], ...(fallback === undefined ? {} : { fallback }), ...(document === undefined ? {} : { document }) };
-    return [{ start: match.index, end: match.index + match[0].length, attrs }];
-  });
+  return [...articlesOf(text), ...sectionsOf(text)]
+    .sort((left, right) => left.start - right.start)
+    .map((mention) => {
+      const depth = depths[mention.start] ?? 0;
+      const previous = chains.get(depth);
+      const inherited =
+        previous?.document !== undefined && isContinuation(withoutClosedParentheses(text.slice(previous.end, mention.start))) ? previous.document : undefined;
+      const document = citedDocument(text, mention.start, CITATION) ?? inherited;
+      chains.set(depth, { end: mention.end, document });
+      return document === undefined ? mention : { ...mention, attrs: { ...mention.attrs, document } };
+    });
 };
-
-const references = (text: string): Mention[] => [...articleReferences(text), ...sectionsOf(text)].sort((left, right) => left.start - right.start);
 
 /** 「3.2節」の 3.2 は節の番地で、節の数ではない。 */
 const quantitiesOutsideSections = (text: string): Mention[] => {

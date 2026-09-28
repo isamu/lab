@@ -76,6 +76,23 @@ describe("日本語: 章・節・項の番号を参照として読む", () => {
     ["三段の項", "3.2.1項の表", [{ label: "3.2.1項", target: "3.2.1" }]],
     ["行頭でも、後ろが本文なら参照", "3.2節で述べたとおり。", [{ label: "3.2節", target: "3.2" }]],
     ["他の文書の章", "民法第3章を参照する。", [{ label: "第3章", target: "ch3", fallback: "3", document: "民法" }]],
+    [
+      "他の文書の章の並び",
+      "民法第3章及び第4章、第5条による。",
+      [
+        { label: "第3章", target: "ch3", fallback: "3", document: "民法" },
+        { label: "第4章", target: "ch4", fallback: "4", document: "民法" },
+        { label: "第5条", target: "5", document: "民法" },
+      ],
+    ],
+    [
+      "並びが切れたら、この文書の章",
+      "民法第3章による。この規程の第2章で扱う。",
+      [
+        { label: "第3章", target: "ch3", fallback: "3", document: "民法" },
+        { label: "第2章", target: "ch2", fallback: "2" },
+      ],
+    ],
   ];
   cases.forEach(([name, text, expected]) => {
     it(name, () => assert.deepEqual(read(text), expected));

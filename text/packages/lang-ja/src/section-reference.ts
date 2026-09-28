@@ -41,9 +41,9 @@ const blocked = (text: string, start: number, unitAt: number, vocabulary: Sectio
 
 /**
  * 「3.2節」→ 3.2、「第3章」「3章」→ ch3。見出し「## 第3章」は木に ch3 として入る。見出しを「## 3. 構成」と書く文書では 3 なので、それを fallback にする。
- * 他の文書の名前が前にあれば、その名前を document に入れる。名前の読み方は条の参照と同じものを渡してもらう。
+ * 他の文書の名前（民法第3章）は、条の参照と一緒に structure.ts が付ける。
  */
-export const sectionReferences = (text: string, vocabulary: SectionVocabulary, documentBefore: (at: number) => string | undefined): Mention[] =>
+export const sectionReferences = (text: string, vocabulary: SectionVocabulary): Mention[] =>
   [...text.matchAll(SECTION)].flatMap((match) => {
     const groups = match.groups ?? {};
     const [written, unit] = [groups["n"] ?? "", groups["unit"] ?? ""];
@@ -51,8 +51,6 @@ export const sectionReferences = (text: string, vocabulary: SectionVocabulary, d
     const end = match.index + match[0].length;
     if (number.includes(".") !== hasDots(unit)) return [];
     if (blocked(text, match.index, end - unit.length, vocabulary) || isLineLabel(text, match.index, end)) return [];
-    const document = documentBefore(match.index);
     const address = unit === "章" ? { target: `ch${number}`, fallback: number } : { target: number };
-    const attrs = { ...address, label: match[0], ...(document === undefined ? {} : { document }) };
-    return [{ start: match.index, end, attrs }];
+    return [{ start: match.index, end, attrs: { ...address, label: match[0] } }];
   });
