@@ -34,14 +34,15 @@ const reasonsFor = (doc: ProseDocument): Reasons => REASONS[uiLanguageOf(doc.lan
  * 読めなかった文書で「参照先が無い」が 0 件なのは、確かめた結果ではないので、読めなかったと言う。
  */
 /**
- * 木を読む rule の要求。structure は番号の並びを読む（読めなかった文書では動かない）。dates は木の日付だけを読むので、
- * 番号を読めなかった文書でも動く。どちらも capability ではなく、adapter が木を作れるかで決まる。
+ * 木を読む rule の要求。structure は番号の並びを読む（読めなかった文書では動かない）。dates と quantities は木の日付と数量だけを
+ * 読むので、番号を読めなかった文書でも動く。どちらも capability ではなく、adapter が木を作れるかで決まる。
  */
-const TREE_NEEDS: ReadonlySet<string> = new Set(["structure", "dates"]);
+const TREE_NEEDS: ReadonlySet<string> = new Set(["structure", "dates", "quantities"]);
+const VALUE_NEEDS: readonly string[] = ["dates", "quantities"];
 
 const treeNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
   if (rule.requires.includes("structure")) return treeProblem(doc);
-  return rule.requires.includes("dates") && doc.structure === undefined ? reasonsFor(doc).noStructure(doc.language) : undefined;
+  return rule.requires.some((need) => VALUE_NEEDS.includes(need)) && doc.structure === undefined ? reasonsFor(doc).noStructure(doc.language) : undefined;
 };
 
 const treeProblem = (doc: ProseDocument): string | undefined => {

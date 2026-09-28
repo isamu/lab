@@ -1,0 +1,26 @@
+id: total-mismatch
+layer: L3
+status: experimental
+how_to_find: total-mismatch
+requires: [quantities]
+severity: error
+
+name:
+  ja: 合計が内訳の和と合わない
+  en: A total that is not the sum of its items
+
+why:
+  ja: 見積や請求の「合計」が、上に並べた金額の和と合わないと、読み手はどちらが正しいのかを計算し直すことになります。行を足したり消したりしたあとに、合計だけ直し忘れると起きます。箇条書きか表で、合計の語（合計・小計）で始まる行を、同じ単位で同じ列の金額の和と比べます。小計のあとの総計のように、足し方が何通りかあるときは、どの足し方でも合わないときだけ指します。
+  en: When the total of a quote or an invoice is not the sum of the amounts listed above it, the reader has to add them up again to find out which is right. It happens when a line is added or removed and the total is not updated. In a list or a table, a line starting with a total word (Total, Subtotal) is compared with the sum of the amounts in the same unit and column above it. When there is more than one way to add them up, such as a grand total after a subtotal and tax, it is pointed out only when none of them matches.
+
+message:
+  ja: 合計「{written}」が、上の金額の和（{sum}）と合いません
+  en: "The total {written} is not the sum of the amounts above it ({sum})"
+
+how_to_fix:
+  ja: 内訳の金額と合計のどちらが正しいかを確かめて、片方を直してください。
+  en: Check which is right, the items or the total, and correct the other.
+
+levels: { strict: 1, normal: 1, relaxed: 1 }
+
+use_for: [business, technical, blog]

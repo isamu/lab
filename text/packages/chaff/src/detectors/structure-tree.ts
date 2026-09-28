@@ -3,6 +3,7 @@ import { danglingReferences, duplicateDefinitions, inDocumentOrder, type Structu
 import { numberingBreaks } from "../structure/numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
+import { totalMismatches, type Amount } from "../structure/total.ts";
 
 const QUOTE_LENGTH = 80;
 
@@ -67,6 +68,29 @@ export const dateOrder: Detector = (doc): Finding[] =>
     : dateOrderBreaks(doc.source, datedPoints(doc.structure)).map((issue) => ({
         rule: "date-order",
         severity: "warning",
+        line: 0,
+        column: 0,
+        quote: quoteAt(doc.source, issue.offset),
+        values: { ...issue.values, offset: issue.offset },
+      }));
+
+/** 木の数量を、原文の位置と一緒に並べる。 */
+const amountsOf = (tree: NonNullable<ProseDocument["structure"]>): Amount[] =>
+  inDocumentOrder(tree).flatMap((node) =>
+    node.kind === "quantity" ? [{ offset: node.span.start, end: node.span.end, value: Number(node.attrs["value"]), unit: String(node.attrs["unit"]) }] : [],
+  );
+
+/** 合計の行が、上の金額の和と合わない。合計の語は言語パッケージの語彙表（total-label）から取る。 */
+export const totalMismatch: Detector = (doc): Finding[] =>
+  doc.structure === undefined
+    ? []
+    : totalMismatches(
+        doc.source,
+        amountsOf(doc.structure),
+        (doc.lexicons["total-label"] ?? []).map((entry) => entry.pattern),
+      ).map((issue) => ({
+        rule: "total-mismatch",
+        severity: "error",
         line: 0,
         column: 0,
         quote: quoteAt(doc.source, issue.offset),

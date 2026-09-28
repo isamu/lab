@@ -1,0 +1,9 @@
+# Words that mark a total line. A line (or a table's first column) starting with one is compared with the amounts above it.
+id: total-label
+language: en
+entries:
+  - pattern: Total
+  - pattern: Subtotal
+  - pattern: Sub-total
+  - pattern: Grand total
+  - pattern: Sum

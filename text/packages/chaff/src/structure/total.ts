@@ -1,0 +1,144 @@
+import type { StructureIssue } from "./issues.ts";
+import { runsOf, type Line } from "./runs.ts";
+
+/**
+ * 合計の行と、その上に並べた金額の和。箇条書きの続いた項目か、表の続いた行で、合計の語（合計・小計・Total）で始まる行を読む。
+ * 同じ単位で同じ列（箇条書きは一つの列）の金額を上から足し、合計の行の金額と合わなければ言う。
+ * 小計と税のあとの総計のように、足し方が何通りかある。どの足し方でも合わないときだけ言う。
+ */
+export type Amount = { readonly offset: number; readonly end: number; readonly value: number; readonly unit: string };
+
+const CENTS = 100;
+const MIN_PARTS = 2;
+
+/** 金額の前に書いた負の印（-500、▲500、-$500）。行頭の箇条書きの - は印にしない。 */
+const NEGATIVE_BEFORE = /[-−▲△][ \t]?(?:[$€£¥￥][ \t]?)?$/u;
+
+/** 括弧に入れた金額（(1,200)）。会計では負の数だが、補足の金額とも読めて符号が決まらない。 */
+const OPEN_PAREN_BEFORE = /[(（][ \t]?(?:[$€£¥￥][ \t]?)?$/u;
+
+type Cell = { readonly column: number; readonly unit: string };
+/** cents が undefined の金額は、符号が決まらない。 */
+type Placed = Amount & Cell & { readonly cents: number | undefined };
+type Entry = { readonly label: boolean; readonly amounts: readonly Placed[] };
+
+const columnOf = (source: string, line: Line, offset: number): number => source.slice(line.start, offset).split("|").length - 1;
+
+const isNegative = (source: string, line: Line, amount: Amount): boolean => {
+  const before = source.slice(line.start, amount.offset);
+  const marker = NEGATIVE_BEFORE.exec(before);
+  return marker !== null && before.slice(0, marker.index).trim().length > 0;
+};
+
+/** 行の最初の文字列（表なら最初の列）から、強調の印と箇条書きの印を除いたもの。 */
+const leadingText = (text: string): string =>
+  text
+    .replace(/^[ \t]*(?:[-*+]|\d{1,3}[.)])?[ \t]*\|?[ \t]*/u, "")
+    .replace(/^[*_]+/u, "")
+    .trimStart();
+
+/** 合計の語で始まり、語がそこで切れている行か。「計画」は「計」で始まっても合計ではない。 */
+const isTotalLabel = (text: string, labels: readonly string[]): boolean => {
+  const lead = leadingText(text).toLowerCase();
+  return labels.some((label) => lead.startsWith(label.toLowerCase()) && !/^\p{L}/u.test(lead.slice(label.length)));
+};
+
+const centsOf = (source: string, line: Line, amount: Amount): number | undefined => {
+  if (OPEN_PAREN_BEFORE.test(source.slice(line.start, amount.offset))) return undefined;
+  return Math.round(amount.value * CENTS) * (isNegative(source, line, amount) ? -1 : 1);
+};
+
+const entryOf = (source: string, line: Line, amounts: readonly Amount[], labels: readonly string[]): Entry => ({
+  label: isTotalLabel(source.slice(line.start, line.end), labels),
+  amounts: amounts
+    .filter((amount) => amount.offset >= line.start && amount.offset <= line.end)
+    .map((amount) => ({ ...amount, column: columnOf(source, line, amount.offset), cents: centsOf(source, line, amount) })),
+});
+
+const sameCell = (a: Cell, b: Cell): boolean => a.column === b.column && a.unit === b.unit;
+
+const sumOf = (values: readonly number[]): number => values.reduce((sum, value) => sum + value, 0);
+
+type RowsAbove = { readonly parts: number[]; readonly totals: number[]; sinceLast: number[] };
+
+/** 行の中で、その列と単位の値。無ければ null、二つ以上あるか、列に別の単位しか無いか、符号が決まらなければ undefined。 */
+const valueIn = (entry: Entry, cell: Cell): number | null | undefined => {
+  const inColumn = entry.amounts.filter((amount) => amount.column === cell.column);
+  const matching = inColumn.filter((amount) => sameCell(amount, cell));
+  if (matching.length === 0) return inColumn.length === 0 ? null : undefined;
+  return matching.length === 1 ? matching[0]?.cents : undefined;
+};
+
+const addTo = (above: RowsAbove, entry: Entry, value: number): void => {
+  if (entry.label) {
+    above.totals.push(value);
+    above.sinceLast = [];
+    return;
+  }
+  above.parts.push(value);
+  above.sinceLast.push(value);
+};
+
+/**
+ * 合計の行より上の、同じ列と単位の値。項目の行と合計の行に分け、最後の合計の行より後の項目も取る。
+ * 足し方が決まらない行（valueIn が undefined）が一つでもあれば undefined。1.2万円と円のように単位が割れた列もここで止まる。
+ */
+const windowAbove = (entries: readonly Entry[], cell: Cell): RowsAbove | undefined => {
+  const values = entries.map((entry) => valueIn(entry, cell));
+  if (values.includes(undefined)) return undefined;
+  const above: RowsAbove = { parts: [], totals: [], sinceLast: [] };
+  entries.forEach((entry, index) => {
+    const value = values[index];
+    if (typeof value === "number") addTo(above, entry, value);
+  });
+  return above;
+};
+
+/** 足し方の候補: 上の項目すべて（小計を並べた総計もこれ）、最後の合計より後の項目、最後の合計にその後の項目。 */
+const candidateSums = (above: RowsAbove): number[] => {
+  const last = above.totals.at(-1);
+  return [sumOf(above.parts), sumOf(above.sinceLast), ...(last === undefined ? [] : [last + sumOf(above.sinceLast)])];
+};
+
+const reportedSum = (above: RowsAbove): number => (above.totals.at(-1) ?? 0) + sumOf(above.sinceLast);
+
+/** 和は、合計の行と同じ小数の桁で見せる（$10,160.00 なら $10,260.00）。端数があれば 2 桁。 */
+const formatCents = (cents: number, written: string): string => {
+  const digits = Math.max(/\.\d{2}/u.test(written) ? 2 : 0, cents % CENTS === 0 ? 0 : 2);
+  return (cents / CENTS).toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+};
+
+/** 数の前に書いた単位（$1,200、$ 1,200）の始まり。木の数量は数から始まるので、見せるときは前の単位も入れる。 */
+const unitStartBefore = (source: string, amount: Amount): number | undefined => {
+  const gap = /[ \t]/u.test(source[amount.offset - 1] ?? "") ? 1 : 0;
+  const start = amount.offset - gap - amount.unit.length;
+  return start >= 0 && source.slice(start, amount.offset - gap) === amount.unit ? start : undefined;
+};
+
+/** 合計の行に書いた金額と、上の和を、同じ書き方で見せる。 */
+const shownAmounts = (source: string, total: Amount, sumCents: number): Record<string, string> => {
+  const unitStart = unitStartBefore(source, total);
+  const written = source.slice(unitStart ?? total.offset, total.end);
+  const sum = formatCents(sumCents, written);
+  if (unitStart !== undefined) return { written, sum: `${total.unit}${sum}` };
+  return { written, sum: written.endsWith(total.unit) ? `${sum}${total.unit}` : sum };
+};
+
+const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue[] =>
+  entries.flatMap((entry, index) => {
+    if (!entry.label) return [];
+    return entry.amounts.flatMap((total) => {
+      const writtenCents = valueIn(entry, total);
+      const above = windowAbove(entries.slice(0, index), total);
+      if (typeof writtenCents !== "number" || above === undefined || above.parts.length < MIN_PARTS || candidateSums(above).includes(writtenCents)) return [];
+      return [{ offset: total.offset, values: shownAmounts(source, total, reportedSum(above)) }];
+    });
+  });
+
+export const totalMismatches = (source: string, amounts: readonly Amount[], labels: readonly string[]): StructureIssue[] =>
+  runsOf(source).flatMap((run) =>
+    mismatchesIn(
+      source,
+      run.map((line) => entryOf(source, line, amounts, labels)),
+    ),
+  );
