@@ -46,6 +46,12 @@ describe("L3 日本語", () => {
       assert.ok(!idsFor("運用を始める。手順を作る。「確認します」と書いた欄を置く。効果を測定する。").includes("no-mixed-desumasu"));
     });
 
+    it("valid: 引用で終わる文は、引用の中の文末で判定しない", () => {
+      assert.ok(!idsFor("運用を始める。手順を作る。画面には「確認します。」。効果を測定する。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始める。手順を作る。表示は『完了しました』。効果を測定する。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始めます。手順を作ります。表示は『完了した』。効果を測定します。").includes("no-mixed-desumasu"));
+    });
+
     it("valid: 文末の終助詞と添えた括弧の手前を見る（でしたか・です（§3））", () => {
       assert.ok(!idsFor("運用を始めます。手順を作ります。準備は十分でしたか。この件は重要です（§3）。").includes("no-mixed-desumasu"));
     });

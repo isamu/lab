@@ -11,7 +11,7 @@ import type { Detector, Finding, Sentence } from "../plugin.ts";
  * 述語を持たないものは文として数えない。見出しの下の `MaaSサービス` のような
  * 名前だけの行がそのまま「である調」の少数派になり、実文書の誤検知はすべてこれだった。
  */
-const isSentence = (sentence: Sentence): boolean => isClosed(sentence) && hasPredicate(sentence);
+const isSentence = (sentence: Sentence): boolean => isClosed(sentence) && hasPredicate(sentence) && endingTokens(sentence).length > 0;
 
 /**
  * 文末の語だけを見る。文の途中の引用（「ご覧ください」という表現を使う。）は文末の調子ではない。
