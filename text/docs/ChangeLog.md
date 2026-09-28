@@ -2,6 +2,15 @@
 
 Newest first.
 
+## Unreleased
+
+### The corpus has press releases, FAQs, privacy policies, how-tos, notices, letters, agendas and job descriptions (#170)
+
+`yarn corpus` now also runs on a GSA news release, the TTS travel FAQ, a cloud.gov how-to and service notice, and
+デジタル庁's announcement, privacy policy, recruitment FAQ and recruitment notice (committed: public domain, CC0, or
+公共データ利用規約（第1.0版）with attribution), and on Automattic's privacy policy and offer letter, a TC39 meeting agenda,
+a GitLab job description and a Japanese README (URL only).
+
 ## 0.11.0 — 2026-09-29
 
 Brushed up against real documents: a corpus of Japanese and English reports, minutes, specifications, contracts,
