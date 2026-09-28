@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### English sentences end after a number (#170)
+
+"We opened in 2026. We shipped in May." is now two sentences. sentence-splitter read any number followed by a period
+as a list number and never ended a sentence there, so `max-sentence-length` reported long sentences that were two, and
+per-paragraph sentence counts came out low. A number that starts its line ("1. First item"), or is followed by a
+lowercase word, is still not a sentence end.
+
 ### `yarn bench` plants mistakes for more rules, in more kinds of document (#170)
 
 The seeded-mistake benchmark now also plants a joined paragraph, a heading echoed by its first sentence, heavy bold,
