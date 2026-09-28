@@ -30,7 +30,21 @@ const textOf = (node: StructureNode, key: string): string => {
  * 日本語の「第4条第1項」は、番号の無い第 1 項を持つ第4条を指しうる。
  */
 const resolves = (node: StructureNode, addresses: ReadonlySet<string>): boolean =>
-  addresses.has(textOf(node, "target")) || (node.attrs["fallback"] !== undefined && addresses.has(textOf(node, "fallback")));
+  addresses.has(textOf(node, "target")) || (node.attrs["fallback"] !== undefined && addresses.has(fallbackKey(node)));
+
+/**
+ * fallbackLabel があれば、fallback はその見出しの番号で書かれた節点だけに当たる。
+ * 「第3章」の fallback 3 は「## 3. 構成」には当たり、同じ番地の「第3条」には当たらない。
+ */
+const labelled = (address: string, label: string): string => `${address}\u0000${label}`;
+const fallbackKey = (node: StructureNode): string =>
+  node.attrs["fallbackLabel"] === undefined ? textOf(node, "fallback") : labelled(textOf(node, "fallback"), textOf(node, "fallbackLabel"));
+
+/** 見出しの下の章（h1/ch9）は、見出しの番地を除いた ch9 でも指せる。本文の「第9章」は見出しの番地を書かない。 */
+const addressesOf = (node: StructureNode): string[] =>
+  node.kind === "chapter" && node.address.includes("/") ? [node.address, node.address.slice(node.address.lastIndexOf("/") + 1)] : [node.address];
+
+const keysOf = (node: StructureNode): string[] => addressesOf(node).flatMap((address) => [address, labelled(address, textOf(node, "label"))]);
 
 /**
  * 参照の番地が木に無い。他の文書の名前が付いた参照（民法第709条、Section 9 of the Master Agreement）は引かない。
@@ -40,7 +54,7 @@ export const danglingReferences = (tree: StructureNode): StructureIssue[] => {
   const nodes = inDocumentOrder(tree);
   // 参照は条を指す。条を一つも持たない文書（契約書に付ける承諾書のひな形など）の「契約書第6条」は、別の文書の条。
   if (!nodes.some((node) => node.kind === "article")) return [];
-  const addresses = new Set(nodes.filter((node) => NUMBERED.includes(node.kind)).map((node) => node.address));
+  const addresses = new Set(nodes.filter((node) => NUMBERED.includes(node.kind)).flatMap(keysOf));
   // Section で組んだ法令が "Articles 13 to 21 of the UK GDPR" と別の文書の Article を名指ししていれば、名の無い "Article 6(3)" もそちら。
   // 名指しがあれば、名の無い "Article 9" が書き間違いか向こうの条かは区別できないので黙る。名指しが無い文書では報告する。
   const numbering = (node: StructureNode): unknown => node.attrs["numbering"];
