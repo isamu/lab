@@ -187,7 +187,21 @@ const ERA_BEFORE = /(?<era>令和|平成|昭和|大正|明治)$/u;
 /** 月の付いた日付の年を直す。年だけ（「昭和二十二年法律」）は 1000 に届かないので、はじめから日付でなく期間の数量。 */
 const ERA_DATE = /^(?<year>\d{1,2})-(?<rest>.+)$/u;
 
+/** 「令和元年10月1日」: 元年は数として読めないので、年の無い 10-01 になっている。その前の「元号 + 元年」を 1 年として足す。 */
+const FIRST_YEAR_BEFORE = /(?<era>令和|平成|昭和|大正|明治)元年$/u;
+const MONTH_DAY = /^\d{2}-\d{2}$/u;
+
+const inFirstEraYear = (text: string, date: Mention): Mention | undefined => {
+  if (!MONTH_DAY.test(String(date.attrs["value"]))) return undefined;
+  const found = FIRST_YEAR_BEFORE.exec(text.slice(Math.max(0, date.start - 4), date.start));
+  const base = found?.groups?.["era"] === undefined ? undefined : ERA_BASE[found.groups["era"]];
+  if (found === null || base === undefined) return undefined;
+  return { ...date, start: date.start - found[0].length, attrs: { ...date.attrs, value: `${String(base + 1)}-${String(date.attrs["value"])}` } };
+};
+
 const inWesternYear = (text: string, date: Mention): Mention => {
+  const first = inFirstEraYear(text, date);
+  if (first !== undefined) return first;
   const parts = ERA_DATE.exec(String(date.attrs["value"]))?.groups;
   const era = ERA_BEFORE.exec(text.slice(Math.max(0, date.start - 2), date.start))?.groups?.["era"];
   const base = era === undefined ? undefined : ERA_BASE[era];

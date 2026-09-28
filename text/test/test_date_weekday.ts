@@ -55,6 +55,9 @@ describe("日本語: 日付のすぐ後ろの曜日", () => {
     );
     assert.deepEqual(found("# 旅程\n\n令和8年10月1日（金）に出発する。", ja, "ja"), ["2026-10-01:金曜日:木曜日"]);
     assert.deepEqual(ja.structure?.dates?.("昭和二十二年法律第四十九号") ?? [], []);
+    // 元年は数として読めないので、「元号 + 元年」を 1 年として足す。令和元年10月1日は火曜日。
+    assert.deepEqual(found("# 旅程\n\n令和元年10月1日（水）に出発する。", ja, "ja"), ["2019-10-01:水曜日:火曜日"]);
+    assert.deepEqual(found("# 旅程\n\n令和元年10月1日（火）に出発する。", ja, "ja"), []);
   });
 
   it("曜日でないもの（木村さん、木の机）は読まない", () => {
@@ -85,6 +88,8 @@ describe("English: the weekday beside a date", () => {
     assert.deepEqual(weekdays(en, "We met on Monday. On 1 October 2026 we left."), [undefined]);
     assert.deepEqual(weekdays(en, "On 2 October 2026, Sat down with the team."), [undefined]);
     assert.deepEqual(weekdays(en, "The fair runs 1-3 October 2026 (Thursday)."), [undefined]);
+    assert.deepEqual(weekdays(en, "The fair runs 1 to 3 October 2026 (Thursday)."), [undefined]);
+    assert.deepEqual(weekdays(en, "Held on 1st and 3 October 2026 (Thursday)."), [undefined]);
     assert.deepEqual(weekdays(en, "Held 2 October 2026, Tuesday's notes attached."), [undefined]);
     assert.deepEqual(weekdays(en, "May 2026 was busy."), [undefined]);
   });
