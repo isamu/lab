@@ -75,12 +75,20 @@ const RENDERERS: Readonly<Record<string, (params: Params) => string>> = {
   gbp: priced("£"),
 };
 
+/**
+ * What the converter drops leaves this mark, so only its gap is closed: "Airport {{IATA|OST}}, but" becomes
+ * "Airport, but", and "a {{x}} b" becomes "a b". Spaces the writer typed ("Wait ... then") are left as they are.
+ */
+const DROPPED = "\uE000";
+const DROPPED_RUN = /\uE000{2,}/gu;
+const DROPPED_GAP = /[ \t]?\uE000(?:([,.;:!?)])|[ \t])/gu;
+
 const expandTemplates = (text: string): string => replaceBalanced(text, "{{", "}}", renderTemplate);
 
 function renderTemplate(inside: string): string {
   const [head = "", ...args] = splitTopLevel(inside);
   const render = RENDERERS[head.trim().toLowerCase().replace(/_/gu, " ")];
-  return render === undefined ? "" : render(paramsOf(args));
+  return render === undefined ? DROPPED : render(paramsOf(args));
 }
 
 const DROPPED_NAMESPACES = new Set(["file", "image", "media", "category"]);
@@ -89,7 +97,7 @@ const renderLink = (inside: string): string => {
   const parts = splitTopLevel(inside);
   const target = (parts[0] ?? "").trim().replace(/^:/u, "");
   const colon = target.indexOf(":");
-  if (colon !== -1 && DROPPED_NAMESPACES.has(target.slice(0, colon).trim().toLowerCase())) return "";
+  if (colon !== -1 && DROPPED_NAMESPACES.has(target.slice(0, colon).trim().toLowerCase())) return DROPPED;
   return (parts.length > 1 ? parts.slice(1).join("|") : target).trim();
 };
 
@@ -108,14 +116,14 @@ const withoutTables = (lines: readonly string[]): string[] =>
 const inlineText = (text: string): string =>
   decodeEntities(
     replaceBalanced(expandTemplates(text), "[[", "]]", renderLink)
-      .replace(/\[(?:https?:)?\/\/[^\s\]]+(?: ([^\]]*))?\]/giu, (_whole: string, label: string | undefined) => (label ?? "").trim())
+      .replace(/\[(?:https?:)?\/\/[^\s\]]+(?: ([^\]]*))?\]/giu, (_whole: string, label: string | undefined) => (label === undefined ? DROPPED : label.trim()))
       .replace(/<br\s*\/?>/giu, " ")
       .replace(/<\/?[a-z][^>]*>/giu, "")
       .replace(/'{2,5}/gu, ""),
   )
-    // A dropped template leaves a gap: "Airport {{IATA|OST}}, but" becomes "Airport , but". Close it.
-    .replace(/[ \t]{2,}/gu, " ")
-    .replace(/[ \t]([,.;:!?)])/gu, "$1");
+    .replace(DROPPED_RUN, DROPPED)
+    .replace(DROPPED_GAP, (_gap: string, after: string | undefined) => after ?? " ")
+    .replace(/\uE000/gu, "");
 
 const LIST_MARK: Readonly<Record<string, string>> = { "*": "- ", "#": "1. " };
 

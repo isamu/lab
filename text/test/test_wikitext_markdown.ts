@@ -71,6 +71,13 @@ describe("wikitextToMarkdown: テンプレート", () => {
     assert.equal(wikitextToMarkdown("The Harbor Airport {{IATA|HBR}}, but mostly cargo."), "The Harbor Airport, but mostly cargo.\n");
     assert.equal(wikitextToMarkdown("Call {{phone|+1 555}} (free) or write."), "Call (free) or write.\n");
     assert.equal(wikitextToMarkdown("A tram ( {{icon|x}} line 1) runs."), "A tram ( line 1) runs.\n");
+    assert.equal(wikitextToMarkdown("The Harbor Airport {{IATA|HBR}}{{icon|plane}}, but mostly cargo."), "The Harbor Airport, but mostly cargo.\n");
+  });
+
+  it("書き手が打った空白はそのまま（省略記号の前、フランス語の句読点の前、二つ続いた空白）", () => {
+    assert.equal(wikitextToMarkdown("Wait ... then go."), "Wait ... then go.\n");
+    assert.equal(wikitextToMarkdown("Bonjour ; allez !"), "Bonjour ; allez !\n");
+    assert.equal(wikitextToMarkdown("Two  spaces stay."), "Two  spaces stay.\n");
   });
 });
 
