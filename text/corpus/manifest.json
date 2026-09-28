@@ -156,6 +156,106 @@
       "url": "https://raw.githubusercontent.com/rust-lang/lang-team/cf7fec8b0fb6b9ad85b0cb3d50566f0b0847f8f9/minutes/2022-11-22.md",
       "license": "MIT OR Apache-2.0",
       "redistribute": false
+    },
+    {
+      "id": "denkiyagi-shugyo-kisoku",
+      "title": "デンキヤギ株式会社 就業規則",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/DenkiYagi/EmployeeHandbook/f9b897822b43575fad169c8c769784acc2166347/001_%E5%B0%B1%E6%A5%AD%E8%A6%8F%E5%89%87.md",
+      "license": "None stated (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "denkiyagi-ryohi-kitei",
+      "title": "デンキヤギ株式会社 出張旅費規程",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/DenkiYagi/EmployeeHandbook/f9b897822b43575fad169c8c769784acc2166347/004_%E5%87%BA%E5%BC%B5%E6%97%85%E8%B2%BB%E8%A6%8F%E7%A8%8B.md",
+      "license": "None stated (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "sre-next-teikan",
+      "title": "SRE NEXT 定款",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/sre-next/corporate-regulations/9873467899a9979c26276c7a4fafdf72f5e92d5c/docs/01-Basic/aoa.md",
+      "license": "MIT",
+      "redistribute": false
+    },
+    {
+      "id": "sre-next-bunsho-kanri",
+      "title": "SRE NEXT 規程管理規程",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/sre-next/corporate-regulations/9873467899a9979c26276c7a4fafdf72f5e92d5c/docs/01-Basic/governing_documents_management.md",
+      "license": "MIT",
+      "redistribute": false
+    },
+    {
+      "id": "entaku-rb-4",
+      "title": "Entaku.rb#4 議事録",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/Entaku-rb/minutes/76e739484b38df421444ceb0dee25eb08c542ac9/4/%E8%AD%B0%E4%BA%8B%E9%8C%B2.md",
+      "license": "CC0-1.0",
+      "redistribute": true
+    },
+    {
+      "id": "entaku-rb-5",
+      "title": "Entaku.rb#5 議事録",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/Entaku-rb/minutes/76e739484b38df421444ceb0dee25eb08c542ac9/5/%E8%AD%B0%E4%BA%8B%E9%8C%B2.md",
+      "license": "CC0-1.0",
+      "redistribute": true
+    },
+    {
+      "id": "yamano-akashi-api",
+      "title": "山のあかし API インターフェース仕様",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/digital-go-jp/yamano-akashi-vc-spec/77875f6a81efd94e83572f4f7d08b3baa45a95af/docs/api-interface-spec.md",
+      "license": "MIT",
+      "redistribute": false
+    },
+    {
+      "id": "yamano-akashi-architecture",
+      "title": "山のあかし システム構成",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/digital-go-jp/yamano-akashi-vc-spec/77875f6a81efd94e83572f4f7d08b3baa45a95af/docs/system-architecture.md",
+      "license": "MIT",
+      "redistribute": false
+    },
+    {
+      "id": "genai-web-api",
+      "title": "源内Web AIアプリ API 仕様",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/digital-go-jp/genai-web/e86155d7a6cf9d28ece962787f3f7c4da219f2b2/docs/AI%E3%82%A2%E3%83%97%E3%83%AAAPI%E4%BB%95%E6%A7%98.md",
+      "license": "See repository LICENSE.md (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "genai-web-procedure",
+      "title": "源内Web AIアプリ登録手順書",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/digital-go-jp/genai-web/e86155d7a6cf9d28ece962787f3f7c4da219f2b2/docs/AI%E3%82%A2%E3%83%97%E3%83%AA%E7%99%BB%E9%8C%B2%E6%89%8B%E9%A0%86%E6%9B%B8.md",
+      "license": "See repository LICENSE.md (URL only)",
+      "redistribute": false
     }
   ]
 }
