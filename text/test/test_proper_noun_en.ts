@@ -15,6 +15,11 @@ describe("properNounChecked", () => {
     ["linters", "json", "e", "offline", "café"].forEach((word) => assert.equal(properNounChecked(word, "PROPN"), "NOUN"));
   });
 
+  it("大文字と小文字の無い文字の語は、解析器の判断のまま（東京、עברית）", () => {
+    ["東京", "עברית", "東京Tower"].forEach((word) => assert.equal(properNounChecked(word, "PROPN"), "PROPN"));
+    assert.equal(properNounChecked("東京tower", "PROPN"), "NOUN");
+  });
+
   it("文字の無い語は、数字なら数、通貨や数学の記号なら記号、ほかは句読点", () => {
     assert.equal(properNounChecked("2026", "PROPN"), "NUM");
     assert.equal(properNounChecked("$", "PROPN"), "SYM");
