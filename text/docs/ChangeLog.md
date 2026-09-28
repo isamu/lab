@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### `--compact` ends with a tally in the document's language (#173)
+
+On a Japanese document, the last line of `--compact` now reads `指摘 6 件、動いていない rule 33 件` instead of
+`6 findings, 33 rules not run`, like the rest of the screen. The severity word on each line (`warning`, `error`) stays in
+English, because tools read it. English documents are unchanged.
+
 ### The corpus has English reports, requirements, contracts, itineraries and internal docs (#170)
 
 `yarn corpus` now also runs on CRS reports, requirement and design documents (a CISA baseline, an F Prime SDD, a
