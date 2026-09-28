@@ -1,7 +1,21 @@
+18f-content-voice-and-tone  agentless-passive 2, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 7, no-em-dash 1, proper-noun-density 1
+18f-engineering-code-review  max-sentence-length 1, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
+18f-engineering-on-call  max-sentence-length 15
+18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 8, expletive-construction 5, max-paragraph-length 1, max-sentence-length 43, preamble-length 1, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
+18f-handbook-projects-in-distress  agentless-passive 18, max-paragraph-length 1, max-sentence-length 28, proper-noun-density 1, undefined-acronym 6
+18f-handbook-travel  agentless-passive 22, contraction-consistency 1, max-sentence-length 14, ngram-repetition 1, preamble-length 1, proper-noun-density 1, title-case-consistency 2, undefined-acronym 7
+bonterms-cloud-terms  agentless-passive 21, max-paragraph-length 5, max-sentence-length 73, ngram-repetition 1, proper-noun-density 1, undefined-acronym 10
+cisa-scuba-teams  bold-density 9, contraction-consistency 4, max-paragraph-length 1, max-sentence-length 36, ngram-repetition 1, numbering-gap 1, proper-noun-density 1, undefined-acronym 23
+commonpaper-csa  agentless-passive 17, max-sentence-length 71, ngram-repetition 1, proper-noun-density 1, undefined-acronym 9
+commonpaper-mutual-nda  agentless-passive 9, max-sentence-length 13, ngram-repetition 1, proper-noun-density 1, undefined-acronym 13
+crs-r47235-budget-timeline  agentless-passive 32, max-paragraph-length 4, max-sentence-length 82, ngram-repetition 1, proper-noun-density 1
+crs-r47585-subcontracting  agentless-passive 24, contraction-consistency 1, heading-echo 1, max-paragraph-length 1, max-sentence-length 87, ngram-repetition 1, proper-noun-density 1, undefined-acronym 6, unqualified-superlative 2
+crs-rl32781-salt  agentless-passive 31, max-paragraph-length 5, max-sentence-length 108, ngram-repetition 1, proper-noun-density 1, undefined-acronym 10
 denkiyagi-ryohi-kitei  heading-echo 1
 denkiyagi-shugyo-kisoku  agentless-passive 3, heading-echo 3, max-kanji-continuous 19, max-sentence-length 7, ngram-repetition 1, no-doubled-joshi 4, repeated-sentence-head 3
 entaku-rb-4  agentless-passive 9, latin-spacing 1, no-mixed-desumasu 1
 entaku-rb-5  no-mixed-desumasu 1
+fprime-buffermanager-sdd  contraction-consistency 2, heading-echo 2, proper-noun-density 1, repeated-sentence-head 1
 genai-web-api  latin-spacing 6
 genai-web-procedure  latin-spacing 29, max-sentence-length 1, proper-noun-density 1, undefined-acronym 3
 gitlab-meetings  agentless-passive 57, concrete-evidence-density 7, max-paragraph-length 2, max-sentence-length 44, proper-noun-density 1, title-case-consistency 1, undefined-acronym 11
@@ -11,10 +25,14 @@ k8s-overview-ja  latin-spacing 1, max-paragraph-length 1, max-sentence-length 3,
 kep-2214-indexed-job  max-sentence-length 16, ngram-repetition 1, proper-noun-density 1, undefined-acronym 6
 pep-0008  heading-echo 4, max-sentence-length 47, ngram-repetition 1, proper-noun-density 1, undefined-acronym 8
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
+rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 83, ngram-repetition 1, proper-noun-density 1, undefined-acronym 50
 rfc9457  max-sentence-length 56, ngram-repetition 1, proper-noun-density 1, undefined-acronym 30
 rust-lang-minutes-2022-11-22  agentless-passive 4, contraction-consistency 2, max-sentence-length 3, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
 rust-rfc-2094-nll  heading-echo 3, max-paragraph-length 11, max-sentence-length 120, ngram-repetition 1, proper-noun-density 1, undefined-acronym 22
 sre-next-bunsho-kanri  agentless-passive 2
 sre-next-teikan  heading-echo 1, max-sentence-length 2, no-doubled-joshi 2, no-mixed-desumasu 1, repeated-sentence-head 1
+wikivoyage-belgian-coast-tram  expletive-construction 5, max-paragraph-length 19, max-sentence-length 47, ngram-repetition 1, proper-noun-density 1
+wikivoyage-loop-art-tour  concrete-evidence-density 3, max-paragraph-length 7, max-sentence-length 7, proper-noun-density 1, title-case-consistency 1, unqualified-superlative 3
+wikivoyage-magnificent-mile  contraction-consistency 5, max-paragraph-length 6, max-sentence-length 8, proper-noun-density 1
 yamano-akashi-api  latin-spacing 15
 yamano-akashi-architecture  undefined-acronym 5

@@ -1,13 +1,14 @@
 // Fetches the documents in corpus/manifest.json. Japanese statutes come from the e-Gov law API (v2), UK Acts from
 // legislation.gov.uk; each is written to corpus/laws/<id>.txt with the revision it came from, so a test run never
 // touches the network. Documents of other kinds come from a pinned URL: committed under corpus/docs/ when they may be
-// redistributed, otherwise into the git-ignored corpus/.cache/.
+// redistributed, otherwise into the git-ignored corpus/.cache/. A wikitext or HTML source (the manifest's "format") is
+// stored converted to Markdown.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { lawText } from "./law-text.ts";
 import { ukText } from "./uk-text.ts";
-import { docEntries, docPath, type DocEntry } from "./corpus-docs.ts";
+import { docEntries, docPath, storedText, type DocEntry } from "./corpus-docs.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus");
 const TIMEOUT_MS = 120_000;
@@ -72,7 +73,7 @@ const fetchUkAct = async (entry: Entry): Promise<void> => {
 const fetchDoc = async (doc: DocEntry): Promise<void> => {
   const out = docPath(ROOT, doc);
   mkdirSync(dirname(out), { recursive: true });
-  writeFileSync(out, await fetchText(doc.url));
+  writeFileSync(out, storedText(doc, await fetchText(doc.url)));
   console.log(`${doc.id}  ${doc.title}  ${doc.redistribute ? "committed" : "cached"}`);
 };
 

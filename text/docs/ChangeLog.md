@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### The corpus has English reports, requirements, contracts, itineraries and internal docs (#170)
+
+`yarn corpus` now also runs on CRS reports, requirement and design documents (a CISA baseline, an F Prime SDD, a
+requirements RFC), standard contracts (Common Paper, Bonterms), Wikivoyage itineraries, and 18F handbook and guide
+pages. Public-domain ones are committed; the others keep only a pinned URL. A manifest entry can name its source
+`"format"` (`wikitext` or `html`); `yarn corpus:fetch` stores such a source converted to Markdown.
+
 ### `yarn bench` measures what chaff misses (#170)
 
 Self-written samples in Japanese and English (itinerary, quote, minutes, design doc, requirements, policy, note) get one
