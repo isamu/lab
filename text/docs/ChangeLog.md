@@ -11,6 +11,12 @@ digits (`AC-2`, `MS.TEAMS.1.1v1`) and `CC BY` are not acronyms. `ATT&CK` and `M&
 also be `Tax Cuts and Jobs Act [TCJA]`, carry quotes (`(“MNDA”)`), or sit next to any use, not only the first.
 `concrete-evidence-density` names a section without a heading by its opening words, not by a fixed Japanese word.
 
+### `--compact` ends with a tally in the document's language (#173)
+
+On a Japanese document, the last line of `--compact` now reads `指摘 6 件、動いていない rule 33 件` instead of
+`6 findings, 33 rules not run`, like the rest of the screen. The severity word on each line (`warning`, `error`) stays in
+English, because tools read it. English documents are unchanged.
+
 ### The corpus has English reports, requirements, contracts, itineraries and internal docs (#170)
 
 `yarn corpus` now also runs on CRS reports, requirement and design documents (a CISA baseline, an F Prime SDD, a
