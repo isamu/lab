@@ -61,6 +61,29 @@ describe("an English contract as a tree", () => {
     assert.equal(tree.children[0]?.children[0]?.attrs["target"], "3");
   });
 
+  it("reads an inserted subsection “(A1)” or “(2A)” as a subsection outside the sequence", () => {
+    // Data Protection Act 2018, section 82 (Open Government Licence v3.0), shortened.
+    const source = lines(
+      "Section 82 Processing to which this Part applies",
+      "(A1) This Part—",
+      "(a) applies to processing by an intelligence service, and",
+      "(b) applies to processing by a qualifying competent authority.",
+      "(1) This Part applies only to—",
+      "(a) processing wholly or partly by automated means, and",
+      "(2) In this Part, “intelligence service” means the Security Service.",
+      "(2A) In this Part, “competent authority” has the same meaning as in Part 3.",
+      "(3) A reference in this Part to processing is to processing to which this Part applies.",
+    );
+    assert.deepEqual(addresses(treeOf(source)), ["82", "82.A1", "82.A1.a", "82.A1.b", "82.1", "82.1.a", "82.2", "82.2A", "82.3"]);
+    const ordinals = (node: StructureNode): (number | undefined)[] => [
+      ...(node.kind === "item" && node.level === 2 ? [node.ordinal] : []),
+      ...node.children.flatMap(ordinals),
+    ];
+    assert.deepEqual(ordinals(treeOf(source)), [undefined, 1, 2, undefined, 3]);
+    const targets = (patterns().references("See section 82(A1)(b) and section 82(2A).") ?? []).map((mention) => mention.attrs["target"]);
+    assert.deepEqual(targets, ["82.A1.b", "82.2A"]);
+  });
+
   it("reads (i) as a roman numeral under (a), and as a letter after (h)", () => {
     const tree = treeOf(lines("Section 1 Terms", "(a) one", "(i) sub one", "(ii) sub two", "(b) two", "(h) eight", "(i) nine", "(j) ten"));
     assert.deepEqual(addresses(tree), ["1", "1.a", "1.a.i", "1.a.ii", "1.b", "1.h", "1.i", "1.j"]);
