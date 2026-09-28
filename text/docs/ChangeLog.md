@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### English: every member of a reference list is checked (#140)
+
+In `Sections 1, 2 and 9`, only `Sections 1` was a reference, so a missing Section 9 went unnoticed. Each member is now
+a reference with the list's numbering and document (`sections 5(7), 29(2) and 9 of the X Act` all point into that
+Act). A member that is only parentheses stands beside the part written the same way: `45(3)(b) and (5)` is 45.5,
+`58(2)(c) to (g)` is 58.2.g. After a singular word, a number is a member only where the list goes on or ends, so
+`Section 3 and 4 days` does not name Section 4. A member with a letter (`45A`) is not read, as the reference itself
+would not be.
+
 ### English: inserted subsections `(A1)` and `(2A)` are read (#140)
 
 An amendment inserts a subsection between two others and numbers it `(A1)` or `(2A)`. lang-en did not read these,

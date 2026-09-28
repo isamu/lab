@@ -1,5 +1,6 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
-import { citedDocumentAfter, listMembers } from "./citation.ts";
+import { citedDocumentAfter } from "./citation.ts";
+import { membersAfter } from "./reference-list.ts";
 
 // Contracts, specifications and statutes in English. core nests what this reads; it does not know
 // how English numbers its articles.
@@ -244,36 +245,9 @@ const references = (text: string): Mention[] => {
     const numbering = /^[Aa]/u.test(match.groups?.["word"] ?? "") ? "article" : "section";
     const shared = { numbering, ...(document === undefined ? {} : { document }) };
     const first = { start: match.index, end, attrs: { target: [main, ...parts].join("."), label: text.slice(match.index, end), ...shared } };
-    return [first, ...membersAfter(text, end, [main, ...parts], shared)];
+    return [first, ...membersAfter(text, end, [main, ...parts], shared, /s$/u.test(match.groups?.["word"] ?? ""))];
   });
 };
-
-const MEMBER = /^(?<main>\d{1,3}[A-Z]{0,2})?(?<parens>(?:\([a-z0-9]{1,4}\))*)$/u;
-
-/**
- * "Sections 1, 2 and 9" → 2 and 9 as references too, with the list's numbering and document.
- * A member that is only parentheses stands at the same depth as the one before it: "Article 58(2)(c) to (g)" → 58.2.g.
- */
-const membersAfter = (text: string, end: number, first: readonly string[], shared: Readonly<Record<string, string>>): Mention[] => {
-  const mentions: Mention[] = [];
-  listMembers(text.slice(end)).reduce<readonly string[] | undefined>((previous, member) => {
-    const groups = MEMBER.exec(member.text)?.groups;
-    const parens = [...(groups?.["parens"] ?? "").matchAll(/\(([a-z0-9]{1,4})\)/gu)].map((part) => part[1] ?? "");
-    const main = groups?.["main"];
-    const parts = main === undefined ? replaceLast(previous, parens) : [main, ...parens];
-    if (parts === undefined) return undefined;
-    const start = end + member.start;
-    mentions.push({ start, end: start + member.text.length, attrs: { target: parts.join("."), label: member.text, ...shared } });
-    return parts;
-  }, first);
-  return mentions;
-};
-
-/** The last parts of the address before, replaced by these: 58.2.c and (g) → 58.2.g. The main number stays. */
-const replaceLast = (previous: readonly string[] | undefined, parens: readonly string[]): string[] | undefined =>
-  previous === undefined || parens.length === 0 || previous.length <= parens.length
-    ? undefined
-    : [...previous.slice(0, previous.length - parens.length), ...parens];
 
 /** Longest first, and never inside a word: "shall not" is not also "shall", "mayor" is not "may". */
 const MARKERS: readonly (readonly [string, "must" | "must-not" | "may"])[] = [

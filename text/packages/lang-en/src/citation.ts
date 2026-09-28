@@ -31,10 +31,13 @@ const listed = (rest: string): (ListMember & { readonly end: number })[] => {
 /** "Article 58(2)(c) to (g) and (j) of the UK GDPR": the list runs on to the name that governs all of it. */
 const listEnd = (rest: string): number => listed(rest).at(-1)?.end ?? 0;
 
-/** The members after a reference, "2" and "9" in "Sections 1, 2 and 9". */
-export const listMembers = (rest: string): ListMember[] =>
+/**
+ * The members after a reference, "2" and "9" in "Sections 1, 2 and 9". After a plural ("Sections") every listed number
+ * is one; after a singular ("Section 3 and 4 days") only one where the list goes on or ends.
+ */
+export const listMembers = (rest: string, plural: boolean): ListMember[] =>
   listed(rest)
-    .filter((member) => MEMBER_END.test(rest.slice(member.end)))
+    .filter((member) => plural || MEMBER_END.test(rest.slice(member.end)))
     .map(({ start, text }) => ({ start, text }));
 
 const CAPITALISED = /^[A-Z][\w'’-]*/u;
