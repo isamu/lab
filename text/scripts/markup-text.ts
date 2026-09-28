@@ -24,6 +24,10 @@ const NAMED: Readonly<Record<string, string>> = {
   bull: "•",
   times: "×",
   minus: "−",
+  larr: "←",
+  uarr: "↑",
+  rarr: "→",
+  darr: "↓",
 };
 
 const fromCodePoint = (code: number, whole: string): string => (Number.isInteger(code) && code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : whole);

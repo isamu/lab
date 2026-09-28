@@ -1,10 +1,11 @@
-// An HTML page (a CRS report as EveryCRSReport serves it) as plain Markdown: headings, paragraphs, list items and the
-// text of links. Scripts, styles, the head, navigation, tables, footnote marks and lists of in-page links (a table of
-// contents) are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a
+// An HTML page (a CRS report as EveryCRSReport serves it, a ministry's page) as plain Markdown: headings, paragraphs,
+// list items and the text of links. Only the <main> element is read when the page has one. Scripts, styles, the head,
+// navigation, asides, footers, forms, tables, footnote marks and lists of nothing but links (a menu, a table of contents)
+// are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a
 // parser for any HTML.
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
-const DROPPED = ["script", "style", "head", "nav", "noscript", "svg", "table"];
+const DROPPED = ["script", "style", "head", "nav", "aside", "footer", "form", "noscript", "svg", "table"];
 
 /** Apply step until the text stops changing: nested elements are removed from the inside out. */
 const untilStable = (text: string, step: (text: string) => string): string => {
@@ -21,8 +22,13 @@ const stripTags = (html: string): string => html.replace(/<\/?[a-z!][^>]*>/giu, 
 
 const IN_PAGE_LINK = /<a\b[^>]*href="#[^"]*"[^>]*>[\s\S]*?<\/a\s*>/giu;
 
-/** A list whose every item is only a link within the page, such as a table of contents. */
-const isNavigation = (body: string): boolean => (body.match(IN_PAGE_LINK) ?? []).length > 0 && stripTags(body.replace(IN_PAGE_LINK, "")).trim() === "";
+const ANY_LINK = /<a\b[^>]*>[\s\S]*?<\/a\s*>/giu;
+
+/** A list whose every item is only a link, such as a site menu or a table of contents. */
+const isNavigation = (body: string): boolean => (body.match(ANY_LINK) ?? []).length > 0 && stripTags(body.replace(ANY_LINK, "")).trim() === "";
+
+/** The page's own content: what is inside <main>, or the whole page when it has none. */
+const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? html;
 
 /** From the inside out, so a nested table of contents goes too once its inner lists are gone. */
 const withoutNavigation = (html: string): string =>
@@ -88,7 +94,7 @@ const asLines = (html: string): string =>
     .replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/giu, (whole: string, tag: string) => (BLOCK_TAGS.has(tag.toLowerCase()) ? "\n\n" : whole));
 
 export const htmlToMarkdown = (html: string): string => {
-  const kept = DROPPED.reduce(withoutElement, html.replace(/<!--[\s\S]*?-->/gu, ""))
+  const kept = DROPPED.reduce(withoutElement, mainContent(html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "")))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(/\s+/gu, " ");
   const text = decodeEntities(stripTags(asLines(markInPageLinks(withoutNavigation(kept)))));
