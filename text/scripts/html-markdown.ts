@@ -94,7 +94,7 @@ const asLines = (html: string): string =>
     .replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/giu, (whole: string, tag: string) => (BLOCK_TAGS.has(tag.toLowerCase()) ? "\n\n" : whole));
 
 export const htmlToMarkdown = (html: string): string => {
-  const kept = DROPPED.reduce(withoutElement, mainContent(html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "")))
+  const kept = mainContent(DROPPED.reduce(withoutElement, html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "")))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(/\s+/gu, " ");
   const text = decodeEntities(stripTags(asLines(markInPageLinks(withoutNavigation(kept)))));

@@ -59,6 +59,7 @@ describe("htmlToMarkdown: 落とすもの", () => {
     const html = '<header><a href="/">ホーム</a><p>サイト名</p></header><main id="main"><h1>第1回検討会</h1><p>議事要旨。</p></main><div><p>所在地</p></div>';
     assert.equal(htmlToMarkdown(html), "# 第1回検討会\n\n議事要旨。\n");
     assert.equal(htmlToMarkdown("<div><h1>報告</h1><p>本文。</p></div>"), "# 報告\n\n本文。\n");
+    assert.equal(htmlToMarkdown('<script>const tpl = "<main>";</script><main><p>本文。</p></main>'), "本文。\n");
   });
 
   it("aside・footer・form (検索窓) を落とす", () => {

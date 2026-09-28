@@ -22,6 +22,12 @@ describe("charsetOf", () => {
     assert.equal(charsetOf("text/plain", "Set charset=latin1 in the config."), "utf-8");
     assert.equal(charsetOf("application/json", '{"text": "<?xml encoding=\\"x\\"?>"}'), "utf-8");
   });
+
+  it("HTML・XML 以外の本文にある meta や XML 宣言は読まない", () => {
+    assert.equal(charsetOf("text/markdown", "# Doc\n<meta charset=shift_jis>"), "utf-8");
+    assert.equal(charsetOf("text/plain", '<?xml version="1.0" encoding="Shift_JIS"?>'), "utf-8");
+    assert.equal(charsetOf("application/xml", '<?xml version="1.0" encoding="Shift_JIS"?>'), "shift_jis");
+  });
 });
 
 describe("decodeFetched", () => {
