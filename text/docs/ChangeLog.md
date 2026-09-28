@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `total-mismatch` adds a table column of bare numbers (#170)
+
+A table column whose cells hold only numbers, with the unit in its header (`| Room | Hours booked |`), is now added up
+against its total row. It is added only when every cell above the total is a number and the total is larger than each
+item, so columns of years, rates or averages are left alone; a column mixing bare numbers and amounts with a unit is
+not judged, and lists are read as before.
+
 ### `yarn bench` plants mistakes for more rules, in more kinds of document (#170)
 
 The seeded-mistake benchmark now also plants a joined paragraph, a heading echoed by its first sentence, heavy bold,

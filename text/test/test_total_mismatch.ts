@@ -109,6 +109,65 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(doc("| Total $999 | Amount |", "| --- | --- |", "| A | $100 |", "| B | $200 |")), []);
   });
 
+  const hours = (...rows: string[]): string => doc("| Room | Hours booked | Hours used |", "| --- | --- | --- |", ...rows);
+
+  it("a table column of bare numbers is added, the unit being in its header; the numbers are shown as written", () => {
+    const table = (total: string): string => hours("| A | 410 | 352 |", "| B | 380 | 301 |", "| C | 415 | 210 |", `| Total | ${total} | 863 |`);
+    assert.deepEqual(found(table("1,205")), []);
+    assert.deepEqual(found(table("1,105")), ["1,105≠1,205"]);
+    assert.deepEqual(found(table("**1,105**")), ["1,105≠1,205"]);
+    assert.deepEqual(found(hours("| A | 410.5 | 1 |", "| B | 380 | 2 |", "| Total | 790 | 3 |")), ["790≠790.50"]);
+    assert.deepEqual(found(hours("| A | 1200 | 1 |", "| B | 100 | 2 |", "| Total | 1250 | 3 |")), ["1250≠1300"]);
+    assert.deepEqual(found(doc("| 部屋 | 予約時間 |", "| --- | --- |", "| A | 410 |", "| B | 380 |", "| 合計 | 800 |"), ja, "ja"), ["800≠790"]);
+  });
+
+  it("a bare number after a minus sign or ▲ is taken away; one in parentheses leaves the column unjudged", () => {
+    assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | -10 | 2 |", "| Total | 400 | 3 |")), []);
+    assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | -10 | 2 |", "| Total | 390 | 3 |")), ["390≠400"]);
+    assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | ▲10 | 2 |", "| Total | 420 | 3 |")), ["420≠400"]);
+    assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | (10) | 2 |", "| Total | 999 | 3 |")), []);
+  });
+
+  it("a column mixing bare numbers and numbers with a unit is not added", () => {
+    const table = (total: string): string => doc("| Item | Amount |", "| --- | --- |", "| A | $100 |", "| B | 200 |", "| C | $300 |", `| Total | ${total} |`);
+    assert.deepEqual(found(table("$999")), []);
+    assert.deepEqual(found(table("999")), []);
+  });
+
+  it("a bare column is added only when every cell above the total is a number, and there are two of them", () => {
+    assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | | 2 |", "| C | 380 | 3 |", "| Total | 999 | 6 |")), []);
+    assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | n/a | 2 |", "| Total | 999 | 3 |")), []);
+    assert.deepEqual(found(hours("| A | 410 | 1 |", "| Total | 999 | 1 |")), []);
+  });
+
+  it("a column of years or IDs beside a total is not added: its total cell holds no number", () => {
+    const years = doc("| Year | Sales |", "| --- | --- |", "| 2024 | $100 |", "| 2025 | $200 |", "| Total | $300 |");
+    assert.deepEqual(found(years), []);
+    const ids = doc(
+      "| ID | Year | Item | Cost |",
+      "| --- | --- | --- | --- |",
+      "| 1041 | 2024 | A | $100 |",
+      "| 1042 | 2025 | B | $200 |",
+      "| Total | | | $300 |",
+    );
+    assert.deepEqual(found(ids), []);
+    assert.deepEqual(found(doc("| Code | Hours |", "| --- | --- |", "| 007 | 4 |", "| 012 | 5 |", "| Total | 020 |")), []);
+  });
+
+  it("a bare column whose total is not above every item is a rate, an average or a year, and is not added", () => {
+    const rates = doc("| Room | Hours | Use rate |", "| --- | --- | --- |", "| A | 410 | 85.9 |", "| B | 380 | 79.2 |", "| Total | 790 | 82.7 |");
+    assert.deepEqual(found(rates), []);
+    assert.deepEqual(found(doc("| Item | Year |", "| --- | --- |", "| A | 2024 |", "| B | 2025 |", "| Total | 2025 |")), []);
+    assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | 380 | 2 |", "| Total | 410 | 3 |")), []);
+    assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | 380 | 2 |", "| Total | 411 | 3 |")), ["411≠790"]);
+    assert.deepEqual(found(doc("| Item | Amount |", "| --- | --- |", "| A | $100 |", "| B | $200 |", "| Total | $150 |")), ["$150≠$300"]);
+  });
+
+  it("a list of bare numbers is not added", () => {
+    assert.deepEqual(found(doc("- A 410", "- B 380", "- Total 999")), []);
+    assert.deepEqual(found(doc("- A | 410", "- B | 380", "- Total | 999")), []);
+  });
+
   it("the sample invoices: the Japanese one's total is off; the English one adds up", () => {
     assert.deepEqual(found(fixture("invoice-ja.md"), ja, "ja"), ["2,000,000円≠2,090,000円"]);
     assert.deepEqual(found(fixture("invoice-en.md")), []);
