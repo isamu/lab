@@ -1,7 +1,7 @@
 import { proseText } from "../measure.ts";
 import { wordsOf } from "./structure.ts";
 import { compacted, placeOf } from "./gram-place.ts";
-import type { Detector, Finding, ProseDocument, Sentence, Token } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 
 const PER = 1000;
 
@@ -353,19 +353,16 @@ const openingOf = (sentence: Sentence | undefined, unit: ProseDocument["lengthUn
   return pieces.length <= OPENING[unit] ? pieces.join(joiner) : `${pieces.slice(0, OPENING[unit]).join(joiner)}…`;
 };
 
-/** 言語パッケージの語彙表（concrete-number）の書き方。漢数字の「二割」「十五分」も、算用数字と同じ具体的な数。 */
-const concretePatterns = (doc: ProseDocument): RegExp[] => [
-  CONCRETE,
-  ...(doc.lexicons["concrete-number"] ?? []).map((entry) => new RegExp(entry.pattern, "u")),
-];
+/**
+ * 形態素解析が数と読んだ語（UD の NumType=Card）。漢数字の「二割」「十五分」も、算用数字と同じ具体的な数。
+ * 言い回しの「二人三脚」「一人ひとり」は、辞書が一語として持つので数にならない。品詞が無ければ、数字だけを見る。
+ */
+const hasNumeral = (section: Section): boolean =>
+  section.sentences.some((sentence) => (sentence.tokens ?? []).some((token) => token.features?.["NumType"] === "Card"));
 
 export const concreteEvidence: Detector = (doc, options): Finding[] => {
-  const concrete = concretePatterns(doc);
   const sections = doc.sections.filter((section) => section.sentences.length >= 3);
-  const empty = sections.filter((section) => {
-    const text = doc.source.slice(section.span.start, section.span.end);
-    return !concrete.some((pattern) => pattern.test(text));
-  });
+  const empty = sections.filter((section) => !CONCRETE.test(doc.source.slice(section.span.start, section.span.end)) && !hasNumeral(section));
   if (empty.length < options.limit) return [];
   return empty.map((section) => ({
     rule: "concrete-evidence-density",
