@@ -111,7 +111,7 @@ contract.txt   blog/tech · 日本語   ジャンルは既定から
   11:6    error   「第9条」（番地 9）はこの文書にありません
                   dangling-reference
 
-4 findings, 7 rules not run
+指摘 4 件、動いていない rule 7 件
 ```
 
 「民法第709条」のように他の文書を指す参照は、探しません。
@@ -153,8 +153,6 @@ $ npx chaffjs draft.txt --experimental --compact
 
 draft.txt   blog/tech · 日本語   ジャンルは既定から
 
-  1:1     info    「場合においては、」が 7 回出てきます（5 回まで）
-                  ngram-repetition
   6:82    error   「第三号」（番地 21.1.3）はこの文書にありません
                   dangling-reference
   6:39    warning この文は 125 文字あります（100 文字まで）
@@ -168,13 +166,13 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
   15:2    warning この文は 101 文字あります（100 文字まで）
                   max-sentence-length
 
-7 findings, 7 rules not run
+指摘 6 件、動いていない rule 7 件
 ```
 
 `error` の 3 件は、変えた 2 か所から出ています。9 行目は号の抜けで、6 行目は抜けた第三号を指す参照です。
 13 行目は、文書に無い条への参照です。
 
-`warning` と `info` は読みやすさの指摘で、法令の書き方としては長い文も繰り返しも普通です。
+`warning` は読みやすさの指摘で、法令の書き方としては長い文も普通です。
 法令の構造だけを確かめるときは、`error` の行を見ます。
 
 2 か所を元に戻して `fixed.txt` にかけ直すと、`error` は消えます。
@@ -184,8 +182,6 @@ $ npx chaffjs fixed.txt --experimental --compact
 
 fixed.txt   blog/tech · 日本語   ジャンルは既定から
 
-  1:1     info    「場合においては、」が 7 回出てきます（5 回まで）
-                  ngram-repetition
   6:39    warning この文は 125 文字あります（100 文字まで）
                   max-sentence-length
   12:1    warning この文は 131 文字あります（100 文字まで）
@@ -193,7 +189,7 @@ fixed.txt   blog/tech · 日本語   ジャンルは既定から
   16:2    warning この文は 101 文字あります（100 文字まで）
                   max-sentence-length
 
-4 findings, 7 rules not run
+指摘 3 件、動いていない rule 7 件
 ```
 
 施行中の法令は食い違いが無いはずです。
