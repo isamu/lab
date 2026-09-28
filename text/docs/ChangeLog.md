@@ -7,8 +7,9 @@ Newest first.
 ### `repeated-sentence-head` leaves list items alone (#170)
 
 Items of a list are written in parallel on purpose (`1. SRE に関するカンファレンス…`, `2. SRE に関する…`, "Take a look
-at …"), so they no longer count as sentences opening the same way. They also break a run, so prose before and after a
-list does not join into one. Runs inside prose paragraphs are reported as before.
+at …"), so a run of sentences opening the same way no longer continues from one item to the next. Prose before and
+after a list does not join into one run either. Inside one item's paragraph, or in running prose, runs are reported as
+before.
 
 ### `ngram-repetition` counts phrasing, not the name of the subject (#170)
 
