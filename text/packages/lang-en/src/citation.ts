@@ -47,7 +47,7 @@ export const listMembers = (rest: string, plural: boolean): ListMember[] =>
  * A citation tag in brackets, as RFCs cite: "[HTTP]", "[URI]", "[RFC8126]". Capitals and digits only, so a bracketed
  * word of a contract ("[Company]", "[Reserved]") is not taken for another document and still has to exist here.
  */
-const TAG = "(?<tag>[A-Z][A-Z0-9.-]{1,30})";
+const TAG = "(?<tag>[A-Z][A-Z0-9]{1,30})";
 const TAG_AFTER = new RegExp(`^\\[${TAG}\\]`, "u");
 /** "[HTTP], Section 12.1": the tag written just before the reference. */
 const TAG_BEFORE = new RegExp(`\\[${TAG}\\],?\\s?$`, "u");

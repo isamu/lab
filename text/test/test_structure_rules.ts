@@ -512,6 +512,8 @@ describe("English: a reference into another document is not looked up here", () 
     ["See [Company], Section 9.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
     ["See Section 9 of [Reserved].", [["dangling-reference", { label: "Section 9", target: "9" }]]],
     ["See [A], Section 9.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+    ["See [BUYER-1], Section 9.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+    ["See Section 9 of [EXHIBIT.A].", [["dangling-reference", { label: "Section 9", target: "9" }]]],
     ["The [HTTP] rules apply; see Section 9.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
   ];
   cases.forEach(([sentence, expected]) => {
