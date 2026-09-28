@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### Sentence splitting stays fast on one long paragraph (#141)
+
+A long paragraph with no blank lines (a `.txt` file, a long list) no longer makes sentence splitting slow down with
+the square of its length. Both language packages now cut the paragraph where sentence-splitter has closed a sentence
+and holds no open bracket, and split each piece on its own. The sentences and their offsets are the same as before;
+this is checked against the splitter itself over generated text in `test/test_sentence_split_chunks.ts`.
+
 ### `date-order`: a date out of order in a schedule (#142)
 
 A new experimental rule. In consecutive list items or table rows that each hold one date, a date that goes against
