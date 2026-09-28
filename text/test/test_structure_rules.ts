@@ -509,6 +509,9 @@ describe("English: a reference into another document is not looked up here", () 
     ["See Section 4.6 of [RFC8126].", []],
     ["See Section 9 [2024 edition].", [["dangling-reference", { label: "Section 9", target: "9" }]]],
     ["See [1], Section 9.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+    ["See [Company], Section 9.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+    ["See Section 9 of [Reserved].", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+    ["See [A], Section 9.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
     ["The [HTTP] rules apply; see Section 9.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
   ];
   cases.forEach(([sentence, expected]) => {

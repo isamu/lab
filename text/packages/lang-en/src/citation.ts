@@ -43,10 +43,14 @@ export const listMembers = (rest: string, plural: boolean): ListMember[] =>
     .filter((member) => plural || MEMBER_END.test(rest.slice(member.end)))
     .map(({ start, text }) => ({ start, text }));
 
-/** A citation tag in brackets, as RFCs and papers cite: "[HTTP]", "[RFC8126]". Its name is the document. */
-const TAG_AFTER = /^\[(?<tag>[A-Za-z][\w.-]{0,30})\]/u;
+/**
+ * A citation tag in brackets, as RFCs cite: "[HTTP]", "[URI]", "[RFC8126]". Capitals and digits only, so a bracketed
+ * word of a contract ("[Company]", "[Reserved]") is not taken for another document and still has to exist here.
+ */
+const TAG = "(?<tag>[A-Z][A-Z0-9.-]{1,30})";
+const TAG_AFTER = new RegExp(`^\\[${TAG}\\]`, "u");
 /** "[HTTP], Section 12.1": the tag written just before the reference. */
-const TAG_BEFORE = /\[(?<tag>[A-Za-z][\w.-]{0,30})\],?\s?$/u;
+const TAG_BEFORE = new RegExp(`\\[${TAG}\\],?\\s?$`, "u");
 
 /** The document cited by a tag just before a reference, as in "see [HTTP], Section 12.1". */
 export const citedDocumentBefore = (text: string, start: number): string | undefined =>
