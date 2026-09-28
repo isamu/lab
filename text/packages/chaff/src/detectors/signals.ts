@@ -252,8 +252,8 @@ const OPENED = new RegExp(String.raw`[(（]${WRAP}$`, "u");
 const SQUARE_CLOSES = new RegExp(String.raw`^${WRAP}\]`, "u");
 const SQUARE_OPENED = new RegExp(String.raw`\[${WRAP}$`, "u");
 
-/** 括弧と略語の間に置ける引用符と空白の幅。これより離れた括弧は、その略語の展開ではない。 */
-const NEAR = 8;
+/** 括弧と略語の間の幅。空白は 1 つに畳んであるので、(“ MNDA ”) まで収まる。 */
+const NEAR = 3;
 
 /**
  * 角括弧は引用の印にも使う（[IANA]、[1]）。直前の語のうち大文字で始まる語の頭文字が

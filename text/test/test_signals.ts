@@ -229,6 +229,14 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
       assert.deepEqual(acronymsIn(`# 契約\n\n本契約（「MNDA」）は双方を拘束します。${BULK}`, ja), []);
     });
 
+    it("valid: 初出が見出し代わりでも、あとの 1 か所で展開してあればよい", () => {
+      assert.deepEqual(acronymsIn("# Terms\n\nDPA. The parties follow the Data Protection Addendum (DPA) here."), []);
+    });
+
+    it("invalid: 別の語の一部に続く括弧は、その略語の展開ではない", () => {
+      assert.deepEqual(acronymsIn("# Notes\n\nAsk CISA (the agency) about SA rules."), ["SA"]);
+    });
+
     it("invalid: 括弧との間に語が挟まれば展開ではない", () => {
       assert.deepEqual(acronymsIn("# Notes\n\nWe use SRE heavily (see below)."), ["SRE"]);
     });
@@ -247,6 +255,10 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
   describe("数字と繋がった識別子", () => {
     it("valid: 管理策の番号と方針の番号", () => {
       assert.deepEqual(acronymsIn("# Controls\n\nControls AC-2 and SC-7 apply. See MS.TEAMS.1.1v1 for details."), []);
+    });
+
+    it("invalid: 数字を含まない繋がりは識別子ではない", () => {
+      assert.deepEqual(acronymsIn("# Notes\n\nThe SRE-SLO handoff is weekly."), ["SRE", "SLO"]);
     });
 
     it("invalid: 小文字の語に繋がった略語は数える", () => {
