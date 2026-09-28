@@ -68,9 +68,15 @@ const anchorAt = (path: readonly StructureNode[], level: number, context: Contex
   return first === undefined ? undefined : { place: first, siblings };
 };
 
+/**
+ * by だけ前後にずらす。範囲の行（第四十三条から第五十五条まで 削除）は中の条を一つずつ持たないので、数えてまたげば行き先がずれる。
+ * 前に数えて範囲をまたぐか範囲に当たる、後ろに数えて範囲をまたぐなら決めない。後ろに数えて範囲に当たるのは、その最初の条なので正しい。
+ */
 const shifted = (anchor: Anchor, by: number): Place | undefined => {
   const index = anchor.siblings.findIndex((place) => place.address === anchor.place.address);
-  return index === -1 ? undefined : anchor.siblings[index + by];
+  if (index === -1) return undefined;
+  const crossed = by > 0 ? anchor.siblings.slice(index + 1, index + by) : anchor.siblings.slice(Math.max(0, index + by), index);
+  return crossed.some((place) => place.range === true) ? undefined : anchor.siblings[index + by];
 };
 
 /** 前の全部（前各項）は、前に一つでもあれば最初のもの。 */
@@ -78,13 +84,11 @@ const allBefore = (anchor: Anchor): Place | undefined => (shifted(anchor, -1) ==
 
 /**
  * 前・次・本で決まる場所。「各」（count 0）は前の全部なので、最初のものを指す。
- * 前に数えて範囲の行に当たれば、その最後のもの（第五十五条）の番地は木に無いので決めない。
  */
 const byPosition = (way: string, count: number, anchor: Anchor): Place | undefined => {
   if (way === "current") return anchor.place;
   if (way === "after") return shifted(anchor, Math.max(count, 1));
-  const found = count === 0 ? allBefore(anchor) : shifted(anchor, -count);
-  return found?.range === true ? undefined : found;
+  return count === 0 ? allBefore(anchor) : shifted(anchor, -count);
 };
 
 /** 同: その前の参照の番地を、この深さまで切る。条より外のまとまりは番地の形が違うので扱わない。 */

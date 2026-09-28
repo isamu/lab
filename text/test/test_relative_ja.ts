@@ -198,6 +198,17 @@ describe("resolveRelative — 章、範囲の行、Markdown", () => {
     assert.deepEqual(references(treeOf(source)), ["前条→56"]);
   });
 
+  it("範囲の行をまたいで数えれば決めない。後ろに数えて範囲に当たるのは、その最初の条", () => {
+    const source = lines(
+      "第四十一条　次二条の規定による。",
+      "第四十二条　次二条の規定による。",
+      "第四十三条から第五十五条まで　削除",
+      "第五十六条　前二条の規定による。",
+      "第五十七条　本文。",
+    );
+    assert.deepEqual(references(treeOf(source)), ["次二条→43"]);
+  });
+
   it("Markdown の見出しで分けても、同じ条の前の項を読む", () => {
     const source = lines("## 第一条", "本文。", "### 払い方", "２　本文。", "### 期限", "３　前項の規定による。", "## 第二条", "本文。", "## 第三条", "本文。");
     const tree = buildStructure({ path: "c.md", source, language: "ja", markdown: true, profile: statute }, patterns());
