@@ -87,6 +87,11 @@ describe("maskAddresses — 種類の知識はコードに無い", () => {
   it("つなぎの語の中の記号は、正規表現として読まない", () => {
     assert.equal(maskAddresses("§1.§2", { id: "dot", addresses: ["§[0-9]+"], connectives: ["."] }), " . ");
     // 「.」を正規表現のまま入れると「漢」までつなぎと読み、§1 を番地にしてしまう。
-    assert.equal(maskAddresses("§1漢§2", { id: "dot", addresses: ["§[0-9]+"], connectives: ["."] }), "§1漢 ");
+    assert.equal(maskAddresses("§1漢§2", { id: "dot", addresses: ["§[0-9]+"], connectives: ["."], addressEnd: "[^\\p{Script=Han}]|$" }), "§1漢 ");
+  });
+
+  it("並びの後ろの決まり（address_end）が無ければ、どこで終わっても番地", () => {
+    assert.equal(maskAddresses("§1漢", { id: "loose", addresses: ["§[0-9]+"], connectives: [] }), " 漢");
+    assert.equal(maskAddresses("§1漢", { id: "strict", addresses: ["§[0-9]+"], connectives: [], addressEnd: "$" }), "§1漢");
   });
 });

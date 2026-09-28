@@ -123,6 +123,11 @@ describe("文書の種類（profile）が決める番地の中の数は、数量
     assert.deepEqual(quantitiesIn(source, statute), ["2年"]);
   });
 
+  it("番地の後ろに語が続けば番地ではなく、数量のまま", () => {
+    assert.deepEqual(quantitiesIn(lines("第二十二条　前二項中央銀行について定める。"), statute), ["2項"]);
+    assert.deepEqual(quantitiesIn(lines("第二十二条　前二項目標管理制度導入を進める。"), statute), ["2項"]);
+  });
+
   it("種類を選ばなければ、「前二項」も数量として読む", () => {
     assert.deepEqual(quantitiesIn(lines("第二十二条　前二項の証明書には、記入してはならない。"), undefined), ["2項"]);
   });
