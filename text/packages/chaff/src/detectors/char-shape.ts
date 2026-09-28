@@ -15,11 +15,14 @@ const isGeo = (token: Token | undefined): boolean => isGeoName(token) || token?.
 const isNumber = (token: Token | undefined): boolean => token?.features?.["NumType"] === "Card";
 
 /**
- * 住所の語: 地名と地名の接尾（NameType=Geo）、数（NumType=Card）、数のすぐ後ろの単位（丁目）。
+ * 住所の語: 地名と地名の単位（NameType=Geo / GeoUnit）、数（NumType=Card）、数のすぐ後ろの助数詞（丁目、NounType=Class）。
  * 辞書に無い町名（新橋）は、地名の後ろで数の前に来るときだけ住所の一部とする。
  */
 const isPlacePart = (tokens: readonly Token[], index: number): boolean =>
-  isGeo(tokens[index]) || isNumber(tokens[index]) || isNumber(tokens[index - 1]) || (isGeo(tokens[index - 1]) && isNumber(tokens[index + 1]));
+  isGeo(tokens[index]) ||
+  isNumber(tokens[index]) ||
+  (isNumber(tokens[index - 1]) && tokens[index]?.features?.["NounType"] === "Class") ||
+  (isGeo(tokens[index - 1]) && isNumber(tokens[index + 1]));
 
 /**
  * 漢字の連なりが住所か（東京都港区新橋二丁目）。形態素解析が地名と読んだ語で始まり、住所の語だけでできている。

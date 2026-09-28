@@ -155,12 +155,16 @@ const placeType = (morpheme: Morpheme): string | undefined => {
   return morpheme.pos_detail_1 === "接尾" ? "GeoUnit" : undefined;
 };
 
+/** 数を数える単位（IPADIC の「接尾,助数詞」: 丁目・件・人）。UD では NounType=Class。 */
+const isCounter = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "接尾" && detail2Of(morpheme) === "助数詞";
+
 const featuresOf = (morpheme: Morpheme): { features?: Readonly<Record<string, string>> } => {
   if (isPassive(morpheme)) return { features: { Voice: "Pass" } };
   if (isDependentNoun(morpheme)) return { features: { NounType: "Dependent" } };
   if (isNumeral(morpheme)) return { features: { NumType: "Card" } };
   const place = placeType(morpheme);
   if (place !== undefined) return { features: { NameType: place } };
+  if (isCounter(morpheme)) return { features: { NounType: "Class" } };
   return {};
 };
 
