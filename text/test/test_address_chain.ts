@@ -11,6 +11,12 @@ if (statute === undefined) throw new Error("profiles/statute.yaml has no ja sect
 
 const maskLegalAddresses = (text: string): string => maskAddresses(text, statute);
 
+/** 止まらなければ落とす。同じ位置を読み続けると、テストが終わらない。 */
+const LOOP_TIMEOUT_MS = 5000;
+
+/** 再帰で読むとスタックが尽きる長さ。 */
+const LONG_CHAIN = 20000;
+
 describe("maskAddresses — 法令（statute）", () => {
   const cases: readonly (readonly [string, string])[] = [
     ["第二十二条第二項", "  "],
@@ -106,8 +112,14 @@ describe("maskAddresses — 種類の知識はコードに無い", () => {
     assert.equal(maskAddresses("§1。§2漢§3", profile), " 。§2漢 ");
   });
 
-  it("空にも当たる書き方（利用者が書いた [0-9]*）でも止まり、空の一致は番地にしない", () => {
+  it("空にも当たる書き方（利用者が書いた [0-9]*）でも止まり、空の一致は番地にしない", { timeout: LOOP_TIMEOUT_MS }, () => {
     assert.equal(maskAddresses("a12b", { id: "empty", addresses: ["[0-9]*"], connectives: [] }), "a b");
+    assert.equal(maskAddresses("😀12😀", { id: "empty", addresses: ["[0-9]*"], connectives: [] }), "😀 😀");
+  });
+
+  it("並びがどれだけ長くても読み切る", () => {
+    const long = "a".repeat(LONG_CHAIN);
+    assert.equal(maskAddresses(long, { id: "long", addresses: ["a"], connectives: [] }), " ".repeat(LONG_CHAIN));
   });
 
   it("並びの後ろの決まり（address_end）が無ければ、どこで終わっても番地", () => {

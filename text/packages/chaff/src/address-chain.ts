@@ -45,31 +45,45 @@ const endsHere = (patterns: Compiled, text: string, at: number): boolean => {
 
 type Cut = { readonly end: number; readonly addresses: number };
 
-/** at から続くつなぎの語を読み、その切れ目を返す。 */
-const connectivesFrom = (patterns: Compiled, text: string, at: number, addresses: number): Cut[] => {
-  const next = matchEnd(patterns.connective, text, at);
-  return next === undefined ? [] : [{ end: next, addresses }, ...connectivesFrom(patterns, text, next, addresses)];
+/** at から続くつなぎの語を読み、その切れ目を cuts に足す。読み終えた位置を返す。 */
+const readConnectives = (patterns: Compiled, text: string, at: number, addresses: number, cuts: Cut[]): number => {
+  let position = at;
+  for (let next = matchEnd(patterns.connective, text, position); next !== undefined; next = matchEnd(patterns.connective, text, position)) {
+    position = next;
+    cuts.push({ end: position, addresses });
+  }
+  return position;
 };
 
-/** 番地の後ろから並びを読み、切れ目（番地かつなぎの語の終わり）と、そこまでの番地を集める。 */
-const readChain = (patterns: Compiled, text: string, spans: readonly Span[], cuts: readonly Cut[]): { spans: readonly Span[]; cuts: readonly Cut[] } => {
-  const at = cuts.at(-1)?.end ?? 0;
-  const connectives = connectivesFrom(patterns, text, at, spans.length);
-  const next = connectives.at(-1)?.end ?? at;
-  const addressEnd = matchEnd(patterns.address, text, next);
-  if (addressEnd === undefined) return { spans, cuts: [...cuts, ...connectives] };
-  const withAddress = [...spans, { start: next, end: addressEnd }];
-  return readChain(patterns, text, withAddress, [...cuts, ...connectives, { end: addressEnd, addresses: withAddress.length }]);
+/**
+ * 番地の後ろから並びを読み、切れ目（番地かつなぎの語の終わり）と、そこまでの番地を集める。
+ * 並びは設定しだいでいくらでも長くなるので、再帰せずに読む。
+ */
+const readChain = (patterns: Compiled, text: string, first: Span): { spans: Span[]; cuts: Cut[] } => {
+  const spans: Span[] = [first];
+  const cuts: Cut[] = [{ end: first.end, addresses: 1 }];
+  let at = first.end;
+  for (;;) {
+    const next = readConnectives(patterns, text, at, spans.length, cuts);
+    const addressEnd = matchEnd(patterns.address, text, next);
+    if (addressEnd === undefined) return { spans, cuts };
+    spans.push({ start: next, end: addressEnd });
+    cuts.push({ end: addressEnd, addresses: spans.length });
+    at = addressEnd;
+  }
 };
 
 /** start から始まる並び。後ろの決まりを満たす切れ目が無ければ、並びではない。 */
 const chainAt = (patterns: Compiled, text: string, start: number): { readonly spans: readonly Span[]; readonly end: number } | undefined => {
   const firstEnd = matchEnd(patterns.address, text, start);
   if (firstEnd === undefined) return undefined;
-  const { spans, cuts } = readChain(patterns, text, [{ start, end: firstEnd }], [{ end: firstEnd, addresses: 1 }]);
+  const { spans, cuts } = readChain(patterns, text, { start, end: firstEnd });
   const cut = [...cuts].reverse().find((candidate) => endsHere(patterns, text, candidate.end));
   return cut === undefined ? undefined : { spans: spans.slice(0, cut.addresses), end: cut.end };
 };
+
+/** 1 文字先。絵文字のような 2 単位の文字の途中に止まると、同じ位置の空の一致を繰り返す。 */
+const nextCharacter = (text: string, at: number): number => at + ((text.codePointAt(at) ?? 0) > 0xffff ? 2 : 1);
 
 /**
  * 並びとして認めた範囲の中の番地の範囲。「第一条件」「前二項中央銀行」のように後ろが語に続くものは、並びにならないので含まない。
@@ -83,11 +97,17 @@ export const addressSpans = (text: string, profile: DocumentProfile | undefined)
   for (let found = patterns.find.exec(text); found !== null; found = patterns.find.exec(text)) {
     const chain = chainAt(patterns, text, found.index);
     spans.push(...(chain?.spans ?? []));
-    patterns.find.lastIndex = chain === undefined ? found.index + 1 : chain.end;
+    patterns.find.lastIndex = chain === undefined ? nextCharacter(text, found.index) : chain.end;
   }
   return spans;
 };
 
-/** 番地を空白にする。空白が連なりを切るので、番地は数えられず、前後は別の連なりになる。後ろから置き換え、前の位置をずらさない。 */
-export const maskAddresses = (text: string, profile: DocumentProfile | undefined): string =>
-  addressSpans(text, profile).reduceRight((masked, span) => `${masked.slice(0, span.start)} ${masked.slice(span.end)}`, text);
+/** 番地を空白にする。空白が連なりを切るので、番地は数えられず、前後は別の連なりになる。 */
+export const maskAddresses = (text: string, profile: DocumentProfile | undefined): string => {
+  const spans = addressSpans(text, profile);
+  if (spans.length === 0) return text;
+  const pieces: string[] = [];
+  spans.forEach((span, index) => pieces.push(text.slice(spans[index - 1]?.end ?? 0, span.start), " "));
+  pieces.push(text.slice(spans.at(-1)?.end ?? 0));
+  return pieces.join("");
+};
