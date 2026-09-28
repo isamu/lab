@@ -8,19 +8,19 @@ import { proseText } from "../measure.ts";
  */
 const KANJI_RUN = /[一-鿿]+/gu;
 
-/** 言語パッケージの語彙表（unsplittable）の書き方を、同じ長さの空白で伏せる。住所のように、漢字が続いても割れないもの。 */
-const maskUnsplittable = (text: string, patterns: readonly RegExp[]): string =>
-  patterns.reduce((masked, pattern) => masked.replace(pattern, (found) => " ".repeat(found.length)), text);
+/** 漢字の連なりの全体が、言語パッケージの語彙表（unsplittable）の書き方か。住所のように、漢字が続いても割れないもの。 */
+const isUnsplittable = (run: string, patterns: readonly RegExp[]): boolean => patterns.some((pattern) => pattern.test(run));
 
 const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, unsplittable: readonly RegExp[]): string =>
-  [...maskUnsplittable(maskAddresses(proseText(sentence), profile), unsplittable).matchAll(KANJI_RUN)].reduce(
-    (longest, match) => (match[0].length > longest.length ? match[0] : longest),
-    "",
-  );
+  [...maskAddresses(proseText(sentence), profile).matchAll(KANJI_RUN)]
+    .map((match) => match[0])
+    .filter((run) => !isUnsplittable(run, unsplittable))
+    .reduce((longest, run) => (run.length > longest.length ? run : longest), "");
 
 const compiled = new Map<string, RegExp>();
+/** 連なりの全体に当てる。一部だけ当たるもの（住所の後ろに別の語が続く）は割れない書き方ではない。 */
 const patternOf = (source: string): RegExp => {
-  const found = compiled.get(source) ?? new RegExp(source, "gu");
+  const found = compiled.get(source) ?? new RegExp(`^(?:${source})$`, "u");
   compiled.set(source, found);
   return found;
 };

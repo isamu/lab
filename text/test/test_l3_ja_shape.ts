@@ -41,6 +41,7 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(!idsFor("主たる事務所は、東京都港区新橋二丁目に置く。").includes("max-kanji-continuous"));
       assert.ok(!idsFor("本店は神奈川県横浜市中区山下町に置く。").includes("max-kanji-continuous"));
       assert.ok(!idsFor("会場は千代田区霞関三丁目です。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("本社は愛知県名古屋市中村区名駅南一丁目にある。").includes("max-kanji-continuous"));
     });
 
     it("invalid: 都道府県や丁目が無い長い語、住所の後ろに続く長い語は数える", () => {
@@ -48,6 +49,7 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(idsFor("新宿区役所総務部総務課長に届ける。").includes("max-kanji-continuous"));
       assert.ok(idsFor("埼玉県市町村総合事務組合に問い合わせる。").includes("max-kanji-continuous"));
       assert.ok(idsFor("大阪府市町村振興協会資料を確認する。").includes("max-kanji-continuous"));
+      assert.ok(idsFor("東京都港区政策経営部に届ける。").includes("max-kanji-continuous"));
     });
 
     it("覆った箇所の空白をまたいで繋がない", () => {
