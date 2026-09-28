@@ -138,6 +138,17 @@ describe("語彙表の rule が原形で照らす（解析器あり）", () => {
     assert.ok(idsFor(source, ja).includes("sasete-itadaku"));
   });
 
+  it("語彙表の動詞は、途中で切らずに原形で書いてある（活用した形はそこから当たる）", () => {
+    const doc = buildDocument("t.md", "重要な役割を果たす。深く掘り下げた。最後までお読みいただきありがとうございます。", ja);
+    const [fulfil, dig, thanks] = doc.sentences;
+    const find = (list: string, pattern: string): LexiconEntry | undefined => doc.lexicons[list]?.find((each) => each.pattern === pattern);
+    const aiTell = ["重要な役割を果たす", "深く掘り下げる"].map((pattern) => find("ai-tell", pattern));
+    const closing = find("closing-cliche", "最後までお読みいただく");
+    assert.ok(fulfil !== undefined && aiTell[0] !== undefined && entryIn(fulfil, aiTell[0]));
+    assert.ok(dig !== undefined && aiTell[1] !== undefined && entryIn(dig, aiTell[1]));
+    assert.ok(thanks !== undefined && closing !== undefined && entryIn(thanks, closing));
+  });
+
   it("二重敬語は、過去の形でも見つける", () => {
     assert.ok(idsFor("先方がご覧になられた。", ja).includes("double-keigo"));
     assert.ok(!idsFor("先方がご覧になった。", ja).includes("double-keigo"));

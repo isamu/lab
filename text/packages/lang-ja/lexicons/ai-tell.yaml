@@ -7,15 +7,15 @@ entries:
     weight: 0.9
   - pattern: 急速に変化する
     weight: 0.7
-  - pattern: 重要な役割を果たし
+  - pattern: 重要な役割を果たす
     weight: 0.8
   - pattern: と言えるでしょう
     weight: 0.6
   - pattern: 様々な要因が
     weight: 0.6
-  - pattern: 大きな可能性を秘め
+  - pattern: 大きな可能性を秘める
     weight: 0.8
-  - pattern: 深く掘り下げ
+  - pattern: 深く掘り下げる
     weight: 0.7
   - pattern: ぜひ参考にしてみてください
     weight: 0.7
