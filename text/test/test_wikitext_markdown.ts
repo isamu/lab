@@ -64,6 +64,7 @@ describe("wikitextToMarkdown: テンプレート", () => {
   it("ほかのテンプレートは落とす。閉じていないものは残す", () => {
     assert.equal(wikitextToMarkdown("{{Pagebanner|a.jpg|star=yes}}\nA day out.{{related|Walks}}"), "A day out.\n");
     assert.equal(wikitextToMarkdown("Open {{Marker|name=X"), "Open {{Marker|name=X\n");
+    assert.equal(wikitextToMarkdown("Open {{ then {{EUR|3}} and [[Old Town]]."), "Open {{ then €3 and Old Town.\n");
   });
 });
 

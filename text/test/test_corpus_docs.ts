@@ -56,7 +56,7 @@ describe("storedText", () => {
   it("format の無い文書は取ったまま、ある文書は Markdown に変えて置く", () => {
     assert.equal(storedText(entry(), "== A ==\n"), "== A ==\n");
     assert.equal(storedText(entry({ format: "wikitext" }), "== A ==\n"), "## A\n");
-    assert.equal(storedText(entry({ format: "html" }), "<h2>A</h2>"), "## A\n");
+    assert.equal(storedText(entry({ format: "html" }), "<h2>A</h2><p>B</p>"), "## A\n\nB\n");
   });
 });
 

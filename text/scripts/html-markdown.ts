@@ -27,6 +27,30 @@ const isNavigation = (body: string): boolean => (body.match(IN_PAGE_LINK) ?? [])
 const withoutNavigation = (html: string): string =>
   html.replace(/<(ul|ol)\b[^>]*>((?:(?!<[uo]l\b)[\s\S])*?)<\/\1\s*>/giu, (whole: string, _tag: string, body: string) => (isNavigation(body) ? " " : whole));
 
+// An in-page link is wrapped in these marks so that one standing alone on its line ("Jump to main text") can be told
+// from one inside a sentence ("see Table 1"); the first is dropped, the second keeps its text.
+const LINK_START = "\u0001";
+const LINK_END = "\u0002";
+
+const markInPageLinks = (html: string): string => html.replace(IN_PAGE_LINK, (link: string) => `${LINK_START}${stripTags(link)}${LINK_END}`);
+
+const isLoneLink = (line: string): boolean => line.startsWith(LINK_START) && line.endsWith(LINK_END) && line.indexOf(LINK_START, 1) === -1;
+
+const headingLevel = (line: string): number => /^#{1,6} /u.exec(line)?.[0].length ?? 0;
+
+/** Headings with nothing under them before the next heading of the same or a higher level: what dropped navigation left. */
+const withoutEmptySections = (lines: readonly string[]): string[] =>
+  lines.reduceRight<{ readonly kept: string[]; readonly nextLevel: number }>(
+    (state, line) => {
+      if (line === "") return { kept: [line, ...state.kept], nextLevel: state.nextLevel };
+      const level = headingLevel(line) - 1;
+      if (level < 0) return { kept: [line, ...state.kept], nextLevel: Number.POSITIVE_INFINITY };
+      if (state.nextLevel <= level) return state;
+      return { kept: [line, ...state.kept], nextLevel: level };
+    },
+    { kept: [], nextLevel: 0 },
+  ).kept;
+
 const BLOCK_TAGS = new Set([
   "p",
   "div",
@@ -64,11 +88,11 @@ export const htmlToMarkdown = (html: string): string => {
   const kept = DROPPED.reduce(withoutElement, html.replace(/<!--[\s\S]*?-->/gu, ""))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(/\s+/gu, " ");
-  const text = decodeEntities(stripTags(asLines(withoutNavigation(kept))));
-  return tidyLines(
-    text
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line !== "-"),
-  );
+  const text = decodeEntities(stripTags(asLines(markInPageLinks(withoutNavigation(kept)))));
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line !== "-" && !isLoneLink(line))
+    .map((line) => line.replaceAll(LINK_START, "").replaceAll(LINK_END, ""));
+  return tidyLines(withoutEmptySections(lines));
 };

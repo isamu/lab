@@ -16,12 +16,12 @@ const closingOf = (text: string, open: string, close: string, from: number, dept
   return closingOf(text, open, close, nextClose + close.length, depth - 1);
 };
 
-/** Every outermost `open … close` replaced by render(inside). An unclosed one is left as written. */
+/** Every outermost `open … close` replaced by render(inside). An unclosed opener is left as written, and what follows it is still read. */
 const replaceBalanced = (text: string, open: string, close: string, render: (inside: string) => string): string => {
   const start = text.indexOf(open);
   if (start === -1) return text;
   const end = closingOf(text, open, close, start + open.length, 1);
-  if (end === -1) return text;
+  if (end === -1) return [text.slice(0, start + open.length), replaceBalanced(text.slice(start + open.length), open, close, render)].join("");
   const rest = replaceBalanced(text.slice(end), open, close, render);
   return [text.slice(0, start), render(text.slice(start + open.length, end - close.length)), rest].join("");
 };
