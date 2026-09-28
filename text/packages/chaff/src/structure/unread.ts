@@ -7,10 +7,11 @@ import type { StructureNode } from "../plugin.ts";
 const NUMBERED = new Set(["chapter", "article", "item"]);
 
 /**
- * 「11.3. Liability Cap」「2.1 Term」: 二段以上の番号と、大文字で始まる語。行頭でも、行の途中でも。
+ * 「11.3. Liability Cap」「2.1 Term」: 二段以上の番号と、大文字で始まる語。行頭か、文の区切り（「. 12.10. Waiver」）の後ろ。
+ * 語の後ろの番号（「Version 1.2 Released」「Figure 2.1 Revenue」）は条項ではない。
  * 「1.   TERM OF CONTRACT」: 行頭の一段の番号と、大文字だけの語。本文の箇条書き（「1. First」）とは分ける。
  */
-const CLAUSE_NUMBERS = [/(?:^|\s)\d{1,3}(?:\.\d{1,3}){1,4}\.?[ \t]{1,10}\p{Lu}/gmu, /^[ \t]{0,20}\d{1,3}\.[ \t]{1,10}\p{Lu}{2}/gmu];
+const CLAUSE_NUMBERS = [/(?:^[ \t]{0,20}|[.;:][ \t]{1,10})\d{1,3}(?:\.\d{1,3}){1,4}\.?[ \t]{1,10}\p{Lu}/gmu, /^[ \t]{0,20}\d{1,3}\.[ \t]{1,10}\p{Lu}{2}/gmu];
 
 /** 本文の条項番号がこれ以上あれば、番号で組んだ文書。 */
 const MIN_CLAUSES = 5;
