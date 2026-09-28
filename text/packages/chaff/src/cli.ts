@@ -23,7 +23,7 @@ import { renderExplain } from "./render/explain.ts";
 import { renderFriendly } from "./render/friendly.ts";
 import { rulesJson } from "./render/rules-json.ts";
 import { renderSarif } from "./render/sarif.ts";
-import { VERSION } from "./version.ts";
+import { VERSION, VERSION_LINES } from "./version.ts";
 import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
 import { citeTargets, runCite } from "./commands/cite.ts";
 import { runSkill } from "./commands/skill.ts";
@@ -327,6 +327,10 @@ export const main = async (argv: readonly string[]): Promise<number> => {
   if (first === undefined || first === "--help" || first === "-h") {
     console.log(hostText(readConfig()).usage);
     return first === undefined ? 1 : 0;
+  }
+  if (first === "--version" || first === "-v") {
+    console.log(VERSION_LINES.join("\n"));
+    return 0;
   }
   const cliGenre = flag(argv, "--genre");
   if (cliGenre !== undefined && !GENRES.includes(cliGenre)) {

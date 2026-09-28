@@ -14,6 +14,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs init` | `chaff.yaml` を作ります |
 | `npx chaffjs explain <rule>` | そのルールの意図と根拠を読みます |
 | `npx chaffjs genres` | ジャンルの一覧を出します |
+| `npx chaffjs --version` | chaffjs と、同梱の言語パッケージの版を出します |
 | `npx chaffjs rules --json` | いまの設定を JSON で出します。AI に渡す用です |
 | `npx chaffjs relax\|strict\|off <rule>` | ルールの強さを変えます。`--why "理由"` を添えます |
 | `npx chaffjs baseline <dir>` | いまある指摘を棚上げします |
