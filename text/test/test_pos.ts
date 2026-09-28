@@ -196,4 +196,48 @@ describe("agentless-passive（英語）", () => {
   it("副詞を挟んだ受動も拾う", () => {
     assert.ok(idsFor("The release was quickly approved.", en).includes("agentless-passive"));
   });
+
+  describe("名詞を修飾しているだけの受動は指摘しない", () => {
+    const passivesIn = (source: string): string[] => tokensOf(source, en).flatMap((token) => (token.features?.["Voice"] === "Pass" ? [token.surface] : []));
+
+    [
+      "We read the report that was published last week.",
+      "The report, which was written last year, is late.",
+      "The people who were elected will serve.",
+      "The plan that has been approved will ship.",
+      "The plan that has already been approved will ship.",
+      "Those who were elected will serve.",
+      "The candidates who will be selected are strong.",
+      "We deleted the files stored on the server.",
+    ].forEach((source) => {
+      it(`valid: ${source}`, () => {
+        assert.deepEqual(passivesIn(source), []);
+        assert.ok(!idsFor(source, en).includes("agentless-passive"));
+      });
+    });
+
+    it("過去分詞には VerbForm=Part を付ける。受動かどうかにかかわらず", () => {
+      const forms = tokensOf("Based on the review, the plan that was approved was shipped.", en).flatMap((token) =>
+        token.features === undefined ? [] : [`${token.surface}:${token.features["VerbForm"] ?? ""}:${token.features["Voice"] ?? ""}`],
+      );
+      assert.deepEqual(forms, ["Based:Part:", "approved:Part:", "shipped:Part:Pass"]);
+    });
+
+    it("invalid: 関係節の外にある述語の受動は残す", () => {
+      assert.deepEqual(passivesIn("The report that was published last week was deleted."), ["deleted"]);
+    });
+
+    it("invalid: 前に名詞が無い that / which は関係代名詞ではない", () => {
+      assert.ok(idsFor("That was decided yesterday.", en).includes("agentless-passive"));
+      assert.ok(idsFor("Which was chosen?", en).includes("agentless-passive"));
+    });
+
+    it("invalid: 名詞の後ろの being は動名詞の主語と見分けられないので残す", () => {
+      assert.ok(idsFor("The delay led to the request being closed.", en).includes("agentless-passive"));
+    });
+
+    it("invalid: that 節の中でも主語があれば述語の受動", () => {
+      assert.ok(idsFor("We know that it was decided.", en).includes("agentless-passive"));
+    });
+  });
 });
