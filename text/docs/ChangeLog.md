@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `yarn bench` measures what chaff misses (#170)
+
+A seeded-mistake benchmark. Self-written samples in Japanese and English (an itinerary, a quote, minutes, a design doc,
+requirements, a policy with numbered articles, a casual note) get one planted mistake at a time — a wrong weekday, two
+rows swapped, an item dropped from a total, a broken reference, a skipped number, a term defined twice, two sentences
+joined, a mixed register, three 「の」 in a row, a dropped acronym expansion. The run counts, per rule, which planted
+mistakes chaff finds near their line and what it reports on the clean samples, and compares the result with
+`test/fixtures/bench/expected.txt` (`yarn bench --update` accepts a change).
+
 ### lang-ja reads 「1.2 万円」 as 12000 yen (#170)
 
 A number written with a space before 万, 億 or 兆 (`1.2 万円`, `26.7 万行`, `3 億円`) was read as two numbers, so the
