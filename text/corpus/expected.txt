@@ -22,15 +22,15 @@ da-machine-readability-output-format  latin-spacing 12, no-mixed-desumasu 1
 da-priority-policy-program  agentless-passive 1, max-kanji-continuous 1, no-doubled-joshi 1, preamble-length 1, undefined-acronym 3
 da-service-design-guidelines-2  agentless-passive 24, concrete-evidence-density 4, dangling-reference 1, latin-spacing 28, max-kanji-continuous 3, max-sentence-length 31, no-doubled-joshi 1, no-mixed-desumasu 1, undefined-acronym 7
 denkiyagi-ryohi-kitei  heading-echo 1
-denkiyagi-shugyo-kisoku  agentless-passive 3, heading-echo 3, max-kanji-continuous 19, max-sentence-length 7, ngram-repetition 1, no-doubled-joshi 4, repeated-sentence-head 3
+denkiyagi-shugyo-kisoku  agentless-passive 3, heading-echo 3, max-kanji-continuous 19, max-sentence-length 7, ngram-repetition 1, no-doubled-joshi 4
 entaku-rb-4  agentless-passive 9, latin-spacing 1, no-mixed-desumasu 1
 entaku-rb-5  no-mixed-desumasu 1
-fprime-buffermanager-sdd  contraction-consistency 2, heading-echo 2, proper-noun-density 1, repeated-sentence-head 1
+fprime-buffermanager-sdd  contraction-consistency 2, heading-echo 2, proper-noun-density 1
 genai-web-api  latin-spacing 6
 genai-web-procedure  latin-spacing 29, max-sentence-length 1, proper-noun-density 1, undefined-acronym 3
 gitlab-meetings  agentless-passive 57, concrete-evidence-density 7, max-paragraph-length 2, max-sentence-length 44, proper-noun-density 1, title-case-consistency 1, undefined-acronym 11
 gitlab-values  agentless-passive 96, bold-density 1, concrete-evidence-density 57, expletive-construction 12, heading-echo 11, max-paragraph-length 25, max-sentence-length 141, proper-noun-density 1, undefined-acronym 10, unqualified-superlative 18
-k8s-overview-en  contraction-consistency 1, max-sentence-length 9, proper-noun-density 1, repeated-sentence-head 1, undefined-acronym 4
+k8s-overview-en  contraction-consistency 1, max-sentence-length 9, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  latin-spacing 1, max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
@@ -42,7 +42,7 @@ soumu-wp-r06-ai-booms  agentless-passive 1, latin-spacing 5, max-sentence-length
 soumu-wp-r06-ai-rules-japan  agentless-passive 5, latin-spacing 9, max-sentence-length 6, no-doubled-joshi 1, preamble-length 1
 soumu-wp-r06-misinformation  agentless-passive 9, latin-spacing 11, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, preamble-length 1, taigen-dome-in-prose 1, undefined-acronym 14
 sre-next-bunsho-kanri  agentless-passive 2
-sre-next-teikan  heading-echo 1, max-sentence-length 2, no-doubled-joshi 2, no-mixed-desumasu 1, repeated-sentence-head 1
+sre-next-teikan  heading-echo 1, max-sentence-length 2, no-doubled-joshi 2, no-mixed-desumasu 1
 wikivoyage-belgian-coast-tram  expletive-construction 5, max-paragraph-length 19, max-sentence-length 47, proper-noun-density 1
 wikivoyage-loop-art-tour  concrete-evidence-density 3, max-paragraph-length 7, max-sentence-length 7, proper-noun-density 1, title-case-consistency 1, unqualified-superlative 3
 wikivoyage-magnificent-mile  contraction-consistency 5, max-paragraph-length 6, max-sentence-length 8, proper-noun-density 1

@@ -11,6 +11,13 @@ plans and data specifications (committed under 公共データ利用規約（第
 page in the encoding it declares (Shift_JIS as well as UTF-8), and the HTML conversion reads only `<main>` when there is
 one and drops asides, footers, forms, XML declarations and lists made only of links.
 
+### `repeated-sentence-head` leaves list items alone (#170)
+
+Items of a list are written in parallel on purpose (`1. SRE に関するカンファレンス…`, `2. SRE に関する…`, "Take a look
+at …"), so a run of sentences opening the same way no longer continues from one item to the next. Prose before and
+after a list does not join into one run either. Inside one item's paragraph, or in running prose, runs are reported as
+before.
+
 ### `ngram-repetition` counts phrasing, not the name of the subject (#170)
 
 A long report naturally repeats its subject (`state and local tax`, `the HTTP status code`, `the Disclosing Party`), and
