@@ -59,15 +59,21 @@ describe("summaryLine", () => {
 
 describe("summaryChanges / updatedSummary", () => {
   const expected = ["a  clean", "b  x 1", "c  y 2"];
+  const known = new Set(["0", "a", "b", "c", "d"]);
 
   it("変わった行と新しい行だけを出す。取っていない文書は比べない", () => {
-    assert.deepEqual(summaryChanges(expected, ["a  clean", "b  x 2", "d  z 1"]), ["- b  x 1", "+ b  x 2", "+ d  z 1"]);
-    assert.deepEqual(summaryChanges(expected, ["a  clean"]), []);
-    assert.deepEqual(summaryChanges([], []), []);
+    assert.deepEqual(summaryChanges(expected, ["a  clean", "b  x 2", "d  z 1"], known), ["- b  x 1", "+ b  x 2", "+ d  z 1"]);
+    assert.deepEqual(summaryChanges(expected, ["a  clean"], known), []);
+    assert.deepEqual(summaryChanges([], [], known), []);
   });
 
-  it("受け入れると、実行した文書の行だけを置き換え、取っていない文書の行は残して id 順に並べる", () => {
-    assert.deepEqual(updatedSummary(expected, ["b  x 2", "0  new 1"]), ["0  new 1", "a  clean", "b  x 2", "c  y 2"]);
-    assert.deepEqual(updatedSummary([], []), []);
+  it("manifest から消えた文書の行は、取っていなくても違いとして出す", () => {
+    assert.deepEqual(summaryChanges(expected, ["a  clean"], new Set(["a", "b"])), ["- c  y 2"]);
+  });
+
+  it("受け入れると、実行した文書の行だけを置き換え、取っていない文書の行は残し、消えた文書の行は落として id 順に並べる", () => {
+    assert.deepEqual(updatedSummary(expected, ["b  x 2", "0  new 1"], known), ["0  new 1", "a  clean", "b  x 2", "c  y 2"]);
+    assert.deepEqual(updatedSummary(expected, [], new Set(["a"])), ["a  clean"]);
+    assert.deepEqual(updatedSummary([], [], known), []);
   });
 });

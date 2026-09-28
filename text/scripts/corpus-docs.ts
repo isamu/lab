@@ -48,21 +48,26 @@ export const summaryLine = (id: string, rules: readonly string[]): string => {
 const idOf = (line: string): string => line.split("  ")[0] ?? "";
 
 /**
- * The lines of actual that differ from expected, as "- expected" / "+ actual" pairs. Documents that were not
- * fetched (absent from actual) are not compared: their expectation stays as it was.
+ * The lines of actual that differ from expected, as "- expected" / "+ actual" pairs, and the expected lines of
+ * documents no longer in the manifest (known). Documents that were not fetched (absent from actual) are not compared.
  */
-export const summaryChanges = (expected: readonly string[], actual: readonly string[]): string[] => {
+export const summaryChanges = (expected: readonly string[], actual: readonly string[], known: ReadonlySet<string>): string[] => {
   const before = new Map(expected.map((line) => [idOf(line), line]));
-  return actual.flatMap((line) => {
+  const changed = actual.flatMap((line) => {
     const previous = before.get(idOf(line));
     if (previous === line) return [];
     return previous === undefined ? [`+ ${line}`] : [`- ${previous}`, `+ ${line}`];
   });
+  const removed = expected.filter((line) => !known.has(idOf(line))).map((line) => `- ${line}`);
+  return [...changed, ...removed];
 };
 
-/** The expectation after a run: actual lines replace expected ones by id; documents not fetched keep theirs. */
-export const updatedSummary = (expected: readonly string[], actual: readonly string[]): string[] => {
-  const merged = new Map(expected.map((line) => [idOf(line), line]));
+/**
+ * The expectation after a run: actual lines replace expected ones by id, documents not fetched keep theirs, and
+ * documents no longer in the manifest (known) are dropped.
+ */
+export const updatedSummary = (expected: readonly string[], actual: readonly string[], known: ReadonlySet<string>): string[] => {
+  const merged = new Map(expected.filter((line) => known.has(idOf(line))).map((line) => [idOf(line), line]));
   actual.forEach((line) => merged.set(idOf(line), line));
   return [...merged.values()].sort((left, right) => idOf(left).localeCompare(idOf(right)));
 };

@@ -51,13 +51,14 @@ const actual = await docEntries(manifest).reduce<Promise<string[]>>(async (previ
   return [...lines, line];
 }, Promise.resolve([]));
 
+const known = new Set(docEntries(manifest).map((doc) => doc.id));
 const expected = existsSync(EXPECTED)
   ? readFileSync(EXPECTED, "utf8")
       .split("\n")
       .filter((line) => line !== "")
   : [];
-if (update) writeFileSync(EXPECTED, `${updatedSummary(expected, actual).join("\n")}\n`);
-const changes = update ? [] : summaryChanges(expected, actual);
+if (update) writeFileSync(EXPECTED, `${updatedSummary(expected, actual, known).join("\n")}\n`);
+const changes = update ? [] : summaryChanges(expected, actual, known);
 if (changes.length > 0) {
   console.log("\nChanged from corpus/expected.txt (yarn corpus --update to accept):");
   changes.forEach((change) => console.log(change));
