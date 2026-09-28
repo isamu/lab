@@ -5,7 +5,9 @@ const OF = /^,? of (?:the |that |those )?/u;
 const GLOSS = /^ \([^()]{1,100}\)/u;
 const CONNECTOR = /^(?:,? (?:to|and|or)|,) /u;
 /** "9", "29(2)", "(g)", and a roman "V" for a list of Articles. The roman numeral must end the word: "VIII", not "Vendor". */
-const LISTED_NUMBER = /^\d{1,3}[A-Z]{0,2}(?:\([a-z0-9]{1,4}\))*|^(?:\([a-z0-9]{1,4}\))+|^[IVXLC]{1,7}\b/u;
+const LISTED_NUMBERS = [/^\d{1,3}[A-Z]{0,2}(?:\([a-z0-9]{1,4}\))*/u, /^(?:\([a-z0-9]{1,4}\))+/u, /^[IVXLC]{1,7}\b/u];
+
+const listedNumber = (text: string): string | undefined => LISTED_NUMBERS.map((pattern) => pattern.exec(text)?.[0]).find((found) => found !== undefined);
 
 /**
  * A listed number is a reference only where the list goes on or ends: "Sections 1, 2 and 9 of" or "Section 3 and 4." —
@@ -21,7 +23,7 @@ const listed = (rest: string): (ListMember & { readonly end: number })[] => {
   let end = 0;
   for (;;) {
     const connector = CONNECTOR.exec(rest.slice(end))?.[0];
-    const number = connector === undefined ? undefined : LISTED_NUMBER.exec(rest.slice(end + connector.length))?.[0];
+    const number = connector === undefined ? undefined : listedNumber(rest.slice(end + connector.length));
     if (connector === undefined || number === undefined) return found;
     const start = end + connector.length;
     end = start + number.length;
