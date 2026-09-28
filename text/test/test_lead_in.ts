@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { isLeadIn } from "../packages/chaff/src/detectors/lead-in.ts";
+import { handsOver, isLeadIn } from "../packages/chaff/src/detectors/lead-in.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -52,6 +52,25 @@ describe("isLeadIn", () => {
   });
 });
 
+describe("handsOver", () => {
+  it("hands over when something follows the lead-in", () => {
+    assert.equal(handsOver("Receipts are needed for:", "\n\n- Hotels\n", EN), true);
+    assert.equal(handsOver("Run the following:", "\n\n```sh\nyarn build\n```\n", EN), true);
+    assert.equal(handsOver("区分は次のとおりとする。", "\n1. 日当\n", JA), true);
+  });
+
+  it("does not hand over when nothing follows in the section", () => {
+    assert.equal(handsOver("Receipts are needed for:", "", EN), false);
+    assert.equal(handsOver("Receipts are needed for:", "\n\n  \n", EN), false);
+    assert.equal(handsOver("区分は次のとおりとする。", "", JA), false);
+  });
+
+  it("does not hand over when the sentence is not a lead-in", () => {
+    assert.equal(handsOver("Receipts are needed.", "\n\n- Hotels\n", EN), false);
+    assert.equal(handsOver("", "\n\n- Hotels\n", EN), false);
+  });
+});
+
 const echoes = (source: string, adapter: LanguageAdapter): number => {
   const doc = buildDocument("a.md", source, adapter);
   return runRules(doc, loadRules(adapter.id), {}, false, "technical/readme").findings.filter((finding) => finding.rule === "heading-echo").length;
@@ -71,6 +90,12 @@ describe("heading-echo and a sentence that hands over to a list", () => {
   it("leaves a sentence with the language's hand-over phrase alone", () => {
     assert.equal(echoes("## Expenses requiring receipts\n\nThe expenses requiring receipts are as follows.\n\n- Hotels\n- Rental cars\n", en), 0);
     assert.equal(echoes("## 旅費の支給基準\n\n旅費の支給基準は、次のとおりとする。\n\n1. 日当\n2. 宿泊料\n", ja), 0);
+  });
+
+  it("still reports a lead-in that hands over to nothing", () => {
+    assert.equal(echoes("## Expenses requiring receipts\n\nThe following expenses require receipts:\n", en), 1);
+    assert.equal(echoes("## Expenses requiring receipts\n\nThe following expenses require receipts:\n\n## Hotels\n\nKeep the folio.\n", en), 1);
+    assert.equal(echoes("## 旅費の支給基準\n\n旅費の支給基準は、次のとおりとする。\n", ja), 1);
   });
 
   it("does not take another language's phrase", () => {

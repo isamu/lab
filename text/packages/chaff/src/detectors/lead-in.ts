@@ -9,3 +9,6 @@ export const isLeadIn = (sentence: string, phrases: readonly string[]): boolean 
   const text = sentence.trim().toLowerCase();
   return ENDS_WITH_COLON.test(text) || phrases.some((phrase) => phrase !== "" && text.includes(phrase.toLowerCase()));
 };
+
+/** 渡す先（following: 同じ節の、その文より後ろ）が空なら、渡す文ではなくただの繰り返し。 */
+export const handsOver = (sentence: string, following: string, phrases: readonly string[]): boolean => following.trim() !== "" && isLeadIn(sentence, phrases);

@@ -8,7 +8,8 @@ Newest first.
 
 A first sentence that hands over to the list or table below it — one ending in a colon (`The following expenses
 require receipts:`), or one with the language's hand-over phrase (「次のとおりとする。」, "as follows") — is no longer
-reported, even when it repeats the heading's words: what the heading promised is in the list. The phrases are a
+reported, even when it repeats the heading's words: what the heading promised is in the list. One with nothing after
+it in its section is still reported. The phrases are a
 lexicon (`lead-in`) in each language package. Found on FAQs, privacy policies, specifications and 就業規則 in the corpus.
 
 ### The corpus has press releases, FAQs, privacy policies, how-tos, notices, letters, agendas and job descriptions (#170)

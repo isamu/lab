@@ -1,6 +1,6 @@
 import { lengthOf } from "../measure.ts";
-import { isLeadIn } from "./lead-in.ts";
-import type { Detector, Finding, LengthUnit, Section } from "../plugin.ts";
+import { handsOver } from "./lead-in.ts";
+import type { Detector, Finding, LengthUnit, ProseDocument, Section } from "../plugin.ts";
 
 /** 見出しが短すぎると、偶然の一致で 100% になる。これ未満の見出しは見ない。 */
 const MIN_GRAMS = 4;
@@ -52,11 +52,17 @@ const addsLittle = (section: Section, unit: LengthUnit): boolean => {
   return lengthOf(first, unit) - headingUnits(section.heading, unit) <= NEW_MATERIAL[unit];
 };
 
+/** 最初の文が、同じ節の後ろ（箇条書き・表・コード）へ読者を渡している。 */
+const leadsIn = (doc: ProseDocument, section: Section, phrases: readonly string[]): boolean => {
+  const first = section.firstSentence;
+  return first !== undefined && handsOver(first.text, doc.source.slice(first.span.end, section.span.end), phrases);
+};
+
 export const headingEcho: Detector = (doc, options): Finding[] => {
   const leadIns = (doc.lexicons["lead-in"] ?? []).map((entry) => entry.pattern);
   return doc.sections
     .filter((section) => section.heading.length > 0 && section.firstSentence !== undefined && addsLittle(section, doc.lengthUnit))
-    .filter((section) => !isLeadIn(section.firstSentence?.text ?? "", leadIns))
+    .filter((section) => !leadsIn(doc, section, leadIns))
     .map((section) => ({ section, overlap: Math.round(containment(trigrams(section.heading), trigrams(section.firstSentence?.text ?? "")) * 100) }))
     .filter(({ overlap }) => overlap >= options.limit)
     .map(({ section, overlap }) => ({
