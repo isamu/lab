@@ -104,4 +104,12 @@ describe("設定ファイルからの読み込み", () => {
   it("by_path が無くても落ちない", () => {
     assert.deepEqual(loadConfig(write("genre: blog/tech\n")).byPath, []);
   });
+
+  it("文書の種類（profile）を、全体とパスごとに読む", () => {
+    const config = loadConfig(write(["profile: none", "by_path:", '  - files: ["laws/**/*.txt"]', "    profile: statute"].join("\n")));
+    assert.equal(config.profile, "none");
+    assert.equal(applyByPath(config.byPath, config.baseDir, join(config.baseDir, "laws", "a.txt")).profile, "statute");
+    assert.equal(applyByPath(config.byPath, config.baseDir, join(config.baseDir, "a.txt")).profile, undefined);
+    assert.equal(loadConfig(write("genre: blog/tech\n")).profile, undefined);
+  });
 });
