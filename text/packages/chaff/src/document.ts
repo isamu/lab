@@ -9,7 +9,7 @@ import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { pageFurniture, textOutline } from "./page-furniture.ts";
 import { tokenizedLexicons } from "./lexicon-tokens.ts";
-import { isInPageNavigation } from "./in-page-nav.ts";
+import { inPageAnchors, isInPageNavigation, isNavigationList, type InPageAnchors } from "./in-page-nav.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
@@ -17,6 +17,7 @@ type Node = {
   readonly type: string;
   readonly url?: string | undefined;
   readonly value?: string | undefined;
+  readonly identifier?: string | undefined;
   readonly position?: { readonly start: Place; readonly end: Place } | undefined;
   readonly children?: readonly Node[] | undefined;
 };
@@ -96,14 +97,14 @@ const matchSpans = (source: string, pattern: RegExp): Span[] =>
 
 const directiveSpans = (source: string): Span[] => [...matchSpans(source, DIRECTIVE), ...matchSpans(source, BARE_URL)];
 
-const collectMasks = (root: Node, source: string): Span[] => {
+const collectMasks = (root: Node, source: string, anchors: InPageAnchors): Span[] => {
   const spans: Span[] = [...directiveSpans(source)];
   walk(root, (node) => {
     if (node.type === "link" || node.type === "linkReference") {
       spans.push(...linkChrome(node));
       return;
     }
-    if (!NOT_PROSE.has(node.type) && node.type !== "heading" && !isInPageNavigation(node)) return;
+    if (!NOT_PROSE.has(node.type) && node.type !== "heading" && !isInPageNavigation(node, anchors)) return;
     const span = spanOf(node);
     if (span !== undefined) spans.push(span);
   });
@@ -221,11 +222,11 @@ const paragraphsOf = (spans: readonly Span[], sentences: readonly Sentence[], li
     .filter((span) => !listSpans.some((list) => span.start >= list.start && span.start < list.end))
     .map((span) => ({ span, sentences: sentences.filter((sentence) => within(sentence.span, span.start, span.end)) }));
 
-/** 箇条書きは list ノードの直下の項目を数える。入れ子の項目は内側の list のものとして数える。 */
-const listsOf = (root: Node, source: string): BulletList[] => {
+/** 箇条書きは list ノードの直下の項目を数える。入れ子の項目は内側の list のものとして数える。目次のような案内だけの箇条書きは数えない。 */
+const listsOf = (root: Node, source: string, anchors: InPageAnchors): BulletList[] => {
   const found: BulletList[] = [];
   walk(root, (node) => {
-    if (node.type !== "list") return;
+    if (node.type !== "list" || isNavigationList(node, anchors)) return;
     const span = spanOf(node);
     if (span === undefined) return;
     const items = (node.children ?? []).flatMap((child) => {
@@ -266,10 +267,11 @@ export const buildDocument = (
   profile: DocumentProfile | undefined = undefined,
 ): ProseDocument => {
   const root = parse(source);
+  const anchors = inPageAnchors(root);
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
   // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
   // テキストの文書は、ページのヘッダーとフッターも本文ではない（Markdown には改ページが無い）。
-  const blocks = [...collectMasks(root, source), ...(isMarkdownPath(path) ? [] : pageFurniture(source))];
+  const blocks = [...collectMasks(root, source, anchors), ...(isMarkdownPath(path) ? [] : pageFurniture(source))];
   const masked = [...blocks, ...emphasisSpans(root, source)];
   const prose = maskSpans(source, masked);
   const paragraphSpans = spansOfType(root, "paragraph");
@@ -295,7 +297,7 @@ export const buildDocument = (
     sentences,
     listSpans: listItems,
     paragraphs: paragraphsOf(paragraphSpans, sentences, listItems),
-    lists: listsOf(root, source),
+    lists: listsOf(root, source, anchors),
     lexicons: tagged ? tokenizedLexicons(lexicons, adapter) : lexicons,
     requiredSections: team.requiredSections,
     // 構造の rule（参照先が無い・番号の抜け）が読む木。どの rule も読まなければ作らない。何万行の契約書で、他の rule の lint に代金を払わせない。
