@@ -14,7 +14,7 @@ hiragana-fukushi                6      6       0             0
 internal-jargon                12     12       0             0
 latin-spacing                   1      1       0             0
 max-kanji-continuous            5      5       0             0
-max-paragraph-length            9      8       1             0
+max-paragraph-length            9      9       0             0
 max-sentence-length            11     11       0             0
 no-doubled-joshi               13     13       0             0
 no-em-dash                      8      8       0             0
@@ -218,7 +218,7 @@ en/policy  number-skipped  found
 en/policy  defined-twice  found
 en/press  weekday-shift  found
 en/press  sentences-joined  found
-en/press  paragraphs-joined  missed
+en/press  paragraphs-joined  found
 en/press  heading-echoed  found
 en/press  bold-heavy  found
 en/press  emoji-decorated  found
