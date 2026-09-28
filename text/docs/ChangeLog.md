@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### lang-ja places words where they are written (#170)
+
+kuromoji's word positions drift after a cluster of symbols (`)、`, `**、`) or an emoji, so from there on every word in
+the paragraph carried a position one or more characters too early. A word from the next sentence could land in the
+previous one, and numbers and dates were read from the wrong characters (`2026年8月1日` came out as `06-08`). lang-ja now
+places each word by matching its text against the paragraph. Found on the Kubernetes Japanese docs in the corpus.
+
 ### English reads bracketed citation tags as another document (#170)
 
 A reference written with a citation tag in capitals, as RFCs cite, is no longer looked up in this document:
