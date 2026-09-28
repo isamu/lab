@@ -72,6 +72,66 @@ describe("date-order", () => {
     assert.deepEqual(found(table), ["2026-04-15<2026-05-01"]);
   });
 
+  it("a nested list: children do not break the parents' order, and each group of children is its own sequence", () => {
+    const source = [
+      "# History",
+      "",
+      "- 2026-01-01 topic A",
+      "  - 2026-06-01 detail",
+      "- 2026-02-01 topic B",
+      "  - 2026-05-01 detail",
+      "- 2026-03-01 topic C",
+      "- 2026-04-01 topic D",
+    ].join("\n");
+    assert.deepEqual(found(source), []);
+  });
+
+  it("children of different parents are separate sequences", () => {
+    const source = [
+      "# Plan",
+      "",
+      "- Phase 1",
+      "  - 2026-06-01 a",
+      "  - 2026-07-01 b",
+      "  - 2026-08-01 c",
+      "- Phase 2",
+      "  - 2026-01-01 d",
+      "  - 2026-02-01 e",
+      "  - 2026-03-01 f",
+    ].join("\n");
+    assert.deepEqual(found(source), []);
+  });
+
+  it("a list followed straight by a table is two sequences", () => {
+    const source = [
+      "# Plan",
+      "",
+      "- 2026-01-01 a",
+      "- 2026-02-01 b",
+      "- 2026-03-01 c",
+      "| Step | Date |",
+      "| --- | --- |",
+      "| d | 2025-01-01 |",
+      "| e | 2025-02-01 |",
+      "| f | 2025-03-01 |",
+    ].join("\n");
+    assert.deepEqual(found(source), []);
+  });
+
+  it("a date in a table's header row is not part of the order", () => {
+    const table = [
+      "# Plan",
+      "",
+      "| As of 2026-07-01 | Date |",
+      "| --- | --- |",
+      "| a | 2026-04-01 |",
+      "| b | 2026-05-01 |",
+      "| c | 2026-04-15 |",
+      "| d | 2026-07-01 |",
+    ].join("\n");
+    assert.deepEqual(found(table), ["2026-04-15<2026-05-01"]);
+  });
+
   it("the sample schedules: the English table's third row, not the newest-first history", () => {
     assert.deepEqual(found(readFileSync(new URL("fixtures/dates/schedule-en.md", import.meta.url), "utf8")), ["2026-04-15<2026-05-01"]);
   });

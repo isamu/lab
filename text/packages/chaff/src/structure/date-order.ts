@@ -15,7 +15,10 @@ const TABLE_ROW = /^[ \t]{0,12}\|/u;
 /** 並びとして比べられる日付の書き方。年月日、年月、月日は、同じ書き方どうしでしか比べない。 */
 const PRECISIONS = [/^\d{4}-\d{2}-\d{2}$/u, /^\d{4}-\d{2}$/u, /^\d{2}-\d{2}$/u];
 
-type Line = { readonly start: number; readonly end: number; readonly kind: Kind | undefined };
+const TABLE_RULE = /^[ \t]{0,12}\|?[ \t]{0,4}:?-{3,}/u;
+const INDENT = /^[ \t]*/u;
+
+type Line = { readonly start: number; readonly end: number; readonly kind: Kind | undefined; readonly indent: number; readonly rule: boolean };
 
 const kindOf = (text: string): Kind | undefined => {
   if (TABLE_ROW.test(text)) return "table";
@@ -26,20 +29,36 @@ const linesOf = (source: string): Line[] => {
   const found: Line[] = [];
   let start = 0;
   source.split("\n").forEach((text) => {
-    found.push({ start, end: start + text.length, kind: kindOf(text) });
+    const indent = INDENT.exec(text)?.[0].length ?? 0;
+    found.push({ start, end: start + text.length, kind: kindOf(text), indent, rule: TABLE_RULE.test(text) });
     start += text.length + 1;
   });
   return found;
 };
 
-/** 同じ種類の行が続くところ。表の区切り行（|---|）も表の行で、日付を持たないので並びには入らない。 */
+/**
+ * 続いた箇条書きや表の中で、同じ深さの行を一つの並びにする。
+ * 子の項目（深い字下げ）は親の並びを切らずに、親ごとに別の並びになる。浅い項目が来たら、それより深い並びは閉じる。
+ * 表の区切り行（|---|）のすぐ前の行は見出しなので、並びから外す。
+ */
 const runsOf = (source: string): Line[][] => {
   const runs: Line[][] = [];
+  const open = new Map<number, Line[]>();
+  const close = (deeperThan: number): void => [...open.keys()].filter((depth) => depth > deeperThan).forEach((depth) => open.delete(depth));
   linesOf(source).forEach((line, index, all) => {
-    const continues = line.kind !== undefined && all[index - 1]?.kind === line.kind;
+    if (line.kind === undefined || all[index - 1]?.kind !== line.kind) close(-1);
     if (line.kind === undefined) return;
-    if (continues && runs.length > 0) runs.at(-1)?.push(line);
-    else runs.push([line]);
+    if (line.rule) {
+      open.get(line.indent)?.pop();
+      return;
+    }
+    close(line.indent);
+    const run = open.get(line.indent) ?? [];
+    if (!open.has(line.indent)) {
+      open.set(line.indent, run);
+      runs.push(run);
+    }
+    run.push(line);
   });
   return runs;
 };

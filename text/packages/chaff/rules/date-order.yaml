@@ -14,8 +14,8 @@ why:
   en: In a list or a table of dates, such as an itinerary or milestones, one date earlier than the one before it makes the reader check whether it is a typo or a swapped row. The direction of the list (oldest or newest first) is taken from most of its steps, and only a date against it is pointed out.
 
 message:
-  ja: 「{date}」が、それより後の「{previous}」の次に並んでいます
-  en: "{date} comes after {previous}, which is later"
+  ja: 「{date}」が、前後の日付の並びから外れています（前は「{previous}」）
+  en: "{date} breaks the order of the dates around it (after {previous})"
 
 how_to_fix:
   ja: 日付を確かめて、書き間違いなら直し、順番が違うなら並べ替えてください。
