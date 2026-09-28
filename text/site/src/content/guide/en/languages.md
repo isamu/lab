@@ -14,7 +14,7 @@ $ npx chaffjs notes.md --compact
 notes.md   blog/tech · English   genre from the default
 
 
-0 findings, 33 rules not run
+0 findings, 36 rules not run
 ```
 
 A Japanese file says 日本語 in the same place, and its screen is in Japanese:
@@ -25,7 +25,7 @@ $ npx chaffjs memo.md --compact
 memo.md   blog/tech · 日本語   ジャンルは既定から
 
 
-0 findings, 30 rules not run
+0 findings, 33 rules not run
 ```
 
 When the language is wrong, fix it with `language: ja` or `language: en` in `chaff.yaml` ([Configuration](./configuration)).

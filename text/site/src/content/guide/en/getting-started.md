@@ -37,12 +37,14 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  33 rules did not run:
+  36 rules did not run:
       adverb-overuse (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
       contraction-consistency (still experimental)
       dangling-reference (still experimental)
+      date-order (still experimental)
+      date-weekday-mismatch (still experimental)
       duplicate-definition (still experimental)
       emoji-density (still experimental)
       empty-conclusion (it reads meaning; npx chaff test runs it)
@@ -70,6 +72,7 @@ article.md   blog/tech · English   genre from the default
       sentence-rhythm (still experimental)
       taigen-dome-in-prose (not a rule for en)
       title-case-consistency (still experimental)
+      total-mismatch (still experimental)
       unqualified-superlative (still experimental)
 
 ```

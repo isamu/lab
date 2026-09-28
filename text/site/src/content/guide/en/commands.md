@@ -55,7 +55,7 @@ sample.md   blog/tech · English   genre from the default
   142:1   warning The first sentence repeats the heading "agentFunctionInfo"
                   heading-echo
 
-3 findings, 33 rules not run
+3 findings, 36 rules not run
 ```
 
 The last line counts the findings and the rules that did not run.
@@ -70,8 +70,8 @@ $ npx chaffjs article.md --watch
   Watching 1 file. 2 findings now.
   Each save prints only what changed. Ctrl-C to stop.
 
-13:27:56  article.md  ✓ 2 → 1 findings   (-1 max-sentence-length)
-13:28:01  article.md  ✗ 1 → 2 findings   (+1 max-sentence-length)
+17:38:49  article.md  ✓ 2 → 1 findings   (-1 max-sentence-length)
+17:38:54  article.md  ✗ 1 → 2 findings   (+1 max-sentence-length)
 ```
 
 `✓` means the findings went down, `✗` that they went up.
@@ -201,7 +201,7 @@ $ npx chaffjs docs/ --compact
 docs/a.md   technical/readme · English   genre from the path   1 shelved
 
 
-0 findings, 22 rules not run
+0 findings, 25 rules not run
 ```
 
 To see the shelved ones too, add `--show-baseline`.
@@ -214,7 +214,7 @@ docs/a.md   technical/readme · English   genre from the path
   3:1     warning This sentence runs 43 words (limit 25)
                   max-sentence-length
 
-1 findings, 22 rules not run
+1 finding, 25 rules not run
 ```
 
 How to use it in CI is in [CI](./ci).
