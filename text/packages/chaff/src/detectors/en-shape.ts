@@ -211,12 +211,12 @@ const itemAfter = (tokens: readonly Token[], at: number): Token[] => {
 };
 
 /**
- * 導入の句（After the review, / If it fails, / Finally, / Based on the review,）は並列の項目ではない。
- * 節の最初の項目が前置詞・接続詞・副詞・過去分詞で始まり、次の項目と頭の形が違えば外す。
+ * 導入の句（After the review, / If it fails, / Finally, / To test it, / Based on the review,）は並列の項目ではない。
+ * 節の最初の項目が前置詞・接続詞・副詞・to・過去分詞で始まり、次の項目と頭の形が違えば外す。
  * Quickly, quietly and carefully は残る。For managers, engineers and designers, も外れるが、前置詞のあとの名詞を
  * 項目と読むと、Over this period, the subcommittees and the full committee ... を並びと誤る。こちらのほうが多い。
  */
-const LEAD_POS = new Set(["ADP", "SCONJ", "ADV"]);
+const LEAD_POS = new Set(["ADP", "SCONJ", "ADV", "PART"]);
 
 const isParticiple = (token: Token): boolean => token.features?.["VerbForm"] === "Part";
 

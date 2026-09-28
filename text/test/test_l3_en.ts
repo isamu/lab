@@ -112,6 +112,7 @@ describe("L3 英語", () => {
       ["導入の節の読点", "If it fails, retry and report."],
       ["導入の副詞の読点", "Finally, retry and report."],
       ["過去分詞で始まる導入の句の読点", "Based on the review, fix the parser and ship it."],
+      ["to で始まる導入の句の読点", "To test the parser, build it and run it."],
       ["前置詞のあとの名詞は、主語の前の導入の句", "Over this period, the subcommittees and the full committee considered the bills."],
       ["名詞の前で重ねた形容詞の読点", "Take the long, winding bridge and enjoy the view."],
       ["挿入の関係節の読点", "The team, which met on Monday, approved the plan and the budget."],
@@ -171,6 +172,10 @@ describe("L3 英語", () => {
 
     it("invalid: 固有名詞・形容詞で始まる項目も名詞の並び", () => {
       assert.ok(judgedAgainst(WITH_COMMA, "We visited Paris, the old port and the museums."));
+    });
+
+    it("invalid: to の並びは並列", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "We plan to test, to build and to run."));
     });
 
     it("invalid: 過去分詞が並べば、文頭でも並列", () => {
