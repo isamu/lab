@@ -18,6 +18,9 @@ const strings = (value: unknown): string[] => (Array.isArray(value) ? value.filt
 const texts = (value: unknown): Record<string, string> =>
   isRecord(value) ? Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string")) : {};
 
+/** 空でない文字列だけ。空の正規表現は何にでも当たる。 */
+const text = (value: unknown): string | undefined => (typeof value === "string" && value !== "" ? value : undefined);
+
 const detectOf = (value: unknown): ProfileDetect | undefined => {
   if (!isRecord(value) || typeof value["line"] !== "string") return undefined;
   const minLines = value["min_lines"];
@@ -32,8 +35,9 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
       .filter(([key, value]) => !LANGUAGE_KEYS.has(key) && isRecord(value))
       .map(([language, value]) => {
         const section = isRecord(value) ? value : {};
-        const addressEnd = typeof section["address_end"] === "string" && section["address_end"] !== "" ? section["address_end"] : undefined;
-        return [language, { id, addresses: strings(section["addresses"]), connectives: strings(section["connectives"]), addressEnd }];
+        const addressEnd = text(section["address_end"]);
+        const caption = text(section["caption"]);
+        return [language, { id, addresses: strings(section["addresses"]), connectives: strings(section["connectives"]), addressEnd, caption }];
       }),
   );
 

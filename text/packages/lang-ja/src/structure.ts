@@ -178,8 +178,9 @@ const unnumberedParagraph = (line: string, context: NumberingContext): NumberedL
   const rest = OLD_STYLE_PARAGRAPH.exec(line)?.groups?.["rest"];
   if (rest === undefined) return undefined;
   // 条の行に本文が続く書き方（「第三十四条 使用者は、…。」）のときだけ。契約書の「第1条（目的）」の次の字下げの行は、第 1 項の本文。
+  // 条の行そのものを見る。前の行から付いた見出しは、条の行の書き方を変えない。
   const article = [...context.open].reverse().find((open) => open.kind === "article");
-  if (article === undefined || article.heading !== "" || article.rest === "") return undefined;
+  if (article === undefined || headingOf(article.rest, true) !== "" || article.rest === "") return undefined;
   const previous = [...context.open].reverse().find((open) => open.depth === PARAGRAPH_DEPTH);
   if (previous !== undefined && previous.label !== "") return undefined;
   const number = String((previous === undefined ? 1 : Number(previous.number)) + 1);

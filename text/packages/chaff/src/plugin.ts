@@ -199,6 +199,11 @@ export type DocumentProfile = {
   readonly connectives: readonly string[];
   /** 番地の並びのすぐ後ろに来てよい文字（正規表現）。無ければどこで終わってもよい。 */
   readonly addressEnd?: string | undefined;
+  /**
+   * 条の前の行に置く見出しの形（正規表現。最初の括弧の中が見出しの言葉）。法令の「（解雇の予告）」。
+   * すぐ次の行の条が見出しを持たなければ、その条の見出しになる。
+   */
+  readonly caption?: string | undefined;
 };
 
 export type ProseDocument = {

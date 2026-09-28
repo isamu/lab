@@ -168,6 +168,50 @@ describe("文書の種類（profile）", () => {
     );
     assert.doesNotMatch(toSexp(treeOf(source)), /:profile/u);
   });
+
+  const statuteTree = (source: string, profile: typeof statute): StructureNode =>
+    buildStructure({ path: "c.txt", source, language: "ja", markdown: false, profile }, patterns());
+
+  const articleHeadings = (node: StructureNode): string[] => [
+    ...(node.kind === "article" ? [`${node.address}:${String(node.attrs["heading"] ?? "")}`] : []),
+    ...node.children.flatMap(articleHeadings),
+  ];
+
+  // 労働基準法 第二十条・第二十一条（公共の著作物）。
+  const DISMISSAL = lines(
+    "（解雇の予告）",
+    "第二十条　使用者は、労働者を解雇しようとする場合においては、少くとも三十日前にその予告をしなければならない。",
+    "\u3000前項の予告の日数は、一日について平均賃金を支払つた場合においては、その日数を短縮することができる。",
+    "第二十一条　前条の規定は、左の各号の一に該当する労働者については適用しない。",
+  );
+
+  it("条の前の行の見出し（「（解雇の予告）」）は、法令ではその条の見出し", () => {
+    assert.deepEqual(articleHeadings(statuteTree(DISMISSAL, statute)), ["20:解雇の予告", "21:"]);
+  });
+
+  it("種類を選ばなければ、見出しの行を条の見出しにしない", () => {
+    assert.deepEqual(articleHeadings(statuteTree(DISMISSAL, undefined)), ["20:", "21:"]);
+  });
+
+  it("見出しを付けても、条の行に本文が続く条の字下げの行は第 2 項のまま", () => {
+    assert.deepEqual(addresses(statuteTree(DISMISSAL, statute)), ["20", "20.2", "21"]);
+  });
+
+  it("空行を挟んだ見出し、見出しを持つ条、条でない行には付けない", () => {
+    assert.deepEqual(articleHeadings(statuteTree(lines("（解雇の予告）", "", "第二十条　使用者は、予告をしなければならない。"), statute)), ["20:"]);
+    assert.deepEqual(articleHeadings(statuteTree(lines("（前文）", "第1条（目的）"), statute)), ["1:目的"]);
+    assert.deepEqual(articleHeadings(statuteTree(lines("（解雇の予告）", "使用者は、予告をしなければならない。", "第二十条　本文。"), statute)), ["20:"]);
+  });
+
+  it("見出しの形は文書の種類が決める。形の無い種類では付けない", () => {
+    const withoutCaption = { id: "plain", addresses: [], connectives: [] };
+    assert.deepEqual(articleHeadings(statuteTree(DISMISSAL, withoutCaption)), ["20:", "21:"]);
+    const brackets = { id: "brackets", addresses: [], connectives: [], caption: "^【(.+)】$" };
+    assert.deepEqual(articleHeadings(statuteTree(lines("【解雇の予告】", "第二十条　本文。"), brackets)), ["20:解雇の予告"]);
+    // 番号の付いた行は、形が当たっても見出しの行ではない。前の条の行を次の条の見出しにしない。
+    const everyLine = { id: "every", addresses: [], connectives: [], caption: "^(.+)$" };
+    assert.deepEqual(articleHeadings(statuteTree(lines("第二十条　本文。", "第二十一条　本文。"), everyLine)), ["20:", "21:"]);
+  });
 });
 
 describe("parseJapaneseNumber", () => {

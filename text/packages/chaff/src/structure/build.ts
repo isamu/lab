@@ -37,6 +37,8 @@ type State = {
   /** opensDefinitionScope の行を含んだ条。ここに入る定義はその条の中でだけ比べる。 */
   readonly scopedArticles: Set<Draft>;
   readonly profile: DocumentProfile | undefined;
+  /** 見出しだけの行（文書の種類の caption）の行番号と、その言葉。すぐ次の行の条が見出しに使う。 */
+  readonly captions: Map<number, string>;
 };
 
 const draftOf = (kind: StructureKind, address: string, line: Line, attrs: Readonly<Record<string, string | number>>): Draft => ({
@@ -219,11 +221,30 @@ const headingLineText = (text: string): string => {
   return atxHeadingText(line.replace(/^#{1,6}(?=[ \t]|$)/u, "").trim());
 };
 
+const captionPatterns = new WeakMap<DocumentProfile, RegExp | undefined>();
+
+/** 文書の種類が決めた見出しだけの行なら、その言葉（最初の括弧の中、括弧が無ければ行全体）。 */
+const captionOf = (profile: DocumentProfile | undefined, text: string): string | undefined => {
+  if (profile === undefined) return undefined;
+  if (!captionPatterns.has(profile)) captionPatterns.set(profile, profile.caption === undefined ? undefined : new RegExp(profile.caption, "u"));
+  const found = captionPatterns.get(profile)?.exec(text);
+  const words = (found?.[1] ?? found?.[0])?.trim();
+  return words === "" ? undefined : words;
+};
+
+/** 見出しの無い条のすぐ前の行が見出しだけの行なら、それを条の見出しにする。 */
+const withCaption = (state: State, line: Line, numbered: NumberedLine | undefined): NumberedLine | undefined => {
+  const caption = numbered?.kind === "article" && numbered.heading === "" ? state.captions.get(line.number - 1) : undefined;
+  return numbered === undefined || caption === undefined ? numbered : { ...numbered, heading: caption };
+};
+
 const readLine = (state: State, patterns: StructurePatterns, line: Line, heading: Heading | undefined): void => {
   const text = heading === undefined ? line.text : headingLineText(line.text);
   const openNumbers = state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered]));
   const context = { open: openNumbers, isHeading: heading !== undefined };
-  const numbered = patterns.numbered(text, context) ?? universalNumber(patterns, text, context);
+  const numbered = withCaption(state, line, patterns.numbered(text, context) ?? universalNumber(patterns, text, context));
+  const caption = numbered === undefined && heading === undefined ? captionOf(state.profile, text) : undefined;
+  if (caption !== undefined) state.captions.set(line.number, caption);
   // 番号付きの見出しも見出しの通し番号を進める。進めないと、その下の「### 詳細」が前の見出しの番地を名乗る。
   if (numbered !== undefined && heading !== undefined) headingAddress(state, heading.depth);
   if (numbered !== undefined) openNumbered(state, line, numbered, heading?.depth);
@@ -248,7 +269,7 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
   const attrs = { path: input.path, language: input.language, ...(input.profile === undefined ? {} : { profile: input.profile.id }) };
   const doc = draftOf("doc", "", { text: "", start: 0, number: 1 }, attrs);
   doc.end = input.source.length;
-  const state: State = { stack: [{ draft: doc, rank: 0 }], headingCounts: [], scopedArticles: new Set(), profile: input.profile };
+  const state: State = { stack: [{ draft: doc, rank: 0 }], headingCounts: [], scopedArticles: new Set(), profile: input.profile, captions: new Map() };
   lines.forEach((line) => {
     if (line.text.trim() !== "") readLine(state, patterns, line, headings.get(line.number));
     // コードの行は覆って読まないが、開いている節の中身ではある。節の最後にコードブロックがあっても、範囲をそこまで伸ばす。
