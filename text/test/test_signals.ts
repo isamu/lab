@@ -404,6 +404,10 @@ describe("heading-echo の絞り込み", () => {
   });
 
   it("英語でも短い繰り返しは拾う", () => {
-    assert.ok(idsFor("## Generating Output\n\nVarious outputs can be generated:", "blog/tech", en).includes("heading-echo"));
+    assert.ok(idsFor("## Generating Output\n\nVarious outputs can be generated.", "blog/tech", en).includes("heading-echo"));
+  });
+
+  it("valid: コロンで後ろの箇条書きへ渡す文は、見出しの語を含んでいても指摘しない", () => {
+    assert.ok(!idsFor("## Generating Output\n\nVarious outputs can be generated:\n\n- Movie\n- PDF", "blog/tech", en).includes("heading-echo"));
   });
 });

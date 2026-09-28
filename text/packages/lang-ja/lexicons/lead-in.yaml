@@ -1,0 +1,10 @@
+# 後ろの箇条書きや表へ読者を渡す言い回し。これを含む文は、見出しの語を繰り返していても heading-echo に数えない。
+id: lead-in
+language: ja
+entries:
+  - pattern: 次のとおり
+  - pattern: 次の通り
+  - pattern: 以下のとおり
+  - pattern: 以下の通り
+  - pattern: 下記のとおり
+  - pattern: 下記の通り

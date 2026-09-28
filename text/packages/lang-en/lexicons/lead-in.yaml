@@ -1,0 +1,8 @@
+# Phrases that hand the reader over to the list or table below. A sentence with one is not counted by heading-echo,
+# even when it repeats the heading's words. "the following" is left out: "the following day" hands over nothing.
+id: lead-in
+language: en
+entries:
+  - pattern: as follows
+  - pattern: listed below
+  - pattern: set out below

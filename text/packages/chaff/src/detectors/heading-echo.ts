@@ -1,4 +1,5 @@
 import { lengthOf } from "../measure.ts";
+import { isLeadIn } from "./lead-in.ts";
 import type { Detector, Finding, LengthUnit, Section } from "../plugin.ts";
 
 /** 見出しが短すぎると、偶然の一致で 100% になる。これ未満の見出しは見ない。 */
@@ -51,9 +52,11 @@ const addsLittle = (section: Section, unit: LengthUnit): boolean => {
   return lengthOf(first, unit) - headingUnits(section.heading, unit) <= NEW_MATERIAL[unit];
 };
 
-export const headingEcho: Detector = (doc, options): Finding[] =>
-  doc.sections
+export const headingEcho: Detector = (doc, options): Finding[] => {
+  const leadIns = (doc.lexicons["lead-in"] ?? []).map((entry) => entry.pattern);
+  return doc.sections
     .filter((section) => section.heading.length > 0 && section.firstSentence !== undefined && addsLittle(section, doc.lengthUnit))
+    .filter((section) => !isLeadIn(section.firstSentence?.text ?? "", leadIns))
     .map((section) => ({ section, overlap: Math.round(containment(trigrams(section.heading), trigrams(section.firstSentence?.text ?? "")) * 100) }))
     .filter(({ overlap }) => overlap >= options.limit)
     .map(({ section, overlap }) => ({
@@ -64,3 +67,4 @@ export const headingEcho: Detector = (doc, options): Finding[] =>
       quote: section.firstSentence?.text.trim() ?? "",
       values: { heading: section.heading, count: overlap, limit: options.limit, offset: section.firstSentence?.span.start ?? section.span.start },
     }));
+};
