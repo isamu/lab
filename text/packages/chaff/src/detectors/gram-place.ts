@@ -24,7 +24,8 @@ export const compacted = (text: string, unit: LengthUnit): Compacted => {
       state.pendingSpace = -1;
     }
     chars.push(char);
-    offsets.push(at);
+    // 位置は UTF-16 の単位で持つ。placeOf は indexOf の位置で引くので、絵文字（2 単位）には 2 つ置く。
+    Array.from({ length: char.length }, (_, unit) => offsets.push(at + unit));
   });
   return { text: chars.join(""), offsets };
 };

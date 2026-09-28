@@ -17,8 +17,18 @@ describe("compacted", () => {
     assert.deepEqual(result.offsets, [0, 2, 4]);
   });
 
-  it("絵文字（UTF-16 で 2 単位）の後ろも元の位置のまま", () => {
-    assert.deepEqual(compacted("😀 a", "word").offsets, [0, 2, 3]);
+  it("位置は UTF-16 の単位で持つ。絵文字（2 単位）には 2 つ置く", () => {
+    const result = compacted("😀 a", "word");
+    assert.equal(result.offsets.length, result.text.length);
+    assert.deepEqual(result.offsets, [0, 1, 2, 3]);
+  });
+
+  it("絵文字の後ろの語句も、元の文の範囲に正しく戻る", () => {
+    const source = "😀 the  upcoming fiscal";
+    const place = placeOf(compacted(source, "word"), "upcoming fiscal");
+    assert.equal(place === undefined ? "" : source.slice(place.start, place.end), "upcoming fiscal");
+    const tail = placeOf(compacted("a 😀", "word"), "a 😀");
+    assert.deepEqual(tail, { start: 0, end: 4 });
   });
 });
 

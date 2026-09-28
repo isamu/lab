@@ -62,7 +62,8 @@ describe("ngram-repetition", () => {
     const places = ["画面", "一覧", "表", "図", "枠", "欄", "箱", "列"];
     // 埋め草は平仮名を含まず番号だけが違う文。言い回しとして数えられない。
     const filler = Array.from({ length: 80 }, (_, index) => `資料${String(index)}番号${String(index)}。`).join("");
-    const source = `# 見出し\n\n${places.map((place) => `${place}の中にあるコンポーネントを選びます。`).join("")}${filler}`;
+    const body = places.map((place) => place + "の中にあるコンポーネントを選びます。").join("");
+    const source = `# 見出し\n\n${body}${filler}`;
     const worst = runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, true, "business/report").findings.find(
       (finding) => finding.rule === "ngram-repetition",
     );
@@ -103,12 +104,14 @@ describe("ngram-repetition: 英語の名詞の語句は言い回しではない"
   };
 
   it("valid: 主題の名前（state and local tax deduction）は、何度出ても数えない", async () => {
-    const source = `# Report\n\n${CONTEXTS.map((context) => `${context} the state and local tax deduction.`).join(" ")} ${FILLER}`;
+    const body = CONTEXTS.map((context) => context + " the state and local tax deduction.").join(" ");
+    const source = `# Report\n\n${body} ${FILLER}`;
     assert.equal(await worstWord(source), undefined);
   });
 
   it("invalid: 動詞を含む言い回し（it is important to note that）は数える", async () => {
-    const source = `# Report\n\n${CONTEXTS.map((context) => `${context} it, and it is important to note that.`).join(" ")} ${FILLER}`;
+    const body = CONTEXTS.map((context) => context + " it, and it is important to note that.").join(" ");
+    const source = `# Report\n\n${body} ${FILLER}`;
     assert.match((await worstWord(source)) ?? "", /is important|important to/u);
   });
 });
