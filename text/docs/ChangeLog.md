@@ -13,6 +13,14 @@ heading. New self-written samples in both languages cover a press release, an em
 table of figures, a README and a blog post. A mistake is planted only where its rule runs (its languages and genres),
 and the bench passes the team's jargon and required sections as `chaff.yaml` would.
 
+### `ngram-repetition` counts phrasing, not the name of the subject (#170)
+
+A long report naturally repeats its subject (`state and local tax`, `the HTTP status code`, `the Disclosing Party`), and
+that was reported as repeated phrasing. With part-of-speech tagging, a repeated phrase now counts only if the part of
+the sentence it covers holds a verb or an auxiliary (`ることができます`, `it is important to`). In English a verb right
+before a noun or adjective is a modifier (`the upcoming fiscal year`), not a predicate. Without tagging, the rule
+behaves as before. Found across the corpus's reports, RFCs and contracts.
+
 ### The corpus's wikitext conversion closes the gaps left by dropped templates (#170)
 
 A Wikivoyage template the converter drops no longer leaves a space before punctuation (`Airport , but`) or a double
