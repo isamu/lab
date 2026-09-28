@@ -8,16 +8,31 @@ import { proseText } from "../measure.ts";
  */
 const KANJI_RUN = /[一-鿿]+/gu;
 
-const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined): string =>
-  [...maskAddresses(proseText(sentence), profile).matchAll(KANJI_RUN)].reduce((longest, match) => (match[0].length > longest.length ? match[0] : longest), "");
+/** 言語パッケージの語彙表（unsplittable）の書き方を、同じ長さの空白で伏せる。住所のように、漢字が続いても割れないもの。 */
+const maskUnsplittable = (text: string, patterns: readonly RegExp[]): string =>
+  patterns.reduce((masked, pattern) => masked.replace(pattern, (found) => " ".repeat(found.length)), text);
+
+const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, unsplittable: readonly RegExp[]): string =>
+  [...maskUnsplittable(maskAddresses(proseText(sentence), profile), unsplittable).matchAll(KANJI_RUN)].reduce(
+    (longest, match) => (match[0].length > longest.length ? match[0] : longest),
+    "",
+  );
+
+const compiled = new Map<string, RegExp>();
+const patternOf = (source: string): RegExp => {
+  const found = compiled.get(source) ?? new RegExp(source, "gu");
+  compiled.set(source, found);
+  return found;
+};
 
 /**
  * 漢字が続くと、どこで語が切れるのか読み手が探すことになる。
  * 「情報処理推進機構認定試験」は 12 字。ひらがなを 1 つ挟むだけで読める。
  */
-export const kanjiRun: Detector = (doc, options): Finding[] =>
-  doc.sentences
-    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile) }))
+export const kanjiRun: Detector = (doc, options): Finding[] => {
+  const unsplittable = (doc.lexicons["unsplittable"] ?? []).map((entry) => patternOf(entry.pattern));
+  return doc.sentences
+    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile, unsplittable) }))
     .filter(({ run }) => run.length > options.limit)
     .map(({ sentence, run }) => ({
       rule: "max-kanji-continuous",
@@ -27,6 +42,7 @@ export const kanjiRun: Detector = (doc, options): Finding[] =>
       quote: sentence.text.trim(),
       values: { word: run, count: run.length, limit: options.limit, offset: sentence.span.start },
     }));
+};
 
 const MIDDLE_DOT = /・/gu;
 
