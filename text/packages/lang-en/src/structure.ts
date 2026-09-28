@@ -2,6 +2,8 @@ import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from 
 import { citedDocumentAfter } from "./citation.ts";
 import { membersAfter } from "./reference-list.ts";
 import { parseRoman } from "./roman.ts";
+import { definitionScopeDepth, definitions, opensDefinitionScope } from "./definitions.ts";
+import { CHAPTER_DEPTH, PART_DEPTH } from "./depth.ts";
 
 // Contracts, specifications and statutes in English. core nests what this reads; it does not know
 // how English numbers its articles.
@@ -134,41 +136,11 @@ const chapter = (pattern: RegExp, line: string, depth: number, prefix: string, w
 };
 
 const numbered = (line: string, context: NumberingContext): NumberedLine | undefined =>
-  chapter(PART, line, -2, "pt", "Part") ??
-  chapter(CHAPTER, line, -1, "ch", "Chapter") ??
+  chapter(PART, line, PART_DEPTH, "pt", "Part") ??
+  chapter(CHAPTER, line, CHAPTER_DEPTH, "ch", "Chapter") ??
   headed(ARTICLE, line, "article", (n) => `Article ${n}`) ??
   headed(SECTION, line, "section", (n) => `Section ${n}`) ??
   lettered(line, context);
-
-const DEFINITIONS = [
-  /["“](?<term>[^"”\n]{1,60})["”] (?:means|shall mean|refers to|has the meaning)\b/gu,
-  /\((?:the |hereinafter )?["“](?<term>[^"”\n]{1,60})["”]\)/gu,
-  /\(hereinafter referred to as ["“](?<term>[^"”\n]{1,60})["”]\)/gu,
-];
-
-/**
- * "In this Part—" and "This section applies where a person ("the seller")…": a statute defines the same word again
- * in the next Part. Read as the enclosing section, which is narrower than a Part: a repeat inside one Part goes unreported.
- */
-const DEFINITION_SCOPE = /\b(?:In this (?:section|subsection|Part|Chapter|Schedule|Article)\b|This (?:section|Part|Chapter) defines\b)/u;
-/** "This section applies where a person ("the seller") …" names a party in parentheses for this section only. */
-const APPLIES = /\bThis section applies\b/u;
-const opensDefinitionScope = (text: string): boolean => DEFINITION_SCOPE.test(text);
-
-/** "has the meaning given in section 3" points at a definition elsewhere instead of making one. */
-const POINTER = /^ has the meaning given (?:in|by)\b/u;
-const isPointer = (text: string, end: number): boolean => POINTER.test(text.slice(end - " has the meaning".length));
-
-const definitions = (text: string): Mention[] =>
-  DEFINITIONS.flatMap((pattern) =>
-    [...text.matchAll(pattern)].flatMap((match) => {
-      const term = match.groups?.["term"];
-      if (term === undefined) return [];
-      const end = match.index + match[0].length;
-      const namesAParty = match[0].startsWith("(") && APPLIES.test(text);
-      return [{ start: match.index, end, attrs: { term, ...(isPointer(text, end) || namesAParty ? { scope: "local" } : {}) } }];
-    }),
-  );
 
 const REFERENCE = /(?<word>\b[Ss]ections?|\b[Aa]rticles?|§) ?(?<n>\d{1,3}(?:\.\d{1,3}){0,5}|[IVXLC]{1,7})\b/gu;
 /** "(a)", "(ii)", "(3)", and an inserted "(A1)" or "(2A)": the same labels the tree reads. */
@@ -408,4 +380,14 @@ const dates = (text: string): Mention[] =>
 /** "2.5 days" and "1.5 times" are amounts, not section 2.5 titled "days". */
 const countedAfter = (_number: string, rest: string): boolean => unitAfter(` ${rest}`, 0) !== undefined;
 
-export const structure: StructurePatterns = { numbered, definitions, references, obligations, quantities, dates, countedAfter, opensDefinitionScope };
+export const structure: StructurePatterns = {
+  numbered,
+  definitions,
+  references,
+  obligations,
+  quantities,
+  dates,
+  countedAfter,
+  opensDefinitionScope,
+  definitionScopeDepth,
+};

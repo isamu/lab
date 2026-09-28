@@ -78,7 +78,8 @@ export const duplicateDefinitions = (tree: StructureNode): StructureIssue[] => {
   const first = new Map<string, StructureNode>();
   return definitionsInOrder(tree).flatMap(({ node, article }) => {
     const term = textOf(node, "term");
-    const key = node.attrs["scope"] === "local" ? `${article}\u0000${term}` : term;
+    const within = node.attrs["within"] === undefined ? article : textOf(node, "within");
+    const key = node.attrs["scope"] === "local" ? `${within}\u0000${term}` : term;
     const earlier = first.get(key);
     if (earlier === undefined) {
       first.set(key, node);

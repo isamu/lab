@@ -134,6 +134,11 @@ export type StructurePatterns = {
    * その条の定義に scope: "local" が付く。定義の並びが次の行から始まるので、定義の行だけを見ても分からない。
    */
   readonly opensDefinitionScope?: (text: string) => boolean;
+  /**
+   * 範囲が条より広いまとまり（「In this Part—」）なら、そのまとまりの深さ（NumberedLine.depth）。
+   * そのまとまりの中の定義どうしだけを比べる。無ければ、opensDefinitionScope のとおり条の中。
+   */
+  readonly definitionScopeDepth?: (text: string) => number | undefined;
   /** 日付。attrs.value に "2024-04-01"・"2024-04"・"04-01"・"2024" のどれか。無い言語は日付を読まない。 */
   readonly dates?: (text: string) => readonly Mention[];
   /**
