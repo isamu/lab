@@ -1,7 +1,13 @@
 import type { LanguageAdapter, Lexicon, LexiconEntry } from "./plugin.ts";
 
-/** adapter の語彙表は一度だけ分ける。チームの語彙表は文書ごとに作られるので、この表に残らない。 */
-const split = new WeakMap<Lexicon, Lexicon>();
+/** adapter の語彙表は adapter ごとに一度だけ分ける。チームの語彙表は文書ごとに作られるので、この表に残らない。 */
+const split = new WeakMap<LanguageAdapter, WeakMap<Lexicon, Lexicon>>();
+
+const splitBy = (adapter: LanguageAdapter): WeakMap<Lexicon, Lexicon> => {
+  const known = split.get(adapter) ?? new WeakMap<Lexicon, Lexicon>();
+  split.set(adapter, known);
+  return known;
+};
 
 const tokenized = (entry: LexiconEntry, adapter: LanguageAdapter): LexiconEntry => {
   const tokens = adapter.segment(entry.pattern).sentences.flatMap((sentence) => sentence.tokens ?? []);
@@ -9,10 +15,11 @@ const tokenized = (entry: LexiconEntry, adapter: LanguageAdapter): LexiconEntry 
 };
 
 const withTokens = (lexicon: Lexicon, adapter: LanguageAdapter): Lexicon => {
-  const known = split.get(lexicon);
+  const cache = splitBy(adapter);
+  const known = cache.get(lexicon);
   if (known !== undefined) return known;
   const made = lexicon.map((entry) => tokenized(entry, adapter));
-  split.set(lexicon, made);
+  cache.set(lexicon, made);
   return made;
 };
 

@@ -1,4 +1,5 @@
 import type { LexiconEntry, Sentence, Token } from "../plugin.ts";
+import { proseText } from "../measure.ts";
 
 /** 活用する品詞。"best" を "good" と同じ語にはしない。 */
 const INFLECTING = new Set(["VERB", "AUX"]);
@@ -11,7 +12,7 @@ const sameWord = (written: Token, entry: Token): boolean => {
   const surface = entry.surface.toLowerCase();
   if (written.surface.toLowerCase() === surface) return true;
   const inflects = INFLECTING.has(written.pos) && INFLECTING.has(entry.pos);
-  return inflects && written.lemma?.toLowerCase() === surface;
+  return inflects && entry.lemma?.toLowerCase() === surface && written.lemma?.toLowerCase() === surface;
 };
 
 const runsAt = (tokens: readonly Token[], entry: readonly Token[], start: number): boolean =>
@@ -22,12 +23,12 @@ const runsAt = (tokens: readonly Token[], entry: readonly Token[], start: number
 
 /**
  * 語彙の語が文の中にあるか。品詞が付いていれば語の並びで照らし、活用する語は原形で比べる（「させていただく」が「させていただきました」に当たる）。
- * 語の途中には当たらない（「また」は「またがる」に当たらない）。品詞が無ければ文字列で照らす。
+ * 語の途中には当たらない（「また」は「またいで」に当たらない）。品詞が無ければ、空白をまとめた文字列で照らす。
  */
 export const entryIn = (sentence: Sentence, entry: LexiconEntry): boolean => {
   const tokens = sentence.tokens;
   const words = entry.tokens;
-  if (tokens === undefined || words === undefined || words.length === 0) return sentence.text.toLowerCase().includes(entry.pattern.toLowerCase());
+  if (tokens === undefined || words === undefined || words.length === 0) return proseText(sentence).toLowerCase().includes(entry.pattern.toLowerCase());
   return tokens.some((_token, start) => runsAt(tokens, words, start));
 };
 
@@ -37,7 +38,7 @@ const LEADING_MARK = new Set(["PUNCT", "SYM"]);
 export const entryOpens = (sentence: Sentence, entry: LexiconEntry): boolean => {
   const tokens = sentence.tokens;
   const words = entry.tokens;
-  if (tokens === undefined || words === undefined || words.length === 0) return sentence.text.trim().toLowerCase().startsWith(entry.pattern.toLowerCase());
+  if (tokens === undefined || words === undefined || words.length === 0) return proseText(sentence).toLowerCase().startsWith(entry.pattern.toLowerCase());
   const first = tokens.findIndex((token) => !LEADING_MARK.has(token.pos));
   return runsAt(tokens, words, first);
 };

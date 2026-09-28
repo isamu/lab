@@ -14,7 +14,7 @@ word by word instead of as a substring. A verb or auxiliary written in its base 
 "can"). An entry no longer matches inside another word (また in またいで, 念のため in 概念のため, 最大 in 最大限,
 "in addition" in "gain additional"), and a phrase broken across a line is found. The entries that were cut short to
 catch every ending (させていただ, おっしゃられ) are written in their base form. The rules declare `uses: [pos]`; without
-the analyser they match the text as before.
+the analyser they match the text as before, with runs of whitespace taken as one space.
 
 ### The corpus's HTML conversion drops more page chrome (#170)
 

@@ -6,7 +6,8 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter, LexiconEntry, Sentence, Token } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, Lexicon, LexiconEntry, Sentence, Token } from "../packages/chaff/src/plugin.ts";
+import { tokenizedLexicons } from "../packages/chaff/src/lexicon-tokens.ts";
 
 // 語彙表の語を、文の語の並びと原形で照らす。例文はすべて自作。
 
@@ -52,6 +53,12 @@ describe("entryIn: 語の並びで照らす", () => {
     );
   });
 
+  it("活用した形で書いた動詞は、それを原形とする別の動詞に当たらない（found は founded に当たらない）", () => {
+    const found = entry("found", [token("found", "VERB", "find")]);
+    assert.equal(entryIn(sentence("founded", [token("founded", "VERB", "found")]), found), false);
+    assert.equal(entryIn(sentence("found", [token("found", "VERB", "find")]), found), true);
+  });
+
   it("活用しない品詞は原形で広げない（best は good に当たらない）", () => {
     assert.equal(entryIn(sentence("good", [token("good", "ADJ", "good")]), entry("good", [token("good", "ADJ", "good")])), true);
     assert.equal(entryIn(sentence("the best", [token("the", "DET"), token("best", "ADJ", "good")]), entry("good", [token("good", "ADJ", "good")])), false);
@@ -73,6 +80,11 @@ describe("entryIn: 語の並びで照らす", () => {
     assert.equal(entryIn(sentence("It Could Be"), entry("it could be", [token("it", "PRON")])), true);
     assert.equal(entryIn(sentence("たまたま", [token("たまたま", "ADV", "たまたま")]), entry("また")), true);
     assert.equal(entryIn(sentence("別の文"), entry("また")), false);
+  });
+
+  it("品詞が無いときは、改行や続いた空白をまたいで照らす", () => {
+    assert.equal(entryIn(sentence("in today's fast-paced\n  world"), entry("today's fast-paced world")), true);
+    assert.equal(entryOpens(sentence("\n in\naddition, more"), entry("in addition")), true);
   });
 
   it("語に分けられなかった語は文字列で照らす", () => {
@@ -146,5 +158,19 @@ describe("語彙表の rule が原形で照らす（解析器あり）", () => {
     const could = lexicon.find((each) => each.pattern === "it could be");
     const can = buildDocument("t.md", "It can be late.", en);
     assert.ok(could !== undefined && can.sentences[0] !== undefined && !entryIn(can.sentences[0], could));
+  });
+});
+
+describe("tokenizedLexicons: adapter ごとに分ける", () => {
+  const fake = (surface: string): LanguageAdapter => ({
+    ...en,
+    segment: (text) => ({ sentences: [{ span: { start: 0, end: text.length }, text, tokens: [token(surface, "NOUN")] }] }),
+  });
+
+  it("同じ語彙表でも、別の adapter には別の分けかたを返す", () => {
+    const shared: Lexicon = [{ pattern: "x" }];
+    const first = tokenizedLexicons({ list: shared }, fake("one"))["list"]?.[0]?.tokens?.[0]?.surface;
+    const second = tokenizedLexicons({ list: shared }, fake("two"))["list"]?.[0]?.tokens?.[0]?.surface;
+    assert.deepEqual([first, second], ["one", "two"]);
   });
 });
