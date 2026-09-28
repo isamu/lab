@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` no longer counts shouting, requirement words, identifiers or licence names (#170)
+
+A run of capitalised words (a disclaimer, “AS IS”), the RFC 2119 words (MUST, SHOULD, MAY …), identifiers joined to
+digits (`AC-2`, `MS.TEAMS.1.1v1`) and `CC BY` are not acronyms. `ATT&CK` and `M&IE` are one word. An expansion may
+also be `Tax Cuts and Jobs Act [TCJA]`, carry quotes (`(“MNDA”)`), or sit next to any use, not only the first.
+`concrete-evidence-density` names a section without a heading by its opening words, not by a fixed Japanese word.
+
 ### Page headers and footers of a paged text are not prose (#170)
 
 A plain-text document copied from paper, such as an RFC, repeats a footer and a header around every page break

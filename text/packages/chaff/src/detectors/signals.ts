@@ -113,8 +113,57 @@ export const ngramRepetition: Detector = (doc, options): Finding[] => {
 /**
  * 略語が初出で展開されているか。「CI」だけでは、読む人によって指すものが違う。
  * 展開は「略語の直前か直後の括弧」か「括弧の中の略語」で書かれる。
+ *
+ * & で繋いだ大文字は 1 語として読む（ATT&CK、M&IE）。割ると CK や IE が別の略語に見える。
  */
-const ACRONYM = /\b[A-Z]{2,6}\b/gu;
+const EDGE_BEFORE = String.raw`(?<![A-Za-z0-9_&])`;
+const EDGE_AFTER = String.raw`(?![A-Za-z0-9_&])`;
+const ACRONYM = new RegExp(String.raw`${EDGE_BEFORE}(?:[A-Z]+(?:&[A-Z]+)+|[A-Z]{2,6})${EDGE_AFTER}`, "gu");
+
+/**
+ * 大文字で書かれていても略語ではないもの。
+ *
+ * 大文字だけの語が 3 つ以上、空白と引用符だけを挟んで続くのは強調（免責の定型文など）。
+ * 強調は読点や括弧をまたいで続くので（THE AUTHOR, THE COMPANY (IF ANY)）、そういう続きを含む
+ * 「大文字以外の文字を含まない一続き」を丸ごと強調と見なす。小文字の語が挟まれば切れるので、
+ * 「SRE, SLO, MTTR」のような略語の並びは残る。引用符に包まれた大文字の句（“AS IS”）も強調。
+ */
+const CAPS_WORD = String.raw`[A-Z]+(?:&[A-Z]+)*`;
+const SHOUTED_RUN = new RegExp(String.raw`${EDGE_BEFORE}${CAPS_WORD}(?:[\s"“”'‘’]+${CAPS_WORD}){2,}${EDGE_AFTER}`, "u");
+const UNCASED_STRETCH = /(?:[A-Z]|\P{L})+/gu;
+const QUOTED_CAPS = new RegExp(String.raw`["“'‘]${CAPS_WORD}(?:\s+${CAPS_WORD})+["”'’]`, "gu");
+
+/** RFC 2119 の要件語。定義された普通の語で、1 語でも強調でも現れる。 */
+const REQUIREMENT_WORD = new RegExp(
+  String.raw`${EDGE_BEFORE}(?:(?:MUST|SHALL|SHOULD)(?:\s+NOT)?|NOT\s+RECOMMENDED|REQUIRED|RECOMMENDED|MAY|OPTIONAL)${EDGE_AFTER}`,
+  "gu",
+);
+
+/** - か . で繋がり、数字を含む識別子（AC-2、MS.TEAMS.1.1v1）。大文字の部品は略語ではない。 */
+const IDENTIFIER = /(?<![A-Za-z0-9_&.-])[A-Z0-9][A-Za-z0-9]*(?:[.-][A-Z0-9][A-Za-z0-9]*)+/gu;
+
+/** Creative Commons のライセンス名。CC と BY は 1 つの名前の部品。 */
+const LICENCE = new RegExp(String.raw`${EDGE_BEFORE}CC BY(?:-(?:SA|NC|ND))*${EDGE_AFTER}`, "gu");
+
+type Span = { readonly start: number; readonly end: number };
+
+const spanOf = (match: RegExpExecArray): Span => ({ start: match.index, end: match.index + match[0].length });
+
+const spansOf = (text: string): Span[] => [
+  ...[...text.matchAll(UNCASED_STRETCH)].filter((match) => SHOUTED_RUN.test(match[0])).map(spanOf),
+  ...[...text.matchAll(IDENTIFIER)].filter((match) => /\d/u.test(match[0])).map(spanOf),
+  ...[QUOTED_CAPS, REQUIREMENT_WORD, LICENCE].flatMap((pattern) => [...text.matchAll(pattern)].map(spanOf)),
+];
+
+type AcronymHit = { readonly word: string; readonly hit: Hit };
+
+const acronymsOf = (doc: ProseDocument): AcronymHit[] =>
+  doc.sentences.flatMap((sentence) => {
+    const excluded = spansOf(sentence.text);
+    return [...sentence.text.matchAll(ACRONYM)]
+      .filter((match) => !excluded.some((span) => span.start <= match.index && match.index + match[0].length <= span.end))
+      .map((match) => ({ word: match[0], hit: { sentence, offset: sentence.span.start + match.index } }));
+  });
 
 /** 読み手が説明なしで通じると見なしてよい語。展開すると逆に読みにくい。 */
 const COMMON = new Set([
@@ -190,28 +239,56 @@ const COMMON = new Set([
  * 展開は略語の**すぐ隣**にあるときだけ認める。
  * 60 文字も見ると、同じ文のどこかに括弧があるだけで「説明済み」になり、1 件も出なくなる。
  *
- * 認めるのは 2 つの形。どちらも実際によく書かれる。
+ * 認めるのは 3 つの形。どれも実際によく書かれる。
  *   CI（継続的インテグレーション）   略語のあとに括弧
  *   Continuous Integration (CI)      括弧の中が略語
+ *   Tax Cuts and Jobs Act [TCJA]     角括弧の中が略語で、直前の語の頭文字と揃う
+ * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
  */
-const OPENS = /^\s*[(（]/u;
-const CLOSES = /^\s*[)）]/u;
-const OPENED = /[(（]\s*$/u;
+const WRAP = String.raw`[\s"“”'‘’「」『』]*`;
+const OPENS = new RegExp(String.raw`^${WRAP}[(（]`, "u");
+const CLOSES = new RegExp(String.raw`^${WRAP}[)）]`, "u");
+const OPENED = new RegExp(String.raw`[(（]${WRAP}$`, "u");
+const SQUARE_CLOSES = new RegExp(String.raw`^${WRAP}\]`, "u");
+const SQUARE_OPENED = new RegExp(String.raw`\[${WRAP}$`, "u");
 
-const isExpanded = (body: string, acronym: string): boolean => {
-  const at = body.indexOf(acronym);
-  if (at === -1) return false;
-  const after = body.slice(at + acronym.length, at + acronym.length + 3);
-  const before = body.slice(Math.max(0, at - 3), at);
-  return OPENS.test(after) || (OPENED.test(before) && CLOSES.test(after));
+/** 括弧と略語の間の幅。空白は 1 つに畳んであるので、(“ MNDA ”) まで収まる。 */
+const NEAR = 3;
+
+/**
+ * 角括弧は引用の印にも使う（[IANA]、[1]）。直前の語のうち大文字で始まる語の頭文字が
+ * 略語と揃うときだけ展開と見なす。見る語は略語の文字数の 2 倍まで（and や of を挟むため）。
+ */
+const spellsOut = (before: string, acronym: string): boolean => {
+  const letters = acronym.replaceAll("&", "");
+  const words = before
+    .replace(SQUARE_OPENED, "")
+    .trim()
+    .split(/\s+/u)
+    .slice(-letters.length * 2);
+  const initials = words.filter((word) => /^[A-Z]/u.test(word)).map((word) => word.charAt(0));
+  return initials.join("").endsWith(letters);
 };
+
+const isExpandedAt = (body: string, acronym: string, at: number): boolean => {
+  const after = body.slice(at + acronym.length, at + acronym.length + NEAR);
+  const before = body.slice(Math.max(0, at - NEAR), at);
+  if (OPENS.test(after) || (OPENED.test(before) && CLOSES.test(after))) return true;
+  return SQUARE_OPENED.test(before) && SQUARE_CLOSES.test(after) && spellsOut(body.slice(0, at), acronym);
+};
+
+/**
+ * どこか 1 か所で展開してあればよい。初出が節の見出し代わりの語（「5.3. DPA.」）で、
+ * 展開がその直後の文にあることが契約書では普通にある。見るのは語として現れた所だけ（CISA の中の CI は見ない）。
+ */
+const isExpanded = (body: string, acronym: string): boolean =>
+  [...body.matchAll(new RegExp(`${EDGE_BEFORE}${acronym}${EDGE_AFTER}`, "gu"))].some((match) => isExpandedAt(body, acronym, match.index));
 
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
   const seen = new Map<string, Hit>();
-  findIn(doc, ACRONYM).forEach((hit) => {
-    const text = /^[A-Z]{2,6}/u.exec(doc.source.slice(hit.offset, hit.offset + 6))?.[0] ?? "";
-    if (text.length > 0 && !COMMON.has(text) && !seen.has(text)) seen.set(text, hit);
+  acronymsOf(doc).forEach(({ word, hit }) => {
+    if (!COMMON.has(word) && !seen.has(word)) seen.set(word, hit);
   });
   const bare = [...seen.entries()].filter(([acronym]) => !isExpanded(body, acronym));
   if (bare.length < options.limit) return [];
@@ -231,6 +308,19 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
  */
 const CONCRETE = /\d|`|https?:\/\//u;
 
+/**
+ * 見出しのない導入部は、書き出しで呼ぶ。文書の言葉なので、message がどの言語でも混ざらない。
+ * 決まった呼び名（「この節」）を置くと、英語の文書の message に日本語が入る。
+ */
+const OPENING = { word: 4, char: 12 };
+
+const openingOf = (sentence: Sentence | undefined, unit: ProseDocument["lengthUnit"]): string => {
+  const text = sentence === undefined ? "" : proseText(sentence);
+  const pieces = unit === "word" ? text.split(" ") : Array.from(text);
+  const joiner = unit === "word" ? " " : "";
+  return pieces.length <= OPENING[unit] ? pieces.join(joiner) : `${pieces.slice(0, OPENING[unit]).join(joiner)}…`;
+};
+
 export const concreteEvidence: Detector = (doc, options): Finding[] => {
   const sections = doc.sections.filter((section) => section.sentences.length >= 3);
   const empty = sections.filter((section) => !CONCRETE.test(doc.source.slice(section.span.start, section.span.end)));
@@ -242,7 +332,7 @@ export const concreteEvidence: Detector = (doc, options): Finding[] => {
     column: 0,
     quote: section.heading.length > 0 ? section.heading : (section.sentences[0]?.text.trim() ?? ""),
     values: {
-      word: section.heading.length > 0 ? section.heading : "この節",
+      word: section.heading.length > 0 ? section.heading : openingOf(section.sentences[0], doc.lengthUnit),
       count: empty.length,
       total: sections.length,
       limit: options.limit,
