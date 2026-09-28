@@ -1,4 +1,5 @@
 import { proseText } from "../measure.ts";
+import { joinWords } from "./word-list.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Sentence, Token } from "../plugin.ts";
 
@@ -12,7 +13,11 @@ import type { Detector, Finding, Sentence, Token } from "../plugin.ts";
  * 表層でも原形でも当てる。利用者は辞書形で書く（「握る」）が、本文は活用している（「握った」）。
  * 品詞解析があれば原形で当たり、無くても表層で当たる。要求はしない。
  */
-const matches = (sentence: Sentence, word: string): boolean => sentence.text.includes(word) || (sentence.tokens ?? []).some((token) => token.lemma === word);
+const matches = (sentence: Sentence, word: string): boolean => {
+  // 大文字小文字は区別しない。英語の文頭の「Circle back」も「circle back」として当てる。
+  const wanted = word.toLowerCase();
+  return sentence.text.toLowerCase().includes(wanted) || (sentence.tokens ?? []).some((token) => token.lemma?.toLowerCase() === wanted);
+};
 
 export const internalJargon: Detector = (doc, options): Finding[] => {
   const words = (options.lexicon ?? []).map((entry) => entry.pattern);
@@ -53,7 +58,7 @@ export const requiredSections: Detector = (doc, options): Finding[] => {
       line: 0,
       column: 0,
       quote: headings.filter((heading) => heading.length > 0).join(" / "),
-      values: { word: missing.join("、"), count: missing.length, limit: options.limit, offset: 0 },
+      values: { word: joinWords(missing, doc.language), count: missing.length, limit: options.limit, offset: 0 },
     },
   ];
 };

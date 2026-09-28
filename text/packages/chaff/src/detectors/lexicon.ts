@@ -1,3 +1,4 @@
+import { joinWords } from "./word-list.ts";
 import { proseText } from "../measure.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, ProseDocument, Sentence } from "../plugin.ts";
@@ -118,7 +119,16 @@ export const aiTell: Detector = (doc, options): Finding[] => {
       line: 0,
       column: 0,
       quote: first.text.trim(),
-      values: { word: found.map(([pattern]) => pattern).join("、"), count: found.length, density: score, limit: options.limit, offset: first.span.start },
+      values: {
+        word: joinWords(
+          found.map(([pattern]) => pattern),
+          doc.language,
+        ),
+        count: found.length,
+        density: score,
+        limit: options.limit,
+        offset: first.span.start,
+      },
     },
   ];
 };

@@ -2,6 +2,14 @@
 
 Newest first.
 
+## Unreleased
+
+### English screens read naturally (#158)
+
+On an English document, words chaff lists are joined with `, ` instead of `、` (`No heading for "Risks, Costs"`);
+`internal-jargon` says a phrase "may only be understood inside your team"; jargon is matched regardless of case, so a
+phrase at the start of a sentence is found; and the compact tally says `1 finding` and `1 rule not run`.
+
 ## 0.9.0 — 2026-09-28
 
 What statutes and contracts showed once chaff read them whole: knowledge of a kind of document now lives in YAML
