@@ -11,6 +11,10 @@ lang-ja marks a word its morphological analysis reads as a number (IPADIC 名詞
 UD feature `NumType=Card`, and the rule looks for that feature in any language. Set phrases the dictionary holds as one
 word (一人ひとり, 二人三脚, 三日坊主, 十分) are not numbers, and neither are 数年 or 何人.
 
+A rule can now declare `uses: [pos]`: part-of-speech tagging is prepared when such a rule runs, but unlike
+`requires`, the rule still runs without it. `concrete-evidence-density` and `ngram-repetition` use it, so their
+morphology-based judgement no longer depends on some other tagging rule happening to be on.
+
 ### `yarn bench` plants mistakes for more rules, in more kinds of document (#170)
 
 The seeded-mistake benchmark now also plants a joined paragraph, a heading echoed by its first sentence, heavy bold,
