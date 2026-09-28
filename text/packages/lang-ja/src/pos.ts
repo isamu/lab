@@ -145,15 +145,22 @@ const NUMERAL_TEXT = /^[〇一二三四五六七八九十百千万億兆0-9０-�
 /** 「数年」「何人」の「数」「何」も名詞,数だが、決まった数ではない。数字の文字でできたものだけ。 */
 const isNumeral = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "数" && NUMERAL_TEXT.test(morpheme.surface_form);
 
-/** 地名と、地名に付く接尾（都・県・市・区・町）。IPADIC の「固有名詞,地域」と「接尾,地域」。UD の NameType=Geo で渡す。 */
-const isPlace = (morpheme: Morpheme): boolean =>
-  morpheme.pos === "名詞" && (morpheme.pos_detail_1 === "固有名詞" || morpheme.pos_detail_1 === "接尾") && detail2Of(morpheme) === "地域";
+/**
+ * 地名（IPADIC の「固有名詞,地域」）は NameType=Geo、地名に付く単位（「接尾,地域」の都・県・市・区・町）は NameType=GeoUnit。
+ * 住所は地名と単位が交互に続く。地名が単位を挟まずに続けば（東京大阪名古屋）、地名の並び。
+ */
+const placeType = (morpheme: Morpheme): string | undefined => {
+  if (morpheme.pos !== "名詞" || detail2Of(morpheme) !== "地域") return undefined;
+  if (morpheme.pos_detail_1 === "固有名詞") return "Geo";
+  return morpheme.pos_detail_1 === "接尾" ? "GeoUnit" : undefined;
+};
 
 const featuresOf = (morpheme: Morpheme): { features?: Readonly<Record<string, string>> } => {
   if (isPassive(morpheme)) return { features: { Voice: "Pass" } };
   if (isDependentNoun(morpheme)) return { features: { NounType: "Dependent" } };
   if (isNumeral(morpheme)) return { features: { NumType: "Card" } };
-  if (isPlace(morpheme)) return { features: { NameType: "Geo" } };
+  const place = placeType(morpheme);
+  if (place !== undefined) return { features: { NameType: place } };
   return {};
 };
 

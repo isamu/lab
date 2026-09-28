@@ -9,7 +9,9 @@ import { proseText } from "../measure.ts";
  */
 const KANJI_RUN = /[一-鿿]+/gu;
 
-const isGeo = (token: Token | undefined): boolean => token?.features?.["NameType"] === "Geo";
+/** 地名（Geo）と、地名に付く単位（GeoUnit: 都・県・市・区・町）。 */
+const isGeoName = (token: Token | undefined): boolean => token?.features?.["NameType"] === "Geo";
+const isGeo = (token: Token | undefined): boolean => isGeoName(token) || token?.features?.["NameType"] === "GeoUnit";
 const isNumber = (token: Token | undefined): boolean => token?.features?.["NumType"] === "Card";
 
 /**
@@ -30,7 +32,9 @@ const isPlaceName = (sentence: Sentence, run: string): boolean => {
   const [start, end] = [sentence.span.start + place.start, sentence.span.start + place.end];
   const covering = tokens.flatMap((token, index) => (token.span.start < end && start < token.span.end ? [index] : []));
   const first = covering[0];
-  return first !== undefined && isGeo(tokens[first]) && covering.every((index) => isPlacePart(tokens, index));
+  // 地名が単位を挟まずに続けば（東京大阪名古屋福岡）、住所ではなく地名の並び。
+  const listed = covering.some((index) => isGeoName(tokens[index]) && isGeoName(tokens[index + 1]));
+  return first !== undefined && isGeo(tokens[first]) && !listed && covering.every((index) => isPlacePart(tokens, index));
 };
 
 const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined): string =>
