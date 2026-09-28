@@ -40,6 +40,8 @@ describe("htmlToMarkdown: 落とすもの", () => {
     const html =
       '<h2>Contents</h2><ul><li><a href="#s1"><span>Intro</span></a></li><li><a href="#s2">Costs</a></li></ul><ul><li><a href="#s1">Intro</a> and more</li></ul>';
     assert.equal(htmlToMarkdown(html), "## Contents\n\n- Intro and more\n");
+    const nested = '<h2>Contents</h2><ul><li><a href="#a">A</a><ul><li><a href="#b">B</a></li></ul></li></ul><h2>Summary</h2><p>Text.</p>';
+    assert.equal(htmlToMarkdown(nested), "## Summary\n\nText.\n");
   });
 
   it("一行にページ内リンクだけがある行は落とし、文の中のページ内リンクは文字を残す", () => {

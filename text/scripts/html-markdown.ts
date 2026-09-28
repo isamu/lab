@@ -24,8 +24,11 @@ const IN_PAGE_LINK = /<a\b[^>]*href="#[^"]*"[^>]*>[\s\S]*?<\/a\s*>/giu;
 /** A list whose every item is only a link within the page, such as a table of contents. */
 const isNavigation = (body: string): boolean => (body.match(IN_PAGE_LINK) ?? []).length > 0 && stripTags(body.replace(IN_PAGE_LINK, "")).trim() === "";
 
+/** From the inside out, so a nested table of contents goes too once its inner lists are gone. */
 const withoutNavigation = (html: string): string =>
-  html.replace(/<(ul|ol)\b[^>]*>((?:(?!<[uo]l\b)[\s\S])*?)<\/\1\s*>/giu, (whole: string, _tag: string, body: string) => (isNavigation(body) ? " " : whole));
+  untilStable(html, (text) =>
+    text.replace(/<(ul|ol)\b[^>]*>((?:(?!<[uo]l\b)[\s\S])*?)<\/\1\s*>/giu, (whole: string, _tag: string, body: string) => (isNavigation(body) ? " " : whole)),
+  );
 
 // An in-page link is wrapped in these marks so that one standing alone on its line ("Jump to main text") can be told
 // from one inside a sentence ("see Table 1"); the first is dropped, the second keeps its text.
