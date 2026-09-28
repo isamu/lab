@@ -14,7 +14,7 @@ $ npx chaffjs notes.md --compact
 notes.md   blog/tech · English   genre from the default
 
 
-0 findings, 33 rules not run
+0 findings, 36 rules not run
 ```
 
 画面は文書の言語で出るので、英語の文書には英語で出ます。日本語のファイルなら、同じ場所に「日本語」と出ます。

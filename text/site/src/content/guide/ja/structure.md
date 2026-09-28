@@ -27,9 +27,9 @@ $ npx chaffjs tree contract.txt
     (definition :term "成果物" :line 9))
   (article "3" :heading "業務" :label "第3条" :line 11
     (obligation :marker "なければならない" :type "must" :line 12)
-    (item "3.1" :label "一" :line 13)
-    (item "3.2" :label "二" :line 14)
-    (item "3.3" :label "三" :line 15))
+    (item "3.1.1" :label "一" :line 13)
+    (item "3.1.2" :label "二" :line 14)
+    (item "3.1.3" :label "三" :line 15))
   (article "4" :heading "委託料" :label "第4条" :line 17
     (quantity :unit "円" :value 500000 :line 18)
     (item "4.2" :label "２" :line 19
@@ -151,7 +151,6 @@ contract.txt   blog/tech · 日本語   ジャンルは既定から
 ```
 $ npx chaffjs draft.txt --experimental --compact
 
-
 draft.txt   blog/tech · 日本語   ジャンルは既定から
 
   1:1     info    「場合においては、」が 7 回出てきます（5 回まで）
@@ -170,7 +169,6 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
                   max-sentence-length
 
 7 findings, 7 rules not run
-
 ```
 
 `error` の 3 件は、変えた 2 か所から出ています。9 行目は号の抜けで、6 行目は抜けた第三号を指す参照です。
@@ -184,20 +182,18 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
 ```
 $ npx chaffjs fixed.txt --experimental --compact
 
-
 fixed.txt   blog/tech · 日本語   ジャンルは既定から
 
   1:1     info    「場合においては、」が 7 回出てきます（5 回まで）
                   ngram-repetition
   6:39    warning この文は 125 文字あります（100 文字まで）
                   max-sentence-length
-  11:1    warning この文は 131 文字あります（100 文字まで）
+  12:1    warning この文は 131 文字あります（100 文字まで）
                   max-sentence-length
-  15:2    warning この文は 101 文字あります（100 文字まで）
+  16:2    warning この文は 101 文字あります（100 文字まで）
                   max-sentence-length
 
 4 findings, 7 rules not run
-
 ```
 
 施行中の法令は食い違いが無いはずです。

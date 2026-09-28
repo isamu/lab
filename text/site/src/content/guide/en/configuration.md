@@ -198,7 +198,7 @@ required_sections: # headings this kind of document must have
 ```
   1:1     error   No heading for "Risks"
                   required-sections
-  3:1     warning "circle back" may only work inside (3 such words)
+  3:1     warning "circle back" may only be understood inside your team (3 such words)
                   internal-jargon
 ```
 
