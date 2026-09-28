@@ -7,6 +7,7 @@ import { atxHeadingText, headingText } from "./heading-text.ts";
 import { maskSpans } from "./mask.ts";
 import { buildTree, NO_OUTLINE, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
+import { pageFurniture } from "./page-furniture.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
@@ -263,7 +264,8 @@ export const buildDocument = (
   const root = parse(source);
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
   // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
-  const blocks = collectMasks(root, source);
+  // テキストの文書は、ページのヘッダーとフッターも本文ではない（Markdown には改ページが無い）。
+  const blocks = [...collectMasks(root, source), ...(isMarkdownPath(path) ? [] : pageFurniture(source))];
   const masked = [...blocks, ...emphasisSpans(root, source)];
   const prose = maskSpans(source, masked);
   const paragraphSpans = spansOfType(root, "paragraph");

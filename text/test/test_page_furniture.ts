@@ -1,0 +1,56 @@
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { pageFurniture } from "../packages/chaff/src/page-furniture.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+
+// 紙の版を写したテキスト（RFC）のページのヘッダーとフッター。改ページ（\f）の直前と直後の、空でない 1 行ずつ。
+
+const lines = (...rows: string[]): string => rows.join("\n");
+
+const PAGED = lines(
+  "The first page ends here.",
+  "",
+  "Author, et al.              Informational                      [Page 1]",
+  "\f",
+  "RFC 9999                  Some Requirements                 May 2026",
+  "",
+  "The second page begins here.",
+);
+
+const spanTexts = (source: string): string[] => pageFurniture(source).map((span) => source.slice(span.start, span.end));
+
+describe("pageFurniture", () => {
+  it("改ページの直前と直後の、空でない 1 行ずつと、改ページの行", () => {
+    assert.deepEqual(spanTexts(PAGED), [
+      "Author, et al.              Informational                      [Page 1]",
+      "\f",
+      "RFC 9999                  Some Requirements                 May 2026",
+    ]);
+  });
+
+  it("改ページが無ければ何も無い。飾りが遠すぎる（4 行以上の空行の先）なら取らない", () => {
+    assert.deepEqual(spanTexts("本文だけ。\n次の行。"), []);
+    assert.deepEqual(spanTexts(lines("Body.", "", "", "", "", "\f", "Next.")), ["\f", "Next."]);
+  });
+
+  it("文書の先頭と末尾の改ページでも止まる", () => {
+    assert.deepEqual(spanTexts("\fHeader line"), ["\fHeader line"]);
+    assert.deepEqual(spanTexts("Footer line\n\f"), ["Footer line", "\f"]);
+  });
+});
+
+describe("テキストの文書では、ページの飾りを本文として読まない", () => {
+  const sentencesOf = (path: string): string[] => buildDocument(path, PAGED, en).sentences.map((sentence) => sentence.text.trim());
+
+  it(".txt では飾りの行が文に入らない", () => {
+    const joined = sentencesOf("rfc.txt").join(" | ");
+    assert.doesNotMatch(joined, /Informational|\[Page 1\]|Some Requirements/u);
+    assert.match(joined, /The first page ends here\./u);
+    assert.match(joined, /The second page begins here\./u);
+  });
+
+  it("Markdown はそのまま（改ページを使わない）", () => {
+    assert.match(sentencesOf("rfc.md").join(" | "), /Informational/u);
+  });
+});
