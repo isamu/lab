@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### A caption line before an article is its heading, in a statute (#138)
+
+A statute puts an article's caption on the line above it (`（解雇の予告）` then `第二十条　…`). With the `statute`
+profile, that line becomes the article's `:heading` in `chaff tree`, when the article has none of its own. The shape
+of a caption is the profile's `caption` pattern, so the code knows nothing about brackets. An article written
+`第1条（目的）` keeps its own heading, and old-style paragraphs under a captioned article are still read.
+
 ### Document profiles: knowledge of a document type lives in YAML (#146)
 
 What is true only of one kind of document now lives in `packages/chaff/profiles/*.yaml`, not in code. The first
