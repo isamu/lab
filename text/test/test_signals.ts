@@ -56,6 +56,19 @@ describe("ngram-repetition", () => {
     assert.ok(!String(worst?.values["word"] ?? "").includes("シンギュラリティ"));
   });
 
+  it("invalid: 名詞の前の動詞を含む日本語の言い回し（〜の中にあるコンポーネント）は数える", async () => {
+    await ja.prepare?.({ pos: true });
+    // 英語では名詞の前の動詞を飾りの語として外すが、日本語の連体の動詞は言い回しの一部になる。
+    const places = ["画面", "一覧", "表", "図", "枠", "欄", "箱", "列"];
+    // 埋め草は平仮名を含まず番号だけが違う文。言い回しとして数えられない。
+    const filler = Array.from({ length: 80 }, (_, index) => `資料${String(index)}番号${String(index)}。`).join("");
+    const source = `# 見出し\n\n${places.map((place) => `${place}の中にあるコンポーネントを選びます。`).join("")}${filler}`;
+    const worst = runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, true, "business/report").findings.find(
+      (finding) => finding.rule === "ngram-repetition",
+    );
+    assert.match(String(worst?.values["word"] ?? ""), /にある/u);
+  });
+
   it("文をまたいで数えない", () => {
     // 文の終わりと次の文の始まりが繋がると、名前が言い回しに見える。
     const source = `# 見出し\n\n${"です。シンギュラ。".repeat(8)}${BULK}`;
@@ -63,6 +76,40 @@ describe("ngram-repetition", () => {
       (finding) => finding.rule === "ngram-repetition",
     );
     assert.ok(!String(worst?.values["word"] ?? "").includes("す。シンギュラ"));
+  });
+});
+
+describe("ngram-repetition: 英語の名詞の語句は言い回しではない", () => {
+  // どの語も重ならない埋め草。これ自体は繰り返しにならない。
+  const FILLER = Array.from({ length: 60 }, (_, index) => `Zq${String(index)}a Yk${String(index)}b Xm${String(index)}c Wp${String(index)}d.`).join(" ");
+  // 動詞の語尾がそろうと「ed the state and loc」のような語尾の繰り返しができるので、ばらばらにする。
+  const CONTEXTS = [
+    "Congress changed",
+    "Economists study",
+    "Governors defend",
+    "Critics attack",
+    "Analysts track",
+    "Voters discuss",
+    "Reports cover",
+    "Lawmakers keep",
+  ];
+
+  const worstWord = async (source: string): Promise<string | undefined> => {
+    await en.prepare?.({ pos: true });
+    const finding = runRules(buildDocument("t.md", source, en), loadRules("en"), {}, true, "business/report").findings.find(
+      (each) => each.rule === "ngram-repetition",
+    );
+    return finding === undefined ? undefined : String(finding.values["word"]);
+  };
+
+  it("valid: 主題の名前（state and local tax deduction）は、何度出ても数えない", async () => {
+    const source = `# Report\n\n${CONTEXTS.map((context) => `${context} the state and local tax deduction.`).join(" ")} ${FILLER}`;
+    assert.equal(await worstWord(source), undefined);
+  });
+
+  it("invalid: 動詞を含む言い回し（it is important to note that）は数える", async () => {
+    const source = `# Report\n\n${CONTEXTS.map((context) => `${context} it, and it is important to note that.`).join(" ")} ${FILLER}`;
+    assert.match((await worstWord(source)) ?? "", /is important|important to/u);
   });
 });
 
