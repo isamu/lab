@@ -46,6 +46,13 @@ const substitutionOf = (value: unknown): RelativeVocabulary["substitution"] => {
     : { open, close, after, before, document: text(value["document"]) };
 };
 
+/** 字下げと、どの種類の中か、どの深さかのどれかが無ければ読まない。 */
+const unnumberedOf = (value: unknown): DocumentProfile["unnumbered"] => {
+  if (!isRecord(value)) return undefined;
+  const [indent, inside, depth] = [text(value["indent"]), text(value["inside"]), value["depth"]];
+  return indent === undefined || inside === undefined || !Number.isInteger(depth) || typeof depth !== "number" ? undefined : { indent, inside, depth };
+};
+
 /** 単位が一つも無ければ読まない。何を指すのか決められない。 */
 const relativeOf = (value: unknown): RelativeVocabulary | undefined => {
   if (!isRecord(value)) return undefined;
@@ -80,7 +87,11 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
         const addressEnd = text(section["address_end"]);
         const caption = text(section["caption"]);
         const relative = relativeOf(section["relative"]);
-        return [language, { id, addresses: strings(section["addresses"]), connectives: strings(section["connectives"]), addressEnd, caption, relative }];
+        const unnumbered = unnumberedOf(section["unnumbered"]);
+        return [
+          language,
+          { id, addresses: strings(section["addresses"]), connectives: strings(section["connectives"]), addressEnd, caption, relative, unnumbered },
+        ];
       }),
   );
 

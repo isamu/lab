@@ -167,28 +167,8 @@ const chapter = (line: string): NumberedLine | undefined => {
   };
 };
 
-/**
- * 古い法令は第 2 項以降にも番号を振らず、全角空白で字下げした行を新しい項にする。条の行に本文が続く条の中で、号でもない字下げの行を、
- * 開いている項の次の項（無ければ第 2 項）として読む。番号付きの項（「２」）がある条では、字下げは使われない。
- */
-const OLD_STYLE_PARAGRAPH = /^\u3000(?<rest>\S.*)$/u;
-
-const unnumberedParagraph = (line: string, context: NumberingContext): NumberedLine | undefined => {
-  if (!insideArticle(context)) return undefined;
-  const rest = OLD_STYLE_PARAGRAPH.exec(line)?.groups?.["rest"];
-  if (rest === undefined) return undefined;
-  // 条の行に本文が続く書き方（「第三十四条 使用者は、…。」）のときだけ。契約書の「第1条（目的）」の次の字下げの行は、第 1 項の本文。
-  // 条の行そのものを見る。前の行から付いた見出しは、条の行の書き方を変えない。
-  const article = [...context.open].reverse().find((open) => open.kind === "article");
-  if (article === undefined || headingOf(article.rest, true) !== "" || article.rest === "") return undefined;
-  const previous = [...context.open].reverse().find((open) => open.depth === PARAGRAPH_DEPTH);
-  if (previous !== undefined && previous.label !== "") return undefined;
-  const number = String((previous === undefined ? 1 : Number(previous.number)) + 1);
-  return { kind: "item", depth: PARAGRAPH_DEPTH, number, absolute: false, label: "", heading: "", rest: rest.trim(), ordinal: Number(number) };
-};
-
 const numbered = (line: string, context: NumberingContext): NumberedLine | undefined =>
-  chapter(line) ?? articleRange(line) ?? article(line) ?? item(line, context) ?? unnumberedParagraph(line, context);
+  chapter(line) ?? articleRange(line) ?? article(line) ?? item(line, context);
 
 /** 正規表現の一致を Mention にする。g フラグ付きのものだけを渡す。 */
 const mentions = (

@@ -42,10 +42,20 @@ describe("parseProfile", () => {
       name: { ja: "試し" },
       detect: { ja: { line: "^A", minLines: 2 } },
       languages: {
-        ja: { id: "t", addresses: ["A"], connectives: ["及"], addressEnd: "$", caption: "^（(.+)）$", relative: undefined },
-        en: { id: "t", addresses: ["B"], connectives: [], addressEnd: undefined, caption: undefined, relative: undefined },
+        ja: { id: "t", addresses: ["A"], connectives: ["及"], addressEnd: "$", caption: "^（(.+)）$", relative: undefined, unnumbered: undefined },
+        en: { id: "t", addresses: ["B"], connectives: [], addressEnd: undefined, caption: undefined, relative: undefined, unnumbered: undefined },
       },
     });
+  });
+
+  it("番号を書かない単位を読む。字下げ・種類・整数の深さのどれかが無ければ読まない", () => {
+    const unnumbered = (value: unknown): unknown => parseProfile({ id: "t", ja: { unnumbered: value } })?.languages["ja"]?.unnumbered;
+    assert.deepEqual(unnumbered({ indent: "　", inside: "article", depth: 2 }), { indent: "　", inside: "article", depth: 2 });
+    assert.equal(unnumbered({ inside: "article", depth: 2 }), undefined);
+    assert.equal(unnumbered({ indent: "　", depth: 2 }), undefined);
+    assert.equal(unnumbered({ indent: "　", inside: "article", depth: 1.5 }), undefined);
+    assert.equal(unnumbered({ indent: "　", inside: "article", depth: "2" }), undefined);
+    assert.equal(unnumbered("　"), undefined);
   });
 
   it("相対の参照の語彙を読む。単位の無いものは読まず、単位に無い語は落とす", () => {

@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### Old-style paragraphs come from the statute profile (#151)
+
+Old statutes number no paragraph after the first; an indented line inside an article whose line carries body text is
+the next paragraph. lang-ja used to decide that on its own; the `statute` profile now states it
+(`unnumbered: { indent, inside, depth }`), and core applies it. The tree is unchanged for documents read as statutes.
+A document without the `statute` profile (fewer than three article lines and no `profile:` setting) now reads such a
+line as body text of the article. Set `profile: statute` for a short excerpt.
+
 ### The 読み替え rule comes from the statute profile (#151)
 
 A reference inside a 読み替え quote (「第九十九条」とあるのは「第百条」) belongs to the text being read in, not to
