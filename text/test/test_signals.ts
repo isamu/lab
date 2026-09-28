@@ -128,7 +128,158 @@ describe("undefined-acronym", () => {
   });
 });
 
+/** 1 個でも出す段階で、出た略語だけを返す。どの語が略語と見なされたかを確かめるため。 */
+const acronymsIn = (source: string, adapter: LanguageAdapter = en): string[] =>
+  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
+    .findings.filter((finding) => finding.rule === "undefined-acronym")
+    .map((finding) => String(finding.values["word"]));
+
+describe("undefined-acronym: 略語でない大文字を数えない（コーパスの誤検出）", () => {
+  describe("大文字だけの語が 3 つ以上続くのは強調であって略語ではない", () => {
+    it("valid: 免責の定型文", () => {
+      assert.deepEqual(acronymsIn("# Terms\n\nTHE SERVICE IS PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND."), []);
+    });
+
+    it("valid: 引用符や強調が挟まっても続いている", () => {
+      assert.deepEqual(acronymsIn("# Terms\n\nTHE SERVICE IS PROVIDED “AS IS” AND **WITH ALL FAULTS**."), []);
+    });
+
+    it("valid: 2 語で終わる強調の断片も、同じ続きの中なら数えない", () => {
+      assert.deepEqual(acronymsIn("# Notice\n\nThis page is FOR INFORMATION ONLY. It changes often."), []);
+    });
+
+    it("valid: 強調は読点や括弧をまたいで続く", () => {
+      const source = "# Terms\n\nIt is provided on this basis and THE AUTHOR, THE COMPANY SHE WORKS FOR (IF ANY), AND THE BOARD DISCLAIM ALL WARRANTIES.";
+      assert.deepEqual(acronymsIn(source), []);
+    });
+
+    it("valid: 小文字の文の中で、引用符に包まれた大文字の句", () => {
+      assert.deepEqual(acronymsIn("# Terms\n\nAll feedback is provided “AS IS” and may be used freely."), []);
+    });
+
+    it("invalid: 引用符に包まれていても、1 語の略語は数える", () => {
+      assert.deepEqual(acronymsIn("# Notes\n\nThe team said “SRE” twice."), ["SRE"]);
+    });
+
+    it("invalid: 強調の隣でも、小文字で区切られた略語は数える", () => {
+      assert.deepEqual(acronymsIn("# Notice\n\nIMPORTANT NOTICE FOR ALL STAFF: the SRE team owns this."), ["SRE"]);
+    });
+
+    it("invalid: 読点で区切った略語の並びは強調ではない", () => {
+      assert.deepEqual(acronymsIn("# Notes\n\nWe track SRE, SLO, MTTR every week."), ["SRE", "SLO", "MTTR"]);
+    });
+
+    it("invalid: 2 語だけの略語の並びは強調ではない", () => {
+      assert.deepEqual(acronymsIn("# Notes\n\nThe NIST SP series applies."), ["NIST", "SP"]);
+    });
+  });
+
+  describe("RFC 2119 の要件語は略語ではない", () => {
+    it("valid: MUST NOT、SHOULD、MAY、SHALL、REQUIRED、RECOMMENDED、OPTIONAL", () => {
+      const source =
+        "# Rules\n\nThe client MUST NOT retry. The server SHOULD log it. A proxy MAY cache it. It SHALL stop. This field is REQUIRED. That one is RECOMMENDED. The last is OPTIONAL.";
+      assert.deepEqual(acronymsIn(source), []);
+    });
+
+    it("invalid: 要件語の隣の略語は数える", () => {
+      assert.deepEqual(acronymsIn("# Rules\n\nThe client MUST send an SRE report."), ["SRE"]);
+    });
+
+    it("invalid: NOT が単独なら要件語ではない", () => {
+      assert.deepEqual(acronymsIn("# Rules\n\nDo NOT touch it."), ["NOT"]);
+    });
+  });
+
+  describe("& で繋いだ名前は 1 語", () => {
+    it("invalid: ATT&CK は ATT と CK に割らず、1 語として数える", () => {
+      assert.deepEqual(acronymsIn("# Map\n\nEach control maps to ATT&CK techniques."), ["ATT&CK"]);
+    });
+
+    it("valid: 展開された M&IE から IE を切り出さない", () => {
+      assert.deepEqual(acronymsIn("# Travel\n\nMeals and Incidental Expenses (M&IE) are paid daily."), []);
+    });
+
+    it("invalid: 空白を挟んだ & は略語 2 つ", () => {
+      assert.deepEqual(acronymsIn("# Notes\n\nSRE & SLO matter."), ["SRE", "SLO"]);
+    });
+  });
+
+  describe("展開の書きかたを広げる。すぐ隣だけは変えない", () => {
+    it("valid: 角括弧で、直前の語の頭文字と揃う", () => {
+      assert.deepEqual(acronymsIn("# Tax\n\nThe Tax Cuts and Jobs Act [TCJA] changed it. The TCJA also capped it."), []);
+    });
+
+    it("invalid: 角括弧でも、直前の語が展開になっていなければ引用の印", () => {
+      assert.deepEqual(acronymsIn("# Refs\n\nThe registry is described in [IANA] and elsewhere."), ["IANA"]);
+    });
+
+    it("invalid: 略語のあとの角括弧は注の番号", () => {
+      assert.deepEqual(acronymsIn("# Refs\n\nThe SLO [1] is strict."), ["SLO"]);
+    });
+
+    it("valid: 括弧の中で引用符と太字に包まれた定義語", () => {
+      assert.deepEqual(acronymsIn("# NDA\n\nThis agreement (“**MNDA**”) covers it."), []);
+    });
+
+    it("valid: 太字の名前のあとの、太字の略語", () => {
+      assert.deepEqual(acronymsIn("# DPA\n\nThe **Data Protection Addendum** (**DPA**) applies."), []);
+    });
+
+    it("valid: 日本語のかぎ括弧に包まれた定義語", () => {
+      assert.deepEqual(acronymsIn(`# 契約\n\n本契約（「MNDA」）は双方を拘束します。${BULK}`, ja), []);
+    });
+
+    it("invalid: 括弧との間に語が挟まれば展開ではない", () => {
+      assert.deepEqual(acronymsIn("# Notes\n\nWe use SRE heavily (see below)."), ["SRE"]);
+    });
+  });
+
+  describe("ライセンス名", () => {
+    it("valid: CC BY 4.0 と CC BY-SA 4.0 は 1 つの名前", () => {
+      assert.deepEqual(acronymsIn("# License\n\nFree to use under CC BY 4.0. The photos are CC BY-SA 3.0."), []);
+    });
+
+    it("invalid: 単独の CC は数える", () => {
+      assert.deepEqual(acronymsIn("# Mail\n\nPut the SRE on CC for the memo."), ["SRE", "CC"]);
+    });
+  });
+
+  describe("数字と繋がった識別子", () => {
+    it("valid: 管理策の番号と方針の番号", () => {
+      assert.deepEqual(acronymsIn("# Controls\n\nControls AC-2 and SC-7 apply. See MS.TEAMS.1.1v1 for details."), []);
+    });
+
+    it("invalid: 小文字の語に繋がった略語は数える", () => {
+      assert.deepEqual(acronymsIn("# Notes\n\nThe NIST-approved method and SRE-led reviews."), ["NIST", "SRE"]);
+    });
+
+    it("invalid: 文末の句点は識別子を作らない", () => {
+      assert.deepEqual(acronymsIn("# Notes\n\nAsk the SRE. Then ask again."), ["SRE"]);
+    });
+  });
+});
+
 describe("concrete-evidence-density", () => {
+  const leadWord = (source: string, adapter: LanguageAdapter): string | number | undefined =>
+    runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "concrete-evidence-density": "strict" }, true, "business/report").findings.find(
+      (finding) => finding.rule === "concrete-evidence-density" && finding.line === 1,
+    )?.values["word"];
+
+  it("見出しのない導入部は、その書き出しで呼ぶ。英語の文書に日本語を混ぜない", () => {
+    const source = "We write for people who are busy. We keep it short. We say what we mean in plain words.\n\n## Next\n\nMore text.";
+    assert.equal(leadWord(source, en), "We write for people…");
+  });
+
+  it("日本語の文書でも書き出しで呼ぶ", () => {
+    const source = "抽象的な説明をこれから始めます。考えかたを述べます。理念を語ります。\n\n## 次\n\n続きです。";
+    assert.equal(leadWord(source, ja), "抽象的な説明をこれから始…");
+  });
+
+  it("短い書き出しはそのまま", () => {
+    const source = "Be kind. We keep it short. We say what we mean.\n\n## Next\n\nMore text.";
+    assert.equal(leadWord(source, en), "Be kind.");
+  });
+
   it("invalid: 数値もコードもリンクも無い節が並ぶ", () => {
     const sections = ["一", "二", "三", "四"].map((name) => `## ${name}\n\n抽象的な説明です。考えかたを述べます。理念を語ります。`).join("\n\n");
     assert.ok(idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));

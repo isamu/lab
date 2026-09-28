@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` no longer counts shouting, requirement words, identifiers or licence names (#170)
+
+A run of capitalised words (a disclaimer, “AS IS”), the RFC 2119 words (MUST, SHOULD, MAY …), identifiers joined to
+digits (`AC-2`, `MS.TEAMS.1.1v1`) and `CC BY` are not acronyms. `ATT&CK` and `M&IE` are one word. An expansion may
+also be `Tax Cuts and Jobs Act [TCJA]`, carry quotes (`(“MNDA”)`), or sit next to any use, not only the first.
+`concrete-evidence-density` names a section without a heading by its opening words, not by a fixed Japanese word.
+
 ### The corpus has English reports, requirements, contracts, itineraries and internal docs (#170)
 
 `yarn corpus` now also runs on CRS reports, requirement and design documents (a CISA baseline, an F Prime SDD, a
