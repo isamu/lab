@@ -37,6 +37,11 @@ describe("entryIn: 語の並びで照らす", () => {
     assert.equal(entryIn(sentence("させていただきます", written), entry("させていただく", ITADAKU)), true);
   });
 
+  it("原形が違う動詞には当たらない（いただく は くださる に当たらない）", () => {
+    const written = [token("さ", "VERB", "する"), token("せ", "VERB", "せる"), token("て", "SCONJ", "て"), token("ください", "VERB", "くださる")];
+    assert.equal(entryIn(sentence("させてください", written), entry("させていただく", ITADAKU)), false);
+  });
+
   it("活用した形で書いた語は、その形だけ（could は can に当たらない）", () => {
     const could = [token("it", "PRON"), token("could", "AUX", "can"), token("be", "AUX", "be")];
     const can = [token("It", "PRON"), token("can", "AUX", "can"), token("be", "AUX", "be")];
@@ -50,6 +55,12 @@ describe("entryIn: 語の並びで照らす", () => {
   it("活用しない品詞は原形で広げない（best は good に当たらない）", () => {
     assert.equal(entryIn(sentence("good", [token("good", "ADJ", "good")]), entry("good", [token("good", "ADJ", "good")])), true);
     assert.equal(entryIn(sentence("the best", [token("the", "DET"), token("best", "ADJ", "good")]), entry("good", [token("good", "ADJ", "good")])), false);
+  });
+
+  it("原形で広げるのは、語彙表の語も文の語も活用する品詞のときだけ", () => {
+    assert.equal(entryIn(sentence("notes", [token("notes", "NOUN", "note")]), entry("note", [token("note", "VERB", "note")])), false);
+    assert.equal(entryIn(sentence("noted", [token("noted", "VERB", "note")]), entry("note", [token("note", "NOUN", "note")])), false);
+    assert.equal(entryIn(sentence("noted", [token("noted", "VERB", "note")]), entry("note", [token("note", "VERB", "note")])), true);
   });
 
   it("語の途中には当たらない（また は またいで・たまたま に当たらない）", () => {
@@ -66,6 +77,7 @@ describe("entryIn: 語の並びで照らす", () => {
 
   it("語に分けられなかった語は文字列で照らす", () => {
     assert.equal(entryIn(sentence("また", [token("また", "CCONJ", "また")]), entry("また", [])), true);
+    assert.equal(entryIn(sentence("別の文", [token("別", "NOUN")]), entry("また", [])), false);
   });
 
   it("文の最後で途切れた並びには当たらない", () => {
@@ -91,6 +103,7 @@ describe("entryOpens: 文頭の語", () => {
   it("品詞が無ければ文字列の前方一致", () => {
     assert.equal(entryOpens(sentence("  またいで"), entry("また")), true);
     assert.equal(entryOpens(sentence("今日もまた"), entry("また")), false);
+    assert.equal(entryOpens(sentence("今日", [token("今日", "NOUN")]), entry("また", [])), false);
   });
 });
 

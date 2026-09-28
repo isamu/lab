@@ -11,7 +11,7 @@ const sameWord = (written: Token, entry: Token): boolean => {
   const surface = entry.surface.toLowerCase();
   if (written.surface.toLowerCase() === surface) return true;
   const inflects = INFLECTING.has(written.pos) && INFLECTING.has(entry.pos);
-  return inflects && entry.lemma?.toLowerCase() === surface && written.lemma?.toLowerCase() === surface;
+  return inflects && written.lemma?.toLowerCase() === surface;
 };
 
 const runsAt = (tokens: readonly Token[], entry: readonly Token[], start: number): boolean =>
@@ -39,5 +39,5 @@ export const entryOpens = (sentence: Sentence, entry: LexiconEntry): boolean => 
   const words = entry.tokens;
   if (tokens === undefined || words === undefined || words.length === 0) return sentence.text.trim().toLowerCase().startsWith(entry.pattern.toLowerCase());
   const first = tokens.findIndex((token) => !LEADING_MARK.has(token.pos));
-  return first !== -1 && runsAt(tokens, words, first);
+  return runsAt(tokens, words, first);
 };
