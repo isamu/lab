@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
 import type { Token } from "chaffjs/plugin";
+import { properNounChecked } from "./proper-noun.ts";
 
 const require = createRequire(import.meta.url);
 
@@ -160,7 +161,7 @@ const locate = (text: string, tagged: readonly Tagged[]): Token[] =>
       const token = {
         span: { start, end },
         surface: entry.value,
-        pos: upos(entry.pos),
+        pos: properNounChecked(entry.value, upos(entry.pos)),
         ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
         ...featuresOf(tagged, at),
       };

@@ -1,7 +1,7 @@
-18f-content-voice-and-tone  agentless-passive 2, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 7, no-em-dash 1, proper-noun-density 1
+18f-content-voice-and-tone  agentless-passive 2, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 7, no-em-dash 1
 18f-engineering-code-review  max-sentence-length 1, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
 18f-engineering-on-call  max-sentence-length 15, oxford-comma-consistency 1
-18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 7, expletive-construction 5, max-paragraph-length 1, max-sentence-length 43, oxford-comma-consistency 1, preamble-length 1, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
+18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 7, expletive-construction 5, max-paragraph-length 1, max-sentence-length 43, oxford-comma-consistency 1, preamble-length 1, title-case-consistency 2, undefined-acronym 3
 18f-handbook-projects-in-distress  agentless-passive 17, max-paragraph-length 1, max-sentence-length 28, proper-noun-density 1, undefined-acronym 6, unqualified-superlative 2
 18f-handbook-travel  agentless-passive 22, contraction-consistency 1, max-sentence-length 14, preamble-length 1, proper-noun-density 1, title-case-consistency 2, undefined-acronym 5
 bonterms-cloud-terms  agentless-passive 21, max-paragraph-length 5, max-sentence-length 73, ngram-repetition 1, proper-noun-density 1, undefined-acronym 3
@@ -29,7 +29,7 @@ fprime-buffermanager-sdd  contraction-consistency 2, heading-echo 2, proper-noun
 genai-web-api  latin-spacing 6
 genai-web-procedure  latin-spacing 29, max-sentence-length 1, proper-noun-density 1, undefined-acronym 3
 gitlab-meetings  agentless-passive 54, concrete-evidence-density 7, max-paragraph-length 2, max-sentence-length 44, proper-noun-density 1, title-case-consistency 1, undefined-acronym 11
-gitlab-values  agentless-passive 90, bold-density 1, concrete-evidence-density 57, expletive-construction 12, heading-echo 11, max-paragraph-length 25, max-sentence-length 141, proper-noun-density 1, undefined-acronym 10, unqualified-superlative 18
+gitlab-values  agentless-passive 90, bold-density 1, concrete-evidence-density 57, expletive-construction 12, heading-echo 11, max-paragraph-length 25, max-sentence-length 141, undefined-acronym 10, unqualified-superlative 18
 k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  latin-spacing 1, max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
@@ -37,7 +37,7 @@ react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, ngram-repetition 1, proper-noun-density 1, undefined-acronym 25
 rfc9457  max-sentence-length 54, oxford-comma-consistency 1, proper-noun-density 1, undefined-acronym 22
 rust-lang-minutes-2022-11-22  agentless-passive 4, contraction-consistency 2, max-sentence-length 3, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
-rust-rfc-2094-nll  heading-echo 3, max-paragraph-length 12, max-sentence-length 120, ngram-repetition 1, proper-noun-density 1, undefined-acronym 19
+rust-rfc-2094-nll  heading-echo 3, max-paragraph-length 12, max-sentence-length 120, ngram-repetition 1, undefined-acronym 19
 soumu-wp-r06-ai-booms  agentless-passive 1, latin-spacing 5, max-sentence-length 2, undefined-acronym 3
 soumu-wp-r06-ai-rules-japan  agentless-passive 5, latin-spacing 9, max-sentence-length 6, no-doubled-joshi 1
 soumu-wp-r06-misinformation  agentless-passive 9, latin-spacing 11, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, taigen-dome-in-prose 1, undefined-acronym 14
