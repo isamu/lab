@@ -93,4 +93,16 @@ describe("木もページの飾りを読まない", () => {
     const tree = buildStructure({ path: "c.txt", source, language: "en", markdown: false }, en.structure ?? assert.fail("lang-en has no structure"));
     assert.deepEqual(addresses(tree), ["1", "2"]);
   });
+
+  it("読めなかった構造の判定も、ページの飾りを数えない（飾りの番号で構造の rule を止めない）", () => {
+    // 行頭に番号のあるフッターがページの数だけ並ぶ。伏せずに数えると「条が本文にあるのに木に入っていない」に見える。
+    const page = (n: number): string[] => [`9.${String(n)} FOOTER OF THE PAGE`, "\f", `Header ${String(n)}`, ""];
+    const pages = Array.from({ length: 20 }, (_, index) => page(index + 1)).flat();
+    const source = lines("1.1 Scope", "text", "1.2 Terms", "See 1.9.", "", ...pages, "1.3 Fees", "text");
+    const result = runRules(buildDocument("c.txt", source, en), loadRules("en"), {}, true, "technical/spec");
+    assert.deepEqual(
+      result.skipped.filter((skip) => skip.rule === "dangling-reference"),
+      [],
+    );
+  });
 });
