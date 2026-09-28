@@ -1,6 +1,7 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
 import { parseJapaneseNumber, toHalfWidth } from "./numbers.ts";
-import { citedDocument } from "./citation.ts";
+import { citationVocabulary, citedDocument } from "./citation.ts";
+import { loadLexicons } from "./lexicons.ts";
 import { countedAfter, dates, quantities } from "./quantities.ts";
 
 // 契約書・規程・法令の番号の書き方。core は番号の書き方を知らず、ここで読んだものを入れ子にする。
@@ -260,6 +261,9 @@ const addressOfReference = (
   return { target, fallback: paragraph === "1" && item === undefined ? article : undefined };
 };
 
+/** 他の文書の名前を読む語。語彙表から一度だけ作る。 */
+const CITATION = citationVocabulary(loadLexicons());
+
 const references = (text: string): Mention[] => {
   const depths = depthsOf(text);
   // 括弧書きの中の参照（「（同法第五十九条において準用する場合を含む。）」）は、外の並びを切らない。並びは括弧の深さごとに持つ。
@@ -273,7 +277,7 @@ const references = (text: string): Mention[] => {
     const previous = chains.get(depth);
     const inherited =
       previous?.document !== undefined && isContinuation(withoutClosedParentheses(text.slice(previous.end, match.index))) ? previous.document : undefined;
-    const document = citedDocument(text, match.index) ?? inherited;
+    const document = citedDocument(text, match.index, CITATION) ?? inherited;
     chains.set(depth, { end: match.index + match[0].length, document });
     const attrs = { target, label: match[0], ...(fallback === undefined ? {} : { fallback }), ...(document === undefined ? {} : { document }) };
     return [{ start: match.index, end: match.index + match[0].length, attrs }];

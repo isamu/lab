@@ -1,45 +1,35 @@
-// 他の文書を指す参照。「民法第709条」の第709条はこの文書の条ではない。
+import type { Lexicon } from "chaffjs/plugin";
 
-/** 文書の種類を表す語。名前がこれで終われば、その直後の「第N条」はその文書の条。長いものから当てる。 */
-const DOCUMENT_KINDS = [
-  "ガイドライン",
-  "契約書",
-  "法律",
-  "条例",
-  "条約",
-  "契約",
-  "規約",
-  "規程",
-  "規則",
-  "約款",
-  "細則",
-  "要綱",
-  "要領",
-  "指針",
-  "基準",
-  "協定",
-  "覚書",
-  "告示",
-  "通達",
-  "法",
-  "令",
-];
+// 他の文書を指す参照。「民法第709条」の第709条はこの文書の条ではない。どの語が文書の名前を作るかは語彙表が持つ。
 
-/** 「本契約」「当規約」はこの文書自身。「同法」は前に出た別の法令なので、他の文書。 */
-const SELF_PREFIXES = ["本", "当"];
+export type CitationVocabulary = {
+  /** 文書の種類の語。長いものから当てる。 */
+  readonly kinds: readonly string[];
+  /** 題名に平仮名を挟む種類。 */
+  readonly kanaTitleKinds: readonly string[];
+  /** 名前と番地のあいだに挟まる括弧書き。 */
+  readonly notes: readonly RegExp[];
+  /** この文書自身を指す名前の頭。 */
+  readonly selfPrefixes: readonly string[];
+};
+
+const patternsOf = (lexicon: Lexicon | undefined): string[] => (lexicon ?? []).map((entry) => entry.pattern);
+
+export const citationVocabulary = (lexicons: Readonly<Record<string, Lexicon>>): CitationVocabulary => ({
+  kinds: patternsOf(lexicons["document-kind"]).sort((left, right) => right.length - left.length),
+  kanaTitleKinds: patternsOf(lexicons["kana-title-kind"]),
+  notes: patternsOf(lexicons["name-note"]).map((pattern) => new RegExp(`(?:${pattern})$`, "u")),
+  selfPrefixes: patternsOf(lexicons["self-prefix"]),
+});
 
 const NAME_CHAR = /[\p{Script=Han}\p{Script=Katakana}ー・A-Za-z0-9]/u;
+const TITLE_CHAR = /[\p{Script=Han}\p{Script=Katakana}\p{Script=Hiragana}ー・A-Za-z0-9]/u;
 
 /** 名前は長くても数十字。後ろ向きに読む長さを抑え、長い行で遅くならないようにする。 */
 const MAX_NAME_LENGTH = 30;
 
-/**
- * at の直前に書かれた文書名。「民法第709条」なら「民法」。この文書の条を指すなら undefined。
- * 名前が種類の語だけ（「契約第3条」）のときも、どの文書か決まらないので undefined にする。
- */
-/** 法律の題名は平仮名を挟む（「個人情報の保護に関する法律」）。「法律」で終わるときだけ、平仮名もさかのぼって読む。 */
-const TITLE_CHAR = /[\p{Script=Han}\p{Script=Katakana}\p{Script=Hiragana}ー・A-Za-z0-9]/u;
-const LAW_TITLE_END = "法律";
+/** 名前の後ろの括弧書きが収まる長さ。後ろ向きに読む長さを抑える。 */
+const MAX_NOTE_LENGTH = 100;
 
 const nameBefore = (text: string, at: number, char: RegExp): string => {
   let start = at;
@@ -47,26 +37,21 @@ const nameBefore = (text: string, at: number, char: RegExp): string => {
   return text.slice(start, at);
 };
 
-/**
- * 法令は題名の後に公布の番号を括弧で添える（「国家行政組織法（昭和二十三年法律第百二十号）第三条」）。
- * 括弧を飛ばして、その前の題名を読む。
- */
-/** 番号に略称を添えることもある（「（平成十三年法律第百四十号。以下この章において「独立行政法人等情報公開法」という。）」）。 */
-const LAW_NUMBER_NOTE = /（(?:明治|大正|昭和|平成|令和)[^（）]{1,24}号(?:。以下[^（）]{1,60}という。)?）$/u;
-
-/** 公布の番号と略称の括弧が収まる長さ。後ろ向きに読む長さを抑える。 */
-const MAX_NOTE_LENGTH = 100;
-
-const beforeLawNumber = (text: string, at: number): number => {
-  const note = LAW_NUMBER_NOTE.exec(text.slice(Math.max(0, at - MAX_NOTE_LENGTH), at));
-  return note === null ? at : at - note[0].length;
+const beforeNote = (text: string, at: number, notes: readonly RegExp[]): number => {
+  const window = text.slice(Math.max(0, at - MAX_NOTE_LENGTH), at);
+  const note = notes.flatMap((pattern) => pattern.exec(window) ?? [])[0];
+  return note === undefined ? at : at - note.length;
 };
 
-export const citedDocument = (text: string, reference: number): string | undefined => {
-  const at = beforeLawNumber(text, reference);
+/**
+ * reference の直前に書かれた文書名。「民法第709条」なら「民法」。この文書の条を指すなら undefined。
+ * 名前が種類の語だけ（「契約第3条」）のときも、どの文書か決まらないので undefined にする。
+ */
+export const citedDocument = (text: string, reference: number, vocabulary: CitationVocabulary): string | undefined => {
+  const at = beforeNote(text, reference, vocabulary.notes);
   const plain = nameBefore(text, at, NAME_CHAR);
-  const name = plain === LAW_TITLE_END ? nameBefore(text, at, TITLE_CHAR) : plain;
-  const kind = DOCUMENT_KINDS.find((candidate) => name.endsWith(candidate));
+  const name = vocabulary.kanaTitleKinds.includes(plain) ? nameBefore(text, at, TITLE_CHAR) : plain;
+  const kind = vocabulary.kinds.find((candidate) => name.endsWith(candidate));
   if (kind === undefined || name.length === kind.length) return undefined;
-  return SELF_PREFIXES.some((prefix) => name.startsWith(prefix)) ? undefined : name;
+  return vocabulary.selfPrefixes.some((prefix) => name.startsWith(prefix)) ? undefined : name;
 };
