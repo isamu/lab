@@ -1,7 +1,7 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
-import { countedAfter, dates, quantities } from "../packages/lang-ja/src/quantities.ts";
+import { countedAfter, countedByTable, dates, quantities } from "../packages/lang-ja/src/quantities.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 import { buildStructure } from "../packages/chaff/src/structure/of.ts";
@@ -74,6 +74,24 @@ describe("数量（助数詞を品詞で読む）", () => {
   ];
   cases.forEach(([text, expected]) => {
     it(text, () => assert.deepEqual(quantityOf(text), expected));
+  });
+});
+
+describe("品詞を読まないときの単位の表でも、空白を挟んだ桁の語は同じ数", () => {
+  const read = (text: string): [number, string][] => countedByTable(text).map((item) => [item.value, item.unit]);
+
+  it("1.2 万円は 12000 円、約 3 万件は 30000 件", () => {
+    assert.deepEqual(read("見積は 1.2 万円です。"), [[12000, "円"]]);
+    assert.deepEqual(read("約 3 万件の文書。"), [[30000, "件"]]);
+  });
+
+  it("空白の無い 1.2万円も 12000 円の一つだけ（前は 1.2 万円と 10000 円の二つに読んでいた）", () => {
+    assert.deepEqual(read("1.2万円です。"), [[12000, "円"]]);
+  });
+
+  it("桁の語の無い書き方はこれまでどおり", () => {
+    assert.deepEqual(read("3 人です。"), [[3, "人"]]);
+    assert.deepEqual(read("百万円の罰金。"), [[1000000, "円"]]);
   });
 });
 
