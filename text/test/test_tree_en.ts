@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { parseRoman } from "../packages/lang-en/src/structure.ts";
+import { parseRoman } from "../packages/lang-en/src/roman.ts";
 import { buildStructure } from "../packages/chaff/src/structure/of.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
 import type { StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
@@ -171,6 +171,20 @@ describe("later members of a reference list are references too", () => {
 
   it("a member with a letter (45A) is not read, as the reference itself would not be", () => {
     assert.deepEqual(targets("see sections 44 and 45A"), ["44"]);
+  });
+
+  it("roman members in a list of Articles, with the document the list ends in", () => {
+    assert.deepEqual(targets("Articles IV, V and VI of the Master Agreement apply."), ["4@Master Agreement", "5@Master Agreement", "6@Master Agreement"]);
+    assert.deepEqual(targets("Articles IV and V apply."), ["4", "5"]);
+  });
+
+  it("a roman letter after a list of numbers is not a member", () => {
+    assert.deepEqual(targets("Sections 2 and I agree."), ["2"]);
+  });
+
+  it("a list that switches document part-way stops at the switch (not read further)", () => {
+    // "3 of the Y Act" is left out rather than guessed; a missed reference, never a false one.
+    assert.deepEqual(targets("Sections 1 and 2 of this Act and 3 of the Y Act"), ["1", "2"]);
   });
 
   it("a later “section 6” is its own reference, not a member", () => {

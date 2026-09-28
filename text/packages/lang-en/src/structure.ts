@@ -1,19 +1,10 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
 import { citedDocumentAfter } from "./citation.ts";
 import { membersAfter } from "./reference-list.ts";
+import { parseRoman } from "./roman.ts";
 
 // Contracts, specifications and statutes in English. core nests what this reads; it does not know
 // how English numbers its articles.
-
-const ROMAN: Readonly<Record<string, number>> = { i: 1, v: 5, x: 10, l: 50, c: 100 };
-
-/** "IV" → 4, "xii" → 12. Undefined for anything that is not a roman numeral. */
-export const parseRoman = (text: string): number | undefined => {
-  const values = [...text.toLowerCase()].map((char) => ROMAN[char]);
-  if (values.length === 0 || values.some((value) => value === undefined)) return undefined;
-  const known = values.filter((value) => value !== undefined);
-  return known.reduce((total, value, index) => ((known[index + 1] ?? 0) > value ? total - value : total + value), 0);
-};
 
 const numberOf = (text: string | undefined): string | undefined => {
   if (text === undefined) return undefined;
@@ -245,7 +236,8 @@ const references = (text: string): Mention[] => {
     const numbering = /^[Aa]/u.test(match.groups?.["word"] ?? "") ? "article" : "section";
     const shared = { numbering, ...(document === undefined ? {} : { document }) };
     const first = { start: match.index, end, attrs: { target: [main, ...parts].join("."), label: text.slice(match.index, end), ...shared } };
-    return [first, ...membersAfter(text, end, [main, ...parts], shared, /s$/u.test(match.groups?.["word"] ?? ""))];
+    const [plural, roman] = [/s$/u.test(match.groups?.["word"] ?? ""), /^[IVXLC]+$/u.test(match.groups?.["n"] ?? "")];
+    return [first, ...membersAfter(text, end, [main, ...parts], shared, plural, roman)];
   });
 };
 

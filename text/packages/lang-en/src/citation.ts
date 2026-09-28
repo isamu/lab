@@ -4,7 +4,8 @@ const OF = /^,? of (?:the |that |those )?/u;
 /** "section 4(2)(a) (exception to liability …) of the Damages (Scotland) Act 2011": the gloss sits between the number and the name. */
 const GLOSS = /^ \([^()]{1,100}\)/u;
 const CONNECTOR = /^(?:,? (?:to|and|or)|,) /u;
-const LISTED_NUMBER = /^\d{1,3}[A-Z]{0,2}(?:\([a-z0-9]{1,4}\))*|^(?:\([a-z0-9]{1,4}\))+/u;
+/** "9", "29(2)", "(g)", and a roman "V" for a list of Articles. The roman numeral must end the word: "VIII", not "Vendor". */
+const LISTED_NUMBER = /^\d{1,3}[A-Z]{0,2}(?:\([a-z0-9]{1,4}\))*|^(?:\([a-z0-9]{1,4}\))+|^[IVXLC]{1,7}\b/u;
 
 /**
  * A listed number is a reference only where the list goes on or ends: "Sections 1, 2 and 9 of" or "Section 3 and 4." —
