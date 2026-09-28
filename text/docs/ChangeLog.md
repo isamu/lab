@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `date-order`: a date out of order in a schedule (#142)
+
+A new experimental rule. In consecutive list items or table rows that each hold one date, a date that goes against
+the direction of the rest is a `warning` (`2026-04-15 comes after 2026-05-01, which is later`). The direction is taken
+from most of the steps, so a newest-first history is a right order; a sequence with as many steps each way, a line
+with two dates, dates of different precision, and dates in running text are not judged. It reads the dates the language
+packages already normalise, so it works the same in any language.
+
 ### `date-weekday-mismatch`: a date and its weekday disagree (#142)
 
 A new experimental rule. A date written with its year and its weekday (`2026年10月1日（金）`, `Friday, 1 October 2026`)
