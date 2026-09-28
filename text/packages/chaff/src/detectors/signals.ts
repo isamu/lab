@@ -353,9 +353,19 @@ const openingOf = (sentence: Sentence | undefined, unit: ProseDocument["lengthUn
   return pieces.length <= OPENING[unit] ? pieces.join(joiner) : `${pieces.slice(0, OPENING[unit]).join(joiner)}…`;
 };
 
+/** 言語パッケージの語彙表（concrete-number）の書き方。漢数字の「二割」「十五分」も、算用数字と同じ具体的な数。 */
+const concretePatterns = (doc: ProseDocument): RegExp[] => [
+  CONCRETE,
+  ...(doc.lexicons["concrete-number"] ?? []).map((entry) => new RegExp(entry.pattern, "u")),
+];
+
 export const concreteEvidence: Detector = (doc, options): Finding[] => {
+  const concrete = concretePatterns(doc);
   const sections = doc.sections.filter((section) => section.sentences.length >= 3);
-  const empty = sections.filter((section) => !CONCRETE.test(doc.source.slice(section.span.start, section.span.end)));
+  const empty = sections.filter((section) => {
+    const text = doc.source.slice(section.span.start, section.span.end);
+    return !concrete.some((pattern) => pattern.test(text));
+  });
   if (empty.length < options.limit) return [];
   return empty.map((section) => ({
     rule: "concrete-evidence-density",

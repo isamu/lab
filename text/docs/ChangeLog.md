@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### `concrete-evidence-density` counts numbers written in kanji (#170)
+
+A section that gives `二割`, `十五分`, `三人` or `百件` now counts as holding a concrete number, like one with digits.
+lang-ja lists these in a new word list, `concrete-number`: a kanji number followed by a counter. A bare 一 is left out
+(誰一人, 一人ひとり), and so are 十分 (sufficient) and 一時的.
+
 ### `yarn bench` plants mistakes for more rules, in more kinds of document (#170)
 
 The seeded-mistake benchmark now also plants a joined paragraph, a heading echoed by its first sentence, heavy bold,

@@ -352,6 +352,18 @@ describe("concrete-evidence-density", () => {
     assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
   });
 
+  it("valid: 漢数字で書いた数（二割、十五分、三人）も具体的な数", () => {
+    const amounts = ["二割", "十五分", "三人", "百件"];
+    const sections = amounts.map((amount, index) => `## 節${String(index)}\n\n参加は${amount}でした。実例を挙げます。結果を示します。`).join("\n\n");
+    assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
+  });
+
+  it("invalid: 数える単位の付かない漢字（一緒、一般、三つ巴）は数ではない", () => {
+    const words = ["誰一人取り残しません", "一人ひとりに届けます", "十分に検討します", "一時的に止めます"];
+    const sections = words.map((word, index) => `## 節${String(index)}\n\n${word}。考えかたを述べます。理念を語ります。`).join("\n\n");
+    assert.ok(idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
+  });
+
   it("仕様書では動かさない。定義の節に具体物は要らない", () => {
     // 「error とは何か」のような節は、数値もコードも無くて当たり前。
     const sections = ["error", "warning", "info", "Phase 1"].map((name) => `## ${name}\n\n抽象的な説明です。考えかたを述べます。理念を語ります。`).join("\n\n");
