@@ -126,6 +126,10 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | -10 | 2 |", "| Total | 390 | 3 |")), ["390≠400"]);
     assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | ▲10 | 2 |", "| Total | 420 | 3 |")), ["420≠400"]);
     assert.deepEqual(found(hours("| A | 410 | 1 |", "| B | (10) | 2 |", "| Total | 999 | 3 |")), []);
+    assert.deepEqual(found(hours("| A | -10 | 1 |", "| B | -20 | 2 |", "| Total | -25 | 3 |")), ["-25≠-30"]);
+    assert.deepEqual(found(hours("| A | ▲10 | 1 |", "| B | ▲20 | 2 |", "| Total | ▲25 | 3 |")), ["▲25≠▲30"]);
+    assert.deepEqual(found(hours("| A | -10 | 1 |", "| B | -20 | 2 |", "| Total | 5 | 3 |")), ["5≠-30"]);
+    assert.deepEqual(found(doc("- A: -$10", "- B: -$20", "- Total: -$25")), ["-$25≠-$30"]);
   });
 
   it("a column mixing bare numbers and numbers with a unit is not added", () => {
@@ -152,6 +156,15 @@ describe("total-mismatch", () => {
     );
     assert.deepEqual(found(ids), []);
     assert.deepEqual(found(doc("| Code | Hours |", "| --- | --- |", "| 007 | 4 |", "| 012 | 5 |", "| Total | 020 |")), []);
+    assert.deepEqual(found(doc("| Item | Year |", "| --- | --- |", "| A | 2024 |", "| B | 2025 |", "| Total | 2026 |")), []);
+    assert.deepEqual(found(doc("| Item | ID |", "| --- | --- |", "| A | 1041 |", "| B | 1042 |", "| Total | 9999 |")), []);
+    assert.deepEqual(found(doc("| Item | Hours |", "| --- | --- |", "| A | 1041 |", "| B | 1,042 |", "| Total | 9,999 |")), ["9,999≠2,083"]);
+    assert.deepEqual(found(doc("| Item | Hours |", "| --- | --- |", "| A | 1200 |", "| B | 10500 |", "| Total | 12000 |")), ["12000≠11700"]);
+  });
+
+  it("a bare column whose header holds % is a rate, and is not added", () => {
+    assert.deepEqual(found(doc("| Channel | Conversion % |", "| --- | --- |", "| Search | 30 |", "| Ads | 40 |", "| Total | 75 |")), []);
+    assert.deepEqual(found(doc("| Channel | Visits |", "| --- | --- |", "| Search | 30 |", "| Ads | 40 |", "| Total | 75 |")), ["75≠70"]);
   });
 
   it("a bare column whose total is not above every item is a rate, an average or a year, and is not added", () => {

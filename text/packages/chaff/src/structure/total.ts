@@ -135,13 +135,23 @@ const unitStartBefore = (source: string, amount: Amount): number | undefined => 
   return start >= 0 && source.slice(start, amount.offset - gap) === amount.unit ? start : undefined;
 };
 
-/** 合計の行に書いた金額と、上の和を、同じ書き方で見せる。 */
-const shownAmounts = (source: string, total: Amount, sumCents: number): Record<string, string> => {
+/** 負の金額の前に書いた印（-、▲）。見せる金額に入れる。 */
+const SIGN_BEFORE = /[-−▲△][ \t]?$/u;
+const SIGN_REACH = 2;
+
+const signBefore = (source: string, total: Placed, start: number): string =>
+  total.cents !== undefined && total.cents < 0 ? (SIGN_BEFORE.exec(source.slice(Math.max(0, start - SIGN_REACH), start))?.[0] ?? "") : "";
+
+/** 合計の行に書いた金額と、上の和を、同じ書き方で見せる。負の和には、合計に書いた印（無ければ -）を付ける。 */
+const shownAmounts = (source: string, total: Placed, sumCents: number): Record<string, string> => {
   const unitStart = unitStartBefore(source, total);
-  const written = source.slice(unitStart ?? total.offset, total.end);
-  const sum = formatCents(sumCents, written);
-  if (unitStart !== undefined) return { written, sum: `${source.slice(unitStart, total.offset)}${sum}` };
-  return { written, sum: written.endsWith(total.unit) ? `${sum}${total.unit}` : sum };
+  const start = unitStart ?? total.offset;
+  const sign = signBefore(source, total, start);
+  const written = source.slice(start - sign.length, total.end);
+  const sumSign = sumCents < 0 ? sign || "-" : "";
+  const sum = formatCents(Math.abs(sumCents), written);
+  if (unitStart !== undefined) return { written, sum: `${sumSign}${source.slice(unitStart, total.offset)}${sum}` };
+  return { written, sum: `${sumSign}${sum}${written.endsWith(total.unit) ? total.unit : ""}` };
 };
 
 /**
