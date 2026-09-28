@@ -40,7 +40,7 @@ const blocked = (text: string, start: number, unitAt: number, vocabulary: Sectio
   vocabulary.notAfter.some((word) => text.startsWith(word, unitAt));
 
 /**
- * 「3.2節」→ 3.2、「第3章」「3章」→ ch3。見出し「## 第3章」は木に ch3 として入る。見出しを「## 3. 構成」と書く文書では 3 なので、それを fallback にする。
+ * 「3.2節」→ 3.2、「第3章」「3章」→ ch3。見出し「## 第3章」は木に ch3 として入る。見出しを「## 3. 構成」と書く文書では 3 なので、番号だけの見出しの 3 を fallback にする（第3条には当てない）。
  * 他の文書の名前（民法第3章）は、条の参照と一緒に structure.ts が付ける。
  */
 export const sectionReferences = (text: string, vocabulary: SectionVocabulary): Mention[] =>
@@ -51,6 +51,6 @@ export const sectionReferences = (text: string, vocabulary: SectionVocabulary): 
     const end = match.index + match[0].length;
     if (number.includes(".") !== hasDots(unit)) return [];
     if (blocked(text, match.index, end - unit.length, vocabulary) || isLineLabel(text, match.index, end)) return [];
-    const address = unit === "章" ? { target: `ch${number}`, fallback: number } : { target: number };
+    const address = unit === "章" ? { target: `ch${number}`, fallback: number, fallbackLabel: number } : { target: number };
     return [{ start: match.index, end, attrs: { ...address, label: match[0] } }];
   });

@@ -20,16 +20,23 @@ before(async () => prepare());
 
 const lines = (...rows: string[]): string => rows.join("\n");
 
-type Read = { readonly label: unknown; readonly target: unknown; readonly fallback?: unknown; readonly document?: unknown };
+type Read = {
+  readonly label: unknown;
+  readonly target: unknown;
+  readonly fallback?: unknown;
+  readonly fallbackLabel?: unknown;
+  readonly document?: unknown;
+};
 
 const read = (text: string): Read[] =>
   patterns()
     .references(text)
     .map((mention: Mention) => ({ ...mention.attrs }))
-    .map(({ label, target, fallback, document }) => ({
+    .map(({ label, target, fallback, fallbackLabel, document }) => ({
       label,
       target,
       ...(fallback === undefined ? {} : { fallback }),
+      ...(fallbackLabel === undefined ? {} : { fallbackLabel }),
       ...(document === undefined ? {} : { document }),
     }));
 
@@ -71,17 +78,17 @@ describe("日本語: 章・節・項の番号を参照として読む", () => {
       ],
     ],
     ["全角の数字と点", "３．２節による。", [{ label: "３．２節", target: "3.2" }]],
-    ["第を付けた章", "第3章に定める。", [{ label: "第3章", target: "ch3", fallback: "3" }]],
-    ["第の無い章", "3章で述べた。", [{ label: "3章", target: "ch3", fallback: "3" }]],
+    ["第を付けた章", "第3章に定める。", [{ label: "第3章", target: "ch3", fallback: "3", fallbackLabel: "3" }]],
+    ["第の無い章", "3章で述べた。", [{ label: "3章", target: "ch3", fallback: "3", fallbackLabel: "3" }]],
     ["三段の項", "3.2.1項の表", [{ label: "3.2.1項", target: "3.2.1" }]],
     ["行頭でも、後ろが本文なら参照", "3.2節で述べたとおり。", [{ label: "3.2節", target: "3.2" }]],
-    ["他の文書の章", "民法第3章を参照する。", [{ label: "第3章", target: "ch3", fallback: "3", document: "民法" }]],
+    ["他の文書の章", "民法第3章を参照する。", [{ label: "第3章", target: "ch3", fallback: "3", fallbackLabel: "3", document: "民法" }]],
     [
       "他の文書の章の並び",
       "民法第3章及び第4章、第5条による。",
       [
-        { label: "第3章", target: "ch3", fallback: "3", document: "民法" },
-        { label: "第4章", target: "ch4", fallback: "4", document: "民法" },
+        { label: "第3章", target: "ch3", fallback: "3", fallbackLabel: "3", document: "民法" },
+        { label: "第4章", target: "ch4", fallback: "4", fallbackLabel: "4", document: "民法" },
         { label: "第5条", target: "5", document: "民法" },
       ],
     ],
@@ -89,8 +96,8 @@ describe("日本語: 章・節・項の番号を参照として読む", () => {
       "並びが切れたら、この文書の章",
       "民法第3章による。この規程の第2章で扱う。",
       [
-        { label: "第3章", target: "ch3", fallback: "3", document: "民法" },
-        { label: "第2章", target: "ch2", fallback: "2" },
+        { label: "第3章", target: "ch3", fallback: "3", fallbackLabel: "3", document: "民法" },
+        { label: "第2章", target: "ch2", fallback: "2", fallbackLabel: "2" },
       ],
     ],
   ];
@@ -136,6 +143,8 @@ describe("日本語: 読んだ番地が木に無ければ参照先が無い", ()
     assert.deepEqual(dangling(lines("# 設計書", "", "## 1. 概要", "", "### 1.1 目的", "", "本文。", "", "### 2.3節", "", "本文。")), []));
   it("見出しにある章は黙る", () => assert.deepEqual(dangling(DESIGN("2章")), []));
   it("見出しに無い章は言う", () => assert.deepEqual(dangling(DESIGN("第4章")), ["第4章"]));
+  it("同じ番号の条があっても、無い章は言う", () =>
+    assert.deepEqual(dangling(lines("第1条（目的）", "本文。", "第2条（定義）", "本文。", "第3条（支払）", "第3章に定める。"), "c.txt"), ["第3章"]));
   it("見出しに無い項は言う", () => assert.deepEqual(dangling(DESIGN("2.2.1項")), ["2.2.1項"]));
   it("他の文書の節は引かない", () => assert.deepEqual(dangling(DESIGN("民法第9章")), []));
   it("「## 第2章」の見出しは ch2 として当たる", () =>
