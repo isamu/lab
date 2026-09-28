@@ -27,12 +27,16 @@ const NUMBER_CHAR = /[0-9０-９.．A-Za-zＡ-Ｚａ-ｚ]/u;
 /** 章は「3章」、節と項は「3.2節」「3.2.1項」。点の無い「2節」「第2項」は数か法令の番地で、点のある「3.2章」は書かない。 */
 const hasDots = (unit: string): boolean => unit !== "章";
 
-/** 行頭の「3.2節 データ」は、その行の見出しの番号。本文の「3.2節で述べた」は参照。 */
-const isLineLabel = (text: string, start: number, end: number): boolean => /^[#\s]*$/u.test(text.slice(0, start)) && /^[ \t\u3000]/u.test(text.slice(end));
+/** 行頭の「3.2節 データ」「3.2節（データ）」「### 3.2節」は、その行の見出しの番号。本文の「3.2節で述べた」は参照。 */
+const isLineLabel = (text: string, start: number, end: number): boolean => /^[#\s]*$/u.test(text.slice(0, start)) && /^(?:[\s（(：:]|$)/u.test(text.slice(end));
+
+/** 「全 3 章」のように数える語と番号のあいだに空白があっても、数える語。見る長さは語彙の語が収まる分だけ。 */
+const BEFORE_WINDOW = 20;
+const wordBefore = (text: string, start: number): string => text.slice(Math.max(0, start - BEFORE_WINDOW), start).trimEnd();
 
 const blocked = (text: string, start: number, unitAt: number, vocabulary: SectionVocabulary): boolean =>
   NUMBER_CHAR.test(text[start - 1] ?? "") ||
-  vocabulary.notBefore.some((word) => text.endsWith(word, start)) ||
+  vocabulary.notBefore.some((word) => wordBefore(text, start).endsWith(word)) ||
   vocabulary.notAfter.some((word) => text.startsWith(word, unitAt));
 
 /**
