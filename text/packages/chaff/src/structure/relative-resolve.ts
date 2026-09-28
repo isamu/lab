@@ -7,14 +7,22 @@ import type { StructureNode } from "../plugin.ts";
  * 番地を決められないもの（最初の条の「前条」、何も引いていない「同条」）は木から外す。当て推量の番地で誤りを言わない。
  */
 
-type Place = { readonly address: string; readonly level: number };
+/** range は「第四十三条から第五十五条まで 削除」のように、一行で並びをまとめたもの。番地は最初のものしか持たない。 */
+type Place = { readonly address: string; readonly level: number; readonly range?: boolean };
 
 type Last = { readonly target: string; readonly document: string | undefined };
 
 const NUMBERED = new Set(["chapter", "article", "item"]);
 
 const placeOf = (node: StructureNode): Place | undefined =>
-  NUMBERED.has(node.kind) && node.level !== undefined ? { address: node.address, level: node.level } : undefined;
+  NUMBERED.has(node.kind) && node.level !== undefined ? { address: node.address, level: node.level, range: node.ordinalTo !== undefined } : undefined;
+
+/** 番号の付いた子。Markdown の見出し（section）は番号の外なので、その中まで見る。 */
+const numberedChildren = (node: StructureNode, level: number): StructureNode[] =>
+  node.children.flatMap((child) => {
+    if (NUMBERED.has(child.kind)) return child.level === level ? [child] : [];
+    return child.kind === "section" ? numberedChildren(child, level) : [];
+  });
 
 type Context = {
   readonly articles: readonly Place[];
@@ -30,11 +38,12 @@ type Context = {
 
 /** 同じ親の下で同じ深さのもの。番号の無い最初のもの（法令の第 1 項）があるなら、それを先頭に足す。 */
 const siblingsUnder = (parent: StructureNode, level: number, implicitLevel: number | undefined): Place[] => {
-  const explicit = parent.children.flatMap((child) => {
+  const children = numberedChildren(parent, level);
+  const explicit = children.flatMap((child) => {
     const place = placeOf(child);
-    return place !== undefined && place.level === level ? [place] : [];
+    return place === undefined ? [] : [place];
   });
-  const firstOrdinal = parent.children.find((child) => child.level === level)?.ordinal;
+  const firstOrdinal = children[0]?.ordinal;
   const implicit = level === implicitLevel && parent.level === level - 1 && firstOrdinal !== 1;
   return implicit ? [{ address: `${parent.address}.1`, level }, ...explicit] : explicit;
 };
@@ -47,7 +56,8 @@ const anchorAt = (path: readonly StructureNode[], level: number, context: Contex
   const node = path[index];
   if (node !== undefined) {
     const place = placeOf(node);
-    const parent = path[index - 1];
+    // 親は番号の付いた一つ上のまとまり。あいだの Markdown の見出しは飛ばす。無ければ文書（条より外のまとまり）。
+    const parent = path.slice(0, index).findLast((candidate) => NUMBERED.has(candidate.kind) && (candidate.level ?? 0) < level) ?? path[0];
     if (place === undefined || parent === undefined) return undefined;
     return { place, siblings: node.kind === "article" ? context.articles : siblingsUnder(parent, level, context.implicitLevel) };
   }
@@ -63,12 +73,18 @@ const shifted = (anchor: Anchor, by: number): Place | undefined => {
   return index === -1 ? undefined : anchor.siblings[index + by];
 };
 
-/** 前・次・本で決まる場所。「各」（count 0）は前の全部なので、最初のものを指す。 */
+/** 前の全部（前各項）は、前に一つでもあれば最初のもの。 */
+const allBefore = (anchor: Anchor): Place | undefined => (shifted(anchor, -1) === undefined ? undefined : anchor.siblings[0]);
+
+/**
+ * 前・次・本で決まる場所。「各」（count 0）は前の全部なので、最初のものを指す。
+ * 前に数えて範囲の行に当たれば、その最後のもの（第五十五条）の番地は木に無いので決めない。
+ */
 const byPosition = (way: string, count: number, anchor: Anchor): Place | undefined => {
   if (way === "current") return anchor.place;
   if (way === "after") return shifted(anchor, Math.max(count, 1));
-  if (count === 0) return shifted(anchor, -1) === undefined ? undefined : anchor.siblings[0];
-  return shifted(anchor, -count);
+  const found = count === 0 ? allBefore(anchor) : shifted(anchor, -count);
+  return found?.range === true ? undefined : found;
 };
 
 /** 同: その前の参照の番地を、この深さまで切る。条より外のまとまりは番地の形が違うので扱わない。 */
@@ -89,7 +105,8 @@ const continued = (level: number, node: StructureNode, context: Context): Last |
  */
 const remember = (context: Context, target: string, document: string | undefined, from: number): void => {
   const articleLevel = context.articleLevel;
-  if (articleLevel === undefined) return;
+  // 章・節は番地の形（ch1）が条から始まらないので覚えない。覚えると「同条」が章を指してしまう。
+  if (articleLevel === undefined || from < articleLevel) return;
   const parts = target.split(".");
   parts.forEach((_, index) => {
     const level = articleLevel + index;
@@ -177,10 +194,10 @@ const walk = (node: StructureNode, path: readonly StructureNode[], context: Cont
 
 const optional = (value: string | number | undefined): string | undefined => (value === undefined ? undefined : String(value));
 
-const articlesOf = (node: StructureNode): Place[] => [
-  ...(node.kind === "article" && node.level !== undefined ? [{ address: node.address, level: node.level }] : []),
-  ...node.children.flatMap(articlesOf),
-];
+const articlesOf = (node: StructureNode): Place[] => {
+  const place = node.kind === "article" ? placeOf(node) : undefined;
+  return [...(place === undefined ? [] : [place]), ...node.children.flatMap(articlesOf)];
+};
 
 export const resolveRelative = (tree: StructureNode, implicitLevel: number | undefined): StructureNode => {
   const articles = articlesOf(tree);

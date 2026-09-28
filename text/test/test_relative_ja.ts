@@ -187,6 +187,24 @@ describe("resolveRelative — 章・番号付きの項・号", () => {
   });
 });
 
+describe("resolveRelative — 章、範囲の行、Markdown", () => {
+  it("前章は同条の行き先を変えない。同章は読まない", () => {
+    const source = lines("第一章　総則", "第一条　本文。", "第二章　雑則", "第二条　前章の規定による。同章の規定による。同条の規定による。", "第三条　本文。");
+    assert.deepEqual(references(treeOf(source)), ["前章→ch1"]);
+  });
+
+  it("前に数えて範囲の行（第四十三条から第五十五条まで 削除）に当たれば決めない", () => {
+    const source = lines("第四十二条　本文。", "第四十三条から第五十五条まで　削除", "第五十六条　前条の規定による。", "第五十七条　前条の規定による。");
+    assert.deepEqual(references(treeOf(source)), ["前条→56"]);
+  });
+
+  it("Markdown の見出しで分けても、同じ条の前の項を読む", () => {
+    const source = lines("## 第一条", "本文。", "### 払い方", "２　本文。", "### 期限", "３　前項の規定による。", "## 第二条", "本文。", "## 第三条", "本文。");
+    const tree = buildStructure({ path: "c.md", source, language: "ja", markdown: true, profile: statute }, patterns());
+    assert.deepEqual(references(tree), ["前項→1.2"]);
+  });
+});
+
 describe("dangling-reference が相対の参照も確かめる", () => {
   it("前条第五項の条に第 5 項が無ければ指摘する", () => {
     const source = lines("第一条　本文。", "２　本文。", "第二条　前条第五項の規定による。", "第三条　本文。");
