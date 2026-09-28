@@ -556,6 +556,12 @@ npx chaffjs eval examples/blog-ja/
 
 corpus が 20 文書に満たないときは、割合が「0 か全部」に振れるので、密度（1 万字あたりの指摘数）のほうを見てください。
 
+## 文書の種類（profile）
+
+法令の番地（「第二十二条第二項」）のように、ある種類の文書にだけ通じる書き方は、コードではなく `packages/chaff/profiles/*.yaml` に書く。
+選ばれた文書にだけ効く。書かなければ内容から選び（`statute` は「第一条　」の形の行が 3 行以上）、`chaff tree` の `:profile` に出る。
+`chaff.yaml` の `profile: statute` で選び、`profile: none` で止める。`by_path` にも書ける。
+
 ## パスごとに設定を変える
 
 ```yaml
@@ -566,6 +572,8 @@ by_path:
     genre: business/report
   - files: ["blog-en/**/*.md"]
     language: en
+  - files: ["laws/**/*.txt"]
+    profile: statute
 ```
 
 後に書いたものが勝ちます。照合は**設定ファイルのある場所からの相対**なので、どこで実行しても結果が変わりません。
@@ -576,6 +584,7 @@ by_path:
 text/                      yarn workspaces のルート
   packages/chaff           core。npm 名 chaffjs
     rules/*.yaml           rule 定義。分岐も式も書かない
+    profiles/*.yaml        文書の種類（法令など）の知識。コードは種類を知らず、ここを読む
     src/plugin.ts          contract（型のみ。実装を持たない）
     src/document.ts        Markdown → ProseDocument
     src/mask.ts            非 prose を同じ長さの空白で覆う
