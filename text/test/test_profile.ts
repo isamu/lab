@@ -79,12 +79,17 @@ describe("parseProfile", () => {
       suffixPrefix: "第",
       implicitFirst: 2,
       notAfter: "\\p{Script=Han}",
-      substitution: { open: "「", close: "」", after: ["とあるのは"], before: [] },
+      substitution: { open: "「", close: "」", after: ["とあるのは"], before: [], document: undefined },
       inside: ["項"],
       joiners: ["及び"],
       aside: { open: "（", close: "）" },
     });
     assert.equal(parseProfile({ id: "t", ja: { relative: { before: ["前"], units: {} } } })?.languages["ja"]?.relative, undefined);
+    assert.equal(
+      parseProfile({ id: "t", ja: { relative: { units: { 条: 1 }, substitution: { open: "「", close: "」", before: ["とあるのは"], document: "読み替え" } } } })
+        ?.languages["ja"]?.relative?.substitution?.document,
+      "読み替え",
+    );
     assert.equal(
       parseProfile({ id: "t", ja: { relative: { units: { 条: 1 }, substitution: { open: "「", close: "」" } } } })?.languages["ja"]?.relative?.substitution,
       undefined,

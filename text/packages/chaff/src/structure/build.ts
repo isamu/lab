@@ -1,7 +1,7 @@
 import type { Heading } from "../document.ts";
 import { atxHeadingText, headingText } from "../heading-text.ts";
 import { addressSpans } from "../address-chain.ts";
-import { relativeMentions } from "./relative-find.ts";
+import { relativeMentions, substitutedDocuments } from "./relative-find.ts";
 import { resolveRelative } from "./relative-resolve.ts";
 import { maskSpans } from "../mask.ts";
 import type { DocumentProfile, Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
@@ -130,7 +130,7 @@ type LeafFinder = (patterns: StructurePatterns, text: string, profile: DocumentP
 
 const LEAVES: readonly { readonly kind: StructureKind; readonly find: LeafFinder }[] = [
   { kind: "definition", find: (patterns, text) => patterns.definitions(text) },
-  { kind: "reference", find: (patterns, text) => patterns.references(text) },
+  { kind: "reference", find: (patterns, text, profile) => substitutedDocuments(patterns.references(text), text, profile) },
   {
     kind: "reference",
     find: (patterns, text, profile) => {

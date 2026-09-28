@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### The 読み替え rule comes from the statute profile (#151)
+
+A reference inside a 読み替え quote (「第九十九条」とあるのは「第百条」) belongs to the text being read in, not to
+this document. lang-ja used to decide that on its own; the `statute` profile now states it once
+(`relative.substitution`, with a new `document` field naming what such references point to), and core applies it.
+Two visible differences: a quote after 「とあるのは、」 (with the comma) is now read as a 読み替え too, as it already was
+for 前条 and 同項; and a document without the `statute` profile (fewer than three article lines and no `profile:`
+setting) no longer treats these quotes specially. Set `profile: statute` for a short excerpt.
+
 ### `total-mismatch`: a total that is not the sum of its items (#142)
 
 A new experimental rule. In a list or a table, a line starting with a total word (`合計`, `小計`, `Total`, `Subtotal`)

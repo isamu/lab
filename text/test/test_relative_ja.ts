@@ -230,3 +230,27 @@ describe("dangling-reference が相対の参照も確かめる", () => {
     assert.deepEqual(danglingReferences(treeOf(source)), []);
   });
 });
+
+describe("読み替えの括弧の中の番地は、読み替える先の文書のもの", () => {
+  const SUBSTITUTED = "@（読み替えの中）";
+
+  it("閉じの後ろか開きの前に「とあるのは」がある括弧だけ。読点を挟んでもよい", () => {
+    const source = lines("第一条　本文。", "第二条　本文。", "第三条　同項中「第九十九条」とあるのは、「第百条」とする。");
+    assert.deepEqual(references(treeOf(source)), [`第九十九条→99${SUBSTITUTED}`, `第百条→100${SUBSTITUTED}`]);
+  });
+
+  it("ほかの括弧（定義した語、引用）の中の番地は、この文書の番地", () => {
+    const source = lines("第一条　本文。", "第二条　本文。", "第三条　「第一条に規定する者」をいう。");
+    assert.deepEqual(references(treeOf(source)), ["第一条→1"]);
+  });
+
+  it("名指しした文書があれば、その文書のまま", () => {
+    const source = lines("第一条　本文。", "第二条　本文。", "第三条　「民法第七百九条」とあるのは「第百条」とする。");
+    assert.deepEqual(references(treeOf(source)), ["第七百九条→709@民法", `第百条→100${SUBSTITUTED}`]);
+  });
+
+  it("文書の種類が無ければ、読み替えを知らない", () => {
+    const source = lines("第一条　本文。", "第二条　本文。", "第三条　同項中「第九十九条」とあるのは「第百条」とする。");
+    assert.deepEqual(references(treeWith(source, undefined)), ["第九十九条→99", "第百条→100"]);
+  });
+});

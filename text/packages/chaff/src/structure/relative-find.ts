@@ -105,6 +105,19 @@ const substitutionSpans = (text: string, quote: Substitution | undefined): Span[
         (span) => quote.after.some((marker) => text.startsWith(marker, span.end)) || quote.before.some((marker) => text.slice(0, span.start).endsWith(marker)),
       );
 
+/** 読み替えの括弧の中の、文書を名指ししていない参照に、読み替える先の文書の名前を付ける。 */
+export const substitutedDocuments = (mentions: readonly Mention[], text: string, profile: DocumentProfile | undefined): readonly Mention[] => {
+  const quote = profile?.relative?.substitution;
+  const document = quote?.document;
+  if (document === undefined) return mentions;
+  const spans = substitutionSpans(text, quote);
+  return mentions.map((mention) =>
+    mention.attrs["document"] === undefined && spans.some((span) => span.start <= mention.start && mention.start < span.end)
+      ? { ...mention, attrs: { ...mention.attrs, document } }
+      : mention,
+  );
+};
+
 /** 閉じた括弧書きを内側から外す。 */
 const withoutAsides = (gap: string, aside: RelativeVocabulary["aside"]): string => {
   if (aside === undefined) return gap;

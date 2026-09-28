@@ -41,7 +41,9 @@ const substitutionOf = (value: unknown): RelativeVocabulary["substitution"] => {
   if (!isRecord(value)) return undefined;
   const [open, close] = [text(value["open"]), text(value["close"])];
   const [after, before] = [strings(value["after"]), strings(value["before"])];
-  return open === undefined || close === undefined || after.length + before.length === 0 ? undefined : { open, close, after, before };
+  return open === undefined || close === undefined || after.length + before.length === 0
+    ? undefined
+    : { open, close, after, before, document: text(value["document"]) };
 };
 
 /** 単位が一つも無ければ読まない。何を指すのか決められない。 */
