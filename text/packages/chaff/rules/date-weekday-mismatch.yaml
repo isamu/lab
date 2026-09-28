@@ -1,0 +1,26 @@
+id: date-weekday-mismatch
+layer: L3
+status: experimental
+how_to_find: date-weekday-mismatch
+requires: [dates]
+severity: error
+
+name:
+  ja: 日付と曜日の食い違い
+  en: Date and weekday disagree
+
+why:
+  ja: 「2026年10月1日（金）」のように、日付と曜日が食い違っていると、読み手はどちらが正しいのか確かめに行くことになります。日程を書き写すときや、年をまたいで予定を使い回すときに起きます。年まで書いた日付の曜日だけを、暦と比べます。
+  en: When a date and its weekday disagree ("Friday, 1 October 2026"), the reader has to find out which one is right. It happens when a schedule is copied, or reused for another year. Only dates written with their year are checked against the calendar.
+
+message:
+  ja: 「{date}」は{actual}です（{written}と書いてあります）
+  en: "{date} is a {actual}, not a {written}"
+
+how_to_fix:
+  ja: 日付と曜日のどちらが正しいかを確かめて、片方を直してください。
+  en: Check which is right, the date or the weekday, and correct the other.
+
+levels: { strict: 1, normal: 1, relaxed: 1 }
+
+use_for: [business, technical, blog]

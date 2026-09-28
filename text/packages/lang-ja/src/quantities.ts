@@ -171,7 +171,21 @@ const toDates = (items: readonly Counted[]): { readonly dates: Mention[]; readon
 export const quantities = (text: string): Mention[] =>
   toDates(counted(text)).rest.map((item) => ({ start: item.start, end: item.end, attrs: { value: item.value, unit: item.unit } }));
 
-export const dates = (text: string): Mention[] => toDates(counted(text)).dates;
+/** 日付のすぐ後ろに書いた曜日（「2026年10月1日（木）」「10月1日 木曜日」）。日曜日が 0。 */
+const WEEKDAY_CHARS = "日月火水木金土";
+const WEEKDAY_AFTER = /^[ \t\u3000]*(?:[（(](?<paren>[日月火水木金土])(?:曜日?)?[）)]|(?<word>[日月火水木金土])曜日)/u;
+
+const weekdayAfter = (text: string, end: number): number | undefined => {
+  const groups = WEEKDAY_AFTER.exec(text.slice(end))?.groups;
+  const written = groups?.["paren"] ?? groups?.["word"];
+  return written === undefined ? undefined : WEEKDAY_CHARS.indexOf(written);
+};
+
+export const dates = (text: string): Mention[] =>
+  toDates(counted(text)).dates.map((date) => {
+    const weekday = weekdayAfter(text, date.end);
+    return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
+  });
 
 /**
  * 「1.5 倍になった。」の 1.5 は章番号ではない。番号と続く語のあいだの空白を詰めて読み直し、

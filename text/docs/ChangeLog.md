@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `date-weekday-mismatch`: a date and its weekday disagree (#142)
+
+A new experimental rule. A date written with its year and its weekday (`2026年10月1日（金）`, `Friday, 1 October 2026`)
+is checked against the calendar, and a wrong weekday is an `error` that says which day it really is. A date without a
+year, and a weekday that is not right beside a date, are not checked. The language packages read the weekday
+(`（木）`, `木曜日`, `Thursday`, `Thu`, `(Thursday)`), and name the days in a `weekday` word list; core compares.
+
+For adapter authors: a date mention may carry `weekday` (0 = Sunday), and a `weekday` lexicon names the days.
+
 ### English screens read naturally (#158)
 
 On an English document, words chaff lists are joined with `, ` instead of `、` (`No heading for "Risks, Costs"`);
