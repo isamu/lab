@@ -118,6 +118,38 @@ describe("date-order", () => {
     assert.deepEqual(found(source), []);
   });
 
+  it("a table written without leading pipes is a sequence too; a line with a pipe in prose is not a table", () => {
+    const table = ["# Plan", "", "Step | Date", "--- | ---", "a | 2026-04-01", "b | 2026-05-01", "c | 2026-04-15", "d | 2026-07-01"].join("\n");
+    assert.deepEqual(found(table), ["2026-04-15<2026-05-01"]);
+    const prose = ["# Notes", "", "a | 2026-04-01", "b | 2026-05-01", "c | 2026-04-15", "d | 2026-07-01"].join("\n");
+    assert.deepEqual(found(prose), []);
+  });
+
+  it("a pipeless table's header holding a date is not part of the order", () => {
+    const table = ["# Plan", "", "As of 2026-07-01 | Date", "--- | ---", "a | 2026-04-01", "b | 2026-05-01", "c | 2026-04-15", "d | 2026-07-01"].join("\n");
+    assert.deepEqual(found(table), ["2026-04-15<2026-05-01"]);
+  });
+
+  it("a pipeless table ends at the first line without a pipe; a list after it is its own sequence", () => {
+    const source = [
+      "# Plan",
+      "",
+      "Step | Date",
+      "--- | ---",
+      "a | 2026-04-01",
+      "b | 2026-05-01",
+      "c | 2026-06-01",
+      "",
+      "- 2026-01-01 x",
+      "- 2026-02-01 y",
+    ].join("\n");
+    assert.deepEqual(found(source), []);
+  });
+
+  it("a dash line with a pipe after a list item without one does not turn the item into a table header", () => {
+    assert.deepEqual(found(`${list("2026-04-01", "2026-05-01", "2026-04-15", "2026-07-01")}\n--- | ---`), ["2026-04-15<2026-05-01"]);
+  });
+
   it("a date in a table's header row is not part of the order", () => {
     const table = [
       "# Plan",

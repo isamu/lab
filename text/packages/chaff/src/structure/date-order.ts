@@ -25,12 +25,27 @@ const kindOf = (text: string): Kind | undefined => {
   return LIST_ITEM.test(text) ? "list" : undefined;
 };
 
+/** 先頭に | を書かない表（「Step | Date」「--- | ---」）の行。| のある見出しの下の区切り行から、| のある行が続くあいだ。 */
+const PIPELESS_RULE = /^[ \t]{0,12}:?-{3,}:?[ \t]{0,4}\|/u;
+
+const pipelessTableLines = (texts: readonly string[]): Set<number> => {
+  const inTable = new Set<number>();
+  texts.forEach((text, index) => {
+    if (!PIPELESS_RULE.test(text) || !(texts[index - 1] ?? "").includes("|")) return;
+    for (let row = index + 1; row < texts.length && (texts[row] ?? "").includes("|"); row += 1) inTable.add(row);
+  });
+  return inTable;
+};
+
 const linesOf = (source: string): Line[] => {
+  const texts = source.split("\n");
+  const pipeless = pipelessTableLines(texts);
   const found: Line[] = [];
   let start = 0;
-  source.split("\n").forEach((text) => {
+  texts.forEach((text, index) => {
     const indent = INDENT.exec(text)?.[0].length ?? 0;
-    found.push({ start, end: start + text.length, kind: kindOf(text), indent, rule: TABLE_RULE.test(text) });
+    const kind = pipeless.has(index) ? "table" : kindOf(text);
+    found.push({ start, end: start + text.length, kind, indent, rule: TABLE_RULE.test(text) });
     start += text.length + 1;
   });
   return found;
