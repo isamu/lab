@@ -1,0 +1,11 @@
+# 番号の直前にあると、「3章」「3.2節」が章や節の番地ではなくなる語。数を数える（全3章・各2章）か、版の番号（バージョン3.2）。
+id: not-section-before
+language: ja
+entries:
+  - pattern: 全
+  - pattern: 計
+  - pattern: 約
+  - pattern: 各
+  - pattern: 毎
+  - pattern: 残り
+  - pattern: バージョン

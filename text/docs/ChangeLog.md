@@ -9,6 +9,14 @@ Newest first.
 A Wikivoyage template the converter drops no longer leaves a space before punctuation (`Airport , but`) or a double
 space in the text chaff reads.
 
+### Japanese 「3.2節」「第3章」「3.2.1項」 are references (#170)
+
+`dangling-reference` now reads a section, chapter or clause written in Arabic numerals in Japanese prose (「3.2節」,
+「3.2 節」, 「３．２節」, 「第3章」, 「3章」, 「3.2.1項」) and reports it when the document has no such heading. A chapter
+matches `## 第3章` (also under a `#` title) or `## 3. …`. Counts (「全3章」, 「3章構成」), other words (「3.2節約」,
+「3項目」), versions, dates and a heading's own number are not read. Statute addresses in kanji (第三章, 第二節) keep
+their own path.
+
 ### `undefined-acronym` no longer counts shouting, requirement words, identifiers or licence names (#170)
 
 A run of capitalised words (a disclaimer, “AS IS”), the RFC 2119 words (MUST, SHOULD, MAY …), identifiers joined to
