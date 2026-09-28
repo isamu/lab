@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { pageFurniture } from "../packages/chaff/src/page-furniture.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
 
 // 紙の版を写したテキスト（RFC）のページのヘッダーとフッター。改ページ（\f）の直前と直後の、空でない 1 行ずつ。
 
@@ -35,8 +37,12 @@ describe("pageFurniture", () => {
   });
 
   it("文書の先頭と末尾の改ページでも止まる", () => {
-    assert.deepEqual(spanTexts("\fHeader line"), ["\fHeader line"]);
+    assert.deepEqual(spanTexts("\f\nHeader line"), ["\f", "Header line"]);
     assert.deepEqual(spanTexts("Footer line\n\f"), ["Footer line", "\f"]);
+  });
+
+  it("行の途中の \\f はページの区切りではない", () => {
+    assert.deepEqual(spanTexts(lines("Before.", "This sentence has a page\fbreak in it.", "After.")), []);
   });
 });
 
@@ -52,5 +58,30 @@ describe("テキストの文書では、ページの飾りを本文として読�
 
   it("Markdown はそのまま（改ページを使わない）", () => {
     assert.match(sentencesOf("rfc.md").join(" | "), /Informational/u);
+  });
+});
+
+describe("木もページの飾りを読まない", () => {
+  it("フッターの「Section 9」は節にならず、Section 9 への参照は参照先が無い", () => {
+    const source = lines(
+      "Section 1 Scope",
+      "text",
+      "Section 2 Terms",
+      "See Section 9.",
+      "",
+      "Section 9 Footer",
+      "\f",
+      "Header line",
+      "",
+      "Section 3 Fees",
+      "text",
+    );
+    const findings = runRules(buildDocument("c.txt", source, en), loadRules("en"), {}, true, "technical/spec").findings.filter(
+      (finding) => finding.rule === "dangling-reference",
+    );
+    assert.deepEqual(
+      findings.map((finding) => finding.values["target"]),
+      ["9"],
+    );
   });
 });

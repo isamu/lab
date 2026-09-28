@@ -16,6 +16,9 @@ const linesOf = (source: string): Line[] => {
 
 const isBlank = (line: Line | undefined): boolean => line !== undefined && line.text.trim() === "";
 
+/** 改ページだけの行。行の途中の \f は本文の一部（写し間違い）で、ページの区切りではない。 */
+const PAGE_BREAK = /^[ \t]*\f[ \t\r]*$/u;
+
 /** index から step の向きに、空行を飛ばして最初の空でない行。REACH 行を越えたら探さない。 */
 const nearestText = (lines: readonly Line[], index: number, step: number): Line | undefined => {
   const candidates = Array.from({ length: REACH }, (_, offset) => lines[index + step * (offset + 1)]);
@@ -30,7 +33,7 @@ const nearestText = (lines: readonly Line[], index: number, step: number): Line 
 export const pageFurniture = (source: string): Span[] => {
   const lines = linesOf(source);
   return lines.flatMap((line, index) => {
-    if (!line.text.includes("\f")) return [];
+    if (!PAGE_BREAK.test(line.text)) return [];
     return [nearestText(lines, index, -1), line, nearestText(lines, index, 1)].flatMap((found) =>
       found === undefined ? [] : [{ start: found.start, end: found.end }],
     );

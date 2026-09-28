@@ -302,7 +302,8 @@ export const buildDocument = (
                 path,
                 source,
                 language: adapter.id,
-                outline: isMarkdownPath(path) ? outlineOf(root, source) : NO_OUTLINE,
+                // テキストの文書は、ページの飾りを覆って読む。フッターの「Section 9」を木の節にしない。
+                outline: isMarkdownPath(path) ? outlineOf(root, source) : { ...NO_OUTLINE, opaque: pageFurniture(source) },
                 markdown: isMarkdownPath(path),
                 profile,
               },
