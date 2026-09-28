@@ -2,6 +2,8 @@ id: ngram-repetition
 layer: L1
 status: stable
 how_to_find: ngram-repetition
+# 品詞があれば使う（数の語、言い回しの動詞）。無くても文字だけで動く。
+uses: [pos]
 severity: info
 
 name:

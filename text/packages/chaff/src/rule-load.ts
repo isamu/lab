@@ -102,6 +102,7 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     what_to_check: isLocalized(raw["what_to_check"]) ? raw["what_to_check"] : undefined,
     where: typeof raw["where"] === "string" ? raw["where"] : undefined,
     requires: stringList(raw["requires"]) ?? [],
+    uses: stringList(raw["uses"]) ?? [],
     from: stringList(raw["from"]) ?? [],
     languages: stringList(raw["languages"]),
     use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],

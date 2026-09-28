@@ -107,7 +107,7 @@ export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, e
   pos: forGenre(rules, genre)
     .filter((rule) => rule.layer !== "L4" && levelFor(rule, settings, experimental) !== "off")
     .filter((rule) => rule.languages === undefined || rule.languages.includes(language))
-    .some((rule) => rule.requires.includes("pos") || rule.requires.includes("lemma")),
+    .some((rule) => [...rule.requires, ...rule.uses].some((need) => need === "pos" || need === "lemma")),
 });
 
 const place = (starts: readonly number[], finding: Finding): Finding => {
