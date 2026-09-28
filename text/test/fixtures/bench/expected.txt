@@ -1,0 +1,80 @@
+rule                     planted  found  missed  false alarms
+contraction-consistency        1      1       0             0
+dangling-reference             6      4       2             0
+date-order                     4      4       0             0
+date-weekday-mismatch          6      6       0             0
+duplicate-definition           4      4       0             0
+latin-spacing                  1      1       0             0
+max-sentence-length            5      5       0             0
+no-doubled-joshi               7      7       0             0
+no-mixed-desumasu              7      7       0             0
+numbering-gap                  6      6       0             0
+total-mismatch                 4      4       0             0
+undefined-acronym              2      1       1             0
+ja/design  clean sample  clean
+ja/itinerary  clean sample  clean
+ja/minutes  clean sample  clean
+ja/note  clean sample  clean
+ja/policy  clean sample  clean
+ja/quote  clean sample  clean
+ja/requirements  clean sample  clean
+en/design  clean sample  clean
+en/itinerary  clean sample  clean
+en/minutes  clean sample  clean
+en/note  clean sample  clean
+en/policy  clean sample  clean
+en/quote  clean sample  clean
+en/requirements  clean sample  clean
+ja/design  reference-broken  missed
+ja/design  number-skipped  found
+ja/design  defined-twice  found
+ja/design  polite-in-plain  found
+ja/design  no-nested  found
+ja/design  gloss-dropped  missed
+ja/design  latin-spaced  found
+ja/itinerary  weekday-shift  found
+ja/itinerary  rows-swapped  found
+ja/itinerary  item-dropped  found
+ja/itinerary  sentences-joined  found
+ja/itinerary  plain-in-polite  found
+ja/itinerary  no-nested  found
+ja/minutes  weekday-shift  found
+ja/minutes  rows-swapped  found
+ja/minutes  polite-in-plain  found
+ja/minutes  no-nested  found
+ja/note  plain-in-polite  found
+ja/note  no-nested  found
+ja/policy  reference-broken  found
+ja/policy  number-skipped  found
+ja/policy  defined-twice  found
+ja/policy  polite-in-plain  found
+ja/policy  no-nested  found
+ja/quote  weekday-shift  found
+ja/quote  item-dropped  found
+ja/quote  plain-in-polite  found
+ja/quote  no-nested  found
+ja/requirements  reference-broken  missed
+ja/requirements  number-skipped  found
+ja/requirements  polite-in-plain  found
+ja/requirements  no-nested  found
+en/design  reference-broken  found
+en/design  number-skipped  found
+en/design  defined-twice  found
+en/design  sentences-joined  found
+en/design  gloss-dropped  found
+en/itinerary  weekday-shift  found
+en/itinerary  rows-swapped  found
+en/itinerary  item-dropped  found
+en/itinerary  sentences-joined  found
+en/minutes  weekday-shift  found
+en/minutes  rows-swapped  found
+en/minutes  sentences-joined  found
+en/note  sentences-joined  found
+en/note  contracted  found
+en/policy  reference-broken  found
+en/policy  number-skipped  found
+en/policy  defined-twice  found
+en/quote  weekday-shift  found
+en/quote  item-dropped  found
+en/requirements  reference-broken  found
+en/requirements  number-skipped  found

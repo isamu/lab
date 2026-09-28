@@ -11,6 +11,7 @@
   "scripts": {
     "corpus": "node scripts/corpus-run.ts",
     "corpus:fetch": "node scripts/corpus-fetch.ts",
+    "bench": "node scripts/bench.ts",
     "build": "yarn workspace @chaffjs/lang-ja build && yarn workspace @chaffjs/lang-en build && yarn workspace chaffjs build",
     "duplication": "npx --yes jscpd@4 . --format typescript,javascript --ignore \"**/node_modules/**,**/dist/**,**/*.d.ts\" --reporters console",
     "example": "node packages/chaff/bin/chaff.js examples/ --compact",

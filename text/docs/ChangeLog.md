@@ -11,6 +11,14 @@ requirements RFC), standard contracts (Common Paper, Bonterms), Wikivoyage itine
 pages. Public-domain ones are committed; the others keep only a pinned URL. A manifest entry can name its source
 `"format"` (`wikitext` or `html`); `yarn corpus:fetch` stores such a source converted to Markdown.
 
+### `yarn bench` measures what chaff misses (#170)
+
+Self-written samples in Japanese and English (itinerary, quote, minutes, design doc, requirements, policy, note) get one
+planted mistake at a time: a wrong weekday, swapped rows, a dropped item, a broken reference, a skipped number, a second
+definition, joined sentences, a mixed register, nested 「の」, a dropped acronym expansion. Per rule, it counts which ones
+chaff finds near their line and what it reports on the clean samples, against `test/fixtures/bench/expected.txt`
+(`yarn bench --update` accepts a change).
+
 ### `chaff --version` (#174)
 
 `chaff --version` (or `-v`) prints the version of chaffjs and of the language packages it bundles, one per line, and
