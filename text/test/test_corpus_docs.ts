@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { docEntries, docPath, parsedAs, summaryChanges, summaryLine, updatedSummary, type DocEntry } from "../scripts/corpus-docs.ts";
+import { docEntries, docPath, parsedAs, storedText, summaryChanges, summaryLine, updatedSummary, type DocEntry } from "../scripts/corpus-docs.ts";
 
 // コーパスの法令以外の文書。どこに置くか、rule ごとの数の一行、前回との違い。
 
@@ -32,6 +32,31 @@ describe("docEntries", () => {
     );
     assert.deepEqual(docEntries(undefined), []);
     assert.deepEqual(docEntries({ documents: "x" }), []);
+  });
+
+  it("format は無いか、変換できる形式 (wikitext / html) のときだけ読む", () => {
+    const manifest = {
+      documents: [
+        { ...entry({ id: "plain" }), source: "url" },
+        { ...entry({ id: "wiki" }), format: "wikitext", source: "url" },
+        { ...entry({ id: "page" }), format: "html", source: "url" },
+        { ...entry({ id: "pdf" }), format: "pdf", source: "url" },
+        { ...entry({ id: "inherited" }), format: "toString", source: "url" },
+        { ...entry({ id: "number" }), format: 1, source: "url" },
+      ],
+    };
+    assert.deepEqual(
+      docEntries(manifest).map((doc) => doc.id),
+      ["plain", "wiki", "page"],
+    );
+  });
+});
+
+describe("storedText", () => {
+  it("format の無い文書は取ったまま、ある文書は Markdown に変えて置く", () => {
+    assert.equal(storedText(entry(), "== A ==\n"), "== A ==\n");
+    assert.equal(storedText(entry({ format: "wikitext" }), "== A ==\n"), "## A\n");
+    assert.equal(storedText(entry({ format: "html" }), "<h2>A</h2>"), "## A\n");
   });
 });
 

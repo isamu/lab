@@ -1,6 +1,13 @@
 // The corpus documents of every kind (not the statutes): where each one lives, and the per-rule summary that
 // `yarn corpus` compares with the committed expectation. Pure; the scripts read and write the files.
 import { join } from "node:path";
+import { htmlToMarkdown } from "./html-markdown.ts";
+import { wikitextToMarkdown } from "./wikitext-markdown.ts";
+
+/** A source that is not Markdown or plain text, and the converter that turns it into Markdown when it is fetched. */
+const CONVERTERS = { wikitext: wikitextToMarkdown, html: htmlToMarkdown } as const;
+
+type SourceFormat = keyof typeof CONVERTERS;
 
 export type DocEntry = {
   readonly id: string;
@@ -11,6 +18,7 @@ export type DocEntry = {
   readonly license: string;
   /** May the text be committed? If not, only the URL is kept and the text is fetched into the cache. */
   readonly redistribute: boolean;
+  readonly format?: SourceFormat;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -21,10 +29,14 @@ const isDocEntry = (value: unknown): value is DocEntry =>
   isRecord(value) &&
   value["source"] === "url" &&
   TEXT_FIELDS.every((field) => typeof value[field] === "string" && value[field] !== "") &&
-  typeof value["redistribute"] === "boolean";
+  typeof value["redistribute"] === "boolean" &&
+  (value["format"] === undefined || (typeof value["format"] === "string" && Object.hasOwn(CONVERTERS, value["format"])));
 
 export const docEntries = (manifest: unknown): DocEntry[] =>
   isRecord(manifest) && Array.isArray(manifest["documents"]) ? manifest["documents"].filter(isDocEntry) : [];
+
+/** What is stored for a fetched document: the text as fetched, or converted to Markdown when it has a format. */
+export const storedText = (entry: DocEntry, fetched: string): string => (entry.format === undefined ? fetched : CONVERTERS[entry.format](fetched));
 
 const isPlainText = (entry: DocEntry): boolean => new URL(entry.url).pathname.endsWith(".txt");
 
