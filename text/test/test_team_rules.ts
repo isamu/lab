@@ -4,6 +4,8 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { renderCompact } from "../packages/chaff/src/render/compact.ts";
 import type { TeamRules } from "../packages/chaff/src/document.ts";
 
 const RULES = loadRules("ja");
@@ -73,5 +75,58 @@ describe("チームが決める rule", () => {
     it("valid: 普通の文章なら指摘しない", () => {
       assert.ok(!idsFor(`# 紹介\n\n${BULK}`, NONE, "blog/tech").includes("proper-noun-density"));
     });
+  });
+});
+
+describe("English screens of the team rules", () => {
+  const RULES_EN = loadRules("en");
+
+  const findingsFor = (source: string, team: TeamRules): ReturnType<typeof runRules>["findings"] =>
+    runRules(buildDocument("t.md", source, en, team), RULES_EN, {}, true, "business/proposal").findings;
+
+  it("missing headings are joined with a comma, not 「、」", () => {
+    const found = findingsFor("# Proposal\n\n## Plan\n\nWe start in May.", { jargon: [], requiredSections: ["Risks", "Costs"] });
+    assert.equal(found.find((finding) => finding.rule === "required-sections")?.values["word"], "Risks, Costs");
+  });
+
+  it("a Japanese document keeps 「、」", () => {
+    const found = runRules(
+      buildDocument("t.md", "# 提案\n\n## 背景\n\n本文。", ja, { jargon: [], requiredSections: ["リスク", "費用"] }),
+      RULES,
+      {},
+      true,
+      "business/proposal",
+    ).findings;
+    assert.equal(found.find((finding) => finding.rule === "required-sections")?.values["word"], "リスク、費用");
+  });
+
+  it("a jargon phrase is found at the start of a sentence too", () => {
+    const found = findingsFor("# Note\n\nCircle back after lunch.", { jargon: ["circle back"], requiredSections: [] });
+    assert.ok(found.some((finding) => finding.rule === "internal-jargon"));
+  });
+
+  it("a jargon entry written with capitals is found in lower case too", () => {
+    const found = findingsFor("# Note\n\nWe circle back after lunch.", { jargon: ["Circle back"], requiredSections: [] });
+    assert.ok(found.some((finding) => finding.rule === "internal-jargon"));
+  });
+
+  it("ai-tell lists its words with a comma in English", () => {
+    const source = "# Note\n\nWe delve into the tapestry of ideas. It plays a crucial role and is a testament to our work.";
+    const found = runRules(buildDocument("t.md", source, en), RULES_EN, { "ai-tell": "strict" }, true, "blog/tech").findings;
+    const words = String(found.find((finding) => finding.rule === "ai-tell")?.values["word"] ?? "");
+    assert.ok(words.includes(", ") && !words.includes("、"), words);
+  });
+
+  it("the compact tally says 1 finding, not 1 findings", () => {
+    const source = "# Note\n\nCircle back after lunch.";
+    const document = buildDocument("t.md", source, en, { jargon: ["circle back"], requiredSections: [] });
+    const result = runRules(
+      document,
+      RULES_EN.filter((rule) => rule.id === "internal-jargon"),
+      {},
+      true,
+      "business/proposal",
+    );
+    assert.match(renderCompact("t.md", result, RULES_EN, "en"), /^1 finding$/mu);
   });
 });

@@ -89,3 +89,29 @@ describe("no-em-dash", () => {
     assert.ok(composite?.from.includes("no-em-dash"));
   });
 });
+
+describe("the composite on an English document", () => {
+  const RULES_EN = loadRules("en");
+  const LISTS = [
+    "It does three things.\n\n- fast\n- cheap\n- strong",
+    "It has three uses.\n\n- read\n- write\n- fix",
+    "Mind three things.\n\n- prepare\n- run\n- check",
+  ].join("\n\n");
+  const ENGLISH = [
+    "# Introduction",
+    "",
+    "In today's fast-paced world, this field has gained significant attention. We delve into the tapestry of ideas.",
+    "",
+    LISTS,
+    "",
+    "In conclusion, it plays a crucial role. Hope this helps, and thanks for reading.",
+  ].join("\n");
+
+  it("names the signals with a comma, not 「、」", () => {
+    const found = runRules(buildDocument("t.md", ENGLISH, en), RULES_EN, {}, true, "blog/tech").findings.find(
+      (finding) => finding.rule === "ai-generated-composite",
+    );
+    const word = String(found?.values["word"] ?? "");
+    assert.ok(word.includes(", ") && !word.includes("、"), word);
+  });
+});
