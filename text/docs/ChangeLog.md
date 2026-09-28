@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### In-page navigation is not prose (#170)
+
+A Markdown paragraph made only of links into the same page (`](#…)`, or a reference link whose definition points to
+`#…`) and marks such as ▲ ↑ | ・ — a "back to contents" line after every section, or the entries of a table of
+contents — is page navigation, not prose, and is no longer read as sentences. A list made only of such entries is not
+counted as a list either (`rule-of-three`). This stopped `repeated-sentence-head` from firing on a repeated
+`[▲ 目次に戻る](#目次)`, and a table of contents no longer sets the document's spacing majority for `latin-spacing` or
+counts as the first use of an acronym. A paragraph where a link sits among other words, and links to other pages, are
+still read.
+
 ### lang-en only counts capitalised words as proper nouns (#170)
 
 The English tagger marks words it does not know as proper nouns, so `proper-noun-density` counted lowercase words

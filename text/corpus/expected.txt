@@ -15,7 +15,7 @@ da-agile-review-4  agentless-passive 4, max-sentence-length 13, no-mixed-desumas
 da-ai-advisory-board-1  agentless-passive 18, heading-echo 1, latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 9, max-sentence-length 30, no-doubled-joshi 2, no-mixed-desumasu 1, sasete-itadaku 4, taigen-dome-in-prose 1, undefined-acronym 11
 da-annual-report-2024  agentless-passive 1, concrete-evidence-density 3, heading-echo 1, max-sentence-length 1, ngram-repetition 1, preamble-length 1
 da-area-data-map-format  clean
-da-area-data-model  latin-spacing 5, max-sentence-length 5, repeated-sentence-head 1, undefined-acronym 3
+da-area-data-model  latin-spacing 1, max-sentence-length 5
 da-data-strategy  agentless-passive 1, empty-intensifier 1, max-kanji-continuous 2, max-sentence-length 4, preamble-length 1
 da-legal-practice  heading-echo 1, latin-spacing 4, max-kanji-continuous 2, max-sentence-length 6, preamble-length 1, repeated-sentence-head 1
 da-machine-readability-output-format  latin-spacing 12, no-mixed-desumasu 1
@@ -26,7 +26,7 @@ denkiyagi-shugyo-kisoku  agentless-passive 3, heading-echo 3, max-kanji-continuo
 entaku-rb-4  agentless-passive 9, latin-spacing 1, no-mixed-desumasu 1
 entaku-rb-5  no-mixed-desumasu 1
 fprime-buffermanager-sdd  contraction-consistency 2, heading-echo 2, proper-noun-density 1
-genai-web-api  latin-spacing 6
+genai-web-api  latin-spacing 4
 genai-web-procedure  latin-spacing 29, max-sentence-length 1, proper-noun-density 1, undefined-acronym 3
 gitlab-meetings  agentless-passive 54, concrete-evidence-density 7, max-paragraph-length 2, max-sentence-length 44, proper-noun-density 1, title-case-consistency 1, undefined-acronym 11
 gitlab-values  agentless-passive 90, bold-density 1, concrete-evidence-density 57, expletive-construction 12, heading-echo 11, max-paragraph-length 25, max-sentence-length 141, undefined-acronym 10, unqualified-superlative 18
