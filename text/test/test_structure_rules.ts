@@ -11,6 +11,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import type { Finding, LanguageAdapter, StructurePatterns } from "../packages/chaff/src/plugin.ts";
 import { citedDocument } from "../packages/lang-ja/src/citation.ts";
 import { citedDocumentAfter } from "../packages/lang-en/src/citation.ts";
+import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 
 // 参照先が無い・番号の抜け・二重定義。誤検出しやすい正常な文書と、誤りのある文書を対にする（spec §23）。
 
@@ -20,10 +21,17 @@ const lines = (...rows: string[]): string => rows.join("\n");
 
 type Found = readonly [string, Readonly<Record<string, string | number>>];
 
+/** 日本語の例は法令と契約書の抜き書き。CLI なら条が 3 つ以上あれば法令の種類で読むので、短い抜き書きにも同じ種類を渡す。 */
+const statuteJa = loadProfiles().find((definition) => definition.id === "statute")?.languages["ja"];
+
 const findingsOf = (adapter: LanguageAdapter, source: string, path = "c.txt"): Finding[] =>
-  runRules(buildDocument(path, source, adapter), loadRules(adapter.id), {}, true, "business/contract").findings.filter((finding) =>
-    STRUCTURE_RULES.includes(finding.rule),
-  );
+  runRules(
+    buildDocument(path, source, adapter, undefined, adapter.id === "ja" ? statuteJa : undefined),
+    loadRules(adapter.id),
+    {},
+    true,
+    "business/contract",
+  ).findings.filter((finding) => STRUCTURE_RULES.includes(finding.rule));
 
 /** offset は位置の確認用で、期待値に書くと読みにくいので外して比べる。 */
 const withoutOffset = (values: Finding["values"]): Readonly<Record<string, string | number>> =>

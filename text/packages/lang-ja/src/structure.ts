@@ -238,35 +238,16 @@ const PARENTHESES = /（[^（）]*）/gu;
 /** 間の文字列が、接続の語・読点・項や号の断片・括弧書きだけでできているか。 */
 const isContinuation = (gap: string): boolean => gap.replace(PARENTHESES, "").replace(FRAGMENT, "").replace(CONNECTORS, "") === "";
 
-const SUBSTITUTION = "とあるのは";
-const SUBSTITUTED = "（読み替えの中）";
-
-/** 行を一度だけ読んで、位置ごとの括弧の深さと、読み替えの「」の中かどうかを出す。参照ごとに行を読み直さない。 */
-type LineMap = { readonly depth: Int32Array; readonly substituted: Uint8Array };
-
-/**
- * 読み替え（「『X』とあるのは『Y』と読み替える」）の「」の中の番地は、読み替える先の法令のもの。
- * ほかの「」（定義した語、引用）はこの文書の言葉なので、その中の参照もこの文書の参照として扱う。
- */
-const isSubstitution = (text: string, start: number, end: number): boolean =>
-  text.startsWith(SUBSTITUTION, end + 1) || text.slice(Math.max(0, start - SUBSTITUTION.length), start) === SUBSTITUTION;
-
-const lineMapOf = (text: string): LineMap => {
+/** 行を一度だけ読んで、位置ごとの括弧の深さを出す。参照ごとに行を読み直さない。 */
+const depthsOf = (text: string): Int32Array => {
   const depth = new Int32Array(text.length + 1);
-  const substituted = new Uint8Array(text.length + 1);
-  const opens: number[] = [];
   const open = { parentheses: 0 };
   text.split("").forEach((char, at) => {
     depth[at] = open.parentheses;
-    if (char === "「") opens.push(at);
-    if (char === "」") {
-      const start = opens.pop();
-      if (start !== undefined && opens.length === 0 && isSubstitution(text, start, at)) substituted.fill(1, start, at + 1);
-    }
     if (char === "（") open.parentheses += 1;
     if (char === "）") open.parentheses = Math.max(0, open.parentheses - 1);
   });
-  return { depth, substituted };
+  return depth;
 };
 
 /**
@@ -300,7 +281,7 @@ const addressOfReference = (
 };
 
 const references = (text: string): Mention[] => {
-  const map = lineMapOf(text);
+  const depths = depthsOf(text);
   // 括弧書きの中の参照（「（同法第五十九条において準用する場合を含む。）」）は、外の並びを切らない。並びは括弧の深さごとに持つ。
   const chains = new Map<number, { readonly end: number; readonly document: string | undefined }>();
   return [...text.matchAll(REFERENCE)].flatMap((match) => {
@@ -308,12 +289,11 @@ const references = (text: string): Mention[] => {
     const address = addressOfReference(groups);
     if (address === undefined) return [];
     const { target, fallback } = address;
-    const depth = map.depth[match.index] ?? 0;
+    const depth = depths[match.index] ?? 0;
     const previous = chains.get(depth);
     const inherited =
       previous?.document !== undefined && isContinuation(withoutClosedParentheses(text.slice(previous.end, match.index))) ? previous.document : undefined;
-    const inQuote = map.substituted[match.index] === 1 ? SUBSTITUTED : undefined;
-    const document = citedDocument(text, match.index) ?? inherited ?? inQuote;
+    const document = citedDocument(text, match.index) ?? inherited;
     chains.set(depth, { end: match.index + match[0].length, document });
     const attrs = { target, label: match[0], ...(fallback === undefined ? {} : { fallback }), ...(document === undefined ? {} : { document }) };
     return [{ start: match.index, end: match.index + match[0].length, attrs }];

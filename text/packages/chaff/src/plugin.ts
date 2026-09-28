@@ -239,9 +239,17 @@ export type RelativeVocabulary = {
   readonly notAfter: string | undefined;
   /**
    * 読み替え（「『前条』とあるのは『…』」）の括弧。中の前条・同項は読み替える先の文の言葉で、ここからは決められないので読まない。
-   * 閉じの直後に after、開きの直前に before のどれかがあるものだけ。
+   * 閉じの直後に after、開きの直前に before のどれかがあるものだけ。中の番地を名指しした参照は、document の名前の文書を指す。
    */
-  readonly substitution: { readonly open: string; readonly close: string; readonly after: readonly string[]; readonly before: readonly string[] } | undefined;
+  readonly substitution:
+    | {
+        readonly open: string;
+        readonly close: string;
+        readonly after: readonly string[];
+        readonly before: readonly string[];
+        readonly document: string | undefined;
+      }
+    | undefined;
   /** 条を書かずにこの単位で始まる番地（法令の「第一項」「第二号」）は、書いた場所を含むまとまりの中を指す。 */
   readonly inside: readonly string[];
   /**
