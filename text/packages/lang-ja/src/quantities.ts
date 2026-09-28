@@ -57,6 +57,10 @@ const runEnd = (morphs: readonly Morph[], index: number): number => {
 /** 「第3条」の 3 は番号で、数量ではない。 */
 const isOrdinal = (morph: Morph | undefined): boolean => morph?.surface === "第";
 
+/** 「前二項」「前三条」は直前の二つの項・三つの条を指す番地で、数量ではない。「前二年」は期間なので数える。 */
+const RELATIVE_UNITS = new Set(["条", "項", "号", "章", "節", "款", "目", "編"]);
+const isRelativeAddress = (previous: Morph | undefined, unit: string): boolean => previous?.surface === "前" && RELATIVE_UNITS.has(unit);
+
 /** 数と単位のあいだに置かれうる空白 1 文字。構造の型（structure.ts の SPACE）と同じく、全角空白とタブも含む。 */
 const GAP = new Set([" ", "\t", "\u3000"]);
 
@@ -91,7 +95,8 @@ const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] =
       const number = text.slice(first.start, morphs[end - 1]?.end ?? first.end);
       const value = parseJapaneseNumber(number);
       const counter = counterAt(text, morphs, number, end);
-      if (value !== undefined && counter !== undefined) found.push({ start: first.start, end: counter.end, value, unit: counter.unit });
+      if (value !== undefined && counter !== undefined && !isRelativeAddress(morphs[index - 1], counter.unit))
+        found.push({ start: first.start, end: counter.end, value, unit: counter.unit });
     }
     index = Math.max(end, index + 1);
   }

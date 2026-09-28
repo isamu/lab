@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### `前二項` and `前三条` are not quantities (#138)
+
+A statute's `前二項` means "the two preceding paragraphs": an address, not the quantity 2 項. A number after `前`
+followed by a statute unit (`条 項 号 章 節 款 目 編`) is no longer read as a quantity. `前二年` (the previous two years)
+still is.
+
 ### `max-kanji-continuous` does not count legal addresses (#139)
 
 `第二十二条第二項` and `第五十二条の二第一項` are how a statute writes an address, in kanji numerals, and cannot be
