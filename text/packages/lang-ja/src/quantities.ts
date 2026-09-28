@@ -47,10 +47,17 @@ const isJoiner = (morphs: readonly Morph[], index: number): boolean => {
   return morph !== undefined && [".", ",", "．", "，"].includes(morph.surface) && isNumeral(morphs[index - 1]) && isNumeral(morphs[index + 1]);
 };
 
+/** 桁の語。「26.7 万行」「1.2 万円」のように、数と空白 1 つを挟んで書かれても同じ数の一部。兆は数として読めないので入れない。 */
+const MULTIPLIERS = new Set(["万", "億"]);
+
+/** 数と桁の語のあいだの空白 1 つ。 */
+const isSpacedMultiplier = (morphs: readonly Morph[], index: number): boolean =>
+  isSpace(morphs[index]) && isNumeral(morphs[index - 1]) && MULTIPLIERS.has(morphs[index + 1]?.surface ?? "");
+
 /** index から始まる数の並びの終わり（含まない）。 */
 const runEnd = (morphs: readonly Morph[], index: number): number => {
   let end = index;
-  while (isNumeral(morphs[end]) || isJoiner(morphs, end)) end += 1;
+  while (isNumeral(morphs[end]) || isJoiner(morphs, end) || isSpacedMultiplier(morphs, end)) end += 1;
   return end;
 };
 
@@ -61,6 +68,8 @@ const isOrdinal = (morph: Morph | undefined): boolean => morph?.surface === "第
 const GAP = new Set([" ", "\t", "\u3000"]);
 
 const isSpace = (morph: Morph | undefined): morph is Morph => morph !== undefined && GAP.has(morph.surface);
+
+const SPACES = /[ \t\u3000]/gu;
 
 /**
  * 「1.5 倍」の「倍」は、数とのあいだに空白があると解析器が普通の名詞と読む。
@@ -88,7 +97,7 @@ const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] =
     const end = runEnd(morphs, index);
     const first = morphs[index];
     if (first !== undefined && end > index && !isOrdinal(morphs[index - 1])) {
-      const number = text.slice(first.start, morphs[end - 1]?.end ?? first.end);
+      const number = text.slice(first.start, morphs[end - 1]?.end ?? first.end).replace(SPACES, "");
       const value = parseJapaneseNumber(number);
       const counter = counterAt(text, morphs, number, end);
       if (value !== undefined && counter !== undefined) found.push({ start: first.start, end: counter.end, value, unit: counter.unit });
@@ -98,14 +107,15 @@ const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] =
   return found;
 };
 
-const NUMBER_RUN = /[0-9０-９][0-9０-９.,]{0,15}|[〇一二三四五六七八九十百千万億]{1,12}/gu;
+/** 算用数字は、すぐ後ろか空白 1 つを挟んだ桁の語（1.2万、1.2 万）まで一つの数。形態素の経路と同じ読み方。 */
+const NUMBER_RUN = /[0-9０-９][0-9０-９.,]{0,15}(?:[ \t\u3000]?[万億])?|[〇一二三四五六七八九十百千万億]{1,12}/gu;
 
-const countedByTable = (text: string): Counted[] =>
+export const countedByTable = (text: string): Counted[] =>
   [...text.matchAll(NUMBER_RUN)].flatMap((match) => {
     // 形態素の経路と同じく、数と単位のあいだの空白 1 つは詰めて読む。
     const after = match.index + match[0].length + (GAP.has(text[match.index + match[0].length] ?? "") ? 1 : 0);
     const unit = UNITS.find((candidate) => text.startsWith(candidate, after));
-    const value = parseJapaneseNumber(toHalfWidth(match[0]));
+    const value = parseJapaneseNumber(toHalfWidth(match[0].replace(SPACES, "")));
     const ordinal = text[match.index - 1] === "第";
     return unit === undefined || value === undefined || ordinal ? [] : [{ start: match.index, end: after + unit.length, value, unit }];
   });

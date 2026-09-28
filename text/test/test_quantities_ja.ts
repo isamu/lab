@@ -1,7 +1,7 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
-import { countedAfter, dates, quantities } from "../packages/lang-ja/src/quantities.ts";
+import { countedAfter, countedByTable, dates, quantities } from "../packages/lang-ja/src/quantities.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 import { buildStructure } from "../packages/chaff/src/structure/of.ts";
@@ -42,6 +42,24 @@ describe("数量（助数詞を品詞で読む）", () => {
     ["委託料として金50万円を支払う。", [[500000, "円"]]],
     ["百万円以下の罰金に処する。", [[1000000, "円"]]],
     ["約1万件の契約書を用いた。", [[10000, "件"]]],
+    // 数と桁の語のあいだの空白 1 つは、同じ数の一部（手元の記事「26.7 万行」）。空白 2 つや、桁でない語の前では繋がない。
+    [
+      "26.7 万行を 0.1 秒台で読む。",
+      [
+        [267000, "行"],
+        [0.1, "秒"],
+      ],
+    ],
+    ["見積は 1.2 万円です。", [[12000, "円"]]],
+    ["予算は 3 億円。", [[300000000, "円"]]],
+    [
+      "3 人と 5 人。",
+      [
+        [3, "人"],
+        [5, "人"],
+      ],
+    ],
+    ["3件万一の場合。", [[3, "件"]]],
     ["精度は95.2%に向上した。", [[95.2, "%"]]],
     ["処理時間を0.5倍に短縮した。", [[0.5, "倍"]]],
     ["全角の３０日でも読む。", [[30, "日"]]],
@@ -56,6 +74,24 @@ describe("数量（助数詞を品詞で読む）", () => {
   ];
   cases.forEach(([text, expected]) => {
     it(text, () => assert.deepEqual(quantityOf(text), expected));
+  });
+});
+
+describe("品詞を読まないときの単位の表でも、空白を挟んだ桁の語は同じ数", () => {
+  const read = (text: string): [number, string][] => countedByTable(text).map((item) => [item.value, item.unit]);
+
+  it("1.2 万円は 12000 円、約 3 万件は 30000 件", () => {
+    assert.deepEqual(read("見積は 1.2 万円です。"), [[12000, "円"]]);
+    assert.deepEqual(read("約 3 万件の文書。"), [[30000, "件"]]);
+  });
+
+  it("空白の無い 1.2万円も 12000 円の一つだけ（前は 1.2 万円と 10000 円の二つに読んでいた）", () => {
+    assert.deepEqual(read("1.2万円です。"), [[12000, "円"]]);
+  });
+
+  it("桁の語の無い書き方はこれまでどおり", () => {
+    assert.deepEqual(read("3 人です。"), [[3, "人"]]);
+    assert.deepEqual(read("百万円の罰金。"), [[1000000, "円"]]);
   });
 });
 
