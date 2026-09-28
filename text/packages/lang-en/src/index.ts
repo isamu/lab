@@ -1,5 +1,5 @@
-import { split, SentenceSplitterSyntax } from "sentence-splitter";
 import { loadLexicons } from "./lexicons.ts";
+import { sentenceSpans } from "./sentence-split.ts";
 import { structure } from "./structure.ts";
 import { isReady, prepare, tokenize } from "./pos.ts";
 import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence } from "chaffjs/plugin";
@@ -51,9 +51,7 @@ export const adapter: LanguageAdapter = {
   lexicons: loadLexicons(),
   structure,
   segment: (text: string): Segmentation => {
-    const sentences: Sentence[] = split(text)
-      .filter((node) => node.type === SentenceSplitterSyntax.Sentence)
-      .map((node) => ({ span: { start: node.range[0], end: node.range[1] }, text: text.slice(node.range[0], node.range[1]) }));
+    const sentences: Sentence[] = sentenceSpans(text).map((span) => ({ span, text: text.slice(span.start, span.end) }));
     return { sentences: isReady() ? sentences.map(withTokens) : sentences };
   },
 };

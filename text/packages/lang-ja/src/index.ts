@@ -1,5 +1,5 @@
-import { split, SentenceSplitterSyntax } from "sentence-splitter";
 import { loadLexicons } from "./lexicons.ts";
+import { sentenceSpans } from "./sentence-split.ts";
 import { structure } from "./structure.ts";
 import { isReady, predicateOnly, prepare, tokenize } from "./pos.ts";
 import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
@@ -22,11 +22,6 @@ const JAPANESE = /[぀-ゟ゠-ヿ一-鿿]/gu;
 const COUNTABLE = /\S/gu;
 
 const isOpen = (text: string): boolean => text.trim().length > 0 && !CLOSED.test(text);
-
-const rawSpans = (text: string): Span[] =>
-  split(text)
-    .filter((node) => node.type === SentenceSplitterSyntax.Sentence)
-    .map((node) => ({ start: node.range[0], end: node.range[1] }));
 
 /**
  * 断片を繋ぐときは raw の連結ではなくオフセットを使う。
@@ -84,7 +79,7 @@ export const adapter: LanguageAdapter = {
   lexicons: loadLexicons(),
   structure,
   segment: (text: string): Segmentation => {
-    const sentences = merge(text, rawSpans(text));
+    const sentences = merge(text, sentenceSpans(text));
     return { sentences: isReady() ? withTokens(text, sentences) : sentences };
   },
 };
