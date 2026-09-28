@@ -526,6 +526,24 @@ describe("English: a reference into another document is not looked up here", () 
   });
 });
 
+describe("a plain-text specification's top-level sections (RFC 9457: '5.  Security Considerations')", () => {
+  // 二段の番号（3.1）は本文でも読むので、どの例も構造を読めた文書として比べる。
+  const withSubsection = (...head: string[]): string => lines(...head, "", "3.1.  Details", "", "Text.", "", "See Section 1.");
+  const missing = [["dangling-reference", { label: "Section 1", target: "1" }]];
+
+  it("a number, a dot and two spaces before a short title is a section in a .txt document", () => {
+    assert.deepEqual(found(en, withSubsection("1.  Introduction", "", "Text.", "", "2.  Terms")), []);
+  });
+
+  it("not when the line reads as a sentence, or has one space, or is in Markdown", () => {
+    assert.deepEqual(found(en, withSubsection("1.  Install the package.", "", "2.  Run it.")), missing);
+    assert.deepEqual(found(en, withSubsection("1. Introduction", "", "2. Terms")), missing);
+    const longLine = `1.  ${"The service keeps every request it receives for audit ".repeat(2).trim()}`;
+    assert.deepEqual(found(en, withSubsection(longLine, "", "2.  Terms")), missing);
+    assert.deepEqual(found(en, withSubsection("1.  Introduction", "", "Text.", "", "2.  Terms"), "c.md"), missing);
+  });
+});
+
 describe("the first paragraph without a number is a Japanese convention, not an English one", () => {
   it("English Section 4.1 is missing when only Section 4 exists", () => {
     assert.deepEqual(found(en, lines("Section 4 Payment", "text", "Section 5 Late fees", "See Section 4.1.")), [

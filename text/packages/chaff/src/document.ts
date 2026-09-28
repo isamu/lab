@@ -295,7 +295,17 @@ export const buildDocument = (
       tree.value ??=
         patterns === undefined
           ? null
-          : buildTree({ path, source, language: adapter.id, outline: isMarkdownPath(path) ? outlineOf(root, source) : NO_OUTLINE, profile }, patterns);
+          : buildTree(
+              {
+                path,
+                source,
+                language: adapter.id,
+                outline: isMarkdownPath(path) ? outlineOf(root, source) : NO_OUTLINE,
+                markdown: isMarkdownPath(path),
+                profile,
+              },
+              patterns,
+            );
       return tree.value ?? undefined;
     },
     profile,

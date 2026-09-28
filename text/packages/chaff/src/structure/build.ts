@@ -44,6 +44,7 @@ type State = {
   readonly profile: DocumentProfile | undefined;
   /** 見出しだけの行（文書の種類の caption）の行番号と、その言葉。すぐ次の行の条が見出しに使う。 */
   readonly captions: Map<number, string>;
+  readonly plainText: boolean;
 };
 
 const draftOf = (kind: StructureKind, address: string, line: Line, attrs: Readonly<Record<string, string | number>>): Draft => ({
@@ -145,8 +146,8 @@ const LEAVES: readonly { readonly kind: StructureKind; readonly find: LeafFinder
 ];
 
 /** 言語を問わない通し番号。後ろが単位なら数量なので番号にしない。 */
-const universalNumber = (patterns: StructurePatterns, text: string, context: NumberingContext): NumberedLine | undefined => {
-  const dotted = dottedNumber(text, context);
+const universalNumber = (patterns: StructurePatterns, text: string, context: NumberingContext, plainText: boolean): NumberedLine | undefined => {
+  const dotted = dottedNumber(text, context, plainText);
   return dotted !== undefined && patterns.countedAfter?.(dotted.number, dotted.rest) === true ? undefined : dotted;
 };
 
@@ -231,6 +232,8 @@ export type StructureInput = {
   readonly source: string;
   readonly language: string;
   readonly outline: Outline;
+  /** Markdown か、テキストか。テキストの仕様書だけの書き方（「5.  Security Considerations」）がある。 */
+  readonly markdown: boolean;
   readonly profile?: DocumentProfile | undefined;
 };
 
@@ -271,7 +274,9 @@ const openUnits = (state: State): OpenUnit[] =>
 
 /** 言語の番号の読み方、文書の種類の番号を書かない単位、言語を問わない通し番号の順に読む。 */
 const numberedLine = (state: State, patterns: StructurePatterns, text: string, context: NumberingContext): NumberedLine | undefined =>
-  patterns.numbered(text, context) ?? unnumberedUnit(text, openUnits(state), state.profile?.unnumbered) ?? universalNumber(patterns, text, context);
+  patterns.numbered(text, context) ??
+  unnumberedUnit(text, openUnits(state), state.profile?.unnumbered) ??
+  universalNumber(patterns, text, context, state.plainText);
 
 /** 番号の後ろが見出しでなく本文か。前の行から見出しが付く前の、行そのもので決める。 */
 const carriesBody = (found: NumberedLine | undefined): boolean => found !== undefined && found.heading === "" && found.rest !== "";
@@ -321,6 +326,7 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
     widerScopes: new Map(),
     profile: input.profile,
     captions: new Map(),
+    plainText: !input.markdown,
   };
   lines.forEach((line) => {
     if (line.text.trim() !== "") readLine(state, patterns, line, headings.get(line.number));

@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### A plain-text specification's top-level sections are read (#170)
+
+In a `.txt` document written like an RFC, a top-level heading such as `5.  Security Considerations` (a number, a dot,
+two spaces and a short title that is not a sentence) is now a section, so `See Section 5` finds it. Markdown documents
+are unchanged: a one-level number there is still a section only in a heading. Found on RFC 9457 in the corpus.
+
 ### lang-ja reads 「1.2 万円」 as 12000 yen (#170)
 
 A number written with a space before 万, 億 or 兆 (`1.2 万円`, `26.7 万行`, `3 億円`) was read as two numbers, so the
