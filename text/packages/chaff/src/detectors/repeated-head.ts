@@ -1,4 +1,4 @@
-import type { Detector, Finding, LengthUnit, Sentence } from "../plugin.ts";
+import type { Detector, Finding, LengthUnit, Sentence, Span } from "../plugin.ts";
 
 const HEAD_CHARS = 6;
 const HEAD_WORDS = 3;
@@ -15,8 +15,19 @@ const headOf = (sentence: Sentence, unit: LengthUnit): string => {
 
 type Run = { readonly head: string; readonly members: readonly Sentence[] };
 
-const runsOf = (sentences: readonly Sentence[], unit: LengthUnit): Run[] =>
+const isListed = (sentence: Sentence, lists: readonly Span[]): boolean =>
+  lists.some((item) => item.start <= sentence.span.start && sentence.span.start < item.end);
+
+/** 連なりを切るだけの空の連なり。 */
+const BREAK: Run = { head: "", members: [] };
+
+/**
+ * 箇条書きの項目は、同じ形で並べるのが書き方そのもの（「1. SRE に関する…」「2. SRE に関する…」）。数えずに、連なりを切る。
+ * 切らないと、箇条書きの前後の地の文が、箇条書きをまたいで一つの連なりになる。
+ */
+const runsOf = (sentences: readonly Sentence[], unit: LengthUnit, lists: readonly Span[]): Run[] =>
   sentences.reduce<Run[]>((acc, sentence) => {
+    if (isListed(sentence, lists)) return [...acc, BREAK];
     const head = headOf(sentence, unit);
     const last = acc.at(-1);
     // 短すぎる書き出しは「同じ」と言えない。単位ぶん揃って初めて連なりと見る。
@@ -28,7 +39,7 @@ const runsOf = (sentences: readonly Sentence[], unit: LengthUnit): Run[] =>
   }, []);
 
 export const repeatedHead: Detector = (doc, options): Finding[] =>
-  runsOf(doc.sentences, doc.lengthUnit)
+  runsOf(doc.sentences, doc.lengthUnit, doc.listSpans)
     .filter((run) => run.members.length > options.limit)
     .map((run) => ({
       rule: "repeated-sentence-head",

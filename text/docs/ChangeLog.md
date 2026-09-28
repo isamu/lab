@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### `repeated-sentence-head` leaves list items alone (#170)
+
+Items of a list are written in parallel on purpose (`1. SRE に関するカンファレンス…`, `2. SRE に関する…`, "Take a look
+at …"), so they no longer count as sentences opening the same way. They also break a run, so prose before and after a
+list does not join into one. Runs inside prose paragraphs are reported as before.
+
 ### `ngram-repetition` counts phrasing, not the name of the subject (#170)
 
 A long report naturally repeats its subject (`state and local tax`, `the HTTP status code`, `the Disclosing Party`), and
