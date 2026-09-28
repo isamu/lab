@@ -30,7 +30,20 @@ const INDENTED = lines(
   "        3.1. Notices. Notices are in writing.",
 );
 const RUN_TOGETHER = "1.1 Term. It starts. 1.2 Renewal. It renews. 2.1 Fees. It pays. 2.2 Taxes. It pays. 3.1 Notices. In writing.";
-const CAPITAL_HEADINGS = lines("1.   TERM OF CONTRACT", "text", "2.   DEFINITIONS", "text", "3.   FEES", "text", "4.   NOTICES", "text", "5.   LAW", "text");
+const CAPITAL_HEADINGS = lines("1. TERM OF CONTRACT", "text", "2. DEFINITIONS", "text", "3. FEES", "text", "4. NOTICES", "text", "5. LAW", "text");
+// 点の後ろに空白が 2 つ以上あれば、テキストの章見出し（RFC の書き方）として木が読む。
+const SPACED_CAPITAL_HEADINGS = lines(
+  "1.   TERM OF CONTRACT",
+  "text",
+  "2.   DEFINITIONS",
+  "text",
+  "3.   FEES",
+  "text",
+  "4.   NOTICES",
+  "text",
+  "5.   LAW",
+  "text",
+);
 
 describe("unreadStructure", () => {
   it("clauses indented too deep, or run into the text, are unread", () => {
@@ -40,6 +53,10 @@ describe("unreadStructure", () => {
 
   it("numbers before capital headings at the start of a line count as clauses", () => {
     assert.deepEqual(unread(CAPITAL_HEADINGS), { clauses: 5, units: 0 });
+  });
+
+  it("capital headings after a dot and two spaces are read as sections, so they are not unread", () => {
+    assert.equal(unread(SPACED_CAPITAL_HEADINGS), undefined);
   });
 
   it("a contract whose clauses were read is not unread", () => {
