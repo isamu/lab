@@ -47,10 +47,17 @@ const isJoiner = (morphs: readonly Morph[], index: number): boolean => {
   return morph !== undefined && [".", ",", "．", "，"].includes(morph.surface) && isNumeral(morphs[index - 1]) && isNumeral(morphs[index + 1]);
 };
 
+/** 桁の語。「26.7 万行」「1.2 万円」のように、数と空白 1 つを挟んで書かれても同じ数の一部。 */
+const MULTIPLIERS = new Set(["万", "億", "兆"]);
+
+/** 数と桁の語のあいだの空白 1 つ。 */
+const isSpacedMultiplier = (morphs: readonly Morph[], index: number): boolean =>
+  isSpace(morphs[index]) && isNumeral(morphs[index - 1]) && MULTIPLIERS.has(morphs[index + 1]?.surface ?? "");
+
 /** index から始まる数の並びの終わり（含まない）。 */
 const runEnd = (morphs: readonly Morph[], index: number): number => {
   let end = index;
-  while (isNumeral(morphs[end]) || isJoiner(morphs, end)) end += 1;
+  while (isNumeral(morphs[end]) || isJoiner(morphs, end) || isSpacedMultiplier(morphs, end)) end += 1;
   return end;
 };
 
@@ -61,6 +68,8 @@ const isOrdinal = (morph: Morph | undefined): boolean => morph?.surface === "第
 const GAP = new Set([" ", "\t", "\u3000"]);
 
 const isSpace = (morph: Morph | undefined): morph is Morph => morph !== undefined && GAP.has(morph.surface);
+
+const SPACES = /[ \t\u3000]/gu;
 
 /**
  * 「1.5 倍」の「倍」は、数とのあいだに空白があると解析器が普通の名詞と読む。
@@ -88,7 +97,7 @@ const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] =
     const end = runEnd(morphs, index);
     const first = morphs[index];
     if (first !== undefined && end > index && !isOrdinal(morphs[index - 1])) {
-      const number = text.slice(first.start, morphs[end - 1]?.end ?? first.end);
+      const number = text.slice(first.start, morphs[end - 1]?.end ?? first.end).replace(SPACES, "");
       const value = parseJapaneseNumber(number);
       const counter = counterAt(text, morphs, number, end);
       if (value !== undefined && counter !== undefined) found.push({ start: first.start, end: counter.end, value, unit: counter.unit });

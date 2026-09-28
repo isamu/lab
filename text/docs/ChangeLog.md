@@ -4,6 +4,11 @@ Newest first.
 
 ## Unreleased
 
+### lang-ja reads 「1.2 万円」 as 12000 yen (#170)
+
+A number written with a space before 万, 億 or 兆 (`1.2 万円`, `26.7 万行`, `3 億円`) was read as two numbers, so the
+amount became 10000. It is now one number. This matters to `total-mismatch`, which adds such amounts.
+
 ### `undefined-acronym` knows more common acronyms (#170)
 
 Acronyms most readers know without an expansion — DNS, IP, TCP, SSH, TLS, UTF, PC, IT, SDK, PNG, GB, CEO, US, EU and
