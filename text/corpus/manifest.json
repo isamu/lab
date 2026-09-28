@@ -1,5 +1,5 @@
 {
-  "note": "Real documents chaff is run on. Japanese statutes are public domain (Copyright Act of Japan, Article 13). UK Acts are under the Open Government Licence v3.0 (contains public sector information licensed under the OGL, from legislation.gov.uk). Both are committed; anything that may not be redistributed is listed with redistribute: false and only cached locally.",
+  "note": "Real documents chaff is run on. Japanese statutes are public domain (Copyright Act of Japan, Article 13). UK Acts are under the Open Government Licence v3.0 (contains public sector information licensed under the OGL, from legislation.gov.uk). Both are committed; anything that may not be redistributed is listed with redistribute: false and only cached locally. Documents of other kinds (source \"url\") are fetched from a pinned URL: committed under docs/ when their license allows it (redistribute: true), otherwise only the URL is kept and the text goes to the git-ignored .cache/.",
   "documents": [
     {
       "id": "rouki",
@@ -56,6 +56,106 @@
       "path": "ukpga/1996/23",
       "language": "en",
       "redistribute": true
+    },
+    {
+      "id": "pep-0008",
+      "title": "PEP 8 – Style Guide for Python Code",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/python/peps/ce48c4ecdd0692e265537f10b09fb3fcf7dc76f3/peps/pep-0008.rst",
+      "license": "Public domain",
+      "redistribute": true
+    },
+    {
+      "id": "kep-2214-indexed-job",
+      "title": "KEP-2214: Indexed Job",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/kubernetes/enhancements/17efff8d336bb4366a458a22a08a805ae8722ecc/keps/sig-apps/2214-indexed-job/README.md",
+      "license": "Apache-2.0",
+      "redistribute": false
+    },
+    {
+      "id": "rust-rfc-2094-nll",
+      "title": "Rust RFC 2094: non-lexical lifetimes",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/rust-lang/rfcs/51783df9a76c355de7ceebeae101cba47f8ca463/text/2094-nll.md",
+      "license": "MIT OR Apache-2.0",
+      "redistribute": false
+    },
+    {
+      "id": "rfc9457",
+      "title": "RFC 9457: Problem Details for HTTP APIs",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://www.rfc-editor.org/rfc/rfc9457.txt",
+      "license": "IETF Trust (BCP 78)",
+      "redistribute": false
+    },
+    {
+      "id": "k8s-overview-en",
+      "title": "Kubernetes: Overview",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/kubernetes/website/0dbea273dea04a241b6616534768a10e0ba14872/content/en/docs/concepts/overview/_index.md",
+      "license": "CC-BY-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "k8s-overview-ja",
+      "title": "Kubernetes: 概要",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/kubernetes/website/0dbea273dea04a241b6616534768a10e0ba14872/content/ja/docs/concepts/overview/_index.md",
+      "license": "CC-BY-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "react-ja-thinking",
+      "title": "React: React の流儀",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/reactjs/ja.react.dev/8a0810dcc7e0455775cd6162f94b32561052ade9/src/content/learn/thinking-in-react.md",
+      "license": "CC-BY-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "gitlab-values",
+      "title": "GitLab Handbook: Values",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://gitlab.com/gitlab-com/content-sites/handbook/-/raw/0d8a947acdbd41b41d6cf30ad854d27edc3ae34c/content/handbook/values/_index.md",
+      "license": "CC-BY-SA-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "gitlab-meetings",
+      "title": "GitLab Handbook: All-remote meetings",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://gitlab.com/gitlab-com/content-sites/handbook/-/raw/0d8a947acdbd41b41d6cf30ad854d27edc3ae34c/content/handbook/company/culture/all-remote/meetings.md",
+      "license": "CC-BY-SA-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "rust-lang-minutes-2022-11-22",
+      "title": "Rust lang team meeting minutes, 2022-11-22",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/rust-lang/lang-team/cf7fec8b0fb6b9ad85b0cb3d50566f0b0847f8f9/minutes/2022-11-22.md",
+      "license": "MIT OR Apache-2.0",
+      "redistribute": false
     }
   ]
 }
