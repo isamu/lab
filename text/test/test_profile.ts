@@ -34,16 +34,16 @@ describe("parseProfile", () => {
       name: { ja: "試し" },
       why: { ja: "理由" },
       detect: { ja: { line: "^A", min_lines: 2 } },
-      ja: { addresses: ["A", "", 3], connectives: ["及"], address_end: "$" },
-      en: { addresses: ["B"], address_end: "" },
+      ja: { addresses: ["A", "", 3], connectives: ["及"], address_end: "$", caption: "^（(.+)）$" },
+      en: { addresses: ["B"], address_end: "", caption: "" },
     });
     assert.deepEqual(definition, {
       id: "t",
       name: { ja: "試し" },
       detect: { ja: { line: "^A", minLines: 2 } },
       languages: {
-        ja: { id: "t", addresses: ["A"], connectives: ["及"], addressEnd: "$" },
-        en: { id: "t", addresses: ["B"], connectives: [], addressEnd: undefined },
+        ja: { id: "t", addresses: ["A"], connectives: ["及"], addressEnd: "$", caption: "^（(.+)）$" },
+        en: { id: "t", addresses: ["B"], connectives: [], addressEnd: undefined, caption: undefined },
       },
     });
   });
