@@ -2,7 +2,16 @@
 
 Newest first.
 
-## Unreleased
+## 0.10.0 — 2026-09-28
+
+Consistency and arithmetic: three experimental rules check what a schedule or a quote says against itself — a weekday
+beside the wrong date, a date out of order, a total that is not the sum of its items. Sentence splitting stays fast on
+one long paragraph, English screens read naturally, and more statute knowledge moved out of code into the `statute`
+profile and lang-ja's word lists.
+
+📦 [`chaffjs@0.10.0`](https://www.npmjs.com/package/chaffjs/v/0.10.0) ·
+[`@chaffjs/lang-ja@0.9.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.9.0) ·
+[`@chaffjs/lang-en@0.8.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.8.0)
 
 ### lang-ja reads other documents' names from word lists (#151)
 
