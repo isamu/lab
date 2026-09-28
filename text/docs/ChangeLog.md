@@ -2,7 +2,15 @@
 
 Newest first.
 
-## Unreleased
+## 0.9.0 — 2026-09-28
+
+What statutes and contracts showed once chaff read them whole: knowledge of a kind of document now lives in YAML
+(a bundled `statute` profile), relative references like `前条` and `同項` are read and checked, English reference
+lists and Part-level definitions are read as written, and a document chaff could not read says so instead of passing.
+
+📦 [`chaffjs@0.9.0`](https://www.npmjs.com/package/chaffjs/v/0.9.0) ·
+[`@chaffjs/lang-ja@0.8.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.8.0) ·
+[`@chaffjs/lang-en@0.7.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.7.0)
 
 ### A document whose numbered clauses could not be read says so (#140)
 
