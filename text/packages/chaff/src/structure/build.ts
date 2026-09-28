@@ -36,7 +36,7 @@ type State = {
   readonly stack: Frame[];
   /** 見出しの深さごとの通し番号。番号の無い見出しの番地 h2.1 を作る。 */
   readonly headingCounts: number[];
-  /** opensDefinitionScope の行を含んだ条。ここに入る定義は範囲の中でだけ比べる。 */
+  /** opensDefinitionScope の行を含んだまとまり（ふつうは条）。ここに入る定義は範囲の中でだけ比べる。 */
   readonly scopedArticles: Set<Draft>;
   /** 範囲が条より広い（「In this Part—」）条と、その広いまとまり。その条の定義は、広いまとまりの中で比べる。 */
   readonly widerScopes: Map<Draft, Draft>;
@@ -158,21 +158,23 @@ const widerScope = (state: State, patterns: StructurePatterns, text: string): Dr
   return depth === undefined ? undefined : [...state.stack].reverse().find((frame) => frame.numbered?.depth === depth)?.draft;
 };
 
+/** 範囲を宣言した行を持つまとまり。条の中なら条、条の外（Markdown の見出しの下、Part の直下）なら開いている一番内側のもの。 */
+const holderOf = (state: State): Draft => enclosingArticle(state) ?? state.stack[0]!.draft;
+
 /**
- * 定義の範囲。範囲を宣言した行（In this section— / In this Part—）を含む条の定義が対象。宣言が Part なら、比べるのは
- * その Part の中（within に番地を残す）。宣言の無い条の定義は、今までどおり文書全体で比べる。
+ * 定義の範囲。範囲を宣言した行（In this section— / In this Part—）を含むまとまりの定義が対象。宣言が Part なら、比べるのは
+ * その Part の中（within に番地を残す）。条の外で宣言したものは、そのまとまりの中。宣言の無いところの定義は、文書全体で比べる。
  */
 const scopeOf = (state: State, patterns: StructurePatterns, text: string): Readonly<Record<string, string>> => {
-  const article = enclosingArticle(state);
-  if (article === undefined) return {};
+  const holder = holderOf(state);
   if (patterns.opensDefinitionScope?.(text) === true) {
-    state.scopedArticles.add(article);
+    state.scopedArticles.add(holder);
     const wider = widerScope(state, patterns, text);
-    if (wider !== undefined) state.widerScopes.set(article, wider);
+    if (wider !== undefined) state.widerScopes.set(holder, wider);
   }
-  if (!state.scopedArticles.has(article)) return {};
-  const wider = state.widerScopes.get(article);
-  return wider === undefined ? { scope: "local" } : { scope: "local", within: wider.address };
+  if (!state.scopedArticles.has(holder)) return {};
+  const within = state.widerScopes.get(holder);
+  return within === undefined ? { scope: "local" } : { scope: "local", within: within.address };
 };
 
 const addLeaves = (state: State, patterns: StructurePatterns, line: Line, text: string, offset: number): void => {

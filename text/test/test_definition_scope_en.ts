@@ -51,6 +51,33 @@ describe("a definition's scope in English statutes", () => {
     assert.deepEqual(duplicates(source), ["data"]);
   });
 
+  it("a scope line under a Markdown heading, with no numbered section, holds in its Part", () => {
+    const source = lines(
+      "# PART 1 One",
+      "## Terms",
+      "In this Part—",
+      "“controller” means one.",
+      "# PART 2 Two",
+      "## Terms",
+      "In this Part—",
+      "“controller” means two.",
+    );
+    const tree = buildStructure({ path: "c.md", source, language: "en", markdown: true }, patterns());
+    assert.deepEqual(duplicateDefinitions(tree), []);
+    const twice = lines("# PART 1 One", "## Terms", "In this Part—", "“controller” means one.", "## More terms", "In this Part—", "“controller” means two.");
+    const again = buildStructure({ path: "c.md", source: twice, language: "en", markdown: true }, patterns());
+    assert.deepEqual(
+      duplicateDefinitions(again).map((issue) => issue.values["term"]),
+      ["controller"],
+    );
+  });
+
+  it("outside a numbered section, a scope line holds in the Markdown section it is under", () => {
+    const source = lines("## Terms", "In this section—", "“x” means a.", "## Other terms", "In this section—", "“x” means b.");
+    const tree = buildStructure({ path: "c.md", source, language: "en", markdown: true }, patterns());
+    assert.deepEqual(duplicateDefinitions(tree), []);
+  });
+
   it("“In this section” still holds only in the section", () => {
     const source = act([
       "PART 2 General processing",
