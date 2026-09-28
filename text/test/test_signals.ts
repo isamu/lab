@@ -360,8 +360,21 @@ describe("concrete-evidence-density", () => {
 
   it("invalid: 数える単位の付かない漢字（一緒、一般、三つ巴）は数ではない", () => {
     const words = ["誰一人取り残しません", "一人ひとりに届けます", "十分に検討します", "一時的に止めます"];
+    const idioms = ["二人三脚で進めます", "三日坊主になりません", "百人一首を読みます", "十人十色の考えです"];
     const sections = words.map((word, index) => `## 節${String(index)}\n\n${word}。考えかたを述べます。理念を語ります。`).join("\n\n");
     assert.ok(idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
+    const idiomSections = idioms.map((word, index) => `## 節${String(index)}\n\n${word}。考えかたを述べます。理念を語ります。`).join("\n\n");
+    assert.ok(idsFor(`# 表題\n\n${idiomSections}`).includes("concrete-evidence-density"));
+    const everyone = ["万人に届けます", "万人が使います", "万人向けです", "万人に開きます"]
+      .map((word, index) => `## 節${String(index)}\n\n${word}。考えかたを述べます。理念を語ります。`)
+      .join("\n\n");
+    assert.ok(idsFor(`# 表題\n\n${everyone}`).includes("concrete-evidence-density"));
+  });
+
+  it("valid: 単位の後ろに語が続く数（二割程度、三日間、五年後）は数える", () => {
+    const amounts = ["二割程度", "三日間", "五年後", "十五分間"];
+    const sections = amounts.map((amount, index) => `## 節${String(index)}\n\n期間は${amount}です。実例を挙げます。結果を示します。`).join("\n\n");
+    assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("concrete-evidence-density"));
   });
 
   it("仕様書では動かさない。定義の節に具体物は要らない", () => {

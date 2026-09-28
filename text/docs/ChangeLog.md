@@ -7,8 +7,8 @@ Newest first.
 ### `concrete-evidence-density` counts numbers written in kanji (#170)
 
 A section that gives `二割`, `十五分`, `三人` or `百件` now counts as holding a concrete number, like one with digits.
-lang-ja lists these in a new word list, `concrete-number`: a kanji number followed by a counter. A bare 一 is left out
-(誰一人, 一人ひとり), and so are 十分 (sufficient) and 一時的.
+lang-ja lists these in a new word list, `concrete-number`: a kanji number followed by a counter. A bare 一 or 万 is left out
+(誰一人, 一人ひとり, 万人), and so are 十分 (sufficient), 一時的 and set phrases such as 二人三脚 and 三日坊主.
 
 ### `yarn bench` plants mistakes for more rules, in more kinds of document (#170)
 
