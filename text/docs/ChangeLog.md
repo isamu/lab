@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `no-mixed-desumasu` counts 「〜ください」 as polite (#170)
+
+「〜ください」 was read by its dictionary form 「くださる」, which is not in the polite word list, so a polite document
+ending with 「詳しくは〜をご覧ください。」 had those sentences reported as the odd ones out, and a plain document hid a
+polite 「〜してください。」. A sentence ending is now matched by how it is written as well as by its dictionary form.
+Found on the Kubernetes Japanese docs in the corpus.
+
 ### English reads bracketed citation tags as another document (#170)
 
 A reference written with a citation tag in capitals, as RFCs cite, is no longer looked up in this document:

@@ -31,6 +31,19 @@ describe("L3 日本語", () => {
       assert.ok(!idsFor("運用を始める。手順を作る。効果は来期に測定する。").includes("no-mixed-desumasu"));
     });
 
+    it("valid: 「〜ください」は ですます調（原形は「くださる」でも、書いた形で当てる）", () => {
+      // Kubernetes の日本語の文書の末尾の「〜をご覧ください。」が、少数派として指摘されていた。
+      assert.ok(!idsFor("運用を始めます。手順を作ります。効果は来期に測定します。詳しくは手順書をご覧ください。").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: 「〜しません」「〜でした」は原形（ます・です）で当てる", () => {
+      assert.ok(!idsFor("運用を始めます。手順を作ります。効果は測定しません。準備は十分でした。").includes("no-mixed-desumasu"));
+    });
+
+    it("invalid: である調の中の「〜ください」は、ですます調として少数派になる", () => {
+      assert.ok(idsFor("運用を始める。手順を作る。効果は来期に測定する。詳しくは手順書をご覧ください。").includes("no-mixed-desumasu"));
+    });
+
     it("valid: 述語を持たない断片は文として数えない", () => {
       // 見出しの下の名前だけの行。実文書の誤検知はすべてこれだった。
       assert.ok(!idsFor("運用を始めます。手順を作ります。研修も予定しています。\n\nMaaSサービス\n\nWeb3").includes("no-mixed-desumasu"));
