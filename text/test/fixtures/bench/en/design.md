@@ -15,11 +15,11 @@ The screens are a single-page application that sends JSON to the server. Claims 
 
 ### 3.1 Sign-in
 
-Employees log in through the company identity provider over SAML. The approver of each claimant comes from the HR system.
+Employees log in through the company identity provider over SAML. The approver, the department, and the cost centre of each claimant come from the HR system.
 
 ### 3.2 Data
 
-Each claim keeps its lines and its approvals in separate tables. Amounts are stored as whole yen.
+Each claim keeps its lines, its approvals, and its receipts in separate tables. Amounts are stored as whole yen.
 
 ## 4. Flow
 

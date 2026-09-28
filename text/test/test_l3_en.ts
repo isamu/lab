@@ -101,6 +101,98 @@ describe("L3 英語", () => {
     it("2 つの並列は判定しない。読点が入らないため", () => {
       assert.ok(!idsFor("We shipped the parser and the renderer.\nWe tested the code, the docs, and the samples.").includes("oxford-comma-consistency"));
     });
+
+    // 候補の文が「読点のない並列」と判定されたときだけ、Oxford 側 2 文の中で少数派として指摘される。
+    const WITH_COMMA = "We shipped the parser, the renderer, and the exporter.\nThe team reviewed the plan, the budget, and the schedule.";
+    const WITHOUT_COMMA = "We shipped the parser, the renderer and the exporter.\nThe team reviewed the plan, the budget and the schedule.";
+    const judgedAgainst = (base: string, candidate: string): boolean => idsFor(`${base}\n${candidate}`).includes("oxford-comma-consistency");
+
+    [
+      ["導入の句の読点と、2 つの動詞", "After the review, the team fixed the bug and shipped it."],
+      ["導入の節の読点", "If it fails, retry and report."],
+      ["導入の副詞の読点", "Finally, retry and report."],
+      ["過去分詞で始まる導入の句の読点", "Based on the review, fix the parser and ship it."],
+      ["to で始まる導入の句の読点", "To test the parser, build it and run it."],
+      ["前置詞のあとの名詞は、主語の前の導入の句", "Over this period, the subcommittees and the full committee considered the bills."],
+      ["名詞の前で重ねた形容詞の読点", "Take the long, winding bridge and enjoy the view."],
+      ["挿入の関係節の読点", "The team, which met on Monday, approved the plan and the budget."],
+      ["セミコロンの前の読点は別の節", "It rained, the deadline moved; the parser and the renderer shipped."],
+      ["節の並びに見えて、and の後ろが節ではない", "We listen, these are crucial to the team and getting results."],
+      ["括弧の中の and は、括弧の外の項目と並べない", "It rained, it snowed (the roads and the rails closed)."],
+      ["and の後ろの項目は次の読点まで", "We listen, the team is crucial to us and the results, which vary."],
+    ].forEach(([why, candidate]) => {
+      it(`valid: ${why ?? ""}`, () => {
+        assert.ok(!judgedAgainst(WITH_COMMA, candidate ?? ""));
+      });
+    });
+
+    it("valid: 節をつなぐ and の前の読点は Oxford comma ではない", () => {
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "We tested it, and the team shipped it."));
+    });
+
+    it("valid: and の後ろが項目と違う形なら並列ではない", () => {
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "We fixed the parser, the renderer, and then we rested."));
+    });
+
+    it("valid: 述語の並びなら、どの項目にも動詞がある。主語は項目ではない", () => {
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "The scope of the data, in contrast, is larger, and covers the whole body."));
+    });
+
+    it("valid: 節の並びなら、どの項目も節。導入の語は項目ではない", () => {
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "Additionally, when we share them, others can learn from us, and the same mistake is rarer."));
+    });
+
+    it("invalid: 動詞で始まる最初の項目は、名詞の並びの前置き", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "Read the guide, the notes and the index."));
+    });
+
+    it("invalid: 動詞で始まる項目は、後ろに動詞があっても節ではない", () => {
+      assert.ok(judgedAgainst(WITHOUT_COMMA, "They wrote the code, explained what changed, and shipped the release."));
+    });
+
+    it("invalid: 主語の並びは、and の後ろに述語が続いても並列", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "The parser, the renderer and the exporter shipped."));
+    });
+
+    it("invalid: 節が 3 つ並べば並列", () => {
+      assert.ok(judgedAgainst(WITHOUT_COMMA, "The parser failed, the renderer crashed, and the exporter stopped."));
+    });
+
+    it("invalid: 括弧の中の読点は項目を切らない", () => {
+      assert.ok(judgedAgainst(WITHOUT_COMMA, "We tested the parser, the renderer (the slow one, sadly), and the exporter."));
+    });
+
+    it("invalid: 導入の句のあとの本当の並列は判定する", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "After the review, we fixed the parser, the renderer and the exporter."));
+    });
+
+    it("invalid: 冠詞の有無は形の違いにしない", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "We need the code, the docs and samples."));
+    });
+
+    it("invalid: 固有名詞・形容詞で始まる項目も名詞の並び", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "We visited Paris, the old port and the museums."));
+    });
+
+    it("invalid: to の並びは並列", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "We plan to test, to build and to run."));
+    });
+
+    it("invalid: 過去分詞が並べば、文頭でも並列", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "Tested, reviewed and approved, the release went out."));
+    });
+
+    it("invalid: 形容詞そのものの並びは切ったまま", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "The tool is quick, cheap and reliable."));
+    });
+
+    it("invalid: 同じ形の副詞が並べば、文頭でも並列", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "Quickly, quietly and carefully, we moved."));
+    });
+
+    it("invalid: 最初の and が並列でなくても、後ろの並列を見る", () => {
+      assert.ok(judgedAgainst(WITHOUT_COMMA, "We wrote the parser and the renderer, the exporter, and the tests."));
+    });
   });
 
   it("英語の rule は日本語で動かさない", () => {
