@@ -76,6 +76,49 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(html), "本文。\n\n- 資料1（PDF）\n");
   });
 
+  it("role=navigation の要素と breadcrumb と名札の付いた要素は、nav でなくても落とす", () => {
+    const html =
+      '<div role="navigation"><a href="/">Home</a><span>Site map</span></div><ol aria-label="Breadcrumb"><li><a href="/">Home</a></li><li>Plan</li></ol>' +
+      '<ul aria-label=breadcrumbs><li><a href="/">Home</a></li><li>Plan</li></ul>' +
+      '<h1>Plan</h1><div role="note"><p>Kept.</p></div>';
+    assert.equal(htmlToMarkdown(html), "# Plan\n\nKept.\n");
+  });
+
+  it("> でつないだリンクの列 (パンくず) は落とし、文の中の > は残す", () => {
+    const html =
+      '<div><a href="/">Home</a> &gt; <a href="/reports">Reports</a> &gt; Annual report</div><h1>Annual report</h1>' +
+      '<p>Open <a href="/settings">Settings</a> &gt; <a href="/privacy">Privacy</a> to change it.</p><p><a href="/income">Income</a> / <a href="/people">population</a> / year</p>';
+    assert.equal(htmlToMarkdown(html), "# Annual report\n\nOpen Settings > Privacy to change it.\n\nIncome / population / year\n");
+  });
+
+  it("リンクだけのブロック (前後のページ、補助リンク) は入れ子でも落とし、リンク一つの段落・カード・文の混じる段落は残す", () => {
+    const html =
+      '<h1>Chapter 2</h1><p>Text.</p><p><a href="/r.pdf">Full report (PDF)</a></p>' +
+      '<div><div><a href="ch1.html">Chapter 1</a></div><div><a href="ch3.html">Chapter 3</a></div></div>' +
+      '<div><a href="/">Top page</a><br><a href="/help">Help</a></div><p><a rel="next" href="ch3.html">Next</a></p><p><a rel=next href=ch3.html>Next</a></p>' +
+      '<section><a href="ch1.html">Previous</a> <a href="ch3.html">Following</a></section>' +
+      '<div><a href="/n1"><h3>News one</h3><p>First summary.</p></a><a href="/n2"><h3>News two</h3><p>Second summary.</p></a></div>' +
+      '<p><a href="/terms">Terms</a> | <a href="/privacy">Privacy</a></p><p><a href="/a">A</a> and <a href="/b">B</a> apply.</p>';
+    assert.equal(
+      htmlToMarkdown(html),
+      "# Chapter 2\n\nText.\n\nFull report (PDF)\n\n### News one\n\nFirst summary.\n\n### News two\n\nSecond summary.\n\nA and B apply.\n",
+    );
+  });
+
+  it("ページ内リンクと ▲ や | のような記号だけの行は落とし、rel=next のリンクも文の中なら文字を残す", () => {
+    const html =
+      '<h2>Costs</h2><p>Costs rose.</p><p>▲ <a href="#toc">Back to contents</a></p><p><a href=#top>Top</a></p><p>| <a href="#a">A</a> | <a href="#b">B</a> |</p>' +
+      '<p>Read <a rel="next" href="ch3.html">the next chapter</a> first.</p>';
+    assert.equal(htmlToMarkdown(html), "## Costs\n\nCosts rose.\n\nRead the next chapter first.\n");
+  });
+
+  it("ページの最後にある著作権表示は footer の外でも落とし、途中にあるものは残す", () => {
+    const html = "<p>© 2020 figures are revised below.</p><p>Text.</p><div><span>Copyright &copy; 2009 Example Office All Rights Reserved.</span></div>";
+    assert.equal(htmlToMarkdown(html), "© 2020 figures are revised below.\n\nText.\n");
+    const underHeading = "<h1>Plan</h1><p>Text.</p><h2>About this site</h2><p>© 2024 Example Office</p><h2>Related</h2>";
+    assert.equal(htmlToMarkdown(underHeading), "# Plan\n\nText.\n");
+  });
+
   it("XML 宣言は本文にしない", () => {
     assert.equal(htmlToMarkdown('<?xml version="1.0" encoding="Shift_JIS"?><html><body><p>本文。</p></body></html>'), "本文。\n");
   });

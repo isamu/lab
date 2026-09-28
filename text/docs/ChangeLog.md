@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### The corpus's HTML conversion drops more page chrome (#170)
+
+Converting a fetched page now also drops navigation marked by `role="navigation"` or a breadcrumb label, a breadcrumb
+trail of links joined by `>`, a block made only of links (previous/next links, a menu without a list), a line of
+in-page links and marks such as `▲`, and a copyright notice closing the page. Each is recognised by structure, not by a
+site's class names or wording; a block of card links that carry a title and a summary is kept.
+
 ### `oxford-comma-consistency` judges only real lists (#170)
 
 An introductory comma (`After the review, the team fixed the bug and shipped it.`) or a comma joining two clauses is
