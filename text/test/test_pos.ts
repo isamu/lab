@@ -59,7 +59,7 @@ describe("解析器を読むまで tokens は無い", () => {
       RULES.filter((rule) => rule.uses.includes("pos"))
         .map((rule) => rule.id)
         .sort((left, right) => left.localeCompare(right)),
-      ["concrete-evidence-density", "ngram-repetition"],
+      ["concrete-evidence-density", "max-kanji-continuous", "ngram-repetition"],
     );
   });
 

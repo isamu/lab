@@ -145,10 +145,15 @@ const NUMERAL_TEXT = /^[〇一二三四五六七八九十百千万億兆0-9０-�
 /** 「数年」「何人」の「数」「何」も名詞,数だが、決まった数ではない。数字の文字でできたものだけ。 */
 const isNumeral = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "数" && NUMERAL_TEXT.test(morpheme.surface_form);
 
+/** 地名と、地名に付く接尾（都・県・市・区・町）。IPADIC の「固有名詞,地域」と「接尾,地域」。UD の NameType=Geo で渡す。 */
+const isPlace = (morpheme: Morpheme): boolean =>
+  morpheme.pos === "名詞" && (morpheme.pos_detail_1 === "固有名詞" || morpheme.pos_detail_1 === "接尾") && detail2Of(morpheme) === "地域";
+
 const featuresOf = (morpheme: Morpheme): { features?: Readonly<Record<string, string>> } => {
   if (isPassive(morpheme)) return { features: { Voice: "Pass" } };
   if (isDependentNoun(morpheme)) return { features: { NounType: "Dependent" } };
   if (isNumeral(morpheme)) return { features: { NumType: "Card" } };
+  if (isPlace(morpheme)) return { features: { NameType: "Geo" } };
   return {};
 };
 

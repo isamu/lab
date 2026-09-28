@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `max-kanji-continuous` recognises an address by morphology (#170)
+
+The regular-expression list that told an address (東京都港区新橋二丁目) from a long compound is replaced by morphological
+analysis: lang-ja marks place names and their suffixes (IPADIC 固有名詞,地域 and 接尾,地域) with the UD feature
+`NameType=Geo`, and a run of kanji made only of place words, numbers and the counter after a number is an address. An
+organisation name that starts with a place (日本経済団体連合会) is still a long compound. The rule declares
+`uses: [pos]`; without tagging it counts every run, as it did before addresses were exempt.
+
 ### `total-mismatch` adds a table column of bare numbers (#170)
 
 A table column whose cells hold only numbers, with the unit in its header (`| Room | Hours booked |`), is now added up
