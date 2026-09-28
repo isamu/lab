@@ -23,11 +23,16 @@ describe("英語の文分割", () => {
     assert.deepEqual(textsOf("Read No. 5. It is short."), ["Read No. 5.", "It is short."]);
     assert.deepEqual(textsOf("Sold in the U.S. 2. Next year too."), ["Sold in the U.S. 2.", "Next year too."]);
     assert.deepEqual(textsOf("It closed at 12.\nThe doors stayed shut."), ["It closed at 12.", "The doors stayed shut."]);
+    assert.deepEqual(textsOf('It ended in 2026. "We shipped," they said.'), ["It ended in 2026.", '"We shipped," they said.']);
+    assert.deepEqual(textsOf("It ended in 2026. \u201cWe shipped.\u201d"), ["It ended in 2026.", "\u201cWe shipped.\u201d"]);
+    assert.deepEqual(textsOf("It ended in 2026. (We shipped.)"), ["It ended in 2026.", "(We shipped.)"]);
   });
 
   it("番号に見えても、行頭・次が小文字・小数・番号の前の略語では切らない", () => {
     assert.deepEqual(textsOf("1. First item\n2. Second item"), ["1. First item\n2. Second item"]);
     assert.deepEqual(textsOf("  3. Indented item"), ["3. Indented item"]);
+    assert.deepEqual(textsOf("Title\r1. Item"), ["Title\r1. Item"]);
+    assert.deepEqual(textsOf("It was 2026. (and more) Then."), ["It was 2026. (and more) Then."]);
     assert.deepEqual(textsOf("It was 2026. and then more."), ["It was 2026. and then more."]);
     assert.deepEqual(textsOf("The ratio is 3.5 Units now."), ["The ratio is 3.5 Units now."]);
     assert.deepEqual(textsOf("Read No. 5 Now."), ["Read No. 5 Now."]);

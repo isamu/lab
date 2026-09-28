@@ -7,11 +7,14 @@
  * 行頭の番号（「1. First」）と、次が大文字でない番号は替えない。
  */
 const NUMBER_WORD = /(?<=\s)\d+(?=\.\s)/g;
-const CAPITAL_AFTER_SPACE = /\s+\p{Lu}/uy;
+// 次の語の頭。開き括弧・引用符の後の大文字も文頭である。
+const CAPITAL_AFTER_SPACE = /\s+[\p{Ps}\p{Pi}"']*\p{Lu}/uy;
 // 分割器の略語表に n だけでできた語は無い。数字の代わりに置いても、略語として読まれない。
 const PLAIN_LETTER = "n";
 
-const isFirstOnLine = (text: string, index: number): boolean => text.slice(text.lastIndexOf("\n", index - 1) + 1, index).trim() === "";
+const lineStartOf = (text: string, index: number): number => Math.max(text.lastIndexOf("\n", index - 1), text.lastIndexOf("\r", index - 1)) + 1;
+
+const isFirstOnLine = (text: string, index: number): boolean => text.slice(lineStartOf(text, index), index).trim() === "";
 
 const capitalFollows = (text: string, dot: number): boolean => {
   CAPITAL_AFTER_SPACE.lastIndex = dot + 1;
