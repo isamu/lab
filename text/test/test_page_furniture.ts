@@ -5,6 +5,8 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
+import { buildStructure } from "../packages/chaff/src/structure/of.ts";
+import type { StructureNode } from "../packages/chaff/src/plugin.ts";
 
 // 紙の版を写したテキスト（RFC）のページのヘッダーとフッター。改ページ（\f）の直前と直後の、空でない 1 行ずつ。
 
@@ -83,5 +85,12 @@ describe("木もページの飾りを読まない", () => {
       findings.map((finding) => finding.values["target"]),
       ["9"],
     );
+  });
+
+  it("chaff tree の入口（buildStructure）でも、フッターは節にならない", () => {
+    const addresses = (node: StructureNode): string[] => [...(node.address === "" ? [] : [node.address]), ...node.children.flatMap(addresses)];
+    const source = lines("Section 1 Scope", "text", "", "Section 9 Footer", "\f", "Header line", "", "Section 2 Terms", "text");
+    const tree = buildStructure({ path: "c.txt", source, language: "en", markdown: false }, en.structure ?? assert.fail("lang-en has no structure"));
+    assert.deepEqual(addresses(tree), ["1", "2"]);
   });
 });

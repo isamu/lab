@@ -1,6 +1,7 @@
 import { markdownOutline } from "../document.ts";
 import type { DocumentProfile, StructureNode, StructurePatterns } from "../plugin.ts";
-import { buildTree, NO_OUTLINE } from "./build.ts";
+import { buildTree } from "./build.ts";
+import { textOutline } from "../page-furniture.ts";
 
 export type SourceInput = {
   readonly path: string;
@@ -20,7 +21,7 @@ export const buildStructure = (input: SourceInput, patterns: StructurePatterns):
       path: input.path,
       source: input.source,
       language: input.language,
-      outline: input.markdown ? markdownOutline(input.source) : NO_OUTLINE,
+      outline: input.markdown ? markdownOutline(input.source) : textOutline(input.source),
       markdown: input.markdown,
       profile: input.profile,
     },

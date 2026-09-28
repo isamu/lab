@@ -1,4 +1,5 @@
 import type { Span } from "./plugin.ts";
+import { NO_OUTLINE, type Outline } from "./structure/build.ts";
 
 /** 改ページから、飾りの行を探しにいく行数。飾りと改ページのあいだには空行が数行入る。 */
 const REACH = 3;
@@ -39,3 +40,6 @@ export const pageFurniture = (source: string): Span[] => {
     );
   });
 };
+
+/** テキストの文書の外形。見出しもコードも無く、ページの飾りだけを覆う。木を作る入口はどれもこれを使う。 */
+export const textOutline = (source: string): Outline => ({ ...NO_OUTLINE, opaque: pageFurniture(source) });

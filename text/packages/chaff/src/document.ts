@@ -5,9 +5,9 @@ import { frontmatter } from "micromark-extension-frontmatter";
 import { frontmatterFromMarkdown } from "mdast-util-frontmatter";
 import { atxHeadingText, headingText } from "./heading-text.ts";
 import { maskSpans } from "./mask.ts";
-import { buildTree, NO_OUTLINE, type Outline } from "./structure/build.ts";
+import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
-import { pageFurniture } from "./page-furniture.ts";
+import { pageFurniture, textOutline } from "./page-furniture.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
@@ -303,7 +303,7 @@ export const buildDocument = (
                 source,
                 language: adapter.id,
                 // テキストの文書は、ページの飾りを覆って読む。フッターの「Section 9」を木の節にしない。
-                outline: isMarkdownPath(path) ? outlineOf(root, source) : { ...NO_OUTLINE, opaque: pageFurniture(source) },
+                outline: isMarkdownPath(path) ? outlineOf(root, source) : textOutline(source),
                 markdown: isMarkdownPath(path),
                 profile,
               },
