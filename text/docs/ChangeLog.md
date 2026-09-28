@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### Page headers and footers of a paged text are not prose (#170)
+
+A plain-text document copied from paper, such as an RFC, repeats a footer and a header around every page break
+(`\f`). They are no longer read as sentences, so they stop counting as a repeated phrase or a long sentence. Markdown
+documents are unchanged. Found on RFC 3693 in the corpus.
+
 ### `--compact` ends with a tally in the document's language (#173)
 
 On a Japanese document, the last line of `--compact` now reads `指摘 6 件、動いていない rule 33 件` instead of

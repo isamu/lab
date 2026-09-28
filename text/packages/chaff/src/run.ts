@@ -6,6 +6,8 @@ import { REASONS, type Reasons } from "./reasons.ts";
 import { joinWords } from "./detectors/word-list.ts";
 import { unreadStructure, type Unread } from "./structure/unread.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
+import { maskSpans } from "./mask.ts";
+import { textOutline } from "./page-furniture.ts";
 import { uiLanguageOf } from "./ui.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
@@ -51,8 +53,9 @@ const treeProblem = (doc: ProseDocument): string | undefined => {
   return unread === undefined ? undefined : reasonsFor(doc).unreadStructure(unread.clauses, unread.units);
 };
 
-/** 木が読んだのと同じ本文。Markdown はコードを覆ったもの、.txt はそのまま（.txt の字下げはコードではない）。 */
-const textTheTreeRead = (doc: ProseDocument): string => (isMarkdownPath(doc.path) ? (doc.prose ?? doc.source) : doc.source);
+/** 木が読んだのと同じ本文。Markdown はコードを覆ったもの、.txt はページの飾りだけを覆ったもの（.txt の字下げはコードではない）。 */
+const textTheTreeRead = (doc: ProseDocument): string =>
+  isMarkdownPath(doc.path) ? (doc.prose ?? doc.source) : maskSpans(doc.source, textOutline(doc.source).opaque);
 
 const unreadByDocument = new WeakMap<ProseDocument, Unread | undefined>();
 
