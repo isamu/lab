@@ -33,7 +33,13 @@ const titleOf = (rest: string): string | undefined => {
 
 const ARTICLE = /^\s{0,3}(?:ARTICLE|Article)\s+(?<n>\d{1,3}|[IVXLC]{1,7})\b(?<rest>.*)$/u;
 const SECTION = /^\s{0,3}(?:SECTION|Section|§)\s*(?<n>\d{1,3}(?:\.\d{1,3}){0,5})\b(?<rest>.*)$/u;
-const LETTERED = /^\s{0,6}\((?<n>[a-z]{1,4}|\d{1,3})\)\s+(?<rest>\S.*)$/u;
+/**
+ * An amendment inserts a subsection between two others and numbers it "(A1)" or "(2A)". It is a subsection, written
+ * outside the sequence: it has no ordinal, so "(1)" after "(A1)" is still the first.
+ */
+const INSERTED = "\\d{1,3}[A-Z]{1,2}|[A-Z]{1,2}\\d{1,3}";
+const LETTERED = new RegExp(`^\\s{0,6}\\((?<n>[a-z]{1,4}|\\d{1,3}|${INSERTED})\\)\\s+(?<rest>\\S.*)$`, "u");
+const IS_INSERTED = new RegExp(`^(?:${INSERTED})$`, "u");
 const MULTI_ROMAN = /^(?:ii|iii|iv|vi|vii|viii|ix)$/u;
 
 const headed = (pattern: RegExp, line: string, numbering: string, label: (n: string) => string): NumberedLine | undefined => {
@@ -62,9 +68,9 @@ type Style = "letter" | "roman" | "digit";
  * 開いたときの読みを覚えておく代わりに、一つ上に英字が開いていたかで決め直す。
  */
 const styleOfLabel = (open: NumberedLine, index: number, all: readonly NumberedLine[]): Style | undefined => {
-  const inner = /^\((?<n>[a-z0-9]{1,4})\)$/u.exec(open.label)?.groups?.["n"];
+  const inner = /^\((?<n>[A-Za-z0-9]{1,5})\)$/u.exec(open.label)?.groups?.["n"];
   if (inner === undefined) return undefined;
-  if (/^\d+$/u.test(inner)) return "digit";
+  if (/^\d+$/u.test(inner) || IS_INSERTED.test(inner)) return "digit";
   if (MULTI_ROMAN.test(inner)) return "roman";
   const above = all[index - 1];
   return /^[ivx]$/u.test(inner) && above !== undefined && styleOfLabel(above, index - 1, all) === "letter" && above.depth < open.depth ? "roman" : "letter";
@@ -78,7 +84,7 @@ const followsLetter = (raw: string, context: NumberingContext): boolean =>
 
 /** "(i)" is a roman numeral right under "(a)", or when a roman list is already open; the letter i otherwise. */
 const styleOf = (raw: string, context: NumberingContext): Style => {
-  if (/^\d+$/u.test(raw)) return "digit";
+  if (/^\d+$/u.test(raw) || IS_INSERTED.test(raw)) return "digit";
   if (MULTI_ROMAN.test(raw)) return "roman";
   if (!/^[ivx]$/u.test(raw) || followsLetter(raw, context)) return "letter";
   const open = styles(context);
@@ -99,7 +105,7 @@ const LETTER_BEFORE_A = "a".charCodeAt(0) - 1;
 
 /** "(b)" は 2 番目、"(ii)" も 2 番目。二文字以上の英字（"(aa)"）は並びが決まらないので付けない。 */
 const ordinalOf = (raw: string, style: Style): number | undefined => {
-  if (style === "digit") return Number(raw);
+  if (style === "digit") return IS_INSERTED.test(raw) ? undefined : Number(raw);
   if (style === "roman") return parseRoman(raw);
   return raw.length === 1 ? raw.charCodeAt(0) - LETTER_BEFORE_A : undefined;
 };

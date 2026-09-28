@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### English: inserted subsections `(A1)` and `(2A)` are read (#140)
+
+An amendment inserts a subsection between two others and numbers it `(A1)` or `(2A)`. lang-en did not read these,
+so the lettered items under `(A1)` became the section's own and `(1)` nested under `(b)`. They are now subsections
+outside the sequence (no ordinal, so `(1)` after `(A1)` is still the first, and no numbering gap is reported). The
+three UK Acts in the corpus get their subsections right; lint output is unchanged.
+
 ### Relative references are read and checked, in a statute (#138)
 
 With the `statute` profile, `前条` `次項` `同号` `本条` `前各項` `前二項` `前条第二項` and an address written without
