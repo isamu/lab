@@ -2,6 +2,15 @@
 
 Newest first.
 
+## Unreleased
+
+### lang-en only counts capitalised words as proper nouns (#170)
+
+The English tagger marks words it does not know as proper nouns, so `proper-noun-density` counted lowercase words
+(linters, json, the e of e.g.) and marks (—, $). lang-en now checks the tag against the spelling: an English proper
+noun is capitalised, so a tagged word with no capital is a common noun, and one with no letters is a number, a symbol
+or punctuation. Names such as Chicago and acronyms such as HTTP are still proper nouns.
+
 ## 0.11.0 — 2026-09-29
 
 Brushed up against real documents: a corpus of Japanese and English reports, minutes, specifications, contracts,
