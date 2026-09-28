@@ -94,11 +94,49 @@ const BE = new Set(["be", "am", "is", "are", "was", "were", "been", "being"]);
 
 const isBe = (entry: Tagged): boolean => BE.has(entry.lemma ?? entry.value.toLowerCase()) || BE.has(entry.value.toLowerCase());
 
+/** 過去分詞の前の be の位置。無ければ -1。 */
+const beBefore = (tagged: readonly Tagged[], at: number): number => {
+  const head = tagged.slice(0, at).findLastIndex((entry) => !SKIPPABLE.has(entry.pos));
+  const entry = tagged[head];
+  return entry !== undefined && isBe(entry) ? head : -1;
+};
+
+/**
+ * 関係節の中で名詞を修飾しているだけの受動。日本語の predicateOnly と同じ判断で、英語は修飾が名詞の後ろに来る。
+ * 「the report that was published」は動作主を隠しているのではなく名詞の説明なので、書き手に直す余地がない。
+ * 文の述語の受動（The decision was made.）は残す。名詞の後ろの being（the request being closed）は
+ * 動名詞の主語であることも多く、関係節と見分けられないので残す。
+ */
+const AUXILIARY_CHAIN = new Set(["RB", "RBR", "RBS", "MD"]);
+
+const HAVE = new Set(["have", "has", "had", "having"]);
+
+const isAuxiliary = (entry: Tagged): boolean => AUXILIARY_CHAIN.has(entry.pos) || isBe(entry) || HAVE.has(entry.value.toLowerCase());
+
+/** 関係代名詞の前に立って、それが指す語。the report / those / anything。 */
+const NOMINAL_TAG = new Set(["NN", "NNS", "NNP", "NNPS", "PRP", "CD", "DT"]);
+
+const RELATIVE_TAG = new Set(["WDT", "WP"]);
+
+const inRelativeClause = (tagged: readonly Tagged[], be: number): boolean => {
+  const lead = tagged.slice(0, be).findLastIndex((entry) => !isAuxiliary(entry));
+  const relative = tagged[lead];
+  if (relative === undefined || !RELATIVE_TAG.has(relative.pos)) return false;
+  // 文頭の That was decided. / Which was chosen? は、前に指す名詞が無いので述語。
+  const antecedent = tagged.slice(0, lead).findLast((entry) => entry.pos !== ",");
+  return antecedent !== undefined && NOMINAL_TAG.has(antecedent.pos);
+};
+
 const isPassive = (tagged: readonly Tagged[], at: number): boolean => {
   if (tagged[at]?.pos !== "VBN") return false;
-  const before = tagged.slice(0, at).reverse();
-  const head = before.find((entry) => !SKIPPABLE.has(entry.pos));
-  return head !== undefined && isBe(head);
+  const be = beBefore(tagged, at);
+  return be !== -1 && !inRelativeClause(tagged, be);
+};
+
+/** 過去分詞は VerbForm=Part。Based on the review, のような分詞の導入句を、命令形の並び（fix the parser, ship it）と見分ける。 */
+const featuresOf = (tagged: readonly Tagged[], at: number): { features?: Readonly<Record<string, string>> } => {
+  if (tagged[at]?.pos !== "VBN") return {};
+  return { features: isPassive(tagged, at) ? { VerbForm: "Part", Voice: "Pass" } : { VerbForm: "Part" } };
 };
 
 const state: { ready: Tagger | undefined } = { ready: undefined };
@@ -124,7 +162,7 @@ const locate = (text: string, tagged: readonly Tagged[]): Token[] =>
         surface: entry.value,
         pos: upos(entry.pos),
         ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
-        ...(isPassive(tagged, at) ? { features: { Voice: "Pass" } } : {}),
+        ...featuresOf(tagged, at),
       };
       return { tokens: [...acc.tokens, token], cursor: end };
     },
