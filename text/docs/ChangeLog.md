@@ -4,6 +4,11 @@ Newest first.
 
 ## Unreleased
 
+### The corpus's wikitext conversion closes the gaps left by dropped templates (#170)
+
+A Wikivoyage template the converter drops no longer leaves a space before punctuation (`Airport , but`) or a double
+space in the text chaff reads.
+
 ### Japanese 「3.2節」「第3章」「3.2.1項」 are references (#170)
 
 `dangling-reference` now reads a section, chapter or clause written in Arabic numerals in Japanese prose (「3.2節」,
