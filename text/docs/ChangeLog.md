@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `max-kanji-continuous` does not count legal addresses (#139)
+
+`第二十二条第二項` and `第五十二条の二第一項` are how a statute writes an address, in kanji numerals, and cannot be
+broken up; `第` and `条` / `項` / `号` already show where the words break. An address made of `第`, a kanji numeral and
+a unit (`条 項 号 章 節 款 目 編`, with an optional `の` branch number) is no longer counted, and splits the run it sits
+in. A long compound beside it (`独立行政法人等情報公開法第五条`) is still flagged.
+
 ### Report a wrong or missed finding from your own document (#133)
 
 `npx chaffjs feedback <file> --rule <rule-id> [--line N]` (a wrong finding) or `--missed --line N` (something
