@@ -38,7 +38,7 @@ describe("maskAddresses — 法令（statute）", () => {
     ["第五条若年雇用", "第五条若年雇用"],
     ["第五条及川研究所", "第五条及川研究所"],
     ["第五条各項目標", "第五条各項目標"],
-    ["第五十二条の二中央銀行", " の二中央銀行"],
+    ["第五十二条の二中央銀行", "第五十二条の二中央銀行"],
     ["第五条第三者委員会", "第五条第三者委員会"],
     ["第一項各号又は", " 各号又は"],
     ["同条第一項本文中", "同条 本文中"],
@@ -88,6 +88,26 @@ describe("maskAddresses — 種類の知識はコードに無い", () => {
     assert.equal(maskAddresses("§1.§2", { id: "dot", addresses: ["§[0-9]+"], connectives: ["."] }), " . ");
     // 「.」を正規表現のまま入れると「漢」までつなぎと読み、§1 を番地にしてしまう。
     assert.equal(maskAddresses("§1漢§2", { id: "dot", addresses: ["§[0-9]+"], connectives: ["."], addressEnd: "[^\\p{Script=Han}]|$" }), "§1漢 ");
+  });
+
+  it("番地は当たったとおりに一度だけ取り、後ろに合わせて縮めない", () => {
+    const end = { connectives: [], addressEnd: "$" };
+    assert.equal(maskAddresses("AB", { id: "long-first", addresses: ["AB", "A"], ...end }), " ");
+    // 正規表現は左の候補から当てる。短い「A」が先なら、その位置の番地は「A」で、後ろの「B」が決まりに合わない。
+    assert.equal(maskAddresses("AB", { id: "short-first", addresses: ["A", "AB"], ...end }), "AB");
+  });
+
+  it("並びは、後ろの決まりを満たす最も長い切れ目まで", () => {
+    const profile = { id: "cut", addresses: ["§[0-9]+"], connectives: ["及"], addressEnd: "[^\\p{Script=Han}]|$" };
+    // 「§」は漢字でないので、「及」の後ろが切れ目になる。§2 は後ろに漢字が続くので番地ではない。
+    assert.equal(maskAddresses("§1及§2漢", profile), " 及§2漢");
+    assert.equal(maskAddresses("§1及§2", profile), " 及 ");
+    assert.equal(maskAddresses("§1及び", profile), " 及び");
+    assert.equal(maskAddresses("§1。§2漢§3", profile), " 。§2漢 ");
+  });
+
+  it("空にも当たる書き方（利用者が書いた [0-9]*）でも止まり、空の一致は番地にしない", () => {
+    assert.equal(maskAddresses("a12b", { id: "empty", addresses: ["[0-9]*"], connectives: [] }), "a b");
   });
 
   it("並びの後ろの決まり（address_end）が無ければ、どこで終わっても番地", () => {
