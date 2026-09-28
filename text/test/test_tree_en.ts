@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { parseRoman } from "../packages/lang-en/src/structure.ts";
+import { parseRoman } from "../packages/lang-en/src/roman.ts";
 import { buildStructure } from "../packages/chaff/src/structure/of.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
 import type { StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
@@ -140,6 +140,55 @@ describe("an English contract as a tree", () => {
       treeOf("There are 3 parties and 12 months of support.").children.map((node) => [node.attrs["value"], node.attrs["unit"]]),
       [[12, "months"]],
     );
+  });
+});
+
+describe("later members of a reference list are references too", () => {
+  const withDocument = (target: string, document: string | number | undefined): string => (document === undefined ? target : `${target}@${String(document)}`);
+  const targets = (text: string): string[] =>
+    patterns()
+      .references(text)
+      .map((mention) => withDocument(String(mention.attrs["target"]), mention.attrs["document"]));
+
+  it("every number after a plural word", () => {
+    assert.deepEqual(targets("Sections 1, 2 and 9 apply."), ["1", "2", "9"]);
+  });
+
+  it("after a singular word, only a number where the list goes on or ends — not “4 days”", () => {
+    assert.deepEqual(targets("Section 3 and 4 days later."), ["3"]);
+    assert.deepEqual(targets("Section 3 or 4."), ["3", "4"]);
+  });
+
+  it("a member that is only parentheses stands beside the part written the same way", () => {
+    // Data Protection Act 2018, sections 49 and 186 (Open Government Licence v3.0).
+    assert.deepEqual(targets("for the purposes of sections 45(3)(b) and (5), 48(2)(b) and 53(7)."), ["45.3.b", "45.5", "48.2.b", "53.7"]);
+    assert.deepEqual(targets("Article 58(2)(c) to (g) and (j) of the UK GDPR"), ["58.2.c@UK GDPR", "58.2.g@UK GDPR", "58.2.j@UK GDPR"]);
+  });
+
+  it("members carry the document the list ends in", () => {
+    assert.deepEqual(targets("sections 5(7), 29(2) and 9 of the Tribunals Act"), ["5.7@Tribunals Act", "29.2@Tribunals Act", "9@Tribunals Act"]);
+  });
+
+  it("a member with a letter (45A) is not read, as the reference itself would not be", () => {
+    assert.deepEqual(targets("see sections 44 and 45A"), ["44"]);
+  });
+
+  it("roman members in a list of Articles, with the document the list ends in", () => {
+    assert.deepEqual(targets("Articles IV, V and VI of the Master Agreement apply."), ["4@Master Agreement", "5@Master Agreement", "6@Master Agreement"]);
+    assert.deepEqual(targets("Articles IV and V apply."), ["4", "5"]);
+  });
+
+  it("a roman letter after a list of numbers is not a member", () => {
+    assert.deepEqual(targets("Sections 2 and I agree."), ["2"]);
+  });
+
+  it("a list that switches document part-way stops at the switch (not read further)", () => {
+    // "3 of the Y Act" is left out rather than guessed; a missed reference, never a false one.
+    assert.deepEqual(targets("Sections 1 and 2 of this Act and 3 of the Y Act"), ["1", "2"]);
+  });
+
+  it("a later “section 6” is its own reference, not a member", () => {
+    assert.deepEqual(targets("section 5 and section 6"), ["5", "6"]);
   });
 });
 
