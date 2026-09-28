@@ -2,7 +2,18 @@
 
 Newest first.
 
-## Unreleased
+## 0.11.0 — 2026-09-29
+
+Brushed up against real documents: a corpus of Japanese and English reports, minutes, specifications, contracts,
+itineraries and internal notes, and a bench that plants mistakes and measures what chaff misses. Japanese checks now
+rest on morphological analysis — word lists match by base form, and addresses, numbers written in kanji and place
+names are recognised by part of speech rather than by pattern lists. False positives fell across `undefined-acronym`,
+`ngram-repetition`, `repeated-sentence-head`, `oxford-comma-consistency` and `agentless-passive`, and `chaff --version`
+prints the installed packages.
+
+📦 [`chaffjs@0.11.0`](https://www.npmjs.com/package/chaffjs/v/0.11.0) ·
+[`@chaffjs/lang-ja@0.10.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.10.0) ·
+[`@chaffjs/lang-en@0.9.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.9.0)
 
 ### Word lists are matched by words and their base forms (#170)
 
