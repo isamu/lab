@@ -2,6 +2,16 @@
 
 Newest first.
 
+## Unreleased
+
+### In-page navigation is not prose (#170)
+
+A Markdown paragraph made only of links into the same page (`](#…)`) and marks such as ▲ ↑ | ・ — a "back to
+contents" line after every section, or the entries of a table of contents — is page navigation, not prose, and is no
+longer read as sentences. It stopped `repeated-sentence-head` from firing on a repeated `[▲ 目次に戻る](#目次)`, and a
+table of contents no longer sets the document's spacing majority for `latin-spacing` or counts as the first use of an
+acronym. A paragraph where a link sits among other words, and links to other pages, are still read.
+
 ## 0.11.0 — 2026-09-29
 
 Brushed up against real documents: a corpus of Japanese and English reports, minutes, specifications, contracts,

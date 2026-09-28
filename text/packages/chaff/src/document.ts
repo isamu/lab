@@ -9,11 +9,14 @@ import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { pageFurniture, textOutline } from "./page-furniture.ts";
 import { tokenizedLexicons } from "./lexicon-tokens.ts";
+import { isInPageNavigation } from "./in-page-nav.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
 type Node = {
   readonly type: string;
+  readonly url?: string | undefined;
+  readonly value?: string | undefined;
   readonly position?: { readonly start: Place; readonly end: Place } | undefined;
   readonly children?: readonly Node[] | undefined;
 };
@@ -100,7 +103,7 @@ const collectMasks = (root: Node, source: string): Span[] => {
       spans.push(...linkChrome(node));
       return;
     }
-    if (!NOT_PROSE.has(node.type) && node.type !== "heading") return;
+    if (!NOT_PROSE.has(node.type) && node.type !== "heading" && !isInPageNavigation(node)) return;
     const span = spanOf(node);
     if (span !== undefined) spans.push(span);
   });
