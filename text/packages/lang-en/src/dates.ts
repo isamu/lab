@@ -71,7 +71,8 @@ const WEEKDAY_AFTER = new RegExp(`^,?\\s*\\((?<day>${DAY_WORD})\\)`, "u");
  * The end of a range or a pair, "1-3 October 2026", "1 to 3 October", "1 and 3 October": a weekday beside it could
  * belong to either day, so it is not read.
  */
-const RANGE_BEFORE = /\d(?:st|nd|rd|th)?\s*(?:[-–—]|to|through|until|till|and|or)\s*$/u;
+/** The number before the connecting word must be a day, not the end of a year ("1 October 2026 and 3 October 2026"). */
+const RANGE_BEFORE = /(?<!\d)\d{1,2}(?:st|nd|rd|th)?\s*(?:[-–—]|to|through|until|till|and|or)\s*$/u;
 
 const weekdayOf = (word: string | undefined): number | undefined => {
   const index = word === undefined ? -1 : WEEKDAYS.findIndex((pattern) => pattern.test(word));

@@ -94,6 +94,11 @@ describe("English: the weekday beside a date", () => {
     assert.deepEqual(weekdays(en, "May 2026 was busy."), [undefined]);
   });
 
+  it("two full dates joined by a word each keep their own weekday", () => {
+    assert.deepEqual(weekdays(en, "We meet 1 October 2026 and 3 October 2026 (Saturday)."), [undefined, 6]);
+    assert.deepEqual(weekdays(en, "From 1 October 2026 to 3 October 2026 (Saturday)."), [undefined, 6]);
+  });
+
   it("says which day it really is; a date without its year is not checked", () => {
     assert.deepEqual(found("# Trip\n\nWe leave on Friday, 1 October 2026.", en, "en"), ["2026-10-01:Friday:Thursday"]);
     assert.deepEqual(found("# Trip\n\nWe leave on Friday, 1 October.", en, "en"), []);
