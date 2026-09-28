@@ -1,0 +1,26 @@
+id: date-order
+layer: L3
+status: experimental
+how_to_find: date-order
+requires: [dates]
+severity: warning
+
+name:
+  ja: 日程の順番が前後している
+  en: A date out of order in a schedule
+
+why:
+  ja: 旅程やマイルストーンのように日付を並べた箇条書きや表で、ひとつだけ前の日付より早い日付があると、書き間違いか順番の入れ替わりかを読み手が確かめることになります。並びが古い順か新しい順かは多いほうで決め、それに逆らう日付だけを指します。
+  en: In a list or a table of dates, such as an itinerary or milestones, one date earlier than the one before it makes the reader check whether it is a typo or a swapped row. The direction of the list (oldest or newest first) is taken from most of its steps, and only a date against it is pointed out.
+
+message:
+  ja: 「{date}」が、前後の日付の並びから外れています（前は「{previous}」）
+  en: "{date} breaks the order of the dates around it (after {previous})"
+
+how_to_fix:
+  ja: 日付を確かめて、書き間違いなら直し、順番が違うなら並べ替えてください。
+  en: Check the date. Correct it if it is a typo, or move the row if the order is wrong.
+
+levels: { strict: 1, normal: 1, relaxed: 1 }
+
+use_for: [business, technical, blog]

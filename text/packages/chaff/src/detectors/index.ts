@@ -15,7 +15,7 @@ import { concreteEvidence, dashDensity, emojiDensity, ngramRepetition, undefined
 import { aiTell, contractionMix, cushionDensity, hedgingDensity, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
-import { danglingReference, dateWeekdayMismatch, duplicateDefinition, numberingGap } from "./structure-tree.ts";
+import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -59,6 +59,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "latin-spacing": latinSpacing,
   "dangling-reference": danglingReference,
   "date-weekday-mismatch": dateWeekdayMismatch,
+  "date-order": dateOrder,
   "numbering-gap": numberingGap,
   "duplicate-definition": duplicateDefinition,
 };

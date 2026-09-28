@@ -1,7 +1,8 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
-import { danglingReferences, duplicateDefinitions, type StructureIssue } from "../structure/issues.ts";
+import { danglingReferences, duplicateDefinitions, inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { numberingBreaks } from "../structure/numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
+import { dateOrderBreaks } from "../structure/date-order.ts";
 
 const QUOTE_LENGTH = 80;
 
@@ -53,4 +54,21 @@ export const dateWeekdayMismatch: Detector = (doc): Finding[] =>
           actual: dayName(doc, issue.values["actual"]),
           offset: issue.offset,
         },
+      }));
+
+/** 木の日付を、原文の位置と一緒に並べる。 */
+const datedPoints = (tree: NonNullable<ProseDocument["structure"]>): { offset: number; value: string }[] =>
+  inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [{ offset: node.span.start, value: String(node.attrs["value"]) }] : []));
+
+/** 日程の並びに逆らう日付。並びの読み方は原文の行を見るので、木と原文の両方を渡す。 */
+export const dateOrder: Detector = (doc): Finding[] =>
+  doc.structure === undefined
+    ? []
+    : dateOrderBreaks(doc.source, datedPoints(doc.structure)).map((issue) => ({
+        rule: "date-order",
+        severity: "warning",
+        line: 0,
+        column: 0,
+        quote: quoteAt(doc.source, issue.offset),
+        values: { ...issue.values, offset: issue.offset },
       }));
