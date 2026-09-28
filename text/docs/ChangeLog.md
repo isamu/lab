@@ -8,8 +8,16 @@ Newest first.
 
 「〜ください」 was read by its dictionary form 「くださる」, which is not in the polite word list, so a polite document
 ending with 「詳しくは〜をご覧ください。」 had those sentences reported as the odd ones out, and a plain document hid a
-polite 「〜してください。」. A sentence ending is now matched by how it is written as well as by its dictionary form.
-Found on the Kubernetes Japanese docs in the corpus.
+polite 「〜してください。」. A sentence ending is now matched by how it is written as well as by its dictionary form, and
+only the ending is read: a polite phrase quoted mid-sentence (「ご覧ください」という表現を使う。) no longer makes a plain
+sentence polite. Found on the Kubernetes Japanese docs in the corpus.
+
+### lang-ja places words where they are written (#170)
+
+kuromoji's word positions drift after a cluster of symbols (`)、`, `**、`) or an emoji, so from there on every word in
+the paragraph carried a position one or more characters too early. A word from the next sentence could land in the
+previous one, and numbers and dates were read from the wrong characters (`2026年8月1日` came out as `06-08`). lang-ja now
+places each word by matching its text against the paragraph. Found on the Kubernetes Japanese docs in the corpus.
 
 ### English reads bracketed citation tags as another document (#170)
 

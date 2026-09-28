@@ -1,3 +1,4 @@
+import { surfaceStarts } from "./surface-starts.ts";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import type { Token } from "chaffjs/plugin";
@@ -123,11 +124,11 @@ export const prepare = async (): Promise<void> => {
 export const isReady = (): boolean => state.ready !== undefined;
 
 /**
- * span は渡した文字列の先頭を 0 とする。kuromoji の word_position は 1 始まりなので 1 引く。
+ * span は渡した文字列の先頭を 0 とする。位置は kuromoji の word_position ではなく、語の文字を本文と照らして決める（surface-starts.ts）。
  * 形の違うものが混ざったら、その 1 つを落とす。位置が NaN の token を下流に流さない。
  */
-const toToken = (morpheme: Morpheme): Token => ({
-  span: { start: morpheme.word_position - 1, end: morpheme.word_position - 1 + morpheme.surface_form.length },
+const toToken = (morpheme: Morpheme, start: number): Token => ({
+  span: { start, end: start + morpheme.surface_form.length },
   surface: morpheme.surface_form,
   // UD の日本語では「れる/られる」は AUX。IPADIC の「動詞,接尾」をそこへ寄せる。
   pos: isPassive(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
@@ -172,9 +173,19 @@ export const predicateOnly = (tokens: readonly Token[]): Token[] =>
 export const tokenize = (text: string): Token[] | undefined => {
   const tokenizer = state.ready;
   if (tokenizer === undefined) return undefined;
-  return toArray(callMethod(tokenizer, "tokenize", [text]))
-    .filter(isMorpheme)
-    .map(toToken);
+  return placed(text, toArray(callMethod(tokenizer, "tokenize", [text])).filter(isMorpheme)).map(({ morpheme, start }) => toToken(morpheme, start));
+};
+
+/** 形態素と、本文の中での始まり。本文に見つからないものは落とす。 */
+const placed = (text: string, raws: readonly Morpheme[]): { readonly morpheme: Morpheme; readonly start: number }[] => {
+  const starts = surfaceStarts(
+    text,
+    raws.map((raw) => raw.surface_form),
+  );
+  return raws.flatMap((morpheme, index) => {
+    const start = starts[index];
+    return start === undefined ? [] : [{ morpheme, start }];
+  });
 };
 
 /**
@@ -200,9 +211,12 @@ const detail2Of = (value: unknown): string => {
 export const morphemes = (text: string): Morph[] | undefined => {
   const tokenizer = state.ready;
   if (tokenizer === undefined) return undefined;
-  return toArray(callMethod(tokenizer, "tokenize", [text])).flatMap((raw) => {
-    if (!isMorpheme(raw)) return [];
-    const start = raw.word_position - 1;
-    return [{ start, end: start + raw.surface_form.length, surface: raw.surface_form, pos: raw.pos, detail1: raw.pos_detail_1, detail2: detail2Of(raw) }];
-  });
+  return placed(text, toArray(callMethod(tokenizer, "tokenize", [text])).filter(isMorpheme)).map(({ morpheme: raw, start }) => ({
+    start,
+    end: start + raw.surface_form.length,
+    surface: raw.surface_form,
+    pos: raw.pos,
+    detail1: raw.pos_detail_1,
+    detail2: detail2Of(raw),
+  }));
 };
