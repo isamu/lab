@@ -58,16 +58,6 @@
       "redistribute": true
     },
     {
-      "id": "pep-0008",
-      "title": "PEP 8 – Style Guide for Python Code",
-      "source": "url",
-      "genre": "technical/spec",
-      "language": "en",
-      "url": "https://raw.githubusercontent.com/python/peps/ce48c4ecdd0692e265537f10b09fb3fcf7dc76f3/peps/pep-0008.rst",
-      "license": "Public domain",
-      "redistribute": true
-    },
-    {
       "id": "kep-2214-indexed-job",
       "title": "KEP-2214: Indexed Job",
       "source": "url",
