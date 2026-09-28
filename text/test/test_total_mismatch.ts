@@ -77,9 +77,18 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(table), ["$400≠$350"]);
   });
 
+  it("a pipe escaped inside a cell does not move the column; a currency code keeps its space", () => {
+    const table = doc("| Item | Amount |", "| --- | --- |", "| A \\| setup | $100 |", "| B | $200 |", "| Total | $999 |");
+    assert.deepEqual(found(table), ["$999≠$300"]);
+    assert.deepEqual(found(doc("- A: USD 100", "- B: USD 200", "- Total: USD 999")), ["USD 999≠USD 300"]);
+  });
+
   it("a word that only starts like a total word is not a total: 計画, Totally", () => {
     assert.deepEqual(found(doc("- 設計 100,000円", "- 実装 200,000円", "- 計画 999,000円"), ja, "ja"), []);
     assert.deepEqual(found(doc("- A: $100", "- B: $200", "- Totally new: $999")), []);
+    assert.deepEqual(found(doc("- Search: 10%", "- Ads: 20%", "- Total conversion: 25%")), []);
+    assert.deepEqual(found(doc("- A: $100", "- B: $200", "- Total (incl. tax) $999")), ["$999≠$300"]);
+    assert.deepEqual(found(doc("- 設計 100,000円", "- 実装 200,000円", "- 合計（税込） 999,000円"), ja, "ja"), ["999,000円≠300,000円"]);
     assert.deepEqual(found(doc("- 設計 100,000円", "- 実装 200,000円", "- **計**: 999,000円"), ja, "ja"), ["999,000円≠300,000円"]);
   });
 

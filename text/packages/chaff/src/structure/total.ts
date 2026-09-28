@@ -22,7 +22,10 @@ type Cell = { readonly column: number; readonly unit: string };
 type Placed = Amount & Cell & { readonly cents: number | undefined };
 type Entry = { readonly label: boolean; readonly amounts: readonly Placed[] };
 
-const columnOf = (source: string, line: Line, offset: number): number => source.slice(line.start, offset).split("|").length - 1;
+/** 表の列の区切り。\| は列の中に書いた | なので数えない。 */
+const CELL_SEPARATOR = /(?<!\\)\|/u;
+
+const columnOf = (source: string, line: Line, offset: number): number => source.slice(line.start, offset).split(CELL_SEPARATOR).length - 1;
 
 const isNegative = (source: string, line: Line, amount: Amount): boolean => {
   const before = source.slice(line.start, amount.offset);
@@ -37,10 +40,15 @@ const leadingText = (text: string): string =>
     .replace(/^[*_]+/u, "")
     .trimStart();
 
-/** 合計の語で始まり、語がそこで切れている行か。「計画」は「計」で始まっても合計ではない。 */
+/**
+ * 合計の語のすぐ後ろ。行や列の終わり、区切り（: |）、括弧の注記（合計（税込））、金額。
+ * 「計画」や「Total conversion: 25%」のように語が続くものは合計の行ではない。
+ */
+const AFTER_LABEL = /^[*_]*[ \t\u3000]*(?:$|[:：|（(]|[-−▲△$€£¥￥\p{N}])/u;
+
 const isTotalLabel = (text: string, labels: readonly string[]): boolean => {
   const lead = leadingText(text).toLowerCase();
-  return labels.some((label) => lead.startsWith(label.toLowerCase()) && !/^\p{L}/u.test(lead.slice(label.length)));
+  return labels.some((label) => lead.startsWith(label.toLowerCase()) && AFTER_LABEL.test(lead.slice(label.length)));
 };
 
 const centsOf = (source: string, line: Line, amount: Amount): number | undefined => {
@@ -120,7 +128,7 @@ const shownAmounts = (source: string, total: Amount, sumCents: number): Record<s
   const unitStart = unitStartBefore(source, total);
   const written = source.slice(unitStart ?? total.offset, total.end);
   const sum = formatCents(sumCents, written);
-  if (unitStart !== undefined) return { written, sum: `${total.unit}${sum}` };
+  if (unitStart !== undefined) return { written, sum: `${source.slice(unitStart, total.offset)}${sum}` };
   return { written, sum: written.endsWith(total.unit) ? `${sum}${total.unit}` : sum };
 };
 
