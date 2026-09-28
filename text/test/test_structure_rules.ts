@@ -502,6 +502,14 @@ describe("English: a reference into another document is not looked up here", () 
     ["See Section 9 of this Agreement.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
     ["See Section 9 of the Agreement.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
     ["See Section 9 of each party's obligations.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+    // RFC 9457: a bracketed citation tag names another document, after the reference or just before it.
+    ["HTTP status codes (Section 15 of [HTTP]) cannot always convey enough.", []],
+    ["The language used is negotiated (see [HTTP], Section 12.1).", []],
+    ["Relative references are resolved as per [URI], Section 5.", []],
+    ["See Section 4.6 of [RFC8126].", []],
+    ["See Section 9 [2024 edition].", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+    ["See [1], Section 9.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
+    ["The [HTTP] rules apply; see Section 9.", [["dangling-reference", { label: "Section 9", target: "9" }]]],
   ];
   cases.forEach(([sentence, expected]) => {
     it(sentence, () => assert.deepEqual(found(en, numbered(sentence)), expected));
