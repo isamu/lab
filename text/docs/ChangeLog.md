@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### The corpus's HTML conversion drops more page chrome (#170)
+
+Converting a fetched page now also drops navigation marked by `role="navigation"` or a breadcrumb label, a breadcrumb
+trail of links joined by `>`, a block made only of links (previous/next links, a menu without a list), a line of
+in-page links and marks such as `▲`, and a copyright notice closing the page. Each is recognised by structure, not by a
+site's class names or wording; a block of card links that carry a title and a summary is kept.
+
 ### `total-mismatch` adds a table column of bare numbers (#170)
 
 A table column whose cells hold only numbers, with the unit in its header (`| Room | Hours booked |`), is now added up

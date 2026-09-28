@@ -38,9 +38,9 @@ rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, ng
 rfc9457  max-sentence-length 54, proper-noun-density 1, undefined-acronym 22
 rust-lang-minutes-2022-11-22  agentless-passive 4, contraction-consistency 2, max-sentence-length 3, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
 rust-rfc-2094-nll  heading-echo 3, max-paragraph-length 12, max-sentence-length 120, ngram-repetition 1, proper-noun-density 1, undefined-acronym 19
-soumu-wp-r06-ai-booms  agentless-passive 1, latin-spacing 5, max-sentence-length 2, preamble-length 1, undefined-acronym 3
-soumu-wp-r06-ai-rules-japan  agentless-passive 5, latin-spacing 9, max-sentence-length 6, no-doubled-joshi 1, preamble-length 1
-soumu-wp-r06-misinformation  agentless-passive 9, latin-spacing 11, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, preamble-length 1, taigen-dome-in-prose 1, undefined-acronym 14
+soumu-wp-r06-ai-booms  agentless-passive 1, latin-spacing 5, max-sentence-length 2, undefined-acronym 3
+soumu-wp-r06-ai-rules-japan  agentless-passive 5, latin-spacing 9, max-sentence-length 6, no-doubled-joshi 1
+soumu-wp-r06-misinformation  agentless-passive 9, latin-spacing 11, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, taigen-dome-in-prose 1, undefined-acronym 14
 sre-next-bunsho-kanri  agentless-passive 2
 sre-next-teikan  heading-echo 1, max-sentence-length 2, no-doubled-joshi 2, no-mixed-desumasu 1
 wikivoyage-belgian-coast-tram  expletive-construction 6, max-paragraph-length 23, max-sentence-length 37, proper-noun-density 1
