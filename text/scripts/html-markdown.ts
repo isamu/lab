@@ -8,7 +8,18 @@
 // lines of nothing but in-page or script links (never a heading), a heading drawn as an image unless its alt text is the page's
 // title, and a copyright notice closing the page, with an address just before it, are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
 // for any HTML.
-import { ANY_LINK, ATTRIBUTES, asMarkup, elementRanges, hasNoWords, isInside, plainText, stripTags, type ElementRange } from "./html-elements.ts";
+import {
+  ANY_LINK,
+  ATTRIBUTES,
+  asMarkup,
+  elementRanges,
+  hasNoWords,
+  isInside,
+  plainText,
+  stripTags,
+  withAttributeMarkupEscaped,
+  type ElementRange,
+} from "./html-elements.ts";
 import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
 import { decodeEntities, tidyLines } from "./markup-text.ts";
@@ -377,7 +388,7 @@ const withoutClosingAddress = (html: string): string => {
 };
 
 export const htmlToMarkdown = (html: string): string => {
-  const uncommented = html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "");
+  const uncommented = withAttributeMarkupEscaped(html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""));
   const preformatted = withPreformattedStashed(DROPPED.reduce(withoutElement, withoutRubyText(uncommented)));
   const kept = withoutHeadingSelfLinks(withoutButtons(withoutHiddenElements(mainContent(preformatted.html))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
