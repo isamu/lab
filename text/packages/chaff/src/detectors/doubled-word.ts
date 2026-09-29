@@ -55,11 +55,16 @@ export type Doubled = { readonly first: Token; readonly second: Token };
 const LOWER_START = /^\p{Ll}/u;
 const UPPER_START = /^\p{Lu}/u;
 
-/** 小文字の語の後ろの大文字は、題名や名前の書き出し（the [Your Rights section]）。大文字の無い文字では起きない。 */
+/** 小文字の語の後ろの大文字は、題名や名前の書き出し（the [Your Rights section]）。同じ語の the The は書き損じのまま。 */
 export const startsTitle = (first: Token, second: Token): boolean => LOWER_START.test(first.surface) && UPPER_START.test(second.surface);
 
+/** アダプタが重ね言葉（UD の Echo=Rdp）と読んだ語。「会社会社で」の二つ目。 */
+const isEcho = (token: Token): boolean => token.features?.["Echo"] === "Rdp";
+
+const isDeterminerPair = (first: Token, second: Token): boolean => isDeterminer(first) && isDeterminer(second) && !startsTitle(first, second);
+
 const isDoubled = (first: Token, second: Token): boolean =>
-  isWord(first) && isWord(second) && !startsTitle(first, second) && (sameWord(first, second) || (isDeterminer(first) && isDeterminer(second)));
+  isWord(first) && isWord(second) && !isEcho(second) && (sameWord(first, second) || isDeterminerPair(first, second));
 
 /** 並んだ二語が書き損じか。source は文書全体で、token の span もその座標。 */
 export const doubledAt = (source: string, first: Token, second: Token, spaced: boolean, allowed: Lexicon): boolean => {

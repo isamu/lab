@@ -101,11 +101,18 @@ describe("doubled-word — 純関数", () => {
     assert.deepEqual(doubledIn(hyphen.source, hyphen.tokens, true, []), []);
   });
 
-  it("小文字の語の後ろの大文字は題名の書き出しなので数えない。大文字で始まる一つ目は数える", () => {
+  it("限定詞の対で、小文字の語の後ろの大文字は題名の書き出しなので数えない。同じ語は大文字でも数える", () => {
     assert.deepEqual(pairs([w("the", "DET", ART), w("Your", "PRON", POSS)], { gaps: [" ["] }), []);
-    assert.deepEqual(pairs([w("the", "DET", ART), w("The", "DET", ART)]), []);
+    assert.deepEqual(pairs([w("the", "DET", ART), w("The", "DET", ART)]), ["the The@4"]);
+    assert.deepEqual(pairs([w("the", "DET", ART), w("Our", "PRON", POSS)]), []);
+    assert.deepEqual(pairs([w("The", "DET", ART), w("Our", "PRON", POSS)]), ["The Our@4"]);
     assert.deepEqual(pairs([w("The", "DET", ART), w("the", "DET", ART)]), ["The the@4"]);
     assert.deepEqual(pairs([w("THE", "DET", ART), w("THE", "DET", ART)]), ["THE THE@4"]);
+  });
+
+  it("アダプタが重ね言葉（Echo=Rdp）と読んだ二つ目は数えない", () => {
+    assert.deepEqual(pairs([w("会社", "NOUN"), w("会社", "NOUN", { Echo: "Rdp" }), w("で", "ADP")], { gaps: ["", ""], spaced: false }), []);
+    assert.deepEqual(pairs([w("会社", "NOUN", { Echo: "Rdp" }), w("会社", "NOUN")], { gaps: [""], spaced: false }), ["会社 会社@2"]);
   });
 
   it("語彙表の重なりは数えない。語彙表は語に分けた形で比べる", () => {
@@ -163,6 +170,7 @@ describe("doubled-word — 英語", () => {
   it("invalid: 行をまたいでも、大文字で始まっても同じ語", () => {
     assert.deepEqual(findingsOf("Please send the\nthe report to finance.", en, "en"), ["2:1 the the"]);
     assert.deepEqual(findingsOf("The the report is attached.", en, "en"), ["1:5 The the"]);
+    assert.deepEqual(findingsOf("Please review the The draft.", en, "en"), ["1:19 the The"]);
   });
 
   it("valid: 文法が許す重なりと、並んでよい限定詞は数えない", () => {
@@ -180,6 +188,7 @@ describe("doubled-word — 英語", () => {
       "The answer is, is it worth it?",
       "Contact us about the [Your Rights section](https://example.com) above.",
       "Open the My Account page.",
+      "We do do manual reviews for high-risk cases.",
     ];
     valid.forEach((text) => assert.deepEqual(findingsOf(text, en, "en"), [], text));
   });
@@ -203,6 +212,7 @@ describe("doubled-word — 日本語", () => {
     assert.deepEqual(findingsOf("私のの本です。", ja, "ja"), ["1:3 のの"]);
     assert.deepEqual(findingsOf("内容を確認確認します。", ja, "ja"), ["1:6 確認確認"]);
     assert.deepEqual(findingsOf("会議会議を開きます。", ja, "ja"), ["1:3 会議会議"]);
+    assert.deepEqual(findingsOf("資料資料が届きました。", ja, "ja"), ["1:3 資料資料"]);
   });
 
   it("valid: 重ね言葉と繰り返し記号は数えない", () => {
@@ -224,6 +234,9 @@ describe("doubled-word — 日本語", () => {
       "毎日毎日同じ作業をしています。",
       "チームでの参加の場合も、個人個人で申し込みが必要です。",
       "場面場面で使い分けます。",
+      "会社会社で判断が異なります。",
+      "部署部署の事情によって変わります。",
+      "地域地域によって違います。",
     ];
     valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
   });

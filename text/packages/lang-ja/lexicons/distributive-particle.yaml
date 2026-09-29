@@ -1,0 +1,9 @@
+# 重ねた名詞の後ろに続いて「それぞれの」を言う助詞。「会社会社で」「部署部署の」「場面場面に」。
+# ここに無い助詞が続く重なり（資料資料を、確認確認する）は、doubled-word が書き損じとして数える。
+id: distributive-particle
+language: ja
+entries:
+  - pattern: で
+  - pattern: に
+  - pattern: の
+  - pattern: によって
