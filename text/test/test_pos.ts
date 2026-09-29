@@ -116,6 +116,7 @@ describe("満たせない要求は黙って通さない", () => {
       by_genre: {},
       how_to_find: "sentence-length",
       word_list: undefined,
+      extra_word_lists: [],
       what_to_check: undefined,
       where: undefined,
       requires: ["telepathy"],
