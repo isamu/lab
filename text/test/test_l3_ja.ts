@@ -217,6 +217,29 @@ describe("L3 日本語", () => {
     it("valid: 他の助詞で句が閉じたら、そこで連なりは切れる", () => {
       assert.equal(countFor("弊社の新製品は他社の製品の後に出ます。", "no-doubled-joshi"), 0);
     });
+
+    it("valid: 鉤括弧で引いた題名や発言の中の「の」は数えない", () => {
+      const title = "委員会が定めた「食品中のウイルスの制御のための食品衛生一般原則の適用に関するガイドライン」において、加熱が必要とされています。";
+      assert.equal(countFor(title, "no-doubled-joshi"), 0);
+      // 前の文が引用より長ければ、文の中の位置と文書の中の位置の取り違えで引用の範囲が外れる。
+      assert.equal(countFor(`${"二枚貝は加熱が必要です。".repeat(5)}${title}`, "no-doubled-joshi"), 0);
+      assert.equal(countFor("『日本の近代の文学の歴史』を読みました。", "no-doubled-joshi"), 0);
+      assert.equal(countFor("部長は「弊社の新製品の販売の計画を見直す」と述べました。", "no-doubled-joshi"), 0);
+    });
+
+    it("valid: 引用の後ろの読点は、連なりを切る", () => {
+      assert.equal(countFor("弊社の「新製品」、他社の製品の件です。", "no-doubled-joshi"), 0);
+    });
+
+    it("invalid: 鉤括弧の外の連なりは数える。引用を挟んだ連なりも、引用を名詞として数える", () => {
+      assert.equal(countFor("「2 ページ表示」での各ページのサイズの揃え方の設定を追加しました。", "no-doubled-joshi"), 1);
+      assert.equal(countFor("「3.1 リサーチの原則」について、以下の3点の改善の余地がある。", "no-doubled-joshi"), 1);
+      assert.equal(countFor("弊社の「新製品」の販売の計画を説明します。", "no-doubled-joshi"), 1);
+    });
+
+    it("invalid: 閉じていない鉤括弧の後ろは引用として外さない", () => {
+      assert.equal(countFor("「弊社の新製品の販売の計画を説明します。", "no-doubled-joshi"), 1);
+    });
   });
 
   describe("taigen-dome-in-prose", () => {

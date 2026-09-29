@@ -2,6 +2,17 @@
 
 Newest first.
 
+## Unreleased
+
+### `no-doubled-joshi` does not count particles inside a quoted title (#170)
+
+A title quoted in 「」 is the name of something, not the writer's phrasing: 「食品中のウイルスの制御のための食品衛生一般原則の適用
+に関するガイドライン」 was reported for its chain of の, which the writer cannot rephrase without misquoting it. A quotation
+in 「」 or 『』 is now read as one noun: the particles inside it are not counted, and the chain around it goes on through it,
+so 「弊社の「新製品」の販売の計画」 is reported where the brackets used to break it. A chain outside a short quotation
+(「「2 ページ表示」での各ページのサイズの揃え方の設定」) is still reported, a comma after the quotation still breaks the chain,
+and an unclosed bracket quotes nothing. Found on 厚生労働省's Q&A on norovirus.
+
 ## 0.14.0 — 2026-09-29
 
 Japanese read more closely by morphology: 「3つ」「三つ」 are a number and a counter, a line opening with 「1.5 万人」 is a
