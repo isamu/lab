@@ -153,6 +153,11 @@ describe("L3 日本語", () => {
       assert.deepEqual(desumasuQuotes(source), ["（1）申請者が市内に住んでいること。", "（2）前年度に補助を受けていないこと。"]);
     });
 
+    it("invalid: 番号の直後が助詞の段落は、項目を指す本文として本文と比べる", () => {
+      const source = "運用を始める。手順を作る。効果を測定する。\n\n（1）の金額を確認します。\n\n（2）の金額を確認します。";
+      assert.deepEqual(desumasuQuotes(source), ["（1）の金額を確認します。", "（2）の金額を確認します。"]);
+    });
+
     it("invalid: 見出しを挟めば並びは切れる", () => {
       const source = `${PROSE}\n\n## 住所\n\n（1）申請者が市内に住んでいること。\n\n## 補助歴\n\n（2）前年度に補助を受けていないこと。\n\n審査には二週間かかります。`;
       assert.deepEqual(desumasuQuotes(source), ["（1）申請者が市内に住んでいること。", "（2）前年度に補助を受けていないこと。"]);

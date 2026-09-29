@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { continuesInto, groupOf, outermostList, registerOf, slipsOf, type Judged, type Register } from "../packages/chaff/src/detectors/register.ts";
-import { enumeratedRuns, itemStarts } from "../packages/chaff/src/detectors/enumerated-runs.ts";
+import { enumeratedRuns, enumeratorStarts, numberedStarts } from "../packages/chaff/src/detectors/enumerated-runs.ts";
 import type { Sentence, Span, StructureKind, StructureNode, Token } from "../packages/chaff/src/plugin.ts";
 
 const POLITE = ["です", "ます", "ません", "でしょう", "ください", "ございます"];
@@ -186,15 +186,60 @@ const node = (kind: StructureKind, start: number, children: readonly StructureNo
   children,
 });
 
-describe("itemStarts: 条の外の、番号の付いた行の始まり", () => {
+const labelled = (start: number, label: string, children: readonly StructureNode[] = []): StructureNode => ({
+  ...node("item", start, children),
+  attrs: { label },
+});
+
+describe("numberedStarts: 条の外の、番号の付いた行", () => {
   it("見出しの下の項目は数え、条の中の項目は深くても数えない", () => {
-    const tree = node("doc", 0, [node("section", 0, [node("item", 5), node("item", 9)]), node("article", 20, [node("item", 25, [node("item", 28)])])]);
-    assert.deepEqual(itemStarts(tree), [5, 9]);
+    const tree = node("doc", 0, [
+      node("section", 0, [labelled(5, "（1）"), labelled(9, "（2）")]),
+      node("article", 20, [labelled(25, "２", [labelled(28, "（1）")])]),
+    ]);
+    assert.deepEqual(numberedStarts(tree), [
+      { start: 5, label: "（1）" },
+      { start: 9, label: "（2）" },
+    ]);
   });
 
-  it("条や項目でない葉は数えない。項目が無ければ空", () => {
-    assert.deepEqual(itemStarts(node("doc", 0, [node("quantity", 3), node("chapter", 4, [node("item", 6)])])), [6]);
-    assert.deepEqual(itemStarts(node("doc", 0)), []);
+  it("条や項目でない葉は数えない。番号の書き方が無ければ空の番号。項目が無ければ空", () => {
+    assert.deepEqual(numberedStarts(node("doc", 0, [node("quantity", 3), node("chapter", 4, [node("item", 6)])])), [{ start: 6, label: "" }]);
+    assert.deepEqual(numberedStarts(node("doc", 0)), []);
+  });
+});
+
+describe("enumeratorStarts: 番号の直後が助詞なら、項目ではなく項目を指す本文", () => {
+  const word = (surface: string, pos: string, start: number): Token => ({ span: { start, end: start + surface.length }, surface, pos });
+  const sentenceOf = (start: number, text: string, tokens: readonly Token[]): Sentence => ({ span: { start, end: start + text.length }, text, tokens });
+  // 「（1）納税者が」「（2）の金額は」「  （3）  と同じ」「（4）」の後に文が無い
+  const source = "（1）納税者が\n（2）の金額は\n  （3）  と同じ\n（4）";
+  const at = (text: string): number => source.indexOf(text);
+  const sentences = [
+    sentenceOf(0, "（1）納税者が", [word("（", "PUNCT", 0), word("1", "NOUN", 1), word("）", "PUNCT", 2), word("納税", "NOUN", 3)]),
+    sentenceOf(at("（2）"), "（2）の金額は", [word("（", "PUNCT", at("（2）")), word("の", "ADP", at("の金額"))]),
+    sentenceOf(at("  （3）"), "  （3）  と同じ", [
+      word("（", "PUNCT", at("（3）")),
+      word("3", "NOUN", at("3）")),
+      word("）", "PUNCT", at("）  と")),
+      word("  ", "PUNCT", at("  と")),
+      word("と", "ADP", at("と同じ")),
+    ]),
+  ];
+  const lines = [
+    { start: 0, label: "（1）" },
+    { start: at("（2）"), label: "（2）" },
+    { start: at("  （3）"), label: "（3）" },
+    { start: at("（4）"), label: "（4）" },
+  ];
+
+  it("直後が名詞なら項目、助詞なら除く。字下げと番号の後の空白は飛ばす", () => {
+    assert.deepEqual(enumeratorStarts(lines.slice(0, 3), sentences, source), [0]);
+  });
+
+  it("直後に語が無ければ項目として残す", () => {
+    assert.deepEqual(enumeratorStarts([lines[3] ?? { start: 0, label: "" }], sentences, source), [at("（4）")]);
+    assert.deepEqual(enumeratorStarts([], sentences, source), []);
   });
 });
 

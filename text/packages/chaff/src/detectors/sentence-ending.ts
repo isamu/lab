@@ -1,5 +1,5 @@
 import { endingTokens, isClosed } from "../sentence-shape.ts";
-import { enumeratedRuns, itemStarts } from "./enumerated-runs.ts";
+import { enumeratedRuns, enumeratorStarts, numberedStarts } from "./enumerated-runs.ts";
 import { continuesInto, groupOf, registerOf, slipsOf, type Register } from "./register.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
 
@@ -25,7 +25,7 @@ const runsOf = (doc: ProseDocument, registers: readonly Register[]): Span[] => {
   if (tree === undefined) return [];
   return enumeratedRuns(
     doc.paragraphs.map((paragraph) => paragraph.span),
-    itemStarts(tree),
+    enumeratorStarts(numberedStarts(tree), doc.sentences, doc.source),
     doc.source,
   );
 };
