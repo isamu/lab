@@ -8,7 +8,8 @@ Newest first.
 
 `undefined-acronym`'s list of acronyms that need no spelling out (API, URL, CEO …) moved from code into each language
 package's `common-acronym` word list, so it can differ by language (NG is understood in Japanese documents). The
-contents are unchanged.
+contents are unchanged. The rule declares the list, so a language package without it does not run the rule and says why,
+instead of reporting API and URL.
 
 ### A heading with no title is not a heading (#170)
 
