@@ -1,0 +1,11 @@
+# 日付・時刻の数字の後ろに書く単位。定型文は数字の代わりに同じ大文字を繰り返して置く（令和YY年MM月DD日 HH時）ので、
+# 単位の前の繰り返しは書式の置き場所で、略語ではない。字面どおりに照らす。
+id: date-time-unit
+language: ja
+entries:
+  - pattern: "年"
+  - pattern: "月"
+  - pattern: "日"
+  - pattern: "時"
+  - pattern: "分"
+  - pattern: "秒"

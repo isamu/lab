@@ -14,6 +14,44 @@ the entry, as a reference list is laid out. A hyphenated tag the document lists 
 reference or just before it ("[HTTP-CACHING], Section 4"); one it never lists, or only opens a sentence with
 ("[BUYER-1] pays …"), is still looked up here. Found on draft-ietf-httpapi-ratelimit-headers-10.
 
+### `date-order` stays silent on a list sorted by something other than its dates (#170)
+
+A release list in board minutes, sorted by release name (`widget-1.10.4`, `widget-2.1.3`, `widget-3.0.0`, …), was read
+as a schedule and one release was reported as out of order, although the list never meant to follow the dates. The
+direction of a list is still taken from most of its steps, but the list is now checked only when more than half of
+its dates can stay in that direction. A schedule with a slip or two keeps the rest of its dates in order and is still
+checked; a list sorted by a name or a version does not, and nothing is said.
+
+### `undefined-acronym` leaves domain names, date placeholders and a numeral after a name alone, and reads `(ON RRP)` as one acronym (#170)
+
+Four kinds of capitals were reported as acronyms without an expansion:
+
+- A name joined by `.` with no space: `GOV.UK`, `SAM.gov`, `README.md`, `CLAUDE.md`, `ASP.NET`. Its capitals are
+  part of a domain or file name. Each part must be all capitals or all lower case (digits and `-` allowed), so a
+  sentence that lost its space (`the IRS.Then`, `Mr.HAWLEY`) is not read as a name, and an acronym before a sentence
+  full stop (`…by the IRS. Then`) is still counted. The same acronym outside the name (`the SAM record`) still counts.
+- A date or time placeholder: one capital letter repeated where a number goes. It is a placeholder when joined by
+  `/`, `:`, `-` or `.` (full-width `／` and `：` too) to another such run or to a number (`MM/DD/YYYY`, `YYYY-MM-DD`,
+  `HH：MM`, `2026/MM/DD`), or when a date or time unit follows it (`令和YY年MM月DD日`, `HH時MM分`). The units are the
+  new `date-time-unit` lexicon: 年, 月, 日, 時, 分 and 秒 in `@chaffjs/lang-ja`, and none in `@chaffjs/lang-en`, which
+  writes its templates with separators. `AI時代`, `CI/CD` and `TCP/IP` are still acronyms: they are not one letter
+  repeated.
+- A Roman numeral written with I, V and X right after a capitalised word: `Senior System Engineer II`, `World War
+  II`, `Leopold III`. It numbers the name. When no letter comes before the word in the sentence (`Start IV fluids`, a
+  list item `1. Give IV fluids`), the capital marks the start of the sentence rather than a name, and `IV` is still
+  counted; so is a numeral with C, D, L or M (`Audio CD`, `Washington DC`, `Pipeline CI`), which is more often an
+  acronym, and one after a word in capitals (`AES IV`) or in lower case (`the IV line`).
+- An acronym written as two or more words inside brackets: `overnight reverse repurchase agreement (ON RRP)`. Its
+  letters do not match the initials of the name (`ON` is *overnight*), so it is read as expanded when its letters can
+  be picked in order from the English words before the brackets, starting at the start of one of them; `ON` and
+  `RRP` are then both expanded. Acronyms listed with spaces (`The regulators (SEC FINRA)`), a Japanese name (whose
+  letters cannot be checked), a bracket with a lower-case word (`(see ON RRP)`) or a comma (`(EPA, FDIC)`) are not,
+  and a run before brackets (`AWS KMS (Key Management Service)`) expands only the word next to them, as before.
+
+Found on GOV.UK's pages (`GOV.UK`), a CRS report (`SAM.gov`), the FOMC minutes (`ON RRP`, `Senior System Engineer
+II`), the Congressional Record (`World War II`) and e-Tax's e-mail templates (`令和YY年MM月DD日 HH：MM`). With the four
+placeholders gone, the e-mail templates have fewer bare acronyms than the rule's level and are no longer reported.
+
 ### A reference wrapped before its "of [HTTP]" names the other document (#170)
 
 A plain-text RFC is hard-wrapped at about 72 columns, so a reference into another document is often split across a
