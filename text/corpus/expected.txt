@@ -52,7 +52,7 @@ gitlab-values  agentless-passive 82, bold-density 1, concrete-evidence-density 5
 govuk-incident-safe-browsing  agentless-passive 16, concrete-evidence-density 4, contraction-consistency 2, max-sentence-length 10, proper-noun-density 1, undefined-acronym 4
 gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1
 gsi-maps-smartphone-howto  max-paragraph-length 1
-jma-tokubetsu-keiho  doubled-word 1, max-kanji-continuous 1, max-sentence-length 2
+jma-tokubetsu-keiho  max-kanji-continuous 1, max-sentence-length 2
 k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kaisha.txt  clean
