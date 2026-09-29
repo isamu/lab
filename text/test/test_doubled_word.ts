@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { doubledAt, doubledIn, gapBetween, isAllowed, isPartOfLongerWord, startsTitle } from "../packages/chaff/src/detectors/doubled-word.ts";
+import { doubledAt, doubledIn, gapBetween, isAllowed, isNameBefore, isPartOfLongerWord, startsTitle } from "../packages/chaff/src/detectors/doubled-word.ts";
 import type { LanguageAdapter, Lexicon, Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -110,6 +110,18 @@ describe("doubled-word — 純関数", () => {
     assert.deepEqual(pairs([w("THE", "DET", ART), w("THE", "DET", ART)]), ["THE THE@4"]);
   });
 
+  it("文の途中の大文字の語の後ろの小文字の同じ語は、名前とその後ろの語（May may）", () => {
+    assert.deepEqual(pairs([w("for", "ADP"), w("May", "AUX"), w("may", "AUX")]), []);
+    assert.deepEqual(pairs([w("“", "PUNCT"), w("The", "DET"), w("the", "DET")], { gaps: ["", " "] }), ["The the@5"]);
+    assert.deepEqual(pairs([w("for", "ADP"), w("MAY", "AUX"), w("MAY", "AUX")]), ["MAY MAY@8"]);
+    const { tokens } = tokensOf([w("May", "AUX"), w("may", "AUX")]);
+    const [capitalised, lower] = tokens;
+    assert.ok(capitalised !== undefined && lower !== undefined);
+    assert.equal(isNameBefore(capitalised, lower, true), false);
+    assert.equal(isNameBefore(capitalised, lower, false), true);
+    assert.equal(isNameBefore(lower, capitalised, false), false);
+  });
+
   it("アダプタが重ね言葉（Echo=Rdp）と読んだ二つ目は数えない", () => {
     assert.deepEqual(pairs([w("会社", "NOUN"), w("会社", "NOUN", { Echo: "Rdp" }), w("で", "ADP")], { gaps: ["", ""], spaced: false }), []);
     assert.deepEqual(pairs([w("会社", "NOUN", { Echo: "Rdp" }), w("会社", "NOUN")], { gaps: [""], spaced: false }), ["会社 会社@2"]);
@@ -189,6 +201,7 @@ describe("doubled-word — 英語", () => {
       "Contact us about the [Your Rights section](https://example.com) above.",
       "Open the My Account page.",
       "We do do manual reviews for high-risk cases.",
+      "Payment for May may be delayed due to procurement review.",
     ];
     valid.forEach((text) => assert.deepEqual(findingsOf(text, en, "en"), [], text));
   });

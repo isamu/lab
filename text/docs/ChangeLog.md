@@ -11,7 +11,8 @@ across a line break and regardless of case, and in English two determiners where
 `a the`). Same word means the same surface and the same part of speech, so `that that` (a conjunction and a
 demonstrative) is left alone; the determiners are the articles and the possessives, which `@chaffjs/lang-en` now
 marks with the Universal Dependencies features `PronType=Art` and `Poss=Yes` (the articles are a lexicon, `article`).
-Interjections, adverbs, proper nouns, numbers and symbols are not counted: repeating them is emphasis or a name
+A capitalised word inside a sentence followed by the same word in lower case is a name and the next word
+("Payment for May may be delayed"). Interjections, adverbs, proper nouns, numbers and symbols are not counted: repeating them is emphasis or a name
 (「そうそう」, "very very", "Walla Walla"). A Japanese noun of a unit or an occasion doubled to mean "each" and
 followed by a particle (「会社会社で」「部署部署の」「場面場面で」) is marked `Echo=Rdp` by `@chaffjs/lang-ja` and left
 alone; the nouns and the particles are lexicons (`distributive-noun`, `distributive-particle`), so 「資料資料の」 is

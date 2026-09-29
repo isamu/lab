@@ -74,10 +74,17 @@ export const doubledAt = (source: string, first: Token, second: Token, spaced: b
   return gap === "space" || (gap === "markup" && FUNCTION_WORD.has(first.pos));
 };
 
+/** 文の途中で、大文字の語の後ろに小文字の同じ語が来たら、一つ目は名前（Payment for May may be delayed）。文頭の The the は書き損じ。 */
+export const isNameBefore = (first: Token, second: Token, opensSentence: boolean): boolean =>
+  !opensSentence && UPPER_START.test(first.surface) && LOWER_START.test(second.surface);
+
+const opensSentence = (tokens: readonly Token[], at: number): boolean => !tokens.slice(0, at).some((token) => LETTER.test(token.surface));
+
 export const doubledIn = (source: string, tokens: readonly Token[], spaced: boolean, allowed: Lexicon): Doubled[] =>
   tokens.flatMap((second, index) => {
     const first = tokens[index - 1];
-    return first !== undefined && doubledAt(source, first, second, spaced, allowed) ? [{ first, second }] : [];
+    if (first === undefined || !doubledAt(source, first, second, spaced, allowed)) return [];
+    return isNameBefore(first, second, opensSentence(tokens, index - 1)) ? [] : [{ first, second }];
   });
 
 /** 印を挟んでいても（the [the）、見せるのは二語だけ。 */
