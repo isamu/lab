@@ -1,0 +1,16 @@
+# 金額の前後に書く ISO 4217 の主要な通貨（USD 1,000、250 EUR）。読み手が説明なしで通じるものだけ。
+# CAD は数の隣でも computer-aided design と読める（3 CAD files）ので入れない。字面どおりに照らす。
+id: currency-code
+language: ja
+entries:
+  - pattern: "USD"
+  - pattern: "EUR"
+  - pattern: "JPY"
+  - pattern: "GBP"
+  - pattern: "CNY"
+  - pattern: "CHF"
+  - pattern: "AUD"
+  - pattern: "KRW"
+  - pattern: "HKD"
+  - pattern: "SGD"
+  - pattern: "INR"
