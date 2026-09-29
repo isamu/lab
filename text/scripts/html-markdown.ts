@@ -3,7 +3,7 @@
 // role="main" element, else a sole <article>) is read when the page has one. Scripts, styles, the head, navigation (by
 // element or by role, and breadcrumbs), asides, footers, forms, tables, footnote marks, lists and blocks of nothing but
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
-// title), a block before the page's title that holds a menu (the site's header, with its tagline and labels), lines of
+// title), a block before the page's title that holds a menu and no sentence (the site's header, with its tagline and labels), lines of
 // nothing but in-page or script links, and a copyright notice closing the page are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
 // for any HTML.
 import { decodeEntities, tidyLines } from "./markup-text.ts";
@@ -196,16 +196,27 @@ const isLabelledMenu = (list: string): boolean => {
 
 const isDefinitionList = (range: ElementRange): boolean => /^<dl\b/iu.test(range.openTag);
 
-const holdsMenu = (range: ElementRange): boolean =>
-  withoutNavigation(range.inner) !== range.inner ||
-  (isDefinitionList(range) && isLabelledMenu(range.inner)) ||
-  elementRanges(range.inner, "dl").some((list) => isLabelledMenu(list.inner));
+/** What a block holds besides its menus: link-only lists and labelled menus taken out; a labelled menu keeps its terms. */
+const besideMenus = (range: ElementRange): string =>
+  isDefinitionList(range) && isLabelledMenu(range.inner)
+    ? range.inner.replace(DEFINITION, " ")
+    : withoutNavigation(withoutElementsWhere(range.inner, "dl", (list) => isLabelledMenu(list.inner)));
+
+/** A full stop, question or exclamation mark closing a sentence; the point in "3.5" does not. */
+const CLOSED_SENTENCE = /[。．！？]|[.!?](?=\s|$)/u;
+
+/** A block holding a menu, with nothing beside it but labels: a sentence beside a menu makes the block the document's. */
+const isSiteHeader = (range: ElementRange): boolean => {
+  const rest = besideMenus(range);
+  return rest !== range.inner && !CLOSED_SENTENCE.test(plainText(rest));
+};
 
 const HEADER_BLOCKS = ["div", "section", "header", "dl"];
 
 /**
- * A block that closes before the page's title opens and holds a menu is the site's header: it goes whole, with the
- * tagline and labels beside the menu. A block before the title without a menu (an agency and docket number) is kept.
+ * A block that closes before the page's title opens and holds a menu with no sentence beside it is the site's header:
+ * it goes whole, with the tagline and labels beside the menu. A block before the title without a menu (an agency and
+ * docket number) is kept, and so is one where a sentence stands beside the menu.
  */
 const withoutSiteHeader = (html: string): string => {
   const title = pageTitle(html);
@@ -213,7 +224,7 @@ const withoutSiteHeader = (html: string): string => {
   const before = HEADER_BLOCKS.flatMap((tag) => elementRanges(html, tag)).filter((range) => range.end <= title.start);
   return withoutRanges(
     html,
-    before.filter(holdsMenu).toSorted((left, right) => left.start - right.start),
+    before.filter(isSiteHeader).toSorted((left, right) => left.start - right.start),
   );
 };
 
