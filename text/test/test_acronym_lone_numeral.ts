@@ -21,6 +21,8 @@ describe("loneNumeralSpans", () => {
     ["文の頭の番号", "II. Background", ["II"]],
     ["文の中の . の後ろ（日本語の文分け）", "A Survey of Cool Stars. VII. The Inner Disk", ["VII"]],
     ["句点の後ろ", "題名。 IV. 副題", ["IV"]],
+    ["番号が続く", "Part. I. II. The End", ["I", "II"]],
+    ["長い空白の後ろ", `${" ".repeat(100_000)}I. Title`, ["I"]],
   ].forEach(([form, text, numerals]) => {
     it(`valid: ${String(form)}`, () => assert.deepEqual(numeralsIn(String(text)), numerals));
   });

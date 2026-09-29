@@ -26,8 +26,12 @@ export const nameNumeralSpans = (text: string): Span[] =>
  * 続き物や区切りの番号で、略語ではない。日本語の文分けは英文の . で切らないので、文の中の . の後ろも見る。
  * C・D・L・M を含む数字（CD.）は略語でもあるので外さない。
  */
-const LONE_NUMERAL = new RegExp(String.raw`(?<=^\s*|[.。]\s+)${SMALL_NUMERAL}(?=\.(?:\s|$))`, "gu");
+// 前置きは後ろ読みにしない。長さの決まらない後ろ読みは、長い空白の上で位置ごとに遡って二乗の時間がかかる。
+const LONE_NUMERAL = new RegExp(String.raw`(?<lead>^\s*|[.。]\s+)(?<numeral>${SMALL_NUMERAL})(?=\.(?:\s|$))`, "gu");
 
 /** 文の中の、1 語で立つ番号の範囲（数字だけ）。 */
 export const loneNumeralSpans = (text: string): Span[] =>
-  [...text.matchAll(LONE_NUMERAL)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+  [...text.matchAll(LONE_NUMERAL)].map((match) => {
+    const start = match.index + (match.groups?.["lead"] ?? "").length;
+    return { start, end: start + (match.groups?.["numeral"] ?? "").length };
+  });
