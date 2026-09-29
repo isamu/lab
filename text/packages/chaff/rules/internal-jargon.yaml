@@ -15,7 +15,7 @@ why:
 
 message:
   ja: 「{matched}」は社内でしか通じないかもしれません（そういう語が {count} 箇所）
-  en: '"{matched}" may only be understood inside your team ({count} such words)'
+  en: '"{matched}" may only be understood inside your team ({count} such {count|word|words})'
 
 how_to_fix:
   ja: 初出のところで普通の言葉に言い換えるか、括弧で説明を添えてください。jargon には辞書形（握る）でも語幹（巻き取）でも書けますが、複合動詞は語幹のほうが確実です。

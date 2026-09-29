@@ -15,7 +15,7 @@ why:
 
 message:
   ja: 1000 語あたり {density} 個の固有名詞があります（{limit} 個まで）
-  en: "{density} proper nouns per 1000 words (limit {limit})"
+  en: "{density} proper {density|noun|nouns} per 1000 words (limit {limit})"
 
 how_to_fix:
   ja: 2 度目からは「その製品」「そのチーム」のように受けてください。初出で何者かを一言添えると、知らない人も読めます。

@@ -14,7 +14,7 @@ why:
 
 message:
   ja: この文は {count} 文字あります（{limit} 文字まで）
-  en: "This sentence runs {count} words (limit {limit})"
+  en: "This sentence runs {count} {count|word|words} (limit {limit})"
 
 how_to_fix:
   ja: 接続助詞のところで 2 文に割ってください。それだけで読めるようになります。

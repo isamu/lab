@@ -16,7 +16,7 @@ why:
 
 message:
   ja: 本文に体言止めが {count} 文あります（{limit} 文まで）
-  en: "{count} sentences end on a noun in the body text (limit {limit})"
+  en: "{count} {count|sentence|sentences} {count|ends|end} on a noun in the body text (limit {limit})"
 
 how_to_fix:
   ja: 述語を足してください。「〜が課題。」を「〜が課題です。」に。

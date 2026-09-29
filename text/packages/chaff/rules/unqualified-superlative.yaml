@@ -17,7 +17,7 @@ why:
 
 message:
   ja: 「{matched}」に比べる相手がありません（そういう言い方が {count} 箇所）
-  en: '"{matched}" has nothing to compare against ({count} such claims)'
+  en: '"{matched}" has nothing to compare against ({count} such {count|claim|claims})'
 
 how_to_fix:
   ja: 比較対象か条件を添えてください。「社内の 3 案のうち最も速い」のように。

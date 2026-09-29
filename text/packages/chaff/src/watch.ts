@@ -13,9 +13,9 @@ const total = (snapshot: Snapshot): number => Object.values(snapshot).reduce((su
 
 /**
  * 差分だけを出す。書いている最中に全件を出し直されると、何が変わったのか分からない。
- * workflow spec §11。
+ * workflow spec §11。`unit` takes the count after the change, which sets the English noun ("0 → 1 finding").
  */
-export const describeChange = (before: Snapshot, after: Snapshot, unit = " 件"): string | undefined => {
+export const describeChange = (before: Snapshot, after: Snapshot, unit: (count: number) => string = () => " 件"): string | undefined => {
   const rules = [...new Set([...Object.keys(before), ...Object.keys(after)])];
   const moved = rules
     .map((rule) => ({ rule, delta: (after[rule] ?? 0) - (before[rule] ?? 0) }))
@@ -24,7 +24,7 @@ export const describeChange = (before: Snapshot, after: Snapshot, unit = " 件")
   if (moved.length === 0) return undefined;
   const detail = moved.map((entry) => `${entry.delta > 0 ? "+" : ""}${entry.delta} ${entry.rule}`).join(", ");
   const mark = total(after) < total(before) ? "✓" : "✗";
-  return `${mark} ${total(before)} → ${total(after)}${unit}   (${detail})`;
+  return `${mark} ${total(before)} → ${total(after)}${unit(total(after))}   (${detail})`;
 };
 
 export const clock = (): string => new Date().toTimeString().slice(0, 8);

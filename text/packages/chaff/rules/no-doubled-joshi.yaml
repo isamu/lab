@@ -17,7 +17,7 @@ why:
 
 message:
   ja: 「{word}」が読点を挟まずに {count} 回続いています（{limit} 回まで）
-  en: '"{word}" repeats {count} times with no break (limit {limit})'
+  en: '"{word}" repeats {count} {count|time|times} with no break (limit {limit})'
 
 how_to_fix:
   ja: 文を割るか、係り先を言い換えてください。「弊社の新製品の販売の計画」を「弊社が新製品を販売する計画」に。

@@ -14,7 +14,7 @@ why:
 
 message:
   ja: 最初の見出しまでに {count} 段落あります（{limit} 段落まで）
-  en: "{count} paragraphs before the first heading (limit {limit})"
+  en: "{count} {count|paragraph|paragraphs} before the first heading (limit {limit})"
 
 how_to_fix:
   ja: 結論を先に書くか、前置きを見出しの下へ移してください。

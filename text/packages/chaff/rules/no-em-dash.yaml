@@ -18,7 +18,7 @@ why:
 
 message:
   ja: 1000 字あたり {density} 個のダッシュがあります（{limit} 個まで）
-  en: "{density} dashes per 1000 words (limit {limit})"
+  en: "{density} {density|dash|dashes} per 1000 words (limit {limit})"
 
 how_to_fix:
   ja: 読点か括弧に置き換えてください。挟み込みなら括弧、言い換えなら読点が読みやすいです。

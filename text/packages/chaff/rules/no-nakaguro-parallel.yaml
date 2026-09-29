@@ -15,7 +15,7 @@ why:
 
 message:
   ja: この文に中黒が {count} 個あります（{limit} 個まで）
-  en: "{count} middle dots in this sentence (limit {limit})"
+  en: "{count} middle {count|dot|dots} in this sentence (limit {limit})"
 
 how_to_fix:
   ja: 文を割るか、箇条書きにしてください。組の切れ目がはっきりします。
