@@ -4,6 +4,24 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` reads a hyphenated acronym as one word, and knows Q&A, R&D and M&A (#170)
+
+Acronyms joined by a hyphen (`RT-PCR`, `CA-FATC`, `USDA-OCFO`) are now one acronym, as acronyms joined by `&`
+already were. Split, `RT` was reported as an acronym of its own, and an expanded compound — "Financial and
+Administrative Terms and Conditions (CA-FATC)" — left both halves reported. A compound is explained when it is expanded
+as written, or when every part is common or expanded elsewhere (`US-EU`); otherwise the compound is reported. A hyphen
+next to a lower-case word (`SRE-led`) or a single capital (`T-SQL`) does not join, and a compound with a digit
+(`COVID-19`, `SARS-CoV-2`) is still an identifier. An expansion in square brackets or after a separator now matches
+the initials of a compound too.
+
+A pair of capitalised words is shouting, not two acronyms, when one of them is longer than an acronym can be
+(`BILLING CODE 3510-13-P`); three or more such words already were. Only the pair itself is left out, so an acronym
+after it (`NEW GUIDELINES: SRE`) is still read, and a pair of short capitalised words (`AWS KMS`, `NIST SP`) is still
+read as two acronyms.
+
+`common-acronym` (Japanese and English) has `Q&A`, `R&D` and `M&A`, which business documents use without expansion.
+Other `&` acronyms (`S&OP`, `F&A`) are still reported unless expanded.
+
 ### Japanese: a counter after a number does not start a run of kanji (#170)
 
 `max-kanji-continuous` counted the counter of a number written in digits as the first kanji of the compound that
