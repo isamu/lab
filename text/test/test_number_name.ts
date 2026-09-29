@@ -1,6 +1,6 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { digitRunAround, isNumberName } from "../packages/chaff/src/number-name.ts";
+import { digitRunAround, isNumberName, sequenceLabelStarts } from "../packages/chaff/src/number-name.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -25,6 +25,34 @@ describe("digitRunAround", () => {
       const run = digitRunAround(text, at);
       assert.equal(run === undefined ? undefined : text.slice(run.start, run.end), expected);
     });
+  });
+});
+
+describe("sequenceLabelStarts", () => {
+  const numbersAt = (text: string): string[] => [...sequenceLabelStarts(text)].map((start) => (/^\d+/u.exec(text.slice(start)) ?? [""])[0]);
+  const cases: readonly (readonly [string, string, readonly string[]])[] = [
+    ["white-paper notes, one per paragraph", "9 首相に\n\n10 日本経済新聞\n\n11 欧州", ["9", "10", "11"]],
+    ["a note continued on the next line, and one with Latin after it", "12 世界経済\nNHK NEWS WEB\n\n13 BBC NEWS\n\n14 「焦点」", ["12", "13", "14"]],
+    ["a pair is a sequence", "1 エキスパート\n\n2 亀田", ["1", "2"]],
+    ["list items", "- 1 氏名\n- 2 年月", ["1", "2"]],
+    ["indented, with a tab", "  3\t注\n  4\t注", ["3", "4"]],
+    ["one number alone", "223 言語に対応する。", []],
+    ["years opening a table's rows", "2025 予算\n2026 予算", []],
+    ["numbers with gaps (codes)", "- 1122 医療費\n- 1124 出産", []],
+    ["descending", "3 注\n\n2 注", []],
+    ["the same number twice", "2 ページ\n2 ページ", []],
+    ["an ordered list marker is not the number", "1. 4 番\n2. 5 番", []],
+    ["a number glued to the word", "9首相\n10新聞", []],
+    ["a number in the middle of a line", "注 9 首相\n注 10 新聞", []],
+    ["nothing after the number", "9 \n10 ", []],
+    ["empty", "", []],
+  ];
+  cases.forEach(([name, text, expected]) => {
+    it(name, () => assert.deepEqual(numbersAt(text), expected));
+  });
+
+  it("gives the position of the number, not of the line", () => {
+    assert.deepEqual([...sequenceLabelStarts("前\n- 1 氏名\n- 2 年月")], [4, 11]);
   });
 });
 
@@ -60,6 +88,27 @@ describe("isNumberName", () => {
     assert.equal(isNumberName(item, runOf(item, "1122"), [token(7, "医療費", "NOUN")], 0), false);
     const parens = "（113 クローン）";
     assert.equal(isNumberName(parens, runOf(parens, "113"), [token(5, "クローン", "NOUN")], 0), false);
+  });
+
+  it("reads a number at the head of a line in a note sequence as a label, unless a word bound to numbers follows it", () => {
+    const note = "10 日本経済新聞";
+    const tokens = [token(103, "日本経済新聞", "PROPN")];
+    assert.equal(isNumberName(note, runOf(note, "10"), tokens, 100, new Set([100])), true);
+    assert.equal(isNumberName(note, runOf(note, "10"), tokens, 100, new Set([0])), false);
+    assert.equal(isNumberName(note, runOf(note, "10"), tokens, 100), false);
+    const counted = "10 回で止める";
+    assert.equal(isNumberName(counted, runOf(counted, "10"), [token(3, "回", "NOUN", { NounType: "Class" })], 0, new Set([0])), false);
+    const conjunction = "31 ただし、課題もある";
+    assert.equal(isNumberName(conjunction, runOf(conjunction, "31"), [token(3, "ただし", "CCONJ")], 0, new Set([0])), true);
+    assert.equal(isNumberName(conjunction, runOf(conjunction, "31"), [token(3, "ただし", "CCONJ")], 0), false);
+    const joined = "※1 又は 2";
+    assert.equal(isNumberName(joined, runOf(joined, "1"), [token(3, "又は", "CCONJ")], 0), false);
+    const particle = "200 のまま";
+    assert.equal(isNumberName(particle, runOf(particle, "200"), [token(4, "の", "ADP")], 0, new Set([0])), false);
+    const numeral = "2 万人";
+    assert.equal(isNumberName(numeral, runOf(numeral, "2"), [token(2, "万", "NUM", { NumType: "Card" })], 0, new Set([0])), false);
+    assert.equal(isNumberName(note, runOf(note, "10"), [], 100, new Set([100])), false);
+    assert.equal(isNumberName(note, runOf(note, "10"), undefined, 100, new Set([100])), false);
   });
 
   it("keeps a section number in the middle of a sentence", () => {
@@ -152,6 +201,17 @@ describe("latin-spacing with parts of speech", () => {
   it("still counts a number that counts things, at the head of a line or in parentheses", () => {
     assert.deepEqual(spacing("# 対応\n\n3回呼び、5件直した。\n\n223 言語に対応する。\n"), ["前の数字:空けています"]);
     assert.deepEqual(spacing("# 対応\n\n3回呼び、5件直した（113 クローン）。\n"), ["前の数字:空けています"]);
+  });
+
+  it("does not count the number of a note in a numbered run of notes", () => {
+    assert.deepEqual(spacing("# 注\n\n本文では3回と5件を扱う。\n\n9 首相の発言。\n\n10 新聞の記事。\n\n11 ただし、課題もある。\n"), []);
+  });
+
+  it("still counts numbered lines that count things, and a note number standing alone", () => {
+    assert.deepEqual(spacing("# 手順\n\n3回呼び、5件直した。\n\n1 回目で止める。\n\n2 回目で直す。\n"), ["前の数字:空けています", "前の数字:空けています"]);
+    assert.deepEqual(spacing("# 注\n\n本文では3回と5件を扱う。\n\n9 首相の発言。\n"), ["前の数字:空けています"]);
+    assert.deepEqual(spacing("# 値\n\n3回呼び、5件直した。\n\n200 のままにする。\n\n201 のままにする。\n"), ["前の数字:空けています", "前の数字:空けています"]);
+    assert.deepEqual(spacing("# 注\n\n本文では3回と5件を扱う。\n\n```\n8 x\n```\n\n9 首相の発言。\n"), ["前の数字:空けています"]);
   });
 
   it("does not count a telephone number before the next item", () => {
