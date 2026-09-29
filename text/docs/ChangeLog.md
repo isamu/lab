@@ -18,7 +18,7 @@ A capitalised word inside a sentence followed by the same word in lower case is 
 followed by a particle (「会社会社で」「部署部署の」「場面場面で」) is marked `Echo=Rdp` by `@chaffjs/lang-ja` and left
 alone; the nouns and the particles are lexicons (`distributive-noun`, `distributive-particle`), so 「資料資料の」 is
 still reported. Other repeats a language allows are a lexicon (`doubled-word`) in each
-language package: "had had", "do do", 「一つ一つ」. The position is the second word. The rule needs parts of speech and says so
+language package: "had had", "do do", "her her", 「一つ一つ」. The position is the second word. The rule needs parts of speech and says so
 when a language has none. Found on cloud.gov's API v2 notice in the corpus ("our the platform").
 
 ### `preamble-length` does not count a page's date stamp (#170)
