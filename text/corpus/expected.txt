@@ -33,7 +33,7 @@ da-machine-readability-limitations  latin-spacing 4, max-sentence-length 1
 da-machine-readability-output-format  latin-spacing 12
 da-news-minister-handover  clean
 da-priority-policy-program  agentless-passive 1, max-kanji-continuous 1, no-doubled-joshi 1, undefined-acronym 3
-da-privacy-policy  agentless-passive 3, concrete-evidence-density 3, latin-spacing 2, max-kanji-continuous 1, max-sentence-length 3, no-doubled-joshi 3
+da-privacy-policy  agentless-passive 3, concrete-evidence-density 3, latin-spacing 1, max-kanji-continuous 1, max-sentence-length 3, no-doubled-joshi 3
 da-recruitment-career-faq  max-sentence-length 1
 da-recruitment-office-visit  max-kanji-continuous 4
 da-service-design-guidelines-2  agentless-passive 24, concrete-evidence-density 4, dangling-reference 1, latin-spacing 3, max-kanji-continuous 3, max-sentence-length 31, no-doubled-joshi 1, undefined-acronym 7
@@ -52,7 +52,7 @@ gitlab-values  agentless-passive 82, bold-density 1, concrete-evidence-density 5
 govuk-incident-safe-browsing  agentless-passive 16, concrete-evidence-density 4, contraction-consistency 2, max-sentence-length 10, proper-noun-density 1, undefined-acronym 4
 gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1
 gsi-maps-smartphone-howto  max-paragraph-length 1
-jma-tokubetsu-keiho  doubled-word 1, max-kanji-continuous 1, max-sentence-length 2
+jma-tokubetsu-keiho  max-kanji-continuous 1, max-sentence-length 2
 k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kaisha.txt  clean
@@ -68,7 +68,7 @@ meti-keiryoshi-exam-correction  agentless-passive 2, latin-spacing 2, max-senten
 meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5
 mext-heatstroke-after-holidays  agentless-passive 4, hiragana-fukushi 1, max-kanji-continuous 6, max-paragraph-length 2, max-sentence-length 18, ngram-repetition 1, preamble-length 1
 mhlw-norovirus-qa  agentless-passive 22, concrete-evidence-density 5, latin-spacing 2, max-kanji-continuous 13, max-paragraph-length 2, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 3, repeated-conjunction 1, undefined-acronym 6
-mhlw-pubcomment-rodohoken  agentless-passive 1, latin-spacing 2, max-kanji-continuous 6, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
+mhlw-pubcomment-rodohoken  agentless-passive 1, latin-spacing 1, max-kanji-continuous 6, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
 minpo.txt  clean
 mit-ocw-6-0001-syllabus  agentless-passive 13, max-paragraph-length 2, max-sentence-length 6, proper-noun-density 1
 mlit-press-planned-suspension  max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 3, no-doubled-joshi 2

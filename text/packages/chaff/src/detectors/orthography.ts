@@ -31,10 +31,10 @@ const digitBeside = (boundary: Boundary): number => {
 };
 
 /** 番号・識別子として書かれた数の境目は、空け方の好みではないので数えない（number-name.ts）。 */
-const isCounted = (sentence: Sentence, boundary: Boundary, sequence: ReadonlySet<number>): boolean => {
+const isCounted = (sentence: Sentence, boundary: Boundary, sequence: ReadonlySet<number>, topUnits: ReadonlySet<string>): boolean => {
   if (boundary.kind === "letter") return true;
   const run = digitRunAround(sentence.text, digitBeside(boundary));
-  return run === undefined || !isNumberName(sentence.text, run, sentence.tokens, sentence.span.start, sequence);
+  return run === undefined || !isNumberName(sentence.text, run, sentence.tokens, sentence.span.start, sequence, topUnits);
 };
 
 /**
@@ -44,9 +44,10 @@ const isCounted = (sentence: Sentence, boundary: Boundary, sequence: ReadonlySet
 export const latinSpacing: Detector = (doc, options): Finding[] => {
   // 覆った文（prose）で探す。コードの中の「1 件」は並びに入れない。
   const sequence = sequenceLabelStarts(doc.prose ?? doc.source);
+  const topUnits = new Set((doc.lexicons["prefecture-unit"] ?? []).map((entry) => entry.pattern));
   const located: Located[] = doc.sentences.flatMap((sentence) =>
     latinBoundaries(sentence.text, doc.source.slice(sentence.span.start, sentence.span.end))
-      .filter((boundary) => isCounted(sentence, boundary, sequence))
+      .filter((boundary) => isCounted(sentence, boundary, sequence, topUnits))
       .map((boundary) => ({ sentence, ...boundary })),
   );
   return KINDS.flatMap((kind) => {
