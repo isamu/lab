@@ -21,6 +21,7 @@ describe("notAcronymSpans: 時刻", () => {
     ["at 3:30\nPM", ["PM"]],
     ["at 3:30 PM PST", ["PM", "PST"]],
     ["at 5 p.m. PT", ["PT"]],
+    ["at 5 P.M. PT", ["PT"]],
   ].forEach(([text, words]) => {
     it(`valid: ${String(text)}`, () => assert.deepEqual(covered(String(text)), words));
   });
