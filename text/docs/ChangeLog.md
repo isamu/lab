@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `yarn bench`'s Japanese design sample plants a dropped gloss the rule is meant to catch (#170)
+
+The dropped-gloss plant in the Japanese design sample left one acronym without an expansion besides the planted one
+(SAML), below `undefined-acronym`'s `normal` limit, so the miss was the limit working as designed (at `strict` the
+rule reports the planted SLA). The English twin reached the limit through "HR system", which the Japanese sample had
+translated as 人事システム. The Japanese sample now says HRシステム like its twin, and the plant is found; the clean
+sample still gets no finding.
+
 ### `latin-spacing` does not count the space after a number written as a label or an identifier (#170)
 
 The space in `「3.1 リサーチの原則」`, `※1 特定の条件`, `2.1 注文の登録` at the head of a line, or after a code with a
