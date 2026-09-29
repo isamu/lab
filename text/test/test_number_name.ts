@@ -81,6 +81,40 @@ describe("isNumberName", () => {
     assert.equal(isNumberName(note, runOf(note, "1"), [token(3, "特定", "NOUN")], 0), true);
   });
 
+  it("reads a postal code after 〒 as a label, even without a part starting with 0", () => {
+    const postal = "〒100-8916 東京都";
+    assert.equal(isNumberName(postal, runOf(postal, "100-8916"), [token(10, "東京", "PROPN", { NameType: "Geo" })], 0), true);
+    const spaced = "〒 100-8916 東京都";
+    assert.equal(isNumberName(spaced, runOf(spaced, "100-8916"), [token(11, "東京", "PROPN", { NameType: "Geo" })], 0), false);
+    const plain = "郵送 100-8916 東京都";
+    assert.equal(isNumberName(plain, runOf(plain, "100-8916"), [token(12, "東京", "PROPN", { NameType: "Geo" })], 0), false);
+  });
+
+  it("reads a hyphen-joined number right after a place name as an address", () => {
+    const text = "紀尾井町1-3 東京ガーデンテラス";
+    const place = token(0, "紀尾井町", "PROPN", { NameType: "Geo" });
+    assert.equal(isNumberName(text, runOf(text, "1-3"), [place, token(8, "東京", "PROPN", { NameType: "Geo" })], 0), true);
+    const unit = "千代田区2-1 ビル";
+    assert.equal(isNumberName(unit, runOf(unit, "2-1"), [token(3, "区", "NOUN", { NameType: "GeoUnit" }), token(8, "ビル", "NOUN")], 0), true);
+  });
+
+  it("keeps a range, a number after a place with no hyphen, and a place away from the number", () => {
+    const range = "期間は3-5 営業日";
+    assert.equal(isNumberName(range, runOf(range, "3-5"), [token(2, "は", "ADP"), token(7, "営業", "NOUN")], 0), false);
+    const wards = "東京都23 区";
+    assert.equal(
+      isNumberName(wards, runOf(wards, "23"), [token(2, "都", "NOUN", { NameType: "GeoUnit" }), token(6, "区", "NOUN", { NameType: "GeoUnit" })], 0),
+      false,
+    );
+    const apart = "東京 3-5 営業日";
+    assert.equal(isNumberName(apart, runOf(apart, "3-5"), [token(0, "東京", "PROPN", { NameType: "Geo" }), token(7, "営業", "NOUN")], 0), false);
+    const counted = "紀尾井町1-3 日";
+    assert.equal(
+      isNumberName(counted, runOf(counted, "1-3"), [token(0, "紀尾井町", "PROPN", { NameType: "Geo" }), token(8, "日", "NOUN", { NounType: "Class" })], 0),
+      false,
+    );
+  });
+
   it("keeps a number without levels at the head of a sentence, a list item or in parentheses: it counts things", () => {
     const head = "223 言語に対応";
     assert.equal(isNumberName(head, runOf(head, "223"), [token(4, "言語", "NOUN")], 0), false);
@@ -221,6 +255,11 @@ describe("latin-spacing with parts of speech", () => {
   it("does not count the space before an address number either", () => {
     assert.deepEqual(spacing("# 所在地\n\n受付を3回、確認を5回行う。\n\n所在地：〒102-0094 東京都千代田区\n"), []);
     assert.deepEqual(spacing("# 連絡\n\n受付を3回、確認を5回行う。\n\n内線 03-3501 担当 山田\n"), []);
+  });
+
+  it("does not count the space after a postal code with no part starting with 0, nor after the address number", () => {
+    assert.deepEqual(spacing("# 提出先\n\n受付を3回、確認を5回行う。\n\n郵送 〒100-8916 東京都千代田区霞が関1-2-2\n"), []);
+    assert.deepEqual(spacing("# 所在地\n\n受付を3回、確認を5回行う。\n\n所在地：〒102-0094 東京都千代田区紀尾井町1-3 東京ガーデンテラス紀尾井町\n"), []);
   });
 
   it("still counts a quantity written the other way, at the head of a line too", () => {

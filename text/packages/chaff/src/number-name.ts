@@ -2,11 +2,11 @@ import type { Span, Token } from "./plugin.ts";
 
 /**
  * 数量ではなく名前として書かれた数（番号・識別子）。鉤括弧で引いた「3.1 リサーチの原則」の節番号、※1 のような注の番号、
- * 「〒102-0094 東京都」の郵便番号は、後ろの空白が番号と題・項目の区切りで、「3回」「3 回」のような空け方の好みではない。
+ * 「〒100-8916 東京都」の郵便番号、「紀尾井町1-3 東京ガーデンテラス」の番地は、後ろの空白が番号と題・項目の区切りで、「3回」「3 回」のような空け方の好みではない。
  * 空け方を数える材料にしない。
  *
- * 形で名前と読むのは四つだけ。0 で始まる組を含むハイフンつなぎの番号、※ や鉤括弧のすぐ後ろの番号、文頭の階層つきの節番号（2.1、3.1.2）、
- * 続き番号になった行の頭の番号（白書の注）。文頭でも「223 言語」「1ターン」は数量なので、階層の無い数は文頭というだけでは名前と読まない。
+ * 形で名前と読むのは五つだけ。0 で始まる組を含むハイフンつなぎの番号、※・〒や鉤括弧のすぐ後ろの番号、地名のすぐ後ろのハイフンつなぎの番号、
+ * 文頭の階層つきの節番号（2.1、3.1.2）、続き番号になった行の頭の番号（白書の注）。文頭でも「223 言語」「1ターン」は数量なので、階層の無い数は文頭というだけでは名前と読まない。
  * そのうえで、すぐ後ろ（空白 1 つまで）の語が数につく語（助数詞・数・助詞・助動詞）なら数量として数え続ける（「3-5 日」「26.7 万行」）。
  * 品詞が無ければ判断せず、名前とは読まない。
  */
@@ -14,8 +14,8 @@ import type { Span, Token } from "./plugin.ts";
 /** 数と結びついて読まれる語。助数詞は NounType=Class、数は NumType=Card で渡る。 */
 const BOUND_TO_NUMBER = new Set(["ADP", "PART", "AUX", "SCONJ", "CCONJ"]);
 
-/** 番号が立つ位置の直前: 題を包む鉤括弧、注の印。 */
-const LABEL_LEAD = /[「『【※]$/u;
+/** 番号が立つ位置の直前: 題を包む鉤括弧、注の印、郵便番号の印。 */
+const LABEL_LEAD = /[「『【※〒]$/u;
 
 /** 文頭（前に空白と箇条書きの印だけ）。 */
 const LINE_HEAD = /^[\s\-*+・•]*$/u;
@@ -71,6 +71,16 @@ export const sequenceLabelStarts = (text: string): ReadonlySet<number> => {
   return new Set(lines.flatMap((line, index) => (continues(index) ? [line.start] : [])));
 };
 
+const PLACE_NAME = new Set(["Geo", "GeoUnit"]);
+
+/**
+ * 住所の番地（紀尾井町1-3、霞が関2-1）。地名のすぐ後ろのハイフンつなぎの番号は、範囲（3-5 営業日）ではなく所番地。
+ * 地名の後ろでもハイフンの無い数（東京都23 区）は数量のこともあるので読まない。
+ */
+const isAddressNumber = (text: string, run: Span, tokens: readonly Token[], base: number): boolean =>
+  text.slice(run.start, run.end).includes("-") &&
+  tokens.some((token) => token.span.end === base + run.start && PLACE_NAME.has(token.features?.["NameType"] ?? ""));
+
 /** ハイフンでつないだ識別子か、番号の立つ位置の番号か、文頭の節番号か。 */
 const isNameShaped = (text: string, run: Span): boolean => {
   const [before, digits] = [text.slice(0, run.start), text.slice(run.start, run.end)];
@@ -89,7 +99,7 @@ export const isNumberName = (
   sequence: ReadonlySet<number> = new Set(),
 ): boolean => {
   const inSequence = sequence.has(base + run.start);
-  if (tokens === undefined || !(inSequence || isNameShaped(text, run))) return false;
+  if (tokens === undefined || !(inSequence || isNameShaped(text, run) || isAddressNumber(text, run, tokens, base))) return false;
   const next = wordAfter(tokens, text, run, base);
   if (next === undefined) return false;
   return !isBoundToNumber(next) || (inSequence && CONJUNCTIONS.has(next.pos));

@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` does not count the space after a postal code or an address number (#170)
+
+The space in 「〒100-8916 東京都千代田区」 was counted as a space between a number and Japanese, because only a code with a
+part starting with 0 (〒102-0094) was read as a code. The 〒 mark now marks the number after it as a label, as ※ and 「
+already did. A hyphenated number right after a place name (「紀尾井町1-3 東京ガーデンテラス」) is an address number, not a range,
+and is not counted either. A range stays a quantity: 「3-5 営業日」 does not follow a place name, 「東京都23 区」 has no
+hyphen, and a counter after the number (「1-3 日」) keeps it a quantity as before. Found on 厚生労働省's call for public
+comment and デジタル庁's privacy policy.
+
 ### Japanese: 「3つ」「三つ」「２つ」 are a number and a counter (#170)
 
 IPADIC reads the つ after an Arabic numeral as the classical perfective auxiliary (the つ of 行きつ戻りつ) and 「三つ」
