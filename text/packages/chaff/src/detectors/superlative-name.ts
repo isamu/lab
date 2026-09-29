@@ -4,19 +4,27 @@ import type { TokenRange } from "./lexicon-match.ts";
 /** 記号（最高!）は名詞と付いても語を作らない。 */
 const LETTER = /\p{L}/u;
 
-const nameHead = (token: Token | undefined): token is Token => token !== undefined && token.pos === "NOUN" && LETTER.test(token.surface);
+const joinsAsNoun = (previous: Token, token: Token | undefined): token is Token =>
+  token !== undefined && token.pos === "NOUN" && LETTER.test(token.surface) && previous.span.end === token.span.start;
 
-const isGrade = (token: Token, grades: Lexicon): boolean => grades.some((entry) => entry.pattern === token.surface);
+/** 空白も助詞も挟まずに続く名詞の連なり（最大|瞬間|風速）の最後の語。連なりが無ければ undefined。 */
+const lastJoined = (tokens: readonly Token[], at: number): Token | undefined => {
+  const previous = tokens[at - 1];
+  const token = tokens[at];
+  if (previous === undefined || !joinsAsNoun(previous, token)) return undefined;
+  return lastJoined(tokens, at + 1) ?? token;
+};
+
+const measures = (noun: Token, endings: Lexicon): boolean => endings.some((entry) => noun.surface.endsWith(entry.pattern));
 
 /**
- * 最上級の名詞がそのまま次の名詞と 1 語になっているか（最大風速・最高気温・最大値、値を言う最大三人も）。
- * これは測る量の名前か値で、何かが一番だという主張ではない。「最大の効果」「最も速い」は助詞や用言を挟むので当たらない。
- * ただし次の名詞が等級そのもの（最高品質・最大規模）なら、一番の等級だと言っている主張。その語は言語パッケージの語彙表が持つ。
+ * 最上級の名詞がそのまま名詞と 1 語になり、その語が測る量で終わるか（最大風速・最高気温・最大値・最大駐車台数）。
+ * これは量の名前で、何かが一番だという主張ではない。「最大の効果」「最も速い」は助詞や用言を挟むので当たらない。
+ * 量で終わらない語（最高品質・最速配送・最大効果）は一番だという主張のまま。量を言う語の終わりは言語パッケージの語彙表が持つ。
  */
-export const namesQuantity = (tokens: readonly Token[], range: TokenRange, grades: Lexicon): boolean => {
+export const namesQuantity = (tokens: readonly Token[], range: TokenRange, endings: Lexicon): boolean => {
   const superlative = tokens[range.start];
-  const last = tokens[range.end - 1];
-  const next = tokens[range.end];
   const single = range.end - range.start === 1 && superlative?.pos === "NOUN";
-  return single && last !== undefined && nameHead(next) && last.span.end === next.span.start && !isGrade(next, grades);
+  const last = single ? lastJoined(tokens, range.end) : undefined;
+  return last !== undefined && measures(last, endings);
 };

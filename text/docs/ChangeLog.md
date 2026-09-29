@@ -8,10 +8,10 @@ Newest first.
 
 最大風速, 最高気温 and 最大値 name a quantity that is measured; they do not claim that anything is the greatest. A
 superlative noun joined directly to the next noun, with no particle or space between (the parts of speech say so), is
-now read as such a name, or as its value (最大三人). A noun that is itself a grade makes the compound a claim again
-(最高品質, 最大規模): those nouns come from each language package's new `superlative-grade` word list, which the rule
-declares. English writes a space between a superlative and its noun, so its list is empty and nothing changes there.
-最大の効果 and 最も速い are still reported.
+now read as such a name when the compound ends in a word for a quantity (速, 温, 値, 数, 度 ...). Those endings come
+from each language package's new `quantity-ending` word list, which the rule declares; a compound ending otherwise
+(最高品質, 最速配送, 最大効果) is still a claim and still reported, as are 最大の効果 and 最も速い. English writes a space
+between a superlative and its noun, so its list is empty and nothing changes there.
 
 ### `undefined-acronym` does not count a reference key in square brackets (#170)
 

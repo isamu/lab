@@ -1,6 +1,0 @@
-# Nouns naming a grade, which make a claim when joined to a superlative with no space (最高品質 in Japanese). English
-# writes a space between the superlative and its noun, so there are none; the list exists so both languages name the
-# same lists.
-id: superlative-grade
-language: en
-entries: []

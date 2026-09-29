@@ -43,19 +43,19 @@ export const cushionDensity = densityRule("cushion-phrase-density");
 /** 数字は語ではないので言語を問わない。数があれば測った結果を言っている。品詞の数（NUM）は "the best one" の one まで含むので使わない。 */
 const DIGIT = /\d/u;
 
-type Qualifiers = { readonly comparison: Lexicon; readonly scope: ScopeMarkers; readonly grades: Lexicon };
+type Qualifiers = { readonly comparison: Lexicon; readonly scope: ScopeMarkers; readonly quantityEndings: Lexicon };
 
 const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
   comparison: doc.lexicons["comparison-marker"] ?? [],
   scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? []),
-  grades: doc.lexicons["superlative-grade"] ?? [],
+  quantityEndings: doc.lexicons["quantity-ending"] ?? [],
 });
 
 /** どの出現も範囲を持つか量の名前のときだけ。1 つでもそうでない出現があれば、その文には限定の無い最上級がある。 */
 const everyQualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean => {
   const tokens = sentence.tokens ?? [];
   const ranges = entryRanges(sentence, entry);
-  return ranges.length > 0 && ranges.every((range) => scoped(tokens, range, qualifiers.scope) || namesQuantity(tokens, range, qualifiers.grades));
+  return ranges.length > 0 && ranges.every((range) => scoped(tokens, range, qualifiers.scope) || namesQuantity(tokens, range, qualifiers.quantityEndings));
 };
 
 const qualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean =>

@@ -1,0 +1,21 @@
+# 測る量を言う名詞の終わり。最上級がそのまま付いた名詞がこれで終われば（最大風速・最高気温・最大値・最大駐車台数）、
+# その語は量の名前で、何かが一番だという主張ではない。ここに無い終わりの語（最高品質・最大効果）は主張として読む。
+id: quantity-ending
+language: ja
+entries:
+  - pattern: 値
+  - pattern: 数
+  - pattern: 量
+  - pattern: 率
+  - pattern: 度
+  - pattern: 額
+  - pattern: 速
+  - pattern: 温
+  - pattern: 圧
+  - pattern: 幅
+  - pattern: 径
+  - pattern: 重
+  - pattern: 料金
+  - pattern: 出力
+  - pattern: 時間
+  - pattern: 距離
