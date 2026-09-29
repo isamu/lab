@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### A heading with no title is not a heading (#170)
+
+A heading with no letter or digit in it — `###` alone, `## ---`, `### ** **`, `## ※`, a heading holding only an
+attribute or an image — is a separator (often an empty `<h3>` left by a converter), not the start of a section a
+reader can find. chaff no longer counts it as a heading: the text on both sides stays in one section for every rule
+that reads sections, and `chaff tree` opens no untitled section for it. `preamble-length` therefore no longer takes an
+empty `###` for the start of the body: a press release whose only deeper heading is empty has no subheading, and gets
+no finding. Found on a GSA press release in the corpus.
+
 ### `preamble-length` does not count a page's date stamp (#170)
 
 A paragraph that is only a date (`2025年6月20日`, `April 23, 2026`), a label and a date (`Updated 2026-03-03`,
