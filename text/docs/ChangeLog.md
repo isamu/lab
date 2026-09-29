@@ -4,6 +4,26 @@ Newest first.
 
 ## Unreleased
 
+### The corpus HTML converter drops more of a site header and footer by their shape (#170)
+
+Three shapes before the page's `<h1>` now count as a menu for the site-header rule, so the innermost block holding
+one, with no sentence beside it, goes whole: a definition list whose definition is a breadcrumb trail (`現在位置`:
+`トップ > 教育 > …`), a list whose items hold no words (a text-size switch drawn as images, with its label
+`文字サイズ変更`), and a block of links and nothing else, even a single one (`English`, `サイトマップ`). A trail with
+only one link, a definition beside prose, a list with words, an empty list, a link with words or a sentence beside
+it, a card, and any of these after the title are kept.
+
+A copyright notice closing the page no longer needs a year when it opens with the © sign or `Copyright ©` /
+`Copyright (c)` (`Copyright © Ministry of Health, Labour and Welfare, All Right reserved.`); `(c)` alone opens an
+enumerated paragraph and `Copyright` alone a sentence, so neither counts without a year. An `<address>` whose nearest
+enclosing block holds nothing else but copyright notices, with nothing but them after it, is the site's contact line
+and goes with them. An address beside a label or any other text (`Send comments to:`), outside any block, with
+anything else after it, or with nothing after it, is kept.
+
+Found on 文部科学省's, 国土地理院's and 厚生労働省's pages. NWS's `Safety` / `National Program` beside the title is
+left as it is: two short paragraphs without links before the `<h1>`, the same shape as a press release's dateline or
+a notice's agency and docket number, set apart only by its class name.
+
 ### `no-doubled-joshi` does not count particles inside a quoted title (#170)
 
 A title quoted in 「」 is the name of something, not the writer's phrasing: 「食品中のウイルスの制御のための食品衛生一般原則の適用
