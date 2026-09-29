@@ -3,7 +3,8 @@
 // role="main" element, else a sole <article>) is read when the page has one. Scripts, styles, the head, navigation (by
 // element or by role, and breadcrumbs), asides, footers, forms, tables, footnote marks, lists and blocks of nothing but
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
-// title), lines of nothing but in-page or script links, and a copyright notice closing the page are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
+// title), a block before the page's title that holds a menu (the site's header, with its tagline and labels), lines of
+// nothing but in-page or script links, and a copyright notice closing the page are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
 // for any HTML.
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
@@ -99,17 +100,19 @@ const elementRanges = (html: string, tag: string): ElementRange[] =>
     })
     .ranges.toSorted((left, right) => left.start - right.start);
 
-/** The <tag> elements that are chrome, each replaced by a space; one inside another dropped one goes with it. */
-const withoutElementsWhere = (html: string, tag: string, isChrome: (range: ElementRange) => boolean): string => {
-  const chosen = elementRanges(html, tag)
-    .filter(isChrome)
-    .reduce<ElementRange[]>((kept, range) => ((kept.at(-1)?.end ?? 0) > range.start ? kept : [...kept, range]), []);
+/** The ranges (in document order) each replaced by a space; one inside another cut one goes with it. */
+const withoutRanges = (html: string, ranges: readonly ElementRange[]): string => {
+  const chosen = ranges.reduce<ElementRange[]>((kept, range) => ((kept.at(-1)?.end ?? 0) > range.start ? kept : [...kept, range]), []);
   const cut = chosen.reduce<{ readonly parts: readonly string[]; readonly from: number }>(
     (acc, range) => ({ parts: [...acc.parts, html.slice(acc.from, range.start), " "], from: range.end }),
     { parts: [], from: 0 },
   );
   return [...cut.parts, html.slice(cut.from)].join("");
 };
+
+/** The <tag> elements that are chrome, each replaced by a space; one inside another dropped one goes with it. */
+const withoutElementsWhere = (html: string, tag: string, isChrome: (range: ElementRange) => boolean): string =>
+  withoutRanges(html, elementRanges(html, tag).filter(isChrome));
 
 const LANDMARK = String.raw`(?:\brole\s*=\s*["']?navigation\b|\baria-label\s*=\s*(?:["'][^"']*|[^\s"'>]*)breadcrumb)`;
 
@@ -182,6 +185,37 @@ const withoutNavigation = (html: string): string =>
       isNavigation(body) || isBreadcrumbList(body, at, title) ? " " : whole,
     );
   });
+
+const DEFINITION = /<dd\b[^>]*>([\s\S]*?)(?:<\/dd\s*>|(?=<d[dt]\b)|$)/giu;
+
+/** A definition list whose every definition is only links: a menu with its label as the term ("文字サイズ: 標準 大"). */
+const isLabelledMenu = (list: string): boolean => {
+  const definitions = [...list.matchAll(DEFINITION)].map((match) => match[1] ?? "");
+  return definitions.length > 0 && definitions.every(isNavigation);
+};
+
+const isDefinitionList = (range: ElementRange): boolean => /^<dl\b/iu.test(range.openTag);
+
+const holdsMenu = (range: ElementRange): boolean =>
+  withoutNavigation(range.inner) !== range.inner ||
+  (isDefinitionList(range) && isLabelledMenu(range.inner)) ||
+  elementRanges(range.inner, "dl").some((list) => isLabelledMenu(list.inner));
+
+const HEADER_BLOCKS = ["div", "section", "header", "dl"];
+
+/**
+ * A block that closes before the page's title opens and holds a menu is the site's header: it goes whole, with the
+ * tagline and labels beside the menu. A block before the title without a menu (an agency and docket number) is kept.
+ */
+const withoutSiteHeader = (html: string): string => {
+  const title = pageTitle(html);
+  if (title === undefined) return html;
+  const before = HEADER_BLOCKS.flatMap((tag) => elementRanges(html, tag)).filter((range) => range.end <= title.start);
+  return withoutRanges(
+    html,
+    before.filter(holdsMenu).toSorted((left, right) => left.start - right.start),
+  );
+};
 
 // An in-page link is wrapped in these marks so that one standing alone on its line ("Jump to main text") can be told
 // from one inside a sentence ("see Table 1"); the first is dropped, the second keeps its text.
@@ -256,7 +290,7 @@ export const htmlToMarkdown = (html: string): string => {
   const kept = mainContent(DROPPED.reduce(withoutElement, withoutRubyText(html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(/\s+/gu, " ");
-  const text = decodeEntities(stripTags(asLines(markChromeLinks(withoutLinkGroups(withoutNavigation(withoutNavigationLandmarks(kept)))))));
+  const text = decodeEntities(stripTags(asLines(markChromeLinks(withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(kept))))))));
   const lines = text
     .split("\n")
     .map((line) => line.trim())

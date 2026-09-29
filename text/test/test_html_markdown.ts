@@ -127,6 +127,36 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(`<ul>${links}<li>Help</li></ul><h2>Help</h2><p>Text.</p>`), "- A\n- B\n- Help\n\n## Help\n\nText.\n");
   });
 
+  it("表題 (h1) の前で閉じ、メニューを持つブロックはサイトの頭として、標語や見出し語ごと丸ごと落とす", () => {
+    const menu = '<ul><li><a href="/">ホーム</a></li><li><a href="/faq/">よくある質問</a></li></ul>';
+    const title = "<div><h1>意見の募集について</h1><p>本文。</p></div>";
+    assert.equal(htmlToMarkdown(`<div id="top"><div><p>みんなのくらしのために</p>${menu}</div></div>${title}`), "# 意見の募集について\n\n本文。\n");
+    const labelled = '<dl><dt>文字の大きさ</dt><dd><a href="#n">標準</a></dd><dd><a href="#l">大</a></dd></dl>';
+    assert.equal(htmlToMarkdown(`<div><p class="logo">省の名前</p>${labelled}</div>${title}`), "# 意見の募集について\n\n本文。\n");
+    assert.equal(htmlToMarkdown(`<dl><dt>ご意見はこちら</dt><dd><a href="/sanka/">参加の場</a></dd></dl>${title}`), "# 意見の募集について\n\n本文。\n");
+    const heading = "<header><h1>計画</h1></header><p>本文。</p>";
+    assert.equal(htmlToMarkdown(`<section><p>お知らせ</p>${menu}</section><div><p>標語</p>${menu}</div>${heading}`), "# 計画\n\n本文。\n");
+    assert.equal(htmlToMarkdown(`<header><p>サイトの名前</p>${menu}</header>${heading}`), "# 計画\n\n本文。\n");
+  });
+
+  it("表題の前でもメニューの無いブロック、語の混じる定義、表題を含むブロック、表題の後ろのブロック、h1 の無いページでは本文を残す", () => {
+    const title = "<h1>AGENCY:</h1><p>Text.</p>";
+    const docket = "<div><h6>National Institute of Standards</h6><ol><li>[Docket Number: 260805-0401]</li><li>RIN 0693-XC139</li></ol></div>";
+    assert.equal(
+      htmlToMarkdown(`${docket}${title}`),
+      "###### National Institute of Standards\n\n- [Docket Number: 260805-0401]\n- RIN 0693-XC139\n\n# AGENCY:\n\nText.\n",
+    );
+    assert.equal(
+      htmlToMarkdown(`<div><dl><dt>Contact</dt><dd><a href="/office">Office</a></dd><dd>Call <a href="tel:1">the office</a> first.</dd></dl></div>${title}`),
+      "Contact\n\nOffice\n\nCall the office first.\n\n# AGENCY:\n\nText.\n",
+    );
+    assert.equal(htmlToMarkdown(`<dl><dt>Issued</dt><dt>Revised</dt></dl>${title}`), "Issued\n\nRevised\n\n# AGENCY:\n\nText.\n");
+    const menu = '<ul><li><a href="/a">A</a></li><li><a href="/b">B</a></li></ul>';
+    assert.equal(htmlToMarkdown(`<div><p>Lead line.</p>${menu}<h1>Plan</h1><p>Text.</p></div>`), "Lead line.\n\n# Plan\n\nText.\n");
+    assert.equal(htmlToMarkdown(`<h1>Plan</h1><div><p>See also.</p>${menu}</div>`), "# Plan\n\nSee also.\n");
+    assert.equal(htmlToMarkdown(`<div><p>Our motto.</p>${menu}</div><h2>Plan</h2><p>Text.</p>`), "Our motto.\n\n## Plan\n\nText.\n");
+  });
+
   it("aside・footer・form (検索窓) を落とす", () => {
     const html =
       '<form action="/search"><label for="q">サイト内検索</label><input id="q"></form><h1>計画</h1><p>本文。</p>' +
