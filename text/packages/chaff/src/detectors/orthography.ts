@@ -1,5 +1,6 @@
 import type { Detector, Finding, Sentence } from "../plugin.ts";
-import { latinBoundaries, minorityStyle, occurrencesOutside, type SpacingKind } from "../orthography.ts";
+import { latinBoundaries, minorityStyle, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
+import { digitRunAround, isNumberName } from "../number-name.ts";
 
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
 export const preferredTerm: Detector = (doc, options): Finding[] => {
@@ -23,12 +24,29 @@ const KINDS: readonly SpacingKind[] = ["letter", "before-digit", "after-digit"];
 
 type Located = { readonly sentence: Sentence; readonly offset: number; readonly kind: SpacingKind; readonly spaced: boolean };
 
+/** 境目の隣の数字の、並びの中の 1 字の位置。数字の後ろなら左の字、数字の前なら（空白を越えた）右の字。 */
+const digitBeside = (boundary: Boundary): number => {
+  if (boundary.kind === "after-digit") return boundary.offset - 1;
+  return boundary.spaced ? boundary.offset + 1 : boundary.offset;
+};
+
+/** 番号・識別子として書かれた数の境目は、空け方の好みではないので数えない（number-name.ts）。 */
+const isCounted = (sentence: Sentence, boundary: Boundary): boolean => {
+  if (boundary.kind === "letter") return true;
+  const run = digitRunAround(sentence.text, digitBeside(boundary));
+  return run === undefined || !isNumberName(sentence.text, run, sentence.tokens, sentence.span.start);
+};
+
 /**
  * 日本語と英字・数字のあいだを、空けるか詰めるか。文書の中で混ざっていたら、少ないほうを指摘する。
  * どちらが正しいかは決めない。決めるのはチームで、chaff はそろっているかだけを見る。
  */
 export const latinSpacing: Detector = (doc, options): Finding[] => {
-  const located: Located[] = doc.sentences.flatMap((sentence) => latinBoundaries(sentence.text).map((boundary) => ({ sentence, ...boundary })));
+  const located: Located[] = doc.sentences.flatMap((sentence) =>
+    latinBoundaries(sentence.text)
+      .filter((boundary) => isCounted(sentence, boundary))
+      .map((boundary) => ({ sentence, ...boundary })),
+  );
   return KINDS.flatMap((kind) => {
     const ofKind = located.filter((entry) => entry.kind === kind);
     const minority = minorityStyle(ofKind);

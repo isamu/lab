@@ -4,6 +4,24 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` does not count the space after a number written as a label or an identifier (#170)
+
+The space in `「3.1 リサーチの原則」`, `※1 特定の条件`, `2.1 注文の登録` at the head of a line, or after a telephone
+number, a postal code or a date joined by hyphens (`073-489-5912 ファックス`, `〒102-0094 東京都`) separates a label from its
+title or from the next item; it is not the choice between `3 回` and `3回`. Those numbers are no longer counted on
+either side. A number followed by a counter, a numeral or a particle is still counted wherever it stands (`「10 回」`,
+`3-5 日`, `2.1 で`), and so is a number without levels at the head of a line (`223 言語`), which usually counts things,
+and so is a number of two hyphen-joined parts without a leading zero (`3-5 営業日`, `1-3`), which may be a range.
+The Japanese adapter now reads a counter written after a number and one space (`10 回`, `3 日`, `26.7 万行`) as a
+counter, as it does when the two touch; before, the analyser read `日` there as the place name Japan. Found on
+デジタル庁's council minutes and 紀美野町's notices.
+
+### The corpus has a third round of document kinds (#170)
+
+Incident reports (Inside GOV.UK, デジタル庁), a research-news article (NIH), a workshop report from arXiv, a funding
+solicitation (NSF), changelogs (cloud.gov, NeeView), ministry press releases and a correction notice (経済産業省), a tax
+procedure guide (国税庁), a staff recruitment notice and a sightseeing notice (紀美野町).
+
 ### `no-mixed-desumasu` judges only endings with a predicate, and each list on its own (#170)
 
 A sentence whose ending has no predicate — a lead-in such as `出力するファイルは以下の通り。`, a gloss such as
