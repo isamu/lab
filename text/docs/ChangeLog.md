@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym`'s notation words are word lists, and the rule declares every list it reads (#170)
+
+The words `undefined-acronym` leaves alone next to a number or on their own moved from code into word lists in each
+language package: `meridiem` (AM, PM), `time-zone` (UTC, JST, ET …), `currency-code` (USD, EUR, JPY …),
+`us-state-code` (the postal codes, read only in an address) and `emphasis-word` (a lone NOT or AND). Japanese
+documents get the same lists, since they carry `10:00 JST` and `USD 1,000` too. The contents and the results are
+unchanged: the old and new rule were run side by side over generated documents in both languages, over the examples
+and over the corpus, with the same findings. The rule now declares these lists and `definition-marker` /
+`definition-verb` in `extra_word_lists`. A language package that lacks one of them no longer runs the rule with that
+part missing — which reported `3:30 PM`, or an acronym defined with hereinafter, as undefined — but says which list is
+missing and does not run it. A language with nothing to list ships the list empty.
+
 ### `latin-spacing` reads `Phase 1 は` as a name, and skips codes and markup (#170)
 
 A number after a Latin word and a space (`Phase 1 は`, `iOS 17以上`, `JIS X 0301 和暦`, `Node.js 22 以上`) is part of

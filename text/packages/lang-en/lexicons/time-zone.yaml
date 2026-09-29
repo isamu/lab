@@ -1,0 +1,22 @@
+# Time zones a business document writes after a clock time without explaining them (16:00 UTC, 2pm ET).
+# One not listed here (ACT …) is counted as an acronym. Matched as written.
+id: time-zone
+language: en
+entries:
+  - pattern: "UTC"
+  - pattern: "GMT"
+  - pattern: "JST"
+  - pattern: "ET"
+  - pattern: "EST"
+  - pattern: "EDT"
+  - pattern: "CT"
+  - pattern: "CST"
+  - pattern: "CDT"
+  - pattern: "MT"
+  - pattern: "MST"
+  - pattern: "MDT"
+  - pattern: "PT"
+  - pattern: "PST"
+  - pattern: "PDT"
+  - pattern: "CET"
+  - pattern: "CEST"
