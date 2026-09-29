@@ -6,9 +6,9 @@ Newest first.
 
 ### `latin-spacing` does not count the space after a number written as a label or an identifier (#170)
 
-The space in `「3.1 リサーチの原則」`, `※1 特定の条件`, `2.1 注文の登録` at the head of a line, or after a telephone
-number, a postal code or a date joined by hyphens (`073-489-5912 ファックス`, `〒102-0094 東京都`) separates a label from its
-title or from the next item; it is not the choice between `3 回` and `3回`. Those numbers are no longer counted on
+The space in `「3.1 リサーチの原則」`, `※1 特定の条件`, `2.1 注文の登録` at the head of a line, or after a code with a
+part starting with 0 (a postal code `〒102-0094 東京都`, a two-part phone number) separates a label from its title or
+from the next item; it is not the choice between `3 回` and `3回`. Those numbers are no longer counted on
 either side. A number followed by a counter, a numeral or a particle is still counted wherever it stands (`「10 回」`,
 `3-5 日`, `2.1 で`), and so is a number without levels at the head of a line (`223 言語`), which usually counts things,
 and so is a number of two hyphen-joined parts without a leading zero (`3-5 営業日`, `1-3`), which may be a range.
@@ -21,6 +21,32 @@ counter, as it does when the two touch; before, the analyser read `日` there as
 Incident reports (Inside GOV.UK, デジタル庁), a research-news article (NIH), a workshop report from arXiv, a funding
 solicitation (NSF), changelogs (cloud.gov, NeeView), ministry press releases and a correction notice (経済産業省), a tax
 procedure guide (国税庁), a staff recruitment notice and a sightseeing notice (紀美野町).
+
+### `latin-spacing` reads `Phase 1 は` as a name, and skips codes and markup (#170)
+
+A number after a Latin word and a space (`Phase 1 は`, `iOS 17以上`, `JIS X 0301 和暦`, `Node.js 22 以上`) is part of
+the name, so the boundary after it is counted with the letters, as `H30 等` already was; a lone letter before a number
+(`1ファイル x 1シート`) is a sign, not a name, and still counts with the numbers. An identifier outside backticks
+(`confidence=0 で`) is read as one run. Three or more digit groups joined by hyphens (a phone number `073-489-5909`, a
+date `2026-06-02`, a figure number `Ⅰ-4-1-3`) are not a quantity and neither side is counted; a range (`1-3ヶ月`)
+still is. A space that only stands for hidden markup, such as the bracket of a link or a footnote reference
+(`稼働させた[Google…](…)`, `1on1[^1on1]を`), is no longer read as a space the writer typed. Found on the Japanese
+corpus (EchoNote requirements, デジタル庁's machine-readability pages, the Kubernetes overview, a city notice).
+
+### The corpus's converters keep the words a ruby or a template carried (#170)
+
+An HTML page's ruby is read as its base text: the reading and the brackets around it are dropped, also where the page
+omits their closing tags, as HTML allows (「隆(たか)一(いち議員」 is now 「隆一議員」). A Wikivoyage page keeps the
+quantities, prices, phone numbers and listings that its templates carried: `{{km}}` and `{{ha}}` as a number and unit,
+`{{JPY}}` as a yen amount, `{{phone}}` as the number, and `{{vCard}}` as a listing's name and description, where
+before each left a hole in the sentence (「全長の道のりです」「1日に約歩く」).
+
+### CI fails when a committed document's result changes (#170)
+
+`chaff ci` now runs `yarn corpus` and `yarn bench`. The corpus compares the committed documents (statutes and
+`corpus/docs`) with `corpus/expected.txt`, and statutes are now compared too instead of only printed; documents kept
+as URLs are compared locally after `yarn corpus:fetch`. A change that is intended is accepted with `--update` in the
+same PR.
 
 ### `no-mixed-desumasu` judges only endings with a predicate, and each list on its own (#170)
 

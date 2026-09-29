@@ -1,9 +1,10 @@
 // An HTML page (a CRS report as EveryCRSReport serves it, a ministry's page) as plain Markdown: headings, paragraphs,
-// list items and the text of links. Only the <main> element is read when the page has one. Scripts, styles, the head,
-// navigation (by element or by role, and breadcrumbs), asides, footers, forms, tables, footnote marks, lists and
-// blocks of nothing but links (a menu, a table of contents, previous/next links, a breadcrumb trail), lines of nothing
-// but in-page links, and a copyright notice closing the page are dropped. Pure; a regular-expression reading that is
-// enough for the documents in the corpus, not a parser for any HTML.
+// list items and the text of links; ruby keeps its base text and loses its reading. Only the <main> element is read
+// when the page has one. Scripts, styles, the head, navigation (by element or by role, and breadcrumbs), asides,
+// footers, forms, tables, footnote marks, lists and blocks of nothing but links (a menu, a table of contents,
+// previous/next links, a breadcrumb trail), lines of nothing but in-page links, and a copyright notice closing the
+// page are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
+// for any HTML.
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
 const DROPPED = ["script", "style", "head", "nav", "aside", "footer", "form", "noscript", "svg", "table"];
@@ -20,6 +21,15 @@ const withoutElement = (html: string, tag: string): string => {
 };
 
 const stripTags = (html: string): string => html.replace(/<\/?[a-z!][^>]*>/giu, "");
+
+// HTML lets a ruby's parts omit their closing tags: a reading container (<rtc>) ends at the next <rb> or <rtc>, a
+// reading (<rt>) or its bracket (<rp>) at the next <rb>, <rt> or <rp>; any of them at the end of the <ruby>.
+const RUBY_TEXT_CONTAINER = /<rtc\b[^>]*>[\s\S]*?(?:<\/rtc\s*>|(?=<(?:rb|rtc)\b|$))/giu;
+const RUBY_TEXT = /<(rt|rp)\b[^>]*>[\s\S]*?(?:<\/\1\s*>|(?=<(?:rb|rt|rp)\b|$))/giu;
+
+/** Ruby as its base text alone: 漢字 with its reading becomes 漢字. */
+const withoutRubyText = (html: string): string =>
+  html.replace(/<ruby\b[^>]*>([\s\S]*?)<\/ruby\s*>/giu, (_whole: string, inside: string) => inside.replace(RUBY_TEXT_CONTAINER, "").replace(RUBY_TEXT, ""));
 
 const ANY_LINK = /<a\b[^>]*>[\s\S]*?<\/a\s*>/giu;
 
@@ -192,7 +202,7 @@ const asLines = (html: string): string =>
     .replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/giu, (whole: string, tag: string) => (BLOCK_TAGS.has(tag.toLowerCase()) ? "\n\n" : whole));
 
 export const htmlToMarkdown = (html: string): string => {
-  const kept = mainContent(DROPPED.reduce(withoutElement, html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "")))
+  const kept = mainContent(DROPPED.reduce(withoutElement, withoutRubyText(html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(/\s+/gu, " ");
   const text = decodeEntities(stripTags(asLines(markChromeLinks(withoutLinkGroups(withoutNavigation(withoutNavigationLandmarks(kept)))))));

@@ -43,7 +43,7 @@ const isCounted = (sentence: Sentence, boundary: Boundary): boolean => {
  */
 export const latinSpacing: Detector = (doc, options): Finding[] => {
   const located: Located[] = doc.sentences.flatMap((sentence) =>
-    latinBoundaries(sentence.text)
+    latinBoundaries(sentence.text, doc.source.slice(sentence.span.start, sentence.span.end))
       .filter((boundary) => isCounted(sentence, boundary))
       .map((boundary) => ({ sentence, ...boundary })),
   );

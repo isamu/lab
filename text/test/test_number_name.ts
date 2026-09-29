@@ -90,14 +90,15 @@ describe("isNumberName", () => {
     assert.equal(isNumberName(range, runOf(range, "3-5"), [token(4, "日", "NOUN", { NounType: "Class" })], 0), false);
   });
 
-  it("reads only a hyphen-joined number of three parts or with a part starting with 0 as an identifier", () => {
+  // 三つ以上つないだ番号（2026-10-12）は、orthography.ts が境目を作る前に外すので、ここでは読まない。
+  it("reads only a hyphen-joined number with a part starting with 0 as an identifier", () => {
     const shaped = (digits: string): boolean => isNumberName(`${digits} 担当`, runOf(`${digits} 担当`, digits), [token(digits.length + 1, "担当", "NOUN")], 0);
     assert.equal(shaped("073-489-5912"), true);
     assert.equal(shaped("102-0094"), true);
     assert.equal(shaped("03-3501"), true);
     assert.equal(shaped("2026-06-02"), true);
-    assert.equal(shaped("2026-10-12"), true);
-    assert.equal(shaped("4-1-3"), true);
+    assert.equal(shaped("2026-10-12"), false);
+    assert.equal(shaped("4-1-3"), false);
     assert.equal(shaped("3-5"), false);
     assert.equal(shaped("1-3"), false);
     assert.equal(shaped("10-20"), false);
@@ -159,7 +160,7 @@ describe("latin-spacing with parts of speech", () => {
 
   it("does not count the space before an address number either", () => {
     assert.deepEqual(spacing("# 所在地\n\n受付を3回、確認を5回行う。\n\n所在地：〒102-0094 東京都千代田区\n"), []);
-    assert.deepEqual(spacing("# 連絡\n\n受付を3回、確認を5回行う。\n\n電話 03-3501-1511 担当 山田\n"), []);
+    assert.deepEqual(spacing("# 連絡\n\n受付を3回、確認を5回行う。\n\n内線 03-3501 担当 山田\n"), []);
   });
 
   it("still counts a quantity written the other way, at the head of a line too", () => {
