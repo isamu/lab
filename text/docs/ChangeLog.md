@@ -15,9 +15,10 @@ it, a card, and any of these after the title are kept.
 
 A copyright notice closing the page no longer needs a year when it opens with the © sign or `Copyright ©` /
 `Copyright (c)` (`Copyright © Ministry of Health, Labour and Welfare, All Right reserved.`); `(c)` alone opens an
-enumerated paragraph and `Copyright` alone a sentence, so neither counts without a year. An `<address>` followed by
-nothing but copyright notices is the site's contact line and goes with them; an address with anything else after it,
-or with nothing after it, is kept.
+enumerated paragraph and `Copyright` alone a sentence, so neither counts without a year. An `<address>` whose nearest
+enclosing block holds nothing else but copyright notices, with nothing but them after it, is the site's contact line
+and goes with them. An address beside a label or any other text (`Send comments to:`), outside any block, with
+anything else after it, or with nothing after it, is kept.
 
 Found on 文部科学省's, 国土地理院's and 厚生労働省's pages. NWS's `Safety` / `National Program` beside the title is
 left as it is: two short paragraphs without links before the `<h1>`, the same shape as a press release's dateline or

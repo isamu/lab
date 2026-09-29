@@ -327,16 +327,35 @@ const textLines = (html: string): string[] =>
 
 const ADDRESS = /<address\b[^>]*>[\s\S]*?<\/address\s*>/giu;
 
+const isOnlyNotices = (html: string): boolean => {
+  const lines = textLines(html);
+  return lines.length > 0 && lines.every((line) => COPYRIGHT_NOTICE.test(line));
+};
+
+const ADDRESS_BLOCKS = ["div", "section"];
+
+/** What the innermost block around the address holds besides it, when it holds anything else. */
+const besideAddress = (html: string, address: RegExpExecArray): string | undefined => {
+  const end = address.index + address[0].length;
+  const around = ADDRESS_BLOCKS.flatMap((tag) => elementRanges(html, tag))
+    .filter((range) => range.start < address.index && end <= range.end)
+    .toSorted((left, right) => right.start - left.start)
+    .map((range) => range.inner.replace(address[0], " "));
+  return around.find((beside) => textLines(beside).length > 0);
+};
+
 /**
- * An <address> followed by nothing but a copyright notice closes the page: the site's own contact line, in a footer
- * written without <footer>. An address with anything else after it, or with nothing after it, is kept.
+ * An <address> that shares its block with nothing but copyright notices, and has nothing but them after it, closes
+ * the page: the site's own contact line, in a footer written without <footer>. An address beside any other text (a
+ * label such as "Send comments to:"), with anything else after it, or with nothing after it, is kept.
  */
 const withoutClosingAddress = (html: string): string => {
   const last = [...html.matchAll(ADDRESS)].at(-1);
   if (last === undefined) return html;
   const end = last.index + last[0].length;
-  const after = textLines(html.slice(end));
-  return after.length > 0 && after.every((line) => COPYRIGHT_NOTICE.test(line)) ? `${html.slice(0, last.index)} ${html.slice(end)}` : html;
+  const beside = besideAddress(html, last);
+  const isFooter = beside !== undefined && isOnlyNotices(beside) && isOnlyNotices(html.slice(end));
+  return isFooter ? `${html.slice(0, last.index)} ${html.slice(end)}` : html;
 };
 
 export const htmlToMarkdown = (html: string): string => {

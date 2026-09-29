@@ -278,19 +278,33 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(`<p>© Example Office</p>${body}`), "© Example Office\n\n# Plan\n\nText.\n");
   });
 
-  it("著作権表示だけが後に続く address はサイトの連絡先として落とし、ほかのものが続くか何も続かない address は残す", () => {
+  it("著作権表示とだけブロックを分け、著作権表示だけが後に続く address はサイトの連絡先として落とす", () => {
     const body = "<h1>意見の募集</h1><p>本文。</p>";
     const address = "<address>〒100-0001 東京都千代田区1-1<br>電話：03-0000-0000</address>";
     const notice = "<p>Copyright &copy; Example Office</p>";
     assert.equal(htmlToMarkdown(`${body}<div><p><a href="/"><img alt="省"></a></p>${address}${notice}</div>`), "# 意見の募集\n\n本文。\n");
-    assert.equal(htmlToMarkdown(`${body}${address}`), "# 意見の募集\n\n本文。\n\n〒100-0001 東京都千代田区1-1\n電話：03-0000-0000\n");
+    assert.equal(htmlToMarkdown(`${body}<section><div><div>${address}</div></div>${notice}</section>`), "# 意見の募集\n\n本文。\n");
+    assert.equal(htmlToMarkdown(`<div>${body}<div>${address}${notice}</div></div>`), "# 意見の募集\n\n本文。\n");
     assert.equal(
-      htmlToMarkdown(`${body}${address}<p>受付は平日のみ</p>${notice}`),
-      "# 意見の募集\n\n本文。\n\n〒100-0001 東京都千代田区1-1\n電話：03-0000-0000\n\n受付は平日のみ\n",
+      htmlToMarkdown(`<div>${body}<p>本文の続き。</p><address>〒100-0002 東京都</address></div><div>${address}${notice}</div>`),
+      "# 意見の募集\n\n本文。\n\n本文の続き。\n\n〒100-0002 東京都\n",
     );
+  });
+
+  it("文や見出し語とブロックを分ける address、後にほかのものが続くか何も続かない address、ブロックの外の address は残す", () => {
+    const body = "<h1>意見の募集</h1><p>本文。</p>";
+    const address = "<address>〒100-0001 東京都千代田区1-1<br>電話：03-0000-0000</address>";
+    const lines = "〒100-0001 東京都千代田区1-1\n電話：03-0000-0000";
+    const notice = "<p>Copyright &copy; Example Office</p>";
+    assert.equal(htmlToMarkdown(`${body}<div>${address}</div>`), `# 意見の募集\n\n本文。\n\n${lines}\n`);
+    assert.equal(htmlToMarkdown(`${body}<div>${address}<p>受付は平日のみ</p>${notice}</div>`), `# 意見の募集\n\n本文。\n\n${lines}\n\n受付は平日のみ\n`);
+    assert.equal(htmlToMarkdown(`${body}<div><p>Send comments to:</p>${address}${notice}</div>`), `# 意見の募集\n\n本文。\n\nSend comments to:\n\n${lines}\n`);
+    assert.equal(htmlToMarkdown(`<div>${body}${address}</div><div>${notice}</div>`), `# 意見の募集\n\n本文。\n\n${lines}\n`);
+    assert.equal(htmlToMarkdown(`${body}${address}${notice}`), `# 意見の募集\n\n本文。\n\n${lines}\n`);
+    assert.equal(htmlToMarkdown(`${body}<div>${notice}${address}</div>`), `# 意見の募集\n\n本文。\n\nCopyright © Example Office\n\n${lines}\n`);
     assert.equal(
-      htmlToMarkdown(`${body}${address}<p>本文の続き。</p><address>〒100-0002 東京都</address>${notice}`),
-      "# 意見の募集\n\n本文。\n\n〒100-0001 東京都千代田区1-1\n電話：03-0000-0000\n\n本文の続き。\n",
+      htmlToMarkdown(`${body}<div>${address}${notice}</div><p>受付は平日のみ</p>`),
+      `# 意見の募集\n\n本文。\n\n${lines}\n\nCopyright © Example Office\n\n受付は平日のみ\n`,
     );
   });
 
