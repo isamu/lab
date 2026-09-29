@@ -2,7 +2,19 @@
 
 Newest first.
 
-## Unreleased
+## 0.12.0 — 2026-09-29
+
+More kinds of document, checked without judgement: the corpus now has press releases, FAQs, privacy policies,
+how-tos, notices, letters, agendas, job descriptions, travel guides, design and requirements documents in both
+languages. A new experimental rule, `doubled-word`, catches a word written twice ("our the", をを). Word lists carry
+more of the knowledge that was in code — the acronyms a reader knows, the words that qualify a superlative — and a rule
+that needs a word list its language lacks says so instead of running. Fewer false positives from page furniture (in-page
+navigation, date stamps, empty headings), English proper nouns and adjectival participles, and acronyms defined with
+以下 / hereinafter or written beside a time or an amount.
+
+📦 [`chaffjs@0.12.0`](https://www.npmjs.com/package/chaffjs/v/0.12.0) ·
+[`@chaffjs/lang-ja@0.11.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.11.0) ·
+[`@chaffjs/lang-en@0.10.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.10.0)
 
 ### `doubled-word`: a word written twice (#170)
 
