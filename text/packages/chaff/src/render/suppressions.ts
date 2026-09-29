@@ -53,7 +53,7 @@ const groupByRule = (files: readonly PerFile[]): Group[] => {
         reasons: [...new Set(mine.flatMap((row) => (row.reason === undefined ? [] : [row.reason])))],
       };
     })
-    .sort((left, right) => right.count - left.count);
+    .toSorted((left, right) => right.count - left.count);
 };
 
 const groupLines = (group: Group, ui: UiLanguage): string[] => {

@@ -126,5 +126,5 @@ const parseRule = (dir: string, file: string): unknown => {
 export const loadRules = (language: string, dir: string = RULES_DIR): RuleDefinition[] =>
   readdirSync(dir)
     .filter((file) => file.endsWith(".yaml"))
-    .sort((left, right) => left.localeCompare(right, "en"))
+    .toSorted((left, right) => left.localeCompare(right, "en"))
     .map((file) => toRule(parseRule(dir, file), language, file));

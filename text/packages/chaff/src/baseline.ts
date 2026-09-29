@@ -29,7 +29,7 @@ export const readBaseline = (path: string): Baseline | undefined => {
 };
 
 export const writeBaseline = (path: string, entries: readonly string[]): void => {
-  const sorted = [...entries].sort((left, right) => left.localeCompare(right, "en"));
+  const sorted = entries.toSorted((left, right) => left.localeCompare(right, "en"));
   const body = { version: 1, created: new Date().toISOString().slice(0, 10), entries: sorted };
   writeFileSync(path, `${JSON.stringify(body, null, 2)}\n`, "utf8");
 };

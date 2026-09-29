@@ -233,5 +233,5 @@ export const relativeMentions = (
   const bare = bareMentions(text, patterns, vocabulary, number, [...absolute, ...named]);
   return [...named, ...bare]
     .filter((mention) => !substituted.some((span) => span.start <= mention.start && mention.start < span.end))
-    .sort((left, right) => left.start - right.start);
+    .toSorted((left, right) => left.start - right.start);
 };

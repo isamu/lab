@@ -7,7 +7,7 @@ const SETTLE_MS = 120;
 export type Snapshot = Readonly<Record<string, number>>;
 
 export const snapshotOf = (findings: readonly Finding[]): Snapshot =>
-  findings.reduce<Record<string, number>>((acc, finding) => ({ ...acc, [finding.rule]: (acc[finding.rule] ?? 0) + 1 }), {});
+  Object.fromEntries(findings.reduce((counts, finding) => counts.set(finding.rule, (counts.get(finding.rule) ?? 0) + 1), new Map<string, number>()));
 
 const total = (snapshot: Snapshot): number => Object.values(snapshot).reduce((sum, count) => sum + count, 0);
 
@@ -20,7 +20,7 @@ export const describeChange = (before: Snapshot, after: Snapshot, unit = " 件")
   const moved = rules
     .map((rule) => ({ rule, delta: (after[rule] ?? 0) - (before[rule] ?? 0) }))
     .filter((entry) => entry.delta !== 0)
-    .sort((left, right) => left.rule.localeCompare(right.rule, "en"));
+    .toSorted((left, right) => left.rule.localeCompare(right.rule, "en"));
   if (moved.length === 0) return undefined;
   const detail = moved.map((entry) => `${entry.delta > 0 ? "+" : ""}${entry.delta} ${entry.rule}`).join(", ");
   const mark = total(after) < total(before) ? "✓" : "✗";
