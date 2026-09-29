@@ -13,6 +13,35 @@ come from each language package's new `quantity-noun` word list, which the rule 
 other noun (最高品質, 最速配送, 最高精度, 最高満足度) is still a claim and still reported, as are 最大の効果 and 最も速い.
 English writes a space between a superlative and its noun, so its list is empty and nothing changes there.
 
+### `concrete-evidence-density` sees a relative link, a spelled-out count and a reference the structure tree read (#170)
+
+The rule says a section has "no number, code or link", but it only saw a link written as `https://…`. A Markdown
+link to another page of the same site (`[guide](/handbook/meetings/)`), to another section (`[results](#results)`),
+to an address (`mailto:`), or a reference-style link (`[guide][g]`) is now a link too; an image is not. In English,
+a spelled-out number counting a plural noun right after it (`five minutes`, `more than two days`) is now a number,
+as a kanji numeral already was in Japanese; `one of`, `two-way` and `one-on-one meetings` are not. A reference,
+quantity or date the structure tree read inside the section (`See Section VI`) also counts. The tree is built only
+when the document would otherwise be reported. lang-en now marks a plural noun with `Number=Plur`.
+
+### A version number that starts a sentence is not a section number (#170)
+
+Meeting minutes and release reports list releases newest first, one per line: `3.11.0 was released on 2024-10-17.`,
+`3.10.0 was released on 2024-08-13.`, or in Japanese `3.11.0 を公開しました。`. Each line was read as a numbered
+section, so `numbering-gap` reported every older release as out of order. On a line of body text, a dotted number
+followed by a sentence (it ends with a full stop, `。`, `?` or `!`) that starts with a lowercase word, or in Japanese
+with a particle (read with the morphological analyser), is now a number inside a sentence and not a section number.
+Headings, a capitalised title (`3.1 Scope`, `4.2 The Supplier shall`), a noun title (`3.1 適用範囲`) and a lowercase
+title that is not a sentence (`3.1 overview`, `4.2.1.  about:blank`) are still read as sections. Found on the Apache
+Software Foundation board minutes.
+
+### The corpus adds a letter template, board and committee minutes, a government roadmap, team week notes, a minister's press conference, e-mail templates and company releases (#170)
+
+Committed with their licence named in the manifest: an Acas letter template, a GOV.UK policy paper and a GDS blog's
+week notes (OGL v3.0), and FOMC minutes (public domain, per the Federal Reserve Board's website). Kept URL only: the
+Apache Software Foundation board minutes (Apache-2.0), デジタル庁's press conference summary (the reporters' questions
+are theirs), e-Tax's e-mail templates (each carries an all-rights-reserved notice) and 小林製薬's releases (no licence
+to redistribute).
+
 ### `agentless-passive` leaves Japanese れる/られる that is not a passive alone (#170)
 
 Japanese れる/られる is also spontaneous, honorific and potential, and IPADIC does not say which. lang-ja now drops
