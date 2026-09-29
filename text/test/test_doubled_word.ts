@@ -255,6 +255,7 @@ describe("doubled-word — 日本語", () => {
       "会社会社で判断が異なります。",
       "部署部署の事情によって変わります。",
       "地域地域によって違います。",
+      "会社会社により条件が異なります。",
     ];
     valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
   });
