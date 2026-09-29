@@ -572,6 +572,141 @@
       "url": "https://raw.githubusercontent.com/digital-go-jp/machine_readability_rule/bb76c7c4f0effec235eba57d80b021d55fca85bb/sample_app/docs/guides/output-format.md",
       "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0), per the repository's LICENSE.md; 出典: デジタル庁 machine_readability_rule (https://github.com/digital-go-jp/machine_readability_rule)",
       "redistribute": true
+    },
+    {
+      "id": "gsa-press-pif-2026",
+      "title": "GSA news release: GSA Advances Tech Talent Strategy with New Presidential Innovation Fellows Class",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260731185213id_/https://www.gsa.gov/about-gsa/newsroom/news-releases/gsa-advances-tech-talent-strategy-with-new-presidential-innovation-fellows-class-04232026",
+      "license": "Public domain (work of the US federal government)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "18f-handbook-travel-faq",
+      "title": "TTS Handbook: Travel guide FAQ",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/GSA-TTS/handbook/c220f93896b39e9e4ab0f486a1d5bf346ac06e3e/pages/travel-and-leave/travel-and-leave-policies/travel-guide-faq.md",
+      "license": "CC0-1.0 (US government work, public domain)",
+      "redistribute": true
+    },
+    {
+      "id": "cloudgov-your-first-deploy",
+      "title": "cloud.gov docs: Your first deploy",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/cloud-gov/cg-site/536b459f25dc541450f8b02675b32584196a05fd/_docs/getting-started/your-first-deploy.md",
+      "license": "CC0-1.0 (US government work, public domain), per the repository's LICENSE.md",
+      "redistribute": true
+    },
+    {
+      "id": "cloudgov-v2api-eol-notice",
+      "title": "cloud.gov news: End-of-life for CloudFoundry API v2",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/cloud-gov/cg-site/536b459f25dc541450f8b02675b32584196a05fd/_posts/2025-01-02-v2api-deprecation.md",
+      "license": "CC0-1.0 (US government work, public domain), per the repository's LICENSE.md",
+      "redistribute": true
+    },
+    {
+      "id": "automattic-privacy-policy",
+      "title": "Automattic Privacy Policy",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/Automattic/legalmattic/2f412dc4995bbec73504d077a04198a94ddd3c90/Privacy-Policy.md",
+      "license": "CC-BY-SA-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "automattic-offer-letter-us",
+      "title": "Automattic offer letter (United States)",
+      "source": "url",
+      "genre": "business/email",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/Automattic/legalmattic/2f412dc4995bbec73504d077a04198a94ddd3c90/Offer%20Letters/United%20States.md",
+      "license": "CC-BY-SA-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "tc39-agenda-2026-07",
+      "title": "Agenda for the 115th meeting of Ecma TC39",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/tc39/agendas/c56ddc95960f85f676e14fb451b14a7d7cf619f7/2026/07.md",
+      "license": "None stated (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "gitlab-jd-instructional-designer",
+      "title": "GitLab job description: Instructional Designer",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://gitlab.com/gitlab-com/content-sites/handbook/-/raw/0d8a947acdbd41b41d6cf30ad854d27edc3ae34c/content/job-description-library/people-group/instructional-designer.md",
+      "license": "CC-BY-SA-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "da-news-minister-handover",
+      "title": "デジタル庁: 大臣・副大臣・大臣政務官の交代式を行いました",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260927073212id_/https://www.digital.go.jp/news/efdd742c-aa9b-4482-8842-0e172fa9b78b",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: デジタル庁ウェブサイト (https://www.digital.go.jp/news/efdd742c-aa9b-4482-8842-0e172fa9b78b), converted to Markdown (加工して作成)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "da-privacy-policy",
+      "title": "デジタル庁: プライバシーポリシー",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260927073122id_/https://www.digital.go.jp/privacy-policy",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: デジタル庁ウェブサイト (https://www.digital.go.jp/privacy-policy), converted to Markdown (加工して作成)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "da-recruitment-career-faq",
+      "title": "デジタル庁: よくある質問【中途採用（専門人材）】",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260927073248id_/https://www.digital.go.jp/recruitment/career/faq",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: デジタル庁ウェブサイト (https://www.digital.go.jp/recruitment/career/faq), converted to Markdown (加工して作成)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "da-recruitment-office-visit",
+      "title": "デジタル庁: 2026年度 一般職（高卒者）官庁訪問",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260927073157id_/https://www.digital.go.jp/recruitment/newgraduates/2026-governmentofficevisit-clericalposition-highschoolgraduate",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: デジタル庁ウェブサイト (https://www.digital.go.jp/recruitment/newgraduates/2026-governmentofficevisit-clericalposition-highschoolgraduate), converted to Markdown (加工して作成)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "abr-geocoder-abrg-readme-ja",
+      "title": "ABR Geocoder: abrg README（日本語）",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/digital-go-jp/abr-geocoder/87182261fc25cb4ca2feb9ba3cdf35741b75130d/abrg/README.ja.md",
+      "license": "MIT",
+      "redistribute": false
     }
   ]
 }

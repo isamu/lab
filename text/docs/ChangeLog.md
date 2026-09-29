@@ -4,6 +4,21 @@ Newest first.
 
 ## Unreleased
 
+### `heading-echo` leaves a sentence that introduces a list alone (#170)
+
+A first sentence that hands over to the list or table below it — one ending in a colon (`The following expenses
+require receipts:`), or one with the language's hand-over phrase (「次のとおりとする。」, "as follows") — is no longer
+reported, even when it repeats the heading's words: what the heading promised is in the list. One with nothing after
+it in its section is still reported. The phrases are a lexicon (`lead-in`) in each language package. Found on FAQs, privacy
+policies, specifications and 就業規則 in the corpus.
+
+### The corpus has press releases, FAQs, privacy policies, how-tos, notices, letters, agendas and job descriptions (#170)
+
+`yarn corpus` now also runs on a GSA news release, the TTS travel FAQ, a cloud.gov how-to and service notice, and
+デジタル庁's announcement, privacy policy, recruitment FAQ and recruitment notice (committed: public domain, CC0, or
+公共データ利用規約（第1.0版）with attribution), and on Automattic's privacy policy and offer letter, a TC39 meeting agenda,
+a GitLab job description and a Japanese README (URL only).
+
 ### In-page navigation is not prose (#170)
 
 A Markdown paragraph made only of links into the same page (`](#…)`, or a reference link whose definition points to
