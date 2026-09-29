@@ -1,6 +1,6 @@
 import type { Detector, DocumentProfile, Finding, Sentence, Span, Token } from "../plugin.ts";
 import { compacted } from "./gram-place.ts";
-import { leadingCounterLength } from "./counter-edge.ts";
+import { leadingCounter } from "./counter-edge.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
@@ -45,8 +45,9 @@ const isPlaceName = (tokens: readonly Token[], span: Span, topUnits: ReadonlySet
  */
 const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, topUnits: ReadonlySet<string>): string => {
   if (tokens === undefined || run.span === undefined) return run.text;
-  const counter = leadingCounterLength(tokens, run.span.start, run.text);
-  return isPlaceName(tokens, { start: run.span.start + counter, end: run.span.end }, topUnits) ? "" : run.text.slice(counter);
+  const counter = leadingCounter(tokens, run.span.start, run.text);
+  const rest = counter === undefined ? run.span : { start: counter.span.end, end: run.span.end };
+  return isPlaceName(tokens, rest, topUnits) ? "" : run.text.slice(counter?.surface.length ?? 0);
 };
 
 const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, topUnits: ReadonlySet<string>): string =>

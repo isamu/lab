@@ -91,6 +91,10 @@ describe("L3 日本語 — 文字と語彙", () => {
     });
 
     it("住所か名前かは、助数詞を外した残りで決める", () => {
+      assert.deepEqual(kanjiWords("2026年度東京都港区新橋二丁目に置く。"), []);
+      // 助数詞が折り返しをまたいでも（年\n度）、残りは助数詞の語の後ろから。
+      assert.deepEqual(kanjiWords("2026年\n度東京都港区新橋二丁目に置く。"), []);
+      assert.deepEqual(kanjiWords("2026年\n度東京都港区新橋二丁目課に置く。"), ["東京都港区新橋二丁目課"]);
       assert.deepEqual(kanjiWords("昭和41年7月1日新東京国際空港公団が発足した。"), []);
       assert.deepEqual(kanjiWords("7月1日新東京国際空港公団総務部が発足した。"), ["新東京国際空港公団総務部"]);
     });

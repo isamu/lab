@@ -17,12 +17,13 @@ const wordBefore = (tokens: readonly Token[], at: number): Token | undefined => 
 };
 
 /**
- * 漢字の連なり run（文書全体の座標で start から始まる）の頭が、直前の数に付いた助数詞（2日、第76回、24時間）なら、その助数詞の長さ。
- * 数字が区切りを見せるので、助数詞は数と読まれ、後ろの複合語の一部ではない。そうでなければ 0。
+ * 漢字の連なり run（文書全体の座標で start から始まる）の頭が、直前の数に付いた助数詞（2日、第76回、24時間）なら、その助数詞の語。
+ * 数字が区切りを見せるので、助数詞は数と読まれ、後ろの複合語の一部ではない。そうでなければ undefined。
+ * 折り返しをまたぐ語（年\n度）は span が surface より長いので、連なりの残りは span の終わりから始まる。
  */
-export const leadingCounterLength = (tokens: readonly Token[], start: number, run: string): number => {
+export const leadingCounter = (tokens: readonly Token[], start: number, run: string): Token | undefined => {
   const at = tokens.findIndex((token) => token.span.start === start);
   const counter = tokens[at];
-  if (counter === undefined || !isCounter(counter) || !isNumber(wordBefore(tokens, at))) return 0;
-  return run.startsWith(counter.surface) ? counter.surface.length : 0;
+  if (counter === undefined || !isCounter(counter) || !isNumber(wordBefore(tokens, at))) return undefined;
+  return run.startsWith(counter.surface) ? counter : undefined;
 };

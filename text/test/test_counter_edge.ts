@@ -1,10 +1,13 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { leadingCounterLength } from "../packages/chaff/src/detectors/counter-edge.ts";
+import { leadingCounter } from "../packages/chaff/src/detectors/counter-edge.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
 type Word = { readonly surface: string; readonly features?: Readonly<Record<string, string>> };
+
+/** 外す助数詞の長さ。助数詞でなければ 0。 */
+const counterLength = (tokens: readonly Token[], start: number, run: string): number => leadingCounter(tokens, start, run)?.surface.length ?? 0;
 
 const NUMBER = { NumType: "Card" };
 const COUNTER = { NounType: "Class" };
@@ -24,10 +27,10 @@ const lengthAt = (words: readonly Word[], start: number): number => {
     .filter((token) => token.span.start >= start)
     .map((token) => token.surface)
     .join("");
-  return leadingCounterLength(tokens, start, run);
+  return counterLength(tokens, start, run);
 };
 
-describe("leadingCounterLength — 連なりの頭の、数に付いた助数詞", () => {
+describe("leadingCounter — 連なりの頭の、数に付いた助数詞", () => {
   it("数のすぐ後ろの助数詞は、その長さだけ外す", () => {
     assert.equal(lengthAt([{ surface: "2", features: NUMBER }, { surface: "日", features: COUNTER }, { surface: "日本" }], 1), 1);
     assert.equal(lengthAt([{ surface: "24", features: NUMBER }, { surface: "時間", features: COUNTER }, { surface: "利用" }], 2), 2);
@@ -57,31 +60,40 @@ describe("leadingCounterLength — 連なりの頭の、数に付いた助数詞
       { span: { start: 0, end: 1 }, surface: "2", pos: "NOUN", features: NUMBER },
       { span: { start: 2, end: 3 }, surface: "日", pos: "NOUN", features: COUNTER },
     ];
-    assert.equal(leadingCounterLength(tokens, 2, "日本"), 0);
+    assert.equal(counterLength(tokens, 2, "日本"), 0);
     const apart: Token[] = [
       { span: { start: 0, end: 1 }, surface: "2", pos: "NOUN", features: NUMBER },
       { span: { start: 2, end: 3 }, surface: " ", pos: "PUNCT" },
       { span: { start: 3, end: 4 }, surface: "日", pos: "NOUN", features: COUNTER },
     ];
-    assert.equal(leadingCounterLength(apart, 3, "日本"), 0);
+    assert.equal(counterLength(apart, 3, "日本"), 0);
+  });
+
+  it("折り返しをまたぐ助数詞（年\\n度）は、その語ごと返す。残りは語の span の終わりから", () => {
+    const wrapped: Token[] = [
+      { span: { start: 0, end: 4 }, surface: "2026", pos: "NOUN", features: NUMBER },
+      { span: { start: 4, end: 7 }, surface: "年度", pos: "NOUN", features: COUNTER },
+      { span: { start: 7, end: 9 }, surface: "東京", pos: "PROPN" },
+    ];
+    assert.deepEqual(leadingCounter(wrapped, 4, "年度東京")?.span, { start: 4, end: 7 });
   });
 
   it("start に語が始まらない、語が無い、連なりが助数詞で始まらないときは 0", () => {
     const tokens = tokensOf([{ surface: "2", features: NUMBER }, { surface: "日", features: COUNTER }, { surface: "日本" }]);
-    assert.equal(leadingCounterLength(tokens, 5, "本"), 0);
-    assert.equal(leadingCounterLength([], 0, "日本"), 0);
-    assert.equal(leadingCounterLength(tokens, 1, "本"), 0);
+    assert.equal(counterLength(tokens, 5, "本"), 0);
+    assert.equal(counterLength([], 0, "日本"), 0);
+    assert.equal(counterLength(tokens, 1, "本"), 0);
   });
 });
 
-describe("leadingCounterLength — 形態素解析の語で", () => {
+describe("leadingCounter — 形態素解析の語で", () => {
   before(async () => {
     await ja.prepare?.({ pos: true });
   });
 
   const realLength = (text: string, run: string): number => {
     const tokens = ja.segment(text).sentences.flatMap((sentence) => sentence.tokens ?? []);
-    return leadingCounterLength(tokens, text.indexOf(run), run);
+    return counterLength(tokens, text.indexOf(run), run);
   };
 
   it("日付・回・時間・人の助数詞を外す", () => {
