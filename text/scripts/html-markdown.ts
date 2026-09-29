@@ -198,8 +198,8 @@ const isDefinitionList = (range: ElementRange): boolean => /^<dl\b/iu.test(range
 const besideMenus = (range: ElementRange): string =>
   isDefinitionList(range) && isLabelledMenu(range.inner) ? range.inner.replace(DEFINITION, " ") : withoutNavigation(range.inner);
 
-/** A full stop, question or exclamation mark closing a sentence; the point in "3.5" does not. */
-const CLOSED_SENTENCE = /[。．！？]|[.!?](?=\s|$)/u;
+/** A full stop, question or exclamation mark closing a sentence, also before a closing quote or bracket; not the point in "3.5". */
+const CLOSED_SENTENCE = /[。．！？]|[.!?][)\]"'”’]*(?=\s|$)/u;
 
 const holdsMenu = (range: ElementRange): boolean => besideMenus(range) !== range.inner;
 

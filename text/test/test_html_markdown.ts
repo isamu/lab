@@ -168,6 +168,8 @@ describe("htmlToMarkdown: 落とすもの", () => {
     const due = (mark: string): string => `<div><p>Comments are due by May 1${mark}</p>${menu}</div>${title}`;
     assert.equal(htmlToMarkdown(due(".")), "Comments are due by May 1.\n\n# AGENCY:\n\nText.\n");
     assert.equal(htmlToMarkdown(due("?")), "Comments are due by May 1?\n\n# AGENCY:\n\nText.\n");
+    assert.equal(htmlToMarkdown(due(".”")), "Comments are due by May 1.”\n\n# AGENCY:\n\nText.\n");
+    assert.equal(htmlToMarkdown(due(".)")), "Comments are due by May 1.)\n\n# AGENCY:\n\nText.\n");
     assert.equal(htmlToMarkdown(`<div><p>募集は5月1日までです。</p>${menu}</div>${title}`), "募集は5月1日までです。\n\n# AGENCY:\n\nText.\n");
     assert.equal(
       htmlToMarkdown(`<dl><dt>Want to comment?</dt><dd><a href="/c">Comment form</a></dd></dl>${title}`),
