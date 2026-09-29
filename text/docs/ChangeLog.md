@@ -21,6 +21,46 @@ judges' names with `{{right}}`; both were dropped, and so was the colloquy quote
 line stays a line of text, not a heading. The corpus adds a 最高裁判所 judgment of 1982 written this way (not subject
 to copyright under 著作権法第13条第3号).
 
+### The corpus has parliamentary minutes, regulations, guidelines, design proposals and an international report (#170)
+
+A debate from the US Congressional Record (public domain), a committee meeting of the 参議院 from the 国会会議録検索
+システム API (URL only: each speech's copyright is its speaker's), a part of the eCFR pinned to a date (public
+domain), a chapter of 消費税法基本通達 and the 個人情報保護委員会 guideline 通則編 (a 通達 and a 告示, not subject to
+copyright under 著作権法第13条第2号), an Ethereum Improvement Proposal (CC0), an architecture decision record of the
+Federal Audit Clearinghouse (CC0) and one of GOV.UK (MIT, URL only), a Chrome for Developers blog post in English and in
+Google's AI translation into Japanese (URL only: the prose is CC BY 4.0 but the code samples are Apache-2.0), and the executive summary of an OECD report (CC BY 4.0). Two new
+corpus formats read what the HTML converter cannot: `kokkai` turns the API's JSON into the meeting's speeches in
+order, dropping the roster of members present; `congressional-record` reads the Record's `<pre>` page, where only
+indentation marks a title, a paragraph, quoted matter or the names of a roll call, and joins a paragraph that a page
+marker (`[[Page S2257]]`) splits. The UK Hansard and the OECD's own pages refuse automated requests, and Python PEPs
+lose their section headings in the HTML converter, so none of them is in the corpus yet.
+
+### Japanese: a 条 reference in a document with no 条 is not looked up there (#170)
+
+A guideline or a 通達 numbers its own parts with headings (`## 1 目的`, `## 2 定義`) and cites the statute it
+explains by article (`法第17条`, `規則第18条第4項`). `dangling-reference` looked such references up in the guideline
+itself and reported every one whose number the headings did not reach, and silently matched the others to the
+wrong heading. A Japanese article reference now names the unit it counts in (`:unitWord "条"` in `chaff tree`), and
+it is not looked up in a document none of whose articles is written with that unit. A document that has 第N条
+articles is checked as before, and English references, which name no unit word, are unchanged.
+
+### English: a surname in capitals after an honorific is not an acronym (#170)
+
+A transcript prints the speaker's surname in capitals (`Mr. HAWLEY.`, `Mrs. CAPITO.`, `Mr BLAKE`), and
+`undefined-acronym` counted each one as an acronym without an expansion. A word in capitals right after an honorific
+from the new `honorific` lexicon (Mr., Mrs., Ms., Dr., Miss, Madam, with or without the full stop) is now read as a
+name. The honorific is matched as written, so `MR. HAWLEY` and an acronym elsewhere in the sentence still count.
+
+### English: a page title is not compared with the section headings (#170)
+
+`title-case-consistency` reported a Title Case page title over sentence-case section headings (CDC's
+`# Carbon Monoxide Poisoning Basics` over `## What it is`), a common and consistent house style: the title is a name.
+When the first heading is the document's only top-level heading, it is now left out of the comparison and never
+reported. It still decides an even split among the section headings, where the style the author chose for the title is
+the likelier house style. A document with several top-level headings has no title in this sense (the first may be a
+chapter), so all of its headings are compared as before; real inconsistencies among section headings are reported as
+before.
+
 ### Japanese: a line break inside a Markdown paragraph no longer splits a word (#170)
 
 A judgment copied from its PDF, or a paragraph wrapped by hand, has line breaks in the middle of a sentence. Markdown

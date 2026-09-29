@@ -1,5 +1,6 @@
 import { lengthOf } from "../measure.ts";
 import { isClosed } from "../sentence-shape.ts";
+import { isTitleCase, minorityCase, pageTitleOf } from "./heading-case.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 
 const PER = 1000;
@@ -106,19 +107,6 @@ export const conjunctionRun: Detector = (doc, options): Finding[] => {
     });
 };
 
-const WORD = /[A-Za-z][A-Za-z'-]*/gu;
-
-/** 小さい語は Title Case でも小文字のままなので、大文字化の判定から外す。 */
-const MINOR = new Set(["a", "an", "the", "and", "or", "but", "of", "in", "on", "at", "to", "for", "with", "as", "by", "from", "is"]);
-
-const isTitleCase = (heading: string): boolean | undefined => {
-  const words = [...heading.matchAll(WORD)].map((match) => match[0]).filter((word) => !MINOR.has(word.toLowerCase()));
-  // 1 語の見出しは、どちらの流儀でも先頭が大文字になる。判定できない。
-  if (words.length < 2) return undefined;
-  const capitalized = words.filter((word) => word[0] === word[0]?.toUpperCase()).length;
-  return capitalized === words.length;
-};
-
 const headingsOf = (sections: readonly Section[]): { readonly section: Section; readonly title: boolean }[] =>
   sections.flatMap((section) => {
     const title = isTitleCase(section.heading);
@@ -127,25 +115,24 @@ const headingsOf = (sections: readonly Section[]): { readonly section: Section; 
 
 /**
  * 見出しの大文字化が混ざっている。どちらの流儀が正しいかは決めない。spec §12.3。
- * 見るのは文書の中で揃っているかだけで、少数派のほうを指摘する。
+ * 見るのは文書の中で揃っているかだけで、少数派のほうを指摘する。題名は指摘しない（minorityCase）。
  */
 export const titleCaseMix: Detector = (doc, options): Finding[] => {
-  const judged = headingsOf(doc.sections);
-  const title = judged.filter((entry) => entry.title).length;
-  const minorityIsTitle = title <= judged.length - title;
-  const few = minorityIsTitle ? title : judged.length - title;
-  // 同数なら少数派は無い。どちらかを「他と違う」と呼ぶのは、選びかたが恣意的になる。
-  if (few === 0 || few * 2 === judged.length || few > options.limit) return [];
-  return judged
-    .filter((entry) => entry.title === minorityIsTitle)
-    .map(({ section }) => ({
-      rule: "title-case-consistency",
-      severity: "info",
-      line: 0,
-      column: 0,
-      quote: section.heading,
-      values: { count: few, limit: options.limit, offset: section.span.start },
-    }));
+  const pageTitle = pageTitleOf(doc.sections);
+  const judged = headingsOf(doc.sections.filter((section) => section !== pageTitle));
+  const titleCase = judged.filter((entry) => entry.title).length;
+  const pageTitleCase = pageTitle === undefined ? undefined : isTitleCase(pageTitle.heading);
+  const minorityIsTitle = minorityCase({ titleCase, sentenceCase: judged.length - titleCase }, pageTitleCase);
+  const few = minorityIsTitle === undefined ? [] : judged.filter((entry) => entry.title === minorityIsTitle);
+  if (few.length > options.limit) return [];
+  return few.map(({ section }) => ({
+    rule: "title-case-consistency",
+    severity: "info",
+    line: 0,
+    column: 0,
+    quote: section.heading,
+    values: { count: few.length, limit: options.limit, offset: section.span.start },
+  }));
 };
 
 const LIST_CONJUNCTION = new Set(["and", "or"]);
