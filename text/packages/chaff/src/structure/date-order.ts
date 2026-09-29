@@ -5,6 +5,7 @@ import { runsOf, type Line } from "./runs.ts";
  * 日程として並べた日付の順番。箇条書きの続いた項目か、表の続いた行で、日付をちょうど一つ持つものを並びとして読む。
  * 並びの向き（古い順か新しい順か）は多いほうで決め、それに逆らう一歩だけを言う。新しい順に並べた履歴は正しい並び。
  * 向きが決まらない並び（上がりと下がりが同じ数）は何も言わない。逆らう一歩を言えるのは、日付が 4 つ以上の並びだけになる。
+ * 向きに沿って並ぶ日付が半分以下の並びは、日付でなく別のもの（名前、版）で並べた一覧として何も言わない。
  */
 export type DatedPoint = { readonly offset: number; readonly value: string };
 
@@ -23,6 +24,19 @@ const samePrecision = (dated: readonly DatedPoint[]): boolean => PRECISIONS.some
 /** 上がりが多ければ 1、下がりが多ければ -1、同じ数なら 0（向きを決めない）。 */
 const majorityOf = (up: number, down: number): number => Math.sign(up - down);
 
+/** 向きに沿って並べられる日付の最大の数（間を飛ばしてよい。等しい日付は向きに逆らわない）。 */
+export const longestInOrder = (values: readonly string[], direction: number): number =>
+  Math.max(
+    0,
+    ...values.reduce<number[]>((lengths, value, index) => {
+      const along = values.slice(0, index).map((earlier, at) => (Math.sign(value.localeCompare(earlier)) === -direction ? 0 : (lengths[at] ?? 0)));
+      return [...lengths, 1 + Math.max(0, ...along)];
+    }, []),
+  );
+
+/** 日付のうち向きに沿うものが過半を占める。ひとつふたつの書き間違いなら残りが揃うが、名前順の一覧は揃わない。 */
+const mostlyInOrder = (values: readonly string[], direction: number): boolean => longestInOrder(values, direction) * 2 > values.length;
+
 /** 多いほうの向きに逆らう一歩。後ろの項目の日付を指す。 */
 const againstMajority = (dated: readonly DatedPoint[]): StructureIssue[] => {
   const steps = dated
@@ -31,7 +45,8 @@ const againstMajority = (dated: readonly DatedPoint[]): StructureIssue[] => {
   const up = steps.filter((step) => step.sign > 0).length;
   const down = steps.filter((step) => step.sign < 0).length;
   const majority = majorityOf(up, down);
-  if (majority === 0) return [];
+  const values = dated.map((point) => point.value);
+  if (majority === 0 || !mostlyInOrder(values, majority)) return [];
   return steps
     .filter((step) => step.sign === -majority)
     .map((step) => ({ offset: step.point.offset, values: { date: step.point.value, previous: step.previous?.value ?? "" } }));

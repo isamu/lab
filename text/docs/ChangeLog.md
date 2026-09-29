@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `date-order` stays silent on a list sorted by something other than its dates (#170)
+
+A release list in board minutes, sorted by release name (`widget-1.10.4`, `widget-2.1.3`, `widget-3.0.0`, …), was read
+as a schedule and one release was reported as out of order, although the list never meant to follow the dates. The
+direction of a list is still taken from most of its steps, but the list is now checked only when more than half of
+its dates can stay in that direction. A schedule with a slip or two keeps the rest of its dates in order and is still
+checked; a list sorted by a name or a version does not, and nothing is said.
+
 ### `undefined-acronym` leaves domain names, date placeholders and a numeral after a name alone, and reads `(ON RRP)` as one acronym (#170)
 
 Four kinds of capitals were reported as acronyms without an expansion:
