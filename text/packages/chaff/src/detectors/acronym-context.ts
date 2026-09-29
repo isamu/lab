@@ -1,5 +1,6 @@
 import { escapeRegExp } from "../orthography.ts";
 import { ROMAN_NUMERAL } from "./roman-numeral.ts";
+import { citationKeySpans } from "./citation-key.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108）。
@@ -62,5 +63,8 @@ export type NotAcronymSpans = (text: string) => Span[];
  */
 export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
   const patterns = patternsOf(words);
-  return (text) => patterns.flatMap((pattern) => [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length })));
+  return (text) => [
+    ...patterns.flatMap((pattern) => [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }))),
+    ...citationKeySpans(text),
+  ];
 };
