@@ -4,6 +4,20 @@ Newest first.
 
 ## Unreleased
 
+### `agentless-passive` leaves Japanese honorific れる/られる and 「〜と呼ばれる」 alone (#170)
+
+Honorific れる/られる names the person who acts as the subject, so no actor is hidden. lang-ja now drops
+`Voice=Pass` where the form shows it is honorific: after おる (「参加をしておられました」), and after an intransitive verb,
+which has no passive that makes the one acted on the subject (「町へ来られ」「熱心に取り組まれ」「委員を辞任され」「参加されていて」). A glossary's naming
+passive 「〜とも呼ばれています」 is dropped too: it gives a name, it does not hide who called it so. The verbs are lexicons in
+`@chaffjs/lang-ja` (`intransitive-verb`, `naming-verb`). Real passives stay: 「方針が決定された」「〜と判断されました」
+「若松謙維君が選任されました」「会議に呼ばれた」「連れてこられた」, and so does an honorific of a transitive verb
+(「林参考人も言われました」「お客様が受けられた」): IPADIC does not mark honorific or transitivity, and a person as the subject
+is as often the one acted on. お・ご・御 before される is not read as honorific either (「お会いされた」): the humble
+「ご用意する」 has the same form in its passive (「資料がご用意されました」). Accepted limit: an intransitive verb's
+adversative passive (「突然、家に来られて困った」) has the honorific's form and is no longer reported. Found in a 紀美野町 mayor's message, a 国会 transcript and
+総務省's cyber security glossary in the corpus.
+
 ### `latin-spacing` does not count the spacing inside a quotation in 「」『』 (#170)
 
 A title or a quotation in 「」 or 『』 keeps the spacing of its source: 「AI原則実践のためのガバナンス・ガイドライン ver.
