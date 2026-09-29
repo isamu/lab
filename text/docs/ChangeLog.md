@@ -4,7 +4,7 @@ Newest first.
 
 ## Unreleased
 
-### `yarn bench` guards seven more rules against misses (#170)
+### `yarn bench` plants mistakes for more rules: a preamble, stock phrasing, repeated openers and team spellings (#170)
 
 The seeded-mistake benchmark now also plants a preamble made by leaving out the first section heading
 (`preamble-length`), a closing 「いかがでしたか。」 / "Thanks for reading." on a blog post (`closing-cliche`), a
@@ -13,6 +13,24 @@ important." after the first statement of the body (`empty-intensifier`), consecu
 「また、」 / "Also," (`repeated-conjunction`), sentences chained with "And" (`sentence-initial-conjunction-run`), and a
 spelling the team has ruled out, such as 打合せ for 打ち合わせ or e-mail for email (`preferred-term`; the bench passes the
 team's `prefer` as `chaff.yaml` would). The clean samples are unchanged and none of these rules reports on them.
+
+### `undefined-acronym` does not count a reference key in square brackets (#170)
+
+Specifications point to their references with a bracketed key: `[HPACK]`, `[RFC9110]`, `[SECURING-WEB]`,
+`[POWERFUL-NEW-FEATURES]`. The key names an entry of the reference list, where the reader goes to find it, so it is not
+an acronym waiting for an expansion; the capitals inside it (`MIX`, `WEB`, `NEW`, `SF`) were reported as undefined. A
+bracketed single word starting with a letter is now read as a key and its capitals are not counted. The same acronym
+outside the brackets is still counted, a bracket after a letter (`List[SF]`) is not read as a key, and neither is a
+Markdown link (`[DRI](/url)`, `[DRI][ref]`), a reference definition (`[DRI]: /url`), an image or a bracket holding
+several words (`[the FBI]`). Found on the W3C Secure Contexts specification and an IETF Internet-Draft; RFC 9457 in the
+corpus loses its bracketed keys (`[TAG]`, `[WEB-LINKING]`, `[ABOUT]`, `[JSON-SCHEMA]`) from the report.
+
+### The corpus adds GOV.UK guidance, a W3C specification, an Internet-Draft, a help-center article, an FTC guide, a Tokyo newsletter article, a university notice for students, a JMA FAQ, an incorporated administrative agency's notice and a library notice (#170)
+
+Committed with their licence named in the manifest: GOV.UK guidance (OGL v3.0), the Nextcloud user manual (CC BY 3.0),
+FTC consumer advice (public domain), 気象庁 and 国立国会図書館 (PDL1.0), 統計センター (政府標準利用規約 2.0). Kept URL
+only: the W3C specification (a notice-bearing permissive licence), the Internet-Draft (IETF Trust), 広報東京都 and the
+University of Tokyo's utelecon (no licence to redistribute).
 
 ### `ngram-repetition` no longer reports a repeated name as phrasing (#170)
 
