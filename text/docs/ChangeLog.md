@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `chaff eval` speaks English to English documents (#170)
+
+`chaff eval` printed its whole report in Japanese, whatever the language of the documents it measured and whatever
+`chaff.yaml` or the terminal said. The report now follows the documents' language, as lint's screen does (eval
+measures one language at a time, so there is one). Its refusals (no Markdown found, languages or genres mixed, no such
+rule) follow `chaff.yaml`'s `language`, then the terminal's locale. The Japanese text is unchanged.
+
 ### `undefined-acronym` on HTTP methods, document numbers, "=" definitions, ONLY and series numbers (#170)
 
 Five kinds of capitals were reported as acronyms with nothing to expand:

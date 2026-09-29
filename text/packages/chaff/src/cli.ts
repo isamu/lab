@@ -293,7 +293,10 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   genres: showGenres,
   rules: showRules,
   explain: (argv) => explain(argv[1]),
-  eval: (argv) => runEval(positional(argv), argv, { config: readConfig(), resolveGenre: genreFrom(argv), flag }),
+  eval: (argv) => {
+    const config = readConfig();
+    return runEval(positional(argv), argv, { config, resolveGenre: genreFrom(argv), flag, ui: hostLanguage(config.language, process.env) });
+  },
   tree: (argv) => runTree(treeTargets(argv), argv, treeContext()),
   cite: (argv) => runCite(citeTargets(argv), argv, treeContext()),
   test: (argv) => runTest(positional(argv), argv, { config: readConfig(), resolveGenre: genreFrom(argv), inspect }),
