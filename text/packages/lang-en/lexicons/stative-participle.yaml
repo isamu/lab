@@ -1,0 +1,25 @@
+# Past participles that, after be, describe a state rather than an action someone did: "We are delighted to offer",
+# "The report is based on a survey", "you are entitled to". There is no hidden actor to name, so agentless-passive
+# leaves them alone. A pattern of several words matches only that phrase: "logged in to" and "located in" are states,
+# "Errors are logged in the console" and "The missing file was located" are passives. Words that are passives in
+# business text as often as states are left out: committed ("an offence was committed"), linked ("documents are
+# linked throughout"), required ("Receipts are required"). "interested" needs no entry: the tagger already reads it
+# as an adjective.
+id: stative-participle
+language: en
+entries:
+  - pattern: delighted
+  - pattern: excited
+  - pattern: surprised
+  - pattern: dissatisfied
+  - pattern: concerned
+  - pattern: nuanced
+  - pattern: gone
+  - pattern: involved
+  - pattern: based
+  - pattern: located in
+  - pattern: entitled
+  - pattern: related
+  - pattern: associated
+  - pattern: focused on
+  - pattern: logged in to
