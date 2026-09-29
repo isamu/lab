@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `yarn bench` guards seven more rules against misses (#170)
+
+The seeded-mistake benchmark now also plants a preamble made by leaving out the first section heading
+(`preamble-length`), a closing 「いかがでしたか。」 / "Thanks for reading." on a blog post (`closing-cliche`), a
+padded opening sentence after the first one (`padded-intro`), an empty 「これは非常に重要です。」 / "This is extremely
+important." after the first statement of the body (`empty-intensifier`), consecutive paragraphs that all open with
+「また、」 / "Also," (`repeated-conjunction`), sentences chained with "And" (`sentence-initial-conjunction-run`), and a
+spelling the team has ruled out, such as 打合せ for 打ち合わせ or e-mail for email (`preferred-term`; the bench passes the
+team's `prefer` as `chaff.yaml` would). The clean samples are unchanged and none of these rules reports on them.
+
 ### `ngram-repetition` no longer reports a repeated name as phrasing (#170)
 
 A document repeats the names of what it is about (`the NSF Proposal & Award Policies & Procedures Guide (PAPPG)`, `the

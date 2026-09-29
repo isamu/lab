@@ -14,8 +14,12 @@ export type CorpusFinding = { readonly rule: string; readonly line: number; read
 
 const ADAPTERS: Readonly<Record<string, LanguageAdapter>> = { ja, en };
 
-/** What a team writes in chaff.yaml for the team rules: jargon and required_sections. */
-export type TeamWords = { readonly jargon: readonly string[]; readonly requiredSections: readonly string[] };
+/** What a team writes in chaff.yaml for the team rules: jargon, required_sections and prefer. */
+export type TeamWords = {
+  readonly jargon: readonly string[];
+  readonly requiredSections: readonly string[];
+  readonly prefer?: Readonly<Record<string, string>>;
+};
 
 const findingsWith = async (
   path: string,
