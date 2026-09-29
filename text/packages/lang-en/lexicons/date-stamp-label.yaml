@@ -1,0 +1,15 @@
+# Labels of a page's date stamp. A paragraph holding only one of these and a date is page metadata, not preamble.
+id: date-stamp-label
+language: en
+entries:
+  - pattern: Last updated
+  - pattern: Last updated on
+  - pattern: Updated
+  - pattern: Updated on
+  - pattern: Last modified
+  - pattern: Last reviewed
+  - pattern: Published
+  - pattern: Published on
+  - pattern: Posted
+  - pattern: Posted on
+  - pattern: Date

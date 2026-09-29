@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `preamble-length` does not count a page's date stamp (#170)
+
+A paragraph that is only a date (`2025年6月20日`, `April 23, 2026`), a label and a date (`Updated 2026-03-03`,
+`最終更新日：2025年6月20日`), or a label ending in a colon followed by a date-only paragraph (「最終更新日:」 then the
+date) is page metadata, not preamble, and is no longer counted before the first heading. A date inside a sentence still
+counts. Dates are read by the language package's date reader, and the labels are a lexicon (`date-stamp-label`) in
+each language package. Found on every デジタル庁 page in the corpus.
+
 ### `heading-echo` leaves a sentence that introduces a list alone (#170)
 
 A first sentence that hands over to the list or table below it — one ending in a colon (`The following expenses
