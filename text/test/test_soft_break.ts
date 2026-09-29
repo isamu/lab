@@ -1,6 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { joinsAcrossBreak, softBreaks, unmaskedSoftBreaks, withoutSpans } from "../packages/chaff/src/soft-break.ts";
+import { firstEndingAfter, joinsAcrossBreak, softBreaks, spansWithin, unmaskedSoftBreaks, withoutSpans } from "../packages/chaff/src/soft-break.ts";
 import { joinedView, segmentJoined } from "../packages/chaff/src/joined-view.ts";
 import { continuedBreaks, wrapBreaks } from "../packages/chaff/src/line-continues.ts";
 import { compacted } from "../packages/chaff/src/detectors/gram-place.ts";
@@ -76,6 +76,30 @@ describe("覆った文字に触れる改行はつながない", () => {
   it("覆っていなければ prose の改行と同じ", () => {
     const source = "刑事裁判に関\nする法律";
     assert.deepEqual(unmaskedSoftBreaks(source, source), softBreaks(source));
+  });
+});
+
+describe("並んだ範囲を探す", () => {
+  const sorted: readonly Span[] = [
+    { start: 2, end: 3 },
+    { start: 5, end: 7 },
+    { start: 9, end: 10 },
+  ];
+
+  it("end が offset より後ろの最初", () => {
+    assert.equal(firstEndingAfter(sorted, 0), 0);
+    assert.equal(firstEndingAfter(sorted, 3), 1);
+    assert.equal(firstEndingAfter(sorted, 6), 1);
+    assert.equal(firstEndingAfter(sorted, 7), 2);
+    assert.equal(firstEndingAfter(sorted, 10), 3);
+    assert.equal(firstEndingAfter([], 5), 0);
+  });
+
+  it("outer に収まるものだけ", () => {
+    assert.deepEqual(spansWithin(sorted, { start: 2, end: 7 }), sorted.slice(0, 2));
+    assert.deepEqual(spansWithin(sorted, { start: 3, end: 9 }), [{ start: 5, end: 7 }]);
+    assert.deepEqual(spansWithin(sorted, { start: 6, end: 10 }), [{ start: 9, end: 10 }]);
+    assert.deepEqual(spansWithin(sorted, { start: 0, end: 1 }), []);
   });
 });
 

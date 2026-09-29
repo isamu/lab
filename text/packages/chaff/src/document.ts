@@ -6,7 +6,7 @@ import { frontmatterFromMarkdown } from "mdast-util-frontmatter";
 import { atxHeadingText, headingText } from "./heading-text.ts";
 import { hasTitle } from "./heading-title.ts";
 import { maskSpans } from "./mask.ts";
-import { unmaskedSoftBreaks } from "./soft-break.ts";
+import { spansWithin, unmaskedSoftBreaks } from "./soft-break.ts";
 import { segmentJoined } from "./joined-view.ts";
 import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
@@ -189,8 +189,7 @@ const spansOfType = (root: Node, type: string, keep: (node: Node) => boolean = (
  */
 const shift = (span: Span, by: number): Span => ({ start: by + span.start, end: by + span.end });
 
-const breaksWithin = (breaks: readonly Span[], paragraph: Span): Span[] =>
-  breaks.filter((span) => span.start >= paragraph.start && span.end <= paragraph.end).map((span) => shift(span, -paragraph.start));
+const breaksWithin = (breaks: readonly Span[], paragraph: Span): Span[] => spansWithin(breaks, paragraph).map((span) => shift(span, -paragraph.start));
 
 const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: LanguageAdapter, softBreaks: readonly Span[]): Sentence[] =>
   paragraphs.flatMap((paragraph) =>

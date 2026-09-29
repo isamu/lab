@@ -1,4 +1,4 @@
-import { withoutSpans } from "./soft-break.ts";
+import { spansWithin, withoutSpans } from "./soft-break.ts";
 import { continuedBreaks, wrapBreaks } from "./line-continues.ts";
 import type { Segmentation, Sentence, Span, Token } from "./plugin.ts";
 
@@ -12,11 +12,15 @@ export type JoinedView = { readonly text: string; readonly toSource: (span: Span
 type Removed = { readonly at: number; readonly removedBefore: number };
 
 /** 取り除いた各範囲が、つないだ文字列のどこにあったか。removedBefore はそこまでに取り除いた長さ（その範囲を含む）。 */
-const removedPlaces = (breaks: readonly Span[]): Removed[] =>
-  breaks.reduce<Removed[]>((acc, span) => {
-    const before = acc.at(-1)?.removedBefore ?? 0;
-    return [...acc, { at: span.start - before, removedBefore: before + span.end - span.start }];
-  }, []);
+const removedPlaces = (breaks: readonly Span[]): Removed[] => {
+  const places: Removed[] = [];
+  breaks.reduce((before, span) => {
+    const removedBefore = before + span.end - span.start;
+    places.push({ at: span.start - before, removedBefore });
+    return removedBefore;
+  }, 0);
+  return places;
+};
 
 /** at が offset 以下（inclusive）または未満の、最後の範囲までに取り除いた長さ。places は at の昇順。 */
 const removedUpTo = (places: readonly Removed[], offset: number, inclusive: boolean): number => {
@@ -68,13 +72,12 @@ const segmentWithout = (text: string, breaks: readonly Span[], segment: Segment)
   return segment(view.text).sentences.map(sentenceInSource(text, view));
 };
 
-const withWrapBreaks = (sentence: Sentence, breaks: readonly Span[]): Sentence => {
-  const wrapped = wrapBreaks(
-    breaks.filter((part) => part.start >= sentence.span.start && part.end <= sentence.span.end),
-    sentence.tokens ?? [],
-  );
-  return wrapped.length === 0 ? sentence : { ...sentence, wrapBreaks: wrapped };
+const withWrapBreaks = (sentence: Sentence, wrapped: readonly Span[]): Sentence => {
+  const inside = spansWithin(wrapped, sentence.span);
+  return inside.length === 0 ? sentence : { ...sentence, wrapBreaks: inside };
 };
+
+const tokensOf = (sentences: readonly Sentence[]): Token[] => sentences.flatMap((sentence) => sentence.tokens ?? []);
 
 /**
  * 消える改行を、行が続いていると言えるものだけ除いて segment する。
@@ -85,11 +88,9 @@ const withWrapBreaks = (sentence: Sentence, breaks: readonly Span[]): Sentence =
 export const segmentJoined = (text: string, breaks: readonly Span[], segment: Segment): readonly Sentence[] => {
   if (breaks.length === 0) return segment(text).sentences;
   const joined = segmentWithout(text, breaks, segment);
-  const kept = continuedBreaks(
-    breaks,
-    joined.flatMap((sentence) => sentence.tokens ?? []),
-  );
+  const kept = continuedBreaks(breaks, tokensOf(joined));
   if (kept.length === 0) return segment(text).sentences;
   const sentences = kept.length === breaks.length ? joined : segmentWithout(text, kept, segment);
-  return sentences.map((sentence) => withWrapBreaks(sentence, kept));
+  const wrapped = wrapBreaks(kept, tokensOf(sentences));
+  return sentences.map((sentence) => withWrapBreaks(sentence, wrapped));
 };

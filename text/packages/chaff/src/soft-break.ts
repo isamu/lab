@@ -67,9 +67,28 @@ export const unmaskedSoftBreaks = (source: string, prose: string): Span[] =>
 
 /** breaks（text の中の範囲、昇順・重ならない）を取り除いた文字列。 */
 export const withoutSpans = (text: string, breaks: readonly Span[]): string => {
-  const { parts, cursor } = breaks.reduce<{ parts: string[]; cursor: number }>(
-    (acc, span) => ({ parts: [...acc.parts, text.slice(acc.cursor, span.start)], cursor: span.end }),
-    { parts: [], cursor: 0 },
-  );
-  return [...parts, text.slice(cursor)].join("");
+  const parts: string[] = [];
+  const cursor = breaks.reduce((from, span) => {
+    parts.push(text.slice(from, span.start));
+    return span.end;
+  }, 0);
+  parts.push(text.slice(cursor));
+  return parts.join("");
+};
+
+/** sorted（昇順・重ならない）の中で、end が offset より後ろの最初の添字。無ければ sorted.length。 */
+export const firstEndingAfter = (sorted: readonly Span[], offset: number): number => {
+  const search = (low: number, high: number): number => {
+    if (low >= high) return low;
+    const middle = (low + high) >> 1;
+    return (sorted[middle]?.end ?? Number.POSITIVE_INFINITY) > offset ? search(low, middle) : search(middle + 1, high);
+  };
+  return search(0, sorted.length);
+};
+
+/** sorted（昇順・重ならない）のうち、outer に収まるもの。段落や文ごとに全部をなめない。 */
+export const spansWithin = <T extends Span>(sorted: readonly T[], outer: Span): T[] => {
+  const from = firstEndingAfter(sorted, outer.start);
+  const to = firstEndingAfter(sorted, outer.end);
+  return sorted.slice(from, to).filter((span) => span.start >= outer.start);
 };
