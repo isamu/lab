@@ -49,7 +49,11 @@ export const outermostList = (offset: number, lists: readonly Span[]): number | 
     .filter((list) => offset >= list.start && offset < list.end)
     .reduce<number | undefined>((outer, list) => (outer === undefined || list.start < outer ? list.start : outer), undefined);
 
-/** group: 文が入っている箇条書き（outermostList の値）。本文なら undefined。 */
+/** 文が入っているまとまりの始まり。一番外側の箇条書き、それが無ければ番号で始まる段落の並び（runs）。本文なら undefined。 */
+export const groupOf = (offset: number, lists: readonly Span[], runs: readonly Span[]): number | undefined =>
+  outermostList(offset, lists) ?? outermostList(offset, runs);
+
+/** group: 文が入っているまとまり（groupOf の値）。本文なら undefined。 */
 export type Judged = { readonly register: Register; readonly group: number | undefined };
 
 /** 混ざった文と、その文が属する本文または箇条書きの中の少数派の数。 */
@@ -74,7 +78,7 @@ const slipsInGroup = <T extends Judged>(judged: readonly T[], group: number | un
 };
 
 /**
- * 調子が混ざった文を、judged の順で。本文は本文どうし、箇条書きは 1 つずつ、その中で揃っているかを見る。
+ * 調子が混ざった文を、judged の順で。本文は本文どうし、箇条書きと番号で始まる段落の並びは 1 つずつ、その中で揃っているかを見る。
  * ですます調の本文に常体の箇条書きを置くのはよくある書き方で、箇条書きが丸ごと揃っていれば混在ではない。
  */
 export const slipsOf = <T extends Judged>(judged: readonly T[], limit: number): Slip<T>[] => {
