@@ -1,5 +1,5 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
-import { citedDocumentAfter, citedDocumentBefore } from "./citation.ts";
+import { citedDocumentAfter, citedDocumentBefore, hyphenatedTagAround } from "./citation.ts";
 import { membersAfter } from "./reference-list.ts";
 import { parseRoman } from "./roman.ts";
 import { dates } from "./dates.ts";
@@ -140,6 +140,13 @@ const glossedDocument = (gloss: Gloss): string | undefined => {
   return anchor !== undefined && gloss.depth > anchor.depth ? anchor.document : undefined;
 };
 
+/** The other document a reference names, or else a bracketed tag that the core checks against the document's list. */
+const citation = (text: string, start: number, end: number, document: string | undefined): Readonly<Record<string, string>> => {
+  if (document !== undefined) return { document };
+  const citedTag = hyphenatedTagAround(text, start, end);
+  return citedTag === undefined ? {} : { citedTag };
+};
+
 /**
  * "Section 4.2(a)" → 4.2.a, "Article III" → 3. The same addresses the tree gives.
  * "Section 9 of the Master Agreement" carries the other document's name, and is not looked up in this tree.
@@ -156,7 +163,7 @@ const references = (text: string): Mention[] => {
     gloss.scanned = Math.max(gloss.scanned, end);
     if (cited !== undefined) gloss.anchors.push({ document: cited, depth: gloss.depth });
     const numbering = /^[Aa]/u.test(match.groups?.["word"] ?? "") ? "article" : "section";
-    const shared = { numbering, ...(document === undefined ? {} : { document }) };
+    const shared = { numbering, ...citation(text, match.index, end, document) };
     const first = { start: match.index, end, attrs: { target: [main, ...parts].join("."), label: text.slice(match.index, end), ...shared } };
     const [plural, roman] = [/s$/u.test(match.groups?.["word"] ?? ""), /^[IVXLC]+$/u.test(match.groups?.["n"] ?? "")];
     return [first, ...membersAfter(text, end, [main, ...parts], shared, plural, roman)];

@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### A hyphenated tag the document lists, "of [HTTP-CACHING]", names another document (#170)
+
+A bracketed tag after a reference named another document only when it was capitals and digits ("[HTTP]"), so that a
+contract's placeholder ("[BUYER-1]") is not taken for one. "Section 4.2.3 of [HTTP-CACHING]" was therefore looked up
+in this document and reported by `dangling-reference`. The two are written alike; what tells them apart is whether the
+document lists the tag: a line that opens with "[HTTP-CACHING]" and then ends, or leaves two spaces or a tab before
+the entry, as a reference list is laid out. A hyphenated tag the document lists now names another document, after the
+reference or just before it ("[HTTP-CACHING], Section 4"); one it never lists, or only opens a sentence with
+("[BUYER-1] pays …"), is still looked up here. Found on draft-ietf-httpapi-ratelimit-headers-10.
+
 ### `date-order` stays silent on a list sorted by something other than its dates (#170)
 
 A release list in board minutes, sorted by release name (`widget-1.10.4`, `widget-2.1.3`, `widget-3.0.0`, …), was read
