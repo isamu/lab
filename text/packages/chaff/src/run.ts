@@ -4,6 +4,7 @@ import type { AdapterNeeds, Finding, Level, ProseDocument, RuleDefinition } from
 import { lineStarts, placeOf } from "./position.ts";
 import { REASONS, type Reasons } from "./reasons.ts";
 import { joinWords } from "./detectors/word-list.ts";
+import { missingList } from "./declared-lists.ts";
 import { unreadStructure, type Unread } from "./structure/unread.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { maskSpans } from "./mask.ts";
@@ -181,15 +182,15 @@ export const runRules = (
       const detector = DETECTORS[rule.how_to_find];
       if (detector === undefined)
         return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noDetector(rule.how_to_find) }] };
+      // 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
+      const absent = missingList(rule, doc.lexicons);
+      if (absent !== undefined)
+        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noLexicon(doc.language, absent) }] };
       const options = {
         limit: limitFor(rule, level, genre, limits),
         lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
         where: rule.where,
       };
-      // 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
-      if (rule.word_list !== undefined && options.lexicon === undefined) {
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noLexicon(doc.language, rule.word_list) }] };
-      }
       const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: rule.severity }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };
     },

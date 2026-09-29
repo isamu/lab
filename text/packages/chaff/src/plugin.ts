@@ -40,6 +40,8 @@ export type LexiconEntry = {
   readonly pattern: string;
   readonly weight?: number | undefined;
   readonly instead_of?: string | undefined;
+  /** 語が、かかる語のどちら側に立つか。語順が言語で違うものを語彙表が言う（範囲の「で」は前、"in" は後ろ）。 */
+  readonly position?: "before" | "after" | undefined;
   /** pattern を adapter が語に分けたもの。品詞が読めるときだけ core が入れる。語彙表を書く側は書かない。 */
   readonly tokens?: readonly Token[] | undefined;
 };
@@ -344,6 +346,8 @@ export type RuleDefinition = {
   readonly by_genre: Readonly<Record<string, LevelTable>>;
   readonly how_to_find: string;
   readonly word_list: string | undefined;
+  /** word_list のほかに detector が名前で引く語彙表。どれかが無い言語では rule を動かさない。 */
+  readonly extra_word_lists: readonly string[];
   /** L4 のみ。LLM に渡す決まり。言語別。 */
   readonly what_to_check: Localized | undefined;
   readonly where: string | undefined;

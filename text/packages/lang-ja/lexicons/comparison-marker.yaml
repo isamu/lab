@@ -1,0 +1,8 @@
+# 最上級が何と比べているかを言う語。文にあれば「最も速い」は誇張ではなく主張になる。
+# 動詞は原形で書く。「に比べる」は「に比べて」「に比べると」「に比べ、」に当たる。
+id: comparison-marker
+language: ja
+entries:
+  - pattern: より
+  - pattern: に比べる
+  - pattern: のうち

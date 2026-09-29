@@ -4,6 +4,24 @@ Newest first.
 
 ## Unreleased
 
+### A superlative that states its scope is not reported (#170)
+
+`unqualified-superlative` no longer reports a superlative that says what it is the most of: a name and で before it
+(日本で最も有名な, トヨタで最も), a noun joined to it (国内最大, 業界最速, 世界唯一の), or in / of and a noun phrase after its
+noun phrase ("the best pizza in Chicago", "the most famous of the sculptures", "the best of the three"). The rule reads
+the parts of speech, and the scope words come from each language package's `superlative-scope` word list, where each
+word says which side of the superlative it stands on (`position: before` or `after`). A common noun before で is a means, not a scope (最少の費用で最大の効果 is still
+reported), and so are 「最も効果的です」 and "the best solution" with nothing around them. Found on ja.wikivoyage and on
+GitLab's and 18F's handbooks.
+
+### The words that give a superlative its comparison are a word list (#170)
+
+`unqualified-superlative`'s words that name a comparison (より, に比べる, のうち / among, than, compared, based on,
+according) moved from a regular expression in code into each language package's `comparison-marker` word list, matched
+word by word like every other list: "thanks", "accordingly", "amongst" and そのうち no longer count as a comparison, and
+「に比べると」 still does. A digit in the sentence still qualifies it. A rule can now declare the lists it reads besides its
+`word_list` (`extra_word_lists`); a language package without one of them does not run the rule and says why.
+
 ### `undefined-acronym` accepts an acronym defined in brackets with 以下 or hereinafter (#170)
 
 An acronym written as a definition inside brackets now counts as spelled out: `Human Resource(以下、HR)`,

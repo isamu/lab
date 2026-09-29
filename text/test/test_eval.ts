@@ -117,3 +117,12 @@ describe("構造の rule", () => {
     assert.deepEqual(measuredWith(blind), []);
   });
 });
+
+describe("語彙表の無い言語", () => {
+  it("lint で動かない rule は掃引しない（宣言した語彙表のどれかが無い）", () => {
+    const bare: LanguageAdapter = { ...ja, lexicons: Object.fromEntries(Object.entries(ja.lexicons).filter(([name]) => name !== "superlative-scope")) };
+    const rule = RULES.filter((entry) => entry.id === "unqualified-superlative");
+    assert.equal(evaluate([buildDocument("d.md", "# T\n\n最も速い。", ja)], rule, "business/report", "ja").length, 1);
+    assert.equal(evaluate([buildDocument("d.md", "# T\n\n最も速い。", bare)], rule, "business/report", "ja").length, 0);
+  });
+});
