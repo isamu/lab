@@ -22,20 +22,31 @@ const isCallable = (value: unknown): value is (...args: readonly unknown[]) => u
 
 const isTokenizer = (value: unknown): value is Tokenizer => isRecord(value) && isCallable(value["tokenize"]);
 
-/** kuromoji の形態素。形の違うものは落とす。二段目の細分類（助数詞・地域）は無ければ *。 */
+/** kuromoji の形態素。形の違うものは落とす。二段目の細分類（助数詞・地域）は無ければ *。三段目（人名の姓・名）は無ければ持たない。 */
 const toMorpheme = (value: unknown): Morpheme[] => {
   if (!isRecord(value)) return [];
-  const [surface, pos, detail1, detail2, basic, reading] = [
+  const [surface, pos, detail1, detail2, detail3, basic, reading] = [
     value["surface_form"],
     value["pos"],
     value["pos_detail_1"],
     value["pos_detail_2"],
+    value["pos_detail_3"],
     value["basic_form"],
     value["reading"],
   ];
   if (typeof surface !== "string" || typeof pos !== "string" || typeof detail1 !== "string" || typeof basic !== "string") return [];
   const detail = typeof detail2 === "string" ? detail2 : "*";
-  return [{ surface_form: surface, pos, pos_detail_1: detail1, pos_detail_2: detail, basic_form: basic, ...(typeof reading === "string" ? { reading } : {}) }];
+  return [
+    {
+      surface_form: surface,
+      pos,
+      pos_detail_1: detail1,
+      pos_detail_2: detail,
+      ...(typeof detail3 === "string" ? { pos_detail_3: detail3 } : {}),
+      basic_form: basic,
+      ...(typeof reading === "string" ? { reading } : {}),
+    },
+  ];
 };
 
 const dictionaryPath = (): string => join(dirname(require.resolve("@sglkc/kuromoji/package.json")), "dict");
@@ -157,6 +168,16 @@ const placeType = (morpheme: Morpheme): string | undefined => {
   return morpheme.pos_detail_1 === "接尾" ? "GeoUnit" : undefined;
 };
 
+/** 人名（IPADIC の「固有名詞,人名」）の三段目。姓は Sur、名は Giv、どちらとも言えない人名は Prs（UD の NameType）。 */
+const PERSON: Readonly<Record<string, string>> = { 姓: "Sur", 名: "Giv", 一般: "Prs" };
+
+/** 人名と組織名（「固有名詞,組織」は UD の NameType=Com）。地名は placeType が見る。 */
+const personOrOrganisation = (morpheme: Morpheme): string | undefined => {
+  if (morpheme.pos !== "名詞" || morpheme.pos_detail_1 !== "固有名詞") return undefined;
+  if (morpheme.pos_detail_2 === "人名") return PERSON[morpheme.pos_detail_3 ?? ""];
+  return morpheme.pos_detail_2 === "組織" ? "Com" : undefined;
+};
+
 /** 数を数える単位（IPADIC の「接尾,助数詞」: 丁目・件・人）。UD では NounType=Class。 */
 const isCounter = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "接尾" && morpheme.pos_detail_2 === "助数詞";
 
@@ -164,8 +185,8 @@ const featuresOf = (morpheme: Morpheme): { features?: Readonly<Record<string, st
   if (isPassive(morpheme)) return { features: { Voice: "Pass" } };
   if (isDependentNoun(morpheme)) return { features: { NounType: "Dependent" } };
   if (isNumeral(morpheme)) return { features: { NumType: "Card" } };
-  const place = placeType(morpheme);
-  if (place !== undefined) return { features: { NameType: place } };
+  const name = placeType(morpheme) ?? personOrOrganisation(morpheme);
+  if (name !== undefined) return { features: { NameType: name } };
   if (isCounter(morpheme)) return { features: { NounType: "Class" } };
   return {};
 };
