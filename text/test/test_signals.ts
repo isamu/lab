@@ -163,10 +163,12 @@ describe("undefined-acronym", () => {
     "CTO",
     "CFO",
     "US",
+    "USA",
     "UK",
     "EU",
     "UN",
     "DNA",
+    "TIP",
   ].forEach((acronym) => {
     it(`よく知られた略語 ${acronym} は数えない`, () => {
       assert.ok(!idsFor(`# 連絡\n\nSRE と SLO と ${acronym} を確かめます。${BULK}`).includes("undefined-acronym"));
@@ -235,8 +237,12 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
       assert.deepEqual(acronymsIn("# Rules\n\nThe client MUST send an SRE report."), ["SRE"]);
     });
 
-    it("invalid: NOT が単独なら要件語ではない", () => {
-      assert.deepEqual(acronymsIn("# Rules\n\nDo NOT touch it."), ["NOT"]);
+    it("valid: 単独の NOT は要件語ではないが、略語でもない（強調）", () => {
+      assert.deepEqual(acronymsIn("# Rules\n\nDo NOT touch it."), []);
+    });
+
+    it("invalid: 単独の NOT の隣の略語は数える", () => {
+      assert.deepEqual(acronymsIn("# Rules\n\nDo NOT touch the SRE queue."), ["SRE"]);
     });
   });
 
@@ -317,6 +323,44 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
 
     it("invalid: 文末の句点は識別子を作らない", () => {
       assert.deepEqual(acronymsIn("# Notes\n\nAsk the SRE. Then ask again."), ["SRE"]);
+    });
+  });
+
+  describe("数字の隣で決まった書き方になる大文字（時刻・通貨・住所）", () => {
+    it("valid: 時刻のあとの PM と時間帯", () => {
+      assert.deepEqual(acronymsIn("# Travel\n\nSubmit it by 3:30 PM Eastern. The call starts at 2pm ET and ends at 16:00 UTC."), []);
+    });
+
+    it("invalid: 時刻の隣でない PM と ET は数える", () => {
+      assert.deepEqual(acronymsIn("# Roles\n\nThe PM owns the plan. The ET team reviews it."), ["PM", "ET"]);
+    });
+
+    it("valid: 金額の前後の通貨コード", () => {
+      assert.deepEqual(acronymsIn("# Offer\n\nYou may buy up to USD 1,000,000 of stock. The fee is 250 EUR."), []);
+    });
+
+    it("invalid: 金額の隣でない通貨コードと、一覧に無い通貨コードは数える", () => {
+      assert.deepEqual(acronymsIn("# Offer\n\nPrices are in USD. The fee is XYZ 250."), ["USD", "XYZ"]);
+    });
+
+    it("valid: 米国の住所の州略号", () => {
+      assert.deepEqual(acronymsIn("# Contact\n\nWrite to 2300 Main Street, Kansas City, MO 64108 or Berkeley, CA 94720-1234."), []);
+    });
+
+    it("invalid: 住所の形でない CA は数える（certificate authority）", () => {
+      assert.deepEqual(acronymsIn("# Certs\n\nThe CA signs each certificate."), ["CA"]);
+    });
+
+    it("valid: 単独の AND は強調", () => {
+      assert.deepEqual(acronymsIn("# Charts\n\nUse both color AND symbols."), []);
+    });
+
+    it("valid: TIP は NOTE と同じ見出し語、USA は US と同じ国名", () => {
+      assert.deepEqual(acronymsIn("# Travel\n\n**TIP**: ask first. The office is in the USA."), []);
+    });
+
+    it("invalid: 語の形をした本物の略語は数える", () => {
+      assert.deepEqual(acronymsIn("# Values\n\nThis touches our CREDIT values and the SAFE framework."), ["CREDIT", "SAFE"]);
     });
   });
 });

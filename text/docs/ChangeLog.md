@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` leaves times, amounts, US addresses and emphasised NOT / AND alone (#170)
+
+Capitals that belong to a fixed notation next to a number are no longer taken as acronyms: AM / PM and a time zone
+after a clock time (`3:30 PM`, `2pm ET`, `16:00 UTC`), a major currency code before or after an amount
+(`USD 1,000,000`, `250 EUR`), and a US state code in a postal address (`Kansas City, MO 64108`). Away from the number
+they are still reported, because the same letters are also real acronyms (PM for project manager, CA for certificate
+authority). A lone `NOT` or `AND` written in capitals is emphasis. TIP (a callout label, like NOTE) and USA (like US)
+join the common acronyms. A capitalised ordinary word such as CASH, FAIL or a template placeholder (LINK) is still
+reported: nothing in the text tells it apart from a real acronym that spells a word (CREDIT, SAFE, HUB).
+
 ### `heading-echo` leaves a sentence that introduces a list alone (#170)
 
 A first sentence that hands over to the list or table below it — one ending in a colon (`The following expenses
