@@ -23,8 +23,13 @@ const endsWithAbbreviation = (sentence: string, stop: number): boolean => {
   return isAbbreviation(word) || INITIALS.test(word);
 };
 
-const bracketOpenAt = (sentence: string, index: number): boolean =>
-  Array.from(sentence.slice(0, index)).reduce((depth, char) => depth + (OPENER.test(char) ? 1 : 0) - (CLOSER.test(char) ? 1 : 0), 0) > 0;
+// 対の無い閉じ括弧（「1) 最初の項目」の番号）は、後から開く括弧を打ち消さない。
+const depthAfter = (depth: number, char: string): number => {
+  if (OPENER.test(char)) return depth + 1;
+  return CLOSER.test(char) ? Math.max(0, depth - 1) : depth;
+};
+
+const bracketOpenAt = (sentence: string, index: number): boolean => Array.from(sentence.slice(0, index)).reduce(depthAfter, 0) > 0;
 
 type Cut = { readonly end: number; readonly next: number };
 
