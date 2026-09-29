@@ -1,12 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { nameNumeralSpans } from "../packages/chaff/src/detectors/name-numeral.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 大文字で始まる語の後ろの、I・V・X だけのローマ数字（Engineer II、World War II）は名前の番号で、略語ではない。例文は自作。
 // FOMC の議事録の出席者一覧（Senior System Engineer II）と連邦議会の議事録（World War II）で II が報告されていた。
@@ -60,21 +57,16 @@ describe("nameNumeralSpans", () => {
   });
 });
 
-const reported = (adapter: LanguageAdapter, source: string): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
-
 describe("undefined-acronym と名前の番号", () => {
   it("en: 肩書きの番号は数えず、SRE は数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nJose Acosta, Senior System Engineer II, joined. The SRE joins.\n"), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nJose Acosta, Senior System Engineer II, joined. The SRE joins.\n"), ["SRE"]);
   });
 
   it("en: 文の頭の語の後ろの IV は数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nStart IV fluids. The SRE joins.\n"), ["IV", "SRE"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nStart IV fluids. The SRE joins.\n"), ["IV", "SRE"]);
   });
 
   it("ja: 名前の番号は数えず、SRE は数える", () => {
-    assert.deepEqual(reported(ja, "# 手引き\n\n第2段階（Phase II）に進みます。SREも見ます。\n"), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(ja, "# 手引き\n\n第2段階（Phase II）に進みます。SREも見ます。\n"), ["SRE"]);
   });
 });

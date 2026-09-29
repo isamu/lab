@@ -1,11 +1,9 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { conjugatedForms } from "../packages/chaff/src/detectors/conjugated-form.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import type { LanguageAdapter, Sentence, Token } from "../packages/chaff/src/plugin.ts";
+import type { Sentence, Token } from "../packages/chaff/src/plugin.ts";
 
 // 語彙表が原形で書いた語句（という、と呼ぶ）の、活用して書かれた形（といいます）。例文はすべて自作。
 
@@ -118,11 +116,6 @@ describe("conjugatedForms", () => {
   });
 });
 
-const reported = (adapter: LanguageAdapter, source: string): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
-
 const doc = (definition: string): string => `# 手引き\n\n共通基盤${definition}を使います。SREも見ます。\n`;
 
 describe("undefined-acronym: 活用した定義の語（日本語）", () => {
@@ -139,7 +132,7 @@ describe("undefined-acronym: 活用した定義の語（日本語）", () => {
     "（以下「GSS」といいました。）",
     "（「GSS」といいます。）",
   ].forEach((definition) => {
-    it(`valid: ${definition}`, () => assert.deepEqual(reported(ja, doc(definition)), ["SRE"]));
+    it(`valid: ${definition}`, () => assert.deepEqual(reportedAcronyms(ja, doc(definition)), ["SRE"]));
   });
 
   [
@@ -148,6 +141,6 @@ describe("undefined-acronym: 活用した定義の語（日本語）", () => {
     ["閉じ括弧が無い", "（以下「GSS」といいます。"],
     ["語彙表に無い動詞", "（以下「GSS」と書きます。）"],
   ].forEach(([form, definition]) => {
-    it(`invalid: ${String(form)}`, () => assert.equal(reported(ja, doc(String(definition))).includes("GSS"), true));
+    it(`invalid: ${String(form)}`, () => assert.equal(reportedAcronyms(ja, doc(String(definition))).includes("GSS"), true));
   });
 });

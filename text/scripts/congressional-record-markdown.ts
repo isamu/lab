@@ -42,7 +42,7 @@ const withoutBanner = (lines: readonly string[]): string[] => {
   return first === -1 ? [] : lines.slice(first);
 };
 
-const isDropped = (text: string): boolean => /^_+$/u.test(text) || /^\{time\}/u.test(text);
+const isDropped = (text: string): boolean => /^_+$/u.test(text) || text.startsWith("{time}");
 
 const indentOf = (line: string): number => line.length - line.trimStart().length;
 

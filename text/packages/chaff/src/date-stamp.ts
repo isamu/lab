@@ -21,7 +21,7 @@ const LABEL_EDGE = /[\s:：]/u;
 const datesOf = (candidate: StampCandidate): Span[] => candidate.dates.filter((date) => date.end > date.start);
 
 const withoutDates = (candidate: StampCandidate): string => {
-  const ordered = datesOf(candidate).sort((left, right) => left.start - right.start);
+  const ordered = datesOf(candidate).toSorted((left, right) => left.start - right.start);
   const gaps = ordered.reduce<{ readonly parts: readonly string[]; readonly from: number }>(
     (acc, date) => ({ parts: [...acc.parts, candidate.text.slice(acc.from, date.start)], from: Math.max(acc.from, date.end) }),
     { parts: [], from: 0 },

@@ -4,11 +4,11 @@ import { join, relative, sep } from "node:path";
 const MARKDOWN = [".md", ".markdown", ".mdx"];
 
 /** 走査から外す。ここを通すと node_modules の README を延々と検査することになる。 */
-const SKIP = ["node_modules", "dist", "build", "coverage", ".git", ".chaff-cache"];
+const SKIP: ReadonlySet<string> = new Set(["node_modules", "dist", "build", "coverage", ".git", ".chaff-cache"]);
 
 const isMarkdown = (path: string): boolean => MARKDOWN.some((ext) => path.toLowerCase().endsWith(ext));
 
-const isSkipped = (path: string): boolean => path.split(sep).some((part) => SKIP.includes(part));
+const isSkipped = (path: string): boolean => path.split(sep).some((part) => SKIP.has(part));
 
 const expand = (target: string): string[] => {
   const stat = statSync(target, { throwIfNoEntry: false });
@@ -30,5 +30,5 @@ const byPath = (left: string, right: string): number => left.localeCompare(right
 
 export const collectTargets = (targets: readonly string[]): string[] => {
   const found = targets.flatMap(expand).filter((path) => !isSkipped(path));
-  return [...new Set(found)].sort((left, right) => byPath(relative(".", left), relative(".", right)));
+  return [...new Set(found)].toSorted((left, right) => byPath(relative(".", left), relative(".", right)));
 };

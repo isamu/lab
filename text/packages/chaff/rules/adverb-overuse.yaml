@@ -16,7 +16,7 @@ why:
 
 message:
   ja: 1000 語あたり {density} 個の -ly 副詞があります（{limit} 個まで）
-  en: "{density} -ly adverbs per 1000 words (limit {limit})"
+  en: "{density} -ly {density|adverb|adverbs} per 1000 words (limit {limit})"
 
 how_to_fix:
   ja: 副詞ごと動詞に畳んでください。"said loudly" を "shouted" に。

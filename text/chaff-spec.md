@@ -1316,7 +1316,7 @@ padded-intro に strict はありません。normal と同じ設定です。
 | `name` | 指摘の見出し。言語別 |
 | `why` | なぜ問題か。言語別 |
 | `how_to_fix` | どうすればいいか。言語別 |
-| `message` | 検出内容。`{count}` などを埋める |
+| `message` | 検出内容。`{count}` などを埋める。英語は `{count\|word\|words}` で数に合う形を選ぶ（ちょうど 1 なら前、それ以外は後） |
 | `levels` | 4 語と数値の対応。2 つ以上 |
 | `use_for` | 対象ジャンル |
 | `status` | `experimental` / `stable` / `deprecated` |

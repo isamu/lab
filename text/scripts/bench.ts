@@ -44,7 +44,7 @@ type Sample = { readonly name: string; readonly language: string; readonly genre
 const samplesOf = (language: string): Sample[] =>
   readdirSync(join(BENCH, language))
     .filter((file) => file.endsWith(".md"))
-    .sort((left, right) => left.localeCompare(right, "en"))
+    .toSorted((left, right) => left.localeCompare(right, "en"))
     .map((file) => {
       const kind = file.replace(/\.md$/u, "");
       return {

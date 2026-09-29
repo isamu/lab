@@ -14,7 +14,7 @@ why:
 
 message:
   ja: この段落は {count} 文あります（{limit} 文まで）
-  en: This paragraph runs {count} sentences (limit {limit})
+  en: This paragraph runs {count} {count|sentence|sentences} (limit {limit})
 
 how_to_fix:
   ja: 話題の変わり目で段落を割ってください。

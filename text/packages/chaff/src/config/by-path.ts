@@ -44,12 +44,11 @@ export const matches = (glob: string, base: string, path: string): boolean => to
 type PathSettings = { genre?: string; language?: string; profile?: string };
 
 export const applyByPath = (rules: readonly PathRule[], base: string, path: string): PathSettings =>
-  rules.reduce<PathSettings>((acc, rule) => {
-    if (!rule.files.some((glob) => matches(glob, base, path))) return acc;
-    return {
-      ...acc,
-      ...(rule.genre === undefined ? {} : { genre: rule.genre }),
-      ...(rule.language === undefined ? {} : { language: rule.language }),
-      ...(rule.profile === undefined ? {} : { profile: rule.profile }),
-    };
-  }, {});
+  rules
+    .filter((rule) => rule.files.some((glob) => matches(glob, base, path)))
+    .reduce<PathSettings>((settings, rule) => {
+      if (rule.genre !== undefined) settings.genre = rule.genre;
+      if (rule.language !== undefined) settings.language = rule.language;
+      if (rule.profile !== undefined) settings.profile = rule.profile;
+      return settings;
+    }, {});

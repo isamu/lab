@@ -73,9 +73,9 @@ const open = (state: State, frame: Frame): void => {
   state.stack.push(frame);
 };
 
-const nearestNumbered = (state: State): Frame | undefined => [...state.stack].reverse().find((frame) => frame.numbered !== undefined);
+const nearestNumbered = (state: State): Frame | undefined => state.stack.findLast((frame) => frame.numbered !== undefined);
 
-const nearestSection = (state: State): Frame | undefined => [...state.stack].reverse().find((frame) => frame.draft.kind === "section");
+const nearestSection = (state: State): Frame | undefined => state.stack.findLast((frame) => frame.draft.kind === "section");
 
 /**
  * 条番号や 4.2 はそれだけで番地になる。項・号・(a) は親の番地に続ける。親が無ければ節の中の番号とする。
@@ -160,12 +160,12 @@ const universalNumber = (patterns: StructurePatterns, text: string, context: Num
 };
 
 /** 行の中の定義・参照・義務・数量を、いま開いている最も内側の節点の子にする。 */
-const enclosingArticle = (state: State): Draft | undefined => [...state.stack].reverse().find((frame) => frame.draft.kind === "article")?.draft;
+const enclosingArticle = (state: State): Draft | undefined => state.stack.findLast((frame) => frame.draft.kind === "article")?.draft;
 
 /** 条より広い範囲（「In this Part」）なら、その深さの開いているまとまり。開いていなければ（Part の見出しの無い文書）無い。 */
 const widerScope = (state: State, patterns: StructurePatterns, text: string): Draft | undefined => {
   const depth = patterns.definitionScopeDepth?.(text);
-  return depth === undefined ? undefined : [...state.stack].reverse().find((frame) => frame.numbered?.depth === depth)?.draft;
+  return depth === undefined ? undefined : state.stack.findLast((frame) => frame.numbered?.depth === depth)?.draft;
 };
 
 /** 範囲を宣言した行を持つまとまり。条の中なら条、条の外（Markdown の見出しの下、Part の直下）なら開いている一番内側のもの。 */
@@ -200,7 +200,7 @@ const addLeaves = (state: State, patterns: StructurePatterns, line: Line, wrappe
         attrs: mention.attrs,
       })),
     )
-    .sort((left, right) => left.start - right.start);
+    .toSorted((left, right) => left.start - right.start);
   leaves.forEach((leaf) =>
     parent.children.push({
       kind: leaf.kind,

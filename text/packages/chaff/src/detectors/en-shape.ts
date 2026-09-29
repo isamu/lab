@@ -79,11 +79,11 @@ const firstWord = (sentence: Sentence): string =>
  * 何が主張なのかが分からなくなる。
  */
 export const conjunctionRun: Detector = (doc, options): Finding[] => {
-  const heads = (options.lexicon ?? []).map((entry) => entry.pattern.toLowerCase());
+  const heads = new Set((options.lexicon ?? []).map((entry) => entry.pattern.toLowerCase()));
   const runs = doc.sentences.filter(isClosed).reduce<Sentence[][]>(
     (acc, sentence) => {
       const last = acc.at(-1) ?? [];
-      if (!heads.includes(firstWord(sentence).toLowerCase())) return [...acc.slice(0, -1), last, []];
+      if (!heads.has(firstWord(sentence).toLowerCase())) return [...acc.slice(0, -1), last, []];
       return [...acc.slice(0, -1), [...last, sentence]];
     },
     [[]],
@@ -232,7 +232,9 @@ const joinAdjectives = (items: readonly Token[][]): Token[][] =>
   items.reduce<Token[][]>((joined, item) => {
     const previous = joined.at(-1);
     const stacked = previous !== undefined && lastContent(previous)?.pos === "ADJ" && lastContent(item)?.pos !== "ADJ";
-    return stacked ? [...joined.slice(0, -1), [...previous, ...item]] : [...joined, item];
+    if (stacked) joined[joined.length - 1] = [...previous, ...item];
+    else joined.push(item);
+    return joined;
   }, []);
 
 /**

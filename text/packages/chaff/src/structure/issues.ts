@@ -7,7 +7,7 @@ import { namesAbsentUnit } from "./unit-word.ts";
 
 export type StructureIssue = { readonly offset: number; readonly values: Readonly<Record<string, string | number>> };
 
-const NUMBERED: readonly string[] = ["chapter", "article", "item"];
+const NUMBERED: ReadonlySet<string> = new Set(["chapter", "article", "item"]);
 
 /** 木を上から順に平らにする。文書の中での順番と同じになる。再帰にしないのは、深い木でスタックを使い切らないため。 */
 export const inDocumentOrder = (tree: StructureNode): StructureNode[] => {
@@ -17,7 +17,7 @@ export const inDocumentOrder = (tree: StructureNode): StructureNode[] => {
     const node = pending.pop();
     if (node === undefined) break;
     order.push(node);
-    pending.push(...[...node.children].reverse());
+    pending.push(...node.children.toReversed());
   }
   return order;
 };
@@ -57,6 +57,8 @@ const citesOtherDocument =
   (node: StructureNode): boolean =>
     node.attrs["document"] !== undefined || (node.attrs["citedTag"] !== undefined && listed.has(textOf(node, "citedTag")));
 
+const numbering = (node: StructureNode): unknown => node.attrs["numbering"];
+
 /**
  * 参照の番地が木に無い。他の文書の名前が付いた参照（民法第709条、Section 9 of the Master Agreement）は引かない。
  * 条を 1 つも持たない文書も見ない。他の文書を指しているだけかもしれない。
@@ -67,10 +69,9 @@ export const danglingReferences = (tree: StructureNode, source: string): Structu
   if (!nodes.some((node) => node.kind === "article")) return [];
   const tagged = nodes.some((node) => node.attrs["citedTag"] !== undefined);
   const citesOther = citesOtherDocument(tagged ? listedTags(source) : new Set());
-  const addresses = new Set(nodes.filter((node) => NUMBERED.includes(node.kind)).flatMap(keysOf));
+  const addresses = new Set(nodes.filter((node) => NUMBERED.has(node.kind)).flatMap(keysOf));
   // Section で組んだ法令が "Articles 13 to 21 of the UK GDPR" と別の文書の Article を名指ししていれば、名の無い "Article 6(3)" もそちら。
   // 名指しがあれば、名の無い "Article 9" が書き間違いか向こうの条かは区別できないので黙る。名指しが無い文書では報告する。
-  const numbering = (node: StructureNode): unknown => node.attrs["numbering"];
   const numberings = new Set(nodes.flatMap((node) => (node.kind === "article" && node.numbering !== undefined ? [node.numbering] : [])));
   const citedElsewhere = new Set(nodes.filter((node) => node.kind === "reference" && citesOther(node)).map(numbering));
   const otherNumbering = (node: StructureNode): boolean =>
@@ -94,7 +95,7 @@ const definitionsInOrder = (tree: StructureNode): Definition[] => {
     if (current === undefined) break;
     if (current.node.kind === "definition") found.push(current);
     const article = current.node.kind === "article" ? current.node.address : current.article;
-    [...current.node.children].reverse().forEach((child) => pending.push({ node: child, article }));
+    current.node.children.toReversed().forEach((child) => pending.push({ node: child, article }));
   }
   return found;
 };

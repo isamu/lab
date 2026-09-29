@@ -18,6 +18,17 @@ and 「5日で」「5分」「3年」「5分30秒」 standing alone cannot be to
 before a date (「は 9月」) is the writer's habit before any number and still counts. A year after an era name
 (「令和8年」 on its own) still counts.
 
+### English messages agree with their counts (#170)
+
+An English message said "(1 such words)", "appears 1 times" or "1 of 1 sections" when the count was one. A rule's
+message can now choose a form by a value. `{count|word|words}` gives "word" for exactly one and "words" for anything
+else. So `{count} such {count|word|words}` reads "1 such word" and "2 such words". A verb agrees the same way
+(`{count|has|have}`).
+
+Every English rule message that carries a count uses it. The rule reference on the site shows each form as its
+plural. The command line agrees too: `--watch` says "2 → 1 finding". A contract whose numbering could not be read says
+"only 1 was read as a numbered line". Japanese messages are unchanged.
+
 ### `concrete-evidence-density` leaves the entries of a glossary alone (#170)
 
 A glossary or an A to Z style guide was reported entry by entry, because a definition carries no number, code or link.

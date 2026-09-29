@@ -6,7 +6,7 @@ import { parseRoman } from "./roman.ts";
  * outside the sequence: it has no ordinal, so "(1)" after "(A1)" is still the first.
  */
 export const INSERTED = "\\d{1,3}[A-Z]{1,2}|[A-Z]{1,2}\\d{1,3}";
-export const IS_INSERTED = new RegExp(`^(?:${INSERTED})$`, "u");
+const IS_INSERTED = new RegExp(`^(?:${INSERTED})$`, "u");
 const MULTI_ROMAN = /^(?:ii|iii|iv|vi|vii|viii|ix)$/u;
 const AMBIGUOUS = /^[ivx]$/u;
 const DIGITS = /^\d+$/u;

@@ -1,10 +1,8 @@
 import type { RuleDefinition } from "../plugin.ts";
 import type { RunResult } from "../run.ts";
 import { messageOf } from "./text.ts";
+import { counted } from "./plural.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
-
-/** 「1 finding」「2 findings」。 */
-const counted = (count: number, noun: string): string => `${String(count)} ${noun}${count === 1 ? "" : "s"}`;
 
 /**
  * 最後の集計の行は、画面のほかの部分と同じく文書の言語で出す。行ごとの重さ（warning / error）は、grep や別の道具が読むので英語のまま。

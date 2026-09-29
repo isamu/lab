@@ -1,5 +1,6 @@
 import { MIN_CORPUS, TARGET_HIT_RATE, type Point, type RuleReport } from "../eval.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
+import { counted, formFor } from "./plural.ts";
 
 const pct = (part: number, whole: number): string => `${((part / Math.max(1, whole)) * 100).toFixed(1)}%`;
 
@@ -51,19 +52,19 @@ const TEXT: Texts<{
     recommended: "  ← recommended",
     both: "  ← current / recommended",
     point: (point, share) =>
-      `${String(point.documents).padStart(3)} ${point.documents === 1 ? "doc " : "docs"} (${share.padStart(6)})   ${String(point.findings).padStart(3)} ${point.findings === 1 ? "finding " : "findings"}   ${point.per10k.toFixed(1)} per 10,000 characters`,
+      `${String(point.documents).padStart(3)} ${formFor(point.documents, "doc ", "docs")} (${share.padStart(6)})   ${String(point.findings).padStart(3)} ${formFor(point.findings, "finding ", "findings")}   ${point.per10k.toFixed(1)} per 10,000 characters`,
     fits: `    The current limit meets the target (under ${TARGET}%).`,
     nothingFits: "    No limit meets the target. The rule itself may not suit this corpus.",
     over: (share) => `    At the current limit ${share} of the documents are hit, over the target (under ${TARGET}%).`,
     recommend: (limit) => `    Recommended: ${limit}`,
     toConfig: (rule, limit) => `${EN_CONFIG_LEAD}rules:\n${" ".repeat(EN_CONFIG_LEAD.length + YAML_INDENT)}${rule}: ${limit}`,
-    measured: (paths, rules) => `  Measured ${rules} rule${rules === 1 ? "" : "s"} on ${paths} file${paths === 1 ? "" : "s"} as a corpus.`,
+    measured: (paths, rules) => `  Measured ${counted(rules, "rule")} on ${counted(paths, "file")} as a corpus.`,
     premise: [
       "  The documents here are taken as good documents that people wrote and published.",
       `  A rule that fires often on them may have a limit that does not fit real writing (target: under ${TARGET}%).`,
     ],
     smallCorpus: (total) => [
-      `  Note: the corpus has only ${total} document${total === 1 ? "" : "s"}. Showing ${TARGET}% takes at least ${MIN_CORPUS}.`,
+      `  Note: the corpus has only ${counted(total, "document")}. Showing ${TARGET}% takes at least ${MIN_CORPUS}.`,
       "     For now each share is either 0 or all, so read the density on the right (findings per 10,000 characters).",
     ],
     untouched: "  No limit was changed. A different corpus gives a different answer.",
