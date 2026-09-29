@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### The corpus HTML converter keeps a `<pre>` block's lines, and fences code (#170)
+
+A `<pre>` block became one paragraph, its lines run together: the Zen of Python in PEP 20, a poem of short lines,
+was reported as one paragraph far over `max-paragraph-length`, and a JSON example in a Chrome blog post was read as
+a long sentence. A `<pre>` is now read by its markup. One holding a single `<code>` element, or whose own class or
+that of the elements wrapping it directly names a language (`language-json`, `lang-sh`, Sphinx's
+`highlight-pycon`), is code and becomes a fenced code block with its lines and indentation, which chaff does not read
+as prose; the fence is longer than any run of backticks inside. Any other `<pre>` (a poem, an address, a plain-text
+notice, or one marked `highlight-text`, `language-none` and the like) keeps its lines, each one a paragraph. A `<pre>`
+inside a heading stays that heading's text, and one inside dropped chrome goes with it. The Congressional Record
+converter, which reads its page's `<pre>` by indentation, is unchanged.
+
 ### English: a capital `(A)` under a roman `(i)`, and a label alone on its line, as US regulations number (#170)
 
 A US regulation goes down `(a)`, `(1)`, `(i)`, `(A)`, and below `(A)` numbers again with `(1)` or `(i)`. lang-en did
