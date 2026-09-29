@@ -86,6 +86,14 @@ describe("L3 日本語", () => {
       assert.ok(!idsFor("運用を始める。日報を導入しませんか？が断られた。手順を作る。").includes("no-mixed-desumasu"));
     });
 
+    it("invalid: 「。」の後が助詞で始まっても、手前の文の文末は数える", () => {
+      assert.ok(idsFor("運用を始める。設定します。という方針を採用する。手順を作る。").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: 「〜しましたこと。」は丁寧体として数える", () => {
+      assert.ok(!idsFor("対応します。確認します。ご迷惑をおかけしましたこと。通知します。").includes("no-mixed-desumasu"));
+    });
+
     it("invalid: 「！」「？」の後が助詞で始まらなければ、そこで文は終わる", () => {
       assert.ok(idsFor("運用を始める。日報を導入しませんか？ 手順を作る。効果を測る。").includes("no-mixed-desumasu"));
       assert.ok(idsFor("運用を始めます。徹夜で作っていた！手順を作ります。効果を測ります。").includes("no-mixed-desumasu"));

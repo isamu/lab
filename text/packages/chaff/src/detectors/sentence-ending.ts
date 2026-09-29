@@ -15,7 +15,7 @@ const registerOfSentence = (sentence: Sentence, polite: readonly string[]): Regi
   const ending = endingTokens(sentence);
   const tokens = sentence.tokens ?? [];
   const head = ending[0] === undefined ? -1 : tokens.indexOf(ending[0]);
-  return registerOf(ending, head > 0 ? tokens[head - 1] : undefined, polite);
+  return registerOf(ending, head > 0 ? tokens.slice(0, head) : [], polite);
 };
 
 export const sentenceEnding: Detector = (doc, options): Finding[] => {

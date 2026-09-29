@@ -20,45 +20,60 @@ const indicesOf = (entries: readonly Judged[], limit = 3): number[] => slipsOf(e
 
 describe("registerOf: 文末の語の調子", () => {
   it("述語で終わる文末は、丁寧語があれば polite、無ければ plain", () => {
-    assert.equal(registerOf([token("し", "VERB", "する"), token("ます", "AUX")], undefined, POLITE), "polite");
-    assert.equal(registerOf([token("する", "VERB")], undefined, POLITE), "plain");
-    assert.equal(registerOf([token("重要", "NOUN"), token("だ", "AUX")], undefined, POLITE), "plain");
-    assert.equal(registerOf([token("高い", "ADJ")], undefined, POLITE), "plain");
+    assert.equal(registerOf([token("し", "VERB", "する"), token("ます", "AUX")], [], POLITE), "polite");
+    assert.equal(registerOf([token("する", "VERB")], [], POLITE), "plain");
+    assert.equal(registerOf([token("重要", "NOUN"), token("だ", "AUX")], [], POLITE), "plain");
+    assert.equal(registerOf([token("高い", "ADJ")], [], POLITE), "plain");
   });
 
   it("原形でも書いた形でも丁寧語に当てる", () => {
-    assert.equal(registerOf([token("ください", "VERB", "くださる")], undefined, POLITE), "polite");
-    assert.equal(registerOf([token("し", "VERB", "する"), token("ませ", "AUX", "ます"), token("ん", "AUX")], undefined, POLITE), "polite");
+    assert.equal(registerOf([token("ください", "VERB", "くださる")], [], POLITE), "polite");
+    assert.equal(registerOf([token("し", "VERB", "する"), token("ませ", "AUX", "ます"), token("ん", "AUX")], [], POLITE), "polite");
   });
 
   it("述語の無い文末（名詞・助詞・接続助詞で終わる）は調子を持たない", () => {
-    assert.equal(registerOf([token("通り", "NOUN")], undefined, POLITE), undefined);
-    assert.equal(registerOf([token("帽子", "NOUN")], undefined, POLITE), undefined);
-    assert.equal(registerOf([token("より", "ADP")], undefined, POLITE), undefined);
-    assert.equal(registerOf([token("から", "SCONJ")], undefined, POLITE), undefined);
-    assert.equal(registerOf([], undefined, POLITE), undefined);
+    assert.equal(registerOf([token("通り", "NOUN")], [], POLITE), undefined);
+    assert.equal(registerOf([token("帽子", "NOUN")], [], POLITE), undefined);
+    assert.equal(registerOf([token("より", "ADP")], [], POLITE), undefined);
+    assert.equal(registerOf([token("から", "SCONJ")], [], POLITE), undefined);
+    assert.equal(registerOf([], [], POLITE), undefined);
   });
 
   it("述語に続く非自立名詞で終わる文末は、その述語の調子（「予約できること。」）", () => {
-    assert.equal(registerOf([dependent("こと")], token("できる", "VERB"), POLITE), "plain");
-    assert.equal(registerOf([dependent("もの")], token("な", "AUX"), POLITE), "plain");
-    assert.equal(registerOf([dependent("もの")], token("です", "AUX"), POLITE), "polite");
+    assert.equal(registerOf([dependent("こと")], [token("できる", "VERB")], POLITE), "plain");
+    assert.equal(registerOf([dependent("もの")], [token("な", "AUX")], POLITE), "plain");
+    assert.equal(registerOf([dependent("もの")], [token("です", "AUX")], POLITE), "polite");
+  });
+
+  it("手前の述語は助動詞の連なりごと見る（「おかけしましたこと。」は丁寧体）", () => {
+    const preceding = [
+      token("迷惑", "NOUN"),
+      token("を", "ADP"),
+      token("おかけ", "NOUN"),
+      token("し", "VERB", "する"),
+      token("まし", "AUX", "ます"),
+      token("た", "AUX"),
+    ];
+    assert.equal(registerOf([dependent("こと")], preceding, POLITE), "polite");
+    assert.equal(registerOf([dependent("こと")], [token("し", "VERB", "する"), token("ませ", "AUX", "ます"), token("ん", "AUX")], POLITE), "polite");
+    assert.equal(registerOf([dependent("こと")], [token("し", "VERB", "する"), token("た", "AUX")], POLITE), "plain");
+    assert.equal(registerOf([dependent("こと")], [token("の", "ADP"), token("だ", "AUX")], POLITE), "plain");
   });
 
   it("非自立名詞でも、手前が述語でなければ調子を持たない（「以下のとおり。」）", () => {
-    assert.equal(registerOf([dependent("とおり")], token("の", "ADP"), POLITE), undefined);
-    assert.equal(registerOf([dependent("とおり")], undefined, POLITE), undefined);
-    assert.equal(registerOf([token("出口", "NOUN")], token("使う", "VERB"), POLITE), undefined);
+    assert.equal(registerOf([dependent("とおり")], [token("の", "ADP")], POLITE), undefined);
+    assert.equal(registerOf([dependent("とおり")], [], POLITE), undefined);
+    assert.equal(registerOf([token("出口", "NOUN")], [token("使う", "VERB")], POLITE), undefined);
   });
 
   it("丁寧語の語彙表が空なら、述語で終わる文はすべて plain", () => {
-    assert.equal(registerOf([token("し", "VERB"), token("ます", "AUX")], undefined, []), "plain");
+    assert.equal(registerOf([token("し", "VERB"), token("ます", "AUX")], [], []), "plain");
   });
 });
 
 describe("continuesInto: 分割器が「！」「？」で切った文が、後ろへ続くか", () => {
-  const sentence = (start: number, end: number, first?: Token): Sentence => ({
-    text: "",
+  const sentence = (start: number, end: number, first?: Token, text = "作っていた！"): Sentence => ({
+    text,
     span: { start, end },
     ...(first === undefined ? {} : { tokens: [first] }),
   });
@@ -72,6 +87,12 @@ describe("continuesInto: 分割器が「！」「？」で切った文が、後�
     assert.equal(continuesInto(sentence(0, 10), sentence(10, 20, token("手順", "NOUN"))), false);
     assert.equal(continuesInto(sentence(0, 10), sentence(10, 20)), false);
     assert.equal(continuesInto(sentence(0, 10), undefined), false);
+  });
+
+  it("「。」で切れた文は、助詞で始まる文が続いても続きとは見ない", () => {
+    assert.equal(continuesInto(sentence(0, 10, undefined, "設定します。"), sentence(10, 20, token("という", "ADP"))), false);
+    assert.equal(continuesInto(sentence(0, 10, undefined, "導入しませんか？"), sentence(10, 20, token("が", "ADP"))), true);
+    assert.equal(continuesInto(sentence(0, 10, undefined, "Really?"), sentence(10, 20, token("と", "ADP"))), true);
   });
 });
 

@@ -8,32 +8,40 @@ const isPredicate = (token: Token): boolean => PREDICATE.has(token.pos);
 
 const isDependent = (token: Token | undefined): boolean => token?.features?.["NounType"] === "Dependent";
 
-/**
- * 非自立名詞で終わる文末は、一つ手前の語まで見る。「予約できること。」「前述したとおり。」は手前の述語が調子を持つ。
- * 要件や規程のである調は「〜こと。」で書く。「以下のとおり。」は手前も述語でないので、調子を持たないまま。
- */
-const withBefore = (ending: readonly Token[], before: Token | undefined): readonly Token[] =>
-  before !== undefined && isDependent(ending[0]) ? [before, ...ending] : ending;
+/** preceding の後ろの述語の連なり: 助動詞の連なりと、その前の語一つ。「おかけしましたこと」なら「し・まし・た」。 */
+const chainAtEnd = (preceding: readonly Token[]): readonly Token[] => {
+  const head = preceding.findLastIndex((token) => token.pos !== "AUX");
+  return preceding.slice(Math.max(head, 0));
+};
 
 /**
- * 文末の語の調子。before は文末の語の一つ手前の語。
+ * 非自立名詞で終わる文末は、手前の述語の連なりまで見る。「予約できること。」「おかけしましたこと。」は手前の述語が調子を持つ。
+ * 要件や規程のである調は「〜こと。」で書く。「以下のとおり。」は手前も述語でないので、調子を持たないまま。
+ */
+const withPreceding = (ending: readonly Token[], preceding: readonly Token[]): readonly Token[] =>
+  isDependent(ending[0]) ? [...chainAtEnd(preceding), ...ending] : ending;
+
+/**
+ * 文末の語の調子。preceding は文末の語より前の語。
  * 文末に述語（動詞・形容詞・助動詞）が無ければ、ですます調でもである調でもないので undefined。
  * 「以下の通り。」「円錐形の麦わら帽子。」のような名詞で終わる文を数えると、そのままである調の少数派になっていた。
  * 書いた形でも原形でも当てる。「ください」の原形は「くださる」で、原形だけを見ると丁寧な文末を見落とす。
  */
-export const registerOf = (ending: readonly Token[], before: Token | undefined, polite: readonly string[]): Register | undefined => {
-  const judged = withBefore(ending, before);
+export const registerOf = (ending: readonly Token[], preceding: readonly Token[], polite: readonly string[]): Register | undefined => {
+  const judged = withPreceding(ending, preceding);
   if (!judged.some(isPredicate)) return undefined;
   const isPolite = judged.some((token) => polite.includes(token.surface) || (token.lemma !== undefined && polite.includes(token.lemma)));
   return isPolite ? "polite" : "plain";
 };
 
+const EXCLAIMED = /[！？!?]$/u;
+
 /**
- * 次の文が間を置かずに助詞で始まるか。「作っていた！！という人」「導入しませんか？が断られた」は、
- * 分割器が「！」「？」で切っても一つの文で、切れ目の手前は書き手の文末ではない。
+ * 「！」「？」で切れた文が、間を置かずに助詞で始まる次の文へ続くか。「作っていた！！という人」「導入しませんか？が断られた」は、
+ * 分割器が切っても一つの文で、切れ目の手前は書き手の文末ではない。「。」で切れた文は続きとは見ない。
  */
 export const continuesInto = (sentence: Sentence, next: Sentence | undefined): boolean =>
-  next !== undefined && next.span.start === sentence.span.end && next.tokens?.[0]?.pos === "ADP";
+  EXCLAIMED.test(sentence.text) && next !== undefined && next.span.start === sentence.span.end && next.tokens?.[0]?.pos === "ADP";
 
 /** 位置 offset を含む一番外側の箇条書きの始まり。本文なら undefined。入れ子の項目は外側の箇条書きと一緒に見る。 */
 export const outermostList = (offset: number, lists: readonly Span[]): number | undefined =>
