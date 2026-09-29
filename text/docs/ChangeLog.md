@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `doubled-word` reads 「法法第64条」 as the name of a statute (#170)
+
+Tax circulars abbreviate 法人税法 as 法法 (beside 所法, 消法, 措法), and the analyser splits it into 法 + 法, which
+`doubled-word` reported as a slip. The structure reader already names the document a reference cites (「法法第64条の2」
+cites 法法). A doubled word is now left alone when the two words are the whole of that name and the second is a
+one-character document-kind word (`document-kind`: 法, 令): the name is an abbreviation, a head character and the kind.
+No abbreviation is listed. 「法法の規定」 with no address after it, a doubled word that is not a kind word
+(「民法民法第709条」), a two-character kind word (「規則規則第3条」), a doubling inside a longer name
+(「就業規則規則第3条」) and a doubled word before an address that names no document (「資料資料第3条」) are still reported.
+Found on 国税庁's 消費税法基本通達.
+
 ### Japanese: a counter after a number does not start a run of kanji (#170)
 
 `max-kanji-continuous` counted the counter of a number written in digits as the first kanji of the compound that
