@@ -14,6 +14,18 @@ copied from its PDF is. Patents come from Google Patents as archived by the Inte
 family tables. Opinions and judgments come from Wikisource at a pinned revision. The courts' own sites publish full
 judgments only as PDF, which the corpus cannot convert.
 
+### English: a sentence that closes inside a quotation ends there (#170)
+
+American usage puts the full stop inside the closing quotation mark (`…to a "fair trial." Plainly, the rule…`), and
+the sentence splitter did not end a sentence there: the next sentence was read as part of it. `max-sentence-length`
+reported the two as one long sentence, `max-paragraph-length` counted too few sentences, and a passive with its actor
+in the following sentence was read as having one. A full stop, question or exclamation mark directly before a closing
+quotation mark now ends the sentence when a space and a capital letter (after an opening bracket or quotation mark, if
+any) follow. It does not when the word before the full stop is an abbreviation or initials (`the "U.S." Army`,
+`"Dr." Smith`, `"J."`), when a bracket is still open, or when the next word is lower case or a number
+(`"Is it right?" asked the clerk`, `"no." 316 U.S. at 462`). Found on a Supreme Court opinion, CRS reports, an NSF
+solicitation and GitLab's handbook.
+
 ### `latin-spacing` does not count the space after a postal code or an address number (#170)
 
 The space in 「〒100-8916 東京都千代田区」 was counted as a space between a number and Japanese, because only a code with a
