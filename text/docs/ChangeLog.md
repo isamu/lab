@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### Japanese: a counter after a number does not start a run of kanji (#170)
+
+`max-kanji-continuous` counted the counter of a number written in digits as the first kanji of the compound that
+follows it: `平成2年3月2日日本弁護士連合会臨時総会決議` was reported as `日日本弁護士連合会臨時総会決議`, starting in the
+middle of the date. The digits show where the counter belongs, so the reader does not have to find that boundary. A
+counter (`NounType=Class`) directly after a number, or after a number and one space (`2 日`), is no longer part of the
+run it opens (`2日`, `第76回`, `24時間`, `2026年度`); the run and the word shown start after it. A number written in
+kanji is itself part of the run (`第三回情報処理推進機構`) and is counted as before, and a word the analyser does not read
+as a counter (`2021会計年度`) stays in the run. Whether a run is an address or one name is decided on what follows the
+counter (`1日日本銀行` is the name `日本銀行`). A run that appears twice in one sentence is now read at each of its
+places, not both at the first one; to keep those places, a masked statute address is blanked to its own length rather
+than to one space. Found on a judgment of 最高裁判所 and several government pages.
+
 ### The corpus's converters drop a heading drawn as an image and keep the words a layout template wraps (#170)
 
 An HTML heading that holds only images — a site logo, a section banner, a photo placed in an `<h2>` — left an empty

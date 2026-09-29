@@ -102,12 +102,15 @@ export const addressSpans = (text: string, profile: DocumentProfile | undefined)
   return spans;
 };
 
-/** 番地を空白にする。空白が連なりを切るので、番地は数えられず、前後は別の連なりになる。 */
+/**
+ * 番地を同じ長さの空白にする。空白が連なりを切るので、番地は数えられず、前後は別の連なりになる。
+ * 長さを保つので、覆った後の位置は元の文字列の位置のまま。
+ */
 export const maskAddresses = (text: string, profile: DocumentProfile | undefined): string => {
   const spans = addressSpans(text, profile);
   if (spans.length === 0) return text;
   const pieces: string[] = [];
-  spans.forEach((span, index) => pieces.push(text.slice(spans[index - 1]?.end ?? 0, span.start), " "));
+  spans.forEach((span, index) => pieces.push(text.slice(spans[index - 1]?.end ?? 0, span.start), " ".repeat(span.end - span.start)));
   pieces.push(text.slice(spans.at(-1)?.end ?? 0));
   return pieces.join("");
 };
