@@ -291,8 +291,8 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
       assert.deepEqual(acronymsIn("# Tax\n\nThe Tax Cuts and Jobs Act [TCJA] changed it. The TCJA also capped it."), []);
     });
 
-    it("invalid: 角括弧でも、直前の語が展開になっていなければ引用の印", () => {
-      assert.deepEqual(acronymsIn("# Refs\n\nThe registry is described in [IANA] and elsewhere."), ["IANA"]);
+    it("invalid: 角括弧でも、直前の語が展開になっていなければ引用の印で、括弧の外の同じ略語は展開されていない", () => {
+      assert.deepEqual(acronymsIn("# Refs\n\nThe registry is described in [IANA] and elsewhere. IANA keeps it."), ["IANA"]);
     });
 
     it("invalid: 略語のあとの角括弧は注の番号", () => {
