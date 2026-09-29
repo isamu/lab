@@ -131,7 +131,9 @@ describe("数と「つ」を解析器で読む", () => {
   });
 
   it("reads a count followed by 目 as an order, not a quantity", () => {
-    ["3つ目の案", "二つ目の案", "3 つ目の案", "2回目の会議", "1年目の社員", "5人目の担当"].forEach((text) => assert.deepEqual(quantityOf(text), [], text));
+    ["3つ目の案", "二つ目の案", "3 つ目の案", "2回目の会議", "1年目の社員", "5人目の担当", "一つめの案", "九つめの案", "2回めの会議"].forEach((text) =>
+      assert.deepEqual(quantityOf(text), [], text),
+    );
     assert.deepEqual(quantityOf("3つ目標を立てる。"), [["3つ", 3, "つ"]]);
     assert.deepEqual(quantityOf("2回、目を通す。"), [["2回", 2, "回"]]);
   });
@@ -149,7 +151,7 @@ describe("数と「つ」を解析器で読む", () => {
   });
 
   it("reads 目 after a counter as an order on the table path too", () => {
-    ["2回目の会議", "3つ目の案", "1 行目に出る"].forEach((text) => assert.deepEqual(countedByTable(text), [], text));
+    ["2回目の会議", "3つ目の案", "1 行目に出る", "2回めの会議", "5人めの担当"].forEach((text) => assert.deepEqual(countedByTable(text), [], text));
     assert.deepEqual(
       ["2回目標を立てる", "5人目線で見る"].map((text) => countedByTable(text).map((item) => item.unit)),
       [["回"], ["人"]],

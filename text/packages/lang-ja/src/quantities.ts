@@ -65,22 +65,17 @@ const runEnd = (morphs: readonly Morph[], index: number): number => {
 /** 「第3条」の 3 は番号で、数量ではない。 */
 const isOrdinal = (morph: Morph | undefined): boolean => morph?.surface === "第";
 
-/** 助数詞の後ろの「目」（3つ目、2回目、1年目）も順番で、数量ではない。「目標」は一語なので当たらない。 */
-const ORDINAL_SUFFIX = "目";
+/** 助数詞の後ろの「目」「め」（3つ目、2回目、1年目、一つめ）も順番で、数量ではない。「目標」は一語なので当たらない。 */
+const ORDINAL_SUFFIXES: ReadonlySet<string> = new Set(["目", "め"]);
 
-const isOrdinalSuffix = (morph: Morph | undefined): boolean => morph?.pos === "名詞" && morph.surface === ORDINAL_SUFFIX;
-
-/** 解析器の無いときは、後ろに漢字が続かない「目」を順番と読む。「2回目標」「5人目線」の目は次の語の頭。 */
-const ORDINAL_BY_TABLE = /^目(?!\p{Script=Han})/u;
+const isOrdinalSuffix = (morph: Morph | undefined): boolean => morph?.pos === "名詞" && ORDINAL_SUFFIXES.has(morph.surface);
 
 /**
- * 解析器の無いときの「3つめ」は順番。「つ」の後ろの漢字は見ない。「3つ選ぶ」「2つ持つ」のように数えた後ろに漢字が来るほうが、
- * 「三つ巴」のような一語よりずっと多い。
+ * 解析器の無いときに順番と読む単位の後ろ。漢字の続かない「目」（「2回目標」「5人目線」の目は次の語の頭）と、
+ * 「めど」でない「め」（「10日めどに」は期限）。「つ」の後ろの漢字は見ない。「3つ選ぶ」のように数えた後ろに漢字が来るほうが、
+ * 「三つ巴」のような一語より多い。
  */
-const NOT_COUNT_AFTER_TSU = /^め/u;
-
-/** 解析器の無いときに、単位 unit のすぐ後ろ rest から、数量ではないと分かるか。 */
-const notCountedByTable = (unit: string, rest: string): boolean => ORDINAL_BY_TABLE.test(rest) || (unit === "つ" && NOT_COUNT_AFTER_TSU.test(rest));
+const ORDINAL_BY_TABLE = /^(?:目(?!\p{Script=Han})|め(?!ど))/u;
 
 /** 数と単位のあいだに置かれうる空白 1 文字。構造の型（structure.ts の SPACE）と同じく、全角空白とタブも含む。 */
 const GAP = new Set([" ", "\t", "\u3000"]);
@@ -138,7 +133,7 @@ export const countedByTable = (text: string): Counted[] =>
     const after = match.index + match[0].length + (GAP.has(text[match.index + match[0].length] ?? "") ? 1 : 0);
     const unit = UNITS.find((candidate) => text.startsWith(candidate, after));
     const value = parseJapaneseNumber(toHalfWidth(match[0].replace(SPACES, "")));
-    const ordinal = text[match.index - 1] === "第" || (unit !== undefined && notCountedByTable(unit, text.slice(after + unit.length)));
+    const ordinal = text[match.index - 1] === "第" || (unit !== undefined && ORDINAL_BY_TABLE.test(text.slice(after + unit.length)));
     return unit === undefined || value === undefined || ordinal ? [] : [{ start: match.index, end: after + unit.length, value, unit }];
   });
 
