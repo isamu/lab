@@ -21,6 +21,33 @@ The corpus adds PEP 20, The Zen of Python (placed in the public domain, as the d
 section headings read. Its aphorisms, set in a `<pre>` block, still run together as one paragraph, since the converter
 reads a `<pre>` as prose.
 
+### An English `(i)` right under `(1)` is a roman numeral, as US regulations number (a)(1)(i) (#170)
+
+A US regulation goes down `(a)`, `(1)`, `(i)`. lang-en read an `(i)` as roman only right under a lettered item, so the
+`(i)` under a `(1)` became the letter i beside `(a)`: its `(ii)`, `(iii)` hung under it, the next `(b)` was reported as
+following `(i)`, and every reference such as `§ 310.3(a)(1)(i)` pointed at an address the tree did not have. An `(i)`,
+`(v)` or `(x)` right under `(1)` is now roman, as it is under `(a)`. The letter i after an open `(h)` stays a letter,
+also when a `(1)` is open under the `(h)`. An open item now keeps the reading it was given (its position in the
+sequence), instead of being read again from the item above it. Found on 16 CFR Part 310 in the corpus.
+
+### `undefined-acronym` reads a hyphenated acronym as one word, and knows Q&A, R&D and M&A (#170)
+
+Acronyms joined by a hyphen (`RT-PCR`, `CA-FATC`, `USDA-OCFO`) are now one acronym, as acronyms joined by `&`
+already were. Split, `RT` was reported as an acronym of its own, and an expanded compound — "Financial and
+Administrative Terms and Conditions (CA-FATC)" — left both halves reported. A compound is explained when it is expanded
+as written, or when every part is common or expanded elsewhere (`US-EU`); otherwise the compound is reported. A hyphen
+next to a lower-case word (`SRE-led`) or a single capital (`T-SQL`) does not join, and a compound with a digit
+(`COVID-19`, `SARS-CoV-2`) is still an identifier. An expansion in square brackets or after a separator now matches
+the initials of a compound too.
+
+A pair of capitalised words is shouting, not two acronyms, when one of them is longer than an acronym can be
+(`BILLING CODE 3510-13-P`); three or more such words already were. Only the pair itself is left out, so an acronym
+after it (`NEW GUIDELINES: SRE`) is still read, and a pair of short capitalised words (`AWS KMS`, `NIST SP`) is still
+read as two acronyms.
+
+`common-acronym` (Japanese and English) has `Q&A`, `R&D` and `M&A`, which business documents use without expansion.
+Other `&` acronyms (`S&OP`, `F&A`) are still reported unless expanded.
+
 ### Japanese: a counter after a number does not start a run of kanji (#170)
 
 `max-kanji-continuous` counted the counter of a number written in digits as the first kanji of the compound that

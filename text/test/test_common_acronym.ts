@@ -25,8 +25,8 @@ const PENDING = { en: "SRE, XYZ and CBA are pending.", ja: "SRE、XYZ、CBAは�
     it("語彙表がある", () => {
       assert.ok(common.includes("API"));
       assert.ok(
-        common.every((word) => /^[A-Z]+$/u.test(word)),
-        "どの語も大文字だけの文字列として読める",
+        common.every((word) => /^[A-Z]+(?:&[A-Z]+)*$/u.test(word)),
+        "どの語も大文字だけの文字列（& で繋いでもよい）として読める",
       );
     });
 

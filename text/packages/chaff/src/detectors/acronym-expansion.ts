@@ -36,7 +36,7 @@ const MARKER_GAP = String.raw`(?![A-Za-z])[\s、,]*`;
  * 角括弧は引用の印にも使う（[IANA]、[1]）。直前の語のうち大文字で始まる語の頭文字が
  * 略語と揃うときだけ展開と見なす。見る語は略語の文字数の 2 倍まで（and や of を挟むため）。
  */
-const lettersOf = (acronym: string): string => acronym.replaceAll("&", "");
+const lettersOf = (acronym: string): string => acronym.replaceAll(/[&-]/gu, "");
 
 const initialsOf = (words: readonly string[]): string =>
   words

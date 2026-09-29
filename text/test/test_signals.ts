@@ -313,8 +313,8 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
       assert.deepEqual(acronymsIn("# Controls\n\nControls AC-2 and SC-7 apply. See MS.TEAMS.1.1v1 for details."), []);
     });
 
-    it("invalid: 数字を含まない繋がりは識別子ではない", () => {
-      assert.deepEqual(acronymsIn("# Notes\n\nThe SRE-SLO handoff is weekly."), ["SRE", "SLO"]);
+    it("invalid: 数字を含まない繋がりは識別子ではない（繋いだ形で 1 語として数える）", () => {
+      assert.deepEqual(acronymsIn("# Notes\n\nThe SRE-SLO handoff is weekly."), ["SRE-SLO"]);
     });
 
     it("invalid: 小文字の語に繋がった略語は数える", () => {

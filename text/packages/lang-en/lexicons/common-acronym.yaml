@@ -70,3 +70,7 @@ entries:
   - pattern: EU
   - pattern: UN
   - pattern: DNA
+  # & で繋いだ、仕事の文書で説明なしで通じる語。
+  - pattern: Q&A
+  - pattern: R&D
+  - pattern: M&A
