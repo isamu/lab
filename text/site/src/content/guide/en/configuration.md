@@ -104,6 +104,7 @@ $ npx chaffjs tree draft.txt
 
 When it is wrong, set `profile`. `none` stops it from being chosen from the content as well.
 To change it per path, `by_path` takes `profile` too.
+A profile that is not bundled stops chaff before it checks anything, and it says where the profile was written and which ones there are.
 
 ```yaml
 profile: statute
