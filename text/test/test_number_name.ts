@@ -90,7 +90,7 @@ describe("isNumberName", () => {
     assert.equal(isNumberName(parens, runOf(parens, "113"), [token(5, "クローン", "NOUN")], 0), false);
   });
 
-  it("reads a number at the head of a line in a note sequence as a label, unless a counter follows it", () => {
+  it("reads a number at the head of a line in a note sequence as a label, unless a word bound to numbers follows it", () => {
     const note = "10 日本経済新聞";
     const tokens = [token(103, "日本経済新聞", "PROPN")];
     assert.equal(isNumberName(note, runOf(note, "10"), tokens, 100, new Set([100])), true);
@@ -101,6 +101,10 @@ describe("isNumberName", () => {
     const conjunction = "31 ただし、課題もある";
     assert.equal(isNumberName(conjunction, runOf(conjunction, "31"), [token(3, "ただし", "CCONJ")], 0, new Set([0])), true);
     assert.equal(isNumberName(conjunction, runOf(conjunction, "31"), [token(3, "ただし", "CCONJ")], 0), false);
+    const joined = "※1 又は 2";
+    assert.equal(isNumberName(joined, runOf(joined, "1"), [token(3, "又は", "CCONJ")], 0), false);
+    const particle = "200 のまま";
+    assert.equal(isNumberName(particle, runOf(particle, "200"), [token(4, "の", "ADP")], 0, new Set([0])), false);
     const numeral = "2 万人";
     assert.equal(isNumberName(numeral, runOf(numeral, "2"), [token(2, "万", "NUM", { NumType: "Card" })], 0, new Set([0])), false);
     assert.equal(isNumberName(note, runOf(note, "10"), [], 100, new Set([100])), false);
@@ -206,6 +210,7 @@ describe("latin-spacing with parts of speech", () => {
   it("still counts numbered lines that count things, and a note number standing alone", () => {
     assert.deepEqual(spacing("# 手順\n\n3回呼び、5件直した。\n\n1 回目で止める。\n\n2 回目で直す。\n"), ["前の数字:空けています", "前の数字:空けています"]);
     assert.deepEqual(spacing("# 注\n\n本文では3回と5件を扱う。\n\n9 首相の発言。\n"), ["前の数字:空けています"]);
+    assert.deepEqual(spacing("# 値\n\n3回呼び、5件直した。\n\n200 のままにする。\n\n201 のままにする。\n"), ["前の数字:空けています", "前の数字:空けています"]);
     assert.deepEqual(spacing("# 注\n\n本文では3回と5件を扱う。\n\n```\n8 x\n```\n\n9 首相の発言。\n"), ["前の数字:空けています"]);
   });
 

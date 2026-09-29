@@ -9,7 +9,8 @@ Newest first.
 A white paper lists its notes one per line, each opening with its number and a space (`9 首相にそっくりの…`,
 `10 日本経済新聞…`, `11 …`). The space is the note's layout, not a choice between `3 回` and `3回`. A number that
 opens a line is now read as a note number when the nearest line before or after that also opens with a number carries
-the number one less or one more, unless a counter or a numeral follows it (`1 回目`, `2 回目` still count). A number opening a line on its own
+the number one less or one more, unless a word bound to numbers follows it, as for any label (`1 回目`, `2 回目` still count); a conjunction does
+not bind a note number (`31 ただし、…`). A number opening a line on its own
 (`223 言語に対応`) still counts, as before. Found on 総務省's 情報通信白書 chapters.
 
 ### `latin-spacing` does not count the space after a number written as a label or an identifier (#170)

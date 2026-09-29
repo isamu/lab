@@ -48,10 +48,11 @@ const wordAfter = (tokens: readonly Token[], text: string, run: Span, base: numb
   return tokens.find((token) => token.span.start === base + next);
 };
 
-/** 数量の印（助数詞・数）。「1 回目」「2 万」。 */
-const countsThings = (token: Token): boolean => token.features?.["NounType"] === "Class" || token.features?.["NumType"] === "Card";
+const isBoundToNumber = (token: Token): boolean =>
+  token.features?.["NounType"] === "Class" || token.features?.["NumType"] === "Card" || BOUND_TO_NUMBER.has(token.pos);
 
-const isBoundToNumber = (token: Token): boolean => countsThings(token) || BOUND_TO_NUMBER.has(token.pos);
+/** 「1 又は 2」の接続詞は数どうしをつなぐが、続き番号の注の本文は「31 ただし、…」のように接続詞でも始まる。 */
+const CONJUNCTIONS = new Set(["CCONJ", "SCONJ"]);
 
 /**
  * 白書の注（「9 首相に…」「10 日本経済新聞…」）のように、行の頭に階層の無い番号を置き、次の行の頭の番号が 1 つ大きいもの。
@@ -91,6 +92,5 @@ export const isNumberName = (
   if (tokens === undefined || !(inSequence || isNameShaped(text, run))) return false;
   const next = wordAfter(tokens, text, run, base);
   if (next === undefined) return false;
-  // 続き番号の行は、後ろが助数詞か数のときだけ数量（「1 回目」「2 回目」の並び）。注は「31 ただし、…」のように接続詞でも始まる。
-  return inSequence ? !countsThings(next) : !isBoundToNumber(next);
+  return !isBoundToNumber(next) || (inSequence && CONJUNCTIONS.has(next.pos));
 };
