@@ -295,7 +295,7 @@ describe("MUTATIONS", () => {
   it("文書全体に言う rule の誤りだけが、どこで言っても見つけたとする", () => {
     assert.deepEqual(
       MUTATIONS.filter((mutation) => mutation.reportsOn === "document").map((mutation) => mutation.rule),
-      ["required-sections"],
+      ["required-sections", "preamble-length"],
     );
   });
 });

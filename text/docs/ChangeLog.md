@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `yarn bench` plants mistakes for more rules: a preamble, stock phrasing, repeated openers and team spellings (#170)
+
+The seeded-mistake benchmark now also plants a preamble made by leaving out the first section heading
+(`preamble-length`), a closing 「いかがでしたか。」 / "Thanks for reading." on a blog post (`closing-cliche`), a
+padded opening sentence after the first one (`padded-intro`), an empty 「これは非常に重要です。」 / "This is extremely
+important." after the first statement of the body (`empty-intensifier`), consecutive paragraphs that all open with
+「また、」 / "Also," (`repeated-conjunction`), sentences chained with "And" (`sentence-initial-conjunction-run`), and a
+spelling the team has ruled out, such as 打合せ for 打ち合わせ or e-mail for email (`preferred-term`; the bench passes the
+team's `prefer` as `chaff.yaml` would). The clean samples are unchanged and none of these rules reports on them.
+
 ### `undefined-acronym` does not count a reference key in square brackets (#170)
 
 Specifications point to their references with a bracketed key: `[HPACK]`, `[RFC9110]`, `[SECURING-WEB]`,
