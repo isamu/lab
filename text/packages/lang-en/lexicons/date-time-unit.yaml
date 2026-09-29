@@ -1,0 +1,6 @@
+# Units written right after the number of a date or a time. English writes a date template with separators (MM/DD/YYYY,
+# HH:MM), which chaff reads without a list, and puts no unit word right after the number, so there are none; the list
+# exists so both languages name the same lists.
+id: date-time-unit
+language: en
+entries: []
