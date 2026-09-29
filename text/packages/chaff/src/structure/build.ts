@@ -10,6 +10,7 @@ import { dottedNumber } from "./universal.ts";
 import { numberInSentence } from "./number-in-sentence.ts";
 import { unnumberedUnit, type OpenUnit } from "./unnumbered.ts";
 import { readsOnHeading } from "./heading-leaves.ts";
+import { onLine, wrappedLine, type WrappedLine } from "./wrapped-tail.ts";
 
 /** 組み立て中の節点。できあがったら StructureNode に固める。 */
 type Draft = {
@@ -130,11 +131,14 @@ const outsideAddresses = (mentions: readonly Mention[], text: string, profile: D
 const withoutAbsolute = (relative: readonly Mention[], absolute: readonly Mention[]): readonly Mention[] =>
   relative.filter((mention) => !absolute.some((other) => mention.start < other.end && other.start < mention.end));
 
-type LeafFinder = (patterns: StructurePatterns, text: string, profile: DocumentProfile | undefined) => readonly Mention[];
+type LeafFinder = (patterns: StructurePatterns, text: string, profile: DocumentProfile | undefined, wrapped: WrappedLine) => readonly Mention[];
 
 const LEAVES: readonly { readonly kind: StructureKind; readonly find: LeafFinder }[] = [
   { kind: "definition", find: (patterns, text) => patterns.definitions(text) },
-  { kind: "reference", find: (patterns, text, profile) => substitutedDocuments(patterns.references(text), text, profile) },
+  {
+    kind: "reference",
+    find: (patterns, _text, profile, wrapped) => onLine(substitutedDocuments(patterns.references(wrapped.text), wrapped.text, profile), wrapped),
+  },
   {
     kind: "reference",
     find: (patterns, text, profile) => {
@@ -183,12 +187,13 @@ const scopeOf = (state: State, patterns: StructurePatterns, text: string): Reado
   return within === undefined ? { scope: "local" } : { scope: "local", within: within.address };
 };
 
-const addLeaves = (state: State, patterns: StructurePatterns, line: Line, text: string, offset: number, onHeading: boolean): void => {
+const addLeaves = (state: State, patterns: StructurePatterns, line: Line, wrapped: WrappedLine, offset: number, onHeading: boolean): void => {
   const parent = top(state).draft;
+  const text = wrapped.line;
   const scope = scopeOf(state, patterns, text);
   const leaves = LEAVES.filter(({ kind }) => !onHeading || readsOnHeading(kind))
     .flatMap(({ kind, find }) =>
-      find(patterns, text, state.profile).map((mention) => ({
+      find(patterns, text, state.profile, wrapped).map((mention) => ({
         kind,
         start: line.start + offset + mention.start,
         end: line.start + offset + mention.end,
@@ -293,7 +298,7 @@ const withCaption = (state: State, line: Line, numbered: NumberedLine | undefine
   return numbered === undefined || caption === undefined ? numbered : { ...numbered, heading: caption };
 };
 
-const readLine = (state: State, patterns: StructurePatterns, line: Line, heading: Heading | undefined): void => {
+const readLine = (state: State, patterns: StructurePatterns, line: Line, heading: Heading | undefined, next: string | undefined): void => {
   const text = heading === undefined ? line.text : headingLineText(line.text);
   const openNumbers = state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered]));
   const context = { open: openNumbers, isHeading: heading !== undefined };
@@ -309,7 +314,8 @@ const readLine = (state: State, patterns: StructurePatterns, line: Line, heading
   // 番号付きの行は番号の後ろだけを読む。「第3条（支払）」の「第3条」を自分への参照として拾わない。
   const scanned = numbered === undefined ? text : numbered.rest;
   const offset = Math.max(0, line.text.lastIndexOf(scanned));
-  if (scanned !== "") addLeaves(state, patterns, line, scanned, offset, heading !== undefined);
+  const onHeading = heading !== undefined;
+  if (scanned !== "") addLeaves(state, patterns, line, wrappedLine(scanned, onHeading, next), offset, onHeading);
 };
 
 /**
@@ -334,8 +340,8 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
     captions: new Map(),
     plainText: !input.markdown,
   };
-  lines.forEach((line) => {
-    if (line.text.trim() !== "") readLine(state, patterns, line, headings.get(line.number));
+  lines.forEach((line, index) => {
+    if (line.text.trim() !== "") readLine(state, patterns, line, headings.get(line.number), lines[index + 1]?.text);
     // コードの行は覆って読まないが、開いている節の中身ではある。節の最後にコードブロックがあっても、範囲をそこまで伸ばす。
     else if (input.source.slice(line.start, line.start + line.text.length).trim() !== "") extend(state, line.start + line.text.length);
   });
