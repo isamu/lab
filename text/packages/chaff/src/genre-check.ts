@@ -14,6 +14,16 @@ type PathGenre = { readonly files: readonly string[]; readonly genre: string | u
 
 type WrittenGenres = { readonly flag: string | undefined; readonly config: string | undefined; readonly byPath: readonly PathGenre[] };
 
+/** Commands that never read a genre from chaff.yaml. A wrong one there must not stop them: genres is how to find the right name. */
+const GENRE_FREE: ReadonlySet<string> = new Set(["init", "genres", "skill", "relax", "strict", "off", "tree", "cite"]);
+
+/** The genres a command would read: --genre always (every command refuses a wrong one), chaff.yaml's only where the command reads a genre. */
+export const writtenGenres = (
+  command: string,
+  flag: string | undefined,
+  config: { readonly genre: string | undefined; readonly byPath: readonly PathGenre[] },
+): WrittenGenres => (GENRE_FREE.has(command) ? { flag, config: undefined, byPath: [] } : { flag, config: config.genre, byPath: config.byPath });
+
 const setting = (where: GenreSetting, genre: string | undefined, files: readonly string[] = []): UnknownGenre[] =>
   genre === undefined ? [] : [{ where, genre, files }];
 

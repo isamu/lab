@@ -16,7 +16,7 @@ import { clock, describeChange, snapshotOf, watchPaths, type Snapshot } from "./
 import { runEval } from "./commands/eval.ts";
 import { runTest } from "./commands/test.ts";
 import { GENRES } from "./genre.ts";
-import { unknownGenres } from "./genre-check.ts";
+import { unknownGenres, writtenGenres } from "./genre-check.ts";
 import { resolveGenre } from "./resolve-genre.ts";
 import { runInit } from "./init.ts";
 import { targetsOf } from "./cli-args.ts";
@@ -45,14 +45,10 @@ const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.langu
 
 const readConfig = (): Config => (existsSync(join(process.cwd(), CONFIG_FILE)) ? loadConfig(join(process.cwd(), CONFIG_FILE)) : EMPTY);
 
-/** Commands that never read a genre from chaff.yaml. A wrong one there must not stop them: genres is how to find the right name. */
-const GENRE_FREE: ReadonlySet<string> = new Set(["init", "genres", "skill", "relax", "strict", "off", "tree", "cite"]);
-
 const genreProblems = (command: string, argv: readonly string[]): string[] => {
   const config = readConfig();
   const text = hostText(config);
-  const fromConfig = GENRE_FREE.has(command) ? { config: undefined, byPath: [] } : { config: config.genre, byPath: config.byPath };
-  return unknownGenres({ flag: flag(argv, "--genre"), ...fromConfig }, GENRES).map((entry) =>
+  return unknownGenres(writtenGenres(command, flag(argv, "--genre"), config), GENRES).map((entry) =>
     text.unknownGenre(entry.genre, text.genreWhere(entry.where, entry.files), GENRES),
   );
 };
@@ -297,7 +293,10 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   genres: showGenres,
   rules: showRules,
   explain: (argv) => explain(argv[1]),
-  eval: (argv) => runEval(positional(argv), argv, { config: readConfig(), resolveGenre: genreFrom(argv), flag }),
+  eval: (argv) => {
+    const config = readConfig();
+    return runEval(positional(argv), argv, { config, resolveGenre: genreFrom(argv), flag, ui: hostLanguage(config.language, process.env) });
+  },
   tree: (argv) => runTree(treeTargets(argv), argv, treeContext()),
   cite: (argv) => runCite(citeTargets(argv), argv, treeContext()),
   test: (argv) => runTest(positional(argv), argv, { config: readConfig(), resolveGenre: genreFrom(argv), inspect }),
@@ -339,10 +338,8 @@ export const main = async (argv: readonly string[]): Promise<number> => {
   }
   // 知らないジャンルでは、どの rule も当たらず、動かなかった rule も並ばない。「指摘なし」が素通りに見えるので、何かする前に止める。
   const problems = genreProblems(first, argv);
-  if (problems.length > 0) {
-    problems.forEach((problem) => console.error(problem));
-    return 1;
-  }
+  problems.forEach((problem) => console.error(problem));
+  if (problems.length > 0) return 1;
   const handler = HANDLERS[first];
   if (handler !== undefined) return handler(argv);
   const targets = targetsOf(first === "lint" ? argv.slice(1) : argv);

@@ -14,6 +14,32 @@ falls back to the path, the content or the default as before, and chaff now says
 language, that the value was not read. The commands that do not read a genre (`genres`, `init`, `tree`, `cite`, `relax`, `strict`, `off`, `skill`)
 still run with such a `chaff.yaml`.
 
+### `chaff eval` speaks English to English documents (#170)
+
+`chaff eval` printed its whole report in Japanese, whatever the language of the documents it measured and whatever
+`chaff.yaml` or the terminal said. The report now follows the documents' language, as lint's screen does (eval
+measures one language at a time, so there is one). Its refusals (no Markdown found, languages or genres mixed, no such
+rule) follow `chaff.yaml`'s `language`, then the terminal's locale. The Japanese text is unchanged.
+
+### `undefined-acronym` on HTTP methods, document numbers, "=" definitions, ONLY and series numbers (#170)
+
+Five kinds of capitals were reported as acronyms with nothing to expand:
+
+- **HTTP methods** (GET, POST, "non-GET requests"): words, not abbreviations. They come from a new `http-method` word
+  list in each language package.
+- **Document numbers**: the capital word right before a hyphenated number with a part of three digits or more is part
+  of the number (SP 800-61, NSF 19-582, IEC 19757-2). The word before it is still counted (NIST in "NIST SP
+  800-61"), and so is a word before a number with no hyphen (RFC 9110), a version (SDK 3.1), a range of years
+  (FY 2024-25), two numbers of the same width going up (SLO 100-200, SLA 500-599), which are a range, or two-digit
+  parts (BOD 25-01), which cannot be told from a range, a score or a date (SRE 1-2, 01-02).
+- **Symbols defined with "="**: "where N = number of cases, EH = total hours worked" defines EH after it is used.
+  A value (EH = 2,000, EH = 40h) or another acronym (EH = SRE) is not a definition. A word as the value
+  (SRE = enabled) reads as a one-word definition: a capital name given a value is a setting, with nothing to expand.
+- **ONLY** in capitals for emphasis joins `emphasis-word` next to NOT and AND.
+- **Series numbers**: a Roman numeral of I, V and X that stands alone with a period at the start of a sentence or
+  after the end of one ("… Filter. VII. Water-Bearing Objects", "Euclid. II. The VIS Instrument") is a number.
+  After a bracket ("(MEGAFLOW) XII.") it is still counted, since "(adult dose) IV" is written the same way.
+
 ### `agentless-passive` leaves Japanese honorific れる/られる and 「〜と呼ばれる」 alone (#170)
 
 Honorific れる/られる names the person who acts as the subject, so no actor is hidden. lang-ja now drops

@@ -4,7 +4,19 @@ status: experimental
 how_to_find: undefined-acronym
 word_list: common-acronym
 extra_word_lists:
-  [definition-marker, definition-verb, meridiem, time-zone, currency-code, us-state-code, emphasis-word, numbered-division, honorific, date-time-unit]
+  [
+    definition-marker,
+    definition-verb,
+    meridiem,
+    time-zone,
+    currency-code,
+    us-state-code,
+    emphasis-word,
+    numbered-division,
+    honorific,
+    date-time-unit,
+    http-method,
+  ]
 uses: [pos]
 severity: info
 

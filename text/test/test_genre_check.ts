@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { unknownFrontMatterGenre, unknownGenres } from "../packages/chaff/src/genre-check.ts";
+import { unknownFrontMatterGenre, unknownGenres, writtenGenres } from "../packages/chaff/src/genre-check.ts";
 import { GENRES } from "../packages/chaff/src/genre.ts";
 import { main } from "../packages/chaff/src/cli.ts";
 
@@ -57,6 +57,22 @@ describe("書かれたジャンルのうち、知らないもの", () => {
     assert.deepEqual(
       unknownGenres({ ...nothing, flag: "blog/tech", config: "tech" }, GENRES).map((entry) => entry.where),
       ["config"],
+    );
+  });
+});
+
+describe("コマンドが読むジャンル", () => {
+  const config = { genre: "tech", byPath: [{ files: ["*.md"], genre: "x" }] };
+
+  it("ジャンルを読むコマンドは、--genre と chaff.yaml の両方", () => {
+    ["lint", "a.md", ".", "test", "eval", "rules", "explain", "baseline", "suppressions", "feedback"].forEach((command) =>
+      assert.deepEqual(writtenGenres(command, "y", config), { flag: "y", config: "tech", byPath: config.byPath }, command),
+    );
+  });
+
+  it("ジャンルを読まないコマンドは --genre だけ", () => {
+    ["init", "genres", "skill", "relax", "strict", "off", "tree", "cite"].forEach((command) =>
+      assert.deepEqual(writtenGenres(command, "y", config), { flag: "y", config: undefined, byPath: [] }, command),
     );
   });
 });
