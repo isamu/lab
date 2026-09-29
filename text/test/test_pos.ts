@@ -55,6 +55,7 @@ describe("解析器を読むまで tokens は無い", () => {
   it("使えるなら使う rule（uses: [pos]）だけが動いていても、pos を読む", () => {
     const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos") || rule.uses.includes("pos")).map((rule) => [rule.id, "off" as const]));
     assert.equal(neededBy(RULES, { ...off, "concrete-evidence-density": "normal" }, false, "business/report", "ja").pos, true);
+    assert.equal(neededBy(RULES, { ...off, "latin-spacing": "normal" }, true, "technical/readme", "ja").pos, true);
     assert.deepEqual(
       RULES.filter((rule) => rule.uses.includes("pos"))
         .map((rule) => rule.id)
@@ -68,6 +69,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "empty-intensifier",
         "excessive-hedging",
         "hiragana-fukushi",
+        "latin-spacing",
         "max-kanji-continuous",
         "ngram-repetition",
         "padded-intro",
