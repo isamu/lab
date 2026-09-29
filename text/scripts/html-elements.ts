@@ -5,8 +5,9 @@ import { decodeEntities } from "./markup-text.ts";
 // In a tag a quote opens a value only after "=", and the value ends only at its matching quote, whatever it holds.
 const TAG_BODY = String.raw`(?:[^>=]|=\s*"[^"]*"|=\s*'[^']*'|=(?!\s*["']))*`;
 
-// A script or a style is matched whole, so that no tag is read inside its text (the converter drops it anyway).
-const TAG = new RegExp(String.raw`<(script|style)\b${TAG_BODY}>[\s\S]*?<\/\1\s*>|<[a-z][a-z0-9-]*${TAG_BODY}>`, "giu");
+// A comment, a processing instruction, a script and a style are matched whole, so that no tag is read inside them
+// (the converter drops them anyway), and a "<!--" inside a value is escaped before comments are looked for.
+const TAG = new RegExp(String.raw`<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<(script|style)\b${TAG_BODY}>[\s\S]*?<\/\1\s*>|<[a-z][a-z0-9-]*${TAG_BODY}>`, "giu");
 
 const QUOTED_VALUE = /=(\s*)("[^"]*"|'[^']*')/gu;
 

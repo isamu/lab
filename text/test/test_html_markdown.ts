@@ -530,6 +530,13 @@ describe("htmlToMarkdown: 属性値の中の < と >", () => {
     assert.equal(htmlToMarkdown(`<p>A.</p>${unclosed}`), `A.\n\n${unclosed}\n`);
   });
 
+  it("属性値の <!-- と <? はコメントを始めず、コメントの中の引用符は値を始めない", () => {
+    assert.equal(htmlToMarkdown('<section title="<!--"><p>Lost?</p><!-- note --><p>Kept.</p></section>'), "Lost?\n\nKept.\n");
+    assert.equal(htmlToMarkdown('<p title="<?">A.</p><p>B.</p><?x ?>'), "A.\n\nB.\n");
+    assert.equal(htmlToMarkdown('<!-- <a title="x --><p>Kept.</p><p title="y">Also.</p>'), "Kept.\n\nAlso.\n");
+    assert.equal(htmlToMarkdown('<?x <b title="?><p>Kept.</p><p class="y">Also.</p>'), "Kept.\n\nAlso.\n");
+  });
+
   it("script と style の中身はタグとして読まない", () => {
     assert.equal(htmlToMarkdown('<script>s = \'<b title="\';</script><p>Kept.</p><p title="x">Also.</p>'), "Kept.\n\nAlso.\n");
     assert.equal(htmlToMarkdown("<style>a[title='<b']{}</style><p>Kept.</p><p title='x'>Also.</p>"), "Kept.\n\nAlso.\n");

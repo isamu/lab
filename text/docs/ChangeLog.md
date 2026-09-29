@@ -18,8 +18,8 @@ An attribute value holding markup, such as GOV.UK's history banner
 (`title="This was published under the <span lang=&quot;en&quot;>…</span>"`), ended its tag at the first `>` inside
 the value and left a stray `…government">` line. Before anything else reads the page, the HTML converter now writes
 each `<` and `>` inside a quoted attribute value as a character reference, which means the same in a value, so every
-tag scanner reads the whole tag. A quote opens a value only after `=`, and a script's or a style's text is not read
-as tags. Converted again, the corpus's pages change only where such a reference stood.
+tag scanner reads the whole tag. A quote opens a value only after `=`; a comment, a script and a style are not read as
+tags, and a `<!--` inside a value no longer opens a comment. Converted again, the corpus's pages change only where such a reference stood.
 
 ### `concrete-evidence-density` sees a relative link, a spelled-out count and a reference the structure tree read (#170)
 

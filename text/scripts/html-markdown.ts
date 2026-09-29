@@ -388,7 +388,7 @@ const withoutClosingAddress = (html: string): string => {
 };
 
 export const htmlToMarkdown = (html: string): string => {
-  const uncommented = withAttributeMarkupEscaped(html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""));
+  const uncommented = withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "");
   const preformatted = withPreformattedStashed(DROPPED.reduce(withoutElement, withoutRubyText(uncommented)));
   const kept = withoutHeadingSelfLinks(withoutButtons(withoutHiddenElements(mainContent(preformatted.html))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
