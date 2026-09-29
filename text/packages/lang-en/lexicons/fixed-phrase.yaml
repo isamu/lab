@@ -1,0 +1,14 @@
+# Fixed phrases, mostly borrowed, that open with a word the tagger reads as an article and act as one adjective or
+# adverb: "the a priori approach", "an a fortiori case", "the a la carte menu". The "a" belongs to the phrase, so an
+# article before it is not a doubled article. The tagger gives no sign of a foreign word here ("priori" is a noun to
+# it), so the phrases are listed.
+id: fixed-phrase
+language: en
+entries:
+  - pattern: a priori
+  - pattern: a posteriori
+  - pattern: a fortiori
+  - pattern: a la carte
+  - pattern: a la mode
+  - pattern: a cappella
+  - pattern: a capella

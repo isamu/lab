@@ -14,6 +14,23 @@ joined by one space in place of the line break and its indentation, when it look
 after the wrap, or "of this Agreement", is still looked up in this document; a blank line ends the join and a heading
 does not run on into the next line; findings keep their place on the line. Found on draft-ietf-httpapi-ratelimit-headers-10.
 
+### `doubled-word` does not count an article before "a priori" (#170)
+
+"the a priori approach" was reported as two articles in a row. The "a" of "a priori", "a posteriori", "a fortiori",
+"a la carte", "a la mode" and "a cappella" belongs to a fixed phrase that acts as one adjective, and the tagger gives no
+sign of a foreign word there ("priori" is a noun to it). An article pair is no longer reported when the second word
+opens a phrase from lang-en's new `fixed-phrase` word list. "the a report" and "a a priori" are still reported, and
+so is any doubled article before the phrase ("the the a priori"). Japanese has no articles and no such list.
+
+### `unqualified-superlative` does not report the name of a measured quantity (#170)
+
+最大風速, 最高気温 and 最大値 name a quantity that is measured; they do not claim that anything is the greatest. A
+superlative noun joined directly to the next noun, with no particle or space between (the parts of speech say so), is
+now read as such a name when the compound ends in a noun for a measured quantity (風速, 気温, 値, 台数 ...). Those nouns
+come from each language package's new `quantity-noun` word list, which the rule declares; a compound ending in any
+other noun (最高品質, 最速配送, 最高精度, 最高満足度) is still a claim and still reported, as are 最大の効果 and 最も速い.
+English writes a space between a superlative and its noun, so its list is empty and nothing changes there.
+
 ### `concrete-evidence-density` sees a relative link, a spelled-out count and a reference the structure tree read (#170)
 
 The rule says a section has "no number, code or link", but it only saw a link written as `https://…`. A Markdown
