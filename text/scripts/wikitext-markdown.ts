@@ -108,7 +108,8 @@ function renderTemplate(inside: string): string {
   return render === undefined ? DROPPED : render(paramsOf(args));
 }
 
-const DROPPED_NAMESPACES = new Set(["file", "image", "media", "category"]);
+// 日本語版のウィキ（Wikivoyage・Wikisource）は、同じ名前空間を日本語の名前でも書く。
+const DROPPED_NAMESPACES = new Set(["file", "image", "media", "category", "ファイル", "画像", "メディア", "カテゴリ"]);
 
 const renderLink = (inside: string): string => {
   const parts = splitTopLevel(inside);

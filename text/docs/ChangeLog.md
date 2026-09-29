@@ -11,8 +11,9 @@ the applicant holds its copyright), a US Supreme Court opinion (Gideon v. Wainwr
 (not subject to copyright under 著作権法第13条第3号), one of them hard-wrapped at a fixed width the way a judgment
 copied from its PDF is. Patents come from Google Patents as archived by the Internet Archive; a new corpus format,
 `google-patents`, keeps only the abstract, the description and the claims and drops Google's metadata, citation and
-family tables. Opinions and judgments come from Wikisource at a pinned revision. The courts' own sites publish full
-judgments only as PDF, which the corpus cannot convert.
+family tables. Opinions and judgments come from Wikisource at a pinned revision; the wikitext converter now also drops
+links in the Japanese names of the file and category namespaces (`[[カテゴリ:日本の判例]]`, `ファイル:`, `画像:`,
+`メディア:`). The courts' own sites publish full judgments only as PDF, which the corpus cannot convert.
 
 ### English: a sentence that closes inside a quotation ends there (#170)
 
