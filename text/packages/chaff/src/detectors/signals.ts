@@ -218,6 +218,7 @@ const notationOf = (doc: ProseDocument): NotAcronymSpans =>
     usStates: patternsOf(doc, "us-state-code"),
     emphasis: patternsOf(doc, "emphasis-word"),
     divisions: patternsOf(doc, "numbered-division"),
+    honorifics: patternsOf(doc, "honorific"),
   });
 
 /** 定義の語は、語彙表の形（という）と、この文書で活用して書かれた形（といいます）の両方で照らす。 */

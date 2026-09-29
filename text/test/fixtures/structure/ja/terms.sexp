@@ -12,7 +12,7 @@
       (obligation :marker "してはならない" :type "must-not" :line 19)
       (item "3.1" :label "（1）" :line 21)
       (item "3.2" :label "（2）" :line 22
-        (reference :label "第2条" :target "2" :line 22)))
+        (reference :label "第2条" :target "2" :unitWord "条" :line 22)))
     (article "4" :heading "料金" :label "第4条" :line 24
       (quantity :unit "円" :value 980 :line 26)
       (obligation :marker "ものとする" :type "must" :line 26))))

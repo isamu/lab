@@ -2,7 +2,7 @@
   (definition :term "甲" :line 3)
   (definition :term "乙" :line 3)
   (article "1" :heading "目的" :label "第1条" :line 5
-    (reference :label "第3条" :target "3" :line 6))
+    (reference :label "第3条" :target "3" :unitWord "条" :line 6))
   (article "2" :heading "定義" :label "第2条" :line 8
     (definition :term "成果物" :line 9))
   (article "3" :heading "業務" :label "第3条" :line 11
@@ -28,6 +28,6 @@
       (quantity :unit "年間" :value 1 :line 27)
       (obligation :marker "することができる" :type "may" :line 27)))
   (article "7" :heading "解除" :label "第7条" :line 29
-    (reference :label "第4条第2項" :target "4.2" :line 30)
-    (reference :label "第5条" :target "5" :line 30)
+    (reference :label "第4条第2項" :target "4.2" :unitWord "条" :line 30)
+    (reference :label "第5条" :target "5" :unitWord "条" :line 30)
     (obligation :marker "することができる" :type "may" :line 30)))

@@ -1,0 +1,15 @@
+# Honorifics a transcript sets before a speaker's surname, which it prints in capitals (Mr. HAWLEY., Mrs. CAPITO.,
+# Mr BLAKE in British style). A word in capitals right after one of these is a name, not an acronym. Matched as written.
+id: honorific
+language: en
+entries:
+  - pattern: "Mr."
+  - pattern: "Mrs."
+  - pattern: "Ms."
+  - pattern: "Dr."
+  - pattern: "Mr"
+  - pattern: "Mrs"
+  - pattern: "Ms"
+  - pattern: "Dr"
+  - pattern: "Miss"
+  - pattern: "Madam"

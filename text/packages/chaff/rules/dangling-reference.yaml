@@ -10,8 +10,8 @@ name:
   en: Reference to a missing provision
 
 why:
-  ja: 「第12条に定める」のような参照は、その条が文書に無ければ読み手を行き止まりにします。条を消したり番号を振り直したりしたときに、参照だけが古い番号のまま残ることがよくあります。chaff は文書を番地の付いた木にして（chaff tree）、参照の番地が木にあるかを見ます。
-  en: A reference such as "as set out in Section 12" leaves the reader at a dead end when that section is not in the document. It usually happens when a provision is deleted or renumbered and the reference keeps the old number. chaff builds the document's tree of addresses (chaff tree) and checks that each reference's address is in it.
+  ja: 「第12条に定める」のような参照は、その条が文書に無ければ読み手を行き止まりにします。条を消したり番号を振り直したりしたときに、参照だけが古い番号のまま残ることがよくあります。chaff は文書を番地の付いた木にして（chaff tree）、参照の番地が木にあるかを見ます。見出しに「1 目的」と番号を振っただけで「第N条」と書いた条の無い文書（ガイドラインや通達）の「法第2条」は、別の文書の条なので探しません。
+  en: A reference such as "as set out in Section 12" leaves the reader at a dead end when that section is not in the document. It usually happens when a provision is deleted or renumbered and the reference keeps the old number. chaff builds the document's tree of addresses (chaff tree) and checks that each reference's address is in it. A Japanese reference counted in 条 (法第2条) is not looked up in a document that numbers none of its provisions with 条, such as a guideline whose headings read "1 目的", because it points into another document.
 
 message:
   ja: 「{label}」（番地 {target}）はこの文書にありません
