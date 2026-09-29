@@ -1,5 +1,6 @@
 import { hasParticle, isClosed, lastContent } from "../sentence-shape.ts";
-import type { Detector, Finding, Span, Token } from "../plugin.ts";
+import { isWithinAny, quotedSpans } from "../quoted-span.ts";
+import type { Detector, Finding, Sentence, Span, Token } from "../plugin.ts";
 
 /**
  * 文末が名詞で終わる（体言止め）。箇条書きでは普通だが、本文では文が途中で切れて読める。
@@ -57,17 +58,25 @@ const BREAK: Run = { surface: "", tokens: [] };
 /**
  * 名詞は連なりの中身なので飛ばす。読点と、語彙表に無い助詞は連なりを切る。
  * 「弊社のAはBの」を 2 回続いたと数えないため。「は」でいちど句が閉じている。
+ *
+ * 鉤括弧で引いたもの（括弧ごと）は、名詞と同じく連なりの中身として飛ばす。引いた題名（「食品中のウイルスの制御のための…ガイドライン」）や
+ * 発言は書き手が言い換えられないので、中の助詞は数えない。題名も名前なので、外の連なり（弊社の「新製品」の販売の計画）は続けて数える。
  */
-const runsOf = (tokens: readonly Token[], nesting: readonly string[]): Run[] =>
+const runsOf = (tokens: readonly Token[], nesting: readonly string[], quoted: readonly Span[]): Run[] =>
   tokens.reduce<Run[]>((acc, token) => {
+    if (isWithinAny(quoted, token.span)) return acc;
     if (nesting.includes(token.surface)) return extend(acc, token);
     return token.pos === "PUNCT" || PARTICLE.has(token.pos) ? [...acc, BREAK] : acc;
   }, []);
 
+/** 文の中の、鉤括弧で引いたものを括弧ごと、文書全体の座標で。 */
+const quotedIn = (sentence: Sentence): Span[] =>
+  quotedSpans(sentence.text).map((span) => ({ start: sentence.span.start + span.start - 1, end: sentence.span.start + span.end + 1 }));
+
 export const doubledParticle: Detector = (doc, options): Finding[] => {
   const nesting = (options.lexicon ?? []).map((entry) => entry.pattern);
   return doc.sentences.flatMap((sentence) =>
-    runsOf(sentence.tokens ?? [], nesting)
+    runsOf(sentence.tokens ?? [], nesting, quotedIn(sentence))
       .filter((run) => run.tokens.length > options.limit)
       .map((run) => ({
         rule: "no-doubled-joshi",

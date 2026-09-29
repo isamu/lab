@@ -50,7 +50,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
                   no-nakaguro-parallel
   83:1    warning この文は 102 文字あります（100 文字まで）
                   max-sentence-length
-  132:1   info    本文に体言止めが 10 文あります（4 文まで）
+  132:1   info    本文に体言止めが 11 文あります（4 文まで）
                   taigen-dome-in-prose
   134:1   warning この段落は 6 文あります（5 文まで）
                   max-paragraph-length

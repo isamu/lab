@@ -27,6 +27,35 @@ any) follow. It does not when the word before the full stop is an abbreviation o
 (`"Is it right?" asked the clerk`, `"no." 316 U.S. at 462`). Found on a Supreme Court opinion, CRS reports, an NSF
 solicitation and GitLab's handbook.
 
+### The corpus HTML converter drops more of a site header and footer by their shape (#170)
+
+Three shapes before the page's `<h1>` now count as a menu for the site-header rule, so the innermost block holding
+one, with no sentence beside it, goes whole: a definition list whose definition is a breadcrumb trail (`現在位置`:
+`トップ > 教育 > …`), a list whose items hold no words (a text-size switch drawn as images, with its label
+`文字サイズ変更`), and a block of links and nothing else, even a single one (`English`, `サイトマップ`). A trail with
+only one link, a definition beside prose, a list with words, an empty list, a link with words or a sentence beside
+it, a card, and any of these after the title are kept.
+
+A copyright notice closing the page no longer needs a year when it opens with the © sign or `Copyright ©` /
+`Copyright (c)` (`Copyright © Ministry of Health, Labour and Welfare, All Right reserved.`); `(c)` alone opens an
+enumerated paragraph and `Copyright` alone a sentence, so neither counts without a year. An `<address>` whose nearest
+enclosing block holds nothing else but copyright notices, with nothing but them after it, is the site's contact line
+and goes with them. An address beside a label or any other text (`Send comments to:`), outside any block, with
+anything else after it, or with nothing after it, is kept.
+
+Found on 文部科学省's, 国土地理院's and 厚生労働省's pages. NWS's `Safety` / `National Program` beside the title is
+left as it is: two short paragraphs without links before the `<h1>`, the same shape as a press release's dateline or
+a notice's agency and docket number, set apart only by its class name.
+
+### `no-doubled-joshi` does not count particles inside a quoted title (#170)
+
+A title quoted in 「」 is the name of something, not the writer's phrasing: 「食品中のウイルスの制御のための食品衛生一般原則の適用
+に関するガイドライン」 was reported for its chain of の, which the writer cannot rephrase without misquoting it. A quotation
+in 「」 or 『』 is now read as one noun: the particles inside it are not counted, and the chain around it goes on through it,
+so 「弊社の「新製品」の販売の計画」 is reported where the brackets used to break it. A chain outside a short quotation
+(「「2 ページ表示」での各ページのサイズの揃え方の設定」) is still reported, a comma after the quotation still breaks the chain,
+and an unclosed bracket quotes nothing. Found on 厚生労働省's Q&A on norovirus.
+
 ### `latin-spacing` does not count the space after a postal code or an address number (#170)
 
 The space in 「〒100-8916 東京都千代田区」 was counted as a space between a number and Japanese, because only a code with a
