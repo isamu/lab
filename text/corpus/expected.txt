@@ -43,7 +43,7 @@ da-service-design-guidelines-2  agentless-passive 24, concrete-evidence-density 
 denkiyagi-ryohi-kitei  clean
 denkiyagi-shugyo-kisoku  agentless-passive 3, heading-echo 2, max-kanji-continuous 19, max-sentence-length 7, ngram-repetition 1, no-doubled-joshi 4
 dwango-nicolive-manifest-generator  latin-spacing 9, max-sentence-length 1, undefined-acronym 3
-ecfr-16-cfr-310-telemarketing  agentless-passive 74, dangling-reference 44, heading-echo 1, max-sentence-length 167, ngram-repetition 1, numbering-gap 9, proper-noun-density 1, title-case-consistency 2, undefined-acronym 7
+ecfr-16-cfr-310-telemarketing  agentless-passive 74, dangling-reference 7, heading-echo 1, max-sentence-length 167, ngram-repetition 1, numbering-gap 2, proper-noun-density 1, title-case-consistency 2, undefined-acronym 7
 eip-1559-fee-market  contraction-consistency 2, max-paragraph-length 3, max-sentence-length 33, undefined-acronym 3
 entaku-rb-4  agentless-passive 9, latin-spacing 1
 entaku-rb-5  no-mixed-desumasu 1

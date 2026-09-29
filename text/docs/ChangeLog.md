@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### An English `(i)` right under `(1)` is a roman numeral, as US regulations number (a)(1)(i) (#170)
+
+A US regulation goes down `(a)`, `(1)`, `(i)`. lang-en read an `(i)` as roman only right under a lettered item, so the
+`(i)` under a `(1)` became the letter i beside `(a)`: its `(ii)`, `(iii)` hung under it, the next `(b)` was reported as
+following `(i)`, and every reference such as `§ 310.3(a)(1)(i)` pointed at an address the tree did not have. An `(i)`,
+`(v)` or `(x)` right under `(1)` is now roman, as it is under `(a)`. The letter i after an open `(h)` stays a letter,
+also when a `(1)` is open under the `(h)`. An open item now keeps the reading it was given (its position in the
+sequence), instead of being read again from the item above it. Found on 16 CFR Part 310 in the corpus.
+
 ### The corpus's converters drop a heading drawn as an image and keep the words a layout template wraps (#170)
 
 An HTML heading that holds only images — a site logo, a section banner, a photo placed in an `<h2>` — left an empty
