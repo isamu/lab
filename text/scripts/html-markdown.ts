@@ -4,9 +4,12 @@
 // element or by role, and breadcrumbs), asides, footers, forms, tables, footnote marks, lists and blocks of nothing but
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
 // title), a block before the page's title that holds a menu or only links and no sentence (the site's header, with its tagline and
-// labels), lines of nothing but in-page or script links, a heading drawn as an image unless its alt text is the page's
+// labels), buttons outside a heading, hidden elements, a heading's link to its own section beside or after its title,
+// lines of nothing but in-page or script links (never a heading), a heading drawn as an image unless its alt text is the page's
 // title, and a copyright notice closing the page, with an address just before it, are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
 // for any HTML.
+import { ANY_LINK, ATTRIBUTES, elementRanges, hasNoWords, isInside, plainText, stripTags, type ElementRange } from "./html-elements.ts";
+import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
 const DROPPED = ["script", "style", "head", "nav", "aside", "footer", "form", "noscript", "svg", "table"];
@@ -22,8 +25,6 @@ const withoutElement = (html: string, tag: string): string => {
   return untilStable(html, (text) => text.replace(innermost, " "));
 };
 
-const stripTags = (html: string): string => html.replace(/<\/?[a-z!][^>]*>/giu, "");
-
 // HTML lets a ruby's parts omit their closing tags: a reading container (<rtc>) ends at the next <rb> or <rtc>, a
 // reading (<rt>) or its bracket (<rp>) at the next <rb>, <rt> or <rp>; any of them at the end of the <ruby>.
 const RUBY_TEXT_CONTAINER = /<rtc\b[^>]*>[\s\S]*?(?:<\/rtc\s*>|(?=<(?:rb|rtc)\b|$))/giu;
@@ -33,8 +34,6 @@ const RUBY_TEXT = /<(rt|rp)\b[^>]*>[\s\S]*?(?:<\/\1\s*>|(?=<(?:rb|rt|rp)\b|$))/g
 const withoutRubyText = (html: string): string =>
   html.replace(/<ruby\b[^>]*>([\s\S]*?)<\/ruby\s*>/giu, (_whole: string, inside: string) => inside.replace(RUBY_TEXT_CONTAINER, "").replace(RUBY_TEXT, ""));
 
-const ANY_LINK = /<a\b[^>]*>[\s\S]*?<\/a\s*>/giu;
-
 /**
  * A link that moves within the page (a table of contents, "back to top"), through a series (rel="prev" / "next"), or
  * goes nowhere and runs a script instead (href="javascript:…", a print or share button).
@@ -43,10 +42,7 @@ const isChromeLink = (link: string): boolean =>
   /^<a\b[^>]*\bhref\s*=\s*(?:["']\s*)?(?:#|javascript:)/iu.test(link) || /^<a\b[^>]*\brel\s*=\s*(?:["'][^"']*\b)?(?:prev|next)\b/iu.test(link);
 
 /** A list whose every item is only a link, such as a site menu or a table of contents. */
-const isNavigation = (body: string): boolean => (body.match(ANY_LINK) ?? []).length > 0 && stripTags(body.replace(ANY_LINK, "")).trim() === "";
-
-/** Attributes before role="main", each skipped whole so that a quoted value (title="x role=main") is not read as one. */
-const ATTRIBUTES = String.raw`(?:\s+[^\s"'>=/]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?)*?`;
+const isNavigation = (body: string): boolean => [...body.matchAll(ANY_LINK)].length > 0 && stripTags(body.replace(ANY_LINK, "")).trim() === "";
 
 // A role is a list of tokens and the first one counts: role="main document" is main.
 const MAIN_ROLE = String.raw`${ATTRIBUTES}\s+role\s*=\s*(?:"\s*main(?:\s[^"]*)?"|'\s*main(?:\s[^']*)?'|main(?=[\s/>]))`;
@@ -57,8 +53,6 @@ const mainLandmark = (html: string): string | undefined => {
   if (tag === undefined) return undefined;
   return elementRanges(html, tag).find((range) => new RegExp(String.raw`^<[a-z][a-z0-9]*${MAIN_ROLE}`, "iu").test(range.openTag))?.inner;
 };
-
-const isInside = (outer: ElementRange, inner: ElementRange): boolean => outer.start < inner.start && inner.end <= outer.end;
 
 const isOutermost = (range: ElementRange, _index: number, all: readonly ElementRange[]): boolean => !all.some((outer) => isInside(outer, range));
 
@@ -76,31 +70,6 @@ const soleArticle = (html: string): string | undefined => {
 
 /** The page's own content: inside <main>, else the element marked role="main", else a sole <article>, else the whole page. */
 const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? mainLandmark(html) ?? soleArticle(html) ?? html;
-
-type ElementRange = { readonly start: number; readonly end: number; readonly openTag: string; readonly inner: string };
-
-type RangeScan = { readonly open: readonly RegExpExecArray[]; readonly ranges: readonly ElementRange[] };
-
-const closeLast = (html: string, scan: RangeScan, close: RegExpExecArray): RangeScan => {
-  const opener = scan.open.at(-1);
-  if (opener === undefined) return scan;
-  const range = {
-    start: opener.index,
-    end: close.index + close[0].length,
-    openTag: opener[0],
-    inner: html.slice(opener.index + opener[0].length, close.index),
-  };
-  return { open: scan.open.slice(0, -1), ranges: [...scan.ranges, range] };
-};
-
-/** Every <tag>…</tag>, nested ones matched to their own closing tag, in document order (outer before inner). */
-const elementRanges = (html: string, tag: string): ElementRange[] =>
-  [...html.matchAll(new RegExp(`<(/?)${tag}\\b[^>]*>`, "giu"))]
-    .reduce<RangeScan>((scan, match) => (match[1] === "/" ? closeLast(html, scan, match) : { open: [...scan.open, match], ranges: scan.ranges }), {
-      open: [],
-      ranges: [],
-    })
-    .ranges.toSorted((left, right) => left.start - right.start);
 
 /** The ranges (in document order) each replaced by a space; one inside another cut one goes with it. */
 const withoutRanges = (html: string, ranges: readonly ElementRange[]): string => {
@@ -122,15 +91,37 @@ const LANDMARK_OPENING = new RegExp(String.raw`<([a-z][a-z0-9]*)\b[^>]*${LANDMAR
 
 const isLandmark = (range: ElementRange): boolean => new RegExp(`^<[^>]*${LANDMARK}`, "iu").test(range.openTag);
 
+/** Every <tag> whose opening matches, for each tag that opens that way, replaced by a space. */
+const withoutElementsOpening = (html: string, opening: RegExp, isChrome: (range: ElementRange) => boolean): string => {
+  const tags = new Set([...html.matchAll(opening)].map((match) => (match[1] ?? "").toLowerCase()));
+  return [...tags].reduce((text, tag) => withoutElementsWhere(text, tag, isChrome), html);
+};
+
 /** Navigation that is not a <nav>: any element with role="navigation", or labelled as a breadcrumb. */
-const withoutNavigationLandmarks = (html: string): string => {
-  const tags = new Set([...html.matchAll(LANDMARK_OPENING)].map((match) => (match[1] ?? "").toLowerCase()));
-  return [...tags].reduce((text, tag) => withoutElementsWhere(text, tag, isLandmark), html);
+const withoutNavigationLandmarks = (html: string): string => withoutElementsOpening(html, LANDMARK_OPENING, isLandmark);
+
+// hidden="until-found" is found by the browser's search and opened, so its text is the page's.
+const HIDDEN = String.raw`${ATTRIBUTES}\s+hidden(?=[\s/>=])(?!\s*=\s*(?:"until-found"|'until-found'|until-found(?=[\s/>])))`;
+
+const HIDDEN_OPENING = new RegExp(String.raw`<([a-z][a-z0-9-]*)${HIDDEN}`, "giu");
+
+const isHidden = (range: ElementRange): boolean => new RegExp(String.raw`^<[a-z][a-z0-9-]*${HIDDEN}`, "iu").test(range.openTag);
+
+/** Elements the page does not show (the hidden attribute): a tooltip, a closed menu. */
+const withoutHiddenElements = (html: string): string => withoutElementsOpening(html, HIDDEN_OPENING, isHidden);
+
+const HEADING_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"];
+
+/**
+ * Buttons are controls ("Close", "Share", "Cite this publication"), not prose, except one inside a heading, which is
+ * how an accordion draws its section's title.
+ */
+const withoutButtons = (html: string): string => {
+  const headings = HEADING_TAGS.flatMap((tag) => elementRanges(html, tag));
+  return withoutElementsWhere(html, "button", (button) => !headings.some((heading) => isInside(heading, button)));
 };
 
 const LINK_MARK = "\u0003";
-
-const hasNoWords = (text: string): boolean => !/[\p{L}\p{N}]/u.test(text);
 
 /** Links joined by ">" or another arrow, then the current page's name as plain text. */
 const BREADCRUMB_TRAIL = new RegExp(`^\\s*(?:${LINK_MARK}\\s*[>›»＞→]\\s*){2,}[^${LINK_MARK}>›»＞→]*$`, "u");
@@ -140,7 +131,7 @@ const isCard = (link: string): boolean => /<(?:div|p|h[1-6]|ul|ol|dl|section|art
 
 /** The links in html, or none when one of them wraps blocks. */
 const plainLinks = (html: string): string[] => {
-  const links = html.match(ANY_LINK) ?? [];
+  const links = [...html.matchAll(ANY_LINK)].map((link) => link[0]);
   return links.some(isCard) ? [] : links;
 };
 
@@ -164,8 +155,6 @@ const isLinkGroup = (range: ElementRange): boolean => {
 const isLinksOnly = (range: ElementRange): boolean => plainLinks(range.inner).length > 0 && isOnlyLinks(range.inner);
 
 const withoutLinkGroups = (html: string): string => ["div", "section", "p"].reduce((text, tag) => withoutElementsWhere(text, tag, isLinkGroup), html);
-
-const plainText = (html: string): string => decodeEntities(stripTags(html)).replace(/\s+/gu, " ").trim();
 
 type PageTitle = { readonly text: string; readonly start: number };
 
@@ -287,8 +276,11 @@ const markChromeLinks = (html: string): string =>
 
 const MARKED_LINK = new RegExp(`${LINK_START}[^${LINK_END}]*${LINK_END}`, "gu");
 
-/** A line of in-page or paging links and at most a mark such as "▲" or "|" between them. */
-const isChromeLinkLine = (line: string): boolean => line.includes(LINK_START) && hasNoWords(line.replace(MARKED_LINK, ""));
+/**
+ * A line of in-page or paging links and at most a mark such as "▲" or "|" between them. Never a heading: a heading
+ * wrapped in a link back to the table of contents is still the section's title.
+ */
+const isChromeLinkLine = (line: string): boolean => headingLevel(line) === 0 && line.includes(LINK_START) && hasNoWords(line.replace(MARKED_LINK, ""));
 
 // Without a year only the sign marks a notice: "(c)" alone opens an enumerated paragraph, "Copyright" alone a sentence.
 const COPYRIGHT_NOTICE = /^(?:(?:copyright\s*)?(?:©|\(c\)|copyright)\s*\d{4}\b|copyright\s*(?:©|\(c\))|©)/iu;
@@ -388,7 +380,7 @@ const withoutClosingAddress = (html: string): string => {
 
 export const htmlToMarkdown = (html: string): string => {
   const uncommented = html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "");
-  const kept = mainContent(DROPPED.reduce(withoutElement, withoutRubyText(uncommented)))
+  const kept = withoutHeadingSelfLinks(withoutButtons(withoutHiddenElements(mainContent(DROPPED.reduce(withoutElement, withoutRubyText(uncommented))))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(/\s+/gu, " ");
   const content = withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))));

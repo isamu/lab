@@ -9,6 +9,7 @@ import { escapeRegExp } from "../orthography.ts";
  *   Continuous Integration (CI)      括弧の中が略語
  *   Tax Cuts and Jobs Act [TCJA]     角括弧の中が略語で、直前の語の頭文字と揃う
  *   Relief Act (RA; P.L. 112-240)    括弧の最初の項目が略語で、直前の語か区切りの後の語の頭文字と揃う
+ *   （single nucleotide polymorphism：SNP）  括弧の最後の項目が略語で、コロンの前の語の頭文字と揃う
  *   人事部（以下「HR」という。）      括弧の中が定義の語と略語だけ
  * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
  */
@@ -20,7 +21,9 @@ const SQUARE_CLOSES = new RegExp(String.raw`^${WRAP}\]`, "u");
 const SQUARE_OPENED = new RegExp(String.raw`\[${WRAP}$`, "u");
 const ANY_OPENED = new RegExp(String.raw`[(（[]${WRAP}$`, "u");
 /** 括弧の最初の項目のあとの区切りと、括弧が閉じるまでの残り（(ARRA; P.L. 111-5)、（OP、Originator Profile））。 */
-const SEPARATED = new RegExp(String.raw`^${WRAP}[;；,，、](?<rest>[^()（）]*)`, "u");
+const SEPARATED = new RegExp(String.raw`^${WRAP}[;；,，、:：](?<rest>[^()（）]*)`, "u");
+/** 括弧の中の名前とコロンのあと、略語の直前まで（（single nucleotide polymorphism：SNP））。名前に区切りがあれば列挙なので外す。 */
+const NAMED_BEFORE = new RegExp(String.raw`[(（](?<name>[^()（）;；,，、:：]*)[:：]${WRAP}$`, "u");
 const QUOTES = /["“”'‘’「」『』]/gu;
 
 /** 括弧と略語の間の幅。空白は 1 つに畳んであるので、(“ MNDA ”) まで収まる。 */
@@ -55,6 +58,17 @@ const spellsOut = (before: string, acronym: string): boolean => {
 };
 
 /**
+ * 括弧の中で略語と組になる名前の頭文字が、略語とちょうど揃うか。大文字で始まる語だけの頭文字（Data Retention and Reuse Act）か、
+ * すべての語の頭文字（single nucleotide polymorphism）で比べる。後者は大文字小文字を問わない。
+ */
+export const namesAcronym = (name: string, acronym: string): boolean => {
+  const words = name.replace(QUOTES, " ").trim().split(/\s+/u);
+  const letters = lettersOf(acronym);
+  const allInitials = words.map((word) => word.charAt(0)).join("");
+  return initialsOf(words) === letters || allInitials.toUpperCase() === letters.toUpperCase();
+};
+
+/**
  * 括弧の最初の項目が略語で、区切りのあとに注記が続く形（(ARRA; P.L. 111-5)、（OP、Originator Profile））。
  * 同じ形で列挙も書く（(MR, handbook, etc.)、(EPA, FDIC, GSA)）ので、直前の語か、区切りから括弧が閉じるまでの語の
  * 頭文字が略語と揃うときだけ展開と見なす。区切りの後ろは閉じた括弧の中だけを見て、頭文字がちょうど略語になることを求める。
@@ -66,7 +80,14 @@ const isSeparatedAt = (body: string, acronym: string, at: number): boolean => {
   const rest = separated.groups?.["rest"] ?? "";
   const end = at + acronym.length + separated[0].length;
   const closed = CLOSES.test(body.slice(end, end + NEAR));
-  return spellsOut(body.slice(0, at), acronym) || (closed && initialsOf(rest.replace(QUOTES, " ").trim().split(/\s+/u)) === lettersOf(acronym));
+  return spellsOut(body.slice(0, at), acronym) || (closed && namesAcronym(rest, acronym));
+};
+
+/** 括弧の最後の項目が略語で、コロンの前に名前を書く形（（Information-technology Promotion Agency：IPA））。 */
+const isNamedBeforeAt = (body: string, acronym: string, at: number): boolean => {
+  const named = NAMED_BEFORE.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at));
+  if (named === null || !CLOSES.test(body.slice(at + acronym.length, at + acronym.length + NEAR))) return false;
+  return namesAcronym(named.groups?.["name"] ?? "", acronym);
 };
 
 /** 言語パッケージの語彙表から読む、括弧の中で略語の前に書く語（以下、hereinafter）と後ろに書く語（という）。 */
@@ -97,7 +118,7 @@ const isBracketedAt = (body: string, acronym: string, at: number): boolean => {
   const before = body.slice(Math.max(0, at - NEAR), at);
   if (OPENS.test(after) || (OPENED.test(before) && CLOSES.test(after))) return true;
   if (SQUARE_OPENED.test(before) && SQUARE_CLOSES.test(after) && spellsOut(body.slice(0, at), acronym)) return true;
-  return isSeparatedAt(body, acronym, at);
+  return isSeparatedAt(body, acronym, at) || isNamedBeforeAt(body, acronym, at);
 };
 
 export type ExpandedAt = (body: string, acronym: string, at: number) => boolean;
