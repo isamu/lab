@@ -1,9 +1,7 @@
-# Adverbs of degree. Only a gradable adjective takes one: "very surprised", "more varied", "overly focused" are
-# states, while "very approved" is not English. A past participle right after one of these is not a passive.
-# "so" is left out: "to be so owned or assigned" is a passive.
+# Adverbs of degree that only a gradable adjective takes: "very surprised" is a state, "very approved" is not English.
+# A past participle right after one of these is not a passive. "more" and "overly" are left out: they also go with a
+# verb ("No issue was more discussed", "The model was overly simplified"), and so does "so" ("to be so owned").
 id: degree-adverb
 language: en
 entries:
   - pattern: very
-  - pattern: more
-  - pattern: overly

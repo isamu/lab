@@ -11,7 +11,7 @@ const lexiconOf = (...patterns: string[]): Lexicon => patterns.map((pattern) => 
 
 const VOCABULARY: StativeVocabulary = stativeVocabulary({
   "stative-participle": lexiconOf("delighted", "based", "logged in to"),
-  "degree-adverb": lexiconOf("very", "more"),
+  "degree-adverb": lexiconOf("very"),
 });
 
 /** "We/PRP are/VBP delighted/VBN" の形で書いた列を、解析器の出力と同じ形にする。 */
@@ -48,11 +48,11 @@ describe("isStativeParticiple: 状態を表す過去分詞", () => {
 
   it("直前が程度の副詞なら状態。very approved とは言わない", () => {
     assert.equal(stative("I/PRP was/VBD very/RB pleased/VBN"), true);
-    assert.equal(stative("Results/NNS are/VBP more/RBR varied/VBN"), true);
   });
 
   it("程度の副詞でない副詞の後は受動のまま", () => {
     assert.equal(stative("The/DT release/NN was/VBD quickly/RB approved/VBN"), false);
+    assert.equal(stative("No/DT issue/NN was/VBD more/RBR discussed/VBN"), false);
   });
 
   it("程度の副詞が離れていれば見ない", () => {
@@ -108,7 +108,6 @@ describe("agentless-passive（英語）: 状態を表す過去分詞", () => {
     "This question is related to the budget.",
     "Several teams may be involved.",
     "The owner will be gone for a week.",
-    "The results have been more varied this year.",
   ].forEach((source) => {
     it(`valid: ${source}`, () => {
       assert.deepEqual(passivesIn(source), []);
@@ -125,6 +124,9 @@ describe("agentless-passive（英語）: 状態を表す過去分詞", () => {
     ["Errors are logged in the console.", ["logged"]],
     ["The changes were committed to the repository.", ["committed"]],
     ["The source files are linked throughout this page.", ["linked"]],
+    ["The missing file was located.", ["located"]],
+    ["No issue was more discussed this year.", ["discussed"]],
+    ["The model was overly simplified.", ["simplified"]],
   ];
 
   realPassives.forEach(([source, expected]) => {
