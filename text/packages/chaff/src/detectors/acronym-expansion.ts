@@ -21,6 +21,7 @@ const SQUARE_OPENED = new RegExp(String.raw`\[${WRAP}$`, "u");
 const ANY_OPENED = new RegExp(String.raw`[(（[]${WRAP}$`, "u");
 /** 括弧の最初の項目のあとの区切りと、括弧が閉じるまでの残り（(ARRA; P.L. 111-5)、（OP、Originator Profile））。 */
 const SEPARATED = new RegExp(String.raw`^${WRAP}[;；,，、](?<rest>[^()（）]*)`, "u");
+const QUOTES = /["“”'‘’「」『』]/gu;
 
 /** 括弧と略語の間の幅。空白は 1 つに畳んであるので、(“ MNDA ”) まで収まる。 */
 const NEAR = 3;
@@ -65,7 +66,7 @@ const isSeparatedAt = (body: string, acronym: string, at: number): boolean => {
   const rest = separated.groups?.["rest"] ?? "";
   const end = at + acronym.length + separated[0].length;
   const closed = CLOSES.test(body.slice(end, end + NEAR));
-  return spellsOut(body.slice(0, at), acronym) || (closed && initialsOf(rest.trim().split(/\s+/u)) === lettersOf(acronym));
+  return spellsOut(body.slice(0, at), acronym) || (closed && initialsOf(rest.replace(QUOTES, " ").trim().split(/\s+/u)) === lettersOf(acronym));
 };
 
 /** 言語パッケージの語彙表から読む、括弧の中で略語の前に書く語（以下、hereinafter）と後ろに書く語（という）。 */

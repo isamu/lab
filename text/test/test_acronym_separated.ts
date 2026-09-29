@@ -28,6 +28,8 @@ const EXPLAINED: readonly Case[] = [
   ["直前の語の頭文字、全角の括弧とセミコロン", "Data Retention Rule（DRR；2030年施行）を定める。", "DRR"],
   ["区切りの後ろの語の頭文字、読点", "データ保持規則（DRR、Data Retention Rule）を定める。", "DRR"],
   ["区切りの後ろの語の頭文字、コンマ", "The retention rule (DRR, Data Retention Rule) applies.", "DRR"],
+  ["区切りの後ろの語の頭文字、引用符に包む", 'The retention rule (DRR, "Data Retention Rule") applies.', "DRR"],
+  ["区切りの後ろの語の頭文字、かぎ括弧に包む", "データ保持規則（DRR、「Data Retention Rule」）を定める。", "DRR"],
   ["区切りの後ろの語の頭文字、小文字の語を挟む", "データ規則（DRRA、Data Retention and Reuse Act）を読む。", "DRRA"],
 ];
 
