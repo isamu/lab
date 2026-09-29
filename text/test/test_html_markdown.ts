@@ -415,6 +415,51 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
   });
 });
 
+describe("htmlToMarkdown: pre (整形済みの文字)", () => {
+  it("code 一つだけを包む pre はコードの囲み (```) にし、字下げも行もそのまま", () => {
+    const html = '<p>Set it:</p><pre class="copy"><code class="json">{\n  &quot;id&quot;: &lt;1&gt;,\n  <span>"on"</span>: true\n}\n</code></pre><p>Done.</p>';
+    assert.equal(htmlToMarkdown(html), 'Set it:\n\n```\n{\n  "id": <1>,\n  "on": true\n}\n```\n\nDone.\n');
+  });
+
+  it("code の無い pre は行を保ち、一行ずつ段落にする (詩・住所・掲示)", () => {
+    const html = "<h2>Rules</h2><pre><span></span>Keep it short.\nKeep it plain.\n\n   Ask first.\n</pre><p>End.</p>";
+    assert.equal(htmlToMarkdown(html), "## Rules\n\nKeep it short.\n\nKeep it plain.\n\nAsk first.\n\nEnd.\n");
+    assert.equal(htmlToMarkdown("<pre>Line one<br>Line two</pre>"), "Line one\n\nLine two\n");
+  });
+
+  it("言語を名乗る class (pre か、すぐ外側の包み) があればコード、text・none などの無地はコードでない", () => {
+    const wrapped = (language: string): string =>
+      `<div class="highlight-${language} notranslate"><div class="highlight"><pre>&gt;&gt;&gt; import os\nos.sep</pre></div></div>`;
+    assert.equal(htmlToMarkdown(wrapped("pycon")), "```\n>>> import os\nos.sep\n```\n");
+    assert.equal(htmlToMarkdown(wrapped("text")), ">>> import os\n\nos.sep\n");
+    assert.equal(htmlToMarkdown('<pre class="language-sh">make\nmake test</pre>'), "```\nmake\nmake test\n```\n");
+    assert.equal(htmlToMarkdown('<pre class="lang-none">One.\nTwo.</pre>'), "One.\n\nTwo.\n");
+  });
+
+  it("言語の class が離れた外側にあるだけ、code が文の一部だけのものは、コードでない", () => {
+    assert.equal(htmlToMarkdown('<div class="language-sh"><p>Run:</p><pre>One.\nTwo.</pre></div>'), "Run:\n\nOne.\n\nTwo.\n");
+    assert.equal(htmlToMarkdown("<pre>Call <code>f()</code> first.\nThen stop.</pre>"), "Call f() first.\n\nThen stop.\n");
+    assert.equal(htmlToMarkdown("<pre><code>a</code>\n<code>b</code></pre>"), "a\n\nb\n");
+  });
+
+  it("コードの中の # の行は見出しにならず、``` を含むコードはもっと長い囲みにする", () => {
+    const html = "<h2>Setup</h2><pre><code># install\n```\nrun\n</code></pre><h2>Next</h2><p>Go.</p>";
+    assert.equal(htmlToMarkdown(html), "## Setup\n\n````\n# install\n```\nrun\n````\n\n## Next\n\nGo.\n");
+  });
+
+  it("空の pre は何も残さない。pre の無いページはこれまでどおり", () => {
+    assert.equal(htmlToMarkdown("<p>A.</p><pre>\n  \n</pre><pre><code></code></pre><p>B.</p>"), "A.\n\nB.\n");
+    assert.equal(htmlToMarkdown("<p>Costs rose\n in May.</p>"), "Costs rose in May.\n");
+  });
+
+  it("捨てる要素 (nav・表) の中の pre は一緒に落ち、見出しの中の pre は一行の文字のまま", () => {
+    assert.equal(htmlToMarkdown("<nav><pre>menu\nhome</pre></nav><table><tr><td><pre><code>x</code></pre></td></tr></table><p>Kept.</p>"), "Kept.\n");
+    assert.equal(htmlToMarkdown("<h2>Step <pre>one\ntwo</pre></h2><p>Text.</p>"), "## Step one two\n\nText.\n");
+    const script = '<script>show("<pre>" + text);</script><p>Kept.</p><pre>One.\nTwo.</pre>';
+    assert.equal(htmlToMarkdown(script), "Kept.\n\nOne.\n\nTwo.\n");
+  });
+});
+
 describe("htmlToMarkdown: ルビ", () => {
   it("ルビは親文字だけ。読みと括弧は落とす", () => {
     assert.equal(htmlToMarkdown("<p>故<ruby>漢<rp>(</rp><rt>かん</rt><rp>)</rp></ruby>字の話。</p>"), "故漢字の話。\n");

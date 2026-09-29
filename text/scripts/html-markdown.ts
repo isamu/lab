@@ -8,8 +8,9 @@
 // lines of nothing but in-page or script links (never a heading), a heading drawn as an image unless its alt text is the page's
 // title, and a copyright notice closing the page, with an address just before it, are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
 // for any HTML.
-import { ANY_LINK, ATTRIBUTES, elementRanges, hasNoWords, isInside, plainText, stripTags, type ElementRange } from "./html-elements.ts";
+import { ANY_LINK, ATTRIBUTES, asMarkup, elementRanges, hasNoWords, isInside, plainText, stripTags, type ElementRange } from "./html-elements.ts";
 import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
+import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
 const DROPPED = ["script", "style", "head", "nav", "aside", "footer", "form", "noscript", "svg", "table"];
@@ -250,9 +251,6 @@ const altText = (image: string): string => {
 /** The page's <title>, which names the page wherever it is shown (a tab, a bookmark, a search result). */
 const documentTitle = (html: string): string => plainText(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/iu.exec(html)?.[1] ?? "");
 
-/** Text put back into markup, so that decoding it again gives the same text. */
-const asMarkup = (text: string): string => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;");
-
 /**
  * A heading holding images and nothing else (a logo, a banner, a title set as a picture) carries the images' alt text
  * only when that text is the page's title, which the reader sees drawn there; otherwise it goes whole, since the
@@ -380,7 +378,8 @@ const withoutClosingAddress = (html: string): string => {
 
 export const htmlToMarkdown = (html: string): string => {
   const uncommented = html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "");
-  const kept = withoutHeadingSelfLinks(withoutButtons(withoutHiddenElements(mainContent(DROPPED.reduce(withoutElement, withoutRubyText(uncommented))))))
+  const preformatted = withPreformattedStashed(DROPPED.reduce(withoutElement, withoutRubyText(uncommented)));
+  const kept = withoutHeadingSelfLinks(withoutButtons(withoutHiddenElements(mainContent(preformatted.html))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(/\s+/gu, " ");
   const content = withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))));
@@ -390,5 +389,5 @@ export const htmlToMarkdown = (html: string): string => {
     .map((line) => line.trim())
     .filter((line) => line !== "-" && !isChromeLinkLine(line))
     .map((line) => line.replaceAll(LINK_START, "").replaceAll(LINK_END, ""));
-  return tidyLines(withoutEmptySections(withoutClosingCopyright(withoutEmptySections(lines))));
+  return tidyLines(withPreformattedRestored(withoutEmptySections(withoutClosingCopyright(withoutEmptySections(lines))), preformatted.blocks));
 };
