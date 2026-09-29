@@ -1,0 +1,5 @@
+# Words written inside brackets after an acronym to close its definition. English puts the defining words before the
+# acronym (hereinafter "SLA"), so there are none; the list exists so both languages name the same two lists.
+id: definition-verb
+language: en
+entries: []
