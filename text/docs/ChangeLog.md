@@ -14,6 +14,22 @@ files' language when they share one and otherwise `chaff.yaml`'s `language`, the
 closing line does. "No Markdown found" follows `chaff.yaml`'s `language`, then the locale. The Japanese text is
 unchanged.
 
+## 0.15.0 — 2026-09-30
+
+chaff reads more kinds of text without stumbling. A file with Windows or classic Mac line breaks, a byte order mark, an
+emoji after a number or one very long line is read as the writer sees it, and a genre chaff does not know stops the run
+instead of checking nothing. `chaff eval` speaks the documents' language, and English no longer counts a sentence's first word as a name. Many false reports found on real documents are
+gone: `undefined-acronym` leaves domain names, date placeholders, name numerals, HTTP methods and document numbers alone;
+`agentless-passive` knows Japanese honorific れる/られる and 「〜と呼ばれる」; `latin-spacing` and `heading-echo` skip
+quotations; `date-order` stays silent on a list sorted by name; a reference wrapped across lines, or to a hyphenated tag
+the document lists, names the other document. The corpus gains more rounds of kinds — parliamentary minutes,
+regulations, patents, court decisions, specifications, style guides, glossaries, a speech and more — and `yarn bench`
+plants mistakes for more rules.
+
+📦 [`chaffjs@0.15.0`](https://www.npmjs.com/package/chaffjs/v/0.15.0) ·
+[`@chaffjs/lang-ja@0.14.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.14.0) ·
+[`@chaffjs/lang-en@0.13.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.13.0)
+
 ### A word capitalised only because it starts the sentence is no longer counted as a proper noun in English (#170)
 
 The English tagger marks every capitalised noun and adjective as a proper noun, so the first word of a sentence
@@ -25,22 +41,6 @@ gives the lower-case word in the same sentence. A word the vocabulary does not k
 it also knows as a name (`May`), a word in capitals (`API`) and a capitalised word inside a sentence stay proper nouns.
 In the corpus this only moves `proper-noun-density`: its density falls on most English documents and the finding goes
 away where common words had pushed it over the limit.
-
-## 0.15.0 — 2026-09-30
-
-chaff reads more kinds of text without stumbling. A file with Windows or classic Mac line breaks, a byte order mark, an
-emoji after a number or one very long line is read as the writer sees it, and a genre chaff does not know stops the run
-instead of checking nothing. `chaff eval` speaks the documents' language. Many false reports found on real documents are
-gone: `undefined-acronym` leaves domain names, date placeholders, name numerals, HTTP methods and document numbers alone;
-`agentless-passive` knows Japanese honorific れる/られる and 「〜と呼ばれる」; `latin-spacing` and `heading-echo` skip
-quotations; `date-order` stays silent on a list sorted by name; a reference wrapped across lines, or to a hyphenated tag
-the document lists, names the other document. The corpus gains more rounds of kinds — parliamentary minutes,
-regulations, patents, court decisions, specifications, style guides, glossaries, a speech and more — and `yarn bench`
-plants mistakes for more rules.
-
-📦 [`chaffjs@0.15.0`](https://www.npmjs.com/package/chaffjs/v/0.15.0) ·
-[`@chaffjs/lang-ja@0.14.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.14.0) ·
-[`@chaffjs/lang-en@0.13.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.13.0)
 
 ### A genre chaff does not know stops the run instead of checking nothing (#170)
 
