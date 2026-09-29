@@ -53,6 +53,9 @@ describe("front matter のジャンル", () => {
     // Zenn の記事の種類（tech / idea）。chaff のジャンルではない。ジャンルとして使うと、どの rule も動かないまま「指摘なし」になる。
     ["Zenn の type", '---\ntitle: "x"\ntype: "tech"\n---\n本文', undefined],
     ["Zenn の type（コメント付き）", '---\ntype: "idea" # tech: 技術記事 / idea: アイデア\n---\n本文', undefined],
+    ["Zenn の type の後ろの genre", '---\ntype: "tech"\ngenre: business/report\n---\n本文', "business/report"],
+    ["genre の後ろの Zenn の type", '---\ngenre: business/report\ntype: "tech"\n---\n本文', "business/report"],
+    ["genre と type の両方がジャンルなら genre", "---\ntype: business/report\ngenre: blog/essay\n---\n本文", "blog/essay"],
     ["知らないジャンル", "---\ngenre: novel\n---\n本文", undefined],
     ["閉じていない引用符", '---\ngenre: "business/report\n---\n本文', undefined],
     ["値が無い", "---\ngenre:\n---\n本文", undefined],

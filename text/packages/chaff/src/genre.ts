@@ -56,13 +56,14 @@ const scalarOf = (raw: string): string => {
   return /^(["'])(.*)\1$/u.exec(value)?.[2] ?? value;
 };
 
+const valuesOf = (block: string, key: string): string[] => [...block.matchAll(new RegExp(`^${key}:(.*)$`, "gmu"))].map((line) => scalarOf(line[1] ?? ""));
+
 /**
- * front matter の genre / type を拾う。失敗しても落とさない。
+ * front matter の genre / type を拾う。失敗しても落とさない。genre が type より先。
  * 知っているジャンルだけを返す。Zenn の type（tech / idea）のような別の意味の値をジャンルにすると、どの rule も当てはまらず「指摘なし」になる。
  */
 export const frontMatterGenre = (source: string): string | undefined => {
-  const match = /^---\n([\s\S]*?)\n---/u.exec(source);
-  const line = match?.[1] === undefined ? undefined : /^(?:genre|type):(.*)$/mu.exec(match[1]);
-  const value = line?.[1] === undefined ? undefined : scalarOf(line[1]);
-  return value !== undefined && GENRES.includes(value) ? value : undefined;
+  const block = /^---\n([\s\S]*?)\n---/u.exec(source)?.[1];
+  if (block === undefined) return undefined;
+  return [...valuesOf(block, "genre"), ...valuesOf(block, "type")].find((value) => GENRES.includes(value));
 };

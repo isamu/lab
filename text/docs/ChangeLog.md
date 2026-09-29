@@ -19,8 +19,9 @@ The genre in front matter was read as the raw text after `genre:` or `type:`. A 
 (its kind of article, not a chaff genre), so the genre became `"tech"`, quotes included; no rule is meant for that
 genre, and without a `chaff.yaml` the article was reported as having no findings while nothing had been checked.
 Front matter now names a genre only when its value, without quotes or a trailing `# comment`, is one of the genres
-`chaff genres` lists; `genre: "business/report"` still counts. Any other value is ignored, and the genre is guessed
-from the path or falls back to the default, which the header says.
+`chaff genres` lists; `genre: "business/report"` still counts, and a `genre:` line wins over a `type:` line wherever
+they stand. Any other value is ignored, and the genre is guessed from the path or falls back to the default, which the
+header says.
 
 ### Japanese text with an emoji close after a number no longer crashes chaff (#170)
 
