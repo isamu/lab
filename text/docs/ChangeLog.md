@@ -16,6 +16,55 @@ existing forms with `;`, `,` or `、`. A name containing a separator is a list a
 `(Legal, Finance: LF)`), and neither is an example marker (`（例：AWS）`) or a Japanese name, whose initials cannot be
 checked. Found on 個人情報保護委員会's guidelines (SNP, STR).
 
+### `latin-spacing` reads a number joined by full-width hyphens as a code, like one joined by `-` (#170)
+
+A Japanese circular (通達) numbers each provision at the head of a line with full-width hyphens: `5－1－1 法第2条…`.
+Only the half-width `-` joined the groups of a code, so the space after `5－1－1` was counted as a writer who spaces
+after a number, and every provision of the 消費税法基本通達 was reported against the document's usual touching style.
+The full-width hyphen `－`, the hyphens `‐` and `‑`, and the minus sign `−` now join digits wherever `-` does: three or
+more groups are a code and are not counted, a postal code or telephone number with a group starting with 0 is a name,
+and an address number after a ward or town may use them. A range of two groups (`3－5 日`) is still counted. The long
+vowel mark `ー` and the dashes (`–`, `—`) do not join digits.
+
+### `doubled-word` accepts the spoken reduplications of the Diet minutes (#170)
+
+Three repeats in a committee's minutes were reported as slips. 「段階段階のところを」 means "at each stage", like
+「場面場面で」: 段階 joins the nouns that double to mean "each" (`distributive-noun`), so a particle must still follow
+(「段階段階を踏む」 is reported). 「繰り返し繰り返し来る」 repeats a verb as an adverb, which the analyser reads as two
+verbs, the same as 「見る見る」: it joins the `doubled-word` list. 「労働者ががんがんじゃなくて」 is the adverb がんがん, which
+the analyser reads as the noun がん twice only because of the が before it. `@chaffjs/lang-ja` now reads two adjacent
+equal content words again as one string, and marks the second `Echo=Rdp` when the analyser reads that string as a
+single adverb. Function words are not read again, since the slip 「行ったたので」 would read as the adverb たた. Minutes
+keep the rule: every repeat found there is explained by the words, and a transcript can still carry a real slip.
+
+### `doubled-word` reads 「法法第64条」 as the name of a statute (#170)
+
+Tax circulars abbreviate 法人税法 as 法法 (beside 所法, 消法, 措法), and the analyser splits it into 法 + 法, which
+`doubled-word` reported as a slip. The structure reader already names the document a reference cites (「法法第64条の2」
+cites 法法). A doubled word is now left alone when the two words are the whole of that name and the second is a
+one-character document-kind word (`document-kind`: 法, 令): the name is an abbreviation, a head character and the kind.
+No abbreviation is listed. 「法法の規定」 with no address after it, a doubled word that is not a kind word
+(「民法民法第709条」), a two-character kind word (「規則規則第3条」), a doubling inside a longer name
+(「就業規則規則第3条」) and a doubled word before an address that names no document (「資料資料第3条」) are still reported.
+Found on 国税庁's 消費税法基本通達.
+
+### The corpus HTML converter drops buttons and a heading's link to itself, and keeps a heading that is a link (#170)
+
+A `<button>` is a control, not prose: its label (`Close`, `Share`, `Cite this publication`, `See All Comments`) no
+longer becomes a line of the document. A button inside a heading stays, since that is how an accordion draws its
+section's title. An element with the `hidden` attribute is not shown and goes too (a bookmark tooltip inside a
+blog post's `<h1>`), except `hidden="until-found"`, which the browser opens when its text is searched for; `aria-hidden`
+and a class named `hidden` are unchanged. A link to the heading's own section — its target is the heading, something
+inside it, or an element enclosing it with no other heading opening in between — goes when it stands just after the
+heading (`Copy link to Context`), or inside it as a mark without words (`Scope ¶`). Linked words inside a heading are
+its title and stay: a heading is never navigation, so a Python PEP's section headings, each a link back to the table
+of contents, and the National Weather Service's expandable headings are no longer dropped. Found on the OECD's
+report, a Chrome for Developers post, GSA's and the Library of Congress's pages and the PEPs.
+
+The corpus adds PEP 20, The Zen of Python (placed in the public domain, as the document states), to show a PEP's
+section headings read. Its aphorisms, set in a `<pre>` block, still run together as one paragraph, since the converter
+reads a `<pre>` as prose.
+
 ### An English `(i)` right under `(1)` is a roman numeral, as US regulations number (a)(1)(i) (#170)
 
 A US regulation goes down `(a)`, `(1)`, `(i)`. lang-en read an `(i)` as roman only right under a lettered item, so the
