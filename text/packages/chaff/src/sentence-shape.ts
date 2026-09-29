@@ -11,10 +11,6 @@ const ENDS = /[。．.！？!?][")）」』\s]*$/u;
 
 export const isClosed = (sentence: Sentence): boolean => ENDS.test(sentence.text);
 
-const PREDICATE = new Set(["AUX", "VERB", "ADJ"]);
-
-export const hasPredicate = (sentence: Sentence): boolean => (sentence.tokens ?? []).some((token) => PREDICATE.has(token.pos));
-
 export const hasParticle = (sentence: Sentence): boolean => (sentence.tokens ?? []).some((token) => token.pos === "ADP" || token.pos === "SCONJ");
 
 const SKIP = new Set(["PUNCT", "PART", "SYM"]);
@@ -46,11 +42,11 @@ const CLOSING_QUOTES = ["」", "』", "\u201d"];
  * 引用で終わる文（画面には「確認します。」。）は、書き手の文末が無いので空。
  */
 export const endingTokens = (sentence: Sentence): Token[] => {
-  const reversed = [...beforeTrailing(sentence)].reverse();
+  const reversed = beforeTrailing(sentence).toReversed();
   const last = reversed.findIndex((token) => !SKIP.has(token.pos));
   if (last === -1 || reversed.slice(0, last).some((token) => CLOSING_QUOTES.some((quote) => token.surface.includes(quote)))) return [];
   const head = reversed.findIndex((token, index) => index >= last && token.pos !== "AUX");
-  return reversed.slice(last, head === -1 ? reversed.length : head + 1).reverse();
+  return reversed.slice(last, head === -1 ? reversed.length : head + 1).toReversed();
 };
 
-export const lastContent = (sentence: Sentence): Token | undefined => [...beforeTrailing(sentence)].reverse().find((token) => !SKIP.has(token.pos));
+export const lastContent = (sentence: Sentence): Token | undefined => beforeTrailing(sentence).findLast((token) => !SKIP.has(token.pos));

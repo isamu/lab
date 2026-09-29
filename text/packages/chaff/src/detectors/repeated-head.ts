@@ -35,10 +35,9 @@ const runsOf = (sentences: readonly Sentence[], unit: LengthUnit, lists: readonl
     // 短すぎる書き出しは「同じ」と言えない。単位ぶん揃って初めて連なりと見る。
     const full = unit === "char" ? head.length === HEAD_CHARS : head.split(" ").length === HEAD_WORDS;
     const joins = last !== undefined && last.head === head && last.container === container && !listBetween(last.members.at(-1), sentence, lists);
-    if (last !== undefined && joins && full) {
-      return [...acc.slice(0, -1), { head, container, members: [...last.members, sentence] }];
-    }
-    return [...acc, { head, container, members: [sentence] }];
+    if (last !== undefined && joins && full) acc[acc.length - 1] = { head, container, members: [...last.members, sentence] };
+    else acc.push({ head, container, members: [sentence] });
+    return acc;
   }, []);
 
 export const repeatedHead: Detector = (doc, options): Finding[] =>

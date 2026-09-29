@@ -89,5 +89,5 @@ const withWeekday = (text: string, date: Mention): Mention => {
 
 export const dates = (text: string): Mention[] =>
   [...[...text.matchAll(MONTH_WORD)].flatMap((match) => namedDate(text, match) ?? []), ...[...text.matchAll(ISO_DATE)].map(isoDate)]
-    .sort((left, right) => left.start - right.start)
+    .toSorted((left, right) => left.start - right.start)
     .map((date) => withWeekday(text, date));

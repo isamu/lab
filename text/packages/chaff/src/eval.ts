@@ -41,7 +41,7 @@ const candidates = (rule: RuleDefinition, current: number): number[] => {
   const fromLevels = [rule.levels.strict, rule.levels.normal, rule.levels.relaxed].filter((value) => value !== undefined);
   const scaled = MULTIPLIERS.map((factor) => Math.max(1, Math.round(base * factor)));
   // 数値で決めた上限は、段の表に無くても掃引に入れる。入れないと「現在」の行が出ない。
-  return [...new Set([...fromLevels, ...scaled, current])].sort((left, right) => left - right);
+  return [...new Set([...fromLevels, ...scaled, current])].toSorted((left, right) => left - right);
 };
 
 const countAt = (docs: readonly ProseDocument[], rule: RuleDefinition, limit: number): Point => {

@@ -8,7 +8,7 @@ const atom = (value: string | number): string => (typeof value === "number" ? St
 /** 属性はキーの順に並べる。同じ木から毎回同じ文字列を出すため。 */
 const keywords = (node: StructureNode): string[] => [
   ...Object.keys(node.attrs)
-    .sort((left, right) => left.localeCompare(right, "en"))
+    .toSorted((left, right) => left.localeCompare(right, "en"))
     .flatMap((key) => {
       const value = node.attrs[key];
       return value === undefined ? [] : [`:${key} ${atom(value)}`];

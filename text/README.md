@@ -400,6 +400,7 @@ doc.md   全 6 文のうち 5 箇所を送ります（API は呼んでいませ�
 ```bash
 npx chaffjs tree contract.txt                  S 式で出す（人と AI が読む）
 npx chaffjs tree contract.txt --format json    JSON で出す
+npx chaffjs tree contract.txt --language en    言語を決めて読む（推定や chaff.yaml より優先）
 ```
 
 第3条第2項は `3.2`、Section 4.2(a) は `4.2.a` という番地になります。試験中の構造の rule が、存在しない条への参照（`dangling-reference`）、番号の抜け（`numbering-gap`）、同じ語の二重の定義（`duplicate-definition`）を見ます。
@@ -408,7 +409,7 @@ npx chaffjs tree contract.txt --format json    JSON で出す
 npx chaffjs cite contract.txt quotes.json
 ```
 
-`quotes.json` は `[{ "address": "4.2", "quote": "…" }]`。回答や要約の引用が原文のその番地に本当にあるかを確かめ、一つでも無ければ 1 で終わります。AI の回答を単体試験のように検査できます。chaff は確かめるだけで、書き換えません。
+`quotes.json` は `[{ "address": "4.2", "quote": "…" }]`。`tree` と同じく `--format json` と `--language` を取ります。回答や要約の引用が原文のその番地に本当にあるかを確かめ、一つでも無ければ 1 で終わります。AI の回答を単体試験のように検査できます。chaff は確かめるだけで、書き換えません。
 
 ## Claude Code の skill
 
@@ -428,7 +429,7 @@ npx chaffjs feedback a.md --rule max-sentence-length --line 42   誤った指摘
 npx chaffjs feedback a.md --missed --line 42                     見逃し
 ```
 
-版・OS・一つの指摘と、その前後の 2 行ずつ、`chaff.yaml` のその rule の設定だけを `.chaff-feedback.md` に書き、送り方（`gh issue create`、または題だけを載せたリンク）を示します。**chaff は何も送りません。** 文書の全体は載せないので、読んでから送るかを決めてください。`chaff.yaml` 全体も載せたいときは `--with-config` を付けます。報告は、そのまま試験と修正になります。
+版・OS・一つの指摘と、その前後の 2 行ずつ、`chaff.yaml` のその rule の設定だけを `.chaff-feedback.md` に書き、送り方（`gh issue create -R isamu/lab --title … --body-file .chaff-feedback.md`、または題だけを載せたリンク）を示します。**chaff は何も送りません。** 文書の全体は載せないので、読んでから送るかを決めてください。`chaff.yaml` 全体も載せたいときは `--with-config` を付けます。報告は、そのまま試験と修正になります。
 
 ## 言い回しを見る rule
 
@@ -631,6 +632,8 @@ yarn build         # 各 package の dist
 yarn test          # node:test
 yarn knip          # 未使用の export（落とさない）
 yarn duplication   # コピペ検出（落とさない）
+yarn corpus        # corpus にかけて corpus/expected.txt と比べる（--verbose で指摘も出す、--update で書き換える）
+yarn bench         # 誤りを植えた見本で見逃しを数える（--verbose、--update は corpus と同じ）
 ```
 
 CI は `.github/workflows/chaff-ci.yml`。`text/**` を触る PR でだけ走り、ubuntu / macOS / Windows の 3 面で回す。

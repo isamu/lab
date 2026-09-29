@@ -12,6 +12,7 @@ The same tree checks whether the passages an AI quotes are really in the source.
 | --- | --- |
 | `npx chaffjs tree <file>` | Prints the tree as an S-expression, for people and AIs to read |
 | `npx chaffjs tree <file> --format json` | Prints the same tree as JSON, for programs |
+| `npx chaffjs tree <file> --language ja` | Reads the file as that language, ahead of `chaff.yaml` and the guess from its content |
 
 On a contract it prints:
 
