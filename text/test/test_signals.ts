@@ -114,6 +114,32 @@ describe("ngram-repetition: 英語の名詞の語句は言い回しではない"
     const source = `# Report\n\n${body} ${FILLER}`;
     assert.match((await worstWord(source)) ?? "", /is important|important to/u);
   });
+
+  it("valid: 文書の名前（Proposal & Award Policies & Procedures Guide (PAPPG)）は、前の動詞が変わりながら何度出ても数えない", async () => {
+    // NSF の募集要項（nsf-19-582）。動詞は contained・identified・described と変わり、繰り返されるのは名前だけ。
+    const verbs = ["contained", "identified", "described", "specified", "contained", "identified", "described", "specified"];
+    const body = CONTEXTS.map(
+      (context, index) => `${context} it as ${verbs[index] ?? ""} in the NSF Proposal & Award Policies & Procedures Guide (PAPPG).`,
+    ).join(" ");
+    const source = `# Solicitation\n\n${body} ${FILLER}`;
+    const word = (await worstWord(source)) ?? "";
+    assert.doesNotMatch(word, /Guide|Propos|Polic|PAPPG/u);
+  });
+
+  it("名前の後ろの動詞が毎回同じなら、動詞を丸ごと含む窓で言い回しとして数える。変わるなら名前の繰り返し", async () => {
+    const objects = ["audit logs", "encryption", "monitoring", "backups", "alerts", "dashboards", "reports", "exports"];
+    const same = objects.map((object) => `The Cloud Service provides the ${object}.`).join(" ");
+    assert.match((await worstWord(`# Report\n\n${same} ${FILLER}`)) ?? "", /provides/u);
+    const verbs = ["provides", "processes", "protects", "presents", "prepares", "prints", "produces", "promotes"];
+    const varying = verbs.map((verb) => `The Cloud Service ${verb} the data.`).join(" ");
+    assert.equal(await worstWord(`# Report\n\n${varying} ${FILLER}`), undefined);
+  });
+
+  it("invalid: 画面の語を含む手順の言い回し（Select Save (if applicable).）は数える", async () => {
+    const body = CONTEXTS.map((context) => `${context} the settings. Select Save (if applicable).`).join(" ");
+    const source = `# Report\n\n${body} ${FILLER}`;
+    assert.match((await worstWord(source)) ?? "", /Save \(if/u);
+  });
 });
 
 describe("undefined-acronym", () => {
@@ -265,8 +291,8 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
       assert.deepEqual(acronymsIn("# Tax\n\nThe Tax Cuts and Jobs Act [TCJA] changed it. The TCJA also capped it."), []);
     });
 
-    it("invalid: 角括弧でも、直前の語が展開になっていなければ引用の印", () => {
-      assert.deepEqual(acronymsIn("# Refs\n\nThe registry is described in [IANA] and elsewhere."), ["IANA"]);
+    it("invalid: 角括弧でも、直前の語が展開になっていなければ引用の印で、括弧の外の同じ略語は展開されていない", () => {
+      assert.deepEqual(acronymsIn("# Refs\n\nThe registry is described in [IANA] and elsewhere. IANA keeps it."), ["IANA"]);
     });
 
     it("invalid: 略語のあとの角括弧は注の番号", () => {

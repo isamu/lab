@@ -18,6 +18,47 @@ an auxiliary verb (「務めてこられた」), which has the form of a passive
 デジタル庁 and 厚生労働省 pages, a 文部科学省 notice, a 最高裁 judgment, a 国会 transcript and the 個人情報保護委員会
 guidelines in the corpus.
 
+### `yarn bench` plants mistakes for more rules: a preamble, stock phrasing, repeated openers and team spellings (#170)
+
+The seeded-mistake benchmark now also plants a preamble made by leaving out the first section heading
+(`preamble-length`), a closing 「いかがでしたか。」 / "Thanks for reading." on a blog post (`closing-cliche`), a
+padded opening sentence after the first one (`padded-intro`), an empty 「これは非常に重要です。」 / "This is extremely
+important." after the first statement of the body (`empty-intensifier`), consecutive paragraphs that all open with
+「また、」 / "Also," (`repeated-conjunction`), sentences chained with "And" (`sentence-initial-conjunction-run`), and a
+spelling the team has ruled out, such as 打合せ for 打ち合わせ or e-mail for email (`preferred-term`; the bench passes the
+team's `prefer` as `chaff.yaml` would). The clean samples are unchanged and none of these rules reports on them.
+
+### `undefined-acronym` does not count a reference key in square brackets (#170)
+
+Specifications point to their references with a bracketed key: `[HPACK]`, `[RFC9110]`, `[SECURING-WEB]`,
+`[POWERFUL-NEW-FEATURES]`. The key names an entry of the reference list, where the reader goes to find it, so it is not
+an acronym waiting for an expansion; the capitals inside it (`MIX`, `WEB`, `NEW`, `SF`) were reported as undefined. A
+bracketed single word starting with a letter is now read as a key and its capitals are not counted. The same acronym
+outside the brackets is still counted, a bracket after a letter (`List[SF]`) is not read as a key, and neither is a
+Markdown link (`[DRI](/url)`, `[DRI][ref]`), a reference definition (`[DRI]: /url`), an image or a bracket holding
+several words (`[the FBI]`). Found on the W3C Secure Contexts specification and an IETF Internet-Draft; RFC 9457 in the
+corpus loses its bracketed keys (`[TAG]`, `[WEB-LINKING]`, `[ABOUT]`, `[JSON-SCHEMA]`) from the report.
+
+### The corpus adds GOV.UK guidance, a W3C specification, an Internet-Draft, a help-center article, an FTC guide, a Tokyo newsletter article, a university notice for students, a JMA FAQ, an incorporated administrative agency's notice and a library notice (#170)
+
+Committed with their licence named in the manifest: GOV.UK guidance (OGL v3.0), the Nextcloud user manual (CC BY 3.0),
+FTC consumer advice (public domain), 気象庁 and 国立国会図書館 (PDL1.0), 統計センター (政府標準利用規約 2.0). Kept URL
+only: the W3C specification (a notice-bearing permissive licence), the Internet-Draft (IETF Trust), 広報東京都 and the
+University of Tokyo's utelecon (no licence to redistribute).
+
+### `ngram-repetition` no longer reports a repeated name as phrasing (#170)
+
+A document repeats the names of what it is about (`the NSF Proposal & Award Policies & Procedures Guide (PAPPG)`, `the
+Learning & Development team`, `the Location Object`), and the tagger sometimes reads a capitalised word inside such a
+name as a verb (`Guide`, `Learning`, `Object`), which made the name count as phrasing. In English, a capitalised word
+after the first word of the sentence, next to another such word (`&` and brackets in between are fine), is now read as
+part of a name, not as a predicate. A verb cut by the edge of the repeated window (`ed in the NSF Propos`, `ed by
+Applicable Law`) no longer counts either when everything else the window holds is a name or a function word: only the
+verb's ending repeats, and the verb itself differs each time (`contained in`, `identified in`; `prohibited by`, `required
+by`). A whole verb still counts (`use the Cloud Service`, `Select Save (if applicable)`), and so does a cut verb next to an
+ordinary word (`the same participant described`). Found on NSF's REU solicitation, a GitLab job description, RFC 3693 and
+Common Paper's cloud service agreement.
+
 ### The corpus HTML converter keeps a `<pre>` block's lines, and fences code (#170)
 
 A `<pre>` block became one paragraph, its lines run together: the Zen of Python in PEP 20, a poem of short lines,
