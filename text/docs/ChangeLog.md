@@ -2,6 +2,18 @@
 
 Newest first.
 
+## Unreleased
+
+### The corpus has patent specifications and court decisions (#170)
+
+A US patent (the sealed crustless sandwich, public domain), a Japanese published patent application (特開, URL only:
+the applicant holds its copyright), a US Supreme Court opinion (Gideon v. Wainwright) and two judgments of 最高裁判所
+(not subject to copyright under 著作権法第13条第3号), one of them hard-wrapped at a fixed width the way a judgment
+copied from its PDF is. Patents come from Google Patents as archived by the Internet Archive; a new corpus format,
+`google-patents`, keeps only the abstract, the description and the claims and drops Google's metadata, citation and
+family tables. Opinions and judgments come from Wikisource at a pinned revision. The courts' own sites publish full
+judgments only as PDF, which the corpus cannot convert.
+
 ## 0.14.0 — 2026-09-29
 
 Japanese read more closely by morphology: 「3つ」「三つ」 are a number and a counter, a line opening with 「1.5 万人」 is a
