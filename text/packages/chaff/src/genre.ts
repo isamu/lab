@@ -1,3 +1,17 @@
+/** chaff が知っているジャンル。rule の use_for はこの頭の部分で当てる。 */
+export const GENRES: readonly string[] = [
+  "technical/spec",
+  "technical/readme",
+  "blog/tech",
+  "blog/essay",
+  "blog/owned-media",
+  "business/proposal",
+  "business/report",
+  "business/email",
+  "business/press-release",
+  "business/meeting-notes",
+];
+
 export type GenreGuess = { readonly genre: string; readonly from: "front-matter" | "path" | "content" };
 
 /**
@@ -35,9 +49,20 @@ export const guessGenre = (path: string, source: string, front: string | undefin
   return undefined;
 };
 
-/** front matter の genre / type を拾う。失敗しても落とさない。 */
+/** YAML の 1 行の値。行末のコメントと、値を囲む引用符を外す。 */
+const scalarOf = (raw: string): string => {
+  const comment = raw.search(/\s#/u);
+  const value = (comment === -1 ? raw : raw.slice(0, comment)).trim();
+  return /^(["'])(.*)\1$/u.exec(value)?.[2] ?? value;
+};
+
+/**
+ * front matter の genre / type を拾う。失敗しても落とさない。
+ * 知っているジャンルだけを返す。Zenn の type（tech / idea）のような別の意味の値をジャンルにすると、どの rule も当てはまらず「指摘なし」になる。
+ */
 export const frontMatterGenre = (source: string): string | undefined => {
   const match = /^---\n([\s\S]*?)\n---/u.exec(source);
-  const line = match?.[1] === undefined ? undefined : /^(?:genre|type):\s*(\S+)\s*$/mu.exec(match[1]);
-  return line?.[1];
+  const line = match?.[1] === undefined ? undefined : /^(?:genre|type):(.*)$/mu.exec(match[1]);
+  const value = line?.[1] === undefined ? undefined : scalarOf(line[1]);
+  return value !== undefined && GENRES.includes(value) ? value : undefined;
 };

@@ -1,4 +1,6 @@
 import { surfaceStarts } from "./surface-starts.ts";
+import { wellFormed } from "./well-formed.ts";
+import { analyserPieces } from "./analyser-pieces.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
 import { isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
@@ -221,12 +223,22 @@ export const predicateOnly = (tokens: readonly Token[]): Token[] =>
 export const tokenize = (text: string): Token[] | undefined => {
   const tokenizer = state.ready;
   if (tokenizer === undefined) return undefined;
-  const read = placed(text, analyse(tokenizer, text));
+  const read = readAll(tokenizer, text);
   const sequence = read.map(({ morpheme }) => morpheme);
   return read.map(({ morpheme, start }, index) => toToken(morpheme, start, readsAsPassive(sequence, index, PASSIVE_VOCABULARY)));
 };
 
-const analyse = (tokenizer: Tokenizer, text: string): Morpheme[] => readCounterTsu(toArray(callMethod(tokenizer, "tokenize", [text])).flatMap(toMorpheme));
+/** 句読点の無い並びをこれより長く渡さない。解析器は並びの長さの二乗で遅くなり、20 万字の 1 行では何分も返らない。 */
+const PIECE_LIMIT = 1000;
+
+const analyse = (tokenizer: Tokenizer, text: string): Morpheme[] =>
+  readCounterTsu(analyserPieces(text, PIECE_LIMIT).flatMap((piece) => toArray(callMethod(tokenizer, "tokenize", [piece])).flatMap(toMorpheme)));
+
+/** 解析器は片割れのサロゲートで例外を投げる。数量の後ろを数文字だけ読み直すと、絵文字を半分に切ることがある。 */
+const readAll = (tokenizer: Tokenizer, text: string): { readonly morpheme: Morpheme; readonly start: number }[] => {
+  const readable = wellFormed(text);
+  return placed(readable, analyse(tokenizer, readable));
+};
 
 /** 形態素と、本文の中での始まり。本文に見つからないものは落とす。 */
 const placed = (text: string, raws: readonly Morpheme[]): { readonly morpheme: Morpheme; readonly start: number }[] => {
@@ -257,7 +269,7 @@ export type Morph = {
 export const morphemes = (text: string): Morph[] | undefined => {
   const tokenizer = state.ready;
   if (tokenizer === undefined) return undefined;
-  return placed(text, analyse(tokenizer, text)).map(({ morpheme: raw, start }) => ({
+  return readAll(tokenizer, text).map(({ morpheme: raw, start }) => ({
     start,
     end: start + raw.surface_form.length,
     surface: raw.surface_form,

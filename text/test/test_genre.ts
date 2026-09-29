@@ -1,8 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { frontMatterGenre, guessGenre } from "../packages/chaff/src/genre.ts";
+import { frontMatterGenre, GENRES, guessGenre } from "../packages/chaff/src/genre.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { GENRES } from "../packages/chaff/src/init.ts";
 
 const guess = (path: string, source = "本文です。"): string | undefined => guessGenre(path, source, undefined)?.genre;
 
@@ -40,6 +39,31 @@ describe("ジャンルの判定", () => {
   it("front matter が最優先", () => {
     assert.equal(guessGenre("README.md", "x", "blog/essay")?.genre, "blog/essay");
     assert.equal(frontMatterGenre("---\ngenre: blog/essay\n---\n本文"), "blog/essay");
+  });
+});
+
+describe("front matter のジャンル", () => {
+  const cases: readonly (readonly [string, string, string | undefined])[] = [
+    ["genre", "---\ngenre: blog/essay\n---\n本文", "blog/essay"],
+    ["type", "---\ntype: business/report\n---\n本文", "business/report"],
+    ["二重引用符", '---\ngenre: "business/report"\n---\n本文', "business/report"],
+    ["一重引用符", "---\ngenre: 'business/report'\n---\n本文", "business/report"],
+    ["行末のコメント", "---\ngenre: business/report # 報告書\n---\n本文", "business/report"],
+    ["引用符とコメント", '---\ngenre: "business/report" # 報告書\n---\n本文', "business/report"],
+    // Zenn の記事の種類（tech / idea）。chaff のジャンルではない。ジャンルとして使うと、どの rule も動かないまま「指摘なし」になる。
+    ["Zenn の type", '---\ntitle: "x"\ntype: "tech"\n---\n本文', undefined],
+    ["Zenn の type（コメント付き）", '---\ntype: "idea" # tech: 技術記事 / idea: アイデア\n---\n本文', undefined],
+    ["知らないジャンル", "---\ngenre: novel\n---\n本文", undefined],
+    ["閉じていない引用符", '---\ngenre: "business/report\n---\n本文', undefined],
+    ["値が無い", "---\ngenre:\n---\n本文", undefined],
+    ["front matter が無い", "genre: blog/essay\n\n本文", undefined],
+  ];
+  cases.forEach(([label, source, expected]) => {
+    it(label, () => assert.equal(frontMatterGenre(source), expected));
+  });
+
+  it("ジャンルの一覧にあるものは、どれも front matter から読める", () => {
+    GENRES.forEach((genre) => assert.equal(frontMatterGenre(`---\ngenre: ${genre}\n---\n`), genre));
   });
 });
 

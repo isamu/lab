@@ -1,3 +1,4 @@
+import { plainSource } from "../plain-source.ts";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import type { Finding, RuleDefinition } from "../plugin.ts";
@@ -178,7 +179,7 @@ export const runFeedback = async (targets: readonly string[], argv: readonly str
     console.error(text.notFound(request.path));
     return 1;
   }
-  const source = readFileSync(request.path, "utf8");
+  const source = plainSource(readFileSync(request.path, "utf8"));
   const checked = await context.check(request.path);
   const picked = pick(request, checked, source.split("\n").length, context.ui);
   if ("error" in picked) {

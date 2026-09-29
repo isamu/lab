@@ -3,6 +3,7 @@ import { sentenceSpans } from "./sentence-split.ts";
 import { structure } from "./structure.ts";
 import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, tokenize } from "./pos.ts";
 import { markSpacedCounters } from "./spaced-counter.ts";
+import { tokensWithin } from "./tokens-within.ts";
 import { distributiveVocabulary, markReduplication } from "./reduplication.ts";
 import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
 
@@ -57,11 +58,7 @@ const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] 
   return sentences.map((sentence) => ({
     ...sentence,
     // 述語かどうかは文の中でしか決まらないので、文へ配ってから印を落とす。
-    tokens: markReduplication(
-      predicateOnly(tokens.filter((token) => token.span.start >= sentence.span.start && token.span.end <= sentence.span.end)),
-      DISTRIBUTIVE,
-      readsAsOneAdverb,
-    ),
+    tokens: markReduplication(predicateOnly(tokensWithin(tokens, sentence.span)), DISTRIBUTIVE, readsAsOneAdverb),
   }));
 };
 

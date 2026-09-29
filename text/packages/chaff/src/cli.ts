@@ -7,6 +7,7 @@ import { applyByPath } from "./config/by-path.ts";
 import { applyLevel } from "./config/write.ts";
 import { buildDocument, teamRules } from "./document.ts";
 import { guessLanguage } from "./detect.ts";
+import { plainSource } from "./plain-source.ts";
 import { collectTargets } from "./files.ts";
 import { BASELINE_FILE, fingerprint, readBaseline, splitByBaseline, writeBaseline } from "./baseline.ts";
 import { applySuppressions } from "./stet.ts";
@@ -14,8 +15,8 @@ import { renderSuppressions, type PerFile } from "./render/suppressions.ts";
 import { clock, describeChange, snapshotOf, watchPaths, type Snapshot } from "./watch.ts";
 import { runEval } from "./commands/eval.ts";
 import { runTest } from "./commands/test.ts";
-import { frontMatterGenre, guessGenre } from "./genre.ts";
-import { GENRES, runInit } from "./init.ts";
+import { frontMatterGenre, GENRES, guessGenre } from "./genre.ts";
+import { runInit } from "./init.ts";
 import { targetsOf } from "./cli-args.ts";
 import { loadRules } from "./rule-load.ts";
 import { renderCompact } from "./render/compact.ts";
@@ -97,7 +98,7 @@ const headerFor = (path: string, genre: string, from: GenreSource, language: str
 };
 
 const inspect = async (path: string, config: Config, argv: readonly string[]): Promise<Inspected> => {
-  const source = await readFile(path, "utf8");
+  const source = plainSource(await readFile(path, "utf8"));
   const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
   const adapter = await loadAdapter(language);
   const { genre, from } = resolveGenre(path, source, config, flag(argv, "--genre"));
