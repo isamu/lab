@@ -2,7 +2,19 @@
 
 Newest first.
 
-## Unreleased
+## 0.14.0 — 2026-09-29
+
+Japanese read more closely by morphology: 「3つ」「三つ」 are a number and a counter, a line opening with 「1.5 万人」 is a
+quantity rather than a section, and lang-ja now carries each word's reading, so 「下さい」 and 「ください」 are the same
+polite ending. `no-mixed-desumasu` judges a run of numbered paragraphs on its own, `undefined-acronym` reads a Roman
+numeral after Part or Section as a number and 「といいます」 as a definition, and `preamble-length` counts only paragraphs
+with a sentence in them. The corpus gains a fourth round of kinds — health, weather, education, transport and
+public-comment documents — its converters drop more page chrome by structure, and a weekly run now compares the
+documents kept only as URLs.
+
+📦 [`chaffjs@0.14.0`](https://www.npmjs.com/package/chaffjs/v/0.14.0) ·
+[`@chaffjs/lang-ja@0.13.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.13.0) ·
+[`@chaffjs/lang-en@0.12.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.12.0)
 
 ### `latin-spacing` does not count the space after a postal code or an address number (#170)
 
