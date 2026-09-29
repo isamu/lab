@@ -1,4 +1,5 @@
 import type { StructureNode } from "../plugin.ts";
+import { namesAbsentUnit } from "./unit-word.ts";
 
 // 木だけで決まる誤り。参照先が無い、番号が飛ぶ・重なる、同じ語を二度定義する。
 // 意味の食い違いは判定しない。書いてあることから機械で決まるものだけを出す。
@@ -62,8 +63,10 @@ export const danglingReferences = (tree: StructureNode): StructureIssue[] => {
   const citedElsewhere = new Set(nodes.filter((node) => node.kind === "reference" && node.attrs["document"] !== undefined).map(numbering));
   const otherNumbering = (node: StructureNode): boolean =>
     numberings.size > 0 && typeof numbering(node) === "string" && !numberings.has(String(numbering(node))) && citedElsewhere.has(numbering(node));
+  const articleLabels = nodes.filter((node) => node.kind === "article").map((node) => textOf(node, "label"));
   return nodes
     .filter((node) => node.kind === "reference" && node.attrs["document"] === undefined && !otherNumbering(node))
+    .filter((node) => !namesAbsentUnit(node, articleLabels))
     .filter((node) => !resolves(node, addresses))
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
 };

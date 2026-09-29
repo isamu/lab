@@ -18,6 +18,6 @@
   (chapter "pt2" :heading "罰則" :label "第二編" :line 20
     (chapter "pt2.ch1" :heading "罰則" :label "第一章" :line 21
       (article "10" :label "第十条" :line 23
-        (reference :label "第三条第二項" :target "3.2" :line 23)
+        (reference :label "第三条第二項" :target "3.2" :unitWord "条" :line 23)
         (quantity :unit "年" :value 1 :line 23)
         (quantity :unit "円" :value 1000000 :line 23)))))
