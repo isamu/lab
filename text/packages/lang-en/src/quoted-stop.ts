@@ -8,7 +8,9 @@ import { isAbbreviation } from "./sentence-split.ts";
  * 分割器が返した一つの文を、文末の記号 + 閉じ引用符 + 空白 + 次の文の頭（大文字。開き括弧・引用符の後の大文字も）で切る。
  * 引用符の中の語が略語・頭文字（"U.S." "Dr." "J."）のときと、括弧が開いたままのときは切らない。
  */
-const QUOTED_STOP = /[.?!]["'”’]+(?=\s+[\p{Ps}\p{Pi}"']*\p{Lu})/gu;
+/** 次の文の頭。空白の後の大文字。開き括弧・引用符の後の大文字も文頭である。 */
+export const NEXT_SENTENCE_HEAD = String.raw`\s+[\p{Ps}\p{Pi}"']*\p{Lu}`;
+const QUOTED_STOP = new RegExp(String.raw`[.?!]["'”’]+(?=${NEXT_SENTENCE_HEAD})`, "gu");
 // ピリオドの前の語は、空白・開き引用符・開き括弧の後から数える。
 const WORD_START = /[\s\p{Ps}\p{Pi}"']/u;
 // 一字ずつピリオドを打った語（J. / U.S. / e.g.）は、略語の一覧に無くても略語。
