@@ -2,20 +2,7 @@
 
 Newest first.
 
-## 0.13.0 — 2026-09-29
-
-Guarded against regressions: CI now compares the committed corpus (statutes included) and the bench on every pull
-request, so a change in what chaff says about an existing document fails the build unless it is accepted on purpose. The
-corpus gains a third round of kinds — incident reports, research articles, solicitations, press releases, correction
-notices, procedure guides, recruitment and sightseeing notices, changelogs — and its converters keep the words a ruby or
-a template carried. Fewer false positives in `no-mixed-desumasu` (noun endings, lists judged on their own),
-`latin-spacing` (numbers that are names or codes, `Phase 1 は`, masked markup), `max-kanji-continuous` (addresses whose
-town the dictionary splits) and `undefined-acronym` (notes after an acronym in brackets). `undefined-acronym`'s notation
-words moved into word lists, and every list a rule reads is declared.
-
-📦 [`chaffjs@0.13.0`](https://www.npmjs.com/package/chaffjs/v/0.13.0) ·
-[`@chaffjs/lang-ja@0.12.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.12.0) ·
-[`@chaffjs/lang-en@0.11.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.11.0)
+## Unreleased
 
 ### `undefined-acronym` reads a Roman numeral after Part or Section as a number, and a polite 「といいます」 as a definition (#170)
 
@@ -32,6 +19,21 @@ now counts as defined, as `という` did. The last verb is matched by its base 
 rule now uses part of speech when it can; without it only the forms in `definition-verb` are read. `definition-verb`
 gains `と言う` and `と称す`, the base forms the analyser gives 言います and 称します. Found on デジタル庁's notice of the
 GSS incident.
+
+## 0.13.0 — 2026-09-29
+
+Guarded against regressions: CI now compares the committed corpus (statutes included) and the bench on every pull
+request, so a change in what chaff says about an existing document fails the build unless it is accepted on purpose. The
+corpus gains a third round of kinds — incident reports, research articles, solicitations, press releases, correction
+notices, procedure guides, recruitment and sightseeing notices, changelogs — and its converters keep the words a ruby or
+a template carried. Fewer false positives in `no-mixed-desumasu` (noun endings, lists judged on their own),
+`latin-spacing` (numbers that are names or codes, `Phase 1 は`, masked markup), `max-kanji-continuous` (addresses whose
+town the dictionary splits) and `undefined-acronym` (notes after an acronym in brackets). `undefined-acronym`'s notation
+words moved into word lists, and every list a rule reads is declared.
+
+📦 [`chaffjs@0.13.0`](https://www.npmjs.com/package/chaffjs/v/0.13.0) ·
+[`@chaffjs/lang-ja@0.12.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.12.0) ·
+[`@chaffjs/lang-en@0.11.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.11.0)
 
 ### `yarn bench`'s Japanese design sample plants a dropped gloss the rule is meant to catch (#170)
 
