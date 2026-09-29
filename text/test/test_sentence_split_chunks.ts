@@ -7,6 +7,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { unmarkNumberStops } from "../packages/lang-en/src/number-stop.ts";
 import { splitAtQuotedStops } from "../packages/lang-en/src/quoted-stop.ts";
+import { reattachClosingQuotes } from "../packages/lang-en/src/closing-quote.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import type { Span } from "../packages/chaff/src/plugin.ts";
 
@@ -44,6 +45,11 @@ const FRAGMENTS = [
   "(",
   ")",
   '"',
+  "“",
+  "”",
+  "‘",
+  "’",
+  "'",
   "[",
   "]",
   "{",
@@ -84,6 +90,9 @@ const SENTENCES = [
   "It ends here.",
   "Then see [note] below.",
   'He said "yes" today.',
+  "She asked “Is it done?” Nobody knew.",
+  "“Stop!” he said.",
+  "It was the ’90s.",
 ];
 
 const MAX_FRAGMENTS = 60;
@@ -119,15 +128,18 @@ describe("文の分割は切れ目ごとに渡しても変わらない", () => {
   });
 
   // 英語のアダプタは、行の途中の番号を替えてから分割器に渡す。比べる相手も替えた後の文字列を丸ごと渡した分割器。
-  it(`英語のアダプタの文は、番号を替えた文字列を分割器に一度に渡し、閉じ引用符の後で切ったときと同じ（seed ${String(SEED)}）`, () => {
+  it(`英語のアダプタの文は、番号を替えた文字列を分割器に一度に渡し、閉じ引用符の後で切って、文頭の閉じ引用符を戻したときと同じ（seed ${String(SEED)}）`, () => {
     generated(SEED, CASES).forEach((text) => {
       const unmarked = unmarkNumberStops(text);
       assert.equal(unmarked.length, text.length, JSON.stringify(text));
       const spans = en.segment(text).sentences.map((sentence) => sentence.span);
-      // 閉じ引用符の内側で閉じた文を切るのは、分割器の後の処理。分割器の文を同じく切ったものと比べる。
+      // 閉じ引用符の内側で閉じた文を切るのと、文頭の閉じ引用符を戻すのは、分割器の後の処理。分割器の文に同じ処理をしたものと比べる。
       assert.deepEqual(
         spans,
-        wholeSpans(unmarked).flatMap((span) => splitAtQuotedStops(text, span)),
+        reattachClosingQuotes(
+          text,
+          wholeSpans(unmarked).flatMap((span) => splitAtQuotedStops(text, span)),
+        ),
         JSON.stringify(text),
       );
     });
