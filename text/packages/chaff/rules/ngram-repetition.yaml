@@ -16,7 +16,7 @@ why:
 
 message:
   ja: 「{word}」が {count} 回出てきます（{limit} 回まで）
-  en: '"{word}" appears {count} times (limit {limit})'
+  en: '"{word}" appears {count} {count|time|times} (limit {limit})'
 
 how_to_fix:
   ja: 2 回目以降を言い換えるか、まとめて 1 度にしてください。

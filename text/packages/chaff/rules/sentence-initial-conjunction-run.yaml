@@ -16,7 +16,7 @@ why:
 
 message:
   ja: 接続詞で始まる文が {count} 文続いています（{limit} 文まで）
-  en: "{count} sentences in a row open with a conjunction (limit {limit})"
+  en: "{count} {count|sentence|sentences} in a row {count|opens|open} with a conjunction (limit {limit})"
 
 how_to_fix:
   ja: どれか 1 つを残して、他は前の文に繋ぐか独立させてください。

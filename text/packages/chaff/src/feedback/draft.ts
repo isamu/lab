@@ -61,7 +61,7 @@ const TEXT: Texts<{
       "false-positive": "<!-- Why it is wrong, and how the text should be read -->",
       missed: "<!-- What is wrong in the text, and which rule should have said so -->",
     },
-    lines: (from, to) => `lines ${String(from)}-${String(to)}`,
+    lines: (from, to) => (from === to ? `line ${String(from)}` : `lines ${String(from)}-${String(to)}`),
   },
 };
 

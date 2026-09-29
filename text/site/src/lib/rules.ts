@@ -3,6 +3,7 @@
 import { resolve } from "node:path";
 import { loadRules } from "../../../packages/chaff/src/rule-load.ts";
 import type { RuleDefinition } from "../../../packages/chaff/src/plugin.ts";
+import { templateForReading } from "../../../packages/chaff/src/render/text.ts";
 import type { Lang } from "./i18n";
 
 export type Localized = Record<Lang, string>;
@@ -38,6 +39,8 @@ const levelsOf = (definition: RuleDefinition): readonly (readonly [string, strin
 
 const text = (localized: Readonly<Record<string, string>>, lang: Lang): string => localized[lang] ?? localized["en"] ?? "";
 
+const readable = (message: Localized): Localized => ({ ja: templateForReading(message.ja), en: templateForReading(message.en) });
+
 const byLanguage: Record<Lang, readonly RuleDefinition[]> = { ja: loadRules("ja", RULES_DIR), en: loadRules("en", RULES_DIR) };
 
 const ruleOf = (ja: RuleDefinition): Rule => {
@@ -56,7 +59,7 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     languages,
     name: localized("name"),
     why: localized("why"),
-    message: localized("message"),
+    message: readable(localized("message")),
     howToFix: localized("how_to_fix"),
     levels: { ja: levelsOf(ja), en: levelsOf(en) },
     useFor: ja.use_for,

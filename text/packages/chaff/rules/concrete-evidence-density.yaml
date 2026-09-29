@@ -16,7 +16,7 @@ why:
 
 message:
   ja: 「{word}」の節に数値もコードもリンクもありません（そういう節が {count}/{total}）
-  en: 'Section "{word}" has no number, code or link ({count} of {total} sections)'
+  en: 'Section "{word}" has no number, code or link ({count} of {total} {total|section|sections})'
 
 how_to_fix:
   ja: 実例を 1 つ足してください。書けないなら、その節は他の節に畳めるかもしれません。

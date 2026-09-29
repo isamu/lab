@@ -2,6 +2,7 @@ import type { Finding, RuleDefinition } from "../plugin.ts";
 import type { RunResult } from "../run.ts";
 import { MARK, localized, messageOf } from "./text.ts";
 import { tally } from "./summary.ts";
+import { counted } from "./plural.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
 
 const RULE = 60;
@@ -32,8 +33,8 @@ const TEXT: Texts<{
     machine: "All judged by machine",
     deterministic: "              (the same text gives the same result every time)",
     untouched: "The text was not changed. Fixing it is the writer's job.",
-    forced: (n, ids) => `${n} experimental rule${n === 1 ? "" : "s"} turned on in the settings: ${ids}`,
-    notRun: (n) => `${n} rule${n === 1 ? "" : "s"} did not run:`,
+    forced: (n, ids) => `${counted(n, "experimental rule")} turned on in the settings: ${ids}`,
+    notRun: (n) => `${counted(n, "rule")} did not run:`,
     because: (why) => ` (${why})`,
   },
 };
