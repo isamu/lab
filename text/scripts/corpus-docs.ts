@@ -1,12 +1,20 @@
 // The corpus documents of every kind (not the statutes): where each one lives, and the per-rule summary that
 // `yarn corpus` compares with the committed expectation. Pure; the scripts read and write the files.
 import { join } from "node:path";
+import { congressionalRecordToMarkdown } from "./congressional-record-markdown.ts";
 import { googlePatentsToMarkdown } from "./google-patents-markdown.ts";
 import { htmlToMarkdown } from "./html-markdown.ts";
+import { kokkaiToMarkdown } from "./kokkai-markdown.ts";
 import { wikitextToMarkdown } from "./wikitext-markdown.ts";
 
 /** A source that is not Markdown or plain text, and the converter that turns it into Markdown when it is fetched. */
-const CONVERTERS = { wikitext: wikitextToMarkdown, html: htmlToMarkdown, "google-patents": googlePatentsToMarkdown } as const;
+const CONVERTERS = {
+  wikitext: wikitextToMarkdown,
+  html: htmlToMarkdown,
+  "google-patents": googlePatentsToMarkdown,
+  kokkai: kokkaiToMarkdown,
+  "congressional-record": congressionalRecordToMarkdown,
+} as const;
 
 type SourceFormat = keyof typeof CONVERTERS;
 

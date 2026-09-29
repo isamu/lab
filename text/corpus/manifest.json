@@ -1,5 +1,5 @@
 {
-  "note": "Real documents chaff is run on. Japanese statutes are public domain (Copyright Act of Japan, Article 13). UK Acts are under the Open Government Licence v3.0 (contains public sector information licensed under the OGL, from legislation.gov.uk). Both are committed; anything that may not be redistributed is listed with redistribute: false and only cached locally. Documents of other kinds (source \"url\") are fetched from a pinned URL: committed under docs/ when their license allows it (redistribute: true), otherwise only the URL is kept and the text goes to the git-ignored .cache/. A source that is not Markdown or plain text names its \"format\" (\"wikitext\", \"html\", or \"google-patents\": a patent page of which only the abstract, description and claims are kept) and is stored converted to Markdown.",
+  "note": "Real documents chaff is run on. Japanese statutes are public domain (Copyright Act of Japan, Article 13). UK Acts are under the Open Government Licence v3.0 (contains public sector information licensed under the OGL, from legislation.gov.uk). Both are committed; anything that may not be redistributed is listed with redistribute: false and only cached locally. Documents of other kinds (source \"url\") are fetched from a pinned URL: committed under docs/ when their license allows it (redistribute: true), otherwise only the URL is kept and the text goes to the git-ignored .cache/. A source that is not Markdown or plain text names its \"format\" (\"wikitext\", \"html\", \"google-patents\": a patent page of which only the abstract, description and claims are kept, \"kokkai\": a meeting from the 国会会議録検索システム API, or \"congressional-record\": a Congressional Record granule from govinfo) and is stored converted to Markdown.",
   "documents": [
     {
       "id": "rouki",
@@ -1118,6 +1118,124 @@
       "format": "wikitext",
       "license": "著作権法第13条第3号（裁判所の判決は著作権の目的とならない）; the two 判示事項 lines above the judgment are the court's own case titles, facts without creative expression; 出典: ウィキソース「平成24 (あ) 646」",
       "redistribute": true
+    },
+    {
+      "id": "crec-2024-03-07-s2256-reca",
+      "title": "Congressional Record, Senate, March 7, 2024: Radiation Exposure Compensation Reauthorization Act (Pages S2256-S2265)",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "en",
+      "url": "https://www.govinfo.gov/content/pkg/CREC-2024-03-07/html/CREC-2024-03-07-pt1-PgS2256.htm",
+      "license": "Public domain (work of the US federal government: the Congressional Record, 170 Cong. Rec. S2256-S2265, published by the Government Publishing Office on govinfo.gov)",
+      "redistribute": true,
+      "format": "congressional-record"
+    },
+    {
+      "id": "ecfr-16-cfr-310-telemarketing",
+      "title": "eCFR: 16 CFR Part 310, Telemarketing Sales Rule (as of 2026-09-01)",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-09-01/title-16?part=310",
+      "license": "Public domain (work of the US federal government: the Code of Federal Regulations, as rendered by the eCFR for 2026-09-01)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "eip-1559-fee-market",
+      "title": "EIP-1559: Fee market change for ETH 1.0 chain",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/ethereum/EIPs/ba6c342c23164072adb500c3136e3ae6eabff306/EIPS/eip-1559.md",
+      "license": "CC0-1.0 (\"Copyright and related rights waived via CC0\", stated in the document)",
+      "redistribute": true
+    },
+    {
+      "id": "fac-adr-0016-file-uploads",
+      "title": "Federal Audit Clearinghouse ADR 16: File Uploads",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/GSA-TTS/FAC/8b54e8d1c000cd585bbc441595f66db46a8f6e81/docs/architecture/decisions/0016-file-uploads.md",
+      "license": "CC0-1.0 (US government work, public domain; the repository's LICENSE.md)",
+      "redistribute": true
+    },
+    {
+      "id": "govuk-adr-0014-replace-terraform-cloud",
+      "title": "GOV.UK infrastructure ADR 14: Replace Terraform Cloud",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/alphagov/govuk-infrastructure/765bcff22c52c688efcae1bc6dd224ba40a83ebf/docs/architecture/decisions/0014-replace-terraform-cloud.md",
+      "license": "MIT (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "chrome-blog-pwa-origin-migration",
+      "title": "Chrome for Developers blog: Seamless PWA origin migration: Change domains without losing users",
+      "source": "url",
+      "genre": "blog/tech",
+      "language": "en",
+      "url": "https://developer.chrome.com/blog/seamless-pwa-origin-migration?hl=en",
+      "license": "CC BY 4.0 for the prose, Apache-2.0 for the code samples the page includes (as stated on the page); URL only because of the Apache-2.0 samples; Dibyajyoti Pal, Dan Murphy, Marijn Kruisselbrink, \"Seamless PWA origin migration: Change domains without losing users\", Chrome for Developers, 2026-06-03, https://developer.chrome.com/blog/seamless-pwa-origin-migration; converted to Markdown",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "oecd-global-drought-outlook-summary",
+      "title": "OECD: Global Drought Outlook, Executive summary",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20251108124701id_/https://www.oecd.org/en/publications/global-drought-outlook_d492583a-en/full-report/executive-summary_4133c25e.html",
+      "license": "CC BY 4.0 (as stated on the page, (c) OECD 2025); OECD (2025), Global Drought Outlook: Trends, Impacts and Policies to Adapt to a Drier World, OECD Publishing, Paris, https://doi.org/10.1787/d492583a-en; converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "kokkai-217-sangiin-shohisha-7",
+      "title": "第217回国会 参議院 消費者問題に関する特別委員会 第7号（令和7年5月23日）",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "ja",
+      "url": "https://kokkai.ndl.go.jp/api/meeting?issueID=121714536X00720250523&recordPacking=json",
+      "license": "Each speech's copyright belongs to its speaker (国会会議録検索システム 利用条件); URL only",
+      "redistribute": false,
+      "format": "kokkai"
+    },
+    {
+      "id": "nta-tsutatsu-shohi-05-01",
+      "title": "国税庁: 消費税法基本通達 第5章 課税範囲 第1節 通則",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20251211125450id_/https://www.nta.go.jp/law/tsutatsu/kihon/shohi/05/01.htm",
+      "license": "著作権法第13条第2号（国の機関が発する通達は著作権の目的とならない）; 出典: 国税庁ホームページ (https://www.nta.go.jp/law/tsutatsu/kihon/shohi/05/01.htm), converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "ppc-guidelines-tsusoku",
+      "title": "個人情報保護委員会: 個人情報の保護に関する法律についてのガイドライン（通則編）",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260926194503id_/https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/",
+      "license": "著作権法第13条第2号（平成28年個人情報保護委員会告示第6号。国の機関が発する告示は著作権の目的とならない）; 出典: 個人情報保護委員会ウェブサイト (https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/), converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "chrome-blog-pwa-origin-migration-ja",
+      "title": "Chrome for Developers ブログ: シームレスな PWA オリジン移行（Google による AI 翻訳）",
+      "source": "url",
+      "genre": "blog/tech",
+      "language": "ja",
+      "url": "https://developer.chrome.com/blog/seamless-pwa-origin-migration?hl=ja",
+      "license": "CC BY 4.0 for the prose, Apache-2.0 for the code samples the page includes (as stated on the page); URL only because of the Apache-2.0 samples; the Japanese page is Google's AI translation of Dibyajyoti Pal, Dan Murphy, Marijn Kruisselbrink, \"Seamless PWA origin migration: Change domains without losing users\", Chrome for Developers, 2026-06-03; converted to Markdown",
+      "redistribute": false,
+      "format": "html"
     }
   ]
 }

@@ -3,7 +3,7 @@ layer: L1
 status: experimental
 how_to_find: undefined-acronym
 word_list: common-acronym
-extra_word_lists: [definition-marker, definition-verb, meridiem, time-zone, currency-code, us-state-code, emphasis-word, numbered-division]
+extra_word_lists: [definition-marker, definition-verb, meridiem, time-zone, currency-code, us-state-code, emphasis-word, numbered-division, honorific]
 uses: [pos]
 severity: info
 
