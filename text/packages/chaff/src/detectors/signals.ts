@@ -3,6 +3,7 @@ import { wordsOf } from "./structure.ts";
 import { compacted, placeOf } from "./gram-place.ts";
 import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
 import { expansionAt, type ExpandedAt } from "./acronym-expansion.ts";
+import { isExplained } from "./acronym-compound.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 
@@ -150,10 +151,14 @@ export const ngramRepetition: Detector = (doc, options): Finding[] => {
  * 展開は「略語の直前か直後の括弧」か「括弧の中の略語」で書かれる。
  *
  * & で繋いだ大文字は 1 語として読む（ATT&CK、M&IE）。割ると CK や IE が別の略語に見える。
+ * - で繋いだ略語どうしも 1 語（RT-PCR）。割ると RT が別の略語に見える。数字を含むもの（COVID-19）は識別子として外す。
  */
 const EDGE_BEFORE = String.raw`(?<![A-Za-z0-9_&])`;
 const EDGE_AFTER = String.raw`(?![A-Za-z0-9_&])`;
-const ACRONYM = new RegExp(String.raw`${EDGE_BEFORE}(?:[A-Z]+(?:&[A-Z]+)+|[A-Z]{2,6})${EDGE_AFTER}`, "gu");
+/** 略語として読む大文字の長さの上限。これより長い大文字の語（BILLING）は、普通の語を大文字で書いたもの。 */
+const ACRONYM_MAX = 6;
+const ACRONYM_PART = String.raw`(?:[A-Z]+(?:&[A-Z]+)+|[A-Z]{2,${ACRONYM_MAX}})`;
+const ACRONYM = new RegExp(String.raw`${EDGE_BEFORE}${ACRONYM_PART}(?:-${ACRONYM_PART})*${EDGE_AFTER}`, "gu");
 
 /**
  * 大文字で書かれていても略語ではないもの。
@@ -162,9 +167,17 @@ const ACRONYM = new RegExp(String.raw`${EDGE_BEFORE}(?:[A-Z]+(?:&[A-Z]+)+|[A-Z]{
  * 強調は読点や括弧をまたいで続くので（THE AUTHOR, THE COMPANY (IF ANY)）、そういう続きを含む
  * 「大文字以外の文字を含まない一続き」を丸ごと強調と見なす。小文字の語が挟まれば切れるので、
  * 「SRE, SLO, MTTR」のような略語の並びは残る。引用符に包まれた大文字の句（“AS IS”）も強調。
+ * 2 語でも、片方が略語にしては長い語なら強調（BILLING CODE）。略語 2 つの並び（NIST SP）は残る。
  */
 const CAPS_WORD = String.raw`[A-Z]+(?:&[A-Z]+)*`;
-const SHOUTED_RUN = new RegExp(String.raw`${EDGE_BEFORE}${CAPS_WORD}(?:[\s"“”'‘’]+${CAPS_WORD}){2,}${EDGE_AFTER}`, "u");
+const LONG_CAPS_WORD = String.raw`[A-Z]{${ACRONYM_MAX + 1},}`;
+const CAPS_GAP = String.raw`[\s"“”'‘’]+`;
+const SHOUTED_RUN = new RegExp(String.raw`${EDGE_BEFORE}${CAPS_WORD}(?:${CAPS_GAP}${CAPS_WORD}){2,}${EDGE_AFTER}`, "u");
+/** 2 語の強調は、その 2 語だけを外す。続きまで外すと、区切りの後ろの略語（NEW GUIDELINES: SRE）まで消える。 */
+const SHOUTED_PAIR = new RegExp(
+  String.raw`${EDGE_BEFORE}(?:${LONG_CAPS_WORD}${CAPS_GAP}${CAPS_WORD}|${CAPS_WORD}${CAPS_GAP}${LONG_CAPS_WORD})${EDGE_AFTER}`,
+  "gu",
+);
 const UNCASED_STRETCH = /(?:[A-Z]|\P{L})+/gu;
 const QUOTED_CAPS = new RegExp(String.raw`["“'‘]${CAPS_WORD}(?:\s+${CAPS_WORD})+["”'’]`, "gu");
 
@@ -187,7 +200,7 @@ const spanOf = (match: RegExpExecArray): Span => ({ start: match.index, end: mat
 const spansOf = (text: string, notation: NotAcronymSpans): Span[] => [
   ...[...text.matchAll(UNCASED_STRETCH)].filter((match) => SHOUTED_RUN.test(match[0])).map(spanOf),
   ...[...text.matchAll(IDENTIFIER)].filter((match) => /\d/u.test(match[0])).map(spanOf),
-  ...[QUOTED_CAPS, REQUIREMENT_WORD, LICENCE].flatMap((pattern) => [...text.matchAll(pattern)].map(spanOf)),
+  ...[SHOUTED_PAIR, QUOTED_CAPS, REQUIREMENT_WORD, LICENCE].flatMap((pattern) => [...text.matchAll(pattern)].map(spanOf)),
   ...notation(text),
 ];
 
@@ -232,10 +245,11 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const common = new Set((options.lexicon ?? []).map((entry) => entry.pattern));
   const seen = new Map<string, Hit>();
   acronymsOf(doc, notationOf(doc)).forEach(({ word, hit }) => {
-    if (!common.has(word) && !seen.has(word)) seen.set(word, hit);
+    if (!seen.has(word)) seen.set(word, hit);
   });
   const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
-  const bare = [...seen.entries()].filter(([acronym]) => !isExpanded(body, acronym, expandedAt));
+  const explainedAlone = (word: string): boolean => common.has(word) || isExpanded(body, word, expandedAt);
+  const bare = [...seen.entries()].filter(([acronym]) => !isExplained(acronym, explainedAlone));
   if (bare.length < options.limit) return [];
   return bare.map(([acronym, hit]) => ({
     rule: "undefined-acronym",
