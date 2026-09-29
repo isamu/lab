@@ -10,7 +10,7 @@ acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-leng
 apidatagov-developer-manual  max-sentence-length 5, proper-noun-density 1, undefined-acronym 3
 arxiv-2609-27842-genai-assessment  adverb-overuse 1, agentless-passive 124, concrete-evidence-density 9, max-paragraph-length 16, max-sentence-length 218, ngram-repetition 1, undefined-acronym 10, unqualified-superlative 3
 arxiv-astro-ph-new-2025-01-03  agentless-passive 116, expletive-construction 9, max-paragraph-length 78, max-sentence-length 351, ngram-repetition 1, proper-noun-density 1, undefined-acronym 133, unqualified-superlative 2
-asf-board-minutes-2025-01  agentless-passive 318, concrete-evidence-density 36, date-order 1, expletive-construction 28, heading-echo 18, max-paragraph-length 8, max-sentence-length 236, ngram-repetition 1, preamble-length 1, proper-noun-density 1, undefined-acronym 153, unqualified-superlative 2
+asf-board-minutes-2025-01  agentless-passive 318, concrete-evidence-density 36, expletive-construction 28, heading-echo 18, max-paragraph-length 8, max-sentence-length 236, ngram-repetition 1, preamble-length 1, proper-noun-density 1, undefined-acronym 153, unqualified-superlative 2
 automattic-offer-letter-us  agentless-passive 10, duplicate-definition 1, max-paragraph-length 2, max-sentence-length 53, proper-noun-density 1
 automattic-privacy-policy  agentless-passive 20, concrete-evidence-density 6, heading-echo 1, max-paragraph-length 1, max-sentence-length 128, ngram-repetition 1, proper-noun-density 1, undefined-acronym 8
 bls-glossary  agentless-passive 222, max-paragraph-length 6, max-sentence-length 262, ngram-repetition 1, proper-noun-density 1, undefined-acronym 8, unqualified-superlative 2
