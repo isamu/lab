@@ -607,6 +607,33 @@ describe("English: a reference wrapped before its 'of [DOC]' (draft-ietf-httpapi
   });
 });
 
+describe("English: a hyphenated bracket tag names another document only where this document lists it", () => {
+  const numbered = (...body: string[]): string => lines("Section 1 Scope", ...body, "Section 2 Fees", "text");
+  const missing9 = [["dangling-reference", { label: "Section 9", target: "9" }]];
+  const listedAlone = ["   [WEB-CACHE]", '              Doe, J., "Caching on the Web", 2020.'];
+  const listedWithGap = ['   [WEB-CACHE]  Doe, J., "Caching on the Web", 2020.'];
+
+  const cited: readonly (readonly [string, string])[] = [
+    ["the tag after the reference, listed alone on its line", numbered("Stale copies are ignored (see Section 9 of [WEB-CACHE]).", ...listedAlone)],
+    ["the tag after the reference, listed with the entry beside it", numbered("Stale copies are ignored (see Section 9 of [WEB-CACHE]).", ...listedWithGap)],
+    ["the tag before the reference", numbered("Stale copies are ignored (see [WEB-CACHE], Section 9).", ...listedAlone)],
+    ["the list before the reference", numbered(...listedWithGap, "Stale copies are ignored (see Section 9 of [WEB-CACHE]).")],
+  ];
+  cited.forEach(([name, source]) => {
+    it(name, () => assert.deepEqual(found(en, source), []));
+  });
+
+  const placeholders: readonly (readonly [string, string])[] = [
+    ["a placeholder the document never lists", numbered("Payment is made under Section 9 of [BUYER-1].")],
+    ["a placeholder written before the reference", numbered("See [BUYER-1], Section 9.")],
+    ["a line that opens with the tag is prose, not a list entry", numbered("[BUYER-1] pays under Section 9 of [BUYER-1].")],
+    ["another tag listed does not list this one", numbered("Payment is made under Section 9 of [BUYER-1].", ...listedAlone)],
+  ];
+  placeholders.forEach(([name, source]) => {
+    it(name, () => assert.deepEqual(found(en, source), missing9));
+  });
+});
+
 describe("a plain-text specification's top-level sections (RFC 9457: '5.  Security Considerations')", () => {
   // 二段の番号（3.1）は本文でも読むので、どの例も構造を読めた文書として比べる。
   const withSubsection = (...head: string[]): string => lines(...head, "", "3.1.  Details", "", "Text.", "", "See Section 1.");

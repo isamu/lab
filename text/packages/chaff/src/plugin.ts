@@ -142,7 +142,10 @@ export type StructurePatterns = {
   readonly numbered: (line: string, context: NumberingContext) => NumberedLine | undefined;
   /** 定義。attrs.term に定義された語。 */
   readonly definitions: (text: string) => readonly Mention[];
-  /** 参照。attrs.target に正規化した番地（"12.1"）、attrs.label に書かれたまま。 */
+  /**
+   * 参照。attrs.target に正規化した番地（"12.1"）、attrs.label に書かれたまま。他の文書を指すなら attrs.document にその名。
+   * 書き方だけでは他の文書か決まらない角括弧の語は attrs.citedTag に入れ、文書がその語を一覧に載せていれば core が他の文書とみなす。
+   */
   readonly references: (text: string) => readonly Mention[];
   /** 義務・禁止・許可。attrs.marker に語、attrs.type に must / must-not / may。 */
   readonly obligations: (text: string) => readonly Mention[];

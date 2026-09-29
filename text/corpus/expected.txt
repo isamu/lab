@@ -74,7 +74,7 @@ govuk-incident-safe-browsing  agentless-passive 16, concrete-evidence-density 4,
 govuk-style-guide-a-to-z  agentless-passive 41, concrete-evidence-density 61, dangling-reference 1, heading-echo 22, max-sentence-length 23, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 39, unqualified-superlative 2
 gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1
 gsi-maps-smartphone-howto  max-paragraph-length 1
-ietf-draft-httpapi-ratelimit-headers-10  dangling-reference 1, max-paragraph-length 1, max-sentence-length 61, ngram-repetition 1, proper-noun-density 1, undefined-acronym 15
+ietf-draft-httpapi-ratelimit-headers-10  max-paragraph-length 1, max-sentence-length 61, ngram-repetition 1, proper-noun-density 1, undefined-acronym 15
 jma-faq-typhoon  agentless-passive 4, concrete-evidence-density 4, max-paragraph-length 1, ngram-repetition 1
 jma-tokubetsu-keiho  max-kanji-continuous 1, max-sentence-length 2
 jp-2011-056072-seiu-kenyo-gasa  hiragana-fukushi 2, max-paragraph-length 1, max-sentence-length 23, ngram-repetition 1, no-doubled-joshi 11, taigen-dome-in-prose 1
