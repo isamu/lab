@@ -1,5 +1,6 @@
-import type { Detector, Finding, Sentence } from "../plugin.ts";
+import type { Detector, Finding, Sentence, Span } from "../plugin.ts";
 import { latinBoundaries, minorityStyle, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
+import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { digitRunAround, isNumberName, sequenceLabelStarts } from "../number-name.ts";
 
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
@@ -38,6 +39,12 @@ const isCounted = (sentence: Sentence, boundary: Boundary, sequence: ReadonlySet
 };
 
 /**
+ * 鉤括弧で引いた題名や発言（「…ガイドライン ver. 1.1」）の中の境目。空け方は引いた元のもので、書き手の書き方ではない。
+ * 括弧は日本語の字でも英数字でもないので、境目はまるごと括弧の中か外にある。
+ */
+const isQuoted = (quoted: readonly Span[], boundary: Boundary): boolean => isWithinAny(quoted, { start: boundary.offset, end: boundary.offset });
+
+/**
  * 日本語と英字・数字のあいだを、空けるか詰めるか。文書の中で混ざっていたら、少ないほうを指摘する。
  * どちらが正しいかは決めない。決めるのはチームで、chaff はそろっているかだけを見る。
  */
@@ -45,11 +52,12 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
   // 覆った文（prose）で探す。コードの中の「1 件」は並びに入れない。
   const sequence = sequenceLabelStarts(doc.prose ?? doc.source);
   const topUnits = new Set((doc.lexicons["prefecture-unit"] ?? []).map((entry) => entry.pattern));
-  const located: Located[] = doc.sentences.flatMap((sentence) =>
-    latinBoundaries(sentence.text, doc.source.slice(sentence.span.start, sentence.span.end))
-      .filter((boundary) => isCounted(sentence, boundary, sequence, topUnits))
-      .map((boundary) => ({ sentence, ...boundary })),
-  );
+  const located: Located[] = doc.sentences.flatMap((sentence) => {
+    const quoted = quotedSpans(sentence.text);
+    return latinBoundaries(sentence.text, doc.source.slice(sentence.span.start, sentence.span.end))
+      .filter((boundary) => !isQuoted(quoted, boundary) && isCounted(sentence, boundary, sequence, topUnits))
+      .map((boundary) => ({ sentence, ...boundary }));
+  });
   return KINDS.flatMap((kind) => {
     const ofKind = located.filter((entry) => entry.kind === kind);
     const minority = minorityStyle(ofKind);
