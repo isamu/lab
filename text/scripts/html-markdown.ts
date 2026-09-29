@@ -30,8 +30,21 @@ const isChromeLink = (link: string): boolean =>
 /** A list whose every item is only a link, such as a site menu or a table of contents. */
 const isNavigation = (body: string): boolean => (body.match(ANY_LINK) ?? []).length > 0 && stripTags(body.replace(ANY_LINK, "")).trim() === "";
 
-/** The page's own content: what is inside <main>, or the whole page when it has none. */
-const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? html;
+/** Attributes before role="main", each skipped whole so that a quoted value (title="x role=main") is not read as one. */
+const ATTRIBUTES = String.raw`(?:\s+[^\s"'>=/]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?)*?`;
+
+// A role is a list of tokens and the first one counts: role="main document" is main.
+const MAIN_ROLE = String.raw`${ATTRIBUTES}\s+role\s*=\s*(?:"\s*main(?:\s[^"]*)?"|'\s*main(?:\s[^']*)?'|main(?=[\s/>]))`;
+
+/** The first element marked role="main" (a CMS's <article id="contents" role="main">), matched to its own closing tag. */
+const mainLandmark = (html: string): string | undefined => {
+  const tag = new RegExp(String.raw`<([a-z][a-z0-9]*)${MAIN_ROLE}`, "iu").exec(html)?.[1];
+  if (tag === undefined) return undefined;
+  return elementRanges(html, tag).find((range) => new RegExp(String.raw`^<[a-z][a-z0-9]*${MAIN_ROLE}`, "iu").test(range.openTag))?.inner;
+};
+
+/** The page's own content: what is inside <main>, else inside the element marked role="main", else the whole page. */
+const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? mainLandmark(html) ?? html;
 
 type ElementRange = { readonly start: number; readonly end: number; readonly openTag: string; readonly inner: string };
 

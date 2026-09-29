@@ -67,6 +67,7 @@ const ALPHANUMERIC = /[A-Za-z0-9.]/u;
 /**
  * 日本語の左にある英数字の並びの、先頭の字。「3GBの」の「GB」は数量の単位で、並びは数字で始まる。
  * そうした並びと日本語の境目は、英字の空け方ではなく数字の後ろの空け方として数える（「3回」と同じ）。
+ * 逆に「H30 等」「EC2 で」は英字で始まる名前で、書き手は英単語と同じに空ける。数字の後ろとしては数えない。
  */
 const runStart = (chars: readonly string[], last: number): string | undefined => {
   let first = last;
@@ -74,10 +75,10 @@ const runStart = (chars: readonly string[], last: number): string | undefined =>
   return chars[first];
 };
 
-/** 左の並びの種類。数字で始まる並び（3GB、10ms）は数字として扱う。 */
+/** 左の並びの種類は先頭の字で決める。数字で始まる並び（3GB、10ms）は数字、英字で始まる並び（H30、v1.2）は英字。 */
 const leftRunBeside = (chars: readonly string[], last: number, japanese: string | undefined): SpacingKind | undefined => {
   const kind = latinBeside(japanese, chars[last], "after-digit");
-  return kind === "letter" && DIGIT.test(runStart(chars, last) ?? "") ? "after-digit" : kind;
+  return kind === undefined ? undefined : (kindOf(runStart(chars, last), "after-digit") ?? kind);
 };
 
 /**

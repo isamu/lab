@@ -707,6 +707,111 @@
       "url": "https://raw.githubusercontent.com/digital-go-jp/abr-geocoder/87182261fc25cb4ca2feb9ba3cdf35741b75130d/abrg/README.ja.md",
       "license": "MIT",
       "redistribute": false
+    },
+    {
+      "id": "wikivoyage-ja-shikoku-henro",
+      "title": "ウィキボヤージュ: 四国八十八箇所巡礼",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "ja",
+      "url": "https://ja.wikivoyage.org/w/index.php?oldid=58318&action=raw",
+      "license": "CC-BY-SA-4.0",
+      "redistribute": false,
+      "format": "wikitext"
+    },
+    {
+      "id": "wikivoyage-ja-shimoda",
+      "title": "ウィキボヤージュ: 下田市",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "ja",
+      "url": "https://ja.wikivoyage.org/w/index.php?oldid=58257&action=raw",
+      "license": "CC-BY-SA-4.0",
+      "redistribute": false,
+      "format": "wikitext"
+    },
+    {
+      "id": "nttcom-onboarding-week1",
+      "title": "NTT Com オンボーディングハンドブック: 入社1週目",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/nttcom/onboarding-handbook/1f103b4b6e45cec5b30ace5a0a622cde9da43207/content/docs/week1.md",
+      "license": "CC-BY-NC-SA-4.0 (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "dwango-nicolive-manifest-generator",
+      "title": "ニコニコ生放送 Kubernetes 移行ハンドブック: Kubernetes Manifest Generator のアーキテクチャ",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/dwango/nicolive-kubernetes-migration-handbook-2022/bb29cd87a1f494e6e6eca3f4b40728d9ccfbff76/content/docs/manifest/kubernetes-manifest-generator-architecture.md",
+      "license": "CC-BY-4.0",
+      "redistribute": false
+    },
+    {
+      "id": "koenote-requirements",
+      "title": "EchoNote 要件定義書",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/koichi1115/koenote-docs/5e5858c8373b77c56a2d53b3586b4c9b1636c734/STT-Docs/requirements.md",
+      "license": "None stated (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "da-machine-readability-ai-configuration",
+      "title": "デジタル庁: 機械可読性ルール判定サンプル AI補完機能の設定ガイド",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/digital-go-jp/machine_readability_rule/bb76c7c4f0effec235eba57d80b021d55fca85bb/sample_app/docs/guides/ai-configuration.md",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0), per the repository's LICENSE.md; 出典: デジタル庁 machine_readability_rule (https://github.com/digital-go-jp/machine_readability_rule)",
+      "redistribute": true
+    },
+    {
+      "id": "da-machine-readability-limitations",
+      "title": "デジタル庁: 機械可読性ルール判定サンプル 既知の制限事項",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/digital-go-jp/machine_readability_rule/bb76c7c4f0effec235eba57d80b021d55fca85bb/sample_app/docs/guides/limitations.md",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0), per the repository's LICENSE.md; 出典: デジタル庁 machine_readability_rule (https://github.com/digital-go-jp/machine_readability_rule)",
+      "redistribute": true
+    },
+    {
+      "id": "gsi-maps-smartphone-howto",
+      "title": "国土地理院: 地理院地図の使い方 スマートフォンで使用する",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260403061055id_/https://maps.gsi.go.jp/help/intro/general/sphowto.html",
+      "license": "国土地理院コンテンツ利用規約 (PDL1.0) covers the 国土地理院ウェブサイト; this page on maps.gsi.go.jp is not named there and closes with ALL RIGHTS RESERVED (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "kimino-mayor-2022-09",
+      "title": "紀美野町: 町長の部屋【令和4年9月8日】4回目のコロナワクチン接種状況と防災活動について",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260420120028id_/https://www.town.kimino.wakayama.jp/gyosei/mayor/2910.html",
+      "license": "紀美野町ホームページの利用ルール（政府標準利用規約（第2.0版）準拠、CC BY 4.0 互換）; 出典: 紀美野町ホームページ (https://www.town.kimino.wakayama.jp/gyosei/mayor/2910.html); 「【令和4年9月8日】4回目のコロナワクチン接種状況と防災活動について」（紀美野町）（https://www.town.kimino.wakayama.jp/gyosei/mayor/2910.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "kimino-cleanup-notice",
+      "title": "紀美野町: 町民一斉清掃の実施について",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20250928102249id_/https://www.town.kimino.wakayama.jp/event/ibento/4297.html",
+      "license": "紀美野町ホームページの利用ルール（政府標準利用規約（第2.0版）準拠、CC BY 4.0 互換）; 出典: 紀美野町ホームページ (https://www.town.kimino.wakayama.jp/event/ibento/4297.html); 「町民一斉清掃の実施について」（紀美野町）（https://www.town.kimino.wakayama.jp/event/ibento/4297.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
     }
   ]
 }

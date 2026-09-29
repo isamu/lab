@@ -4,6 +4,22 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` reads a name ending in a digit as a Latin word (#170)
+
+A run that starts with a letter and ends in a digit (`H30 等`, `EC2 で`, `IPv6アドレス`, `v1.2の`) is now counted with
+the letters, not with the numbers: a writer spaces it the way they space `API を`, whatever they do after `3日`. Before,
+a document that spaces Latin words and glues numbers had `H30 等` reported as a spaced number. A run that starts with a
+digit (`3GBの`) still counts with the numbers. Found on デジタル庁's specification of the machine-readability checker.
+
+### The corpus has travel guides, an onboarding handbook, a design document, a requirements document, manuals and a town's notices (#170)
+
+`yarn corpus` now also runs on two ja.wikivoyage articles (四国八十八箇所巡礼, 下田市), NTT Com's onboarding handbook,
+dwango's design of its Kubernetes manifest generator, a requirements document for a note-taking app, a 国土地理院 how-to
+(URL only), two guides of デジタル庁's machine-readability checker (公共データ利用規約（第1.0版）with attribution), and a
+mayor's report and a notice of 紀美野町 (committed: its site terms follow 政府標準利用規約（第2.0版）, with attribution). The
+HTML converter reads the element marked `role="main"` when a page has no `<main>`, so a town CMS's menus and text-size
+buttons are not read as the page's preamble.
+
 ### The list of acronyms a reader knows is a word list (#170)
 
 `undefined-acronym`'s list of acronyms that need no spelling out (API, URL, CEO …) moved from code into each language
