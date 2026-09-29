@@ -567,6 +567,46 @@ describe("English: a reference into another document is not looked up here", () 
   });
 });
 
+describe("English: a reference wrapped before its 'of [DOC]' (draft-ietf-httpapi-ratelimit-headers-10)", () => {
+  const numbered = (...body: string[]): string => lines("Section 1 Scope", ...body, "Section 2 Fees", "text");
+  const offsetsOf = (source: string, path?: string): (string | number | undefined)[] => findingsOf(en, source, path).map((finding) => finding.values["offset"]);
+  const missing9 = [["dangling-reference", { label: "Section 9", target: "9" }]];
+
+  const elsewhere: readonly (readonly [string, string, string])[] = [
+    ["an RFC tag on the next, indented line", numbered("   This section documents the considerations advised in Section 16.3.2", "   of [HTTP]."), "c.txt"],
+    [
+      "the tag alone on the next line",
+      numbered("   This document uses the terms List, Item and Integer from Section 3 of", "   [SF] to specify syntax."),
+      "c.txt",
+    ],
+    ["a named document on the next line", numbered("As provided in Section 9", "of the Master Agreement."), "c.txt"],
+    ["an RFC number on the next line", numbered("   The field is defined in Section 9", "   of RFC 9110."), "c.txt"],
+    ["spaces at the end of the line", numbered("As provided in Section 9   ", "   of the Master Agreement."), "c.txt"],
+    ["a Markdown paragraph wraps the same way", numbered("As provided in Section 9", "of the Master Agreement."), "c.md"],
+  ];
+  elsewhere.forEach(([name, source, path]) => {
+    it(name, () => assert.deepEqual(found(en, source, path), []));
+  });
+
+  it("a reference with no 'of' after the wrap is still into this document, at its own place", () => {
+    const source = numbered("   The limits are listed in Section 9", "   of this Agreement.");
+    assert.deepEqual(found(en, source), missing9);
+    assert.deepEqual(offsetsOf(source), [source.indexOf("Section 9")]);
+    const plain = numbered("   The limits are listed in Section 9", "   for each client.");
+    assert.deepEqual(offsetsOf(plain), [plain.indexOf("Section 9")]);
+  });
+
+  it("not across a blank line, or out of a heading", () => {
+    assert.deepEqual(found(en, numbered("See Section 9", "", "of the Master Agreement.")), missing9);
+    assert.deepEqual(found(en, numbered("## See Section 9", "of the Master Agreement."), "c.md"), missing9);
+  });
+
+  it("a reference on the next line is read there, once", () => {
+    const source = numbered("The fee is set in", "Section 9 of this Agreement.");
+    assert.deepEqual(offsetsOf(source), [source.indexOf("Section 9")]);
+  });
+});
+
 describe("a plain-text specification's top-level sections (RFC 9457: '5.  Security Considerations')", () => {
   // 二段の番号（3.1）は本文でも読むので、どの例も構造を読めた文書として比べる。
   const withSubsection = (...head: string[]): string => lines(...head, "", "3.1.  Details", "", "Text.", "", "See Section 1.");

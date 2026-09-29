@@ -12,6 +12,16 @@ direction of a list is still taken from most of its steps, but the list is now c
 its dates can stay in that direction. A schedule with a slip or two keeps the rest of its dates in order and is still
 checked; a list sorted by a name or a version does not, and nothing is said.
 
+### A reference wrapped before its "of [HTTP]" names the other document (#170)
+
+A plain-text RFC is hard-wrapped at about 72 columns, so a reference into another document is often split across a
+line: "…advised in Section 16.3.2\n   of [HTTP]." or "…from Section 3 of\n   [SF] to specify…". Each line was read on its own, so "Section 16.3.2" looked like a
+reference into this document and `dangling-reference` reported it. The reference reader now also sees the next line,
+joined by one space in place of the line break and its indentation, when it looks for the "of [DOC]" / "of RFC 9110" /
+"of the Master Agreement" after a reference; the same holds for a wrapped Markdown paragraph. A reference with nothing
+after the wrap, or "of this Agreement", is still looked up in this document; a blank line ends the join and a heading
+does not run on into the next line; findings keep their place on the line. Found on draft-ietf-httpapi-ratelimit-headers-10.
+
 ### `doubled-word` does not count an article before "a priori" (#170)
 
 "the a priori approach" was reported as two articles in a row. The "a" of "a priori", "a posteriori", "a fortiori",
