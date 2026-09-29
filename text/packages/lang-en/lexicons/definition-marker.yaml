@@ -1,0 +1,14 @@
+# Words written inside brackets before an acronym to define it: Service Level Agreement (hereinafter "SLA"),
+# (the "SLA"), (aka the "GDPR"). They count only when the brackets hold nothing but these words and the acronym.
+# Matched without regard to case.
+id: definition-marker
+language: en
+entries:
+  - pattern: the
+  - pattern: hereinafter
+  - pattern: hereafter
+  - pattern: referred to as
+  - pattern: called
+  - pattern: aka
+  - pattern: a.k.a.
+  - pattern: also known as
