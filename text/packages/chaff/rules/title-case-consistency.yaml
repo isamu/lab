@@ -10,8 +10,8 @@ name:
   en: Heading capitalisation is inconsistent
 
 why:
-  ja: Title Case と sentence case のどちらが正しいかは決めません。1 つの文書で混ざっていると、見出しの階層が変わったように見えます。
-  en: Neither Title Case nor sentence case is wrong. Mixed within one document, the headings look like they change level.
+  ja: Title Case と sentence case のどちらが正しいかは決めません。1 つの文書で混ざっていると、見出しの階層が変わったように見えます。文書の題名（先頭にある深さ 1 の見出しが 1 つだけのとき）は名前なので比べません。節の見出しが同数に割れたときだけ、題名の流儀に合わせます。
+  en: Neither Title Case nor sentence case is wrong. Mixed within one document, the headings look like they change level. The document's title (a single top-level heading that opens it) is a name and is not compared; when the section headings split evenly, the title's style decides.
 
 message:
   ja: この見出しだけ他と大文字化の流儀が違います（文書の中で {count} 個）
