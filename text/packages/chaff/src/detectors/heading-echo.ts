@@ -1,5 +1,6 @@
 import { lengthOf } from "../measure.ts";
 import { handsOver } from "./lead-in.ts";
+import { withoutQuotedVariants } from "./quoted-variant.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Section } from "../plugin.ts";
 
 /** 見出しが短すぎると、偶然の一致で 100% になる。これ未満の見出しは見ない。 */
@@ -58,12 +59,15 @@ const leadsIn = (doc: ProseDocument, section: Section, phrases: readonly string[
   return first !== undefined && handsOver(first.text, doc.source.slice(first.span.end, section.span.end), phrases);
 };
 
+/** 見出しとの重なりを測る文。用語集や表記の手引きは見出しの語の別の書き方を引用する（Not “datacentre”）ので、それは数えない。 */
+const echoedText = (section: Section): string => withoutQuotedVariants(section.firstSentence?.text ?? "", section.heading);
+
 export const headingEcho: Detector = (doc, options): Finding[] => {
   const leadIns = (doc.lexicons["lead-in"] ?? []).map((entry) => entry.pattern);
   return doc.sections
     .filter((section) => section.heading.length > 0 && section.firstSentence !== undefined && addsLittle(section, doc.lengthUnit))
     .filter((section) => !leadsIn(doc, section, leadIns))
-    .map((section) => ({ section, overlap: Math.round(containment(trigrams(section.heading), trigrams(section.firstSentence?.text ?? "")) * 100) }))
+    .map((section) => ({ section, overlap: Math.round(containment(trigrams(section.heading), trigrams(echoedText(section))) * 100) }))
     .filter(({ overlap }) => overlap >= options.limit)
     .map(({ section, overlap }) => ({
       rule: "heading-echo",

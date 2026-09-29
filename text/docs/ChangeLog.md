@@ -13,6 +13,38 @@ of the count entirely, so a quotation neither is reported nor decides which way 
 same place outside the brackets (「手引き」を IDで引く) is still reported, and a bracket that does not close counts as
 before. This is the reading `no-doubled-joshi` already gives a quotation.
 
+### `heading-echo` does not count a quoted variant of the heading; a ninth round of corpus kinds (#170)
+
+A style guide or glossary entry names its term in the heading and then quotes the spellings not to use:
+"## data centre" followed by `Not “datacentre”.` was reported as a sentence that repeats its heading. Text in
+quotation marks (“…”, ‘…’, "…", '…', 「…」, 『…』) is a word being talked about, not the heading said again, so it
+no longer counts toward the overlap unless it is the heading itself (`「利用規約への同意」へお進みください` still
+counts). An apostrophe (organisation’s, don't) does not open or close a quotation. A sentence that repeats the
+heading outside quotes is still reported.
+
+The corpus adds the A to Z of GOV.UK style, the U.S. Bureau of Labor Statistics glossary, the api.data.gov developer
+manual, cloud.gov's security incident response guide, a 首相官邸 speech transcript, a 環境省 national park guide,
+総務省's cyber security glossary and explainer, and 国立国会図書館's service guide (committed, licence named in the
+manifest), and an arXiv listing of abstracts (URL only).
+
+### A hyphenated tag the document lists, "of [HTTP-CACHING]", names another document (#170)
+
+A bracketed tag after a reference named another document only when it was capitals and digits ("[HTTP]"), so that a
+contract's placeholder ("[BUYER-1]") is not taken for one. "Section 4.2.3 of [HTTP-CACHING]" was therefore looked up
+in this document and reported by `dangling-reference`. The two are written alike; what tells them apart is whether the
+document lists the tag: a line that opens with "[HTTP-CACHING]" and then ends, or leaves two spaces or a tab before
+the entry, as a reference list is laid out. A hyphenated tag the document lists now names another document, after the
+reference or just before it ("[HTTP-CACHING], Section 4"); one it never lists, or only opens a sentence with
+("[BUYER-1] pays …"), is still looked up here. Found on draft-ietf-httpapi-ratelimit-headers-10.
+
+### `date-order` stays silent on a list sorted by something other than its dates (#170)
+
+A release list in board minutes, sorted by release name (`widget-1.10.4`, `widget-2.1.3`, `widget-3.0.0`, …), was read
+as a schedule and one release was reported as out of order, although the list never meant to follow the dates. The
+direction of a list is still taken from most of its steps, but the list is now checked only when more than half of
+its dates can stay in that direction. A schedule with a slip or two keeps the rest of its dates in order and is still
+checked; a list sorted by a name or a version does not, and nothing is said.
+
 ### `undefined-acronym` leaves domain names, date placeholders and a numeral after a name alone, and reads `(ON RRP)` as one acronym (#170)
 
 Four kinds of capitals were reported as acronyms without an expansion:

@@ -10,8 +10,8 @@ name:
   en: A date out of order in a schedule
 
 why:
-  ja: 旅程やマイルストーンのように日付を並べた箇条書きや表で、ひとつだけ前の日付より早い日付があると、書き間違いか順番の入れ替わりかを読み手が確かめることになります。並びが古い順か新しい順かは多いほうで決め、それに逆らう日付だけを指します。
-  en: In a list or a table of dates, such as an itinerary or milestones, one date earlier than the one before it makes the reader check whether it is a typo or a swapped row. The direction of the list (oldest or newest first) is taken from most of its steps, and only a date against it is pointed out.
+  ja: 旅程やマイルストーンのように日付を並べた箇条書きや表で、ひとつだけ前の日付より早い日付があると、書き間違いか順番の入れ替わりかを読み手が確かめることになります。並びが古い順か新しい順かは多いほうで決め、それに逆らう日付だけを指します。その向きに沿う日付が半分以下の並びは、名前や版の順に並べた一覧として扱い、何も言いません。
+  en: In a list or a table of dates, such as an itinerary or milestones, one date earlier than the one before it makes the reader check whether it is a typo or a swapped row. The direction of the list (oldest or newest first) is taken from most of its steps, and only a date against it is pointed out. A list where no more than half of the dates follow that direction is taken as sorted by something else, such as a name or a version, and nothing is said.
 
 message:
   ja: 「{date}」が、前後の日付の並びから外れています（前は「{previous}」）

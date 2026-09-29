@@ -220,14 +220,14 @@ describe("dangling-reference が相対の参照も確かめる", () => {
   it("前条第五項の条に第 5 項が無ければ指摘する", () => {
     const source = lines("第一条　本文。", "２　本文。", "第二条　前条第五項の規定による。", "第三条　本文。");
     assert.deepEqual(
-      danglingReferences(treeOf(source)).map((issue) => issue.values["target"]),
+      danglingReferences(treeOf(source), source).map((issue) => issue.values["target"]),
       ["1.5"],
     );
   });
 
   it("前条第二項の条に第 2 項があれば指摘しない", () => {
     const source = lines("第一条　本文。", "２　本文。", "第二条　前条第二項の規定による。", "第三条　本文。");
-    assert.deepEqual(danglingReferences(treeOf(source)), []);
+    assert.deepEqual(danglingReferences(treeOf(source), source), []);
   });
 });
 
