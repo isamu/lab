@@ -106,6 +106,11 @@ describe("略語の定義の形: 語彙表が無い・変な入力", () => {
     assert.equal(expansionAt(wordsOf(ja))(text, "SLO", text.indexOf("SLO")), false);
   });
 
+  it("括弧の中が定義の語と略語だけなら、前の語を問わない。語の無い括弧（(KPT)）と同じ強さ", () => {
+    const at = expansionAt(wordsOf(en));
+    ["Ask (KPT) now.", "Ask (the KPT) now."].forEach((text) => assert.ok(at(text, "KPT", text.indexOf("KPT")), text));
+  });
+
   it("空の本文・範囲の外の位置でも落ちない", () => {
     const at = expansionAt(wordsOf(ja));
     assert.equal(at("", "HR", 0), false);
