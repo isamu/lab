@@ -12,6 +12,11 @@ const RULES = loadRules("ja");
 const idsFor = (source: string, profile?: DocumentProfile): string[] =>
   runRules(buildDocument("t.md", source, ja, undefined, profile), RULES, {}, true, "business/report").findings.map((finding) => finding.rule);
 
+const kanjiWords = (source: string): string[] =>
+  runRules(buildDocument("t.md", source, ja), RULES, {}, true, "business/report")
+    .findings.filter((finding) => finding.rule === "max-kanji-continuous")
+    .map((finding) => String(finding.values?.["word"]));
+
 const statute = loadProfiles().find((definition) => definition.id === "statute")?.languages["ja"];
 if (statute === undefined) throw new Error("profiles/statute.yaml has no ja section");
 
@@ -64,6 +69,29 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(idsFor("和歌山県海草郡紀美野町役場総務課に届ける。").includes("max-kanji-continuous"));
       // 数の後ろが助数詞でない語なら住所ではない。
       assert.ok(idsFor("東京都港区新橋二政策に届ける。").includes("max-kanji-continuous"));
+      // 住所の後ろの 1 字の語も連なりの一部で、住所だけの連なりではない。
+      assert.ok(idsFor("東京都港区新橋二丁目課に届ける。").includes("max-kanji-continuous"));
+    });
+
+    it("数に付いた助数詞は、後ろの複合語の連なりに数えない", () => {
+      // 最高裁平成18年9月14日判決。「2日」の日は数と読まれるので、見せる語は「日本弁護士連合会臨時総会決議」。
+      assert.deepEqual(kanjiWords("弁護士倫理規定（平成2年3月2日日本弁護士連合会臨時総会決議）は、基本倫理を掲げた。"), ["日本弁護士連合会臨時総会決議"]);
+      // 助数詞を外すと 8 字で、上限に届かない。
+      assert.deepEqual(kanjiWords("第3回情報処理推進機構の試験です。"), []);
+      assert.deepEqual(kanjiWords("第3 回情報処理推進機構の試験です。"), []);
+    });
+
+    it("同じ連なりが文に二度出れば、それぞれの位置で助数詞かどうかを読む", () => {
+      assert.deepEqual(kanjiWords("2026年度予算編成基本方針と年度予算編成基本方針を比べる。"), ["年度予算編成基本方針"]);
+      assert.deepEqual(kanjiWords("年度予算編成基本方針と2026年度予算編成基本方針を比べる。"), ["年度予算編成基本方針"]);
+    });
+
+    it("invalid: 漢数字の後ろの助数詞と、助数詞でない語は数える", () => {
+      // 漢数字は連なりの一部で、数と助数詞も連なりの中にある。
+      assert.deepEqual(kanjiWords("第三回情報処理推進機構の試験です。"), ["第三回情報処理推進機構"]);
+      // 会計は助数詞ではない（令和6年版情報通信白書）。
+      assert.deepEqual(kanjiWords("米国の「2021会計年度国防授権法」を参照する。"), ["会計年度国防授権法"]);
+      assert.deepEqual(kanjiWords("第3回情報処理推進機構認定試験です。"), ["情報処理推進機構認定試験"]);
     });
 
     it("覆った箇所の空白をまたいで繋がない", () => {
