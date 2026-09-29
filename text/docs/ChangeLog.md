@@ -17,6 +17,21 @@ counter (`1日日本銀行` is the name `日本銀行`). A run that appears twic
 places, not both at the first one; to keep those places, a masked statute address is blanked to its own length rather
 than to one space. Found on a judgment of 最高裁判所 and several government pages.
 
+### Japanese: a line break inside a Markdown paragraph no longer splits a word (#170)
+
+A judgment copied from its PDF, or a paragraph wrapped by hand, has line breaks in the middle of a sentence. Markdown
+shows such a paragraph as one line, and a line break between two full-width characters shows as nothing at all (the
+rule browsers follow), but chaff passed it to the morphological analyser, which read it as a word boundary: 「に関\nする」
+became two words, a 「の」 chain continuing onto the next line was cut there (`no-doubled-joshi`), and the excerpt of a
+long sentence showed 「関 する」. chaff now removes such a line break before the analysis when the line clearly continues: the analyser finds a
+word across it, or the line ends in a particle, a conjunction or a comma. Every word and finding is mapped back to the
+source, so line, column and offset still point at the text as written. A line that ends in a noun or a bracket keeps its
+break, because it may be a numbered heading (「2.1 注文の登録」) or one item of an address or signature written one per
+line, which Markdown also runs together; `max-kanji-continuous` joins only a line break inside a word. A line break next
+to a Latin letter or a digit, a hard line break (two spaces or a backslash), a blank line, a full-width indent and a line
+break next to inline code stay as they were, and so does a plain-text document, whose lines are shown as they are (a
+statute puts one item on each line).
+
 ### Japanese: a long run of kanji that is one proper name is not reported (#170)
 
 `max-kanji-continuous` no longer reports a run of kanji that is one name, since the writer cannot change a name: a

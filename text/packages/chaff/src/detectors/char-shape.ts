@@ -4,22 +4,30 @@ import { leadingCounterLength } from "./counter-edge.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
+import { proseText } from "../measure.ts";
 import { parallelDotCount } from "./middle-dot.ts";
 
 /**
  * 文字の並びを見る検出。漢字の連なりが住所か名前かだけは、形態素解析の固有名詞と数で決める。
- * 覆った箇所は空白になっているので、空白を詰めてから数える。
+ * 覆った箇所は空白になっているので、proseText で潰してから数える。
  */
 const KANJI_RUN = /[一-鿿]+/gu;
 
 /** 漢字の連なりと、その文書全体の座標での範囲。 */
 type KanjiRun = { readonly text: string; readonly span: Span | undefined };
 
-/** 同じ連なりが文に二度出ても、それぞれの位置で読む。番地の覆いは長さを保つので、詰めた文の位置がそのまま使える。 */
+const SPACE = /\s/gu;
+
+/**
+ * 同じ連なりが文に二度出ても、それぞれの位置で読む。proseText は空白を詰めたり除いたりするだけなので、
+ * 空白でない k 文字目は元の文でも空白でない k 文字目。番地の覆いは長さを保つので、proseText の位置がそのまま使える。
+ */
 const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined): KanjiRun[] => {
-  const prose = compacted(sentence.text, "word");
-  return [...maskAddresses(prose.text, profile).matchAll(KANJI_RUN)].map((match) => {
-    const [start, last] = [prose.offsets[match.index], prose.offsets[match.index + match[0].length - 1]];
+  const prose = proseText(sentence);
+  const printed = compacted(sentence.text, "char").offsets;
+  return [...maskAddresses(prose, profile).matchAll(KANJI_RUN)].map((match) => {
+    const before = prose.slice(0, match.index).replace(SPACE, "").length;
+    const [start, last] = [printed[before], printed[before + match[0].length - 1]];
     const span = start === undefined || last === undefined ? undefined : { start: sentence.span.start + start, end: sentence.span.start + last + 1 };
     return { text: match[0], span };
   });
