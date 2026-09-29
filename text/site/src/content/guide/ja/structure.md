@@ -13,6 +13,7 @@ AI の回答が引いた箇所が本当に原文にあるかも、同じ木で�
 | --- | --- |
 | `npx chaffjs tree <file>` | 木を S 式で出します。人と AI が読む形です |
 | `npx chaffjs tree <file> --format json` | 同じ木を JSON で出します。プログラムが読む形です |
+| `npx chaffjs tree <file> --language en` | 言語を決めて読みます。`chaff.yaml` の設定や中身からの推定より優先します |
 
 契約書をかけると、次のように出ます。
 
