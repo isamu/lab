@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { latinBoundaries, minorityStyle, occurrencesOutside, type Boundary } from "../packages/chaff/src/orthography.ts";
+import { hyphenGroups, isHyphen, latinBoundaries, minorityStyle, occurrencesOutside, type Boundary } from "../packages/chaff/src/orthography.ts";
 import { loadConfig } from "../packages/chaff/src/config/load.ts";
 import { buildDocument, teamRules } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -50,6 +50,14 @@ describe("latinBoundaries", () => {
     ["電話：073-489-5909 ファックス", []],
     ["は 2026-06-02 時点", []],
     ["図表Ⅰ-4-1-3 生成", []],
+    ["5－1－1 法の規定", []],
+    ["5‐1‐1 法の規定", []],
+    ["5−1−1 法の規定", []],
+    ["は 5－1－1 の", []],
+    ["5－1－10 個人事業者", []],
+    ["で 3－5 日", ["before-digit:spaced", "after-digit:spaced"]],
+    ["5ー1ー1 法", ["after-digit:touching", "before-digit:touching", "after-digit:touching", "before-digit:touching", "after-digit:spaced"]],
+    ["5–1–1 法", ["after-digit:spaced"]],
     ["中期的(1-3ヶ月後)", ["after-digit:touching"]],
     ["で 20-30分", ["before-digit:spaced", "after-digit:touching"]],
     ["3日で終わる", ["after-digit:touching"]],
@@ -98,6 +106,24 @@ describe("latinBoundaries", () => {
       latinBoundaries("😀あA").map((boundary) => boundary.offset),
       [3],
     );
+  });
+});
+
+describe("hyphens between digits", () => {
+  it("reads the half-width, full-width and Japanese hyphens and the minus sign as hyphens", () => {
+    ["-", "－", "‐", "‑", "−"].forEach((char) => assert.equal(isHyphen(char), true, char));
+  });
+
+  it("does not read the long vowel mark, a dash, a tilde or nothing as a hyphen", () => {
+    ["ー", "–", "—", "―", "～", "〜", "_", "", undefined].forEach((char) => assert.equal(isHyphen(char), false, String(char)));
+  });
+
+  it("splits on every kind of hyphen and drops empty groups", () => {
+    assert.deepEqual(hyphenGroups("5－1－1"), ["5", "1", "1"]);
+    assert.deepEqual(hyphenGroups("073-489－5909"), ["073", "489", "5909"]);
+    assert.deepEqual(hyphenGroups("5ー1"), ["5ー1"]);
+    assert.deepEqual(hyphenGroups("--3"), ["3"]);
+    assert.deepEqual(hyphenGroups(""), []);
   });
 });
 

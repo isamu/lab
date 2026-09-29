@@ -125,22 +125,28 @@ const isOrdinalRun = (chars: readonly string[], index: number): boolean => {
 };
 
 /**
- * 「073-489-5909」「2026-06-02」「Ⅰ-4-1-3」のように - でつないだ 3 組以上の数字は、電話番号・日付・図の番号で
+ * 「073-489-5909」「2026-06-02」「Ⅰ-4-1-3」「5－1－1」のように - でつないだ 3 組以上の数字は、電話番号・日付・図や項目の番号で
  * 数量ではない。後ろの空白は欄の区切りで、「3回」の空け方とは別のもの。両側とも数えない。
  * 2 組（「1-3ヶ月」「20-30分」）は幅のある数量なので数える。
  */
 const MIN_CODE_GROUPS = 3;
-const CODE_CHAR = /[\d-]/u;
+
+// 通達の「5－1－1」は全角の「－」でつなぐ。ハイフン「‐」やマイナス「−」も同じに読む。長音「ー」は仮名の一部なので入れない。
+const HYPHEN = /[-‐‑−－]/u;
+
+/** 数字をつなぐハイフンか。半角の - のほか、全角・和文のハイフンも。 */
+export const isHyphen = (char: string | undefined): boolean => char !== undefined && HYPHEN.test(char);
+
+/** ハイフンで区切った組（空の組は除く）。「5－1－1」は ["5", "1", "1"]。 */
+export const hyphenGroups = (text: string): string[] => text.split(HYPHEN).filter((group) => group !== "");
+
+const isCodeChar = (char: string | undefined): boolean => DIGIT.test(char ?? "") || isHyphen(char);
 
 const isCode = (chars: readonly string[], digit: number): boolean => {
   let [first, last] = [digit, digit];
-  while (first > 0 && CODE_CHAR.test(chars[first - 1] ?? "")) first -= 1;
-  while (last < chars.length - 1 && CODE_CHAR.test(chars[last + 1] ?? "")) last += 1;
-  const groups = chars
-    .slice(first, last + 1)
-    .join("")
-    .split("-");
-  return groups.filter((group) => group !== "").length >= MIN_CODE_GROUPS;
+  while (first > 0 && isCodeChar(chars[first - 1])) first -= 1;
+  while (last < chars.length - 1 && isCodeChar(chars[last + 1])) last += 1;
+  return hyphenGroups(chars.slice(first, last + 1).join("")).length >= MIN_CODE_GROUPS;
 };
 
 /** 日本語との境目にある数字が、数えない書き方（「第3条」の番地、「073-489-5909」の符号）か。 */

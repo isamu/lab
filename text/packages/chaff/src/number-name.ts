@@ -1,3 +1,4 @@
+import { hyphenGroups, isHyphen } from "./orthography.ts";
 import type { Span, Token } from "./plugin.ts";
 
 /**
@@ -28,17 +29,18 @@ const SECTION_NUMBER = /^\d+(?:\.\d+)+$/u;
  * 数え続ける。三つ以上つないだもの（073-489-5909）は、orthography.ts が境目を作る前に外している。
  */
 const isHyphenIdentifier = (digits: string): boolean => {
-  const parts = digits.split("-").filter((part) => part !== "");
+  const parts = hyphenGroups(digits);
   return parts.length > 1 && parts.some((part) => part.startsWith("0"));
 };
 
-const RUN_CHAR = /[\d.-]/u;
+const DIGIT_OR_POINT = /[\d.]/u;
+const isRunChar = (char: string | undefined): boolean => DIGIT_OR_POINT.test(char ?? "") || isHyphen(char);
 
-/** at を含む、数字・小数点・ハイフンの並び。at が並びの中に無ければ undefined。 */
+/** at を含む、数字・小数点・ハイフン（全角の「－」なども）の並び。at が並びの中に無ければ undefined。 */
 export const digitRunAround = (text: string, at: number): Span | undefined => {
-  if (!RUN_CHAR.test(text[at] ?? "")) return undefined;
-  const startAt = (index: number): number => (index > 0 && RUN_CHAR.test(text[index - 1] ?? "") ? startAt(index - 1) : index);
-  const endAt = (index: number): number => (index < text.length && RUN_CHAR.test(text[index] ?? "") ? endAt(index + 1) : index);
+  if (!isRunChar(text[at])) return undefined;
+  const startAt = (index: number): number => (index > 0 && isRunChar(text[index - 1]) ? startAt(index - 1) : index);
+  const endAt = (index: number): number => (index < text.length && isRunChar(text[index]) ? endAt(index + 1) : index);
   return { start: startAt(at), end: endAt(at) };
 };
 
@@ -86,7 +88,8 @@ export const placeChainBefore = (tokens: readonly Token[], end: number): Token[]
  * ハイフンの無い数（千代田区23 番）も読まない。topUnits は都道府県の単位（語彙表 prefecture-unit）。
  */
 const isAddressNumber = (text: string, run: Span, tokens: readonly Token[], base: number, topUnits: ReadonlySet<string>): boolean =>
-  text.slice(run.start, run.end).includes("-") && placeChainBefore(tokens, base + run.start).some((token) => isGeoUnit(token) && !topUnits.has(token.surface));
+  [...text.slice(run.start, run.end)].some(isHyphen) &&
+  placeChainBefore(tokens, base + run.start).some((token) => isGeoUnit(token) && !topUnits.has(token.surface));
 
 /** ハイフンでつないだ識別子か、番号の立つ位置の番号か、文頭の節番号か。 */
 const isNameShaped = (text: string, run: Span): boolean => {

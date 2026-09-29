@@ -13,6 +13,8 @@ describe("digitRunAround", () => {
   const cases: readonly (readonly [string, number, string | undefined])[] = [
     ["電話：073-489-5912 ファックス", 5, "073-489-5912"],
     ["「3.1 リサーチ」", 2, "3.1"],
+    ["「5－1 総則」", 3, "5－1"],
+    ["5ー1", 0, "5"],
     ["3回", 0, "3"],
     ["あ3", 1, "3"],
     ["あい", 0, undefined],
@@ -116,6 +118,14 @@ describe("isNumberName", () => {
     assert.equal(isNumberName(ward, runOf(ward, "2-1"), [geo(0, "千代田"), unit(3, "区"), token(8, "ビル", "NOUN")], 0, new Set(), TOP_UNITS), true);
   });
 
+  it("reads an address number joined by a full-width hyphen too", () => {
+    const ward = "千代田区紀尾井町1－3 ビル";
+    assert.equal(
+      isNumberName(ward, runOf(ward, "1－3"), [geo(0, "千代田"), unit(3, "区"), geo(4, "紀尾井町"), token(12, "ビル", "NOUN")], 0, new Set(), TOP_UNITS),
+      true,
+    );
+  });
+
   it("keeps a range after a region or a prefecture, a number with no hyphen, and a place away from the number", () => {
     const region = "北海道2-3 営業日";
     assert.equal(isNumberName(region, runOf(region, "2-3"), [geo(0, "北海道"), token(7, "営業", "NOUN")], 0, new Set(), TOP_UNITS), false);
@@ -208,6 +218,9 @@ describe("isNumberName", () => {
     assert.equal(shaped("1-3"), false);
     assert.equal(shaped("10-20"), false);
     assert.equal(shaped("05"), false);
+    assert.equal(shaped("102－0094"), true);
+    assert.equal(shaped("03‐3501"), true);
+    assert.equal(shaped("3－5"), false);
   });
 
   it("keeps a number followed by a particle or an auxiliary", () => {
@@ -282,6 +295,14 @@ describe("latin-spacing with parts of speech", () => {
   it("does not count the space after a postal code with no part starting with 0, nor after the address number", () => {
     assert.deepEqual(spacing("# 提出先\n\n受付を3回、確認を5回行う。\n\n郵送 〒100-8916 東京都千代田区霞が関1-2-2\n"), []);
     assert.deepEqual(spacing("# 所在地\n\n受付を3回、確認を5回行う。\n\n所在地：〒102-0094 東京都千代田区紀尾井町1-3 東京ガーデンテラス紀尾井町\n"), []);
+  });
+
+  it("does not count the space after a provision number joined by full-width hyphens", () => {
+    assert.deepEqual(spacing("# 通則\n\n受付を3回、確認を5回行う。\n\n5－1－1 法第2条に規定する事業をいう。\n\n5－1－2 令第2条に規定する資産をいう。\n"), []);
+  });
+
+  it("still counts a quantity after a range joined by a full-width hyphen", () => {
+    assert.deepEqual(spacing("# 使い方\n\n3日、5日と待ち、3－5 日で終わる。\n"), ["前の数字:空けています"]);
   });
 
   it("still counts a range after a region or a prefecture", () => {
