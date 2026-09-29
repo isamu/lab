@@ -504,8 +504,64 @@ describe("htmlToMarkdown: ルビ", () => {
   });
 });
 
+describe("htmlToMarkdown: 属性値の中の < と >", () => {
+  it("引用符で囲んだ属性値の中のタグは、タグの終わりにならない", () => {
+    const banner =
+      '<section class="notice" title="This was published under the <span lang=&quot;en&quot;>2019 to 2022 government</span>">' +
+      '<p>This was published under the <span lang="en">2019 to 2022 government</span></p></section>';
+    assert.equal(htmlToMarkdown(banner), "This was published under the 2019 to 2022 government\n");
+    assert.equal(htmlToMarkdown("<p title='1 > 0'>Kept.</p><p data-rule=\"a<b\">Also kept.</p>"), "Kept.\n\nAlso kept.\n");
+    assert.equal(htmlToMarkdown('<p title = "1 > 0">Kept.</p><p title="a <li b">Also kept.</p>'), "Kept.\n\nAlso kept.\n");
+  });
+
+  it("属性値の > の先も読む: 画像の代替テキストと見出しの id", () => {
+    const image = '<html><head><title>A &gt; B</title></head><body><h1><img alt="A > B" src="a.png"></h1><p>Text.</p></body></html>';
+    assert.equal(htmlToMarkdown(image), "# A > B\n\nText.\n");
+    assert.equal(htmlToMarkdown('<h2 id="a>b">Scope <a href="#a&gt;b">¶</a></h2><p>Text.</p>'), "## Scope\n\nText.\n");
+  });
+
+  it("= の後でない引用符はただの文字。閉じない引用符のタグはこれまでどおり", () => {
+    assert.equal(htmlToMarkdown('<p class=it\'s>One.</p><p>Two "quoted".</p>'), 'One.\n\nTwo "quoted".\n');
+    assert.equal(htmlToMarkdown('<p>A.</p><p title="oops>B.</p>'), "A.\n\nB.\n");
+  });
+
+  it("閉じないタグに引用符の値がいくつ並んでも、読み終わる", () => {
+    const unclosed = `<p${' a="x"'.repeat(40)}`;
+    assert.equal(htmlToMarkdown(`<p>A.</p>${unclosed}`), `A.\n\n${unclosed}\n`);
+  });
+
+  it("属性値の <!-- と <? はコメントを始めず、コメントの中の引用符は値を始めない", () => {
+    assert.equal(htmlToMarkdown('<section title="<!--"><p>Lost?</p><!-- note --><p>Kept.</p></section>'), "Lost?\n\nKept.\n");
+    assert.equal(htmlToMarkdown('<p title="<?">A.</p><p>B.</p><?x ?>'), "A.\n\nB.\n");
+    assert.equal(htmlToMarkdown('<!-- <a title="x --><p>Kept.</p><p title="y">Also.</p>'), "Kept.\n\nAlso.\n");
+    assert.equal(htmlToMarkdown('<?x <b title="?><p>Kept.</p><p class="y">Also.</p>'), "Kept.\n\nAlso.\n");
+  });
+
+  it("script と style の中身はタグとして読まない", () => {
+    assert.equal(htmlToMarkdown('<script>s = \'<b title="\';</script><p>Kept.</p><p title="x">Also.</p>'), "Kept.\n\nAlso.\n");
+    assert.equal(htmlToMarkdown("<style>a[title='<b']{}</style><p>Kept.</p><p title='x'>Also.</p>"), "Kept.\n\nAlso.\n");
+  });
+});
+
 describe("decodeEntities", () => {
   it("一度だけ戻す。知らない名前や範囲外の番号は書かれたまま", () => {
     assert.equal(decodeEntities("&amp;lt; &unknown; &#0; &#x110000; &nbsp;&rsquo;"), "&lt; &unknown; &#0; &#x110000;  ’");
+  });
+
+  it("HTML の標準の名前はすべて戻す。数字を含む名前も", () => {
+    assert.equal(decodeEntities("Vissing-J&oslash;rgensen, 2,088&divide;814,793, &frac12;, m&sup2;, &Dagger;"), "Vissing-Jørgensen, 2,088÷814,793, ½, m², ‡");
+  });
+
+  it("名前の大文字と小文字は区別する", () => {
+    assert.equal(decodeEntities("&Oslash;&oslash; &AMP; &NBSP; &Divide;"), "Øø & &NBSP; &Divide;");
+  });
+
+  it("名前付きの空白は普通の空白。番号で書いた空白と見えない文字はそのまま", () => {
+    assert.equal(decodeEntities("a&nbsp;b&thinsp;c&ensp;d&ThickSpace;e"), "a b c d e");
+    assert.equal(decodeEntities("a&#160;b&zwj;c"), "a b‍c");
+  });
+
+  it("オブジェクトの持つ名前 (constructor など) は参照でない", () => {
+    assert.equal(decodeEntities("&constructor; &toString; &hasOwnProperty; &valueOf;"), "&constructor; &toString; &hasOwnProperty; &valueOf;");
   });
 });

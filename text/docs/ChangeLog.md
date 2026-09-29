@@ -2,6 +2,25 @@
 
 Newest first.
 
+## Unreleased
+
+### The corpus's converters decode every HTML character reference name and read an attribute value that holds markup (#170)
+
+A named character reference outside the converters' short list stayed in the text as written: `Vissing-J&oslash;rgensen`
+in the FOMC minutes, `records&thinsp;[1]` in a Federal Register notice, `2,088人&divide;814,793` in a MHLW Q&A. The
+HTML and wikitext converters now decode every name of the HTML standard (the `character-entities` table, already in
+the workspace under the Markdown parser and now a root dev dependency), matched as written: `&Oslash;` is Ø and
+`&oslash;` is ø, a name with digits (`&frac12;`) is read, and a name that is not in the table (`&NBSP;`,
+`&constructor;`) stays as written. A named space (`&nbsp;`, `&thinsp;`, `&ensp;`) is a plain space, as `&nbsp;`
+already was; a numeric one (`&#160;`) keeps its character.
+
+An attribute value holding markup, such as GOV.UK's history banner
+(`title="This was published under the <span lang=&quot;en&quot;>…</span>"`), ended its tag at the first `>` inside
+the value and left a stray `…government">` line. Before anything else reads the page, the HTML converter now writes
+each `<` and `>` inside a quoted attribute value as a character reference, which means the same in a value, so every
+tag scanner reads the whole tag. A quote opens a value only after `=`; a comment, a script and a style are not read as
+tags, and a `<!--` inside a value no longer opens a comment. Converted again, the corpus's pages change only where such a reference stood.
+
 ## 0.15.0 — 2026-09-30
 
 chaff reads more kinds of text without stumbling. A file with Windows or classic Mac line breaks, a byte order mark, an
