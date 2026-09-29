@@ -1,9 +1,9 @@
 // An HTML page (a CRS report as EveryCRSReport serves it, a ministry's page) as plain Markdown: headings, paragraphs,
-// list items and the text of links; ruby keeps its base text and loses its reading. Only the <main> element is read
-// when the page has one. Scripts, styles, the head, navigation (by element or by role, and breadcrumbs), asides,
-// footers, forms, tables, footnote marks, lists and blocks of nothing but links (a menu, a table of contents,
-// previous/next links, a breadcrumb trail), lines of nothing but in-page links, and a copyright notice closing the
-// page are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
+// list items and the text of links; ruby keeps its base text and loses its reading. Only the <main> element (else the
+// role="main" element, else a sole <article>) is read when the page has one. Scripts, styles, the head, navigation (by
+// element or by role, and breadcrumbs), asides, footers, forms, tables, footnote marks, lists and blocks of nothing but
+// links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
+// title), lines of nothing but in-page or script links, and a copyright notice closing the page are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
 // for any HTML.
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
@@ -33,9 +33,12 @@ const withoutRubyText = (html: string): string =>
 
 const ANY_LINK = /<a\b[^>]*>[\s\S]*?<\/a\s*>/giu;
 
-/** A link that moves within the page (a table of contents, "back to top") or through a series (rel="prev" / "next"). */
+/**
+ * A link that moves within the page (a table of contents, "back to top"), through a series (rel="prev" / "next"), or
+ * goes nowhere and runs a script instead (href="javascript:…", a print or share button).
+ */
 const isChromeLink = (link: string): boolean =>
-  /^<a\b[^>]*\bhref\s*=\s*["']?#/iu.test(link) || /^<a\b[^>]*\brel\s*=\s*(?:["'][^"']*\b)?(?:prev|next)\b/iu.test(link);
+  /^<a\b[^>]*\bhref\s*=\s*(?:["']\s*)?(?:#|javascript:)/iu.test(link) || /^<a\b[^>]*\brel\s*=\s*(?:["'][^"']*\b)?(?:prev|next)\b/iu.test(link);
 
 /** A list whose every item is only a link, such as a site menu or a table of contents. */
 const isNavigation = (body: string): boolean => (body.match(ANY_LINK) ?? []).length > 0 && stripTags(body.replace(ANY_LINK, "")).trim() === "";
@@ -53,8 +56,17 @@ const mainLandmark = (html: string): string | undefined => {
   return elementRanges(html, tag).find((range) => new RegExp(String.raw`^<[a-z][a-z0-9]*${MAIN_ROLE}`, "iu").test(range.openTag))?.inner;
 };
 
-/** The page's own content: what is inside <main>, else inside the element marked role="main", else the whole page. */
-const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? mainLandmark(html) ?? html;
+const isOutermost = (range: ElementRange, _index: number, all: readonly ElementRange[]): boolean =>
+  !all.some((outer) => outer.start < range.start && range.end <= outer.end);
+
+/** The one <article> not nested in another, when the page has exactly one: the composition the page was made for. */
+const soleArticle = (html: string): string | undefined => {
+  const outermost = elementRanges(html, "article").filter(isOutermost);
+  return outermost.length === 1 ? outermost[0]?.inner : undefined;
+};
+
+/** The page's own content: inside <main>, else the element marked role="main", else a sole <article>, else the whole page. */
+const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? mainLandmark(html) ?? soleArticle(html) ?? html;
 
 type ElementRange = { readonly start: number; readonly end: number; readonly openTag: string; readonly inner: string };
 
@@ -126,11 +138,30 @@ const isLinkGroup = (range: ElementRange): boolean => {
 
 const withoutLinkGroups = (html: string): string => ["div", "section", "p"].reduce((text, tag) => withoutElementsWhere(text, tag, isLinkGroup), html);
 
+const plainText = (html: string): string => decodeEntities(stripTags(html)).replace(/\s+/gu, " ").trim();
+
+/** The page's title as its first <h1> reads; empty when it has none. */
+const pageTitle = (html: string): string => plainText(/<h1\b[^>]*>([\s\S]*?)<\/h1\s*>/iu.exec(html)?.[1] ?? "");
+
+const MIN_TRAIL_LINKS = 2;
+
+/** A breadcrumb as a list: two or more items that are each only a link, then the page's own title as the last item. */
+const isBreadcrumbList = (body: string, title: string): boolean => {
+  const items = body.split(/<li\b[^>]*>/iu).slice(1);
+  const current = items.at(-1);
+  const trail = items.slice(0, -1);
+  return current !== undefined && plainText(current) === title && trail.length >= MIN_TRAIL_LINKS && trail.every(isNavigation);
+};
+
 /** From the inside out, so a nested table of contents goes too once its inner lists are gone. */
-const withoutNavigation = (html: string): string =>
-  untilStable(html, (text) =>
-    text.replace(/<(ul|ol)\b[^>]*>((?:(?!<[uo]l\b)[\s\S])*?)<\/\1\s*>/giu, (whole: string, _tag: string, body: string) => (isNavigation(body) ? " " : whole)),
+const withoutNavigation = (html: string): string => {
+  const title = pageTitle(html);
+  return untilStable(html, (text) =>
+    text.replace(/<(ul|ol)\b[^>]*>((?:(?!<[uo]l\b)[\s\S])*?)<\/\1\s*>/giu, (whole: string, _tag: string, body: string) =>
+      isNavigation(body) || isBreadcrumbList(body, title) ? " " : whole,
+    ),
   );
+};
 
 // An in-page link is wrapped in these marks so that one standing alone on its line ("Jump to main text") can be told
 // from one inside a sentence ("see Table 1"); the first is dropped, the second keeps its text.

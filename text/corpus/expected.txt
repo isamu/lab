@@ -3,10 +3,10 @@
 18f-engineering-on-call  max-sentence-length 15, oxford-comma-consistency 1
 18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 6, expletive-construction 5, max-paragraph-length 1, max-sentence-length 43, oxford-comma-consistency 1, preamble-length 1, title-case-consistency 2, undefined-acronym 3
 18f-handbook-projects-in-distress  agentless-passive 16, max-paragraph-length 1, max-sentence-length 28, proper-noun-density 1, undefined-acronym 6
-18f-handbook-travel  agentless-passive 21, contraction-consistency 1, max-sentence-length 14, preamble-length 1, proper-noun-density 1, title-case-consistency 2, undefined-acronym 5
+18f-handbook-travel  agentless-passive 21, contraction-consistency 1, max-sentence-length 14, proper-noun-density 1, title-case-consistency 2, undefined-acronym 5
 18f-handbook-travel-faq  agentless-passive 76, concrete-evidence-density 7, max-paragraph-length 1, max-sentence-length 65, proper-noun-density 1, undefined-acronym 17
 abr-geocoder-abrg-readme-ja  clean
-arxiv-2609-27842-genai-assessment  adverb-overuse 1, agentless-passive 124, concrete-evidence-density 18, max-paragraph-length 16, max-sentence-length 215, ngram-repetition 1, preamble-length 1, undefined-acronym 13, unqualified-superlative 3
+arxiv-2609-27842-genai-assessment  adverb-overuse 1, agentless-passive 124, concrete-evidence-density 18, max-paragraph-length 16, max-sentence-length 215, ngram-repetition 1, undefined-acronym 12, unqualified-superlative 3
 automattic-offer-letter-us  agentless-passive 10, duplicate-definition 1, max-paragraph-length 2, max-sentence-length 52, proper-noun-density 1
 automattic-privacy-policy  agentless-passive 20, concrete-evidence-density 7, heading-echo 1, max-paragraph-length 1, max-sentence-length 128, ngram-repetition 1, proper-noun-density 1, undefined-acronym 8
 bonterms-cloud-terms  agentless-passive 20, max-paragraph-length 5, max-sentence-length 73, ngram-repetition 1, proper-noun-density 1, undefined-acronym 3
@@ -60,8 +60,8 @@ kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1
 kimino-staff-exam-guide  latin-spacing 3
 koenote-requirements  latin-spacing 56, undefined-acronym 6
 kojin.txt  clean
-meti-keiryoshi-exam-correction  agentless-passive 2, latin-spacing 2, max-sentence-length 2, preamble-length 1
-meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5, preamble-length 1
+meti-keiryoshi-exam-correction  agentless-passive 2, latin-spacing 2, max-sentence-length 2
+meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5
 minpo.txt  clean
 neeview-changelog-ja  doubled-word 1, heading-echo 6, latin-spacing 113, max-kanji-continuous 4, ngram-repetition 1, no-doubled-joshi 5, no-mixed-desumasu 12, undefined-acronym 19
 nih-research-matters-hpv-one-dose  max-paragraph-length 2, max-sentence-length 7, oxford-comma-consistency 1, proper-noun-density 1

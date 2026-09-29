@@ -4,6 +4,21 @@ Newest first.
 
 ## Unreleased
 
+### `preamble-length` counts only paragraphs with a sentence in them (#170)
+
+A paragraph before the first subheading in which no sentence closes with a full stop, question or exclamation mark is
+a label, not a preamble the reader has to get through: a category tag under a press release's date, the names and
+affiliations on a report's title page, a template directive or a link to the next page. Those are no longer counted,
+the same way date stamps are not. A paragraph with one closed sentence counts as before. Found on 経済産業省's press
+releases, an arXiv workshop report and the 18F handbook.
+
+### The corpus HTML converter drops more page chrome by structure (#170)
+
+A link that runs a script instead of going anywhere (`href="javascript:…"`, a print button) is dropped when it stands
+alone on its line, and keeps its text inside a sentence. A list of two or more link-only items ending in the page's own
+`<h1>` title is a breadcrumb and is dropped. A page with neither `<main>` nor `role="main"` but exactly one outermost
+`<article>` is read from that article, which leaves out a site banner, a header and a licence box around it.
+
 ### `yarn bench`'s Japanese design sample plants a dropped gloss the rule is meant to catch (#170)
 
 The dropped-gloss plant in the Japanese design sample left one acronym without an expansion besides the planted one
