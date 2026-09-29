@@ -41,7 +41,7 @@ genai-web-procedure  latin-spacing 29, max-sentence-length 1, proper-noun-densit
 gitlab-jd-instructional-designer  agentless-passive 10, concrete-evidence-density 4, heading-echo 5, max-sentence-length 7, ngram-repetition 1, oxford-comma-consistency 1, proper-noun-density 1
 gitlab-meetings  agentless-passive 54, concrete-evidence-density 7, max-paragraph-length 2, max-sentence-length 44, proper-noun-density 1, title-case-consistency 1, undefined-acronym 10
 gitlab-values  agentless-passive 82, bold-density 1, concrete-evidence-density 57, expletive-construction 12, heading-echo 11, max-paragraph-length 25, max-sentence-length 141, undefined-acronym 10, unqualified-superlative 18
-gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, preamble-length 1, proper-noun-density 1
+gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1
 k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  latin-spacing 1, max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
