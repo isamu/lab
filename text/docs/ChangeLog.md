@@ -15,6 +15,28 @@ mix inside such a run is still reported. A single numbered paragraph, or one cut
 heading, is still judged with the prose, and so is a numbered paragraph inside an article, where it may be one of the
 article's own paragraphs. Found on 国税庁's タックスアンサー.
 
+### `no-nakaguro-parallel` does not count a 「・」 that opens a line (#170)
+
+Japanese notices often write a list with 「・」 as the bullet, one item per line (`・ 水分を補給すること`). When the
+items end without 。, the whole list reads as one sentence, and each bullet was counted as a middle dot joining items.
+A 「・」 at the start of a line or a sentence, after nothing but spaces, is now read as a bullet and not counted; middle
+dots inside an item (`通気性・透湿性`) still count. Found on 文部科学省's notice to schools.
+
+### `duplicate-definition` does not read a heading as a definition (#170)
+
+A heading such as `## 「特別警報」とは` names the term its section goes on to define; it is not the definition. It was
+recorded as one, so the body's `「特別警報」とは、…` became a second definition. Definitions are no longer read from
+heading lines, in either language; references and quantities in a heading still are. Found on 気象庁's explanation of
+special warnings.
+
+### The corpus has a fourth round of document kinds (#170)
+
+Health and safety information (a 厚生労働省 Q&A, CDC), weather and disaster guidance (気象庁, the National Weather
+Service, Ready.gov), a notice to schools (文部科学省), a transport press release (国土交通省), calls for public comment
+(厚生労働省, a NIST request for information in the Federal Register), a course syllabus (MIT OpenCourseWare, URL
+only) and a library newsletter (Library of Congress, URL only). The URL-only agenda of TC39 had not been re-run since
+`preamble-length` stopped counting paragraphs without a sentence; its expected line now matches what chaff says.
+
 ### `preamble-length` counts only paragraphs with a sentence in them (#170)
 
 A paragraph before the first subheading in which no sentence closes with a full stop, question or exclamation mark is
