@@ -50,6 +50,7 @@ describe("notAcronymSpans: 通貨", () => {
     ["JPY 3.5 million", ["JPY"]],
     ["a GBP1,200 fee", ["GBP"]],
     ["12,345.50 USD", ["USD"]],
+    ["USD $1,000 or $1,000 USD", ["USD", "USD"]],
     ["USD  1,000 and 250\nEUR", ["USD", "EUR"]],
   ].forEach(([text, words]) => {
     it(`valid: ${String(text)}`, () => assert.deepEqual(covered(String(text)), words));

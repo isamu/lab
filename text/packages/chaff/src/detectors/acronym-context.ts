@@ -42,7 +42,7 @@ const AMOUNT = String.raw`(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?`;
 const PATTERNS: readonly RegExp[] = [
   new RegExp(String.raw`${CLOCK_12}\s*${oneOf(MERIDIEM)}`, "gu"),
   new RegExp(String.raw`(?:${CLOCK_24}|${CLOCK_12}\s*${ANY_MERIDIEM})\s*${oneOf(TIME_ZONE)}`, "gu"),
-  new RegExp(String.raw`${oneOf(CURRENCY)}\s*${AMOUNT}`, "gu"),
+  new RegExp(String.raw`${oneOf(CURRENCY)}\s*[$€£¥]?${AMOUNT}`, "gu"),
   new RegExp(String.raw`(?<![\w.,])${AMOUNT}\s*${oneOf(CURRENCY)}`, "gu"),
   new RegExp(String.raw`,\s+${oneOf(US_STATE)}\s+\d{5}(?:-\d{4})?(?!\d)`, "gu"),
   new RegExp(oneOf(PLAIN_WORD), "gu"),
