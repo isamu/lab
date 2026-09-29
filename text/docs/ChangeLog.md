@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### A word capitalised only because it starts the sentence is no longer counted as a proper noun in English (#170)
+
+The English tagger marks every capitalised noun and adjective as a proper noun, so the first word of a sentence
+(`Containers start in seconds.`, `Traditional servers were slow.`, `Use the scheduler.`) was counted as a name, and
+`proper-noun-density` reported handbooks and guides whose names were few. `@chaffjs/lang-en` now reads the first word
+of a sentence again in lower case when it is written with one leading capital, the tagger tagged it as a proper noun,
+and the tagger's own vocabulary knows the lower-case word and never as a name. It takes the part of speech the tagger
+gives the lower-case word in the same sentence. A word the vocabulary does not know (`Kubernetes`, `Congress`), a word
+it also knows as a name (`May`), a word in capitals (`API`) and a capitalised word inside a sentence stay proper nouns.
+In the corpus this only moves `proper-noun-density`: its density falls on most English documents and the finding goes
+away where common words had pushed it over the limit.
+
 ### `date-order` stays silent on a list sorted by something other than its dates (#170)
 
 A release list in board minutes, sorted by release name (`widget-1.10.4`, `widget-2.1.3`, `widget-3.0.0`, …), was read
