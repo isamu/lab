@@ -17,6 +17,8 @@ describe("notAcronymSpans: 時刻", () => {
     ["from 10:00 JST", ["JST"]],
     ["until 23:59 UTC", ["UTC"]],
     ["at 12:30pm ET", ["ET"]],
+    ["at 3:30  PM  PST", ["PM", "PST"]],
+    ["at 3:30\nPM", ["PM"]],
     ["at 3:30 PM PST", ["PM", "PST"]],
     ["at 5 p.m. PT", ["PT"]],
   ].forEach(([text, words]) => {
@@ -47,6 +49,7 @@ describe("notAcronymSpans: 通貨", () => {
     ["JPY 3.5 million", ["JPY"]],
     ["a GBP1,200 fee", ["GBP"]],
     ["12,345.50 USD", ["USD"]],
+    ["USD  1,000 and 250\nEUR", ["USD", "EUR"]],
   ].forEach(([text, words]) => {
     it(`valid: ${String(text)}`, () => assert.deepEqual(covered(String(text)), words));
   });
@@ -69,6 +72,8 @@ describe("notAcronymSpans: 米国の住所", () => {
     ["Kansas City, MO 64108", ["MO"]],
     ["Berkeley, CA 94720-1234", ["CA"]],
     ["Washington, DC 20405", ["DC"]],
+    ["Berkeley,\nCA  94720", ["CA"]],
+    ["Berkeley,  CA 94720", ["CA"]],
   ].forEach(([text, words]) => {
     it(`valid: ${String(text)}`, () => assert.deepEqual(covered(String(text)), words));
   });

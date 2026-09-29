@@ -335,6 +335,10 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
       assert.deepEqual(acronymsIn("# Roles\n\nThe PM owns the plan. The ET team reviews it."), ["PM", "ET"]);
     });
 
+    it("valid: 太字の時刻のあとの PM（強調の記号は空白になる）", () => {
+      assert.deepEqual(acronymsIn("# Travel\n\nSubmit it by **3:30** PM."), []);
+    });
+
     it("invalid: 時刻になりえない数の隣の PM は数える", () => {
       assert.deepEqual(acronymsIn("# Roles\n\nTeam 99 PM owns the plan."), ["PM"]);
     });
