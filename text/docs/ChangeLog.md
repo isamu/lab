@@ -7,13 +7,46 @@ Newest first.
 ### `concrete-evidence-density` leaves the entries of a glossary alone (#170)
 
 A glossary or an A to Z style guide was reported entry by entry, because a definition carries no number, code or link.
-Entries are now recognised by structure: headings of a single letter (`## A`, `## B`, `## あ`, `## い`) with nothing
-under them but deeper headings, two or more of them in the order of their letters, divide an index when most of the
-headings right under them start with their letter (case, accents and voicing marks aside, katakana read as hiragana).
-Every section under such a divider is an entry, and entries are neither reported nor counted in the section total.
-The rest of the document (the introduction, "how to suggest a change") is checked as before, and so are FAQs, sections
-headed by a single word or phrase, and sections merely grouped under `## A` / `## B`. An index divided by `あ行`, or
-whose entries sit at the same heading level as the letters, is not recognised.
+Entries are now recognised by structure: headings of a single letter (`## A`, `## B`, `## あ`, `## い`) with nothing under
+them but deeper headings, two or more of them in a row and in the order of their letters, divide an index when most of
+the headings right under them start with their letter (case, accents and voicing marks aside, katakana read as
+hiragana). Every section under such a divider is an entry, and entries are neither reported nor counted in the section
+total. The rest of the document (the introduction, "how to suggest a change") is checked as before, and so are FAQs,
+sections headed by a single word or phrase, and sections merely grouped under `## A` / `## B`. An index divided by `あ行`,
+or whose entries sit at the same heading level as the letters, is not recognised.
+
+### The corpus's converters decode every HTML character reference name and read an attribute value that holds markup (#170)
+
+A named character reference outside the converters' short list stayed in the text as written: `Vissing-J&oslash;rgensen`
+in the FOMC minutes, `records&thinsp;[1]` in a Federal Register notice, `2,088人&divide;814,793` in a MHLW Q&A. The
+HTML and wikitext converters now decode every name of the HTML standard (the `character-entities` table, already in
+the workspace under the Markdown parser and now a root dev dependency), matched as written: `&Oslash;` is Ø and
+`&oslash;` is ø, a name with digits (`&frac12;`) is read, and a name that is not in the table (`&NBSP;`,
+`&constructor;`) stays as written. A named space (`&nbsp;`, `&thinsp;`, `&ensp;`) is a plain space, as `&nbsp;`
+already was; a numeric one (`&#160;`) keeps its character.
+
+An attribute value holding markup, such as GOV.UK's history banner
+(`title="This was published under the <span lang=&quot;en&quot;>…</span>"`), ended its tag at the first `>` inside
+the value and left a stray `…government">` line. Before anything else reads the page, the HTML converter now writes
+each `<` and `>` inside a quoted attribute value as a character reference, which means the same in a value, so every
+tag scanner reads the whole tag. A quote opens a value only after `=`; a comment, a script and a style are not read as
+tags, and a `<!--` inside a value no longer opens a comment. Converted again, the corpus's pages change only where such a reference stood.
+
+## 0.15.0 — 2026-09-30
+
+chaff reads more kinds of text without stumbling. A file with Windows or classic Mac line breaks, a byte order mark, an
+emoji after a number or one very long line is read as the writer sees it, and a genre chaff does not know stops the run
+instead of checking nothing. `chaff eval` speaks the documents' language, and English no longer counts a sentence's first word as a name. Many false reports found on real documents are
+gone: `undefined-acronym` leaves domain names, date placeholders, name numerals, HTTP methods and document numbers alone;
+`agentless-passive` knows Japanese honorific れる/られる and 「〜と呼ばれる」; `latin-spacing` and `heading-echo` skip
+quotations; `date-order` stays silent on a list sorted by name; a reference wrapped across lines, or to a hyphenated tag
+the document lists, names the other document. The corpus gains more rounds of kinds — parliamentary minutes,
+regulations, patents, court decisions, specifications, style guides, glossaries, a speech and more — and `yarn bench`
+plants mistakes for more rules.
+
+📦 [`chaffjs@0.15.0`](https://www.npmjs.com/package/chaffjs/v/0.15.0) ·
+[`@chaffjs/lang-ja@0.14.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.14.0) ·
+[`@chaffjs/lang-en@0.13.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.13.0)
 
 ### A word capitalised only because it starts the sentence is no longer counted as a proper noun in English (#170)
 
@@ -26,22 +59,6 @@ gives the lower-case word in the same sentence. A word the vocabulary does not k
 it also knows as a name (`May`), a word in capitals (`API`) and a capitalised word inside a sentence stay proper nouns.
 In the corpus this only moves `proper-noun-density`: its density falls on most English documents and the finding goes
 away where common words had pushed it over the limit.
-
-## 0.15.0 — 2026-09-30
-
-chaff reads more kinds of text without stumbling. A file with Windows or classic Mac line breaks, a byte order mark, an
-emoji after a number or one very long line is read as the writer sees it, and a genre chaff does not know stops the run
-instead of checking nothing. `chaff eval` speaks the documents' language. Many false reports found on real documents are
-gone: `undefined-acronym` leaves domain names, date placeholders, name numerals, HTTP methods and document numbers alone;
-`agentless-passive` knows Japanese honorific れる/られる and 「〜と呼ばれる」; `latin-spacing` and `heading-echo` skip
-quotations; `date-order` stays silent on a list sorted by name; a reference wrapped across lines, or to a hyphenated tag
-the document lists, names the other document. The corpus gains more rounds of kinds — parliamentary minutes,
-regulations, patents, court decisions, specifications, style guides, glossaries, a speech and more — and `yarn bench`
-plants mistakes for more rules.
-
-📦 [`chaffjs@0.15.0`](https://www.npmjs.com/package/chaffjs/v/0.15.0) ·
-[`@chaffjs/lang-ja@0.14.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.14.0) ·
-[`@chaffjs/lang-en@0.13.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.13.0)
 
 ### A genre chaff does not know stops the run instead of checking nothing (#170)
 
