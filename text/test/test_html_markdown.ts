@@ -55,6 +55,34 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(html), "# Report\n\n## Summary\n\n### Detail\n\nText.\n");
   });
 
+  it("画像だけの見出し (ロゴ・帯・図) は、画像の代替文字がページの表題 (title) でなければ見出しごと落とす", () => {
+    const page = (heading: string): string => `<html><head><title>雨の日の案内｜緑町</title></head><body>${heading}<h2>持ち物</h2><p>傘。</p></body></html>`;
+    assert.equal(htmlToMarkdown(page('<h1><img src="logo.png" alt="緑町"></h1>')), "## 持ち物\n\n傘。\n");
+    assert.equal(htmlToMarkdown(page('<h1><a href="/"><img src="logo.png" alt="緑町の案内"></a></h1>')), "## 持ち物\n\n傘。\n");
+    assert.equal(htmlToMarkdown(page('<h1><img src="band.gif"></h1>')), "## 持ち物\n\n傘。\n");
+    assert.equal(htmlToMarkdown(page('<h1><img src="band.gif" alt=""></h1>')), "## 持ち物\n\n傘。\n");
+    assert.equal(htmlToMarkdown(page('<h2><img src="a.png" alt="雨の日の案内"></h2>')), "## 持ち物\n\n傘。\n");
+    assert.equal(htmlToMarkdown('<h2><img src="p.jpg" alt="A photo"></h2><h2>What happened</h2><p>It rained.</p>'), "## What happened\n\nIt rained.\n");
+    assert.equal(htmlToMarkdown('<h1><img src="x.png"></h1><p>Text.</p>'), "Text.\n");
+    assert.equal(htmlToMarkdown(page('<h1><img data-alt="雨の日の案内｜緑町" src="x.png"></h1>')), "## 持ち物\n\n傘。\n");
+  });
+
+  it("文字も画像も無い見出しは画像の見出しとは別で、そのまま (chaff が見出しとして読まない)", () => {
+    assert.equal(htmlToMarkdown("<h2></h2><p>Text.</p>"), "##\n\nText.\n");
+  });
+
+  it("画像だけの見出しでも、代替文字がページの表題そのものなら表題として残す。文字や記号のある見出しの画像は今までどおり落とす", () => {
+    const page = (heading: string): string => `<html><head><title> 雨の日の
+      案内 </title></head><body>${heading}<p>傘。</p></body></html>`;
+    assert.equal(htmlToMarkdown(page('<h1><img src="t.png" alt="雨の日の　案内"></h1>')), "# 雨の日の 案内\n\n傘。\n");
+    assert.equal(htmlToMarkdown(page("<h1 id=t><img src=t.png alt='雨の日の 案内'></h1>")), "# 雨の日の 案内\n\n傘。\n");
+    assert.equal(htmlToMarkdown(page('<h1><img src="a.png" alt="雨の日の"><img src="b.png" alt="案内"></h1>')), "# 雨の日の 案内\n\n傘。\n");
+    assert.equal(htmlToMarkdown(page('<h1>雨の日の案内 <img src="i.png" alt="印"></h1>')), "# 雨の日の案内\n\n傘。\n");
+    assert.equal(htmlToMarkdown(page('<h1><img src="i.png" alt="印">※</h1>')), "# ※\n\n傘。\n");
+    const escaped = '<html><head><title>A &amp;lt; B</title></head><body><h1><img alt="A &amp;lt; B"></h1><p>Text.</p></body></html>';
+    assert.equal(htmlToMarkdown(escaped), "# A &lt; B\n\nText.\n");
+  });
+
   it("main 要素があればその中だけを読み、無ければページ全体を読む", () => {
     const html = '<header><a href="/">ホーム</a><p>サイト名</p></header><main id="main"><h1>第1回検討会</h1><p>議事要旨。</p></main><div><p>所在地</p></div>';
     assert.equal(htmlToMarkdown(html), "# 第1回検討会\n\n議事要旨。\n");

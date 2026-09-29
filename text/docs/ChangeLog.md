@@ -4,6 +4,23 @@ Newest first.
 
 ## Unreleased
 
+### The corpus's converters drop a heading drawn as an image and keep the words a layout template wraps (#170)
+
+An HTML heading that holds only images — a site logo, a section banner, a photo placed in an `<h2>` — left an empty
+`#` line. The converter keeps no image's alt text in prose, and such a heading now goes whole the same way, unless the
+images' alt text is the page's own `<title>`: a title set as a picture keeps its words as the heading. A heading with
+any text beside the image is unchanged. Found on 国土地理院's and 国土交通省's pages (a logo and a banner above the
+real title) and an Inside GOV.UK post (a picture in an `<h2>`).
+
+A Wikisource page now keeps the text its layout templates wrap: `{{center}}` (and `{{c}}`), `{{block center}}` (and
+`{{bc}}`), `{{right}}`, `{{left}}` and `{{quote}}` as paragraphs of their own, the way the page sets them apart from
+the text beside them (inline on a heading or list line, which a break would cut), and `{{larger}}`, `{{smaller}}` and
+`{{resize}}` inline. Only the words stay: a second value is an offset or a size (the text of `{{resize}}` when it has
+two), and a quotation's author and source are left out because the wikis number them differently. An older judgment centres its 主文 and 理由 with `{{center}}` and sets the
+judges' names with `{{right}}`; both were dropped, and so was the colloquy quoted in Gideon v. Wainwright. A centred
+line stays a line of text, not a heading. The corpus adds a 最高裁判所 judgment of 1982 written this way (not subject
+to copyright under 著作権法第13条第3号).
+
 ### The corpus has parliamentary minutes, regulations, guidelines, design proposals and an international report (#170)
 
 A debate from the US Congressional Record (public domain), a committee meeting of the 参議院 from the 国会会議録検索
