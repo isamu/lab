@@ -1,6 +1,8 @@
 import { createRequire } from "node:module";
 import type { Token } from "chaffjs/plugin";
+import { loadLexicons } from "./lexicons.ts";
 import { properNounChecked } from "./proper-noun.ts";
+import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
 
 const require = createRequire(import.meta.url);
 
@@ -128,10 +130,12 @@ const inRelativeClause = (tagged: readonly Tagged[], be: number): boolean => {
   return antecedent !== undefined && NOMINAL_TAG.has(antecedent.pos);
 };
 
+const STATIVE = stativeVocabulary(loadLexicons());
+
 const isPassive = (tagged: readonly Tagged[], at: number): boolean => {
   if (tagged[at]?.pos !== "VBN") return false;
   const be = beBefore(tagged, at);
-  return be !== -1 && !inRelativeClause(tagged, be);
+  return be !== -1 && !inRelativeClause(tagged, be) && !isStativeParticiple(tagged, at, STATIVE);
 };
 
 /** 過去分詞は VerbForm=Part。Based on the review, のような分詞の導入句を、命令形の並び（fix the parser, ship it）と見分ける。 */

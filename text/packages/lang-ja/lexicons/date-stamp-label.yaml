@@ -1,0 +1,14 @@
+# 更新日・公開日の刻印のラベル。これと日付だけの段落は、ページの付帯情報として本題までの段落に数えない。
+id: date-stamp-label
+language: ja
+entries:
+  - pattern: 最終更新日
+  - pattern: 最終更新
+  - pattern: 更新日
+  - pattern: 公開日
+  - pattern: 掲載日
+  - pattern: 作成日
+  - pattern: 発行日
+  - pattern: 更新
+  - pattern: 公開
+  - pattern: 掲載

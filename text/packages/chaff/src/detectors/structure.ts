@@ -1,5 +1,7 @@
 import { charLength, lengthOf } from "../measure.ts";
-import type { BulletList, Detector, Finding, Paragraph, ProseDocument, Section } from "../plugin.ts";
+import type { BulletList, Detector, Finding, Paragraph, ProseDocument, Section, Span } from "../plugin.ts";
+import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
+import { inDocumentOrder } from "../structure/issues.ts";
 
 /**
  * ばらつきは変動係数（標準偏差 ÷ 平均）で測る。
@@ -90,6 +92,21 @@ export const ruleOfThree: Detector = (doc, options): Finding[] => {
   ];
 };
 
+const dateSpans = (doc: ProseDocument): Span[] =>
+  doc.structure === undefined ? [] : inDocumentOrder(doc.structure).flatMap((node) => (node.kind === "date" ? [node.span] : []));
+
+/** 更新日の刻印（「最終更新日:」「2025年6月20日」）は前置きに数えない。木を作るのは、数えて上限を超えたときだけ。 */
+const withoutDateStamps = (doc: ProseDocument, paragraphs: readonly Paragraph[]): Paragraph[] => {
+  const labels = (doc.lexicons["date-stamp-label"] ?? []).map((entry) => entry.pattern);
+  const candidates = stampCandidates(
+    doc.source,
+    paragraphs.map((paragraph) => paragraph.span),
+    dateSpans(doc),
+  );
+  const stamps = dateStampIndexes(candidates, labels);
+  return paragraphs.filter((_, index) => !stamps.has(index));
+};
+
 /**
  * 本題に入るまでが長い。業務文書では、読み手は結論を探しに来ている。
  *
@@ -99,7 +116,9 @@ export const ruleOfThree: Detector = (doc, options): Finding[] => {
 export const preambleLength: Detector = (doc, options): Finding[] => {
   const body = doc.sections.find((section) => section.depth >= 2);
   if (body === undefined) return [];
-  const before = doc.paragraphs.filter((paragraph) => paragraph.span.start < body.span.start);
+  const all = doc.paragraphs.filter((paragraph) => paragraph.span.start < body.span.start);
+  if (all.length <= options.limit) return [];
+  const before = withoutDateStamps(doc, all);
   if (before.length <= options.limit) return [];
   const first = before[0];
   return first === undefined
