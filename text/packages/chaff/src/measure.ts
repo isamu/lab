@@ -1,3 +1,4 @@
+import { withoutSpans } from "./soft-break.ts";
 import type { Sentence } from "./plugin.ts";
 
 /**
@@ -9,7 +10,14 @@ import type { Sentence } from "./plugin.ts";
  *
  * 日本語は文字数、英語は語数。単位は adapter が宣言する。
  */
-export const proseText = (sentence: Sentence): string => sentence.text.replace(/\s+/gu, " ").trim();
+/** 語の途中で折り返した改行（wrapBreaks）は空白にせず除く。「関\nする」を「関 する」と読まない。 */
+export const proseText = (sentence: Sentence): string =>
+  withoutSpans(
+    sentence.text,
+    (sentence.wrapBreaks ?? []).map((span) => ({ start: span.start - sentence.span.start, end: span.end - sentence.span.start })),
+  )
+    .replace(/\s+/gu, " ")
+    .trim();
 
 export const charLength = (sentence: Sentence): number => sentence.text.replace(/\s+/gu, "").length;
 

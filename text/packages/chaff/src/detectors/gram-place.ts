@@ -1,3 +1,4 @@
+import { softBreaks } from "../soft-break.ts";
 import type { LengthUnit, Span } from "../plugin.ts";
 
 /** 数えるために詰めた文と、詰めた文の各文字が元の文のどこにあったか。 */
@@ -7,15 +8,21 @@ export type Compacted = { readonly text: string; readonly offsets: readonly numb
  * n-gram を数えるときと同じ詰め方。word 単位は空白の並びを 1 つにして前後を削り、char 単位は空白を全部除く。
  * 語句が元の文のどこにあるかを戻せるよう、残した文字ごとに元の位置を持つ。
  */
+/** spans が覆う位置（UTF-16 の単位）。 */
+const offsetsIn = (spans: readonly Span[]): Set<number> =>
+  new Set(spans.flatMap((span) => Array.from({ length: span.end - span.start }, (_, step) => span.start + step)));
+
 export const compacted = (text: string, unit: LengthUnit): Compacted => {
   const chars: string[] = [];
   const offsets: number[] = [];
   const state = { pendingSpace: -1, at: 0 };
+  // 読み手に見えない改行は空白 1 つにもしない。proseText がつないだ語句を、ここでも同じ形で探せるように。
+  const hidden = offsetsIn(unit === "word" ? softBreaks(text) : []);
   Array.from(text).forEach((char) => {
     const at = state.at;
     state.at += char.length;
     if (/\s/u.test(char)) {
-      if (unit === "word" && chars.length > 0 && state.pendingSpace === -1) state.pendingSpace = at;
+      if (unit === "word" && chars.length > 0 && state.pendingSpace === -1 && !hidden.has(at)) state.pendingSpace = at;
       return;
     }
     if (state.pendingSpace !== -1) {

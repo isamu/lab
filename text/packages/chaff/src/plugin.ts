@@ -8,7 +8,16 @@ export type Span = { readonly start: number; readonly end: number };
  * token の span は文の span と同じ座標系（segment に渡した文字列の先頭が 0）。
  * 2 つの基準を混ぜると、ずれたときに どちらが悪いか分からなくなる。
  */
-export type Sentence = { readonly span: Span; readonly text: string; readonly tokens?: readonly Token[] };
+export type Sentence = {
+  readonly span: Span;
+  readonly text: string;
+  readonly tokens?: readonly Token[];
+  /**
+   * 行の折り返しで語の途中に入った改行（前後の行頭・行末の空白ごと）。span と同じ座標系。chaff が入れる。
+   * tokens は全角どうしに挟まれた段落内の改行を除いた文字列から作るので、改行をまたぐ語の span は改行ごと覆い、surface より長い。
+   */
+  readonly wrapBreaks?: readonly Span[];
+};
 
 /**
  * 品詞は Universal Dependencies の UPOS に統一する。アダプタ独自の体系を露出させない。
