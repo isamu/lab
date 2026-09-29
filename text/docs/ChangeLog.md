@@ -2,6 +2,17 @@
 
 Newest first.
 
+## Unreleased
+
+### `latin-spacing` does not count the number of a note in a numbered run of notes (#170)
+
+A white paper lists its notes one per line, each opening with its number and a space (`9 首相にそっくりの…`,
+`10 日本経済新聞…`, `11 …`). The space is the note's layout, not a choice between `3 回` and `3回`. A number that
+opens a line is now read as a note number when the nearest line before or after that also opens with a number carries
+the number one less or one more, unless a word bound to numbers follows it, as for any label (`1 回目`, `2 回目` still count); a conjunction does
+not bind a note number (`31 ただし、…`). A number opening a line on its own
+(`223 言語に対応`) still counts, as before. Found on 総務省's 情報通信白書 chapters.
+
 ## 0.13.0 — 2026-09-29
 
 Guarded against regressions: CI now compares the committed corpus (statutes included) and the bench on every pull
@@ -16,15 +27,6 @@ words moved into word lists, and every list a rule reads is declared.
 📦 [`chaffjs@0.13.0`](https://www.npmjs.com/package/chaffjs/v/0.13.0) ·
 [`@chaffjs/lang-ja@0.12.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.12.0) ·
 [`@chaffjs/lang-en@0.11.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.11.0)
-
-### `latin-spacing` does not count the number of a note in a numbered run of notes (#170)
-
-A white paper lists its notes one per line, each opening with its number and a space (`9 首相にそっくりの…`,
-`10 日本経済新聞…`, `11 …`). The space is the note's layout, not a choice between `3 回` and `3回`. A number that
-opens a line is now read as a note number when the nearest line before or after that also opens with a number carries
-the number one less or one more, unless a word bound to numbers follows it, as for any label (`1 回目`, `2 回目` still count); a conjunction does
-not bind a note number (`31 ただし、…`). A number opening a line on its own
-(`223 言語に対応`) still counts, as before. Found on 総務省's 情報通信白書 chapters.
 
 ### `yarn bench`'s Japanese design sample plants a dropped gloss the rule is meant to catch (#170)
 
