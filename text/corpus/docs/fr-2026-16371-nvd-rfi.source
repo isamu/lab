@@ -54,7 +54,7 @@ For questions about this RFI contact: Cristina Ritfeld, NVD-RFI@nist.gov. Direct
 
 The National Vulnerability Database (NVD), established and operated by NIST, provides the U.S. government repository of standards-based vulnerability management data. The NVD is a foundational resource for vulnerability management, software security, compliance automation, and cybersecurity risk analysis across the public and private sectors. It provides standardized vulnerability enrichment and associated metadata consumed by a broad ecosystem of security tools and operational workflows. It is a part of the broader vulnerability management ecosystem that encompasses processes, standards, and tools involved in one or more phases of the vulnerability lifecycle of identifying, validating, disclosing, disseminating, prioritizing, and remediating software and system vulnerabilities.
 
-Today, the NVD ingests Common Vulnerabilities and Exposures (CVE) records&thinsp;[1]  within approximately an hour of publication using automated processes. NVD analysts then enrich CVE records with additional information and analysis such as severity scores and affected product versions. Users and security tools can access the enriched CVE records through the NVD's web interface or through automated mechanisms.
+Today, the NVD ingests Common Vulnerabilities and Exposures (CVE) records [1]  within approximately an hour of publication using automated processes. NVD analysts then enrich CVE records with additional information and analysis such as severity scores and affected product versions. Users and security tools can access the enriched CVE records through the NVD's web interface or through automated mechanisms.
 
 Today's vulnerability management ecosystem is rapidly evolving and is characterized by AI-enabled cyber tools and accelerated technology delivery cycles. Malicious actors may seek to leverage AI systems to discover and exploit vulnerabilities at scale and to support post-exploitation activities. The inadequacies of traditional vulnerability management approaches, which center on periodic scanning, static prioritization, and manual remediation, are increasingly apparent. Several trends present both challenges and opportunities for modernization, including the growth in the volume and complexity of disclosed vulnerabilities; a range in the quality of data; increased reliance on automation and machine-readable security data; the expansion of technology security risk management practices; the emergence of AI-assisted vulnerability discovery, triage, exploitation, and remediation; demand for near real-time vulnerability enrichment; and resource constraints associated with scaling vulnerability analysis and enrichment activities.
 
@@ -150,7 +150,7 @@ NIST Executive Secretariat.
 
 # Footnotes
 
-1. &thinsp; https://www.cve.org/​Downloads.
+1.   https://www.cve.org/​Downloads.
 
 [FR Doc. 2026-16371 Filed 8-11-26; 8:45 am]
 
