@@ -1367,6 +1367,104 @@
       "license": "国立国会図書館ウェブサイトのコンテンツ利用規約（公共データ利用規約（第1.0版）(PDL1.0) に準拠、CC BY 4.0 互換）; 出典: 国立国会図書館ウェブサイト (https://www.ndl.go.jp/news/fy2026/260901_01); Markdown に変換（加工して作成）",
       "redistribute": true,
       "format": "html"
+    },
+    {
+      "id": "acas-letter-disciplinary-hearing-warning",
+      "title": "Acas template: Notice of disciplinary hearing letter: possible warning",
+      "source": "url",
+      "genre": "business/email",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260213173110id_/https://www.acas.org.uk/disciplinary-meeting-letter-templates/disciplinary-meeting-letter-for-warning-template",
+      "license": "Open Government Licence v3.0 (acas.org.uk \"Copyright\": \"This website is licensed under the Open Government Licence except where otherwise stated\"; contains public sector information licensed under the OGL v3.0, from Acas, https://www.acas.org.uk/disciplinary-meeting-letter-templates/disciplinary-meeting-letter-for-warning-template), converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "fomc-minutes-2025-07",
+      "title": "Minutes of the Federal Open Market Committee, July 29-30, 2025",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260414062250id_/https://www.federalreserve.gov/monetarypolicy/fomcminutes20250730.htm",
+      "license": "Public domain (\"Unless otherwise indicated, information on Board's website is in the public domain and may be copied and distributed without permission\", https://www.federalreserve.gov/disclaimer.htm); Source: Board of Governors of the Federal Reserve System; converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "asf-board-minutes-2025-01",
+      "title": "The Apache Software Foundation Board of Directors Meeting Minutes, January 15, 2025",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "en",
+      "url": "https://www.apache.org/foundation/records/minutes/2025/board_minutes_2025_01_15.txt",
+      "license": "Apache-2.0 (apache.org site footer); URL only",
+      "redistribute": false
+    },
+    {
+      "id": "govuk-cddo-roadmap-2022-2025",
+      "title": "GOV.UK policy paper: Transforming for a digital future: 2022 to 2025 roadmap for digital and data (updated September 2023)",
+      "source": "url",
+      "genre": "business/proposal",
+      "language": "en",
+      "url": "https://web.archive.org/web/20240406231528id_/https://www.gov.uk/government/publications/roadmap-for-digital-and-data-2022-to-2025/transforming-for-a-digital-future-2022-to-2025-roadmap-for-digital-and-data",
+      "license": "Open Government Licence v3.0 (as stated in the publication; contains public sector information licensed under the OGL v3.0, from the Central Digital and Data Office, gov.uk), converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "gds-user-research-weeknotes-2014-07-04",
+      "title": "User research in government (GDS blog): What the user research team's been doing this week (week notes, 4 July 2014)",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260710075948id_/https://userresearch.blog.gov.uk/2014/07/04/what-the-user-research-team-has-been-doing-this-week/",
+      "license": "Open Government Licence v3.0 (contains public sector information licensed under the OGL v3.0, from User research in government, https://userresearch.blog.gov.uk/2014/07/04/what-the-user-research-team-has-been-doing-this-week/); the page's images are not included; converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "da-minister-press-conference-2026-09-18",
+      "title": "デジタル庁: 古川デジタル大臣就任記者会見要旨（令和8年9月18日）",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260927073214id_/https://www.digital.go.jp/speech/minister-260918-01",
+      "license": "公共データ利用規約（第1.0版）for デジタル庁's own text, but the questions are the reporters' (a third party's) words and the page does not say they are covered; URL only",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "etax-oshirase-mail-templates",
+      "title": "e-Tax: 「税務署からのお知らせ」等のメールが届いた方へ（送信メールの定型文）",
+      "source": "url",
+      "genre": "business/email",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260730142456id_/https://www.e-tax.nta.go.jp/topics/topics_oshirase_mail.htm",
+      "license": "国税庁ホームページ利用規約 (公共データ利用規約（第1.0版）準拠) unless a rights notice says otherwise, and each template carries \"Copyright (C) NATIONAL TAX AGENCY ALL Rights Reserved.\"; URL only",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "kobayashi-press-hananoa-2026-02",
+      "title": "小林製薬 ニュースリリース: ダイアン津田さんが『ハナノア』で「渾身のスーーー！」を差し上げます！（2026年2月16日）",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260510133734id_/https://www.kobayashi.co.jp/newsrelease/2026/20260216_01/",
+      "license": "No licence stated for reuse (company press release); URL only",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "kobayashi-nento-shokan-2026",
+      "title": "小林製薬 ニュースリリース: 2026年 小林製薬 年頭所感",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://www.kobayashi.co.jp/newsrelease/2026/20260105/",
+      "license": "No licence stated for reuse (company release); URL only; no Wayback snapshot, so the live page",
+      "redistribute": false,
+      "format": "html"
     }
   ]
 }

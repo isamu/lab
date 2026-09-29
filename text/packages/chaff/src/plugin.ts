@@ -165,6 +165,11 @@ export type StructurePatterns = {
    * 数字と点だけの通し番号は core が言語を問わず読むので、それを数量と見分けられるのは言語パッケージだけ。
    */
   readonly countedAfter?: (number: string, rest: string) => boolean;
+  /**
+   * 本文の行頭の「3.11.0 を公開しました。」の 3.11.0 は、文の中の数で通し番号ではない。番号と後ろの文字列を渡し、文の続き
+   * （日本語なら助詞で始まる）なら true。小文字で始まる続きは core が言語を問わず読む。
+   */
+  readonly continuesSentence?: (number: string, rest: string) => boolean;
   /** 数の書き方（「二十二」「3」）を数にする。相対の参照の「前二項」「前条第二項」が使う。 */
   readonly number?: (text: string) => number | undefined;
 };
