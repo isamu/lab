@@ -11,7 +11,7 @@ import { escapeRegExp } from "../orthography.ts";
  *   Relief Act (RA; P.L. 112-240)    括弧の最初の項目が略語で、直前の語か区切りの後の語の頭文字と揃う
  *   （single nucleotide polymorphism：SNP）  括弧の最後の項目が略語で、コロンの前の語の頭文字と揃う
  *   人事部（以下「HR」という。）      括弧の中が定義の語と略語だけ
- *   reverse repurchase agreement (ON RRP)  括弧の中が空白で繋いだ略語だけ（1 つの略語を 2 語で書く）
+ *   overnight reverse repurchase agreement (ON RRP)  括弧の中が空白で繋いだ略語だけで、前の名前から文字が順に拾える
  * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
  */
 const WRAP = String.raw`[\s"“”'‘’「」『』]*`;
@@ -119,9 +119,24 @@ const CAPITALS = "[A-Z][A-Z&-]*[A-Z]";
 const JOINT_BEFORE = new RegExp(String.raw`(?:(?<![A-Za-z0-9_&-])${CAPITALS} )+$`, "u");
 const JOINT_AFTER = new RegExp(String.raw`^(?: ${CAPITALS}(?![A-Za-z0-9_&-]))+`, "u");
 
+const LOWER_WORDS = /[a-z]+/gu;
+
+const isSubsequence = (letters: string, text: string): boolean =>
+  [...text].reduce((matched, char) => (char === letters.charAt(matched) ? matched + 1 : matched), 0) === letters.length;
+
 /**
- * 括弧の中身が、空白で繋いだ略語の並びだけの形（(ON RRP)）。1 つの略語を 2 語以上で書いたもので、並びの頭文字は名前の語の
- * 頭文字と揃わない（overnight を ON と書く）ので、括弧の中の 1 語の略語（(CI)）と同じく、括弧の形だけで展開と見なす。
+ * 略語の文字が、名前のどれかの語の頭から始まって、名前の文字の中に順に拾えるか。1 つの略語を空白で分けて書くときは、
+ * 語の頭文字ではなく語の途中の文字も使う（overnight reverse repurchase agreement → ON RRP）。見る語は略語の文字数の 2 倍まで。
+ */
+export const abbreviates = (name: string, acronym: string): boolean => {
+  const letters = acronym.toLowerCase().replaceAll(/[^a-z]/gu, "");
+  const words = (name.toLowerCase().match(LOWER_WORDS) ?? []).slice(-letters.length * 2);
+  return letters !== "" && words.some((word, index) => word.startsWith(letters.charAt(0)) && isSubsequence(letters, words.slice(index).join("")));
+};
+
+/**
+ * 括弧の中身が、空白で繋いだ略語の並びだけの形（(ON RRP)）。1 つの略語を 2 語以上で書いたもの。並びの文字が括弧の前の名前から
+ * 順に拾えるときだけ展開と見なす。拾えなければ、空白で並べた略語の列挙（(SEC FINRA)）。
  * 括弧の外の並び（AWS KMS (Key Management Service)）は、括弧の直前の語だけが展開されるので、ここでは見ない。
  */
 const isJointBracketedAt = (body: string, acronym: string, at: number): boolean => {
@@ -130,7 +145,8 @@ const isJointBracketedAt = (body: string, acronym: string, at: number): boolean 
   const after = JOINT_AFTER.exec(body.slice(end, end + DEFINITION_REACH))?.[0] ?? "";
   const start = at - before.length;
   const close = end + after.length;
-  return OPENED.test(body.slice(Math.max(0, start - NEAR), start)) && CLOSES.test(body.slice(close, close + NEAR));
+  if (!OPENED.test(body.slice(Math.max(0, start - NEAR), start)) || !CLOSES.test(body.slice(close, close + NEAR))) return false;
+  return abbreviates(body.slice(0, start), body.slice(start, close));
 };
 
 const isBracketedAt = (body: string, acronym: string, at: number): boolean => {

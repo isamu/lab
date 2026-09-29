@@ -24,10 +24,11 @@ Four kinds of capitals were reported as acronyms without an expansion:
   counted; so is a numeral with C, D, L or M (`Audio CD`, `Washington DC`, `Pipeline CI`), which is more often an
   acronym, and one after a word in capitals (`AES IV`) or in lower case (`the IV line`).
 - An acronym written as two or more words inside brackets: `overnight reverse repurchase agreement (ON RRP)`. Its
-  letters need not match the initials of the name (`ON` is *overnight*), so, like a single acronym in brackets
-  (`(CI)`), the brackets alone expand it, and `ON` and `RRP` are both expanded. A bracket with a lower-case word
-  (`(see ON RRP)`) or a list (`(EPA, FDIC)`) is not, and a run before brackets (`AWS KMS (Key Management Service)`)
-  expands only the word next to them, as before.
+  letters do not match the initials of the name (`ON` is *overnight*), so it is read as expanded when its letters can
+  be picked in order from the English words before the brackets, starting at the start of one of them; `ON` and
+  `RRP` are then both expanded. Acronyms listed with spaces (`The regulators (SEC FINRA)`), a Japanese name (whose
+  letters cannot be checked), a bracket with a lower-case word (`(see ON RRP)`) or a comma (`(EPA, FDIC)`) are not,
+  and a run before brackets (`AWS KMS (Key Management Service)`) expands only the word next to them, as before.
 
 Found on GOV.UK's pages (`GOV.UK`), a CRS report (`SAM.gov`), the FOMC minutes (`ON RRP`, `Senior System Engineer
 II`), the Congressional Record (`World War II`) and e-Tax's e-mail templates (`令和YY年MM月DD日 HH：MM`). With the four
