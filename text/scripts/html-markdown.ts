@@ -30,7 +30,7 @@ const isChromeLink = (link: string): boolean =>
 /** A list whose every item is only a link, such as a site menu or a table of contents. */
 const isNavigation = (body: string): boolean => (body.match(ANY_LINK) ?? []).length > 0 && stripTags(body.replace(ANY_LINK, "")).trim() === "";
 
-const MAIN_ROLE = String.raw`\brole\s*=\s*["']?main(?![\w-])`;
+const MAIN_ROLE = String.raw`\srole\s*=\s*["']?main(?![\w-])`;
 
 /** The first element marked role="main" (a CMS's <article id="contents" role="main">), matched to its own closing tag. */
 const mainLandmark = (html: string): string | undefined => {
