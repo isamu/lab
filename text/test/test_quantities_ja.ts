@@ -1,7 +1,7 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { prepare } from "../packages/lang-ja/src/pos.ts";
-import { countedAfter, countedByTable, dates, quantities } from "../packages/lang-ja/src/quantities.ts";
+import { prepare, type Morph } from "../packages/lang-ja/src/pos.ts";
+import { continuesWithMultiplier, countedAfter, countedByTable, dates, quantities } from "../packages/lang-ja/src/quantities.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 import { buildStructure } from "../packages/chaff/src/structure/of.ts";
@@ -136,9 +136,84 @@ describe("countedAfter（通し番号か数量か）", () => {
     ["4.2", "設定", false],
     ["1.1", "目的", false],
     ["2.1", "注文の登録", false],
+    ["1.5", "適用範囲", false],
+    ["3.2", "節", true],
+    ["1.5", "万人が参加した。", true],
+    ["2.1", "億円の予算", true],
+    ["1.5", "万を超える", true],
+    ["2.4", "億", true],
+    ["3.1", "万葉集の成立", false],
+    ["4.2", "万一の場合", false],
+    ["2.3", "万博の概要", false],
+    ["1.3", "万全の体制", false],
+    ["1.1", "億劫な作業", false],
   ];
   cases.forEach(([number, rest, expected]) => {
     it(`${number} ${rest} → ${String(expected)}`, () => assert.equal(countedAfter(number, rest), expected));
+  });
+});
+
+describe("continuesWithMultiplier（桁の語が数の続きか）", () => {
+  const morph = (surface: string, detail1: string, detail2 = "*", pos = "名詞"): Morph => ({ start: 0, end: surface.length, surface, pos, detail1, detail2 });
+  const numeral = (surface: string): Morph => morph(surface, "数");
+  const counter = (surface: string): Morph => morph(surface, "接尾", "助数詞");
+  const cases: readonly (readonly [string, readonly Morph[], number, boolean])[] = [
+    ["万 人", [numeral("万"), counter("人")], 0, true],
+    ["億 で終わる", [numeral("億")], 0, true],
+    ["万 を", [numeral("万"), morph("を", "格助詞", "一般", "助詞")], 0, true],
+    ["万 。", [numeral("万"), morph("。", "句点", "*", "記号")], 0, true],
+    ["万 葉（接尾の名詞）", [numeral("万"), morph("葉", "接尾")], 0, false],
+    ["億 単位", [numeral("億"), morph("単位", "一般")], 0, false],
+    ["万 一", [numeral("万"), numeral("一")], 0, false],
+    ["千 人", [numeral("千"), counter("人")], 0, false],
+    ["兆 円", [numeral("兆"), counter("円")], 0, false],
+    ["数でない万", [morph("万", "一般")], 0, false],
+    ["位置が無い", [numeral("万")], -1, false],
+    ["位置が後ろにはみ出す", [numeral("万")], 1, false],
+    ["空", [], 0, false],
+  ];
+  cases.forEach(([name, morphs, index, expected]) => {
+    it(`${name} → ${String(expected)}`, () => assert.equal(continuesWithMultiplier(morphs, index), expected));
+  });
+});
+
+describe("行頭の小数と桁の語は節にならない", () => {
+  const articles = (source: string): string[] => {
+    const collect = (node: StructureNode): string[] => [...(node.kind === "article" ? [node.address] : []), ...node.children.flatMap(collect)];
+    return collect(buildStructure({ path: "c.md", source, language: "ja", markdown: true }, patterns()));
+  };
+
+  it("数量の行は節でなく、本物の節は残る", () => {
+    const source = lines(
+      "# 報告",
+      "",
+      "## 1 概要",
+      "",
+      "1.5 万人が参加した。",
+      "",
+      "2.1 億円の予算を使った。",
+      "",
+      "1.5 適用範囲",
+      "",
+      "詳しくは 3.2 節を見る。",
+      "",
+      "1.5 倍になった。",
+    );
+    assert.deepEqual(articles(source), ["1", "1.5"]);
+  });
+
+  it("辞書が桁の語と助数詞に切る一語で始まる見出しは節のまま", () => {
+    const source = lines("# 文学", "", "## 1 古典", "", "1.1 万葉の世界", "", "1.2 万年筆の歴史", "", "1.3 万歳の起こり");
+    assert.deepEqual(articles(source), ["1", "1.1", "1.2", "1.3"]);
+  });
+
+  it("数量の続きか（構造が読む入口）", () => {
+    assert.equal(patterns().countedAfter?.("1.5", "万葉の世界"), false);
+    assert.equal(patterns().countedAfter?.("1.5", "万年筆の歴史"), false);
+    assert.equal(patterns().countedAfter?.("1.5", "万年前の地層"), true);
+    assert.equal(patterns().countedAfter?.("1.5", "万人が参加した。"), true);
+    assert.equal(patterns().countedAfter?.("1.5", "万人が万葉集を読む。"), true);
+    assert.equal(patterns().countedAfter?.("4.2", "万が一の場合"), false);
   });
 });
 

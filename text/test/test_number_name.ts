@@ -228,5 +228,6 @@ describe("latin-spacing with parts of speech", () => {
     assert.deepEqual(spacing("# 使い方\n\n10 回で止める。3回呼び、5回待つ。\n"), ["前の数字:空けています"]);
     assert.deepEqual(spacing("# 使い方\n\n3日、5日と待ち、3-5 日で終わる。\n"), ["前の数字:空けています"]);
     assert.deepEqual(spacing("# 使い方\n\n受付は3営業日、確認は5営業日、終了は3-5 営業日です。\n"), ["前の数字:空けています"]);
+    assert.deepEqual(spacing("# 使い方\n\n3回呼び、5回待つ。\n\n1.5 万人が来る。\n"), ["前の数字:空けています"]);
   });
 });

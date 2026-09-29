@@ -29,6 +29,16 @@ the number one less or one more, unless a word bound to numbers follows it, as f
 not bind a note number (`31 ただし、…`). A number opening a line on its own
 (`223 言語に対応`) still counts, as before. Found on 総務省's 情報通信白書 chapters.
 
+### A line that opens with `1.5 万人` or `2.1 億円` is a quantity, not a section (#170)
+
+The Japanese structure reader took a decimal number followed by 万 or 億 at the start of a line for a dotted section
+number, so `1.5 万人が参加した。` became section 1.5 headed `万人が参加した。`, could open a false `numbering-gap`,
+and its quantity was read as 1万人. The number and the magnitude word are now read as one quantity (15000人), also
+without a unit (`1.5 万を超える`). Words that only begin with the character (`万葉集`, `万全`, `万博`, `億劫`), `万一`,
+and the words the dictionary splits into a magnitude and a counter (`万葉の世界`, `万年筆`, listed in lang-ja's
+`not-magnitude` word list) are not magnitudes, and real sections (`1.5 適用範囲`, `2.1 注文の登録`) stay sections. 兆 and
+千 are not read this way yet.
+
 ## 0.13.0 — 2026-09-29
 
 Guarded against regressions: CI now compares the committed corpus (statutes included) and the bench on every pull

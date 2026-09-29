@@ -71,12 +71,15 @@ const isSpace = (morph: Morph | undefined): morph is Morph => morph !== undefine
 
 const SPACES = /[ \t\u3000]/gu;
 
+/** 数量の後ろを読むのに要る文字数。「万人が」「億円の」まで見えれば足りる。 */
+const LOOKAHEAD = 8;
+
 /**
  * 「1.5 倍」の「倍」は、数とのあいだに空白があると解析器が普通の名詞と読む。
  * 空白を詰めて読み直し、数の直後に来る語が助数詞ならその語を返す。
  */
 const unitAfterSpace = (number: string, rest: string): string | undefined => {
-  const next = morphemes(toHalfWidth(number + rest.slice(0, 8)))?.find((morph) => morph.start >= number.length);
+  const next = morphemes(toHalfWidth(number + rest.slice(0, LOOKAHEAD)))?.find((morph) => morph.start >= number.length);
   return next !== undefined && isCounter(next) ? next.surface : undefined;
 };
 
@@ -227,11 +230,41 @@ export const dates = (text: string): Mention[] =>
     return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
   });
 
+/** 数がそこで閉じる。助数詞（「万人」）か、名詞でない語（「万を」「万。」）か、行の終わり。 */
+const closesNumber = (morph: Morph | undefined): boolean => morph === undefined || isCounter(morph) || morph.pos !== "名詞";
+
 /**
- * 「1.5 倍になった。」の 1.5 は章番号ではない。番号と続く語のあいだの空白を詰めて読み直し、
+ * 桁の語が一語として続く。「1.5 万を超える」のように単位が無くても数の一部。
+ * 「万葉集」は一語で、「万葉の」「万一」は桁の語の後ろに名詞や数が続くので、どれも数の続きではない。
+ */
+export const continuesWithMultiplier = (morphs: readonly Morph[], index: number): boolean =>
+  MULTIPLIERS.has(morphs[index]?.surface ?? "") && isNumeral(morphs[index]) && closesNumber(morphs[index + 1]);
+
+const multiplierAfter = (number: string, rest: string): boolean => {
+  const morphs = morphemes(toHalfWidth(number + rest.slice(0, LOOKAHEAD))) ?? [];
+  return continuesWithMultiplier(
+    morphs,
+    morphs.findIndex((morph) => morph.start >= number.length),
+  );
+};
+
+const startsWithUnit = (text: string): boolean => UNITS.some((unit) => text.startsWith(unit));
+
+/** 解析器の無いときの、数がそこで閉じる字。行の終わり、表の単位、仮名の助詞や句読点（「万を」「万。」）。漢字（「万葉」「万全」）は閉じない。 */
+const CLOSES_BY_TABLE = /^(?:$|[\p{Script=Hiragana}\p{P}\s])/u;
+
+/** 解析器の無いときの読み方。桁の語が先にあれば、その後ろで数が閉じるかを見る。 */
+const countedByTableAfter = (rest: string): boolean => {
+  if (!MULTIPLIERS.has(rest[0] ?? "")) return startsWithUnit(rest);
+  const after = rest.slice(1);
+  return startsWithUnit(after) || CLOSES_BY_TABLE.test(after);
+};
+
+/**
+ * 「1.5 倍になった。」「1.5 万人が参加した。」の 1.5 は章番号ではない。番号と続く語のあいだの空白を詰めて読み直し、
  * 続く語が助数詞なら数量の一部と分かる。空白のあるままだと、解析器は「倍」を普通の名詞と読む。
  */
 export const countedAfter = (number: string, rest: string): boolean => {
-  if (!isReady()) return UNITS.some((unit) => rest.startsWith(unit));
-  return unitAfterSpace(number, rest) !== undefined;
+  if (!isReady()) return countedByTableAfter(rest);
+  return unitAfterSpace(number, rest) !== undefined || multiplierAfter(number, rest);
 };
