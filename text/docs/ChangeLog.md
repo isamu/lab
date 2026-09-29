@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` accepts an acronym expanded with a note after it in the brackets (#170)
+
+An acronym written as the first item in brackets, followed by a semicolon, comma or 、 and a note, now counts as
+spelled out when the words right before the brackets spell it (`Tax Relief Act (TRA; P.L. 1-1)`,
+`Data Retention Rule (DRR, effective 2030)`), or when the words after the separator do, up to the closing bracket
+(`データ保持規則（DRR、Data Retention Rule）`). The initials are required because the same shape also opens a list
+(`(MR, handbook, etc.)`, `(EPA, FDIC, GSA)`), which is still reported, and so are `(see TRA; …)`, where the acronym is
+not the first item, and a Japanese name followed by only a year (`（DRR、2030年施行）`). Found on a CRS report
+(American Recovery and Reinvestment Act (ARRA; P.L. 111-5)) and 総務省's white paper (オリジネータープロファイル（OP、Originator Profile）).
+
 ### `undefined-acronym`'s notation words are word lists, and the rule declares every list it reads (#170)
 
 The words `undefined-acronym` leaves alone next to a number or on their own moved from code into word lists in each
@@ -52,7 +62,6 @@ dependent noun carries the ending. A `！` or `？` followed at once by a partic
 prose, and each bulleted list (with its nested items) against itself: a です・ます article whose list is written
 throughout in plain form, the usual way to write bullets, is consistent, while a list that mixes `記載します。` and
 `記載する。` is still reported, and so is a plain sentence in です・ます prose. Found on ja.wikivoyage, dwango's design document and デジタル庁's guides.
-
 
 ## 0.12.0 — 2026-09-29
 

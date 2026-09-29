@@ -4,10 +4,11 @@ import { escapeRegExp } from "../orthography.ts";
  * 展開は略語の**すぐ隣**にあるときだけ認める。
  * 60 文字も見ると、同じ文のどこかに括弧があるだけで「説明済み」になり、1 件も出なくなる。
  *
- * 認めるのは 4 つの形。どれも実際によく書かれる。
+ * 認めるのは次の形。どれも実際によく書かれる。
  *   CI（継続的インテグレーション）   略語のあとに括弧
  *   Continuous Integration (CI)      括弧の中が略語
  *   Tax Cuts and Jobs Act [TCJA]     角括弧の中が略語で、直前の語の頭文字と揃う
+ *   Relief Act (RA; P.L. 112-240)    括弧の最初の項目が略語で、直前の語か区切りの後の語の頭文字と揃う
  *   人事部（以下「HR」という。）      括弧の中が定義の語と略語だけ
  * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
  */
@@ -17,6 +18,10 @@ const CLOSES = new RegExp(String.raw`^${WRAP}[)）]`, "u");
 const OPENED = new RegExp(String.raw`[(（]${WRAP}$`, "u");
 const SQUARE_CLOSES = new RegExp(String.raw`^${WRAP}\]`, "u");
 const SQUARE_OPENED = new RegExp(String.raw`\[${WRAP}$`, "u");
+const ANY_OPENED = new RegExp(String.raw`[(（[]${WRAP}$`, "u");
+/** 括弧の最初の項目のあとの区切りと、括弧が閉じるまでの残り（(ARRA; P.L. 111-5)、（OP、Originator Profile））。 */
+const SEPARATED = new RegExp(String.raw`^${WRAP}[;；,，、](?<rest>[^()（）]*)`, "u");
+const QUOTES = /["“”'‘’「」『』]/gu;
 
 /** 括弧と略語の間の幅。空白は 1 つに畳んであるので、(“ MNDA ”) まで収まる。 */
 const NEAR = 3;
@@ -31,15 +36,37 @@ const MARKER_GAP = String.raw`(?![A-Za-z])[\s、,]*`;
  * 角括弧は引用の印にも使う（[IANA]、[1]）。直前の語のうち大文字で始まる語の頭文字が
  * 略語と揃うときだけ展開と見なす。見る語は略語の文字数の 2 倍まで（and や of を挟むため）。
  */
+const lettersOf = (acronym: string): string => acronym.replaceAll("&", "");
+
+const initialsOf = (words: readonly string[]): string =>
+  words
+    .filter((word) => /^[A-Z]/u.test(word))
+    .map((word) => word.charAt(0))
+    .join("");
+
 const spellsOut = (before: string, acronym: string): boolean => {
-  const letters = acronym.replaceAll("&", "");
+  const letters = lettersOf(acronym);
   const words = before
-    .replace(SQUARE_OPENED, "")
+    .replace(ANY_OPENED, "")
     .trim()
     .split(/\s+/u)
     .slice(-letters.length * 2);
-  const initials = words.filter((word) => /^[A-Z]/u.test(word)).map((word) => word.charAt(0));
-  return initials.join("").endsWith(letters);
+  return initialsOf(words).endsWith(letters);
+};
+
+/**
+ * 括弧の最初の項目が略語で、区切りのあとに注記が続く形（(ARRA; P.L. 111-5)、（OP、Originator Profile））。
+ * 同じ形で列挙も書く（(MR, handbook, etc.)、(EPA, FDIC, GSA)）ので、直前の語か、区切りから括弧が閉じるまでの語の
+ * 頭文字が略語と揃うときだけ展開と見なす。区切りの後ろは閉じた括弧の中だけを見て、頭文字がちょうど略語になることを求める。
+ */
+const isSeparatedAt = (body: string, acronym: string, at: number): boolean => {
+  if (!OPENED.test(body.slice(Math.max(0, at - NEAR), at))) return false;
+  const separated = SEPARATED.exec(body.slice(at + acronym.length, at + acronym.length + DEFINITION_REACH));
+  if (separated === null) return false;
+  const rest = separated.groups?.["rest"] ?? "";
+  const end = at + acronym.length + separated[0].length;
+  const closed = CLOSES.test(body.slice(end, end + NEAR));
+  return spellsOut(body.slice(0, at), acronym) || (closed && initialsOf(rest.replace(QUOTES, " ").trim().split(/\s+/u)) === lettersOf(acronym));
 };
 
 /** 言語パッケージの語彙表から読む、括弧の中で略語の前に書く語（以下、hereinafter）と後ろに書く語（という）。 */
@@ -69,7 +96,8 @@ const isBracketedAt = (body: string, acronym: string, at: number): boolean => {
   const after = body.slice(at + acronym.length, at + acronym.length + NEAR);
   const before = body.slice(Math.max(0, at - NEAR), at);
   if (OPENS.test(after) || (OPENED.test(before) && CLOSES.test(after))) return true;
-  return SQUARE_OPENED.test(before) && SQUARE_CLOSES.test(after) && spellsOut(body.slice(0, at), acronym);
+  if (SQUARE_OPENED.test(before) && SQUARE_CLOSES.test(after) && spellsOut(body.slice(0, at), acronym)) return true;
+  return isSeparatedAt(body, acronym, at);
 };
 
 export type ExpandedAt = (body: string, acronym: string, at: number) => boolean;
