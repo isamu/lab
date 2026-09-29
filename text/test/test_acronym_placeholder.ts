@@ -1,9 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { placeholderSpans } from "../packages/chaff/src/detectors/placeholder.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -58,26 +56,21 @@ describe("placeholderSpans", () => {
   });
 });
 
-const reported = (adapter: LanguageAdapter, source: string): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
-
 describe("undefined-acronym と日付・時刻の書式", () => {
   it("ja: 定型文の YY・MM・DD・HH は数えず、SRE は数える", () => {
-    assert.deepEqual(reported(ja, "# 手引き\n\n有効期限は令和YY年MM月DD日 HH：MMとなります。SREも見ます。\n"), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(ja, "# 手引き\n\n有効期限は令和YY年MM月DD日 HH：MMとなります。SREも見ます。\n"), ["SRE"]);
   });
 
   it("en: MM/DD/YYYY と HH:MM は数えず、SRE は数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nWrite the date as MM/DD/YYYY and the time as HH:MM. The SRE joins.\n"), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nWrite the date as MM/DD/YYYY and the time as HH:MM. The SRE joins.\n"), ["SRE"]);
   });
 
   it("ja: 語彙表から単位を抜けば、単位の前の繰り返しは数える", () => {
     const withoutUnits: LanguageAdapter = { ...ja, lexicons: { ...ja.lexicons, "date-time-unit": [] } };
-    assert.deepEqual(reported(withoutUnits, "# 手引き\n\n有効期限は令和YY年です。SREも見ます。\n"), ["YY", "SRE"]);
+    assert.deepEqual(reportedAcronyms(withoutUnits, "# 手引き\n\n有効期限は令和YY年です。SREも見ます。\n"), ["YY", "SRE"]);
   });
 
   it("ja: 単位の前でも、同じ文字の繰り返しでない略語は数える", () => {
-    assert.deepEqual(reported(ja, "# 手引き\n\nRPA時代にSREも見ます。\n"), ["RPA", "SRE"]);
+    assert.deepEqual(reportedAcronyms(ja, "# 手引き\n\nRPA時代にSREも見ます。\n"), ["RPA", "SRE"]);
   });
 });
