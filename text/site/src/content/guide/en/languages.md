@@ -25,7 +25,7 @@ $ npx chaffjs memo.md --compact
 memo.md   blog/tech · 日本語   ジャンルは既定から
 
 
-0 findings, 33 rules not run
+指摘 0 件、動いていない rule 33 件
 ```
 
 When the language is wrong, fix it with `language: ja` or `language: en` in `chaff.yaml` ([Configuration](./configuration)).

@@ -191,12 +191,10 @@ draft.txt   blog/tech · English   genre from the default
                   max-sentence-length
   23:1    warning This sentence runs 30 words (limit 25)
                   max-sentence-length
-  23:1    info    This list punctuates differently from the rest (1 in this document)
-                  oxford-comma-consistency
   25:1    warning This sentence runs 26 words (limit 25)
                   max-sentence-length
 
-14 findings, 9 rules not run
+13 findings, 9 rules not run
 ```
 
 The two `error` lines come from the two changes.
@@ -233,12 +231,10 @@ fixed.txt   blog/tech · English   genre from the default
                   max-sentence-length
   24:1    warning This sentence runs 30 words (limit 25)
                   max-sentence-length
-  24:1    info    This list punctuates differently from the rest (1 in this document)
-                  oxford-comma-consistency
   26:1    warning This sentence runs 26 words (limit 25)
                   max-sentence-length
 
-13 findings, 9 rules not run
+12 findings, 9 rules not run
 ```
 
 An Act in force should have no such breaks.
