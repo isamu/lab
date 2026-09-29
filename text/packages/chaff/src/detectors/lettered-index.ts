@@ -10,7 +10,7 @@ const MIN_DIVIDERS = 2;
 /** カタカナとひらがなは Unicode で同じ並びにあり、この差だけ離れている。 */
 const KATAKANA = { first: 0x30a1, last: 0x30f6, toHiragana: 0x60 };
 
-type Group = { readonly letter: string; readonly entries: Section[] };
+type Group = { readonly run: number; readonly letter: string; readonly entries: Section[] };
 
 /** 索引で引くときの文字。最初の文字から濁点やアクセントを外し、カタカナはひらがなに、小文字は大文字にする。 */
 export const indexLetterOf = (text: string): string => {
@@ -22,21 +22,32 @@ export const indexLetterOf = (text: string): string => {
 
 const isDivider = (section: Section): boolean => SINGLE_LETTER.test(section.heading.normalize("NFC")) && section.sentences.length === 0;
 
-/** ある深さの区切りごとに、その下の節を集める。区切りと同じ深さか浅い見出しで閉じる。 */
+/**
+ * ある深さの区切りごとに、その下の節を集める。区切りと同じ深さか浅い見出しで閉じる。
+ * 区切りでない見出しを挟んだ区切りは、別の並び（run）になる。別の親の下の A と B を 1 つの索引に綴じないため。
+ */
 const groupsAt = (sections: readonly Section[], depth: number): Group[] => {
   const groups: Group[] = [];
-  sections.reduce<Group | undefined>((open, section) => {
-    if (section.depth === depth && isDivider(section)) {
-      const group = { letter: indexLetterOf(section.heading), entries: [] };
-      groups.push(group);
-      return group;
-    }
-    if (open === undefined || section.depth <= depth) return undefined;
-    open.entries.push(section);
-    return open;
-  }, undefined);
+  sections.reduce<{ run: number; open: Group | undefined }>(
+    ({ run, open }, section) => {
+      if (section.depth === depth && isDivider(section)) {
+        const group = { run, letter: indexLetterOf(section.heading), entries: [] };
+        groups.push(group);
+        return { run, open: group };
+      }
+      if (open !== undefined && section.depth > depth) {
+        open.entries.push(section);
+        return { run, open };
+      }
+      return { run: run + 1, open: undefined };
+    },
+    { run: 0, open: undefined },
+  );
   return groups;
 };
+
+const runsOf = (groups: readonly Group[]): Group[][] =>
+  [...new Set(groups.map((group) => group.run))].map((run) => groups.filter((group) => group.run === run));
 
 const ascending = (groups: readonly Group[]): boolean => groups.every((group, index) => index === 0 || (groups[index - 1]?.letter ?? "") < group.letter);
 
@@ -58,9 +69,10 @@ const isIndex = (groups: readonly Group[], depth: number): boolean =>
 export const letteredIndexEntries = (sections: readonly Section[]): ReadonlySet<Section> => {
   const depths = new Set(sections.filter(isDivider).map((section) => section.depth));
   return new Set(
-    [...depths].flatMap((depth) => {
-      const groups = groupsAt(sections, depth);
-      return isIndex(groups, depth) ? groups.flatMap((group) => group.entries) : [];
-    }),
+    [...depths].flatMap((depth) =>
+      runsOf(groupsAt(sections, depth))
+        .filter((run) => isIndex(run, depth))
+        .flatMap((run) => run.flatMap((group) => group.entries)),
+    ),
   );
 };

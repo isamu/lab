@@ -278,6 +278,16 @@ describe("concrete-evidence-density: 文字で区切った索引（用語集）"
     assert.deepEqual(flaggedIn(source, en), ["Account setup", "Billing cycle"]);
   });
 
+  it("invalid: 別の親の下にある A と B は 1 つの索引ではない", () => {
+    const source = `# Report\n\n## First area\n\n### A\n\n#### Account setup\n\n${ABSTRACT_EN}\n\n## Second area\n\n### B\n\n#### Billing cycle\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), ["Account setup", "Billing cycle"]);
+  });
+
+  it("valid: 索引が 2 つあっても、それぞれ索引と読む", () => {
+    const index = `### A\n\n#### Account\n\n${ACCOUNT_EN}\n\n### B\n\n#### Backup\n\n${BACKUP_EN}\n\n`;
+    assert.deepEqual(flaggedIn(`# Glossaries\n\n## Accounting\n\n${index}## Storage\n\n${index}`, en), []);
+  });
+
   it("valid: 見出し語の下の小見出しは、区切りの文字で始まらなくてよい", () => {
     const source = `# Glossary\n\n## A\n\n### Account\n\n${ACCOUNT_EN}\n\n#### Kindness\n\n${ACCOUNT_EN}\n\n#### Openness\n\n${ACCOUNT_EN}\n\n## B\n\n### Backup\n\n${BACKUP_EN}\n\n#### Trust\n\n${BACKUP_EN}\n`;
     assert.deepEqual(flaggedIn(source, en), []);
