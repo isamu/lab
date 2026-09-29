@@ -1,5 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { superlativeReported } from "./rule-run.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -26,11 +27,6 @@ const isScoped = (adapter: LanguageAdapter, text: string, superlative: readonly 
   if (start === -1) throw new Error(`${superlative.join(" ")} が ${text} に無い`);
   return scoped(tokens, { start, end: start + superlative.length }, markersOf(adapter));
 };
-
-const reported = (adapter: LanguageAdapter, sentence: string): boolean =>
-  runRules(buildDocument("t.md", `# T\n\n${sentence}\n`, adapter), loadRules(adapter.id), { [RULE]: "strict" }, true, "business/report", {
-    [RULE]: 1,
-  }).findings.some((finding) => finding.rule === RULE);
 
 describe("superlative-scope（ja）", () => {
   it("名前 + で + 最上級は範囲を持つ（地名・組織名・地名の単位）", () => {
@@ -148,16 +144,16 @@ describe("superlative-scope: 語の並びの端", () => {
 
 describe("unqualified-superlative は範囲を持つ最上級を指摘しない", () => {
   it("範囲があれば指摘しない", () => {
-    assert.ok(!reported(ja, "日本で最も有名な巡礼路です。"));
-    assert.ok(!reported(ja, "国内最大の工場です。"));
-    assert.ok(!reported(en, "It is the best pizza in Chicago."));
-    assert.ok(!reported(en, "It was the best of the three options."));
+    assert.ok(!superlativeReported(ja, "日本で最も有名な巡礼路です。"));
+    assert.ok(!superlativeReported(ja, "国内最大の工場です。"));
+    assert.ok(!superlativeReported(en, "It is the best pizza in Chicago."));
+    assert.ok(!superlativeReported(en, "It was the best of the three options."));
   });
 
   it("範囲が無ければ指摘する", () => {
-    assert.ok(reported(ja, "最も効果的です。"));
-    assert.ok(reported(ja, "最少の費用で最大の効果を上げる。"));
-    assert.ok(reported(en, "It is the best solution."));
+    assert.ok(superlativeReported(ja, "最も効果的です。"));
+    assert.ok(superlativeReported(ja, "最少の費用で最大の効果を上げる。"));
+    assert.ok(superlativeReported(en, "It is the best solution."));
   });
 
   it("品詞が無ければ範囲を読めないので、範囲のありそうな最上級も指摘する", () => {
@@ -165,12 +161,12 @@ describe("unqualified-superlative は範囲を持つ最上級を指摘しない"
       ...ja,
       segment: (text) => ({ sentences: ja.segment(text).sentences.map((sentence) => ({ span: sentence.span, text: sentence.text })) }),
     };
-    assert.ok(reported(untagged, "国内最大の工場です。"));
+    assert.ok(superlativeReported(untagged, "国内最大の工場です。"));
   });
 
   it("同じ文に範囲の無い出現が 1 つでもあれば指摘する", () => {
-    assert.ok(reported(ja, "日本で最も有名で、最も古い寺です。"));
-    assert.ok(reported(en, "It is the best pizza in Chicago and the best pasta."));
+    assert.ok(superlativeReported(ja, "日本で最も有名で、最も古い寺です。"));
+    assert.ok(superlativeReported(en, "It is the best pizza in Chicago and the best pasta."));
   });
 
   it("範囲の語彙表の無い言語では、rule は動かず理由を言う", () => {
