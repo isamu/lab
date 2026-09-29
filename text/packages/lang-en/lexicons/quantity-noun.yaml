@@ -1,0 +1,6 @@
+# Nouns that name a measured quantity. A superlative joined to such a noun with no space names the quantity (最大風速
+# in Japanese) rather than claiming anything is the greatest. English writes a space between a superlative and its noun,
+# so there are none; the list exists so both languages name the same lists.
+id: quantity-noun
+language: en
+entries: []

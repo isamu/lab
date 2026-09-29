@@ -1,0 +1,42 @@
+# 測る量を言う名詞（形態素 1 つ）。最上級がそのまま付いた名詞の連なりがこれで終われば（最大風速・最高気温・最大値・
+# 最大駐車台数）、その語は量の名前で、何かが一番だという主張ではない。ここに無い語で終わるもの（最高品質・最高精度・
+# 最高満足度）は主張として読む。度・率のように主張にも付く語は載せない。
+id: quantity-noun
+language: ja
+entries:
+  - pattern: 値
+  - pattern: 数
+  - pattern: 量
+  - pattern: 額
+  - pattern: 風速
+  - pattern: 速度
+  - pattern: 時速
+  - pattern: 流速
+  - pattern: 気温
+  - pattern: 温度
+  - pattern: 水温
+  - pattern: 震度
+  - pattern: 湿度
+  - pattern: 濃度
+  - pattern: 高度
+  - pattern: 深度
+  - pattern: 角度
+  - pattern: 容量
+  - pattern: 雨量
+  - pattern: 台数
+  - pattern: 人数
+  - pattern: 回数
+  - pattern: 日数
+  - pattern: 件数
+  - pattern: 料金
+  - pattern: 金額
+  - pattern: 出力
+  - pattern: 気圧
+  - pattern: 圧力
+  - pattern: 荷重
+  - pattern: 重量
+  - pattern: 時間
+  - pattern: 距離
+  - pattern: 振幅
+  - pattern: 直径
+  - pattern: 半径
