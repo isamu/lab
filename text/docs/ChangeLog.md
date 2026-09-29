@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` accepts an acronym expanded with a note after it in the brackets (#170)
+
+An acronym written as the first item in brackets, followed by a semicolon, comma or 、 and a note, now counts as
+spelled out when the words right before the brackets spell it (`Tax Relief Act (TRA; P.L. 1-1)`,
+`Data Retention Rule (DRR, effective 2030)`), or when the words after the separator do, up to the closing bracket
+(`データ保持規則（DRR、Data Retention Rule）`). The initials are required because the same shape also opens a list
+(`(MR, handbook, etc.)`, `(EPA, FDIC, GSA)`), which is still reported, and so are `(see TRA; …)`, where the acronym is
+not the first item, and a Japanese name followed by only a year (`（DRR、2030年施行）`). Found on a CRS report
+(American Recovery and Reinvestment Act (ARRA; P.L. 111-5)) and 総務省's white paper (オリジネータープロファイル（OP、Originator Profile）).
+
 ### The corpus's converters keep the words a ruby or a template carried (#170)
 
 An HTML page's ruby is read as its base text: the reading and the brackets around it are dropped, also where the page
