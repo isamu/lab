@@ -59,10 +59,16 @@ const mainLandmark = (html: string): string | undefined => {
 const isOutermost = (range: ElementRange, _index: number, all: readonly ElementRange[]): boolean =>
   !all.some((outer) => outer.start < range.start && range.end <= outer.end);
 
-/** The one <article> not nested in another, when the page has exactly one: the composition the page was made for. */
+const holdsEveryTitle = (html: string, range: ElementRange): boolean =>
+  [...html.matchAll(/<h1\b/giu)].every((title) => title.index > range.start && title.index < range.end);
+
+/**
+ * The one <article> not nested in another, when the page has exactly one and no <h1> outside it: the composition the
+ * page was made for. A page title outside the article means the article is only part of the page's content.
+ */
 const soleArticle = (html: string): string | undefined => {
-  const outermost = elementRanges(html, "article").filter(isOutermost);
-  return outermost.length === 1 ? outermost[0]?.inner : undefined;
+  const [only, ...others] = elementRanges(html, "article").filter(isOutermost);
+  return only !== undefined && others.length === 0 && holdsEveryTitle(html, only) ? only.inner : undefined;
 };
 
 /** The page's own content: inside <main>, else the element marked role="main", else a sole <article>, else the whole page. */
@@ -140,28 +146,42 @@ const withoutLinkGroups = (html: string): string => ["div", "section", "p"].redu
 
 const plainText = (html: string): string => decodeEntities(stripTags(html)).replace(/\s+/gu, " ").trim();
 
-/** The page's title as its first <h1> reads; empty when it has none. */
-const pageTitle = (html: string): string => plainText(/<h1\b[^>]*>([\s\S]*?)<\/h1\s*>/iu.exec(html)?.[1] ?? "");
+type PageTitle = { readonly text: string; readonly start: number };
+
+/** The page's first <h1>: what it reads and where it opens. */
+const pageTitle = (html: string): PageTitle | undefined => {
+  const title = /<h1\b[^>]*>([\s\S]*?)<\/h1\s*>/iu.exec(html);
+  return title === null ? undefined : { text: plainText(title[1] ?? ""), start: title.index };
+};
 
 const MIN_TRAIL_LINKS = 2;
 
-/** A breadcrumb as a list: two or more items that are each only a link, then the page's own title as the last item. */
-const isBreadcrumbList = (body: string, title: string): boolean => {
+/**
+ * A breadcrumb as a list above the page's title: two or more items that are each only a link, then the title itself as
+ * the last item. The same list further down is the page's own content (steps ending in the one this page is about).
+ */
+const isBreadcrumbList = (body: string, at: number, title: PageTitle | undefined): boolean => {
   const items = body.split(/<li\b[^>]*>/iu).slice(1);
   const current = items.at(-1);
   const trail = items.slice(0, -1);
-  return current !== undefined && plainText(current) === title && trail.length >= MIN_TRAIL_LINKS && trail.every(isNavigation);
+  return (
+    title !== undefined &&
+    at < title.start &&
+    current !== undefined &&
+    plainText(current) === title.text &&
+    trail.length >= MIN_TRAIL_LINKS &&
+    trail.every(isNavigation)
+  );
 };
 
 /** From the inside out, so a nested table of contents goes too once its inner lists are gone. */
-const withoutNavigation = (html: string): string => {
-  const title = pageTitle(html);
-  return untilStable(html, (text) =>
-    text.replace(/<(ul|ol)\b[^>]*>((?:(?!<[uo]l\b)[\s\S])*?)<\/\1\s*>/giu, (whole: string, _tag: string, body: string) =>
-      isNavigation(body) || isBreadcrumbList(body, title) ? " " : whole,
-    ),
-  );
-};
+const withoutNavigation = (html: string): string =>
+  untilStable(html, (text) => {
+    const title = pageTitle(text);
+    return text.replace(/<(ul|ol)\b[^>]*>((?:(?!<[uo]l\b)[\s\S])*?)<\/\1\s*>/giu, (whole: string, _tag: string, body: string, at: number) =>
+      isNavigation(body) || isBreadcrumbList(body, at, title) ? " " : whole,
+    );
+  });
 
 // An in-page link is wrapped in these marks so that one standing alone on its line ("Jump to main text") can be told
 // from one inside a sentence ("see Table 1"); the first is dropped, the second keeps its text.

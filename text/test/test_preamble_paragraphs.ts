@@ -65,6 +65,13 @@ describe("preamble-length と文でない段落", () => {
     assert.equal(finding?.values["offset"], source.indexOf("前置き一"));
   });
 
+  it("終止符の後ろに脚注の印が付いた文も閉じた文として数える", () => {
+    const ja3 = "# 表題\n\n前置き一です。※1\n\n前置き二です。[^2]\n\n前置き三です。<sup>3</sup>\n\n## 本題\n\n中身です。\n\n[^2]: 注。\n";
+    assert.equal(findingsFor(ja3, ja)[0]?.values["count"], 3);
+    const en3 = "# Title\n\nFirst paragraph.[^1]\n\nSecond paragraph.[^2]\n\nThird paragraph.[^3]\n\n## Body\n\nText.\n\n[^1]: A.\n[^2]: B.\n[^3]: C.\n";
+    assert.equal(findingsFor(en3, en)[0]?.values["count"], 3);
+  });
+
   it("English: a report's front matter of names, affiliations and labels is not preamble", () => {
     const source = [
       "Assessment After the Chatbot. What Changed?",

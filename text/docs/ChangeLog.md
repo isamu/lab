@@ -15,9 +15,10 @@ releases, an arXiv workshop report and the 18F handbook.
 ### The corpus HTML converter drops more page chrome by structure (#170)
 
 A link that runs a script instead of going anywhere (`href="javascript:…"`, a print button) is dropped when it stands
-alone on its line, and keeps its text inside a sentence. A list of two or more link-only items ending in the page's own
-`<h1>` title is a breadcrumb and is dropped. A page with neither `<main>` nor `role="main"` but exactly one outermost
-`<article>` is read from that article, which leaves out a site banner, a header and a licence box around it.
+alone on its line, and keeps its text inside a sentence. A list above the page's `<h1>` of two or more link-only items
+ending in that title is a breadcrumb and is dropped; the same list below the title is kept. A page with neither
+`<main>` nor `role="main"` but exactly one outermost `<article>`, and no `<h1>` outside it, is read from that article,
+which leaves out a site banner, a header and a licence box around it.
 
 ## 0.13.0 — 2026-09-29
 

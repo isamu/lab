@@ -88,6 +88,12 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown("<p>Site</p><article><p>One.</p></article><article><p>Two.</p></article>"), "Site\n\nOne.\n\nTwo.\n");
     assert.equal(htmlToMarkdown("<article><p>Card.</p></article><main><p>Body.</p></main>"), "Body.\n");
     assert.equal(htmlToMarkdown('<article><p>Card.</p></article><div role="main"><p>Body.</p></div>'), "Body.\n");
+    assert.equal(htmlToMarkdown("<div><p>Now a nonprofit!</p></div><article><p>Title.</p><p>Text.</p></article>"), "Title.\n\nText.\n");
+  });
+
+  it("h1 が article の外にあれば、article は中身の一部なのでページ全体を読む", () => {
+    assert.equal(htmlToMarkdown("<h1>Report</h1><article><p>Text.</p></article><p>Lead.</p>"), "# Report\n\nText.\n\nLead.\n");
+    assert.equal(htmlToMarkdown("<article><h1>Report</h1><p>Text.</p></article><h1>Other</h1><p>More.</p>"), "# Report\n\nText.\n\n# Other\n\nMore.\n");
   });
 
   it("href が javascript: のリンク (印刷・共有のボタン) は一行に一つなら落とし、文の中なら文字を残す", () => {
@@ -98,28 +104,27 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(html), "# お知らせ\n\n詳しくは地図をご覧ください。\n\nJavaScript の手引き\n\nJS\n");
   });
 
-  it("リンクだけの項目が二つ以上続き、最後の項目がリンクの無いページの表題 (h1) そのものの一覧はパンくずとして落とす", () => {
-    const trail = '<ol><li><a href="/">ホーム</a></li><li><a href="/news/">お知らせ</a></li><li>窓口の&amp;変更</li></ol>';
+  it("表題 (h1) の前にあり、リンクだけの項目が二つ以上続いて最後の項目が表題そのものの一覧はパンくずとして落とす", () => {
+    const trail = '<ol><li><a href="/">ホーム</a></li><li><a href="/news/">お知らせ</a></li><li> 窓口の&amp;変更 </li></ol>';
     assert.equal(htmlToMarkdown(`${trail}<h1><span>窓口の</span>&amp;変更</h1><p>本文。</p>`), "# 窓口の&変更\n\n本文。\n");
-    assert.equal(
-      htmlToMarkdown(
-        `<div><h1>窓口の&amp;変更</h1></div><ul><li><a href="/">ホーム</a></li><li><a href="/news/">お知らせ</a></li><li> 窓口の&amp;変更 </li></ul><p>本文。</p>`,
-      ),
-      "# 窓口の&変更\n\n本文。\n",
-    );
+    assert.equal(htmlToMarkdown(`<ul><li><a href="/">Top</a></li></ul>${trail}<h1>窓口の&amp;変更</h1><p>本文。</p>`), "# 窓口の&変更\n\n本文。\n");
   });
 
-  it("最後の項目が表題と違う・リンクを含む・前のリンクが一つだけ・前の項目に文が混じる・h1 が無い一覧は残す", () => {
+  it("表題の後ろ・最後の項目が表題と違う・リンクを含む・前のリンクが一つだけ・前の項目に文が混じる・h1 が無い一覧は残す", () => {
     const links = '<li><a href="/a">A</a></li><li><a href="/b">B</a></li>';
-    assert.equal(htmlToMarkdown(`<h1>Help</h1><ul>${links}<li>Call us for C</li></ul>`), "# Help\n\n- A\n- B\n- Call us for C\n");
-    assert.equal(htmlToMarkdown(`<h1>Help</h1><ul>${links}<li>Help <a href="/c">now</a></li></ul>`), "# Help\n\n- A\n- B\n- Help now\n");
-    assert.equal(htmlToMarkdown('<h1>Help</h1><ul><li><a href="/">Home</a></li><li>Help</li></ul>'), "# Help\n\n- Home\n- Help\n");
     assert.equal(
-      htmlToMarkdown(`<h1>Help</h1><ul><li><a href="/a">A</a> first</li><li><a href="/b">B</a></li><li>Help</li></ul>`),
-      "# Help\n\n- A first\n- B\n- Help\n",
+      htmlToMarkdown(`<h1>Submit Appeal</h1><p>Read these in order.</p><ol>${links}<li>Submit Appeal</li></ol>`),
+      "# Submit Appeal\n\nRead these in order.\n\n- A\n- B\n- Submit Appeal\n",
     );
-    assert.equal(htmlToMarkdown(`<h2>Help</h2><ul>${links}<li>Help</li></ul>`), "## Help\n\n- A\n- B\n- Help\n");
-    assert.equal(htmlToMarkdown(`<p>Help</p><ul>${links}<li>Help</li></ul>`), "Help\n\n- A\n- B\n- Help\n");
+    const title = "<h1>Help</h1><p>Text.</p>";
+    assert.equal(htmlToMarkdown(`<ul>${links}<li>Call us for C</li></ul>${title}`), "- A\n- B\n- Call us for C\n\n# Help\n\nText.\n");
+    assert.equal(htmlToMarkdown(`<ul>${links}<li>Help <a href="/c">now</a></li></ul>${title}`), "- A\n- B\n- Help now\n\n# Help\n\nText.\n");
+    assert.equal(htmlToMarkdown(`<ul><li><a href="/">Home</a></li><li>Help</li></ul>${title}`), "- Home\n- Help\n\n# Help\n\nText.\n");
+    assert.equal(
+      htmlToMarkdown(`<ul><li><a href="/a">A</a> first</li><li><a href="/b">B</a></li><li>Help</li></ul>${title}`),
+      "- A first\n- B\n- Help\n\n# Help\n\nText.\n",
+    );
+    assert.equal(htmlToMarkdown(`<ul>${links}<li>Help</li></ul><h2>Help</h2><p>Text.</p>`), "- A\n- B\n- Help\n\n## Help\n\nText.\n");
   });
 
   it("aside・footer・form (検索窓) を落とす", () => {
