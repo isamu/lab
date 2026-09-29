@@ -1,3 +1,4 @@
+import { softBreaks } from "../soft-break.ts";
 import type { LengthUnit, Span } from "../plugin.ts";
 
 /** 数えるために詰めた文と、詰めた文の各文字が元の文のどこにあったか。 */
@@ -7,15 +8,19 @@ export type Compacted = { readonly text: string; readonly offsets: readonly numb
  * n-gram を数えるときと同じ詰め方。word 単位は空白の並びを 1 つにして前後を削り、char 単位は空白を全部除く。
  * 語句が元の文のどこにあるかを戻せるよう、残した文字ごとに元の位置を持つ。
  */
+const insideAny = (spans: readonly Span[], at: number): boolean => spans.some((span) => at >= span.start && at < span.end);
+
 export const compacted = (text: string, unit: LengthUnit): Compacted => {
   const chars: string[] = [];
   const offsets: number[] = [];
   const state = { pendingSpace: -1, at: 0 };
+  // 読み手に見えない改行は空白 1 つにもしない。proseText がつないだ語句を、ここでも同じ形で探せるように。
+  const hidden = unit === "word" ? softBreaks(text) : [];
   Array.from(text).forEach((char) => {
     const at = state.at;
     state.at += char.length;
     if (/\s/u.test(char)) {
-      if (unit === "word" && chars.length > 0 && state.pendingSpace === -1) state.pendingSpace = at;
+      if (unit === "word" && chars.length > 0 && state.pendingSpace === -1 && !insideAny(hidden, at)) state.pendingSpace = at;
       return;
     }
     if (state.pendingSpace !== -1) {

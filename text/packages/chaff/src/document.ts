@@ -6,6 +6,8 @@ import { frontmatterFromMarkdown } from "mdast-util-frontmatter";
 import { atxHeadingText, headingText } from "./heading-text.ts";
 import { hasTitle } from "./heading-title.ts";
 import { maskSpans } from "./mask.ts";
+import { unmaskedSoftBreaks } from "./soft-break.ts";
+import { segmentJoined } from "./joined-view.ts";
 import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { pageFurniture, textOutline } from "./page-furniture.ts";
@@ -187,15 +189,18 @@ const spansOfType = (root: Node, type: string, keep: (node: Node) => boolean = (
  */
 const shift = (span: Span, by: number): Span => ({ start: by + span.start, end: by + span.end });
 
-const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: LanguageAdapter): Sentence[] =>
+const breaksWithin = (breaks: readonly Span[], paragraph: Span): Span[] =>
+  breaks.filter((span) => span.start >= paragraph.start && span.end <= paragraph.end).map((span) => shift(span, -paragraph.start));
+
+const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: LanguageAdapter, softBreaks: readonly Span[]): Sentence[] =>
   paragraphs.flatMap((paragraph) =>
-    adapter
-      .segment(prose.slice(paragraph.start, paragraph.end))
-      .sentences.filter((sentence) => sentence.text.trim().length > 0)
+    segmentJoined(prose.slice(paragraph.start, paragraph.end), breaksWithin(softBreaks, paragraph), (text) => adapter.segment(text))
+      .filter((sentence) => sentence.text.trim().length > 0)
       .map((sentence) => ({
         span: shift(sentence.span, paragraph.start),
         text: sentence.text,
         ...(sentence.tokens === undefined ? {} : { tokens: sentence.tokens.map((token) => ({ ...token, span: shift(token.span, paragraph.start) })) }),
+        ...(sentence.wrapBreaks === undefined ? {} : { wrapBreaks: sentence.wrapBreaks.map((span) => shift(span, paragraph.start)) }),
       })),
   );
 
@@ -279,7 +284,9 @@ export const buildDocument = (
   // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。
   const paragraphSpans = spansOfType(root, "paragraph", (node) => !isInPageNavigation(node, anchors));
   const listItems = spansOfType(root, "listItem");
-  const sentences = sentencesOf(prose, paragraphSpans, adapter);
+  // Markdown は段落を流し込んで表示するので、段落の中の改行は読み手に見えない。テキストの文書は行をそのまま見せる（法令は 1 行 1 号）。
+  const softBreaks = isMarkdownPath(path) ? unmaskedSoftBreaks(source, prose) : [];
+  const sentences = sentencesOf(prose, paragraphSpans, adapter, softBreaks);
   const lexicons = {
     ...adapter.lexicons,
     "internal-jargon": team.jargon.map((pattern) => ({ pattern })),
