@@ -13,9 +13,8 @@ const total = (snapshot: Snapshot): number => Object.values(snapshot).reduce((su
 
 /**
  * 差分だけを出す。書いている最中に全件を出し直されると、何が変わったのか分からない。
- * workflow spec §11。
+ * workflow spec §11。`unit` takes the count after the change, which sets the English noun ("0 → 1 finding").
  */
-/** `unit` names the count after the change, which sets the English noun ("0 → 1 finding"). */
 export const describeChange = (before: Snapshot, after: Snapshot, unit: (count: number) => string = () => " 件"): string | undefined => {
   const rules = [...new Set([...Object.keys(before), ...Object.keys(after)])];
   const moved = rules
