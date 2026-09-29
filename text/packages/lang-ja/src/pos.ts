@@ -1,5 +1,7 @@
 import { surfaceStarts } from "./surface-starts.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
+import { isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
+import { loadLexicons } from "./lexicons.ts";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import type { Token } from "chaffjs/plugin";
@@ -100,13 +102,10 @@ const BY_POS: Readonly<Record<string, string>> = {
 export const upos = (pos: string, detail: string): string => BY_DETAIL[detail] ?? BY_POS[pos] ?? "X";
 
 /**
- * 受動の「れる/られる」。IPADIC では動詞の接尾として出る。
- * ただしこの語は可能・尊敬・自発も表す。区別は文脈が要るのでここではしない。
- * 受動と言い切らず「受動の形」として印を付け、どう扱うかは rule 側に委ねる。
+ * 受動の「れる/られる」。この語は可能・尊敬・自発も表す。形のうえで受動でないと言えるもの
+ * （自発や関係を表す動詞、尊敬の決まり文句）は passive-reading.ts が外す。残りは「受動の形」として印を付ける。
  */
-const PASSIVE_LEMMA = new Set(["れる", "られる"]);
-
-const isPassive = (morpheme: Morpheme): boolean => morpheme.pos === "動詞" && morpheme.pos_detail_1 === "接尾" && PASSIVE_LEMMA.has(morpheme.basic_form);
+const PASSIVE_VOCABULARY = passiveVocabulary(loadLexicons());
 
 /**
  * 非自立名詞（の・こと・もの・ため・はず）。品詞は名詞だが、単独では何も指さない。
@@ -139,14 +138,14 @@ export const isReady = (): boolean => state.ready !== undefined;
  * span は渡した文字列の先頭を 0 とする。位置は kuromoji の word_position ではなく、語の文字を本文と照らして決める（surface-starts.ts）。
  * 形の違うものが混ざったら、その 1 つを落とす。位置が NaN の token を下流に流さない。
  */
-const toToken = (morpheme: Morpheme, start: number): Token => ({
+const toToken = (morpheme: Morpheme, start: number, passive: boolean): Token => ({
   span: { start, end: start + morpheme.surface_form.length },
   surface: morpheme.surface_form,
   // UD の日本語では「れる/られる」は AUX。IPADIC の「動詞,接尾」をそこへ寄せる。
-  pos: isPassive(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
+  pos: isPassiveForm(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
   ...(morpheme.basic_form === "*" ? {} : { lemma: morpheme.basic_form }),
   ...(typeof morpheme.reading !== "string" || morpheme.reading === "*" ? {} : { reading: morpheme.reading }),
-  ...featuresOf(morpheme),
+  ...featuresOf(morpheme, passive),
 });
 
 /**
@@ -181,8 +180,8 @@ const personOrOrganisation = (morpheme: Morpheme): string | undefined => {
 /** 数を数える単位（IPADIC の「接尾,助数詞」: 丁目・件・人）。UD では NounType=Class。 */
 const isCounter = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "接尾" && morpheme.pos_detail_2 === "助数詞";
 
-const featuresOf = (morpheme: Morpheme): { features?: Readonly<Record<string, string>> } => {
-  if (isPassive(morpheme)) return { features: { Voice: "Pass" } };
+const featuresOf = (morpheme: Morpheme, passive: boolean): { features?: Readonly<Record<string, string>> } => {
+  if (passive) return { features: { Voice: "Pass" } };
   if (isDependentNoun(morpheme)) return { features: { NounType: "Dependent" } };
   if (isNumeral(morpheme)) return { features: { NumType: "Card" } };
   const name = placeType(morpheme) ?? personOrOrganisation(morpheme);
@@ -222,7 +221,9 @@ export const predicateOnly = (tokens: readonly Token[]): Token[] =>
 export const tokenize = (text: string): Token[] | undefined => {
   const tokenizer = state.ready;
   if (tokenizer === undefined) return undefined;
-  return placed(text, analyse(tokenizer, text)).map(({ morpheme, start }) => toToken(morpheme, start));
+  const read = placed(text, analyse(tokenizer, text));
+  const sequence = read.map(({ morpheme }) => morpheme);
+  return read.map(({ morpheme, start }, index) => toToken(morpheme, start, readsAsPassive(sequence, index, PASSIVE_VOCABULARY)));
 };
 
 const analyse = (tokenizer: Tokenizer, text: string): Morpheme[] => readCounterTsu(toArray(callMethod(tokenizer, "tokenize", [text])).flatMap(toMorpheme));
