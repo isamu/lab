@@ -121,6 +121,53 @@ describe("L3 日本語", () => {
       const source = "運用を始めます。手順を作ります。効果は来期に測定する。\n\n- 設定を確認する。\n- 記録を残す。\n\n研修も予定しています。";
       assert.equal(countFor(source, "no-mixed-desumasu"), 1);
     });
+
+    const desumasuQuotes = (source: string): string[] =>
+      runRules(buildDocument("t.md", source, ja), RULES, {}, true, "business/report")
+        .findings.filter((finding) => finding.rule === "no-mixed-desumasu")
+        .map((finding) => finding.quote);
+    const PROSE = "補助を受けられます。申請は窓口で受け付けます。";
+
+    it("valid: ですます調の本文に、常体で揃えた「（1）」「（2）」で始まる段落の並び", () => {
+      const source = `${PROSE}\n\n（1）申請者が市内に住んでいること。\n\n（2）前年度に補助を受けていないこと。\n\n審査には二週間かかります。`;
+      assert.deepEqual(desumasuQuotes(source), []);
+    });
+
+    it("valid: 改行だけで続けた番号付きの行も、一つの段落の中の並び", () => {
+      const source = `${PROSE}\n\n（1）申請者が市内に住んでいること。\n（2）前年度に補助を受けていないこと。\n\n審査には二週間かかります。`;
+      assert.deepEqual(desumasuQuotes(source), []);
+    });
+
+    it("invalid: 番号で始まる段落の並びの中で調子が混ざる", () => {
+      const source = `${PROSE}\n\n（1）申請者が市内に住んでいること。\n\n（2）前年度の補助は受けられません。\n\n（3）税を滞納していないこと。\n\n審査には二週間かかります。`;
+      assert.deepEqual(desumasuQuotes(source), ["（2）前年度の補助は受けられません。"]);
+    });
+
+    it("invalid: 番号で始まる段落が一つだけなら、本文と比べる", () => {
+      const source = `${PROSE}\n\n（1）申請者が市内に住んでいること。\n\n審査には二週間かかります。`;
+      assert.deepEqual(desumasuQuotes(source), ["（1）申請者が市内に住んでいること。"]);
+    });
+
+    it("invalid: あいだに本文の段落が入れば並びは切れ、それぞれ本文と比べる", () => {
+      const source = `${PROSE}\n\n（1）申請者が市内に住んでいること。\n\n証明書を添えてください。\n\n（2）前年度に補助を受けていないこと。\n\n審査には二週間かかります。`;
+      assert.deepEqual(desumasuQuotes(source), ["（1）申請者が市内に住んでいること。", "（2）前年度に補助を受けていないこと。"]);
+    });
+
+    it("invalid: 番号の直後が助詞の段落は、項目を指す本文として本文と比べる", () => {
+      const source = "運用を始める。手順を作る。効果を測定する。\n\n（1）の金額を確認します。\n\n（2）の金額を確認します。";
+      assert.deepEqual(desumasuQuotes(source), ["（1）の金額を確認します。", "（2）の金額を確認します。"]);
+    });
+
+    it("invalid: 見出しを挟めば並びは切れる", () => {
+      const source = `${PROSE}\n\n## 住所\n\n（1）申請者が市内に住んでいること。\n\n## 補助歴\n\n（2）前年度に補助を受けていないこと。\n\n審査には二週間かかります。`;
+      assert.deepEqual(desumasuQuotes(source), ["（1）申請者が市内に住んでいること。", "（2）前年度に補助を受けていないこと。"]);
+    });
+
+    it("invalid: 条の中の番号付きの段落（項）は条の本文と比べる", () => {
+      const source =
+        "第1条（目的）\n\nこの規約は利用の条件を定めます。利用者はこの規約に従います。当社は規約を公開します。\n\n２　利用者は規約を守る。\n\n３　当社は規約を改める。";
+      assert.deepEqual(desumasuQuotes(source), ["２　利用者は規約を守る。", "３　当社は規約を改める。"]);
+    });
   });
 
   describe("no-doubled-joshi", () => {
