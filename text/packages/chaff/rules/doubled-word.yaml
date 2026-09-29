@@ -1,0 +1,27 @@
+id: doubled-word
+layer: L3
+status: experimental
+how_to_find: doubled-word
+word_list: doubled-word
+requires: [pos]
+severity: warning
+
+name:
+  ja: 語を二度書いている
+  en: Word written twice
+
+why:
+  ja: 「資料をを送ります」「確認確認する」のように同じ語が続くのは、消し忘れか、書き換えの途中で残った語です。読み手はつまずき、急いで書いた文書に見えます。同じ語でも品詞が違うものと、重ねて強める書き方（「そうそう」「一つ一つ」）は数えていません。
+  en: The same word twice in a row ("the the"), or two words where English takes one ("our the platform"), is left over from an edit. The reader stumbles, and the document looks rushed. Repeats that grammar allows ("had had", "that that", "is, is") and repeats for emphasis ("very very") are not counted.
+
+message:
+  ja: 「{word}」で語が重なっています。どちらかが余分です
+  en: '"{word}" doubles a word; one of the two is left over'
+
+how_to_fix:
+  ja: 余分なほうを消してください。書き換えの途中なら、残したい言い方に揃えてください。
+  en: Delete the extra word. If a rewrite was half done ("our the platform"), keep the wording you meant.
+
+levels: { strict: 1, normal: 1, relaxed: 1 }
+
+use_for: [blog, business, technical]

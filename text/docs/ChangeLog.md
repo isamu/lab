@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### `doubled-word`: a word written twice (#170)
+
+A new experimental rule. It reports a word written twice in a row — `the the`, `is is`, 「資料をを」, 「確認確認」 —
+across a line break and regardless of case, and in English two determiners where one belongs (`our the platform`,
+`a the`). Same word means the same surface and the same part of speech, so `that that` (a conjunction and a
+demonstrative) is left alone; the determiners are the articles and the possessives, which `@chaffjs/lang-en` now
+marks with the Universal Dependencies features `PronType=Art` and `Poss=Yes` (the articles are a lexicon, `article`).
+Interjections, adverbs, proper nouns, numbers and symbols are not counted: repeating them is emphasis or a name
+(「そうそう」, "very very", "Walla Walla"). Other repeats a language allows are a lexicon (`doubled-word`) in each
+language package: "had had", 「一つ一つ」. The position is the second word. The rule needs parts of speech and says so
+when a language has none. Found on cloud.gov's API v2 notice in the corpus ("our the platform").
+
 ### `preamble-length` does not count a page's date stamp (#170)
 
 A paragraph that is only a date (`2025年6月20日`, `April 23, 2026`), a label and a date (`Updated 2026-03-03`,
