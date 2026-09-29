@@ -2,6 +2,16 @@
 
 Newest first.
 
+## Unreleased
+
+### `doubled-word` accepts 「早め早め」 (#170)
+
+「早め早めの避難行動を心がけてください」 repeats 早め for emphasis, but the analyser reads 早め as an ordinary noun, the
+same as 資料 in the slip 「資料資料」, so neither the part of speech nor the particle after it tells the two apart. 「早め早め」
+joins 「毎日毎日」 and 「一つ一つ」 in the Japanese list of repeats that are not slips; three in a row (「早め早め早め」) is still
+reported. No other repeated form in the corpus is reported, and the common ones need no entry: 「ゆっくりゆっくり」 is an
+adverb and 「少しずつ少しずつ」 is not two adjacent words. Found on 気象庁's page on emergency warnings.
+
 ## 0.14.0 — 2026-09-29
 
 Japanese read more closely by morphology: 「3つ」「三つ」 are a number and a counter, a line opening with 「1.5 万人」 is a
