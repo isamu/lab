@@ -1,5 +1,6 @@
-import type { Detector, DocumentProfile, Finding, Sentence } from "../plugin.ts";
-import { compacted, placeOf } from "./gram-place.ts";
+import type { Detector, DocumentProfile, Finding, Sentence, Span, Token } from "../plugin.ts";
+import { compacted } from "./gram-place.ts";
+import { leadingCounter } from "./counter-edge.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
@@ -12,20 +13,46 @@ import { parallelDotCount } from "./middle-dot.ts";
  */
 const KANJI_RUN = /[一-鿿]+/gu;
 
-/** 漢字の連なりが住所（東京都港区新橋二丁目）か 1 つの名前（日本銀行）か。形態素解析の地名・人名・組織名と数で決める。品詞が無ければ判定しない。 */
-const isPlaceName = (sentence: Sentence, run: string, topUnits: ReadonlySet<string>): boolean => {
-  const tokens = sentence.tokens;
-  const place = tokens === undefined ? undefined : placeOf(compacted(sentence.text, "word"), run);
-  if (tokens === undefined || place === undefined) return false;
-  const [start, end] = [sentence.span.start + place.start, sentence.span.start + place.end];
-  const covering = tokens.flatMap((token, index) => (token.span.start < end && start < token.span.end ? [index] : []));
+/** 漢字の連なりと、その文書全体の座標での範囲。 */
+type KanjiRun = { readonly text: string; readonly span: Span | undefined };
+
+const SPACE = /\s/gu;
+
+/**
+ * 同じ連なりが文に二度出ても、それぞれの位置で読む。proseText は空白を詰めたり除いたりするだけなので、
+ * 空白でない k 文字目は元の文でも空白でない k 文字目。番地の覆いは長さを保つので、proseText の位置がそのまま使える。
+ */
+const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined): KanjiRun[] => {
+  const prose = proseText(sentence);
+  const printed = compacted(sentence.text, "char").offsets;
+  return [...maskAddresses(prose, profile).matchAll(KANJI_RUN)].map((match) => {
+    const before = prose.slice(0, match.index).replace(SPACE, "").length;
+    const [start, last] = [printed[before], printed[before + match[0].length - 1]];
+    const span = start === undefined || last === undefined ? undefined : { start: sentence.span.start + start, end: sentence.span.start + last + 1 };
+    return { text: match[0], span };
+  });
+};
+
+/** 漢字の連なりが住所（東京都港区新橋二丁目）か 1 つの名前（日本銀行）か。形態素解析の地名・人名・組織名と数で決める。 */
+const isPlaceName = (tokens: readonly Token[], span: Span, topUnits: ReadonlySet<string>): boolean => {
+  const covering = tokens.flatMap((token, index) => (token.span.start < span.end && span.start < token.span.end ? [index] : []));
   return isAddressRun(tokens, covering, topUnits) || isOneName(tokens, covering);
 };
 
+/**
+ * 数えない連なりは空。頭の、数に付いた助数詞（2日日本弁護士連合会の「日」）は数えない。
+ * 住所か名前かは、助数詞を外した残りで決める（1日日本銀行の「日本銀行」）。品詞が無ければ判定しない。
+ */
+const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, topUnits: ReadonlySet<string>): string => {
+  if (tokens === undefined || run.span === undefined) return run.text;
+  const counter = leadingCounter(tokens, run.span.start, run.text);
+  const rest = counter === undefined ? run.span : { start: counter.span.end, end: run.span.end };
+  return isPlaceName(tokens, rest, topUnits) ? "" : run.text.slice(counter?.surface.length ?? 0);
+};
+
 const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, topUnits: ReadonlySet<string>): string =>
-  [...maskAddresses(proseText(sentence), profile).matchAll(KANJI_RUN)]
-    .map((match) => match[0])
-    .filter((run) => !isPlaceName(sentence, run, topUnits))
+  runsOf(sentence, profile)
+    .map((run) => measuredRun(sentence.tokens, run, topUnits))
     .reduce((longest, run) => (run.length > longest.length ? run : longest), "");
 
 /**
