@@ -14,6 +14,16 @@ as a kanji numeral already was in Japanese; `one of`, `two-way` and `one-on-one 
 quantity or date the structure tree read inside the section (`See Section VI`) also counts. The tree is built only
 when the document would otherwise be reported. lang-en now marks a plural noun with `Number=Plur`.
 
+### `yarn bench` plants mistakes for more rules: a preamble, stock phrasing, repeated openers and team spellings (#170)
+
+The seeded-mistake benchmark now also plants a preamble made by leaving out the first section heading
+(`preamble-length`), a closing 「いかがでしたか。」 / "Thanks for reading." on a blog post (`closing-cliche`), a
+padded opening sentence after the first one (`padded-intro`), an empty 「これは非常に重要です。」 / "This is extremely
+important." after the first statement of the body (`empty-intensifier`), consecutive paragraphs that all open with
+「また、」 / "Also," (`repeated-conjunction`), sentences chained with "And" (`sentence-initial-conjunction-run`), and a
+spelling the team has ruled out, such as 打合せ for 打ち合わせ or e-mail for email (`preferred-term`; the bench passes the
+team's `prefer` as `chaff.yaml` would). The clean samples are unchanged and none of these rules reports on them.
+
 ### `undefined-acronym` does not count a reference key in square brackets (#170)
 
 Specifications point to their references with a bracketed key: `[HPACK]`, `[RFC9110]`, `[SECURING-WEB]`,

@@ -3,10 +3,10 @@
 // Pure and deterministic, like scripts/bench-mutations.ts.
 import { isJapanese, isPoliteDocument, isProse, isRow, linesOf, proseAt, rewriteFirst, splitSentences, type Plant, type PlantContext } from "./bench-text.ts";
 
-type Block = { readonly start: number; readonly end: number };
+export type Block = { readonly start: number; readonly end: number };
 
 /** 空行で区切られた行のかたまり。end は含まない。 */
-const blocksOf = (lines: readonly string[]): Block[] =>
+export const blocksOf = (lines: readonly string[]): Block[] =>
   lines.reduce<Block[]>((blocks, line, index) => {
     if (line.trim() === "") return blocks;
     const last = blocks.at(-1);
@@ -20,7 +20,7 @@ const blocksOf = (lines: readonly string[]): Block[] =>
 // 文で終わる行だけの段落。「第4条（管理）」のような条の見出しの行は段落に入れない。
 const SENTENCE_END = /[。.!?]$/u;
 
-const isParagraph = (lines: readonly string[], block: Block): boolean => {
+export const isParagraph = (lines: readonly string[], block: Block): boolean => {
   const isProseLine = proseAt(lines);
   return lines.slice(block.start, block.end).every((line, at) => isProseLine(block.start + at) && !isRow(line) && SENTENCE_END.test(line.trimEnd()));
 };
@@ -49,7 +49,7 @@ export const joinParagraphs = (source: string, context: PlantContext): Plant | u
 
 // --- heading-echo ---
 
-const SECTION = /^#{2,6} +(\S.*)$/u;
+export const SECTION = /^#{2,6} +(\S.*)$/u;
 // chaff は見出しの文字 3-gram が四つ未満だと測らない。節の番号を除いて六文字ある見出しにだけ植える。
 const MIN_HEADING_CHARS = 6;
 
