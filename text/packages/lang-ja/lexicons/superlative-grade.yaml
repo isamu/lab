@@ -1,0 +1,14 @@
+# 等級そのものを言う名詞。最上級にそのまま付くと（最高品質・最大規模）、一番の等級だという主張になる。
+# ほかの名詞が付いた最上級（最大風速・最高気温・最大値）は測る量の名前で、主張ではない。
+id: superlative-grade
+language: ja
+entries:
+  - pattern: 品質
+  - pattern: 水準
+  - pattern: 規模
+  - pattern: 級
+  - pattern: レベル
+  - pattern: クラス
+  - pattern: 性能
+  - pattern: 精度
+  - pattern: 傑作
