@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### The list of acronyms a reader knows is a word list (#170)
+
+`undefined-acronym`'s list of acronyms that need no spelling out (API, URL, CEO …) moved from code into each language
+package's `common-acronym` word list, so it can differ by language (NG is understood in Japanese documents). The
+contents are unchanged.
+
 ### `undefined-acronym` leaves times, amounts, US addresses and emphasised NOT / AND alone (#170)
 
 Capitals that belong to a fixed notation next to a number are no longer taken as acronyms: AM / PM and a time zone

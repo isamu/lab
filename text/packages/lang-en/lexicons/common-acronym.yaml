@@ -1,0 +1,72 @@
+# Acronyms a reader understands without the spelled-out form. Spelling them out would make the text harder to read.
+id: common-acronym
+language: en
+entries:
+  - pattern: OK
+  - pattern: NG
+  - pattern: URL
+  - pattern: API
+  - pattern: CSS
+  - pattern: HTML
+  - pattern: JSON
+  - pattern: YAML
+  - pattern: HTTP
+  - pattern: HTTPS
+  - pattern: PDF
+  - pattern: CPU
+  - pattern: GPU
+  - pattern: RAM
+  - pattern: USB
+  - pattern: AI
+  - pattern: ID
+  - pattern: FAQ
+  - pattern: PR
+  - pattern: OS
+  - pattern: CLI
+  - pattern: UI
+  - pattern: UX
+  - pattern: SQL
+  - pattern: CSV
+  - pattern: XML
+  - pattern: TODO
+  - pattern: NOTE
+  - pattern: TIP
+  # 通信と符号化。技術文書でなくても説明なしで通じる。
+  - pattern: DNS
+  - pattern: IP
+  - pattern: TCP
+  - pattern: UDP
+  - pattern: SSH
+  - pattern: SSL
+  - pattern: TLS
+  - pattern: VPN
+  - pattern: LAN
+  - pattern: UTF
+  - pattern: ASCII
+  # 機器・形式・単位。
+  - pattern: PC
+  - pattern: IT
+  - pattern: SDK
+  - pattern: IDE
+  - pattern: PNG
+  - pattern: JPEG
+  - pattern: GIF
+  - pattern: SVG
+  - pattern: QR
+  - pattern: GPS
+  - pattern: SNS
+  - pattern: TV
+  - pattern: KB
+  - pattern: MB
+  - pattern: GB
+  - pattern: TB
+  # 役職と国・地域。
+  - pattern: CEO
+  - pattern: CTO
+  - pattern: CFO
+  - pattern: US
+  - pattern: USA
+  - pattern: UK
+  - pattern: EU
+  - pattern: UN
+  - pattern: DNA

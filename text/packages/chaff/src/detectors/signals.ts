@@ -199,78 +199,6 @@ const acronymsOf = (doc: ProseDocument): AcronymHit[] =>
       .map((match) => ({ word: match[0], hit: { sentence, offset: sentence.span.start + match.index } }));
   });
 
-/** 読み手が説明なしで通じると見なしてよい語。展開すると逆に読みにくい。 */
-const COMMON = new Set([
-  "OK",
-  "NG",
-  "URL",
-  "API",
-  "CSS",
-  "HTML",
-  "JSON",
-  "YAML",
-  "HTTP",
-  "HTTPS",
-  "PDF",
-  "CPU",
-  "GPU",
-  "RAM",
-  "USB",
-  "AI",
-  "ID",
-  "FAQ",
-  "PR",
-  "OS",
-  "CLI",
-  "UI",
-  "UX",
-  "SQL",
-  "CSV",
-  "XML",
-  "TODO",
-  "NOTE",
-  "TIP",
-  // 通信と符号化。技術文書でなくても説明なしで通じる。
-  "DNS",
-  "IP",
-  "TCP",
-  "UDP",
-  "SSH",
-  "SSL",
-  "TLS",
-  "VPN",
-  "LAN",
-  "UTF",
-  "ASCII",
-  // 機器・形式・単位。
-  "PC",
-  "IT",
-  "SDK",
-  "IDE",
-  "PNG",
-  "JPEG",
-  "GIF",
-  "SVG",
-  "QR",
-  "GPS",
-  "SNS",
-  "TV",
-  "KB",
-  "MB",
-  "GB",
-  "TB",
-  // 役職と国・地域。
-  "CEO",
-  "CTO",
-  "CFO",
-  "US",
-  "USA",
-  "UK",
-  "EU",
-  "UN",
-  "DNA",
-]);
-
 /**
  * 展開は略語の**すぐ隣**にあるときだけ認める。
  * 60 文字も見ると、同じ文のどこかに括弧があるだけで「説明済み」になり、1 件も出なくなる。
@@ -322,9 +250,10 @@ const isExpanded = (body: string, acronym: string): boolean =>
 
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
+  const common = new Set((doc.lexicons["common-acronym"] ?? []).map((entry) => entry.pattern));
   const seen = new Map<string, Hit>();
   acronymsOf(doc).forEach(({ word, hit }) => {
-    if (!COMMON.has(word) && !seen.has(word)) seen.set(word, hit);
+    if (!common.has(word) && !seen.has(word)) seen.set(word, hit);
   });
   const bare = [...seen.entries()].filter(([acronym]) => !isExpanded(body, acronym));
   if (bare.length < options.limit) return [];
