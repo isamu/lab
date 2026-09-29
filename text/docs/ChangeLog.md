@@ -10,6 +10,17 @@ A scheduled workflow (`chaff corpus (URL-only documents)`) fetches every documen
 compares it with `corpus/expected.txt`, which pull requests cannot do. A changed result opens an issue, or comments on the
 open one, with the changed lines; a document that cannot be fetched is skipped and named in a warning.
 
+### `no-mixed-desumasu` judges a run of numbered paragraphs on its own, like a list (#170)
+
+A procedure guide states the conditions of a rule as paragraphs that open with a number, `（1）…であること。`
+`（2）…を受けていること。`, in plain form inside です・ます prose: the same convention as a bulleted list, written without
+list markup. Paragraphs that open with a line the language package reads as a numbered item, separated only by blank
+lines and holding at least two numbered lines, are now judged against each other and not against the prose, as a list
+is. A number followed at once by a particle (`（1）の金額は…`) points at an item and opens prose, not an enumeration. A
+mix inside such a run is still reported. A single numbered paragraph, or one cut off from the next by prose or a
+heading, is still judged with the prose, and so is a numbered paragraph inside an article, where it may be one of the
+article's own paragraphs. Found on 国税庁's タックスアンサー.
+
 ### `no-nakaguro-parallel` does not count a 「・」 that opens a line (#170)
 
 Japanese notices often write a list with 「・」 as the bullet, one item per line (`・ 水分を補給すること`). When the
