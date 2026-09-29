@@ -4,6 +4,22 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` on HTTP methods, document numbers, "=" definitions, ONLY and series numbers (#170)
+
+Five kinds of capitals were reported as acronyms with nothing to expand:
+
+- **HTTP methods** (GET, POST, "non-GET requests"): words, not abbreviations. They come from a new `http-method` word
+  list in each language package.
+- **Document numbers**: the capital word right before a hyphenated number is part of the number (SP 800-61, BOD 25-01,
+  IEC 19757-2). The word before it is still counted (NIST in "NIST SP 800-61"), and so is a word before a number
+  with no hyphen (RFC 9110), a version (SDK 3.1) or a range of years (FY 2024-25).
+- **Symbols defined with "="**: "where N = number of cases, EH = total hours worked" defines EH after it is used.
+  A value (EH = 2,000, EH = 40h) or another acronym (EH = SRE) is not a definition.
+- **ONLY** in capitals for emphasis joins `emphasis-word` next to NOT and AND.
+- **Series numbers**: a Roman numeral of I, V and X that stands alone with a period at the start of a sentence or
+  after the end of one ("… Filter. VII. Water-Bearing Objects", "Euclid. II. The VIS Instrument") is a number.
+  After a bracket ("(MEGAFLOW) XII.") it is still counted, since "(adult dose) IV" is written the same way.
+
 ### `latin-spacing` does not count the spacing inside a quotation in 「」『』 (#170)
 
 A title or a quotation in 「」 or 『』 keeps the spacing of its source: 「AI原則実践のためのガバナンス・ガイドライン ver.
