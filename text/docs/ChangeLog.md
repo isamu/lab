@@ -16,6 +16,34 @@ stands beside the menu (`Comments are due by May 1.`), one that contains the tit
 on 厚生労働省's call for public comment. The Federal Register's "Document Headings" help box is left as it is: it sits
 beside the agency and docket number and differs from them only by its class names and wording.
 
+### `undefined-acronym` reads a Roman numeral after Part or Section as a number, and a polite 「といいます」 as a definition (#170)
+
+A Roman numeral written in its proper form (I to MMMM) right after the name of a division of a document — `Part II`,
+`Section VIII`, `Title IV`, `Chapter XI`, `Appendix III`, or the name in capitals (`PART II`) — is the division's
+number, not an acronym. The names come from a new word list in each language package, `numbered-division`, which the
+rule declares. Acronyms that are also Roman numerals (CD, CI, DC, MD, CV, MIX, IV) are still reported anywhere else,
+and so are a malformed numeral (`Section IIII`), a numeral glued to more letters (`Section CIA`) and a lowercase name
+in running text (`part II`). A plural name or a list of numerals (`Chapters II and III`) is not read yet. Found on
+NSF's REU solicitation and an arXiv workshop report.
+
+An acronym defined with the verb conjugated — `（以下、「GSS」といいます。）`, `と呼びます`, `と称します`, `といいました` —
+now counts as defined, as `という` did. The last verb is matched by its base form from morphological analysis, so the
+rule now uses part of speech when it can; without it only the forms in `definition-verb` are read. `definition-verb`
+gains `と言う` and `と称す`, the base forms the analyser gives 言います and 称します. Found on デジタル庁's notice of the
+GSS incident.
+
+### Japanese: 「3つ」「三つ」「２つ」 are a number and a counter (#170)
+
+IPADIC reads the つ after an Arabic numeral as the classical perfective auxiliary (the つ of 行きつ戻りつ) and 「三つ」
+「２つ」 as one ordinary noun, so a count written with つ was neither a quantity in the structure tree nor a number and a
+counter in the tokens. lang-ja now reads both as a numeral (`NumType=Card`) and the counter つ (`NounType=Class`),
+the same way it reads 「三人」. The perfective つ after a verb, 「三つ巴」 and the kana 「ひとつ」 are unchanged. A count
+followed by 目 or め (「3つ目」「2回目」「1 行目」「二日目」「一つめ」「3つめ」) is a position, not an amount, and is no longer a quantity, like
+「第3条」.
+What moves: a sentence ending in a count (「理由は3つ。」) is a noun ending for `taigen-dome-in-prose` rather than a
+plain-style predicate for `no-mixed-desumasu`, and a heading that opens with a count (「## 4 つで足りないとき」) is no
+longer read as numbered article 4, which also removes the `dangling-reference` that reading caused.
+
 ### `no-mixed-desumasu` reads 「〜下さい」 as polite, like 「〜ください」 (#170)
 
 A polite request written with the kanji 下さい (「ご意見をお寄せ下さい。」) was read as plain: the analyser gives its
