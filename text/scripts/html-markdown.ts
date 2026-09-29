@@ -4,8 +4,8 @@
 // element or by role, and breadcrumbs), asides, footers, forms, tables, footnote marks, lists and blocks of nothing but
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
 // title), a block before the page's title that holds a menu or only links and no sentence (the site's header, with its tagline and
-// labels), lines of nothing but in-page or script links, and a copyright notice closing the page, with an address just before it, are
-// dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
+// labels), lines of nothing but in-page or script links, a heading drawn as an image unless its alt text is the page's
+// title, and a copyright notice closing the page, with an address just before it, are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
 // for any HTML.
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
@@ -249,6 +249,34 @@ const withoutSiteHeader = (html: string): string => {
   );
 };
 
+const IMAGE = /<img\b[^>]*>/giu;
+
+const ALT = /\salt\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/iu;
+
+const altText = (image: string): string => {
+  const alt = ALT.exec(image);
+  return plainText(alt?.[1] ?? alt?.[2] ?? alt?.[3] ?? "");
+};
+
+/** The page's <title>, which names the page wherever it is shown (a tab, a bookmark, a search result). */
+const documentTitle = (html: string): string => plainText(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/iu.exec(html)?.[1] ?? "");
+
+/** Text put back into markup, so that decoding it again gives the same text. */
+const asMarkup = (text: string): string => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;");
+
+/**
+ * A heading holding images and nothing else (a logo, a banner, a title set as a picture) carries the images' alt text
+ * only when that text is the page's title, which the reader sees drawn there; otherwise it goes whole, since the
+ * converter keeps no image's alt text anywhere else either.
+ */
+const withImageHeadingsRead = (html: string, title: string): string =>
+  html.replace(/<h([1-6])\b([^>]*)>([\s\S]*?)<\/h\1\s*>/giu, (whole: string, level: string, attributes: string, inside: string) => {
+    const images = inside.match(IMAGE) ?? [];
+    if (images.length === 0 || plainText(inside) !== "") return whole;
+    const alt = images.map(altText).join(" ").trim();
+    return alt !== "" && alt === title ? `<h${level}${attributes}>${asMarkup(alt)}</h${level}>` : " ";
+  });
+
 // An in-page link is wrapped in these marks so that one standing alone on its line ("Jump to main text") can be told
 // from one inside a sentence ("see Table 1"); the first is dropped, the second keeps its text.
 const LINK_START = "\u0001";
@@ -359,12 +387,12 @@ const withoutClosingAddress = (html: string): string => {
 };
 
 export const htmlToMarkdown = (html: string): string => {
-  const kept = mainContent(DROPPED.reduce(withoutElement, withoutRubyText(html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""))))
+  const uncommented = html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "");
+  const kept = mainContent(DROPPED.reduce(withoutElement, withoutRubyText(uncommented)))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(/\s+/gu, " ");
-  const text = decodeEntities(
-    stripTags(asLines(markChromeLinks(withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))))))),
-  );
+  const content = withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))));
+  const text = decodeEntities(stripTags(asLines(markChromeLinks(withImageHeadingsRead(content, documentTitle(uncommented))))));
   const lines = text
     .split("\n")
     .map((line) => line.trim())

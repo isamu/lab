@@ -88,6 +88,7 @@ rust-lang-minutes-2022-11-22  agentless-passive 3, contraction-consistency 2, ma
 rust-rfc-2094-nll  heading-echo 1, max-paragraph-length 12, max-sentence-length 120, ngram-repetition 1, undefined-acronym 19
 saikosai-h18-09-14-bengoshi-chokai  agentless-passive 2, doubled-word 1, max-kanji-continuous 5, max-paragraph-length 1, max-sentence-length 25, no-doubled-joshi 2
 saikosai-h26-09-02-nagano  agentless-passive 2, max-paragraph-length 1, max-sentence-length 6
+saikosai-s57-09-28-shorai-kyufu  hiragana-fukushi 1, max-kanji-continuous 2, max-sentence-length 3, no-doubled-joshi 1
 soumu-wp-r06-ai-booms  agentless-passive 1, latin-spacing 2, max-sentence-length 2, undefined-acronym 3
 soumu-wp-r06-ai-rules-japan  agentless-passive 5, latin-spacing 4, max-sentence-length 6, no-doubled-joshi 1
 soumu-wp-r06-misinformation  agentless-passive 9, latin-spacing 3, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, taigen-dome-in-prose 1, undefined-acronym 10
@@ -98,7 +99,7 @@ uk-arbitration1996.txt  clean
 uk-cra2015.txt  clean
 uk-dpa2018.txt  clean
 us-6004596-crustless-sandwich  max-paragraph-length 2, max-sentence-length 22, ngram-repetition 1
-us-scotus-gideon-v-wainwright  agentless-passive 21, max-paragraph-length 6, max-sentence-length 37, oxford-comma-consistency 2, preamble-length 1, proper-noun-density 1
+us-scotus-gideon-v-wainwright  agentless-passive 22, max-paragraph-length 6, max-sentence-length 38, oxford-comma-consistency 2, preamble-length 1, proper-noun-density 1, undefined-acronym 3
 wikivoyage-belgian-coast-tram  expletive-construction 6, max-paragraph-length 23, max-sentence-length 37, proper-noun-density 1
 wikivoyage-ja-shikoku-henro  latin-spacing 1, max-kanji-continuous 1
 wikivoyage-ja-shimoda  latin-spacing 3

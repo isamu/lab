@@ -1,7 +1,7 @@
-// MediaWiki wikitext (a Wikivoyage article, as action=raw returns it) as plain Markdown: headings, paragraphs,
-// lists and the text of links. Templates are dropped except the few that carry the prose's own words (a map marker's
-// name, a listing's name and description, a converted quantity, a price, a phone number); tables, files, references
-// and comments are dropped. Pure.
+// MediaWiki wikitext (a Wikivoyage or Wikisource page, as action=raw returns it) as plain Markdown: headings,
+// paragraphs, lists and the text of links. Templates are dropped except the few that carry the prose's own words (a
+// map marker's name, a listing's name and description, a converted quantity, a price, a phone number, the text a layout
+// template or a quotation wraps); tables, files, references and comments are dropped. Pure.
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
 type Params = { readonly named: ReadonlyMap<string, string>; readonly positional: readonly string[] };
@@ -41,11 +41,9 @@ const splitTopLevel = (inside: string): string[] => {
   return split.parts.map((chars) => chars.join(""));
 };
 
-/** Each value with its own templates expanded and its spaces made one, so a dropped icon leaves no gap. */
-const paramsOf = (args: readonly string[]): Params => {
+const paramsOf = (args: readonly string[], valueOf: (raw: string) => string): Params => {
   const named = new Map<string, string>();
   const positional: string[] = [];
-  const valueOf = (raw: string): string => expandTemplates(raw).replace(/\s+/gu, " ").trim();
   args.forEach((arg) => {
     const equals = arg.indexOf("=");
     const key = equals === -1 ? "" : arg.slice(0, equals).trim();
@@ -100,13 +98,73 @@ const DROPPED_SPACED = /\uE000[ \t]+(?=\uE000)/gu;
 const DROPPED_RUN = /\uE000{2,}/gu;
 const DROPPED_GAP = /[ \t]?\uE000(?:([,.;:!?)])|[ \t])/gu;
 
+/** The nth value, whether written in its place or by number (`1=` lets the text hold an `=`). */
+const valueAt = (params: Params, n: number): string | undefined => params.named.get(String(n)) ?? params.positional[n - 1];
+
+const firstValue = (params: Params): string => valueAt(params, 1) ?? "";
+
+/** {{center}} and {{quote}} also take their text by name. */
+const textValue = (params: Params): string => params.named.get("text") ?? firstValue(params);
+
+/** {{resize|size|text}}, or {{resize|text}} in a default smaller size. */
+const resizedText = (params: Params): string => valueAt(params, 2) ?? firstValue(params);
+
+// The mark on each side of the text of a template drawn as a block of its own (a <div> on the page), where the text is
+// set apart from what surrounds it.
+const BLOCK_EDGE = "\uE001";
+
+const block =
+  (textOf: (params: Params) => string) =>
+  (params: Params): string =>
+    `${BLOCK_EDGE}${textOf(params)}${BLOCK_EDGE}`;
+
+/**
+ * Templates that only lay out or size the text they wrap (Wikisource's centred 主文 and 理由, a signature set to the
+ * right), and a quotation: they show as their text, with its lines as written. A second value is an offset or a size,
+ * never text, except in {{resize}}; a quotation's author and source are left out, since the wikis number them differently.
+ */
+const WRAPPERS: Readonly<Record<string, (params: Params) => string>> = {
+  center: block(textValue),
+  c: block(textValue),
+  "block center": block(firstValue),
+  bc: block(firstValue),
+  right: block(firstValue),
+  left: block(firstValue),
+  quote: block(textValue),
+  larger: firstValue,
+  smaller: firstValue,
+  resize: resizedText,
+};
+
+/** Each value with its own templates expanded and its spaces made one, so a dropped icon leaves no gap. */
+const inlineValue = (raw: string): string => expandTemplates(raw).replace(/\s+/gu, " ").trim();
+
+/** Each value with its own templates expanded and its lines kept. */
+const textBlockValue = (raw: string): string => expandTemplates(raw).trim();
+
 const expandTemplates = (text: string): string => replaceBalanced(text, "{{", "}}", renderTemplate);
 
 function renderTemplate(inside: string): string {
   const [head = "", ...args] = splitTopLevel(inside);
-  const render = RENDERERS[head.trim().toLowerCase().replace(/_/gu, " ")];
-  return render === undefined ? DROPPED : render(paramsOf(args));
+  const name = head.trim().toLowerCase().replace(/_/gu, " ");
+  const wrapper = WRAPPERS[name];
+  if (wrapper !== undefined) return wrapper(paramsOf(args, textBlockValue));
+  const render = RENDERERS[name];
+  return render === undefined ? DROPPED : render(paramsOf(args, inlineValue));
 }
+
+/** A heading, a list item, an indented line or a definition: one line that a paragraph break would cut in two. */
+const MARKED_LINE = /^[ \t]*[=*#:;]/u;
+
+/**
+ * A block template's text is a paragraph of its own, as the page shows a <div> apart from the text beside it; on a
+ * heading or list line it stays inline, so that the line is not broken.
+ */
+const withBlocksApart = (text: string): string =>
+  text
+    .split("\n")
+    .map((line) => line.replaceAll(BLOCK_EDGE, MARKED_LINE.test(line) ? "" : "\n\n"))
+    .join("\n");
 
 // 日本語版のウィキ（Wikivoyage・Wikisource）は、同じ名前空間を日本語の名前でも書く。
 const DROPPED_NAMESPACES = new Set(["file", "image", "media", "category", "ファイル", "画像", "メディア", "カテゴリ"]);
@@ -175,6 +233,6 @@ export const wikitextToMarkdown = (source: string): string => {
     .replace(/<ref\b[^>]*\/>/giu, "")
     .replace(/<(ref|gallery)\b[^>]*>[\s\S]*?<\/\1\s*>/giu, "")
     .replace(/__[A-Z]+__/gu, "");
-  const text = inlineText(withoutTables(cleaned.split("\n")).join("\n"));
+  const text = withBlocksApart(inlineText(withoutTables(cleaned.split("\n")).join("\n")));
   return tidyLines(text.split("\n").map((line) => markdownLine(line.trim())));
 };

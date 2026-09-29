@@ -98,6 +98,37 @@ describe("wikitextToMarkdown: テンプレート", () => {
     );
   });
 
+  it("中央・右・左に寄せるテンプレートと引用は、行を保ったまま中の文字だけを残し、前後の文とは段落を分ける", () => {
+    assert.equal(
+      wikitextToMarkdown("{{center|'''主　　文'''}}\n本件控訴を棄却する。\n{{center|'''理　　由'''}}\n一　事案の概要"),
+      "主　　文\n\n本件控訴を棄却する。\n\n理　　由\n\n一　事案の概要\n",
+    );
+    assert.equal(
+      wikitextToMarkdown("判決する。\n\n{{right|\n第一小法廷\n\n　裁判長裁判官　山川一郎}}\n{{DEFAULTSORT:x}}"),
+      "判決する。\n\n第一小法廷\n\n裁判長裁判官　山川一郎\n",
+    );
+    assert.equal(
+      wikitextToMarkdown("{{Center|text=Part One}}{{c|Chapter I}}\n{{Block center|A verse}}{{bc|Another}}"),
+      "Part One\n\nChapter I\n\nA verse\n\nAnother\n",
+    );
+    assert.equal(wikitextToMarkdown("{{left|Dated May 1}}{{quote|1=F=ma}}{{quote|text=Go on.|author=A. Writer}}"), "Dated May 1\n\nF=ma\n\nGo on.\n");
+    assert.equal(wikitextToMarkdown("{{quote|First.\n\nSecond, with [[Old Town|the town]].}}\nAfter."), "First.\n\nSecond, with the town.\n\nAfter.\n");
+  });
+
+  it("寄せる幅や字下げの二つ目の値は文字にしない。文の途中でも段落を分け、見出し・箇条書き・字下げの行の中では分けない", () => {
+    assert.equal(wikitextToMarkdown("{{right|Signed|3em}} {{left|Noted|offset=2em}}"), "Signed\n\nNoted\n");
+    assert.equal(wikitextToMarkdown("The {{center|middle}} word."), "The\n\nmiddle\n\nword.\n");
+    assert.equal(wikitextToMarkdown("Lead {{center|Centered}}\nNext."), "Lead\n\nCentered\n\nNext.\n");
+    assert.equal(wikitextToMarkdown("{{center|Centered}} tail\nNext."), "Centered\n\ntail\nNext.\n");
+    assert.equal(wikitextToMarkdown("== {{center|主文}} ==\n* {{right|署名}} と日付\n: {{c|注}} を見よ"), "## 主文\n- 署名 と日付\n注 を見よ\n");
+  });
+
+  it("大きさを変えるテンプレートは文の中で文字だけ。resize は値が二つなら二つ目が文字", () => {
+    assert.equal(wikitextToMarkdown("A {{larger|big}} and {{smaller|small}} word."), "A big and small word.\n");
+    assert.equal(wikitextToMarkdown("{{resize|120%|大きな字}}と{{resize|小さな字}}"), "大きな字と小さな字\n");
+    assert.equal(wikitextToMarkdown("{{larger|{{EUR|3}} each}}"), "€3 each\n");
+  });
+
   it("ほかのテンプレートは落とす。閉じていないものは残す", () => {
     assert.equal(wikitextToMarkdown("{{Pagebanner|a.jpg|star=yes}}\nA day out.{{related|Walks}}"), "A day out.\n");
     assert.equal(wikitextToMarkdown("Open {{Marker|name=X"), "Open {{Marker|name=X\n");
