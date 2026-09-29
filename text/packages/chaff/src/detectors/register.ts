@@ -4,16 +4,16 @@ export type Register = "polite" | "plain";
 
 const PREDICATE = new Set(["VERB", "ADJ", "AUX"]);
 
-const isPredicate = (token: Token | undefined): boolean => token !== undefined && PREDICATE.has(token.pos);
+const isPredicate = (token: Token): boolean => PREDICATE.has(token.pos);
 
 const isDependent = (token: Token | undefined): boolean => token?.features?.["NounType"] === "Dependent";
 
 /**
- * 述語に続く非自立名詞で終わる文末（「予約できること。」「前述したとおり。」）は、その述語が調子を持つ。
- * 要件や規程のである調は「〜こと。」で書く。
+ * 非自立名詞で終わる文末は、一つ手前の語まで見る。「予約できること。」「前述したとおり。」は手前の述語が調子を持つ。
+ * 要件や規程のである調は「〜こと。」で書く。「以下のとおり。」は手前も述語でないので、調子を持たないまま。
  */
-const withPredicate = (ending: readonly Token[], before: Token | undefined): readonly Token[] =>
-  before !== undefined && isPredicate(before) && isDependent(ending[0]) ? [before, ...ending] : ending;
+const withBefore = (ending: readonly Token[], before: Token | undefined): readonly Token[] =>
+  before !== undefined && isDependent(ending[0]) ? [before, ...ending] : ending;
 
 /**
  * 文末の語の調子。before は文末の語の一つ手前の語。
@@ -22,7 +22,7 @@ const withPredicate = (ending: readonly Token[], before: Token | undefined): rea
  * 書いた形でも原形でも当てる。「ください」の原形は「くださる」で、原形だけを見ると丁寧な文末を見落とす。
  */
 export const registerOf = (ending: readonly Token[], before: Token | undefined, polite: readonly string[]): Register | undefined => {
-  const judged = withPredicate(ending, before);
+  const judged = withBefore(ending, before);
   if (!judged.some(isPredicate)) return undefined;
   const isPolite = judged.some((token) => polite.includes(token.surface) || (token.lemma !== undefined && polite.includes(token.lemma)));
   return isPolite ? "polite" : "plain";

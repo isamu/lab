@@ -65,6 +65,10 @@ describe("L3 日本語", () => {
       assert.ok(!idsFor("運用を始めます。手順を作ります。研修も予定しています。\n\nMaaSサービス\n\nWeb3").includes("no-mixed-desumasu"));
     });
 
+    it("valid: 終止符で終わらない行は、述語で終わっていても文として数えない", () => {
+      assert.ok(!idsFor("運用を始めます。手順を作ります。効果を測定します。\n\n設定を確認する\n").includes("no-mixed-desumasu"));
+    });
+
     it("valid: 述語の無い文末（後ろへ渡す「以下の通り。」、名詞で終わる説明）は調子に数えない", () => {
       assert.ok(
         !idsFor("運用を始めます。手順を作ります。作業で出力するファイルは以下の通り。\n\n- 設定\n- 記録\n\n効果を測定します。").includes("no-mixed-desumasu"),

@@ -135,7 +135,7 @@ describe("slipsOf: 本文と箇条書きごとの少数派", () => {
   });
 
   it("指す順は judged の順で、群ごとではない", () => {
-    const entries = [judged("polite"), judged("polite", 50), judged("plain"), judged("polite", 50), judged("plain", 50), judged("polite")];
-    assert.deepEqual(indicesOf(entries), [2, 4]);
+    const entries = [judged("polite", 50), judged("polite"), judged("polite"), judged("plain"), judged("polite", 50), judged("plain", 50)];
+    assert.deepEqual(indicesOf(entries), [3, 5]);
   });
 });
