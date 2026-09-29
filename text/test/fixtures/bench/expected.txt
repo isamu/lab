@@ -27,7 +27,7 @@ required-sections              20     20       0             0
 sasete-itadaku                  3      3       0             0
 title-case-consistency          7      7       0             0
 total-mismatch                  8      8       0             0
-undefined-acronym               2      1       1             0
+undefined-acronym               2      2       0             0
 ja/blog  clean sample  clean
 ja/design  clean sample  clean
 ja/email  clean sample  clean
@@ -70,7 +70,7 @@ ja/design  number-skipped  found
 ja/design  defined-twice  found
 ja/design  polite-in-plain  found
 ja/design  no-nested  found
-ja/design  gloss-dropped  missed
+ja/design  gloss-dropped  found
 ja/design  latin-spaced  found
 ja/design  section-dropped  found
 ja/design  particle-doubled  found
