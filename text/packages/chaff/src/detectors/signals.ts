@@ -1,6 +1,7 @@
 import { proseText } from "../measure.ts";
 import { wordsOf } from "./structure.ts";
 import { compacted, placeOf } from "./gram-place.ts";
+import { notAcronymSpans } from "./acronym-context.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 
 const PER = 1000;
@@ -185,6 +186,7 @@ const spansOf = (text: string): Span[] => [
   ...[...text.matchAll(UNCASED_STRETCH)].filter((match) => SHOUTED_RUN.test(match[0])).map(spanOf),
   ...[...text.matchAll(IDENTIFIER)].filter((match) => /\d/u.test(match[0])).map(spanOf),
   ...[QUOTED_CAPS, REQUIREMENT_WORD, LICENCE].flatMap((pattern) => [...text.matchAll(pattern)].map(spanOf)),
+  ...notAcronymSpans(text),
 ];
 
 type AcronymHit = { readonly word: string; readonly hit: Hit };
@@ -196,76 +198,6 @@ const acronymsOf = (doc: ProseDocument): AcronymHit[] =>
       .filter((match) => !excluded.some((span) => span.start <= match.index && match.index + match[0].length <= span.end))
       .map((match) => ({ word: match[0], hit: { sentence, offset: sentence.span.start + match.index } }));
   });
-
-/** 読み手が説明なしで通じると見なしてよい語。展開すると逆に読みにくい。 */
-const COMMON = new Set([
-  "OK",
-  "NG",
-  "URL",
-  "API",
-  "CSS",
-  "HTML",
-  "JSON",
-  "YAML",
-  "HTTP",
-  "HTTPS",
-  "PDF",
-  "CPU",
-  "GPU",
-  "RAM",
-  "USB",
-  "AI",
-  "ID",
-  "FAQ",
-  "PR",
-  "OS",
-  "CLI",
-  "UI",
-  "UX",
-  "SQL",
-  "CSV",
-  "XML",
-  "TODO",
-  "NOTE",
-  // 通信と符号化。技術文書でなくても説明なしで通じる。
-  "DNS",
-  "IP",
-  "TCP",
-  "UDP",
-  "SSH",
-  "SSL",
-  "TLS",
-  "VPN",
-  "LAN",
-  "UTF",
-  "ASCII",
-  // 機器・形式・単位。
-  "PC",
-  "IT",
-  "SDK",
-  "IDE",
-  "PNG",
-  "JPEG",
-  "GIF",
-  "SVG",
-  "QR",
-  "GPS",
-  "SNS",
-  "TV",
-  "KB",
-  "MB",
-  "GB",
-  "TB",
-  // 役職と国・地域。
-  "CEO",
-  "CTO",
-  "CFO",
-  "US",
-  "UK",
-  "EU",
-  "UN",
-  "DNA",
-]);
 
 /**
  * 展開は略語の**すぐ隣**にあるときだけ認める。
@@ -318,9 +250,10 @@ const isExpanded = (body: string, acronym: string): boolean =>
 
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
+  const common = new Set((options.lexicon ?? []).map((entry) => entry.pattern));
   const seen = new Map<string, Hit>();
   acronymsOf(doc).forEach(({ word, hit }) => {
-    if (!COMMON.has(word) && !seen.has(word)) seen.set(word, hit);
+    if (!common.has(word) && !seen.has(word)) seen.set(word, hit);
   });
   const bare = [...seen.entries()].filter(([acronym]) => !isExpanded(body, acronym));
   if (bare.length < options.limit) return [];

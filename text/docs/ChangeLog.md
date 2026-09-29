@@ -20,6 +20,32 @@ mayor's report and a notice of 紀美野町 (committed: its site terms follow �
 HTML converter reads the element marked `role="main"` when a page has no `<main>`, so a town CMS's menus and text-size
 buttons are not read as the page's preamble.
 
+### The list of acronyms a reader knows is a word list (#170)
+
+`undefined-acronym`'s list of acronyms that need no spelling out (API, URL, CEO …) moved from code into each language
+package's `common-acronym` word list, so it can differ by language (NG is understood in Japanese documents). The
+contents are unchanged. The rule declares the list, so a language package without it does not run the rule and says why,
+instead of reporting API and URL.
+
+### A heading with no title is not a heading (#170)
+
+A heading with no letter or digit in it — `###` alone, `## ---`, `### ** **`, `## ※`, a heading holding only an
+attribute or an image — is a separator (often an empty `<h3>` left by a converter), not the start of a section a
+reader can find. chaff no longer counts it as a heading: the text on both sides stays in one section for every rule
+that reads sections, and `chaff tree` opens no untitled section for it. `preamble-length` therefore no longer takes an
+empty `###` for the start of the body: a press release whose only deeper heading is empty has no subheading, and gets
+no finding. Found on a GSA press release in the corpus.
+
+### `undefined-acronym` leaves times, amounts, US addresses and emphasised NOT / AND alone (#170)
+
+Capitals that belong to a fixed notation next to a number are no longer taken as acronyms: AM / PM and a time zone
+after a clock time (`3:30 PM`, `2pm ET`, `16:00 UTC`), a major currency code before or after an amount
+(`USD 1,000,000`, `250 EUR`), and a US state code in a postal address (`Kansas City, MO 64108`). Away from the number
+they are still reported, because the same letters are also real acronyms (PM for project manager, CA for certificate
+authority). A lone `NOT` or `AND` written in capitals is emphasis. TIP (a callout label, like NOTE) and USA (like US)
+join the common acronyms. A capitalised ordinary word such as CASH, FAIL or a template placeholder (LINK) is still
+reported: nothing in the text tells it apart from a real acronym that spells a word (CREDIT, SAFE, HUB).
+
 ### `preamble-length` does not count a page's date stamp (#170)
 
 A paragraph that is only a date (`2025年6月20日`, `April 23, 2026`), a label and a date (`Updated 2026-03-03`,
