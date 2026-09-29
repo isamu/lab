@@ -44,18 +44,19 @@ export const isPartOfLongerWord = (source: string, first: Token, second: Token):
 
 const surfacesOf = (tokens: readonly Token[]): string => tokens.map((token) => token.surface.toLowerCase()).join("\u0000");
 
-/** 語彙表の行は、重なった二語と、その前に続く語（sign in in の sign）。一語の行は重なりを言っていないので使わない。 */
-const MIN_ENTRY_WORDS = 2;
+/**
+ * 語彙表の行（had had、sign in in、set up up to）の k 語目と k+1 語目を重なりに重ねて、行の語が全部並んでいるか。
+ * 一語の行は重なりを言っていないので、重ねる位置が無い。
+ */
+const coversPairAt = (tokens: readonly Token[], at: number, words: readonly Token[]): boolean =>
+  Array.from({ length: words.length - 1 }, (_, k) => tokens.slice(at - k, at - k + words.length)).some((row) => surfacesOf(row) === surfacesOf(words));
 
 /**
- * 重なりの二つ目までの語の並び（ending）の終わりが、語彙表のどれかの行と同じか。
+ * tokens の at 語目と次の語の重なりを、語彙表のどれかの行がそのまま含むか。
  * 語彙表の語は、文と同じ解析器で分けたもの（entry.tokens）で比べる。書き方の空白の有無に左右されない。
  */
-export const isAllowed = (ending: readonly Token[], allowed: Lexicon): boolean =>
-  allowed.some((entry) => {
-    const words = entry.tokens ?? [];
-    return words.length >= MIN_ENTRY_WORDS && surfacesOf(ending.slice(-words.length)) === surfacesOf(words);
-  });
+export const isAllowed = (tokens: readonly Token[], at: number, allowed: Lexicon): boolean =>
+  allowed.some((entry) => coversPairAt(tokens, at, entry.tokens ?? []));
 
 export type Doubled = { readonly first: Token; readonly second: Token };
 
@@ -102,7 +103,7 @@ export const doubledIn = (source: string, tokens: readonly Token[], spaced: bool
   tokens.flatMap((second, index) => {
     const first = tokens[index - 1];
     if (first === undefined || !doubledAt(source, first, second, spaced)) return [];
-    if (isAllowed(tokens.slice(0, index + 1), allowedAt(tokens, index - 1, allowed))) return [];
+    if (isAllowed(tokens, index - 1, allowedAt(tokens, index - 1, allowed))) return [];
     return isNameBefore(first, second, opensSentence(tokens, index - 1)) ? [] : [{ first, second }];
   });
 

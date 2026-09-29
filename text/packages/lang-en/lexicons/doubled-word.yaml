@@ -4,8 +4,9 @@
 # the tagger reads as two determiners. "is is" is left out: "What it is is a plan" is rare in business text, "The
 # plan is is ready" is a common slip.
 #
-# A phrasal verb's particle followed by the same preposition ("sign in in advance") is listed with its verb, so that
-# "stored in in the folder" is still a slip. An entry matches the words that end at the second of the pair.
+# A phrasal verb's particle followed by the same preposition ("sign in in advance", "set up up to 10") is listed with
+# the words around it, so that "stored in in the folder" and "set up up the environment" are still slips. An entry
+# matches when the sentence has all its words in a row, the pair among them.
 id: doubled-word
 language: en
 entries:
@@ -26,3 +27,4 @@ entries:
   - pattern: logged on on
   - pattern: turn on on
   - pattern: turned on on
+  - pattern: up up to

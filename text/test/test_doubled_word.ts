@@ -141,17 +141,25 @@ describe("doubled-word — 純関数", () => {
     assert.deepEqual(pairs([w("sign", "VERB"), w("in", "ADP"), w("in", "ADP"), w("advance", "NOUN")], { allowed: phrasal }), []);
     assert.deepEqual(pairs([w("stored", "VERB"), w("in", "ADP"), w("in", "ADP"), w("the", "DET")], { allowed: phrasal }), ["in in@10"]);
     assert.deepEqual(pairs([w("in", "ADP"), w("in", "ADP")], { allowed: phrasal }), ["in in@3"]);
+    // 後ろの語まで書いた行（set up up to 10 と、set up up the environment）。
+    const upTo: Lexicon = [entry("up", "up", "to")];
+    assert.deepEqual(pairs([w("set", "VERB"), w("up", "ADP"), w("up", "ADP"), w("to", "PART"), w("10", "NUM")], { allowed: upTo }), []);
+    assert.deepEqual(pairs([w("set", "VERB"), w("up", "ADP"), w("up", "ADP"), w("the", "DET")], { allowed: upTo }), ["up up@7"]);
+    assert.deepEqual(pairs([w("to", "PART"), w("up", "ADP"), w("up", "ADP")], { allowed: upTo }), ["up up@6"]);
+    // 行の最後の語が重なりの一つ目になる並べかたは無い。
+    assert.deepEqual(pairs([w("up", "ADP"), w("up", "ADP"), w("to", "PART"), w("to", "PART")], { allowed: upTo }), ["to to@9"]);
   });
 
   it("語に分けていない語彙表の行は何も許さない", () => {
     const { tokens } = tokensOf([w("had", "VERB"), w("had", "VERB")]);
     const [first, second] = tokens;
     assert.ok(first !== undefined && second !== undefined);
-    assert.equal(isAllowed([first, second], [{ pattern: "had had" }]), false);
-    assert.equal(isAllowed([first, second], [entry("had", "had")]), true);
-    // 一語の行は重なりを言っていない。長すぎる行は並びに収まらない。
-    assert.equal(isAllowed([first, second], [entry("had")]), false);
-    assert.equal(isAllowed([first, second], [entry("we", "had", "had")]), false);
+    assert.equal(isAllowed([first, second], 0, [{ pattern: "had had" }]), false);
+    assert.equal(isAllowed([first, second], 0, [entry("had", "had")]), true);
+    // 一語の行は重なりを言っていない。前後の語まで書いた行は、その語が並びにあるときだけ。
+    assert.equal(isAllowed([first, second], 0, [entry("had")]), false);
+    assert.equal(isAllowed([first, second], 0, [entry("we", "had", "had")]), false);
+    assert.equal(isAllowed([first, second], 0, [entry("had", "had", "been")]), false);
   });
 
   it("空の並び、一語だけの並びでは何も出さない", () => {
@@ -199,6 +207,7 @@ describe("doubled-word — 英語", () => {
     assert.deepEqual(findingsOf("Please review The the draft before Friday.", en, "en"), ["1:19 The the"]);
     assert.deepEqual(findingsOf("The vendor had had had enough time to respond.", en, "en"), ["1:20 had had"]);
     assert.deepEqual(findingsOf("The file is stored in in the shared folder.", en, "en"), ["1:23 in in"]);
+    assert.deepEqual(findingsOf("Set up up the environment first.", en, "en"), ["1:8 up up"]);
   });
 
   it("valid: 文法が許す重なりと、並んでよい限定詞は数えない", () => {
@@ -212,6 +221,7 @@ describe("doubled-word — 英語", () => {
       "Please sign in in advance.",
       "Customers can opt in in May.",
       "Users who logged in in March kept access.",
+      "Set up up to 10 projects before launch.",
       "I told her my plan and her their schedule.",
       "All the reports are in, and both the leads agreed.",
       "It was such a long week.",
