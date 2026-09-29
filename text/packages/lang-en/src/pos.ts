@@ -157,11 +157,16 @@ const determinerFeatures = (entry: Tagged): Features => {
   return entry.pos === "DT" && ARTICLES.has(entry.value.toLowerCase()) ? { features: { PronType: "Art" } } : {};
 };
 
+/** 複数形の名詞は UD の Number=Plur。数の語がそれを数えていれば（five minutes）、one of のような言い回しではなく量。 */
+const PLURAL_TAG = new Set(["NNS", "NNPS"]);
+
+const nounOrDeterminerFeatures = (entry: Tagged): Features => (PLURAL_TAG.has(entry.pos) ? { features: { Number: "Plur" } } : determinerFeatures(entry));
+
 /** 過去分詞は VerbForm=Part。Based on the review, のような分詞の導入句を、命令形の並び（fix the parser, ship it）と見分ける。 */
 const featuresOf = (tagged: readonly Tagged[], at: number): Features => {
   const entry = tagged[at];
   if (entry === undefined) return {};
-  if (entry.pos !== "VBN") return determinerFeatures(entry);
+  if (entry.pos !== "VBN") return nounOrDeterminerFeatures(entry);
   return { features: isPassive(tagged, at) ? { VerbForm: "Part", Voice: "Pass" } : { VerbForm: "Part" } };
 };
 

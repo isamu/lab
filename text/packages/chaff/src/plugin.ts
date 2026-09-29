@@ -165,6 +165,11 @@ export type StructurePatterns = {
    * 数字と点だけの通し番号は core が言語を問わず読むので、それを数量と見分けられるのは言語パッケージだけ。
    */
   readonly countedAfter?: (number: string, rest: string) => boolean;
+  /**
+   * 本文の行頭の「3.11.0 を公開しました。」の 3.11.0 は、文の中の数で通し番号ではない。番号と後ろの文字列を渡し、文の続き
+   * （日本語なら助詞で始まる）なら true。小文字で始まる続きは core が言語を問わず読む。
+   */
+  readonly continuesSentence?: (number: string, rest: string) => boolean;
   /** 数の書き方（「二十二」「3」）を数にする。相対の参照の「前二項」「前条第二項」が使う。 */
   readonly number?: (text: string) => number | undefined;
 };
@@ -300,6 +305,8 @@ export type ProseDocument = {
   readonly paragraphs: readonly Paragraph[];
   /** 箇条書き 1 つ。項目の数と長さのばらつきを見る rule が使う。 */
   readonly lists: readonly BulletList[];
+  /** リンク（`[text](url)`、`<https://…>`、`[text][ref]`）の範囲。行き先が相対パスでもページ内でも、読み手が辿れる出典。 */
+  readonly links: readonly Span[];
   /** アダプタが持つ語彙表と、チームが chaff.yaml に足した語彙表。detector は出所を知らない。 */
   readonly lexicons: Readonly<Record<string, Lexicon>>;
   /** この種類の文書に無いと困る見出し。チームが chaff.yaml で決める。 */
