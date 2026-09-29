@@ -4,6 +4,20 @@ Newest first.
 
 ## Unreleased
 
+### A report or a proposal is checked for a padded opening and an empty closing (#290)
+
+`--genre business/report` checked less than naming no genre at all. `padded-intro` (「近年、」, "in today's fast-paced
+world") ran only on blog posts, so a report that opened with filler was reported under the default `blog/tech` and not
+once it was called a report. `padded-intro` now runs on `business/report` and `business/proposal` too, and
+`empty-conclusion` (a closing that only restates the body) is listed for `chaff test` there. Press releases, e-mails and
+meeting notes are left out: their first lines give a reason or the business at hand (a fee notice's 「昨今の人件費の上昇のため」
+was the only place the rule fired on a business document in the corpus), and their last lines are greetings.
+
+`agentless-passive` and `excessive-hedging` stay experimental. On the corpus's business documents `agentless-passive` is
+mostly wrong (descriptive, legal and relative-clause passives such as 「適用される」「分類されています」, "is assigned"), and
+`excessive-hedging` has never fired on a real document, which is not yet evidence that it is right. Pass
+`--experimental` to run them.
+
 ### `concrete-evidence-density` leaves the entries of a glossary alone (#170)
 
 A glossary or an A to Z style guide was reported entry by entry, because a definition carries no number, code or link.
