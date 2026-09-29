@@ -3,6 +3,7 @@ import { compacted, placeOf } from "./gram-place.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { proseText } from "../measure.ts";
+import { parallelDotCount } from "./middle-dot.ts";
 
 /**
  * 文字の並びを見る検出。漢字の連なりが住所かどうかだけは、形態素解析の地名と数で決める。
@@ -45,15 +46,13 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
     }));
 };
 
-const MIDDLE_DOT = /・/gu;
-
 /**
  * 中黒で並べると、どこまでが 1 つの項目か分からなくなる。
  * 「企画・開発・運用・保守体制」は、保守体制が 1 つなのか保守と体制なのか読めない。
  */
 export const middleDot: Detector = (doc, options): Finding[] =>
   doc.sentences
-    .map((sentence) => ({ sentence, count: [...proseText(sentence).matchAll(MIDDLE_DOT)].length }))
+    .map((sentence) => ({ sentence, count: parallelDotCount(sentence.text) }))
     .filter(({ count }) => count > options.limit)
     .map(({ sentence, count }) => ({
       rule: "no-nakaguro-parallel",

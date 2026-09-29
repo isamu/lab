@@ -10,8 +10,8 @@ name:
   en: Too many items joined by middle dots
 
 why:
-  ja: 中黒の並列は 1 組なら読めますが、1 文に何組も入ると、どの項目がどの組に属するのか追えなくなります。実文書では 1 文 4 個までは普通に読めていました。
-  en: One run of middle dots reads fine. Several runs in one sentence make it impossible to tell which item belongs to which group.
+  ja: 中黒の並列は 1 組なら読めますが、1 文に何組も入ると、どの項目がどの組に属するのか追えなくなります。実文書では 1 文 4 個までは普通に読めていました。行頭の「・」は箇条書きの印なので数えません。
+  en: One run of middle dots reads fine. Several runs in one sentence make it impossible to tell which item belongs to which group. A 「・」 that opens a line is a bullet and is not counted.
 
 message:
   ja: この文に中黒が {count} 個あります（{limit} 個まで）
