@@ -40,3 +40,13 @@ const PENDING = { en: "SRE, XYZ and CBA are pending.", ja: "SRE、XYZ、CBAは�
     });
   });
 });
+
+describe("common-acronym の無い言語", () => {
+  it("rule は動かず、語彙表が無いと理由を言う（通じる略語まで指摘しない）", () => {
+    const bare: LanguageAdapter = { ...en, lexicons: {} };
+    const result = runRules(buildDocument("t.md", `# T\n\n${PENDING.en} We use API here.\n`, bare), loadRules("en"), {}, true, "business/report");
+    assert.ok(!result.findings.some((finding) => finding.rule === "undefined-acronym"));
+    const skipped = result.skipped.find((entry) => entry.rule === "undefined-acronym");
+    assert.ok(skipped?.why.includes("common-acronym"));
+  });
+});

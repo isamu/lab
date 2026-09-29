@@ -250,7 +250,7 @@ const isExpanded = (body: string, acronym: string): boolean =>
 
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
-  const common = new Set((doc.lexicons["common-acronym"] ?? []).map((entry) => entry.pattern));
+  const common = new Set((options.lexicon ?? []).map((entry) => entry.pattern));
   const seen = new Map<string, Hit>();
   acronymsOf(doc).forEach(({ word, hit }) => {
     if (!common.has(word) && !seen.has(word)) seen.set(word, hit);
