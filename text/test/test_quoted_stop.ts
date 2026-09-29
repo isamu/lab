@@ -54,6 +54,9 @@ describe("閉じ引用符の内側で閉じた文の後で切る", () => {
 
   it("括弧が開いたままの所では切らない。閉じた後なら切る", () => {
     assert.deepEqual(textsOf('The rule (called "the test." The Court) applies.'), ['The rule (called "the test." The Court) applies.']);
+    assert.deepEqual(textsOf('The rule [called "the test." The Court] applies.'), ['The rule [called "the test." The Court] applies.']);
+    assert.deepEqual(textsOf('The rule {called "the test." The Court} applies.'), ['The rule {called "the test." The Court} applies.']);
+    assert.deepEqual(textsOf('The rule （called "the test." The Court） applies.'), ['The rule （called "the test." The Court） applies.']);
     assert.deepEqual(textsOf('The rule (the test) was "final." The Court agreed.'), ['The rule (the test) was "final."', "The Court agreed."]);
   });
 

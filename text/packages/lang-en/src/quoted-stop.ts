@@ -13,8 +13,9 @@ const QUOTED_STOP = /[.?!]["'”’]+(?=\s+[\p{Ps}\p{Pi}"']*\p{Lu})/gu;
 const WORD_START = /[\s\p{Ps}\p{Pi}"']/u;
 // 一字ずつピリオドを打った語（J. / U.S. / e.g.）は、略語の一覧に無くても略語。
 const INITIALS = /^(?:\p{L}\.)+$/u;
-const OPENERS = new Set(["(", "["]);
-const CLOSERS = new Set([")", "]"]);
+// 分割器が一組として読む括弧（( [ { （ ［ ｛ 【 《 「 『 …）は、Unicode の開き・閉じ括弧の分類にすべて入る。
+const OPENER = /\p{Ps}/u;
+const CLOSER = /\p{Pe}/u;
 
 const endsWithAbbreviation = (sentence: string, stop: number): boolean => {
   if (sentence[stop] !== ".") return false;
@@ -23,7 +24,7 @@ const endsWithAbbreviation = (sentence: string, stop: number): boolean => {
 };
 
 const bracketOpenAt = (sentence: string, index: number): boolean =>
-  Array.from(sentence.slice(0, index)).reduce((depth, char) => depth + (OPENERS.has(char) ? 1 : 0) - (CLOSERS.has(char) ? 1 : 0), 0) > 0;
+  Array.from(sentence.slice(0, index)).reduce((depth, char) => depth + (OPENER.test(char) ? 1 : 0) - (CLOSER.test(char) ? 1 : 0), 0) > 0;
 
 type Cut = { readonly end: number; readonly next: number };
 
