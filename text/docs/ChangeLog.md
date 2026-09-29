@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### A document profile chaff does not bundle stops the run instead of turning profiles off (#170)
+
+A `profile` in `chaff.yaml`, or in one of its `by_path` entries, that names no bundled profile (`profile: statue`)
+chose nothing and also stopped the profile from being chosen from the content, so it acted as `none` without a word:
+a statute lost its addresses and article captions. It now stops before checking anything, and says where the profile
+was written and which profiles there are, `none` included. Profiles come only from the bundled `profiles/*.yaml`, so
+there is nothing else a name could mean. The commands that read no document (`genres`, `init`, `rules`, `explain`,
+`relax`, `strict`, `off`, `skill`) still run with such a `chaff.yaml`.
+
 ### A genre chaff does not know stops the run instead of checking nothing (#170)
 
 A `genre` in `chaff.yaml`, or in one of its `by_path` entries, that is not in `npx chaff genres` matched no rule: chaff

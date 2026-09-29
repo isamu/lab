@@ -2,6 +2,7 @@
 // follows hostLanguage (chaff.yaml's language, else the terminal's locale).
 import type { Texts } from "./ui.ts";
 import type { GenreSetting } from "./genre-check.ts";
+import type { ProfileSetting } from "./profile/check.ts";
 
 /** Where a file's genre came from, as the header names it. */
 export type GenreSource = "--genre" | "by_path" | "config" | "default" | "front-matter" | "path" | "content";
@@ -85,6 +86,8 @@ export type CliText = {
   readonly unknownGenre: (genre: string, where: string, known: readonly string[]) => string;
   readonly genreWhere: (where: GenreSetting, files: readonly string[]) => string;
   readonly unreadFrontMatterGenre: (path: string, genre: string, known: readonly string[]) => string;
+  readonly unknownProfile: (profile: string, where: string, known: readonly string[]) => string;
+  readonly profileWhere: (where: ProfileSetting, files: readonly string[]) => string;
   readonly unknownRule: (id: string) => string;
   readonly unknownRuleWithList: (id: string, list: string) => string;
   readonly unnamed: string;
@@ -126,6 +129,9 @@ export const CLI_TEXT: Texts<CliText> = {
     },
     unreadFrontMatterGenre: (path, genre, known) =>
       `${path}: front matter の genre "${genre}" はジャンルではないので読みませんでした。使えるのは ${known.join("、")} です。`,
+    unknownProfile: (profile, where, known) =>
+      `文書の種類 "${profile}" はありません（${where}）。使えるのは ${known.join("、")} と、種類を使わない none です。`,
+    profileWhere: (where, files) => (where === "config" ? "chaff.yaml の profile" : `chaff.yaml の by_path、files: ${files.join(", ")}`),
     unknownRule: (id) => `${id} というルールはありません。npx chaff rules --json で一覧が出ます。`,
     unknownRuleWithList: (id, list) => `${id} というルールはありません。\n一覧:\n${list}`,
     unnamed: "(名前なし)",
@@ -176,6 +182,9 @@ export const CLI_TEXT: Texts<CliText> = {
     },
     unreadFrontMatterGenre: (path, genre, known) =>
       `${path}: the front matter's genre "${genre}" is not a genre, so it was not used. The genres are ${known.join(", ")}.`,
+    unknownProfile: (profile, where, known) =>
+      `There is no document profile "${profile}" (${where}). The profiles are ${known.join(", ")}; none uses no profile.`,
+    profileWhere: (where, files) => (where === "config" ? "profile in chaff.yaml" : `by_path in chaff.yaml, files: ${files.join(", ")}`),
     unknownRule: (id) => `There is no rule named ${id}. npx chaff rules --json lists them.`,
     unknownRuleWithList: (id, list) => `There is no rule named ${id}.\nRules:\n${list}`,
     unnamed: "(no name)",
