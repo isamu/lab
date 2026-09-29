@@ -11,6 +11,7 @@ import { allFindings, type CorpusFinding, type TeamWords } from "./corpus-findin
 import { MUTATIONS, type Mutation } from "./bench-mutations.ts";
 import type { PlantContext } from "./bench-text.ts";
 import { TEAM_JARGON, requiredSectionsOf } from "./bench-mutations-layout.ts";
+import { TEAM_PREFER } from "./bench-mutations-phrasing.ts";
 import { cleanLine, falseAlarms, formatTable, outcomeLine, outcomeOf, ruleTable, summaryChanges, type Outcome } from "./bench-score.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { resolve } from "../packages/chaff/src/levels.ts";
@@ -63,7 +64,7 @@ const contextOf = (sample: Sample): PlantContext => ({
 const runsOn = (sample: Sample, id: string): boolean =>
   loadRules(sample.language).some((rule) => rule.id === id && rule.use_for.some((target) => sample.genre.startsWith(target)));
 
-const teamOf = (sample: Sample): TeamWords => ({ jargon: TEAM_JARGON, requiredSections: requiredSectionsOf(sample.source) });
+const teamOf = (sample: Sample): TeamWords => ({ jargon: TEAM_JARGON, requiredSections: requiredSectionsOf(sample.source), prefer: TEAM_PREFER });
 
 const findingsOf = async (sample: Sample, source: string): Promise<CorpusFinding[]> =>
   allFindings(sample.path, source, sample.language, sample.genre, teamOf(sample));
