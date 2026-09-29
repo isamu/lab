@@ -24,6 +24,8 @@ da-area-data-map-format  clean
 da-area-data-model  latin-spacing 1, max-sentence-length 5
 da-data-strategy  agentless-passive 1, empty-intensifier 1, max-kanji-continuous 2, max-sentence-length 4
 da-legal-practice  heading-echo 1, latin-spacing 4, max-kanji-continuous 2, max-sentence-length 6, repeated-sentence-head 1
+da-machine-readability-ai-configuration  latin-spacing 2
+da-machine-readability-limitations  latin-spacing 7, max-sentence-length 1, no-mixed-desumasu 1
 da-machine-readability-output-format  latin-spacing 12, no-mixed-desumasu 1
 da-news-minister-handover  clean
 da-priority-policy-program  agentless-passive 1, max-kanji-continuous 1, no-doubled-joshi 1, undefined-acronym 3
@@ -33,6 +35,7 @@ da-recruitment-office-visit  max-kanji-continuous 4
 da-service-design-guidelines-2  agentless-passive 24, concrete-evidence-density 4, dangling-reference 1, latin-spacing 28, max-kanji-continuous 3, max-sentence-length 31, no-doubled-joshi 1, no-mixed-desumasu 1, undefined-acronym 7
 denkiyagi-ryohi-kitei  clean
 denkiyagi-shugyo-kisoku  agentless-passive 3, heading-echo 2, max-kanji-continuous 19, max-sentence-length 7, ngram-repetition 1, no-doubled-joshi 4
+dwango-nicolive-manifest-generator  latin-spacing 11, max-sentence-length 1, no-mixed-desumasu 2, undefined-acronym 3
 entaku-rb-4  agentless-passive 9, latin-spacing 1, no-mixed-desumasu 1
 entaku-rb-5  no-mixed-desumasu 1
 fprime-buffermanager-sdd  contraction-consistency 2, proper-noun-density 1
@@ -42,9 +45,14 @@ gitlab-jd-instructional-designer  agentless-passive 10, concrete-evidence-densit
 gitlab-meetings  agentless-passive 54, concrete-evidence-density 7, max-paragraph-length 2, max-sentence-length 44, proper-noun-density 1, title-case-consistency 1, undefined-acronym 11
 gitlab-values  agentless-passive 82, bold-density 1, concrete-evidence-density 57, expletive-construction 12, heading-echo 11, max-paragraph-length 25, max-sentence-length 141, undefined-acronym 10, unqualified-superlative 18
 gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, preamble-length 1, proper-noun-density 1
+gsi-maps-smartphone-howto  max-paragraph-length 1
 k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  latin-spacing 1, max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
+kimino-cleanup-notice  latin-spacing 1, max-kanji-continuous 3, max-sentence-length 2
+kimino-mayor-2022-09  agentless-passive 2, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1, sasete-itadaku 3
+koenote-requirements  latin-spacing 57, undefined-acronym 6
+nttcom-onboarding-week1  agentless-passive 1, concrete-evidence-density 6, hiragana-fukushi 2, latin-spacing 2, max-sentence-length 1, no-doubled-joshi 1, undefined-acronym 4, unqualified-superlative 2
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, ngram-repetition 1, proper-noun-density 1, undefined-acronym 25
 rfc9457  max-sentence-length 54, oxford-comma-consistency 1, proper-noun-density 1, undefined-acronym 22
@@ -57,6 +65,8 @@ sre-next-bunsho-kanri  agentless-passive 2
 sre-next-teikan  max-sentence-length 2, no-doubled-joshi 2, no-mixed-desumasu 1
 tc39-agenda-2026-07  adverb-overuse 1, agentless-passive 7, max-sentence-length 11, oxford-comma-consistency 1, preamble-length 1, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
 wikivoyage-belgian-coast-tram  expletive-construction 6, max-paragraph-length 23, max-sentence-length 37, proper-noun-density 1
+wikivoyage-ja-shikoku-henro  latin-spacing 1, max-kanji-continuous 1, no-mixed-desumasu 3, unqualified-superlative 2
+wikivoyage-ja-shimoda  latin-spacing 1
 wikivoyage-loop-art-tour  concrete-evidence-density 3, max-paragraph-length 7, max-sentence-length 7, proper-noun-density 1, title-case-consistency 1, unqualified-superlative 3
 wikivoyage-magnificent-mile  contraction-consistency 5, max-paragraph-length 6, max-sentence-length 8, proper-noun-density 1
 yamano-akashi-api  latin-spacing 15

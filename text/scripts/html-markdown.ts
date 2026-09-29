@@ -30,8 +30,17 @@ const isChromeLink = (link: string): boolean =>
 /** A list whose every item is only a link, such as a site menu or a table of contents. */
 const isNavigation = (body: string): boolean => (body.match(ANY_LINK) ?? []).length > 0 && stripTags(body.replace(ANY_LINK, "")).trim() === "";
 
-/** The page's own content: what is inside <main>, or the whole page when it has none. */
-const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? html;
+const MAIN_ROLE = String.raw`\brole\s*=\s*["']?main(?![\w-])`;
+
+/** The first element marked role="main" (a CMS's <article id="contents" role="main">), matched to its own closing tag. */
+const mainLandmark = (html: string): string | undefined => {
+  const tag = new RegExp(String.raw`<([a-z][a-z0-9]*)\b[^>]*${MAIN_ROLE}`, "iu").exec(html)?.[1];
+  if (tag === undefined) return undefined;
+  return elementRanges(html, tag).find((range) => new RegExp(`^<[^>]*${MAIN_ROLE}`, "iu").test(range.openTag))?.inner;
+};
+
+/** The page's own content: what is inside <main>, else inside the element marked role="main", else the whole page. */
+const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? mainLandmark(html) ?? html;
 
 type ElementRange = { readonly start: number; readonly end: number; readonly openTag: string; readonly inner: string };
 

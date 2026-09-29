@@ -11,6 +11,15 @@ the letters, not with the numbers: a writer spaces it the way they space `API �
 a document that spaces Latin words and glues numbers had `H30 等` reported as a spaced number. A run that starts with a
 digit (`3GBの`) still counts with the numbers. Found on デジタル庁's specification of the machine-readability checker.
 
+### The corpus has travel guides, an onboarding handbook, a design document, a requirements document, manuals and a town's notices (#170)
+
+`yarn corpus` now also runs on two ja.wikivoyage articles (四国八十八箇所巡礼, 下田市), NTT Com's onboarding handbook,
+dwango's design of its Kubernetes manifest generator, a requirements document for a note-taking app, a 国土地理院 how-to
+(URL only), two guides of デジタル庁's machine-readability checker (公共データ利用規約（第1.0版）with attribution), and a
+mayor's report and a notice of 紀美野町 (committed: its site terms follow 政府標準利用規約（第2.0版）, with attribution). The
+HTML converter reads the element marked `role="main"` when a page has no `<main>`, so a town CMS's menus and text-size
+buttons are not read as the page's preamble.
+
 ### `preamble-length` does not count a page's date stamp (#170)
 
 A paragraph that is only a date (`2025年6月20日`, `April 23, 2026`), a label and a date (`Updated 2026-03-03`,

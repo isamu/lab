@@ -62,6 +62,19 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown('<script>const tpl = "<main>";</script><main><p>本文。</p></main>'), "本文。\n");
   });
 
+  it('main 要素が無ければ role="main" の要素の中だけを読む。入れ子の同じ要素があっても閉じ位置を取り違えない', () => {
+    const html =
+      '<div class="tool"><p>スマートフォン版を表示</p><p>文字サイズ</p></div>' +
+      '<article id="contents" role="main"><h1>町民一斉清掃</h1><article><p>実施日は日曜日です。</p></article><p>雨天決行。</p></article>' +
+      "<article><p>このページの感想</p></article>";
+    assert.equal(htmlToMarkdown(html), "# 町民一斉清掃\n\n実施日は日曜日です。\n\n雨天決行。\n");
+    assert.equal(htmlToMarkdown('<div role="navigation"><p>メニュー</p></div><div><p>本文。</p></div>'), "本文。\n");
+    assert.equal(htmlToMarkdown("<div><p>ROLE=MAIN の話。</p></div>"), "ROLE=MAIN の話。\n");
+    assert.equal(htmlToMarkdown('<main><p>本文。</p></main><div role="main"><p>別の枠</p></div>'), "本文。\n");
+    assert.equal(htmlToMarkdown('<div><p>新着一覧</p></div><DIV ROLE="main"><p>本文。</p></DIV>'), "本文。\n");
+    assert.equal(htmlToMarkdown('<div role="main-menu"><p>メニュー</p></div><div><p>本文。</p></div>'), "メニュー\n\n本文。\n");
+  });
+
   it("aside・footer・form (検索窓) を落とす", () => {
     const html =
       '<form action="/search"><label for="q">サイト内検索</label><input id="q"></form><h1>計画</h1><p>本文。</p>' +
