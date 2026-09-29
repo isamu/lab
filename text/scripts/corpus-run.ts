@@ -1,6 +1,6 @@
-// Runs chaff over the corpus. Statutes: the structure rules, grouped by rule; a statute in force is internally
-// consistent, so every finding there is a candidate false positive to explain. Documents of other kinds: every rule
-// (as with --experimental) for the document's genre, summarised per rule and compared with corpus/expected.txt.
+// Runs chaff over the corpus. Statutes: the structure rules; a statute in force is internally consistent, so every
+// finding there is a candidate false positive to explain. Documents of other kinds: every rule (as with --experimental)
+// for the document's genre. Both are summarised per rule and compared with corpus/expected.txt.
 // --update rewrites that file; documents not fetched yet (yarn corpus:fetch) are skipped and keep their line.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -16,25 +16,25 @@ const languages = corpusLanguages(manifest);
 const verbose = process.argv.includes("--verbose");
 const update = process.argv.includes("--update");
 
-const summaryOf = (findings: readonly CorpusFinding[]): string => {
-  const counts = findings.reduce<Record<string, number>>((acc, finding) => ({ ...acc, [finding.rule]: (acc[finding.rule] ?? 0) + 1 }), {});
-  const parts = Object.entries(counts).map(([rule, count]) => `${rule} ${String(count)}`);
-  return parts.length === 0 ? "clean" : parts.join(", ");
-};
-
 const printFindings = (findings: readonly CorpusFinding[]): void => {
   if (verbose) findings.forEach((finding) => console.log(`  ${String(finding.line)}  ${finding.rule}  ${finding.message}`));
 };
 
+// 法令も、ほかの文書と同じく expected.txt と比べる。施行中の法令に構造の指摘が出れば、それは chaff の後退。
 const files = readdirSync(LAWS).filter((file) => file.endsWith(".txt"));
-await files.reduce<Promise<void>>(async (previous, file) => {
-  await previous;
+const lawLines = await files.reduce<Promise<string[]>>(async (previous, file) => {
+  const lines = await previous;
   const findings = await structureFindings(file, readFileSync(join(LAWS, file), "utf8"), languages.get(file) ?? "ja");
-  console.log(`${file}  ${summaryOf(findings)}`);
+  const line = summaryLine(
+    file,
+    findings.map((finding) => finding.rule),
+  );
+  console.log(line);
   printFindings(findings);
-}, Promise.resolve());
+  return [...lines, line];
+}, Promise.resolve([]));
 
-const actual = await docEntries(manifest).reduce<Promise<string[]>>(async (previous, doc) => {
+const docLines = await docEntries(manifest).reduce<Promise<string[]>>(async (previous, doc) => {
   const lines = await previous;
   const path = docPath(CORPUS, doc);
   if (!existsSync(path)) {
@@ -51,7 +51,8 @@ const actual = await docEntries(manifest).reduce<Promise<string[]>>(async (previ
   return [...lines, line];
 }, Promise.resolve([]));
 
-const known = new Set(docEntries(manifest).map((doc) => doc.id));
+const actual = [...lawLines, ...docLines];
+const known = new Set([...files, ...docEntries(manifest).map((doc) => doc.id)]);
 const expected = existsSync(EXPECTED)
   ? readFileSync(EXPECTED, "utf8")
       .split("\n")

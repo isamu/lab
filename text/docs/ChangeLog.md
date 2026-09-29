@@ -12,6 +12,13 @@ quantities, prices, phone numbers and listings that its templates carried: `{{km
 `{{JPY}}` as a yen amount, `{{phone}}` as the number, and `{{vCard}}` as a listing's name and description, where
 before each left a hole in the sentence (「全長の道のりです」「1日に約歩く」).
 
+### CI fails when a committed document's result changes (#170)
+
+`chaff ci` now runs `yarn corpus` and `yarn bench`. The corpus compares the committed documents (statutes and
+`corpus/docs`) with `corpus/expected.txt`, and statutes are now compared too instead of only printed; documents kept
+as URLs are compared locally after `yarn corpus:fetch`. A change that is intended is accepted with `--update` in the
+same PR.
+
 ### `no-mixed-desumasu` judges only endings with a predicate, and each list on its own (#170)
 
 A sentence whose ending has no predicate — a lead-in such as `出力するファイルは以下の通り。`, a gloss such as
