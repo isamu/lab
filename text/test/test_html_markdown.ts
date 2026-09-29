@@ -447,6 +447,11 @@ describe("htmlToMarkdown: pre (整形済みの文字)", () => {
     assert.equal(htmlToMarkdown(html), "## Setup\n\n````\n# install\n```\nrun\n````\n\n## Next\n\nGo.\n");
   });
 
+  it("一つのページの複数の pre は、それぞれ自分の場所で自分の種類のまま", () => {
+    const html = "<pre>Roses.\nViolets.</pre><p>Then:</p><pre><code>x = 1</code></pre><pre>Fin.</pre>";
+    assert.equal(htmlToMarkdown(html), "Roses.\n\nViolets.\n\nThen:\n\n```\nx = 1\n```\n\nFin.\n");
+  });
+
   it("空の pre は何も残さない。pre の無いページはこれまでどおり", () => {
     assert.equal(htmlToMarkdown("<p>A.</p><pre>\n  \n</pre><pre><code></code></pre><p>B.</p>"), "A.\n\nB.\n");
     assert.equal(htmlToMarkdown("<p>Costs rose\n in May.</p>"), "Costs rose in May.\n");

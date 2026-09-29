@@ -12,8 +12,20 @@ export type StashedPage = { readonly html: string; readonly blocks: readonly Pre
 const PLACE_START = "\u0005";
 const PLACE_TEXT = "\u0006";
 
-// The opening tags right before the <pre> (its wrappers, with nothing between them) are read for a declared language.
-const PRE = /((?:<[a-z][a-z0-9-]*\b[^>]*>\s*)*)<pre\b([^>]*)>([\s\S]*?)<\/pre\s*>/giu;
+const PRE = /<pre\b([^>]*)>([\s\S]*?)<\/pre\s*>/giu;
+
+const WRAPPER = /^<[a-z][a-z0-9-]*\b[^>]*>\s*$/iu;
+
+// A highlighter names the language on the <pre> or on a wrapper or two around it (Sphinx: two <div>s); the bound
+// keeps a long run of opening tags from being walked back for every <pre>.
+const MAX_WRAPPERS = 4;
+
+/** The opening tags right before end, with nothing but whitespace between them: the elements wrapping a <pre>. */
+const wrappersBefore = (html: string, end: number, depth: number): string => {
+  const open = html.lastIndexOf("<", end - 1);
+  if (depth === 0 || open < 0 || !WRAPPER.test(html.slice(open, end))) return "";
+  return `${wrappersBefore(html, open, depth - 1)}${html.slice(open, end)}`;
+};
 
 const SOLE_CODE = /^\s*<code\b[^>]*>[\s\S]*<\/code\s*>\s*$/iu;
 
@@ -56,14 +68,15 @@ const placeholder = (index: number, inner: string): string => `${PLACE_START}${S
  */
 export const withPreformattedStashed = (html: string): StashedPage => {
   const found = [...html.matchAll(PRE)];
-  const blocks = found.map(([, wrappers = "", attributes = "", inner = ""]) => ({
-    isCode: isSoleCode(inner) || declaresLanguage(`${wrappers}<pre${attributes}>`),
-    lines: textLinesOf(inner),
-  }));
-  const stashed = html.replace(PRE, (_whole: string, wrappers: string, attributes: string, inner: string, at: number) => {
-    const index = found.findIndex((match) => match.index === at);
-    return `${wrappers}<pre${attributes}>${placeholder(index, inner)}</pre>`;
+  const blocks = found.map((match) => {
+    const [, attributes = "", inner = ""] = match;
+    return { isCode: isSoleCode(inner) || declaresLanguage(`${wrappersBefore(html, match.index, MAX_WRAPPERS)}<pre${attributes}>`), lines: textLinesOf(inner) };
   });
+  const indexAt = new Map(found.map((match, index) => [match.index, index]));
+  const stashed = html.replace(
+    PRE,
+    (_whole: string, attributes: string, inner: string, at: number) => `<pre${attributes}>${placeholder(indexAt.get(at) ?? -1, inner)}</pre>`,
+  );
   return { html: stashed, blocks };
 };
 
