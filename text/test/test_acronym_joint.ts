@@ -1,12 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { abbreviates, expansionAt, type DefinitionWords } from "../packages/chaff/src/detectors/acronym-expansion.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 1 つの略語を空白で繋いだ 2 語以上で書き、括弧の中に置く形（overnight reverse repurchase agreement (ON RRP)）。
 // FOMC の議事録で ON と RRP が別々に、説明の無い略語として報告されていた。例文は自作。
@@ -89,27 +86,22 @@ describe("abbreviates", () => {
   });
 });
 
-const reported = (adapter: LanguageAdapter, source: string): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
-
 describe("undefined-acronym と空白で繋いだ略語", () => {
   it("en: 括弧で展開した ON RRP は、後ろで並べて使っても数えない", () => {
     const source =
       "# Notes\n\nTake-up at the overnight reverse repurchase agreement (ON RRP) facility fell. Usage of the ON RRP facility was flat. The SRE joins.\n";
-    assert.deepEqual(reported(en, source), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(en, source), ["SRE"]);
   });
 
   it("en: 括弧の中に小文字の語があれば、展開ではないので数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nThe overnight reverse repurchase facility (see ON RRP) fell. The SRE joins.\n"), ["ON", "RRP", "SRE"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe overnight reverse repurchase facility (see ON RRP) fell. The SRE joins.\n"), ["ON", "RRP", "SRE"]);
   });
 
   it("en: 空白で並べた略語の列挙は展開ではないので数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nThe regulators (SEC FINRA) issued guidance. The SRE joins.\n"), ["SEC", "FINRA", "SRE"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe regulators (SEC FINRA) issued guidance. The SRE joins.\n"), ["SEC", "FINRA", "SRE"]);
   });
 
   it("ja: 英語の名前を全角の括弧で展開した ON RRP は数えない", () => {
-    assert.deepEqual(reported(ja, "# 手引き\n\novernight reverse repurchase agreement（ON RRP）の残高を見ます。SREも見ます。\n"), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(ja, "# 手引き\n\novernight reverse repurchase agreement（ON RRP）の残高を見ます。SREも見ます。\n"), ["SRE"]);
   });
 });

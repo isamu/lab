@@ -1,11 +1,11 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { DETECTORS } from "../packages/chaff/src/detectors/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -13,11 +13,6 @@ import type { Lexicon, LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 数字の隣でだけ略語から外す語（meridiem、time-zone、currency-code、us-state-code）と、単独で強調の語（emphasis-word）。
 // 語彙表のどの語も、それぞれの書き方の中で外れ、書き方の外では数えられ、語彙表から抜けば書き方の中でも数えられる。例文はすべて自作。
-
-const reported = (adapter: LanguageAdapter, source: string): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
 
 const listOf = (adapter: LanguageAdapter, id: string): string[] => (adapter.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -49,18 +44,18 @@ const commonOf = (adapter: LanguageAdapter): Set<string> => new Set(listOf(adapt
 const assertInside = (adapter: LanguageAdapter, id: string, notation: Notation): void =>
   listOf(adapter, id)
     .flatMap((word) => notation.inside.map((place) => place(word)))
-    .forEach((phrase) => assert.deepEqual(reported(adapter, sentence(adapter, phrase)), ["SRE"], phrase));
+    .forEach((phrase) => assert.deepEqual(reportedAcronyms(adapter, sentence(adapter, phrase)), ["SRE"], phrase));
 
 const assertOutside = (adapter: LanguageAdapter, id: string, outside: (word: string) => string): void =>
   listOf(adapter, id).forEach((word) => {
     const expected = commonOf(adapter).has(word) ? ["SRE"] : [word, "SRE"];
-    assert.deepEqual(reported(adapter, sentence(adapter, outside(word))), expected, outside(word));
+    assert.deepEqual(reportedAcronyms(adapter, sentence(adapter, outside(word))), expected, outside(word));
   });
 
 const assertDropped = (adapter: LanguageAdapter, id: string, place: (word: string) => string): void =>
   listOf(adapter, id)
     .filter((word) => !commonOf(adapter).has(word))
-    .forEach((word) => assert.deepEqual(reported(without(adapter, id, word), sentence(adapter, place(word))), [word, "SRE"], place(word)));
+    .forEach((word) => assert.deepEqual(reportedAcronyms(without(adapter, id, word), sentence(adapter, place(word))), [word, "SRE"], place(word)));
 
 const SUITES = [en, ja].flatMap((adapter) => Object.entries(NOTATIONS).map(([id, notation]) => ({ adapter, id, notation })));
 
@@ -139,6 +134,6 @@ describe("undefined-acronym は読む語彙表をすべて宣言する", () => {
 
 describe("強調の ONLY", () => {
   it("en: 引用の中の大文字の ONLY は数えず、SRE は数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nThe survey asks, “Are you ONLY called to work as needed?” The SRE joins.\n"), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe survey asks, “Are you ONLY called to work as needed?” The SRE joins.\n"), ["SRE"]);
   });
 });

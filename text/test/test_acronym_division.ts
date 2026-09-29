@@ -1,9 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { notAcronymSpansOf, type NotationWords } from "../packages/chaff/src/detectors/acronym-context.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -86,11 +84,6 @@ describe("区切りの名前の後ろのローマ数字", () => {
   });
 });
 
-const reported = (adapter: LanguageAdapter, source: string): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
-
 const without = (adapter: LanguageAdapter, word: string): LanguageAdapter => ({
   ...adapter,
   lexicons: { ...adapter.lexicons, "numbered-division": (adapter.lexicons["numbered-division"] ?? []).filter((entry) => entry.pattern !== word) },
@@ -109,17 +102,19 @@ const DOCS: Readonly<Record<string, (phrase: string) => string>> = {
   describe(`undefined-acronym と区切りの番号（${adapter.id}）`, () => {
     it("valid: 番号のローマ数字は数えず、SRE は数える", () => {
       ["Part II", "Section VIII", "Title IV", "Chapter XI", "Appendix III", "PART II"].forEach((phrase) =>
-        assert.deepEqual(reported(adapter, doc(phrase)), ["SRE"], phrase),
+        assert.deepEqual(reportedAcronyms(adapter, doc(phrase)), ["SRE"], phrase),
       );
     });
 
     it("invalid: ローマ数字として読める略語も、番号の位置でなければ数える", () => {
       const common = new Set(listOf(adapter, "common-acronym"));
-      COLLISIONS.filter((word) => !common.has(word)).forEach((word) => assert.deepEqual(reported(adapter, doc(`the ${word} report`)), [word, "SRE"], word));
+      COLLISIONS.filter((word) => !common.has(word)).forEach((word) =>
+        assert.deepEqual(reportedAcronyms(adapter, doc(`the ${word} report`)), [word, "SRE"], word),
+      );
     });
 
     it("invalid: 語彙表から抜いた名前の後ろでは数える", () => {
-      assert.deepEqual(reported(without(adapter, "Part"), doc("PART VIII")), ["PART", "VIII", "SRE"]);
+      assert.deepEqual(reportedAcronyms(without(adapter, "Part"), doc("PART VIII")), ["PART", "VIII", "SRE"]);
     });
   });
 });

@@ -1,12 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { dottedNameSpans } from "../packages/chaff/src/detectors/dotted-name.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // . で空白を挟まずに繋いだ名前（GOV.UK、SAM.gov）の中の大文字は略語ではない。例文は自作。
 // GOV.UK の文書で GOV が、CRS の報告書で SAM.gov の SAM が、説明の無い略語として報告されていた。
@@ -41,21 +38,16 @@ describe("dottedNameSpans", () => {
   });
 });
 
-const reported = (adapter: LanguageAdapter, source: string): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
-
 describe("undefined-acronym とドメイン名", () => {
   it("en: GOV.UK の GOV は数えず、文の終わりの略語は数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nThe guidance is on GOV.UK now. It was reported by the IRS. Then it moved.\n"), ["IRS"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe guidance is on GOV.UK now. It was reported by the IRS. Then it moved.\n"), ["IRS"]);
   });
 
   it("en: 名前の中で数えなくても、同じ略語が名前の外にあれば数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nRegister at SAM.gov first. The SAM record then opens.\n"), ["SAM"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nRegister at SAM.gov first. The SAM record then opens.\n"), ["SAM"]);
   });
 
   it("ja: GOV.UK の GOV は数えず、SRE は数える", () => {
-    assert.deepEqual(reported(ja, "# 手引き\n\nGOV.UKで公開します。SREも見ます。\n"), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(ja, "# 手引き\n\nGOV.UKで公開します。SREも見ます。\n"), ["SRE"]);
   });
 });
