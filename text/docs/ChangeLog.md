@@ -2,6 +2,19 @@
 
 Newest first.
 
+## Unreleased
+
+### `latin-spacing` does not count the space after a postal code or an address number (#170)
+
+The space in 「〒100-8916 東京都千代田区」 was counted as a space between a number and Japanese, because only a code with a
+part starting with 0 (〒102-0094) was read as a code. The 〒 mark now marks the number after it as a label, as ※ and 「
+already did. A hyphenated number right after a place that has come down below the prefecture to a city, ward or town
+(「千代田区紀尾井町1-3 東京ガーデンテラス」) is an address number, not a range, and is not counted either; the prefecture units
+come from the `prefecture-unit` list. A range stays a quantity: after a region or a prefecture alone (「北海道2-3 営業日」
+「東京都2-3 営業日」), after no place at all (「3-5 営業日」), with no hyphen (「千代田区23 番」), or with a counter after it
+(「1-3 日」). Found on 厚生労働省's call for public
+comment and デジタル庁's privacy policy.
+
 ## 0.14.0 — 2026-09-29
 
 Japanese read more closely by morphology: 「3つ」「三つ」 are a number and a counter, a line opening with 「1.5 万人」 is a
@@ -15,17 +28,6 @@ documents kept only as URLs.
 📦 [`chaffjs@0.14.0`](https://www.npmjs.com/package/chaffjs/v/0.14.0) ·
 [`@chaffjs/lang-ja@0.13.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.13.0) ·
 [`@chaffjs/lang-en@0.12.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.12.0)
-
-### `latin-spacing` does not count the space after a postal code or an address number (#170)
-
-The space in 「〒100-8916 東京都千代田区」 was counted as a space between a number and Japanese, because only a code with a
-part starting with 0 (〒102-0094) was read as a code. The 〒 mark now marks the number after it as a label, as ※ and 「
-already did. A hyphenated number right after a place that has come down below the prefecture to a city, ward or town
-(「千代田区紀尾井町1-3 東京ガーデンテラス」) is an address number, not a range, and is not counted either; the prefecture units
-come from the `prefecture-unit` list. A range stays a quantity: after a region or a prefecture alone (「北海道2-3 営業日」
-「東京都2-3 営業日」), after no place at all (「3-5 営業日」), with no hyphen (「千代田区23 番」), or with a counter after it
-(「1-3 日」). Found on 厚生労働省's call for public
-comment and デジタル庁's privacy policy.
 
 ### The corpus HTML converter drops a site header that has no landmark (#170)
 
