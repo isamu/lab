@@ -79,6 +79,54 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown('<div role="document main"><p>本文。</p></div><div><p>所在地</p></div>'), "本文。\n\n所在地\n");
   });
 
+  it("main も role=main も無ければ、入れ子でない article が一つだけのときその中を読む。二つあればページ全体", () => {
+    const html =
+      '<div role="region" aria-label="Announcement"><span>We are now a nonprofit!</span> <a href="/about">Learn more</a></div>' +
+      '<header><a href="/"><span>Back to the site</span></a></header><div><a href="/license">License: CC BY 4.0</a><div>id:1234 [cs.XX]</div></div>' +
+      "<article><h1>Report</h1><p>Text.</p><article><p>Reply.</p></article></article><div><p>Contact</p></div>";
+    assert.equal(htmlToMarkdown(html), "# Report\n\nText.\n\nReply.\n");
+    assert.equal(htmlToMarkdown("<p>Site</p><article><p>One.</p></article><article><p>Two.</p></article>"), "Site\n\nOne.\n\nTwo.\n");
+    assert.equal(htmlToMarkdown("<article><p>Card.</p></article><main><p>Body.</p></main>"), "Body.\n");
+    assert.equal(htmlToMarkdown('<article><p>Card.</p></article><div role="main"><p>Body.</p></div>'), "Body.\n");
+    assert.equal(htmlToMarkdown("<div><p>Now a nonprofit!</p></div><article><p>Title.</p><p>Text.</p></article>"), "Title.\n\nText.\n");
+  });
+
+  it("h1 が article の外にあれば、article は中身の一部なのでページ全体を読む", () => {
+    assert.equal(htmlToMarkdown("<h1>Report</h1><article><p>Text.</p></article><p>Lead.</p>"), "# Report\n\nText.\n\nLead.\n");
+    assert.equal(htmlToMarkdown("<article><h1>Report</h1><p>Text.</p></article><h1>Other</h1><p>More.</p>"), "# Report\n\nText.\n\n# Other\n\nMore.\n");
+  });
+
+  it("href が javascript: のリンク (印刷・共有のボタン) は一行に一つなら落とし、文の中なら文字を残す", () => {
+    const html =
+      '<p><a href="javascript:void(0)" onclick="window.print();return false;"><span class="i"></span>印刷</a></p><h1>お知らせ</h1>' +
+      '<p>詳しくは<a href="javascript:openMap()">地図</a>をご覧ください。</p><p><a href=\' JavaScript:share()\'>共有</a> | <a href="#top">上へ</a></p>' +
+      '<p><a href="/javascript-guide.html">JavaScript の手引き</a></p><p><a href=javascript.html>JS</a></p>';
+    assert.equal(htmlToMarkdown(html), "# お知らせ\n\n詳しくは地図をご覧ください。\n\nJavaScript の手引き\n\nJS\n");
+  });
+
+  it("表題 (h1) の前にあり、リンクだけの項目が二つ以上続いて最後の項目が表題そのものの一覧はパンくずとして落とす", () => {
+    const trail = '<ol><li><a href="/">ホーム</a></li><li><a href="/news/">お知らせ</a></li><li> 窓口の&amp;変更 </li></ol>';
+    assert.equal(htmlToMarkdown(`${trail}<h1><span>窓口の</span>&amp;変更</h1><p>本文。</p>`), "# 窓口の&変更\n\n本文。\n");
+    assert.equal(htmlToMarkdown(`<ul><li><a href="/">Top</a></li></ul>${trail}<h1>窓口の&amp;変更</h1><p>本文。</p>`), "# 窓口の&変更\n\n本文。\n");
+  });
+
+  it("表題の後ろ・最後の項目が表題と違う・リンクを含む・前のリンクが一つだけ・前の項目に文が混じる・h1 が無い一覧は残す", () => {
+    const links = '<li><a href="/a">A</a></li><li><a href="/b">B</a></li>';
+    assert.equal(
+      htmlToMarkdown(`<h1>Submit Appeal</h1><p>Read these in order.</p><ol>${links}<li>Submit Appeal</li></ol>`),
+      "# Submit Appeal\n\nRead these in order.\n\n- A\n- B\n- Submit Appeal\n",
+    );
+    const title = "<h1>Help</h1><p>Text.</p>";
+    assert.equal(htmlToMarkdown(`<ul>${links}<li>Call us for C</li></ul>${title}`), "- A\n- B\n- Call us for C\n\n# Help\n\nText.\n");
+    assert.equal(htmlToMarkdown(`<ul>${links}<li>Help <a href="/c">now</a></li></ul>${title}`), "- A\n- B\n- Help now\n\n# Help\n\nText.\n");
+    assert.equal(htmlToMarkdown(`<ul><li><a href="/">Home</a></li><li>Help</li></ul>${title}`), "- Home\n- Help\n\n# Help\n\nText.\n");
+    assert.equal(
+      htmlToMarkdown(`<ul><li><a href="/a">A</a> first</li><li><a href="/b">B</a></li><li>Help</li></ul>${title}`),
+      "- A first\n- B\n- Help\n\n# Help\n\nText.\n",
+    );
+    assert.equal(htmlToMarkdown(`<ul>${links}<li>Help</li></ul><h2>Help</h2><p>Text.</p>`), "- A\n- B\n- Help\n\n## Help\n\nText.\n");
+  });
+
   it("aside・footer・form (検索窓) を落とす", () => {
     const html =
       '<form action="/search"><label for="q">サイト内検索</label><input id="q"></form><h1>計画</h1><p>本文。</p>' +

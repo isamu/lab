@@ -2,6 +2,7 @@ import { charLength, lengthOf } from "../measure.ts";
 import type { BulletList, Detector, Finding, Paragraph, ProseDocument, Section, Span } from "../plugin.ts";
 import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
+import { preambleParagraphs } from "../preamble-paragraphs.ts";
 
 /**
  * ばらつきは変動係数（標準偏差 ÷ 平均）で測る。
@@ -116,7 +117,7 @@ const withoutDateStamps = (doc: ProseDocument, paragraphs: readonly Paragraph[])
 export const preambleLength: Detector = (doc, options): Finding[] => {
   const body = doc.sections.find((section) => section.depth >= 2);
   if (body === undefined) return [];
-  const all = doc.paragraphs.filter((paragraph) => paragraph.span.start < body.span.start);
+  const all = preambleParagraphs(doc.paragraphs, body.span.start);
   if (all.length <= options.limit) return [];
   const before = withoutDateStamps(doc, all);
   if (before.length <= options.limit) return [];
