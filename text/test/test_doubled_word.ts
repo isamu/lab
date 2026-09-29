@@ -136,13 +136,22 @@ describe("doubled-word — 純関数", () => {
     assert.deepEqual(pairs([w("is", "VERB"), w("is", "VERB")], { allowed }), ["is is@3"]);
     assert.deepEqual(pairs([w("had", "VERB"), w("had", "VERB"), w("had", "VERB")], { allowed }), ["had had@8"]);
     assert.deepEqual(pairs([w("it", "PRON"), w("had", "VERB"), w("had", "VERB"), w("been", "VERB")], { allowed }), []);
+    // 前の語まで書いた行は、その語が前にあるときだけ（sign in in advance と、stored in in the folder）。
+    const phrasal: Lexicon = [entry("sign", "in", "in")];
+    assert.deepEqual(pairs([w("sign", "VERB"), w("in", "ADP"), w("in", "ADP"), w("advance", "NOUN")], { allowed: phrasal }), []);
+    assert.deepEqual(pairs([w("stored", "VERB"), w("in", "ADP"), w("in", "ADP"), w("the", "DET")], { allowed: phrasal }), ["in in@10"]);
+    assert.deepEqual(pairs([w("in", "ADP"), w("in", "ADP")], { allowed: phrasal }), ["in in@3"]);
   });
 
   it("語に分けていない語彙表の行は何も許さない", () => {
     const { tokens } = tokensOf([w("had", "VERB"), w("had", "VERB")]);
     const [first, second] = tokens;
     assert.ok(first !== undefined && second !== undefined);
-    assert.equal(isAllowed(first, second, [{ pattern: "had had" }]), false);
+    assert.equal(isAllowed([first, second], [{ pattern: "had had" }]), false);
+    assert.equal(isAllowed([first, second], [entry("had", "had")]), true);
+    // 一語の行は重なりを言っていない。長すぎる行は並びに収まらない。
+    assert.equal(isAllowed([first, second], [entry("had")]), false);
+    assert.equal(isAllowed([first, second], [entry("we", "had", "had")]), false);
   });
 
   it("空の並び、一語だけの並びでは何も出さない", () => {
@@ -159,7 +168,7 @@ describe("doubled-word — 純関数", () => {
     assert.equal(gapBetween(source, c, d), "text");
     assert.equal(isPartOfLongerWord(source, a, b), false);
     assert.equal(isPartOfLongerWord(source, c, d), false);
-    assert.equal(doubledAt(source, a, b, true, []), false);
+    assert.equal(doubledAt(source, a, b, true), false);
     assert.equal(startsTitle(a, b), false);
   });
 });
@@ -189,6 +198,7 @@ describe("doubled-word — 英語", () => {
     assert.deepEqual(findingsOf("Please review the The draft.", en, "en"), ["1:19 the The"]);
     assert.deepEqual(findingsOf("Please review The the draft before Friday.", en, "en"), ["1:19 The the"]);
     assert.deepEqual(findingsOf("The vendor had had had enough time to respond.", en, "en"), ["1:20 had had"]);
+    assert.deepEqual(findingsOf("The file is stored in in the shared folder.", en, "en"), ["1:23 in in"]);
   });
 
   it("valid: 文法が許す重なりと、並んでよい限定詞は数えない", () => {
@@ -199,6 +209,9 @@ describe("doubled-word — 英語", () => {
       "We sent her our report before the meeting.",
       "Please give her her copy of the signed agreement.",
       "No no, we should not deploy today.",
+      "Please sign in in advance.",
+      "Customers can opt in in May.",
+      "Users who logged in in March kept access.",
       "I told her my plan and her their schedule.",
       "All the reports are in, and both the leads agreed.",
       "It was such a long week.",

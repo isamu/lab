@@ -3,6 +3,9 @@
 # ("We do do manual reviews"); "her her" an object and a possessive ("give her her copy"); "no no" an interjection
 # the tagger reads as two determiners. "is is" is left out: "What it is is a plan" is rare in business text, "The
 # plan is is ready" is a common slip.
+#
+# A phrasal verb's particle followed by the same preposition ("sign in in advance") is listed with its verb, so that
+# "stored in in the folder" is still a slip. An entry matches the words that end at the second of the pair.
 id: doubled-word
 language: en
 entries:
@@ -11,3 +14,15 @@ entries:
   - pattern: do do
   - pattern: her her
   - pattern: no no
+  - pattern: sign in in
+  - pattern: signed in in
+  - pattern: log in in
+  - pattern: logged in in
+  - pattern: opt in in
+  - pattern: opted in in
+  - pattern: check in in
+  - pattern: checked in in
+  - pattern: log on on
+  - pattern: logged on on
+  - pattern: turn on on
+  - pattern: turned on on

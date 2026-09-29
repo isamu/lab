@@ -44,11 +44,18 @@ export const isPartOfLongerWord = (source: string, first: Token, second: Token):
 
 const surfacesOf = (tokens: readonly Token[]): string => tokens.map((token) => token.surface.toLowerCase()).join("\u0000");
 
-/** 語彙表の語は、文と同じ解析器で分けたもの（entry.tokens）で比べる。書き方の空白の有無に左右されない。 */
-export const isAllowed = (first: Token, second: Token, allowed: Lexicon): boolean => {
-  const pair = surfacesOf([first, second]);
-  return allowed.some((entry) => entry.tokens !== undefined && surfacesOf(entry.tokens) === pair);
-};
+/** 語彙表の行は、重なった二語と、その前に続く語（sign in in の sign）。一語の行は重なりを言っていないので使わない。 */
+const MIN_ENTRY_WORDS = 2;
+
+/**
+ * 重なりの二つ目までの語の並び（ending）の終わりが、語彙表のどれかの行と同じか。
+ * 語彙表の語は、文と同じ解析器で分けたもの（entry.tokens）で比べる。書き方の空白の有無に左右されない。
+ */
+export const isAllowed = (ending: readonly Token[], allowed: Lexicon): boolean =>
+  allowed.some((entry) => {
+    const words = entry.tokens ?? [];
+    return words.length >= MIN_ENTRY_WORDS && surfacesOf(ending.slice(-words.length)) === surfacesOf(words);
+  });
 
 export type Doubled = { readonly first: Token; readonly second: Token };
 
@@ -67,8 +74,8 @@ const isDoubled = (first: Token, second: Token): boolean =>
   isWord(first) && isWord(second) && !isEcho(second) && (sameWord(first, second) || isDeterminerPair(first, second));
 
 /** 並んだ二語が書き損じか。source は文書全体で、token の span もその座標。 */
-export const doubledAt = (source: string, first: Token, second: Token, spaced: boolean, allowed: Lexicon): boolean => {
-  if (!isDoubled(first, second) || isAllowed(first, second, allowed)) return false;
+export const doubledAt = (source: string, first: Token, second: Token, spaced: boolean): boolean => {
+  if (!isDoubled(first, second)) return false;
   if (spaced && isPartOfLongerWord(source, first, second)) return false;
   const gap = gapBetween(source, first, second);
   return gap === "space" || (gap === "markup" && FUNCTION_WORD.has(first.pos));
@@ -94,7 +101,8 @@ const allowedAt = (tokens: readonly Token[], at: number, allowed: Lexicon): Lexi
 export const doubledIn = (source: string, tokens: readonly Token[], spaced: boolean, allowed: Lexicon): Doubled[] =>
   tokens.flatMap((second, index) => {
     const first = tokens[index - 1];
-    if (first === undefined || !doubledAt(source, first, second, spaced, allowedAt(tokens, index - 1, allowed))) return [];
+    if (first === undefined || !doubledAt(source, first, second, spaced)) return [];
+    if (isAllowed(tokens.slice(0, index + 1), allowedAt(tokens, index - 1, allowed))) return [];
     return isNameBefore(first, second, opensSentence(tokens, index - 1)) ? [] : [{ first, second }];
   });
 
