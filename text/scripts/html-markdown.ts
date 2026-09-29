@@ -57,8 +57,9 @@ const mainLandmark = (html: string): string | undefined => {
   return elementRanges(html, tag).find((range) => new RegExp(String.raw`^<[a-z][a-z0-9]*${MAIN_ROLE}`, "iu").test(range.openTag))?.inner;
 };
 
-const isOutermost = (range: ElementRange, _index: number, all: readonly ElementRange[]): boolean =>
-  !all.some((outer) => outer.start < range.start && range.end <= outer.end);
+const isInside = (outer: ElementRange, inner: ElementRange): boolean => outer.start < inner.start && inner.end <= outer.end;
+
+const isOutermost = (range: ElementRange, _index: number, all: readonly ElementRange[]): boolean => !all.some((outer) => isInside(outer, range));
 
 const holdsEveryTitle = (html: string, range: ElementRange): boolean =>
   [...html.matchAll(/<h1\b/giu)].every((title) => title.index > range.start && title.index < range.end);
@@ -189,42 +190,37 @@ const withoutNavigation = (html: string): string =>
 const DEFINITION = /<dd\b[^>]*>([\s\S]*?)(?:<\/dd\s*>|(?=<d[dt]\b)|$)/giu;
 
 /** A definition list whose every definition is only links: a menu with its label as the term ("文字サイズ: 標準 大"). */
-const isLabelledMenu = (list: string): boolean => {
-  const definitions = [...list.matchAll(DEFINITION)].map((match) => match[1] ?? "");
-  return definitions.length > 0 && definitions.every(isNavigation);
-};
+const isLabelledMenu = (list: string): boolean => [...list.matchAll(DEFINITION)].every((definition) => isNavigation(definition[1] ?? ""));
 
 const isDefinitionList = (range: ElementRange): boolean => /^<dl\b/iu.test(range.openTag);
 
-/** What a block holds besides its menus: link-only lists and labelled menus taken out; a labelled menu keeps its terms. */
+/** What a block holds besides its menus: its link-only lists taken out, or a labelled menu's terms. */
 const besideMenus = (range: ElementRange): string =>
-  isDefinitionList(range) && isLabelledMenu(range.inner)
-    ? range.inner.replace(DEFINITION, " ")
-    : withoutNavigation(withoutElementsWhere(range.inner, "dl", (list) => isLabelledMenu(list.inner)));
+  isDefinitionList(range) && isLabelledMenu(range.inner) ? range.inner.replace(DEFINITION, " ") : withoutNavigation(range.inner);
 
 /** A full stop, question or exclamation mark closing a sentence; the point in "3.5" does not. */
 const CLOSED_SENTENCE = /[。．！？]|[.!?](?=\s|$)/u;
 
-/** A block holding a menu, with nothing beside it but labels: a sentence beside a menu makes the block the document's. */
-const isSiteHeader = (range: ElementRange): boolean => {
-  const rest = besideMenus(range);
-  return rest !== range.inner && !CLOSED_SENTENCE.test(plainText(rest));
-};
+const holdsMenu = (range: ElementRange): boolean => besideMenus(range) !== range.inner;
+
+/** Nothing but labels beside the menus: a sentence beside a menu makes the block the document's. */
+const hasNoSentenceBesideMenus = (range: ElementRange): boolean => !CLOSED_SENTENCE.test(plainText(besideMenus(range)));
 
 const HEADER_BLOCKS = ["div", "section", "header", "dl"];
 
 /**
- * A block that closes before the page's title opens and holds a menu with no sentence beside it is the site's header:
- * it goes whole, with the tagline and labels beside the menu. A block before the title without a menu (an agency and
- * docket number) is kept, and so is one where a sentence stands beside the menu.
+ * The innermost block that closes before the page's title opens and holds a menu, with no sentence beside it, is part
+ * of the site's header: it goes whole, with the tagline and labels beside the menu. Only the innermost, so that text
+ * sharing an outer block with a menu block (an agency and docket number) is kept; so is a block with a sentence in it.
  */
 const withoutSiteHeader = (html: string): string => {
   const title = pageTitle(html);
   if (title === undefined) return html;
-  const before = HEADER_BLOCKS.flatMap((tag) => elementRanges(html, tag)).filter((range) => range.end <= title.start);
+  const menus = HEADER_BLOCKS.flatMap((tag) => elementRanges(html, tag)).filter((range) => range.end <= title.start && holdsMenu(range));
+  const innermost = menus.filter((range) => !menus.some((inner) => isInside(range, inner)));
   return withoutRanges(
     html,
-    before.filter(isSiteHeader).toSorted((left, right) => left.start - right.start),
+    innermost.filter(hasNoSentenceBesideMenus).toSorted((left, right) => left.start - right.start),
   );
 };
 

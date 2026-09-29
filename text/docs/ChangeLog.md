@@ -7,14 +7,14 @@ Newest first.
 ### The corpus HTML converter drops a site header that has no landmark (#170)
 
 A page without `<main>`, `role="main"` or a sole `<article>` was read whole, and its site header survived the menus
-inside it: the tagline beside the menu and the labels of the text-size and contact boxes. A block (`div`, `section`,
-`header` or `dl`) that closes before the page's `<h1>` opens and holds a menu, with nothing but labels beside it, now
-goes whole. A menu is a list the navigation rule already drops, or a definition list whose every definition is only
-links (`文字サイズの変更`: `標準` `大`). A block before the title without a menu, such as a notice's agency and docket
-number, is kept, and so is one where a sentence stands beside the menu (`Comments are due by May 1.`), one that
-contains the title and one that comes after it. Found on 厚生労働省's call for public comment. The Federal Register's
-"Document Headings" help box is left as it is: it sits beside the agency and docket number and differs from them only
-by its class names and wording.
+inside it: the tagline beside the menu and the labels of the text-size and contact boxes. The innermost block (`div`,
+`section`, `header` or `dl`) that closes before the page's `<h1>` opens and holds a menu, with nothing but labels
+beside it, now goes whole. A menu is a list the navigation rule already drops, or a definition list whose every
+definition is only links (`文字サイズの変更`: `標準` `大`). A block before the title without a menu, such as a notice's
+agency and docket number, is kept, and so is text sharing an outer block with a menu block, a block where a sentence
+stands beside the menu (`Comments are due by May 1.`), one that contains the title and one that comes after it. Found
+on 厚生労働省's call for public comment. The Federal Register's "Document Headings" help box is left as it is: it sits
+beside the agency and docket number and differs from them only by its class names and wording.
 
 ### `no-mixed-desumasu` reads 「〜下さい」 as polite, like 「〜ください」 (#170)
 

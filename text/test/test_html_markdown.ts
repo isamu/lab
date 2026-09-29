@@ -132,7 +132,7 @@ describe("htmlToMarkdown: 落とすもの", () => {
     const title = "<div><h1>意見の募集について</h1><p>本文。</p></div>";
     assert.equal(htmlToMarkdown(`<div id="top"><div><p>みんなのくらしのために</p>${menu}</div></div>${title}`), "# 意見の募集について\n\n本文。\n");
     const labelled = '<dl><dt>文字の大きさ</dt><dd><a href="#n">標準</a></dd><dd><a href="#l">大</a></dd></dl>';
-    assert.equal(htmlToMarkdown(`<div><p class="logo">省の名前</p>${labelled}</div>${title}`), "# 意見の募集について\n\n本文。\n");
+    assert.equal(htmlToMarkdown(`<div>${labelled}</div>${title}`), "# 意見の募集について\n\n本文。\n");
     assert.equal(htmlToMarkdown(`<dl><dt>ご意見はこちら</dt><dd><a href="/sanka/">参加の場</a></dd></dl>${title}`), "# 意見の募集について\n\n本文。\n");
     const heading = "<header><h1>計画</h1></header><p>本文。</p>";
     assert.equal(htmlToMarkdown(`<section><p>お知らせ</p>${menu}</section><div><p>標語</p>${menu}</div>${heading}`), "# 計画\n\n本文。\n");
@@ -159,13 +159,16 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(`<div><p>Lead line</p>${menu}<h1>Plan</h1><p>Text</p></div>`), "Lead line\n\n# Plan\n\nText\n");
     assert.equal(htmlToMarkdown(`<h1>Plan</h1><div><p>See also</p>${menu}</div>`), "# Plan\n\nSee also\n");
     assert.equal(htmlToMarkdown(`<div><p>Our motto.</p>${menu}</div><h2>Plan</h2><p>Text.</p>`), "Our motto.\n\n## Plan\n\nText.\n");
+    assert.equal(
+      htmlToMarkdown(`<div><p>National Institute of Standards</p><p>Docket 26-0401</p><div><p>Help</p>${menu}</div></div>${title}`),
+      "National Institute of Standards\n\nDocket 26-0401\n\n# AGENCY:\n\nText.\n",
+    );
+    const labelled = '<dl><dt>文字の大きさ</dt><dd><a href="#n">標準</a></dd><dd><a href="#l">大</a></dd></dl>';
+    assert.equal(htmlToMarkdown(`<div><p>省の名前</p>${labelled}</div>${title}`), "省の名前\n\n# AGENCY:\n\nText.\n");
     const due = (mark: string): string => `<div><p>Comments are due by May 1${mark}</p>${menu}</div>${title}`;
     assert.equal(htmlToMarkdown(due(".")), "Comments are due by May 1.\n\n# AGENCY:\n\nText.\n");
     assert.equal(htmlToMarkdown(due("?")), "Comments are due by May 1?\n\n# AGENCY:\n\nText.\n");
-    assert.equal(
-      htmlToMarkdown(`<div><div><p>募集は5月1日までです。</p></div><div><p>標語</p>${menu}</div></div>${title}`),
-      "募集は5月1日までです。\n\n# AGENCY:\n\nText.\n",
-    );
+    assert.equal(htmlToMarkdown(`<div><p>募集は5月1日までです。</p>${menu}</div>${title}`), "募集は5月1日までです。\n\n# AGENCY:\n\nText.\n");
     assert.equal(
       htmlToMarkdown(`<dl><dt>Want to comment?</dt><dd><a href="/c">Comment form</a></dd></dl>${title}`),
       "Want to comment?\n\nComment form\n\n# AGENCY:\n\nText.\n",
