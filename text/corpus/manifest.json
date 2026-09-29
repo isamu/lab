@@ -1258,6 +1258,115 @@
       "license": "CC BY 4.0 for the prose, Apache-2.0 for the code samples the page includes (as stated on the page); URL only because of the Apache-2.0 samples; the Japanese page is Google's AI translation of Dibyajyoti Pal, Dan Murphy, Marijn Kruisselbrink, \"Seamless PWA origin migration: Change domains without losing users\", Chrome for Developers, 2026-06-03; converted to Markdown",
       "redistribute": false,
       "format": "html"
+    },
+    {
+      "id": "govuk-guidance-academy-senior-pay",
+      "title": "GOV.UK guidance: Senior pay controls for academy trusts",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260929150127id_/https://www.gov.uk/guidance/senior-pay-controls-for-academy-trusts",
+      "license": "Open Government Licence v3.0 (contains public sector information licensed under the OGL v3.0, from GOV.UK, Department for Education, https://www.gov.uk/guidance/senior-pay-controls-for-academy-trusts), converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "w3c-secure-contexts",
+      "title": "W3C Candidate Recommendation Draft: Secure Contexts (10 November 2023)",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260929150223id_/https://www.w3.org/TR/2023/CRD-secure-contexts-20231110/",
+      "license": "W3C Software and Document License (\"permissive document license\", as stated in the document); a notice-bearing permissive licence, kept URL only like MIT/Apache-2.0",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "ietf-draft-httpapi-ratelimit-headers-10",
+      "title": "Internet-Draft: RateLimit header fields for HTTP (draft-ietf-httpapi-ratelimit-headers-10)",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://www.ietf.org/archive/id/draft-ietf-httpapi-ratelimit-headers-10.txt",
+      "license": "IETF Trust (BCP 78, Trust Legal Provisions)",
+      "redistribute": false
+    },
+    {
+      "id": "nextcloud-user-2fa",
+      "title": "Nextcloud 32 User Manual: Using two-factor authentication",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260929150147id_/https://docs.nextcloud.com/server/32/user_manual/en/user_2fa.html",
+      "license": "CC BY 3.0 (\"All documentation in this repository is licensed under the Creative Commons Attribution 3.0 Unported license\", https://github.com/nextcloud/documentation README); © Nextcloud GmbH and Nextcloud contributors; the page's images are not included; converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "ftc-phishing-scams",
+      "title": "FTC Consumer Advice: How To Recognize and Avoid Phishing Scams",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260921112557id_/https://consumer.ftc.gov/articles/how-recognize-avoid-phishing-scams",
+      "license": "Public domain (work of the US federal government; per https://www.ftc.gov/policy-notices/website-policy); Source: United States Federal Trade Commission, consumer.ftc.gov; the page's images are not included; converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "koho-tokyo-2026-06-suigai",
+      "title": "広報東京都 2026年6月号: 豪雨への備え、できていますか？みんなで取り組む水害対策",
+      "source": "url",
+      "genre": "blog/owned-media",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260709063213id_/https://www.koho.metro.tokyo.lg.jp/2026/06/01-1.html",
+      "license": "WEB広報東京都「著作権・リンクについて」: 著作権法上認められた場合を除き無断で複製・転用することはできない (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "utelecon-account-leave",
+      "title": "utelecon（東京大学）: 卒業・退職や所属変更によるアカウント失効についての注意",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260520040152id_/https://utelecon.adm.u-tokyo.ac.jp/systems/leave/",
+      "license": "No licence stated for the site's text (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "jma-faq-typhoon",
+      "title": "気象庁: よくある質問集 台風について",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260929150242id_/https://www.jma.go.jp/jma/kishou/know/faq/faq14.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0; 気象庁ホームページについて https://www.jma.go.jp/jma/kishou/info/coment.html); 出典: 気象庁ホームページ (https://www.jma.go.jp/jma/kishou/know/faq/faq14.html); Markdown に変換（加工して作成）",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "nstac-microdata-forum",
+      "title": "独立行政法人統計センター: 公的統計の二次的利用サービス イベント情報（公的統計ミクロデータ利活用フォーラム）",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260929150205id_/https://www.nstac.go.jp/use/archives/event/",
+      "license": "統計センター「当サイトのご利用にあたって」（政府標準利用規約（第2.0版）準拠、CC BY 4.0 互換）; 出典: 独立行政法人統計センターホームページ (https://www.nstac.go.jp/use/archives/event/); 「イベント情報」（独立行政法人統計センター）（https://www.nstac.go.jp/use/archives/event/）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "ndl-copy-fee-revision-2026",
+      "title": "国立国会図書館: 複写料金改定のお知らせ（10月1日（木）から）",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260929150432id_/https://www.ndl.go.jp/news/fy2026/260901_01",
+      "license": "国立国会図書館ウェブサイトのコンテンツ利用規約（公共データ利用規約（第1.0版）(PDL1.0) に準拠、CC BY 4.0 互換）; 出典: 国立国会図書館ウェブサイト (https://www.ndl.go.jp/news/fy2026/260901_01); Markdown に変換（加工して作成）",
+      "redistribute": true,
+      "format": "html"
     }
   ]
 }
