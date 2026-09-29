@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` reads a number joined by full-width hyphens as a code, like one joined by `-` (#170)
+
+A Japanese circular (通達) numbers each provision at the head of a line with full-width hyphens: `5－1－1 法第2条…`.
+Only the half-width `-` joined the groups of a code, so the space after `5－1－1` was counted as a writer who spaces
+after a number, and every provision of the 消費税法基本通達 was reported against the document's usual touching style.
+The full-width hyphen `－`, the hyphens `‐` and `‑`, and the minus sign `−` now join digits wherever `-` does: three or
+more groups are a code and are not counted, a postal code or telephone number with a group starting with 0 is a name,
+and an address number after a ward or town may use them. A range of two groups (`3－5 日`) is still counted. The long
+vowel mark `ー` and the dashes (`–`, `—`) do not join digits.
+
 ### `doubled-word` accepts the spoken reduplications of the Diet minutes (#170)
 
 Three repeats in a committee's minutes were reported as slips. 「段階段階のところを」 means "at each stage", like
