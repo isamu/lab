@@ -55,6 +55,18 @@ describe("undefined-acronym: - で繋いだ略語は 1 語", () => {
     assert.deepEqual(acronymsIn("# Tests\n\nWe use Reverse Transcription Polymerase Chain Reaction [RT-PCR] here."), []);
   });
 
+  it("valid: 括弧の最初の項目で、区切りの後ろの語の頭文字と揃う（- は頭文字に数えない）", () => {
+    assert.deepEqual(acronymsIn("# Tests\n\nWe use it (RT-PCR, Reverse Transcription Polymerase Chain Reaction) daily."), []);
+  });
+
+  it("valid: 括弧の最初の項目で、直前の語の頭文字と揃う", () => {
+    assert.deepEqual(acronymsIn("# Tests\n\nWe use Reverse Transcription Polymerase Chain Reaction (RT-PCR; see below) daily."), []);
+  });
+
+  it("invalid: 区切りの後ろの語の頭文字が - の片側にしか揃わない", () => {
+    assert.deepEqual(acronymsIn("# Tests\n\nWe use it (RT-PCR, Polymerase Chain Reaction) daily."), ["RT-PCR"]);
+  });
+
   it("valid: 部品がどれも通じる語", () => {
     assert.deepEqual(acronymsIn("# Trade\n\nThe US-EU talks resume."), []);
   });
