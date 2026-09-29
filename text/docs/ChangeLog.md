@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `no-mixed-desumasu` judges only endings with a predicate, and each list on its own (#170)
+
+A sentence whose ending has no predicate — a lead-in such as `出力するファイルは以下の通り。`, a gloss such as
+`円錐形の麦わら帽子。`, a sentence cut short before `から` — is neither です・ます nor である, and no longer counts as
+plain. `以下の通りである。` still does, and so does a requirement written `予約できること。`, where the verb before the
+dependent noun carries the ending. A `！` or `？` followed at once by a particle (`導入しませんか？が断られた`,
+`作っていた！！という人`) is inside a sentence, and the text before it is not judged. Prose is now judged against
+prose, and each bulleted list (with its nested items) against itself: a です・ます article whose list is written
+throughout in plain form, the usual way to write bullets, is consistent, while a list that mixes `記載します。` and
+`記載する。` is still reported, and so is a plain sentence in です・ます prose. Found on ja.wikivoyage, dwango's design document and デジタル庁's guides.
+
 ### `undefined-acronym` accepts an acronym defined in brackets with 以下 or hereinafter (#170)
 
 An acronym written as a definition inside brackets now counts as spelled out: `Human Resource(以下、HR)`,

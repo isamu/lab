@@ -1,4 +1,5 @@
-import { endingTokens, hasPredicate, isClosed } from "../sentence-shape.ts";
+import { endingTokens, isClosed } from "../sentence-shape.ts";
+import { continuesInto, outermostList, registerOf, slipsOf, type Register } from "./register.ts";
 import type { Detector, Finding, Sentence } from "../plugin.ts";
 
 /**
@@ -6,36 +7,31 @@ import type { Detector, Finding, Sentence } from "../plugin.ts";
  *
  * どちらが正しいかは決めない。決めると、方針の違う書き手にそのまま無視される。
  * 見るのは文書の中での一貫性だけで、少数派のほうを指摘する。spec §12.3 の方針を日本語にも。
+ * 終止符で終わらないもの（見出しの下の `MaaSサービス` のような名前だけの行）は文として数えない。
  */
-/**
- * 述語を持たないものは文として数えない。見出しの下の `MaaSサービス` のような
- * 名前だけの行がそのまま「である調」の少数派になり、実文書の誤検知はすべてこれだった。
- */
-const isSentence = (sentence: Sentence): boolean => isClosed(sentence) && hasPredicate(sentence) && endingTokens(sentence).length > 0;
+type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined };
 
-/**
- * 文末の語だけを見る。文の途中の引用（「ご覧ください」という表現を使う。）は文末の調子ではない。
- * 書いた形でも原形でも当てる。「ください」の原形は「くださる」で、原形だけを見ると丁寧な文末を見落とす。
- */
-const isPolite = (sentence: Sentence, polite: readonly string[]): boolean =>
-  endingTokens(sentence).some((token) => polite.includes(token.surface) || (token.lemma !== undefined && polite.includes(token.lemma)));
+const registerOfSentence = (sentence: Sentence, polite: readonly string[]): Register | undefined => {
+  const ending = endingTokens(sentence);
+  const tokens = sentence.tokens ?? [];
+  const head = ending[0] === undefined ? -1 : tokens.indexOf(ending[0]);
+  return registerOf(ending, head > 0 ? tokens[head - 1] : undefined, polite);
+};
 
 export const sentenceEnding: Detector = (doc, options): Finding[] => {
   const polite = (options.lexicon ?? []).map((entry) => entry.pattern);
-  const judged = doc.sentences.filter(isSentence).map((sentence) => ({ sentence, polite: isPolite(sentence, polite) }));
-  const counts = { polite: judged.filter((entry) => entry.polite).length, plain: judged.length - judged.filter((entry) => entry.polite).length };
-  const minorityIsPolite = counts.polite <= counts.plain;
-  const few = minorityIsPolite ? counts.polite : counts.plain;
-  // 片方しか無ければ一貫している。少数派が閾値を超えて多ければ、混在ではなく別の文体。
-  if (few === 0 || few > options.limit) return [];
-  return judged
-    .filter((entry) => entry.polite === minorityIsPolite)
-    .map(({ sentence }) => ({
-      rule: "no-mixed-desumasu",
-      severity: "warning",
-      line: 0,
-      column: 0,
-      quote: sentence.text.trim(),
-      values: { count: few, limit: options.limit, offset: sentence.span.start },
-    }));
+  const lists = doc.lists.map((list) => list.span);
+  const judged = doc.sentences.flatMap((sentence, index): Entry[] => {
+    if (!isClosed(sentence) || continuesInto(sentence, doc.sentences[index + 1])) return [];
+    const register = registerOfSentence(sentence, polite);
+    return register === undefined ? [] : [{ sentence, register, group: outermostList(sentence.span.start, lists) }];
+  });
+  return slipsOf(judged, options.limit).map(({ entry: { sentence }, count }) => ({
+    rule: "no-mixed-desumasu",
+    severity: "warning",
+    line: 0,
+    column: 0,
+    quote: sentence.text.trim(),
+    values: { count, limit: options.limit, offset: sentence.span.start },
+  }));
 };
