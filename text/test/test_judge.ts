@@ -187,8 +187,8 @@ describe("判定役の差し替え", () => {
   });
 
   it("認証の案内は backend ごとに違う", () => {
-    assert.match(credentialHint("anthropic"), /ANTHROPIC_API_KEY/u);
-    assert.match(credentialHint("openai"), /OPENAI_API_KEY/u);
+    assert.match(credentialHint("anthropic", "ja"), /ANTHROPIC_API_KEY/u);
+    assert.match(credentialHint("openai", "ja"), /OPENAI_API_KEY/u);
   });
 
   it("OPENAI_API_KEY だけで openai の認証は通り、anthropic は通らない", () => {

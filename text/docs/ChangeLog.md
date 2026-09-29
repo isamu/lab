@@ -15,6 +15,25 @@ total. The rest of the document (the introduction, "how to suggest a change") is
 sections headed by a single word or phrase, and sections merely grouped under `## A` / `## B`. An index divided by `あ行`,
 or whose entries sit at the same heading level as the letters, is not recognised.
 
+### A document profile chaff does not bundle stops the run instead of turning profiles off (#170)
+
+A `profile` in `chaff.yaml`, or in one of its `by_path` entries, that names no bundled profile (`profile: statue`)
+chose nothing and also stopped the profile from being chosen from the content, so it acted as `none` without a word:
+a statute lost its addresses and article captions. It now stops before checking anything, and says where the profile
+was written and which profiles there are, `none` included. Profiles come only from the bundled `profiles/*.yaml`, so
+there is nothing else a name could mean. The commands that read no document (`genres`, `init`, `rules`, `explain`,
+`relax`, `strict`, `off`, `skill`) still run with such a `chaff.yaml`.
+
+### `chaff test` speaks English to English documents (#170)
+
+`chaff test` printed its screens in Japanese whatever the document, `chaff.yaml` or the terminal said: the banners over
+the machine and AI findings, the AI findings themselves, the `--dry-run` plan and its total, the notice when the checks
+that read meaning could not run, the hint on setting a key, and the closing tally. Each file's banners, findings and
+plan now follow that file's language. The closing lines (the total, the notice, the key hint and the tally) follow the
+files' language when they share one and otherwise `chaff.yaml`'s `language`, then the terminal's locale, as lint's
+closing line does. "No Markdown found" follows `chaff.yaml`'s `language`, then the locale. The Japanese text is
+unchanged.
+
 ### The corpus's converters decode every HTML character reference name and read an attribute value that holds markup (#170)
 
 A named character reference outside the converters' short list stayed in the text as written: `Vissing-J&oslash;rgensen`
