@@ -1,0 +1,9 @@
+# 都道府県の単位。住所では先頭にしか来ないので、地名の後ろに付けば地名を並べたもの（北海道神奈川県）。
+# 形態素解析はこれらも郡・市・町と同じ「接尾,地域」（NameType=GeoUnit）にするので、単位の段はここで言う。
+id: prefecture-unit
+language: ja
+entries:
+  - pattern: 都
+  - pattern: 道
+  - pattern: 府
+  - pattern: 県

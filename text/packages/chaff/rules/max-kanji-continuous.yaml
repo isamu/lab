@@ -4,6 +4,8 @@ status: experimental
 how_to_find: kanji-run
 # 品詞があれば、住所（地名と数だけでできた連なり）を数えない。無くても文字だけで動く。
 uses: [pos]
+# 住所の先頭にしか来ない単位（都道府県）。地名の後ろに付けば、割られた町名ではなく地名の並び。
+extra_word_lists: [prefecture-unit]
 languages: [ja]
 severity: warning
 

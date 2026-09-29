@@ -50,7 +50,7 @@ k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-
 k8s-overview-ja  max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kaisha.txt  clean
 kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
-kimino-cleanup-notice  max-kanji-continuous 3, max-sentence-length 2
+kimino-cleanup-notice  max-kanji-continuous 2, max-sentence-length 2
 kimino-mayor-2022-09  agentless-passive 2, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1, sasete-itadaku 3
 koenote-requirements  latin-spacing 56, undefined-acronym 6
 kojin.txt  clean
