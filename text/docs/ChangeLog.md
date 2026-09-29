@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `agentless-passive` leaves an English participle that describes a state alone (#170)
+
+"We are delighted to offer", "The report is based on a survey", "you are entitled to", "while you are logged in to
+your account" are no longer reported: be + past participle there names a state, and there is no hidden actor to name.
+The participles are a lexicon (`stative-participle`) in `@chaffjs/lang-en`, together with the adverbs of degree
+(`degree-adverb`: "very surprised", "more varied") that only a state takes. Real passives stay: "The decision was
+made.", "No additional approvals are required.", "Errors are logged in the console." Found on offer letters, privacy
+policies, contracts and handbooks in the corpus.
+
 ### `heading-echo` leaves a sentence that introduces a list alone (#170)
 
 A first sentence that hands over to the list or table below it — one ending in a colon (`The following expenses
