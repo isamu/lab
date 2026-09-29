@@ -17,11 +17,12 @@ const BACKENDS: readonly BackendName[] = ["anthropic", "openai"];
 export const isBackend = (value: unknown): value is BackendName => BACKENDS.some((name) => name === value);
 
 /** API が返した失敗。生のスタックトレースを人に見せないための、最小の分類。 */
-export type Failure = { readonly kind: "auth" | "quota" | "api"; readonly status: number | undefined; readonly message: string };
+/** message is the provider's own words, undefined when it gave none: the screen says so in the reader's language. */
+export type Failure = { readonly kind: "auth" | "quota" | "api"; readonly status: number | undefined; readonly message: string | undefined };
 
 const statusOf = (value: unknown): number | undefined => (typeof value === "number" ? value : undefined);
 
-const messageOf = (value: unknown): string => (typeof value === "string" && value.length > 0 ? value : "原因は返ってきませんでした");
+const messageOf = (value: unknown): string | undefined => (typeof value === "string" && value.length > 0 ? value : undefined);
 
 const kindOf = (status: number | undefined): Failure["kind"] => {
   if (status === 401 || status === 403) return "auth";

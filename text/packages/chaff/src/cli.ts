@@ -36,7 +36,7 @@ import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRules } from "./run.ts";
 import type { Level, RuleDefinition } from "./plugin.ts";
 import { CLI_TEXT, type CliText, type GenreSource } from "./cli-text.ts";
-import { hostLanguage, uiLanguageOf, type UiLanguage } from "./ui.ts";
+import { hostLanguage, sharedLanguage, uiLanguageOf, type UiLanguage } from "./ui.ts";
 import { profileFor } from "./profile/for-file.ts";
 import { settingProblems } from "./setting-problems.ts";
 
@@ -144,9 +144,8 @@ const warnRuleProblems = (config: Config, language: string): void => {
 
 /** Several files end with one summary: in their language when they share one, else the host's. */
 const summaryLanguage = (results: readonly Inspected[], config: Config): UiLanguage => {
-  const languages = new Set(results.map((result) => uiLanguageOf(result.language)));
-  const [only] = [...languages];
-  return languages.size === 1 && only !== undefined ? only : hostLanguage(config.language, process.env);
+  const languages = results.map((result) => result.language);
+  return sharedLanguage(languages, hostLanguage(config.language, process.env));
 };
 
 const lint = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
@@ -276,6 +275,12 @@ const treeContext = (): TreeContext => {
   return { config, flag, ui: hostLanguage(config.language, process.env) };
 };
 
+/** What eval and test share: the settings, this run's genre, and the language for what is not about one document. */
+const measureContext = (argv: readonly string[]): { config: Config; resolveGenre: ReturnType<typeof genreFrom>; ui: UiLanguage } => {
+  const config = readConfig();
+  return { config, resolveGenre: genreFrom(argv), ui: hostLanguage(config.language, process.env) };
+};
+
 /** 分岐を数珠つなぎにせず表にする。足すときに main を太らせない。 */
 const HANDLERS: Readonly<Record<string, Handler>> = {
   init: (argv) => {
@@ -285,13 +290,10 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   genres: showGenres,
   rules: showRules,
   explain: (argv) => explain(argv[1]),
-  eval: (argv) => {
-    const config = readConfig();
-    return runEval(positional(argv), argv, { config, resolveGenre: genreFrom(argv), flag, ui: hostLanguage(config.language, process.env) });
-  },
+  eval: (argv) => runEval(positional(argv), argv, { ...measureContext(argv), flag }),
   tree: (argv) => runTree(treeTargets(argv), argv, treeContext()),
   cite: (argv) => runCite(citeTargets(argv), argv, treeContext()),
-  test: (argv) => runTest(positional(argv), argv, { config: readConfig(), resolveGenre: genreFrom(argv), inspect }),
+  test: (argv) => runTest(positional(argv), argv, { ...measureContext(argv), inspect }),
   baseline: (argv) => runBaseline(positional(argv), argv),
   suppressions: (argv) => runSuppressions(positional(argv), argv),
   relax: (argv) => changeSetting("relaxed", argv[1], flag(argv, "--why")),

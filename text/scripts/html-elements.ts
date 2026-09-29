@@ -2,6 +2,24 @@
 // closing tag. Pure; a regular-expression reading, not a parser.
 import { decodeEntities } from "./markup-text.ts";
 
+// In a tag a quote opens a value only after "=", and the value ends only at its matching quote, whatever it holds.
+const TAG_BODY = String.raw`(?:[^>=]|=\s*"[^"]*"|=\s*'[^']*'|=(?!\s*["']))*`;
+
+// A comment, a processing instruction, a script and a style are matched whole, so that no tag is read inside them
+// (the converter drops them anyway), and a "<!--" inside a value is escaped before comments are looked for.
+const TAG = new RegExp(String.raw`<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<(script|style)\b${TAG_BODY}>[\s\S]*?<\/\1\s*>|<[a-z][a-z0-9-]*${TAG_BODY}>`, "giu");
+
+const QUOTED_VALUE = /=(\s*)("[^"]*"|'[^']*')/gu;
+
+const withValuesEscaped = (tag: string): string =>
+  tag.replace(QUOTED_VALUE, (_whole: string, space: string, value: string) => `=${space}${value.replaceAll("<", "&lt;").replaceAll(">", "&gt;")}`);
+
+/**
+ * Each "<" and ">" inside a quoted attribute value (title="published under the <span>…</span>") as a character
+ * reference, which means the same in a value, so that a scanner reading a tag up to its first ">" reads all of it.
+ */
+export const withAttributeMarkupEscaped = (html: string): string => html.replace(TAG, (tag: string) => withValuesEscaped(tag));
+
 export const stripTags = (html: string): string => html.replace(/<\/?[a-z!][^>]*>/giu, "");
 
 export const plainText = (html: string): string => decodeEntities(stripTags(html)).replace(/\s+/gu, " ").trim();

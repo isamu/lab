@@ -13,6 +13,61 @@ was written and which profiles there are, `none` included. Profiles come only fr
 there is nothing else a name could mean. The commands that read no document (`genres`, `init`, `rules`, `explain`,
 `relax`, `strict`, `off`, `skill`) still run with such a `chaff.yaml`.
 
+### `chaff test` speaks English to English documents (#170)
+
+`chaff test` printed its screens in Japanese whatever the document, `chaff.yaml` or the terminal said: the banners over
+the machine and AI findings, the AI findings themselves, the `--dry-run` plan and its total, the notice when the checks
+that read meaning could not run, the hint on setting a key, and the closing tally. Each file's banners, findings and
+plan now follow that file's language. The closing lines (the total, the notice, the key hint and the tally) follow the
+files' language when they share one and otherwise `chaff.yaml`'s `language`, then the terminal's locale, as lint's
+closing line does. "No Markdown found" follows `chaff.yaml`'s `language`, then the locale. The Japanese text is
+unchanged.
+
+### The corpus's converters decode every HTML character reference name and read an attribute value that holds markup (#170)
+
+A named character reference outside the converters' short list stayed in the text as written: `Vissing-J&oslash;rgensen`
+in the FOMC minutes, `records&thinsp;[1]` in a Federal Register notice, `2,088人&divide;814,793` in a MHLW Q&A. The
+HTML and wikitext converters now decode every name of the HTML standard (the `character-entities` table, already in
+the workspace under the Markdown parser and now a root dev dependency), matched as written: `&Oslash;` is Ø and
+`&oslash;` is ø, a name with digits (`&frac12;`) is read, and a name that is not in the table (`&NBSP;`,
+`&constructor;`) stays as written. A named space (`&nbsp;`, `&thinsp;`, `&ensp;`) is a plain space, as `&nbsp;`
+already was; a numeric one (`&#160;`) keeps its character.
+
+An attribute value holding markup, such as GOV.UK's history banner
+(`title="This was published under the <span lang=&quot;en&quot;>…</span>"`), ended its tag at the first `>` inside
+the value and left a stray `…government">` line. Before anything else reads the page, the HTML converter now writes
+each `<` and `>` inside a quoted attribute value as a character reference, which means the same in a value, so every
+tag scanner reads the whole tag. A quote opens a value only after `=`; a comment, a script and a style are not read as
+tags, and a `<!--` inside a value no longer opens a comment. Converted again, the corpus's pages change only where such a reference stood.
+
+## 0.15.0 — 2026-09-30
+
+chaff reads more kinds of text without stumbling. A file with Windows or classic Mac line breaks, a byte order mark, an
+emoji after a number or one very long line is read as the writer sees it, and a genre chaff does not know stops the run
+instead of checking nothing. `chaff eval` speaks the documents' language, and English no longer counts a sentence's first word as a name. Many false reports found on real documents are
+gone: `undefined-acronym` leaves domain names, date placeholders, name numerals, HTTP methods and document numbers alone;
+`agentless-passive` knows Japanese honorific れる/られる and 「〜と呼ばれる」; `latin-spacing` and `heading-echo` skip
+quotations; `date-order` stays silent on a list sorted by name; a reference wrapped across lines, or to a hyphenated tag
+the document lists, names the other document. The corpus gains more rounds of kinds — parliamentary minutes,
+regulations, patents, court decisions, specifications, style guides, glossaries, a speech and more — and `yarn bench`
+plants mistakes for more rules.
+
+📦 [`chaffjs@0.15.0`](https://www.npmjs.com/package/chaffjs/v/0.15.0) ·
+[`@chaffjs/lang-ja@0.14.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.14.0) ·
+[`@chaffjs/lang-en@0.13.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.13.0)
+
+### A word capitalised only because it starts the sentence is no longer counted as a proper noun in English (#170)
+
+The English tagger marks every capitalised noun and adjective as a proper noun, so the first word of a sentence
+(`Containers start in seconds.`, `Traditional servers were slow.`, `Use the scheduler.`) was counted as a name, and
+`proper-noun-density` reported handbooks and guides whose names were few. `@chaffjs/lang-en` now reads the first word
+of a sentence again in lower case when it is written with one leading capital, the tagger tagged it as a proper noun,
+and the tagger's own vocabulary knows the lower-case word and never as a name. It takes the part of speech the tagger
+gives the lower-case word in the same sentence. A word the vocabulary does not know (`Kubernetes`, `Congress`), a word
+it also knows as a name (`May`), a word in capitals (`API`) and a capitalised word inside a sentence stay proper nouns.
+In the corpus this only moves `proper-noun-density`: its density falls on most English documents and the finding goes
+away where common words had pushed it over the limit.
+
 ### A genre chaff does not know stops the run instead of checking nothing (#170)
 
 A `genre` in `chaff.yaml`, or in one of its `by_path` entries, that is not in `npx chaff genres` matched no rule: chaff
