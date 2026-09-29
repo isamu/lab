@@ -15,6 +15,34 @@ come from the `prefecture-unit` list. A range stays a quantity: after a region o
 (「1-3 日」). Found on 厚生労働省's call for public
 comment and デジタル庁's privacy policy.
 
+### The corpus HTML converter drops a site header that has no landmark (#170)
+
+A page without `<main>`, `role="main"` or a sole `<article>` was read whole, and its site header survived the menus
+inside it: the tagline beside the menu and the labels of the text-size and contact boxes. The innermost block (`div`,
+`section`, `header` or `dl`) that closes before the page's `<h1>` opens and holds a menu, with nothing but labels
+beside it, now goes whole. A menu is a list the navigation rule already drops, or a definition list whose every
+definition is only links (`文字サイズの変更`: `標準` `大`). A block before the title without a menu, such as a notice's
+agency and docket number, is kept, and so is text sharing an outer block with a menu block, a block where a sentence
+stands beside the menu (`Comments are due by May 1.`), one that contains the title and one that comes after it. Found
+on 厚生労働省's call for public comment. The Federal Register's "Document Headings" help box is left as it is: it sits
+beside the agency and docket number and differs from them only by its class names and wording.
+
+### `undefined-acronym` reads a Roman numeral after Part or Section as a number, and a polite 「といいます」 as a definition (#170)
+
+A Roman numeral written in its proper form (I to MMMM) right after the name of a division of a document — `Part II`,
+`Section VIII`, `Title IV`, `Chapter XI`, `Appendix III`, or the name in capitals (`PART II`) — is the division's
+number, not an acronym. The names come from a new word list in each language package, `numbered-division`, which the
+rule declares. Acronyms that are also Roman numerals (CD, CI, DC, MD, CV, MIX, IV) are still reported anywhere else,
+and so are a malformed numeral (`Section IIII`), a numeral glued to more letters (`Section CIA`) and a lowercase name
+in running text (`part II`). A plural name or a list of numerals (`Chapters II and III`) is not read yet. Found on
+NSF's REU solicitation and an arXiv workshop report.
+
+An acronym defined with the verb conjugated — `（以下、「GSS」といいます。）`, `と呼びます`, `と称します`, `といいました` —
+now counts as defined, as `という` did. The last verb is matched by its base form from morphological analysis, so the
+rule now uses part of speech when it can; without it only the forms in `definition-verb` are read. `definition-verb`
+gains `と言う` and `と称す`, the base forms the analyser gives 言います and 称します. Found on デジタル庁's notice of the
+GSS incident.
+
 ### Japanese: 「3つ」「三つ」「２つ」 are a number and a counter (#170)
 
 IPADIC reads the つ after an Arabic numeral as the classical perfective auxiliary (the つ of 行きつ戻りつ) and 「三つ」
