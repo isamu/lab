@@ -266,6 +266,10 @@ const addressOfReference = (
 const LEXICONS = loadLexicons();
 const CITATION = citationVocabulary(LEXICONS);
 const SECTIONS = sectionVocabulary(LEXICONS);
+const NOT_MAGNITUDE = (LEXICONS["not-magnitude"] ?? []).map((entry) => entry.pattern);
+
+/** 辞書が桁の語と助数詞に切る一語（「1.5 万葉の世界」）は数量の続きではないので、行頭の番号は節のまま。 */
+const countedAfterNumber = (number: string, rest: string): boolean => !NOT_MAGNITUDE.some((word) => rest.startsWith(word)) && countedAfter(number, rest);
 
 const sectionsOf = (text: string): Mention[] => sectionReferences(text, SECTIONS);
 
@@ -355,6 +359,6 @@ export const structure: StructurePatterns = {
   obligations,
   quantities: quantitiesOutsideSections,
   dates,
-  countedAfter,
+  countedAfter: countedAfterNumber,
   number,
 };

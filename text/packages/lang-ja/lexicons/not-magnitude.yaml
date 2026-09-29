@@ -1,0 +1,12 @@
+# 桁の語（万・億）で始まるが数量ではない一語。辞書が桁の語と助数詞に切るもの（万葉・万年筆）と、解析器の無いときに仮名が続いて数量に見えるもの（万が一）。
+# 行頭の「1.5 万葉の世界」は節の見出しで、数量ではない。
+id: not-magnitude
+language: ja
+entries:
+  - pattern: 万葉
+  - pattern: 万年筆
+  - pattern: 万歳
+  - pattern: 万遍
+  - pattern: 万世一系
+  - pattern: 万灯
+  - pattern: 万が一
