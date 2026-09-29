@@ -1,0 +1,8 @@
+# The articles. The tagger gives every determiner the same tag (DT), so the adapter marks these PronType=Art, as
+# Universal Dependencies does: a noun takes one article or possessive, and two in a row ("our the platform") is a slip.
+id: article
+language: en
+entries:
+  - pattern: a
+  - pattern: an
+  - pattern: the

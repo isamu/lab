@@ -138,7 +138,7 @@ describe("agentless-passive（英語）: 状態を表す過去分詞", () => {
 
   it("状態の過去分詞にも VerbForm=Part は付く。分詞の導入句の判断は変わらない", () => {
     const forms = tokensOf("The plan is based on the review.").flatMap((token) =>
-      token.features === undefined ? [] : [`${token.surface}:${token.features["VerbForm"] ?? ""}:${token.features["Voice"] ?? ""}`],
+      token.features?.["VerbForm"] === undefined ? [] : [`${token.surface}:${token.features["VerbForm"]}:${token.features["Voice"] ?? ""}`],
     );
     assert.deepEqual(forms, ["based:Part:"]);
   });

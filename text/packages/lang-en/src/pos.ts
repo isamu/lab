@@ -130,7 +130,9 @@ const inRelativeClause = (tagged: readonly Tagged[], be: number): boolean => {
   return antecedent !== undefined && NOMINAL_TAG.has(antecedent.pos);
 };
 
-const STATIVE = stativeVocabulary(loadLexicons());
+const LEXICONS = loadLexicons();
+
+const STATIVE = stativeVocabulary(LEXICONS);
 
 const isPassive = (tagged: readonly Tagged[], at: number): boolean => {
   if (tagged[at]?.pos !== "VBN") return false;
@@ -138,9 +140,28 @@ const isPassive = (tagged: readonly Tagged[], at: number): boolean => {
   return be !== -1 && !inRelativeClause(tagged, be) && !isStativeParticiple(tagged, at, STATIVE);
 };
 
+const wordsOf = (name: string): ReadonlySet<string> => new Set((LEXICONS[name] ?? []).map((entry) => entry.pattern.toLowerCase()));
+
+const ARTICLES = wordsOf("article");
+
+/** 目的語にも所有にもなる語（give her the book / her book）。解析器はいつも PRP$ と付けるので、所有とは言えない。 */
+const OBJECT_OR_POSSESSIVE = wordsOf("object-or-possessive");
+
+const POSSESSIVE_TAG = new Set(["PRP$", "WP$"]);
+
+type Features = { features?: Readonly<Record<string, string>> };
+
+/** 冠詞（PronType=Art）と所有の語（Poss=Yes）は、名詞の前に一つしか立たない。二つ並ぶ our the platform は書き損じ。 */
+const determinerFeatures = (entry: Tagged): Features => {
+  if (POSSESSIVE_TAG.has(entry.pos)) return OBJECT_OR_POSSESSIVE.has(entry.value.toLowerCase()) ? {} : { features: { Poss: "Yes" } };
+  return entry.pos === "DT" && ARTICLES.has(entry.value.toLowerCase()) ? { features: { PronType: "Art" } } : {};
+};
+
 /** 過去分詞は VerbForm=Part。Based on the review, のような分詞の導入句を、命令形の並び（fix the parser, ship it）と見分ける。 */
-const featuresOf = (tagged: readonly Tagged[], at: number): { features?: Readonly<Record<string, string>> } => {
-  if (tagged[at]?.pos !== "VBN") return {};
+const featuresOf = (tagged: readonly Tagged[], at: number): Features => {
+  const entry = tagged[at];
+  if (entry === undefined) return {};
+  if (entry.pos !== "VBN") return determinerFeatures(entry);
   return { features: isPassive(tagged, at) ? { VerbForm: "Part", Voice: "Pass" } : { VerbForm: "Part" } };
 };
 

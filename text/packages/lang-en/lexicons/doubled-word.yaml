@@ -1,0 +1,30 @@
+# Word pairs that doubled-word leaves alone: repeats that grammar allows. "had had" is the past perfect of have;
+# "that that" a conjunction and a demonstrative, which the tagger does not always tell apart; "do do" is emphatic do
+# ("We do do manual reviews"); "her her" an object and a possessive ("give her her copy"); "no no" an interjection
+# the tagger reads as two determiners. "is is" is left out: "What it is is a plan" is rare in business text, "The
+# plan is is ready" is a common slip.
+#
+# A phrasal verb's particle followed by the same preposition ("sign in in advance", "set up up to 10") is listed with
+# the words around it, so that "stored in in the folder" and "set up up the environment" are still slips. An entry
+# matches when the sentence has all its words in a row, the pair among them.
+id: doubled-word
+language: en
+entries:
+  - pattern: had had
+  - pattern: that that
+  - pattern: do do
+  - pattern: her her
+  - pattern: no no
+  - pattern: sign in in
+  - pattern: signed in in
+  - pattern: log in in
+  - pattern: logged in in
+  - pattern: opt in in
+  - pattern: opted in in
+  - pattern: check in in
+  - pattern: checked in in
+  - pattern: log on on
+  - pattern: logged on on
+  - pattern: turn on on
+  - pattern: turned on on
+  - pattern: up up to

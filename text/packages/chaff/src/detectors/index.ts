@@ -6,6 +6,7 @@ import { repeatedHead } from "./repeated-head.ts";
 import { sentenceRhythm } from "./sentence-rhythm.ts";
 import { phraseMatch } from "./phrase-match.ts";
 import { agentlessPassive } from "./agentless-passive.ts";
+import { doubledWord } from "./doubled-word.ts";
 import { sentenceEnding } from "./sentence-ending.ts";
 import { doubledParticle, nounEnding } from "./token-shape.ts";
 import { kanjiRun, middleDot } from "./char-shape.ts";
@@ -29,6 +30,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "sentence-ending": sentenceEnding,
   "noun-ending": nounEnding,
   "doubled-particle": doubledParticle,
+  "doubled-word": doubledWord,
   "kanji-run": kanjiRun,
   "middle-dot": middleDot,
   "adverb-density": adverbDensity,
