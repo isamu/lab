@@ -5,7 +5,7 @@ import { parseRoman } from "./roman.ts";
 import { dates } from "./dates.ts";
 import { definitionScopeDepth, definitions, opensDefinitionScope } from "./definitions.ts";
 import { CHAPTER_DEPTH, PART_DEPTH } from "./depth.ts";
-import { depthFor, INSERTED, ordinalOf, styleOf } from "./item-style.ts";
+import { continuesAddress, continuesOpen, depthFor, INSERTED, ordinalOf, styleOf } from "./item-style.ts";
 
 // Contracts, specifications and statutes in English. core nests what this reads; it does not know
 // how English numbers its articles.
@@ -29,7 +29,8 @@ const titleOf = (rest: string): string | undefined => {
 
 const ARTICLE = /^\s{0,3}(?:ARTICLE|Article)\s+(?<n>\d{1,3}|[IVXLC]{1,7})\b(?<rest>.*)$/u;
 const SECTION = /^\s{0,3}(?:SECTION|Section|§)\s*(?<n>\d{1,3}(?:\.\d{1,3}){0,5})\b(?<rest>.*)$/u;
-const LETTERED = new RegExp(`^\\s{0,6}\\((?<n>[a-z]{1,4}|\\d{1,3}|${INSERTED})\\)\\s+(?<rest>\\S.*)$`, "u");
+/** "(a) text", "(ii) text", "(B) text", or the label alone on its line with the text below it. */
+const LETTERED = new RegExp(`^\\s{0,6}\\((?<n>[a-z]{1,4}|[A-Z]{1,4}|\\d{1,3}|${INSERTED})\\)(?:\\s+(?<rest>\\S.*))?\\s*$`, "u");
 
 const headed = (pattern: RegExp, line: string, numbering: string, label: (n: string) => string): NumberedLine | undefined => {
   const groups = pattern.exec(line)?.groups;
@@ -55,16 +56,19 @@ const lettered = (line: string, context: NumberingContext): NumberedLine | undef
   const raw = groups?.["n"];
   if (groups === undefined || raw === undefined) return undefined;
   const style = styleOf(raw, context);
+  const ordinal = style === undefined ? undefined : ordinalOf(raw, style);
+  const rest = groups["rest"];
+  if (style === undefined || (rest === undefined && !continuesOpen(style, ordinal, context))) return undefined;
   // 番地は書かれたままの "ii" を使う。参照「Section 4.2(a)(ii)」も同じ形で書かれるので、そのまま引ける。
   return {
     kind: "item",
-    depth: depthFor(style, context),
-    ordinal: ordinalOf(raw, style),
+    depth: depthFor(style, context, ordinal),
+    ordinal,
     number: raw,
     absolute: false,
     label: `(${raw})`,
     heading: "",
-    rest: groups["rest"]?.trim() ?? "",
+    rest: rest?.trim() ?? "",
   };
 };
 
@@ -89,13 +93,13 @@ const numbered = (line: string, context: NumberingContext): NumberedLine | undef
   lettered(line, context);
 
 const REFERENCE = /(?<word>\b[Ss]ections?|\b[Aa]rticles?|§) ?(?<n>\d{1,3}(?:\.\d{1,3}){0,5}|[IVXLC]{1,7})\b/gu;
-/** "(a)", "(ii)", "(3)", and an inserted "(A1)" or "(2A)": the same labels the tree reads. */
-const SUBDIVISION = new RegExp(`^\\((?<p>[a-z0-9]{1,4}|${INSERTED})\\)`, "u");
+/** "(a)", "(ii)", "(3)", "(B)", and an inserted "(A1)" or "(2A)": the same labels the tree reads. */
+const SUBDIVISION = new RegExp(`^\\((?<p>[a-z0-9]{1,4}|[A-Z]{1,4}|${INSERTED})\\)`, "u");
 /** The longest label, with its parentheses: "(ZZ999)". */
 const MAX_SUBDIVISION_LENGTH = 7;
 
-/** "(a)(ii)(3)" is as deep as a reference goes; more parentheses are text, not a deeper address. */
-const MAX_SUBDIVISIONS = 4;
+/** "(a)(1)(i)(A)(1)", a US regulation's deepest paragraph, is as deep as a reference goes; more parentheses are text. */
+const MAX_SUBDIVISIONS = 5;
 
 /**
  * "(a)(ii)" のような続きの括弧を、正規表現を複雑にせずに一つずつ読む。
@@ -106,7 +110,7 @@ const subdivisions = (text: string, from: number): { readonly parts: readonly st
   let end = from;
   while (parts.length < MAX_SUBDIVISIONS) {
     const part = SUBDIVISION.exec(text.slice(end, end + MAX_SUBDIVISION_LENGTH))?.groups?.["p"];
-    if (part === undefined) break;
+    if (part === undefined || !continuesAddress(part, parts)) break;
     parts.push(part);
     end += part.length + 2;
   }

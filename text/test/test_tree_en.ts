@@ -110,6 +110,79 @@ describe("an English contract as a tree", () => {
     assert.deepEqual(addresses(treeOf(source)), ["1", "1.1", "1.1.g", "1.1.h", "1.1.i", "1.1.j", "1.2"]);
   });
 
+  it("reads (A) under a roman item, and a (1) under (C) a level below it, as US regulations go (a)(1)(i)(A)(1)", () => {
+    // 16 CFR 310.4(a)(5) (public domain), shortened. "(5)" stands alone on its line in the eCFR.
+    const source = lines(
+      "§ 310.4 Abusive telemarketing acts or practices.",
+      "(a) Abusive conduct generally.",
+      "(4) Requesting or receiving payment of any fee or consideration in advance of obtaining a loan;",
+      "(5)",
+      "(i) Requesting or receiving payment of any fee for any debt relief service until and unless:",
+      "(A) The seller or telemarketer has renegotiated at least one debt;",
+      "(B) The customer has made at least one payment; and",
+      "(C) To the extent that debts enrolled in a service are renegotiated individually, the fee:",
+      "(1) Bears the same proportional relationship to the total fee; or",
+      "(2) Is a percentage of the amount saved.",
+      "(ii) Nothing in § 310.4(a)(5)(i) prohibits requesting or requiring the customer to place funds in an account:",
+      "(A) The funds are held in an account at an insured financial institution;",
+      "(6) Disclosing or receiving, for consideration, unencrypted consumer account numbers.",
+    );
+    assert.deepEqual(addresses(treeOf(source)), [
+      "310.4",
+      "310.4.a",
+      "310.4.a.4",
+      "310.4.a.5",
+      "310.4.a.5.i",
+      "310.4.a.5.i.A",
+      "310.4.a.5.i.B",
+      "310.4.a.5.i.C",
+      "310.4.a.5.i.C.1",
+      "310.4.a.5.i.C.2",
+      "310.4.a.5.ii",
+      "310.4.a.5.ii.A",
+      "310.4.a.6",
+    ]);
+  });
+
+  it("reads an (i) under (A) a level below it, and a (B) after it beside (A)", () => {
+    // 16 CFR 310.4(b)(1)(v) (public domain), shortened.
+    const source = lines(
+      "§ 310.4 Abusive telemarketing acts or practices.",
+      "(b) Pattern of calls.",
+      "(1) It is an abusive telemarketing act or practice:",
+      "(v) Initiating any outbound telephone call that delivers a prerecorded message, unless:",
+      "(A) The seller has obtained from the recipient of the call an express agreement, in writing, that:",
+      "(i) The seller obtained only after a clear and conspicuous disclosure;",
+      "(ii) The seller obtained without requiring that the agreement be executed as a condition of purchasing;",
+      "(B) In any such call, the seller or telemarketer:",
+      "(i) Allows the telephone to ring for at least fifteen (15) seconds; and",
+      "(C) Any call that complies with this paragraph (v) shall not be deemed to violate § 310.4(b)(1)(iv).",
+      "(2) It is an abusive telemarketing act or practice for any person to sell any list.",
+    );
+    const expected = ["310.4", "310.4.b", "310.4.b.1", "310.4.b.1.v", "310.4.b.1.v.A", "310.4.b.1.v.A.i", "310.4.b.1.v.A.ii"];
+    assert.deepEqual(addresses(treeOf(source)), [...expected, "310.4.b.1.v.B", "310.4.b.1.v.B.i", "310.4.b.1.v.C", "310.4.b.2"]);
+  });
+
+  it("reads (I) under a roman item as a capital roman numeral, and (II) beside it", () => {
+    const source = lines("Section 1 Terms", "(a) one", "(1) one", "(i) one", "(I) one", "(II) two", "(ii) two");
+    assert.deepEqual(addresses(treeOf(source)), ["1", "1.a", "1.a.1", "1.a.1.i", "1.a.1.i.I", "1.a.1.i.II", "1.a.1.ii"]);
+  });
+
+  it("leaves a capital (A) that opens a list, or sits under a number, as text, as it was", () => {
+    const contract = lines("Section 1 Recitals", "(A) The Supplier provides services.", "(B) The Customer wishes to buy them.", "(a) one");
+    assert.deepEqual(addresses(treeOf(contract)), ["1", "1.a"]);
+    const code = lines("Section 1 Terms", "(a) one", "(1) one", "(A) one", "(B) two", "(2) two");
+    assert.deepEqual(addresses(treeOf(code)), ["1", "1.a", "1.a.1", "1.a.2"]);
+  });
+
+  it("reads a label alone on its line only as the next of an open list", () => {
+    assert.deepEqual(addresses(treeOf(lines("Section 1 Terms", "(1) one", "(2)", "(a) two a"))), ["1", "1.1", "1.2", "1.2.a"]);
+    const equation = lines("Section 1 Terms", "The ratio is x = y / z", "(1)", "and it holds.");
+    assert.deepEqual(addresses(treeOf(equation)), ["1"]);
+    assert.deepEqual(addresses(treeOf(lines("Section 1 Terms", "(1) one", "(3)", "(1) again"))), ["1", "1.1", "1.1"]);
+    assert.deepEqual(addresses(treeOf(lines("Section 1 Terms", "(1) one", "(1)"))), ["1", "1.1"]);
+  });
+
   it("gives a reference the same address the tree gives its target", () => {
     const tree = treeOf(lines("Section 1 Terms", "(a) one", "(ii) two", "See Section 1(a)(ii) and Article IV."));
     const targets = tree.children[0]?.children[0]?.children[0]?.children.map((node) => node.attrs["target"]);
@@ -128,7 +201,17 @@ describe("an English contract as a tree", () => {
     const markers = treeOf(`The Buyer ${"may ".repeat(20_000)}pay.`).children.filter((node) => node.kind === "obligation");
     assert.equal(markers.length, 20_000);
     const reference = treeOf(`See Section 1${"(a)".repeat(20_000)}.`).children[0];
-    assert.equal(reference?.attrs["target"], "1.a.a.a.a");
+    assert.equal(reference?.attrs["target"], "1.a.a.a.a.a");
+  });
+
+  it("reads a capital in a reference only after a roman part, as the tree reads it only under a roman item", () => {
+    const targets = (text: string): unknown[] => treeOf(text).children.map((node) => node.attrs["target"]);
+    assert.deepEqual(targets("See § 310.4(b)(1)(iii)(B)."), ["310.4.b.1.iii.B"]);
+    assert.deepEqual(targets("See § 310.4(a)(5)(i)(C)(1) and Section 2(a)(ii)(I)."), ["310.4.a.5.i.C.1", "2.a.ii.I"]);
+    assert.deepEqual(targets("See section 5(A) and Section 3(a)(B)."), ["5", "3.a"]);
+    assert.deepEqual(targets("See Section 1(h)(i)(A)."), ["1.h.i"]);
+    assert.deepEqual(targets("See Section 1(i)(A)."), ["1.i"]);
+    assert.deepEqual(targets("See Section 1(a)(1)(i)(A)(1)(i)."), ["1.a.1.i.A.1"]);
   });
 
   it("does not read a reference inside inline code in a heading", () => {
@@ -192,6 +275,16 @@ describe("later members of a reference list are references too", () => {
 
   it("a member with a letter (45A) is not read, as the reference itself would not be", () => {
     assert.deepEqual(targets("see sections 44 and 45A"), ["44"]);
+  });
+
+  it("a dotted member (310.5) is not read as its head (310), after a singular or a plural word", () => {
+    // 16 CFR 310.6 and 310.4(b)(3)(iv) (public domain), shortened.
+    assert.deepEqual(targets("§§ 310.4(b)(1)(iii)(B) and 310.5 shall not apply."), ["310.4.b.1.iii.B"]);
+    assert.deepEqual(targets("pursuant to § 310.4(b)(3)(iii) or 310.4(b)(1)(iii)(B), employing"), ["310.4.b.3.iii"]);
+    assert.deepEqual(targets("see sections 3.1 and 3.2"), ["3.1"]);
+    assert.deepEqual(targets("see sections 310.4 and 310.5"), ["310.4"]);
+    assert.deepEqual(targets("see Sections 3 and 4."), ["3", "4"]);
+    assert.deepEqual(targets("see Sections 3, 4 and 5 of the Act"), ["3@Act", "4@Act", "5@Act"]);
   });
 
   it("roman members in a list of Articles, with the document the list ends in", () => {
