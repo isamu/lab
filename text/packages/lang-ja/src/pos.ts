@@ -105,7 +105,7 @@ export const upos = (pos: string, detail: string): string => BY_DETAIL[detail] ?
 
 /**
  * 受動の「れる/られる」。この語は可能・尊敬・自発も表す。形のうえで受動でないと言えるもの
- * （自発や関係を表す動詞、尊敬の決まり文句）は passive-reading.ts が外す。残りは「受動の形」として印を付ける。
+ * （自発や関係を表す動詞、名付けの「と呼ばれる」、尊敬の形と決まり文句）は passive-reading.ts が外す。残りは「受動の形」として印を付ける。
  */
 const PASSIVE_VOCABULARY = passiveVocabulary(loadLexicons());
 
