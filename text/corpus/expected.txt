@@ -1,9 +1,9 @@
 18f-content-voice-and-tone  agentless-passive 1, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 7, no-em-dash 1
-18f-engineering-code-review  max-sentence-length 1, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
+18f-engineering-code-review  max-sentence-length 1, title-case-consistency 1, undefined-acronym 4
 18f-engineering-on-call  max-sentence-length 15, oxford-comma-consistency 1
 18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 6, expletive-construction 5, max-paragraph-length 1, max-sentence-length 43, oxford-comma-consistency 1, preamble-length 1, title-case-consistency 2, undefined-acronym 3
-18f-handbook-projects-in-distress  agentless-passive 16, max-paragraph-length 1, max-sentence-length 28, proper-noun-density 1, undefined-acronym 6
-18f-handbook-travel  agentless-passive 21, contraction-consistency 1, max-sentence-length 14, proper-noun-density 1, title-case-consistency 2, undefined-acronym 5
+18f-handbook-projects-in-distress  agentless-passive 16, max-paragraph-length 1, max-sentence-length 28, undefined-acronym 6
+18f-handbook-travel  agentless-passive 21, contraction-consistency 1, max-sentence-length 14, title-case-consistency 2, undefined-acronym 5
 18f-handbook-travel-faq  agentless-passive 76, max-paragraph-length 1, max-sentence-length 65, proper-noun-density 1, undefined-acronym 16
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2
@@ -65,7 +65,7 @@ gds-user-research-weeknotes-2014-07-04  concrete-evidence-density 3, max-sentenc
 genai-web-api  latin-spacing 4
 genai-web-procedure  latin-spacing 29, max-sentence-length 1, proper-noun-density 1, undefined-acronym 3
 gitlab-jd-instructional-designer  agentless-passive 10, concrete-evidence-density 4, heading-echo 5, max-sentence-length 7, oxford-comma-consistency 1, proper-noun-density 1
-gitlab-meetings  agentless-passive 54, max-paragraph-length 2, max-sentence-length 41, proper-noun-density 1, title-case-consistency 1, undefined-acronym 10
+gitlab-meetings  agentless-passive 54, max-paragraph-length 2, max-sentence-length 41, title-case-consistency 1, undefined-acronym 10
 gitlab-values  agentless-passive 83, bold-density 1, concrete-evidence-density 27, expletive-construction 12, heading-echo 11, max-paragraph-length 26, max-sentence-length 137, undefined-acronym 10, unqualified-superlative 16
 govuk-adr-0014-replace-terraform-cloud  max-sentence-length 1, proper-noun-density 1, undefined-acronym 3
 govuk-cddo-roadmap-2022-2025  agentless-passive 22, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 88, ngram-repetition 1, proper-noun-density 1, undefined-acronym 11
@@ -121,7 +121,7 @@ readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-pa
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, proper-noun-density 1, undefined-acronym 22
 rfc9457  max-sentence-length 54, oxford-comma-consistency 1, proper-noun-density 1, undefined-acronym 15
 rouki.txt  clean
-rust-lang-minutes-2022-11-22  agentless-passive 3, contraction-consistency 2, max-sentence-length 3, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
+rust-lang-minutes-2022-11-22  agentless-passive 3, contraction-consistency 2, max-sentence-length 3, title-case-consistency 2, undefined-acronym 3
 rust-rfc-2094-nll  heading-echo 1, max-paragraph-length 12, max-sentence-length 120, ngram-repetition 1, undefined-acronym 19
 saikosai-h18-09-14-bengoshi-chokai  agentless-passive 1, doubled-word 1, max-kanji-continuous 5, max-paragraph-length 1, max-sentence-length 25, no-doubled-joshi 2
 saikosai-h26-09-02-nagano  agentless-passive 2, max-paragraph-length 1, max-sentence-length 6

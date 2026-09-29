@@ -14,6 +14,34 @@ under a divider is an entry. Entries are neither reported nor counted in the sec
 word or phrase. An index divided by `あ行`, or whose entries sit at the same heading level as the letters, is not
 recognised.
 
+### A word capitalised only because it starts the sentence is no longer counted as a proper noun in English (#170)
+
+The English tagger marks every capitalised noun and adjective as a proper noun, so the first word of a sentence
+(`Containers start in seconds.`, `Traditional servers were slow.`, `Use the scheduler.`) was counted as a name, and
+`proper-noun-density` reported handbooks and guides whose names were few. `@chaffjs/lang-en` now reads the first word
+of a sentence again in lower case when it is written with one leading capital, the tagger tagged it as a proper noun,
+and the tagger's own vocabulary knows the lower-case word and never as a name. It takes the part of speech the tagger
+gives the lower-case word in the same sentence. A word the vocabulary does not know (`Kubernetes`, `Congress`), a word
+it also knows as a name (`May`), a word in capitals (`API`) and a capitalised word inside a sentence stay proper nouns.
+In the corpus this only moves `proper-noun-density`: its density falls on most English documents and the finding goes
+away where common words had pushed it over the limit.
+
+## 0.15.0 — 2026-09-30
+
+chaff reads more kinds of text without stumbling. A file with Windows or classic Mac line breaks, a byte order mark, an
+emoji after a number or one very long line is read as the writer sees it, and a genre chaff does not know stops the run
+instead of checking nothing. `chaff eval` speaks the documents' language. Many false reports found on real documents are
+gone: `undefined-acronym` leaves domain names, date placeholders, name numerals, HTTP methods and document numbers alone;
+`agentless-passive` knows Japanese honorific れる/られる and 「〜と呼ばれる」; `latin-spacing` and `heading-echo` skip
+quotations; `date-order` stays silent on a list sorted by name; a reference wrapped across lines, or to a hyphenated tag
+the document lists, names the other document. The corpus gains more rounds of kinds — parliamentary minutes,
+regulations, patents, court decisions, specifications, style guides, glossaries, a speech and more — and `yarn bench`
+plants mistakes for more rules.
+
+📦 [`chaffjs@0.15.0`](https://www.npmjs.com/package/chaffjs/v/0.15.0) ·
+[`@chaffjs/lang-ja@0.14.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.14.0) ·
+[`@chaffjs/lang-en@0.13.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.13.0)
+
 ### A genre chaff does not know stops the run instead of checking nothing (#170)
 
 A `genre` in `chaff.yaml`, or in one of its `by_path` entries, that is not in `npx chaff genres` matched no rule: chaff
