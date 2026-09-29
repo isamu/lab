@@ -45,6 +45,8 @@ describe("latinBoundaries", () => {
     ["の 2 つ", ["before-digit:spaced", "after-digit:spaced"]],
     ["3 GB の", ["letter:spaced"]],
     ["は confidence=0 で", ["letter:spaced", "letter:spaced"]],
+    ["API = 0 で", ["after-digit:spaced"]],
+    ["は a=b 2 回", ["letter:spaced", "after-digit:spaced"]],
     ["電話：073-489-5909 ファックス", []],
     ["は 2026-06-02 時点", []],
     ["図表Ⅰ-4-1-3 生成", []],

@@ -64,11 +64,13 @@ const latinBeside = (japanese: string | undefined, other: string | undefined, di
 /** 日本語の字の隣にある英字・数字との境目。間が半角空白 1 つなら「空けている」、何も無ければ「詰めている」。 */
 // 「confidence=0」のような設定の書き方も、= を含めて一つの並びとして読む。
 const ALPHANUMERIC = /[A-Za-z0-9.=]/u;
+// 名前の語は英数字だけ。「API = 0」の空白で囲んだ = は式の記号で、名前の一部ではない。
+const WORD_CHAR = /[A-Za-z0-9.]/u;
 
-/** chars[last] を末尾とする英数字の並びの、先頭の位置。 */
-const runStartIndex = (chars: readonly string[], last: number): number => {
+/** chars[last] を末尾とし、pattern の字が続く並びの、先頭の位置。 */
+const runStartIndex = (chars: readonly string[], last: number, pattern: RegExp = ALPHANUMERIC): number => {
   let first = last;
-  while (first > 0 && ALPHANUMERIC.test(chars[first - 1] ?? "")) first -= 1;
+  while (first > 0 && pattern.test(chars[first - 1] ?? "")) first -= 1;
   return first;
 };
 
@@ -76,8 +78,8 @@ const runStartIndex = (chars: readonly string[], last: number): number => {
 const wordsBefore = (chars: readonly string[], first: number): string => {
   const words: string[] = [];
   let space = first - 1;
-  while (chars[space] === " " && ALPHANUMERIC.test(chars[space - 1] ?? "")) {
-    const start = runStartIndex(chars, space - 1);
+  while (chars[space] === " " && WORD_CHAR.test(chars[space - 1] ?? "")) {
+    const start = runStartIndex(chars, space - 1, WORD_CHAR);
     words.unshift(chars.slice(start, space).join(""));
     space = start - 1;
   }
