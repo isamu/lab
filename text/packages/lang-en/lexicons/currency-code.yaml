@@ -1,0 +1,16 @@
+# ISO 4217 codes of the major currencies a reader knows, before or after an amount (USD 1,000, 250 EUR).
+# CAD is left out: next to a number it also reads as computer-aided design (3 CAD files). Matched as written.
+id: currency-code
+language: en
+entries:
+  - pattern: "USD"
+  - pattern: "EUR"
+  - pattern: "JPY"
+  - pattern: "GBP"
+  - pattern: "CNY"
+  - pattern: "CHF"
+  - pattern: "AUD"
+  - pattern: "KRW"
+  - pattern: "HKD"
+  - pattern: "SGD"
+  - pattern: "INR"

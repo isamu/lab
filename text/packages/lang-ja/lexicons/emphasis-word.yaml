@@ -1,0 +1,7 @@
+# 大文字で書いて強調する英語の機能語（should NOT change）。略語としての読みが無く、展開するものが無い。
+# OR（Oregon、operating room）や IS（International Standard）のように略語でもある語は入れない。字面どおりに照らす。
+id: emphasis-word
+language: ja
+entries:
+  - pattern: "NOT"
+  - pattern: "AND"

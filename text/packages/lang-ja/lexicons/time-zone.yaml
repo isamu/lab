@@ -1,0 +1,22 @@
+# 業務文書が説明なしで時刻の後ろに書く時間帯（16:00 UTC、2pm ET、10:00 JST）。
+# ここに無いもの（ACT など）は略語として数える。字面どおりに照らす。
+id: time-zone
+language: ja
+entries:
+  - pattern: "UTC"
+  - pattern: "GMT"
+  - pattern: "JST"
+  - pattern: "ET"
+  - pattern: "EST"
+  - pattern: "EDT"
+  - pattern: "CT"
+  - pattern: "CST"
+  - pattern: "CDT"
+  - pattern: "MT"
+  - pattern: "MST"
+  - pattern: "MDT"
+  - pattern: "PT"
+  - pattern: "PST"
+  - pattern: "PDT"
+  - pattern: "CET"
+  - pattern: "CEST"

@@ -16,6 +16,28 @@ which the rule declares; without it the rule is skipped with that reason. Offici
 programmes and exams stay reported: the analyser tags almost none of them as names, and their shape is the same as a
 compound the writer can break.
 
+### `undefined-acronym` accepts an acronym expanded with a note after it in the brackets (#170)
+
+An acronym written as the first item in brackets, followed by a semicolon, comma or 、 and a note, now counts as
+spelled out when the words right before the brackets spell it (`Tax Relief Act (TRA; P.L. 1-1)`,
+`Data Retention Rule (DRR, effective 2030)`), or when the words after the separator do, up to the closing bracket
+(`データ保持規則（DRR、Data Retention Rule）`). The initials are required because the same shape also opens a list
+(`(MR, handbook, etc.)`, `(EPA, FDIC, GSA)`), which is still reported, and so are `(see TRA; …)`, where the acronym is
+not the first item, and a Japanese name followed by only a year (`（DRR、2030年施行）`). Found on a CRS report
+(American Recovery and Reinvestment Act (ARRA; P.L. 111-5)) and 総務省's white paper (オリジネータープロファイル（OP、Originator Profile）).
+
+### `undefined-acronym`'s notation words are word lists, and the rule declares every list it reads (#170)
+
+The words `undefined-acronym` leaves alone next to a number or on their own moved from code into word lists in each
+language package: `meridiem` (AM, PM), `time-zone` (UTC, JST, ET …), `currency-code` (USD, EUR, JPY …),
+`us-state-code` (the postal codes, read only in an address) and `emphasis-word` (a lone NOT or AND). Japanese
+documents get the same lists, since they carry `10:00 JST` and `USD 1,000` too. The contents and the results are
+unchanged: the old and new rule were run side by side over generated documents in both languages, over the examples
+and over the corpus, with the same findings. The rule now declares these lists and `definition-marker` /
+`definition-verb` in `extra_word_lists`. A language package that lacks one of them no longer runs the rule with that
+part missing — which reported `3:30 PM`, or an acronym defined with hereinafter, as undefined — but says which list is
+missing and does not run it. A language with nothing to list ships the list empty.
+
 ### `latin-spacing` reads `Phase 1 は` as a name, and skips codes and markup (#170)
 
 A number after a Latin word and a space (`Phase 1 は`, `iOS 17以上`, `JIS X 0301 和暦`, `Node.js 22 以上`) is part of
@@ -52,7 +74,6 @@ dependent noun carries the ending. A `！` or `？` followed at once by a partic
 prose, and each bulleted list (with its nested items) against itself: a です・ます article whose list is written
 throughout in plain form, the usual way to write bullets, is consistent, while a list that mixes `記載します。` and
 `記載する。` is still reported, and so is a plain sentence in です・ます prose. Found on ja.wikivoyage, dwango's design document and デジタル庁's guides.
-
 
 ## 0.12.0 — 2026-09-29
 
