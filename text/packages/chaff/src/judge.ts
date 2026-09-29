@@ -6,6 +6,7 @@ import * as openai from "./backends/openai.ts";
 import type { AnthropicClient } from "./backends/anthropic.ts";
 import type { OpenAIClient } from "./backends/openai.ts";
 import type { BackendName, Failure, Judge, JsonSchema } from "./backends/types.ts";
+import type { UiLanguage } from "./ui.ts";
 
 export const CACHE_DIR = ".chaff-cache";
 
@@ -87,7 +88,8 @@ export const isAuthFailure = (backend: BackendName, error: unknown): boolean =>
 export const describeFailure = (backend: BackendName, error: unknown): Failure | undefined =>
   backend === "openai" ? openai.describeFailure(error) : anthropic.describeFailure(error);
 
-export const credentialHint = (backend: BackendName): string => (backend === "openai" ? openai.SETUP_HINT : anthropic.SETUP_HINT);
+export const credentialHint = (backend: BackendName, language: UiLanguage): string =>
+  (backend === "openai" ? openai.SETUP_HINT : anthropic.SETUP_HINT)[language];
 
 /**
  * 同じ (model, rule, rubric, candidate) なら 2 度目は問い合わせない。

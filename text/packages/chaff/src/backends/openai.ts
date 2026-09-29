@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { toFailure } from "./types.ts";
 import type { Failure, Judge, Prompt } from "./types.ts";
+import type { Texts } from "../ui.ts";
 
 type OpenAIResponse = { readonly choices: readonly { readonly message: { readonly content: string | null } }[] };
 
@@ -43,4 +44,4 @@ export const judge =
     return body;
   };
 
-export const SETUP_HINT = "OPENAI_API_KEY を設定してください。";
+export const SETUP_HINT: Texts<string> = { ja: "OPENAI_API_KEY を設定してください。", en: "Set OPENAI_API_KEY." };

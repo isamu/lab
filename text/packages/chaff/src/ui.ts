@@ -19,5 +19,12 @@ export const hostLanguage = (configLanguage: string | undefined, env: Readonly<R
   return locale !== undefined && locale.toLowerCase().startsWith("ja") ? "ja" : "en";
 };
 
+/** Several documents end with one closing: in their language when they share one, else the host's. */
+export const sharedLanguage = (languages: readonly string[], host: UiLanguage): UiLanguage => {
+  const distinct = new Set(languages.map((language) => uiLanguageOf(language)));
+  const [only] = [...distinct];
+  return distinct.size === 1 && only !== undefined ? only : host;
+};
+
 /** Text in both languages. Each module keeps its own, next to where it is used. */
 export type Texts<T> = Readonly<Record<UiLanguage, T>>;

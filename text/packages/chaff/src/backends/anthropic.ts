@@ -4,6 +4,7 @@ import { join } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { toFailure } from "./types.ts";
 import type { Failure, Judge, Prompt } from "./types.ts";
+import type { Texts } from "../ui.ts";
 
 type AnthropicResponse = { readonly content: readonly { readonly type: string; readonly text?: string | undefined }[] };
 
@@ -58,4 +59,7 @@ export const judge =
   };
 
 /** 認証が無いときに人へ見せる案内。 */
-export const SETUP_HINT = "ANTHROPIC_API_KEY を設定するか、ant auth login を実行してください。";
+export const SETUP_HINT: Texts<string> = {
+  ja: "ANTHROPIC_API_KEY を設定するか、ant auth login を実行してください。",
+  en: "Set ANTHROPIC_API_KEY, or run ant auth login.",
+};

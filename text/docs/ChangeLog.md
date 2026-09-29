@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `chaff test` speaks English to English documents (#170)
+
+`chaff test` printed its screens in Japanese whatever the document, `chaff.yaml` or the terminal said: the banners over
+the machine and AI findings, the AI findings themselves, the `--dry-run` plan and its total, the notice when the checks
+that read meaning could not run, the hint on setting a key, and the closing tally. Each file's banners, findings and
+plan now follow that file's language. The closing lines (the total, the notice, the key hint and the tally) follow the
+files' language when they share one and otherwise `chaff.yaml`'s `language`, then the terminal's locale, as lint's
+closing line does. "No Markdown found" follows `chaff.yaml`'s `language`, then the locale. The Japanese text is
+unchanged.
+
 ### The corpus's converters decode every HTML character reference name and read an attribute value that holds markup (#170)
 
 A named character reference outside the converters' short list stayed in the text as written: `Vissing-J&oslash;rgensen`
