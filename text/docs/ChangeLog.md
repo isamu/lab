@@ -13,7 +13,8 @@ Five kinds of capitals were reported as acronyms with nothing to expand:
 - **Document numbers**: the capital word right before a hyphenated number with a part of three digits or more is part
   of the number (SP 800-61, NSF 19-582, IEC 19757-2). The word before it is still counted (NIST in "NIST SP
   800-61"), and so is a word before a number with no hyphen (RFC 9110), a version (SDK 3.1), a range of years
-  (FY 2024-25), or two-digit parts (BOD 25-01), which cannot be told from a range, a score or a date (SRE 1-2, 01-02).
+  (FY 2024-25), two numbers of the same width going up (SLO 100-200, SLA 500-599), which are a range, or two-digit
+  parts (BOD 25-01), which cannot be told from a range, a score or a date (SRE 1-2, 01-02).
 - **Symbols defined with "="**: "where N = number of cases, EH = total hours worked" defines EH after it is used.
   A value (EH = 2,000, EH = 40h) or another acronym (EH = SRE) is not a definition. A word as the value
   (SRE = enabled) reads as a one-word definition: a capital name given a value is a setting, with nothing to expand.

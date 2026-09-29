@@ -11,10 +11,20 @@ const SERIES_LABEL = new RegExp(String.raw`(?<![A-Za-z0-9_&.-])[A-Z]+ (?!${YEAR_
 
 /**
  * 文書番号は長い通し番号を持つ（800-61、19757-2）。2 桁ずつの番号（BOD 25-01）は範囲・得点・日付（SRE 1-2、NFL 3-1、
- * 01-02）と見分けられないので、その前の語は略語のまま数える。
+ * 01-02）と見分けられないので、その前の語は略語のまま数える。同じ桁数で小さいほうから書いた 2 つの数（SLO 100-200、
+ * SLA 500-599）は範囲。
  */
 const SERIAL_DIGITS = 3;
-const isDocumentNumber = (number: string): boolean => number.split("-").some((group) => group.length >= SERIAL_DIGITS);
+
+const isRange = (groups: readonly string[]): boolean => {
+  const [low, high, ...rest] = groups;
+  return rest.length === 0 && low !== undefined && high !== undefined && low.length === high.length && Number(low) < Number(high);
+};
+
+const isDocumentNumber = (number: string): boolean => {
+  const groups = number.split("-");
+  return groups.some((group) => group.length >= SERIAL_DIGITS) && !isRange(groups);
+};
 
 /** 文の中の、番号と、その前の大文字の語の範囲。 */
 export const seriesLabelSpans = (text: string): Span[] =>
