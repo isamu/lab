@@ -76,3 +76,14 @@ jobs:
             cat examples-report.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # 既存の文書で結果が変わったら落とす。リポジトリに入っている文書（法令と corpus/docs）だけを比べる。
+      # URL だけの文書は取得先で中身が変わりうるので、手元で yarn corpus:fetch してから比べる。
+      # 変化が意図どおりなら、yarn corpus --update / yarn bench --update で expected を書き換えて PR に含める。
+      - name: corpus (committed documents)
+        if: runner.os == 'Linux'
+        run: yarn corpus
+
+      - name: bench
+        if: runner.os == 'Linux'
+        run: yarn bench
