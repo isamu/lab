@@ -2,7 +2,8 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { evaluate, TARGET_HIT_RATE } from "../packages/chaff/src/eval.ts";
+import { evaluate, TARGET_HIT_RATE, type Point, type RuleReport } from "../packages/chaff/src/eval.ts";
+import { renderEval } from "../packages/chaff/src/render/eval.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
@@ -124,5 +125,51 @@ describe("語彙表の無い言語", () => {
     const rule = RULES.filter((entry) => entry.id === "unqualified-superlative");
     assert.equal(evaluate([buildDocument("d.md", "# T\n\n最も速い。", ja)], rule, "business/report", "ja").length, 1);
     assert.equal(evaluate([buildDocument("d.md", "# T\n\n最も速い。", bare)], rule, "business/report", "ja").length, 0);
+  });
+});
+
+describe("測定結果の言語", () => {
+  const point = (limit: number, documents: number): Point => ({ limit, findings: documents * 2, documents, per10k: documents / 3 });
+  const report = (rule: string, current: number, recommended: number | undefined, sweep: readonly Point[]): RuleReport => ({
+    rule,
+    name: rule,
+    current,
+    sweep,
+    recommended,
+    total: 10,
+  });
+  // 目標を満たす / 超えていて推奨がある / どの閾値でも満たさない、の 3 通りと、小さな corpus の注意書きをすべて通す。
+  const REPORTS: readonly RuleReport[] = [
+    report("fits", 10, 10, [point(5, 1), point(10, 0)]),
+    report("too-strict", 5, 10, [point(5, 4), point(10, 0)]),
+    report("hopeless", 5, undefined, [point(5, 6), point(10, 5)]),
+  ];
+  const JAPANESE = /[぀-ゟ゠-ヿ一-鿿]/u;
+
+  it("英語では日本語を 1 文字も出さない", () => {
+    const text = renderEval(REPORTS, 10, 10, "en");
+    assert.doesNotMatch(text, JAPANESE);
+    assert.match(text, /Measured 3 rules on 10 files as a corpus\./u);
+    assert.match(text, /← current \/ recommended/u);
+    assert.match(text, /Recommended: 10/u);
+    assert.match(text, /No limit meets the target/u);
+    assert.match(text, /the corpus has only 10 documents/u);
+    assert.match(text, / {2}1 doc {2}\( 10\.0%\) {5}2 findings /u);
+  });
+
+  it("英語では 1 のときに単数で数える", () => {
+    const text = renderEval([report("one", 5, 5, [{ limit: 5, findings: 1, documents: 0, per10k: 0 }])], 1, 1, "en");
+    assert.match(text, /Measured 1 rule on 1 file as a corpus\./u);
+    assert.match(text, /the corpus has only 1 document\./u);
+    assert.match(text, / 1 finding {4}/u);
+  });
+
+  it("日本語では以前の文言のまま", () => {
+    const text = renderEval(REPORTS, 10, 10, "ja");
+    assert.match(text, /10 ファイルを corpus として 3 本の rule を測りました。/u);
+    assert.match(text, /← 現在 \/ 推奨/u);
+    assert.match(text, /推奨: 10/u);
+    assert.match(text, /どの閾値でも目標を満たしません。/u);
+    assert.match(text, /※ corpus が 10 文書しかありません。/u);
   });
 });
