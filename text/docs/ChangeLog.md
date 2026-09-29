@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### The corpus HTML converter drops buttons and a heading's link to itself, and keeps a heading that is a link (#170)
+
+A `<button>` is a control, not prose: its label (`Close`, `Share`, `Cite this publication`, `See All Comments`) no
+longer becomes a line of the document. A button inside a heading stays, since that is how an accordion draws its
+section's title. An element with the `hidden` attribute is not shown and goes too (a bookmark tooltip inside a
+blog post's `<h1>`), except `hidden="until-found"`, which the browser opens when its text is searched for; `aria-hidden`
+and a class named `hidden` are unchanged. A link to the heading's own section — its target is the heading, something
+inside it, or a block opening before it with no other heading in between — goes when it stands just after the heading
+(`Copy link to Context`) or inside it beside the title (`Scope ¶`). A heading that is nothing but a link keeps the
+link's text as its title: a heading is never navigation, so a Python PEP's section headings, each a link back to the
+table of contents, and the National Weather Service's expandable headings are no longer dropped. Found on the OECD's
+report, a Chrome for Developers post, GSA's and the Library of Congress's pages and the PEPs.
+
 ### Japanese: a counter after a number does not start a run of kanji (#170)
 
 `max-kanji-continuous` counted the counter of a number written in digits as the first kanji of the compound that
