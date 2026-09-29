@@ -307,6 +307,7 @@ export const buildDocument = (
     listSpans: listItems,
     paragraphs: paragraphsOf(paragraphSpans, sentences, listItems),
     lists: listsOf(root, source, anchors),
+    links: [...spansOfType(root, "link"), ...spansOfType(root, "linkReference")],
     lexicons: tagged ? tokenizedLexicons(lexicons, adapter) : lexicons,
     requiredSections: team.requiredSections,
     // 構造の rule（参照先が無い・番号の抜け）が読む木。どの rule も読まなければ作らない。何万行の契約書で、他の rule の lint に代金を払わせない。
