@@ -15,16 +15,16 @@ const RULE = "unqualified-superlative";
 await ja.prepare?.({ pos: true });
 await en.prepare?.({ pos: true });
 
-const endingsOf = (adapter: LanguageAdapter): Lexicon => adapter.lexicons["quantity-ending"] ?? [];
+const quantitiesOf = (adapter: LanguageAdapter): Lexicon => adapter.lexicons["quantity-noun"] ?? [];
 
 const tokensOf = (adapter: LanguageAdapter, text: string): Token[] => adapter.segment(text).sentences.flatMap((sentence) => sentence.tokens ?? []);
 
 /** 文の中の最上級（語の並び）が量の名前か。最上級は最初に現れたものを見る。 */
-const isName = (adapter: LanguageAdapter, text: string, superlative: readonly string[], endings: Lexicon = endingsOf(adapter)): boolean => {
+const isName = (adapter: LanguageAdapter, text: string, superlative: readonly string[], quantities: Lexicon = quantitiesOf(adapter)): boolean => {
   const tokens = tokensOf(adapter, text);
   const start = tokens.findIndex((_token, at) => superlative.every((word, offset) => tokens[at + offset]?.surface.toLowerCase() === word));
   if (start === -1) throw new Error(`${superlative.join(" ")} が ${text} に無い`);
-  return namesQuantity(tokens, { start, end: start + superlative.length }, endings);
+  return namesQuantity(tokens, { start, end: start + superlative.length }, quantities);
 };
 
 const reported = (adapter: LanguageAdapter, sentence: string): boolean =>
@@ -56,7 +56,15 @@ describe("namesQuantity（ja）", () => {
     assert.ok(!isName(ja, "最大級の台風です。", ["最大"]));
   });
 
-  it("量の語の終わりの語彙表が空なら、どれも名前ではない", () => {
+  it("主張にも付く語（度・率・価値）で終われば主張", () => {
+    assert.ok(!isName(ja, "最高精度を実現しました。", ["最高"]));
+    assert.ok(!isName(ja, "最高強度を実現しました。", ["最高"]));
+    assert.ok(!isName(ja, "最高満足度を獲得しました。", ["最高"]));
+    assert.ok(!isName(ja, "最高成功率です。", ["最高"]));
+    assert.ok(!isName(ja, "最大価値を提供します。", ["最大"]));
+  });
+
+  it("量の名詞の語彙表が空なら、どれも名前ではない", () => {
     assert.ok(!isName(ja, "最大風速が強い。", ["最大"], []));
   });
 
@@ -89,8 +97,8 @@ describe("namesQuantity（ja）", () => {
 
   it("文末の最上級・語が無いとき", () => {
     const tokens = tokensOf(ja, "最大");
-    assert.equal(namesQuantity(tokens, { start: 0, end: tokens.length }, endingsOf(ja)), false);
-    assert.equal(namesQuantity([], { start: 0, end: 0 }, endingsOf(ja)), false);
+    assert.equal(namesQuantity(tokens, { start: 0, end: tokens.length }, quantitiesOf(ja)), false);
+    assert.equal(namesQuantity([], { start: 0, end: 0 }, quantitiesOf(ja)), false);
   });
 });
 
@@ -100,8 +108,8 @@ describe("namesQuantity（en）", () => {
     assert.ok(!isName(en, "Buy the fastest car.", ["the", "fastest"]));
   });
 
-  it("the English list of quantity endings is empty", () => {
-    assert.deepEqual(endingsOf(en), []);
+  it("the English list of quantity nouns is empty", () => {
+    assert.deepEqual(quantitiesOf(en), []);
   });
 });
 
@@ -127,12 +135,12 @@ describe("unqualified-superlative は量の名前を指摘しない", () => {
     assert.ok(reported(ja, "最大風速が強まり、最大の被害が出た。"));
   });
 
-  it("量の語の終わりの語彙表が無い言語では、rule は動かず理由を言う", () => {
-    const bare: LanguageAdapter = { ...ja, lexicons: Object.fromEntries(Object.entries(ja.lexicons).filter(([name]) => name !== "quantity-ending")) };
+  it("量の名詞の語彙表が無い言語では、rule は動かず理由を言う", () => {
+    const bare: LanguageAdapter = { ...ja, lexicons: Object.fromEntries(Object.entries(ja.lexicons).filter(([name]) => name !== "quantity-noun")) };
     const result = runRules(buildDocument("t.md", "# T\n\n最も効果的です。\n", bare), loadRules("ja"), { [RULE]: "strict" }, true, "business/report", {
       [RULE]: 1,
     });
     assert.ok(!result.findings.some((finding) => finding.rule === RULE));
-    assert.ok(result.skipped.find((entry) => entry.rule === RULE)?.why.includes("quantity-ending"));
+    assert.ok(result.skipped.find((entry) => entry.rule === RULE)?.why.includes("quantity-noun"));
   });
 });
