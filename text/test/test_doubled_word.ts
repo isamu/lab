@@ -134,6 +134,8 @@ describe("doubled-word — 純関数", () => {
     assert.deepEqual(pairs([w("had", "VERB"), w("had", "VERB")], { allowed }), []);
     assert.deepEqual(pairs([w("HAD", "VERB"), w("had", "VERB")], { allowed }), []);
     assert.deepEqual(pairs([w("is", "VERB"), w("is", "VERB")], { allowed }), ["is is@3"]);
+    assert.deepEqual(pairs([w("had", "VERB"), w("had", "VERB"), w("had", "VERB")], { allowed }), ["had had@8"]);
+    assert.deepEqual(pairs([w("it", "PRON"), w("had", "VERB"), w("had", "VERB"), w("been", "VERB")], { allowed }), []);
   });
 
   it("語に分けていない語彙表の行は何も許さない", () => {
@@ -186,6 +188,7 @@ describe("doubled-word — 英語", () => {
     assert.deepEqual(findingsOf("The the report is attached.", en, "en"), ["1:5 The the"]);
     assert.deepEqual(findingsOf("Please review the The draft.", en, "en"), ["1:19 the The"]);
     assert.deepEqual(findingsOf("Please review The the draft before Friday.", en, "en"), ["1:19 The the"]);
+    assert.deepEqual(findingsOf("The vendor had had had enough time to respond.", en, "en"), ["1:20 had had"]);
   });
 
   it("valid: 文法が許す重なりと、並んでよい限定詞は数えない", () => {

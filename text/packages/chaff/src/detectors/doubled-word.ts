@@ -83,10 +83,18 @@ export const isNameBefore = (first: Token, second: Token, opensSentence: boolean
 
 const opensSentence = (tokens: readonly Token[], at: number): boolean => !tokens.slice(0, at).some((token) => LETTER.test(token.surface));
 
+const repeatsPrevious = (tokens: readonly Token[], at: number): boolean => {
+  const [previous, token] = [tokens[at - 1], tokens[at]];
+  return previous !== undefined && token !== undefined && surfacesOf([previous]) === surfacesOf([token]);
+};
+
+/** 語彙表の重なり（had had）も、三つ続けば（had had had）書き損じ。 */
+const allowedAt = (tokens: readonly Token[], at: number, allowed: Lexicon): Lexicon => (repeatsPrevious(tokens, at) ? [] : allowed);
+
 export const doubledIn = (source: string, tokens: readonly Token[], spaced: boolean, allowed: Lexicon): Doubled[] =>
   tokens.flatMap((second, index) => {
     const first = tokens[index - 1];
-    if (first === undefined || !doubledAt(source, first, second, spaced, allowed)) return [];
+    if (first === undefined || !doubledAt(source, first, second, spaced, allowedAt(tokens, index - 1, allowed))) return [];
     return isNameBefore(first, second, opensSentence(tokens, index - 1)) ? [] : [{ first, second }];
   });
 
