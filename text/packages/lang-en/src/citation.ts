@@ -4,8 +4,11 @@ const OF = /^,? of (?:the |that |those )?/u;
 /** "section 4(2)(a) (exception to liability …) of the Damages (Scotland) Act 2011": the gloss sits between the number and the name. */
 const GLOSS = /^ \([^()]{1,100}\)/u;
 const CONNECTOR = /^(?:,? (?:to|and|or)|,) /u;
-/** "9", "29(2)", "(g)", and a roman "V" for a list of Articles. The roman numeral must end the word: "VIII", not "Vendor". */
-const LISTED_NUMBERS = [/^\d{1,3}[A-Z]{0,2}(?:\([a-z0-9]{1,4}\))*/u, /^(?:\([a-z0-9]{1,4}\))+/u, /^[IVXLC]{1,7}\b/u];
+/**
+ * "9", "29(2)", "(g)", and a roman "V" for a list of Articles. The roman numeral must end the word: "VIII", not "Vendor".
+ * A dotted "310.5" is not read: its "310" alone is not the section the list names.
+ */
+const LISTED_NUMBERS = [/^\d{1,3}(?!\.?\d)[A-Z]{0,2}(?:\([a-z0-9]{1,4}\))*/u, /^(?:\([a-z0-9]{1,4}\))+/u, /^[IVXLC]{1,7}\b/u];
 
 const listedNumber = (text: string): string | undefined => LISTED_NUMBERS.map((pattern) => pattern.exec(text)?.[0]).find((found) => found !== undefined);
 

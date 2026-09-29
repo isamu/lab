@@ -243,6 +243,24 @@ describe("English: nothing to say about a sound document", () => {
     ["(1), (h), (i), (j), (2)", lines("Section 1 Terms", "(1) one", "(h) eight", "(i) nine", "(j) ten", "(2) two")],
     ["a reference into another agreement from a document with no numbering", "As provided in Section 5 of the Master Agreement."],
     ["a reference down to a lettered item", lines("Section 4.2 Payment", "(a) Pay within 30 days.", "Section 4.3 Late fees", "See Section 4.2(a).")],
+    [
+      "(a), (5) alone on its line, (i), (A), (B), (C), (1), (2), (ii), (6), as US regulations go",
+      lines(
+        "Section 1 Terms",
+        "(a) one",
+        "(4) four",
+        "(5)",
+        "(i) one",
+        "(A) one",
+        "(B) two",
+        "(C) three",
+        "(1) one",
+        "(2) two",
+        "(ii) Nothing in Section 1(a)(5)(i) or Section 1(a)(5)(i)(C)(2) prohibits it.",
+        "(6) six",
+      ),
+    ],
+    ["(A) opening a contract's recitals, as text", lines("Section 1 Recitals", "(A) The Supplier provides services.", "(C) The Customer buys them.")],
   ];
   cases.forEach(([name, source]) => {
     it(name, () => assert.deepEqual(found(en, source), []));
@@ -265,6 +283,24 @@ describe("English: finds the errors", () => {
   it("a roman item skipped", () => {
     assert.deepEqual(found(en, lines("Section 1 Terms", "(a) one", "(i) sub one", "(iii) sub three")), [
       ["numbering-gap", { previous: "(i)", label: "(iii)", expected: 2, found: 3 }],
+    ]);
+  });
+
+  it("a capital item skipped under a roman item", () => {
+    assert.deepEqual(found(en, lines("Section 1 Terms", "(a) one", "(i) sub one", "(A) one", "(C) three")), [
+      ["numbering-gap", { previous: "(A)", label: "(C)", expected: 2, found: 3 }],
+    ]);
+  });
+
+  it("a reference to a capital item that is not there", () => {
+    assert.deepEqual(found(en, lines("Section 1 Terms", "(a) one", "(i) sub one", "(A) one", "(B) two", "See Section 1(a)(i)(C).")), [
+      ["dangling-reference", { label: "Section 1(a)(i)(C)", target: "1.a.i.C" }],
+    ]);
+  });
+
+  it("a paragraph skipped after a paragraph whose label stands alone on its line", () => {
+    assert.deepEqual(found(en, lines("Section 1 Terms", "(a) one", "(4) four", "(5)", "(i) one", "(7) seven")), [
+      ["numbering-gap", { previous: "(5)", label: "(7)", expected: 6, found: 7 }],
     ]);
   });
 
