@@ -172,9 +172,11 @@ const ACRONYM = new RegExp(String.raw`${EDGE_BEFORE}${ACRONYM_PART}(?:-${ACRONYM
 const CAPS_WORD = String.raw`[A-Z]+(?:&[A-Z]+)*`;
 const LONG_CAPS_WORD = String.raw`[A-Z]{${ACRONYM_MAX + 1},}`;
 const CAPS_GAP = String.raw`[\s"“”'‘’]+`;
-const SHOUTED_RUN = new RegExp(
-  String.raw`${EDGE_BEFORE}(?:${CAPS_WORD}(?:${CAPS_GAP}${CAPS_WORD}){2,}|${LONG_CAPS_WORD}${CAPS_GAP}${CAPS_WORD}|${CAPS_WORD}${CAPS_GAP}${LONG_CAPS_WORD})${EDGE_AFTER}`,
-  "u",
+const SHOUTED_RUN = new RegExp(String.raw`${EDGE_BEFORE}${CAPS_WORD}(?:${CAPS_GAP}${CAPS_WORD}){2,}${EDGE_AFTER}`, "u");
+/** 2 語の強調は、その 2 語だけを外す。続きまで外すと、区切りの後ろの略語（NEW GUIDELINES: SRE）まで消える。 */
+const SHOUTED_PAIR = new RegExp(
+  String.raw`${EDGE_BEFORE}(?:${LONG_CAPS_WORD}${CAPS_GAP}${CAPS_WORD}|${CAPS_WORD}${CAPS_GAP}${LONG_CAPS_WORD})${EDGE_AFTER}`,
+  "gu",
 );
 const UNCASED_STRETCH = /(?:[A-Z]|\P{L})+/gu;
 const QUOTED_CAPS = new RegExp(String.raw`["“'‘]${CAPS_WORD}(?:\s+${CAPS_WORD})+["”'’]`, "gu");
@@ -198,7 +200,7 @@ const spanOf = (match: RegExpExecArray): Span => ({ start: match.index, end: mat
 const spansOf = (text: string, notation: NotAcronymSpans): Span[] => [
   ...[...text.matchAll(UNCASED_STRETCH)].filter((match) => SHOUTED_RUN.test(match[0])).map(spanOf),
   ...[...text.matchAll(IDENTIFIER)].filter((match) => /\d/u.test(match[0])).map(spanOf),
-  ...[QUOTED_CAPS, REQUIREMENT_WORD, LICENCE].flatMap((pattern) => [...text.matchAll(pattern)].map(spanOf)),
+  ...[SHOUTED_PAIR, QUOTED_CAPS, REQUIREMENT_WORD, LICENCE].flatMap((pattern) => [...text.matchAll(pattern)].map(spanOf)),
   ...notation(text),
 ];
 

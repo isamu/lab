@@ -128,6 +128,11 @@ describe("undefined-acronym: 2 語の強調", () => {
     assert.deepEqual(acronymsIn("# Notice\n\nIMPORTANT: the SRE team owns this."), ["SRE"]);
   });
 
+  it("invalid: 2 語の強調の続きでも、区切りの後ろの略語は数える", () => {
+    assert.deepEqual(acronymsIn("# Notice\n\nNEW GUIDELINES: SRE team owns this."), ["SRE"]);
+    assert.deepEqual(acronymsIn("# Notice\n\nSee BILLING CODE, XYZ first."), ["XYZ"]);
+  });
+
   it("invalid: 長い大文字の語と小文字の語を挟んだ略語は数える", () => {
     assert.deepEqual(acronymsIn("# Notice\n\nThe BILLING team and the SRE team meet."), ["SRE"]);
   });

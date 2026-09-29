@@ -15,8 +15,9 @@ next to a lower-case word (`SRE-led`) or a single capital (`T-SQL`) does not joi
 the initials of a compound too.
 
 A pair of capitalised words is shouting, not two acronyms, when one of them is longer than an acronym can be
-(`BILLING CODE 3510-13-P`); three or more such words already were. A pair of short capitalised words (`AWS KMS`,
-`NIST SP`) is still read as two acronyms.
+(`BILLING CODE 3510-13-P`); three or more such words already were. Only the pair itself is left out, so an acronym
+after it (`NEW GUIDELINES: SRE`) is still read, and a pair of short capitalised words (`AWS KMS`, `NIST SP`) is still
+read as two acronyms.
 
 `common-acronym` (Japanese and English) has `Q&A`, `R&D` and `M&A`, which business documents use without expansion.
 Other `&` acronyms (`S&OP`, `F&A`) are still reported unless expanded.
