@@ -15,7 +15,9 @@ import { renderSuppressions, type PerFile } from "./render/suppressions.ts";
 import { clock, describeChange, snapshotOf, watchPaths, type Snapshot } from "./watch.ts";
 import { runEval } from "./commands/eval.ts";
 import { runTest } from "./commands/test.ts";
-import { frontMatterGenre, GENRES, guessGenre } from "./genre.ts";
+import { GENRES } from "./genre.ts";
+import { unknownGenres } from "./genre-check.ts";
+import { resolveGenre } from "./resolve-genre.ts";
 import { runInit } from "./init.ts";
 import { targetsOf } from "./cli-args.ts";
 import { loadRules } from "./rule-load.ts";
@@ -43,15 +45,16 @@ const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.langu
 
 const readConfig = (): Config => (existsSync(join(process.cwd(), CONFIG_FILE)) ? loadConfig(join(process.cwd(), CONFIG_FILE)) : EMPTY);
 
-const resolveGenre = (path: string, source: string, config: Config, cliGenre?: string): { genre: string; from: GenreSource } => {
-  // コマンドで指定したものが最優先。その実行だけの指定だから、設定より強い。
-  if (cliGenre !== undefined) return { genre: cliGenre, from: "--genre" };
-  // パスごとの上書きが次。「全体はこう、ここだけは違う」を書けるようにする。
-  const override = applyByPath(config.byPath, config.baseDir, path);
-  if (override.genre !== undefined) return { genre: override.genre, from: "by_path" };
-  if (config.genre !== undefined) return { genre: config.genre, from: "config" };
-  const guess = guessGenre(path, source, frontMatterGenre(source));
-  return guess === undefined ? { genre: "blog/tech", from: "default" } : { genre: guess.genre, from: guess.from };
+/** Commands that never read a genre from chaff.yaml. A wrong one there must not stop them: genres is how to find the right name. */
+const GENRE_FREE: ReadonlySet<string> = new Set(["init", "genres", "skill", "relax", "strict", "off", "tree", "cite"]);
+
+const genreProblems = (command: string, argv: readonly string[]): string[] => {
+  const config = readConfig();
+  const text = hostText(config);
+  const fromConfig = GENRE_FREE.has(command) ? { config: undefined, byPath: [] } : { config: config.genre, byPath: config.byPath };
+  return unknownGenres({ flag: flag(argv, "--genre"), ...fromConfig }, GENRES).map((entry) =>
+    text.unknownGenre(entry.genre, text.genreWhere(entry.where, entry.files), GENRES),
+  );
 };
 
 /** resolveGenre with this run's --genre, for the commands that take it as a dependency. */
@@ -101,7 +104,8 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const source = plainSource(await readFile(path, "utf8"));
   const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
   const adapter = await loadAdapter(language);
-  const { genre, from } = resolveGenre(path, source, config, flag(argv, "--genre"));
+  const { genre, from, unread } = resolveGenre(path, source, config, flag(argv, "--genre"));
+  if (unread !== undefined) console.error(`chaff: ${CLI_TEXT[uiLanguageOf(language)].unreadFrontMatterGenre(path, unread, GENRES)}`);
   const rules = loadRules(language);
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
@@ -333,9 +337,10 @@ export const main = async (argv: readonly string[]): Promise<number> => {
     console.log(VERSION_LINES.join("\n"));
     return 0;
   }
-  const cliGenre = flag(argv, "--genre");
-  if (cliGenre !== undefined && !GENRES.includes(cliGenre)) {
-    console.error(hostText(readConfig()).unknownGenre(cliGenre));
+  // 知らないジャンルでは、どの rule も当たらず、動かなかった rule も並ばない。「指摘なし」が素通りに見えるので、何かする前に止める。
+  const problems = genreProblems(first, argv);
+  if (problems.length > 0) {
+    problems.forEach((problem) => console.error(problem));
     return 1;
   }
   const handler = HANDLERS[first];

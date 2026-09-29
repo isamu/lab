@@ -526,6 +526,8 @@ CI でも毎回かけています。指摘の数では落としません（文�
 
 判定はパスと内容から自動で行い、1 行目に根拠つきで出ます。`README.md`、`*-spec.md`、`docs/` は技術文書として見ます。
 `chaff.yaml` の `genre` で決めるか、その実行だけなら `--genre` で決めます（`chaff.yaml` より優先）。
+一覧（`npx chaffjs genres`）に無いジャンルを書くと、何も検査せずに止まります。
+front matter の `genre:` が一覧に無いときは、使わずにそう言い、パスと内容から決めます。
 
 ```
 chaff-spec.md   technical/spec · 日本語   ジャンルはパスから

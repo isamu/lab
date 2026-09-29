@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### A genre chaff does not know stops the run instead of checking nothing (#170)
+
+A `genre` in `chaff.yaml`, or in one of its `by_path` entries, that is not in `npx chaff genres` matched no rule: chaff
+reported no findings, listed no rule as not run, and exited 0. It now stops before checking anything, as `--genre`
+already did, and says where the genre was written and which genres there are (`--genre`'s message lists them too now).
+A front matter `genre:` that is not a genre is not an error, since front matter often belongs to another tool: the file
+falls back to the path, the content or the default as before, and chaff now says on standard error, in the document's
+language, that the value was not read. The commands that do not read a genre (`genres`, `init`, `tree`, `cite`, `relax`, `strict`, `off`, `skill`)
+still run with such a `chaff.yaml`.
+
 ### `agentless-passive` leaves Japanese honorific れる/られる and 「〜と呼ばれる」 alone (#170)
 
 Honorific れる/られる names the person who acts as the subject, so no actor is hidden. lang-ja now drops
