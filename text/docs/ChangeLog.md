@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### English: a page title is not compared with the section headings (#170)
+
+`title-case-consistency` reported a Title Case page title over sentence-case section headings (CDC's
+`# Carbon Monoxide Poisoning Basics` over `## What it is`), a common and consistent house style: the title is a name.
+When the first heading is the document's only top-level heading, it is now left out of the comparison and never
+reported. It still decides an even split among the section headings, where the style the author chose for the title is
+the likelier house style. A document with several top-level headings has no title in this sense (the first may be a
+chapter), so all of its headings are compared as before; real inconsistencies among section headings are reported as
+before.
+
 ### Japanese: a line break inside a Markdown paragraph no longer splits a word (#170)
 
 A judgment copied from its PDF, or a paragraph wrapped by hand, has line breaks in the middle of a sentence. Markdown

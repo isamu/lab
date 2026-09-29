@@ -10,7 +10,7 @@ arxiv-2609-27842-genai-assessment  adverb-overuse 1, agentless-passive 124, conc
 automattic-offer-letter-us  agentless-passive 10, duplicate-definition 1, max-paragraph-length 2, max-sentence-length 53, proper-noun-density 1
 automattic-privacy-policy  agentless-passive 20, concrete-evidence-density 7, heading-echo 1, max-paragraph-length 1, max-sentence-length 128, ngram-repetition 1, proper-noun-density 1, undefined-acronym 8
 bonterms-cloud-terms  agentless-passive 20, max-paragraph-length 5, max-sentence-length 73, ngram-repetition 1, proper-noun-density 1, undefined-acronym 3
-cdc-co-poisoning-basics  agentless-passive 7, concrete-evidence-density 5, contraction-consistency 2, heading-echo 1, max-sentence-length 2, proper-noun-density 1, title-case-consistency 1
+cdc-co-poisoning-basics  agentless-passive 7, concrete-evidence-density 5, contraction-consistency 2, heading-echo 1, max-sentence-length 2, proper-noun-density 1
 cisa-scuba-teams  bold-density 9, contraction-consistency 4, max-paragraph-length 2, max-sentence-length 32, ngram-repetition 1, numbering-gap 1, proper-noun-density 1, undefined-acronym 6
 cloudgov-changelog-2023-11-27  max-sentence-length 2, proper-noun-density 1, undefined-acronym 3
 cloudgov-v2api-eol-notice  agentless-passive 4, contraction-consistency 1, doubled-word 1, max-sentence-length 1, proper-noun-density 1, title-case-consistency 1
