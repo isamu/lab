@@ -15,6 +15,20 @@ reported, as is a run of names (田中一郎山田花子佐藤次郎): both are 
 names are not in the dictionary as proper nouns: kuromoji splits 個人情報保護委員会 and 日本経済団体連合会 into common
 nouns, and they stay reported. No finding in the corpus changes.
 
+### English: a curly or single closing quotation mark stays with its sentence (#170)
+
+After a question or exclamation mark, the sentence splitter ended the sentence before a curly closing quotation mark
+(`“Is it done?” Nobody answered.`, `‘…?’`) or a straight single one (`'What if?'`), so the next sentence began with
+`”`. That stray mark was counted as a word by `max-sentence-length`, a quoted question on its own became a sentence of
+one mark, which made a section look longer to `concrete-evidence-density`, and a quotation in the middle of a sentence
+(`the room “How do we grade?”, which met twice`) split the sentence in two. A closing quotation mark (or bracket) that
+opens a sentence directly after a full stop, question or exclamation mark now goes back to the end of that sentence.
+When a space and a capital letter follow, the two stay separate sentences; when nothing follows, the quotation ends
+the paragraph; when lower case, a number or punctuation follows, the quotation was mid-sentence and the two are one
+sentence, as with straight double quotes. Opening marks (`“`, `‘`) and a word-initial apostrophe (`’Tis`, `’90s`) are
+never moved. Found on 18F's handbook, an arXiv workshop report, a Federal Register notice, a Library of Congress blog
+post and GitLab's handbook.
+
 ### The corpus has patent specifications and court decisions (#170)
 
 A US patent (the sealed crustless sandwich, public domain), a Japanese published patent application (特開, URL only:
