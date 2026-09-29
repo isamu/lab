@@ -1,7 +1,8 @@
 import { loadLexicons } from "./lexicons.ts";
 import { sentenceSpans } from "./sentence-split.ts";
 import { structure } from "./structure.ts";
-import { isReady, predicateOnly, prepare, tokenize } from "./pos.ts";
+import { isReady, predicateOnly, prepare, readsAsCounter, tokenize } from "./pos.ts";
+import { markSpacedCounters } from "./spaced-counter.ts";
 import { distributiveVocabulary, markReduplication } from "./reduplication.ts";
 import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
 
@@ -50,8 +51,9 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] =>
 const DISTRIBUTIVE = distributiveVocabulary(loadLexicons());
 
 const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] => {
-  const tokens = tokenize(source);
-  if (tokens === undefined) return [...sentences];
+  const read = tokenize(source);
+  if (read === undefined) return [...sentences];
+  const tokens = markSpacedCounters(read, readsAsCounter);
   return sentences.map((sentence) => ({
     ...sentence,
     // 述語かどうかは文の中でしか決まらないので、文へ配ってから印を落とす。

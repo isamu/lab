@@ -812,6 +812,136 @@
       "license": "紀美野町ホームページの利用ルール（政府標準利用規約（第2.0版）準拠、CC BY 4.0 互換）; 出典: 紀美野町ホームページ (https://www.town.kimino.wakayama.jp/event/ibento/4297.html); 「町民一斉清掃の実施について」（紀美野町）（https://www.town.kimino.wakayama.jp/event/ibento/4297.html）を加工して作成 (converted to Markdown)",
       "redistribute": true,
       "format": "html"
+    },
+    {
+      "id": "govuk-incident-safe-browsing",
+      "title": "Inside GOV.UK: Incident report: Some GOV.UK URLs blocked by deceptive site warning",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260618133943id_/https://insidegovuk.blog.gov.uk/2022/11/24/incident-report-some-gov-uk-urls-blocked-by-deceptive-site-warning/",
+      "license": "Open Government Licence v3.0 (contains public sector information licensed under the OGL v3.0, from Inside GOV.UK, https://insidegovuk.blog.gov.uk/2022/11/24/incident-report-some-gov-uk-urls-blocked-by-deceptive-site-warning/), converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "nih-research-matters-hpv-one-dose",
+      "title": "NIH Research Matters: One dose of HPV vaccine as effective as two",
+      "source": "url",
+      "genre": "blog/owned-media",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260902063334id_/https://www.nih.gov/news-events/nih-research-matters/one-dose-hpv-vaccine-effective-two",
+      "license": "Public domain (work of the US federal government, NIH); the photograph is not included, only its caption and credit line",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "arxiv-2609-27842-genai-assessment",
+      "title": "arXiv 2609.27842v1: AI Can Do Your Homework. Now What? Report from an online workshop on computing assessment in the age of generative AI",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://arxiv.org/html/2609.27842v1",
+      "license": "CC BY 4.0 (as declared on arXiv); Akbar, M. S., Challen, G., Fund, F., Hopkins, C., Karnalim, O., Lin, K., McGuffee, J., Taneja, S., and Ware, R. (2026), https://arxiv.org/abs/2609.27842v1; converted from the arXiv HTML rendering to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "nsf-19-582-reu-solicitation",
+      "title": "NSF 19-582: Research Experiences for Undergraduates (REU) program solicitation",
+      "source": "url",
+      "genre": "business/proposal",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260426211937id_/https://www.nsf.gov/funding/opportunities/reu-research-experiences-undergraduates/nsf19-582/solicitation",
+      "license": "Public domain (work of the US federal government, NSF)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "cloudgov-changelog-2023-11-27",
+      "title": "cloud.gov news: November 27th cloud.gov Change Log",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/cloud-gov/cg-site/536b459f25dc541450f8b02675b32584196a05fd/_posts/2023-11-27-release-notes.md",
+      "license": "CC0-1.0 per the repository's LICENSE.md, but the post quotes upstream release notes (Cloud Foundry, Ubuntu security notices) under their own licences (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "meti-press-level4-bus",
+      "title": "経済産業省: 一般道における中型バスでのレベル4自動運転による運行を開始します",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260113055151id_/https://www.meti.go.jp/press/2025/01/20260113001/20260113001.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: 経済産業省ウェブサイト (https://www.meti.go.jp/press/2025/01/20260113001/20260113001.html); 「一般道における中型バスでのレベル4自動運転による運行を開始します」（経済産業省）（https://www.meti.go.jp/press/2025/01/20260113001/20260113001.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "meti-keiryoshi-exam-correction",
+      "title": "経済産業省: 第76回計量士国家試験の正解番号の訂正について",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260123042929id_/https://www.meti.go.jp/press/2025/01/20260122003/20260122003.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: 経済産業省ウェブサイト (https://www.meti.go.jp/press/2025/01/20260122003/20260122003.html); 「第76回計量士国家試験の正解番号の訂正について」（経済産業省）（https://www.meti.go.jp/press/2025/01/20260122003/20260122003.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "nta-taxanswer-1120",
+      "title": "国税庁: タックスアンサー No.1120 医療費を支払ったとき（医療費控除）",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260920161234id_/https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1120.htm",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: 国税庁ホームページ (https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1120.htm); 「No.1120 医療費を支払ったとき（医療費控除）」（国税庁）（https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1120.htm）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "da-gss-incident",
+      "title": "デジタル庁: ガバメントソリューションサービスへの不正アクセスによる職員等の個人情報の漏えいの可能性について",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260929040957id_/https://www.digital.go.jp/news/2026-0911-01",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: デジタル庁ウェブサイト (https://www.digital.go.jp/news/2026-0911-01); 「ガバメントソリューションサービスへの不正アクセスによる職員等の個人情報の漏えいの可能性について」（デジタル庁）（https://www.digital.go.jp/news/2026-0911-01）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "kimino-staff-exam-guide",
+      "title": "紀美野町: 令和8年度第2回紀美野町職員採用試験のご案内【一般事務職】",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260729160136id_/https://www.town.kimino.wakayama.jp/event/saiyouzyouhou/zyoukin/shikenannai/4782.html",
+      "license": "紀美野町ホームページの利用ルール（政府標準利用規約（第2.0版）準拠、CC BY 4.0 互換）; 出典: 紀美野町ホームページ (https://www.town.kimino.wakayama.jp/event/saiyouzyouhou/zyoukin/shikenannai/4782.html); 「令和8年度第2回紀美野町職員採用試験のご案内【一般事務職】」（紀美野町）（https://www.town.kimino.wakayama.jp/event/saiyouzyouhou/zyoukin/shikenannai/4782.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "kimino-oishi-kogen-traffic",
+      "title": "紀美野町: 【お知らせ】秋のススキシーズンにおける生石高原までのアクセス道路の渋滞について",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260922230449id_/https://www.town.kimino.wakayama.jp/sabusaito/kanko/4851.html",
+      "license": "紀美野町ホームページの利用ルール（政府標準利用規約（第2.0版）準拠、CC BY 4.0 互換）; 出典: 紀美野町ホームページ (https://www.town.kimino.wakayama.jp/sabusaito/kanko/4851.html); 「【お知らせ】秋のススキシーズンにおける生石高原までのアクセス道路の渋滞について」（紀美野町）（https://www.town.kimino.wakayama.jp/sabusaito/kanko/4851.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "neeview-changelog-ja",
+      "title": "NeeView 更新履歴",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/neelabo/NeeView/686a43362dc4b3c9f2ea014240dbba2d0e9fbcaa/docs/ja-jp/changelog.md",
+      "license": "MIT (URL only)",
+      "redistribute": false
     }
   ]
 }

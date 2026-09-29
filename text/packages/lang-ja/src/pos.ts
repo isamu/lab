@@ -246,3 +246,17 @@ export const morphemes = (text: string): Morph[] | undefined => {
     detail2: detail2Of(raw),
   }));
 };
+
+const isCounterMorph = (morph: Morph): boolean => morph.pos === "名詞" && morph.detail1 === "接尾" && morph.detail2 === "助数詞";
+
+/** 桁の語（万・億）。「26.7 万行」の「万行」は、詰めれば 26.7万 と 行 に分かれる。 */
+const isNumeralMorph = (morph: Morph): boolean => morph.pos === "名詞" && morph.detail1 === "数";
+
+/**
+ * 数のすぐ後ろに詰めて書いたとき、word が数につく語として読まれるか（spaced-counter.ts が使う）。
+ * word がそのまま一語の助数詞になるか、桁の語で始まるとき。「件名」は詰めると 件 と 名 に割れるので、助数詞とは読まない。
+ */
+export const readsAsCounter = (number: string, word: string): boolean => {
+  const next = morphemes(number + word)?.find((morph) => morph.start === number.length);
+  return next !== undefined && ((next.surface === word && isCounterMorph(next)) || isNumeralMorph(next));
+};
