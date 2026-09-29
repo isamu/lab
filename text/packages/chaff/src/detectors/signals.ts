@@ -3,6 +3,7 @@ import { wordsOf } from "./structure.ts";
 import { compacted, placeOf } from "./gram-place.ts";
 import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
 import { expansionAt, type ExpandedAt } from "./acronym-expansion.ts";
+import { conjugatedForms } from "./conjugated-form.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 
 const PER = 1000;
@@ -216,7 +217,14 @@ const notationOf = (doc: ProseDocument): NotAcronymSpans =>
     currencies: patternsOf(doc, "currency-code"),
     usStates: patternsOf(doc, "us-state-code"),
     emphasis: patternsOf(doc, "emphasis-word"),
+    divisions: patternsOf(doc, "numbered-division"),
   });
+
+/** 定義の語は、語彙表の形（という）と、この文書で活用して書かれた形（といいます）の両方で照らす。 */
+const definitionVerbsOf = (doc: ProseDocument): string[] => {
+  const verbs = patternsOf(doc, "definition-verb");
+  return [...verbs, ...conjugatedForms(doc.sentences, verbs)];
+};
 
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
@@ -225,7 +233,7 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   acronymsOf(doc, notationOf(doc)).forEach(({ word, hit }) => {
     if (!common.has(word) && !seen.has(word)) seen.set(word, hit);
   });
-  const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: patternsOf(doc, "definition-verb") });
+  const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
   const bare = [...seen.entries()].filter(([acronym]) => !isExpanded(body, acronym, expandedAt));
   if (bare.length < options.limit) return [];
   return bare.map(([acronym, hit]) => ({
