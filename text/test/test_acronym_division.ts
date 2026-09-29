@@ -12,7 +12,7 @@ import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 const listOf = (adapter: LanguageAdapter, id: string): string[] => (adapter.lexicons[id] ?? []).map((entry) => entry.pattern);
 
-const NONE: NotationWords = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [], divisions: [], honorifics: [] };
+const NONE: NotationWords = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [], divisions: [], honorifics: [], dateTimeUnits: [] };
 const spans = notAcronymSpansOf({ ...NONE, divisions: listOf(en, "numbered-division") });
 
 /** 範囲にまるごと覆われた、大文字だけの語。 */
@@ -71,7 +71,7 @@ describe("区切りの名前の後ろのローマ数字", () => {
   [
     ["崩れた書き方（IIII、VX、IC、XD、LLVM、MMMMM）", "Section IIII, Section VX, Part IC, Part XD, Part LLVM, Volume MMMMM"],
     ["番号の後ろに英字・数字・&が続く", "Section IIa, Part IIIB, Section CIA, Part II2, Part CD&R"],
-    ["区切りの名前が語の一部", "Counterpart II, Subsection II, Parts II, COUNTERPART II, SUBSECTION IV"],
+    ["区切りの名前が語の一部", "COUNTERPART II, SUBSECTION IV, PARTS II"],
     ["小文字の名前（本文の part）", "the part II of it, section VI"],
     ["名前と番号の間に別の語", "Section on CI, Part of CD"],
     ["名前が無い", "CI, CD, DC, CV, MD, MIX, DIV, CLI, LV, DX, IV, MM, XL"],
@@ -119,7 +119,7 @@ const DOCS: Readonly<Record<string, (phrase: string) => string>> = {
     });
 
     it("invalid: 語彙表から抜いた名前の後ろでは数える", () => {
-      assert.deepEqual(reported(without(adapter, "Section"), doc("Section VIII")), ["VIII", "SRE"]);
+      assert.deepEqual(reported(without(adapter, "Part"), doc("PART VIII")), ["PART", "VIII", "SRE"]);
     });
   });
 });

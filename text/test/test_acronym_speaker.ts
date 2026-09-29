@@ -10,7 +10,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 const listOf = (id: string): string[] => (en.lexicons[id] ?? []).map((entry) => entry.pattern);
 
-const NONE: NotationWords = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [], divisions: [], honorifics: [] };
+const NONE: NotationWords = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [], divisions: [], honorifics: [], dateTimeUnits: [] };
 const spans = notAcronymSpansOf({ ...NONE, honorifics: listOf("honorific") });
 
 /** 範囲にまるごと覆われた、大文字だけの語。 */
