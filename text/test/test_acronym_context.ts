@@ -1,6 +1,17 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { notAcronymSpans } from "../packages/chaff/src/detectors/acronym-context.ts";
+import { notAcronymSpansOf } from "../packages/chaff/src/detectors/acronym-context.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+
+const listOf = (id: string): string[] => (en.lexicons[id] ?? []).map((entry) => entry.pattern);
+
+const notAcronymSpans = notAcronymSpansOf({
+  meridiem: listOf("meridiem"),
+  timeZones: listOf("time-zone"),
+  currencies: listOf("currency-code"),
+  usStates: listOf("us-state-code"),
+  emphasis: listOf("emphasis-word"),
+});
 
 /** 範囲に覆われた大文字の語だけを返す。 */
 const covered = (text: string): string[] =>
@@ -104,4 +115,22 @@ describe("notAcronymSpans: 異常な入力", () => {
   it("空文字", () => assert.deepEqual(notAcronymSpans(""), []));
 
   it("数字だけ", () => assert.deepEqual(notAcronymSpans("12:30 1,000 94720"), []));
+});
+
+describe("notAcronymSpansOf: 語彙表の形", () => {
+  const none = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [] };
+
+  it("空の語彙表はどこにも当たらない（空の選択肢で文字の間に当たらない）", () => {
+    assert.deepEqual(notAcronymSpansOf(none)("at 3:30 PM, USD 1,000, Berkeley, CA 94720, NOT"), []);
+  });
+
+  it("語は字面どおりに照らす。正規表現の記号は記号のまま（N.B は NXB に当たらない）", () => {
+    const spans = notAcronymSpansOf({ ...none, emphasis: ["N.B"] });
+    assert.deepEqual(spans("NXB"), []);
+    assert.deepEqual(spans("see N.B here"), [{ start: 4, end: 7 }]);
+  });
+
+  it("大文字と小文字を区別する（pm は語彙表の PM ではない）", () => {
+    assert.deepEqual(notAcronymSpansOf({ ...none, meridiem: ["PM"] })("at 3:30 pm"), []);
+  });
 });
