@@ -9,8 +9,8 @@ Newest first.
 "the a priori approach" was reported as two articles in a row. The "a" of "a priori", "a posteriori", "a fortiori",
 "a la carte", "a la mode" and "a cappella" belongs to a fixed phrase that acts as one adjective, and the tagger gives no
 sign of a foreign word there ("priori" is a noun to it). An article pair is no longer reported when the second word
-opens a phrase from lang-en's new `fixed-phrase` word list. "the a report" is still reported, and so is any doubled
-article before the phrase ("the the a priori"). Japanese has no articles and no such list.
+opens a phrase from lang-en's new `fixed-phrase` word list. "the a report" and "a a priori" are still reported, and
+so is any doubled article before the phrase ("the the a priori"). Japanese has no articles and no such list.
 
 ### `agentless-passive` leaves Japanese れる/られる that is not a passive alone (#170)
 

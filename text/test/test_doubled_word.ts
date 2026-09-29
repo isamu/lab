@@ -179,6 +179,8 @@ describe("doubled-word — 純関数", () => {
     assert.deepEqual(pairs(words), ["the a@4"]);
     // 句の続きが無ければ句ではない。
     assert.deepEqual(pairs([w("the", "DET", ART), w("a", "DET", ART), w("report", "NOUN")], { phrases }), ["the a@4"]);
+    // 同じ語の重なり（a a priori）は書き損じのまま。
+    assert.deepEqual(pairs([w("a", "DET", ART), w("a", "DET", ART), w("priori", "NOUN")], { phrases }), ["a a@2"]);
     // 句より前の重なりは書き損じのまま。
     assert.deepEqual(pairs([w("the", "DET", ART), w("the", "DET", ART), w("a", "DET", ART), w("priori", "NOUN")], { phrases }), ["the the@4"]);
   });
@@ -329,6 +331,8 @@ describe("doubled-word — 英語", () => {
   it("invalid: 句でなければ、句の前でも冠詞の重なりは書き損じ", () => {
     assert.deepEqual(findingsOf("Please send the a report on the a priori method.", en, "en"), ["1:17 the a"]);
     assert.deepEqual(findingsOf("It is the a prior approach.", en, "en"), ["1:11 the a"]);
+    assert.deepEqual(findingsOf("This is a a priori argument.", en, "en"), ["1:11 a a"]);
+    assert.deepEqual(findingsOf("Use a a la carte menu.", en, "en"), ["1:7 a a"]);
   });
 
   it("決まった句の語彙表を持たない言語では、句の前の冠詞も重なりとして数える", () => {

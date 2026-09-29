@@ -102,7 +102,7 @@ const allowedAt = (tokens: readonly Token[], at: number, allowed: Lexicon): Lexi
 
 /**
  * tokens の at 語目から、語彙表の決まった句（a priori・a la carte）が始まるか。句の頭の a は冠詞ではなく句の一部なので、
- * 前の冠詞と並んでも（the a priori approach）書き損じではない。
+ * 前の違う冠詞と並んでも（the a priori approach）書き損じではない。同じ語（a a priori）は書き損じのまま。
  */
 export const opensPhrase = (tokens: readonly Token[], at: number, phrases: Lexicon): boolean =>
   phrases.some((entry) => {
@@ -114,7 +114,8 @@ export const doubledIn = (source: string, tokens: readonly Token[], spaced: bool
   tokens.flatMap((second, index) => {
     const first = tokens[index - 1];
     if (first === undefined || !doubledAt(source, first, second, spaced)) return [];
-    if (isAllowed(tokens, index - 1, allowedAt(tokens, index - 1, allowed)) || opensPhrase(tokens, index, phrases)) return [];
+    if (isAllowed(tokens, index - 1, allowedAt(tokens, index - 1, allowed))) return [];
+    if (!sameWord(first, second) && opensPhrase(tokens, index, phrases)) return [];
     return isNameBefore(first, second, opensSentence(tokens, index - 1)) ? [] : [{ first, second }];
   });
 
