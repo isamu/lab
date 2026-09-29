@@ -74,6 +74,7 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown('<div><p>新着一覧</p></div><DIV ROLE="main"><p>本文。</p></DIV>'), "本文。\n");
     assert.equal(htmlToMarkdown('<div role="main-menu"><p>メニュー</p></div><div><p>本文。</p></div>'), "メニュー\n\n本文。\n");
     assert.equal(htmlToMarkdown('<div data-role="main"><p>メニュー</p></div><article role="main"><p>本文。</p></article>'), "本文。\n");
+    assert.equal(htmlToMarkdown('<div title="x role=main y"><p>メニュー</p></div><article class=page role=main><p>本文。</p></article>'), "本文。\n");
   });
 
   it("aside・footer・form (検索窓) を落とす", () => {
