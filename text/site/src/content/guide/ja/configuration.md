@@ -104,6 +104,7 @@ $ npx chaffjs tree draft.txt
 
 違うときは `profile` に書きます。`none` と書くと、内容からも選びません。
 パスごとに変えるときは、`by_path` にも `profile` を書けます。
+同梱していない種類を書くと、chaff は何も検査せずに止まり、どこに書いた種類かと、使える種類を言います。
 
 ```yaml
 profile: statute

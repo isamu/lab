@@ -4,6 +4,26 @@ Newest first.
 
 ## Unreleased
 
+### `concrete-evidence-density` leaves the entries of a glossary alone (#170)
+
+A glossary or an A to Z style guide was reported entry by entry, because a definition carries no number, code or link.
+Entries are now recognised by structure: headings of a single letter (`## A`, `## B`, `## あ`, `## い`) with nothing under
+them but deeper headings, two or more of them in a row and in the order of their letters, divide an index when most of
+the headings right under them start with their letter (case, accents and voicing marks aside, katakana read as
+hiragana). Every section under such a divider is an entry, and entries are neither reported nor counted in the section
+total. The rest of the document (the introduction, "how to suggest a change") is checked as before, and so are FAQs,
+sections headed by a single word or phrase, and sections merely grouped under `## A` / `## B`. An index divided by `あ行`,
+or whose entries sit at the same heading level as the letters, is not recognised.
+
+### A document profile chaff does not bundle stops the run instead of turning profiles off (#170)
+
+A `profile` in `chaff.yaml`, or in one of its `by_path` entries, that names no bundled profile (`profile: statue`)
+chose nothing and also stopped the profile from being chosen from the content, so it acted as `none` without a word:
+a statute lost its addresses and article captions. It now stops before checking anything, and says where the profile
+was written and which profiles there are, `none` included. Profiles come only from the bundled `profiles/*.yaml`, so
+there is nothing else a name could mean. The commands that read no document (`genres`, `init`, `rules`, `explain`,
+`relax`, `strict`, `off`, `skill`) still run with such a `chaff.yaml`.
+
 ### `chaff test` speaks English to English documents (#170)
 
 `chaff test` printed its screens in Japanese whatever the document, `chaff.yaml` or the terminal said: the banners over
