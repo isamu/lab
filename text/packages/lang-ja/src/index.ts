@@ -1,7 +1,7 @@
 import { loadLexicons } from "./lexicons.ts";
 import { sentenceSpans } from "./sentence-split.ts";
 import { structure } from "./structure.ts";
-import { isReady, predicateOnly, prepare, readsAsCounter, tokenize } from "./pos.ts";
+import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, tokenize } from "./pos.ts";
 import { markSpacedCounters } from "./spaced-counter.ts";
 import { distributiveVocabulary, markReduplication } from "./reduplication.ts";
 import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
@@ -60,6 +60,7 @@ const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] 
     tokens: markReduplication(
       predicateOnly(tokens.filter((token) => token.span.start >= sentence.span.start && token.span.end <= sentence.span.end)),
       DISTRIBUTIVE,
+      readsAsOneAdverb,
     ),
   }));
 };

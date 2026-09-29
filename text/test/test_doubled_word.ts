@@ -295,6 +295,23 @@ describe("doubled-word — 日本語", () => {
     valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
   });
 
+  it("valid: 話し言葉の重ね言葉（国会の会議録）は数えない", () => {
+    const valid = [
+      "そういった段階段階のところをきっちりと制度上つくっていくことが重要です。",
+      "段階段階で確認します。",
+      "濫用的な通報というのは、繰り返し繰り返し来る通報のことだと思います。",
+      "繰り返し繰り返し説明しました。",
+      "要するに、労働者ががんがんじゃなくて経営者が報復する。",
+      "がんがん進めてください。",
+    ];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
+  });
+
+  it("invalid: 重ね言葉と同じ形でも書き損じは数える", () => {
+    assert.deepEqual(findingsOf("段階段階を踏みます。", ja, "ja"), ["1:3 段階段階"]);
+    assert.deepEqual(findingsOf("昨日行ったたので疲れた。", ja, "ja"), ["1:6 たた"]);
+  });
+
   it("valid: 読点で区切った同じ語は数えない", () => {
     assert.deepEqual(findingsOf("は、はい。資料、資料と言われても困ります。", ja, "ja"), []);
   });

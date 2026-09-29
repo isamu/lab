@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `doubled-word` accepts the spoken reduplications of the Diet minutes (#170)
+
+Three repeats in a committee's minutes were reported as slips. 「段階段階のところを」 means "at each stage", like
+「場面場面で」: 段階 joins the nouns that double to mean "each" (`distributive-noun`), so a particle must still follow
+(「段階段階を踏む」 is reported). 「繰り返し繰り返し来る」 repeats a verb as an adverb, which the analyser reads as two
+verbs, the same as 「見る見る」: it joins the `doubled-word` list. 「労働者ががんがんじゃなくて」 is the adverb がんがん, which
+the analyser reads as the noun がん twice only because of the が before it. `@chaffjs/lang-ja` now reads two adjacent
+equal content words again as one string, and marks the second `Echo=Rdp` when the analyser reads that string as a
+single adverb. Function words are not read again, since the slip 「行ったたので」 would read as the adverb たた. Minutes
+keep the rule: every repeat found there is explained by the words, and a transcript can still carry a real slip.
+
 ### An English `(i)` right under `(1)` is a roman numeral, as US regulations number (a)(1)(i) (#170)
 
 A US regulation goes down `(a)`, `(1)`, `(i)`. lang-en read an `(i)` as roman only right under a lettered item, so the
