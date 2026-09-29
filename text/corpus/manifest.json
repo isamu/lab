@@ -942,6 +942,127 @@
       "url": "https://raw.githubusercontent.com/neelabo/NeeView/686a43362dc4b3c9f2ea014240dbba2d0e9fbcaa/docs/ja-jp/changelog.md",
       "license": "MIT (URL only)",
       "redistribute": false
+    },
+    {
+      "id": "mhlw-norovirus-qa",
+      "title": "厚生労働省: ノロウイルスに関するＱ＆Ａ",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260914090016id_/https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/shokuhin/syokuchu/kanren/yobou/040204-1.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: 厚生労働省ホームページ (https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/shokuhin/syokuchu/kanren/yobou/040204-1.html); 「ノロウイルスに関するＱ＆Ａ」（厚生労働省）（https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/shokuhin/syokuchu/kanren/yobou/040204-1.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "jma-tokubetsu-keiho",
+      "title": "気象庁: 特別警報について",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260914053538id_/https://www.jma.go.jp/jma/kishou/know/tokubetsu-keiho/index.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: 気象庁ホームページ (https://www.jma.go.jp/jma/kishou/know/tokubetsu-keiho/index.html); 「特別警報について」（気象庁）（https://www.jma.go.jp/jma/kishou/know/tokubetsu-keiho/index.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "mext-heatstroke-after-holidays",
+      "title": "文部科学省: 休業日明けの時期等における熱中症事故の防止について（依頼）（令和7年8月22日 事務連絡）",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20250902141126id_/https://www.mext.go.jp/a_menu/kenko/anzen/1417343_00045.htm",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: 文部科学省ホームページ (https://www.mext.go.jp/a_menu/kenko/anzen/1417343_00045.htm); 「休業日明けの時期等における熱中症事故の防止について（依頼）（令和7年8月22日 事務連絡）」（文部科学省）（https://www.mext.go.jp/a_menu/kenko/anzen/1417343_00045.htm）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "mlit-press-planned-suspension",
+      "title": "国土交通省: 「計画運休」、鉄道各社がタイムライン作成へ～鉄道の計画運休のあり方について最終とりまとめ～",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20250919125136id_/https://www.mlit.go.jp/report/press/tetsudo02_hh_000111.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: 国土交通省ウェブサイト (https://www.mlit.go.jp/report/press/tetsudo02_hh_000111.html); 「「計画運休」、鉄道各社がタイムライン作成へ～鉄道の計画運休のあり方について最終とりまとめ～」（国土交通省）（https://www.mlit.go.jp/report/press/tetsudo02_hh_000111.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "mhlw-pubcomment-rodohoken",
+      "title": "厚生労働省: 「労働保険加入促進業務における民間競争入札実施要項（案）」に関するご意見の募集について",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260318125809id_/https://www.mhlw.go.jp/public/bosyuu/iken/p20150918-01.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: 厚生労働省ホームページ (https://www.mhlw.go.jp/public/bosyuu/iken/p20150918-01.html); 「「労働保険加入促進業務における民間競争入札実施要項（案）」に関するご意見の募集について」（厚生労働省）（https://www.mhlw.go.jp/public/bosyuu/iken/p20150918-01.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "cdc-co-poisoning-basics",
+      "title": "CDC: Carbon Monoxide Poisoning Basics",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260928120056id_/https://www.cdc.gov/carbon-monoxide/about/index.html",
+      "license": "Public domain (work of the US federal government, CDC; per https://www.cdc.gov/other/agencymaterials.html); the page's images are not included, only their captions",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "nws-heat-wave-safety",
+      "title": "National Weather Service: During a Heat Wave",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260918174845id_/https://www.weather.gov/safety/heat-during",
+      "license": "Public domain (work of the US federal government, NOAA National Weather Service; per https://www.weather.gov/disclaimer)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "readygov-power-outages",
+      "title": "Ready.gov (FEMA): Power Outages",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260928142227id_/https://www.ready.gov/power-outages",
+      "license": "Public domain (work of the US federal government, FEMA; per https://www.fema.gov/about/website-information); the page's images are not included",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "fr-2026-16371-nvd-rfi",
+      "title": "Federal Register: Request for Information (RFI) on Modernizing the National Vulnerability Database in the Age of Artificial Intelligence",
+      "source": "url",
+      "genre": "business/proposal",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260813211334id_/https://www.federalregister.gov/documents/full_text/html/2026/08/12/2026-16371.html",
+      "license": "Public domain (work of the US federal government, a NIST notice published in the Federal Register, 91 FR 52042)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "mit-ocw-6-0001-syllabus",
+      "title": "MIT OpenCourseWare: 6.0001 Introduction to Computer Science and Programming in Python (Fall 2016), Syllabus",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260918171126id_/https://ocw.mit.edu/courses/6-0001-introduction-to-computer-science-and-programming-in-python-fall-2016/pages/syllabus/",
+      "license": "CC-BY-NC-SA-4.0 (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "loc-signal-new-online-2026-07",
+      "title": "The Signal (Library of Congress): New Online at the Library of Congress: July 2026",
+      "source": "url",
+      "genre": "blog/owned-media",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260726053212id_/https://blogs.loc.gov/thesignal/2026/07/new-loc-july-2026/",
+      "license": "None stated for the blog's text (loc.gov/legal speaks only of the collections); it quotes collection items (URL only)",
+      "redistribute": false,
+      "format": "html"
     }
   ]
 }

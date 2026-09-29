@@ -8,6 +8,7 @@ import type { DocumentProfile, Mention, NumberedLine, NumberingContext, Span, St
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
 import { dottedNumber } from "./universal.ts";
 import { unnumberedUnit, type OpenUnit } from "./unnumbered.ts";
+import { readsOnHeading } from "./heading-leaves.ts";
 
 /** 組み立て中の節点。できあがったら StructureNode に固める。 */
 type Draft = {
@@ -179,17 +180,19 @@ const scopeOf = (state: State, patterns: StructurePatterns, text: string): Reado
   return within === undefined ? { scope: "local" } : { scope: "local", within: within.address };
 };
 
-const addLeaves = (state: State, patterns: StructurePatterns, line: Line, text: string, offset: number): void => {
+const addLeaves = (state: State, patterns: StructurePatterns, line: Line, text: string, offset: number, onHeading: boolean): void => {
   const parent = top(state).draft;
   const scope = scopeOf(state, patterns, text);
-  const leaves = LEAVES.flatMap(({ kind, find }) =>
-    find(patterns, text, state.profile).map((mention) => ({
-      kind,
-      start: line.start + offset + mention.start,
-      end: line.start + offset + mention.end,
-      attrs: mention.attrs,
-    })),
-  ).sort((left, right) => left.start - right.start);
+  const leaves = LEAVES.filter(({ kind }) => !onHeading || readsOnHeading(kind))
+    .flatMap(({ kind, find }) =>
+      find(patterns, text, state.profile).map((mention) => ({
+        kind,
+        start: line.start + offset + mention.start,
+        end: line.start + offset + mention.end,
+        attrs: mention.attrs,
+      })),
+    )
+    .sort((left, right) => left.start - right.start);
   leaves.forEach((leaf) =>
     parent.children.push({
       kind: leaf.kind,
@@ -303,7 +306,7 @@ const readLine = (state: State, patterns: StructurePatterns, line: Line, heading
   // 番号付きの行は番号の後ろだけを読む。「第3条（支払）」の「第3条」を自分への参照として拾わない。
   const scanned = numbered === undefined ? text : numbered.rest;
   const offset = Math.max(0, line.text.lastIndexOf(scanned));
-  if (scanned !== "") addLeaves(state, patterns, line, scanned, offset);
+  if (scanned !== "") addLeaves(state, patterns, line, scanned, offset, heading !== undefined);
 };
 
 /**
