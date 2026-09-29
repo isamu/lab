@@ -271,6 +271,12 @@ const isCounterMorph = (morph: Morph): boolean => morph.pos === "名詞" && morp
 /** 桁の語（万・億）。「26.7 万行」の「万行」は、詰めれば 26.7万 と 行 に分かれる。 */
 const isNumeralMorph = (morph: Morph): boolean => morph.pos === "名詞" && morph.detail1 === "数";
 
+/** 一語の副詞と読むか（がんがん）。前後の語に引かれない、その文字列だけの読み。 */
+export const readsAsOneAdverb = (text: string): boolean => {
+  const read = tokenize(text);
+  return read?.length === 1 && read[0]?.pos === "ADV";
+};
+
 /**
  * 数のすぐ後ろに詰めて書いたとき、word が数につく語として読まれるか（spaced-counter.ts が使う）。
  * word がそのまま一語の助数詞になるか、桁の語で始まるとき。「件名」は詰めると 件 と 名 に割れるので、助数詞とは読まない。

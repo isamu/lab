@@ -71,7 +71,7 @@ kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1
 kimino-staff-exam-guide  latin-spacing 3
 koenote-requirements  latin-spacing 56, undefined-acronym 6
 kojin.txt  clean
-kokkai-217-sangiin-shohisha-7  agentless-passive 54, double-keigo 1, doubled-word 3, empty-intensifier 4, max-kanji-continuous 31, max-paragraph-length 11, max-sentence-length 217, ngram-repetition 1, no-doubled-joshi 14, sasete-itadaku 12, taigen-dome-in-prose 1
+kokkai-217-sangiin-shohisha-7  agentless-passive 54, double-keigo 1, empty-intensifier 4, max-kanji-continuous 31, max-paragraph-length 11, max-sentence-length 217, ngram-repetition 1, no-doubled-joshi 14, sasete-itadaku 12, taigen-dome-in-prose 1
 loc-signal-new-online-2026-07  contraction-consistency 1, max-sentence-length 26, proper-noun-density 1, title-case-consistency 2
 meti-keiryoshi-exam-correction  agentless-passive 2, latin-spacing 2, max-sentence-length 2
 meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5
