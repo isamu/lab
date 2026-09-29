@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### The list of acronyms a reader knows is a word list (#170)
+
+`undefined-acronym`'s list of acronyms that need no spelling out (API, URL, CEO …) moved from code into each language
+package's `common-acronym` word list, so it can differ by language (NG is understood in Japanese documents). The
+contents are unchanged. The rule declares the list, so a language package without it does not run the rule and says why,
+instead of reporting API and URL.
+
 ### A heading with no title is not a heading (#170)
 
 A heading with no letter or digit in it — `###` alone, `## ---`, `### ** **`, `## ※`, a heading holding only an
