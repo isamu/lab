@@ -15,6 +15,7 @@ type Morpheme = {
   readonly pos: string;
   readonly pos_detail_1: string;
   readonly basic_form: string;
+  readonly reading?: unknown;
 };
 
 type Tokenizer = Record<string, unknown>;
@@ -133,6 +134,7 @@ const toToken = (morpheme: Morpheme, start: number): Token => ({
   // UD の日本語では「れる/られる」は AUX。IPADIC の「動詞,接尾」をそこへ寄せる。
   pos: isPassive(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
   ...(morpheme.basic_form === "*" ? {} : { lemma: morpheme.basic_form }),
+  ...(typeof morpheme.reading !== "string" || morpheme.reading === "*" ? {} : { reading: morpheme.reading }),
   ...featuresOf(morpheme),
 });
 

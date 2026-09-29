@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `no-mixed-desumasu` reads 「〜下さい」 as polite, like 「〜ください」 (#170)
+
+A polite request written with the kanji 下さい (「ご意見をお寄せ下さい。」) was read as plain: the analyser gives its
+dictionary form as 下さる, not くださる, so it matched neither the written form nor the dictionary form in the polite word
+list, and a です・ます list of such requests was reported. lang-ja tokens now carry the analyser's reading, and a word is
+polite when its reading and part of speech are those of a one-word entry in the list: 下さい and ください are both
+クダサイ. 「来て下さる。」 (クダサル) stays plain, and a noun or a word read the same way with another part of speech does not
+match. 頂きます, 致します and 御座います needed no change: their ます already makes them polite. A document that wrote
+下さい throughout may now have its real plain sentences reported, where the 下さい sentences had hidden them among a
+larger plain count. Found on 厚生労働省's call for public comment.
+
 ### A weekly run compares the documents kept as URLs (#170)
 
 A scheduled workflow (`chaff corpus (URL-only documents)`) fetches every document the corpus keeps only as a URL and
