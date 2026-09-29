@@ -12,8 +12,8 @@ name:
   en: Nested repeated particle
 
 why:
-  ja: 「弊社の新製品の販売の計画」のように同じ助詞が読点を挟まずに続くと、どれがどれに係るのか読み手が追えなくなります。読点で区切られた並列は数えていません。
-  en: When the same particle repeats without a break, the reader cannot tell which phrase attaches to which. Items separated by punctuation are not counted.
+  ja: 「弊社の新製品の販売の計画」のように同じ助詞が読点を挟まずに続くと、どれがどれに係るのか読み手が追えなくなります。読点で区切られた並列は数えていません。鉤括弧で引いた題名や発言（「食品中のウイルスの制御のための…」）の中は書き手が言い換えられないので数えず、引いたもの全体を一つの名詞として読みます。
+  en: When the same particle repeats without a break, the reader cannot tell which phrase attaches to which. Items separated by punctuation are not counted. Nor are particles inside a title or a quotation in 「」 or 『』, which the writer cannot rephrase; the quotation as a whole is read as one noun.
 
 message:
   ja: 「{word}」が読点を挟まずに {count} 回続いています（{limit} 回まで）

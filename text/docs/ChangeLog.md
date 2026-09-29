@@ -24,6 +24,15 @@ Found on 文部科学省's, 国土地理院's and 厚生労働省's pages. NWS's
 left as it is: two short paragraphs without links before the `<h1>`, the same shape as a press release's dateline or
 a notice's agency and docket number, set apart only by its class name.
 
+### `no-doubled-joshi` does not count particles inside a quoted title (#170)
+
+A title quoted in 「」 is the name of something, not the writer's phrasing: 「食品中のウイルスの制御のための食品衛生一般原則の適用
+に関するガイドライン」 was reported for its chain of の, which the writer cannot rephrase without misquoting it. A quotation
+in 「」 or 『』 is now read as one noun: the particles inside it are not counted, and the chain around it goes on through it,
+so 「弊社の「新製品」の販売の計画」 is reported where the brackets used to break it. A chain outside a short quotation
+(「「2 ページ表示」での各ページのサイズの揃え方の設定」) is still reported, a comma after the quotation still breaks the chain,
+and an unclosed bracket quotes nothing. Found on 厚生労働省's Q&A on norovirus.
+
 ### `latin-spacing` does not count the space after a postal code or an address number (#170)
 
 The space in 「〒100-8916 東京都千代田区」 was counted as a space between a number and Japanese, because only a code with a
