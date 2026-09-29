@@ -1,6 +1,10 @@
 import { escapeRegExp } from "../orthography.ts";
 import { ROMAN_NUMERAL } from "./roman-numeral.ts";
 import { citationKeySpans } from "./citation-key.ts";
+import { dottedNameSpans } from "./dotted-name.ts";
+import { loneNumeralSpans, nameNumeralSpans } from "./name-numeral.ts";
+import { placeholderSpans } from "./placeholder.ts";
+import { seriesLabelSpans } from "./series-label.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108）。
@@ -21,6 +25,8 @@ export type NotationWords = {
   readonly divisions: readonly string[];
   /** 速記録が大文字で書く発言者の姓の前に置く敬称（Mr.、Mrs.、Madam）。 */
   readonly honorifics: readonly string[];
+  /** 日付・時刻の数字の後ろに書く単位（年、月、日、時、分）。その前の同じ大文字の繰り返し（YY年）は書式の置き場所。 */
+  readonly dateTimeUnits: readonly string[];
 };
 
 // 空の語彙表は「その書き方が無い」。空の選択肢 (?:) は至る所で空文字に当たるので、何にも当たらない形にする。
@@ -66,5 +72,10 @@ export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
   return (text) => [
     ...patterns.flatMap((pattern) => [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }))),
     ...citationKeySpans(text),
+    ...dottedNameSpans(text),
+    ...nameNumeralSpans(text),
+    ...loneNumeralSpans(text),
+    ...seriesLabelSpans(text),
+    ...placeholderSpans(text, words.dateTimeUnits),
   ];
 };

@@ -21,6 +21,200 @@ each `<` and `>` inside a quoted attribute value as a character reference, which
 tag scanner reads the whole tag. A quote opens a value only after `=`; a comment, a script and a style are not read as
 tags, and a `<!--` inside a value no longer opens a comment. Converted again, the corpus's pages change only where such a reference stood.
 
+## 0.15.0 — 2026-09-30
+
+chaff reads more kinds of text without stumbling. A file with Windows or classic Mac line breaks, a byte order mark, an
+emoji after a number or one very long line is read as the writer sees it, and a genre chaff does not know stops the run
+instead of checking nothing. `chaff eval` speaks the documents' language, and English no longer counts a sentence's first word as a name. Many false reports found on real documents are
+gone: `undefined-acronym` leaves domain names, date placeholders, name numerals, HTTP methods and document numbers alone;
+`agentless-passive` knows Japanese honorific れる/られる and 「〜と呼ばれる」; `latin-spacing` and `heading-echo` skip
+quotations; `date-order` stays silent on a list sorted by name; a reference wrapped across lines, or to a hyphenated tag
+the document lists, names the other document. The corpus gains more rounds of kinds — parliamentary minutes,
+regulations, patents, court decisions, specifications, style guides, glossaries, a speech and more — and `yarn bench`
+plants mistakes for more rules.
+
+📦 [`chaffjs@0.15.0`](https://www.npmjs.com/package/chaffjs/v/0.15.0) ·
+[`@chaffjs/lang-ja@0.14.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.14.0) ·
+[`@chaffjs/lang-en@0.13.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.13.0)
+
+### A word capitalised only because it starts the sentence is no longer counted as a proper noun in English (#170)
+
+The English tagger marks every capitalised noun and adjective as a proper noun, so the first word of a sentence
+(`Containers start in seconds.`, `Traditional servers were slow.`, `Use the scheduler.`) was counted as a name, and
+`proper-noun-density` reported handbooks and guides whose names were few. `@chaffjs/lang-en` now reads the first word
+of a sentence again in lower case when it is written with one leading capital, the tagger tagged it as a proper noun,
+and the tagger's own vocabulary knows the lower-case word and never as a name. It takes the part of speech the tagger
+gives the lower-case word in the same sentence. A word the vocabulary does not know (`Kubernetes`, `Congress`), a word
+it also knows as a name (`May`), a word in capitals (`API`) and a capitalised word inside a sentence stay proper nouns.
+In the corpus this only moves `proper-noun-density`: its density falls on most English documents and the finding goes
+away where common words had pushed it over the limit.
+
+### A genre chaff does not know stops the run instead of checking nothing (#170)
+
+A `genre` in `chaff.yaml`, or in one of its `by_path` entries, that is not in `npx chaff genres` matched no rule: chaff
+reported no findings, listed no rule as not run, and exited 0. It now stops before checking anything, as `--genre`
+already did, and says where the genre was written and which genres there are (`--genre`'s message lists them too now).
+A front matter `genre:` that is not a genre is not an error, since front matter often belongs to another tool: the file
+falls back to the path, the content or the default as before, and chaff now says on standard error, in the document's
+language, that the value was not read. The commands that do not read a genre (`genres`, `init`, `tree`, `cite`, `relax`, `strict`, `off`, `skill`)
+still run with such a `chaff.yaml`.
+
+### `chaff eval` speaks English to English documents (#170)
+
+`chaff eval` printed its whole report in Japanese, whatever the language of the documents it measured and whatever
+`chaff.yaml` or the terminal said. The report now follows the documents' language, as lint's screen does (eval
+measures one language at a time, so there is one). Its refusals (no Markdown found, languages or genres mixed, no such
+rule) follow `chaff.yaml`'s `language`, then the terminal's locale. The Japanese text is unchanged.
+
+### `undefined-acronym` on HTTP methods, document numbers, "=" definitions, ONLY and series numbers (#170)
+
+Five kinds of capitals were reported as acronyms with nothing to expand:
+
+- **HTTP methods** (GET, POST, "non-GET requests"): words, not abbreviations. They come from a new `http-method` word
+  list in each language package.
+- **Document numbers**: the capital word right before a hyphenated number with a part of three digits or more is part
+  of the number (SP 800-61, NSF 19-582, IEC 19757-2). The word before it is still counted (NIST in "NIST SP
+  800-61"), and so is a word before a number with no hyphen (RFC 9110), a version (SDK 3.1), a range of years
+  (FY 2024-25), two numbers of the same width going up (SLO 100-200, SLA 500-599), which are a range, or two-digit
+  parts (BOD 25-01), which cannot be told from a range, a score or a date (SRE 1-2, 01-02).
+- **Symbols defined with "="**: "where N = number of cases, EH = total hours worked" defines EH after it is used.
+  A value (EH = 2,000, EH = 40h) or another acronym (EH = SRE) is not a definition. A word as the value
+  (SRE = enabled) reads as a one-word definition: a capital name given a value is a setting, with nothing to expand.
+- **ONLY** in capitals for emphasis joins `emphasis-word` next to NOT and AND.
+- **Series numbers**: a Roman numeral of I, V and X that stands alone with a period at the start of a sentence or
+  after the end of one ("… Filter. VII. Water-Bearing Objects", "Euclid. II. The VIS Instrument") is a number.
+  After a bracket ("(MEGAFLOW) XII.") it is still counted, since "(adult dose) IV" is written the same way.
+
+### `agentless-passive` leaves Japanese honorific れる/られる and 「〜と呼ばれる」 alone (#170)
+
+Honorific れる/られる names the person who acts as the subject, so no actor is hidden. lang-ja now drops
+`Voice=Pass` where the form shows it is honorific: after おる (「参加をしておられました」), and after an intransitive verb,
+which has no passive that makes the one acted on the subject (「町へ来られ」「熱心に取り組まれ」「委員を辞任され」「参加されていて」). A glossary's naming
+passive 「〜とも呼ばれています」 is dropped too: it gives a name, it does not hide who called it so. The verbs are lexicons in
+`@chaffjs/lang-ja` (`intransitive-verb`, `naming-verb`). Real passives stay: 「方針が決定された」「〜と判断されました」
+「若松謙維君が選任されました」「会議に呼ばれた」「連れてこられた」, and so does an honorific of a transitive verb
+(「林参考人も言われました」「お客様が受けられた」): IPADIC does not mark honorific or transitivity, and a person as the subject
+is as often the one acted on. お・ご・御 before される is not read as honorific either (「お会いされた」): the humble
+「ご用意する」 has the same form in its passive (「資料がご用意されました」). Accepted limit: an intransitive verb's
+adversative passive (「突然、家に来られて困った」) has the honorific's form and is no longer reported. Found in a 紀美野町 mayor's message, a 国会 transcript and
+総務省's cyber security glossary in the corpus.
+
+### A file with Windows or classic Mac line breaks, or a byte order mark, is read as the writer sees it (#170)
+
+A file whose lines end in a lone `\r` (classic Mac) was read as one line: every finding pointed at line 1, and `chaff
+tree` found no articles in a statute. A file that starts with a byte order mark had every quote and every masked span
+one character off, so a quoted sentence lost its last character. Front matter in a file with `\r\n` line breaks, or
+after a byte order mark, was not read, and the genre it names fell back to the default. chaff now drops a leading byte
+order mark and reads `\r\n` and `\r` as `\n` whenever it reads a document (lint, `tree`, `cite`, `test`, `eval`,
+`feedback`). Line and column numbers are the file's own.
+
+### A Zenn article's `type: "tech"` is no longer taken for a genre that no rule checks (#170)
+
+The genre in front matter was read as the raw text after `genre:` or `type:`. A Zenn article says `type: "tech"`
+(its kind of article, not a chaff genre), so the genre became `"tech"`, quotes included; no rule is meant for that
+genre, and without a `chaff.yaml` the article was reported as having no findings while nothing had been checked.
+Front matter now names a genre only when its value, without quotes or a trailing `# comment`, is one of the genres
+`chaff genres` lists; `genre: "business/report"` still counts, and a `genre:` line wins over a `type:` line wherever
+they stand. Any other value is ignored, and the genre is guessed from the path or falls back to the default, which the
+header says.
+
+### Japanese text with an emoji close after a number no longer crashes chaff (#170)
+
+To read the unit after "３ 年", chaff reads a few characters after the space again. When those characters ended in the
+middle of an emoji, the Japanese analyser was handed half of it and threw, and `chaff tree`, `chaff cite` and lint with
+`--experimental` stopped with a stack trace ("期間は３ 年のうち半分は😀です。"). The analyser is now always handed
+well-formed text; a half character counts as one unknown character in the same place.
+
+### A very long line, or a Japanese text file with no blank lines, no longer stalls chaff (#170)
+
+Three costs grew with the square of the length of the text. The Japanese analyser slows down on a run with no `、` or
+`。`, so such a run is now handed to it in pieces, cut after a space where there is one; a text whose runs are short
+is handed over whole, as before. The English analyser slows down on one long run of non-space characters (a hash or an
+encoded blob, not a word), so a run longer than any word is left out of its reading, as a URL already is. And each
+Japanese sentence looked through every token of its paragraph, which a `.txt` file with no blank lines makes one long
+paragraph; a sentence now finds its own tokens directly.
+
+### `latin-spacing` does not count the spacing inside a quotation in 「」『』 (#170)
+
+A title or a quotation in 「」 or 『』 keeps the spacing of its source: 「AI原則実践のためのガバナンス・ガイドライン ver.
+1.1」, 『絵師100人展 16』, 「…ガイドライン CXG79-2012」. The writer cannot change it, so it was wrong to report it as
+the odd one out in a document that packs Latin text. A boundary with both sides inside the brackets is now left out
+of the count entirely, so a quotation neither is reported nor decides which way the document usually writes. The
+same place outside the brackets (「手引き」を IDで引く) is still reported, and a bracket that does not close counts as
+before. This is the reading `no-doubled-joshi` already gives a quotation.
+
+### `heading-echo` does not count a quoted variant of the heading; a ninth round of corpus kinds (#170)
+
+A style guide or glossary entry names its term in the heading and then quotes the spellings not to use:
+"## data centre" followed by `Not “datacentre”.` was reported as a sentence that repeats its heading. Text in
+quotation marks (“…”, ‘…’, "…", '…', 「…」, 『…』) is a word being talked about, not the heading said again, so it
+no longer counts toward the overlap unless it is the heading itself (`「利用規約への同意」へお進みください` still
+counts). An apostrophe (organisation’s, don't) does not open or close a quotation. A sentence that repeats the
+heading outside quotes is still reported.
+
+The corpus adds the A to Z of GOV.UK style, the U.S. Bureau of Labor Statistics glossary, the api.data.gov developer
+manual, cloud.gov's security incident response guide, a 首相官邸 speech transcript, a 環境省 national park guide,
+総務省's cyber security glossary and explainer, and 国立国会図書館's service guide (committed, licence named in the
+manifest), and an arXiv listing of abstracts (URL only).
+
+### A hyphenated tag the document lists, "of [HTTP-CACHING]", names another document (#170)
+
+A bracketed tag after a reference named another document only when it was capitals and digits ("[HTTP]"), so that a
+contract's placeholder ("[BUYER-1]") is not taken for one. "Section 4.2.3 of [HTTP-CACHING]" was therefore looked up
+in this document and reported by `dangling-reference`. The two are written alike; what tells them apart is whether the
+document lists the tag: a line that opens with "[HTTP-CACHING]" and then ends, or leaves two spaces or a tab before
+the entry, as a reference list is laid out. A hyphenated tag the document lists now names another document, after the
+reference or just before it ("[HTTP-CACHING], Section 4"); one it never lists, or only opens a sentence with
+("[BUYER-1] pays …"), is still looked up here. Found on draft-ietf-httpapi-ratelimit-headers-10.
+
+### `date-order` stays silent on a list sorted by something other than its dates (#170)
+
+A release list in board minutes, sorted by release name (`widget-1.10.4`, `widget-2.1.3`, `widget-3.0.0`, …), was read
+as a schedule and one release was reported as out of order, although the list never meant to follow the dates. The
+direction of a list is still taken from most of its steps, but the list is now checked only when more than half of
+its dates can stay in that direction. A schedule with a slip or two keeps the rest of its dates in order and is still
+checked; a list sorted by a name or a version does not, and nothing is said.
+
+### `undefined-acronym` leaves domain names, date placeholders and a numeral after a name alone, and reads `(ON RRP)` as one acronym (#170)
+
+Four kinds of capitals were reported as acronyms without an expansion:
+
+- A name joined by `.` with no space: `GOV.UK`, `SAM.gov`, `README.md`, `CLAUDE.md`, `ASP.NET`. Its capitals are
+  part of a domain or file name. Each part must be all capitals or all lower case (digits and `-` allowed), so a
+  sentence that lost its space (`the IRS.Then`, `Mr.HAWLEY`) is not read as a name, and an acronym before a sentence
+  full stop (`…by the IRS. Then`) is still counted. The same acronym outside the name (`the SAM record`) still counts.
+- A date or time placeholder: one capital letter repeated where a number goes. It is a placeholder when joined by
+  `/`, `:`, `-` or `.` (full-width `／` and `：` too) to another such run or to a number (`MM/DD/YYYY`, `YYYY-MM-DD`,
+  `HH：MM`, `2026/MM/DD`), or when a date or time unit follows it (`令和YY年MM月DD日`, `HH時MM分`). The units are the
+  new `date-time-unit` lexicon: 年, 月, 日, 時, 分 and 秒 in `@chaffjs/lang-ja`, and none in `@chaffjs/lang-en`, which
+  writes its templates with separators. `AI時代`, `CI/CD` and `TCP/IP` are still acronyms: they are not one letter
+  repeated.
+- A Roman numeral written with I, V and X right after a capitalised word: `Senior System Engineer II`, `World War
+  II`, `Leopold III`. It numbers the name. When no letter comes before the word in the sentence (`Start IV fluids`, a
+  list item `1. Give IV fluids`), the capital marks the start of the sentence rather than a name, and `IV` is still
+  counted; so is a numeral with C, D, L or M (`Audio CD`, `Washington DC`, `Pipeline CI`), which is more often an
+  acronym, and one after a word in capitals (`AES IV`) or in lower case (`the IV line`).
+- An acronym written as two or more words inside brackets: `overnight reverse repurchase agreement (ON RRP)`. Its
+  letters do not match the initials of the name (`ON` is *overnight*), so it is read as expanded when its letters can
+  be picked in order from the English words before the brackets, starting at the start of one of them; `ON` and
+  `RRP` are then both expanded. Acronyms listed with spaces (`The regulators (SEC FINRA)`), a Japanese name (whose
+  letters cannot be checked), a bracket with a lower-case word (`(see ON RRP)`) or a comma (`(EPA, FDIC)`) are not,
+  and a run before brackets (`AWS KMS (Key Management Service)`) expands only the word next to them, as before.
+
+Found on GOV.UK's pages (`GOV.UK`), a CRS report (`SAM.gov`), the FOMC minutes (`ON RRP`, `Senior System Engineer
+II`), the Congressional Record (`World War II`) and e-Tax's e-mail templates (`令和YY年MM月DD日 HH：MM`). With the four
+placeholders gone, the e-mail templates have fewer bare acronyms than the rule's level and are no longer reported.
+
+### A reference wrapped before its "of [HTTP]" names the other document (#170)
+
+A plain-text RFC is hard-wrapped at about 72 columns, so a reference into another document is often split across a
+line: "…advised in Section 16.3.2\n   of [HTTP]." or "…from Section 3 of\n   [SF] to specify…". Each line was read on its own, so "Section 16.3.2" looked like a
+reference into this document and `dangling-reference` reported it. The reference reader now also sees the next line,
+joined by one space in place of the line break and its indentation, when it looks for the "of [DOC]" / "of RFC 9110" /
+"of the Master Agreement" after a reference; the same holds for a wrapped Markdown paragraph. A reference with nothing
+after the wrap, or "of this Agreement", is still looked up in this document; a blank line ends the join and a heading
+does not run on into the next line; findings keep their place on the line. Found on draft-ietf-httpapi-ratelimit-headers-10.
+
 ### `doubled-word` does not count an article before "a priori" (#170)
 
 "the a priori approach" was reported as two articles in a row. The "a" of "a priori", "a posteriori", "a fortiori",

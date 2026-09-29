@@ -220,6 +220,7 @@ const notationOf = (doc: ProseDocument): NotAcronymSpans =>
     emphasis: patternsOf(doc, "emphasis-word"),
     divisions: patternsOf(doc, "numbered-division"),
     honorifics: patternsOf(doc, "honorific"),
+    dateTimeUnits: patternsOf(doc, "date-time-unit"),
   });
 
 /** 定義の語は、語彙表の形（という）と、この文書で活用して書かれた形（といいます）の両方で照らす。 */
@@ -230,7 +231,8 @@ const definitionVerbsOf = (doc: ProseDocument): string[] => {
 
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
-  const common = new Set((options.lexicon ?? []).map((entry) => entry.pattern));
+  // HTTP のメソッド名（GET）は略語ではないので、通じる略語と同じく展開を求めない。
+  const common = new Set([...(options.lexicon ?? []).map((entry) => entry.pattern), ...patternsOf(doc, "http-method")]);
   const seen = new Map<string, Hit>();
   acronymsOf(doc, notationOf(doc)).forEach(({ word, hit }) => {
     if (!seen.has(word)) seen.set(word, hit);

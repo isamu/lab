@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { buildStructure } from "../packages/chaff/src/structure/of.ts";
 import { toSexp } from "../packages/chaff/src/structure/sexp.ts";
 import { lineNumberAt, linesOf } from "../packages/chaff/src/structure/lines.ts";
+import { onLine, wrappedLine } from "../packages/chaff/src/structure/wrapped-tail.ts";
 import { inOrder, treeLanguage, treeTargets } from "../packages/chaff/src/commands/tree.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import type { Mention, NumberedLine, StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
@@ -116,6 +117,33 @@ describe("linesOf", () => {
       { text: "bc", start: 3, number: 2 },
       { text: "d", start: 6, number: 3 },
     ]);
+  });
+});
+
+describe("wrappedLine: 折り返した次の行を空白一つでつなぐ", () => {
+  it("改行と字下げは空白一つ。行末の空白も一つにまとめ、行の長さは空白を除いた長さ", () => {
+    assert.deepEqual(wrappedLine("see Section 16.3.2", false, "   of [HTTP]."), {
+      line: "see Section 16.3.2",
+      text: "see Section 16.3.2 of [HTTP].",
+      lineLength: "see Section 16.3.2".length,
+    });
+    assert.deepEqual(wrappedLine("see Section 9  \t", false, "of X"), { line: "see Section 9  \t", text: "see Section 9 of X", lineLength: 13 });
+  });
+
+  it("次の行が無い・空・空白だけ、または自分が見出しなら、行をそのまま", () => {
+    const alone = { line: "see Section 9 ", text: "see Section 9 ", lineLength: 14 };
+    assert.deepEqual(wrappedLine("see Section 9 ", false, undefined), alone);
+    assert.deepEqual(wrappedLine("see Section 9 ", false, ""), alone);
+    assert.deepEqual(wrappedLine("see Section 9 ", false, " \t "), alone);
+    assert.deepEqual(wrappedLine("see Section 9 ", true, "of X"), alone);
+    assert.deepEqual(wrappedLine("", false, "of X"), { line: "", text: " of X", lineLength: 0 });
+  });
+
+  it("onLine は行の中で終わる参照だけを残す。行末ちょうどで終わるものは残す", () => {
+    const wrapped = wrappedLine("Sections 1 and", false, "2 apply");
+    const mention = (start: number, end: number): Mention => ({ start, end, attrs: {} });
+    assert.deepEqual(onLine([mention(0, 10), mention(9, 14), mention(13, 15), mention(15, 16)], wrapped), [mention(0, 10), mention(9, 14)]);
+    assert.deepEqual(onLine([], wrapped), []);
   });
 });
 

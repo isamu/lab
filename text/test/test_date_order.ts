@@ -7,6 +7,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import { longestInOrder } from "../packages/chaff/src/structure/date-order.ts";
 
 // 日程として並べた日付の順番（date-order）。言語を問わず、箇条書きと表の行を並びとして読む。
 
@@ -164,6 +165,32 @@ describe("date-order", () => {
     assert.deepEqual(found(table), ["2026-04-15<2026-05-01"]);
   });
 
+  it("a list sorted by name, not by date, is not a schedule: most of its dates are off the order", () => {
+    const releases = [
+      "# Releases",
+      "",
+      "- widget-1.10.4 (legacy) was released on 2023-11-16.",
+      "- widget-2.1.3 (LTS) was released on 2024-08-12.",
+      "- widget-3.0.0 was released on 2023-08-21.",
+      "- widget-cli-1.0.0 was released on 2024-02-17.",
+    ].join("\n");
+    assert.deepEqual(found(releases), []);
+    assert.deepEqual(found(list("2024-02-01", "2023-10-01", "2024-06-01", "2023-12-01")), []);
+  });
+
+  it("a list with exactly half of its dates in order is not read as a schedule", () => {
+    assert.deepEqual(found(list("2024-01-01", "2024-02-01", "2024-03-01", "2023-01-01", "2023-02-01", "2023-03-01")), []);
+  });
+
+  it("a list with more than half of its dates in order is still read as one; two slips in six are both pointed at", () => {
+    assert.deepEqual(found(list("2026-01-01", "2026-02-01", "2026-03-01", "2026-01-15", "2026-01-20")), ["2026-01-15<2026-03-01"]);
+    assert.deepEqual(found(list("2026-09-01", "2026-08-01", "2026-07-01", "2026-09-15", "2026-06-01")), ["2026-09-15<2026-07-01"]);
+    assert.deepEqual(found(list("2026-01-01", "2026-02-01", "2026-01-15", "2026-03-01", "2026-04-01", "2026-03-15")), [
+      "2026-01-15<2026-02-01",
+      "2026-03-15<2026-04-01",
+    ]);
+  });
+
   it("the sample schedules: the English table's third row, not the newest-first history", () => {
     assert.deepEqual(found(readFileSync(new URL("fixtures/dates/schedule-en.md", import.meta.url), "utf8")), ["2026-04-15<2026-05-01"]);
   });
@@ -171,5 +198,28 @@ describe("date-order", () => {
   it("the Japanese sample itinerary: the third day goes back a month", () => {
     const source = readFileSync(new URL("fixtures/dates/schedule-ja.md", import.meta.url), "utf8");
     assert.deepEqual(found(source, ja, "ja"), ["2026-09-03<2026-10-02"]);
+  });
+});
+
+describe("longestInOrder", () => {
+  it("counts the dates that can stay in the direction, skipping the ones off it", () => {
+    assert.equal(longestInOrder(["2026-04-01", "2026-05-01", "2026-04-15", "2026-07-01"], 1), 3);
+    assert.equal(longestInOrder(["2023-11-16", "2024-08-12", "2023-08-21", "2024-02-17"], 1), 2);
+    assert.equal(longestInOrder(["2026-09-01", "2026-08-01", "2026-08-15", "2026-07-01"], -1), 3);
+  });
+
+  it("equal dates stay in order in either direction", () => {
+    assert.equal(longestInOrder(["2026-04-01", "2026-04-01", "2026-04-01"], 1), 3);
+    assert.equal(longestInOrder(["2026-04-01", "2026-04-01", "2026-04-01"], -1), 3);
+  });
+
+  it("the direction matters: an oldest-first list read newest-first keeps one date", () => {
+    assert.equal(longestInOrder(["2026-01-01", "2026-02-01", "2026-03-01"], -1), 1);
+    assert.equal(longestInOrder(["2026-03-01", "2026-02-01", "2026-01-01"], 1), 1);
+  });
+
+  it("empty and single lists", () => {
+    assert.equal(longestInOrder([], 1), 0);
+    assert.equal(longestInOrder(["2026-01-01"], -1), 1);
   });
 });

@@ -1,7 +1,8 @@
 import { createRequire } from "node:module";
 import type { Token } from "chaffjs/plugin";
 import { loadLexicons } from "./lexicons.ts";
-import { properNounChecked } from "./proper-noun.ts";
+import { blankLongRuns } from "./long-runs.ts";
+import { lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
 
 const require = createRequire(import.meta.url);
@@ -170,10 +171,26 @@ const featuresOf = (tagged: readonly Tagged[], at: number): Features => {
   return { features: isPassive(tagged, at) ? { VerbForm: "Part", Voice: "Pass" } : { VerbForm: "Part" } };
 };
 
-const state: { ready: Tagger | undefined } = { ready: undefined };
+/** 解析器が引く語彙（語 → Penn Treebank の品詞の並び）。wink-pos-tagger が自分の依存から読むものと同じ一つを、同じ場所から読む。 */
+type Vocabulary = (word: string) => readonly string[] | undefined;
+
+const isTags = (value: unknown): value is readonly string[] => Array.isArray(value) && value.every((tag) => typeof tag === "string");
+
+const buildVocabulary = (): Vocabulary => {
+  const words: unknown = createRequire(require.resolve("wink-pos-tagger"))("wink-lexicon/src/lexicon.js");
+  if (!isRecord(words)) throw new Error("wink-lexicon の語彙が object ではありません");
+  return (word) => {
+    const tags = Object.hasOwn(words, word) ? words[word] : undefined;
+    return isTags(tags) ? tags : undefined;
+  };
+};
+
+const state: { ready: Tagger | undefined; vocabulary: Vocabulary } = { ready: undefined, vocabulary: () => undefined };
 
 export const prepare = (): void => {
-  state.ready ??= build();
+  if (state.ready !== undefined) return;
+  state.ready = build();
+  state.vocabulary = buildVocabulary();
 };
 
 export const isReady = (): boolean => state.ready !== undefined;
@@ -200,8 +217,21 @@ const locate = (text: string, tagged: readonly Tagged[]): Token[] =>
     { tokens: [], cursor: 0 },
   ).tokens;
 
+/** 英語の語はこれより長くならない。超える並びは語として読まない。 */
+const RUN_LIMIT = 1000;
+
+const tagged = (tagger: Tagger, text: string): readonly Tagged[] => toArray(callMethod(tagger, "tagSentence", [text])).filter(isTagged);
+
+/** 文頭で大文字になっただけの普通の語を、小文字で書いたときの品詞に戻す。前後の語による判断も効くよう、文ごと解析し直す。 */
+const withSentenceInitialCase = (tagger: Tagger, text: string, entries: readonly Tagged[]): readonly Tagged[] => {
+  const at = sentenceInitialCommonWord(entries, state.vocabulary);
+  const lowered = lowercasedAt(text, entries[at]?.value);
+  return lowered === undefined ? entries : rereadAt(entries, at, tagged(tagger, lowered));
+};
+
 export const tokenize = (text: string): Token[] | undefined => {
   const tagger = state.ready;
   if (tagger === undefined) return undefined;
-  return locate(text, toArray(callMethod(tagger, "tagSentence", [text])).filter(isTagged));
+  const words = blankLongRuns(text, RUN_LIMIT);
+  return locate(words, withSentenceInitialCase(tagger, words, tagged(tagger, words)));
 };

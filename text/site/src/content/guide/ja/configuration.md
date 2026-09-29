@@ -83,6 +83,8 @@ chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
 | `business/meeting-notes` | 議事録 |
 
 一覧は `npx chaffjs genres` でも見られます。
+一覧に無いジャンルを書くと、chaff は何も検査せずに止まり、どこに書いたジャンルかを言います。
+文書の front matter の `genre:` が一覧に無いときは使わず、そう言ってから、書いていないときと同じようにジャンルを決めます。
 言語も自動で決まり、`language` に `ja` か `en` を書けば固定できます。
 
 ## 文書の種類を決める

@@ -11,6 +11,7 @@ import { escapeRegExp } from "../orthography.ts";
  *   Relief Act (RA; P.L. 112-240)    括弧の最初の項目が略語で、直前の語か区切りの後の語の頭文字と揃う
  *   （single nucleotide polymorphism：SNP）  括弧の最後の項目が略語で、コロンの前の語の頭文字と揃う
  *   人事部（以下「HR」という。）      括弧の中が定義の語と略語だけ
+ *   overnight reverse repurchase agreement (ON RRP)  括弧の中が空白で繋いだ略語だけで、前の名前から文字が順に拾える
  * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
  */
 const WRAP = String.raw`[\s"“”'‘’「」『』]*`;
@@ -113,18 +114,63 @@ const isDefinedAt = (patterns: DefinitionPatterns, body: string, acronym: string
   return (opened.groups?.["markers"] ?? "") !== "" || (closes.groups?.["verb"] ?? "") !== "";
 };
 
+/** 空白 1 つで繋いだ略語の並びのうち、at の略語の前と後ろに続く分（(ON RRP) の ON の後ろの " RRP"）。 */
+const CAPITALS = "[A-Z][A-Z&-]*[A-Z]";
+const JOINT_BEFORE = new RegExp(String.raw`(?:(?<![A-Za-z0-9_&-])${CAPITALS} )+$`, "u");
+const JOINT_AFTER = new RegExp(String.raw`^(?: ${CAPITALS}(?![A-Za-z0-9_&-]))+`, "u");
+
+const LOWER_WORDS = /[a-z]+/gu;
+
+const isSubsequence = (letters: string, text: string): boolean =>
+  [...text].reduce((matched, char) => (char === letters.charAt(matched) ? matched + 1 : matched), 0) === letters.length;
+
+/**
+ * 略語の文字が、名前のどれかの語の頭から始まって、名前の文字の中に順に拾えるか。1 つの略語を空白で分けて書くときは、
+ * 語の頭文字ではなく語の途中の文字も使う（overnight reverse repurchase agreement → ON RRP）。見る語は略語の文字数の 2 倍まで。
+ */
+export const abbreviates = (name: string, acronym: string): boolean => {
+  const letters = acronym.toLowerCase().replaceAll(/[^a-z]/gu, "");
+  const words = (name.toLowerCase().match(LOWER_WORDS) ?? []).slice(-letters.length * 2);
+  return letters !== "" && words.some((word, index) => word.startsWith(letters.charAt(0)) && isSubsequence(letters, words.slice(index).join("")));
+};
+
+/**
+ * 括弧の中身が、空白で繋いだ略語の並びだけの形（(ON RRP)）。1 つの略語を 2 語以上で書いたもの。並びの文字が括弧の前の名前から
+ * 順に拾えるときだけ展開と見なす。拾えなければ、空白で並べた略語の列挙（(SEC FINRA)）。
+ * 括弧の外の並び（AWS KMS (Key Management Service)）は、括弧の直前の語だけが展開されるので、ここでは見ない。
+ */
+const isJointBracketedAt = (body: string, acronym: string, at: number): boolean => {
+  const end = at + acronym.length;
+  const before = JOINT_BEFORE.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at))?.[0] ?? "";
+  const after = JOINT_AFTER.exec(body.slice(end, end + DEFINITION_REACH))?.[0] ?? "";
+  const start = at - before.length;
+  const close = end + after.length;
+  if (!OPENED.test(body.slice(Math.max(0, start - NEAR), start)) || !CLOSES.test(body.slice(close, close + NEAR))) return false;
+  return abbreviates(body.slice(0, start), body.slice(start, close));
+};
+
 const isBracketedAt = (body: string, acronym: string, at: number): boolean => {
   const after = body.slice(at + acronym.length, at + acronym.length + NEAR);
   const before = body.slice(Math.max(0, at - NEAR), at);
   if (OPENS.test(after) || (OPENED.test(before) && CLOSES.test(after))) return true;
   if (SQUARE_OPENED.test(before) && SQUARE_CLOSES.test(after) && spellsOut(body.slice(0, at), acronym)) return true;
-  return isSeparatedAt(body, acronym, at) || isNamedBeforeAt(body, acronym, at);
+  return isSeparatedAt(body, acronym, at) || isNamedBeforeAt(body, acronym, at) || isJointBracketedAt(body, acronym, at);
 };
+
+/**
+ * 記号を = で定義する書き方（where N = number of cases, EH = total hours worked）。定義は記号の後ろの語。
+ * 値（EH = 2,000）、比べる・矢印（==、=>）、別の略語だけ（EH = SRE）は定義ではない。定義の語は小文字か、大小の無い文字を含む。
+ * 語の値（SRE = enabled）は 1 語の定義と見分けられないので、定義と読む。値を入れる大文字の名前は設定の名前で、展開するものが無い。
+ */
+const EQUALS_DEFINITION = /^\s*[=＝]\s*(?=\p{L})\S*?[\p{Ll}\p{Lo}]/u;
+
+const isEqualsDefinedAt = (body: string, acronym: string, at: number): boolean =>
+  EQUALS_DEFINITION.test(body.slice(at + acronym.length, at + acronym.length + DEFINITION_REACH));
 
 export type ExpandedAt = (body: string, acronym: string, at: number) => boolean;
 
 /** body の at にある略語が、その場で展開・定義されているか。語彙表から一度だけ組み立てて、略語ごとに呼ぶ。 */
 export const expansionAt = (words: DefinitionWords): ExpandedAt => {
   const patterns = definitionPatterns(words);
-  return (body, acronym, at) => isBracketedAt(body, acronym, at) || isDefinedAt(patterns, body, acronym, at);
+  return (body, acronym, at) => isBracketedAt(body, acronym, at) || isDefinedAt(patterns, body, acronym, at) || isEqualsDefinedAt(body, acronym, at);
 };

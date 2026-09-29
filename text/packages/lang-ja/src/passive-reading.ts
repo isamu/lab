@@ -12,6 +12,10 @@ export type PassiveVocabulary = {
   readonly stative: ReadonlySet<string>;
   /** 尊敬の決まり文句（におかれましては）。 */
   readonly formulas: readonly string[];
+  /** 受動を作らない自動詞の原形（来る・取り組む）と、「する」を付けて自動詞になるサ変名詞（参加・辞任）。 */
+  readonly intransitive: ReadonlySet<string>;
+  /** 「と」を受けて名前を言う動詞の原形（呼ぶ）。 */
+  readonly naming: ReadonlySet<string>;
 };
 
 const patternsOf = (lexicon: Lexicon | undefined): string[] => (lexicon ?? []).map((entry) => entry.pattern).filter((pattern) => pattern !== "");
@@ -20,6 +24,8 @@ export const passiveVocabulary = (lexicons: Readonly<Record<string, Lexicon>>): 
   spontaneous: new Set(patternsOf(lexicons["spontaneous-verb"])),
   stative: new Set(patternsOf(lexicons["stative-passive-verb"])),
   formulas: patternsOf(lexicons["honorific-formula"]),
+  intransitive: new Set(patternsOf(lexicons["intransitive-verb"])),
+  naming: new Set(patternsOf(lexicons["naming-verb"])),
 });
 
 const PASSIVE_LEMMA = new Set(["れる", "られる"]);
@@ -56,7 +62,40 @@ const pastFollows = (morphemes: readonly Morpheme[], at: number): boolean => {
  * 補助動詞（動詞,非自立）の後ろは見ない。「務めてこられた」は尊敬でも、「連れてこられた」「持っていかれた」は受動で、形では分けられない。
  */
 const verbReadsOtherwise = (morphemes: readonly Morpheme[], at: number, verb: Morpheme, vocabulary: PassiveVocabulary): boolean =>
-  (vocabulary.spontaneous.has(verb.basic_form) && !pastFollows(morphemes, at)) || vocabulary.stative.has(verb.basic_form);
+  (vocabulary.spontaneous.has(verb.basic_form) && !pastFollows(morphemes, at)) ||
+  vocabulary.stative.has(verb.basic_form) ||
+  namesSomething(morphemes, at, verb, vocabulary);
+
+/** 「〜と呼ばれる」「〜とも呼ばれています」は名前を言うもので、呼んだ誰かを隠していない。「と」の無い「会議に呼ばれた」は受動。 */
+const namesSomething = (morphemes: readonly Morpheme[], at: number, verb: Morpheme, vocabulary: PassiveVocabulary): boolean => {
+  if (!vocabulary.naming.has(verb.basic_form)) return false;
+  const before = morphemes[at - 2]?.pos_detail_1 === "係助詞" ? morphemes[at - 3] : morphemes[at - 2];
+  return before?.pos === "助詞" && before.surface_form === "と";
+};
+
+const isSuru = (morpheme: Morpheme | undefined): boolean => morpheme?.pos === "動詞" && morpheme.basic_form === "する";
+
+/**
+ * 自動詞には、動作を受ける側を主語にする受動が無い。「来られ」「取り組まれ」「辞任され」は尊敬か可能。
+ * 本動詞（動詞,自立）だけを見る。補助動詞の「連れてこられた」は「連れてくる」全体の受動。
+ */
+const intransitiveVerb = (morphemes: readonly Morpheme[], at: number, vocabulary: PassiveVocabulary): boolean => {
+  const verb = morphemes[at - 1];
+  if (verb?.pos !== "動詞" || verb.pos_detail_1 !== "自立") return false;
+  if (vocabulary.intransitive.has(verb.basic_form)) return true;
+  const noun = morphemes[at - 2];
+  return isSuru(verb) && noun?.pos_detail_1 === "サ変接続" && vocabulary.intransitive.has(noun.basic_form);
+};
+
+/** 「おる」は受動を作らないので、「しておられる」の「れる」は尊敬。 */
+const HONORIFIC_BASE = "おる";
+
+/**
+ * 形のうえで尊敬と言える「れる/られる」。主語が動作をする人なので、隠れた動作主はいない。
+ * 「ご用意された」「お会いされた」の お・ご は見ない。謙譲の「ご用意する」の受動（「資料がご用意されました」）と形が同じ。
+ */
+const honoursTheDoer = (morphemes: readonly Morpheme[], at: number, vocabulary: PassiveVocabulary): boolean =>
+  (morphemes[at - 1]?.pos === "動詞" && morphemes[at - 1]?.basic_form === HONORIFIC_BASE) || intransitiveVerb(morphemes, at, vocabulary);
 
 const textOf = (morphemes: readonly Morpheme[]): string => morphemes.map((morpheme) => morpheme.surface_form).join("");
 
@@ -75,11 +114,12 @@ const insideFormula = (morphemes: readonly Morpheme[], at: number, formulas: rea
   });
 };
 
-/** morphemes[at] が受動と読める「れる/られる」か。直前の動詞と、囲む決まり文句を見る。 */
+/** morphemes[at] が受動と読める「れる/られる」か。直前の動詞、尊敬の形、囲む決まり文句を見る。 */
 export const readsAsPassive = (morphemes: readonly Morpheme[], at: number, vocabulary: PassiveVocabulary): boolean => {
   const morpheme = morphemes[at];
   if (morpheme === undefined || !isPassiveForm(morpheme)) return false;
   const verb = morphemes[at - 1];
   if (verb?.pos === "動詞" && verbReadsOtherwise(morphemes, at, verb, vocabulary)) return false;
+  if (honoursTheDoer(morphemes, at, vocabulary)) return false;
   return !insideFormula(morphemes, at, vocabulary.formulas);
 };

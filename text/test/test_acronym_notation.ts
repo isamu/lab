@@ -37,7 +37,10 @@ const NOTATIONS: Record<string, Notation> = {
   meridiem: { inside: [(word) => `3:30 ${word}`, (word) => `10${word}`], outside: (word) => `the ${word} desk` },
   "time-zone": { inside: [(word) => `16:00 ${word}`, (word) => `2pm ${word}`, (word) => `12:30pm ${word}`], outside: (word) => `the ${word} desk` },
   "currency-code": { inside: [(word) => `${word} 1,000,000`, (word) => `250 ${word}`, (word) => `${word} $1,000`], outside: (word) => `the ${word} desk` },
-  "us-state-code": { inside: [(word) => `Kansas City, ${word} 64108`, (word) => `Berkeley, ${word} 94720-1234`], outside: (word) => `Berkeley ${word} 94720` },
+  "us-state-code": {
+    inside: [(word) => `Kansas City, ${word} 64108`, (word) => `Berkeley, ${word} 94720-1234`],
+    outside: (word) => `the ${word} 94720 office`,
+  },
   "emphasis-word": { inside: [(word) => `the desk, ${word} the hall`] },
 };
 
@@ -131,5 +134,11 @@ describe("undefined-acronym は読む語彙表をすべて宣言する", () => {
       const rule = loadRules(adapter.id).find((candidate) => candidate.id === "undefined-acronym");
       assert.deepEqual(listsRead(adapter, "undefined-acronym"), [...(rule?.extra_word_lists ?? [])].sort(byName));
     });
+  });
+});
+
+describe("強調の ONLY", () => {
+  it("en: 引用の中の大文字の ONLY は数えず、SRE は数える", () => {
+    assert.deepEqual(reported(en, "# Notes\n\nThe survey asks, “Are you ONLY called to work as needed?” The SRE joins.\n"), ["SRE"]);
   });
 });
