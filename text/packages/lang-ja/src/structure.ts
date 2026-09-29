@@ -4,6 +4,7 @@ import { citationVocabulary, citedDocument } from "./citation.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { countedAfter, dates, quantities } from "./quantities.ts";
 import { sectionReferences, sectionVocabulary } from "./section-reference.ts";
+import { startsWithParticle } from "./particle-after.ts";
 
 // 契約書・規程・法令の番号の書き方。core は番号の書き方を知らず、ここで読んだものを入れ子にする。
 
@@ -363,5 +364,6 @@ export const structure: StructurePatterns = {
   quantities: quantitiesOutsideSections,
   dates,
   countedAfter: countedAfterNumber,
+  continuesSentence: startsWithParticle,
   number,
 };

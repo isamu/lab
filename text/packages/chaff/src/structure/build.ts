@@ -7,6 +7,7 @@ import { maskSpans } from "../mask.ts";
 import type { DocumentProfile, Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
 import { dottedNumber } from "./universal.ts";
+import { numberInSentence } from "./number-in-sentence.ts";
 import { unnumberedUnit, type OpenUnit } from "./unnumbered.ts";
 import { readsOnHeading } from "./heading-leaves.ts";
 
@@ -146,10 +147,12 @@ const LEAVES: readonly { readonly kind: StructureKind; readonly find: LeafFinder
   { kind: "date", find: (patterns, text) => patterns.dates?.(text) ?? [] },
 ];
 
-/** 言語を問わない通し番号。後ろが単位なら数量なので番号にしない。 */
+/** 言語を問わない通し番号。後ろが単位なら数量、本文の文の続きなら文の中の数なので、番号にしない。 */
 const universalNumber = (patterns: StructurePatterns, text: string, context: NumberingContext, plainText: boolean): NumberedLine | undefined => {
   const dotted = dottedNumber(text, context, plainText);
-  return dotted !== undefined && patterns.countedAfter?.(dotted.number, dotted.rest) === true ? undefined : dotted;
+  if (dotted === undefined || patterns.countedAfter?.(dotted.number, dotted.rest) === true) return undefined;
+  const numbered = { number: dotted.number, rest: dotted.rest, isHeading: context.isHeading };
+  return numberInSentence(numbered, patterns.continuesSentence) ? undefined : dotted;
 };
 
 /** 行の中の定義・参照・義務・数量を、いま開いている最も内側の節点の子にする。 */
