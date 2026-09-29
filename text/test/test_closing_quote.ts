@@ -54,6 +54,8 @@ describe("文頭に取り残された閉じ引用符を前の文へ戻す", () =
     assert.deepEqual(textsOf("Rock ’n’ roll. Don’t go."), ["Rock ’n’ roll.", "Don’t go."]);
     assert.deepEqual(textsOf("It ended. “Next,” he said."), ["It ended.", "“Next,” he said."]);
     assert.deepEqual(textsOf("It ended. ‘Next,’ he said."), ["It ended.", "‘Next,’ he said."]);
+    assert.deepEqual(textsOf("He asked, “Is it done?” ’Tis true."), ["He asked, “Is it done?”", "’Tis true."]);
+    assert.deepEqual(textsOf("He asked, “Is it done?” ’90s music played."), ["He asked, “Is it done?” ’90s music played."]);
   });
 
   it("span は元の文字列の位置のまま。閉じ引用符は前の文の末尾、次の文は空白の後から", () => {

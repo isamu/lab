@@ -13,7 +13,8 @@ import { NEXT_SENTENCE_HEAD } from "./quoted-stop.ts";
 const CLOSING_RUN = /^[\p{Pf}\p{Pe}"']+/u;
 const WORD_CHARACTER = /^[\p{L}\p{N}]/u;
 const STOP_AT_END = /[.?!]$/u;
-const NEXT_SENTENCE = new RegExp(`^${NEXT_SENTENCE_HEAD}`, "u");
+// 語頭のアポストロフィの後の大文字（’Tis）も次の文の頭。
+const NEXT_SENTENCE = new RegExp(String.raw`^(?:${NEXT_SENTENCE_HEAD}|\s+’\p{Lu})`, "u");
 const LEADING_SPACE = /^\s*/u;
 
 /** 文頭の閉じ引用符の並びの長さ。後ろに字が続けば開き引用符かアポストロフィなので 0。 */
