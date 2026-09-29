@@ -42,7 +42,7 @@ describe("isAddressRun — 漢字の連なりが住所か", () => {
       tokensOf("紀美野町").map((token) => token.surface),
       ["紀", "美野", "町"],
     );
-    assert.equal(tokensOf("紀美野町")[0]?.features?.["NameType"], undefined);
+    assert.equal(tokensOf("紀美野町")[0]?.features?.["NameType"], "Sur");
     assert.deepEqual(
       tokensOf("南伊勢町").map((token) => token.surface),
       ["南", "伊勢", "町"],

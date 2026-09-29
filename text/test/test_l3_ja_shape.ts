@@ -66,6 +66,21 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(idsFor("東京都港区新橋二政策に届ける。").includes("max-kanji-continuous"));
     });
 
+    it("valid: 辞書が 1 語の固有名詞と読む名前は、書き手が変えられないので数えない", () => {
+      assert.ok(!idsFor("新東京国際空港公団が発表した。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("動力炉核燃料開発事業団の報告を読む。").includes("max-kanji-continuous"));
+    });
+
+    it("invalid: 名前に普通の語が続く語、名前の並び、辞書が固有名詞と読まない正式名称は数える", () => {
+      assert.ok(idsFor("新東京国際空港公団総務部に届ける。").includes("max-kanji-continuous"));
+      // デジタル庁のサービスデザインガイドラインにある学部名。武蔵野美術大学だけが固有名詞で、後ろは普通の語。
+      assert.ok(idsFor("武蔵野美術大学造形構想学部の教員が参加した。").includes("max-kanji-continuous"));
+      assert.ok(idsFor("日本経済団体連合会が提言した。").includes("max-kanji-continuous"));
+      assert.ok(idsFor("田中一郎山田花子佐藤次郎が出席した。").includes("max-kanji-continuous"));
+      // デジタル庁のプライバシーポリシーにある委員会名。形態素解析は 個人/情報/保護/委員/会 と普通の語に割る。
+      assert.ok(idsFor("個人情報保護委員会規則に従う。").includes("max-kanji-continuous"));
+    });
+
     it("覆った箇所の空白をまたいで繋がない", () => {
       // `情報処理` と `推進機構` は別のコード。間の記号は覆われて空白になる。
       assert.ok(!idsFor("`情報処理`と`推進機構`の話です。").includes("max-kanji-continuous"));

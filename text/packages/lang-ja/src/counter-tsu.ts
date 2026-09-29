@@ -9,6 +9,7 @@ export type Morpheme = {
   readonly pos: string;
   readonly pos_detail_1: string;
   readonly pos_detail_2: string;
+  readonly pos_detail_3?: string;
   readonly basic_form: string;
   readonly reading?: string;
 };

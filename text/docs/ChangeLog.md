@@ -14,6 +14,17 @@ the likelier house style. A document with several top-level headings has no titl
 chapter), so all of its headings are compared as before; real inconsistencies among section headings are reported as
 before.
 
+### Japanese: a long run of kanji that is one proper name is not reported (#170)
+
+`max-kanji-continuous` no longer reports a run of kanji that is one name, since the writer cannot change a name: a
+word the dictionary reads as a single proper noun (新東京国際空港公団, 動力炉核燃料開発事業団) or a person's family and
+given name (田中太郎). The Japanese adapter now tells persons and organisations apart the way it already told places:
+IPADIC's 固有名詞,人名 becomes UD `NameType=Sur` (family name), `Giv` (given name) or `Prs`, and 固有名詞,組織 becomes
+`NameType=Com`. A proper noun followed by common nouns (武蔵野美術大学造形構想学部, 新東京国際空港公団総務部) is still
+reported, as is a run of names (田中一郎山田花子佐藤次郎): both are the way unreadable compounds are built. Most official
+names are not in the dictionary as proper nouns: kuromoji splits 個人情報保護委員会 and 日本経済団体連合会 into common
+nouns, and they stay reported. No finding in the corpus changes.
+
 ### English: a curly or single closing quotation mark stays with its sentence (#170)
 
 After a question or exclamation mark, the sentence splitter ended the sentence before a curly closing quotation mark
