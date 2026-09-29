@@ -389,13 +389,15 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
     assert.equal(htmlToMarkdown(note), "Note one.\n\n## Terms\n\nRead the note\n");
   });
 
-  it("見出しの中の自己リンクは、題の横にあれば落とし、題そのものなら文字を残す", () => {
+  it("見出しの中の自己リンクは、文字の無い印 (¶ など) なら落とし、語のあるものは題として残す", () => {
     assert.equal(htmlToMarkdown('<h2 id="scope">Scope<a href="#scope" title="Link">¶</a></h2><p>x.</p>'), "## Scope\n\nx.\n");
     assert.equal(htmlToMarkdown('<h2 id="a b">Scope <a href="#a%20b">¶</a></h2><p>x.</p>'), "## Scope\n\nx.\n");
     assert.equal(htmlToMarkdown('<h2 id="a&amp;b">Scope <a href="#a&amp;b">¶</a></h2><p>x.</p>'), "## Scope\n\nx.\n");
     assert.equal(htmlToMarkdown('<h2 id="概要">概要<a href="#%E6%A6%82%E8%A6%81">¶</a></h2><p>x.</p>'), "## 概要\n\nx.\n");
     assert.equal(htmlToMarkdown('<h2 id="%">Scope <a href="#%">¶</a></h2><p>x.</p>'), "## Scope\n\nx.\n");
     assert.equal(htmlToMarkdown('<section id="intro"><h2><a href="#intro">Introduction</a></h2><p>x.</p></section>'), "## Introduction\n\nx.\n");
+    assert.equal(htmlToMarkdown('<h2 id="x"><a href="#x">Title</a> (revised)</h2><p>x.</p>'), "## Title (revised)\n\nx.\n");
+    assert.equal(htmlToMarkdown('<h2 id="x"><a href="#x">2.1</a> Scope <a href="#x">#</a></h2><p>x.</p>'), "## 2.1 Scope\n\nx.\n");
     assert.equal(htmlToMarkdown('<h2 id="s">Scope <a href="https://example.org/law">Act</a></h2><p>x.</p>'), "## Scope Act\n\nx.\n");
   });
 

@@ -6,6 +6,8 @@ export const stripTags = (html: string): string => html.replace(/<\/?[a-z!][^>]*
 
 export const plainText = (html: string): string => decodeEntities(stripTags(html)).replace(/\s+/gu, " ").trim();
 
+export const hasNoWords = (text: string): boolean => !/[\p{L}\p{N}]/u.test(text);
+
 export const ANY_LINK = /<a\b[^>]*>[\s\S]*?<\/a\s*>/giu;
 
 /** Attributes before a given one, each skipped whole so that a quoted value (title="x role=main") is not read as one. */

@@ -8,7 +8,7 @@
 // lines of nothing but in-page or script links (never a heading), a heading drawn as an image unless its alt text is the page's
 // title, and a copyright notice closing the page, with an address just before it, are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
 // for any HTML.
-import { ANY_LINK, ATTRIBUTES, elementRanges, isInside, plainText, stripTags, type ElementRange } from "./html-elements.ts";
+import { ANY_LINK, ATTRIBUTES, elementRanges, hasNoWords, isInside, plainText, stripTags, type ElementRange } from "./html-elements.ts";
 import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
@@ -122,8 +122,6 @@ const withoutButtons = (html: string): string => {
 };
 
 const LINK_MARK = "\u0003";
-
-const hasNoWords = (text: string): boolean => !/[\p{L}\p{N}]/u.test(text);
 
 /** Links joined by ">" or another arrow, then the current page's name as plain text. */
 const BREADCRUMB_TRAIL = new RegExp(`^\\s*(?:${LINK_MARK}\\s*[>›»＞→]\\s*){2,}[^${LINK_MARK}>›»＞→]*$`, "u");
