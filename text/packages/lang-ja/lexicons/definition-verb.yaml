@@ -1,0 +1,8 @@
+# 括弧の中で、略語の後ろに書いて定義を閉じる語（（以下「HR」という。））。
+id: definition-verb
+language: ja
+entries:
+  - pattern: という
+  - pattern: と呼ぶ
+  - pattern: と称する
+  - pattern: と略す

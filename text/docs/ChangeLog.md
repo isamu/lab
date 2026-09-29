@@ -11,15 +11,67 @@ across a line break and regardless of case, and in English two determiners where
 `a the`). Same word means the same surface and the same part of speech, so `that that` (a conjunction and a
 demonstrative) is left alone; the determiners are the articles and the possessives, which `@chaffjs/lang-en` now
 marks with the Universal Dependencies features `PronType=Art` and `Poss=Yes` (the articles are a lexicon, `article`;
-"her", an object as often as a possessive, is a lexicon `object-or-possessive` and not marked).
-A capitalised word inside a sentence followed by the same word in lower case is a name and the next word
-("Payment for May may be delayed"). Interjections, adverbs, proper nouns, numbers and symbols are not counted: repeating them is emphasis or a name
-(「そうそう」, "very very", "Walla Walla"). A Japanese noun of a unit or an occasion doubled to mean "each" and
+"her", an object as often as a possessive, is a lexicon `object-or-possessive` and not marked). A capitalised word
+inside a sentence followed by the same word in lower case is a name and the next word ("Payment for May may be
+delayed"). Interjections, adverbs, proper nouns, numbers and symbols are not counted: repeating them is emphasis or a
+name (「そうそう」, "very very", "Walla Walla"). A Japanese noun of a unit or an occasion doubled to mean "each" and
 followed by a particle (「会社会社で」「部署部署の」「場面場面で」) is marked `Echo=Rdp` by `@chaffjs/lang-ja` and left
 alone; the nouns and the particles are lexicons (`distributive-noun`, `distributive-particle`), so 「資料資料の」 is
-still reported. Other repeats a language allows are a lexicon (`doubled-word`) in each
-language package: "had had", "do do", "her her", "sign in in advance", 「一つ一つ」. The position is the second word. The rule needs parts of speech and says so
-when a language has none. Found on cloud.gov's API v2 notice in the corpus ("our the platform").
+still reported. Other repeats a language allows are a lexicon (`doubled-word`) in each language package: "had had",
+"do do", "her her", "sign in in advance", 「一つ一つ」. The position is the second word. The rule needs parts of speech
+and says so when a language has none. Found on cloud.gov's API v2 notice in the corpus ("our the platform").
+
+### `undefined-acronym` accepts an acronym defined in brackets with 以下 or hereinafter (#170)
+
+An acronym written as a definition inside brackets now counts as spelled out: `Human Resource(以下、HR)`,
+`人事部（以下「HR」という。）`, `Service Level Agreement（以下「SLA」）`, `Service Level Agreement (hereinafter "SLA")`,
+`(the "SLA")`, `(aka the "GDPR")`. The words come from two new word lists in each language package,
+`definition-marker` (before the acronym: 以下, the, hereinafter, aka …) and `definition-verb` (after it: という, と称する
+…); a language without them keeps the older forms only. The brackets must hold nothing but those words, quotes and the
+acronym, so `（以下のSRE手順）` or `(the SRE team)` still report SRE. Found on 総務省's white paper, NTT Com's onboarding
+handbook and Automattic's privacy policy.
+
+### `latin-spacing` reads a name ending in a digit as a Latin word (#170)
+
+A run that starts with a letter and ends in a digit (`H30 等`, `EC2 で`, `IPv6アドレス`, `v1.2の`) is now counted with
+the letters, not with the numbers: a writer spaces it the way they space `API を`, whatever they do after `3日`. Before,
+a document that spaces Latin words and glues numbers had `H30 等` reported as a spaced number. A run that starts with a
+digit (`3GBの`) still counts with the numbers. Found on デジタル庁's specification of the machine-readability checker.
+
+### The corpus has travel guides, an onboarding handbook, a design document, a requirements document, manuals and a town's notices (#170)
+
+`yarn corpus` now also runs on two ja.wikivoyage articles (四国八十八箇所巡礼, 下田市), NTT Com's onboarding handbook,
+dwango's design of its Kubernetes manifest generator, a requirements document for a note-taking app, a 国土地理院 how-to
+(URL only), two guides of デジタル庁's machine-readability checker (公共データ利用規約（第1.0版）with attribution), and a
+mayor's report and a notice of 紀美野町 (committed: its site terms follow 政府標準利用規約（第2.0版）, with attribution). The
+HTML converter reads the element marked `role="main"` when a page has no `<main>`, so a town CMS's menus and text-size
+buttons are not read as the page's preamble.
+
+### The list of acronyms a reader knows is a word list (#170)
+
+`undefined-acronym`'s list of acronyms that need no spelling out (API, URL, CEO …) moved from code into each language
+package's `common-acronym` word list, so it can differ by language (NG is understood in Japanese documents). The
+contents are unchanged. The rule declares the list, so a language package without it does not run the rule and says why,
+instead of reporting API and URL.
+
+### A heading with no title is not a heading (#170)
+
+A heading with no letter or digit in it — `###` alone, `## ---`, `### ** **`, `## ※`, a heading holding only an
+attribute or an image — is a separator (often an empty `<h3>` left by a converter), not the start of a section a
+reader can find. chaff no longer counts it as a heading: the text on both sides stays in one section for every rule
+that reads sections, and `chaff tree` opens no untitled section for it. `preamble-length` therefore no longer takes an
+empty `###` for the start of the body: a press release whose only deeper heading is empty has no subheading, and gets
+no finding. Found on a GSA press release in the corpus.
+
+### `undefined-acronym` leaves times, amounts, US addresses and emphasised NOT / AND alone (#170)
+
+Capitals that belong to a fixed notation next to a number are no longer taken as acronyms: AM / PM and a time zone
+after a clock time (`3:30 PM`, `2pm ET`, `16:00 UTC`), a major currency code before or after an amount
+(`USD 1,000,000`, `250 EUR`), and a US state code in a postal address (`Kansas City, MO 64108`). Away from the number
+they are still reported, because the same letters are also real acronyms (PM for project manager, CA for certificate
+authority). A lone `NOT` or `AND` written in capitals is emphasis. TIP (a callout label, like NOTE) and USA (like US)
+join the common acronyms. A capitalised ordinary word such as CASH, FAIL or a template placeholder (LINK) is still
+reported: nothing in the text tells it apart from a real acronym that spells a word (CREDIT, SAFE, HUB).
 
 ### `preamble-length` does not count a page's date stamp (#170)
 

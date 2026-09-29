@@ -1,6 +1,8 @@
 import { proseText } from "../measure.ts";
 import { wordsOf } from "./structure.ts";
 import { compacted, placeOf } from "./gram-place.ts";
+import { notAcronymSpans } from "./acronym-context.ts";
+import { expansionAt, type ExpandedAt } from "./acronym-expansion.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 
 const PER = 1000;
@@ -185,6 +187,7 @@ const spansOf = (text: string): Span[] => [
   ...[...text.matchAll(UNCASED_STRETCH)].filter((match) => SHOUTED_RUN.test(match[0])).map(spanOf),
   ...[...text.matchAll(IDENTIFIER)].filter((match) => /\d/u.test(match[0])).map(spanOf),
   ...[QUOTED_CAPS, REQUIREMENT_WORD, LICENCE].flatMap((pattern) => [...text.matchAll(pattern)].map(spanOf)),
+  ...notAcronymSpans(text),
 ];
 
 type AcronymHit = { readonly word: string; readonly hit: Hit };
@@ -197,132 +200,24 @@ const acronymsOf = (doc: ProseDocument): AcronymHit[] =>
       .map((match) => ({ word: match[0], hit: { sentence, offset: sentence.span.start + match.index } }));
   });
 
-/** 読み手が説明なしで通じると見なしてよい語。展開すると逆に読みにくい。 */
-const COMMON = new Set([
-  "OK",
-  "NG",
-  "URL",
-  "API",
-  "CSS",
-  "HTML",
-  "JSON",
-  "YAML",
-  "HTTP",
-  "HTTPS",
-  "PDF",
-  "CPU",
-  "GPU",
-  "RAM",
-  "USB",
-  "AI",
-  "ID",
-  "FAQ",
-  "PR",
-  "OS",
-  "CLI",
-  "UI",
-  "UX",
-  "SQL",
-  "CSV",
-  "XML",
-  "TODO",
-  "NOTE",
-  // 通信と符号化。技術文書でなくても説明なしで通じる。
-  "DNS",
-  "IP",
-  "TCP",
-  "UDP",
-  "SSH",
-  "SSL",
-  "TLS",
-  "VPN",
-  "LAN",
-  "UTF",
-  "ASCII",
-  // 機器・形式・単位。
-  "PC",
-  "IT",
-  "SDK",
-  "IDE",
-  "PNG",
-  "JPEG",
-  "GIF",
-  "SVG",
-  "QR",
-  "GPS",
-  "SNS",
-  "TV",
-  "KB",
-  "MB",
-  "GB",
-  "TB",
-  // 役職と国・地域。
-  "CEO",
-  "CTO",
-  "CFO",
-  "US",
-  "UK",
-  "EU",
-  "UN",
-  "DNA",
-]);
-
-/**
- * 展開は略語の**すぐ隣**にあるときだけ認める。
- * 60 文字も見ると、同じ文のどこかに括弧があるだけで「説明済み」になり、1 件も出なくなる。
- *
- * 認めるのは 3 つの形。どれも実際によく書かれる。
- *   CI（継続的インテグレーション）   略語のあとに括弧
- *   Continuous Integration (CI)      括弧の中が略語
- *   Tax Cuts and Jobs Act [TCJA]     角括弧の中が略語で、直前の語の頭文字と揃う
- * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
- */
-const WRAP = String.raw`[\s"“”'‘’「」『』]*`;
-const OPENS = new RegExp(String.raw`^${WRAP}[(（]`, "u");
-const CLOSES = new RegExp(String.raw`^${WRAP}[)）]`, "u");
-const OPENED = new RegExp(String.raw`[(（]${WRAP}$`, "u");
-const SQUARE_CLOSES = new RegExp(String.raw`^${WRAP}\]`, "u");
-const SQUARE_OPENED = new RegExp(String.raw`\[${WRAP}$`, "u");
-
-/** 括弧と略語の間の幅。空白は 1 つに畳んであるので、(“ MNDA ”) まで収まる。 */
-const NEAR = 3;
-
-/**
- * 角括弧は引用の印にも使う（[IANA]、[1]）。直前の語のうち大文字で始まる語の頭文字が
- * 略語と揃うときだけ展開と見なす。見る語は略語の文字数の 2 倍まで（and や of を挟むため）。
- */
-const spellsOut = (before: string, acronym: string): boolean => {
-  const letters = acronym.replaceAll("&", "");
-  const words = before
-    .replace(SQUARE_OPENED, "")
-    .trim()
-    .split(/\s+/u)
-    .slice(-letters.length * 2);
-  const initials = words.filter((word) => /^[A-Z]/u.test(word)).map((word) => word.charAt(0));
-  return initials.join("").endsWith(letters);
-};
-
-const isExpandedAt = (body: string, acronym: string, at: number): boolean => {
-  const after = body.slice(at + acronym.length, at + acronym.length + NEAR);
-  const before = body.slice(Math.max(0, at - NEAR), at);
-  if (OPENS.test(after) || (OPENED.test(before) && CLOSES.test(after))) return true;
-  return SQUARE_OPENED.test(before) && SQUARE_CLOSES.test(after) && spellsOut(body.slice(0, at), acronym);
-};
-
 /**
  * どこか 1 か所で展開してあればよい。初出が節の見出し代わりの語（「5.3. DPA.」）で、
  * 展開がその直後の文にあることが契約書では普通にある。見るのは語として現れた所だけ（CISA の中の CI は見ない）。
  */
-const isExpanded = (body: string, acronym: string): boolean =>
-  [...body.matchAll(new RegExp(`${EDGE_BEFORE}${acronym}${EDGE_AFTER}`, "gu"))].some((match) => isExpandedAt(body, acronym, match.index));
+const isExpanded = (body: string, acronym: string, expandedAt: ExpandedAt): boolean =>
+  [...body.matchAll(new RegExp(`${EDGE_BEFORE}${acronym}${EDGE_AFTER}`, "gu"))].some((match) => expandedAt(body, acronym, match.index));
+
+const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
+  const common = new Set((options.lexicon ?? []).map((entry) => entry.pattern));
   const seen = new Map<string, Hit>();
   acronymsOf(doc).forEach(({ word, hit }) => {
-    if (!COMMON.has(word) && !seen.has(word)) seen.set(word, hit);
+    if (!common.has(word) && !seen.has(word)) seen.set(word, hit);
   });
-  const bare = [...seen.entries()].filter(([acronym]) => !isExpanded(body, acronym));
+  const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: patternsOf(doc, "definition-verb") });
+  const bare = [...seen.entries()].filter(([acronym]) => !isExpanded(body, acronym, expandedAt));
   if (bare.length < options.limit) return [];
   return bare.map(([acronym, hit]) => ({
     rule: "undefined-acronym",

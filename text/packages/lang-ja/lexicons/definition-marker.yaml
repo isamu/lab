@@ -1,0 +1,6 @@
+# 括弧の中で、略語の前に書いて定義を始める語（人事部（以下「HR」という。）、Human Resource(以下、HR)）。
+# 契約書・白書・社内の手引きのどれでも書く、ふつうの書き方。括弧の中が語と略語だけのときに限って、略語の説明と見なす。
+id: definition-marker
+language: ja
+entries:
+  - pattern: 以下

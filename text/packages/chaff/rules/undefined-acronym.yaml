@@ -2,6 +2,7 @@ id: undefined-acronym
 layer: L1
 status: experimental
 how_to_find: undefined-acronym
+word_list: common-acronym
 severity: info
 
 name:
