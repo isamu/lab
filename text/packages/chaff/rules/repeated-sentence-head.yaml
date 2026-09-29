@@ -14,7 +14,7 @@ why:
 
 message:
   ja: 「{head}」で始まる文が {count} 続いています（{limit} まで）
-  en: '{count} sentences in a row open with "{head}" (limit {limit})'
+  en: '{count} {count|sentence|sentences} in a row {count|opens|open} with "{head}" (limit {limit})'
 
 how_to_fix:
   ja: 語順を変えるか、1 文を前の文に繋げてください。

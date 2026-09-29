@@ -79,7 +79,7 @@ const indexesOf = (text: string, pattern: RegExp): number[] => [...text.matchAll
 const stopEnds = (text: string): number[] => {
   const japanese = [...text.matchAll(JAPANESE_STOPS)].filter((match) => isCJK(text[match.index - 1]));
   const english = [...text.matchAll(ENGLISH_STOP)].filter((match) => !isAbbreviation(match[0]));
-  return [...japanese, ...english].map((match) => match.index + match[0].length).sort((a, b) => a - b);
+  return [...japanese, ...english].map((match) => match.index + match[0].length).toSorted((a, b) => a - b);
 };
 
 const skipSpaces = (text: string, from: number): number => {

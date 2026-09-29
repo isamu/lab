@@ -1,8 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
+import { reportedAcronyms } from "./rule-run.ts";
 import { citationKeySpans } from "../packages/chaff/src/detectors/citation-key.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
@@ -11,10 +9,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 const keysIn = (text: string): string[] => citationKeySpans(text).map((span) => text.slice(span.start, span.end));
 
-const reported = (source: string): string[] =>
-  runRules(buildDocument("t.md", source, en), loadRules("en"), { "undefined-acronym": "strict" }, true, "technical/spec")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
+const reported = (source: string): string[] => reportedAcronyms(en, source, "technical/spec");
 
 /** 説明の無い略語 SRE を毎回並べ、rule が動いていることを確かめる。 */
 const withSre = (sentence: string): string => `# Notes\n\n${sentence} The SRE joins.\n`;

@@ -16,7 +16,7 @@ why:
 
 message:
   ja: 接続詞で始まる段落が {count} 続いています（{limit} まで）
-  en: "{count} paragraphs in a row open with a conjunction (limit {limit})"
+  en: "{count} {count|paragraph|paragraphs} in a row {count|opens|open} with a conjunction (limit {limit})"
 
 how_to_fix:
   ja: どれか 1 つを残して、他は言いたいことから始めてください。

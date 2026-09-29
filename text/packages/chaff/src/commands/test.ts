@@ -7,6 +7,7 @@ import { buildDocument, teamRules } from "../document.ts";
 import { guessLanguage } from "../detect.ts";
 import { collectTargets } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
+import { counted } from "../render/plural.ts";
 import { CHECKS_FILE, loadChecks, type UserCheck } from "../checks.ts";
 import { CACHE_DIR, credentialHint, describeFailure, hasCredentials, type JudgeOptions } from "../judge.ts";
 import { ENV_FILE, loadEnvFile } from "../env.ts";
@@ -50,7 +51,7 @@ const TEXT: Texts<{
     untouched: "  文章は書き換えていません。直すのは書いた人です。",
   },
   en: {
-    total: (total) => `  ${total} ${total === 1 ? "passage" : "passages"} in all would be sent. With --dry-run the API was not called.`,
+    total: (total) => `  ${counted(total, "passage")} in all would be sent. With --dry-run the API was not called.`,
     sentTo: (backend, model, found) => `  Sent to: ${backend} / ${model} (${found ? "credentials found" : "no credentials"})`,
     envRead: (path) => `  Read ${path}.`,
     envWhere: (found) => (found === undefined ? `A key written in ${ENV_FILE} is read too (there is no ${ENV_FILE} now)` : `${found} was read`),

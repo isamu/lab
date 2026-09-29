@@ -38,10 +38,9 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] =>
       // 誤分割を閉じるためのもので、行またぎは要らない。またぐと、引用ブロックの
       // 英文と訳文のように別の行のものまで 1 文に繋がる。
       const acrossLines = last !== undefined && source.slice(last.end, span.start).includes("\n");
-      if (last !== undefined && !acrossLines && isOpen(source.slice(last.start, last.end))) {
-        return [...acc.slice(0, -1), { start: last.start, end: span.end }];
-      }
-      return [...acc, span];
+      if (last !== undefined && !acrossLines && isOpen(source.slice(last.start, last.end))) acc[acc.length - 1] = { start: last.start, end: span.end };
+      else acc.push(span);
+      return acc;
     }, [])
     .map((span) => ({ span, text: source.slice(span.start, span.end) }));
 

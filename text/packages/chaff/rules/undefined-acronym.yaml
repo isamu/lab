@@ -30,7 +30,7 @@ why:
 
 message:
   ja: 「{word}」が説明なしで使われています（説明のない略語 {count} 個）
-  en: '"{word}" is used without an expansion ({count} such acronyms)'
+  en: '"{word}" is used without an expansion ({count} such {count|acronym|acronyms})'
 
 how_to_fix:
   ja: 初出のところで括弧に入れて展開してください。「CI（継続的インテグレーション）」のように。

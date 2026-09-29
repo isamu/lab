@@ -4,10 +4,9 @@ import type { Narrowing } from "../look-at.ts";
 import type { Job as Plan, SemanticResult } from "../run-semantic.ts";
 import { uiLanguageOf, type Texts, type UiLanguage } from "../ui.ts";
 import { MARK, localized } from "./text.ts";
+import { counted, formFor } from "./plural.ts";
 
 const RULE = 60;
-
-const plural = (count: number, word: string): string => `${count} ${word}${count === 1 ? "" : "s"}`;
 
 const TEXT: Texts<{
   readonly machineBanner: readonly string[];
@@ -57,26 +56,26 @@ const TEXT: Texts<{
     machineBanner: ["", `═══ Judged by machine ${"═".repeat(RULE - 21)}`, "    The same text gives the same result every time", ""],
     aiTitle: `═══ Judged by AI ${"═".repeat(RULE - 16)}`,
     aiNote: ["    These read the meaning of the text. The result can change", "    from run to run. If one looks wrong, feel free to ignore it."],
-    read: (asked, seen) => `    Read ${plural(asked, "passage")} out of ${plural(seen, "sentence")} (the machine ruled out the rest)`,
+    read: (asked, seen) => `    Read ${counted(asked, "passage")} out of ${counted(seen, "sentence")} (the machine ruled out the rest)`,
     wholeRead: (name) => [
       `    ${name}: could not narrow what to read, so read the whole text`,
       `      Put words in quotes in look_at ("like this") to read only the sentences that contain them`,
     ],
     word: (word) => `"${word}"`,
     number: "a number",
-    narrowedRead: (name, what, kept, total) => `    ${name}: read only the ${plural(kept, "sentence")} containing ${what} (of ${total})`,
+    narrowedRead: (name, what, kept, total) => `    ${name}: read only the ${counted(kept, "sentence")} containing ${what} (of ${total})`,
     line: (line) => `line ${line}`,
     confidence: (value) => `confidence ${value}`,
     disagree: ["     If you think this finding is wrong:"],
     silence: (rule) => `       Silence this spot only    <!-- stet: ${rule} — reason -->`,
     relax: (rule) => `       Relax the whole rule      npx chaff relax ${rule}`,
-    notRunChecks: (count) => `  ${plural(count, "check")} did not run: there was nothing for ${count === 1 ? "it" : "them"} to look at.`,
+    notRunChecks: (count) => `  ${counted(count, "check")} did not run: there was nothing for ${formFor(count, "it", "them")} to look at.`,
     byMachine: "narrowed by machine",
     whole: "not narrowed: the whole text",
     containing: (parts) => `sentences containing ${parts}`,
     planLine: (count, name, how) => `    ${String(count).padStart(3)} to send  ${name}  (${how})`,
     firstSample: "  The text sent for the first one:",
-    planHead: (path, sentences, asked) => `${path}   sends ${plural(asked, "passage")} out of ${plural(sentences, "sentence")} (the API was not called)`,
+    planHead: (path, sentences, asked) => `${path}   sends ${counted(asked, "passage")} out of ${counted(sentences, "sentence")} (the API was not called)`,
   },
 };
 

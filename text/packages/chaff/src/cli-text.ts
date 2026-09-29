@@ -1,6 +1,7 @@
 // What the command line says, in Japanese and English. Per-file text follows the file's language; the rest
 // follows hostLanguage (chaff.yaml's language, else the terminal's locale).
 import type { Texts } from "./ui.ts";
+import { counted, formFor } from "./render/plural.ts";
 import type { GenreSetting } from "./genre-check.ts";
 import type { ProfileSetting } from "./profile/check.ts";
 
@@ -93,7 +94,7 @@ export type CliText = {
   readonly unnamed: string;
   readonly sarifWritten: (path: string, count: number) => string;
   readonly unchanged: string;
-  readonly findingsUnit: string;
+  readonly findingsUnit: (count: number) => string;
   readonly watching: (files: number, findings: number) => string;
   readonly watchHint: string;
   readonly baselineDone: (files: number, entries: number, file: string) => readonly string[];
@@ -137,7 +138,7 @@ export const CLI_TEXT: Texts<CliText> = {
     unnamed: "(名前なし)",
     sarifWritten: (path, count) => `\n  SARIF を書きました: ${path}（${count} 件）`,
     unchanged: "変わりませんでした",
-    findingsUnit: " 件",
+    findingsUnit: () => " 件",
     watching: (files, findings) => `\n  ${files} ファイルを見ています。いまの指摘は ${findings} 件です。`,
     watchHint: "  保存するたびに、変わったところだけ出します。止めるには Ctrl-C。\n",
     baselineDone: (files, entries, file) => [
@@ -188,16 +189,16 @@ export const CLI_TEXT: Texts<CliText> = {
     unknownRule: (id) => `There is no rule named ${id}. npx chaff rules --json lists them.`,
     unknownRuleWithList: (id, list) => `There is no rule named ${id}.\nRules:\n${list}`,
     unnamed: "(no name)",
-    sarifWritten: (path, count) => `\n  Wrote SARIF: ${path} (${count} finding${count === 1 ? "" : "s"})`,
+    sarifWritten: (path, count) => `\n  Wrote SARIF: ${path} (${counted(count, "finding")})`,
     unchanged: "no change",
-    findingsUnit: " findings",
-    watching: (files, findings) => `\n  Watching ${files} file${files === 1 ? "" : "s"}. ${findings} finding${findings === 1 ? "" : "s"} now.`,
+    findingsUnit: (count) => ` ${formFor(count, "finding", "findings")}`,
+    watching: (files, findings) => `\n  Watching ${counted(files, "file")}. ${counted(findings, "finding")} now.`,
     watchHint: "  Each save prints only what changed. Ctrl-C to stop.\n",
     baselineDone: (files, entries, file) => [
       "",
-      `  Checked ${files} file${files === 1 ? "" : "s"}.`,
+      `  Checked ${counted(files, "file")}.`,
       "",
-      `  Recorded ${entries} finding${entries === 1 ? "" : "s"} in ${file}.`,
+      `  Recorded ${counted(entries, "finding")} in ${file}.`,
       "  They will not be reported again; only new ones will.",
       "",
       `  Commit ${file}.`,

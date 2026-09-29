@@ -85,7 +85,11 @@ const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>
 
 /** The ranges (in document order) each replaced by a space; one inside another cut one goes with it. */
 const withoutRanges = (html: string, ranges: readonly ElementRange[]): string => {
-  const chosen = ranges.reduce<ElementRange[]>((kept, range) => ((kept.at(-1)?.end ?? 0) > range.start ? kept : [...kept, range]), []);
+  const chosen = ranges.reduce<ElementRange[]>((kept, range) => {
+    const insideKept = (kept.at(-1)?.end ?? 0) > range.start;
+    if (!insideKept) kept.push(range);
+    return kept;
+  }, []);
   const cut = chosen.reduce<{ readonly parts: readonly string[]; readonly from: number }>(
     (acc, range) => ({ parts: [...acc.parts, html.slice(acc.from, range.start), " "], from: range.end }),
     { parts: [], from: 0 },

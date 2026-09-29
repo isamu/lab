@@ -1,5 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { superlativeReported } from "./rule-run.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -26,11 +27,6 @@ const isName = (adapter: LanguageAdapter, text: string, superlative: readonly st
   if (start === -1) throw new Error(`${superlative.join(" ")} が ${text} に無い`);
   return namesQuantity(tokens, { start, end: start + superlative.length }, quantities);
 };
-
-const reported = (adapter: LanguageAdapter, sentence: string): boolean =>
-  runRules(buildDocument("t.md", `# T\n\n${sentence}\n`, adapter), loadRules(adapter.id), { [RULE]: "strict" }, true, "business/report", {
-    [RULE]: 1,
-  }).findings.some((finding) => finding.rule === RULE);
 
 const noun = (surface: string, start: number): Token => ({ surface, pos: "NOUN", span: { start, end: start + surface.length } });
 
@@ -115,24 +111,24 @@ describe("namesQuantity（en）", () => {
 
 describe("unqualified-superlative は量の名前を指摘しない", () => {
   it("気象庁 FAQ の最大風速", () => {
-    assert.ok(!reported(ja, "台風の強さは、最大風速の大きさで分類しています。"));
+    assert.ok(!superlativeReported(ja, "台風の強さは、最大風速の大きさで分類しています。"));
     assert.ok(
-      !reported(
+      !superlativeReported(
         ja,
         "このように、それぞれの名称を付している最大風速の基準には違いはありますが、台風もハリケーンもサイクロンもそれぞれの地域に存在する熱帯低気圧を強さによって分類している用語の１つということになります。",
       ),
     );
-    assert.ok(!reported(ja, "最高気温と最大値を記録する。"));
+    assert.ok(!superlativeReported(ja, "最高気温と最大値を記録する。"));
   });
 
   it("主張の最上級は指摘する", () => {
-    assert.ok(reported(ja, "最大の効果を上げる。"));
-    assert.ok(reported(ja, "最高品質のサービスです。"));
-    assert.ok(reported(ja, "最速配送を提供します。"));
+    assert.ok(superlativeReported(ja, "最大の効果を上げる。"));
+    assert.ok(superlativeReported(ja, "最高品質のサービスです。"));
+    assert.ok(superlativeReported(ja, "最速配送を提供します。"));
   });
 
   it("同じ文に名前と主張があれば指摘する", () => {
-    assert.ok(reported(ja, "最大風速が強まり、最大の被害が出た。"));
+    assert.ok(superlativeReported(ja, "最大風速が強まり、最大の被害が出た。"));
   });
 
   it("量の名詞の語彙表が無い言語では、rule は動かず理由を言う", () => {

@@ -16,7 +16,7 @@ why:
 
 message:
   ja: '"{word} is ..." の形が文書内に {count} 回あります（{limit} 回まで）'
-  en: '"{word} is ..." appears {count} times (limit {limit})'
+  en: '"{word} is ..." appears {count} {count|time|times} (limit {limit})'
 
 how_to_fix:
   ja: 主語を前に出してください。"There is a need to review" を "The board must review" に。

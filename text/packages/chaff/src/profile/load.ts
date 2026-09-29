@@ -12,7 +12,7 @@ const loaded: { value: readonly ProfileDefinition[] | undefined } = { value: und
 export const loadProfiles = (): readonly ProfileDefinition[] => {
   loaded.value ??= readdirSync(PROFILES_DIR)
     .filter((file) => file.endsWith(".yaml"))
-    .sort((left, right) => left.localeCompare(right))
+    .toSorted((left, right) => left.localeCompare(right))
     .flatMap((file) => {
       const path = join(PROFILES_DIR, file);
       try {

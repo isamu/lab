@@ -14,7 +14,7 @@ why:
 
 message:
   ja: このセクションは {chars} 字に太字が {bolds} 箇所あります（1000 字あたり {limit} 箇所まで）
-  en: "{bolds} bold spans in {chars} characters (limit {limit} per 1000)"
+  en: "{bolds} bold {bolds|span|spans} in {chars} {chars|character|characters} (limit {limit} per 1000)"
 
 how_to_fix:
   ja: 本当に強調したい 1〜2 箇所だけ残して、ほかは普通の文にしてください。

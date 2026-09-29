@@ -118,7 +118,7 @@ export const ngramRepetition: Detector = (doc, options): Finding[] => {
   const sentenceWith = (gram: string): Sentence | undefined => doc.sentences.find((sentence) => gramText(sentence, doc.lengthUnit).includes(gram));
   const worst = [...gramsOf(doc).entries()]
     .filter(([gram, count]) => count > options.limit && isPhrasing(gram, doc.lengthUnit))
-    .sort(([, left], [, right]) => right - left)
+    .toSorted(([, left], [, right]) => right - left)
     .map(([gram, count]) => ({ gram, count, at: sentenceWith(gram) }))
     .find(({ gram, at }) => at === undefined || hasPredicate(gram, at, doc.lengthUnit));
   if (worst === undefined) return [];

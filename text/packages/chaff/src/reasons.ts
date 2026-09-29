@@ -1,4 +1,5 @@
 import type { Texts } from "./ui.ts";
+import { formFor } from "./render/plural.ts";
 
 /** Why a rule did not run, in the document's language. Listed under the findings so "0 findings" is never a silent pass. */
 export type Reasons = {
@@ -42,7 +43,7 @@ export const REASONS: Texts<Reasons> = {
     turnedOff: "turned off in the settings",
     noStructure: (language) => `the ${language} package cannot read a document's structure`,
     unreadStructure: (clauses, units) =>
-      `the text has ${String(clauses)} clause numbers but only ${String(units)} were read as numbered lines (deep indents, or lines run into the text)`,
+      `the text has ${String(clauses)} clause numbers but only ${String(units)} ${formFor(units, "was read as a numbered line", "were read as numbered lines")} (deep indents, or lines run into the text)`,
     noDetector: (name) => `no detector named ${name}`,
     noLexicon: (language, list) => `the ${language} package has no word list ${list}`,
   },

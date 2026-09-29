@@ -17,7 +17,7 @@ why:
 
 message:
   ja: 「{matched}」が文書内に {count} 回あります（{limit} 回まで）
-  en: '"{matched}" appears {count} times in this document (limit {limit})'
+  en: '"{matched}" appears {count} {count|time|times} in this document (limit {limit})'
 
 how_to_fix:
   ja: 主語を立てて言い切ってください。「検討させていただきます」を「来週までに結論を出します」に。
