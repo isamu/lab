@@ -64,6 +64,63 @@ describe("L3 日本語", () => {
       // 見出しの下の名前だけの行。実文書の誤検知はすべてこれだった。
       assert.ok(!idsFor("運用を始めます。手順を作ります。研修も予定しています。\n\nMaaSサービス\n\nWeb3").includes("no-mixed-desumasu"));
     });
+
+    it("valid: 終止符で終わらない行は、述語で終わっていても文として数えない", () => {
+      assert.ok(!idsFor("運用を始めます。手順を作ります。効果を測定します。\n\n設定を確認する\n").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: 述語の無い文末（後ろへ渡す「以下の通り。」、名詞で終わる説明）は調子に数えない", () => {
+      assert.ok(
+        !idsFor("運用を始めます。手順を作ります。作業で出力するファイルは以下の通り。\n\n- 設定\n- 記録\n\n効果を測定します。").includes("no-mixed-desumasu"),
+      );
+      assert.ok(!idsFor("駅に着きます。観光客がよく使う出口は駅の北口。バスに乗ります。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始めます。手順を作ります。効果を測定します。移行は明日でも可能ですから。").includes("no-mixed-desumasu"));
+    });
+
+    it("invalid: 要件の「〜できること。」はである調として数え、ですます調の 1 文が少数派になる", () => {
+      assert.ok(idsFor("会議室を予約できること。二重に予約できないこと。予約を取り消せること。前日に通知します。").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: 「！」「？」の直後に助詞が続けば、そこは文末ではない", () => {
+      assert.ok(!idsFor("運用を始めます。徹夜で作っていた！！という人を歓迎します。手順を作ります。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始める。日報を導入しませんか？が断られた。手順を作る。").includes("no-mixed-desumasu"));
+    });
+
+    it("invalid: 「。」の後が助詞で始まっても、手前の文の文末は数える", () => {
+      assert.ok(idsFor("運用を始める。設定します。という方針を採用する。手順を作る。").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: 「〜しましたこと。」は丁寧体として数える", () => {
+      assert.ok(!idsFor("対応します。確認します。ご迷惑をおかけしましたこと。通知します。").includes("no-mixed-desumasu"));
+    });
+
+    it("invalid: 「！」「？」の後が助詞で始まらなければ、そこで文は終わる", () => {
+      assert.ok(idsFor("運用を始める。日報を導入しませんか？ 手順を作る。効果を測る。").includes("no-mixed-desumasu"));
+      assert.ok(idsFor("運用を始めます。徹夜で作っていた！手順を作ります。効果を測ります。").includes("no-mixed-desumasu"));
+    });
+
+    it("invalid: 述語で終わる文は、名詞が挟まっても調子を持つ（〜である・〜だ）", () => {
+      assert.ok(idsFor("運用を始めます。手順を作ります。効果を測定します。出力するファイルは以下の通りである。").includes("no-mixed-desumasu"));
+    });
+
+    it("valid: ですます調の本文に、常体で揃えた箇条書き", () => {
+      const source =
+        "巡礼を始めます。装束を選びます。準備を整えます。\n\n- 白衣には死装束の意味があった。\n- 金剛杖は巡礼者であることを示す。\n\n寺を回ります。";
+      assert.ok(!idsFor(source).includes("no-mixed-desumasu"));
+    });
+
+    it("invalid: 箇条書きの中で調子が混ざる", () => {
+      assert.equal(countFor("手順を説明します。\n\n- 名前を記載します。\n- 所管を記載します。\n- 所在を記載する。\n", "no-mixed-desumasu"), 1);
+    });
+
+    it("invalid: 入れ子の項目は外側の箇条書きと一緒に見る", () => {
+      assert.equal(countFor("手順を説明します。\n\n- 名前を記載します。\n  - 所管を記載する。\n- 所在を記載します。\n", "no-mixed-desumasu"), 1);
+    });
+
+    it("invalid: 本文の混在は、常体の箇条書きがあっても指摘する", () => {
+      const source = "運用を始めます。手順を作ります。効果は来期に測定する。\n\n- 設定を確認する。\n- 記録を残す。\n\n研修も予定しています。";
+      assert.equal(countFor(source, "no-mixed-desumasu"), 1);
+    });
   });
 
   describe("no-doubled-joshi", () => {
