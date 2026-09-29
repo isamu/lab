@@ -1,0 +1,14 @@
+# Names of HTTP request methods (RFC 9110, and PATCH from RFC 5789). They are written in capitals but are words, not
+# abbreviations, so there is nothing to expand. Matched as written.
+id: http-method
+language: en
+entries:
+  - pattern: GET
+  - pattern: HEAD
+  - pattern: POST
+  - pattern: PUT
+  - pattern: DELETE
+  - pattern: CONNECT
+  - pattern: OPTIONS
+  - pattern: TRACE
+  - pattern: PATCH

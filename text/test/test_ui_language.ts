@@ -120,6 +120,56 @@ describe("画面の言語", () => {
     assert.match((await runIn({}, ["baseline"], "en_US.UTF-8")).err, /^No Markdown files found\.$/u);
   });
 
+  describe("eval", () => {
+    const JAPANESE = /[぀-ゟ゠-ヿ一-鿿]/u;
+
+    it("英語の文書の測定結果は英語（端末が日本語でも）", async () => {
+      const result = await runIn({ "a.md": EN, "b.md": EN }, ["eval", "."], "ja_JP.UTF-8");
+      assert.equal(result.code, 0);
+      assert.match(result.out, /Measured \d+ rules? on 2 files as a corpus/u);
+      assert.doesNotMatch(result.out, JAPANESE);
+    });
+
+    it("測定結果は by_path で決めた文書の言語（chaff.yaml の language と端末が日本語でも）", async () => {
+      const config = 'language: ja\nby_path:\n  - files: ["*.md"]\n    language: en\n';
+      const result = await runIn({ "chaff.yaml": config, "a.md": EN }, ["eval", "."], "ja_JP.UTF-8");
+      assert.equal(result.code, 0);
+      assert.match(result.out, /Measured \d+ rules? on 1 file as a corpus/u);
+      assert.doesNotMatch(result.out, JAPANESE);
+    });
+
+    it("日本語の文書の測定結果は日本語（端末が英語でも）", async () => {
+      const result = await runIn({ "a.md": JA }, ["eval", "."], "en_US.UTF-8");
+      assert.equal(result.code, 0);
+      assert.match(result.out, /1 ファイルを corpus として \d+ 本の rule を測りました。/u);
+      assert.match(result.out, /閾値は自動で書き換えていません。/u);
+    });
+
+    it("Markdown が無いときの断りは端末の言語、日本語は以前の文言のまま", async () => {
+      assert.match((await runIn({}, ["eval", "nothing"], "en_US.UTF-8")).err, /^No Markdown files found: nothing$/u);
+      assert.match((await runIn({}, ["eval", "nothing"], "ja_JP.UTF-8")).err, /^Markdown が 1 つも見つかりませんでした: nothing$/u);
+    });
+
+    it("言語が混ざっているときの断りは端末の言語", async () => {
+      const english = await runIn({ "a.md": EN, "b.md": JA }, ["eval", "."], "en_US.UTF-8");
+      assert.equal(english.code, 1);
+      assert.match(english.err, /^Languages or genres are mixed: /u);
+      assert.doesNotMatch(english.err, JAPANESE);
+      const japanese = await runIn({ "a.md": EN, "b.md": JA }, ["eval", "."], "ja_JP.UTF-8");
+      assert.match(japanese.err, /^言語かジャンルが混ざっています: .+\n1 つに絞って測ってください（例: npx chaff eval examples\/blog-ja\/）。$/u);
+    });
+
+    it("無い rule の断りは端末の言語", async () => {
+      assert.match((await runIn({ "a.md": EN }, ["eval", ".", "--rule", "nope"], "en_US.UTF-8")).err, /^There is no rule named nope\.$/u);
+      assert.match((await runIn({ "a.md": EN }, ["eval", ".", "--rule", "nope"], "ja_JP.UTF-8")).err, /^nope という rule はありません。$/u);
+    });
+
+    it("断りは chaff.yaml の language が端末より先", async () => {
+      const result = await runIn({ "chaff.yaml": "language: en\n" }, ["eval", "nothing"], "ja_JP.UTF-8");
+      assert.match(result.err, /^No Markdown files found: nothing$/u);
+    });
+  });
+
   it("無いジャンルの断りも端末の言語", async () => {
     const result = await runIn({ "a.md": EN }, ["a.md", "--genre", "novel"], "en_US.UTF-8");
     assert.equal(result.code, 1);

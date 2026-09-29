@@ -1,6 +1,7 @@
 // What the command line says, in Japanese and English. Per-file text follows the file's language; the rest
 // follows hostLanguage (chaff.yaml's language, else the terminal's locale).
 import type { Texts } from "./ui.ts";
+import type { GenreSetting } from "./genre-check.ts";
 
 /** Where a file's genre came from, as the header names it. */
 export type GenreSource = "--genre" | "by_path" | "config" | "default" | "front-matter" | "path" | "content";
@@ -81,7 +82,9 @@ export type CliText = {
   readonly noMarkdown: (targets: string) => string;
   readonly noMarkdownHere: string;
   readonly noAdapter: (language: string) => string;
-  readonly unknownGenre: (genre: string) => string;
+  readonly unknownGenre: (genre: string, where: string, known: readonly string[]) => string;
+  readonly genreWhere: (where: GenreSetting, files: readonly string[]) => string;
+  readonly unreadFrontMatterGenre: (path: string, genre: string, known: readonly string[]) => string;
   readonly unknownRule: (id: string) => string;
   readonly unknownRuleWithList: (id: string, list: string) => string;
   readonly unnamed: string;
@@ -115,7 +118,14 @@ export const CLI_TEXT: Texts<CliText> = {
     noMarkdown: (targets) => `Markdown が 1 つも見つかりませんでした: ${targets}`,
     noMarkdownHere: "Markdown が 1 つも見つかりませんでした。",
     noAdapter: (language) => `言語 "${language}" のアダプタがありません。`,
-    unknownGenre: (genre) => `ジャンル "${genre}" はありません。npx chaff genres で一覧が出ます。`,
+    unknownGenre: (genre, where, known) =>
+      `ジャンル "${genre}" はありません（${where}）。使えるのは ${known.join("、")} です。npx chaff genres で一覧が出ます。`,
+    genreWhere: (where, files) => {
+      if (where === "config") return "chaff.yaml の genre";
+      return where === "by_path" ? `chaff.yaml の by_path、files: ${files.join(", ")}` : "--genre";
+    },
+    unreadFrontMatterGenre: (path, genre, known) =>
+      `${path}: front matter の genre "${genre}" はジャンルではないので読みませんでした。使えるのは ${known.join("、")} です。`,
     unknownRule: (id) => `${id} というルールはありません。npx chaff rules --json で一覧が出ます。`,
     unknownRuleWithList: (id, list) => `${id} というルールはありません。\n一覧:\n${list}`,
     unnamed: "(名前なし)",
@@ -159,7 +169,13 @@ export const CLI_TEXT: Texts<CliText> = {
     noMarkdown: (targets) => `No Markdown files found: ${targets}`,
     noMarkdownHere: "No Markdown files found.",
     noAdapter: (language) => `No language package for "${language}".`,
-    unknownGenre: (genre) => `There is no genre "${genre}". npx chaff genres lists them.`,
+    unknownGenre: (genre, where, known) => `There is no genre "${genre}" (${where}). The genres are ${known.join(", ")}. npx chaff genres lists them.`,
+    genreWhere: (where, files) => {
+      if (where === "config") return "genre in chaff.yaml";
+      return where === "by_path" ? `by_path in chaff.yaml, files: ${files.join(", ")}` : "--genre";
+    },
+    unreadFrontMatterGenre: (path, genre, known) =>
+      `${path}: the front matter's genre "${genre}" is not a genre, so it was not used. The genres are ${known.join(", ")}.`,
     unknownRule: (id) => `There is no rule named ${id}. npx chaff rules --json lists them.`,
     unknownRuleWithList: (id, list) => `There is no rule named ${id}.\nRules:\n${list}`,
     unnamed: "(no name)",

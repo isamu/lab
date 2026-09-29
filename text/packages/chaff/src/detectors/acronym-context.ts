@@ -2,8 +2,9 @@ import { escapeRegExp } from "../orthography.ts";
 import { ROMAN_NUMERAL } from "./roman-numeral.ts";
 import { citationKeySpans } from "./citation-key.ts";
 import { dottedNameSpans } from "./dotted-name.ts";
-import { nameNumeralSpans } from "./name-numeral.ts";
+import { loneNumeralSpans, nameNumeralSpans } from "./name-numeral.ts";
 import { placeholderSpans } from "./placeholder.ts";
+import { seriesLabelSpans } from "./series-label.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108）。
@@ -73,6 +74,8 @@ export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
     ...citationKeySpans(text),
     ...dottedNameSpans(text),
     ...nameNumeralSpans(text),
+    ...loneNumeralSpans(text),
+    ...seriesLabelSpans(text),
     ...placeholderSpans(text, words.dateTimeUnits),
   ];
 };

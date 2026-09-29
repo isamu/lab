@@ -1,3 +1,4 @@
+import { plainSource } from "../plain-source.ts";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { loadAdapter } from "../adapter-load.ts";
@@ -33,7 +34,7 @@ const judgeAll = async (
 ): Promise<Judged[]> =>
   Promise.all(
     paths.map(async (path) => {
-      const source = await readFile(path, "utf8");
+      const source = plainSource(await readFile(path, "utf8"));
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
       const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language));
@@ -53,7 +54,7 @@ const dryRun = async (
 ): Promise<void> => {
   const plans = await Promise.all(
     paths.map(async (path) => {
-      const source = await readFile(path, "utf8");
+      const source = plainSource(await readFile(path, "utf8"));
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
       const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language));

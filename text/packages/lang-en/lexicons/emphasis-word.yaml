@@ -6,3 +6,4 @@ language: en
 entries:
   - pattern: "NOT"
   - pattern: "AND"
+  - pattern: "ONLY"

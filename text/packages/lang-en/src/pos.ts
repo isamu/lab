@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import type { Token } from "chaffjs/plugin";
 import { loadLexicons } from "./lexicons.ts";
+import { blankLongRuns } from "./long-runs.ts";
 import { lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
 
@@ -216,6 +217,9 @@ const locate = (text: string, tagged: readonly Tagged[]): Token[] =>
     { tokens: [], cursor: 0 },
   ).tokens;
 
+/** 英語の語はこれより長くならない。超える並びは語として読まない。 */
+const RUN_LIMIT = 1000;
+
 const tagged = (tagger: Tagger, text: string): readonly Tagged[] => toArray(callMethod(tagger, "tagSentence", [text])).filter(isTagged);
 
 /** 文頭で大文字になっただけの普通の語を、小文字で書いたときの品詞に戻す。前後の語による判断も効くよう、文ごと解析し直す。 */
@@ -228,5 +232,6 @@ const withSentenceInitialCase = (tagger: Tagger, text: string, entries: readonly
 export const tokenize = (text: string): Token[] | undefined => {
   const tagger = state.ready;
   if (tagger === undefined) return undefined;
-  return locate(text, withSentenceInitialCase(tagger, text, tagged(tagger, text)));
+  const words = blankLongRuns(text, RUN_LIMIT);
+  return locate(words, withSentenceInitialCase(tagger, words, tagged(tagger, words)));
 };
