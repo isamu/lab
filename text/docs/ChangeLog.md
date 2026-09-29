@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### A weekly run compares the documents kept as URLs (#170)
+
+A scheduled workflow (`chaff corpus (URL-only documents)`) fetches every document the corpus keeps only as a URL and
+compares it with `corpus/expected.txt`, which pull requests cannot do. A changed result opens an issue, or comments on the
+open one, with the changed lines; a document that cannot be fetched is skipped and named in a warning.
+
 ### `no-mixed-desumasu` judges a run of numbered paragraphs on its own, like a list (#170)
 
 A procedure guide states the conditions of a rule as paragraphs that open with a number, `（1）…であること。`
