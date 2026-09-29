@@ -18,8 +18,8 @@ describe("seriesLabelSpans", () => {
     ["文書番号", "following NIST SP 800-61, as", ["SP 800-61"]],
     ["版の印が続く番号", "see NIST SP 800-53r5 today", ["SP 800-53r5"]],
     ["番号の区切りが 2 つ", "the GIF 491-3-1 entry", ["GIF 491-3-1"]],
-    ["指令の番号", "under BOD 25-01 agencies", ["BOD 25-01"]],
-    ["文の終わり", "under BOD 25-01.", ["BOD 25-01"]],
+    ["公募の番号", "under NSF 19-582 grants", ["NSF 19-582"]],
+    ["文の終わり", "under NSF 19-582.", ["NSF 19-582"]],
     ["日本語の文の中", "NIST SP 800-61に従う", ["SP 800-61"]],
   ].forEach(([form, text, labels]) => {
     it(`valid: ${String(form)}`, () => assert.deepEqual(labelsIn(String(text)), labels));
@@ -29,7 +29,8 @@ describe("seriesLabelSpans", () => {
     ["区切りの無い番号", "the RFC 9110 text and the EO 14028 order"],
     ["版の番号（. で区切る）", "the SDK 3.1 release"],
     ["年の範囲", "the FY 2024-25 budget and the NFL 1999-2000 season"],
-    ["範囲や得点（桁が揃わず、短い）", "the SRE 1-2 handoff, the NFL 3-1 win and UK 5-10 days and NSF 19-1"],
+    ["範囲や得点（短い）", "the SRE 1-2 handoff, the NFL 3-1 win and UK 5-10 days and NSF 19-1"],
+    ["2 桁ずつの番号（日付や範囲と見分けられない）", "the SRE 01-02 handoff and BOD 25-01"],
     ["語と番号の間に空白が 2 つ以上", "the SP  800-61 text"],
     ["語と番号の間に別の文字", "the SP, 800-61 text and SP-800-61"],
     ["小文字を含む語", "the Sp 800-61 text"],

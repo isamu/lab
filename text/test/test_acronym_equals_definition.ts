@@ -21,6 +21,7 @@ describe("= で定義した記号", () => {
     ["空白を挟まない", "where EH=total hours worked"],
     ["大文字で始まる定義", "where EH = Employee Hours"],
     ["全角の等号", "EH ＝ 総労働時間"],
+    ["語の値（1 語の定義と見分けられないので、定義と読む）", "set EH = enabled before launch"],
   ].forEach(([form, text]) => {
     it(`valid: ${String(form)}`, () => assert.ok(definedIn(String(text), "EH")));
   });
