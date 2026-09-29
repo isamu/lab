@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { hostLanguage, uiLanguageOf } from "../packages/chaff/src/ui.ts";
+import { hostLanguage, sharedLanguage, uiLanguageOf } from "../packages/chaff/src/ui.ts";
 import { main } from "../packages/chaff/src/cli.ts";
 
 describe("どの言語で話すか", () => {
@@ -25,6 +25,15 @@ describe("どの言語で話すか", () => {
   ];
   cases.forEach(([label, configLanguage, env, expected]) => {
     it(label, () => assert.equal(hostLanguage(configLanguage, env), expected));
+  });
+
+  it("締めの言語: 文書がそろっていればその言語、混ざっているか無ければ host", () => {
+    assert.equal(sharedLanguage(["en", "en"], "ja"), "en");
+    assert.equal(sharedLanguage(["ja"], "en"), "ja");
+    assert.equal(sharedLanguage(["en", "zh"], "ja"), "en");
+    assert.equal(sharedLanguage(["ja", "en"], "ja"), "ja");
+    assert.equal(sharedLanguage(["ja", "en"], "en"), "en");
+    assert.equal(sharedLanguage([], "ja"), "ja");
   });
 });
 
@@ -167,6 +176,100 @@ describe("画面の言語", () => {
     it("断りは chaff.yaml の language が端末より先", async () => {
       const result = await runIn({ "chaff.yaml": "language: en\n" }, ["eval", "nothing"], "ja_JP.UTF-8");
       assert.match(result.err, /^No Markdown files found: nothing$/u);
+    });
+  });
+
+  describe("test", () => {
+    const JAPANESE = /[぀-ゟ゠-ヿ一-鿿]/u;
+    const CREDENTIALS = [
+      "ANTHROPIC_API_KEY",
+      "ANTHROPIC_AUTH_TOKEN",
+      "ANTHROPIC_IDENTITY_TOKEN",
+      "ANTHROPIC_IDENTITY_TOKEN_FILE",
+      "OPENAI_API_KEY",
+      "ANTHROPIC_CONFIG_DIR",
+    ];
+
+    /** 鍵が無い状態で走らせる。ネットワークに出る経路へは入らない。 */
+    const withoutKeys = async <T>(run: () => Promise<T>): Promise<T> => {
+      const saved = CREDENTIALS.map((name) => [name, process.env[name]] as const);
+      CREDENTIALS.forEach((name) => delete process.env[name]);
+      process.env["ANTHROPIC_CONFIG_DIR"] = join(tmpdir(), "chaff-no-profile-here");
+      try {
+        return await run();
+      } finally {
+        saved.forEach(([name, value]) => {
+          if (value === undefined) delete process.env[name];
+          else process.env[name] = value;
+        });
+      }
+    };
+
+    it("英語の文書なら、鍵が無いときの断りまで英語（端末が日本語でも）", async () => {
+      const result = await withoutKeys(() => runIn({ "a.md": EN }, ["test", "a.md"], "ja_JP.UTF-8"));
+      assert.match(result.out, /═══ Judged by machine ═+\n {4}The same text gives the same result every time/u);
+      assert.match(result.out, / {2}The checks that read meaning did not run\. There are no credentials for anthropic\./u);
+      assert.match(result.out, / {2}Set ANTHROPIC_API_KEY, or run ant auth login\./u);
+      assert.match(result.out, / {2}A key written in \.env is read too \(there is no \.env now\)\./u);
+      assert.match(result.out, / {2}Every machine check ran\./u);
+      assert.doesNotMatch(result.out, JAPANESE);
+    });
+
+    it("日本語の文書なら、鍵が無いときの断りは以前の文言のまま（端末が英語でも）", async () => {
+      const result = await withoutKeys(() => runIn({ "a.md": JA }, ["test", "a.md"], "en_US.UTF-8"));
+      assert.match(result.out, /═══ 機械による判定 ═{42}\n {4}同じ文章なら何度実行しても同じ結果になります/u);
+      const notice = [
+        "",
+        "  意味を読む検査は動かしていません。anthropic の認証情報がありません。",
+        "  ANTHROPIC_API_KEY を設定するか、ant auth login を実行してください。",
+        "  .env に書いても読みます（いまは .env がありません）。",
+        "  機械による判定はすべて動いています。",
+        "",
+      ].join("\n");
+      assert.ok(result.out.endsWith(notice), result.out);
+    });
+
+    it("openai の鍵の案内も文書の言語", async () => {
+      const config = "ai_backend: openai\n";
+      const english = await withoutKeys(() => runIn({ "chaff.yaml": config, "a.md": EN }, ["test", "a.md"], "ja_JP.UTF-8"));
+      assert.match(english.out, / {2}Set OPENAI_API_KEY\./u);
+      assert.doesNotMatch(english.out, JAPANESE);
+      const japanese = await withoutKeys(() => runIn({ "chaff.yaml": config, "a.md": JA }, ["test", "a.md"], "en_US.UTF-8"));
+      assert.match(japanese.out, / {2}OPENAI_API_KEY を設定してください。/u);
+    });
+
+    it("--dry-run の計画と合計は、英語の文書なら英語", async () => {
+      const result = await withoutKeys(() => runIn({ "a.md": EN }, ["test", "a.md", "--dry-run"], "ja_JP.UTF-8"));
+      assert.equal(result.code, 0);
+      assert.match(result.out, /a\.md {3}sends \d+ passages? out of \d+ sentences? \(the API was not called\)/u);
+      assert.match(result.out, / {2}\d+ passages? in all would be sent\. With --dry-run the API was not called\./u);
+      assert.match(result.out, / {2}Sent to: anthropic \/ \S+ \(no credentials\)/u);
+      assert.doesNotMatch(result.out, JAPANESE);
+    });
+
+    it("--dry-run の計画と合計は、日本語の文書なら以前の文言のまま", async () => {
+      const result = await withoutKeys(() => runIn({ "a.md": JA }, ["test", "a.md", "--dry-run"], "en_US.UTF-8"));
+      assert.match(result.out, /a\.md {3}全 \d+ 文のうち \d+ 箇所を送ります（API は呼んでいません）/u);
+      assert.match(result.out, / {2}合計 \d+ 箇所を送ります。--dry-run なので API は呼んでいません。\n {2}送り先: anthropic \/ \S+（認証なし）/u);
+    });
+
+    it("言語の混ざった実行の締めは chaff.yaml の language、次に端末の言語。文書ごとの枠は文書の言語", async () => {
+      const byPath = 'by_path:\n  - files: ["en.md"]\n    language: en\n  - files: ["ja.md"]\n    language: ja\n';
+      const files = { "en.md": EN, "ja.md": JA };
+      const english = await withoutKeys(() => runIn({ ...files, "chaff.yaml": byPath }, ["test", "."], "en_US.UTF-8"));
+      assert.match(english.out, /═══ Judged by machine/u);
+      assert.match(english.out, /═══ 機械による判定/u);
+      assert.match(english.out, /Every machine check ran\.\n$/u);
+      const japanese = await withoutKeys(() => runIn({ ...files, "chaff.yaml": byPath }, ["test", "."], "ja_JP.UTF-8"));
+      assert.match(japanese.out, /機械による判定はすべて動いています。\n$/u);
+      const configured = await withoutKeys(() => runIn({ ...files, "chaff.yaml": `language: ja\n${byPath}` }, ["test", ".", "--dry-run"], "en_US.UTF-8"));
+      assert.match(configured.out, /合計 \d+ 箇所を送ります。/u);
+    });
+
+    it("Markdown が無いときの断りは端末の言語、日本語は以前の文言のまま", async () => {
+      assert.match((await runIn({}, ["test", "nothing"], "en_US.UTF-8")).err, /^No Markdown files found: nothing$/u);
+      assert.match((await runIn({}, ["test", "nothing"], "ja_JP.UTF-8")).err, /^Markdown が 1 つも見つかりませんでした: nothing$/u);
+      assert.match((await runIn({ "chaff.yaml": "language: en\n" }, ["test", "nothing"], "ja_JP.UTF-8")).err, /^No Markdown files found: nothing$/u);
     });
   });
 

@@ -47,7 +47,7 @@ describe("chaff test --dry-run", () => {
   });
 
   it("何箇所送るかと、絞り込みかたを出す", () => {
-    const text = renderPlan("t.md", jobs, doc.sentences.length).join("\n");
+    const text = renderPlan("t.md", jobs, doc.sentences.length, doc.language).join("\n");
     assert.match(text, /API は呼んでいません/u);
     assert.match(text, /「お願いします」/u);
     assert.match(text, /絞り込めず全文/u);
