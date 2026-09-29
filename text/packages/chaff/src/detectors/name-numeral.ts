@@ -20,3 +20,14 @@ export const nameNumeralSpans = (text: string): Span[] =>
       const end = match.index + match[0].length;
       return { start: end - numeral.length, end };
     });
+
+/**
+ * 文の頭か文の終わりの . の後ろに、. を付けて 1 語で立つ数字（Survey of Cool Stars. VII. The Inner Disk、II. Background）。
+ * 続き物や区切りの番号で、略語ではない。日本語の文分けは英文の . で切らないので、文の中の . の後ろも見る。
+ * C・D・L・M を含む数字（CD.）は略語でもあるので外さない。
+ */
+const LONE_NUMERAL = new RegExp(String.raw`(?<=^\s*|[.。]\s+)${SMALL_NUMERAL}(?=\.(?:\s|$))`, "gu");
+
+/** 文の中の、1 語で立つ番号の範囲（数字だけ）。 */
+export const loneNumeralSpans = (text: string): Span[] =>
+  [...text.matchAll(LONE_NUMERAL)].map((match) => ({ start: match.index, end: match.index + match[0].length }));

@@ -1,0 +1,68 @@
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { seriesLabelSpans } from "../packages/chaff/src/detectors/series-label.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+
+// 番号の前の大文字の語は、文書番号の一部（SP 800-61、BOD 25-01、NSF 19-582）で、略語ではない。例文は自作。
+// cloud.gov の手順書の NIST SP 800-61 で SP が報告されていた。発行元の NIST は番号の直前ではないので、略語のまま数える。
+
+const labelsIn = (text: string): string[] => seriesLabelSpans(text).map((span) => text.slice(span.start, span.end));
+
+describe("seriesLabelSpans", () => {
+  [
+    ["文書番号", "following NIST SP 800-61, as", ["SP 800-61"]],
+    ["版の印が続く番号", "see NIST SP 800-53r5 today", ["SP 800-53r5"]],
+    ["番号の区切りが 2 つ", "the GIF 491-3-1 entry", ["GIF 491-3-1"]],
+    ["指令の番号", "under BOD 25-01 agencies", ["BOD 25-01"]],
+    ["文の終わり", "under BOD 25-01.", ["BOD 25-01"]],
+    ["日本語の文の中", "NIST SP 800-61に従う", ["SP 800-61"]],
+  ].forEach(([form, text, labels]) => {
+    it(`valid: ${String(form)}`, () => assert.deepEqual(labelsIn(String(text)), labels));
+  });
+
+  [
+    ["区切りの無い番号", "the RFC 9110 text and the EO 14028 order"],
+    ["版の番号（. で区切る）", "the SDK 3.1 release"],
+    ["年の範囲", "the FY 2024-25 budget and the NFL 1999-2000 season"],
+    ["語と番号の間に空白が 2 つ以上", "the SP  800-61 text"],
+    ["語と番号の間に別の文字", "the SP, 800-61 text and SP-800-61"],
+    ["小文字を含む語", "the Sp 800-61 text"],
+    ["番号の後ろに英字が続かない形が崩れている", "the SP 800- text and SP -61"],
+  ].forEach(([form, text]) => {
+    it(`invalid: ${String(form)}`, () => assert.deepEqual(labelsIn(String(text)), []));
+  });
+
+  it("異常な入力: 空文字、語だけ、番号だけ", () => {
+    assert.deepEqual(labelsIn(""), []);
+    assert.deepEqual(labelsIn("SP"), []);
+    assert.deepEqual(labelsIn("800-61"), []);
+  });
+});
+
+const reported = (adapter: LanguageAdapter, source: string): string[] =>
+  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
+    .findings.filter((finding) => finding.rule === "undefined-acronym")
+    .map((finding) => String(finding.values["word"]));
+
+describe("undefined-acronym と文書番号", () => {
+  it("en: 番号の前の SP は数えず、発行元の NIST は数える", () => {
+    assert.deepEqual(reported(en, "# Notes\n\nWe define it broadly, following [NIST SP 800-61](https://example.gov/sp.pdf), as a violation.\n"), ["NIST"]);
+  });
+
+  it("en: 番号の外の SP は数える", () => {
+    assert.deepEqual(reported(en, "# Notes\n\nThe SP 800-61 guide applies. The SP signs it.\n"), ["SP"]);
+  });
+
+  it("en: 年の範囲の前の FY は数える", () => {
+    assert.deepEqual(reported(en, "# Notes\n\nThe FY 2024-25 budget is final.\n"), ["FY"]);
+  });
+
+  it("ja: 番号の前の SP は数えず、SRE は数える", () => {
+    assert.deepEqual(reported(ja, "# 手引き\n\nNIST SP 800-61（米国標準技術研究所の文書）に従います。SREも見ます。\n"), ["NIST", "SRE"]);
+  });
+});

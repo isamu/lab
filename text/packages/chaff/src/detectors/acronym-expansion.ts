@@ -157,10 +157,19 @@ const isBracketedAt = (body: string, acronym: string, at: number): boolean => {
   return isSeparatedAt(body, acronym, at) || isNamedBeforeAt(body, acronym, at) || isJointBracketedAt(body, acronym, at);
 };
 
+/**
+ * 記号を = で定義する書き方（where N = number of cases, EH = total hours worked）。定義は記号の後ろの語。
+ * 値（EH = 2,000）、比べる・矢印（==、=>）、別の略語だけ（EH = SRE）は定義ではない。定義の語は小文字か、大小の無い文字を含む。
+ */
+const EQUALS_DEFINITION = /^\s*[=＝](?![=>＝])\s*(?=\p{L})\S*?[\p{Ll}\p{Lo}]/u;
+
+const isEqualsDefinedAt = (body: string, acronym: string, at: number): boolean =>
+  EQUALS_DEFINITION.test(body.slice(at + acronym.length, at + acronym.length + DEFINITION_REACH));
+
 export type ExpandedAt = (body: string, acronym: string, at: number) => boolean;
 
 /** body の at にある略語が、その場で展開・定義されているか。語彙表から一度だけ組み立てて、略語ごとに呼ぶ。 */
 export const expansionAt = (words: DefinitionWords): ExpandedAt => {
   const patterns = definitionPatterns(words);
-  return (body, acronym, at) => isBracketedAt(body, acronym, at) || isDefinedAt(patterns, body, acronym, at);
+  return (body, acronym, at) => isBracketedAt(body, acronym, at) || isDefinedAt(patterns, body, acronym, at) || isEqualsDefinedAt(body, acronym, at);
 };

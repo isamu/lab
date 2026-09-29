@@ -136,3 +136,9 @@ describe("undefined-acronym は読む語彙表をすべて宣言する", () => {
     });
   });
 });
+
+describe("強調の ONLY", () => {
+  it("en: 引用の中の大文字の ONLY は数えず、SRE は数える", () => {
+    assert.deepEqual(reported(en, "# Notes\n\nThe survey asks, “Are you ONLY called to work as needed?” The SRE joins.\n"), ["SRE"]);
+  });
+});

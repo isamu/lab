@@ -1,0 +1,14 @@
+# HTTP のリクエストのメソッド名（RFC 9110 と、RFC 5789 の PATCH）。大文字で書くが略語ではなく語なので、展開するものが無い。
+# 字面どおりに照らす。
+id: http-method
+language: ja
+entries:
+  - pattern: GET
+  - pattern: HEAD
+  - pattern: POST
+  - pattern: PUT
+  - pattern: DELETE
+  - pattern: CONNECT
+  - pattern: OPTIONS
+  - pattern: TRACE
+  - pattern: PATCH
