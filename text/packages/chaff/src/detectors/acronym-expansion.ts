@@ -11,6 +11,7 @@ import { escapeRegExp } from "../orthography.ts";
  *   Relief Act (RA; P.L. 112-240)    括弧の最初の項目が略語で、直前の語か区切りの後の語の頭文字と揃う
  *   （single nucleotide polymorphism：SNP）  括弧の最後の項目が略語で、コロンの前の語の頭文字と揃う
  *   人事部（以下「HR」という。）      括弧の中が定義の語と略語だけ
+ *   reverse repurchase agreement (ON RRP)  括弧の中が空白で繋いだ略語だけ（1 つの略語を 2 語で書く）
  * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
  */
 const WRAP = String.raw`[\s"“”'‘’「」『』]*`;
@@ -113,12 +114,31 @@ const isDefinedAt = (patterns: DefinitionPatterns, body: string, acronym: string
   return (opened.groups?.["markers"] ?? "") !== "" || (closes.groups?.["verb"] ?? "") !== "";
 };
 
+/** 空白 1 つで繋いだ略語の並びのうち、at の略語の前と後ろに続く分（(ON RRP) の ON の後ろの " RRP"）。 */
+const CAPITALS = "[A-Z][A-Z&-]*[A-Z]";
+const JOINT_BEFORE = new RegExp(String.raw`(?:(?<![A-Za-z0-9_&-])${CAPITALS} )+$`, "u");
+const JOINT_AFTER = new RegExp(String.raw`^(?: ${CAPITALS}(?![A-Za-z0-9_&-]))+`, "u");
+
+/**
+ * 括弧の中身が、空白で繋いだ略語の並びだけの形（(ON RRP)）。1 つの略語を 2 語以上で書いたもので、並びの頭文字は名前の語の
+ * 頭文字と揃わない（overnight を ON と書く）ので、括弧の中の 1 語の略語（(CI)）と同じく、括弧の形だけで展開と見なす。
+ * 括弧の外の並び（AWS KMS (Key Management Service)）は、括弧の直前の語だけが展開されるので、ここでは見ない。
+ */
+const isJointBracketedAt = (body: string, acronym: string, at: number): boolean => {
+  const end = at + acronym.length;
+  const before = JOINT_BEFORE.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at))?.[0] ?? "";
+  const after = JOINT_AFTER.exec(body.slice(end, end + DEFINITION_REACH))?.[0] ?? "";
+  const start = at - before.length;
+  const close = end + after.length;
+  return OPENED.test(body.slice(Math.max(0, start - NEAR), start)) && CLOSES.test(body.slice(close, close + NEAR));
+};
+
 const isBracketedAt = (body: string, acronym: string, at: number): boolean => {
   const after = body.slice(at + acronym.length, at + acronym.length + NEAR);
   const before = body.slice(Math.max(0, at - NEAR), at);
   if (OPENS.test(after) || (OPENED.test(before) && CLOSES.test(after))) return true;
   if (SQUARE_OPENED.test(before) && SQUARE_CLOSES.test(after) && spellsOut(body.slice(0, at), acronym)) return true;
-  return isSeparatedAt(body, acronym, at) || isNamedBeforeAt(body, acronym, at);
+  return isSeparatedAt(body, acronym, at) || isNamedBeforeAt(body, acronym, at) || isJointBracketedAt(body, acronym, at);
 };
 
 export type ExpandedAt = (body: string, acronym: string, at: number) => boolean;

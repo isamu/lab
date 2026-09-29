@@ -13,6 +13,7 @@ const notAcronymSpans = notAcronymSpansOf({
   emphasis: listOf("emphasis-word"),
   divisions: listOf("numbered-division"),
   honorifics: listOf("honorific"),
+  dateTimeUnits: listOf("date-time-unit"),
 });
 
 /** 範囲に覆われた大文字の語だけを返す。 */
@@ -120,16 +121,16 @@ describe("notAcronymSpans: 異常な入力", () => {
 });
 
 describe("notAcronymSpansOf: 語彙表の形", () => {
-  const none = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [], divisions: [], honorifics: [] };
+  const none = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [], divisions: [], honorifics: [], dateTimeUnits: [] };
 
   it("空の語彙表はどこにも当たらない（空の選択肢で文字の間に当たらない）", () => {
-    assert.deepEqual(notAcronymSpansOf(none)("at 3:30 PM, USD 1,000, Berkeley, CA 94720, NOT, Part II"), []);
+    assert.deepEqual(notAcronymSpansOf(none)("at 3:30 PM, USD 1,000, Berkeley, CA 94720, NOT, PART II"), []);
   });
 
-  it("語は字面どおりに照らす。正規表現の記号は記号のまま（N.B は NXB に当たらない）", () => {
-    const spans = notAcronymSpansOf({ ...none, emphasis: ["N.B"] });
-    assert.deepEqual(spans("NXB"), []);
-    assert.deepEqual(spans("see N.B here"), [{ start: 4, end: 7 }]);
+  it("語は字面どおりに照らす。正規表現の記号は記号のまま（NB+ は NBB に当たらない）", () => {
+    const spans = notAcronymSpansOf({ ...none, emphasis: ["NB+"] });
+    assert.deepEqual(spans("NBB"), []);
+    assert.deepEqual(spans("see NB+ here"), [{ start: 4, end: 7 }]);
   });
 
   it("大文字と小文字を区別する（pm は語彙表の PM ではない）", () => {
