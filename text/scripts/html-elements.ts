@@ -6,6 +6,9 @@ export const stripTags = (html: string): string => html.replace(/<\/?[a-z!][^>]*
 
 export const plainText = (html: string): string => decodeEntities(stripTags(html)).replace(/\s+/gu, " ").trim();
 
+/** Text put back into markup, so that decoding it again gives the same text. */
+export const asMarkup = (text: string): string => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;");
+
 export const hasNoWords = (text: string): boolean => !/[\p{L}\p{N}]/u.test(text);
 
 export const ANY_LINK = /<a\b[^>]*>[\s\S]*?<\/a\s*>/giu;
