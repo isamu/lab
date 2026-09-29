@@ -20,23 +20,37 @@ const ENDS_WITH_DIGIT = /[0-9０-９]$/u;
 /** 一語で出る「三つ」「２つ」。「三つ巴」「一つ目」の目は別の語なので、「つ」で終わる語だけ。 */
 const COUNT_WORD = /^(?<number>[一二三四五六七八九]|[0-9０-９]+)つ$/u;
 
+/** IPADIC が一語の名詞（爪）と読む「つめ」。数の後ろでは「3つめ」「三つめ」の順番。 */
+const TSUME = "つめ";
+
+/** 「つめ」の前の数。漢数字も入る。「三つめ」は 三 と つめ に分かれて出る。 */
+const ENDS_WITH_NUMERAL = /[0-9０-９一二三四五六七八九]$/u;
+
 const counter = (): Morpheme => ({ surface_form: TSU, pos: "名詞", pos_detail_1: "接尾", pos_detail_2: "助数詞", basic_form: TSU });
 
 const numeral = (number: string): Morpheme => ({ surface_form: number, pos: "名詞", pos_detail_1: "数", pos_detail_2: "*", basic_form: number });
+
+const ordinalMe = (): Morpheme => ({ surface_form: "め", pos: "名詞", pos_detail_1: "接尾", pos_detail_2: "一般", basic_form: "め" });
 
 const isTsuAuxiliary = (morpheme: Morpheme): boolean => morpheme.pos === "助動詞" && morpheme.surface_form === TSU;
 
 const isDigitNumeral = (morpheme: Morpheme | undefined): boolean =>
   morpheme !== undefined && morpheme.pos === "名詞" && morpheme.pos_detail_1 === "数" && ENDS_WITH_DIGIT.test(morpheme.surface_form);
 
+const isNumeralBeforeTsume = (morpheme: Morpheme | undefined): boolean =>
+  morpheme !== undefined && morpheme.pos === "名詞" && morpheme.pos_detail_1 === "数" && ENDS_WITH_NUMERAL.test(morpheme.surface_form);
+
+const isTsume = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "一般" && morpheme.surface_form === TSUME;
+
 /** 一語で出た「三つ」の数の部分。そう読めなければ undefined。 */
 const numberOfCountWord = (morpheme: Morpheme): string | undefined =>
   morpheme.pos === "名詞" && morpheme.pos_detail_1 === "一般" ? COUNT_WORD.exec(morpheme.surface_form)?.groups?.["number"] : undefined;
 
-/** 形態素の並びを受け取り、数と「つ」を数と助数詞の二語にした並びを返す。ほかの語はそのまま。 */
+/** 形態素の並びを受け取り、数と「つ」を数と助数詞の二語に、数の後ろの「つめ」を助数詞と順番の「め」にした並びを返す。ほかの語はそのまま。 */
 export const readCounterTsu = (morphemes: readonly Morpheme[]): Morpheme[] =>
   morphemes.flatMap((morpheme, index) => {
     if (isTsuAuxiliary(morpheme) && isDigitNumeral(morphemes[index - 1])) return [counter()];
+    if (isTsume(morpheme) && isNumeralBeforeTsume(morphemes[index - 1])) return [counter(), ordinalMe()];
     const number = numberOfCountWord(morpheme);
     return number === undefined ? [morpheme] : [numeral(number), counter()];
   });

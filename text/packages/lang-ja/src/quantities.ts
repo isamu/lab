@@ -91,19 +91,25 @@ const LOOKAHEAD = 8;
  * 「1.5 倍」の「倍」は、数とのあいだに空白があると解析器が普通の名詞と読む。
  * 空白を詰めて読み直し、数の直後に来る語が助数詞ならその語を返す。
  */
+const rereadAfterSpace = (number: string, rest: string): Morph[] => morphemes(toHalfWidth(number + rest.slice(0, LOOKAHEAD))) ?? [];
+
 const unitAfterSpace = (number: string, rest: string): string | undefined => {
-  const next = morphemes(toHalfWidth(number + rest.slice(0, LOOKAHEAD)))?.find((morph) => morph.start >= number.length);
+  const next = rereadAfterSpace(number, rest).find((morph) => morph.start >= number.length);
   return next !== undefined && isCounter(next) ? next.surface : undefined;
 };
 
-type Unit = { readonly unit: string; readonly end: number };
+/** ordinal: 単位のすぐ後ろが順番の「目」「め」。空白を詰めて読み直したときは、読み直した語で見る（「3 つめ」の「つめ」は詰めると つ + め）。 */
+type Unit = { readonly unit: string; readonly end: number; readonly ordinal: boolean };
 
 const counterAt = (text: string, morphs: readonly Morph[], number: string, end: number): Unit | undefined => {
   const next = morphs[end];
-  if (next !== undefined && isCounter(next)) return { unit: next.surface, end: next.end };
+  if (next !== undefined && isCounter(next)) return { unit: next.surface, end: next.end, ordinal: isOrdinalSuffix(morphs[end + 1]) };
   if (!isSpace(next)) return undefined;
-  const unit = unitAfterSpace(number, text.slice(next.end));
-  return unit === undefined ? undefined : { unit, end: next.end + unit.length };
+  const rest = text.slice(next.end);
+  const unit = unitAfterSpace(number, rest);
+  if (unit === undefined) return undefined;
+  const ordinal = isOrdinalSuffix(rereadAfterSpace(number, rest).find((morph) => morph.start === number.length + unit.length));
+  return { unit, end: next.end + unit.length, ordinal };
 };
 
 const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] => {
@@ -116,8 +122,7 @@ const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] =
       const number = text.slice(first.start, morphs[end - 1]?.end ?? first.end).replace(SPACES, "");
       const value = parseJapaneseNumber(number);
       const counter = counterAt(text, morphs, number, end);
-      const ordinal = counter !== undefined && isOrdinalSuffix(morphs.find((morph) => morph.start === counter.end));
-      if (value !== undefined && counter !== undefined && !ordinal) found.push({ start: first.start, end: counter.end, value, unit: counter.unit });
+      if (value !== undefined && counter !== undefined && !counter.ordinal) found.push({ start: first.start, end: counter.end, value, unit: counter.unit });
     }
     index = Math.max(end, index + 1);
   }

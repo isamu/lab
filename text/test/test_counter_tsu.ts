@@ -63,7 +63,6 @@ describe("readCounterTsu", () => {
       morpheme("ふたつ", "名詞", "一般"),
       morpheme("十つ", "名詞", "一般"),
       morpheme("一つ", "名詞", "固有名詞"),
-      morpheme("つめ", "名詞", "一般"),
       morpheme("いくつ", "名詞", "代名詞"),
     ];
     cases.forEach((item) => assert.deepEqual(readCounterTsu([morpheme("3", "名詞", "数"), item]), [morpheme("3", "名詞", "数"), item], item.surface_form));
@@ -71,6 +70,24 @@ describe("readCounterTsu", () => {
       morpheme("3", "名詞", "数"),
       morpheme("つ", "動詞", "自立"),
     ]);
+  });
+
+  it("splits つめ after a numeral into the counter and the ordinal め", () => {
+    ["3", "三", "２"].forEach((number) => {
+      const read = readCounterTsu([morpheme(number, "名詞", "数"), morpheme("つめ", "名詞", "一般")]);
+      assert.deepEqual(shape(read), [`${number}/名詞,数,*/${number}`, "つ/名詞,接尾,助数詞/つ", "め/名詞,接尾,一般/め"], number);
+    });
+  });
+
+  it("leaves つめ that does not follow a numeral", () => {
+    const cases: readonly (readonly Morpheme[])[] = [
+      [morpheme("つめ", "名詞", "一般")],
+      [morpheme("足", "名詞", "一般"), morpheme("つめ", "名詞", "一般")],
+      [morpheme("3", "名詞", "数"), morpheme(" ", "記号", "空白"), morpheme("つめ", "名詞", "一般")],
+      [morpheme("十", "名詞", "数"), morpheme("つめ", "名詞", "一般")],
+      [morpheme("3", "名詞", "数"), morpheme("つめ", "動詞", "自立")],
+    ];
+    cases.forEach((morphemes) => assert.deepEqual(readCounterTsu(morphemes), morphemes, shape(morphemes).join(" ")));
   });
 
   it("returns nothing for nothing", () => {
@@ -131,9 +148,20 @@ describe("数と「つ」を解析器で読む", () => {
   });
 
   it("reads a count followed by 目 as an order, not a quantity", () => {
-    ["3つ目の案", "二つ目の案", "3 つ目の案", "2回目の会議", "1年目の社員", "5人目の担当", "一つめの案", "九つめの案", "2回めの会議"].forEach((text) =>
-      assert.deepEqual(quantityOf(text), [], text),
-    );
+    [
+      "3つ目の案",
+      "二つ目の案",
+      "3 つ目の案",
+      "2回目の会議",
+      "1年目の社員",
+      "5人目の担当",
+      "一つめの案",
+      "九つめの案",
+      "2回めの会議",
+      "3つめの案",
+      "三つめの案",
+      "3 つめの案",
+    ].forEach((text) => assert.deepEqual(quantityOf(text), [], text));
     assert.deepEqual(quantityOf("3つ目標を立てる。"), [["3つ", 3, "つ"]]);
     assert.deepEqual(quantityOf("2回、目を通す。"), [["2回", 2, "回"]]);
   });
@@ -169,6 +197,8 @@ describe("数と「つ」を解析器で読む", () => {
   it("does not read a heading that opens with a count (## 4 つで足りないとき) as a numbered article", () => {
     assert.equal(countedAfter("4", "つで足りないとき"), true);
     assert.equal(countedAfter("4", "設定"), false);
+    assert.equal(countedAfter("3", "つめの案"), true);
+    assert.deepEqual(tokensOf("三つめ"), [`三/NOUN${CARD}`, `つ/NOUN${CLASS}`, "め/NOUN"]);
     const structure = ja.structure;
     if (structure === undefined) throw new Error("lang-ja has no structure");
     const source = ["# 設定", "", "## 1 概要", "", "本文。", "", "## 4 つで足りないとき", "", "本文。"].join("\n");
