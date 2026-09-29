@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `max-kanji-continuous` recognises an address whose town name the dictionary splits (#170)
+
+A municipality the dictionary does not know is split by morphological analysis: 紀美野町 into a personal name and a
+place name, 南伊勢町 into a common noun and a place name, 北海道虻田郡 into two place names. Such an address was
+reported as a long compound. A single piece between a unit and the next unit (郡 … 町), and two place names closed by
+a unit below the prefecture (郡・市・町), now count as one place name. Three or more place names in a row, or two
+closed by 都・道・府・県, are still a list (京都奈良大阪神戸市, 北海道神奈川県), and an address followed by an ordinary
+word (紀美野町役場総務課) is still reported. Official names of organisations,
+programmes and exams stay reported: the analyser tags almost none of them as names, and their shape is the same as a
+compound the writer can break.
+
 ### The corpus's converters keep the words a ruby or a template carried (#170)
 
 An HTML page's ruby is read as its base text: the reading and the brackets around it are dropped, also where the page

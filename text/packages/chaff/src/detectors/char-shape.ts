@@ -1,6 +1,7 @@
-import type { Detector, DocumentProfile, Finding, Sentence, Token } from "../plugin.ts";
+import type { Detector, DocumentProfile, Finding, Sentence } from "../plugin.ts";
 import { compacted, placeOf } from "./gram-place.ts";
 import { maskAddresses } from "../address-chain.ts";
+import { isAddressRun } from "./place-run.ts";
 import { proseText } from "../measure.ts";
 
 /**
@@ -9,35 +10,14 @@ import { proseText } from "../measure.ts";
  */
 const KANJI_RUN = /[一-鿿]+/gu;
 
-/** 地名（Geo）と、地名に付く単位（GeoUnit: 都・県・市・区・町）。 */
-const isGeoName = (token: Token | undefined): boolean => token?.features?.["NameType"] === "Geo";
-const isGeo = (token: Token | undefined): boolean => isGeoName(token) || token?.features?.["NameType"] === "GeoUnit";
-const isNumber = (token: Token | undefined): boolean => token?.features?.["NumType"] === "Card";
-
-/**
- * 住所の語: 地名と地名の単位（NameType=Geo / GeoUnit）、数（NumType=Card）、数のすぐ後ろの助数詞（丁目、NounType=Class）。
- * 辞書に無い町名（新橋）は、地名の後ろで数の前に来るときだけ住所の一部とする。
- */
-const isPlacePart = (tokens: readonly Token[], index: number): boolean =>
-  isGeo(tokens[index]) ||
-  isNumber(tokens[index]) ||
-  (isNumber(tokens[index - 1]) && tokens[index]?.features?.["NounType"] === "Class") ||
-  (isGeo(tokens[index - 1]) && isNumber(tokens[index + 1]));
-
-/**
- * 漢字の連なりが住所か（東京都港区新橋二丁目）。形態素解析が地名と読んだ語で始まり、住所の語だけでできている。
- * 住所は決まった形で、ひらがなを挟んで書けない。組織名（日本経済団体連合会）は地名の後ろに普通の語が続くので住所ではない。品詞が無ければ判定しない。
- */
+/** 漢字の連なりが住所か（東京都港区新橋二丁目）。形態素解析の地名と数で決める。品詞が無ければ判定しない。 */
 const isPlaceName = (sentence: Sentence, run: string): boolean => {
   const tokens = sentence.tokens;
   const place = tokens === undefined ? undefined : placeOf(compacted(sentence.text, "word"), run);
   if (tokens === undefined || place === undefined) return false;
   const [start, end] = [sentence.span.start + place.start, sentence.span.start + place.end];
   const covering = tokens.flatMap((token, index) => (token.span.start < end && start < token.span.end ? [index] : []));
-  const first = covering[0];
-  // 地名が単位を挟まずに続けば（東京大阪名古屋福岡）、住所ではなく地名の並び。
-  const listed = covering.some((index) => isGeoName(tokens[index]) && isGeoName(tokens[index + 1]));
-  return first !== undefined && isGeo(tokens[first]) && !listed && covering.every((index) => isPlacePart(tokens, index));
+  return isAddressRun(tokens, covering);
 };
 
 const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined): string =>

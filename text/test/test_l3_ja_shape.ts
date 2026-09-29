@@ -42,6 +42,9 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(!idsFor("本店は神奈川県横浜市中区山下町に置く。").includes("max-kanji-continuous"));
       assert.ok(!idsFor("会場は千代田区霞関三丁目です。").includes("max-kanji-continuous"));
       assert.ok(!idsFor("本社は愛知県名古屋市中村区名駅南一丁目にある。").includes("max-kanji-continuous"));
+      // 辞書に無い町名は形態素解析が割る（紀美野町は 紀＋美野、倶知安町の前は 北海道＋虻田）。単位で閉じれば住所。
+      assert.ok(!idsFor("所在地は和歌山県海草郡紀美野町動木です。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("会場は北海道虻田郡倶知安町です。").includes("max-kanji-continuous"));
     });
 
     it("invalid: 都道府県や丁目が無い長い語、住所の後ろに続く長い語は数える", () => {
@@ -54,6 +57,9 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(idsFor("三百二十五万四千八百人が参加した。").includes("max-kanji-continuous"));
       // 地名を並べただけのものは住所ではない（地名が単位を挟まずに続く）。
       assert.ok(idsFor("東京大阪名古屋福岡に展開します。").includes("max-kanji-continuous"));
+      assert.ok(idsFor("京都奈良大阪神戸市に展開します。").includes("max-kanji-continuous"));
+      // 割られた町名の後ろに普通の語が続けば住所ではない。
+      assert.ok(idsFor("和歌山県海草郡紀美野町役場総務課に届ける。").includes("max-kanji-continuous"));
       // 数の後ろが助数詞でない語なら住所ではない。
       assert.ok(idsFor("東京都港区新橋二政策に届ける。").includes("max-kanji-continuous"));
     });
