@@ -114,6 +114,8 @@ describe("doubled-word — 純関数", () => {
     assert.deepEqual(pairs([w("for", "ADP"), w("May", "AUX"), w("may", "AUX")]), []);
     assert.deepEqual(pairs([w("“", "PUNCT"), w("The", "DET"), w("the", "DET")], { gaps: ["", " "] }), ["The the@5"]);
     assert.deepEqual(pairs([w("for", "ADP"), w("MAY", "AUX"), w("MAY", "AUX")]), ["MAY MAY@8"]);
+    assert.deepEqual(pairs([w("review", "VERB"), w("The", "DET", ART), w("the", "DET", ART)]), ["The the@11"]);
+    assert.deepEqual(pairs([w("review", "VERB"), w("Our", "PRON", POSS), w("the", "DET", ART)]), ["Our the@11"]);
     const { tokens } = tokensOf([w("May", "AUX"), w("may", "AUX")]);
     const [capitalised, lower] = tokens;
     assert.ok(capitalised !== undefined && lower !== undefined);
@@ -183,6 +185,7 @@ describe("doubled-word — 英語", () => {
     assert.deepEqual(findingsOf("Please send the\nthe report to finance.", en, "en"), ["2:1 the the"]);
     assert.deepEqual(findingsOf("The the report is attached.", en, "en"), ["1:5 The the"]);
     assert.deepEqual(findingsOf("Please review the The draft.", en, "en"), ["1:19 the The"]);
+    assert.deepEqual(findingsOf("Please review The the draft before Friday.", en, "en"), ["1:19 The the"]);
   });
 
   it("valid: 文法が許す重なりと、並んでよい限定詞は数えない", () => {

@@ -74,9 +74,12 @@ export const doubledAt = (source: string, first: Token, second: Token, spaced: b
   return gap === "space" || (gap === "markup" && FUNCTION_WORD.has(first.pos));
 };
 
-/** 文の途中で、大文字の語の後ろに小文字の同じ語が来たら、一つ目は名前（Payment for May may be delayed）。文頭の The the は書き損じ。 */
+/**
+ * 文の途中で、大文字の語の後ろに小文字の同じ語が来たら、一つ目は名前（Payment for May may be delayed）。
+ * 文頭の The the と、冠詞・所有の語（review The the draft）は名前にならないので書き損じ。
+ */
 export const isNameBefore = (first: Token, second: Token, opensSentence: boolean): boolean =>
-  !opensSentence && UPPER_START.test(first.surface) && LOWER_START.test(second.surface);
+  !opensSentence && !isDeterminer(first) && UPPER_START.test(first.surface) && LOWER_START.test(second.surface);
 
 const opensSentence = (tokens: readonly Token[], at: number): boolean => !tokens.slice(0, at).some((token) => LETTER.test(token.surface));
 
