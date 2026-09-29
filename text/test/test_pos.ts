@@ -75,6 +75,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "padded-intro",
         "repeated-conjunction",
         "sasete-itadaku",
+        "undefined-acronym",
         "unqualified-superlative",
       ],
     );
