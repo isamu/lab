@@ -126,6 +126,15 @@ describe("ngram-repetition: 英語の名詞の語句は言い回しではない"
     assert.doesNotMatch(word, /Guide|Propos|Polic|PAPPG/u);
   });
 
+  it("名前の後ろの動詞が毎回同じなら、動詞を丸ごと含む窓で言い回しとして数える。変わるなら名前の繰り返し", async () => {
+    const objects = ["audit logs", "encryption", "monitoring", "backups", "alerts", "dashboards", "reports", "exports"];
+    const same = objects.map((object) => `The Cloud Service provides the ${object}.`).join(" ");
+    assert.match((await worstWord(`# Report\n\n${same} ${FILLER}`)) ?? "", /provides/u);
+    const verbs = ["provides", "processes", "protects", "presents", "prepares", "prints", "produces", "promotes"];
+    const varying = verbs.map((verb) => `The Cloud Service ${verb} the data.`).join(" ");
+    assert.equal(await worstWord(`# Report\n\n${varying} ${FILLER}`), undefined);
+  });
+
   it("invalid: 画面の語を含む手順の言い回し（Select Save (if applicable).）は数える", async () => {
     const body = CONTEXTS.map((context) => `${context} the settings. Select Save (if applicable).`).join(" ");
     const source = `# Report\n\n${body} ${FILLER}`;
