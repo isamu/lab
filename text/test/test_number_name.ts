@@ -1,6 +1,6 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { digitRunAround, isNumberName, sequenceLabelStarts } from "../packages/chaff/src/number-name.ts";
+import { digitRunAround, isNumberName, placeChainBefore, sequenceLabelStarts } from "../packages/chaff/src/number-name.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -90,27 +90,49 @@ describe("isNumberName", () => {
     assert.equal(isNumberName(plain, runOf(plain, "100-8916"), [token(12, "東京", "PROPN", { NameType: "Geo" })], 0), false);
   });
 
-  it("reads a hyphen-joined number right after a place name as an address", () => {
-    const text = "紀尾井町1-3 東京ガーデンテラス";
-    const place = token(0, "紀尾井町", "PROPN", { NameType: "Geo" });
-    assert.equal(isNumberName(text, runOf(text, "1-3"), [place, token(8, "東京", "PROPN", { NameType: "Geo" })], 0), true);
-    const unit = "千代田区2-1 ビル";
-    assert.equal(isNumberName(unit, runOf(unit, "2-1"), [token(3, "区", "NOUN", { NameType: "GeoUnit" }), token(8, "ビル", "NOUN")], 0), true);
+  const TOP_UNITS = new Set(["都", "道", "府", "県"]);
+  const geo = (start: number, surface: string): Token => token(start, surface, "PROPN", { NameType: "Geo" });
+  const unit = (start: number, surface: string): Token => token(start, surface, "NOUN", { NameType: "GeoUnit" });
+
+  it("collects the place words that touch, nearest first, and stops at a gap or another word", () => {
+    const tokens = [token(0, "住所", "NOUN"), geo(2, "東京"), unit(4, "都"), geo(5, "千代田"), unit(8, "区"), geo(10, "紀尾井町")];
+    assert.deepEqual(
+      placeChainBefore(tokens, 9).map((word) => word.surface),
+      ["区", "千代田", "都", "東京"],
+    );
+    assert.deepEqual(
+      placeChainBefore(tokens, 14).map((word) => word.surface),
+      ["紀尾井町"],
+    );
+    assert.deepEqual(placeChainBefore(tokens, 2), []);
+    assert.deepEqual(placeChainBefore([], 3), []);
   });
 
-  it("keeps a range, a number after a place with no hyphen, and a place away from the number", () => {
-    const range = "期間は3-5 営業日";
-    assert.equal(isNumberName(range, runOf(range, "3-5"), [token(2, "は", "ADP"), token(7, "営業", "NOUN")], 0), false);
-    const wards = "東京都23 区";
+  it("reads a hyphen-joined number right after a place below a prefecture as an address", () => {
+    const text = "千代田区紀尾井町1-3 東京ガーデンテラス";
+    const tokens = [geo(0, "千代田"), unit(3, "区"), geo(4, "紀尾井町"), geo(12, "東京")];
+    assert.equal(isNumberName(text, runOf(text, "1-3"), tokens, 0, new Set(), TOP_UNITS), true);
+    const ward = "千代田区2-1 ビル";
+    assert.equal(isNumberName(ward, runOf(ward, "2-1"), [geo(0, "千代田"), unit(3, "区"), token(8, "ビル", "NOUN")], 0, new Set(), TOP_UNITS), true);
+  });
+
+  it("keeps a range after a region or a prefecture, a number with no hyphen, and a place away from the number", () => {
+    const region = "北海道2-3 営業日";
+    assert.equal(isNumberName(region, runOf(region, "2-3"), [geo(0, "北海道"), token(7, "営業", "NOUN")], 0, new Set(), TOP_UNITS), false);
+    const prefecture = "東京都2-3 営業日";
+    assert.equal(isNumberName(prefecture, runOf(prefecture, "2-3"), [geo(0, "東京"), unit(2, "都"), token(7, "営業", "NOUN")], 0, new Set(), TOP_UNITS), false);
+    const unhyphenated = "千代田区23 番";
     assert.equal(
-      isNumberName(wards, runOf(wards, "23"), [token(2, "都", "NOUN", { NameType: "GeoUnit" }), token(6, "区", "NOUN", { NameType: "GeoUnit" })], 0),
+      isNumberName(unhyphenated, runOf(unhyphenated, "23"), [geo(0, "千代田"), unit(3, "区"), token(7, "番", "NOUN")], 0, new Set(), TOP_UNITS),
       false,
     );
-    const apart = "東京 3-5 営業日";
-    assert.equal(isNumberName(apart, runOf(apart, "3-5"), [token(0, "東京", "PROPN", { NameType: "Geo" }), token(7, "営業", "NOUN")], 0), false);
-    const counted = "紀尾井町1-3 日";
+    const apart = "千代田区 2-1 ビル";
+    assert.equal(isNumberName(apart, runOf(apart, "2-1"), [geo(0, "千代田"), unit(3, "区"), token(9, "ビル", "NOUN")], 0, new Set(), TOP_UNITS), false);
+    const range = "期間は3-5 営業日";
+    assert.equal(isNumberName(range, runOf(range, "3-5"), [token(2, "は", "ADP"), token(7, "営業", "NOUN")], 0, new Set(), TOP_UNITS), false);
+    const counted = "千代田区1-3 日";
     assert.equal(
-      isNumberName(counted, runOf(counted, "1-3"), [token(0, "紀尾井町", "PROPN", { NameType: "Geo" }), token(8, "日", "NOUN", { NounType: "Class" })], 0),
+      isNumberName(counted, runOf(counted, "1-3"), [geo(0, "千代田"), unit(3, "区"), token(8, "日", "NOUN", { NounType: "Class" })], 0, new Set(), TOP_UNITS),
       false,
     );
   });
@@ -260,6 +282,11 @@ describe("latin-spacing with parts of speech", () => {
   it("does not count the space after a postal code with no part starting with 0, nor after the address number", () => {
     assert.deepEqual(spacing("# 提出先\n\n受付を3回、確認を5回行う。\n\n郵送 〒100-8916 東京都千代田区霞が関1-2-2\n"), []);
     assert.deepEqual(spacing("# 所在地\n\n受付を3回、確認を5回行う。\n\n所在地：〒102-0094 東京都千代田区紀尾井町1-3 東京ガーデンテラス紀尾井町\n"), []);
+  });
+
+  it("still counts a range after a region or a prefecture", () => {
+    assert.deepEqual(spacing("# 配送\n\n本州は2営業日、九州は3営業日、北海道2-3 営業日です。\n"), ["前の数字:空けています"]);
+    assert.deepEqual(spacing("# 配送\n\n本州は2営業日、九州は3営業日、東京都2-3 営業日です。\n"), ["前の数字:空けています"]);
   });
 
   it("still counts a quantity written the other way, at the head of a line too", () => {

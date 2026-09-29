@@ -5,7 +5,7 @@ import type { Span, Token } from "./plugin.ts";
  * 「〒100-8916 東京都」の郵便番号、「紀尾井町1-3 東京ガーデンテラス」の番地は、後ろの空白が番号と題・項目の区切りで、「3回」「3 回」のような空け方の好みではない。
  * 空け方を数える材料にしない。
  *
- * 形で名前と読むのは五つだけ。0 で始まる組を含むハイフンつなぎの番号、※・〒や鉤括弧のすぐ後ろの番号、地名のすぐ後ろのハイフンつなぎの番号、
+ * 形で名前と読むのは五つだけ。0 で始まる組を含むハイフンつなぎの番号、※・〒や鉤括弧のすぐ後ろの番号、市・区・町まで下りた地名のすぐ後ろのハイフンつなぎの番号、
  * 文頭の階層つきの節番号（2.1、3.1.2）、続き番号になった行の頭の番号（白書の注）。文頭でも「223 言語」「1ターン」は数量なので、階層の無い数は文頭というだけでは名前と読まない。
  * そのうえで、すぐ後ろ（空白 1 つまで）の語が数につく語（助数詞・数・助詞・助動詞）なら数量として数え続ける（「3-5 日」「26.7 万行」）。
  * 品詞が無ければ判断せず、名前とは読まない。
@@ -71,15 +71,22 @@ export const sequenceLabelStarts = (text: string): ReadonlySet<number> => {
   return new Set(lines.flatMap((line, index) => (continues(index) ? [line.start] : [])));
 };
 
-const PLACE_NAME = new Set(["Geo", "GeoUnit"]);
+const isGeoUnit = (token: Token): boolean => token.features?.["NameType"] === "GeoUnit";
+const isPlaceWord = (token: Token): boolean => isGeoUnit(token) || token.features?.["NameType"] === "Geo";
+
+/** end で終わる、間を空けずに続く地名と地名の単位（東京都千代田区紀尾井町）。近いほうから。 */
+export const placeChainBefore = (tokens: readonly Token[], end: number): Token[] => {
+  const last = tokens.find((token) => token.span.end === end && isPlaceWord(token));
+  return last === undefined ? [] : [last, ...placeChainBefore(tokens, last.span.start)];
+};
 
 /**
- * 住所の番地（紀尾井町1-3、霞が関2-1）。地名のすぐ後ろのハイフンつなぎの番号は、範囲（3-5 営業日）ではなく所番地。
- * 地名の後ろでもハイフンの無い数（東京都23 区）は数量のこともあるので読まない。
+ * 住所の番地（千代田区紀尾井町1-3、霞が関2-1）。都道府県より下の単位（市・区・町）まで下りた地名のすぐ後ろの、ハイフンつなぎの番号。
+ * 地名だけ（北海道2-3 営業日）や都道府県まで（東京都2-3 営業日）の後ろは、地域ごとの範囲のことがあるので読まない。
+ * ハイフンの無い数（千代田区23 番）も読まない。topUnits は都道府県の単位（語彙表 prefecture-unit）。
  */
-const isAddressNumber = (text: string, run: Span, tokens: readonly Token[], base: number): boolean =>
-  text.slice(run.start, run.end).includes("-") &&
-  tokens.some((token) => token.span.end === base + run.start && PLACE_NAME.has(token.features?.["NameType"] ?? ""));
+const isAddressNumber = (text: string, run: Span, tokens: readonly Token[], base: number, topUnits: ReadonlySet<string>): boolean =>
+  text.slice(run.start, run.end).includes("-") && placeChainBefore(tokens, base + run.start).some((token) => isGeoUnit(token) && !topUnits.has(token.surface));
 
 /** ハイフンでつないだ識別子か、番号の立つ位置の番号か、文頭の節番号か。 */
 const isNameShaped = (text: string, run: Span): boolean => {
@@ -88,7 +95,8 @@ const isNameShaped = (text: string, run: Span): boolean => {
 };
 
 /**
- * text の run が名前として書かれた数か。tokens は文書全体の座標で、base は text の先頭の位置。sequence は sequenceLabelStarts の結果。
+ * text の run が名前として書かれた数か。tokens は文書全体の座標で、base は text の先頭の位置。sequence は sequenceLabelStarts の結果、
+ * topUnits は都道府県の単位。
  * 後ろの語が読めない（品詞が無い、語の切れ目が合わない）ときは、数量として数え続ける。
  */
 export const isNumberName = (
@@ -97,9 +105,10 @@ export const isNumberName = (
   tokens: readonly Token[] | undefined,
   base: number,
   sequence: ReadonlySet<number> = new Set(),
+  topUnits: ReadonlySet<string> = new Set(),
 ): boolean => {
   const inSequence = sequence.has(base + run.start);
-  if (tokens === undefined || !(inSequence || isNameShaped(text, run) || isAddressNumber(text, run, tokens, base))) return false;
+  if (tokens === undefined || !(inSequence || isNameShaped(text, run) || isAddressNumber(text, run, tokens, base, topUnits))) return false;
   const next = wordAfter(tokens, text, run, base);
   if (next === undefined) return false;
   return !isBoundToNumber(next) || (inSequence && CONJUNCTIONS.has(next.pos));
