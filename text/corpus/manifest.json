@@ -1178,8 +1178,8 @@
       "genre": "blog/tech",
       "language": "en",
       "url": "https://developer.chrome.com/blog/seamless-pwa-origin-migration?hl=en",
-      "license": "CC BY 4.0 (as stated on the page; code samples Apache-2.0); Dibyajyoti Pal, Dan Murphy, Marijn Kruisselbrink, \"Seamless PWA origin migration: Change domains without losing users\", Chrome for Developers, 2026-06-03, https://developer.chrome.com/blog/seamless-pwa-origin-migration; converted to Markdown",
-      "redistribute": true,
+      "license": "CC BY 4.0 for the prose, Apache-2.0 for the code samples the page includes (as stated on the page); URL only because of the Apache-2.0 samples; Dibyajyoti Pal, Dan Murphy, Marijn Kruisselbrink, \"Seamless PWA origin migration: Change domains without losing users\", Chrome for Developers, 2026-06-03, https://developer.chrome.com/blog/seamless-pwa-origin-migration; converted to Markdown",
+      "redistribute": false,
       "format": "html"
     },
     {
@@ -1233,8 +1233,8 @@
       "genre": "blog/tech",
       "language": "ja",
       "url": "https://developer.chrome.com/blog/seamless-pwa-origin-migration?hl=ja",
-      "license": "CC BY 4.0 (as stated on the page; code samples Apache-2.0); the Japanese page is Google's AI translation of Dibyajyoti Pal, Dan Murphy, Marijn Kruisselbrink, \"Seamless PWA origin migration: Change domains without losing users\", Chrome for Developers, 2026-06-03; converted to Markdown",
-      "redistribute": true,
+      "license": "CC BY 4.0 for the prose, Apache-2.0 for the code samples the page includes (as stated on the page); URL only because of the Apache-2.0 samples; the Japanese page is Google's AI translation of Dibyajyoti Pal, Dan Murphy, Marijn Kruisselbrink, \"Seamless PWA origin migration: Change domains without losing users\", Chrome for Developers, 2026-06-03; converted to Markdown",
+      "redistribute": false,
       "format": "html"
     }
   ]

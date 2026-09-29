@@ -11,7 +11,7 @@ A debate from the US Congressional Record (public domain), a committee meeting o
 domain), a chapter of 消費税法基本通達 and the 個人情報保護委員会 guideline 通則編 (a 通達 and a 告示, not subject to
 copyright under 著作権法第13条第2号), an Ethereum Improvement Proposal (CC0), an architecture decision record of the
 Federal Audit Clearinghouse (CC0) and one of GOV.UK (MIT, URL only), a Chrome for Developers blog post in English and in
-Google's AI translation into Japanese (CC BY 4.0), and the executive summary of an OECD report (CC BY 4.0). Two new
+Google's AI translation into Japanese (URL only: the prose is CC BY 4.0 but the code samples are Apache-2.0), and the executive summary of an OECD report (CC BY 4.0). Two new
 corpus formats read what the HTML converter cannot: `kokkai` turns the API's JSON into the meeting's speeches in
 order, dropping the roster of members present; `congressional-record` reads the Record's `<pre>` page, where only
 indentation marks a title, a paragraph, quoted matter or the names of a roll call, and joins a paragraph that a page
