@@ -16,7 +16,6 @@ import { clock, describeChange, snapshotOf, watchPaths, type Snapshot } from "./
 import { runEval } from "./commands/eval.ts";
 import { runTest } from "./commands/test.ts";
 import { GENRES } from "./genre.ts";
-import { unknownGenres, writtenGenres } from "./genre-check.ts";
 import { resolveGenre } from "./resolve-genre.ts";
 import { runInit } from "./init.ts";
 import { targetsOf } from "./cli-args.ts";
@@ -39,19 +38,12 @@ import type { Level, RuleDefinition } from "./plugin.ts";
 import { CLI_TEXT, type CliText, type GenreSource } from "./cli-text.ts";
 import { hostLanguage, sharedLanguage, uiLanguageOf, type UiLanguage } from "./ui.ts";
 import { profileFor } from "./profile/for-file.ts";
+import { settingProblems } from "./setting-problems.ts";
 
 /** Text for output that is not about one document. */
 const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.language, process.env)];
 
 const readConfig = (): Config => (existsSync(join(process.cwd(), CONFIG_FILE)) ? loadConfig(join(process.cwd(), CONFIG_FILE)) : EMPTY);
-
-const genreProblems = (command: string, argv: readonly string[]): string[] => {
-  const config = readConfig();
-  const text = hostText(config);
-  return unknownGenres(writtenGenres(command, flag(argv, "--genre"), config), GENRES).map((entry) =>
-    text.unknownGenre(entry.genre, text.genreWhere(entry.where, entry.files), GENRES),
-  );
-};
 
 /** resolveGenre with this run's --genre, for the commands that take it as a dependency. */
 const genreFrom =
@@ -338,8 +330,9 @@ export const main = async (argv: readonly string[]): Promise<number> => {
     console.log(VERSION_LINES.join("\n"));
     return 0;
   }
-  // 知らないジャンルでは、どの rule も当たらず、動かなかった rule も並ばない。「指摘なし」が素通りに見えるので、何かする前に止める。
-  const problems = genreProblems(first, argv);
+  // 知らないジャンルではどの rule も当たらず、知らない文書の種類では種類の知識が外れる。どちらも素通りに見えるので、何かする前に止める。
+  const config = readConfig();
+  const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config));
   problems.forEach((problem) => console.error(problem));
   if (problems.length > 0) return 1;
   const handler = HANDLERS[first];
