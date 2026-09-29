@@ -14,6 +14,16 @@ joined by one space in place of the line break and its indentation, when it look
 after the wrap, or "of this Agreement", is still looked up in this document; a blank line ends the join and a heading
 does not run on into the next line; findings keep their place on the line. Found on draft-ietf-httpapi-ratelimit-headers-10.
 
+### `concrete-evidence-density` sees a relative link, a spelled-out count and a reference the structure tree read (#170)
+
+The rule says a section has "no number, code or link", but it only saw a link written as `https://…`. A Markdown
+link to another page of the same site (`[guide](/handbook/meetings/)`), to another section (`[results](#results)`),
+to an address (`mailto:`), or a reference-style link (`[guide][g]`) is now a link too; an image is not. In English,
+a spelled-out number counting a plural noun right after it (`five minutes`, `more than two days`) is now a number,
+as a kanji numeral already was in Japanese; `one of`, `two-way` and `one-on-one meetings` are not. A reference,
+quantity or date the structure tree read inside the section (`See Section VI`) also counts. The tree is built only
+when the document would otherwise be reported. lang-en now marks a plural noun with `Number=Plur`.
+
 ### A version number that starts a sentence is not a section number (#170)
 
 Meeting minutes and release reports list releases newest first, one per line: `3.11.0 was released on 2024-10-17.`,

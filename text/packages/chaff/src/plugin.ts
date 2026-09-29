@@ -305,6 +305,8 @@ export type ProseDocument = {
   readonly paragraphs: readonly Paragraph[];
   /** 箇条書き 1 つ。項目の数と長さのばらつきを見る rule が使う。 */
   readonly lists: readonly BulletList[];
+  /** リンク（`[text](url)`、`<https://…>`、`[text][ref]`）の範囲。行き先が相対パスでもページ内でも、読み手が辿れる出典。 */
+  readonly links: readonly Span[];
   /** アダプタが持つ語彙表と、チームが chaff.yaml に足した語彙表。detector は出所を知らない。 */
   readonly lexicons: Readonly<Record<string, Lexicon>>;
   /** この種類の文書に無いと困る見出し。チームが chaff.yaml で決める。 */
