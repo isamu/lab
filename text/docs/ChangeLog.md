@@ -22,6 +22,18 @@ Incident reports (Inside GOV.UK, デジタル庁), a research-news article (NIH)
 solicitation (NSF), changelogs (cloud.gov, NeeView), ministry press releases and a correction notice (経済産業省), a tax
 procedure guide (国税庁), a staff recruitment notice and a sightseeing notice (紀美野町).
 
+### `max-kanji-continuous` recognises an address whose town name the dictionary splits (#170)
+
+A municipality the dictionary does not know is split by morphological analysis: 紀美野町 into a personal name and a
+place name, 南伊勢町 into a common noun and a place name, 北海道虻田郡 into two place names. Such an address was
+reported as a long compound. A single piece between a unit and the next unit (郡 … 町), and two place names closed by
+a unit below the prefecture (郡・市・町), now count as one place name. Three or more place names in a row, or two
+closed by 都・道・府・県, are still a list (京都奈良大阪神戸市, 北海道神奈川県), and an address followed by an ordinary
+word (紀美野町役場総務課) is still reported. The prefecture units come from lang-ja's word list `prefecture-unit`,
+which the rule declares; without it the rule is skipped with that reason. Official names of organisations,
+programmes and exams stay reported: the analyser tags almost none of them as names, and their shape is the same as a
+compound the writer can break.
+
 ### `undefined-acronym` accepts an acronym expanded with a note after it in the brackets (#170)
 
 An acronym written as the first item in brackets, followed by a semicolon, comma or 、 and a note, now counts as
