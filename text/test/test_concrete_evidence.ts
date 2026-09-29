@@ -6,7 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { evidenceSpans, hasNumeral, startsWithin } from "../packages/chaff/src/detectors/concrete-evidence.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter, StructureNode, Token } from "../packages/chaff/src/plugin.ts";
+import type { Finding, LanguageAdapter, StructureNode, Token } from "../packages/chaff/src/plugin.ts";
 
 const RULE = "concrete-evidence-density";
 
@@ -188,5 +188,85 @@ describe("concrete-evidence-density: 構造の木が読んだ参照", () => {
 
   it("invalid: 参照の無い節は、今までどおり指摘する", () => {
     assert.ok(flaggedIn(englishWith(ABSTRACT_EN), en).includes("Last"));
+  });
+});
+
+describe("concrete-evidence-density: 文字で区切った索引（用語集）", () => {
+  const ACCOUNT_EN = "The right to use a system. It is tied to a user. A user may hold several.";
+  const BACKUP_EN = "A copy kept apart from the original. It is used to restore lost data. It is made on a schedule.";
+  const ACCOUNT_JA = "システムを使う権利のこと。利用者ごとに与えられます。複数持つこともあります。";
+  const BACKUP_JA = "元とは別に保管する写しのこと。失ったデータを戻すのに使います。定期的に作ります。";
+
+  const glossaryEn = (intro = ""): string =>
+    `# Glossary\n\n${intro}## A\n\n### Account\n\n${ACCOUNT_EN}\n\n### Access log\n\n${ACCOUNT_EN}\n\n## B\n\n### Backup\n\n${BACKUP_EN}\n\n#### Offsite copies\n\n${BACKUP_EN}\n`;
+
+  const findingIn = (source: string): Finding | undefined =>
+    runRules(buildDocument("t.md", source, en), loadRules(en.id), { [RULE]: "strict" }, true, "business/report").findings.find(
+      (candidate) => candidate.rule === RULE,
+    );
+
+  it("valid: 1 文字の見出しで区切った項目は、定義であって主張ではない", () => {
+    assert.deepEqual(flaggedIn(glossaryEn(), en), []);
+  });
+
+  it("valid: 日本語の用語集（あ・い）でも同じ", () => {
+    const source = `# 用語集\n\n## あ\n\n### アカウント\n\n${ACCOUNT_JA}\n\n### アクセスログ\n\n${ACCOUNT_JA}\n\n## い\n\n### インフラ\n\n${BACKUP_JA}\n`;
+    assert.deepEqual(flaggedIn(source, ja), []);
+  });
+
+  it("valid: 小文字の区切り（a, b）も文字の順に並べば索引", () => {
+    const source = `# Glossary\n\n## a\n\n### Account\n\n${ACCOUNT_EN}\n\n## B\n\n### Backup\n\n${BACKUP_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), []);
+  });
+
+  it("invalid: 索引の外の節（前書き・索引の後の節）は、今までどおり指摘する", () => {
+    const intro = `## About this glossary\n\n${ABSTRACT_EN}\n\n`;
+    assert.deepEqual(flaggedIn(glossaryEn(intro), en), ["About this glossary"]);
+    const after = `${glossaryEn()}\n## Suggest a change\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(after, en), ["Suggest a change"]);
+  });
+
+  it("invalid: 索引の項目は分母にも数えない", () => {
+    assert.equal(findingIn(glossaryEn(`## About this glossary\n\n${ABSTRACT_EN}\n\n`))?.values["total"], 1);
+  });
+
+  it("invalid: FAQ の答えに具体物が無ければ指摘する", () => {
+    const source = `# FAQ\n\n## How do I apply?\n\n${ABSTRACT_EN}\n\n## Who can apply?\n\n${ABSTRACT_EN}\n\n## What happens next?\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), ["How do I apply?", "Who can apply?", "What happens next?"]);
+  });
+
+  it("invalid: 語だけの見出しが並ぶ語り（Kindness, No ego）は索引ではない", () => {
+    const source = `# Values\n\n## Kindness\n\n${ABSTRACT_EN}\n\n## No ego\n\n${ABSTRACT_EN}\n\n## Trust\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), ["Kindness", "No ego", "Trust"]);
+  });
+
+  it("invalid: 1 文字の見出しが 1 つだけなら索引と読まない", () => {
+    const source = `# Plans\n\n## A\n\n### Openness\n\n${ABSTRACT_EN}\n\n### Trust\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), ["Openness", "Trust"]);
+  });
+
+  it("invalid: 区切りが文字の順に並ばなければ索引と読まない", () => {
+    const source = `# Plans\n\n## B\n\n### Openness\n\n${ABSTRACT_EN}\n\n## A\n\n### Trust\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), ["Openness", "Trust"]);
+  });
+
+  it("invalid: 同じ文字の区切りが繰り返すなら索引と読まない", () => {
+    const source = `# Plans\n\n## A\n\n### Openness\n\n${ABSTRACT_EN}\n\n## A\n\n### Trust\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), ["Openness", "Trust"]);
+  });
+
+  it("invalid: 本文を持つ 1 文字の見出し（案 A・案 B）は区切りではない", () => {
+    const source = `# Plans\n\n## A\n\nWe start small.\n\n### Openness\n\n${ABSTRACT_EN}\n\n## B\n\nWe start big.\n\n### Trust\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), ["Openness", "Trust"]);
+  });
+
+  it("invalid: 数字 1 文字の見出し（1, 2）は文字の区切りではない", () => {
+    const source = `# Plans\n\n## 1\n\n### Openness\n\n${ABSTRACT_EN}\n\n## 2\n\n### Trust\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), ["Openness", "Trust"]);
+  });
+
+  it("invalid: 区切りと同じ深さの見出しで索引は閉じる", () => {
+    const source = `${glossaryEn()}\n## Notes\n\n### Openness\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), ["Openness"]);
   });
 });

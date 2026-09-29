@@ -71,7 +71,7 @@ govuk-adr-0014-replace-terraform-cloud  max-sentence-length 1, proper-noun-densi
 govuk-cddo-roadmap-2022-2025  agentless-passive 22, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 88, ngram-repetition 1, proper-noun-density 1, undefined-acronym 11
 govuk-guidance-academy-senior-pay  agentless-passive 37, concrete-evidence-density 16, max-sentence-length 21, ngram-repetition 1, oxford-comma-consistency 1, unqualified-superlative 3
 govuk-incident-safe-browsing  agentless-passive 16, concrete-evidence-density 4, contraction-consistency 2, max-sentence-length 10, proper-noun-density 1, undefined-acronym 3
-govuk-style-guide-a-to-z  agentless-passive 41, concrete-evidence-density 61, dangling-reference 1, heading-echo 22, max-sentence-length 23, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 39, unqualified-superlative 2
+govuk-style-guide-a-to-z  agentless-passive 41, concrete-evidence-density 5, dangling-reference 1, heading-echo 22, max-sentence-length 23, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 39, unqualified-superlative 2
 gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1
 gsi-maps-smartphone-howto  max-paragraph-length 1
 ietf-draft-httpapi-ratelimit-headers-10  max-paragraph-length 1, max-sentence-length 61, ngram-repetition 1, proper-noun-density 1, undefined-acronym 14
@@ -126,7 +126,7 @@ rust-rfc-2094-nll  heading-echo 1, max-paragraph-length 12, max-sentence-length 
 saikosai-h18-09-14-bengoshi-chokai  agentless-passive 1, doubled-word 1, max-kanji-continuous 5, max-paragraph-length 1, max-sentence-length 25, no-doubled-joshi 2
 saikosai-h26-09-02-nagano  agentless-passive 2, max-paragraph-length 1, max-sentence-length 6
 saikosai-s57-09-28-shorai-kyufu  hiragana-fukushi 1, max-kanji-continuous 2, max-sentence-length 3, no-doubled-joshi 1
-soumu-kokumin-cyber-glossary-a  agentless-passive 4, concrete-evidence-density 15, heading-echo 1, max-sentence-length 2, ngram-repetition 1, undefined-acronym 3
+soumu-kokumin-cyber-glossary-a  agentless-passive 4, heading-echo 1, max-sentence-length 2, ngram-repetition 1, undefined-acronym 3
 soumu-kokumin-cyber-phishing  concrete-evidence-density 3, latin-spacing 7, max-sentence-length 6
 soumu-wp-r06-ai-booms  agentless-passive 1, latin-spacing 2, max-sentence-length 2, undefined-acronym 3
 soumu-wp-r06-ai-rules-japan  agentless-passive 5, latin-spacing 3, max-sentence-length 6, no-doubled-joshi 1
