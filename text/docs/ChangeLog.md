@@ -4,6 +4,20 @@ Newest first.
 
 ## Unreleased
 
+### `agentless-passive` leaves Japanese れる/られる that is not a passive alone (#170)
+
+Japanese れる/られる is also spontaneous, honorific and potential, and IPADIC does not say which. lang-ja now drops
+`Voice=Pass` where the form alone shows it is not a passive: after a verb that reads as spontaneous
+(「〜と考えられる」「〜と思われる」, the guidelines' and judgments' 「〜と解される」) unless the predicate is past, after a verb that names a relation
+rather than an act (「外国人も含まれる」「対症療法に限られる」), and inside an honorific address (「参考人におかれましては」
+「各学校設置者におかれては」). The verbs and the address are lexicons in `@chaffjs/lang-ja` (`spontaneous-verb`,
+`stative-passive-verb`, `honorific-formula`). Real passives stay: 「方針が決定された」「予算案が承認されました」
+「一定の協力が求められます」, and so do a past 「会議で考えられました」, 「〜と言われる」 and 「〜とされている」, which hide who
+thought or said so, 「予算に見込まれていない」, and an honorific after
+an auxiliary verb (「務めてこられた」), which has the form of a passive after one (「連れてこられた」). Found on
+デジタル庁 and 厚生労働省 pages, a 文部科学省 notice, a 最高裁 judgment, a 国会 transcript and the 個人情報保護委員会
+guidelines in the corpus.
+
 ### The corpus HTML converter keeps a `<pre>` block's lines, and fences code (#170)
 
 A `<pre>` block became one paragraph, its lines run together: the Zen of Python in PEP 20, a poem of short lines,
