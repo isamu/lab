@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` does not count the spacing inside a quotation in 「」『』 (#170)
+
+A title or a quotation in 「」 or 『』 keeps the spacing of its source: 「AI原則実践のためのガバナンス・ガイドライン ver.
+1.1」, 『絵師100人展 16』, 「…ガイドライン CXG79-2012」. The writer cannot change it, so it was wrong to report it as
+the odd one out in a document that packs Latin text. A boundary with both sides inside the brackets is now left out
+of the count entirely, so a quotation neither is reported nor decides which way the document usually writes. The
+same place outside the brackets (「手引き」を IDで引く) is still reported, and a bracket that does not close counts as
+before. This is the reading `no-doubled-joshi` already gives a quotation.
+
 ### `undefined-acronym` leaves domain names, date placeholders and a numeral after a name alone, and reads `(ON RRP)` as one acronym (#170)
 
 Four kinds of capitals were reported as acronyms without an expansion:
