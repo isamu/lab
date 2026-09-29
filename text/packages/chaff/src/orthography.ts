@@ -1,6 +1,6 @@
 // 表記のそろい。書き方の決まりのうち、文字だけで決まるもの。
 
-const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+export const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 
 /** text の中で word が現れる [始まり, 終わり) を、左から順に。大文字小文字を区別しないときは i で探す（位置は元の文字列のまま）。 */
 const spansOf = (text: string, word: string, ignoreCase: boolean): [number, number][] => {

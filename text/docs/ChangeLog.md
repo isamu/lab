@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` accepts an acronym defined in brackets with 以下 or hereinafter (#170)
+
+An acronym written as a definition inside brackets now counts as spelled out: `Human Resource(以下、HR)`,
+`人事部（以下「HR」という。）`, `Service Level Agreement（以下「SLA」）`, `Service Level Agreement (hereinafter "SLA")`,
+`(the "SLA")`, `(aka the "GDPR")`. The words come from two new word lists in each language package,
+`definition-marker` (before the acronym: 以下, the, hereinafter, aka …) and `definition-verb` (after it: という, と称する
+…); a language without them keeps the older forms only. The brackets must hold nothing but those words, quotes and the
+acronym, so `（以下のSRE手順）` or `(the SRE team)` still report SRE. Found on 総務省's white paper, NTT Com's onboarding
+handbook and Automattic's privacy policy.
+
 ### `latin-spacing` reads a name ending in a digit as a Latin word (#170)
 
 A run that starts with a letter and ends in a digit (`H30 等`, `EC2 で`, `IPv6アドレス`, `v1.2の`) is now counted with
