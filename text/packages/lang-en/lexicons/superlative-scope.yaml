@@ -1,0 +1,10 @@
+# Words that say what a superlative is the most of. position is the side of the superlative they stand on.
+# English puts them after the superlative's noun phrase, with a noun phrase after them: "the best pizza in Chicago",
+# "the most famous of the sculptures".
+id: superlative-scope
+language: en
+entries:
+  - pattern: in
+    position: after
+  - pattern: of
+    position: after

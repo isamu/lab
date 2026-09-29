@@ -16,8 +16,8 @@ import {
   type PlantContext,
 } from "./bench-text.ts";
 import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinParagraphs } from "./bench-mutations-layout.ts";
-import { doubleHonorific, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa } from "./bench-mutations-ja.ts";
-import { expletives, flipFirstList, flipLastHeading, passiveEn } from "./bench-mutations-en.ts";
+import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa } from "./bench-mutations-ja.ts";
+import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn } from "./bench-mutations-en.ts";
 
 export type Mutation = {
   readonly id: string;
@@ -386,4 +386,6 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "expletives", rule: "expletive-construction", languages: ["en"], plant: expletives },
   { id: "oxford-flipped", rule: "oxford-comma-consistency", languages: ["en"], plant: flipFirstList },
   { id: "heading-recased", rule: "title-case-consistency", languages: ["en"], plant: flipLastHeading },
+  { id: "particle-doubled", rule: "doubled-word", languages: ["ja"], plant: doubleParticle },
+  { id: "article-doubled", rule: "doubled-word", languages: ["en"], plant: doubleArticle },
 ];

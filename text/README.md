@@ -284,6 +284,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | rule | 何を見るか |
 | --- | --- |
 | `agentless-passive` | 受け身で、誰がしたのか書かれていない（ja / en） |
+| `doubled-word` | 語を二度書いた（資料をを / the the / our the）（ja / en、試験中） |
 | `no-mixed-desumasu` | ですます調とである調の混在（ja） |
 | `no-doubled-joshi` | 「弊社の新製品の販売の計画」のような入れ子（ja） |
 | `taigen-dome-in-prose` | 本文の体言止めが続く（ja） |

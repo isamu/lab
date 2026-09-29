@@ -1,0 +1,10 @@
+# doubled-word が数えない重なり。形態素解析が一語にしない重ね言葉だけを置く。
+# 「まだまだ」「ますます」「いろいろ」「時々」は一語になり、「そうそう」「もっともっと」は副詞なので、ここには要らない。
+# 名詞を重ねて「それぞれの」を言う形（会社会社で）は、後ろの助詞でアダプタが見分ける（distributive-particle）。
+id: doubled-word
+language: ja
+entries:
+  - pattern: 一つ一つ
+  - pattern: 見る見る
+  - pattern: 毎日毎日
+  - pattern: 毎回毎回

@@ -15,6 +15,56 @@ prose, and each bulleted list (with its nested items) against itself: a です�
 throughout in plain form, the usual way to write bullets, is consistent, while a list that mixes `記載します。` and
 `記載する。` is still reported, and so is a plain sentence in です・ます prose. Found on ja.wikivoyage, dwango's design document and デジタル庁's guides.
 
+
+## 0.12.0 — 2026-09-29
+
+More kinds of document, checked without judgement: the corpus now has press releases, FAQs, privacy policies,
+how-tos, notices, letters, agendas, job descriptions, travel guides, design and requirements documents in both
+languages. A new experimental rule, `doubled-word`, catches a word written twice ("our the", をを). Word lists carry
+more of the knowledge that was in code — the acronyms a reader knows, the words that qualify a superlative — and a rule
+that needs a word list its language lacks says so instead of running. Fewer false positives from page furniture (in-page
+navigation, date stamps, empty headings), English proper nouns and adjectival participles, and acronyms defined with
+以下 / hereinafter or written beside a time or an amount.
+
+📦 [`chaffjs@0.12.0`](https://www.npmjs.com/package/chaffjs/v/0.12.0) ·
+[`@chaffjs/lang-ja@0.11.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.11.0) ·
+[`@chaffjs/lang-en@0.10.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.10.0)
+
+### `doubled-word`: a word written twice (#170)
+
+A new experimental rule. It reports a word written twice in a row — `the the`, `is is`, 「資料をを」, 「確認確認」 —
+across a line break and regardless of case, and in English two determiners where one belongs (`our the platform`,
+`a the`). Same word means the same surface and the same part of speech, so `that that` (a conjunction and a
+demonstrative) is left alone; the determiners are the articles and the possessives, which `@chaffjs/lang-en` now
+marks with the Universal Dependencies features `PronType=Art` and `Poss=Yes` (the articles are a lexicon, `article`;
+"her", an object as often as a possessive, is a lexicon `object-or-possessive` and not marked). A capitalised word
+inside a sentence followed by the same word in lower case is a name and the next word ("Payment for May may be
+delayed"). Interjections, adverbs, proper nouns, numbers and symbols are not counted: repeating them is emphasis or a
+name (「そうそう」, "very very", "Walla Walla"). A Japanese noun of a unit or an occasion doubled to mean "each" and
+followed by a particle (「会社会社で」「部署部署の」「場面場面で」) is marked `Echo=Rdp` by `@chaffjs/lang-ja` and left
+alone; the nouns and the particles are lexicons (`distributive-noun`, `distributive-particle`), so 「資料資料の」 is
+still reported. Other repeats a language allows are a lexicon (`doubled-word`) in each language package: "had had",
+"do do", "her her", "sign in in advance", 「一つ一つ」. The position is the second word. The rule needs parts of speech
+and says so when a language has none. Found on cloud.gov's API v2 notice in the corpus ("our the platform").
+
+### A superlative that states its scope is not reported (#170)
+
+`unqualified-superlative` no longer reports a superlative that says what it is the most of: a name and で before it
+(日本で最も有名な, トヨタで最も), a noun joined to it (国内最大, 業界最速, 世界唯一の), or in / of and a noun phrase after its
+noun phrase ("the best pizza in Chicago", "the most famous of the sculptures", "the best of the three"). The rule reads
+the parts of speech, and the scope words come from each language package's `superlative-scope` word list, where each
+word says which side of the superlative it stands on (`position: before` or `after`). A common noun before で is a means, not a scope (最少の費用で最大の効果 is still
+reported), and so are 「最も効果的です」 and "the best solution" with nothing around them. Found on ja.wikivoyage and on
+GitLab's and 18F's handbooks.
+
+### The words that give a superlative its comparison are a word list (#170)
+
+`unqualified-superlative`'s words that name a comparison (より, に比べる, のうち / among, than, compared, based on,
+according) moved from a regular expression in code into each language package's `comparison-marker` word list, matched
+word by word like every other list: "thanks", "accordingly", "amongst" and そのうち no longer count as a comparison, and
+「に比べると」 still does. A digit in the sentence still qualifies it. A rule can now declare the lists it reads besides its
+`word_list` (`extra_word_lists`); a language package without one of them does not run the rule and says why.
+
 ### `undefined-acronym` accepts an acronym defined in brackets with 以下 or hereinafter (#170)
 
 An acronym written as a definition inside brackets now counts as spelled out: `Human Resource(以下、HR)`,

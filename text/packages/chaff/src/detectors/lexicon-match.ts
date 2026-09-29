@@ -32,6 +32,16 @@ export const entryIn = (sentence: Sentence, entry: LexiconEntry): boolean => {
   return tokens.some((_token, start) => runsAt(tokens, words, start));
 };
 
+export type TokenRange = { readonly start: number; readonly end: number };
+
+/** 語彙の語が文のどの語の並びに当たったか（始まりと、終わった次の位置）。品詞が無ければ位置を言えないので空。 */
+export const entryRanges = (sentence: Sentence, entry: LexiconEntry): TokenRange[] => {
+  const tokens = sentence.tokens;
+  const words = entry.tokens;
+  if (tokens === undefined || words === undefined || words.length === 0) return [];
+  return tokens.flatMap((_token, start) => (runsAt(tokens, words, start) ? [{ start, end: start + words.length }] : []));
+};
+
 const LEADING_MARK = new Set(["PUNCT", "SYM"]);
 
 /** 語彙の語で文が始まるか。文頭の記号は飛ばす。品詞が無ければ文字列の前方一致。 */

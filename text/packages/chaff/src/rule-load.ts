@@ -99,6 +99,7 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     by_genre: genreTables(raw["by_genre"], language),
     how_to_find: String(raw["how_to_find"]),
     word_list: typeof raw["word_list"] === "string" ? raw["word_list"] : undefined,
+    extra_word_lists: stringList(raw["extra_word_lists"]) ?? [],
     what_to_check: isLocalized(raw["what_to_check"]) ? raw["what_to_check"] : undefined,
     where: typeof raw["where"] === "string" ? raw["where"] : undefined,
     requires: stringList(raw["requires"]) ?? [],

@@ -1,0 +1,7 @@
+# 最上級の範囲（何の中で最もなのか）を言う語。position は最上級のどちら側に置くか。
+# 日本語は前に置く（日本で最も）。前の語が固有名詞か地名のときだけ範囲と読む。「最少の費用で最大の効果」の「費用で」は手段。
+id: superlative-scope
+language: ja
+entries:
+  - pattern: で
+    position: before

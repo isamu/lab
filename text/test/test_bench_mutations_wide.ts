@@ -1,8 +1,8 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { codeLines, rewriteFirst, type Plant } from "../scripts/bench-text.ts";
-import { doubleHonorific, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa } from "../scripts/bench-mutations-ja.ts";
-import { expletiveOf, expletives, flipFirstList, flipLastHeading, isTitleCase, oxfordOf, passiveEn } from "../scripts/bench-mutations-en.ts";
+import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa } from "../scripts/bench-mutations-ja.ts";
+import { doubleArticle, expletiveOf, expletives, flipFirstList, flipLastHeading, isTitleCase, oxfordOf, passiveEn } from "../scripts/bench-mutations-en.ts";
 import {
   TEAM_JARGON,
   boldSection,
@@ -186,6 +186,19 @@ describe("passiveEn", () => {
   it("by のある文、不規則動詞の文には植えない", () => {
     assert.equal(passiveEn("We tested the app by hand."), undefined);
     assert.equal(passiveEn("We sent the report."), undefined);
+  });
+});
+
+describe("doubleArticle / doubleParticle", () => {
+  it("本文の最初の the と、名詞の後ろの最初の を を重ねる", () => {
+    assert.deepEqual(at(doubleArticle(lines("# The plan", "", "Send the report to the team."))), [3, "Send the the report to the team."]);
+    assert.deepEqual(at(doubleParticle(lines("# 計画", "", "資料を送り、結果を待つ。"))), [3, "資料をを送り、結果を待つ。"]);
+  });
+
+  it("見出し・表・コードと、重ねる語の無い文書には植えない", () => {
+    assert.equal(doubleArticle(lines("# Read the plan", "| the value |", "```", "the code", "```", "Other text.")), undefined);
+    assert.equal(doubleArticle("There is theory here."), undefined);
+    assert.equal(doubleParticle(lines("# 資料を送る", "| 資料を送る |", "ここを見る。")), undefined);
   });
 });
 

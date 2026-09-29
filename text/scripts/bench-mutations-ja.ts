@@ -1,5 +1,5 @@
 // Seeded mistakes of Japanese wording for `yarn bench`: kanji adverbs, doubled honorifics, overused humble forms,
-// glued kanji, middle-dot lists and agentless passives. Pure and deterministic, like scripts/bench-mutations.ts.
+// glued kanji, middle-dot lists, agentless passives and a doubled particle. Pure and deterministic, like scripts/bench-mutations.ts.
 import { isProse, linesOf, proseAt, rewriteFirst, type Plant, type PlantContext } from "./bench-text.ts";
 
 type Swap = readonly [string, string];
@@ -138,3 +138,15 @@ const passiveLine = (line: string): string | undefined => {
 
 /** 「〜を〇〇した」の文を、動作主の無い受け身「〜が〇〇された」にする。 */
 export const passiveJa = (source: string): Plant | undefined => rewriteFirst(source, (line) => isProse(line) && passiveLine(line) !== undefined, passiveLine);
+
+// --- doubled-word ---
+
+const NOUN_THEN_WO = /([一-龠々ァ-ヶー])を/u;
+
+/** 名詞の後ろの最初の「を」を「をを」にする。打ち直したときに残った助詞。 */
+export const doubleParticle = (source: string): Plant | undefined =>
+  rewriteFirst(
+    source,
+    (line) => isProse(line) && NOUN_THEN_WO.test(line),
+    (line) => line.replace(NOUN_THEN_WO, "$1をを"),
+  );

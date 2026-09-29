@@ -116,6 +116,7 @@ describe("満たせない要求は黙って通さない", () => {
       by_genre: {},
       how_to_find: "sentence-length",
       word_list: undefined,
+      extra_word_lists: [],
       what_to_check: undefined,
       where: undefined,
       requires: ["telepathy"],
@@ -218,9 +219,23 @@ describe("agentless-passive（英語）", () => {
 
     it("過去分詞には VerbForm=Part を付ける。受動かどうかにかかわらず", () => {
       const forms = tokensOf("Based on the review, the plan that was approved was shipped.", en).flatMap((token) =>
-        token.features === undefined ? [] : [`${token.surface}:${token.features["VerbForm"] ?? ""}:${token.features["Voice"] ?? ""}`],
+        token.features?.["VerbForm"] === undefined ? [] : [`${token.surface}:${token.features["VerbForm"]}:${token.features["Voice"] ?? ""}`],
       );
       assert.deepEqual(forms, ["Based:Part:", "approved:Part:", "shipped:Part:Pass"]);
+    });
+
+    it("冠詞には PronType=Art、所有の語には Poss=Yes を付ける。ほかの限定詞には付けない", () => {
+      const marks = tokensOf("Our team sent the report and a summary to all their clients, which this group reads.", en).flatMap((token) =>
+        token.features?.["PronType"] === undefined && token.features?.["Poss"] === undefined
+          ? []
+          : [`${token.surface}:${token.features["PronType"] ?? token.features["Poss"] ?? ""}`],
+      );
+      assert.deepEqual(marks, ["Our:Yes", "the:Art", "a:Art", "their:Yes"]);
+      // her は目的語にもなるので、所有の印を付けない（sent her our report）。
+      assert.deepEqual(
+        tokensOf("We sent her our report.", en).flatMap((token) => (token.features?.["Poss"] === "Yes" ? [token.surface] : [])),
+        ["our"],
+      );
     });
 
     it("invalid: 関係節の外にある述語の受動は残す", () => {

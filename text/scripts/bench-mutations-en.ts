@@ -1,5 +1,5 @@
 // Seeded mistakes of English wording for `yarn bench`: expletive openings, a flipped Oxford comma, a flipped heading
-// capitalisation and an agentless passive. Pure and deterministic, like scripts/bench-mutations.ts.
+// capitalisation, an agentless passive and a doubled article. Pure and deterministic, like scripts/bench-mutations.ts.
 import { isHeading, isProse, linesOf, proseAt, lowerFirst, replaceLine, rewriteFirst, splitSentences, type Plant, type PlantContext } from "./bench-text.ts";
 
 const LIST_PREFIX = /^\s*[-*]\s/u;
@@ -159,4 +159,16 @@ export const passiveEn = (source: string): Plant | undefined =>
     source,
     (line) => isProse(line) && rewriteSentence(line, passiveOf) !== undefined,
     (line) => rewriteSentence(line, passiveOf),
+  );
+
+// --- doubled-word ---
+
+const ARTICLE_BEFORE_WORD = /\bthe (?=[a-z])/u;
+
+/** 本文の最初の「the」を「the the」にする。書き換えの途中で消し忘れた語。 */
+export const doubleArticle = (source: string): Plant | undefined =>
+  rewriteFirst(
+    source,
+    (line) => isProse(line) && ARTICLE_BEFORE_WORD.test(line),
+    (line) => line.replace(ARTICLE_BEFORE_WORD, "the the "),
   );
