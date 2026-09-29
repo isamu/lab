@@ -129,4 +129,14 @@ describe("the tree has no untitled section", () => {
     const detail = tree.children[0]?.children[0]?.children[0];
     assert.equal(detail?.address, "h1.1.1");
   });
+
+  it("the line of an untitled heading adds no leaf to the section it falls in", () => {
+    const patterns = ja.structure;
+    if (patterns === undefined) throw new Error("no structure");
+    const kinds = (node: StructureNode): string[] => [node.kind, ...node.children.flatMap(kinds)];
+    ["###", "## ---", "## ※", "## {#a3}"].forEach((line) => {
+      const tree = buildStructure({ path: "a.md", source: `# 規約\n\n## 目的\n\n本文。\n\n${line}\n\n付記。\n`, language: "ja", markdown: true }, patterns);
+      assert.deepEqual(kinds(tree), ["doc", "section", "section"], line);
+    });
+  });
 });
