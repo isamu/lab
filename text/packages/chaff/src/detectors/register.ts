@@ -1,4 +1,5 @@
-import type { Sentence, Span, Token } from "../plugin.ts";
+import { isPoliteWord } from "./polite-word.ts";
+import type { LexiconEntry, Sentence, Span, Token } from "../plugin.ts";
 
 export type Register = "polite" | "plain";
 
@@ -25,13 +26,12 @@ const withPreceding = (ending: readonly Token[], preceding: readonly Token[]): r
  * 文末の語の調子。preceding は文末の語より前の語。
  * 文末に述語（動詞・形容詞・助動詞）が無ければ、ですます調でもである調でもないので undefined。
  * 「以下の通り。」「円錐形の麦わら帽子。」のような名詞で終わる文を数えると、そのままである調の少数派になっていた。
- * 書いた形でも原形でも当てる。「ください」の原形は「くださる」で、原形だけを見ると丁寧な文末を見落とす。
+ * 書いた形でも原形でも読みでも当てる（polite-word.ts）。「ください」の原形は「くださる」で、原形だけを見ると丁寧な文末を見落とす。
  */
-export const registerOf = (ending: readonly Token[], preceding: readonly Token[], polite: readonly string[]): Register | undefined => {
+export const registerOf = (ending: readonly Token[], preceding: readonly Token[], polite: readonly LexiconEntry[]): Register | undefined => {
   const judged = withPreceding(ending, preceding);
   if (!judged.some(isPredicate)) return undefined;
-  const isPolite = judged.some((token) => polite.includes(token.surface) || (token.lemma !== undefined && polite.includes(token.lemma)));
-  return isPolite ? "polite" : "plain";
+  return judged.some((token) => isPoliteWord(token, polite)) ? "polite" : "plain";
 };
 
 const EXCLAIMED = /[！？!?]$/u;

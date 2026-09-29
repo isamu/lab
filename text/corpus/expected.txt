@@ -67,8 +67,8 @@ loc-signal-new-online-2026-07  contraction-consistency 1, max-sentence-length 28
 meti-keiryoshi-exam-correction  agentless-passive 2, latin-spacing 2, max-sentence-length 2
 meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5
 mext-heatstroke-after-holidays  agentless-passive 4, hiragana-fukushi 1, max-kanji-continuous 6, max-paragraph-length 2, max-sentence-length 18, ngram-repetition 1, preamble-length 1
-mhlw-norovirus-qa  agentless-passive 22, concrete-evidence-density 5, latin-spacing 2, max-kanji-continuous 13, max-paragraph-length 2, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 4, repeated-conjunction 1, undefined-acronym 6
-mhlw-pubcomment-rodohoken  agentless-passive 1, latin-spacing 3, max-kanji-continuous 6, max-sentence-length 2, no-doubled-joshi 1, no-mixed-desumasu 3, preamble-length 1
+mhlw-norovirus-qa  agentless-passive 22, concrete-evidence-density 5, latin-spacing 2, max-kanji-continuous 13, max-paragraph-length 2, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 3, repeated-conjunction 1, undefined-acronym 6
+mhlw-pubcomment-rodohoken  agentless-passive 1, latin-spacing 3, max-kanji-continuous 6, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
 minpo.txt  clean
 mit-ocw-6-0001-syllabus  agentless-passive 13, max-paragraph-length 2, max-sentence-length 6, proper-noun-density 1
 mlit-press-planned-suspension  max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 3, no-doubled-joshi 2
