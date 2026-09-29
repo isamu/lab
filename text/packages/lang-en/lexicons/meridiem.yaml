@@ -1,0 +1,7 @@
+# AM and PM written after a clock time (3:30 PM, 10AM). Away from a clock time PM is still an acronym
+# (project manager). Matched as written.
+id: meridiem
+language: en
+entries:
+  - pattern: "AM"
+  - pattern: "PM"

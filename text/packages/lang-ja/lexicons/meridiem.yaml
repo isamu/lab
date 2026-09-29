@@ -1,0 +1,7 @@
+# 時刻の後ろに書く午前・午後（3:30 PM、10AM）。時刻の隣でなければ PM は略語（project manager）として数える。
+# 字面どおりに照らす。
+id: meridiem
+language: ja
+entries:
+  - pattern: "AM"
+  - pattern: "PM"

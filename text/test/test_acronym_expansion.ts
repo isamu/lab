@@ -145,9 +145,25 @@ describe("undefined-acronym: 定義の形で書いた略語は指摘しない", 
     const source = '# Terms\n\nThe Service Level Agreement (hereinafter "SLA") applies. Ask (the KPT team) about the SLA.\n';
     assert.deepEqual(acronymsIn(source, en), ["KPT"]);
   });
+});
 
-  it("定義の語彙表が無い言語では、定義の形は数えず、rule は動く", () => {
-    const bare: LanguageAdapter = { ...en, lexicons: { "common-acronym": en.lexicons["common-acronym"] ?? [] } };
-    assert.deepEqual(acronymsIn('# Terms\n\nThe Service Level Agreement (hereinafter "SLA") applies.\n', bare), ["SLA"]);
+describe("undefined-acronym: 読む語彙表がどれか 1 つ無い言語", () => {
+  const source = '# Terms\n\nThe Service Level Agreement (hereinafter "SLA") applies at 3:30 PM.\n';
+  const without = (list: string): LanguageAdapter => ({ ...en, lexicons: Object.fromEntries(Object.entries(en.lexicons).filter(([id]) => id !== list)) });
+
+  loadRules("en")
+    .filter((rule) => rule.id === "undefined-acronym")
+    .flatMap((rule) => rule.extra_word_lists)
+    .forEach((list) => {
+      it(`${list} が無ければ rule は動かず、その語彙表の名前を理由に言う`, () => {
+        const result = runRules(buildDocument("t.md", source, without(list)), loadRules("en"), { "undefined-acronym": "strict" }, true, "business/report");
+        assert.ok(!result.findings.some((finding) => finding.rule === "undefined-acronym"));
+        assert.ok(result.skipped.find((entry) => entry.rule === "undefined-acronym")?.why.includes(list));
+      });
+    });
+
+  it("空の語彙表は「その書き方が無い」で、rule は動く（定義の形も時刻も数えない）", () => {
+    const empty: LanguageAdapter = { ...en, lexicons: { ...en.lexicons, "definition-marker": [], meridiem: [] } };
+    assert.deepEqual(acronymsIn(source, empty), ["SLA", "PM"]);
   });
 });

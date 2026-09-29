@@ -1,7 +1,7 @@
 import { proseText } from "../measure.ts";
 import { wordsOf } from "./structure.ts";
 import { compacted, placeOf } from "./gram-place.ts";
-import { notAcronymSpans } from "./acronym-context.ts";
+import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
 import { expansionAt, type ExpandedAt } from "./acronym-expansion.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 
@@ -183,18 +183,18 @@ type Span = { readonly start: number; readonly end: number };
 
 const spanOf = (match: RegExpExecArray): Span => ({ start: match.index, end: match.index + match[0].length });
 
-const spansOf = (text: string): Span[] => [
+const spansOf = (text: string, notation: NotAcronymSpans): Span[] => [
   ...[...text.matchAll(UNCASED_STRETCH)].filter((match) => SHOUTED_RUN.test(match[0])).map(spanOf),
   ...[...text.matchAll(IDENTIFIER)].filter((match) => /\d/u.test(match[0])).map(spanOf),
   ...[QUOTED_CAPS, REQUIREMENT_WORD, LICENCE].flatMap((pattern) => [...text.matchAll(pattern)].map(spanOf)),
-  ...notAcronymSpans(text),
+  ...notation(text),
 ];
 
 type AcronymHit = { readonly word: string; readonly hit: Hit };
 
-const acronymsOf = (doc: ProseDocument): AcronymHit[] =>
+const acronymsOf = (doc: ProseDocument, notation: NotAcronymSpans): AcronymHit[] =>
   doc.sentences.flatMap((sentence) => {
-    const excluded = spansOf(sentence.text);
+    const excluded = spansOf(sentence.text, notation);
     return [...sentence.text.matchAll(ACRONYM)]
       .filter((match) => !excluded.some((span) => span.start <= match.index && match.index + match[0].length <= span.end))
       .map((match) => ({ word: match[0], hit: { sentence, offset: sentence.span.start + match.index } }));
@@ -209,11 +209,20 @@ const isExpanded = (body: string, acronym: string, expandedAt: ExpandedAt): bool
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
+const notationOf = (doc: ProseDocument): NotAcronymSpans =>
+  notAcronymSpansOf({
+    meridiem: patternsOf(doc, "meridiem"),
+    timeZones: patternsOf(doc, "time-zone"),
+    currencies: patternsOf(doc, "currency-code"),
+    usStates: patternsOf(doc, "us-state-code"),
+    emphasis: patternsOf(doc, "emphasis-word"),
+  });
+
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
   const common = new Set((options.lexicon ?? []).map((entry) => entry.pattern));
   const seen = new Map<string, Hit>();
-  acronymsOf(doc).forEach(({ word, hit }) => {
+  acronymsOf(doc, notationOf(doc)).forEach(({ word, hit }) => {
     if (!common.has(word) && !seen.has(word)) seen.set(word, hit);
   });
   const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: patternsOf(doc, "definition-verb") });
