@@ -45,6 +45,8 @@ const { language } = DefaultAbbrMarkerOptions;
 const ABBREVIATIONS = new Set(
   [...language.ABBREVIATIONS, ...language.PREPOSITIVE_ABBREVIATIONS, ...language.EXCLAMATION_WORDS].map((word) => word.toLowerCase()),
 );
+/** 分割器が略語と読む語（ピリオドまで含めて渡す）。「Dr.」「U.S.」「Jan.」。 */
+export const isAbbreviation = (word: string): boolean => ABBREVIATIONS.has(word.toLowerCase());
 // 「J. Smith」のような語は前の語を見て略語か決まる。前の語が切れ目の向こうにあると判定が変わる。
 const CAPITAL_DOT = /\p{Lu}\./gu;
 
@@ -76,7 +78,7 @@ const indexesOf = (text: string, pattern: RegExp): number[] => [...text.matchAll
 /** 句点の並びの直後。和文は直前が仮名・漢字の句点、英文は略語でない語のピリオド。 */
 const stopEnds = (text: string): number[] => {
   const japanese = [...text.matchAll(JAPANESE_STOPS)].filter((match) => isCJK(text[match.index - 1]));
-  const english = [...text.matchAll(ENGLISH_STOP)].filter((match) => !ABBREVIATIONS.has(match[0].toLowerCase()));
+  const english = [...text.matchAll(ENGLISH_STOP)].filter((match) => !isAbbreviation(match[0]));
   return [...japanese, ...english].map((match) => match.index + match[0].length).sort((a, b) => a - b);
 };
 

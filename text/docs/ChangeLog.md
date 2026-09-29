@@ -4,6 +4,29 @@ Newest first.
 
 ## Unreleased
 
+### The corpus has patent specifications and court decisions (#170)
+
+A US patent (the sealed crustless sandwich, public domain), a Japanese published patent application (特開, URL only:
+the applicant holds its copyright), a US Supreme Court opinion (Gideon v. Wainwright) and two judgments of 最高裁判所
+(not subject to copyright under 著作権法第13条第3号), one of them hard-wrapped at a fixed width the way a judgment
+copied from its PDF is. Patents come from Google Patents as archived by the Internet Archive; a new corpus format,
+`google-patents`, keeps only the abstract, the description and the claims and drops Google's metadata, citation and
+family tables. Opinions and judgments come from Wikisource at a pinned revision; the wikitext converter now also drops
+links in the Japanese names of the file and category namespaces (`[[カテゴリ:日本の判例]]`, `ファイル:`, `画像:`,
+`メディア:`). The courts' own sites publish full judgments only as PDF, which the corpus cannot convert.
+
+### English: a sentence that closes inside a quotation ends there (#170)
+
+American usage puts the full stop inside the closing quotation mark (`…to a "fair trial." Plainly, the rule…`), and
+the sentence splitter did not end a sentence there: the next sentence was read as part of it. `max-sentence-length`
+reported the two as one long sentence, `max-paragraph-length` counted too few sentences, and a passive with its actor
+in the following sentence was read as having one. A full stop, question or exclamation mark directly before a closing
+quotation mark now ends the sentence when a space and a capital letter (after an opening bracket or quotation mark, if
+any) follow. It does not when the word before the full stop is an abbreviation or initials (`the "U.S." Army`,
+`"Dr." Smith`, `"J."`), when a bracket is still open, or when the next word is lower case or a number
+(`"Is it right?" asked the clerk`, `"no." 316 U.S. at 462`). Found on a Supreme Court opinion, CRS reports, an NSF
+solicitation and GitLab's handbook.
+
 ### The corpus HTML converter drops more of a site header and footer by their shape (#170)
 
 Three shapes before the page's `<h1>` now count as a menu for the site-header rule, so the innermost block holding

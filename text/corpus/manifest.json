@@ -1,5 +1,5 @@
 {
-  "note": "Real documents chaff is run on. Japanese statutes are public domain (Copyright Act of Japan, Article 13). UK Acts are under the Open Government Licence v3.0 (contains public sector information licensed under the OGL, from legislation.gov.uk). Both are committed; anything that may not be redistributed is listed with redistribute: false and only cached locally. Documents of other kinds (source \"url\") are fetched from a pinned URL: committed under docs/ when their license allows it (redistribute: true), otherwise only the URL is kept and the text goes to the git-ignored .cache/. A source that is not Markdown or plain text names its \"format\" (\"wikitext\" or \"html\") and is stored converted to Markdown.",
+  "note": "Real documents chaff is run on. Japanese statutes are public domain (Copyright Act of Japan, Article 13). UK Acts are under the Open Government Licence v3.0 (contains public sector information licensed under the OGL, from legislation.gov.uk). Both are committed; anything that may not be redistributed is listed with redistribute: false and only cached locally. Documents of other kinds (source \"url\") are fetched from a pinned URL: committed under docs/ when their license allows it (redistribute: true), otherwise only the URL is kept and the text goes to the git-ignored .cache/. A source that is not Markdown or plain text names its \"format\" (\"wikitext\", \"html\", or \"google-patents\": a patent page of which only the abstract, description and claims are kept) and is stored converted to Markdown.",
   "documents": [
     {
       "id": "rouki",
@@ -1063,6 +1063,61 @@
       "license": "None stated for the blog's text (loc.gov/legal speaks only of the collections); it quotes collection items (URL only)",
       "redistribute": false,
       "format": "html"
+    },
+    {
+      "id": "us-6004596-crustless-sandwich",
+      "title": "US 6,004,596: Sealed crustless sandwich",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://web.archive.org/web/20251111225013id_/https://patents.google.com/patent/US6004596A/en",
+      "format": "google-patents",
+      "license": "Public domain (text of a US patent, which carries no copyright notice under 37 CFR 1.71(d); per the USPTO, the text of a patent is typically not subject to copyright); only the abstract, description and claims are kept, from Google Patents as archived by the Internet Archive",
+      "redistribute": true
+    },
+    {
+      "id": "jp-2011-056072-seiu-kenyo-gasa",
+      "title": "特開2011-056072 晴雨兼用傘",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260929095355id_/https://patents.google.com/patent/JP2011056072A/ja",
+      "format": "google-patents",
+      "license": "The applicant's copyright: per INPIT's J-PlatPat notice (利用上のご案内 4.著作権について), the claims, description and abstract in a patent gazette are normally the applicant's copyright and reproducing them may need permission (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "us-scotus-gideon-v-wainwright",
+      "title": "Gideon v. Wainwright, 372 U.S. 335 (1963): Opinion of the Court",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://en.wikisource.org/w/index.php?oldid=11650344&action=raw",
+      "format": "wikitext",
+      "license": "Public domain (an opinion of the US Supreme Court: judicial opinions are not subject to copyright, and it is a work of the US federal government, 17 U.S.C. 105); transcription from English Wikisource",
+      "redistribute": true
+    },
+    {
+      "id": "saikosai-h18-09-14-bengoshi-chokai",
+      "title": "最高裁判所第一小法廷 平成18年9月14日判決（平成15年（行ヒ）第68号 裁決取消請求事件）",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://ja.wikisource.org/w/index.php?oldid=163051&action=raw",
+      "format": "wikitext",
+      "license": "著作権法第13条第3号（裁判所の判決は著作権の目的とならない）; 出典: ウィキソース「最高裁判所平成15年 (行ヒ) 第68号裁決取消請求事件」（PD-JapanGov）",
+      "redistribute": true
+    },
+    {
+      "id": "saikosai-h26-09-02-nagano",
+      "title": "最高裁判所第三小法廷 平成26年9月2日判決（平成24年（あ）第646号 強盗殺人，死体遺棄被告事件）",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://ja.wikisource.org/w/index.php?oldid=206848&action=raw",
+      "format": "wikitext",
+      "license": "著作権法第13条第3号（裁判所の判決は著作権の目的とならない）; the two 判示事項 lines above the judgment are the court's own case titles, facts without creative expression; 出典: ウィキソース「平成24 (あ) 646」",
+      "redistribute": true
     }
   ]
 }

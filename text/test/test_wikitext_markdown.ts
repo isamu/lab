@@ -35,6 +35,11 @@ describe("wikitextToMarkdown: リンクと強調", () => {
     assert.equal(wikitextToMarkdown("[[File:Pier.jpg|thumb|The pier at [[Old Town]].]]\nText.[[Category:Walks]]"), "Text.\n");
   });
 
+  it("日本語の名前空間（ファイル・画像・メディア・カテゴリ）のリンクも落とす。ほかの語の後のコロンは本文", () => {
+    assert.equal(wikitextToMarkdown("[[ファイル:桟橋.jpg|thumb|桟橋]]\n[[画像:港.png]]本文。[[メディア:音.ogg]]\n[[カテゴリ:旅程]]"), "本文。\n");
+    assert.equal(wikitextToMarkdown("[[地図:港]]を見る。"), "地図:港を見る。\n");
+  });
+
   it("太字・斜体の '' と ''' を外す", () => {
     assert.equal(wikitextToMarkdown("The '''North Gate''' is ''closed'' on '''''Sundays'''''."), "The North Gate is closed on Sundays.\n");
   });
