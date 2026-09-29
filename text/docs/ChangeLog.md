@@ -10,7 +10,8 @@ A procedure guide states the conditions of a rule as paragraphs that open with a
 `（2）…を受けていること。`, in plain form inside です・ます prose: the same convention as a bulleted list, written without
 list markup. Paragraphs that open with a line the language package reads as a numbered item, separated only by blank
 lines and holding at least two numbered lines, are now judged against each other and not against the prose, as a list
-is. A mix inside such a run is still reported. A single numbered paragraph, or one cut off from the next by prose or a
+is. A number followed at once by a particle (`（1）の金額は…`) points at an item and opens prose, not an enumeration. A
+mix inside such a run is still reported. A single numbered paragraph, or one cut off from the next by prose or a
 heading, is still judged with the prose, and so is a numbered paragraph inside an article, where it may be one of the
 article's own paragraphs. Found on 国税庁's タックスアンサー.
 
