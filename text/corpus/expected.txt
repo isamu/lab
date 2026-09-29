@@ -90,7 +90,7 @@ nttcom-onboarding-week1  agentless-passive 1, concrete-evidence-density 6, hirag
 nws-heat-wave-safety  agentless-passive 4, concrete-evidence-density 5, contraction-consistency 4, max-paragraph-length 1, max-sentence-length 6, preamble-length 1, proper-noun-density 1
 oecd-global-drought-outlook-summary  adverb-overuse 1, agentless-passive 2, max-paragraph-length 2, max-sentence-length 12, proper-noun-density 1
 pep-0020-zen-of-python  max-paragraph-length 1, proper-noun-density 1
-ppc-guidelines-tsusoku  agentless-passive 66, duplicate-definition 14, latin-spacing 19, max-kanji-continuous 565, max-sentence-length 502, ngram-repetition 1, no-doubled-joshi 103, repeated-conjunction 9, taigen-dome-in-prose 1, undefined-acronym 5
+ppc-guidelines-tsusoku  agentless-passive 66, duplicate-definition 14, latin-spacing 19, max-kanji-continuous 565, max-sentence-length 502, ngram-repetition 1, no-doubled-joshi 103, repeated-conjunction 9, taigen-dome-in-prose 1, undefined-acronym 3
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-paragraph-length 2, max-sentence-length 1, oxford-comma-consistency 1
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, ngram-repetition 1, proper-noun-density 1, undefined-acronym 22
