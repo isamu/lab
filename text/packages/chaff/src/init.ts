@@ -125,16 +125,3 @@ export const runInit = (dir: string, genre: string, ui: UiLanguage = "ja"): stri
     "",
   ];
 };
-
-export const GENRES: readonly string[] = [
-  "technical/spec",
-  "technical/readme",
-  "blog/tech",
-  "blog/essay",
-  "blog/owned-media",
-  "business/proposal",
-  "business/report",
-  "business/email",
-  "business/press-release",
-  "business/meeting-notes",
-];
