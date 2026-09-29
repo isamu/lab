@@ -1465,6 +1465,115 @@
       "license": "No licence stated for reuse (company release); URL only; no Wayback snapshot, so the live page",
       "redistribute": false,
       "format": "html"
+    },
+    {
+      "id": "kantei-unga81-general-debate-speech",
+      "title": "首相官邸: 第８１回国連総会における高市内閣総理大臣一般討論演説（令和8年9月22日）",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260925081930id_/https://www.kantei.go.jp/jp/105/statement/2026/0922enzetsu.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0; 首相官邸ホームページ利用規約 https://www.kantei.go.jp/jp/terms.html); 出典: 首相官邸ホームページ (https://www.kantei.go.jp/jp/105/statement/2026/0922enzetsu.html); Markdown に変換（加工して作成）; a speech by a single speaker, no third-party words",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "soumu-kokumin-cyber-glossary-a",
+      "title": "総務省 国民のためのサイバーセキュリティサイト: 用語集（あ行）",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260310023743id_/https://www.soumu.go.jp/main_sosiki/cybersecurity/kokumin/glossary/ja_01/",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0; 総務省「著作権について」 https://www.soumu.go.jp/menu_kyotsuu/policy/tyosaku.html); 出典: 総務省ホームページ (https://www.soumu.go.jp/main_sosiki/cybersecurity/kokumin/glossary/ja_01/); Markdown に変換（加工して作成）",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "env-nikko-national-park-story",
+      "title": "環境省: 日光国立公園のストーリー（国立公園に、行ってみよう！）",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20250718194308id_/https://www.env.go.jp/nature/nationalparks/list/nikko/feature/story/",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0; 環境省ホームページコンテンツの利用について https://www.env.go.jp/mail.html); 出典: 環境省ホームページ (https://www.env.go.jp/nature/nationalparks/list/nikko/feature/story/); Markdown に変換（加工して作成）; the page's photographs are not included",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "soumu-kokumin-cyber-phishing",
+      "title": "総務省 国民のためのサイバーセキュリティサイト: フィッシング詐欺とは？",
+      "source": "url",
+      "genre": "blog/owned-media",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260803194354id_/https://www.soumu.go.jp/main_sosiki/cybersecurity/kokumin/basic/risk/04/",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0; 総務省「著作権について」 https://www.soumu.go.jp/menu_kyotsuu/policy/tyosaku.html); 出典: 総務省ホームページ (https://www.soumu.go.jp/main_sosiki/cybersecurity/kokumin/basic/risk/04/); Markdown に変換（加工して作成）; the page's illustrations are not included",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "ndl-digital-transmission-individuals",
+      "title": "国立国会図書館: 個人向けデジタル化資料送信サービス（利用方法）",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20251104012630id_/https://www.ndl.go.jp/jp/use/digital_transmission/individuals_index.html",
+      "license": "国立国会図書館ウェブサイトのコンテンツ利用規約（公共データ利用規約（第1.0版）(PDL1.0) に準拠、CC BY 4.0 互換）; 出典: 国立国会図書館ウェブサイト (https://www.ndl.go.jp/jp/use/digital_transmission/individuals_index.html); Markdown に変換（加工して作成）",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "govuk-style-guide-a-to-z",
+      "title": "GOV.UK guidance: A to Z of GOV.UK style",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260529112210id_/https://www.gov.uk/guidance/style-guide/a-to-z",
+      "license": "Open Government Licence v3.0 (contains public sector information licensed under the OGL v3.0, from GOV.UK, Government Digital Service, https://www.gov.uk/guidance/style-guide/a-to-z), converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "bls-glossary",
+      "title": "U.S. Bureau of Labor Statistics: Glossary",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260927174418id_/https://www.bls.gov/bls/glossary.htm",
+      "license": "Public domain (work of the US federal government; \"everything that we publish, both in hard copy and electronically, is in the public domain, except for previously copyrighted photographs and illustrations\", https://www.bls.gov/opub/copyright-information.htm); Source: U.S. Bureau of Labor Statistics; converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "apidatagov-developer-manual",
+      "title": "api.data.gov: API Developer Manual",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260820204432id_/https://api.data.gov/docs/developer-manual/",
+      "license": "Public domain (work of the US federal government: \"An official website of the GSA's Technology Transformation Services\"); converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "cloudgov-security-ir-guide",
+      "title": "cloud.gov: Security Incident Response Guide",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/cloud-gov/cg-site/c415a83cc24df562c883beb219f4a78037d6e6a3/_docs/ops/security-ir.md",
+      "license": "CC0-1.0 (US government work, public domain), per the repository's LICENSE.md",
+      "redistribute": true
+    },
+    {
+      "id": "arxiv-astro-ph-new-2025-01-03",
+      "title": "arXiv: Astrophysics, new submissions (3 January 2025), titles and abstracts",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20250103165715id_/https://arxiv.org/list/astro-ph/new",
+      "license": "Each abstract under the licence its authors chose on arXiv (mostly the arXiv non-exclusive distribution licence, which does not allow redistribution by third parties); URL only",
+      "redistribute": false,
+      "format": "html"
     }
   ]
 }

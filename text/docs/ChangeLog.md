@@ -4,6 +4,20 @@ Newest first.
 
 ## Unreleased
 
+### `heading-echo` does not count a quoted variant of the heading; a ninth round of corpus kinds (#170)
+
+A style guide or glossary entry names its term in the heading and then quotes the spellings not to use:
+"## data centre" followed by `Not “datacentre”.` was reported as a sentence that repeats its heading. Text in
+quotation marks (“…”, ‘…’, "…", '…', 「…」, 『…』) is a word being talked about, not the heading said again, so it
+no longer counts toward the overlap unless it is the heading itself (`「利用規約への同意」へお進みください` still
+counts). An apostrophe (organisation’s, don't) does not open or close a quotation. A sentence that repeats the
+heading outside quotes is still reported.
+
+The corpus adds the A to Z of GOV.UK style, the U.S. Bureau of Labor Statistics glossary, the api.data.gov developer
+manual, cloud.gov's security incident response guide, a 首相官邸 speech transcript, a 環境省 national park guide,
+総務省's cyber security glossary and explainer, and 国立国会図書館's service guide (committed, licence named in the
+manifest), and an arXiv listing of abstracts (URL only).
+
 ### `doubled-word` does not count an article before "a priori" (#170)
 
 "the a priori approach" was reported as two articles in a row. The "a" of "a priori", "a posteriori", "a fortiori",
