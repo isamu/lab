@@ -10,8 +10,8 @@ name:
   en: Term defined twice
 
 why:
-  ja: 同じ語を二か所で定義すると、二つの定義が食い違っていないかを読み手が確かめなければなりません。長い契約書では、後から足した定義が先の定義と少しずれることがよくあります。中身が食い違っているかは機械では決まらないので、chaff は二度目の定義の場所だけを示します。
-  en: A term defined in two places makes the reader check whether the two definitions agree. In long contracts a definition added later often drifts from the first. Whether they conflict is not something a machine can decide, so chaff only points at the second one.
+  ja: 同じ語を二か所で定義すると、二つの定義が食い違っていないかを読み手が確かめなければなりません。長い契約書では、後から足した定義が先の定義と少しずれることがよくあります。中身が食い違っているかは機械では決まらないので、chaff は二度目の定義の場所だけを示します。見出し（「『X』とは」）は語を掲げるだけなので、定義として数えません。
+  en: A term defined in two places makes the reader check whether the two definitions agree. In long contracts a definition added later often drifts from the first. Whether they conflict is not something a machine can decide, so chaff only points at the second one. A heading that names the term is not counted as a definition.
 
 message:
   ja: 「{term}」は {first} 行目でも定義されています
