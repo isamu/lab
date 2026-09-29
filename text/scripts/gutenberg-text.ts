@@ -14,7 +14,17 @@ const between = (text: string): string => {
   return end === null ? text.slice(from) : text.slice(from, from + end.index);
 };
 
-/** The volunteers' credit paragraph that opens some eBooks' text, up to the first blank line. */
-const CREDIT = /^\n*Produced by [^\n]*(?:\n[^\n]+)*/u;
+const CREDIT = "Produced by ";
+const BLANK_LINE = /\n[ \t]*\n/u;
 
-export const gutenbergText = (fetched: string): string => `${between(fetched.replace(/\r\n?/gu, "\n")).replace(CREDIT, "").replace(/^\n+/u, "").trimEnd()}\n`;
+/** The volunteers' credit paragraph that opens some eBooks' text, up to the first blank line; without one, nothing is dropped. */
+const withoutCredit = (text: string): string => {
+  const body = text.replace(/^\n+/u, "");
+  const blank = body.startsWith(CREDIT) ? BLANK_LINE.exec(body) : null;
+  return blank === null ? text : body.slice(blank.index + blank[0].length);
+};
+
+export const gutenbergText = (fetched: string): string =>
+  `${withoutCredit(between(fetched.replace(/\r\n?/gu, "\n")))
+    .replace(/^\n+/u, "")
+    .trimEnd()}\n`;

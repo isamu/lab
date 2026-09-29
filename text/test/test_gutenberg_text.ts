@@ -22,6 +22,11 @@ describe("gutenbergText: 印のあいだの作品だけを残す", () => {
   it("始まりの印の直後の制作者の段落（Produced by …）を落とす。本文の中の同じ言葉は残す", () => {
     assert.equal(gutenbergText(`${HEADER}\n\nProduced by A Volunteer\nand Another\n\n\nA Poem\n${FOOTER}`), "A Poem\n");
     assert.equal(gutenbergText(`${HEADER}A Poem\n\nProduced by the author.\n${FOOTER}`), "A Poem\n\nProduced by the author.\n");
+    assert.equal(gutenbergText(`${HEADER}Produced by A Volunteer\n \t\nA Poem\n${FOOTER}`), "A Poem\n");
+  });
+
+  it("制作者の段落の後ろに空行が無ければ、作品と見分けられないので何も落とさない", () => {
+    assert.equal(gutenbergText(`${HEADER}Produced by A Volunteer\nA POEM\nFirst line.\n${FOOTER}`), "Produced by A Volunteer\nA POEM\nFirst line.\n");
   });
 
   it("作品の行頭の字下げは残す", () => {
