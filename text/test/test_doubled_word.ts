@@ -190,6 +190,8 @@ describe("doubled-word — 英語", () => {
       "He had had enough of the delays.",
       "I think that that is fine.",
       "Give her the book before the meeting.",
+      "We sent her our report before the meeting.",
+      "I told her my plan and her their schedule.",
       "All the reports are in, and both the leads agreed.",
       "It was such a long week.",
       "This is the order in which the steps run.",

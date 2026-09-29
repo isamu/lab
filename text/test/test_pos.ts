@@ -230,6 +230,11 @@ describe("agentless-passive（英語）", () => {
           : [`${token.surface}:${token.features["PronType"] ?? token.features["Poss"] ?? ""}`],
       );
       assert.deepEqual(marks, ["Our:Yes", "the:Art", "a:Art", "their:Yes"]);
+      // her は目的語にもなるので、所有の印を付けない（sent her our report）。
+      assert.deepEqual(
+        tokensOf("We sent her our report.", en).flatMap((token) => (token.features?.["Poss"] === "Yes" ? [token.surface] : [])),
+        ["our"],
+      );
     });
 
     it("invalid: 関係節の外にある述語の受動は残す", () => {

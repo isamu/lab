@@ -140,7 +140,12 @@ const isPassive = (tagged: readonly Tagged[], at: number): boolean => {
   return be !== -1 && !inRelativeClause(tagged, be) && !isStativeParticiple(tagged, at, STATIVE);
 };
 
-const ARTICLES = new Set((LEXICONS["article"] ?? []).map((entry) => entry.pattern.toLowerCase()));
+const wordsOf = (name: string): ReadonlySet<string> => new Set((LEXICONS[name] ?? []).map((entry) => entry.pattern.toLowerCase()));
+
+const ARTICLES = wordsOf("article");
+
+/** 目的語にも所有にもなる語（give her the book / her book）。解析器はいつも PRP$ と付けるので、所有とは言えない。 */
+const OBJECT_OR_POSSESSIVE = wordsOf("object-or-possessive");
 
 const POSSESSIVE_TAG = new Set(["PRP$", "WP$"]);
 
@@ -148,7 +153,7 @@ type Features = { features?: Readonly<Record<string, string>> };
 
 /** 冠詞（PronType=Art）と所有の語（Poss=Yes）は、名詞の前に一つしか立たない。二つ並ぶ our the platform は書き損じ。 */
 const determinerFeatures = (entry: Tagged): Features => {
-  if (POSSESSIVE_TAG.has(entry.pos)) return { features: { Poss: "Yes" } };
+  if (POSSESSIVE_TAG.has(entry.pos)) return OBJECT_OR_POSSESSIVE.has(entry.value.toLowerCase()) ? {} : { features: { Poss: "Yes" } };
   return entry.pos === "DT" && ARTICLES.has(entry.value.toLowerCase()) ? { features: { PronType: "Art" } } : {};
 };
 

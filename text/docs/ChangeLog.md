@@ -10,7 +10,8 @@ A new experimental rule. It reports a word written twice in a row — `the the`,
 across a line break and regardless of case, and in English two determiners where one belongs (`our the platform`,
 `a the`). Same word means the same surface and the same part of speech, so `that that` (a conjunction and a
 demonstrative) is left alone; the determiners are the articles and the possessives, which `@chaffjs/lang-en` now
-marks with the Universal Dependencies features `PronType=Art` and `Poss=Yes` (the articles are a lexicon, `article`).
+marks with the Universal Dependencies features `PronType=Art` and `Poss=Yes` (the articles are a lexicon, `article`;
+"her", an object as often as a possessive, is a lexicon `object-or-possessive` and not marked).
 A capitalised word inside a sentence followed by the same word in lower case is a name and the next word
 ("Payment for May may be delayed"). Interjections, adverbs, proper nouns, numbers and symbols are not counted: repeating them is emphasis or a name
 (「そうそう」, "very very", "Walla Walla"). A Japanese noun of a unit or an occasion doubled to mean "each" and

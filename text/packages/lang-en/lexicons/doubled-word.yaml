@@ -1,14 +1,10 @@
-# Word pairs that doubled-word leaves alone: repeats that grammar allows, and pairs the tagger cannot tell apart from
-# a slip. "had had" is the past perfect of have; "that that" a conjunction and a demonstrative, which the tagger does
-# not always tell apart; "do do" is emphatic do ("We do do manual reviews"). "is is" is left out: "What it is is a
-# plan" is rare in business text, "The plan is is ready" is a common slip. The tagger tags every "her" as a
-# possessive, so "give her the book" would read as two determiners.
+# Word pairs that doubled-word leaves alone: repeats that grammar allows. "had had" is the past perfect of have;
+# "that that" a conjunction and a demonstrative, which the tagger does not always tell apart; "do do" is emphatic do
+# ("We do do manual reviews"). "is is" is left out: "What it is is a plan" is rare in business text, "The plan is is
+# ready" is a common slip.
 id: doubled-word
 language: en
 entries:
   - pattern: had had
   - pattern: that that
   - pattern: do do
-  - pattern: her the
-  - pattern: her a
-  - pattern: her an

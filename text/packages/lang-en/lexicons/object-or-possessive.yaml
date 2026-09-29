@@ -1,0 +1,7 @@
+# Pronouns that are both an object and a possessive: "give her the book", "her book". The tagger tags every "her" as
+# a possessive (PRP$), so the adapter does not mark these Poss=Yes, and "sent her our report" is not read as two
+# determiners in a row.
+id: object-or-possessive
+language: en
+entries:
+  - pattern: her
