@@ -33,7 +33,8 @@ const isNavigation = (body: string): boolean => (body.match(ANY_LINK) ?? []).len
 /** Attributes before role="main", each skipped whole so that a quoted value (title="x role=main") is not read as one. */
 const ATTRIBUTES = String.raw`(?:\s+[^\s"'>=/]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?)*?`;
 
-const MAIN_ROLE = String.raw`${ATTRIBUTES}\s+role\s*=\s*(?:"main"|'main'|main(?=[\s/>]))`;
+// A role is a list of tokens and the first one counts: role="main document" is main.
+const MAIN_ROLE = String.raw`${ATTRIBUTES}\s+role\s*=\s*(?:"\s*main(?:\s[^"]*)?"|'\s*main(?:\s[^']*)?'|main(?=[\s/>]))`;
 
 /** The first element marked role="main" (a CMS's <article id="contents" role="main">), matched to its own closing tag. */
 const mainLandmark = (html: string): string | undefined => {
