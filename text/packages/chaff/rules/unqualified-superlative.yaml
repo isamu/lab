@@ -3,7 +3,7 @@ layer: L2
 status: experimental
 how_to_find: unqualified-superlative
 word_list: superlative
-extra_word_lists: [comparison-marker]
+extra_word_lists: [comparison-marker, superlative-scope]
 uses: [pos]
 severity: warning
 

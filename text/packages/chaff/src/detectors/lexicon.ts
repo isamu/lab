@@ -1,7 +1,8 @@
 import { joinWords } from "./word-list.ts";
 import { wordsOf } from "./structure.ts";
-import type { Detector, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
-import { entryIn, entryOpens } from "./lexicon-match.ts";
+import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
+import { entryIn, entryOpens, entryRanges } from "./lexicon-match.ts";
+import { scoped, scopeMarkersOf, type ScopeMarkers } from "./superlative-scope.ts";
 
 const PER = 1000;
 
@@ -41,17 +42,36 @@ export const cushionDensity = densityRule("cushion-phrase-density");
 /** 数字は語ではないので言語を問わない。数があれば測った結果を言っている。品詞の数（NUM）は "the best one" の one まで含むので使わない。 */
 const DIGIT = /\d/u;
 
-const COMPARISON_MARKER = "comparison-marker";
+type Qualifiers = { readonly comparison: Lexicon; readonly scope: ScopeMarkers };
 
-const qualified = (sentence: Sentence, markers: Lexicon): boolean => DIGIT.test(sentence.text) || markers.some((entry) => entryIn(sentence, entry));
+const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
+  comparison: doc.lexicons["comparison-marker"] ?? [],
+  scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? []),
+});
+
+/** どの出現も範囲を持つときだけ。1 つでも範囲の無い出現があれば、その文には限定の無い最上級がある。 */
+const everyScoped = (sentence: Sentence, entry: LexiconEntry, scope: ScopeMarkers): boolean => {
+  const ranges = entryRanges(sentence, entry);
+  return ranges.length > 0 && ranges.every((range) => scoped(sentence.tokens ?? [], range, scope));
+};
+
+const qualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean =>
+  DIGIT.test(sentence.text) || qualifiers.comparison.some((marker) => entryIn(sentence, marker)) || everyScoped(sentence, entry, qualifiers.scope);
+
+const bareHits = (doc: ProseDocument, lexicon: Lexicon): Hit[] => {
+  const qualifiers = qualifiersOf(doc);
+  return doc.sentences.flatMap((sentence) =>
+    lexicon.filter((entry) => entryIn(sentence, entry) && !qualified(sentence, entry, qualifiers)).map((entry) => ({ sentence, matched: entry.pattern })),
+  );
+};
 
 /**
  * 限定のない最上級。「最も速い」だけでは、何と比べて最もなのかが無い。
- * 同じ文に比較対象や条件があれば、それは主張であって誇張ではない。比較を言う語は言語パッケージの語彙表が持つ。
+ * 同じ文に比較対象・条件・範囲（日本で最も、the best in the world）があれば、それは主張であって誇張ではない。
+ * 比較と範囲を言う語は言語パッケージの語彙表が持つ。
  */
 export const unqualifiedSuperlative: Detector = (doc, options): Finding[] => {
-  const markers = doc.lexicons[COMPARISON_MARKER] ?? [];
-  const bare = hitsFor(doc, options.lexicon ?? []).filter((hit) => !qualified(hit.sentence, markers));
+  const bare = bareHits(doc, options.lexicon ?? []);
   if (bare.length < options.limit) return [];
   return bare.map((hit) => ({
     rule: "unqualified-superlative",

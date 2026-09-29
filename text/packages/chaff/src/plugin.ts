@@ -40,6 +40,8 @@ export type LexiconEntry = {
   readonly pattern: string;
   readonly weight?: number | undefined;
   readonly instead_of?: string | undefined;
+  /** 語が、かかる語のどちら側に立つか。語順が言語で違うものを語彙表が言う（範囲の「で」は前、"in" は後ろ）。 */
+  readonly position?: "before" | "after" | undefined;
   /** pattern を adapter が語に分けたもの。品詞が読めるときだけ core が入れる。語彙表を書く側は書かない。 */
   readonly tokens?: readonly Token[] | undefined;
 };
