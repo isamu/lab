@@ -34,4 +34,5 @@ levels:
   normal: warning
   relaxed: info
 
-use_for: [blog]
+# メール・議事録・プレスリリースの結びは挨拶か連絡先で、判断を書く所ではない。
+use_for: [blog, business/report, business/proposal]
