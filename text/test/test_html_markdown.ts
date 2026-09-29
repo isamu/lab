@@ -350,6 +350,71 @@ describe("htmlToMarkdown: 落とすもの", () => {
   });
 });
 
+describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リンク", () => {
+  it("button は操作の部品なので落とす。見出しの中の button (アコーディオンの題) は残す", () => {
+    assert.equal(htmlToMarkdown("<p>Annual report</p><button>Close</button><p>Costs rose.</p>"), "Annual report\n\nCosts rose.\n");
+    assert.equal(htmlToMarkdown('<p>Fees rose.<button type="button">Share <i></i></button></p>'), "Fees rose.\n");
+    assert.equal(htmlToMarkdown("<h3><button>Who may apply</button></h3><div><p>Any resident.</p></div>"), "### Who may apply\n\nAny resident.\n");
+    assert.equal(htmlToMarkdown("<h3>Step 2 <button>Expand</button></h3><p>Sign.</p>"), "### Step 2 Expand\n\nSign.\n");
+  });
+
+  it("hidden 属性の要素は落とす。until-found・aria-hidden・class の hidden は残す", () => {
+    const tooltip = "<h1>Moving a site<span hidden data-x><span>Save this page</span></span></h1><p>Plan first.</p>";
+    assert.equal(htmlToMarkdown(tooltip), "# Moving a site\n\nPlan first.\n");
+    assert.equal(htmlToMarkdown('<div hidden="">Menu</div><p>Kept.</p><ul hidden="hidden"><li>A</li></ul>'), "Kept.\n");
+    assert.equal(htmlToMarkdown('<div hidden="until-found"><p>Answer.</p></div>'), "Answer.\n");
+    assert.equal(htmlToMarkdown('<div hidden=until-found><p>Answer.</p></div><div hidden="until-found-later">Menu</div>'), "Answer.\n");
+    assert.equal(htmlToMarkdown('<p aria-hidden="true">Shown.</p><p class="hidden">Too.</p><p data-hidden>And.</p>'), "Shown.\n\nToo.\n\nAnd.\n");
+    assert.equal(htmlToMarkdown('<p title="not hidden">Plain.</p><p hidden-note="1">Noted.</p>'), "Plain.\n\nNoted.\n");
+  });
+
+  it("見出しの直後で自分の節を指すリンク (Copy link to …) は落とす", () => {
+    const copy = '<div id="s1"><h2>Context</h2> <a href="https://example.org/r.html#s1"><span>Copy link to Context</span></a></div><p>Rain fell.</p>';
+    assert.equal(htmlToMarkdown(copy), "## Context\n\nRain fell.\n");
+    assert.equal(htmlToMarkdown('<h2 id="c">Context</h2><a href="#c">Link to this section</a><p>x.</p>'), "## Context\n\nx.\n");
+    assert.equal(htmlToMarkdown('<h2><span id="c">Context</span></h2><a href="https://example.org/r#c">Permalink</a><p>x.</p>'), "## Context\n\nx.\n");
+  });
+
+  it("見出しの直後でも、自分の節でない先・無い id・間に文字があるリンクは残す", () => {
+    const earlier = '<div id="a"><h2>Scope</h2><p>x.</p><h2>Terms</h2><a href="https://example.org/r#a">Back to scope and more</a></div>';
+    assert.equal(htmlToMarkdown(earlier), "## Scope\n\nx.\n\n## Terms\n\nBack to scope and more\n");
+    assert.equal(htmlToMarkdown('<h2 id="c">Context</h2><a href="https://example.org/r#nowhere">Read the annex</a>'), "## Context\n\nRead the annex\n");
+    assert.equal(htmlToMarkdown('<h2 id="c">Context</h2>See <a href="https://example.org/r#c">the annex</a>.'), "## Context\n\nSee the annex.\n");
+    const later = '<h2>Context</h2><a href="https://example.org/r#d">Details below</a><div id="d"><p>y.</p></div>';
+    assert.equal(htmlToMarkdown(later), "## Context\n\nDetails below\n\ny.\n");
+    assert.equal(htmlToMarkdown('<div id=""><h2>Context</h2><a href="https://example.org/annex">Annex</a></div>'), "## Context\n\nAnnex\n");
+    const twice = '<h2 id="x">One</h2><p>a.</p><h2><span id="x">Two</span></h2><a href="https://example.org/r#x">Jump to one</a>';
+    assert.equal(htmlToMarkdown(twice), "## One\n\na.\n\n## Two\n\nJump to one\n");
+    const note = '<p>Note <span id="n">one</span>.</p><h2>Terms</h2><a href="https://example.org/r#n">Read the note</a>';
+    assert.equal(htmlToMarkdown(note), "Note one.\n\n## Terms\n\nRead the note\n");
+  });
+
+  it("見出しの中の自己リンクは、文字の無い印 (¶ など) なら落とし、語のあるものは題として残す", () => {
+    assert.equal(htmlToMarkdown('<h2 id="scope">Scope<a href="#scope" title="Link">¶</a></h2><p>x.</p>'), "## Scope\n\nx.\n");
+    assert.equal(htmlToMarkdown('<h2 id="a b">Scope <a href="#a%20b">¶</a></h2><p>x.</p>'), "## Scope\n\nx.\n");
+    assert.equal(htmlToMarkdown('<h2 id="a&amp;b">Scope <a href="#a&amp;b">¶</a></h2><p>x.</p>'), "## Scope\n\nx.\n");
+    assert.equal(htmlToMarkdown('<h2 id="概要">概要<a href="#%E6%A6%82%E8%A6%81">¶</a></h2><p>x.</p>'), "## 概要\n\nx.\n");
+    assert.equal(htmlToMarkdown('<h2 id="%">Scope <a href="#%">¶</a></h2><p>x.</p>'), "## Scope\n\nx.\n");
+    assert.equal(htmlToMarkdown('<section id="intro"><h2><a href="#intro">Introduction</a></h2><p>x.</p></section>'), "## Introduction\n\nx.\n");
+    assert.equal(htmlToMarkdown('<h2 id="x"><a href="#x">Title</a> (revised)</h2><p>x.</p>'), "## Title (revised)\n\nx.\n");
+    assert.equal(htmlToMarkdown('<h2 id="x"><a href="#x">2.1</a> Scope <a href="#x">#</a></h2><p>x.</p>'), "## 2.1 Scope\n\nx.\n");
+    assert.equal(htmlToMarkdown('<h2 id="s">Scope <a href="https://example.org/law">Act</a></h2><p>x.</p>'), "## Scope Act\n\nx.\n");
+  });
+
+  it("ページ内リンクだけの見出しも見出し (目次へ戻るリンク、開閉のリンク)", () => {
+    const pep =
+      '<ul><li><a id="t1" href="#intro">Introduction</a></li><li><a id="t2" href="#layout">Layout</a></li></ul>' +
+      '<section id="intro"><h2><a class="toc-backref" href="#t1" role="doc-backlink">Introduction</a></h2><p>Style matters.</p></section>' +
+      '<section id="layout"><h2><a href="#t2">Layout</a></h2><p>Use spaces.</p></section>';
+    assert.equal(htmlToMarkdown(pep), "## Introduction\n\nStyle matters.\n\n## Layout\n\nUse spaces.\n");
+    assert.equal(htmlToMarkdown('<h3><a class="toggle" href="#">Keeping cool</a></h3><div><p>Drink water.</p></div>'), "### Keeping cool\n\nDrink water.\n");
+  });
+
+  it("見出しでない行のページ内リンクは、これまでどおり落とす", () => {
+    assert.equal(htmlToMarkdown('<p>Text.</p><p><a href="#top">Back to top</a></p><p>More.</p>'), "Text.\n\nMore.\n");
+  });
+});
+
 describe("htmlToMarkdown: ルビ", () => {
   it("ルビは親文字だけ。読みと括弧は落とす", () => {
     assert.equal(htmlToMarkdown("<p>故<ruby>漢<rp>(</rp><rt>かん</rt><rp>)</rp></ruby>字の話。</p>"), "故漢字の話。\n");

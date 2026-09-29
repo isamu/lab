@@ -4,7 +4,8 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { doubledAt, doubledIn, gapBetween, isAllowed, isNameBefore, isPartOfLongerWord, startsTitle } from "../packages/chaff/src/detectors/doubled-word.ts";
-import type { LanguageAdapter, Lexicon, Token } from "../packages/chaff/src/plugin.ts";
+import { citedNamesOf, endsCitedName } from "../packages/chaff/src/detectors/cited-name.ts";
+import type { LanguageAdapter, Lexicon, StructureNode, Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
@@ -181,6 +182,50 @@ describe("doubled-word — 純関数", () => {
   });
 });
 
+const nodeOf = (kind: StructureNode["kind"], start: number, attrs: StructureNode["attrs"], children: readonly StructureNode[] = []): StructureNode => ({
+  kind,
+  address: "",
+  span: { start, end: start + 1 },
+  line: 1,
+  attrs,
+  children,
+});
+
+describe("doubled-word — 文書の名前の重なり（純関数）", () => {
+  const KINDS = new Set(["法", "規則"]);
+  const tokenAt = (surface: string, end: number): Token => ({ span: { start: end - surface.length, end }, surface, pos: "NOUN" });
+
+  it("参照の節点を入れ子の奥まで集め、名前の付いたものだけを始まりの位置で引けるようにする", () => {
+    const tree = nodeOf("doc", 0, {}, [
+      nodeOf("section", 0, {}, [nodeOf("reference", 4, { document: "法法" }), nodeOf("reference", 20, {})]),
+      nodeOf("reference", 30, { document: "民法" }),
+      nodeOf("definition", 40, { document: "所法" }),
+      nodeOf("reference", 50, { document: 3 }),
+    ]);
+    assert.deepEqual(
+      [...citedNamesOf(tree)],
+      [
+        [4, "法法"],
+        [30, "民法"],
+      ],
+    );
+    assert.equal(citedNamesOf(undefined).size, 0);
+  });
+
+  it("valid: 番地のすぐ前の文書の名前が、頭の一字と種類の一字の重なりそのものなら、名前", () => {
+    assert.equal(endsCitedName(tokenAt("法", 1), tokenAt("法", 2), new Map([[2, "法法"]]), KINDS), true);
+  });
+
+  it("invalid: 種類の語でない語、二字の種類の語、名前の一部だけの重なり、参照に届かない語、名前の無い参照は書き損じのまま", () => {
+    assert.equal(endsCitedName(tokenAt("民法", 2), tokenAt("民法", 4), new Map([[4, "民法民法"]]), KINDS), false);
+    assert.equal(endsCitedName(tokenAt("規則", 2), tokenAt("規則", 4), new Map([[4, "規則規則"]]), KINDS), false);
+    assert.equal(endsCitedName(tokenAt("法", 2), tokenAt("法", 3), new Map([[3, "旧法法"]]), KINDS), false);
+    assert.equal(endsCitedName(tokenAt("法", 1), tokenAt("法", 2), new Map([[3, "法法"]]), KINDS), false);
+    assert.equal(endsCitedName(tokenAt("法", 1), tokenAt("法", 2), new Map(), KINDS), false);
+    assert.equal(endsCitedName(tokenAt("法", 1), tokenAt("法", 2), new Map([[2, "法法"]]), new Set()), false);
+  });
+});
+
 const RULES = { ja: loadRules("ja"), en: loadRules("en") };
 
 const findingsOf = (source: string, adapter: LanguageAdapter, language: "ja" | "en"): string[] =>
@@ -310,6 +355,23 @@ describe("doubled-word — 日本語", () => {
   it("invalid: 重ね言葉と同じ形でも書き損じは数える", () => {
     assert.deepEqual(findingsOf("段階段階を踏みます。", ja, "ja"), ["1:3 段階段階"]);
     assert.deepEqual(findingsOf("昨日行ったたので疲れた。", ja, "ja"), ["1:6 たた"]);
+  });
+
+  it("valid: 番地のすぐ前の法令の略称（法法 = 法人税法）は名前で、重なりに数えない", () => {
+    const valid = [
+      "所法第67条の2第1項又は法法第64条の2第1項の規定により売買があったものとされる。",
+      "法法第六十四条の規定による。",
+      "詳しくは法法第22条第4項を参照。",
+    ];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
+  });
+
+  it("invalid: 番地が続かない略称、種類の語でない語の重なり、番地の前でも名前でない重なりは数える", () => {
+    assert.deepEqual(findingsOf("法法の規定による。", ja, "ja"), ["1:2 法法"]);
+    assert.deepEqual(findingsOf("民法民法第709条の規定による。", ja, "ja"), ["1:3 民法民法"]);
+    assert.deepEqual(findingsOf("資料資料第3条を見てください。", ja, "ja"), ["1:3 資料資料"]);
+    assert.deepEqual(findingsOf("規則規則第3条による。", ja, "ja"), ["1:3 規則規則"]);
+    assert.deepEqual(findingsOf("就業規則規則第3条による。", ja, "ja"), ["1:5 規則規則"]);
   });
 
   it("valid: 読点で区切った同じ語は数えない", () => {

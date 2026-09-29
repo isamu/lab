@@ -1,4 +1,5 @@
 import type { Detector, Finding, Lexicon, Sentence, Token } from "../plugin.ts";
+import { citedNamesOf, endsCitedName } from "./cited-name.ts";
 
 /**
  * 語を書き損じて二度書いた（the the / 資料をを）。消し忘れと、書き換えの途中で残った語（our the platform）の二つ。
@@ -119,10 +120,17 @@ const findingOf = (sentence: Sentence, doubled: Doubled, spaced: boolean): Findi
   values: { word: wordOf(doubled, spaced), offset: doubled.second.span.start },
 });
 
+/** 文書の種類の語（法・規則・契約書）。語彙表はアダプタが持つ。 */
+const DOCUMENT_KIND = "document-kind";
+
 export const doubledWord: Detector = (doc, options): Finding[] => {
   const spaced = doc.lengthUnit === "word";
   const allowed = options.lexicon ?? [];
+  const cited = citedNamesOf(doc.structure);
+  const kinds = new Set((doc.lexicons[DOCUMENT_KIND] ?? []).map((entry) => entry.pattern));
   return doc.sentences.flatMap((sentence) =>
-    doubledIn(doc.source, sentence.tokens ?? [], spaced, allowed).map((doubled) => findingOf(sentence, doubled, spaced)),
+    doubledIn(doc.source, sentence.tokens ?? [], spaced, allowed)
+      .filter((doubled) => !endsCitedName(doubled.first, doubled.second, cited, kinds))
+      .map((doubled) => findingOf(sentence, doubled, spaced)),
   );
 };
