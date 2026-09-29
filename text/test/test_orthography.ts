@@ -36,7 +36,20 @@ describe("occurrencesOutside", () => {
 describe("latinBoundaries", () => {
   const kinds = (text: string): string[] => latinBoundaries(text).map((boundary) => `${boundary.kind}:${boundary.spaced ? "spaced" : "touching"}`);
   const cases: readonly (readonly [string, readonly string[]])[] = [
-    ["Node.js 22 以上", ["after-digit:spaced"]],
+    ["Node.js 22 以上", ["letter:spaced"]],
+    ["Phase 1 は", ["letter:spaced"]],
+    ["iOS 17以上", ["letter:touching"]],
+    ["JIS X 0301 和暦", ["letter:spaced"]],
+    ["を 2 or 3 回", ["before-digit:spaced", "after-digit:spaced"]],
+    ["1ファイル x 1シート", ["after-digit:touching", "letter:spaced", "after-digit:touching"]],
+    ["の 2 つ", ["before-digit:spaced", "after-digit:spaced"]],
+    ["3 GB の", ["letter:spaced"]],
+    ["は confidence=0 で", ["letter:spaced", "letter:spaced"]],
+    ["電話：073-489-5909 ファックス", []],
+    ["は 2026-06-02 時点", []],
+    ["図表Ⅰ-4-1-3 生成", []],
+    ["中期的(1-3ヶ月後)", ["after-digit:touching"]],
+    ["で 20-30分", ["before-digit:spaced", "after-digit:touching"]],
     ["3日で終わる", ["after-digit:touching"]],
     ["を 3回", ["before-digit:spaced", "after-digit:touching"]],
     ["3GBの容量", ["after-digit:touching"]],
@@ -68,6 +81,14 @@ describe("latinBoundaries", () => {
   ];
   cases.forEach(([text, expected]) => {
     it(JSON.stringify(text), () => assert.deepEqual(kinds(text), expected));
+  });
+
+  it("does not count a space that covers markup, only one the writer typed", () => {
+    const written = (text: string, source: string): string[] =>
+      latinBoundaries(text, source).map((boundary) => `${boundary.kind}:${boundary.spaced ? "spaced" : "touching"}`);
+    assert.deepEqual(written("させた Googleの", "させた[Googleの"), ["letter:touching"]);
+    assert.deepEqual(written("1on1 ^1on1 を", "1on1[^1on1]を"), []);
+    assert.deepEqual(written("させた Googleの", "させた Googleの"), ["letter:spaced", "letter:touching"]);
   });
 
   it("gives the offset of the boundary in UTF-16, after an emoji too", () => {
@@ -167,6 +188,15 @@ describe("latin-spacing", () => {
   it("reads a name that ends in a digit (H30, EC2) as a Latin word, not as a number", () => {
     assert.deepEqual(spacing("# 使い方\n\nAPI を呼び、5日で終わり、H30 等の略称と EC2 で動かす。\n"), []);
     assert.deepEqual(spacing("# 使い方\n\nAPIを呼び、JSONを返し、H30 等を書く。\n"), ["英字:空けています"]);
+  });
+
+  it("reads a number after a Latin word (Phase 1) as part of a name", () => {
+    assert.deepEqual(spacing("# 計画\n\nAPI を呼び、3日で終わり、Phase 1 は小さく始める。\n"), []);
+    assert.deepEqual(spacing("# 計画\n\nAPIを呼び、JSONを返し、Phase 1 は小さく始める。\n"), ["英字:空けています"]);
+  });
+
+  it("does not read the bracket of a link as the writer's space", () => {
+    assert.deepEqual(spacing("# 使い方\n\nAPIを呼び、JSONを返し、調べるには[Google](https://example.com/)を使う。\n"), []);
   });
 
   it("on relaxed, one odd place is not enough", () => {

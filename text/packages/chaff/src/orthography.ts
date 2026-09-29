@@ -62,23 +62,51 @@ const latinBeside = (japanese: string | undefined, other: string | undefined, di
   isJapanese(japanese) ? kindOf(other, digitSide) : undefined;
 
 /** 日本語の字の隣にある英字・数字との境目。間が半角空白 1 つなら「空けている」、何も無ければ「詰めている」。 */
-const ALPHANUMERIC = /[A-Za-z0-9.]/u;
+// 「confidence=0」のような設定の書き方も、= を含めて一つの並びとして読む。
+const ALPHANUMERIC = /[A-Za-z0-9.=]/u;
 
-/**
- * 日本語の左にある英数字の並びの、先頭の字。「3GBの」の「GB」は数量の単位で、並びは数字で始まる。
- * そうした並びと日本語の境目は、英字の空け方ではなく数字の後ろの空け方として数える（「3回」と同じ）。
- * 逆に「H30 等」「EC2 で」は英字で始まる名前で、書き手は英単語と同じに空ける。数字の後ろとしては数えない。
- */
-const runStart = (chars: readonly string[], last: number): string | undefined => {
+/** chars[last] を末尾とする英数字の並びの、先頭の位置。 */
+const runStartIndex = (chars: readonly string[], last: number): number => {
   let first = last;
   while (first > 0 && ALPHANUMERIC.test(chars[first - 1] ?? "")) first -= 1;
-  return chars[first];
+  return first;
 };
 
-/** 左の並びの種類は先頭の字で決める。数字で始まる並び（3GB、10ms）は数字、英字で始まる並び（H30、v1.2）は英字。 */
+/** 並び first の前に、半角空白 1 つずつで続く英数字の語。「Phase 1」の「Phase」、「JIS X 0301」の「JIS X」。無ければ空。 */
+const wordsBefore = (chars: readonly string[], first: number): string => {
+  const words: string[] = [];
+  let space = first - 1;
+  while (chars[space] === " " && ALPHANUMERIC.test(chars[space - 1] ?? "")) {
+    const start = runStartIndex(chars, space - 1);
+    words.unshift(chars.slice(start, space).join(""));
+    space = start - 1;
+  }
+  return words.join(" ");
+};
+
+// 「1ファイル x 1シート」の x のように、1 字だけの英字は記号か変数で、名前の頭ではない。
+const MIN_NAME_LETTERS = 2;
+
+/**
+ * 「Phase 1 は」「iOS 17以上」の数字は、英字の語に続く名前の一部。空白は名前の中の空白で、日本語との境目は
+ * 「H30 等」と同じく英字の空け方として数える。
+ */
+const isNameTail = (chars: readonly string[], first: number): boolean => {
+  const words = wordsBefore(chars, first);
+  return LETTER.test(words[0] ?? "") && (words.match(/[A-Za-z]/gu)?.length ?? 0) >= MIN_NAME_LETTERS;
+};
+
+/**
+ * 日本語の左にある英数字の並びの種類は、先頭の字で決める。「3GBの」の「GB」は数量の単位で、並びは数字で始まる。
+ * そうした並びと日本語の境目は、英字の空け方ではなく数字の後ろの空け方として数える（「3回」と同じ）。
+ * 逆に「H30 等」「EC2 で」「v1.2の」は英字で始まる名前で、書き手は英単語と同じに空ける。
+ */
 const leftRunBeside = (chars: readonly string[], last: number, japanese: string | undefined): SpacingKind | undefined => {
   const kind = latinBeside(japanese, chars[last], "after-digit");
-  return kind === undefined ? undefined : (kindOf(runStart(chars, last), "after-digit") ?? kind);
+  if (kind === undefined) return undefined;
+  const first = runStartIndex(chars, last);
+  if (DIGIT.test(chars[first] ?? "") && isNameTail(chars, first)) return "letter";
+  return kindOf(chars[first], "after-digit") ?? kind;
 };
 
 /**
@@ -94,10 +122,37 @@ const isOrdinalRun = (chars: readonly string[], index: number): boolean => {
   return chars[before] === ORDINAL_PREFIX;
 };
 
+/**
+ * 「073-489-5909」「2026-06-02」「Ⅰ-4-1-3」のように - でつないだ 3 組以上の数字は、電話番号・日付・図の番号で
+ * 数量ではない。後ろの空白は欄の区切りで、「3回」の空け方とは別のもの。両側とも数えない。
+ * 2 組（「1-3ヶ月」「20-30分」）は幅のある数量なので数える。
+ */
+const MIN_CODE_GROUPS = 3;
+const CODE_CHAR = /[\d-]/u;
+
+const isCode = (chars: readonly string[], digit: number): boolean => {
+  let [first, last] = [digit, digit];
+  while (first > 0 && CODE_CHAR.test(chars[first - 1] ?? "")) first -= 1;
+  while (last < chars.length - 1 && CODE_CHAR.test(chars[last + 1] ?? "")) last += 1;
+  const groups = chars
+    .slice(first, last + 1)
+    .join("")
+    .split("-");
+  return groups.filter((group) => group !== "").length >= MIN_CODE_GROUPS;
+};
+
+/** 日本語との境目にある数字が、数えない書き方（「第3条」の番地、「073-489-5909」の符号）か。 */
+const isUncountedNumber = (chars: readonly string[], index: number): boolean => {
+  const [left, right] = [chars[index], chars[index + 1]];
+  if (DIGIT.test(left ?? "")) return isOrdinalRun(chars, index) || isCode(chars, index);
+  const next = right === " " ? index + 2 : index + 1;
+  if (!DIGIT.test(chars[next] ?? "")) return false;
+  return left === ORDINAL_PREFIX || (isJapanese(left) && isCode(chars, next));
+};
+
 const boundaryAt = (chars: readonly string[], index: number): Omit<Boundary, "offset"> | undefined => {
+  if (isUncountedNumber(chars, index)) return undefined;
   const [left, right, after] = [chars[index], chars[index + 1], chars[index + 2]];
-  const numberAfterPrefix = left === ORDINAL_PREFIX && DIGIT.test((right === " " ? after : right) ?? "");
-  if (numberAfterPrefix || (DIGIT.test(left ?? "") && isOrdinalRun(chars, index))) return undefined;
   const touching = latinBeside(left, right, "before-digit") ?? leftRunBeside(chars, index, right);
   if (touching !== undefined) return { kind: touching, spaced: false };
   if (right !== " ") return undefined;
@@ -105,15 +160,19 @@ const boundaryAt = (chars: readonly string[], index: number): Omit<Boundary, "of
   return spaced === undefined ? undefined : { kind: spaced, spaced: true };
 };
 
-/** 文の中の境目を全部。offset は境目の位置（左の字の直後、UTF-16）。配列を作り直さずに一度なめる。 */
-export const latinBoundaries = (text: string): Boundary[] => {
+/**
+ * 文の中の境目を全部。offset は境目の位置（左の字の直後、UTF-16）。配列を作り直さずに一度なめる。
+ * text は本文でないものを空白で覆った文、written は覆う前の同じ範囲。覆ってできた空白（リンクの「[」など）は
+ * 書き手が空けたものではないので、「空けている」とは数えない。
+ */
+export const latinBoundaries = (text: string, written: string = text): Boundary[] => {
   const chars = [...text];
   const found: Boundary[] = [];
   let offset = 0;
   chars.forEach((char, index) => {
     offset += char.length;
     const boundary = boundaryAt(chars, index);
-    if (boundary !== undefined) found.push({ ...boundary, offset });
+    if (boundary !== undefined && (!boundary.spaced || written[offset] === " ")) found.push({ ...boundary, offset });
   });
   return found;
 };
