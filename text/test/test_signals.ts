@@ -114,6 +114,23 @@ describe("ngram-repetition: 英語の名詞の語句は言い回しではない"
     const source = `# Report\n\n${body} ${FILLER}`;
     assert.match((await worstWord(source)) ?? "", /is important|important to/u);
   });
+
+  it("valid: 文書の名前（Proposal & Award Policies & Procedures Guide (PAPPG)）は、前の動詞が変わりながら何度出ても数えない", async () => {
+    // NSF の募集要項（nsf-19-582）。動詞は contained・identified・described と変わり、繰り返されるのは名前だけ。
+    const verbs = ["contained", "identified", "described", "specified", "contained", "identified", "described", "specified"];
+    const body = CONTEXTS.map(
+      (context, index) => `${context} it as ${verbs[index] ?? ""} in the NSF Proposal & Award Policies & Procedures Guide (PAPPG).`,
+    ).join(" ");
+    const source = `# Solicitation\n\n${body} ${FILLER}`;
+    const word = (await worstWord(source)) ?? "";
+    assert.doesNotMatch(word, /Guide|Propos|Polic|PAPPG/u);
+  });
+
+  it("invalid: 画面の語を含む手順の言い回し（Select Save (if applicable).）は数える", async () => {
+    const body = CONTEXTS.map((context) => `${context} the settings. Select Save (if applicable).`).join(" ");
+    const source = `# Report\n\n${body} ${FILLER}`;
+    assert.match((await worstWord(source)) ?? "", /Save \(if/u);
+  });
 });
 
 describe("undefined-acronym", () => {

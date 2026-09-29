@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### `ngram-repetition` no longer reports a repeated name as phrasing (#170)
+
+A document repeats the names of what it is about (`the NSF Proposal & Award Policies & Procedures Guide (PAPPG)`, `the
+Learning & Development team`, `the Location Object`), and the tagger sometimes reads a capitalised word inside such a
+name as a verb (`Guide`, `Learning`, `Object`), which made the name count as phrasing. In English, a capitalised word
+after the first word of the sentence, next to another such word (`&` and brackets in between are fine), is now read as
+part of a name, not as a predicate. A verb cut by the edge of the repeated window (`ed in the NSF Propos`, `ed by
+Applicable Law`) no longer counts either when everything else the window holds is a name or a function word: only the
+verb's ending repeats, and the verb itself differs each time (`contained in`, `identified in`; `prohibited by`, `required
+by`). A whole verb still counts (`use the Cloud Service`, `Select Save (if applicable)`), and so does a cut verb next to an
+ordinary word (`the same participant described`). Found on NSF's REU solicitation, a GitLab job description, RFC 3693 and
+Common Paper's cloud service agreement.
+
 ### `undefined-acronym` accepts a name and an acronym joined by a colon in brackets (#170)
 
 Japanese guidelines and white papers expand an acronym as `（single nucleotide polymorphism：SNP）` or
