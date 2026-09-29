@@ -192,6 +192,7 @@ describe("doubled-word — 英語", () => {
       "Give her the book before the meeting.",
       "We sent her our report before the meeting.",
       "Please give her her copy of the signed agreement.",
+      "No no, we should not deploy today.",
       "I told her my plan and her their schedule.",
       "All the reports are in, and both the leads agreed.",
       "It was such a long week.",
