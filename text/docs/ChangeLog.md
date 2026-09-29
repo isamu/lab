@@ -8,11 +8,12 @@ Newest first.
 
 A glossary or an A to Z style guide was reported entry by entry, because a definition carries no number, code or link.
 Entries are now recognised by structure: headings of a single letter (`## A`, `## B`, `## あ`, `## い`) with nothing
-under them but deeper headings, two or more of them in the order of their letters, divide an index, and every section
-under a divider is an entry. Entries are neither reported nor counted in the section total. The rest of the document
-(the introduction, "how to suggest a change") is checked as before, and so are FAQs and sections headed by a single
-word or phrase. An index divided by `あ行`, or whose entries sit at the same heading level as the letters, is not
-recognised.
+under them but deeper headings, two or more of them in the order of their letters, divide an index when most of the
+headings right under them start with their letter (case, accents and voicing marks aside, katakana read as hiragana).
+Every section under such a divider is an entry, and entries are neither reported nor counted in the section total.
+The rest of the document (the introduction, "how to suggest a change") is checked as before, and so are FAQs, sections
+headed by a single word or phrase, and sections merely grouped under `## A` / `## B`. An index divided by `あ行`, or
+whose entries sit at the same heading level as the letters, is not recognised.
 
 ### A word capitalised only because it starts the sentence is no longer counted as a proper noun in English (#170)
 
