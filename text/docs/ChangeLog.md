@@ -17,6 +17,25 @@ by`). A whole verb still counts (`use the Cloud Service`, `Select Save (if appli
 ordinary word (`the same participant described`). Found on NSF's REU solicitation, a GitLab job description, RFC 3693 and
 Common Paper's cloud service agreement.
 
+### English: a capital `(A)` under a roman `(i)`, and a label alone on its line, as US regulations number (#170)
+
+A US regulation goes down `(a)`, `(1)`, `(i)`, `(A)`, and below `(A)` numbers again with `(1)` or `(i)`. lang-en did
+not read `(A)` at all, so the `(1)`, `(2)` under a `(C)` were taken for the paragraphs beside `(4)`: the next `(6)` was
+reported as following `(2)`, and `(3)` as following `(3)`. A capital letter is now an item when it opens right under a
+roman item with `(A)`, or continues an open capital; a first `(1)` or `(i)` right under a capital, and a first `(A)`
+right under a roman item, open a level below it. `(I)` first under a roman item is a capital roman numeral, as in the
+US Code's subclauses, and `(II)` continues it; after an open `(H)` it is the letter I. A capital `(A)` anywhere else —
+the recitals of a contract, a list under a numbered paragraph — is text, as before.
+
+A label with nothing after it on its line — the eCFR writes `(5)` alone and starts its text with `(i)` on the next
+line — is now an item when it is the next number of an open list (`(5)` after `(4)`), so `§ 310.4(a)(5)(i)` resolves.
+A lone `(1)`, or a label that repeats or skips a number, stays text. Found on 16 CFR Part 310 in the corpus.
+
+A reference now reaches these levels: `§ 310.4(b)(1)(iii)(B)` points at `(B)`, and `(a)(1)(i)(A)(1)` is read to its
+end. A capital part is read only after a roman one, as the tree reads it; `section 5(A)` still points at section 5. A
+dotted number in a list of references (`§§ 310.4(b) and 310.5`) is no longer read as its head (`310`), which was
+reported as missing.
+
 ### `undefined-acronym` accepts a name and an acronym joined by a colon in brackets (#170)
 
 Japanese guidelines and white papers expand an acronym as `（single nucleotide polymorphism：SNP）` or
