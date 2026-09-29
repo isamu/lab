@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` accepts a name and an acronym joined by a colon in brackets (#170)
+
+Japanese guidelines and white papers expand an acronym as `（single nucleotide polymorphism：SNP）` or
+`（Information-technology Promotion Agency：IPA）`: the name, a colon (full-width or half-width), then the acronym as the
+last item in the brackets. This form now counts as spelled out when the initials of the name are exactly the acronym,
+and so does the other order, `(SNP: single nucleotide polymorphism)`, where the colon is one more separator after the
+acronym as the first item. The initials are those of the capitalised words (`Data Retention and Reuse Act`) or, for a
+name written in lower case, of every word (`single nucleotide polymorphism`); the second reading also applies to the
+existing forms with `;`, `,` or `、`. A name containing a separator is a list and is not read (`(EPA, FDIC: GSA)`,
+`(Legal, Finance: LF)`), and neither is an example marker (`（例：AWS）`) or a Japanese name, whose initials cannot be
+checked. Found on 個人情報保護委員会's guidelines (SNP, STR).
+
 ### An English `(i)` right under `(1)` is a roman numeral, as US regulations number (a)(1)(i) (#170)
 
 A US regulation goes down `(a)`, `(1)`, `(i)`. lang-en read an `(i)` as roman only right under a lettered item, so the
