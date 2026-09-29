@@ -4,6 +4,23 @@ Newest first.
 
 ## Unreleased
 
+### The corpus HTML converter drops buttons and a heading's link to itself, and keeps a heading that is a link (#170)
+
+A `<button>` is a control, not prose: its label (`Close`, `Share`, `Cite this publication`, `See All Comments`) no
+longer becomes a line of the document. A button inside a heading stays, since that is how an accordion draws its
+section's title. An element with the `hidden` attribute is not shown and goes too (a bookmark tooltip inside a
+blog post's `<h1>`), except `hidden="until-found"`, which the browser opens when its text is searched for; `aria-hidden`
+and a class named `hidden` are unchanged. A link to the heading's own section — its target is the heading, something
+inside it, or an element enclosing it with no other heading opening in between — goes when it stands just after the
+heading (`Copy link to Context`), or inside it as a mark without words (`Scope ¶`). Linked words inside a heading are
+its title and stay: a heading is never navigation, so a Python PEP's section headings, each a link back to the table
+of contents, and the National Weather Service's expandable headings are no longer dropped. Found on the OECD's
+report, a Chrome for Developers post, GSA's and the Library of Congress's pages and the PEPs.
+
+The corpus adds PEP 20, The Zen of Python (placed in the public domain, as the document states), to show a PEP's
+section headings read. Its aphorisms, set in a `<pre>` block, still run together as one paragraph, since the converter
+reads a `<pre>` as prose.
+
 ### An English `(i)` right under `(1)` is a roman numeral, as US regulations number (a)(1)(i) (#170)
 
 A US regulation goes down `(a)`, `(1)`, `(i)`. lang-en read an `(i)` as roman only right under a lettered item, so the

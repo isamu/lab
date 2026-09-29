@@ -1163,6 +1163,17 @@
       "redistribute": true
     },
     {
+      "id": "pep-0020-zen-of-python",
+      "title": "PEP 20 – The Zen of Python",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260919013757id_/https://peps.python.org/pep-0020/",
+      "license": "Public domain (\"This document has been placed in the public domain.\", stated in the document); converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
       "id": "fac-adr-0016-file-uploads",
       "title": "Federal Audit Clearinghouse ADR 16: File Uploads",
       "source": "url",
