@@ -17,11 +17,11 @@ const quoteAt = (source: string, offset: number): string => {
 };
 
 const findingsOf =
-  (rule: string, issuesOf: (tree: NonNullable<ProseDocument["structure"]>) => StructureIssue[]): Detector =>
+  (rule: string, issuesOf: (tree: NonNullable<ProseDocument["structure"]>, source: string) => StructureIssue[]): Detector =>
   (doc): Finding[] =>
     doc.structure === undefined
       ? []
-      : issuesOf(doc.structure).map((issue) => ({
+      : issuesOf(doc.structure, doc.source).map((issue) => ({
           rule,
           severity: "error",
           line: 0,
