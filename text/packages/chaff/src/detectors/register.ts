@@ -1,4 +1,5 @@
-import type { Sentence, Span, Token } from "../plugin.ts";
+import { isPoliteWord } from "./polite-word.ts";
+import type { LexiconEntry, Sentence, Span, Token } from "../plugin.ts";
 
 export type Register = "polite" | "plain";
 
@@ -25,13 +26,12 @@ const withPreceding = (ending: readonly Token[], preceding: readonly Token[]): r
  * 文末の語の調子。preceding は文末の語より前の語。
  * 文末に述語（動詞・形容詞・助動詞）が無ければ、ですます調でもである調でもないので undefined。
  * 「以下の通り。」「円錐形の麦わら帽子。」のような名詞で終わる文を数えると、そのままである調の少数派になっていた。
- * 書いた形でも原形でも当てる。「ください」の原形は「くださる」で、原形だけを見ると丁寧な文末を見落とす。
+ * 書いた形でも原形でも読みでも当てる（polite-word.ts）。「ください」の原形は「くださる」で、原形だけを見ると丁寧な文末を見落とす。
  */
-export const registerOf = (ending: readonly Token[], preceding: readonly Token[], polite: readonly string[]): Register | undefined => {
+export const registerOf = (ending: readonly Token[], preceding: readonly Token[], polite: readonly LexiconEntry[]): Register | undefined => {
   const judged = withPreceding(ending, preceding);
   if (!judged.some(isPredicate)) return undefined;
-  const isPolite = judged.some((token) => polite.includes(token.surface) || (token.lemma !== undefined && polite.includes(token.lemma)));
-  return isPolite ? "polite" : "plain";
+  return judged.some((token) => isPoliteWord(token, polite)) ? "polite" : "plain";
 };
 
 const EXCLAIMED = /[！？!?]$/u;
@@ -49,7 +49,11 @@ export const outermostList = (offset: number, lists: readonly Span[]): number | 
     .filter((list) => offset >= list.start && offset < list.end)
     .reduce<number | undefined>((outer, list) => (outer === undefined || list.start < outer ? list.start : outer), undefined);
 
-/** group: 文が入っている箇条書き（outermostList の値）。本文なら undefined。 */
+/** 文が入っているまとまりの始まり。一番外側の箇条書き、それが無ければ番号で始まる段落の並び（runs）。本文なら undefined。 */
+export const groupOf = (offset: number, lists: readonly Span[], runs: readonly Span[]): number | undefined =>
+  outermostList(offset, lists) ?? outermostList(offset, runs);
+
+/** group: 文が入っているまとまり（groupOf の値）。本文なら undefined。 */
 export type Judged = { readonly register: Register; readonly group: number | undefined };
 
 /** 混ざった文と、その文が属する本文または箇条書きの中の少数派の数。 */
@@ -74,7 +78,7 @@ const slipsInGroup = <T extends Judged>(judged: readonly T[], group: number | un
 };
 
 /**
- * 調子が混ざった文を、judged の順で。本文は本文どうし、箇条書きは 1 つずつ、その中で揃っているかを見る。
+ * 調子が混ざった文を、judged の順で。本文は本文どうし、箇条書きと番号で始まる段落の並びは 1 つずつ、その中で揃っているかを見る。
  * ですます調の本文に常体の箇条書きを置くのはよくある書き方で、箇条書きが丸ごと揃っていれば混在ではない。
  */
 export const slipsOf = <T extends Judged>(judged: readonly T[], limit: number): Slip<T>[] => {

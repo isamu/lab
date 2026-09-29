@@ -29,6 +29,7 @@ const UNITS = [
   "名",
   "倍",
   "個",
+  "つ",
   "%",
   "％",
 ];
@@ -64,6 +65,18 @@ const runEnd = (morphs: readonly Morph[], index: number): number => {
 /** 「第3条」の 3 は番号で、数量ではない。 */
 const isOrdinal = (morph: Morph | undefined): boolean => morph?.surface === "第";
 
+/** 助数詞の後ろの「目」「め」（3つ目、2回目、1年目、一つめ）も順番で、数量ではない。「目標」は一語なので当たらない。 */
+const ORDINAL_SUFFIXES: ReadonlySet<string> = new Set(["目", "め"]);
+
+const isOrdinalSuffix = (morph: Morph | undefined): boolean => morph?.pos === "名詞" && ORDINAL_SUFFIXES.has(morph.surface);
+
+/**
+ * 解析器の無いときに順番と読む単位の後ろ。漢字の続かない「目」（「2回目標」「5人目線」の目は次の語の頭）と、
+ * 「めど」でない「め」（「10日めどに」は期限）。「つ」の後ろの漢字は見ない。「3つ選ぶ」のように数えた後ろに漢字が来るほうが、
+ * 「三つ巴」のような一語より多い。
+ */
+const ORDINAL_BY_TABLE = /^(?:目(?!\p{Script=Han})|め(?!ど))/u;
+
 /** 数と単位のあいだに置かれうる空白 1 文字。構造の型（structure.ts の SPACE）と同じく、全角空白とタブも含む。 */
 const GAP = new Set([" ", "\t", "\u3000"]);
 
@@ -71,23 +84,32 @@ const isSpace = (morph: Morph | undefined): morph is Morph => morph !== undefine
 
 const SPACES = /[ \t\u3000]/gu;
 
+/** 数量の後ろを読むのに要る文字数。「万人が」「億円の」まで見えれば足りる。 */
+const LOOKAHEAD = 8;
+
 /**
  * 「1.5 倍」の「倍」は、数とのあいだに空白があると解析器が普通の名詞と読む。
  * 空白を詰めて読み直し、数の直後に来る語が助数詞ならその語を返す。
  */
+const rereadAfterSpace = (number: string, rest: string): Morph[] => morphemes(toHalfWidth(number + rest.slice(0, LOOKAHEAD))) ?? [];
+
 const unitAfterSpace = (number: string, rest: string): string | undefined => {
-  const next = morphemes(toHalfWidth(number + rest.slice(0, 8)))?.find((morph) => morph.start >= number.length);
+  const next = rereadAfterSpace(number, rest).find((morph) => morph.start >= number.length);
   return next !== undefined && isCounter(next) ? next.surface : undefined;
 };
 
-type Unit = { readonly unit: string; readonly end: number };
+/** ordinal: 単位のすぐ後ろが順番の「目」「め」。空白を詰めて読み直したときは、読み直した語で見る（「3 つめ」の「つめ」は詰めると つ + め）。 */
+type Unit = { readonly unit: string; readonly end: number; readonly ordinal: boolean };
 
 const counterAt = (text: string, morphs: readonly Morph[], number: string, end: number): Unit | undefined => {
   const next = morphs[end];
-  if (next !== undefined && isCounter(next)) return { unit: next.surface, end: next.end };
+  if (next !== undefined && isCounter(next)) return { unit: next.surface, end: next.end, ordinal: isOrdinalSuffix(morphs[end + 1]) };
   if (!isSpace(next)) return undefined;
-  const unit = unitAfterSpace(number, text.slice(next.end));
-  return unit === undefined ? undefined : { unit, end: next.end + unit.length };
+  const rest = text.slice(next.end);
+  const unit = unitAfterSpace(number, rest);
+  if (unit === undefined) return undefined;
+  const ordinal = isOrdinalSuffix(rereadAfterSpace(number, rest).find((morph) => morph.start === number.length + unit.length));
+  return { unit, end: next.end + unit.length, ordinal };
 };
 
 const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] => {
@@ -100,7 +122,7 @@ const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] =
       const number = text.slice(first.start, morphs[end - 1]?.end ?? first.end).replace(SPACES, "");
       const value = parseJapaneseNumber(number);
       const counter = counterAt(text, morphs, number, end);
-      if (value !== undefined && counter !== undefined) found.push({ start: first.start, end: counter.end, value, unit: counter.unit });
+      if (value !== undefined && counter !== undefined && !counter.ordinal) found.push({ start: first.start, end: counter.end, value, unit: counter.unit });
     }
     index = Math.max(end, index + 1);
   }
@@ -116,7 +138,7 @@ export const countedByTable = (text: string): Counted[] =>
     const after = match.index + match[0].length + (GAP.has(text[match.index + match[0].length] ?? "") ? 1 : 0);
     const unit = UNITS.find((candidate) => text.startsWith(candidate, after));
     const value = parseJapaneseNumber(toHalfWidth(match[0].replace(SPACES, "")));
-    const ordinal = text[match.index - 1] === "第";
+    const ordinal = text[match.index - 1] === "第" || (unit !== undefined && ORDINAL_BY_TABLE.test(text.slice(after + unit.length)));
     return unit === undefined || value === undefined || ordinal ? [] : [{ start: match.index, end: after + unit.length, value, unit }];
   });
 
@@ -227,11 +249,41 @@ export const dates = (text: string): Mention[] =>
     return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
   });
 
+/** 数がそこで閉じる。助数詞（「万人」）か、名詞でない語（「万を」「万。」）か、行の終わり。 */
+const closesNumber = (morph: Morph | undefined): boolean => morph === undefined || isCounter(morph) || morph.pos !== "名詞";
+
 /**
- * 「1.5 倍になった。」の 1.5 は章番号ではない。番号と続く語のあいだの空白を詰めて読み直し、
+ * 桁の語が一語として続く。「1.5 万を超える」のように単位が無くても数の一部。
+ * 「万葉集」は一語で、「万葉の」「万一」は桁の語の後ろに名詞や数が続くので、どれも数の続きではない。
+ */
+export const continuesWithMultiplier = (morphs: readonly Morph[], index: number): boolean =>
+  MULTIPLIERS.has(morphs[index]?.surface ?? "") && isNumeral(morphs[index]) && closesNumber(morphs[index + 1]);
+
+const multiplierAfter = (number: string, rest: string): boolean => {
+  const morphs = morphemes(toHalfWidth(number + rest.slice(0, LOOKAHEAD))) ?? [];
+  return continuesWithMultiplier(
+    morphs,
+    morphs.findIndex((morph) => morph.start >= number.length),
+  );
+};
+
+const startsWithUnit = (text: string): boolean => UNITS.some((unit) => text.startsWith(unit));
+
+/** 解析器の無いときの、数がそこで閉じる字。行の終わり、表の単位、仮名の助詞や句読点（「万を」「万。」）。漢字（「万葉」「万全」）は閉じない。 */
+const CLOSES_BY_TABLE = /^(?:$|[\p{Script=Hiragana}\p{P}\s])/u;
+
+/** 解析器の無いときの読み方。桁の語が先にあれば、その後ろで数が閉じるかを見る。 */
+const countedByTableAfter = (rest: string): boolean => {
+  if (!MULTIPLIERS.has(rest[0] ?? "")) return startsWithUnit(rest);
+  const after = rest.slice(1);
+  return startsWithUnit(after) || CLOSES_BY_TABLE.test(after);
+};
+
+/**
+ * 「1.5 倍になった。」「1.5 万人が参加した。」の 1.5 は章番号ではない。番号と続く語のあいだの空白を詰めて読み直し、
  * 続く語が助数詞なら数量の一部と分かる。空白のあるままだと、解析器は「倍」を普通の名詞と読む。
  */
 export const countedAfter = (number: string, rest: string): boolean => {
-  if (!isReady()) return UNITS.some((unit) => rest.startsWith(unit));
-  return unitAfterSpace(number, rest) !== undefined;
+  if (!isReady()) return countedByTableAfter(rest);
+  return unitAfterSpace(number, rest) !== undefined || multiplierAfter(number, rest);
 };

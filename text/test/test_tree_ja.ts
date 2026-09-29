@@ -249,3 +249,25 @@ describe("parseJapaneseNumber", () => {
     it(`「${text}」→ ${String(expected)}`, () => assert.equal(parseJapaneseNumber(text), expected));
   });
 });
+
+describe("解析器の無いとき、行頭の小数と桁の語", () => {
+  const cases: readonly (readonly [string, string, boolean])[] = [
+    ["1.5", "万人が参加した。", true],
+    ["2.1", "億円の予算", true],
+    ["1.5", "万を超える", true],
+    ["2.4", "億", true],
+    ["2.4", "億。", true],
+    ["1.5", "倍になった。", true],
+    ["1.3", "万全の体制", false],
+    ["1.5", "万葉の世界", false],
+    ["4.2", "万が一の場合", false],
+    ["2.2", "万ドル", false],
+    ["3.1", "万葉集の成立", false],
+    ["4.2", "万一の場合", false],
+    ["2.1", "注文の登録", false],
+    ["1.5", "適用範囲", false],
+  ];
+  cases.forEach(([number, rest, expected]) => {
+    it(`${number} ${rest} → ${String(expected)}`, () => assert.equal(patterns().countedAfter?.(number, rest), expected));
+  });
+});

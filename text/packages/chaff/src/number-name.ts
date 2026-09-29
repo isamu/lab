@@ -5,8 +5,8 @@ import type { Span, Token } from "./plugin.ts";
  * 「〒102-0094 東京都」の郵便番号は、後ろの空白が番号と題・項目の区切りで、「3回」「3 回」のような空け方の好みではない。
  * 空け方を数える材料にしない。
  *
- * 形で名前と読むのは三つだけ。0 で始まる組を含むハイフンつなぎの番号、※ や鉤括弧のすぐ後ろの番号、文頭の階層つきの節番号（2.1、3.1.2）。
- * 文頭でも「223 言語」「1ターン」は数量なので、階層の無い数は文頭というだけでは名前と読まない。
+ * 形で名前と読むのは四つだけ。0 で始まる組を含むハイフンつなぎの番号、※ や鉤括弧のすぐ後ろの番号、文頭の階層つきの節番号（2.1、3.1.2）、
+ * 続き番号になった行の頭の番号（白書の注）。文頭でも「223 言語」「1ターン」は数量なので、階層の無い数は文頭というだけでは名前と読まない。
  * そのうえで、すぐ後ろ（空白 1 つまで）の語が数につく語（助数詞・数・助詞・助動詞）なら数量として数え続ける（「3-5 日」「26.7 万行」）。
  * 品詞が無ければ判断せず、名前とは読まない。
  */
@@ -51,6 +51,26 @@ const wordAfter = (tokens: readonly Token[], text: string, run: Span, base: numb
 const isBoundToNumber = (token: Token): boolean =>
   token.features?.["NounType"] === "Class" || token.features?.["NumType"] === "Card" || BOUND_TO_NUMBER.has(token.pos);
 
+/** 「1 又は 2」の接続詞は数どうしをつなぐが、続き番号の注の本文は「31 ただし、…」のように接続詞でも始まる。 */
+const CONJUNCTIONS = new Set(["CCONJ", "SCONJ"]);
+
+/**
+ * 白書の注（「9 首相に…」「10 日本経済新聞…」）のように、行の頭に階層の無い番号を置き、次の行の頭の番号が 1 つ大きいもの。
+ * 一行だけ見ると「223 言語に対応」と区別がつかないので、前後の番号の行と続き番号になっているものだけを番号と読む。
+ * 後ろが英字（「15 Federal Bureau…」）の行も並びには数える。値は行の頭の位置（文書全体の座標）。
+ */
+const NUMBERED_LINE = /^[ \t]*(?:[-*+][ \t]+)?(?<number>\d{1,3})[ \t]+\S/gmu;
+
+export const sequenceLabelStarts = (text: string): ReadonlySet<number> => {
+  const lines = [...text.matchAll(NUMBERED_LINE)].map((match) => {
+    const number = match.groups?.["number"] ?? "";
+    return { start: match.index + match[0].indexOf(number), value: Number(number) };
+  });
+  const continues = (index: number): boolean =>
+    lines[index - 1]?.value === (lines[index]?.value ?? 0) - 1 || lines[index + 1]?.value === (lines[index]?.value ?? 0) + 1;
+  return new Set(lines.flatMap((line, index) => (continues(index) ? [line.start] : [])));
+};
+
 /** ハイフンでつないだ識別子か、番号の立つ位置の番号か、文頭の節番号か。 */
 const isNameShaped = (text: string, run: Span): boolean => {
   const [before, digits] = [text.slice(0, run.start), text.slice(run.start, run.end)];
@@ -58,11 +78,19 @@ const isNameShaped = (text: string, run: Span): boolean => {
 };
 
 /**
- * text の run が名前として書かれた数か。tokens は文書全体の座標で、base は text の先頭の位置。
+ * text の run が名前として書かれた数か。tokens は文書全体の座標で、base は text の先頭の位置。sequence は sequenceLabelStarts の結果。
  * 後ろの語が読めない（品詞が無い、語の切れ目が合わない）ときは、数量として数え続ける。
  */
-export const isNumberName = (text: string, run: Span, tokens: readonly Token[] | undefined, base: number): boolean => {
-  if (tokens === undefined || !isNameShaped(text, run)) return false;
+export const isNumberName = (
+  text: string,
+  run: Span,
+  tokens: readonly Token[] | undefined,
+  base: number,
+  sequence: ReadonlySet<number> = new Set(),
+): boolean => {
+  const inSequence = sequence.has(base + run.start);
+  if (tokens === undefined || !(inSequence || isNameShaped(text, run))) return false;
   const next = wordAfter(tokens, text, run, base);
-  return next !== undefined && !isBoundToNumber(next);
+  if (next === undefined) return false;
+  return !isBoundToNumber(next) || (inSequence && CONJUNCTIONS.has(next.pos));
 };

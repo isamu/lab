@@ -1,6 +1,7 @@
 import { endingTokens, isClosed } from "../sentence-shape.ts";
-import { continuesInto, outermostList, registerOf, slipsOf, type Register } from "./register.ts";
-import type { Detector, Finding, Sentence } from "../plugin.ts";
+import { enumeratedRuns, enumeratorStarts, numberedStarts } from "./enumerated-runs.ts";
+import { continuesInto, groupOf, registerOf, slipsOf, type Register } from "./register.ts";
+import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } from "../plugin.ts";
 
 /**
  * 文末の調子が混ざっているかを見る。日本語の「ですます / である」がこれ。
@@ -11,21 +12,37 @@ import type { Detector, Finding, Sentence } from "../plugin.ts";
  */
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined };
 
-const registerOfSentence = (sentence: Sentence, polite: readonly string[]): Register | undefined => {
+const registerOfSentence = (sentence: Sentence, polite: readonly LexiconEntry[]): Register | undefined => {
   const ending = endingTokens(sentence);
   const tokens = sentence.tokens ?? [];
   const head = ending[0] === undefined ? -1 : tokens.indexOf(ending[0]);
   return registerOf(ending, head > 0 ? tokens.slice(0, head) : [], polite);
 };
 
+/** 番号で始まる段落の並び。木を組むのは高いので、調子が一つだけの文書（混ざりようがない）では組まない。 */
+const runsOf = (doc: ProseDocument, registers: readonly Register[]): Span[] => {
+  const tree = new Set(registers).size > 1 ? doc.structure : undefined;
+  if (tree === undefined) return [];
+  return enumeratedRuns(
+    doc.paragraphs.map((paragraph) => paragraph.span),
+    enumeratorStarts(numberedStarts(tree), doc.sentences, doc.source),
+    doc.source,
+  );
+};
+
 export const sentenceEnding: Detector = (doc, options): Finding[] => {
-  const polite = (options.lexicon ?? []).map((entry) => entry.pattern);
+  const polite = options.lexicon ?? [];
   const lists = doc.lists.map((list) => list.span);
-  const judged = doc.sentences.flatMap((sentence, index): Entry[] => {
+  const found = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register }[] => {
     if (!isClosed(sentence) || continuesInto(sentence, doc.sentences[index + 1])) return [];
     const register = registerOfSentence(sentence, polite);
-    return register === undefined ? [] : [{ sentence, register, group: outermostList(sentence.span.start, lists) }];
+    return register === undefined ? [] : [{ sentence, register }];
   });
+  const runs = runsOf(
+    doc,
+    found.map((entry) => entry.register),
+  );
+  const judged = found.map((entry): Entry => ({ ...entry, group: groupOf(entry.sentence.span.start, lists, runs) }));
   return slipsOf(judged, options.limit).map(({ entry: { sentence }, count }) => ({
     rule: "no-mixed-desumasu",
     severity: "warning",

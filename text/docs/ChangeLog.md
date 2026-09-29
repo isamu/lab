@@ -20,6 +20,103 @@ rule now uses part of speech when it can; without it only the forms in `definiti
 gains `と言う` and `と称す`, the base forms the analyser gives 言います and 称します. Found on デジタル庁's notice of the
 GSS incident.
 
+### Japanese: 「3つ」「三つ」「２つ」 are a number and a counter (#170)
+
+IPADIC reads the つ after an Arabic numeral as the classical perfective auxiliary (the つ of 行きつ戻りつ) and 「三つ」
+「２つ」 as one ordinary noun, so a count written with つ was neither a quantity in the structure tree nor a number and a
+counter in the tokens. lang-ja now reads both as a numeral (`NumType=Card`) and the counter つ (`NounType=Class`),
+the same way it reads 「三人」. The perfective つ after a verb, 「三つ巴」 and the kana 「ひとつ」 are unchanged. A count
+followed by 目 or め (「3つ目」「2回目」「1 行目」「二日目」「一つめ」「3つめ」) is a position, not an amount, and is no longer a quantity, like
+「第3条」.
+What moves: a sentence ending in a count (「理由は3つ。」) is a noun ending for `taigen-dome-in-prose` rather than a
+plain-style predicate for `no-mixed-desumasu`, and a heading that opens with a count (「## 4 つで足りないとき」) is no
+longer read as numbered article 4, which also removes the `dangling-reference` that reading caused.
+
+### `no-mixed-desumasu` reads 「〜下さい」 as polite, like 「〜ください」 (#170)
+
+A polite request written with the kanji 下さい (「ご意見をお寄せ下さい。」) was read as plain: the analyser gives its
+dictionary form as 下さる, not くださる, so it matched neither the written form nor the dictionary form in the polite word
+list, and a です・ます list of such requests was reported. lang-ja tokens now carry the analyser's reading, and a word is
+polite when its reading and part of speech are those of a one-word entry in the list: 下さい and ください are both
+クダサイ. 「来て下さる。」 (クダサル) stays plain, and a noun or a word read the same way with another part of speech does not
+match. 頂きます, 致します and 御座います needed no change: their ます already makes them polite. A document that wrote
+下さい throughout may now have its real plain sentences reported, where the 下さい sentences had hidden them among a
+larger plain count. Found on 厚生労働省's call for public comment.
+
+### A weekly run compares the documents kept as URLs (#170)
+
+A scheduled workflow (`chaff corpus (URL-only documents)`) fetches every document the corpus keeps only as a URL and
+compares it with `corpus/expected.txt`, which pull requests cannot do. A changed result opens an issue, or comments on the
+open one, with the changed lines; a document that cannot be fetched is skipped and named in a warning.
+
+### `no-mixed-desumasu` judges a run of numbered paragraphs on its own, like a list (#170)
+
+A procedure guide states the conditions of a rule as paragraphs that open with a number, `（1）…であること。`
+`（2）…を受けていること。`, in plain form inside です・ます prose: the same convention as a bulleted list, written without
+list markup. Paragraphs that open with a line the language package reads as a numbered item, separated only by blank
+lines and holding at least two numbered lines, are now judged against each other and not against the prose, as a list
+is. A number followed at once by a particle (`（1）の金額は…`) points at an item and opens prose, not an enumeration. A
+mix inside such a run is still reported. A single numbered paragraph, or one cut off from the next by prose or a
+heading, is still judged with the prose, and so is a numbered paragraph inside an article, where it may be one of the
+article's own paragraphs. Found on 国税庁's タックスアンサー.
+
+### `no-nakaguro-parallel` does not count a 「・」 that opens a line (#170)
+
+Japanese notices often write a list with 「・」 as the bullet, one item per line (`・ 水分を補給すること`). When the
+items end without 。, the whole list reads as one sentence, and each bullet was counted as a middle dot joining items.
+A 「・」 at the start of a line or a sentence, after nothing but spaces, is now read as a bullet and not counted; middle
+dots inside an item (`通気性・透湿性`) still count. Found on 文部科学省's notice to schools.
+
+### `duplicate-definition` does not read a heading as a definition (#170)
+
+A heading such as `## 「特別警報」とは` names the term its section goes on to define; it is not the definition. It was
+recorded as one, so the body's `「特別警報」とは、…` became a second definition. Definitions are no longer read from
+heading lines, in either language; references and quantities in a heading still are. Found on 気象庁's explanation of
+special warnings.
+
+### The corpus has a fourth round of document kinds (#170)
+
+Health and safety information (a 厚生労働省 Q&A, CDC), weather and disaster guidance (気象庁, the National Weather
+Service, Ready.gov), a notice to schools (文部科学省), a transport press release (国土交通省), calls for public comment
+(厚生労働省, a NIST request for information in the Federal Register), a course syllabus (MIT OpenCourseWare, URL
+only) and a library newsletter (Library of Congress, URL only). The URL-only agenda of TC39 had not been re-run since
+`preamble-length` stopped counting paragraphs without a sentence; its expected line now matches what chaff says.
+
+### `preamble-length` counts only paragraphs with a sentence in them (#170)
+
+A paragraph before the first subheading in which no sentence closes with a full stop, question or exclamation mark is
+a label, not a preamble the reader has to get through: a category tag under a press release's date, the names and
+affiliations on a report's title page, a template directive or a link to the next page. Those are no longer counted,
+the same way date stamps are not. A paragraph with one closed sentence counts as before. Found on 経済産業省's press
+releases, an arXiv workshop report and the 18F handbook.
+
+### The corpus HTML converter drops more page chrome by structure (#170)
+
+A link that runs a script instead of going anywhere (`href="javascript:…"`, a print button) is dropped when it stands
+alone on its line, and keeps its text inside a sentence. A list above the page's `<h1>` of two or more link-only items
+ending in that title is a breadcrumb and is dropped; the same list below the title is kept. A page with neither
+`<main>` nor `role="main"` but exactly one outermost `<article>`, and no `<h1>` outside it, is read from that article,
+which leaves out a site banner, a header and a licence box around it.
+
+### `latin-spacing` does not count the number of a note in a numbered run of notes (#170)
+
+A white paper lists its notes one per line, each opening with its number and a space (`9 首相にそっくりの…`,
+`10 日本経済新聞…`, `11 …`). The space is the note's layout, not a choice between `3 回` and `3回`. A number that
+opens a line is now read as a note number when the nearest line before or after that also opens with a number carries
+the number one less or one more, unless a word bound to numbers follows it, as for any label (`1 回目`, `2 回目` still count); a conjunction does
+not bind a note number (`31 ただし、…`). A number opening a line on its own
+(`223 言語に対応`) still counts, as before. Found on 総務省's 情報通信白書 chapters.
+
+### A line that opens with `1.5 万人` or `2.1 億円` is a quantity, not a section (#170)
+
+The Japanese structure reader took a decimal number followed by 万 or 億 at the start of a line for a dotted section
+number, so `1.5 万人が参加した。` became section 1.5 headed `万人が参加した。`, could open a false `numbering-gap`,
+and its quantity was read as 1万人. The number and the magnitude word are now read as one quantity (15000人), also
+without a unit (`1.5 万を超える`). Words that only begin with the character (`万葉集`, `万全`, `万博`, `億劫`), `万一`,
+and the words the dictionary splits into a magnitude and a counter (`万葉の世界`, `万年筆`, listed in lang-ja's
+`not-magnitude` word list) are not magnitudes, and real sections (`1.5 適用範囲`, `2.1 注文の登録`) stay sections. 兆 and
+千 are not read this way yet.
+
 ## 0.13.0 — 2026-09-29
 
 Guarded against regressions: CI now compares the committed corpus (statutes included) and the bench on every pull

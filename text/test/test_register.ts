@@ -1,9 +1,11 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { continuesInto, outermostList, registerOf, slipsOf, type Judged, type Register } from "../packages/chaff/src/detectors/register.ts";
-import type { Sentence, Token } from "../packages/chaff/src/plugin.ts";
+import { continuesInto, groupOf, outermostList, registerOf, slipsOf, type Judged, type Register } from "../packages/chaff/src/detectors/register.ts";
+import { enumeratedRuns, enumeratorStarts, numberedStarts } from "../packages/chaff/src/detectors/enumerated-runs.ts";
+import { isPoliteWord } from "../packages/chaff/src/detectors/polite-word.ts";
+import type { LexiconEntry, Sentence, Span, StructureKind, StructureNode, Token } from "../packages/chaff/src/plugin.ts";
 
-const POLITE = ["です", "ます", "ません", "でしょう", "ください", "ございます"];
+const POLITE: readonly LexiconEntry[] = ["です", "ます", "ません", "でしょう", "ください", "ございます"].map((pattern) => ({ pattern }));
 
 const token = (surface: string, pos: string, lemma?: string): Token => ({
   span: { start: 0, end: surface.length },
@@ -11,6 +13,16 @@ const token = (surface: string, pos: string, lemma?: string): Token => ({
   pos,
   ...(lemma === undefined ? {} : { lemma }),
 });
+
+const read = (surface: string, pos: string, lemma: string, reading: string): Token => ({ ...token(surface, pos, lemma), reading });
+
+/** 解析器が語彙表の語を分けた形。「ございます」は ござい・ます の二語。 */
+const TOKENIZED: readonly LexiconEntry[] = [
+  { pattern: "です", tokens: [read("です", "AUX", "です", "デス")] },
+  { pattern: "ます", tokens: [read("ます", "AUX", "ます", "マス")] },
+  { pattern: "ください", tokens: [read("ください", "VERB", "くださる", "クダサイ")] },
+  { pattern: "ございます", tokens: [read("ござい", "AUX", "ござる", "ゴザイ"), read("ます", "AUX", "ます", "マス")] },
+];
 
 const dependent = (surface: string): Token => ({ ...token(surface, "NOUN"), features: { NounType: "Dependent" } });
 
@@ -66,8 +78,53 @@ describe("registerOf: 文末の語の調子", () => {
     assert.equal(registerOf([token("出口", "NOUN")], [token("使う", "VERB")], POLITE), undefined);
   });
 
+  it("漢字で書いた「〜下さい」は polite、「〜下さる」は plain", () => {
+    assert.equal(registerOf([read("下さい", "VERB", "下さる", "クダサイ")], [], TOKENIZED), "polite");
+    assert.equal(registerOf([read("下さる", "VERB", "下さる", "クダサル")], [], TOKENIZED), "plain");
+  });
+
   it("丁寧語の語彙表が空なら、述語で終わる文はすべて plain", () => {
     assert.equal(registerOf([token("し", "VERB"), token("ます", "AUX")], [], []), "plain");
+  });
+});
+
+describe("isPoliteWord: 丁寧語の語彙表の語か", () => {
+  it("書いた形か原形が語彙表の語と同じなら当たる", () => {
+    assert.ok(isPoliteWord(token("ください", "VERB", "くださる"), POLITE));
+    assert.ok(isPoliteWord(token("ませ", "AUX", "ます"), POLITE));
+  });
+
+  it("漢字で書いた「下さい」は、読みと品詞が語彙表の「ください」と同じなので当たる", () => {
+    assert.ok(isPoliteWord(read("下さい", "VERB", "下さる", "クダサイ"), TOKENIZED));
+  });
+
+  it("「下さる」「くださる」は読みが違うので当たらない（来て下さる。は常体）", () => {
+    assert.ok(!isPoliteWord(read("下さる", "VERB", "下さる", "クダサル"), TOKENIZED));
+    assert.ok(!isPoliteWord(read("くださる", "VERB", "くださる", "クダサル"), TOKENIZED));
+  });
+
+  it("読みが同じでも品詞が違えば当たらない（升 と ます）", () => {
+    assert.ok(!isPoliteWord(read("升", "NOUN", "升", "マス"), TOKENIZED));
+    assert.ok(!isPoliteWord(read("下さい", "NOUN", "下さい", "クダサイ"), TOKENIZED));
+  });
+
+  it("二語に分かれた語彙表の語（ございます）は読みで照らさない", () => {
+    assert.ok(!isPoliteWord(read("御座い", "AUX", "御座る", "ゴザイ"), TOKENIZED));
+  });
+
+  it("読みが無い語（英語、品詞を読んでいない文書）は書いた形と原形だけで照らす", () => {
+    assert.ok(!isPoliteWord(token("下さい", "VERB", "下さる"), TOKENIZED));
+    assert.ok(!isPoliteWord(read("下さい", "VERB", "下さる", "クダサイ"), POLITE));
+    assert.ok(isPoliteWord(token("です", "AUX"), POLITE));
+  });
+
+  it("語彙表の語に読みが無ければ、読みの無い語どうしを同じとは見ない", () => {
+    const unread: readonly LexiconEntry[] = [{ pattern: "ください", tokens: [token("ください", "VERB", "くださる")] }];
+    assert.ok(!isPoliteWord(token("下さい", "VERB", "下さる"), unread));
+  });
+
+  it("語彙表が空なら当たらない", () => {
+    assert.ok(!isPoliteWord(read("下さい", "VERB", "下さる", "クダサイ"), []));
   });
 });
 
@@ -158,5 +215,122 @@ describe("slipsOf: 本文と箇条書きごとの少数派", () => {
   it("指す順は judged の順で、群ごとではない", () => {
     const entries = [judged("polite", 50), judged("polite"), judged("polite"), judged("plain"), judged("polite", 50), judged("plain", 50)];
     assert.deepEqual(indicesOf(entries), [3, 5]);
+  });
+});
+
+describe("groupOf: 箇条書きが先、無ければ番号で始まる段落の並び", () => {
+  const list = { start: 10, end: 50 };
+  const run = { start: 60, end: 90 };
+
+  it("箇条書きの中なら箇条書き、並びの中なら並び、どちらでもなければ本文", () => {
+    assert.equal(groupOf(20, [list], [run]), 10);
+    assert.equal(groupOf(70, [list], [run]), 60);
+    assert.equal(groupOf(55, [list], [run]), undefined);
+  });
+
+  it("両方に入っていれば箇条書き", () => {
+    assert.equal(groupOf(70, [{ start: 65, end: 80 }], [run]), 65);
+  });
+});
+
+const node = (kind: StructureKind, start: number, children: readonly StructureNode[] = []): StructureNode => ({
+  kind,
+  address: "",
+  span: { start, end: start + 1 },
+  line: 1,
+  attrs: {},
+  children,
+});
+
+const labelled = (start: number, label: string, children: readonly StructureNode[] = []): StructureNode => ({
+  ...node("item", start, children),
+  attrs: { label },
+});
+
+describe("numberedStarts: 条の外の、番号の付いた行", () => {
+  it("見出しの下の項目は数え、条の中の項目は深くても数えない", () => {
+    const tree = node("doc", 0, [
+      node("section", 0, [labelled(5, "（1）"), labelled(9, "（2）")]),
+      node("article", 20, [labelled(25, "２", [labelled(28, "（1）")])]),
+    ]);
+    assert.deepEqual(numberedStarts(tree), [
+      { start: 5, label: "（1）" },
+      { start: 9, label: "（2）" },
+    ]);
+  });
+
+  it("条や項目でない葉は数えない。番号の書き方が無ければ空の番号。項目が無ければ空", () => {
+    assert.deepEqual(numberedStarts(node("doc", 0, [node("quantity", 3), node("chapter", 4, [node("item", 6)])])), [{ start: 6, label: "" }]);
+    assert.deepEqual(numberedStarts(node("doc", 0)), []);
+  });
+});
+
+describe("enumeratorStarts: 番号の直後が助詞なら、項目ではなく項目を指す本文", () => {
+  const word = (surface: string, pos: string, start: number): Token => ({ span: { start, end: start + surface.length }, surface, pos });
+  const sentenceOf = (start: number, text: string, tokens: readonly Token[]): Sentence => ({ span: { start, end: start + text.length }, text, tokens });
+  // 「（1）納税者が」「（2）の金額は」「  （3）  と同じ」「（4）」の後に文が無い
+  const source = "（1）納税者が\n（2）の金額は\n  （3）  と同じ\n（4）";
+  const at = (text: string): number => source.indexOf(text);
+  const sentences = [
+    sentenceOf(0, "（1）納税者が", [word("（", "PUNCT", 0), word("1", "NOUN", 1), word("）", "PUNCT", 2), word("納税", "NOUN", 3)]),
+    sentenceOf(at("（2）"), "（2）の金額は", [word("（", "PUNCT", at("（2）")), word("の", "ADP", at("の金額"))]),
+    sentenceOf(at("  （3）"), "  （3）  と同じ", [
+      word("（", "PUNCT", at("（3）")),
+      word("3", "NOUN", at("3）")),
+      word("）", "PUNCT", at("）  と")),
+      word("  ", "PUNCT", at("  と")),
+      word("と", "ADP", at("と同じ")),
+    ]),
+  ];
+  const lines = [
+    { start: 0, label: "（1）" },
+    { start: at("（2）"), label: "（2）" },
+    { start: at("  （3）"), label: "（3）" },
+    { start: at("（4）"), label: "（4）" },
+  ];
+
+  it("直後が名詞なら項目、助詞なら除く。字下げと番号の後の空白は飛ばす", () => {
+    assert.deepEqual(enumeratorStarts(lines.slice(0, 3), sentences, source), [0]);
+  });
+
+  it("直後に語が無ければ項目として残す", () => {
+    assert.deepEqual(enumeratorStarts([lines[3] ?? { start: 0, label: "" }], sentences, source), [at("（4）")]);
+    assert.deepEqual(enumeratorStarts([], sentences, source), []);
+  });
+});
+
+describe("enumeratedRuns: 番号で始まる段落が空行だけを挟んで続く範囲", () => {
+  // 位置は source の中の位置。段落は「A」「(1)x」「(2)y」「B」「(3)z」。
+  const source = "A.\n\n(1)x\n\n(2)y\n\nB.\n\n(3)z";
+  const spanOf = (text: string): Span => ({ start: source.indexOf(text), end: source.indexOf(text) + text.length });
+  const paragraphs = ["A.", "(1)x", "(2)y", "B.", "(3)z"].map(spanOf);
+  const starts = ["(1)x", "(2)y", "(3)z"].map((text) => source.indexOf(text));
+
+  it("空行だけを挟んだ二つをまとめ、本文を挟んだ一つは並びにしない", () => {
+    assert.deepEqual(enumeratedRuns(paragraphs, starts, source), [{ start: source.indexOf("(1)x"), end: source.indexOf("(2)y") + 4 }]);
+  });
+
+  it("番号の行の始まりから段落の始まりまでが字下げだけなら、その段落は番号で始まる", () => {
+    const indented = "  (1)x\n\n  (2)y";
+    const spans = [
+      { start: 2, end: 6 },
+      { start: 10, end: 14 },
+    ];
+    assert.deepEqual(enumeratedRuns(spans, [0, 8], indented), [{ start: 2, end: 14 }]);
+  });
+
+  it("番号の行がほかの段落の中なら、後ろの段落は番号で始まらない", () => {
+    assert.deepEqual(enumeratedRuns([spanOf("A."), spanOf("B.")], [0, source.indexOf("B.")], source), []);
+    assert.deepEqual(enumeratedRuns([spanOf("(2)y"), spanOf("B.")], [source.indexOf("(1)x"), source.indexOf("(2)y")], source), []);
+  });
+
+  it("一つの段落に番号の行が二つあれば並び", () => {
+    const joined = "(1)x\n(2)y";
+    assert.deepEqual(enumeratedRuns([{ start: 0, end: joined.length }], [0, 5], joined), [{ start: 0, end: joined.length }]);
+  });
+
+  it("番号の行が無ければ、段落が無ければ空", () => {
+    assert.deepEqual(enumeratedRuns(paragraphs, [], source), []);
+    assert.deepEqual(enumeratedRuns([], starts, source), []);
   });
 });

@@ -1,6 +1,6 @@
 import type { Detector, Finding, Sentence } from "../plugin.ts";
 import { latinBoundaries, minorityStyle, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
-import { digitRunAround, isNumberName } from "../number-name.ts";
+import { digitRunAround, isNumberName, sequenceLabelStarts } from "../number-name.ts";
 
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
 export const preferredTerm: Detector = (doc, options): Finding[] => {
@@ -31,10 +31,10 @@ const digitBeside = (boundary: Boundary): number => {
 };
 
 /** 番号・識別子として書かれた数の境目は、空け方の好みではないので数えない（number-name.ts）。 */
-const isCounted = (sentence: Sentence, boundary: Boundary): boolean => {
+const isCounted = (sentence: Sentence, boundary: Boundary, sequence: ReadonlySet<number>): boolean => {
   if (boundary.kind === "letter") return true;
   const run = digitRunAround(sentence.text, digitBeside(boundary));
-  return run === undefined || !isNumberName(sentence.text, run, sentence.tokens, sentence.span.start);
+  return run === undefined || !isNumberName(sentence.text, run, sentence.tokens, sentence.span.start, sequence);
 };
 
 /**
@@ -42,9 +42,11 @@ const isCounted = (sentence: Sentence, boundary: Boundary): boolean => {
  * どちらが正しいかは決めない。決めるのはチームで、chaff はそろっているかだけを見る。
  */
 export const latinSpacing: Detector = (doc, options): Finding[] => {
+  // 覆った文（prose）で探す。コードの中の「1 件」は並びに入れない。
+  const sequence = sequenceLabelStarts(doc.prose ?? doc.source);
   const located: Located[] = doc.sentences.flatMap((sentence) =>
     latinBoundaries(sentence.text, doc.source.slice(sentence.span.start, sentence.span.end))
-      .filter((boundary) => isCounted(sentence, boundary))
+      .filter((boundary) => isCounted(sentence, boundary, sequence))
       .map((boundary) => ({ sentence, ...boundary })),
   );
   return KINDS.flatMap((kind) => {
