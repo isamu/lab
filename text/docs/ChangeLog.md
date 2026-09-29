@@ -16,6 +16,17 @@ and over the corpus, with the same findings. The rule now declares these lists a
 part missing — which reported `3:30 PM`, or an acronym defined with hereinafter, as undefined — but says which list is
 missing and does not run it. A language with nothing to list ships the list empty.
 
+### `latin-spacing` reads `Phase 1 は` as a name, and skips codes and markup (#170)
+
+A number after a Latin word and a space (`Phase 1 は`, `iOS 17以上`, `JIS X 0301 和暦`, `Node.js 22 以上`) is part of
+the name, so the boundary after it is counted with the letters, as `H30 等` already was; a lone letter before a number
+(`1ファイル x 1シート`) is a sign, not a name, and still counts with the numbers. An identifier outside backticks
+(`confidence=0 で`) is read as one run. Three or more digit groups joined by hyphens (a phone number `073-489-5909`, a
+date `2026-06-02`, a figure number `Ⅰ-4-1-3`) are not a quantity and neither side is counted; a range (`1-3ヶ月`)
+still is. A space that only stands for hidden markup, such as the bracket of a link or a footnote reference
+(`稼働させた[Google…](…)`, `1on1[^1on1]を`), is no longer read as a space the writer typed. Found on the Japanese
+corpus (EchoNote requirements, デジタル庁's machine-readability pages, the Kubernetes overview, a city notice).
+
 ### The corpus's converters keep the words a ruby or a template carried (#170)
 
 An HTML page's ruby is read as its base text: the reading and the brackets around it are dropped, also where the page
