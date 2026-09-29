@@ -1,3 +1,4 @@
+import { plainSource } from "../plain-source.ts";
 import { readFile } from "node:fs/promises";
 import { loadAdapter } from "../adapter-load.ts";
 import { applyByPath } from "../config/by-path.ts";
@@ -46,7 +47,7 @@ export const treeTargets = (argv: readonly string[]): string[] =>
 
 export const readSource = async (path: string, context: TreeContext): Promise<string | undefined> => {
   try {
-    return await readFile(path, "utf8");
+    return plainSource(await readFile(path, "utf8"));
   } catch (err) {
     console.error(treeText(context).unreadable(path, err instanceof Error ? err.message : String(err)));
     return undefined;

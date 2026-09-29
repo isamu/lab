@@ -23,6 +23,55 @@ Five kinds of capitals were reported as acronyms with nothing to expand:
   after the end of one ("… Filter. VII. Water-Bearing Objects", "Euclid. II. The VIS Instrument") is a number.
   After a bracket ("(MEGAFLOW) XII.") it is still counted, since "(adult dose) IV" is written the same way.
 
+### `agentless-passive` leaves Japanese honorific れる/られる and 「〜と呼ばれる」 alone (#170)
+
+Honorific れる/られる names the person who acts as the subject, so no actor is hidden. lang-ja now drops
+`Voice=Pass` where the form shows it is honorific: after おる (「参加をしておられました」), and after an intransitive verb,
+which has no passive that makes the one acted on the subject (「町へ来られ」「熱心に取り組まれ」「委員を辞任され」「参加されていて」). A glossary's naming
+passive 「〜とも呼ばれています」 is dropped too: it gives a name, it does not hide who called it so. The verbs are lexicons in
+`@chaffjs/lang-ja` (`intransitive-verb`, `naming-verb`). Real passives stay: 「方針が決定された」「〜と判断されました」
+「若松謙維君が選任されました」「会議に呼ばれた」「連れてこられた」, and so does an honorific of a transitive verb
+(「林参考人も言われました」「お客様が受けられた」): IPADIC does not mark honorific or transitivity, and a person as the subject
+is as often the one acted on. お・ご・御 before される is not read as honorific either (「お会いされた」): the humble
+「ご用意する」 has the same form in its passive (「資料がご用意されました」). Accepted limit: an intransitive verb's
+adversative passive (「突然、家に来られて困った」) has the honorific's form and is no longer reported. Found in a 紀美野町 mayor's message, a 国会 transcript and
+総務省's cyber security glossary in the corpus.
+
+### A file with Windows or classic Mac line breaks, or a byte order mark, is read as the writer sees it (#170)
+
+A file whose lines end in a lone `\r` (classic Mac) was read as one line: every finding pointed at line 1, and `chaff
+tree` found no articles in a statute. A file that starts with a byte order mark had every quote and every masked span
+one character off, so a quoted sentence lost its last character. Front matter in a file with `\r\n` line breaks, or
+after a byte order mark, was not read, and the genre it names fell back to the default. chaff now drops a leading byte
+order mark and reads `\r\n` and `\r` as `\n` whenever it reads a document (lint, `tree`, `cite`, `test`, `eval`,
+`feedback`). Line and column numbers are the file's own.
+
+### A Zenn article's `type: "tech"` is no longer taken for a genre that no rule checks (#170)
+
+The genre in front matter was read as the raw text after `genre:` or `type:`. A Zenn article says `type: "tech"`
+(its kind of article, not a chaff genre), so the genre became `"tech"`, quotes included; no rule is meant for that
+genre, and without a `chaff.yaml` the article was reported as having no findings while nothing had been checked.
+Front matter now names a genre only when its value, without quotes or a trailing `# comment`, is one of the genres
+`chaff genres` lists; `genre: "business/report"` still counts, and a `genre:` line wins over a `type:` line wherever
+they stand. Any other value is ignored, and the genre is guessed from the path or falls back to the default, which the
+header says.
+
+### Japanese text with an emoji close after a number no longer crashes chaff (#170)
+
+To read the unit after "３ 年", chaff reads a few characters after the space again. When those characters ended in the
+middle of an emoji, the Japanese analyser was handed half of it and threw, and `chaff tree`, `chaff cite` and lint with
+`--experimental` stopped with a stack trace ("期間は３ 年のうち半分は😀です。"). The analyser is now always handed
+well-formed text; a half character counts as one unknown character in the same place.
+
+### A very long line, or a Japanese text file with no blank lines, no longer stalls chaff (#170)
+
+Three costs grew with the square of the length of the text. The Japanese analyser slows down on a run with no `、` or
+`。`, so such a run is now handed to it in pieces, cut after a space where there is one; a text whose runs are short
+is handed over whole, as before. The English analyser slows down on one long run of non-space characters (a hash or an
+encoded blob, not a word), so a run longer than any word is left out of its reading, as a URL already is. And each
+Japanese sentence looked through every token of its paragraph, which a `.txt` file with no blank lines makes one long
+paragraph; a sentence now finds its own tokens directly.
+
 ### `latin-spacing` does not count the spacing inside a quotation in 「」『』 (#170)
 
 A title or a quotation in 「」 or 『』 keeps the spacing of its source: 「AI原則実践のためのガバナンス・ガイドライン ver.

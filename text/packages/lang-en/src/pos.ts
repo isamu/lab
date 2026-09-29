@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import type { Token } from "chaffjs/plugin";
 import { loadLexicons } from "./lexicons.ts";
+import { blankLongRuns } from "./long-runs.ts";
 import { properNounChecked } from "./proper-noun.ts";
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
 
@@ -200,8 +201,12 @@ const locate = (text: string, tagged: readonly Tagged[]): Token[] =>
     { tokens: [], cursor: 0 },
   ).tokens;
 
+/** 英語の語はこれより長くならない。超える並びは語として読まない。 */
+const RUN_LIMIT = 1000;
+
 export const tokenize = (text: string): Token[] | undefined => {
   const tagger = state.ready;
   if (tagger === undefined) return undefined;
-  return locate(text, toArray(callMethod(tagger, "tagSentence", [text])).filter(isTagged));
+  const words = blankLongRuns(text, RUN_LIMIT);
+  return locate(words, toArray(callMethod(tagger, "tagSentence", [words])).filter(isTagged));
 };
