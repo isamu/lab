@@ -19,6 +19,11 @@ describe("gutenbergText: 印のあいだの作品だけを残す", () => {
     assert.equal(gutenbergText(fetched), "Body.\n");
   });
 
+  it("始まりの印の直後の制作者の段落（Produced by …）を落とす。本文の中の同じ言葉は残す", () => {
+    assert.equal(gutenbergText(`${HEADER}\n\nProduced by A Volunteer\nand Another\n\n\nA Poem\n${FOOTER}`), "A Poem\n");
+    assert.equal(gutenbergText(`${HEADER}A Poem\n\nProduced by the author.\n${FOOTER}`), "A Poem\n\nProduced by the author.\n");
+  });
+
   it("作品の行頭の字下げは残す", () => {
     assert.equal(gutenbergText(`${HEADER}\n    A verse,\n    indented.\n${FOOTER}`), "    A verse,\n    indented.\n");
   });
