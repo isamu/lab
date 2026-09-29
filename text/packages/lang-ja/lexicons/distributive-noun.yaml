@@ -1,0 +1,25 @@
+# 重ねて「それぞれの」を言える名詞。まとまり（会社・部署・家庭）と、場合や時（場面・時代）を指すもの。
+# 「会社会社で考え方が違う」「場面場面で使い分ける」。ここに無い名詞の重なり（資料資料の）は、doubled-word が書き損じとして数える。
+id: distributive-noun
+language: ja
+entries:
+  - pattern: 会社
+  - pattern: 企業
+  - pattern: 組織
+  - pattern: 部署
+  - pattern: 部門
+  - pattern: チーム
+  - pattern: 店舗
+  - pattern: 現場
+  - pattern: 職場
+  - pattern: 学校
+  - pattern: 家庭
+  - pattern: 地域
+  - pattern: 国
+  - pattern: 個人
+  - pattern: 場面
+  - pattern: 場所
+  - pattern: 時代
+  - pattern: 時期
+  - pattern: 季節
+  - pattern: 案件

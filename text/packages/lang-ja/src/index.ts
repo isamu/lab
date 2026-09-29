@@ -2,7 +2,7 @@ import { loadLexicons } from "./lexicons.ts";
 import { sentenceSpans } from "./sentence-split.ts";
 import { structure } from "./structure.ts";
 import { isReady, predicateOnly, prepare, tokenize } from "./pos.ts";
-import { distributiveParticles, markReduplication } from "./reduplication.ts";
+import { distributiveVocabulary, markReduplication } from "./reduplication.ts";
 import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
 
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
@@ -47,7 +47,7 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] =>
  * token の span は文ではなく、segment に渡した文字列を基準にする。文の span と同じ座標系。
  * 文ごとに解析して足し戻すのではなく、一度解析して文へ配る。同じ文字列を二度読まない。
  */
-const DISTRIBUTIVE = distributiveParticles(loadLexicons());
+const DISTRIBUTIVE = distributiveVocabulary(loadLexicons());
 
 const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] => {
   const tokens = tokenize(source);

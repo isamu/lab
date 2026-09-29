@@ -213,6 +213,9 @@ describe("doubled-word — 日本語", () => {
     assert.deepEqual(findingsOf("内容を確認確認します。", ja, "ja"), ["1:6 確認確認"]);
     assert.deepEqual(findingsOf("会議会議を開きます。", ja, "ja"), ["1:3 会議会議"]);
     assert.deepEqual(findingsOf("資料資料が届きました。", ja, "ja"), ["1:3 資料資料"]);
+    assert.deepEqual(findingsOf("資料資料の確認をお願いします。", ja, "ja"), ["1:3 資料資料"]);
+    assert.deepEqual(findingsOf("資料資料で確認してください。", ja, "ja"), ["1:3 資料資料"]);
+    assert.deepEqual(findingsOf("会社会社を訪問します。", ja, "ja"), ["1:3 会社会社"]);
   });
 
   it("valid: 重ね言葉と繰り返し記号は数えない", () => {

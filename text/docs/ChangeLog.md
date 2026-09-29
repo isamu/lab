@@ -12,9 +12,10 @@ across a line break and regardless of case, and in English two determiners where
 demonstrative) is left alone; the determiners are the articles and the possessives, which `@chaffjs/lang-en` now
 marks with the Universal Dependencies features `PronType=Art` and `Poss=Yes` (the articles are a lexicon, `article`).
 Interjections, adverbs, proper nouns, numbers and symbols are not counted: repeating them is emphasis or a name
-(「そうそう」, "very very", "Walla Walla"). A Japanese noun doubled to mean "each" and followed by a particle
-(「会社会社で」「部署部署の」) is marked `Echo=Rdp` by `@chaffjs/lang-ja` (the particles are a lexicon,
-`distributive-particle`) and left alone. Other repeats a language allows are a lexicon (`doubled-word`) in each
+(「そうそう」, "very very", "Walla Walla"). A Japanese noun of a unit or an occasion doubled to mean "each" and
+followed by a particle (「会社会社で」「部署部署の」「場面場面で」) is marked `Echo=Rdp` by `@chaffjs/lang-ja` and left
+alone; the nouns and the particles are lexicons (`distributive-noun`, `distributive-particle`), so 「資料資料の」 is
+still reported. Other repeats a language allows are a lexicon (`doubled-word`) in each
 language package: "had had", "do do", 「一つ一つ」. The position is the second word. The rule needs parts of speech and says so
 when a language has none. Found on cloud.gov's API v2 notice in the corpus ("our the platform").
 
