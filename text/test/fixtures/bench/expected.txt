@@ -25,7 +25,7 @@ no-mixed-desumasu                      13     13       0             0
 no-nakaguro-parallel                    2      2       0             0
 numbering-gap                           6      6       0             0
 oxford-comma-consistency                2      2       0             0
-padded-intro                            2      2       0             0
+padded-intro                           10     10       0             0
 preamble-length                         2      2       0             0
 preferred-term                         12     12       0             0
 repeated-conjunction                    7      7       0             0
@@ -112,6 +112,7 @@ ja/figures  kanji-glued  found
 ja/figures  adverb-kanji  found
 ja/figures  passive-ja  found
 ja/figures  particle-doubled  found
+ja/figures  padded-opening  found
 ja/figures  intensified  found
 ja/figures  opener-repeated  found
 ja/itinerary  weekday-shift  found
@@ -123,6 +124,7 @@ ja/itinerary  no-nested  found
 ja/itinerary  heading-echoed  found
 ja/itinerary  section-dropped  found
 ja/itinerary  particle-doubled  found
+ja/itinerary  padded-opening  found
 ja/itinerary  intensified  found
 ja/minutes  weekday-shift  found
 ja/minutes  rows-swapped  found
@@ -178,6 +180,7 @@ ja/proposal  keigo-doubled  found
 ja/proposal  humble-overused  found
 ja/proposal  adverb-kanji  found
 ja/proposal  particle-doubled  found
+ja/proposal  padded-opening  found
 ja/proposal  intensified  found
 ja/proposal  opener-repeated  found
 ja/proposal  spelling-avoided  found
@@ -186,6 +189,7 @@ ja/quote  item-dropped  found
 ja/quote  plain-in-polite  found
 ja/quote  no-nested  found
 ja/quote  section-dropped  found
+ja/quote  padded-opening  found
 ja/quote  intensified  found
 ja/quote  spelling-avoided  found
 ja/readme  polite-in-plain  found
@@ -251,6 +255,7 @@ en/figures  passive-en  found
 en/figures  expletives  found
 en/figures  heading-recased  found
 en/figures  article-doubled  found
+en/figures  padded-opening  found
 en/figures  intensified  found
 en/figures  spelling-avoided  found
 en/itinerary  weekday-shift  found
@@ -263,6 +268,7 @@ en/itinerary  jargon-used  found
 en/itinerary  section-dropped  found
 en/itinerary  heading-recased  found
 en/itinerary  article-doubled  found
+en/itinerary  padded-opening  found
 en/itinerary  intensified  found
 en/minutes  weekday-shift  found
 en/minutes  rows-swapped  found
@@ -310,11 +316,13 @@ en/proposal  section-dropped  found
 en/proposal  expletives  found
 en/proposal  heading-recased  found
 en/proposal  article-doubled  found
+en/proposal  padded-opening  found
 en/proposal  intensified  found
 en/quote  weekday-shift  found
 en/quote  item-dropped  found
 en/quote  section-dropped  found
 en/quote  article-doubled  found
+en/quote  padded-opening  found
 en/quote  intensified  found
 en/readme  contracted  found
 en/readme  heading-echoed  found
