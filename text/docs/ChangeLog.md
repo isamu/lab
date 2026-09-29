@@ -16,6 +16,23 @@ What moves: a sentence ending in a count (「理由は3つ。」) is a noun endi
 plain-style predicate for `no-mixed-desumasu`, and a heading that opens with a count (「## 4 つで足りないとき」) is no
 longer read as numbered article 4, which also removes the `dangling-reference` that reading caused.
 
+### `no-mixed-desumasu` reads 「〜下さい」 as polite, like 「〜ください」 (#170)
+
+A polite request written with the kanji 下さい (「ご意見をお寄せ下さい。」) was read as plain: the analyser gives its
+dictionary form as 下さる, not くださる, so it matched neither the written form nor the dictionary form in the polite word
+list, and a です・ます list of such requests was reported. lang-ja tokens now carry the analyser's reading, and a word is
+polite when its reading and part of speech are those of a one-word entry in the list: 下さい and ください are both
+クダサイ. 「来て下さる。」 (クダサル) stays plain, and a noun or a word read the same way with another part of speech does not
+match. 頂きます, 致します and 御座います needed no change: their ます already makes them polite. A document that wrote
+下さい throughout may now have its real plain sentences reported, where the 下さい sentences had hidden them among a
+larger plain count. Found on 厚生労働省's call for public comment.
+
+### A weekly run compares the documents kept as URLs (#170)
+
+A scheduled workflow (`chaff corpus (URL-only documents)`) fetches every document the corpus keeps only as a URL and
+compares it with `corpus/expected.txt`, which pull requests cannot do. A changed result opens an issue, or comments on the
+open one, with the changed lines; a document that cannot be fetched is skipped and named in a warning.
+
 ### `no-mixed-desumasu` judges a run of numbered paragraphs on its own, like a list (#170)
 
 A procedure guide states the conditions of a rule as paragraphs that open with a number, `（1）…であること。`

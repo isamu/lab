@@ -25,9 +25,17 @@ const isTokenizer = (value: unknown): value is Tokenizer => isRecord(value) && i
 /** kuromoji の形態素。形の違うものは落とす。二段目の細分類（助数詞・地域）は無ければ *。 */
 const toMorpheme = (value: unknown): Morpheme[] => {
   if (!isRecord(value)) return [];
-  const [surface, pos, detail1, detail2, basic] = [value["surface_form"], value["pos"], value["pos_detail_1"], value["pos_detail_2"], value["basic_form"]];
+  const [surface, pos, detail1, detail2, basic, reading] = [
+    value["surface_form"],
+    value["pos"],
+    value["pos_detail_1"],
+    value["pos_detail_2"],
+    value["basic_form"],
+    value["reading"],
+  ];
   if (typeof surface !== "string" || typeof pos !== "string" || typeof detail1 !== "string" || typeof basic !== "string") return [];
-  return [{ surface_form: surface, pos, pos_detail_1: detail1, pos_detail_2: typeof detail2 === "string" ? detail2 : "*", basic_form: basic }];
+  const detail = typeof detail2 === "string" ? detail2 : "*";
+  return [{ surface_form: surface, pos, pos_detail_1: detail1, pos_detail_2: detail, basic_form: basic, ...(typeof reading === "string" ? { reading } : {}) }];
 };
 
 const dictionaryPath = (): string => join(dirname(require.resolve("@sglkc/kuromoji/package.json")), "dict");
@@ -126,6 +134,7 @@ const toToken = (morpheme: Morpheme, start: number): Token => ({
   // UD の日本語では「れる/られる」は AUX。IPADIC の「動詞,接尾」をそこへ寄せる。
   pos: isPassive(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
   ...(morpheme.basic_form === "*" ? {} : { lemma: morpheme.basic_form }),
+  ...(typeof morpheme.reading !== "string" || morpheme.reading === "*" ? {} : { reading: morpheme.reading }),
   ...featuresOf(morpheme),
 });
 

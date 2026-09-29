@@ -2,9 +2,10 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { continuesInto, groupOf, outermostList, registerOf, slipsOf, type Judged, type Register } from "../packages/chaff/src/detectors/register.ts";
 import { enumeratedRuns, enumeratorStarts, numberedStarts } from "../packages/chaff/src/detectors/enumerated-runs.ts";
-import type { Sentence, Span, StructureKind, StructureNode, Token } from "../packages/chaff/src/plugin.ts";
+import { isPoliteWord } from "../packages/chaff/src/detectors/polite-word.ts";
+import type { LexiconEntry, Sentence, Span, StructureKind, StructureNode, Token } from "../packages/chaff/src/plugin.ts";
 
-const POLITE = ["です", "ます", "ません", "でしょう", "ください", "ございます"];
+const POLITE: readonly LexiconEntry[] = ["です", "ます", "ません", "でしょう", "ください", "ございます"].map((pattern) => ({ pattern }));
 
 const token = (surface: string, pos: string, lemma?: string): Token => ({
   span: { start: 0, end: surface.length },
@@ -12,6 +13,16 @@ const token = (surface: string, pos: string, lemma?: string): Token => ({
   pos,
   ...(lemma === undefined ? {} : { lemma }),
 });
+
+const read = (surface: string, pos: string, lemma: string, reading: string): Token => ({ ...token(surface, pos, lemma), reading });
+
+/** 解析器が語彙表の語を分けた形。「ございます」は ござい・ます の二語。 */
+const TOKENIZED: readonly LexiconEntry[] = [
+  { pattern: "です", tokens: [read("です", "AUX", "です", "デス")] },
+  { pattern: "ます", tokens: [read("ます", "AUX", "ます", "マス")] },
+  { pattern: "ください", tokens: [read("ください", "VERB", "くださる", "クダサイ")] },
+  { pattern: "ございます", tokens: [read("ござい", "AUX", "ござる", "ゴザイ"), read("ます", "AUX", "ます", "マス")] },
+];
 
 const dependent = (surface: string): Token => ({ ...token(surface, "NOUN"), features: { NounType: "Dependent" } });
 
@@ -67,8 +78,53 @@ describe("registerOf: 文末の語の調子", () => {
     assert.equal(registerOf([token("出口", "NOUN")], [token("使う", "VERB")], POLITE), undefined);
   });
 
+  it("漢字で書いた「〜下さい」は polite、「〜下さる」は plain", () => {
+    assert.equal(registerOf([read("下さい", "VERB", "下さる", "クダサイ")], [], TOKENIZED), "polite");
+    assert.equal(registerOf([read("下さる", "VERB", "下さる", "クダサル")], [], TOKENIZED), "plain");
+  });
+
   it("丁寧語の語彙表が空なら、述語で終わる文はすべて plain", () => {
     assert.equal(registerOf([token("し", "VERB"), token("ます", "AUX")], [], []), "plain");
+  });
+});
+
+describe("isPoliteWord: 丁寧語の語彙表の語か", () => {
+  it("書いた形か原形が語彙表の語と同じなら当たる", () => {
+    assert.ok(isPoliteWord(token("ください", "VERB", "くださる"), POLITE));
+    assert.ok(isPoliteWord(token("ませ", "AUX", "ます"), POLITE));
+  });
+
+  it("漢字で書いた「下さい」は、読みと品詞が語彙表の「ください」と同じなので当たる", () => {
+    assert.ok(isPoliteWord(read("下さい", "VERB", "下さる", "クダサイ"), TOKENIZED));
+  });
+
+  it("「下さる」「くださる」は読みが違うので当たらない（来て下さる。は常体）", () => {
+    assert.ok(!isPoliteWord(read("下さる", "VERB", "下さる", "クダサル"), TOKENIZED));
+    assert.ok(!isPoliteWord(read("くださる", "VERB", "くださる", "クダサル"), TOKENIZED));
+  });
+
+  it("読みが同じでも品詞が違えば当たらない（升 と ます）", () => {
+    assert.ok(!isPoliteWord(read("升", "NOUN", "升", "マス"), TOKENIZED));
+    assert.ok(!isPoliteWord(read("下さい", "NOUN", "下さい", "クダサイ"), TOKENIZED));
+  });
+
+  it("二語に分かれた語彙表の語（ございます）は読みで照らさない", () => {
+    assert.ok(!isPoliteWord(read("御座い", "AUX", "御座る", "ゴザイ"), TOKENIZED));
+  });
+
+  it("読みが無い語（英語、品詞を読んでいない文書）は書いた形と原形だけで照らす", () => {
+    assert.ok(!isPoliteWord(token("下さい", "VERB", "下さる"), TOKENIZED));
+    assert.ok(!isPoliteWord(read("下さい", "VERB", "下さる", "クダサイ"), POLITE));
+    assert.ok(isPoliteWord(token("です", "AUX"), POLITE));
+  });
+
+  it("語彙表の語に読みが無ければ、読みの無い語どうしを同じとは見ない", () => {
+    const unread: readonly LexiconEntry[] = [{ pattern: "ください", tokens: [token("ください", "VERB", "くださる")] }];
+    assert.ok(!isPoliteWord(token("下さい", "VERB", "下さる"), unread));
+  });
+
+  it("語彙表が空なら当たらない", () => {
+    assert.ok(!isPoliteWord(read("下さい", "VERB", "下さる", "クダサイ"), []));
   });
 });
 

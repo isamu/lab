@@ -60,6 +60,36 @@ describe("L3 日本語", () => {
       assert.ok(idsFor("運用を始める。手順を作る。効果は来期に測定する。詳しくは手順書をご覧ください。").includes("no-mixed-desumasu"));
     });
 
+    it("valid: 漢字で書いた「〜下さい」も ですます調（読みと品詞が「ください」と同じ）", () => {
+      // 厚生労働省の意見募集の「〜提出して下さい。」が、ですます調の箇条書きの中で常体として指摘されていた。
+      assert.ok(!idsFor("運用を始めます。手順を作ります。効果は来期に測定します。詳しくは手順書をご覧下さい。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("- 様式で提出して下さい。\n- 期限を守って下さい。\n- 日本語に限ります。\n- 郵送も受け付けます。").includes("no-mixed-desumasu"));
+    });
+
+    it("invalid: である調の中の「〜下さい」は、ですます調として少数派になる", () => {
+      assert.ok(idsFor("運用を始める。手順を作る。効果は来期に測定する。詳しくは手順書をご覧下さい。").includes("no-mixed-desumasu"));
+    });
+
+    it("「賞を下さい。」の下さい（動詞,自立）も、読みと品詞が同じなので ですます調", () => {
+      assert.ok(!idsFor("運用を始めます。手順を作ります。効果を測定します。記念の賞を下さい。").includes("no-mixed-desumasu"));
+      assert.ok(idsFor("運用を始める。手順を作る。効果を測定する。記念の賞を下さい。").includes("no-mixed-desumasu"));
+    });
+
+    it("「来て下さる。」「来てくださる。」は常体（読みがクダサル）", () => {
+      assert.ok(!idsFor("運用を始める。手順を作る。担当者が来て下さる。効果を測定する。").includes("no-mixed-desumasu"));
+      assert.ok(!idsFor("運用を始める。手順を作る。担当者が来てくださる。効果を測定する。").includes("no-mixed-desumasu"));
+      assert.ok(idsFor("運用を始めます。手順を作ります。担当者が来て下さる。効果を測定します。").includes("no-mixed-desumasu"));
+    });
+
+    it("語に読みが付く（下さい はクダサイ、下さる はクダサル）", () => {
+      const readings = ja
+        .segment("ご確認下さい。来て下さる。")
+        .sentences.flatMap((sentence) => sentence.tokens ?? [])
+        .filter((token) => token.lemma === "下さる")
+        .map((token) => `${token.surface}:${token.reading ?? ""}`);
+      assert.deepEqual(readings, ["下さい:クダサイ", "下さる:クダサル"]);
+    });
+
     it("valid: 述語を持たない断片は文として数えない", () => {
       // 見出しの下の名前だけの行。実文書の誤検知はすべてこれだった。
       assert.ok(!idsFor("運用を始めます。手順を作ります。研修も予定しています。\n\nMaaSサービス\n\nWeb3").includes("no-mixed-desumasu"));

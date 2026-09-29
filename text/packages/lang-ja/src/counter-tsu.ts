@@ -10,6 +10,7 @@ export type Morpheme = {
   readonly pos_detail_1: string;
   readonly pos_detail_2: string;
   readonly basic_form: string;
+  readonly reading?: string;
 };
 
 const TSU = "つ";
@@ -49,7 +50,9 @@ const numberOfCountWord = (morpheme: Morpheme): string | undefined =>
 /** 形態素の並びを受け取り、数と「つ」を数と助数詞の二語に、数の後ろの「つめ」を助数詞と順番の「め」にした並びを返す。ほかの語はそのまま。 */
 export const readCounterTsu = (morphemes: readonly Morpheme[]): Morpheme[] =>
   morphemes.flatMap((morpheme, index) => {
-    if (isTsuAuxiliary(morpheme) && isDigitNumeral(morphemes[index - 1])) return [counter()];
+    // 読み（ツ）は助動詞のときと同じなので残す。
+    if (isTsuAuxiliary(morpheme) && isDigitNumeral(morphemes[index - 1]))
+      return [{ ...counter(), ...(morpheme.reading === undefined ? {} : { reading: morpheme.reading }) }];
     if (isTsume(morpheme) && isNumeralBeforeTsume(morphemes[index - 1])) return [counter(), ordinalMe()];
     const number = numberOfCountWord(morpheme);
     return number === undefined ? [morpheme] : [numeral(number), counter()];

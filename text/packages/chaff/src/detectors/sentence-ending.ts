@@ -1,7 +1,7 @@
 import { endingTokens, isClosed } from "../sentence-shape.ts";
 import { enumeratedRuns, enumeratorStarts, numberedStarts } from "./enumerated-runs.ts";
 import { continuesInto, groupOf, registerOf, slipsOf, type Register } from "./register.ts";
-import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
+import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } from "../plugin.ts";
 
 /**
  * 文末の調子が混ざっているかを見る。日本語の「ですます / である」がこれ。
@@ -12,7 +12,7 @@ import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin
  */
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined };
 
-const registerOfSentence = (sentence: Sentence, polite: readonly string[]): Register | undefined => {
+const registerOfSentence = (sentence: Sentence, polite: readonly LexiconEntry[]): Register | undefined => {
   const ending = endingTokens(sentence);
   const tokens = sentence.tokens ?? [];
   const head = ending[0] === undefined ? -1 : tokens.indexOf(ending[0]);
@@ -31,7 +31,7 @@ const runsOf = (doc: ProseDocument, registers: readonly Register[]): Span[] => {
 };
 
 export const sentenceEnding: Detector = (doc, options): Finding[] => {
-  const polite = (options.lexicon ?? []).map((entry) => entry.pattern);
+  const polite = options.lexicon ?? [];
   const lists = doc.lists.map((list) => list.span);
   const found = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register }[] => {
     if (!isClosed(sentence) || continuesInto(sentence, doc.sentences[index + 1])) return [];

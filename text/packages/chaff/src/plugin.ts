@@ -20,6 +20,8 @@ export type Token = {
   readonly surface: string;
   readonly pos: string;
   readonly lemma?: string;
+  /** 書いた形の読み（日本語はカタカナ）。表記の違う同じ語（下さい・ください）を同じと見るため。読めない adapter は持たない。 */
+  readonly reading?: string;
   readonly features?: Readonly<Record<string, string>>;
 };
 
