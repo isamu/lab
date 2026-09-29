@@ -13,6 +13,30 @@ come from each language package's new `quantity-noun` word list, which the rule 
 other noun (最高品質, 最速配送, 最高精度, 最高満足度) is still a claim and still reported, as are 最大の効果 and 最も速い.
 English writes a space between a superlative and its noun, so its list is empty and nothing changes there.
 
+### `agentless-passive` leaves Japanese れる/られる that is not a passive alone (#170)
+
+Japanese れる/られる is also spontaneous, honorific and potential, and IPADIC does not say which. lang-ja now drops
+`Voice=Pass` where the form alone shows it is not a passive: after a verb that reads as spontaneous
+(「〜と考えられる」「〜と思われる」, the guidelines' and judgments' 「〜と解される」) unless the predicate is past, after a verb that names a relation
+rather than an act (「外国人も含まれる」「対症療法に限られる」), and inside an honorific address (「参考人におかれましては」
+「各学校設置者におかれては」). The verbs and the address are lexicons in `@chaffjs/lang-ja` (`spontaneous-verb`,
+`stative-passive-verb`, `honorific-formula`). Real passives stay: 「方針が決定された」「予算案が承認されました」
+「一定の協力が求められます」, and so do a past 「会議で考えられました」, 「〜と言われる」 and 「〜とされている」, which hide who
+thought or said so, 「予算に見込まれていない」, and an honorific after
+an auxiliary verb (「務めてこられた」), which has the form of a passive after one (「連れてこられた」). Found on
+デジタル庁 and 厚生労働省 pages, a 文部科学省 notice, a 最高裁 judgment, a 国会 transcript and the 個人情報保護委員会
+guidelines in the corpus.
+
+### `yarn bench` plants mistakes for more rules: a preamble, stock phrasing, repeated openers and team spellings (#170)
+
+The seeded-mistake benchmark now also plants a preamble made by leaving out the first section heading
+(`preamble-length`), a closing 「いかがでしたか。」 / "Thanks for reading." on a blog post (`closing-cliche`), a
+padded opening sentence after the first one (`padded-intro`), an empty 「これは非常に重要です。」 / "This is extremely
+important." after the first statement of the body (`empty-intensifier`), consecutive paragraphs that all open with
+「また、」 / "Also," (`repeated-conjunction`), sentences chained with "And" (`sentence-initial-conjunction-run`), and a
+spelling the team has ruled out, such as 打合せ for 打ち合わせ or e-mail for email (`preferred-term`; the bench passes the
+team's `prefer` as `chaff.yaml` would). The clean samples are unchanged and none of these rules reports on them.
+
 ### `undefined-acronym` does not count a reference key in square brackets (#170)
 
 Specifications point to their references with a bracketed key: `[HPACK]`, `[RFC9110]`, `[SECURING-WEB]`,

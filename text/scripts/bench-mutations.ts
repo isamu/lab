@@ -18,6 +18,7 @@ import {
 import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinParagraphs } from "./bench-mutations-layout.ts";
 import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa } from "./bench-mutations-ja.ts";
 import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn } from "./bench-mutations-en.ts";
+import { avoidedSpelling, chainWithAnd, closeWithCliche, dropFirstHeading, intensify, padOpening, repeatOpener } from "./bench-mutations-phrasing.ts";
 
 export type Mutation = {
   readonly id: string;
@@ -388,4 +389,11 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "heading-recased", rule: "title-case-consistency", languages: ["en"], plant: flipLastHeading },
   { id: "particle-doubled", rule: "doubled-word", languages: ["ja"], plant: doubleParticle },
   { id: "article-doubled", rule: "doubled-word", languages: ["en"], plant: doubleArticle },
+  { id: "heading-dropped", rule: "preamble-length", languages: ["ja", "en"], reportsOn: "document", plant: dropFirstHeading },
+  { id: "cliche-closing", rule: "closing-cliche", languages: ["ja", "en"], plant: closeWithCliche },
+  { id: "padded-opening", rule: "padded-intro", languages: ["ja", "en"], plant: padOpening },
+  { id: "intensified", rule: "empty-intensifier", languages: ["ja", "en"], plant: intensify },
+  { id: "opener-repeated", rule: "repeated-conjunction", languages: ["ja", "en"], plant: repeatOpener },
+  { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: chainWithAnd },
+  { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: avoidedSpelling },
 ];
