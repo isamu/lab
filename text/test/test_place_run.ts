@@ -2,6 +2,7 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { isAddressRun } from "../packages/chaff/src/detectors/place-run.ts";
 import { prepare, tokenize } from "../packages/lang-ja/src/pos.ts";
+import { loadLexicons } from "../packages/lang-ja/src/lexicons.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 
 const tokensOf = (text: string): Token[] => {
@@ -10,12 +11,16 @@ const tokensOf = (text: string): Token[] => {
   return tokens;
 };
 
+/** 住所の先頭にしか来ない単位。日本語の語彙表（lexicons/prefecture-unit.yaml）から読む。 */
+const TOP_UNITS: ReadonlySet<string> = new Set((loadLexicons()["prefecture-unit"] ?? []).map((entry) => entry.pattern));
+
 /** 文字列全体を 1 つの漢字の連なりとして判定する。 */
 const isAddress = (run: string): boolean => {
   const tokens = tokensOf(run);
   return isAddressRun(
     tokens,
     tokens.map((_, index) => index),
+    TOP_UNITS,
   );
 };
 
@@ -23,7 +28,7 @@ const isAddress = (run: string): boolean => {
 const isAddressPrefix = (text: string, run: string): boolean => {
   const tokens = tokensOf(text);
   const covering = tokens.flatMap((token, index) => (token.span.end <= run.length ? [index] : []));
-  return isAddressRun(tokens, covering);
+  return isAddressRun(tokens, covering, TOP_UNITS);
 };
 
 describe("isAddressRun — 漢字の連なりが住所か", () => {
@@ -76,6 +81,10 @@ describe("isAddressRun — 漢字の連なりが住所か", () => {
     assert.ok(!isAddress("埼玉県市町村総合事務組合"));
   });
 
+  it("前提: 都道府県の単位は語彙表にある（無ければ下の「並び」の判定は試されていない）", () => {
+    assert.deepEqual(TOP_UNITS, new Set(["都", "道", "府", "県"]));
+  });
+
   it("invalid: 地名の並びは、単位で終わっても住所ではない", () => {
     assert.ok(!isAddress("東京大阪名古屋福岡"));
     assert.ok(!isAddress("東京大阪名古屋福岡県"));
@@ -84,6 +93,15 @@ describe("isAddressRun — 漢字の連なりが住所か", () => {
     assert.ok(!isAddress("北海道神奈川県"));
     assert.ok(!isAddress("和歌山大阪府"));
     assert.ok(!isAddress("東京都港区紀和歌山県"));
+    // 都道府県の段は語彙表が言う。渡さなければ、単位で閉じた 2 つの地名は 1 つの地名として通る。
+    const pair = tokensOf("北海道神奈川県");
+    assert.ok(
+      isAddressRun(
+        pair,
+        pair.map((_, index) => index),
+        new Set(),
+      ),
+    );
   });
 
   it("invalid: 単位で閉じるかは連なりの中だけで見る（連なりの外の「郡」では閉じない）", () => {
@@ -104,6 +122,6 @@ describe("isAddressRun — 漢字の連なりが住所か", () => {
   it("invalid: 地名で始まらないもの、空のもの", () => {
     assert.ok(!isAddress("三百二十五万四千八百人"));
     assert.ok(!isAddress("個人情報保護委員会"));
-    assert.ok(!isAddressRun(tokensOf("東京都"), []));
+    assert.ok(!isAddressRun(tokensOf("東京都"), [], TOP_UNITS));
   });
 });

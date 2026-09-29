@@ -11,28 +11,29 @@ import { proseText } from "../measure.ts";
 const KANJI_RUN = /[一-鿿]+/gu;
 
 /** 漢字の連なりが住所か（東京都港区新橋二丁目）。形態素解析の地名と数で決める。品詞が無ければ判定しない。 */
-const isPlaceName = (sentence: Sentence, run: string): boolean => {
+const isPlaceName = (sentence: Sentence, run: string, topUnits: ReadonlySet<string>): boolean => {
   const tokens = sentence.tokens;
   const place = tokens === undefined ? undefined : placeOf(compacted(sentence.text, "word"), run);
   if (tokens === undefined || place === undefined) return false;
   const [start, end] = [sentence.span.start + place.start, sentence.span.start + place.end];
   const covering = tokens.flatMap((token, index) => (token.span.start < end && start < token.span.end ? [index] : []));
-  return isAddressRun(tokens, covering);
+  return isAddressRun(tokens, covering, topUnits);
 };
 
-const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined): string =>
+const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, topUnits: ReadonlySet<string>): string =>
   [...maskAddresses(proseText(sentence), profile).matchAll(KANJI_RUN)]
     .map((match) => match[0])
-    .filter((run) => !isPlaceName(sentence, run))
+    .filter((run) => !isPlaceName(sentence, run, topUnits))
     .reduce((longest, run) => (run.length > longest.length ? run : longest), "");
 
 /**
  * 漢字が続くと、どこで語が切れるのか読み手が探すことになる。
  * 「情報処理推進機構認定試験」は 12 字。ひらがなを 1 つ挟むだけで読める。
  */
-export const kanjiRun: Detector = (doc, options): Finding[] =>
-  doc.sentences
-    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile) }))
+export const kanjiRun: Detector = (doc, options): Finding[] => {
+  const topUnits = new Set((doc.lexicons["prefecture-unit"] ?? []).map((entry) => entry.pattern));
+  return doc.sentences
+    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile, topUnits) }))
     .filter(({ run }) => run.length > options.limit)
     .map(({ sentence, run }) => ({
       rule: "max-kanji-continuous",
@@ -42,6 +43,7 @@ export const kanjiRun: Detector = (doc, options): Finding[] =>
       quote: sentence.text.trim(),
       values: { word: run, count: run.length, limit: options.limit, offset: sentence.span.start },
     }));
+};
 
 const MIDDLE_DOT = /・/gu;
 

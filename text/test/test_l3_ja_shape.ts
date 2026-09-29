@@ -58,6 +58,8 @@ describe("L3 日本語 — 文字と語彙", () => {
       // 地名を並べただけのものは住所ではない（地名が単位を挟まずに続く）。
       assert.ok(idsFor("東京大阪名古屋福岡に展開します。").includes("max-kanji-continuous"));
       assert.ok(idsFor("京都奈良大阪神戸市に展開します。").includes("max-kanji-continuous"));
+      // 都道府県の単位（語彙表 prefecture-unit）は住所の先頭にしか来ない。地名の後ろに付けば並び。
+      assert.ok(idsFor("北海道神奈川県横浜市に展開します。").includes("max-kanji-continuous"));
       // 割られた町名の後ろに普通の語が続けば住所ではない。
       assert.ok(idsFor("和歌山県海草郡紀美野町役場総務課に届ける。").includes("max-kanji-continuous"));
       // 数の後ろが助数詞でない語なら住所ではない。

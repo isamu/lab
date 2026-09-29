@@ -11,7 +11,8 @@ place name, 南伊勢町 into a common noun and a place name, 北海道虻田郡
 reported as a long compound. A single piece between a unit and the next unit (郡 … 町), and two place names closed by
 a unit below the prefecture (郡・市・町), now count as one place name. Three or more place names in a row, or two
 closed by 都・道・府・県, are still a list (京都奈良大阪神戸市, 北海道神奈川県), and an address followed by an ordinary
-word (紀美野町役場総務課) is still reported. Official names of organisations,
+word (紀美野町役場総務課) is still reported. The prefecture units come from lang-ja's word list `prefecture-unit`,
+which the rule declares; without it the rule is skipped with that reason. Official names of organisations,
 programmes and exams stay reported: the analyser tags almost none of them as names, and their shape is the same as a
 compound the writer can break.
 
