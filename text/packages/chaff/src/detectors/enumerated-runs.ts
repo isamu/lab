@@ -61,8 +61,9 @@ export const enumeratedRuns = (paragraphs: readonly Span[], starts: readonly num
   const enumerated = paragraphs.filter((paragraph) => opensWithItem(paragraph, starts, source));
   const runs = enumerated.reduce<Span[]>((joined, paragraph) => {
     const last = joined.at(-1);
-    if (last === undefined || !isBlank(source, last.end, paragraph.start)) return [...joined, paragraph];
-    return [...joined.slice(0, -1), { start: last.start, end: paragraph.end }];
+    if (last === undefined || !isBlank(source, last.end, paragraph.start)) joined.push(paragraph);
+    else joined[joined.length - 1] = { start: last.start, end: paragraph.end };
+    return joined;
   }, []);
   return runs.filter((run) => itemsIn(run, starts, source) >= MIN_ITEMS);
 };

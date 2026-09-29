@@ -32,7 +32,7 @@ export const compacted = (text: string, unit: LengthUnit): Compacted => {
     }
     chars.push(char);
     // 位置は UTF-16 の単位で持つ。placeOf は indexOf の位置で引くので、絵文字（2 単位）には 2 つ置く。
-    Array.from({ length: char.length }, (_, unit) => offsets.push(at + unit));
+    Array.from({ length: char.length }, (_, codeUnit) => offsets.push(at + codeUnit));
   });
   return { text: chars.join(""), offsets };
 };

@@ -27,11 +27,12 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
  * 新しい言語のサポートは、ここを書くところから始まる。
  */
 export const loadLexicons = (dir: string = DIR): Record<string, Lexicon> =>
-  readdirSync(dir)
-    .filter((file) => file.endsWith(".yaml"))
-    .reduce<Record<string, Lexicon>>((acc, file) => {
-      const raw: unknown = parse(readFileSync(join(dir, file), "utf8"));
-      if (!isRecord(raw) || typeof raw["id"] !== "string" || !Array.isArray(raw["entries"])) return acc;
-      const entries = raw["entries"].map(toEntry).filter((entry) => entry !== undefined);
-      return { ...acc, [raw["id"]]: entries };
-    }, {});
+  Object.fromEntries(
+    readdirSync(dir)
+      .filter((file) => file.endsWith(".yaml"))
+      .flatMap((file): [string, Lexicon][] => {
+        const raw: unknown = parse(readFileSync(join(dir, file), "utf8"));
+        if (!isRecord(raw) || typeof raw["id"] !== "string" || !Array.isArray(raw["entries"])) return [];
+        return [[raw["id"], raw["entries"].map(toEntry).filter((entry) => entry !== undefined)]];
+      }),
+  );

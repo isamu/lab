@@ -21,7 +21,7 @@ export const versionLines = (raw: unknown): string[] => {
   const dependencies = isRecord(raw) && isRecord(raw["dependencies"]) ? raw["dependencies"] : {};
   const bundled = Object.entries(dependencies)
     .filter((entry): entry is [string, string] => BUNDLED.test(entry[0]) && typeof entry[1] === "string")
-    .sort(([left], [right]) => left.localeCompare(right))
+    .toSorted(([left], [right]) => left.localeCompare(right))
     .map(([name, version]) => `${name} ${version}`);
   return [`chaffjs ${versionOf(raw)}`, ...bundled];
 };

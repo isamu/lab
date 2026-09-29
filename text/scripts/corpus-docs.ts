@@ -62,7 +62,7 @@ export const parsedAs = (entry: DocEntry): string => `${entry.id}${isPlainText(e
 /** "id  rule 2, other-rule 1" with rules in id order, or "id  clean". */
 export const summaryLine = (id: string, rules: readonly string[]): string => {
   const counts = rules.reduce<Map<string, number>>((acc, rule) => acc.set(rule, (acc.get(rule) ?? 0) + 1), new Map());
-  const parts = [...counts.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([rule, count]) => `${rule} ${String(count)}`);
+  const parts = [...counts.entries()].toSorted(([left], [right]) => left.localeCompare(right)).map(([rule, count]) => `${rule} ${String(count)}`);
   return `${id}  ${parts.length === 0 ? "clean" : parts.join(", ")}`;
 };
 
@@ -90,5 +90,5 @@ export const summaryChanges = (expected: readonly string[], actual: readonly str
 export const updatedSummary = (expected: readonly string[], actual: readonly string[], known: ReadonlySet<string>): string[] => {
   const merged = new Map(expected.filter((line) => known.has(idOf(line))).map((line) => [idOf(line), line]));
   actual.forEach((line) => merged.set(idOf(line), line));
-  return [...merged.values()].sort((left, right) => idOf(left).localeCompare(idOf(right)));
+  return [...merged.values()].toSorted((left, right) => idOf(left).localeCompare(idOf(right)));
 };
