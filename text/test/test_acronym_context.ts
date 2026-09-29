@@ -15,6 +15,8 @@ describe("notAcronymSpans: 時刻", () => {
     ["at 10AM", ["AM"]],
     ["after 2pm ET (1pm CT)", ["ET", "CT"]],
     ["from 10:00 JST", ["JST"]],
+    ["until 23:59 UTC", ["UTC"]],
+    ["at 12:30pm ET", ["ET"]],
     ["at 3:30 PM PST", ["PM", "PST"]],
     ["at 5 p.m. PT", ["PT"]],
   ].forEach(([text, words]) => {
@@ -27,6 +29,12 @@ describe("notAcronymSpans: 時刻", () => {
     ["version 1.5 PM", []],
     ["room 12:00 ACT", []],
     ["123 PM", []],
+    ["13 PM", []],
+    ["99 PM", []],
+    ["00 AM", []],
+    ["at 10 JST", []],
+    ["24:00 UTC", []],
+    ["build 123:45 UTC", []],
   ].forEach(([text, words]) => {
     it(`invalid: ${String(text)}`, () => assert.deepEqual(covered(String(text)), words));
   });
@@ -38,6 +46,7 @@ describe("notAcronymSpans: 通貨", () => {
     ["costs 250 EUR today", ["EUR"]],
     ["JPY 3.5 million", ["JPY"]],
     ["a GBP1,200 fee", ["GBP"]],
+    ["12,345.50 USD", ["USD"]],
   ].forEach(([text, words]) => {
     it(`valid: ${String(text)}`, () => assert.deepEqual(covered(String(text)), words));
   });
@@ -47,6 +56,9 @@ describe("notAcronymSpans: 通貨", () => {
     ["the XYZ 250 fee", []],
     ["RFC 9457 applies", []],
     ["v1.5 USD", []],
+    ["item 1, CAD owns it", []],
+    ["see 1,23 USD", []],
+    ["1,2345 USD", []],
   ].forEach(([text, words]) => {
     it(`invalid: ${String(text)}`, () => assert.deepEqual(covered(String(text)), words));
   });

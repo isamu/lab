@@ -30,16 +30,18 @@ const PLAIN_WORD = ["NOT", "AND"];
 
 const oneOf = (words: readonly string[]): string => `(?:${words.join("|")})`;
 
-const CLOCK = String.raw`(?<![\d:.])\d{1,2}`;
 const MINUTES = String.raw`:[0-5]\d`;
+const CLOCK_12 = String.raw`(?<![\d:.])(?:1[0-2]|0?[1-9])(?:${MINUTES})?`;
+const CLOCK_24 = String.raw`(?<![\d:.])(?:[01]?\d|2[0-3])${MINUTES}`;
 const LOWER_MERIDIEM = String.raw`[ap]\.?m\.?`;
-const AMOUNT = String.raw`\d[\d,]*(?:\.\d+)?`;
+/** 桁区切りは 3 桁ずつ揃っているときだけ金額と読む。「item 1, CAD」の 1, は金額ではない。 */
+const AMOUNT = String.raw`(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?`;
 
 const PATTERNS: readonly RegExp[] = [
-  new RegExp(String.raw`${CLOCK}(?:${MINUTES})?\s?${oneOf(MERIDIEM)}`, "gu"),
-  new RegExp(String.raw`${CLOCK}(?:${MINUTES}|(?:${MINUTES})?\s?(?:${LOWER_MERIDIEM}|${oneOf(MERIDIEM)}))\s?${oneOf(TIME_ZONE)}`, "gu"),
+  new RegExp(String.raw`${CLOCK_12}\s?${oneOf(MERIDIEM)}`, "gu"),
+  new RegExp(String.raw`(?:${CLOCK_24}|${CLOCK_12}\s?(?:${LOWER_MERIDIEM}|${oneOf(MERIDIEM)}))\s?${oneOf(TIME_ZONE)}`, "gu"),
   new RegExp(String.raw`${oneOf(CURRENCY)}\s?${AMOUNT}`, "gu"),
-  new RegExp(String.raw`(?<![\w.])${AMOUNT}\s?${oneOf(CURRENCY)}`, "gu"),
+  new RegExp(String.raw`(?<![\w.,])${AMOUNT}\s?${oneOf(CURRENCY)}`, "gu"),
   new RegExp(String.raw`,\s${oneOf(US_STATE)}\s\d{5}(?:-\d{4})?(?!\d)`, "gu"),
   new RegExp(oneOf(PLAIN_WORD), "gu"),
 ];

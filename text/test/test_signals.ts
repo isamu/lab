@@ -335,8 +335,16 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
       assert.deepEqual(acronymsIn("# Roles\n\nThe PM owns the plan. The ET team reviews it."), ["PM", "ET"]);
     });
 
+    it("invalid: 時刻になりえない数の隣の PM は数える", () => {
+      assert.deepEqual(acronymsIn("# Roles\n\nTeam 99 PM owns the plan."), ["PM"]);
+    });
+
     it("valid: 金額の前後の通貨コード", () => {
       assert.deepEqual(acronymsIn("# Offer\n\nYou may buy up to USD 1,000,000 of stock. The fee is 250 EUR."), []);
+    });
+
+    it("invalid: 番号のあとの読点に続く略語は金額ではない", () => {
+      assert.deepEqual(acronymsIn("# Drawings\n\nIn item 1, CAD owns the drawing."), ["CAD"]);
     });
 
     it("invalid: 金額の隣でない通貨コードと、一覧に無い通貨コードは数える", () => {
