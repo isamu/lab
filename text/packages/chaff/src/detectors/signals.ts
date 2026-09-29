@@ -1,6 +1,7 @@
 import { proseText } from "../measure.ts";
 import { wordsOf } from "./structure.ts";
 import { compacted, placeOf } from "./gram-place.ts";
+import { notAcronymSpans } from "./acronym-context.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 
 const PER = 1000;
@@ -185,6 +186,7 @@ const spansOf = (text: string): Span[] => [
   ...[...text.matchAll(UNCASED_STRETCH)].filter((match) => SHOUTED_RUN.test(match[0])).map(spanOf),
   ...[...text.matchAll(IDENTIFIER)].filter((match) => /\d/u.test(match[0])).map(spanOf),
   ...[QUOTED_CAPS, REQUIREMENT_WORD, LICENCE].flatMap((pattern) => [...text.matchAll(pattern)].map(spanOf)),
+  ...notAcronymSpans(text),
 ];
 
 type AcronymHit = { readonly word: string; readonly hit: Hit };
@@ -227,6 +229,7 @@ const COMMON = new Set([
   "XML",
   "TODO",
   "NOTE",
+  "TIP",
   // 通信と符号化。技術文書でなくても説明なしで通じる。
   "DNS",
   "IP",
@@ -261,6 +264,7 @@ const COMMON = new Set([
   "CTO",
   "CFO",
   "US",
+  "USA",
   "UK",
   "EU",
   "UN",
