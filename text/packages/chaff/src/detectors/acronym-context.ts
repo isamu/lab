@@ -11,8 +11,8 @@ const MERIDIEM = ["AM", "PM"];
 /** 業務文書で説明なしに書かれる時間帯。ここに無いもの（ACT など）は略語として数える。 */
 const TIME_ZONE = ["UTC", "GMT", "JST", "ET", "EST", "EDT", "CT", "CST", "CDT", "MT", "MST", "MDT", "PT", "PST", "PDT", "CET", "CEST"];
 
-/** ISO 4217 のうち、業務文書の読み手が説明なしで通じる主要な通貨。 */
-const CURRENCY = ["USD", "EUR", "JPY", "GBP", "CNY", "CHF", "CAD", "AUD", "KRW", "HKD", "SGD", "INR"];
+/** ISO 4217 のうち、業務文書の読み手が説明なしで通じる主要な通貨。CAD は数の隣でも computer-aided design と読める（3 CAD files）ので入れない。 */
+const CURRENCY = ["USD", "EUR", "JPY", "GBP", "CNY", "CHF", "AUD", "KRW", "HKD", "SGD", "INR"];
 
 /** 米国の州・特別区・準州の郵便略号。住所の書き方（, CA 94720）の中でだけ見る。 */
 const US_STATE = [

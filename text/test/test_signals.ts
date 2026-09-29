@@ -347,8 +347,12 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
       assert.deepEqual(acronymsIn("# Offer\n\nYou may buy up to USD 1,000,000 of stock. The fee is 250 EUR."), []);
     });
 
-    it("invalid: 番号のあとの読点に続く略語は金額ではない", () => {
-      assert.deepEqual(acronymsIn("# Drawings\n\nIn item 1, CAD owns the drawing."), ["CAD"]);
+    it("invalid: 番号のあとの読点に続く通貨コードは金額ではない", () => {
+      assert.deepEqual(acronymsIn("# Rates\n\nIn item 1, USD rates apply."), ["USD"]);
+    });
+
+    it("invalid: 数の隣でも CAD は computer-aided design と読めるので数える", () => {
+      assert.deepEqual(acronymsIn("# Drawings\n\nSend 3 CAD files."), ["CAD"]);
     });
 
     it("invalid: 金額の隣でない通貨コードと、一覧に無い通貨コードは数える", () => {

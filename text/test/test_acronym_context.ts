@@ -59,7 +59,8 @@ describe("notAcronymSpans: 通貨", () => {
     ["the XYZ 250 fee", []],
     ["RFC 9457 applies", []],
     ["v1.5 USD", []],
-    ["item 1, CAD owns it", []],
+    ["item 1, USD applies", []],
+    ["send 3 CAD files", []],
     ["see 1,23 USD", []],
     ["1,2345 USD", []],
   ].forEach(([text, words]) => {
