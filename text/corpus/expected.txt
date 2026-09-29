@@ -121,7 +121,7 @@ uk-dpa2018.txt  clean
 us-6004596-crustless-sandwich  max-paragraph-length 2, max-sentence-length 22, ngram-repetition 1
 us-scotus-gideon-v-wainwright  agentless-passive 22, max-paragraph-length 6, max-sentence-length 38, oxford-comma-consistency 2, preamble-length 1, proper-noun-density 1
 utelecon-account-leave  concrete-evidence-density 3, latin-spacing 1, max-sentence-length 10, ngram-repetition 1, preamble-length 1
-w3c-secure-contexts  doubled-word 1, heading-echo 2, max-sentence-length 26, ngram-repetition 1, oxford-comma-consistency 1, proper-noun-density 1
+w3c-secure-contexts  heading-echo 2, max-sentence-length 26, ngram-repetition 1, oxford-comma-consistency 1, proper-noun-density 1
 wikivoyage-belgian-coast-tram  expletive-construction 6, max-paragraph-length 23, max-sentence-length 37, proper-noun-density 1
 wikivoyage-ja-shikoku-henro  latin-spacing 1, max-kanji-continuous 1
 wikivoyage-ja-shimoda  latin-spacing 3
