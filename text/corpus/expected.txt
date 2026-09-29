@@ -73,7 +73,7 @@ uk-cra2015.txt  clean
 uk-dpa2018.txt  clean
 wikivoyage-belgian-coast-tram  expletive-construction 6, max-paragraph-length 23, max-sentence-length 37, proper-noun-density 1
 wikivoyage-ja-shikoku-henro  latin-spacing 1, max-kanji-continuous 1
-wikivoyage-ja-shimoda  latin-spacing 1
+wikivoyage-ja-shimoda  latin-spacing 3
 wikivoyage-loop-art-tour  concrete-evidence-density 3, max-paragraph-length 7, max-sentence-length 7, proper-noun-density 1, title-case-consistency 1, unqualified-superlative 2
 wikivoyage-magnificent-mile  contraction-consistency 5, max-paragraph-length 6, max-sentence-length 8, proper-noun-density 1
 yamano-akashi-api  latin-spacing 15

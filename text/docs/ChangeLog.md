@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### The corpus's converters keep the words a ruby or a template carried (#170)
+
+An HTML page's ruby is read as its base text: the reading and the brackets around it are dropped, also where the page
+omits their closing tags, as HTML allows (「隆(たか)一(いち議員」 is now 「隆一議員」). A Wikivoyage page keeps the
+quantities, prices, phone numbers and listings that its templates carried: `{{km}}` and `{{ha}}` as a number and unit,
+`{{JPY}}` as a yen amount, `{{phone}}` as the number, and `{{vCard}}` as a listing's name and description, where
+before each left a hole in the sentence (「全長の道のりです」「1日に約歩く」).
+
 ### CI fails when a committed document's result changes (#170)
 
 `chaff ci` now runs `yarn corpus` and `yarn bench`. The corpus compares the committed documents (statutes and

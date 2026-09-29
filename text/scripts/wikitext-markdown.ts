@@ -1,7 +1,7 @@
 // MediaWiki wikitext (a Wikivoyage article, as action=raw returns it) as plain Markdown: headings, paragraphs,
 // lists and the text of links. Templates are dropped except the few that carry the prose's own words (a map marker's
-// name, a listing's name and description, a converted quantity, a price); tables, files, references and comments are
-// dropped. Pure.
+// name, a listing's name and description, a converted quantity, a price, a phone number); tables, files, references
+// and comments are dropped. Pure.
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
 type Params = { readonly named: ReadonlyMap<string, string>; readonly positional: readonly string[] };
@@ -55,24 +55,39 @@ const paramsOf = (args: readonly string[]): Params => {
   return { named, positional };
 };
 
-const listing = (params: Params): string => [params.named.get("name") ?? "", params.named.get("content") ?? ""].filter((part) => part !== "").join(": ");
+/** vCard documents `content` as another name for `description`. */
+const descriptionOf = (params: Params): string => ["content", "description"].map((key) => params.named.get(key) ?? "").find((value) => value !== "") ?? "";
+
+const listing = (params: Params): string => [params.named.get("name") ?? "", descriptionOf(params)].filter((part) => part !== "").join(": ");
 
 const priced =
   (symbol: string) =>
   (params: Params): string =>
     `${symbol}${params.positional[0] ?? ""}`;
 
-const LISTINGS = ["see", "do", "buy", "eat", "drink", "sleep", "go", "listing"];
+/** A template that shows its first value in a unit, as {{convert}} does without the conversion: {{km|10}} is "10 km". */
+const measured =
+  (unit: string) =>
+  (params: Params): string =>
+    `${params.positional[0] ?? ""} ${unit}`;
+
+const LISTINGS = ["see", "do", "buy", "eat", "drink", "sleep", "go", "listing", "vcard"];
+
+/** Templates that are {{convert}} with a fixed unit, and the unit they show. */
+const UNITS: Readonly<Record<string, string>> = { km: "km", kilometer: "km", ha: "ha", hectare: "ha" };
 
 /** The templates whose words are part of the sentence around them. Every other template is dropped. */
 const RENDERERS: Readonly<Record<string, (params: Params) => string>> = {
   ...Object.fromEntries(LISTINGS.map((name) => [name, listing])),
   marker: (params) => params.named.get("name") ?? "",
   station: (params) => params.positional[0] ?? "",
+  ...Object.fromEntries(Object.entries(UNITS).map(([name, unit]) => [name, measured(unit)])),
   convert: (params) => params.positional.slice(0, 2).join(" "),
   eur: priced("€"),
   usd: priced("$"),
   gbp: priced("£"),
+  jpy: priced("¥"),
+  phone: (params) => params.positional[0] ?? "",
 };
 
 /**
