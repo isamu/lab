@@ -236,6 +236,11 @@ describe("English: nothing to say about a sound document", () => {
     ],
     ["(h), (i), (j) are letters", lines("Section 1 Terms", "(g) seven", "(h) eight", "(i) nine", "(j) ten")],
     ["(a), (i), (ii), (b)", lines("Section 1 Terms", "(a) one", "(i) sub one", "(ii) sub two", "(b) two")],
+    [
+      "(a), (1), (i), (ii), (2), (i), (b), as US regulations go",
+      lines("Section 1 Terms", "(a) one", "(1) one", "(i) one", "(ii) two", "(2) two", "(i) one", "(b) two", "See Section 1(a)(2)(i)."),
+    ],
+    ["(1), (h), (i), (j), (2)", lines("Section 1 Terms", "(1) one", "(h) eight", "(i) nine", "(j) ten", "(2) two")],
     ["a reference into another agreement from a document with no numbering", "As provided in Section 5 of the Master Agreement."],
     ["a reference down to a lettered item", lines("Section 4.2 Payment", "(a) Pay within 30 days.", "Section 4.3 Late fees", "See Section 4.2(a).")],
   ];

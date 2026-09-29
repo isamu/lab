@@ -89,6 +89,27 @@ describe("an English contract as a tree", () => {
     assert.deepEqual(addresses(tree), ["1", "1.a", "1.a.i", "1.a.ii", "1.b", "1.h", "1.i", "1.j"]);
   });
 
+  it("reads (i) as a roman numeral under (1), as US regulations go (a)(1)(i)", () => {
+    // 16 CFR 310.3(a) (public domain), shortened.
+    const source = lines(
+      "§ 310.3 Deceptive telemarketing acts or practices.",
+      "(a) Prohibited deceptive telemarketing acts or practices.",
+      "(1) Before a customer consents to pay, failing to disclose:",
+      "(i) The total costs to purchase the goods or services;",
+      "(ii) All material restrictions on the goods or services;",
+      "(2) Misrepresenting any of the following material information:",
+      "(i) The total costs to purchase the goods or services;",
+      "(b) Assisting and facilitating, in violation of § 310.3(a)(1)(i) or (a)(2)(i).",
+    );
+    const tree = treeOf(source);
+    assert.deepEqual(addresses(tree), ["310.3", "310.3.a", "310.3.a.1", "310.3.a.1.i", "310.3.a.1.ii", "310.3.a.2", "310.3.a.2.i", "310.3.b"]);
+  });
+
+  it("keeps the letter (i) after (h) under a numbered subsection a letter, so (j) sits beside it", () => {
+    const source = lines("Section 1 Terms", "(1) In this Act:", "(g) seven", "(h) eight", "(i) nine", "(j) ten", "(2) Next.");
+    assert.deepEqual(addresses(treeOf(source)), ["1", "1.1", "1.1.g", "1.1.h", "1.1.i", "1.1.j", "1.2"]);
+  });
+
   it("gives a reference the same address the tree gives its target", () => {
     const tree = treeOf(lines("Section 1 Terms", "(a) one", "(ii) two", "See Section 1(a)(ii) and Article IV."));
     const targets = tree.children[0]?.children[0]?.children[0]?.children.map((node) => node.attrs["target"]);
