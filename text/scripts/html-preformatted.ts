@@ -84,7 +84,7 @@ const MIN_FENCE = 3;
 
 /** A fence longer than any run of backticks in the code, so that none of them closes it. */
 const fenceFor = (lines: readonly string[]): string => {
-  const longest = Math.max(0, ...lines.flatMap((line) => (line.match(/`+/gu) ?? []).map((run) => run.length)));
+  const longest = lines.reduce((most, line) => (line.match(/`+/gu) ?? []).reduce((inLine, run) => Math.max(inLine, run.length), most), 0);
   return "`".repeat(Math.max(MIN_FENCE, longest + 1));
 };
 
@@ -101,8 +101,10 @@ const WHOLE_PLACEHOLDER = new RegExp(`^${PLACEHOLDER.source}$`, "u");
 
 /** Each line that is a placeholder as its block; a placeholder inside a longer line (a heading) as its text on that line. */
 export const withPreformattedRestored = (lines: readonly string[], blocks: readonly Preformatted[]): string[] =>
-  lines.flatMap((line) => {
-    const whole = WHOLE_PLACEHOLDER.exec(line);
-    const block = whole === null ? undefined : blocks[Number(whole[1])];
-    return block === undefined ? [line.replace(PLACEHOLDER, (_placeholder: string, _index: string, text: string) => text)] : rendered(block);
-  });
+  blocks.length === 0
+    ? [...lines]
+    : lines.flatMap((line) => {
+        const whole = WHOLE_PLACEHOLDER.exec(line);
+        const block = whole === null ? undefined : blocks[Number(whole[1])];
+        return block === undefined ? [line.replace(PLACEHOLDER, (_placeholder: string, _index: string, text: string) => text)] : rendered(block);
+      });

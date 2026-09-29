@@ -452,9 +452,15 @@ describe("htmlToMarkdown: pre (整形済みの文字)", () => {
     assert.equal(htmlToMarkdown(html), "Roses.\n\nViolets.\n\nThen:\n\n```\nx = 1\n```\n\nFin.\n");
   });
 
+  it("バッククォートの多い大きなコードでも囲みの長さを数えられる", () => {
+    const lines = Array.from({ length: 200_000 }, () => "`");
+    assert.equal(htmlToMarkdown(`<pre><code>${lines.join("\n")}</code></pre>`), `\`\`\`\n${lines.join("\n")}\n\`\`\`\n`);
+  });
+
   it("空の pre は何も残さない。pre の無いページはこれまでどおり", () => {
     assert.equal(htmlToMarkdown("<p>A.</p><pre>\n  \n</pre><pre><code></code></pre><p>B.</p>"), "A.\n\nB.\n");
     assert.equal(htmlToMarkdown("<p>Costs rose\n in May.</p>"), "Costs rose in May.\n");
+    assert.equal(htmlToMarkdown("<p>A\u00050\u0006B\u0005C.</p>"), "A\u00050\u0006B\u0005C.\n");
   });
 
   it("捨てる要素 (nav・表) の中の pre は一緒に落ち、見出しの中の pre は一行の文字のまま", () => {
