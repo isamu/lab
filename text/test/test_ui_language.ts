@@ -194,7 +194,8 @@ describe("画面の言語", () => {
     const withoutKeys = async <T>(run: () => Promise<T>): Promise<T> => {
       const saved = CREDENTIALS.map((name) => [name, process.env[name]] as const);
       CREDENTIALS.forEach((name) => delete process.env[name]);
-      process.env["ANTHROPIC_CONFIG_DIR"] = join(tmpdir(), "chaff-no-profile-here");
+      // A child of a fresh directory: it cannot exist, so no profile counts as credentials.
+      process.env["ANTHROPIC_CONFIG_DIR"] = join(mkdtempSync(join(tmpdir(), "chaff-no-profile-")), "absent");
       try {
         return await run();
       } finally {
