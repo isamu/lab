@@ -17,6 +17,10 @@ link's text as its title: a heading is never navigation, so a Python PEP's secti
 table of contents, and the National Weather Service's expandable headings are no longer dropped. Found on the OECD's
 report, a Chrome for Developers post, GSA's and the Library of Congress's pages and the PEPs.
 
+The corpus adds PEP 20, The Zen of Python (placed in the public domain, as the document states), to show a PEP's
+section headings read. Its aphorisms, set in a `<pre>` block, still run together as one paragraph, since the converter
+reads a `<pre>` as prose.
+
 ### Japanese: a counter after a number does not start a run of kanji (#170)
 
 `max-kanji-continuous` counted the counter of a number written in digits as the first kanji of the compound that
