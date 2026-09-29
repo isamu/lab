@@ -4,6 +4,20 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` leaves dates and clock times out of the count (#290)
+
+「9月」「8月」 were counted as digits packed against the next Japanese character, so a report that spaced its counts
+(「412 件」「6.2 時間」) was told its month names were the odd ones out. A date or a time written with units is packed by
+convention, so the inside of one no longer counts for or against either habit: the space between a number and its
+unit, and between one unit and the next number (「2026年9月30日」「10時5分」, also when written 「2026 年 9 月」). What
+makes a date is read from the words after the number, with three lexicons in `@chaffjs/lang-ja`: `calendar-unit`
+(月, 時, 時半: the number names a month or an hour on its own), `calendar-year-unit` (年, 年度, after a number of four
+digits) and the existing `date-time-unit`, now in order from the largest unit, which joins 日, 分 and 秒 to a date when
+they follow a larger unit (「10月1日」「15時30分」). A length stays a count: 「3ヶ月」「3 時間」「3日間」 are other words,
+and 「5日で」「5分」「3年」「5分30秒」 standing alone cannot be told from a length, so they count as before. The space
+before a date (「は 9月」) is the writer's habit before any number and still counts. A year after an era name
+(「令和8年」 on its own) still counts.
+
 ### `concrete-evidence-density` leaves the entries of a glossary alone (#170)
 
 A glossary or an A to Z style guide was reported entry by entry, because a definition carries no number, code or link.
