@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### Japanese: 「3つ」「三つ」「２つ」 are a number and a counter (#170)
+
+IPADIC reads the つ after an Arabic numeral as the classical perfective auxiliary (the つ of 行きつ戻りつ) and 「三つ」
+「２つ」 as one ordinary noun, so a count written with つ was neither a quantity in the structure tree nor a number and a
+counter in the tokens. lang-ja now reads both as a numeral (`NumType=Card`) and the counter つ (`NounType=Class`),
+the same way it reads 「三人」. The perfective つ after a verb, 「三つ巴」 and the kana 「ひとつ」 are unchanged. A count
+followed by 目 or め (「3つ目」「2回目」「1 行目」「二日目」「一つめ」「3つめ」) is a position, not an amount, and is no longer a quantity, like
+「第3条」.
+What moves: a sentence ending in a count (「理由は3つ。」) is a noun ending for `taigen-dome-in-prose` rather than a
+plain-style predicate for `no-mixed-desumasu`, and a heading that opens with a count (「## 4 つで足りないとき」) is no
+longer read as numbered article 4, which also removes the `dangling-reference` that reading caused.
+
 ### `no-mixed-desumasu` reads 「〜下さい」 as polite, like 「〜ください」 (#170)
 
 A polite request written with the kanji 下さい (「ご意見をお寄せ下さい。」) was read as plain: the analyser gives its

@@ -1,4 +1,5 @@
 import { surfaceStarts } from "./surface-starts.ts";
+import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import type { Token } from "chaffjs/plugin";
@@ -9,15 +10,6 @@ const require = createRequire(import.meta.url);
  * kuromoji は CommonJS で、辞書を非同期に読む。ESM からは createRequire で取る。
  * 辞書の初期化に 1.5 秒かかるので、prepare が呼ばれるまで触らない。
  */
-type Morpheme = {
-  readonly word_position: number;
-  readonly surface_form: string;
-  readonly pos: string;
-  readonly pos_detail_1: string;
-  readonly basic_form: string;
-  readonly reading?: unknown;
-};
-
 type Tokenizer = Record<string, unknown>;
 
 type BuildDone = (error: Error | null, tokenizer: unknown) => void;
@@ -30,13 +22,21 @@ const isCallable = (value: unknown): value is (...args: readonly unknown[]) => u
 
 const isTokenizer = (value: unknown): value is Tokenizer => isRecord(value) && isCallable(value["tokenize"]);
 
-const isMorpheme = (value: unknown): value is Morpheme =>
-  isRecord(value) &&
-  typeof value["word_position"] === "number" &&
-  typeof value["surface_form"] === "string" &&
-  typeof value["pos"] === "string" &&
-  typeof value["pos_detail_1"] === "string" &&
-  typeof value["basic_form"] === "string";
+/** kuromoji の形態素。形の違うものは落とす。二段目の細分類（助数詞・地域）は無ければ *。 */
+const toMorpheme = (value: unknown): Morpheme[] => {
+  if (!isRecord(value)) return [];
+  const [surface, pos, detail1, detail2, basic, reading] = [
+    value["surface_form"],
+    value["pos"],
+    value["pos_detail_1"],
+    value["pos_detail_2"],
+    value["basic_form"],
+    value["reading"],
+  ];
+  if (typeof surface !== "string" || typeof pos !== "string" || typeof detail1 !== "string" || typeof basic !== "string") return [];
+  const detail = typeof detail2 === "string" ? detail2 : "*";
+  return [{ surface_form: surface, pos, pos_detail_1: detail1, pos_detail_2: detail, basic_form: basic, ...(typeof reading === "string" ? { reading } : {}) }];
+};
 
 const dictionaryPath = (): string => join(dirname(require.resolve("@sglkc/kuromoji/package.json")), "dict");
 
@@ -152,13 +152,13 @@ const isNumeral = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && 
  * 住所は地名と単位が交互に続く。地名が単位を挟まずに続けば（東京大阪名古屋）、地名の並び。
  */
 const placeType = (morpheme: Morpheme): string | undefined => {
-  if (morpheme.pos !== "名詞" || detail2Of(morpheme) !== "地域") return undefined;
+  if (morpheme.pos !== "名詞" || morpheme.pos_detail_2 !== "地域") return undefined;
   if (morpheme.pos_detail_1 === "固有名詞") return "Geo";
   return morpheme.pos_detail_1 === "接尾" ? "GeoUnit" : undefined;
 };
 
 /** 数を数える単位（IPADIC の「接尾,助数詞」: 丁目・件・人）。UD では NounType=Class。 */
-const isCounter = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "接尾" && detail2Of(morpheme) === "助数詞";
+const isCounter = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "接尾" && morpheme.pos_detail_2 === "助数詞";
 
 const featuresOf = (morpheme: Morpheme): { features?: Readonly<Record<string, string>> } => {
   if (isPassive(morpheme)) return { features: { Voice: "Pass" } };
@@ -201,8 +201,10 @@ export const predicateOnly = (tokens: readonly Token[]): Token[] =>
 export const tokenize = (text: string): Token[] | undefined => {
   const tokenizer = state.ready;
   if (tokenizer === undefined) return undefined;
-  return placed(text, toArray(callMethod(tokenizer, "tokenize", [text])).filter(isMorpheme)).map(({ morpheme, start }) => toToken(morpheme, start));
+  return placed(text, analyse(tokenizer, text)).map(({ morpheme, start }) => toToken(morpheme, start));
 };
+
+const analyse = (tokenizer: Tokenizer, text: string): Morpheme[] => readCounterTsu(toArray(callMethod(tokenizer, "tokenize", [text])).flatMap(toMorpheme));
 
 /** 形態素と、本文の中での始まり。本文に見つからないものは落とす。 */
 const placed = (text: string, raws: readonly Morpheme[]): { readonly morpheme: Morpheme; readonly start: number }[] => {
@@ -229,23 +231,17 @@ export type Morph = {
   readonly detail2: string;
 };
 
-const detail2Of = (value: unknown): string => {
-  const record: Record<string, unknown> = isRecord(value) ? { ...value } : {};
-  const detail = record["pos_detail_2"];
-  return typeof detail === "string" ? detail : "*";
-};
-
 /** 解析器を読み込んでいなければ undefined。呼ぶ側は、形態素なしの読み方に戻る。 */
 export const morphemes = (text: string): Morph[] | undefined => {
   const tokenizer = state.ready;
   if (tokenizer === undefined) return undefined;
-  return placed(text, toArray(callMethod(tokenizer, "tokenize", [text])).filter(isMorpheme)).map(({ morpheme: raw, start }) => ({
+  return placed(text, analyse(tokenizer, text)).map(({ morpheme: raw, start }) => ({
     start,
     end: start + raw.surface_form.length,
     surface: raw.surface_form,
     pos: raw.pos,
     detail1: raw.pos_detail_1,
-    detail2: detail2Of(raw),
+    detail2: raw.pos_detail_2,
   }));
 };
 

@@ -29,6 +29,7 @@ const UNITS = [
   "名",
   "倍",
   "個",
+  "つ",
   "%",
   "％",
 ];
@@ -64,6 +65,18 @@ const runEnd = (morphs: readonly Morph[], index: number): number => {
 /** 「第3条」の 3 は番号で、数量ではない。 */
 const isOrdinal = (morph: Morph | undefined): boolean => morph?.surface === "第";
 
+/** 助数詞の後ろの「目」「め」（3つ目、2回目、1年目、一つめ）も順番で、数量ではない。「目標」は一語なので当たらない。 */
+const ORDINAL_SUFFIXES: ReadonlySet<string> = new Set(["目", "め"]);
+
+const isOrdinalSuffix = (morph: Morph | undefined): boolean => morph?.pos === "名詞" && ORDINAL_SUFFIXES.has(morph.surface);
+
+/**
+ * 解析器の無いときに順番と読む単位の後ろ。漢字の続かない「目」（「2回目標」「5人目線」の目は次の語の頭）と、
+ * 「めど」でない「め」（「10日めどに」は期限）。「つ」の後ろの漢字は見ない。「3つ選ぶ」のように数えた後ろに漢字が来るほうが、
+ * 「三つ巴」のような一語より多い。
+ */
+const ORDINAL_BY_TABLE = /^(?:目(?!\p{Script=Han})|め(?!ど))/u;
+
 /** 数と単位のあいだに置かれうる空白 1 文字。構造の型（structure.ts の SPACE）と同じく、全角空白とタブも含む。 */
 const GAP = new Set([" ", "\t", "\u3000"]);
 
@@ -78,19 +91,25 @@ const LOOKAHEAD = 8;
  * 「1.5 倍」の「倍」は、数とのあいだに空白があると解析器が普通の名詞と読む。
  * 空白を詰めて読み直し、数の直後に来る語が助数詞ならその語を返す。
  */
+const rereadAfterSpace = (number: string, rest: string): Morph[] => morphemes(toHalfWidth(number + rest.slice(0, LOOKAHEAD))) ?? [];
+
 const unitAfterSpace = (number: string, rest: string): string | undefined => {
-  const next = morphemes(toHalfWidth(number + rest.slice(0, LOOKAHEAD)))?.find((morph) => morph.start >= number.length);
+  const next = rereadAfterSpace(number, rest).find((morph) => morph.start >= number.length);
   return next !== undefined && isCounter(next) ? next.surface : undefined;
 };
 
-type Unit = { readonly unit: string; readonly end: number };
+/** ordinal: 単位のすぐ後ろが順番の「目」「め」。空白を詰めて読み直したときは、読み直した語で見る（「3 つめ」の「つめ」は詰めると つ + め）。 */
+type Unit = { readonly unit: string; readonly end: number; readonly ordinal: boolean };
 
 const counterAt = (text: string, morphs: readonly Morph[], number: string, end: number): Unit | undefined => {
   const next = morphs[end];
-  if (next !== undefined && isCounter(next)) return { unit: next.surface, end: next.end };
+  if (next !== undefined && isCounter(next)) return { unit: next.surface, end: next.end, ordinal: isOrdinalSuffix(morphs[end + 1]) };
   if (!isSpace(next)) return undefined;
-  const unit = unitAfterSpace(number, text.slice(next.end));
-  return unit === undefined ? undefined : { unit, end: next.end + unit.length };
+  const rest = text.slice(next.end);
+  const unit = unitAfterSpace(number, rest);
+  if (unit === undefined) return undefined;
+  const ordinal = isOrdinalSuffix(rereadAfterSpace(number, rest).find((morph) => morph.start === number.length + unit.length));
+  return { unit, end: next.end + unit.length, ordinal };
 };
 
 const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] => {
@@ -103,7 +122,7 @@ const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] =
       const number = text.slice(first.start, morphs[end - 1]?.end ?? first.end).replace(SPACES, "");
       const value = parseJapaneseNumber(number);
       const counter = counterAt(text, morphs, number, end);
-      if (value !== undefined && counter !== undefined) found.push({ start: first.start, end: counter.end, value, unit: counter.unit });
+      if (value !== undefined && counter !== undefined && !counter.ordinal) found.push({ start: first.start, end: counter.end, value, unit: counter.unit });
     }
     index = Math.max(end, index + 1);
   }
@@ -119,7 +138,7 @@ export const countedByTable = (text: string): Counted[] =>
     const after = match.index + match[0].length + (GAP.has(text[match.index + match[0].length] ?? "") ? 1 : 0);
     const unit = UNITS.find((candidate) => text.startsWith(candidate, after));
     const value = parseJapaneseNumber(toHalfWidth(match[0].replace(SPACES, "")));
-    const ordinal = text[match.index - 1] === "第";
+    const ordinal = text[match.index - 1] === "第" || (unit !== undefined && ORDINAL_BY_TABLE.test(text.slice(after + unit.length)));
     return unit === undefined || value === undefined || ordinal ? [] : [{ start: match.index, end: after + unit.length, value, unit }];
   });
 
