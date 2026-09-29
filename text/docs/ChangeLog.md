@@ -22,6 +22,19 @@ FTC consumer advice (public domain), 気象庁 and 国立国会図書館 (PDL1.0
 only: the W3C specification (a notice-bearing permissive licence), the Internet-Draft (IETF Trust), 広報東京都 and the
 University of Tokyo's utelecon (no licence to redistribute).
 
+### `ngram-repetition` no longer reports a repeated name as phrasing (#170)
+
+A document repeats the names of what it is about (`the NSF Proposal & Award Policies & Procedures Guide (PAPPG)`, `the
+Learning & Development team`, `the Location Object`), and the tagger sometimes reads a capitalised word inside such a
+name as a verb (`Guide`, `Learning`, `Object`), which made the name count as phrasing. In English, a capitalised word
+after the first word of the sentence, next to another such word (`&` and brackets in between are fine), is now read as
+part of a name, not as a predicate. A verb cut by the edge of the repeated window (`ed in the NSF Propos`, `ed by
+Applicable Law`) no longer counts either when everything else the window holds is a name or a function word: only the
+verb's ending repeats, and the verb itself differs each time (`contained in`, `identified in`; `prohibited by`, `required
+by`). A whole verb still counts (`use the Cloud Service`, `Select Save (if applicable)`), and so does a cut verb next to an
+ordinary word (`the same participant described`). Found on NSF's REU solicitation, a GitLab job description, RFC 3693 and
+Common Paper's cloud service agreement.
+
 ### The corpus HTML converter keeps a `<pre>` block's lines, and fences code (#170)
 
 A `<pre>` block became one paragraph, its lines run together: the Zen of Python in PEP 20, a poem of short lines,
