@@ -14,6 +14,39 @@ joined by one space in place of the line break and its indentation, when it look
 after the wrap, or "of this Agreement", is still looked up in this document; a blank line ends the join and a heading
 does not run on into the next line; findings keep their place on the line. Found on draft-ietf-httpapi-ratelimit-headers-10.
 
+### A version number that starts a sentence is not a section number (#170)
+
+Meeting minutes and release reports list releases newest first, one per line: `3.11.0 was released on 2024-10-17.`,
+`3.10.0 was released on 2024-08-13.`, or in Japanese `3.11.0 を公開しました。`. Each line was read as a numbered
+section, so `numbering-gap` reported every older release as out of order. On a line of body text, a dotted number
+followed by a sentence (it ends with a full stop, `。`, `?` or `!`) that starts with a lowercase word, or in Japanese
+with a particle (read with the morphological analyser), is now a number inside a sentence and not a section number.
+Headings, a capitalised title (`3.1 Scope`, `4.2 The Supplier shall`), a noun title (`3.1 適用範囲`) and a lowercase
+title that is not a sentence (`3.1 overview`, `4.2.1.  about:blank`) are still read as sections. Found on the Apache
+Software Foundation board minutes.
+
+### The corpus adds a letter template, board and committee minutes, a government roadmap, team week notes, a minister's press conference, e-mail templates and company releases (#170)
+
+Committed with their licence named in the manifest: an Acas letter template, a GOV.UK policy paper and a GDS blog's
+week notes (OGL v3.0), and FOMC minutes (public domain, per the Federal Reserve Board's website). Kept URL only: the
+Apache Software Foundation board minutes (Apache-2.0), デジタル庁's press conference summary (the reporters' questions
+are theirs), e-Tax's e-mail templates (each carries an all-rights-reserved notice) and 小林製薬's releases (no licence
+to redistribute).
+
+### `agentless-passive` leaves Japanese れる/られる that is not a passive alone (#170)
+
+Japanese れる/られる is also spontaneous, honorific and potential, and IPADIC does not say which. lang-ja now drops
+`Voice=Pass` where the form alone shows it is not a passive: after a verb that reads as spontaneous
+(「〜と考えられる」「〜と思われる」, the guidelines' and judgments' 「〜と解される」) unless the predicate is past, after a verb that names a relation
+rather than an act (「外国人も含まれる」「対症療法に限られる」), and inside an honorific address (「参考人におかれましては」
+「各学校設置者におかれては」). The verbs and the address are lexicons in `@chaffjs/lang-ja` (`spontaneous-verb`,
+`stative-passive-verb`, `honorific-formula`). Real passives stay: 「方針が決定された」「予算案が承認されました」
+「一定の協力が求められます」, and so do a past 「会議で考えられました」, 「〜と言われる」 and 「〜とされている」, which hide who
+thought or said so, 「予算に見込まれていない」, and an honorific after
+an auxiliary verb (「務めてこられた」), which has the form of a passive after one (「連れてこられた」). Found on
+デジタル庁 and 厚生労働省 pages, a 文部科学省 notice, a 最高裁 judgment, a 国会 transcript and the 個人情報保護委員会
+guidelines in the corpus.
+
 ### `yarn bench` plants mistakes for more rules: a preamble, stock phrasing, repeated openers and team spellings (#170)
 
 The seeded-mistake benchmark now also plants a preamble made by leaving out the first section heading
