@@ -81,6 +81,11 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.deepEqual(kanjiWords("第3 回情報処理推進機構の試験です。"), []);
     });
 
+    it("住所か名前かは、助数詞を外した残りで決める", () => {
+      assert.deepEqual(kanjiWords("昭和41年7月1日新東京国際空港公団が発足した。"), []);
+      assert.deepEqual(kanjiWords("7月1日新東京国際空港公団総務部が発足した。"), ["新東京国際空港公団総務部"]);
+    });
+
     it("同じ連なりが文に二度出れば、それぞれの位置で助数詞かどうかを読む", () => {
       assert.deepEqual(kanjiWords("2026年度予算編成基本方針と年度予算編成基本方針を比べる。"), ["年度予算編成基本方針"]);
       assert.deepEqual(kanjiWords("年度予算編成基本方針と2026年度予算編成基本方針を比べる。"), ["年度予算編成基本方針"]);
@@ -92,6 +97,21 @@ describe("L3 日本語 — 文字と語彙", () => {
       // 会計は助数詞ではない（令和6年版情報通信白書）。
       assert.deepEqual(kanjiWords("米国の「2021会計年度国防授権法」を参照する。"), ["会計年度国防授権法"]);
       assert.deepEqual(kanjiWords("第3回情報処理推進機構認定試験です。"), ["情報処理推進機構認定試験"]);
+    });
+
+    it("valid: 辞書が 1 語の固有名詞と読む名前は、書き手が変えられないので数えない", () => {
+      assert.ok(!idsFor("新東京国際空港公団が発表した。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("動力炉核燃料開発事業団の報告を読む。").includes("max-kanji-continuous"));
+    });
+
+    it("invalid: 名前に普通の語が続く語、名前の並び、辞書が固有名詞と読まない正式名称は数える", () => {
+      assert.ok(idsFor("新東京国際空港公団総務部に届ける。").includes("max-kanji-continuous"));
+      // デジタル庁のサービスデザインガイドラインにある学部名。武蔵野美術大学だけが固有名詞で、後ろは普通の語。
+      assert.ok(idsFor("武蔵野美術大学造形構想学部の教員が参加した。").includes("max-kanji-continuous"));
+      assert.ok(idsFor("日本経済団体連合会が提言した。").includes("max-kanji-continuous"));
+      assert.ok(idsFor("田中一郎山田花子佐藤次郎が出席した。").includes("max-kanji-continuous"));
+      // デジタル庁のプライバシーポリシーにある委員会名。形態素解析は 個人/情報/保護/委員/会 と普通の語に割る。
+      assert.ok(idsFor("個人情報保護委員会規則に従う。").includes("max-kanji-continuous"));
     });
 
     it("覆った箇所の空白をまたいで繋がない", () => {

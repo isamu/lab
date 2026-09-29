@@ -12,9 +12,35 @@ middle of the date. The digits show where the counter belongs, so the reader doe
 counter (`NounType=Class`) directly after a number, or after a number and one space (`2 日`), is no longer part of the
 run it opens (`2日`, `第76回`, `24時間`, `2026年度`); the run and the word shown start after it. A number written in
 kanji is itself part of the run (`第三回情報処理推進機構`) and is counted as before, and a word the analyser does not read
-as a counter (`2021会計年度`) stays in the run. A run that appears twice in one sentence is now read at each of its
+as a counter (`2021会計年度`) stays in the run. Whether a run is an address or one name is decided on what follows the
+counter (`1日日本銀行` is the name `日本銀行`). A run that appears twice in one sentence is now read at each of its
 places, not both at the first one; to keep those places, a masked statute address is blanked to its own length rather
 than to one space. Found on a judgment of 最高裁判所 and several government pages.
+
+### Japanese: a long run of kanji that is one proper name is not reported (#170)
+
+`max-kanji-continuous` no longer reports a run of kanji that is one name, since the writer cannot change a name: a
+word the dictionary reads as a single proper noun (新東京国際空港公団, 動力炉核燃料開発事業団) or a person's family and
+given name (田中太郎). The Japanese adapter now tells persons and organisations apart the way it already told places:
+IPADIC's 固有名詞,人名 becomes UD `NameType=Sur` (family name), `Giv` (given name) or `Prs`, and 固有名詞,組織 becomes
+`NameType=Com`. A proper noun followed by common nouns (武蔵野美術大学造形構想学部, 新東京国際空港公団総務部) is still
+reported, as is a run of names (田中一郎山田花子佐藤次郎): both are the way unreadable compounds are built. Most official
+names are not in the dictionary as proper nouns: kuromoji splits 個人情報保護委員会 and 日本経済団体連合会 into common
+nouns, and they stay reported. No finding in the corpus changes.
+
+### English: a curly or single closing quotation mark stays with its sentence (#170)
+
+After a question or exclamation mark, the sentence splitter ended the sentence before a curly closing quotation mark
+(`“Is it done?” Nobody answered.`, `‘…?’`) or a straight single one (`'What if?'`), so the next sentence began with
+`”`. That stray mark was counted as a word by `max-sentence-length`, a quoted question on its own became a sentence of
+one mark, which made a section look longer to `concrete-evidence-density`, and a quotation in the middle of a sentence
+(`the room “How do we grade?”, which met twice`) split the sentence in two. A closing quotation mark (or bracket) that
+opens a sentence directly after a full stop, question or exclamation mark now goes back to the end of that sentence.
+When a space and a capital letter follow, the two stay separate sentences; when nothing follows, the quotation ends
+the paragraph; when lower case, a number or punctuation follows, the quotation was mid-sentence and the two are one
+sentence, as with straight double quotes. Opening marks (`“`, `‘`) and a word-initial apostrophe (`’Tis`, `’90s`) are
+never moved. Found on 18F's handbook, an arXiv workshop report, a Federal Register notice, a Library of Congress blog
+post and GitLab's handbook.
 
 ### The corpus has patent specifications and court decisions (#170)
 

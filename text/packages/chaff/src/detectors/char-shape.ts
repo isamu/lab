@@ -3,10 +3,11 @@ import { compacted } from "./gram-place.ts";
 import { leadingCounterLength } from "./counter-edge.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
+import { isOneName } from "./name-run.ts";
 import { parallelDotCount } from "./middle-dot.ts";
 
 /**
- * 文字の並びを見る検出。漢字の連なりが住所かどうかだけは、形態素解析の地名と数で決める。
+ * 文字の並びを見る検出。漢字の連なりが住所か名前かだけは、形態素解析の固有名詞と数で決める。
  * 覆った箇所は空白になっているので、空白を詰めてから数える。
  */
 const KANJI_RUN = /[一-鿿]+/gu;
@@ -24,16 +25,20 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined): Kanji
   });
 };
 
-/** 漢字の連なりが住所か（東京都港区新橋二丁目）。形態素解析の地名と数で決める。 */
+/** 漢字の連なりが住所（東京都港区新橋二丁目）か 1 つの名前（日本銀行）か。形態素解析の地名・人名・組織名と数で決める。 */
 const isPlaceName = (tokens: readonly Token[], span: Span, topUnits: ReadonlySet<string>): boolean => {
   const covering = tokens.flatMap((token, index) => (token.span.start < span.end && span.start < token.span.end ? [index] : []));
-  return isAddressRun(tokens, covering, topUnits);
+  return isAddressRun(tokens, covering, topUnits) || isOneName(tokens, covering);
 };
 
-/** 数えない連なりは空。頭の、数に付いた助数詞（2日日本弁護士連合会の「日」）は数えない。 */
+/**
+ * 数えない連なりは空。頭の、数に付いた助数詞（2日日本弁護士連合会の「日」）は数えない。
+ * 住所か名前かは、助数詞を外した残りで決める（1日日本銀行の「日本銀行」）。品詞が無ければ判定しない。
+ */
 const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, topUnits: ReadonlySet<string>): string => {
   if (tokens === undefined || run.span === undefined) return run.text;
-  return isPlaceName(tokens, run.span, topUnits) ? "" : run.text.slice(leadingCounterLength(tokens, run.span.start, run.text));
+  const counter = leadingCounterLength(tokens, run.span.start, run.text);
+  return isPlaceName(tokens, { start: run.span.start + counter, end: run.span.end }, topUnits) ? "" : run.text.slice(counter);
 };
 
 const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, topUnits: ReadonlySet<string>): string =>
