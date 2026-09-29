@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { depthFor, ordinalOf, styleOf, styleOfOpen, type Style } from "../packages/lang-en/src/item-style.ts";
+import { continuesAddress, continuesOpen, depthFor, ordinalOf, styleOf, styleOfOpen, type Style } from "../packages/lang-en/src/item-style.ts";
 import type { NumberedLine, NumberingContext } from "../packages/chaff/src/plugin.ts";
 
 const SECTION: NumberedLine = { kind: "article", depth: 1, number: "310.3", absolute: true, label: "Section 310.3", heading: "", rest: "" };
@@ -82,17 +82,136 @@ describe("lang-en: how an open item was read", () => {
   });
 });
 
+/** 項目として読める番号の書き方。読めなければテストの前提が崩れている。 */
+const styled = (raw: string, open: NumberingContext): Style => {
+  const style = styleOf(raw, open);
+  if (style === undefined) throw new Error(`(${raw}) is not read as an item`);
+  return style;
+};
+
 describe("lang-en: how deep an item goes", () => {
   it("the letter (j) after a letter (i) under (1) is its sibling, not a level below", () => {
     const open = context(SECTION, item("1", "digit", 2), item("i", "letter", 3));
-    assert.equal(depthFor(styleOf("j", open), open), 3);
+    assert.equal(depthFor(styled("j", open), open), 3);
   });
 
   it("a roman (ii) after a roman (i) under (1) is its sibling; a new level goes one deeper", () => {
     const open = context(SECTION, item("a", "letter", 2), item("1", "digit", 3), item("i", "roman", 4));
-    assert.equal(depthFor(styleOf("ii", open), open), 4);
-    assert.equal(depthFor(styleOf("2", open), open), 3);
-    assert.equal(depthFor(styleOf("b", open), open), 2);
+    assert.equal(depthFor(styled("ii", open), open), 4);
+    assert.equal(depthFor(styled("2", open), open), 3);
+    assert.equal(depthFor(styled("b", open), open), 2);
     assert.equal(depthFor("roman", context(SECTION, item("a", "letter", 2), item("1", "digit", 3))), 4);
+  });
+});
+
+describe("lang-en: a capital (A), the level below a roman (i) in US regulations", () => {
+  const underRoman = context(SECTION, item("a", "letter", 2), item("1", "digit", 3), item("i", "roman", 4));
+
+  it("is a capital letter first right under a roman item, and next to an open capital", () => {
+    assert.equal(styleOf("A", underRoman), "capital");
+    const open = context(SECTION, item("a", "letter", 2), item("1", "digit", 3), item("i", "roman", 4), item("A", "capital", 5));
+    assert.equal(styleOf("B", open), "capital");
+    assert.equal(styleOf("D", open), "capital");
+    assert.equal(styleOf("B", context(SECTION, item("i", "roman", 2), item("A", "capital", 3), item("1", "digit", 4))), "capital");
+  });
+
+  it("is not an item where nothing says it is a level: under a heading, a digit, a letter, or not first", () => {
+    assert.equal(styleOf("A", context()), undefined);
+    assert.equal(styleOf("A", context(SECTION)), undefined);
+    assert.equal(styleOf("A", context(SECTION, item("1", "digit", 2))), undefined);
+    assert.equal(styleOf("A", context(SECTION, item("a", "letter", 2))), undefined);
+    assert.equal(styleOf("B", underRoman), undefined);
+    assert.equal(styleOf("AA", context(SECTION, item("i", "roman", 2), item("A", "capital", 3))), undefined);
+  });
+
+  it("reads (I) as a capital roman numeral first under a roman item, and the letter I after an open (H)", () => {
+    assert.equal(styleOf("I", underRoman), "capital-roman");
+    const roman = context(SECTION, item("i", "roman", 2), item("I", "capital-roman", 3));
+    assert.equal(styleOf("II", roman), "capital-roman");
+    assert.equal(styleOf("V", roman), "capital-roman");
+    assert.equal(styleOf("I", context(SECTION, item("i", "roman", 2), item("H", "capital", 3))), "capital");
+    assert.equal(styleOf("I", context(SECTION, item("i", "roman", 2), item("H", "capital", 3), item("ii", "roman", 4))), "capital");
+    assert.equal(styleOf("II", underRoman), undefined);
+    assert.equal(styleOf("V", underRoman), undefined);
+    assert.equal(styleOf("I", context(SECTION, item("a", "letter", 2))), undefined);
+  });
+
+  it("keeps the reading an open capital was given", () => {
+    assert.equal(styleOfOpen(item("A", "capital", 5)), "capital");
+    assert.equal(styleOfOpen(item("I", "capital", 5)), "capital");
+    assert.equal(styleOfOpen(item("I", "capital-roman", 5)), "capital-roman");
+    assert.equal(styleOfOpen(item("IV", "capital-roman", 5)), "capital-roman");
+    assert.equal(ordinalOf("C", "capital"), 3);
+    assert.equal(ordinalOf("IV", "capital-roman"), 4);
+  });
+});
+
+describe("lang-en: how deep a capital goes, and what goes under it", () => {
+  const underCapital = context(SECTION, item("a", "letter", 2), item("1", "digit", 3), item("i", "roman", 4), item("C", "capital", 5));
+
+  it("a first (1) or (i) right under a capital opens a level below it, not beside the open (1) or (i)", () => {
+    assert.equal(depthFor("digit", underCapital, 1), 6);
+    assert.equal(depthFor("roman", underCapital, 1), 6);
+  });
+
+  it("a later (2) or (ii) under a capital is the sibling of the open (1) or (i) above", () => {
+    assert.equal(depthFor("digit", underCapital, 2), 3);
+    assert.equal(depthFor("roman", underCapital, 2), 4);
+  });
+
+  it("a first (A) right under a roman item opens a level, even with another capital open above", () => {
+    const open = context(SECTION, item("v", "roman", 2), item("B", "capital", 3), item("ii", "roman", 4));
+    assert.equal(depthFor("capital", open, 1), 5);
+    assert.equal(depthFor("capital", open, 3), 3);
+  });
+
+  it("the lower-case levels are unchanged: a first (1) under a letter still joins an open (1)", () => {
+    const open = context(SECTION, item("1", "digit", 2), item("a", "letter", 3));
+    assert.equal(depthFor("digit", open, 1), 2);
+    assert.equal(depthFor("letter", open, 1), 3);
+  });
+});
+
+describe("lang-en: a capital part of a reference", () => {
+  it("continues the address after a roman part", () => {
+    assert.equal(continuesAddress("A", ["b", "1", "iii"]), true);
+    assert.equal(continuesAddress("B", ["a", "i"]), true);
+    assert.equal(continuesAddress("II", ["1", "v"]), true);
+    assert.equal(continuesAddress("A", ["h", "ii"]), true);
+  });
+
+  it("ends the address after anything else, after the letter i of (h)(i) or of a bare (i), or first", () => {
+    assert.equal(continuesAddress("B", ["i"]), false);
+    assert.equal(continuesAddress("A", ["x"]), false);
+    assert.equal(continuesAddress("A", ["5"]), false);
+    assert.equal(continuesAddress("A", ["b"]), false);
+    assert.equal(continuesAddress("B", ["i", "A"]), false);
+    assert.equal(continuesAddress("A", ["h", "i"]), false);
+    assert.equal(continuesAddress("A", ["u", "v"]), false);
+    assert.equal(continuesAddress("A", []), false);
+  });
+
+  it("leaves the lower-case and inserted parts as they were", () => {
+    assert.equal(continuesAddress("a", []), true);
+    assert.equal(continuesAddress("1", ["i", "A"]), true);
+    assert.equal(continuesAddress("A1", []), true);
+  });
+});
+
+describe("lang-en: a label alone on its line", () => {
+  const open = context(SECTION, item("a", "letter", 2), item("4", "digit", 3));
+
+  it("continues an open list when it is the next number", () => {
+    assert.equal(continuesOpen("digit", 5, open), true);
+    assert.equal(continuesOpen("letter", 2, open), true);
+  });
+
+  it("is not an item when it starts, repeats or skips a number, or nothing written that way is open", () => {
+    assert.equal(continuesOpen("digit", 1, open), false);
+    assert.equal(continuesOpen("digit", 4, open), false);
+    assert.equal(continuesOpen("digit", 6, open), false);
+    assert.equal(continuesOpen("roman", 2, open), false);
+    assert.equal(continuesOpen("digit", undefined, open), false);
+    assert.equal(continuesOpen("digit", 2, context()), false);
   });
 });
