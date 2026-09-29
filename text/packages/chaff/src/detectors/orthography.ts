@@ -28,7 +28,9 @@ type Located = { readonly sentence: Sentence; readonly offset: number; readonly 
  * どちらが正しいかは決めない。決めるのはチームで、chaff はそろっているかだけを見る。
  */
 export const latinSpacing: Detector = (doc, options): Finding[] => {
-  const located: Located[] = doc.sentences.flatMap((sentence) => latinBoundaries(sentence.text).map((boundary) => ({ sentence, ...boundary })));
+  const located: Located[] = doc.sentences.flatMap((sentence) =>
+    latinBoundaries(sentence.text, doc.source.slice(sentence.span.start, sentence.span.end)).map((boundary) => ({ sentence, ...boundary })),
+  );
   return KINDS.flatMap((kind) => {
     const ofKind = located.filter((entry) => entry.kind === kind);
     const minority = minorityStyle(ofKind);
