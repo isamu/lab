@@ -150,6 +150,39 @@ describe("htmlToMarkdown: 落とすもの", () => {
   });
 });
 
+describe("htmlToMarkdown: ルビ", () => {
+  it("ルビは親文字だけ。読みと括弧は落とす", () => {
+    assert.equal(htmlToMarkdown("<p>故<ruby>漢<rp>(</rp><rt>かん</rt><rp>)</rp></ruby>字の話。</p>"), "故漢字の話。\n");
+    assert.equal(htmlToMarkdown("<p><ruby>東<rt>とう</rt>京<rt>きょう</rt></ruby>駅</p>"), "東京駅\n");
+    assert.equal(htmlToMarkdown("<P>故<RUBY>漢<RP>(</RP><RT>かん</RT><RP>)</RP></RUBY>字</P>"), "故漢字\n");
+  });
+
+  it("閉じタグを省いた読みと括弧は、次の rt・rp・rb か ruby の終わりまで", () => {
+    assert.equal(htmlToMarkdown("<p>故<ruby>一<rp>(</rp><rt>いち</rt></ruby>議員</p>"), "故一議員\n");
+    assert.equal(htmlToMarkdown("<p><ruby>一<rp>(<rt>いち<rp>)</ruby>議員</p>"), "一議員\n");
+    assert.equal(htmlToMarkdown("<p><ruby>明日<rt>あした</ruby>は晴れ</p>"), "明日は晴れ\n");
+    assert.equal(htmlToMarkdown("<p><ruby><rb>東<rt>とう<rb>京<rt>きょう</ruby>駅</p>"), "東京駅\n");
+    assert.equal(htmlToMarkdown("<p><ruby>漢<rp>(<rt>かん</rt>字<rt>じ</rt><rp>)</rp></ruby></p>"), "漢字\n");
+    assert.equal(htmlToMarkdown("<p><ruby>漢<rt>かん<rp>)</rp>字<rt>じ</rt></ruby></p>"), "漢字\n");
+  });
+
+  it("読みの入れ物 rtc は、閉じていても省いていても落とす", () => {
+    assert.equal(htmlToMarkdown("<p><ruby>東京<rtc><rt>とう<rt>きょう</rtc><rtc>Tokyo</rtc></ruby>駅</p>"), "東京駅\n");
+    assert.equal(htmlToMarkdown("<p><ruby><rb>東<rtc>Tokyo<rb>京</ruby>駅</p>"), "東京駅\n");
+    assert.equal(htmlToMarkdown("<p><ruby>東<rtc>とう</rtc>京<rtc>きょう</rtc></ruby>駅</p>"), "東京駅\n");
+    assert.equal(htmlToMarkdown("<p><ruby>東京<rtc>Tokyo</ruby>駅</p>"), "東京駅\n");
+  });
+
+  it("ルビの外の rt・rp と、ルビの無いページはそのまま", () => {
+    assert.equal(htmlToMarkdown("<p>a<rt>b</rt>c<rp>(</rp>d</p>"), "abc(d\n");
+    assert.equal(htmlToMarkdown("<p>読み(よみ)は括弧で書く。</p><p>次の段落。</p>"), "読み(よみ)は括弧で書く。\n\n次の段落。\n");
+  });
+
+  it("ルビが二つ並んでも、それぞれの親文字だけ", () => {
+    assert.equal(htmlToMarkdown("<p>故廣瀬<ruby>隆<rp>(</rp><rt>たか</rt><rp>)</rp></ruby><ruby>一<rp>(</rp><rt>いち</rt></ruby>議員</p>"), "故廣瀬隆一議員\n");
+  });
+});
+
 describe("decodeEntities", () => {
   it("一度だけ戻す。知らない名前や範囲外の番号は書かれたまま", () => {
     assert.equal(decodeEntities("&amp;lt; &unknown; &#0; &#x110000; &nbsp;&rsquo;"), "&lt; &unknown; &#0; &#x110000;  ’");

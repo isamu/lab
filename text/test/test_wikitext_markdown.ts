@@ -61,6 +61,38 @@ describe("wikitextToMarkdown: テンプレート", () => {
     assert.equal(wikitextToMarkdown("* {{Station|North Station|city=xx|rail}}\n* {{do|name=Swim}}"), "- North Station\n- Swim\n");
   });
 
+  it("距離と面積のテンプレートは数と単位。換算は付けない", () => {
+    assert.equal(
+      wikitextToMarkdown("四国を一周する全長{{km|1,200}}の道のりです。1日に約{{Kilometer|10}}歩く。"),
+      "四国を一周する全長1,200 kmの道のりです。1日に約10 km歩く。\n",
+    );
+    assert.equal(
+      wikitextToMarkdown("A {{km|5|on}} walk through {{ha|152|acre}} of dunes, {{hectare|3}} each."),
+      "A 5 km walk through 152 ha of dunes, 3 ha each.\n",
+    );
+  });
+
+  it("円は ¥ と額、電話のテンプレートは番号を文の中に残す", () => {
+    assert.equal(wikitextToMarkdown("1泊{{JPY|4,000-7,000}}程度。予約は{{phone|0558 00-0000}}へ。"), "1泊¥4,000-7,000程度。予約は0558 00-0000へ。\n");
+    assert.equal(wikitextToMarkdown("Dial {{phone|+32 555 000}} or {{Phone|112}}."), "Dial +32 555 000 or 112.\n");
+  });
+
+  it("vCard は一覧と同じく名前と説明。説明は content、無ければ description", () => {
+    const source =
+      "* {{vCard|type= hotel\n| name= 港の宿|alt=Minato Inn | phone = 0558 00-0000\n| content=海が見える。\n}}\n* {{vCard\n| name= 駅 | content=\n}}";
+    assert.equal(wikitextToMarkdown(source), "- 港の宿: 海が見える。\n- 駅\n");
+    assert.equal(wikitextToMarkdown("* {{vCard | name = 市場 | description = 朝だけ開く。 }}"), "- 市場: 朝だけ開く。\n");
+    assert.equal(wikitextToMarkdown("* {{listing | name = 市場 | content = 朝市。 | description = 別の説明。 }}"), "- 市場: 朝市。\n");
+    assert.equal(wikitextToMarkdown("* {{listing | name = 市場 | content = | description = 朝だけ開く。 }}"), "- 市場: 朝だけ開く。\n");
+  });
+
+  it("ページの飾りのテンプレートは落とす", () => {
+    assert.equal(
+      wikitextToMarkdown("下田へ行く。\n{{IsPartOf|静岡県}}\n{{mapsources|34.6|138.9}}\n{{geo|34.6|138.9}}\n{{Status}}\n{{静岡県}}"),
+      "下田へ行く。\n",
+    );
+  });
+
   it("ほかのテンプレートは落とす。閉じていないものは残す", () => {
     assert.equal(wikitextToMarkdown("{{Pagebanner|a.jpg|star=yes}}\nA day out.{{related|Walks}}"), "A day out.\n");
     assert.equal(wikitextToMarkdown("Open {{Marker|name=X"), "Open {{Marker|name=X\n");
@@ -69,7 +101,7 @@ describe("wikitextToMarkdown: テンプレート", () => {
 
   it("落としたテンプレートの跡の空白は詰める（句読点の前、続いた空白）", () => {
     assert.equal(wikitextToMarkdown("The Harbor Airport {{IATA|HBR}}, but mostly cargo."), "The Harbor Airport, but mostly cargo.\n");
-    assert.equal(wikitextToMarkdown("Call {{phone|+1 555}} (free) or write."), "Call (free) or write.\n");
+    assert.equal(wikitextToMarkdown("Call {{IATA|HBR}} (free) or write."), "Call (free) or write.\n");
     assert.equal(wikitextToMarkdown("A tram ( {{icon|x}} line 1) runs."), "A tram ( line 1) runs.\n");
     assert.equal(wikitextToMarkdown("The Harbor Airport {{IATA|HBR}}{{icon|plane}}, but mostly cargo."), "The Harbor Airport, but mostly cargo.\n");
     assert.equal(wikitextToMarkdown("a {{x}} {{y}} b"), "a b\n");
