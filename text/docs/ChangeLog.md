@@ -39,6 +39,29 @@ encoded blob, not a word), so a run longer than any word is left out of its read
 Japanese sentence looked through every token of its paragraph, which a `.txt` file with no blank lines makes one long
 paragraph; a sentence now finds its own tokens directly.
 
+### `latin-spacing` does not count the spacing inside a quotation in 「」『』 (#170)
+
+A title or a quotation in 「」 or 『』 keeps the spacing of its source: 「AI原則実践のためのガバナンス・ガイドライン ver.
+1.1」, 『絵師100人展 16』, 「…ガイドライン CXG79-2012」. The writer cannot change it, so it was wrong to report it as
+the odd one out in a document that packs Latin text. A boundary with both sides inside the brackets is now left out
+of the count entirely, so a quotation neither is reported nor decides which way the document usually writes. The
+same place outside the brackets (「手引き」を IDで引く) is still reported, and a bracket that does not close counts as
+before. This is the reading `no-doubled-joshi` already gives a quotation.
+
+### `heading-echo` does not count a quoted variant of the heading; a ninth round of corpus kinds (#170)
+
+A style guide or glossary entry names its term in the heading and then quotes the spellings not to use:
+"## data centre" followed by `Not “datacentre”.` was reported as a sentence that repeats its heading. Text in
+quotation marks (“…”, ‘…’, "…", '…', 「…」, 『…』) is a word being talked about, not the heading said again, so it
+no longer counts toward the overlap unless it is the heading itself (`「利用規約への同意」へお進みください` still
+counts). An apostrophe (organisation’s, don't) does not open or close a quotation. A sentence that repeats the
+heading outside quotes is still reported.
+
+The corpus adds the A to Z of GOV.UK style, the U.S. Bureau of Labor Statistics glossary, the api.data.gov developer
+manual, cloud.gov's security incident response guide, a 首相官邸 speech transcript, a 環境省 national park guide,
+総務省's cyber security glossary and explainer, and 国立国会図書館's service guide (committed, licence named in the
+manifest), and an arXiv listing of abstracts (URL only).
+
 ### A hyphenated tag the document lists, "of [HTTP-CACHING]", names another document (#170)
 
 A bracketed tag after a reference named another document only when it was capitals and digits ("[HTTP]"), so that a

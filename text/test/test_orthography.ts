@@ -227,6 +227,24 @@ describe("latin-spacing", () => {
     assert.deepEqual(spacing("# 使い方\n\nAPIを呼び、JSONを返し、調べるには[Google](https://example.com/)を使う。\n"), []);
   });
 
+  it("does not count the spacing inside a title or a quotation in 「」『』, which is the source's", () => {
+    assert.deepEqual(spacing("# 参考\n\nAPIを呼び、JSONを返し、経済産業省の「ガバナンス・ガイドライン ver. 1.1」を読む。\n"), []);
+    assert.deepEqual(spacing("# 参考\n\n今年は100人が来て、会場は200席あり、『絵師100人展 16』に参加する。\n"), []);
+  });
+
+  it("still points at an odd space outside the quotation", () => {
+    assert.deepEqual(spacing("# 参考\n\nAPIを呼び、JSONを返し、「手引き」を IDで引く。\n"), ["英字:空けています"]);
+    assert.deepEqual(spacing("# 参考\n\n今年は100人が来て、会場は200席あり、『絵師展』は 16日に開く。\n"), ["後ろの数字:空けています"]);
+  });
+
+  it("counts as before when the bracket does not close", () => {
+    assert.deepEqual(spacing("# 参考\n\nAPIを呼び、JSONを返し、「手引き ver.1を読む。\n"), ["英字:空けています"]);
+  });
+
+  it("does not let the quotations decide which way is usual", () => {
+    assert.deepEqual(spacing("# 参考\n\nAPI を呼び、JSON を返し、「APIの手引き」「IDの表」を読み、IDを返す。\n"), ["英字:詰めています"]);
+  });
+
   it("on relaxed, one odd place is not enough", () => {
     assert.deepEqual(spacing("# 使い方\n\nAPI を呼び、JSON を受け取り、IDを返す。\n", "relaxed"), []);
   });
