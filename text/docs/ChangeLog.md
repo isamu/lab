@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### A reference wrapped before its "of [HTTP]" names the other document (#170)
+
+A plain-text RFC is hard-wrapped at about 72 columns, so a reference into another document is often split across a
+line: "…advised in Section 16.3.2\n   of [HTTP]." or "…from Section 3 of\n   [SF] to specify…". Each line was read on its own, so "Section 16.3.2" looked like a
+reference into this document and `dangling-reference` reported it. The reference reader now also sees the next line,
+joined by one space in place of the line break and its indentation, when it looks for the "of [DOC]" / "of RFC 9110" /
+"of the Master Agreement" after a reference; the same holds for a wrapped Markdown paragraph. A reference with nothing
+after the wrap, or "of this Agreement", is still looked up in this document; a blank line ends the join and a heading
+does not run on into the next line; findings keep their place on the line. Found on draft-ietf-httpapi-ratelimit-headers-10.
+
 ### `yarn bench` plants mistakes for more rules: a preamble, stock phrasing, repeated openers and team spellings (#170)
 
 The seeded-mistake benchmark now also plants a preamble made by leaving out the first section heading
