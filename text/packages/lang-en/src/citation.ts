@@ -51,13 +51,25 @@ export const listMembers = (rest: string, plural: boolean): ListMember[] =>
  * word of a contract ("[Company]", "[Reserved]") is not taken for another document and still has to exist here.
  */
 const TAG = "(?<tag>[A-Z][A-Z0-9]{1,30})";
-const TAG_AFTER = new RegExp(`^\\[${TAG}\\]`, "u");
+/**
+ * "[HTTP-CACHING]" is written like a contract's placeholder "[BUYER-1]". Only the document tells them apart, by listing
+ * the tag or not, so this tag is a candidate that the core checks against the document (attrs.citedTag).
+ */
+const HYPHENATED_TAG = "(?<tag>[A-Z][A-Z0-9]{0,30}(?:-[A-Z0-9]{1,30}){1,4})";
+const tagAfter = (tag: string): RegExp => new RegExp(`^\\[${tag}\\]`, "u");
 /** "[HTTP], Section 12.1": the tag written just before the reference. */
-const TAG_BEFORE = new RegExp(`\\[${TAG}\\],?\\s?$`, "u");
+const tagBefore = (tag: string): RegExp => new RegExp(`\\[${tag}\\],?\\s?$`, "u");
+const TAG_AFTER = tagAfter(TAG);
+const TAG_BEFORE = tagBefore(TAG);
+const HYPHENATED_AFTER = tagAfter(HYPHENATED_TAG);
+const HYPHENATED_BEFORE = tagBefore(HYPHENATED_TAG);
+const TAG_REACH = 40;
+
+const tagEndingAt = (pattern: RegExp, text: string, start: number): string | undefined =>
+  pattern.exec(text.slice(Math.max(0, start - TAG_REACH), start))?.groups?.["tag"];
 
 /** The document cited by a tag just before a reference, as in "see [HTTP], Section 12.1". */
-export const citedDocumentBefore = (text: string, start: number): string | undefined =>
-  TAG_BEFORE.exec(text.slice(Math.max(0, start - 40), start))?.groups?.["tag"];
+export const citedDocumentBefore = (text: string, start: number): string | undefined => tagEndingAt(TAG_BEFORE, text, start);
 
 const CAPITALISED = /^[A-Z][\w'’-]*/u;
 /**
@@ -84,20 +96,33 @@ const titleWords = (rest: string): string[] => {
   return words;
 };
 
+/** What follows the "of" after a reference and its list, or undefined when no "of" follows. */
+const afterOf = (text: string, end: number): string | undefined => {
+  const rest = text.slice(end, end + 200);
+  const afterList = listEnd(rest);
+  const listed = afterList + (GLOSS.exec(rest.slice(afterList))?.[0].length ?? 0);
+  const of = OF.exec(rest.slice(listed));
+  return of === null ? undefined : rest.slice(listed + of[0].length);
+};
+
 /**
  * The document named right after a reference, or undefined when the reference is into this document.
  * "of this Agreement" and "of the Agreement" are this document; "of the Master Agreement" is another.
  */
 export const citedDocumentAfter = (text: string, end: number): string | undefined => {
-  const rest = text.slice(end, end + 200);
-  const afterList = listEnd(rest);
-  const listed = afterList + (GLOSS.exec(rest.slice(afterList))?.[0].length ?? 0);
-  const of = OF.exec(rest.slice(listed));
-  if (of === null) return undefined;
-  const tag = TAG_AFTER.exec(rest.slice(listed + of[0].length))?.groups?.["tag"];
+  const named = afterOf(text, end);
+  if (named === undefined) return undefined;
+  const tag = TAG_AFTER.exec(named)?.groups?.["tag"];
   if (tag !== undefined) return tag;
-  const words = titleWords(rest.slice(listed + of[0].length));
+  const words = titleWords(named);
   if (words.length === 0) return undefined;
   const name = words.join(" ");
   return words.length === 1 && SELF.has(name) ? undefined : name;
+};
+
+/** A hyphenated tag right after a reference ("Section 4.2.3 of [HTTP-CACHING]") or just before it ("[HTTP-CACHING], Section 4"). */
+export const hyphenatedTagAround = (text: string, start: number, end: number): string | undefined => {
+  const named = afterOf(text, end);
+  const following = named === undefined ? undefined : HYPHENATED_AFTER.exec(named)?.groups?.["tag"];
+  return following ?? tagEndingAt(HYPHENATED_BEFORE, text, start);
 };
