@@ -10,9 +10,10 @@ Five kinds of capitals were reported as acronyms with nothing to expand:
 
 - **HTTP methods** (GET, POST, "non-GET requests"): words, not abbreviations. They come from a new `http-method` word
   list in each language package.
-- **Document numbers**: the capital word right before a hyphenated number is part of the number (SP 800-61, BOD 25-01,
-  IEC 19757-2). The word before it is still counted (NIST in "NIST SP 800-61"), and so is a word before a number
-  with no hyphen (RFC 9110), a version (SDK 3.1) or a range of years (FY 2024-25).
+- **Document numbers**: the capital word right before a hyphenated number with a long or zero-padded part is part of
+  the number (SP 800-61, BOD 25-01, IEC 19757-2). The word before it is still counted (NIST in "NIST SP 800-61"),
+  and so is a word before a number with no hyphen (RFC 9110), a version (SDK 3.1), a range of years (FY 2024-25) or a
+  short range or score (SRE 1-2, NFL 3-1).
 - **Symbols defined with "="**: "where N = number of cases, EH = total hours worked" defines EH after it is used.
   A value (EH = 2,000, EH = 40h) or another acronym (EH = SRE) is not a definition.
 - **ONLY** in capitals for emphasis joins `emphasis-word` next to NOT and AND.

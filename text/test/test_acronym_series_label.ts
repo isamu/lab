@@ -29,6 +29,7 @@ describe("seriesLabelSpans", () => {
     ["区切りの無い番号", "the RFC 9110 text and the EO 14028 order"],
     ["版の番号（. で区切る）", "the SDK 3.1 release"],
     ["年の範囲", "the FY 2024-25 budget and the NFL 1999-2000 season"],
+    ["範囲や得点（桁が揃わず、短い）", "the SRE 1-2 handoff, the NFL 3-1 win and UK 5-10 days and NSF 19-1"],
     ["語と番号の間に空白が 2 つ以上", "the SP  800-61 text"],
     ["語と番号の間に別の文字", "the SP, 800-61 text and SP-800-61"],
     ["小文字を含む語", "the Sp 800-61 text"],
@@ -56,6 +57,10 @@ describe("undefined-acronym と文書番号", () => {
 
   it("en: 番号の外の SP は数える", () => {
     assert.deepEqual(reported(en, "# Notes\n\nThe SP 800-61 guide applies. The SP signs it.\n"), ["SP"]);
+  });
+
+  it("en: 範囲の前の SRE は数える", () => {
+    assert.deepEqual(reported(en, "# Notes\n\nThe SRE 1-2 handoff failed.\n"), ["SRE"]);
   });
 
   it("en: 年の範囲の前の FY は数える", () => {
