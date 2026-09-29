@@ -177,6 +177,40 @@ describe("htmlToMarkdown: 落とすもの", () => {
     );
   });
 
+  it("表題の前の、見出し語とパンくずの定義リスト・画像だけのボタンの一覧と見出し語・リンクだけのブロックはサイトの頭として落とす", () => {
+    const title = "<h1>熱中症の防止について</h1><p>本文。</p>";
+    const trail = '<a href="/">トップ</a>&nbsp;&gt;&nbsp;<a href="/kyoiku/">教育</a>&nbsp;&gt;&nbsp;熱中症の防止について';
+    assert.equal(htmlToMarkdown(`<dl><dt>現在位置</dt><dd>${trail}</dd></dl>${title}`), "# 熱中症の防止について\n\n本文。\n");
+    const sizes = '<ul><li id="n"><img src="n.png" alt="標準"></li><li><button><img src="l.png" alt="拡大"></button></li></ul>';
+    assert.equal(htmlToMarkdown(`<div><p>文字サイズ変更</p>${sizes}</div>${title}`), "# 熱中症の防止について\n\n本文。\n");
+    const lone = '<div><div><a href="/en/">English</a></div><div><a href="/map.html">サイトマップ</a></div></div>';
+    assert.equal(htmlToMarkdown(`${lone}${title}`), "# 熱中症の防止について\n\n本文。\n");
+    assert.equal(htmlToMarkdown(`<header><a href="/a">A</a> <a href="/b">B</a></header>${title}`), "# 熱中症の防止について\n\n本文。\n");
+  });
+
+  it("パンくずでない定義・語のある一覧・空の一覧・文や語の混じるリンク・表題の後ろのリンクだけのブロックは残す", () => {
+    const title = "<h1>Plan</h1><p>Text.</p>";
+    assert.equal(
+      htmlToMarkdown(`<dl><dt>現在位置</dt><dd><a href="/">トップ</a> &gt; この頁</dd></dl>${title}`),
+      "現在位置\n\nトップ > この頁\n\n# Plan\n\nText.\n",
+    );
+    assert.equal(
+      htmlToMarkdown(`<dl><dt>Path</dt><dd><a href="/">Home</a> &gt; <a href="/r">Reports</a> &gt; Plan</dd><dd>Filed by the office</dd></dl>${title}`),
+      "Path\n\nHome > Reports > Plan\n\nFiled by the office\n\n# Plan\n\nText.\n",
+    );
+    assert.equal(
+      htmlToMarkdown(`<h1>Plan</h1><dl><dt>Path</dt><dd><a href="/">Home</a> &gt; <a href="/r">Reports</a> &gt; Plan</dd></dl>`),
+      "# Plan\n\nPath\n\nHome > Reports > Plan\n",
+    );
+    assert.equal(htmlToMarkdown(`<div><p>Figures</p><ul><li><img alt="a">Chart one</li></ul></div>${title}`), "Figures\n\n- Chart one\n\n# Plan\n\nText.\n");
+    assert.equal(htmlToMarkdown(`<div><p>Figures</p><ul></ul></div>${title}`), "Figures\n\n# Plan\n\nText.\n");
+    assert.equal(htmlToMarkdown(`<div><p>By <a href="/staff/jane">Jane Doe</a></p></div>${title}`), "By Jane Doe\n\n# Plan\n\nText.\n");
+    assert.equal(htmlToMarkdown(`<div><a href="/guide">Read the guide first.</a></div>${title}`), "Read the guide first.\n\n# Plan\n\nText.\n");
+    assert.equal(htmlToMarkdown(`<div><a href="/n1"><h3>News one</h3><p>Summary</p></a></div>${title}`), "### News one\n\nSummary\n\n# Plan\n\nText.\n");
+    assert.equal(htmlToMarkdown(`<p>Kept</p><div><a href="/en/">English</a></div><h2>Plan</h2><p>Text.</p>`), "Kept\n\nEnglish\n\n## Plan\n\nText.\n");
+    assert.equal(htmlToMarkdown(`${title}<div><a href="/en/">English</a></div>`), "# Plan\n\nText.\n\nEnglish\n");
+  });
+
   it("aside・footer・form (検索窓) を落とす", () => {
     const html =
       '<form action="/search"><label for="q">サイト内検索</label><input id="q"></form><h1>計画</h1><p>本文。</p>' +
@@ -232,6 +266,32 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(html), "© 2020 figures are revised below.\n\nText.\n");
     const underHeading = "<h1>Plan</h1><p>Text.</p><h2>About this site</h2><p>© 2024 Example Office</p><h2>Related</h2>";
     assert.equal(htmlToMarkdown(underHeading), "# Plan\n\nText.\n");
+  });
+
+  it("年の無い著作権表示も © の記号があればページの最後で落とし、(c) や Copyright で始まる文は残す", () => {
+    const body = "<h1>Plan</h1><p>Text.</p>";
+    assert.equal(htmlToMarkdown(`${body}<p>Copyright &copy; Example Office, All Rights reserved.</p>`), "# Plan\n\nText.\n");
+    assert.equal(htmlToMarkdown(`${body}<p>Copyright (c) Example Office</p>`), "# Plan\n\nText.\n");
+    assert.equal(htmlToMarkdown(`${body}<p>© Example Office</p>`), "# Plan\n\nText.\n");
+    assert.equal(htmlToMarkdown(`${body}<p>(c) The office publishes the plan.</p>`), "# Plan\n\nText.\n\n(c) The office publishes the plan.\n");
+    assert.equal(htmlToMarkdown(`${body}<p>Copyright law applies to the plan.</p>`), "# Plan\n\nText.\n\nCopyright law applies to the plan.\n");
+    assert.equal(htmlToMarkdown(`<p>© Example Office</p>${body}`), "© Example Office\n\n# Plan\n\nText.\n");
+  });
+
+  it("著作権表示だけが後に続く address はサイトの連絡先として落とし、ほかのものが続くか何も続かない address は残す", () => {
+    const body = "<h1>意見の募集</h1><p>本文。</p>";
+    const address = "<address>〒100-0001 東京都千代田区1-1<br>電話：03-0000-0000</address>";
+    const notice = "<p>Copyright &copy; Example Office</p>";
+    assert.equal(htmlToMarkdown(`${body}<div><p><a href="/"><img alt="省"></a></p>${address}${notice}</div>`), "# 意見の募集\n\n本文。\n");
+    assert.equal(htmlToMarkdown(`${body}${address}`), "# 意見の募集\n\n本文。\n\n〒100-0001 東京都千代田区1-1\n電話：03-0000-0000\n");
+    assert.equal(
+      htmlToMarkdown(`${body}${address}<p>受付は平日のみ</p>${notice}`),
+      "# 意見の募集\n\n本文。\n\n〒100-0001 東京都千代田区1-1\n電話：03-0000-0000\n\n受付は平日のみ\n",
+    );
+    assert.equal(
+      htmlToMarkdown(`${body}${address}<p>本文の続き。</p><address>〒100-0002 東京都</address>${notice}`),
+      "# 意見の募集\n\n本文。\n\n〒100-0001 東京都千代田区1-1\n電話：03-0000-0000\n\n本文の続き。\n",
+    );
   });
 
   it("XML 宣言は本文にしない", () => {

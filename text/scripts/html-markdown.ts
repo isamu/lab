@@ -3,8 +3,9 @@
 // role="main" element, else a sole <article>) is read when the page has one. Scripts, styles, the head, navigation (by
 // element or by role, and breadcrumbs), asides, footers, forms, tables, footnote marks, lists and blocks of nothing but
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
-// title), a block before the page's title that holds a menu and no sentence (the site's header, with its tagline and labels), lines of
-// nothing but in-page or script links, and a copyright notice closing the page are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
+// title), a block before the page's title that holds a menu or only links and no sentence (the site's header, with its tagline and
+// labels), lines of nothing but in-page or script links, and a copyright notice closing the page, with an address just before it, are
+// dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
 // for any HTML.
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
@@ -137,14 +138,30 @@ const BREADCRUMB_TRAIL = new RegExp(`^\\s*(?:${LINK_MARK}\\s*[>›»＞→]\\s*)
 /** A link wrapping blocks (a card with a title and a summary) carries content, not a way around the site. */
 const isCard = (link: string): boolean => /<(?:div|p|h[1-6]|ul|ol|dl|section|article|figure)\b/iu.test(link);
 
+/** The links in html, or none when one of them wraps blocks. */
+const plainLinks = (html: string): string[] => {
+  const links = html.match(ANY_LINK) ?? [];
+  return links.some(isCard) ? [] : links;
+};
+
+/** The text with each link standing as one mark. */
+const withLinksMarked = (html: string): string => decodeEntities(stripTags(html.replace(ANY_LINK, LINK_MARK)));
+
+const isBreadcrumbTrail = (html: string): boolean => plainLinks(html).length > 0 && BREADCRUMB_TRAIL.test(withLinksMarked(html));
+
+const isOnlyLinks = (html: string): boolean => hasNoWords(withLinksMarked(html).replaceAll(LINK_MARK, ""));
+
+const MIN_GROUP_LINKS = 2;
+
 /** A block made of two or more links and nothing else (a menu, previous and next), or a breadcrumb trail. */
 const isLinkGroup = (range: ElementRange): boolean => {
-  const links = range.inner.match(ANY_LINK) ?? [];
-  const rest = decodeEntities(stripTags(range.inner.replace(ANY_LINK, LINK_MARK)));
-  if (links.length === 0 || links.some(isCard)) return false;
-  if (hasNoWords(rest.replaceAll(LINK_MARK, ""))) return links.length >= 2;
-  return BREADCRUMB_TRAIL.test(rest);
+  const links = plainLinks(range.inner);
+  if (links.length === 0) return false;
+  return isOnlyLinks(range.inner) ? links.length >= MIN_GROUP_LINKS : isBreadcrumbTrail(range.inner);
 };
+
+/** A block of links and nothing else, even a single one: before the page's title, a way around the site ("English"). */
+const isLinksOnly = (range: ElementRange): boolean => plainLinks(range.inner).length > 0 && isOnlyLinks(range.inner);
 
 const withoutLinkGroups = (html: string): string => ["div", "section", "p"].reduce((text, tag) => withoutElementsWhere(text, tag, isLinkGroup), html);
 
@@ -178,19 +195,27 @@ const isBreadcrumbList = (body: string, at: number, title: PageTitle | undefined
   );
 };
 
+/** A list with items and not a word in them: buttons drawn as images, such as a text-size switch. */
+const isWordlessList = (body: string): boolean => /<li\b/iu.test(body) && hasNoWords(plainText(body));
+
 /** From the inside out, so a nested table of contents goes too once its inner lists are gone. */
 const withoutNavigation = (html: string): string =>
   untilStable(html, (text) => {
     const title = pageTitle(text);
     return text.replace(/<(ul|ol)\b[^>]*>((?:(?!<[uo]l\b)[\s\S])*?)<\/\1\s*>/giu, (whole: string, _tag: string, body: string, at: number) =>
-      isNavigation(body) || isBreadcrumbList(body, at, title) ? " " : whole,
+      isNavigation(body) || isWordlessList(body) || isBreadcrumbList(body, at, title) ? " " : whole,
     );
   });
 
 const DEFINITION = /<dd\b[^>]*>([\s\S]*?)(?:<\/dd\s*>|(?=<d[dt]\b)|$)/giu;
 
-/** A definition list whose every definition is only links: a menu with its label as the term ("文字サイズ: 標準 大"). */
-const isLabelledMenu = (list: string): boolean => [...list.matchAll(DEFINITION)].every((definition) => isNavigation(definition[1] ?? ""));
+const isMenuDefinition = (definition: string): boolean => isNavigation(definition) || isBreadcrumbTrail(definition);
+
+/**
+ * A definition list whose every definition is only links or a breadcrumb trail: a menu with its label as the term
+ * ("文字サイズ: 標準 大", "現在位置: トップ > 教育 > この頁").
+ */
+const isLabelledMenu = (list: string): boolean => [...list.matchAll(DEFINITION)].every((definition) => isMenuDefinition(definition[1] ?? ""));
 
 const isDefinitionList = (range: ElementRange): boolean => /^<dl\b/iu.test(range.openTag);
 
@@ -201,7 +226,7 @@ const besideMenus = (range: ElementRange): string =>
 /** A full stop, question or exclamation mark closing a sentence, also before a closing quote or bracket; not the point in "3.5". */
 const CLOSED_SENTENCE = /[。．！？]|[.!?][)\]"'”’]*(?=\s|$)/u;
 
-const holdsMenu = (range: ElementRange): boolean => besideMenus(range) !== range.inner;
+const holdsMenu = (range: ElementRange): boolean => besideMenus(range) !== range.inner || isLinksOnly(range);
 
 /** Nothing but labels beside the menus: a sentence beside a menu makes the block the document's. */
 const hasNoSentenceBesideMenus = (range: ElementRange): boolean => !CLOSED_SENTENCE.test(plainText(besideMenus(range)));
@@ -209,7 +234,7 @@ const hasNoSentenceBesideMenus = (range: ElementRange): boolean => !CLOSED_SENTE
 const HEADER_BLOCKS = ["div", "section", "header", "dl"];
 
 /**
- * The innermost block that closes before the page's title opens and holds a menu, with no sentence beside it, is part
+ * The innermost block that closes before the page's title opens and holds a menu (or only links), with no sentence beside it, is part
  * of the site's header: it goes whole, with the tagline and labels beside the menu. Only the innermost, so that text
  * sharing an outer block with a menu block (an agency and docket number) is kept; so is a block with a sentence in it.
  */
@@ -237,7 +262,8 @@ const MARKED_LINK = new RegExp(`${LINK_START}[^${LINK_END}]*${LINK_END}`, "gu");
 /** A line of in-page or paging links and at most a mark such as "▲" or "|" between them. */
 const isChromeLinkLine = (line: string): boolean => line.includes(LINK_START) && hasNoWords(line.replace(MARKED_LINK, ""));
 
-const COPYRIGHT_NOTICE = /^(?:copyright\s*)?(?:©|\(c\)|copyright)\s*\d{4}\b/iu;
+// Without a year only the sign marks a notice: "(c)" alone opens an enumerated paragraph, "Copyright" alone a sentence.
+const COPYRIGHT_NOTICE = /^(?:(?:copyright\s*)?(?:©|\(c\)|copyright)\s*\d{4}\b|copyright\s*(?:©|\(c\))|©)/iu;
 
 /** A copyright notice at the very end of the page, where a site puts it when it has no <footer>. */
 const withoutClosingCopyright = (lines: readonly string[]): string[] => {
@@ -293,11 +319,33 @@ const asLines = (html: string): string =>
     .replace(/<br\s*\/?>/giu, "\n")
     .replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/giu, (whole: string, tag: string) => (BLOCK_TAGS.has(tag.toLowerCase()) ? "\n\n" : whole));
 
+const textLines = (html: string): string[] =>
+  decodeEntities(stripTags(asLines(html)))
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line !== "");
+
+const ADDRESS = /<address\b[^>]*>[\s\S]*?<\/address\s*>/giu;
+
+/**
+ * An <address> followed by nothing but a copyright notice closes the page: the site's own contact line, in a footer
+ * written without <footer>. An address with anything else after it, or with nothing after it, is kept.
+ */
+const withoutClosingAddress = (html: string): string => {
+  const last = [...html.matchAll(ADDRESS)].at(-1);
+  if (last === undefined) return html;
+  const end = last.index + last[0].length;
+  const after = textLines(html.slice(end));
+  return after.length > 0 && after.every((line) => COPYRIGHT_NOTICE.test(line)) ? `${html.slice(0, last.index)} ${html.slice(end)}` : html;
+};
+
 export const htmlToMarkdown = (html: string): string => {
   const kept = mainContent(DROPPED.reduce(withoutElement, withoutRubyText(html.replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(/\s+/gu, " ");
-  const text = decodeEntities(stripTags(asLines(markChromeLinks(withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(kept))))))));
+  const text = decodeEntities(
+    stripTags(asLines(markChromeLinks(withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))))))),
+  );
   const lines = text
     .split("\n")
     .map((line) => line.trim())
