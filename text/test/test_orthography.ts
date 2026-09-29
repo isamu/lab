@@ -41,7 +41,11 @@ describe("latinBoundaries", () => {
     ["を 3回", ["before-digit:spaced", "after-digit:touching"]],
     ["3GBの容量", ["after-digit:touching"]],
     ["10ms 待つ", ["after-digit:spaced"]],
-    ["v1.2の変更", ["after-digit:touching"]],
+    ["v1.2の変更", ["letter:touching"]],
+    ["H30 等", ["letter:spaced"]],
+    ["IPv6アドレス", ["letter:touching"]],
+    ["EC2 で動かす", ["letter:spaced"]],
+    ["約 .5日", ["after-digit:touching"]],
     ["SmartHRの設定", ["letter:touching"]],
     ["APIを呼ぶ", ["letter:touching"]],
     ["API を呼ぶ", ["letter:spaced"]],
@@ -158,6 +162,11 @@ describe("latin-spacing", () => {
 
   it("does not read a unit after a number as a Latin word", () => {
     assert.deepEqual(spacing("# 使い方\n\nAPI を呼び、JSON を返し、ID を保存し、3GBの容量を使う。\n"), []);
+  });
+
+  it("reads a name that ends in a digit (H30, EC2) as a Latin word, not as a number", () => {
+    assert.deepEqual(spacing("# 使い方\n\nAPI を呼び、5日で終わり、H30 等の略称と EC2 で動かす。\n"), []);
+    assert.deepEqual(spacing("# 使い方\n\nAPIを呼び、JSONを返し、H30 等を書く。\n"), ["英字:空けています"]);
   });
 
   it("on relaxed, one odd place is not enough", () => {

@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` reads a name ending in a digit as a Latin word (#170)
+
+A run that starts with a letter and ends in a digit (`H30 等`, `EC2 で`, `IPv6アドレス`, `v1.2の`) is now counted with
+the letters, not with the numbers: a writer spaces it the way they space `API を`, whatever they do after `3日`. Before,
+a document that spaces Latin words and glues numbers had `H30 等` reported as a spaced number. A run that starts with a
+digit (`3GBの`) still counts with the numbers. Found on デジタル庁's specification of the machine-readability checker.
+
 ### `preamble-length` does not count a page's date stamp (#170)
 
 A paragraph that is only a date (`2025年6月20日`, `April 23, 2026`), a label and a date (`Updated 2026-03-03`,
