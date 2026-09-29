@@ -27,4 +27,4 @@
       (obligation :marker "なければならない" :type "must" :line 32)
       (item "6.1" :label "（1）" :line 33)
       (item "6.2" :label "（2）" :line 34
-        (reference :label "第5条" :target "5" :line 34)))))
+        (reference :label "第5条" :target "5" :unitWord "条" :line 34)))))

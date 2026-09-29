@@ -22,7 +22,7 @@ $ npx chaffjs tree contract.txt
   (definition :term "甲" :line 3)
   (definition :term "乙" :line 3)
   (article "1" :heading "目的" :label "第1条" :line 5
-    (reference :label "第3条" :target "3" :line 6))
+    (reference :label "第3条" :target "3" :unitWord "条" :line 6))
   (article "2" :heading "定義" :label "第2条" :line 8
     (definition :term "成果物" :line 9))
   (article "3" :heading "業務" :label "第3条" :line 11
@@ -48,8 +48,8 @@ $ npx chaffjs tree contract.txt
       (quantity :unit "年間" :value 1 :line 27)
       (obligation :marker "することができる" :type "may" :line 27)))
   (article "7" :heading "解除" :label "第7条" :line 29
-    (reference :label "第4条第2項" :target "4.2" :line 30)
-    (reference :label "第5条" :target "5" :line 30)
+    (reference :label "第4条第2項" :target "4.2" :unitWord "条" :line 30)
+    (reference :label "第5条" :target "5" :unitWord "条" :line 30)
     (obligation :marker "することができる" :type "may" :line 30)))
 ```
 
@@ -69,6 +69,7 @@ $ npx chaffjs tree contract.txt
 
 参照も、同じ形の番地を持ちます。上の例の「第4条第2項」は `:target "4.2"` です。
 そのため、参照がどの条を指しているかを木の中で探せます。
+`:unitWord "条"` は、参照が「条」で数えた単位を指していることを表します。見出しに「1 目的」と番号を振っただけの文書（「第N条」と書いた条が一つも無い文書）の「法第2条」は、その文書の 2 ではなく別の文書の条なので、`dangling-reference` はこの文書の中を探しません。
 
 ## 構造の崩れを見つける
 

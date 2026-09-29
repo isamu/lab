@@ -18,6 +18,8 @@ export type NotationWords = {
   readonly emphasis: readonly string[];
   /** 番号を後ろに書く、文書の区切りの名前（Part、Section、Title）。 */
   readonly divisions: readonly string[];
+  /** 速記録が大文字で書く発言者の姓の前に置く敬称（Mr.、Mrs.、Madam）。 */
+  readonly honorifics: readonly string[];
 };
 
 // 空の語彙表は「その書き方が無い」。空の選択肢 (?:) は至る所で空文字に当たるので、何にも当たらない形にする。
@@ -37,6 +39,9 @@ const AMOUNT = String.raw`(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?`;
  */
 const divisionOf = (words: readonly string[]): string => oneOf(words.flatMap((word) => [word, word.toUpperCase()]));
 
+/** 敬称のすぐ後ろの大文字の姓（Mr. HAWLEY、Dr. O'NEIL）。速記録は発言者をこう書き、略語ではない。 */
+const SURNAME_IN_CAPITALS = String.raw`[A-Z]+(?:['’-][A-Z]+)*(?![\p{L}\p{N}_])`;
+
 // 強調の記号は空白に置き換えてある（**3:30** PM）ので、部品の間の空白は数を問わない。
 const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`${CLOCK_12}\s*${oneOf(words.meridiem)}`, "gu"),
@@ -46,6 +51,7 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`,\s+${oneOf(words.usStates)}\s+\d{5}(?:-\d{4})?(?!\d)`, "gu"),
   new RegExp(oneOf(words.emphasis), "gu"),
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${divisionOf(words.divisions)}\s+${ROMAN_NUMERAL}(?![\p{L}\p{N}_&])`, "gu"),
+  new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(words.honorifics)}\s+${SURNAME_IN_CAPITALS}`, "gu"),
 ];
 
 export type NotAcronymSpans = (text: string) => Span[];

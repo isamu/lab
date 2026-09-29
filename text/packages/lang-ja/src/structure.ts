@@ -202,6 +202,9 @@ const definitions = (text: string): Mention[] =>
     }),
   );
 
+/** 条を数える語。見出しに「1 目的」と番号を振っただけの文書には、この語で数えた条が無い。 */
+const ARTICLE_UNIT = "条";
+
 const REFERENCE = new RegExp(`第(?<a>${NUMBER})条(?:の(?<s>${NUMBER}))?(?:第(?<p>${NUMBER})項)?(?:第(?<i>${NUMBER})号)?`, "gu");
 
 /**
@@ -278,7 +281,7 @@ const articlesOf = (text: string): Mention[] =>
     const address = addressOfReference(match.groups ?? {});
     if (address === undefined) return [];
     const { target, fallback } = address;
-    const attrs = { target, label: match[0], ...(fallback === undefined ? {} : { fallback }) };
+    const attrs = { target, label: match[0], unitWord: ARTICLE_UNIT, ...(fallback === undefined ? {} : { fallback }) };
     return [{ start: match.index, end: match.index + match[0].length, attrs }];
   });
 

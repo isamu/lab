@@ -1,0 +1,15 @@
+# 英語の速記録が、大文字で書く発言者の姓の前に置く敬称（Mr. HAWLEY.、Mrs. CAPITO.、英国式の Mr BLAKE）。すぐ後ろの大文字の語は名前で、略語ではない。
+# 日本語の文書も英語の議事録を引くので、英語と同じ語を置く。字面どおりに照らす。
+id: honorific
+language: ja
+entries:
+  - pattern: "Mr."
+  - pattern: "Mrs."
+  - pattern: "Ms."
+  - pattern: "Dr."
+  - pattern: "Mr"
+  - pattern: "Mrs"
+  - pattern: "Ms"
+  - pattern: "Dr"
+  - pattern: "Miss"
+  - pattern: "Madam"
