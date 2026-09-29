@@ -38,14 +38,20 @@ const densityRule =
 export const hedgingDensity = densityRule("excessive-hedging");
 export const cushionDensity = densityRule("cushion-phrase-density");
 
+/** 数字は語ではないので言語を問わない。数があれば測った結果を言っている。品詞の数（NUM）は "the best one" の one まで含むので使わない。 */
+const DIGIT = /\d/u;
+
+const COMPARISON_MARKER = "comparison-marker";
+
+const qualified = (sentence: Sentence, markers: Lexicon): boolean => DIGIT.test(sentence.text) || markers.some((entry) => entryIn(sentence, entry));
+
 /**
  * 限定のない最上級。「最も速い」だけでは、何と比べて最もなのかが無い。
- * 同じ文に比較対象や条件があれば、それは主張であって誇張ではない。
+ * 同じ文に比較対象や条件があれば、それは主張であって誇張ではない。比較を言う語は言語パッケージの語彙表が持つ。
  */
-const QUALIFIER = /\d|より|に比べ|のうち|among|than|compared|based on|according/iu;
-
 export const unqualifiedSuperlative: Detector = (doc, options): Finding[] => {
-  const bare = hitsFor(doc, options.lexicon ?? []).filter((hit) => !QUALIFIER.test(hit.sentence.text));
+  const markers = doc.lexicons[COMPARISON_MARKER] ?? [];
+  const bare = hitsFor(doc, options.lexicon ?? []).filter((hit) => !qualified(hit.sentence, markers));
   if (bare.length < options.limit) return [];
   return bare.map((hit) => ({
     rule: "unqualified-superlative",

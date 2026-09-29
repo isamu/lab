@@ -1,6 +1,7 @@
 import { DETECTORS } from "./detectors/index.ts";
 import { charLength } from "./measure.ts";
 import type { ProseDocument, RuleDefinition } from "./plugin.ts";
+import { missingList } from "./declared-lists.ts";
 
 /**
  * 閾値の較正。
@@ -47,8 +48,8 @@ const countAt = (docs: readonly ProseDocument[], rule: RuleDefinition, limit: nu
   const detector = DETECTORS[rule.how_to_find];
   if (detector === undefined) return { limit, findings: 0, documents: 0, per10k: 0 };
   const perDoc = docs.map((doc) => {
+    if (missingList(rule, doc.lexicons) !== undefined) return 0;
     const lexicon = rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list];
-    if (rule.word_list !== undefined && lexicon === undefined) return 0;
     return detector(doc, { limit, lexicon, where: rule.where }).length;
   });
   const findings = perDoc.reduce((sum, count) => sum + count, 0);

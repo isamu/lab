@@ -1,0 +1,9 @@
+# Words that name what a superlative is measured against. With one in the sentence, "the fastest" is a claim, not a boast.
+id: comparison-marker
+language: en
+entries:
+  - pattern: among
+  - pattern: than
+  - pattern: compared
+  - pattern: based on
+  - pattern: according

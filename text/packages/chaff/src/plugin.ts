@@ -344,6 +344,8 @@ export type RuleDefinition = {
   readonly by_genre: Readonly<Record<string, LevelTable>>;
   readonly how_to_find: string;
   readonly word_list: string | undefined;
+  /** word_list のほかに detector が名前で引く語彙表。どれかが無い言語では rule を動かさない。 */
+  readonly extra_word_lists: readonly string[];
   /** L4 のみ。LLM に渡す決まり。言語別。 */
   readonly what_to_check: Localized | undefined;
   readonly where: string | undefined;

@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### The words that give a superlative its comparison are a word list (#170)
+
+`unqualified-superlative`'s words that name a comparison (より, に比べる, のうち / among, than, compared, based on,
+according) moved from a regular expression in code into each language package's `comparison-marker` word list, matched
+word by word like every other list: "thanks", "accordingly", "amongst" and そのうち no longer count as a comparison, and
+「に比べると」 still does. A digit in the sentence still qualifies it. A rule can now declare the lists it reads besides its
+`word_list` (`extra_word_lists`); a language package without one of them does not run the rule and says why.
+
 ### `latin-spacing` reads a name ending in a digit as a Latin word (#170)
 
 A run that starts with a letter and ends in a digit (`H30 等`, `EC2 で`, `IPv6アドレス`, `v1.2の`) is now counted with
