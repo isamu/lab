@@ -1,5 +1,5 @@
 {
-  "note": "Real documents chaff is run on. Japanese statutes are public domain (Copyright Act of Japan, Article 13). UK Acts are under the Open Government Licence v3.0 (contains public sector information licensed under the OGL, from legislation.gov.uk). Both are committed; anything that may not be redistributed is listed with redistribute: false and only cached locally. Documents of other kinds (source \"url\") are fetched from a pinned URL: committed under docs/ when their license allows it (redistribute: true), otherwise only the URL is kept and the text goes to the git-ignored .cache/. A source that is not Markdown or plain text names its \"format\" (\"wikitext\", \"html\", \"google-patents\": a patent page of which only the abstract, description and claims are kept, \"kokkai\": a meeting from the 国会会議録検索システム API, or \"congressional-record\": a Congressional Record granule from govinfo) and is stored converted to Markdown.",
+  "note": "Real documents chaff is run on. Japanese statutes are public domain (Copyright Act of Japan, Article 13). UK Acts are under the Open Government Licence v3.0 (contains public sector information licensed under the OGL, from legislation.gov.uk). Both are committed; anything that may not be redistributed is listed with redistribute: false and only cached locally. Documents of other kinds (source \"url\") are fetched from a pinned URL: committed under docs/ when their license allows it (redistribute: true), otherwise only the URL is kept and the text goes to the git-ignored .cache/. A source that is not Markdown or plain text names its \"format\" (\"wikitext\", \"html\", \"google-patents\": a patent page of which only the abstract, description and claims are kept, \"kokkai\": a meeting from the 国会会議録検索システム API, or \"congressional-record\": a Congressional Record granule from govinfo) and is stored converted to Markdown; a Project Gutenberg eBook (\"gutenberg\") is stored as the work alone, without Project Gutenberg's header and licence.",
   "documents": [
     {
       "id": "rouki",
@@ -1572,6 +1572,149 @@
       "language": "en",
       "url": "https://web.archive.org/web/20250103165715id_/https://arxiv.org/list/astro-ph/new",
       "license": "Each abstract under the licence its authors chose on arXiv (mostly the arXiv non-exclusive distribution licence, which does not allow redistribution by third parties); URL only",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "aozora-soseki-yume-juya",
+      "title": "夏目漱石「夢十夜」（青空文庫）",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "ja",
+      "url": "https://www.aozora.gr.jp/cards/000148/files/799_14972.html",
+      "license": "Public domain in Japan (著作権法第51条・第57条: the author died in 1916, and the term of protection has expired); transcription by 青空文庫 (https://www.aozora.gr.jp/), whose 収録ファイルの取り扱い規準 allows free use of works whose copyright has expired; ruby readings dropped, converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "aozora-terada-tensai-to-kokubo",
+      "title": "寺田寅彦「天災と国防」（青空文庫）",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "ja",
+      "url": "https://www.aozora.gr.jp/cards/000042/files/2509_9319.html",
+      "license": "Public domain in Japan (著作権法第51条・第57条: the author died in 1935, and the term of protection has expired); transcription by 青空文庫 (https://www.aozora.gr.jp/), whose 収録ファイルの取り扱い規準 allows free use of works whose copyright has expired; ruby readings dropped, converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "aozora-takuboku-ichiaku-no-suna",
+      "title": "石川啄木「一握の砂」（青空文庫）",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "ja",
+      "url": "https://www.aozora.gr.jp/cards/000153/files/816_15786.html",
+      "license": "Public domain in Japan (著作権法第51条・第57条: the author died in 1912, and the term of protection has expired); transcription by 青空文庫 (https://www.aozora.gr.jp/), whose 収録ファイルの取り扱い規準 allows free use of works whose copyright has expired; ruby readings dropped, converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "aozora-kishida-kamifusen",
+      "title": "岸田國士「紙風船（一幕）」（青空文庫）",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "ja",
+      "url": "https://www.aozora.gr.jp/cards/001154/files/52082_45850.html",
+      "license": "Public domain in Japan (著作権法第51条・第57条: the author died in 1954, and the term of protection has expired); transcription by 青空文庫 (https://www.aozora.gr.jp/), whose 収録ファイルの取り扱い規準 allows free use of works whose copyright has expired; ruby readings dropped, converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "jstage-jkg-72-4-133",
+      "title": "J-STAGE: 日本語医学文献を探す～進化する医中誌Web（情報の科学と技術 72巻4号, 2022）抄録ページ",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20240615033038id_/https://www.jstage.jst.go.jp/article/jkg/72/4/72_133/_article/-char/ja/",
+      "license": "The article is CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.ja), but the page also carries J-STAGE's own interface text, which that licence does not cover (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "wikipedia-ja-talk-oden",
+      "title": "ウィキペディア日本語版: ノート:おでん",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "ja",
+      "url": "https://ja.wikipedia.org/w/index.php?oldid=109376827&action=raw",
+      "license": "CC-BY-SA-4.0 (URL only)",
+      "redistribute": false,
+      "format": "wikitext"
+    },
+    {
+      "id": "mhlw-icd-committee-26-minutes",
+      "title": "厚生労働省: 第26回 社会保障審議会統計分科会 疾病、傷害及び死因分類専門委員会 議事録",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260510085218id_/https://www.mhlw.go.jp/stf/newpage_36191.html",
+      "license": "厚生労働省ホームページは PDL1.0 だが、議事録の発言は委員（第三者）の言葉で、PDL1.0 は第三者の権利を含むコンテンツを保証しない (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "utokyo-gakui-kisoku",
+      "title": "東京大学学位規則",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20250419041429id_/https://www.u-tokyo.ac.jp/gen01/reiki_int/reiki_honbun/u0740354001.html",
+      "license": "No licence stated for the university's regulations (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "gutenberg-yellow-wallpaper",
+      "title": "Charlotte Perkins Gilman, The Yellow Wallpaper (Project Gutenberg #1952)",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "en",
+      "url": "https://www.gutenberg.org/cache/epub/1952/pg1952.txt",
+      "license": "Public domain in the United States (first published 1892); Project Gutenberg eBook #1952, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "redistribute": true,
+      "format": "gutenberg"
+    },
+    {
+      "id": "gutenberg-civil-disobedience",
+      "title": "Henry David Thoreau, On the Duty of Civil Disobedience (Project Gutenberg #71)",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "en",
+      "url": "https://www.gutenberg.org/cache/epub/71/pg71.txt",
+      "license": "Public domain in the United States (first published 1849); Project Gutenberg eBook #71, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "redistribute": true,
+      "format": "gutenberg"
+    },
+    {
+      "id": "gutenberg-frost-a-boys-will",
+      "title": "Robert Frost, A Boy's Will (Project Gutenberg #3021)",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "en",
+      "url": "https://www.gutenberg.org/cache/epub/3021/pg3021.txt",
+      "license": "Public domain in the United States (first published 1913); Project Gutenberg eBook #3021, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "redistribute": true,
+      "format": "gutenberg"
+    },
+    {
+      "id": "gutenberg-importance-of-being-earnest",
+      "title": "Oscar Wilde, The Importance of Being Earnest (Project Gutenberg #844)",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "en",
+      "url": "https://www.gutenberg.org/cache/epub/844/pg844.txt",
+      "license": "Public domain in the United States (first published 1899); Project Gutenberg eBook #844, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "redistribute": true,
+      "format": "gutenberg"
+    },
+    {
+      "id": "myplate-vegetable-cheese-soup",
+      "title": "MyPlate Kitchen (USDA): Vegetable Cheese Soup",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260120035359id_/https://www.myplate.gov/recipes/vegetable-cheese-soup",
+      "license": "The recipe's source is the University of Nebraska at Lincoln (Nebraska Nutrition Education Program), not the federal government, and no licence is stated (URL only)",
       "redistribute": false,
       "format": "html"
     }

@@ -3,17 +3,19 @@
 import { join } from "node:path";
 import { congressionalRecordToMarkdown } from "./congressional-record-markdown.ts";
 import { googlePatentsToMarkdown } from "./google-patents-markdown.ts";
+import { gutenbergText } from "./gutenberg-text.ts";
 import { htmlToMarkdown } from "./html-markdown.ts";
 import { kokkaiToMarkdown } from "./kokkai-markdown.ts";
 import { wikitextToMarkdown } from "./wikitext-markdown.ts";
 
-/** A source that is not Markdown or plain text, and the converter that turns it into Markdown when it is fetched. */
+/** A source that is not Markdown or plain text, and the converter that turns it into Markdown (or, for a Gutenberg eBook, into the work's own text) when it is fetched. */
 const CONVERTERS = {
   wikitext: wikitextToMarkdown,
   html: htmlToMarkdown,
   "google-patents": googlePatentsToMarkdown,
   kokkai: kokkaiToMarkdown,
   "congressional-record": congressionalRecordToMarkdown,
+  gutenberg: gutenbergText,
 } as const;
 
 type SourceFormat = keyof typeof CONVERTERS;

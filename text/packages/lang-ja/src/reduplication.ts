@@ -50,3 +50,35 @@ const isSplitAdverb = (first: Token | undefined, second: Token, readsAsAdverb: R
 
 export const markReduplication = (tokens: readonly Token[], vocabulary: Distributive, readsAsAdverb: ReadsAsAdverb): Token[] =>
   tokens.map((token, index) => (isDistributive(tokens, index, vocabulary) || isSplitAdverb(tokens[index - 1], token, readsAsAdverb) ? echoed(token) : token));
+
+/** 解析器が読んだ一語。pos は IPADIC の品詞、detail はその細分類、form は活用形（活用しない語は *）。 */
+export type Inflection = { readonly surface: string; readonly pos: string; readonly detail: string; readonly form: string; readonly start: number };
+
+/** 文を終えずに後ろへ続く形。連用形（連用テ接続・連用タ接続を含む）と命令形。 */
+const CONTINUING_FORM = /^(?:連用|命令)/u;
+
+/** 一文字の語（し・い）は重ねて強める形にならない。「確認ししました」は書き損じ。 */
+const MIN_ECHO_LENGTH = 2;
+
+/** IPADIC で細分類が「自立」なのは動詞と形容詞だけで、活用形を持つ。 */
+const continuesAsWord = (word: Inflection | undefined): word is Inflection =>
+  word !== undefined && word.detail === "自立" && word.surface.length >= MIN_ECHO_LENGTH && CONTINUING_FORM.test(word.form);
+
+/** 語尾として続く語（助動詞・接続助詞）。「できできます」の重なりは語幹の書き損じで、重ね言葉ではない。 */
+const isEnding = (word: Inflection | undefined): boolean => word !== undefined && (word.pos === "助動詞" || word.detail === "接続助詞");
+
+/**
+ * 自立の動詞・形容詞を、連用形か命令形のまま重ねた形（泣き泣き・売り売り・長く長く・待て待て）は重ね言葉。二つ目に Echo=Rdp。
+ * 解析器は一つ目を別の活用に読むことがある（待て待て の一つ目は「待てる」の連用形）ので、形は二つとも続く形であればよい。
+ * 終止形の重なり（行く行く）、非自立の語（くださいください）、語尾が続く重なり（できできます）は書き損じのまま。
+ */
+export const isInflectedEcho = (words: readonly Inflection[], index: number): boolean => {
+  const [first, second] = [words[index - 1], words[index]];
+  return (
+    continuesAsWord(first) &&
+    continuesAsWord(second) &&
+    first.surface === second.surface &&
+    first.start + first.surface.length === second.start &&
+    !isEnding(words[index + 1])
+  );
+};
