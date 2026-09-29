@@ -1,0 +1,24 @@
+# Names of the divisions of a document that take a number after them (Part II, Section VIII, Title IV). A Roman
+# numeral right after one of these is the number, not an acronym. Matched as written, or in capitals (PART II).
+id: numbered-division
+language: en
+entries:
+  - pattern: Part
+  - pattern: Section
+  - pattern: Title
+  - pattern: Chapter
+  - pattern: Article
+  - pattern: Appendix
+  - pattern: Annex
+  - pattern: Schedule
+  - pattern: Exhibit
+  - pattern: Attachment
+  - pattern: Volume
+  - pattern: Book
+  - pattern: Division
+  - pattern: Subpart
+  - pattern: Subtitle
+  - pattern: Subchapter
+  - pattern: Phase
+  - pattern: Table
+  - pattern: Figure

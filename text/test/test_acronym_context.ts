@@ -11,6 +11,7 @@ const notAcronymSpans = notAcronymSpansOf({
   currencies: listOf("currency-code"),
   usStates: listOf("us-state-code"),
   emphasis: listOf("emphasis-word"),
+  divisions: listOf("numbered-division"),
 });
 
 /** 範囲に覆われた大文字の語だけを返す。 */
@@ -118,10 +119,10 @@ describe("notAcronymSpans: 異常な入力", () => {
 });
 
 describe("notAcronymSpansOf: 語彙表の形", () => {
-  const none = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [] };
+  const none = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [], divisions: [] };
 
   it("空の語彙表はどこにも当たらない（空の選択肢で文字の間に当たらない）", () => {
-    assert.deepEqual(notAcronymSpansOf(none)("at 3:30 PM, USD 1,000, Berkeley, CA 94720, NOT"), []);
+    assert.deepEqual(notAcronymSpansOf(none)("at 3:30 PM, USD 1,000, Berkeley, CA 94720, NOT, Part II"), []);
   });
 
   it("語は字面どおりに照らす。正規表現の記号は記号のまま（N.B は NXB に当たらない）", () => {

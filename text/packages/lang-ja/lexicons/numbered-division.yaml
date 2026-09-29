@@ -1,0 +1,24 @@
+# 後ろに番号を書く、英語の文書の区切りの名前（Part II、Section VIII、Title IV）。すぐ後ろのローマ数字は番号で、略語ではない。
+# 日本語の文書も英語の文書の箇所（米国法の Title IX など）を引くので、英語と同じ語を置く。字面どおりか、全部大文字で照らす。
+id: numbered-division
+language: ja
+entries:
+  - pattern: Part
+  - pattern: Section
+  - pattern: Title
+  - pattern: Chapter
+  - pattern: Article
+  - pattern: Appendix
+  - pattern: Annex
+  - pattern: Schedule
+  - pattern: Exhibit
+  - pattern: Attachment
+  - pattern: Volume
+  - pattern: Book
+  - pattern: Division
+  - pattern: Subpart
+  - pattern: Subtitle
+  - pattern: Subchapter
+  - pattern: Phase
+  - pattern: Table
+  - pattern: Figure
