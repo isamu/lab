@@ -52,8 +52,9 @@ jobs:
 
       # 公開版ではなく、いま review 中のコミットから作った dist で走らせる。
       # 自分の仕様書を自分で読ませる。動かなくなったらここで落ちる。
+      # .chaff-baseline.json は Code Scanning の prose scan 用。ここでは棚上げ分も含めて全部見る。
       - name: chaff on its own spec
-        run: node packages/chaff/bin/chaff.js chaff-spec.md
+        run: node packages/chaff/bin/chaff.js chaff-spec.md --show-baseline
 
       # 実際に公開した記事と社内文書にかける。作り物では通るのに実文書で壊れる、
       # という状態に気づくため。指摘の数は文章の好みの問題なので落とさない。

@@ -100,9 +100,9 @@ const titleWords = (rest: string): string[] => {
 const afterOf = (text: string, end: number): string | undefined => {
   const rest = text.slice(end, end + 200);
   const afterList = listEnd(rest);
-  const listed = afterList + (GLOSS.exec(rest.slice(afterList))?.[0].length ?? 0);
-  const of = OF.exec(rest.slice(listed));
-  return of === null ? undefined : rest.slice(listed + of[0].length);
+  const afterGloss = afterList + (GLOSS.exec(rest.slice(afterList))?.[0].length ?? 0);
+  const of = OF.exec(rest.slice(afterGloss));
+  return of === null ? undefined : rest.slice(afterGloss + of[0].length);
 };
 
 /**

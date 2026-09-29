@@ -2,12 +2,12 @@ import { checkCitations, type Citation, type CitationResult } from "../structure
 import { readSource, readTree, type TreeContext } from "./tree.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
 
-const FORMATS = ["text", "json"];
+const FORMATS: ReadonlySet<string> = new Set(["text", "json"]);
 const QUOTE_WIDTH = 40;
-const VALUED = ["--format", "--language"];
+const VALUED: ReadonlySet<string> = new Set(["--format", "--language"]);
 
 export const citeTargets = (argv: readonly string[]): string[] =>
-  argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.includes(all[index - 1] ?? ""));
+  argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.has(all[index - 1] ?? ""));
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -88,7 +88,7 @@ const describe = (result: CitationResult, text: CiteText): string => {
 export const runCite = async (targets: readonly string[], argv: readonly string[], context: TreeContext): Promise<number> => {
   const [sourcePath, citationsPath] = targets;
   const format = context.flag(argv, "--format") ?? "text";
-  if (sourcePath === undefined || citationsPath === undefined || targets.length !== 2 || !FORMATS.includes(format)) {
+  if (sourcePath === undefined || citationsPath === undefined || targets.length !== 2 || !FORMATS.has(format)) {
     console.error(TEXT[context.ui ?? "ja"].usage);
     return 1;
   }

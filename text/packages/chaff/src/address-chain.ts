@@ -78,7 +78,7 @@ const chainAt = (patterns: Compiled, text: string, start: number): { readonly sp
   const firstEnd = matchEnd(patterns.address, text, start);
   if (firstEnd === undefined) return undefined;
   const { spans, cuts } = readChain(patterns, text, { start, end: firstEnd });
-  const cut = [...cuts].reverse().find((candidate) => endsHere(patterns, text, candidate.end));
+  const cut = cuts.findLast((candidate) => endsHere(patterns, text, candidate.end));
   return cut === undefined ? undefined : { spans: spans.slice(0, cut.addresses), end: cut.end };
 };
 

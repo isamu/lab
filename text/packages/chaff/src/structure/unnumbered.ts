@@ -24,9 +24,9 @@ export const unnumberedUnit = (line: string, open: readonly OpenUnit[], rule: Ru
   if (rule === undefined) return undefined;
   const rest = patternOf(rule.indent).exec(line)?.groups?.["rest"];
   if (rest === undefined) return undefined;
-  const holder = [...open].reverse().find((unit) => unit.numbered.kind === rule.inside);
+  const holder = open.findLast((unit) => unit.numbered.kind === rule.inside);
   if (holder === undefined || !holder.bodyOnLine) return undefined;
-  const previous = [...open].reverse().find((unit) => unit.numbered.depth === rule.depth)?.numbered;
+  const previous = open.findLast((unit) => unit.numbered.depth === rule.depth)?.numbered;
   if (previous !== undefined && previous.label !== "") return undefined;
   const number = String((previous === undefined ? 1 : Number(previous.number)) + 1);
   return { kind: "item", depth: rule.depth, number, absolute: false, label: "", heading: "", rest: rest.trim(), ordinal: Number(number) };

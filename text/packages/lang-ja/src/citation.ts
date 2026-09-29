@@ -16,7 +16,7 @@ export type CitationVocabulary = {
 const patternsOf = (lexicon: Lexicon | undefined): string[] => (lexicon ?? []).map((entry) => entry.pattern);
 
 export const citationVocabulary = (lexicons: Readonly<Record<string, Lexicon>>): CitationVocabulary => ({
-  kinds: patternsOf(lexicons["document-kind"]).sort((left, right) => right.length - left.length),
+  kinds: patternsOf(lexicons["document-kind"]).toSorted((left, right) => right.length - left.length),
   kanaTitleKinds: patternsOf(lexicons["kana-title-kind"]),
   notes: patternsOf(lexicons["name-note"]).map((pattern) => new RegExp(`(?:${pattern})$`, "u")),
   selfPrefixes: patternsOf(lexicons["self-prefix"]),

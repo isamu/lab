@@ -47,7 +47,7 @@ const insideArticle = (context: NumberingContext): boolean => context.open.some(
 /** 「（2）」は開いている「（1）」の兄弟。無ければ、開いているものより一段深い。 */
 const PAREN_LABEL = /^（\d+）$/u;
 const parenDepth = (context: NumberingContext): number =>
-  [...context.open].reverse().find((open) => PAREN_LABEL.test(open.label))?.depth ?? (context.open.at(-1)?.depth ?? 0) + 1;
+  context.open.findLast((open) => PAREN_LABEL.test(open.label))?.depth ?? (context.open.at(-1)?.depth ?? 0) + 1;
 
 /**
  * 条の範囲の行は、最初の条の番地を持ち、並びの位置は範囲の最後まで進める。中の条は番地を持たない。
@@ -125,7 +125,7 @@ const ITEM_SHAPES: readonly ItemShape[] = [
  * 「第十二条第二項」（12.2）がぶつからないようにする。
  */
 const inFirstParagraph = (context: NumberingContext, depth: number): boolean =>
-  depth === ITEM_DEPTH && [...context.open].reverse().find((open) => open.depth < ITEM_DEPTH)?.kind === "article";
+  depth === ITEM_DEPTH && context.open.findLast((open) => open.depth < ITEM_DEPTH)?.kind === "article";
 
 const item = (line: string, context: NumberingContext): NumberedLine | undefined =>
   ITEM_SHAPES.reduce<NumberedLine | undefined>((found, shape) => {
@@ -258,12 +258,12 @@ const addressOfReference = (
   const main = numberOf(groups["a"]);
   if (main === undefined) return undefined;
   const sub = numberOf(groups["s"]);
-  const article = sub === undefined ? main : `${main}-${sub}`;
-  const item = numberOf(groups["i"]);
+  const articleNumber = sub === undefined ? main : `${main}-${sub}`;
+  const itemNumber = numberOf(groups["i"]);
   // 「第二条第一号」は第 1 項の号。項を書かずに号を指すのは、項が一つしかない条。
-  const paragraph = numberOf(groups["p"]) ?? (item === undefined ? undefined : "1");
-  const target = [article, paragraph, item].filter((part) => part !== undefined).join(".");
-  return { target, fallback: paragraph === "1" && item === undefined ? article : undefined };
+  const paragraph = numberOf(groups["p"]) ?? (itemNumber === undefined ? undefined : "1");
+  const target = [articleNumber, paragraph, itemNumber].filter((part) => part !== undefined).join(".");
+  return { target, fallback: paragraph === "1" && itemNumber === undefined ? articleNumber : undefined };
 };
 
 /** 他の文書の名前を読む語と、章・節の番地でない言い方。語彙表から一度だけ作る。 */
@@ -292,7 +292,7 @@ const references = (text: string): Mention[] => {
   // 括弧書きの中の参照（「（同法第五十九条において準用する場合を含む。）」）は、外の並びを切らない。並びは括弧の深さごとに持つ。
   const chains = new Map<number, { readonly end: number; readonly document: string | undefined }>();
   return [...articlesOf(text), ...sectionsOf(text)]
-    .sort((left, right) => left.start - right.start)
+    .toSorted((left, right) => left.start - right.start)
     .map((mention) => {
       const depth = depths[mention.start] ?? 0;
       const previous = chains.get(depth);
@@ -350,7 +350,7 @@ const obligations = (text: string): Mention[] => {
       kept.push({ start, end, attrs: { marker, type } });
     });
   });
-  return kept.sort((left, right) => left.start - right.start);
+  return kept.toSorted((left, right) => left.start - right.start);
 };
 
 /** 「二十二」「２」を数にする。相対の参照（前二項・前条第二項）を core が読むときに使う。 */
