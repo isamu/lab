@@ -100,11 +100,22 @@ const repeatsPrevious = (tokens: readonly Token[], at: number): boolean => {
 /** 語彙表の重なり（had had）も、三つ続けば（had had had）書き損じ。 */
 const allowedAt = (tokens: readonly Token[], at: number, allowed: Lexicon): Lexicon => (repeatsPrevious(tokens, at) ? [] : allowed);
 
-export const doubledIn = (source: string, tokens: readonly Token[], spaced: boolean, allowed: Lexicon): Doubled[] =>
+/**
+ * tokens の at 語目から、語彙表の決まった句（a priori・a la carte）が始まるか。句の頭の a は冠詞ではなく句の一部なので、
+ * 前の違う冠詞と並んでも（the a priori approach）書き損じではない。同じ語（a a priori）は書き損じのまま。
+ */
+export const opensPhrase = (tokens: readonly Token[], at: number, phrases: Lexicon): boolean =>
+  phrases.some((entry) => {
+    const words = entry.tokens ?? [];
+    return words.length > 1 && surfacesOf(tokens.slice(at, at + words.length)) === surfacesOf(words);
+  });
+
+export const doubledIn = (source: string, tokens: readonly Token[], spaced: boolean, allowed: Lexicon, phrases: Lexicon = []): Doubled[] =>
   tokens.flatMap((second, index) => {
     const first = tokens[index - 1];
     if (first === undefined || !doubledAt(source, first, second, spaced)) return [];
     if (isAllowed(tokens, index - 1, allowedAt(tokens, index - 1, allowed))) return [];
+    if (!sameWord(first, second) && opensPhrase(tokens, index, phrases)) return [];
     return isNameBefore(first, second, opensSentence(tokens, index - 1)) ? [] : [{ first, second }];
   });
 
@@ -123,13 +134,17 @@ const findingOf = (sentence: Sentence, doubled: Doubled, spaced: boolean): Findi
 /** 文書の種類の語（法・規則・契約書）。語彙表はアダプタが持つ。 */
 const DOCUMENT_KIND = "document-kind";
 
+/** 冠詞のような語で始まる決まった句。語彙表はアダプタが持つ。冠詞の無い言語（日本語）は持たない。 */
+const FIXED_PHRASE = "fixed-phrase";
+
 export const doubledWord: Detector = (doc, options): Finding[] => {
   const spaced = doc.lengthUnit === "word";
   const allowed = options.lexicon ?? [];
   const cited = citedNamesOf(doc.structure);
   const kinds = new Set((doc.lexicons[DOCUMENT_KIND] ?? []).map((entry) => entry.pattern));
+  const phrases = doc.lexicons[FIXED_PHRASE] ?? [];
   return doc.sentences.flatMap((sentence) =>
-    doubledIn(doc.source, sentence.tokens ?? [], spaced, allowed)
+    doubledIn(doc.source, sentence.tokens ?? [], spaced, allowed, phrases)
       .filter((doubled) => !endsCitedName(doubled.first, doubled.second, cited, kinds))
       .map((doubled) => findingOf(sentence, doubled, spaced)),
   );

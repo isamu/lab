@@ -3,7 +3,16 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { doubledAt, doubledIn, gapBetween, isAllowed, isNameBefore, isPartOfLongerWord, startsTitle } from "../packages/chaff/src/detectors/doubled-word.ts";
+import {
+  doubledAt,
+  doubledIn,
+  gapBetween,
+  isAllowed,
+  isNameBefore,
+  isPartOfLongerWord,
+  opensPhrase,
+  startsTitle,
+} from "../packages/chaff/src/detectors/doubled-word.ts";
 import { citedNamesOf, endsCitedName } from "../packages/chaff/src/detectors/cited-name.ts";
 import type { LanguageAdapter, Lexicon, StructureNode, Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
@@ -38,9 +47,9 @@ const entry = (...surfaces: readonly string[]): Lexicon[number] => ({
   tokens: tokensOf(surfaces.map((surface) => w(surface, "X"))).tokens,
 });
 
-const pairs = (words: readonly Word[], options: { gaps?: readonly string[]; spaced?: boolean; allowed?: Lexicon } = {}): string[] => {
+const pairs = (words: readonly Word[], options: { gaps?: readonly string[]; spaced?: boolean; allowed?: Lexicon; phrases?: Lexicon } = {}): string[] => {
   const { source, tokens } = tokensOf(words, options.gaps);
-  return doubledIn(source, tokens, options.spaced ?? true, options.allowed ?? []).map(
+  return doubledIn(source, tokens, options.spaced ?? true, options.allowed ?? [], options.phrases ?? []).map(
     ({ first, second }) => `${first.surface} ${second.surface}@${String(second.span.start)}`,
   );
 };
@@ -163,6 +172,30 @@ describe("doubled-word — 純関数", () => {
     assert.equal(isAllowed([first, second], 0, [entry("had", "had", "been")]), false);
   });
 
+  it("決まった句（a priori）の頭の冠詞は、前の冠詞と並んでも書き損じではない", () => {
+    const phrases = [entry("a", "priori")];
+    const words = [w("the", "DET", ART), w("a", "DET", ART), w("priori", "NOUN"), w("approach", "NOUN")];
+    assert.deepEqual(pairs(words, { phrases }), []);
+    assert.deepEqual(pairs(words), ["the a@4"]);
+    // 句の続きが無ければ句ではない。
+    assert.deepEqual(pairs([w("the", "DET", ART), w("a", "DET", ART), w("report", "NOUN")], { phrases }), ["the a@4"]);
+    // 同じ語の重なり（a a priori）は書き損じのまま。
+    assert.deepEqual(pairs([w("a", "DET", ART), w("a", "DET", ART), w("priori", "NOUN")], { phrases }), ["a a@2"]);
+    // 句より前の重なりは書き損じのまま。
+    assert.deepEqual(pairs([w("the", "DET", ART), w("the", "DET", ART), w("a", "DET", ART), w("priori", "NOUN")], { phrases }), ["the the@4"]);
+  });
+
+  it("opensPhrase: 句の語が全部並んでいるときだけ。一語の行は句ではない", () => {
+    const { tokens } = tokensOf([w("the", "DET"), w("A", "DET"), w("la", "X"), w("carte", "NOUN")]);
+    assert.equal(opensPhrase(tokens, 1, [entry("a", "la", "carte")]), true);
+    assert.equal(opensPhrase(tokens, 0, [entry("a", "la", "carte")]), false);
+    assert.equal(opensPhrase(tokens, 1, [entry("a", "la", "mode")]), false);
+    assert.equal(opensPhrase(tokens, 1, [entry("a")]), false);
+    assert.equal(opensPhrase(tokens, 2, [entry("la", "carte", "menu")]), false);
+    assert.equal(opensPhrase(tokens, 1, [{ pattern: "a la carte" }]), false);
+    assert.equal(opensPhrase(tokens, 1, []), false);
+  });
+
   it("空の並び、一語だけの並びでは何も出さない", () => {
     assert.deepEqual(doubledIn("", [], true, []), []);
     assert.deepEqual(pairs([w("the", "DET")]), []);
@@ -282,6 +315,29 @@ describe("doubled-word — 英語", () => {
       "Payment for May may be delayed due to procurement review.",
     ];
     valid.forEach((text) => assert.deepEqual(findingsOf(text, en, "en"), [], text));
+  });
+
+  it("valid: 冠詞のような語で始まる決まった句（a priori）は、前の冠詞と重なっていない", () => {
+    const valid = [
+      "This is meant to be analogous to the a priori trusted origin concept.",
+      "We reject the a posteriori argument.",
+      "It is an a fortiori case.",
+      "Order from our A la carte menu.",
+      "The a cappella group sang.",
+    ];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text, en, "en"), [], text));
+  });
+
+  it("invalid: 句でなければ、句の前でも冠詞の重なりは書き損じ", () => {
+    assert.deepEqual(findingsOf("Please send the a report on the a priori method.", en, "en"), ["1:17 the a"]);
+    assert.deepEqual(findingsOf("It is the a prior approach.", en, "en"), ["1:11 the a"]);
+    assert.deepEqual(findingsOf("This is a a priori argument.", en, "en"), ["1:11 a a"]);
+    assert.deepEqual(findingsOf("Use a a la carte menu.", en, "en"), ["1:7 a a"]);
+  });
+
+  it("決まった句の語彙表を持たない言語では、句の前の冠詞も重なりとして数える", () => {
+    const bare: LanguageAdapter = { ...en, lexicons: Object.fromEntries(Object.entries(en.lexicons).filter(([name]) => name !== "fixed-phrase")) };
+    assert.deepEqual(findingsOf("We reject the a posteriori argument.", bare, "en"), ["1:15 the a"]);
   });
 
   it("valid: コードを挟んだ語は別々の語", () => {
