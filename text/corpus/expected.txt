@@ -87,8 +87,9 @@ nsf-19-582-reu-solicitation  agentless-passive 154, concrete-evidence-density 5,
 nta-taxanswer-1120  latin-spacing 21, max-kanji-continuous 8, max-sentence-length 6, ngram-repetition 1, no-doubled-joshi 4
 nta-tsutatsu-shohi-05-01  latin-spacing 11, max-sentence-length 13, ngram-repetition 1, no-doubled-joshi 4
 nttcom-onboarding-week1  agentless-passive 1, concrete-evidence-density 6, hiragana-fukushi 2, latin-spacing 1, max-sentence-length 1, no-doubled-joshi 1, undefined-acronym 3, unqualified-superlative 2
-nws-heat-wave-safety  agentless-passive 4, concrete-evidence-density 4, contraction-consistency 4, max-paragraph-length 1, max-sentence-length 6, preamble-length 1, proper-noun-density 1
-oecd-global-drought-outlook-summary  agentless-passive 2, heading-echo 4, max-paragraph-length 2, max-sentence-length 12, proper-noun-density 1
+nws-heat-wave-safety  agentless-passive 4, concrete-evidence-density 5, contraction-consistency 4, max-paragraph-length 1, max-sentence-length 6, preamble-length 1, proper-noun-density 1
+oecd-global-drought-outlook-summary  adverb-overuse 1, agentless-passive 2, max-paragraph-length 2, max-sentence-length 12, proper-noun-density 1
+pep-0020-zen-of-python  max-paragraph-length 1, proper-noun-density 1
 ppc-guidelines-tsusoku  agentless-passive 66, duplicate-definition 14, latin-spacing 19, max-kanji-continuous 565, max-sentence-length 502, ngram-repetition 1, no-doubled-joshi 103, repeated-conjunction 9, taigen-dome-in-prose 1, undefined-acronym 5
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-paragraph-length 2, max-sentence-length 1, oxford-comma-consistency 1
