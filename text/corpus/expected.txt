@@ -8,8 +8,8 @@
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2
 aozora-kishida-kamifusen  hiragana-fukushi 1, max-kanji-continuous 1, max-paragraph-length 5, max-sentence-length 3, taigen-dome-in-prose 1
-aozora-soseki-yume-juya  doubled-word 2, latin-spacing 2, max-paragraph-length 42, max-sentence-length 1, no-doubled-joshi 2, no-mixed-desumasu 1, section-length-uniformity 1
-aozora-takuboku-ichiaku-no-suna  doubled-word 10, hiragana-fukushi 1, latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 41, no-mixed-desumasu 2, sentence-rhythm 1
+aozora-soseki-yume-juya  latin-spacing 2, max-paragraph-length 42, max-sentence-length 1, no-doubled-joshi 2, no-mixed-desumasu 1, section-length-uniformity 1
+aozora-takuboku-ichiaku-no-suna  doubled-word 1, hiragana-fukushi 1, latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 41, no-mixed-desumasu 2, sentence-rhythm 1
 aozora-terada-tensai-to-kokubo  excessive-hedging 3, max-kanji-continuous 2, max-paragraph-length 5, max-sentence-length 7, no-doubled-joshi 7, unqualified-superlative 2
 apidatagov-developer-manual  max-sentence-length 5, proper-noun-density 1
 arxiv-2609-27842-genai-assessment  adverb-overuse 1, agentless-passive 124, concrete-evidence-density 9, excessive-hedging 1, max-paragraph-length 16, max-sentence-length 218, ngram-repetition 1, undefined-acronym 10

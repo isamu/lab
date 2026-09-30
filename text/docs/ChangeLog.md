@@ -32,6 +32,27 @@ independent verb or adjective repeated in a form that does not end the sentence 
 (「くださいください」), a one-character word (「確認ししました」), and a repeat followed by an ending
 (「確認できできます」), which is a stem written twice.
 
+### doubled-word does not count Japanese mimetics, 畳語 written without 々, or 「売り売りて」 (#170)
+
+The analyser splits a kana mimetic it does not know into whatever words match its sounds (すうすう → 吸う + 吸う,
+しだいしだい → two suffixes, たんたらたら → a noun and two auxiliaries), and a 畳語 written without 々 (家家, 朝朝)
+into two nouns; doubled-word reported them as a word written twice. Now read as reduplication:
+
+- a whole hiragana word repeated where an adverb stands, before と or に or at a line end
+  (「きしきしと」「ちょんちょんと」「すうすうと」「しだいしだいに」「あはれあはれ」); a verb read there counts only
+  with a two-mora root, the shape of a mimetic (すう);
+- two identical auxiliaries with no predicate before them that read together as one adverb (「たんたらたら」);
+- a one-kanji noun doubled, when the kanji takes 々: the analyser's dictionary reads 家々 as one word, and the new
+  `iteration-kanji` word list holds those it does not know (朝々, 神々);
+- a 五段 verb's continuative repeated before て (「売り売りて」「行き行きて」); 「日毎日毎」 joins 「毎日毎日」 in the
+  doubled-word word list.
+
+Still reported: particles and auxiliaries after a predicate (「のの」「をを」「着いたらたら」), a suffix attached to a
+noun (「田中さんさん」), a kana word that does not stand as an adverb (「まとめまとめを」「まとめまとめ、」), a
+katakana word (「ユーザーユーザー」), a longer kana verb (「できるできると」), a one-kanji noun that has no
+々 form (「法法の」, and 「金金と」, which only emphasis tells from a slip), a doubled two-kanji noun (「確認確認」), and
+「くださいください」 and 「できできて」.
+
 ### A tenth round of corpus kinds: fiction, essays, poetry and plays in Japanese and English, and more (#170)
 
 The corpus adds, committed as public domain: 夏目漱石「夢十夜」, 寺田寅彦「天災と国防」, 石川啄木「一握の砂」 and

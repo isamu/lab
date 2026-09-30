@@ -1,0 +1,18 @@
+# 々 を付けて畳語になる一字の漢字のうち、解析器の辞書が 々 付きの一語として持たないもの（朝々・神々）。
+# 家々・国々・人々・日々 は辞書が一語と読むので、ここには要らない。
+# 々 を使わずに重ねた形（朝朝・家家）を、doubled-word は書き損じに数えない。略称の重なり（法法）は 法々 と書けないので数える。
+id: iteration-kanji
+language: ja
+entries:
+  - pattern: 朝
+  - pattern: 夜
+  - pattern: 村
+  - pattern: 町
+  - pattern: 神
+  - pattern: 隅
+  - pattern: 谷
+  - pattern: 花
+  - pattern: 星
+  - pattern: 枝
+  - pattern: 軒
+  - pattern: 窓
