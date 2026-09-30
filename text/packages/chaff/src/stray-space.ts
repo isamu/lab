@@ -27,7 +27,10 @@ const kindOf = (left: Token, right: Token): JointKind | undefined => {
   return PARTICLE.has(left.pos) ? "between-phrases" : undefined;
 };
 
-/** 行（か文）の頭の語か。行頭の「ヘ」「イ」は項目の記号で、後ろの空白は記号と本文の区切り。 */
+/**
+ * 行（か文）の頭の語か。助詞は前の語に付くので、行頭の「助詞」（「ヘ」）は項目の記号を読み違えたもので、後ろの空白は記号と本文の区切り。
+ * 行頭の内容語（折り返した「確認 しました」の「確認」）は語句の頭なので、ここでは外さない。
+ */
 const isLineHead = (text: string, at: number): boolean => text.slice(text.lastIndexOf("\n", at - 1) + 1, at).trim() === "";
 
 const isWord = (token: Token): boolean => token.surface.trim() !== "";
@@ -60,9 +63,9 @@ const jointOf = (sentence: Sentence, written: string, quoted: readonly Span[], p
   if (!isJapanese(left.surface.at(-1)) || !isJapanese(right.surface.at(0))) return undefined;
   const spaced = spacing(sentence, written, pair);
   if (spaced === undefined || isWithinAny(quoted, { start: left.span.start, end: right.span.end })) return undefined;
-  if (isLineHead(sentence.text, left.span.start - sentence.span.start)) return undefined;
   const kind = kindOf(left, right);
-  return kind === undefined ? undefined : { offset: left.span.end, kind, spaced, before: left.surface, after: right.surface };
+  if (kind === undefined || (kind === "between-phrases" && isLineHead(sentence.text, left.span.start - sentence.span.start))) return undefined;
+  return { offset: left.span.end, kind, spaced, before: left.surface, after: right.surface };
 };
 
 /**

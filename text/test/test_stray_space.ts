@@ -52,6 +52,7 @@ describe("stray-space: 語句の途中の空白を指摘する", () => {
 
   it("折り返した行の途中の空白も見る（行ではなく文が句点で終わればよい）", () => {
     assert.deepEqual(strays(`${PLAIN}\n\nさくらさんが 買った本は、\n三冊あります。\n`), ["が 買っ"]);
+    assert.deepEqual(strays(`${PLAIN}\n\n資料を\n確認 しました。\n`), ["確認 し"]);
   });
 
   it("疑問文の終わり（？）も文として読む", () => {
@@ -66,6 +67,7 @@ describe("stray-space: 語句の途中の空白を指摘する", () => {
 
   it("境目の種類と空け方を読む", () => {
     assert.deepEqual(joints("資料を確認 しました。"), [
+      "inside-phrase:touching:資料|を",
       "between-phrases:touching:を|確認",
       "inside-phrase:spaced:確認|し",
       "inside-phrase:touching:し|まし",
