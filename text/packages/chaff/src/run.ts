@@ -127,12 +127,15 @@ export const wantsTags = (rule: RuleDefinition): boolean => [...rule.requires, .
  * 解析器の初期化に払う代金を決める。動く rule が 1 本も要求しないなら読み込まない。
  * capabilities は「払えばできる」の宣言なので、ここでは見ない。
  */
-export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, experimental: boolean, genre: string, language: string): AdapterNeeds => ({
-  pos: forGenre(rules, genre)
+export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, experimental: boolean, genre: string, language: string): AdapterNeeds => {
+  const running = forGenre(rules, genre)
     .filter((rule) => rule.layer !== "L4" && levelFor(rule, settings, experimental, presetLevels(genre)) !== "off")
-    .filter((rule) => rule.languages === undefined || rule.languages.includes(language))
-    .some(wantsTags),
-});
+    .filter((rule) => rule.languages === undefined || rule.languages.includes(language));
+  return { pos: running.some(wantsTags), features: tokenFeaturesOf(running) };
+};
+
+/** The token features the rules read (RuleDefinition.token_features), each once. */
+export const tokenFeaturesOf = (rules: readonly RuleDefinition[]): string[] => [...new Set(rules.flatMap((rule) => rule.token_features ?? []))];
 
 const place = (starts: readonly number[], finding: Finding): Finding => {
   const offset = finding.values["offset"];

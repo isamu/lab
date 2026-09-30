@@ -2,11 +2,13 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { buildDocument, type TeamRules } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules, runRulesWith, type RunContext } from "../packages/chaff/src/run.ts";
+import { neededBy, runRules, runRulesWith, type RunContext } from "../packages/chaff/src/run.ts";
+import { evaluate } from "../packages/chaff/src/eval.ts";
 import { longFormMorae, moraCount, oddLongVowels, type KanaWord } from "../packages/chaff/src/long-vowel.ts";
 import type { OptionLayer } from "../packages/chaff/src/rule-options.ts";
 import { katakanaLongVowel } from "../packages/chaff/src/detectors/long-vowel.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import type { Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 const RULE = "katakana-long-vowel";
@@ -23,11 +25,13 @@ const found = (source: string, options: Record<string, unknown> = {}, team: Team
     .findings.filter((finding) => finding.rule === RULE)
     .map((finding) => `${String(finding.values["matched"])}→${String(finding.values["preferred"])}:${finding.variant ?? ""}`);
 
+const isDropped = (token: Token): boolean => token.features?.["LongVowelEnding"] === "Dropped";
+
 const word = (surface: string, offset: number, dropped = false): KanaWord => ({ surface, offset, long: surface.endsWith("ー"), dropped });
 
 describe("katakana-long-vowel", () => {
   before(async () => {
-    await ja.prepare?.({ pos: true });
+    await ja.prepare?.({ pos: true, features: ["LongVowelEnding"] });
     await en.prepare?.({ pos: true });
   });
 
@@ -175,6 +179,32 @@ describe("katakana-long-vowel", () => {
         }).findings.filter((finding) => finding.rule === RULE).length;
       assert.equal(at("normal"), 2);
       assert.equal(at("relaxed"), 0);
+    });
+
+    it("chaff eval measures with the options chaff.yaml sets", () => {
+      const doc = buildDocument("t.md", "# 報告\n\nサーバーを使います。\n", ja);
+      const rule = RULES_JA.filter((entry) => entry.id === RULE);
+      const at = (layers: OptionLayer[]): number => evaluate([doc], rule, "business/report", "ja", {}, layers)[0]?.sweep[0]?.findings ?? -1;
+      assert.equal(at([]), 0);
+      assert.equal(at(settingsLayer({ ending: "drop" })), 1);
+    });
+
+    it("asks the adapter for the dictionary's long forms only while the rule runs", () => {
+      assert.deepEqual(neededBy(RULES_JA, {}, false, "business/report", "ja").features, []);
+      assert.deepEqual(neededBy(RULES_JA, { [RULE]: "normal" }, false, "business/report", "ja").features, ["LongVowelEnding"]);
+      assert.deepEqual(neededBy(RULES_JA, { [RULE]: "off" }, true, "business/report", "ja").features, []);
+    });
+
+    it("the adapter marks no dropped ー when no rule asked for it", async () => {
+      const marked = (): boolean =>
+        buildDocument("t.md", "# 報告\n\nメモリを使います。\n", ja)
+          .sentences.flatMap((sentence) => sentence.tokens ?? [])
+          .some(isDropped);
+      await ja.prepare?.({ pos: true });
+      const without = marked();
+      await ja.prepare?.({ pos: true, features: ["LongVowelEnding"] });
+      assert.equal(without, false);
+      assert.equal(marked(), true);
     });
 
     it("is off by default (experimental) and does not run on English", () => {

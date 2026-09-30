@@ -107,6 +107,12 @@ const numberFor = (raw: unknown, language: string): number | undefined => {
 
 const stringList = (value: unknown): string[] | undefined => (Array.isArray(value) ? value.map((entry) => String(entry)) : undefined);
 
+/** What only some rules declare: options beyond the level, and token features the adapter computes on request. */
+const extrasOf = (raw: Record<string, unknown>, file: string): Pick<RuleDefinition, "options" | "token_features"> => ({
+  ...(raw["options"] === undefined ? {} : { options: optionsOf(raw["options"], file) }),
+  ...(raw["token_features"] === undefined ? {} : { token_features: stringList(raw["token_features"]) ?? [] }),
+});
+
 const toRule = (raw: unknown, language: string, file: string): RuleDefinition => {
   if (!isRecord(raw)) throw new Error(`${file}: rule は object であること`);
   const levels = flattenLevels(raw["levels"], language);
@@ -138,7 +144,7 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     languages: stringList(raw["languages"]),
     use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],
     severity: severityOf(raw["severity"], language),
-    ...(raw["options"] === undefined ? {} : { options: optionsOf(raw["options"], file) }),
+    ...extrasOf(raw, file),
   };
 };
 

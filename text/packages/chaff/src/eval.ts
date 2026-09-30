@@ -1,6 +1,7 @@
 import { DETECTORS } from "./detectors/index.ts";
 import { charLength } from "./measure.ts";
-import type { ProseDocument, RuleDefinition } from "./plugin.ts";
+import type { DetectorOptions, ProseDocument, RuleDefinition } from "./plugin.ts";
+import { optionValues, settleOptions, type OptionLayer } from "./rule-options.ts";
 import { missingList } from "./declared-lists.ts";
 import { bodySectionOf } from "./body-section.ts";
 
@@ -45,12 +46,12 @@ const candidates = (rule: RuleDefinition, current: number): number[] => {
   return [...new Set([...fromLevels, ...scaled, current])].toSorted((left, right) => left - right);
 };
 
-const countAt = (docs: readonly ProseDocument[], rule: RuleDefinition, limit: number): Point => {
+const countAt = (docs: readonly ProseDocument[], rule: RuleDefinition, limit: number, settings: DetectorOptions["settings"]): Point => {
   const detector = DETECTORS[rule.how_to_find];
   if (detector === undefined) return { limit, findings: 0, documents: 0, per10k: 0 };
   const perDoc = docs.map((doc) => {
     const lexicon = rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list];
-    return detector(doc, { limit, lexicon, where: rule.where }).length;
+    return detector(doc, { limit, lexicon, where: rule.where, settings }).length;
   });
   const findings = perDoc.reduce((sum, count) => sum + count, 0);
   const chars = docs.reduce((sum, doc) => sum + doc.sentences.reduce((inner, sentence) => inner + charLength(sentence), 0), 0);
@@ -99,12 +100,14 @@ export const evaluate = (
   genre: string,
   language: string,
   limits: Readonly<Record<string, number>> = {},
+  optionLayers: readonly OptionLayer[] = [],
 ): RuleReport[] =>
   rules
     .filter((rule) => measurable(rule, docs, genre, language))
     .map((rule) => {
       const current = limits[rule.id] ?? rule.levels.normal ?? 1;
-      const sweep = candidates(rule, current).map((limit) => countAt(docs, rule, limit));
+      const settings = rule.options === undefined ? undefined : optionValues(settleOptions(rule.id, rule.options, optionLayers));
+      const sweep = candidates(rule, current).map((limit) => countAt(docs, rule, limit, settings));
       return {
         rule: rule.id,
         name: rule.name[language] ?? rule.id,

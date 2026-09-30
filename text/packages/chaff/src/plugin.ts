@@ -79,7 +79,11 @@ export type AdapterCapabilities = {
 };
 
 /** prepare に渡す要求。動く rule が要らないものの代金を払わせない。 */
-export type AdapterNeeds = { readonly pos: boolean };
+export type AdapterNeeds = {
+  readonly pos: boolean;
+  /** Token features that cost the adapter extra work (LongVowelEnding asks the dictionary about each katakana word). Only the running rules' are asked for. */
+  readonly features?: readonly string[];
+};
 
 export type LanguageAdapter = {
   readonly kind: "language";
@@ -424,6 +428,8 @@ export type RuleDefinition = {
   readonly requires: readonly string[];
   /** 使えるなら用意してほしい capability（"pos"）。requires と違い、満たせなくても動かす（品詞が無ければ文字だけで見る）。 */
   readonly uses: readonly string[];
+  /** Token features the rule reads that the adapter computes only when asked (AdapterNeeds.features). */
+  readonly token_features?: readonly string[];
   /** 複合シグナル。ここに並べた rule のうち何本が出たかを見る。spec §20.2。 */
   readonly from: readonly string[];
   /** 動かす言語。未指定は全言語。「ですます調」のように言語に固有の rule が使う。 */

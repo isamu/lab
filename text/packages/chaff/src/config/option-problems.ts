@@ -9,6 +9,9 @@ export const configOptionLayer = (config: Pick<Config, "options">): OptionLayer 
   values: config.options ?? {},
 });
 
+/** Every place options come from, strongest first. */
+export const optionLayersOf = (config: Pick<Config, "options">): OptionLayer[] => [configOptionLayer(config)];
+
 type ProblemText = {
   readonly notAMap: (where: string, value: string) => string;
   readonly problem: (where: string, problem: OptionProblem) => string;

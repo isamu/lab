@@ -75,11 +75,14 @@ const LEXICONS = loadLexicons();
 const DISTRIBUTIVE = distributiveVocabulary(LEXICONS);
 const TAKES_ITERATION_MARK = iterationMarkReading(LEXICONS, readsAsOneWord);
 const KNOWS_WITH_LONG_VOWEL = remembered(knownWordReading(tokenize));
+/** Whether a running rule reads LongVowelEnding. Asking the dictionary about every katakana word costs, so only then. */
+const askForLongVowels = { value: false };
 
 const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] => {
   const read = tokenize(source);
   if (read === undefined) return [...sentences];
-  const tokens = markDroppedLongVowels(markSpacedCounters(read, readsAsCounter), KNOWS_WITH_LONG_VOWEL);
+  const counted = markSpacedCounters(read, readsAsCounter);
+  const tokens = askForLongVowels.value ? markDroppedLongVowels(counted, KNOWS_WITH_LONG_VOWEL) : counted;
   return sentences.map((sentence) => ({
     ...sentence,
     // 述語かどうかは文の中でしか決まらないので、文へ配ってから印を落とす。
@@ -112,6 +115,7 @@ export const adapter: LanguageAdapter = {
     lengthUnit: "char",
   },
   prepare: async (need: AdapterNeeds): Promise<void> => {
+    askForLongVowels.value = need.features?.includes("LongVowelEnding") ?? false;
     if (need.pos) await prepare();
   },
   detect: (source: string): number => {

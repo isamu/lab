@@ -34,7 +34,7 @@ import { runSkill } from "./commands/skill.ts";
 import { runFeedback, settingsOf } from "./commands/feedback.ts";
 import { homedir } from "node:os";
 import { settingWarnings } from "./config/warnings.ts";
-import { configOptionLayer } from "./config/option-problems.ts";
+import { optionLayersOf } from "./config/option-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRulesWith } from "./run.ts";
 import type { Finding, Level, RuleDefinition } from "./plugin.ts";
@@ -96,7 +96,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
   const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
-  const raw = runRulesWith(doc, rules, { settings: config.rules, experimental, genre, limits: config.limits, optionLayers: [configOptionLayer(config)] });
+  const raw = runRulesWith(doc, rules, { settings: config.rules, experimental, genre, limits: config.limits, optionLayers: optionLayersOf(config) });
   // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
   const applied = applySuppressions(
     source,
@@ -220,7 +220,7 @@ const explain = (ruleId: string | undefined, genreFlag: string | undefined): num
   }
   const preset = genre === undefined ? {} : presetLevels(genre);
   const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
-  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, [configOptionLayer(config)]));
+  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, optionLayersOf(config)));
   return 0;
 };
 
@@ -261,7 +261,7 @@ const showRules = (genreFlag: string | undefined): number => {
   const config = readConfig();
   const language = config.language ?? hostLanguage(undefined, process.env);
   warnRuleProblems(config, language);
-  console.log(rulesJson(loadRules(language), config, language, genreFlag ?? config.genre ?? "blog/tech", [configOptionLayer(config)]));
+  console.log(rulesJson(loadRules(language), config, language, genreFlag ?? config.genre ?? "blog/tech", optionLayersOf(config)));
   return 0;
 };
 
