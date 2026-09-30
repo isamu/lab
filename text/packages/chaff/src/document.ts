@@ -400,6 +400,7 @@ const OPAQUE = ["code", "inlineCode", "html", "yaml", "toml"];
 const outlineOf = (root: Node, source: string, replyQuotes: readonly Span[]): Outline => ({
   headings: headingsOf(root, source, replyQuotes),
   opaque: [...OPAQUE.flatMap((type) => spansOfType(root, type)), ...replyQuotes],
+  tables: spansOfType(root, "table"),
 });
 
 /** 構造を読むための Markdown の手がかり。見出しと、中を読まない範囲。返信の引用は、言語パッケージの語彙表で見分ける。 */

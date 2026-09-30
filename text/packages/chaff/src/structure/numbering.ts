@@ -1,5 +1,6 @@
 import type { StructureNode } from "../plugin.ts";
 import { inDocumentOrder, type StructureIssue } from "./issues.ts";
+import { numbersQuotedInside } from "./quoted-number.ts";
 
 const labelOf = (node: StructureNode): string => String(node.attrs["label"] ?? node.address);
 
@@ -9,10 +10,10 @@ type Ordered = { readonly node: StructureNode; readonly ordinal: number; readonl
  * 同じ親の子のうち、番号の付いたものを種類と深さごとに分ける。条と項は別の並び、項と号も別の並び。
  * 法令の第 1 項は番号が無いので、その号（一、二）と第 2 項（２）は同じ条の直下に並ぶ。深さで分けないと「二の次が２」に見える。
  */
-const sequencesOf = (parent: StructureNode): Ordered[][] => {
+const sequencesOf = (parent: StructureNode, quoting: ReadonlySet<StructureNode>): Ordered[][] => {
   const groups = new Map<string, Ordered[]>();
   parent.children.forEach((node) => {
-    if (node.ordinal === undefined) return;
+    if (node.ordinal === undefined || quoting.has(node)) return;
     const key = `${node.kind}/${String(node.level ?? "")}`;
     // 配列を作り直さずに足す。条が何千もある法令で二乗にしない。
     const group = groups.get(key) ?? [];
@@ -41,9 +42,12 @@ const breaksIn = (sequence: readonly Ordered[]): StructureIssue[] =>
  * 番号の抜けと重なり。比べるのは同じ親の子どうしだけ。英米の法令は章ごとに Section 101、201 と百の位を変えるので、
  * 文書全体の通し番号として比べると抜けに見える。最初の番号は見ない。日本語の項は 2 から番号を振る。
  * 1 に戻った番号は新しい並びの始まりとして扱うので、「(a) の後の (a)」の重なりは見逃す。
+ * 同じ番号の節を中に持つ節（ほかの文書の条を引いた手本の見出し）は、並びに入れない。
  */
-export const numberingBreaks = (tree: StructureNode): StructureIssue[] =>
-  inDocumentOrder(tree)
-    .flatMap(sequencesOf)
+export const numberingBreaks = (tree: StructureNode): StructureIssue[] => {
+  const quoting = numbersQuotedInside(tree);
+  return inDocumentOrder(tree)
+    .flatMap((parent) => sequencesOf(parent, quoting))
     .flatMap(breaksIn)
     .toSorted((left, right) => left.offset - right.offset);
+};
