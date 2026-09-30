@@ -702,6 +702,34 @@ describe("English: a hyphenated bracket tag names another document only where th
   });
 });
 
+// RFC 9293 cites its references by number: "Section 4.2.2.17 of [19]", "See [23], Section 2.17". A bracketed number is
+// also how a form leaves a blank, so it names another document only where the document lists it. Self-written text.
+describe("English: a numbered bracket tag names another document only where this document lists it", () => {
+  const numbered = (...body: string[]): string => lines("Section 1 Scope", ...body, "Section 2 Fees", "text");
+  const missing9 = [["dangling-reference", { label: "Section 9", target: "9" }]];
+  const listed19 = ['   [19]       Doe, J., "Requirements for Hosts", 1989.'];
+
+  const cited: readonly (readonly [string, string])[] = [
+    ["the number after the reference", numbered("Hosts keep the link open (see Section 9 of [19]).", ...listed19)],
+    ["the number before the reference", numbered("Hosts keep the link open (see [19], Section 9).", ...listed19)],
+    ["a document named, then its number, then the reference", numbered("Hosts keep the link open (see RFC 5961 [19], Section 9).", ...listed19)],
+    ["the list alone on its line", numbered("See Section 9 of [19].", "   [19]", "              Doe, J., 1989.")],
+  ];
+  cited.forEach(([name, source]) => {
+    it(name, () => assert.deepEqual(found(en, source), []));
+  });
+
+  const blanks: readonly (readonly [string, string])[] = [
+    ["a number the document never lists", numbered("Payment is made under Section 9 of [19].")],
+    ["another number listed does not list this one", numbered("Payment is made under Section 9 of [18].", ...listed19)],
+    ["a line that opens with the number is prose, not a list entry", numbered("[19] pays under Section 9 of [19].")],
+    ["a year in brackets is not a numbered citation", numbered("See Section 9 of [2024].", "   [2024]     Annual edition.")],
+  ];
+  blanks.forEach(([name, source]) => {
+    it(name, () => assert.deepEqual(found(en, source), missing9));
+  });
+});
+
 describe("a plain-text specification's top-level sections (RFC 9457: '5.  Security Considerations')", () => {
   // 二段の番号（3.1）は本文でも読むので、どの例も構造を読めた文書として比べる。
   const withSubsection = (...head: string[]): string => lines(...head, "", "3.1.  Details", "", "Text.", "", "See Section 1.");

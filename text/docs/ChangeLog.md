@@ -36,6 +36,37 @@ the word "Fed" followed by a lowercase word "s", and the Title Case heading was 
 now read with the same apostrophe fold as `contraction-consistency` and the English tagger: `’` between a letter or
 digit and a letter, and every `ʼ`, reads as `'`. A closing quote (`‘Board’ Reviews`) is still outside the word.
 
+### English inside a Japanese document is split as in an English one, and no sentence ends inside nested brackets (#170)
+
+- **English runs in a Japanese document get the English adapter's sentence ends.** `FIG. 1 illustrates…` and
+  `Vol. XLIII` no longer end a sentence at the label's full stop. `He said "done." Then…` ends after the closing
+  quote. `“Is it done?” Nobody knew.` keeps the `”` on the first sentence. An English paragraph is now split the same
+  way by both adapters. The Japanese adapter holds copies of the English functions, since adapters do not depend on
+  each other, and a test compares the copies with the originals.
+- **A 。 inside brackets or double quotes no longer ends a Japanese sentence when the brackets nest.** A statute's
+  「（…（…）をいう。以下同じ。）に記載され…」 was cut inside the outer parentheses, so a sentence began with 「）」.
+  `“終わった？”誰も知らない。` is one sentence, as `「終わった？」誰も知らない。` already was. Only a bracket closed later on
+  the same line counts, so `1）`, an unclosed `（` and a ditto `“` join nothing. A closing bracket left at the start of a
+  sentence goes back to the sentence it closes. A line that ends in a lone `\r` is a line break too.
+
+### Corpus round 13; `dangling-reference` and sections of numbered documents (#170)
+
+Documents of kinds the corpus had not seen: GitHub-flavoured Markdown with alerts and Liquid tags, an MDX page,
+a specification made of tables (OpenAPI 3.1.0), release notes, a changelog, a plain-language guideline from
+plainlanguage.gov, Japanese technical documents from GitHub (Vue.js docs, JavaScript Primer, a textlint preset's README),
+a town's open-data page, RFC 9293 in plain text, a mailing-list archive with quoted replies, an English Wikipedia
+article and a Japanese Wikipedia village-pump thread.
+
+`dangling-reference` reported RFC 9293's references into other documents as missing sections:
+
+- **A numbered citation tag.** "Section 4.2.2.17 of [19]" and "See [23], Section 2.17" point into the document listed
+  as [19] or [23]. A bracketed number is also how a form leaves a blank, so, as with a hyphenated tag
+  ("[HTTP-CACHING]"), it names another document only where this document lists it (a line that starts with the tag,
+  then the entry after two spaces, or nothing). "[2024]" is not read as a tag.
+- **A numbered document named before the reference.** "RFC 1122, Section 3.3.4.2" and "RFC 7657 (Sections 5.1, 5.3,
+  and 6)". The lang-en lexicon `document-kind` now lists RFC, BCP and STD with `position: before`: the name stands
+  before its own number, where a code (CFR) takes a title number before it.
+
 ### `yarn bench` plants a polite sentence only where chaff can see it clash (#170)
 
 Since 「〜こと。」 and 「〜もの。」 endings became neutral, the requirements sample, written entirely in 「〜こと。」, had no
