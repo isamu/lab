@@ -42,3 +42,10 @@ example:
       表は Excel で作り、Word に貼ります。図は PowerPoint で描きます。最後にPDFにします。
     after: |
       表は Excel で作り、Word に貼ります。図は PowerPoint で描きます。最後に PDF にします。
+
+not_flagged:
+  ja: 電話番号や日付のような番号、単位つきの日付や時刻（9月、10時5分）、見出しの番号、「」の中は数えません。どちらの空け方が正しいかは決めません。
+  en: Codes such as phone numbers and dates, dates and times with units (9月, 10時5分), heading numbers and quotations are not counted. Neither way is called right.
+level_meaning:
+  ja: 少ないほうの空け方が {limit} 箇所あれば指摘
+  en: reported once {limit} places go against the document's habit

@@ -53,3 +53,10 @@ example:
       ## How to claim expenses
 
       Attach the receipt and submit it by the end of the month.
+
+not_flagged:
+  ja: 短い見出し（言葉が少なく、重なりを測れないもの）は見ません。
+  en: Headings too short to measure an overlap are not checked.
+level_meaning:
+  ja: 見出しと直後の文の重なりが {limit}% 以上なら指摘
+  en: reported when the first sentence overlaps the heading by {limit}% or more

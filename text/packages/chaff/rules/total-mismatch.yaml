@@ -56,3 +56,7 @@ example:
       | Design | $3,000 |
       | Build | $5,000 |
       | Total | $8,000 |
+
+not_flagged:
+  ja: 単位や列の違う金額は足しません。足し方が何通りもあるとき（小計と税のあとの総計など）は、どれとも合わないときだけ指します。
+  en: Amounts in another unit or column are not added. Where there is more than one way to add them up, it is reported only when none matches.

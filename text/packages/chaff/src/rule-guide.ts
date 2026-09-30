@@ -34,6 +34,10 @@ export type RuleGuide = {
   readonly summary: Localized;
   /** By language. A rule that runs in one language has an example in that language only. */
   readonly examples: Readonly<Record<string, RuleExample>>;
+  /** What the rule leaves alone on purpose, so a reader does not take silence for a miss. */
+  readonly notFlagged: Localized;
+  /** What a level's number means, with {limit} for the number ("一文 {limit} 字まで"). None when every level is the same. */
+  readonly levelMeaning: Localized;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -69,6 +73,8 @@ export const ruleGuideOf = (raw: Readonly<Record<string, unknown>>): RuleGuide =
   group: RULE_GROUPS.find((group) => group === raw["group"]),
   summary: localizedOf(raw["summary"]),
   examples: examplesOf(raw["example"]),
+  notFlagged: localizedOf(raw["not_flagged"]),
+  levelMeaning: localizedOf(raw["level_meaning"]),
 });
 
 /** The rules in each group, in the order the reference lists them. A rule with no group is in none, which the test on rule files reports. */

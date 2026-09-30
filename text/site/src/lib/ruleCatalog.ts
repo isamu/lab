@@ -72,7 +72,8 @@ const outputOf = (rule: Rule, lang: Lang): readonly ExampleFinding[] => {
   return outcome.before;
 };
 
-const entryOf = (rule: Rule, lang: Lang): CatalogEntry => {
+/** One rule's row: its example in the page's language (or the one it checks) and what chaff printed. */
+export const entryOf = (rule: Rule, lang: Lang): CatalogEntry => {
   const exampleLang = exampleLangOf(rule, lang);
   const example = rule.examples[exampleLang];
   if (example === undefined) throw new Error(`${rule.id}: no example in its rule file`);

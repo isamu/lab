@@ -13,16 +13,24 @@ const READER_LANGUAGES = ["ja", "en"];
 
 const languagesOf = (rule: RuleDefinition): readonly string[] => rule.languages ?? READER_LANGUAGES;
 
+/** A level's number needs words only when it is a number that changes; L4 and rules with nothing to count set severities. */
+const needsLevelMeaning = (rule: RuleDefinition): boolean =>
+  rule.layer !== "L4" && rule.level_sets !== "severity" && new Set(Object.values(rule.levels)).size > 1;
+
 const lackingOf = (rule: RuleDefinition): string[] => [
   ...(rule.guide?.group === undefined ? ["group"] : []),
   ...READER_LANGUAGES.filter((language) => (rule.guide?.summary[language] ?? "") === "").map((language) => `summary.${language}`),
   ...languagesOf(rule)
     .filter((language) => rule.guide?.examples[language] === undefined)
     .map((language) => `example.${language} (before and after)`),
+  ...READER_LANGUAGES.filter((language) => (rule.guide?.notFlagged[language] ?? "") === "").map((language) => `not_flagged.${language}`),
+  ...(needsLevelMeaning(rule) ? READER_LANGUAGES : [])
+    .filter((language) => !(rule.guide?.levelMeaning[language] ?? "").includes("{limit}"))
+    .map((language) => `level_meaning.${language} (with {limit})`),
 ];
 
 describe("rule reference — the plain-language fields of every rule file", () => {
-  it("every rule has a group, a one-line summary in Japanese and English, and an example in each language it checks", () => {
+  it("every rule has a group, a summary and what it does not flag in both languages, an example in each language it checks, and words for its levels", () => {
     const lacking = rules.flatMap((rule) => {
       const fields = lackingOf(rule);
       return fields.length === 0 ? [] : [`${rule.id}.yaml lacks ${fields.join(", ")}`];

@@ -65,3 +65,10 @@ example:
       Payment will be due at the end of the month.
 
       The old prices end in March.
+
+not_flagged:
+  ja: 接続詞で始まる段落が一つだけなら、流れをつなぐ普通の書き方なので指しません。
+  en: One paragraph opening with a connective is ordinary and is not reported.
+level_meaning:
+  ja: 接続詞で始まる段落の連続 {limit} まで
+  en: up to {limit} paragraphs in a row opening with a connective

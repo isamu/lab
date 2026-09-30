@@ -35,3 +35,10 @@ example:
   ja:
     before: 部長がおっしゃられたとおり、来週から始めます。
     after: 部長がおっしゃったとおり、来週から始めます。
+
+not_flagged:
+  ja: 一覧にある形だけを見ます。一覧にない形は、二重敬語でも指しません。
+  en: Only the forms on chaff's list are checked; a doubled honorific not on the list is not reported.
+level_meaning:
+  ja: 当てはまる形が {limit} 箇所あれば指摘
+  en: reported once there are {limit}
