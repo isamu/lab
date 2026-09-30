@@ -1,11 +1,9 @@
-import { plainSource } from "../plain-source.ts";
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { loadAdapter } from "../adapter-load.ts";
 import { applyByPath } from "../config/by-path.ts";
 import { buildDocument, teamRules } from "../document.ts";
 import { guessLanguage } from "../detect.ts";
-import { collectTargets } from "../files.ts";
+import { collectTargets, readDocumentFile } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
 import { counted } from "../render/plural.ts";
 import { CHECKS_FILE, loadChecks, type UserCheck } from "../checks.ts";
@@ -87,7 +85,7 @@ type SemanticDocument = { readonly doc: ProseDocument; readonly rules: RuleDefin
 
 /** 意味を読む検査に渡す文書。絞り込みが品詞を使うなら、解析器を読み込んでから作る。dry-run も本番も同じ文書を見る。 */
 const semanticDocument = async (path: string, config: Config, resolveGenre: TestContext["resolveGenre"]): Promise<SemanticDocument> => {
-  const source = plainSource(await readFile(path, "utf8"));
+  const source = await readDocumentFile(path);
   const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
   const adapter = await loadAdapter(language);
   const { genre } = resolveGenre(path, source, config);

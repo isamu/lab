@@ -1,5 +1,10 @@
 import { globSync, statSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
+import { plainSource } from "./plain-source.ts";
+
+/** 検査する文書を読む。言語・ジャンル・stet も文書モデルと同じ本文（BOM と CRLF / CR をそろえたもの）で読むため、ここでそろえる。 */
+export const readDocumentFile = async (path: string): Promise<string> => plainSource(await readFile(path, "utf8"));
 
 const MARKDOWN = [".md", ".markdown", ".mdx"];
 

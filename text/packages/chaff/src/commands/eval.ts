@@ -1,10 +1,8 @@
-import { plainSource } from "../plain-source.ts";
-import { readFile } from "node:fs/promises";
 import { loadAdapter } from "../adapter-load.ts";
 import { applyByPath } from "../config/by-path.ts";
 import { buildDocument, teamRules } from "../document.ts";
 import { guessLanguage } from "../detect.ts";
-import { collectTargets } from "../files.ts";
+import { collectTargets, readDocumentFile } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
 import { evaluate } from "../eval.ts";
 import { renderEval } from "../render/eval.ts";
@@ -51,7 +49,7 @@ export const runEval = async (targets: readonly string[], argv: readonly string[
   const only = flag(argv, "--rule");
   const docs = await Promise.all(
     paths.map(async (path) => {
-      const source = plainSource(await readFile(path, "utf8"));
+      const source = await readDocumentFile(path);
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
       const { genre } = resolveGenre(path, source, config);
