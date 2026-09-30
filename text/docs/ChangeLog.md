@@ -4,6 +4,25 @@ Newest first.
 
 ## Unreleased
 
+### `names:` in chaff.yaml: the team lists its own names (#170)
+
+`max-kanji-continuous` reported official names such as 個人情報保護委員会 and 国土交通省鉄道局総務課, and the dictionary
+cannot say they are names: it splits them into common nouns (厚生 + 労働省). A team now lists its own names under `names:`
+in chaff.yaml, as it lists its jargon. A listed name matches as written and is read as one name:
+
+- `max-kanji-continuous` does not count it; kanji before or after it are measured as separate runs, so
+  「個人情報保護委員会事務局総務課長補佐」 still reports 「事務局総務課長補佐」;
+- `ngram-repetition` does not count a phrase that touches it;
+- `undefined-acronym` does not ask to expand it, or an acronym inside it (`NTT` in `NTT Docomo`);
+- `proper-noun-density` counts it as one proper noun however many words it splits into.
+
+`names` must be a list of names (a number such as `2025` is read as text); any other value, or an entry that is not a
+name, is skipped with a message in both languages. A name wrapped across a line in the source still matches. `chaff init` shows the key, commented out. chaff ships no names of its own.
+
+`max-kanji-continuous` also leaves out a run of kanji that fills a 「」 or 『』 quotation exactly
+(「英国大使館別荘記念公園」), even without `names`: the brackets mark it as one quoted name, the same trade-off
+`latin-spacing` and `no-doubled-joshi` make for quotations. A quotation that also holds kana is measured as before.
+
 ### doubled-word does not count a Japanese verb or adjective repeated in its continuative or imperative form (#170)
 
 Fiction, plays and poems repeat a word to press it: 「流せ流せ」「待て待て」「死ね死ね」「長く長く」. The analyser

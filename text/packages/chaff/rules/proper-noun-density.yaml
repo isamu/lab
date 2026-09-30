@@ -3,6 +3,7 @@ layer: L3
 status: experimental
 how_to_find: proper-noun-density
 requires: [pos]
+# chaff.yaml の names に並べた名前は、何語に割れても 1 つと数える。名前そのものは数える（読み手が知らないことは変わらない）。
 severity: info
 
 name:

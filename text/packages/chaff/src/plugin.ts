@@ -314,6 +314,8 @@ export type ProseDocument = {
   readonly lexicons: Readonly<Record<string, Lexicon>>;
   /** この種類の文書に無いと困る見出し。チームが chaff.yaml で決める。 */
   readonly requiredSections: readonly string[];
+  /** チームが chaff.yaml の names に並べた固有名詞。1 つの名前として読み、書き手の落ち度に数えない。 */
+  readonly names?: readonly string[];
   /** 番地の付いた木（§27）。adapter が structure を持たない言語では無い。 */
   readonly structure: StructureNode | undefined;
   /** 文書の種類（法令など）。選ばれなければ無い。 */
