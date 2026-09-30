@@ -36,6 +36,93 @@ Case and in sentence case.
 The HTML converter drops a heading with no text in it (an empty `<h2>`); the two committed documents that had one
 are converted again.
 
+### Email: headers, separators, signatures and quoted replies are not the writer's prose (#170)
+
+A plain-text or Markdown email was read as one long piece of prose. Found by shape, in any genre:
+
+- **Header.** A block of `Field: value` lines that names known fields (`From:`, `Subject:`, `Message-ID:`, 件名 /
+  差出人 / 宛先 …) is a header: at the top of a message, or after a separator line, one known field is enough;
+  elsewhere two. An archive's envelope line (`From x  Mon Mar 14 …`) and folded lines belong to it. The fields the
+  writer types (Subject, To, Cc, 件名, 宛先) keep their value as a line of its own, so a typo in the subject is still
+  found; the other fields (addresses, dates, message ids) are not prose. The field names are in the new lexicons
+  `email-header-field` and `email-written-field` of both language packages.
+- **Separator lines** (`-----Original Message-----`, a row of underscores, `---------- Forwarded message ----------`)
+  and **signatures** (the `-- ` line and at most four lines after it) are not prose. Paragraphs are cut around all of
+  these, so a header no longer runs into the greeting as one sentence.
+- **Quoted reply.** An attribution line (ending in "wrote:", 「書きました:」, or a sender's address and a colon; the new
+  lexicon `email-attribution`) followed by `>` lines is someone else's words. Quoted text was already outside the prose
+  rules as a blockquote; now the attribution line is not prose either, a heading inside the quote is not a section of
+  this document, and the structure rules (`duplicate-definition`, `numbering-gap`, `dangling-reference`) do not read
+  the quote. A blockquote the writer introduces without an attribution is treated as before.
+- **`preamble-length` needs a heading.** On a document with no heading below its title it did nothing and said
+  nothing; it is now listed as not run, "the document has no headings below its title"
+  (「表題より下の見出しが無いため」). A rule declares this with `requires: [headings]`.
+
+In the corpus, the mailing-list archive loses the findings on its headers, signatures, the definition repeated inside
+a quoted reply, and the sentences that ran a header into the next line. With the headers no longer counted as words,
+it gains `adverb-overuse`. Its `preamble-length` stays: its only heading is inside release notes the writer quoted
+with `>` without an attribution.
+
+### `oxford-comma-consistency`: a cited title does not vote (#170)
+
+A title's commas belong to whoever named it, not to the writer, yet "Journal of Money, Credit and Banking" in a
+Federal Reserve speech's notes was judged as a list without an Oxford comma and reported against the notes' author
+lists. A list no longer votes when its "and" / "or" sits in a Title Case run (capitalised words, with "of", "and", "a"
+and the like, hyphens and a subtitle's colon between them) that holds a phrase of two or more words and is either
+wrapped in quotation marks or emphasis (`“Hurricanes, Their Nature and History”`, `_The Update, The Vent, and The
+Disaster_`) or follows a quoted article title and its comma and ends at a comma or the end of the sentence (`"Three
+Lessons…," Journal of Money, Credit and Banking, vol. 32`). Lists of names in running text ("Login.gov, TTS
+Engineering and USAi"), author lists, a list followed by its verb after a quote (`In “The Review,” Smith, Jones and
+Brown argued`), a quoted list of one-word names (`‘Paris, Rome and Madrid’`), and quoted lists of lowercase words
+still vote. A quoted list of multi-word names (`‘New York, Los Angeles and San Diego’`) cannot be told from a title by
+its shape, and no longer votes. Which style is right is still not decided.
+
+### `undefined-acronym`: an expansion written in a heading counts (#170)
+
+Headings never become sentences, so an acronym spelled out only in a heading ("##### Maximum Envelope of Water (MEOW)
+runs", then "the MEOW for the cell" in the body) was reported as unexplained. Each heading is now searched with the
+same expansion forms as the body: brackets after a name, a name in brackets after the acronym, a square-bracketed
+acronym whose capitalised initials match, and the rest. Because headings also carry bracketed labels ("Your Own AI
+(LLM)", "(Beta)"), a heading counts only when the acronym's letters can be picked, in order, from its other words (the
+check glossary headwords already use), so a Japanese name in a heading cannot be confirmed. A heading that only uses
+the acronym ("## MEOW runs") still explains nothing. In the corpus, MEOW and MOM (NOAA AOML hurricane FAQ), HMRC
+(GOV.UK CDDO roadmap) and ESL, EHC and EEA (GOV.UK style guide A to Z) are no longer reported.
+
+### `title-case-consistency`: a curly apostrophe inside a word is part of the word (#170)
+
+The heading reader took `'` inside a word but not `’`, so "Monetary Policy and the Fed’s Framework Review" read as
+the word "Fed" followed by a lowercase word "s", and the Title Case heading was counted as sentence case. The heading is
+now read with the same apostrophe fold as `contraction-consistency` and the English tagger: `’` between a letter or
+digit and a letter, and every `ʼ`, reads as `'`. A closing quote (`‘Board’ Reviews`) is still outside the word.
+
+### A run of digits, words or parentheses as long as the text no longer crashes chaff (#170)
+
+A number tens of thousands of digits long, a town name split into thousands of one-character pieces, a superlative
+followed by thousands of nouns, or parentheses nested thousands deep in a statute stopped chaff with "Maximum call
+stack size exceeded". The functions that read along such a run now keep a cursor, and nested parentheses are removed in
+one reading instead of once per level. The output of every other document is unchanged.
+
+`chaff tree --format json` on a tree too deep to write as indented JSON (only a third-party language package nests
+that deep) now says so and names the depth instead of crashing; `--format sexp` may still write it.
+
+### English inside a Japanese document is split as in an English one, and no sentence ends inside nested brackets (#170)
+
+- **English runs in a Japanese document get the English adapter's sentence ends.** `FIG. 1 illustrates…` and
+  `Vol. XLIII` no longer end a sentence at the label's full stop. `He said "done." Then…` ends after the closing
+  quote. `“Is it done?” Nobody knew.` keeps the `”` on the first sentence. An English paragraph is now split the same
+  way by both adapters. The Japanese adapter holds copies of the English functions, since adapters do not depend on
+  each other, and a test compares the copies with the originals.
+- **A 。 inside brackets or double quotes no longer ends a Japanese sentence when the brackets nest.** A statute's
+  「（…（…）をいう。以下同じ。）に記載され…」 was cut inside the outer parentheses, so a sentence began with 「）」.
+  `“終わった？”誰も知らない。` is one sentence, as `「終わった？」誰も知らない。` already was. Only a bracket closed later on
+  the same line counts, so `1）`, an unclosed `（` and a ditto `“` join nothing. A closing bracket left at the start of a
+  sentence goes back to the sentence it closes. A line that ends in a lone `\r` is a line break too.
+- **A note in parentheses is read for its own ending.** Once such a note stayed one sentence,
+  「（この際、…亜塩素酸水（…（含量…以上））を入れることが望ましい。）」 was read as ending in its last inner bracket,
+  and `no-mixed-desumasu` lost a real finding. A bracket at the end of a sentence is now left out only when it is
+  closed and follows the predicate. A note that is the whole sentence, or that ends with 「。）」 after a finished
+  sentence, is read inside. Several asides in a row (「（※3）（ただし…を除く。）」) are all left out.
+
 ### Corpus round 13; `dangling-reference` and sections of numbered documents (#170)
 
 Documents of kinds the corpus had not seen: GitHub-flavoured Markdown with alerts and Liquid tags, an MDX page,

@@ -37,12 +37,14 @@ const isHyphenIdentifier = (digits: string): boolean => {
 const DIGIT_OR_POINT = /[\d.]/u;
 const isRunChar = (char: string | undefined): boolean => DIGIT_OR_POINT.test(char ?? "") || isHyphen(char);
 
-/** at を含む、数字・小数点・ハイフン（全角の「－」なども）の並び。at が並びの中に無ければ undefined。 */
+/** at を含む、数字・小数点・ハイフン（全角の「－」なども）の並び。at が並びの中に無ければ undefined。並びは本文ほど長くなれるので、1 字ずつ呼び直さずに進む。 */
 export const digitRunAround = (text: string, at: number): Span | undefined => {
   if (!isRunChar(text[at])) return undefined;
-  const startAt = (index: number): number => (index > 0 && isRunChar(text[index - 1]) ? startAt(index - 1) : index);
-  const endAt = (index: number): number => (index < text.length && isRunChar(text[index]) ? endAt(index + 1) : index);
-  return { start: startAt(at), end: endAt(at) };
+  let start = at;
+  while (start > 0 && isRunChar(text[start - 1])) start -= 1;
+  let end = at;
+  while (end < text.length && isRunChar(text[end])) end += 1;
+  return { start, end };
 };
 
 /** 並びの後ろ（空白 1 つまで）で始まる語。 */
@@ -163,10 +165,24 @@ export const sequenceLabelStarts = (text: string): ReadonlySet<number> => new Se
 const isGeoUnit = (token: Token): boolean => token.features?.["NameType"] === "GeoUnit";
 const isPlaceWord = (token: Token): boolean => isGeoUnit(token) || token.features?.["NameType"] === "Geo";
 
-/** end で終わる、間を空けずに続く地名と地名の単位（東京都千代田区紀尾井町）。近いほうから。 */
+/** 終わりの位置ごとの、その位置で終わる最初の地名の語。Map は NaN を NaN の鍵で引けるが、位置の NaN はどこにも等しくないので入れない。 */
+const placesByEnd = (tokens: readonly Token[]): ReadonlyMap<number, Token> => {
+  const byEnd = new Map<number, Token>();
+  tokens.forEach((token) => {
+    if (isPlaceWord(token) && !Number.isNaN(token.span.end) && !byEnd.has(token.span.end)) byEnd.set(token.span.end, token);
+  });
+  return byEnd;
+};
+
+/**
+ * end で終わる、間を空けずに続く地名と地名の単位（東京都千代田区紀尾井町）。近いほうから。
+ * 連なりは本文ほど長くなれるので、語を 1 度だけ読む。同じ語に戻れば（幅の無い語。adapter が壊れているとき）そこで止める。
+ */
 export const placeChainBefore = (tokens: readonly Token[], end: number): Token[] => {
-  const last = tokens.find((token) => token.span.end === end && isPlaceWord(token));
-  return last === undefined ? [] : [last, ...placeChainBefore(tokens, last.span.start)];
+  const byEnd = placesByEnd(tokens);
+  const chain = new Set<Token>();
+  for (let last = byEnd.get(end); last !== undefined && !chain.has(last); last = byEnd.get(last.span.start)) chain.add(last);
+  return [...chain];
 };
 
 /**

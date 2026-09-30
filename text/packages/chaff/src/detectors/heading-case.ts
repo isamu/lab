@@ -1,9 +1,29 @@
+import { straightApostrophes } from "../orthography.ts";
 import { withoutCodeWords } from "./heading-code-words.ts";
 
+/** 語の中のアポストロフィは ' に畳んでから読む（Fed’s）。’ を語の外に置くと、’s が小文字の語に見える。 */
 const WORD = /[A-Za-z][A-Za-z'-]*/gu;
 
 /** 小さい語は Title Case でも小文字のままなので、大文字化の判定から外す。 */
-const MINOR = new Set(["a", "an", "the", "and", "or", "but", "of", "in", "on", "at", "to", "for", "with", "as", "by", "from", "is"]);
+export const MINOR_WORDS: ReadonlySet<string> = new Set([
+  "a",
+  "an",
+  "the",
+  "and",
+  "or",
+  "but",
+  "of",
+  "in",
+  "on",
+  "at",
+  "to",
+  "for",
+  "with",
+  "as",
+  "by",
+  "from",
+  "is",
+]);
 
 /** 大文字だけの語（PR・FCPs）は略語で、どちらの流儀でも大文字のまま。Title Case の証拠にならない。 */
 const ACRONYM = /^[A-Z]{2,}s?$/u;
@@ -12,7 +32,9 @@ const TITLE_DEPTH = 1;
 
 /** 見出しが Title Case か。判定できなければ undefined。 */
 export const isTitleCase = (heading: string): boolean | undefined => {
-  const words = [...withoutCodeWords(heading).matchAll(WORD)].map((match) => match[0]).filter((word) => !MINOR.has(word.toLowerCase()) && !ACRONYM.test(word));
+  const words = [...withoutCodeWords(straightApostrophes(heading)).matchAll(WORD)]
+    .map((match) => match[0])
+    .filter((word) => !MINOR_WORDS.has(word.toLowerCase()) && !ACRONYM.test(word));
   // 1 語の見出しは、どちらの流儀でも先頭が大文字になる。判定できない。
   if (words.length < 2) return undefined;
   const capitalized = words.filter((word) => word[0] === word[0]?.toUpperCase()).length;

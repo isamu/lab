@@ -1,0 +1,28 @@
+# Email header field names. A block of "Field: value" lines that names these at the top of a message, or after a
+# separator line, is the header, not the writer's prose. Matched without regard to case.
+id: email-header-field
+language: en
+entries:
+  - pattern: From
+  - pattern: To
+  - pattern: Cc
+  - pattern: Bcc
+  - pattern: Subject
+  - pattern: Date
+  - pattern: Sent
+  - pattern: Reply-To
+  - pattern: Message-ID
+  - pattern: In-Reply-To
+  - pattern: References
+  - pattern: Received
+  - pattern: Return-Path
+  - pattern: Delivered-To
+  - pattern: Sender
+  - pattern: Organization
+  - pattern: Importance
+  - pattern: MIME-Version
+  - pattern: Content-Type
+  - pattern: Content-Transfer-Encoding
+  - pattern: User-Agent
+  - pattern: X-Mailer
+  - pattern: List-Id

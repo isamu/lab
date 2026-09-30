@@ -14,6 +14,7 @@ export type Reasons = {
   readonly unreadStructure: (clauses: number, units: number) => string;
   readonly noDetector: (name: string) => string;
   readonly noLexicon: (language: string, list: string) => string;
+  readonly noHeadings: string;
 };
 
 const CAPABILITY_NAME: Texts<Readonly<Record<string, string>>> = {
@@ -35,6 +36,7 @@ export const REASONS: Texts<Reasons> = {
       `条項の番号が本文に ${String(clauses)} 個あるのに、番号として読めたのは ${String(units)} 個のため（深い字下げや、行が本文につながった文書）`,
     noDetector: (name) => `検出器 ${name} がないため`,
     noLexicon: (language, list) => `${language} の語彙表 ${list} が無いため`,
+    noHeadings: "表題より下の見出しが無いため",
   },
   en: {
     otherLanguage: (language) => `not a rule for ${language}`,
@@ -49,5 +51,6 @@ export const REASONS: Texts<Reasons> = {
       `the text has ${String(clauses)} clause numbers but only ${String(units)} ${formFor(units, "was read as a numbered line", "were read as numbered lines")} (deep indents, or lines run into the text)`,
     noDetector: (name) => `no detector named ${name}`,
     noLexicon: (language, list) => `the ${language} package has no word list ${list}`,
+    noHeadings: "the document has no headings below its title",
   },
 };

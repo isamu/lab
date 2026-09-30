@@ -254,10 +254,22 @@ const depthsOf = (text: string): Int32Array => {
  * 「民法第709条」のように他の文書の名前が前にあれば、その名前を document に入れる。この文書の木では引かない。
  */
 /** at より前で開いたまま閉じていない括弧の数。 */
-/** 間に挟まった括弧書き（中に参照があっても）を外す。入れ子は内側から外す。 */
+/**
+ * 間に挟まった括弧書き（中に参照があっても）を外す。入れ子は内側から外れる。閉じない「（」と開かない「）」は残す。
+ * 内側を外すのを繰り返すと深さの数だけ読み直すので、組ごと 1 度で外す。
+ */
 const withoutClosedParentheses = (gap: string): string => {
-  const once = gap.replace(PARENTHESES, "");
-  return once === gap ? gap : withoutClosedParentheses(once);
+  const kept: string[] = [];
+  const opens: number[] = [];
+  for (const char of gap) {
+    const opened = char === "）" ? opens.pop() : undefined;
+    if (opened !== undefined) kept.splice(opened);
+    else {
+      if (char === "（") opens.push(kept.length);
+      kept.push(char);
+    }
+  }
+  return kept.join("");
 };
 
 /**
