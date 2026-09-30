@@ -336,6 +336,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `no-mixed-desumasu` | ですます調とである調の混在（ja） |
 | `no-doubled-joshi` | 「弊社の新製品の販売の計画」のような入れ子（ja） |
 | `taigen-dome-in-prose` | 本文の体言止めが続く（ja） |
+| `stray-space` | 語句の途中の空白（こころさんが 払った / 確認 しました）。空けた所が文書の中で少ないときだけ（ja、試験中） |
 
 品詞が要らない日本語の rule:
 

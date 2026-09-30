@@ -151,3 +151,16 @@ export const doubleParticle = (source: string): Plant | undefined =>
     (line) => isProse(line) && NOUN_THEN_WO.test(line),
     (line) => line.replace(NOUN_THEN_WO, "$1をを"),
   );
+
+// --- stray-space ---
+
+// 名詞の後ろの「を」と、続く漢字の語。
+const WO_THEN_WORD = /([一-龠々ァ-ヶー])を(?=[一-龠々])/u;
+
+/** 句点で終わる行で、名詞の後ろの最初の「を」と次の語のあいだに空白を入れる。打ち直しで残った空白。 */
+export const strayParticleSpace = (source: string): Plant | undefined =>
+  rewriteFirst(
+    source,
+    (line) => isProse(line) && line.trimEnd().endsWith("。") && !line.includes("「") && WO_THEN_WORD.test(line),
+    (line) => line.replace(WO_THEN_WORD, "$1を "),
+  );
