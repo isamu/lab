@@ -1,0 +1,10 @@
+# Determiners that count several things. A singular noun after one of these ("these new version") is a slip. They also
+# stand alone ("These help us"), so a noun is counted only when an adjective comes between.
+#
+# "one of the" is left out. It takes a plural ("one of the most important features"), but in the corpus it only ever
+# stood before a singular in "some one of the name of Cecily", which is right: "some one" is "someone".
+id: plural-determiner
+language: en
+entries:
+  - pattern: these
+  - pattern: those

@@ -2,7 +2,17 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { codeLines, rewriteFirst, type Plant } from "../scripts/bench-text.ts";
 import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa } from "../scripts/bench-mutations-ja.ts";
-import { doubleArticle, expletiveOf, expletives, flipFirstList, flipLastHeading, isTitleCase, oxfordOf, passiveEn } from "../scripts/bench-mutations-en.ts";
+import {
+  doubleArticle,
+  expletiveOf,
+  expletives,
+  flipFirstList,
+  flipLastHeading,
+  isTitleCase,
+  oxfordOf,
+  passiveEn,
+  pluralAfterArticle,
+} from "../scripts/bench-mutations-en.ts";
 import {
   TEAM_JARGON,
   boldSection,
@@ -199,6 +209,17 @@ describe("doubleArticle / doubleParticle", () => {
     assert.equal(doubleArticle(lines("# Read the plan", "| the value |", "```", "the code", "```", "Other text.")), undefined);
     assert.equal(doubleArticle("There is theory here."), undefined);
     assert.equal(doubleParticle(lines("# 資料を送る", "| 資料を送る |", "ここを見る。")), undefined);
+  });
+});
+
+describe("pluralAfterArticle", () => {
+  it("本文の最初の「a <名詞> of」の名詞を複数にする", () => {
+    assert.deepEqual(at(pluralAfterArticle(lines("# A week of work", "", "We spent a week of work on it."))), [3, "We spent a weeks of work on it."]);
+  });
+
+  it("見出し・表と、s で終わる名詞・前置詞の続かない名詞には植えない", () => {
+    assert.equal(pluralAfterArticle(lines("# a week of work", "| a week of work |", "We spent a week.")), undefined);
+    assert.equal(pluralAfterArticle("We made a series of calls."), undefined);
   });
 });
 

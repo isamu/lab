@@ -7,6 +7,7 @@ import { sentenceRhythm } from "./sentence-rhythm.ts";
 import { phraseCount, phraseMatch } from "./phrase-match.ts";
 import { agentlessPassive } from "./agentless-passive.ts";
 import { doubledWord } from "./doubled-word.ts";
+import { agreementSlip } from "./agreement-slip.ts";
 import { sentenceEnding } from "./sentence-ending.ts";
 import { doubledParticle, nounEnding } from "./token-shape.ts";
 import { kanjiRun, middleDot } from "./char-shape.ts";
@@ -34,6 +35,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "noun-ending": nounEnding,
   "doubled-particle": doubledParticle,
   "doubled-word": doubledWord,
+  "agreement-slip": agreementSlip,
   "kanji-run": kanjiRun,
   "middle-dot": middleDot,
   "adverb-density": adverbDensity,
