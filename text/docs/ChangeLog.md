@@ -19,6 +19,26 @@ The parenthesis count looked each word up as an object property, so a word that 
 sentence, and a list after it was never judged. Such a sentence is now judged like any other. The corpus wikitext
 converter had the same lookup for template names, and `{{constructor}}` is now dropped like any unknown template.
 
+### A guide page on adding a rule, and the skill writes chaff.yaml from a style note (#170)
+
+- **Adding a rule: for AI and engineers** (`/guide/adding-rules/`) lays out the ways from easiest to most
+  powerful, with a worked example that turns "polite endings, sentences of at most 80 characters" into
+  `chaff.yaml` through `chaff rules --json`, and what a new built-in rule needs (rule file, detector, tests, a
+  planted mistake, the corpus check).
+- **The Claude Code skill** reads `rules --json` to turn a team's style note into `chaff.yaml`, says what no rule
+  covers, and tests a team rule with `explain` and a sample before committing it.
+
+### `chaff rules` prints a table, and `rules --json` carries what an AI needs to write settings (#170)
+
+- **`chaff rules`** (without `--json`) lists every rule by group, each with the level it runs at now, whether it
+  runs by default, is experimental, needs a list in `chaff.yaml` or runs with `chaff test`, and one line on what it
+  finds. A rule for another language shows as off.
+- **`chaff rules --json` is schema 2.** Each rule adds `group`, `summary`, `example`, `not_flagged`,
+  `level_meaning`, `languages`, `requires`, `genres` (how it stands in every genre: on and at which level,
+  experimental, turned off, or not suited) and `options`. The top level adds `groups`, the steps from a team's
+  style note to `chaff.yaml`, and `style_presets`, `custom_rule_types` and `rule_options`, marked as coming with the
+  local-rules release. Every field of schema 1 is kept.
+
 ### Each rule's page reads for someone who is not an engineer (#170)
 
 A rule's page on the site now says what the rule finds, why it matters, a before and after with what chaff printed
