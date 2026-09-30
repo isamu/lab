@@ -10,6 +10,75 @@ Newest first.
 size exceeded". Every walk over the Markdown tree and the structure tree now keeps its own stack, so lint, `tree` and
 the structure rules read such a document like any other. The output of every other document is unchanged.
 
+### Patent figures, volume numbers and sections of US codes are not reported (#170)
+
+`undefined-acronym` reported the label and the number of a figure or a volume in US patents: "FIG" in "FIG. 1",
+"FIGS" in "FIGS. 1A-1C", "XLIII" in "Vol. XLIII" and "II-VI" in "Reactions II-VI". A new lexicon, `abbreviated-label`,
+lists short labels written with a full stop before a number (Vol., No., Pt., Ch., Fig., and their plurals), in both
+languages. A Roman numeral after one of these or after a division name (Part, Section) is a number, as it already was
+after a division name, and so is a short Arabic number, with a letter or not (FIG. 3, TABLE 1, FIG. 1A). Roman numerals
+written as a range ("II-VI", "I–III") count as one number, after a label or after a capitalised word. The full stop
+is part of the label, so "CH 4" and "PT 3" are still acronyms. English sentences no longer end at such a label before
+its number: "FIG." and "1 illustrates …" were two sentences, and so were "Science, Vol." and "347, Issue 6222".
+
+`dangling-reference` reported "§122" and "§1.14" in "35 CFR §122" and "37 CFR §1.14". A section sign (or "Section")
+right after the name of a code points into that code, not into this document. The codes are a new lang-en lexicon,
+`document-kind` (CFR, C.F.R., U.S.C., U.S.C.A., USC, USCA), with an optional title number before them ("42 U.S.C. §
+1983"). A section sign with no code before it is still looked up here.
+
+### A rule's how to fix names the words of the finding (#345)
+
+`preferred-term` printed 「{preferred}」に直してください and `Change it to "{preferred}"` as written: only the
+message had its placeholders filled. Every text a finding shows now fills them the same way: the rule's name, why and
+how to fix, in the friendly output and in `chaff test`. 「サーバ」 under `prefer: { サーバ: サーバー }` now reads
+「サーバー」に直してください. `duplicate-definition`'s Japanese how to fix (「第2条に定める{term}」) had the same slip.
+
+Where there is no finding (`chaff explain`, `chaff rules --json`, the SARIF rule's help, the comment `chaff relax`
+writes into chaff.yaml and the site's rule reference), a placeholder now reads as words the rule gives for it under
+`placeholders:` in its YAML: 「prefer に並べた使う書き方」, 「第2条に定める〇〇」. A test plants each of `yarn bench`'s
+mistakes and fails if any rendered finding still shows a placeholder, and another fails if a rule uses a placeholder
+in its name, why or how to fix without giving words for it.
+
+### `latin-spacing` leaves labels and whole dates out of the count (#170)
+
+A label followed by a space and its title is layout, not the writer's spacing habit, but it was counted and
+reported as the odd one out. These are no longer counted:
+
+- the numbers of a bulleted list that go up, even when numbers are skipped: outlines (`- 2-19 …`, `- 3 …`,
+  `- 3-1…`) and codes of one width, at least three digits, a few apart (`- 1122 医療費控除…`, `- 1124 …`). It
+  takes three items in a row. Two numbered items, plain numbers that count things (`- 3 ユーザー`, `- 5 チーム`,
+  `- 8 アカウント`; `- 100 ユーザー`, `- 200 チーム`, `- 300 アカウント`) and a list of counts (`- 3 件の修正`) still
+  count;
+- a number written right after a label word (`問3 ガス…`, `図2`), unless a counter or a particle follows it
+  (`図3枚`, `問3の`);
+- the space after a numbered division (`第1節 AI…`, `第2章 3つ…`). Without 第 (`1節 AI`) it still counts.
+
+The label words come from a new `numbered-label` word list: 問, 図, 表 and others are written before the number,
+and 章, 節, 条 and others after 第 and the number.
+
+Dates:
+
+- **An era year is a date** (`令和8年`, `令和 3 年改正法`, `平成30年度`). The era names come from a new
+  `calendar-era` word list. A short year with no era (`3年`) is still a length and still counts.
+- **The space in front of a date is no longer counted** (`は 9月`, `は9月`, `午後3時`). A date or a time now
+  counts for neither habit, as #290 asked.
+
+A noun followed by its value (`合計 3 件`, `内線 3461`) still counts, because it has the same shape as a count.
+
+### `ngram-repetition` counts whole English words and leaves out listing furniture (#170)
+
+English phrases were counted on 20-character slices, so a reported phrase could start or end in the middle of a
+word ("roductivity change a"). They are now counted on runs of whole words at least 18 characters long, the length a
+phrase had inside the old slice between its two spaces. Punctuation at a word's edge is not part of the phrase
+("described," and "described" are the same word), and case is ignored ("Proposals submitted" at the start of a
+sentence is the same phrase as "proposals submitted" in the middle). The finding quotes the phrase as first written.
+
+A phrase made mostly of what a listing repeats on every entry is not counted either: symbols and punctuation, link
+text, and bracketed tags, where a tag is a bracket holding one word or a list of single words (`(replaced)`,
+`[pdf, html, other]`). A bracket holding a phrase is still the writer's text ("Select Save (if applicable)."). On the
+arXiv listing, `" (replaced) [pdf, ht"` is no longer reported. The furniture check applies to Japanese too; no Japanese
+finding in the corpus moved.
+
 ### Japanese text written with 「，．」 is split into sentences at 「．」 (#170)
 
 Papers and university pages often write 「，」 and 「．」 for 「、」 and 「。」. The Japanese adapter did not count 「．」 as

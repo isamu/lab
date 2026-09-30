@@ -1,5 +1,5 @@
 import { definedLevels, resolve } from "../levels.ts";
-import { localized } from "./text.ts";
+import { readableText } from "./text.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
 import type { Level, RuleDefinition } from "../plugin.ts";
 
@@ -54,11 +54,11 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
   const experimental = rule.status === "experimental" ? [`  ${text.experimental}`] : [];
   return [
     "",
-    `  ${localized(rule.name, language)}   (${rule.id})`,
+    `  ${readableText(rule, rule.name, language)}   (${rule.id})`,
     "",
-    `  ${localized(rule.why, language)}`,
+    `  ${readableText(rule, rule.why, language)}`,
     "",
-    `  ${text.howToFix}: ${localized(rule.how_to_fix, language)}`,
+    `  ${text.howToFix}: ${readableText(rule, rule.how_to_fix, language)}`,
     "",
     `  ${text.values(unit)}`,
     ...definedLevels(rule).map((level) => levelLine(rule, level, current, genre, text.off)),

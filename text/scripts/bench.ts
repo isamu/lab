@@ -4,61 +4,17 @@
 // preset. The team's words (jargon, required_sections) are passed as chaff.yaml would pass them.
 // The corpus measures false positives; this measures misses. The summary is compared with
 // test/fixtures/bench/expected.txt, and --update rewrites that file.
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { allFindings, type CorpusFinding, type TeamWords } from "./corpus-findings.ts";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { allFindings, type CorpusFinding } from "./corpus-findings.ts";
 import { MUTATIONS, type Mutation } from "./bench-mutations.ts";
-import type { PlantContext } from "./bench-text.ts";
-import { TEAM_JARGON, requiredSectionsOf } from "./bench-mutations-layout.ts";
-import { TEAM_PREFER } from "./bench-mutations-phrasing.ts";
 import { cleanLine, falseAlarms, formatTable, outcomeLine, outcomeOf, ruleTable, summaryChanges, type Outcome } from "./bench-score.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { resolve } from "../packages/chaff/src/levels.ts";
-import { GENRES } from "../packages/chaff/src/genre.ts";
-import { presetLevels } from "../packages/chaff/src/genre-load.ts";
-import { BENCH_GENRES, benchGenreOf, benchLevelOf, runsInBench } from "./bench-genres.ts";
-import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { BENCH, contextOf, runsOn, samplesOf, teamOf, type Sample } from "./bench-samples.ts";
 
-const BENCH = join(dirname(fileURLToPath(import.meta.url)), "..", "test", "fixtures", "bench");
 const EXPECTED = join(BENCH, "expected.txt");
 const LANGUAGES: readonly string[] = ["ja", "en"];
 const verbose = process.argv.includes("--verbose");
 const update = process.argv.includes("--update");
-
-const LENGTH_UNITS: Readonly<Record<string, "char" | "word">> = { ja: ja.capabilities.lengthUnit, en: en.capabilities.lengthUnit };
-
-type Sample = { readonly name: string; readonly language: string; readonly genre: string; readonly path: string; readonly source: string };
-
-const samplesOf = (language: string): Sample[] =>
-  readdirSync(join(BENCH, language))
-    .filter((file) => file.endsWith(".md"))
-    .toSorted((left, right) => left.localeCompare(right, "en"))
-    .map((file) => {
-      const kind = file.replace(/\.md$/u, "");
-      return {
-        name: `${language}/${kind}`,
-        language,
-        genre: benchGenreOf(kind, BENCH_GENRES, GENRES),
-        path: `bench/${language}/${file}`,
-        source: readFileSync(join(BENCH, language, file), "utf8"),
-      };
-    });
-
-const contextOf = (sample: Sample): PlantContext => ({
-  limits: Object.fromEntries(
-    loadRules(sample.language).map((rule) => [rule.id, resolve(rule, benchLevelOf(rule.id, presetLevels(sample.genre)), sample.genre).limit]),
-  ),
-  lengthUnit: LENGTH_UNITS[sample.language],
-  fullSentences: Object.fromEntries(loadRules(sample.language).flatMap((rule) => (rule.full_sentence === undefined ? [] : [[rule.id, rule.full_sentence]]))),
-});
-
-/** Whether chaff runs the rule on this sample at all: its languages, a genre in its use_for, and not off in the genre's preset. */
-const runsOn = (sample: Sample, id: string): boolean =>
-  loadRules(sample.language).some((rule) => rule.id === id && runsInBench(rule, sample.genre, presetLevels(sample.genre)));
-
-const teamOf = (sample: Sample): TeamWords => ({ jargon: TEAM_JARGON, requiredSections: requiredSectionsOf(sample.source), prefer: TEAM_PREFER });
 
 const findingsOf = async (sample: Sample, source: string): Promise<CorpusFinding[]> =>
   allFindings(sample.path, source, sample.language, sample.genre, teamOf(sample));

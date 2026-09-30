@@ -1,7 +1,7 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { latinSpacing } from "./rule-run.ts";
-import { digitRunAround, isNumberName, placeChainBefore, sequenceLabelStarts } from "../packages/chaff/src/number-name.ts";
+import { digitRunAround, endsWithDivisionLabel, isNumberName, placeChainBefore, sequenceLabelStarts } from "../packages/chaff/src/number-name.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
@@ -53,6 +53,33 @@ describe("sequenceLabelStarts", () => {
 
   it("gives the position of the number, not of the line", () => {
     assert.deepEqual([...sequenceLabelStarts("前\n- 1 氏名\n- 2 年月")], [4, 11]);
+  });
+
+  // 箇条書きの項目の頭に番号を置き、下へ増えていく並び（国税庁の関連コード、ガイドラインの目次）。番号は飛んでもよい。
+  const labelsAt = (text: string): string[] => [...sequenceLabelStarts(text)].map((start) => (/^[\d.\-－]+/u.exec(text.slice(start)) ?? [""])[0]);
+  const lists: readonly (readonly [string, string, readonly string[]])[] = [
+    ["codes that skip numbers, three list items", "- 1122 医療費\n- 1124 出産\n- 1126 入院", ["1122", "1124", "1126"]],
+    ["an outline, with blank lines and numbers glued to the title", "- 2-18学術\n\n- 2-19「目的」\n\n- 3 義務\n\n- 3-1利用", ["2-18", "2-19", "3", "3-1"]],
+    ["dotted numbers", "* 1.2 背景\n* 1.3 範囲\n* 2 用語", ["1.2", "1.3", "2"]],
+    ["full-width hyphens", "- 5－1 通則\n- 5－2 資産\n- 5－3 役務", ["5－1", "5－2", "5－3"]],
+    ["only the run of three that ascends", "- 1126 入院\n- 1122 医療費\n- 1124 出産\n- 1128 歯", ["1122", "1124", "1128"]],
+    ["two items with a gap are not enough", "- 1122 医療費\n- 1124 出産", []],
+    ["a line of text between the items ends the list", "- 1122 医療費\n- 1124 出産\n本文\n- 1126 入院", []],
+    ["lines with no list marker", "1122 医療費\n1124 出産\n1126 入院", []],
+    ["the same number again", "- 1122 注\n- 1122 注\n- 1122 注", []],
+    ["descending", "- 1126 注\n- 1124 注\n- 1122 注", []],
+    ["an ordered list marker inside the item", "- 101. 概要\n- 102. 背景\n- 103. 範囲", []],
+    ["a number in the middle of the item", "- 注 1 首相\n- 注 2 新聞\n- 注 3 記事", []],
+    ["small numbers with no levels, which count things", "- 3 ユーザー\n- 5 チーム\n- 8 アカウント", []],
+    ["a range among small numbers is not a level", "- 3 ユーザー\n- 5 チーム\n- 8-10 アカウント", []],
+    ["codes of two digits", "- 11 医療費\n- 13 出産\n- 15 入院", []],
+    ["round numbers that jump, which count things", "- 100 ユーザー\n- 200 チーム\n- 300 アカウント", []],
+    ["codes nine apart", "- 1100 総則\n- 1109 定義\n- 1118 範囲", ["1100", "1109", "1118"]],
+    ["codes ten apart", "- 1100 総則\n- 1110 定義\n- 1120 範囲", []],
+    ["codes of different widths", "- 998 医療費\n- 1000 出産\n- 1002 入院", []],
+  ];
+  lists.forEach(([name, text, expected]) => {
+    it(`a numbered list: ${name}`, () => assert.deepEqual(labelsAt(text), expected));
   });
 });
 
@@ -111,36 +138,41 @@ describe("isNumberName", () => {
   it("reads a hyphen-joined number right after a place below a prefecture as an address", () => {
     const text = "千代田区紀尾井町1-3 東京ガーデンテラス";
     const tokens = [geo(0, "千代田"), unit(3, "区"), geo(4, "紀尾井町"), geo(12, "東京")];
-    assert.equal(isNumberName(text, runOf(text, "1-3"), tokens, 0, new Set(), TOP_UNITS), true);
+    assert.equal(isNumberName(text, runOf(text, "1-3"), tokens, 0, { topUnits: TOP_UNITS }), true);
     const ward = "千代田区2-1 ビル";
-    assert.equal(isNumberName(ward, runOf(ward, "2-1"), [geo(0, "千代田"), unit(3, "区"), token(8, "ビル", "NOUN")], 0, new Set(), TOP_UNITS), true);
+    assert.equal(isNumberName(ward, runOf(ward, "2-1"), [geo(0, "千代田"), unit(3, "区"), token(8, "ビル", "NOUN")], 0, { topUnits: TOP_UNITS }), true);
   });
 
   it("reads an address number joined by a full-width hyphen too", () => {
     const ward = "千代田区紀尾井町1－3 ビル";
     assert.equal(
-      isNumberName(ward, runOf(ward, "1－3"), [geo(0, "千代田"), unit(3, "区"), geo(4, "紀尾井町"), token(12, "ビル", "NOUN")], 0, new Set(), TOP_UNITS),
+      isNumberName(ward, runOf(ward, "1－3"), [geo(0, "千代田"), unit(3, "区"), geo(4, "紀尾井町"), token(12, "ビル", "NOUN")], 0, { topUnits: TOP_UNITS }),
       true,
     );
   });
 
   it("keeps a range after a region or a prefecture, a number with no hyphen, and a place away from the number", () => {
     const region = "北海道2-3 営業日";
-    assert.equal(isNumberName(region, runOf(region, "2-3"), [geo(0, "北海道"), token(7, "営業", "NOUN")], 0, new Set(), TOP_UNITS), false);
+    assert.equal(isNumberName(region, runOf(region, "2-3"), [geo(0, "北海道"), token(7, "営業", "NOUN")], 0, { topUnits: TOP_UNITS }), false);
     const prefecture = "東京都2-3 営業日";
-    assert.equal(isNumberName(prefecture, runOf(prefecture, "2-3"), [geo(0, "東京"), unit(2, "都"), token(7, "営業", "NOUN")], 0, new Set(), TOP_UNITS), false);
+    assert.equal(
+      isNumberName(prefecture, runOf(prefecture, "2-3"), [geo(0, "東京"), unit(2, "都"), token(7, "営業", "NOUN")], 0, { topUnits: TOP_UNITS }),
+      false,
+    );
     const unhyphenated = "千代田区23 番";
     assert.equal(
-      isNumberName(unhyphenated, runOf(unhyphenated, "23"), [geo(0, "千代田"), unit(3, "区"), token(7, "番", "NOUN")], 0, new Set(), TOP_UNITS),
+      isNumberName(unhyphenated, runOf(unhyphenated, "23"), [geo(0, "千代田"), unit(3, "区"), token(7, "番", "NOUN")], 0, { topUnits: TOP_UNITS }),
       false,
     );
     const apart = "千代田区 2-1 ビル";
-    assert.equal(isNumberName(apart, runOf(apart, "2-1"), [geo(0, "千代田"), unit(3, "区"), token(9, "ビル", "NOUN")], 0, new Set(), TOP_UNITS), false);
+    assert.equal(isNumberName(apart, runOf(apart, "2-1"), [geo(0, "千代田"), unit(3, "区"), token(9, "ビル", "NOUN")], 0, { topUnits: TOP_UNITS }), false);
     const range = "期間は3-5 営業日";
-    assert.equal(isNumberName(range, runOf(range, "3-5"), [token(2, "は", "ADP"), token(7, "営業", "NOUN")], 0, new Set(), TOP_UNITS), false);
+    assert.equal(isNumberName(range, runOf(range, "3-5"), [token(2, "は", "ADP"), token(7, "営業", "NOUN")], 0, { topUnits: TOP_UNITS }), false);
     const counted = "千代田区1-3 日";
     assert.equal(
-      isNumberName(counted, runOf(counted, "1-3"), [geo(0, "千代田"), unit(3, "区"), token(8, "日", "NOUN", { NounType: "Class" })], 0, new Set(), TOP_UNITS),
+      isNumberName(counted, runOf(counted, "1-3"), [geo(0, "千代田"), unit(3, "区"), token(8, "日", "NOUN", { NounType: "Class" })], 0, {
+        topUnits: TOP_UNITS,
+      }),
       false,
     );
   });
@@ -157,22 +189,48 @@ describe("isNumberName", () => {
   it("reads a number at the head of a line in a note sequence as a label, unless a word bound to numbers follows it", () => {
     const note = "10 日本経済新聞";
     const tokens = [token(103, "日本経済新聞", "PROPN")];
-    assert.equal(isNumberName(note, runOf(note, "10"), tokens, 100, new Set([100])), true);
-    assert.equal(isNumberName(note, runOf(note, "10"), tokens, 100, new Set([0])), false);
+    assert.equal(isNumberName(note, runOf(note, "10"), tokens, 100, { sequence: new Set([100]) }), true);
+    assert.equal(isNumberName(note, runOf(note, "10"), tokens, 100, { sequence: new Set([0]) }), false);
     assert.equal(isNumberName(note, runOf(note, "10"), tokens, 100), false);
     const counted = "10 回で止める";
-    assert.equal(isNumberName(counted, runOf(counted, "10"), [token(3, "回", "NOUN", { NounType: "Class" })], 0, new Set([0])), false);
+    assert.equal(isNumberName(counted, runOf(counted, "10"), [token(3, "回", "NOUN", { NounType: "Class" })], 0, { sequence: new Set([0]) }), false);
     const conjunction = "31 ただし、課題もある";
-    assert.equal(isNumberName(conjunction, runOf(conjunction, "31"), [token(3, "ただし", "CCONJ")], 0, new Set([0])), true);
+    assert.equal(isNumberName(conjunction, runOf(conjunction, "31"), [token(3, "ただし", "CCONJ")], 0, { sequence: new Set([0]) }), true);
     assert.equal(isNumberName(conjunction, runOf(conjunction, "31"), [token(3, "ただし", "CCONJ")], 0), false);
     const joined = "※1 又は 2";
     assert.equal(isNumberName(joined, runOf(joined, "1"), [token(3, "又は", "CCONJ")], 0), false);
     const particle = "200 のまま";
-    assert.equal(isNumberName(particle, runOf(particle, "200"), [token(4, "の", "ADP")], 0, new Set([0])), false);
+    assert.equal(isNumberName(particle, runOf(particle, "200"), [token(4, "の", "ADP")], 0, { sequence: new Set([0]) }), false);
     const numeral = "2 万人";
-    assert.equal(isNumberName(numeral, runOf(numeral, "2"), [token(2, "万", "NUM", { NumType: "Card" })], 0, new Set([0])), false);
-    assert.equal(isNumberName(note, runOf(note, "10"), [], 100, new Set([100])), false);
-    assert.equal(isNumberName(note, runOf(note, "10"), undefined, 100, new Set([100])), false);
+    assert.equal(isNumberName(numeral, runOf(numeral, "2"), [token(2, "万", "NUM", { NumType: "Card" })], 0, { sequence: new Set([0]) }), false);
+    assert.equal(isNumberName(note, runOf(note, "10"), [], 100, { sequence: new Set([100]) }), false);
+    assert.equal(isNumberName(note, runOf(note, "10"), undefined, 100, { sequence: new Set([100]) }), false);
+  });
+
+  it("reads a number written right after a label word (問3, 図2) as a label, unless a word bound to numbers follows it", () => {
+    const labelWords = new Set(["問", "図"]);
+    const question = "問3 ガスクロマトグラフ";
+    const tokens = [token(0, "問", "NOUN"), token(3, "ガス", "NOUN")];
+    assert.equal(isNumberName(question, runOf(question, "3"), tokens, 0, { labelWords }), true);
+    assert.equal(isNumberName(question, runOf(question, "3"), tokens, 0), false);
+    assert.equal(
+      isNumberName(
+        question,
+        runOf(question, "3"),
+        tokens.map((word) => ({ ...word, span: { start: word.span.start + 50, end: word.span.end + 50 } })),
+        50,
+        { labelWords },
+      ),
+      true,
+    );
+    const inWord = "質問3 ガス";
+    assert.equal(isNumberName(inWord, runOf(inWord, "3"), [token(0, "質問", "NOUN"), token(4, "ガス", "NOUN")], 0, { labelWords }), false);
+    const particle = "問3の解答";
+    assert.equal(isNumberName(particle, runOf(particle, "3"), [token(0, "問", "NOUN"), token(2, "の", "ADP")], 0, { labelWords }), false);
+    const counted = "図3枚";
+    assert.equal(isNumberName(counted, runOf(counted, "3"), [token(0, "図", "NOUN"), token(2, "枚", "NOUN", { NounType: "Class" })], 0, { labelWords }), false);
+    const spaced = "図 3 ガス";
+    assert.equal(isNumberName(spaced, runOf(spaced, "3"), [token(0, "図", "NOUN"), token(4, "ガス", "NOUN")], 0, { labelWords }), false);
   });
 
   it("keeps a section number in the middle of a sentence", () => {
@@ -245,6 +303,28 @@ describe("isNumberName", () => {
   });
 });
 
+describe("endsWithDivisionLabel", () => {
+  const units = new Set(["章", "節"]);
+  const cases: readonly (readonly [string, boolean])[] = [
+    ["第1節", true],
+    ["第12章", true],
+    ["第 1 節", true],
+    ["前は第4章第2節", true],
+    ["1節", false],
+    ["第1回", false],
+    ["第1節の", false],
+    ["第節", false],
+    ["", false],
+  ];
+  cases.forEach(([before, expected]) => {
+    it(JSON.stringify(before), () => assert.equal(endsWithDivisionLabel(before, units), expected));
+  });
+
+  it("reads nothing with no units", () => {
+    assert.equal(endsWithDivisionLabel("第1節", new Set()), false);
+  });
+});
+
 describe("latin-spacing with parts of speech", () => {
   before(async () => {
     await ja.prepare?.({ pos: true });
@@ -309,5 +389,56 @@ describe("latin-spacing with parts of speech", () => {
     assert.deepEqual(spacing("# 使い方\n\n3日、5日と待ち、3-5 日で終わる。\n"), ["前の数字:空けています"]);
     assert.deepEqual(spacing("# 使い方\n\n受付は3営業日、確認は5営業日、終了は3-5 営業日です。\n"), ["前の数字:空けています"]);
     assert.deepEqual(spacing("# 使い方\n\n3回呼び、5回待つ。\n\n1.5 万人が来る。\n"), ["前の数字:空けています"]);
+  });
+});
+
+describe("latin-spacing leaves labels out", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const spacing = (source: string): string[] => latinSpacing(ja, source, "business/report");
+
+  it("does not count a question number or the space after it (問3 ガス…)", () => {
+    assert.deepEqual(spacing("# 試験\n\n対応は 412 件、残りは 12 件です。\n\n問3 ガスクロマトグラフの設問。\n"), []);
+    assert.deepEqual(spacing("# 試験\n\n対応は412件、残りは12件です。\n\n問3 ガスクロマトグラフの設問。\n"), []);
+  });
+
+  it("still counts a label word with a count after it, and a question number with a particle", () => {
+    assert.deepEqual(spacing("# 試験\n\n対応は412件、残りは12件で、項目 3 件を直す。\n"), ["後ろの数字:空けています", "前の数字:空けています"]);
+    assert.deepEqual(spacing("# 試験\n\n対応は 412 件、残りは 12 件で、問3の解答を直す。\n"), ["後ろの数字:詰めています", "前の数字:詰めています"]);
+  });
+
+  it("does not count the space after a numbered division (第1節 AI…, 第2章 3つ…)", () => {
+    assert.deepEqual(spacing("# 概要\n\n生成AIの利用とWeb APIの設計を扱う。\n\n第1節 AIの経緯\n"), []);
+    assert.deepEqual(spacing("# 概要\n\n生成 AI の利用と Web API の設計を扱う。\n\n第1節AI の経緯\n"), []);
+    assert.deepEqual(spacing("# 概要\n\n対応は412件、残りは12件です。\n\n第2章 3つの原則\n"), []);
+  });
+
+  it("still counts the space after a division with no 第, and after a noun before its value (合計 3 件)", () => {
+    assert.deepEqual(spacing("# 概要\n\n生成AIの利用とWeb APIの設計を扱う。\n\n1節 AIの経緯\n"), ["英字:空けています"]);
+    assert.deepEqual(spacing("# 集計\n\n対応は412件、残りは12件で、合計 3 件です。\n"), ["後ろの数字:空けています", "前の数字:空けています"]);
+  });
+
+  it("does not count the numbers of a numbered list, codes that skip numbers or an outline", () => {
+    const codes = "- 1122 医療費控除の対象となる医療費\n- 1124 医療費控除の対象となる出産費用\n- 1126 医療費控除の対象となる入院費用\n";
+    assert.deepEqual(spacing(`# 関連コード\n\n対応は412件、残りは12件です。\n\n${codes}`), []);
+    const outline = "- 3-1個人情報の利用目的\n- 3-2利用の禁止\n- 3-3適正な取得\n";
+    assert.deepEqual(spacing(`# 目次\n\n対応は 412 件、残りは 12 件です。\n\n${outline}`), []);
+  });
+
+  it("still counts a list that counts things, and two codes alone", () => {
+    assert.deepEqual(spacing("# 変更\n\n対応は412件、残りは12件です。\n\n- 3 件の修正\n- 5 件の追加\n- 8 件の削除\n"), [
+      "前の数字:詰めています",
+      "前の数字:詰めています",
+    ]);
+    assert.deepEqual(spacing("# 変更\n\n対応は412件、残りは12件です。\n\n- 3 ユーザーを追加\n- 5 チームを削除\n- 8 アカウントを更新\n"), [
+      "前の数字:詰めています",
+      "前の数字:詰めています",
+    ]);
+    assert.deepEqual(spacing("# 関連コード\n\n対応は412件、残りは12件です。\n\n- 1122 医療費\n- 1124 出産\n"), [
+      "前の数字:空けています",
+      "前の数字:空けています",
+    ]);
   });
 });

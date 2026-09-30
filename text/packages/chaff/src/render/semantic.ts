@@ -3,7 +3,7 @@ import type { UserCheck } from "../checks.ts";
 import type { Narrowing } from "../look-at.ts";
 import type { Job as Plan, SemanticResult } from "../run-semantic.ts";
 import { uiLanguageOf, type Texts, type UiLanguage } from "../ui.ts";
-import { MARK, localized } from "./text.ts";
+import { MARK, fill, localized } from "./text.ts";
 import { counted, formFor } from "./plural.ts";
 
 const RULE = 60;
@@ -129,13 +129,13 @@ const block = (finding: Finding, named: Named, language: UiLanguage): string[] =
   const confidence = finding.values["confidence"];
   const reason = String(finding.values["reason"] ?? "");
   const sure = confidence === undefined ? "" : `            ${text.confidence(String(confidence))}`;
-  const fix = named.howToFix.length > 0 ? ["", ...indent(`→ ${named.howToFix}`, "     ")] : [];
+  const fix = named.howToFix.length > 0 ? ["", ...indent(`→ ${fill(named.howToFix, finding.values)}`, "     ")] : [];
   return [
     "",
     // "12 行目" and "line 12" take the same width on a terminal, so the rule ends in the same column in both.
     `─── ${text.line(finding.line)} ${"─".repeat(Math.max(0, RULE - String(finding.line).length - 8))}`,
     "",
-    `  ${MARK[finding.severity] ?? "·"}  ${named.name}${sure}`,
+    `  ${MARK[finding.severity] ?? "·"}  ${fill(named.name, finding.values)}${sure}`,
     "",
     ...indent(reason, "     "),
     ...fix,

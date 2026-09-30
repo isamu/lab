@@ -8,9 +8,15 @@ import type { ProseDocument, Span, Token } from "./plugin.ts";
  * 単位は語彙表から渡す。chained は日付・時刻の単位を大きい順に（年月日時分秒）。大きい単位の後ろに小さい単位を続けて書けば
  * 一つの日付・時刻になる。「2008年 2年連続」のように同じ単位や大きい単位が続けば、別のものの始まり。
  * positional は数の後ろに置くだけで位置を言う単位（月、時）。year は 4 桁の数の後ろで暦の年を言う単位（年、年度）。
+ * era は元号（令和）。元号のすぐ後ろ（空白 1 つまで）の数は、単位が何でも暦の上の位置を言う（令和8年、桁が少なくても年数ではない）。
  * 「5日」「5分」「3年」のように、単位だけでは長さと見分けのつかないものは、位置を言う単位と続けて書いたときだけ日付・時刻と読む。
  */
-export type CalendarUnits = { readonly chained: readonly string[]; readonly positional: ReadonlySet<string>; readonly year: ReadonlySet<string> };
+export type CalendarUnits = {
+  readonly chained: readonly string[];
+  readonly positional: ReadonlySet<string>;
+  readonly year: ReadonlySet<string>;
+  readonly era: readonly string[];
+};
 
 /** 日付・時刻の数の並び。first は日付の頭の数、inner は前の単位に続く数（2026年9月の 9）。unit は数の後ろの単位（月）。 */
 export type CalendarRun = { readonly run: Span; readonly place: "first" | "inner"; readonly unit: string };
@@ -38,15 +44,22 @@ const pastSpace = (text: string, at: number): number => (text[at] === " " ? at +
 
 const isUnit = (surface: string, units: CalendarUnits): boolean => units.chained.includes(surface) || units.positional.has(surface) || units.year.has(surface);
 
-const isAnchor = (digits: string, surface: string, units: CalendarUnits): boolean =>
-  units.positional.has(surface) || (units.year.has(surface) && CALENDAR_YEAR.test(digits));
+/** 数 run のすぐ前（空白 1 つまで）が元号か。 */
+const followsEra = (text: string, run: Span, units: CalendarUnits): boolean => {
+  const before = text.slice(0, run.start);
+  const written = before.endsWith(" ") ? before.slice(0, -1) : before;
+  return units.era.some((era) => written.endsWith(era));
+};
+
+const isAnchor = (text: string, run: Span, surface: string, units: CalendarUnits): boolean =>
+  units.positional.has(surface) || (units.year.has(surface) && CALENDAR_YEAR.test(text.slice(run.start, run.end))) || followsEra(text, run, units);
 
 /** 数のすぐ後ろ（空白 1 つまで）の語が日付・時刻の単位なら、その組。語の切れ目が合わなければ組にしない。 */
 const partOf = (text: string, run: Span, tokens: readonly Token[], base: number, units: CalendarUnits): Part | undefined => {
   const unit = tokens.find((token) => token.span.start === base + pastSpace(text, run.end));
   if (unit === undefined || !isUnit(unit.surface, units)) return undefined;
   const rank = units.chained.indexOf(unit.surface);
-  return { run, unit: unit.surface, unitEnd: unit.span.end - base, rank, anchored: isAnchor(text.slice(run.start, run.end), unit.surface, units) };
+  return { run, unit: unit.surface, unitEnd: unit.span.end - base, rank, anchored: isAnchor(text, run, unit.surface, units) };
 };
 
 /** 前の組の単位のすぐ後ろ（空白 1 つまで）から始まり、単位が前より小さい組か。 */
@@ -81,4 +94,5 @@ export const calendarUnitsOf = (doc: ProseDocument): CalendarUnits => ({
   chained: patternList(doc, "date-time-unit"),
   positional: new Set(patternList(doc, "calendar-unit")),
   year: new Set(patternList(doc, "calendar-year-unit")),
+  era: patternList(doc, "calendar-era"),
 });
