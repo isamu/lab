@@ -84,7 +84,7 @@ kaisha.txt  clean
 kantei-unga81-general-debate-speech  agentless-passive 4, empty-intensifier 6, max-kanji-continuous 3, max-sentence-length 4, no-doubled-joshi 2, preamble-length 1, unqualified-superlative 3
 kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
 kimino-cleanup-notice  max-kanji-continuous 2, max-sentence-length 2
-kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1, sasete-itadaku 3
+kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1
 kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1
 kimino-staff-exam-guide  clean
 kobayashi-nento-shokan-2026  max-paragraph-length 2, max-sentence-length 2

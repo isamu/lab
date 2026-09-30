@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `sasete-itadaku` lets the number of uses its message allows pass (#170)
+
+The message says 「3 回あります（3 回まで）」: three uses are allowed. The rule nevertheless reported a document with
+exactly three, so it spoke at the limit its own message allows. It now reports only when a document uses the form
+more often than the limit; at `strict` one use passes, as the rule's reason (once is polite) says. A numeric setting
+such as `sasete-itadaku: 3` now means three are allowed, as it does for the other rules whose message states a limit.
+
+Every other rule whose message states its limit already agreed: a value equal to an upper limit ("N まで", "limit N",
+"N% allowed") passes, and so does a value equal to a lower limit ("N% 以上ほしい", "want N%"). A new test holds this
+for every such rule in both languages.
+
 ### `excessive-hedging` reports hedges stacked in one sentence (#290)
 
 The rule measured only hedges per 1000 characters and skipped documents under 500 characters, so a short report
