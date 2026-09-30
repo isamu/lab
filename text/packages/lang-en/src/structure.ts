@@ -6,6 +6,7 @@ import { dates } from "./dates.ts";
 import { definitionScopeDepth, definitions, opensDefinitionScope } from "./definitions.ts";
 import { CHAPTER_DEPTH, PART_DEPTH } from "./depth.ts";
 import { continuesAddress, continuesOpen, depthFor, INSERTED, ordinalOf, styleOf } from "./item-style.ts";
+import { loadLexicons } from "./lexicons.ts";
 
 // Contracts, specifications and statutes in English. core nests what this reads; it does not know
 // how English numbers its articles.
@@ -278,8 +279,15 @@ const quantities = (text: string): Mention[] =>
     return unit === undefined || Number.isNaN(value) || isWordChar(text[match.index - 1]) ? [] : [{ start: match.index, end, attrs: { value, unit } }];
   });
 
-/** "2.5 days" and "1.5 times" are amounts, not section 2.5 titled "days". */
-const countedAfter = (_number: string, rest: string): boolean => unitAfter(` ${rest}`, 0) !== undefined;
+const MEASURE_UNITS = (loadLexicons()["measure-unit"] ?? []).map((entry) => entry.pattern);
+
+/** A letter, digit or hyphen right after the symbol makes it the start of a word: "2.1 mmap", "5.2.2.4 min-fresh". */
+const CONTINUES_WORD = /^[\p{Script=Latin}\p{Nd}_-]/u;
+
+const startsWithMeasureUnit = (rest: string): boolean => MEASURE_UNITS.some((unit) => rest.startsWith(unit) && !CONTINUES_WORD.test(rest.slice(unit.length)));
+
+/** "2.5 days", "1.5 times" and "1.5 mM in each" are amounts, not section 2.5 titled "days". */
+const countedAfter = (_number: string, rest: string): boolean => unitAfter(` ${rest}`, 0) !== undefined || startsWithMeasureUnit(rest);
 
 export const structure: StructurePatterns = {
   numbered,

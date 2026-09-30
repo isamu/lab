@@ -43,7 +43,7 @@ da-ai-advisory-board-1  agentless-passive 6, latin-spacing 2, max-kanji-continuo
 da-annual-report-2024  concrete-evidence-density 3, heading-echo 1, max-sentence-length 1, ngram-repetition 1
 da-area-data-map-format  no-mixed-desumasu 1
 da-area-data-model  latin-spacing 1, max-sentence-length 5
-da-copyright-policy  latin-spacing 2
+da-copyright-policy  latin-spacing 2, numbering-gap 1
 da-data-strategy  agentless-passive 1, empty-intensifier 1, max-kanji-continuous 2, max-sentence-length 4
 da-gss-incident  agentless-passive 1, latin-spacing 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1
 da-legal-practice  latin-spacing 4, max-kanji-continuous 2, max-sentence-length 6, repeated-sentence-head 1
@@ -175,7 +175,7 @@ tc39-agenda-2026-07  adverb-overuse 1, agentless-passive 7, max-sentence-length 
 uk-arbitration1996.txt  clean
 uk-cra2015.txt  clean
 uk-dpa2018.txt  clean
-us-4683202-nucleic-acid-amplification  dangling-reference 2, max-paragraph-length 7, max-sentence-length 16, numbering-gap 1, undefined-acronym 23
+us-4683202-nucleic-acid-amplification  dangling-reference 2, max-paragraph-length 7, max-sentence-length 16, undefined-acronym 23
 us-6004596-crustless-sandwich  max-sentence-length 2
 us-6285999-node-ranking  max-paragraph-length 4, max-sentence-length 3, undefined-acronym 5
 us-scotus-gideon-v-wainwright  max-paragraph-length 1, max-sentence-length 3
