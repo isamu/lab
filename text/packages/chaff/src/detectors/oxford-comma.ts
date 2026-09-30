@@ -188,15 +188,9 @@ const fromParticiplePhrase = (items: readonly Token[][], after: readonly Token[]
   return new Set(inPhrase.map(shapeOf)).size > 1 ? rest : inPhrase;
 };
 
-/** 語のあとに空白があるか。e.g. は続けて書き、頭文字の E. G. Evans は空けて書く。 */
-const spacedAfter = (tokens: readonly Token[], index: number): boolean => {
-  const [word, next] = [tokens[index], tokens[index + 1]];
-  return word !== undefined && next !== undefined && next.span.start > word.span.end;
-};
-
+/** 大文字小文字も比べる。頭文字の E.G. Evans / I.E. Evans は e.g. / i.e. ではない。文頭の句の前には項目が無いので、大文字で始まる句は要らない。 */
 const sameSurfaces = (tokens: readonly Token[], words: readonly Token[]): boolean =>
-  tokens.length === words.length &&
-  words.every((word, index) => tokens[index]?.surface.toLowerCase() === word.surface.toLowerCase() && spacedAfter(tokens, index) === spacedAfter(words, index));
+  tokens.length === words.length && words.every((word, index) => tokens[index]?.surface === word.surface);
 
 /** 項目の中で、and / or と同じ深さにある最後の例の句（such as / e.g.）の直後の位置。無ければ -1。 */
 const exampleEnd = (clause: Clause, level: number, item: readonly Token[]): number =>

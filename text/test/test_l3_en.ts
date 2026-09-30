@@ -337,6 +337,8 @@ describe("L3 英語", () => {
       ["過去分詞の並びが名詞を共有しても並び", WITH_COMMA, "We ship tested, reviewed and approved code."],
       ["修飾語の前の読点は項目の区切り（BLS）", WITHOUT_COMMA, "We count federal government, military, and agricultural workers."],
       ["空けて書いた頭文字は e.g. ではない", WITH_COMMA, "The attendees (A. B. Clark, E. G. Evans and C. D. Ford) arrived."],
+      ["続けて書いた頭文字は e.g. ではない", WITH_COMMA, "The attendees (A.B. Clark, E.G. Evans and C.D. Ford) arrived."],
+      ["続けて書いた頭文字は i.e. ではない", WITH_COMMA, "We invited Alice, I.E. Evans and Carol."],
       ["括弧の中の例の句は、括弧の外の並びを切らない", WITH_COMMA, "We tested the parser, the renderer (such as the slow one) and the exporter."],
       ["修飾語だけでない項目は、名詞を共有しない", WITH_COMMA, "We sell cheese, blue cheese and white bread."],
       ["冠詞や目的語を連れた後ろの項目は、名詞を共有しない", WITH_COMMA, "We built the parser, tested and shipped the release."],
