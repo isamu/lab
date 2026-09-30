@@ -1,6 +1,15 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { classifyDocuments, driftedIds, errorText, firstDifferingLine, issueBody, needsAttention, type FetchOutcome } from "../scripts/corpus-health-report.ts";
+import {
+  classifyDocuments,
+  corpusRunVerdict,
+  driftedIds,
+  errorText,
+  firstDifferingLine,
+  issueBody,
+  needsAttention,
+  type FetchOutcome,
+} from "../scripts/corpus-health-report.ts";
 import { HttpStatusError } from "../scripts/fetch-text.ts";
 import { isTransientFetchError, withRetry, type RetryOptions } from "../scripts/retry.ts";
 
@@ -35,6 +44,20 @@ describe("driftedIds", () => {
 
   it("id の無い - / + 行は落とす", () => {
     assert.deepEqual([...driftedIds("Changed from corpus/expected.txt\n- \n+   clean\n")], []);
+  });
+});
+
+describe("corpusRunVerdict", () => {
+  it("0 は clean、変化の一覧つきの 1 は changed", () => {
+    assert.equal(corpusRunVerdict(0, "a  clean\n"), "clean");
+    assert.equal(corpusRunVerdict(1, REPORT), "changed");
+  });
+
+  it("一覧の無い 1（捕まらなかった例外）や、ほかの終了は crashed", () => {
+    assert.equal(corpusRunVerdict(1, "a  clean\n"), "crashed");
+    assert.equal(corpusRunVerdict(1, ""), "crashed");
+    assert.equal(corpusRunVerdict(2, REPORT), "crashed");
+    assert.equal(corpusRunVerdict(null, ""), "crashed");
   });
 });
 

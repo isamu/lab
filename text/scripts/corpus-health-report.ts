@@ -48,6 +48,17 @@ export const driftedIds = (corpusReport: string): Set<string> => {
   return new Set(changes.map((line) => line.slice(2).split("  ")[0] ?? "").filter((id) => id !== ""));
 };
 
+const CORPUS_CHANGED_EXIT = 1;
+
+/**
+ * How `yarn corpus` ended: 0 is clean; 1 with its list of changes is drift. Node also exits 1 on an uncaught error,
+ * so a 1 without the list, like any other status, is a crash and must not read as "nothing drifted".
+ */
+export const corpusRunVerdict = (status: number | null, report: string): "clean" | "changed" | "crashed" => {
+  if (status === 0) return "clean";
+  return status === CORPUS_CHANGED_EXIT && driftedIds(report).size > 0 ? "changed" : "crashed";
+};
+
 /** The first line (1-based) where the two texts differ, or undefined when they are the same. */
 export const firstDifferingLine = (committed: string, fetched: string): number | undefined => {
   if (committed === fetched) return undefined;
