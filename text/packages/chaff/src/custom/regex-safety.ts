@@ -12,8 +12,11 @@ export const MAX_UNBOUNDED_REPEATS = 3;
 
 export type RegexRefusal = "too-long" | "nested-quantifier" | "too-many-repeats" | "backreference" | "empty-match" | "invalid";
 
-/** An open group: where its body starts, and whether it holds a repeat without bound or an alternation. */
-type Group = { readonly start: number; unbounded: boolean; alternation: boolean };
+/** An open group: where its body starts, and whether it holds a repeat of varying count (a+, a?, a{1,3}) or an alternation. */
+type Group = { readonly start: number; varies: boolean; alternation: boolean };
+
+/** A quantifier: its length, whether it has no upper bound, whether its count varies, and whether it can repeat more than once. */
+type Quantifier = { readonly length: number; readonly unbounded: boolean; readonly varies: boolean; readonly many: boolean };
 
 type Scan = { at: number; repeats: number; readonly stack: Group[] };
 
@@ -22,14 +25,15 @@ const BRACE = /^\{(\d+)(,(\d*))?\}\??/u;
 const BACKREFERENCE = /^\\(?:[1-9]|k<)/u;
 const CLASS_BODY = /^\^?\]?(?:\\.|[^\]\\])*\]/u;
 
-/** The quantifier at pattern[at], and whether it repeats without bound (*, +, {n,}). undefined when none is there. */
-const quantifierAt = (pattern: string, at: number): { readonly length: number; readonly unbounded: boolean } | undefined => {
+/** The quantifier at pattern[at], or undefined when none is there. */
+const quantifierAt = (pattern: string, at: number): Quantifier | undefined => {
   const char = pattern[at];
   if (char === undefined || !QUANTIFIER_START.has(char)) return undefined;
-  if (char !== "{") return { length: pattern[at + 1] === "?" ? 2 : 1, unbounded: char !== "?" };
+  if (char !== "{") return { length: pattern[at + 1] === "?" ? 2 : 1, unbounded: char !== "?", varies: true, many: char !== "?" };
   const brace = BRACE.exec(pattern.slice(at));
   if (brace === null) return undefined;
-  return { length: brace[0].length, unbounded: brace[2] !== undefined && brace[3] === "" };
+  const [least, most] = [Number(brace[1]), brace[2] === undefined ? Number(brace[1]) : Number(brace[3] || Infinity)];
+  return { length: brace[0].length, unbounded: most === Infinity, varies: most !== least, many: most > 1 };
 };
 
 /** Just past the "]" that closes the character class opened at pattern[at]. */
@@ -38,9 +42,10 @@ const classEnd = (pattern: string, at: number): number => {
   return close === null ? pattern.length : at + 1 + close[0].length;
 };
 
-const innermost = (scan: Scan): Group => scan.stack[scan.stack.length - 1] ?? { start: 0, unbounded: false, alternation: false };
+const innermost = (scan: Scan): Group => scan.stack[scan.stack.length - 1] ?? { start: 0, varies: false, alternation: false };
 
-const LITERAL = /^[^\\[\](){}*+?.|^$]+$/u;
+/** A fixed string: plain characters, and punctuation escaped (Mr\.). \d, \w and the like are classes, not literals. */
+const LITERAL = /^(?:[^\\[\](){}*+?.|^$]|\\[^A-Za-z0-9])+$/u;
 
 /**
  * Alternatives that are plain words starting with different characters ((cat|dog)+) never compete for the same text, so
@@ -48,21 +53,26 @@ const LITERAL = /^[^\\[\](){}*+?.|^$]+$/u;
  */
 const distinctWords = (body: string): boolean => {
   const alternatives = body.replace(/^\?:/u, "").split("|");
-  const firsts = alternatives.map((alternative) => alternative.charAt(0));
+  const firsts = alternatives.map((alternative) => (alternative.startsWith("\\") ? alternative.charAt(1) : alternative.charAt(0)));
   return alternatives.every((alternative) => LITERAL.test(alternative)) && new Set(firsts).size === firsts.length;
 };
 
+/** Whether the group's text can be split between repeats in more than one way: it varies in length, or its alternatives compete. */
 const competes = (pattern: string, closed: Group, end: number): boolean =>
-  closed.unbounded || (closed.alternation && !distinctWords(pattern.slice(closed.start, end - 1)));
+  closed.varies || (closed.alternation && !distinctWords(pattern.slice(closed.start, end - 1)));
 
-/** After an atom that ends at end (closed is the group it closes, if any): a group that repeats a repeat is refused. */
+/**
+ * After an atom that ends at end (closed is the group it closes, if any). A group repeated a varying number of times, more than
+ * once ((…)+, (…)*, (…){1,10}), that can itself match in more than one way ((a+), (a{1,10}), (a|aa)) is refused.
+ */
 const afterAtom = (pattern: string, scan: Scan, end: number, closed: Group | undefined): RegexRefusal | undefined => {
   const quantifier = quantifierAt(pattern, end);
   scan.at = end + (quantifier?.length ?? 0);
   if (quantifier?.unbounded === true) scan.repeats += 1;
   if (scan.repeats > MAX_UNBOUNDED_REPEATS) return "too-many-repeats";
-  if (closed !== undefined && quantifier?.unbounded === true && competes(pattern, closed, end)) return "nested-quantifier";
-  if (quantifier?.unbounded === true || closed?.unbounded === true) innermost(scan).unbounded = true;
+  const repeatsVariably = quantifier !== undefined && quantifier.varies && quantifier.many;
+  if (closed !== undefined && repeatsVariably && competes(pattern, closed, end)) return "nested-quantifier";
+  if (quantifier?.varies === true || closed?.varies === true) innermost(scan).varies = true;
   return undefined;
 };
 
@@ -72,7 +82,7 @@ const step = (pattern: string, scan: Scan): RegexRefusal | undefined => {
   if (char === "\\") return BACKREFERENCE.test(pattern.slice(scan.at)) ? "backreference" : afterAtom(pattern, scan, scan.at + 2, undefined);
   if (char === "[") return afterAtom(pattern, scan, classEnd(pattern, scan.at), undefined);
   if (char === "(") {
-    scan.stack.push({ start: scan.at + 1, unbounded: false, alternation: false });
+    scan.stack.push({ start: scan.at + 1, varies: false, alternation: false });
     scan.at += 1;
     return undefined;
   }
@@ -86,7 +96,7 @@ const step = (pattern: string, scan: Scan): RegexRefusal | undefined => {
  * that backtracks exponentially. The pattern is read once, left to right, with a stack of open groups.
  */
 const nestedRepeat = (pattern: string): RegexRefusal | undefined => {
-  const scan: Scan = { at: 0, repeats: 0, stack: [{ start: 0, unbounded: false, alternation: false }] };
+  const scan: Scan = { at: 0, repeats: 0, stack: [{ start: 0, varies: false, alternation: false }] };
   while (scan.at < pattern.length) {
     const refusal = step(pattern, scan);
     if (refusal !== undefined) return refusal;
