@@ -198,4 +198,11 @@ describe("the command line on Markdown nested far too deep", () => {
     assert.equal(run.code, 0, run.err);
     assert.match(run.out, /^\(doc/u);
   });
+
+  // The structure tree is as deep as the language package's numbering, not as the Markdown's nesting, so JSON.stringify holds.
+  it("tree --format json reads a deep blockquote", async () => {
+    const run = await runCli({ "deep.md": `# Title\n\n${">".repeat(10_000)} 第1条 本文\n` }, ["tree", "deep.md", "--format", "json"]);
+    assert.equal(run.code, 0, run.err);
+    assert.match(run.out, /^\{\n {2}"kind": "doc"/u);
+  });
 });
