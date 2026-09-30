@@ -19,12 +19,21 @@ of 「ご案内」, the 「さん」 of 「こころさん」, the 「いる」 
 tokens (`Bound=Yes`, `VerbType=Light`), and the count is a pure function in `chaffjs` that takes tokens. English is
 unchanged, and so is Japanese read without parts of speech.
 
-On the Japanese corpus documents this only removes findings: the two 「こころさんの…の場合」 sections, a glossary entry
-that says what the term usually means, changelog entries that say what was added, and a meeting minute that names who
-explained what. A sentence that only restates its heading (「国立国会図書館サーチで資料を検索します。」,
-「キャッシュの仕組みについて説明します。」) is still reported. Findings a reader might have kept went with them: a talk
-page's 「一次資料の扱いに関して一つ問題を提起させて頂きます。」 and a changelog's 「スライドショーの機能を強化しました。」, which add
+On the Japanese corpus documents this only removes findings: the two 「こころさんの…の場合」 sections, changelog entries
+that say what was added or how, and a meeting minute that names who explained what. A sentence that only restates its
+heading (「詳細：デジタル庁の組織づくり」, 「ブック メニューを拡充しました」, 「キャッシュの仕組みについて説明します。」) is
+still reported. Findings a reader might have kept went with them: a talk page's
+「一次資料の扱いに関して一つ問題を提起させて頂きます。」 and a changelog's 「スライドショーの機能を強化しました。」, which add
 two content words each.
+
+### The corpus checks each document with the preset for its kind (#170)
+
+`corpus/manifest.json` gave every document one of the original ten genres, so `yarn corpus` never ran the presets
+added in 0.16.0. Statutes and internal rules, contracts and privacy policies, court decisions, patents, manuals, FAQs,
+glossaries, papers, literature, speeches and transcripts now carry `legal/*`, `docs/*`, `academic/paper`,
+`literature/*` and `speech/*`, so a regression in a preset shows in `corpus/expected.txt`. The statutes in
+`corpus/laws/` are read as `legal/statute`, which names the statute profile; they were already read with it from
+their content, and their structure results do not change.
 
 ### `stray-space`: a space inside a Japanese phrase (#170)
 
