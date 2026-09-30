@@ -690,3 +690,186 @@ describe("htmlToMarkdown: 表", () => {
     assert.equal(htmlToMarkdown(layout), "Term\n\nIt means a word.\n");
   });
 });
+
+describe("htmlToMarkdown: 埋め込みの部品 (再生プレーヤー・ツールチップ・スクリプトのボタン)", () => {
+  it("audio や video を持ち、文の無い塊は再生プレーヤー。外側の塊ごと落とす。ツールチップの文は数えない", () => {
+    const html =
+      '<main><h1>Moon water</h1><div class="embed"><div class="player"><audio src="a.mp3">Your browser cannot play this audio.</audio>\n' +
+      '<span>Embed</span> <span>share</span><div role="tooltip">The code has been copied to your clipboard.</div><span>0:00</span></div>' +
+      "<div><span>Direct link</span></div></div><p>NASA is preparing a spacecraft.</p></main>";
+    assert.equal(htmlToMarkdown(html), "# Moon water\n\nNASA is preparing a spacecraft.\n");
+  });
+
+  it("文のある説明の付いた動画は残す", () => {
+    assert.equal(
+      htmlToMarkdown('<figure><video src="v.mp4"></video><figcaption>The river floods every May.</figcaption></figure>'),
+      "The river floods every May.\n",
+    );
+    assert.equal(
+      htmlToMarkdown('<figure><video src="i.mp4"></video>\n<figcaption>Interview with the mayor</figcaption></figure><p>Kept.</p>'),
+      "Interview with the mayor\n\nKept.\n",
+    );
+    assert.equal(htmlToMarkdown('<div><video src="v.mp4"></video>\n<p>The river floods every May.</p></div>'), "The river floods every May.\n");
+    assert.equal(
+      htmlToMarkdown('<div><audio src="meeting.mp3"></audio><p><a href="transcript.pdf">Transcript PDF</a></p></div><p>The meeting opened at noon.</p>'),
+      "Transcript PDF\n\nThe meeting opened at noon.\n",
+    );
+    assert.equal(
+      htmlToMarkdown('<div><audio src="m.mp3"></audio><ul><li><a href="m_hq.mp3?download=1">128 kbps</a></li></ul><span>Direct link</span></div><p>Kept.</p>'),
+      "Kept.\n",
+    );
+  });
+
+  it('role="tooltip" の文は、操作の横に出る知らせ。本文ではない', () => {
+    assert.equal(htmlToMarkdown('<p>Copy the link.</p><div><span role="tooltip">Copied.</span></div>'), "Copy the link.\n");
+    assert.equal(htmlToMarkdown("<p role='tooltip note'>Saved.</p><p>Kept.</p>"), "Kept.\n");
+  });
+
+  it("クリックでスクリプトを動かし、リンク一つだけを持つ塊はボタン。文の中のリンクや、文を持つ塊は残す", () => {
+    const quiz =
+      '<main><h1>Story</h1><p>The story ends here.</p><div class="quiz"><h2>Quiz - Story</h2><img src="q.png" alt="Quiz">' +
+      '<h4>Start the Quiz to find out</h4><div onclick="track(\'start\')"><a href="/quiz/p1.html">Start Quiz</a></div></div>' +
+      "<p><strong>______________</strong></p><h2>Words in This Story</h2><p>comet – n. an object in space</p></main>";
+    assert.equal(htmlToMarkdown(quiz), "# Story\n\nThe story ends here.\n\n______________\n\n## Words in This Story\n\ncomet – n. an object in space\n");
+    assert.equal(htmlToMarkdown('<p>Read <a href="/r.html" onclick="track()">the report</a> first.</p>'), "Read the report first.\n");
+    assert.equal(htmlToMarkdown('<div onclick="go()"><a href="/next.html">Next</a> for the rest of the steps.</div>'), "Next for the rest of the steps.\n");
+    assert.equal(
+      htmlToMarkdown('<div onclick="open()"><a href="/map.html"><h3>Flood map</h3><p>Where the water rises</p></a></div><p>Kept.</p>'),
+      "### Flood map\n\nWhere the water rises\n\nKept.\n",
+    );
+  });
+
+  it("線を引いただけの行 (_____ や -----) は、見出しの下の中身に数えない", () => {
+    assert.equal(htmlToMarkdown("<h2>Quiz</h2><p>_____</p><h2>Words</h2><p>Text.</p>"), "_____\n\n## Words\n\nText.\n");
+    assert.equal(htmlToMarkdown("<h2>Notes</h2><p>- - -</p><p>A blank is ____ here.</p>"), "## Notes\n\n- - -\n\nA blank is ____ here.\n");
+  });
+});
+
+describe("htmlToMarkdown: 言語の切り替え・アイコンの並び・前後のページへの帯・読み上げない文字", () => {
+  it("hreflang のリンクと言語の名前だけの一覧は、別の言語の版への切り替え", () => {
+    const html =
+      '<main><h1>Beware of scammers</h1><ul><li>English</li><li><a href="/es/" hreflang="es" lang="es">Español</a></li></ul>' +
+      "<p>Scammers are calling.</p></main>";
+    assert.equal(htmlToMarkdown(html), "# Beware of scammers\n\nScammers are calling.\n");
+  });
+
+  it("文を持つ項目や、hreflang の無いリンクの一覧は残す", () => {
+    assert.equal(htmlToMarkdown('<ul><li>This guide is also in <a href="/es/" hreflang="es">Spanish</a>.</li></ul>'), "- This guide is also in Spanish.\n");
+    assert.equal(htmlToMarkdown('<ul><li>Step one</li><li><a href="/two.html">Step two</a></li></ul>'), "- Step one\n- Step two\n");
+    assert.equal(
+      htmlToMarkdown('<ul><li>English</li><li><a href="/es/" hreflang="es">Español</a></li><li><a href="/fr.html">Français</a></li></ul>'),
+      "- English\n- Español\n- Français\n",
+    );
+    assert.equal(
+      htmlToMarkdown('<ul><li>Read in <a href="/es/" hreflang="es">Español</a></li><li><a href="/fr/" hreflang="fr">Français</a></li></ul>'),
+      "- Read in Español\n- Français\n",
+    );
+    assert.equal(
+      htmlToMarkdown('<ul><li>This page is also in other languages.</li><li><a href="/es/" hreflang="es">Español</a></li></ul>'),
+      "- This page is also in other languages.\n- Español\n",
+    );
+    assert.equal(
+      htmlToMarkdown('<ul><li>Safety form</li><li><a href="/forms/safety-es.pdf" hreflang="es">Español</a></li></ul>'),
+      "- Safety form\n- Español\n",
+    );
+  });
+
+  it("言葉の無いアイコンの一覧と、その横の一行の見出しだけの塊は、共有や SNS のボタンの並び", () => {
+    const html =
+      "<main><h1>T</h1><p>Body text here.</p><div><div>Share &amp; print</div><ul>" +
+      '<li><a href="https://facebook.com/share" aria-label="Share on Facebook"><svg><path d="M0"/></svg></a></li>' +
+      '<li><a href="mailto:?body=x" aria-label="Email"><svg></svg></a></li>' +
+      '<li><button onclick="window.print()" aria-label="Print"><svg></svg></button></li></ul></div></main>';
+    assert.equal(htmlToMarkdown(html), "# T\n\nBody text here.\n");
+    const wrapped = '<div><p>Share</p><div><ul><li><a href="/share"><svg></svg></a></li></ul></div></div><p>Body text here.</p>';
+    assert.equal(htmlToMarkdown(wrapped), "Body text here.\n");
+    const titled = '<div><h2>Vegetable Soup</h2><div><ul><li><a href="/share"><svg></svg></a></li></ul></div></div><p>Body text here.</p>';
+    assert.equal(htmlToMarkdown(titled), "## Vegetable Soup\n\nBody text here.\n");
+  });
+
+  it("アイコンの横に文や二行以上の文字があれば、その文字は残す", () => {
+    const icons = '<ul><li><a href="https://x.com/a"><img src="x.png" alt="X"></a></li></ul>';
+    assert.equal(htmlToMarkdown(`<div><p>Follow us for updates on every storm.</p>${icons}</div>`), "Follow us for updates on every storm.\n");
+    assert.equal(htmlToMarkdown(`<div><p>Contact</p><p>Tel 03-1234-5678</p>${icons}</div>`), "Contact\n\nTel 03-1234-5678\n");
+  });
+
+  it("← で始まり → で終わり、リンクが二つ以上で文の無い塊は、前後のページへの帯", () => {
+    const html =
+      '<div><div><div>←</div><a href="/v9/gray">Gray, John P.</a></div><div><a href="/v9">Volume 9</a><div>Greely, Horace</div></div>' +
+      '<div><a href="/v9/green">Green, Duff</a><div>→</div></div></div><p>Friend Greeley: I discovered a paragraph.</p>';
+    assert.equal(htmlToMarkdown(html), "Friend Greeley: I discovered a paragraph.\n");
+  });
+
+  it("矢印が文の途中にあるもの、文のあるもの、リンクが一つだけのものは残す", () => {
+    assert.equal(htmlToMarkdown("<p>Tokyo → Osaka → Kyoto</p>"), "Tokyo → Osaka → Kyoto\n");
+    assert.equal(
+      htmlToMarkdown('<p>Trains run <a href="/t.html">Tokyo</a> → <a href="/o.html">Osaka</a> every hour</p>'),
+      "Trains run Tokyo → Osaka every hour\n",
+    );
+    assert.equal(
+      htmlToMarkdown('<div>← <a href="/a">Chapter 1</a> ends the war. <a href="/c">Chapter 3</a> →</div>'),
+      "← Chapter 1 ends the war. Chapter 3 →\n",
+    );
+    assert.equal(htmlToMarkdown('<div>← <a href="/a">Chapter 1</a> →</div><p>Text.</p>'), "← Chapter 1 →\n\nText.\n");
+    assert.equal(
+      htmlToMarkdown(
+        '<div>← <a href="agenda.pdf">Agenda PDF</a> | <span>Files</span> | <a href="minutes.pdf">Minutes PDF</a> →</div><p>Meeting files are available.</p>',
+      ),
+      "← Agenda PDF | Files | Minutes PDF →\n\nMeeting files are available.\n",
+    );
+  });
+
+  it("style に speak: none のある要素は読み上げない文字 (スクリプト向けの番号と題)。ほかの style は残す", () => {
+    const html = '<div id="data" style="speak:none"><span>791259</span><a href="/w">Life and Works</a> — Greely</div><p>Friend Greeley: text.</p>';
+    assert.equal(htmlToMarkdown(html), "Friend Greeley: text.\n");
+    assert.equal(htmlToMarkdown('<p style="color: red">Speak clearly.</p><p style="speak: normal">Aloud.</p>'), "Speak clearly.\n\nAloud.\n");
+  });
+
+  it("幅の無い空白 (U+200B など) だけの行は空の行。文の中のものはそのまま", () => {
+    assert.equal(htmlToMarkdown("<p>First.</p><div><span>​</span></div><p>Second.</p>"), "First.\n\nSecond.\n");
+    assert.equal(htmlToMarkdown("<p>may I ask you to ​examine it</p>"), "may I ask you to ​examine it\n");
+  });
+});
+
+describe("htmlToMarkdown: main の無いページ", () => {
+  const header =
+    '<div class="header"><p><a href="/"><img src="logo.png" alt="Ministry"></a></p><ul><li><a href="/a.html">About</a></li></ul>' +
+    '<div><p>Food industry</p><ul><li><a href="/f1.html">Planning</a>(<a href="/f2.html">Distribution</a>)</li><li><a href="/f3.html">Exports</a></li></ul></div></div>';
+  const body =
+    "<h1>Are farms decreasing?</h1><h2>Answer</h2><p>There were about 1.75 million farms in 2020. That is 56% fewer than twenty years before.</p>" +
+    "<h3>Sources</h3><p>Statistics on farms</p>";
+
+  it("題 (h1) とほぼすべての文を持ついちばん内側の塊だけを読む。メニュー・脇の案内・フッターは落ちる", () => {
+    const html =
+      `<body>${header}<div class="crumbs"><ol><li><a href="/">Top</a></li><li><a href="/kids/">Kids</a></li><li>Are farms decreasing?</li></ol></div>` +
+      `<div class="content"><div class="left">${body}</div>` +
+      '<div class="right"><p>Contents</p><p><a href="/k/farm.html">Farming</a></p><p><a href="/k/rice.html">Rice</a></p></div></div>' +
+      '<div class="foot"><p>Address: 1-2-1 Kasumigaseki</p><p>Copyright : Ministry</p></div></body>';
+    assert.equal(
+      htmlToMarkdown(html),
+      "# Are farms decreasing?\n\n## Answer\n\nThere were about 1.75 million farms in 2020. That is 56% fewer than twenty years before.\n\n### Sources\n\nStatistics on farms\n",
+    );
+  });
+
+  it("文が塊に分かれているとき、塊の外に見出しや文の前置きがあるとき、h1 が無いとき、文が一つも無いときは、ページ全体を読む", () => {
+    const spread =
+      "<div><h1>Report</h1><p>The first and longer half of the findings is set out here.</p></div><div><p>The second half of the findings is here.</p></div>";
+    assert.equal(
+      htmlToMarkdown(spread),
+      "# Report\n\nThe first and longer half of the findings is set out here.\n\nThe second half of the findings is here.\n",
+    );
+    const untitled = "<div><p>Menu label</p></div><div><p>One sentence here. Two sentences here.</p></div>";
+    assert.equal(htmlToMarkdown(untitled), "Menu label\n\nOne sentence here. Two sentences here.\n");
+    const notice =
+      '<div class="alert"><p>Updated.</p></div><div><h1>Recall notice</h1><p>This product can fail during normal use. Stop using it at once and contact support.</p></div>';
+    assert.equal(
+      htmlToMarkdown(notice),
+      "Updated.\n\n# Recall notice\n\nThis product can fail during normal use. Stop using it at once and contact support.\n",
+    );
+    const roster =
+      "<div><section><h1>Roster</h1><p>The following members joined this year.</p></section><section><h2>Members</h2><ul><li>Alice</li><li>Bob</li></ul></section></div>";
+    assert.equal(htmlToMarkdown(roster), "# Roster\n\nThe following members joined this year.\n\n## Members\n\n- Alice\n- Bob\n");
+    const index = "<div><h1>Index</h1><p>Farming</p></div><div><p>Rice</p></div>";
+    assert.equal(htmlToMarkdown(index), "# Index\n\nFarming\n\nRice\n");
+  });
+});
