@@ -54,7 +54,7 @@ ecfr-16-cfr-310-telemarketing  agentless-passive 74, dangling-reference 4, headi
 eip-1559-fee-market  contraction-consistency 2, max-paragraph-length 3, max-sentence-length 33, undefined-acronym 3
 entaku-rb-4  agentless-passive 9, latin-spacing 1
 entaku-rb-5  no-mixed-desumasu 1
-env-nikko-national-park-story  max-kanji-continuous 2, max-paragraph-length 1, no-mixed-desumasu 2, proper-noun-density 1, taigen-dome-in-prose 1
+env-nikko-national-park-story  max-kanji-continuous 2, no-mixed-desumasu 2, proper-noun-density 1, taigen-dome-in-prose 1
 etax-oshirase-mail-templates  agentless-passive 7, concrete-evidence-density 57, latin-spacing 9, max-kanji-continuous 11, max-paragraph-length 1, max-sentence-length 51, ngram-repetition 1, no-doubled-joshi 21
 fac-adr-0016-file-uploads  max-sentence-length 3, proper-noun-density 1, undefined-acronym 5
 fomc-minutes-2025-07  agentless-passive 34, max-paragraph-length 12, max-sentence-length 161, ngram-repetition 1, proper-noun-density 1, undefined-acronym 4
@@ -81,7 +81,7 @@ jp-2011-056072-seiu-kenyo-gasa  hiragana-fukushi 2, max-paragraph-length 1, max-
 k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kaisha.txt  clean
-kantei-unga81-general-debate-speech  agentless-passive 4, empty-intensifier 6, max-kanji-continuous 3, max-paragraph-length 1, max-sentence-length 4, no-doubled-joshi 2, unqualified-superlative 3
+kantei-unga81-general-debate-speech  agentless-passive 4, empty-intensifier 6, max-kanji-continuous 3, max-sentence-length 4, no-doubled-joshi 2, preamble-length 1, unqualified-superlative 3
 kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
 kimino-cleanup-notice  max-kanji-continuous 2, max-sentence-length 2
 kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1, sasete-itadaku 3
@@ -123,7 +123,7 @@ rfc9457  max-sentence-length 54, oxford-comma-consistency 1, proper-noun-density
 rouki.txt  clean
 rust-lang-minutes-2022-11-22  agentless-passive 3, contraction-consistency 2, max-sentence-length 3, title-case-consistency 2, undefined-acronym 3
 rust-rfc-2094-nll  heading-echo 1, max-paragraph-length 12, max-sentence-length 120, ngram-repetition 1, undefined-acronym 19
-saikosai-h18-09-14-bengoshi-chokai  agentless-passive 1, doubled-word 1, max-kanji-continuous 5, max-paragraph-length 1, max-sentence-length 25, no-doubled-joshi 2
+saikosai-h18-09-14-bengoshi-chokai  agentless-passive 1, doubled-word 1, max-kanji-continuous 5, max-sentence-length 25, no-doubled-joshi 2
 saikosai-h26-09-02-nagano  agentless-passive 2, max-paragraph-length 1, max-sentence-length 6
 saikosai-s57-09-28-shorai-kyufu  hiragana-fukushi 1, max-kanji-continuous 2, max-sentence-length 3, no-doubled-joshi 1
 soumu-kokumin-cyber-glossary-a  agentless-passive 4, heading-echo 1, max-sentence-length 2, ngram-repetition 1, undefined-acronym 3
