@@ -12,6 +12,8 @@ export type Morpheme = {
   readonly pos_detail_3?: string;
   readonly basic_form: string;
   readonly reading?: string;
+  /** 活用形（連用形・命令ｅ）。活用しない語は持たない。 */
+  readonly conjugated_form?: string;
   /** 活用の型（一段、五段・ラ行、サ変・スル など）。活用しない語には無い。 */
   readonly conjugated_type?: string;
 };

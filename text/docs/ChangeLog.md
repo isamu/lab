@@ -23,6 +23,23 @@ name, is skipped with a message in both languages. A name wrapped across a line 
 (「英国大使館別荘記念公園」), even without `names`: the brackets mark it as one quoted name, the same trade-off
 `latin-spacing` and `no-doubled-joshi` make for quotations. A quotation that also holds kana is measured as before.
 
+### doubled-word does not count a Japanese verb or adjective repeated in its continuative or imperative form (#170)
+
+Fiction, plays and poems repeat a word to press it: 「流せ流せ」「待て待て」「死ね死ね」「長く長く」. The analyser
+splits these into two identical verbs or adjectives, and doubled-word reported them as a word written twice. An
+independent verb or adjective repeated in a form that does not end the sentence (continuative 連用形 or imperative
+命令形) is now read as reduplication. Still reported: a repeated terminal form, a non-independent word
+(「くださいください」), a one-character word (「確認ししました」), and a repeat followed by an ending
+(「確認できできます」), which is a stem written twice.
+
+### A tenth round of corpus kinds: fiction, essays, poetry and plays in Japanese and English, and more (#170)
+
+The corpus adds, committed as public domain: 夏目漱石「夢十夜」, 寺田寅彦「天災と国防」, 石川啄木「一握の砂」 and
+岸田國士「紙風船」 from 青空文庫, and Gilman's The Yellow Wallpaper, Thoreau's Civil Disobedience, Frost's A Boy's
+Will and Wilde's The Importance of Being Earnest from Project Gutenberg. URL only: a J-STAGE abstract page, a
+Japanese Wikipedia talk page, the minutes of a 厚生労働省 council, 東京大学学位規則, and a MyPlate recipe. A Project
+Gutenberg eBook (format `gutenberg`) is stored as the work alone, without Project Gutenberg's header and licence.
+
 ### Japanese `agentless-passive` leaves descriptive and legal passives alone (#290)
 
 The rule is about a passive that hides who is responsible (「二次被害は確認されていません」「〜が検討されています」). On
