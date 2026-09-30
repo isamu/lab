@@ -7,16 +7,16 @@ import { countIn, firstIn, lastIn, lowerBound, type TokenRange } from "./token-c
 
 type ColumnName = keyof Columns;
 
-const count = (scope: ItemScope, name: ColumnName, item: TokenRange): number => countIn(scope.sentence.column[name], item, scope.admit);
+const count = (scope: ItemScope, name: ColumnName, item: TokenRange): number => countIn(scope.sentence.column[name], item, scope.level);
 
 const tokenAt = (scope: ItemScope, index: number): Token | undefined => (index === -1 ? undefined : scope.sentence.tokens[index]);
 
-export const firstAt = (scope: ItemScope, name: ColumnName, item: TokenRange): number => firstIn(scope.sentence.column[name], item, scope.admit);
+export const firstAt = (scope: ItemScope, name: ColumnName, item: TokenRange): number => firstIn(scope.sentence.column[name], item, scope.level);
 
 const first = (scope: ItemScope, name: ColumnName, item: TokenRange): Token | undefined => tokenAt(scope, firstAt(scope, name, item));
 
 const last = (scope: ItemScope, name: ColumnName, item: TokenRange): Token | undefined =>
-  tokenAt(scope, lastIn(scope.sentence.column[name], item, scope.admit));
+  tokenAt(scope, lastIn(scope.sentence.column[name], item, scope.level));
 
 export const hasContent = (scope: ItemScope, item: TokenRange): boolean => count(scope, "content", item) > 0;
 

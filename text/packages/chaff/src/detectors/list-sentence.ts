@@ -1,6 +1,6 @@
 import type { Lexicon, Token } from "../plugin.ts";
 import { citedTitles } from "./cited-title.ts";
-import { columnOf, type Admit, type Column } from "./token-column.ts";
+import { columnOf, type Column } from "./token-column.ts";
 
 /**
  * 並びを読むための語彙表。participle は解析器が分詞と読まないが読点のあとで分詞の句を始める語（meaning）、
@@ -61,8 +61,9 @@ const byDepth = (depths: readonly number[], test: (index: number) => boolean): R
 const isComma = (token: Token): boolean => token.surface === ",";
 
 /** 項目への問いの列。読点は項目に入ったり入らなかったりするので、脇に置いて問いごとに数える（token-column.ts）。 */
-const columnsOf = (tokens: readonly Token[]) => {
-  const of = (test: (token: Token) => boolean): Column => columnOf(tokens, test, isComma);
+const columnsOf = (tokens: readonly Token[], depths: readonly number[]) => {
+  const commaDepth = (token: Token, index: number): number | undefined => (isComma(token) ? depths[index] : undefined);
+  const of = (test: (token: Token) => boolean): Column => columnOf(tokens, test, commaDepth);
   return {
     content: of(isContent),
     open: of(isOpen),
@@ -134,13 +135,13 @@ const pairOpenersOf = (tokens: readonly Token[], depths: readonly number[], pair
 /**
  * 1 つの and / or の深さから見た文。その深さの読点は項目の区切りで、項目の中には無い。ほかの深さの読点（括弧の中）は項目の語。
  */
-export type ItemScope = { readonly sentence: ListSentence; readonly level: number; readonly admit: Admit };
+export type ItemScope = { readonly sentence: ListSentence; readonly level: number };
 
-export const scopeOf = (sentence: ListSentence, level: number): ItemScope => ({ sentence, level, admit: (index) => sentence.depths[index] !== level });
+export const scopeOf = (sentence: ListSentence, level: number): ItemScope => ({ sentence, level });
 
 export const listSentenceOf = (tokens: readonly Token[], words: ListWords, source: string): ListSentence => {
   const depths = depthsOf(tokens);
-  const column = columnsOf(tokens);
+  const column = columnsOf(tokens, depths);
   const exampleEnds = exampleEndsOf(tokens, depths, column, words.example);
   return {
     tokens,

@@ -426,12 +426,15 @@ describe("listVerdicts: one sentence of many items takes time in proportion to i
   const LONG = 40_000;
   const LONG_TIMEOUT_MS = 30_000;
   const noun = (surface: string, index: number): Token => ({ span: { start: index, end: index + 1 }, surface, pos: surface === "," ? "PUNCT" : "NOUN" });
+  /** The test runner's timeout cannot stop a synchronous call, so the time is also checked after it returns. */
+  const timedVerdicts = (tokens: readonly Token[]): (boolean | undefined)[] => {
+    const started = performance.now();
+    const result = listVerdicts(tokens, WORDS, "");
+    assert.ok(performance.now() - started < LONG_TIMEOUT_MS, "took longer than the timeout");
+    return result;
+  };
   const verdicts = (surfaces: readonly string[]): (boolean | undefined)[] =>
-    listVerdicts(
-      surfaces.map((surface, index) => (["and", "or"].includes(surface) ? { ...noun(surface, index), pos: "CCONJ" } : noun(surface, index))),
-      WORDS,
-      "",
-    );
+    timedVerdicts(surfaces.map((surface, index) => (["and", "or"].includes(surface) ? { ...noun(surface, index), pos: "CCONJ" } : noun(surface, index))));
 
   it(`judges ${String(LONG / 2)} and's in one sentence`, { timeout: LONG_TIMEOUT_MS }, () => {
     const result = verdicts(Array.from({ length: LONG }, (_, index) => (index % 2 === 1 ? "and" : "apples")));
@@ -446,6 +449,22 @@ describe("listVerdicts: one sentence of many items takes time in proportion to i
   it(`judges ${String(LONG / 4)} and's inside and outside parentheses`, { timeout: LONG_TIMEOUT_MS }, () => {
     const result = verdicts(Array.from({ length: LONG }, (_, index) => ["(", "pears", "and", ")", "and", "apples", ","][index % 7] ?? "apples"));
     assert.ok(result.length > LONG / 4);
+  });
+
+  // Quadratic reading of these commas is cheap per step, so it takes a longer sentence to show.
+  const LONGER = 200_000;
+
+  it(`judges ${String(LONGER / 4)} and's after commas inside parentheses that the tagger read as numbers`, { timeout: LONG_TIMEOUT_MS }, () => {
+    const surfaces = Array.from({ length: LONGER }, (_, index) => ["(", ",", ")", "and"][index % 4] ?? "and");
+    const tokens = surfaces.map((surface, index): Token => {
+      const pos = new Map([
+        ["(", "PUNCT"],
+        [")", "PUNCT"],
+        [",", "NUM"],
+      ]).get(surface);
+      return { span: { start: index, end: index + 1 }, surface, pos: pos ?? "CCONJ" };
+    });
+    assert.equal(timedVerdicts(tokens).length, LONGER / 4);
   });
 });
 
