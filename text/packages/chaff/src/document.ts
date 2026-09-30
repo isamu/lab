@@ -8,7 +8,7 @@ import { subheadingPieces } from "./subheading-line.ts";
 import { speakerLabels } from "./speaker-labels.ts";
 import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
-import { pageFurniture, textOutline } from "./page-furniture.ts";
+import { layoutMasks, textOutline } from "./page-furniture.ts";
 import { tokenizedLexicons } from "./lexicon-tokens.ts";
 import { plainSource } from "./plain-source.ts";
 import { inPageAnchors, isInPageNavigation, isNavigationList, type InPageAnchors } from "./in-page-nav.ts";
@@ -18,6 +18,7 @@ import { opaqueSpans, parse, readMarkdown, spansOfType } from "./markdown-read.t
 import { spanOf, type MarkdownNode as Node } from "./markdown-node.ts";
 import { emailParts, emailVocabulary } from "./email-parts.ts";
 import { cutTextSpans } from "./span-cut.ts";
+import { markdownFigures } from "./text-figures.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile, Token } from "./plugin.ts";
 
 /**
@@ -307,8 +308,8 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
   const emailLayout = emailParts(source, emailVocabulary(adapter.lexicons));
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
   // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
-  // テキストの文書は、ページのヘッダーとフッターも本文ではない（Markdown には改ページが無い）。
-  const blocks = [...collectMasks(root, source, anchors, syntax), ...(markdown ? [] : pageFurniture(source)), ...emailLayout.furniture];
+  // ページのヘッダーとフッター（テキストの文書）と、線で描いた図も本文ではない。
+  const blocks = [...collectMasks(root, source, anchors, syntax), ...layoutMasks(root, source, markdown), ...emailLayout.furniture];
   const prose = proseOf(source, [...blocks, ...emphasisSpans(root, source)]);
   // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。メールのヘッダーや署名の行は段落から切り取る。
   const paragraphSpans = cutTextSpans(
@@ -381,7 +382,7 @@ export const buildDocument = (
 /** 引用した返信も中を読まない。ほかの人の言葉の中の定義や番号は、この文書のものではない。 */
 const outlineOf = (root: Node, source: string, syntax: readonly Span[], replyQuotes: readonly Span[]): Outline => ({
   headings: headingsOf(root, source, maskSpans(source, syntax), replyQuotes),
-  opaque: [...opaqueSpans(root), ...syntax, ...replyQuotes],
+  opaque: [...opaqueSpans(root), ...markdownFigures(root, source), ...syntax, ...replyQuotes],
   tables: spansOfType(root, "table"),
 });
 

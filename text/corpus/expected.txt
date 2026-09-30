@@ -16,7 +16,7 @@ aozora-terada-tensai-to-kokubo  clean
 apidatagov-developer-manual  agreement-slip 1, contraction-consistency 4, max-sentence-length 5, proper-noun-density 1
 arxiv-2609-27842-genai-assessment  max-sentence-length 18, undefined-acronym 10
 arxiv-astro-ph-new-2025-01-03  agreement-slip 1, max-paragraph-length 22, max-sentence-length 27, ngram-repetition 1, undefined-acronym 130, unqualified-superlative 2
-asf-board-minutes-2025-01  agentless-passive 318, concrete-evidence-density 36, expletive-construction 28, heading-echo 18, max-paragraph-length 5, max-sentence-length 236, ngram-repetition 1, preamble-length 1, proper-noun-density 1, undefined-acronym 153
+asf-board-minutes-2025-01  agentless-passive 318, concrete-evidence-density 36, expletive-construction 28, heading-echo 18, max-paragraph-length 5, max-sentence-length 233, ngram-repetition 1, preamble-length 1, proper-noun-density 1, undefined-acronym 153
 automattic-offer-letter-us  agentless-passive 10, contraction-consistency 2, duplicate-definition 1, max-paragraph-length 2, max-sentence-length 53, proper-noun-density 1
 automattic-privacy-policy  max-sentence-length 6, undefined-acronym 8
 bls-glossary  max-paragraph-length 6, max-sentence-length 69, undefined-acronym 6
@@ -161,8 +161,8 @@ ppc-guidelines-tsusoku  duplicate-definition 11, latin-spacing 3, max-sentence-l
 python-code-quality-list-2016-03  adverb-overuse 1, agentless-passive 13, max-sentence-length 23, ngram-repetition 1, preamble-length 1, proper-noun-density 1
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-sentence-length 1, oxford-comma-consistency 1
-rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, proper-noun-density 1, undefined-acronym 22
-rfc9293-tcp  dangling-reference 1, doubled-word 7, duplicate-definition 1, empty-intensifier 1, excessive-hedging 3, max-paragraph-length 14, max-sentence-length 263, ngram-repetition 1, proper-noun-density 1, undefined-acronym 40
+rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 79, proper-noun-density 1, undefined-acronym 22
+rfc9293-tcp  dangling-reference 1, duplicate-definition 1, empty-intensifier 1, excessive-hedging 3, max-paragraph-length 14, max-sentence-length 262, ngram-repetition 1, proper-noun-density 1, undefined-acronym 38
 rfc9457  max-sentence-length 54, proper-noun-density 1, undefined-acronym 15
 rouki.txt  clean
 rust-lang-minutes-2022-11-22  agentless-passive 3, agreement-slip 1, contraction-consistency 2, max-sentence-length 3, undefined-acronym 3
@@ -196,8 +196,8 @@ voa-le-lunar-trailblazer  max-sentence-length 8, proper-noun-density 1
 vue-docs-ja-reactivity-fundamentals  max-sentence-length 1, no-doubled-joshi 1
 w3c-secure-contexts  excessive-hedging 1, heading-echo 2, max-sentence-length 26, ngram-repetition 1, oxford-comma-consistency 1, proper-noun-density 1
 wikipedia-en-markdown  adverb-overuse 1, agentless-passive 10, concrete-evidence-density 5, max-sentence-length 12, proper-noun-density 1, title-case-consistency 2
-wikipedia-ja-idobata-template-collapse  latin-spacing 1, max-paragraph-length 1
-wikipedia-ja-talk-oden  latin-spacing 4, max-paragraph-length 1, max-sentence-length 6, no-doubled-joshi 3, stray-space 1
+wikipedia-ja-idobata-template-collapse  latin-spacing 1, stray-space 1
+wikipedia-ja-talk-oden  latin-spacing 4, max-paragraph-length 3, max-sentence-length 6, no-doubled-joshi 3, stray-space 1
 wikisource-lincoln-letters-greeley  agentless-passive 4, max-paragraph-length 1, max-sentence-length 32, proper-noun-density 1
 wikivoyage-belgian-coast-tram  expletive-construction 6, max-paragraph-length 22, max-sentence-length 37, proper-noun-density 1
 wikivoyage-ja-shikoku-henro  latin-spacing 1, max-kanji-continuous 1, stray-space 1
