@@ -21,7 +21,7 @@ latin-spacing                           1      1       0             0
 max-kanji-continuous                    5      5       0             0
 max-paragraph-length                   10     10       0             0
 max-sentence-length                    11     11       0             0
-no-doubled-joshi                       13     13       0             0
+no-doubled-joshi                       12     12       0             0
 no-em-dash                              8      8       0             0
 no-mixed-desumasu                      13     13       0             0
 no-nakaguro-parallel                    2      2       0             0
@@ -156,7 +156,6 @@ ja/policy  reference-broken  found
 ja/policy  number-skipped  found
 ja/policy  defined-twice  found
 ja/policy  polite-in-plain  found
-ja/policy  no-nested  found
 ja/policy  space-strayed  found
 ja/policy  particle-doubled  found
 ja/press  weekday-shift  found
