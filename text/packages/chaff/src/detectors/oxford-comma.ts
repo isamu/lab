@@ -1,4 +1,5 @@
 import type { Detector, Finding, Lexicon, Token } from "../plugin.ts";
+import { inCitedTitle } from "./cited-title.ts";
 
 const LIST_CONJUNCTION = new Set(["and", "or"]);
 
@@ -24,7 +25,7 @@ const depthsOf = (tokens: readonly Token[]): number[] =>
  */
 type ListWords = { readonly participle: ReadonlySet<string>; readonly example: Lexicon; readonly pair: ReadonlySet<string> };
 
-type Clause = { readonly tokens: readonly Token[]; readonly depths: readonly number[]; readonly words: ListWords };
+type Clause = { readonly tokens: readonly Token[]; readonly depths: readonly number[]; readonly words: ListWords; readonly source: string };
 
 /** 冠詞や引用符を飛ばした、項目の頭の品詞。the parser と an exporter と samples を同じ形と見る。 */
 const NOMINAL = new Set(["NOUN", "PROPN", "PRON", "NUM", "ADJ"]);
@@ -347,6 +348,8 @@ const insideLastItem = (clause: Clause, at: number, items: readonly Token[][], a
  * （We tested it, and the team shipped it.）は、Oxford comma を打つかどうかの選択を見せない。
  */
 const listAt = (clause: Clause, at: number): boolean | undefined => {
+  // 題名の読点は題名を付けた人のもの。書き手の流儀の票にしない。
+  if (inCitedTitle(clause.tokens, at, clause.source)) return undefined;
   const after = itemAfter(clause.tokens, at);
   const listed = fromExample(clause, at, afterClosedList(withoutLead(joinAdjectives(itemsBefore(clause, at)))));
   const items = fromParticiplePhrase(listed, after, clause.words.participle);
@@ -364,8 +367,8 @@ const listAt = (clause: Clause, at: number): boolean | undefined => {
  * どちらが正しいかは決めない。スタイルガイドで割れる論点に立場を取ると rule ごと無視される。
  * 見るのは 1 つの文書で揃っているかだけ。spec §12.3。
  */
-const oxfordIn = (tokens: readonly Token[], words: ListWords): boolean | undefined => {
-  const clause = { tokens, depths: depthsOf(tokens), words };
+const oxfordIn = (tokens: readonly Token[], words: ListWords, source: string): boolean | undefined => {
+  const clause = { tokens, depths: depthsOf(tokens), words, source };
   return tokens.reduce<boolean | undefined>(
     (found, token, at) => found ?? (at > 0 && LIST_CONJUNCTION.has(token.surface.toLowerCase()) ? listAt(clause, at) : undefined),
     undefined,
@@ -381,7 +384,7 @@ export const oxfordComma: Detector = (doc, options): Finding[] => {
     pair: patternsOf(doc.lexicons["pair-opener"]),
   };
   const judged = doc.sentences.flatMap((sentence) => {
-    const oxford = oxfordIn(sentence.tokens ?? [], words);
+    const oxford = oxfordIn(sentence.tokens ?? [], words, doc.source);
     return oxford === undefined ? [] : [{ sentence, oxford }];
   });
   const withComma = judged.filter((entry) => entry.oxford).length;
