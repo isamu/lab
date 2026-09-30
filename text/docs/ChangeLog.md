@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `yarn bench` checks every sample as a genre chaff has, and stops on one it does not (#170)
+
+The policy and note samples were checked as `business/policy` and `business/note`, which are not genres, so they ran
+with no genre's settings and nothing said so. A policy (社内規程) is now checked as `legal/statute` and a note to staff as
+`business/press-release` (a notice). A sample kind with no genre, or a genre not in `genres.yaml`, now stops the bench.
+The bench also plants a mistake only where the genre's preset leaves its rule on, as chaff runs it: under
+`legal/statute` the nested-の plant is no longer made in the policy sample, since the legal presets turn
+`no-doubled-joshi` off.
+
 ### `oxford-comma-consistency` no longer reads an example aside or an "and" inside one item as a list (#170)
 
 A list needs three items, and four shapes made two items, or an "and" inside one item, look like three:
