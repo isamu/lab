@@ -27,7 +27,7 @@ placeholders:
     ja: 〇〇
     en: the term
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 

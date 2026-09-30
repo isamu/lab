@@ -31,6 +31,7 @@ const ja = {
   languages: "対象の言語",
   allLanguages: "日本語と英語",
   levels: "段階",
+  levelsSetSeverity: "このルールには数える上限がありません。段階は指摘の重さを変えます。relaxed にすると指摘は消えずに一段軽く出ます。",
   usedFor: "向いている文章",
   why: "なぜ指摘するのか",
   message: "指摘の文",
@@ -66,7 +67,8 @@ const ja = {
   noFinding: "指摘なし",
   notFlagged: "指摘しないもの",
   levelsPlain: "強さ（段階）",
-  levelsIntro: "chaff.yaml の rules にこの名前と段階を書くと変わります。何も書かなければ normal です。",
+  levelsIntro:
+    "chaff.yaml の rules にこの名前と段階を書くと変わります。書かなければ、ジャンルが決めた段階で動きます（どのジャンルで動くかは下の「ジャンルごとの動き」にあります）。",
   levelsSame: "どの段階でも同じように見ます。見ないときは off にします。",
   levelsSeverity: "意味を読む検査の段階は、指摘の重さを表します。",
   ownNumbers: "次のジャンルは、段階に別の数字を持っています（npx chaffjs explain で確かめられます）:",
@@ -110,6 +112,8 @@ const en: Record<UiKey, string> = {
   languages: "Languages",
   allLanguages: "Japanese and English",
   levels: "Levels",
+  levelsSetSeverity:
+    "This rule has no limit to count to. A level sets how a finding is marked: relaxed keeps the finding and marks it a step lower.",
   usedFor: "Suited to",
   why: "Why it matters",
   message: "Message",
@@ -145,7 +149,8 @@ const en: Record<UiKey, string> = {
   noFinding: "no finding",
   notFlagged: "What it does not flag",
   levelsPlain: "Levels",
-  levelsIntro: "Set a level for this rule under rules in chaff.yaml. With nothing set, it is normal.",
+  levelsIntro:
+    "Set a level for this rule under rules in chaff.yaml. With nothing set, it runs at the level its genre gives it (see By genre below).",
   levelsSame: "Every level checks the same way. Use off to turn it off.",
   levelsSeverity: "For a check that reads meaning, the level is how serious a finding is.",
   ownNumbers: "These genres set their own numbers for the levels (npx chaffjs explain shows them):",

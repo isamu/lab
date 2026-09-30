@@ -12,7 +12,8 @@ off or are not suited to it, and how to silence one spot or change it for the te
 same way as the reference.
 
 - **Two more rule fields:** `not_flagged` (ja and en) and `level_meaning` (with `{limit}` for the number; not needed
-  when every level is the same). The rule-file test requires them.
+  for a rule whose levels set a severity). The rule-file test requires them. A rule whose levels are severities shows
+  them as error, warning and info.
 
 ### The guide lists everything chaff can find, with an example and chaff's real output (#170)
 
@@ -26,6 +27,29 @@ the rule runs by default, is experimental, needs a list in `chaff.yaml`, or runs
 - **The output cannot drift from chaff.** The site runs the command line on every example before it builds
   (`yarn examples`), and a test checks that each `before` is reported by its rule and each `after` is not. A rule
   file without the fields fails the test.
+
+### `title-case-consistency`: "vs", "v." and "via" stay lowercase in Title Case (#170)
+
+"Development Environment vs MulmoChat" was counted as a sentence-case heading, because "vs" was read as a word that
+Title Case capitalises. Chicago, APA, AP and MLA all keep "vs.", "v." and "via" lowercase in a title, so they now join
+the other small words that the check skips. A heading whose other words are lowercase ("Switch via environment
+variable") is still sentence case.
+
+### `relax` on a rule with nothing to count lowers the severity instead of doing nothing (#170)
+
+`numbering-gap`, `dangling-reference`, `date-weekday-mismatch`, `total-mismatch`, `duplicate-definition`, `date-order`,
+`doubled-word` and `agreement-slip` have no limit to count to: their levels were all `1`, so `npx chaffjs relax
+numbering-gap` wrote `relaxed` to chaff.yaml and the error was reported exactly as before. Their levels are now
+severities, as the L4 rules' already were: `relaxed` keeps the finding and marks it a step lower (an error becomes a
+warning, a warning a note), and `strict` raises a warning rule to an error. An error rule has no `strict`, so `chaff
+strict` refuses it as it does for any level a rule does not have. At the default level every finding is marked as before.
+
+`relax` and `strict` say what the new level does ("its findings still show, as a warning instead of an error").
+`explain` lists the severity at each level instead of a number, and `rules --json` gives each rule `level_sets`
+(`limit` or `severity`), with severities in `levels` and `now` for these rules. A number written for one of them in
+chaff.yaml is reported, since it only runs the rule at `normal`, and `chaff eval` no longer sweeps limits that none of
+them read. The rule loader refuses a severity that is not the one at `normal`, levels (with `by_genre`) that mix
+severities and numbers, and `by_genre` on a rule whose levels are severities.
 
 ### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
 

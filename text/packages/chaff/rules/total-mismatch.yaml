@@ -21,7 +21,7 @@ how_to_fix:
   ja: 内訳の金額と合計のどちらが正しいかを確かめて、片方を直してください。
   en: Check which is right, the items or the total, and correct the other.
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { normal: error, relaxed: warning }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
