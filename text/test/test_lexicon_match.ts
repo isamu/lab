@@ -1,9 +1,8 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
+import { firedRules } from "./rule-run.ts";
 import { entryIn, entryOpens } from "../packages/chaff/src/detectors/lexicon-match.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter, Lexicon, LexiconEntry, Sentence, Token } from "../packages/chaff/src/plugin.ts";
@@ -119,8 +118,7 @@ describe("entryOpens: 文頭の語", () => {
   });
 });
 
-const idsFor = (source: string, adapter: LanguageAdapter): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, true, "business/report").findings.map((finding) => finding.rule);
+const idsFor = (source: string, adapter: LanguageAdapter): string[] => firedRules(adapter, source);
 
 describe("語彙表の rule が原形で照らす（解析器あり）", () => {
   before(async () => {

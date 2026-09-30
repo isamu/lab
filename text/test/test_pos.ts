@@ -1,5 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
+import { firedRules } from "./rule-run.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { neededBy, runRules } from "../packages/chaff/src/run.ts";
@@ -11,8 +12,7 @@ import type { LanguageAdapter, ProseDocument, RuleDefinition, Token } from "../p
 
 const RULES = loadRules("ja");
 
-const idsFor = (source: string, adapter: LanguageAdapter): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, true, "business/report").findings.map((finding) => finding.rule);
+const idsFor = (source: string, adapter: LanguageAdapter): string[] => firedRules(adapter, source);
 
 const tokensOf = (source: string, adapter: LanguageAdapter): readonly Token[] =>
   buildDocument("t.md", source, adapter).sentences.flatMap((sentence) => sentence.tokens ?? []);
