@@ -164,10 +164,14 @@ const PLURAL_TAG = new Set(["NNS", "NNPS"]);
 
 const nounOrDeterminerFeatures = (entry: Tagged): Features => (PLURAL_TAG.has(entry.pos) ? { features: { Number: "Plur" } } : determinerFeatures(entry));
 
-/** 過去分詞は VerbForm=Part。Based on the review, のような分詞の導入句を、命令形の並び（fix the parser, ship it）と見分ける。 */
+/**
+ * 過去分詞は VerbForm=Part。Based on the review, のような分詞の導入句を、命令形の並び（fix the parser, ship it）と見分ける。
+ * -ing 形は VerbForm=Ger。解析器は動名詞と現在分詞を分けないので、過去分詞を見る判断（Part）には混ぜない。
+ */
 const featuresOf = (tagged: readonly Tagged[], at: number): Features => {
   const entry = tagged[at];
   if (entry === undefined) return {};
+  if (entry.pos === "VBG") return { features: { VerbForm: "Ger" } };
   if (entry.pos !== "VBN") return nounOrDeterminerFeatures(entry);
   return { features: isPassive(tagged, at) ? { VerbForm: "Part", Voice: "Pass" } : { VerbForm: "Part" } };
 };
