@@ -247,14 +247,29 @@ const listContinues = (clause: Clause, at: number, after: readonly Token[]): boo
   return shape !== undefined && shape === leadShape(after) && isClause(following) === isClause(after);
 };
 
+const isPluralNounPhrase = (tokens: readonly Token[]): boolean =>
+  tokens.filter(isContent).every((token) => NOUN_PHRASE_TAIL.has(token.pos)) && lastContent(tokens)?.features?.["Number"] === "Plur";
+
 /**
- * 最後の項目に 2 つだけを結ぶ語（between / both）があり、そのあとに and / or がまだ無ければ、この and / or はその 2 つを結ぶ
+ * 語のあとが複数形の名詞句なら、語は名詞にかかる語で、2 つはもう揃っている（the renderer in both modes and the exporter）。
+ * and の後ろも冠詞の無い複数形の名詞句なら、2 つを結ぶ語（both project goals and business goals）。
+ */
+const pairComplete = (member: readonly Token[], after: readonly Token[]): boolean => {
+  const end = after.findIndex((token) => LIST_CONJUNCTION.has(token.surface.toLowerCase()));
+  const partner = end === -1 ? after : after.slice(0, end);
+  return isPluralNounPhrase(member) && !(isPluralNounPhrase(partner) && !partner.some((token) => token.pos === "DET"));
+};
+
+/**
+ * 最後の項目に 2 つだけを結ぶ語（between / both）があり、そのあとに and / or がまだ無く、読点も無ければ、この and / or はその 2 つを結ぶ
  * （the Key Terms between Provider and Customer, and any policies）。
  */
-const pairsInLastItem = (clause: Clause, items: readonly Token[][]): boolean => {
+const pairsInLastItem = (clause: Clause, at: number, items: readonly Token[][], after: readonly Token[]): boolean => {
   const last = items.at(-1) ?? [];
   const opener = last.findLastIndex((token) => clause.words.pair.has(token.surface.toLowerCase()));
-  return opener !== -1 && !last.slice(opener).some((token) => LIST_CONJUNCTION.has(token.surface.toLowerCase()));
+  const member = last.slice(opener + 1);
+  if (opener === -1 || commaBefore(clause.tokens, at) || pairComplete(member, after)) return false;
+  return !member.some((token) => LIST_CONJUNCTION.has(token.surface.toLowerCase()));
 };
 
 /** 名詞にかかる語。解析器は分詞を過去形とも読む（registered or certified mail の certified）ので、動詞も数える。 */
@@ -316,7 +331,7 @@ const joinsObjects = (clause: Clause, at: number, items: readonly Token[][], aft
 
 /** and / or が並びの最後の継ぎ目ではなく、最後の項目の中にある。 */
 const insideLastItem = (clause: Clause, at: number, items: readonly Token[][], after: readonly Token[]): boolean =>
-  pairsInLastItem(clause, items) || sharesNoun(clause, at, items, after) || joinsObjects(clause, at, items, after);
+  pairsInLastItem(clause, at, items, after) || sharesNoun(clause, at, items, after) || joinsObjects(clause, at, items, after);
 
 /**
  * 読点で区切った項目が and / or の前に 2 つ以上あり、最後の項目と and の後ろが同じ形のときだけ並列。
