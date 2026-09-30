@@ -1,4 +1,4 @@
-import { localized, messageOf } from "./text.ts";
+import { messageOf, readableText } from "./text.ts";
 import type { Finding, RuleDefinition, Severity } from "../plugin.ts";
 
 /**
@@ -48,10 +48,10 @@ const ruleFor = (located: Located): RuleDefinition | undefined => located.rules.
 const sarifRule = (rule: RuleDefinition, language: string): SarifRule => ({
   id: ruleIdOf(rule.id),
   name: rule.id,
-  shortDescription: { text: localized(rule.name, language) },
+  shortDescription: { text: readableText(rule, rule.name, language) },
   // なぜ直すのかと、どう直すのかを一緒に上げる。指摘だけでは書いた人が動けない。
-  fullDescription: { text: localized(rule.why, language) },
-  help: { text: localized(rule.how_to_fix, language) },
+  fullDescription: { text: readableText(rule, rule.why, language) },
+  help: { text: readableText(rule, rule.how_to_fix, language) },
   properties: { tags: [rule.layer, ...rule.use_for] },
 });
 

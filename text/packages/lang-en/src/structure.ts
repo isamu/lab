@@ -1,5 +1,7 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
 import { citedDocumentAfter, citedDocumentBefore, hyphenatedTagAround } from "./citation.ts";
+import { citedCodeBefore, codeVocabulary } from "./code-citation.ts";
+import { loadLexicons } from "./lexicons.ts";
 import { membersAfter } from "./reference-list.ts";
 import { parseRoman } from "./roman.ts";
 import { dates } from "./dates.ts";
@@ -140,6 +142,8 @@ const glossedDocument = (gloss: Gloss): string | undefined => {
   return anchor !== undefined && gloss.depth > anchor.depth ? anchor.document : undefined;
 };
 
+const CODES = codeVocabulary(loadLexicons());
+
 /** The other document a reference names, or else a bracketed tag that the core checks against the document's list. */
 const citation = (text: string, start: number, end: number, document: string | undefined): Readonly<Record<string, string>> => {
   if (document !== undefined) return { document };
@@ -149,7 +153,7 @@ const citation = (text: string, start: number, end: number, document: string | u
 
 /**
  * "Section 4.2(a)" → 4.2.a, "Article III" → 3. The same addresses the tree gives.
- * "Section 9 of the Master Agreement" carries the other document's name, and is not looked up in this tree.
+ * "Section 9 of the Master Agreement" and "35 CFR §122" carry the other document's name, and are not looked up in this tree.
  */
 const references = (text: string): Mention[] => {
   const gloss: Gloss = { depth: 0, scanned: 0, anchors: [] };
@@ -158,7 +162,7 @@ const references = (text: string): Mention[] => {
     if (main === undefined) return [];
     const { parts, end } = subdivisions(text, match.index + match[0].length);
     advance(gloss, text, match.index);
-    const cited = citedDocumentAfter(text, end) ?? citedDocumentBefore(text, match.index);
+    const cited = citedDocumentAfter(text, end) ?? citedDocumentBefore(text, match.index) ?? citedCodeBefore(text, match.index, CODES);
     const document = cited ?? glossedDocument(gloss);
     gloss.scanned = Math.max(gloss.scanned, end);
     if (cited !== undefined) gloss.anchors.push({ document: cited, depth: gloss.depth });

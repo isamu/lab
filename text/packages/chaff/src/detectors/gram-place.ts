@@ -37,12 +37,16 @@ export const compacted = (text: string, unit: LengthUnit): Compacted => {
   return { text: chars.join(""), offsets };
 };
 
+/** 詰めた文の中の範囲を、元の文の範囲に戻す。 */
+export const placeAt = (source: Compacted, window: Span): Span | undefined => {
+  const start = source.offsets[window.start];
+  const last = source.offsets[window.end - 1];
+  if (start === undefined || last === undefined) return undefined;
+  return { start, end: last + 1 };
+};
+
 /** 詰めた文の中の gram の最初の出現を、元の文の範囲に戻す。無ければ undefined。 */
 export const placeOf = (source: Compacted, gram: string): Span | undefined => {
   const at = source.text.indexOf(gram);
-  if (at === -1) return undefined;
-  const start = source.offsets[at];
-  const last = source.offsets[at + gram.length - 1];
-  if (start === undefined || last === undefined) return undefined;
-  return { start, end: last + 1 };
+  return at === -1 ? undefined : placeAt(source, { start: at, end: at + gram.length });
 };

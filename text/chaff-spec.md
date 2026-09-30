@@ -640,7 +640,7 @@ genres:
 
 設計上の注意:
 
-`heading-echo` と `ngram-repetition` は **character n-gram** を使う。word n-gram にすると `wordSplit` capability を要求することになり L2 に落ちる。character trigram なら日本語でも英語でも同じ実装で動き、精度も実用に足りる。
+`heading-echo` と `ngram-repetition` は **character n-gram** を使う。word n-gram にすると `wordSplit` capability を要求することになり L2 に落ちる。character trigram なら日本語でも英語でも同じ実装で動き、精度も実用に足りる。`ngram-repetition` の英語（語単位の言語）の窓は、空白で区切った語の切れ目にそろえる。空白を見るだけなので `wordSplit` は要らない。
 
 `heading-echo` の重なりは **Jaccard ではなく包含率**（見出しの trigram のうち、直後の文に現れたものの割合）で測る。実装して測るまで Jaccard と書いていたが、いちばん典型的な反復を取り逃すことが分かった。
 
@@ -1360,6 +1360,10 @@ padded-intro に strict はありません。normal と同じ設定です。
 | `status` | `experimental` / `stable` / `deprecated` |
 
 `message` だけでは、非エンジニアは何が悪いのか分からない。`why` と `how_to_fix` を必須にするのはそのため。
+
+`name` / `why` / `how_to_fix` にも `{preferred}` などを書ける。指摘があれば `message` と同じく指摘の値で埋める。
+指摘の無い表示（`chaff explain`、`chaff rules --json`、SARIF の rule、規則の一覧）では、`placeholders:` に言語別に
+書いた言葉で読ませる（`preferred: { ja: prefer に並べた使う書き方, en: the spelling listed under prefer }`）。
 
 ### 18.3 利用者が自然文で足す検査
 

@@ -140,7 +140,9 @@ const isOrdinalRun = (chars: readonly string[], index: number): boolean => {
 const MIN_CODE_GROUPS = 3;
 
 // 通達の「5－1－1」は全角の「－」でつなぐ。ハイフン「‐」やマイナス「−」も同じに読む。長音「ー」は仮名の一部なので入れない。
-const HYPHEN = /[-‐‑−－]/u;
+/** 正規表現の文字クラスに入れるハイフンの字。- は範囲の記号にならないよう \ を付ける。 */
+export const HYPHEN_CHARS = "\\-‐‑−－";
+const HYPHEN = new RegExp(`[${HYPHEN_CHARS}]`, "u");
 
 /** 数字をつなぐハイフンか。半角の - のほか、全角・和文のハイフンも。 */
 export const isHyphen = (char: string | undefined): boolean => char !== undefined && HYPHEN.test(char);
