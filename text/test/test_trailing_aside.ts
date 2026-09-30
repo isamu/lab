@@ -65,6 +65,11 @@ describe("ownEnd: a trailing aside is a closed bracket after the predicate", () 
     assert.equal(own("支払った医療費であること（未払いの分は翌年の対象となります。）。"), "支払った医療費であること");
   });
 
+  it("reads a statute-length run of asides without deep recursion", () => {
+    const RUN = 20_000;
+    assert.equal(ownEnd(`本文${"（1）".repeat(RUN)}。`), "本文".length);
+  });
+
   it("leaves text without a closed trailing bracket whole", () => {
     ["", "。", "）", "（", "これで終わる。", "A（B）C）。", "（§17", "括弧（は）途中にある。"].forEach((text) => assert.equal(ownEnd(text), text.length, text));
   });
