@@ -8,7 +8,7 @@
 18f-handbook-travel-faq  max-paragraph-length 1, max-sentence-length 65, undefined-acronym 16
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2
-aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 77
+aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 79
 aozora-kishida-kamifusen  clean
 aozora-soseki-yume-juya  clean
 aozora-takuboku-ichiaku-no-suna  clean
@@ -68,8 +68,8 @@ entaku-rb-5  no-mixed-desumasu 1
 env-nikko-national-park-story  max-kanji-continuous 2, proper-noun-density 1, section-length-uniformity 1, taigen-dome-in-prose 1
 etax-oshirase-mail-templates  agentless-passive 7, concrete-evidence-density 57, latin-spacing 9, max-kanji-continuous 11, max-paragraph-length 1, max-sentence-length 51, ngram-repetition 1, no-doubled-joshi 21
 fac-adr-0016-file-uploads  max-sentence-length 3, proper-noun-density 1, undefined-acronym 5
-fed-powell-2025-08-22-framework-review  adverb-overuse 1, expletive-construction 5, max-paragraph-length 4, max-sentence-length 63, undefined-acronym 3
-fomc-minutes-2025-07  agentless-passive 34, max-paragraph-length 12, max-sentence-length 161, ngram-repetition 1, proper-noun-density 1, undefined-acronym 4
+fed-powell-2025-08-22-framework-review  adverb-overuse 1, expletive-construction 5, max-paragraph-length 6, max-sentence-length 65, oxford-comma-consistency 2, title-case-consistency 1, undefined-acronym 3
+fomc-minutes-2025-07  agentless-passive 34, max-paragraph-length 12, max-sentence-length 160, ngram-repetition 1, proper-noun-density 1, undefined-acronym 4
 fprime-buffermanager-sdd  contraction-consistency 2, proper-noun-density 1
 fr-2026-16371-nvd-rfi  agentless-passive 17, concrete-evidence-density 7, max-sentence-length 22, proper-noun-density 1, undefined-acronym 4
 ftc-phishing-scams  agentless-passive 1, concrete-evidence-density 3, contraction-consistency 1, max-sentence-length 3, no-em-dash 1, title-case-consistency 2
