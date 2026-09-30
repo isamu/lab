@@ -206,6 +206,14 @@ genres:
     summary:
       ja: 契約書・利用規約・プライバシーポリシー
       en: Contracts, terms of service and privacy policies
+    suggest:
+      paths: ["(^|/)(contracts?|agreements?|terms|tos|nda|keiyaku|kiyaku)(/|[-_.])", "(^|/)privacy[-_]?policy[-_.]"]
+      ja: { line: "本契約|本規約|本ポリシー|以下「(?:甲|乙|丙)」|^#{1,6}\\s*(?:プライバシーポリシー|個人情報保護方針|利用規約|契約書)", min_lines: 2 }
+      en:
+        {
+          line: "\\b(?:[Tt]his Agreement|[Tt]hese Terms|[Tt]his (?:Privacy )?Policy|the Parties)\\b|^#{1,6}\\s*(?:Terms of (?:Service|Use)|Privacy Policy)\\b",
+          min_lines: 3,
+        }
     # A contract is read clause by clause against its own numbers, definitions and dates: these are its mistakes.
     rules:
       numbering-gap: normal
@@ -219,41 +227,74 @@ genres:
       ja: 法令・規則・社内規程・通達
       en: Statutes, regulations and internal rules
     profile: statute
+    # Also suggested when the content has the statute profile's shape.
+    suggest:
+      paths: ["(^|/)(laws?|statutes?|regulations?|kitei|kisoku)(/|[-_.])"]
+      ja: { line: "(?:この|本)(?:法律|政令|省令|府令|規則|規程|条例|定款|通達)", min_lines: 2 }
+      en: { line: "\\b(?:[Tt]his (?:Act|[Pp]art|[Ss]ubpart|[Rr]egulation)|[Tt]hese [Rr]egulations)\\b|^§\\s?\\d", min_lines: 3 }
   - id: legal/judgment
     name: { ja: 判決, en: Court decision }
     summary:
       ja: 判決文・決定
       en: Court judgments and opinions
+    suggest:
+      ja: { line: "^(?:#{1,6}\\s*)?(?:主\\s*文|理\\s*由|判\\s*決)\\s*$", min_lines: 2 }
+      en: { line: "delivered the opinion of the Court|^(?:Reversed|Affirmed)\\.?$", min_lines: 1 }
   - id: legal/patent
     name: { ja: 特許明細書, en: Patent }
     summary:
       ja: 特許の明細書と請求項
       en: Patent specifications and claims
+    suggest:
+      ja: { line: "【(?:課題|解決手段|請求項[0-9０-９]+|選択図|技術分野|背景技術|発明の詳細な説明|特許請求の範囲)】", min_lines: 2 }
+      en: { line: "^#{1,6}\\s*(?:BACKGROUND OF THE INVENTION|SUMMARY OF THE INVENTION|Claims\\b)|\\bof claim \\d+", min_lines: 3 }
   - id: docs/manual
     name: { ja: マニュアル・手順書, en: Manual and how-to }
     summary:
       ja: 使い方の説明・手順書・ヘルプ
       en: User guides, how-to pages and help
+    suggest:
+      paths: ["(^|/)(manuals?|guides?|how-?tos?|help|tutorials?|user-?guides?)(/|[-_.])"]
+      ja: { line: "^#{1,6}\\s.*(?:手順|操作方法|設定方法)", min_lines: 2 }
+      en: { line: "^#{1,6}\\s*(?:Steps?\\b|Step \\d|Prerequisites|Before you begin|Troubleshooting)", min_lines: 2 }
   - id: docs/faq
     name: { ja: よくある質問, en: FAQ }
     summary:
       ja: 問いと答えを並べたページ
       en: Pages of questions and answers
+    suggest:
+      paths: ["(^|[/_-])(faqs?|q-?and-?a)([/_.-]|$)"]
+      ja: { line: "^(?:#{1,6}\\s*)?(?:[QＱ][0-9０-９]*[.．:：、\\s　]|問[0-9０-９]+[.．:：\\s　])|^#{1,6}\\s*(?:よくある(?:ご)?質問|Ｑ＆Ａ|Q&A)", min_lines: 2 }
+      en: { line: "^(?:#{1,6}\\s*)?Q[0-9]*[.:)]\\s|^#{1,6}\\s*(?:FAQs?|Frequently asked questions)\\b", min_lines: 2 }
   - id: docs/glossary
     name: { ja: 用語集, en: Glossary }
     summary:
       ja: 用語と、その説明を並べたページ
       en: Lists of terms and what they mean
+    suggest:
+      paths: ["(^|/)(glossary|glossaries|yogo|用語集)(/|[-_.])"]
+      ja: { line: "^#{1,6}\\s*用語集", min_lines: 1 }
+      en: { line: "^#{1,6}\\s*Glossary\\b", min_lines: 1 }
   - id: academic/paper
     name: { ja: 論文, en: Academic paper }
     summary:
       ja: 論文と、その要旨
       en: Papers and abstracts
+    suggest:
+      paths: ["(^|/)(papers?|ronbun)(/|[-_.])"]
+      ja: { line: "^(?:#{1,6}\\s*)?(?:要旨|抄録|参考文献|引用文献|謝辞)\\s*(?:[（(].*)?$", min_lines: 2 }
+      en:
+        {
+          line: "^(?:#{1,6}\\s*)?(?:\\d+\\.?\\s+)?(?:Abstract|Keywords|Methods?|Methodology|Results|Discussion|Conclusions?|Related [Ww]ork|Bibliography|References)\\s*$",
+          min_lines: 4,
+        }
   - id: literature/fiction
     name: { ja: 小説, en: Fiction }
     summary:
       ja: 小説・物語
       en: Novels and stories
+    suggest:
+      paths: ["(^|/)(novels?|fiction|stories|shosetsu)(/|[-_.])"]
   - id: literature/essay
     name: { ja: 随筆, en: Literary essay }
     summary:
@@ -264,21 +305,34 @@ genres:
     summary:
       ja: 詩・短歌・俳句
       en: Poems and verse
+    suggest:
+      paths: ["(^|/)(poems?|poetry|tanka|haiku)(/|[-_.])"]
   - id: literature/play
     name: { ja: 戯曲・脚本, en: Play and script }
     summary:
       ja: 戯曲・脚本
       en: Plays and scripts
+    suggest:
+      paths: ["(^|/)(plays?|screenplays?|kyakuhon)(/|[-_.])"]
+      en: { line: "^[A-Z][A-Z '-]{2,}\\.$", min_lines: 10 }
   - id: speech/address
     name: { ja: スピーチ・挨拶, en: Speech }
     summary:
       ja: 読み上げるために書いた演説・挨拶
       en: Speeches and addresses written to be read aloud
+    suggest:
+      paths: ["(^|/)(speech(es)?|addresses)(/|[-_.])"]
+      ja: { line: "^(?:議長|御列席の皆様|ご列席の皆様|皆様|皆さん)、|ご清聴(?:いただき)?ありがとうございました", min_lines: 2 }
+      en: { line: "^(?:Mr\\.|Madam) (?:President|Speaker|Chair(?:man)?),|^Ladies and gentlemen,|Thank you for (?:your attention|listening)", min_lines: 2 }
   - id: speech/transcript
     name: { ja: 発言録, en: Transcript }
     summary:
       ja: 話したことを書き起こした記録（会見・国会の会議録）
       en: Verbatim records of what was said (press conferences, parliamentary debates)
+    suggest:
+      paths: ["(^|/)(transcripts?|kaigiroku)(/|[-_.])"]
+      ja: { line: "^○[^　\\s]{1,30}　|^（(?:問|答)）|^【(?:記者|大臣|質問|回答)】", min_lines: 3 }
+      en: { line: "^(?:Mr|Ms|Mrs|Dr)\\. [A-Z][A-Z-]{2,}(?: of [A-Z][a-z]+)?\\. ", min_lines: 3 }
     # A transcript records what was said: its sentences, repeats and register are the speaker's, not the writer's to fix.
     rules:
       max-sentence-length: off
