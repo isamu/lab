@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### `ngram-repetition` counts whole English words and leaves out listing furniture (#170)
+
+English phrases were counted on 20-character slices, so a reported phrase could start or end in the middle of a
+word ("roductivity change a"). They are now counted on runs of whole words at least 18 characters long, the length a
+phrase had inside the old slice between its two spaces. Punctuation at a word's edge is not part of the phrase
+("described," and "described" are the same word), and case is ignored ("Proposals submitted" at the start of a
+sentence is the same phrase as "proposals submitted" in the middle). The finding quotes the phrase as first written.
+
+A phrase made mostly of what a listing repeats on every entry is not counted either: symbols and punctuation, link
+text, and bracketed tags, where a tag is a bracket holding one word or a list of single words (`(replaced)`,
+`[pdf, html, other]`). A bracket holding a phrase is still the writer's text ("Select Save (if applicable)."). On the
+arXiv listing, `" (replaced) [pdf, ht"` is no longer reported. The furniture check applies to Japanese too; no Japanese finding in the corpus moved.
+
 ### `undefined-acronym` reads an acronym glossary's headwords as defined when their name follows them (#170)
 
 In a glossary of abbreviations, the headword is the acronym and its name is the definition right after it. The
