@@ -303,6 +303,10 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(speech), "# 演説\n\n御清聴ありがとうございました。\n");
     const twoBlocks = '<h1>Notice</h1><p>Text.</p><p><a href="/list">Back to the list</a></p><div><div><a href="/">Home</a></div></div>';
     assert.equal(htmlToMarkdown(twoBlocks), "# Notice\n\nText.\n");
+    const pages =
+      '<h1>Report</h1><p>Text.</p><p><a href="/list/">List</a></p><p><a href="index.php?p=1">Index</a></p><p><a href="/r/a.html#top">Top</a></p>' +
+      '<p><a href="https://example.com">Home</a></p><p><a href="//example.org/?q=a.b">Search</a></p>';
+    assert.equal(htmlToMarkdown(pages), "# Report\n\nText.\n");
   });
 
   it("後ろに文の続くリンク一つのブロック、文の中のリンク、カードのリンク、ファイルへのリンクは閉じていても残す", () => {
@@ -314,8 +318,6 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(card), "# Notice\n\nText.\n\n### News one\n\nFirst summary.\n");
     const appendix = '<h1>Report</h1><p>Text.</p><p><a href="/appendix.PDF">Appendix A (PDF)</a></p><div><a href="/t.xlsx?v=2#s">Table</a></div>';
     assert.equal(htmlToMarkdown(appendix), "# Report\n\nText.\n\nAppendix A (PDF)\n\nTable\n");
-    const pages = '<h1>Report</h1><p>Text.</p><p><a href="/list/">List</a></p><p><a href="index.php?p=1">Index</a></p><p><a href="/r/a.html#top">Top</a></p>';
-    assert.equal(htmlToMarkdown(pages), "# Report\n\nText.\n");
   });
 
   it("ページ内リンクと ▲ や | のような記号だけの行は落とし、rel=next のリンクも文の中なら文字を残す", () => {
