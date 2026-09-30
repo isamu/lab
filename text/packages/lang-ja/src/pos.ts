@@ -4,7 +4,7 @@ import { analyserPieces } from "./analyser-pieces.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
 import { outsideTheReport, isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
-import { isInflectedEcho, type Inflection } from "./reduplication.ts";
+import { isEchoAt, type Inflection } from "./reduplication.ts";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import type { Token } from "chaffjs/plugin";
@@ -235,6 +235,7 @@ const inflectionOf = (morpheme: Morpheme, start: number): Inflection => ({
   pos: morpheme.pos,
   detail: morpheme.pos_detail_1,
   form: morpheme.conjugated_form ?? "*",
+  conjugation: morpheme.conjugated_type ?? "*",
   start,
 });
 
@@ -245,7 +246,7 @@ export const tokenize = (text: string): Token[] | undefined => {
   const sequence = read.map(({ morpheme }) => morpheme);
   const inflections = read.map(({ morpheme, start }) => inflectionOf(morpheme, start));
   return read.map(({ morpheme, start }, index) =>
-    toToken(morpheme, start, readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index), isInflectedEcho(inflections, index)),
+    toToken(morpheme, start, readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index), isEchoAt(inflections, index)),
   );
 };
 
@@ -310,6 +311,9 @@ export const readsAsOneAdverb = (text: string): boolean => {
   const read = tokenize(text);
   return read?.length === 1 && read[0]?.pos === "ADV";
 };
+
+/** 一語と読むか（家々・時々）。品詞は問わない。 */
+export const readsAsOneWord = (text: string): boolean => tokenize(text)?.length === 1;
 
 /**
  * 数のすぐ後ろに詰めて書いたとき、word が数につく語として読まれるか（spaced-counter.ts が使う）。
