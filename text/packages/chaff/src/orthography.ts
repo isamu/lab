@@ -63,7 +63,7 @@ const kindOf = (char: string | undefined, digitSide: "before-digit" | "after-dig
   return DIGIT.test(char) ? digitSide : undefined;
 };
 
-const isJapanese = (char: string | undefined): boolean => char !== undefined && JAPANESE.test(char);
+export const isJapanese = (char: string | undefined): boolean => char !== undefined && JAPANESE.test(char);
 
 /** japanese が日本語の字のとき、other の英字・数字の種類。 */
 const latinBeside = (japanese: string | undefined, other: string | undefined, digitSide: "before-digit" | "after-digit"): SpacingKind | undefined =>
@@ -197,7 +197,7 @@ export const latinBoundaries = (text: string, written: string = text): Boundary[
  * 混ざっているとき、そろえるべき少数派。種類（英字・数字の前・数字の後ろ）ごとに数える。
  * 同数なら、文書が先に使った書き方をその文書の書き方とみなし、後から出た書き方を少数派にする。
  */
-export const minorityStyle = (boundaries: readonly Boundary[]): boolean | undefined => {
+export const minorityStyle = (boundaries: readonly { readonly spaced: boolean }[]): boolean | undefined => {
   const spaced = boundaries.filter((boundary) => boundary.spaced).length;
   const touching = boundaries.length - spaced;
   if (spaced === 0 || touching === 0) return undefined;

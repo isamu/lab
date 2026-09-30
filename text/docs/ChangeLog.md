@@ -26,6 +26,19 @@ explained what. A sentence that only restates its heading (「国立国会図書
 page's 「一次資料の扱いに関して一つ問題を提起させて頂きます。」 and a changelog's 「スライドショーの機能を強化しました。」, which add
 two content words each.
 
+### `stray-space`: a space inside a Japanese phrase (#170)
+
+A new experimental rule reports a half-width or full-width space inside what reads as one phrase: after a particle
+(「こころさんが 払った」) or before a word that cannot start a phrase (「アプリ が」, 「確認 しました」). Which joint is
+which comes from the parts of speech, so the rule needs the tagger. It takes no side on style: the two kinds of joint
+are counted separately, and a space is reported only when the document spaces that kind less often than it does not.
+A document that spaces every phrase on purpose (分かち書き in text for children) is left alone. So are spaces
+between two nouns (a label and its value, a name, a compound), lines that do not end with a full stop (verse,
+labels, table-like lines), headings, tables, a full-width indent, the space after an item mark at the start of a line,
+a Markdown line break, quotations in 「」 and boundaries with Latin letters or digits. On the Japanese corpus
+(`yarn corpus`), every space it reports is stray except one, which separates a lead-in from its explanation in a
+bullet whose line break was lost in conversion; the rule stays experimental until it has been measured further.
+
 ### `undefined-acronym` no longer asks to expand emphasis, a month in a date, a surname after a title or a qualified expansion (#170)
 
 Four kinds of capital word that corpus round 11 reported are not acronyms, and are no longer counted:
