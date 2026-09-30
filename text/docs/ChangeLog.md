@@ -11,7 +11,9 @@ A list needs three items, and four shapes made two items, or an "and" inside one
 - **An example aside.** `the screen lock on your phone, such as a PIN or phone-based fingerprint`: the list starts
   after a word in the new `example-marker` list (such as, including, e.g., i.e., for example, for instance), so this
   is two items. `such as a PIN, a password or a fingerprint` is still a list. When the items after the marker do not
-  share a shape, the marker is not taken as the list's start (`materials such as green steel, utilizing …, and adopting …`).
+  share a shape, or an "and" has already closed the aside, the marker is not taken as the list's start (`materials
+  such as green steel, utilizing …, and adopting …`, `apples, oranges such as navels and mandarins, and pears`). The
+  marker is matched case by case, so the initials in `E.G. Evans` are not "e.g.".
 - **A pair word.** `the Key Terms between Provider and Customer, and any policies`: the conjunction a word in the new
   `pair-opener` list takes (between … and, both … and, either … or, whether … or), in the same item with no comma before
   it, joins that pair. `between the provider, the reseller and the customer`, `the impact of either option and
