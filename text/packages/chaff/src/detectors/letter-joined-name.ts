@@ -6,8 +6,8 @@
 
 type Span = { readonly start: number; readonly end: number };
 
-// 語を空白で区切る文字（é、α）や数字が接していれば長い語の一部。仮名や漢字は接していてよい（論文はJ-STAGEで）。
-const SPACED_WORD_CHAR = String.raw`\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}\p{N}_&`;
+// 語を空白で区切る文字（é、α、分けて書いた e と ́）や数字が接していれば長い語の一部。仮名や漢字は接していてよい（論文はJ-STAGEで）。
+const SPACED_WORD_CHAR = String.raw`\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}\p{M}\p{N}_&`;
 const LETTER_JOINED_NAME = new RegExp(String.raw`(?<![${SPACED_WORD_CHAR}.-])[A-Za-z]-[A-Za-z]{2,}(?![${SPACED_WORD_CHAR}-]|\.[A-Za-z0-9])`, "gu");
 
 /** 文の中の、一文字を - で語の前に繋いだ名前の範囲。 */

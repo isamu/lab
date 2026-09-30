@@ -29,6 +29,7 @@ describe("letterJoinedNameSpans", () => {
     ["数字を含む", "the J-2 visa, COVID-19 and the J-STAGE2 page"],
     [". で繋いだ名前の一部", "see X.J-STAGE and J-STAGE.X"],
     ["空白で区切る文字の語に接する", "the CaféJ-STAGE, αJ-STAGE, ЖJ-STAGE and J-STAGÉ pages"],
+    ["分けて書いたアクセントに接する", "the Cafe\u0301J-STAGE page"],
   ].forEach(([form, text]) => {
     it(`invalid: ${String(form)}`, () => assert.deepEqual(namesIn(String(text)), []));
   });
