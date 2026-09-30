@@ -13,6 +13,20 @@ The bench also plants a mistake only where the genre's preset leaves its rule on
 `legal/statute` the nested-の plant is no longer made in the policy sample, since the legal presets turn
 `no-doubled-joshi` off.
 
+### New experimental rule `agreement-slip`: words that do not agree (English) (#170)
+
+Corpus round 9 (#274) found slips no rule caught: "Your can check" and "remains ones of the most intriguing". The new
+rule reports a determiner and a noun that differ in number ("a significant changes", "these new version"), a
+possessive directly before a verb ("Your can", "their is"), and "ones of the most". "one of the" + a singular noun is
+not counted: in the corpus it only misfired ("some one of the name of Cecily"). It counts only forms
+with one reading: nouns spelled alike in both numbers ("series", "data"), words the tagger does not know (their number is
+a guess), a noun that can also be a verb after a word that can head the phrase ("an individual works", "This results
+in"), nouns that modify another noun ("a sales team") and names ("Plan A users") are not counted. The words come from new English lexicons (`singular-determiner`,
+`plural-determiner`, `invariant-noun`, `count-adjective`, `dependent-possessive`, `finite-auxiliary`,
+`misnumbered-phrase`). The English adapter marks a noun that can also be a verb `AlsoVerb=Yes` and an adjective that can
+also be a noun `AlsoNoun=Yes`, and a noun or adjective it does not know `Guess=Yes`. Off for literature and transcripts, like `doubled-word`. Experimental: on the English
+corpus every finding is a real slip, but there are too few of them for §21.1.
+
 ### `oxford-comma-consistency` no longer reads an example aside or an "and" inside one item as a list (#170)
 
 A list needs three items, and four shapes made two items, or an "and" inside one item, look like three:

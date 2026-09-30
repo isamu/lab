@@ -1,0 +1,9 @@
+# Forms of "be" and "have" that are never a noun, so a possessive directly before one ("their is") is a slip.
+id: finite-auxiliary
+language: en
+entries:
+  - pattern: is
+  - pattern: are
+  - pattern: was
+  - pattern: were
+  - pattern: has

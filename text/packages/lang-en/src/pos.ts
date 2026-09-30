@@ -165,6 +165,27 @@ const PLURAL_TAG = new Set(["NNS", "NNPS"]);
 
 const nounOrDeterminerFeatures = (entry: Tagged): Features => (PLURAL_TAG.has(entry.pos) ? { features: { Number: "Plur" } } : determinerFeatures(entry));
 
+const COMMON_NOUN_TAG = new Set(["NN", "NNS"]);
+const NOUN_TAG = new Set(["NN", "NNS", "NNP", "NNPS"]);
+const ADJECTIVE_TAG = new Set(["JJ", "JJR", "JJS"]);
+
+/**
+ * 解析器が一つに決めた読みの、ほかの読み。名詞と付けた語が動詞にもなる（works / report）なら AlsoVerb=Yes、
+ * 形容詞と付けた語が名詞にもなる（individual / key）なら AlsoNoun=Yes。an individual works は名詞と動詞とも読める。
+ * 語彙に無い名詞・形容詞（tribunal / stimuli）は、品詞も単数・複数も解析器が形から当てたものなので Guess=Yes。
+ */
+const otherReading = (entry: Tagged): Readonly<Record<string, string>> => {
+  const tags = state.vocabulary(entry.value.toLowerCase());
+  if (tags === undefined) return NOUN_TAG.has(entry.pos) || ADJECTIVE_TAG.has(entry.pos) ? { Guess: "Yes" } : {};
+  if (COMMON_NOUN_TAG.has(entry.pos) && tags.some((tag) => tag.startsWith("VB"))) return { AlsoVerb: "Yes" };
+  return ADJECTIVE_TAG.has(entry.pos) && tags.some((tag) => COMMON_NOUN_TAG.has(tag)) ? { AlsoNoun: "Yes" } : {};
+};
+
+const withOtherReading = (entry: Tagged, found: Features): Features => {
+  const other = otherReading(entry);
+  return Object.keys(other).length === 0 ? found : { features: { ...found.features, ...other } };
+};
+
 /**
  * 過去分詞は VerbForm=Part。Based on the review, のような分詞の導入句を、命令形の並び（fix the parser, ship it）と見分ける。
  * -ing 形は VerbForm=Ger。解析器は動名詞と現在分詞を分けないので、過去分詞を見る判断（Part）には混ぜない。
@@ -173,7 +194,7 @@ const featuresOf = (tagged: readonly Tagged[], at: number): Features => {
   const entry = tagged[at];
   if (entry === undefined) return {};
   if (entry.pos === "VBG") return { features: { VerbForm: "Ger" } };
-  if (entry.pos !== "VBN") return nounOrDeterminerFeatures(entry);
+  if (entry.pos !== "VBN") return withOtherReading(entry, nounOrDeterminerFeatures(entry));
   return { features: isPassive(tagged, at) ? { VerbForm: "Part", Voice: "Pass" } : { VerbForm: "Part" } };
 };
 

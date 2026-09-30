@@ -1,0 +1,8 @@
+# Adjectives with which a singular determiner counts several things: "a few days", "a great many people",
+# "an extra several hours".
+id: count-adjective
+language: en
+entries:
+  - pattern: few
+  - pattern: many
+  - pattern: several

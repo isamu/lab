@@ -1,5 +1,5 @@
 // Seeded mistakes of English wording for `yarn bench`: expletive openings, a flipped Oxford comma, a flipped heading
-// capitalisation, an agentless passive and a doubled article. Pure and deterministic, like scripts/bench-mutations.ts.
+// capitalisation, an agentless passive, a doubled article and a plural noun after "a". Pure and deterministic, like scripts/bench-mutations.ts.
 import { isHeading, isProse, linesOf, proseAt, lowerFirst, replaceLine, rewriteFirst, splitSentences, type Plant, type PlantContext } from "./bench-text.ts";
 
 const LIST_PREFIX = /^\s*[-*]\s/u;
@@ -159,6 +159,18 @@ export const passiveEn = (source: string): Plant | undefined =>
     source,
     (line) => isProse(line) && rewriteSentence(line, passiveOf) !== undefined,
     (line) => rewriteSentence(line, passiveOf),
+  );
+
+// --- agreement-slip ---
+
+const ARTICLE_NOUN_PREPOSITION = /\ba ([a-z]{3,}[^s]) (of|in|on|for|with) /u;
+
+/** 本文の最初の「a <名詞> of」の名詞を複数にする（a week of → a weeks of）。片方だけ直した書き換えの跡。 */
+export const pluralAfterArticle = (source: string): Plant | undefined =>
+  rewriteFirst(
+    source,
+    (line) => isProse(line) && ARTICLE_NOUN_PREPOSITION.test(line),
+    (line) => line.replace(ARTICLE_NOUN_PREPOSITION, "a $1s $2 "),
   );
 
 // --- doubled-word ---
