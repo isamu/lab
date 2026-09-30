@@ -2,6 +2,14 @@
 
 export const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 
+/**
+ * 字に挟まれた ’ と、どこにあっても ʼ を ' にする（don’t → don't）。語彙表は ' で書くので、’ で書いた本文も同じ語に当てるため。
+ * 英語アダプタの解析器が同じ決めかたをする（chaff とアダプタは実行時の値を共有しないので、ここにも置く）。一字を一字に置き換えるので位置は変わらない。
+ */
+const APOSTROPHE = /(?<=[\p{L}\p{N}])’(?=\p{L})|ʼ/gu;
+
+export const straightApostrophes = (text: string): string => text.replace(APOSTROPHE, "'");
+
 /** text の中で word が現れる [始まり, 終わり) を、左から順に。大文字小文字を区別しないときは i で探す（位置は元の文字列のまま）。 */
 const spansOf = (text: string, word: string, ignoreCase: boolean): [number, number][] => {
   const pattern = new RegExp(escapeRegExp(word), ignoreCase ? "giu" : "gu");
