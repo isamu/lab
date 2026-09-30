@@ -1,10 +1,10 @@
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { buildDocument, teamRules } from "../packages/chaff/src/document.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
+import { runRules, type RunResult } from "../packages/chaff/src/run.ts";
 import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
 
@@ -21,6 +21,25 @@ export type TeamWords = {
   readonly prefer?: Readonly<Record<string, string>>;
 };
 
+/** Every rule's run on one document of the given genre, as if --experimental, with the rules it ran. */
+export const allRulesRun = async (
+  path: string,
+  source: string,
+  language: string,
+  genre: string,
+  team: TeamWords = EMPTY,
+  only: (id: string) => boolean = () => true,
+): Promise<{ readonly result: RunResult; readonly rules: readonly RuleDefinition[] }> => {
+  const adapter = ADAPTERS[language];
+  if (adapter === undefined) throw new Error(`no adapter for ${language}`);
+  await adapter.prepare?.({ pos: true });
+  const rules = loadRules(language).filter((rule) => only(rule.id));
+  return {
+    result: runRules(buildDocument(path, source, adapter, teamRules(team), profileFor(EMPTY, path, source, language, genre)), rules, {}, true, genre),
+    rules,
+  };
+};
+
 const findingsWith = async (
   path: string,
   source: string,
@@ -29,11 +48,7 @@ const findingsWith = async (
   genre: string,
   team: TeamWords = EMPTY,
 ): Promise<CorpusFinding[]> => {
-  const adapter = ADAPTERS[language];
-  if (adapter === undefined) throw new Error(`no adapter for ${language}`);
-  await adapter.prepare?.({ pos: true });
-  const rules = loadRules(language).filter((rule) => only(rule.id));
-  const result = runRules(buildDocument(path, source, adapter, teamRules(team), profileFor(EMPTY, path, source, language, genre)), rules, {}, true, genre);
+  const { result, rules } = await allRulesRun(path, source, language, genre, team, only);
   const byId = new Map(rules.map((rule) => [rule.id, rule]));
   return result.findings.flatMap((finding) => {
     const rule = byId.get(finding.rule);

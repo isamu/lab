@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### A rule's how to fix names the words of the finding (#345)
+
+`preferred-term` printed 「{preferred}」に直してください and `Change it to "{preferred}"` as written: only the
+message had its placeholders filled. Every text a finding shows now fills them the same way: the rule's name, why and
+how to fix, in the friendly output and in `chaff test`. 「サーバ」 under `prefer: { サーバ: サーバー }` now reads
+「サーバー」に直してください. `duplicate-definition`'s Japanese how to fix (「第2条に定める{term}」) had the same slip.
+
+Where there is no finding (`chaff explain`, `chaff rules --json`, the SARIF rule's help, the comment `chaff relax`
+writes into chaff.yaml and the site's rule reference), a placeholder now reads as words the rule gives for it under
+`placeholders:` in its YAML: 「prefer に並べた使う書き方」, 「第2条に定める〇〇」. A test plants each of `yarn bench`'s
+mistakes and fails if any rendered finding still shows a placeholder, and another fails if a rule uses a placeholder
+in its name, why or how to fix without giving words for it.
+
 ### `latin-spacing` leaves labels and whole dates out of the count (#170)
 
 A label followed by a space and its title is layout, not the writer's spacing habit, but it was counted and
