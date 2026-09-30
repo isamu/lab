@@ -22,6 +22,25 @@ article and a Japanese Wikipedia village-pump thread.
   and 6)". The lang-en lexicon `document-kind` now lists RFC, BCP and STD with `position: before`: the name stands
   before its own number, where a code (CFR) takes a title number before it.
 
+### `yarn bench` plants a polite sentence only where chaff can see it clash (#170)
+
+Since 「〜こと。」 and 「〜もの。」 endings became neutral, the requirements sample, written entirely in 「〜こと。」, had no
+plain sentence left for the planted polite one to clash with, and the bench recorded a miss. The `polite-in-plain`
+plant now measures the edited document with chaff's own reading of sentence endings, among the sentences the planted
+one is compared with (its list, its numbered run, or the body), and plants only where plain sentences remain and are
+not outnumbered. The requirements sample is left out rather than reported as a miss; the sample text is unchanged.
+
+### `yarn bench` plants a repeated phrase, and fails when a rule it should plant for goes unplanted (#170)
+
+`ngram-repetition` had no plant: the audit that added plants for uncovered rules skipped it. The bench now opens one
+more paragraph than the limit with the same pet phrase, 「言うまでもないことですが、」 (「言うまでもないことだが、」 in a plain
+document) or "It goes without saying that", once per paragraph. It is planted only where the document, after the
+edit, is long enough for chaff to count repetition, so a short sample is left out rather than reported as a miss.
+
+`test/fixtures/bench/plants.yaml` now lists every rule, either with the languages the bench must plant it in or with
+the reason it is not planted. `yarn test` fails when a rule is missing from the list or a listed language has no
+mutation, and `yarn bench` (even with `--update`) fails when a run plants a listed rule in no sample of a language.
+
 ### Documents that mix Japanese and English (#170)
 
 A Japanese paper with an English abstract was read as if the abstract were one long Japanese sentence, because a
