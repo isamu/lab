@@ -4,6 +4,35 @@ Newest first.
 
 ## Unreleased
 
+### Rules for the documented shapes of generated text, and more words for `ai-tell` (#170)
+
+Four new experimental rules check the marks of AI-sounding writing that style guides, Wikipedia's "Signs of AI
+writing" and studies of LLM vocabulary list, in Japanese and English. Each word they look for is in the language
+package's lexicon.
+
+- **`contrast-framing`**: the density of contrast frames: 「単なる X ではなく Y」「X だけでなく」, "not just X, but Y",
+  and a denial answered by a turn ("It's not a perk. It's a necessity."). One is ordinary, so a single one never counts.
+- **`stock-transition`**: the density of sentences that open with a stock transition (「さらに」「加えて」「このように」,
+  "Moreover", "Additionally", "In addition,"). Words that carry the argument (また, However, Therefore) are not counted.
+- **`assistant-residue`**: what a chat reply leaves in a document. A knowledge-cutoff line or an AI disclaimer
+  (「私の知識は」, "As of my last knowledge update") counts on its own; a courtesy people also write
+  (「お役に立てれば幸いです」, "I hope this helps") counts only when two come together.
+- **`unfilled-placeholder`**: a template blank left unfilled (「【会社名】」, "[Your Name]", "[Insert Date]"). A
+  Markdown link, a label its value follows (【氏名】山田), and an example 「○○」 are not blanks.
+
+`ai-generated-composite` also counts `contrast-framing`, `stock-transition` and `assistant-residue`. The genres that
+turn `ai-tell` off also turn off the two density rules (and academic papers `stock-transition`, speeches both);
+transcripts turn off `assistant-residue`.
+
+`ai-tell` gains the words the sources agree on (showcasing, underscores, pivotal, meticulous, "evolving landscape",
+"stands as", 「探っていきましょう」「一翼を担う」「未来をより豊かに」 and others). `closing-cliche` gains
+「いかがでしたでしょうか」 and 「お役に立てれば幸いです」. Words the sources name but human documents in the corpus use
+just as often (さまざまな, において, を実現, crucial, robust) are left out.
+
+In the corpus, the new rules report only the blanks of a published letter template (ACAS). AI-written samples in
+both languages (`test/fixtures/ai-samples/`, labelled as written by an AI) fire them; `yarn bench` plants a
+knowledge-cutoff line and a blank for the two rules that one edit can trigger.
+
 ### `oxford-comma-consistency` reads a sentence once, however many "and"s it has (#170)
 
 For each "and" or "or", the check split the clause into items again from its start and read each item token by
