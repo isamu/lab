@@ -90,6 +90,16 @@ export const doubledAt = (source: string, first: Token, second: Token, spaced: b
 export const isNameBefore = (first: Token, second: Token, opensSentence: boolean): boolean =>
   !opensSentence && !isDeterminer(first) && UPPER_START.test(first.surface) && LOWER_START.test(second.surface);
 
+/** 大文字 1 字の語。 */
+const SINGLE_CAPITAL = /^\p{Lu}$/u;
+
+/**
+ * 文の途中の大文字 1 字の冠詞（at site A the connection、Peer A our copy）は、名前にした文字。冠詞は文の途中で大文字にならない。
+ * 同じ語（site A a）と文頭の A the は書き損じのまま。
+ */
+export const isLetterName = (first: Token, second: Token, opensSentence: boolean): boolean =>
+  !opensSentence && SINGLE_CAPITAL.test(first.surface) && !sameWord(first, second);
+
 /** 文の最初の、字のある語の位置。at 語目より前に字のある語が無ければ、at 語目は文の書き出し。 */
 const firstWordIndex = (tokens: readonly Token[]): number => tokens.findIndex((token) => LETTER.test(token.surface));
 
@@ -119,8 +129,8 @@ export const doubledIn = (source: string, tokens: readonly Token[], spaced: bool
     if (isAllowed(tokens, index - 1, allowedAt(tokens, index - 1, allowed))) return [];
     if (!sameWord(first, second) && opensPhrase(tokens, index, phrases)) return [];
     // first は字のある語なので、firstWord は見つかっていて index - 1 以下。
-    const opensSentence = firstWord >= index - 1;
-    return isNameBefore(first, second, opensSentence) ? [] : [{ first, second }];
+    const opens = firstWord >= index - 1;
+    return isNameBefore(first, second, opens) || isLetterName(first, second, opens) ? [] : [{ first, second }];
   });
 };
 

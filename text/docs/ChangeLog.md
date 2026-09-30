@@ -21,6 +21,106 @@ time grew with the square of the length. Each now reads it once. The output is u
 - **Statutes** (`legal/statute`): a bare 第一項 looks up the aside depth and the reference it continues from an index
   built once per line, instead of reading the line from its start for each reference.
 
+### Corpus: the wikitext converter keeps each `:` reply a paragraph of its own (#170)
+
+On a talk page every reply is a line indented with `:` or `::`, and the page shows each as a block of its own. The
+corpus converter wrote them as consecutive lines, so a whole thread became one paragraph (ja.wikipedia's 井戸端 thread
+was one paragraph of many sentences). A line that starts with `:` or `;` alone is now a paragraph of its own; a `*:` or
+`#:` line still continues its list item. Link templates keep the text the page shows: `{{google|…}}` its search words,
+`{{tl|…}}` and `{{tlx|…}}` the template's name in braces.
+
+This changes stored text: the committed 最高裁 平成18年9月14日 judgment is converted again (its numbered `:`
+paragraphs and the judges' names are now separate paragraphs; no finding moved). The ノート:おでん page's run-on
+paragraph splits into its replies, and the long ones are still reported. The 井戸端 thread loses `max-paragraph-length`
+and gains a real `stray-space`: the writer's space after the search term, which the dropped template had hidden.
+
+### `doubled-word`: "at site A the connection" is a name, not a doubled article (#170)
+
+A single capital letter in the middle of a sentence names something ("at site A the connection", "Peer A our copy"),
+since an article is not capitalised there, so it is not an article doubled with the next one. "A the" at the start of a
+sentence, "A a", and a capitalised word of two letters or more ("review An the draft") are still reported. RFC 9293
+loses its "A the".
+
+### Plain text: a figure drawn with lines is not prose (#170)
+
+RFC 9293's state diagrams and message sequences were read as prose: "CLOSED CLOSED" and "LISTEN LISTEN" were doubled
+words, and the state diagram was one very long sentence. Where a figure was indented four spaces or more it was already
+an indented code block; rows at the body's own indent (numbered rows such as "1.  CLOSED … CLOSED", box edges at the
+body's margin) were not. A figure is now found by its shape, in `.txt` and in Markdown:
+
+- **Rows.** A line drawn with lines (a run such as `-->`, `+---+`, `<==` or box-drawing characters, or a line at least
+  half made of `+ - | / \ < > ^ = v`), or a line whose words are set in columns (three or more spaces between them). A
+  line with sentence punctuation ("reply. It", "link, then", 。 or 、) is never a row, nor is one whose last column
+  ends a sentence ("Sends requests.", "Uses TCP."). A note closed by a parenthesis ("(return to LISTEN!)") or an
+  ellipsis does not end a sentence.
+- **A figure** is two or more rows with at most one blank line between them, at least one of them drawn with lines. A
+  short note between rows ("(Close)", "(2 MSL)") belongs to it; a line of more than four words does not, so a wrapped
+  sentence between two figures stays prose.
+- **Not a line:** a rule of one repeated character (`-----`, `=====`), so a title between two rules and a table of words
+  with a dashed underline stay prose; a `---` dash between words; a list marker ("- EU", "- /").
+- **Markdown:** only outside code, tables, HTML and headings. A block indented four spaces or more was already code and
+  still is.
+- A figure is masked like a code block, keeping offsets, and the structure rules do not read inside it.
+
+In the corpus, RFC 9293 loses the `doubled-word` findings inside its figures and the sentence made of the state
+diagram. `undefined-acronym` no longer counts the state names seen only in figures (RCVD, ESTAB, DATA) and now reports
+LISTEN, which text inside a figure had counted as explained. RFC 3693 loses the long sentences made of figure rows, and
+the ASF board minutes those made of `+----+` tables.
+
+### `numbering-gap`: table cells and quoted section numbers are not the document's numbering (#170)
+
+- **Tables.** A Markdown table's rows, with or without leading pipes, no longer open numbered sections: a
+  revision-history column ("3.1.0 | 3.0.3 | … | 1.0") is data. Amounts and dates in the cells are still read.
+- **A code's title number.** A heading that starts with a title number and the name of a code (`## 40 CFR § 163.25 …`,
+  `## 12 U.S.C. § 5481 …`) is not section 40 of this document. The names come from lang-en's `document-kind`
+  lexicon; "## 40 Forest" is still section 40.
+- **A section that holds its own number again.** A style guide that shows a regulation before and after rewriting it
+  puts "§ 163.25" as a heading and "§ 163.25" again inside it. A section never holds itself, so such a section is left
+  out of its sequence. It stays in the tree, and a heading out of order without such a repeat is still reported.
+- Numbers inside a blockquote or code were already not read; tests now pin this.
+- **`dangling-reference`: the line before.** A reference also reads the last few words of the line before it, cut at a
+  space, so "… in RFC 7657\n(Sections 5.1 and 6)" points into RFC 7657. Only the end, so a reference earlier on the line
+  before does not lend its document to this line. It does not reach across a blank line, a heading or a table row, or
+  into a numbered line. The break is always joined with a space, also between Japanese characters, so an addressee on
+  the line before ("…担当課") never becomes part of a statute's name at the start of the line
+  ("構造改革特別区域法第12条"). A Japanese statute named at the end of the line before is therefore not read.
+
+In the corpus, `openapi-spec-3-1-0` and `plainlanguage-use-tables` lose their `numbering-gap` findings, and
+`rfc9293-tcp` loses the `dangling-reference` on RFC 7657. Still reported there: "§ 163.25(e)" in plainlanguage.gov (a reference inside
+the quoted regulation), and in RFC 9293 "Section 3.2.1.3" inside a block quoted from RFC 1122 with `|`.
+
+### Template and MDX syntax is not prose; code words in headings are neutral (#170)
+
+Documentation written in Markdown carries syntax for the site generator, which chaff read as prose (corpus round 13:
+GitHub Docs with Liquid, a Docusaurus page in MDX). It is now blanked the way a code span is, keeping every offset:
+
+- **Liquid and Jinja** tags, outputs and comments (`{% ifversion %}`, `{% data variables.product.github %}`,
+  `{{ page.title }}`, `{# … #}`), and **Hugo shortcodes** (`{{< note >}}`, `{{% alert %}}`). An inline variable
+  usually stands for a product name, but it is blanked rather than replaced with a stand-in noun: a stand-in would
+  show in the quoted sentence, and the rules that look between two words read the source there, so a blank changes
+  no finding a name would not. The text a tag guards stays prose. A `{{` in code opens nothing, and no tag runs past
+  a blank line.
+- **MDX**: `import … from '…'` and `export` in JavaScript's shapes at the top level ("export default reports from
+  the dashboard." stays a sentence), comments in braces, and lines of JSX tags (`<Tabs>`, `<TabItem value="a">`,
+  attributes with quoted `>` or nested expressions). A line of JSX tags is read as a block of its own, as MDX reads
+  it, so the text after it is a paragraph; before, it was the start of an HTML block that hid that text, or, for a
+  tag CommonMark does not accept, prose itself. A line of lower-case HTML stays opaque. MDX syntax is read in `.md`
+  files too, since Docusaurus reads them as MDX.
+- **GitHub alerts** (`> [!NOTE]`) are the writer's own text, not a quote: the body is prose, and only the marker
+  line and the `>` of each line are not. A plain quote, and any quote inside a quote (even one opening with
+  `[!TIP]`), are still not prose.
+- **Admonitions** (`:::note Title` … `:::`) were already read with only their marker lines blanked; an indented one
+  (in a list item) now is too. The title stays with its marker: it is a label, as a heading is.
+- A heading's text leaves the syntax out (`## Usage with Prettier {/* #usage */}` is "Usage with Prettier"), and a
+  heading of nothing but a tag still starts a section.
+
+`title-case-consistency` no longer counts code words as evidence of either style: a code span, a flag (`--force`), a
+file or domain name (`config.yaml`, `Research.gov`) and an identifier (`useEffect`) are written the same way in Title
+Case and in sentence case.
+
+The HTML converter drops a heading with no text in it (an empty `<h2>`); the two committed documents that had one
+are converted again.
+
 ### Email: headers, separators, signatures and quoted replies are not the writer's prose (#170)
 
 A plain-text or Markdown email was read as one long piece of prose. Found by shape, in any genre:
@@ -102,6 +202,11 @@ that deep) now says so and names the depth instead of crashing; `--format sexp` 
   `“終わった？”誰も知らない。` is one sentence, as `「終わった？」誰も知らない。` already was. Only a bracket closed later on
   the same line counts, so `1）`, an unclosed `（` and a ditto `“` join nothing. A closing bracket left at the start of a
   sentence goes back to the sentence it closes. A line that ends in a lone `\r` is a line break too.
+- **A note in parentheses is read for its own ending.** Once such a note stayed one sentence,
+  「（この際、…亜塩素酸水（…（含量…以上））を入れることが望ましい。）」 was read as ending in its last inner bracket,
+  and `no-mixed-desumasu` lost a real finding. A bracket at the end of a sentence is now left out only when it is
+  closed and follows the predicate. A note that is the whole sentence, or that ends with 「。）」 after a finished
+  sentence, is read inside. Several asides in a row (「（※3）（ただし…を除く。）」) are all left out.
 
 ### Corpus round 13; `dangling-reference` and sections of numbered documents (#170)
 

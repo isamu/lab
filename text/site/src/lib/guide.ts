@@ -2,7 +2,17 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import type { Lang } from "./i18n";
 
 // The order a reader takes the guide in. A page not listed here follows, by name.
-const ORDER = ["getting-started", "configuration", "commands", "structure", "languages", "ci"];
+const ORDER = [
+  "getting-started",
+  "documents",
+  "documents-statute",
+  "documents-report",
+  "configuration",
+  "commands",
+  "structure",
+  "languages",
+  "ci",
+];
 
 export type GuidePage = { readonly lang: Lang; readonly slug: string; readonly entry: CollectionEntry<"guide"> };
 

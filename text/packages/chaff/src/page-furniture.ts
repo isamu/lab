@@ -1,5 +1,7 @@
 import type { Span } from "./plugin.ts";
 import { NO_OUTLINE, type Outline } from "./structure/build.ts";
+import { markdownFigures, textFigures } from "./text-figures.ts";
+import type { MarkdownNode } from "./markdown-node.ts";
 
 /** 改ページから、飾りの行を探しにいく行数。飾りと改ページのあいだには空行が数行入る。 */
 const REACH = 3;
@@ -41,8 +43,12 @@ export const pageFurniture = (source: string): Span[] => {
   });
 };
 
-/** テキストの文書の外形。見出しもコードも無く、ページの飾りとメールの引用した返信だけを覆う。木を作る入口はどれもこれを使う。 */
+/** テキストの文書の外形。見出しもコードも無く、ページの飾り・線で描いた図・メールの引用した返信だけを覆う。木を作る入口はどれもこれを使う。 */
 export const textOutline = (source: string, replyQuotes: readonly Span[] = []): Outline => ({
   ...NO_OUTLINE,
-  opaque: [...pageFurniture(source), ...replyQuotes],
+  opaque: [...pageFurniture(source), ...textFigures(source), ...replyQuotes],
 });
+
+/** 紙面の形で本文でないもの: テキストの文書のページの飾り（Markdown には改ページが無い）と、線で描いた図。 */
+export const layoutMasks = (root: MarkdownNode, source: string, markdown: boolean): Span[] =>
+  markdown ? markdownFigures(root, source) : [...pageFurniture(source), ...textFigures(source)];
