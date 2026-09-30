@@ -60,7 +60,12 @@ describe("kutoten-consistency: 句読点の書き方がそろっていない", (
   });
 
   it("注の番号で始まる行と、URL を含む文は、文献の書き方", () => {
-    assert.deepEqual(findingsOf(`${PLAIN}2\u3000山田太郎，「報告書」，2024年\n\n資料，https://example.jp/ を見ました。\n`), []);
+    assert.deepEqual(
+      findingsOf(
+        `${PLAIN}2\u3000山田太郎，「報告書」，2024年\n\n[1] 田中花子，「資料」，2024年．\n\n注3 佐藤一郎，「論文」．\n\n資料，https://example.jp/ を見ました。\n`,
+      ),
+      [],
+    );
   });
 
   it("relaxed は 3 箇所から", () => {
