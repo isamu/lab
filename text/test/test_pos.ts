@@ -125,6 +125,7 @@ describe("満たせない要求は黙って通さない", () => {
       extra_word_lists: [],
       what_to_check: undefined,
       where: undefined,
+      full_sentence: undefined,
       requires: ["telepathy"],
       uses: [],
       from: [],

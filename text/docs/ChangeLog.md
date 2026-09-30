@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `max-paragraph-length` no longer reports a paragraph of many short sentences (#170)
+
+The rule counted sentences only, so text written in short sentences (children's pages, a list of releases, a Q&A)
+was reported as a wall: every paragraph of NASA's spacewalk page for grades K-4 was. A paragraph is now reported only
+when it has more sentences than the limit and is also longer than that many sentences of ordinary length. That length is
+data in the rule's YAML (`full_sentence`, in characters for Japanese and words for English) and is multiplied by the
+limit, so the levels, the genres and a number in `chaff.yaml` move both together. The message still gives the number of
+sentences. A dense paragraph of long sentences is reported as before. The bench's joined-paragraph plant now joins
+paragraphs (across a heading if it must) into one line until both limits are passed.
+
 ### The corpus stores 青空文庫 texts without their colophon (#170)
 
 A new `aozora` format for the corpus manifest drops the blocks 青空文庫 closes every file with (底本, 入力, 校正, the

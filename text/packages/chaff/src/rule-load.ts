@@ -83,6 +83,13 @@ const severityOf = (raw: unknown, language: string): Severity => {
   return isSeverity(picked) ? picked : "warning";
 };
 
+/** 言語で単位が違う数（日本語は文字、英語は語）。その言語のぶんだけを取る。無い言語では undefined。 */
+const numberFor = (raw: unknown, language: string): number | undefined => {
+  if (typeof raw === "number") return raw;
+  const picked: unknown = isRecord(raw) ? (raw[language] ?? raw["default"]) : undefined;
+  return typeof picked === "number" ? picked : undefined;
+};
+
 const stringList = (value: unknown): string[] | undefined => (Array.isArray(value) ? value.map((entry) => String(entry)) : undefined);
 
 const toRule = (raw: unknown, language: string, file: string): RuleDefinition => {
@@ -107,6 +114,7 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     extra_word_lists: stringList(raw["extra_word_lists"]) ?? [],
     what_to_check: isLocalized(raw["what_to_check"]) ? raw["what_to_check"] : undefined,
     where: typeof raw["where"] === "string" ? raw["where"] : undefined,
+    full_sentence: numberFor(raw["full_sentence"], language),
     requires: stringList(raw["requires"]) ?? [],
     uses: stringList(raw["uses"]) ?? [],
     from: stringList(raw["from"]) ?? [],

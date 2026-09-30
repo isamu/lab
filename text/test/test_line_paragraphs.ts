@@ -201,7 +201,10 @@ describe("1 行 1 段落の文書: 段落の数え方", () => {
   });
 
   it("1 行 1 文で書いた長い段落は、これまでどおり長すぎると言う", () => {
-    const text = Array.from({ length: 8 }, (_, index) => `これは${String(index)}番目の文です。`).join("\n");
+    const text = Array.from(
+      { length: 8 },
+      (_, index) => `これは${String(index)}番目の文で、担当者が申請書と添付書類を一件ずつ突き合わせて確認した結果を台帳に記録します。`,
+    ).join("\n");
     assert.ok(findingsOf(`# 見出し\n\n${text}`, ja).includes("max-paragraph-length"));
   });
 

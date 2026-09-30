@@ -348,6 +348,8 @@ export type DetectorOptions = {
   readonly lexicon?: Lexicon | undefined;
   /** 見る範囲。opening は冒頭 2 段落、closing は最後の節、whole は全体。 */
   readonly where?: string | undefined;
+  /** 普通の長さの文 1 つの長さ（adapter の単位）。段落の長さを文の数と一緒に見る rule だけが持つ。 */
+  readonly fullSentence?: number | undefined;
 };
 
 export type Detector = (doc: ProseDocument, options: DetectorOptions) => Finding[];
@@ -380,6 +382,8 @@ export type RuleDefinition = {
   /** L4 のみ。LLM に渡す決まり。言語別。 */
   readonly what_to_check: Localized | undefined;
   readonly where: string | undefined;
+  /** 普通の長さの文 1 つの長さ。言語で単位が違うので、levels と同じく読み込み時に言語で平坦化済み。 */
+  readonly full_sentence: number | undefined;
   /** adapter に要る capability。"pos" / "lemma"。満たさなければ動かさない。spec §16。 */
   readonly requires: readonly string[];
   /** 使えるなら用意してほしい capability（"pos"）。requires と違い、満たせなくても動かす（品詞が無ければ文字だけで見る）。 */
