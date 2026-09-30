@@ -20,7 +20,9 @@ body's margin) were not. A figure is now found by its shape, in `.txt` and in Ma
 
 - **Rows.** A line drawn with lines (a run such as `-->`, `+---+`, `<==` or box-drawing characters, or a line at least
   half made of `+ - | / \ < > ^ = v`), or a line whose words are set in columns (three or more spaces between them). A
-  line with sentence punctuation ("reply. It", "link, then", 。 or 、) is never a row.
+  line with sentence punctuation ("reply. It", "link, then", 。 or 、) is never a row, nor is one whose last column
+  ends a sentence ("Sends requests.", "Uses TCP."). A note closed by a parenthesis ("(return to LISTEN!)") or an
+  ellipsis does not end a sentence.
 - **A figure** is two or more rows with at most one blank line between them, at least one of them drawn with lines. A
   short note between rows ("(Close)", "(2 MSL)") belongs to it; a line of more than four words does not, so a wrapped
   sentence between two figures stays prose.

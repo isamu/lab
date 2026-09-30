@@ -94,7 +94,16 @@ describe("textFigures: 図の塊", () => {
     assert.deepEqual(figureTexts(table), [lines("   Name        Meaning", "   +-----------+------------------+")]);
     const endings = lines("   Name        Meaning", "   +-----------+------------------+", "   alpha       Sends requests.", "   beta        Closes links.");
     assert.deepEqual(figureTexts(endings), [lines("   Name        Meaning", "   +-----------+------------------+")]);
-    const notes = lines("   1.  OPEN     --> <ID=1>      --> (back to IDLE!)", "", "   2.  IDLE                         IDLE");
+    const capitals = lines("   Name        Meaning", "   +-----------+------------------+", "   alpha       Requires TLS.", "   beta        Uses TCP?");
+    assert.deepEqual(figureTexts(capitals), [lines("   Name        Meaning", "   +-----------+------------------+")]);
+    const ellipsis = lines(
+      "   2.  OPEN   --> <ID=1>   ...",
+      "   3.  done   <-- <ID=2>   waiting...",
+      "   4.  OPEN   --> <ID=3>   DONE.",
+      "   5.  sent   --> <ID=4>   DONE.",
+    );
+    assert.deepEqual(figureTexts(ellipsis), [ellipsis]);
+    const notes = lines("   1.  OPEN     --> <ID=1>      --> (back to idle!)", "", "   2.  IDLE                         IDLE");
     assert.deepEqual(figureTexts(notes), [notes]);
     const prose = lines("   Right arrows (-->) mark a message sent to the peer.  Left", "   arrows (<--) mark the reverse.  Both are shown below.");
     assert.deepEqual(figureTexts(prose), []);

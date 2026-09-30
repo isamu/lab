@@ -28,8 +28,18 @@ const MIN_LINE_CHARS = 2;
 const COLUMN_GAP = /\S {3,}\S/u;
 /** 文の印: 語の直後の句読点に、次の語が続く（"reply. It"、"link, then"）。日本語は句点か読点があれば文。 */
 const SENTENCE = /\p{L}\p{L}[.,;:?!]["')\]]?\s+\p{L}|[。、]/u;
-/** 行末で終わる文（"alpha  Sends requests."）。小文字の語の後ろだけ: 図の中の注記は大文字で書く（"(return to LISTEN!)"）。 */
-const SENTENCE_END = /\p{Ll}\p{Ll}[.?!]["')\]]?\s*$/u;
+/**
+ * 行末で終わる文（"alpha  Sends requests."、"beta  Uses TCP."）。見るのは最後の桁で、小文字の語があり . ? ! で終わるもの。
+ * 括弧で閉じた注記（"(return to LISTEN!)"）と省略の点（"..."）は図の中の書き方で、文の終わりではない。
+ */
+const SENTENCE_END = /[^.][.?!]["'”’]?$/u;
+const LOWER_WORD = /\p{Ll}\p{Ll}/u;
+const LAST_CELL = / {3,}/u;
+
+const endsSentence = (text: string): boolean => {
+  const cell = text.trim().split(LAST_CELL).at(-1) ?? "";
+  return SENTENCE_END.test(cell) && LOWER_WORD.test(cell);
+};
 /**
  * 同じ線の文字だけの行（-----、==== ====）。見出しの下線や段の区切りで、図の中にあってもよいが図の印にはならない。
  * 印にすると、区切りの線 2 本に挟まれた題（===== / Title / =====）や、下線を引いた見出しの前の箇条書きまで図になる。
@@ -65,7 +75,7 @@ const isLineArt = (text: string): boolean => {
 
 const kindOf = (text: string): Kind => {
   if (text.trim() === "") return "blank";
-  if (SENTENCE.test(text) || SENTENCE_END.test(text)) return "text";
+  if (SENTENCE.test(text) || endsSentence(text)) return "text";
   if (RULE_LINE.test(text)) return "plain";
   if (isLineArt(text)) return "line";
   if (COLUMN_GAP.test(text.replace(LIST_MARK, "").trimStart())) return "column";
