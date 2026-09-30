@@ -2,6 +2,7 @@
 // its first sentence, too much bold, emoji or dashes, team jargon and a missing required section.
 // Pure and deterministic, like scripts/bench-mutations.ts.
 import { isJapanese, isPoliteDocument, isProse, isRow, linesOf, proseAt, rewriteFirst, splitSentences, type Plant, type PlantContext } from "./bench-text.ts";
+import { MIN_DOCUMENT_LENGTH } from "../packages/chaff/src/detectors/signals.ts";
 
 export type Block = { readonly start: number; readonly end: number };
 
@@ -171,14 +172,11 @@ export const boldSection = (source: string, context: PlantContext): Plant | unde
 
 // --- emoji-density, no-em-dash ---
 
-// chaff は短い文書の密度を測らない（signals.ts の FLOOR）。英語は 200 語、日本語は 500 字。
-const FLOOR_WORDS = 200;
-const FLOOR_CHARS = 500;
-
+// chaff は短い文書の密度を測らない。
 const isLongEnough = (lines: readonly string[]): boolean => {
   const isProseLine = proseAt(lines);
   const body = lines.filter((_, index) => isProseLine(index)).join(" ");
-  return isJapanese(body) ? body.replace(/\s+/gu, "").length >= FLOOR_CHARS : body.split(/\s+/u).length >= FLOOR_WORDS;
+  return isJapanese(body) ? body.replace(/\s+/gu, "").length >= MIN_DOCUMENT_LENGTH.char : body.split(/\s+/u).length >= MIN_DOCUMENT_LENGTH.word;
 };
 
 /** 本文のすべての行を書き換える。最初に書き換えた行を指す。短い文書には植えない。 */

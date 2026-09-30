@@ -1,6 +1,10 @@
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter, RuleDefinition } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, ProseDocument, RuleDefinition } from "../packages/chaff/src/plugin.ts";
+import { wordsOf } from "../packages/chaff/src/detectors/structure.ts";
+import { judgedSentences } from "../packages/chaff/src/detectors/sentence-ending.ts";
+import { lineNumberAt, linesOf } from "../packages/chaff/src/structure/lines.ts";
+import type { RegisterCounts } from "./bench-text.ts";
 import { buildDocument, teamRules } from "../packages/chaff/src/document.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -21,6 +25,33 @@ export type TeamWords = {
   readonly prefer?: Readonly<Record<string, string>>;
 };
 
+const adapterOf = (language: string): LanguageAdapter => {
+  const adapter = ADAPTERS[language];
+  if (adapter === undefined) throw new Error(`no adapter for ${language}`);
+  return adapter;
+};
+
+const documentOf = (path: string, source: string, language: string, genre: string, team: TeamWords): ProseDocument =>
+  buildDocument(path, source, adapterOf(language), teamRules(team), profileFor(EMPTY, path, source, language, genre));
+
+/** A document's length as chaff counts it for the rules with a length floor: its sentences, in the adapter's unit. */
+export const documentLengthOf = (path: string, source: string, language: string, genre: string, team: TeamWords): number =>
+  wordsOf(documentOf(path, source, language, genre, team));
+
+/**
+ * How many sentences no-mixed-desumasu reads as polite and as plain, among those it compares the sentence ending on
+ * `line` with (its list, its numbered run, or the body). A sentence without a register (a noun, 「こと」) is in neither.
+ */
+export const registerCountsOf = (path: string, source: string, language: string, genre: string, team: TeamWords, line: number): RegisterCounts => {
+  const doc = documentOf(path, source, language, genre, team);
+  const wordList = loadRules(language).find((rule) => rule.id === "no-mixed-desumasu")?.word_list;
+  const judged = judgedSentences(doc, wordList === undefined ? [] : (doc.lexicons[wordList] ?? []));
+  const lines = linesOf(source);
+  const onLine = judged.find((entry) => lineNumberAt(lines, entry.sentence.span.end - 1) === line);
+  const peers = onLine === undefined ? [] : judged.filter((entry) => entry.group === onLine.group);
+  return { polite: peers.filter((entry) => entry.register === "polite").length, plain: peers.filter((entry) => entry.register === "plain").length };
+};
+
 /** Every rule's run on one document of the given genre, as if --experimental, with the rules it ran. */
 export const allRulesRun = async (
   path: string,
@@ -30,12 +61,10 @@ export const allRulesRun = async (
   team: TeamWords = EMPTY,
   only: (id: string) => boolean = () => true,
 ): Promise<{ readonly result: RunResult; readonly rules: readonly RuleDefinition[] }> => {
-  const adapter = ADAPTERS[language];
-  if (adapter === undefined) throw new Error(`no adapter for ${language}`);
-  await adapter.prepare?.({ pos: true });
+  await adapterOf(language).prepare?.({ pos: true });
   const rules = loadRules(language).filter((rule) => only(rule.id));
   return {
-    result: runRules(buildDocument(path, source, adapter, teamRules(team), profileFor(EMPTY, path, source, language, genre)), rules, {}, true, genre),
+    result: runRules(documentOf(path, source, language, genre, team), rules, {}, true, genre),
     rules,
   };
 };

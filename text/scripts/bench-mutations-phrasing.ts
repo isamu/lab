@@ -1,12 +1,13 @@
 // Seeded mistakes of stock phrasing for `yarn bench`, in either language: a preamble before the first heading, a
 // clichéd closing, a padded opening, an empty intensifier, hedges stacked in one sentence, one paragraph opener repeated, sentences chained with "And",
-// and a spelling the team does not use. Pure and deterministic, like scripts/bench-mutations.ts.
+// a spelling the team does not use, and a pet phrase used in paragraph after paragraph. Pure and deterministic, like scripts/bench-mutations.ts.
 import {
   isJapanese,
   isPoliteDocument,
   isProse,
   isRow,
   linesOf,
+  proseAt,
   replaceLine,
   rewriteFirst,
   splitSentences,
@@ -14,6 +15,7 @@ import {
   type PlantContext,
 } from "./bench-text.ts";
 import { SECTION, blocksOf, isParagraph, type Block } from "./bench-mutations-layout.ts";
+import { MIN_DOCUMENT_LENGTH } from "../packages/chaff/src/detectors/signals.ts";
 
 const SENTENCE_END = /[。.!?]$/u;
 
@@ -184,6 +186,45 @@ export const chainWithAnd = (source: string, context: PlantContext): Plant | und
     (line) => isSentenceLine(line) && chainLine(line, limit + 1) !== undefined,
     (line) => chainLine(line, limit + 1),
   );
+};
+
+// --- ngram-repetition ---
+
+// 書き手の口癖。述語（言う・goes）を含むので、品詞で言い回しを見分ける ngram-repetition にも言い回しとして数えられる。
+const PET_PHRASE = { polite: "言うまでもないことですが、", plain: "言うまでもないことだが、", en: "It goes without saying that " };
+
+const petPhraseFor = (source: string): string => {
+  if (!isJapanese(source)) return PET_PHRASE.en;
+  return isPoliteDocument(source) ? PET_PHRASE.polite : PET_PHRASE.plain;
+};
+
+/** 段落の、前置きを足せる最初の文の頭に足す。足せる文が無ければ undefined。 */
+const prefixFirstFitting = (phrase: string, line: string): string | undefined => {
+  const sentences = splitSentences(line);
+  const at = sentences.findIndex((sentence) => prefixed(phrase, sentence) !== undefined);
+  const head = sentences[at];
+  const phrased = head === undefined ? undefined : prefixed(phrase, head);
+  return phrased === undefined ? undefined : joinSentences(sentences.map((sentence, index) => (index === at ? phrased : sentence)));
+};
+
+/** chaff が繰り返しを数える長さか。短い文書では ngram-repetition は走らない。 */
+const isCounted = (source: string, context: PlantContext): boolean =>
+  context.lengthUnit !== undefined && context.documentLength !== undefined && context.documentLength(source) >= MIN_DOCUMENT_LENGTH[context.lengthUnit];
+
+/**
+ * 上限より一つ多い段落で、同じ口癖を文の頭に足す。一つの段落には一度だけ: 続く文の頭をそろえると、別の rule
+ * （repeated-sentence-head）の誤りになる。足した後でも chaff が数えない短さの文書には植えない。
+ */
+export const repeatPetPhrase = (source: string, context: PlantContext): Plant | undefined => {
+  const limit = context.limits["ngram-repetition"];
+  const phrase = petPhraseFor(source);
+  const lines = linesOf(source);
+  const prose = proseAt(lines);
+  const targets = lines.flatMap((line, index) => (prose(index) && isSentenceLine(line) && prefixFirstFitting(phrase, line) !== undefined ? [index] : []));
+  if (limit === undefined || targets.length <= limit) return undefined;
+  const chosen = targets.slice(0, limit + 1);
+  const rewritten = lines.map((line, index) => (chosen.includes(index) ? (prefixFirstFitting(phrase, line) ?? line) : line)).join("\n");
+  return isCounted(rewritten, context) ? { source: rewritten, line: (chosen[0] ?? 0) + 1 } : undefined;
 };
 
 // --- preferred-term ---

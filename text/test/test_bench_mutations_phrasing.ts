@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import type { Plant } from "../scripts/bench-text.ts";
+import type { Plant, PlantContext } from "../scripts/bench-text.ts";
+import { MIN_DOCUMENT_LENGTH } from "../packages/chaff/src/detectors/signals.ts";
 import {
   TEAM_PREFER,
   avoidedSpelling,
@@ -10,6 +11,7 @@ import {
   intensify,
   padOpening,
   repeatOpener,
+  repeatPetPhrase,
   stackHedges,
 } from "../scripts/bench-mutations-phrasing.ts";
 
@@ -180,5 +182,87 @@ describe("avoidedSpelling / TEAM_PREFER", () => {
     assert.equal(TEAM_PREFER["打合せ"], "打ち合わせ");
     assert.equal(TEAM_PREFER["e-mail"], "email");
     assert.equal(TEAM_PREFER["打ち合わせ"], undefined);
+  });
+});
+
+describe("repeatPetPhrase", () => {
+  /** chaff が数えるちょうどの長さ（床）と測る文書。 */
+  const counted = (unit: "char" | "word", entries: Record<string, number>): PlantContext => ({
+    limits: entries,
+    lengthUnit: unit,
+    documentLength: () => MIN_DOCUMENT_LENGTH[unit],
+  });
+  const rule = counted("char", { "ngram-repetition": 2 });
+  const polite = lines(
+    "# 案内",
+    "",
+    "こんにちは、田中です。表を作りました。",
+    "",
+    "- 箇条書きの項目です。",
+    "",
+    "部屋が増えました。予約も増えました。",
+    "",
+    "```",
+    "コードの中です。",
+    "```",
+    "",
+    "表示板を足しました。",
+  );
+
+  it("上限より一つ多い段落で、足せる最初の文の頭に同じ前置きを足す。一つの段落には一度だけ", () => {
+    const plant = repeatPetPhrase(polite, rule);
+    assert.deepEqual(plant?.source.split("\n"), [
+      "# 案内",
+      "",
+      "こんにちは、田中です。言うまでもないことですが、表を作りました。",
+      "",
+      "- 箇条書きの項目です。",
+      "",
+      "言うまでもないことですが、部屋が増えました。予約も増えました。",
+      "",
+      "```",
+      "コードの中です。",
+      "```",
+      "",
+      "言うまでもないことですが、表示板を足しました。",
+    ]);
+    assert.equal(plant?.line, 3);
+  });
+
+  it("である調の文書には、である調の前置きを足す", () => {
+    const plain = lines("表を作った。", "", "部屋が増えた。", "", "表示板を足した。");
+    assert.deepEqual(
+      repeatPetPhrase(plain, rule)
+        ?.source.split("\n")
+        .filter((line) => line !== ""),
+      ["言うまでもないことだが、表を作った。", "言うまでもないことだが、部屋が増えた。", "言うまでもないことだが、表示板を足した。"],
+    );
+  });
+
+  it("英語は小文字にしてよい語で始まる文にだけ足す。人名で始まる文は飛ばして、同じ段落の次の文に足す", () => {
+    const english = lines("# Note", "", "Ito made a table. We shared it.", "", "The room filled.", "", "It worked.");
+    const plant = repeatPetPhrase(english, counted("word", { "ngram-repetition": 2 }));
+    assert.deepEqual(
+      plant?.source.split("\n").filter((line) => line !== "" && !line.startsWith("#")),
+      ["Ito made a table. It goes without saying that we shared it.", "It goes without saying that the room filled.", "It goes without saying that it worked."],
+    );
+    assert.equal(plant?.line, 3);
+  });
+
+  it("足せる段落が上限より一つ多くなければ、上限が分からなければ、植えない。文で終わらない行（社名）は段落に数えない", () => {
+    assert.equal(repeatPetPhrase(polite, counted("char", { "ngram-repetition": 3 })), undefined);
+    assert.equal(repeatPetPhrase(lines(polite, "", "株式会社みなと製作所"), counted("char", { "ngram-repetition": 3 })), undefined);
+    assert.equal(repeatPetPhrase(polite.replace("部屋が増えました。予約も増えました。", "- 部屋が増えました。"), rule), undefined);
+    assert.equal(repeatPetPhrase(lines("Ito came.", "", "Sato came.", "", "Kato came."), counted("word", { "ngram-repetition": 2 })), undefined);
+    assert.equal(repeatPetPhrase(polite, counted("char", {})), undefined);
+  });
+
+  it("足した後の文書が chaff の数える長さに届かなければ、長さを測れなければ、植えない。長さは足した後で測る", () => {
+    const floor = MIN_DOCUMENT_LENGTH.char;
+    assert.equal(repeatPetPhrase(polite, { ...rule, documentLength: () => floor - 1 }), undefined);
+    assert.equal(repeatPetPhrase(polite, { limits: rule.limits, lengthUnit: "char" }), undefined);
+    assert.equal(repeatPetPhrase(polite, { limits: rule.limits, documentLength: () => floor }), undefined);
+    const grown = (source: string): number => (source.includes("言うまでもない") ? floor : floor - 1);
+    assert.equal(repeatPetPhrase(polite, { ...rule, documentLength: grown })?.line, 3);
   });
 });
