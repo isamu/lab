@@ -458,6 +458,9 @@ const MARKUP_SPACE = /[^\S\u3000]+/gu;
 // A zero-width space or joiner draws nothing, so a line of nothing else is empty (a page-number anchor).
 const INVISIBLE_ONLY = /^[\s\p{Cf}]*$/u;
 
+// An <h2> with no text in it (a spacer, an emptied widget) becomes "##": a heading with nothing to read.
+const UNTITLED_HEADING = /^#{1,6}$/u;
+
 export const htmlToMarkdown = (html: string): string => {
   const uncommented = withLostParagraphTagsRestored(withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""));
   const preformatted = withPreformattedStashed(withTablesRead(DROPPED.reduce(withoutElement, withoutRubyText(uncommented))));
@@ -472,6 +475,7 @@ export const htmlToMarkdown = (html: string): string => {
     .split("\n")
     .map((line) => (INVISIBLE_ONLY.test(line) ? "" : line.trim()))
     .filter((line) => line !== "-" && !isChromeLinkLine(line))
-    .map((line) => line.replaceAll(LINK_START, "").replaceAll(LINK_END, ""));
+    .map((line) => line.replaceAll(LINK_START, "").replaceAll(LINK_END, ""))
+    .filter((line) => !UNTITLED_HEADING.test(line));
   return tidyLines(withPreformattedRestored(withoutEmptySections(withoutClosingCopyright(withoutEmptySections(lines))), preformatted.blocks));
 };

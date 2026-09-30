@@ -1,4 +1,5 @@
 import { straightApostrophes } from "../orthography.ts";
+import { withoutCodeWords } from "./heading-code-words.ts";
 
 /** 語の中のアポストロフィは ' に畳んでから読む（Fed’s）。’ を語の外に置くと、’s が小文字の語に見える。 */
 const WORD = /[A-Za-z][A-Za-z'-]*/gu;
@@ -31,7 +32,7 @@ const TITLE_DEPTH = 1;
 
 /** 見出しが Title Case か。判定できなければ undefined。 */
 export const isTitleCase = (heading: string): boolean | undefined => {
-  const words = [...straightApostrophes(heading).matchAll(WORD)]
+  const words = [...withoutCodeWords(straightApostrophes(heading)).matchAll(WORD)]
     .map((match) => match[0])
     .filter((word) => !MINOR_WORDS.has(word.toLowerCase()) && !ACRONYM.test(word));
   // 1 語の見出しは、どちらの流儀でも先頭が大文字になる。判定できない。
