@@ -20,7 +20,7 @@ import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinPa
 import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa, strayParticleSpace } from "./bench-mutations-ja.ts";
 import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, pluralAfterArticle } from "./bench-mutations-en.ts";
 import * as phrasing from "./bench-mutations-phrasing.ts";
-import { skipHeadingLevel } from "./bench-mutations-markup.ts";
+import { imageWithoutAlt, skipHeadingLevel } from "./bench-mutations-markup.ts";
 
 // --- date-weekday-mismatch ---
 
@@ -399,4 +399,5 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: phrasing.avoidedSpelling },
   { id: "pet-phrase", rule: "ngram-repetition", languages: ["ja", "en"], plant: phrasing.repeatPetPhrase },
   { id: "heading-deepened", rule: "heading-level-skip", languages: ["ja", "en"], plant: skipHeadingLevel },
+  { id: "image-unlabelled", rule: "image-alt-text", languages: ["ja", "en"], plant: imageWithoutAlt },
 ];

@@ -12,6 +12,8 @@ read before the rule was added.
 
 - **`heading-level-skip`**: a heading two or more levels deeper than the one before it (`##` then `####`). The first
   heading may start at any level, and after a skip the deeper level is the new baseline (markdownlint's MD001).
+- **`image-alt-text`**: an image with no alt text (`![](chart.png)`), or an HTML `<img>` with no `alt` attribute.
+  `alt=""` marks decoration and is left alone (markdownlint's MD045).
 
 ### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
 

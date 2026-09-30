@@ -1,7 +1,7 @@
 // Seeded mistakes of Markdown markup for `yarn bench`: a heading that skips a level, an image with no alt text, a link to a
 // heading the document does not have, and a URL with text run on after it. Pure and deterministic, like
 // scripts/bench-mutations.ts.
-import { codeLines, linesOf, replaceLine, type Plant } from "./bench-text.ts";
+import { codeLines, isProse, linesOf, replaceLine, type Plant } from "./bench-text.ts";
 
 const HEADING = /^(#{1,6})\s/u;
 
@@ -34,4 +34,23 @@ export const skipHeadingLevel = (source: string): Plant | undefined => {
   const line = target === undefined ? undefined : lines[target.index];
   if (target === undefined || previous === undefined || line === undefined) return undefined;
   return { source: replaceLine(lines, target.index, line.replace(HEADING, `${"#".repeat(previous.depth + 2)} `)), line: target.index + 1 };
+};
+
+// --- image-alt-text ---
+
+const SENTENCE_END = /[。.]$/u;
+
+const endsParagraph = (lines: readonly string[]): ((line: string, index: number) => boolean) => {
+  const code = codeLines(lines);
+  return (line, index) => !code.has(index) && isProse(line) && SENTENCE_END.test(line.trimEnd()) && (lines[index + 1] ?? "").trim() === "";
+};
+
+/** 最初の段落の後ろに、代替テキストの無い図を足す。 */
+export const imageWithoutAlt = (source: string): Plant | undefined => {
+  const lines = linesOf(source);
+  const index = lines.findIndex(endsParagraph(lines));
+  const line = lines[index];
+  if (line === undefined) return undefined;
+  // 段落の行、空行、図の行。
+  return { source: replaceLine(lines, index, `${line}\n\n![](figure.png)`), line: index + 3 };
 };

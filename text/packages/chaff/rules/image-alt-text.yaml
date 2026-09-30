@@ -1,0 +1,26 @@
+id: image-alt-text
+layer: L1
+status: experimental
+how_to_find: image-alt-text
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 画像に代替テキストが無い
+  en: Image without alt text
+
+why:
+  ja: 画像が読み込めないときと、画面読み上げで読むときは、代替テキストだけが画像の代わりに伝わります。「![](図1.png)」のように空だと、そこに何があったのか読み手には分かりません。HTML の <img> は alt 属性が無いものだけを数え、alt="" は飾りの画像と書き手が明示したものとして数えません（markdownlint の MD045 と同じ）。
+  en: When an image does not load, or a screen reader reads the page, the alt text is all that stands in for it. With an empty one ("![](chart.png)") the reader cannot tell what was there. An HTML <img> is reported only when it has no alt attribute; alt="" says the image is decoration and is not counted (as markdownlint's MD045).
+
+message:
+  ja: 画像「{image}」に代替テキストがありません
+  en: 'Image "{image}" has no alt text'
+
+how_to_fix:
+  ja: 画像が伝えることを一言で書いてください（![4月の売上の推移](図1.png)）。飾りの画像なら、HTML で alt="" と書くと読み上げが飛ばします。
+  en: Write what the image shows in a few words ("![Sales by month, April](chart.png)"). If it is decoration, write alt="" in HTML so screen readers skip it.
+
+levels: { strict: 1, normal: 1, relaxed: 1 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]

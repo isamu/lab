@@ -21,6 +21,7 @@ planted:
   heading-echo: [ja, en]
   heading-level-skip: [ja, en]
   hiragana-fukushi: [ja]
+  image-alt-text: [ja, en]
   internal-jargon: [ja, en]
   latin-spacing: [ja]
   max-kanji-continuous: [ja]

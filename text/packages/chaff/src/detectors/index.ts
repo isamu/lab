@@ -20,6 +20,7 @@ import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
 import { headingLevelSkip } from "./heading-level-skip.ts";
+import { imageAltText } from "./image-alt-text.ts";
 import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -73,4 +74,5 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "numbering-gap": numberingGap,
   "duplicate-definition": duplicateDefinition,
   "heading-level-skip": headingLevelSkip,
+  "image-alt-text": imageAltText,
 };
