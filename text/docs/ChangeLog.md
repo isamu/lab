@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### Email: a list archive's attachment stub is not prose (#170)
+
+Mailman leaves a note where it removed an attachment: "An HTML attachment was scrubbed..." and a `URL: <…>` line, or
+the note with `Name`, `Type`, `Size`, `Desc` and `URL` fields. The note was read as the writer's sentence, so each one
+was an agentless passive, and together they were a repeated phrase. A block right after a separator line is now furniture
+when its first line ends as a new `email-attachment-note` lexicon says ("was scrubbed...", 「を保管しました...」),
+every other line is a `Field: value` line, the last one a URL alone, and it is six lines at most. The same words in
+the writer's own paragraph, away from a separator or with a sentence among the fields, are still prose.
+
 ### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
 
 Several checks read a whole run, sentence or line again for each character, finding or reference in it, so their
