@@ -97,6 +97,10 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf("## 準備\n\n[目次][toc]\n\n[toc]: #目次\n").length, 1);
   });
 
+  it("同じ名前の定義は先のものが使われる", () => {
+    assert.deepEqual(findingsOf("[x][ref]\n\n[ref]: #ok\n[ref]: #missing\n\n## ok\n", en), []);
+  });
+
   it("使われていない定義は、押されるリンクではないので見ない", () => {
     assert.deepEqual(findingsOf("本文です。\n\n[unused]: #missing\n"), []);
   });

@@ -128,10 +128,15 @@ const readHtml = (written: string, span: Span, walk: Walk): void => {
   });
 };
 
+/** 同じ名前の定義が二つあれば、CommonMark は先のものを使う。後のものは使われない。 */
+const defineOnce = (walk: Walk, name: string, link: MarkupLink): void => {
+  if (!walk.definitions.has(name)) walk.definitions.set(name, link);
+};
+
 /** リンクと参照の定義。定義は、使われたかを最後に見るので別に持つ。 */
 const readLink = (node: MarkdownNode, span: Span, walk: Walk): void => {
   if (node.type === "link") walk.links.push({ destination: node.url ?? "", ...span });
-  else if (node.type === "definition") walk.definitions.set(node.identifier ?? "", { destination: node.url ?? "", ...span });
+  else if (node.type === "definition") defineOnce(walk, node.identifier ?? "", { destination: node.url ?? "", ...span });
   else if (node.type === "linkReference") walk.referenced.add(node.identifier ?? "");
 };
 
