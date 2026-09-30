@@ -66,6 +66,11 @@ describe("和文の中の英文を英語の句点で切る", () => {
     // 同じ行で英文の後に和文が続くときは切らない。英字の語の後のピリオドと見分けられないため。
     "Then it grew. 本稿では整理する。",
   ];
+  it("年だけの短い英文でも切る", () => {
+    // 数字は英字とも和字とも数えない。数えると「In 1997.」が英文でなくなり、次の文とつながる。
+    assert.deepEqual(textsOf(ja, "In 1997. Programs start."), ["In 1997.", "Programs start."]);
+  });
+
   it("英字の後の全角の「．」は英文の文末と読まない", () => {
     // 和文の規則のとおり、「．」は仮名・漢字の後だけ文末。英語の文末は半角の . ? ! に限る。
     assert.deepEqual(textsOf(ja, "See Table A． Then compare the rows."), ["See Table A． Then compare the rows."]);
@@ -95,6 +100,10 @@ describe("英文の中の和文", () => {
       sentences.map((sentence) => sentence.embeddedLanguage),
       [undefined, { id: "ja", lengthUnit: "char" }],
     );
+  });
+
+  it("数字の多い和文も日本語の印が付く", () => {
+    assert.deepEqual(en.segment("2024年12月16日から2025年12月31日まで。").sentences[0]?.embeddedLanguage, { id: "ja", lengthUnit: "char" });
   });
 
   it("仮名の無い漢字だけの文は日本語と読まない", () => {

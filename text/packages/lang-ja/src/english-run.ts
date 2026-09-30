@@ -1,10 +1,11 @@
 /**
- * 和文の中の英文（英語の要旨、英語の文献）。仮名を含まず、字の半分以上が英字。
+ * 和文の中の英文（英語の要旨、英語の文献）。仮名を含まず、文字（数字と記号は数えない）の半分以上が英字。
+ * 数字を数えると「In 1997.」のような年の入った短い英文が英文でなくなる。
  * 漢字だけなら含んでよい（英文の中の「東京」）。仮名があれば和文の一部と読む。
  */
 const KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
 const LATIN = /\p{Script=Latin}/gu;
-const COUNTABLE = /\S/gu;
+const LETTER = /\p{L}/gu;
 // 英文の文末。閉じ括弧・引用符が続いてよい。断片の末尾だけを見る。
 const ENGLISH_STOP_AT_END = /[.?!][)\]"'”’]{0,3}$/u;
 const TAIL_LENGTH = 4;
@@ -12,7 +13,7 @@ const TAIL_LENGTH = 4;
 export const isEnglishRun = (text: string): boolean => {
   if (KANA.test(text)) return false;
   const latin = [...text.matchAll(LATIN)].length;
-  return latin > 0 && latin * 2 >= [...text.matchAll(COUNTABLE)].length;
+  return latin > 0 && latin * 2 >= [...text.matchAll(LETTER)].length;
 };
 
 /**
