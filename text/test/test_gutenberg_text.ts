@@ -46,6 +46,23 @@ describe("gutenbergText: 印のあいだの作品だけを残す", () => {
     );
   });
 
+  it("終わりの印の前の古い結びの行（End of Project Gutenberg's …）を落とす", () => {
+    // Poems by Emily Dickinson, Three Series (#12242) の 2026 年 3 月の版の結び。
+    const closing = "End of Project Gutenberg's Poems: Three Series, Complete, by Emily Dickinson";
+    assert.equal(gutenbergText(`${HEADER}Ashore at last!\r\n\r\n\r\n\r\n${closing}\r\n\r\n\r\n\r\n${FOOTER}`), "Ashore at last!\n");
+    assert.equal(gutenbergText(`${HEADER}The end.\n\nEnd of the Project Gutenberg EBook of A Test, by A. Writer\n${FOOTER}`), "The end.\n");
+    assert.equal(gutenbergText(`${HEADER}The end.\n\nEnd of this Project Gutenberg Etext of A Test\n${FOOTER}`), "The end.\n");
+    assert.equal(gutenbergText(`${HEADER}The end.\n\nEnd of Project Gutenberg’s A Test, by A. Writer\n${FOOTER}`), "The end.\n");
+    assert.equal(gutenbergText(`${HEADER}The end.\nEnd of The Project Gutenberg eBook of A Test\n`), "The end.\n");
+  });
+
+  it("結びの行に似た本文の行は残す: 最後の行でない、行の途中、Project Gutenberg の名が無い", () => {
+    const middle = `${HEADER}End of Project Gutenberg's A Test\n\nOne more line.\n${FOOTER}`;
+    assert.equal(gutenbergText(middle), "End of Project Gutenberg's A Test\n\nOne more line.\n");
+    assert.equal(gutenbergText(`${HEADER}At the End of Project Gutenberg's day.\n${FOOTER}`), "At the End of Project Gutenberg's day.\n");
+    assert.equal(gutenbergText(`${HEADER}The end.\n\nEnd of the Second Book\n${FOOTER}`), "The end.\n\nEnd of the Second Book\n");
+  });
+
   it("空の本文は改行一つ", () => {
     assert.equal(gutenbergText(""), "\n");
     assert.equal(gutenbergText(`${HEADER}${FOOTER}`), "\n");
