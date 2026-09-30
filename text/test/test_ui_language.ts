@@ -1,10 +1,10 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { hostLanguage, sharedLanguage, uiLanguageOf } from "../packages/chaff/src/ui.ts";
-import { main } from "../packages/chaff/src/cli.ts";
+import { runCli, type CliRun } from "./cli-run.ts";
 
 describe("どの言語で話すか", () => {
   it("日本語だけが日本語、ほかはすべて英語", () => {
@@ -41,38 +41,14 @@ describe("画面の言語", () => {
   const JA = `# 手順\n\n${"設定の手順は画面の右上にあるボタンを押してから開く一覧の中で目的の項目を選び、".repeat(5)}保存します。\n`;
   const EN = "# Notes\n\nThis is a short note. It says one thing.\n";
 
-  const runIn = async (files: Readonly<Record<string, string>>, args: readonly string[], lang: string): Promise<{ code: number; out: string; err: string }> => {
-    const dir = mkdtempSync(join(tmpdir(), "chaff-ui-"));
-    Object.entries(files).forEach(([name, body]) => writeFileSync(join(dir, name), body));
-    const out: string[] = [];
-    const err: string[] = [];
-    const saved = {
-      log: console.log,
-      error: console.error,
-      cwd: process.cwd(),
-      env: { LANG: process.env["LANG"], LC_ALL: process.env["LC_ALL"], LC_MESSAGES: process.env["LC_MESSAGES"] },
-    };
-    console.log = (...parts: unknown[]) => {
-      out.push(parts.join(" "));
-    };
-    console.error = (...parts: unknown[]) => {
-      err.push(parts.join(" "));
-    };
-    delete process.env["LC_ALL"];
+  /** runCli sets LANG and clears LC_ALL; LC_MESSAGES also outranks LANG, so it is cleared here too. */
+  const runIn = async (files: Readonly<Record<string, string>>, args: readonly string[], lang: string): Promise<CliRun> => {
+    const messages = process.env["LC_MESSAGES"];
     delete process.env["LC_MESSAGES"];
-    process.env["LANG"] = lang;
-    process.chdir(dir);
     try {
-      const code = await main(args);
-      return { code, out: out.join("\n"), err: err.join("\n") };
+      return await runCli(files, args, lang);
     } finally {
-      process.chdir(saved.cwd);
-      console.log = saved.log;
-      console.error = saved.error;
-      Object.entries(saved.env).forEach(([name, value]) => {
-        if (value === undefined) delete process.env[name];
-        else process.env[name] = value;
-      });
+      if (messages !== undefined) process.env["LC_MESSAGES"] = messages;
     }
   };
 

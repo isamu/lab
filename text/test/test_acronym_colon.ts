@@ -1,12 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { expansionAt, namesAcronym, type DefinitionWords } from "../packages/chaff/src/detectors/acronym-expansion.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 括弧の中で名前と略語をコロンでつなぐ形（（single nucleotide polymorphism：SNP）、(SNP: single nucleotide polymorphism)）。
 // 名前の頭文字が略語とちょうど揃うときだけ展開と読む。例文は個人情報保護委員会のガイドライン（ゲノムデータの定義）の語句と自作。
@@ -79,21 +76,15 @@ describe("namesAcronym", () => {
   });
 });
 
-/** 1 個でも出す段階で、出た略語だけを返す。 */
-const acronymsIn = (source: string, adapter: LanguageAdapter): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
-
 describe("undefined-acronym: コロンで名前をつないだ略語は指摘しない", () => {
   it("日本語: 名前：略語の形の略語は外れ、例示の略語は残る", () => {
     const source =
       "# 定義\n\n全ゲノム一塩基多型（single nucleotide polymorphism：SNP）データのほか、40箇所以上のSNPから構成されるデータを含む。監査の道具（例：KPT）も使う。\n";
-    assert.deepEqual(acronymsIn(source, ja), ["KPT"]);
+    assert.deepEqual(reportedAcronyms(ja, source), ["KPT"]);
   });
 
   it("英語: 略語: 名前の形の略語は外れ、列挙の略語は残る", () => {
     const source = "# Panel\n\nThe panel (DRB: Data Retention Board) met. Later the DRB closed. Staff of agencies (KPT, QRX: use the portal) log in.\n";
-    assert.deepEqual(acronymsIn(source, en), ["KPT", "QRX"]);
+    assert.deepEqual(reportedAcronyms(en, source), ["KPT", "QRX"]);
   });
 });

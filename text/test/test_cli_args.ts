@@ -1,8 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { runCli, type CliRun } from "./cli-run.ts";
 import { targetsOf } from "../packages/chaff/src/cli-args.ts";
 import { main } from "../packages/chaff/src/cli.ts";
 import { versionLines } from "../packages/chaff/src/version.ts";
@@ -24,29 +22,12 @@ describe("検査するものの取り出し", () => {
 });
 
 describe("--genre で、この実行のジャンルを決める", () => {
-  const lintWith = async (args: readonly string[], command?: string): Promise<{ code: number; out: string; err: string }> => {
-    const dir = mkdtempSync(join(tmpdir(), "chaff-genre-"));
-    writeFileSync(join(dir, "chaff.yaml"), "genre: blog/tech\nlanguage: ja\n");
-    writeFileSync(join(dir, "a.md"), "# 手順\n\n設定を開きます。\n");
-    const out: string[] = [];
-    const err: string[] = [];
-    const saved = { log: console.log, error: console.error, cwd: process.cwd() };
-    console.log = (...parts: unknown[]) => {
-      out.push(parts.join(" "));
-    };
-    console.error = (...parts: unknown[]) => {
-      err.push(parts.join(" "));
-    };
-    process.chdir(dir);
-    try {
-      const code = await main([...(command === undefined ? [] : [command]), "a.md", ...args]);
-      return { code, out: out.join("\n"), err: err.join("\n") };
-    } finally {
-      process.chdir(saved.cwd);
-      console.log = saved.log;
-      console.error = saved.error;
-    }
-  };
+  const lintWith = async (args: readonly string[], command?: string): Promise<CliRun> =>
+    runCli({ "chaff.yaml": "genre: blog/tech\nlanguage: ja\n", "a.md": "# 手順\n\n設定を開きます。\n" }, [
+      ...(command === undefined ? [] : [command]),
+      "a.md",
+      ...args,
+    ]);
 
   it("chaff.yaml の genre より優先し、どこから決めたかを出す", async () => {
     const result = await lintWith(["--genre", "business/email"]);
@@ -68,28 +49,16 @@ describe("--genre で、この実行のジャンルを決める", () => {
   });
 
   it("eval にも届く: by_path で分かれたジャンルを、--genre で 1 つにそろえて測れる", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "chaff-genre-eval-"));
-    writeFileSync(join(dir, "chaff.yaml"), 'language: ja\ngenre: blog/tech\nby_path:\n  - files: ["b.md"]\n    genre: business/email\n');
-    writeFileSync(join(dir, "a.md"), "# 手順\n\n設定を開きます。\n");
-    writeFileSync(join(dir, "b.md"), "# 連絡\n\n資料を送ります。\n");
-    const saved = { log: console.log, error: console.error, cwd: process.cwd() };
-    const err: string[] = [];
-    console.log = () => undefined;
-    console.error = (...parts: unknown[]) => {
-      err.push(parts.join(" "));
+    const files = {
+      "chaff.yaml": 'language: ja\ngenre: blog/tech\nby_path:\n  - files: ["b.md"]\n    genre: business/email\n',
+      "a.md": "# 手順\n\n設定を開きます。\n",
+      "b.md": "# 連絡\n\n資料を送ります。\n",
     };
-    process.chdir(dir);
-    try {
-      const mixed = await main(["eval", "."]);
-      const forced = await main(["eval", ".", "--genre", "blog/tech"]);
-      assert.equal(mixed, 1, "by_path だけなら混ざっている");
-      assert.match(err.join("\n"), /混ざっています/u);
-      assert.equal(forced, 0, err.join("\n"));
-    } finally {
-      process.chdir(saved.cwd);
-      console.log = saved.log;
-      console.error = saved.error;
-    }
+    const mixed = await runCli(files, ["eval", "."]);
+    const forced = await runCli(files, ["eval", ".", "--genre", "blog/tech"]);
+    assert.equal(mixed.code, 1, "by_path だけなら混ざっている");
+    assert.match(mixed.err, /混ざっています/u);
+    assert.equal(forced.code, 0, forced.err);
   });
 
   it("無いジャンルは止めて、一覧の出し方を言う", async () => {

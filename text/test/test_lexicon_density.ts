@@ -1,5 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
+import { firedRules } from "./rule-run.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -7,8 +8,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
-const idsFor = (source: string, adapter: LanguageAdapter = ja, genre = "business/report"): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, true, genre).findings.map((finding) => finding.rule);
+const idsFor = (source: string, adapter: LanguageAdapter = ja, genre = "business/report"): string[] => firedRules(adapter, source, genre);
 
 /** 密度を見る rule は短い文書を測らない。嵩を足すための本文。 */
 const BULK = "本日の連絡です。今日も順調に進めます。明日も続けます。".repeat(20);

@@ -1,5 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { latinSpacing } from "./rule-run.ts";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -188,12 +189,7 @@ describe("preferred-term", () => {
 });
 
 describe("latin-spacing", () => {
-  const spacing = (source: string, level: Settings[string] = "normal", adapter = ja): (string | number | undefined)[] => {
-    const doc = buildDocument("a.md", source, adapter);
-    return runRules(doc, loadRules(adapter.id), { "latin-spacing": level }, false, "technical/readme")
-      .findings.filter((finding) => finding.rule === "latin-spacing")
-      .map((finding) => `${String(finding.values["kind"])}:${String(finding.values["style"])}`);
-  };
+  const spacing = (source: string, level: Settings[string] = "normal", adapter = ja): string[] => latinSpacing(adapter, source, "technical/readme", level);
 
   it("says nothing when the document is consistent, either way", () => {
     assert.deepEqual(spacing("# 使い方\n\nAPI を呼び、JSON を受け取り、ID を返す。\n"), []);

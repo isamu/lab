@@ -1,4 +1,5 @@
 import { joinWords } from "./word-list.ts";
+import { straightApostrophes } from "../orthography.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { entryIn, entryOpens, entryRanges, type TokenRange } from "./lexicon-match.ts";
@@ -227,9 +228,12 @@ export const aiTell: Detector = (doc, options): Finding[] => {
  */
 const containsWord = (text: string, word: string): boolean => new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}\\b`, "u").test(text);
 
+/** アポストロフィの形（don’t と don't）は短縮形かどうかを変えない。違うのは印刷の形で、文体ではない。 */
+const comparableText = (sentence: Sentence): string => straightApostrophes(sentence.text).toLowerCase();
+
 export const contractionMix: Detector = (doc, options): Finding[] => {
   const pairs = (options.lexicon ?? []).flatMap((entry) => (entry.instead_of === undefined ? [] : [{ short: entry.pattern, long: entry.instead_of }]));
-  const body = doc.sentences.map((sentence) => sentence.text.toLowerCase()).join(" ");
+  const body = doc.sentences.map(comparableText).join(" ");
   const used = pairs.filter((pair) => containsWord(body, pair.short.toLowerCase()));
   const spelled = pairs.filter((pair) => containsWord(body, pair.long.toLowerCase()));
   // 片方しか無ければ一貫している。両方あるときだけ、少数派を指摘する。
@@ -239,7 +243,7 @@ export const contractionMix: Detector = (doc, options): Finding[] => {
   if (few.length > options.limit) return [];
   const wanted = few.map((pair) => (minorityIsShort ? pair.short : pair.long).toLowerCase());
   const hits = doc.sentences.flatMap((sentence) => {
-    const text = sentence.text.toLowerCase();
+    const text = comparableText(sentence);
     const matched = wanted.find((word) => containsWord(text, word));
     return matched === undefined ? [] : [{ sentence, matched }];
   });
