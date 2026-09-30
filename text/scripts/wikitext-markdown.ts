@@ -76,7 +76,7 @@ const measured =
 const linkText =
   (shown: (text: string) => string) =>
   (params: Params): string => {
-    const text = params.positional[0] ?? "";
+    const text = valueAt(params, 1) ?? "";
     return text === "" ? DROPPED : shown(text);
   };
 

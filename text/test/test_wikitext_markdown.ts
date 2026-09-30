@@ -83,6 +83,7 @@ describe("wikitextToMarkdown: テンプレート", () => {
     assert.equal(wikitextToMarkdown("方法は {{google|強制再読み込み}} を参考に。"), "方法は 強制再読み込み を参考に。\n");
     assert.equal(wikitextToMarkdown("ページに{{tlx|要出典}}を貼り、{{tl|Stub}}も外す。"), "ページに{{要出典}}を貼り、{{Stub}}も外す。\n");
     assert.equal(wikitextToMarkdown("See {{Google|harbour tram}} results."), "See harbour tram results.\n");
+    assert.equal(wikitextToMarkdown("Try {{google|1=a=b}} or {{tl|1=x=y}}."), "Try a=b or {{x=y}}.\n");
   });
 
   it("中身の無いリンクのテンプレートは落としたものと同じく、何も残さない", () => {
