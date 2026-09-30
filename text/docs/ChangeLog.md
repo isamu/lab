@@ -4,6 +4,24 @@ Newest first.
 
 ## Unreleased
 
+### `oxford-comma-consistency` reads fewer non-lists as lists (#170)
+
+A participle phrase, an appositive and a coordination inside one item of a list were read as a list of three:
+"It comes from Latin, meaning ship or boat", "He was found guilty by the judge, sitting without a jury, and
+sentenced", "two HPV types, HPV16 and HPV18, that account", "prohibition of unreasonable searches and seizures, and
+the Eighth's ban". Now:
+
+- An item that opens with a participle starts a participle phrase, not a list item, unless the first item holds the
+  same kind of participle or the other items open with verbs. A list inside the phrase is still judged
+  ("programs, including the grants office, the help desk and the travel team"). Words the tagger reads as nouns but
+  that open such a phrase ("meaning") are in the new lang-en lexicon `participle-word`.
+- "Noun, X and Y," with no comma before "and" and no verb in X or Y is an appositive. A real list of three in the
+  same shape is left unjudged; with a comma before "and" it is still a list.
+- An "and" followed by ", and" (or ", or") joins words inside one item, and a list closed by "and" is not continued
+  by the items after it.
+
+English -ing verbs now carry `VerbForm=Ger`, so a present participle is told apart from a past one.
+
 ### `title-case-consistency` does not count acronyms as Title Case (#170)
 
 A word in capitals ("PR", "FCPs") is capitalised in either style, so it is no longer evidence of Title Case.

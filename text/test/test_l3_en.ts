@@ -190,6 +190,100 @@ describe("L3 英語", () => {
       assert.ok(judgedAgainst(WITH_COMMA, "Quickly, quietly and carefully, we moved."));
     });
 
+    // 分詞の句と同格の名詞句は、読点で挟まれていても並列の項目ではない（#277 の triage）。
+    [
+      ["分詞で始まる句の中の or（meaning は解析器が名詞と読む）", WITH_COMMA, "The name comes from Latin, meaning ship or boat."],
+      [
+        "現在分詞の挿入句と、別の形の述語（Gideon v. Wainwright）",
+        WITHOUT_COMMA,
+        "He was found guilty by the judge, sitting without a jury, and sentenced to eight years in prison.",
+      ],
+      ["副詞のあとの過去分詞の句が 2 つ", WITHOUT_COMMA, "The parser, originally written by the core team, and now maintained by volunteers, runs everywhere."],
+      ["現在分詞の句の中の and", WITH_COMMA, "The team met on Monday, filling the gaps and fixing the bugs."],
+      [
+        "名詞のあとの同格の名詞句（NIH Research Matters）",
+        WITH_COMMA,
+        "A bivalent vaccine targeted two HPV types, HPV16 and HPV18, that account for more than 77% of cervical cancers worldwide.",
+      ],
+      [
+        "主語のあとの同格の句（Gideon v. Wainwright）",
+        WITH_COMMA,
+        "Governments, both state and federal, quite properly spend vast sums of money to establish machinery to try defendants.",
+      ],
+    ].forEach(([why, base, candidate]) => {
+      it(`valid: ${why ?? ""}`, () => {
+        assert.ok(!judgedAgainst(base ?? "", candidate ?? ""));
+      });
+    });
+
+    it("valid: 最後の項目の中の and は、その後ろに並列が続くなら並列の and ではない（Gideon v. Wainwright）", () => {
+      const candidate =
+        "The Court has made obligatory the Fifth Amendment's command, the Fourth Amendment's prohibition of unreasonable searches and seizures, and the Eighth's ban on cruel and unusual punishment.";
+      assert.ok(!judgedAgainst(WITH_COMMA, candidate));
+      assert.ok(judgedAgainst(WITHOUT_COMMA, candidate));
+    });
+
+    it("invalid: including のあとの並列は判定する（GSA）", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "We hired top talent across our programs, including the grants office, the help desk and the travel team."));
+    });
+
+    it("invalid: 動詞の並びは判定する（Kubernetes overview の形）", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "You can create new containers for your deployment, remove old containers and adopt their resources."));
+    });
+
+    it("invalid: 現在分詞そのものの並びは判定する", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "We are hiring engineers, buying laptops and renting desks."));
+      assert.ok(judgedAgainst(WITH_COMMA, "The team is fixing the parser, testing the renderer and shipping the exporter."));
+    });
+
+    it("invalid: and の前に読点があれば、後ろに読点が続いても 3 つの並列（CRS）", () => {
+      const candidate =
+        "Each bill follows a sequential process involving consideration at the subcommittee, full committee, and chamber levels, as well as action between the chambers.";
+      assert.ok(judgedAgainst(WITHOUT_COMMA, candidate));
+    });
+
+    it("valid: 分詞の句の中の挿入の語は項目ではない", () => {
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "Send us your notes on the call, including, for example, any reference numbers, and the times of the calls."));
+    });
+
+    it("valid: 項目の中の and は、後ろに並列が続くなら並列の and ではない（18F）", () => {
+      const candidate = "Documentation makes it easier to onboard a new team member, explain and justify historic decisions, and ultimately ensure success.";
+      assert.ok(!judgedAgainst(WITH_COMMA, candidate));
+    });
+
+    it("valid: and / or で閉じた並びのあとの項目は、次の並びと並べない", () => {
+      assert.ok(!judgedAgainst(WITH_COMMA, "Neither party will allow the offering, giving, or receiving, directly or indirectly, of money."));
+    });
+
+    it("valid: 分詞の句のあとが同じ形でなければ並びではない", () => {
+      assert.ok(!judgedAgainst(WITH_COMMA, "The other party may seek relief, including an injunction, in any court without a bond and without notice."));
+    });
+
+    [
+      [
+        "後ろの項目が動詞で始まれば、分詞に読まれた項目も述語の並び（Gideon v. Wainwright）",
+        WITHOUT_COMMA,
+        "He made an opening statement to the jury, cross-examined the State's witnesses, presented witnesses in his own defense, declined to testify himself, and made a short argument.",
+      ],
+      ["動詞のある項目は同格ではない", WITH_COMMA, "We found the bug in the parser, fixed the code and shipped the release, then rested."],
+      ["and で始まる項目から次の並びが始まる", WITH_COMMA, "The file gets a comment explaining the rule, and the date, the reason and a name."],
+      ["括弧の中の読点は、and の後ろの項目を閉じない", WITH_COMMA, "Opening, welcome and roll call (Chair, 10 minutes)"],
+      ["引用符の中の -ing の語は分詞の句ではない", WITHOUT_COMMA, "Use ‘organise’ not ‘organize’, ‘modelling’ not ‘modeling’, and ‘fill in’, not ‘fill out’."],
+      [
+        "挿入の分詞の句のあとの並び",
+        WITHOUT_COMMA,
+        "It means information disclosed by a party, including before the start date, to a recipient that the party marks as “secret”, “private”, or the like.",
+      ],
+    ].forEach(([why, base, candidate]) => {
+      it(`invalid: ${why ?? ""}`, () => {
+        assert.ok(judgedAgainst(base ?? "", candidate ?? ""));
+      });
+    });
+
+    it("invalid: 項目が 3 つより多ければ、後ろに読点が続いても並列", () => {
+      assert.ok(judgedAgainst(WITH_COMMA, "We bought apples, pears, plums and figs, then went home."));
+    });
+
     it("invalid: 最初の and が並列でなくても、後ろの並列を見る", () => {
       assert.ok(judgedAgainst(WITHOUT_COMMA, "We wrote the parser and the renderer, the exporter, and the tests."));
     });
