@@ -27,7 +27,7 @@ describe("doubled-punctuation: 句読点が重なっている", () => {
   });
 
   it("三つ以上の同じ印はわざと伸ばした書き方", () => {
-    assert.deepEqual(runsOf("えーと。。。 Well... ，，，"), []);
+    assert.deepEqual(runsOf("えーと。。。 Well... ，，， for...in 文"), []);
   });
 
   it("略語の点の後ろの読点とセミコロン、次の語の頭の点", () => {
@@ -35,7 +35,7 @@ describe("doubled-punctuation: 句読点が重なっている", () => {
   });
 
   it("範囲と道のり（1..10、a..b、../）", () => {
-    assert.deepEqual(runsOf("1..10 a..b ../docs /..x"), []);
+    assert.deepEqual(runsOf("1..10 a..b ../docs /..x path/.. up"), []);
   });
 
   it("コロンと感嘆符は見ない", () => {

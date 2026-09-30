@@ -43,6 +43,11 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
 
   it("印として読むのは丸括弧だけ", () => {
     assert.deepEqual(findingsOf("「a」」\n").length, 1);
+    assert.deepEqual(findingsOf("See item a] here.\n", en), ['"]" closes nothing that was opened']);
+  });
+
+  it("続きとして読むのは引用符だけ。丸括弧は次の段落の頭で開き直しても続きではない", () => {
+    assert.deepEqual(findingsOf("(one\n\n(two) here.\n", en), ['"(" is never closed']);
   });
 
   it("段落をまたいでも、同じ節の中なら組にする（詩の連、長い引用）", () => {
