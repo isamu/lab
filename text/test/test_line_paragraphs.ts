@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { lineParagraphs } from "../packages/chaff/src/line-paragraphs.ts";
+import { documentLineParagraphs, lineParagraphs } from "../packages/chaff/src/line-paragraphs.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -240,5 +240,85 @@ describe("1 行 1 段落の文書: 段落の数え方", () => {
       "A vote was deferred. Nobody objected.",
     ].join("\n");
     assert.deepEqual(paragraphSizes(lines, en), [2, 2, 2]);
+  });
+});
+
+/** 空行で区切った段落ごとの、素朴な文の範囲。documentLineParagraphs に渡す形。 */
+const paragraphsOf = (text: string): { span: Span; sentences: Span[] }[] =>
+  [...text.matchAll(/[^\n](?:[^\n]|\n(?!\n))*/gu)].map((match) => {
+    const span = { start: match.index, end: match.index + match[0].length };
+    return { span, sentences: naiveSentences(match[0]).map((sentence) => ({ start: sentence.start + span.start, end: sentence.end + span.start })) };
+  });
+const documentPieces = (text: string): string[] => documentLineParagraphs(text, paragraphsOf(text)).map((span) => text.slice(span.start, span.end));
+
+describe("documentLineParagraphs: 1 行 1 段落の書き方は文書で決める", () => {
+  const SHORT_A = ["一。二。", "三。四。", "五。"];
+  const SHORT_B = ["六。七。", "八。九。", "十。"];
+
+  it("2 文の行が 2 つずつの短い段落も、文書全体で 1 行 1 段落の形なら行で割る", () => {
+    assert.deepEqual(documentPieces([SHORT_A.join("\n"), SHORT_B.join("\n")].join("\n\n")), [...SHORT_A, ...SHORT_B]);
+  });
+
+  it("その段落 1 つだけの文書では割らない（段落 1 つの判断は lineParagraphs と同じ）", () => {
+    const text = SHORT_A.join("\n");
+    assert.deepEqual(documentPieces(text), [text]);
+    assert.deepEqual(pieces(text), [text]);
+  });
+
+  it("1 行だけの段落（空行で区切った普通の段落）は、1 行 1 段落の印に数えない", () => {
+    const blankLined = Array.from({ length: 6 }, (_, index) => `段${String(index)}の一。段${String(index)}の二。`);
+    const text = [...blankLined, SHORT_A.join("\n")].join("\n\n");
+    assert.deepEqual(documentPieces(text), [...blankLined, SHORT_A.join("\n")]);
+  });
+
+  it("文書全体で 2 文の行が 5 分の 1 に届かなければ割らない（1 行 1 文の書き方）", () => {
+    const singles = (from: number): string[] => Array.from({ length: 12 }, (_, index) => `文${String(from + index)}。`);
+    const text = [[...SHORT_A, ...singles(0)].join("\n"), [...SHORT_B, ...singles(20)].join("\n")].join("\n\n");
+    assert.deepEqual(documentPieces(text).length, 2);
+  });
+
+  it("文書の判断が 1 行 1 段落でも、文で終わる行が半分に届かない段落（折り返し）は割らない", () => {
+    const wrapped = ["折り返した一つ目の", "文は長い。二つ目の", "文も長く", "続いて終わる。"].join("\n");
+    const text = [SHORT_A.join("\n"), SHORT_B.join("\n"), wrapped].join("\n\n");
+    assert.deepEqual(documentPieces(text), [...SHORT_A, ...SHORT_B, wrapped]);
+  });
+
+  it("折り返しの段落（文で終わる行が半分に届かない）は、1 行 1 段落の印に数えない", () => {
+    const wrapped = ["段の一。段の二。", "折り返した", "文の", "続きの", "終わり。"].join("\n");
+    const text = [SHORT_A.join("\n"), wrapped].join("\n\n");
+    assert.deepEqual(documentPieces(text), [SHORT_A.join("\n"), wrapped]);
+  });
+
+  it("それだけで割れる段落は、文書全体の判断が割らないでも割る（前と同じ）", () => {
+    const semantic = Array.from({ length: 20 }, (_, index) => `文${String(index)}。`).join("\n");
+    const text = [LINE_SHAPED.join("\n"), semantic].join("\n\n");
+    assert.deepEqual(documentPieces(text), [...LINE_SHAPED, semantic]);
+  });
+
+  it("段落が無い文書", () => {
+    assert.deepEqual(documentLineParagraphs("", []), []);
+  });
+});
+
+/** 首相官邸「第２２１回国会における施政方針演説」（PDL1.0）の形: 見出しごとの短い段落が、1 行 1 段落で書かれている。 */
+const SPEECH = [
+  "（１）はじめに",
+  "",
+  "先般の総選挙の結果を受け、再び、内閣総理大臣の職責を担うこととなりました。",
+  "その大きな御期待に応えるため、公約の内容を一つ一つ実現していく。その重い責任を必ずや果たしてまいります。",
+  "野党の皆様とも、是非、力を合わせて取り組んでいきたい。様々なお声に耳を傾け、政権運営に当たってまいります。",
+  "私のこの使命を、全身全霊をかけて成し遂げてまいります。",
+  "",
+  "（２）国力の強化",
+  "",
+  "昨年の臨時国会では、物価高への対応を最優先に働きました。ガソリンの価格は着実に低下しています。支援も届き始めています。",
+  "いよいよ本国会では、広範な政策を本格的に起動させます。",
+  "外交力、防衛力、経済力、技術力。日本の総合的な国力を徹底的に強くしていく。",
+  "その本丸は、「責任ある積極財政」です。",
+].join("\n");
+
+describe("1 行 1 段落の短い段落が並ぶ演説", () => {
+  it("段落ごとには 2 文の行が 3 つに届かなくても、行ごとの段落として数える", () => {
+    assert.deepEqual(paragraphSizes(SPEECH, ja), [1, 1, 2, 2, 1, 1, 3, 1, 2, 1]);
   });
 });

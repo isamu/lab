@@ -10,6 +10,7 @@ import type { Span } from "./plugin.ts";
  *   （議事録は発言者の行と発言の行が交互に来るので、半分ちょうどは割る）。
  * - 1 行 1 文の書き方（行を意味の切れ目で改める。英語の Markdown に多い）は、段落のつもりではない。
  *   文の頭で始まり文の終わりで終わる行が 2 文以上を持つことが、段落を 1 行に書いた印。それがたまにしか無ければ割らない。
+ *   この印は文書全体で数える（documentIsLineShaped）。
  */
 
 /** 2 文以上を持つ行がこれより少なければ、1 行 1 文の書き方にたまに混じる 2 文の行と見分けられない。 */
@@ -69,18 +70,60 @@ const sentencesIn = (group: Span, cores: readonly Span[]): number => firstStarti
 const wholeMultiSentenceLines = (lines: readonly Line[], closing: readonly boolean[], cores: readonly Span[]): number =>
   lines.filter((line, index) => (index === 0 || closing[index - 1] === true) && closing[index] === true && sentencesIn(line.span, cores) >= 2).length;
 
-/** 行ごとの段落として読む形か。 */
-const isLineShaped = (lines: readonly Line[], closing: readonly boolean[], groups: readonly Span[], cores: readonly Span[]): boolean => {
-  const closed = closing.filter(Boolean).length;
-  const multi = wholeMultiSentenceLines(lines, closing, cores);
-  return closed * 2 >= closing.length && multi >= MIN_MULTI_SENTENCE && multi >= groups.length * MULTI_SENTENCE_SHARE;
+/** 1 つの段落の形: 割るならどこで割るか（groups）と、行ごとの段落と読む手がかり。 */
+type Shape = {
+  readonly paragraph: Span;
+  readonly groups: readonly Span[];
+  readonly lines: number;
+  /** 文で終わる行が半分以上。届かなければ固定幅の折り返し。 */
+  readonly mostlyClosed: boolean;
+  /** 文の頭で始まり文の終わりで終わる、2 文以上の行の数。 */
+  readonly multi: number;
 };
 
-/** paragraph を、書いた人が段落のつもりで改めた行ごとに割る。そう読めなければ paragraph 1 つ。sentences は段落の中の文。 */
-export const lineParagraphs = (source: string, paragraph: Span, sentences: readonly Span[]): Span[] => {
+const shapeOf = (source: string, paragraph: Span, sentences: readonly Span[]): Shape => {
   const lines = linesOf(source, paragraph);
   const cores = sentences.map((sentence) => coreOf(source, sentence)).filter((core) => core.end > core.start);
   const closing = lines.map((line) => hasText(source, line) && endsSentence(line, cores));
-  const groups = groupAt(lines, closing);
-  return isLineShaped(lines, closing, groups, cores) ? groups : [paragraph];
+  return {
+    paragraph,
+    groups: groupAt(lines, closing),
+    lines: lines.length,
+    mostlyClosed: closing.filter(Boolean).length * 2 >= closing.length,
+    multi: wholeMultiSentenceLines(lines, closing, cores),
+  };
 };
+
+/** 2 文以上の行が、1 行 1 文の書き方にたまに混じる数より多い。 */
+const enoughMulti = (multi: number, groups: number): boolean => multi >= MIN_MULTI_SENTENCE && multi >= groups * MULTI_SENTENCE_SHARE;
+
+/**
+ * 文書が 1 行 1 段落で書かれているか。書き方は書き手のもので、段落 1 つずつでは決まらない（見出しごとの短い段落が並ぶ演説）。
+ * 手がかりは、2 行以上あって折り返しでない段落だけから集める。1 行だけの段落は空行で区切った普通の段落で、1 行 1 段落の印ではない。
+ */
+const documentIsLineShaped = (shapes: readonly Shape[]): boolean => {
+  const evidence = shapes.filter((shape) => shape.lines > 1 && shape.mostlyClosed);
+  const total = (count: (shape: Shape) => number): number => evidence.reduce((sum, shape) => sum + count(shape), 0);
+  return enoughMulti(
+    total((shape) => shape.multi),
+    total((shape) => shape.groups.length),
+  );
+};
+
+/** 割るか: 折り返しでなく、段落だけで、または文書全体で、行ごとの段落と読める。 */
+const splits = (shape: Shape, lineShapedDocument: boolean): boolean =>
+  shape.mostlyClosed && (lineShapedDocument || enoughMulti(shape.multi, shape.groups.length));
+
+/**
+ * 文書の段落（並び順）を、書いた人が段落のつもりで改めた行ごとに割った段落。そう読めない段落はそのまま。
+ * sentences は段落の中の文。
+ */
+export const documentLineParagraphs = (source: string, paragraphs: readonly { readonly span: Span; readonly sentences: readonly Span[] }[]): Span[] => {
+  const shapes = paragraphs.map((paragraph) => shapeOf(source, paragraph.span, paragraph.sentences));
+  const lineShaped = documentIsLineShaped(shapes);
+  return shapes.flatMap((shape) => (splits(shape, lineShaped) ? shape.groups : [shape.paragraph]));
+};
+
+/** paragraph を、書いた人が段落のつもりで改めた行ごとに割る。そう読めなければ paragraph 1 つ。sentences は段落の中の文。 */
+export const lineParagraphs = (source: string, paragraph: Span, sentences: readonly Span[]): Span[] =>
+  documentLineParagraphs(source, [{ span: paragraph, sentences }]);

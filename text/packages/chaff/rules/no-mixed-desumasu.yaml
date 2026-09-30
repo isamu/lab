@@ -3,6 +3,7 @@ layer: L3
 status: experimental
 how_to_find: sentence-ending
 word_list: polite-ending
+extra_word_lists: [neutral-ending]
 requires: [pos]
 languages: [ja]
 severity: warning
