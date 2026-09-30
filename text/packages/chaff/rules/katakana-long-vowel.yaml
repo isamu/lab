@@ -62,8 +62,8 @@ options:
         ja: min_morae 音以上の語の語末の「ー」を省く（電子情報通信学会、JIS Z 8301:2011 まで）
         en: Drop the final ー on words of min_morae morae or more (IEICE; JIS Z 8301 up to 2011)
       keep:
-        ja: 語末の「ー」を付ける（文化庁「外来語の表記」、新聞）。「ー」の無い語は、辞書が「ー」付きで知っている語（メモリ）か、文書がほかで「ー」付きで書く語だけを見る
-        en: Keep the final ー (the Agency for Cultural Affairs' 外来語の表記; newspapers). A word without one is checked only when the dictionary knows it with one (メモリ) or the document writes it with one elsewhere
+        ja: 語末の「ー」を付ける（文化庁「外来語の表記」、JIS Z 8301:2019）。「ー」の無い語は、辞書が「ー」付きで知っている語（メモリ）か、文書がほかで「ー」付きで書く語だけを見る
+        en: Keep the final ー (the Agency for Cultural Affairs' 外来語の表記; JIS Z 8301:2019). A word without one is checked only when the dictionary knows it with one (メモリ) or the document writes it with one elsewhere
   min_morae:
     kind: count
     default: 3

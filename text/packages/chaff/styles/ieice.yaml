@@ -1,0 +1,29 @@
+# 電子情報通信学会（IEICE）の和文論文誌の書き方。chaff.yaml に style: ieice と書くと使える。
+# ここに置くのは、案内が言っていることだけ。案内に無いことは足さない。
+#
+# 投稿のしおり 2.4 (b) は、用語を文部省「学術用語集 電気工学編」などによるとする。学術用語集のカタカナ語は、
+# 3 音以上の語の語末の「ー」を省く（コンピュータ、レーザ、プリンタ）。2 音以下の語（カー）は付ける。
+# 2.4 (d) は、句読点を全角の「．」「，」とする。句読点を見る rule が chaff にまだ無いので、ここでは決めない。
+id: ieice
+
+name:
+  ja: 電子情報通信学会 和文論文誌
+  en: IEICE Transactions (papers in Japanese)
+
+summary:
+  ja: 3 音以上のカタカナ語は語末の「ー」を省きます（コンピュータ、プリンタ）。2 音以下の語（カー）は付けます。
+  en: Drops the final ー of katakana words of three morae or more (コンピュータ, プリンタ) and keeps it on shorter words (カー).
+
+source:
+  title:
+    ja: 電子情報通信学会「和文論文誌 投稿のしおり」2.4 用字と用語について (b)。用語は文部省「学術用語集 電気工学編」による
+    en: IEICE, 和文論文誌 投稿のしおり (submission guide for papers in Japanese), 2.4 (b); terms follow 学術用語集 電気工学編
+  url: https://www.ieice.org/jpn/shiori/cs_2.html
+
+rules:
+  katakana-long-vowel: normal
+
+options:
+  katakana-long-vowel:
+    ending: drop
+    min_morae: 3

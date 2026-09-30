@@ -1,0 +1,25 @@
+# 文化庁「外来語の表記」（平成 3 年内閣告示第 2 号）の長音の書き方。chaff.yaml に style: bunkacho と書くと使える。
+# JIS Z 8301:2019 も外来語の表記をこれによるとした。告示は「慣用に応じて「ー」を省くことができる」とも書くので、
+# 省いた語は、辞書が「ー」付きで知る語と、文書がほかで「ー」付きで書く語だけを見る（katakana-long-vowel の keep）。
+id: bunkacho
+
+name:
+  ja: 文化庁「外来語の表記」
+  en: The Agency for Cultural Affairs' 外来語の表記 (Cabinet notice, 1991)
+
+summary:
+  ja: 英語の語末の -er、-or、-ar などは、長音として「ー」を付けます（コンピューター、エレベーター）。
+  en: Writes the English endings -er, -or, -ar and the like as a long vowel with ー (コンピューター, エレベーター).
+
+source:
+  title:
+    ja: 外来語の表記（平成 3 年 6 月 28 日 内閣告示第 2 号）留意事項その 2（細則的な事項）Ⅲ 3 注 3
+    en: 外来語の表記 (Cabinet notice No. 2 of 28 June 1991), detailed notes (留意事項その2), III 3, note 3
+  url: https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/gairai/honbun06.html
+
+rules:
+  katakana-long-vowel: normal
+
+options:
+  katakana-long-vowel:
+    ending: keep

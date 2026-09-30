@@ -34,6 +34,8 @@ import { runSkill } from "./commands/skill.ts";
 import { runFeedback, settingsOf } from "./commands/feedback.ts";
 import { homedir } from "node:os";
 import { settingWarnings } from "./config/warnings.ts";
+import { styleLevelSource, withStyle } from "./config/style.ts";
+import { loadStyles } from "./style-load.ts";
 import { optionLayersOf } from "./config/option-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRulesWith } from "./run.ts";
@@ -46,7 +48,7 @@ import { settingProblems } from "./setting-problems.ts";
 /** Text for output that is not about one document. */
 const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.language, process.env)];
 
-const readConfig = (): Config => (existsSync(join(process.cwd(), CONFIG_FILE)) ? loadConfig(join(process.cwd(), CONFIG_FILE)) : EMPTY);
+const readConfig = (): Config => (existsSync(join(process.cwd(), CONFIG_FILE)) ? withStyle(loadConfig(join(process.cwd(), CONFIG_FILE)), loadStyles()) : EMPTY);
 
 /** resolveGenre with this run's --genre, for the commands that take it as a dependency. */
 const genreFrom =
@@ -220,7 +222,8 @@ const explain = (ruleId: string | undefined, genreFlag: string | undefined): num
   }
   const preset = genre === undefined ? {} : presetLevels(genre);
   const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
-  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, optionLayersOf(config)));
+  const settings = { optionLayers: optionLayersOf(config), levelFrom: styleLevelSource(config, rule.id) };
+  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, settings));
   return 0;
 };
 
@@ -335,7 +338,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
   }
   // 知らないジャンルではどの rule も当たらず、知らない文書の種類では種類の知識が外れる。どちらも素通りに見えるので、何かする前に止める。
   const config = readConfig();
-  const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config));
+  const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config), hostLanguage(config.language, process.env));
   problems.forEach((problem) => console.error(problem));
   if (problems.length > 0) return 1;
   const handler = HANDLERS[first];
