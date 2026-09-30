@@ -383,6 +383,7 @@ export const buildDocument = (
 const outlineOf = (root: Node, source: string, syntax: readonly Span[], replyQuotes: readonly Span[]): Outline => ({
   headings: headingsOf(root, source, maskSpans(source, syntax), replyQuotes),
   opaque: [...opaqueSpans(root), ...markdownFigures(root, source), ...syntax, ...replyQuotes],
+  tables: spansOfType(root, "table"),
 });
 
 /** 構造を読むための Markdown の手がかり。見出しと、中を読まない範囲。返信の引用は、言語パッケージの語彙表で見分ける。 */

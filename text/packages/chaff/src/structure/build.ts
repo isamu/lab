@@ -236,10 +236,13 @@ const frozen = (draft: Draft, children: readonly StructureNode[]): StructureNode
 
 const freeze = (root: Draft): StructureNode => foldPostOrder(root, (draft) => draft.children, frozen);
 
-/** Markdown から取った手がかり。見出しと、中を読まない範囲（コード）。.txt はどちらも空。 */
-export type Outline = { readonly headings: readonly Heading[]; readonly opaque: readonly Span[] };
+/**
+ * Markdown から取った手がかり。見出しと、中を読まない範囲（コード）と、表。.txt はどれも空。
+ * 表の欄の数（版の番号 3.1.0）は値で、この文書の番号ではない。表の行は番号として読まず、数量や日付は読む。
+ */
+export type Outline = { readonly headings: readonly Heading[]; readonly opaque: readonly Span[]; readonly tables: readonly Span[] };
 
-export const NO_OUTLINE: Outline = { headings: [], opaque: [] };
+export const NO_OUTLINE: Outline = { headings: [], opaque: [], tables: [] };
 
 export type StructureInput = {
   readonly path: string;
@@ -301,11 +304,14 @@ const withCaption = (state: State, line: Line, numbered: NumberedLine | undefine
   return numbered === undefined || caption === undefined ? numbered : { ...numbered, heading: caption };
 };
 
-const readLine = (state: State, patterns: StructurePatterns, line: Line, heading: Heading | undefined, next: string | undefined): void => {
+/** 行の周り。前の行は、前の行が見出しでなく自分が表の行でないときだけ渡す。表の行は番号として読まない。 */
+type Around = { readonly next: string | undefined; readonly previous: string | undefined; readonly inTable: boolean };
+
+const readLine = (state: State, patterns: StructurePatterns, line: Line, heading: Heading | undefined, around: Around): void => {
   const text = heading === undefined ? line.text : headingLineText(line.text);
   const openNumbers = state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered]));
   const context = { open: openNumbers, isHeading: heading !== undefined };
-  const found = numberedLine(state, patterns, text, context);
+  const found = around.inTable ? undefined : numberedLine(state, patterns, text, context);
   const numbered = withCaption(state, line, found);
   const caption = numbered === undefined && heading === undefined ? captionOf(state.profile, text) : undefined;
   if (caption !== undefined) state.captions.set(line.number, caption);
@@ -318,7 +324,21 @@ const readLine = (state: State, patterns: StructurePatterns, line: Line, heading
   const scanned = numbered === undefined ? text : numbered.rest;
   const offset = Math.max(0, line.text.lastIndexOf(scanned));
   const onHeading = heading !== undefined;
-  if (scanned !== "") addLeaves(state, patterns, line, wrappedLine(scanned, onHeading, next), offset, onHeading);
+  // 番号付きの行は新しいまとまりの始まりなので、前の行の続きとして読まない。
+  const previous = numbered === undefined ? around.previous : undefined;
+  if (scanned !== "") addLeaves(state, patterns, line, wrappedLine(scanned, onHeading, around.next, previous), offset, onHeading);
+};
+
+/** 表の範囲に入る行の番号。表ごとに始まりと終わりの行を引くので、表の数に比例する。 */
+const tableLineNumbers = (lines: readonly Line[], tables: readonly Span[]): Set<number> => {
+  const numbers = new Set<number>();
+  tables.forEach((table) => {
+    const first = lineNumberAt(lines, table.start);
+    const last = lineNumberAt(lines, table.end);
+    if (first === undefined || last === undefined) return;
+    Array.from({ length: last - first + 1 }, (_, index) => numbers.add(first + index));
+  });
+  return numbers;
 };
 
 /**
@@ -343,8 +363,13 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
     captions: new Map(),
     plainText: !input.markdown,
   };
+  const inTable = tableLineNumbers(lines, outline.tables);
   lines.forEach((line, index) => {
-    if (line.text.trim() !== "") readLine(state, patterns, line, headings.get(line.number), lines[index + 1]?.text);
+    // 見出しの後ろと表の行は、段落の折り返しではない。表のすぐ後ろの行は（GFM では）表の行になるので、表の中だけ見ればよい。
+    const apart = headings.has(line.number - 1) || inTable.has(line.number);
+    const previous = apart ? undefined : lines[index - 1]?.text;
+    const around = { next: lines[index + 1]?.text, previous, inTable: inTable.has(line.number) };
+    if (line.text.trim() !== "") readLine(state, patterns, line, headings.get(line.number), around);
     // コードの行は覆って読まないが、開いている節の中身ではある。節の最後にコードブロックがあっても、範囲をそこまで伸ばす。
     else if (input.source.slice(line.start, line.start + line.text.length).trim() !== "") extend(state, line.start + line.text.length);
   });
