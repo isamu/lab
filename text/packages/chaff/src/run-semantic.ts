@@ -3,8 +3,9 @@ import { ask, type JudgeOptions } from "./judge.ts";
 import { FILTERS, type Candidate } from "./semantic.ts";
 import { narrow, type Narrowing } from "./look-at.ts";
 import { localized } from "./render/text.ts";
-import type { Finding, Level, ProseDocument, RuleDefinition, Severity } from "./plugin.ts";
+import type { AdapterNeeds, Finding, Level, ProseDocument, RuleDefinition, Severity } from "./plugin.ts";
 import { lineStarts, placeOf } from "./position.ts";
+import { wantsTags } from "./run.ts";
 
 export type SemanticResult = {
   readonly findings: readonly Finding[];
@@ -39,26 +40,33 @@ const severityFromLevel = (rule: RuleDefinition, level: Level): Severity => {
   return SEVERITY_BY_VALUE[Math.min(3, Math.max(1, Math.round(value)))] ?? "warning";
 };
 
+/** この文書で動かす、意味を読む rule。 */
+const semanticRules = (rules: readonly RuleDefinition[], settings: Readonly<Record<string, Level>>, genre: string): RuleDefinition[] =>
+  rules.filter((rule) => rule.layer === "L4" && rule.use_for.some((target) => genre.startsWith(target)) && settings[rule.id] !== "off");
+
+/** 意味を読む rule の絞り込みが品詞を使うか。chaff test はこれで解析器を読み込む（neededBy は L4 を数えない）。 */
+export const semanticNeeds = (rules: readonly RuleDefinition[], settings: Readonly<Record<string, Level>>, genre: string): AdapterNeeds => ({
+  pos: semanticRules(rules, settings, genre).some(wantsTags),
+});
+
 const builtInJobs = (doc: ProseDocument, rules: readonly RuleDefinition[], settings: Readonly<Record<string, Level>>, genre: string): Job[] =>
-  rules
-    .filter((rule) => rule.layer === "L4" && rule.use_for.some((target) => genre.startsWith(target)) && settings[rule.id] !== "off")
-    .flatMap((rule) => {
-      const rubric = rule.what_to_check === undefined ? undefined : localized(rule.what_to_check, doc.language);
-      if (rubric === undefined || rubric.length === 0) return [];
-      // 絞り込みが無い rule は動かさない。黙って落とさず、下の skipped に出す。
-      const filter = filterFor(rule.how_to_find);
-      if (filter === undefined) return [];
-      return [
-        {
-          rule: rule.id,
-          name: localized(rule.name, doc.language),
-          rubric,
-          howToFix: localized(rule.how_to_fix, doc.language),
-          severity: severityFromLevel(rule, settings[rule.id] ?? "normal"),
-          candidates: filter(doc),
-        },
-      ];
-    });
+  semanticRules(rules, settings, genre).flatMap((rule) => {
+    const rubric = rule.what_to_check === undefined ? undefined : localized(rule.what_to_check, doc.language);
+    if (rubric === undefined || rubric.length === 0) return [];
+    // 絞り込みが無い rule は動かさない。黙って落とさず、下の skipped に出す。
+    const filter = filterFor(rule.how_to_find);
+    if (filter === undefined) return [];
+    return [
+      {
+        rule: rule.id,
+        name: localized(rule.name, doc.language),
+        rubric,
+        howToFix: localized(rule.how_to_fix, doc.language),
+        severity: severityFromLevel(rule, settings[rule.id] ?? "normal"),
+        candidates: filter(doc),
+      },
+    ];
+  });
 
 const userJobs = (doc: ProseDocument, checks: readonly UserCheck[], genre: string): Job[] =>
   checks

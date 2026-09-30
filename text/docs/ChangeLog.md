@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### `empty-conclusion` sends a closing that only repeats the body's numbers (#290, #170)
+
+The filter that picks closings for `chaff test` skipped any closing with a digit in it, taking the digit as
+evidence. A 「まとめ」 such as 「以上のように、9月は問い合わせが増え…」 was never sent, though 9月 is the report's month
+and the rest repeats the body. A number now counts as evidence only when the closing is the first place it is written.
+Numbers are compared as written: a date or clock time with its unit (「9月」, found with the date lexicons that
+`latin-spacing` uses), anything else by its digits, so a title's 「9月」 covers a closing's 「9月」 but not its 「9 件」.
+Headings and tables are read too; they have no tags, so there a date is told by the unit written right after the
+number. A new date or a new target in the closing (「10月1日から」, 「300 件以下」) still keeps it from being sent.
+`chaff test` now loads the tagger when a rule it will run declares `uses: [pos]`, so `--dry-run` and a real run
+decide the same way whatever the machine checks need.
+
 ### `contraction-consistency` counts `don’t` as a contraction (#170)
 
 The rule compared the text as written, so a contraction with a curly apostrophe (`don’t`, `it’s`) counted as neither

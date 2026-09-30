@@ -8,6 +8,7 @@ import { emptyConclusion, riskDisclosure, unsourcedNumber, wholeDocument } from 
 import { loadChecks, severityOf } from "../packages/chaff/src/checks.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 const doc = (source: string) => buildDocument("t.md", source, ja);
 
@@ -42,6 +43,23 @@ describe("絞り込み: empty-conclusion", () => {
 
   it("コードがあれば問い合わせない", () => {
     assert.deepEqual(emptyConclusion(doc("# 題\n\n本文。\n\n## まとめ\n\n`chaff lint` を回してください。")), []);
+  });
+
+  it("本文の数と題の月を繰り返すだけの結びは問い合わせる", async () => {
+    await ja.prepare?.({ pos: true });
+    const source = "# 9月の報告\n\n9月の問い合わせは 412 件でした。\n\n## まとめ\n\n以上のように、9月は 412 件でした。今後も改善に努めます。\n";
+    assert.equal(emptyConclusion(doc(source)).length, 1);
+  });
+
+  it("本文に無い数を書いた結びは問い合わせない", async () => {
+    await ja.prepare?.({ pos: true });
+    assert.deepEqual(emptyConclusion(doc("# 9月の報告\n\n9月は 412 件でした。\n\n## まとめ\n\n10月は 300 件以下を目指します。\n")), []);
+  });
+
+  it("英語の結びも、本文の数を繰り返すだけなら問い合わせる", () => {
+    const body = "# Report\n\nTickets rose from 356 to 412 in September.\n\n## Summary\n\n";
+    assert.equal(emptyConclusion(buildDocument("t.md", `${body}In short, tickets rose to 412. We will keep improving.\n`, en)).length, 1);
+    assert.deepEqual(emptyConclusion(buildDocument("t.md", `${body}We will cut them to 300 by October.\n`, en)), []);
   });
 });
 
