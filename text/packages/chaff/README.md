@@ -11,7 +11,32 @@ npx chaffjs article.md
 インストールも、AI の利用登録も、言語の指定も要りません。
 
 > chaff finds what makes writing hard to read — in Japanese and English — and never rewrites the text. On an
-> English document it speaks English. Guide and rule reference: https://isamu.github.io/lab/en/
+> English document it speaks English. Pick the kind of document (`--genre legal/contract`, `docs/manual`,
+> `academic/paper`, …) and it checks it the way that kind is written. Guide, genres and rule reference:
+> https://isamu.github.io/lab/en/
+
+## 文書の種類を選ぶ
+
+契約書・法令・マニュアル・論文・小説・発言録は、それぞれの書き方で書かれます。種類（ジャンル）を選ぶと、その書き方に合わせて見ます。設定は要りません。
+
+```bash
+npx chaffjs --genre legal/contract 契約書.md    この実行だけ、契約書として見る
+npx chaffjs init --genre legal/contract         この場所の chaff.yaml に書く
+npx chaffjs genres                              ジャンルの一覧と、それぞれ何向けか
+```
+
+| 群 | ジャンル |
+| --- | --- |
+| 技術文書 | `technical/spec` `technical/readme` |
+| ブログ | `blog/tech`（既定） `blog/essay` `blog/owned-media` |
+| ビジネス文書 | `business/proposal` `business/report` `business/email` `business/press-release` `business/meeting-notes` |
+| 法務 | `legal/contract` `legal/statute` `legal/judgment` `legal/patent` |
+| 説明書 | `docs/manual` `docs/faq` `docs/glossary` |
+| 学術 | `academic/paper` |
+| 文学 | `literature/fiction` `literature/essay` `literature/poetry` `literature/play` |
+| 話し言葉 | `speech/address` `speech/transcript` |
+
+ジャンルを決めていない文書が別の種類に見えるときは、画面がそう言います（「契約書・規約のようです。--genre legal/contract を試せます」）。
 
 ## 何を見つけるか
 
@@ -57,7 +82,7 @@ npx chaffjs article.md
 ```bash
 npx chaffjs .                     この場所の Markdown を全部
 npx chaffjs article.md --watch    保存のたびに、変わったところだけ出す
-npx chaffjs init                  chaff.yaml を作る
+npx chaffjs init                  chaff.yaml を作る（端末ならジャンルを尋ねる）
 npx chaffjs explain bold-density  ルールの意図と根拠を読む
 npx chaffjs baseline docs/        既にある指摘を棚上げする
 npx chaffjs suppressions docs/    stet で黙らせている指摘を数える

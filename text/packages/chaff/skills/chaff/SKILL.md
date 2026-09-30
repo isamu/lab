@@ -1,6 +1,6 @@
 ---
 name: chaff
-description: "Check prose with chaff (npx chaffjs): run it on Markdown or text, read each finding, fix the text or record why not, and tune chaff.yaml with rules --json and relax --why. Use when asked to lint, proofread or tighten documents, or to set up a team's writing rules."
+description: "Check prose with chaff (npx chaffjs): pick the genre preset for the kind of document (contract, statute, manual, FAQ, paper, fiction, transcript…), run it on Markdown or text, read each finding, fix the text or record why not, and tune chaff.yaml with rules --json and relax --why. Use when asked to lint, proofread or tighten documents, or to set up a team's writing rules."
 ---
 
 # Checking writing with chaff
@@ -9,12 +9,30 @@ chaff finds what makes writing hard to read — long sentences, padding, mixed s
 contract — and never rewrites anything. Reading the findings and changing the text is your part. Japanese and
 English documents both work; the language is detected per file.
 
+## Pick the genre first
+
+A genre is a preset for one kind of document: which rules run, where their limits are, and how the document is
+read. A contract checked as a blog post gets wrong findings, so choose the genre before reading any finding.
+
+1. Name the kind from the document itself. `npx chaffjs genres` lists every genre with what it is for:
+   `legal/contract`, `legal/statute`, `docs/manual`, `docs/faq`, `academic/paper`, `literature/fiction`,
+   `speech/transcript`, `business/report`, `technical/spec`, …
+2. Unsure? Run once without `--genre`. When the file looks like another kind, the line under the header says so
+   (`Looks like: Contract and terms. Try --genre legal/contract`); use that genre if it fits.
+3. Run with it: `npx chaffjs --genre legal/contract contract.md`. For a folder of one kind,
+   `npx chaffjs init --genre legal/contract` writes it into `chaff.yaml` (always pass `--genre`: without it,
+   `init` asks at a terminal).
+4. The header's first line shows the genre used and where it came from. Check it before trusting the findings.
+
+A rule the genre turns off is listed under "did not run" with the genre as the reason. That is the preset's
+choice, not a gap; turn it back on (`rules:` in `chaff.yaml`) only when the person asks.
+
 ## Run it
 
 ```sh
-npx chaffjs <file|dir|glob>...     # human-readable, one block per finding (a folder or glob picks up .md / .markdown / .mdx; name a .txt file directly)
-npx chaffjs . --compact            # two lines per finding: line:col severity message, then the rule id
-npx chaffjs <file> --experimental  # also the experimental rules
+npx chaffjs --genre <genre> <file|dir|glob>...   # human-readable, one block per finding (a folder or glob picks up .md / .markdown / .mdx; name a .txt file directly)
+npx chaffjs . --compact                          # two lines per finding: line:col severity message, then the rule id
+npx chaffjs <file> --experimental                # also the experimental rules
 ```
 
 A run exits 1 when a finding is an `error`. It also exits 1 when it could not check anything: no file to
@@ -39,15 +57,16 @@ relaxing a rule.
 
 ## Tune chaff.yaml
 
-- `npx chaffjs init` writes a commented `chaff.yaml` when there is none (an existing one is left as it is), and
-  adds `.chaff-cache/` and `.env*` to `.gitignore`.
-- `npx chaffjs rules --json` prints every rule with its levels, the setting in effect (`now`) and why a rule is
-  off. Read it instead of guessing rule names or limits.
+- `npx chaffjs init --genre <genre>` writes a commented `chaff.yaml` for that genre when there is none (an
+  existing one is left as it is), and adds `.chaff-cache/` and `.env*` to `.gitignore`.
+- `npx chaffjs rules --json [--genre <genre>]` prints every rule with its levels, the setting in effect (`now`,
+  the genre's preset included) and why a rule is off. Read it instead of guessing rule names or limits.
 - A level is `strict` / `normal` / `relaxed` / `off`; when even `relaxed` is too tight, a positive number is the
   limit itself (`max-sentence-length: 260`).
 - `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on.
 - Unknown rule names and unreadable values are reported on stderr — read stderr after editing `chaff.yaml`.
-- `genre:` sets the kind of document (`npx chaffjs genres` lists them); `--genre` overrides it for one run.
+- `genre:` sets the kind of document; `by_path` sets one per folder; `--genre` overrides both for one run.
+  `rules:` wins over the genre's preset.
 
 ## Structured documents
 

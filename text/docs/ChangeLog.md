@@ -2,7 +2,38 @@
 
 Newest first.
 
-## Unreleased
+## 0.16.0 — 2026-09-30
+
+Pick the kind of document, and chaff checks it as that kind. New genres cover contracts, statutes, court decisions,
+patents, manuals, FAQs, glossaries, papers, fiction, essays, poetry, plays, speeches and verbatim records, each measured
+on real documents of its kind; with no genre set, chaff suggests one instead of guessing. The documentation and the
+Claude Code skill now start from that choice. `names:` in `chaff.yaml` lists the team's own names, and a genre or profile
+chaff does not know stops the run. Many false reports found on real documents are gone: Japanese descriptive and legal
+passives, honorifics, mimetics and 畳語, dates in `latin-spacing`, 「前契約の第9条」, one-paragraph-per-line texts,
+English curly apostrophes, restricted superlatives, appositives read as lists. `excessive-hedging` catches a hedge
+stacked in one sentence, English messages agree with their counts, and `chaff test` follows the document's language. The
+corpus adds literature, speech, glossaries and more, its converter reads tables and keeps U+3000, and a weekly run
+reports dead sources.
+
+📦 [`chaffjs@0.16.0`](https://www.npmjs.com/package/chaffjs/v/0.16.0) ·
+[`@chaffjs/lang-ja@0.15.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.15.0) ·
+[`@chaffjs/lang-en@0.14.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.14.0)
+
+### The Claude Code skill picks the genre first (#170)
+
+The skill that `chaff skill` installs now starts from the kind of document: name it from the document (`chaff
+genres` lists them), or run once and take the genre the header suggests, then run with `--genre` (or write it with
+`init --genre`) and check the header before reading the findings. A rule the genre turns off is the preset's
+choice, and the skill leaves it off unless asked.
+
+### The documentation starts from picking the kind of document (#170)
+
+README, the npm README and the site guide (getting started, configuration and commands, in Japanese and English) now
+begin with choosing the genre: a table of every genre with what it is for, the commands (`--genre`, `init --genre`,
+`genres`), and what the screen says when no genre is set. The site has a Genres page built from `genres.yaml`: each
+genre's summary, the rules it turns off and the experimental ones it turns on, and the profile it reads with. `--help`
+says that `init` asks for the genre and that `genres` says what each is for. A test keeps every genre in the pages that
+list them by hand.
 
 ### chaff suggests a genre when none is set, and `chaff init` asks for one (#170)
 

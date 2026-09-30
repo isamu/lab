@@ -7,6 +7,56 @@ chaff は、文章の読みにくいところを見つける道具です。文�
 npx chaffjs article.md
 ```
 
+## 文書の種類を選ぶ
+
+契約書の一文はブログより長く、詩は同じ言葉を繰り返し、発言録は話したとおりに残します。
+どれもその種類の書き方です。
+文書の種類（ジャンル）を選ぶと、ルールと閾値をその種類に合わせて見ます。設定は要りません。
+
+```bash
+npx chaffjs --genre legal/contract 契約書.md    この実行だけ、契約書として見る
+npx chaffjs init --genre legal/contract         この場所の chaff.yaml にジャンルを書く
+npx chaffjs genres                              ジャンルの一覧と、それぞれ何向けか
+```
+
+| 文書 | ジャンル |
+| --- | --- |
+| 仕様書・RFC・設計文書 | `technical/spec` |
+| README・開発者向けの説明 | `technical/readme` |
+| 技術記事（ジャンルを決めないときはこれ） | `blog/tech` |
+| ブログのエッセイ | `blog/essay` |
+| 会社や団体が出す記事 | `blog/owned-media` |
+| 提案書・企画書・計画書 | `business/proposal` |
+| 報告書・白書・社内文書 | `business/report` |
+| 仕事のメール・手紙 | `business/email` |
+| プレスリリース・お知らせ | `business/press-release` |
+| 議事録・議事要旨 | `business/meeting-notes` |
+| 契約書・利用規約・プライバシーポリシー | `legal/contract` |
+| 法令・規則・社内規程・通達 | `legal/statute` |
+| 判決文・決定 | `legal/judgment` |
+| 特許の明細書と請求項 | `legal/patent` |
+| 使い方の説明・手順書・ヘルプ | `docs/manual` |
+| よくある質問 | `docs/faq` |
+| 用語集 | `docs/glossary` |
+| 論文と要旨 | `academic/paper` |
+| 小説・物語 | `literature/fiction` |
+| 文学としての随筆 | `literature/essay` |
+| 詩・短歌・俳句 | `literature/poetry` |
+| 戯曲・脚本 | `literature/play` |
+| 読み上げるために書いた演説・挨拶 | `speech/address` |
+| 話したことの記録（会見・国会の会議録） | `speech/transcript` |
+
+ジャンルごとに見ないルールと足すルールは、[ジャンルのページ](../../genres/)にあります。
+
+ジャンルを決めていない文書は、技術記事（`blog/tech`）として見ます。
+別の種類に見えるときは、1 行目の下にそう出ます。
+見るジャンルは変えません。
+
+```
+契約書.md   blog/tech · 日本語   ジャンルは既定から
+   契約書・規約のようです。--genre legal/contract を試せます
+```
+
 ## 自分の文章にかける
 
 設定ファイルも API key も言語指定も要りません。ファイルを 1 つ渡せば、そのまま見ます。
