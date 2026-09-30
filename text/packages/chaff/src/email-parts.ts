@@ -13,6 +13,8 @@ export type EmailVocabulary = {
   readonly writtenFields: ReadonlySet<string>;
   /** Words an attribution line ends with, before its colon ("wrote", 「書きました」). */
   readonly attributions: readonly string[];
+  /** How an archive's note in place of a removed attachment ends ("was scrubbed...", 「を保管しました...」). */
+  readonly attachmentNotes: readonly string[];
 };
 
 export type EmailParts = {
@@ -31,6 +33,7 @@ export const emailVocabulary = (lexicons: Readonly<Record<string, Lexicon>>): Em
   headerFields: lowerCased(lexicons["email-header-field"]),
   writtenFields: lowerCased(lexicons["email-written-field"]),
   attributions: (lexicons["email-attribution"] ?? []).map((entry) => entry.pattern),
+  attachmentNotes: (lexicons["email-attachment-note"] ?? []).map((entry) => entry.pattern),
 });
 
 /** A signature has at most this many lines after its "-- " line (the convention is four). More is prose again. */
@@ -39,6 +42,8 @@ const SIGNATURE_MAX_LINES = 4;
 const ATTRIBUTION_MAX_LINES = 3;
 /** Away from the top of a message, one known field ("Date: the first Monday") is a sentence; a header names several. */
 const HEADER_MIN_FIELDS = 2;
+/** An attachment stub is its note and a few fields: Mailman's longest is the note, Name, Type, Size, Desc and URL. */
+const ATTACHMENT_STUB_MAX_LINES = 6;
 
 /** "Field: value" or 「件名：値」. A colon followed by text, as in a URL, is not a field. */
 const FIELD = /^([^\s:：]{1,40})(?::(?:[ \t]+|$)|：[ \t]*)/u;
@@ -56,6 +61,8 @@ const QUOTED_TEXT = /^ {0,3}>[\s>]*\S/u;
 const BRACKETED_THEN_COLON = /<([^<>]*)>[ \t]*[:：]$/u;
 const ADDRESS_MARK = /@| at /u;
 const LATIN_LETTER = /[A-Za-z]/u;
+/** The stub's last field: its value is a URL alone, bare or in angle brackets. */
+const URL_VALUE = /^<?[a-z][a-z0-9+.-]*:\/\/\S+?>?$/iu;
 
 const isBlank = (line: Line | undefined): boolean => line !== undefined && line.text.trim() === "";
 const isSeparator = (line: Line | undefined): boolean => {
@@ -142,6 +149,30 @@ const headerSpans = (lines: readonly Line[], vocabulary: EmailVocabulary): Span[
     return fieldsOf(block).flatMap((field) => fieldMask(field, vocabulary) ?? []);
   });
 
+const isUrlField = (line: Line | undefined): boolean => {
+  const label = line === undefined ? null : FIELD.exec(line.text);
+  return line !== undefined && label !== null && URL_VALUE.test(line.text.slice(label[0].length).trim());
+};
+
+/**
+ * An archive's note where it removed an attachment: right after a separator, a line ending as the lexicon says, then
+ * only field lines, the last one a URL. Mailman's "An HTML attachment was scrubbed..." and its "URL: <…>" line.
+ */
+const isAttachmentStub = (lines: readonly Line[], block: readonly Line[], vocabulary: EmailVocabulary): boolean => {
+  const [note, ...fields] = block;
+  if (note === undefined || block.length > ATTACHMENT_STUB_MAX_LINES) return false;
+  const noteText = note.text.trim();
+  if (!vocabulary.attachmentNotes.some((ending) => noteText.endsWith(ending))) return false;
+  return fields.every((line) => FIELD.test(line.text)) && isUrlField(fields.at(-1)) && isSeparator(lines[note.number - 2]);
+};
+
+const attachmentStubSpans = (lines: readonly Line[], vocabulary: EmailVocabulary): Span[] =>
+  blocksOf(lines).flatMap((block) => {
+    const first = block[0];
+    const last = block.at(-1);
+    return first !== undefined && last !== undefined && isAttachmentStub(lines, block, vocabulary) ? [spanOfLines(first, last)] : [];
+  });
+
 /** From the "-- " line: the blank lines right after it, then its lines up to a blank line, a separator or a quote. */
 const signatureAt = (lines: readonly Line[], delimiter: Line): Span => {
   const firstText = indexFrom(lines, delimiter.number, (line) => !isBlank(line));
@@ -226,7 +257,13 @@ export const emailParts = (source: string, vocabulary: EmailVocabulary): EmailPa
   const replies = repliesOf(lines, vocabulary);
   const separators = lines.filter((line) => isSeparator(line)).map((line) => spanOfLines(line, line));
   return {
-    furniture: [...headerSpans(lines, vocabulary), ...separators, ...signatureSpans(lines), ...replies.map((reply) => reply.attribution)].toSorted(bySpanStart),
+    furniture: [
+      ...headerSpans(lines, vocabulary),
+      ...attachmentStubSpans(lines, vocabulary),
+      ...separators,
+      ...signatureSpans(lines),
+      ...replies.map((reply) => reply.attribution),
+    ].toSorted(bySpanStart),
     replyQuotes: replies.map((reply) => reply.quote),
   };
 };

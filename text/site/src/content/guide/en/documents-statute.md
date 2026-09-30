@@ -263,23 +263,58 @@ rules.md   legal/statute · English   genre from --genre   1 stet
 ## Changing a rule for the whole team
 
 When it is not one spot but how your team works, change the rule instead.
-The rules about article numbers only have "check" and "do not check"; `relax` does not change what they find.
-To stop checking, type `off` with a reason.
+If your team keeps the numbers of deleted articles, a gap in the numbering is not a mistake.
+Type `relax` with a reason.
 
 ```bash
-npx chaffjs off numbering-gap --why "we keep the numbers of deleted articles"
+npx chaffjs relax numbering-gap --why "we keep the numbers of deleted articles"
 ```
 
-This adds the rule to `chaff.yaml`, with the reason, the date and who typed it:
+It prints:
+
+```
+Set numbering-gap to relaxed (…/chaff.yaml)
+This rule has no numeric limit: its findings still show, as a warning instead of an error.
+```
+
+The rules about article numbers do not count anything; a number is either skipped or it is not.
+So relaxing one lowers how its findings are marked, by one step. The finding stays, so the gap is still in view.
+The rule is added to `chaff.yaml`, with the reason, the date and who typed it:
 
 ```yaml
   # Skipped or repeated number
   # Article 5 right after Article 3, (c) right after (a), two paragraphs numbered 2. A reader cannot tell whether something was removed, or which one a reference means. Only numbers side by side under the same parent are compared.
-  numbering-gap: off # 2026-09-30 we keep the numbers of deleted articles / isamu
+  numbering-gap: relaxed # 2026-09-30 we keep the numbers of deleted articles / isamu
 ```
 
-Run it again and `numbering-gap` appears in the "did not run" list as "turned off in the settings".
-The reason stays in the file, so whoever comes later can see why it was turned off.
+Run it again on `rules.md` without the stet, and the numbering finding is a `warning` instead of an `error`.
+
+```
+$ npx chaffjs rules.md --compact
+
+rules.md   legal/statute · English   genre from chaff.yaml
+
+  10:74   error   "Article 9" (address 9) is not in this document
+                  dangling-reference
+  12:1    warning "Article 4" follows "Article 2" (expected number 3)
+                  numbering-gap
+  15:19   warning "equipment" is also defined on line 6
+                  duplicate-definition
+
+3 findings, 44 rules not run
+```
+
+chaff fails when any error is left, and passes when there are only warnings, so a warning does not stop CI.
+The error left here is the reference to Article 9, which does not exist.
+
+If gaps in the numbering need no checking at all, turn the rule off instead.
+
+```bash
+npx chaffjs off numbering-gap --why "article numbers are kept in a separate register"
+```
+
+A rule turned off appears in the "did not run" list as "turned off in the settings".
+Either way the reason stays in the file, so whoever comes later can see why the rule was changed.
 
 ## After fixing
 

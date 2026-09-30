@@ -132,6 +132,7 @@ $ npx chaffjs explain max-sentence-length
 
 `relax` `strict` `off` は、`chaff.yaml` を開かずにルールの強さを変えます。
 `relax` はゆるめ、`strict` はきびしくし、`off` は止めます。
+番号の抜けのように数えるもののないルールでは、`relax` は指摘を消さずに一段軽くします（[数えるもののないルール](./configuration#数えるもののないルール)）。
 
 ```
 $ npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
