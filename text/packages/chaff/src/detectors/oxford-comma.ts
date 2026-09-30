@@ -291,13 +291,15 @@ const hasPrepositionalTail = (item: readonly Token[]): boolean => {
 };
 
 /**
- * and / or の後ろが、最後の項目の前置詞の目的語と同じ品詞で、どの項目の頭とも違う（chat in Slack or Google Hangouts: 固有名詞どうし）。
- * 頭と同じ品詞なら項目とも読める（petitions for waivers and appeals）ので、並びのまま。
+ * and / or の後ろの最初の名詞が、最後の項目の前置詞の目的語と同じ品詞で、どの項目の頭とも違う（chat in Slack or Google Hangouts /
+ * Teams (beta): 固有名詞どうし）。頭と同じ品詞なら項目とも読める（petitions for waivers and appeals）ので、並びのまま。
  */
-const lastNoun = (item: readonly Token[]): Token | undefined => item.findLast((token) => APPOSITIVE_ANCHOR.has(token.pos));
+const isNoun = (token: Token): boolean => APPOSITIVE_ANCHOR.has(token.pos);
+
+const lastNoun = (item: readonly Token[]): Token | undefined => item.findLast(isNoun);
 
 const likeLastObject = (items: readonly Token[][], after: readonly Token[]): boolean => {
-  const kind = lastNoun(after)?.pos;
+  const kind = after.find(isNoun)?.pos;
   return kind !== undefined && lastNoun(items.at(-1) ?? [])?.pos === kind && items.every((item) => item.find(isContent)?.pos !== kind);
 };
 

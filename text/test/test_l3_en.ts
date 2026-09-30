@@ -315,6 +315,8 @@ describe("L3 英語", () => {
         "Updates and real-time chat should continue as above (updates on the Google Doc, chat in Slack or Google Hangouts).",
       ],
       ["目的語のあとの副詞は目的語の品詞を変えない", "Updates should continue as above (updates on the Google Doc, chat in Slack or Teams only)."],
+      ["目的語のあとの名詞は目的語の品詞を変えない", "Updates should continue as above (updates on the Google Doc, chat in Slack or Teams desktop)."],
+      ["目的語のあとの括弧は目的語の品詞を変えない", "Updates should continue as above (updates on the Google Doc, chat in Slack or Teams (beta))."],
     ].forEach(([why, candidate]) => {
       it(`valid: ${why ?? ""}`, () => {
         assert.ok(!neitherSide(candidate ?? ""));
