@@ -19,7 +19,7 @@ const PER = 1000;
  * これより短い文書では密度が暴れる。1 個で「1000 あたり 100」になる。
  * 単位は言語で違うので、床も分ける。英語の 200 語と日本語の 200 文字では長さが桁で違う。
  */
-const FLOOR = { word: 200, char: 500 };
+export const MIN_DOCUMENT_LENGTH = { word: 200, char: 500 };
 
 const bodyOf = (doc: ProseDocument): string => doc.sentences.map(proseText).join(" ");
 
@@ -43,7 +43,7 @@ export const emojiDensity: Detector = (doc, options): Finding[] => {
   const hits = findIn(doc, EMOJI);
   const first = hits[0];
   const rate = density(doc, hits.length);
-  if (wordsOf(doc) < FLOOR[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];
+  if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];
   return [
     {
       rule: "emoji-density",
@@ -143,7 +143,7 @@ const hasPredicate = (at: FirstSeen | undefined, unit: ProseDocument["lengthUnit
 };
 
 export const ngramRepetition: Detector = (doc, options): Finding[] => {
-  if (wordsOf(doc) < FLOOR[doc.lengthUnit]) return [];
+  if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit]) return [];
   const tally = gramsOf(doc);
   const worst = [...tally.counts.entries()]
     .filter(([key, count]) => count > options.limit && isPhrasing(key, doc.lengthUnit))
@@ -364,7 +364,7 @@ export const dashDensity: Detector = (doc, options): Finding[] => {
   const hits = findIn(doc, DASH);
   const first = hits[0];
   const rate = density(doc, hits.length);
-  if (wordsOf(doc) < FLOOR[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];
+  if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];
   return [
     {
       rule: "no-em-dash",

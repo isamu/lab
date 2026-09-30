@@ -399,4 +399,5 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "opener-repeated", rule: "repeated-conjunction", languages: ["ja", "en"], plant: phrasing.repeatOpener },
   { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: phrasing.chainWithAnd },
   { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: phrasing.avoidedSpelling },
+  { id: "pet-phrase", rule: "ngram-repetition", languages: ["ja", "en"], plant: phrasing.repeatPetPhrase },
 ];
