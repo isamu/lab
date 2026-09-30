@@ -2,6 +2,8 @@ import type { Detector, Finding, Span } from "../plugin.ts";
 import { BARE_URL } from "../bare-url.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAround } from "./quote-around.ts";
+import { mergeSpans } from "../span-merge.ts";
+import { firstEndingAfter } from "../soft-break.ts";
 
 /**
  * 括弧の組。どの言語でも同じ字の決まりなので、語彙表ではなくここに置く。family は形（丸・角）で、全角と半角は同じ形の別の幅。
@@ -106,22 +108,28 @@ export const bracketProblems = (text: string): BracketProblem[] => {
   return [...scan.problems, ...scan.open.map(unclosedOf)].toSorted((left, right) => left.offset - right.offset);
 };
 
+/** sorted（昇順・重ならない）のどれかが offset を含むか。何万もの字の節があっても、URL ごとに全部をなめない。 */
+const coversOffset = (sorted: readonly Span[], offset: number): boolean => {
+  const span = sorted[firstEndingAfter(sorted, offset)];
+  return span !== undefined && span.start <= offset;
+};
+
 /**
  * 本文（prose）では URL を覆うが、覆いは空白まで取るので、URL の直後に続けて書いた字（「（https://example.jp/）」の「）」）まで消える。
  * 読み手には見えている字なので、ASCII でない字から先を元に戻す。コードの中の URL（texts の外）は戻さない。
  */
 export const withRunOnRestored = (prose: string, source: string, texts: readonly Span[]): string => {
-  const restored = [...source.matchAll(BARE_URL)].flatMap((match) => {
+  const readable = mergeSpans(texts, false);
+  const parts: string[] = [];
+  const cursor = { at: 0 };
+  [...source.matchAll(BARE_URL)].forEach((match) => {
     const tail = match[0].search(/[^\p{ASCII}]/u);
-    const from = match.index + tail;
-    const readable = texts.some((span) => match.index >= span.start && match.index < span.end);
-    return tail === -1 || !readable ? [] : [{ start: from, end: match.index + match[0].length }];
+    if (tail === -1 || !coversOffset(readable, match.index)) return;
+    parts.push(prose.slice(cursor.at, match.index + tail), source.slice(match.index + tail, match.index + match[0].length));
+    cursor.at = match.index + match[0].length;
   });
-  const parts = restored.reduce<{ readonly at: number; readonly parts: readonly string[] }>(
-    (acc, span) => ({ at: span.end, parts: [...acc.parts, prose.slice(acc.at, span.start), source.slice(span.start, span.end)] }),
-    { at: 0, parts: [] },
-  );
-  return [...parts.parts, prose.slice(parts.at)].join("");
+  parts.push(prose.slice(cursor.at));
+  return parts.join("");
 };
 
 const findingOf = (text: string, problem: BracketProblem): Finding => ({
