@@ -55,6 +55,10 @@ by_genre:
     en: { strict: 80, normal: 130, relaxed: 180 }
   legal/judgment:
     ja: { strict: 250, normal: 350, relaxed: 450 }
+  # 英語の定義は、限定を重ねた名詞句の一文になる。英語の用語集で測り、normal が列挙を詰めた定義や長い注記だけを指すように置いた。
+  # 日本語は既定の上限のままで、すでに最も長い一握りだけを指していた。
+  docs/glossary:
+    en: { strict: 30, normal: 40, relaxed: 50 }
   academic:
     ja: { strict: 100, normal: 140, relaxed: 180 }
     en: { strict: 35, normal: 50, relaxed: 65 }

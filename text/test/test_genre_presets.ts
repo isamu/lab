@@ -336,3 +336,67 @@ describe("rules --json のいまの段", () => {
   it("前からあるジャンルは変わらない", () => assert.equal(nowOf("blog/tech")["level"], "normal"));
   it("chaff.yaml の段が勝つ", () => assert.equal(nowOf("legal/contract", { ...EMPTY, rules: { "ngram-repetition": "strict" } })["level"], "strict"));
 });
+
+// 用語集は、用語を引いてその項だけを読む。定義は名詞で終わるのが普通の形で、並んだ項が同じ型の説明を持つのは揃えた結果。
+describe("用語集のジャンル", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  const runEn = (source: string, genre: string): RunResult => runRules(buildDocument("t.md", source, en), loadRules("en"), {}, false, genre);
+  const flagged = (result: RunResult, rule: string): boolean => result.findings.some((finding) => finding.rule === rule);
+
+  const JA_GLOSSARY = [
+    "# 天気の用語",
+    "",
+    ...[
+      ["晴れ", "雲が空の一部だけを覆っている空の様子。"],
+      ["曇り", "雲が空のほとんどを覆っている空の様子。"],
+      ["霧雨", "とても細かい雨粒が、ゆっくり落ちてくる雨。"],
+      ["にわか雨", "急に降り出して、すぐにやむ雨。"],
+      ["雷雨", "雷を伴って降る強い雨。"],
+      ["小春日和", "晩秋から初冬にかけての、穏やかで暖かい晴れの日。"],
+    ].flatMap(([term, definition]) => [term ?? "", "", definition ?? "", ""]),
+  ].join("\n");
+
+  it("名詞で終わる定義は、用語集では数えない（ほかの説明書では数える）", () => {
+    assert.equal(why(runJa(JA_GLOSSARY, "docs/glossary", {}, false), "taigen-dome-in-prose"), REASONS.ja.presetOff("docs/glossary"));
+    assert.ok(flagged(runJa(JA_GLOSSARY, "docs/manual", {}, false), "taigen-dome-in-prose"));
+  });
+
+  const template = (input: string): string => `Share of output growth that comes from the change in the use of ${input} over the year.`;
+  const EN_GLOSSARY = [
+    "# Glossary",
+    "",
+    ...["buildings", "machinery", "vehicles", "software", "land", "research", "energy", "materials"].flatMap((input) => [
+      `- Contribution of ${input}`,
+      "",
+      `${template(input)} It is measured for each industry and reported as a share of the total, so that the parts add up to the whole.`,
+      "",
+    ]),
+  ].join("\n");
+
+  it("並んだ項が同じ型の定義を持っても、用語集では言い回しの繰り返しとして数えない（ほかの説明書では数える）", () => {
+    assert.equal(why(runEn(EN_GLOSSARY, "docs/glossary"), "ngram-repetition"), REASONS.en.presetOff("docs/glossary"));
+    assert.ok(flagged(runEn(EN_GLOSSARY, "docs/manual"), "ngram-repetition"));
+  });
+
+  const FILLER = ["payment", "made", "to", "a", "worker", "for", "time", "spent"];
+  const definitionOf = (wordCount: number): string =>
+    `# Glossary\n\n- Pay\n\n${Array.from({ length: wordCount - 1 }, (_, index) => FILLER[index % FILLER.length]).join(" ")} working.\n`;
+
+  it("英語の定義の一文は、ほかの説明書より長くてよい。それでも長すぎる一文は指す", () => {
+    assert.ok(!flagged(runEn(definitionOf(35), "docs/glossary"), "max-sentence-length"));
+    assert.ok(flagged(runEn(definitionOf(35), "docs/manual"), "max-sentence-length"));
+    assert.ok(flagged(runEn(definitionOf(45), "docs/glossary"), "max-sentence-length"));
+  });
+
+  it("日本語の用語集の文の長さは、説明書と同じ上限（測って変える理由が無かった）", () => {
+    const rule = loadRules("ja").find((entry) => entry.id === "max-sentence-length");
+    if (rule === undefined) throw new Error("no max-sentence-length");
+    (["strict", "normal", "relaxed"] as const).forEach((level) =>
+      assert.equal(resolve(rule, level, "docs/glossary").limit, resolve(rule, level, "docs/manual").limit, level),
+    );
+  });
+});

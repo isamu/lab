@@ -31,6 +31,15 @@ names:
 
 Documents fetched from HTML change when they are fetched again.
 
+### The `docs/glossary` preset reads a glossary the way it is written (#170)
+
+A glossary is looked up one entry at a time. Its definitions are noun phrases (「風の吹いてくる方向。」), and sibling
+entries share one wording on purpose, so under `docs/glossary` `taigen-dome-in-prose` and `ngram-repetition` are off
+and listed under "did not run" with the genre as the reason. An English definition stacks its qualifiers into one
+sentence, so `max-sentence-length` allows 40 words at normal (30 strict, 50 relaxed) instead of 25; what it still
+reports are definitions packed with lists and long notes. Japanese glossaries keep the usual limit, which already
+reported only their longest sentences. Other genres do not change.
+
 ### `heading-echo` measures a Japanese sentence in content words, not characters (#170)
 
 In Japanese, `heading-echo` measured what a first sentence adds as its characters, less the part of the heading it
