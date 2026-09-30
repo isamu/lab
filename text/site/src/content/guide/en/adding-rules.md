@@ -43,7 +43,8 @@ The JSON alone is enough to give the AI.
 ## Example: "polite endings, sentences of at most 80 characters"
 
 Say a team's Japanese technical documents must use polite endings (です・ます), with sentences of at most 80
-characters. In `rules --json`, `max-sentence-length` reads like this (in part).
+characters. With `language: ja` in `chaff.yaml`, `max-sentence-length` in `rules --json` reads like this (in part).
+The numbers are counted the way the language counts (characters for Japanese, words for English), so look in the language of the rules.
 
 ```json
 {
@@ -190,14 +191,14 @@ chaff's own rule is that a rule decides by machine alone. Anything that needs th
 
 | What | Where | Contents |
 | --- | --- | --- |
-| The rule's definition | `packages/chaff/rules/<id>.yaml` | Name, reason, message, how to fix and levels, in Japanese and English. Also the reader's fields: `group`, `summary`, `example`, `not_flagged`, `level_meaning` |
+| The rule's definition | `packages/chaff/rules/<id>.yaml` | Name, reason, message, how to fix and levels, in Japanese and English. Also the reader's fields: `group`, `summary`, `example`, `not_flagged`, and `level_meaning` when its levels are numbers that change |
 | What finds it | `packages/chaff/src/detectors/` | A function that takes the document and returns findings, registered by name in `detectors/index.ts` |
 | Word lists | `packages/lang-ja/lexicons/` and `packages/lang-en/lexicons/` | Only for a rule that finds words from a list. One per language |
 | Tests | `test/test_<id>.ts` | Examples it must report and examples it must not |
 | A planted mistake | `scripts/bench-mutations*.ts` and `test/fixtures/bench/plants.yaml` | One mistake put into a clean sample, to measure whether the rule finds it. When none can be planted, say why |
 | ChangeLog | `Unreleased` in `docs/ChangeLog.md` | What chaff can now find |
 
-`yarn test` stops when a rule file lacks a reader's field.
+`yarn test` stops when a rule file lacks a reader's field that the rule needs.
 It also stops when an `example`'s `before` is not reported, or its `after` is.
 That keeps the reference from showing an example that does not work.
 

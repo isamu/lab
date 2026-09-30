@@ -42,7 +42,8 @@ AI に渡すのは、JSON だけでも足ります。
 ## 例：「です・ます、1文80字まで」
 
 技術資料の決まりが「です・ます、1文80字まで」だとします。
-`rules --json` で `max-sentence-length` を見ると、次のように出ます（一部）。
+`chaff.yaml` に `language: ja` を書いてから `rules --json` で `max-sentence-length` を見ると、次のように出ます（一部）。
+数は言語で数え方が違うので、決まりの言語で見ます（英語なら語で数えます）。
 
 ```json
 {
@@ -191,14 +192,14 @@ chaff の決まりで、ルールは機械で決まるものだけです。意�
 
 | 書くもの | 場所 | 中身 |
 | --- | --- | --- |
-| ルールの定義 | `packages/chaff/rules/<id>.yaml` | 名前・理由・指摘の文・直し方・段階を日本語と英語で。読み手向けの `group` `summary` `example` `not_flagged` `level_meaning` も書く |
+| ルールの定義 | `packages/chaff/rules/<id>.yaml` | 名前・理由・指摘の文・直し方・段階を日本語と英語で。読み手向けの `group` `summary` `example` `not_flagged` も書く。段階が数で変わるルールは `level_meaning` も |
 | 見つける処理 | `packages/chaff/src/detectors/` | 文書を受け取って指摘を返す関数。`detectors/index.ts` に名前で登録する |
 | 語の一覧 | `packages/lang-ja/lexicons/` と `packages/lang-en/lexicons/` | 語の一覧で見つけるルールだけ。言語ごとに書く |
 | テスト | `test/test_<id>.ts` | 指摘すべき例と、指摘してはいけない例の両方 |
 | 見本への仕込み | `scripts/bench-mutations*.ts` と `test/fixtures/bench/plants.yaml` | きれいな見本に誤りを一つ入れて、見つかるかを測る。仕込めないときは理由を書く |
 | ChangeLog | `docs/ChangeLog.md` の `Unreleased` | 何が見つかるようになったか |
 
-ルールの定義に読み手向けの欄が欠けていると、`yarn test` が止まります。
+ルールの定義に、そのルールに要る読み手向けの欄が欠けていると、`yarn test` が止まります。
 `example` の `before` が指摘されないとき、`after` が指摘されるときも止まります。
 リファレンスのページに、動かない例が載らないためです。
 
