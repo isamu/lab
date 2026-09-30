@@ -492,6 +492,12 @@ describe("doubled-word — 日本語", () => {
     assert.deepEqual(findingsOf("１１　前項の規定による。", ja, "ja"), []);
     assert.deepEqual(findingsOf("「A」「A」の二つがあります。", ja, "ja"), []);
   });
+
+  // 最高裁判決（パブリックドメイン）を縮めた文。同じ文の「にもかかわらず」の かか は一語（かかわる）の中で、書き損じは うかかが の方。
+  it("一語の中の同じ仮名（にもかかわらず）は数えず、書き損じ（うかかがわれない）は数える", () => {
+    assert.deepEqual(findingsOf("報告を求められたにもかかわらず報告しなかった。", ja, "ja"), []);
+    assert.deepEqual(findingsOf("報告を求められたにもかかわらず，事情があったことはうかかがわれない。", ja, "ja"), ["1:28 かか"]);
+  });
 });
 
 describe("doubled-word — 品詞が無いとき", () => {

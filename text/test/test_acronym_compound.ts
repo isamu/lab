@@ -75,9 +75,12 @@ describe("undefined-acronym: - で繋いだ略語は 1 語", () => {
     assert.deepEqual(reportedAcronyms(en, "# Ops\n\nAn SRE-led review and a GDPR-compliant form."), ["SRE", "GDPR"]);
   });
 
-  it("invalid: 1 文字の大文字と繋いだ略語は、略語だけを数える", () => {
-    assert.deepEqual(reportedAcronyms(en, "# Data\n\nWe write T-XYZ queries."), ["XYZ"]);
+  it("invalid: 後ろに 1 文字の大文字を繋いだ略語は、略語だけを数える", () => {
     assert.deepEqual(reportedAcronyms(en, "# Data\n\nThe XYZ-B plan ships."), ["XYZ"]);
+  });
+
+  it("valid: 前に 1 文字を繋いだ語（T-XYZ）は一つの名前で、略語を数えない", () => {
+    assert.deepEqual(reportedAcronyms(en, "# Data\n\nWe write T-XYZ queries."), []);
   });
 
   it("invalid: 長すぎる大文字の語と繋いだ略語は、略語だけを数える", () => {
