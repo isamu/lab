@@ -37,12 +37,10 @@ describe("house styles", () => {
     });
 
     const known = new Set(rules.map((rule) => rule.id));
+    const unknownRules = (ids: readonly string[]): string[] => ids.filter((id) => !known.has(id));
     styles.forEach((style) => {
       it(`${style.id} names only rules chaff has, with options that fit`, () => {
-        assert.deepEqual(
-          Object.keys(style.rules).filter((id) => !known.has(id)),
-          [],
-        );
+        assert.deepEqual(unknownRules(Object.keys(style.rules)), []);
         assert.deepEqual(optionProblems({ from: style.id, values: style.options }, optionsByRule), []);
       });
     });
