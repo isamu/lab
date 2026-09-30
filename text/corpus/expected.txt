@@ -8,7 +8,7 @@
 18f-handbook-travel-faq  max-paragraph-length 1, max-sentence-length 65, undefined-acronym 16
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2
-aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 79
+aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 77
 aozora-kishida-kamifusen  clean
 aozora-soseki-yume-juya  clean
 aozora-takuboku-ichiaku-no-suna  clean
