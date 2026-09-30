@@ -57,3 +57,7 @@ example:
     after: |
       Moving to the new accounting system closes the month three days sooner. It also cuts costs by 20,000 dollars a year.
       In the month we switch, however, finance will run both systems side by side and work longer hours.
+
+not_flagged:
+  ja: 機械では決めません。chaff test で、AI が文書を読んでリスクに触れているかを見ます。
+  en: No machine decides this. chaff test has an AI read the document for any mention of a risk.

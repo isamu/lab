@@ -59,3 +59,10 @@ example:
       ## Results
 
       Replies to help desk tickets now take 1 day on average, down from 3. Customer satisfaction rose from 72% to 85%. Overtime fell by 10 hours a month.
+
+not_flagged:
+  ja: 3 文より短い節、索引のように項目を並べた節は見ません。
+  en: Sections shorter than three sentences, and index-like sections of entries, are not checked.
+level_meaning:
+  ja: 具体物のない節が {limit} 個あれば指摘
+  en: reported once {limit} sections have nothing concrete

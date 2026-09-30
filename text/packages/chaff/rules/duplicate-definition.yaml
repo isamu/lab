@@ -78,3 +78,7 @@ example:
       ## 2. Use
 
       Users may use the Service free of charge.
+
+not_flagged:
+  ja: 二つの定義が食い違っているかは決めません。二つ目を指すだけです。語を名前にした見出しは定義に数えません。
+  en: Whether the two definitions conflict is not decided; only the second is pointed at. A heading that names the term is not a definition.

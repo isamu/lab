@@ -38,3 +38,10 @@ example:
   ja:
     before: 来週、新規顧客獲得施策検討会議を開きます。
     after: 来週、新しい顧客を増やす施策を話し合う会議を開きます。
+
+not_flagged:
+  ja: chaff.yaml の names に書いた組織名や製品名、法令の条番号（第二十二条第二項）は数えません。
+  en: Names listed under names in chaff.yaml, and provision numbers in statutes (第二十二条第二項), are not counted.
+level_meaning:
+  ja: 漢字の連続 {limit} 字まで
+  en: up to {limit} kanji in a row

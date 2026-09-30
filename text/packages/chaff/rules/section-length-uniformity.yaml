@@ -105,3 +105,10 @@ example:
       ## Check
 
       Add a sample document and look for findings on the screen.
+
+not_flagged:
+  ja: ビジネス文書と技術文書のジャンルでは見ません。
+  en: Business and technical genres do not run this rule.
+level_meaning:
+  ja: 節の長さのばらつきが {limit}% 未満なら指摘
+  en: reported when section length varies by less than {limit}%

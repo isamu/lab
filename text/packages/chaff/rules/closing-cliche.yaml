@@ -55,3 +55,10 @@ example:
       ## Summary
 
       Changing one line of the settings made the build twice as fast. Next, we will try running the tests in parallel.
+
+not_flagged:
+  ja: 最後の節だけを見ます。本文の途中の「まとめると」は普通のつなぎなので指しません。
+  en: Only the last section is checked; "to sum up" in the middle of the text is an ordinary link and is not reported.
+level_meaning:
+  ja: 当てはまる結びが {limit} 箇所あれば指摘
+  en: reported once there are {limit}

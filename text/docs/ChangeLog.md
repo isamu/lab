@@ -19,6 +19,17 @@ The parenthesis count looked each word up as an object property, so a word that 
 sentence, and a list after it was never judged. Such a sentence is now judged like any other. The corpus wikitext
 converter had the same lookup for template names, and `{{constructor}}` is now dropped like any unknown template.
 
+### Each rule's page reads for someone who is not an engineer (#170)
+
+A rule's page on the site now says what the rule finds, why it matters, a before and after with what chaff printed
+for each, what it does not flag, its levels in words ("up to 25 words in a sentence"), which genres run it, turn it
+off or are not suited to it, and how to silence one spot or change it for the team. The rule list is grouped the
+same way as the reference.
+
+- **Two more rule fields:** `not_flagged` (ja and en) and `level_meaning` (with `{limit}` for the number; not needed
+  for a rule whose levels set a severity). The rule-file test requires them. A rule whose levels are severities shows
+  them as error, warning and info.
+
 ### The guide lists everything chaff can find, with an example and chaff's real output (#170)
 
 A new guide page, **Reference: what chaff can find** (`/guide/reference/`), lists every rule in groups a reader

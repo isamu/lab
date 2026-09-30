@@ -35,3 +35,10 @@ example:
   ja:
     before: 本社の営業部の第二課の方針を確認しました。
     after: 本社営業部にある第二課の方針を確認しました。
+
+not_flagged:
+  ja: 読点で区切った並び、「」や『』の中の題名や引用は数えません。
+  en: Items separated by commas, and titles or quotations inside 「」 or 『』, are not counted.
+level_meaning:
+  ja: 同じ助詞の連続 {limit} 回まで
+  en: up to {limit} of the same particle in a row

@@ -59,3 +59,10 @@ example:
       ## Sharing files with your team
 
       Press share.
+
+not_flagged:
+  ja: 文書の題（最初の一番上の見出し）は名前なので比べません。どちらの流儀が正しいかは決めません。
+  en: The document's title (the single top-level heading that opens it) is a name and is not compared. Neither style is called right.
+level_meaning:
+  ja: 少ないほうの流儀の見出しが {limit} 個以下のとき指摘
+  en: reported when the minority style has {limit} headings or fewer
