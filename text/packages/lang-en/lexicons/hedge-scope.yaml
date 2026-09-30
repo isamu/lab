@@ -1,0 +1,7 @@
+# Entries of excessive-hedging that say where a claim holds, not how sure the writer is.
+# "In some cases, the API may accept the key as a parameter" states a fact about some cases.
+# They count towards the density, but never towards hedges stacked in one sentence.
+id: hedge-scope
+language: en
+entries:
+  - pattern: in some cases

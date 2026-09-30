@@ -1,8 +1,11 @@
 id: excessive-hedging
 layer: L2
 status: experimental
-how_to_find: hedging-density
+how_to_find: hedging
 word_list: excessive-hedging
+# 1 つの文の重なりを数えるときの、それだけでは逃げていない包む言い方（「という状況です」、may）と、
+# 逃げの表現のうちどこで成り立つかを言うもの（「場合がある」、in some cases）。
+extra_word_lists: [hedge-frame, hedge-scope]
 uses: [pos]
 severity: warning
 
@@ -11,17 +14,24 @@ name:
   en: Too much hedging
 
 why:
-  ja: 断言を避けるほど、読み手は何が決まったのか分からなくなります。1 つなら慎重さですが、重なると誰も責任を取らない文書になります。
-  en: The more the text avoids claiming, the less the reader can tell what was decided. One hedge is caution; many mean nobody is accountable.
+  ja: 断言を避けるほど、読み手は何が決まったのか分からなくなります。1 つなら慎重さですが、重なると誰も責任を取らない文書になります。chaff は 2 つの見方で探します。1 つの文に逃げを重ねたもの（「〜という状況であると考えられます」「〜かもしれないと思われます」）は、短い文書でも 1 文で指摘します。文書全体で逃げの表現が多すぎるものは、短い文書では測りません。鉤括弧や引用符で引いた発言の中の逃げは、話した人のものなので数えません。
+  en: The more the text avoids claiming, the less the reader can tell what was decided. One hedge is caution; many mean nobody is accountable. chaff looks two ways. A sentence that stacks hedges ("may possibly", "it could perhaps be argued") is reported on its own, even in a short document. Too many hedges across the whole document is measured only on longer documents. A hedge inside a quotation is the speaker's, not the writer's, and is not counted.
 
 message:
   ja: 「{matched}」など、逃げの表現が 1000 語あたり {density} 個あります（{limit} 個まで）
   en: '"{matched}" and other hedges: {density} per 1000 words (limit {limit})'
 
-how_to_fix:
-  ja: 言い切れるものは言い切ってください。言い切れないなら、何が分かれば言い切れるのかを書いてください。
-  en: Commit where you can. Where you cannot, say what you would need to know.
+# 1 つの文に重ねたもの。上の message は文書全体の密度。
+messages:
+  stacked:
+    ja: この文は逃げの表現を {count} つ重ねています（「{matched}」）
+    en: 'This sentence stacks {count} hedges ("{matched}")'
 
+how_to_fix:
+  ja: 言い切れるものは言い切ってください。言い切れないなら、何が分かれば言い切れるのかを書いてください。重ねた逃げは、1 つ残すか、全部外して言い切ってください。
+  en: Commit where you can. Where you cannot, say what you would need to know. Where hedges are stacked, keep one or drop them all and commit.
+
+# 文書全体の、1000 語あたりの数の上限。1 つの文に 2 つ以上重ねたものは、どの段でも指摘する。
 levels: { strict: 3, normal: 6, relaxed: 12 }
 
 use_for: [business, blog, technical]

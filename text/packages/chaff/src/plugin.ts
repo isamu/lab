@@ -333,6 +333,8 @@ export type Finding = {
   readonly quote: string;
   /** message のプレースホルダに入れる値。 */
   readonly values: Readonly<Record<string, string | number>>;
+  /** 1 つの rule が 2 通りの見つけ方を持つとき、どちらで見つけたか。rule の messages から文を選ぶ。無ければ message。 */
+  readonly variant?: string;
 };
 
 /** rule 定義が threshold を渡す。数値は 4 語から解決済み。 */
@@ -360,6 +362,8 @@ export type RuleDefinition = {
   readonly why: Localized;
   readonly how_to_fix: Localized;
   readonly message: Localized;
+  /** 見つけ方ごとの message（Finding の variant で引く）。ほとんどの rule は持たない。 */
+  readonly messages: Readonly<Record<string, Localized>>;
   /** 4 語と数値の対応。2 つ以上。未定義の段は normal に落ちる。spec §18.1。
    *  言語別の閾値を持つ rule（max-sentence-length）は、読み込み時に言語で平坦化済み。 */
   readonly levels: LevelTable;

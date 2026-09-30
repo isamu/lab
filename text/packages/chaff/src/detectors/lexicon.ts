@@ -1,9 +1,10 @@
 import { joinWords } from "./word-list.ts";
 import { wordsOf } from "./structure.ts";
-import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
+import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span } from "../plugin.ts";
 import { entryIn, entryOpens, entryRanges } from "./lexicon-match.ts";
 import { scoped, scopeMarkersOf, type ScopeMarkers } from "./superlative-scope.ts";
 import { namesQuantity } from "./superlative-name.ts";
+import { stackedHedges, type StackedHedge } from "./stacked-hedge.ts";
 
 const PER = 1000;
 
@@ -37,8 +38,43 @@ const densityRule =
     }));
   };
 
-export const hedgingDensity = densityRule("excessive-hedging");
+const hedgingDensity = densityRule("excessive-hedging");
 export const cushionDensity = densityRule("cushion-phrase-density");
+
+/** 書いたとおりの字。行の折り返しをまたいでいたら空白 1 つに。 */
+const writtenAt = (source: string, span: Span): string => source.slice(span.start, span.end).replace(/\s+/gu, " ").trim();
+
+const stackedFinding = (doc: ProseDocument, stacked: StackedHedge): Finding => ({
+  rule: "excessive-hedging",
+  severity: "warning",
+  line: 0,
+  column: 0,
+  quote: stacked.sentence.text.trim(),
+  variant: "stacked",
+  values: {
+    matched: joinWords(
+      stacked.spans.map((span) => writtenAt(doc.source, span)),
+      doc.language,
+    ),
+    count: stacked.spans.length,
+    offset: stacked.spans[0]?.start ?? stacked.sentence.span.start,
+  },
+});
+
+/**
+ * 逃げの表現は 2 つの見方で探す。1 つの文に重ねたもの（短い文書でも 1 文で分かる）と、文書全体の密度。
+ * 重ねた文は密度の側では出さない。同じ文を同じ rule で 2 度言わない。
+ */
+export const hedging: Detector = (doc, options): Finding[] => {
+  const stacked = stackedHedges(doc.sentences, {
+    hedges: options.lexicon ?? [],
+    frames: doc.lexicons["hedge-frame"] ?? [],
+    scope: doc.lexicons["hedge-scope"] ?? [],
+  });
+  const reported = new Set(stacked.map((entry) => entry.sentence.span.start));
+  const density = hedgingDensity(doc, options).filter((finding) => !reported.has(Number(finding.values["offset"])));
+  return [...stacked.map((entry) => stackedFinding(doc, entry)), ...density];
+};
 
 /** 数字は語ではないので言語を問わない。数があれば測った結果を言っている。品詞の数（NUM）は "the best one" の one まで含むので使わない。 */
 const DIGIT = /\d/u;

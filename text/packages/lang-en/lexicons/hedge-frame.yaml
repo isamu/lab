@@ -1,0 +1,9 @@
+# Words that soften a claim without hedging it on their own: "may" is often permission or plain possibility.
+# Next to a hedge in the same sentence they stack ("may possibly", "it could perhaps be argued").
+# Used only by excessive-hedging's count of hedges in one sentence, never by its density.
+id: hedge-frame
+language: en
+entries:
+  - pattern: may
+  - pattern: might
+  - pattern: could

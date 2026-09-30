@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { isWithinAny, quotedSpans } from "../packages/chaff/src/quoted-span.ts";
+import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../packages/chaff/src/quoted-span.ts";
 
 const contents = (text: string): string[] => quotedSpans(text).map((span) => text.slice(span.start, span.end));
 
@@ -34,6 +34,25 @@ describe("quotedSpans", () => {
     const text = "𠮷「野の家」";
     assert.deepEqual(quotedSpans(text), [{ start: 3, end: 6 }]);
     assert.deepEqual(contents(text), ["野の家"]);
+  });
+});
+
+describe("quotedSpans with QUOTATION_MARKS", () => {
+  const quoted = (text: string): string[] => quotedSpans(text, QUOTATION_MARKS).map((span) => text.slice(span.start, span.end));
+
+  it("also returns what is inside curly and straight double quotes", () => {
+    assert.deepEqual(quoted("He said “it may rain” today"), ["it may rain"]);
+    assert.deepEqual(quoted('He said "it may rain" and "it did"'), ["it may rain", "it did"]);
+  });
+
+  it("reads a straight quote as the closer while one is open, and still nests inside 「」", () => {
+    assert.deepEqual(quoted('「部長は "たぶん" と言った」'), ["たぶん", '部長は "たぶん" と言った']);
+    assert.deepEqual(quoted('an unclosed "quote'), []);
+  });
+
+  it("leaves double quotes alone by default, as the Japanese rules expect", () => {
+    assert.deepEqual(quotedSpans('He said "it may rain"'), []);
+    assert.deepEqual(quotedSpans("He said “it may rain”"), []);
   });
 });
 

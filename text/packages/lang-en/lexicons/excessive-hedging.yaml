@@ -10,3 +10,9 @@ entries:
   - pattern: in some cases
   - pattern: it is possible that
   - pattern: one might argue
+  - pattern: perhaps
+  - pattern: possibly
+  - pattern: presumably
+  - pattern: conceivably
+  - pattern: apparently
+  - pattern: seemingly

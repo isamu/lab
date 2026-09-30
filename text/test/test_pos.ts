@@ -115,6 +115,7 @@ describe("満たせない要求は黙って通さない", () => {
       why: {},
       how_to_fix: {},
       message: {},
+      messages: {},
       levels: { normal: 1 },
       by_genre: {},
       how_to_find: "sentence-length",
