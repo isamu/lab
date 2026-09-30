@@ -13,20 +13,27 @@ const KINDS: readonly Kind[] = [
 const MARKS = /[、，。．]/gu;
 
 const DIGIT = /[\d０-９]/u;
-const LATIN = /[A-Za-zＡ-Ｚａ-ｚ]/u;
+
+/** 番号の印（行の頭や読点・空白・括弧の後ろの「１．」「２．」）。文の中の数の後ろの点（締切は10．）は文の終わり。 */
+const LIST_NUMBER = /(?:^|[\s、，,（(])[\d０-９]{1,3}$/u;
+const LIST_NUMBER_REACH = 4;
 
 /** 一、二文字の英字だけの印（Ｑ．、No．）。「API．」のような語の後ろの点は文の終わり。 */
 const LATIN_LABEL = /(?:^|[^A-Za-zＡ-Ｚａ-ｚ])[A-Za-zＡ-Ｚａ-ｚ]{1,2}$/u;
 const LATIN_LABEL_REACH = 3;
 
+const isInsideNumber = (text: string, at: number): boolean => DIGIT.test(text.charAt(at - 1)) && DIGIT.test(text.charAt(at + 1));
+
+const isLabelPeriod = (text: string, at: number): boolean =>
+  LIST_NUMBER.test(text.slice(Math.max(0, at - LIST_NUMBER_REACH), at)) || LATIN_LABEL.test(text.slice(Math.max(0, at - LATIN_LABEL_REACH), at));
+
 /**
- * 句読点として数えない「，」「．」。数の中の桁の区切りと小数点（１，０００、３．５）、番号の後ろの点（１．はじめに）、
- * 英字の後ろの点（Ｑ．、No．）は、日本語の文の区切りではない。
+ * 句読点として数えない「，」「．」。数の中の桁の区切りと小数点（１，０００、３．５）、番号の印の点（１．はじめに、、２．確認）、
+ * 一、二文字の英字の印の後ろの点（Ｑ．、No．）は、日本語の文の区切りではない。
  */
 const isNotPunctuation = (text: string, at: number, mark: string): boolean => {
-  const before = text.charAt(at - 1);
-  if (mark === "．") return DIGIT.test(before) || LATIN_LABEL.test(text.slice(Math.max(0, at - LATIN_LABEL_REACH), at));
-  if (mark === "，") return LATIN.test(before) || (DIGIT.test(before) && DIGIT.test(text.charAt(at + 1)));
+  if (mark === "．") return isInsideNumber(text, at) || isLabelPeriod(text, at);
+  if (mark === "，") return isInsideNumber(text, at);
   return false;
 };
 

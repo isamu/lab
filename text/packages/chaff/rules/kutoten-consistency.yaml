@@ -10,8 +10,8 @@ name:
   en: Japanese commas and periods are mixed
 
 why:
-  ja: 読点を「、」と「，」、句点を「。」と「．」のどちらで書くかは、どちらでも読めます（横書きの論文や公用文には「，」があります）。困るのは一つの文書の中で混ざることで、貼り付けた文や別の人が書いた段落が、そこだけ違って見えます。chaff はどちらが正しいかを決めず、読点と句点のそれぞれで、文書の中で少ないほうを指摘します。数の中の「，」「．」（１，０００、３．５）、番号の後ろの点（１．はじめに）、英字の後ろの点（Ｑ．）、鉤括弧で引いたものの中と、注の番号で始まる行や URL を含む文（文献や出典の書き方に従う）は数えません。
-  en: Whether Japanese text uses 、 or ， for its commas and 。 or ． for its periods is a choice either way (， is common in horizontal academic and official writing). What reads badly is mixing both in one document, which makes a pasted sentence or another writer's paragraph stand out. chaff does not decide which is right; for commas and for periods separately, it points at whichever the document uses less. Marks inside a number (１，０００, ３．５), after a list number (１．), after a Latin letter (Ｑ．), inside a 「」 quotation, and in a sentence that starts with a note number or holds a URL (a citation follows its own style) are not counted.
+  ja: 読点を「、」と「，」、句点を「。」と「．」のどちらで書くかは、どちらでも読めます（横書きの論文や公用文には「，」があります）。困るのは一つの文書の中で混ざることで、貼り付けた文や別の人が書いた段落が、そこだけ違って見えます。chaff はどちらが正しいかを決めず、読点と句点のそれぞれで、文書の中で少ないほうを指摘します。数の中の「，」「．」（１，０００、３．５）、番号の印の点（１．はじめに、２．確認）、一、二文字の英字の印の後ろの点（Ｑ．）、鉤括弧で引いたものの中と、注の番号で始まる行や URL を含む文（文献や出典の書き方に従う）は数えません。
+  en: Whether Japanese text uses 、 or ， for its commas and 。 or ． for its periods is a choice either way (， is common in horizontal academic and official writing). What reads badly is mixing both in one document, which makes a pasted sentence or another writer's paragraph stand out. chaff does not decide which is right; for commas and for periods separately, it points at whichever the document uses less. Marks inside a number (１，０００, ３．５), after a list number (１．はじめに, ２．確認), after a one- or two-letter label (Ｑ．), inside a 「」 quotation, and in a sentence that starts with a note number or holds a URL (a citation follows its own style) are not counted.
 
 message:
   ja: 「{mark}」と書いています（この文書はふつう「{usual}」。{of} 箇所のうち {count} 箇所が違う）
@@ -46,7 +46,7 @@ example:
       申込書は、窓口で受け付けます。書類は、担当者が確認します。結果は、翌日に知らせます。
 
 not_flagged:
-  ja: 数の中の「，」「．」（１，０００、３．５）、番号の後ろの点（１．）、「Ｑ．」のような英字の印、「」の中、注の番号で始まる行と URL を含む文は数えません。どちらの書き方が正しいかは決めません。
+  ja: 数の中の「，」「．」（１，０００、３．５）、番号の印の点（１．）、「Ｑ．」のような英字の印、「」の中、注の番号で始まる行と URL を含む文は数えません。どちらの書き方が正しいかは決めません。
   en: Marks inside numbers (１，０００, ３．５), after a list number (１．), in a letter label (Ｑ．), inside 「」, and in a note or a sentence with a URL are not counted. Neither way is called right.
 level_meaning:
   ja: 少ないほうの書き方が {limit} 箇所あれば指摘
