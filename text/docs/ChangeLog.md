@@ -8,11 +8,15 @@ Newest first.
 
 A title's commas belong to whoever named it, not to the writer, yet "Journal of Money, Credit and Banking" in a
 Federal Reserve speech's notes was judged as a list without an Oxford comma and reported against the notes' author
-lists. A list no longer votes when its "and" / "or" sits in a Title Case run (capitalised words, with "of", "and",
-"a" and the like between them) that is either wrapped in quotation marks or emphasis (`“Hurricanes, Their Nature and
-History”`, `_The Update, The Vent, and The Disaster_`) or follows a quoted article title and its comma (`"Three
-Lessons…," Journal of Money, Credit and Banking`). Lists of names in running text ("Login.gov, TTS Engineering and
-USAi"), author lists, and quoted lists of lowercase words still vote. Which style is right is still not decided.
+lists. A list no longer votes when its "and" / "or" sits in a Title Case run (capitalised words, with "of", "and", "a"
+and the like, hyphens and a subtitle's colon between them) that holds a phrase of two or more words and is either
+wrapped in quotation marks or emphasis (`“Hurricanes, Their Nature and History”`, `_The Update, The Vent, and The
+Disaster_`) or follows a quoted article title and its comma and ends at a comma or the end of the sentence (`"Three
+Lessons…," Journal of Money, Credit and Banking, vol. 32`). Lists of names in running text ("Login.gov, TTS
+Engineering and USAi"), author lists, a list followed by its verb after a quote (`In “The Review,” Smith, Jones and
+Brown argued`), a quoted list of one-word names (`‘Paris, Rome and Madrid’`), and quoted lists of lowercase words
+still vote. A quoted list of multi-word names (`‘New York, Los Angeles and San Diego’`) cannot be told from a title by
+its shape, and no longer votes. Which style is right is still not decided.
 
 ### `undefined-acronym`: an expansion written in a heading counts (#170)
 

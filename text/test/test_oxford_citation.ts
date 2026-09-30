@@ -39,6 +39,13 @@ const NOT_JUDGED: readonly Case[] = [
     "See Bundick and Cairó (2025), “Labor Market Dynamics, Monetary Policy Tradeoffs, and a Shortfalls Approach to Pursuing Maximum Employment,” a working paper.",
   ],
   ["まっすぐな引用符の中の Title Case の題名", WITHOUT_COMMA, 'We read "Labor Market Dynamics, Monetary Policy Tradeoffs, and Maximum Employment" last week.'],
+  ["ハイフンでつないだ語を含む題名", WITHOUT_COMMA, "We read “Policy in a Low-Inflation Era, Growth, and Risks” last week."],
+  ["引用した論文名のあとの誌名で文が終わる", WITH_COMMA, "See Reifschneider and Williams, “Three Lessons,” Journal of Money, Credit and Banking."],
+  [
+    "並びのあとに副題が続く題名（Codex）",
+    WITHOUT_COMMA,
+    'We read "Labor Market Dynamics, Monetary Policy Tradeoffs, and Maximum Employment: A Shortfalls Approach" last week.',
+  ],
   ["* で強調した誌名", WITH_COMMA, "See *Journal of Money, Credit and Banking* for the full paper."],
   ["_ で強調した誌名", WITH_COMMA, "See _Journal of Money, Credit and Banking_ for the full paper."],
 ];
@@ -57,6 +64,19 @@ const JUDGED: readonly Case[] = [
   ],
   ["引用符の中の sentence case の題名", WITH_COMMA, "See the paper “Money, credit and banking in the long run” for details."],
   ["箇条書きの印の * は強調ではない", WITH_COMMA, "* Paris, Rome and Madrid were visited."],
+  ["引用符で閉じた題名のあとの主語の並び（述語が続く、Codex）", WITH_COMMA, "In “The Review,” Smith, Jones and Brown argued for a change."],
+  ["閉じる引用符と読点のあとの固有名詞の並び（述語が続く、Codex）", WITH_COMMA, "He said “Done,” Paris, Rome and Madrid agreed."],
+  ["閉じる引用符と読点のあとの 2 語の名前の並び（述語が続く）", WITH_COMMA, "He said “Done,” New York, Los Angeles and San Diego agreed."],
+  ["語の中の _ は強調の印ではない（関数名の並び）", WITHOUT_COMMA, "It adds Postgres-compatible TO_DATE, TO_TIMESTAMP, and TO_CHAR functions."],
+  ["閉じる引用符に語が続けば、並びは引用符に囲まれていない", WITHOUT_COMMA, "We loved “Old Paris, New Rome, and Madrid’s museums” on the trip."],
+  ["引用符の中の 1 語ずつの名前の並び（Codex）", WITH_COMMA, "Say ‘Paris, Rome and Madrid’ in the guidance."],
+  ["強調した 1 語ずつの名前の並び", WITH_COMMA, "We visited *Paris, Rome and Madrid* last year."],
+  ["小文字の語で始まる引用符の中の固有名詞の並び", WITH_COMMA, "Say ‘the UK, France, Spain and Italy’ in the guidance."],
+  [
+    "論文名のあとの編者の並び（Fed の注）",
+    WITH_COMMA,
+    'See Sahm (2019), "Direct Stimulus Payments," in Heather Boushey, Ryan Nunn and Jay Shambaugh, eds., Recession Ready.',
+  ],
   ["強調が並びの一部だけを囲む", WITH_COMMA, "We visited *Paris*, Rome and Madrid."],
   ["ピリオドのあとの閉じる引用符に続く固有名詞の並びは誌名と読まない", WITH_COMMA, "He said “we are done.” Paris, Rome and Madrid agreed."],
 ];
