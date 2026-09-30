@@ -3,7 +3,7 @@ layer: L3
 status: experimental
 how_to_find: oxford-comma
 languages: [en]
-extra_word_lists: [participle-word]
+extra_word_lists: [participle-word, example-marker, pair-opener]
 severity: info
 
 name:

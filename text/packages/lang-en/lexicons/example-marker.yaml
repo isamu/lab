@@ -1,0 +1,12 @@
+# Words that open examples of, or a restatement of, the noun before them: "the screen lock on your phone, such as a PIN
+# or phone-based fingerprint". oxford-comma-consistency starts the list after them, so the noun they follow is not an
+# item: "such as a PIN or a fingerprint" is two items, and "such as a PIN, a password or a fingerprint" is still three.
+id: example-marker
+language: en
+entries:
+  - pattern: such as
+  - pattern: including
+  - pattern: e.g.
+  - pattern: i.e.
+  - pattern: for example
+  - pattern: for instance
