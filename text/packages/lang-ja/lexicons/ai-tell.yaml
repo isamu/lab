@@ -19,3 +19,45 @@ entries:
     weight: 0.7
   - pattern: ぜひ参考にしてみてください
     weight: 0.7
+  - pattern: といえるでしょう
+    weight: 0.6
+  - pattern: と言えるのではないでしょうか
+    weight: 0.7
+  - pattern: 探っていきましょう
+    weight: 0.8
+  - pattern: 詳しく解説していきます
+    weight: 0.6
+  - pattern: 魅力に迫る
+    weight: 0.7
+  - pattern: という側面も持ち合わせている
+    weight: 0.8
+  - pattern: 総じて言えるのは
+    weight: 0.8
+  - pattern: 一翼を担う
+    weight: 0.6
+  - pattern: 鍵となる
+    weight: 0.5
+  - pattern: 鍵を握る
+    weight: 0.5
+  - pattern: 欠かせない存在
+    weight: 0.6
+  - pattern: 未来をより豊かに
+    weight: 0.8
+  - pattern: 大きな転換点
+    weight: 0.6
+  - pattern: 重要な示唆
+    weight: 0.5
+  - pattern: 重要な役割を担う
+    weight: 0.6
+  - pattern: 新たな可能性を切り開く
+    weight: 0.8
+  - pattern: 多岐にわたる
+    weight: 0.4
+  - pattern: 私たちの生活に欠かせない
+    weight: 0.7
+  - pattern: 本記事では
+    weight: 0.4
+  - pattern: することが重要です
+    weight: 0.4
+  - pattern: することが大切です
+    weight: 0.4

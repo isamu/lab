@@ -1,0 +1,15 @@
+# A denial that frames a contrast only when a turn (contrast-turn) answers it: "It's not a perk. It's a necessity."
+id: contrast-lead
+language: en
+entries:
+  - pattern: it's not
+  - pattern: it is not
+  - pattern: it isn't
+  - pattern: this isn't
+  - pattern: this is not
+  - pattern: that's not
+  - pattern: that isn't
+  - pattern: they're not
+  - pattern: they aren't
+  - pattern: isn't about
+  - pattern: is not about

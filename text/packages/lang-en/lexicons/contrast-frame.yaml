@@ -1,0 +1,10 @@
+# Words that frame a contrast on their own: "not just X, but Y". One is ordinary; the density rule counts them.
+id: contrast-frame
+language: en
+entries:
+  - pattern: not only
+  - pattern: not just
+  - pattern: not merely
+  - pattern: not simply
+  - pattern: isn't just
+  - pattern: more than just

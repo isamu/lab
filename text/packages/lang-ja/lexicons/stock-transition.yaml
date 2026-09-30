@@ -1,0 +1,11 @@
+# 繋がりを言わずに文を始める決まった接ぎ。話を運ぶ語（また、そのため、しかし）は入れない。
+id: stock-transition
+language: ja
+entries:
+  - pattern: さらに
+  - pattern: 加えて
+  - pattern: このように
+  - pattern: 総じて
+  - pattern: 結論として
+  - pattern: まず第一に
+  - pattern: だからこそ
