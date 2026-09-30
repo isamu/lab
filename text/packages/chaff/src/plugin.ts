@@ -204,6 +204,8 @@ export type Section = {
   /** 見出しの深さ。見出しより前の導入部は 0。 */
   readonly depth: number;
   readonly heading: string;
+  /** 見出しを文と同じ解析器で語に分けたもの。文が tokens を持つときだけ入る。 */
+  readonly headingTokens?: readonly Token[];
   readonly span: Span;
   readonly sentences: readonly Sentence[];
   /** この節に含まれる強調（Markdown の ** **）の数。 */
