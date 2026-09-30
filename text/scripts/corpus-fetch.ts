@@ -9,10 +9,9 @@ import { fileURLToPath } from "node:url";
 import { lawText } from "./law-text.ts";
 import { ukText } from "./uk-text.ts";
 import { docEntries, docPath, storedText, type DocEntry } from "./corpus-docs.ts";
-import { decodeFetched } from "./fetched-text.ts";
+import { fetchText } from "./fetch-text.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus");
-const TIMEOUT_MS = 120_000;
 const PAUSE_MS = 1_000;
 
 type Entry = {
@@ -32,20 +31,6 @@ const isEntry = (value: unknown): value is Entry =>
   typeof value["title"] === "string" &&
   typeof value["source"] === "string" &&
   typeof value["redistribute"] === "boolean";
-
-const fetchText = async (url: string): Promise<string> => {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  try {
-    const response = await fetch(url, { signal: controller.signal });
-    if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-    return decodeFetched(new Uint8Array(await response.arrayBuffer()), response.headers.get("content-type"));
-  } catch (err) {
-    throw new Error(`${url}: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
-  } finally {
-    clearTimeout(timer);
-  }
-};
 
 const fetchLaw = async (entry: Entry): Promise<void> => {
   const url = `https://laws.e-gov.go.jp/api/2/law_data/${entry.lawId ?? ""}?law_full_text_format=xml`;
