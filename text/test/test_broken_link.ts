@@ -54,6 +54,15 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf('## Setup\n\n<a id="setup"></a>\n\n[bad](#setup-1)\n', en).length, 1);
   });
 
+  it("id の文字参照は字に戻して比べる", () => {
+    assert.deepEqual(findingsOf('<a id="a&amp;b"></a>\n\n[x](#a%26b)\n', en), []);
+  });
+
+  it("テンプレートの記法の中のリンクは読まない", () => {
+    assert.deepEqual(findingsOf("Text {{ [x](#missing) }} here.\n", en), []);
+    assert.deepEqual(findingsOf("Text [x](#missing) here.\n", en).length, 1);
+  });
+
   it("data-id は名前ではない", () => {
     assert.deepEqual(findingsOf('<div data-id="faq"></div>\n\n[FAQ](#faq)\n', en).length, 1);
   });

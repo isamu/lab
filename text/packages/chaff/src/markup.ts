@@ -81,8 +81,23 @@ const readHeading = (node: MarkdownNode, span: Span, source: string, walk: Walk)
   walk.headings.push({ depth: numberField(node, "depth") ?? 1, text, start: span.start, end: span.end });
 };
 
+/** 属性の値の文字参照のうち、名前に書かれるもの。ほかの名前の参照は id にまず現れない。 */
+const NAMED_REFERENCES: Readonly<Record<string, string>> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
+
+const CHARACTER_REFERENCE = /&(?:#(\d+)|#x([\da-f]+)|([a-z]+));/giu;
+
+const HEX = 16;
+
+/** 属性の値の文字参照（&amp;、&#38;、&#x26;）を字に戻す。ブラウザが名前として読むのは戻した字。 */
+export const decodedAttribute = (value: string): string =>
+  value.replace(CHARACTER_REFERENCE, (whole: string, decimal?: string, hex?: string, name?: string) => {
+    if (decimal !== undefined) return String.fromCodePoint(Number(decimal));
+    if (hex !== undefined) return String.fromCodePoint(Number.parseInt(hex, HEX));
+    return NAMED_REFERENCES[(name ?? "").toLowerCase()] ?? whole;
+  });
+
 const readHtml = (value: string, span: Span, walk: Walk): void => {
-  [...value.matchAll(HTML_ID)].forEach((match) => walk.ids.add(match[1] ?? match[2] ?? match[3] ?? ""));
+  [...value.matchAll(HTML_ID)].forEach((match) => walk.ids.add(decodedAttribute(match[1] ?? match[2] ?? match[3] ?? "")));
   [...value.matchAll(IMG_TAG)].forEach((match) => {
     const alt = ALT_ATTRIBUTE.exec(match[0]);
     const start = span.start + match.index;
@@ -103,7 +118,8 @@ const startsInside = (span: Span, regions: readonly Span[]): boolean => regions.
 type Pending = { readonly node: MarkdownNode; readonly inLink: boolean };
 
 /**
- * Markdown の記法の手がかりを集める。outside（メールの引用した返信）と、引用（`>`）の中は、ほかの人の文書なので読まない。
+ * Markdown の記法の手がかりを集める。outside（メールの引用した返信と、MDX の import やテンプレートの記法）と、
+ * 引用（`>`）の中は読まない。返信と引用はほかの人の文書で、記法は読み手に見えない。
  * GitHub の注記（`> [!NOTE]`）は書き手の言葉なので読む。本文の組み立て（document.ts）と同じ線引き。
  */
 export const markdownMarkup = (root: MarkdownNode, source: string, outside: readonly Span[] = []): Markup => {

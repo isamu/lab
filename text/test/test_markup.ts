@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
-import { namedHeading } from "../packages/chaff/src/markup.ts";
+import { decodedAttribute, namedHeading } from "../packages/chaff/src/markup.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import type { Markup } from "../packages/chaff/src/plugin.ts";
 
@@ -74,6 +74,13 @@ describe("doc.markup", () => {
   it("文書ごとに一度だけ作る", () => {
     const doc = buildDocument("a.md", "# 表題\n", ja);
     assert.equal(doc.markup, doc.markup);
+  });
+});
+
+describe("decodedAttribute", () => {
+  it("数と名前の文字参照を字に戻し、知らない名前はそのまま", () => {
+    assert.equal(decodedAttribute("a&amp;b&#38;c&#x26;d&LT;"), "a&b&c&d<");
+    assert.equal(decodedAttribute("&nbsp;x"), "&nbsp;x");
   });
 });
 

@@ -378,7 +378,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     prose,
     replyQuotes: emailLayout.replyQuotes,
     get markup(): Markup {
-      return documentMarkup(root, source, markdown, emailLayout.replyQuotes);
+      return documentMarkup(root, source, markdown, [...emailLayout.replyQuotes, ...syntax]);
     },
   };
 };
