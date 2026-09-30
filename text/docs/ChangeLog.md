@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `title-case-consistency`: "vs", "v." and "via" stay lowercase in Title Case (#170)
+
+"Development Environment vs MulmoChat" was counted as a sentence-case heading, because "vs" was read as a word that
+Title Case capitalises. Chicago, APA, AP and MLA all keep "vs.", "v." and "via" lowercase in a title, so they now join
+the other small words that the check skips. A heading whose other words are lowercase ("Switch via environment
+variable") is still sentence case.
+
 ### Corpus: the wikitext converter keeps each `:` reply a paragraph of its own (#170)
 
 On a talk page every reply is a line indented with `:` or `::`, and the page shows each as a block of its own. The
