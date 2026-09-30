@@ -648,6 +648,10 @@ describe("htmlToMarkdown: 表", () => {
     const english =
       "<table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody><tr><td>API_KEY_MISSING</td><td>No key was sent.</td></tr></tbody></table>";
     assert.equal(htmlToMarkdown(english), "API_KEY_MISSING\n\nNo key was sent.\n");
+    const twoHeaders =
+      "<table><thead><tr><th colspan=2>Definitions</th></tr><tr><th>Term</th><th>Meaning</th></tr></thead>" +
+      "<tbody><tr><td>Applicant</td><td>A person who applies.</td></tr></tbody></table>";
+    assert.equal(htmlToMarkdown(twoHeaders), "Applicant\n\nA person who applies.\n");
   });
 
   it("行の見出し (th) も本文の升目。数で始まる升目 (行の番号・数の範囲) は落とし、数で始まる文は残す", () => {
@@ -671,6 +675,10 @@ describe("htmlToMarkdown: 表", () => {
     const abbreviations =
       "<table><tr><td>1976</td><td>H.Con.Res. 218</td><td>05-14-1975</td></tr><tr><td>1977</td><td>S.Con.Res. 109</td><td>None</td></tr></table><p>End.</p>";
     assert.equal(htmlToMarkdown(abbreviations), "End.\n");
+    const oneRow = (cells: string): string => `<table><tr>${cells}</tr></table><p>End.</p>`;
+    assert.equal(htmlToMarkdown(oneRow("<td>Acme</td><td>Acme Inc.</td>")), "End.\n");
+    assert.equal(htmlToMarkdown(oneRow("<td>Example</td><td>e.g.</td>")), "End.\n");
+    assert.equal(htmlToMarkdown(oneRow("<td>Seat</td><td>It is in the U.S.</td>")), "End.\n");
   });
 
   it("入れ子の表は内側から読む。文の表を包むレイアウトの表は、中の文を残す", () => {

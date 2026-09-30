@@ -32,8 +32,9 @@ const rowsOf = (table: string): Row[] =>
 
 const hasText = (cell: Cell): boolean => plainText(cell.html) !== "";
 
-// A cell ends a sentence with its last mark; a point inside it ("H.Con.Res. 218", "U.S. Code") is an abbreviation.
-const ENDS_SENTENCE = /[。．！？.!?][)\]"'”’」』）]*$/u;
+// A cell ends a sentence with its last mark. A point inside it ("H.Con.Res. 218") or after a short capitalised word
+// or a letter after a point ("Inc.", "U.S.") is an abbreviation.
+const ENDS_SENTENCE = /(?:[。．！？!?]|(?<!\b[A-Z][A-Za-z]{0,3}|\.[A-Za-z])\.)[)\]"'”’」』）]*$/u;
 
 const holdsSentence = (cell: Cell): boolean => ENDS_SENTENCE.test(plainText(cell.html));
 
@@ -46,9 +47,9 @@ const isKept = (cell: Cell): boolean => holdsSentence(cell) || (hasText(cell) &&
 /** A row of nothing but header cells labels the columns. */
 const isHeaderRow = (row: Row): boolean => row.length > 0 && row.every((cell) => cell.header);
 
-/** At least half of the rows with text in them hold a sentence. */
+/** At least half of the rows with text in them, header rows aside, hold a sentence. */
 const isProse = (rows: readonly Row[]): boolean => {
-  const written = rows.filter((row) => row.some(hasText));
+  const written = rows.filter((row) => !isHeaderRow(row) && row.some(hasText));
   const sentences = written.filter((row) => row.some(holdsSentence)).length;
   return sentences > 0 && sentences * 2 >= written.length;
 };
