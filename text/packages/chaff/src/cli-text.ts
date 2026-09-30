@@ -14,11 +14,11 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff .                        この場所の Markdown を全部
   chaff test <file|dir>...       意味を読む検査も動かす（API key が要ります）
                                  判定役は chaff.yaml の ai_backend で選びます
-  chaff init                     chaff.yaml を作る
+  chaff init                     chaff.yaml を作る（端末ならジャンルを尋ねる。--genre <ジャンル> でも選べる）
   chaff --version                chaffjs と言語パッケージの版
   chaff eval <dir>               手元の文書で閾値を測り直す
   chaff explain <rule>           そのルールの意図と根拠を読む
-  chaff genres                   ジャンルの一覧
+  chaff genres                   ジャンル（文書の種類）の一覧と、それぞれ何向けか
   chaff tree <file> [--format sexp|json]  文書を番地の付いた木にする（条・項・定義・参照）
   chaff cite <原文> <引用.json>           回答の引用（番地と引用文）が原文にあるかを確かめる
   chaff rules --json             いまの設定を JSON で出す（AI に渡す用）
@@ -48,11 +48,11 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff .                        every Markdown file here
   chaff test <file|dir>...       also run the checks that read meaning (needs an API key)
                                  the judge is chosen by ai_backend in chaff.yaml
-  chaff init                     create chaff.yaml
+  chaff init                     create chaff.yaml (asks for the genre at a terminal; --genre <genre> chooses it)
   chaff --version                the version of chaffjs and its language packages
   chaff eval <dir>               re-measure the limits on your own documents
   chaff explain <rule>           read what a rule is for and why
-  chaff genres                   list the genres
+  chaff genres                   list the genres (kinds of document) and what each is for
   chaff tree <file> [--format sexp|json]  the document as a tree of addresses (sections, clauses, definitions, references)
   chaff cite <source> <quotes.json>       check that quoted passages (address and text) are in the source
   chaff rules --json             the current settings as JSON (to give to an AI)
@@ -81,6 +81,8 @@ export type CliText = {
   readonly languageName: (language: string) => string;
   readonly genreSource: Readonly<Record<GenreSource, string>>;
   readonly header: (path: string, genre: string, language: string, from: string, shelved: number, hushed: number) => string;
+  readonly suggested: (name: string, genre: string) => string;
+  readonly suggestedNote: (name: string, genre: string, used: string) => string;
   readonly noMarkdown: (targets: string) => string;
   readonly noMarkdownHere: string;
   readonly noAdapter: (language: string) => string;
@@ -98,7 +100,6 @@ export type CliText = {
   readonly watching: (files: number, findings: number) => string;
   readonly watchHint: string;
   readonly baselineDone: (files: number, entries: number, file: string) => readonly string[];
-  readonly genres: (list: readonly string[]) => string;
   readonly unit: (ruleId: string, language: string) => string;
 };
 
@@ -119,6 +120,9 @@ export const CLI_TEXT: Texts<CliText> = {
       [`${path}   ${genre} · ${language}   ジャンルは${from}から`, shelved > 0 ? `   棚上げ ${shelved} 件` : "", hushed > 0 ? `   stet ${hushed} 件` : ""].join(
         "",
       ),
+    suggested: (name, genre) => `   ${name}のようです。--genre ${genre} を試せます`,
+    suggestedNote: (name, genre, used) =>
+      `  ジャンルを決めていないので、${used} として見ました。${name}なら、--genre ${genre} でその種類の書き方に合わせて見ます（npx chaffjs genres で一覧）。`,
     noMarkdown: (targets) => `Markdown が 1 つも見つかりませんでした: ${targets}`,
     noMarkdownHere: "Markdown が 1 つも見つかりませんでした。",
     noAdapter: (language) => `言語 "${language}" のアダプタがありません。`,
@@ -151,8 +155,6 @@ export const CLI_TEXT: Texts<CliText> = {
       `  ${file} を commit してください。`,
       "",
     ],
-    genres: (list) =>
-      ["", "  使えるジャンル:", ...list.map((genre) => `    ${genre}`), "", "  chaff.yaml の genre に書くか、--genre で指定します。", ""].join("\n"),
     unit: (ruleId, language) => {
       if (ruleId === "bold-density") return "1000 字あたりの箇所数";
       if (ruleId !== "max-sentence-length") return "回";
@@ -173,6 +175,9 @@ export const CLI_TEXT: Texts<CliText> = {
     },
     header: (path, genre, language, from, shelved, hushed) =>
       [`${path}   ${genre} · ${language}   genre from ${from}`, shelved > 0 ? `   ${shelved} shelved` : "", hushed > 0 ? `   ${hushed} stet` : ""].join(""),
+    suggested: (name, genre) => `   Looks like: ${name}. Try --genre ${genre}`,
+    suggestedNote: (name, genre, used) =>
+      `  No genre was set, so this was checked as ${used}. If it is ${name}, --genre ${genre} checks it the way that kind is written (npx chaffjs genres lists them).`,
     noMarkdown: (targets) => `No Markdown files found: ${targets}`,
     noMarkdownHere: "No Markdown files found.",
     noAdapter: (language) => `No language package for "${language}".`,
@@ -204,7 +209,6 @@ export const CLI_TEXT: Texts<CliText> = {
       `  Commit ${file}.`,
       "",
     ],
-    genres: (list) => ["", "  Genres:", ...list.map((genre) => `    ${genre}`), "", "  Set one with genre in chaff.yaml, or with --genre.", ""].join("\n"),
     unit: (ruleId, language) => {
       if (ruleId === "bold-density") return "places per 1000 characters";
       if (ruleId !== "max-sentence-length") return "times";

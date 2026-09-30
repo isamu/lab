@@ -24,4 +24,4 @@ how_to_fix:
 
 levels: { strict: 1, normal: 1, relaxed: 1 }
 
-use_for: [blog, business, technical]
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]

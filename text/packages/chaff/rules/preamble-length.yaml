@@ -22,4 +22,4 @@ how_to_fix:
 
 levels: { strict: 1, normal: 2, relaxed: 4 }
 
-use_for: [business]
+use_for: [business, legal, docs, academic, literature, speech]

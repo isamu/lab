@@ -4,7 +4,7 @@ import type { Texts, UiLanguage } from "../ui.ts";
 
 const FORMATS: ReadonlySet<string> = new Set(["text", "json"]);
 const QUOTE_WIDTH = 40;
-const VALUED: ReadonlySet<string> = new Set(["--format", "--language"]);
+const VALUED: ReadonlySet<string> = new Set(["--format", "--language", "--genre"]);
 
 export const citeTargets = (argv: readonly string[]): string[] =>
   argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.has(all[index - 1] ?? ""));

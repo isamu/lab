@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { SKILL_SOURCE, installSkill, runSkill, skillTarget } from "../packages/chaff/src/commands/skill.ts";
 import { COMMANDS } from "../packages/chaff/src/cli.ts";
+import { GENRES } from "../packages/chaff/src/genre.ts";
 
 const temp = (): string => mkdtempSync(join(tmpdir(), "chaff-skill-"));
 
@@ -21,6 +22,24 @@ describe("同梱の skill", () => {
     const unknown = mentioned.filter((command) => !COMMANDS.includes(command));
     assert.deepEqual(unknown, []);
     assert.ok(mentioned.length > 5);
+  });
+
+  it("skill が挙げるジャンルは、chaff に実際にある", () => {
+    const named = [...skill.matchAll(/`((?:technical|blog|business|legal|docs|academic|literature|speech)\/[a-z-]+)`/gu)].map((match) => match[1] ?? "");
+    assert.ok(named.length > 5);
+    assert.deepEqual(
+      named.filter((genre) => !GENRES.includes(genre)),
+      [],
+    );
+  });
+
+  it("ジャンルを選ぶことから始める（見つけたものを読む前に）", () => {
+    const pick = skill.indexOf("## Pick the genre first");
+    assert.ok(pick !== -1);
+    assert.ok(pick < skill.indexOf("## For each finding"));
+    assert.match(skill, /npx chaffjs genres/u);
+    assert.match(skill, /npx chaffjs --genre /u);
+    assert.match(skill, /Looks like: .+ Try --genre /u);
   });
 });
 

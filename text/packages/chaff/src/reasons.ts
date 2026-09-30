@@ -9,6 +9,7 @@ export type Reasons = {
   readonly semantic: string;
   readonly experimental: string;
   readonly turnedOff: string;
+  readonly presetOff: (genre: string) => string;
   readonly noStructure: (language: string) => string;
   readonly unreadStructure: (clauses: number, units: number) => string;
   readonly noDetector: (name: string) => string;
@@ -28,6 +29,7 @@ export const REASONS: Texts<Reasons> = {
     semantic: "意味を読む検査のため（npx chaff test で動きます）",
     experimental: "まだ試験中のため",
     turnedOff: "設定で止めているため",
+    presetOff: (genre) => `ジャンル ${genre} では見ないため`,
     noStructure: (language) => `${language} のパッケージは文書の構造を読めないため`,
     unreadStructure: (clauses, units) =>
       `条項の番号が本文に ${String(clauses)} 個あるのに、番号として読めたのは ${String(units)} 個のため（深い字下げや、行が本文につながった文書）`,
@@ -41,6 +43,7 @@ export const REASONS: Texts<Reasons> = {
     semantic: "it reads meaning; npx chaff test runs it",
     experimental: "still experimental",
     turnedOff: "turned off in the settings",
+    presetOff: (genre) => `the ${genre} genre does not check it`,
     noStructure: (language) => `the ${language} package cannot read a document's structure`,
     unreadStructure: (clauses, units) =>
       `the text has ${String(clauses)} clause numbers but only ${String(units)} ${formFor(units, "was read as a numbered line", "were read as numbered lines")} (deep indents, or lines run into the text)`,

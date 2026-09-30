@@ -576,6 +576,43 @@ by_genre:
 | blog/essay | 140 char / 35 word | 8 | 1 | 0.35 |
 | blog/owned-media | 90 char / 22 word | 5 | 3 | 0.30 |
 
+### 9.2 ジャンルは preset（`genres.yaml`）
+
+ジャンルの一覧、名前と説明（ja / en）、ジャンルの既定の段は `packages/chaff/genres.yaml` に置く。
+ジャンルを選べば、その種類の文書の書き方に合わせて見る。設定を書かずに使えるようにするためのもの。
+
+```yaml
+groups:
+  - id: legal                # legal/* のどのジャンルにも効く段
+    rules: { ngram-repetition: off }
+genres:
+  - id: legal/contract
+    rules: { numbering-gap: normal }   # 群の段に重ねる
+  - id: legal/statute
+    profile: statute                   # chaff.yaml が profile を書かなければ、これで読む
+```
+
+- 段の強さは chaff.yaml の `rules` > ジャンルの `rules`（ジャンル > 群）> status の既定。
+  `--experimental` はジャンルが止めた rule を動かさない。
+- ジャンルが止めた rule は「動いていない」一覧に、ジャンルを理由に出す。黙って外さない。
+  rule をそもそも当てないのは use_for で、こちらは一覧に出ない。新しい群は use_for に入れたうえで、ジャンルの段で止める。
+- ジャンルが入れた試験中の rule は、設定で入れたもの（§18.4）とは別に知らせる。
+- 数字は §9.1 のとおり rule の `by_genre` に置く。ジャンルの段は 4 語だけを書く。
+- profile の強さは by_path > chaff.yaml の `profile` > ジャンルの `profile` > 内容。
+- 前からあるジャンルには段も profile も無い。結果は変わらない。
+
+### 9.3 ジャンルを決めていない文書には、見当を出す
+
+ジャンルが既定（`blog/tech`）に落ちた文書だけに、「契約書・規約のようです。--genre legal/contract を試せます」と
+見出しの下と「動いていない」一覧の後に出す。**出すだけで、検査のジャンルは変えない。** 黙って切り替えると、
+いま使っている人の結果が変わる。
+
+- 手がかりは `genres.yaml` の `suggest:`（データ）。パスの形、言語ごとの行の形と、その行が要る数。
+  profile を持つジャンルは、内容がその profile の形なら当たる。
+- 強さはパスが最も強く、行はその数を要る数で割ったもの。最も強いものを挙げ、同じならファイルの先のもの。
+  契約を論じる会議録は、「本契約」の行より発言者の行が多いので会議録になる。
+- `chaff init` は端末でだけ一覧を出して尋ねる。スクリプトと CI は尋ねず、既定を書く。
+
 ---
 
 ## 10. Rule Catalog — L1 Universal

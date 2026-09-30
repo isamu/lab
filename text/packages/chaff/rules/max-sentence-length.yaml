@@ -46,5 +46,17 @@ by_genre:
   blog/owned-media:
     ja: { strict: 65, normal: 90, relaxed: 125 }
     en: { strict: 16, normal: 22, relaxed: 30 }
+  # 法令・契約・判決・論文は、長い一文がその種類の書き方。corpus のその種類の文書で、normal が最も長い一握りの文だけを指すように測って置いた。
+  legal:
+    ja: { strict: 120, normal: 200, relaxed: 300 }
+    en: { strict: 40, normal: 60, relaxed: 80 }
+  legal/statute:
+    ja: { strict: 200, normal: 300, relaxed: 450 }
+    en: { strict: 80, normal: 130, relaxed: 180 }
+  legal/judgment:
+    ja: { strict: 250, normal: 350, relaxed: 450 }
+  academic:
+    ja: { strict: 100, normal: 140, relaxed: 180 }
+    en: { strict: 35, normal: 50, relaxed: 65 }
 
-use_for: [blog, business, technical]
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]

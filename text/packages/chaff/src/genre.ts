@@ -1,16 +1,7 @@
-/** chaff が知っているジャンル。rule の use_for はこの頭の部分で当てる。 */
-export const GENRES: readonly string[] = [
-  "technical/spec",
-  "technical/readme",
-  "blog/tech",
-  "blog/essay",
-  "blog/owned-media",
-  "business/proposal",
-  "business/report",
-  "business/email",
-  "business/press-release",
-  "business/meeting-notes",
-];
+import { loadGenres } from "./genre-load.ts";
+
+/** chaff が知っているジャンル。genres.yaml の並び。rule の use_for はこの頭の部分で当てる。 */
+export const GENRES: readonly string[] = loadGenres().genres.map((genre) => genre.id);
 
 export type GenreGuess = { readonly genre: string; readonly from: "front-matter" | "path" | "content" };
 

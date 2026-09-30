@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { loadAdapter } from "../adapter-load.ts";
 import { applyByPath } from "../config/by-path.ts";
 import { profileFor } from "../profile/for-file.ts";
+import { resolveGenre } from "../resolve-genre.ts";
 import { guessLanguage } from "../detect.ts";
 import { isMarkdownPath } from "../structure/markdown-path.ts";
 import { buildStructure } from "../structure/of.ts";
@@ -40,7 +41,7 @@ const treeText = (context: TreeContext): (typeof TEXT)["ja"] => TEXT[context.ui 
 const FORMATS: ReadonlySet<string> = new Set(["sexp", "json"]);
 
 /** 値を取るフラグ。その次の引数は値で、対象のファイルではない。 */
-const VALUED: ReadonlySet<string> = new Set(["--format", "--language"]);
+const VALUED: ReadonlySet<string> = new Set(["--format", "--language", "--genre"]);
 
 export const treeTargets = (argv: readonly string[]): string[] =>
   argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.has(all[index - 1] ?? ""));
@@ -81,7 +82,7 @@ export const readTree = async (path: string, argv: readonly string[], context: T
   }
   // 日本語は形態素で数量と日付を読む。解析器が無ければ単位の表で読むので、木は作れる。
   await adapter.prepare?.({ pos: true });
-  const profile = profileFor(context.config, path, source, language);
+  const profile = profileFor(context.config, path, source, language, resolveGenre(path, source, context.config, context.flag(argv, "--genre")).genre);
   return { source, tree: buildStructure({ path, source, language, markdown: isMarkdownPath(path), profile }, adapter.structure) };
 };
 

@@ -56,7 +56,7 @@ export const runEval = async (targets: readonly string[], argv: readonly string[
       const adapter = await loadAdapter(language);
       const { genre } = resolveGenre(path, source, config);
       await adapter.prepare?.(neededBy(loadRules(language), config.rules, config.experimental, genre, language));
-      return { doc: buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language)), language, genre };
+      return { doc: buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre)), language, genre };
     }),
   );
   const language = docs[0]?.language ?? "ja";

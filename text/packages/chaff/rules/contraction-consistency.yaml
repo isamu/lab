@@ -25,4 +25,4 @@ how_to_fix:
 # 少数派が何種までなら「混在」と見るか。これを超えたら混在ではなく、そういう文体。
 levels: { strict: 4, normal: 2, relaxed: 1 }
 
-use_for: [blog, business, technical]
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]
