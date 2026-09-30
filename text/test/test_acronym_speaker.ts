@@ -89,7 +89,6 @@ describe("undefined-acronym: 肩書きの後ろの大文字の姓", () => {
     ["Minister KONO Taro replied. The DOJ agreed.", ["DOJ"]],
     ["Senator HAWLEY. I thank the chair. The DOJ agreed.", ["DOJ"]],
     ["Chairman JORDAN: The committee will come to order. The DOJ agreed.", ["DOJ"]],
-    ["It was signed by Governor HOCHUL. The DOJ agreed.", ["DOJ"]],
   ].forEach(([body, expected]) => {
     it(`数えない: ${String(body)}`, () => assert.deepEqual(sorted(String(body)), expected));
   });
@@ -97,6 +96,8 @@ describe("undefined-acronym: 肩書きの後ろの大文字の姓", () => {
   [
     ["The President NASA memo remains unpublished. The DOJ agreed.", ["DOJ", "NASA"]],
     ["Governor FEMA funding was cut. The DOJ agreed.", ["DOJ", "FEMA"]],
+    ["The Secretary GDPR: Article 5 applies. The DOJ agreed.", ["DOJ", "GDPR"]],
+    ["It was signed by Governor HOCHUL. The DOJ agreed.", ["DOJ", "HOCHUL"]],
     ["The prime minister ABE Shinzo file is open. The DOJ agreed.", ["ABE", "DOJ"]],
     ["The Prime Minister's GDPR note is open. The DOJ agreed.", ["DOJ", "GDPR"]],
     ["The Minister of the MOFA spoke. The DOJ agreed.", ["DOJ", "MOFA"]],

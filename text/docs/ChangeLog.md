@@ -17,8 +17,9 @@ Four kinds of capital word that corpus round 11 reported are not acronyms, and a
   account` is still an acronym.
 - **A surname in capitals after a title.** `former Prime Minister ABE Shinzo`, `Senator HAWLEY.`: the new `name-title`
   word list (President, Minister, Secretary, Governor, Senator, Chief Justice, …) works like the honorifics `Mr.` and
-  `Mrs.`, but only where the capital word has a name's shape: a speaker's label (followed by `.` or `:`) or the
-  Japanese government's surname-first order (followed by a given name). `the President NASA memo` is still reported.
+  `Mrs.`, but only where the capital word has a name's shape: a speaker's label at the start of a line (followed by `.` or
+  `:`) or the Japanese government's surname-first order (followed by a given name). `the President NASA memo` and
+  `The Secretary GDPR: Article 5` are still reported.
 - **An expansion whose brackets add a word.** `Partnership On Wide Energy and Resources Resilience Asia (POWERR Asia)`
   and `Historically Underutilized Business Zone (HUB Zone)`: capitalised words after the acronym inside the brackets
   are allowed when the name before the brackets, less those words, spells the acronym. `(NASA Goddard)` does not.

@@ -52,10 +52,15 @@ const divisionOf = (words: readonly string[]): string => oneOf(words.flatMap((wo
 const SURNAME_IN_CAPITALS = String.raw`[A-Z]+(?:['’-][A-Z]+)*(?![\p{L}\p{N}_])`;
 
 /**
- * 肩書きの後ろの大文字の語が姓と読めるのは、名前の形のときだけ。発言者の印（Senator HAWLEY.、Chairman JORDAN:）か、
- * 日本政府の英文が「姓 名」の順に書くローマ字の名前（Prime Minister ABE Shinzo）。the President NASA memo の NASA は略語。
+ * 肩書きの後ろの大文字の語が姓と読めるのは、名前の形のときだけ。行頭の発言者の印（Senator HAWLEY.、Chairman JORDAN:）か、
+ * 日本政府の英文が「姓 名」の順に書くローマ字の名前（Prime Minister ABE Shinzo）。the President NASA memo と
+ * The Secretary GDPR: Article 5 の略語は数える。
  */
-const NAME_AFTER_SURNAME = String.raw`(?=[.:]|\s+\p{Lu}\p{Ll}+(?![\p{L}\p{N}_]))`;
+const GIVEN_NAME_AFTER = String.raw`(?=\s+\p{Lu}\p{Ll}+(?![\p{L}\p{N}_]))`;
+const titledName = (titles: string): readonly RegExp[] => [
+  new RegExp(String.raw`(?<=(?:^|\n)[ \t]*)${titles}\s+${SURNAME_IN_CAPITALS}(?=[.:])`, "gu"),
+  new RegExp(String.raw`(?<![\p{L}\p{N}_])${titles}\s+${SURNAME_IN_CAPITALS}${GIVEN_NAME_AFTER}`, "gu"),
+];
 
 // 強調の記号は空白に置き換えてある（**3:30** PM）ので、部品の間の空白は数を問わない。
 const patternsOf = (words: NotationWords): readonly RegExp[] => [
@@ -67,7 +72,7 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(oneOf(words.emphasis), "gu"),
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${divisionOf(words.divisions)}\s+${ROMAN_NUMERAL}(?![\p{L}\p{N}_&])`, "gu"),
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(words.honorifics)}\s+${SURNAME_IN_CAPITALS}`, "gu"),
-  new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(words.titles)}\s+${SURNAME_IN_CAPITALS}${NAME_AFTER_SURNAME}`, "gu"),
+  ...titledName(oneOf(words.titles)),
 ];
 
 export type NotAcronymSpans = (text: string) => Span[];
