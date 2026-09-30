@@ -48,9 +48,9 @@ jobs:
         env:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          set -uo pipefail
-          yarn --silent corpus:health --report issue-body.md
-          status=$?
+          # shell: bash は -e で走る。exit 1 で止まらずに status を残すため || で受ける。
+          status=0
+          yarn --silent corpus:health --report issue-body.md || status=$?
           echo "status=$status" >> "$GITHUB_OUTPUT"
           exit "$status"
 

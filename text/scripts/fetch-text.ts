@@ -7,8 +7,8 @@ const TIMEOUT_MS = 120_000;
 export class HttpStatusError extends Error {
   readonly status: number;
 
-  constructor(url: string, status: number) {
-    super(`${url}: HTTP ${String(status)}`);
+  constructor(status: number) {
+    super(`HTTP ${String(status)}`);
     this.status = status;
   }
 }
@@ -18,7 +18,7 @@ export const fetchText = async (url: string): Promise<string> => {
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
     const response = await fetch(url, { signal: controller.signal });
-    if (!response.ok) throw new HttpStatusError(url, response.status);
+    if (!response.ok) throw new HttpStatusError(response.status);
     return decodeFetched(new Uint8Array(await response.arrayBuffer()), response.headers.get("content-type"));
   } catch (err) {
     throw new Error(`${url}: ${err instanceof Error ? err.message : String(err)}`, { cause: err });

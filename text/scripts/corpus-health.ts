@@ -10,7 +10,7 @@ import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { docEntries, docPath, storedText, type DocEntry } from "./corpus-docs.ts";
-import { classifyDocuments, driftedIds, firstDifferingLine, issueBody, needsAttention, type FetchOutcome } from "./corpus-health-report.ts";
+import { classifyDocuments, driftedIds, errorText, firstDifferingLine, issueBody, needsAttention, type FetchOutcome } from "./corpus-health-report.ts";
 import { fetchText } from "./fetch-text.ts";
 import { isTransientFetchError, RETRY_DELAYS_MS, withRetry } from "./retry.ts";
 
@@ -26,8 +26,6 @@ const { values, positionals } = parseArgs({
 });
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
-
-const errorText = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
 const fetchWithRetry = (doc: DocEntry): Promise<string> =>
   withRetry(() => fetchText(doc.url), {

@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { classifyDocuments, driftedIds, firstDifferingLine, issueBody, needsAttention, type FetchOutcome } from "../scripts/corpus-health-report.ts";
+import { classifyDocuments, driftedIds, errorText, firstDifferingLine, issueBody, needsAttention, type FetchOutcome } from "../scripts/corpus-health-report.ts";
 import { HttpStatusError } from "../scripts/fetch-text.ts";
 import { isTransientFetchError, withRetry, type RetryOptions } from "../scripts/retry.ts";
 
@@ -134,8 +134,29 @@ describe("issueBody", () => {
   });
 });
 
+describe("errorText", () => {
+  it("原因の文言のうち、まだ出ていないものを括弧で足す", () => {
+    const network = new TypeError("fetch failed", { cause: new Error("getaddrinfo ENOTFOUND x.invalid") });
+    const outer = new Error("https://x.invalid/a: fetch failed", { cause: network });
+    assert.equal(errorText(outer), "https://x.invalid/a: fetch failed (getaddrinfo ENOTFOUND x.invalid)");
+  });
+
+  it("原因の文言が既に含まれていれば繰り返さない", () => {
+    assert.equal(errorText(new Error("https://e.com/a: HTTP 404", { cause: new HttpStatusError(404) })), "https://e.com/a: HTTP 404");
+  });
+
+  it("Error でない値、原因の無い Error、循環する原因も読める", () => {
+    assert.equal(errorText("plain"), "plain");
+    assert.equal(errorText(new Error("only")), "only");
+    const loop = new Error("a");
+    loop.cause = loop;
+    assert.equal(errorText(loop), "a");
+    assert.equal(errorText(new Error("a", { cause: "b" })), "a (b)");
+  });
+});
+
 describe("isTransientFetchError", () => {
-  const wrapped = (status: number): Error => new Error("https://example.com: outer", { cause: new HttpStatusError("https://example.com", status) });
+  const wrapped = (status: number): Error => new Error(`https://example.com: HTTP ${String(status)}`, { cause: new HttpStatusError(status) });
 
   it("404 など 4xx は再試行しない", () => {
     [400, 401, 403, 404, 410, 451].forEach((status) => assert.equal(isTransientFetchError(wrapped(status)), false, String(status)));
@@ -153,8 +174,8 @@ describe("isTransientFetchError", () => {
   });
 
   it("包まれていない HttpStatusError もそのまま読む", () => {
-    assert.equal(isTransientFetchError(new HttpStatusError("u", 404)), false);
-    assert.equal(isTransientFetchError(new HttpStatusError("u", 503)), true);
+    assert.equal(isTransientFetchError(new HttpStatusError(404)), false);
+    assert.equal(isTransientFetchError(new HttpStatusError(503)), true);
   });
 });
 
@@ -190,7 +211,7 @@ describe("withRetry", () => {
 
   it("一時的な失敗は間を広げて取り直す", async () => {
     const waits: number[] = [];
-    const run = failingTimes([new HttpStatusError("u", 503), new TypeError("fetch failed")]);
+    const run = failingTimes([new HttpStatusError(503), new TypeError("fetch failed")]);
     assert.equal(await withRetry(run.attempt, options(waits)), "text");
     assert.deepEqual(waits, [5, 20]);
     assert.equal(run.calls(), 3);
@@ -198,8 +219,8 @@ describe("withRetry", () => {
 
   it("待ちを使い切ったら最後の失敗を投げる", async () => {
     const waits: number[] = [];
-    const last = new HttpStatusError("u", 502);
-    const run = failingTimes([new HttpStatusError("u", 503), new HttpStatusError("u", 504), last]);
+    const last = new HttpStatusError(502);
+    const run = failingTimes([new HttpStatusError(503), new HttpStatusError(504), last]);
     await assert.rejects(withRetry(run.attempt, options(waits)), (err) => err === last);
     assert.deepEqual(waits, [5, 20]);
     assert.equal(run.calls(), 3);
@@ -207,7 +228,7 @@ describe("withRetry", () => {
 
   it("404 は取り直さずに投げる", async () => {
     const waits: number[] = [];
-    const run = failingTimes([new HttpStatusError("u", 404)]);
+    const run = failingTimes([new HttpStatusError(404)]);
     await assert.rejects(withRetry(run.attempt, options(waits)), /HTTP 404/u);
     assert.deepEqual(waits, []);
     assert.equal(run.calls(), 1);
@@ -222,8 +243,8 @@ describe("withRetry", () => {
 
   it("取り直すたびに onRetry に理由と待ちを渡す", async () => {
     const seen: string[] = [];
-    const run = failingTimes([new HttpStatusError("u", 429)]);
+    const run = failingTimes([new HttpStatusError(429)]);
     await withRetry(run.attempt, { ...options([]), onRetry: (err, ms) => seen.push(`${err instanceof Error ? err.message : ""} ${String(ms)}`) });
-    assert.deepEqual(seen, ["u: HTTP 429 5"]);
+    assert.deepEqual(seen, ["HTTP 429 5"]);
   });
 });

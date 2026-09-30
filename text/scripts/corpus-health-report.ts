@@ -13,6 +13,30 @@ export type DocumentHealth =
   | { readonly id: string; readonly status: "source-changed"; readonly line: number }
   | { readonly id: string; readonly status: "drift" };
 
+/** Deep enough for fetch's own nesting (our wrapper, TypeError, the system error); a cycle stops here. */
+const MAX_CAUSE_DEPTH = 8;
+
+const messageOf = (value: unknown): string => {
+  if (value instanceof Error) return value.message;
+  return typeof value === "string" ? value : JSON.stringify(value);
+};
+
+const causeOf = (error: unknown): unknown => (error instanceof Error ? error.cause : undefined);
+
+/** The error's message, followed by each cause's message the text does not already hold: "fetch failed (getaddrinfo ENOTFOUND x)". */
+export const errorText = (error: unknown): string => {
+  const messages: string[] = [];
+  const visit = (current: unknown, depth: number): void => {
+    if (current === undefined || depth > MAX_CAUSE_DEPTH) return;
+    const message = messageOf(current);
+    if (!messages.some((seen) => seen.includes(message))) messages.push(message);
+    visit(causeOf(current), depth + 1);
+  };
+  visit(error, 0);
+  const [first = "", ...rest] = messages;
+  return rest.length === 0 ? first : `${first} (${rest.join(": ")})`;
+};
+
 const CHANGES_HEADER = "Changed from corpus/expected.txt";
 
 /** The ids on the "- expected" / "+ actual" lines `yarn corpus` prints after its "Changed from" header. */
