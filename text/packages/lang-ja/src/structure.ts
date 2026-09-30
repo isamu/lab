@@ -283,9 +283,17 @@ const LEXICONS = loadLexicons();
 const CITATION = citationVocabulary(LEXICONS);
 const SECTIONS = sectionVocabulary(LEXICONS);
 const NOT_MAGNITUDE = (LEXICONS["not-magnitude"] ?? []).map((entry) => entry.pattern);
+const MEASURE_UNITS = (LEXICONS["measure-unit"] ?? []).map((entry) => entry.pattern);
+
+/** 記号のすぐ後ろにラテン文字・数字・ハイフンが続けば、単位ではなく語の頭（「2.1 mmap」）。 */
+const CONTINUES_WORD = /^[\p{Script=Latin}\p{Nd}_-]/u;
+
+/** 「1.5 mM の塩化マグネシウム」「37.5 ℃で」: 解析器が助数詞と読まない単位の記号。 */
+const startsWithMeasureUnit = (rest: string): boolean => MEASURE_UNITS.some((unit) => rest.startsWith(unit) && !CONTINUES_WORD.test(rest.slice(unit.length)));
 
 /** 辞書が桁の語と助数詞に切る一語（「1.5 万葉の世界」）は数量の続きではないので、行頭の番号は節のまま。 */
-const countedAfterNumber = (number: string, rest: string): boolean => !NOT_MAGNITUDE.some((word) => rest.startsWith(word)) && countedAfter(number, rest);
+const countedAfterNumber = (number: string, rest: string): boolean =>
+  startsWithMeasureUnit(rest) || (!NOT_MAGNITUDE.some((word) => rest.startsWith(word)) && countedAfter(number, rest));
 
 const sectionsOf = (text: string): Mention[] => sectionReferences(text, SECTIONS);
 
