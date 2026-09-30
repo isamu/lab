@@ -41,7 +41,10 @@ const measuredOf = (finding: Finding): number => Number(finding.values[MEASURED_
 const LOOSE_LIMIT = { upper: 1, lower: 1000, from: 1 };
 
 const findingsAt = (doc: ProseDocument, rules: readonly RuleDefinition[], rule: RuleDefinition, limit: number): Finding[] =>
-  runRules(doc, rules, {}, true, rule.use_for[0] ?? "business", { [rule.id]: limit }).findings.filter((finding) => finding.rule === rule.id);
+  runRules(doc, rules, {}, true, rule.use_for[0] ?? "business", { [rule.id]: limit }).findings.filter(
+    // A variant speaks with its own message, which states no limit (excessive-hedging's stacked hedges).
+    (finding) => finding.rule === rule.id && finding.variant === undefined,
+  );
 
 /** The limit that lets this value pass, and the one just past it that must report it. */
 const passing = (direction: Direction, value: number): number => (direction === "from" ? value + 1 : value);

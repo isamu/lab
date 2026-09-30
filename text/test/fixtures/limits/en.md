@@ -10,7 +10,7 @@ There is a need to review the budget. There is a plan to hire two people. There 
 It is clear that the team needs more time. It is obvious that the release will slip.
 In today's fast-paced world, we must delve into the tapestry of our processes; it's not just a tool, it plays a crucial role.
 The team quickly and quietly reviewed the plan — then happily and eagerly approved it — and finally, rapidly and carefully, shipped it.
-Arguably, it seems the plan works. It may be late. It could be fine, to some extent, in some cases.
+Arguably, it seems the plan works. It may possibly be late. It could be fine, to some extent, in some cases.
 Sorry to bother you, but if you don't mind, I just wanted to ask. I was wondering if you could check it 😀.
 
 Moreover, the budget is fixed.
