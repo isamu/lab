@@ -7,11 +7,15 @@ Newest first.
 ### A library caller gets the BOM and CRLF / CR handling too (#170)
 
 Removing a leading BOM and reading CRLF and CR-only line ends as LF happened only where the command line read a file.
-`buildDocument` and `profileFor` now do it themselves, so a program that passes a file's text as it is (and the
-`corpus` scripts) reads the same document as the command line. Every offset in the returned document refers to
-`doc.source`, the text after this normalisation, not to the string that was passed in; line numbers are the same
-either way. `buildStructure` returns only a tree, so its offsets still refer to the text it was given, as before. The
-command line's output is unchanged.
+`buildDocument`, `profileFor` and `resolveGenre` now do it themselves, so a program that passes a file's text as it is
+(and the `corpus` scripts) reads the same document as the command line. Every offset in the returned document refers
+to `doc.source`, the text after this normalisation, not to the string that was passed in; line numbers are the same
+either way. `buildStructure` returns only a tree, so its offsets still refer to the text it was given, as before.
+
+A file that starts with two BOMs now loses both. Before, the second one stayed in the text while the Markdown parser
+dropped it, so every position in the file was off by one: `# Notes` was read as the heading "Note", and a quoted
+sentence lost its last character.
+The command line's output is otherwise unchanged.
 
 ### `max-paragraph-length` no longer reports a paragraph of many short sentences (#170)
 

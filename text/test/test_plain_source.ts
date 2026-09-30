@@ -20,12 +20,21 @@ describe("plainSource: BOM を外し、改行を \\n にそろえる", () => {
     ["BOM と CRLF", "\uFEFF# T\r\n", "# T\n"],
     ["BOM だけ", "\uFEFF", ""],
     ["途中の U+FEFF は文字として残す", "a\uFEFFb", "a\uFEFFb"],
-    ["BOM が二つなら先頭の一つだけ", "\uFEFF\uFEFFa", "\uFEFFa"],
+    ["BOM が二つなら二つとも外す（二度かけても一度と同じ）", "\uFEFF\uFEFFa", "a"],
+    ["先頭の BOM の後の文字の後ろの U+FEFF は残す", "\uFEFF\uFEFFa\uFEFF", "a\uFEFF"],
     ["行の中の \\r でない空白は触らない", "a\tb\u00A0c\u3000d", "a\tb\u00A0c\u3000d"],
     ["U+2028 は改行にしない", "a\u2028b", "a\u2028b"],
   ];
   cases.forEach(([label, input, expected]) => {
     it(label, () => assert.equal(plainSource(input), expected));
+  });
+
+  it("二度かけても一度と同じ", () => {
+    const pieces = [String.fromCodePoint(0xfeff), "\r", "\n", "\r\n", "a", " ", String.fromCodePoint(0x2028)];
+    const texts = Array.from({ length: 2000 }, (_, seed) =>
+      Array.from({ length: seed % 12 }, (_, index) => pieces[(seed * 7 + index * 13 + (seed >> 3)) % pieces.length] ?? "").join(""),
+    );
+    texts.forEach((text) => assert.equal(plainSource(plainSource(text)), plainSource(text), JSON.stringify(text)));
   });
 
   it("行の数と、各行の中身は変わらない（CRLF / CR）", () => {
@@ -69,6 +78,14 @@ describe("Windows と古い Mac の改行、BOM 付きのファイル", () => {
     const out = await runIn("a.md", `\uFEFF# Notes\n\n${short}\n`, ["FILE"]);
     assert.match(out, /line 3/u);
     assert.ok(out.split("\n").includes(`    ${short}`), out);
+  });
+
+  it("BOM が二つでも、見出しと引用が 1 文字もずれない", async () => {
+    const short = "We go to it as we do so and we see it as we go on up to it if we do so or we be it now.";
+    const out = await runIn("a.md", `\uFEFF\uFEFF# Notes\n\n${short}\n`, ["FILE"]);
+    assert.ok(out.split("\n").includes(`    ${short}`), out);
+    const tree = await runIn("a.md", `\uFEFF\uFEFF# Notes\n\n${short}\n`, ["tree", "FILE"]);
+    assert.match(tree, /:heading "Notes"/u);
   });
 
   const FRONT = "---\ngenre: business/report\n---\n\n# Report\n\nThe results are stated here.\n";

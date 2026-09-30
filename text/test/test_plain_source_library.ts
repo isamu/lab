@@ -8,6 +8,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { allFindings } from "../scripts/corpus-findings.ts";
+import { resolveGenre } from "../packages/chaff/src/resolve-genre.ts";
 
 // A library caller (and the corpus scripts) hands chaff the text as it is on disk: a BOM, CRLF or CR-only line ends.
 // chaff reads it as the same document as the plain text, and every offset refers to doc.source, the plain text.
@@ -84,6 +85,23 @@ describe("buildDocument reads a BOM and CRLF / CR line ends as the plain text", 
     const plain = run(REPORT);
     assert.ok(plain.length > 0);
     assert.deepEqual(run(crlf(REPORT)), plain);
+  });
+});
+
+describe("resolveGenre and two leading BOMs", () => {
+  variants(REPORT).forEach(([label, raw]) => {
+    it(`${label}: resolveGenre reads the front matter`, () => {
+      assert.deepEqual(resolveGenre("a.md", raw, EMPTY), { genre: "business/report", from: "front-matter", unread: undefined });
+    });
+  });
+
+  it("two leading BOMs: the same document as the plain text, heading and all", () => {
+    const doc = documentOf("a.md", `${BOM}${BOM}${REPORT}`, "en", "business/report");
+    assert.equal(doc.source, REPORT);
+    assert.deepEqual(
+      doc.sections.map((section) => section.heading),
+      ["", "Report"],
+    );
   });
 });
 
