@@ -15,21 +15,32 @@ const chainAtEnd = (preceding: readonly Token[]): readonly Token[] => {
   return preceding.slice(Math.max(head, 0));
 };
 
-/**
- * 非自立名詞で終わる文末は、手前の述語の連なりまで見る。「予約できること。」「おかけしましたこと。」は手前の述語が調子を持つ。
- * 要件や規程のである調は「〜こと。」で書く。「以下のとおり。」は手前も述語でないので、調子を持たないまま。
- */
-const withPreceding = (ending: readonly Token[], preceding: readonly Token[]): readonly Token[] =>
-  isDependent(ending[0]) ? [...chainAtEnd(preceding), ...ending] : ending;
+/** 語彙表 neutral-ending の語（「こと」）か。書いた形か原形で照らす。 */
+const isNeutralWord = (token: Token | undefined, neutral: readonly LexiconEntry[]): boolean =>
+  token !== undefined && neutral.some((entry) => token.surface === entry.pattern || token.lemma === entry.pattern);
 
 /**
- * 文末の語の調子。preceding は文末の語より前の語。
+ * 非自立名詞で終わる文末は、手前の述語の連なりまで見る。「使っているのかな？」は手前の述語が調子を持つ。
+ * 「以下のとおり。」は手前も述語でないので、調子を持たないまま。
+ * 語彙表 neutral-ending の語（「こと」）で終わる文末は手前を見ない。「〜を保持すること。」は体言止めで、要件や規程の箇条書きは
+ * ですます調の文書でもである調の文書でもこの形で書く。
+ */
+const withPreceding = (ending: readonly Token[], preceding: readonly Token[], neutral: readonly LexiconEntry[]): readonly Token[] =>
+  isDependent(ending[0]) && !isNeutralWord(ending[0], neutral) ? [...chainAtEnd(preceding), ...ending] : ending;
+
+/**
+ * 文末の語の調子。preceding は文末の語より前の語。neutral は調子を持たない文末の語（語彙表 neutral-ending）。
  * 文末に述語（動詞・形容詞・助動詞）が無ければ、ですます調でもである調でもないので undefined。
  * 「以下の通り。」「円錐形の麦わら帽子。」のような名詞で終わる文を数えると、そのままである調の少数派になっていた。
  * 書いた形でも原形でも読みでも当てる（polite-word.ts）。「ください」の原形は「くださる」で、原形だけを見ると丁寧な文末を見落とす。
  */
-export const registerOf = (ending: readonly Token[], preceding: readonly Token[], polite: readonly LexiconEntry[]): Register | undefined => {
-  const judged = withPreceding(ending, preceding);
+export const registerOf = (
+  ending: readonly Token[],
+  preceding: readonly Token[],
+  polite: readonly LexiconEntry[],
+  neutral: readonly LexiconEntry[] = [],
+): Register | undefined => {
+  const judged = withPreceding(ending, preceding, neutral);
   if (!judged.some(isPredicate)) return undefined;
   return judged.some((token) => isPoliteWord(token, polite)) ? "polite" : "plain";
 };

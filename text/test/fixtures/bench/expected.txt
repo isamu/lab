@@ -24,7 +24,7 @@ max-sentence-length                    11     11       0             0
 ngram-repetition                        9      9       0             0
 no-doubled-joshi                       12     12       0             0
 no-em-dash                              8      8       0             0
-no-mixed-desumasu                      13     13       0             0
+no-mixed-desumasu                      13     12       1             0
 no-nakaguro-parallel                    2      2       0             0
 numbering-gap                           6      6       0             0
 oxford-comma-consistency                2      2       0             0
@@ -230,7 +230,7 @@ ja/readme  hedges-stacked  found
 ja/readme  spelling-avoided  found
 ja/requirements  reference-broken  found
 ja/requirements  number-skipped  found
-ja/requirements  polite-in-plain  found
+ja/requirements  polite-in-plain  missed
 ja/requirements  no-nested  found
 ja/requirements  space-strayed  found
 ja/requirements  section-dropped  found
