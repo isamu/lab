@@ -152,10 +152,20 @@ const isReaderOnlyClass = (range: ElementRange): boolean => {
 const isFocusTarget = (range: ElementRange): boolean =>
   !/\shref\s*=/iu.test(range.openTag) && /\stabindex\s*=\s*(?:"\s*-1\s*"|'\s*-1\s*'|-1(?=[\s/>]))/iu.test(range.openTag);
 
-/** Text the page writes for a screen reader and does not show; a focus target inside a heading is the heading's title. */
+/** Nothing but markup on either side: the anchor is a block of its own, not a word in a sentence. */
+const standsAlone = (html: string, range: ElementRange): boolean =>
+  html.slice(html.lastIndexOf(">", range.start - 1) + 1, range.start).trim() === "" &&
+  html.slice(range.end, html.indexOf("<", range.end) === -1 ? html.length : html.indexOf("<", range.end)).trim() === "";
+
+/**
+ * Text the page writes for a screen reader and does not show. A focus target counts only standing alone outside a
+ * heading: inside a heading it is the heading's title, inside a sentence a word of it.
+ */
 const withoutReaderOnlyText = (html: string): string => {
   const headings = headingRanges(html);
-  const targets = withoutElementsWhere(html, "a", (anchor) => isFocusTarget(anchor) && !headings.some((heading) => isInside(heading, anchor)));
+  const isReaderTarget = (anchor: ElementRange): boolean =>
+    isFocusTarget(anchor) && standsAlone(html, anchor) && !headings.some((heading) => isInside(heading, anchor));
+  const targets = withoutElementsWhere(html, "a", isReaderTarget);
   return withoutElementsOpening(targets, CLASS_OPENING, isReaderOnlyClass);
 };
 
