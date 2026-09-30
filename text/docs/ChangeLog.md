@@ -28,6 +28,29 @@ English -ing verbs now carry `VerbForm=Ger`, so a present participle is told apa
 A word in capitals ("PR", "FCPs") is capitalised in either style, so it is no longer evidence of Title Case.
 "Opening a PR" and "Proposed FCPs" are left unjudged; "Using the API Client" is still Title Case.
 
+### The corpus HTML converter reads a table of sentences (#170)
+
+A glossary, a list of infection routes or a report's footnotes written as an HTML table disappeared from the stored
+text, because every table was dropped. A table where at least half of the rows end a sentence in some cell is now
+read: each cell becomes a paragraph of its own (like a term and its definition in a `<dl>`), the caption comes
+first, a row of nothing but header cells goes, and a cell that starts with a number and ends no sentence (a row
+number, a range of figures) goes. Any other table (figures, dates, names) is dropped as before; a point inside a
+cell ("H.Con.Res. 218") is not a sentence's end. Documents fetched from HTML change when they are fetched again.
+
+### The corpus HTML converter keeps U+3000 and drops text written for a screen reader (#170)
+
+The converter behind `yarn corpus:fetch` collapsed every run of whitespace, U+3000 included, so 「2　学士」 was stored
+as 「2 学士」 and a clause number lost the full-width space that marks it. Only markup's own spacing collapses now.
+It also drops text that a sighted reader never sees: an element whose class follows a screen-reader convention
+(`sr-only`, `visually-hidden`, `govuk-visually-hidden`, `screen-reader-text`, or exactly `hidden`), unless a variant
+such as `md:block` shows it on some screens, and a skip link's target (an anchor with no `href` and `tabindex="-1"`
+alone on its line, such as 「ここから本文です。」). A block of nothing but links to other pages that closes the page (「一覧に戻る」) is dropped
+like the menus above the title (a link to a file, such as an appendix in PDF, stays), so a site's trailing `## 新着記事` no longer follows a speech as its only heading. Documents fetched
+from HTML change when they are fetched again.
+
+A heading numbered like a statute's paragraph (`## 4　適用除外`) is now read as a chapter number, never as a
+paragraph of an open article, so `numbering-gap` no longer reports a guideline's chapters as gaps in a paragraph list.
+
 ### `names:` in chaff.yaml: the team lists its own names (#170)
 
 `max-kanji-continuous` reported official names such as 個人情報保護委員会 and 国土交通省鉄道局総務課, and the dictionary
