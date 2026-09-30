@@ -17,7 +17,7 @@ import {
 } from "./bench-text.ts";
 import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinParagraphs } from "./bench-mutations-layout.ts";
 import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa, strayParticleSpace } from "./bench-mutations-ja.ts";
-import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn } from "./bench-mutations-en.ts";
+import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, pluralAfterArticle } from "./bench-mutations-en.ts";
 import * as phrasing from "./bench-mutations-phrasing.ts";
 
 export type Mutation = {
@@ -390,6 +390,7 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "heading-recased", rule: "title-case-consistency", languages: ["en"], plant: flipLastHeading },
   { id: "particle-doubled", rule: "doubled-word", languages: ["ja"], plant: doubleParticle },
   { id: "article-doubled", rule: "doubled-word", languages: ["en"], plant: doubleArticle },
+  { id: "plural-after-article", rule: "agreement-slip", languages: ["en"], plant: pluralAfterArticle },
   { id: "heading-dropped", rule: "preamble-length", languages: ["ja", "en"], reportsOn: "document", plant: phrasing.dropFirstHeading },
   { id: "cliche-closing", rule: "closing-cliche", languages: ["ja", "en"], plant: phrasing.closeWithCliche },
   { id: "padded-opening", rule: "padded-intro", languages: ["ja", "en"], plant: phrasing.padOpening },

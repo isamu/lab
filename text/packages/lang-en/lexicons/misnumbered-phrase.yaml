@@ -1,0 +1,7 @@
+# Phrases with a plural where English takes the singular: "remains ones of the most intriguing" is "one of the most".
+# Not counted after a determiner, an adjective or a pronoun, where "ones" is the pronoun ("the ones of the most use").
+id: misnumbered-phrase
+language: en
+entries:
+  - pattern: ones of the most
+  - pattern: ones of the least

@@ -1,0 +1,13 @@
+# Determiners that count one thing. A plural noun after one of these ("a significant changes", "each new users") is a
+# slip. "that" is left out: the tagger cannot tell the demonstrative from the conjunction ("so that users can").
+# Only the articles never stand alone; after the others a noun is counted only when an adjective comes between, because
+# "This results in a loss" is a pronoun and a verb, not a determiner and a noun.
+id: singular-determiner
+language: en
+entries:
+  - pattern: a
+  - pattern: an
+  - pattern: another
+  - pattern: each
+  - pattern: every
+  - pattern: this

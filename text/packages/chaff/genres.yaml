@@ -110,6 +110,7 @@ groups:
       no-mixed-desumasu: off
       contraction-consistency: off
       doubled-word: off
+      agreement-slip: off
       agentless-passive: off
       expletive-construction: off
       excessive-hedging: off
@@ -371,6 +372,7 @@ genres:
       no-mixed-desumasu: off
       contraction-consistency: off
       doubled-word: off
+      agreement-slip: off
       sasete-itadaku: off
       double-keigo: off
       cushion-phrase-density: off

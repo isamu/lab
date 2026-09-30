@@ -1,5 +1,6 @@
 rule                              planted  found  missed  false alarms
 agentless-passive                       4      4       0             0
+agreement-slip                          4      4       0             0
 bold-density                           10     10       0             0
 closing-cliche                          2      2       0             0
 contraction-consistency                 2      2       0             0
@@ -258,6 +259,7 @@ en/design  heading-echoed  found
 en/design  section-dropped  found
 en/design  oxford-flipped  found
 en/design  article-doubled  found
+en/design  plural-after-article  found
 en/design  intensified  found
 en/design  hedges-stacked  found
 en/design  spelling-avoided  found
@@ -296,6 +298,7 @@ en/itinerary  jargon-used  found
 en/itinerary  section-dropped  found
 en/itinerary  heading-recased  found
 en/itinerary  article-doubled  found
+en/itinerary  plural-after-article  found
 en/itinerary  padded-opening  found
 en/itinerary  intensified  found
 en/itinerary  hedges-stacked  found
@@ -347,6 +350,7 @@ en/proposal  section-dropped  found
 en/proposal  expletives  found
 en/proposal  heading-recased  found
 en/proposal  article-doubled  found
+en/proposal  plural-after-article  found
 en/proposal  padded-opening  found
 en/proposal  intensified  found
 en/proposal  hedges-stacked  found
@@ -371,6 +375,7 @@ en/requirements  heading-echoed  found
 en/requirements  section-dropped  found
 en/requirements  heading-recased  found
 en/requirements  article-doubled  found
+en/requirements  plural-after-article  found
 en/requirements  intensified  found
 en/requirements  hedges-stacked  found
 en/requirements  opener-repeated  found
