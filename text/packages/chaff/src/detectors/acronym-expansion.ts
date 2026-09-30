@@ -12,6 +12,7 @@ import { escapeRegExp } from "../orthography.ts";
  *   （single nucleotide polymorphism：SNP）  括弧の最後の項目が略語で、コロンの前の語の頭文字と揃う
  *   人事部（以下「HR」という。）      括弧の中が定義の語と略語だけ
  *   overnight reverse repurchase agreement (ON RRP)  括弧の中が空白で繋いだ略語だけで、前の名前から文字が順に拾える
+ *   Partnership On Wide Energy and Resources Resilience Asia (POWERR Asia)  括弧の中が略語と添えた語で、前の名前の頭文字と揃う
  * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
  */
 const WRAP = String.raw`[\s"“”'‘’「」『』]*`;
@@ -149,12 +150,28 @@ const isJointBracketedAt = (body: string, acronym: string, at: number): boolean 
   return abbreviates(body.slice(0, start), body.slice(start, close));
 };
 
+/** 括弧の中で略語に添えた、大文字で始まる語（(POWERR Asia)、(ZEC Initiative)）と、閉じる括弧。 */
+const QUALIFIER = new RegExp(String.raw`^(?<words>(?: [A-Z][a-z]+)+)${WRAP}[)）]`, "u");
+
+/**
+ * 括弧の中が略語と、それに添えた語だけの形。括弧の前の名前の頭文字が略語と揃うときだけ展開と見なす（(NASA Goddard) は揃わない）。
+ * 添えた語が名前の終わりにもあれば（… Resilience Asia (POWERR Asia)）、それを除いて比べる。
+ */
+const isQualifiedAt = (body: string, acronym: string, at: number): boolean => {
+  if (!OPENED.test(body.slice(Math.max(0, at - NEAR), at))) return false;
+  const end = at + acronym.length;
+  const words = QUALIFIER.exec(body.slice(end, end + DEFINITION_REACH))?.groups?.["words"];
+  if (words === undefined) return false;
+  const name = body.slice(0, at).replace(ANY_OPENED, "").trimEnd();
+  return spellsOut(name.endsWith(words) ? name.slice(0, -words.length) : name, acronym);
+};
+
 const isBracketedAt = (body: string, acronym: string, at: number): boolean => {
   const after = body.slice(at + acronym.length, at + acronym.length + NEAR);
   const before = body.slice(Math.max(0, at - NEAR), at);
   if (OPENS.test(after) || (OPENED.test(before) && CLOSES.test(after))) return true;
   if (SQUARE_OPENED.test(before) && SQUARE_CLOSES.test(after) && spellsOut(body.slice(0, at), acronym)) return true;
-  return isSeparatedAt(body, acronym, at) || isNamedBeforeAt(body, acronym, at) || isJointBracketedAt(body, acronym, at);
+  return isSeparatedAt(body, acronym, at) || isNamedBeforeAt(body, acronym, at) || isJointBracketedAt(body, acronym, at) || isQualifiedAt(body, acronym, at);
 };
 
 /**

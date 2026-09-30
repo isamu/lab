@@ -1,0 +1,20 @@
+# 大文字で書く姓の前に置く肩書き。英語の速記録の発言者（Senator HAWLEY.、Secretary BLINKEN.）と、日本政府の英文が
+# 「姓 名」の順に書くローマ字の名前（Prime Minister ABE Shinzo）。すぐ後ろの大文字の語は名前で、略語ではない。
+# 日本語の文書も英語の記録を引くので、英語と同じ語を置く。Minister は Prime Minister も、President は Vice President も覆う。
+# 後ろに略語が来やすい肩書き（Chair、General、Justice）は入れない。字面どおりに照らす。
+id: name-title
+language: ja
+entries:
+  - pattern: "President"
+  - pattern: "Minister"
+  - pattern: "Secretary"
+  - pattern: "Secretary-General"
+  - pattern: "Chief Justice"
+  - pattern: "Governor"
+  - pattern: "Senator"
+  - pattern: "Ambassador"
+  - pattern: "Mayor"
+  - pattern: "Chancellor"
+  - pattern: "Commissioner"
+  - pattern: "Chairman"
+  - pattern: "Chairwoman"

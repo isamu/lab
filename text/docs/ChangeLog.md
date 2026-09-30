@@ -4,6 +4,26 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` no longer asks to expand emphasis, a month in a date, a surname after a title or a qualified expansion (#170)
+
+Four kinds of capital word that corpus round 11 reported are not acronyms, and are no longer counted:
+
+- **A word in capitals for emphasis.** `the CFPB will NEVER call you`: a word the English dictionary knows only as an
+  adverb (NEVER, ALWAYS, ALSO) is read as that word, so any such word is covered without a list. A word that is also a
+  noun or an adjective stays counted, because it is often a real name: FAST and EAGLE are a telescope and a simulation
+  in the arXiv listing. `NEW` (a label's "NEW formula") joins the `emphasis-word` list beside NOT, AND and ONLY.
+- **A month in a date.** `SEP 01, 2022`, `12 SEP 2025`, `Sept. 12, 2025`: English dates now read month
+  abbreviations, months in capitals and the `12-SEP-2025` form. A month counts only with a year beside it, so `a SEP
+  account` is still an acronym.
+- **A surname in capitals after a title.** `former Prime Minister ABE Shinzo`, `Senator HAWLEY.`: the new `name-title`
+  word list (President, Minister, Secretary, Governor, Senator, Chief Justice, …) works like the honorifics `Mr.` and
+  `Mrs.`, but only where the capital word has a name's shape: a speaker's label at the start of a line (followed by `.` or
+  `:`) or the Japanese government's surname-first order (followed by a given name). `the President NASA memo` and
+  `The Secretary GDPR: Article 5` are still reported.
+- **An expansion whose brackets add a word.** `Partnership On Wide Energy and Resources Resilience Asia (POWERR Asia)`
+  and `Historically Underutilized Business Zone (HUB Zone)`: capitalised words after the acronym inside the brackets
+  are allowed when the name before the brackets, less those words, spells the acronym. `(NASA Goddard)` does not.
+
 ### Genre suggestions: fewer wrong ones, and literature by its content (#170)
 
 The suggestion shown when no genre is set was wrong on three corpus documents. An offer letter that encloses an

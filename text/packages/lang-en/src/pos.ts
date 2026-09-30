@@ -5,6 +5,7 @@ import { loadLexicons } from "./lexicons.ts";
 import { blankLongRuns } from "./long-runs.ts";
 import { lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
+import { isEmphasisedAdverb } from "./emphasis.ts";
 
 const require = createRequire(import.meta.url);
 
@@ -200,6 +201,10 @@ export const prepare = (): void => {
 
 export const isReady = (): boolean => state.ready !== undefined;
 
+/** 大文字で強調した副詞（NEVER）は、解析器が名前と付けても副詞。Emph=Yes は、略語ではないと detector に伝える。 */
+const withEmphasis = (token: Token): Token =>
+  isEmphasisedAdverb(token.surface, state.vocabulary) ? { ...token, pos: "ADV", lemma: token.surface.toLowerCase(), features: { Emph: "Yes" } } : token;
+
 /**
  * wink は位置を返さないので、表層を順に照合して復元する。
  * 見つからないものは飛ばし、カーソルは進めない。位置の当てずっぽうを下流に流さない。
@@ -217,7 +222,7 @@ const locate = (text: string, tagged: readonly Tagged[]): Token[] =>
         ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
         ...featuresOf(tagged, at),
       };
-      return { tokens: [...acc.tokens, token], cursor: end };
+      return { tokens: [...acc.tokens, withEmphasis(token)], cursor: end };
     },
     { tokens: [], cursor: 0 },
   ).tokens;
