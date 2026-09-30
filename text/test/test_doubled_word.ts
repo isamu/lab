@@ -134,6 +134,15 @@ describe("doubled-word — 純関数", () => {
     assert.equal(isNameBefore(lower, capitalised, false), false);
   });
 
+  it("文の途中の大文字 1 字の冠詞（site A、Peer A）の後ろの違う限定詞は、名前とその後ろの語。文頭と同じ語は書き損じ", () => {
+    assert.deepEqual(pairs([w("site", "NOUN"), w("A", "DET", ART), w("the", "DET", ART)]), []);
+    assert.deepEqual(pairs([w("plan", "NOUN"), w("A", "DET", ART), w("our", "PRON", POSS)]), []);
+    assert.deepEqual(pairs([w("A", "DET", ART), w("the", "DET", ART)]), ["A the@2"]);
+    assert.deepEqual(pairs([w("site", "NOUN"), w("A", "DET", ART), w("a", "DET", ART)]), ["A a@7"]);
+    assert.deepEqual(pairs([w("site", "NOUN"), w("a", "DET", ART), w("the", "DET", ART)]), ["a the@7"]);
+    assert.deepEqual(pairs([w("review", "VERB"), w("An", "DET", ART), w("the", "DET", ART)]), ["An the@10"]);
+  });
+
   it("アダプタが重ね言葉（Echo=Rdp）と読んだ二つ目は数えない", () => {
     assert.deepEqual(pairs([w("会社", "NOUN"), w("会社", "NOUN", { Echo: "Rdp" }), w("で", "ADP")], { gaps: ["", ""], spaced: false }), []);
     assert.deepEqual(pairs([w("会社", "NOUN", { Echo: "Rdp" }), w("会社", "NOUN")], { gaps: [""], spaced: false }), ["会社 会社@2"]);
@@ -275,6 +284,7 @@ describe("doubled-word — 英語", () => {
     assert.deepEqual(findingsOf("Please review the the draft before Friday.", en, "en"), ["1:19 the the"]);
     assert.deepEqual(findingsOf("Developers interact with our the platform every day.", en, "en"), ["1:30 our the"]);
     assert.deepEqual(findingsOf("We will send a the report to the team.", en, "en"), ["1:16 a the"]);
+    assert.deepEqual(findingsOf("A the report is attached.", en, "en"), ["1:3 A the"]);
     assert.deepEqual(findingsOf("The plan is is ready for review.", en, "en"), ["1:13 is is"]);
   });
 
@@ -313,6 +323,8 @@ describe("doubled-word — 英語", () => {
       "Open the My Account page.",
       "We do do manual reviews for high-risk cases.",
       "Payment for May may be delayed due to procurement review.",
+      "If at site A the connection no longer exists, site B is told.",
+      "Under plan B the team ships first.",
     ];
     valid.forEach((text) => assert.deepEqual(findingsOf(text, en, "en"), [], text));
   });
