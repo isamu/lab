@@ -57,7 +57,7 @@ dailymed-advil-otc-label  max-sentence-length 4, proper-noun-density 1, title-ca
 denkiyagi-ryohi-kitei  clean
 denkiyagi-shugyo-kisoku  clean
 dwango-nicolive-manifest-generator  latin-spacing 9, max-sentence-length 1, undefined-acronym 3
-ecfr-16-cfr-310-telemarketing  dangling-reference 4, max-sentence-length 1, numbering-gap 1, title-case-consistency 2, undefined-acronym 7
+ecfr-16-cfr-310-telemarketing  dangling-reference 4, max-sentence-length 1, title-case-consistency 2, undefined-acronym 7
 eip-1559-fee-market  contraction-consistency 2, max-paragraph-length 3, max-sentence-length 33, undefined-acronym 3
 entaku-rb-4  agentless-passive 7, latin-spacing 1
 entaku-rb-5  no-mixed-desumasu 1

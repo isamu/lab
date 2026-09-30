@@ -12,6 +12,13 @@ licence: they are 青空文庫's record of the file, not the author's text, and 
 work's. The blocks are told by the classes 青空文庫 marks them with; the rest of the page is converted as HTML. The four
 青空文庫 documents use it.
 
+### The corpus HTML converter restores a paragraph tag that lost its "<" (#170)
+
+The eCFR serves 16 CFR 310.4(b) with `… 45 CFR 160.103. P&gt;(2) It is …`, the remains of the `<P>` that opened
+paragraph (2). A `P>` after a sentence's end and right before a paragraph's designation (`(2)`, `(iv)`, `(A)`) now
+opens a paragraph, so (2) no longer hides inside (1)(v)(D) and `numbering-gap` no longer reports (3) after (1).
+`P>0.05`, `P > (2)` and the same text inside a tag stay as they are.
+
 ### `oxford-comma-consistency` no longer reads an example aside or an "and" inside one item as a list (#170)
 
 A list needs three items, and four shapes made two items, or an "and" inside one item, look like three:
