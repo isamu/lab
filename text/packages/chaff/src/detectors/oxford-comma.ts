@@ -54,16 +54,13 @@ const isClause = (item: readonly Token[]): boolean => {
 const itemsBefore = (clause: Clause, at: number): Token[][] => {
   const level = clause.depths[at] ?? 0;
   const start = clause.tokens.slice(0, at).findLastIndex((token) => CLAUSE_BREAK.has(token.surface)) + 1;
-  return clause.tokens
-    .slice(start, at)
-    .reduce<Token[][]>(
-      (items, token, offset) => {
-        if (isComma(token) && clause.depths[start + offset] === level) return [...items, []];
-        return [...items.slice(0, -1), [...(items.at(-1) ?? []), token]];
-      },
-      [[]],
-    )
-    .filter((item) => item.length > 0);
+  // 項目を足すたびに並びを作り直すと、長い並びで語数の二乗になる。今の項目に足していく。
+  const items: Token[][] = [[]];
+  clause.tokens.slice(start, at).forEach((token, offset) => {
+    if (isComma(token) && clause.depths[start + offset] === level) items.push([]);
+    else items.at(-1)?.push(token);
+  });
+  return items.filter((item) => item.length > 0);
 };
 
 /**

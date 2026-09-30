@@ -15,8 +15,8 @@ time grew with the square of the length. Each now reads it once. The output is u
   A run without `baseline` computes none unless `.chaff-baseline.json` exists.
 - **The default output** tidies each quoted sentence once, not once per finding in it.
 - **`doubled-word`** finds the first word of a sentence once per sentence.
-- **English:** the tagger's words are placed in the sentence, and `oxford-comma-consistency` counts parentheses, in one
-  pass.
+- **English:** the tagger's words are placed in the sentence, and `oxford-comma-consistency` counts parentheses and
+  splits a list into its items, in one pass.
 - **Statutes** (`legal/statute`): a bare 第一項 looks up the aside depth and the reference it continues from an index
   built once per line, instead of reading the line from its start for each reference.
 
