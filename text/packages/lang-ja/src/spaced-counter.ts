@@ -26,7 +26,8 @@ const asCounter = (token: Token): Token => ({
   surface: token.surface,
   pos: "NOUN",
   ...(token.lemma === undefined ? {} : { lemma: token.lemma }),
-  features: { NounType: "Class" },
+  // 解析器が読む助数詞（名詞,接尾,助数詞）と同じ印。数に付いて単独では語にならない。
+  features: { NounType: "Class", Bound: "Yes" },
 });
 
 export const markSpacedCounters = (tokens: readonly Token[], readsAsCounter: CounterReading): Token[] =>
