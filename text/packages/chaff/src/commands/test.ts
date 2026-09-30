@@ -97,8 +97,8 @@ const judgeAll = async (
       const source = plainSource(await readFile(path, "utf8"));
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
-      const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language));
       const { genre } = resolveGenre(path, source, config);
+      const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
       const rules = loadRules(language);
       return { path, outcome: await runSemantic(doc, rules, checks, config.rules, genre, options), rules, language };
     }),
@@ -117,8 +117,8 @@ const dryRun = async (
       const source = plainSource(await readFile(path, "utf8"));
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
-      const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language));
       const { genre } = resolveGenre(path, source, config);
+      const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
       return { path, jobs: planSemantic(doc, loadRules(language), checks, config.rules, genre), sentences: doc.sentences.length, language };
     }),
   );

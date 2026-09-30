@@ -26,4 +26,4 @@ how_to_fix:
 # 少数派が何文までなら「混在」と見るか。これを超えたら、混在ではなく別の文体と判断して黙る。
 levels: { strict: 5, normal: 3, relaxed: 1 }
 
-use_for: [blog, business, technical]
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]

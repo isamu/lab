@@ -1,0 +1,69 @@
+---
+import Base from "../../../layouts/Base.astro";
+import Badge from "../../../components/Badge.astro";
+import { LANGS, href, isLang, t } from "../../../lib/i18n";
+import { genreGroups } from "../../../lib/genres";
+
+export const getStaticPaths = () => LANGS.map((lang) => ({ params: { lang } }));
+
+const { lang } = Astro.params;
+if (!isLang(lang)) throw new Error(`unknown language ${String(lang)}`);
+const sample = lang === "ja" ? "契約書.md" : "contract.md";
+---
+
+<Base lang={lang} title={t(lang, "genres")} path="genres" description={t(lang, "genresIntro")}>
+  <h1 class="text-3xl font-bold">{t(lang, "genres")}</h1>
+  <p class="mt-2 leading-relaxed">{t(lang, "genresIntro")}</p>
+  <pre class="mt-4 overflow-x-auto rounded bg-zinc-100 p-4 font-mono text-sm dark:bg-zinc-900">{`npx chaffjs --genre legal/contract ${sample}
+npx chaffjs init --genre legal/contract`}</pre>
+  <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "genresSuggest")}</p>
+
+  {genreGroups.map((group) => (
+    <section class="mt-10">
+      <h2 class="text-2xl font-semibold">{group.name[lang]}</h2>
+      {group.genres.map((genre) => (
+        <article id={genre.id.replace("/", "-")} class="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+          <h3 class="flex flex-wrap items-baseline gap-x-3">
+            <span class="font-mono text-lg">{genre.id}</span>
+            <span>{genre.name[lang]}</span>
+          </h3>
+          <p class="mt-1 leading-relaxed">{genre.summary[lang]}</p>
+          <p class="mt-2 font-mono text-sm text-zinc-600 dark:text-zinc-400">{`npx chaffjs --genre ${genre.id} <file>`}</p>
+          {genre.profile !== undefined && (
+            <p class="mt-2 text-sm">
+              {t(lang, "genreProfile")} <Badge tone="neutral">{genre.profile}</Badge>
+            </p>
+          )}
+          {genre.on.length > 0 && (
+            <p class="mt-2 text-sm">
+              <span class="text-zinc-500">{t(lang, "genreTurnsOn")}</span>{" "}
+              {genre.on.map((id) => (
+                <a href={href(`${lang}/rules/${id}`)} class="mr-2 font-mono text-blue-700 underline dark:text-blue-400">
+                  {id}
+                </a>
+              ))}
+            </p>
+          )}
+          {genre.off.length > 0 ? (
+            <details class="mt-2 text-sm">
+              <summary class="cursor-pointer text-zinc-500">
+                {t(lang, "genreTurnsOff")} ({genre.off.length})
+              </summary>
+              <p class="mt-1">
+                {genre.off.map((id) => (
+                  <a href={href(`${lang}/rules/${id}`)} class="mr-2 font-mono text-blue-700 underline dark:text-blue-400">
+                    {id}
+                  </a>
+                ))}
+              </p>
+            </details>
+          ) : (
+            <p class="mt-2 text-sm text-zinc-500">{t(lang, "genreAsDefault")}</p>
+          )}
+        </article>
+      ))}
+    </section>
+  ))}
+
+  <p class="mt-10 text-sm text-zinc-500">{t(lang, "genresSource")}</p>
+</Base>

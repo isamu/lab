@@ -33,7 +33,7 @@ const findingsWith = async (
   if (adapter === undefined) throw new Error(`no adapter for ${language}`);
   await adapter.prepare?.({ pos: true });
   const rules = loadRules(language).filter((rule) => only(rule.id));
-  const result = runRules(buildDocument(path, source, adapter, teamRules(team), profileFor(EMPTY, path, source, language)), rules, {}, true, genre);
+  const result = runRules(buildDocument(path, source, adapter, teamRules(team), profileFor(EMPTY, path, source, language, genre)), rules, {}, true, genre);
   const byId = new Map(rules.map((rule) => [rule.id, rule]));
   return result.findings.flatMap((finding) => {
     const rule = byId.get(finding.rule);

@@ -2,7 +2,93 @@
 
 Newest first.
 
-## Unreleased
+## 0.16.0 — 2026-09-30
+
+Pick the kind of document, and chaff checks it as that kind. New genres cover contracts, statutes, court decisions,
+patents, manuals, FAQs, glossaries, papers, fiction, essays, poetry, plays, speeches and verbatim records, each measured
+on real documents of its kind; with no genre set, chaff suggests one instead of guessing. The documentation and the
+Claude Code skill now start from that choice. `names:` in `chaff.yaml` lists the team's own names, and a genre or profile
+chaff does not know stops the run. Many false reports found on real documents are gone: Japanese descriptive and legal
+passives, honorifics, mimetics and 畳語, dates in `latin-spacing`, 「前契約の第9条」, one-paragraph-per-line texts,
+English curly apostrophes, restricted superlatives, appositives read as lists. `excessive-hedging` catches a hedge
+stacked in one sentence, English messages agree with their counts, and `chaff test` follows the document's language. The
+corpus adds literature, speech, glossaries and more, its converter reads tables and keeps U+3000, and a weekly run
+reports dead sources.
+
+📦 [`chaffjs@0.16.0`](https://www.npmjs.com/package/chaffjs/v/0.16.0) ·
+[`@chaffjs/lang-ja@0.15.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.15.0) ·
+[`@chaffjs/lang-en@0.14.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.14.0)
+
+### The Claude Code skill picks the genre first (#170)
+
+The skill that `chaff skill` installs now starts from the kind of document: name it from the document (`chaff
+genres` lists them), or run once and take the genre the header suggests, then run with `--genre` (or write it with
+`init --genre`) and check the header before reading the findings. A rule the genre turns off is the preset's
+choice, and the skill leaves it off unless asked.
+
+### The documentation starts from picking the kind of document (#170)
+
+README, the npm README and the site guide (getting started, configuration and commands, in Japanese and English) now
+begin with choosing the genre: a table of every genre with what it is for, the commands (`--genre`, `init --genre`,
+`genres`), and what the screen says when no genre is set. The site has a Genres page built from `genres.yaml`: each
+genre's summary, the rules it turns off and the experimental ones it turns on, and the profile it reads with. `--help`
+says that `init` asks for the genre and that `genres` says what each is for. A test keeps every genre in the pages that
+list them by hand.
+
+### chaff suggests a genre when none is set, and `chaff init` asks for one (#170)
+
+A file with no genre set (none on the command line, in chaff.yaml or its front matter, and none guessed from its
+path or headings) is checked as `blog/tech`. When it looks like another kind, the screen now says so under the header
+and again after the not-run list, in the file's language:
+
+```
+contract.md   blog/tech · 日本語   ジャンルは既定から
+   契約書・規約のようです。--genre legal/contract を試せます
+```
+
+The suggestion never changes the run: switching silently would change what an existing run reports. Each genre's
+cues are data in `genres.yaml` (`suggest:`): path patterns, and per language a line pattern with how many lines must
+match (「本契約」「以下「甲」」, `this Agreement`; 「○委員長（…君）」 speaker lines; 【請求項】; `delivered the opinion of the
+Court`), and a genre that reads with a profile is suggested when the content has that profile's shape. The genre whose
+cues the file meets most strongly wins. On the corpus, the suggestion names the right kind for most statutes,
+contracts, judgments, patents, FAQs, glossaries, transcripts and papers; literature has path cues only.
+
+`chaff init` at a terminal lists the genres with what each is for and asks for one (a number or a name; Enter for
+`blog/tech`). `chaff init --genre <genre>` chooses without asking, and a script or CI is never asked. The written
+chaff.yaml names what the genre is for in its comment.
+
+### Genres for contracts, statutes, manuals, papers, literature and speech: pick the kind of document (#170)
+
+A contract, a statute or a novel was checked against blog rules unless its writer knew better. chaff now ships
+presets for the common kinds of document, each a genre in the new `genres.yaml`:
+
+| Group | Genres |
+| --- | --- |
+| legal | `legal/contract`, `legal/statute`, `legal/judgment`, `legal/patent` |
+| docs | `docs/manual`, `docs/faq`, `docs/glossary` |
+| academic | `academic/paper` |
+| literature | `literature/fiction`, `literature/essay`, `literature/poetry`, `literature/play` |
+| speech | `speech/address`, `speech/transcript` |
+
+A genre is data: the level each rule runs at (`rules:`, on a group or a genre, under chaff.yaml's own `rules`), and
+the document profile it reads with (`legal/statute` reads with `statute`). A rule the genre turns off is listed under
+"did not run" with the genre as the reason, and chaff.yaml can turn it back on. The levels were measured on the
+corpus documents of each kind:
+
+- legal: long sentences and paragraphs are the form, so `max-sentence-length` and `max-paragraph-length` have
+  wider limits (wider still for statutes and judgments), and the rules that only flag legal drafting's form are off
+  (repeated terms and heads, the passive, noun compounds, の chains). `legal/contract` turns on the experimental
+  structure checks a contract is read against: references to clauses that are not there, numbering gaps, terms
+  defined twice, a weekday that does not match its date, and totals that do not add up.
+- docs: a help page's first line repeats its heading, and it makes no claims to back up.
+- academic: the passive and hedging are the norm; sentences may run longer.
+- literature: length, rhythm, repetition and register are the author's; only what one work holds itself to runs.
+- speech: greetings and thanks are a speech's form; a transcript is what was said, so none of its style is checked.
+
+`chaff genres` lists every genre under its group with what it is for, in the output language, and how to use one.
+`rules --json` and `explain` show a genre's level as the one in effect, and now read `--genre` as a check does (before,
+they took the genre only from chaff.yaml). `tree` and `cite` read with the genre's profile. The genres that were there
+before are unchanged, and so is every check's result for them.
 
 ### 「（1）」 directly under an article with body text is an item of the unnumbered first paragraph (#170)
 
