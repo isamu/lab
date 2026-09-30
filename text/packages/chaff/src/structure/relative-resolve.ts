@@ -10,7 +10,13 @@ import type { StructureNode } from "../plugin.ts";
 /** range は「第四十三条から第五十五条まで 削除」のように、一行で並びをまとめたもの。番地は最初のものしか持たない。 */
 type Place = { readonly address: string; readonly level: number; readonly range?: boolean };
 
-type Last = { readonly target: string; readonly document: string | undefined };
+/**
+ * 参照が指した文書: 他の文書の名前と、番号を名指した単位の語。
+ * 単位の語は、見出しに「1 目的」と番号を振った指針の「法第16条」が、条で数える別の文書の条だと決めるのに使う（unit-word.ts）。
+ */
+type Cited = { readonly document: string | undefined; readonly unitWord: string | undefined };
+
+type Last = Cited & { readonly target: string };
 
 const NUMBERED = new Set(["chapter", "article", "item"]);
 
@@ -100,21 +106,21 @@ const continued = (level: number, node: StructureNode, context: Context): Last |
   if (origin === undefined || context.articleLevel === undefined || level < context.articleLevel) return undefined;
   const parts = origin.target.split(".");
   const kept = level - context.articleLevel + 1;
-  return parts.length < kept ? undefined : { target: parts.slice(0, kept).join("."), document: origin.document };
+  return parts.length < kept ? undefined : { ...origin, target: parts.slice(0, kept).join(".") };
 };
 
 /**
  * 参照が名指しした深さを覚える。名指しは、書き出しの深さ（第〇条なら条、前項なら項）から番地の深さまで。
  * 番地を深さで切る起点は条。条より外のまとまりは番地の形が違うので覚えない。
  */
-const remember = (context: Context, target: string, document: string | undefined, from: number): void => {
+const remember = (context: Context, reference: Last, from: number): void => {
   const articleLevel = context.articleLevel;
   // 章・節は番地の形（ch1）が条から始まらないので覚えない。覚えると「同条」が章を指してしまう。
   if (articleLevel === undefined || from < articleLevel) return;
-  const parts = target.split(".");
+  const parts = reference.target.split(".");
   parts.forEach((_, index) => {
     const level = articleLevel + index;
-    if (level >= from) context.last.set(level, { target: parts.slice(0, index + 1).join("."), document });
+    if (level >= from) context.last.set(level, { ...reference, target: parts.slice(0, index + 1).join(".") });
   });
 };
 
@@ -145,11 +151,16 @@ const baseOf = (way: string, node: StructureNode, anchor: Anchor | undefined, la
   return anchor === undefined ? undefined : byPosition(way, Number(node.attrs["count"]), anchor);
 };
 
-/** 同と並びの続きは、元の参照が他の文書を指していれば、それを引き継ぐ。前・次・本はこの文書の中。 */
-const documentOf = (way: string, node: StructureNode, last: Last | undefined, context: Context): string | undefined => {
-  if (way === "same") return last?.document;
-  return way === "continue" ? continued(Number(node.attrs["level"]), node, context)?.document : undefined;
+/** 同と並びの続きは、元の参照が指した文書を引き継ぐ。前・次・本はこの文書の中。 */
+const citedOf = (way: string, node: StructureNode, last: Last | undefined, context: Context): Cited | undefined => {
+  if (way === "same") return last;
+  return way === "continue" ? continued(Number(node.attrs["level"]), node, context) : undefined;
 };
+
+const citedAttrs = (cited: Cited | undefined): Record<string, string> => ({
+  ...(cited?.document === undefined ? {} : { document: cited.document }),
+  ...(cited?.unitWord === undefined ? {} : { unitWord: cited.unitWord }),
+});
 
 const resolveOne = (node: StructureNode, path: readonly StructureNode[], context: Context): StructureNode | undefined => {
   const way = String(node.attrs["relative"]);
@@ -160,12 +171,11 @@ const resolveOne = (node: StructureNode, path: readonly StructureNode[], context
   const place = base === undefined ? undefined : withSuffix(base, String(node.attrs["suffix"] ?? ""), context.implicitLevel);
   if (place === undefined) return undefined;
   const fallback = fallbackOf(place, context.implicitLevel);
-  const document = documentOf(way, node, last, context);
   const attrs = {
     target: place.address,
     label: String(node.attrs["label"]),
     ...(fallback === undefined ? {} : { fallback }),
-    ...(document === undefined ? {} : { document }),
+    ...citedAttrs(citedOf(way, node, last, context)),
   };
   return { ...node, attrs };
 };
@@ -176,17 +186,16 @@ const isRelative = (node: StructureNode): boolean => node.kind === "reference" &
 const walk = (node: StructureNode, path: readonly StructureNode[], context: Context): StructureNode | undefined => {
   if (isRelative(node)) {
     const resolved = resolveOne(node, path, context);
-    const target = resolved === undefined ? undefined : String(resolved.attrs["target"]);
-    const document = optional(resolved?.attrs["document"]);
-    if (target !== undefined) context.byStart.set(node.span.start, { target, document });
-    if (target !== undefined) remember(context, target, document, Number(node.attrs["names"] ?? node.attrs["level"]));
+    if (resolved === undefined) return undefined;
+    const reference = lastOf(resolved);
+    context.byStart.set(node.span.start, reference);
+    remember(context, reference, Number(node.attrs["names"] ?? node.attrs["level"]));
     return resolved;
   }
   if (node.kind === "reference") {
-    const target = String(node.attrs["target"]);
-    const document = optional(node.attrs["document"]);
-    context.byStart.set(node.span.start, { target, document });
-    remember(context, target, document, context.articleLevel ?? 0);
+    const reference = lastOf(node);
+    context.byStart.set(node.span.start, reference);
+    remember(context, reference, context.articleLevel ?? 0);
   }
   const inside = [...path, node];
   const children = node.children.flatMap((child) => {
@@ -197,6 +206,12 @@ const walk = (node: StructureNode, path: readonly StructureNode[], context: Cont
 };
 
 const optional = (value: string | number | undefined): string | undefined => (value === undefined ? undefined : String(value));
+
+const lastOf = (reference: StructureNode): Last => ({
+  target: String(reference.attrs["target"]),
+  document: optional(reference.attrs["document"]),
+  unitWord: optional(reference.attrs["unitWord"]),
+});
 
 const articlesOf = (node: StructureNode): Place[] => {
   const place = node.kind === "article" ? placeOf(node) : undefined;

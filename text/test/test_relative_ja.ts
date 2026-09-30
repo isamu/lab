@@ -231,6 +231,69 @@ describe("dangling-reference が相対の参照も確かめる", () => {
   });
 });
 
+describe("同項・同号・同条は、前の参照が指した文書のもの", () => {
+  // 見出しに「1 目的」と番号を振った指針。「法第16条」は条で数える別の文書（法律）の条で、この指針の 16 ではない。
+  const GUIDELINE = lines(
+    "## 1　目的",
+    "",
+    "本文。",
+    "",
+    "## 2　定義",
+    "",
+    "- ２　法第16条第1項第2号の政令で定めるものは、同項に規定する情報の集合物をいう。",
+    "- ３　法第27条第5項第3号の規定による通知は、同号に規定する方法による。",
+    "- ４　法第182条の罰金刑は、同条の規定による。",
+    "",
+    "## 3　適用",
+    "",
+    "- １　法第十六条の規定は、同条第二項の場合に準用する。同項各号に掲げる事項とする。",
+    "- ２　法第二十九条第一項若しくは第三項の記録は、同項の規定による。",
+    "- ３　法第三十条の規定は、同条第一項若しくは第二項の場合による。",
+  );
+  const guidelineTree = (): StructureNode => buildStructure({ path: "g.md", source: GUIDELINE, language: "ja", markdown: true, profile: statute }, patterns());
+  const dangling = (tree: StructureNode, source: string): string[] =>
+    danglingReferences(tree, source).map((issue) => `${String(issue.values["label"])}:${String(issue.values["target"])}`);
+
+  it("別の文書の条を引いた後の同項・同号・同条は、この文書で引かない", () => {
+    assert.deepEqual(dangling(guidelineTree(), GUIDELINE), []);
+  });
+
+  it("同を重ねても、並びの続きの後でも、元の参照の文書のまま", () => {
+    const labelled = (node: StructureNode): string[] => [
+      ...(node.kind === "reference" ? [`${String(node.attrs["label"])}:${String(node.attrs["unitWord"] ?? "-")}`] : []),
+      ...node.children.flatMap(labelled),
+    ];
+    assert.deepEqual(labelled(guidelineTree()).slice(-10), [
+      "同条:条",
+      "第十六条:条",
+      "同条第二項:条",
+      "同項:条",
+      "第二十九条第一項:条",
+      "第三項:条",
+      "同項:条",
+      "第三十条:条",
+      "同条第一項:条",
+      "第二項:条",
+    ]);
+  });
+
+  it("この法令の条を引いた後の同項は、この法令の中で引く。あれば指摘しない", () => {
+    const source = lines("第一条　本文。", "第二条　本文。", "第三条　本文。", "２　本文。", "第四条　第三条第二項の規定は、同項の場合に準用する。");
+    assert.deepEqual(references(treeOf(source)), ["第三条第二項→3.2", "同項→3.2"]);
+    assert.deepEqual(danglingReferences(treeOf(source), source), []);
+  });
+
+  it("この法令の条を引いた後の同項は、無ければ指摘する", () => {
+    const source = lines("第一条　本文。", "第二条　本文。", "第三条　本文。", "第四条　第三条第二項の規定は、同項の場合に準用する。");
+    assert.deepEqual(dangling(treeOf(source), source), ["第三条第二項:3.2", "同項:3.2"]);
+  });
+
+  it("別の文書の後でも、前項の後の同項はこの法令の中。無ければ指摘する", () => {
+    const source = lines("第一条　本文。", "第二条　本文。", "２　民法第七百九条第二項の規定による。", "３　前項第九号の規定は、同項第八号の場合に準用する。");
+    assert.deepEqual(dangling(treeOf(source), source), ["前項第九号:2.2.9", "同項第八号:2.2.8"]);
+  });
+});
+
 describe("読み替えの括弧の中の番地は、読み替える先の文書のもの", () => {
   const SUBSTITUTED = "@（読み替えの中）";
 
