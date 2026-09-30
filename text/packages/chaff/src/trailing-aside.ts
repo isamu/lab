@@ -8,6 +8,7 @@
 const OPEN = new Set(["(", "（"]);
 const CLOSE = new Set([")", "）"]);
 const STOPS = new Set(["。", "．", "！", "？", "!", "?"]);
+const LINE_BREAKS = new Set(["\n", "\r"]);
 const isSpace = (unit: string): boolean => /\s/u.test(unit);
 const isInlineSpace = (unit: string): boolean => unit === " " || unit === "\t" || unit === "　";
 
@@ -35,7 +36,7 @@ const isNote = (text: string, open: number, closeAt: number): boolean => {
   if (lastBefore(text, open, isSpace) === -1) return true;
   const previous = text.charAt(lastBefore(text, open, isInlineSpace));
   const inner = lastBefore(text, closeAt, isSpace);
-  return (STOPS.has(previous) || previous === "\n") && inner > open && STOPS.has(text.charAt(inner));
+  return (STOPS.has(previous) || LINE_BREAKS.has(previous)) && inner > open && STOPS.has(text.charAt(inner));
 };
 
 export const ownEnd = (text: string): number => {

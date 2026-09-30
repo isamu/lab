@@ -52,6 +52,7 @@ describe("ownEnd: a trailing aside is a closed bracket after the predicate", () 
     assert.equal(own("開始は10時。 （詳細は後日周知。）"), "開始は10時。 （詳細は後日周知。");
     assert.equal(own("廃棄します。（この際、袋を使う。）。"), "廃棄します。（この際、袋を使う。");
     assert.equal(own("日時：10時から16時\n（※詳細は後日周知。）"), "日時：10時から16時\n（※詳細は後日周知。");
+    assert.equal(own("日時：10時から16時\r（※詳細は後日周知。）"), "日時：10時から16時\r（※詳細は後日周知。");
   });
 
   it("cuts a bracketed proviso after a predicate or a noun, even when it ends with 。）", () => {
