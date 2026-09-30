@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### The Claude Code skill picks the genre first (#170)
+
+The skill that `chaff skill` installs now starts from the kind of document: name it from the document (`chaff
+genres` lists them), or run once and take the genre the header suggests, then run with `--genre` (or write it with
+`init --genre`) and check the header before reading the findings. A rule the genre turns off is the preset's
+choice, and the skill leaves it off unless asked.
+
 ### chaff suggests a genre when none is set, and `chaff init` asks for one (#170)
 
 A file with no genre set (none on the command line, in chaff.yaml or its front matter, and none guessed from its
