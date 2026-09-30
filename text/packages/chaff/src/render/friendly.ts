@@ -73,14 +73,21 @@ const block = (finding: Finding, rule: RuleDefinition, language: string): string
   "",
 ];
 
-export const renderFriendly = (header: string, result: RunResult, rules: readonly RuleDefinition[], language: string): string => {
+/** notes: lines after the not-run list (the genre chaff suggests when none is set). */
+export const renderFriendly = (
+  header: string,
+  result: RunResult,
+  rules: readonly RuleDefinition[],
+  language: string,
+  notes: readonly string[] = [],
+): string => {
   const byId = new Map(rules.map((rule) => [rule.id, rule]));
   const blocks = result.findings.flatMap((finding) => {
     const rule = byId.get(finding.rule);
     return rule === undefined ? [] : block(finding, rule, language);
   });
   const text = TEXT[uiLanguageOf(language)];
-  const notes = [
+  const closing = [
     "",
     "─".repeat(RULE),
     "",
@@ -97,5 +104,6 @@ export const renderFriendly = (header: string, result: RunResult, rules: readonl
     result.skipped.length > 0
       ? ["", `  ${text.notRun(result.skipped.length)}`, ...result.skipped.map((entry) => `      ${entry.rule}${text.because(entry.why)}`)]
       : [];
-  return ["", header, ...blocks, ...notes, ...forced, ...skipped, ""].join("\n");
+  const after = notes.flatMap((note) => ["", note]);
+  return ["", header, ...blocks, ...closing, ...forced, ...skipped, ...after, ""].join("\n");
 };

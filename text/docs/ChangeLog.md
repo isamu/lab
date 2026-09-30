@@ -4,6 +4,28 @@ Newest first.
 
 ## Unreleased
 
+### chaff suggests a genre when none is set, and `chaff init` asks for one (#170)
+
+A file with no genre set (none on the command line, in chaff.yaml or its front matter, and none guessed from its
+path or headings) is checked as `blog/tech`. When it looks like another kind, the screen now says so under the header
+and again after the not-run list, in the file's language:
+
+```
+contract.md   blog/tech · 日本語   ジャンルは既定から
+   契約書・規約のようです。--genre legal/contract を試せます
+```
+
+The suggestion never changes the run: switching silently would change what an existing run reports. Each genre's
+cues are data in `genres.yaml` (`suggest:`): path patterns, and per language a line pattern with how many lines must
+match (「本契約」「以下「甲」」, `this Agreement`; 「○委員長（…君）」 speaker lines; 【請求項】; `delivered the opinion of the
+Court`), and a genre that reads with a profile is suggested when the content has that profile's shape. The genre whose
+cues the file meets most strongly wins. On the corpus, the suggestion names the right kind for most statutes,
+contracts, judgments, patents, FAQs, glossaries, transcripts and papers; literature has path cues only.
+
+`chaff init` at a terminal lists the genres with what each is for and asks for one (a number or a name; Enter for
+`blog/tech`). `chaff init --genre <genre>` chooses without asking, and a script or CI is never asked. The written
+chaff.yaml names what the genre is for in its comment.
+
 ### Genres for contracts, statutes, manuals, papers, literature and speech: pick the kind of document (#170)
 
 A contract, a statute or a novel was checked against blog rules unless its writer knew better. chaff now ships

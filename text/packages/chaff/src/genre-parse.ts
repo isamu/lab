@@ -14,7 +14,14 @@ export type GenreDefinition = {
   readonly summary: Localized;
   readonly rules: PresetLevels;
   readonly profile: string | undefined;
+  readonly suggest: GenreSuggest;
 };
+
+/** A line shape that marks the genre, and how many lines must have it. */
+type LineCue = { readonly line: RegExp; readonly minLines: number };
+
+/** What makes a document look like this genre when no genre is set: its path, or enough lines of the genre's own shape, per language. */
+export type GenreSuggest = { readonly paths: readonly RegExp[]; readonly lines: Readonly<Record<string, LineCue>> };
 
 export type GenreData = { readonly groups: readonly GenreGroup[]; readonly genres: readonly GenreDefinition[] };
 
@@ -48,12 +55,47 @@ const groupOf = (value: unknown, index: number): GenreGroup => {
   return { id, name: localizedOf(raw["name"], "name", id), rules: levelsOf(raw["rules"], id) };
 };
 
+const patternOf = (value: unknown, flags: string, where: string): RegExp => {
+  if (typeof value !== "string" || value === "") throw new Error(`${where}: a pattern must be a non-empty string`);
+  try {
+    return new RegExp(value, flags);
+  } catch (error) {
+    throw new Error(`${where}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+  }
+};
+
+const lineCueOf = (value: unknown, where: string): LineCue => {
+  if (!isRecord(value)) throw new Error(`${where}: needs line and min_lines`);
+  const minLines = value["min_lines"];
+  if (typeof minLines !== "number" || !Number.isInteger(minLines) || minLines < 1) throw new Error(`${where}: min_lines must be a whole number of 1 or more`);
+  return { line: patternOf(value["line"], "u", where), minLines };
+};
+
+const suggestOf = (value: unknown, where: string): GenreSuggest => {
+  if (value === undefined) return { paths: [], lines: {} };
+  if (!isRecord(value)) throw new Error(`${where}: suggest must be a map`);
+  const paths = value["paths"] ?? [];
+  if (!Array.isArray(paths)) throw new Error(`${where}: suggest.paths must be a list`);
+  const lines = Object.entries(value).filter(([key]) => key !== "paths");
+  return {
+    paths: paths.map((path) => patternOf(path, "iu", `${where} suggest.paths`)),
+    lines: Object.fromEntries(lines.map(([language, cue]) => [language, lineCueOf(cue, `${where} suggest.${language}`)])),
+  };
+};
+
 const genreOf = (value: unknown, index: number): GenreDefinition => {
   const id = idOf(value, index);
   const raw = isRecord(value) ? value : {};
   const profile = raw["profile"];
   if (profile !== undefined && (typeof profile !== "string" || profile === "")) throw new Error(`${id}: profile must be a profile's id`);
-  return { id, name: localizedOf(raw["name"], "name", id), summary: localizedOf(raw["summary"], "summary", id), rules: levelsOf(raw["rules"], id), profile };
+  return {
+    id,
+    name: localizedOf(raw["name"], "name", id),
+    summary: localizedOf(raw["summary"], "summary", id),
+    rules: levelsOf(raw["rules"], id),
+    profile,
+    suggest: suggestOf(raw["suggest"], id),
+  };
 };
 
 const listOf = (raw: Record<string, unknown>, key: string): unknown[] => {
