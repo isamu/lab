@@ -28,3 +28,27 @@ levels:
   relaxed: 40
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 太字が多すぎて、どこが大事なのか分からなくなった所
+  en: So much bold text that nothing stands out any more
+example:
+  ja:
+    before: |
+      ## 申し込み
+
+      **申し込み**は**今月末**までに、**専用の用紙**で**総務部**へ出してください。用紙は社内の共有フォルダにあり、印刷して手で書いても、画面で入力してから印刷してもかまいません。**上長の印**が要るので、締め切りの三日前までには上長に渡してください。**遅れた場合**は、どんな理由でも**受け付けません**。分からないことがあれば、総務部の窓口に電話で問い合わせてください。受付の時間は平日の午前九時から午後五時までです。書き方の見本も、同じ共有フォルダに置いてあります。
+    after: |
+      ## 申し込み
+
+      申し込みは、専用の用紙で総務部へ出してください。**締め切りは今月末で、遅れた場合はどんな理由でも受け付けません。**用紙は社内の共有フォルダにあり、印刷して手で書いても、画面で入力してから印刷してもかまいません。上長の印が要るので、締め切りの三日前までには上長に渡してください。分からないことがあれば、総務部の窓口に電話で問い合わせてください。受付の時間は平日の午前九時から午後五時までです。書き方の見本も、同じ共有フォルダに置いてあります。
+  en:
+    before: |
+      ## How to apply
+
+      Send the **form** to **HR** by the **end of the month**. The form is in the shared folder. You can print it and fill it in by hand, or type into it on screen and then print it. It needs your **manager's signature**, so give it to your manager at least three days before the deadline. **Late forms** will **not** be **accepted**, whatever the reason. If you have a question, call the HR desk between nine and five on a weekday.
+    after: |
+      ## How to apply
+
+      Send the form to HR. **The deadline is the end of the month, and late forms will not be accepted, whatever the reason.** The form is in the shared folder. You can print it and fill it in by hand, or type into it on screen and then print it. It needs your manager's signature, so give it to your manager at least three days before the deadline. If you have a question, call the HR desk between nine and five on a weekday.

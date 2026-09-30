@@ -26,3 +26,15 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
 use_for: [business, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「〜が決定されました」のように、受け身で書いて、誰がしたのかが書かれていない所
+  en: A passive sentence ("the budget was approved") that never says who did it
+example:
+  ja:
+    before: 来期の予算が承認されました。
+    after: 取締役会が、来期の予算を承認しました。
+  en:
+    before: The budget for next year was approved.
+    after: The board approved the budget for next year.

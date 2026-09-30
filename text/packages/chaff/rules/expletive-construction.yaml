@@ -25,3 +25,15 @@ how_to_fix:
 levels: { strict: 1, normal: 3, relaxed: 6 }
 
 use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 英語で、There is や It is ... that で主語を後ろへ押しやった文が多い所
+  en: Many sentences that open with "There is" or "It is ... that", pushing the subject to the back
+example:
+  en:
+    config: { rules: { expletive-construction: strict } }
+    before: |
+      There is a meeting on Friday to review the budget. It is the finance team that will lead it.
+    after: |
+      The team meets on Friday to review the budget. The finance team will lead it.

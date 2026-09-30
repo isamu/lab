@@ -23,3 +23,85 @@ how_to_fix:
 levels: { strict: 45, normal: 35, relaxed: 25 }
 
 use_for: [blog, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: どの節もほぼ同じ長さに埋めてあり、ひな形を埋めたように見える所
+  en: Every section filled to the same size, which is what a template does
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      # 新しい道具の紹介
+
+      ## 入れる
+
+      公式のページから、使う機械に合った版を選んで入れます。
+
+      ## 設定する
+
+      右上の歯車の印を押して、言語と文書の種類を選びます。
+
+      ## 招く
+
+      左の招待の画面で、仲間の宛先を入れて送ります。
+
+      ## 確かめる
+
+      試しの文書を置いて、指摘が画面に出るかを見ます。
+    after: |
+      # 新しい道具の紹介
+
+      ## 入れる
+
+      公式のページから入れます。
+
+      ## 設定する
+
+      右上の歯車の印を押して、言語と文書の種類を選びます。項目は多いですが、最初に触るのはこの二つだけで足ります。ほかは、使いながら必要になったときに変えてください。
+
+      ## 招く
+
+      左の招待の画面から送ります。
+
+      ## 確かめる
+
+      試しの文書を置いて、指摘が画面に出るかを見ます。
+  en:
+    config: { genre: blog/tech }
+    before: |
+      # Introducing the new tool
+
+      ## Install
+
+      Pick the version for your computer from the official page.
+
+      ## Set up
+
+      Press the gear icon and choose your language and document type.
+
+      ## Invite
+
+      Enter your team's addresses on the invite page and send.
+
+      ## Check
+
+      Add a sample document and look for findings on the screen.
+    after: |
+      # Introducing the new tool
+
+      ## Install
+
+      Download it from the official page.
+
+      ## Set up
+
+      Press the gear icon and choose your language and document type. There are many options, but at first you only need these two. Change the rest when you need to.
+
+      ## Invite
+
+      Send invites from the page on the left.
+
+      ## Check
+
+      Add a sample document and look for findings on the screen.

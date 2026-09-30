@@ -25,3 +25,15 @@ how_to_fix:
 levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「資料をを」「the the」のように、同じ語が続けて二度書かれている所
+  en: The same word written twice in a row, as in "the the"
+example:
+  ja:
+    before: 明日、資料をを送ります。
+    after: 明日、資料を送ります。
+  en:
+    before: We will send the the file tomorrow.
+    after: We will send the file tomorrow.

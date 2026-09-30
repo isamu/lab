@@ -29,3 +29,12 @@ how_to_fix:
 levels: { strict: 6, normal: 8, relaxed: 12 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「新規顧客獲得施策検討会議」のように、漢字だけが長く続く所
+  en: A long run of kanji with no kana between them, which Japanese readers have to take apart
+example:
+  ja:
+    before: 来週、新規顧客獲得施策検討会議を開きます。
+    after: 来週、新しい顧客を増やす施策を話し合う会議を開きます。

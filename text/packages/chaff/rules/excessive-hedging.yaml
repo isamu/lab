@@ -35,3 +35,15 @@ how_to_fix:
 levels: { strict: 3, normal: 6, relaxed: 12 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「〜の可能性があるかもしれません」のように、逃げの表現を重ねて、何が言いたいのか分からない所
+  en: Hedges piled up ("it may perhaps be possible") until nobody is saying anything
+example:
+  ja:
+    before: 納期は遅れる可能性があるかもしれません。
+    after: 部品の入荷が来週にずれたため、納期は三日遅れます。
+  en:
+    before: It may be that the launch could perhaps slip.
+    after: The launch will slip by three days, because the parts arrive next week.

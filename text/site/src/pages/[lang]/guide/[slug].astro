@@ -1,6 +1,7 @@
 ---
 import { render } from "astro:content";
 import Base from "../../../layouts/Base.astro";
+import RuleCatalog from "../../../components/RuleCatalog.astro";
 import { LANGS, href, isLang, otherLang } from "../../../lib/i18n";
 import { guidePages, titleOf } from "../../../lib/guide";
 
@@ -35,6 +36,7 @@ const counterpart = (await guidePages(otherLang(lang))).some((other) => other.sl
     </nav>
     <article class="min-w-0 leading-relaxed [&_a]:text-blue-700 [&_a]:underline dark:[&_a]:text-blue-400 [&_code]:font-mono [&_code]:text-[0.9em] [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mt-10 [&_h2]:text-xl [&_h2]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_p]:mt-4 [&_pre]:mt-4 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:bg-zinc-100 [&_pre]:p-4 [&_pre]:text-sm dark:[&_pre]:bg-zinc-900 [&_table]:mt-4 [&_table]:text-sm [&_td]:border-t [&_td]:border-zinc-200 [&_td]:py-1 [&_td]:pr-4 dark:[&_td]:border-zinc-800 [&_th]:py-1 [&_th]:pr-4 [&_th]:text-left [&_ul]:mt-4">
       <Content />
+      {page.slug === "reference" && <RuleCatalog lang={lang} />}
     </article>
   </div>
 </Base>

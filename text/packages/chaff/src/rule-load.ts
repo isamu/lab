@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { parse } from "yaml";
 import type { LanguageLevels, LevelSets, LevelTable, RuleDefinition, Severity } from "./plugin.ts";
 import { rankOfSeverity, severityAt } from "./levels.ts";
+import { ruleGuideOf } from "./rule-guide.ts";
 
 const RULES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "rules");
 
@@ -169,6 +170,7 @@ const ruleOf = (raw: Record<string, unknown>, levels: LevelTable, levelSets: Lev
   languages: stringList(raw["languages"]),
   use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],
   severity: severityOf(raw["severity"], language),
+  guide: ruleGuideOf(raw),
 });
 
 /**

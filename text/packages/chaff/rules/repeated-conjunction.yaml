@@ -25,3 +25,43 @@ how_to_fix:
 levels: { strict: 1, normal: 2, relaxed: 4 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「また、」「さらに、」のように、接続詞で始まる段落が続く所
+  en: Paragraph after paragraph opening with a connective such as "Also" or "Moreover"
+example:
+  ja:
+    before: |
+      新しい料金は来月から始まります。
+
+      また、請求書の形式も変わります。
+
+      さらに、支払いの期限が月末になります。
+
+      そして、古い料金は三月で終わります。
+    after: |
+      新しい料金は来月から始まります。
+
+      請求書の形式も変わります。
+
+      支払いの期限は月末になります。
+
+      古い料金は三月で終わります。
+  en:
+    before: |
+      The new prices start next month.
+
+      Also, the invoice format will change.
+
+      Moreover, payment will be due at the end of the month.
+
+      Furthermore, the old prices end in March.
+    after: |
+      The new prices start next month.
+
+      The invoice format will change.
+
+      Payment will be due at the end of the month.
+
+      The old prices end in March.

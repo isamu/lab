@@ -31,3 +31,14 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 3 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 日本語と英数字のあいだの空白が、文書の中で付いたり付かなかったりしている所
+  en: Spacing between Japanese and Latin letters or digits that is done both ways in one document
+example:
+  ja:
+    before: |
+      表は Excel で作り、Word に貼ります。図は PowerPoint で描きます。最後にPDFにします。
+    after: |
+      表は Excel で作り、Word に貼ります。図は PowerPoint で描きます。最後に PDF にします。

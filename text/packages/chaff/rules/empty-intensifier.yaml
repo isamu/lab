@@ -28,3 +28,15 @@ levels:
   relaxed: 3
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「非常に重要」「言うまでもなく」のように、何が大事かを言わずに強めるだけの言い方
+  en: Phrases such as "extremely important" that add weight without saying what matters
+example:
+  ja:
+    before: 期限を守ることは非常に重要です。
+    after: 期限に遅れると、先方の検収が翌月に回り、入金が一か月遅れます。
+  en:
+    before: It is important to note that the deadline is Friday.
+    after: The deadline is Friday; a late delivery pushes payment into next month.
