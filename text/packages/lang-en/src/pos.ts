@@ -100,9 +100,22 @@ const BE = new Set(["be", "am", "is", "are", "was", "were", "been", "being"]);
 
 const isBe = (entry: Tagged): boolean => BE.has(entry.lemma ?? entry.value.toLowerCase()) || BE.has(entry.value.toLowerCase());
 
+/**
+ * end（0 以上）より前で test に合う最後の位置。無ければ -1。過去分詞の多い長い文で、分詞ごとに文の頭から写すと語数の二乗になるので、後ろから探す。
+ */
+const lastIndexBefore = (tagged: readonly Tagged[], end: number, test: (entry: Tagged) => boolean): number => {
+  let at = Math.min(end, tagged.length);
+  while (at > 0) {
+    at -= 1;
+    const entry = tagged[at];
+    if (entry !== undefined && test(entry)) return at;
+  }
+  return -1;
+};
+
 /** 過去分詞の前の be の位置。無ければ -1。 */
 const beBefore = (tagged: readonly Tagged[], at: number): number => {
-  const head = tagged.slice(0, at).findLastIndex((entry) => !SKIPPABLE.has(entry.pos));
+  const head = lastIndexBefore(tagged, at, (entry) => !SKIPPABLE.has(entry.pos));
   const entry = tagged[head];
   return entry !== undefined && isBe(entry) ? head : -1;
 };
@@ -125,11 +138,11 @@ const NOMINAL_TAG = new Set(["NN", "NNS", "NNP", "NNPS", "PRP", "CD", "DT"]);
 const RELATIVE_TAG = new Set(["WDT", "WP"]);
 
 const inRelativeClause = (tagged: readonly Tagged[], be: number): boolean => {
-  const lead = tagged.slice(0, be).findLastIndex((entry) => !isAuxiliary(entry));
+  const lead = lastIndexBefore(tagged, be, (entry) => !isAuxiliary(entry));
   const relative = tagged[lead];
   if (relative === undefined || !RELATIVE_TAG.has(relative.pos)) return false;
   // 文頭の That was decided. / Which was chosen? は、前に指す名詞が無いので述語。
-  const antecedent = tagged.slice(0, lead).findLast((entry) => entry.pos !== ",");
+  const antecedent = tagged[lastIndexBefore(tagged, lead, (entry) => entry.pos !== ",")];
   return antecedent !== undefined && NOMINAL_TAG.has(antecedent.pos);
 };
 
@@ -230,23 +243,26 @@ const withEmphasis = (token: Token): Token =>
  * wink は位置を返さないので、表層を順に照合して復元する。
  * 見つからないものは飛ばし、カーソルは進めない。位置の当てずっぽうを下流に流さない。
  */
-const locate = (text: string, tagged: readonly Tagged[]): Token[] =>
-  tagged.reduce<{ tokens: Token[]; cursor: number }>(
-    (acc, entry, at) => {
-      const start = text.indexOf(entry.value, acc.cursor);
-      if (start === -1) return acc;
-      const end = start + entry.value.length;
-      const token = {
-        span: { start, end },
-        surface: entry.value,
-        pos: properNounChecked(entry.value, upos(entry.pos)),
-        ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
-        ...featuresOf(tagged, at),
-      };
-      return { tokens: [...acc.tokens, withEmphasis(token)], cursor: end };
-    },
-    { tokens: [], cursor: 0 },
-  ).tokens;
+const locate = (text: string, tagged: readonly Tagged[]): Token[] => {
+  // 語を足すたびに並びを作り直すと、長い文で語数の二乗になる。一つの並びに足していく。
+  const tokens: Token[] = [];
+  let cursor = 0;
+  tagged.forEach((entry, at) => {
+    const start = text.indexOf(entry.value, cursor);
+    if (start === -1) return;
+    const end = start + entry.value.length;
+    const token = {
+      span: { start, end },
+      surface: entry.value,
+      pos: properNounChecked(entry.value, upos(entry.pos)),
+      ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
+      ...featuresOf(tagged, at),
+    };
+    tokens.push(withEmphasis(token));
+    cursor = end;
+  });
+  return tokens;
+};
 
 /** 英語の語はこれより長くならない。超える並びは語として読まない。 */
 const RUN_LIMIT = 1000;
