@@ -127,6 +127,7 @@ $ npx chaffjs explain max-sentence-length
 
 `relax`, `strict` and `off` change a rule's level without opening `chaff.yaml`.
 `relax` loosens it, `strict` tightens it, and `off` stops it.
+For a rule with nothing to count, such as a gap in the numbering, `relax` keeps the finding and marks it a step lower ([Rules with nothing to count](./configuration#rules-with-nothing-to-count)).
 
 ```
 $ npx chaffjs relax bold-density --why "figure captions use a lot of bold"
