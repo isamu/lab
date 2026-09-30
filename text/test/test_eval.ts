@@ -82,7 +82,7 @@ describe("対象の絞り込み", () => {
 
   it("ジャンルが合わない rule は測らない", () => {
     const measured = evaluate(docs([clean]), RULES, "business/report", "ja").map((report) => report.rule);
-    assert.ok(!measured.includes("padded-intro"), "blog 専用の rule を business で測っている");
+    assert.ok(!measured.includes("closing-cliche"), "blog 専用の rule を business で測っている");
   });
 
   it("目標は 5%", () => {

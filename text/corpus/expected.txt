@@ -86,7 +86,7 @@ kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-a
 kimino-cleanup-notice  max-kanji-continuous 2, max-sentence-length 2
 kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1, sasete-itadaku 3
 kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1
-kimino-staff-exam-guide  latin-spacing 3
+kimino-staff-exam-guide  clean
 kobayashi-nento-shokan-2026  max-paragraph-length 2, max-sentence-length 2
 kobayashi-press-hananoa-2026-02  agentless-passive 2, latin-spacing 2, max-paragraph-length 2, max-sentence-length 1, no-mixed-desumasu 2, undefined-acronym 3
 koenote-requirements  latin-spacing 56, undefined-acronym 6
@@ -115,7 +115,7 @@ nttcom-onboarding-week1  agentless-passive 1, concrete-evidence-density 6, hirag
 nws-heat-wave-safety  agentless-passive 4, concrete-evidence-density 3, contraction-consistency 4, max-paragraph-length 1, max-sentence-length 6, preamble-length 1, proper-noun-density 1
 oecd-global-drought-outlook-summary  adverb-overuse 1, agentless-passive 2, max-paragraph-length 2, max-sentence-length 12, proper-noun-density 1
 pep-0020-zen-of-python  proper-noun-density 1
-ppc-guidelines-tsusoku  agentless-passive 36, duplicate-definition 14, latin-spacing 19, max-kanji-continuous 565, max-sentence-length 502, ngram-repetition 1, no-doubled-joshi 103, repeated-conjunction 9, taigen-dome-in-prose 1, undefined-acronym 3
+ppc-guidelines-tsusoku  agentless-passive 36, duplicate-definition 14, latin-spacing 14, max-kanji-continuous 565, max-sentence-length 502, ngram-repetition 1, no-doubled-joshi 103, repeated-conjunction 9, taigen-dome-in-prose 1, undefined-acronym 3
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-paragraph-length 2, max-sentence-length 1, oxford-comma-consistency 1
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, proper-noun-density 1, undefined-acronym 22
@@ -130,7 +130,7 @@ soumu-kokumin-cyber-glossary-a  agentless-passive 4, heading-echo 1, max-sentenc
 soumu-kokumin-cyber-phishing  concrete-evidence-density 3, latin-spacing 7, max-sentence-length 6
 soumu-wp-r06-ai-booms  agentless-passive 1, latin-spacing 2, max-sentence-length 2, undefined-acronym 3
 soumu-wp-r06-ai-rules-japan  agentless-passive 5, latin-spacing 3, max-sentence-length 6, no-doubled-joshi 1
-soumu-wp-r06-misinformation  agentless-passive 8, latin-spacing 2, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, taigen-dome-in-prose 1, undefined-acronym 9
+soumu-wp-r06-misinformation  agentless-passive 8, latin-spacing 2, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
 sre-next-bunsho-kanri  agentless-passive 2
 sre-next-teikan  max-sentence-length 2, no-doubled-joshi 2, no-mixed-desumasu 1
 tc39-agenda-2026-07  adverb-overuse 1, agentless-passive 7, max-sentence-length 11, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 2
