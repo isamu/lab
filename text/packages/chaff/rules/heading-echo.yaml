@@ -29,3 +29,34 @@ levels:
   relaxed: 75
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 見出しのすぐ後の文が、見出しをほぼそのまま繰り返している所
+  en: A first sentence that only repeats the heading above it
+example:
+  ja:
+    before: |
+      ## 経費の精算方法
+
+      経費の精算方法について説明します。領収書を添えて、月末までに申請してください。
+    after: |
+      ## 経費の精算方法
+
+      領収書を添えて、月末までに申請してください。
+  en:
+    before: |
+      ## How to claim expenses
+
+      This section explains how to claim expenses. Attach the receipt and submit it by the end of the month.
+    after: |
+      ## How to claim expenses
+
+      Attach the receipt and submit it by the end of the month.
+
+not_flagged:
+  ja: 短い見出し（言葉が少なく、重なりを測れないもの）は見ません。
+  en: Headings too short to measure an overlap are not checked.
+level_meaning:
+  ja: 見出しと直後の文の重なりが {limit}% 以上なら指摘
+  en: reported when the first sentence overlaps the heading by {limit}% or more

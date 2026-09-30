@@ -26,3 +26,22 @@ how_to_fix:
 levels: { strict: 10, normal: 15, relaxed: 25 }
 
 use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 英語で、-ly の副詞が多すぎる所（弱い動詞の印になりやすい）
+  en: Too many -ly adverbs, which usually prop up a weak verb
+example:
+  en:
+    pad: true
+    before: |
+      She quickly walked to the room and quietly opened the door. He really badly needed the report and angrily asked for it.
+    after: |
+      She hurried to the room and eased the door open. He needed the report and demanded it.
+
+not_flagged:
+  ja: 短い文書（200 語より短いもの）は測りません。
+  en: Documents under 200 words are not measured.
+level_meaning:
+  ja: 1000 語あたり {limit} 個まで
+  en: up to {limit} per 1000 words

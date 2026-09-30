@@ -24,3 +24,19 @@ how_to_fix:
 levels: { normal: error, relaxed: warning }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「2026年10月1日（金）」のように、日付と曜日が暦と合っていない所
+  en: A date and its weekday that disagree, such as "Friday, 1 October 2026"
+example:
+  ja:
+    before: 次の会議は 2026年10月1日（金）です。
+    after: 次の会議は 2026年10月1日（木）です。
+  en:
+    before: The next meeting is on Friday, 1 October 2026.
+    after: The next meeting is on Thursday, 1 October 2026.
+
+not_flagged:
+  ja: 年を書いていない日付は、どの年か決まらないので暦と照らしません。
+  en: Dates without a year are not checked, since the year is unknown.

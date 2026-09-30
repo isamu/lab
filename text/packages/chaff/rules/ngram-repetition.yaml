@@ -25,3 +25,30 @@ how_to_fix:
 levels: { strict: 3, normal: 5, relaxed: 9 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 同じ言い回しが何度も出てきて、新しいことを言っていないように読める所
+  en: The same phrase used over and over, so nothing new seems to be said
+example:
+  ja:
+    pad: true
+    config: { rules: { ngram-repetition: strict } }
+    before: |
+      お客様の声を大切にしています。商品開発でもお客様の声を大切にしています。店頭でもお客様の声を大切にしています。電話の窓口でもお客様の声を大切にしています。
+    after: |
+      お客様の声を大切にしています。商品開発では試作品を常連の方に使ってもらい、店頭では買い物のあとに感想を聞いています。
+  en:
+    pad: true
+    config: { rules: { ngram-repetition: strict } }
+    before: |
+      We listen to our customers. In product design we listen to our customers. In our stores we listen to our customers. On the phone we listen to our customers.
+    after: |
+      We listen to our customers. Regulars try every prototype, and store staff ask shoppers what they thought.
+
+not_flagged:
+  ja: 一覧の飾り（各項目に付くタグやリンクの文字）と、名前にかかる語句は数えません。短い文書は測りません。
+  en: Tags, link text and symbols that a listing repeats on every entry, and the words around a repeated name, are not counted. Short documents are not measured.
+level_meaning:
+  ja: 同じ言い回し {limit} 回まで
+  en: up to {limit} uses of the same phrase

@@ -4,6 +4,50 @@ Newest first.
 
 ## Unreleased
 
+### A guide page on adding a rule, and the skill writes chaff.yaml from a style note (#170)
+
+- **Adding a rule: for AI and engineers** (`/guide/adding-rules/`) lays out the ways from easiest to most
+  powerful, with a worked example that turns "polite endings, sentences of at most 80 characters" into
+  `chaff.yaml` through `chaff rules --json`, and what a new built-in rule needs (rule file, detector, tests, a
+  planted mistake, the corpus check).
+- **The Claude Code skill** reads `rules --json` to turn a team's style note into `chaff.yaml`, says what no rule
+  covers, and tests a team rule with `explain` and a sample before committing it.
+
+### `chaff rules` prints a table, and `rules --json` carries what an AI needs to write settings (#170)
+
+- **`chaff rules`** (without `--json`) lists every rule by group, each with the level it runs at now, whether it
+  runs by default, is experimental, needs a list in `chaff.yaml` or runs with `chaff test`, and one line on what it
+  finds. A rule for another language shows as off.
+- **`chaff rules --json` is schema 2.** Each rule adds `group`, `summary`, `example`, `not_flagged`,
+  `level_meaning`, `languages`, `requires`, `genres` (how it stands in every genre: on and at which level,
+  experimental, turned off, or not suited) and `options`. The top level adds `groups`, the steps from a team's
+  style note to `chaff.yaml`, and `style_presets`, `custom_rule_types` and `rule_options`, marked as coming with the
+  local-rules release. Every field of schema 1 is kept.
+
+### Each rule's page reads for someone who is not an engineer (#170)
+
+A rule's page on the site now says what the rule finds, why it matters, a before and after with what chaff printed
+for each, what it does not flag, its levels in words ("up to 25 words in a sentence"), which genres run it, turn it
+off or are not suited to it, and how to silence one spot or change it for the team. The rule list is grouped the
+same way as the reference.
+
+- **Two more rule fields:** `not_flagged` (ja and en) and `level_meaning` (with `{limit}` for the number; not needed
+  for a rule whose levels set a severity). The rule-file test requires them. A rule whose levels are severities shows
+  them as error, warning and info.
+
+### The guide lists everything chaff can find, with an example and chaff's real output (#170)
+
+A new guide page, **Reference: what chaff can find** (`/guide/reference/`), lists every rule in groups a reader
+recognises (readability, wording, slips, consistency, structure, facts, signs of generated text, the team's words).
+Each row says in one line what the rule finds, shows a text it flags and what chaff printed for it, and says whether
+the rule runs by default, is experimental, needs a list in `chaff.yaml`, or runs with `chaff test`.
+
+- **Rule files carry the plain-language part.** New optional fields: `group`, `summary` (ja and en) and `example`
+  (per language: `before`, `after`, and the `config` or `pad` the example needs). Every shipped rule has them.
+- **The output cannot drift from chaff.** The site runs the command line on every example before it builds
+  (`yarn examples`), and a test checks that each `before` is reported by its rule and each `after` is not. A rule
+  file without the fields fails the test.
+
 ### `undefined-acronym`: a figure neither uses nor explains an acronym (#170)
 
 Since plain-text figures are masked, RFC 9293 reports LISTEN. That is the intended behaviour, now pinned by tests. An

@@ -28,3 +28,21 @@ how_to_fix:
 levels: { strict: 5, normal: 3, relaxed: 1 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「です・ます」の中に「だ・である」が混ざった文
+  en: A Japanese sentence whose ending (polite or plain) differs from the rest of the document
+example:
+  ja:
+    before: |
+      新しい料金は来月から始まります。請求書の形式も変わります。支払いの期限は月末です。古い料金は三月で終わる。
+    after: |
+      新しい料金は来月から始まります。請求書の形式も変わります。支払いの期限は月末です。古い料金は三月で終わります。
+
+not_flagged:
+  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。
+  en: Neither register is called right; only the sentences in the minority are pointed at.
+level_meaning:
+  ja: 少ないほうの調子の文が {limit} 文以下のとき、それを指摘
+  en: reported when the minority register has {limit} sentences or fewer

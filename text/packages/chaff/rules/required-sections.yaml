@@ -24,3 +24,52 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+
+group: team
+summary:
+  ja: チームが必須と決めた見出し（「リスク」「費用」など）が無い文書。chaff.yaml の required_sections に書いた見出しだけを見ます
+  en: A heading the team requires (such as "Risks" or "Cost") missing from the document, from required_sections in chaff.yaml
+example:
+  ja:
+    config: { required_sections: [リスク] }
+    before: |
+      # 新しい会計の仕組みへの切り替え
+
+      ## 効果
+
+      月末の締めが三日早くなります。
+    after: |
+      # 新しい会計の仕組みへの切り替え
+
+      ## 効果
+
+      月末の締めが三日早くなります。
+
+      ## リスク
+
+      切り替えの月は、経理部の残業が増えます。
+  en:
+    config: { required_sections: [Risks] }
+    before: |
+      # Moving to the new accounting system
+
+      ## Benefits
+
+      The month closes three days sooner.
+    after: |
+      # Moving to the new accounting system
+
+      ## Benefits
+
+      The month closes three days sooner.
+
+      ## Risks
+
+      Finance will work longer hours in the month we switch.
+
+not_flagged:
+  ja: chaff.yaml の required_sections に書いた見出しだけを見ます。見出しの一部に含まれていれば満たします（「リスク」は「リスクと対策」でも満たす）。
+  en: Only the headings under required_sections in chaff.yaml are checked. A heading that contains the word counts ("Risks" is met by "Risks and mitigations").
+level_meaning:
+  ja: 無い見出しが {limit} 個あれば指摘
+  en: reported once {limit} required headings are missing
