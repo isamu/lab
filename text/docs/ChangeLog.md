@@ -4,6 +4,24 @@ Newest first.
 
 ## Unreleased
 
+### Corpus round 13; `dangling-reference` and sections of numbered documents (#170)
+
+Documents of kinds the corpus had not seen: GitHub-flavoured Markdown with alerts and Liquid tags, an MDX page,
+a specification made of tables (OpenAPI 3.1.0), release notes, a changelog, a plain-language guideline from
+plainlanguage.gov, Japanese technical documents from GitHub (Vue.js docs, JavaScript Primer, a textlint preset's README),
+a town's open-data page, RFC 9293 in plain text, a mailing-list archive with quoted replies, an English Wikipedia
+article and a Japanese Wikipedia village-pump thread.
+
+`dangling-reference` reported RFC 9293's references into other documents as missing sections:
+
+- **A numbered citation tag.** "Section 4.2.2.17 of [19]" and "See [23], Section 2.17" point into the document listed
+  as [19] or [23]. A bracketed number is also how a form leaves a blank, so, as with a hyphenated tag
+  ("[HTTP-CACHING]"), it names another document only where this document lists it (a line that starts with the tag,
+  then the entry after two spaces, or nothing). "[2024]" is not read as a tag.
+- **A numbered document named before the reference.** "RFC 1122, Section 3.3.4.2" and "RFC 7657 (Sections 5.1, 5.3,
+  and 6)". The lang-en lexicon `document-kind` now lists RFC, BCP and STD with `position: before`: the name stands
+  before its own number, where a code (CFR) takes a title number before it.
+
 ### Documents that mix Japanese and English (#170)
 
 A Japanese paper with an English abstract was read as if the abstract were one long Japanese sentence, because a
