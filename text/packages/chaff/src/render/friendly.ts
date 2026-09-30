@@ -1,6 +1,6 @@
 import type { Finding, RuleDefinition } from "../plugin.ts";
 import type { RunResult } from "../run.ts";
-import { MARK, localized, messageOf } from "./text.ts";
+import { MARK, filledText, messageOf } from "./text.ts";
 import { tally } from "./summary.ts";
 import { counted } from "./plural.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
@@ -62,12 +62,12 @@ const block = (finding: Finding, rule: RuleDefinition, language: string): string
   `─── ${TEXT[uiLanguageOf(language)].line(finding.line)} ${"─".repeat(Math.max(0, RULE - String(finding.line).length - 8))}`,
   ...quoteOf(finding),
   "",
-  `  ${MARK[finding.severity] ?? "·"}  ${localized(rule.name, language)}`,
+  `  ${MARK[finding.severity] ?? "·"}  ${filledText(rule.name, finding, language)}`,
   "",
   ...indent(messageOf(rule, finding, language), "     "),
-  ...indent(localized(rule.why, language), "     "),
+  ...indent(filledText(rule.why, finding, language), "     "),
   "",
-  ...indent(`→ ${localized(rule.how_to_fix, language)}`, "     "),
+  ...indent(`→ ${filledText(rule.how_to_fix, finding, language)}`, "     "),
   "",
   `     ${TEXT[uiLanguageOf(language)].relax}:  npx chaff relax ${finding.rule}`,
   "",

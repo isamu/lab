@@ -1,5 +1,7 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
 import { citedDocumentAfter, citedDocumentBefore, hyphenatedTagAround } from "./citation.ts";
+import { citedCodeBefore, codeVocabulary } from "./code-citation.ts";
+import { loadLexicons } from "./lexicons.ts";
 import { membersAfter } from "./reference-list.ts";
 import { parseRoman } from "./roman.ts";
 import { dates } from "./dates.ts";
@@ -140,6 +142,9 @@ const glossedDocument = (gloss: Gloss): string | undefined => {
   return anchor !== undefined && gloss.depth > anchor.depth ? anchor.document : undefined;
 };
 
+const LEXICONS = loadLexicons();
+const CODES = codeVocabulary(LEXICONS);
+
 /** The other document a reference names, or else a bracketed tag that the core checks against the document's list. */
 const citation = (text: string, start: number, end: number, document: string | undefined): Readonly<Record<string, string>> => {
   if (document !== undefined) return { document };
@@ -149,7 +154,7 @@ const citation = (text: string, start: number, end: number, document: string | u
 
 /**
  * "Section 4.2(a)" → 4.2.a, "Article III" → 3. The same addresses the tree gives.
- * "Section 9 of the Master Agreement" carries the other document's name, and is not looked up in this tree.
+ * "Section 9 of the Master Agreement" and "35 CFR §122" carry the other document's name, and are not looked up in this tree.
  */
 const references = (text: string): Mention[] => {
   const gloss: Gloss = { depth: 0, scanned: 0, anchors: [] };
@@ -158,7 +163,7 @@ const references = (text: string): Mention[] => {
     if (main === undefined) return [];
     const { parts, end } = subdivisions(text, match.index + match[0].length);
     advance(gloss, text, match.index);
-    const cited = citedDocumentAfter(text, end) ?? citedDocumentBefore(text, match.index);
+    const cited = citedDocumentAfter(text, end) ?? citedDocumentBefore(text, match.index) ?? citedCodeBefore(text, match.index, CODES);
     const document = cited ?? glossedDocument(gloss);
     gloss.scanned = Math.max(gloss.scanned, end);
     if (cited !== undefined) gloss.anchors.push({ document: cited, depth: gloss.depth });
@@ -278,8 +283,15 @@ const quantities = (text: string): Mention[] =>
     return unit === undefined || Number.isNaN(value) || isWordChar(text[match.index - 1]) ? [] : [{ start: match.index, end, attrs: { value, unit } }];
   });
 
-/** "2.5 days" and "1.5 times" are amounts, not section 2.5 titled "days". */
-const countedAfter = (_number: string, rest: string): boolean => unitAfter(` ${rest}`, 0) !== undefined;
+const MEASURE_UNITS = (LEXICONS["measure-unit"] ?? []).map((entry) => entry.pattern);
+
+/** A letter, digit or hyphen right after the symbol makes it the start of a word: "2.1 mmap", "5.2.2.4 min-fresh". */
+const CONTINUES_WORD = /^[\p{Script=Latin}\p{Nd}_-]/u;
+
+const startsWithMeasureUnit = (rest: string): boolean => MEASURE_UNITS.some((unit) => rest.startsWith(unit) && !CONTINUES_WORD.test(rest.slice(unit.length)));
+
+/** "2.5 days", "1.5 times" and "1.5 mM in each" are amounts, not section 2.5 titled "days". */
+const countedAfter = (_number: string, rest: string): boolean => unitAfter(` ${rest}`, 0) !== undefined || startsWithMeasureUnit(rest);
 
 export const structure: StructurePatterns = {
   numbered,

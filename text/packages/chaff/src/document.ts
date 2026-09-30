@@ -14,7 +14,9 @@ import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { pageFurniture, textOutline } from "./page-furniture.ts";
 import { tokenizedLexicons } from "./lexicon-tokens.ts";
+import { plainSource } from "./plain-source.ts";
 import { inPageAnchors, isInPageNavigation, isNavigationList, type InPageAnchors } from "./in-page-nav.ts";
+import { eachPreOrder } from "./tree-walk.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile, Token } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
@@ -40,11 +42,6 @@ const spanOf = (node: Node): Span | undefined => {
   const start = node.position?.start.offset;
   const end = node.position?.end.offset;
   return start === undefined || end === undefined ? undefined : { start, end };
-};
-
-const walk = (node: Node, visit: (node: Node) => void): void => {
-  visit(node);
-  (node.children ?? []).forEach((child) => walk(child, visit));
 };
 
 const parse = (source: string): Node =>
@@ -104,7 +101,7 @@ const directiveSpans = (source: string): Span[] => [...matchSpans(source, DIRECT
 
 const collectMasks = (root: Node, source: string, anchors: InPageAnchors): Span[] => {
   const spans: Span[] = [...directiveSpans(source)];
-  walk(root, (node) => {
+  eachPreOrder(root, (node) => {
     if (node.type === "link" || node.type === "linkReference") {
       spans.push(...linkChrome(node));
       return;
@@ -118,7 +115,7 @@ const collectMasks = (root: Node, source: string, anchors: InPageAnchors): Span[
 
 const emphasisSpans = (root: Node, source: string): Span[] => {
   const spans: Span[] = [];
-  walk(root, (node) => {
+  eachPreOrder(root, (node) => {
     if (EMPHASIS.has(node.type)) spans.push(...emphasisChrome(node, source));
   });
   return spans;
@@ -126,7 +123,7 @@ const emphasisSpans = (root: Node, source: string): Span[] => {
 
 const textOf = (node: Node, source: string): string => {
   const parts: string[] = [];
-  walk(node, (child) => {
+  eachPreOrder(node, (child) => {
     if (child.type !== "text" && child.type !== "inlineCode") return;
     const span = spanOf(child);
     if (span !== undefined) parts.push(source.slice(span.start, span.end));
@@ -138,7 +135,7 @@ export type Heading = { readonly depth: number; readonly text: string; readonly 
 
 const headingsOf = (root: Node, source: string): Heading[] => {
   const found: Heading[] = [];
-  walk(root, (node) => {
+  eachPreOrder(root, (node) => {
     if (node.type !== "heading") return;
     const span = spanOf(node);
     const depth = typeof node === "object" && "depth" in node && typeof node.depth === "number" ? node.depth : 1;
@@ -162,7 +159,7 @@ const startsInside = (span: Span, regions: readonly Span[]): boolean => regions.
  */
 const strongSpans = (root: Node, masked: readonly Span[]): Span[] => {
   const found: Span[] = [];
-  walk(root, (node) => {
+  eachPreOrder(root, (node) => {
     if (node.type !== "strong") return;
     const span = spanOf(node);
     if (span !== undefined && !startsInside(span, masked)) found.push(span);
@@ -174,7 +171,7 @@ const within = (span: Span, from: number, to: number): boolean => span.start >= 
 
 const spansOfType = (root: Node, type: string, keep: (node: Node) => boolean = () => true): Span[] => {
   const found: Span[] = [];
-  walk(root, (node) => {
+  eachPreOrder(root, (node) => {
     if (node.type !== type || !keep(node)) return;
     const span = spanOf(node);
     if (span !== undefined) found.push(span);
@@ -265,7 +262,7 @@ const paragraphsOf = (prose: string, spans: readonly Span[], sentences: readonly
 /** 箇条書きは list ノードの直下の項目を数える。入れ子の項目は内側の list のものとして数える。目次のような案内だけの箇条書きは数えない。 */
 const listsOf = (root: Node, source: string, anchors: InPageAnchors): BulletList[] => {
   const found: BulletList[] = [];
-  walk(root, (node) => {
+  eachPreOrder(root, (node) => {
     if (node.type !== "list" || isNavigationList(node, anchors)) return;
     const span = spanOf(node);
     if (span === undefined) return;
@@ -312,13 +309,7 @@ const proseOf = (source: string, masked: readonly Span[]): string => {
   return maskSpans(unlabelled, speakerLabels(unlabelled));
 };
 
-export const buildDocument = (
-  path: string,
-  source: string,
-  adapter: LanguageAdapter,
-  team: TeamRules = EMPTY_TEAM,
-  profile: DocumentProfile | undefined = undefined,
-): ProseDocument => {
+const documentOf = (path: string, source: string, adapter: LanguageAdapter, team: TeamRules, profile: DocumentProfile | undefined): ProseDocument => {
   const root = parse(source);
   const anchors = inPageAnchors(root);
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
@@ -381,6 +372,18 @@ export const buildDocument = (
     prose,
   };
 };
+
+/**
+ * 文書モデルを作る。text はファイルの中身のままでよい。先頭の BOM を外し、CRLF と CR を LF にそろえた doc.source を読む。
+ * 位置（span・offset）はすべて doc.source の上の位置で、渡した text の上の位置ではない。行と桁は同じ。
+ */
+export const buildDocument = (
+  path: string,
+  text: string,
+  adapter: LanguageAdapter,
+  team: TeamRules = EMPTY_TEAM,
+  profile: DocumentProfile | undefined = undefined,
+): ProseDocument => documentOf(path, plainSource(text), adapter, team, profile);
 
 /** 番号を探してはいけない範囲。コードの中の「第3条」は条ではなく、参照でもない。 */
 const OPAQUE = ["code", "inlineCode", "html", "yaml", "toml"];

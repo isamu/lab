@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { Scalar, YAMLMap, isMap, isScalar, parseDocument, type Document } from "yaml";
 import { definedLevels } from "../levels.ts";
-import { localized } from "../render/text.ts";
+import { readableText } from "../render/text.ts";
 import type { Level, RuleDefinition } from "../plugin.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
 
@@ -47,7 +47,8 @@ const reasonOf = (value: unknown): string | undefined => {
   return text.length === 0 ? undefined : text;
 };
 
-const ruleComment = (rule: RuleDefinition, language: string): string => ` ${localized(rule.name, language)}\n ${localized(rule.why, language)}`;
+const ruleComment = (rule: RuleDefinition, language: string): string =>
+  ` ${readableText(rule, rule.name, language)}\n ${readableText(rule, rule.why, language)}`;
 
 const load = (path: string, language: string): Document => parseDocument(existsSync(path) ? readFileSync(path, "utf8") : TEXT[uiLanguageOf(language)].template);
 

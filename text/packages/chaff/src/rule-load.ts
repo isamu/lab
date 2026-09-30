@@ -82,8 +82,8 @@ const missingFields = (raw: Record<string, unknown>, levels: LevelTable | undefi
 
 const localizedOf = (value: unknown): Record<string, string> => (isLocalized(value) ? value : {});
 
-/** 見つけ方ごとの message。読めないものは捨てる。 */
-const messagesOf = (value: unknown): Record<string, Record<string, string>> =>
+/** 見つけ方ごとの message、置き場所ごとの読みかた。読めないものは捨てる。 */
+const localizedByKey = (value: unknown): Record<string, Record<string, string>> =>
   isRecord(value) ? Object.fromEntries(Object.entries(value).flatMap(([variant, text]) => (isLocalized(text) ? [[variant, text]] : []))) : {};
 
 /**
@@ -120,7 +120,8 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     why: localizedOf(raw["why"]),
     how_to_fix: localizedOf(raw["how_to_fix"]),
     message: localizedOf(raw["message"]),
-    messages: messagesOf(raw["messages"]),
+    messages: localizedByKey(raw["messages"]),
+    placeholders: localizedByKey(raw["placeholders"]),
     levels,
     by_genre: genreTables(raw["by_genre"], language),
     other_languages: otherLanguages(raw, language),

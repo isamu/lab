@@ -1,5 +1,6 @@
 import { loadLexicons } from "./lexicons.ts";
 import { unmarkNumberStops } from "./number-stop.ts";
+import { labelStops, unmarkLabelStops } from "./label-stop.ts";
 import { sentenceSpans } from "./sentence-split.ts";
 import { splitAtQuotedStops } from "./quoted-stop.ts";
 import { reattachClosingQuotes } from "./closing-quote.ts";
@@ -9,6 +10,9 @@ import { isJapaneseRun } from "./japanese-run.ts";
 import type { AdapterNeeds, EmbeddedLanguage, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
 
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
+
+const LEXICONS = loadLexicons();
+const LABEL_STOPS = labelStops((LEXICONS["abbreviated-label"] ?? []).map((entry) => entry.pattern));
 
 const LATIN_LETTER = /[a-z]/giu;
 const COUNTABLE = /\S/gu;
@@ -32,7 +36,7 @@ const withLanguage = (text: string, span: Span): Sentence => (isJapaneseRun(text
 
 /**
  * 英語は sentence-splitter の既定にほぼ任せる。"Dr." "e.g." "U.S." "$3.50" を
- * いずれも文末と誤認しない。前処理は行の途中の番号を箇条書きと読ませること、後処理は閉じ引用符の内側で閉じた文を切ることと、文頭に取り残された閉じ引用符を前の文へ戻すこと。spec §7.2。
+ * いずれも文末と誤認しない。前処理は行の途中の番号を箇条書きと読ませることと、番号の前の略した名前（FIG. 1、Vol. XLIII）の点で切らないこと、後処理は閉じ引用符の内側で閉じた文を切ることと、文頭に取り残された閉じ引用符を前の文へ戻すこと。spec §7.2。
  */
 export const adapter: LanguageAdapter = {
   kind: "language",
@@ -56,10 +60,10 @@ export const adapter: LanguageAdapter = {
     if (total === 0) return 0;
     return [...source.matchAll(LATIN_LETTER)].length / total;
   },
-  lexicons: loadLexicons(),
+  lexicons: LEXICONS,
   structure,
   segment: (text: string): Segmentation => {
-    const quotedStops = sentenceSpans(unmarkNumberStops(text)).flatMap((span) => splitAtQuotedStops(text, span));
+    const quotedStops = sentenceSpans(unmarkNumberStops(unmarkLabelStops(text, LABEL_STOPS))).flatMap((span) => splitAtQuotedStops(text, span));
     const sentences: Sentence[] = reattachClosingQuotes(text, quotedStops).map((span) => withLanguage(text.slice(span.start, span.end), span));
     return { sentences: isReady() ? sentences.map(withTokens) : sentences };
   },

@@ -21,6 +21,12 @@ how_to_fix:
   ja: 定義を一か所にまとめ、もう一方は「第2条に定める{term}」のように参照にしてください。意図して意味を変えているなら、別の語にします。
   en: Keep one definition and refer to it from the other place. If the meaning changes on purpose, use a different term.
 
+# chaff explain と規則の一覧には指摘が無いので、{term} をこう読ませる。
+placeholders:
+  term:
+    ja: 〇〇
+    en: the term
+
 levels: { strict: 1, normal: 1, relaxed: 1 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]

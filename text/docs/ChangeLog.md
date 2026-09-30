@@ -25,6 +25,70 @@ Japanese sentence only ends at 。．！？. Now:
 The other rules still run in the document's language only; English-only rules do not check English sentences in a
 Japanese document. Language adapters mark such a sentence with `embeddedLanguage` (a new optional field of `Sentence`).
 
+### `numbering-gap`: a decimal before a unit symbol is an amount, and 「1.4 本利用ルール」 is a heading number (#170)
+
+A line opening with a decimal followed by a unit symbol ("1.5 mM in each of the four deoxyribonucleoside
+triphosphates", then "0.25 mM in dithiothreitol") was read as dotted section 1.5, then 0.25, and reported as a gap
+in a US patent. Both language packages now carry a `measure-unit` lexicon (mM, mg, µL, kDa, °C, ℃, % and other
+symbols); a dotted number followed by one of them is an amount, not a section. A symbol is only matched when no letter,
+digit or hyphen follows, so "2.1 mmap" and "5.2.2 min-fresh" stay section titles, and symbols that start with a
+capital letter (Da, Pa, GB) are left out because a section title starts with a capital too.
+
+In Japanese, 「### 1.4 本利用ルールが適用されないコンテンツについて」 was read as 1.4 counted in 本 (the counter for long
+things), so the heading was no section and the jump from 「1.1.」 to 「1.4」 in デジタル庁のコピーライトポリシー went
+unreported. After a number that opens a line, a counter read across the space is no longer taken when the text after
+the space, read on its own, opens with a noun prefix and a noun (本規約, 本サービス, 本利用ルール). 「3 本の鉛筆」 is still 3 counted in 本, and
+quantities inside a sentence are read as before (「10 両編成」). The gap is now reported, and 「1.4 本ガイドブックの概要」 in
+デジタル庁's area data model is read as section 1.4.
+
+### A library caller gets the BOM and CRLF / CR handling too (#170)
+
+Removing a leading BOM and reading CRLF and CR-only line ends as LF happened only where the command line read a file.
+`buildDocument`, `profileFor` and `resolveGenre` now do it themselves, so a program that passes a file's text as it is
+(and the `corpus` scripts) reads the same document as the command line. Every offset in the returned document refers
+to `doc.source`, the text after this normalisation, not to the string that was passed in; line numbers are the same
+either way. `buildStructure` returns only a tree, so its offsets still refer to the text it was given, as before.
+
+A file that starts with two BOMs now loses both. Before, the second one stayed in the text while the Markdown parser
+dropped it, so every position in the file was off by one: `# Notes` was read as the heading "Note", and a quoted
+sentence lost its last character.
+The command line's output is otherwise unchanged.
+
+### A blockquote or list nested thousands of levels deep no longer crashes chaff (#170)
+
+`>>>>…` or `- - - …` nested a few thousand levels deep is valid Markdown, and chaff stopped with "Maximum call stack
+size exceeded". Every walk over the Markdown tree and the structure tree now keeps its own stack, so lint, `tree` and
+the structure rules read such a document like any other. The output of every other document is unchanged.
+
+### Patent figures, volume numbers and sections of US codes are not reported (#170)
+
+`undefined-acronym` reported the label and the number of a figure or a volume in US patents: "FIG" in "FIG. 1",
+"FIGS" in "FIGS. 1A-1C", "XLIII" in "Vol. XLIII" and "II-VI" in "Reactions II-VI". A new lexicon, `abbreviated-label`,
+lists short labels written with a full stop before a number (Vol., No., Pt., Ch., Fig., and their plurals), in both
+languages. A Roman numeral after one of these or after a division name (Part, Section) is a number, as it already was
+after a division name, and so is a short Arabic number, with a letter or not (FIG. 3, TABLE 1, FIG. 1A). Roman numerals
+written as a range ("II-VI", "I–III") count as one number, after a label or after a capitalised word. The full stop
+is part of the label, so "CH 4" and "PT 3" are still acronyms. English sentences no longer end at such a label before
+its number: "FIG." and "1 illustrates …" were two sentences, and so were "Science, Vol." and "347, Issue 6222".
+
+`dangling-reference` reported "§122" and "§1.14" in "35 CFR §122" and "37 CFR §1.14". A section sign (or "Section")
+right after the name of a code points into that code, not into this document. The codes are a new lang-en lexicon,
+`document-kind` (CFR, C.F.R., U.S.C., U.S.C.A., USC, USCA), with an optional title number before them ("42 U.S.C. §
+1983"). A section sign with no code before it is still looked up here.
+
+### A rule's how to fix names the words of the finding (#345)
+
+`preferred-term` printed 「{preferred}」に直してください and `Change it to "{preferred}"` as written: only the
+message had its placeholders filled. Every text a finding shows now fills them the same way: the rule's name, why and
+how to fix, in the friendly output and in `chaff test`. 「サーバ」 under `prefer: { サーバ: サーバー }` now reads
+「サーバー」に直してください. `duplicate-definition`'s Japanese how to fix (「第2条に定める{term}」) had the same slip.
+
+Where there is no finding (`chaff explain`, `chaff rules --json`, the SARIF rule's help, the comment `chaff relax`
+writes into chaff.yaml and the site's rule reference), a placeholder now reads as words the rule gives for it under
+`placeholders:` in its YAML: 「prefer に並べた使う書き方」, 「第2条に定める〇〇」. A test plants each of `yarn bench`'s
+mistakes and fails if any rendered finding still shows a placeholder, and another fails if a rule uses a placeholder
+in its name, why or how to fix without giving words for it.
+
 ### `latin-spacing` leaves labels and whole dates out of the count (#170)
 
 A label followed by a space and its title is layout, not the writer's spacing habit, but it was counted and
@@ -74,7 +138,6 @@ sentence after kana, kanji, 「ー」 or a closing bracket (「低下するこ�
 decimal point, so 「１．はじめに」 and 「３．５％」 are read as before. Corpus round 12 added Japanese papers from 保健医療科学 and
 自然言語処理 (J-STAGE, CC BY 4.0) and more documents for genres the corpus had few of: a Japanese licence and terms, US
 patents, English FAQs, speeches, a novel, poems, an essay, a play and a tech blog post.
-
 
 ## 0.17.0 — 2026-09-30
 
