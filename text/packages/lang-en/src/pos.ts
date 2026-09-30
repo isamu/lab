@@ -197,18 +197,18 @@ export const prepare = (): void => {
 export const isReady = (): boolean => state.ready !== undefined;
 
 /**
- * wink は位置を返さないので、解析させた文字列（read）で表層を順に照合して復元する。語は本文（source）の字で返す。
+ * wink は位置を返さないので、表層を順に照合して復元する。
  * 見つからないものは飛ばし、カーソルは進めない。位置の当てずっぽうを下流に流さない。
  */
-const locate = (source: string, read: string, tagged: readonly Tagged[]): Token[] =>
+const locate = (text: string, tagged: readonly Tagged[]): Token[] =>
   tagged.reduce<{ tokens: Token[]; cursor: number }>(
     (acc, entry, at) => {
-      const start = read.indexOf(entry.value, acc.cursor);
+      const start = text.indexOf(entry.value, acc.cursor);
       if (start === -1) return acc;
       const end = start + entry.value.length;
       const token = {
         span: { start, end },
-        surface: source.slice(start, end),
+        surface: entry.value,
         pos: properNounChecked(entry.value, upos(entry.pos)),
         ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
         ...featuresOf(tagged, at),
@@ -233,6 +233,7 @@ const withSentenceInitialCase = (tagger: Tagger, text: string, entries: readonly
 export const tokenize = (text: string): Token[] | undefined => {
   const tagger = state.ready;
   if (tagger === undefined) return undefined;
+  // 語は解析させた字（don't）で返す。語彙表の語と同じ字で比べられる。span は本文を指したまま。
   const words = straightApostrophes(blankLongRuns(text, RUN_LIMIT));
-  return locate(text, words, withSentenceInitialCase(tagger, words, tagged(tagger, words)));
+  return locate(words, withSentenceInitialCase(tagger, words, tagged(tagger, words)));
 };

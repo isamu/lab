@@ -12,8 +12,10 @@ the curly form, so every rule that reads parts of speech saw a broken sentence: 
 list that was not there, `agentless-passive` and `expletive-construction` missed `It’s written` and `There’s`, and the
 stray pieces counted as words in `adverb-overuse` and `proper-noun-density`. A `’` between a letter or digit and a
 letter (`don’t`, `team’s`, `1990’s`) and every `ʼ` (U+02BC) are now read as `'`. A `’` with no letter after it stays a
-closing quote (`‘like this’`), so a plural possessive (`the users’ files`) is still read as a quote. Spans and quoted
-text still point at the source as written.
+closing quote (`‘like this’`), so a plural possessive (`the users’ files`) is still read as a quote. Spans still point
+at the source as written; a word's surface is the straight form, so a lexicon entry such as `in today's fast-paced
+world` (`padded-intro`) also matches `In today’s fast-paced world`. `contraction-consistency` compares the text itself
+and does not yet treat `don’t` as `don't`.
 
 ### The corpus HTML converter keeps U+3000 and drops text written for a screen reader (#170)
 

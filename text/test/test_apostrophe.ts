@@ -63,12 +63,16 @@ describe("曲がったアポストロフィの英文を、まっすぐなアポ�
     });
   });
 
-  it("語は本文の字のまま返す。位置が本文を指す", () => {
+  it("語はまっすぐな形で返し、位置は本文を指す", () => {
     const text = "We don’t know what that’s for.";
     const tokens = tokenize(text) ?? [];
-    tokens.forEach((token) => assert.equal(token.surface, text.slice(token.span.start, token.span.end)));
-    assert.ok(tokens.some((token) => token.surface === "n’t"));
-    assert.ok(tokens.some((token) => token.surface === "’s"));
+    tokens.forEach((token) => assert.equal(token.surface, straightApostrophes(text).slice(token.span.start, token.span.end)));
+    assert.deepEqual(
+      tokens.filter((token) => token.surface.includes("'")).map((token) => text.slice(token.span.start, token.span.end)),
+      ["n’t", "’s"],
+    );
+    assert.ok(tokens.some((token) => token.surface === "n't"));
+    assert.ok(tokens.some((token) => token.surface === "'s"));
   });
 
   it("閉じの一重引用符は引用符のまま。語に付かない", () => {
@@ -76,6 +80,20 @@ describe("曲がったアポストロフィの英文を、まっすぐなアポ�
     const closing = tokens.find((token) => token.surface.includes("’"));
     assert.equal(closing?.surface, "’");
     assert.ok(tokens.some((token) => token.surface === "this"));
+  });
+});
+
+describe("語彙表の語は、曲がったアポストロフィで書いても当たる", () => {
+  const paddedIntro = (source: string): string[] =>
+    runRules(buildDocument("t.md", `# Report\n\n${source}\n`, en), loadRules("en"), {}, true, "blog/tech")
+      .findings.filter((finding) => finding.rule === "padded-intro")
+      .map((finding) => String(finding.values?.["matched"]));
+
+  before(() => prepare());
+
+  it("In today’s fast-paced world は In today's fast-paced world と同じに当たる", () => {
+    assert.deepEqual(paddedIntro("In today’s fast-paced world, teams ship faster."), ["in today's fast-paced world"]);
+    assert.deepEqual(paddedIntro("In today’s fast-paced world, teams ship faster."), paddedIntro("In today's fast-paced world, teams ship faster."));
   });
 });
 
