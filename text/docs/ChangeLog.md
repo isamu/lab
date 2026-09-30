@@ -36,6 +36,16 @@ the word "Fed" followed by a lowercase word "s", and the Title Case heading was 
 now read with the same apostrophe fold as `contraction-consistency` and the English tagger: `’` between a letter or
 digit and a letter, and every `ʼ`, reads as `'`. A closing quote (`‘Board’ Reviews`) is still outside the word.
 
+### A run of digits, words or parentheses as long as the text no longer crashes chaff (#170)
+
+A number tens of thousands of digits long, a town name split into thousands of one-character pieces, a superlative
+followed by thousands of nouns, or parentheses nested thousands deep in a statute stopped chaff with "Maximum call
+stack size exceeded". The functions that read along such a run now keep a cursor, and nested parentheses are removed in
+one reading instead of once per level. The output of every other document is unchanged.
+
+`chaff tree --format json` on a tree too deep to write as indented JSON (only a third-party language package nests
+that deep) now says so and names the depth instead of crashing; `--format sexp` may still write it.
+
 ### English inside a Japanese document is split as in an English one, and no sentence ends inside nested brackets (#170)
 
 - **English runs in a Japanese document get the English adapter's sentence ends.** `FIG. 1 illustrates…` and
