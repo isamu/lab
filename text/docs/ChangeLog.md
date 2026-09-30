@@ -26,6 +26,14 @@ A list needs three items, and four shapes made two items, or an "and" inside one
   object and not of any item's head, and there is no comma before "or", the "or" joins the preposition's objects.
   `requests for records, petitions for waivers and appeals` is still a list.
 
+### 同項, 同号 and 同条 after another law's article are not looked up in this document (#170)
+
+A 同-reference points at the provision cited last, and now also at that provision's document. After 「法第16条第1項」
+in a guideline numbered by headings (「1 目的」), 「同項」 is article 16 of the law, not of the guideline, and
+`dangling-reference` no longer reports it. The same holds for a continuation (「法第二十九条第一項若しくは第三項」).
+After an article of this document (「第三条第二項…同項」) the reference is still looked up here and reported when
+missing. In `chaff tree`, such references now carry the `unitWord` of the reference they follow.
+
 ### The corpus HTML converter drops players, share rows, language switches and paging bars, and finds the body of a page with no `<main>` (#170)
 
 Corpus round 11 found page chrome in the stored text. Each part is told by its structure, not by a site's class
