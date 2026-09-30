@@ -1,5 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
+import { firedRules } from "./rule-run.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -8,8 +9,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
 const RULES = loadRules("en");
 
-const idsFor = (source: string): string[] =>
-  runRules(buildDocument("t.md", source, en), RULES, {}, true, "business/report").findings.map((finding) => finding.rule);
+const idsFor = (source: string): string[] => firedRules(en, source);
 
 /** adverb-overuse は 200 語未満を測らない。密度を見る test はこれで嵩を足す。 */
 const padded = (source: string): string => `${source}\n\n${"We shipped the release and the team reported the numbers. ".repeat(22)}`;
