@@ -184,6 +184,120 @@ const EQUALS_DEFINITION = /^\s*[=＝]\s*(?=\p{L})\S*?[\p{Ll}\p{Lo}]/u;
 const isEqualsDefinedAt = (body: string, acronym: string, at: number): boolean =>
   EQUALS_DEFINITION.test(body.slice(at + acronym.length, at + acronym.length + DEFINITION_REACH));
 
+/**
+ * 用語集の見出し語としての略語（## AFD、| AFD |、**AFD**:、- AFD —）。名前は見出し語のすぐ後ろ、つまり次の行・隣のセル・
+ * 区切りの後ろに書く。見出しと表は文にならないので、文をつないだ本文ではなく source の行を見る。
+ */
+const TERM = String.raw`[A-Z][A-Z&-]*[A-Z]`;
+const STRONG = /\*\*|__/gu;
+const LIST_MARK = String.raw`(?:[-*+]|\d+[.)])\s+`;
+const TERM_SEPARATOR = String.raw`(?:[:：]|\s[-–—]|[–—])`;
+/** 行が略語だけの見出し・段落（## AFD、AFD:、**AFD**）。 */
+const TERM_LINE = new RegExp(String.raw`^(?:#{1,6}\s+)?(?<term>${TERM})\s*(?<colon>[:：])?(?:\s+#+)?$`, "u");
+/** 見出しか強調の印。印の無い「RTO:」の行はメモの見出しにも書くので、コロンを付けた略語だけの行は印があるときだけ見出し語と読む。 */
+const MARKED_LINE = /^(?:#|\*\*|__)/u;
+/**
+ * 箇条書きの頭の略語と区切りの後ろの名前（- AFD — Area…）か、強調した略語とその後ろの名前（**AFD**: Area…、**AFD** Area…）。
+ * 印の無い行頭の略語とコロン（RTO: Review ticket ownership.）は、メモの見出しにも書くので見出し語と読まない。
+ */
+const TERM_LEAD = new RegExp(
+  String.raw`^(?:(?:${LIST_MARK})?(?<strong>\*\*|__)(?<strongTerm>${TERM})\s*(?:[:：]\s*)?\k<strong>\s*${TERM_SEPARATOR}?|${LIST_MARK}(?<term>${TERM})\s*${TERM_SEPARATOR})\s*(?<rest>\S.*)$`,
+  "u",
+);
+const TABLE_ROW = /^\s*\|.*\|\s*$/u;
+const WHOLE_TERM = new RegExp(String.raw`^${TERM}$`, "u");
+/** 名前の終わり。文の終わり、区切り、括弧、空白で挟んだハイフン。読点は名前の中にも書く（Aviation, Range, and Aerospace Meteorology）ので、その前でも比べる。 */
+const NAME_END = /[.;:：(（。|]|\s[-–—]\s|[–—]/u;
+const NAME_COMMA = /[,，、]/u;
+const LEADING_MARKS = /^[\s:：>*+-]+/u;
+
+/** 項目の頭の名前と、その読点の前まで（Service Level Agreement, a contract → Service Level Agreement）。 */
+const namesOf = (text: string): string[] => {
+  const clause = (text.replaceAll(STRONG, "").replace(LEADING_MARKS, "").split(NAME_END)[0] ?? "").trim();
+  return [clause, (clause.split(NAME_COMMA)[0] ?? "").trim()].filter((name) => name !== "");
+};
+
+/** 1 語の名前を縮めた略語（ABV → Above、ABNDT → Abundant）。名前は小文字を含む語で、略語そのもの（SEO.）ではない。 */
+const shortensWord = (name: string, acronym: string): boolean => !/\s/u.test(name) && /\p{Ll}/u.test(name) && abbreviates(name, acronym);
+
+const spellsName = (text: string, acronym: string): boolean => namesOf(text).some((name) => namesAcronym(name, acronym) || shortensWord(name, acronym));
+
+const cellsOf = (row: string): string[] =>
+  row
+    .trim()
+    .replace(/^\||\|$/gu, "")
+    .split("|")
+    .map((cell) => cell.replaceAll(STRONG, "").trim());
+
+/** 表の行で、略語だけのセルの隣（後ろか前）のセルが名前のもの。 */
+const tableTerms = (row: string): string[] => {
+  const cells = cellsOf(row);
+  return cells.filter(
+    (cell, index) => WHOLE_TERM.test(cell) && [cells[index + 1], cells[index - 1]].some((next) => next !== undefined && spellsName(next, cell)),
+  );
+};
+
+const leadTerm = (line: string): string[] => {
+  const lead = TERM_LEAD.exec(line.trim());
+  const term = lead?.groups?.["strongTerm"] ?? lead?.groups?.["term"];
+  return term !== undefined && spellsName(lead?.groups?.["rest"] ?? "", term) ? [term] : [];
+};
+
+/** 見出し語から名前までに見る行の数。空行が 2 つ挟まっても、次の段落を見る。 */
+const NEXT_LINE_REACH = 3;
+
+/** 略語だけの行と、その次の空でない行が名前のもの。 */
+const lineTerm = (lines: readonly string[], index: number): string[] => {
+  const line = (lines[index] ?? "").trim();
+  const groups = TERM_LINE.exec(line.replaceAll(STRONG, ""))?.groups;
+  const term = groups?.["term"];
+  if (term === undefined || (groups?.["colon"] !== undefined && !MARKED_LINE.test(line))) return [];
+  const next = lines.slice(index + 1, index + 1 + NEXT_LINE_REACH).find((line) => line.trim() !== "");
+  return next !== undefined && spellsName(next, term) ? [term] : [];
+};
+
+const FENCE = /^ {0,3}(?<fence>`{3,}|~{3,})/u;
+const FRONT_MATTER_EDGE = /^(?:---|\.\.\.)\s*$/u;
+
+type FenceScan = { readonly open: string | undefined; readonly kept: string[] };
+
+/** 閉じる行は記号の並びだけ。後ろに語がある行（```ts）は囲みの中の行。 */
+const CLOSING_FENCE = /^ {0,3}(?<fence>`{3,}|~{3,})\s*$/u;
+
+const closes = (line: string, open: string): boolean => CLOSING_FENCE.exec(line)?.groups?.["fence"]?.startsWith(open) === true;
+
+/** コードの囲みの中の行（開き・閉じの行も）を空にする。閉じるのは同じ記号で、開きと同じか長い並び。 */
+const withoutFences = (lines: readonly string[]): string[] =>
+  lines.reduce<FenceScan>(
+    (scan, line) => {
+      const fence = FENCE.exec(line)?.groups?.["fence"];
+      const inside = scan.open !== undefined || fence !== undefined;
+      scan.kept.push(inside ? "" : line);
+      if (scan.open === undefined) return { open: fence, kept: scan.kept };
+      return { open: closes(line, scan.open) ? undefined : scan.open, kept: scan.kept };
+    },
+    { open: undefined, kept: [] },
+  ).kept;
+
+/** 文書の頭の front matter（--- で始まり --- か ... で閉じる）の行数。無ければ 0。 */
+const frontMatterLength = (lines: readonly string[]): number =>
+  lines[0]?.trim() === "---" ? lines.findIndex((line, index) => index > 0 && FRONT_MATTER_EDGE.test(line)) + 1 : 0;
+
+/** 4 桁以上の字下げはコードとして書ける。入れ子の箇条書きと見分けずに外す（外しても、略語が報告されるほうへ倒れるだけ）。 */
+const INDENTED = /^(?: {4}|\t)/u;
+
+/** 本文として読まない行（front matter、コードの囲み、字下げしたコード）を空にした行。行の位置は変えない。 */
+const proseLines = (lines: readonly string[]): string[] => {
+  const skipped = frontMatterLength(lines);
+  return withoutFences(lines.map((line, index) => (index < skipped || INDENTED.test(line) ? "" : line)));
+};
+
+/** 用語集の見出し語として、すぐ後ろに名前を書いた略語。 */
+export const termEntryAcronyms = (source: string): ReadonlySet<string> => {
+  const lines = proseLines(source.split(/\r?\n/u));
+  return new Set(lines.flatMap((line, index) => (TABLE_ROW.test(line) ? tableTerms(line) : [...lineTerm(lines, index), ...leadTerm(line)])));
+};
+
 export type ExpandedAt = (body: string, acronym: string, at: number) => boolean;
 
 /** body の at にある略語が、その場で展開・定義されているか。語彙表から一度だけ組み立てて、略語ごとに呼ぶ。 */
