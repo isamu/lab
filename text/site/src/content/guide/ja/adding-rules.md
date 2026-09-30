@@ -101,6 +101,88 @@ sample.md   technical/spec · 日本語   ジャンルはchaff.yamlから
 書き方の細かいところは [設定](./configuration) にあります。
 書いたあとは `npx chaffjs rules` の表で、そのルールがいまどの段階で動くかを確かめます。
 
+## ルールの細かい設定（次のリリース）
+
+> 次のリリースで入る予定です（#380）。形が変わることがあります。
+
+段階のほかに、ルールごとの設定（`options`）を書けるようになります。
+最初に入るのは、カタカナ語の語末の長音を見る `katakana-long-vowel` です。
+たとえば「IEICE 準拠」なら、3 音以上の語は語末に「ー」を付けない決まりなので、次のように書きます。
+
+```yaml
+rules:
+  katakana-long-vowel: normal
+options:
+  katakana-long-vowel:
+    ending: drop      # 語末の「ー」を付けない（コンピュータ、メモリ）
+    min_morae: 3      # 3 音以上の語だけ
+    except: [カー]     # この語はどちらの書き方でも指さない
+```
+
+どの設定があり、どの値を書けるかは、`npx chaffjs explain katakana-long-vowel` と `rules --json` に出ます。
+
+## 語と正規表現のルール（次のリリース）
+
+> 次のリリースで入る予定です。ここに書く形は予定で、変わることがあります。
+
+決まった語句や文字の並びを、チームの言葉で指摘するルールです。`chaff.yaml` の `custom_rules` に書きます。
+`words` は語の一覧で、活用していても当たります。`pattern` は正規表現です。
+
+```yaml
+custom_rules:
+  - id: no-heisha
+    type: words
+    words: [弊社]
+    message:
+      ja: 社外向けの文書では「当社」と書きます
+      en: Write "we" in external documents
+  - id: date-with-slash
+    type: pattern
+    pattern: '\d{4}/\d{1,2}/\d{1,2}'
+    message:
+      ja: 日付は「2026年10月1日」の形で書きます
+      en: Write dates as "1 October 2026"
+```
+
+書いたルールは、組み込みのルールと同じく `rules` で強さを変えられ、`stet` で一か所だけ黙らせられます。
+
+## 形態素解析のルール（次のリリース）
+
+> 次のリリースで入る予定です。ここに書く形は予定で、変わることがあります。
+
+語の品詞や、活用する前の形（原形）で当てるルールです。
+「〜することができる」を「〜できる」に、のような決まりは、文字だけでは活用のたびに書き分けが要ります。
+形態素解析で分けた語の並びで書けば、一つで足ります。
+
+```yaml
+custom_rules:
+  - id: suru-koto-ga-dekiru
+    type: tokens
+    tokens:
+      - { lemma: する }
+      - { surface: こと }
+      - { surface: が }
+      - { lemma: できる }
+    message:
+      ja: 「することができる」は「できる」で足ります
+```
+
+どう分かれるかは文によって違います。書いたら、当てたい文と当てたくない文の見本で確かめます。
+
+## Node の関数のルール（その後のリリース）
+
+> `type: module` は名前だけ決めてあり、まだ動きません。
+
+数える・比べるなど、上のどれでも書けないものは、Node の関数で書く予定です。
+関数は文書を受け取り、指摘の一覧を返します。chaff 本体の見つける処理（`packages/chaff/src/detectors/`）と同じ形です。
+
+```yaml
+custom_rules:
+  - id: max-list-items
+    type: module
+    module: ./chaff-rules/max-list-items.js
+```
+
 ## chaff 本体にルールを足す
 
 どのチームにも役立つルールは、chaff 本体に足せます。

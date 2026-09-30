@@ -102,6 +102,86 @@ This is the easiest way. Only `chaff.yaml` changes; chaff's code is not touched.
 The details are in [Configuration](./configuration).
 Afterwards, the `npx chaffjs rules` table shows the level each rule now runs at.
 
+## Options on a rule (next release)
+
+> Coming in the next release (#380). The shape may change.
+
+Besides its level, a rule will take its own settings under `options`.
+The first is `katakana-long-vowel`, which checks the final ー of katakana loanwords.
+IEICE's house style, for one, drops the final ー from words of three morae or more, which reads like this.
+
+```yaml
+rules:
+  katakana-long-vowel: normal
+options:
+  katakana-long-vowel:
+    ending: drop      # no final ー (コンピュータ, メモリ)
+    min_morae: 3      # only words of three morae or more
+    except: [カー]     # never reported, either way
+```
+
+`npx chaffjs explain katakana-long-vowel` and `rules --json` list each option and the values it takes.
+
+## A words or regular-expression rule (next release)
+
+> Planned for the next release. The shape below is the plan and may change.
+
+A rule that flags a fixed phrase or pattern with the team's own message, written under `custom_rules` in
+`chaff.yaml`. `words` is a list of words, matched in any inflection; `pattern` is a regular expression.
+
+```yaml
+custom_rules:
+  - id: no-our-company
+    type: words
+    words: [our company]
+    message:
+      en: Write "we" in external documents
+  - id: date-with-slash
+    type: pattern
+    pattern: '\d{4}/\d{1,2}/\d{1,2}'
+    message:
+      en: Write dates as "1 October 2026"
+```
+
+Like a built-in rule, a team rule takes a level under `rules`, and `stet` silences one spot.
+
+## A morphology rule (next release)
+
+> Planned for the next release. The shape below is the plan and may change.
+
+A rule that matches words by part of speech or by dictionary form.
+"Is able to" for "can" takes one pattern per inflection when written as text ("was able to", "are able to").
+As a sequence of analysed words it takes one.
+
+```yaml
+custom_rules:
+  - id: able-to
+    type: tokens
+    tokens:
+      - { lemma: be }
+      - { surface: able }
+      - { surface: to }
+    message:
+      en: Write "can" instead of "is able to"
+```
+
+How a sentence is split depends on the sentence. Check the rule on samples it must match and samples it must not.
+
+## A Node function rule (a later release)
+
+> `type: module` is reserved by name and does not run yet.
+
+Counting, comparing, anything none of the above can say, is planned as a Node function.
+It takes the document and returns a list of findings, the same shape as chaff's own detectors
+(`packages/chaff/src/detectors/`).
+
+```yaml
+custom_rules:
+  - id: max-list-items
+    type: module
+    module: ./chaff-rules/max-list-items.js
+```
+
 ## Adding a rule to chaff itself
 
 A rule that helps any team can go into chaff itself.
