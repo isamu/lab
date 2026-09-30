@@ -24,4 +24,4 @@ how_to_fix:
 # チームが並べた書き方なので、1 つでも指摘する。並べた時点で「使わない」と決めている。
 levels: { strict: 1, normal: 1, relaxed: 3 }
 
-use_for: [business, blog, technical]
+use_for: [business, blog, technical, legal, docs, academic, literature, speech]

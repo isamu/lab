@@ -2,9 +2,12 @@ import { definedLevels, resolve } from "../levels.ts";
 import type { Config } from "../config/load.ts";
 import type { RuleDefinition } from "../plugin.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
+import { presetLevels } from "../genre-load.ts";
+import type { PresetLevels } from "../genre-parse.ts";
 
 const TEXT: Texts<{
   readonly offBySetting: string;
+  readonly offByGenre: (genre: string) => string;
   readonly offExperimental: string;
   readonly valuesNote: string;
   readonly reason: string;
@@ -12,6 +15,7 @@ const TEXT: Texts<{
 }> = {
   ja: {
     offBySetting: "設定で止めている",
+    offByGenre: (genre) => `ジャンル ${genre} では見ない`,
     offExperimental: "experimental な rule は既定で動かさない",
     valuesNote: "この 4 語のかわりに数字を直接書いてもよい。4 語のほうを勧める。",
     reason: "<理由>",
@@ -19,6 +23,7 @@ const TEXT: Texts<{
   },
   en: {
     offBySetting: "turned off in the settings",
+    offByGenre: (genre) => `the ${genre} genre does not check it`,
     offExperimental: "experimental rules do not run by default",
     valuesNote: "A number may be written instead of these four words. The words are recommended.",
     reason: "<reason>",
@@ -26,8 +31,9 @@ const TEXT: Texts<{
   },
 };
 
-const now = (rule: RuleDefinition, config: Config, genre: string, text: (typeof TEXT)["ja"]): Record<string, unknown> => {
-  const explicit = config.rules[rule.id];
+const now = (rule: RuleDefinition, config: Config, genre: string, text: (typeof TEXT)["ja"], preset: PresetLevels): Record<string, unknown> => {
+  const explicit = config.rules[rule.id] ?? preset[rule.id];
+  if (explicit === "off" && config.rules[rule.id] === undefined) return { level: "off", why_off: text.offByGenre(genre) };
   if (explicit === "off") return { level: "off", why_off: text.offBySetting };
   const limit = rule.layer === "L4" ? undefined : config.limits[rule.id];
   if (limit !== undefined) return { level: "normal", limit, set_as: "number" };
@@ -59,6 +65,7 @@ const levelsOf = (rule: RuleDefinition, genre: string): Record<string, unknown> 
 /** AI に設定を書かせるときの入口。推測せずに書けるだけの情報を 1 つに入れる。spec §19.3。 */
 export const rulesJson = (rules: readonly RuleDefinition[], config: Config, language: string, genre: string): string => {
   const text = TEXT[uiLanguageOf(language)];
+  const preset = presetLevels(genre);
   return JSON.stringify(
     {
       schema_version: 1,
@@ -77,7 +84,7 @@ export const rulesJson = (rules: readonly RuleDefinition[], config: Config, lang
         ...levelsOf(rule, genre),
         levels_you_can_set: definedLevels(rule),
         your_setting: yourSetting(rule, config),
-        now: now(rule, config, genre, text),
+        now: now(rule, config, genre, text, preset),
       })),
       how_to_change: {
         by_command: ["relax", "strict", "off"].map((command) => `npx chaff ${command} <rule-id> --why "${text.reason}"`),

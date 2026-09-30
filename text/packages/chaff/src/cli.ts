@@ -23,6 +23,8 @@ import { loadRules } from "./rule-load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
 import { renderFriendly } from "./render/friendly.ts";
+import { renderGenres } from "./render/genres.ts";
+import { loadGenres, presetLevels } from "./genre-load.ts";
 import { rulesJson } from "./render/rules-json.ts";
 import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
@@ -98,7 +100,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const rules = loadRules(language);
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
-  const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language));
+  const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
   const raw = runRules(doc, rules, config.rules, experimental, genre, config.limits);
   // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
   const applied = applySuppressions(
@@ -209,8 +211,10 @@ const runWatch = async (targets: readonly string[], argv: readonly string[]): Pr
   return new Promise(() => undefined);
 };
 
-const explain = (ruleId: string | undefined): number => {
+/** genreFlag: --genre, which wins over chaff.yaml's genre here as it does in a run. */
+const explain = (ruleId: string | undefined, genreFlag: string | undefined): number => {
   const config = readConfig();
+  const genre = genreFlag ?? config.genre;
   // The rule's limits differ by language (characters for Japanese, words for English): explain in the one being written.
   const language = config.language ?? hostLanguage(undefined, process.env);
   const text = CLI_TEXT[uiLanguageOf(language)];
@@ -221,8 +225,9 @@ const explain = (ruleId: string | undefined): number => {
     console.error(text.unknownRuleWithList(ruleId ?? text.unnamed, list));
     return 1;
   }
-  const current = config.rules[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
-  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), config.genre));
+  const preset = genre === undefined ? {} : presetLevels(genre);
+  const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
+  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre));
   return 0;
 };
 
@@ -259,16 +264,16 @@ type Handler = (argv: readonly string[]) => number | Promise<number>;
 /** `--` で始まらない引数。対象のパス。 */
 const positional = (argv: readonly string[]): string[] => targetsOf(argv.slice(1));
 
-const showRules = (): number => {
+const showRules = (genreFlag: string | undefined): number => {
   const config = readConfig();
   const language = config.language ?? hostLanguage(undefined, process.env);
   warnRuleProblems(config, language);
-  console.log(rulesJson(loadRules(language), config, language, config.genre ?? "blog/tech"));
+  console.log(rulesJson(loadRules(language), config, language, genreFlag ?? config.genre ?? "blog/tech"));
   return 0;
 };
 
 const showGenres = (): number => {
-  console.log(hostText(readConfig()).genres(GENRES));
+  console.log(renderGenres(loadGenres(), hostLanguage(readConfig().language, process.env)));
   return 0;
 };
 
@@ -290,8 +295,8 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
     return 0;
   },
   genres: showGenres,
-  rules: showRules,
-  explain: (argv) => explain(argv[1]),
+  rules: (argv) => showRules(flag(argv, "--genre")),
+  explain: (argv) => explain(argv[1], flag(argv, "--genre")),
   eval: (argv) => runEval(positional(argv), argv, { ...measureContext(argv), flag }),
   tree: (argv) => runTree(treeTargets(argv), argv, treeContext()),
   cite: (argv) => runCite(citeTargets(argv), argv, treeContext()),

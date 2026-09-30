@@ -25,4 +25,4 @@ how_to_fix:
 # 1000 語あたりの個数。件数で数えると長い文書ほど当たる（bold-density と同じ）。
 levels: { strict: 10, normal: 15, relaxed: 25 }
 
-use_for: [blog, business]
+use_for: [blog, business, legal, docs, academic, literature, speech]

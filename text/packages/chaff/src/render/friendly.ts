@@ -14,6 +14,7 @@ const TEXT: Texts<{
   readonly deterministic: string;
   readonly untouched: string;
   readonly forced: (n: number, ids: string) => string;
+  readonly presetOn: (n: number, ids: string) => string;
   readonly notRun: (n: number) => string;
   readonly because: (why: string) => string;
 }> = {
@@ -24,6 +25,7 @@ const TEXT: Texts<{
     deterministic: "              （同じ文章なら何度実行しても同じ結果になります）",
     untouched: "文章は書き換えていません。直すのは書いた人です。",
     forced: (n, ids) => `試験中の rule を ${n} 件、設定により有効にしています: ${ids}`,
+    presetOn: (n, ids) => `試験中の rule を ${n} 件、ジャンルの既定で有効にしています: ${ids}`,
     notRun: (n) => `${n} 件の rule は動いていません:`,
     because: (why) => `（${why}）`,
   },
@@ -34,6 +36,7 @@ const TEXT: Texts<{
     deterministic: "              (the same text gives the same result every time)",
     untouched: "The text was not changed. Fixing it is the writer's job.",
     forced: (n, ids) => `${counted(n, "experimental rule")} turned on in the settings: ${ids}`,
+    presetOn: (n, ids) => `${counted(n, "experimental rule")} turned on by the genre: ${ids}`,
     notRun: (n) => `${counted(n, "rule")} did not run:`,
     because: (why) => ` (${why})`,
   },
@@ -86,7 +89,10 @@ export const renderFriendly = (header: string, result: RunResult, rules: readonl
     "",
     `  ${text.untouched}`,
   ];
-  const forced = result.forcedExperimental.length > 0 ? ["", `  ${text.forced(result.forcedExperimental.length, result.forcedExperimental.join(", "))}`] : [];
+  const forced = [
+    ...(result.forcedExperimental.length > 0 ? ["", `  ${text.forced(result.forcedExperimental.length, result.forcedExperimental.join(", "))}`] : []),
+    ...(result.presetExperimental.length > 0 ? ["", `  ${text.presetOn(result.presetExperimental.length, result.presetExperimental.join(", "))}`] : []),
+  ];
   const skipped =
     result.skipped.length > 0
       ? ["", `  ${text.notRun(result.skipped.length)}`, ...result.skipped.map((entry) => `      ${entry.rule}${text.because(entry.why)}`)]

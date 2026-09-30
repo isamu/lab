@@ -25,4 +25,4 @@ how_to_fix:
 # 1 文に受け身がいくつまで許されるか。1 は「1 つでも指摘する」。
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
-use_for: [business]
+use_for: [business, legal, docs, academic, literature, speech]
