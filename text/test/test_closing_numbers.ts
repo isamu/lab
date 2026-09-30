@@ -20,7 +20,7 @@ const freshIn = (source: string, adapter: LanguageAdapter = ja): string[] => {
 };
 
 const plain = (text: string, base = 0): Passage => ({ text, base, sentences: [] });
-const NO_UNITS = { chained: [], positional: new Set<string>(), year: new Set<string>() };
+const NO_UNITS = { chained: [], positional: new Set<string>(), year: new Set<string>(), era: [] };
 
 describe("newNumbers: 結びの数が前に書いたものか（日本語）", () => {
   before(async () => {
@@ -70,13 +70,13 @@ describe("newNumbers: 結びの数が前に書いたものか（日本語）", (
   });
 
   it("品詞の無い見出しでは、数の後ろの字で日付を見分ける", () => {
-    const units = { chained: ["年", "月", "日"], positional: new Set(["月"]), year: new Set(["年"]) };
+    const units = { chained: ["年", "月", "日"], positional: new Set(["月"]), year: new Set(["年"]), era: [] };
     assert.deepEqual(newNumbers(plain("9 と 2026 と 30"), plain("# 2026年9月 30日\n\n"), units), ["9", "2026", "30"]);
     assert.deepEqual(newNumbers(plain("9月 2026年 30日"), plain("# 2026年9月 30日\n\n"), units), []);
   });
 
   it("字で見分けるときも、単位の前の空白 1 つを越え、いちばん長い単位を取る", () => {
-    const units = { chained: ["年", "月"], positional: new Set(["月"]), year: new Set(["年", "年度"]) };
+    const units = { chained: ["年", "月"], positional: new Set(["月"]), year: new Set(["年", "年度"]), era: [] };
     assert.deepEqual(newNumbers(plain("9月"), plain("# 2026 年 9 月の報告\n\n"), units), []);
     assert.deepEqual(newNumbers(plain("2026年"), plain("# 2026年度の報告\n\n"), units), ["2026年"]);
   });
