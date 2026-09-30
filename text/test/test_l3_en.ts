@@ -252,7 +252,7 @@ describe("L3 英語", () => {
     });
 
     it("valid: and / or で閉じた並びのあとの項目は、次の並びと並べない", () => {
-      assert.ok(!judgedAgainst(WITH_COMMA, "Neither party will allow the offering, giving, or receiving, directly or indirectly, of money."));
+      assert.ok(!judgedAgainst(WITH_COMMA, "Neither party will allow the offering, giving, or receiving, directly or indirectly, money or anything of value."));
     });
 
     it("valid: 分詞の句のあとが同じ形でなければ並びではない", () => {
@@ -264,6 +264,13 @@ describe("L3 英語", () => {
         "後ろの項目が動詞で始まれば、分詞に読まれた項目も述語の並び（Gideon v. Wainwright）",
         WITHOUT_COMMA,
         "He made an opening statement to the jury, cross-examined the State's witnesses, presented witnesses in his own defense, declined to testify himself, and made a short argument.",
+      ],
+      ["並びのあとに別の形の and が続いても並列", WITH_COMMA, "We bought apples, pears and plums, and went home."],
+      ["並びのあとに別の形の and が続いても並列（読点あり）", WITHOUT_COMMA, "We bought apples, pears, and plums, and went home."],
+      [
+        "閉じた並びの項目の中から次の並びが始まる",
+        WITHOUT_COMMA,
+        "We promise nothing about it being safe, secure, or fast, or that it will run without errors, delays, or crashes.",
       ],
       ["動詞のある項目は同格ではない", WITH_COMMA, "We found the bug in the parser, fixed the code and shipped the release, then rested."],
       ["and で始まる項目から次の並びが始まる", WITH_COMMA, "The file gets a comment explaining the rule, and the date, the reason and a name."],

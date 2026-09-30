@@ -17,7 +17,8 @@ the Eighth's ban". Now:
   that open such a phrase ("meaning") are in the new lang-en lexicon `participle-word`.
 - "Noun, X and Y," with no comma before "and" and no verb in X or Y is an appositive. A real list of three in the
   same shape is left unjudged; with a comma before "and" it is still a list.
-- An "and" followed by ", and" (or ", or") joins words inside one item, and a list closed by "and" is not continued
+- An "and" followed by ", and" (or ", or") and an item of the same shape joins words inside one item; followed by
+  a clause ("apples, pears and plums, and went home") it still ends the list. A list closed by "and" is not continued
   by the items after it.
 
 English -ing verbs now carry `VerbForm=Ger`, so a present participle is told apart from a past one.

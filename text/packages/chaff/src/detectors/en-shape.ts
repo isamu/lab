@@ -203,7 +203,8 @@ const afterClosedList = (items: readonly Token[][]): Token[][] => {
   const body = closing.slice(closing.findIndex((token) => LIST_CONJUNCTION.has(token.surface.toLowerCase())) + 1);
   const head = body.findIndex(isContent);
   const rest = VERBAL.has(body[head]?.pos ?? "") ? body.slice(head + 1) : body;
-  return [...(rest.some(isContent) ? [rest] : []), ...items.slice(closed + 1)];
+  // 項目が残らなければ、後ろは新しい句の頭。導入の句（directly or indirectly,）を外す。
+  return rest.some(isContent) ? [rest, ...items.slice(closed + 1)] : [...withoutLead(items.slice(closed + 1))];
 };
 
 /** and / or の後ろの項目。次の読点か節の切れ目まで。 */
@@ -329,14 +330,24 @@ const isAppositive = (clause: Clause, at: number, items: readonly Token[][], aft
   const [anchor, head] = items;
   if (items.length !== 2 || anchor === undefined || head === undefined || commaBefore(clause.tokens, at)) return false;
   const end = at + 1 + after.length;
-  const closed = clause.tokens[end]?.surface === "," && clause.depths[end] === clause.depths[at];
+  // 閉じた読点のあとに and / or が続くなら、並びのあとに節をつないでいる（apples, pears and plums, and went home）。
+  const joinsClause = LIST_CONJUNCTION.has(clause.tokens[end + 1]?.surface.toLowerCase() ?? "");
+  const closed = clause.tokens[end]?.surface === "," && clause.depths[end] === clause.depths[at] && !joinsClause;
   return closed && APPOSITIVE_ANCHOR.has(lastContent(anchor)?.pos ?? "") && !hasVerb(head) && !hasVerb(after);
 };
 
-/** and の後ろの項目に読点と and / or が続くなら、この and は項目の中にある（searches and seizures, and the Eighth's ban）。 */
+/** 副詞を飛ばした頭の形。explain and justify と ultimately ensure は同じ動詞の項目。 */
+const leadShape = (item: readonly Token[]): string | undefined => shapeOf(item.filter((token) => token.pos !== "ADV"));
+
+/**
+ * and の後ろの項目に読点と、同じ形の項目を連れた and / or が続くなら、この and は項目の中にある（searches and seizures, and
+ * the Eighth's ban）。形が違えば別の節をつなぐ and で、この and までが並び（apples, pears and plums, and went home）。
+ */
 const listContinues = (clause: Clause, at: number, after: readonly Token[]): boolean => {
   const next = at + 1 + after.length;
-  return clause.tokens[next]?.surface === "," && LIST_CONJUNCTION.has(clause.tokens[next + 1]?.surface.toLowerCase() ?? "");
+  if (clause.tokens[next]?.surface !== "," || !LIST_CONJUNCTION.has(clause.tokens[next + 1]?.surface.toLowerCase() ?? "")) return false;
+  const shape = leadShape(itemAfter(clause.tokens, next + 1));
+  return shape !== undefined && shape === leadShape(after);
 };
 
 /**
@@ -346,7 +357,7 @@ const listContinues = (clause: Clause, at: number, after: readonly Token[]): boo
  */
 const listAt = (clause: Clause, at: number): boolean | undefined => {
   const after = itemAfter(clause.tokens, at);
-  const items = fromParticiplePhrase(withoutLead(joinAdjectives(afterClosedList(itemsBefore(clause, at)))), after, clause.participleWords);
+  const items = fromParticiplePhrase(afterClosedList(withoutLead(joinAdjectives(itemsBefore(clause, at)))), after, clause.participleWords);
   if (listContinues(clause, at, after) || isAppositive(clause, at, items, after)) return undefined;
   const last = items.at(-1);
   const shape = last === undefined ? undefined : shapeOf(last);
