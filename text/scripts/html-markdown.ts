@@ -4,10 +4,12 @@
 // element or by role, and breadcrumbs), asides, footers, forms, tables, footnote marks, lists and blocks of nothing but
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
 // title), a block before the page's title that holds a menu or only links and no sentence (the site's header, with its tagline and
-// labels), buttons outside a heading, hidden elements, a heading's link to its own section beside or after its title,
+// labels), buttons outside a heading, hidden elements, text for a screen reader only (a visually-hidden class, a skip
+// link's target), a heading's link to its own section beside or after its title,
 // lines of nothing but in-page or script links (never a heading), a heading drawn as an image unless its alt text is the page's
-// title, and a copyright notice closing the page, with an address just before it, are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
-// for any HTML.
+// title, blocks of nothing but links closing the page, and a copyright notice closing the page, with an address just
+// before it, are dropped. Markup's spacing collapses; U+3000 is text and stays. Pure; a regular-expression reading that
+// is enough for the documents in the corpus, not a parser for any HTML.
 import {
   ANY_LINK,
   ATTRIBUTES,
@@ -15,12 +17,17 @@ import {
   elementRanges,
   hasNoWords,
   isInside,
+  headingRanges,
   plainText,
   stripTags,
   withAttributeMarkupEscaped,
+  withoutElementsOpening,
+  withoutElementsWhere,
+  withoutRanges,
   type ElementRange,
 } from "./html-elements.ts";
 import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
+import { withoutReaderOnlyText } from "./html-reader-only.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
@@ -83,35 +90,11 @@ const soleArticle = (html: string): string | undefined => {
 /** The page's own content: inside <main>, else the element marked role="main", else a sole <article>, else the whole page. */
 const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? mainLandmark(html) ?? soleArticle(html) ?? html;
 
-/** The ranges (in document order) each replaced by a space; one inside another cut one goes with it. */
-const withoutRanges = (html: string, ranges: readonly ElementRange[]): string => {
-  const chosen = ranges.reduce<ElementRange[]>((kept, range) => {
-    const insideKept = (kept.at(-1)?.end ?? 0) > range.start;
-    if (!insideKept) kept.push(range);
-    return kept;
-  }, []);
-  const cut = chosen.reduce<{ readonly parts: readonly string[]; readonly from: number }>(
-    (acc, range) => ({ parts: [...acc.parts, html.slice(acc.from, range.start), " "], from: range.end }),
-    { parts: [], from: 0 },
-  );
-  return [...cut.parts, html.slice(cut.from)].join("");
-};
-
-/** The <tag> elements that are chrome, each replaced by a space; one inside another dropped one goes with it. */
-const withoutElementsWhere = (html: string, tag: string, isChrome: (range: ElementRange) => boolean): string =>
-  withoutRanges(html, elementRanges(html, tag).filter(isChrome));
-
 const LANDMARK = String.raw`(?:\brole\s*=\s*["']?navigation\b|\baria-label\s*=\s*(?:["'][^"']*|[^\s"'>]*)breadcrumb)`;
 
 const LANDMARK_OPENING = new RegExp(String.raw`<([a-z][a-z0-9]*)\b[^>]*${LANDMARK}`, "giu");
 
 const isLandmark = (range: ElementRange): boolean => new RegExp(`^<[^>]*${LANDMARK}`, "iu").test(range.openTag);
-
-/** Every <tag> whose opening matches, for each tag that opens that way, replaced by a space. */
-const withoutElementsOpening = (html: string, opening: RegExp, isChrome: (range: ElementRange) => boolean): string => {
-  const tags = new Set([...html.matchAll(opening)].map((match) => (match[1] ?? "").toLowerCase()));
-  return [...tags].reduce((text, tag) => withoutElementsWhere(text, tag, isChrome), html);
-};
 
 /** Navigation that is not a <nav>: any element with role="navigation", or labelled as a breadcrumb. */
 const withoutNavigationLandmarks = (html: string): string => withoutElementsOpening(html, LANDMARK_OPENING, isLandmark);
@@ -126,14 +109,12 @@ const isHidden = (range: ElementRange): boolean => new RegExp(String.raw`^<[a-z]
 /** Elements the page does not show (the hidden attribute): a tooltip, a closed menu. */
 const withoutHiddenElements = (html: string): string => withoutElementsOpening(html, HIDDEN_OPENING, isHidden);
 
-const HEADING_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"];
-
 /**
  * Buttons are controls ("Close", "Share", "Cite this publication"), not prose, except one inside a heading, which is
  * how an accordion draws its section's title.
  */
 const withoutButtons = (html: string): string => {
-  const headings = HEADING_TAGS.flatMap((tag) => elementRanges(html, tag));
+  const headings = headingRanges(html);
   return withoutElementsWhere(html, "button", (button) => !headings.some((heading) => isInside(heading, button)));
 };
 
@@ -391,13 +372,51 @@ const withoutClosingAddress = (html: string): string => {
   return isFooter ? `${html.slice(0, last.index)} ${html.slice(end)}` : html;
 };
 
+const CLOSING_BLOCKS = ["div", "section", "p"];
+
+const HREF = /\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/iu;
+
+const PAGE_EXTENSION = /^(?:[sx]?html?|php|aspx?|jsp|cgi)$/iu;
+
+// The host is not part of the path: "https://example.com" names a site, not a file ending in .com.
+const SCHEME_AND_HOST = /^(?:[a-z][a-z0-9+.-]*:)?\/\/[^/?#]*/iu;
+
+// A link that opens no page (tel:, mailto:, sms:) carries its own content, a number or an address.
+const OTHER_SCHEME = /^\s*(?!https?:)[a-z][a-z0-9+.-]*:(?!\/\/)/iu;
+
+/** A link to a file (an appendix as PDF, a table as .xlsx), or one that opens no page, is part of the document. */
+const isFileLink = (link: string): boolean => {
+  const href = HREF.exec(link);
+  const target = href?.[1] ?? href?.[2] ?? href?.[3] ?? "";
+  if (OTHER_SCHEME.test(target)) return true;
+  const path = target.replace(SCHEME_AND_HOST, "").split(/[?#]/u)[0] ?? "";
+  const extension = /\.([a-z0-9]{1,5})$/iu.exec(path.split("/").at(-1) ?? "")?.[1];
+  return extension !== undefined && !PAGE_EXTENSION.test(extension);
+};
+
+const isClosingMenu = (text: string, range: ElementRange): boolean =>
+  isLinksOnly(range) && !plainLinks(range.inner).some(isFileLink) && textLines(text.slice(range.end)).length === 0;
+
+/** Blocks of links to pages with nothing after them ("一覧に戻る"): a way around the site, as a menu is above the title. */
+const withoutClosingLinks = (html: string): string =>
+  untilStable(html, (text) => {
+    const closing = CLOSING_BLOCKS.flatMap((tag) => elementRanges(text, tag)).filter((range) => isClosingMenu(text, range));
+    return withoutRanges(
+      text,
+      closing.toSorted((left, right) => left.start - right.start),
+    );
+  });
+
+// Markup's own spacing, collapsed as HTML does; U+3000 is a character Japanese text writes (a clause number and its text), so it stays.
+const MARKUP_SPACE = /[^\S\u3000]+/gu;
+
 export const htmlToMarkdown = (html: string): string => {
   const uncommented = withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "");
   const preformatted = withPreformattedStashed(DROPPED.reduce(withoutElement, withoutRubyText(uncommented)));
-  const kept = withoutHeadingSelfLinks(withoutButtons(withoutHiddenElements(mainContent(preformatted.html))))
+  const kept = withoutHeadingSelfLinks(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(preformatted.html)))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
-    .replace(/\s+/gu, " ");
-  const content = withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))));
+    .replace(MARKUP_SPACE, " ");
+  const content = withoutClosingLinks(withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept))))));
   const text = decodeEntities(stripTags(asLines(markChromeLinks(withImageHeadingsRead(content, documentTitle(uncommented))))));
   const lines = text
     .split("\n")

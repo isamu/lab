@@ -60,3 +60,31 @@ export const elementRanges = (html: string, tag: string): ElementRange[] =>
     .ranges.toSorted((left, right) => left.start - right.start);
 
 export const isInside = (outer: ElementRange, inner: ElementRange): boolean => outer.start < inner.start && inner.end <= outer.end;
+
+/** The ranges (in document order) each replaced by a space; one inside another cut one goes with it. */
+export const withoutRanges = (html: string, ranges: readonly ElementRange[]): string => {
+  const chosen = ranges.reduce<ElementRange[]>((kept, range) => {
+    const insideKept = (kept.at(-1)?.end ?? 0) > range.start;
+    if (!insideKept) kept.push(range);
+    return kept;
+  }, []);
+  const cut = chosen.reduce<{ readonly parts: readonly string[]; readonly from: number }>(
+    (acc, range) => ({ parts: [...acc.parts, html.slice(acc.from, range.start), " "], from: range.end }),
+    { parts: [], from: 0 },
+  );
+  return [...cut.parts, html.slice(cut.from)].join("");
+};
+
+/** The <tag> elements that are chrome, each replaced by a space; one inside another dropped one goes with it. */
+export const withoutElementsWhere = (html: string, tag: string, isChrome: (range: ElementRange) => boolean): string =>
+  withoutRanges(html, elementRanges(html, tag).filter(isChrome));
+
+/** Every <tag> whose opening matches, for each tag that opens that way, replaced by a space. */
+export const withoutElementsOpening = (html: string, opening: RegExp, isChrome: (range: ElementRange) => boolean): string => {
+  const tags = new Set([...html.matchAll(opening)].map((match) => (match[1] ?? "").toLowerCase()));
+  return [...tags].reduce((text, tag) => withoutElementsWhere(text, tag, isChrome), html);
+};
+
+export const HEADING_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"];
+
+export const headingRanges = (html: string): ElementRange[] => HEADING_TAGS.flatMap((tag) => elementRanges(html, tag));
