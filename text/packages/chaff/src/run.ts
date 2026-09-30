@@ -204,6 +204,7 @@ export const runRules = (
         limit: limitFor(rule, level, genre, limits),
         lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
         where: rule.where,
+        fullSentence: rule.full_sentence,
       };
       const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: rule.severity }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };

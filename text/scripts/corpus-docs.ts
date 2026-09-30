@@ -1,6 +1,7 @@
 // The corpus documents of every kind (not the statutes): where each one lives, and the per-rule summary that
 // `yarn corpus` compares with the committed expectation. Pure; the scripts read and write the files.
 import { join } from "node:path";
+import { aozoraToMarkdown } from "./aozora-markdown.ts";
 import { congressionalRecordToMarkdown } from "./congressional-record-markdown.ts";
 import { googlePatentsToMarkdown } from "./google-patents-markdown.ts";
 import { gutenbergText } from "./gutenberg-text.ts";
@@ -8,7 +9,7 @@ import { htmlToMarkdown } from "./html-markdown.ts";
 import { kokkaiToMarkdown } from "./kokkai-markdown.ts";
 import { wikitextToMarkdown } from "./wikitext-markdown.ts";
 
-/** A source that is not Markdown or plain text, and the converter that turns it into Markdown (or, for a Gutenberg eBook, into the work's own text) when it is fetched. */
+/** A source that is not Markdown or plain text, and the converter that turns it into Markdown (or, for a Gutenberg eBook or a 青空文庫 file, into the work's own text) when it is fetched. */
 const CONVERTERS = {
   wikitext: wikitextToMarkdown,
   html: htmlToMarkdown,
@@ -16,6 +17,7 @@ const CONVERTERS = {
   kokkai: kokkaiToMarkdown,
   "congressional-record": congressionalRecordToMarkdown,
   gutenberg: gutenbergText,
+  aozora: aozoraToMarkdown,
 } as const;
 
 type SourceFormat = keyof typeof CONVERTERS;

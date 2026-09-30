@@ -2,6 +2,7 @@ import { escapeRegExp } from "../orthography.ts";
 import { ROMAN_NUMERAL } from "./roman-numeral.ts";
 import { citationKeySpans } from "./citation-key.ts";
 import { dottedNameSpans } from "./dotted-name.ts";
+import { letterJoinedNameSpans } from "./letter-joined-name.ts";
 import { loneNumeralSpans, nameNumeralSpans } from "./name-numeral.ts";
 import { placeholderSpans } from "./placeholder.ts";
 import { seriesLabelSpans } from "./series-label.ts";
@@ -87,6 +88,7 @@ export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
     ...patterns.flatMap((pattern) => [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }))),
     ...citationKeySpans(text),
     ...dottedNameSpans(text),
+    ...letterJoinedNameSpans(text),
     ...nameNumeralSpans(text),
     ...loneNumeralSpans(text),
     ...seriesLabelSpans(text),
