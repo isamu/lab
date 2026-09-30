@@ -15,7 +15,7 @@ type PathGenre = { readonly files: readonly string[]; readonly genre: string | u
 type WrittenGenres = { readonly flag: string | undefined; readonly config: string | undefined; readonly byPath: readonly PathGenre[] };
 
 /** Commands that never read a genre from chaff.yaml. A wrong one there must not stop them: genres is how to find the right name. */
-const GENRE_FREE: ReadonlySet<string> = new Set(["init", "genres", "skill", "relax", "strict", "off", "tree", "cite"]);
+const GENRE_FREE: ReadonlySet<string> = new Set(["init", "genres", "skill", "relax", "strict", "off"]);
 
 /** The genres a command would read: --genre always (every command refuses a wrong one), chaff.yaml's only where the command reads a genre. */
 export const writtenGenres = (

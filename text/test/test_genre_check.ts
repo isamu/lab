@@ -65,13 +65,13 @@ describe("コマンドが読むジャンル", () => {
   const config = { genre: "tech", byPath: [{ files: ["*.md"], genre: "x" }] };
 
   it("ジャンルを読むコマンドは、--genre と chaff.yaml の両方", () => {
-    ["lint", "a.md", ".", "test", "eval", "rules", "explain", "baseline", "suppressions", "feedback"].forEach((command) =>
+    ["lint", "a.md", ".", "test", "eval", "rules", "explain", "baseline", "suppressions", "feedback", "tree", "cite"].forEach((command) =>
       assert.deepEqual(writtenGenres(command, "y", config), { flag: "y", config: "tech", byPath: config.byPath }, command),
     );
   });
 
   it("ジャンルを読まないコマンドは --genre だけ", () => {
-    ["init", "genres", "skill", "relax", "strict", "off", "tree", "cite"].forEach((command) =>
+    ["init", "genres", "skill", "relax", "strict", "off"].forEach((command) =>
       assert.deepEqual(writtenGenres(command, "y", config), { flag: "y", config: undefined, byPath: [] }, command),
     );
   });

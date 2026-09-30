@@ -54,6 +54,20 @@ describe("tree はジャンルの profile で読む", () => {
     assert.doesNotMatch(without.out, /:profile/u);
   });
 
+  const typos: readonly (readonly [string, string, readonly string[]])[] = [
+    ["tree と chaff.yaml の genre", "genre: legl/statute\n", ["tree", "rule.txt"]],
+    ["tree と by_path の genre", 'by_path:\n  - files: ["*.txt"]\n    genre: legl/statute\n', ["tree", "rule.txt"]],
+    ["cite と chaff.yaml の genre", "genre: legl/statute\n", ["cite", "rule.txt", "quotes.json"]],
+  ];
+  typos.forEach(([label, config, args]) => {
+    it(`知らないジャンルなら黙って profile を外さず止める: ${label}`, async () => {
+      const run = await runCli({ "chaff.yaml": config, "rule.txt": RULE, "quotes.json": "[]" }, args);
+      assert.equal(run.code, 1);
+      assert.equal(run.out, "");
+      assert.match(run.err, /"legl\/statute"/u);
+    });
+  });
+
   it("--genre の値は読むファイルではない", async () => {
     const run = await runCli({ "rule.txt": RULE }, ["tree", "--genre", "legal/statute", "rule.txt"]);
     assert.equal(run.code, 0);
