@@ -1,13 +1,14 @@
 import type { StructureNode, Token } from "../plugin.ts";
+import { preOrder } from "../tree-walk.ts";
 
 /** 他の文書を指す参照（民法第709条の第709条）の始まりの位置から、その文書の名前（民法）へ。 */
 export type CitedNames = ReadonlyMap<number, string>;
 
-const namedReferences = (node: StructureNode): (readonly [number, string])[] => {
-  const document = node.attrs["document"];
-  const own: (readonly [number, string])[] = node.kind === "reference" && typeof document === "string" ? [[node.span.start, document]] : [];
-  return [...own, ...node.children.flatMap(namedReferences)];
-};
+const namedReferences = (root: StructureNode): (readonly [number, string])[] =>
+  preOrder(root).flatMap((node) => {
+    const document = node.attrs["document"];
+    return node.kind === "reference" && typeof document === "string" ? [[node.span.start, document] as const] : [];
+  });
 
 export const citedNamesOf = (structure: StructureNode | undefined): CitedNames => new Map(structure === undefined ? [] : namedReferences(structure));
 

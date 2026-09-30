@@ -1,4 +1,5 @@
 import type { Span, StructureKind, StructureNode, Token } from "../plugin.ts";
+import { preOrder } from "../tree-walk.ts";
 
 /**
  * 形態素解析が数と読んだ語（UD の NumType=Card）。漢数字の「二割」「十五分」も、算用数字と同じ具体的な数。
@@ -27,5 +28,5 @@ export const startsWithin = (section: Span, spans: readonly Span[]): boolean => 
 /** 構造の木が読んだ参照（第3条・Section VI）・数量・日付。どれも読み手が確かめに行ける具体物。 */
 const EVIDENCE: ReadonlySet<StructureKind> = new Set(["reference", "quantity", "date"]);
 
-export const evidenceSpans = (node: StructureNode | undefined): Span[] =>
-  node === undefined ? [] : [...(EVIDENCE.has(node.kind) ? [node.span] : []), ...node.children.flatMap((child) => evidenceSpans(child))];
+export const evidenceSpans = (root: StructureNode | undefined): Span[] =>
+  root === undefined ? [] : preOrder(root).flatMap((node) => (EVIDENCE.has(node.kind) ? [node.span] : []));

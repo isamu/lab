@@ -17,6 +17,12 @@ dropped it, so every position in the file was off by one: `# Notes` was read as 
 sentence lost its last character.
 The command line's output is otherwise unchanged.
 
+### A blockquote or list nested thousands of levels deep no longer crashes chaff (#170)
+
+`>>>>…` or `- - - …` nested a few thousand levels deep is valid Markdown, and chaff stopped with "Maximum call stack
+size exceeded". Every walk over the Markdown tree and the structure tree now keeps its own stack, so lint, `tree` and
+the structure rules read such a document like any other. The output of every other document is unchanged.
+
 ### Patent figures, volume numbers and sections of US codes are not reported (#170)
 
 `undefined-acronym` reported the label and the number of a figure or a volume in US patents: "FIG" in "FIG. 1",
@@ -95,7 +101,6 @@ sentence after kana, kanji, 「ー」 or a closing bracket (「低下するこ�
 decimal point, so 「１．はじめに」 and 「３．５％」 are read as before. Corpus round 12 added Japanese papers from 保健医療科学 and
 自然言語処理 (J-STAGE, CC BY 4.0) and more documents for genres the corpus had few of: a Japanese licence and terms, US
 patents, English FAQs, speeches, a novel, poems, an essay, a play and a tech blog post.
-
 
 ## 0.17.0 — 2026-09-30
 

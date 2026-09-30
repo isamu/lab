@@ -1,4 +1,5 @@
 import type { StructureNode } from "../plugin.ts";
+import { preOrder } from "../tree-walk.ts";
 
 /**
  * 相対の参照（relative-find.ts が見つけたもの）に番地を与える。木ができてからでないと「次条」は決まらないので、ここは木を読むだけの後段。
@@ -24,11 +25,18 @@ const placeOf = (node: StructureNode): Place | undefined =>
   NUMBERED.has(node.kind) && node.level !== undefined ? { address: node.address, level: node.level, range: node.ordinalTo !== undefined } : undefined;
 
 /** 番号の付いた子。Markdown の見出し（section）は番号の外なので、その中まで見る。 */
-const numberedChildren = (node: StructureNode, level: number): StructureNode[] =>
-  node.children.flatMap((child) => {
-    if (NUMBERED.has(child.kind)) return child.level === level ? [child] : [];
-    return child.kind === "section" ? numberedChildren(child, level) : [];
-  });
+const numberedChildren = (node: StructureNode, level: number): StructureNode[] => {
+  const found: StructureNode[] = [];
+  const pending = node.children.toReversed();
+  while (pending.length > 0) {
+    const child = pending.pop();
+    if (child === undefined) break;
+    if (NUMBERED.has(child.kind)) {
+      if (child.level === level) found.push(child);
+    } else if (child.kind === "section") child.children.toReversed().forEach((inner) => pending.push(inner));
+  }
+  return found;
+};
 
 type Context = {
   readonly articles: readonly Place[];
@@ -182,27 +190,65 @@ const resolveOne = (node: StructureNode, path: readonly StructureNode[], context
 
 const isRelative = (node: StructureNode): boolean => node.kind === "reference" && node.attrs["relative"] !== undefined;
 
-/** 文書の順に読み、参照ごとに「その前の参照」を覚える。 */
-const walk = (node: StructureNode, path: readonly StructureNode[], context: Context): StructureNode | undefined => {
-  if (isRelative(node)) {
-    const resolved = resolveOne(node, path, context);
-    if (resolved === undefined) return undefined;
-    const reference = lastOf(resolved);
-    context.byStart.set(node.span.start, reference);
-    remember(context, reference, Number(node.attrs["names"] ?? node.attrs["level"]));
-    return resolved;
+/** 相対の参照に番地を決めて、その番地を覚える。決まらなければ木から外す（undefined）。 */
+const resolvedReference = (node: StructureNode, path: readonly StructureNode[], context: Context): StructureNode | undefined => {
+  const resolved = resolveOne(node, path, context);
+  if (resolved === undefined) return undefined;
+  const reference = lastOf(resolved);
+  context.byStart.set(node.span.start, reference);
+  remember(context, reference, Number(node.attrs["names"] ?? node.attrs["level"]));
+  return resolved;
+};
+
+/** 番地を名指した参照の番地を覚える。 */
+const noteReference = (node: StructureNode, context: Context): void => {
+  if (node.kind !== "reference") return;
+  const reference = lastOf(node);
+  context.byStart.set(node.span.start, reference);
+  remember(context, reference, context.articleLevel ?? 0);
+};
+
+/** 子を読んでいる節点。next は次に読む子。 */
+type Visit = { readonly node: StructureNode; readonly kept: StructureNode[]; next: number };
+
+/** 読み終えた節点を、残した子で作り直して親に渡す。親が無ければ（根なら）それを返す。 */
+const close = (visits: Visit[]): StructureNode | undefined => {
+  const visit = visits.pop();
+  if (visit === undefined) return undefined;
+  const rebuilt = { ...visit.node, children: visit.kept };
+  const parent = visits.at(-1);
+  if (parent === undefined) return rebuilt;
+  parent.kept.push(rebuilt);
+  return undefined;
+};
+
+/** 文書の順に読み、参照ごとに「その前の参照」を覚える。相対の参照は置き換えて、その中は読まない。 */
+const walk = (tree: StructureNode, context: Context): StructureNode | undefined => {
+  if (isRelative(tree)) return resolvedReference(tree, [], context);
+  noteReference(tree, context);
+  const visits: Visit[] = [{ node: tree, kept: [], next: 0 }];
+  while (visits.length > 0) {
+    const visit = visits.at(-1);
+    const child = visit?.node.children[visit.next];
+    if (visit === undefined || child === undefined) {
+      const root = close(visits);
+      if (root !== undefined) return root;
+      continue;
+    }
+    visit.next += 1;
+    if (isRelative(child)) {
+      const resolved = resolvedReference(
+        child,
+        visits.map((open) => open.node),
+        context,
+      );
+      if (resolved !== undefined) visit.kept.push(resolved);
+      continue;
+    }
+    noteReference(child, context);
+    visits.push({ node: child, kept: [], next: 0 });
   }
-  if (node.kind === "reference") {
-    const reference = lastOf(node);
-    context.byStart.set(node.span.start, reference);
-    remember(context, reference, context.articleLevel ?? 0);
-  }
-  const inside = [...path, node];
-  const children = node.children.flatMap((child) => {
-    const kept = walk(child, inside, context);
-    return kept === undefined ? [] : [kept];
-  });
-  return { ...node, children };
+  return undefined;
 };
 
 const optional = (value: string | number | undefined): string | undefined => (value === undefined ? undefined : String(value));
@@ -213,12 +259,13 @@ const lastOf = (reference: StructureNode): Last => ({
   unitWord: optional(reference.attrs["unitWord"]),
 });
 
-const articlesOf = (node: StructureNode): Place[] => {
-  const place = node.kind === "article" ? placeOf(node) : undefined;
-  return [...(place === undefined ? [] : [place]), ...node.children.flatMap(articlesOf)];
-};
+const articlesOf = (root: StructureNode): Place[] =>
+  preOrder(root).flatMap((node) => {
+    const place = node.kind === "article" ? placeOf(node) : undefined;
+    return place === undefined ? [] : [place];
+  });
 
 export const resolveRelative = (tree: StructureNode, implicitLevel: number | undefined): StructureNode => {
   const articles = articlesOf(tree);
-  return walk(tree, [], { articles, articleLevel: articles[0]?.level, implicitLevel, last: new Map(), byStart: new Map() }) ?? tree;
+  return walk(tree, { articles, articleLevel: articles[0]?.level, implicitLevel, last: new Map(), byStart: new Map() }) ?? tree;
 };

@@ -12,10 +12,19 @@ const labelOf = (node: StructureNode): string => {
  * 条の外で、番号の付いた行（言語パッケージが項目と読んだ「（1）」など）。
  * 条の中の番号付きの行は、条の項（条の本文の続き）でもありうるので数えない。
  */
-export const numberedStarts = (node: StructureNode, inArticle = false): NumberedStart[] => [
-  ...(node.kind === "item" && !inArticle ? [{ start: node.span.start, label: labelOf(node) }] : []),
-  ...node.children.flatMap((child) => numberedStarts(child, inArticle || node.kind === "article")),
-];
+export const numberedStarts = (root: StructureNode, inArticle = false): NumberedStart[] => {
+  const found: NumberedStart[] = [];
+  const pending = [{ node: root, inArticle }];
+  while (pending.length > 0) {
+    const next = pending.pop();
+    if (next === undefined) break;
+    const { node } = next;
+    if (node.kind === "item" && !next.inArticle) found.push({ start: node.span.start, label: labelOf(node) });
+    const within = next.inArticle || node.kind === "article";
+    node.children.toReversed().forEach((child) => pending.push({ node: child, inArticle: within }));
+  }
+  return found;
+};
 
 const INDENT = /^[ \t\u3000]*/u;
 

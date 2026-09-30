@@ -20,9 +20,21 @@ const keywords = (node: StructureNode): string[] => [
  * 木を S 式にする。人と AI が読むための形で、JSON と同じ木から作る。
  * `(kind "番地" :key value ... 子)`。番地を持たない葉は番地を書かない。
  */
-export const toSexp = (node: StructureNode, indent = ""): string => {
-  const head = [node.kind, ...(node.address === "" ? [] : [quote(node.address)]), ...keywords(node)].join(" ");
-  if (node.children.length === 0) return `${indent}(${head})`;
-  const inner = node.children.map((child) => toSexp(child, `${indent}  `)).join("\n");
-  return `${indent}(${head}\n${inner})`;
+export const toSexp = (root: StructureNode, indent = ""): string => {
+  const lines: string[] = [];
+  // 1 行に 1 節点。節点を閉じる ")" は、その部分木の最後の行の後ろに付く。
+  const pending = [{ node: root, depth: 0, closing: false }];
+  while (pending.length > 0) {
+    const next = pending.pop();
+    if (next === undefined) break;
+    if (next.closing) {
+      lines.push(`${lines.pop() ?? ""})`);
+      continue;
+    }
+    const head = [next.node.kind, ...(next.node.address === "" ? [] : [quote(next.node.address)]), ...keywords(next.node)].join(" ");
+    lines.push(`${indent}${"  ".repeat(next.depth)}(${head}`);
+    pending.push({ ...next, closing: true });
+    next.node.children.toReversed().forEach((child) => pending.push({ node: child, depth: next.depth + 1, closing: false }));
+  }
+  return lines.join("\n");
 };
