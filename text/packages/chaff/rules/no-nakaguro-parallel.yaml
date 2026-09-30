@@ -24,4 +24,4 @@ how_to_fix:
 # 実文書の分布から。1 文 4 個までは読める。
 levels: { strict: 3, normal: 5, relaxed: 8 }
 
-use_for: [blog, business, technical]
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]

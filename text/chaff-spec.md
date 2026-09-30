@@ -576,6 +576,31 @@ by_genre:
 | blog/essay | 140 char / 35 word | 8 | 1 | 0.35 |
 | blog/owned-media | 90 char / 22 word | 5 | 3 | 0.30 |
 
+### 9.2 ジャンルは preset（`genres.yaml`）
+
+ジャンルの一覧、名前と説明（ja / en）、ジャンルの既定の段は `packages/chaff/genres.yaml` に置く。
+ジャンルを選べば、その種類の文書の書き方に合わせて見る。設定を書かずに使えるようにするためのもの。
+
+```yaml
+groups:
+  - id: legal                # legal/* のどのジャンルにも効く段
+    rules: { ngram-repetition: off }
+genres:
+  - id: legal/contract
+    rules: { numbering-gap: normal }   # 群の段に重ねる
+  - id: legal/statute
+    profile: statute                   # chaff.yaml が profile を書かなければ、これで読む
+```
+
+- 段の強さは chaff.yaml の `rules` > ジャンルの `rules`（ジャンル > 群）> status の既定。
+  `--experimental` はジャンルが止めた rule を動かさない。
+- ジャンルが止めた rule は「動いていない」一覧に、ジャンルを理由に出す。黙って外さない。
+  rule をそもそも当てないのは use_for で、こちらは一覧に出ない。新しい群は use_for に入れたうえで、ジャンルの段で止める。
+- ジャンルが入れた試験中の rule は、設定で入れたもの（§18.4）とは別に知らせる。
+- 数字は §9.1 のとおり rule の `by_genre` に置く。ジャンルの段は 4 語だけを書く。
+- profile の強さは by_path > chaff.yaml の `profile` > ジャンルの `profile` > 内容。
+- 前からある 10 のジャンルには段も profile も無い。結果は変わらない。
+
 ---
 
 ## 10. Rule Catalog — L1 Universal

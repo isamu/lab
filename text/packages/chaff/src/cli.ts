@@ -23,6 +23,8 @@ import { loadRules } from "./rule-load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
 import { renderFriendly } from "./render/friendly.ts";
+import { renderGenres } from "./render/genres.ts";
+import { loadGenres, presetLevels } from "./genre-load.ts";
 import { rulesJson } from "./render/rules-json.ts";
 import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
@@ -98,7 +100,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const rules = loadRules(language);
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
-  const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language));
+  const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
   const raw = runRules(doc, rules, config.rules, experimental, genre, config.limits);
   // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
   const applied = applySuppressions(
@@ -221,7 +223,8 @@ const explain = (ruleId: string | undefined): number => {
     console.error(text.unknownRuleWithList(ruleId ?? text.unnamed, list));
     return 1;
   }
-  const current = config.rules[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
+  const preset = config.genre === undefined ? {} : presetLevels(config.genre);
+  const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
   console.log(renderExplain(rule, current, language, text.unit(rule.id, language), config.genre));
   return 0;
 };
@@ -268,7 +271,7 @@ const showRules = (): number => {
 };
 
 const showGenres = (): number => {
-  console.log(hostText(readConfig()).genres(GENRES));
+  console.log(renderGenres(loadGenres(), hostLanguage(readConfig().language, process.env)));
   return 0;
 };
 

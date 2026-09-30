@@ -4,6 +4,38 @@ Newest first.
 
 ## Unreleased
 
+### Genres for contracts, statutes, manuals, papers, literature and speech: pick the kind of document (#170)
+
+A contract, a statute or a novel was checked against blog rules unless its writer knew better. chaff now ships
+presets for the common kinds of document, each a genre in the new `genres.yaml`:
+
+| Group | Genres |
+| --- | --- |
+| legal | `legal/contract`, `legal/statute`, `legal/judgment`, `legal/patent` |
+| docs | `docs/manual`, `docs/faq`, `docs/glossary` |
+| academic | `academic/paper` |
+| literature | `literature/fiction`, `literature/essay`, `literature/poetry`, `literature/play` |
+| speech | `speech/address`, `speech/transcript` |
+
+A genre is data: the level each rule runs at (`rules:`, on a group or a genre, under chaff.yaml's own `rules`), and
+the document profile it reads with (`legal/statute` reads with `statute`). A rule the genre turns off is listed under
+"did not run" with the genre as the reason, and chaff.yaml can turn it back on. The levels were measured on the
+corpus documents of each kind:
+
+- legal: long sentences and paragraphs are the form, so `max-sentence-length` and `max-paragraph-length` have
+  wider limits (wider still for statutes and judgments), and the rules that only flag legal drafting's form are off
+  (repeated terms and heads, the passive, noun compounds, の chains). `legal/contract` turns on the experimental
+  structure checks a contract is read against: references to clauses that are not there, numbering gaps, terms
+  defined twice, a weekday that does not match its date, and totals that do not add up.
+- docs: a help page's first line repeats its heading, and it makes no claims to back up.
+- academic: the passive and hedging are the norm; sentences may run longer.
+- literature: length, rhythm, repetition and register are the author's; only what one work holds itself to runs.
+- speech: greetings and thanks are a speech's form; a transcript is what was said, so none of its style is checked.
+
+`chaff genres` lists every genre under its group with what it is for, in the output language, and how to use one.
+`rules --json` and `explain` show a genre's level as the one in effect. The ten genres that were there before are
+unchanged, and so is every result for them.
+
 ### `names:` in chaff.yaml: the team lists its own names (#170)
 
 `max-kanji-continuous` reported official names such as 個人情報保護委員会 and 国土交通省鉄道局総務課, and the dictionary

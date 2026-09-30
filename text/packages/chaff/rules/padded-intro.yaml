@@ -29,4 +29,4 @@ levels:
   relaxed: 2
 
 # プレスリリース・メール・議事録の冒頭は理由や用件を言う所で、つかみではない。
-use_for: [blog, business/report, business/proposal]
+use_for: [blog, business/report, business/proposal, legal, docs, academic, literature, speech]

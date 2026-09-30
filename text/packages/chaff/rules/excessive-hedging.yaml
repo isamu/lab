@@ -34,4 +34,4 @@ how_to_fix:
 # 文書全体の、1000 語あたりの数の上限。1 つの文に 2 つ以上重ねたものは、どの段でも指摘する。
 levels: { strict: 3, normal: 6, relaxed: 12 }
 
-use_for: [business, blog, technical]
+use_for: [business, blog, technical, legal, docs, academic, literature, speech]

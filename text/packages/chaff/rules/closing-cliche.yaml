@@ -28,4 +28,4 @@ levels:
   normal: 1
   relaxed: 2
 
-use_for: [blog]
+use_for: [blog, legal, docs, academic, literature, speech]

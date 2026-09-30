@@ -22,4 +22,11 @@ how_to_fix:
 
 levels: { strict: 3, normal: 5, relaxed: 8 }
 
-use_for: [blog, business, technical]
+# 条文・判決・論文の段落は、一つの規定や論点をまとめて書く。corpus のその種類の文書で、normal が最も長い一握りの段落だけを指すように測って置いた。
+by_genre:
+  legal: { strict: 5, normal: 8, relaxed: 12 }
+  legal/statute: { strict: 8, normal: 12, relaxed: 16 }
+  legal/judgment: { strict: 8, normal: 12, relaxed: 16 }
+  academic: { strict: 5, normal: 9, relaxed: 12 }
+
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]

@@ -10,6 +10,7 @@ import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { maskSpans } from "./mask.ts";
 import { textOutline } from "./page-furniture.ts";
 import { uiLanguageOf } from "./ui.ts";
+import { presetLevels } from "./genre-load.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
 
@@ -18,16 +19,27 @@ export type RunResult = {
   readonly skipped: readonly Skipped[];
   /** 設定で明示的に有効にした experimental な rule。実行ごとに一度報告する。spec §18.4。 */
   readonly forcedExperimental: readonly string[];
+  /** The experimental rules the genre's preset turns on. Reported apart from forcedExperimental: chaff.yaml did not name them. */
+  readonly presetExperimental: readonly string[];
 };
 
 export type Settings = Readonly<Record<string, Level>>;
 
-const levelFor = (rule: RuleDefinition, settings: Settings, experimental: boolean): Level => {
+const levelFor = (rule: RuleDefinition, settings: Settings, experimental: boolean, preset: Settings): Level => {
   const explicit = settings[rule.id];
   // 明示設定は status の既定に勝つ。名指しで有効にしたものを黙って無効にしない。
   if (explicit !== undefined) return explicit;
+  // ジャンルの既定は chaff.yaml より弱く、status の既定より強い。--experimental でも、ジャンルが止めたものは止めたまま。
+  const fromPreset = preset[rule.id];
+  if (fromPreset !== undefined) return fromPreset;
   if (rule.status === "experimental" && !experimental) return "off";
   return "normal";
+};
+
+/** Why a rule at off did not run: chaff.yaml turned it off, the genre's preset did, or it is experimental. */
+const offReason = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): string => {
+  if (settings[rule.id] !== undefined) return reasons.turnedOff;
+  return preset[rule.id] === undefined ? reasons.experimental : reasons.presetOff(genre);
 };
 
 const reasonsFor = (doc: ProseDocument): Reasons => REASONS[uiLanguageOf(doc.language)];
@@ -106,7 +118,7 @@ const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefiniti
  */
 export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, experimental: boolean, genre: string, language: string): AdapterNeeds => ({
   pos: forGenre(rules, genre)
-    .filter((rule) => rule.layer !== "L4" && levelFor(rule, settings, experimental) !== "off")
+    .filter((rule) => rule.layer !== "L4" && levelFor(rule, settings, experimental, presetLevels(genre)) !== "off")
     .filter((rule) => rule.languages === undefined || rule.languages.includes(language))
     .some((rule) => [...rule.requires, ...rule.uses].some((need) => need === "pos" || need === "lemma")),
 });
@@ -153,11 +165,12 @@ export const runRules = (
   genre: string,
   limits: Limits = {},
 ): RunResult => {
+  const preset = presetLevels(genre);
   const starts = lineStarts(doc.source);
   const applicable = forGenre(rules, genre);
-  const forced = applicable
-    .filter((rule) => rule.status === "experimental" && settings[rule.id] !== undefined && settings[rule.id] !== "off")
-    .map((rule) => rule.id);
+  const experimentalOn = applicable.filter((rule) => rule.status === "experimental" && levelFor(rule, settings, experimental, preset) !== "off");
+  const forced = experimentalOn.filter((rule) => settings[rule.id] !== undefined).map((rule) => rule.id);
+  const presetOn = experimentalOn.filter((rule) => settings[rule.id] === undefined && preset[rule.id] !== undefined).map((rule) => rule.id);
   const outcome = applicable.reduce<{ findings: Finding[]; skipped: Skipped[] }>(
     (acc, rule) => {
       // L4 は意味を読む検査。chaff test が扱う。ここで「検出器が無い」と言わせない。
@@ -166,11 +179,9 @@ export const runRules = (
       }
       const blocked = unmet(rule, doc);
       if (blocked !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: blocked }] };
-      const level = levelFor(rule, settings, experimental);
-      if (level === "off") {
-        const why = rule.status === "experimental" && settings[rule.id] === undefined ? reasonsFor(doc).experimental : reasonsFor(doc).turnedOff;
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why }] };
-      }
+      const level = levelFor(rule, settings, experimental, preset);
+      if (level === "off")
+        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: offReason(rule, settings, preset, genre, reasonsFor(doc)) }] };
       const noTags = untagged(rule, doc);
       if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
       // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
@@ -197,8 +208,10 @@ export const runRules = (
     { findings: [], skipped: [] },
   );
   const composites = applicable
-    .filter((rule) => rule.from.length > 0 && levelFor(rule, settings, experimental) !== "off")
-    .flatMap((rule) => compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental), genre, limits), starts, doc.language));
+    .filter((rule) => rule.from.length > 0 && levelFor(rule, settings, experimental, preset) !== "off")
+    .flatMap((rule) =>
+      compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental, preset), genre, limits), starts, doc.language),
+    );
   const all = [...outcome.findings, ...composites];
-  return { ...outcome, findings: all.toSorted((left, right) => left.line - right.line), forcedExperimental: forced };
+  return { ...outcome, findings: all.toSorted((left, right) => left.line - right.line), forcedExperimental: forced, presetExperimental: presetOn };
 };

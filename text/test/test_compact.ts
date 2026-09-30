@@ -18,6 +18,7 @@ const resultWith = (findings: number, skipped: number): RunResult => ({
   })),
   skipped: Array.from({ length: skipped }, (_, index) => ({ rule: `r${String(index)}`, why: "理由" })),
   forcedExperimental: [],
+  presetExperimental: [],
 });
 
 const tailOf = (text: string): string => text.trimEnd().split("\n").at(-1) ?? "";

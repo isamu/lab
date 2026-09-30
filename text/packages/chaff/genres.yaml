@@ -1,0 +1,309 @@
+# The genres chaff knows, in the order `chaff genres` lists them.
+#
+# A genre is a preset: pick the kind of document and chaff checks it the way that kind is written.
+#   rules:   the level a rule runs at for this genre (strict / normal / relaxed / off), under chaff.yaml's rules.
+#            A group's rules apply to every genre in it; a genre's own rules win over its group's.
+#            A rule turned off here is listed under "did not run" with the genre as the reason.
+#   profile: the document profile (profiles/*.yaml) this genre reads with, when chaff.yaml names none.
+# Which genres a rule applies to at all is the rule's use_for; the numbers behind a level are the rule's by_genre.
+
+groups:
+  - id: technical
+    name: { ja: 技術文書, en: Technical }
+  - id: blog
+    name: { ja: ブログ, en: Blog }
+  - id: business
+    name: { ja: ビジネス文書, en: Business }
+  # Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive
+  # (shall be deemed), and joins long noun compounds (個人情報取扱事業者). Those rules would only flag the form.
+  - id: legal
+    name: { ja: 法務, en: Legal }
+    rules:
+      agentless-passive: off
+      max-kanji-continuous: off
+      no-doubled-joshi: off
+      ngram-repetition: off
+      repeated-sentence-head: off
+      heading-echo: off
+      taigen-dome-in-prose: off
+      unqualified-superlative: off
+      excessive-hedging: off
+      proper-noun-density: off
+      expletive-construction: off
+      adverb-overuse: off
+      concrete-evidence-density: off
+      closing-cliche: off
+      padded-intro: off
+      preamble-length: off
+      cushion-phrase-density: off
+      sasete-itadaku: off
+      sentence-rhythm: off
+      rule-of-three: off
+      section-length-uniformity: off
+      paragraph-length-variance: off
+      ai-tell: off
+      ai-generated-composite: off
+  # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
+  - id: docs
+    name: { ja: 説明書, en: Documentation }
+    rules:
+      heading-echo: off
+      agentless-passive: off
+      concrete-evidence-density: off
+      preamble-length: off
+      proper-noun-density: off
+      unqualified-superlative: off
+      expletive-construction: off
+      adverb-overuse: off
+      cushion-phrase-density: off
+      double-keigo: off
+      sasete-itadaku: off
+      sentence-initial-conjunction-run: off
+      closing-cliche: off
+      padded-intro: off
+      sentence-rhythm: off
+      rule-of-three: off
+      section-length-uniformity: off
+      paragraph-length-variance: off
+      ai-tell: off
+      ai-generated-composite: off
+  # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
+  - id: academic
+    name: { ja: 学術, en: Academic }
+    rules:
+      agentless-passive: off
+      excessive-hedging: off
+      expletive-construction: off
+      concrete-evidence-density: off
+      proper-noun-density: off
+      adverb-overuse: off
+      closing-cliche: off
+      padded-intro: off
+      preamble-length: off
+      cushion-phrase-density: off
+      sasete-itadaku: off
+      double-keigo: off
+      sentence-rhythm: off
+      rule-of-three: off
+      section-length-uniformity: off
+      paragraph-length-variance: off
+  # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
+  # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
+  - id: literature
+    name: { ja: 文学, en: Literature }
+    rules:
+      max-sentence-length: off
+      max-paragraph-length: off
+      ngram-repetition: off
+      repeated-sentence-head: off
+      heading-echo: off
+      empty-intensifier: off
+      no-doubled-joshi: off
+      no-nakaguro-parallel: off
+      taigen-dome-in-prose: off
+      max-kanji-continuous: off
+      hiragana-fukushi: off
+      no-mixed-desumasu: off
+      contraction-consistency: off
+      doubled-word: off
+      agentless-passive: off
+      expletive-construction: off
+      excessive-hedging: off
+      unqualified-superlative: off
+      adverb-overuse: off
+      sentence-initial-conjunction-run: off
+      repeated-conjunction: off
+      undefined-acronym: off
+      proper-noun-density: off
+      concrete-evidence-density: off
+      closing-cliche: off
+      padded-intro: off
+      preamble-length: off
+      cushion-phrase-density: off
+      sasete-itadaku: off
+      double-keigo: off
+      no-em-dash: off
+      emoji-density: off
+      sentence-rhythm: off
+      rule-of-three: off
+      section-length-uniformity: off
+      paragraph-length-variance: off
+      ai-tell: off
+      ai-generated-composite: off
+      dangling-reference: off
+      duplicate-definition: off
+      date-order: off
+      date-weekday-mismatch: off
+      total-mismatch: off
+  # A speech opens with greetings and closes with thanks: that is its form, not padding.
+  - id: speech
+    name: { ja: 話し言葉, en: Speech }
+    rules:
+      agentless-passive: off
+      preamble-length: off
+      padded-intro: off
+      closing-cliche: off
+      concrete-evidence-density: off
+      proper-noun-density: off
+      sentence-rhythm: off
+      rule-of-three: off
+      section-length-uniformity: off
+      paragraph-length-variance: off
+
+genres:
+  - id: technical/spec
+    name: { ja: 仕様書, en: Specification }
+    summary:
+      ja: 仕様書・RFC・設計文書。読み手に間違えさせないための文書
+      en: Specifications, RFCs and design documents, written so the reader cannot get it wrong
+  - id: technical/readme
+    name: { ja: README・技術文書, en: README and technical docs }
+    summary:
+      ja: README と開発者向けの説明
+      en: READMEs and documentation for developers
+  - id: blog/tech
+    name: { ja: 技術ブログ, en: Tech blog }
+    summary:
+      ja: 技術記事。ジャンルを決めないときはこれで見ます
+      en: Technical articles; the genre used when none is set
+  - id: blog/essay
+    name: { ja: エッセイ（ブログ）, en: Blog essay }
+    summary:
+      ja: 自分の考えを書くブログのエッセイ
+      en: Personal essays posted on a blog
+  - id: blog/owned-media
+    name: { ja: オウンドメディア, en: Owned media }
+    summary:
+      ja: 会社や団体が読者に向けて出す記事
+      en: Articles an organisation publishes for its readers
+  - id: business/proposal
+    name: { ja: 提案書・企画書, en: Proposal }
+    summary:
+      ja: 提案書・企画書・計画書
+      en: Proposals, plans and pitches
+  - id: business/report
+    name: { ja: 報告書, en: Report }
+    summary:
+      ja: 報告書・白書・社内文書
+      en: Reports, white papers and internal documents
+  - id: business/email
+    name: { ja: メール・手紙, en: Email and letter }
+    summary:
+      ja: 仕事のメールと手紙
+      en: Work email and letters
+  - id: business/press-release
+    name: { ja: プレスリリース・お知らせ, en: Press release and notice }
+    summary:
+      ja: プレスリリースと、お知らせ
+      en: Press releases and public notices
+  - id: business/meeting-notes
+    name: { ja: 議事録, en: Meeting notes }
+    summary:
+      ja: 議事録・議事要旨
+      en: Minutes and meeting notes
+  - id: legal/contract
+    name: { ja: 契約書・規約, en: Contract and terms }
+    summary:
+      ja: 契約書・利用規約・プライバシーポリシー
+      en: Contracts, terms of service and privacy policies
+    # A contract is read clause by clause against its own numbers, definitions and dates: these are its mistakes.
+    rules:
+      numbering-gap: normal
+      duplicate-definition: normal
+      dangling-reference: normal
+      date-weekday-mismatch: normal
+      total-mismatch: normal
+  - id: legal/statute
+    name: { ja: 法令・規程, en: Statute and regulation }
+    summary:
+      ja: 法令・規則・社内規程・通達
+      en: Statutes, regulations and internal rules
+    profile: statute
+  - id: legal/judgment
+    name: { ja: 判決, en: Court decision }
+    summary:
+      ja: 判決文・決定
+      en: Court judgments and opinions
+  - id: legal/patent
+    name: { ja: 特許明細書, en: Patent }
+    summary:
+      ja: 特許の明細書と請求項
+      en: Patent specifications and claims
+  - id: docs/manual
+    name: { ja: マニュアル・手順書, en: Manual and how-to }
+    summary:
+      ja: 使い方の説明・手順書・ヘルプ
+      en: User guides, how-to pages and help
+  - id: docs/faq
+    name: { ja: よくある質問, en: FAQ }
+    summary:
+      ja: 問いと答えを並べたページ
+      en: Pages of questions and answers
+  - id: docs/glossary
+    name: { ja: 用語集, en: Glossary }
+    summary:
+      ja: 用語と、その説明を並べたページ
+      en: Lists of terms and what they mean
+  - id: academic/paper
+    name: { ja: 論文, en: Academic paper }
+    summary:
+      ja: 論文と、その要旨
+      en: Papers and abstracts
+  - id: literature/fiction
+    name: { ja: 小説, en: Fiction }
+    summary:
+      ja: 小説・物語
+      en: Novels and stories
+  - id: literature/essay
+    name: { ja: 随筆, en: Literary essay }
+    summary:
+      ja: 文学としての随筆。ブログのエッセイは blog/essay
+      en: Literary essays; a blog essay is blog/essay
+  - id: literature/poetry
+    name: { ja: 詩歌, en: Poetry }
+    summary:
+      ja: 詩・短歌・俳句
+      en: Poems and verse
+  - id: literature/play
+    name: { ja: 戯曲・脚本, en: Play and script }
+    summary:
+      ja: 戯曲・脚本
+      en: Plays and scripts
+  - id: speech/address
+    name: { ja: スピーチ・挨拶, en: Speech }
+    summary:
+      ja: 読み上げるために書いた演説・挨拶
+      en: Speeches and addresses written to be read aloud
+  - id: speech/transcript
+    name: { ja: 発言録, en: Transcript }
+    summary:
+      ja: 話したことを書き起こした記録（会見・国会の会議録）
+      en: Verbatim records of what was said (press conferences, parliamentary debates)
+    # A transcript records what was said: its sentences, repeats and register are the speaker's, not the writer's to fix.
+    rules:
+      max-sentence-length: off
+      max-paragraph-length: off
+      ngram-repetition: off
+      repeated-sentence-head: off
+      heading-echo: off
+      empty-intensifier: off
+      no-doubled-joshi: off
+      no-nakaguro-parallel: off
+      taigen-dome-in-prose: off
+      max-kanji-continuous: off
+      hiragana-fukushi: off
+      no-mixed-desumasu: off
+      contraction-consistency: off
+      doubled-word: off
+      sasete-itadaku: off
+      double-keigo: off
+      cushion-phrase-density: off
+      excessive-hedging: off
+      unqualified-superlative: off
+      expletive-construction: off
+      adverb-overuse: off
+      sentence-initial-conjunction-run: off
+      repeated-conjunction: off
+      undefined-acronym: off
+      ai-tell: off
+      ai-generated-composite: off
