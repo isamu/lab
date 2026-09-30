@@ -13,6 +13,7 @@ planted:
   date-order: [ja, en]
   date-weekday-mismatch: [ja, en]
   double-keigo: [ja]
+  doubled-punctuation: [ja, en]
   doubled-word: [ja, en]
   duplicate-definition: [ja, en]
   emoji-density: [ja, en]

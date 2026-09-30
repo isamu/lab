@@ -14,4 +14,20 @@ export const dropClosingBracket = (source: string): Plant | undefined =>
     (line) => line.replace(ROUND_PAIR, (pair) => pair.slice(0, -1)),
   );
 
-export const MARK_MUTATIONS: readonly Mutation[] = [{ id: "bracket-unclosed", rule: "unbalanced-bracket", languages: ["ja", "en"], plant: dropClosingBracket }];
+// --- doubled-punctuation ---
+
+/** 最初の文の終わりの句点を二つにする。打ち直しで残った印。 */
+export const doublePeriod = (source: string): Plant | undefined =>
+  rewriteFirst(
+    source,
+    (line) => isProse(line) && /[^.。][。.]$/u.test(line.trimEnd()) && !line.startsWith("|"),
+    (line) => {
+      const trimmed = line.trimEnd();
+      return `${trimmed}${trimmed.slice(-1)}`;
+    },
+  );
+
+export const MARK_MUTATIONS: readonly Mutation[] = [
+  { id: "bracket-unclosed", rule: "unbalanced-bracket", languages: ["ja", "en"], plant: dropClosingBracket },
+  { id: "period-doubled", rule: "doubled-punctuation", languages: ["ja", "en"], plant: doublePeriod },
+];

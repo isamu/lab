@@ -1,0 +1,25 @@
+id: doubled-punctuation
+layer: L1
+status: experimental
+how_to_find: doubled-punctuation
+severity: warning
+
+name:
+  ja: 句読点が重なっている
+  en: Doubled punctuation
+
+why:
+  ja: 「。。」「、、」「、。」のように句読点が二つ並ぶのは、打ち直しや貼り付けで残った印です。読み手はそこで止まり、急いで書いた文書に見えます。同じ印を三つ以上並べたもの（「...」「。。。」）はわざと伸ばした書き方なので数えません。「e.g.,」「etc.;」のような略語の点の後ろの読点、「、.NET」のように次の語の頭の点、「1..10」「../」のような範囲や道のり、コードと URL も数えません。「!!」「??」は文体の選び方なので見ません。
+  en: Two punctuation marks side by side ("..", ",,", "i.e.,,") are left over from an edit or a paste. The reader stops there, and the document looks rushed. Three or more of the same mark ("...") are drawn out on purpose and are not counted, nor is the comma or semicolon after an abbreviation's period ("e.g.,", "etc.;"), a period that starts the next word (".NET"), a range or path ("1..10", "../"), code or a URL. "!!" and "??" are a matter of style and are not checked.
+
+message:
+  ja: 「{marks}」と句読点が重なっています
+  en: 'Punctuation is doubled: "{marks}"'
+
+how_to_fix:
+  ja: 余分な印を消してください。
+  en: Delete the extra mark.
+
+levels: { strict: 1, normal: 1, relaxed: 1 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]

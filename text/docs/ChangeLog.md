@@ -14,6 +14,9 @@ Experimental rules for marks left over from an edit. Each finding in the corpus 
   is not a closing bracket. A URL mask no longer hides the `）` a reader sees after `（https://…`. In the corpus it
   finds real slips in 白書, 通知 and handbooks (`（FAO)`, `(※1）`, `“Yellowstone.` never closed); the misses are per-line
   quotation marks in verse and a `事例5）` label inside a real `（`.
+- **`doubled-punctuation`**: two punctuation marks side by side (`。。`, `、。`, `,,`, `i.e.,,`). Three or more of
+  one mark are drawn out on purpose; `e.g.,`, `etc.;`, `、.NET`, `1..10` and `../` are not slips; `!!` and colons
+  are not checked. Every corpus finding is a slip.
 
 ### New rules: headings, images, links and URLs in Markdown (#170)
 

@@ -9,6 +9,7 @@ dangling-reference                      6      6       0             0
 date-order                              6      6       0             0
 date-weekday-mismatch                  10     10       0             0
 double-keigo                            3      3       0             0
+doubled-punctuation                    26     26       0             0
 doubled-word                           25     25       0             0
 duplicate-definition                    4      4       0             0
 emoji-density                           8      8       0             0
@@ -91,6 +92,7 @@ ja/blog  heading-deepened  found
 ja/blog  image-unlabelled  found
 ja/blog  link-to-nowhere  found
 ja/blog  url-run-on  found
+ja/blog  period-doubled  found
 ja/design  reference-broken  found
 ja/design  number-skipped  found
 ja/design  defined-twice  found
@@ -111,6 +113,7 @@ ja/design  image-unlabelled  found
 ja/design  link-to-nowhere  found
 ja/design  url-run-on  found
 ja/design  bracket-unclosed  found
+ja/design  period-doubled  found
 ja/email  weekday-shift  found
 ja/email  rows-swapped  found
 ja/email  plain-in-polite  found
@@ -130,6 +133,7 @@ ja/email  image-unlabelled  found
 ja/email  link-to-nowhere  found
 ja/email  url-run-on  found
 ja/email  bracket-unclosed  found
+ja/email  period-doubled  found
 ja/figures  item-dropped  found
 ja/figures  polite-in-plain  found
 ja/figures  no-nested  found
@@ -150,6 +154,7 @@ ja/figures  heading-deepened  found
 ja/figures  image-unlabelled  found
 ja/figures  link-to-nowhere  found
 ja/figures  url-run-on  found
+ja/figures  period-doubled  found
 ja/itinerary  weekday-shift  found
 ja/itinerary  rows-swapped  found
 ja/itinerary  item-dropped  found
@@ -167,6 +172,7 @@ ja/itinerary  heading-deepened  found
 ja/itinerary  image-unlabelled  found
 ja/itinerary  link-to-nowhere  found
 ja/itinerary  url-run-on  found
+ja/itinerary  period-doubled  found
 ja/minutes  weekday-shift  found
 ja/minutes  rows-swapped  found
 ja/minutes  polite-in-plain  found
@@ -181,6 +187,7 @@ ja/minutes  image-unlabelled  found
 ja/minutes  link-to-nowhere  found
 ja/minutes  url-run-on  found
 ja/minutes  bracket-unclosed  found
+ja/minutes  period-doubled  found
 ja/note  plain-in-polite  found
 ja/note  no-nested  found
 ja/note  space-strayed  found
@@ -188,6 +195,7 @@ ja/note  particle-doubled  found
 ja/note  image-unlabelled  found
 ja/note  link-to-nowhere  found
 ja/note  url-run-on  found
+ja/note  period-doubled  found
 ja/policy  reference-broken  found
 ja/policy  number-skipped  found
 ja/policy  defined-twice  found
@@ -198,6 +206,7 @@ ja/policy  image-unlabelled  found
 ja/policy  link-to-nowhere  found
 ja/policy  url-run-on  found
 ja/policy  bracket-unclosed  found
+ja/policy  period-doubled  found
 ja/press  weekday-shift  found
 ja/press  sentences-joined  found
 ja/press  plain-in-polite  found
@@ -228,6 +237,7 @@ ja/press  image-unlabelled  found
 ja/press  link-to-nowhere  found
 ja/press  url-run-on  found
 ja/press  bracket-unclosed  found
+ja/press  period-doubled  found
 ja/proposal  item-dropped  found
 ja/proposal  plain-in-polite  found
 ja/proposal  no-nested  found
@@ -255,6 +265,7 @@ ja/proposal  heading-deepened  found
 ja/proposal  image-unlabelled  found
 ja/proposal  link-to-nowhere  found
 ja/proposal  url-run-on  found
+ja/proposal  period-doubled  found
 ja/quote  weekday-shift  found
 ja/quote  item-dropped  found
 ja/quote  plain-in-polite  found
@@ -269,6 +280,7 @@ ja/quote  image-unlabelled  found
 ja/quote  link-to-nowhere  found
 ja/quote  url-run-on  found
 ja/quote  bracket-unclosed  found
+ja/quote  period-doubled  found
 ja/readme  polite-in-plain  found
 ja/readme  no-nested  found
 ja/readme  space-strayed  found
@@ -284,6 +296,7 @@ ja/readme  heading-deepened  found
 ja/readme  image-unlabelled  found
 ja/readme  link-to-nowhere  found
 ja/readme  url-run-on  found
+ja/readme  period-doubled  found
 ja/requirements  reference-broken  found
 ja/requirements  number-skipped  found
 ja/requirements  no-nested  found
@@ -298,6 +311,7 @@ ja/requirements  heading-deepened  found
 ja/requirements  image-unlabelled  found
 ja/requirements  link-to-nowhere  found
 ja/requirements  url-run-on  found
+ja/requirements  period-doubled  found
 en/blog  sentences-joined  found
 en/blog  paragraphs-joined  found
 en/blog  heading-echoed  found
@@ -316,6 +330,7 @@ en/blog  pet-phrase  found
 en/blog  heading-deepened  found
 en/blog  image-unlabelled  found
 en/blog  link-to-nowhere  found
+en/blog  period-doubled  found
 en/design  reference-broken  found
 en/design  number-skipped  found
 en/design  defined-twice  found
@@ -335,6 +350,7 @@ en/design  heading-deepened  found
 en/design  image-unlabelled  found
 en/design  link-to-nowhere  found
 en/design  bracket-unclosed  found
+en/design  period-doubled  found
 en/email  weekday-shift  found
 en/email  rows-swapped  found
 en/email  sentences-joined  found
@@ -347,6 +363,7 @@ en/email  article-doubled  found
 en/email  spelling-avoided  found
 en/email  image-unlabelled  found
 en/email  link-to-nowhere  found
+en/email  period-doubled  found
 en/figures  item-dropped  found
 en/figures  sentences-joined  found
 en/figures  paragraphs-joined  found
@@ -365,6 +382,7 @@ en/figures  spelling-avoided  found
 en/figures  heading-deepened  found
 en/figures  image-unlabelled  found
 en/figures  link-to-nowhere  found
+en/figures  period-doubled  found
 en/itinerary  weekday-shift  found
 en/itinerary  rows-swapped  found
 en/itinerary  item-dropped  found
@@ -382,6 +400,7 @@ en/itinerary  hedges-stacked  found
 en/itinerary  heading-deepened  found
 en/itinerary  image-unlabelled  found
 en/itinerary  link-to-nowhere  found
+en/itinerary  period-doubled  found
 en/minutes  weekday-shift  found
 en/minutes  rows-swapped  found
 en/minutes  sentences-joined  found
@@ -395,17 +414,20 @@ en/minutes  heading-deepened  found
 en/minutes  image-unlabelled  found
 en/minutes  link-to-nowhere  found
 en/minutes  bracket-unclosed  found
+en/minutes  period-doubled  found
 en/note  sentences-joined  found
 en/note  contracted  found
 en/note  article-doubled  found
 en/note  image-unlabelled  found
 en/note  link-to-nowhere  found
+en/note  period-doubled  found
 en/policy  reference-broken  found
 en/policy  number-skipped  found
 en/policy  defined-twice  found
 en/policy  article-doubled  found
 en/policy  image-unlabelled  found
 en/policy  link-to-nowhere  found
+en/policy  period-doubled  found
 en/press  weekday-shift  found
 en/press  sentences-joined  found
 en/press  paragraphs-joined  found
@@ -430,6 +452,7 @@ en/press  pet-phrase  found
 en/press  heading-deepened  found
 en/press  image-unlabelled  found
 en/press  link-to-nowhere  found
+en/press  period-doubled  found
 en/proposal  item-dropped  found
 en/proposal  sentences-joined  found
 en/proposal  paragraphs-joined  found
@@ -450,6 +473,7 @@ en/proposal  pet-phrase  found
 en/proposal  heading-deepened  found
 en/proposal  image-unlabelled  found
 en/proposal  link-to-nowhere  found
+en/proposal  period-doubled  found
 en/quote  weekday-shift  found
 en/quote  item-dropped  found
 en/quote  section-dropped  found
@@ -460,6 +484,7 @@ en/quote  hedges-stacked  found
 en/quote  heading-deepened  found
 en/quote  image-unlabelled  found
 en/quote  link-to-nowhere  found
+en/quote  period-doubled  found
 en/readme  contracted  found
 en/readme  heading-echoed  found
 en/readme  bold-heavy  found
@@ -471,6 +496,7 @@ en/readme  hedges-stacked  found
 en/readme  heading-deepened  found
 en/readme  image-unlabelled  found
 en/readme  link-to-nowhere  found
+en/readme  period-doubled  found
 en/requirements  reference-broken  found
 en/requirements  number-skipped  found
 en/requirements  paragraphs-joined  found
@@ -486,3 +512,4 @@ en/requirements  spelling-avoided  found
 en/requirements  heading-deepened  found
 en/requirements  image-unlabelled  found
 en/requirements  link-to-nowhere  found
+en/requirements  period-doubled  found
