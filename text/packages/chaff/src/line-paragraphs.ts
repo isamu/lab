@@ -51,6 +51,9 @@ const firstStartingAt = (cores: readonly Span[], offset: number): number => {
 /** 改行をまたぐ文が無い。またぐなら、改行の直前に始まった文がまだ続いている。 */
 const endsSentence = (line: Line, cores: readonly Span[]): boolean => (cores[firstStartingAt(cores, line.newline) - 1]?.end ?? 0) <= line.newline;
 
+/** 覆われて空白だけになった行（話し手の名前の行）は段落を終えない。終えると、文の無い段落ができる。 */
+const hasText = (source: string, line: Line): boolean => source.slice(line.span.start, line.span.end).trim().length > 0;
+
 /** 行の並びを、文の終わる改行で区切った段落。 */
 const groupAt = (lines: readonly Line[], closing: readonly boolean[]): Span[] => {
   const firsts = lines.flatMap((_, index) => (index === 0 || closing[index - 1] === true ? [index] : []));
@@ -77,7 +80,7 @@ const isLineShaped = (lines: readonly Line[], closing: readonly boolean[], group
 export const lineParagraphs = (source: string, paragraph: Span, sentences: readonly Span[]): Span[] => {
   const lines = linesOf(source, paragraph);
   const cores = sentences.map((sentence) => coreOf(source, sentence)).filter((core) => core.end > core.start);
-  const closing = lines.map((line) => endsSentence(line, cores));
+  const closing = lines.map((line) => hasText(source, line) && endsSentence(line, cores));
   const groups = groupAt(lines, closing);
   return isLineShaped(lines, closing, groups, cores) ? groups : [paragraph];
 };
