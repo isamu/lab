@@ -22,8 +22,8 @@ The corpus adds 気象庁「予報用語 風」 (a glossary laid out as a table)
 the table reading now converts, and kinds it did not have: a 厚生労働省 期間業務職員 job posting, a 消費者庁 注意喚起,
 国税庁's page for primary-school children, the English version of the Prime Minister's UN speech (a pair with the
 Japanese one), a VOA Learning English news story, a NASA Knows page for grades K-4, Login.gov help, a CFPB consumer
-warning and Lincoln's letters to Horace Greeley (Wikisource). A さいたま市 recipe and a DailyMed drug label are kept as
-URLs only.
+warning and Lincoln's letters to Horace Greeley (Wikisource). A さいたま市 recipe, a DailyMed drug label and the job
+posting, which names an individual contact person, are kept as URLs only.
 ### `contraction-consistency` counts `don’t` as a contraction (#170)
 
 The rule compared the text as written, so a contraction with a curly apostrophe (`don’t`, `it’s`) counted as neither
