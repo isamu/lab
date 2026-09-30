@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### English inside a Japanese document is split as in an English one, and no sentence ends inside nested brackets (#170)
+
+- **English runs in a Japanese document get the English adapter's sentence ends.** `FIG. 1 illustrates…` and
+  `Vol. XLIII` no longer end a sentence at the label's full stop. `He said "done." Then…` ends after the closing
+  quote. `“Is it done?” Nobody knew.` keeps the `”` on the first sentence. An English paragraph is now split the same
+  way by both adapters. The Japanese adapter holds copies of the English functions, since adapters do not depend on
+  each other, and a test compares the copies with the originals.
+- **A 。 inside brackets or double quotes no longer ends a Japanese sentence when the brackets nest.** A statute's
+  「（…（…）をいう。以下同じ。）に記載され…」 was cut inside the outer parentheses, so a sentence began with 「）」.
+  `“終わった？”誰も知らない。` is one sentence, as `「終わった？」誰も知らない。` already was. Only a bracket closed later on
+  the same line counts, so `1）`, an unclosed `（` and a ditto `“` join nothing. A closing bracket left at the start of a
+  sentence goes back to the sentence it closes. A line that ends in a lone `\r` is a line break too.
+
 ### `yarn bench` plants a repeated phrase, and fails when a rule it should plant for goes unplanted (#170)
 
 `ngram-repetition` had no plant: the audit that added plants for uncovered rules skipped it. The bench now opens one
