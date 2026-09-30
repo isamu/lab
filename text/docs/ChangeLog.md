@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### 「（1）」 directly under an article with body text is an item of the unnumbered first paragraph (#170)
+
+In 東京大学学位規則, 第3条 reads 「第3条　…次のとおりとする。」, then (1) (2) (3), then 「2　…」. The (1) (2) (3)
+were read at paragraph depth, so paragraph 2 looked like their sibling and `numbering-gap` reported 「（3）」の次が「2」.
+When the article's own line carries body text, that line opens the unnumbered first paragraph, and a parenthesised
+number right under it is now an item of that paragraph (3.1.1, 3.1.2), as 一 and 二 already were. 「第3条第2号」 then
+finds it. An article line with only a caption (「第1条（目的）」, 「第1条 総則」) or nothing after the number keeps
+the old reading, where (1) is at paragraph depth.
+
 ### The weekly corpus run reports dead sources and upstream changes (#170)
 
 The weekly workflow now refetches every document kept as a URL, not only the ones that may not be redistributed. A

@@ -44,10 +44,20 @@ const numberOf = (text: string | undefined): string | undefined => {
 
 const insideArticle = (context: NumberingContext): boolean => context.open.some((open) => open.kind === "article");
 
-/** 「（2）」は開いている「（1）」の兄弟。無ければ、開いているものより一段深い。 */
+/** 条の行に本文があれば、番号の無い第 1 項がその行で始まっている。見出しだけの条（「第1条（目的）」「第1条 総則」）は違う。 */
+const opensFirstParagraph = (open: NumberedLine | undefined): boolean => open?.kind === "article" && open.heading === "" && open.rest !== "";
+
+/**
+ * 「（2）」は開いている「（1）」の兄弟。無ければ、開いているものより一段深い。
+ * ただし本文のある条の直下なら、番号の無い第 1 項の号。規則の「第3条 …次のとおりとする。」「(1) 学士」「2 …」の (1) は、第 2 項の兄弟ではない。
+ */
 const PAREN_LABEL = /^（\d+）$/u;
-const parenDepth = (context: NumberingContext): number =>
-  context.open.findLast((open) => PAREN_LABEL.test(open.label))?.depth ?? (context.open.at(-1)?.depth ?? 0) + 1;
+const parenDepth = (context: NumberingContext): number => {
+  const sibling = context.open.findLast((open) => PAREN_LABEL.test(open.label));
+  if (sibling !== undefined) return sibling.depth;
+  const innermost = context.open.at(-1);
+  return opensFirstParagraph(innermost) ? ITEM_DEPTH : (innermost?.depth ?? 0) + 1;
+};
 
 /**
  * 条の範囲の行は、最初の条の番地を持ち、並びの位置は範囲の最後まで進める。中の条は番地を持たない。
