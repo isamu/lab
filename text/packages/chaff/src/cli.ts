@@ -32,6 +32,7 @@ import { runSkill } from "./commands/skill.ts";
 import { runFeedback, settingsOf } from "./commands/feedback.ts";
 import { homedir } from "node:os";
 import { ruleProblems } from "./config/rule-problems.ts";
+import { nameProblems } from "./config/name-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRules } from "./run.ts";
 import type { Level, RuleDefinition } from "./plugin.ts";
@@ -139,7 +140,8 @@ const writeSarif = (results: readonly Inspected[], argv: readonly string[]): voi
 
 /** 効いていない設定は、結果の前に一度だけ言う。標準エラーに出すので、JSON や SARIF の出力は汚さない。 */
 const warnRuleProblems = (config: Config, language: string): void => {
-  ruleProblems(config, loadRules(language), hostLanguage(config.language, process.env)).forEach((problem) => console.error(`chaff: ${problem}`));
+  const ui = hostLanguage(config.language, process.env);
+  [...ruleProblems(config, loadRules(language), ui), ...nameProblems(config, ui)].forEach((problem) => console.error(`chaff: ${problem}`));
 };
 
 /** Several files end with one summary: in their language when they share one, else the host's. */

@@ -271,6 +271,8 @@ export type TeamRules = {
   readonly requiredSections: readonly string[];
   /** { 使わない書き方: 使う書き方 }。preferred-term が語彙表として読む。 */
   readonly prefer?: Readonly<Record<string, string>>;
+  /** チームの固有名詞。1 つの名前として読む rule が見る。 */
+  readonly names?: readonly string[];
 };
 
 const EMPTY_TEAM: TeamRules = { jargon: [], requiredSections: [] };
@@ -280,10 +282,12 @@ export const teamRules = (config: {
   readonly jargon: readonly string[];
   readonly requiredSections: readonly string[];
   readonly prefer?: Readonly<Record<string, string>>;
+  readonly names?: readonly string[];
 }): TeamRules => ({
   jargon: config.jargon,
   prefer: config.prefer ?? {},
   requiredSections: config.requiredSections,
+  names: config.names ?? [],
 });
 
 export const buildDocument = (
@@ -331,6 +335,7 @@ export const buildDocument = (
     links: [...spansOfType(root, "link"), ...spansOfType(root, "linkReference")],
     lexicons: tagged ? tokenizedLexicons(lexicons, adapter) : lexicons,
     requiredSections: team.requiredSections,
+    names: team.names ?? [],
     // 構造の rule（参照先が無い・番号の抜け）が読む木。どの rule も読まなければ作らない。何万行の契約書で、他の rule の lint に代金を払わせない。
     get structure(): StructureNode | undefined {
       tree.value ??=

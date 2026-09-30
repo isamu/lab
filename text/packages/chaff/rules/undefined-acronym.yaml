@@ -33,8 +33,8 @@ message:
   en: '"{word}" is used without an expansion ({count} such {count|acronym|acronyms})'
 
 how_to_fix:
-  ja: 初出のところで括弧に入れて展開してください。「CI（継続的インテグレーション）」のように。
-  en: Expand it in brackets at first use.
+  ja: 初出のところで括弧に入れて展開してください。「CI（継続的インテグレーション）」のように。読み手が名前として知っている略語（社名など）なら、chaff.yaml の names に並べると求めません。
+  en: Expand it in brackets at first use. If your readers know it as a name (a company, say), list it under names in chaff.yaml and it is not asked for.
 
 levels: { strict: 1, normal: 3, relaxed: 6 }
 

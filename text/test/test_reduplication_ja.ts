@@ -1,6 +1,13 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { distributiveVocabulary, markReduplication, type Distributive, type ReadsAsAdverb } from "../packages/lang-ja/src/reduplication.ts";
+import {
+  distributiveVocabulary,
+  isInflectedEcho,
+  markReduplication,
+  type Distributive,
+  type Inflection,
+  type ReadsAsAdverb,
+} from "../packages/lang-ja/src/reduplication.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { prepare, readsAsOneAdverb } from "../packages/lang-ja/src/pos.ts";
 
@@ -111,5 +118,56 @@ describe("readsAsOneAdverb", () => {
     assert.equal(readsAsOneAdverb("ややや"), false);
     assert.equal(readsAsOneAdverb("もも"), false);
     assert.equal(readsAsOneAdverb(""), false);
+  });
+});
+
+/** 語を隙間なく並べた、解析器の読み。[表層, 品詞, 細分類, 活用形]。 */
+const wordsOf = (...words: readonly (readonly [string, string, string, string])[]): Inflection[] =>
+  words.reduce<Inflection[]>((acc, [surface, pos, detail, form]) => {
+    const last = acc.at(-1);
+    const start = last === undefined ? 0 : last.start + last.surface.length;
+    return [...acc, { surface, pos, detail, form, start }];
+  }, []);
+
+const echoAt = (words: readonly Inflection[]): number[] => words.flatMap((_, index) => (isInflectedEcho(words, index) ? [index] : []));
+
+const TO: readonly [string, string, string, string] = ["と", "助詞", "格助詞", "*"];
+
+describe("isInflectedEcho", () => {
+  it("自立の動詞・形容詞を連用形か命令形のまま重ねれば、二つ目が重ね言葉", () => {
+    assert.deepEqual(echoAt(wordsOf(["流せ", "動詞", "自立", "連用形"], ["流せ", "動詞", "自立", "連用形"], TO)), [1]);
+    assert.deepEqual(echoAt(wordsOf(["待て", "動詞", "自立", "連用形"], ["待て", "動詞", "自立", "命令ｅ"], ["、", "記号", "読点", "*"])), [1]);
+    assert.deepEqual(echoAt(wordsOf(["見ろ", "動詞", "自立", "命令ｒｏ"], ["見ろ", "動詞", "自立", "命令ｒｏ"])), [1]);
+    assert.deepEqual(
+      echoAt(wordsOf(["長く", "形容詞", "自立", "連用テ接続"], ["長く", "形容詞", "自立", "連用テ接続"], ["続く", "動詞", "自立", "基本形"])),
+      [1],
+    );
+    assert.deepEqual(echoAt(wordsOf(["売り", "動詞", "自立", "連用形"], ["売り", "動詞", "自立", "連用形"], ["し", "動詞", "自立", "連用形"])), [1]);
+  });
+
+  it("終止形・非自立・一文字・表層違い・名詞の重なりは重ね言葉にしない", () => {
+    assert.deepEqual(echoAt(wordsOf(["行く", "動詞", "自立", "基本形"], ["行く", "動詞", "自立", "基本形"])), []);
+    assert.deepEqual(echoAt(wordsOf(["見る", "動詞", "自立", "基本形"], ["見る", "動詞", "自立", "連用形"], TO)), []);
+    assert.deepEqual(echoAt(wordsOf(["ください", "動詞", "非自立", "連用形"], ["ください", "動詞", "非自立", "命令ｉ"])), []);
+    assert.deepEqual(echoAt(wordsOf(["来い", "動詞", "自立", "命令ｉ"], ["来い", "動詞", "非自立", "命令ｉ"])), []);
+    assert.deepEqual(echoAt(wordsOf(["し", "動詞", "自立", "連用形"], ["し", "動詞", "自立", "連用形"], TO)), []);
+    assert.deepEqual(echoAt(wordsOf(["降り", "動詞", "自立", "連用形"], ["売り", "動詞", "自立", "連用形"], TO)), []);
+    assert.deepEqual(echoAt(wordsOf(["確認", "名詞", "サ変接続", "*"], ["確認", "名詞", "サ変接続", "*"], TO)), []);
+    assert.deepEqual(echoAt(wordsOf(["書き", "動詞", "自立", "連用形"], ["書き", "名詞", "接尾", "*"])), []);
+  });
+
+  it("語尾（助動詞・接続助詞）が続けば、語幹の書き損じ", () => {
+    assert.deepEqual(echoAt(wordsOf(["でき", "動詞", "自立", "連用形"], ["でき", "動詞", "自立", "連用形"], ["ます", "助動詞", "*", "基本形"])), []);
+    assert.deepEqual(echoAt(wordsOf(["売り", "動詞", "自立", "連用形"], ["売り", "動詞", "自立", "連用形"], ["て", "助詞", "接続助詞", "*"])), []);
+  });
+
+  it("離れた二語、先頭の語、空の並びは重ね言葉にしない", () => {
+    const apart: Inflection[] = [
+      { surface: "流せ", pos: "動詞", detail: "自立", form: "連用形", start: 0 },
+      { surface: "流せ", pos: "動詞", detail: "自立", form: "連用形", start: 3 },
+    ];
+    assert.deepEqual(echoAt(apart), []);
+    assert.deepEqual(echoAt(wordsOf(["流せ", "動詞", "自立", "連用形"])), []);
+    assert.deepEqual(echoAt([]), []);
   });
 });

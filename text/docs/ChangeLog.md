@@ -28,6 +28,62 @@ English -ing verbs now carry `VerbForm=Ger`, so a present participle is told apa
 A word in capitals ("PR", "FCPs") is capitalised in either style, so it is no longer evidence of Title Case.
 "Opening a PR" and "Proposed FCPs" are left unjudged; "Using the API Client" is still Title Case.
 
+### `names:` in chaff.yaml: the team lists its own names (#170)
+
+`max-kanji-continuous` reported official names such as 個人情報保護委員会 and 国土交通省鉄道局総務課, and the dictionary
+cannot say they are names: it splits them into common nouns (厚生 + 労働省). A team now lists its own names under `names:`
+in chaff.yaml, as it lists its jargon. A listed name matches as written and is read as one name:
+
+- `max-kanji-continuous` does not count it; kanji before or after it are measured as separate runs, so
+  「個人情報保護委員会事務局総務課長補佐」 still reports 「事務局総務課長補佐」;
+- `ngram-repetition` does not count a phrase that touches it;
+- `undefined-acronym` does not ask to expand it, or an acronym inside it (`NTT` in `NTT Docomo`);
+- `proper-noun-density` counts it as one proper noun however many words it splits into.
+
+`names` must be a list of names (a number such as `2025` is read as text); any other value, or an entry that is not a
+name, is skipped with a message in both languages. A name wrapped across a line in the source still matches. `chaff init` shows the key, commented out. chaff ships no names of its own.
+
+`max-kanji-continuous` also leaves out a run of kanji that fills a 「」 or 『』 quotation exactly
+(「英国大使館別荘記念公園」), even without `names`: the brackets mark it as one quoted name, the same trade-off
+`latin-spacing` and `no-doubled-joshi` make for quotations. A quotation that also holds kana is measured as before.
+
+### doubled-word does not count a Japanese verb or adjective repeated in its continuative or imperative form (#170)
+
+Fiction, plays and poems repeat a word to press it: 「流せ流せ」「待て待て」「死ね死ね」「長く長く」. The analyser
+splits these into two identical verbs or adjectives, and doubled-word reported them as a word written twice. An
+independent verb or adjective repeated in a form that does not end the sentence (continuative 連用形 or imperative
+命令形) is now read as reduplication. Still reported: a repeated terminal form, a non-independent word
+(「くださいください」), a one-character word (「確認ししました」), and a repeat followed by an ending
+(「確認できできます」), which is a stem written twice.
+
+### A tenth round of corpus kinds: fiction, essays, poetry and plays in Japanese and English, and more (#170)
+
+The corpus adds, committed as public domain: 夏目漱石「夢十夜」, 寺田寅彦「天災と国防」, 石川啄木「一握の砂」 and
+岸田國士「紙風船」 from 青空文庫, and Gilman's The Yellow Wallpaper, Thoreau's Civil Disobedience, Frost's A Boy's
+Will and Wilde's The Importance of Being Earnest from Project Gutenberg. URL only: a J-STAGE abstract page, a
+Japanese Wikipedia talk page, the minutes of a 厚生労働省 council, 東京大学学位規則, and a MyPlate recipe. A Project
+Gutenberg eBook (format `gutenberg`) is stored as the work alone, without Project Gutenberg's header and licence.
+
+### Japanese `agentless-passive` leaves descriptive and legal passives alone (#290)
+
+The rule is about a passive that hides who is responsible (「二次被害は確認されていません」「〜が検討されています」). On
+the corpus's business documents most of its findings were passives where no one is hiding: a rule's scope
+(「次の各号が適用される」「法令上定められていない」), what a document says (「ガイドラインに記載されている」「図に示されて
+いる」), a classification (「3 つに分類されている」). These are no longer reported:
+
+- `stative-passive-verb` in `@chaffjs/lang-ja` now holds rule, document-content and state verbs (適用, 規定, 定める,
+  分類, 構成, 位置付ける, 記載, 示す, 言及 …). A サ変 noun is matched before する. An event in the past
+  (「割引が適用されました」「新しい規程が定められた」) is still reported. 求める and 認める are left out:
+  「一定の協力が求められます」 hides that the writer's organisation is the one asking, and 「不正アクセスは認められて
+  いません」 hides who looked.
+- A passive in a conditional clause (「立証されれば」「整理されていると、」) or followed by a tendency word
+  (「理解されやすい」「解釈され得る」) is not reported. 「見直されなければなりません」 is an obligation and still is.
+- A れる attached directly to an ichidan verb (a ら抜き form, or a typo the parser read as passive) and an ichidan
+  られる followed directly by ない or ず (「他人は変えられない」, a potential) are not passives.
+
+The rule stays experimental: most of what remains on business documents is a generic action (「使用されます」「行われ
+ます」) that morphology cannot tell from a hidden actor.
+
 ### `sasete-itadaku` lets the number of uses its message allows pass (#170)
 
 The message says 「3 回あります（3 回まで）」: three uses are allowed. The rule nevertheless reported a document with
