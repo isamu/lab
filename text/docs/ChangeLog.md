@@ -28,6 +28,15 @@ the rule runs by default, is experimental, needs a list in `chaff.yaml`, or runs
   (`yarn examples`), and a test checks that each `before` is reported by its rule and each `after` is not. A rule
   file without the fields fails the test.
 
+### `undefined-acronym`: a figure neither uses nor explains an acronym (#170)
+
+Since plain-text figures are masked, RFC 9293 reports LISTEN. That is the intended behaviour, now pinned by tests. An
+acronym that appears only in a figure is not reported, and one that a figure shows before the prose uses it is
+reported at its first use in prose unless the prose expands it. LISTEN had been silent only because a cell of the
+message-sequence figure, "LISTEN (??)", read as LISTEN with its expansion in brackets. The prose that describes LISTEN
+("LISTEN - represents waiting for a connection request …") says what the state means but does not expand it. Its
+siblings SYN-SENT and LAST-ACK, described in the same list, were already reported.
+
 ### Email: a list archive's attachment stub is not prose (#170)
 
 Mailman leaves a note where it removed an attachment: "An HTML attachment was scrubbed..." and a `URL: <…>` line, or
