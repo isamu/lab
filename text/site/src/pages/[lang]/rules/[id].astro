@@ -56,12 +56,13 @@ const facts = [
   {rule.levels[lang].length > 0 && (
     <>
       <h2 class="mt-8 text-xl font-semibold">{t(lang, "levels")}</h2>
+      {rule.levelSets === "severity" && <p class="mt-2 text-sm leading-relaxed">{t(lang, "levelsSetSeverity")}</p>}
       <table class="mt-2 text-sm">
         <tbody>
           {rule.levels[lang].map(([level, value]) => (
             <tr>
               <th class="py-1 pr-6 text-left font-mono font-normal text-zinc-500">{level}</th>
-              <td class="py-1 font-mono">{value}</td>
+              <td class="py-1 font-mono">{term(lang, value)}</td>
             </tr>
           ))}
         </tbody>

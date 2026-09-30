@@ -22,6 +22,6 @@ how_to_fix:
   en: Fix the number or remove the reference. If it points into another document, name that document so the reader knows where to look.
 
 # 何件あれば指摘するか。1 は「1 件でもあれば」。
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { normal: error, relaxed: warning }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]

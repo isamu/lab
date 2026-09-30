@@ -83,6 +83,8 @@ const meets = (need: string, docs: readonly ProseDocument[]): boolean => {
  */
 const measurable = (rule: RuleDefinition, docs: readonly ProseDocument[], genre: string, language: string): boolean => {
   if (rule.layer === "L4" || !rule.use_for.some((target) => genre.startsWith(target))) return false;
+  // A rule with nothing to count has no limit to sweep: its levels set severity.
+  if (rule.level_sets === "severity") return false;
   if (rule.languages !== undefined && !rule.languages.includes(language)) return false;
   if (rule.from.length > 0) return false;
   if (docs.some((doc) => missingList(rule, doc.lexicons) !== undefined)) return false;
