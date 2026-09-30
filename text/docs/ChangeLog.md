@@ -2,7 +2,19 @@
 
 Newest first.
 
-## Unreleased
+## 0.17.0 — 2026-09-30
+
+`legal/statute` now checks numbering, references and definitions the way `legal/contract` does, without
+`--experimental`. Two new experimental rules: `stray-space` finds a space inside a Japanese phrase, and `agreement-slip`
+finds English words that do not agree ("a decisions", "Your can"). Many false reports are gone. A paragraph of many short
+sentences is no longer too long. Japanese `heading-echo` counts content words. Speaker names in plays and minutes are not
+sentences. Acronym glossaries, emphasis capitals, J-STAGE and names after a title are not undefined acronyms. Example
+asides are not lists. 同項 after another law is not looked up here, and curly contractions count. Genre suggestions are
+more careful, the `docs/glossary` preset fits glossaries, and every corpus document is now checked with its preset.
+
+📦 [`chaffjs@0.17.0`](https://www.npmjs.com/package/chaffjs/v/0.17.0) ·
+[`@chaffjs/lang-ja@0.16.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.16.0) ·
+[`@chaffjs/lang-en@0.15.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.15.0)
 
 ### `legal/statute` checks numbering, references and definitions without `--experimental` (#340)
 
