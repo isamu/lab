@@ -25,3 +25,19 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「【会社名】」「[Your Name]」のように、雛形の空欄が埋まらないまま残っている所
+  en: A template blank left unfilled, such as "[Your Name]" or "[Insert Date]"
+example:
+  ja:
+    before: |
+      【会社名】の田中です。見積もりをお送りします。
+    after: |
+      山田商事の田中です。見積もりをお送りします。
+  en:
+    before: |
+      We can meet on [Insert Date] to go through the quote.
+    after: |
+      We can meet on Friday 9 October to go through the quote.

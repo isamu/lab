@@ -30,3 +30,21 @@ levels:
   en: { strict: 2, normal: 3, relaxed: 6 }
 
 use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 「単なる X ではなく Y」「X だけでなく Y も」のような対比の枠が重なり、誰も言っていない X を打ち消し続けている所
+  en: 'Contrast frames piling up ("It''s not X, it''s Y", "not just X, but Y"), knocking down an X nobody said'
+example:
+  ja:
+    pad: true
+    before: |
+      この仕組みは単なる道具ではなく、チームの文化です。速さだけでなく、安心も届けます。
+    after: |
+      この仕組みで、見積もりの作成が一件あたり十分短くなりました。
+  en:
+    pad: true
+    before: |
+      This tool is not just software, but a culture. It's not a feature. It's a promise.
+    after: |
+      This tool cut the time to draft a quote by ten minutes.

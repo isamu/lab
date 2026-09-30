@@ -28,3 +28,21 @@ levels:
   en: { strict: 4, normal: 6, relaxed: 10 }
 
 use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 「さらに」「加えて」「このように」で始まる文が多く、何がどう繋がるのかを言わずに並べている所
+  en: Too many sentences opening with "Moreover", "Additionally" or "Furthermore", listing without saying how they connect
+example:
+  ja:
+    pad: true
+    before: |
+      さらに、費用が下がります。加えて、作業も速くなります。このように、良い点が多くあります。
+    after: |
+      費用が下がり、見積もりも一件あたり十分早く出せるようになりました。
+  en:
+    pad: true
+    before: |
+      Moreover, costs go down. Additionally, the work gets faster. Furthermore, the team is happier.
+    after: |
+      Costs went down, so each quote now goes out ten minutes sooner.

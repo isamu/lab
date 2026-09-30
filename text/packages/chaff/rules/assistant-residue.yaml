@@ -27,3 +27,19 @@ how_to_fix:
 levels: { strict: 10, normal: 10, relaxed: 20 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 「私の知識は」「お役に立てれば幸いです」のような、チャットの返事を貼ったときに残る言葉
+  en: What a pasted chat reply leaves behind ("As of my last knowledge update", "I hope this helps")
+example:
+  ja:
+    before: |
+      新しい棟の計画は検討中でした。私の知識は2023年時点のものです。
+    after: |
+      新しい棟の計画は、2026年9月の議会資料では検討中でした。
+  en:
+    before: |
+      As of my last knowledge update, plans for a new wing were under discussion.
+    after: |
+      The council's minutes of September 2026 say plans for a new wing are under discussion.
