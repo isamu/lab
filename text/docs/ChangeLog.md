@@ -4,6 +4,11 @@ Newest first.
 
 ## Unreleased
 
+### `title-case-consistency` does not count acronyms as Title Case (#170)
+
+A word in capitals ("PR", "FCPs") is capitalised in either style, so it is no longer evidence of Title Case.
+"Opening a PR" and "Proposed FCPs" are left unjudged; "Using the API Client" is still Title Case.
+
 ### `sasete-itadaku` lets the number of uses its message allows pass (#170)
 
 The message says 「3 回あります（3 回まで）」: three uses are allowed. The rule nevertheless reported a document with

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { minorityCase, pageTitleOf } from "../packages/chaff/src/detectors/heading-case.ts";
+import { isTitleCase, minorityCase, pageTitleOf } from "../packages/chaff/src/detectors/heading-case.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 const RULES = loadRules("en");
@@ -117,6 +117,53 @@ describe("title-case-consistency と題名", () => {
   it("valid: 節が同数に割れて題名が無い・判定できないなら、少数派は無い", () => {
     assert.deepEqual(quotesFor(["## How the visits run\n\nText.", "## Expected Costs\n\nText."].join("\n\n")), []);
     assert.deepEqual(quotesFor(["# Osaka", "## How the visits run\n\nText.", "## Expected Costs\n\nText."].join("\n\n")), []);
+  });
+});
+
+describe("isTitleCase と略語", () => {
+  it("大文字だけの語（略語）は Title Case の証拠にしない。ほかに 1 語しか無ければ判定できない", () => {
+    assert.equal(isTitleCase("Proposed FCPs"), undefined);
+    assert.equal(isTitleCase("Opening a PR"), undefined);
+    assert.equal(isTitleCase("Active FCPs"), undefined);
+  });
+
+  it("略語を除いた語で判定する", () => {
+    assert.equal(isTitleCase("RFCs waiting to be merged"), false);
+    assert.equal(isTitleCase("Nominated RFCs, PRs and issues NOT discussed this meeting"), false);
+    assert.equal(isTitleCase("Using the API client"), false);
+    assert.equal(isTitleCase("Using the API Client"), true);
+    assert.equal(isTitleCase("Basic Mechanics"), true);
+  });
+});
+
+describe("title-case-consistency と略語", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("valid: 略語しか大文字の語が無い見出しは、sentence case の中で指摘しない（rust-lang minutes, 18F code review）", () => {
+    const source = [
+      "# T-lang meeting agenda",
+      "## Meeting roles\n\nText.",
+      "## Scheduled meetings\n\nText.",
+      "## Proposed FCPs\n\nText.",
+      "## Active FCPs\n\nText.",
+      "## Action item review\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+    const review = ["## Why reviews?\n\nText.", "## For code submitters\n\nText.", "## Who merges\n\nText.", "## Opening a PR\n\nText."].join("\n\n");
+    assert.deepEqual(quotesFor(review), []);
+  });
+
+  it("invalid: 略語のほかにも大文字の語があれば Title Case（18F one-on-ones）", () => {
+    const source = [
+      "## Basic Mechanics\n\nText.",
+      "## Taking notes\n\nText.",
+      "## Alternate strategies\n\nText.",
+      "## What to cover during the future part\n\nText.",
+      "## Using the API Client\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), ["Basic Mechanics", "Using the API Client"]);
   });
 });
 
