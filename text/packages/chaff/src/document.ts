@@ -1,8 +1,3 @@
-import { fromMarkdown } from "mdast-util-from-markdown";
-import { gfmTable } from "micromark-extension-gfm-table";
-import { gfmTableFromMarkdown } from "mdast-util-gfm-table";
-import { frontmatter } from "micromark-extension-frontmatter";
-import { frontmatterFromMarkdown } from "mdast-util-frontmatter";
 import { atxHeadingText, headingText } from "./heading-text.ts";
 import { hasTitle } from "./heading-title.ts";
 import { maskSpans } from "./mask.ts";
@@ -18,19 +13,12 @@ import { tokenizedLexicons } from "./lexicon-tokens.ts";
 import { plainSource } from "./plain-source.ts";
 import { inPageAnchors, isInPageNavigation, isNavigationList, type InPageAnchors } from "./in-page-nav.ts";
 import { eachPreOrder } from "./tree-walk.ts";
+import { alertReader } from "./template-syntax.ts";
+import { opaqueSpans, parse, readMarkdown, spansOfType } from "./markdown-read.ts";
+import { spanOf, type MarkdownNode as Node } from "./markdown-node.ts";
 import { emailParts, emailVocabulary } from "./email-parts.ts";
 import { cutTextSpans } from "./span-cut.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile, Token } from "./plugin.ts";
-
-type Place = { readonly offset?: number | undefined };
-type Node = {
-  readonly type: string;
-  readonly url?: string | undefined;
-  readonly value?: string | undefined;
-  readonly identifier?: string | undefined;
-  readonly position?: { readonly start: Place; readonly end: Place } | undefined;
-  readonly children?: readonly Node[] | undefined;
-};
 
 /**
  * 本文として数えないもの。
@@ -40,15 +28,6 @@ type Node = {
  * 引用文にそれはできない。直せないものを指摘しても、書いた人は動けない。
  */
 const NOT_PROSE = new Set(["code", "inlineCode", "html", "yaml", "toml", "table", "blockquote", "thematicBreak", "definition", "image", "imageReference"]);
-
-const spanOf = (node: Node): Span | undefined => {
-  const start = node.position?.start.offset;
-  const end = node.position?.end.offset;
-  return start === undefined || end === undefined ? undefined : { start, end };
-};
-
-const parse = (source: string): Node =>
-  fromMarkdown(source, { extensions: [gfmTable(), frontmatter(["yaml"])], mdastExtensions: [gfmTableFromMarkdown(), frontmatterFromMarkdown(["yaml"])] });
 
 /** link は `[text](url)` の外側だけを覆う。表示される文字は本文なので残す。 */
 const linkChrome = (node: Node): Span[] => {
@@ -88,7 +67,7 @@ const EMPHASIS = new Set(["strong", "emphasis", "delete"]);
  * `:::note` `:::` のようなディレクティブ。Zenn・Docusaurus・VitePress が使う記法で、
  * 標準の Markdown には無いため段落として解析される。囲みの指定であって文章ではない。
  */
-const DIRECTIVE = /^:::[^\n]*/gmu;
+const DIRECTIVE = /^[ \t]*:::[^\n]*/gmu;
 
 /**
  * `https://…` をそのまま書いた URL。GFM の autolink 拡張を入れていないので mdast では
@@ -102,11 +81,17 @@ const matchSpans = (source: string, pattern: RegExp): Span[] =>
 
 const directiveSpans = (source: string): Span[] => [...matchSpans(source, DIRECTIVE), ...matchSpans(source, BARE_URL)];
 
-const collectMasks = (root: Node, source: string, anchors: InPageAnchors): Span[] => {
-  const spans: Span[] = [...directiveSpans(source)];
+const collectMasks = (root: Node, source: string, anchors: InPageAnchors, syntax: readonly Span[]): Span[] => {
+  const spans: Span[] = [...directiveSpans(source), ...syntax];
+  const alertOf = alertReader(source);
   eachPreOrder(root, (node) => {
     if (node.type === "link" || node.type === "linkReference") {
       spans.push(...linkChrome(node));
+      return;
+    }
+    const alert = alertOf(node);
+    if (alert !== undefined) {
+      spans.push(...alert);
       return;
     }
     if (!NOT_PROSE.has(node.type) && node.type !== "heading" && !isInPageNavigation(node, anchors)) return;
@@ -136,8 +121,12 @@ const textOf = (node: Node, source: string): string => {
 
 export type Heading = { readonly depth: number; readonly text: string; readonly start: number; readonly end: number };
 
-/** 引用した返信（outside）の中の見出しは、ほかの人の文書の見出しなので数えない。 */
-const headingsOf = (root: Node, source: string, outside: readonly Span[] = []): Heading[] => {
+/**
+ * `neutral` is the source with the template syntax blanked: `## Usage {% if x %}` is headed "Usage". Whether a
+ * heading has a title is read from the source, since `## {{ product }}` names something.
+ * 引用した返信（outside）の中の見出しは、ほかの人の文書の見出しなので数えない。
+ */
+const headingsOf = (root: Node, source: string, neutral: string, outside: readonly Span[] = []): Heading[] => {
   const found: Heading[] = [];
   eachPreOrder(root, (node) => {
     if (node.type !== "heading") return;
@@ -146,8 +135,11 @@ const headingsOf = (root: Node, source: string, outside: readonly Span[] = []): 
     if (span === undefined || startsInside(span, outside)) return;
     // ATX（行頭が #）なら閉じの # も外す。setext の見出しの末尾の # は言葉なので残す。
     const read = source.startsWith("#", span.start) ? atxHeadingText : headingText;
-    const text = read(textOf(node, source));
-    if (hasTitle(text)) found.push({ depth, text, start: span.start, end: span.end });
+    const written = textOf(node, source);
+    const shown = textOf(node, neutral);
+    // A blanked tag leaves a run of spaces where the reader sees one gap.
+    const text = read(shown === written ? written : shown.replace(/ {2,}/gu, " "));
+    if (hasTitle(read(written))) found.push({ depth, text, start: span.start, end: span.end });
   });
   return found;
 };
@@ -172,16 +164,6 @@ const strongSpans = (root: Node, masked: readonly Span[]): Span[] => {
 };
 
 const within = (span: Span, from: number, to: number): boolean => span.start >= from && span.start < to;
-
-const spansOfType = (root: Node, type: string, keep: (node: Node) => boolean = () => true): Span[] => {
-  const found: Span[] = [];
-  eachPreOrder(root, (node) => {
-    if (node.type !== type || !keep(node)) return;
-    const span = spanOf(node);
-    if (span !== undefined) found.push(span);
-  });
-  return found;
-};
 
 /**
  * 文の分割は**段落ごと**に行う。
@@ -311,14 +293,22 @@ const proseOf = (source: string, masked: readonly Span[]): string => {
   return maskSpans(unlabelled, speakerLabels(unlabelled));
 };
 
+const teamLexicons = (adapter: LanguageAdapter, team: TeamRules): LanguageAdapter["lexicons"] => ({
+  ...adapter.lexicons,
+  "internal-jargon": team.jargon.map((pattern) => ({ pattern })),
+  // 使わない書き方を pattern に、使う書き方を instead_of に置く。語彙表の「同じことの別の書き方」と同じ向き。
+  "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => ({ pattern, instead_of: use })),
+});
+
 const documentOf = (path: string, source: string, adapter: LanguageAdapter, team: TeamRules, profile: DocumentProfile | undefined): ProseDocument => {
-  const root = parse(source);
+  const markdown = isMarkdownPath(path);
+  const { root, syntax } = markdown ? readMarkdown(source) : { root: parse(source), syntax: [] };
   const anchors = inPageAnchors(root);
   const emailLayout = emailParts(source, emailVocabulary(adapter.lexicons));
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
   // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
   // テキストの文書は、ページのヘッダーとフッターも本文ではない（Markdown には改ページが無い）。
-  const blocks = [...collectMasks(root, source, anchors), ...(isMarkdownPath(path) ? [] : pageFurniture(source)), ...emailLayout.furniture];
+  const blocks = [...collectMasks(root, source, anchors, syntax), ...(markdown ? [] : pageFurniture(source)), ...emailLayout.furniture];
   const prose = proseOf(source, [...blocks, ...emphasisSpans(root, source)]);
   // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。メールのヘッダーや署名の行は段落から切り取る。
   const paragraphSpans = cutTextSpans(
@@ -326,17 +316,12 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     emailLayout.furniture,
     source,
   );
-  const headings = headingsOf(root, source, emailLayout.replyQuotes);
+  const headings = headingsOf(root, source, maskSpans(source, syntax), emailLayout.replyQuotes);
   const listItems = spansOfType(root, "listItem");
   // Markdown は段落を流し込んで表示するので、段落の中の改行は読み手に見えない。テキストの文書は行をそのまま見せる（法令は 1 行 1 号）。
-  const softBreaks = isMarkdownPath(path) ? unmaskedSoftBreaks(source, prose) : [];
+  const softBreaks = markdown ? unmaskedSoftBreaks(source, prose) : [];
   const sentences = sentencesOf(prose, piecesOf(prose, paragraphSpans), adapter, softBreaks);
-  const lexicons = {
-    ...adapter.lexicons,
-    "internal-jargon": team.jargon.map((pattern) => ({ pattern })),
-    // 使わない書き方を pattern に、使う書き方を instead_of に置く。語彙表の「同じことの別の書き方」と同じ向き。
-    "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => ({ pattern, instead_of: use })),
-  };
+  const lexicons = teamLexicons(adapter, team);
   const tagged = sentences.some((sentence) => sentence.tokens !== undefined);
   const patterns = adapter.structure;
   // null は「作ったが構造を読めない言語だった」、undefined は「まだ作っていない」。
@@ -367,7 +352,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
                 source,
                 language: adapter.id,
                 // テキストの文書は、ページの飾りを覆って読む。フッターの「Section 9」を木の節にしない。
-                outline: isMarkdownPath(path) ? outlineOf(root, source, emailLayout.replyQuotes) : textOutline(source, emailLayout.replyQuotes),
+                outline: markdown ? outlineOf(root, source, syntax, emailLayout.replyQuotes) : textOutline(source, emailLayout.replyQuotes),
                 markdown: isMarkdownPath(path),
                 profile,
               },
@@ -393,15 +378,14 @@ export const buildDocument = (
   profile: DocumentProfile | undefined = undefined,
 ): ProseDocument => documentOf(path, plainSource(text), adapter, team, profile);
 
-/** 番号を探してはいけない範囲。コードの中の「第3条」は条ではなく、参照でもない。 */
-const OPAQUE = ["code", "inlineCode", "html", "yaml", "toml"];
-
 /** 引用した返信も中を読まない。ほかの人の言葉の中の定義や番号は、この文書のものではない。 */
-const outlineOf = (root: Node, source: string, replyQuotes: readonly Span[]): Outline => ({
-  headings: headingsOf(root, source, replyQuotes),
-  opaque: [...OPAQUE.flatMap((type) => spansOfType(root, type)), ...replyQuotes],
+const outlineOf = (root: Node, source: string, syntax: readonly Span[], replyQuotes: readonly Span[]): Outline => ({
+  headings: headingsOf(root, source, maskSpans(source, syntax), replyQuotes),
+  opaque: [...opaqueSpans(root), ...syntax, ...replyQuotes],
 });
 
 /** 構造を読むための Markdown の手がかり。見出しと、中を読まない範囲。返信の引用は、言語パッケージの語彙表で見分ける。 */
-export const markdownOutline = (source: string, lexicons: LanguageAdapter["lexicons"] = {}): Outline =>
-  outlineOf(parse(source), source, emailParts(source, emailVocabulary(lexicons)).replyQuotes);
+export const markdownOutline = (source: string, lexicons: LanguageAdapter["lexicons"] = {}): Outline => {
+  const { root, syntax } = readMarkdown(source);
+  return outlineOf(root, source, syntax, emailParts(source, emailVocabulary(lexicons)).replyQuotes);
+};
