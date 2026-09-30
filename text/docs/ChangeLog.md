@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `doubled-word`: "at site A the connection" is a name, not a doubled article (#170)
+
+A single capital letter in the middle of a sentence names something ("at site A the connection", "Peer A our copy"),
+since an article is not capitalised there, so it is not an article doubled with the next one. "A the" at the start of a
+sentence, "A a", and a capitalised word of two letters or more ("review An the draft") are still reported. RFC 9293
+loses its "A the".
+
 ### Plain text: a figure drawn with lines is not prose (#170)
 
 RFC 9293's state diagrams and message sequences were read as prose: "CLOSED CLOSED" and "LISTEN LISTEN" were doubled

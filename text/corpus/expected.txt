@@ -162,7 +162,7 @@ python-code-quality-list-2016-03  adverb-overuse 1, agentless-passive 13, max-se
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-sentence-length 1, oxford-comma-consistency 1
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 79, proper-noun-density 1, undefined-acronym 22
-rfc9293-tcp  dangling-reference 2, doubled-word 1, duplicate-definition 1, empty-intensifier 1, excessive-hedging 3, max-paragraph-length 14, max-sentence-length 262, ngram-repetition 1, proper-noun-density 1, undefined-acronym 38
+rfc9293-tcp  dangling-reference 2, duplicate-definition 1, empty-intensifier 1, excessive-hedging 3, max-paragraph-length 14, max-sentence-length 262, ngram-repetition 1, proper-noun-density 1, undefined-acronym 38
 rfc9457  max-sentence-length 54, proper-noun-density 1, undefined-acronym 15
 rouki.txt  clean
 rust-lang-minutes-2022-11-22  agentless-passive 3, agreement-slip 1, contraction-consistency 2, max-sentence-length 3, undefined-acronym 3
