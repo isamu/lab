@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `title-case-consistency`: a curly apostrophe inside a word is part of the word (#170)
+
+The heading reader took `'` inside a word but not `’`, so "Monetary Policy and the Fed’s Framework Review" read as
+the word "Fed" followed by a lowercase word "s", and the Title Case heading was counted as sentence case. The heading is
+now read with the same apostrophe fold as `contraction-consistency` and the English tagger: `’` between a letter or
+digit and a letter, and every `ʼ`, reads as `'`. A closing quote (`‘Board’ Reviews`) is still outside the word.
+
 ### Corpus: footnote numbers, run-in section titles and Gutenberg's older closing line (#170)
 
 The corpus's HTML converter dropped a footnote mark written as `<sup><a>1</a></sup>` but kept one written as

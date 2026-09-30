@@ -68,7 +68,7 @@ entaku-rb-5  no-mixed-desumasu 1
 env-nikko-national-park-story  max-kanji-continuous 2, proper-noun-density 1, section-length-uniformity 1, taigen-dome-in-prose 1
 etax-oshirase-mail-templates  agentless-passive 7, concrete-evidence-density 57, latin-spacing 9, max-kanji-continuous 11, max-paragraph-length 1, max-sentence-length 51, ngram-repetition 1, no-doubled-joshi 21
 fac-adr-0016-file-uploads  max-sentence-length 3, proper-noun-density 1, undefined-acronym 5
-fed-powell-2025-08-22-framework-review  adverb-overuse 1, expletive-construction 5, max-paragraph-length 6, max-sentence-length 65, oxford-comma-consistency 2, title-case-consistency 1, undefined-acronym 3
+fed-powell-2025-08-22-framework-review  adverb-overuse 1, expletive-construction 5, max-paragraph-length 6, max-sentence-length 65, oxford-comma-consistency 2, undefined-acronym 3
 fomc-minutes-2025-07  agentless-passive 34, max-paragraph-length 12, max-sentence-length 160, ngram-repetition 1, proper-noun-density 1, undefined-acronym 4
 fprime-buffermanager-sdd  contraction-consistency 2, proper-noun-density 1
 fr-2026-16371-nvd-rfi  agentless-passive 17, concrete-evidence-density 7, max-sentence-length 22, proper-noun-density 1, undefined-acronym 4
