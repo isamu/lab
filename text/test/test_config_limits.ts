@@ -11,7 +11,7 @@ import { runRules, type Settings } from "../packages/chaff/src/run.ts";
 import { rulesJson } from "../packages/chaff/src/render/rules-json.ts";
 import { evaluate } from "../packages/chaff/src/eval.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { main } from "../packages/chaff/src/cli.ts";
+import { runCli, type CliRun } from "./cli-run.ts";
 
 // 段階の 4 語では足りないときに、rule の上限を数値で書ける。書いたのに効いていない設定は黙って捨てない。
 
@@ -112,29 +112,7 @@ describe("rules --json shows the limit in effect", () => {
 
 describe("through the CLI", () => {
   const LONG_SENTENCE = `${"設定の手順は画面の右上にあるボタンを押してから開く一覧の中で目的の項目を選び、".repeat(5)}保存します。`;
-  const lintIn = async (yaml: string): Promise<{ code: number; out: string; err: string }> => {
-    const dir = mkdtempSync(join(tmpdir(), "chaff-cli-"));
-    writeFileSync(join(dir, "chaff.yaml"), yaml);
-    writeFileSync(join(dir, "a.md"), `# 手順\n\n${LONG_SENTENCE}\n`);
-    const out: string[] = [];
-    const err: string[] = [];
-    const saved = { log: console.log, error: console.error, cwd: process.cwd() };
-    console.log = (...args: unknown[]) => {
-      out.push(args.join(" "));
-    };
-    console.error = (...args: unknown[]) => {
-      err.push(args.join(" "));
-    };
-    process.chdir(dir);
-    try {
-      const code = await main(["a.md", "--compact"]);
-      return { code, out: out.join("\n"), err: err.join("\n") };
-    } finally {
-      process.chdir(saved.cwd);
-      console.log = saved.log;
-      console.error = saved.error;
-    }
-  };
+  const lintIn = async (yaml: string): Promise<CliRun> => runCli({ "chaff.yaml": yaml, "a.md": `# 手順\n\n${LONG_SENTENCE}\n` }, ["a.md", "--compact"]);
 
   it("passes the numeric limit to the run", async () => {
     const loose = await lintIn("genre: technical/readme\nlanguage: ja\nrules:\n  max-sentence-length: 250\n");
