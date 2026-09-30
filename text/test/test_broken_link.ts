@@ -63,6 +63,12 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf("Text [x](#missing) here.\n", en).length, 1);
   });
 
+  it("書き手が付けた id は書いたとおりに比べる（見出しと違い、記号を畳まない）", () => {
+    assert.deepEqual(findingsOf('<a id="foo-bar"></a>\n\n[ok](#foo-bar) [broken](#foobar)\n', en), [
+      'The link "[broken](#foobar)" points to "#foobar", which is not a heading on this page',
+    ]);
+  });
+
   it("data-id は名前ではない", () => {
     assert.deepEqual(findingsOf('<div data-id="faq"></div>\n\n[FAQ](#faq)\n', en).length, 1);
   });

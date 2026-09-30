@@ -3,6 +3,8 @@ import { headingText } from "./heading-text.ts";
 import { eachPreOrder } from "./tree-walk.ts";
 import { alertReader } from "./template-syntax.ts";
 import { cutSpans } from "./span-cut.ts";
+import { mergeSpans } from "./span-merge.ts";
+import { firstEndingAfter } from "./soft-break.ts";
 import type { Markup, MarkupHeading, MarkupImage, MarkupLink, Span } from "./plugin.ts";
 
 /** mdast の節のうち、ここで読む値。MarkdownNode の型には無いものを、型を見て取り出す。 */
@@ -150,7 +152,11 @@ const readNode = (node: MarkdownNode, span: Span, source: string, walk: Walk, in
   else if (node.type === "text" && !inLink) walk.texts.push(span);
 };
 
-const startsInside = (span: Span, regions: readonly Span[]): boolean => regions.some((region) => span.start >= region.start && span.start < region.end);
+/** sorted（昇順・重ならない）のどれかの中で始まるか。記法の範囲が何千あっても、節ごとに全部をなめない。 */
+const startsInside = (span: Span, sorted: readonly Span[]): boolean => {
+  const region = sorted[firstEndingAfter(sorted, span.start)];
+  return region !== undefined && region.start <= span.start;
+};
 
 type Pending = { readonly node: MarkdownNode; readonly inLink: boolean };
 
@@ -162,13 +168,14 @@ type Pending = { readonly node: MarkdownNode; readonly inLink: boolean };
 export const markdownMarkup = (root: MarkdownNode, source: string, outside: readonly Span[] = []): Markup => {
   const walk: Walk = { headings: [], images: [], links: [], ids: new Set(), texts: [], definitions: new Map(), referenced: new Set() };
   const alertOf = alertReader(source);
+  const skipped = mergeSpans(outside, false);
   const pending: Pending[] = [{ node: root, inLink: false }];
   while (pending.length > 0) {
     const next = pending.pop();
     if (next === undefined) break;
     const { node, inLink } = next;
     const span = spanOf(node);
-    if (span !== undefined && startsInside(span, outside)) continue;
+    if (span !== undefined && startsInside(span, skipped)) continue;
     if (node.type === "blockquote" && alertOf(node) === undefined) continue;
     if (span !== undefined) readNode(node, span, source, walk, inLink);
     const childInLink = inLink || LINKS.has(node.type);
@@ -177,7 +184,7 @@ export const markdownMarkup = (root: MarkdownNode, source: string, outside: read
   const { definitions, referenced, ...found } = walk;
   const used = [...definitions].filter(([name]) => referenced.has(name)).map(([, link]) => link);
   // 字の節の途中から始まる記法（`{{ … }}`）も、字のまま見える範囲から切り取る。
-  const texts = cutSpans(found.texts, outside);
+  const texts = cutSpans(found.texts, skipped);
   return { markdown: true, ...found, texts, links: [...found.links, ...used].toSorted((left, right) => left.start - right.start) };
 };
 
