@@ -228,5 +228,6 @@ If you keep silencing the same rule, it is time to change the rule instead.
 
 ## What to read next
 
+- What chaff does for internal rules or a business report, with real examples, is in [What chaff does for each kind of document](./documents).
 - To fit rule strength and genre to your team, read [Configuration](./configuration).
 - Every command and option is listed in [Commands](./commands).
