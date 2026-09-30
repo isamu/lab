@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### A run of digits, words or parentheses as long as the text no longer crashes chaff (#170)
+
+A number tens of thousands of digits long, a town name split into thousands of one-character pieces, a superlative
+followed by thousands of nouns, or parentheses nested thousands deep in a statute stopped chaff with "Maximum call
+stack size exceeded". The functions that read along such a run now keep a cursor, and nested parentheses are removed in
+one reading instead of once per level. The output of every other document is unchanged.
+
+`chaff tree --format json` on a tree too deep to write as indented JSON (only a third-party language package nests
+that deep) now says so and names the depth instead of crashing; `--format sexp` may still write it.
+
 ### Documents that mix Japanese and English (#170)
 
 A Japanese paper with an English abstract was read as if the abstract were one long Japanese sentence, because a
