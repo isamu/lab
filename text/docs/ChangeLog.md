@@ -4,6 +4,25 @@ Newest first.
 
 ## Unreleased
 
+### `excessive-hedging` reports hedges stacked in one sentence (#290)
+
+The rule measured only hedges per 1000 characters and skipped documents under 500 characters, so a short report
+with 「〜という状況であると考えられます」 got nothing, and on the corpus it had never fired. It now also reports a
+sentence that stacks two or more hedging devices in one clause (「〜という状況であると考えられます」「〜かもしれないと思われます」
+「〜かと思われる可能性があります」, "may possibly", "it could perhaps be argued"), on a document of any length. At least one device
+must be a hedge; the others may be words that soften without hedging on their own, from the new lexicons `hedge-frame`
+(「という状況だ」「かと」, may, might, could). Hedges that say where a claim holds rather than how sure the writer is
+(`hedge-scope`: 「場合がある」, "in some cases") never stack. Punctuation and a conjunction such as "and" end a clause, and a
+hedge in a quotation is the speaker's. A sentence reported this way is not reported again by the density check. The
+Japanese hedges are matched by their base form, so 「と思われる」 also finds 「と思われます」 and 「と思われた」; English gains
+"perhaps", "possibly", "presumably", "conceivably", "apparently" and "seemingly". A rule can now give a message per way
+of finding (`messages`, chosen by a finding's `variant`), and the rule reference shows both.
+
+`excessive-hedging` stays experimental. On the corpus the stacked check fires seven times, and each finding was read and
+judged right; on `examples/` it fires never. Seven findings, one of them Japanese, are too few to show a false-positive
+rate under 5%, and promoting the rule would also turn on its density check, which still has not fired on a real
+document. Pass `--experimental` to run it.
+
 ### `latin-spacing` leaves dates and clock times out of the count (#290)
 
 「9月」「8月」 were counted as digits packed against the next Japanese character, so a report that spaced its counts

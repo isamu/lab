@@ -14,8 +14,8 @@ name:
   en: Too much hedging
 
 why:
-  ja: 断言を避けるほど、読み手は何が決まったのか分からなくなります。1 つなら慎重さですが、重なると誰も責任を取らない文書になります。chaff は 2 つの見方で探します。1 つの文に逃げを重ねたもの（「〜という状況であると考えられます」「〜かもしれないと思われます」）は、短い文書でも 1 文で指摘します。文書全体で逃げの表現が多すぎるものは、短い文書では測りません。鉤括弧や引用符で引いた発言の中の逃げは、話した人のものなので数えません。
-  en: The more the text avoids claiming, the less the reader can tell what was decided. One hedge is caution; many mean nobody is accountable. chaff looks two ways. A sentence that stacks hedges ("may possibly", "it could perhaps be argued") is reported on its own, even in a short document. Too many hedges across the whole document is measured only on longer documents. A hedge inside a quotation is the speaker's, not the writer's, and is not counted.
+  ja: 断言を避けるほど、読み手は何が決まったのか分からなくなります。1 つなら慎重さですが、重なると誰も責任を取らない文書になります。chaff は 2 つの見方で探します。1 つの文に逃げを重ねたもの（「〜という状況であると考えられます」「〜かもしれないと思われます」）は、短い文書でも 1 文で指摘します。文書全体で逃げの表現が多すぎるものは、短い文書では測りません。重なりを数えるとき、鉤括弧や引用符で引いた発言の中の逃げは、話した人のものなので数えません。
+  en: The more the text avoids claiming, the less the reader can tell what was decided. One hedge is caution; many mean nobody is accountable. chaff looks two ways. A sentence that stacks hedges ("may possibly", "it could perhaps be argued") is reported on its own, even in a short document. Too many hedges across the whole document is measured only on longer documents. When counting hedges stacked in a sentence, a hedge inside a quotation is the speaker's, not the writer's, and is left out.
 
 message:
   ja: 「{matched}」など、逃げの表現が 1000 語あたり {density} 個あります（{limit} 個まで）
