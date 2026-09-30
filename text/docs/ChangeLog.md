@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym`: a figure neither uses nor explains an acronym (#170)
+
+Since plain-text figures are masked, RFC 9293 reports LISTEN. That is the intended behaviour, now pinned by tests. An
+acronym that appears only in a figure is not reported, and one that a figure shows before the prose uses it is
+reported at its first use in prose unless the prose expands it. LISTEN had been silent only because a cell of the
+message-sequence figure, "LISTEN (??)", read as LISTEN with its expansion in brackets. The prose that describes LISTEN
+("LISTEN - represents waiting for a connection request …") says what the state means but does not expand it. Its
+siblings SYN-SENT and LAST-ACK, described in the same list, were already reported.
+
 ### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
 
 Several checks read a whole run, sentence or line again for each character, finding or reference in it, so their
