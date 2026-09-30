@@ -8,7 +8,7 @@
 18f-handbook-travel-faq  max-paragraph-length 1, max-sentence-length 65, undefined-acronym 16
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2
-aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 79
+aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 77
 aozora-kishida-kamifusen  clean
 aozora-soseki-yume-juya  clean
 aozora-takuboku-ichiaku-no-suna  clean
@@ -80,10 +80,10 @@ gitlab-jd-instructional-designer  agentless-passive 10, concrete-evidence-densit
 gitlab-meetings  agentless-passive 54, max-paragraph-length 2, max-sentence-length 41, title-case-consistency 1, undefined-acronym 10
 gitlab-values  agentless-passive 83, bold-density 1, concrete-evidence-density 27, expletive-construction 12, heading-echo 9, max-paragraph-length 23, max-sentence-length 137, undefined-acronym 10, unqualified-superlative 10
 govuk-adr-0014-replace-terraform-cloud  max-sentence-length 1, proper-noun-density 1, undefined-acronym 3
-govuk-cddo-roadmap-2022-2025  agentless-passive 22, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 88, ngram-repetition 1, proper-noun-density 1, undefined-acronym 11
+govuk-cddo-roadmap-2022-2025  agentless-passive 22, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 88, ngram-repetition 1, proper-noun-density 1, undefined-acronym 10
 govuk-guidance-academy-senior-pay  agentless-passive 37, concrete-evidence-density 16, contraction-consistency 1, max-sentence-length 21, ngram-repetition 1, oxford-comma-consistency 1, unqualified-superlative 3
 govuk-incident-safe-browsing  agentless-passive 16, concrete-evidence-density 4, max-sentence-length 10, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
-govuk-style-guide-a-to-z  agentless-passive 50, concrete-evidence-density 5, dangling-reference 1, expletive-construction 6, heading-echo 20, max-sentence-length 23, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 39
+govuk-style-guide-a-to-z  agentless-passive 50, concrete-evidence-density 5, dangling-reference 1, expletive-construction 6, heading-echo 20, max-sentence-length 23, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 36
 gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1
 gsi-maps-smartphone-howto  clean
 gutenberg-civil-disobedience  clean

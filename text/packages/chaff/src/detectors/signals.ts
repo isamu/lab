@@ -290,7 +290,10 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const common = new Set([...(options.lexicon ?? []).map((entry) => entry.pattern), ...patternsOf(doc, "http-method"), ...(doc.names ?? [])]);
   const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
   const entries = termEntryAcronyms(doc.source);
-  const explainedAlone = (word: string): boolean => common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt);
+  // 見出しは文にならない。見出しの中の展開（Maximum Envelope of Water (MEOW) runs）も、本文と同じ形で読む。
+  const headings = doc.sections.map((section) => section.heading).filter((heading) => heading !== "");
+  const explainedAlone = (word: string): boolean =>
+    common.has(word) || entries.has(word) || [body, ...headings].some((text) => isExpanded(text, word, expandedAt));
   const hits = acronymsOf(doc, notationOf(doc));
   const unexplained = new Set([...firstHits(hits).keys()].filter((acronym) => !isExplained(acronym, explainedAlone)));
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
