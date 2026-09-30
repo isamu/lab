@@ -1,12 +1,10 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { firedRules } from "./rule-run.ts";
 import { readCounterTsu, type Morpheme } from "../packages/lang-ja/src/counter-tsu.ts";
 import { readsAsCounter } from "../packages/lang-ja/src/pos.ts";
 import { countedAfter, countedByTable, quantities } from "../packages/lang-ja/src/quantities.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { buildStructure } from "../packages/chaff/src/structure/of.ts";
 import type { StructureNode } from "../packages/chaff/src/plugin.ts";
 
@@ -109,10 +107,7 @@ const tokensOf = (text: string): string[] =>
 const CARD = JSON.stringify({ NumType: "Card" });
 const CLASS = JSON.stringify({ NounType: "Class" });
 
-const RULES = loadRules("ja");
-
-const idsFor = (source: string): string[] =>
-  runRules(buildDocument("t.md", source, ja), RULES, {}, true, "business/report").findings.map((finding) => finding.rule);
+const idsFor = (source: string): string[] => firedRules(ja, source);
 
 describe("数と「つ」を解析器で読む", () => {
   before(async () => {

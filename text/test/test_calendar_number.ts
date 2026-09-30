@@ -1,9 +1,8 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { latinSpacing } from "./rule-run.ts";
 import { calendarRuns, type CalendarUnits } from "../packages/chaff/src/calendar-number.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
 // 日付・時刻の数（9月、2026年、10時5分）は詰めて書く決まりで、空け方の好みではない。latin-spacing の票に入れない。
@@ -71,12 +70,7 @@ describe("latin-spacing leaves dates out", () => {
     await ja.prepare?.({ pos: true });
   });
 
-  const spacing = (source: string): string[] => {
-    const doc = buildDocument("a.md", source, ja);
-    return runRules(doc, loadRules("ja"), { "latin-spacing": "normal" }, false, "business/report")
-      .findings.filter((finding) => finding.rule === "latin-spacing")
-      .map((finding) => `${String(finding.values["kind"])}:${String(finding.values["style"])}`);
-  };
+  const spacing = (source: string): string[] => latinSpacing(ja, source, "business/report");
 
   // isamu/lab#290 の報告に書き手が添えた文書。
   const REPORT = [

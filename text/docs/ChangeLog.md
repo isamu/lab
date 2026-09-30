@@ -24,6 +24,15 @@ the table reading now converts, and kinds it did not have: a 厚生労働省 期
 Japanese one), a VOA Learning English news story, a NASA Knows page for grades K-4, Login.gov help, a CFPB consumer
 warning and Lincoln's letters to Horace Greeley (Wikisource). A さいたま市 recipe and a DailyMed drug label are kept as
 URLs only.
+### `contraction-consistency` counts `don’t` as a contraction (#170)
+
+The rule compared the text as written, so a contraction with a curly apostrophe (`don’t`, `it’s`) counted as neither
+form. A document written in curly contractions with a few long forms was not reported, and one with mostly curly
+contractions and a single straight one reported the straight one as the odd form out. The rule now reads `’` and `ʼ`
+the way the English tagger does (a `’` between a letter or digit and a letter, and every `ʼ`), so `don’t` and `don't`
+are the same contraction. The message names the lexicon's form (`don't`). The apostrophe's shape itself is not
+reported: which shape to use is a typographic choice, not a register one, and mixed shapes are common in published
+text, statutes included.
 
 ## 0.16.0 — 2026-09-30
 

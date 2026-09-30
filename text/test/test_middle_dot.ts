@@ -1,8 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
+import { firedRules } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { parallelDotCount } from "../packages/chaff/src/detectors/middle-dot.ts";
 
@@ -50,9 +48,7 @@ describe("no-nakaguro-parallel", () => {
     await ja.prepare?.({ pos: true });
   });
 
-  const RULES = loadRules("ja");
-  const idsFor = (source: string): string[] =>
-    runRules(buildDocument("t.md", source, ja), RULES, {}, true, "business/report").findings.map((finding) => finding.rule);
+  const idsFor = (source: string): string[] => firedRules(ja, source);
 
   const bulletList = lines(
     "次の点に留意すること。",

@@ -1,9 +1,7 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { latinSpacing } from "./rule-run.ts";
 import { digitRunAround, isNumberName, placeChainBefore, sequenceLabelStarts } from "../packages/chaff/src/number-name.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
@@ -252,12 +250,7 @@ describe("latin-spacing with parts of speech", () => {
     await ja.prepare?.({ pos: true });
   });
 
-  const spacing = (source: string): string[] => {
-    const doc = buildDocument("a.md", source, ja);
-    return runRules(doc, loadRules("ja"), { "latin-spacing": "normal" }, false, "technical/readme")
-      .findings.filter((finding) => finding.rule === "latin-spacing")
-      .map((finding) => `${String(finding.values["kind"])}:${String(finding.values["style"])}`);
-  };
+  const spacing = (source: string): string[] => latinSpacing(ja, source, "technical/readme");
 
   it("does not count a section number quoted before its title", () => {
     assert.deepEqual(spacing("# 意見\n\n- 「1.2 背景と課題」を読み、3回確認した。\n- 「2.4 同意の要件」は5件直す。\n- 以下3点を直す。\n"), []);

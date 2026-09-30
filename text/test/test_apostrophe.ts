@@ -4,8 +4,21 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { straightApostrophes } from "../packages/lang-en/src/apostrophe.ts";
+import { straightApostrophes as coreStraightApostrophes } from "../packages/chaff/src/orthography.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { prepare, tokenize } from "../packages/lang-en/src/pos.ts";
+
+const PARITY_SAMPLES = 5000;
+const PARITY_LENGTH = 12;
+
+/** 決まった種から同じ並びを出す乱数。落ちたときに同じ入力で再現できる。 */
+const randomFrom = (seed: number): (() => number) => {
+  const state = { value: seed };
+  return () => {
+    state.value = (state.value * 1103515245 + 12345) % 2147483648;
+    return state.value / 2147483648;
+  };
+};
 
 describe("straightApostrophes: 字に挟まれた ’ を ' に置き換える", () => {
   const cases: readonly (readonly [string, string, string])[] = [
@@ -28,12 +41,28 @@ describe("straightApostrophes: 字に挟まれた ’ を ' に置き換える",
     ["ラテン文字以外の字にも挟まれれば置き換える", "café’s", "café's"],
     ["サロゲートの字", "𝐀’s", "𝐀's"],
   ];
-  cases.forEach(([label, input, expected]) => {
-    it(label, () => {
-      const result = straightApostrophes(input);
-      assert.equal(result, expected);
-      assert.equal(result.length, input.length);
+  const implementations = [
+    ["英語アダプタ", straightApostrophes],
+    ["chaff", coreStraightApostrophes],
+  ] as const;
+  implementations.forEach(([owner, fold]) => {
+    cases.forEach(([label, input, expected]) => {
+      it(`${owner}: ${label}`, () => {
+        const result = fold(input);
+        assert.equal(result, expected);
+        assert.equal(result.length, input.length);
+      });
     });
+  });
+
+  it("chaff と英語アダプタは同じ字を置き換える（生成した文字列で比べる）", () => {
+    // 語彙表の語（chaff）と解析器の語（アダプタ）が別の決めかたをすると、同じ本文が片方でだけ短縮形になる。
+    const alphabet = ["a", "Z", "é", "𝐀", "1", " ", ".", "’", "‘", "ʼ", "'", "\n"];
+    const seed = 170;
+    const random = randomFrom(seed);
+    Array.from({ length: PARITY_SAMPLES }, () =>
+      Array.from({ length: 1 + Math.floor(random() * PARITY_LENGTH) }, () => alphabet[Math.floor(random() * alphabet.length)]).join(""),
+    ).forEach((input) => assert.equal(coreStraightApostrophes(input), straightApostrophes(input), `seed ${String(seed)}: ${JSON.stringify(input)}`));
   });
 });
 
