@@ -430,10 +430,11 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
       '<p><a name="t1">用語</a>の説明。</p><p><a href="/x" tabindex="-1">外へ</a>行く。</p>' +
       '<p><a id="term" tabindex="-1">サービス</a>とは、本サービスをいう。</p><p>次の <a id="d" tabindex="-1">定義</a></p>' +
       "<p>x > <a id=v tabindex=-1>value</a></p><p><a id=w tabindex=-1>word</a> < y</p>" +
-      "<p><a id=m tabindex=-1>Important</a><strong>:</strong> read first.</p>";
+      "<p><a id=m tabindex=-1>Important</a><strong>:</strong> read first.</p>" +
+      '<p><a href="/x" tabindex="-1">Linked alone</a></p><p><a name="s2">Named alone</a></p><p>End.</p>';
     assert.equal(
       htmlToMarkdown(html),
-      "# 日光の物語\n\n山と湖。\n\n用語の説明。\n\n外へ行く。\n\nサービスとは、本サービスをいう。\n\n次の 定義\n\nx > value\n\nword < y\n\nImportant: read first.\n",
+      "# 日光の物語\n\n山と湖。\n\n用語の説明。\n\n外へ行く。\n\nサービスとは、本サービスをいう。\n\n次の 定義\n\nx > value\n\nword < y\n\nImportant: read first.\n\nLinked alone\n\nNamed alone\n\nEnd.\n",
     );
   });
 
