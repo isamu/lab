@@ -1,0 +1,8 @@
+# The header fields whose value the writer types: a subject, and the people a memo is addressed to. Their value is
+# checked as a line of its own; the other fields of a header (addresses, dates, message ids) are not prose.
+id: email-written-field
+language: en
+entries:
+  - pattern: Subject
+  - pattern: To
+  - pattern: Cc

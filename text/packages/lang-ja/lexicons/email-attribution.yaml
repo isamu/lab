@@ -1,0 +1,10 @@
+# 引用した返信の上に、メールの画面が置く行の終わり（「山田太郎 さんは書きました:」）。これとコロンで終わる短い段落の後の「> 」の行は、ほかの人の言葉。
+# 英語の画面の書き方も出るので、英語の語も入れる。
+id: email-attribution
+language: ja
+entries:
+  - pattern: 書きました
+  - pattern: のメール
+  - pattern: のメッセージ
+  - pattern: wrote
+  - pattern: writes

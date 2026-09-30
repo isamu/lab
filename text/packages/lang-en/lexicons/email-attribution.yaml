@@ -1,0 +1,7 @@
+# How an email client ends the line it puts above a quoted reply ("On Mon, Oct 5, 2026, Ann Lee <ann@example.com> wrote:").
+# A short paragraph ending in one of these and a colon, followed by "> " lines, is someone else's words.
+id: email-attribution
+language: en
+entries:
+  - pattern: wrote
+  - pattern: writes

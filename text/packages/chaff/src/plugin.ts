@@ -331,6 +331,8 @@ export type ProseDocument = {
   readonly profile?: DocumentProfile | undefined;
   /** 本文でないもの（コード・HTML・強調の印）を同じ長さの空白で覆った source。位置は source と同じ。 */
   readonly prose?: string | undefined;
+  /** メールの引用した返信（前置きの行と「> 」の行）。ほかの人の言葉なので、見出しにも木にも入れない。 */
+  readonly replyQuotes?: readonly Span[] | undefined;
 };
 
 export type Severity = "error" | "warning" | "info";
