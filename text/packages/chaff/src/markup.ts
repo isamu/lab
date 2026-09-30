@@ -88,15 +88,29 @@ const CHARACTER_REFERENCE = /&(?:#(\d+)|#x([\da-f]+)|([a-z]+));/giu;
 
 const HEX = 16;
 
+/** Unicode の字の番号の上限。 */
+const LAST_CODE_POINT = 0x10ffff;
+
+/** 番号の字。字の番号でなければ（&#999999999;）undefined で、参照は書いたまま残す。 */
+const characterOf = (codePoint: number): string | undefined =>
+  Number.isSafeInteger(codePoint) && codePoint > 0 && codePoint <= LAST_CODE_POINT ? String.fromCodePoint(codePoint) : undefined;
+
 /** 属性の値の文字参照（&amp;、&#38;、&#x26;）を字に戻す。ブラウザが名前として読むのは戻した字。 */
 export const decodedAttribute = (value: string): string =>
   value.replace(CHARACTER_REFERENCE, (whole: string, decimal?: string, hex?: string, name?: string) => {
-    if (decimal !== undefined) return String.fromCodePoint(Number(decimal));
-    if (hex !== undefined) return String.fromCodePoint(Number.parseInt(hex, HEX));
+    if (decimal !== undefined) return characterOf(Number(decimal)) ?? whole;
+    if (hex !== undefined) return characterOf(Number.parseInt(hex, HEX)) ?? whole;
     return NAMED_REFERENCES[(name ?? "").toLowerCase()] ?? whole;
   });
 
-const readHtml = (value: string, span: Span, walk: Walk): void => {
+/** HTML のコメント。中の要素は表示されない。 */
+const HTML_COMMENT = /<!--[\s\S]*?-->/gu;
+
+/** コメントを同じ長さの空白にする。位置は変えない。 */
+const withoutComments = (html: string): string => html.replace(HTML_COMMENT, (comment) => " ".repeat(comment.length));
+
+const readHtml = (written: string, span: Span, walk: Walk): void => {
+  const value = withoutComments(written);
   [...value.matchAll(HTML_ID)].forEach((match) => walk.ids.add(decodedAttribute(match[1] ?? match[2] ?? match[3] ?? "")));
   [...value.matchAll(IMG_TAG)].forEach((match) => {
     const alt = ALT_ATTRIBUTE.exec(match[0]);

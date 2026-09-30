@@ -34,6 +34,12 @@ describe("doc.markup", () => {
     );
   });
 
+  it("HTML のコメントの中の id と img は表示されないので読まない", () => {
+    const markup = markupOf('<!-- <a id="hidden"></a> <img src="x.png"> -->\n\n<a id="shown"></a>\n');
+    assert.deepEqual([...markup.ids], ["shown"]);
+    assert.deepEqual(markup.images, []);
+  });
+
   it("リンクの行き先と、参照の定義の行き先", () => {
     const markup = markupOf("[a](https://x.jp) [b]() [c][Ref]\n\n[Ref]: #top\n");
     assert.deepEqual(
@@ -81,6 +87,7 @@ describe("decodedAttribute", () => {
   it("数と名前の文字参照を字に戻し、知らない名前はそのまま", () => {
     assert.equal(decodedAttribute("a&amp;b&#38;c&#x26;d&LT;"), "a&b&c&d<");
     assert.equal(decodedAttribute("&nbsp;x"), "&nbsp;x");
+    assert.equal(decodedAttribute("&#999999999999999999999;&#0;&#x110000;"), "&#999999999999999999999;&#0;&#x110000;");
   });
 });
 
