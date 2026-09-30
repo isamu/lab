@@ -7,7 +7,7 @@ import { labelStops, unmarkLabelStops } from "../packages/lang-en/src/label-stop
 // sentence-splitter ended one there, so "FIG." stood alone and its number opened the next sentence. US 4,683,202 and
 // US 6,285,999 (public domain); the other sentences are self-written.
 
-const LABELS = labelStops((en.lexicons["number-label"] ?? []).map((entry) => entry.pattern));
+const LABELS = labelStops((en.lexicons["abbreviated-label"] ?? []).map((entry) => entry.pattern));
 const sentencesOf = (text: string): string[] => en.segment(text).sentences.map((sentence) => sentence.text);
 
 describe("unmarkLabelStops", () => {

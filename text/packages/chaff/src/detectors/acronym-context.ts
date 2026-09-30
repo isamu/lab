@@ -25,7 +25,7 @@ export type NotationWords = {
   /** 番号を後ろに書く、文書の区切りの名前（Part、Section、Title）。 */
   readonly divisions: readonly string[];
   /** 番号を後ろに書く、点の付いた略した名前（Vol.、No.、FIG.）。 */
-  readonly numberLabels: readonly string[];
+  readonly abbreviatedLabels: readonly string[];
   /** 速記録が大文字で書く発言者の姓の前に置く敬称（Mr.、Mrs.、Madam）。 */
   readonly honorifics: readonly string[];
   /** 大文字で書く姓の前に置く肩書き（Prime Minister、Governor）。後ろに略語も来る（the President NASA memo）ので、名前の形を求める。 */
@@ -57,7 +57,7 @@ const SHORT_NUMBER = String.raw`\d{1,3}[A-Za-z]?`;
 const NUMBER_END = String.raw`(?![\p{L}\p{N}_&])`;
 
 const numberedPatterns = (words: NotationWords): readonly RegExp[] => {
-  const label = String.raw`(?<![\p{L}\p{N}_])${divisionOf([...words.divisions, ...words.numberLabels])}\s+`;
+  const label = String.raw`(?<![\p{L}\p{N}_])${divisionOf([...words.divisions, ...words.abbreviatedLabels])}\s+`;
   return [new RegExp(`${label}${romanRangeOf(ROMAN_NUMERAL)}${NUMBER_END}`, "gu"), new RegExp(`${label}${SHORT_NUMBER}${NUMBER_END}`, "gu")];
 };
 

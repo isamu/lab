@@ -17,7 +17,7 @@ const NONE: NotationWords = {
   usStates: [],
   emphasis: [],
   divisions: [],
-  numberLabels: [],
+  abbreviatedLabels: [],
   honorifics: [],
   titles: [],
   dateTimeUnits: [],

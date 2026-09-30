@@ -1,7 +1,7 @@
 # Short labels written with their full stop before a number (Vol. XLIII, No. 5, FIG. 3, FIGS. 1A-1C). The number after
 # one of these, Roman or a short Arabic one, is a number, and the label itself is not an acronym. Matched as written, or
 # in capitals (VOL., FIG.). The full stop is part of the label: "CH 4" and "PT 3" are acronyms.
-id: number-label
+id: abbreviated-label
 language: en
 entries:
   - pattern: Vol.

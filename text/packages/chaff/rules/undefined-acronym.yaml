@@ -13,7 +13,7 @@ extra_word_lists:
     us-state-code,
     emphasis-word,
     numbered-division,
-    number-label,
+    abbreviated-label,
     honorific,
     name-title,
     date-time-unit,

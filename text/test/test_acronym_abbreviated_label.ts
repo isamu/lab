@@ -19,12 +19,12 @@ const NONE: NotationWords = {
   usStates: [],
   emphasis: [],
   divisions: [],
-  numberLabels: [],
+  abbreviatedLabels: [],
   honorifics: [],
   titles: [],
   dateTimeUnits: [],
 };
-const spans = notAcronymSpansOf({ ...NONE, divisions: listOf(en, "numbered-division"), numberLabels: listOf(en, "number-label") });
+const spans = notAcronymSpansOf({ ...NONE, divisions: listOf(en, "numbered-division"), abbreviatedLabels: listOf(en, "abbreviated-label") });
 
 /** 範囲にまるごと覆われた、大文字だけの語（- で繋いだ II-VI は 1 語）。 */
 const covered = (text: string): string[] =>
@@ -51,8 +51,8 @@ describe("番号を後ろに書く略した名前", () => {
   });
 
   it("valid: 語彙表のどの名前でも、字面どおりでも全部大文字でも", () => {
-    assert.notDeepEqual(listOf(en, "number-label"), []);
-    listOf(en, "number-label")
+    assert.notDeepEqual(listOf(en, "abbreviated-label"), []);
+    listOf(en, "abbreviated-label")
       .flatMap((label) => [label, label.toUpperCase()])
       .forEach((label) => assert.deepEqual(covered(`in ${label} XLIII of it`).at(-1), "XLIII", label));
   });
@@ -113,8 +113,8 @@ describe("undefined-acronym と番号の書き方（en）", () => {
   });
 
   it("invalid: 語彙表から抜いた名前の後ろでは数える", () => {
-    assert.deepEqual(reportedAcronyms(without(en, "number-label", "Fig."), doc("FIG. 1 illustrates a sequence.")), ["FIG", "SRE"]);
-    assert.deepEqual(reportedAcronyms(without(en, "number-label", "Vol."), doc("See Symposia on Biology, Vol. XLIII, page 3.")), ["XLIII", "SRE"]);
+    assert.deepEqual(reportedAcronyms(without(en, "abbreviated-label", "Fig."), doc("FIG. 1 illustrates a sequence.")), ["FIG", "SRE"]);
+    assert.deepEqual(reportedAcronyms(without(en, "abbreviated-label", "Vol."), doc("See Symposia on Biology, Vol. XLIII, page 3.")), ["XLIII", "SRE"]);
   });
 
   it("invalid: 名前の無い大文字は数える", () => {
@@ -128,6 +128,6 @@ describe("undefined-acronym と番号の書き方（ja）", () => {
   });
 
   it("invalid: 語彙表から抜いた名前の後ろでは数える", () => {
-    assert.deepEqual(reportedAcronyms(without(ja, "number-label", "Fig."), "# 手引き\n\n構成は FIG. 3 に示します。SREも見ます。\n"), ["FIG", "SRE"]);
+    assert.deepEqual(reportedAcronyms(without(ja, "abbreviated-label", "Fig."), "# 手引き\n\n構成は FIG. 3 に示します。SREも見ます。\n"), ["FIG", "SRE"]);
   });
 });

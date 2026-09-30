@@ -7,7 +7,7 @@ Newest first.
 ### Patent figures, volume numbers and sections of US codes are not reported (#170)
 
 `undefined-acronym` reported the label and the number of a figure or a volume in US patents: "FIG" in "FIG. 1",
-"FIGS" in "FIGS. 1A-1C", "XLIII" in "Vol. XLIII" and "II-VI" in "Reactions II-VI". A new lexicon, `number-label`,
+"FIGS" in "FIGS. 1A-1C", "XLIII" in "Vol. XLIII" and "II-VI" in "Reactions II-VI". A new lexicon, `abbreviated-label`,
 lists short labels written with a full stop before a number (Vol., No., Pt., Ch., Fig., and their plurals), in both
 languages. A Roman numeral after one of these or after a division name (Part, Section) is a number, as it already was
 after a division name, and so is a short Arabic number, with a letter or not (FIG. 3, TABLE 1, FIG. 1A). Roman numerals

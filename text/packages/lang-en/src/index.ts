@@ -11,7 +11,7 @@ import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence } from "chaf
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
 
 const LEXICONS = loadLexicons();
-const LABEL_STOPS = labelStops((LEXICONS["number-label"] ?? []).map((entry) => entry.pattern));
+const LABEL_STOPS = labelStops((LEXICONS["abbreviated-label"] ?? []).map((entry) => entry.pattern));
 
 const LATIN_LETTER = /[a-z]/giu;
 const COUNTABLE = /\S/gu;

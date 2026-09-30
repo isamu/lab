@@ -1,7 +1,7 @@
 # 後ろに番号を書く、点の付いた英語の略した名前（Vol. XLIII、No. 5、FIG. 3、FIGS. 1A-1C）。後ろのローマ数字や短い算用数字は
 # 番号で、名前も略語ではない。日本語の文書も英語の文献や特許の図を引くので、英語と同じ語を置く。字面どおりか、全部大文字で照らす。
 # 点までが名前。点の無い「CH 4」「PT 3」は略語のまま数える。
-id: number-label
+id: abbreviated-label
 language: ja
 entries:
   - pattern: Vol.
