@@ -40,7 +40,6 @@ const lackingOf = (rule: Record<string, unknown>): string[] => {
     ...(languages.length > 0 ? [] : ["languages"]),
     ...languages.filter((language) => !isRecord(example[language])).map((language) => `example.${language}`),
     ...(Array.isArray(rule["requires"]) ? [] : ["requires"]),
-    ...(Array.isArray(rule["options"]) ? [] : ["options"]),
     ...GENRE_IDS.filter((genre) => {
       const standing = genres[genre];
       return !isRecord(standing) || !RUNS.has(String(standing["runs"]));
@@ -48,7 +47,7 @@ const lackingOf = (rule: Record<string, unknown>): string[] => {
   ];
 };
 
-const OLD_FIELDS = ["id", "layer", "status", "name", "why", "how_to_fix", "use_for", "levels", "levels_you_can_set", "your_setting", "now"];
+const OLD_FIELDS = ["id", "layer", "status", "name", "why", "how_to_fix", "use_for", "level_sets", "levels", "levels_you_can_set", "your_setting", "now"];
 
 describe("chaff rules --json — everything an AI needs to write settings", () => {
   it("is schema 2 and keeps every field of schema 1", async () => {
@@ -59,7 +58,7 @@ describe("chaff rules --json — everything an AI needs to write settings", () =
     assert.deepEqual(missing, []);
   });
 
-  it("lists every rule, each with its group, summary, example, not flagged, languages, requires, options and a standing in every genre", async () => {
+  it("lists every rule, each with its group, summary, example, not flagged, languages, requires and a standing in every genre", async () => {
     const rules = rulesIn(await jsonOf());
     assert.deepEqual(
       rules.map((rule) => rule["id"]),
@@ -108,5 +107,12 @@ describe("chaff rules — the same list as a table for a person", () => {
     assert.match(lineFor("max-sentence-length"), / strict \(18\) /u);
     assert.match(lineFor("doubled-word"), / off /u);
     assert.match(lineFor("no-doubled-joshi"), / off \(ja\) /u);
+  });
+
+  it("follows a run: a rule the genre is not suited to is off, and --experimental turns experimental rules on", async () => {
+    const run = await runCli({ "chaff.yaml": "language: en\ngenre: blog/tech\n" }, ["rules", "--experimental"], "en_US.UTF-8");
+    const lineFor = (id: string): string => run.out.split("\n").find((line) => line.startsWith(`  ${id} `)) ?? "";
+    assert.match(lineFor("preamble-length"), / off /u);
+    assert.match(lineFor("doubled-word"), / normal \(warning\) /u);
   });
 });

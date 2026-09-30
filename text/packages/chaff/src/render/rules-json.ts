@@ -11,6 +11,7 @@ import { standingIn } from "../rule-genres.ts";
 const TEXT: Texts<{
   readonly offBySetting: string;
   readonly offByGenre: (genre: string) => string;
+  readonly offUnsuited: (genre: string) => string;
   readonly offExperimental: string;
   readonly valuesNote: string;
   readonly reason: string;
@@ -20,6 +21,7 @@ const TEXT: Texts<{
   ja: {
     offBySetting: "設定で止めている",
     offByGenre: (genre) => `ジャンル ${genre} では見ない`,
+    offUnsuited: (genre) => `ジャンル ${genre} の文書には向かない rule（use_for）`,
     offExperimental: "experimental な rule は既定で動かさない",
     valuesNote: "この 4 語のかわりに数字を直接書いてもよい。4 語のほうを勧める。",
     reason: "<理由>",
@@ -35,6 +37,7 @@ const TEXT: Texts<{
   en: {
     offBySetting: "turned off in the settings",
     offByGenre: (genre) => `the ${genre} genre does not check it`,
+    offUnsuited: (genre) => `not a rule for ${genre} documents (use_for)`,
     offExperimental: "experimental rules do not run by default",
     valuesNote: "A number may be written instead of these four words. The words are recommended.",
     reason: "<reason>",
@@ -50,6 +53,8 @@ const TEXT: Texts<{
 };
 
 const now = (rule: RuleDefinition, config: Config, genre: string, text: (typeof TEXT)["ja"], preset: PresetLevels): Record<string, unknown> => {
+  // A run leaves out a rule whose use_for does not cover the genre before it reads any level.
+  if (standingIn(rule, genre, {}).kind === "unsuited") return { level: "off", why_off: text.offUnsuited(genre) };
   const explicit = config.rules[rule.id] ?? preset[rule.id];
   if (explicit === "off" && config.rules[rule.id] === undefined) return { level: "off", why_off: text.offByGenre(genre) };
   if (explicit === "off") return { level: "off", why_off: text.offBySetting };
@@ -123,7 +128,6 @@ const guideOf = (rule: RuleDefinition): Record<string, unknown> => ({
   languages: rule.languages ?? READER_LANGUAGES,
   requires: rule.requires,
   genres: genresOf(rule),
-  options: [],
 });
 
 const groupsOf = (): Record<string, unknown>[] =>
@@ -149,7 +153,7 @@ export const rulesJson = (rules: readonly RuleDefinition[], config: Config, lang
   const preset = presetLevels(genre);
   return JSON.stringify(
     {
-      // 2: rules gained group, summary, example, not_flagged, level_meaning, languages, requires, genres and options,
+      // 2: rules gained group, summary, example, not_flagged, level_meaning, languages, requires and genres,
       // and groups and the coming local-rules fields were added. Nothing from 1 was removed or renamed.
       schema_version: 2,
       config_file: "chaff.yaml",

@@ -266,7 +266,8 @@ const showRules = (argv: readonly string[]): number => {
   const language = config.language ?? hostLanguage(undefined, process.env);
   warnRuleProblems(config, language);
   const render = argv.includes("--json") ? rulesJson : rulesTable;
-  console.log(render(loadRules(language), config, language, flag(argv, "--genre") ?? config.genre ?? "blog/tech"));
+  const settings = { ...config, experimental: config.experimental || argv.includes("--experimental") };
+  console.log(render(loadRules(language), settings, language, flag(argv, "--genre") ?? config.genre ?? "blog/tech"));
   return 0;
 };
 
