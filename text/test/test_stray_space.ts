@@ -50,6 +50,10 @@ describe("stray-space: 語句の途中の空白を指摘する", () => {
     assert.deepEqual(strays(`${PLAIN}\n\n控えの書類は\u3000窓口で受け取れます。\n`), ["は 窓口"]);
   });
 
+  it("折り返した行の途中の空白も見る（行ではなく文が句点で終わればよい）", () => {
+    assert.deepEqual(strays(`${PLAIN}\n\nさくらさんが 買った本は、\n三冊あります。\n`), ["が 買っ"]);
+  });
+
   it("疑問文の終わり（？）も文として読む", () => {
     assert.deepEqual(strays(`${PLAIN}\n\nさくらさんが 払ったお金は、いくらでしょうか？\n`), ["が 払っ"]);
   });
@@ -116,6 +120,20 @@ describe("stray-space: 書き手が選んだ空白は指摘しない", () => {
 
   it("強調の印を覆ってできた空白は、書き手が空けたものではない", () => {
     assert.deepEqual(strays(`${PLAIN}\n\nさくらさんが**払った**お金です。\n`), []);
+    assert.deepEqual(
+      joints("さくらさんが**払った**お金です。").filter((joint) => joint.endsWith("が|払っ")),
+      ["between-phrases:touching:が|払っ"],
+    );
+  });
+
+  it("強調やリンクの括弧の隣の空白は、Markdown のための空白", () => {
+    assert.deepEqual(strays(`${PLAIN}\n\n目標は**高い精度を得られること** とする。\n`), []);
+    assert.deepEqual(strays(`${PLAIN}\n\nさくらさんが **払った**お金です。\n`), []);
+    assert.deepEqual(strays(`${PLAIN}\n\n手順は [説明書](https://example.com)にあります。\n`), []);
+  });
+
+  it("コードを覆った空白をまたぐ語は、隣り合っていない", () => {
+    assert.deepEqual(strays(`${PLAIN}\n\n設定が \`有効\` になります。\n`), []);
   });
 
   it("英字・数字との境目は latin-spacing が見る", () => {

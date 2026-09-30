@@ -40,15 +40,19 @@ const pairsOf = (tokens: readonly Token[]): Pair[] =>
     return left === undefined ? [] : [{ left, right }];
   });
 
+// 強調とリンクの括弧。読み手には見えない。
+const CHROME = /[*_~[\]]/gu;
+
 /**
- * 空けたか詰めたか。間が何も無ければ詰めた、書き手が書いた空白（半角・全角）だけなら空けた。
- * 改行（Markdown の改行や、行の折り返し）や、本文でないものを覆った空白をまたぐ語は、境目に数えない。
+ * 空けたか詰めたか。間が何も無いか強調・リンクの括弧だけなら詰めた、書き手が書いた空白（半角・全角）だけなら空けた。
+ * 括弧の隣の空白（「**…こと** とする」「手順は [README]」）は、日本語の隣で強調が効かない Markdown のための空白なので数えない。
+ * 改行（Markdown の改行や、行の折り返し）や、見える字を覆った空白（コード）をまたぐ語も、境目に数えない。
  */
 const spacing = (sentence: Sentence, written: string, pair: Pair): boolean | undefined => {
   const [from, to] = [pair.left.span.end - sentence.span.start, pair.right.span.start - sentence.span.start];
-  const gap = sentence.text.slice(from, to);
-  if (gap === "") return false;
-  return SPACES.test(gap) && written.slice(from, to) === gap ? true : undefined;
+  const gap = written.slice(from, to);
+  if (gap.replace(CHROME, "") === "") return false;
+  return SPACES.test(gap) ? true : undefined;
 };
 
 const jointOf = (sentence: Sentence, written: string, quoted: readonly Span[], pair: Pair): Joint | undefined => {
