@@ -5,7 +5,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { evaluate, TARGET_HIT_RATE, type Point, type RuleReport } from "../packages/chaff/src/eval.ts";
 import { renderEval } from "../packages/chaff/src/render/eval.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, RuleDefinition } from "../packages/chaff/src/plugin.ts";
 
 const RULES = loadRules("ja");
 const docs = (sources: readonly string[]) => sources.map((source, index) => buildDocument(`d${index}.md`, source, ja));
@@ -93,10 +93,23 @@ describe("対象の絞り込み", () => {
 describe("構造の rule", () => {
   const STRUCTURE_RULES = ["dangling-reference", "numbering-gap", "duplicate-definition"];
   const contract = "第1条（目的）\n第12条に定める。\n第2条（定義）\n本文";
+  // 同梱の構造の rule には数える上限が無い（段は指摘の重さを決める）。木を読む要求の扱いは、上限を持たせた写しで確かめる。
+  const counting = RULES.filter((rule) => STRUCTURE_RULES.includes(rule.id)).map((rule): RuleDefinition => ({
+    ...rule,
+    levels: { normal: 1 },
+    level_sets: "limit",
+  }));
   const measuredWith = (adapter: LanguageAdapter): string[] =>
-    evaluate([buildDocument("c.txt", contract, adapter)], RULES, "business/contract", "ja")
+    evaluate([buildDocument("c.txt", contract, adapter)], counting, "business/contract", "ja")
       .map((report) => report.rule)
       .filter((id) => STRUCTURE_RULES.includes(id));
+
+  it("数える上限の無い同梱の rule は掃引しない（どの閾値でも同じ件数で、書ける上限も無い）", () => {
+    assert.deepEqual(
+      evaluate([buildDocument("c.txt", contract, ja)], RULES, "business/contract", "ja").filter((report) => STRUCTURE_RULES.includes(report.rule)),
+      [],
+    );
+  });
 
   it("構造を読める言語では測る", () => {
     assert.deepEqual(

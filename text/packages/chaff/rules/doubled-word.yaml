@@ -22,6 +22,6 @@ how_to_fix:
   ja: 余分なほうを消してください。書き換えの途中なら、残したい言い方に揃えてください。
   en: Delete the extra word. If a rewrite was half done ("our the platform"), keep the wording you meant.
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
