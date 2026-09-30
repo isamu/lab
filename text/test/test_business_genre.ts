@@ -67,6 +67,10 @@ describe("business/report で既定の検査が弱くならない", () => {
     );
   });
 
+  it("--experimental なら、1 つの文に重ねた逃げの表現を指摘する。逃げが 1 つの文は指摘しない", () => {
+    assert.deepEqual(firedIn(run(PADDED_REPORT, "business/report", true), "excessive-hedging"), [5]);
+  });
+
   it("--experimental なら動作主の無い受け身も指摘する", () => {
     assert.deepEqual(firedIn(run(PADDED_REPORT, "business/report", true), "agentless-passive"), [15]);
   });
