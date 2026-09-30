@@ -30,9 +30,9 @@ const SENTENCES: Readonly<
   >
 > = {
   en: {
-    bare: (superlative) => `Our tool is ${superlative} option.`,
-    measured: (superlative) => `Our tool is ${superlative} option with 3 tools.`,
-    marked: (superlative, marker) => `Our tool is ${superlative} option ${marker} the others.`,
+    bare: (superlative) => `Our tool is ${superlative} useful option.`,
+    measured: (superlative) => `Our tool is ${superlative} useful option with 3 tools.`,
+    marked: (superlative, marker) => `Our tool is ${superlative} useful option ${marker} the others.`,
   },
   ja: {
     bare: (superlative) => `本製品は${superlative}の性能です。`,
