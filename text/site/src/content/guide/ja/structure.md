@@ -103,6 +103,7 @@ $ npx chaffjs tree contract.txt
 $ npx chaffjs contract.txt --experimental --compact
 
 contract.txt   blog/tech · 日本語   ジャンルは既定から
+   契約書・規約のようです。--genre legal/contract を試せます
 
   4:6     error   「第3条」（番地 3）はこの文書にありません
                   dangling-reference
@@ -115,6 +116,10 @@ contract.txt   blog/tech · 日本語   ジャンルは既定から
 
 指摘 4 件、動いていない rule 7 件
 ```
+
+1 行目の下の行は、契約書として見ることを勧めています。
+`legal/contract` は、この 3 つのルールを動かします。
+`npx chaffjs contract.txt --genre legal/contract` なら、`--experimental` を付けなくても同じ 4 件が出ます。
 
 「民法第709条」「前契約の第9条」のように他の文書を指す参照は、探しません。「本契約の第9条」「この契約の第9条」はこの文書の条として探します。
 番号を比べるのは、同じ親の中で並ぶもの同士だけです。
@@ -154,6 +159,7 @@ contract.txt   blog/tech · 日本語   ジャンルは既定から
 $ npx chaffjs draft.txt --experimental --compact
 
 draft.txt   blog/tech · 日本語   ジャンルは既定から
+   法令・規程のようです。--genre legal/statute を試せます
 
   6:82    error   「第三号」（番地 21.1.3）はこの文書にありません
                   dangling-reference
@@ -177,12 +183,16 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
 `warning` は読みやすさの指摘で、法令の書き方としては長い文も普通です。
 法令の構造だけを確かめるときは、`error` の行を見ます。
 
+1 行目の下の行は、法令として見ることを勧めています。
+`--genre legal/statute --experimental` でかけると閾値が法令のものになり、`error` の 3 件だけが残ります。
+
 2 か所を元に戻して `fixed.txt` にかけ直すと、`error` は消えます。
 
 ```
 $ npx chaffjs fixed.txt --experimental --compact
 
 fixed.txt   blog/tech · 日本語   ジャンルは既定から
+   法令・規程のようです。--genre legal/statute を試せます
 
   6:39    warning この文は 125 文字あります（100 文字まで）
                   max-sentence-length

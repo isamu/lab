@@ -93,7 +93,8 @@ export const ruleOfThree: Detector = (doc, options): Finding[] => {
   ];
 };
 
-const dateSpans = (doc: ProseDocument): Span[] =>
+/** 言語パッケージが日付と読んだ範囲（April 1, 2024、SEP 01, 2022）。木を作るので、要るときだけ呼ぶ。 */
+export const dateSpans = (doc: ProseDocument): Span[] =>
   doc.structure === undefined ? [] : inDocumentOrder(doc.structure).flatMap((node) => (node.kind === "date" ? [node.span] : []));
 
 /** 更新日の刻印（「最終更新日:」「2025年6月20日」）は前置きに数えない。木を作るのは、数えて上限を超えたときだけ。 */

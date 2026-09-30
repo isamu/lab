@@ -1,0 +1,20 @@
+# Official titles set before a surname printed in capitals: a hearing transcript's speakers (Senator HAWLEY., Secretary
+# BLINKEN.) and the Japanese government's romanised names, surname first (Prime Minister ABE Shinzo). A word in capitals
+# right after one of these is a name, not an acronym. "Minister" also covers Prime Minister and Foreign Minister, "President"
+# Vice President. Titles often followed by an acronym (Chair, General, Justice) are left out. Matched as written.
+id: name-title
+language: en
+entries:
+  - pattern: "President"
+  - pattern: "Minister"
+  - pattern: "Secretary"
+  - pattern: "Secretary-General"
+  - pattern: "Chief Justice"
+  - pattern: "Governor"
+  - pattern: "Senator"
+  - pattern: "Ambassador"
+  - pattern: "Mayor"
+  - pattern: "Chancellor"
+  - pattern: "Commissioner"
+  - pattern: "Chairman"
+  - pattern: "Chairwoman"

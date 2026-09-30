@@ -1,9 +1,11 @@
-# English function words written in capitals for emphasis (should NOT change): they have no reading as
+# English words written in capitals for emphasis (should NOT change, the NEW formula): they have no reading as
 # an acronym, so there is nothing to expand. A word that is also an acronym (OR: Oregon, operating room;
-# IS: International Standard) does not belong here. Matched as written.
+# IS: International Standard) does not belong here. A word the dictionary knows only as an adverb (NEVER,
+# ALWAYS) needs no entry: lang-en reads it as emphasis by itself. Matched as written.
 id: emphasis-word
 language: en
 entries:
   - pattern: "NOT"
   - pattern: "AND"
   - pattern: "ONLY"
+  - pattern: "NEW"

@@ -20,8 +20,17 @@ export type GenreDefinition = {
 /** A line shape that marks the genre, and how many lines must have it. */
 type LineCue = { readonly line: RegExp; readonly minLines: number };
 
-/** What makes a document look like this genre when no genre is set: its path, or enough lines of the genre's own shape, per language. */
-export type GenreSuggest = { readonly paths: readonly RegExp[]; readonly lines: Readonly<Record<string, LineCue>> };
+/**
+ * What makes a document look like this genre when no genre is set: its path, or per language, the shape of the body's first
+ * line (a letter's salutation) or enough lines of the genre's own shape.
+ */
+export type GenreSuggest = {
+  readonly paths: readonly RegExp[];
+  readonly lines: Readonly<Record<string, LineCue>>;
+  readonly openings: Readonly<Record<string, RegExp>>;
+};
+
+type LanguageCue = { readonly line: LineCue | undefined; readonly opening: RegExp | undefined };
 
 export type GenreData = { readonly groups: readonly GenreGroup[]; readonly genres: readonly GenreDefinition[] };
 
@@ -71,15 +80,31 @@ const lineCueOf = (value: unknown, where: string): LineCue => {
   return { line: patternOf(value["line"], "u", where), minLines };
 };
 
+const hasLineCue = (value: Readonly<Record<string, unknown>>): boolean => value["line"] !== undefined || value["min_lines"] !== undefined;
+
+const languageCueOf = (value: unknown, where: string): LanguageCue => {
+  if (!isRecord(value) || (!hasLineCue(value) && value["opening"] === undefined)) throw new Error(`${where}: needs line and min_lines, or opening`);
+  return {
+    line: hasLineCue(value) ? lineCueOf(value, where) : undefined,
+    opening: value["opening"] === undefined ? undefined : patternOf(value["opening"], "u", where),
+  };
+};
+
+const presentOf = <T>(cues: readonly (readonly [string, T | undefined])[]): Record<string, T> =>
+  Object.fromEntries(cues.filter((entry): entry is readonly [string, T] => entry[1] !== undefined));
+
 const suggestOf = (value: unknown, where: string): GenreSuggest => {
-  if (value === undefined) return { paths: [], lines: {} };
+  if (value === undefined) return { paths: [], lines: {}, openings: {} };
   if (!isRecord(value)) throw new Error(`${where}: suggest must be a map`);
   const paths = value["paths"] ?? [];
   if (!Array.isArray(paths)) throw new Error(`${where}: suggest.paths must be a list`);
-  const lines = Object.entries(value).filter(([key]) => key !== "paths");
+  const cues = Object.entries(value)
+    .filter(([key]) => key !== "paths")
+    .map(([language, cue]) => [language, languageCueOf(cue, `${where} suggest.${language}`)] as const);
   return {
     paths: paths.map((path) => patternOf(path, "iu", `${where} suggest.paths`)),
-    lines: Object.fromEntries(lines.map(([language, cue]) => [language, lineCueOf(cue, `${where} suggest.${language}`)])),
+    lines: presentOf(cues.map(([language, cue]) => [language, cue.line] as const)),
+    openings: presentOf(cues.map(([language, cue]) => [language, cue.opening] as const)),
   };
 };
 

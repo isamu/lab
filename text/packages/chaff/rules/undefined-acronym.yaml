@@ -14,6 +14,7 @@ extra_word_lists:
     emphasis-word,
     numbered-division,
     honorific,
+    name-title,
     date-time-unit,
     http-method,
   ]
