@@ -20,6 +20,22 @@ the space, read on its own, opens with a noun prefix and a noun (本規約, 本�
 quantities inside a sentence are read as before (「10 両編成」). The gap is now reported, and 「1.4 本ガイドブックの概要」 in
 デジタル庁's area data model is read as section 1.4.
 
+### Patent figures, volume numbers and sections of US codes are not reported (#170)
+
+`undefined-acronym` reported the label and the number of a figure or a volume in US patents: "FIG" in "FIG. 1",
+"FIGS" in "FIGS. 1A-1C", "XLIII" in "Vol. XLIII" and "II-VI" in "Reactions II-VI". A new lexicon, `abbreviated-label`,
+lists short labels written with a full stop before a number (Vol., No., Pt., Ch., Fig., and their plurals), in both
+languages. A Roman numeral after one of these or after a division name (Part, Section) is a number, as it already was
+after a division name, and so is a short Arabic number, with a letter or not (FIG. 3, TABLE 1, FIG. 1A). Roman numerals
+written as a range ("II-VI", "I–III") count as one number, after a label or after a capitalised word. The full stop
+is part of the label, so "CH 4" and "PT 3" are still acronyms. English sentences no longer end at such a label before
+its number: "FIG." and "1 illustrates …" were two sentences, and so were "Science, Vol." and "347, Issue 6222".
+
+`dangling-reference` reported "§122" and "§1.14" in "35 CFR §122" and "37 CFR §1.14". A section sign (or "Section")
+right after the name of a code points into that code, not into this document. The codes are a new lang-en lexicon,
+`document-kind` (CFR, C.F.R., U.S.C., U.S.C.A., USC, USCA), with an optional title number before them ("42 U.S.C. §
+1983"). A section sign with no code before it is still looked up here.
+
 ### A rule's how to fix names the words of the finding (#345)
 
 `preferred-term` printed 「{preferred}」に直してください and `Change it to "{preferred}"` as written: only the

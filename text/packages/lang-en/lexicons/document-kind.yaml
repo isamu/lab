@@ -1,0 +1,12 @@
+# Names of codes that are cited by title and section (35 CFR §122, 42 U.S.C. § 1983). A section sign, or "Section", right
+# after one of these points into that code, not into this document. Matched as written, with an optional title number
+# before it.
+id: document-kind
+language: en
+entries:
+  - pattern: CFR
+  - pattern: C.F.R.
+  - pattern: U.S.C.
+  - pattern: U.S.C.A.
+  - pattern: USC
+  - pattern: USCA
