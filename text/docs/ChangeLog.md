@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `oxford-comma-consistency` judges a sentence that contains "constructor" or "toString" (#170)
+
+The parenthesis count looked each word up as an object property, so a word that names a member every object has
+(`constructor`, `toString`, `valueOf`, `hasOwnProperty`, `isPrototypeOf`) broke the count for the rest of the
+sentence, and a list after it was never judged. Such a sentence is now judged like any other. The corpus wikitext
+converter had the same lookup for template names, and `{{constructor}}` is now dropped like any unknown template.
+
 ### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
 
 Several checks read a whole run, sentence or line again for each character, finding or reference in it, so their

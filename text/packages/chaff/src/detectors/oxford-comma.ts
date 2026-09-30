@@ -11,13 +11,16 @@ const commaBefore = (tokens: readonly Token[], at: number): boolean => tokens[at
 const CLAUSE_BREAK = new Set([";", ":", "—"]);
 
 /** 各 token の前で閉じていない括弧の数。括弧の中の読点（external users (e.g., guests), and ...）は外の並列を切らない。 */
-const PAREN_STEP: Readonly<Record<string, number>> = { "(": 1, ")": -1 };
+const PAREN_STEP: ReadonlyMap<string, number> = new Map([
+  ["(", 1],
+  [")", -1],
+]);
 
 export const depthsOf = (tokens: readonly Token[]): number[] => {
   let open = 0;
   return tokens.map((token) => {
     const before = open;
-    open = Math.max(0, open + (PAREN_STEP[token.surface] ?? 0));
+    open = Math.max(0, open + (PAREN_STEP.get(token.surface) ?? 0));
     return before;
   });
 };
