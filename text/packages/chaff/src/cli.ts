@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { loadAdapter, packageFor } from "./adapter-load.ts";
@@ -7,8 +6,7 @@ import { applyByPath } from "./config/by-path.ts";
 import { applyLevel } from "./config/write.ts";
 import { buildDocument, teamRules } from "./document.ts";
 import { guessLanguage } from "./detect.ts";
-import { plainSource } from "./plain-source.ts";
-import { collectTargets } from "./files.ts";
+import { collectTargets, readDocumentFile } from "./files.ts";
 import { BASELINE_FILE, fingerprint, readBaseline, splitByBaseline, writeBaseline } from "./baseline.ts";
 import { applySuppressions } from "./stet.ts";
 import { renderSuppressions, type PerFile } from "./render/suppressions.ts";
@@ -88,7 +86,7 @@ type Inspected = {
 };
 
 const inspect = async (path: string, config: Config, argv: readonly string[]): Promise<Inspected> => {
-  const source = plainSource(await readFile(path, "utf8"));
+  const source = await readDocumentFile(path);
   const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
   const adapter = await loadAdapter(language);
   const { genre, from, unread } = resolveGenre(path, source, config, flag(argv, "--genre"));

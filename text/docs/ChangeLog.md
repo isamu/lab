@@ -23,6 +23,41 @@ as だ・である. Requirements, licence terms and glossaries use this form in 
 The words are a new lang-ja lexicon, `neutral-ending`. Other nouns before a question or a particle keep the register
 of the verb before them (「〜のかな？」 is still plain).
 
+### `numbering-gap`: a decimal before a unit symbol is an amount, and 「1.4 本利用ルール」 is a heading number (#170)
+
+A line opening with a decimal followed by a unit symbol ("1.5 mM in each of the four deoxyribonucleoside
+triphosphates", then "0.25 mM in dithiothreitol") was read as dotted section 1.5, then 0.25, and reported as a gap
+in a US patent. Both language packages now carry a `measure-unit` lexicon (mM, mg, µL, kDa, °C, ℃, % and other
+symbols); a dotted number followed by one of them is an amount, not a section. A symbol is only matched when no letter,
+digit or hyphen follows, so "2.1 mmap" and "5.2.2 min-fresh" stay section titles, and symbols that start with a
+capital letter (Da, Pa, GB) are left out because a section title starts with a capital too.
+
+In Japanese, 「### 1.4 本利用ルールが適用されないコンテンツについて」 was read as 1.4 counted in 本 (the counter for long
+things), so the heading was no section and the jump from 「1.1.」 to 「1.4」 in デジタル庁のコピーライトポリシー went
+unreported. After a number that opens a line, a counter read across the space is no longer taken when the text after
+the space, read on its own, opens with a noun prefix and a noun (本規約, 本サービス, 本利用ルール). 「3 本の鉛筆」 is still 3 counted in 本, and
+quantities inside a sentence are read as before (「10 両編成」). The gap is now reported, and 「1.4 本ガイドブックの概要」 in
+デジタル庁's area data model is read as section 1.4.
+
+### A library caller gets the BOM and CRLF / CR handling too (#170)
+
+Removing a leading BOM and reading CRLF and CR-only line ends as LF happened only where the command line read a file.
+`buildDocument`, `profileFor` and `resolveGenre` now do it themselves, so a program that passes a file's text as it is
+(and the `corpus` scripts) reads the same document as the command line. Every offset in the returned document refers
+to `doc.source`, the text after this normalisation, not to the string that was passed in; line numbers are the same
+either way. `buildStructure` returns only a tree, so its offsets still refer to the text it was given, as before.
+
+A file that starts with two BOMs now loses both. Before, the second one stayed in the text while the Markdown parser
+dropped it, so every position in the file was off by one: `# Notes` was read as the heading "Note", and a quoted
+sentence lost its last character.
+The command line's output is otherwise unchanged.
+
+### A blockquote or list nested thousands of levels deep no longer crashes chaff (#170)
+
+`>>>>…` or `- - - …` nested a few thousand levels deep is valid Markdown, and chaff stopped with "Maximum call stack
+size exceeded". Every walk over the Markdown tree and the structure tree now keeps its own stack, so lint, `tree` and
+the structure rules read such a document like any other. The output of every other document is unchanged.
+
 ### Patent figures, volume numbers and sections of US codes are not reported (#170)
 
 `undefined-acronym` reported the label and the number of a figure or a volume in US patents: "FIG" in "FIG. 1",
@@ -101,7 +136,6 @@ sentence after kana, kanji, 「ー」 or a closing bracket (「低下するこ�
 decimal point, so 「１．はじめに」 and 「３．５％」 are read as before. Corpus round 12 added Japanese papers from 保健医療科学 and
 自然言語処理 (J-STAGE, CC BY 4.0) and more documents for genres the corpus had few of: a Japanese licence and terms, US
 patents, English FAQs, speeches, a novel, poems, an essay, a play and a tech blog post.
-
 
 ## 0.17.0 — 2026-09-30
 
