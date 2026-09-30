@@ -21,7 +21,7 @@ const ARTICLE_RANGE = new RegExp(
 const PARAGRAPH = new RegExp(`^${SPACE}*第(?<n>${NUMBER})項(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
 const ITEM = new RegExp(`^${SPACE}*第(?<n>${NUMBER})号(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
 /**
- * 法令の項と号は、番号だけを行頭に置き、全角空白で本文と区切る（「２」「一」）。条の中でだけ読む。
+ * 法令の項と号は、番号だけを行頭に置き、全角空白で本文と区切る（「２」「一」）。条の中でだけ読み、見出しの行（章の番号）では読まない。
  * 半角数字や漢数字に半角空白が続くだけなら本文として扱う。「3 人で」「一 人で」を項や号にしない。
  */
 const BARE_PARAGRAPH = new RegExp(`^${SPACE}*(?<n>[0-9]{1,3})\\u3000+(?<rest>\\S.*)$`, "u");
@@ -129,7 +129,7 @@ const inFirstParagraph = (context: NumberingContext, depth: number): boolean =>
 
 const item = (line: string, context: NumberingContext): NumberedLine | undefined =>
   ITEM_SHAPES.reduce<NumberedLine | undefined>((found, shape) => {
-    if (found !== undefined || (shape.needsArticle && !insideArticle(context))) return found;
+    if (found !== undefined || (shape.needsArticle && (context.isHeading || !insideArticle(context)))) return found;
     const groups = shape.pattern.exec(line)?.groups;
     const number = numberOf(groups?.["n"]);
     if (groups === undefined || number === undefined) return undefined;

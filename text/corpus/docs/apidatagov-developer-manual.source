@@ -86,6 +86,38 @@ If you’re building an application that needs higher rate limits, please reach 
 
 Certain, general errors will be returned in a standardized way from all API Umbrella web services. Additional, service-specific error messages may also be returned (see individual service documentation for those details). The following list describes the general errors any application may return:
 
+API_KEY_MISSING
+
+An API key was not supplied. See API key usage for details on how to pass your API key to the API.
+
+API_KEY_INVALID
+
+An invalid API key was supplied. Double check that the API key being passed in is valid, or signup for an API key.
+
+API_KEY_DISABLED
+
+The API key supplied has been disabled by an administrator. Please contact the API owner at the agency that offers the service for assistance.
+
+API_KEY_UNAUTHORIZED
+
+The API key supplied is not authorized to access the given service. Please contact the API owner at the agency that offers the service for assistance.
+
+API_KEY_UNVERIFIED
+
+The API key supplied has not been verified yet. Please check your e-mail to verify the API key. Please contact the API owner at the agency that offers the service for assistance.
+
+HTTPS_REQUIRED
+
+Requests to this API must be made over HTTPS. Ensure that the URL being used is over HTTPS.
+
+OVER_RATE_LIMIT
+
+The API key has exceeded the rate limits. See rate limits for more details or contact the API owner at the agency that offers the service for assistance.
+
+NOT_FOUND
+
+An API could not be found at the given URL. Check your URL.
+
 ### Error Response Body
 
 The error response body will contain an error code value from the table above and a brief description of the error. The descriptions are subject to change, so it’s suggested any error handling use the HTTP status code or the error code value for error handling (and not the content of the message description).

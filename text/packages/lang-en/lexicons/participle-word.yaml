@@ -1,0 +1,8 @@
+# Words that open a participle phrase after a comma but that the tagger reads as another part of speech:
+# "It comes from Latin, meaning ship or boat." oxford-comma-consistency reads them as participles, so the phrase
+# they open is not an item of the list before it. Words the tagger already reads as -ing verbs (including,
+# regarding) need no entry.
+id: participle-word
+language: en
+entries:
+  - pattern: meaning
