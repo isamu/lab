@@ -9,9 +9,9 @@ Newest first.
 The converter behind `yarn corpus:fetch` collapsed every run of whitespace, U+3000 included, so 「2　学士」 was stored
 as 「2 学士」 and a clause number lost the full-width space that marks it. Only markup's own spacing collapses now.
 It also drops text that a sighted reader never sees: an element whose class follows a screen-reader convention
-(`sr-only`, `visually-hidden`, `govuk-visually-hidden`, `screen-reader-text`, or exactly `hidden` without a breakpoint
-variant beside it), and a skip link's target (an anchor with no `href` and `tabindex="-1"`, such as
-「ここから本文です。」). A block of nothing but links to other pages that closes the page (「一覧に戻る」) is dropped
+(`sr-only`, `visually-hidden`, `govuk-visually-hidden`, `screen-reader-text`, or exactly `hidden`), unless a variant
+such as `md:block` shows it on some screens, and a skip link's target (an anchor with no `href` and `tabindex="-1"`
+alone on its line, such as 「ここから本文です。」). A block of nothing but links to other pages that closes the page (「一覧に戻る」) is dropped
 like the menus above the title (a link to a file, such as an appendix in PDF, stays), so a site's trailing `## 新着記事` no longer follows a speech as its only heading. Documents fetched
 from HTML change when they are fetched again.
 

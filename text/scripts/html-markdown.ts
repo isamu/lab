@@ -17,12 +17,17 @@ import {
   elementRanges,
   hasNoWords,
   isInside,
+  headingRanges,
   plainText,
   stripTags,
   withAttributeMarkupEscaped,
+  withoutElementsOpening,
+  withoutElementsWhere,
+  withoutRanges,
   type ElementRange,
 } from "./html-elements.ts";
 import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
+import { withoutReaderOnlyText } from "./html-reader-only.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
@@ -85,35 +90,11 @@ const soleArticle = (html: string): string | undefined => {
 /** The page's own content: inside <main>, else the element marked role="main", else a sole <article>, else the whole page. */
 const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? mainLandmark(html) ?? soleArticle(html) ?? html;
 
-/** The ranges (in document order) each replaced by a space; one inside another cut one goes with it. */
-const withoutRanges = (html: string, ranges: readonly ElementRange[]): string => {
-  const chosen = ranges.reduce<ElementRange[]>((kept, range) => {
-    const insideKept = (kept.at(-1)?.end ?? 0) > range.start;
-    if (!insideKept) kept.push(range);
-    return kept;
-  }, []);
-  const cut = chosen.reduce<{ readonly parts: readonly string[]; readonly from: number }>(
-    (acc, range) => ({ parts: [...acc.parts, html.slice(acc.from, range.start), " "], from: range.end }),
-    { parts: [], from: 0 },
-  );
-  return [...cut.parts, html.slice(cut.from)].join("");
-};
-
-/** The <tag> elements that are chrome, each replaced by a space; one inside another dropped one goes with it. */
-const withoutElementsWhere = (html: string, tag: string, isChrome: (range: ElementRange) => boolean): string =>
-  withoutRanges(html, elementRanges(html, tag).filter(isChrome));
-
 const LANDMARK = String.raw`(?:\brole\s*=\s*["']?navigation\b|\baria-label\s*=\s*(?:["'][^"']*|[^\s"'>]*)breadcrumb)`;
 
 const LANDMARK_OPENING = new RegExp(String.raw`<([a-z][a-z0-9]*)\b[^>]*${LANDMARK}`, "giu");
 
 const isLandmark = (range: ElementRange): boolean => new RegExp(`^<[^>]*${LANDMARK}`, "iu").test(range.openTag);
-
-/** Every <tag> whose opening matches, for each tag that opens that way, replaced by a space. */
-const withoutElementsOpening = (html: string, opening: RegExp, isChrome: (range: ElementRange) => boolean): string => {
-  const tags = new Set([...html.matchAll(opening)].map((match) => (match[1] ?? "").toLowerCase()));
-  return [...tags].reduce((text, tag) => withoutElementsWhere(text, tag, isChrome), html);
-};
 
 /** Navigation that is not a <nav>: any element with role="navigation", or labelled as a breadcrumb. */
 const withoutNavigationLandmarks = (html: string): string => withoutElementsOpening(html, LANDMARK_OPENING, isLandmark);
@@ -127,49 +108,6 @@ const isHidden = (range: ElementRange): boolean => new RegExp(String.raw`^<[a-z]
 
 /** Elements the page does not show (the hidden attribute): a tooltip, a closed menu. */
 const withoutHiddenElements = (html: string): string => withoutElementsOpening(html, HIDDEN_OPENING, isHidden);
-
-const HEADING_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"];
-
-const headingRanges = (html: string): ElementRange[] => HEADING_TAGS.flatMap((tag) => elementRanges(html, tag));
-
-// The class names that frameworks and style guides give text written for a screen reader alone (sr-only,
-// visually-hidden, govuk-visually-hidden, screen-reader-text), never negated (not-sr-only shows it); "hidden" only as
-// a whole name (not hidden-xs).
-const READER_ONLY_CLASS = /^(?:(?!not-)[a-z0-9]+-)*(?:sr-only|visually-?hidden|screen-reader-text|element-invisible)$/iu;
-
-const CLASS_OPENING = /<([a-z][a-z0-9-]*)\b[^>]*\sclass\s*=/giu;
-
-const CLASS_VALUE = new RegExp(String.raw`^<[a-z][a-z0-9-]*${ATTRIBUTES}\s+class\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))`, "iu");
-
-/** A breakpoint variant (md:block) shows the element on a wider screen, so "hidden" beside one hides it only on some. */
-const isReaderOnlyClass = (range: ElementRange): boolean => {
-  const value = CLASS_VALUE.exec(range.openTag);
-  const names = (value?.[1] ?? value?.[2] ?? value?.[3] ?? "").split(/\s+/u);
-  return names.some((name) => READER_ONLY_CLASS.test(name)) || (names.includes("hidden") && !names.some((name) => name.includes(":")));
-};
-
-/** An anchor with no href that only a script can focus: where a skip link moves the reader ("ここから本文です。"). */
-const isFocusTarget = (range: ElementRange): boolean =>
-  !/\shref\s*=/iu.test(range.openTag) && /\stabindex\s*=\s*(?:"\s*-1\s*"|'\s*-1\s*'|-1(?=[\s/>]))/iu.test(range.openTag);
-
-// A tag (or the start or end of the page) with only spacing between it and the anchor; a ">" or "<" in text is no tag.
-const TAG_BEFORE = /(?:^|<\/?[a-z][^<>]*>)\s*$/iu;
-const TAG_AFTER = /^\s*(?:<\/?[a-z]|$)/iu;
-
-/** Nothing but markup on either side: the anchor is a block of its own, not a word in a sentence. */
-const standsAlone = (html: string, range: ElementRange): boolean => TAG_BEFORE.test(html.slice(0, range.start)) && TAG_AFTER.test(html.slice(range.end));
-
-/**
- * Text the page writes for a screen reader and does not show. A focus target counts only standing alone outside a
- * heading: inside a heading it is the heading's title, inside a sentence a word of it.
- */
-const withoutReaderOnlyText = (html: string): string => {
-  const headings = headingRanges(html);
-  const isReaderTarget = (anchor: ElementRange): boolean =>
-    isFocusTarget(anchor) && standsAlone(html, anchor) && !headings.some((heading) => isInside(heading, anchor));
-  const targets = withoutElementsWhere(html, "a", isReaderTarget);
-  return withoutElementsOpening(targets, CLASS_OPENING, isReaderOnlyClass);
-};
 
 /**
  * Buttons are controls ("Close", "Share", "Cite this publication"), not prose, except one inside a heading, which is

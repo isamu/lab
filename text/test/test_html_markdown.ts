@@ -418,8 +418,9 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
     const html =
       '<p class="hidden-xs">Wide.</p><p class="overflow-hidden">Clip.</p><p class="is-hidden-later">Later.</p>' +
       '<p class="hidden md:block">Desktop.</p><p data-class="sr-only">Data.</p><p title="class=sr-only">Title.</p><p class="sr-only-note">Note.</p>' +
-      '<p class="not-sr-only">Shown.</p><p class="md:not-sr-only x-not-visually-hidden">Shown too.</p>';
-    assert.equal(htmlToMarkdown(html), "Wide.\n\nClip.\n\nLater.\n\nDesktop.\n\nData.\n\nTitle.\n\nNote.\n\nShown.\n\nShown too.\n");
+      '<p class="not-sr-only">Shown.</p><p class="md:not-sr-only x-not-visually-hidden">Shown too.</p>' +
+      '<p class="sr-only md:not-sr-only">Wider.</p>';
+    assert.equal(htmlToMarkdown(html), "Wide.\n\nClip.\n\nLater.\n\nDesktop.\n\nData.\n\nTitle.\n\nNote.\n\nShown.\n\nShown too.\n\nWider.\n");
   });
 
   it("スキップリンクが移す先 (href の無い tabindex=-1 のリンク) の読み上げ文は落とす。見出しの中と、ふつうの名前付きの印は残す", () => {
@@ -428,10 +429,11 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
       '<h1><a id="top" tabindex=\'-1\'>日光の物語</a></h1><p>山と湖。</p><div><a id="reader-end" tabindex=-1>本文ここまでです。</a></div>' +
       '<p><a name="t1">用語</a>の説明。</p><p><a href="/x" tabindex="-1">外へ</a>行く。</p>' +
       '<p><a id="term" tabindex="-1">サービス</a>とは、本サービスをいう。</p><p>次の <a id="d" tabindex="-1">定義</a></p>' +
-      "<p>x > <a id=v tabindex=-1>value</a></p><p><a id=w tabindex=-1>word</a> < y</p>";
+      "<p>x > <a id=v tabindex=-1>value</a></p><p><a id=w tabindex=-1>word</a> < y</p>" +
+      "<p><a id=m tabindex=-1>Important</a><strong>:</strong> read first.</p>";
     assert.equal(
       htmlToMarkdown(html),
-      "# 日光の物語\n\n山と湖。\n\n用語の説明。\n\n外へ行く。\n\nサービスとは、本サービスをいう。\n\n次の 定義\n\nx > value\n\nword < y\n",
+      "# 日光の物語\n\n山と湖。\n\n用語の説明。\n\n外へ行く。\n\nサービスとは、本サービスをいう。\n\n次の 定義\n\nx > value\n\nword < y\n\nImportant: read first.\n",
     );
   });
 
