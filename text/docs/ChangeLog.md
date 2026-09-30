@@ -19,8 +19,9 @@ A team can now write its own deterministic rules in chaff.yaml. Each one works l
 - A rule that cannot run stops the run and says why. Causes include a bad regex, a missing field, an id that is
   already one of chaff's, and an unknown part of speech.
 - Regular expressions are checked before they run. A pattern longer than 500 characters is refused, and so is a
-  backreference, a pattern that matches the empty string, or a repeat around a group that already repeats or
-  alternates (`(a+)+`).
+  backreference, a pattern that matches the empty string, a repeat around a group that already repeats or
+  alternates (`(a+)+`, though plain words with different first letters such as `(cat|dog)+` pass), and more than
+  three unbounded repeats (`a*a*a*a*b`).
 - `type: module` (a small Node function) is reserved and refused for now.
 
 ### House styles: `style: ieice` and friends (#170)
