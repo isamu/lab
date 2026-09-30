@@ -11,7 +11,7 @@ import {
   type FetchOutcome,
 } from "../scripts/corpus-health-report.ts";
 import { CONNECT_TIMEOUT_MS, HttpStatusError, withConnectTimeout } from "../scripts/fetch-text.ts";
-import { hostOf, paceWait_ms, retryDelaysFor, type HostPace } from "../scripts/fetch-pacing.ts";
+import { hostOf, isHostGivenUp, paceWait_ms, type HostPace } from "../scripts/fetch-pacing.ts";
 import { isTransientFetchError, RETRY_DELAYS_MS, withRetry, type RetryOptions } from "../scripts/retry.ts";
 
 // 週に一度のコーパス点検。文書ごとの判定（ok / drift / fetch-failed / source-changed）、issue の本文、取得の再試行。
@@ -289,21 +289,19 @@ describe("RETRY_DELAYS_MS", () => {
   });
 });
 
-describe("retryDelaysFor", () => {
-  const delays = [15, 60, 180];
-
-  it("まだ落ちた文書の無い取得先には、待ちをすべて使う", () => {
-    assert.deepEqual(retryDelaysFor(0, delays, 2), delays);
-    assert.deepEqual(retryDelaysFor(1, delays, 2), delays);
+describe("isHostGivenUp", () => {
+  it("取り直しても落ちた文書が上限より少ない取得先は、まだ取りに行く", () => {
+    assert.equal(isHostGivenUp(0, 2), false);
+    assert.equal(isHostGivenUp(1, 2), false);
   });
 
-  it("取り直しても落ちた文書が上限に達した取得先は、一度だけ試す（止まった取得先で job の時間を使い切らない）", () => {
-    assert.deepEqual(retryDelaysFor(2, delays, 2), []);
-    assert.deepEqual(retryDelaysFor(5, delays, 2), []);
+  it("上限に達した取得先は、この回ではもう取りに行かない（応答の止まった取得先で job の時間を使い切らない）", () => {
+    assert.equal(isHostGivenUp(2, 2), true);
+    assert.equal(isHostGivenUp(5, 2), true);
   });
 
-  it("上限 0 なら最初から取り直さない", () => {
-    assert.deepEqual(retryDelaysFor(0, delays, 0), []);
+  it("上限 0 なら最初から取りに行かない", () => {
+    assert.equal(isHostGivenUp(0, 0), true);
   });
 });
 

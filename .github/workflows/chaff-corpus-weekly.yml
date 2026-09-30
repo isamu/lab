@@ -25,7 +25,7 @@ jobs:
   # 取得と判定。外から取ってきた文書を読む job なので、token は読み取りだけ。
   corpus:
     runs-on: ubuntu-latest
-    # 取り直しの待ちが長いので余裕を持たせる。取り直しても落ちる取得先が続けば、以降は一度だけ試す（scripts/fetch-pacing.ts）。
+    # 取り直しの待ちが長いので余裕を持たせる。取り直しても落ちる文書が同じ取得先で続けば、その取得先の残りは取りに行かずに失敗として出す（scripts/fetch-pacing.ts）。
     timeout-minutes: 120
     permissions:
       contents: read

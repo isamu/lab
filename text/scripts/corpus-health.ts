@@ -21,7 +21,7 @@ import {
   type FetchOutcome,
 } from "./corpus-health-report.ts";
 import { fetchText, lengthenConnectTimeout } from "./fetch-text.ts";
-import { hostOf, paceWait_ms, retryDelaysFor } from "./fetch-pacing.ts";
+import { hostOf, isHostGivenUp, paceWait_ms } from "./fetch-pacing.ts";
 import { isTransientFetchError, RETRY_DELAYS_MS, withRetry } from "./retry.ts";
 
 const SCRIPTS = dirname(fileURLToPath(import.meta.url));
@@ -49,11 +49,12 @@ const pacedFetch = async (url: string): Promise<string> => {
 const fetchWithRetry = async (doc: DocEntry): Promise<string> => {
   const host = hostOf(doc.url);
   const failedDocs = failedDocsByHost.get(host) ?? 0;
-  const delays_ms = retryDelaysFor(failedDocs, RETRY_DELAYS_MS, GIVE_UP_AFTER_FAILED_DOCS);
-  if (delays_ms.length === 0) console.log(`${doc.id}  trying once: ${String(failedDocs)} documents on ${host} already failed after retrying`);
+  if (isHostGivenUp(failedDocs, GIVE_UP_AFTER_FAILED_DOCS)) {
+    throw new Error(`${doc.url}: not fetched, ${String(failedDocs)} documents on ${host} already failed after retrying in this run`);
+  }
   try {
     return await withRetry(() => pacedFetch(doc.url), {
-      delays_ms,
+      delays_ms: RETRY_DELAYS_MS,
       isTransient: isTransientFetchError,
       sleep,
       onRetry: (error, delay_ms) => console.log(`${doc.id}  retrying in ${String(delay_ms)} ms: ${errorText(error)}`),

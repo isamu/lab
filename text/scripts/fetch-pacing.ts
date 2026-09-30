@@ -1,5 +1,5 @@
-// How the weekly corpus check spaces its requests: a gap between two requests to the same host, and fewer retries
-// for a host that has already failed after retrying. Pure; the clock and the record of past requests are passed in.
+// How the weekly corpus check spaces its requests: a gap between two requests to the same host, and no more requests
+// to a host that has already failed after retrying. Pure; the clock and the record of past requests are passed in.
 
 /** When each host was last asked, and the gap to leave before asking it again. */
 export type HostPace = {
@@ -24,9 +24,9 @@ export const paceWait_ms = (pace: HostPace, host: string, now_ms: number): numbe
 };
 
 /**
- * The retry waits for a host on which failedDocs documents have already failed after every retry. Once that reaches
- * giveUpAfter, the host is taken to be down for this run and later documents are tried once, so a dead host cannot
- * spend the job's time limit on waits and the report is still written.
+ * Whether a host on which failedDocs documents have already failed after every retry is taken to be down for this run.
+ * Its later documents are then reported as failed without a request: even a single attempt at a host that accepts
+ * connections but never answers costs the whole request timeout, and enough of those outlast the job before the
+ * report is written.
  */
-export const retryDelaysFor = (failedDocs: number, delays_ms: readonly number[], giveUpAfter: number): readonly number[] =>
-  failedDocs >= giveUpAfter ? [] : delays_ms;
+export const isHostGivenUp = (failedDocs: number, giveUpAfter: number): boolean => failedDocs >= giveUpAfter;
