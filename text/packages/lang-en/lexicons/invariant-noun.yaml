@@ -1,0 +1,26 @@
+# Nouns whose singular and plural are spelled alike, or that name one thing while ending in -s. The tagger may read
+# either number into them, so agreement-slip does not count them: "a series", "a means", "these staff", "this data".
+id: invariant-noun
+language: en
+entries:
+  - pattern: news
+  - pattern: series
+  - pattern: species
+  - pattern: means
+  - pattern: data
+  - pattern: media
+  - pattern: criteria
+  - pattern: phenomena
+  - pattern: staff
+  - pattern: personnel
+  - pattern: police
+  - pattern: headquarters
+  - pattern: crossroads
+  - pattern: whereabouts
+  - pattern: savings
+  - pattern: sheep
+  - pattern: fish
+  - pattern: deer
+  - pattern: aircraft
+  - pattern: spacecraft
+  - pattern: offspring

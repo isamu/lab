@@ -1,0 +1,10 @@
+# Possessives that only stand before a noun. One of these directly before a verb ("Your can check", "Their is no
+# limit") is "you" or "there" mistyped. "his" and "her" are left out: "His is red", "give her a copy".
+id: dependent-possessive
+language: en
+entries:
+  - pattern: my
+  - pattern: your
+  - pattern: our
+  - pattern: their
+  - pattern: its
