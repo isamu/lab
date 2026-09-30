@@ -1,0 +1,38 @@
+id: stray-space
+layer: L3
+status: experimental
+how_to_find: stray-space
+# どの境目が一続きの語句の中かは、語の品詞で決める。品詞が無ければ動かない。
+requires: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: 語句の途中に空白がある
+  en: Stray space inside a phrase
+
+why:
+  ja: 「こころさんが 払った」「確認 しました」のように、一続きに読む語句の途中に空白が入ると、読み手はそこで区切れるのかと迷います。打ち直しや貼り付けで残りやすく、目で見ても気づきにくい空白です。chaff は二つの境目を別々に数えます。助詞の後ろ（「が 払った」、文節の切れ目）と、文節を始められない語の前（「アプリ が」の助詞、「行き ます」の助動詞、「確認 しました」の「する」）です。文節ごとに空けて書く分かち書き（子ども向けの文や、日本語を学ぶ人向けの文）は書き方の一つなので、chaff はどちらが正しいかを決めず、文書の中で空けたほうが少ないときだけ、その空白を指摘します。名詞どうしのあいだ（「担当 田中」の名札と値、「赤坂 文弥」の名前、「サムネイル キャッシュ」の複合語）は書き方として空けることが多いので数えません。句点で終わらない行（歌、名札と値、表のような行）、見出し、表、行頭の全角空白の字下げ、行頭の項目の記号（「イ　」）の後ろ、Markdown の改行、鉤括弧（「」『』）で引いたものの中、英字・数字との境目（latin-spacing が見ます）も数えません。
+  en: A space inside what reads as one phrase in Japanese (こころさんが 払った, 確認 しました) makes the reader wonder whether the phrase breaks there. It is typically left over from retyping or pasting and is easy to miss by eye. chaff counts two kinds of joint separately, after a particle (が 払った, the break between phrases) and before a word that cannot start a phrase (a particle as in アプリ が, an auxiliary as in 行き ます, or する after a noun as in 確認 しました). Spacing every phrase (分かち書き, as in text for children or for learners of Japanese) is a way of writing, so chaff does not decide which is right; it reports the spaces only when the document spaces less often than it does not. A space between two nouns (a label and its value as in 担当 田中, a name as in 赤坂 文弥, a compound as in サムネイル キャッシュ) is often written on purpose and is not counted. Neither are lines that do not end with a full stop (verse, labels and values, table-like lines), headings, tables, a full-width indent at the start of a line, the space after an item mark at the start of a line (イ　), a Markdown line break, the inside of a quotation in 「」 or 『』, or a boundary with Latin letters or digits (latin-spacing looks at those).
+
+message:
+  ja: "「{before}」と「{after}」のあいだに空白があります（この文書では {of} 箇所のうち {count} 箇所が空いている）"
+  en: 'Space between "{before}" and "{after}" ({count} of {of} in this document are spaced)'
+
+messages:
+  between-phrases:
+    ja: "助詞「{before}」と「{after}」のあいだに空白があります（この文書は文節のあいだをふつう詰めて書く。{of} 箇所のうち {count} 箇所が空いている）"
+    en: 'Space after the particle "{before}" before "{after}" (this document usually writes phrases without a space; {count} of {of} are spaced)'
+  inside-phrase:
+    ja: "「{before}」と「{after}」は一続きの語句ですが、あいだに空白があります（{of} 箇所のうち {count} 箇所が空いている）"
+    en: '"{before}" and "{after}" read as one phrase but are separated by a space ({count} of {of} are spaced)'
+
+how_to_fix:
+  ja: 空白を消して詰めてください。文節ごとに空ける書き方をしているなら、文書全体でそろえてください。
+  en: Delete the space. If the document spaces its phrases on purpose, do so throughout.
+
+# 何箇所空いていれば指摘するか。1 は「1 箇所でも空いていれば」。
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+# 歌の行は句点で終わらないので、ジャンルを問わず数えない。
+use_for: [business, blog, technical, legal, docs, academic, literature, speech]

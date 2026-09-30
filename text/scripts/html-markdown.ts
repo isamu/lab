@@ -1,10 +1,12 @@
 // An HTML page (a CRS report as EveryCRSReport serves it, a ministry's page) as plain Markdown: headings, paragraphs,
 // list items and the text of links; ruby keeps its base text and loses its reading. Only the <main> element (else the
-// role="main" element, else a sole <article>) is read when the page has one. Scripts, styles, the head, navigation (by
+// role="main" element, else a sole <article>, else the block holding the title and nearly every sentence) is read when
+// the page has one. Scripts, styles, the head, navigation (by
 // element or by role, and breadcrumbs), asides, footers, forms, tables without sentences (html-tables.ts), footnote marks, lists and blocks of nothing but
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
-// title), a block before the page's title that holds a menu or only links and no sentence (the site's header, with its tagline and
-// labels), buttons outside a heading, hidden elements, text for a screen reader only (a visually-hidden class, a skip
+// title), a list of the page in other languages, a block of icons with only a label, a block before the page's title that holds a menu or only links and no sentence (the site's header, with its tagline and
+// labels), buttons outside a heading, controls (html-widgets.ts: tooltips, media players, scripted link buttons, paging
+// bars, unspoken text), hidden elements, text for a screen reader only (a visually-hidden class, a skip
 // link's target), a heading's link to its own section beside or after its title,
 // lines of nothing but in-page or script links (never a heading), a heading drawn as an image unless its alt text is the page's
 // title, blocks of nothing but links closing the page, and a copyright notice closing the page, with an address just
@@ -13,9 +15,12 @@
 import {
   ANY_LINK,
   ATTRIBUTES,
+  CLOSED_SENTENCE,
   asMarkup,
   elementRanges,
   hasNoWords,
+  hasSentence,
+  isFileLink,
   isInside,
   headingRanges,
   plainText,
@@ -27,8 +32,10 @@ import {
   untilStable,
   type ElementRange,
 } from "./html-elements.ts";
+import { contentBlock } from "./html-content-block.ts";
 import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
 import { withoutReaderOnlyText } from "./html-reader-only.ts";
+import { withoutWidgets } from "./html-widgets.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
 import { withTablesRead } from "./html-tables.ts";
 import { decodeEntities, tidyLines } from "./markup-text.ts";
@@ -83,8 +90,12 @@ const soleArticle = (html: string): string | undefined => {
   return only !== undefined && others.length === 0 && holdsEveryTitle(html, only) ? only.inner : undefined;
 };
 
-/** The page's own content: inside <main>, else the element marked role="main", else a sole <article>, else the whole page. */
-const mainContent = (html: string): string => /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? mainLandmark(html) ?? soleArticle(html) ?? html;
+/**
+ * The page's own content: inside <main>, else the element marked role="main", else a sole <article>, else the block
+ * holding the title and nearly every sentence (html-content-block.ts), else the whole page.
+ */
+const mainContent = (html: string): string =>
+  /<main\b[^>]*>([\s\S]*)<\/main\s*>/iu.exec(html)?.[1] ?? mainLandmark(html) ?? soleArticle(html) ?? contentBlock(html) ?? html;
 
 const LANDMARK = String.raw`(?:\brole\s*=\s*["']?navigation\b|\baria-label\s*=\s*(?:["'][^"']*|[^\s"'>]*)breadcrumb)`;
 
@@ -180,12 +191,30 @@ const isBreadcrumbList = (body: string, at: number, title: PageTitle | undefined
 /** A list with items and not a word in them: buttons drawn as images, such as a text-size switch. */
 const isWordlessList = (body: string): boolean => /<li\b/iu.test(body) && hasNoWords(plainText(body));
 
+const HREFLANG = /^<a\b[^>]*\shreflang\s*=/iu;
+
+/**
+ * A list of this page in other languages: every link names its language (hreflang) and opens a page, and every other
+ * item is only a label, the language being read ("English", "Español"). An item with a sentence, or a link to a file
+ * (a form in each language), makes it the document's.
+ */
+const isLanguageSwitch = (body: string): boolean => {
+  const links = [...body.matchAll(ANY_LINK)].map((link) => link[0]);
+  const items = body.split(/<li\b[^>]*>/iu).slice(1);
+  return (
+    links.length > 0 &&
+    links.every((link) => HREFLANG.test(link) && !isFileLink(link)) &&
+    items.every((item) => isNavigation(item) || !/<a\b/iu.test(item)) &&
+    !hasSentence(body)
+  );
+};
+
 /** From the inside out, so a nested table of contents goes too once its inner lists are gone. */
 const withoutNavigation = (html: string): string =>
   untilStable(html, (text) => {
     const title = pageTitle(text);
     return text.replace(/<(ul|ol)\b[^>]*>((?:(?!<[uo]l\b)[\s\S])*?)<\/\1\s*>/giu, (whole: string, _tag: string, body: string, at: number) =>
-      isNavigation(body) || isWordlessList(body) || isBreadcrumbList(body, at, title) ? " " : whole,
+      isNavigation(body) || isWordlessList(body) || isLanguageSwitch(body) || isBreadcrumbList(body, at, title) ? " " : whole,
     );
   });
 
@@ -204,9 +233,6 @@ const isDefinitionList = (range: ElementRange): boolean => /^<dl\b/iu.test(range
 /** What a block holds besides its menus: its link-only lists taken out, or a labelled menu's terms. */
 const besideMenus = (range: ElementRange): string =>
   isDefinitionList(range) && isLabelledMenu(range.inner) ? range.inner.replace(DEFINITION, " ") : withoutNavigation(range.inner);
-
-/** A full stop, question or exclamation mark closing a sentence, also before a closing quote or bracket; not the point in "3.5". */
-const CLOSED_SENTENCE = /[。．！？]|[.!?][)\]"'”’]*(?=\s|$)/u;
 
 const holdsMenu = (range: ElementRange): boolean => besideMenus(range) !== range.inner || isLinksOnly(range);
 
@@ -228,6 +254,40 @@ const withoutSiteHeader = (html: string): string => {
   return withoutRanges(
     html,
     innermost.filter(hasNoSentenceBesideMenus).toSorted((left, right) => left.start - right.start),
+  );
+};
+
+const ICON_MENU_BLOCKS = ["div", "section"];
+
+const LIST = /<(ul|ol)\b[^>]*>(?:(?!<[uo]l\b)[\s\S])*?<\/\1\s*>/giu;
+
+const wordlessLists = (html: string): string[] =>
+  [...html.matchAll(LIST)].map((list) => list[0]).filter((list) => isWordlessList(list.replace(/^<[^>]*>/u, "")));
+
+/** What a block holds beside its lists of icons. */
+const besideIcons = (range: ElementRange): string => wordlessLists(range.inner).reduce((text, list) => text.replace(list, " "), range.inner);
+
+/**
+ * Beside its wordless lists, one line, no sentence and no heading: the label of a row of icons ("Share & print",
+ * "Follow us"). A heading beside share buttons is the page's title.
+ */
+const isIconMenu = (range: ElementRange): boolean => {
+  const beside = besideIcons(range);
+  return textLines(beside).length === 1 && !hasSentence(beside) && !/<h[1-6]\b/iu.test(beside);
+};
+
+/**
+ * The innermost block holding a list of icons (share buttons, social links) and anything else goes whole when that is
+ * only a label; a wrapper around the list alone is passed over for the block that holds its label.
+ */
+const withoutIconMenus = (html: string): string => {
+  const menus = ICON_MENU_BLOCKS.flatMap((tag) => elementRanges(html, tag)).filter(
+    (range) => wordlessLists(range.inner).length > 0 && textLines(besideIcons(range)).length > 0,
+  );
+  const innermost = menus.filter((range) => !menus.some((inner) => isInside(range, inner)));
+  return withoutRanges(
+    html,
+    innermost.filter(isIconMenu).toSorted((left, right) => left.start - right.start),
   );
 };
 
@@ -283,11 +343,17 @@ const withoutClosingCopyright = (lines: readonly string[]): string[] => {
 
 const headingLevel = (line: string): number => /^#{1,6} /u.exec(line)?.[0].length ?? 0;
 
-/** Headings with nothing under them before the next heading of the same or a higher level: what dropped navigation left. */
+/** A rule drawn with characters ("_____", "-----"), which Markdown reads as a thematic break: a line, not text. */
+const isDrawnRule = (line: string): boolean => /^(?:([-_*=])\s*)(?:\1\s*){2,}$/u.test(line);
+
+/**
+ * Headings with nothing under them before the next heading of the same or a higher level: what dropped navigation left.
+ * A drawn rule under a heading is not something under it.
+ */
 const withoutEmptySections = (lines: readonly string[]): string[] =>
   lines.reduceRight<{ readonly kept: string[]; readonly nextLevel: number }>(
     (state, line) => {
-      if (line === "") return { kept: [line, ...state.kept], nextLevel: state.nextLevel };
+      if (line === "" || isDrawnRule(line)) return { kept: [line, ...state.kept], nextLevel: state.nextLevel };
       const level = headingLevel(line) - 1;
       if (level < 0) return { kept: [line, ...state.kept], nextLevel: Number.POSITIVE_INFINITY };
       if (state.nextLevel <= level) return state;
@@ -370,26 +436,6 @@ const withoutClosingAddress = (html: string): string => {
 
 const CLOSING_BLOCKS = ["div", "section", "p"];
 
-const HREF = /\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/iu;
-
-const PAGE_EXTENSION = /^(?:[sx]?html?|php|aspx?|jsp|cgi)$/iu;
-
-// The host is not part of the path: "https://example.com" names a site, not a file ending in .com.
-const SCHEME_AND_HOST = /^(?:[a-z][a-z0-9+.-]*:)?\/\/[^/?#]*/iu;
-
-// A link that opens no page (tel:, mailto:, sms:) carries its own content, a number or an address.
-const OTHER_SCHEME = /^\s*(?!https?:)[a-z][a-z0-9+.-]*:(?!\/\/)/iu;
-
-/** A link to a file (an appendix as PDF, a table as .xlsx), or one that opens no page, is part of the document. */
-const isFileLink = (link: string): boolean => {
-  const href = HREF.exec(link);
-  const target = href?.[1] ?? href?.[2] ?? href?.[3] ?? "";
-  if (OTHER_SCHEME.test(target)) return true;
-  const path = target.replace(SCHEME_AND_HOST, "").split(/[?#]/u)[0] ?? "";
-  const extension = /\.([a-z0-9]{1,5})$/iu.exec(path.split("/").at(-1) ?? "")?.[1];
-  return extension !== undefined && !PAGE_EXTENSION.test(extension);
-};
-
 const isClosingMenu = (text: string, range: ElementRange): boolean =>
   isLinksOnly(range) && !plainLinks(range.inner).some(isFileLink) && textLines(text.slice(range.end)).length === 0;
 
@@ -406,17 +452,22 @@ const withoutClosingLinks = (html: string): string =>
 // Markup's own spacing, collapsed as HTML does; U+3000 is a character Japanese text writes (a clause number and its text), so it stays.
 const MARKUP_SPACE = /[^\S\u3000]+/gu;
 
+// A zero-width space or joiner draws nothing, so a line of nothing else is empty (a page-number anchor).
+const INVISIBLE_ONLY = /^[\s\p{Cf}]*$/u;
+
 export const htmlToMarkdown = (html: string): string => {
   const uncommented = withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "");
   const preformatted = withPreformattedStashed(withTablesRead(DROPPED.reduce(withoutElement, withoutRubyText(uncommented))));
-  const kept = withoutHeadingSelfLinks(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(preformatted.html)))))
+  const kept = withoutHeadingSelfLinks(withoutWidgets(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(preformatted.html))))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(MARKUP_SPACE, " ");
-  const content = withoutClosingLinks(withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept))))));
+  const content = withoutClosingLinks(
+    withoutLinkGroups(withoutNavigation(withoutIconMenus(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))))),
+  );
   const text = decodeEntities(stripTags(asLines(markChromeLinks(withImageHeadingsRead(content, documentTitle(uncommented))))));
   const lines = text
     .split("\n")
-    .map((line) => line.trim())
+    .map((line) => (INVISIBLE_ONLY.test(line) ? "" : line.trim()))
     .filter((line) => line !== "-" && !isChromeLinkLine(line))
     .map((line) => line.replaceAll(LINK_START, "").replaceAll(LINK_END, ""));
   return tidyLines(withPreformattedRestored(withoutEmptySections(withoutClosingCopyright(withoutEmptySections(lines))), preformatted.blocks));

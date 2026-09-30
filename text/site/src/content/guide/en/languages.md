@@ -53,6 +53,11 @@ These read parts of speech:
 | `no-mixed-desumasu` | です・ます mixed with だ・である |
 | `no-doubled-joshi` | Chains of 「の」, as in 「弊社の新製品の販売の計画」 |
 | `taigen-dome-in-prose` | Runs of sentences that end on a noun, in running text |
+| `stray-space` | A space inside a phrase (「こころさんが 払った」, 「確認 しました」) |
+
+`stray-space` also accepts spacing every phrase (分かち書き) as a way of writing.
+It points at the spaces only when the document spaces less often than it does not.
+The rule is experimental, so turn it on in `chaff.yaml`.
 
 Loading the dictionary takes about two seconds, and it is skipped when none of these rules runs.
 For a language without part-of-speech tagging, such a rule does not pass silently.

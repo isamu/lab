@@ -105,7 +105,8 @@ const tokensOf = (text: string): string[] =>
     .map((token) => `${token.surface}/${token.pos}${token.features === undefined ? "" : JSON.stringify(token.features)}`);
 
 const CARD = JSON.stringify({ NumType: "Card" });
-const CLASS = JSON.stringify({ NounType: "Class" });
+const CLASS = JSON.stringify({ NounType: "Class", Bound: "Yes" });
+const BOUND = JSON.stringify({ Bound: "Yes" });
 
 const idsFor = (source: string): string[] => firedRules(ja, source);
 
@@ -117,7 +118,7 @@ describe("数と「つ」を解析器で読む", () => {
   it("gives 3つ, 三つ, ２つ the numeral and counter features", () => {
     assert.deepEqual(tokensOf("3つの理由"), [`3/NOUN${CARD}`, `つ/NOUN${CLASS}`, "の/ADP", "理由/NOUN"]);
     assert.deepEqual(tokensOf("三つの理由"), [`三/NOUN${CARD}`, `つ/NOUN${CLASS}`, "の/ADP", "理由/NOUN"]);
-    assert.deepEqual(tokensOf("２つ目"), [`２/NOUN${CARD}`, `つ/NOUN${CLASS}`, "目/NOUN"]);
+    assert.deepEqual(tokensOf("２つ目"), [`２/NOUN${CARD}`, `つ/NOUN${CLASS}`, `目/NOUN${BOUND}`]);
     assert.deepEqual(tokensOf("3 つの案"), [`3/NOUN${CARD}`, " /PUNCT", `つ/NOUN${CLASS}`, "の/ADP", "案/NOUN"]);
   });
 
@@ -193,7 +194,7 @@ describe("数と「つ」を解析器で読む", () => {
     assert.equal(countedAfter("4", "つで足りないとき"), true);
     assert.equal(countedAfter("4", "設定"), false);
     assert.equal(countedAfter("3", "つめの案"), true);
-    assert.deepEqual(tokensOf("三つめ"), [`三/NOUN${CARD}`, `つ/NOUN${CLASS}`, "め/NOUN"]);
+    assert.deepEqual(tokensOf("三つめ"), [`三/NOUN${CARD}`, `つ/NOUN${CLASS}`, `め/NOUN${BOUND}`]);
     const structure = ja.structure;
     if (structure === undefined) throw new Error("lang-ja has no structure");
     const source = ["# 設定", "", "## 1 概要", "", "本文。", "", "## 4 つで足りないとき", "", "本文。"].join("\n");

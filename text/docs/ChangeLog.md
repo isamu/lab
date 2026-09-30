@@ -23,6 +23,86 @@ A list needs three items, and four shapes made two items, or an "and" inside one
   object and not of any item's head, and there is no comma before "or", the "or" joins the preposition's objects.
   `requests for records, petitions for waivers and appeals` is still a list.
 
+### The corpus HTML converter drops players, share rows, language switches and paging bars, and finds the body of a page with no `<main>` (#170)
+
+Corpus round 11 found page chrome in the stored text. Each part is told by its structure, not by a site's class
+names:
+
+- **A media player.** The outermost block holding an `<audio>` or `<video>` and no sentence goes with its controls
+  ("Embed", "share", "0:00", "Direct link"); the words a browser shows when it cannot play the media do not count, and
+  a block with a sentence, a `<figcaption>` or a link to a file other than media (a transcript in PDF) stays. A `role="tooltip"` element ("The code has been copied to your
+  clipboard.") goes too.
+- **A scripted button.** A `div`, `p`, `span` or `li` with an event handler (`onclick`) that holds only a link ("Start
+  Quiz") is a button. A link inside a sentence stays. A rule drawn with characters (`_____`) no longer counts as
+  something under a heading, so a quiz's heading with nothing left under it goes.
+- **A language switch.** A list whose every link carries `hreflang` and opens a page (not a file), and whose other
+  items are only labels ("English", "Español").
+- **A row of icons.** The innermost block holding a list with no words (share buttons, social links) and something
+  else, when that is only a one-line label ("Share & print", "Share this page"). A label with a sentence, more than
+  one line, or a heading beside the icons stays.
+- **A paging bar.** The innermost block that opens with a back arrow and closes with a forward one around two or
+  more links to pages (not files), with no sentence beside the links (a work's header: "← Gray, John P. | Volume 9 | Green, Duff →").
+- **Text marked not to be spoken** (`style="speak: none"`), and a line of nothing but zero-width characters.
+- **A page with no `<main>`, `role="main"` or sole `<article>`.** When it has an `<h1>`, only the innermost block that
+  holds every heading and at least nine tenths of the text written in sentences, with no sentence before it, is read,
+  so a site's menus, side column and footer fall outside. A sentence that only repeats the title (in a breadcrumb)
+  does not count. Without an `<h1>`, or when no block qualifies, the whole page is read as before.
+
+Documents fetched from HTML change when they are fetched again.
+
+### The `docs/glossary` preset reads a glossary the way it is written (#170)
+
+A glossary is looked up one entry at a time. Its definitions are noun phrases (「風の吹いてくる方向。」), and sibling
+entries share one wording on purpose, so under `docs/glossary` `taigen-dome-in-prose` and `ngram-repetition` are off
+and listed under "did not run" with the genre as the reason. An English definition stacks its qualifiers into one
+sentence, so `max-sentence-length` allows 40 words at normal (30 strict, 50 relaxed) instead of 25; what it still
+reports are definitions packed with lists and long notes. Japanese glossaries keep the usual limit, which already
+reported only their longest sentences. Other genres do not change.
+
+### `heading-echo` measures a Japanese sentence in content words, not characters (#170)
+
+In Japanese, `heading-echo` measured what a first sentence adds as its characters, less the part of the heading it
+repeats. A character count does not say how much is said: 「会社に勤めています」 adds two words (会社, 勤める) and
+「について説明します」 adds one (説明), in the same nine characters. Corpus round 11 found
+「こころさんのお父さんは、会社に勤めています。」 under 「こころさんのお父さんの場合」 reported as an echo.
+
+Now, when the parts of speech are read, a Japanese sentence adds little if it has at most one content word that the
+heading does not have. A content word is a noun, verb, adjective, adverb or number that stands by itself; particles,
+auxiliaries, pronouns, determiners and conjunctions are not, nor are prefixes, suffixes and dependent words (the 「ご」
+of 「ご案内」, the 「さん」 of 「こころさん」, the 「いる」 of 「勤めている」) or the 「する」 that makes a verb of a noun
+(「説明します」). Words are matched by their base form, so 「変えました」 repeats 「変える」. `lang-ja` marks these
+tokens (`Bound=Yes`, `VerbType=Light`), and the count is a pure function in `chaffjs` that takes tokens. English is
+unchanged, and so is Japanese read without parts of speech.
+
+On the Japanese corpus documents this only removes findings: the two 「こころさんの…の場合」 sections, changelog entries
+that say what was added or how, and a meeting minute that names who explained what. A sentence that only restates its
+heading (「詳細：デジタル庁の組織づくり」, 「ブック メニューを拡充しました」, 「キャッシュの仕組みについて説明します。」) is
+still reported. Findings a reader might have kept went with them: a talk page's
+「一次資料の扱いに関して一つ問題を提起させて頂きます。」 and a changelog's 「スライドショーの機能を強化しました。」, which add
+two content words each.
+
+### The corpus checks each document with the preset for its kind (#170)
+
+`corpus/manifest.json` gave every document one of the original ten genres, so `yarn corpus` never ran the presets
+added in 0.16.0. Statutes and internal rules, contracts and privacy policies, court decisions, patents, manuals, FAQs,
+glossaries, papers, literature, speeches and transcripts now carry `legal/*`, `docs/*`, `academic/paper`,
+`literature/*` and `speech/*`, so a regression in a preset shows in `corpus/expected.txt`. The statutes in
+`corpus/laws/` are read as `legal/statute`, which names the statute profile; they were already read with it from
+their content, and their structure results do not change.
+
+### `stray-space`: a space inside a Japanese phrase (#170)
+
+A new experimental rule reports a half-width or full-width space inside what reads as one phrase: after a particle
+(「こころさんが 払った」) or before a word that cannot start a phrase (「アプリ が」, 「確認 しました」). Which joint is
+which comes from the parts of speech, so the rule needs the tagger. It takes no side on style: the two kinds of joint
+are counted separately, and a space is reported only when the document spaces that kind less often than it does not.
+A document that spaces every phrase on purpose (分かち書き in text for children) is left alone. So are spaces
+between two nouns (a label and its value, a name, a compound), lines that do not end with a full stop (verse,
+labels, table-like lines), headings, tables, a full-width indent, the space after an item mark at the start of a line,
+a Markdown line break, quotations in 「」 and boundaries with Latin letters or digits. On the Japanese corpus
+(`yarn corpus`), every space it reports is stray except one, which separates a lead-in from its explanation in a
+bullet whose line break was lost in conversion; the rule stays experimental until it has been measured further.
+
 ### `undefined-acronym` no longer asks to expand emphasis, a month in a date, a surname after a title or a qualified expansion (#170)
 
 Four kinds of capital word that corpus round 11 reported are not acronyms, and are no longer counted:

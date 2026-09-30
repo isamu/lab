@@ -41,9 +41,9 @@ const findingsWith = async (
   });
 };
 
-/** The structure rules' findings on one document, turned on as if --experimental. */
+/** The structure rules' findings on one statute, turned on as if --experimental, read as the legal/statute genre (its statute profile). */
 export const structureFindings = async (path: string, source: string, language = "ja"): Promise<CorpusFinding[]> =>
-  findingsWith(path, source, language, (id) => STRUCTURE_RULES.includes(id), "technical/spec");
+  findingsWith(path, source, language, (id) => STRUCTURE_RULES.includes(id), "legal/statute");
 
 /** Every rule's findings on one document of the given genre, as if --experimental, with the team's words when given. */
 export const allFindings = async (path: string, source: string, language: string, genre: string, team?: TeamWords): Promise<CorpusFinding[]> =>
