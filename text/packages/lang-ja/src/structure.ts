@@ -202,7 +202,9 @@ const DEFINITIONS = [/以下「(?<term>[^「」\n]{1,40})」という/gu, /「(?
  */
 const THIS_PART = /この[条項号款目節章編](?:及び[^、。]{1,20})?において$/u;
 const NEARBY_PART = /[前次同](?:各)?[項条号]に規定する$/u;
-const scopedLocally = (before: string): boolean => THIS_PART.test(before) || NEARBY_PART.test(before);
+/** 「規則第7条に規定する『X』とは」「法第31条第1項第1号の『X』とは」は、その番地で使う X の意味。番地の末尾だけを見る。 */
+const ADDRESSED_PART = new RegExp(`第${NUMBER}[条項号](?:の${NUMBER})?(?:に規定する|の)$`, "u");
+const scopedLocally = (before: string): boolean => THIS_PART.test(before) || NEARBY_PART.test(before) || ADDRESSED_PART.test(before);
 
 const definitions = (text: string): Mention[] =>
   DEFINITIONS.flatMap((pattern) =>

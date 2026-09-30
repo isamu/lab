@@ -1,4 +1,5 @@
 import { loadLexicons } from "./lexicons.ts";
+import { closesSentence } from "./sentence-close.ts";
 import { sentenceSpans } from "./sentence-split.ts";
 import { structure } from "./structure.ts";
 import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, readsAsOneWord, tokenize } from "./pos.ts";
@@ -9,8 +10,11 @@ import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence, Span } from
 
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
 
+const JAPANESE = /[぀-ゟ゠-ヿ一-鿿]/gu;
+const COUNTABLE = /\S/gu;
+
 /**
- * 日本語の文末は「。！？」に限られる。
+ * 日本語の文末は「。！？」と、語の後の「．」に限られる（closesSentence）。
  *
  * sentence-splitter は "." も文末と見なすため、「、Dr. 田中は」で誤分割する。
  * AbbrMarker の language を差し替えても直らない。原因は略語の保護ではなく、
@@ -19,12 +23,7 @@ import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence, Span } from
  * 文長は sentence-rhythm と max-sentence-length の入力なので、
  * 誤分割はそのまま指標を動かす。ここで閉じる。
  */
-const CLOSED = /[。！？!?][")）」』]*\s*$/u;
-
-const JAPANESE = /[぀-ゟ゠-ヿ一-鿿]/gu;
-const COUNTABLE = /\S/gu;
-
-const isOpen = (text: string): boolean => text.trim().length > 0 && !CLOSED.test(text);
+const isOpen = (text: string): boolean => text.trim().length > 0 && !closesSentence(text);
 
 /**
  * 断片を繋ぐときは raw の連結ではなくオフセットを使う。

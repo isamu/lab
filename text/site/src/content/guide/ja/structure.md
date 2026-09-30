@@ -184,7 +184,8 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
 法令の構造だけを確かめるときは、`error` の行を見ます。
 
 1 行目の下の行は、法令として見ることを勧めています。
-`--genre legal/statute --experimental` でかけると閾値が法令のものになり、`error` の 3 件だけが残ります。
+`--genre legal/statute` でかけると閾値が法令のものになり、`error` の 3 件だけが残ります。
+`legal/statute` も `legal/contract` と同じ構造のルールを動かすので、`--experimental` は要りません。
 
 2 か所を元に戻して `fixed.txt` にかけ直すと、`error` は消えます。
 
