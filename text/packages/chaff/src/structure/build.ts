@@ -11,6 +11,7 @@ import { numberInSentence } from "./number-in-sentence.ts";
 import { unnumberedUnit, type OpenUnit } from "./unnumbered.ts";
 import { readsOnHeading } from "./heading-leaves.ts";
 import { onLine, wrappedLine, type WrappedLine } from "./wrapped-tail.ts";
+import { foldPostOrder } from "../tree-walk.ts";
 
 /** 組み立て中の節点。できあがったら StructureNode に固める。 */
 type Draft = {
@@ -220,18 +221,20 @@ const extend = (state: State, end: number): void => {
   });
 };
 
-const freeze = (draft: Draft): StructureNode => ({
+const frozen = (draft: Draft, children: readonly StructureNode[]): StructureNode => ({
   kind: draft.kind,
   address: draft.address,
   span: { start: draft.start, end: draft.end },
   line: draft.line,
   attrs: draft.attrs,
-  children: draft.children.map(freeze),
+  children,
   ...(draft.ordinal === undefined ? {} : { ordinal: draft.ordinal }),
   ...(draft.level === undefined ? {} : { level: draft.level }),
   ...(draft.ordinalTo === undefined ? {} : { ordinalTo: draft.ordinalTo }),
   ...(draft.numbering === undefined ? {} : { numbering: draft.numbering }),
 });
+
+const freeze = (root: Draft): StructureNode => foldPostOrder(root, (draft) => draft.children, frozen);
 
 /** Markdown から取った手がかり。見出しと、中を読まない範囲（コード）。.txt はどちらも空。 */
 export type Outline = { readonly headings: readonly Heading[]; readonly opaque: readonly Span[] };
