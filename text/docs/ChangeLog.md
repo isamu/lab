@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `sasete-itadaku` lets the number of uses its message allows pass (#170)
+
+The message says 「3 回あります（3 回まで）」: three uses are allowed. The rule nevertheless reported a document with
+exactly three, so it spoke at the limit its own message allows. It now reports only when a document uses the form
+more often than the limit; at `strict` one use passes, as the rule's reason (once is polite) says. A numeric setting
+such as `sasete-itadaku: 3` now means three are allowed, as it does for the other rules whose message states a limit.
+
+Every other rule whose message states its limit already agreed: a value equal to an upper limit ("N まで", "limit N",
+"N% allowed") passes, and so does a value equal to a lower limit ("N% 以上ほしい", "want N%"). A new test holds this
+for every such rule in both languages.
+
 ### A paragraph written one per line is counted line by line (#170)
 
 Text that puts each paragraph on one line with no blank line between them (青空文庫 texts, minutes, HTML that breaks

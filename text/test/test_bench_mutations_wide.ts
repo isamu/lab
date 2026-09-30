@@ -61,8 +61,8 @@ describe("kanjiAdverb / doubleHonorific", () => {
 describe("humbleForms", () => {
   const polite = lines("資料を共有します。", "日程を調整します。", "結果を報告しました。", "費用を請求します。");
 
-  it("漢語に続く「します」を、上限の数だけ「させていただきます」にする", () => {
-    const plant = humbleForms(polite, limits({ "sasete-itadaku": 3 }));
+  it("漢語に続く「します」を、上限を 1 つ超える数だけ「させていただきます」にする", () => {
+    const plant = humbleForms(polite, limits({ "sasete-itadaku": 2 }));
     assert.deepEqual(plant?.source.split("\n"), [
       "資料を共有させていただきます。",
       "日程を調整させていただきます。",
@@ -72,8 +72,8 @@ describe("humbleForms", () => {
     assert.equal(plant?.line, 1);
   });
 
-  it("上限に届く数が無ければ、または上限が分からなければ植えない。「いたします」は替えない", () => {
-    assert.equal(humbleForms(polite, limits({ "sasete-itadaku": 5 })), undefined);
+  it("上限を超える数が無ければ、または上限が分からなければ植えない。「いたします」は替えない", () => {
+    assert.equal(humbleForms(polite, limits({ "sasete-itadaku": 4 })), undefined);
     assert.equal(humbleForms(polite, limits({})), undefined);
     assert.equal(humbleForms(lines("お願いいたします。", "お知らせいたします。"), limits({ "sasete-itadaku": 1 })), undefined);
   });
