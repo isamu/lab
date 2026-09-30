@@ -20,6 +20,26 @@ how_to_fix:
   ja: 余分な印を消してください。
   en: Delete the extra mark.
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「。。」「、。」のように、句読点が二つ並んだ所
+  en: Two punctuation marks side by side, as ",," or ".."
+example:
+  ja:
+    before: |
+      資料を送ります。。明日には届きます。
+    after: |
+      資料を送ります。明日には届きます。
+  en:
+    before: |
+      We will send the file today,, as agreed.
+    after: |
+      We will send the file today, as agreed.
+
+not_flagged:
+  ja: 「...」「。。。」のように三つ以上並べたもの、「e.g.,」「etc.;」のような略語の後ろ、「1..10」「../」のような範囲と道のり、「!!」「??」とコロンは指しません。
+  en: Three or more of one mark ("...", "。。。"), the mark after an abbreviation ("e.g.,", "etc.;"), ranges and paths ("1..10", "../"), "!!", "??" and colons are not reported.

@@ -157,7 +157,7 @@ oecd-global-drought-outlook-summary  adverb-overuse 1, agentless-passive 2, head
 openapi-spec-3-1-0  contraction-consistency 1, heading-echo 4, heading-level-skip 2, max-sentence-length 40, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
 pep-0020-zen-of-python  proper-noun-density 1
 plainlanguage-use-tables  agentless-passive 2, contraction-consistency 1, dangling-reference 1, max-sentence-length 5, preamble-length 1
-ppc-guidelines-tsusoku  duplicate-definition 11, latin-spacing 3, max-sentence-length 9, repeated-conjunction 9, undefined-acronym 4
+ppc-guidelines-tsusoku  duplicate-definition 11, latin-spacing 3, max-sentence-length 9, repeated-conjunction 9, unbalanced-bracket 23, undefined-acronym 4
 python-code-quality-list-2016-03  adverb-overuse 1, agentless-passive 7, max-sentence-length 23, preamble-length 1, proper-noun-density 1
 react-ja-thinking  heading-level-skip 1, max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-sentence-length 1, oxford-comma-consistency 1

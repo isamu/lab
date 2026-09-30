@@ -33,3 +33,21 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 3 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 読点の「、」と「，」、句点の「。」と「．」が、一つの文書の中で混ざっている所
+  en: Japanese commas written both 、 and ，, or periods written both 。 and ．, in one document
+example:
+  ja:
+    before: |
+      申込書は、窓口で受け付けます。書類は，担当者が確認します。結果は、翌日に知らせます。
+    after: |
+      申込書は、窓口で受け付けます。書類は、担当者が確認します。結果は、翌日に知らせます。
+
+not_flagged:
+  ja: 数の中の「，」「．」（１，０００、３．５）、番号の後ろの点（１．）、「Ｑ．」のような英字の印、「」の中、注の番号で始まる行と URL を含む文は数えません。どちらの書き方が正しいかは決めません。
+  en: Marks inside numbers (１，０００, ３．５), after a list number (１．), in a letter label (Ｑ．), inside 「」, and in a note or a sentence with a URL are not counted. Neither way is called right.
+level_meaning:
+  ja: 少ないほうの書き方が {limit} 箇所あれば指摘
+  en: reported once {limit} places go against the document's habit

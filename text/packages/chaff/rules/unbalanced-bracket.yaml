@@ -31,6 +31,26 @@ how_to_fix:
   ja: 足りない括弧を足すか、余分な括弧を消してください。全角と半角は、開きと閉じをそろえてください。
   en: Add the missing bracket or remove the extra one. Make the opening and closing marks the same width.
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 閉じ忘れた「（」や開きの無い「」」のように、組になっていない括弧と引用符
+  en: A bracket or quotation mark with no partner, such as a "(" that is never closed
+example:
+  ja:
+    before: |
+      資料（別紙を参照してください。
+    after: |
+      資料（別紙）を参照してください。
+  en:
+    before: |
+      The plan (see below is ready.
+    after: |
+      The plan (see below) is ready.
+
+not_flagged:
+  ja: 行の頭や空白の後ろの「1)」「a)」「事例）」のような三文字までの番号の印、数の後ろの「）」、コードと URL は数えません。段落をまたいで閉じる括弧と、次の段落を同じ引用符で始める台詞も指しません。
+  en: Labels of up to three characters such as "1)" or "a)" at the start of a line or after a space, a ")" right after a number, code and URLs are not counted. A bracket closed in a later paragraph, and a quotation carried into a paragraph that opens with the same mark, are not reported.
