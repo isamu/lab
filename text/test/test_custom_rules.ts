@@ -61,6 +61,8 @@ describe("custom rules", () => {
       "\\(a+\\)+",
       "(?:株式会社|有限会社)\\S+",
       "(ab)+c",
+      "(a{2}b)+c",
+      "[(a+)+]x",
     ];
     safe.forEach((pattern) => {
       it(`runs ${pattern}`, () => {
@@ -73,6 +75,7 @@ describe("custom rules", () => {
       ["(\\w+\\s?)*x", "nested-quantifier"],
       ["(?:x*y)+z", "nested-quantifier"],
       ["((ab)+)+", "nested-quantifier"],
+      ["((a+)b)+c", "nested-quantifier"],
       ["(a{2,})+", "nested-quantifier"],
       ["(.)\\1", "backreference"],
       ["(?<w>a)\\k<w>", "backreference"],
@@ -113,6 +116,13 @@ describe("custom rules", () => {
       ]);
       assert.deepEqual(tokenRuns(tokens, [{ pos: ["NOUN"] }, { base: "行う" }]), []);
       assert.deepEqual(tokenRuns(tokens, []), []);
+      const nouns = [token("東京", "NOUN"), token("都", "NOUN"), token("庁", "NOUN")];
+      assert.deepEqual(tokenRuns(nouns, [{ pos: ["NOUN"] }, { pos: ["NOUN"] }]), [[0, 1]]);
+    });
+
+    it("compares surface and base form without case", () => {
+      assert.deepEqual(tokenRuns([token("ASAP", "ADV")], [{ surface: "asap" }]), [[0, 0]]);
+      assert.deepEqual(tokenRuns([token("Made", "VERB", "Make")], [{ base: "make" }]), [[0, 0]]);
     });
   });
 

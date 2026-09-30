@@ -4,6 +4,25 @@ Newest first.
 
 ## Unreleased
 
+### `custom_rules:` — a team's own rules, without code (#170)
+
+A team can now write its own deterministic rules in chaff.yaml. Each one works like a built-in rule: findings,
+`explain` (with its example), `rules --json`, `stet`, `relax`, the baseline and SARIF.
+
+- **`type: words`** takes a list of words, or `avoid: use` pairs (`下さい: ください`).
+- **`type: pattern`** takes a regular expression (`TBD|未定`), with `ignore_case` if needed.
+- **`type: tokens`** takes a run of token conditions on part of speech, base form or surface. For example,
+  `[{pos: 名詞}, {surface: を}, {base: 行う}]` finds 「調査を行いました」. It works in Japanese and English, and
+  parts of speech are UD tags or everyday names (名詞, verb).
+- Every rule needs `name`, `why`, `how_to_fix` and an `example` with `before` and `after`, in ja and/or en.
+  `level` is `error`, `warning` or `info`.
+- A rule that cannot run stops the run and says why. Causes include a bad regex, a missing field, an id that is
+  already one of chaff's, and an unknown part of speech.
+- Regular expressions are checked before they run. A pattern longer than 500 characters is refused, and so is a
+  backreference, a pattern that matches the empty string, or a repeat around a group that already repeats or
+  alternates (`(a+)+`).
+- `type: module` (a small Node function) is reserved and refused for now.
+
 ### House styles: `style: ieice` and friends (#170)
 
 A well-known style guide can now be picked by name in chaff.yaml. The style sets rule levels and options, and cites

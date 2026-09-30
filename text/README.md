@@ -343,6 +343,40 @@ style: ieice
 強さは chaff.yaml の `rules:` と `options:` が最も強く、次にスタイル、次にジャンル、最後に既定。
 `explain` と `rules --json` は、どの値がスタイルから来たかを `style: ieice` と出す。知らないスタイル名は、実行を止めて使える名前を並べる。
 
+チームだけの決まりは `custom_rules:` にルールとして書ける。プログラムは要らない。種類は 3 つ。
+
+| `type:` | 見つけるもの | 書くもの |
+| --- | --- | --- |
+| `words` | 決めた語（直す先があればそれも） | `words: { 下さい: ください }` か語の並び |
+| `pattern` | 正規表現に当たる所 | `pattern:`（`ignore_case: true` で大文字小文字を区別しない） |
+| `tokens` | 品詞・原形・表記の並び（ja / en） | `tokens: [{ pos: 名詞 }, { surface: を }, { base: 行う }]` |
+
+どのルールにも `id`、`name`、`why`、`how_to_fix`、`example`（`before` と `after`）を書く。読む人に理由と直し方を伝えるため。
+`level`（`error` / `warning` / `info`、既定は `warning`）と `languages` は任意。
+
+```yaml
+custom_rules:
+  - id: team-tbd
+    type: pattern
+    pattern: 'TBD|未定'
+    level: error
+    name: 決まっていないことが残っている
+    why: 「TBD」「未定」が残ったまま配ると、読み手は決まったものとして動きます。
+    how_to_fix: 決める人と期限を書いてください。
+    example:
+      before: 公開日は TBD です。
+      after: 公開日は 10 月 1 日です（佐藤が 9 月 20 日までに確定します）。
+```
+
+```
+  5:6     error   決まっていないことが残っている:「TBD」
+                  team-tbd
+```
+
+チームのルールは chaff のルールと同じに扱う。`explain` は例も出し、`rules --json`、`stet`、`relax`、baseline、SARIF もそのまま効く。
+書き間違い（読めない正規表現、足りない説明、chaff のルールと同じ id）は、実行を止めて何が悪いかを言う。
+`(a+)+` のように長い行で止まらなくなる正規表現と後方参照は、動かす前に断る。`type: module`（Node の関数）は予約済みで、まだ使えない。
+
 知らない rule 名（たいていは綴り違い）と読めない値は、検査と `rules --json` が標準エラーに出す。黙って捨てると、効いていない設定を効いていると思い込むため。
 
 ## 品詞を見る rule

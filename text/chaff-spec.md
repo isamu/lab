@@ -1497,6 +1497,28 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 | `jis-z8301-2011` | `katakana-long-vowel`: `drop`、3 音 | JIS Z 8301:2011 附属書 G 表 G.3。2019 年版は外来語の表記によるとした |
 | `bunkacho` | `katakana-long-vowel`: `keep` | 外来語の表記 留意事項その 2 Ⅲ 3 注 3 |
 
+### 18.7 チームのルール（`custom_rules:`）
+
+チームは chaff.yaml に決定的なルールを足せる。コードは書かせない。どれも組み込みの rule と同じ `RuleDefinition` になり、
+指摘・`explain`・`rules --json`・`stet`・`relax`・baseline・SARIF がそのまま扱う。
+
+| `type` | 見るもの | detector |
+| --- | --- | --- |
+| `words` | 語の並び、または「使わない書き方: 使う書き方」。使う書き方の中の一部は数えない（preferred-term と同じ） | `custom-words` |
+| `pattern` | 正規表現。文ごとに当てる。`ignore_case: true` で `i` | `custom-pattern` |
+| `tokens` | 語の条件の並び。条件は `pos`（UPOS か 名詞・動詞・noun・verb などの名前）、`base`（原形）、`surface`（表記） | `custom-tokens`（`requires: [pos]`） |
+
+- 必須は `id`（英小文字・数字・ハイフン。chaff の rule と同じ id は不可）、`type`、`name`、`why`、`how_to_fix`、
+  `example.before`、`example.after`。文言は 1 つの文字列か `{ ja, en }`。`message` を書かなければ種類ごとの既定の文。
+- `level` は重さ（`error` / `warning` / `info`）。段階は重さの段（§18.1 の `level_sets: severity`）で、`relax` は一段軽く、
+  `strict` は一段重くする。status は `stable`（チームが名指しで書いたものなので、既定で動く）。use_for は全ジャンル。
+- **読めないものは実行を止める。** チームのルールが黙って動かないと、きれいな文書に見える。
+- **正規表現は動かす前に確かめる。** 長さ 500 字まで。後方参照（`\1`、`\k<name>`）と、空文字列に当たるもの、
+  上限の無い繰り返しの中に上限の無い繰り返しか選択肢を持つ群に、上限の無い繰り返しを付けた形（`(a+)+`、`(a|aa)*`、
+  `((a+)b)+`）は断る。V8 の正規表現は後戻りするので、この形は長い行で指数時間になる。当てるのは文ごとなので、
+  断らない形の時間も文の長さで抑えられる。
+- `type: module`（Node の関数）は予約した。いまは「まだ使えない」と言って止める。
+
 ---
 
 ## 19. CLI と出力例
