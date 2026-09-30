@@ -55,14 +55,12 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
                   max-sentence-length
   132:1   info    本文に体言止めが 11 文あります（4 文まで）
                   taigen-dome-in-prose
-  134:1   warning この段落は 6 文あります（5 文まで）
-                  max-paragraph-length
   170:22  warning この文は 102 文字あります（100 文字まで）
                   max-sentence-length
   344:1   warning この文は 129 文字あります（100 文字まで）
                   max-sentence-length
 
-指摘 6 件、動いていない rule 34 件
+指摘 5 件、動いていない rule 34 件
 ```
 
 最後の行は、指摘の数と、動かなかったルールの数です。

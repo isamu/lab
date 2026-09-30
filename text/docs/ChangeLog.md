@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `max-paragraph-length` no longer reports a paragraph of many short sentences (#170)
+
+The rule counted sentences only, so text written in short sentences (children's pages, a list of releases, a Q&A)
+was reported as a wall: every paragraph of NASA's spacewalk page for grades K-4 was. A paragraph is now reported only
+when it has more sentences than the limit and is also longer than that many sentences of ordinary length. That length is
+data in the rule's YAML (`full_sentence`, in characters for Japanese and words for English) and is multiplied by the
+limit, so the levels, the genres and a number in `chaff.yaml` move both together. The message still gives the number of
+sentences. A dense paragraph of long sentences is reported as before. The bench's joined-paragraph plant now joins
+paragraphs (across a heading if it must) into one line until both limits are passed.
+
 ### `yarn bench` checks every sample as a genre chaff has, and stops on one it does not (#170)
 
 The policy and note samples were checked as `business/policy` and `business/note`, which are not genres, so they ran
