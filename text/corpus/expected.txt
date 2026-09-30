@@ -197,7 +197,7 @@ vue-docs-ja-reactivity-fundamentals  max-sentence-length 1, no-doubled-joshi 1
 w3c-secure-contexts  excessive-hedging 1, heading-echo 2, max-sentence-length 26, ngram-repetition 1, oxford-comma-consistency 1, proper-noun-density 1
 wikipedia-en-markdown  adverb-overuse 1, agentless-passive 10, concrete-evidence-density 5, max-sentence-length 12, proper-noun-density 1, title-case-consistency 2
 wikipedia-ja-idobata-template-collapse  latin-spacing 1, stray-space 1
-wikipedia-ja-talk-oden  latin-spacing 4, max-paragraph-length 3, max-sentence-length 6, no-doubled-joshi 3, stray-space 1
+wikipedia-ja-talk-oden  latin-spacing 4, max-paragraph-length 1, max-sentence-length 6, no-doubled-joshi 3, stray-space 1
 wikisource-lincoln-letters-greeley  agentless-passive 4, max-paragraph-length 1, max-sentence-length 32, proper-noun-density 1
 wikivoyage-belgian-coast-tram  expletive-construction 6, max-paragraph-length 22, max-sentence-length 37, proper-noun-density 1
 wikivoyage-ja-shikoku-henro  latin-spacing 1, max-kanji-continuous 1, stray-space 1
