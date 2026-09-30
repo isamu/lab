@@ -19,6 +19,7 @@ planted:
   excessive-hedging: [ja, en]
   expletive-construction: [en]
   heading-echo: [ja, en]
+  heading-level-skip: [ja, en]
   hiragana-fukushi: [ja]
   internal-jargon: [ja, en]
   latin-spacing: [ja]

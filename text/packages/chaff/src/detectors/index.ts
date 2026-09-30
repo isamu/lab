@@ -19,6 +19,7 @@ import { aiTell, contractionMix, cushionDensity, hedging, repeatedConjunction, u
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
+import { headingLevelSkip } from "./heading-level-skip.ts";
 import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -71,4 +72,5 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "total-mismatch": totalMismatch,
   "numbering-gap": numberingGap,
   "duplicate-definition": duplicateDefinition,
+  "heading-level-skip": headingLevelSkip,
 };

@@ -8,7 +8,8 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { allFindings, type CorpusFinding } from "./corpus-findings.ts";
-import { MUTATIONS, type Mutation } from "./bench-mutations.ts";
+import { MUTATIONS } from "./bench-mutations.ts";
+import type { Mutation } from "./bench-text.ts";
 import { cleanLine, falseAlarms, formatTable, outcomeLine, outcomeOf, ruleTable, summaryChanges, type Outcome } from "./bench-score.ts";
 import { BENCH, contextOf, runsOn, samplesOf, teamOf, type Sample } from "./bench-samples.ts";
 import { planOf, planProblems, unplanted } from "./bench-coverage.ts";

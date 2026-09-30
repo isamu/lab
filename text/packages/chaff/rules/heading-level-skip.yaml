@@ -1,0 +1,26 @@
+id: heading-level-skip
+layer: L1
+status: experimental
+how_to_find: heading-level-skip
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 見出しの深さが飛んでいる
+  en: Heading level skipped
+
+why:
+  ja: 「##」の次に「####」が来ると、間の一段が抜けます。目次や画面読み上げは見出しの深さで文書の形を伝えるので、抜けた段は「どこかの節が消えた」ように読めます。見た目の大きさのために深さを選ぶと起きます。最初の見出しは何段から始めてもよく、一つ前の見出しより二段以上深いときだけ指摘します（markdownlint の MD001 と同じ数え方）。
+  en: A "####" right after a "##" leaves out a level. A table of contents and a screen reader show a document's shape by heading level, so the missing level reads as a section that went missing. It happens when a level is chosen for its size on screen. The first heading may start at any level; only a heading two or more levels deeper than the one before it is reported (as markdownlint's MD001 counts).
+
+message:
+  ja: 見出し「{heading}」の深さが {from} から {to} へ飛んでいます（{expected} のはず）
+  en: 'Heading "{heading}" goes from level {from} to level {to} (expected {expected})'
+
+how_to_fix:
+  ja: 一つ前の見出しより一段だけ深くしてください。文字の大きさを変えたいだけなら、深さではなく表示の設定で変えてください。
+  en: Make the heading one level deeper than the one before it. If only the size on screen was the point, change the style instead of the level.
+
+levels: { strict: 1, normal: 1, relaxed: 1 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]

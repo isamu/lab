@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### New rules: headings, images, links and URLs in Markdown (#170)
+
+Experimental rules that read the markup rather than the prose. They run on Markdown only and say so on a `.txt`
+("the document is not Markdown"), except `url-run-on`, which also reads plain text. Each finding in the corpus was
+read before the rule was added.
+
+- **`heading-level-skip`**: a heading two or more levels deeper than the one before it (`##` then `####`). The first
+  heading may start at any level, and after a skip the deeper level is the new baseline (markdownlint's MD001).
+
 ### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
 
 Several checks read a whole run, sentence or line again for each character, finding or reference in it, so their

@@ -80,10 +80,13 @@ const unreadOf = (doc: ProseDocument): Unread | undefined => {
 };
 
 /** 見出しを読む rule の要求。表題より下の見出しが無い文書では、本題の前を測れない。0 件を「前置きが短い」に見せない。 */
-const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings"]);
+/** 記法を読む rule の要求（markdown）。.txt には見出しの記法も画像もリンクの記法も無いので、0 件を「問題なし」に見せない。 */
+const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings", "markdown"]);
 
-const headingNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined =>
-  rule.requires.includes("headings") && bodySectionOf(doc.sections) === undefined ? reasonsFor(doc).noHeadings : undefined;
+const documentNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
+  if (rule.requires.includes("markdown") && !isMarkdownPath(doc.path)) return reasonsFor(doc).notMarkdown;
+  return rule.requires.includes("headings") && bodySectionOf(doc.sections) === undefined ? reasonsFor(doc).noHeadings : undefined;
+};
 
 /** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
 const has = (capabilities: ProseDocument["capabilities"], need: string): boolean => {
@@ -212,8 +215,8 @@ export const runRules = (
       // 段階を見た後で聞く。doc.structure は触れたときに木を作るので、止めている rule のために作らない。
       const noTree = treeNeed(rule, doc);
       if (noTree !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTree }] };
-      const noHeadings = headingNeed(rule, doc);
-      if (noHeadings !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noHeadings }] };
+      const noDocumentNeed = documentNeed(rule, doc);
+      if (noDocumentNeed !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noDocumentNeed }] };
       // 複合シグナルは二段目で扱う。一段目では「検出器が無い」と言わせない。
       if (rule.from.length > 0) return acc;
       const detector = DETECTORS[rule.how_to_find];

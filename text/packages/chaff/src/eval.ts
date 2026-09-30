@@ -74,6 +74,8 @@ const meets = (need: string, docs: readonly ProseDocument[]): boolean => {
   if (need === "structure") return docs.length > 0 && docs.every((doc) => doc.structure !== undefined);
   // 見出しの無い文書では lint が動かない。見出しのある文書が 1 つも無ければ、どの閾値でも 0 件になる。
   if (need === "headings") return docs.some((doc) => bodySectionOf(doc.sections) !== undefined);
+  // 記法を読む rule は Markdown の文書でしか動かない。
+  if (need === "markdown") return docs.some((doc) => doc.markup?.markdown === true);
   return false;
 };
 

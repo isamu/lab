@@ -19,7 +19,20 @@ import { spanOf, type MarkdownNode as Node } from "./markdown-node.ts";
 import { emailParts, emailVocabulary } from "./email-parts.ts";
 import { cutTextSpans } from "./span-cut.ts";
 import { markdownFigures } from "./text-figures.ts";
-import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile, Token } from "./plugin.ts";
+import { documentMarkup } from "./markup.ts";
+import type {
+  BulletList,
+  LanguageAdapter,
+  Markup,
+  Paragraph,
+  ProseDocument,
+  Section,
+  Sentence,
+  Span,
+  StructureNode,
+  DocumentProfile,
+  Token,
+} from "./plugin.ts";
 
 /**
  * 本文として数えないもの。
@@ -364,6 +377,9 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     profile,
     prose,
     replyQuotes: emailLayout.replyQuotes,
+    get markup(): Markup {
+      return documentMarkup(root, source, markdown, emailLayout.replyQuotes);
+    },
   };
 };
 
