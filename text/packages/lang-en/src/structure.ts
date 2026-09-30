@@ -1,5 +1,5 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
-import { citedDocumentAfter, citedDocumentBefore, hyphenatedTagAround } from "./citation.ts";
+import { citedDocumentAfter, citedDocumentBefore, listedTagAround } from "./citation.ts";
 import { citedCodeBefore, codeVocabulary } from "./code-citation.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { membersAfter } from "./reference-list.ts";
@@ -148,7 +148,7 @@ const CODES = codeVocabulary(LEXICONS);
 /** The other document a reference names, or else a bracketed tag that the core checks against the document's list. */
 const citation = (text: string, start: number, end: number, document: string | undefined): Readonly<Record<string, string>> => {
   if (document !== undefined) return { document };
-  const citedTag = hyphenatedTagAround(text, start, end);
+  const citedTag = listedTagAround(text, start, end);
   return citedTag === undefined ? {} : { citedTag };
 };
 

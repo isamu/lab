@@ -2057,6 +2057,149 @@
       "url": "https://raw.githubusercontent.com/18F/18f.gsa.gov/292605ab095af8e70e2087aca63c2319ce892a4c/content/posts/2024-07-17-working-with-oracle-databases-in-open-source-projects.md",
       "license": "CC0-1.0 (US government work, public domain; the repository's LICENSE.md)",
       "redistribute": true
+    },
+    {
+      "id": "ghdocs-basic-writing-and-formatting",
+      "title": "GitHub Docs: Basic writing and formatting syntax",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/github/docs/d45a621cbb91a7371c49ffbb35334ece98556c2f/content/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax.md",
+      "license": "CC-BY-4.0 (the github/docs repository's LICENSE: \"Creative Commons Attribution 4.0 International\"); © GitHub, Inc., source https://github.com/github/docs",
+      "redistribute": true
+    },
+    {
+      "id": "docusaurus-admonitions-mdx",
+      "title": "Docusaurus docs: Admonitions (MDX)",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/facebook/docusaurus/baaa9069324a8dbff1ff8e3ffcd4598d5242332a/website/docs/guides/markdown-features/markdown-features-admonitions.mdx",
+      "license": "MIT (the facebook/docusaurus repository's LICENSE: \"Copyright (c) Facebook, Inc. and its affiliates. Permission is hereby granted, free of charge, … to deal in the Software without restriction\")",
+      "redistribute": true
+    },
+    {
+      "id": "openapi-spec-3-1-0",
+      "title": "OpenAPI Specification v3.1.0",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/447c479c9c7136918e80a57a258fd6c84f369c7c/versions/3.1.0.md",
+      "license": "Apache-2.0 (the document's own notice: \"This document is licensed under The Apache License, Version 2.0\"; the OAI/OpenAPI-Specification repository's LICENSE)",
+      "redistribute": true
+    },
+    {
+      "id": "typescript-5-4-release-notes",
+      "title": "TypeScript 5.4 release notes (TypeScript website documentation)",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/microsoft/TypeScript-Website/6556b08756b766fd41d0f887174cb0b042e5f72c/packages/documentation/copy/en/release-notes/TypeScript%205.4.md",
+      "license": "CC-BY-4.0 (the microsoft/TypeScript-Website repository's LICENSE: \"Creative Commons Attribution 4.0 International\"); © Microsoft Corporation. The text credits contributors by name and GitHub handle, as part of the licensed work",
+      "redistribute": true
+    },
+    {
+      "id": "vite-plugin-legacy-changelog",
+      "title": "Vite: @vitejs/plugin-legacy CHANGELOG",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/vitejs/vite/cf5c0288d526824aead1b24e977400f13c527927/packages/plugin-legacy/CHANGELOG.md",
+      "license": "MIT (the vitejs/vite repository's LICENSE: \"Copyright (c) 2019-present, VoidZero Inc. and Vite contributors. Permission is hereby granted, free of charge, …\")",
+      "redistribute": true
+    },
+    {
+      "id": "plainlanguage-use-tables",
+      "title": "Federal Plain Language Guidelines: Use tables to make complex material easier to understand (plainlanguage.gov)",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/GSA/plainlanguage.gov/fd7694740f19c0ed20ed71c2dd1dc92699e920fa/_pages/guidelines/design/use-tables-to-make-complex-material-easier-to-understand.md",
+      "license": "CC0-1.0 (the GSA/plainlanguage.gov repository's LICENSE.md: \"As a work of the United States Government, this project is in the public domain within the United States. Additionally, we waive copyright and related rights in the work worldwide through the CC0 1.0 Universal public domain dedication.\"). Its front matter lists the published books it draws on",
+      "redistribute": true
+    },
+    {
+      "id": "vue-docs-ja-reactivity-fundamentals",
+      "title": "Vue.js 日本語ドキュメント: リアクティビティーの基礎",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/vuejs-translations/docs-ja/edc1273e61d3f46668bd78b29d18ef04adcf5138/src/guide/essentials/reactivity-fundamentals.md",
+      "license": "CC-BY-4.0 (the vuejs-translations/docs-ja repository's LICENSE: \"The contents of this repository, except for all image files, are licensed under CC BY 4.0\"; Copyright (c) 2019-present, Yuxi (Evan) You and Vue documentation contributors)",
+      "redistribute": true
+    },
+    {
+      "id": "jsprimer-loop",
+      "title": "JavaScript Primer: ループと反復処理",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/asciidwango/js-primer/b4f2bb04dce74868c46e73a8fd9842c67ab24e49/source/basic/loop/README.md",
+      "license": "CC-BY-4.0 (the asciidwango/js-primer README's License section: \"Copyright (c) 2016-present jsprimer project\", \"文章: CC BY 4.0\", \"ソースコード: MITライセンス\"); source https://jsprimer.net/",
+      "redistribute": true
+    },
+    {
+      "id": "textlint-preset-ja-technical-writing-readme",
+      "title": "textlint-rule-preset-ja-technical-writing README",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/textlint-ja/textlint-rule-preset-ja-technical-writing/5e73caaf8700db90408bb133b0d792aaea4337d6/README.md",
+      "license": "MIT (the README's own notice: \"MIT © azu\"; the repository's LICENSE)",
+      "redistribute": true
+    },
+    {
+      "id": "kimino-opendata-site",
+      "title": "紀美野町: オープンデータサイト",
+      "source": "url",
+      "genre": "docs/manual",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260805022359id_/https://www.town.kimino.wakayama.jp/jigyosha/opendata/2950.html",
+      "license": "紀美野町ホームページの利用ルール（政府標準利用規約（第2.0版）準拠、CC BY 4.0 互換）; 出典: 紀美野町ホームページ (https://www.town.kimino.wakayama.jp/jigyosha/opendata/2950.html); 「オープンデータサイト」（紀美野町）（https://www.town.kimino.wakayama.jp/jigyosha/opendata/2950.html）を加工して作成 (converted to Markdown)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "rfc9293-tcp",
+      "title": "RFC 9293: Transmission Control Protocol (TCP)",
+      "source": "url",
+      "genre": "technical/spec",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260731130543id_/https://www.rfc-editor.org/rfc/rfc9293.txt",
+      "license": "IETF Trust (BCP 78); URL only",
+      "redistribute": false
+    },
+    {
+      "id": "python-code-quality-list-2016-03",
+      "title": "code-quality mailing list (mail.python.org), March 2016 archive",
+      "source": "url",
+      "genre": "business/email",
+      "language": "en",
+      "url": "https://web.archive.org/web/20231231132459id_/https://mail.python.org/pipermail/code-quality/2016-March.txt",
+      "license": "No licence stated for the list archive; the messages remain their authors' and name private individuals (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "wikipedia-en-markdown",
+      "title": "English Wikipedia: Markdown",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://en.wikipedia.org/w/index.php?oldid=1376168863&action=raw",
+      "license": "CC-BY-SA-4.0 (URL only)",
+      "redistribute": false,
+      "format": "wikitext"
+    },
+    {
+      "id": "wikipedia-ja-idobata-template-collapse",
+      "title": "ウィキペディア日本語版: Wikipedia:井戸端/subj/Templateの折り畳みが出来なくなっている件",
+      "source": "url",
+      "genre": "blog/essay",
+      "language": "ja",
+      "url": "https://ja.wikipedia.org/w/index.php?oldid=38035862&action=raw",
+      "license": "CC-BY-SA-4.0 (URL only)",
+      "redistribute": false,
+      "format": "wikitext"
     }
   ]
 }
