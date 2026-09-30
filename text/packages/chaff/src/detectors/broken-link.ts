@@ -8,7 +8,7 @@ const PAGE_TOP = new Set(["", "top"]);
 export const anchorKey = (name: string): string => name.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 
 /** 同じ見出しが二つあると、表示するものは二つ目以降に -1、-2 を付ける。 */
-const DUPLICATE_SUFFIX = /-\d+$/u;
+const DUPLICATE_SUFFIX = /-(\d+)$/u;
 
 const decoded = (fragment: string): string => {
   try {
@@ -18,18 +18,27 @@ const decoded = (fragment: string): string => {
   }
 };
 
-/** 文書の中の、名前を持つところ（見出しと、書き手が付けた id）の形。 */
 /** 「&」を and と読んで名前を作るもの（M&IE → m-and-ie）もある。 */
-const namesOf = (text: string): string[] => [text, text.replaceAll("&", " and ")];
+const namesOf = (text: string): string[] => [...new Set([text, text.replaceAll("&", " and ")])];
 
-export const anchorKeys = (markup: Markup): ReadonlySet<string> =>
-  new Set([...markup.headings.map((heading) => heading.text), ...markup.ids].flatMap(namesOf).map(anchorKey));
+/** 文書の中の、名前を持つところ（見出しと、書き手が付けた id）の形と、同じ形がいくつあるか。 */
+export const anchorKeys = (markup: Markup): ReadonlyMap<string, number> =>
+  [...markup.headings.map((heading) => heading.text), ...markup.ids]
+    .flatMap((name) => [...new Set(namesOf(name).map(anchorKey))])
+    .reduce((counts, key) => counts.set(key, (counts.get(key) ?? 0) + 1), new Map<string, number>());
+
+/** `#setup-2` は、同じ形の見出しが 3 つ以上あるときだけ行き先がある（二つ目が -1）。 */
+const reachesDuplicate = (fragment: string, keys: ReadonlyMap<string, number>): boolean => {
+  const suffix = DUPLICATE_SUFFIX.exec(fragment);
+  if (suffix === null) return false;
+  return (keys.get(anchorKey(fragment.slice(0, suffix.index))) ?? 0) > Number(suffix[1]);
+};
 
 /** `#…` の行き先が、文書の中の見出しか id を指しているか。 */
-export const reachesAnchor = (destination: string, keys: ReadonlySet<string>): boolean => {
+export const reachesAnchor = (destination: string, keys: ReadonlyMap<string, number>): boolean => {
   const fragment = decoded(destination.slice(1));
   if (PAGE_TOP.has(fragment.toLowerCase())) return true;
-  return keys.has(anchorKey(fragment)) || keys.has(anchorKey(fragment.replace(DUPLICATE_SUFFIX, "")));
+  return keys.has(anchorKey(fragment)) || reachesDuplicate(fragment, keys);
 };
 
 /**

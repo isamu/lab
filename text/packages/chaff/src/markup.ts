@@ -34,11 +34,12 @@ export const namedHeading = (written: string): NamedHeading => {
   return isComment ? { text: before, id: inner.slice(MDX_COMMENT_OPEN.length, -MDX_COMMENT_CLOSE.length).trim() } : { text: trimmed, id: undefined };
 };
 
-/** HTML の id・name 属性の値。 */
-const HTML_ID = /\b(?:id|name)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/giu;
+/** HTML の id・name 属性の値。属性の前は空白なので、data-id は数えない。 */
+const HTML_ID = /\s(?:id|name)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/giu;
 
-const IMG_TAG = /<img\b[^>]*>/giu;
-const ALT_ATTRIBUTE = /\balt\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))?/iu;
+/** `<img …>`。引用符の中の `>`（title="2 > 1"）では閉じない。 */
+const IMG_TAG = /<img\b(?:"[^"]*"|'[^']*'|[^"'>])*>/giu;
+const ALT_ATTRIBUTE = /\salt\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))?/iu;
 
 /** 中を字のまま見せない節。リンクの中の字はリンクで、コードと HTML は字ではない。 */
 const NOT_TEXT = new Set(["link", "linkReference", "code", "inlineCode", "html", "yaml", "toml", "definition"]);

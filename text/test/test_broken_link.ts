@@ -45,6 +45,15 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf(source), []);
   });
 
+  it("-1、-2 の付いた名前は、同じ見出しがその数だけあるときだけ行き先がある", () => {
+    const source = "## Setup\n\n## Setup\n\n## Step 3\n\n[a](#setup-1) [b](#setup-2) [c](#step-3)\n";
+    assert.deepEqual(findingsOf(source, en), ['The link "[b](#setup-2)" points to "#setup-2", which is not a heading on this page']);
+  });
+
+  it("data-id は名前ではない", () => {
+    assert.deepEqual(findingsOf('<div data-id="faq"></div>\n\n[FAQ](#faq)\n', en).length, 1);
+  });
+
   it("ページの先頭（#、#top）は見出しが無くても行き先がある", () => {
     assert.deepEqual(findingsOf("本文です。\n\n[戻る](#) [先頭](#top)\n"), []);
   });

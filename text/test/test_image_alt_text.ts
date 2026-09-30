@@ -31,6 +31,12 @@ describe("image-alt-text: 代替テキストの無い画像", () => {
     assert.deepEqual(findingsOf('<img src="line.png" alt="">\n\n<img src="logo.png" alt="Logo">\n', en), []);
   });
 
+  it("data-alt は代替テキストではなく、引用符の中の > で img は閉じない", () => {
+    assert.deepEqual(findingsOf('<img src="x.png" data-alt="chart">\n\n<img title="2 > 1" alt="" src="y.png">\n', en), [
+      'Image "<img src="x.png" data-alt="chart">" has no alt text',
+    ]);
+  });
+
   it("段落の中の img も読む", () => {
     assert.deepEqual(findingsOf('See <img src="a.png"> here.\n', en).length, 1);
   });
