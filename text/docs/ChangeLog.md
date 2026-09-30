@@ -22,6 +22,31 @@ drop the final ー on words of three morae or more (コンピュータ), newspap
 - An option that does not apply (an unknown rule or option, a value that does not fit) is said on stderr on every run.
   `chaff explain` shows each option's value and where it came from; `chaff rules --json` carries `options`.
 
+### `undefined-acronym`: a figure neither uses nor explains an acronym (#170)
+
+Since plain-text figures are masked, RFC 9293 reports LISTEN. That is the intended behaviour, now pinned by tests. An
+acronym that appears only in a figure is not reported, and one that a figure shows before the prose uses it is
+reported at its first use in prose unless the prose expands it. LISTEN had been silent only because a cell of the
+message-sequence figure, "LISTEN (??)", read as LISTEN with its expansion in brackets. The prose that describes LISTEN
+("LISTEN - represents waiting for a connection request …") says what the state means but does not expand it. Its
+siblings SYN-SENT and LAST-ACK, described in the same list, were already reported.
+
+### Email: a list archive's attachment stub is not prose (#170)
+
+Mailman leaves a note where it removed an attachment: "An HTML attachment was scrubbed..." and a `URL: <…>` line, or
+the note with `Name`, `Type`, `Size`, `Desc` and `URL` fields. The note was read as the writer's sentence, so each one
+was an agentless passive, and together they were a repeated phrase. A block right after a separator line is now furniture
+when its first line ends as a new `email-attachment-note` lexicon says ("was scrubbed...", 「を保管しました...」),
+every other line is a `Field: value` line, the last one a URL alone, and it is six lines at most. The same words in
+the writer's own paragraph, away from a separator or with a sentence among the fields, are still prose.
+
+### `title-case-consistency`: "vs", "v." and "via" stay lowercase in Title Case (#170)
+
+"Development Environment vs MulmoChat" was counted as a sentence-case heading, because "vs" was read as a word that
+Title Case capitalises. Chicago, APA, AP and MLA all keep "vs.", "v." and "via" lowercase in a title, so they now join
+the other small words that the check skips. A heading whose other words are lowercase ("Switch via environment
+variable") is still sentence case.
+
 ### `relax` on a rule with nothing to count lowers the severity instead of doing nothing (#170)
 
 `numbering-gap`, `dangling-reference`, `date-weekday-mismatch`, `total-mismatch`, `duplicate-definition`, `date-order`,
