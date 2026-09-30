@@ -25,3 +25,44 @@ how_to_fix:
 levels: { strict: 1, normal: 3, relaxed: 6 }
 
 use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 数字もコードもリンクも無く、読み手が持ち帰れるものの無い節
+  en: A section with no number, no code and no link, so the reader has nothing to take away
+example:
+  ja:
+    config: { rules: { concrete-evidence-density: strict } }
+    before: |
+      # 改善の報告
+
+      ## 成果
+
+      問い合わせ対応が大きく良くなりました。お客様からの評判も上々です。担当者の負担も軽くなりました。
+    after: |
+      # 改善の報告
+
+      ## 成果
+
+      問い合わせへの回答が、平均 3 日から 1 日になりました。お客様アンケートの満足度は 72% から 85% に上がりました。担当者の残業は月 10 時間減りました。
+  en:
+    config: { rules: { concrete-evidence-density: strict } }
+    before: |
+      # Improvement report
+
+      ## Results
+
+      Our help desk got much better. Customers are pleased with it. The team feels less pressure too.
+    after: |
+      # Improvement report
+
+      ## Results
+
+      Replies to help desk tickets now take 1 day on average, down from 3. Customer satisfaction rose from 72% to 85%. Overtime fell by 10 hours a month.
+
+not_flagged:
+  ja: 3 文より短い節、索引のように項目を並べた節は見ません。
+  en: Sections shorter than three sentences, and index-like sections of entries, are not checked.
+level_meaning:
+  ja: 具体物のない節が {limit} 個あれば指摘
+  en: reported once {limit} sections have nothing concrete

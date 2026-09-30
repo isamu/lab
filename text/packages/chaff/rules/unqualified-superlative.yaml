@@ -26,3 +26,22 @@ how_to_fix:
 levels: { strict: 1, normal: 2, relaxed: 4 }
 
 use_for: [business, blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「業界最速」「最高の品質」のように、何と比べたのかを書いていない最上級
+  en: A superlative such as "the fastest" with nothing to compare it against
+example:
+  ja:
+    before: 当社の新製品は業界最速で、最高の品質です。圧倒的な使いやすさです。
+    after: 当社の新製品は、従来品より処理が二割速くなりました。
+  en:
+    before: Our new product is the fastest on the market, with unmatched quality and unparalleled ease of use.
+    after: Our new product processes orders a fifth faster than the previous model.
+
+not_flagged:
+  ja: 「当社比」「〜の中で」のように、比べる相手や範囲が同じ文にあれば指しません。
+  en: A superlative with its comparison or scope in the same sentence ("in our range", "than last year") is not reported.
+level_meaning:
+  ja: 比べる相手のない最上級が {limit} 箇所あれば指摘
+  en: reported once there are {limit} such claims

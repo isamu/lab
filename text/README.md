@@ -131,7 +131,8 @@ npx chaffjs --version            chaffjs と言語パッケージの版
 npx chaffjs baseline docs/       いまある指摘を棚上げする
 npx chaffjs suppressions docs/   stet で黙らせている指摘を数える
 npx chaffjs article.md --watch   保存のたびに、変わったところだけ出す
-npx chaffjs rules --json         いまの設定を JSON で出す（AI に設定を書かせるときに渡す）
+npx chaffjs rules                ルールの一覧を、グループごとに表で出す（いまの段階つき）
+npx chaffjs rules --json         いまの設定とルールの説明を JSON で出す（AI に設定を書かせるときに渡す）
 npx chaffjs tree contract.txt    文書を番地の付いた木にする（条・項・定義・参照）
 npx chaffjs cite 原文 引用.json  引用が原文にあるかを確かめる
 npx chaffjs skill                Claude Code の skill を入れる
@@ -289,6 +290,8 @@ AI に設定を書かせるときは `npx chaffjs rules --json` を渡す。今�
 rules:
   max-sentence-length: 260
 ```
+
+番号の抜け（`numbering-gap`）のように数えるもののない rule には上限が無い。4 つの言葉は指摘の重さを変え、`relaxed` にしても指摘は消えずに一段軽く出る（エラーは注意に、注意は参考に）。
 
 チームで決めた表記は `prefer:` に「避ける綴り: 使う綴り」で書き、`preferred-term` を動かす。英字や数字の前後に空白を入れるかどうかが文書の中で混ざっているのは `latin-spacing`（日本語）が見る。どちらも試験中なので、`rules:` に名前を書いて動かす。
 

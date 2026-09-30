@@ -121,6 +121,7 @@ profile: statute
 
 ## ルールの強さを変える
 
+どんなルールがあるかは、[リファレンス](./reference) に例と一緒に並べてあります。
 ルールの強さは、`rules` の下に 4 つの言葉で書きます。
 
 ```yaml
@@ -161,6 +162,31 @@ $ npx chaffjs explain max-sentence-length
 
 同じ `normal` でも、ジャンルによって数字が違います。
 数字ではなく言葉で書くのは、ジャンルに合った数字を chaff に選ばせるためです。
+
+## 数えるもののないルール
+
+番号の抜けや、日付と曜日の食い違いは、あるか無いかだけです。数える上限がありません。
+こうしたルールでは、4 つの言葉が指摘の重さを変えます。`relaxed` にしても指摘は消えず、一段軽く出ます。
+
+| ルール | `strict` | `normal` | `relaxed` |
+| --- | --- | --- | --- |
+| `numbering-gap` `dangling-reference` `date-weekday-mismatch` `total-mismatch` | （無い） | エラー | 注意 |
+| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` | エラー | 注意 | 参考 |
+
+エラーが 1 件でも残ると、chaff は失敗で終わります。注意と参考だけなら成功で終わります。
+`explain` でも、数字の代わりに重さが出ます。
+
+```
+$ npx chaffjs explain numbering-gap --genre legal/statute
+（略）
+  設定できる値（数える上限は無く、指摘の重さが変わります）:
+  → normal   エラー
+    relaxed  注意
+    off      見ない
+```
+
+見なくてよいときは `off` で止めます。
+数を書いても `normal` として動くだけなので、chaff は設定を読んだときにそう言います。
 
 ## 4 つで足りないとき
 
@@ -310,6 +336,7 @@ npx chaffjs rules --json         いまの設定を JSON で出す
     "literature",
     "speech"
   ],
+  "level_sets": "limit",
   "levels": {
     "strict": 70,
     "normal": 100,
@@ -335,6 +362,8 @@ npx chaffjs rules --json         いまの設定を JSON で出す
 ```
 
 `now` が、いま実際に効いている値です。
+`level_sets` は、段階が何を変えるかです。`limit` は数える上限、`severity` は指摘の重さです。
+数えるもののないルールでは、`levels` と `now` に数の代わりに重さ（`error` / `warning` / `info`）が出ます。
 試験中のルールなら、`now` に動いていない理由と動かしかたが出ます。
 
 ```json

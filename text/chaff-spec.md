@@ -1351,6 +1351,22 @@ padded-intro に strict はありません。normal と同じ設定です。
 設定は変更しませんでした。
 ```
 
+**数えるもののない rule がある。** 番号の抜け、参照先の無い参照、日付と曜日の食い違い、合わない合計、語の二重定義は、あるか無いかだけで、数える上限を持たない。こうした rule は `levels` に数ではなく重さを書き、段は指摘の重さを変える。L4 の rule（§13）と同じ書き方。
+
+```yaml
+numbering-gap:
+  severity: error
+  levels: { normal: error, relaxed: warning }        # error の上は無いので strict は書かない
+duplicate-definition:
+  severity: warning
+  levels: { strict: error, normal: warning, relaxed: info }
+```
+
+`relaxed` は指摘を消さずに一段軽くする。`chaff relax` が何も変えないように見えると、利用者は chaff が壊れたと思う。止めたいなら `off`。
+`severity` は `normal` の段の重さと同じでなければならず、食い違う rule と、重さと数を混ぜて書いた rule は読み込み時に拒否する。重さを段に持つ rule は `by_genre` も持てない（ジャンルによって既定の重さが `severity` と変わってしまうため）。
+`chaff relax` / `chaff strict` は重さがどう変わるかを告げ（「指摘は消えず、エラー ではなく 注意 として出ます」）、`chaff explain` は段ごとの重さを、`chaff rules --json` は `level_sets: severity` と重さを出す。
+chaff.yaml に数を書くと `normal` として動くだけなので、設定を読んだときにそう言う。`chaff eval` は掃引しない（どの閾値でも同じ件数になる）。
+
 ### 18.2 rule 定義に必須のフィールド
 
 利用者向けの表示（§19）を成立させるため、すべての rule は次を持つ。欠けている rule は読み込み時に拒否する。
@@ -1361,7 +1377,7 @@ padded-intro に strict はありません。normal と同じ設定です。
 | `why` | なぜ問題か。言語別 |
 | `how_to_fix` | どうすればいいか。言語別 |
 | `message` | 検出内容。`{count}` などを埋める。英語は `{count\|word\|words}` で数に合う形を選ぶ（ちょうど 1 なら前、それ以外は後） |
-| `levels` | 4 語と数値の対応。2 つ以上 |
+| `levels` | 4 語と数値の対応。数えるもののない rule は数値の代わりに重さ（§18.1）。2 つ以上 |
 | `use_for` | 対象ジャンル |
 | `status` | `experimental` / `stable` / `deprecated` |
 
@@ -1524,6 +1540,7 @@ article.md  [ja · blog/tech]
 ### 19.3 `chaff rules --json` は AI のための入口
 
 AI に設定を書かせるとき、これを渡せば推測せずに書ける。現在値、使える値、数値との対応、なぜ今 off なのか、変更コマンドまでが 1 つに入る。
+`level_sets` は段が何を変えるかを言う。`limit` は数える上限、`severity` は指摘の重さ（§18.1 の数えるもののない rule）。後者の `levels` と `now` には数ではなく重さが入る。
 
 ```json
 {
@@ -1534,8 +1551,15 @@ AI に設定を書かせるとき、これを渡せば推測せずに書ける�
       "name": { "ja": "太字の使いすぎ" },
       "why": { "ja": "太字は読者の目を止める道具です。..." },
       "your_setting": { "level": "relaxed", "from": "chaff.yaml:24", "why": "図の説明で..." },
+      "level_sets": "limit",
       "now": { "level": "relaxed", "limit": 4 },
       "levels": { "strict": 1, "normal": 2, "relaxed": 4 }
+    },
+    {
+      "id": "numbering-gap",
+      "level_sets": "severity",
+      "now": { "level": "normal", "severity": "error" },
+      "levels": { "normal": "error", "relaxed": "warning" }
     }
   ],
   "how_to_change": {

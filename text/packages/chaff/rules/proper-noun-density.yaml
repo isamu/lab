@@ -25,3 +25,29 @@ how_to_fix:
 levels: { strict: 20, normal: 40, relaxed: 80 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 製品名・会社名・人名が詰まりすぎて、知らない人には文の形が見えない所
+  en: So many product, company and personal names that a newcomer cannot see the sentence
+example:
+  ja:
+    config: { rules: { proper-noun-density: strict } }
+    pad: true
+    before: |
+      田中さんと佐藤さんが、東京の丸の内にあるトヨタとソニーとパナソニックの展示を見てから、大阪の梅田で日立の鈴木さんと会いました。翌日は京都で任天堂の山本さんと、神戸で川崎重工の中村さんと会い、名古屋に戻ってデンソーの小林さんとトヨタの加藤さんに報告しました。
+    after: |
+      営業部の二人が、取引先三社の展示を見てから、大阪で別の取引先の担当者と会いました。翌日は関西の二社を回り、名古屋に戻って取引先二社に報告しました。
+  en:
+    pad: true
+    before: |
+      Alice and Bob from Contoso met Carol from Fabrikam in Seattle, then flew with Dave from Northwind to Boston to see Erin at Tailspin and Frank at Litware.
+    after: |
+      Two of our sales team met three customers on the West Coast, then flew to Boston to meet two more.
+
+not_flagged:
+  ja: chaff.yaml の names に書いた名前は、何語に分かれても 1 つと数えます。短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
+  en: A name listed under names in chaff.yaml counts as one, however many words it has. Short documents (under 200 words) are not measured.
+level_meaning:
+  ja: 1000 字あたり {limit} 個まで
+  en: up to {limit} per 1000 words

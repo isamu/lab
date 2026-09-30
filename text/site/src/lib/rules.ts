@@ -2,8 +2,10 @@
 // status on the site is the one chaff uses.
 import { resolve } from "node:path";
 import { loadRules } from "../../../packages/chaff/src/rule-load.ts";
+import { severityAt } from "../../../packages/chaff/src/levels.ts";
 import type { RuleDefinition } from "../../../packages/chaff/src/plugin.ts";
 import { readableText, templateForReading } from "../../../packages/chaff/src/render/text.ts";
+import type { RuleExample, RuleGroup } from "../../../packages/chaff/src/rule-guide.ts";
 import type { Lang } from "./i18n";
 
 export type Localized = Record<Lang, string>;
@@ -21,22 +23,30 @@ export type Rule = {
   readonly otherMessages: readonly Localized[];
   readonly howToFix: Localized;
   readonly levels: Record<Lang, readonly (readonly [string, string])[]>;
+  readonly levelSets: RuleDefinition["level_sets"];
   readonly useFor: readonly string[];
+  /** The plain-language part of the rule file (group, summary, examples), for the reference in the guide. */
+  readonly group: RuleGroup | undefined;
+  readonly summary: Localized;
+  readonly examples: Readonly<Record<string, RuleExample>>;
+  readonly notFlagged: Localized;
+  /** What a level's number means, with {limit}; empty when every level is the same. */
+  readonly levelMeaning: Localized;
+  /** The genres that set their own numbers for the levels. */
+  readonly ownNumbers: readonly string[];
 };
 
 // astro build runs in text/site.
 const RULES_DIR = resolve(process.cwd(), "..", "packages", "chaff", "rules");
 const LEVEL_NAMES = ["strict", "normal", "relaxed"] satisfies readonly (keyof RuleDefinition["levels"])[];
-const SEVERITY_BY_NUMBER: Readonly<Record<number, string>> = { 1: "info", 2: "warning", 3: "error" };
-
-/** L4 keeps its levels as severities, which chaff counts as 1-3; show them as the words the rule file uses. */
-const levelText = (definition: RuleDefinition, value: number): string =>
-  definition.layer === "L4" ? (SEVERITY_BY_NUMBER[value] ?? String(value)) : String(value);
+/** A rule with nothing to count keeps severities as its levels; show them as the words the rule file uses. */
+const levelText = (definition: RuleDefinition, level: (typeof LEVEL_NAMES)[number], value: number): string =>
+  definition.level_sets === "severity" ? severityAt(definition, level) : String(value);
 
 const levelsOf = (definition: RuleDefinition): readonly (readonly [string, string])[] =>
   LEVEL_NAMES.flatMap((level): (readonly [string, string])[] => {
     const value = definition.levels[level];
-    return value === undefined ? [] : [[level, levelText(definition, value)]];
+    return value === undefined ? [] : [[level, levelText(definition, level, value)]];
   });
 
 const text = (localized: Readonly<Record<string, string>>, lang: Lang): string => localized[lang] ?? localized["en"] ?? "";
@@ -72,7 +82,14 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     ),
     howToFix: readable("how_to_fix"),
     levels: { ja: levelsOf(ja), en: levelsOf(en) },
+    levelSets: ja.level_sets,
     useFor: ja.use_for,
+    group: ja.guide?.group,
+    summary: { ja: ja.guide?.summary["ja"] ?? "", en: ja.guide?.summary["en"] ?? "" },
+    examples: ja.guide?.examples ?? {},
+    notFlagged: { ja: ja.guide?.notFlagged["ja"] ?? "", en: ja.guide?.notFlagged["en"] ?? "" },
+    levelMeaning: { ja: ja.guide?.levelMeaning["ja"] ?? "", en: ja.guide?.levelMeaning["en"] ?? "" },
+    ownNumbers: Object.keys(ja.by_genre),
   };
 };
 

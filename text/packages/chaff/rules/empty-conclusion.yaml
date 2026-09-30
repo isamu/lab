@@ -37,3 +37,31 @@ levels:
 
 # メール・議事録・プレスリリースの結びは挨拶か連絡先で、判断を書く所ではない。
 use_for: [blog, business/report, business/proposal]
+
+group: wording
+summary:
+  ja: 本文をなぞるだけで、読み手に何も残さない結び（AI に読ませる検査）
+  en: A conclusion that only restates the body and leaves the reader nothing (checked by an AI)
+example:
+  ja:
+    before: |
+      ## まとめ
+
+      この記事では、ビルドを速くする方法を紹介しました。ビルドを速くすることは大切です。
+    after: |
+      ## まとめ
+
+      設定を一行変えるだけで、ビルドが二倍速くなりました。次は、テストを並列で動かします。
+  en:
+    before: |
+      ## Conclusion
+
+      This article described how to make the build faster. A fast build is important.
+    after: |
+      ## Conclusion
+
+      One line of settings made the build twice as fast. Next, we will run the tests in parallel.
+
+not_flagged:
+  ja: 機械では決めません。chaff test で、最後の節だけを AI が読みます。
+  en: No machine decides this. chaff test has an AI read the last section only.

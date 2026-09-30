@@ -1,6 +1,8 @@
 // 言語アダプタと genre pack が依存してよい唯一の面。spec §6。
 // ここに実装を置かない。型だけを置く。
 
+import type { RuleGuide } from "./rule-guide.ts";
+
 export type Span = { readonly start: number; readonly end: number };
 
 /**
@@ -397,6 +399,8 @@ export type Level = "strict" | "normal" | "relaxed" | "off";
 
 export type LevelTable = Readonly<Partial<Record<Exclude<Level, "off">, number>>>;
 
+export type LevelSets = "limit" | "severity";
+
 export type LanguageLevels = { readonly levels: LevelTable; readonly by_genre: Readonly<Record<string, LevelTable>> };
 
 export type RuleDefinition = {
@@ -414,6 +418,8 @@ export type RuleDefinition = {
   /** 4 語と数値の対応。2 つ以上。未定義の段は normal に落ちる。spec §18.1。
    *  言語別の閾値を持つ rule（max-sentence-length）は、読み込み時に言語で平坦化済み。 */
   readonly levels: LevelTable;
+  /** What a level changes: the limit a detector counts to, or, for a rule with nothing to count, the severity of its findings. */
+  readonly level_sets: LevelSets;
   /** ジャンル別の上書き。"business" は business/* 全部に効き、"business/email" が勝つ。spec §9。 */
   readonly by_genre: Readonly<Record<string, LevelTable>>;
   /** 読み込んだ言語以外の levels と by_genre。文書と違う言語で書いた文（和文の中の英文）の上限に使う。 */
@@ -437,4 +443,6 @@ export type RuleDefinition = {
   readonly languages: readonly string[] | undefined;
   readonly use_for: readonly string[];
   readonly severity: Severity;
+  /** What the rule reference tells a reader who is not an engineer: its group, one line, a before and after. */
+  readonly guide?: RuleGuide;
 };

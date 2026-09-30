@@ -26,3 +26,19 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 3 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「殆ど」「勿論」のように、ひらがなのほうが読みやすい副詞を漢字で書いた所
+  en: A Japanese adverb written in rare kanji where kana is easier to read
+example:
+  ja:
+    before: 参加者の殆どが、勿論その案に賛成しました。
+    after: 参加者のほとんどが、もちろんその案に賛成しました。
+
+not_flagged:
+  ja: 一覧にある副詞だけを見ます。常用漢字で普通に書く副詞（「必ず」「特に」など）は指しません。
+  en: Only the adverbs on chaff's list are checked; adverbs normally written in common kanji are not.
+level_meaning:
+  ja: 当てはまる語が {limit} 箇所あれば指摘
+  en: reported once there are {limit}

@@ -28,6 +28,91 @@ read before the rule was added.
   everything up to the next space as the URL. Link syntax, `<…>` and code are not read, nor is an invisible character
   such as a zero-width space. Also runs on `.txt`. In the corpus it finds press releases that write `（https://…）`.
 
+### A guide page on adding a rule, and the skill writes chaff.yaml from a style note (#170)
+
+- **Adding a rule: for AI and engineers** (`/guide/adding-rules/`) lays out the ways from easiest to most
+  powerful, with a worked example that turns "polite endings, sentences of at most 80 characters" into
+  `chaff.yaml` through `chaff rules --json`, and what a new built-in rule needs (rule file, detector, tests, a
+  planted mistake, the corpus check).
+- **The Claude Code skill** reads `rules --json` to turn a team's style note into `chaff.yaml`, says what no rule
+  covers, and tests a team rule with `explain` and a sample before committing it.
+
+### `chaff rules` prints a table, and `rules --json` carries what an AI needs to write settings (#170)
+
+- **`chaff rules`** (without `--json`) lists every rule by group, each with the level it runs at now, whether it
+  runs by default, is experimental, needs a list in `chaff.yaml` or runs with `chaff test`, and one line on what it
+  finds. A rule for another language shows as off.
+- **`chaff rules --json` is schema 2.** Each rule adds `group`, `summary`, `example`, `not_flagged`,
+  `level_meaning`, `languages`, `requires`, `genres` (how it stands in every genre: on and at which level,
+  experimental, turned off, or not suited) and `options`. The top level adds `groups`, the steps from a team's
+  style note to `chaff.yaml`, and `style_presets`, `custom_rule_types` and `rule_options`, marked as coming with the
+  local-rules release. Every field of schema 1 is kept.
+
+### Each rule's page reads for someone who is not an engineer (#170)
+
+A rule's page on the site now says what the rule finds, why it matters, a before and after with what chaff printed
+for each, what it does not flag, its levels in words ("up to 25 words in a sentence"), which genres run it, turn it
+off or are not suited to it, and how to silence one spot or change it for the team. The rule list is grouped the
+same way as the reference.
+
+- **Two more rule fields:** `not_flagged` (ja and en) and `level_meaning` (with `{limit}` for the number; not needed
+  for a rule whose levels set a severity). The rule-file test requires them. A rule whose levels are severities shows
+  them as error, warning and info.
+
+### The guide lists everything chaff can find, with an example and chaff's real output (#170)
+
+A new guide page, **Reference: what chaff can find** (`/guide/reference/`), lists every rule in groups a reader
+recognises (readability, wording, slips, consistency, structure, facts, signs of generated text, the team's words).
+Each row says in one line what the rule finds, shows a text it flags and what chaff printed for it, and says whether
+the rule runs by default, is experimental, needs a list in `chaff.yaml`, or runs with `chaff test`.
+
+- **Rule files carry the plain-language part.** New optional fields: `group`, `summary` (ja and en) and `example`
+  (per language: `before`, `after`, and the `config` or `pad` the example needs). Every shipped rule has them.
+- **The output cannot drift from chaff.** The site runs the command line on every example before it builds
+  (`yarn examples`), and a test checks that each `before` is reported by its rule and each `after` is not. A rule
+  file without the fields fails the test.
+
+### `undefined-acronym`: a figure neither uses nor explains an acronym (#170)
+
+Since plain-text figures are masked, RFC 9293 reports LISTEN. That is the intended behaviour, now pinned by tests. An
+acronym that appears only in a figure is not reported, and one that a figure shows before the prose uses it is
+reported at its first use in prose unless the prose expands it. LISTEN had been silent only because a cell of the
+message-sequence figure, "LISTEN (??)", read as LISTEN with its expansion in brackets. The prose that describes LISTEN
+("LISTEN - represents waiting for a connection request …") says what the state means but does not expand it. Its
+siblings SYN-SENT and LAST-ACK, described in the same list, were already reported.
+
+### Email: a list archive's attachment stub is not prose (#170)
+
+Mailman leaves a note where it removed an attachment: "An HTML attachment was scrubbed..." and a `URL: <…>` line, or
+the note with `Name`, `Type`, `Size`, `Desc` and `URL` fields. The note was read as the writer's sentence, so each one
+was an agentless passive, and together they were a repeated phrase. A block right after a separator line is now furniture
+when its first line ends as a new `email-attachment-note` lexicon says ("was scrubbed...", 「を保管しました...」),
+every other line is a `Field: value` line, the last one a URL alone, and it is six lines at most. The same words in
+the writer's own paragraph, away from a separator or with a sentence among the fields, are still prose.
+
+### `title-case-consistency`: "vs", "v." and "via" stay lowercase in Title Case (#170)
+
+"Development Environment vs MulmoChat" was counted as a sentence-case heading, because "vs" was read as a word that
+Title Case capitalises. Chicago, APA, AP and MLA all keep "vs.", "v." and "via" lowercase in a title, so they now join
+the other small words that the check skips. A heading whose other words are lowercase ("Switch via environment
+variable") is still sentence case.
+
+### `relax` on a rule with nothing to count lowers the severity instead of doing nothing (#170)
+
+`numbering-gap`, `dangling-reference`, `date-weekday-mismatch`, `total-mismatch`, `duplicate-definition`, `date-order`,
+`doubled-word` and `agreement-slip` have no limit to count to: their levels were all `1`, so `npx chaffjs relax
+numbering-gap` wrote `relaxed` to chaff.yaml and the error was reported exactly as before. Their levels are now
+severities, as the L4 rules' already were: `relaxed` keeps the finding and marks it a step lower (an error becomes a
+warning, a warning a note), and `strict` raises a warning rule to an error. An error rule has no `strict`, so `chaff
+strict` refuses it as it does for any level a rule does not have. At the default level every finding is marked as before.
+
+`relax` and `strict` say what the new level does ("its findings still show, as a warning instead of an error").
+`explain` lists the severity at each level instead of a number, and `rules --json` gives each rule `level_sets`
+(`limit` or `severity`), with severities in `levels` and `now` for these rules. A number written for one of them in
+chaff.yaml is reported, since it only runs the rule at `normal`, and `chaff eval` no longer sweeps limits that none of
+them read. The rule loader refuses a severity that is not the one at `normal`, levels (with `by_genre`) that mix
+severities and numbers, and `by_genre` on a rule whose levels are severities.
+
 ### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
 
 Several checks read a whole run, sentence or line again for each character, finding or reference in it, so their

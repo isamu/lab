@@ -15,7 +15,8 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs explain <rule>` | Shows what a rule is for, and why |
 | `npx chaffjs genres` | Lists the genres and what each is for |
 | `npx chaffjs --version` | Prints the version of chaffjs and of its bundled language packages |
-| `npx chaffjs rules --json` | The current settings as JSON, to give to an AI |
+| `npx chaffjs rules` | Every rule as a table, by group, with the level it runs at now |
+| `npx chaffjs rules --json` | The current settings and what each rule is, as JSON, to give to an AI |
 | `npx chaffjs relax\|strict\|off <rule>` | Changes a rule's level, with `--why "reason"` |
 | `npx chaffjs baseline <dir>` | Shelves today's findings |
 | `npx chaffjs suppressions <dir>` | Counts the findings silenced with `stet` |
@@ -127,6 +128,7 @@ $ npx chaffjs explain max-sentence-length
 
 `relax`, `strict` and `off` change a rule's level without opening `chaff.yaml`.
 `relax` loosens it, `strict` tightens it, and `off` stops it.
+For a rule with nothing to count, such as a gap in the numbering, `relax` keeps the finding and marks it a step lower ([Rules with nothing to count](./configuration#rules-with-nothing-to-count)).
 
 ```
 $ npx chaffjs relax bold-density --why "figure captions use a lot of bold"

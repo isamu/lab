@@ -1,4 +1,4 @@
-import type { Level, LevelTable, RuleDefinition } from "./plugin.ts";
+import type { Level, LevelTable, RuleDefinition, Severity } from "./plugin.ts";
 
 const LEVELS: readonly Level[] = ["strict", "normal", "relaxed", "off"];
 
@@ -37,3 +37,16 @@ export const resolve = (rule: RuleDefinition, level: Level, genre?: string): Res
 
 /** その rule が実際に区別できる段だけを返す。CLI の案内に使う。 */
 export const definedLevels = (rule: RuleDefinition): Level[] => LEVELS.filter((level) => level === "off" || rule.levels[level] !== undefined);
+
+/** Lightest first: a level table holds info as 1, warning as 2 and error as 3. */
+const SEVERITY_BY_RANK: readonly Severity[] = ["info", "warning", "error"];
+
+/** A severity written in a level table, as the number the table holds. */
+export const rankOfSeverity = (value: unknown): number | undefined => {
+  const index = SEVERITY_BY_RANK.findIndex((entry) => entry === value);
+  return index === -1 ? undefined : index + 1;
+};
+
+/** The severity a rule with nothing to count gives its findings at a level. A counting rule keeps its own. */
+export const severityAt = (rule: RuleDefinition, level: Exclude<Level, "off">, genre?: string): Severity =>
+  rule.level_sets === "severity" ? (SEVERITY_BY_RANK[resolve(rule, level, genre).limit - 1] ?? rule.severity) : rule.severity;
