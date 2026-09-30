@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### English: a curly apostrophe is read like a straight one (#170)
+
+The English tagger split a contraction written with a curly apostrophe: `that’s` became `that` / `’` / `s`, with `s`
+read as a noun, while `that's` was read correctly. Published text (GOV.UK, 18F, anything from a word processor) uses
+the curly form, so every rule that reads parts of speech saw a broken sentence: `oxford-comma-consistency` reported a
+list that was not there, `agentless-passive` and `expletive-construction` missed `It’s written` and `There’s`, and the
+stray pieces counted as words in `adverb-overuse` and `proper-noun-density`. A `’` between a letter or digit and a
+letter (`don’t`, `team’s`, `1990’s`) and every `ʼ` (U+02BC) are now read as `'`. A `’` with no letter after it stays a
+closing quote (`‘like this’`), so a plural possessive (`the users’ files`) is still read as a quote. Spans still point
+at the source as written; a word's surface is the straight form, so a lexicon entry such as `in today's fast-paced
+world` (`padded-intro`) also matches `In today’s fast-paced world`. `contraction-consistency` compares the text itself
+and does not yet treat `don’t` as `don't`.
+
 ### 「前契約の第9条」 is another document's article, the same as 「前契約第9条」 (#153)
 
 `dangling-reference` reported 「乙は、前契約の第9条に従う。」 because the article was looked up in this document: a
