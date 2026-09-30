@@ -33,9 +33,11 @@ import {
   type ElementRange,
 } from "./html-elements.ts";
 import { contentBlock } from "./html-content-block.ts";
+import { withoutFootnoteMarks } from "./html-footnote-marks.ts";
 import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
 import { withLostParagraphTagsRestored } from "./html-lost-tags.ts";
 import { withoutReaderOnlyText } from "./html-reader-only.ts";
+import { withRunInHeadingsRead } from "./html-run-in-headings.ts";
 import { withoutWidgets } from "./html-widgets.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
 import { withTablesRead } from "./html-tables.ts";
@@ -459,13 +461,13 @@ const INVISIBLE_ONLY = /^[\s\p{Cf}]*$/u;
 export const htmlToMarkdown = (html: string): string => {
   const uncommented = withLostParagraphTagsRestored(withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""));
   const preformatted = withPreformattedStashed(withTablesRead(DROPPED.reduce(withoutElement, withoutRubyText(uncommented))));
-  const kept = withoutHeadingSelfLinks(withoutWidgets(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(preformatted.html))))))
-    .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
-    .replace(MARKUP_SPACE, " ");
+  const kept = withoutFootnoteMarks(
+    withoutHeadingSelfLinks(withoutWidgets(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(preformatted.html)))))),
+  ).replace(MARKUP_SPACE, " ");
   const content = withoutClosingLinks(
     withoutLinkGroups(withoutNavigation(withoutIconMenus(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))))),
   );
-  const text = decodeEntities(stripTags(asLines(markChromeLinks(withImageHeadingsRead(content, documentTitle(uncommented))))));
+  const text = decodeEntities(stripTags(asLines(markChromeLinks(withImageHeadingsRead(withRunInHeadingsRead(content), documentTitle(uncommented))))));
   const lines = text
     .split("\n")
     .map((line) => (INVISIBLE_ONLY.test(line) ? "" : line.trim()))

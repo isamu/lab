@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### Corpus: footnote numbers, run-in section titles and Gutenberg's older closing line (#170)
+
+The corpus's HTML converter dropped a footnote mark written as `<sup><a>1</a></sup>` but kept one written as
+`<a href="#fn1"><sup>1</sup></a>`, so a Federal Reserve speech read "recessions.1 Over the …" and two sentences
+became one. A link to a place on the same page holding nothing but a superscript is now dropped too; a superscript
+linking to another page stays. A section title drawn as the bold first line of a paragraph
+(`<p><strong>Conclusion</strong><br />In closing, …</p>`) becomes a heading one level below the heading before it,
+instead of a line glued to the paragraph; a bold name over a role ("Joshua Gallin" / "Secretary") stays a signature. A Project Gutenberg text now also loses the closing line older eBooks put
+before the end marker ("End of Project Gutenberg's Poems, by Emily Dickinson"). Sentence splitting in lang-en is
+unchanged: plain text rarely has "word.1 Word", and only markup tells a footnote mark from a number.
+
 ### Patent figures, volume numbers and sections of US codes are not reported (#170)
 
 `undefined-acronym` reported the label and the number of a figure or a volume in US patents: "FIG" in "FIG. 1",
