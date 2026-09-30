@@ -8,6 +8,7 @@ const ORDER = [
   "documents-statute",
   "documents-report",
   "configuration",
+  "house-style",
   "commands",
   "structure",
   "languages",
