@@ -45,3 +45,10 @@ example:
     config: { prefer: { e-mail: email } }
     before: Please send it by e-mail.
     after: Please send it by email.
+
+not_flagged:
+  ja: chaff.yaml の prefer に書いた組だけを見ます。何も書かなければ何も言いません。
+  en: Only the pairs under prefer in chaff.yaml are checked. With nothing listed, it says nothing.
+level_meaning:
+  ja: 当てはまる語が {limit} 箇所あれば指摘
+  en: reported once there are {limit}

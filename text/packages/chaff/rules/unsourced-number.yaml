@@ -50,3 +50,7 @@ example:
   en:
     before: Nine in ten users are happy with this feature.
     after: In a survey of 120 users in September, 108 (nine in ten) said they were happy with this feature.
+
+not_flagged:
+  ja: 機械では決めません。chaff test で、機械が数字を含む文を絞り込み、その文だけを AI が読みます。
+  en: No machine decides this. chaff test narrows the text to sentences with numbers, and an AI reads only those.

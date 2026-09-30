@@ -43,3 +43,7 @@ example:
   en:
     before: These new version will ship in May.
     after: This new version will ship in May.
+
+not_flagged:
+  ja: 単数と複数で形が同じ名詞（series、data）、this や these の直後の語、名詞を修飾する名詞（a sales team）は指しません。
+  en: Nouns spelled alike in both numbers ("series", "data"), a word right after "this" or "these", and nouns that modify another noun ("a sales team") are not reported.

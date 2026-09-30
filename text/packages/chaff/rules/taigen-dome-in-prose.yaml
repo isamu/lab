@@ -37,3 +37,10 @@ example:
       今年の目標は売上の回復。そのための施策は三つ。最初は店頭の品ぞろえの見直し。
     after: |
       今年の目標は売上の回復です。そのための施策は三つあります。最初に、店頭の品ぞろえを見直します。
+
+not_flagged:
+  ja: 箇条書きの中の体言止めは、その書き方が普通なので数えません。
+  en: Noun endings in bullet lists, where the form is normal, are not counted.
+level_meaning:
+  ja: 本文の体言止め {limit} 文まで
+  en: up to {limit} noun-ending sentences in the body

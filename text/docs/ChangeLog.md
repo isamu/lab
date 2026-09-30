@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### Each rule's page reads for someone who is not an engineer (#170)
+
+A rule's page on the site now says what the rule finds, why it matters, a before and after with what chaff printed
+for each, what it does not flag, its levels in words ("up to 25 words in a sentence"), which genres run it, turn it
+off or are not suited to it, and how to silence one spot or change it for the team. The rule list is grouped the
+same way as the reference.
+
+- **Two more rule fields:** `not_flagged` (ja and en) and `level_meaning` (with `{limit}` for the number; not needed
+  when every level is the same). The rule-file test requires them.
+
 ### The guide lists everything chaff can find, with an example and chaff's real output (#170)
 
 A new guide page, **Reference: what chaff can find** (`/guide/reference/`), lists every rule in groups a reader

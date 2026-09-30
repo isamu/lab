@@ -48,3 +48,10 @@ example:
       The new prices — which start next month — will show on invoices. Payment is due — as before — at the end of the month.
     after: |
       The new prices start next month and will show on invoices. Payment is due at the end of the month, as before.
+
+not_flagged:
+  ja: 短い文書は測りません。英語では、ダッシュそのものを誤りとは言いません。
+  en: Short documents are not measured. In English a dash is not called wrong; only a heavy hand is.
+level_meaning:
+  ja: 1000 字あたり {limit} 個まで
+  en: up to {limit} per 1000 words

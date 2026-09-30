@@ -124,3 +124,10 @@ example:
       - Missed counts
       - Gaps in the record
       - No review
+
+not_flagged:
+  ja: 特徴が一つだけなら何も言いません。そろっても、生成された文章だとは言いません。読み返す場所の目印です。
+  en: One signal alone says nothing. Even several together do not say the text was generated; they mark a place to reread.
+level_meaning:
+  ja: 特徴が {limit} 種そろえば指摘
+  en: reported once {limit} signals occur together

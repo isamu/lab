@@ -55,3 +55,10 @@ example:
     config: { rules: { undefined-acronym: strict } }
     before: Our KGI this term is to reach PMF.
     after: Our key goal indicator (KGI) this term is to reach product-market fit (PMF).
+
+not_flagged:
+  ja: 誰でも知っている略語（URL、PDF など）と、前後の括弧で説明した略語は指しません。
+  en: Common acronyms (URL, PDF) and acronyms spelled out in brackets next to them are not reported.
+level_meaning:
+  ja: 説明のない略語が {limit} 種類あれば指摘
+  en: reported once {limit} different acronyms go unexplained

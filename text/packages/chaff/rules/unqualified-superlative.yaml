@@ -38,3 +38,10 @@ example:
   en:
     before: Our new product is the fastest on the market, with unmatched quality and unparalleled ease of use.
     after: Our new product processes orders a fifth faster than the previous model.
+
+not_flagged:
+  ja: 「当社比」「〜の中で」のように、比べる相手や範囲が同じ文にあれば指しません。
+  en: A superlative with its comparison or scope in the same sentence ("in our range", "than last year") is not reported.
+level_meaning:
+  ja: 比べる相手のない最上級が {limit} 箇所あれば指摘
+  en: reported once there are {limit} such claims

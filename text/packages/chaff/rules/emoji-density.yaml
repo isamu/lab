@@ -42,3 +42,10 @@ example:
       The new feature is live 🎉 Try it today 🚀 We would love your feedback 🙏✨
     after: |
       The new feature is live 🎉 Try it today, and tell us what you think.
+
+not_flagged:
+  ja: 短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
+  en: Documents under 200 words are not measured.
+level_meaning:
+  ja: 1000 字あたり {limit} 個まで
+  en: up to {limit} per 1000 words

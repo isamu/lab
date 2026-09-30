@@ -52,3 +52,10 @@ example:
       ## How to apply
 
       Send the form to HR. **The deadline is the end of the month, and late forms will not be accepted, whatever the reason.** The form is in the shared folder. You can print it and fill it in by hand, or type into it on screen and then print it. It needs your manager's signature, so give it to your manager at least three days before the deadline. If you have a question, call the HR desk between nine and five on a weekday.
+
+not_flagged:
+  ja: 200 字より短い節は、1 箇所で割合が跳ねるので測りません。
+  en: Sections under 200 characters are not measured, since one bold span would swing the rate.
+level_meaning:
+  ja: 1000 字あたり太字 {limit} 箇所まで
+  en: up to {limit} bold spans per 1000 characters

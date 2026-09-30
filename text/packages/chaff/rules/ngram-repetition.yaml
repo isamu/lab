@@ -45,3 +45,10 @@ example:
       We listen to our customers. In product design we listen to our customers. In our stores we listen to our customers. On the phone we listen to our customers.
     after: |
       We listen to our customers. Regulars try every prototype, and store staff ask shoppers what they thought.
+
+not_flagged:
+  ja: 一覧の飾り（各項目に付くタグやリンクの文字）と、名前にかかる語句は数えません。短い文書は測りません。
+  en: Tags, link text and symbols that a listing repeats on every entry, and the words around a repeated name, are not counted. Short documents are not measured.
+level_meaning:
+  ja: 同じ言い回し {limit} 回まで
+  en: up to {limit} uses of the same phrase

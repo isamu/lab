@@ -37,3 +37,7 @@ example:
   en:
     before: We will send the the file tomorrow.
     after: We will send the file tomorrow.
+
+not_flagged:
+  ja: 品詞の違う同じ語と、重ねて強める書き方（「そうそう」「一つ一つ」「very very」）は指しません。英語で文法が許す重なり（had had、that that）も指しません。
+  en: Repeats that grammar allows ("had had", "that that"), repeats for emphasis ("very very"), and the same word in two different parts of speech are not reported.

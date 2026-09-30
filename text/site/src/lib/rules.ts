@@ -27,6 +27,11 @@ export type Rule = {
   readonly group: RuleGroup | undefined;
   readonly summary: Localized;
   readonly examples: Readonly<Record<string, RuleExample>>;
+  readonly notFlagged: Localized;
+  /** What a level's number means, with {limit}; empty when every level is the same. */
+  readonly levelMeaning: Localized;
+  /** The genres that set their own numbers for the levels. */
+  readonly ownNumbers: readonly string[];
 };
 
 // astro build runs in text/site.
@@ -81,6 +86,9 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     group: ja.guide?.group,
     summary: { ja: ja.guide?.summary["ja"] ?? "", en: ja.guide?.summary["en"] ?? "" },
     examples: ja.guide?.examples ?? {},
+    notFlagged: { ja: ja.guide?.notFlagged["ja"] ?? "", en: ja.guide?.notFlagged["en"] ?? "" },
+    levelMeaning: { ja: ja.guide?.levelMeaning["ja"] ?? "", en: ja.guide?.levelMeaning["en"] ?? "" },
+    ownNumbers: Object.keys(ja.by_genre),
   };
 };
 

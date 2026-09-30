@@ -73,3 +73,7 @@ example:
       ## Article 2 (Holidays)
 
       Holidays follow the rota that the company publishes each month.
+
+not_flagged:
+  ja: 「法第2条」のように、ほかの文書の条を指す参照は探しません。条で番号を振っていない文書では、条で数える参照を見ません。
+  en: References into another document ("Article 2 of the Act") are not looked up. A document that numbers none of its provisions as articles is not checked for article references.

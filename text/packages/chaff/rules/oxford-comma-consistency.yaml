@@ -36,3 +36,10 @@ example:
       We sell apples, pears, and plums. We ship to homes, offices, and schools. We accept cash, cards and vouchers.
     after: |
       We sell apples, pears, and plums. We ship to homes, offices, and schools. We accept cash, cards, and vouchers.
+
+not_flagged:
+  ja: カンマを打つかどうかは決めません。半々に分かれた文書では、どちらが少ないとも言えないので指しません。
+  en: Whether to use the comma is not decided. A document split evenly has no minority and is not reported.
+level_meaning:
+  ja: 少ないほうの打ち方が {limit} 箇所以下のとき指摘
+  en: reported when the minority style appears {limit} times or fewer

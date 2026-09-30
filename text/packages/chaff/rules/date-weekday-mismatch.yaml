@@ -36,3 +36,7 @@ example:
   en:
     before: The next meeting is on Friday, 1 October 2026.
     after: The next meeting is on Thursday, 1 October 2026.
+
+not_flagged:
+  ja: 年を書いていない日付は、どの年か決まらないので暦と照らしません。
+  en: Dates without a year are not checked, since the year is unknown.
