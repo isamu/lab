@@ -1,5 +1,7 @@
 import type { DocumentProfile, Mention, RelativeVocabulary, Span } from "../plugin.ts";
 import { isOneCharacter, withoutClosedPairs } from "./closed-pairs.ts";
+import { asideDepth, characters, type AsideDepth } from "./aside-depth.ts";
+import { knownMentions, type KnownMentions } from "./known-mentions.ts";
 
 /**
  * 前条・次項・同号・本条・前各項・前二項・前条第二項、条を書かない「第一項」を行の中から探す。語は文書の種類（profiles/*.yaml）が決める。
@@ -75,17 +77,6 @@ const countOf = (count: string | undefined, vocabulary: RelativeVocabulary, numb
 
 type Substitution = NonNullable<RelativeVocabulary["substitution"]>;
 
-/** 文字と、その位置（UTF-16 の単位で）。絵文字のような 2 単位の文字も 1 文字として読む。 */
-const characters = (text: string): { readonly char: string; readonly at: number }[] => {
-  const found: { char: string; at: number }[] = [];
-  let at = 0;
-  for (const char of text) {
-    found.push({ char, at });
-    at += char.length;
-  }
-  return found;
-};
-
 /** 一番外側の括弧の範囲。閉じの無い開きは捨てる。 */
 const outerQuotes = (text: string, quote: Substitution): Span[] => {
   const spans: Span[] = [];
@@ -136,8 +127,6 @@ const withoutAsides = (gap: string, aside: RelativeVocabulary["aside"]): string 
 const onlyJoins = (gap: string, patterns: Compiled, vocabulary: RelativeVocabulary): boolean =>
   withoutAsides(gap, vocabulary.aside).replace(patterns.joins, "").trim() === "";
 
-const overlaps = (start: number, end: number, others: readonly Mention[]): boolean => others.some((other) => start < other.end && other.start < end);
-
 /** 行き先を決められない番地。並びの続きを止めるためだけに覚え、参照にはしない。 */
 const OPAQUE = "opaque";
 
@@ -160,36 +149,23 @@ const bareCandidates = (text: string, patterns: Compiled, vocabulary: RelativeVo
 /** 並びの中での扱い: 前の参照の続きか、今いるところの中か、行き先を決められないか。 */
 type BareWay = { readonly way: string; readonly continues?: Mention | undefined };
 
-/** 並びの中での扱い: 前の参照の続きか、今いるところの中か、行き先を決められないか。続きなら、どの参照の続きか。 */
-const wayOfBare = (text: string, bare: Bare, known: readonly Mention[], patterns: Compiled, vocabulary: RelativeVocabulary): BareWay => {
-  if (glued(text, bare.start, patterns)) return { way: OPAQUE };
-  const depth = openAsides(text, bare.start, vocabulary).length;
-  const sameDepth = known.filter((other) => other.end <= bare.start && openAsides(text, other.end, vocabulary).length === depth);
-  const previous = sameDepth.toSorted((left, right) => left.end - right.end).at(-1);
-  const joined = previous !== undefined && onlyJoins(text.slice(previous.end, bare.start), patterns, vocabulary) ? previous : undefined;
-  const continues = joined ?? ownerOfAside(text, bare.start, known, vocabulary);
-  if (continues === undefined) return { way: "current" };
-  return continues.attrs["relative"] === OPAQUE ? { way: OPAQUE } : { way: "continue", continues };
-};
-
-/** at の位置で開いたままの括弧書きの開きの位置。並びは同じ深さの参照どうしでつながる。 */
-const openAsides = (text: string, at: number, vocabulary: RelativeVocabulary): number[] => {
-  const aside = vocabulary.aside;
-  const opens: number[] = [];
-  if (aside === undefined) return opens;
-  characters(text.slice(0, at)).forEach(({ char, at: position }) => {
-    if (char === aside.open) opens.push(position);
-    if (char === aside.close) opens.pop();
-  });
-  return opens;
-};
+/** 本文と、その括弧書きの深さ。並びは同じ深さの参照どうしでつながる。 */
+type Line = { readonly text: string; readonly asides: AsideDepth };
 
 /**
- * 参照の直後に開いた括弧書きの中なら、その参照。「第二十七条（第四項を除き、第五項及び第六項の規定を…）」の番地は、どれも第二十七条の中。
+ * 並びの中での扱い: 前の参照の続きか、今いるところの中か、行き先を決められないか。続きなら、どの参照の続きか。
+ * 前の参照とつながらなくても、参照の直後に開いた括弧書きの中なら、その参照の続き。
+ * 「第二十七条（第四項を除き、第五項及び第六項の規定を…）」の番地は、どれも第二十七条の中。
  */
-const ownerOfAside = (text: string, at: number, known: readonly Mention[], vocabulary: RelativeVocabulary): Mention | undefined => {
-  const open = openAsides(text, at, vocabulary).at(-1);
-  return open === undefined ? undefined : known.find((other) => other.end === open);
+const wayOfBare = (line: Line, bare: Bare, known: KnownMentions, patterns: Compiled, vocabulary: RelativeVocabulary): BareWay => {
+  const { text, asides } = line;
+  if (glued(text, bare.start, patterns)) return { way: OPAQUE };
+  const previous = known.previous(bare.start, asides.depth(bare.start));
+  const joined = previous !== undefined && onlyJoins(text.slice(previous.end, bare.start), patterns, vocabulary) ? previous : undefined;
+  const open = asides.innermost(bare.start);
+  const continues = joined ?? (open === undefined ? undefined : known.endingAt(open));
+  if (continues === undefined) return { way: "current" };
+  return continues.attrs["relative"] === OPAQUE ? { way: OPAQUE } : { way: "continue", continues };
 };
 
 /**
@@ -197,16 +173,21 @@ const ownerOfAside = (text: string, at: number, known: readonly Mention[], vocab
  * そうでなければ、書いた場所を含む一つ上のまとまり（current）の中。
  */
 const bareMentions = (text: string, patterns: Compiled, vocabulary: RelativeVocabulary, number: NumberReader, before: readonly Mention[]): Mention[] => {
+  const candidates = bareCandidates(text, patterns, vocabulary, number);
+  if (candidates.length === 0) return [];
+  const line = { text, asides: asideDepth(text, vocabulary.aside) };
+  const known = knownMentions(before, line.asides.depth);
   const found: Mention[] = [];
-  bareCandidates(text, patterns, vocabulary, number).forEach((bare) => {
-    const known = [...before, ...found];
-    if (overlaps(bare.start, bare.end, known)) return;
-    const { way, continues } = wayOfBare(text, bare, known, patterns, vocabulary);
+  candidates.forEach((bare) => {
+    if (known.overlaps(bare.start, bare.end)) return;
+    const { way, continues } = wayOfBare(line, bare, known, patterns, vocabulary);
     // 条を書かない番地は、その一つ上（level）ではなく、書いた単位（level + 1）から名指しする。「第一項」は「同条」の行き先を変えない。
     // continues は、続きの元の参照がどれだけ前から始まるか。木の中で、その参照を位置で引く。
     const back = continues === undefined ? {} : { continues: bare.start - continues.start };
     const attrs = { label: bare.label, relative: way, level: bare.first - 1, count: 1, suffix: bare.suffix, names: bare.first, ...back };
-    found.push({ start: bare.start, end: bare.end, attrs });
+    const mention = { start: bare.start, end: bare.end, attrs };
+    found.push(mention);
+    known.add(mention, line.asides.depth(mention.end));
   });
   return found.filter((mention) => mention.attrs["relative"] !== OPAQUE);
 };

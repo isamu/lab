@@ -20,6 +20,23 @@ chaff.yaml is reported, since it only runs the rule at `normal`, and `chaff eval
 them read. The rule loader refuses a severity that is not the one at `normal`, levels (with `by_genre`) that mix
 severities and numbers, and `by_genre` on a rule whose levels are severities.
 
+### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
+
+Several checks read a whole run, sentence or line again for each character, finding or reference in it, so their
+time grew with the square of the length. Each now reads it once. The output is unchanged.
+
+- **`latin-spacing`** asks whether a number is an ordinal (第3条) or a code (073-489-5909) only where Japanese touches
+  Latin letters or digits, not at every digit of the run.
+- **`chaff baseline` and the baseline file.** The fingerprint of a finding is computed once per sentence and rule.
+  A run without `baseline` computes none unless `.chaff-baseline.json` exists.
+- **The default output** tidies each quoted sentence once, not once per finding in it.
+- **`doubled-word`** finds the first word of a sentence once per sentence.
+- **English:** the tagger's words are placed in the sentence, and `oxford-comma-consistency` counts parentheses and
+  splits a list into its items, in one pass. The `be` before a past participle is looked for backwards from the
+  participle, without copying the sentence before it.
+- **Statutes** (`legal/statute`): a bare 第一項 looks up the aside depth and the reference it continues from an index
+  built once per line, instead of reading the line from its start for each reference.
+
 ### Corpus: the wikitext converter keeps each `:` reply a paragraph of its own (#170)
 
 On a talk page every reply is a line indented with `:` or `::`, and the page shows each as a block of its own. The

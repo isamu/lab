@@ -13,11 +13,14 @@ const CLAUSE_BREAK = new Set([";", ":", "—"]);
 /** 各 token の前で閉じていない括弧の数。括弧の中の読点（external users (e.g., guests), and ...）は外の並列を切らない。 */
 const PAREN_STEP: Readonly<Record<string, number>> = { "(": 1, ")": -1 };
 
-const depthsOf = (tokens: readonly Token[]): number[] =>
-  tokens.reduce<{ depths: number[]; open: number }>(
-    (acc, token) => ({ depths: [...acc.depths, acc.open], open: Math.max(0, acc.open + (PAREN_STEP[token.surface] ?? 0)) }),
-    { depths: [], open: 0 },
-  ).depths;
+export const depthsOf = (tokens: readonly Token[]): number[] => {
+  let open = 0;
+  return tokens.map((token) => {
+    const before = open;
+    open = Math.max(0, open + (PAREN_STEP[token.surface] ?? 0));
+    return before;
+  });
+};
 
 /**
  * 並びを読むための語彙表。participle は解析器が分詞と読まないが読点のあとで分詞の句を始める語（meaning）、
@@ -51,16 +54,13 @@ const isClause = (item: readonly Token[]): boolean => {
 const itemsBefore = (clause: Clause, at: number): Token[][] => {
   const level = clause.depths[at] ?? 0;
   const start = clause.tokens.slice(0, at).findLastIndex((token) => CLAUSE_BREAK.has(token.surface)) + 1;
-  return clause.tokens
-    .slice(start, at)
-    .reduce<Token[][]>(
-      (items, token, offset) => {
-        if (isComma(token) && clause.depths[start + offset] === level) return [...items, []];
-        return [...items.slice(0, -1), [...(items.at(-1) ?? []), token]];
-      },
-      [[]],
-    )
-    .filter((item) => item.length > 0);
+  // 項目を足すたびに並びを作り直すと、長い並びで語数の二乗になる。今の項目に足していく。
+  const items: Token[][] = [[]];
+  clause.tokens.slice(start, at).forEach((token, offset) => {
+    if (isComma(token) && clause.depths[start + offset] === level) items.push([]);
+    else items.at(-1)?.push(token);
+  });
+  return items.filter((item) => item.length > 0);
 };
 
 /**
