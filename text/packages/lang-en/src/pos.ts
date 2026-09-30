@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
 import type { Token } from "chaffjs/plugin";
+import { straightApostrophes } from "./apostrophe.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { blankLongRuns } from "./long-runs.ts";
 import { lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
@@ -196,18 +197,18 @@ export const prepare = (): void => {
 export const isReady = (): boolean => state.ready !== undefined;
 
 /**
- * wink は位置を返さないので、表層を順に照合して復元する。
+ * wink は位置を返さないので、解析させた文字列（read）で表層を順に照合して復元する。語は本文（source）の字で返す。
  * 見つからないものは飛ばし、カーソルは進めない。位置の当てずっぽうを下流に流さない。
  */
-const locate = (text: string, tagged: readonly Tagged[]): Token[] =>
+const locate = (source: string, read: string, tagged: readonly Tagged[]): Token[] =>
   tagged.reduce<{ tokens: Token[]; cursor: number }>(
     (acc, entry, at) => {
-      const start = text.indexOf(entry.value, acc.cursor);
+      const start = read.indexOf(entry.value, acc.cursor);
       if (start === -1) return acc;
       const end = start + entry.value.length;
       const token = {
         span: { start, end },
-        surface: entry.value,
+        surface: source.slice(start, end),
         pos: properNounChecked(entry.value, upos(entry.pos)),
         ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
         ...featuresOf(tagged, at),
@@ -232,6 +233,6 @@ const withSentenceInitialCase = (tagger: Tagger, text: string, entries: readonly
 export const tokenize = (text: string): Token[] | undefined => {
   const tagger = state.ready;
   if (tagger === undefined) return undefined;
-  const words = blankLongRuns(text, RUN_LIMIT);
-  return locate(words, withSentenceInitialCase(tagger, words, tagged(tagger, words)));
+  const words = straightApostrophes(blankLongRuns(text, RUN_LIMIT));
+  return locate(text, words, withSentenceInitialCase(tagger, words, tagged(tagger, words)));
 };

@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### English: a curly apostrophe is read like a straight one (#170)
+
+The English tagger split a contraction written with a curly apostrophe: `that’s` became `that` / `’` / `s`, with `s`
+read as a noun, while `that's` was read correctly. Published text (GOV.UK, 18F, anything from a word processor) uses
+the curly form, so every rule that reads parts of speech saw a broken sentence: `oxford-comma-consistency` reported a
+list that was not there, `agentless-passive` and `expletive-construction` missed `It’s written` and `There’s`, and the
+stray pieces counted as words in `adverb-overuse` and `proper-noun-density`. A `’` between a letter or digit and a
+letter (`don’t`, `team’s`, `1990’s`) and every `ʼ` (U+02BC) are now read as `'`. A `’` with no letter after it stays a
+closing quote (`‘like this’`), so a plural possessive (`the users’ files`) is still read as a quote. Spans and quoted
+text still point at the source as written.
+
 ### The corpus HTML converter keeps U+3000 and drops text written for a screen reader (#170)
 
 The converter behind `yarn corpus:fetch` collapsed every run of whitespace, U+3000 included, so 「2　学士」 was stored
