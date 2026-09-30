@@ -1361,6 +1361,10 @@ padded-intro に strict はありません。normal と同じ設定です。
 
 `message` だけでは、非エンジニアは何が悪いのか分からない。`why` と `how_to_fix` を必須にするのはそのため。
 
+`name` / `why` / `how_to_fix` にも `{preferred}` などを書ける。指摘があれば `message` と同じく指摘の値で埋める。
+指摘の無い表示（`chaff explain`、`chaff rules --json`、SARIF の rule、規則の一覧）では、`placeholders:` に言語別に
+書いた言葉で読ませる（`preferred: { ja: prefer に並べた使う書き方, en: the spelling listed under prefer }`）。
+
 ### 18.3 利用者が自然文で足す検査
 
 `checks.yaml` に書いたものは L4 rule として扱う。キーは英語で書き、中身は書き手の言語で書く。
