@@ -25,3 +25,16 @@ how_to_fix:
 levels: { strict: 3, normal: 5, relaxed: 8 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 一つの文に「・」で並べた語が多すぎて、どれとどれが組なのか分からない所
+  en: So many items joined by middle dots (・) in one Japanese sentence that the groups blur
+example:
+  ja:
+    before: 対象は営業・企画・総務・経理・人事・法務の各部と、東京・大阪・名古屋の各拠点です。
+    after: |
+      対象は次の部と拠点です。
+
+      - 部: 営業、企画、総務、経理、人事、法務
+      - 拠点: 東京、大阪、名古屋

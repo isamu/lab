@@ -25,3 +25,17 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 3 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+
+group: team
+summary:
+  ja: 「横展開」「握る」のように、社内でしか通じない言葉。chaff.yaml の jargon に書いた語だけを見ます
+  en: Words that only work inside your team, from jargon in chaff.yaml
+example:
+  ja:
+    config: { jargon: [横展開] }
+    before: この取り組みを、ほかの部にも横展開します。
+    after: この取り組みを、ほかの部でも同じように始めます。
+  en:
+    config: { jargon: [ping] }
+    before: I will ping the vendor about the quote.
+    after: I will email the vendor about the quote.

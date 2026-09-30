@@ -21,6 +21,38 @@ how_to_fix:
   ja: 内訳の金額と合計のどちらが正しいかを確かめて、片方を直してください。
   en: Check which is right, the items or the total, and correct the other.
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { normal: error, relaxed: warning }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 見積もりや請求書で、合計が上に並べた金額の和と合わない所
+  en: A total in a quote or an invoice that is not the sum of the amounts above it
+example:
+  ja:
+    before: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 設計 | 300,000円 |
+      | 開発 | 500,000円 |
+      | 合計 | 900,000円 |
+    after: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 設計 | 300,000円 |
+      | 開発 | 500,000円 |
+      | 合計 | 800,000円 |
+  en:
+    before: |
+      | Item | Amount |
+      | --- | --- |
+      | Design | $3,000 |
+      | Build | $5,000 |
+      | Total | $9,000 |
+    after: |
+      | Item | Amount |
+      | --- | --- |
+      | Design | $3,000 |
+      | Build | $5,000 |
+      | Total | $8,000 |

@@ -38,3 +38,15 @@ levels:
   relaxed: info
 
 use_for: [business]
+
+group: facts
+summary:
+  ja: どこから来たのか確かめようのない数字（AI に読ませる検査）
+  en: A number the reader has no way to check (checked by an AI)
+example:
+  ja:
+    before: 利用者の 9 割が、この機能に満足しています。
+    after: 9 月に利用者 120 人へ聞いたアンケートでは、108 人（9 割）がこの機能に満足と答えました。
+  en:
+    before: Nine in ten users are happy with this feature.
+    after: In a survey of 120 users in September, 108 (nine in ten) said they were happy with this feature.

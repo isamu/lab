@@ -39,3 +39,21 @@ levels:
   relaxed: info
 
 use_for: [business]
+
+group: structure
+summary:
+  ja: よい面だけを書き、リスクや弱みに触れていない提案（AI に読ませる検査）
+  en: A proposal that gives only the upside and never mentions a risk (checked by an AI)
+example:
+  ja:
+    before: |
+      新しい会計の仕組みに切り替えると、月末の締めが三日早くなります。費用も年に二百万円下がります。
+    after: |
+      新しい会計の仕組みに切り替えると、月末の締めが三日早くなります。費用も年に二百万円下がります。
+      ただし、切り替えの月は二つの仕組みを並べて動かすため、経理部の残業が増えます。
+  en:
+    before: |
+      Moving to the new accounting system closes the month three days sooner. It also cuts costs by 20,000 dollars a year.
+    after: |
+      Moving to the new accounting system closes the month three days sooner. It also cuts costs by 20,000 dollars a year.
+      In the month we switch, however, finance will run both systems side by side and work longer hours.

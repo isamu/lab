@@ -21,6 +21,54 @@ how_to_fix:
   ja: 番号を振り直してください。削った条を欠番として残すなら、「第4条（削除）」のように番号だけを残すと読み手に伝わります。
   en: Renumber. If a provision was removed on purpose, keep its number with a note such as "Section 4 [Deleted]".
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { normal: error, relaxed: warning }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 第1条の次が第3条、(a) の次が (c) のように、番号が飛んだり重なったりしている所
+  en: A numbered item that skips or repeats a number, such as Article 3 right after Article 1
+example:
+  ja:
+    before: |
+      # 就業規則
+
+      ## 第1条（目的）
+
+      この規則は、働き方の決まりを定める。
+
+      ## 第3条（勤務時間）
+
+      勤務時間は、午前九時から午後六時までとする。
+    after: |
+      # 就業規則
+
+      ## 第1条（目的）
+
+      この規則は、働き方の決まりを定める。
+
+      ## 第2条（勤務時間）
+
+      勤務時間は、午前九時から午後六時までとする。
+  en:
+    before: |
+      # Staff rules
+
+      ## Article 1 (Purpose)
+
+      These rules set out how we work.
+
+      ## Article 3 (Working hours)
+
+      Working hours are from nine to six.
+    after: |
+      # Staff rules
+
+      ## Article 1 (Purpose)
+
+      These rules set out how we work.
+
+      ## Article 2 (Working hours)
+
+      Working hours are from nine to six.

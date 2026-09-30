@@ -31,6 +31,15 @@ how_to_fix:
   ja: 限定詞か名詞のどちらかに揃えてください（a significant change / significant changes）。所有の語なら、主語の語に直してください（Your can → You can、their is → there is）。
   en: Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their is" becomes "there is").
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 英語で、「these new version」のように単数と複数が合っていない所
+  en: Words that no longer agree after an edit, as in "these new version"
+example:
+  en:
+    before: These new version will ship in May.
+    after: This new version will ship in May.

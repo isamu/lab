@@ -21,6 +21,34 @@ how_to_fix:
   ja: 日付を確かめて、書き間違いなら直し、順番が違うなら並べ替えてください。
   en: Check the date. Correct it if it is a typo, or move the row if the order is wrong.
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 旅程や予定表で、一つだけ日付の順番が前後している所
+  en: One date out of order in an itinerary or a schedule
+example:
+  ja:
+    before: |
+      - 2026年4月1日 出発
+      - 2026年4月3日 視察
+      - 2026年3月5日 会議
+      - 2026年4月10日 帰国
+    after: |
+      - 2026年4月1日 出発
+      - 2026年4月3日 視察
+      - 2026年4月5日 会議
+      - 2026年4月10日 帰国
+  en:
+    before: |
+      - 1 April 2026: depart
+      - 3 April 2026: site visit
+      - 5 March 2026: meeting
+      - 10 April 2026: return
+    after: |
+      - 1 April 2026: depart
+      - 3 April 2026: site visit
+      - 5 April 2026: meeting
+      - 10 April 2026: return

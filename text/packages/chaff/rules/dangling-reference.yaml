@@ -22,6 +22,54 @@ how_to_fix:
   en: Fix the number or remove the reference. If it points into another document, name that document so the reader knows where to look.
 
 # 何件あれば指摘するか。1 は「1 件でもあれば」。
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { normal: error, relaxed: warning }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「第5条に定める」と書いてあるのに、その第5条が文書に無い所
+  en: A reference such as "as set out in Article 5" to a provision the document does not have
+example:
+  ja:
+    before: |
+      # 就業規則
+
+      ## 第1条（目的）
+
+      この規則は、働き方の決まりを定める。
+
+      ## 第2条（休日）
+
+      休日は、第5条に定める勤務表による。
+    after: |
+      # 就業規則
+
+      ## 第1条（目的）
+
+      この規則は、働き方の決まりを定める。
+
+      ## 第2条（休日）
+
+      休日は、第1条に定める決まりのほか、会社が別に定める勤務表による。
+  en:
+    before: |
+      # Staff rules
+
+      ## Article 1 (Purpose)
+
+      These rules set out how we work.
+
+      ## Article 2 (Holidays)
+
+      Holidays follow the rota set out in Article 5.
+    after: |
+      # Staff rules
+
+      ## Article 1 (Purpose)
+
+      These rules set out how we work.
+
+      ## Article 2 (Holidays)
+
+      Holidays follow the rota that the company publishes each month.

@@ -24,3 +24,21 @@ how_to_fix:
 levels: { strict: 3, normal: 8, relaxed: 20 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 絵文字が多すぎて、飾りのほうが目立つ所
+  en: So many emoji that the decoration drowns the text
+example:
+  ja:
+    pad: true
+    before: |
+      新機能が出ました🎉🎉 すぐに試せます🚀🔥 感想をお待ちしています🙏✨💬
+    after: |
+      新機能が出ました🎉 すぐに試せます。感想をお待ちしています。
+  en:
+    pad: true
+    before: |
+      The new feature is live 🎉 Try it today 🚀 We would love your feedback 🙏✨
+    after: |
+      The new feature is live 🎉 Try it today, and tell us what you think.
