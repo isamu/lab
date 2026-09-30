@@ -66,6 +66,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "concrete-evidence-density",
         "cushion-phrase-density",
         "double-keigo",
+        "empty-conclusion",
         "empty-intensifier",
         "excessive-hedging",
         "hiragana-fukushi",

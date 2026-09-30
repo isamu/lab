@@ -18,6 +18,18 @@ unpunctuated lines, many of them), a speaker's name before the line for `literat
 spoken lines for `literature/fiction` in Japanese (`「…」と云った`). A 青空文庫 colophon or Gutenberg front matter says
 the text is literature but not which kind, so it suggests nothing on its own.
 
+### `empty-conclusion` sends a closing that only repeats the body's numbers (#290, #170)
+
+The filter that picks closings for `chaff test` skipped any closing with a digit in it, taking the digit as
+evidence. A 「まとめ」 such as 「以上のように、9月は問い合わせが増え…」 was never sent, though 9月 is the report's month
+and the rest repeats the body. A number now counts as evidence only when the closing is the first place it is written.
+Numbers are compared as written: a date or clock time with its unit (「9月」, found with the date lexicons that
+`latin-spacing` uses), anything else by its digits, so a title's 「9月」 covers a closing's 「9月」 but not its 「9 件」.
+Headings and tables are read too; they have no tags, so there a date is told by the unit written right after the
+number. A new date or a new target in the closing (「10月1日から」, 「300 件以下」) still keeps it from being sent.
+`chaff test` now loads the tagger when a rule it will run declares `uses: [pos]`, so `--dry-run` and a real run
+decide the same way whatever the machine checks need.
+
 ### `heading-echo` counts only the part of the heading that the sentence repeats (#170)
 
 `heading-echo` reports a first sentence that adds little besides its heading. It measured "little" as the sentence's
@@ -48,6 +60,21 @@ the way the English tagger does (a `’` between a letter or digit and a letter,
 are the same contraction. The message names the lexicon's form (`don't`). The apostrophe's shape itself is not
 reported: which shape to use is a typographic choice, not a register one, and mixed shapes are common in published
 text, statutes included.
+
+### A speaker's name in a play or the minutes is not a sentence (#170)
+
+In a play or a record of what was said, each turn starts with who speaks: `ALGERNON.` on its own line (Project
+Gutenberg), `夫` and full-width spaces before the line (青空文庫), `○事務局` or `○委員長（…君）` (minutes, the Diet). chaff
+read each name as text. `ALGERNON.` was a sentence of its own, so paragraphs ran one sentence longer; every turn added
+a proper noun to `proper-noun-density`; and a name joined the speech after it in `max-sentence-length` and
+`ngram-repetition`.
+
+chaff now reads a line-initial name as a speaker's name when it has one of those shapes (also `NAME:`, `Mr. SMITH.` and
+`名前「…」`), more than one name of that shape recurs, speech follows each, and such lines start a good share of the
+document's paragraphs. Such names are left out of the text the rules read, like a page header; the speech is checked as
+before. A single recurring label (`○　注意事項`), an occasional `NOTE:` or `WARNING:`, numbered items and headings
+(`一　`, `第一節　`, `A.`), and mixed-case field names (`Title:`, `Notes:`) are not read as speakers. This holds with the default genre too; `literature/play` and `speech/transcript` already
+turn these rules off.
 
 ## 0.16.0 — 2026-09-30
 

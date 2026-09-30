@@ -43,6 +43,11 @@ describe("lineParagraphs: 1 行 1 段落で書いた段落を行で割る", () =
     assert.deepEqual(pieces(text), ["○議長\n一。二。", "三。四。", "○委員\n五。六。", "七。八。", "○議長\n九。十。", "十一。十二。"]);
   });
 
+  it("空白だけの行（覆った発言者の名前）は段落を終えず、続く行と同じ段落に入る", () => {
+    const text = ["   ", "一。二。", "三。四。", "五。六。", "   ", "七。八。", "九。十。"].join("\n");
+    assert.deepEqual(pieces(text), ["   \n一。二。", "三。四。", "五。六。", "   \n七。八。", "九。十。"]);
+  });
+
   const multiThenWrapped = (wrappedLines: number): string =>
     ["一。二。", "三。四。", "五。六。", ...Array.from({ length: wrappedLines }, (_, index) => `折${String(index)}`), "終わり。"].join("\n");
 

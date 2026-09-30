@@ -1,5 +1,5 @@
 import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
-import { calendarRuns, type CalendarRun, type CalendarUnits } from "../calendar-number.ts";
+import { calendarRuns, calendarUnitsOf, type CalendarRun, type CalendarUnits } from "../calendar-number.ts";
 import { latinBoundaries, minorityStyle, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { digitRunAround, isNumberName, sequenceLabelStarts } from "../number-name.ts";
@@ -73,7 +73,7 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
   const context: NumberContext = {
     sequence: sequenceLabelStarts(doc.prose ?? doc.source),
     topUnits: patternsOf(doc, "prefecture-unit"),
-    calendar: { chained: patternList(doc, "date-time-unit"), positional: patternsOf(doc, "calendar-unit"), year: patternsOf(doc, "calendar-year-unit") },
+    calendar: calendarUnitsOf(doc),
   };
   const located: Located[] = doc.sentences.flatMap((sentence) => {
     const quoted = quotedSpans(sentence.text);
