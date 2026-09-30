@@ -81,8 +81,8 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(page('<h1><img data-alt="雨の日の案内｜緑町" src="x.png"></h1>')), "## 持ち物\n\n傘。\n");
   });
 
-  it("文字も画像も無い見出しは画像の見出しとは別で、そのまま (chaff が見出しとして読まない)", () => {
-    assert.equal(htmlToMarkdown("<h2></h2><p>Text.</p>"), "##\n\nText.\n");
+  it("文字も画像も無い見出しは、読む題が無いので落とす", () => {
+    assert.equal(htmlToMarkdown("<h2></h2><p>Text.</p>"), "Text.\n");
   });
 
   it("画像だけの見出しでも、代替文字がページの表題そのものなら表題として残す。文字や記号のある見出しの画像は今までどおり落とす", () => {
@@ -871,5 +871,21 @@ describe("htmlToMarkdown: main の無いページ", () => {
     assert.equal(htmlToMarkdown(roster), "# Roster\n\nThe following members joined this year.\n\n## Members\n\n- Alice\n- Bob\n");
     const index = "<div><h1>Index</h1><p>Farming</p></div><div><p>Rice</p></div>";
     assert.equal(htmlToMarkdown(index), "# Index\n\nFarming\n\nRice\n");
+  });
+});
+
+describe("htmlToMarkdown: a heading with no words", () => {
+  it("is dropped, however it is empty", () => {
+    ["<h2></h2>", "<h2> </h2>", "<h2>&nbsp;</h2>", '<h3><img src="x.png" alt=""></h3>', "<h2><span></span></h2>"].forEach((empty) => {
+      assert.equal(
+        htmlToMarkdown(`<h1>Plan</h1><p>Intro.</p>${empty}<h2>Budget</h2><p>Costs rose.</p>`),
+        "# Plan\n\nIntro.\n\n## Budget\n\nCosts rose.\n",
+        empty,
+      );
+    });
+  });
+
+  it("a heading with words is kept", () => {
+    assert.equal(htmlToMarkdown("<h1>Plan</h1><p>Intro.</p><h2>No. 2</h2><p>Costs rose.</p>"), "# Plan\n\nIntro.\n\n## No. 2\n\nCosts rose.\n");
   });
 });

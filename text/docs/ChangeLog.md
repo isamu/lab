@@ -37,6 +37,38 @@ diagram. `undefined-acronym` no longer counts the state names seen only in figur
 LISTEN, which text inside a figure had counted as explained. RFC 3693 loses the long sentences made of figure rows, and
 the ASF board minutes those made of `+----+` tables.
 
+### Template and MDX syntax is not prose; code words in headings are neutral (#170)
+
+Documentation written in Markdown carries syntax for the site generator, which chaff read as prose (corpus round 13:
+GitHub Docs with Liquid, a Docusaurus page in MDX). It is now blanked the way a code span is, keeping every offset:
+
+- **Liquid and Jinja** tags, outputs and comments (`{% ifversion %}`, `{% data variables.product.github %}`,
+  `{{ page.title }}`, `{# … #}`), and **Hugo shortcodes** (`{{< note >}}`, `{{% alert %}}`). An inline variable
+  usually stands for a product name, but it is blanked rather than replaced with a stand-in noun: a stand-in would
+  show in the quoted sentence, and the rules that look between two words read the source there, so a blank changes
+  no finding a name would not. The text a tag guards stays prose. A `{{` in code opens nothing, and no tag runs past
+  a blank line.
+- **MDX**: `import … from '…'` and `export` in JavaScript's shapes at the top level ("export default reports from
+  the dashboard." stays a sentence), comments in braces, and lines of JSX tags (`<Tabs>`, `<TabItem value="a">`,
+  attributes with quoted `>` or nested expressions). A line of JSX tags is read as a block of its own, as MDX reads
+  it, so the text after it is a paragraph; before, it was the start of an HTML block that hid that text, or, for a
+  tag CommonMark does not accept, prose itself. A line of lower-case HTML stays opaque. MDX syntax is read in `.md`
+  files too, since Docusaurus reads them as MDX.
+- **GitHub alerts** (`> [!NOTE]`) are the writer's own text, not a quote: the body is prose, and only the marker
+  line and the `>` of each line are not. A plain quote, and any quote inside a quote (even one opening with
+  `[!TIP]`), are still not prose.
+- **Admonitions** (`:::note Title` … `:::`) were already read with only their marker lines blanked; an indented one
+  (in a list item) now is too. The title stays with its marker: it is a label, as a heading is.
+- A heading's text leaves the syntax out (`## Usage with Prettier {/* #usage */}` is "Usage with Prettier"), and a
+  heading of nothing but a tag still starts a section.
+
+`title-case-consistency` no longer counts code words as evidence of either style: a code span, a flag (`--force`), a
+file or domain name (`config.yaml`, `Research.gov`) and an identifier (`useEffect`) are written the same way in Title
+Case and in sentence case.
+
+The HTML converter drops a heading with no text in it (an empty `<h2>`); the two committed documents that had one
+are converted again.
+
 ### Email: headers, separators, signatures and quoted replies are not the writer's prose (#170)
 
 A plain-text or Markdown email was read as one long piece of prose. Found by shape, in any genre:
@@ -118,6 +150,11 @@ that deep) now says so and names the depth instead of crashing; `--format sexp` 
   `“終わった？”誰も知らない。` is one sentence, as `「終わった？」誰も知らない。` already was. Only a bracket closed later on
   the same line counts, so `1）`, an unclosed `（` and a ditto `“` join nothing. A closing bracket left at the start of a
   sentence goes back to the sentence it closes. A line that ends in a lone `\r` is a line break too.
+- **A note in parentheses is read for its own ending.** Once such a note stayed one sentence,
+  「（この際、…亜塩素酸水（…（含量…以上））を入れることが望ましい。）」 was read as ending in its last inner bracket,
+  and `no-mixed-desumasu` lost a real finding. A bracket at the end of a sentence is now left out only when it is
+  closed and follows the predicate. A note that is the whole sentence, or that ends with 「。）」 after a finished
+  sentence, is read inside. Several asides in a row (「（※3）（ただし…を除く。）」) are all left out.
 
 ### Corpus round 13; `dangling-reference` and sections of numbered documents (#170)
 

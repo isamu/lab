@@ -57,7 +57,7 @@ const runIn = async (name: string, body: string, args: readonly string[]): Promi
   process.env["LANG"] = "en_US.UTF-8";
   process.chdir(dir);
   try {
-    await main([...args.map((arg) => (arg === "FILE" ? name : arg))]);
+    await main(args.map((arg) => (arg === "FILE" ? name : arg)));
     return out.join("\n");
   } finally {
     process.chdir(saved.cwd);

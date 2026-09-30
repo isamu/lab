@@ -1,6 +1,7 @@
 import type { Span } from "./plugin.ts";
 import { mergeSpans } from "./span-merge.ts";
-import { eachPreOrder } from "./tree-walk.ts";
+import { spansOfType } from "./markdown-read.ts";
+import type { MarkdownNode } from "./markdown-node.ts";
 
 /**
  * 線と矢印で描いた図（RFC の状態遷移図、やり取りの図、枠の表）。文ではないので、コードブロックと同じく本文から外す。
@@ -135,22 +136,12 @@ export const textFigures = (source: string, skip: readonly Span[] = []): Span[] 
     .filter(isFigure)
     .map((run) => ({ start: run[0]?.start ?? 0, end: run.at(-1)?.end ?? 0 }));
 
-type Place = { readonly offset?: number | undefined };
-export type MarkdownNode = {
-  readonly type: string;
-  readonly position?: { readonly start: Place; readonly end: Place } | undefined;
-  readonly children?: readonly MarkdownNode[] | undefined;
-};
-
 /** Markdown が図と別に読む塊。この中の線は図として探さない（コードはもともと本文でなく、表の区切りの行は表、見出しは見出し）。 */
-const NOT_FIGURE: ReadonlySet<string> = new Set(["code", "table", "html", "heading"]);
+const NOT_FIGURE = ["code", "table", "html", "heading"];
 
 /** Markdown の図。コード・表・HTML・見出しの外に描かれたものだけ。 */
-export const markdownFigures = (root: MarkdownNode, source: string): Span[] => {
-  const skip: Span[] = [];
-  eachPreOrder(root, (node) => {
-    const [start, end] = [node.position?.start.offset, node.position?.end.offset];
-    if (NOT_FIGURE.has(node.type) && start !== undefined && end !== undefined) skip.push({ start, end });
-  });
-  return textFigures(source, skip);
-};
+export const markdownFigures = (root: MarkdownNode, source: string): Span[] =>
+  textFigures(
+    source,
+    NOT_FIGURE.flatMap((type) => spansOfType(root, type)),
+  );

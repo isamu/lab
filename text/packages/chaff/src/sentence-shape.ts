@@ -1,4 +1,5 @@
 import type { Sentence, Token } from "./plugin.ts";
+import { ownEnd } from "./trailing-aside.ts";
 
 /**
  * 「これは文か」の判定を 1 箇所に置く。
@@ -21,13 +22,11 @@ const SKIP = new Set(["PUNCT", "PART", "SYM"]);
  * 「これを最優先制約とする（§17）。」の述語は「とする」であって「17」ではない。
  * 仕様書は相互参照を括弧で添えるので、これを数えると文末が全部そこになる。
  */
-const TRAILING = /[(（][^(（]*[)）][\s。．！？!?]*$/u;
-
 const beforeTrailing = (sentence: Sentence): readonly Token[] => {
   const tokens = sentence.tokens ?? [];
-  const match = TRAILING.exec(sentence.text);
-  if (match?.index === undefined) return tokens;
-  const cut = sentence.span.start + match.index;
+  const end = ownEnd(sentence.text);
+  if (end === sentence.text.length) return tokens;
+  const cut = sentence.span.start + end;
   const kept = tokens.filter((token) => token.span.end <= cut);
   // 括弧を外したら何も残らない文は、括弧そのものが中身。そのまま見る。
   return kept.length === 0 ? tokens : kept;

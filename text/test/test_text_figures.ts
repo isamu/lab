@@ -1,6 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { markdownFigures, textFigures, type MarkdownNode } from "../packages/chaff/src/text-figures.ts";
+import { markdownFigures, textFigures } from "../packages/chaff/src/text-figures.ts";
+import type { MarkdownNode } from "../packages/chaff/src/markdown-node.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";

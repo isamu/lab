@@ -1,6 +1,7 @@
 import type { Span } from "./plugin.ts";
 import { NO_OUTLINE, type Outline } from "./structure/build.ts";
-import { markdownFigures, textFigures, type MarkdownNode } from "./text-figures.ts";
+import { markdownFigures, textFigures } from "./text-figures.ts";
+import type { MarkdownNode } from "./markdown-node.ts";
 
 /** 改ページから、飾りの行を探しにいく行数。飾りと改ページのあいだには空行が数行入る。 */
 const REACH = 3;
