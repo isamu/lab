@@ -23,11 +23,14 @@ const namesOf = (text: string): string[] => [...new Set([text, text.replaceAll("
 
 const keysOf = (name: string): string[] => [...new Set(namesOf(name).map(anchorKey))];
 
-/** 文書の中の名前を持つところ。names は見出しと書き手が付けた id の形、headings は見出しの形ごとの数（-1、-2 は見出しだけに付く）。 */
-export type Anchors = { readonly names: ReadonlySet<string>; readonly headings: ReadonlyMap<string, number> };
+/**
+ * 文書の中の名前を持つところ。headings は見出しから作る名前の形ごとの数（-1、-2 は見出しだけに付く）。
+ * ids は書き手が付けた名前そのもの。見出しと違って作り方の違いが無いので、書いたとおりに比べる。
+ */
+export type Anchors = { readonly ids: ReadonlySet<string>; readonly headings: ReadonlyMap<string, number> };
 
 export const anchorsOf = (markup: Markup): Anchors => ({
-  names: new Set([...markup.headings.map((heading) => heading.text), ...markup.ids].flatMap(keysOf)),
+  ids: markup.ids,
   headings: markup.headings
     .flatMap((heading) => keysOf(heading.text))
     .reduce((counts, key) => counts.set(key, (counts.get(key) ?? 0) + 1), new Map<string, number>()),
@@ -44,7 +47,7 @@ const reachesDuplicate = (fragment: string, headings: ReadonlyMap<string, number
 export const reachesAnchor = (destination: string, anchors: Anchors): boolean => {
   const fragment = decoded(destination.slice(1));
   if (PAGE_TOP.has(fragment.toLowerCase())) return true;
-  return anchors.names.has(anchorKey(fragment)) || reachesDuplicate(fragment, anchors.headings);
+  return anchors.ids.has(fragment) || anchors.headings.has(anchorKey(fragment)) || reachesDuplicate(fragment, anchors.headings);
 };
 
 /**
