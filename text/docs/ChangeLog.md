@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### 同項, 同号 and 同条 after another law's article are not looked up in this document (#170)
+
+A 同-reference points at the provision cited last, and now also at that provision's document. After 「法第16条第1項」
+in a guideline numbered by headings (「1 目的」), 「同項」 is article 16 of the law, not of the guideline, and
+`dangling-reference` no longer reports it. The same holds for a continuation (「法第二十九条第一項若しくは第三項」).
+After an article of this document (「第三条第二項…同項」) the reference is still looked up here and reported when
+missing. In `chaff tree`, such references now carry the `unitWord` of the reference they follow.
+
 ### The corpus checks each document with the preset for its kind (#170)
 
 `corpus/manifest.json` gave every document one of the original ten genres, so `yarn corpus` never ran the presets
