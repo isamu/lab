@@ -11,6 +11,28 @@ waiting for its expansion; `STAGE` in 「J-STAGEで公開」 is no longer report
 (`ITU-T`, `GOODS-S`) marks a variant of that acronym, which is still reported, and so is an acronym joined of two
 longer parts (`RT-PCR`). The same capitals outside the name are counted as before.
 
+### `oxford-comma-consistency` no longer reads an example aside or an "and" inside one item as a list (#170)
+
+A list needs three items, and four shapes made two items, or an "and" inside one item, look like three:
+
+- **An example aside.** `the screen lock on your phone, such as a PIN or phone-based fingerprint`: the list starts
+  after a word in the new `example-marker` list (such as, including, e.g., i.e., for example, for instance), so this
+  is two items. `such as a PIN, a password or a fingerprint` is still a list. When the items after the marker do not
+  share a shape, or an "and" has already closed the aside, the marker is not taken as the list's start (`materials
+  such as green steel, utilizing …, and adopting …`, `apples, oranges such as navels and mandarins, and pears`). The
+  marker is matched case by case, so the initials in `E.G. Evans` are not "e.g.".
+- **A pair word.** `the Key Terms between Provider and Customer, and any policies`: the conjunction a word in the new
+  `pair-opener` list takes (between … and, both … and, either … or, whether … or), in the same item with no comma before
+  it, joins that pair. `between the provider, the reseller and the customer`, `the impact of either option and
+  implementation` and `the renderer in both modes and the exporter` are still lists.
+- **Modifiers sharing a noun.** `natural and artificial flavor`, `registered or certified mail, or personal delivery`:
+  a lone adjective or participle joined to a modifier-plus-noun is one item. `red, white and blue flags` and
+  `Federal government, military, and agricultural workers` are still lists.
+- **An object inside the last item.** `(updates on the Google Doc, chat in Slack or Google Hangouts)`: when every
+  item carries a prepositional phrase, the part after "or" does not, it has the part of speech of the last item's
+  object and not of any item's head, and there is no comma before "or", the "or" joins the preposition's objects.
+  `requests for records, petitions for waivers and appeals` is still a list.
+
 ### 同項, 同号 and 同条 after another law's article are not looked up in this document (#170)
 
 A 同-reference points at the provision cited last, and now also at that provision's document. After 「法第16条第1項」
