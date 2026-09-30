@@ -437,7 +437,7 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 
 | rule | 何を見るか |
 | --- | --- |
-| `excessive-hedging` | 逃げの表現の密度 |
+| `excessive-hedging` | 1 つの文に重ねた逃げの表現と、文書全体の逃げの表現の密度 |
 | `cushion-phrase-density` | クッション言葉の密度 |
 | `unqualified-superlative` | 比べる相手のない最上級 |
 | `repeated-conjunction` | 段落が接続詞で始まり続けていないか |
@@ -469,6 +469,18 @@ required_sections: # この種類の文書に無いと困る見出し
 切られます。** 書いていなければ何も言いません。
 
 `jargon` は辞書形（`握る`）でも語幹（`巻き取`）でも書けます。活用していても当たります。
+
+チームの固有名詞（組織名・製品名）は `names:` に並べます。並べた名前は 1 つの名前として読み、
+`max-kanji-continuous`（漢字の連なり）・`ngram-repetition`（繰り返し）・`undefined-acronym`（略語）では数えず、
+`proper-noun-density` では何語に割れても 1 つと数えます。名前の外に続く漢字は今までどおり数えます。
+
+```yaml
+names:
+  - 個人情報保護委員会
+  - 国土交通省鉄道局総務課
+```
+
+鉤括弧でまるごとくくった漢字の連なり（「英国大使館別荘記念公園」）は、`names` に書かなくても `max-kanji-continuous` が数えません。
 
 ## 揃ったときだけ言う
 

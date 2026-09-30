@@ -30,6 +30,10 @@ export type Config = {
   readonly prefer: Readonly<Record<string, string>>;
   /** この種類の文書に無いと困る見出し。チームが自分で決める。 */
   readonly requiredSections: readonly string[];
+  /** チームの固有名詞（組織名・製品名）。1 つの名前として読み、漢字の連なりや繰り返しに数えない。 */
+  readonly names: readonly string[];
+  /** names に書かれていたが名前として読めなかった値。黙って捨てると、並べたつもりの名前が効いていないことに気づけない。 */
+  readonly unreadableNames: readonly string[];
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
   readonly byPath: readonly PathRule[];
   readonly baseDir: string;
@@ -54,6 +58,8 @@ export const EMPTY: Config = {
   jargon: [],
   prefer: {},
   requiredSections: [],
+  names: [],
+  unreadableNames: [],
   byPath: [],
   baseDir: process.cwd(),
 };
@@ -114,6 +120,21 @@ const preferOf = (raw: unknown): Record<string, string> =>
       )
     : {};
 
+const isNameEntry = (value: unknown): value is string | number => typeof value === "string" || typeof value === "number";
+
+const printed = (value: unknown): string => JSON.stringify(value) ?? String(value);
+
+/** 名前は文字列か数（2025 のような名前）の並び。並びでない値と、並びの中の名前でない項目は読めないものとして返す。 */
+const namesOf = (raw: unknown): { readonly names: string[]; readonly unreadable: string[] } => {
+  if (raw === undefined || raw === null) return { names: [], unreadable: [] };
+  if (!Array.isArray(raw)) return { names: [], unreadable: [printed(raw)] };
+  const entries: unknown[] = raw;
+  return {
+    names: wordsOf(entries.filter(isNameEntry)),
+    unreadable: entries.filter((entry) => !isNameEntry(entry)).map(printed),
+  };
+};
+
 const byPathOf = (raw: unknown): PathRule[] => (Array.isArray(raw) ? raw.map(toPathRule).filter((rule) => rule !== undefined) : []);
 
 /** 設定ファイルが無くても動く。あっても、既定から変えたものだけが書かれている。spec §18。 */
@@ -122,6 +143,7 @@ export const loadConfig = (path: string): Config => {
   if (!isRecord(raw)) return { ...EMPTY, path };
   const declared: unknown = raw["ai_backend"];
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;
+  const names = namesOf(raw["names"]);
   return {
     genre: str(raw["genre"]),
     profile: str(raw["profile"]),
@@ -137,6 +159,8 @@ export const loadConfig = (path: string): Config => {
     jargon: wordsOf(raw["jargon"]),
     prefer: preferOf(raw["prefer"]),
     requiredSections: wordsOf(raw["required_sections"]),
+    names: names.names,
+    unreadableNames: names.unreadable,
     byPath: byPathOf(raw["by_path"]),
     baseDir: dirname(path),
   };

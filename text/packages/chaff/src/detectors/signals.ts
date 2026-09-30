@@ -8,6 +8,7 @@ import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, startsWithin } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
+import { nameSpans, touchesAny } from "../team-names.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
 
 const PER = 1000;
@@ -63,9 +64,12 @@ export const emojiDensity: Detector = (doc, options): Finding[] => {
  */
 const GRAM = { char: 8, word: 20 };
 
-const countGrams = (text: string, width: number): Map<string, number> => {
+/** 並べた名前にかかる語句は数えない。名前が繰り返されれば、その前後（「the …」）も一緒に繰り返されるのは当たり前。 */
+const countGrams = (text: string, width: number, names: readonly string[]): Map<string, number> => {
   const counts = new Map<string, number>();
+  const named = nameSpans(text, names);
   Array.from({ length: Math.max(0, text.length - width + 1) }).forEach((_, index) => {
+    if (touchesAny(named, index, index + width)) return;
     const gram = text.slice(index, index + width);
     counts.set(gram, (counts.get(gram) ?? 0) + 1);
   });
@@ -94,7 +98,8 @@ const gramsOf = (doc: ProseDocument): Map<string, number> => {
   const counts = new Map<string, number>();
   doc.sentences.forEach((sentence) => {
     const text = doc.lengthUnit === "char" ? proseText(sentence).replace(/\s+/gu, "") : proseText(sentence);
-    countGrams(text, GRAM[doc.lengthUnit]).forEach((count, gram) => counts.set(gram, (counts.get(gram) ?? 0) + count));
+    const names = doc.lengthUnit === "char" ? (doc.names ?? []).map((name) => name.replace(/\s+/gu, "")) : (doc.names ?? []);
+    countGrams(text, GRAM[doc.lengthUnit], names).forEach((count, gram) => counts.set(gram, (counts.get(gram) ?? 0) + count));
   });
   return counts;
 };
@@ -195,9 +200,10 @@ const spansOf = (text: string, notation: NotAcronymSpans): Span[] => [
 
 type AcronymHit = { readonly word: string; readonly hit: Hit };
 
+/** チームが並べた名前の中の略語（NTT Docomo の NTT）は、名前の一部であって説明を待つ略語ではない。 */
 const acronymsOf = (doc: ProseDocument, notation: NotAcronymSpans): AcronymHit[] =>
   doc.sentences.flatMap((sentence) => {
-    const excluded = spansOf(sentence.text, notation);
+    const excluded = [...spansOf(sentence.text, notation), ...nameSpans(sentence.text, doc.names ?? [])];
     return [...sentence.text.matchAll(ACRONYM)]
       .filter((match) => !excluded.some((span) => span.start <= match.index && match.index + match[0].length <= span.end))
       .map((match) => ({ word: match[0], hit: { sentence, offset: sentence.span.start + match.index } }));
@@ -233,7 +239,8 @@ const definitionVerbsOf = (doc: ProseDocument): string[] => {
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
   // HTTP のメソッド名（GET）は略語ではないので、通じる略語と同じく展開を求めない。
-  const common = new Set([...(options.lexicon ?? []).map((entry) => entry.pattern), ...patternsOf(doc, "http-method")]);
+  // 並べた名前（JAXA）も、繋いだ略語（JAXA-ISAS）の片割れとして説明済みに数える。
+  const common = new Set([...(options.lexicon ?? []).map((entry) => entry.pattern), ...patternsOf(doc, "http-method"), ...(doc.names ?? [])]);
   const seen = new Map<string, Hit>();
   acronymsOf(doc, notationOf(doc)).forEach(({ word, hit }) => {
     if (!seen.has(word)) seen.set(word, hit);

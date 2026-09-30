@@ -867,7 +867,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `taigen-dome-in-prose` ✅ | 箇条書き外の体言止め | pos |
 | `no-doubled-joshi` ✅ | 名詞を繋ぐ助詞の入れ子 | pos |
 | `double-keigo` ✅ | 二重敬語 | - |
-| `sasete-itadaku` ✅ | 「させていただく」の密度 | - |
+| `sasete-itadaku` ✅ | 「させていただく」の回数。上限の回数までは通す | - |
 | `no-nakaguro-parallel` ✅ | 中黒の並列 | - |
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
@@ -1282,7 +1282,7 @@ relaxed   ゆるく見る
 off       見ない
 ```
 
-数値との対応は rule 定義の `levels` が持つ（§18.2）。4 語で足りないときは、上限を正の数で直接書ける。段階は `normal` として扱い、上限だけがその数になる。単位は rule ごとに違うので、`chaff rules --json` の `levels` の数で見当をつける。
+数値との対応は rule 定義の `levels` が持つ（§18.2）。4 語で足りないときは、上限を正の数で直接書ける。上限ちょうどは通り、超えたときだけ指摘する（下限を言う rule は、下限ちょうどは通り、下回ったときだけ指摘する）。message が「N まで」「limit N」と言う数は、この上限そのもの。段階は `normal` として扱い、上限だけがその数になる。単位は rule ごとに違うので、`chaff rules --json` の `levels` の数で見当をつける。
 
 ```yaml
 rules:
@@ -1655,6 +1655,8 @@ Precision / Recall
 
 `agentless-passive` は 1 と 3 を満たすが 2 で止めている。実文書 5 件中 4 件が真で、
 残る 1 件は「れる・られる」の多義（§26-6）。**8 割は既定で出すには足りない。**
+corpus の日本語業務文書では、決まり・文書の中身・状態を言う受動と、仮定の節を外したあとも、
+残る指摘の大半は誰も隠していない一般的な動作（「使用されます」「行われます」）で、2 と 3 のどちらも満たさない（#290）。
 
 `title-case-consistency` と `contraction-consistency` は 3 で止めている。eval が
 「どの閾値でも目標を満たさない」と言っている。

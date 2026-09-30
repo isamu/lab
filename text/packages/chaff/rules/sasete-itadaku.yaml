@@ -1,7 +1,7 @@
 id: sasete-itadaku
 layer: L3
 status: experimental
-how_to_find: phrase-match
+how_to_find: phrase-count
 word_list: sasete-itadaku
 uses: [pos]
 languages: [ja]

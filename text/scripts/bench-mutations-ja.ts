@@ -51,15 +51,16 @@ const HUMBLE: Readonly<Record<string, string>> = { します: "させていた�
 
 const humble = (line: string): string => line.replace(KANGO_VERB, (_, ending: string) => `${HUMBLE[ending] ?? ending}。`);
 
-/** 「漢語＋します」の文を、上限の数だけ「させていただきます」にする。上限に届く数が無ければ植えない。 */
+/** 「漢語＋します」の文を、上限を 1 つ超える数だけ「させていただきます」にする。上限は許す回数なので、ちょうどでは指摘にならない。 */
 export const humbleForms = (source: string, context: PlantContext): Plant | undefined => {
   const limit = context.limits["sasete-itadaku"];
   if (limit === undefined) return undefined;
   const lines = linesOf(source);
   const isProseLine = proseAt(lines);
-  const targets = lines.flatMap((line, index) => (isProseLine(index) && KANGO_VERB.test(line) ? [index] : [])).slice(0, limit);
+  const needed = limit + 1;
+  const targets = lines.flatMap((line, index) => (isProseLine(index) && KANGO_VERB.test(line) ? [index] : [])).slice(0, needed);
   const first = targets[0];
-  if (first === undefined || targets.length < limit) return undefined;
+  if (first === undefined || targets.length < needed) return undefined;
   return { source: lines.map((line, index) => (targets.includes(index) ? humble(line) : line)).join("\n"), line: first + 1 };
 };
 

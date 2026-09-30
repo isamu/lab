@@ -2,8 +2,9 @@ import { surfaceStarts } from "./surface-starts.ts";
 import { wellFormed } from "./well-formed.ts";
 import { analyserPieces } from "./analyser-pieces.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
-import { isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
+import { outsideTheReport, isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
+import { isInflectedEcho, type Inflection } from "./reduplication.ts";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import type { Token } from "chaffjs/plugin";
@@ -29,7 +30,7 @@ const isTokenizer = (value: unknown): value is Tokenizer => isRecord(value) && i
 /** kuromoji の形態素。形の違うものは落とす。二段目の細分類（助数詞・地域）は無ければ *。三段目（人名の姓・名）は無ければ持たない。 */
 const toMorpheme = (value: unknown): Morpheme[] => {
   if (!isRecord(value)) return [];
-  const [surface, pos, detail1, detail2, detail3, basic, reading] = [
+  const [surface, pos, detail1, detail2, detail3, basic, reading, form, conjugation] = [
     value["surface_form"],
     value["pos"],
     value["pos_detail_1"],
@@ -37,6 +38,8 @@ const toMorpheme = (value: unknown): Morpheme[] => {
     value["pos_detail_3"],
     value["basic_form"],
     value["reading"],
+    value["conjugated_form"],
+    value["conjugated_type"],
   ];
   if (typeof surface !== "string" || typeof pos !== "string" || typeof detail1 !== "string" || typeof basic !== "string") return [];
   const detail = typeof detail2 === "string" ? detail2 : "*";
@@ -49,6 +52,8 @@ const toMorpheme = (value: unknown): Morpheme[] => {
       ...(typeof detail3 === "string" ? { pos_detail_3: detail3 } : {}),
       basic_form: basic,
       ...(typeof reading === "string" ? { reading } : {}),
+      ...(typeof form === "string" && form !== "*" ? { conjugated_form: form } : {}),
+      ...(typeof conjugation === "string" && conjugation !== "*" ? { conjugated_type: conjugation } : {}),
     },
   ];
 };
@@ -105,7 +110,8 @@ export const upos = (pos: string, detail: string): string => BY_DETAIL[detail] ?
 
 /**
  * 受動の「れる/られる」。この語は可能・尊敬・自発も表す。形のうえで受動でないと言えるもの
- * （自発や関係を表す動詞、名付けの「と呼ばれる」、尊敬の形と決まり文句）は passive-reading.ts が外す。残りは「受動の形」として印を付ける。
+ * （自発や状態を言う動詞、名付けの「と呼ばれる」、尊敬の形と決まり文句、ら抜きと可能）と、文が報告する動作の外にあるもの
+ * （仮定の節、「〜されやすい」）は passive-reading.ts が外す。残りは「受動の形」として印を付ける。
  */
 const PASSIVE_VOCABULARY = passiveVocabulary(loadLexicons());
 
@@ -140,15 +146,19 @@ export const isReady = (): boolean => state.ready !== undefined;
  * span は渡した文字列の先頭を 0 とする。位置は kuromoji の word_position ではなく、語の文字を本文と照らして決める（surface-starts.ts）。
  * 形の違うものが混ざったら、その 1 つを落とす。位置が NaN の token を下流に流さない。
  */
-const toToken = (morpheme: Morpheme, start: number, passive: boolean): Token => ({
+const toToken = (morpheme: Morpheme, start: number, passive: boolean, echo: boolean): Token => ({
   span: { start, end: start + morpheme.surface_form.length },
   surface: morpheme.surface_form,
   // UD の日本語では「れる/られる」は AUX。IPADIC の「動詞,接尾」をそこへ寄せる。
   pos: isPassiveForm(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
   ...(morpheme.basic_form === "*" ? {} : { lemma: morpheme.basic_form }),
   ...(typeof morpheme.reading !== "string" || morpheme.reading === "*" ? {} : { reading: morpheme.reading }),
-  ...featuresOf(morpheme, passive),
+  ...withEcho(featuresOf(morpheme, passive), echo),
 });
+
+/** 重ね言葉の二つ目（UD の Echo=Rdp）。ほかの印は残す。 */
+const withEcho = (found: { features?: Readonly<Record<string, string>> }, echo: boolean): { features?: Readonly<Record<string, string>> } =>
+  echo ? { features: { ...found.features, Echo: "Rdp" } } : found;
 
 /**
  * 数（名詞,数）。UPOS では名詞に寄せるので、数であることは UD の NumType=Card で渡す。
@@ -220,12 +230,23 @@ export const predicateOnly = (tokens: readonly Token[]): Token[] =>
     return { span: token.span, surface: token.surface, pos: token.pos, ...(token.lemma === undefined ? {} : { lemma: token.lemma }) };
   });
 
+const inflectionOf = (morpheme: Morpheme, start: number): Inflection => ({
+  surface: morpheme.surface_form,
+  pos: morpheme.pos,
+  detail: morpheme.pos_detail_1,
+  form: morpheme.conjugated_form ?? "*",
+  start,
+});
+
 export const tokenize = (text: string): Token[] | undefined => {
   const tokenizer = state.ready;
   if (tokenizer === undefined) return undefined;
   const read = readAll(tokenizer, text);
   const sequence = read.map(({ morpheme }) => morpheme);
-  return read.map(({ morpheme, start }, index) => toToken(morpheme, start, readsAsPassive(sequence, index, PASSIVE_VOCABULARY)));
+  const inflections = read.map(({ morpheme, start }) => inflectionOf(morpheme, start));
+  return read.map(({ morpheme, start }, index) =>
+    toToken(morpheme, start, readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index), isInflectedEcho(inflections, index)),
+  );
 };
 
 /** 句読点の無い並びをこれより長く渡さない。解析器は並びの長さの二乗で遅くなり、20 万字の 1 行では何分も返らない。 */
