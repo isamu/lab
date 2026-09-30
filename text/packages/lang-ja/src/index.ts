@@ -12,6 +12,7 @@ import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, read
 import { markSpacedCounters } from "./spaced-counter.ts";
 import { tokensWithin } from "./tokens-within.ts";
 import { distributiveVocabulary, iterationMarkReading, markReduplication } from "./reduplication.ts";
+import { knownWordReading, markDroppedLongVowels, remembered } from "./long-vowel-form.ts";
 import type { AdapterNeeds, EmbeddedLanguage, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
 
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
@@ -73,11 +74,12 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] => {
 const LEXICONS = loadLexicons();
 const DISTRIBUTIVE = distributiveVocabulary(LEXICONS);
 const TAKES_ITERATION_MARK = iterationMarkReading(LEXICONS, readsAsOneWord);
+const KNOWS_WITH_LONG_VOWEL = remembered(knownWordReading(tokenize));
 
 const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] => {
   const read = tokenize(source);
   if (read === undefined) return [...sentences];
-  const tokens = markSpacedCounters(read, readsAsCounter);
+  const tokens = markDroppedLongVowels(markSpacedCounters(read, readsAsCounter), KNOWS_WITH_LONG_VOWEL);
   return sentences.map((sentence) => ({
     ...sentence,
     // 述語かどうかは文の中でしか決まらないので、文へ配ってから印を落とす。

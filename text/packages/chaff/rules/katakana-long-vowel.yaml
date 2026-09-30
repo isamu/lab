@@ -1,0 +1,78 @@
+id: katakana-long-vowel
+layer: L3
+status: experimental
+how_to_find: katakana-long-vowel
+# 語は形態素解析で取る。複合語の中の「ユーザー」も一語として見る。品詞が無ければ動かない。
+requires: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: カタカナ語の語末の「ー」がそろっていない
+  en: The final ー of katakana words is inconsistent
+
+why:
+  ja: 「コンピューター」と「コンピュータ」のように、カタカナ語の語末の「ー」は付ける書き方と省く書き方があります。どちらも正しく、困るのは一つの文書の中で混ざることです。読み手は別のものかと迷い、検索でも片方を取りこぼします。設定が無ければ、同じ語が両方で書かれた所だけを指摘し、違う語どうし（サーバーとブラウザ）は比べません。options の ending を drop か keep にすると、決めた書き方に合わない語をすべて指摘します。音は「コ・ン・ピュ・ー・タ・ー」で 6 音と数えます（小さい「ャュョァィゥェォ」は前の字と合わせて 1 音、「ッ」「ン」「ー」は 1 音ずつ）。辞書が固有名詞と知っている語（ディズニー）と、chaff.yaml の names に並べた名前は見ません。
+  en: A katakana loanword can be written with or without its final long-vowel mark (コンピューター / コンピュータ). Both are right; what reads badly is mixing them in one document, which makes a reader wonder whether they differ and makes a search miss one. With no setting chaff points only at a word written both ways, and does not compare different words (サーバー and ブラウザ). Setting ending under options to drop or keep points at every word written the other way. Morae are counted as コ・ン・ピュ・ー・タ・ー, six (a small ャュョァィゥェォ joins the kana before it; ッ, ン and ー are one each). Words the dictionary knows as proper nouns (ディズニー) and the names under names in chaff.yaml are left alone.
+
+message:
+  ja: 「{matched}」は語末の「ー」がほかと違います（「{preferred}」）
+  en: 'The final ー of "{matched}" differs from the rest ("{preferred}")'
+
+messages:
+  same-word:
+    ja: 「{matched}」と「{preferred}」が混ざっています（この語は {of} 回のうち {count} 回が「{matched}」）
+    en: '"{matched}" and "{preferred}" are both used ({count} of {of} are "{matched}")'
+  drop:
+    ja: 「{matched}」は語末の「ー」を省いて「{preferred}」と書きます（{min_morae} 音以上の語）
+    en: 'Write "{preferred}", without the final ー ({min_morae} morae or more)'
+  keep:
+    ja: 「{matched}」は語末の「ー」を付けて「{preferred}」と書きます
+    en: 'Write "{preferred}", with the final ー'
+
+how_to_fix:
+  ja: 「{preferred}」に直してください。どちらに寄せるかチームで決めているなら、chaff.yaml の options で ending を決めておくと、この文書の多いほうではなく、決めた書き方で見ます。製品名など、そのままにすべき語は options の except か names に並べます。
+  en: Change it to "{preferred}". If the team has decided which way, set ending under options in chaff.yaml, and chaff checks against that instead of the document's usual way. List a word that must stay as it is (a product's name) under except in options, or under names.
+
+placeholders:
+  matched:
+    ja: 見つけた語
+    en: the word found
+  preferred:
+    ja: 直した書き方
+    en: the other way of writing it
+
+# 何語違えば指摘するか。1 は「1 語でも違えば」。
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+options:
+  ending:
+    kind: choice
+    default: consistent
+    about:
+      ja: 語末の「ー」をどちらに寄せるか
+      en: Which way the final ー goes
+    choices:
+      consistent:
+        ja: 決めない。文書の中でそろっているかだけを見る
+        en: No side taken; only checks that the document is consistent
+      drop:
+        ja: min_morae 音以上の語の語末の「ー」を省く（電子情報通信学会、JIS Z 8301:2011 まで）
+        en: Drop the final ー on words of min_morae morae or more (IEICE; JIS Z 8301 up to 2011)
+      keep:
+        ja: 語末の「ー」を付ける（文化庁「外来語の表記」、新聞）。「ー」の無い語は、辞書が「ー」付きで知っている語（メモリ）か、文書がほかで「ー」付きで書く語だけを見る
+        en: Keep the final ー (the Agency for Cultural Affairs' 外来語の表記; newspapers). A word without one is checked only when the dictionary knows it with one (メモリ) or the document writes it with one elsewhere
+  min_morae:
+    kind: count
+    default: 3
+    about:
+      ja: 何音以上の語を見るか。語末の「ー」も 1 音と数える（コンピューターは 6 音、カーは 2 音）
+      en: The shortest word checked, in morae, counting the final ー (コンピューター is six, カー two)
+  except:
+    kind: words
+    default: []
+    about:
+      ja: 見ない語。どちらの書き方で並べても、両方の書き方が外れる
+      en: Words left alone; listing either way of writing one exempts both
+
+use_for: [business, blog, technical, legal, docs, academic, literature, speech]

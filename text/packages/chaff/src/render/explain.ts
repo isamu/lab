@@ -2,6 +2,8 @@ import { definedLevels, resolve } from "../levels.ts";
 import { readableText } from "./text.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
 import type { Level, RuleDefinition } from "../plugin.ts";
+import { optionLines } from "./options.ts";
+import type { OptionLayer } from "../rule-options.ts";
 
 const TEXT: Texts<{
   readonly off: string;
@@ -49,7 +51,14 @@ const genreNote = (rule: RuleDefinition, genre: string | undefined, text: (typeo
 };
 
 /** rule の意図と根拠を読む。指摘に納得できないときの入口。 */
-export const renderExplain = (rule: RuleDefinition, current: Level, language: string, unit: string, genre?: string): string => {
+export const renderExplain = (
+  rule: RuleDefinition,
+  current: Level,
+  language: string,
+  unit: string,
+  genre?: string,
+  optionLayers: readonly OptionLayer[] = [],
+): string => {
   const text = TEXT[uiLanguageOf(language)];
   const experimental = rule.status === "experimental" ? [`  ${text.experimental}`] : [];
   return [
@@ -63,6 +72,7 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
     `  ${text.values(unit)}`,
     ...definedLevels(rule).map((level) => levelLine(rule, level, current, genre, text.off)),
     ...genreNote(rule, genre, text),
+    ...optionLines(rule, optionLayers, language),
     "",
     `  ${text.now(current)}`,
     ...experimental,

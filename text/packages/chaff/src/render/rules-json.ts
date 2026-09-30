@@ -5,6 +5,8 @@ import { readableText } from "./text.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
 import { presetLevels } from "../genre-load.ts";
 import type { PresetLevels } from "../genre-parse.ts";
+import { optionsJson } from "./options.ts";
+import type { OptionLayer } from "../rule-options.ts";
 
 const TEXT: Texts<{
   readonly offBySetting: string;
@@ -13,6 +15,7 @@ const TEXT: Texts<{
   readonly valuesNote: string;
   readonly reason: string;
   readonly byFile: string;
+  readonly optionsByFile: string;
 }> = {
   ja: {
     offBySetting: "設定で止めている",
@@ -21,6 +24,7 @@ const TEXT: Texts<{
     valuesNote: "この 4 語のかわりに数字を直接書いてもよい。4 語のほうを勧める。",
     reason: "<理由>",
     byFile: "chaff.yaml の rules に <rule-id>: <level> を足す。既定のままのものは書かない。",
+    optionsByFile: "options を持つ rule は、chaff.yaml の options に <rule-id>: { <option>: <value> } を足す。",
   },
   en: {
     offBySetting: "turned off in the settings",
@@ -29,6 +33,7 @@ const TEXT: Texts<{
     valuesNote: "A number may be written instead of these four words. The words are recommended.",
     reason: "<reason>",
     byFile: "Add <rule-id>: <level> under rules in chaff.yaml. Leave out anything at its default.",
+    optionsByFile: "For a rule with options, add <rule-id>: { <option>: <value> } under options in chaff.yaml.",
   },
 };
 
@@ -68,7 +73,13 @@ const readableInEvery = (rule: RuleDefinition, field: Localized): Localized =>
   Object.fromEntries(Object.keys(field).map((language) => [language, readableText(rule, field, language)]));
 
 /** AI に設定を書かせるときの入口。推測せずに書けるだけの情報を 1 つに入れる。spec §19.3。 */
-export const rulesJson = (rules: readonly RuleDefinition[], config: Config, language: string, genre: string): string => {
+export const rulesJson = (
+  rules: readonly RuleDefinition[],
+  config: Config,
+  language: string,
+  genre: string,
+  optionLayers: readonly OptionLayer[] = [],
+): string => {
   const text = TEXT[uiLanguageOf(language)];
   const preset = presetLevels(genre);
   return JSON.stringify(
@@ -90,10 +101,12 @@ export const rulesJson = (rules: readonly RuleDefinition[], config: Config, lang
         levels_you_can_set: definedLevels(rule),
         your_setting: yourSetting(rule, config),
         now: now(rule, config, genre, text, preset),
+        ...(rule.options === undefined ? {} : { options: optionsJson(rule, optionLayers) }),
       })),
       how_to_change: {
         by_command: ["relax", "strict", "off"].map((command) => `npx chaff ${command} <rule-id> --why "${text.reason}"`),
         by_file: text.byFile,
+        options_by_file: text.optionsByFile,
       },
     },
     null,

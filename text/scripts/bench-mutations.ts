@@ -19,6 +19,7 @@ import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinPa
 import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa, strayParticleSpace } from "./bench-mutations-ja.ts";
 import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, pluralAfterArticle } from "./bench-mutations-en.ts";
 import * as phrasing from "./bench-mutations-phrasing.ts";
+import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
 
 export type Mutation = {
   readonly id: string;
@@ -314,26 +315,6 @@ export const dropGloss = (source: string): Plant | undefined =>
   rewriteFirst(source, (line) => isProse(line) && hasJaGloss(line), dropJaGloss) ??
   rewriteFirst(source, (line) => isProse(line) && dropEnGloss(line) !== undefined, dropEnGloss);
 
-// --- latin-spacing ---
-
-const JA_CHAR = "[ぁ-んァ-ヶー一-龠々]";
-const UNSPACED_LATIN = new RegExp(`(${JA_CHAR})([A-Za-z][A-Za-z0-9]*)(?=${JA_CHAR})`, "u");
-const UNSPACED_LATIN_ALL = new RegExp(UNSPACED_LATIN.source, "gu");
-const SPACED_LATIN = new RegExp(`${JA_CHAR} [A-Za-z][A-Za-z0-9]* ${JA_CHAR}`, "u");
-const MIN_LATIN_WORDS = 3;
-
-/** 英字の前後を空けない文書で、一語だけ前後を空ける。空けない書き方が三つ以上あるときだけ。 */
-export const spaceLatin = (source: string): Plant | undefined => {
-  const body = linesOf(source).filter(isProse);
-  const unspaced = body.flatMap((line) => [...line.matchAll(UNSPACED_LATIN_ALL)]).length;
-  if (unspaced < MIN_LATIN_WORDS || body.some((line) => SPACED_LATIN.test(line))) return undefined;
-  return rewriteFirst(
-    source,
-    (line) => isProse(line) && UNSPACED_LATIN.test(line),
-    (line) => line.replace(UNSPACED_LATIN, "$1 $2 "),
-  );
-};
-
 // --- contraction-consistency ---
 
 type Swap = readonly [string, string];
@@ -407,4 +388,5 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: phrasing.chainWithAnd },
   { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: phrasing.avoidedSpelling },
   { id: "pet-phrase", rule: "ngram-repetition", languages: ["ja", "en"], plant: phrasing.repeatPetPhrase },
+  { id: "long-vowel-dropped", rule: "katakana-long-vowel", languages: ["ja"], plant: dropOneLongVowel },
 ];

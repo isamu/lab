@@ -19,6 +19,7 @@ import { aiTell, contractionMix, cushionDensity, hedging, repeatedConjunction, u
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
+import { katakanaLongVowel } from "./long-vowel.ts";
 import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -65,6 +66,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "preferred-term": preferredTerm,
   "latin-spacing": latinSpacing,
   "stray-space": straySpace,
+  "katakana-long-vowel": katakanaLongVowel,
   "dangling-reference": danglingReference,
   "date-weekday-mismatch": dateWeekdayMismatch,
   "date-order": dateOrder,

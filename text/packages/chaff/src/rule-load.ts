@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parse } from "yaml";
 import type { LanguageLevels, LevelTable, RuleDefinition, Severity } from "./plugin.ts";
+import { optionsOf } from "./rule-options.ts";
 
 const RULES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "rules");
 
@@ -137,6 +138,7 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     languages: stringList(raw["languages"]),
     use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],
     severity: severityOf(raw["severity"], language),
+    ...(raw["options"] === undefined ? {} : { options: optionsOf(raw["options"], file) }),
   };
 };
 

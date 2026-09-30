@@ -301,6 +301,26 @@ prefer:
   e-mail: email
 ```
 
+段階で言えない決まりは、その rule の `options:` に書く。いまオプションを持つのは `katakana-long-vowel` で、
+語末の「ー」を省くか（`drop`）付けるか（`keep`）と、何音の語から見るか（`min_morae`）を決める。
+書かなければ立場を取らず、同じ語が両方で書かれた所だけを指摘する。
+
+```yaml
+rules:
+  katakana-long-vowel: normal
+options:
+  katakana-long-vowel:
+    ending: drop
+    min_morae: 3
+```
+
+```
+  3:4     warning 「サーバー」は語末の「ー」を省いて「サーバ」と書きます（3 音以上の語）
+                  katakana-long-vowel
+```
+
+`npx chaffjs explain katakana-long-vowel` がオプションのいまの値と、どこで決めたかを出す。
+
 知らない rule 名（たいていは綴り違い）と読めない値は、検査と `rules --json` が標準エラーに出す。黙って捨てると、効いていない設定を効いていると思い込むため。
 
 ## 品詞を見る rule
@@ -338,6 +358,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `no-doubled-joshi` | 「弊社の新製品の販売の計画」のような入れ子（ja） |
 | `taigen-dome-in-prose` | 本文の体言止めが続く（ja） |
 | `stray-space` | 語句の途中の空白（こころさんが 払った / 確認 しました）。空けた所が文書の中で少ないときだけ（ja、試験中） |
+| `katakana-long-vowel` | カタカナ語の語末の「ー」（コンピューター / コンピュータ）。既定は同じ語の混在だけ。`options` で省く・付けるを決める（ja、試験中） |
 
 品詞が要らない日本語の rule:
 

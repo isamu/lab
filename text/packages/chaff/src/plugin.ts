@@ -361,6 +361,25 @@ export type DetectorOptions = {
   readonly fullSentence?: number | undefined;
   /** 文書と違う言語で書いた文の上限。その言語の段から解決済み。rule がその言語の段を持たなければ無い。 */
   readonly embeddedLimits?: Readonly<Record<string, number>> | undefined;
+  /** The rule's options (RuleDefinition.options), each at the value the settings chose or its default. Only a rule with options has them. */
+  readonly settings?: Readonly<Record<string, OptionValue>> | undefined;
+};
+
+/** The value of one rule option: a choice, a count, or a list of words. */
+export type OptionValue = string | number | readonly string[];
+
+/**
+ * One option a rule takes, beyond its level. The rule's YAML declares it; a team sets it under options in chaff.yaml.
+ * choice takes one of choices, count a whole number of 1 or more, words a list of words.
+ */
+export type RuleOption = {
+  readonly kind: "choice" | "count" | "words";
+  readonly choices: readonly string[];
+  readonly default: OptionValue;
+  /** What the option decides, in plain words. */
+  readonly about: Localized;
+  /** What each choice means, in plain words. Only a choice has them. */
+  readonly choiceNames: Readonly<Record<string, Localized>>;
 };
 
 export type Detector = (doc: ProseDocument, options: DetectorOptions) => Finding[];
@@ -411,4 +430,6 @@ export type RuleDefinition = {
   readonly languages: readonly string[] | undefined;
   readonly use_for: readonly string[];
   readonly severity: Severity;
+  /** Options beyond the level (the direction and length for katakana-long-vowel). Most rules have none. */
+  readonly options?: Readonly<Record<string, RuleOption>>;
 };
