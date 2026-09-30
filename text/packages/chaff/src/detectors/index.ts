@@ -21,6 +21,7 @@ import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
 import { headingLevelSkip } from "./heading-level-skip.ts";
 import { imageAltText } from "./image-alt-text.ts";
+import { brokenLink } from "./broken-link.ts";
 import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -75,4 +76,5 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "duplicate-definition": duplicateDefinition,
   "heading-level-skip": headingLevelSkip,
   "image-alt-text": imageAltText,
+  "broken-link": brokenLink,
 };

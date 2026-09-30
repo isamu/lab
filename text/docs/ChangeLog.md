@@ -14,6 +14,10 @@ read before the rule was added.
   heading may start at any level, and after a skip the deeper level is the new baseline (markdownlint's MD001).
 - **`image-alt-text`**: an image with no alt text (`![](chart.png)`), or an HTML `<img>` with no `alt` attribute.
   `alt=""` marks decoration and is left alone (markdownlint's MD045).
+- **`broken-link`**: a link with an empty destination (`[report]()`), a `#…` link to a heading or id the page does
+  not have, and a reference-style link with no definition (`[report][1]` with no `[1]:` line). Heading names are
+  compared on letters and digits only, since renderers build anchors differently; `[1][2]` citation numbers and
+  `A[i][j]` subscripts are not references (markdownlint's MD042, MD051 and MD052).
 
 ### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
 

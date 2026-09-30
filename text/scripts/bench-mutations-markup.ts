@@ -1,7 +1,7 @@
 // Seeded mistakes of Markdown markup for `yarn bench`: a heading that skips a level, an image with no alt text, a link to a
 // heading the document does not have, and a URL with text run on after it. Pure and deterministic, like
 // scripts/bench-mutations.ts.
-import { codeLines, isProse, linesOf, replaceLine, type Plant } from "./bench-text.ts";
+import { codeLines, isJapanese, isProse, linesOf, replaceLine, rewriteFirst, type Plant } from "./bench-text.ts";
 
 const HEADING = /^(#{1,6})\s/u;
 
@@ -54,3 +54,13 @@ export const imageWithoutAlt = (source: string): Plant | undefined => {
   // 段落の行、空行、図の行。
   return { source: replaceLine(lines, index, `${line}\n\n![](figure.png)`), line: index + 3 };
 };
+
+// --- broken-link ---
+
+/** 最初の文の行に、文書に無い節へのページ内リンクを足す。 */
+export const linkToMissingSection = (source: string): Plant | undefined =>
+  rewriteFirst(
+    source,
+    (line) => isProse(line) && SENTENCE_END.test(line.trimEnd()) && !line.startsWith("|"),
+    (line) => (isJapanese(line) ? `${line}詳しくは[付録](#付録)を参照してください。` : `${line} See [the appendix](#appendix).`),
+  );

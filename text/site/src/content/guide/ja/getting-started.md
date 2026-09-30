@@ -87,11 +87,12 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  38 件の rule は動いていません:
+  39 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
       ai-tell（まだ試験中のため）
+      broken-link（まだ試験中のため）
       contraction-consistency（ja 向けの rule ではないため）
       dangling-reference（まだ試験中のため）
       date-order（まだ試験中のため）

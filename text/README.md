@@ -369,6 +369,7 @@ Markdown の記法と URL を見る rule（ja / en、試験中）:
 | --- | --- |
 | `heading-level-skip` | 見出しの深さが飛ぶ（`##` の次の `####`） |
 | `image-alt-text` | 代替テキストの無い画像（`![](図.png)`、alt 属性の無い `<img>`） |
+| `broken-link` | 行き先の無いリンク（空の行き先、文書に無い見出しへのページ内リンク、定義の無い参照の形） |
 
 記法の rule は Markdown の文書でだけ動き、`.txt` では「Markdown の文書ではないため」と出して止まります。
 
