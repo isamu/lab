@@ -61,12 +61,43 @@ relaxing a rule.
   existing one is left as it is), and adds `.chaff-cache/` and `.env*` to `.gitignore`.
 - `npx chaffjs rules --json [--genre <genre>]` prints every rule with its levels, the setting in effect (`now`,
   the genre's preset included) and why a rule is off. Read it instead of guessing rule names or limits.
+  `npx chaffjs rules` shows the same as a table, grouped, with the level each rule runs at now.
 - A level is `strict` / `normal` / `relaxed` / `off`; when even `relaxed` is too tight, a positive number is the
   limit itself (`max-sentence-length: 260`).
 - `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on.
 - Unknown rule names and unreadable values are reported on stderr — read stderr after editing `chaff.yaml`.
 - `genre:` sets the kind of document; `by_path` sets one per folder; `--genre` overrides both for one run.
   `rules:` wins over the genre's preset.
+
+## Turn a team's style note into chaff.yaml
+
+When the person gives house rules ("polite endings, sentences of at most 80 characters"), do not guess rule
+names or numbers:
+
+1. Read `npx chaffjs rules --json`. Each rule has `summary` (what it finds), `level_meaning` (what a level's
+   number means), `levels`, `example`, `not_flagged`, and `genres` (whether it runs in each genre).
+2. Split the note into single requirements; map each to the rule whose `summary` and `level_meaning` fit. A
+   number between levels is written as the number itself (`max-sentence-length: 80`). Spellings go under
+   `prefer`, in-house words under `jargon`, required headings under `required_sections`.
+3. Say plainly what no rule covers. For example, `no-mixed-desumasu` flags a register mixed into a document, but
+   does not require a particular one; a document wholly in the other register is not reported.
+4. Write only what differs from the default, then check before committing: `npx chaffjs explain <rule-id>`, a
+   short sample that breaks each requirement (each must be reported), and `npx chaffjs rules` (the table shows the
+   level each rule now runs at).
+
+## Adding a team rule
+
+Pick the easiest way that can say the requirement:
+
+| Requirement | Use |
+| --- | --- |
+| An existing rule covers it | A level, a number, `prefer`, `jargon` or `required_sections` in `chaff.yaml` |
+| A fixed phrase or pattern, with the team's own message | `custom_rules` of type `words` or `pattern` (coming in the next release) |
+| Decided by part of speech or inflection | `custom_rules` of type `tokens` (coming in the next release) |
+| Counting or comparing that the above cannot express | a Node function, `type: module` (a later release) |
+
+Test a new team rule the same way: `explain`, then a sample it must report and a sample it must not, before
+committing `chaff.yaml`. The guide page "Adding a rule" covers each way and how to add a rule to chaff itself.
 
 ## Structured documents
 
