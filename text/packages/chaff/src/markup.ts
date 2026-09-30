@@ -1,6 +1,7 @@
 import { spanOf, type MarkdownNode } from "./markdown-node.ts";
 import { headingText } from "./heading-text.ts";
 import { eachPreOrder } from "./tree-walk.ts";
+import { alertReader } from "./template-syntax.ts";
 import type { Markup, MarkupHeading, MarkupImage, MarkupLink, Span } from "./plugin.ts";
 
 /** mdast の節のうち、ここで読む値。MarkdownNode の型には無いものを、型を見て取り出す。 */
@@ -41,8 +42,8 @@ const HTML_ID = /\s(?:id|name)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/giu;
 const IMG_TAG = /<img\b(?:"[^"]*"|'[^']*'|[^"'>])*>/giu;
 const ALT_ATTRIBUTE = /\salt\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))?/iu;
 
-/** 中を字のまま見せない節。リンクの中の字はリンクで、コードと HTML は字ではない。 */
-const NOT_TEXT = new Set(["link", "linkReference", "code", "inlineCode", "html", "yaml", "toml", "definition"]);
+/** 中の字が、字のまま見える範囲にならない節。リンクの字はリンクで（中の画像は読む）。 */
+const LINKS = new Set(["link", "linkReference"]);
 
 type Walk = {
   readonly headings: MarkupHeading[];
@@ -89,30 +90,36 @@ const readHtml = (value: string, span: Span, walk: Walk): void => {
   });
 };
 
-const readNode = (node: MarkdownNode, span: Span, source: string, walk: Walk): void => {
+const readNode = (node: MarkdownNode, span: Span, source: string, walk: Walk, inLink: boolean): void => {
   if (node.type === "heading") readHeading(node, span, source, walk);
   else if (node.type === "image" || node.type === "imageReference") walk.images.push({ alt: stringField(node, "alt") ?? "", ...span });
   else if (node.type === "link" || node.type === "definition") walk.links.push({ destination: node.url ?? "", ...span });
   else if (node.type === "html") readHtml(node.value ?? "", span, walk);
-  else if (node.type === "text") walk.texts.push(span);
+  else if (node.type === "text" && !inLink) walk.texts.push(span);
 };
 
 const startsInside = (span: Span, regions: readonly Span[]): boolean => regions.some((region) => span.start >= region.start && span.start < region.end);
 
+type Pending = { readonly node: MarkdownNode; readonly inLink: boolean };
+
 /**
- * Markdown の記法の手がかりを集める。outside（メールの引用した返信）の中は、ほかの人の文書なので読まない。
- * リンクの中へは下りない（リンクの字は字のまま見える範囲ではない）。
+ * Markdown の記法の手がかりを集める。outside（メールの引用した返信）と、引用（`>`）の中は、ほかの人の文書なので読まない。
+ * GitHub の注記（`> [!NOTE]`）は書き手の言葉なので読む。本文の組み立て（document.ts）と同じ線引き。
  */
 export const markdownMarkup = (root: MarkdownNode, source: string, outside: readonly Span[] = []): Markup => {
   const walk: Walk = { headings: [], images: [], links: [], ids: new Set(), texts: [] };
-  const pending: MarkdownNode[] = [root];
+  const alertOf = alertReader(source);
+  const pending: Pending[] = [{ node: root, inLink: false }];
   while (pending.length > 0) {
-    const node = pending.pop();
-    if (node === undefined) break;
+    const next = pending.pop();
+    if (next === undefined) break;
+    const { node, inLink } = next;
     const span = spanOf(node);
     if (span !== undefined && startsInside(span, outside)) continue;
-    if (span !== undefined) readNode(node, span, source, walk);
-    if (!NOT_TEXT.has(node.type)) (node.children ?? []).toReversed().forEach((child) => pending.push(child));
+    if (node.type === "blockquote" && alertOf(node) === undefined) continue;
+    if (span !== undefined) readNode(node, span, source, walk, inLink);
+    const childInLink = inLink || LINKS.has(node.type);
+    (node.children ?? []).toReversed().forEach((child) => pending.push({ node: child, inLink: childInLink }));
   }
   return { markdown: true, ...walk };
 };

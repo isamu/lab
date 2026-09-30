@@ -50,6 +50,15 @@ describe("doc.markup", () => {
     assert.deepEqual(textsOf(source), ["はい、大丈夫です。"]);
   });
 
+  it("引用の中の見出しと URL は、ほかの人の文書なので読まない", () => {
+    const markup = markupOf("## 本文\n\n> ## 引用\n> https://example.jp/aを参照\n");
+    assert.deepEqual(
+      markup.headings.map((heading) => heading.text),
+      ["本文"],
+    );
+    assert.deepEqual(textsOf("## 本文\n\n> https://example.jp/aを参照\n"), ["本文"]);
+  });
+
   it("字のまま見える範囲は、リンク・コード・HTML の外", () => {
     assert.deepEqual(textsOf("見る [資料](https://x.jp) と `code` と <b>太</b> と https://y.jp。\n"), ["見る ", " と ", " と ", "太", " と https://y.jp。"]);
   });

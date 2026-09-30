@@ -21,24 +21,30 @@ const decoded = (fragment: string): string => {
 /** 「&」を and と読んで名前を作るもの（M&IE → m-and-ie）もある。 */
 const namesOf = (text: string): string[] => [...new Set([text, text.replaceAll("&", " and ")])];
 
-/** 文書の中の、名前を持つところ（見出しと、書き手が付けた id）の形と、同じ形がいくつあるか。 */
-export const anchorKeys = (markup: Markup): ReadonlyMap<string, number> =>
-  [...markup.headings.map((heading) => heading.text), ...markup.ids]
-    .flatMap((name) => [...new Set(namesOf(name).map(anchorKey))])
-    .reduce((counts, key) => counts.set(key, (counts.get(key) ?? 0) + 1), new Map<string, number>());
+const keysOf = (name: string): string[] => [...new Set(namesOf(name).map(anchorKey))];
+
+/** 文書の中の名前を持つところ。names は見出しと書き手が付けた id の形、headings は見出しの形ごとの数（-1、-2 は見出しだけに付く）。 */
+export type Anchors = { readonly names: ReadonlySet<string>; readonly headings: ReadonlyMap<string, number> };
+
+export const anchorsOf = (markup: Markup): Anchors => ({
+  names: new Set([...markup.headings.map((heading) => heading.text), ...markup.ids].flatMap(keysOf)),
+  headings: markup.headings
+    .flatMap((heading) => keysOf(heading.text))
+    .reduce((counts, key) => counts.set(key, (counts.get(key) ?? 0) + 1), new Map<string, number>()),
+});
 
 /** `#setup-2` は、同じ形の見出しが 3 つ以上あるときだけ行き先がある（二つ目が -1）。 */
-const reachesDuplicate = (fragment: string, keys: ReadonlyMap<string, number>): boolean => {
+const reachesDuplicate = (fragment: string, headings: ReadonlyMap<string, number>): boolean => {
   const suffix = DUPLICATE_SUFFIX.exec(fragment);
   if (suffix === null) return false;
-  return (keys.get(anchorKey(fragment.slice(0, suffix.index))) ?? 0) > Number(suffix[1]);
+  return (headings.get(anchorKey(fragment.slice(0, suffix.index))) ?? 0) > Number(suffix[1]);
 };
 
 /** `#…` の行き先が、文書の中の見出しか id を指しているか。 */
-export const reachesAnchor = (destination: string, keys: ReadonlyMap<string, number>): boolean => {
+export const reachesAnchor = (destination: string, anchors: Anchors): boolean => {
   const fragment = decoded(destination.slice(1));
   if (PAGE_TOP.has(fragment.toLowerCase())) return true;
-  return keys.has(anchorKey(fragment)) || reachesDuplicate(fragment, keys);
+  return anchors.names.has(anchorKey(fragment)) || reachesDuplicate(fragment, anchors.headings);
 };
 
 /**
@@ -61,9 +67,9 @@ const emptyLinks = (doc: ProseDocument, markup: Markup): Finding[] =>
   markup.links.filter((link) => link.destination.trim() === "").map((link) => findingAt(doc, link, { link: quoteOf(doc.source, link) }, "empty"));
 
 const missingAnchors = (doc: ProseDocument, markup: Markup): Finding[] => {
-  const keys = anchorKeys(markup);
+  const anchors = anchorsOf(markup);
   return markup.links
-    .filter((link) => link.destination.startsWith("#") && !reachesAnchor(link.destination, keys))
+    .filter((link) => link.destination.startsWith("#") && !reachesAnchor(link.destination, anchors))
     .map((link) => findingAt(doc, link, { link: quoteOf(doc.source, link), target: link.destination }, "anchor"));
 };
 

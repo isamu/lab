@@ -37,6 +37,14 @@ describe("image-alt-text: 代替テキストの無い画像", () => {
     ]);
   });
 
+  it("リンクにした画像も読む（バッジ）", () => {
+    assert.deepEqual(findingsOf("[![](badge.svg)](https://example.com/)\n", en), ['Image "![](badge.svg)" has no alt text']);
+  });
+
+  it("引用（>）の中は読まず、GitHub の注記の中は読む", () => {
+    assert.deepEqual(findingsOf("> ![](quoted.png)\n\n> [!NOTE]\n> ![](note.png)\n", en), ['Image "![](note.png)" has no alt text']);
+  });
+
   it("段落の中の img も読む", () => {
     assert.deepEqual(findingsOf('See <img src="a.png"> here.\n', en).length, 1);
   });

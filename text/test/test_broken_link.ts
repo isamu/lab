@@ -50,6 +50,10 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf(source, en), ['The link "[b](#setup-2)" points to "#setup-2", which is not a heading on this page']);
   });
 
+  it("-1 は見出しだけに付く。同じ名前の id は数えない", () => {
+    assert.deepEqual(findingsOf('## Setup\n\n<a id="setup"></a>\n\n[bad](#setup-1)\n', en).length, 1);
+  });
+
   it("data-id は名前ではない", () => {
     assert.deepEqual(findingsOf('<div data-id="faq"></div>\n\n[FAQ](#faq)\n', en).length, 1);
   });
