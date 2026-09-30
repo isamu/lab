@@ -188,8 +188,15 @@ const fromParticiplePhrase = (items: readonly Token[][], after: readonly Token[]
   return new Set(inPhrase.map(shapeOf)).size > 1 ? rest : inPhrase;
 };
 
+/** 語のあとに空白があるか。e.g. は続けて書き、頭文字の E. G. Evans は空けて書く。 */
+const spacedAfter = (tokens: readonly Token[], index: number): boolean => {
+  const [word, next] = [tokens[index], tokens[index + 1]];
+  return word !== undefined && next !== undefined && next.span.start > word.span.end;
+};
+
 const sameSurfaces = (tokens: readonly Token[], words: readonly Token[]): boolean =>
-  tokens.length === words.length && words.every((word, index) => tokens[index]?.surface.toLowerCase() === word.surface.toLowerCase());
+  tokens.length === words.length &&
+  words.every((word, index) => tokens[index]?.surface.toLowerCase() === word.surface.toLowerCase() && spacedAfter(tokens, index) === spacedAfter(words, index));
 
 /** 項目の中で、and / or と同じ深さにある最後の例の句（such as / e.g.）の直後の位置。無ければ -1。 */
 const exampleEnd = (clause: Clause, level: number, item: readonly Token[]): number =>
@@ -293,9 +300,11 @@ const hasPrepositionalTail = (item: readonly Token[]): boolean => {
  * and / or の後ろが、最後の項目の前置詞の目的語と同じ品詞で、どの項目の頭とも違う（chat in Slack or Google Hangouts: 固有名詞どうし）。
  * 頭と同じ品詞なら項目とも読める（petitions for waivers and appeals）ので、並びのまま。
  */
+const lastNoun = (item: readonly Token[]): Token | undefined => item.findLast((token) => APPOSITIVE_ANCHOR.has(token.pos));
+
 const likeLastObject = (items: readonly Token[][], after: readonly Token[]): boolean => {
-  const kind = lastContent(after)?.pos;
-  return kind !== undefined && lastContent(items.at(-1) ?? [])?.pos === kind && items.every((item) => item.find(isContent)?.pos !== kind);
+  const kind = lastNoun(after)?.pos;
+  return kind !== undefined && lastNoun(items.at(-1) ?? [])?.pos === kind && items.every((item) => item.find(isContent)?.pos !== kind);
 };
 
 /**
