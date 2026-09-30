@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `title-case-consistency`: "vs", "v." and "via" stay lowercase in Title Case (#170)
+
+"Development Environment vs MulmoChat" was counted as a sentence-case heading, because "vs" was read as a word that
+Title Case capitalises. Chicago, APA, AP and MLA all keep "vs.", "v." and "via" lowercase in a title, so they now join
+the other small words that the check skips. A heading whose other words are lowercase ("Switch via environment
+variable") is still sentence case.
+
 ### `relax` on a rule with nothing to count lowers the severity instead of doing nothing (#170)
 
 `numbering-gap`, `dangling-reference`, `date-weekday-mismatch`, `total-mismatch`, `duplicate-definition`, `date-order`,
