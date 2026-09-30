@@ -8,7 +8,7 @@ import type { Morpheme } from "./counter-tsu.ts";
 export type PassiveVocabulary = {
   /** 自発に読む動詞の原形（考える・思う）。 */
   readonly spontaneous: ReadonlySet<string>;
-  /** 関係を表す動詞の原形（含む・限る）。 */
+  /** 状態・決まり・文書の中身を言う動詞の原形とサ変名詞（含む・定める・適用・記載）。 */
   readonly stative: ReadonlySet<string>;
   /** 尊敬の決まり文句（におかれましては）。 */
   readonly formulas: readonly string[];
@@ -51,10 +51,21 @@ const continuesPredicate = (morpheme: Morpheme): boolean =>
 
 const isPast = (morpheme: Morpheme): boolean => morpheme.pos === "助動詞" && morpheme.basic_form === "た";
 
-const pastFollows = (morphemes: readonly Morpheme[], at: number): boolean => {
+/** at の「れる/られる」に続く述語の語（ます・ている・た）。述語の外の最初の語は含まない。 */
+const predicateAfter = (morphemes: readonly Morpheme[], at: number): readonly Morpheme[] => {
   const rest = morphemes.slice(at + 1, at + 1 + PREDICATE_REACH);
   const end = rest.findIndex((morpheme) => !continuesPredicate(morpheme));
-  return rest.slice(0, end === -1 ? rest.length : end).some(isPast);
+  return rest.slice(0, end === -1 ? rest.length : end);
+};
+
+const pastFollows = (morphemes: readonly Morpheme[], at: number): boolean => predicateAfter(morphemes, at).some(isPast);
+
+const isAspect = (morpheme: Morpheme): boolean => morpheme.pos === "動詞" && ASPECT_VERB.has(morpheme.basic_form);
+
+/** 「た」で終わる出来事の述語。「適用された」は誰かが適用した動作、「記載されていた」は過去の状態。 */
+const eventPastFollows = (morphemes: readonly Morpheme[], at: number): boolean => {
+  const predicate = predicateAfter(morphemes, at);
+  return predicate.some(isPast) && !predicate.some(isAspect);
 };
 
 /**
@@ -63,8 +74,43 @@ const pastFollows = (morphemes: readonly Morpheme[], at: number): boolean => {
  */
 const verbReadsOtherwise = (morphemes: readonly Morpheme[], at: number, verb: Morpheme, vocabulary: PassiveVocabulary): boolean =>
   (vocabulary.spontaneous.has(verb.basic_form) && !pastFollows(morphemes, at)) ||
-  vocabulary.stative.has(verb.basic_form) ||
-  namesSomething(morphemes, at, verb, vocabulary);
+  statesSomething(morphemes, at, vocabulary) ||
+  namesSomething(morphemes, at, verb, vocabulary) ||
+  withoutRa(verb, morphemes[at]) ||
+  cannotBeDone(morphemes, at, verb);
+
+/**
+ * 状態・決まり・文書の中身を言う受動（「適用される」「定められている」「記載されている」）。サ変名詞は「する」の前で見る。
+ * 「た」で終わる出来事（「適用された」「定められた」）は、誰かがした動作の受動として残す。
+ */
+const statesSomething = (morphemes: readonly Morpheme[], at: number, vocabulary: PassiveVocabulary): boolean =>
+  lemmasBefore(morphemes, at).some((lemma) => vocabulary.stative.has(lemma)) && !eventPastFollows(morphemes, at);
+
+const isSuru = (morpheme: Morpheme | undefined): boolean => morpheme?.pos === "動詞" && morpheme.basic_form === "する";
+
+/** 「れる/られる」の直前の動詞の原形と、それが「する」ならその前のサ変名詞（「適用される」の適用）。 */
+const lemmasBefore = (morphemes: readonly Morpheme[], at: number): string[] => {
+  const verb = morphemes[at - 1];
+  const noun = morphemes[at - 2];
+  if (verb === undefined) return [];
+  return isSuru(verb) && noun?.pos_detail_1 === "サ変接続" ? [verb.basic_form, noun.basic_form] : [verb.basic_form];
+};
+
+/**
+ * 一段動詞の受動は「られる」で作る（「変えられる」）。一段動詞に直に付いた「れる」は、ら抜きの可能（「見れる」）か、
+ * 「とらえれいただければ」のような誤字を解析器が受動と読んだもの。
+ */
+const withoutRa = (verb: Morpheme, passive: Morpheme | undefined): boolean => verb.conjugated_type === "一段" && passive?.basic_form === "れる";
+
+const NEGATION = new Set(["ない", "ぬ"]);
+
+const isNegation = (morpheme: Morpheme | undefined): boolean => morpheme?.pos === "助動詞" && NEGATION.has(morpheme.basic_form);
+
+/**
+ * 一段動詞の「られる」は受動と可能が同じ形。打ち消しが直に続くと可能に読む（「他人は変えられない」「質問に答えられず」）。
+ * 「ている」を挟んだ「変えられていない」は、まだ変えていない状態の受動として残す。
+ */
+const cannotBeDone = (morphemes: readonly Morpheme[], at: number, verb: Morpheme): boolean => verb.conjugated_type === "一段" && isNegation(morphemes[at + 1]);
 
 /** 「〜と呼ばれる」「〜とも呼ばれています」は名前を言うもので、呼んだ誰かを隠していない。「と」の無い「会議に呼ばれた」は受動。 */
 const namesSomething = (morphemes: readonly Morpheme[], at: number, verb: Morpheme, vocabulary: PassiveVocabulary): boolean => {
@@ -73,8 +119,6 @@ const namesSomething = (morphemes: readonly Morpheme[], at: number, verb: Morphe
   return before?.pos === "助詞" && before.surface_form === "と";
 };
 
-const isSuru = (morpheme: Morpheme | undefined): boolean => morpheme?.pos === "動詞" && morpheme.basic_form === "する";
-
 /**
  * 自動詞には、動作を受ける側を主語にする受動が無い。「来られ」「取り組まれ」「辞任され」は尊敬か可能。
  * 本動詞（動詞,自立）だけを見る。補助動詞の「連れてこられた」は「連れてくる」全体の受動。
@@ -82,9 +126,7 @@ const isSuru = (morpheme: Morpheme | undefined): boolean => morpheme?.pos === "�
 const intransitiveVerb = (morphemes: readonly Morpheme[], at: number, vocabulary: PassiveVocabulary): boolean => {
   const verb = morphemes[at - 1];
   if (verb?.pos !== "動詞" || verb.pos_detail_1 !== "自立") return false;
-  if (vocabulary.intransitive.has(verb.basic_form)) return true;
-  const noun = morphemes[at - 2];
-  return isSuru(verb) && noun?.pos_detail_1 === "サ変接続" && vocabulary.intransitive.has(noun.basic_form);
+  return lemmasBefore(morphemes, at).some((lemma) => vocabulary.intransitive.has(lemma));
 };
 
 /** 「おる」は受動を作らないので、「しておられる」の「れる」は尊敬。 */
@@ -123,3 +165,31 @@ export const readsAsPassive = (morphemes: readonly Morpheme[], at: number, vocab
   if (honoursTheDoer(morphemes, at, vocabulary)) return false;
   return !insideFormula(morphemes, at, vocabulary.formulas);
 };
+
+/**
+ * 述語を従える接続助詞のうち、仮定の節を作るもの。逆接の「が」「けど」は入れない。「確認されていないが、」は起きたことを言い切っている。
+ */
+const CONDITIONAL = new Set(["ば", "と"]);
+
+/** 「見直されなければならない」「図られなければなりません」の「ば」は仮定ではなく義務の言い方の一部。 */
+const OBLIGATION = new Set(["なる", "いける"]);
+
+const isObligation = (morpheme: Morpheme | undefined): boolean => morpheme?.pos === "動詞" && OBLIGATION.has(morpheme.basic_form);
+
+/** 受動が仮定の節の述語か。「立証されれば」「整理されていると」は起きたことではなく、その前提。 */
+const inConditionalClause = (morphemes: readonly Morpheme[], at: number): boolean => {
+  const end = at + 1 + predicateAfter(morphemes, at).length;
+  const next = morphemes[end];
+  return next?.pos_detail_1 === "接続助詞" && CONDITIONAL.has(next.basic_form) && !isObligation(morphemes[end + 1]);
+};
+
+/** 受動の連用形に付いて、起きやすさ・起こりうることを言う語（「理解されやすい」「開催されづらい」「解釈され得る」「放置されがち」）。 */
+const TENDENCY = new Set(["やすい", "にくい", "づらい", "得る", "うる", "がち"]);
+
+const isTendency = (morpheme: Morpheme | undefined): boolean => morpheme !== undefined && TENDENCY.has(morpheme.basic_form);
+
+/**
+ * 受動の「れる/られる」が、文の報告する動作の外にあるか。仮定の節と、起きやすさを言う形は、誰かが実際にした動作を言っていない。
+ * 隠れた動作主を問うのは、文末や「〜され、」で続く述語の受動のほう。
+ */
+export const outsideTheReport = (morphemes: readonly Morpheme[], at: number): boolean => isTendency(morphemes[at + 1]) || inConditionalClause(morphemes, at);

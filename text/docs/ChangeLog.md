@@ -4,6 +4,26 @@ Newest first.
 
 ## Unreleased
 
+### Japanese `agentless-passive` leaves descriptive and legal passives alone (#290)
+
+The rule is about a passive that hides who is responsible (「二次被害は確認されていません」「〜が検討されています」). On
+the corpus's business documents most of its findings were passives where no one is hiding: a rule's scope
+(「次の各号が適用される」「法令上定められていない」), what a document says (「ガイドラインに記載されている」「図に示されて
+いる」), a classification (「3 つに分類されている」). These are no longer reported:
+
+- `stative-passive-verb` in `@chaffjs/lang-ja` now holds rule, document-content and state verbs (適用, 規定, 定める,
+  分類, 構成, 位置付ける, 記載, 示す, 言及 …). A サ変 noun is matched before する. An event in the past
+  (「割引が適用されました」「新しい規程が定められた」) is still reported. 求める and 認める are left out:
+  「一定の協力が求められます」 hides that the writer's organisation is the one asking, and 「不正アクセスは認められて
+  いません」 hides who looked.
+- A passive in a conditional clause (「立証されれば」「整理されていると、」) or followed by a tendency word
+  (「理解されやすい」「解釈され得る」) is not reported. 「見直されなければなりません」 is an obligation and still is.
+- A れる attached directly to an ichidan verb (a ら抜き form, or a typo the parser read as passive) and an ichidan
+  られる followed directly by ない or ず (「他人は変えられない」, a potential) are not passives.
+
+The rule stays experimental: most of what remains on business documents is a generic action (「使用されます」「行われ
+ます」) that morphology cannot tell from a hidden actor.
+
 ### `sasete-itadaku` lets the number of uses its message allows pass (#170)
 
 The message says 「3 回あります（3 回まで）」: three uses are allowed. The rule nevertheless reported a document with
