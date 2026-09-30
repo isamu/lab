@@ -339,6 +339,13 @@ describe("L3 英語", () => {
       ["修飾語だけでない項目は、名詞を共有しない", WITH_COMMA, "We sell cheese, blue cheese and white bread."],
       ["冠詞や目的語を連れた後ろの項目は、名詞を共有しない", WITH_COMMA, "We built the parser, tested and shipped the release."],
       ["and の後ろも前置詞の句を連れれば並び", WITH_COMMA, "We keep updates on the Google Doc, chat in Slack and notes on paper."],
+      ["and の後ろが項目の頭と同じ品詞なら並び", WITH_COMMA, "The policy applies to requests for records, petitions for waivers and appeals."],
+      ["and の後ろが項目の頭と同じ品詞なら並び（別の形）", WITH_COMMA, "We track requirements for admins, settings for editors and viewers."],
+      ["固有名詞の目的語でも、or の前の読点は項目の区切り", WITHOUT_COMMA, "We keep updates on the Google Doc, chat in Slack, and Google Hangouts."],
+      ["前置詞の句を連れない項目があれば、固有名詞でも並び", WITH_COMMA, "We keep updates, chat in Slack and Google Hangouts."],
+      ["and の後ろが前置詞の句を連れれば、固有名詞でも並び", WITH_COMMA, "We keep notes on the Google Doc, chat in Slack and Zoom in Chrome."],
+      ["and の後ろに述語が続けば、固有名詞でも主語の並び", WITH_COMMA, "Updates on the Google Doc, chat in Slack and Google Hangouts replaced Skype."],
+      ["最後の項目の目的語と品詞が違えば並び", WITH_COMMA, "We keep updates on the doc, chat in rooms and Google Hangouts."],
       [
         "例の句の中の項目の形が揃わなければ、句の前からの並び（CRS）",
         WITHOUT_COMMA,

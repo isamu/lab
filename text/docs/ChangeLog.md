@@ -19,8 +19,9 @@ A list needs three items, and four shapes made two items, or an "and" inside one
   a lone adjective or participle joined to a modifier-plus-noun is one item. `red, white and blue flags` and
   `Federal government, military, and agricultural workers` are still lists.
 - **An object inside the last item.** `(updates on the Google Doc, chat in Slack or Google Hangouts)`: when every
-  item carries a prepositional phrase and the part after "or" does not, with no comma before "or", the "or" joins the
-  preposition's objects.
+  item carries a prepositional phrase, the part after "or" does not, it has the part of speech of the last item's
+  object and not of any item's head, and there is no comma before "or", the "or" joins the preposition's objects.
+  `requests for records, petitions for waivers and appeals` is still a list.
 
 ### `undefined-acronym` no longer asks to expand emphasis, a month in a date, a surname after a title or a qualified expansion (#170)
 

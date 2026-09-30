@@ -290,11 +290,24 @@ const hasPrepositionalTail = (item: readonly Token[]): boolean => {
 };
 
 /**
- * どの項目も前置詞の句を連れ、and / or の後ろだけが連れていなければ、and / or は最後の項目の前置詞の目的語を結ぶ（updates on the
- * Google Doc, chat in Slack or Google Hangouts は 2 つ）。and / or の前に読点があれば、項目の区切りなので並び。
+ * and / or の後ろが、最後の項目の前置詞の目的語と同じ品詞で、どの項目の頭とも違う（chat in Slack or Google Hangouts: 固有名詞どうし）。
+ * 頭と同じ品詞なら項目とも読める（petitions for waivers and appeals）ので、並びのまま。
+ */
+const likeLastObject = (items: readonly Token[][], after: readonly Token[]): boolean => {
+  const kind = lastContent(after)?.pos;
+  return kind !== undefined && lastContent(items.at(-1) ?? [])?.pos === kind && items.every((item) => item.find(isContent)?.pos !== kind);
+};
+
+/**
+ * どの項目も前置詞の句を連れ、and / or の後ろだけが連れておらず、その目的語に似ていれば、and / or は最後の項目の前置詞の目的語を結ぶ
+ * （updates on the Google Doc, chat in Slack or Google Hangouts は 2 つ）。and / or の前に読点があれば、項目の区切りなので並び。
  */
 const joinsObjects = (clause: Clause, at: number, items: readonly Token[][], after: readonly Token[]): boolean =>
-  !commaBefore(clause.tokens, at) && items.every(hasPrepositionalTail) && !after.some((token) => token.pos === "ADP") && !hasVerb(after);
+  !commaBefore(clause.tokens, at) &&
+  items.every(hasPrepositionalTail) &&
+  !after.some((token) => token.pos === "ADP") &&
+  !hasVerb(after) &&
+  likeLastObject(items, after);
 
 /** and / or が並びの最後の継ぎ目ではなく、最後の項目の中にある。 */
 const insideLastItem = (clause: Clause, at: number, items: readonly Token[][], after: readonly Token[]): boolean =>
