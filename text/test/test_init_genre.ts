@@ -60,15 +60,18 @@ describe("init が尋ねるとき", () => {
   });
 });
 
-/** A terminal made of streams: the answer typed, and everything init printed. */
-const terminal = (answer: string, isTTY = true): { io: Prompter; printed: () => string } => {
+/** A terminal made of streams: what is typed (sent as is, so a line needs its own newline), and everything init printed. */
+const typed = (keys: string, isTTY = true): { io: Prompter; printed: () => string } => {
   const input = Object.assign(new PassThrough(), { isTTY });
   const output = Object.assign(new PassThrough(), { isTTY });
   const chunks: string[] = [];
   output.on("data", (chunk: Buffer) => chunks.push(chunk.toString("utf8")));
-  input.end(`${answer}\n`);
+  input.end(keys);
   return { io: { input, output }, printed: () => chunks.join("") };
 };
+
+/** One answer typed and Enter pressed. */
+const terminal = (answer: string, isTTY = true): { io: Prompter; printed: () => string } => typed(`${answer}\n`, isTTY);
 
 describe("init が端末で尋ねる", () => {
   const ids = loadGenres().genres.map((genre) => genre.id);
@@ -84,6 +87,12 @@ describe("init が端末で尋ねる", () => {
   it("名前でも選べ、Enter なら既定", async () => {
     assert.deepEqual(await initGenre(undefined, "en", dir(), terminal("docs/faq").io), { genre: "docs/faq" });
     assert.deepEqual(await initGenre(undefined, "en", dir(), terminal("").io), { genre: DEFAULT_GENRE });
+  });
+
+  it("答えずに入力が終われば（Ctrl-D）、待ち続けずに何も書かない", async () => {
+    assert.deepEqual(await initGenre(undefined, "ja", dir(), typed("").io), { error: "答えが無いまま入力が終わったので、何も作っていません。" });
+    assert.deepEqual(await initGenre(undefined, "en", dir(), typed("").io), { error: "The input ended without an answer, so nothing was created." });
+    assert.deepEqual(await initGenre(undefined, "en", dir(), typed("docs/faq").io), { genre: "docs/faq" }, "a last line without Enter is still an answer");
   });
 
   it("一覧に無い答えは、何も書かずに理由を返す", async () => {

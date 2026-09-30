@@ -207,6 +207,8 @@ describe("画面の見当", () => {
     ["chaff.yaml の genre", { "a.md": CONTRACT, "chaff.yaml": "genre: business/report\n" }, ["a.md"]],
     ["by_path の genre", { "a.md": CONTRACT, "chaff.yaml": 'by_path:\n  - files: ["*.md"]\n    genre: business/report\n' }, ["a.md"]],
     ["front matter の genre", { "a.md": `---\ngenre: business/report\n---\n${CONTRACT}` }, ["a.md"]],
+    // 書いたが読めなかったジャンルも、書いた人が決めたもの。「ジャンルを決めていないので」とは言えない。
+    ["front matter の知らない genre", { "a.md": `---\ngenre: contract\n---\n${CONTRACT}` }, ["a.md"]],
   ];
   decided.forEach(([label, files, args]) => {
     it(`ジャンルが決まっていれば出さない: ${label}`, async () => {

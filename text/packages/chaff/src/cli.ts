@@ -107,7 +107,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const baseline = argv.includes("--show-baseline") ? undefined : readBaseline(join(process.cwd(), BASELINE_FILE));
   const split = splitByBaseline(path, applied.kept, baseline);
   const result = { ...raw, findings: split.fresh };
-  const { header, notes } = fileHeader(path, source, language, { genre, from }, { shelved: split.shelved, hushed: applied.suppressed.length });
+  const { header, notes } = fileHeader(path, source, language, { genre, from, unread }, { shelved: split.shelved, hushed: applied.suppressed.length });
   const text = argv.includes("--compact") ? renderCompact(header, result, rules, language) : renderFriendly(header, result, rules, language, notes);
   return {
     text,
