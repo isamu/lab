@@ -2,7 +2,7 @@ import type { Config } from "../config/load.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
 import type { CustomProblem } from "./parse.ts";
 import { customRulesOf } from "./load.ts";
-import { MAX_PATTERN_LENGTH, type RegexRefusal } from "./regex-safety.ts";
+import { MAX_PATTERN_LENGTH, MAX_UNBOUNDED_REPEATS, type RegexRefusal } from "./regex-safety.ts";
 import { POS_WRITTEN_NAMES } from "./token-pattern.ts";
 
 type Text = { readonly problem: (problem: CustomProblem) => string; readonly refusal: Readonly<Record<RegexRefusal, string>> };
@@ -12,6 +12,7 @@ const TEXT: Texts<Text> = {
     refusal: {
       "too-long": `${String(MAX_PATTERN_LENGTH)} 字を超えています。いくつかのルールに分けてください`,
       "nested-quantifier": "繰り返しの中に繰り返しがあります（(a+)+ のような形）。長い行で止まらなくなるので使えません",
+      "too-many-repeats": `上限の無い繰り返し（* や +）が ${String(MAX_UNBOUNDED_REPEATS)} つを超えています。長い行で止まらなくなることがあります`,
       backreference: "後方参照（\\1）は使えません。長い行で止まらなくなることがあるためです",
       "empty-match": "何も無い所にも当たります。すべての文で指摘が出てしまいます",
       invalid: "正規表現として読めません",
@@ -39,6 +40,7 @@ const TEXT: Texts<Text> = {
     refusal: {
       "too-long": `it is longer than ${String(MAX_PATTERN_LENGTH)} characters; split it into several rules`,
       "nested-quantifier": "it repeats something that repeats (a shape like (a+)+), which can run for minutes on a long line",
+      "too-many-repeats": `it has more than ${String(MAX_UNBOUNDED_REPEATS)} unbounded repeats (* or +), which can run for minutes on a long line`,
       backreference: "backreferences (\\1) are not allowed, since they can run for minutes on a long line",
       "empty-match": "it matches an empty string, so it would report every sentence",
       invalid: "it is not a regular expression",

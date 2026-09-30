@@ -62,6 +62,9 @@ describe("custom rules", () => {
       "(?:株式会社|有限会社)\\S+",
       "(ab)+c",
       "(a{2}b)+c",
+      "(cat|dog)+",
+      "(?:株式|有限)会社",
+      "\\d+年\\d+月\\d+日",
       "[(a+)+]x",
     ];
     safe.forEach((pattern) => {
@@ -76,6 +79,10 @@ describe("custom rules", () => {
       ["(?:x*y)+z", "nested-quantifier"],
       ["((ab)+)+", "nested-quantifier"],
       ["((a+)b)+c", "nested-quantifier"],
+      ["(cat|car)+x", "nested-quantifier"],
+      ["(a|ab)+c", "nested-quantifier"],
+      ["(\\w|x)+c", "nested-quantifier"],
+      ["a*a*a*a*b", "too-many-repeats"],
       ["(a{2,})+", "nested-quantifier"],
       ["(.)\\1", "backreference"],
       ["(?<w>a)\\k<w>", "backreference"],
@@ -212,6 +219,16 @@ describe("custom rules", () => {
     it("tokens (ja): 「〜を行う」 in any inflection", () => {
       const rule = one({ id: "team-okonau", type: "tokens", tokens: [{ pos: "名詞" }, { surface: "を" }, { base: "行う" }] });
       assert.deepEqual(found(rule, "# 報告\n\n調査を行いました。確認をします。\n"), ["調査を行い→"]);
+    });
+
+    it("words and patterns read a word broken across lines as one", () => {
+      const words = one({ id: "team-kansuru", type: "words", words: { 関する: "関係する" } });
+      const pattern = one({ id: "team-kansuru-pattern", type: "pattern", pattern: "関する" });
+      const source = "# T\n\nこれは関\nする文です。\n";
+      assert.deepEqual(found(words, source), ["関する→関係する"]);
+      assert.deepEqual(found(pattern, source), ["関する→"]);
+      const at = runRules(buildDocument("t.md", source, ja), [words], {}, false, "business/report").findings[0];
+      assert.deepEqual([at?.line, at?.column], [3, 4]);
     });
 
     it("tokens (en): make + a + decision by base form", () => {
