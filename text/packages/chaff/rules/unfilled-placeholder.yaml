@@ -1,0 +1,27 @@
+id: unfilled-placeholder
+layer: L2
+status: experimental
+how_to_find: unfilled-placeholder
+word_list: placeholder-word
+severity: warning
+
+name:
+  ja: 埋め忘れた空欄
+  en: Unfilled placeholder
+
+why:
+  ja: 「【会社名】」「[Your Name]」は、雛形や生成した下書きに残る空欄です。文体の好みではなく、埋め忘れです。例として置いた「○○」は正しい書き方なので数えません。
+  en: '"[Your Name]" and "[Insert Date]" are the blanks a template or a generated draft leaves. This is not a matter of style: the blank was never filled.'
+
+message:
+  ja: 「{matched}」が埋まっていません
+  en: '"{matched}" was never filled in'
+
+how_to_fix:
+  ja: 中身を書いてください。例のつもりなら、例だと分かる書き方（例：山田太郎）にしてください。
+  en: Fill it in. If it is meant as an example, say so ("for example, Jane Smith").
+
+# 指摘に要る空欄の数。
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]

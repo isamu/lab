@@ -1,0 +1,21 @@
+# 雛形の空欄の括弧に書く語。【会社名】【氏名】。括弧の中がこの語そのものか、この語で始まって空白が続くときに数える。
+# 例として置く「○○」は正しい書き方なので入れない（官公庁の文書は記入例に使う）。
+id: placeholder-word
+language: ja
+entries:
+  - pattern: 氏名
+  - pattern: 名前
+  - pattern: 会社名
+  - pattern: 企業名
+  - pattern: 貴社名
+  - pattern: 担当者名
+  - pattern: 部署名
+  - pattern: 商品名
+  - pattern: 製品名
+  - pattern: サービス名
+  - pattern: 日付
+  - pattern: 金額
+  - pattern: 住所
+  - pattern: 電話番号
+  - pattern: メールアドレス
+  - pattern: ここに

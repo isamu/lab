@@ -1,0 +1,55 @@
+# What a chat reply leaves in a document. Weight 1: the residue itself (an AI disclaimer, a knowledge cutoff), which
+# counts on its own. Weight 0.5: a courtesy people also write, which counts only when two come together.
+id: assistant-residue
+language: en
+entries:
+  - pattern: as an AI language model
+    weight: 1
+  - pattern: as a large language model
+    weight: 1
+  - pattern: as an AI assistant
+    weight: 1
+  - pattern: my knowledge cutoff
+    weight: 1
+  - pattern: as of my last knowledge update
+    weight: 1
+  - pattern: as of my last training update
+    weight: 1
+  - pattern: up to my last training update
+    weight: 1
+  - pattern: my training data
+    weight: 1
+  - pattern: I don't have access to real-time
+    weight: 1
+  - pattern: I cannot browse the internet
+    weight: 1
+  - pattern: regenerate response
+    weight: 1
+  - pattern: specific details are limited
+    weight: 0.5
+  - pattern: not widely documented
+    weight: 0.5
+  - pattern: based on available information
+    weight: 0.5
+  - pattern: in the provided sources
+    weight: 0.5
+  - pattern: I apologize for the confusion
+    weight: 0.5
+  - pattern: great question
+    weight: 0.5
+  - pattern: you're absolutely right
+    weight: 0.5
+  - pattern: I hope this helps
+    weight: 0.5
+  - pattern: is there anything else
+    weight: 0.5
+  - pattern: would you like me to
+    weight: 0.5
+  - pattern: let me know if you'd like
+    weight: 0.5
+  - pattern: more detailed breakdown
+    weight: 0.5
+  - pattern: here's a revised version
+    weight: 0.5
+  - pattern: here is the revised
+    weight: 0.5

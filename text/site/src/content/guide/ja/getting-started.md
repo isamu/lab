@@ -87,12 +87,14 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  36 件の rule は動いていません:
+  40 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
       ai-tell（まだ試験中のため）
+      assistant-residue（まだ試験中のため）
       contraction-consistency（ja 向けの rule ではないため）
+      contrast-framing（まだ試験中のため）
       dangling-reference（まだ試験中のため）
       date-order（まだ試験中のため）
       date-weekday-mismatch（まだ試験中のため）
@@ -120,9 +122,11 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       section-length-uniformity（まだ試験中のため）
       sentence-initial-conjunction-run（ja 向けの rule ではないため）
       sentence-rhythm（まだ試験中のため）
+      stock-transition（まだ試験中のため）
       stray-space（まだ試験中のため）
       title-case-consistency（ja 向けの rule ではないため）
       total-mismatch（まだ試験中のため）
+      unfilled-placeholder（まだ試験中のため）
       unqualified-superlative（まだ試験中のため）
 ```
 

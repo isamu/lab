@@ -13,6 +13,9 @@ from:
   - padded-intro
   - closing-cliche
   - no-em-dash
+  - contrast-framing
+  - stock-transition
+  - assistant-residue
 
 name:
   ja: 生成文の特徴がそろっている

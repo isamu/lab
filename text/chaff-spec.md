@@ -812,6 +812,10 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `preferred-term` | チームの表記（`prefer`） | 両方 | warning |
 | `repeated-conjunction` ✅ | 段落先頭の語彙照合 | 両方 | warning |
 | `ai-tell` ✅ | weighted phrase-match | blog | info |
+| `contrast-framing` ✅ | 対比の枠（frame の語、または打ち消しとそれを返す語）の密度 | blog | info |
+| `stock-transition` ✅ | 文頭の決まった接ぎの密度 | blog | info |
+| `assistant-residue` ✅ | weighted phrase-match（会話の返事の名残。重み 1 は 1 つで、0.5 は 2 つで届く） | 両方 | warning |
+| `unfilled-placeholder` ✅ | 括弧の中が雛形の語（[Your Name]、【会社名】）の空欄 | 両方 | warning |
 | `padded-intro` | phrase-match（冒頭限定） | blog | warning |
 | `closing-cliche` | phrase-match（末尾限定） | blog | warning |
 | `proper-noun-density` ✅ | 固有名詞の密度 | blog | info |
@@ -1591,9 +1595,9 @@ bold-density: strict       # 2026-09-11 図の説明で太字を多用するた�
 
 ### 20.2 複合シグナル
 
-✅ 実装済み。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` / `no-em-dash` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に 1 件の warning を足す。
+✅ 実装済み。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` / `no-em-dash` / `contrast-framing` / `stock-transition` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に 1 件の warning を足す。
 
-**元の指摘は消さない。** spec の初版は「集約する」としていたが、`from` に並ぶ 7 本のうち
+**元の指摘は消さない。** spec の初版は「集約する」としていたが、`from` に並ぶ rule のうち
 `padded-intro` と `closing-cliche` は stable な warning で、単独でも正しい指摘である。
 まとめるために消すと、本物の指摘が見えなくなる。
 
@@ -1614,6 +1618,9 @@ ai-generated-composite:
       - padded-intro
       - closing-cliche
       - no-em-dash
+      - contrast-framing
+      - stock-transition
+      - assistant-residue
 ```
 
 集約 rule 自体も rule として定義する。言語別に有効なシグナルが違う（英語では `no-em-dash` が強く、日本語では弱い）ため、`from` は genre profile で言語別に上書きできる。
@@ -1731,7 +1738,8 @@ L3  no-mixed-desumasu, no-nakaguro-parallel (ja) / oxford-comma-consistency (en)
 experimental 開始（corpus 評価が必要）
     ai-tell, rule-of-three, section-length-uniformity, sentence-rhythm,
     concrete-evidence-density, padded-intro, cushion-phrase-density,
-    proper-noun-density
+    proper-noun-density,
+    contrast-framing, stock-transition, assistant-residue, unfilled-placeholder
 ```
 
 CI:

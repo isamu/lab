@@ -62,8 +62,10 @@ describe("解析器を読むまで tokens は無い", () => {
         .sort((left, right) => left.localeCompare(right)),
       [
         "ai-tell",
+        "assistant-residue",
         "closing-cliche",
         "concrete-evidence-density",
+        "contrast-framing",
         "cushion-phrase-density",
         "double-keigo",
         "empty-conclusion",
@@ -77,6 +79,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "padded-intro",
         "repeated-conjunction",
         "sasete-itadaku",
+        "stock-transition",
         "undefined-acronym",
         "unqualified-superlative",
       ],
