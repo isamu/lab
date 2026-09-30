@@ -2,6 +2,18 @@
 
 Newest first.
 
+## Unreleased
+
+### `contraction-consistency` counts `don’t` as a contraction (#170)
+
+The rule compared the text as written, so a contraction with a curly apostrophe (`don’t`, `it’s`) counted as neither
+form. A document written in curly contractions with a few long forms was not reported, and one with mostly curly
+contractions and a single straight one reported the straight one as the odd form out. The rule now reads `’` and `ʼ`
+the way the English tagger does (a `’` between a letter or digit and a letter, and every `ʼ`), so `don’t` and `don't`
+are the same contraction. The message names the lexicon's form (`don't`). The apostrophe's shape itself is not
+reported: which shape to use is a typographic choice, not a register one, and mixed shapes are common in published
+text, statutes included.
+
 ## 0.16.0 — 2026-09-30
 
 Pick the kind of document, and chaff checks it as that kind. New genres cover contracts, statutes, court decisions,
@@ -56,16 +68,6 @@ contracts, judgments, patents, FAQs, glossaries, transcripts and papers; literat
 `chaff init` at a terminal lists the genres with what each is for and asks for one (a number or a name; Enter for
 `blog/tech`). `chaff init --genre <genre>` chooses without asking, and a script or CI is never asked. The written
 chaff.yaml names what the genre is for in its comment.
-
-### `contraction-consistency` counts `don’t` as a contraction (#170)
-
-The rule compared the text as written, so a contraction with a curly apostrophe (`don’t`, `it’s`) counted as neither
-form. A document written in curly contractions with a few long forms was not reported, and one with mostly curly
-contractions and a single straight one reported the straight one as the odd form out. The rule now reads `’` and `ʼ`
-the way the English tagger does (a `’` between a letter or digit and a letter, and every `ʼ`), so `don’t` and `don't`
-are the same contraction. The message names the lexicon's form (`don't`). The apostrophe's shape itself is not
-reported: which shape to use is a typographic choice, not a register one, and mixed shapes are common in published
-text, statutes included.
 
 ### Genres for contracts, statutes, manuals, papers, literature and speech: pick the kind of document (#170)
 
@@ -128,7 +130,8 @@ stray pieces counted as words in `adverb-overuse` and `proper-noun-density`. A `
 letter (`don’t`, `team’s`, `1990’s`) and every `ʼ` (U+02BC) are now read as `'`. A `’` with no letter after it stays a
 closing quote (`‘like this’`), so a plural possessive (`the users’ files`) is still read as a quote. Spans still point
 at the source as written; a word's surface is the straight form, so a lexicon entry such as `in today's fast-paced
-world` (`padded-intro`) also matches `In today’s fast-paced world`.
+world` (`padded-intro`) also matches `In today’s fast-paced world`. `contraction-consistency` compares the text itself
+and does not yet treat `don’t` as `don't`.
 
 ### 「前契約の第9条」 is another document's article, the same as 「前契約第9条」 (#153)
 
