@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### The corpus checks each document with the preset for its kind (#170)
+
+`corpus/manifest.json` gave every document one of the original ten genres, so `yarn corpus` never ran the presets
+added in 0.16.0. Statutes and internal rules, contracts and privacy policies, court decisions, patents, manuals, FAQs,
+glossaries, papers, literature, speeches and transcripts now carry `legal/*`, `docs/*`, `academic/paper`,
+`literature/*` and `speech/*`, so a regression in a preset shows in `corpus/expected.txt`. The statutes in
+`corpus/laws/` are read as `legal/statute`, which names the statute profile; they were already read with it from
+their content, and their structure results do not change.
+
 ### `stray-space`: a space inside a Japanese phrase (#170)
 
 A new experimental rule reports a half-width or full-width space inside what reads as one phrase: after a particle
