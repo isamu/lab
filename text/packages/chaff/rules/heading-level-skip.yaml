@@ -21,6 +21,58 @@ how_to_fix:
   ja: 一つ前の見出しより一段だけ深くしてください。文字の大きさを変えたいだけなら、深さではなく表示の設定で変えてください。
   en: Make the heading one level deeper than the one before it. If only the size on screen was the point, change the style instead of the level.
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「##」の次に「####」が来るように、見出しの深さが一段以上飛んでいる所
+  en: A heading two or more levels deeper than the one before it, as "####" right after "##"
+example:
+  ja:
+    before: |
+      # 手順書
+
+      ## 準備
+
+      道具をそろえます。
+
+      #### 注意
+
+      手袋をはめます。
+    after: |
+      # 手順書
+
+      ## 準備
+
+      道具をそろえます。
+
+      ### 注意
+
+      手袋をはめます。
+  en:
+    before: |
+      # Setup guide
+
+      ## Before you start
+
+      Gather the tools.
+
+      #### Safety
+
+      Wear gloves.
+    after: |
+      # Setup guide
+
+      ## Before you start
+
+      Gather the tools.
+
+      ### Safety
+
+      Wear gloves.
+
+not_flagged:
+  ja: 最初の見出しは何段から始めてもかまいません。浅くなる見出し（「####」の次の「##」）も指しません。
+  en: The first heading may start at any level, and a heading that goes back up ("##" after "####") is not reported.

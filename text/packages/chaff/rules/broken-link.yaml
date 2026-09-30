@@ -32,6 +32,34 @@ how_to_fix:
   ja: "行き先を書いてください。見出しを指すなら、今の見出しの言葉に合わせてください。参照の形なら、文書のどこかに「[名前]: URL」の行を足してください。"
   en: 'Fill in the destination. For a heading, match the heading as it is now written. For a reference-style link, add a "[label]: URL" line somewhere in the document.'
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 行き先が空のリンク、文書に無い見出しを指すリンク、定義の無い参照の形のリンク
+  en: A link with no destination, a link to a heading the page does not have, or a reference-style link with no definition
+example:
+  ja:
+    before: |
+      ## 準備
+
+      道具をそろえます。詳しくは[手順](#手順)を見てください。
+    after: |
+      ## 準備
+
+      道具をそろえます。詳しくは[準備](#準備)を見てください。
+  en:
+    before: |
+      ## Setup
+
+      Gather the tools. See [Install](#install) for more.
+    after: |
+      ## Setup
+
+      Gather the tools. See [Setup](#setup) for more.
+
+not_flagged:
+  ja: 見出しの名前は字と数字だけで比べ、大文字小文字や記号の違いは問いません。「[1][2]」のような文献の番号、「A[i][j]」のような添字、使われていない定義も指しません。
+  en: Heading anchors are compared on letters and digits only, ignoring case and punctuation. Citation numbers ("[1][2]"), subscripts ("A[i][j]") and definitions no link uses are not reported.

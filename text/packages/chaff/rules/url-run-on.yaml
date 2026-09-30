@@ -20,6 +20,26 @@ how_to_fix:
   ja: URL の後ろに空白を入れるか、<https://…> または [説明](https://…) の形で書いてください。
   en: Put a space after the URL, or write it as <https://…> or [text](https://…).
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「https://example.jp/をご覧ください」のように、URL のすぐ後ろに字が続き、リンクがそこまで伸びる所
+  en: A URL followed straight away by a character outside ASCII, which the link swallows
+example:
+  ja:
+    before: |
+      詳しくは https://example.jp/guideをご覧ください。
+    after: |
+      詳しくは https://example.jp/guide をご覧ください。
+  en:
+    before: |
+      See https://example.com/guide—it has the details.
+    after: |
+      See https://example.com/guide — it has the details.
+
+not_flagged:
+  ja: リンクの記法（[説明](URL) と <URL>）で書いた URL、コードの中、空白や ASCII の記号が続く URL、ゼロ幅の空白のような見えない字は指しません。
+  en: URLs written with link syntax ([text](URL) or <URL>), URLs in code, a URL followed by a space or an ASCII mark, and invisible characters such as a zero-width space are not reported.
