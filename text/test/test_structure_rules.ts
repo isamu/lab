@@ -708,6 +708,13 @@ describe("two lists under one parent", () => {
     assert.deepEqual(found(ja, lines("第1条（手続）", "申込みは次による。", "（1）書面", "（2）電子", "取消しは次による。", "（1）書面", "（2）電子")), []);
   });
 
+  it("本文のある条の直下の（1）（2）と、それに続く第 2 項", () => {
+    const items = lines("第3条　学位の名称は、次のとおりとする。", "(1)　学士の学位", "(2)　修士の学位", "(3)　博士の学位");
+    const second = "2　専門職学位の名称は、次のとおりとする。";
+    assert.deepEqual(found(ja, lines(items, second, "第4条　第3条第2号の学位を授与する。")), []);
+    assert.deepEqual(found(ja, lines(items, "(5)　別の学位", second)), [["numbering-gap", { previous: "（3）", label: "（5）", expected: 4, found: 5 }]]);
+  });
+
   it("附則が第1条から振り直す", () => {
     assert.deepEqual(found(ja, lines("第1条（目的）", "本文", "第2条（施行）", "本文", "附則", "第1条（経過措置）", "本文")), []);
   });

@@ -131,6 +131,39 @@ describe("日本語の契約書を木にする", () => {
     );
   });
 
+  describe("条の行に本文があれば、直下の「（1）」は番号の無い第 1 項の号", () => {
+    const itemsIn = (node: StructureNode): string[][] =>
+      node.children.filter((child) => child.kind === "item").flatMap((child) => [[child.address, String(child.attrs["label"])], ...itemsIn(child)]);
+    const items = (...rows: string[]): string[][] => itemsIn(treeOf(lines(...rows)).children[0] ?? treeOf(""));
+
+    it("規則の書き方: 号の後に第 2 項が続く（半角括弧と全角空白）", () => {
+      assert.deepEqual(items("第3条　学位の名称は、次のとおりとする。", "(1)　学士の学位", "(2)　修士の学位", "2　専門職学位の名称は、次のとおりとする。"), [
+        ["3.1.1", "（1）"],
+        ["3.1.2", "（2）"],
+        ["3.2", "2"],
+      ]);
+    });
+
+    it("見出しの括弧に本文が続く行も、本文のある行", () => {
+      assert.deepEqual(items("第5条（禁止事項）乙は、次の行為をしてはならない。", "（1）法令違反", "（2）迷惑行為"), [
+        ["5.1.1", "（1）"],
+        ["5.1.2", "（2）"],
+      ]);
+    });
+
+    it("見出しだけの条の「（1）」は、これまでどおり項の深さ", () => {
+      assert.deepEqual(items("第1条（目的）", "（1）第一の場合"), [["1.1", "（1）"]]);
+      assert.deepEqual(items("第1条　総則", "（1）第一の場合"), [["1.1", "（1）"]]);
+    });
+
+    it("番号付きの項の下の「（1）」は、その項の号", () => {
+      assert.deepEqual(items("第7条　委員会を置く。", "2　委員は、次のとおりとする。", "(1)　教授", "(2)　准教授").slice(1), [
+        ["7.2.1", "（1）"],
+        ["7.2.2", "（2）"],
+      ]);
+    });
+  });
+
   it("義務の語が何万あっても、長い方で一度ずつ数えて返る", () => {
     const leaves = treeOf("支払わなければならない。".repeat(20_000)).children.filter((node) => node.kind === "obligation");
     assert.equal(leaves.length, 20_000);
