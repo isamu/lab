@@ -11,9 +11,9 @@ aozora-kishida-kamifusen  clean
 aozora-soseki-yume-juya  latin-spacing 2
 aozora-takuboku-ichiaku-no-suna  latin-spacing 2
 aozora-terada-tensai-to-kokubo  clean
-apidatagov-developer-manual  contraction-consistency 4, max-sentence-length 5, proper-noun-density 1
+apidatagov-developer-manual  agreement-slip 1, contraction-consistency 4, max-sentence-length 5, proper-noun-density 1
 arxiv-2609-27842-genai-assessment  max-sentence-length 18, ngram-repetition 1, undefined-acronym 10
-arxiv-astro-ph-new-2025-01-03  max-paragraph-length 22, max-sentence-length 27, ngram-repetition 1, undefined-acronym 131, unqualified-superlative 2
+arxiv-astro-ph-new-2025-01-03  agreement-slip 1, max-paragraph-length 22, max-sentence-length 27, ngram-repetition 1, undefined-acronym 131, unqualified-superlative 2
 asf-board-minutes-2025-01  agentless-passive 318, concrete-evidence-density 36, expletive-construction 28, heading-echo 18, max-paragraph-length 8, max-sentence-length 236, ngram-repetition 1, preamble-length 1, proper-noun-density 1, undefined-acronym 153
 automattic-offer-letter-us  agentless-passive 10, contraction-consistency 2, duplicate-definition 1, max-paragraph-length 2, max-sentence-length 53, proper-noun-density 1
 automattic-privacy-policy  max-sentence-length 6, undefined-acronym 8
@@ -141,7 +141,7 @@ readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-pa
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, proper-noun-density 1, undefined-acronym 22
 rfc9457  max-sentence-length 54, proper-noun-density 1, undefined-acronym 15
 rouki.txt  clean
-rust-lang-minutes-2022-11-22  agentless-passive 3, contraction-consistency 2, max-sentence-length 3, undefined-acronym 3
+rust-lang-minutes-2022-11-22  agentless-passive 3, agreement-slip 1, contraction-consistency 2, max-sentence-length 3, undefined-acronym 3
 rust-rfc-2094-nll  excessive-hedging 1, heading-echo 1, max-paragraph-length 12, max-sentence-length 120, ngram-repetition 1, undefined-acronym 19
 saikosai-h18-09-14-bengoshi-chokai  doubled-word 1, max-sentence-length 1
 saikosai-h26-09-02-nagano  max-sentence-length 1
