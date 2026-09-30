@@ -640,7 +640,7 @@ genres:
 
 設計上の注意:
 
-`heading-echo` と `ngram-repetition` は **character n-gram** を使う。word n-gram にすると `wordSplit` capability を要求することになり L2 に落ちる。character trigram なら日本語でも英語でも同じ実装で動き、精度も実用に足りる。
+`heading-echo` と `ngram-repetition` は **character n-gram** を使う。word n-gram にすると `wordSplit` capability を要求することになり L2 に落ちる。character trigram なら日本語でも英語でも同じ実装で動き、精度も実用に足りる。`ngram-repetition` の英語（語単位の言語）の窓は、空白で区切った語の切れ目にそろえる。空白を見るだけなので `wordSplit` は要らない。
 
 `heading-echo` の重なりは **Jaccard ではなく包含率**（見出しの trigram のうち、直後の文に現れたものの割合）で測る。実装して測るまで Jaccard と書いていたが、いちばん典型的な反復を取り逃すことが分かった。
 
