@@ -161,9 +161,9 @@ const expandTemplates = (text: string): string => replaceBalanced(text, "{{", "}
 function renderTemplate(inside: string): string {
   const [head = "", ...args] = splitTopLevel(inside);
   const name = head.trim().toLowerCase().replace(/_/gu, " ");
-  const wrapper = WRAPPERS[name];
+  const wrapper = Object.hasOwn(WRAPPERS, name) ? WRAPPERS[name] : undefined;
   if (wrapper !== undefined) return wrapper(paramsOf(args, textBlockValue));
-  const render = RENDERERS[name];
+  const render = Object.hasOwn(RENDERERS, name) ? RENDERERS[name] : undefined;
   return render === undefined ? DROPPED : render(paramsOf(args, inlineValue));
 }
 
