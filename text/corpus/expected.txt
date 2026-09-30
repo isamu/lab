@@ -136,7 +136,7 @@ nws-glossary-a  agreement-slip 1, doubled-word 1, max-paragraph-length 4, max-se
 nws-heat-wave-safety  agentless-passive 4, concrete-evidence-density 4, contraction-consistency 4, max-paragraph-length 1, max-sentence-length 6, preamble-length 1
 oecd-global-drought-outlook-summary  adverb-overuse 1, agentless-passive 2, max-paragraph-length 2, max-sentence-length 12, proper-noun-density 1
 pep-0020-zen-of-python  proper-noun-density 1
-ppc-guidelines-tsusoku  duplicate-definition 14, latin-spacing 8, max-sentence-length 9, repeated-conjunction 9, undefined-acronym 4
+ppc-guidelines-tsusoku  duplicate-definition 11, latin-spacing 8, max-sentence-length 9, repeated-conjunction 9, undefined-acronym 4
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-sentence-length 1, oxford-comma-consistency 1
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, proper-noun-density 1, undefined-acronym 22
@@ -163,7 +163,7 @@ uk-dpa2018.txt  clean
 us-6004596-crustless-sandwich  max-sentence-length 2
 us-scotus-gideon-v-wainwright  max-paragraph-length 1, max-sentence-length 3
 utelecon-account-leave  concrete-evidence-density 3, latin-spacing 1, max-sentence-length 10, ngram-repetition 1, preamble-length 1
-utokyo-gakui-kisoku  dangling-reference 1
+utokyo-gakui-kisoku  clean
 voa-le-lunar-trailblazer  max-sentence-length 8, proper-noun-density 1
 w3c-secure-contexts  excessive-hedging 1, heading-echo 2, max-sentence-length 26, ngram-repetition 1, oxford-comma-consistency 1, proper-noun-density 1
 wikipedia-ja-talk-oden  latin-spacing 4, max-paragraph-length 1, max-sentence-length 6, no-doubled-joshi 3, stray-space 1
