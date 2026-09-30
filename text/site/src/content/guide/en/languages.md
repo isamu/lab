@@ -14,7 +14,7 @@ $ npx chaffjs notes.md --compact
 notes.md   blog/tech · English   genre from the default
 
 
-0 findings, 37 rules not run
+0 findings, 39 rules not run
 ```
 
 A Japanese file says 日本語 in the same place, and its screen is in Japanese:
@@ -25,7 +25,7 @@ $ npx chaffjs memo.md --compact
 memo.md   blog/tech · 日本語   ジャンルは既定から
 
 
-指摘 0 件、動いていない rule 34 件
+指摘 0 件、動いていない rule 36 件
 ```
 
 When the language is wrong, fix it with `language: ja` or `language: en` in `chaff.yaml` ([Configuration](./configuration)).
@@ -102,9 +102,12 @@ The rule is experimental, so turn it on in `chaff.yaml`.
 | `title-case-consistency` | Whether headings are capitalised the same way throughout |
 | `oxford-comma-consistency` | Whether lists use the serial comma the same way throughout |
 | `contraction-consistency` | Whether contractions are used the same way throughout |
+| `agreement-slip` | A determiner and a noun that differ in number ("a significant changes"), or "Your can" for "You can" |
 
 The rules ending in `-consistency` do not decide which style is right.
 They only check that one document is consistent, and point at the less common style.
+
+`agreement-slip` reads parts of speech. It is experimental, so turn it on in `chaff.yaml`.
 
 ## Language packages
 

@@ -152,7 +152,7 @@ $ npx chaffjs explain max-sentence-length
     relaxed  35
     off      not checked
 
-  These numbers are for the default genre. business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / academic have numbers of their own.
+  These numbers are for the default genre. business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / docs/glossary / academic have numbers of their own.
 
   Now: normal.
 

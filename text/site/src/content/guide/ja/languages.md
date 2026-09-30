@@ -14,7 +14,7 @@ $ npx chaffjs notes.md --compact
 notes.md   blog/tech · English   genre from the default
 
 
-0 findings, 37 rules not run
+0 findings, 39 rules not run
 ```
 
 画面は文書の言語で出るので、英語の文書には英語で出ます。日本語のファイルなら、同じ場所に「日本語」と出ます。
@@ -94,9 +94,12 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `title-case-consistency` | 見出しの大文字化が文書の中で揃っているか |
 | `oxford-comma-consistency` | 並列の読点が文書の中で揃っているか |
 | `contraction-consistency` | 短縮形の使いかたが文書の中で揃っているか |
+| `agreement-slip` | 限定詞と名詞の単数・複数の食い違い（a significant changes）や、You can を Your can と書いた所 |
 
 `-consistency` で終わるルールは、どちらの書き方が正しいかを決めません。
 1 つの文書で揃っているかだけを見て、少ないほうを指摘します。
+
+`agreement-slip` は品詞を見ます。試験中なので、`chaff.yaml` で動かします。
 
 ## 言語パッケージ
 
