@@ -55,6 +55,13 @@ describe("日本語: 誤りの無い文書では何も言わない", () => {
   cases.forEach(([name, source]) => {
     it(name, () => assert.deepEqual(found(ja, source), []));
   });
+
+  it("全角空白の続く番号の見出しは章の番号で、条の中でも項と読まない", () => {
+    const guide = ["## 1　目的", "", "本文。", "", "## 2　定義", "", "法第2条", "", "- １　「情報」とは、記録をいう。", "", "## 3　義務", "", "本文。"];
+    assert.deepEqual(found(ja, guide.join("\n"), "c.md"), []);
+    const statute = ["第1条（支払）", "", "甲は支払う。", "", "２　乙は受け取る。", "", "2　期限は月末とする。"];
+    assert.deepEqual(found(ja, statute.join("\n"), "c.md"), [["numbering-gap", { previous: "２", label: "2", expected: 3, found: 2 }]]);
+  });
 });
 
 // 実際の法令（e-Gov、労働基準法・民法・会社法・個人情報の保護に関する法律）で誤検出したものを、短く切り出して残す。

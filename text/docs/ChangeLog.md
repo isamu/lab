@@ -33,8 +33,55 @@ corpus documents of each kind:
 - speech: greetings and thanks are a speech's form; a transcript is what was said, so none of its style is checked.
 
 `chaff genres` lists every genre under its group with what it is for, in the output language, and how to use one.
-`rules --json` and `explain` show a genre's level as the one in effect. The ten genres that were there before are
+`rules --json` and `explain` show a genre's level as the one in effect. The genres that were there before are
 unchanged, and so is every result for them.
+
+### `oxford-comma-consistency` reads fewer non-lists as lists (#170)
+
+A participle phrase, an appositive and a coordination inside one item of a list were read as a list of three:
+"It comes from Latin, meaning ship or boat", "He was found guilty by the judge, sitting without a jury, and
+sentenced", "two HPV types, HPV16 and HPV18, that account", "prohibition of unreasonable searches and seizures, and
+the Eighth's ban". Now:
+
+- An item that opens with a participle starts a participle phrase, not a list item, unless the first item holds the
+  same kind of participle or the other items open with verbs. A list inside the phrase is still judged
+  ("programs, including the grants office, the help desk and the travel team"). Words the tagger reads as nouns but
+  that open such a phrase ("meaning") are in the new lang-en lexicon `participle-word`.
+- "Noun, X and Y," with no comma before "and" and no verb in X or Y is an appositive. A real list of three in the
+  same shape is left unjudged; with a comma before "and" it is still a list.
+- An "and" followed by ", and" (or ", or") and an item of the same shape joins words inside one item; followed by
+  a clause ("apples, pears and plums, and went home") it still ends the list. A list closed by "and" is not continued
+  by the items after it.
+
+English -ing verbs now carry `VerbForm=Ger`, so a present participle is told apart from a past one.
+
+### `title-case-consistency` does not count acronyms as Title Case (#170)
+
+A word in capitals ("PR", "FCPs") is capitalised in either style, so it is no longer evidence of Title Case.
+"Opening a PR" and "Proposed FCPs" are left unjudged; "Using the API Client" is still Title Case.
+
+### The corpus HTML converter reads a table of sentences (#170)
+
+A glossary, a list of infection routes or a report's footnotes written as an HTML table disappeared from the stored
+text, because every table was dropped. A table where at least half of the rows end a sentence in some cell is now
+read: each cell becomes a paragraph of its own (like a term and its definition in a `<dl>`), the caption comes
+first, a row of nothing but header cells goes, and a cell that starts with a number and ends no sentence (a row
+number, a range of figures) goes. Any other table (figures, dates, names) is dropped as before; a point inside a
+cell ("H.Con.Res. 218") is not a sentence's end. Documents fetched from HTML change when they are fetched again.
+
+### The corpus HTML converter keeps U+3000 and drops text written for a screen reader (#170)
+
+The converter behind `yarn corpus:fetch` collapsed every run of whitespace, U+3000 included, so 「2　学士」 was stored
+as 「2 学士」 and a clause number lost the full-width space that marks it. Only markup's own spacing collapses now.
+It also drops text that a sighted reader never sees: an element whose class follows a screen-reader convention
+(`sr-only`, `visually-hidden`, `govuk-visually-hidden`, `screen-reader-text`, or exactly `hidden`), unless a variant
+such as `md:block` shows it on some screens, and a skip link's target (an anchor with no `href` and `tabindex="-1"`
+alone on its line, such as 「ここから本文です。」). A block of nothing but links to other pages that closes the page (「一覧に戻る」) is dropped
+like the menus above the title (a link to a file, such as an appendix in PDF, stays), so a site's trailing `## 新着記事` no longer follows a speech as its only heading. Documents fetched
+from HTML change when they are fetched again.
+
+A heading numbered like a statute's paragraph (`## 4　適用除外`) is now read as a chapter number, never as a
+paragraph of an open article, so `numbering-gap` no longer reports a guideline's chapters as gaps in a paragraph list.
 
 ### `names:` in chaff.yaml: the team lists its own names (#170)
 
@@ -63,6 +110,27 @@ independent verb or adjective repeated in a form that does not end the sentence 
 命令形) is now read as reduplication. Still reported: a repeated terminal form, a non-independent word
 (「くださいください」), a one-character word (「確認ししました」), and a repeat followed by an ending
 (「確認できできます」), which is a stem written twice.
+
+### doubled-word does not count Japanese mimetics, 畳語 written without 々, or 「売り売りて」 (#170)
+
+The analyser splits a kana mimetic it does not know into whatever words match its sounds (すうすう → 吸う + 吸う,
+しだいしだい → two suffixes, たんたらたら → a noun and two auxiliaries), and a 畳語 written without 々 (家家, 朝朝)
+into two nouns; doubled-word reported them as a word written twice. Now read as reduplication:
+
+- a whole hiragana word repeated where an adverb stands, before と or に or at a line end
+  (「きしきしと」「ちょんちょんと」「すうすうと」「しだいしだいに」「あはれあはれ」); a verb read there counts only
+  with a two-mora root, the shape of a mimetic (すう);
+- two identical auxiliaries with no predicate before them that read together as one adverb (「たんたらたら」);
+- a one-kanji noun doubled, when the kanji takes 々: the analyser's dictionary reads 家々 as one word, and the new
+  `iteration-kanji` word list holds those it does not know (朝々, 神々);
+- a 五段 verb's continuative repeated before て (「売り売りて」「行き行きて」); 「日毎日毎」 joins 「毎日毎日」 in the
+  doubled-word word list.
+
+Still reported: particles and auxiliaries after a predicate (「のの」「をを」「着いたらたら」), a suffix attached to a
+noun (「田中さんさん」), a kana word that does not stand as an adverb (「まとめまとめを」「まとめまとめ、」), a
+katakana word (「ユーザーユーザー」), a longer kana verb (「できるできると」), a one-kanji noun that has no
+々 form (「法法の」, and 「金金と」, which only emphasis tells from a slip), a doubled two-kanji noun (「確認確認」), and
+「くださいください」 and 「できできて」.
 
 ### A tenth round of corpus kinds: fiction, essays, poetry and plays in Japanese and English, and more (#170)
 

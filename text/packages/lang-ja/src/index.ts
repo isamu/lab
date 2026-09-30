@@ -1,10 +1,10 @@
 import { loadLexicons } from "./lexicons.ts";
 import { sentenceSpans } from "./sentence-split.ts";
 import { structure } from "./structure.ts";
-import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, tokenize } from "./pos.ts";
+import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, readsAsOneWord, tokenize } from "./pos.ts";
 import { markSpacedCounters } from "./spaced-counter.ts";
 import { tokensWithin } from "./tokens-within.ts";
-import { distributiveVocabulary, markReduplication } from "./reduplication.ts";
+import { distributiveVocabulary, iterationMarkReading, markReduplication } from "./reduplication.ts";
 import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
 
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
@@ -48,7 +48,9 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] =>
  * token の span は文ではなく、segment に渡した文字列を基準にする。文の span と同じ座標系。
  * 文ごとに解析して足し戻すのではなく、一度解析して文へ配る。同じ文字列を二度読まない。
  */
-const DISTRIBUTIVE = distributiveVocabulary(loadLexicons());
+const LEXICONS = loadLexicons();
+const DISTRIBUTIVE = distributiveVocabulary(LEXICONS);
+const TAKES_ITERATION_MARK = iterationMarkReading(LEXICONS, readsAsOneWord);
 
 const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] => {
   const read = tokenize(source);
@@ -57,7 +59,7 @@ const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] 
   return sentences.map((sentence) => ({
     ...sentence,
     // 述語かどうかは文の中でしか決まらないので、文へ配ってから印を落とす。
-    tokens: markReduplication(predicateOnly(tokensWithin(tokens, sentence.span)), DISTRIBUTIVE, readsAsOneAdverb),
+    tokens: markReduplication(predicateOnly(tokensWithin(tokens, sentence.span)), DISTRIBUTIVE, readsAsOneAdverb, TAKES_ITERATION_MARK),
   }));
 };
 

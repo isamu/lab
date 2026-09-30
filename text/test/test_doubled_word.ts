@@ -445,7 +445,43 @@ describe("doubled-word — 日本語", () => {
   it("invalid: 同じ活用の重なりでも、非自立の語・一文字の語・語尾が続く重なりは数える", () => {
     assert.deepEqual(findingsOf("確認してくださいください。", ja, "ja"), ["1:9 くださいください"]);
     assert.deepEqual(findingsOf("確認できできます。", ja, "ja"), ["1:5 できでき"]);
+    assert.deepEqual(findingsOf("準備ができできて安心した。", ja, "ja"), ["1:6 できでき"]);
     assert.deepEqual(findingsOf("確認ししました。", ja, "ja"), ["1:4 しし"]);
+  });
+
+  it("valid: 仮名の擬音・擬態語、一字の漢字の畳語、五段動詞の連用形に「て」が続く重ね言葉（青空文庫の歌集・小説）は数えない", () => {
+    const valid = [
+      "きしきしと寒さに踏めば板軋む",
+      "ちょんちょんと\nとある小藪に頬白の遊ぶを眺む",
+      "たんたらたらたんたらたらと\n雨滴が",
+      "凄いものが手元から、すうすうと逃げて行くように思われる。",
+      "しかし捕まえるものがないから、しだいしだいに水に近づいて来る。",
+      "森の奥より銃声聞ゆ\nあはれあはれ\n自ら死ぬる音のよろしさ",
+      "家家の高低の軒に",
+      "朝朝の\nうがひの料の水薬の",
+      "六年ほど日毎日毎にかぶりたる",
+      "売り売りて\n手垢きたなきドイツ語の辞書のみ残る",
+      "木木の緑が濃くなりました。",
+      "神神の住む山です。",
+    ];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
+  });
+
+  it("invalid: 仮名の語でも、接尾語・語尾・助詞の重なりや、副詞の位置に立たない重なりは数える", () => {
+    assert.deepEqual(findingsOf("田中さんさんに連絡します。", ja, "ja"), ["1:5 さんさん"]);
+    assert.deepEqual(findingsOf("まとめまとめを作ります。", ja, "ja"), ["1:4 まとめまとめ"]);
+    assert.deepEqual(findingsOf("確認できるできるように準備します。", ja, "ja"), ["1:6 できるできる"]);
+    assert.deepEqual(findingsOf("着いたらたら連絡します。", ja, "ja"), ["1:5 たらたら"]);
+    assert.deepEqual(findingsOf("本日は確認ですです。", ja, "ja"), ["1:8 ですです"]);
+    assert.deepEqual(findingsOf("制御するためののコントロール。", ja, "ja"), ["1:8 のの"]);
+    assert.deepEqual(findingsOf("ユーザーユーザー、確認します。", ja, "ja"), ["1:5 ユーザーユーザー"]);
+    assert.deepEqual(findingsOf("データデータ、確認します。", ja, "ja"), ["1:4 データデータ"]);
+    assert.deepEqual(findingsOf("対応できるできると回答しました。", ja, "ja"), ["1:6 できるできる"]);
+  });
+
+  it("invalid: 々 を付けて畳語にならない一字の漢字の重なりは数える（金金は強めて繰り返した言い方だが、書き損じと形では見分けられない）", () => {
+    assert.deepEqual(findingsOf("法法の規定による。", ja, "ja"), ["1:2 法法"]);
+    assert.deepEqual(findingsOf("何事も金金とわらひ", ja, "ja"), ["1:5 金金"]);
   });
 
   it("valid: 読点で区切った同じ語は数えない", () => {
