@@ -638,3 +638,45 @@ describe("decodeEntities", () => {
     assert.equal(decodeEntities("&constructor; &toString; &hasOwnProperty; &valueOf;"), "&constructor; &toString; &hasOwnProperty; &valueOf;");
   });
 });
+describe("htmlToMarkdown: 表", () => {
+  it("行の半分以上に文のある表は、見出しの行を落とし、升目を一つずつ段落にする", () => {
+    const glossary =
+      "<h1>風</h1><table><caption>風向に関する用語</caption><tr><th>用語</th><th>説明</th></tr>" +
+      "<tr><td>風向</td><td>風の吹いてくる方向。</td></tr><tr><td></td><td><img src='i.png' alt='図'></td></tr>" +
+      "<tr><td>備考</td><td>予報では８方位を用いる。</td></tr></table><p>以上。</p>";
+    assert.equal(htmlToMarkdown(glossary), "# 風\n\n風向に関する用語\n\n風向\n\n風の吹いてくる方向。\n\n備考\n\n予報では８方位を用いる。\n\n以上。\n");
+    const english =
+      "<table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody><tr><td>API_KEY_MISSING</td><td>No key was sent.</td></tr></tbody></table>";
+    assert.equal(htmlToMarkdown(english), "API_KEY_MISSING\n\nNo key was sent.\n");
+  });
+
+  it("行の見出し (th) も本文の升目。数で始まる升目 (行の番号・数の範囲) は落とし、数で始まる文は残す", () => {
+    const routes =
+      "<table><tr><th scope='row'>1</th><td>ホームページの閲覧</td><td>閲覧だけで感染することがあります。</td></tr>" +
+      "<tr><th scope='row'>２</th><th>メール</th><td>0.3 以上 1.6 未満</td><td>2025年に増えました。</td></tr></table>";
+    assert.equal(htmlToMarkdown(routes), "ホームページの閲覧\n\n閲覧だけで感染することがあります。\n\nメール\n\n2025年に増えました。\n");
+  });
+
+  it("閉じタグを省いた行と升目も、次の行・升目の始まりまで", () => {
+    const html = "<table><tr><td>Term<td>It means a word.<tr><td>Other<td>It means another.</table>";
+    assert.equal(htmlToMarkdown(html), "Term\n\nIt means a word.\n\nOther\n\nIt means another.\n");
+  });
+
+  it("文の行が半分に届かない表 (数の表に注が一つ)、文の無い表、略語の点しか無い表は、これまでどおり丸ごと落とす", () => {
+    const figures =
+      "<p>Fees.</p><table><tr><td>A</td><td>100</td></tr><tr><td>B</td><td>200</td></tr><tr><td>C</td><td>300</td></tr>" +
+      "<tr><td>Note</td><td>Fees are in yen.</td></tr></table><p>End.</p>";
+    assert.equal(htmlToMarkdown(figures), "Fees.\n\nEnd.\n");
+    assert.equal(htmlToMarkdown("<table><tr><th>Name</th></tr><tr><td>Tokyo</td></tr></table><p>End.</p>"), "End.\n");
+    const abbreviations =
+      "<table><tr><td>1976</td><td>H.Con.Res. 218</td><td>05-14-1975</td></tr><tr><td>1977</td><td>S.Con.Res. 109</td><td>None</td></tr></table><p>End.</p>";
+    assert.equal(htmlToMarkdown(abbreviations), "End.\n");
+  });
+
+  it("入れ子の表は内側から読む。文の表を包むレイアウトの表は、中の文を残す", () => {
+    const layout =
+      "<table><tr><td><table><tr><td>Term</td><td>It means a word.</td></tr></table></td></tr>" +
+      "<tr><td><table><tr><td>1</td><td>2</td></tr></table></td></tr></table>";
+    assert.equal(htmlToMarkdown(layout), "Term\n\nIt means a word.\n");
+  });
+});
