@@ -351,6 +351,7 @@ describe("L3 英語", () => {
       ["both のあとの読点は項目の区切り", WITHOUT_COMMA, "We tested the parser, the renderer in both views, and the exporter."],
       ["either のあとの読点は項目の区切り", WITHOUT_COMMA, "We can drop the parser, the renderer with either option, or the exporter."],
       ["between の 2 つが揃ったあとの and は並びの継ぎ目", WITH_COMMA, "We read the notes, the terms between the provider and the customer and the policies."],
+      ["括弧の中の either は括弧の外の or と組まない", WITH_COMMA, "The plan covers pricing, implementation (either way) or support."],
       ["either の相手は or。and なら either は名詞にかかるだけ", WITH_COMMA, "The review covers pricing, the impact of either option and implementation."],
       ["and で閉じた例の句は 1 つの項目", WITHOUT_COMMA, "The menu includes apples, oranges such as navels and mandarins, and pears."],
       ["空けて書いた頭文字は e.g. ではない", WITH_COMMA, "The attendees (A. B. Clark, E. G. Evans and C. D. Ford) arrived."],

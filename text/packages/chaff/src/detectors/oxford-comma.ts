@@ -266,12 +266,15 @@ const pairComplete = (member: readonly Token[], after: readonly Token[]): boolea
 /**
  * 最後の項目に 2 つだけを結ぶ語（between / either）があり、この接続詞がその語の相手で（between … and / either … or）、そのあとに
  * and / or がまだ無く、読点も無ければ、この and / or はその 2 つを結ぶ（the Key Terms between Provider and Customer, and any policies）。
- * 相手でなければ語は名詞にかかるだけ（the impact of either option and implementation）。
+ * 相手でなければ語は名詞にかかるだけ（the impact of either option and implementation）。括弧の中の語は外の接続詞と組まない。
  */
 const pairsInLastItem = (clause: Clause, at: number, items: readonly Token[][], after: readonly Token[]): boolean => {
   const last = items.at(-1) ?? [];
   const conjunction = clause.tokens[at]?.surface.toLowerCase() ?? "";
-  const opener = last.findLastIndex((token) => clause.words.pair.has(`${token.surface.toLowerCase()} ${conjunction}`));
+  const level = clause.depths[at] ?? 0;
+  const opener = last.findLastIndex(
+    (token) => clause.words.pair.has(`${token.surface.toLowerCase()} ${conjunction}`) && clause.depths[clause.tokens.indexOf(token)] === level,
+  );
   const member = last.slice(opener + 1);
   if (opener === -1 || commaBefore(clause.tokens, at) || pairComplete(member, after)) return false;
   return !member.some((token) => LIST_CONJUNCTION.has(token.surface.toLowerCase()));
