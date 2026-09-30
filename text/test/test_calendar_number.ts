@@ -11,7 +11,12 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 const patternList = (id: string): string[] => (ja.lexicons[id] ?? []).map((entry) => entry.pattern);
 const listOf = (id: string): ReadonlySet<string> => new Set(patternList(id));
 
-const UNITS: CalendarUnits = { chained: patternList("date-time-unit"), positional: listOf("calendar-unit"), year: listOf("calendar-year-unit") };
+const UNITS: CalendarUnits = {
+  chained: patternList("date-time-unit"),
+  positional: listOf("calendar-unit"),
+  year: listOf("calendar-year-unit"),
+  era: patternList("calendar-era"),
+};
 
 /** 文ごとの日付の数を、書いたとおりの字と位置（first か inner）で。 */
 const calendarOf = (text: string): string[] =>
@@ -49,6 +54,12 @@ describe("calendarRuns", () => {
     ["a larger unit after a smaller one starts another thing", "10時 3日", ["10:first"]],
     ["no unit follows one outside the order", "3時半 5分待つ", ["3:first"]],
     ["a count", "412 件と6.2 時間", []],
+    ["a year after an era name", "令和8年に施行", ["8:first"]],
+    ["an era year written with spaces", "令和 3 年改正法", ["3:first"]],
+    ["an era fiscal year", "平成30年度の予算", ["30:first"]],
+    ["an era year with its month and day", "令和5 年 4 月 1 日", ["5:first", "4:inner", "1:inner"]],
+    ["a number after an era name with no year unit", "令和8の改正", []],
+    ["a length of years after an era name that is not next to it", "令和になって3年", []],
   ];
   cases.forEach(([name, text, expected]) => {
     it(`${name}: ${text}`, () => assert.deepEqual(calendarOf(text), expected));
@@ -59,7 +70,7 @@ describe("calendarRuns", () => {
   });
 
   it("reads no date with no units", () => {
-    const none: CalendarUnits = { chained: [], positional: new Set(), year: new Set() };
+    const none: CalendarUnits = { chained: [], positional: new Set(), year: new Set(), era: [] };
     const [sentence] = buildDocument("a.md", "2026年9月30日\n", ja).sentences;
     assert.deepEqual(calendarRuns(sentence?.text ?? "", sentence?.tokens, sentence?.span.start ?? 0, none), []);
   });
@@ -134,7 +145,19 @@ describe("latin-spacing leaves dates out", () => {
     assert.deepEqual(spacing("# 報告\n\n対応は412件、残りは12件で、2025年 3年ぶりに開く。\n"), ["後ろの数字:空けています"]);
   });
 
-  it("still counts the space before a date, which is the writer's habit before any number", () => {
-    assert.deepEqual(spacing("# 報告\n\n対応は 412 件、残りは 12 件で、開始は9月です。\n"), ["後ろの数字:詰めています"]);
+  it("does not count the space before a date either, which belongs to the date", () => {
+    assert.deepEqual(spacing("# 報告\n\n対応は 412 件、残りは 12 件で、開始は9月です。\n"), []);
+    assert.deepEqual(spacing("# 報告\n\n対応は412件、残りは12件で、開始は 9月です。\n"), []);
+    assert.deepEqual(spacing("# 報告\n\n対応は 412 件、残りは 12 件で、会議は午後3時に始める。\n"), []);
+  });
+
+  it("reads a year after an era name as a date, packed or spaced", () => {
+    assert.deepEqual(spacing("# 報告\n\n対応は 412 件、残りは 12 件で、施行は令和8年です。\n"), []);
+    assert.deepEqual(spacing("# 報告\n\n対応は412件、残りは12件で、令和 3 年改正法による。\n"), []);
+  });
+
+  it("still counts a length of years that no era name comes right before", () => {
+    assert.deepEqual(spacing("# 報告\n\n対応は412件、残りは12件で、期間は 3 年です。\n"), ["後ろの数字:空けています", "前の数字:空けています"]);
+    assert.deepEqual(spacing("# 報告\n\n対応は412件、残りは12件で、令和になって 3 年です。\n"), ["後ろの数字:空けています", "前の数字:空けています"]);
   });
 });

@@ -1,0 +1,42 @@
+# 番号と組んで、題や設問に名前を付ける語。position は番号のどちら側に書くか。
+# before は番号のすぐ前（問3、図2）。語として照らす（「質問3」の「問」は照らさない）。後ろの語が助数詞や助詞なら数量として数える（図3枚、問3の）。
+# after は「第」と番号の後ろ（第1節、第2章）。その後ろの空白は題との区切りで、空け方の好みではない。字面どおりに照らす。
+id: numbered-label
+language: ja
+entries:
+  - pattern: 問
+    position: before
+  - pattern: 設問
+    position: before
+  - pattern: 項目
+    position: before
+  - pattern: 図
+    position: before
+  - pattern: 表
+    position: before
+  - pattern: 別表
+    position: before
+  - pattern: 別紙
+    position: before
+  - pattern: 様式
+    position: before
+  - pattern: 編
+    position: after
+  - pattern: 部
+    position: after
+  - pattern: 章
+    position: after
+  - pattern: 節
+    position: after
+  - pattern: 款
+    position: after
+  - pattern: 目
+    position: after
+  - pattern: 条
+    position: after
+  - pattern: 項
+    position: after
+  - pattern: 号
+    position: after
+  - pattern: 問
+    position: after

@@ -1,0 +1,10 @@
+# 元号。すぐ後ろ（空白 1 つまで）の数に日付の単位が続けば暦の年で（令和8年、令和 3 年、平成30年度）、年数という長さではない。
+# 字面どおりに照らす（「令和」は「令」「和」の二語に分かれることがある）。
+id: calendar-era
+language: ja
+entries:
+  - pattern: 令和
+  - pattern: 平成
+  - pattern: 昭和
+  - pattern: 大正
+  - pattern: 明治

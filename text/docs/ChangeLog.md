@@ -4,6 +4,32 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` leaves labels and whole dates out of the count (#170)
+
+A label followed by a space and its title is layout, not the writer's spacing habit, but it was counted and
+reported as the odd one out. These are no longer counted:
+
+- the numbers of a bulleted list that go up, even when numbers are skipped: outlines (`- 2-19 …`, `- 3 …`,
+  `- 3-1…`) and codes of one width, at least three digits, a few apart (`- 1122 医療費控除…`, `- 1124 …`). It
+  takes three items in a row. Two numbered items, plain numbers that count things (`- 3 ユーザー`, `- 5 チーム`,
+  `- 8 アカウント`; `- 100 ユーザー`, `- 200 チーム`, `- 300 アカウント`) and a list of counts (`- 3 件の修正`) still
+  count;
+- a number written right after a label word (`問3 ガス…`, `図2`), unless a counter or a particle follows it
+  (`図3枚`, `問3の`);
+- the space after a numbered division (`第1節 AI…`, `第2章 3つ…`). Without 第 (`1節 AI`) it still counts.
+
+The label words come from a new `numbered-label` word list: 問, 図, 表 and others are written before the number,
+and 章, 節, 条 and others after 第 and the number.
+
+Dates:
+
+- **An era year is a date** (`令和8年`, `令和 3 年改正法`, `平成30年度`). The era names come from a new
+  `calendar-era` word list. A short year with no era (`3年`) is still a length and still counts.
+- **The space in front of a date is no longer counted** (`は 9月`, `は9月`, `午後3時`). A date or a time now
+  counts for neither habit, as #290 asked.
+
+A noun followed by its value (`合計 3 件`, `内線 3461`) still counts, because it has the same shape as a count.
+
 ### `undefined-acronym` reads an acronym glossary's headwords as defined when their name follows them (#170)
 
 In a glossary of abbreviations, the headword is the acronym and its name is the definition right after it. The
