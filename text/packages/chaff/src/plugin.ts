@@ -370,6 +370,8 @@ export type RuleDefinition = {
   readonly message: Localized;
   /** 見つけ方ごとの message（Finding の variant で引く）。ほとんどの rule は持たない。 */
   readonly messages: Readonly<Record<string, Localized>>;
+  /** How a placeholder in name, why or how_to_fix reads where no finding fills it (explain, the rule reference). */
+  readonly placeholders?: Readonly<Record<string, Localized>>;
   /** 4 語と数値の対応。2 つ以上。未定義の段は normal に落ちる。spec §18.1。
    *  言語別の閾値を持つ rule（max-sentence-length）は、読み込み時に言語で平坦化済み。 */
   readonly levels: LevelTable;
