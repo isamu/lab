@@ -55,7 +55,7 @@ const SURNAME_IN_CAPITALS = String.raw`[A-Z]+(?:['’-][A-Z]+)*(?![\p{L}\p{N}_])
  * 肩書きの後ろの大文字の語が姓と読めるのは、名前の形のときだけ。発言者の印（Senator HAWLEY.、Chairman JORDAN:）か、
  * 日本政府の英文が「姓 名」の順に書くローマ字の名前（Prime Minister ABE Shinzo）。the President NASA memo の NASA は略語。
  */
-const NAME_AFTER_SURNAME = String.raw`(?=[.:](?:\s|$)|\s+\p{Lu}\p{Ll}+(?![\p{L}\p{N}_]))`;
+const NAME_AFTER_SURNAME = String.raw`(?=[.:]|\s+\p{Lu}\p{Ll}+(?![\p{L}\p{N}_]))`;
 
 // 強調の記号は空白に置き換えてある（**3:30** PM）ので、部品の間の空白は数を問わない。
 const patternsOf = (words: NotationWords): readonly RegExp[] => [
