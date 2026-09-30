@@ -8,8 +8,8 @@
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2
 aozora-kishida-kamifusen  clean
-aozora-soseki-yume-juya  latin-spacing 2
-aozora-takuboku-ichiaku-no-suna  latin-spacing 2
+aozora-soseki-yume-juya  clean
+aozora-takuboku-ichiaku-no-suna  clean
 aozora-terada-tensai-to-kokubo  clean
 apidatagov-developer-manual  contraction-consistency 4, max-sentence-length 5, proper-noun-density 1
 arxiv-2609-27842-genai-assessment  max-sentence-length 18, ngram-repetition 1, undefined-acronym 10

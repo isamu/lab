@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### The corpus stores 青空文庫 texts without their colophon (#170)
+
+A new `aozora` format for the corpus manifest drops the blocks 青空文庫 closes every file with (底本, 入力, 校正, the
+dates, 青空文庫作成ファイル and the note on notation), as the `gutenberg` format drops Project Gutenberg's header and
+licence: they are 青空文庫's record of the file, not the author's text, and `latin-spacing` read their spacing as the
+work's. The blocks are told by the classes 青空文庫 marks them with; the rest of the page is converted as HTML. The four
+青空文庫 documents use it.
+
 ### `oxford-comma-consistency` no longer reads an example aside or an "and" inside one item as a list (#170)
 
 A list needs three items, and four shapes made two items, or an "and" inside one item, look like three:
