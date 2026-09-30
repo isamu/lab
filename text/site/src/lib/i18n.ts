@@ -12,7 +12,7 @@ const ja = {
   genres: "ジャンル",
   pickGenre: "文書の種類を選ぶ（ジャンルの一覧）",
   genresIntro:
-    "文書の種類（ジャンル）を選ぶと、その種類の書き方に合わせて見ます。契約書なら長い一文を咎めず、条項の番号の抜けや、無い条項への参照を見ます。設定は要りません。",
+    "文書の種類（ジャンル）を選ぶと、ルールと閾値をその種類に合わせて見ます。契約書なら、一文の長さの上限を法務の文書に合わせ、条項の番号の抜けや無い条項への参照も見ます。設定は要りません。",
   genresSuggest:
     "ジャンルを決めていない文書は、技術ブログ（blog/tech）として見ます。別の種類に見えるときは、画面がそう言って、試すジャンルを挙げます。",
   genreProfile: "この種類の書き方の知識で読む:",
@@ -54,7 +54,7 @@ const en: Record<UiKey, string> = {
   genres: "Genres",
   pickGenre: "Pick the kind of document (the genres)",
   genresIntro:
-    "Pick the kind of document (the genre) and chaff checks it the way that kind is written. A contract is not faulted for its long sentences; its clause numbering and its references to clauses are checked instead. No settings needed.",
+    "Pick the kind of document (the genre) and chaff sets its rules and limits to that kind. A contract gets sentence limits fit for legal writing, and its clause numbering and references to clauses are checked too. No settings needed.",
   genresSuggest:
     "A document with no genre set is checked as a tech blog post (blog/tech). When it looks like another kind, the screen says so and names the genre to try.",
   genreProfile: "Reads with the knowledge of this kind of document:",

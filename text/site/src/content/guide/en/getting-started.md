@@ -9,9 +9,9 @@ npx chaffjs article.md
 
 ## Pick the kind of document
 
-A contract is written in long sentences, a poem repeats its words, and a transcript keeps what was said.
-Each is how that kind of document is written, not something to fix.
-Pick the kind of document (the genre) and chaff checks it the way that kind is written, with no settings to write.
+A contract's sentences run longer than a blog's, a poem repeats its words, and a transcript keeps what was said.
+Each is how that kind of document is written.
+Pick the kind of document (the genre) and chaff sets its rules and limits to that kind, with no settings to write.
 
 ```bash
 npx chaffjs --genre legal/contract contract.md   check it as a contract, this run only
