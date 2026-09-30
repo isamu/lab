@@ -23,7 +23,7 @@ caa-mokebanashi-chuikanki  max-sentence-length 3
 cdc-co-poisoning-basics  agentless-passive 7, concrete-evidence-density 5, contraction-consistency 2, heading-echo 1, max-sentence-length 2, proper-noun-density 1
 cfpb-blog-imposter-scams  agentless-passive 3, max-sentence-length 6, preamble-length 1, proper-noun-density 1, undefined-acronym 3
 chrome-blog-pwa-origin-migration  contraction-consistency 1, heading-echo 1, max-sentence-length 5, proper-noun-density 1
-chrome-blog-pwa-origin-migration-ja  latin-spacing 1, max-sentence-length 4
+chrome-blog-pwa-origin-migration-ja  latin-spacing 1, max-sentence-length 4, stray-space 4
 cisa-scuba-teams  bold-density 9, contraction-consistency 4, max-paragraph-length 2, max-sentence-length 32, ngram-repetition 1, numbering-gap 1, proper-noun-density 1, undefined-acronym 5
 cloudgov-changelog-2023-11-27  max-sentence-length 2, proper-noun-density 1, undefined-acronym 3
 cloudgov-security-ir-guide  agentless-passive 31, concrete-evidence-density 4, contraction-consistency 2, max-sentence-length 24, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 10
@@ -53,7 +53,7 @@ da-privacy-policy  latin-spacing 1
 da-recruitment-career-faq  max-sentence-length 1
 da-recruitment-office-visit  max-kanji-continuous 4
 da-service-design-guidelines-2  agentless-passive 4, concrete-evidence-density 4, dangling-reference 1, latin-spacing 2, max-kanji-continuous 3, max-sentence-length 31, no-doubled-joshi 1, undefined-acronym 7
-dailymed-advil-otc-label  max-sentence-length 4, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 1, undefined-acronym 6
+dailymed-advil-otc-label  max-sentence-length 4, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 1, undefined-acronym 5
 denkiyagi-ryohi-kitei  clean
 denkiyagi-shugyo-kisoku  clean
 dwango-nicolive-manifest-generator  latin-spacing 9, max-sentence-length 1, undefined-acronym 3
@@ -99,7 +99,7 @@ kantei-unga81-general-debate-speech-en  empty-intensifier 1, max-paragraph-lengt
 kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
 kimino-cleanup-notice  max-kanji-continuous 2, max-sentence-length 2
 kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1
-kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1
+kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1, stray-space 1
 kimino-staff-exam-guide  clean
 kobayashi-nento-shokan-2026  max-paragraph-length 2, max-sentence-length 2
 kobayashi-press-hananoa-2026-02  agentless-passive 2, max-paragraph-length 2, max-sentence-length 1, no-mixed-desumasu 2, undefined-acronym 3
@@ -118,7 +118,7 @@ mhlw-norovirus-qa  latin-spacing 1, max-kanji-continuous 12, max-paragraph-lengt
 mhlw-pubcomment-rodohoken  agentless-passive 1, max-kanji-continuous 5, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
 minpo.txt  clean
 mit-ocw-6-0001-syllabus  agentless-passive 13, max-paragraph-length 2, max-sentence-length 6, proper-noun-density 1
-mlit-press-planned-suspension  max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 4, no-doubled-joshi 2
+mlit-press-planned-suspension  max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 4, no-doubled-joshi 2, stray-space 1
 myplate-vegetable-cheese-soup  clean
 nasa-knows-spacewalk-k4  contraction-consistency 1, heading-echo 1, max-paragraph-length 7, proper-noun-density 1
 ndl-copy-fee-revision-2026  clean
@@ -128,7 +128,7 @@ nextcloud-user-2fa  contraction-consistency 2, max-sentence-length 4
 nih-research-matters-hpv-one-dose  max-paragraph-length 2, max-sentence-length 7, proper-noun-density 1
 nsf-19-582-reu-solicitation  agentless-passive 154, concrete-evidence-density 3, expletive-construction 4, heading-echo 1, max-paragraph-length 11, max-sentence-length 207, ngram-repetition 1, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
 nstac-microdata-forum  agentless-passive 1, latin-spacing 3, max-kanji-continuous 9, max-sentence-length 2, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
-nta-kids-mijika-na-zeikin  heading-echo 2, latin-spacing 1, no-mixed-desumasu 3
+nta-kids-mijika-na-zeikin  heading-echo 2, latin-spacing 1, no-mixed-desumasu 3, stray-space 1
 nta-taxanswer-1120  latin-spacing 10, max-kanji-continuous 8, max-sentence-length 6, ngram-repetition 1, no-doubled-joshi 4
 nta-tsutatsu-shohi-05-01  clean
 nttcom-onboarding-week1  agentless-passive 1, concrete-evidence-density 6, hiragana-fukushi 2, latin-spacing 1, max-sentence-length 1, no-doubled-joshi 1, undefined-acronym 3, unqualified-superlative 2
@@ -165,10 +165,10 @@ utelecon-account-leave  concrete-evidence-density 3, latin-spacing 1, max-senten
 utokyo-gakui-kisoku  dangling-reference 1
 voa-le-lunar-trailblazer  max-sentence-length 8, proper-noun-density 1, title-case-consistency 1
 w3c-secure-contexts  excessive-hedging 1, heading-echo 2, max-sentence-length 26, ngram-repetition 1, oxford-comma-consistency 1, proper-noun-density 1
-wikipedia-ja-talk-oden  heading-echo 1, latin-spacing 4, max-paragraph-length 3, max-sentence-length 6, no-doubled-joshi 3
+wikipedia-ja-talk-oden  heading-echo 1, latin-spacing 4, max-paragraph-length 3, max-sentence-length 6, no-doubled-joshi 3, stray-space 1
 wikisource-lincoln-letters-greeley  agentless-passive 4, max-paragraph-length 1, max-sentence-length 32, proper-noun-density 1
 wikivoyage-belgian-coast-tram  expletive-construction 6, max-paragraph-length 23, max-sentence-length 37, proper-noun-density 1
-wikivoyage-ja-shikoku-henro  latin-spacing 1, max-kanji-continuous 1
+wikivoyage-ja-shikoku-henro  latin-spacing 1, max-kanji-continuous 1, stray-space 1
 wikivoyage-ja-shimoda  latin-spacing 3
 wikivoyage-loop-art-tour  max-paragraph-length 7, max-sentence-length 7, proper-noun-density 1, title-case-consistency 1, unqualified-superlative 2
 wikivoyage-magnificent-mile  contraction-consistency 5, max-paragraph-length 6, max-sentence-length 8, proper-noun-density 1

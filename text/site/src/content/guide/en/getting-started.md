@@ -87,7 +87,7 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  37 rules did not run:
+  38 rules did not run:
       adverb-overuse (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
@@ -121,6 +121,7 @@ article.md   blog/tech · English   genre from the default
       section-length-uniformity (still experimental)
       sentence-initial-conjunction-run (still experimental)
       sentence-rhythm (still experimental)
+      stray-space (not a rule for en)
       taigen-dome-in-prose (not a rule for en)
       title-case-consistency (still experimental)
       total-mismatch (still experimental)

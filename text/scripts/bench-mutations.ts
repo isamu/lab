@@ -16,7 +16,7 @@ import {
   type PlantContext,
 } from "./bench-text.ts";
 import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinParagraphs } from "./bench-mutations-layout.ts";
-import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa } from "./bench-mutations-ja.ts";
+import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa, strayParticleSpace } from "./bench-mutations-ja.ts";
 import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn } from "./bench-mutations-en.ts";
 import * as phrasing from "./bench-mutations-phrasing.ts";
 
@@ -369,6 +369,7 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "no-nested", rule: "no-doubled-joshi", languages: ["ja"], plant: nestNo },
   { id: "gloss-dropped", rule: "undefined-acronym", languages: ["ja", "en"], plant: dropGloss },
   { id: "latin-spaced", rule: "latin-spacing", languages: ["ja"], plant: spaceLatin },
+  { id: "space-strayed", rule: "stray-space", languages: ["ja"], plant: strayParticleSpace },
   { id: "contracted", rule: "contraction-consistency", languages: ["en"], plant: contract },
   { id: "paragraphs-joined", rule: "max-paragraph-length", languages: ["ja", "en"], plant: joinParagraphs },
   { id: "heading-echoed", rule: "heading-echo", languages: ["ja", "en"], plant: echoHeading },
