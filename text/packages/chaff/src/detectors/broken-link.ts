@@ -59,11 +59,15 @@ const REFERENCE_LIKE = /(?<![\\A-Za-z0-9_\]])\[([^[\]\n]+)\]\[([^[\]\n]*)\]/gu;
 /** 数だけの括弧（[1][2]、[3, 4]）は、参照の記法ではなく文献の番号を並べたもの。 */
 const CITATION_NUMBERS = /^[\d\s,，、–-]+$/u;
 
+/** 画像の参照（`![alt][label]`）の頭の印。指摘の範囲に含める。 */
+const IMAGE_MARK = "!";
+
 export const unresolvedReferences = (source: string, markup: Markup): Span[] =>
   markup.texts.flatMap((text) =>
     [...source.slice(text.start, text.end).matchAll(REFERENCE_LIKE)]
       .filter((match) => !CITATION_NUMBERS.test(match[1] ?? ""))
-      .map((match) => ({ start: text.start + match.index, end: text.start + match.index + match[0].length })),
+      .map((match) => ({ start: text.start + match.index, end: text.start + match.index + match[0].length }))
+      .map((span) => (source.charAt(span.start - 1) === IMAGE_MARK ? { start: span.start - 1, end: span.end } : span)),
   );
 
 const emptyLinks = (doc: ProseDocument, markup: Markup): Finding[] =>
