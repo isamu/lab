@@ -4,6 +4,22 @@ Newest first.
 
 ## Unreleased
 
+### `numbering-gap`: a decimal before a unit symbol is an amount, and 「1.4 本利用ルール」 is a heading number (#170)
+
+A line opening with a decimal followed by a unit symbol ("1.5 mM in each of the four deoxyribonucleoside
+triphosphates", then "0.25 mM in dithiothreitol") was read as dotted section 1.5, then 0.25, and reported as a gap
+in a US patent. Both language packages now carry a `measure-unit` lexicon (mM, mg, µL, kDa, °C, ℃, % and other
+symbols); a dotted number followed by one of them is an amount, not a section. A symbol is only matched when no letter,
+digit or hyphen follows, so "2.1 mmap" and "5.2.2 min-fresh" stay section titles, and symbols that start with a
+capital letter (Da, Pa, GB) are left out because a section title starts with a capital too.
+
+In Japanese, 「### 1.4 本利用ルールが適用されないコンテンツについて」 was read as 1.4 counted in 本 (the counter for long
+things), so the heading was no section and the jump from 「1.1.」 to 「1.4」 in デジタル庁のコピーライトポリシー went
+unreported. After a number that opens a line, a counter read across the space is no longer taken when the text after
+the space, read on its own, opens with a noun prefix and a noun (本規約, 本サービス, 本利用ルール). 「3 本の鉛筆」 is still 3 counted in 本, and
+quantities inside a sentence are read as before (「10 両編成」). The gap is now reported, and 「1.4 本ガイドブックの概要」 in
+デジタル庁's area data model is read as section 1.4.
+
 ### A library caller gets the BOM and CRLF / CR handling too (#170)
 
 Removing a leading BOM and reading CRLF and CR-only line ends as LF happened only where the command line read a file.

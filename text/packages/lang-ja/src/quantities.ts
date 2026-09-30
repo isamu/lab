@@ -93,6 +93,17 @@ const LOOKAHEAD = 8;
  */
 const rereadAfterSpace = (number: string, rest: string): Morph[] => morphemes(toHalfWidth(number + rest.slice(0, LOOKAHEAD))) ?? [];
 
+/**
+ * 空白の後ろだけを読むと、名詞につく接頭詞と名詞で始まる（「1.4 本利用ルール」「1.2 本規約」の「本」）。詰めて読み直すと
+ * 助数詞に見えるが、行頭の番号の後ろなら、書き手が空けたのは番号と題のあいだ。「3 本の鉛筆」の「本」は単独で名詞、
+ * 「0.5 枚の紙」の「枚」は数につく接頭詞と読まれるので、どちらも数量のまま。
+ * 文中の数量には使わない。「10 両編成」の「両」も単独では名詞につく接頭詞と読まれる。
+ */
+const opensWithPrefix = (rest: string): boolean => {
+  const [first, second] = morphemes(toHalfWidth(rest.slice(0, LOOKAHEAD))) ?? [];
+  return first?.pos === "接頭詞" && first.detail1 === "名詞接続" && second?.pos === "名詞";
+};
+
 const unitAfterSpace = (number: string, rest: string): string | undefined => {
   const next = rereadAfterSpace(number, rest).find((morph) => morph.start >= number.length);
   return next !== undefined && isCounter(next) ? next.surface : undefined;
@@ -285,5 +296,5 @@ const countedByTableAfter = (rest: string): boolean => {
  */
 export const countedAfter = (number: string, rest: string): boolean => {
   if (!isReady()) return countedByTableAfter(rest);
-  return unitAfterSpace(number, rest) !== undefined || multiplierAfter(number, rest);
+  return (unitAfterSpace(number, rest) !== undefined && !opensWithPrefix(rest)) || multiplierAfter(number, rest);
 };
