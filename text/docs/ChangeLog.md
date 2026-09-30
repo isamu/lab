@@ -17,6 +17,63 @@ dropped it, so every position in the file was off by one: `# Notes` was read as 
 sentence lost its last character.
 The command line's output is otherwise unchanged.
 
+### Japanese text written with 「，．」 is split into sentences at 「．」 (#170)
+
+Papers and university pages often write 「，」 and 「．」 for 「、」 and 「。」. The Japanese adapter did not count 「．」 as
+closing a sentence, so every sentence on one line ran into one: a whole abstract was measured as a single sentence by
+`max-sentence-length`, and its middle dots were counted together by `no-nakaguro-parallel`. 「．」 now closes a
+sentence after kana, kanji, 「ー」 or a closing bracket (「低下することがある．」「（表1）．」). After a digit it is a number or a
+decimal point, so 「１．はじめに」 and 「３．５％」 are read as before. Corpus round 12 added Japanese papers from 保健医療科学 and
+自然言語処理 (J-STAGE, CC BY 4.0) and more documents for genres the corpus had few of: a Japanese licence and terms, US
+patents, English FAQs, speeches, a novel, poems, an essay, a play and a tech blog post.
+
+
+## 0.17.0 — 2026-09-30
+
+`legal/statute` now checks numbering, references and definitions the way `legal/contract` does, without
+`--experimental`. Two new experimental rules: `stray-space` finds a space inside a Japanese phrase, and `agreement-slip`
+finds English words that do not agree ("a decisions", "Your can"). Many false reports are gone. A paragraph of many short
+sentences is no longer too long. Japanese `heading-echo` counts content words. Speaker names in plays and minutes are not
+sentences. Acronym glossaries, emphasis capitals, J-STAGE and names after a title are not undefined acronyms. Example
+asides are not lists. 同項 after another law is not looked up here, and curly contractions count. Genre suggestions are
+more careful, the `docs/glossary` preset fits glossaries, and every corpus document is now checked with its preset.
+
+📦 [`chaffjs@0.17.0`](https://www.npmjs.com/package/chaffjs/v/0.17.0) ·
+[`@chaffjs/lang-ja@0.16.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.16.0) ·
+[`@chaffjs/lang-en@0.15.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.15.0)
+
+### `legal/statute` checks numbering, references and definitions without `--experimental` (#340)
+
+`legal/statute` now turns on the structure rules `legal/contract` does: `numbering-gap`, `dangling-reference`,
+`duplicate-definition`, `date-weekday-mismatch` and `total-mismatch`. A 規程 with a missing 第3条 and a reference to
+a 第9条 that is not there gets both findings under `--genre legal/statute`, as it did under `legal/contract`. The
+statutes in the corpus (the e-Gov laws with 「削除」 articles and 枝番号, the UK Acts, 16 CFR 310, a 通達 and the
+規程・規則 documents) give these rules no new findings. Two misfires the measurement found are fixed:
+
+- 「大学院学則第9条の2」 is an article of another document: 学則 joins the words that end a document's name.
+- A definition of a term as used at an address (「規則第7条に規定する『個人データ』とは」, 「法第31条第1項第1号の
+  『本人の同意』とは」, 「前項第1号に規定する『報道』とは」) is scoped to that article, like 「前項に規定する」 already
+  was, and no longer counts as a second definition of the term.
+
+### `undefined-acronym` reads an acronym glossary's headwords as defined when their name follows them (#170)
+
+In a glossary of abbreviations, the headword is the acronym and its name is the definition right after it. The
+rule reported the headword anyway. An acronym now counts as defined when it stands alone as a term and the text
+directly attached to it spells it out:
+
+- a heading or a line of its own (`## AFD`, `**AFD**`), and the next line;
+- a table cell (`| AFD | Area Forecast Discussion |`), and the cell next to it;
+- a bold term or a list term with a separator (`**AFD**: …`, `- AFD — …`), and the text after it.
+
+A plain line starting "RTO: …" is not read as an entry, since notes are written that way too, and nothing inside a
+code block (fenced or indented) or the front matter counts.
+
+The name is checked the way a bracketed name is: its initials must match the acronym exactly ("At or above" for AOA),
+or a single word must hold its letters in order ("Above" for ABV). A name that does not match, or a Japanese name, still
+leaves the acronym reported, as does an acronym used in prose with no expansion. The corpus gains the National Weather
+Service glossary, letter A (`docs/glossary`); its headwords whose names match are no longer reported, and the acronyms
+inside definitions still are.
+
 ### `max-paragraph-length` no longer reports a paragraph of many short sentences (#170)
 
 The rule counted sentences only, so text written in short sentences (children's pages, a list of releases, a Q&A)
