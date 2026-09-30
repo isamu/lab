@@ -100,7 +100,8 @@ const SINGLE_CAPITAL = /^\p{Lu}$/u;
 export const isLetterName = (first: Token, second: Token, opensSentence: boolean): boolean =>
   !opensSentence && SINGLE_CAPITAL.test(first.surface) && !sameWord(first, second);
 
-const opensSentence = (tokens: readonly Token[], at: number): boolean => !tokens.slice(0, at).some((token) => LETTER.test(token.surface));
+/** 文の最初の、字のある語の位置。at 語目より前に字のある語が無ければ、at 語目は文の書き出し。 */
+const firstWordIndex = (tokens: readonly Token[]): number => tokens.findIndex((token) => LETTER.test(token.surface));
 
 const repeatsPrevious = (tokens: readonly Token[], at: number): boolean => {
   const [previous, token] = [tokens[at - 1], tokens[at]];
@@ -120,15 +121,18 @@ export const opensPhrase = (tokens: readonly Token[], at: number, phrases: Lexic
     return words.length > 1 && surfacesOf(tokens.slice(at, at + words.length)) === surfacesOf(words);
   });
 
-export const doubledIn = (source: string, tokens: readonly Token[], spaced: boolean, allowed: Lexicon, phrases: Lexicon = []): Doubled[] =>
-  tokens.flatMap((second, index) => {
+export const doubledIn = (source: string, tokens: readonly Token[], spaced: boolean, allowed: Lexicon, phrases: Lexicon = []): Doubled[] => {
+  const firstWord = firstWordIndex(tokens);
+  return tokens.flatMap((second, index) => {
     const first = tokens[index - 1];
     if (first === undefined || !doubledAt(source, first, second, spaced)) return [];
     if (isAllowed(tokens, index - 1, allowedAt(tokens, index - 1, allowed))) return [];
     if (!sameWord(first, second) && opensPhrase(tokens, index, phrases)) return [];
-    const opens = opensSentence(tokens, index - 1);
+    // first は字のある語なので、firstWord は見つかっていて index - 1 以下。
+    const opens = firstWord >= index - 1;
     return isNameBefore(first, second, opens) || isLetterName(first, second, opens) ? [] : [{ first, second }];
   });
+};
 
 /** 印を挟んでいても（the [the）、見せるのは二語だけ。 */
 const wordOf = (doubled: Doubled, spaced: boolean): string => [doubled.first.surface, doubled.second.surface].join(spaced ? " " : "");

@@ -7,7 +7,7 @@ import { applyLevel } from "./config/write.ts";
 import { buildDocument, teamRules } from "./document.ts";
 import { guessLanguage } from "./detect.ts";
 import { collectTargets, readDocumentFile } from "./files.ts";
-import { BASELINE_FILE, fingerprint, readBaseline, splitByBaseline, writeBaseline } from "./baseline.ts";
+import { BASELINE_FILE, fingerprints, readBaseline, splitByBaseline, writeBaseline } from "./baseline.ts";
 import { applySuppressions } from "./stet.ts";
 import { renderSuppressions, type PerFile } from "./render/suppressions.ts";
 import { clock, describeChange, snapshotOf, watchPaths, type Snapshot } from "./watch.ts";
@@ -37,7 +37,7 @@ import { ruleProblems } from "./config/rule-problems.ts";
 import { nameProblems } from "./config/name-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRules } from "./run.ts";
-import type { Level, RuleDefinition } from "./plugin.ts";
+import type { Finding, Level, RuleDefinition } from "./plugin.ts";
 import { CLI_TEXT, type CliText, type GenreSource } from "./cli-text.ts";
 import { hostLanguage, sharedLanguage, uiLanguageOf, type UiLanguage } from "./ui.ts";
 import { profileFor } from "./profile/for-file.ts";
@@ -82,7 +82,8 @@ type Inspected = {
   readonly genre: string;
   readonly outcome: FileOutcome;
   readonly perFile: PerFile;
-  readonly all: readonly string[];
+  /** stet で黙らせたものを除いた、baseline で棚上げする前の指摘。fingerprint は baseline を書くときだけ作る。 */
+  readonly kept: readonly Finding[];
 };
 
 const inspect = async (path: string, config: Config, argv: readonly string[]): Promise<Inspected> => {
@@ -114,7 +115,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
     genre,
     outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
     perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless },
-    all: applied.kept.map((finding) => fingerprint(path, finding)),
+    kept: applied.kept,
   };
 };
 
@@ -233,7 +234,7 @@ const runBaseline = async (targets: readonly string[], argv: readonly string[]):
     return 1;
   }
   const results = await Promise.all(paths.map((path) => inspect(path, config, [...argv, "--show-baseline"])));
-  const entries = results.flatMap((result) => result.all);
+  const entries = results.flatMap((result) => fingerprints(result.outcome.path, result.kept));
   const file = join(process.cwd(), BASELINE_FILE);
   writeBaseline(file, entries);
   console.log(hostText(config).baselineDone(paths.length, entries.length, BASELINE_FILE).join("\n"));

@@ -168,14 +168,19 @@ const isUncountedNumber = (chars: readonly string[], index: number): boolean => 
   return left === ORDINAL_PREFIX || (isJapanese(left) && isCode(chars, next));
 };
 
-const boundaryAt = (chars: readonly string[], index: number): Omit<Boundary, "offset"> | undefined => {
-  if (isUncountedNumber(chars, index)) return undefined;
+const candidateAt = (chars: readonly string[], index: number): Omit<Boundary, "offset"> | undefined => {
   const [left, right, after] = [chars[index], chars[index + 1], chars[index + 2]];
   const touching = latinBeside(left, right, "before-digit") ?? leftRunBeside(chars, index, right);
   if (touching !== undefined) return { kind: touching, spaced: false };
   if (right !== " ") return undefined;
   const spaced = latinBeside(left, after, "before-digit") ?? leftRunBeside(chars, index, after);
   return spaced === undefined ? undefined : { kind: spaced, spaced: true };
+};
+
+// isUncountedNumber は数字の並びを端まで読む。境目の候補でだけ聞けば、並びの字ごとではなく並びごとに一度で済む。
+const boundaryAt = (chars: readonly string[], index: number): Omit<Boundary, "offset"> | undefined => {
+  const candidate = candidateAt(chars, index);
+  return candidate === undefined || isUncountedNumber(chars, index) ? undefined : candidate;
 };
 
 /**
