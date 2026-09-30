@@ -102,6 +102,7 @@ The Client may terminate this Agreement if the Supplier breaches Section 9.
 $ npx chaffjs contract.txt --experimental --compact
 
 contract.txt   blog/tech · English   genre from the default
+   Looks like: Contract and terms. Try --genre legal/contract
 
   4:49    error   "Section 3" (address 3) is not in this document
                   dangling-reference
@@ -114,6 +115,9 @@ contract.txt   blog/tech · English   genre from the default
 
 4 findings, 9 rules not run
 ```
+
+The line under the first one suggests checking it as a contract.
+`legal/contract` turns these three rules on, so `npx chaffjs contract.txt --genre legal/contract` reports the same four without `--experimental`.
 
 A reference into another document, such as "section 9 of the Companies Act 2006", is not looked up here.
 Numbers are compared only among siblings under the same parent.
@@ -202,6 +206,8 @@ The two `error` lines come from the two changes.
 Line 10 is the skipped subsection, and line 14 is the reference to a section that is not there.
 The `warning` and `info` lines are about readability; long sentences are normal in legislation.
 To check only the structure of an Act, read the `error` lines.
+
+Run it as a statute, with `--genre legal/statute --experimental`, and the limits are a statute's: only the two `error` lines are left.
 
 Undo the two changes and run `fixed.txt`: the `error` lines are gone.
 

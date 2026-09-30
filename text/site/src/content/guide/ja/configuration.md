@@ -61,7 +61,7 @@ genre: legal/contract
 rules:
 ```
 
-一緒にできる `.gitignore` には `.env` が入っています。
+一緒にできる `.gitignore` には `.env*` が入っています。
 意味を読む検査の API key を `.env` に書いても、うっかり commit しないためです。
 
 ## ジャンルと言語を決める
@@ -152,7 +152,7 @@ $ npx chaffjs explain max-sentence-length
     relaxed  140
     off      見ない
 
-  この数字は 既定 のものです。ほかに business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media で別の数字を持っています。
+  この数字は 既定 のものです。ほかに business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / legal/judgment / academic で別の数字を持っています。
 
   いまは normal です。
 
@@ -303,7 +303,12 @@ npx chaffjs rules --json         いまの設定を JSON で出す
   "use_for": [
     "blog",
     "business",
-    "technical"
+    "technical",
+    "legal",
+    "docs",
+    "academic",
+    "literature",
+    "speech"
   ],
   "levels": {
     "strict": 70,
