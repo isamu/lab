@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
 import type { Token } from "chaffjs/plugin";
+import { straightApostrophes } from "./apostrophe.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { blankLongRuns } from "./long-runs.ts";
 import { lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
@@ -236,6 +237,7 @@ const withSentenceInitialCase = (tagger: Tagger, text: string, entries: readonly
 export const tokenize = (text: string): Token[] | undefined => {
   const tagger = state.ready;
   if (tagger === undefined) return undefined;
-  const words = blankLongRuns(text, RUN_LIMIT);
+  // 語は解析させた字（don't）で返す。語彙表の語と同じ字で比べられる。span は本文を指したまま。
+  const words = straightApostrophes(blankLongRuns(text, RUN_LIMIT));
   return locate(words, withSentenceInitialCase(tagger, words, tagged(tagger, words)));
 };

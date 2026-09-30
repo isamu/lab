@@ -1,7 +1,7 @@
 18f-content-voice-and-tone  agentless-passive 1, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 7, no-em-dash 1
 18f-engineering-code-review  max-sentence-length 1, undefined-acronym 4
 18f-engineering-on-call  excessive-hedging 1, max-sentence-length 15
-18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 6, excessive-hedging 2, expletive-construction 5, max-paragraph-length 1, max-sentence-length 43, oxford-comma-consistency 1, preamble-length 1, title-case-consistency 2, undefined-acronym 3
+18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 6, excessive-hedging 2, expletive-construction 6, max-paragraph-length 1, max-sentence-length 43, preamble-length 1, title-case-consistency 2, undefined-acronym 3
 18f-handbook-projects-in-distress  agentless-passive 16, max-paragraph-length 1, max-sentence-length 28, undefined-acronym 6
 18f-handbook-travel  agentless-passive 21, contraction-consistency 1, max-sentence-length 14, title-case-consistency 2, undefined-acronym 5
 18f-handbook-travel-faq  agentless-passive 76, max-paragraph-length 1, max-sentence-length 65, proper-noun-density 1, undefined-acronym 16
@@ -75,13 +75,13 @@ govuk-adr-0014-replace-terraform-cloud  max-sentence-length 1, proper-noun-densi
 govuk-cddo-roadmap-2022-2025  agentless-passive 22, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 88, ngram-repetition 1, proper-noun-density 1, undefined-acronym 11
 govuk-guidance-academy-senior-pay  agentless-passive 37, concrete-evidence-density 16, max-sentence-length 21, ngram-repetition 1, oxford-comma-consistency 1, unqualified-superlative 3
 govuk-incident-safe-browsing  agentless-passive 16, concrete-evidence-density 4, contraction-consistency 2, max-sentence-length 10, proper-noun-density 1, title-case-consistency 2, undefined-acronym 3
-govuk-style-guide-a-to-z  agentless-passive 41, concrete-evidence-density 5, dangling-reference 1, heading-echo 22, max-sentence-length 23, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 39
+govuk-style-guide-a-to-z  agentless-passive 50, concrete-evidence-density 5, dangling-reference 1, expletive-construction 6, heading-echo 22, max-sentence-length 23, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 39
 gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1
 gsi-maps-smartphone-howto  max-paragraph-length 1
 gutenberg-civil-disobedience  adverb-overuse 1, excessive-hedging 1, expletive-construction 11, max-paragraph-length 26, max-sentence-length 74, repeated-sentence-head 1, unqualified-superlative 5
 gutenberg-frost-a-boys-will  max-sentence-length 4, proper-noun-density 1
-gutenberg-importance-of-being-earnest  adverb-overuse 1, excessive-hedging 3, expletive-construction 22, max-paragraph-length 83, max-sentence-length 25, ngram-repetition 1, proper-noun-density 1, unqualified-superlative 5
-gutenberg-yellow-wallpaper  expletive-construction 18, max-sentence-length 14, no-em-dash 1, sentence-initial-conjunction-run 1, unqualified-superlative 2
+gutenberg-importance-of-being-earnest  adverb-overuse 1, excessive-hedging 3, expletive-construction 25, max-paragraph-length 83, max-sentence-length 25, ngram-repetition 1, proper-noun-density 1, unqualified-superlative 5
+gutenberg-yellow-wallpaper  expletive-construction 20, max-sentence-length 14, no-em-dash 1, sentence-initial-conjunction-run 1, unqualified-superlative 2
 ietf-draft-httpapi-ratelimit-headers-10  max-paragraph-length 1, max-sentence-length 61, ngram-repetition 1, proper-noun-density 1, undefined-acronym 14
 jma-faq-typhoon  agentless-passive 2, concrete-evidence-density 4, max-paragraph-length 1, ngram-repetition 1
 jma-tokubetsu-keiho  max-sentence-length 2
@@ -97,7 +97,7 @@ kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph
 kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1
 kimino-staff-exam-guide  clean
 kobayashi-nento-shokan-2026  max-paragraph-length 2, max-sentence-length 2
-kobayashi-press-hananoa-2026-02  agentless-passive 2, latin-spacing 2, max-paragraph-length 2, max-sentence-length 1, no-mixed-desumasu 2, undefined-acronym 3
+kobayashi-press-hananoa-2026-02  agentless-passive 2, max-paragraph-length 2, max-sentence-length 1, no-mixed-desumasu 2, undefined-acronym 3
 koenote-requirements  latin-spacing 56, undefined-acronym 6
 koho-tokyo-2026-06-suigai  max-kanji-continuous 1, max-paragraph-length 1, no-mixed-desumasu 2
 kojin.txt  clean
@@ -139,9 +139,9 @@ saikosai-h26-09-02-nagano  agentless-passive 1, max-paragraph-length 1, max-sent
 saikosai-s57-09-28-shorai-kyufu  hiragana-fukushi 1, max-kanji-continuous 2, max-sentence-length 3, no-doubled-joshi 1
 soumu-kokumin-cyber-glossary-a  agentless-passive 4, heading-echo 1, max-sentence-length 2, ngram-repetition 1, undefined-acronym 3
 soumu-kokumin-cyber-phishing  concrete-evidence-density 3, latin-spacing 7, max-sentence-length 6
-soumu-wp-r06-ai-booms  agentless-passive 1, latin-spacing 2, max-sentence-length 2, undefined-acronym 3
-soumu-wp-r06-ai-rules-japan  agentless-passive 2, latin-spacing 3, max-sentence-length 6, no-doubled-joshi 1
-soumu-wp-r06-misinformation  agentless-passive 7, latin-spacing 2, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
+soumu-wp-r06-ai-booms  agentless-passive 1, max-sentence-length 2, undefined-acronym 3
+soumu-wp-r06-ai-rules-japan  agentless-passive 2, latin-spacing 1, max-sentence-length 6, no-doubled-joshi 1
+soumu-wp-r06-misinformation  agentless-passive 7, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
 sre-next-bunsho-kanri  agentless-passive 1
 sre-next-teikan  max-sentence-length 2, no-doubled-joshi 2, no-mixed-desumasu 1
 tc39-agenda-2026-07  adverb-overuse 1, agentless-passive 7, max-sentence-length 11, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 2
@@ -151,7 +151,7 @@ uk-dpa2018.txt  clean
 us-6004596-crustless-sandwich  max-paragraph-length 2, max-sentence-length 22, ngram-repetition 1
 us-scotus-gideon-v-wainwright  agentless-passive 22, max-paragraph-length 6, max-sentence-length 38, preamble-length 1, proper-noun-density 1
 utelecon-account-leave  concrete-evidence-density 3, latin-spacing 1, max-sentence-length 10, ngram-repetition 1, preamble-length 1
-utokyo-gakui-kisoku  dangling-reference 12, latin-spacing 5, max-kanji-continuous 9, max-sentence-length 8, ngram-repetition 1, no-doubled-joshi 4
+utokyo-gakui-kisoku  dangling-reference 1, max-kanji-continuous 9, max-sentence-length 8, ngram-repetition 1, no-doubled-joshi 4, numbering-gap 1
 w3c-secure-contexts  excessive-hedging 1, heading-echo 2, max-sentence-length 26, ngram-repetition 1, oxford-comma-consistency 1, proper-noun-density 1
 wikipedia-ja-talk-oden  heading-echo 1, latin-spacing 4, max-paragraph-length 3, max-sentence-length 6, no-doubled-joshi 3
 wikivoyage-belgian-coast-tram  expletive-construction 6, max-paragraph-length 23, max-sentence-length 37, proper-noun-density 1
