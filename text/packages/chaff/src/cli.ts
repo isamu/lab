@@ -18,6 +18,7 @@ import { runTest } from "./commands/test.ts";
 import { GENRES } from "./genre.ts";
 import { resolveGenre } from "./resolve-genre.ts";
 import { runInit } from "./init.ts";
+import { initGenre } from "./commands/init-ask.ts";
 import { targetsOf } from "./cli-args.ts";
 import { loadRules } from "./rule-load.ts";
 import { renderCompact } from "./render/compact.ts";
@@ -25,6 +26,7 @@ import { renderExplain } from "./render/explain.ts";
 import { renderFriendly } from "./render/friendly.ts";
 import { renderGenres } from "./render/genres.ts";
 import { loadGenres, presetLevels } from "./genre-load.ts";
+import { fileHeader } from "./file-header.ts";
 import { rulesJson } from "./render/rules-json.ts";
 import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
@@ -85,12 +87,6 @@ type Inspected = {
   readonly all: readonly string[];
 };
 
-/** The first line for a file, in the file's language. */
-const headerFor = (path: string, genre: string, from: GenreSource, language: string, shelved: number, hushed: number): string => {
-  const text = CLI_TEXT[uiLanguageOf(language)];
-  return text.header(path, genre, text.languageName(language), text.genreSource[from], shelved, hushed);
-};
-
 const inspect = async (path: string, config: Config, argv: readonly string[]): Promise<Inspected> => {
   const source = plainSource(await readFile(path, "utf8"));
   const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
@@ -111,8 +107,8 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const baseline = argv.includes("--show-baseline") ? undefined : readBaseline(join(process.cwd(), BASELINE_FILE));
   const split = splitByBaseline(path, applied.kept, baseline);
   const result = { ...raw, findings: split.fresh };
-  const header = headerFor(path, genre, from, language, split.shelved, applied.suppressed.length);
-  const text = argv.includes("--compact") ? renderCompact(header, result, rules, language) : renderFriendly(header, result, rules, language);
+  const { header, notes } = fileHeader(path, source, language, { genre, from }, { shelved: split.shelved, hushed: applied.suppressed.length });
+  const text = argv.includes("--compact") ? renderCompact(header, result, rules, language) : renderFriendly(header, result, rules, language, notes);
   return {
     text,
     rules,
@@ -290,9 +286,12 @@ const measureContext = (argv: readonly string[]): { config: Config; resolveGenre
 
 /** 分岐を数珠つなぎにせず表にする。足すときに main を太らせない。 */
 const HANDLERS: Readonly<Record<string, Handler>> = {
-  init: (argv) => {
-    runInit(process.cwd(), flag(argv, "--genre") ?? "blog/tech", hostLanguage(readConfig().language, process.env)).forEach((line) => console.log(line));
-    return 0;
+  init: async (argv) => {
+    const ui = hostLanguage(readConfig().language, process.env);
+    const chosen = await initGenre(flag(argv, "--genre"), ui, process.cwd());
+    if ("error" in chosen) console.error(chosen.error);
+    else runInit(process.cwd(), chosen.genre, ui).forEach((line) => console.log(line));
+    return "error" in chosen ? 1 : 0;
   },
   genres: showGenres,
   rules: (argv) => showRules(flag(argv, "--genre")),

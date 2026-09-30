@@ -81,6 +81,8 @@ export type CliText = {
   readonly languageName: (language: string) => string;
   readonly genreSource: Readonly<Record<GenreSource, string>>;
   readonly header: (path: string, genre: string, language: string, from: string, shelved: number, hushed: number) => string;
+  readonly suggested: (name: string, genre: string) => string;
+  readonly suggestedNote: (name: string, genre: string, used: string) => string;
   readonly noMarkdown: (targets: string) => string;
   readonly noMarkdownHere: string;
   readonly noAdapter: (language: string) => string;
@@ -118,6 +120,9 @@ export const CLI_TEXT: Texts<CliText> = {
       [`${path}   ${genre} · ${language}   ジャンルは${from}から`, shelved > 0 ? `   棚上げ ${shelved} 件` : "", hushed > 0 ? `   stet ${hushed} 件` : ""].join(
         "",
       ),
+    suggested: (name, genre) => `   ${name}のようです。--genre ${genre} を試せます`,
+    suggestedNote: (name, genre, used) =>
+      `  ジャンルを決めていないので、${used} として見ました。${name}なら、--genre ${genre} でその種類の書き方に合わせて見ます（npx chaffjs genres で一覧）。`,
     noMarkdown: (targets) => `Markdown が 1 つも見つかりませんでした: ${targets}`,
     noMarkdownHere: "Markdown が 1 つも見つかりませんでした。",
     noAdapter: (language) => `言語 "${language}" のアダプタがありません。`,
@@ -170,6 +175,9 @@ export const CLI_TEXT: Texts<CliText> = {
     },
     header: (path, genre, language, from, shelved, hushed) =>
       [`${path}   ${genre} · ${language}   genre from ${from}`, shelved > 0 ? `   ${shelved} shelved` : "", hushed > 0 ? `   ${hushed} stet` : ""].join(""),
+    suggested: (name, genre) => `   Looks like: ${name}. Try --genre ${genre}`,
+    suggestedNote: (name, genre, used) =>
+      `  No genre was set, so this was checked as ${used}. If it is ${name}, --genre ${genre} checks it the way that kind is written (npx chaffjs genres lists them).`,
     noMarkdown: (targets) => `No Markdown files found: ${targets}`,
     noMarkdownHere: "No Markdown files found.",
     noAdapter: (language) => `No language package for "${language}".`,

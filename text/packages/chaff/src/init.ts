@@ -1,9 +1,10 @@
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Texts, UiLanguage } from "./ui.ts";
+import { loadGenres } from "./genre-load.ts";
 
 const TEXT: Texts<{
-  readonly config: (genre: string) => string;
+  readonly config: (genre: string, summary: string) => string;
   readonly created: string;
   readonly appended: (lines: readonly string[]) => string;
   readonly configNote: string;
@@ -15,7 +16,7 @@ const TEXT: Texts<{
   readonly nextCheck: string;
 }> = {
   ja: {
-    config: (genre) => `# chaff.yaml — このチームの文章規範
+    config: (genre, summary) => `# chaff.yaml — このチームの文章規範
 #
 # ここに書くのは「既定から変えたもの」だけです。書かなければ既定で動きます。
 # このファイルを消しても chaff は動きます。
@@ -33,7 +34,7 @@ const TEXT: Texts<{
 #   npx chaff explain bold-density        そのルールの意図を読む
 #   npx chaff rules --json                AI に設定を書かせるときに渡す
 
-# この場所に置く文書の種類。
+# この場所に置く文書の種類（${summary}）。ほかの種類: npx chaffjs genres
 genre: ${genre}
 
 # チームが書く固有名詞（組織名・製品名）。1 つの名前として読み、漢字の連なりに数えない。
@@ -54,7 +55,7 @@ rules:
     nextCheck: "  npx chaff .            この場所の Markdown を全部見る",
   },
   en: {
-    config: (genre) => `# chaff.yaml — this team's writing rules
+    config: (genre, summary) => `# chaff.yaml — this team's writing rules
 #
 # Write only what differs from the defaults; anything left out uses the default.
 # chaff still runs if this file is deleted.
@@ -72,7 +73,7 @@ rules:
 #   npx chaff explain bold-density        read what the rule is for
 #   npx chaff rules --json                give this to an AI that writes the settings
 
-# The kind of document kept here.
+# The kind of document kept here (${summary}). The others: npx chaffjs genres
 genre: ${genre}
 
 # The names your team writes (organisations, products). Each is read as one name, not as words to count.
@@ -116,9 +117,14 @@ const ensureGitignore = (dir: string, text: (typeof TEXT)["ja"]): Written | unde
   return { path, note: text.appended(missing) };
 };
 
+/** What the genre is for, as chaff genres says it; the genre itself when chaff does not know it. */
+const summaryOf = (genre: string, ui: UiLanguage): string => loadGenres().genres.find((entry) => entry.id === genre)?.summary[ui] ?? genre;
+
 export const runInit = (dir: string, genre: string, ui: UiLanguage = "ja"): string[] => {
   const text = TEXT[ui];
-  const made = [writeIfAbsent(join(dir, "chaff.yaml"), text.config(genre), text.configNote), ensureGitignore(dir, text)].filter((entry) => entry !== undefined);
+  const made = [writeIfAbsent(join(dir, "chaff.yaml"), text.config(genre, summaryOf(genre, ui)), text.configNote), ensureGitignore(dir, text)].filter(
+    (entry) => entry !== undefined,
+  );
   if (made.length === 0) return [text.exists];
   return [
     "",
