@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### Corpus: the wikitext converter keeps each `:` reply a paragraph of its own (#170)
+
+On a talk page every reply is a line indented with `:` or `::`, and the page shows each as a block of its own. The
+corpus converter wrote them as consecutive lines, so a whole thread became one paragraph (ja.wikipedia's 井戸端 thread
+was one paragraph of many sentences). A line that starts with `:` or `;` alone is now a paragraph of its own; a `*:` or
+`#:` line still continues its list item. Link templates keep the text the page shows: `{{google|…}}` its search words,
+`{{tl|…}}` and `{{tlx|…}}` the template's name in braces.
+
+This changes stored text: the committed 最高裁 平成18年9月14日 judgment is converted again (its numbered `:`
+paragraphs and the judges' names are now separate paragraphs; no finding moved). The ノート:おでん page's run-on
+paragraph splits into its replies, and the long ones are still reported. The 井戸端 thread loses `max-paragraph-length`
+and gains a real `stray-space`: the writer's space after the search term, which the dropped template had hidden.
+
 ### `doubled-word`: "at site A the connection" is a name, not a doubled article (#170)
 
 A single capital letter in the middle of a sentence names something ("at site A the connection", "Peer A our copy"),
