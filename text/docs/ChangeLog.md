@@ -4,6 +4,28 @@ Newest first.
 
 ## Unreleased
 
+### `numbering-gap`: table cells and quoted section numbers are not the document's numbering (#170)
+
+- **Tables.** A Markdown table's rows, with or without leading pipes, no longer open numbered sections: a
+  revision-history column ("3.1.0 | 3.0.3 | … | 1.0") is data. Amounts and dates in the cells are still read.
+- **A code's title number.** A heading that starts with a title number and the name of a code (`## 40 CFR § 163.25 …`,
+  `## 12 U.S.C. § 5481 …`) is not section 40 of this document. The names come from lang-en's `document-kind`
+  lexicon; "## 40 Forest" is still section 40.
+- **A section that holds its own number again.** A style guide that shows a regulation before and after rewriting it
+  puts "§ 163.25" as a heading and "§ 163.25" again inside it. A section never holds itself, so such a section is left
+  out of its sequence. It stays in the tree, and a heading out of order without such a repeat is still reported.
+- Numbers inside a blockquote or code were already not read; tests now pin this.
+- **`dangling-reference`: the line before.** A reference also reads the last few words of the line before it, cut at a
+  space, so "… in RFC 7657\n(Sections 5.1 and 6)" points into RFC 7657. Only the end, so a reference earlier on the line
+  before does not lend its document to this line. It does not reach across a blank line, a heading or a table row, or
+  into a numbered line. The break is always joined with a space, also between Japanese characters, so an addressee on
+  the line before ("…担当課") never becomes part of a statute's name at the start of the line
+  ("構造改革特別区域法第12条"). A Japanese statute named at the end of the line before is therefore not read.
+
+In the corpus, `openapi-spec-3-1-0` and `plainlanguage-use-tables` lose their `numbering-gap` findings, and
+`rfc9293-tcp` loses the `dangling-reference` on RFC 7657. Still reported there: "§ 163.25(e)" in plainlanguage.gov (a reference inside
+the quoted regulation), and in RFC 9293 "Section 3.2.1.3" inside a block quoted from RFC 1122 with `|`.
+
 ### Template and MDX syntax is not prose; code words in headings are neutral (#170)
 
 Documentation written in Markdown carries syntax for the site generator, which chaff read as prose (corpus round 13:
