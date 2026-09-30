@@ -5,6 +5,10 @@
 #            A group's rules apply to every genre in it; a genre's own rules win over its group's.
 #            A rule turned off here is listed under "did not run" with the genre as the reason.
 #   profile: the document profile (profiles/*.yaml) this genre reads with, when chaff.yaml names none.
+#   suggest: when no genre is set, what makes a file look like this genre, strongest first:
+#            paths (the file's path), then per language an opening (the body's first line, past front matter and
+#            headings) or a line with min_lines (how many lines must have that shape). A wrong suggestion misleads
+#            more than none, so a cue is added only where the corpus shows it does not fire on other kinds.
 # Which genres a rule applies to at all is the rule's use_for; the numbers behind a level are the rule's by_genre.
 
 groups:
@@ -191,6 +195,11 @@ genres:
     summary:
       ja: 仕事のメールと手紙
       en: Work email and letters
+    # A letter is a letter even when it encloses an agreement (an offer letter), so it goes by how it opens.
+    # Not by an addressee line (〇〇御中, To: ...): quotes and proposals open with one too.
+    suggest:
+      ja: { opening: "^(?:拝啓|謹啓|前略)(?:\\s|$)|^件名\\s*[:：]" }
+      en: { opening: "^(?:Dear [^\\n]{1,60}|To whom it may concern)[,:]?$|^Subject\\s*:" }
   - id: business/press-release
     name: { ja: プレスリリース・お知らせ, en: Press release and notice }
     summary:
@@ -253,10 +262,9 @@ genres:
     summary:
       ja: 使い方の説明・手順書・ヘルプ
       en: User guides, how-to pages and help
+    # Path only: step and procedure headings are as common in tech blogs and specifications as in manuals.
     suggest:
       paths: ["(^|/)(manuals?|guides?|how-?tos?|help|tutorials?|user-?guides?)(/|[-_.])"]
-      ja: { line: "^#{1,6}\\s.*(?:手順|操作方法|設定方法)", min_lines: 2 }
-      en: { line: "^#{1,6}\\s*(?:Steps?\\b|Step \\d|Prerequisites|Before you begin|Troubleshooting)", min_lines: 2 }
   - id: docs/faq
     name: { ja: よくある質問, en: FAQ }
     summary:
@@ -293,8 +301,11 @@ genres:
     summary:
       ja: 小説・物語
       en: Novels and stories
+    # A line that is a spoken line (「…」, or 「…」と云った): a sentence in quotes, not a term being defined
+    # (「…」とは, 「…」という, 「…」とする, 「…」と定める, 「…」と称する, 「…」と呼ぶ).
     suggest:
       paths: ["(^|/)(novels?|fiction|stories|shosetsu)(/|[-_.])"]
+      ja: { line: "^「[^」]+」と(?!は|い[うい]|する|定め|称|呼)|^「[^」]*[、。？！…―][^」]*」$", min_lines: 10 }
   - id: literature/essay
     name: { ja: 随筆, en: Literary essay }
     summary:
@@ -305,15 +316,21 @@ genres:
     summary:
       ja: 詩・短歌・俳句
       en: Poems and verse
+    # Verse lines: short lines with no sentence punctuation (a tanka's three lines; a capitalised line of English verse).
+    # A glossary or a list of names has short lines too, so it takes many of them.
     suggest:
       paths: ["(^|/)(poems?|poetry|tanka|haiku)(/|[-_.])"]
+      ja: { line: "^(?=.*[ぁ-ゖ])[ぁ-ゖゝゞァ-ヺー-ヾ一-鿿々〆]{3,20}$", min_lines: 40 }
+      en: { line: "^\\s{0,8}[A-Z][a-z’']*,? [^.#|*\\[\\]()<>:0-9]{6,50}[a-z,;!?’—-]$", min_lines: 80 }
   - id: literature/play
     name: { ja: 戯曲・脚本, en: Play and script }
     summary:
       ja: 戯曲・脚本
       en: Plays and scripts
+    # A speaker's name before the line: 妻　　あたしは… (two ideographic spaces; a statute's 第一条　 has one), ALGERNON.
     suggest:
       paths: ["(^|/)(plays?|screenplays?|kyakuhon)(/|[-_.])"]
+      ja: { line: "^[^\\s○◯●※・]{1,6}　　\\S", min_lines: 20 }
       en: { line: "^[A-Z][A-Z '-]{2,}\\.$", min_lines: 10 }
   - id: speech/address
     name: { ja: スピーチ・挨拶, en: Speech }

@@ -21,6 +21,8 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs suppressions <dir>` | `stet` で黙らせている指摘を数えます |
 | `npx chaffjs tree <file>` | 文書を番地の付いた木にします |
 | `npx chaffjs cite <原文> <引用.json>` | 回答の引用が原文にあるかを確かめます |
+| `npx chaffjs skill` | Claude Code の skill を入れます。`--global` を付けると `~/.claude/` に入れます |
+| `npx chaffjs feedback <file> --rule <rule>` | 誤った指摘や見逃しの報告の下書きを作ります。何も送りません |
 | `npx chaffjs test <file\|dir>...` | 意味を読む検査も動かします。API key が要ります |
 | `npx chaffjs eval <dir>` | 手元の文書で閾値を測り直します |
 
@@ -31,6 +33,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `--compact` | エンジニア向けの 1 行形式で出します |
 | `--watch` | 保存のたびに見直し、変わったところだけ出します |
 | `--experimental` | 試験中のルールも動かします |
+| `--genre <ジャンル>` | この回だけジャンルを決めます。`chaff.yaml` より優先します |
 | `--show-baseline` | 棚上げした分も含めて全部見ます |
 | `--sarif <path>` | 指摘を SARIF で書き出します。GitHub の PR の行に出すためです |
 
@@ -120,7 +123,7 @@ $ npx chaffjs explain max-sentence-length
     relaxed  140
     off      見ない
 
-  この数字は 既定 のものです。ほかに business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media で別の数字を持っています。
+  この数字は 既定 のものです。ほかに business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / legal/judgment / academic で別の数字を持っています。
 
   いまは normal です。
 
