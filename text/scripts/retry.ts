@@ -2,8 +2,11 @@
 // any other 4xx is the source's answer and is not retried. The wait is injected, so this runs without a clock.
 import { HttpStatusError } from "./fetch-text.ts";
 
-/** One wait before each retry, growing: a source that is still down after these is counted as failed. */
-export const RETRY_DELAYS_MS: readonly number[] = [5_000, 20_000];
+/**
+ * One wait before each retry, growing: a source that is still down after these is counted as failed. Long enough to
+ * outlast a spell of 504s or connect timeouts as seen from GitHub's runners.
+ */
+export const RETRY_DELAYS_MS: readonly number[] = [15_000, 60_000, 180_000];
 
 const HTTP_REQUEST_TIMEOUT = 408;
 const HTTP_TOO_EARLY = 425;
