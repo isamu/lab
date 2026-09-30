@@ -105,7 +105,9 @@ describe("lineParagraphs: 1 行 1 段落で書いた段落を行で割る", () =
   it("文の範囲が前後の空白（改行、字下げの全角空白）を含んでいても、文の終わる改行と読む", () => {
     const lines = ["　一つ目。二つ目。", "　三つ目。四つ目。", "　五つ目。", "　六つ目。七つ目。"];
     const text = lines.join("\n");
-    const withSpaces = [...text.matchAll(/[^。]+。\s*/gu)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+    const trailing = (from: number): number => from + (text.slice(from).length - text.slice(from).trimStart().length);
+    const ends = [...text.matchAll(/。/gu)].map((match) => match.index + 1);
+    const withSpaces = ends.map((end, index) => ({ start: ends[index - 1] ?? 0, end: trailing(end) }));
     assert.deepEqual(
       lineParagraphs(text, whole(text), withSpaces).map((span) => text.slice(span.start, span.end)),
       lines,

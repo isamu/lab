@@ -222,7 +222,18 @@ const sectionsOf = (headings: readonly Heading[], sentences: readonly Sentence[]
     });
 };
 
-const sentencesWithin = (sentences: readonly Sentence[], span: Span): Sentence[] => sentences.filter((sentence) => within(sentence.span, span.start, span.end));
+/** sentences（並び順）の中で、start が offset 以上の最初の添字。1 行 1 段落の何万行でも、段落ごとに全部をなめない。 */
+const firstStartingAt = (sentences: readonly Sentence[], offset: number): number => {
+  const search = (low: number, high: number): number => {
+    if (low >= high) return low;
+    const middle = (low + high) >> 1;
+    return (sentences[middle]?.span.start ?? Number.POSITIVE_INFINITY) >= offset ? search(low, middle) : search(middle + 1, high);
+  };
+  return search(0, sentences.length);
+};
+
+const sentencesWithin = (sentences: readonly Sentence[], span: Span): Sentence[] =>
+  sentences.slice(firstStartingAt(sentences, span.start), firstStartingAt(sentences, span.end));
 
 const paragraphsOf = (prose: string, spans: readonly Span[], sentences: readonly Sentence[], listSpans: readonly Span[]): Paragraph[] =>
   spans
