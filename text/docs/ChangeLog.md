@@ -4,6 +4,48 @@ Newest first.
 
 ## Unreleased
 
+### `oxford-comma-consistency`: a cited title does not vote (#170)
+
+A title's commas belong to whoever named it, not to the writer, yet "Journal of Money, Credit and Banking" in a
+Federal Reserve speech's notes was judged as a list without an Oxford comma and reported against the notes' author
+lists. A list no longer votes when its "and" / "or" sits in a Title Case run (capitalised words, with "of", "and", "a"
+and the like, hyphens and a subtitle's colon between them) that holds a phrase of two or more words and is either
+wrapped in quotation marks or emphasis (`“Hurricanes, Their Nature and History”`, `_The Update, The Vent, and The
+Disaster_`) or follows a quoted article title and its comma and ends at a comma or the end of the sentence (`"Three
+Lessons…," Journal of Money, Credit and Banking, vol. 32`). Lists of names in running text ("Login.gov, TTS
+Engineering and USAi"), author lists, a list followed by its verb after a quote (`In “The Review,” Smith, Jones and
+Brown argued`), a quoted list of one-word names (`‘Paris, Rome and Madrid’`), and quoted lists of lowercase words
+still vote. A quoted list of multi-word names (`‘New York, Los Angeles and San Diego’`) cannot be told from a title by
+its shape, and no longer votes. Which style is right is still not decided.
+
+### `undefined-acronym`: an expansion written in a heading counts (#170)
+
+Headings never become sentences, so an acronym spelled out only in a heading ("##### Maximum Envelope of Water (MEOW)
+runs", then "the MEOW for the cell" in the body) was reported as unexplained. Each heading is now searched with the
+same expansion forms as the body: brackets after a name, a name in brackets after the acronym, a square-bracketed
+acronym whose capitalised initials match, and the rest. Because headings also carry bracketed labels ("Your Own AI
+(LLM)", "(Beta)"), a heading counts only when the acronym's letters can be picked, in order, from its other words (the
+check glossary headwords already use), so a Japanese name in a heading cannot be confirmed. A heading that only uses
+the acronym ("## MEOW runs") still explains nothing. In the corpus, MEOW and MOM (NOAA AOML hurricane FAQ), HMRC
+(GOV.UK CDDO roadmap) and ESL, EHC and EEA (GOV.UK style guide A to Z) are no longer reported.
+
+### `title-case-consistency`: a curly apostrophe inside a word is part of the word (#170)
+
+The heading reader took `'` inside a word but not `’`, so "Monetary Policy and the Fed’s Framework Review" read as
+the word "Fed" followed by a lowercase word "s", and the Title Case heading was counted as sentence case. The heading is
+now read with the same apostrophe fold as `contraction-consistency` and the English tagger: `’` between a letter or
+digit and a letter, and every `ʼ`, reads as `'`. A closing quote (`‘Board’ Reviews`) is still outside the word.
+
+### A run of digits, words or parentheses as long as the text no longer crashes chaff (#170)
+
+A number tens of thousands of digits long, a town name split into thousands of one-character pieces, a superlative
+followed by thousands of nouns, or parentheses nested thousands deep in a statute stopped chaff with "Maximum call
+stack size exceeded". The functions that read along such a run now keep a cursor, and nested parentheses are removed in
+one reading instead of once per level. The output of every other document is unchanged.
+
+`chaff tree --format json` on a tree too deep to write as indented JSON (only a third-party language package nests
+that deep) now says so and names the depth instead of crashing; `--format sexp` may still write it.
+
 ### English inside a Japanese document is split as in an English one, and no sentence ends inside nested brackets (#170)
 
 - **English runs in a Japanese document get the English adapter's sentence ends.** `FIG. 1 illustrates…` and

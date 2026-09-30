@@ -9,10 +9,13 @@ const joinsAsNoun = (previous: Token, token: Token | undefined): token is Token 
 
 /** 空白も助詞も挟まずに続く名詞の連なり（最大|瞬間|風速）の最後の語。連なりが無ければ undefined。 */
 const lastJoined = (tokens: readonly Token[], at: number): Token | undefined => {
-  const previous = tokens[at - 1];
-  const token = tokens[at];
-  if (previous === undefined || !joinsAsNoun(previous, token)) return undefined;
-  return lastJoined(tokens, at + 1) ?? token;
+  let last: Token | undefined;
+  for (let index = at; ; index += 1) {
+    const previous = tokens[index - 1];
+    const token = tokens[index];
+    if (previous === undefined || !joinsAsNoun(previous, token)) return last;
+    last = token;
+  }
 };
 
 const measures = (noun: Token, quantities: Lexicon): boolean => quantities.some((entry) => entry.pattern === noun.surface);

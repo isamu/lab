@@ -1,4 +1,5 @@
 import type { DocumentProfile, Mention, RelativeVocabulary, Span } from "../plugin.ts";
+import { isOneCharacter, withoutClosedPairs } from "./closed-pairs.ts";
 
 /**
  * 前条・次項・同号・本条・前各項・前二項・前条第二項、条を書かない「第一項」を行の中から探す。語は文書の種類（profiles/*.yaml）が決める。
@@ -118,12 +119,17 @@ export const substitutedDocuments = (mentions: readonly Mention[], text: string,
   );
 };
 
-/** 閉じた括弧書きを内側から外す。 */
+/**
+ * 閉じた括弧書きを内側から外す。開きと閉じが 1 字ずつなら、組ごと 1 度で外す（深い入れ子でも本文を読み直さない）。
+ * 2 字以上の括弧は、内側の組を外すのを変わらなくなるまで繰り返す。
+ */
 const withoutAsides = (gap: string, aside: RelativeVocabulary["aside"]): string => {
   if (aside === undefined) return gap;
+  if (isOneCharacter(aside.open) && isOneCharacter(aside.close)) return withoutClosedPairs(gap, aside.open, aside.close);
   const inner = new RegExp(`${escape(aside.open)}[^${escape(aside.open)}${escape(aside.close)}]*${escape(aside.close)}`, "gu");
-  const once = gap.replace(inner, "");
-  return once === gap ? gap : withoutAsides(once, aside);
+  let rest = gap;
+  for (let once = rest.replace(inner, ""); once !== rest; once = rest.replace(inner, "")) rest = once;
+  return rest;
 };
 
 /** あいだが、並びをつなぐもの・つなぎの語・閉じた括弧書き・空白だけか。 */
