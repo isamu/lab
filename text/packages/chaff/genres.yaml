@@ -242,6 +242,14 @@ genres:
       paths: ["(^|/)(laws?|statutes?|regulations?|kitei|kisoku)(/|[-_.])"]
       ja: { line: "(?:この|本)(?:法律|政令|省令|府令|規則|規程|条例|定款|通達)", min_lines: 2 }
       en: { line: "\\b(?:[Tt]his (?:Act|[Pp]art|[Ss]ubpart|[Rr]egulation)|[Tt]hese [Rr]egulations)\\b|^§\\s?\\d", min_lines: 3 }
+    # A statute or an internal rule is read article by article against its own numbers, like a contract.
+    # The statutes in the corpus (yarn corpus) give these no findings, deleted articles (第三条　削除) and 第十条の二 included.
+    rules:
+      numbering-gap: normal
+      duplicate-definition: normal
+      dangling-reference: normal
+      date-weekday-mismatch: normal
+      total-mismatch: normal
   - id: legal/judgment
     name: { ja: 判決, en: Court decision }
     summary:
