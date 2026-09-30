@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### The corpus HTML converter reads a table of sentences (#170)
+
+A glossary, a list of infection routes or a report's footnotes written as an HTML table disappeared from the stored
+text, because every table was dropped. A table where at least half of the rows end a sentence in some cell is now
+read: each cell becomes a paragraph of its own (like a term and its definition in a `<dl>`), the caption comes
+first, a row of nothing but header cells goes, and a cell that starts with a number and ends no sentence (a row
+number, a range of figures) goes. Any other table (figures, dates, names) is dropped as before; a point inside a
+cell ("H.Con.Res. 218") is not a sentence's end. Documents fetched from HTML change when they are fetched again.
+
 ### The corpus HTML converter keeps U+3000 and drops text written for a screen reader (#170)
 
 The converter behind `yarn corpus:fetch` collapsed every run of whitespace, U+3000 included, so 「2　学士」 was stored

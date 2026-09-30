@@ -1,7 +1,7 @@
 // An HTML page (a CRS report as EveryCRSReport serves it, a ministry's page) as plain Markdown: headings, paragraphs,
 // list items and the text of links; ruby keeps its base text and loses its reading. Only the <main> element (else the
 // role="main" element, else a sole <article>) is read when the page has one. Scripts, styles, the head, navigation (by
-// element or by role, and breadcrumbs), asides, footers, forms, tables, footnote marks, lists and blocks of nothing but
+// element or by role, and breadcrumbs), asides, footers, forms, tables without sentences (html-tables.ts), footnote marks, lists and blocks of nothing but
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
 // title), a block before the page's title that holds a menu or only links and no sentence (the site's header, with its tagline and
 // labels), buttons outside a heading, hidden elements, text for a screen reader only (a visually-hidden class, a skip
@@ -24,20 +24,16 @@ import {
   withoutElementsOpening,
   withoutElementsWhere,
   withoutRanges,
+  untilStable,
   type ElementRange,
 } from "./html-elements.ts";
 import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
 import { withoutReaderOnlyText } from "./html-reader-only.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
+import { withTablesRead } from "./html-tables.ts";
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
-const DROPPED = ["script", "style", "head", "nav", "aside", "footer", "form", "noscript", "svg", "table"];
-
-/** Apply step until the text stops changing: nested elements are removed from the inside out. */
-const untilStable = (text: string, step: (text: string) => string): string => {
-  const next = step(text);
-  return next === text ? text : untilStable(next, step);
-};
+const DROPPED = ["script", "style", "head", "nav", "aside", "footer", "form", "noscript", "svg"];
 
 const withoutElement = (html: string, tag: string): string => {
   const innermost = new RegExp(`<${tag}\\b[^>]*>(?:(?!<${tag}\\b)[\\s\\S])*?</${tag}\\s*>`, "giu");
@@ -412,7 +408,7 @@ const MARKUP_SPACE = /[^\S\u3000]+/gu;
 
 export const htmlToMarkdown = (html: string): string => {
   const uncommented = withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "");
-  const preformatted = withPreformattedStashed(DROPPED.reduce(withoutElement, withoutRubyText(uncommented)));
+  const preformatted = withPreformattedStashed(withTablesRead(DROPPED.reduce(withoutElement, withoutRubyText(uncommented))));
   const kept = withoutHeadingSelfLinks(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(preformatted.html)))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
     .replace(MARKUP_SPACE, " ");

@@ -20,6 +20,12 @@ const withValuesEscaped = (tag: string): string =>
  */
 export const withAttributeMarkupEscaped = (html: string): string => html.replace(TAG, (tag: string) => withValuesEscaped(tag));
 
+/** Apply step until the text stops changing: nested elements are removed from the inside out. */
+export const untilStable = (text: string, step: (text: string) => string): string => {
+  const next = step(text);
+  return next === text ? text : untilStable(next, step);
+};
+
 export const stripTags = (html: string): string => html.replace(/<\/?[a-z!][^>]*>/giu, "");
 
 export const plainText = (html: string): string => decodeEntities(stripTags(html)).replace(/\s+/gu, " ").trim();
