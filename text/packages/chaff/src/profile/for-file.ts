@@ -4,6 +4,7 @@ import type { DocumentProfile } from "../plugin.ts";
 import { presetProfile } from "../genre-load.ts";
 import { loadProfiles } from "./load.ts";
 import { chooseProfile } from "./select.ts";
+import { plainSource } from "../plain-source.ts";
 
 type ProfileSettings = Pick<Config, "profile" | "byPath" | "baseDir">;
 
@@ -13,6 +14,7 @@ export const profileFor = (config: ProfileSettings, path: string, source: string
     byPath: applyByPath(config.byPath, config.baseDir, path).profile,
     config: config.profile,
     genre: genre === undefined ? undefined : presetProfile(genre),
-    source,
+    // 行頭で数える検出は、CR だけの改行では 1 行に見える。
+    source: plainSource(source),
     language,
   })?.profile;

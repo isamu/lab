@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### A library caller gets the BOM and CRLF / CR handling too (#170)
+
+Removing a leading BOM and reading CRLF and CR-only line ends as LF happened only where the command line read a file.
+`buildDocument` and `profileFor` now do it themselves, so a program that passes a file's text as it is (and the
+`corpus` scripts) reads the same document as the command line. Every offset in the returned document refers to
+`doc.source`, the text after this normalisation, not to the string that was passed in; line numbers are the same
+either way. `buildStructure` returns only a tree, so its offsets still refer to the text it was given, as before. The
+command line's output is unchanged.
+
 ### `undefined-acronym` reads a single letter joined in front of a word as one name (#170)
 
 In `J-STAGE`, `B-GSM` or `e-Gov` the letter in front makes a new name, so the capitals after it are not an acronym
