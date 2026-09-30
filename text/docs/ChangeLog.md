@@ -14,6 +14,29 @@ limit, so the levels, the genres and a number in `chaff.yaml` move both together
 sentences. A dense paragraph of long sentences is reported as before. The bench's joined-paragraph plant now joins
 paragraphs (across a heading if it must) into one line until both limits are passed.
 
+### The corpus stores 青空文庫 texts without their colophon (#170)
+
+A new `aozora` format for the corpus manifest drops the blocks 青空文庫 closes every file with (底本, 入力, 校正, the
+dates, 青空文庫作成ファイル and the note on notation), as the `gutenberg` format drops Project Gutenberg's header and
+licence: they are 青空文庫's record of the file, not the author's text, and `latin-spacing` read their spacing as the
+work's. The blocks are told by the classes 青空文庫 marks them with; the rest of the page is converted as HTML. The four
+青空文庫 documents use it.
+
+### The corpus HTML converter restores a paragraph tag that lost its "<" (#170)
+
+The eCFR serves 16 CFR 310.4(b) with `… 45 CFR 160.103. P&gt;(2) It is …`, the remains of the `<P>` that opened
+paragraph (2). A `P>` after a sentence's end and right before a paragraph's designation (`(2)`, `(iv)`, `(A)`) and a
+capital now opens a paragraph, so (2) no longer hides inside (1)(v)(D) and `numbering-gap` no longer reports (3) after (1).
+`P>0.05`, `P > (2)`, a formula opening a sentence (`P>(2) follows`) and the same text inside a tag stay as they
+are.
+
+### `undefined-acronym` reads a single letter joined in front of a word as one name (#170)
+
+In `J-STAGE`, `B-GSM` or `e-Gov` the letter in front makes a new name, so the capitals after it are not an acronym
+waiting for its expansion; `STAGE` in 「J-STAGEで公開」 is no longer reported. A letter joined after an acronym
+(`ITU-T`, `GOODS-S`) marks a variant of that acronym, which is still reported, and so is an acronym joined of two
+longer parts (`RT-PCR`). The same capitals outside the name are counted as before.
+
 ### `yarn bench` checks every sample as a genre chaff has, and stops on one it does not (#170)
 
 The policy and note samples were checked as `business/policy` and `business/note`, which are not genres, so they ran
