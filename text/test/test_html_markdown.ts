@@ -316,8 +316,10 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(sentence), "# Notice\n\nText.\n\nSee the list.\n");
     const card = '<h1>Notice</h1><p>Text.</p><div><a href="/n1"><h3>News one</h3><p>First summary.</p></a></div>';
     assert.equal(htmlToMarkdown(card), "# Notice\n\nText.\n\n### News one\n\nFirst summary.\n");
-    const appendix = '<h1>Report</h1><p>Text.</p><p><a href="/appendix.PDF">Appendix A (PDF)</a></p><div><a href="/t.xlsx?v=2#s">Table</a></div>';
-    assert.equal(htmlToMarkdown(appendix), "# Report\n\nText.\n\nAppendix A (PDF)\n\nTable\n");
+    const appendix =
+      '<h1>Report</h1><p>Text.</p><p><a href="/appendix.PDF">Appendix A (PDF)</a></p><div><a href="/t.xlsx?v=2#s">Table</a></div>' +
+      '<p><a href="mailto:office">office</a></p><p><a href="tel:+81-3-1234-5678">03-1234-5678</a></p>';
+    assert.equal(htmlToMarkdown(appendix), "# Report\n\nText.\n\nAppendix A (PDF)\n\nTable\n\noffice\n\n03-1234-5678\n");
   });
 
   it("ページ内リンクと ▲ や | のような記号だけの行は落とし、rel=next のリンクも文の中なら文字を残す", () => {
@@ -431,6 +433,7 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
       '<p><a id="term" tabindex="-1">サービス</a>とは、本サービスをいう。</p><p>次の <a id="d" tabindex="-1">定義</a></p>' +
       "<p>x > <a id=v tabindex=-1>value</a></p><p><a id=w tabindex=-1>word</a> < y</p>" +
       "<p><a id=m tabindex=-1>Important</a><strong>:</strong> read first.</p>" +
+      '<p><span class="sr-only">Skip marker</span><a id="c" tabindex="-1">ここから本文です。</a></p>' +
       '<p><a href="/x" tabindex="-1">Linked alone</a></p><p><a name="s2">Named alone</a></p><p>End.</p>';
     assert.equal(
       htmlToMarkdown(html),

@@ -74,9 +74,9 @@ const standsAlone = (html: string, range: ElementRange): boolean => lineAround(h
  * heading: inside a heading it is the heading's title, inside a sentence a word of it.
  */
 export const withoutReaderOnlyText = (html: string): string => {
-  const headings = headingRanges(html);
+  const shown = withoutElementsOpening(html, CLASS_OPENING, isReaderOnlyClass);
+  const headings = headingRanges(shown);
   const isReaderTarget = (anchor: ElementRange): boolean =>
-    isFocusTarget(anchor) && standsAlone(html, anchor) && !headings.some((heading) => isInside(heading, anchor));
-  const targets = withoutElementsWhere(html, "a", isReaderTarget);
-  return withoutElementsOpening(targets, CLASS_OPENING, isReaderOnlyClass);
+    isFocusTarget(anchor) && standsAlone(shown, anchor) && !headings.some((heading) => isInside(heading, anchor));
+  return withoutElementsWhere(shown, "a", isReaderTarget);
 };

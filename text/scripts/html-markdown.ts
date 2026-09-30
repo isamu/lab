@@ -381,10 +381,15 @@ const PAGE_EXTENSION = /^(?:[sx]?html?|php|aspx?|jsp|cgi)$/iu;
 // The host is not part of the path: "https://example.com" names a site, not a file ending in .com.
 const SCHEME_AND_HOST = /^(?:[a-z][a-z0-9+.-]*:)?\/\/[^/?#]*/iu;
 
-/** A link to a file (an appendix as PDF, a table as .xlsx) is part of the document; a link to a page is a way around the site. */
+// A link that opens no page (tel:, mailto:, sms:) carries its own content, a number or an address.
+const OTHER_SCHEME = /^\s*(?!https?:)[a-z][a-z0-9+.-]*:(?!\/\/)/iu;
+
+/** A link to a file (an appendix as PDF, a table as .xlsx), or one that opens no page, is part of the document. */
 const isFileLink = (link: string): boolean => {
   const href = HREF.exec(link);
-  const path = (href?.[1] ?? href?.[2] ?? href?.[3] ?? "").replace(SCHEME_AND_HOST, "").split(/[?#]/u)[0] ?? "";
+  const target = href?.[1] ?? href?.[2] ?? href?.[3] ?? "";
+  if (OTHER_SCHEME.test(target)) return true;
+  const path = target.replace(SCHEME_AND_HOST, "").split(/[?#]/u)[0] ?? "";
   const extension = /\.([a-z0-9]{1,5})$/iu.exec(path.split("/").at(-1) ?? "")?.[1];
   return extension !== undefined && !PAGE_EXTENSION.test(extension);
 };
