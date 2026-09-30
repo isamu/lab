@@ -97,7 +97,7 @@ kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph
 kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1
 kimino-staff-exam-guide  clean
 kobayashi-nento-shokan-2026  max-paragraph-length 2, max-sentence-length 2
-kobayashi-press-hananoa-2026-02  agentless-passive 2, latin-spacing 2, max-paragraph-length 2, max-sentence-length 1, no-mixed-desumasu 2, undefined-acronym 3
+kobayashi-press-hananoa-2026-02  agentless-passive 2, max-paragraph-length 2, max-sentence-length 1, no-mixed-desumasu 2, undefined-acronym 3
 koenote-requirements  latin-spacing 56, undefined-acronym 6
 koho-tokyo-2026-06-suigai  max-kanji-continuous 1, max-paragraph-length 1, no-mixed-desumasu 2
 kojin.txt  clean
@@ -139,9 +139,9 @@ saikosai-h26-09-02-nagano  agentless-passive 1, max-paragraph-length 1, max-sent
 saikosai-s57-09-28-shorai-kyufu  hiragana-fukushi 1, max-kanji-continuous 2, max-sentence-length 3, no-doubled-joshi 1
 soumu-kokumin-cyber-glossary-a  agentless-passive 4, heading-echo 1, max-sentence-length 2, ngram-repetition 1, undefined-acronym 3
 soumu-kokumin-cyber-phishing  concrete-evidence-density 3, latin-spacing 7, max-sentence-length 6
-soumu-wp-r06-ai-booms  agentless-passive 1, latin-spacing 2, max-sentence-length 2, undefined-acronym 3
-soumu-wp-r06-ai-rules-japan  agentless-passive 2, latin-spacing 3, max-sentence-length 6, no-doubled-joshi 1
-soumu-wp-r06-misinformation  agentless-passive 7, latin-spacing 2, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
+soumu-wp-r06-ai-booms  agentless-passive 1, max-sentence-length 2, undefined-acronym 3
+soumu-wp-r06-ai-rules-japan  agentless-passive 2, latin-spacing 1, max-sentence-length 6, no-doubled-joshi 1
+soumu-wp-r06-misinformation  agentless-passive 7, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
 sre-next-bunsho-kanri  agentless-passive 1
 sre-next-teikan  max-sentence-length 2, no-doubled-joshi 2, no-mixed-desumasu 1
 tc39-agenda-2026-07  adverb-overuse 1, agentless-passive 7, max-sentence-length 11, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 2
