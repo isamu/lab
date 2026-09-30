@@ -41,3 +41,10 @@ example:
       We can meet on [Insert Date] to go through the quote.
     after: |
       We can meet on Friday 9 October to go through the quote.
+
+not_flagged:
+  ja: 例として置いた「○○」、Markdown のリンク、脚注の番号、チェック欄、値が続く見出しの札（【氏名】山田）は指しません。
+  en: 'Markdown links and reference definitions, footnote numbers, checkboxes, and a label its value follows ("[Date]: 2024-04-01") are not reported.'
+level_meaning:
+  ja: 空欄が {limit} 箇所あれば指摘
+  en: reported once there are {limit}

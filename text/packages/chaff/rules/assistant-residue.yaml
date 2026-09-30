@@ -43,3 +43,10 @@ example:
       As of my last knowledge update, plans for a new wing were under discussion.
     after: |
       The council's minutes of September 2026 say plans for a new wing are under discussion.
+
+not_flagged:
+  ja: 人も書く礼の言葉（「お役に立てれば幸いです」）が一つだけなら、何度書いてあっても指しません。同じ文の中の二つの言い回しは一つと数えます。
+  en: A single courtesy people also write ("I hope this helps"), however often it is repeated, is not reported. Two listed phrases in one sentence count as one.
+level_meaning:
+  ja: 重みの合計が {limit} 点で指摘
+  en: reported from a score of {limit}
