@@ -20,7 +20,7 @@ const depthsOf = (tokens: readonly Token[]): number[] =>
 
 /**
  * 並びを読むための語彙表。participle は解析器が分詞と読まないが読点のあとで分詞の句を始める語（meaning）、
- * example は例を挙げる句（such as, e.g.）、pair は 2 つだけを結ぶ語（between）。
+ * example は例を挙げる句（such as, e.g.）、pair は 2 つだけを結ぶ語とその接続詞（between and / either or）。
  */
 type ListWords = { readonly participle: ReadonlySet<string>; readonly example: Lexicon; readonly pair: ReadonlySet<string> };
 
@@ -264,12 +264,14 @@ const pairComplete = (member: readonly Token[], after: readonly Token[]): boolea
 };
 
 /**
- * 最後の項目に 2 つだけを結ぶ語（between / both）があり、そのあとに and / or がまだ無く、読点も無ければ、この and / or はその 2 つを結ぶ
- * （the Key Terms between Provider and Customer, and any policies）。
+ * 最後の項目に 2 つだけを結ぶ語（between / either）があり、この接続詞がその語の相手で（between … and / either … or）、そのあとに
+ * and / or がまだ無く、読点も無ければ、この and / or はその 2 つを結ぶ（the Key Terms between Provider and Customer, and any policies）。
+ * 相手でなければ語は名詞にかかるだけ（the impact of either option and implementation）。
  */
 const pairsInLastItem = (clause: Clause, at: number, items: readonly Token[][], after: readonly Token[]): boolean => {
   const last = items.at(-1) ?? [];
-  const opener = last.findLastIndex((token) => clause.words.pair.has(token.surface.toLowerCase()));
+  const conjunction = clause.tokens[at]?.surface.toLowerCase() ?? "";
+  const opener = last.findLastIndex((token) => clause.words.pair.has(`${token.surface.toLowerCase()} ${conjunction}`));
   const member = last.slice(opener + 1);
   if (opener === -1 || commaBefore(clause.tokens, at) || pairComplete(member, after)) return false;
   return !member.some((token) => LIST_CONJUNCTION.has(token.surface.toLowerCase()));

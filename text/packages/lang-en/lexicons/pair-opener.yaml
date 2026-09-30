@@ -1,12 +1,13 @@
-# Words that take exactly two things joined by "and" or "or": "between Provider and Customer", "both state and
-# federal", "either email or post", "whether written or oral". When one stands in the item right before the "and",
-# oxford-comma-consistency reads that "and" as part of the item, not as the list's last joint: "the Key Terms between
-# Provider and Customer, and any policies". "between Acme, Beta and Gamma" is still a list: "between" is not in the
-# last item.
+# Words that take exactly two things, each with the conjunction that joins its pair: "between Provider and Customer",
+# "both state and federal", "either email or post", "whether written or oral". When one stands in the item right
+# before its own conjunction, oxford-comma-consistency reads that conjunction as part of the item, not as the list's
+# last joint: "the Key Terms between Provider and Customer, and any policies". "between Acme, Beta and Gamma" is still
+# a list: "between" is not in the last item. "the impact of either option and implementation" is still a list: "either"
+# pairs with "or", not "and".
 id: pair-opener
 language: en
 entries:
-  - pattern: between
-  - pattern: both
-  - pattern: either
-  - pattern: whether
+  - pattern: between and
+  - pattern: both and
+  - pattern: either or
+  - pattern: whether or

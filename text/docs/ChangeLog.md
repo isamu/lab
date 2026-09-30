@@ -12,9 +12,10 @@ A list needs three items, and four shapes made two items, or an "and" inside one
   after a word in the new `example-marker` list (such as, including, e.g., i.e., for example, for instance), so this
   is two items. `such as a PIN, a password or a fingerprint` is still a list. When the items after the marker do not
   share a shape, the marker is not taken as the list's start (`materials such as green steel, utilizing …, and adopting …`).
-- **A pair word.** `the Key Terms between Provider and Customer, and any policies`: an "and" after a word in the new
-  `pair-opener` list (between, both, either, whether) in the same item joins that pair. `between the provider, the
-  reseller and the customer` is still a list.
+- **A pair word.** `the Key Terms between Provider and Customer, and any policies`: the conjunction a word in the new
+  `pair-opener` list takes (between … and, both … and, either … or, whether … or), in the same item with no comma before
+  it, joins that pair. `between the provider, the reseller and the customer`, `the impact of either option and
+  implementation` and `the renderer in both modes and the exporter` are still lists.
 - **Modifiers sharing a noun.** `natural and artificial flavor`, `registered or certified mail, or personal delivery`:
   a lone adjective or participle joined to a modifier-plus-noun is one item. `red, white and blue flags` and
   `Federal government, military, and agricultural workers` are still lists.
