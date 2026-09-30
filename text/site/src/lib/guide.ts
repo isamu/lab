@@ -9,6 +9,7 @@ const ORDER = [
   "documents-report",
   "configuration",
   "reference",
+  "adding-rules",
   "commands",
   "structure",
   "languages",

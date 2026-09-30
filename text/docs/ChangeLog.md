@@ -33,6 +33,15 @@ In the corpus, the new rules report only the blanks of a published letter templa
 both languages (`test/fixtures/ai-samples/`, labelled as written by an AI) fire them; `yarn bench` plants a
 knowledge-cutoff line and a blank for the two rules that one edit can trigger.
 
+### A guide page on adding a rule, and the skill writes chaff.yaml from a style note (#170)
+
+- **Adding a rule: for AI and engineers** (`/guide/adding-rules/`) lays out the ways from easiest to most
+  powerful, with a worked example that turns "polite endings, sentences of at most 80 characters" into
+  `chaff.yaml` through `chaff rules --json`, and what a new built-in rule needs (rule file, detector, tests, a
+  planted mistake, the corpus check).
+- **The Claude Code skill** reads `rules --json` to turn a team's style note into `chaff.yaml`, says what no rule
+  covers, and tests a team rule with `explain` and a sample before committing it.
+
 ### `chaff rules` prints a table, and `rules --json` carries what an AI needs to write settings (#170)
 
 - **`chaff rules`** (without `--json`) lists every rule by group, each with the level it runs at now, whether it
