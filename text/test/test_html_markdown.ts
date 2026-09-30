@@ -305,13 +305,17 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(twoBlocks), "# Notice\n\nText.\n");
   });
 
-  it("後ろに文の続くリンク一つのブロック、文の中のリンク、カードのリンクは閉じていても残す", () => {
+  it("後ろに文の続くリンク一つのブロック、文の中のリンク、カードのリンク、ファイルへのリンクは閉じていても残す", () => {
     const middle = '<h1>Notice</h1><p><a href="/r.pdf">Full report (PDF)</a></p><p>Text.</p>';
     assert.equal(htmlToMarkdown(middle), "# Notice\n\nFull report (PDF)\n\nText.\n");
     const sentence = '<h1>Notice</h1><p>Text.</p><p>See <a href="/list">the list</a>.</p>';
     assert.equal(htmlToMarkdown(sentence), "# Notice\n\nText.\n\nSee the list.\n");
     const card = '<h1>Notice</h1><p>Text.</p><div><a href="/n1"><h3>News one</h3><p>First summary.</p></a></div>';
     assert.equal(htmlToMarkdown(card), "# Notice\n\nText.\n\n### News one\n\nFirst summary.\n");
+    const appendix = '<h1>Report</h1><p>Text.</p><p><a href="/appendix.PDF">Appendix A (PDF)</a></p><div><a href="/t.xlsx?v=2#s">Table</a></div>';
+    assert.equal(htmlToMarkdown(appendix), "# Report\n\nText.\n\nAppendix A (PDF)\n\nTable\n");
+    const pages = '<h1>Report</h1><p>Text.</p><p><a href="/list/">List</a></p><p><a href="index.php?p=1">Index</a></p><p><a href="/r/a.html#top">Top</a></p>';
+    assert.equal(htmlToMarkdown(pages), "# Report\n\nText.\n");
   });
 
   it("ページ内リンクと ▲ や | のような記号だけの行は落とし、rel=next のリンクも文の中なら文字を残す", () => {
@@ -411,8 +415,9 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
   it("hidden を含むだけの class・画面の幅で見せる hidden・class でない属性の値は残す", () => {
     const html =
       '<p class="hidden-xs">Wide.</p><p class="overflow-hidden">Clip.</p><p class="is-hidden-later">Later.</p>' +
-      '<p class="hidden md:block">Desktop.</p><p data-class="sr-only">Data.</p><p title="class=sr-only">Title.</p><p class="sr-only-note">Note.</p>';
-    assert.equal(htmlToMarkdown(html), "Wide.\n\nClip.\n\nLater.\n\nDesktop.\n\nData.\n\nTitle.\n\nNote.\n");
+      '<p class="hidden md:block">Desktop.</p><p data-class="sr-only">Data.</p><p title="class=sr-only">Title.</p><p class="sr-only-note">Note.</p>' +
+      '<p class="not-sr-only">Shown.</p><p class="md:not-sr-only x-not-visually-hidden">Shown too.</p>';
+    assert.equal(htmlToMarkdown(html), "Wide.\n\nClip.\n\nLater.\n\nDesktop.\n\nData.\n\nTitle.\n\nNote.\n\nShown.\n\nShown too.\n");
   });
 
   it("スキップリンクが移す先 (href の無い tabindex=-1 のリンク) の読み上げ文は落とす。見出しの中と、ふつうの名前付きの印は残す", () => {

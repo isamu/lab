@@ -133,8 +133,9 @@ const HEADING_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"];
 const headingRanges = (html: string): ElementRange[] => HEADING_TAGS.flatMap((tag) => elementRanges(html, tag));
 
 // The class names that frameworks and style guides give text written for a screen reader alone (sr-only,
-// visually-hidden, govuk-visually-hidden, screen-reader-text); "hidden" only as a whole name (not hidden-xs).
-const READER_ONLY_CLASS = /^(?:[a-z0-9]+-)*(?:sr-only|visually-?hidden|screen-reader-text|element-invisible)$/iu;
+// visually-hidden, govuk-visually-hidden, screen-reader-text), never negated (not-sr-only shows it); "hidden" only as
+// a whole name (not hidden-xs).
+const READER_ONLY_CLASS = /^(?:(?!not-)[a-z0-9]+-)*(?:sr-only|visually-?hidden|screen-reader-text|element-invisible)$/iu;
 
 const CLASS_OPENING = /<([a-z][a-z0-9-]*)\b[^>]*\sclass\s*=/giu;
 
@@ -423,12 +424,25 @@ const withoutClosingAddress = (html: string): string => {
 
 const CLOSING_BLOCKS = ["div", "section", "p"];
 
-/** Blocks of nothing but links with nothing after them ("一覧に戻る"): a way around the site, as a menu is above the title. */
+const HREF = /\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/iu;
+
+const PAGE_EXTENSION = /^(?:html?|php|aspx?|jsp|cgi)$/iu;
+
+/** A link to a file (an appendix as PDF, a table as .xlsx) is part of the document; a link to a page is a way around the site. */
+const isFileLink = (link: string): boolean => {
+  const href = HREF.exec(link);
+  const path = (href?.[1] ?? href?.[2] ?? href?.[3] ?? "").split(/[?#]/u)[0] ?? "";
+  const extension = /\.([a-z0-9]{1,5})$/iu.exec(path.split("/").at(-1) ?? "")?.[1];
+  return extension !== undefined && !PAGE_EXTENSION.test(extension);
+};
+
+const isClosingMenu = (text: string, range: ElementRange): boolean =>
+  isLinksOnly(range) && !plainLinks(range.inner).some(isFileLink) && textLines(text.slice(range.end)).length === 0;
+
+/** Blocks of links to pages with nothing after them ("一覧に戻る"): a way around the site, as a menu is above the title. */
 const withoutClosingLinks = (html: string): string =>
   untilStable(html, (text) => {
-    const closing = CLOSING_BLOCKS.flatMap((tag) => elementRanges(text, tag)).filter(
-      (range) => isLinksOnly(range) && textLines(text.slice(range.end)).length === 0,
-    );
+    const closing = CLOSING_BLOCKS.flatMap((tag) => elementRanges(text, tag)).filter((range) => isClosingMenu(text, range));
     return withoutRanges(
       text,
       closing.toSorted((left, right) => left.start - right.start),
