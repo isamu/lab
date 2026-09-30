@@ -4,6 +4,22 @@ Newest first.
 
 ## Unreleased
 
+### `relax` on a rule with nothing to count lowers the severity instead of doing nothing (#170)
+
+`numbering-gap`, `dangling-reference`, `date-weekday-mismatch`, `total-mismatch`, `duplicate-definition`, `date-order`,
+`doubled-word` and `agreement-slip` have no limit to count to: their levels were all `1`, so `npx chaffjs relax
+numbering-gap` wrote `relaxed` to chaff.yaml and the error was reported exactly as before. Their levels are now
+severities, as the L4 rules' already were: `relaxed` keeps the finding and marks it a step lower (an error becomes a
+warning, a warning a note), and `strict` raises a warning rule to an error. An error rule has no `strict`, so `chaff
+strict` refuses it as it does for any level a rule does not have. At the default level every finding is marked as before.
+
+`relax` and `strict` say what the new level does ("its findings still show, as a warning instead of an error").
+`explain` lists the severity at each level instead of a number, and `rules --json` gives each rule `level_sets`
+(`limit` or `severity`), with severities in `levels` and `now` for these rules. A number written for one of them in
+chaff.yaml is reported, since it only runs the rule at `normal`, and `chaff eval` no longer sweeps limits that none of
+them read. The rule loader refuses a severity that is not the one at `normal`, levels (with `by_genre`) that mix
+severities and numbers, and `by_genre` on a rule whose levels are severities.
+
 ### Corpus: the wikitext converter keeps each `:` reply a paragraph of its own (#170)
 
 On a talk page every reply is a line indented with `:` or `::`, and the page shows each as a block of its own. The

@@ -1,21 +1,27 @@
 import type { Config } from "./load.ts";
+import type { RuleDefinition } from "../plugin.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
 
 const TEXT: Texts<{
   readonly unknown: (where: string, id: string) => string;
   readonly unreadable: (where: string, id: string, value: string) => string;
   readonly numberOnSemantic: (where: string, id: string) => string;
+  readonly numberOnSeverity: (where: string, id: string) => string;
 }> = {
   ja: {
     unknown: (where, id) => `${where}: ${id} というルールはありません（npx chaff rules --json で一覧が出ます）`,
     unreadable: (where, id, value) => `${where}: ${id} の値 ${value} は読めません（strict / normal / relaxed / off か、正の数）`,
     numberOnSemantic: (where, id) =>
       `${where}: ${id} は意味を読む検査なので数値の上限はありません。normal として動きます（strict / normal / relaxed / off で書いてください）`,
+    numberOnSeverity: (where, id) =>
+      `${where}: ${id} には数の上限がありません。normal として動きます（段階は指摘の重さを変えます。relaxed で一段軽く、off で止まります）`,
   },
   en: {
     unknown: (where, id) => `${where}: there is no rule named ${id} (npx chaff rules --json lists them)`,
     unreadable: (where, id, value) => `${where}: cannot read ${value} as the level of ${id} (strict / normal / relaxed / off, or a positive number)`,
     numberOnSemantic: (where, id) => `${where}: ${id} reads meaning and has no numeric limit; it runs as normal (write strict / normal / relaxed / off)`,
+    numberOnSeverity: (where, id) =>
+      `${where}: ${id} has no numeric limit; it runs as normal (its levels set how a finding is marked: relaxed lowers it a step, off stops it)`,
   },
 };
 
@@ -25,7 +31,7 @@ const TEXT: Texts<{
  */
 export const ruleProblems = (
   config: Pick<Config, "rules" | "limits" | "unreadableRules" | "path">,
-  known: readonly { readonly id: string; readonly layer: string }[],
+  known: readonly Pick<RuleDefinition, "id" | "layer" | "level_sets">[],
   ui: UiLanguage = "ja",
 ): string[] => {
   const text = TEXT[ui];
@@ -39,5 +45,9 @@ export const ruleProblems = (
   const numberOnSemantic = Object.keys(config.limits)
     .filter((id) => semantic.has(id))
     .map((id) => text.numberOnSemantic(where, id));
-  return [...unknown, ...unreadable, ...numberOnSemantic];
+  const nothingToCount = new Set(known.filter((rule) => rule.layer !== "L4" && rule.level_sets === "severity").map((rule) => rule.id));
+  const numberOnSeverity = Object.keys(config.limits)
+    .filter((id) => nothingToCount.has(id))
+    .map((id) => text.numberOnSeverity(where, id));
+  return [...unknown, ...unreadable, ...numberOnSemantic, ...numberOnSeverity];
 };
