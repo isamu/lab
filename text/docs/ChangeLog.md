@@ -4,6 +4,25 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` reads an acronym glossary's headwords as defined when their name follows them (#170)
+
+In a glossary of abbreviations, the headword is the acronym and its name is the definition right after it. The
+rule reported the headword anyway. An acronym now counts as defined when it stands alone as a term and the text
+directly attached to it spells it out:
+
+- a heading or a line of its own (`## AFD`, `**AFD**`), and the next line;
+- a table cell (`| AFD | Area Forecast Discussion |`), and the cell next to it;
+- a bold term or a list term with a separator (`**AFD**: …`, `- AFD — …`), and the text after it.
+
+A plain line starting "RTO: …" is not read as an entry, since notes are written that way too, and nothing inside a
+code block (fenced or indented) or the front matter counts.
+
+The name is checked the way a bracketed name is: its initials must match the acronym exactly ("At or above" for AOA),
+or a single word must hold its letters in order ("Above" for ABV). A name that does not match, or a Japanese name, still
+leaves the acronym reported, as does an acronym used in prose with no expansion. The corpus gains the National Weather
+Service glossary, letter A (`docs/glossary`); its headwords whose names match are no longer reported, and the acronyms
+inside definitions still are.
+
 ### `yarn bench` checks every sample as a genre chaff has, and stops on one it does not (#170)
 
 The policy and note samples were checked as `business/policy` and `business/note`, which are not genres, so they ran

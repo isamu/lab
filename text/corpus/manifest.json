@@ -1544,6 +1544,17 @@
       "format": "html"
     },
     {
+      "id": "nws-glossary-a",
+      "title": "National Weather Service: Glossary (letter A)",
+      "source": "url",
+      "genre": "docs/glossary",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260908121643id_/https://forecast.weather.gov/glossary.php?letter=a",
+      "license": "Public domain (work of the US federal government, NOAA National Weather Service; per https://www.weather.gov/disclaimer)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
       "id": "apidatagov-developer-manual",
       "title": "api.data.gov: API Developer Manual",
       "source": "url",
