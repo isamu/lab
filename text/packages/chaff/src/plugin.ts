@@ -1,6 +1,8 @@
 // 言語アダプタと genre pack が依存してよい唯一の面。spec §6。
 // ここに実装を置かない。型だけを置く。
 
+import type { RuleGuide } from "./rule-guide.ts";
+
 export type Span = { readonly start: number; readonly end: number };
 
 /**
@@ -442,4 +444,6 @@ export type RuleDefinition = {
   readonly severity: Severity;
   /** Options beyond the level (the direction and length for katakana-long-vowel). Most rules have none. */
   readonly options?: Readonly<Record<string, RuleOption>>;
+  /** What the rule reference tells a reader who is not an engineer: its group, one line, a before and after. */
+  readonly guide?: RuleGuide;
 };

@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "yaml";
 import { parseGenres, presetLevelsOf } from "../../../packages/chaff/src/genre-parse.ts";
-import { rules, type Localized } from "./rules";
+import { standingIn, type GenreStanding } from "../../../packages/chaff/src/rule-genres.ts";
+import { rules, type Localized, type Rule } from "./rules";
 
 // astro build runs in text/site.
 const GENRES_FILE = resolve(process.cwd(), "..", "packages", "chaff", "genres.yaml");
@@ -47,3 +48,13 @@ export const genreGroups: readonly GenreGroupEntry[] = data.groups
     genres: data.genres.filter((genre) => genre.id.startsWith(`${group.id}/`)).map(entryOf),
   }))
   .filter((group) => group.genres.length > 0);
+
+export type RuleInGenre = { readonly genre: string; readonly name: Localized; readonly standing: GenreStanding };
+
+/** How one rule stands in every genre, in the order chaff genres lists them. */
+export const standingsOf = (rule: Pick<Rule, "id" | "status" | "useFor">): readonly RuleInGenre[] =>
+  data.genres.map((genre) => ({
+    genre: genre.id,
+    name: both(genre.name),
+    standing: standingIn({ id: rule.id, status: rule.status, use_for: rule.useFor }, genre.id, presetLevelsOf(data, genre.id)),
+  }));

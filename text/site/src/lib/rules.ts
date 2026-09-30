@@ -5,6 +5,7 @@ import { loadRules } from "../../../packages/chaff/src/rule-load.ts";
 import { severityAt } from "../../../packages/chaff/src/levels.ts";
 import type { RuleDefinition } from "../../../packages/chaff/src/plugin.ts";
 import { readableText, templateForReading } from "../../../packages/chaff/src/render/text.ts";
+import type { RuleExample, RuleGroup } from "../../../packages/chaff/src/rule-guide.ts";
 import type { Lang } from "./i18n";
 
 export type Localized = Record<Lang, string>;
@@ -24,6 +25,15 @@ export type Rule = {
   readonly levels: Record<Lang, readonly (readonly [string, string])[]>;
   readonly levelSets: RuleDefinition["level_sets"];
   readonly useFor: readonly string[];
+  /** The plain-language part of the rule file (group, summary, examples), for the reference in the guide. */
+  readonly group: RuleGroup | undefined;
+  readonly summary: Localized;
+  readonly examples: Readonly<Record<string, RuleExample>>;
+  readonly notFlagged: Localized;
+  /** What a level's number means, with {limit}; empty when every level is the same. */
+  readonly levelMeaning: Localized;
+  /** The genres that set their own numbers for the levels. */
+  readonly ownNumbers: readonly string[];
 };
 
 // astro build runs in text/site.
@@ -74,6 +84,12 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     levels: { ja: levelsOf(ja), en: levelsOf(en) },
     levelSets: ja.level_sets,
     useFor: ja.use_for,
+    group: ja.guide?.group,
+    summary: { ja: ja.guide?.summary["ja"] ?? "", en: ja.guide?.summary["en"] ?? "" },
+    examples: ja.guide?.examples ?? {},
+    notFlagged: { ja: ja.guide?.notFlagged["ja"] ?? "", en: ja.guide?.notFlagged["en"] ?? "" },
+    levelMeaning: { ja: ja.guide?.levelMeaning["ja"] ?? "", en: ja.guide?.levelMeaning["en"] ?? "" },
+    ownNumbers: Object.keys(ja.by_genre),
   };
 };
 

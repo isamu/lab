@@ -37,3 +37,36 @@ by_genre:
   academic: { strict: 5, normal: 9, relaxed: 12 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 文を詰めこみすぎて、息をつく場所がない段落
+  en: A paragraph packed with so many sentences that the reader has nowhere to pause
+example:
+  ja:
+    config: { rules: { max-paragraph-length: strict } }
+    before: |
+      今期の売上は前年より一割増えましたが、その多くは春に新しく始めた定期購入の申し込みによるもので、店頭での買い物が増えたわけではありませんでした。一方で、店頭での販売は三か月続けて前年を下回り、特に平日の夕方の客数が大きく減っています。原因として、駅の反対側に開いた競合店と、夕方の品ぞろえの薄さが考えられるという声が、先月の店長会議で何人もの店長から出ました。来期は夕方の品ぞろえを見直し、定期購入の案内を店頭でも配ることで、両方の数字を同時に上げることを目指します。
+    after: |
+      今期の売上は前年より一割増えました。その多くは、新しく始めた定期購入の申し込みによるものです。
+
+      一方で、店頭での販売は三か月続けて前年を下回りました。特に平日の夕方の客数が大きく減っています。
+
+      来期は夕方の品ぞろえを見直し、定期購入の案内を店頭でも配ります。
+  en:
+    config: { rules: { max-paragraph-length: strict } }
+    before: |
+      Sales this term rose by a tenth over last year, and most of the growth came from the new subscription plan that we launched in the spring. In-store sales, on the other hand, fell below last year's level for three months in a row, with weekday evenings down the most. At the store managers' meeting, several people pointed to the competitor that opened nearby and to the thin evening range as likely causes. Next term we will review the evening range and hand out subscription leaflets in store, so that both numbers go up together.
+    after: |
+      Sales this term rose by a tenth over last year. Most of the growth came from the new subscription plan.
+
+      In-store sales fell for three months in a row. Weekday evenings fell the most.
+
+      Next term we will review the evening range and hand out subscription leaflets in store.
+
+not_flagged:
+  ja: 文の数が多くても、短い文を重ねただけの段落（普通の長さの文を上限の数だけ並べたより短いもの）は指しません。
+  en: A paragraph of many short sentences is not reported, as long as it is shorter than that many sentences of ordinary length.
+level_meaning:
+  ja: 一つの段落に {limit} 文まで
+  en: up to {limit} sentences in a paragraph

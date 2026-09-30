@@ -17,7 +17,7 @@ import { GENRES } from "./genre.ts";
 import { resolveGenre } from "./resolve-genre.ts";
 import { runInit } from "./init.ts";
 import { initGenre } from "./commands/init-ask.ts";
-import { targetsOf } from "./cli-args.ts";
+import { targetsOf, withExperimental } from "./cli-args.ts";
 import { loadRules } from "./rule-load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
@@ -26,6 +26,7 @@ import { renderGenres } from "./render/genres.ts";
 import { loadGenres, presetLevels } from "./genre-load.ts";
 import { fileHeader } from "./file-header.ts";
 import { rulesJson } from "./render/rules-json.ts";
+import { rulesTable } from "./render/rules-table.ts";
 import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
 import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
@@ -257,11 +258,14 @@ type Handler = (argv: readonly string[]) => number | Promise<number>;
 /** `--` で始まらない引数。対象のパス。 */
 const positional = (argv: readonly string[]): string[] => targetsOf(argv.slice(1));
 
-const showRules = (genreFlag: string | undefined): number => {
-  const config = readConfig();
+/** `rules --json` for an AI to read; `rules` alone, a table for a person. */
+const showRules = (argv: readonly string[]): number => {
+  const config = withExperimental(readConfig(), argv);
   const language = config.language ?? hostLanguage(undefined, process.env);
   warnRuleProblems(config, language);
-  console.log(rulesJson(loadRules(language), config, language, genreFlag ?? config.genre ?? "blog/tech", optionLayersOf(config)));
+  const genre = flag(argv, "--genre") ?? config.genre ?? "blog/tech";
+  const rules = loadRules(language);
+  console.log(argv.includes("--json") ? rulesJson(rules, config, language, genre, optionLayersOf(config)) : rulesTable(rules, config, language, genre));
   return 0;
 };
 
@@ -291,7 +295,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
     return "error" in chosen ? 1 : 0;
   },
   genres: showGenres,
-  rules: (argv) => showRules(flag(argv, "--genre")),
+  rules: showRules,
   explain: (argv) => explain(argv[1], flag(argv, "--genre")),
   eval: (argv) => runEval(positional(argv), argv, { ...measureContext(argv), flag }),
   tree: (argv) => runTree(treeTargets(argv), argv, treeContext()),

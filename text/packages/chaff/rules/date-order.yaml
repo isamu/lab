@@ -24,3 +24,35 @@ how_to_fix:
 levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 旅程や予定表で、一つだけ日付の順番が前後している所
+  en: One date out of order in an itinerary or a schedule
+example:
+  ja:
+    before: |
+      - 2026年4月1日 出発
+      - 2026年4月3日 視察
+      - 2026年3月5日 会議
+      - 2026年4月10日 帰国
+    after: |
+      - 2026年4月1日 出発
+      - 2026年4月3日 視察
+      - 2026年4月5日 会議
+      - 2026年4月10日 帰国
+  en:
+    before: |
+      - 1 April 2026: depart
+      - 3 April 2026: site visit
+      - 5 March 2026: meeting
+      - 10 April 2026: return
+    after: |
+      - 1 April 2026: depart
+      - 3 April 2026: site visit
+      - 5 April 2026: meeting
+      - 10 April 2026: return
+
+not_flagged:
+  ja: その向きに沿う日付が半分以下の並びは、名前や版の順に並べた一覧として扱い、何も言いません。
+  en: A list where no more than half of the dates follow one direction is taken as sorted by something else, and nothing is said.
