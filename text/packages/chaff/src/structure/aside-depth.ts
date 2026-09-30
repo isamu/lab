@@ -33,7 +33,7 @@ const NO_OPEN = -1;
 
 /**
  * 本文を一度だけ読み、文字の切れ目ごとに openAsidesAt の答えを覚える。参照ごとに頭から読み直すと、参照の数と行の長さの積になる。
- * 覚えていない位置（文字の途中、本文の外）は openAsidesAt で読む。
+ * 覚えていない位置（2 単位の文字の途中）は openAsidesAt で読む。
  */
 export const asideDepth = (text: string, aside: Aside): AsideDepth => {
   if (aside === undefined) return { depth: () => 0, innermost: () => undefined };
@@ -48,12 +48,19 @@ export const asideDepth = (text: string, aside: Aside): AsideDepth => {
     depths[at + char.length] = opens.length;
     innermosts[at + char.length] = opens.at(-1) ?? NO_OPEN;
   });
-  const read = (at: number): boolean => Number.isInteger(at) && at >= 0 && at <= text.length && depths[at] !== UNREAD;
+  // text.slice(0, at) が切る位置。負の数は後ろから数え、本文の外は端に寄せる。文字の途中なら覚えていない。
+  const cut = (at: number): number => {
+    const whole = Math.trunc(Number.isNaN(at) ? 0 : at);
+    return whole < 0 ? Math.max(text.length + whole, 0) : Math.min(whole, text.length);
+  };
   return {
-    depth: (at) => (read(at) ? (depths[at] ?? 0) : openAsidesAt(text, at, aside).length),
+    depth: (at) => {
+      const depth = depths[cut(at)] ?? UNREAD;
+      return depth === UNREAD ? openAsidesAt(text, at, aside).length : depth;
+    },
     innermost: (at) => {
-      if (!read(at)) return openAsidesAt(text, at, aside).at(-1);
-      const open = innermosts[at] ?? NO_OPEN;
+      const open = innermosts[cut(at)] ?? UNREAD;
+      if (open === UNREAD) return openAsidesAt(text, at, aside).at(-1);
       return open === NO_OPEN ? undefined : open;
     },
   };

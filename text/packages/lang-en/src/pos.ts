@@ -100,9 +100,22 @@ const BE = new Set(["be", "am", "is", "are", "was", "were", "been", "being"]);
 
 const isBe = (entry: Tagged): boolean => BE.has(entry.lemma ?? entry.value.toLowerCase()) || BE.has(entry.value.toLowerCase());
 
+/**
+ * end（0 以上）より前で test に合う最後の位置。無ければ -1。過去分詞の多い長い文で、分詞ごとに文の頭から写すと語数の二乗になるので、後ろから探す。
+ */
+const lastIndexBefore = (tagged: readonly Tagged[], end: number, test: (entry: Tagged) => boolean): number => {
+  let at = Math.min(end, tagged.length);
+  while (at > 0) {
+    at -= 1;
+    const entry = tagged[at];
+    if (entry !== undefined && test(entry)) return at;
+  }
+  return -1;
+};
+
 /** 過去分詞の前の be の位置。無ければ -1。 */
 const beBefore = (tagged: readonly Tagged[], at: number): number => {
-  const head = tagged.slice(0, at).findLastIndex((entry) => !SKIPPABLE.has(entry.pos));
+  const head = lastIndexBefore(tagged, at, (entry) => !SKIPPABLE.has(entry.pos));
   const entry = tagged[head];
   return entry !== undefined && isBe(entry) ? head : -1;
 };
@@ -125,11 +138,11 @@ const NOMINAL_TAG = new Set(["NN", "NNS", "NNP", "NNPS", "PRP", "CD", "DT"]);
 const RELATIVE_TAG = new Set(["WDT", "WP"]);
 
 const inRelativeClause = (tagged: readonly Tagged[], be: number): boolean => {
-  const lead = tagged.slice(0, be).findLastIndex((entry) => !isAuxiliary(entry));
+  const lead = lastIndexBefore(tagged, be, (entry) => !isAuxiliary(entry));
   const relative = tagged[lead];
   if (relative === undefined || !RELATIVE_TAG.has(relative.pos)) return false;
   // 文頭の That was decided. / Which was chosen? は、前に指す名詞が無いので述語。
-  const antecedent = tagged.slice(0, lead).findLast((entry) => entry.pos !== ",");
+  const antecedent = tagged[lastIndexBefore(tagged, lead, (entry) => entry.pos !== ",")];
   return antecedent !== undefined && NOMINAL_TAG.has(antecedent.pos);
 };
 

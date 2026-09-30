@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { BASELINE_FILE, fingerprint, fingerprints, readBaseline, splitByBaseline } from "../packages/chaff/src/baseline.ts";
 import { doubledIn } from "../packages/chaff/src/detectors/doubled-word.ts";
 import { depthsOf } from "../packages/chaff/src/detectors/oxford-comma.ts";
+import { tokenize } from "../packages/lang-en/src/pos.ts";
 import { renderFriendly } from "../packages/chaff/src/render/friendly.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
@@ -137,6 +138,19 @@ describe("English: one sentence of many words", () => {
     await en.prepare?.({ pos: true });
   });
 
+  it(`reads ${String(LONG / 2)} past participles in one sentence`, { timeout: LONG_TIMEOUT_MS }, () => {
+    const tokens = tokenize(`The plans were ${"reviewed ".repeat(LONG / 2)}today.`) ?? [];
+    assert.ok(tokens.length > LONG / 2);
+    assert.deepEqual(tokens[3]?.features, { VerbForm: "Part", Voice: "Pass" });
+  });
+
+  it("still reads a participle after be as passive, and one in a relative clause as not", () => {
+    const features = (sentence: string, word: string): unknown => (tokenize(sentence) ?? []).find((token) => token.surface === word)?.features;
+    assert.deepEqual(features("The decision was made.", "made"), { VerbForm: "Part", Voice: "Pass" });
+    assert.deepEqual(features("The report that was published is here.", "published"), { VerbForm: "Part" });
+    assert.deepEqual(features("That was decided.", "decided"), { VerbForm: "Part", Voice: "Pass" });
+  });
+
   it(`tags and judges a list of ${String(LONG / 5)} words`, { timeout: LONG_TIMEOUT_MS }, () => {
     const words = Array.from({ length: LONG / 5 }, (_, index) => (index % 7 === 3 ? "(apples)," : "pears,")).join(" ");
     assert.deepEqual(firedRules(en, `We bought ${words} and plums today.\n`).includes("oxford-comma-consistency"), false);
@@ -211,7 +225,7 @@ describe("relativeMentions: a bare 第一項 on a line of many references", () =
 describe("asideDepth: the open asides at a position, read once", () => {
   const aside = { open: "（", close: "）" };
   const text = "a（b（😀）c）（d";
-  const positions = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 99, 2.5, Number.NaN];
+  const positions = [-100, -3, -1, -0.5, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 99, 2.5, Number.NaN, Infinity, -Infinity];
 
   it("answers as reading the text up to the position would", () => {
     const depth = asideDepth(text, aside);
@@ -220,6 +234,11 @@ describe("asideDepth: the open asides at a position, read once", () => {
       assert.equal(depth.depth(at), opens.length, `depth at ${String(at)}`);
       assert.equal(depth.innermost(at), opens.at(-1), `innermost at ${String(at)}`);
     });
+  });
+
+  it("reads a position that is not a number as the start of the text", () => {
+    const opening = asideDepth("（a）", aside);
+    assert.deepEqual([opening.depth(Number.NaN), opening.depth(1), opening.innermost(Number.NaN)], [0, 1, undefined]);
   });
 
   it("reads the middle of a two-unit character as the text cut there", () => {
