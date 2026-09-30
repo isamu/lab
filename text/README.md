@@ -696,6 +696,7 @@ yarn test          # node:test
 yarn knip          # 未使用の export（落とさない）
 yarn duplication   # コピペ検出（落とさない）
 yarn corpus        # corpus にかけて corpus/expected.txt と比べる（--verbose で指摘も出す、--update で書き換える）
+yarn corpus:health # URL の文書をすべて取り直す。取れない・コミットした写しと上流が違う・結果が変わった、を報告する（週次の CI と同じ）
 yarn bench         # 誤りを植えた見本で見逃しを数える（--verbose、--update は corpus と同じ）
 ```
 
