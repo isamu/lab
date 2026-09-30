@@ -16,7 +16,8 @@ time grew with the square of the length. Each now reads it once. The output is u
 - **The default output** tidies each quoted sentence once, not once per finding in it.
 - **`doubled-word`** finds the first word of a sentence once per sentence.
 - **English:** the tagger's words are placed in the sentence, and `oxford-comma-consistency` counts parentheses and
-  splits a list into its items, in one pass.
+  splits a list into its items, in one pass. The `be` before a past participle is looked for backwards from the
+  participle, without copying the sentence before it.
 - **Statutes** (`legal/statute`): a bare 第一項 looks up the aside depth and the reference it continues from an index
   built once per line, instead of reading the line from its start for each reference.
 
