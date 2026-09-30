@@ -26,10 +26,10 @@ chrome-blog-pwa-origin-migration  contraction-consistency 1, heading-echo 1, max
 chrome-blog-pwa-origin-migration-ja  latin-spacing 1, max-sentence-length 4, stray-space 4
 cisa-scuba-teams  bold-density 9, contraction-consistency 4, max-paragraph-length 2, max-sentence-length 32, ngram-repetition 1, numbering-gap 1, proper-noun-density 1, undefined-acronym 5
 cloudgov-changelog-2023-11-27  max-sentence-length 2, proper-noun-density 1, undefined-acronym 3
-cloudgov-security-ir-guide  agentless-passive 31, concrete-evidence-density 4, contraction-consistency 2, max-sentence-length 24, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 10
+cloudgov-security-ir-guide  agentless-passive 31, concrete-evidence-density 4, contraction-consistency 2, max-sentence-length 24, proper-noun-density 1, undefined-acronym 10
 cloudgov-v2api-eol-notice  agentless-passive 4, contraction-consistency 1, doubled-word 1, max-sentence-length 1, proper-noun-density 1, title-case-consistency 1
 cloudgov-your-first-deploy  contraction-consistency 1, doubled-word 1, max-sentence-length 3, proper-noun-density 1, undefined-acronym 5
-commonpaper-csa  max-sentence-length 10, oxford-comma-consistency 2, undefined-acronym 7
+commonpaper-csa  max-sentence-length 10, undefined-acronym 7
 commonpaper-mutual-nda  max-sentence-length 4
 crec-2024-03-07-s2256-reca  clean
 crs-r47235-budget-timeline  agentless-passive 53, max-paragraph-length 5, max-sentence-length 126, ngram-repetition 1, proper-noun-density 1, repeated-sentence-head 1, undefined-acronym 5
@@ -53,7 +53,7 @@ da-privacy-policy  latin-spacing 1
 da-recruitment-career-faq  max-sentence-length 1
 da-recruitment-office-visit  max-kanji-continuous 4
 da-service-design-guidelines-2  agentless-passive 4, concrete-evidence-density 4, dangling-reference 1, latin-spacing 2, max-kanji-continuous 3, max-sentence-length 31, no-doubled-joshi 1, undefined-acronym 7
-dailymed-advil-otc-label  max-sentence-length 4, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
+dailymed-advil-otc-label  max-sentence-length 4, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
 denkiyagi-ryohi-kitei  clean
 denkiyagi-shugyo-kisoku  clean
 dwango-nicolive-manifest-generator  latin-spacing 9, max-sentence-length 1, undefined-acronym 3
@@ -95,7 +95,7 @@ k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-
 k8s-overview-ja  max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kaisha.txt  clean
 kantei-unga81-general-debate-speech  empty-intensifier 6, max-kanji-continuous 3, max-sentence-length 4, no-doubled-joshi 2, unqualified-superlative 3
-kantei-unga81-general-debate-speech-en  empty-intensifier 1, max-paragraph-length 1, max-sentence-length 49
+kantei-unga81-general-debate-speech-en  empty-intensifier 1, max-paragraph-length 1, max-sentence-length 49, oxford-comma-consistency 2
 kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
 kimino-cleanup-notice  max-kanji-continuous 2, max-sentence-length 2
 kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1
@@ -108,7 +108,7 @@ koho-tokyo-2026-06-suigai  max-kanji-continuous 1, max-paragraph-length 1, no-mi
 kojin.txt  clean
 kokkai-217-sangiin-shohisha-7  clean
 loc-signal-new-online-2026-07  contraction-consistency 2, max-sentence-length 26, proper-noun-density 1, title-case-consistency 2
-logingov-help-face-or-touch-unlock  contraction-consistency 1, max-sentence-length 7, oxford-comma-consistency 1
+logingov-help-face-or-touch-unlock  contraction-consistency 1, max-sentence-length 7
 meti-keiryoshi-exam-correction  latin-spacing 1, max-sentence-length 2
 meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5
 mext-heatstroke-after-holidays  hiragana-fukushi 1, max-kanji-continuous 5, max-paragraph-length 2, max-sentence-length 18, ngram-repetition 1, preamble-length 1

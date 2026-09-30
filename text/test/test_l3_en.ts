@@ -296,6 +296,99 @@ describe("L3 英語", () => {
     it("invalid: 最初の and が並列でなくても、後ろの並列を見る", () => {
       assert.ok(judgedAgainst(WITHOUT_COMMA, "We wrote the parser and the renderer, the exporter, and the tests."));
     });
+
+    // 例の句・2 つだけを取る語・名詞を共有する修飾語・前置詞の目的語の中の and / or は、並びの最後の継ぎ目ではない（#170 の corpus round 11）。
+    const neitherSide = (candidate: string): boolean => judgedAgainst(WITH_COMMA, candidate) || judgedAgainst(WITHOUT_COMMA, candidate);
+
+    [
+      ["such as のあとの 2 つ（Login.gov）", "This will rely on the screen lock on your phone, such as a PIN or phone-based fingerprint."],
+      ["括弧の中の e.g. のあとの 2 つ", "Invite external users (e.g., guests or vendors) to the call."],
+      ["i.e. のあとの 2 つ", "Use a second factor, i.e. a security key or an authentication app."],
+      ["for example のあとの 2 つ", "Bring a document, for example a passport or a driving licence."],
+      [
+        "名詞を共有する形容詞の and（成分表示）",
+        "Inactive ingredients: carnauba wax, microcrystalline cellulose, natural and artificial flavor, titanium dioxide",
+      ],
+      ["名詞を共有する過去分詞の or（解析器が過去形と読む）", "Notices are given upon delivery by email, registered or certified mail, or personal delivery."],
+      [
+        "最後の項目の前置詞の目的語の or（cloud.gov）",
+        "Updates and real-time chat should continue as above (updates on the Google Doc, chat in Slack or Google Hangouts).",
+      ],
+      [
+        "both のあとが複数形でも、and の後ろが冠詞の無い複数形なら 2 つを結ぶ（18F）",
+        "Teams should make a recommendation to the Director of Account Management, who is accountable for both project impact goals and business goals and will make the ultimate decision.",
+      ],
+      [
+        "either のあとが動詞なら 2 つを結ぶ（GitLab）",
+        "Some meetings may benefit from introductions, so be intentional about either doing introductions or not.",
+      ],
+      ["目的語のあとの副詞は目的語の品詞を変えない", "Updates should continue as above (updates on the Google Doc, chat in Slack or Teams only)."],
+      ["目的語のあとの名詞は目的語の品詞を変えない", "Updates should continue as above (updates on the Google Doc, chat in Slack or Teams desktop)."],
+      ["目的語のあとの括弧は目的語の品詞を変えない", "Updates should continue as above (updates on the Google Doc, chat in Slack or Teams (beta))."],
+    ].forEach(([why, candidate]) => {
+      it(`valid: ${why ?? ""}`, () => {
+        assert.ok(!neitherSide(candidate ?? ""));
+      });
+    });
+
+    it("valid: between の中の and は項目の中。Oxford の並びとして読む", () => {
+      const candidate =
+        "The terms mean these standard terms, the key terms between the provider and the customer, and any policies referenced in or attached to them.";
+      assert.ok(!judgedAgainst(WITH_COMMA, candidate));
+      assert.ok(judgedAgainst(WITHOUT_COMMA, candidate));
+    });
+
+    [
+      ["such as のあとの 3 つ", WITH_COMMA, "This will rely on the screen lock on your phone, such as a PIN, a password or a fingerprint."],
+      ["括弧の中の e.g. のあとの 3 つ", WITH_COMMA, "Invite external users (e.g., guests, vendors and partners) to the call."],
+      ["such as が最初の項目の中にあっても、後ろの並び", WITHOUT_COMMA, "We sell tools such as hammers, saws, and drills."],
+      ["between が最後の項目に無ければ並び", WITH_COMMA, "The contract is between the provider, the reseller and the customer."],
+      ["形容詞の並びが名詞を共有しても並び", WITH_COMMA, "We sell red, white and blue flags."],
+      ["過去分詞の並びが名詞を共有しても並び", WITH_COMMA, "We ship tested, reviewed and approved code."],
+      ["修飾語の前の読点は項目の区切り（BLS）", WITHOUT_COMMA, "We count federal government, military, and agricultural workers."],
+      ["both のあとが複数形なら 2 つは揃っていて、and は並びの継ぎ目", WITH_COMMA, "We tested the parser, the renderer in both modes and the exporter."],
+      ["and の後ろが冠詞を連れた複数形なら、both の 2 つは揃っている", WITH_COMMA, "We tested the parser, the renderer in both modes and the exporters."],
+      ["both のあとの読点は項目の区切り", WITHOUT_COMMA, "We tested the parser, the renderer in both views, and the exporter."],
+      ["either のあとの読点は項目の区切り", WITHOUT_COMMA, "We can drop the parser, the renderer with either option, or the exporter."],
+      ["between の 2 つが揃ったあとの and は並びの継ぎ目", WITH_COMMA, "We read the notes, the terms between the provider and the customer and the policies."],
+      ["括弧の中の either は括弧の外の or と組まない", WITH_COMMA, "The plan covers pricing, implementation (either way) or support."],
+      ["either の相手は or。and なら either は名詞にかかるだけ", WITH_COMMA, "The review covers pricing, the impact of either option and implementation."],
+      ["and で閉じた例の句は 1 つの項目", WITHOUT_COMMA, "The menu includes apples, oranges such as navels and mandarins, and pears."],
+      ["空けて書いた頭文字は e.g. ではない", WITH_COMMA, "The attendees (A. B. Clark, E. G. Evans and C. D. Ford) arrived."],
+      ["続けて書いた頭文字は e.g. ではない", WITH_COMMA, "The attendees (A.B. Clark, E.G. Evans and C.D. Ford) arrived."],
+      ["続けて書いた頭文字は i.e. ではない", WITH_COMMA, "We invited Alice, I.E. Evans and Carol."],
+      ["括弧の中の例の句は、括弧の外の並びを切らない", WITH_COMMA, "We tested the parser, the renderer (such as the slow one) and the exporter."],
+      ["修飾語だけでない項目は、名詞を共有しない", WITH_COMMA, "We sell cheese, blue cheese and white bread."],
+      ["冠詞や目的語を連れた後ろの項目は、名詞を共有しない", WITH_COMMA, "We built the parser, tested and shipped the release."],
+      ["and の後ろも前置詞の句を連れれば並び", WITH_COMMA, "We keep updates on the Google Doc, chat in Slack and notes on paper."],
+      ["and の後ろが項目の頭と同じ品詞なら並び", WITH_COMMA, "The policy applies to requests for records, petitions for waivers and appeals."],
+      ["and の後ろが項目の頭と同じ品詞なら並び（別の形）", WITH_COMMA, "We track requirements for admins, settings for editors and viewers."],
+      ["固有名詞の目的語でも、or の前の読点は項目の区切り", WITHOUT_COMMA, "We keep updates on the Google Doc, chat in Slack, and Google Hangouts."],
+      ["前置詞の句を連れない項目があれば、固有名詞でも並び", WITH_COMMA, "We keep updates, chat in Slack and Google Hangouts."],
+      ["and の後ろが前置詞の句を連れれば、固有名詞でも並び", WITH_COMMA, "We keep notes on the Google Doc, chat in Slack and Zoom in Chrome."],
+      ["and の後ろに述語が続けば、固有名詞でも主語の並び", WITH_COMMA, "Updates on the Google Doc, chat in Slack and Google Hangouts replaced Skype."],
+      ["最後の項目の目的語と品詞が違えば並び", WITH_COMMA, "We keep updates on the doc, chat in rooms and Google Hangouts."],
+      [
+        "例の句の中の項目の形が揃わなければ、句の前からの並び（CRS）",
+        WITHOUT_COMMA,
+        "It cannot be analyzed further (e.g., by location of performance, contract type, or contract preference).",
+      ],
+      [
+        "項目の中の例の句の形が揃わなければ、句の前からの並び",
+        WITHOUT_COMMA,
+        "Such capabilities include producing materials such as green steel, utilizing gas power, and adopting data centers.",
+      ],
+      ["前置詞の句を連れない項目があれば並び", WITH_COMMA, "We need updates on the Google Doc, chat and email."],
+      ["前置詞の句が揃っても、and の前の読点は並び", WITHOUT_COMMA, "We keep updates on the Google Doc, chat in Slack, and notes."],
+    ].forEach(([why, base, candidate]) => {
+      it(`invalid: ${why ?? ""}`, () => {
+        assert.ok(judgedAgainst(base ?? "", candidate ?? ""));
+      });
+    });
+
+    it("2 つの X or Y は、読点があってもなくても並びではない", () => {
+      ["We accept cash or cards.", "We accept cash, or cards.", "Pay by cash or by card."].forEach((candidate) => assert.ok(!neitherSide(candidate)));
+    });
   });
 
   it("英語の rule は日本語で動かさない", () => {
