@@ -72,6 +72,27 @@ describe("registerOf: 文末の語の調子", () => {
     assert.equal(registerOf([dependent("こと")], [token("の", "ADP"), token("だ", "AUX")], POLITE), "plain");
   });
 
+  it("調子を持たない文末の語（語彙表 neutral-ending の「こと」「もの」）で終われば、手前の述語にかかわらず調子を持たない", () => {
+    assert.equal(registerOf([dependent("もの")], [token("な", "AUX")], POLITE, [{ pattern: "もの" }]), undefined);
+    const neutral: readonly LexiconEntry[] = [{ pattern: "こと" }, { pattern: "事" }];
+    assert.equal(registerOf([dependent("こと")], [token("できる", "VERB")], POLITE, neutral), undefined);
+    assert.equal(registerOf([dependent("こと")], [token("し", "VERB", "する"), token("まし", "AUX", "ます"), token("た", "AUX")], POLITE, neutral), undefined);
+    assert.equal(registerOf([{ ...dependent("事"), lemma: "事" }], [token("する", "VERB")], POLITE, neutral), undefined);
+    assert.equal(registerOf([{ ...dependent("こと"), lemma: "事" }], [token("する", "VERB")], POLITE, [{ pattern: "事" }]), undefined);
+  });
+
+  it("語彙表に無い非自立名詞は、これまでどおり手前の述語の調子（「のかな？」「ものだ」）", () => {
+    const neutral: readonly LexiconEntry[] = [{ pattern: "こと" }];
+    assert.equal(registerOf([dependent("の")], [token("いる", "VERB")], POLITE, neutral), "plain");
+    assert.equal(registerOf([dependent("もの")], [token("です", "AUX")], POLITE, neutral), "polite");
+  });
+
+  it("「こと」の後ろに述語が続けば、その述語の調子（「ことです。」「ことだ。」）", () => {
+    const neutral: readonly LexiconEntry[] = [{ pattern: "こと" }];
+    assert.equal(registerOf([dependent("こと"), token("です", "AUX")], [token("する", "VERB")], POLITE, neutral), "polite");
+    assert.equal(registerOf([dependent("こと"), token("だ", "AUX")], [token("する", "VERB")], POLITE, neutral), "plain");
+  });
+
   it("非自立名詞でも、手前が述語でなければ調子を持たない（「以下のとおり。」）", () => {
     assert.equal(registerOf([dependent("とおり")], [token("の", "ADP")], POLITE), undefined);
     assert.equal(registerOf([dependent("とおり")], [], POLITE), undefined);

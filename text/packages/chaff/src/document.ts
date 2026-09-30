@@ -8,7 +8,8 @@ import { hasTitle } from "./heading-title.ts";
 import { maskSpans } from "./mask.ts";
 import { spansWithin, unmaskedSoftBreaks } from "./soft-break.ts";
 import { segmentJoined } from "./joined-view.ts";
-import { lineParagraphs } from "./line-paragraphs.ts";
+import { documentLineParagraphs } from "./line-paragraphs.ts";
+import { subheadingPieces } from "./subheading-line.ts";
 import { speakerLabels } from "./speaker-labels.ts";
 import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
@@ -190,6 +191,10 @@ const shift = (span: Span, by: number): Span => ({ start: by + span.start, end: 
 
 const breaksWithin = (breaks: readonly Span[], paragraph: Span): Span[] => spansWithin(breaks, paragraph).map((span) => shift(span, -paragraph.start));
 
+/** 段落を、中の小見出しの行（「（経済再生）」）の後ろで切った片。片ごとに分割すれば、小見出しが次の文に入らない。 */
+const piecesOf = (prose: string, paragraphs: readonly Span[]): Span[] =>
+  paragraphs.flatMap((paragraph) => subheadingPieces(prose.slice(paragraph.start, paragraph.end)).map((piece) => shift(piece, paragraph.start)));
+
 const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: LanguageAdapter, softBreaks: readonly Span[]): Sentence[] =>
   paragraphs.flatMap((paragraph) =>
     segmentJoined(prose.slice(paragraph.start, paragraph.end), breaksWithin(softBreaks, paragraph), (text) => adapter.segment(text))
@@ -244,19 +249,13 @@ const firstStartingAt = (sentences: readonly Sentence[], offset: number): number
 const sentencesWithin = (sentences: readonly Sentence[], span: Span): Sentence[] =>
   sentences.slice(firstStartingAt(sentences, span.start), firstStartingAt(sentences, span.end));
 
-const paragraphsOf = (prose: string, spans: readonly Span[], sentences: readonly Sentence[], listSpans: readonly Span[]): Paragraph[] =>
-  spans
-    // 箇条書きの中の段落は「段落」として数えない。項目 1 つを 1 段落と読むと、
-    // 段落あたりの文数も長さのばらつきも、箇条書きの多い文書で壊れる。
-    .filter((span) => !listSpans.some((list) => span.start >= list.start && span.start < list.end))
-    .flatMap((span) =>
-      lineParagraphs(
-        prose,
-        span,
-        sentencesWithin(sentences, span).map((sentence) => sentence.span),
-      ),
-    )
-    .map((span) => ({ span, sentences: sentencesWithin(sentences, span) }));
+const paragraphsOf = (prose: string, spans: readonly Span[], sentences: readonly Sentence[], listSpans: readonly Span[]): Paragraph[] => {
+  // 箇条書きの中の段落は「段落」として数えない。項目 1 つを 1 段落と読むと、
+  // 段落あたりの文数も長さのばらつきも、箇条書きの多い文書で壊れる。
+  const outsideLists = spans.filter((span) => !listSpans.some((list) => span.start >= list.start && span.start < list.end));
+  const withSentences = outsideLists.map((span) => ({ span, sentences: sentencesWithin(sentences, span).map((sentence) => sentence.span) }));
+  return documentLineParagraphs(prose, withSentences).map((span) => ({ span, sentences: sentencesWithin(sentences, span) }));
+};
 
 /** 箇条書きは list ノードの直下の項目を数える。入れ子の項目は内側の list のものとして数える。目次のような案内だけの箇条書きは数えない。 */
 const listsOf = (root: Node, source: string, anchors: InPageAnchors): BulletList[] => {
@@ -322,7 +321,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
   const listItems = spansOfType(root, "listItem");
   // Markdown は段落を流し込んで表示するので、段落の中の改行は読み手に見えない。テキストの文書は行をそのまま見せる（法令は 1 行 1 号）。
   const softBreaks = isMarkdownPath(path) ? unmaskedSoftBreaks(source, prose) : [];
-  const sentences = sentencesOf(prose, paragraphSpans, adapter, softBreaks);
+  const sentences = sentencesOf(prose, piecesOf(prose, paragraphSpans), adapter, softBreaks);
   const lexicons = {
     ...adapter.lexicons,
     "internal-jargon": team.jargon.map((pattern) => ({ pattern })),

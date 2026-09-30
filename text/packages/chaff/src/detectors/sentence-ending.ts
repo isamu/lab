@@ -12,11 +12,11 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } f
  */
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined };
 
-const registerOfSentence = (sentence: Sentence, polite: readonly LexiconEntry[]): Register | undefined => {
+const registerOfSentence = (sentence: Sentence, polite: readonly LexiconEntry[], neutral: readonly LexiconEntry[]): Register | undefined => {
   const ending = endingTokens(sentence);
   const tokens = sentence.tokens ?? [];
   const head = ending[0] === undefined ? -1 : tokens.indexOf(ending[0]);
-  return registerOf(ending, head > 0 ? tokens.slice(0, head) : [], polite);
+  return registerOf(ending, head > 0 ? tokens.slice(0, head) : [], polite, neutral);
 };
 
 /** 番号で始まる段落の並び。木を組むのは高いので、調子が一つだけの文書（混ざりようがない）では組まない。 */
@@ -32,10 +32,11 @@ const runsOf = (doc: ProseDocument, registers: readonly Register[]): Span[] => {
 
 export const sentenceEnding: Detector = (doc, options): Finding[] => {
   const polite = options.lexicon ?? [];
+  const neutral = doc.lexicons["neutral-ending"] ?? [];
   const lists = doc.lists.map((list) => list.span);
   const found = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register }[] => {
     if (!isClosed(sentence) || continuesInto(sentence, doc.sentences[index + 1])) return [];
-    const register = registerOfSentence(sentence, polite);
+    const register = registerOfSentence(sentence, polite, neutral);
     return register === undefined ? [] : [{ sentence, register }];
   });
   const runs = runsOf(

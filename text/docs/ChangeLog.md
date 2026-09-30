@@ -4,6 +4,25 @@ Newest first.
 
 ## Unreleased
 
+### Japanese speeches written one paragraph per line; subheading lines; 「〜こと。」 items (#170)
+
+A document written one paragraph per line, with no blank line between (the 官邸's 施政方針演説), is now split line
+by line even when each block under a heading is short. Whether a document is written this way is decided over the
+whole document: the two-sentence lines of every block with more than one line are counted together. Before, each
+block had to show enough two-sentence lines on its own, so a speech whose sections hold a few lines each stayed one
+paragraph per section, and `max-paragraph-length` reported them. A block that splits on its own still splits, a
+block that wraps mid-sentence still does not, and one-line blocks (ordinary blank-line paragraphs) are not counted.
+
+A line that is only a short phrase in parentheses (「（経済再生）」, 「【お問い合わせ先】」, 「（目的）」) is a
+subheading. It no longer joins the sentence on the next line, so a finding on that sentence is reported on its own
+line, and the sentence's length no longer includes the subheading. Quotation marks 「」『』 are not subheadings, and
+neither is a bracketed line in the middle of a sentence, a bracketed note that ends a sentence, or a long one.
+
+`no-mixed-desumasu` no longer counts an ending in 「こと」 or 「もの」 (「〜を保持すること。」, 「〜が可能なもの。」)
+as だ・である. Requirements, licence terms and glossaries use this form in both registers, so it votes for neither.
+The words are a new lang-ja lexicon, `neutral-ending`. Other nouns before a question or a particle keep the register
+of the verb before them (「〜のかな？」 is still plain).
+
 ### Corpus: footnote numbers, run-in section titles and Gutenberg's older closing line (#170)
 
 The corpus's HTML converter dropped a footnote mark written as `<sup><a>1</a></sup>` but kept one written as
