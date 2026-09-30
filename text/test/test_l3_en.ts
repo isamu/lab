@@ -267,6 +267,8 @@ describe("L3 英語", () => {
       ],
       ["並びのあとに別の形の and が続いても並列", WITH_COMMA, "We bought apples, pears and plums, and went home."],
       ["並びのあとに別の形の and が続いても並列（読点あり）", WITHOUT_COMMA, "We bought apples, pears, and plums, and went home."],
+      ["並びのあとに節をつなぐ and が続いても並列", WITH_COMMA, "We bought apples, pears and plums, and the figs fell."],
+      ["並びのあとに節をつなぐ and が続いても並列（読点あり）", WITHOUT_COMMA, "We bought apples, pears, and plums, and the figs fell."],
       [
         "閉じた並びの項目の中から次の並びが始まる",
         WITHOUT_COMMA,

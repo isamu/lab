@@ -341,13 +341,14 @@ const leadShape = (item: readonly Token[]): string | undefined => shapeOf(item.f
 
 /**
  * and の後ろの項目に読点と、同じ形の項目を連れた and / or が続くなら、この and は項目の中にある（searches and seizures, and
- * the Eighth's ban）。形が違えば別の節をつなぐ and で、この and までが並び（apples, pears and plums, and went home）。
+ * the Eighth's ban）。頭の形か、節かどうかが違えば別の節をつなぐ and で、この and までが並び（apples, pears and plums, and went home / and figs fell）。
  */
 const listContinues = (clause: Clause, at: number, after: readonly Token[]): boolean => {
   const next = at + 1 + after.length;
   if (clause.tokens[next]?.surface !== "," || !LIST_CONJUNCTION.has(clause.tokens[next + 1]?.surface.toLowerCase() ?? "")) return false;
-  const shape = leadShape(itemAfter(clause.tokens, next + 1));
-  return shape !== undefined && shape === leadShape(after);
+  const following = itemAfter(clause.tokens, next + 1);
+  const shape = leadShape(following);
+  return shape !== undefined && shape === leadShape(after) && isClause(following) === isClause(after);
 };
 
 /**
