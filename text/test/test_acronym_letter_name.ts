@@ -15,6 +15,7 @@ describe("letterJoinedNameSpans", () => {
     ["一文字が前", "published on J-STAGE today", ["J-STAGE"]],
     ["語が小文字混じり", "use T-Mobile or e-Gov", ["T-Mobile", "e-Gov"]],
     ["日本語の文の中", "J-STAGEトップから開きます。", ["J-STAGE"]],
+    ["仮名と漢字に接する", "論文はJ-STAGEで、資料もJ-STAGE上にある。", ["J-STAGE", "J-STAGE"]],
     ["文の終わりの . の前", "see J-STAGE.", ["J-STAGE"]],
   ].forEach(([form, text, names]) => {
     it(`valid: ${String(form)}`, () => assert.deepEqual(namesIn(String(text)), names));
@@ -23,10 +24,11 @@ describe("letterJoinedNameSpans", () => {
   [
     ["部品がどちらも二文字以上", "samples go to RT-PCR testing"],
     ["一文字が後ろ（略語の一種）", "under Recommendation ITU-T and the GOODS-S field"],
-    ["部品が三つ", "the A-B-C list and J-STAGE-X"],
+    ["部品が三つ", "the A-B-C list, X-J-STAGE and J-STAGE-X"],
     ["一文字の部品が二つ", "the A-B test"],
     ["数字を含む", "the J-2 visa, COVID-19 and the J-STAGE2 page"],
     [". で繋いだ名前の一部", "see X.J-STAGE and J-STAGE.X"],
+    ["空白で区切る文字の語に接する", "the CaféJ-STAGE, αJ-STAGE, ЖJ-STAGE and J-STAGÉ pages"],
   ].forEach(([form, text]) => {
     it(`invalid: ${String(form)}`, () => assert.deepEqual(namesIn(String(text)), []));
   });
@@ -44,6 +46,10 @@ describe("undefined-acronym と一文字で繋いだ名前", () => {
 
   it("en: 名前の中で数えなくても、同じ略語が名前の外にあれば数える", () => {
     assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe paper is on J-STAGE now. The STAGE team reviewed it.\n"), ["STAGE"]);
+  });
+
+  it("en: 長い語に接していれば名前ではなく、略語を数える", () => {
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe CaféJ-STAGE page is new.\n"), ["STAGE"]);
   });
 
   it("en: 後ろに一文字を繋いだ略語（ITU-T）の略語は数えたまま", () => {
