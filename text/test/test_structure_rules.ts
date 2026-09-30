@@ -504,10 +504,28 @@ describe("日本語: 他の文書の条を指す参照は、この文書では�
     ["当規約第9条に定める。", [["dangling-reference", { label: "第9条", target: "9" }]]],
     ["契約第9条に定める。", [["dangling-reference", { label: "第9条", target: "9" }]]],
     ["甲は第9条に定める。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+    // 名前と番地を「の」で繋いでも、名前の文書の条。本・この・当で始まる名前と、種類の語だけの名前はこの文書。
+    ["乙は、前契約第9条に従う。", []],
+    ["乙は、前契約の第9条に従う。", []],
+    ["乙は、原契約の第8条に従う。", []],
+    ["乙は、旧規程の第3条に従う。", []],
+    ["乙は、同契約の第7条に従う。", []],
+    ["乙は、前契約の第9条及び第10条に従う。", []],
+    ["乙は、前契約の第3章に従う。", []],
+    ["個人情報の保護に関する法律の第3条による。", []],
+    ["乙は、本契約の第9条に従う。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+    ["乙は、この契約の第9条に従う。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+    ["乙は、当規約の第9条に従う。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+    ["乙は、契約の第9条に従う。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+    ["この法律の第9条による。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+    ["この法律第9条による。", [["dangling-reference", { label: "第9条", target: "9" }]]],
+    ["甲の第9条に従う。", [["dangling-reference", { label: "第9条", target: "9" }]]],
   ];
   cases.forEach(([sentence, expected]) => {
     it(sentence, () => assert.deepEqual(found(ja, numbered(sentence)), expected));
   });
+
+  it("本契約の第1条はこの文書の条として引ける", () => assert.deepEqual(found(ja, numbered("乙は、本契約の第1条に従う。")), []));
 
   const names: readonly (readonly [string, string | undefined])[] = [
     ["民法第709条", "民法"],
@@ -519,6 +537,20 @@ describe("日本語: 他の文書の条を指す参照は、この文書では�
     ["本法第3条", undefined],
     ["この契約第3条", undefined],
     ["第3条", undefined],
+    ["前契約の第9条", "前契約"],
+    ["旧規程の第3条", "旧規程"],
+    ["同契約の第7条", "同契約"],
+    ["個人情報の保護に関する法律の第3条", "個人情報の保護に関する法律"],
+    ["民法（明治二十九年法律第八十九号）第3条", "民法"],
+    ["民法（明治二十九年法律第八十九号）の第3条", "民法"],
+    ["本契約の第9条", undefined],
+    ["この契約の第9条", undefined],
+    ["当規約の第9条", undefined],
+    ["この法律の第3条", undefined],
+    ["この法律第3条", undefined],
+    ["契約の第9条", undefined],
+    ["甲の第9条", undefined],
+    ["前契約のの第9条", undefined],
   ];
   names.forEach(([text, expected]) => {
     it(`citedDocument: ${text} → ${String(expected)}`, () =>

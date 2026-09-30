@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### 「前契約の第9条」 is another document's article, the same as 「前契約第9条」 (#153)
+
+`dangling-reference` reported 「乙は、前契約の第9条に従う。」 because the article was looked up in this document: a
+document name was recognised only when it touched the article number. A name joined to the reference by 「の」 now names
+the document too (原契約の第8条, 旧規程の第3条, 同契約の第7条, 個人情報の保護に関する法律の第3条), and a chapter or a
+following 「及び第10条」 goes with it. The particle is data, in the new `name-joiner` lexicon; the name must still end
+with a word from `document-kind`.
+
+A name that starts with 本, 当 or この (本契約の第9条, この契約の第9条, この法律の第9条) or is a kind word alone
+(契約の第9条) still points into this document and is still reported when the article is missing. この is new in
+`self-prefix`, so 「この法律第9条」 without 「の」 is now read as this document's article too.
+
 ### `names:` in chaff.yaml: the team lists its own names (#170)
 
 `max-kanji-continuous` reported official names such as 個人情報保護委員会 and 国土交通省鉄道局総務課, and the dictionary
