@@ -161,7 +161,7 @@ uk-cra2015.txt  clean
 uk-dpa2018.txt  clean
 us-6004596-crustless-sandwich  max-paragraph-length 1, max-sentence-length 2
 us-scotus-gideon-v-wainwright  max-paragraph-length 1, max-sentence-length 3
-utelecon-account-leave  concrete-evidence-density 3, latin-spacing 1, max-sentence-length 10, ngram-repetition 1, preamble-length 1
+utelecon-account-leave  concrete-evidence-density 3, latin-spacing 1, max-sentence-length 5, ngram-repetition 1, preamble-length 1
 utokyo-gakui-kisoku  dangling-reference 1
 voa-le-lunar-trailblazer  max-sentence-length 8, proper-noun-density 1
 w3c-secure-contexts  excessive-hedging 1, heading-echo 2, max-sentence-length 26, ngram-repetition 1, oxford-comma-consistency 1, proper-noun-density 1
