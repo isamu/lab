@@ -23,6 +23,10 @@ export const MINOR_WORDS: ReadonlySet<string> = new Set([
   "by",
   "from",
   "is",
+  // 語の並び（WORD）は点を含まないので、vs. と v. は vs と v で拾う。
+  "vs",
+  "v",
+  "via",
 ]);
 
 /** 大文字だけの語（PR・FCPs）は略語で、どちらの流儀でも大文字のまま。Title Case の証拠にならない。 */

@@ -233,3 +233,49 @@ describe("minorityCase", () => {
     assert.equal(minorityCase({ titleCase: 1, sentenceCase: 1 }, undefined), undefined);
   });
 });
+
+describe("isTitleCase と vs・v.・via", () => {
+  it("Title Case でも小文字のまま書く語（Chicago・APA・AP・MLA のどれでも小文字）は、大文字化の判定から外す", () => {
+    assert.equal(isTitleCase("Development Environment vs MulmoChat"), true);
+    assert.equal(isTitleCase("Method A vs. Method B"), true);
+    assert.equal(isTitleCase("Storm Surge v. Storm Tide"), true);
+    assert.equal(isTitleCase("Configuring Each Service via Config"), true);
+  });
+
+  it("大文字で書いた Vs・Via も Title Case の語", () => {
+    assert.equal(isTitleCase("Storm Surge Vs. Storm Tide"), true);
+    assert.equal(isTitleCase("Switch Via Environment Variable"), true);
+  });
+
+  it("ほかの語が小文字なら sentence case のまま", () => {
+    assert.equal(isTitleCase("Switch via environment variable"), false);
+    assert.equal(isTitleCase("Storm surge vs storm tide"), false);
+    assert.equal(isTitleCase("Storm surge v. storm tide"), false);
+  });
+});
+
+describe("title-case-consistency と vs", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("valid: vs を挟んだ Title Case の見出しは、Title Case の文書の中で指摘しない（MulmoChat の記事）", () => {
+    const source = [
+      "## Plugin Structure\n\nText.",
+      "## Sample Plugin Code\n\nText.",
+      "## Development Environment vs MulmoChat\n\nText.",
+      "## Publishing the Package\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+  });
+
+  it("invalid: sentence case の文書の中の、vs を挟んだ Title Case の見出しは指摘する", () => {
+    const source = [
+      "## Plugin structure\n\nText.",
+      "## Sample plugin code\n\nText.",
+      "## Development Environment vs MulmoChat\n\nText.",
+      "## Publishing the package\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), ["Development Environment vs MulmoChat"]);
+  });
+});

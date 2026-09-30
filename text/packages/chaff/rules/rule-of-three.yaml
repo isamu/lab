@@ -23,3 +23,100 @@ how_to_fix:
 levels: { strict: 50, normal: 70, relaxed: 90 }
 
 use_for: [blog, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 箇条書きがどれも三つの項目で、数を合わせて並べたように見える所
+  en: Lists that almost all have exactly three items, as if padded or trimmed to fit
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      # 在庫管理
+
+      よい在庫管理の条件です。
+
+      - 正確さ
+      - 速さ
+      - 安さ
+
+      毎日することです。
+
+      - 数える
+      - 記録する
+      - 見返す
+
+      よくある失敗です。
+
+      - 数え忘れ
+      - 記録の漏れ
+      - 見返さない
+    after: |
+      # 在庫管理
+
+      よい在庫管理の条件です。
+
+      - 正確さ
+      - 速さ
+
+      毎日することです。
+
+      - 数える
+      - 記録する
+      - 見返す
+      - 月末の棚卸しと突き合わせる
+
+      よくある失敗です。
+
+      - 数え忘れ
+      - 記録の漏れ
+      - 見返さない
+  en:
+    config: { genre: blog/tech }
+    before: |
+      # Stock control
+
+      Good stock control is:
+
+      - Accurate
+      - Fast
+      - Cheap
+
+      Every day we:
+
+      - Count
+      - Record
+      - Review
+
+      Common mistakes:
+
+      - Missed counts
+      - Gaps in the record
+      - No review
+    after: |
+      # Stock control
+
+      Good stock control is:
+
+      - Accurate
+      - Fast
+
+      Every day we:
+
+      - Count
+      - Record
+      - Review
+      - Match against the month-end count
+
+      Common mistakes:
+
+      - Missed counts
+      - Gaps in the record
+      - No review
+
+not_flagged:
+  ja: 箇条書きが 3 つより少ない文書は見ません。ビジネス文書と技術文書のジャンルでは見ません。
+  en: Documents with fewer than three lists are not checked. Business and technical genres do not run this rule.
+level_meaning:
+  ja: 3 項目の箇条書きの割合 {limit}% まで
+  en: up to {limit}% of lists with exactly three items

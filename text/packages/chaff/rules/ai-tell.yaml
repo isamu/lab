@@ -26,3 +26,26 @@ how_to_fix:
 levels: { strict: 10, normal: 18, relaxed: 30 }
 
 use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 「重要な役割を果たす」「と言えるでしょう」のような、生成された文章にありがちな言い回しが重なった所
+  en: Phrases common in generated text ("delve into", "plays a crucial role") piling up
+example:
+  ja:
+    before: |
+      現代社会において、データは重要な役割を果たすと言えるでしょう。
+    after: |
+      当社では、在庫の数を毎朝データで確かめてから発注しています。
+  en:
+    before: |
+      In today's fast-paced world, data plays a crucial role. Let us delve into why.
+    after: |
+      We check stock levels every morning before placing orders.
+
+not_flagged:
+  ja: どの言い回しも、一つだけなら普通の文章にあります。重みの合計が上限を超えるまでは何も言いません。これだけで生成された文章だとは言いません。
+  en: Each phrase is ordinary on its own; nothing is said until the weights add up past the limit. This alone never says the text was generated.
+level_meaning:
+  ja: 言い回しの重みの合計が {limit} 点まで
+  en: up to a score of {limit}

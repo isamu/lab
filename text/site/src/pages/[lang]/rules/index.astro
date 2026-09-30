@@ -1,35 +1,43 @@
 ---
 import Base from "../../../layouts/Base.astro";
 import Badge from "../../../components/Badge.astro";
-import { LANGS, href, isLang, t } from "../../../lib/i18n";
-import { rules } from "../../../lib/rules";
+import { LANGS, groupText, href, isLang, t } from "../../../lib/i18n";
+import { catalogOf } from "../../../lib/ruleCatalog";
 
 export const getStaticPaths = () => LANGS.map((lang) => ({ params: { lang } }));
 
 const { lang } = Astro.params;
 if (!isLang(lang)) throw new Error(`unknown language ${String(lang)}`);
-const layers = [...new Set(rules.map((rule) => rule.layer))];
+const groups = catalogOf(lang);
+const RUNS_WHEN = { default: "runsDefault", experimental: "runsExperimental", team: "runsTeam", test: "runsTest" } as const;
 ---
 
 <Base lang={lang} title={t(lang, "rules")} path="rules">
   <h1 class="text-3xl font-bold">{t(lang, "rules")}</h1>
   <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "experimentalNote")}</p>
-  {layers.map((layer) => (
+  <p class="mt-2 text-sm">
+    <a href={href(`${lang}/guide/reference`)} class="text-blue-700 underline dark:text-blue-400">
+      {t(lang, "referenceLink")}
+    </a>
+  </p>
+  {groups.map(({ group, entries }) => (
     <section class="mt-8">
-      <h2 class="font-mono text-xl font-semibold">{layer}</h2>
+      <h2 class="text-xl font-semibold">{groupText(lang, group).name}</h2>
+      <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{groupText(lang, group).note}</p>
       <ul class="mt-3 divide-y divide-zinc-200 dark:divide-zinc-800">
-        {rules
-          .filter((rule) => rule.layer === layer)
-          .map((rule) => (
-            <li class="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-2">
-              <a href={href(`${lang}/rules/${rule.id}`)} class="font-mono text-sm text-blue-700 underline dark:text-blue-400">
-                {rule.id}
+        {entries.map(({ rule, runsWhen }) => (
+          <li class="py-2">
+            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <a href={href(`${lang}/rules/${rule.id}`)} class="text-blue-700 underline dark:text-blue-400">
+                {rule.name[lang]}
               </a>
-              <span>{rule.name[lang]}</span>
-              {rule.status === "experimental" && <Badge tone="warn">{t(lang, "experimental")}</Badge>}
+              <span class="font-mono text-xs text-zinc-500">{rule.id}</span>
+              {runsWhen !== "default" && <Badge tone="warn">{t(lang, RUNS_WHEN[runsWhen])}</Badge>}
               {rule.languages.length === 1 && <Badge tone="neutral">{rule.languages[0]}</Badge>}
-            </li>
-          ))}
+            </div>
+            <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{rule.summary[lang]}</div>
+          </li>
+        ))}
       </ul>
     </section>
   ))}

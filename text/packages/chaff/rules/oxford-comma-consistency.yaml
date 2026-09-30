@@ -25,3 +25,21 @@ how_to_fix:
 levels: { strict: 3, normal: 2, relaxed: 1 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 英語で、並べた最後の and の前にカンマを打つか打たないかが揃っていない所
+  en: Lists that put a comma before the final "and" in some places and not in others
+example:
+  en:
+    before: |
+      We sell apples, pears, and plums. We ship to homes, offices, and schools. We accept cash, cards and vouchers.
+    after: |
+      We sell apples, pears, and plums. We ship to homes, offices, and schools. We accept cash, cards, and vouchers.
+
+not_flagged:
+  ja: カンマを打つかどうかは決めません。半々に分かれた文書では、どちらが少ないとも言えないので指しません。
+  en: Whether to use the comma is not decided. A document split evenly has no minority and is not reported.
+level_meaning:
+  ja: 少ないほうの打ち方が {limit} 箇所以下のとき指摘
+  en: reported when the minority style appears {limit} times or fewer

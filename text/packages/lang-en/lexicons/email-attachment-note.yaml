@@ -1,0 +1,7 @@
+# How a mailing-list archive ends the note it leaves where it removed an attachment (Mailman 2.1's Scrubber: "An HTML
+# attachment was scrubbed..."). Such a note right after a separator line, followed only by "Field: value" lines with a
+# URL line last, is the archive's, not the writer's.
+id: email-attachment-note
+language: en
+entries:
+  - pattern: was scrubbed...

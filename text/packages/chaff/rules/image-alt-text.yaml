@@ -21,6 +21,34 @@ how_to_fix:
   ja: 画像が伝えることを一言で書いてください（![4月の売上の推移](図1.png)）。飾りの画像なら、HTML で alt="" と書くと読み上げが飛ばします。
   en: Write what the image shows in a few words ("![Sales by month, April](chart.png)"). If it is decoration, write alt="" in HTML so screen readers skip it.
 
-levels: { strict: 1, normal: 1, relaxed: 1 }
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「![](図.png)」のように、代替テキストの無い画像
+  en: An image with no alt text, as in "![](chart.png)"
+example:
+  ja:
+    before: |
+      四月から六月の売上です。
+
+      ![](sales.png)
+    after: |
+      四月から六月の売上です。
+
+      ![四月から六月の売上の推移](sales.png)
+  en:
+    before: |
+      Sales from April to June.
+
+      ![](sales.png)
+    after: |
+      Sales from April to June.
+
+      ![Sales from April to June](sales.png)
+
+not_flagged:
+  ja: HTML で alt="" と書いた画像は、飾りと明示したものとして指しません。引用（>）とコードの中の画像も見ません。
+  en: An HTML image with alt="" is marked as decoration and is not reported, nor is an image in a quotation (>) or in code.
