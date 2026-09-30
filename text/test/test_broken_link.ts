@@ -83,6 +83,10 @@ describe("broken-link: 行き先の無いリンク", () => {
     ]);
   });
 
+  it("画像の参照の形は、頭の ! から指摘する", () => {
+    assert.deepEqual(findingsOf("See ![alt][missing].\n", en), ['"![alt][missing]" is a reference-style link with no definition (it shows as plain text)']);
+  });
+
   it("名前を省いた参照の形（[text][]）も、定義が無ければ指摘する", () => {
     assert.deepEqual(findingsOf("See [the report][] first.\n", en).length, 1);
   });
