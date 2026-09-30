@@ -13,7 +13,7 @@ import { kanjiRun, middleDot } from "./char-shape.ts";
 import { adverbDensity, conjunctionRun, expletive, oxfordComma, titleCaseMix } from "./en-shape.ts";
 import { paragraphLength, paragraphVariance, preambleLength, ruleOfThree, sectionUniformity } from "./structure.ts";
 import { concreteEvidence, dashDensity, emojiDensity, ngramRepetition, undefinedAcronym } from "./signals.ts";
-import { aiTell, contractionMix, cushionDensity, hedgingDensity, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
+import { aiTell, contractionMix, cushionDensity, hedging, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
@@ -49,7 +49,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "ngram-repetition": ngramRepetition,
   "undefined-acronym": undefinedAcronym,
   "concrete-evidence": concreteEvidence,
-  "hedging-density": hedgingDensity,
+  hedging: hedging,
   "cushion-density": cushionDensity,
   "unqualified-superlative": unqualifiedSuperlative,
   "repeated-conjunction": repeatedConjunction,

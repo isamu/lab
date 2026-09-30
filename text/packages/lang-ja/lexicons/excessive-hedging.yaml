@@ -1,12 +1,16 @@
 # 逃げの表現。断言を避けるほど、読み手は何が決まったのか分からなくなる。
+# 活用する語は原形で書く（「と思われる」は「と思われます」「と思われた」にも当たる）。
+# 「かもしれません」「言えません」の「ません」は「ない」の活用ではないので、ていねいな形も並べて書く。
 id: excessive-hedging
 language: ja
 entries:
+  - pattern: かもしれない
   - pattern: かもしれません
-  - pattern: と思われます
-  - pattern: のような気がします
-  - pattern: 可能性があります
-  - pattern: 場合があります
+  - pattern: と思われる
+  - pattern: ような気がする
+  - pattern: 可能性がある
+  - pattern: 場合がある
+  - pattern: 一概には言えない
   - pattern: 一概には言えません
-  - pattern: と考えられます
+  - pattern: と考えられる
   - pattern: ではないでしょうか
