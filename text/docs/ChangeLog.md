@@ -4,6 +4,28 @@ Newest first.
 
 ## Unreleased
 
+### `heading-echo` measures a Japanese sentence in content words, not characters (#170)
+
+In Japanese, `heading-echo` measured what a first sentence adds as its characters, less the part of the heading it
+repeats. A character count does not say how much is said: 「会社に勤めています」 adds two words (会社, 勤める) and
+「について説明します」 adds one (説明), in the same nine characters. Corpus round 11 found
+「こころさんのお父さんは、会社に勤めています。」 under 「こころさんのお父さんの場合」 reported as an echo.
+
+Now, when the parts of speech are read, a Japanese sentence adds little if it has at most one content word that the
+heading does not have. A content word is a noun, verb, adjective, adverb or number that stands by itself; particles,
+auxiliaries, pronouns, determiners and conjunctions are not, nor are prefixes, suffixes and dependent words (the 「ご」
+of 「ご案内」, the 「さん」 of 「こころさん」, the 「いる」 of 「勤めている」) or the 「する」 that makes a verb of a noun
+(「説明します」). Words are matched by their base form, so 「変えました」 repeats 「変える」. `lang-ja` marks these
+tokens (`Bound=Yes`, `VerbType=Light`), and the count is a pure function in `chaffjs` that takes tokens. English is
+unchanged, and so is Japanese read without parts of speech.
+
+On the Japanese corpus documents this only removes findings: the two 「こころさんの…の場合」 sections, a glossary entry
+that says what the term usually means, changelog entries that say what was added, and a meeting minute that names who
+explained what. A sentence that only restates its heading (「国立国会図書館サーチで資料を検索します。」,
+「キャッシュの仕組みについて説明します。」) is still reported. Findings a reader might have kept went with them: a talk
+page's 「一次資料の扱いに関して一つ問題を提起させて頂きます。」 and a changelog's 「スライドショーの機能を強化しました。」, which add
+two content words each.
+
 ### `undefined-acronym` no longer asks to expand emphasis, a month in a date, a surname after a title or a qualified expansion (#170)
 
 Four kinds of capital word that corpus round 11 reported are not acronyms, and are no longer counted:

@@ -146,15 +146,38 @@ export const isReady = (): boolean => state.ready !== undefined;
  * span は渡した文字列の先頭を 0 とする。位置は kuromoji の word_position ではなく、語の文字を本文と照らして決める（surface-starts.ts）。
  * 形の違うものが混ざったら、その 1 つを落とす。位置が NaN の token を下流に流さない。
  */
-const toToken = (morpheme: Morpheme, start: number, passive: boolean, echo: boolean): Token => ({
+const toToken = (morpheme: Morpheme, start: number, passive: boolean, echo: boolean, light: boolean): Token => ({
   span: { start, end: start + morpheme.surface_form.length },
   surface: morpheme.surface_form,
   // UD の日本語では「れる/られる」は AUX。IPADIC の「動詞,接尾」をそこへ寄せる。
   pos: isPassiveForm(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
   ...(morpheme.basic_form === "*" ? {} : { lemma: morpheme.basic_form }),
   ...(typeof morpheme.reading !== "string" || morpheme.reading === "*" ? {} : { reading: morpheme.reading }),
-  ...withEcho(featuresOf(morpheme, passive), echo),
+  ...withEcho(withWordStatus(featuresOf(morpheme, passive), isBound(morpheme), light), echo),
 });
+
+/**
+ * 単独では語にならない形態素（IPADIC の接頭詞・接尾・非自立: ご案内の「ご」、こころさんの「さん」、勤めているの「いる」）は Bound=Yes。
+ * 語の中身を数える rule が、付いた先の語だけを数えるため。UD の FEATS の言語別拡張。
+ */
+const isBound = (morpheme: Morpheme): boolean => morpheme.pos === "接頭詞" || morpheme.pos_detail_1 === "非自立" || morpheme.pos_detail_1 === "接尾";
+
+/** サ変名詞を動詞にするだけの「する」「いたす」（説明します）。意味は名詞が持つ。UD の VerbType=Light。 */
+const LIGHT_VERBS = new Set(["する", "いたす"]);
+
+const isLightVerbAt = (sequence: readonly Morpheme[], index: number): boolean => {
+  const [previous, morpheme] = [sequence[index - 1], sequence[index]];
+  return morpheme?.pos === "動詞" && LIGHT_VERBS.has(morpheme.basic_form) && previous?.pos === "名詞" && previous.pos_detail_1 === "サ変接続";
+};
+
+const withWordStatus = (
+  found: { features?: Readonly<Record<string, string>> },
+  bound: boolean,
+  light: boolean,
+): { features?: Readonly<Record<string, string>> } => {
+  if (!bound && !light) return found;
+  return { features: { ...found.features, ...(bound ? { Bound: "Yes" } : {}), ...(light ? { VerbType: "Light" } : {}) } };
+};
 
 /** 重ね言葉の二つ目（UD の Echo=Rdp）。ほかの印は残す。 */
 const withEcho = (found: { features?: Readonly<Record<string, string>> }, echo: boolean): { features?: Readonly<Record<string, string>> } =>
@@ -246,7 +269,13 @@ export const tokenize = (text: string): Token[] | undefined => {
   const sequence = read.map(({ morpheme }) => morpheme);
   const inflections = read.map(({ morpheme, start }) => inflectionOf(morpheme, start));
   return read.map(({ morpheme, start }, index) =>
-    toToken(morpheme, start, readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index), isEchoAt(inflections, index)),
+    toToken(
+      morpheme,
+      start,
+      readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index),
+      isEchoAt(inflections, index),
+      isLightVerbAt(sequence, index),
+    ),
   );
 };
 
