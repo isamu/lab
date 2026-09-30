@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `oxford-comma-consistency` reads a sentence once, however many "and"s it has (#170)
+
+For each "and" or "or", the check split the clause into items again from its start and read each item token by
+token, so a sentence of many "and"s took time in proportion to the square of its length, and a long one took minutes.
+It now reads the sentence once: the items are kept as it moves from one "and" to the next, and each question about an
+item is answered from counts made in that one reading. The same goes for finding a cited title around each "and". The
+output is unchanged.
+
 ### `oxford-comma-consistency` judges a sentence that contains "constructor" or "toString" (#170)
 
 The parenthesis count looked each word up as an object property, so a word that names a member every object has

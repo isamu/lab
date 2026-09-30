@@ -1,7 +1,7 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
-import { depthsOf } from "../packages/chaff/src/detectors/oxford-comma.ts";
+import { depthsOf } from "../packages/chaff/src/detectors/list-sentence.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { wikitextToMarkdown } from "../scripts/wikitext-markdown.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";

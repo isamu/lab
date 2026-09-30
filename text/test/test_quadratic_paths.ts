@@ -8,7 +8,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { BASELINE_FILE, fingerprint, fingerprints, readBaseline, splitByBaseline } from "../packages/chaff/src/baseline.ts";
 import { doubledIn } from "../packages/chaff/src/detectors/doubled-word.ts";
-import { depthsOf } from "../packages/chaff/src/detectors/oxford-comma.ts";
+import { depthsOf } from "../packages/chaff/src/detectors/list-sentence.ts";
 import { tokenize } from "../packages/lang-en/src/pos.ts";
 import { renderFriendly } from "../packages/chaff/src/render/friendly.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
