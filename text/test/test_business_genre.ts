@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules, type RunResult } from "../packages/chaff/src/run.ts";
-import { planSemantic } from "../packages/chaff/src/run-semantic.ts";
+import { planSemantic, semanticNeeds } from "../packages/chaff/src/run-semantic.ts";
 import { REASONS } from "../packages/chaff/src/reasons.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
@@ -87,5 +87,20 @@ describe("chaff test は報告書と提案書の結びを見る", () => {
 
   it("メールと議事録とプレスリリースでは問い合わせない", () => {
     ["business/email", "business/meeting-notes", "business/press-release"].forEach((genre) => assert.ok(!jobsFor(genre).includes("empty-conclusion"), genre));
+  });
+
+  it("本文の数を繰り返すだけのまとめ（9月、目標）を送る", async () => {
+    await ja.prepare?.({ pos: true });
+    const job = planSemantic(buildDocument("report.md", PADDED_REPORT, ja), loadRules("ja"), [], {}, "business/report").find(
+      (entry) => entry.rule === "empty-conclusion",
+    );
+    assert.equal(job?.candidates.length, 1);
+    assert.match(job?.candidates[0]?.text ?? "", /^以上のように、9月は/u);
+  });
+
+  it("結びを見るジャンルでは、日付を見分ける品詞を読み込む。結びを見ないジャンルや、切った設定では読み込まない", () => {
+    assert.equal(semanticNeeds(loadRules("ja"), {}, "business/report").pos, true);
+    assert.equal(semanticNeeds(loadRules("ja"), {}, "business/email").pos, false);
+    assert.equal(semanticNeeds(loadRules("ja"), { "empty-conclusion": "off" }, "business/report").pos, false);
   });
 });

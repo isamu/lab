@@ -83,7 +83,7 @@ gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-con
 gsi-maps-smartphone-howto  max-paragraph-length 1
 gutenberg-civil-disobedience  adverb-overuse 1, excessive-hedging 1, expletive-construction 11, max-paragraph-length 26, max-sentence-length 74, repeated-sentence-head 1, unqualified-superlative 5
 gutenberg-frost-a-boys-will  max-sentence-length 4, proper-noun-density 1
-gutenberg-importance-of-being-earnest  adverb-overuse 1, excessive-hedging 3, expletive-construction 25, max-paragraph-length 83, max-sentence-length 25, ngram-repetition 1, proper-noun-density 1, unqualified-superlative 5
+gutenberg-importance-of-being-earnest  adverb-overuse 1, excessive-hedging 3, expletive-construction 25, max-paragraph-length 49, max-sentence-length 25, ngram-repetition 1, proper-noun-density 1, unqualified-superlative 5
 gutenberg-yellow-wallpaper  expletive-construction 20, max-sentence-length 14, no-em-dash 1, sentence-initial-conjunction-run 1, unqualified-superlative 2
 ietf-draft-httpapi-ratelimit-headers-10  max-paragraph-length 1, max-sentence-length 61, ngram-repetition 1, proper-noun-density 1, undefined-acronym 14
 jma-faq-typhoon  agentless-passive 2, concrete-evidence-density 4, max-paragraph-length 1, ngram-repetition 1
