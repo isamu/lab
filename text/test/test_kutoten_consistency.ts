@@ -41,6 +41,10 @@ describe("kutoten-consistency: 句読点の書き方がそろっていない", (
     assert.deepEqual(findingsOf(`${PLAIN}料金は１，０００円で、３．５時間です。\n\n１．はじめに、Ｑ．と No．を見ます。\n`), []);
   });
 
+  it("語の後ろの「．」は文の終わり（API．）", () => {
+    assert.deepEqual(findingsOf(`${PLAIN}API．次に進みます。\n`), ["句点を「．」と書いています（この文書はふつう「。」。5 箇所のうち 1 箇所が違う）"]);
+  });
+
   it("鉤括弧で引いたものの中は、引いた元の書き方", () => {
     assert.deepEqual(findingsOf(`${PLAIN}論文には「方法は，次のとおり」とあります。\n`), []);
   });

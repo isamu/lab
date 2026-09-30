@@ -15,13 +15,17 @@ const MARKS = /[、，。．]/gu;
 const DIGIT = /[\d０-９]/u;
 const LATIN = /[A-Za-zＡ-Ｚａ-ｚ]/u;
 
+/** 一、二文字の英字だけの印（Ｑ．、No．）。「API．」のような語の後ろの点は文の終わり。 */
+const LATIN_LABEL = /(?:^|[^A-Za-zＡ-Ｚａ-ｚ])[A-Za-zＡ-Ｚａ-ｚ]{1,2}$/u;
+const LATIN_LABEL_REACH = 3;
+
 /**
  * 句読点として数えない「，」「．」。数の中の桁の区切りと小数点（１，０００、３．５）、番号の後ろの点（１．はじめに）、
  * 英字の後ろの点（Ｑ．、No．）は、日本語の文の区切りではない。
  */
 const isNotPunctuation = (text: string, at: number, mark: string): boolean => {
   const before = text.charAt(at - 1);
-  if (mark === "．") return DIGIT.test(before) || LATIN.test(before);
+  if (mark === "．") return DIGIT.test(before) || LATIN_LABEL.test(text.slice(Math.max(0, at - LATIN_LABEL_REACH), at));
   if (mark === "，") return LATIN.test(before) || (DIGIT.test(before) && DIGIT.test(text.charAt(at + 1)));
   return false;
 };
