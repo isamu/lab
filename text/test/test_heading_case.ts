@@ -136,6 +136,53 @@ describe("isTitleCase と略語", () => {
   });
 });
 
+describe("isTitleCase と語の中のアポストロフィ", () => {
+  it("字に挟まれた ’ と ʼ は ' と同じく語の中の字。’s は小文字の語にならない（Fed’s）", () => {
+    assert.equal(isTitleCase("Monetary Policy and the Fed’s Framework Review"), true);
+    assert.equal(isTitleCase("Monetary Policy and the Fedʼs Framework Review"), true);
+    assert.equal(isTitleCase("Monetary Policy and the Fed's Framework Review"), true);
+    assert.equal(isTitleCase("The Board’s Review"), true);
+  });
+
+  it("’ のあとの小文字の語は、語の中の字でなくても小文字として数える", () => {
+    assert.equal(isTitleCase("The Fed’s framework review"), false);
+    assert.equal(isTitleCase("What the ‘Board’ reviews"), false);
+    assert.equal(isTitleCase("Policy Under ‘Review’ now"), false);
+  });
+
+  it("閉じる引用符の ’ は語の中の字にしない", () => {
+    assert.equal(isTitleCase("The ‘Board’ Reviews Policy"), true);
+  });
+});
+
+describe("title-case-consistency と語の中のアポストロフィ", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("valid: ’s を含む Title Case の題名と Title Case の節（Fed speech）", () => {
+    const source = [
+      "## Speech",
+      "### Monetary Policy and the Fed’s Framework Review",
+      "#### Current Economic Conditions and Near-Term Outlook\n\nText.",
+      "#### Evolution of Monetary Policy Framework\n\nText.",
+      "#### Elements of the Revised Consensus Statement\n\nText.",
+      "#### Conclusion\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+  });
+
+  it("invalid: ’s を含む sentence case の見出しは、Title Case の中で指摘する", () => {
+    const source = [
+      "## Current Economic Conditions\n\nText.",
+      "## Evolution of the Framework\n\nText.",
+      "## Elements of the Statement\n\nText.",
+      "## The Board’s next review\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), ["The Board’s next review"]);
+  });
+});
+
 describe("title-case-consistency と略語", () => {
   before(async () => {
     await en.prepare?.({ pos: true });
