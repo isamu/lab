@@ -14,6 +14,7 @@ import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { pageFurniture, textOutline } from "./page-furniture.ts";
 import { tokenizedLexicons } from "./lexicon-tokens.ts";
+import { plainSource } from "./plain-source.ts";
 import { inPageAnchors, isInPageNavigation, isNavigationList, type InPageAnchors } from "./in-page-nav.ts";
 import { eachPreOrder } from "./tree-walk.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile, Token } from "./plugin.ts";
@@ -307,13 +308,7 @@ const proseOf = (source: string, masked: readonly Span[]): string => {
   return maskSpans(unlabelled, speakerLabels(unlabelled));
 };
 
-export const buildDocument = (
-  path: string,
-  source: string,
-  adapter: LanguageAdapter,
-  team: TeamRules = EMPTY_TEAM,
-  profile: DocumentProfile | undefined = undefined,
-): ProseDocument => {
+const documentOf = (path: string, source: string, adapter: LanguageAdapter, team: TeamRules, profile: DocumentProfile | undefined): ProseDocument => {
   const root = parse(source);
   const anchors = inPageAnchors(root);
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
@@ -376,6 +371,18 @@ export const buildDocument = (
     prose,
   };
 };
+
+/**
+ * 文書モデルを作る。text はファイルの中身のままでよい。先頭の BOM を外し、CRLF と CR を LF にそろえた doc.source を読む。
+ * 位置（span・offset）はすべて doc.source の上の位置で、渡した text の上の位置ではない。行と桁は同じ。
+ */
+export const buildDocument = (
+  path: string,
+  text: string,
+  adapter: LanguageAdapter,
+  team: TeamRules = EMPTY_TEAM,
+  profile: DocumentProfile | undefined = undefined,
+): ProseDocument => documentOf(path, plainSource(text), adapter, team, profile);
 
 /** 番号を探してはいけない範囲。コードの中の「第3条」は条ではなく、参照でもない。 */
 const OPAQUE = ["code", "inlineCode", "html", "yaml", "toml"];
