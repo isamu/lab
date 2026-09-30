@@ -30,8 +30,8 @@ const runsOf = (doc: ProseDocument, registers: readonly Register[]): Span[] => {
   );
 };
 
-export const sentenceEnding: Detector = (doc, options): Finding[] => {
-  const polite = options.lexicon ?? [];
+/** 調子を持つ文と、比べ合うまとまり（groupOf）。polite は語彙表 polite-ending。 */
+export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntry[]): Entry[] => {
   const neutral = doc.lexicons["neutral-ending"] ?? [];
   const lists = doc.lists.map((list) => list.span);
   const found = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register }[] => {
@@ -43,7 +43,11 @@ export const sentenceEnding: Detector = (doc, options): Finding[] => {
     doc,
     found.map((entry) => entry.register),
   );
-  const judged = found.map((entry): Entry => ({ ...entry, group: groupOf(entry.sentence.span.start, lists, runs) }));
+  return found.map((entry): Entry => ({ ...entry, group: groupOf(entry.sentence.span.start, lists, runs) }));
+};
+
+export const sentenceEnding: Detector = (doc, options): Finding[] => {
+  const judged = judgedSentences(doc, options.lexicon ?? []);
   return slipsOf(judged, options.limit).map(({ entry: { sentence }, count }) => ({
     rule: "no-mixed-desumasu",
     severity: "warning",

@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { documentLengthOf, type TeamWords } from "./corpus-findings.ts";
+import { documentLengthOf, registerCountsOf, type TeamWords } from "./corpus-findings.ts";
 import type { PlantContext } from "./bench-text.ts";
 import { TEAM_JARGON, requiredSectionsOf } from "./bench-mutations-layout.ts";
 import { TEAM_PREFER } from "./bench-mutations-phrasing.ts";
@@ -48,6 +48,7 @@ export const contextOf = (sample: Sample): PlantContext => ({
   lengthUnit: LENGTH_UNITS[sample.language],
   fullSentences: Object.fromEntries(rulesOf(sample.language).flatMap((rule) => (rule.full_sentence === undefined ? [] : [[rule.id, rule.full_sentence]]))),
   documentLength: (source) => documentLengthOf(sample.path, source, sample.language, sample.genre, teamOf(sample)),
+  registers: (source, line) => registerCountsOf(sample.path, source, sample.language, sample.genre, teamOf(sample), line),
 });
 
 /** Whether chaff runs the rule on this sample at all: its languages, a genre in its use_for, and not off in the genre's preset. */

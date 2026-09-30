@@ -17,7 +17,7 @@ import {
   spaceLatin,
   swapDatedRows,
 } from "../scripts/bench-mutations.ts";
-import { isPoliteDocument, type Plant } from "../scripts/bench-text.ts";
+import { isPoliteDocument, type Plant, type PlantContext } from "../scripts/bench-text.ts";
 
 // yarn bench の植える誤り。どの行に何を植えたかを、短い自作の文書で固定する。
 
@@ -145,9 +145,27 @@ describe("politeInPlain / plainInPolite", () => {
     assert.equal(isPoliteDocument("来週に訪問します。資料を共有する。"), false);
   });
 
+  /** chaff の読む調子の数を返す、測る文書。 */
+  const reading = (counts: { polite: number; plain: number }): PlantContext => ({ limits: {}, registers: () => counts });
+  const clash = reading({ polite: 1, plain: 1 });
+
   it("である調の文書に、です・ます調の文を一つ混ぜる", () => {
-    assert.deepEqual(at(politeInPlain(plain)), [3, "会社は機器を貸与します。従業員は機器を管理する。"]);
-    assert.equal(politeInPlain(polite), undefined);
+    assert.deepEqual(at(politeInPlain(plain, clash)), [3, "会社は機器を貸与します。従業員は機器を管理する。"]);
+    assert.equal(politeInPlain(polite, clash), undefined);
+  });
+
+  it("混ぜた後に chaff の読む である調の文が残らなければ、です・ます調より少なければ、調子を測れなければ、植えない", () => {
+    assert.equal(politeInPlain(plain, reading({ polite: 1, plain: 0 })), undefined);
+    assert.equal(politeInPlain(plain, reading({ polite: 0, plain: 0 })), undefined);
+    assert.equal(politeInPlain(plain, reading({ polite: 2, plain: 1 })), undefined);
+    assert.deepEqual(at(politeInPlain(plain, reading({ polite: 2, plain: 2 })))?.[0], 3);
+    assert.equal(politeInPlain(plain, { limits: {} }), undefined);
+  });
+
+  it("調子は混ぜた後の文書の、混ぜた行の文と比べ合う文で測る", () => {
+    const planted = (source: string, line: number): { polite: number; plain: number } =>
+      source.includes("貸与します") && line === 3 ? { polite: 1, plain: 1 } : { polite: 0, plain: 0 };
+    assert.deepEqual(at(politeInPlain(plain, { limits: {}, registers: planted }))?.[0], 3);
   });
 
   it("です・ます調の文書に、である調の文を一つ混ぜる。「ございます」「いたします」は替えない", () => {
