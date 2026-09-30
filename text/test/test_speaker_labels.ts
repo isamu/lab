@@ -10,6 +10,9 @@ import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 const lines = (...rows: string[]): string => rows.join("\n");
 const labelTexts = (text: string): string[] => speakerLabels(text).map((span) => text.slice(span.start, span.end));
+/** 抜き出しを 2 度並べる。対話と読むのに要る行の数（MIN_DIALOGUE_TURNS）を、短い抜き出しで満たす。 */
+const twice = (text: string): string => `${text}\n\n${text}`;
+const doubled = (items: readonly string[]): string[] => [...items, ...items];
 
 /** Oscar Wilde, The Importance of Being Earnest (Project Gutenberg #844, public domain). The speaker's name is its own line. */
 const EARNEST = lines(
@@ -77,15 +80,15 @@ const MINUTES = lines(
 
 describe("speakerLabels: 戯曲・議事録の話し手の名前", () => {
   it("大文字の名前だけの行（Gutenberg の戯曲）", () => {
-    assert.deepEqual(labelTexts(EARNEST), ["LANE.", "ALGERNON.", "LANE.", "ALGERNON.", "LANE.", "ALGERNON.", "JACK."]);
+    assert.deepEqual(labelTexts(twice(EARNEST)), doubled(["LANE.", "ALGERNON.", "LANE.", "ALGERNON.", "LANE.", "ALGERNON.", "JACK."]));
   });
 
   it("行頭の名前と全角空白（紙風船）。台詞は残す", () => {
-    assert.deepEqual(labelTexts(KAMIFUSEN), ["夫　　", "妻　　", "妻　　", "夫　　", "妻　　", "夫　　", "妻　　", "夫　　"]);
+    assert.deepEqual(labelTexts(twice(KAMIFUSEN)), doubled(["夫　　", "妻　　", "妻　　", "夫　　", "妻　　", "夫　　", "妻　　", "夫　　"]));
   });
 
   it("○で始まる発言者の行（議事録）。1 度しか話さない人も、同じ形なら話し手", () => {
-    assert.deepEqual(labelTexts(MINUTES), ["○事務局", "○事務局", "○山田委員", "○事務局", "○佐藤委員", "○山田委員", "○山田委員"]);
+    assert.deepEqual(labelTexts(twice(MINUTES)), doubled(["○事務局", "○事務局", "○山田委員", "○事務局", "○佐藤委員", "○山田委員", "○山田委員"]));
   });
 
   it("○と名前と括弧の後に全角空白、同じ行に発言（会議録の形、自作）", () => {
@@ -97,14 +100,29 @@ describe("speakerLabels: 戯曲・議事録の話し手の名前", () => {
       "○委員長（山田太郎君）　以上で終わります。",
       "○参考人（佐藤花子君）　ありがとうございました。",
     );
-    assert.deepEqual(labelTexts(text), [
-      "○委員長（山田太郎君）　",
-      "○参考人（佐藤花子君）　",
-      "○委員長（山田太郎君）　",
-      "○参考人（佐藤花子君）　",
-      "○委員長（山田太郎君）　",
-      "○参考人（佐藤花子君）　",
-    ]);
+    assert.deepEqual(
+      labelTexts(twice(text)),
+      doubled([
+        "○委員長（山田太郎君）　",
+        "○参考人（佐藤花子君）　",
+        "○委員長（山田太郎君）　",
+        "○参考人（佐藤花子君）　",
+        "○委員長（山田太郎君）　",
+        "○参考人（佐藤花子君）　",
+      ]),
+    );
+  });
+
+  it("長い発言が何段落も続く会議録でも、発言者の行が段落の 1 割を始めれば読む", () => {
+    const speech = ["一つ目の段落です。", "二つ目の段落です。", "三つ目の段落です。", "四つ目の段落です。"].join("\n\n");
+    const text = Array.from({ length: 10 }, (_, index) => `○${index % 2 === 0 ? "委員長" : "参考人"}\u3000はい。\n\n${speech}`).join("\n\n");
+    assert.equal(labelTexts(text).length, 10);
+  });
+
+  it("段落は行ではなく空行で数える（長い台詞を何行にも折り返した戯曲）", () => {
+    const speech = Array.from({ length: 10 }, (_, index) => `line ${String(index)} of a long speech`).join("\n");
+    const text = Array.from({ length: 10 }, (_, index) => `${index % 2 === 0 ? "JACK" : "ALGERNON"}.\n${speech}`).join("\n\n");
+    assert.equal(labelTexts(text).length, 10);
   });
 
   it("名前の直後の「（台本の形、自作）", () => {
@@ -121,7 +139,7 @@ describe("speakerLabels: 戯曲・議事録の話し手の名前", () => {
       "",
       "健太「じゃあ後で」",
     );
-    assert.deepEqual(labelTexts(text), ["ゆかり", "健太", "ゆかり", "健太", "ゆかり", "健太"]);
+    assert.deepEqual(labelTexts(twice(text)), doubled(["ゆかり", "健太", "ゆかり", "健太", "ゆかり", "健太"]));
   });
 
   it("大文字の名前とコロン、敬称つきの大文字の名前（書き起こし、自作）", () => {
@@ -133,83 +151,93 @@ describe("speakerLabels: 戯曲・議事録の話し手の名前", () => {
       "INTERVIEWER: And then?",
       "Ms. JONES. Then it grew.",
     );
-    assert.deepEqual(labelTexts(text), ["INTERVIEWER:", "Ms. JONES.", "INTERVIEWER:", "Ms. JONES.", "INTERVIEWER:", "Ms. JONES."]);
+    assert.deepEqual(labelTexts(twice(text)), doubled(["INTERVIEWER:", "Ms. JONES.", "INTERVIEWER:", "Ms. JONES.", "INTERVIEWER:", "Ms. JONES."]));
   });
 
   it("大文字の名前とピリオドの後に同じ行の台詞", () => {
     const text = lines("HAMLET. To be.", "HORATIO. My lord.", "HAMLET. Not to be.", "HORATIO. Indeed.", "HAMLET. Well.", "HORATIO. Good night.");
-    assert.deepEqual(labelTexts(text), ["HAMLET.", "HORATIO.", "HAMLET.", "HORATIO.", "HAMLET.", "HORATIO."]);
+    assert.deepEqual(labelTexts(twice(text)), doubled(["HAMLET.", "HORATIO.", "HAMLET.", "HORATIO.", "HAMLET.", "HORATIO."]));
   });
 
   const none: readonly (readonly [string, string])[] = [
     ["話し手が 1 人（同じ見出しの繰り返し）", lines("○　注意事項", "本文。", "○　注意事項", "本文。", "○　注意事項", "本文。")],
-    ["名前が繰り返されない", lines("○事務局", "開会します。", "○委員長", "承知しました。", "○委員", "質問です。")],
-    ["2 回ずつでは足りない", lines("○事務局", "一。", "○委員長", "二。", "○事務局", "三。", "○委員長", "四。")],
+    ["名前が繰り返されない", lines(..."甲乙丙丁戊己庚辛壬癸".split("").flatMap((name) => [`○${name}委員`, "発言です。"]))],
+    ["2 回ずつでは足りない", lines(..."甲乙丙丁戊".split("").flatMap((name) => [`○${name}委員`, "一。", `○${name}委員`, "二。"]))],
     [
       "大文字の行の後が空行（テキストの見出し）",
-      lines(
-        "NOTES",
-        "",
-        "Body.",
-        "",
-        "INDEX",
-        "",
-        "Body.",
-        "",
-        "NOTES",
-        "",
-        "Body.",
-        "",
-        "INDEX",
-        "",
-        "Body.",
-        "",
-        "NOTES",
-        "",
-        "Body.",
-        "",
-        "INDEX",
-        "",
-        "Body.",
+      twice(
+        lines(
+          "NOTES",
+          "",
+          "Body.",
+          "",
+          "INDEX",
+          "",
+          "Body.",
+          "",
+          "NOTES",
+          "",
+          "Body.",
+          "",
+          "INDEX",
+          "",
+          "Body.",
+          "",
+          "NOTES",
+          "",
+          "Body.",
+          "",
+          "INDEX",
+          "",
+          "Body.",
+        ),
       ),
     ],
-    ["漢数字の項目（一　二）", lines("一　甲のこと", "二　乙のこと", "一　丙のこと", "二　丁のこと", "一　戊のこと", "二　己のこと")],
+    ["漢数字の項目（一　二）", twice(lines("一　甲のこと", "二　乙のこと", "一　丙のこと", "二　丁のこと", "一　戊のこと", "二　己のこと"))],
     [
       "数字とローマ数字の番号",
-      lines("II. Two.", "IV. Four.", "II. Two.", "IV. Four.", "II. Two.", "IV. Four.", "1: one", "2: two", "1: one", "2: two", "1: one", "2: two"),
+      twice(lines("II. Two.", "IV. Four.", "II. Two.", "IV. Four.", "II. Two.", "IV. Four.", "1: one", "2: two", "1: one", "2: two", "1: one", "2: two")),
     ],
-    ["「第」で始まる序数の見出し", lines("第一節　甲", "第二節　乙", "第一節　丙", "第二節　丁", "第一節　戊", "第二節　己")],
-    ["の で繋いだ番号", lines("三の二　甲", "四の二　乙", "三の二　丙", "四の二　丁", "三の二　戊", "四の二　己")],
-    ["数字を含む名前", lines("案1　甲", "案2　乙", "案1　丙", "案2　丁", "案1　戊", "案2　己")],
-    ["英字 1 字の選択肢", lines("A. One.", "B. Two.", "A. Three.", "B. Four.", "A. Five.", "B. Six.")],
-    ["文字の無い印", lines("※　甲", "＊　乙", "※　丙", "＊　丁", "※　戊", "＊　己")],
-    ["繰り返す名前が 1 つだけ", lines("NOTE.", "Keep the lid closed.", "NOTE.", "Wash your hands.", "NOTE.", "Store it cold.")],
-    ["同じ名前でも形が違えば別に数える", lines("夫「おい」", "夫　　一つ目。", "夫　　二つ目。", "妻　　三つ目。", "妻　　四つ目。", "妻　　五つ目。")],
-    ["片仮名 1 字の項目（イ　ロ）", lines("イ　甲", "ロ　乙", "イ　丙", "ロ　丁", "イ　戊", "ロ　己")],
+    ["「第」で始まる序数の見出し", twice(lines("第一節　甲", "第二節　乙", "第一節　丙", "第二節　丁", "第一節　戊", "第二節　己"))],
+    ["の で繋いだ番号", twice(lines("三の二　甲", "四の二　乙", "三の二　丙", "四の二　丁", "三の二　戊", "四の二　己"))],
+    ["数字を含む名前", twice(lines("案1　甲", "案2　乙", "案1　丙", "案2　丁", "案1　戊", "案2　己"))],
+    ["英字 1 字の選択肢", twice(lines("A. One.", "B. Two.", "A. Three.", "B. Four.", "A. Five.", "B. Six."))],
+    ["文字の無い印", twice(lines("※　甲", "＊　乙", "※　丙", "＊　丁", "※　戊", "＊　己"))],
+    ["繰り返す名前が 1 つだけ", twice(lines("NOTE.", "Keep the lid closed.", "NOTE.", "Wash your hands.", "NOTE.", "Store it cold."))],
+    ["同じ名前でも形が違えば別に数える", lines("夫「おい」", "夫　　一つ目。", "夫　　二つ目。", ...Array.from({ length: 8 }, () => "妻　　三つ目。"))],
+    ["注記が数回だけ（NOTE: と WARNING: が 3 回ずつ）", lines(...Array.from({ length: 3 }, () => ["NOTE: Keep it closed.", "WARNING: Hot surface."]).flat())],
+    [
+      "話し手の形の行が段落の 1 割に届かない",
+      [...Array.from({ length: 5 }, () => "NOTE: Keep it closed.\n\nWARNING: Hot surface."), ...Array.from({ length: 91 }, () => "Body.")].join("\n\n"),
+    ],
+    ["片仮名 1 字の項目（イ　ロ）", twice(lines("イ　甲", "ロ　乙", "イ　丙", "ロ　丁", "イ　戊", "ロ　己"))],
     [
       "大文字小文字まじりの名前とコロン（記録の項目と同じ形）",
       lines("Title: One.", "Notes: Two.", "Source: Three.", "Title: Four.", "Notes: Five.", "Source: Six.", "Title: Seven.", "Notes: Eight.", "Source: Nine."),
     ],
     [
       "地の文の「",
-      lines(
-        "私は「はい」と答えた。",
-        "彼は「いいえ」と言った。",
-        "私は「なぜ」と聞いた。",
-        "彼は「さあ」と言った。",
-        "私は「そう」と言った。",
-        "彼は「うん」と言った。",
+      twice(
+        lines(
+          "私は「はい」と答えた。",
+          "彼は「いいえ」と言った。",
+          "私は「なぜ」と聞いた。",
+          "彼は「さあ」と言った。",
+          "私は「そう」と言った。",
+          "彼は「うん」と言った。",
+        ),
       ),
     ],
-    ["名前だけの行の後が空行", lines("○事務局", "", "○委員長", "", "○事務局", "", "○委員長", "", "○事務局", "", "○委員長")],
+    ["名前だけの行の後が空行", twice(lines("○事務局", "", "○委員長", "", "○事務局", "", "○委員長", "", "○事務局", "", "○委員長"))],
   ];
   none.forEach(([label, text]) => {
     it(`話し手の名前と読まない: ${label}`, () => assert.deepEqual(labelTexts(text), []));
   });
 
   it("CRLF の行も読む。改行は範囲に入れない", () => {
-    assert.deepEqual(labelTexts(EARNEST.replaceAll("\n", "\r\n")), ["LANE.", "ALGERNON.", "LANE.", "ALGERNON.", "LANE.", "ALGERNON.", "JACK."]);
-    assert.deepEqual(labelTexts(MINUTES.replaceAll("\n", "\r\n")), labelTexts(MINUTES));
+    assert.deepEqual(labelTexts(twice(EARNEST).replaceAll("\n", "\r\n")), labelTexts(twice(EARNEST)));
+    assert.deepEqual(labelTexts(twice(MINUTES).replaceAll("\n", "\r\n")), labelTexts(twice(MINUTES)));
+    assert.equal(labelTexts(twice(MINUTES)).length, 14);
   });
 
   it("空の文書", () => assert.deepEqual(speakerLabels(""), []));
@@ -234,15 +262,15 @@ describe("話し手の名前は文でも本文でもない", () => {
   });
 
   it("大文字の名前の行は文として数えない。台詞は文のまま", () => {
-    const sentences = sentenceTexts(EARNEST, en);
+    const sentences = sentenceTexts(twice(EARNEST), en);
     assert.ok(!sentences.some((sentence) => /^(?:LANE|ALGERNON|JACK)\.$/u.test(sentence)));
     assert.ok(sentences.some((sentence) => sentence.startsWith("Very natural, I am sure.")));
   });
 
   it("Markdown: 太字の名前も読む。コードの中の名前は数えない", () => {
-    const bold = EARNEST.replace(/^([A-Z]+\.)$/gmu, "**$1**");
+    const bold = twice(EARNEST).replace(/^([A-Z]+\.)$/gmu, "**$1**");
     assert.ok(!sentenceTexts(bold, en, "t.md").some((sentence) => /^(?:LANE|ALGERNON|JACK)\.$/u.test(sentence)));
-    const coded = `\`\`\`\n${EARNEST}\n\`\`\`\n\nJACK.\nOh, pleasure, pleasure!`;
+    const coded = `\`\`\`\n${twice(EARNEST)}\n\`\`\`\n\nJACK.\nOh, pleasure, pleasure!`;
     assert.ok(sentenceTexts(coded, en, "t.md").includes("JACK."));
   });
 
@@ -293,13 +321,13 @@ describe("話し手の名前は文でも本文でもない", () => {
   });
 
   it("紙風船: 名前を文から外し、台詞は文として残す", () => {
-    const sentences = sentenceTexts(KAMIFUSEN, ja);
+    const sentences = sentenceTexts(twice(KAMIFUSEN), ja);
     assert.ok(!sentences.some((sentence) => /^[夫妻]/u.test(sentence)));
     assert.ok(sentences.includes("散歩か。"));
   });
 
   it("議事録: 発言者の名前を文から外し、発言は文として残す", () => {
-    const doc = buildDocument("t.md", MINUTES, ja);
+    const doc = buildDocument("t.md", twice(MINUTES), ja);
     assert.ok(!doc.sentences.some((sentence) => sentence.text.includes("○")));
     assert.ok(doc.sentences.some((sentence) => sentence.text.trim() === "では、これより委員会を開催いたします。"));
   });
@@ -310,10 +338,14 @@ describe("話し手の名前は文でも本文でもない", () => {
       `${String(index)}件目の説明です。資料を御覧ください。`,
       "続けて補足します。以上です。",
     ];
-    const minutes = lines(...["事務局", "山田委員", "事務局", "山田委員", "事務局", "山田委員"].flatMap(turn));
+    const minutes = lines(
+      ...Array.from({ length: 6 }, () => ["事務局", "山田委員"])
+        .flat()
+        .flatMap(turn),
+    );
     const doc = buildDocument("t.md", minutes, ja);
     const texts = doc.paragraphs.map((paragraph) => minutes.slice(paragraph.span.start, paragraph.span.end));
-    assert.equal(texts.length, 12);
+    assert.equal(texts.length, 24);
     assert.ok(texts[0]?.startsWith("○事務局\n0件目"));
     assert.ok(doc.paragraphs.every((paragraph) => paragraph.sentences.length > 0));
     assert.equal(

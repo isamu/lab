@@ -4,8 +4,9 @@ import type { Span } from "./plugin.ts";
  * 戯曲・台本・議事録・書き起こしの、話し手の名前（`ALGERNON.`、行頭の `夫` と全角空白、`○事務局`）。
  * 名前は誰が話すかの印であって本文ではない。文として数えると、名前だけの文が増え、名前が固有名詞と言い回しの繰り返しに入る。
  *
- * 形だけで決める。同じ形の行頭の名前が、MIN_SPEAKERS 人以上それぞれ MIN_TURNS 回以上繰り返され、どれも後に発言が続く。
- * 1 つの名前の繰り返しは見出し（○ と全角空白の後の「注意事項」）、繰り返されない名前は偶然なので、話し手と読まない。
+ * 形だけで決める。同じ形の行頭の名前が、MIN_SPEAKERS 人以上それぞれ MIN_TURNS 回以上繰り返され、どれも後に発言が続き、
+ * その形の行が文書の段落の多くを始める。1 つの名前の繰り返しは見出し（○ と全角空白の後の「注意事項」）、
+ * 繰り返されない名前は偶然、ときどき出るだけの `NOTE:` `WARNING:` は注記なので、話し手と読まない。
  * そう読めた形では、1 度しか話さない人の名前も話し手の名前とする（議事録の委員）。
  */
 
@@ -13,6 +14,10 @@ import type { Span } from "./plugin.ts";
 const MIN_SPEAKERS = 2;
 /** 名前が繰り返されたと読む回数。 */
 const MIN_TURNS = 3;
+/** 対話と読むのに要る、その形の行の数。数回の注記（NOTE: と WARNING:）は対話ではない。 */
+const MIN_DIALOGUE_TURNS = 10;
+/** その形の行が始める段落の割合の下限。会議録は長い発言が何段落も続くので、戯曲より低い。 */
+const MIN_TURN_SHARE = 0.1;
 
 type Candidate = { readonly shape: string; readonly name: string; readonly span: Span };
 
@@ -93,7 +98,7 @@ const countBy = <T>(items: readonly T[], keyOf: (item: T) => string): Map<string
 const speakerKey = (candidate: Candidate): string => `${candidate.shape}\n${candidate.name}`;
 
 /** 形ごとに、MIN_TURNS 回以上出る名前が MIN_SPEAKERS 人以上いるか。 */
-const dialogueShapes = (candidates: readonly Candidate[]): Set<string> => {
+const speakerShapes = (candidates: readonly Candidate[]): Set<string> => {
   const turns = countBy(candidates, speakerKey);
   const speakers = [...new Map(candidates.map((candidate) => [speakerKey(candidate), candidate])).values()];
   const repeated = speakers.filter((speaker) => (turns.get(speakerKey(speaker)) ?? 0) >= MIN_TURNS);
@@ -101,10 +106,24 @@ const dialogueShapes = (candidates: readonly Candidate[]): Set<string> => {
   return new Set([...perShape].filter(([, count]) => count >= MIN_SPEAKERS).map(([shape]) => shape));
 };
 
+/** 空行の後から始まる、空でない行のまとまり（段落）の数。 */
+const paragraphCount = (lines: readonly Line[]): number => lines.filter((line, index) => !isBlank(line) && (index === 0 || isBlank(lines[index - 1]))).length;
+
+/** 話し手の形のうち、その形の行が MIN_DIALOGUE_TURNS 以上あり、段落の MIN_TURN_SHARE 以上を始めるもの。 */
+const dialogueShapes = (candidates: readonly Candidate[], paragraphs: number): Set<string> => {
+  const turns = countBy(candidates, (candidate) => candidate.shape);
+  return new Set(
+    [...speakerShapes(candidates)].filter((shape) => {
+      const count = turns.get(shape) ?? 0;
+      return count >= MIN_DIALOGUE_TURNS && count >= paragraphs * MIN_TURN_SHARE;
+    }),
+  );
+};
+
 /** text の中の話し手の名前の範囲。発言は含まない。 */
 export const speakerLabels = (text: string): Span[] => {
   const lines = linesOf(text);
   const candidates = lines.flatMap((_, index) => candidateOf(lines, index) ?? []);
-  const shapes = dialogueShapes(candidates);
+  const shapes = dialogueShapes(candidates, paragraphCount(lines));
   return candidates.filter((candidate) => shapes.has(candidate.shape)).map((candidate) => candidate.span);
 };

@@ -23,10 +23,10 @@ a proper noun to `proper-noun-density`; and a name joined the speech after it in
 `ngram-repetition`.
 
 chaff now reads a line-initial name as a speaker's name when it has one of those shapes (also `NAME:`, `Mr. SMITH.` and
-`名前「…」`), more than one name of that shape recurs, and speech follows each. Such names are left
-out of the text the rules read, like a page header; the speech is checked as before. A single recurring label
-(`○　注意事項`), numbered items and headings (`一　`, `第一節　`, `A.`), and mixed-case field names (`Title:`, `Notes:`)
-are not read as speakers. This holds with the default genre too; `literature/play` and `speech/transcript` already
+`名前「…」`), more than one name of that shape recurs, speech follows each, and such lines start a good share of the
+document's paragraphs. Such names are left out of the text the rules read, like a page header; the speech is checked as
+before. A single recurring label (`○　注意事項`), an occasional `NOTE:` or `WARNING:`, numbered items and headings
+(`一　`, `第一節　`, `A.`), and mixed-case field names (`Title:`, `Notes:`) are not read as speakers. This holds with the default genre too; `literature/play` and `speech/transcript` already
 turn these rules off.
 
 ## 0.16.0 — 2026-09-30
