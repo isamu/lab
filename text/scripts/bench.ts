@@ -1,7 +1,7 @@
 // Seeded-mistake benchmark. Plants one mistake at a time in the self-written samples of test/fixtures/bench/<lang>/,
 // runs every rule (as with --experimental) for the sample's genre, and counts which planted mistakes chaff finds.
-// A mistake is planted only where its rule runs: in the rule's languages and a genre in its use_for. The team's words
-// (jargon, required_sections) are passed as chaff.yaml would pass them.
+// A mistake is planted only where its rule runs: in the rule's languages, a genre in its use_for, and not off in the genre's
+// preset. The team's words (jargon, required_sections) are passed as chaff.yaml would pass them.
 // The corpus measures false positives; this measures misses. The summary is compared with
 // test/fixtures/bench/expected.txt, and --update rewrites that file.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -15,6 +15,11 @@ import { TEAM_PREFER } from "./bench-mutations-phrasing.ts";
 import { cleanLine, falseAlarms, formatTable, outcomeLine, outcomeOf, ruleTable, summaryChanges, type Outcome } from "./bench-score.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { resolve } from "../packages/chaff/src/levels.ts";
+import { GENRES } from "../packages/chaff/src/genre.ts";
+import { presetLevels } from "../packages/chaff/src/genre-load.ts";
+import { BENCH_GENRES, benchGenreOf, benchLevelOf, runsInBench } from "./bench-genres.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 const BENCH = join(dirname(fileURLToPath(import.meta.url)), "..", "test", "fixtures", "bench");
 const EXPECTED = join(BENCH, "expected.txt");
@@ -22,22 +27,7 @@ const LANGUAGES: readonly string[] = ["ja", "en"];
 const verbose = process.argv.includes("--verbose");
 const update = process.argv.includes("--update");
 
-/** The genre each kind of sample is checked as. */
-const GENRES: Readonly<Record<string, string>> = {
-  itinerary: "business/report",
-  quote: "business/report",
-  minutes: "business/meeting-notes",
-  design: "technical/spec",
-  requirements: "technical/spec",
-  policy: "business/policy",
-  note: "business/note",
-  press: "business/press-release",
-  email: "business/email",
-  proposal: "business/proposal",
-  figures: "business/report",
-  readme: "technical/readme",
-  blog: "blog/tech",
-};
+const LENGTH_UNITS: Readonly<Record<string, "char" | "word">> = { ja: ja.capabilities.lengthUnit, en: en.capabilities.lengthUnit };
 
 type Sample = { readonly name: string; readonly language: string; readonly genre: string; readonly path: string; readonly source: string };
 
@@ -50,19 +40,23 @@ const samplesOf = (language: string): Sample[] =>
       return {
         name: `${language}/${kind}`,
         language,
-        genre: GENRES[kind] ?? "business",
+        genre: benchGenreOf(kind, BENCH_GENRES, GENRES),
         path: `bench/${language}/${file}`,
         source: readFileSync(join(BENCH, language, file), "utf8"),
       };
     });
 
 const contextOf = (sample: Sample): PlantContext => ({
-  limits: Object.fromEntries(loadRules(sample.language).map((rule) => [rule.id, resolve(rule, "normal", sample.genre).limit])),
+  limits: Object.fromEntries(
+    loadRules(sample.language).map((rule) => [rule.id, resolve(rule, benchLevelOf(rule.id, presetLevels(sample.genre)), sample.genre).limit]),
+  ),
+  lengthUnit: LENGTH_UNITS[sample.language],
+  fullSentences: Object.fromEntries(loadRules(sample.language).flatMap((rule) => (rule.full_sentence === undefined ? [] : [[rule.id, rule.full_sentence]]))),
 });
 
-/** Whether chaff runs the rule on this sample at all: its languages, and a genre in its use_for. */
+/** Whether chaff runs the rule on this sample at all: its languages, a genre in its use_for, and not off in the genre's preset. */
 const runsOn = (sample: Sample, id: string): boolean =>
-  loadRules(sample.language).some((rule) => rule.id === id && rule.use_for.some((target) => sample.genre.startsWith(target)));
+  loadRules(sample.language).some((rule) => rule.id === id && runsInBench(rule, sample.genre, presetLevels(sample.genre)));
 
 const teamOf = (sample: Sample): TeamWords => ({ jargon: TEAM_JARGON, requiredSections: requiredSectionsOf(sample.source), prefer: TEAM_PREFER });
 

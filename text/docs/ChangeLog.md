@@ -10,6 +10,62 @@ Newest first.
 size exceeded". Every walk over the Markdown tree and the structure tree now keeps its own stack, so lint, `tree` and
 the structure rules read such a document like any other. The output of every other document is unchanged.
 
+### `max-paragraph-length` no longer reports a paragraph of many short sentences (#170)
+
+The rule counted sentences only, so text written in short sentences (children's pages, a list of releases, a Q&A)
+was reported as a wall: every paragraph of NASA's spacewalk page for grades K-4 was. A paragraph is now reported only
+when it has more sentences than the limit and is also longer than that many sentences of ordinary length. That length is
+data in the rule's YAML (`full_sentence`, in characters for Japanese and words for English) and is multiplied by the
+limit, so the levels, the genres and a number in `chaff.yaml` move both together. The message still gives the number of
+sentences. A dense paragraph of long sentences is reported as before. The bench's joined-paragraph plant now joins
+paragraphs (across a heading if it must) into one line until both limits are passed.
+
+### The corpus stores 青空文庫 texts without their colophon (#170)
+
+A new `aozora` format for the corpus manifest drops the blocks 青空文庫 closes every file with (底本, 入力, 校正, the
+dates, 青空文庫作成ファイル and the note on notation), as the `gutenberg` format drops Project Gutenberg's header and
+licence: they are 青空文庫's record of the file, not the author's text, and `latin-spacing` read their spacing as the
+work's. The blocks are told by the classes 青空文庫 marks them with; the rest of the page is converted as HTML. The four
+青空文庫 documents use it.
+
+### The corpus HTML converter restores a paragraph tag that lost its "<" (#170)
+
+The eCFR serves 16 CFR 310.4(b) with `… 45 CFR 160.103. P&gt;(2) It is …`, the remains of the `<P>` that opened
+paragraph (2). A `P>` after a sentence's end and right before a paragraph's designation (`(2)`, `(iv)`, `(A)`) and a
+capital now opens a paragraph, so (2) no longer hides inside (1)(v)(D) and `numbering-gap` no longer reports (3) after (1).
+`P>0.05`, `P > (2)`, a formula opening a sentence (`P>(2) follows`) and the same text inside a tag stay as they
+are.
+
+### `undefined-acronym` reads a single letter joined in front of a word as one name (#170)
+
+In `J-STAGE`, `B-GSM` or `e-Gov` the letter in front makes a new name, so the capitals after it are not an acronym
+waiting for its expansion; `STAGE` in 「J-STAGEで公開」 is no longer reported. A letter joined after an acronym
+(`ITU-T`, `GOODS-S`) marks a variant of that acronym, which is still reported, and so is an acronym joined of two
+longer parts (`RT-PCR`). The same capitals outside the name are counted as before.
+
+### `yarn bench` checks every sample as a genre chaff has, and stops on one it does not (#170)
+
+The policy and note samples were checked as `business/policy` and `business/note`, which are not genres, so they ran
+with no genre's settings and nothing said so. A policy (社内規程) is now checked as `legal/statute` and a note to staff as
+`business/press-release` (a notice). A sample kind with no genre, or a genre not in `genres.yaml`, now stops the bench.
+The bench also plants a mistake only where the genre's preset leaves its rule on, as chaff runs it: under
+`legal/statute` the nested-の plant is no longer made in the policy sample, since the legal presets turn
+`no-doubled-joshi` off.
+
+### New experimental rule `agreement-slip`: words that do not agree (English) (#170)
+
+Corpus round 9 (#274) found slips no rule caught: "Your can check" and "remains ones of the most intriguing". The new
+rule reports a determiner and a noun that differ in number ("a significant changes", "these new version"), a
+possessive directly before a verb ("Your can", "their is"), and "ones of the most". "one of the" + a singular noun is
+not counted: in the corpus it only misfired ("some one of the name of Cecily"). It counts only forms
+with one reading: nouns spelled alike in both numbers ("series", "data"), words the tagger does not know (their number is
+a guess), a noun that can also be a verb after a word that can head the phrase ("an individual works", "This results
+in"), nouns that modify another noun ("a sales team") and names ("Plan A users") are not counted. The words come from new English lexicons (`singular-determiner`,
+`plural-determiner`, `invariant-noun`, `count-adjective`, `dependent-possessive`, `finite-auxiliary`,
+`misnumbered-phrase`). The English adapter marks a noun that can also be a verb `AlsoVerb=Yes` and an adjective that can
+also be a noun `AlsoNoun=Yes`, and a noun or adjective it does not know `Guess=Yes`. Off for literature and transcripts, like `doubled-word`. Experimental: on the English
+corpus every finding is a real slip, but there are too few of them for §21.1.
+
 ### `oxford-comma-consistency` no longer reads an example aside or an "and" inside one item as a list (#170)
 
 A list needs three items, and four shapes made two items, or an "and" inside one item, look like three:

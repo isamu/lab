@@ -2,7 +2,17 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { codeLines, rewriteFirst, type Plant } from "../scripts/bench-text.ts";
 import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa } from "../scripts/bench-mutations-ja.ts";
-import { doubleArticle, expletiveOf, expletives, flipFirstList, flipLastHeading, isTitleCase, oxfordOf, passiveEn } from "../scripts/bench-mutations-en.ts";
+import {
+  doubleArticle,
+  expletiveOf,
+  expletives,
+  flipFirstList,
+  flipLastHeading,
+  isTitleCase,
+  oxfordOf,
+  passiveEn,
+  pluralAfterArticle,
+} from "../scripts/bench-mutations-en.ts";
 import {
   TEAM_JARGON,
   boldSection,
@@ -202,19 +212,77 @@ describe("doubleArticle / doubleParticle", () => {
   });
 });
 
+describe("pluralAfterArticle", () => {
+  it("本文の最初の「a <名詞> of」の名詞を複数にする", () => {
+    assert.deepEqual(at(pluralAfterArticle(lines("# A week of work", "", "We spent a week of work on it."))), [3, "We spent a weeks of work on it."]);
+  });
+
+  it("見出し・表と、s で終わる名詞・前置詞の続かない名詞には植えない", () => {
+    assert.equal(pluralAfterArticle(lines("# a week of work", "| a week of work |", "We spent a week.")), undefined);
+    assert.equal(pluralAfterArticle("We made a series of calls."), undefined);
+  });
+});
+
 describe("joinParagraphs", () => {
   const three = "One. Two. Three.";
+  const gated = (limit: number, fullSentence: number, lengthUnit?: "char" | "word") => ({
+    limits: { "max-paragraph-length": limit },
+    fullSentences: { "max-paragraph-length": fullSentence },
+    lengthUnit,
+  });
 
-  it("空行だけを挟む二つの段落を一つにし、上の段落の最初の行を指す", () => {
+  it("空行だけを挟む二つの段落を 1 行の段落にし、上の段落の最初の行を指す", () => {
     const plant = joinParagraphs(lines("# T", "", three, "", three), limits({ "max-paragraph-length": 5 }));
-    assert.deepEqual(plant?.source.split("\n"), ["# T", "", three, three]);
+    assert.deepEqual(plant?.source.split("\n"), ["# T", "", `${three} ${three}`]);
     assert.equal(plant?.line, 3);
   });
 
-  it("文が上限を超えない組、見出しを挟む組、文で終わらない行の段落はつながない", () => {
+  it("文が上限を超えない組、文で終わらない行の段落、箇条書きを挟む組はつながない", () => {
     assert.equal(joinParagraphs(lines(three, "", three), limits({ "max-paragraph-length": 6 })), undefined);
-    assert.equal(joinParagraphs(lines(three, "## H", three), limits({ "max-paragraph-length": 5 })), undefined);
     assert.equal(joinParagraphs(lines("第4条（管理）", three, "", three), limits({ "max-paragraph-length": 5 })), undefined);
+    assert.equal(joinParagraphs(lines(three, "", "- item", "", three), limits({ "max-paragraph-length": 5 })), undefined);
+  });
+
+  it("見出しを挟む段落は、見出しごと消してつなぐ", () => {
+    const plant = joinParagraphs(lines(three, "", "## H", "", three, "", "Next."), limits({ "max-paragraph-length": 5 }));
+    assert.deepEqual(plant?.source.split("\n"), [`${three} ${three}`, "", "Next."]);
+    assert.equal(plant?.line, 1);
+  });
+
+  it("文の数だけでなく長さも上限を超えるまで、次の段落をつなぐ", () => {
+    // 3 文 3 語の段落。上限 5 文 × 1 語 = 5 語は段落 2 つ（6 語）で超え、5 文 × 2 語 = 10 語は 4 つ（12 語）で超える。
+    const source = lines(three, "", three, "", three, "", three);
+    assert.deepEqual(joinParagraphs(source, gated(5, 1))?.source.split("\n"), [`${three} ${three}`, "", three, "", three]);
+    assert.deepEqual(joinParagraphs(source, gated(5, 2))?.source.split("\n"), [[three, three, three, three].join(" ")]);
+  });
+
+  it("つなぐ段落がいちばん少ない並びを選ぶ", () => {
+    // 1 文・3 文・3 文。頭からだと 3 つつなぐ（7 文）が、2 つ目からなら 2 つ（6 文）で上限 5 文を超える。
+    const plant = joinParagraphs(lines("One.", "", three, "", three), limits({ "max-paragraph-length": 5 }));
+    assert.deepEqual(plant?.source.split("\n"), ["One.", "", `${three} ${three}`]);
+  });
+
+  it("一つで上限を超えている段落も、次の段落とつなぐ（元のままでは植えたことにならない）", () => {
+    const six = "A. B. C. D. E. F.";
+    assert.deepEqual(joinParagraphs(lines(six, "", three), limits({ "max-paragraph-length": 5 }))?.source, `${six} ${three}`);
+  });
+
+  it("文書の段落を全部つないでも長さが足りなければ植えない", () => {
+    assert.equal(joinParagraphs(lines(three, "", three, "", three), gated(5, 10)), undefined);
+  });
+
+  it("日本語は文字で測る", () => {
+    const ja = "あいうえお。かきくけこ。さしすせそ。";
+    // 1 段落 3 文 18 字。2 つで 36 字。
+    assert.equal(joinParagraphs(lines(ja, "", ja), gated(5, 8)), undefined);
+    assert.deepEqual(joinParagraphs(lines(ja, "", ja), gated(5, 7))?.source, `${ja}${ja}`);
+  });
+
+  it("単位は文書の adapter が決める。英語の文書に日本語の文があっても語で測る", () => {
+    const mixed = "See the note. 詳しくは別紙を見てください。 Then reply.";
+    // 1 段落 2 文 6 語、2 つで 12 語。語で測れば 3 × 4 = 12 を超えず、3 × 3 = 9 は超える。文字で測れば、どちらも超える。
+    assert.equal(joinParagraphs(lines(mixed, "", mixed), gated(3, 4, "word")), undefined);
+    assert.equal(joinParagraphs(lines(mixed, "", mixed), gated(3, 3, "word"))?.source, `${mixed} ${mixed}`);
   });
 });
 

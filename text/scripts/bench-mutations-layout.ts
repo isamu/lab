@@ -25,26 +25,75 @@ export const isParagraph = (lines: readonly string[], block: Block): boolean => 
   return lines.slice(block.start, block.end).every((line, at) => isProseLine(block.start + at) && !isRow(line) && SENTENCE_END.test(line.trimEnd()));
 };
 
-const sentenceCount = (lines: readonly string[], block: Block): number =>
-  lines.slice(block.start, block.end).flatMap((line) => splitSentences(line).filter((sentence) => sentence.trim() !== "")).length;
+const HEADING = /^#{1,6}\s/u;
 
-type Join = { readonly upper: Block; readonly lower: Block; readonly count: number };
+/** 段落のあいだにあってよい行。空行と見出しだけ。箇条書きや表を挟む段落はつながない。 */
+const isSeparator = (line: string): boolean => line.trim() === "" || HEADING.test(line);
 
-/** 空行だけを挟んで並ぶ二つの段落の空行を消して、一つの段落にする。文がいちばん多くなる組を選び、上限を超えなければ植えない。 */
+type LengthUnit = "char" | "word";
+
+/** chaff と同じ単位の長さ。文字は空白を除いて数え、語は空白で区切って数える。 */
+const sizeOf = (sentence: string, unit: LengthUnit): number =>
+  unit === "char" ? sentence.replace(/\s+/gu, "").length : sentence.split(/\s+/u).filter((word) => word !== "").length;
+
+type Measure = { readonly count: number; readonly size: number };
+
+const measureOf = (lines: readonly string[], block: Block, unit: LengthUnit): Measure => {
+  const sentences = lines.slice(block.start, block.end).flatMap((line) => splitSentences(line).filter((sentence) => sentence.trim() !== ""));
+  return { count: sentences.length, size: sentences.reduce((sum, sentence) => sum + sizeOf(sentence, unit), 0) };
+};
+
+/** 見出しと空行だけを挟んで続く段落の並び。 */
+const chainsOf = (lines: readonly string[], paragraphs: readonly Block[]): Block[][] =>
+  paragraphs.reduce<Block[][]>((chains, paragraph) => {
+    const chain = chains.at(-1);
+    const previous = chain?.at(-1);
+    const joinable = chain !== undefined && previous !== undefined && lines.slice(previous.end, paragraph.start).every(isSeparator);
+    return joinable ? [...chains.slice(0, -1), [...chain, paragraph]] : [...chains, [paragraph]];
+  }, []);
+
+/** from から始めて、文の数も長さも上限を超えるまで段落を足したときの最後の段落の位置。2 つ以上つなぐ。 */
+const endOfRun = (measures: readonly Measure[], from: number, isTooLong: (total: Measure) => boolean): number | undefined => {
+  const totals = measures
+    .slice(from)
+    .map((_, at) =>
+      measures
+        .slice(from, from + at + 1)
+        .reduce((sum, measure) => ({ count: sum.count + measure.count, size: sum.size + measure.size }), { count: 0, size: 0 }),
+    );
+  const at = totals.findIndex((total, index) => index > 0 && isTooLong(total));
+  return at < 0 ? undefined : from + at;
+};
+
+type Run = { readonly first: Block; readonly last: Block; readonly joined: number };
+
+const runsOf = (lines: readonly string[], chain: readonly Block[], unit: LengthUnit, isTooLong: (total: Measure) => boolean): Run[] => {
+  const measures = chain.map((paragraph) => measureOf(lines, paragraph, unit));
+  return chain.flatMap((first, from) => {
+    const to = endOfRun(measures, from, isTooLong);
+    const last = to === undefined ? undefined : chain[to];
+    return to === undefined || last === undefined ? [] : [{ first, last, joined: to - from + 1 }];
+  });
+};
+
+/**
+ * 段落のあいだの空行と見出しを消して、1 行の段落にする（行を並べただけだと、chaff は 1 行 1 段落の文書として読む）。chaff の max-paragraph-length と同じく、文の数が上限を超え、
+ * 長さも「上限 × 普通の文の長さ」を超えるまで次の段落をつなぐ。つなぐ段落がいちばん少ない並びを選び、足りなければ植えない。
+ */
 export const joinParagraphs = (source: string, context: PlantContext): Plant | undefined => {
   const limit = context.limits["max-paragraph-length"];
+  if (limit === undefined) return undefined;
+  const lengthLimit = limit * (context.fullSentences?.["max-paragraph-length"] ?? 0);
+  const isTooLong = (total: Measure): boolean => total.count > limit && total.size > lengthLimit;
+  const unit = context.lengthUnit ?? (isJapanese(source) ? "char" : "word");
   const lines = linesOf(source);
   const paragraphs = blocksOf(lines).filter((block) => isParagraph(lines, block));
-  const joins = paragraphs.slice(1).flatMap((lower, at) => {
-    const upper = paragraphs[at];
-    const between = upper === undefined ? [] : lines.slice(upper.end, lower.start);
-    return upper === undefined || between.some((line) => line.trim() !== "")
-      ? []
-      : [{ upper, lower, count: sentenceCount(lines, upper) + sentenceCount(lines, lower) }];
-  });
-  const best = joins.reduce<Join | undefined>((found, join) => (found === undefined || join.count > found.count ? join : found), undefined);
-  if (limit === undefined || best === undefined || best.count <= limit) return undefined;
-  return { source: lines.filter((_, index) => index < best.upper.end || index >= best.lower.start).join("\n"), line: best.upper.start + 1 };
+  const runs = chainsOf(lines, paragraphs).flatMap((chain) => runsOf(lines, chain, unit, isTooLong));
+  const best = runs.reduce<Run | undefined>((found, run) => (found === undefined || run.joined < found.joined ? run : found), undefined);
+  if (best === undefined) return undefined;
+  const joined = lines.slice(best.first.start, best.last.end).filter((line) => !isSeparator(line));
+  const paragraph = joined.map((line) => line.trim()).join(unit === "char" ? "" : " ");
+  return { source: [...lines.slice(0, best.first.start), paragraph, ...lines.slice(best.last.end)].join("\n"), line: best.first.start + 1 };
 };
 
 // --- heading-echo ---

@@ -28,18 +28,21 @@ describe("変動係数", () => {
 });
 
 describe("max-paragraph-length", () => {
+  // 普通の長さの文。短い文だけの段落は長さで外れるので、文の数を見る試験は長い文で書く。
+  const sentence = (index: number): string =>
+    `これは${String(index)}番目の文で、担当者が申請書の記載内容と添付書類の写しを一件ずつ突き合わせて確認した結果を台帳に記録します。`;
+  const sentences = Array.from({ length: 7 }, (_, index) => sentence(index));
+
   it("invalid: 1 段落に 7 文", () => {
-    const long = Array.from({ length: 7 }, (_, index) => `これは${String(index)}番目の文です。`).join("");
-    assert.ok(idsFor(`# 見出し\n\n${long}`).includes("max-paragraph-length"));
+    assert.ok(idsFor(`# 見出し\n\n${sentences.join("")}`).includes("max-paragraph-length"));
   });
 
   it("valid: 割ってあれば指摘しない", () => {
-    const split = Array.from({ length: 7 }, (_, index) => `これは${String(index)}番目の文です。`).join("\n\n");
-    assert.ok(!idsFor(`# 見出し\n\n${split}`).includes("max-paragraph-length"));
+    assert.ok(!idsFor(`# 見出し\n\n${sentences.join("\n\n")}`).includes("max-paragraph-length"));
   });
 
   it("箇条書きの項目は段落として数えない", () => {
-    const list = Array.from({ length: 7 }, (_, index) => `- 項目${String(index)}です。`).join("\n");
+    const list = sentences.map((text) => `- ${text}`).join("\n");
     assert.ok(!idsFor(`# 見出し\n\n${list}`).includes("max-paragraph-length"));
   });
 });

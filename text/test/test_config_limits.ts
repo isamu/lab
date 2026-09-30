@@ -134,7 +134,11 @@ describe("a numeric limit on a composite rule", () => {
   if (base === undefined) throw new Error("max-sentence-length is missing");
   const composite = { ...base, id: "both-long", how_to_find: "", from: ["max-sentence-length", "max-paragraph-length"], levels: { normal: 2 } };
   const compositesWith = (limit: number): number => {
-    const doc = buildDocument("a.md", "# 手順\n\n設定を開きます。項目を選びます。保存します。\n", ja);
+    const doc = buildDocument(
+      "a.md",
+      "# 手順\n\n画面の右上にある設定を開いて、通知の項目を一覧から選びます。選んだ項目の内容を確かめてから、画面の下にある保存を押します。保存が終わると、画面の上に完了の知らせが出ます。\n",
+      ja,
+    );
     const limits = { "max-sentence-length": 3, "max-paragraph-length": 1, "both-long": limit };
     const settings: Settings = { "max-sentence-length": "normal", "max-paragraph-length": "normal", "both-long": "normal" };
     return runRules(doc, [...RULES, composite], settings, false, "technical/readme", limits).findings.filter((finding) => finding.rule === "both-long").length;
