@@ -4,7 +4,6 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { anchorKey } from "../packages/chaff/src/detectors/broken-link.ts";
-import { referenceName } from "../packages/chaff/src/markup.ts";
 
 // 行き先の無いリンク（broken-link）。例文はすべて自作。
 
@@ -60,7 +59,7 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf("See [the report][] first.\n", en).length, 1);
   });
 
-  it("定義のある参照は指摘しない（大文字小文字と空白の違いは問わない）", () => {
+  it("定義のある参照はリンクなので指摘しない（大文字小文字と空白の違いは問わない）", () => {
     assert.deepEqual(findingsOf("See [the report][Annual  Report].\n\n[annual report]: https://example.com/\n", en), []);
   });
 
@@ -81,15 +80,10 @@ describe("broken-link: 行き先の無いリンク", () => {
   });
 });
 
-describe("名前をそろえる", () => {
+describe("見出しの名前をそろえる", () => {
   it("見出しの名前は字と数字だけを小文字で比べる", () => {
     assert.equal(anchorKey("Getting-Started_2!"), "gettingstarted2");
     assert.equal(anchorKey("手順の概要"), "手順の概要");
     assert.equal(anchorKey(""), "");
-  });
-
-  it("参照の名前は空白の並びと大文字小文字を畳む", () => {
-    assert.equal(referenceName("  Annual \n Report "), "annual report");
-    assert.equal(referenceName("ẞ"), referenceName("ss"));
   });
 });

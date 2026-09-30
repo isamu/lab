@@ -1,5 +1,4 @@
 import type { Detector, Finding, Markup, ProseDocument, Span } from "../plugin.ts";
-import { referenceName } from "../markup.ts";
 import { findingAt, markupOf, quoteOf } from "./markup-finding.ts";
 
 /** ページの先頭を指す書き方。見出しが無くても行き先がある。 */
@@ -34,8 +33,8 @@ export const reachesAnchor = (destination: string, keys: ReadonlySet<string>): b
 };
 
 /**
- * 参照の形で書いたのに、名前の定義（`[label]: url`）が無いもの（`[text][label]`、`[text][]`）。字のまま表示される。
- * 英数字のすぐ後ろの括弧（A[i][j]）は配列の添字。
+ * 参照の形で書いたのに名前の定義（`[label]: url`）が無いもの（`[text][label]`、`[text][]`）。字のまま表示される。
+ * 定義があれば CommonMark はリンクにするので、字のまま残った参照の形は定義が無い。英数字のすぐ後ろの括弧（A[i][j]）は配列の添字。
  */
 const REFERENCE_LIKE = /(?<![\\A-Za-z0-9_\]])\[([^[\]\n]+)\]\[([^[\]\n]*)\]/gu;
 
@@ -46,7 +45,6 @@ export const unresolvedReferences = (source: string, markup: Markup): Span[] =>
   markup.texts.flatMap((text) =>
     [...source.slice(text.start, text.end).matchAll(REFERENCE_LIKE)]
       .filter((match) => !CITATION_NUMBERS.test(match[1] ?? ""))
-      .filter((match) => !markup.definitions.has(referenceName(match[2] === "" ? (match[1] ?? "") : (match[2] ?? ""))))
       .map((match) => ({ start: text.start + match.index, end: text.start + match.index + match[0].length })),
   );
 

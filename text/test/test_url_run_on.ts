@@ -30,7 +30,9 @@ describe("url-run-on: URL のすぐ後ろに続く字", () => {
 
   it("空白や ASCII の句読点が続くなら指摘しない", () => {
     assert.deepEqual(
-      findingsOf("詳しくは https://example.jp/docs をご覧ください。See https://example.com/docs. Or https://example.com/a, then　全角の空白。\n"),
+      findingsOf(
+        "詳しくは https://example.jp/docs をご覧ください。See https://example.com/docs. Or https://example.com/a, then https://example.jp/b　全角の空白。\n",
+      ),
       [],
     );
   });

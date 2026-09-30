@@ -355,8 +355,6 @@ export type Markup = {
   readonly headings: readonly MarkupHeading[];
   readonly images: readonly MarkupImage[];
   readonly links: readonly MarkupLink[];
-  /** 参照の定義（`[label]: url`）の名前。大文字小文字と空白の違いをそろえたもの。 */
-  readonly definitions: ReadonlySet<string>;
   /** 書き手が付けたページ内の名前（見出しの `{#id}`、HTML の id と name）。 */
   readonly ids: ReadonlySet<string>;
   /** 読み手に字のまま見える範囲（リンクの外のテキスト）。 */

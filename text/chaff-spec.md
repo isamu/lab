@@ -644,7 +644,7 @@ genres:
 
 設計上の注意:
 
-記法の rule（`heading-level-skip` など）は `requires: [markdown]` を持ち、`.txt` では理由を言って止まる。記法は `doc.markup`（見出し・画像・リンクの行き先・参照の定義・書き手が付けた名前・字のまま見える範囲）だけから読む。`.txt` の `doc.markup` は記法を持たず、文書全体が字のまま見える範囲になる。
+記法の rule（`heading-level-skip` など）は `requires: [markdown]` を持ち、`.txt` では理由を言って止まる。記法は `doc.markup`（見出し・画像・リンクの行き先・書き手が付けた名前・字のまま見える範囲）だけから読む。`.txt` の `doc.markup` は記法を持たず、文書全体が字のまま見える範囲になる。
 
 `heading-echo` と `ngram-repetition` は **character n-gram** を使う。word n-gram にすると `wordSplit` capability を要求することになり L2 に落ちる。character trigram なら日本語でも英語でも同じ実装で動き、精度も実用に足りる。`ngram-repetition` の英語（語単位の言語）の窓は、空白で区切った語の切れ目にそろえる。空白を見るだけなので `wordSplit` は要らない。
 

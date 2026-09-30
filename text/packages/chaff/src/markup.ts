@@ -16,18 +16,6 @@ const stringField = (node: MarkdownNode, field: string): string | undefined => {
   return typeof value === "string" ? value : undefined;
 };
 
-/**
- * 参照の名前をそろえる。CommonMark の決まりのとおり、空白の並びを 1 つにし、前後を外し、大文字小文字を畳む。
- * mdast の identifier と同じ形になる。
- */
-export const referenceName = (label: string): string =>
-  label
-    .replace(/[\t\n\r ]+/gu, " ")
-    .trim()
-    .toLowerCase()
-    .toUpperCase()
-    .toLowerCase();
-
 // 見出しの末尾に付けた名前。属性（`{#step1 .class}`）と、MDX のコメント（`{/*step1*/}`）。
 type NamedHeading = { readonly text: string; readonly id: string | undefined };
 
@@ -59,7 +47,6 @@ type Walk = {
   readonly headings: MarkupHeading[];
   readonly images: MarkupImage[];
   readonly links: MarkupLink[];
-  readonly definitions: Set<string>;
   readonly ids: Set<string>;
   readonly texts: Span[];
 };
@@ -107,7 +94,6 @@ const readNode = (node: MarkdownNode, span: Span, source: string, walk: Walk): v
   else if (node.type === "link" || node.type === "definition") walk.links.push({ destination: node.url ?? "", ...span });
   else if (node.type === "html") readHtml(node.value ?? "", span, walk);
   else if (node.type === "text") walk.texts.push(span);
-  if (node.type === "definition") walk.definitions.add(referenceName(stringField(node, "label") ?? node.identifier ?? ""));
 };
 
 const startsInside = (span: Span, regions: readonly Span[]): boolean => regions.some((region) => span.start >= region.start && span.start < region.end);
@@ -117,7 +103,7 @@ const startsInside = (span: Span, regions: readonly Span[]): boolean => regions.
  * リンクの中へは下りない（リンクの字は字のまま見える範囲ではない）。
  */
 export const markdownMarkup = (root: MarkdownNode, source: string, outside: readonly Span[] = []): Markup => {
-  const walk: Walk = { headings: [], images: [], links: [], definitions: new Set(), ids: new Set(), texts: [] };
+  const walk: Walk = { headings: [], images: [], links: [], ids: new Set(), texts: [] };
   const pending: MarkdownNode[] = [root];
   while (pending.length > 0) {
     const node = pending.pop();
@@ -136,7 +122,6 @@ export const plainMarkup = (source: string): Markup => ({
   headings: [],
   images: [],
   links: [],
-  definitions: new Set(),
   ids: new Set(),
   texts: [{ start: 0, end: source.length }],
 });

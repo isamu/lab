@@ -5,10 +5,10 @@ import { findingAt, quoteOf } from "./markup-finding.ts";
 const BARE_URL = /https?:\/\/[!-~]+/gu;
 
 /**
- * 空白でも ASCII でもない字。GFM の自動リンクや多くのメールソフトは、空白が来るまでをリンクにするので、この字までリンクに入る。
- * 見えない字（ゼロ幅の空白など、Cf）は、折り返しのために入れたもので、読み手には続いて見えない。
+ * URL は ASCII の字を空白まで取るので、後ろに来るのは空白か ASCII でない字。GFM の自動リンクや多くのメールソフトは空白が来るまでを
+ * リンクにするので、空白でない字はリンクに入る。見えない字（ゼロ幅の空白など、Cf）は折り返しのために入れたもので、読み手には続いて見えない。
  */
-const RUNS_ON = /[^\s\p{ASCII}\p{Cf}]/u;
+const RUNS_ON = /[^\s\p{Cf}]/u;
 
 export type RunOnUrl = { readonly url: Span; readonly next: string };
 

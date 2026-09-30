@@ -34,13 +34,20 @@ describe("doc.markup", () => {
     );
   });
 
-  it("リンクの行き先と参照の定義", () => {
+  it("リンクの行き先と、参照の定義の行き先", () => {
     const markup = markupOf("[a](https://x.jp) [b]() [c][Ref]\n\n[Ref]: #top\n");
     assert.deepEqual(
       markup.links.map((link) => link.destination),
       ["https://x.jp", "", "#top"],
     );
-    assert.deepEqual([...markup.definitions], ["ref"]);
+  });
+
+  it("メールの引用した返信の中は、ほかの人の文書なので読まない", () => {
+    const source = ["はい、大丈夫です。", "", "山田太郎 さんは書きました:", "> ![](figure.png) 詳しくは https://example.jp/aを。", "> [資料]()", ""].join("\n");
+    const markup = markupOf(source);
+    assert.deepEqual(markup.images, []);
+    assert.deepEqual(markup.links, []);
+    assert.deepEqual(textsOf(source), ["はい、大丈夫です。"]);
   });
 
   it("字のまま見える範囲は、リンク・コード・HTML の外", () => {
