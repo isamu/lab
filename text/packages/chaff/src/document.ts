@@ -15,7 +15,7 @@ import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { pageFurniture, textOutline } from "./page-furniture.ts";
 import { tokenizedLexicons } from "./lexicon-tokens.ts";
 import { inPageAnchors, isInPageNavigation, isNavigationList, type InPageAnchors } from "./in-page-nav.ts";
-import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
+import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile, Token } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
 type Node = {
@@ -205,7 +205,17 @@ const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: Langua
       })),
   );
 
-const sectionsOf = (headings: readonly Heading[], sentences: readonly Sentence[], strongs: readonly Span[], length: number): Section[] => {
+/** 見出しの語。品詞を読んでいない文書（文が tokens を持たない）では分けない。 */
+const headingTokensOf = (adapter: LanguageAdapter, tagged: boolean, heading: string): { headingTokens?: readonly Token[] } =>
+  tagged && heading !== "" ? { headingTokens: adapter.segment(heading).sentences.flatMap((sentence) => sentence.tokens ?? []) } : {};
+
+const sectionsOf = (
+  headings: readonly Heading[],
+  sentences: readonly Sentence[],
+  strongs: readonly Span[],
+  length: number,
+  tokensOf: (heading: string) => { headingTokens?: readonly Token[] },
+): Section[] => {
   const bounds = headings.map((heading, index) => ({ heading, from: heading.end, to: headings[index + 1]?.start ?? length }));
   const lead = { heading: { depth: 0, text: "", start: 0, end: 0 }, from: 0, to: headings[0]?.start ?? length };
   return [lead, ...bounds]
@@ -215,6 +225,7 @@ const sectionsOf = (headings: readonly Heading[], sentences: readonly Sentence[]
       return {
         depth: heading.depth,
         heading: heading.text,
+        ...tokensOf(heading.text),
         span: { start: from, end: to },
         sentences: inside,
         strongCount: strongs.filter((span) => within(span, from, to)).length,
@@ -337,7 +348,7 @@ export const buildDocument = (
     language: adapter.id,
     lengthUnit: adapter.capabilities.lengthUnit,
     capabilities: adapter.capabilities,
-    sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root, blocks), source.length),
+    sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root, blocks), source.length, (heading) => headingTokensOf(adapter, tagged, heading)),
     sentences,
     listSpans: listItems,
     paragraphs: paragraphsOf(prose, paragraphSpans, sentences, listItems),

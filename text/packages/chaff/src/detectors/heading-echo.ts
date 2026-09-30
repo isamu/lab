@@ -1,4 +1,5 @@
 import { lengthOf, proseText } from "../measure.ts";
+import { newContentMorphemes } from "./content-morphemes.ts";
 import { echoedHeadingUnits, trigrams } from "./heading-overlap.ts";
 import { handsOver } from "./lead-in.ts";
 import { withoutQuotedVariants } from "./quoted-variant.ts";
@@ -29,9 +30,18 @@ const containment = (heading: Set<string>, sentence: Set<string>): number => {
  */
 const NEW_MATERIAL = { word: 6, char: 20 };
 
+/**
+ * 空白で語を分けない言語は、品詞が読めれば文字ではなく見出しに無い内容語で測る。文字数は中身の量を言わない:
+ * 「会社に勤めています」は 9 文字で 会社・勤める を足し、「について説明します」は同じ 9 文字で 説明 しか足さない。
+ * 内容語 2 つで足りる（こころさんのお父さんは、会社に勤めています。）。日本語の corpus で測った（yarn corpus）。
+ */
+const NEW_CONTENT_MORPHEMES = 1;
+
 const addsLittle = (section: Section, unit: LengthUnit): boolean => {
   const first = section.firstSentence;
   if (first === undefined) return false;
+  if (unit === "char" && first.tokens !== undefined && section.headingTokens !== undefined)
+    return newContentMorphemes(section.headingTokens, first.tokens) <= NEW_CONTENT_MORPHEMES;
   return lengthOf(first, unit) - echoedHeadingUnits(section.heading, proseText(first), unit) <= NEW_MATERIAL[unit];
 };
 
