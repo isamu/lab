@@ -3,6 +3,10 @@ import { closesSentence } from "./sentence-close.ts";
 import { sentenceSpans } from "./sentence-split.ts";
 import { isEnglishBoundary, isEnglishRun } from "./english-run.ts";
 import { unmarkNumberStops } from "./number-stop.ts";
+import { labelStops, unmarkLabelStops } from "./label-stop.ts";
+import { splitAtQuotedStops } from "./quoted-stop.ts";
+import { reattachClosingQuotes } from "./closing-quote.ts";
+import { insideBrackets, startsWithCloser } from "./inside-brackets.ts";
 import { structure } from "./structure.ts";
 import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, readsAsOneWord, tokenize } from "./pos.ts";
 import { markSpacedCounters } from "./spaced-counter.ts";
@@ -27,8 +31,15 @@ const COUNTABLE = /\S/gu;
  */
 const isOpen = (text: string): boolean => text.trim().length > 0 && !closesSentence(text);
 
-/** 和文の句点で閉じていない断片は次へ続く。ただし英文どうしは、分割器が英語の文末で切ったところで切る。 */
-const continues = (before: string, after: string): boolean => isOpen(before) && !isEnglishBoundary(before, after);
+/**
+ * 和文の句点で閉じていない断片、括弧・二重引用符の中で切れた断片、閉じ括弧で始まる断片の前は次へ続く。
+ * 閉じ括弧は閉じる文に付き、後ろは分割器が組にした括弧（「…。」と言った）と同じく同じ文に続く。
+ * ただし英文どうしは、英語のアダプタと同じく英語の文末で切ったところで切る。
+ */
+const continues = (before: string, after: string, bracketOpen: boolean): boolean =>
+  (isOpen(before) || bracketOpen || startsWithCloser(after)) && !isEnglishBoundary(before, after);
+
+const LINE_BREAK = /[\n\r]/u;
 
 const ENGLISH: EmbeddedLanguage = { id: "en", lengthUnit: "word" };
 
@@ -38,20 +49,22 @@ const withLanguage = (text: string, span: Span): Sentence => (isEnglishRun(text)
  * 断片を繋ぐときは raw の連結ではなくオフセットを使う。
  * sentence-splitter は空白を別ノードに分けるため、raw を繋ぐと空白が落ちて文長が縮む。
  */
-const merge = (source: string, spans: readonly Span[]): Sentence[] =>
-  spans
+const merge = (source: string, spans: readonly Span[]): Sentence[] => {
+  const open = insideBrackets(source);
+  return spans
     .reduce<Span[]>((acc, span) => {
       const last = acc.at(-1);
       // 断片の「間」に改行があれば繋がない。結合は「Dr. 田中」のような行の途中の
       // 誤分割を閉じるためのもので、行またぎは要らない。またぐと、引用ブロックの
       // 英文と訳文のように別の行のものまで 1 文に繋がる。
-      const acrossLines = last !== undefined && source.slice(last.end, span.start).includes("\n");
-      if (last !== undefined && !acrossLines && continues(source.slice(last.start, last.end), source.slice(span.start, span.end)))
+      const acrossLines = last !== undefined && LINE_BREAK.test(source.slice(last.end, span.start));
+      if (last !== undefined && !acrossLines && continues(source.slice(last.start, last.end), source.slice(span.start, span.end), open[last.end] === true))
         acc[acc.length - 1] = { start: last.start, end: span.end };
       else acc.push(span);
       return acc;
     }, [])
     .map((span) => withLanguage(source.slice(span.start, span.end), span));
+};
 
 /**
  * token の span は文ではなく、segment に渡した文字列を基準にする。文の span と同じ座標系。
@@ -70,6 +83,18 @@ const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] 
     // 述語かどうかは文の中でしか決まらないので、文へ配ってから印を落とす。
     tokens: markReduplication(predicateOnly(tokensWithin(tokens, sentence.span)), DISTRIBUTIVE, readsAsOneAdverb, TAKES_ITERATION_MARK),
   }));
+};
+
+const LABEL_STOPS = labelStops((LEXICONS["abbreviated-label"] ?? []).map((entry) => entry.pattern));
+
+/**
+ * 英語のアダプタと同じ手当てを英文にも当てる。番号の前の略した名前（FIG. 1）の点で切らず、
+ * 英文の閉じ引用符の内側の句点で切り、文頭に取り残された閉じ引用符を前の文へ戻す。
+ */
+const spansOf = (text: string): Span[] => {
+  const spans = sentenceSpans(unmarkNumberStops(unmarkLabelStops(text, LABEL_STOPS)));
+  const quotedStops = spans.flatMap((span) => (isEnglishRun(text.slice(span.start, span.end)) ? splitAtQuotedStops(text, span) : [span]));
+  return reattachClosingQuotes(text, quotedStops);
 };
 
 export const adapter: LanguageAdapter = {
@@ -95,7 +120,7 @@ export const adapter: LanguageAdapter = {
   lexicons: loadLexicons(),
   structure,
   segment: (text: string): Segmentation => {
-    const sentences = merge(text, sentenceSpans(unmarkNumberStops(text)));
+    const sentences = merge(text, spansOf(text));
     return { sentences: isReady() ? withTokens(text, sentences) : sentences };
   },
 };
