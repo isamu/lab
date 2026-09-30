@@ -4,7 +4,7 @@ import type { Sentence, Span } from "./plugin.ts";
 type Marks = Readonly<Record<string, string>>;
 
 /** 鉤括弧。日本語の引用と題名。 */
-export const KAGI_MARKS: Marks = { "「": "」", "『": "』" };
+const KAGI_MARKS: Marks = { "「": "」", "『": "』" };
 
 /**
  * 引用符も含めた、人の言葉を引く印。英語の "…" は開きと閉じが同じ字なので、開いている間に来たら閉じと読む。

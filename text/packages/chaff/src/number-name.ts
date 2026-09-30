@@ -88,7 +88,7 @@ export const placeChainBefore = (tokens: readonly Token[], end: number): Token[]
  * ハイフンの無い数（千代田区23 番）も読まない。topUnits は都道府県の単位（語彙表 prefecture-unit）。
  */
 const isAddressNumber = (text: string, run: Span, tokens: readonly Token[], base: number, topUnits: ReadonlySet<string>): boolean =>
-  [...text.slice(run.start, run.end)].some(isHyphen) &&
+  Array.from(text.slice(run.start, run.end)).some(isHyphen) &&
   placeChainBefore(tokens, base + run.start).some((token) => isGeoUnit(token) && !topUnits.has(token.surface));
 
 /** ハイフンでつないだ識別子か、番号の立つ位置の番号か、文頭の節番号か。 */

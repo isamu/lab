@@ -1,5 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
+import { firedRules } from "./rule-run.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -8,8 +9,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 const RULES = loadRules("ja");
 
-const idsFor = (source: string): string[] =>
-  runRules(buildDocument("t.md", source, ja), RULES, {}, true, "business/report").findings.map((finding) => finding.rule);
+const idsFor = (source: string): string[] => firedRules(ja, source);
 
 const countFor = (source: string, rule: string): number => idsFor(source).filter((id) => id === rule).length;
 

@@ -1,12 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { expansionAt, type DefinitionWords } from "../packages/chaff/src/detectors/acronym-expansion.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 括弧の最初の項目が略語で、区切りのあとに注記が続く形（Relief Act (RA; P.L. 1-1)、（DRR、Data Retention Rule））。例文はすべて自作。
 
@@ -61,20 +58,14 @@ describe("括弧の最初の項目が略語で、区切りが続く形", () => {
   });
 });
 
-/** 1 個でも出す段階で、出た略語だけを返す。 */
-const acronymsIn = (source: string, adapter: LanguageAdapter): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
-
 describe("undefined-acronym: 区切りの続く形で展開した略語は指摘しない", () => {
   it("英語: 展開した略語は外れ、列挙の最初の略語は残る", () => {
     const source = "# Tax\n\nThe Rural Broadband Relief Act (RBRA; P.L. 999-1) extended it. Later the RBRA lapsed. Ask a peer (KPT, notes, etc.) first.\n";
-    assert.deepEqual(acronymsIn(source, en), ["KPT"]);
+    assert.deepEqual(reportedAcronyms(en, source), ["KPT"]);
   });
 
   it("日本語: 区切りの後ろで展開した略語は外れ、年だけの略語は残る", () => {
     const source = "# 規則\n\nデータ保持規則（DRR、Data Retention Rule）を定める。のちに DRR を見直す。監査規則（KPT、2030年施行）もある。\n";
-    assert.deepEqual(acronymsIn(source, ja), ["KPT"]);
+    assert.deepEqual(reportedAcronyms(ja, source), ["KPT"]);
   });
 });
