@@ -85,6 +85,11 @@ that deep) now says so and names the depth instead of crashing; `--format sexp` 
   `“終わった？”誰も知らない。` is one sentence, as `「終わった？」誰も知らない。` already was. Only a bracket closed later on
   the same line counts, so `1）`, an unclosed `（` and a ditto `“` join nothing. A closing bracket left at the start of a
   sentence goes back to the sentence it closes. A line that ends in a lone `\r` is a line break too.
+- **A note in parentheses is read for its own ending.** Once such a note stayed one sentence,
+  「（この際、…亜塩素酸水（…（含量…以上））を入れることが望ましい。）」 was read as ending in its last inner bracket,
+  and `no-mixed-desumasu` lost a real finding. A bracket at the end of a sentence is now left out only when it is
+  closed and follows the predicate. A note that is the whole sentence, or that ends with 「。）」 after a finished
+  sentence, is read inside. Several asides in a row (「（※3）（ただし…を除く。）」) are all left out.
 
 ### Corpus round 13; `dangling-reference` and sections of numbered documents (#170)
 
