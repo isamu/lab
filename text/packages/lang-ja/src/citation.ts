@@ -9,6 +9,8 @@ export type CitationVocabulary = {
   readonly kanaTitleKinds: readonly string[];
   /** 名前と番地のあいだに挟まる括弧書き。 */
   readonly notes: readonly RegExp[];
+  /** 名前と番地を繋ぐ助詞（「前契約の第9条」の「の」）。 */
+  readonly joiners: readonly string[];
   /** この文書自身を指す名前の頭。 */
   readonly selfPrefixes: readonly string[];
 };
@@ -19,6 +21,7 @@ export const citationVocabulary = (lexicons: Readonly<Record<string, Lexicon>>):
   kinds: patternsOf(lexicons["document-kind"]).toSorted((left, right) => right.length - left.length),
   kanaTitleKinds: patternsOf(lexicons["kana-title-kind"]),
   notes: patternsOf(lexicons["name-note"]).map((pattern) => new RegExp(`(?:${pattern})$`, "u")),
+  joiners: patternsOf(lexicons["name-joiner"]),
   selfPrefixes: patternsOf(lexicons["self-prefix"]),
 });
 
@@ -43,12 +46,17 @@ const beforeNote = (text: string, at: number, notes: readonly RegExp[]): number 
   return note === undefined ? at : at - note.length;
 };
 
+const beforeJoiner = (text: string, at: number, joiners: readonly string[]): number => {
+  const joiner = joiners.find((candidate) => text.endsWith(candidate, at));
+  return joiner === undefined ? at : at - joiner.length;
+};
+
 /**
- * reference の直前に書かれた文書名。「民法第709条」なら「民法」。この文書の条を指すなら undefined。
+ * reference の直前に書かれた文書名。「民法第709条」「民法の第709条」なら「民法」。この文書の条を指すなら undefined。
  * 名前が種類の語だけ（「契約第3条」）のときも、どの文書か決まらないので undefined にする。
  */
 export const citedDocument = (text: string, reference: number, vocabulary: CitationVocabulary): string | undefined => {
-  const at = beforeNote(text, reference, vocabulary.notes);
+  const at = beforeNote(text, beforeJoiner(text, reference, vocabulary.joiners), vocabulary.notes);
   const plain = nameBefore(text, at, NAME_CHAR);
   const name = vocabulary.kanaTitleKinds.includes(plain) ? nameBefore(text, at, TITLE_CHAR) : plain;
   const kind = vocabulary.kinds.find((candidate) => name.endsWith(candidate));
