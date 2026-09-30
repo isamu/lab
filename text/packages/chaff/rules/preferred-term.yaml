@@ -31,3 +31,17 @@ placeholders:
 levels: { strict: 1, normal: 1, relaxed: 3 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+
+group: team
+summary:
+  ja: チームで決めた表記と違う書き方（「サーバー」と決めたのに「サーバ」と書いた、など）。chaff.yaml の prefer に書いた組だけを見ます
+  en: A spelling the team has chosen not to use ("e-mail" where the team writes "email"), from prefer in chaff.yaml
+example:
+  ja:
+    config: { prefer: { サーバ: サーバー } }
+    before: 新しいサーバを来週入れます。
+    after: 新しいサーバーを来週入れます。
+  en:
+    config: { prefer: { e-mail: email } }
+    before: Please send it by e-mail.
+    after: Please send it by email.

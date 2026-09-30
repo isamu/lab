@@ -26,3 +26,12 @@ how_to_fix:
 levels: { strict: 1, normal: 2, relaxed: 3 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「会社の部の課の方針」のように、同じ助詞が区切りなしに続く所
+  en: The same Japanese particle repeated with no break, so the reader cannot tell what attaches to what
+example:
+  ja:
+    before: 本社の営業部の第二課の方針を確認しました。
+    after: 本社営業部にある第二課の方針を確認しました。

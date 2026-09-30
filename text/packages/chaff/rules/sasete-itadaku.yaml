@@ -26,3 +26,14 @@ how_to_fix:
 levels: { strict: 1, normal: 3, relaxed: 6 }
 
 use_for: [business, blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「させていただく」を繰り返して、誰が決めて何が起きるのかがぼやけた所
+  en: The Japanese humble form させていただく repeated until it hides who decides what
+example:
+  ja:
+    before: |
+      本日は資料を配布させていただきます。続いて内容を説明させていただきます。そのあと質問に回答させていただきます。最後に日程を確認させていただきます。
+    after: |
+      本日は資料を配ります。続いて内容を説明します。そのあと質問に答えます。最後に日程を確認します。

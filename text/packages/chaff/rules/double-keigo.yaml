@@ -26,3 +26,12 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
 use_for: [business, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「おっしゃられる」のように、同じ種類の敬語を二重にかけた所
+  en: A Japanese verb with the same kind of honorific applied twice
+example:
+  ja:
+    before: 部長がおっしゃられたとおり、来週から始めます。
+    after: 部長がおっしゃったとおり、来週から始めます。

@@ -25,3 +25,14 @@ how_to_fix:
 levels: { strict: 1, normal: 2, relaxed: 4 }
 
 use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 英語で、And や But で始まる文が続く所
+  en: A run of sentences that open with "And", "But" or "So"
+example:
+  en:
+    before: |
+      We shipped the update on Monday. But the login page broke. And the fix took two days. So some customers could not sign in.
+    after: |
+      We shipped the update on Monday, and the login page broke. The fix took two days, during which some customers could not sign in.

@@ -23,3 +23,45 @@ how_to_fix:
 levels: { strict: 40, normal: 30, relaxed: 20 }
 
 use_for: [blog, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: どの段落もほぼ同じ長さで、型に流しこんだように見える所
+  en: Paragraphs all of about the same length, as if poured into a mould
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      最初に、道具を手元に入れます。公式のページから、使う機械に合った版を選んでください。
+
+      次に、設定の画面を開きます。右上の歯車の印を押すと、変えられる項目の一覧が出てきます。
+
+      続けて、仲間を招きます。左の端にある招待の画面で、相手の宛先を入れて送ってください。
+
+      最後に、動きを確かめます。試しの文書を一つ置いて、指摘が画面に出ることを見てください。
+    after: |
+      最初に、道具を手元に入れます。
+
+      次に、設定の画面を開きます。右上の歯車の印を押すと、変えられる項目の一覧が出てきます。項目は多いですが、最初に触るのは言語と文書の種類の二つだけで足ります。ほかは、使いながら必要になったときに変えてください。
+
+      続けて、仲間を招きます。
+
+      最後に、動きを確かめます。試しの文書を一つ置いて、指摘が画面に出ることを見てください。
+  en:
+    config: { genre: blog/tech }
+    before: |
+      First, install the tool. Pick the version for your computer from the official download page.
+
+      Next, open the settings. The gear icon at the top right shows everything that you can change.
+
+      Then, invite your team. Enter their addresses on the invite page on the left and press send.
+
+      Finally, check that it works. Add a sample document and look for the findings on the screen.
+    after: |
+      First, install the tool.
+
+      Next, open the settings. The gear icon at the top right shows everything that you can change. There are many options, but at first you only need two: the language and the kind of document. Change the rest when you need to.
+
+      Then, invite your team.
+
+      Finally, check that it works. Add a sample document and look for the findings on the screen.

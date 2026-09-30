@@ -25,3 +25,21 @@ how_to_fix:
 levels: { strict: 2, normal: 5, relaxed: 10 }
 
 use_for: [business, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「恐れ入りますが」「念のため」のようなクッション言葉が多く、用件が埋もれている所
+  en: So many softeners ("sorry to bother", "just wanted to") that the request gets lost
+example:
+  ja:
+    pad: true
+    before: |
+      お忙しいところ恐れ入りますが、念のためご確認をお願いします。差し支えなければ、取り急ぎご返信ください。
+    after: |
+      お忙しいところ恐れ入りますが、金曜までに見積もりの金額をご確認ください。
+  en:
+    pad: true
+    before: |
+      Sorry to bother you, but I just wanted to check the quote. If you don't mind, reply when you get a chance.
+    after: |
+      Could you check the quote by Friday? The total on page two changed.

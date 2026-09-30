@@ -37,3 +37,93 @@ how_to_fix:
 levels: { strict: 2, normal: 3, relaxed: 5 }
 
 use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 生成された文章の特徴がいくつも一つの文書にそろっている所（生成だと決めつけはしません）
+  en: Several signals of generated text together in one document (a place to reread, not a verdict)
+example:
+  ja:
+    config: { genre: blog/tech, rules: { ai-generated-composite: strict } }
+    before: |
+      # 在庫管理を見直す
+
+      現代社会において、データは重要な役割を果たすと言えるでしょう。
+
+      - 正確さ
+      - 速さ
+      - 安さ
+
+      毎日することです。
+
+      - 数える
+      - 記録する
+      - 見返す
+
+      よくある失敗です。
+
+      - 数え忘れ
+      - 記録の漏れ
+      - 見返さない
+    after: |
+      # 在庫管理を見直す
+
+      当社では、在庫の数を毎朝データで確かめてから発注しています。
+
+      - 正確さ
+      - 速さ
+
+      毎日することです。
+
+      - 数える
+      - 記録する
+      - 見返す
+      - 月末の棚卸しと突き合わせる
+
+      よくある失敗です。
+
+      - 数え忘れ
+      - 記録の漏れ
+      - 見返さない
+  en:
+    config: { genre: blog/tech, rules: { ai-generated-composite: strict } }
+    before: |
+      # Rethinking stock control
+
+      In today's fast-paced world, data plays a crucial role. Let us delve into why.
+
+      - Accuracy
+      - Speed
+      - Cost
+
+      Every day we:
+
+      - Count
+      - Record
+      - Review
+
+      Common mistakes:
+
+      - Missed counts
+      - Gaps in the record
+      - No review
+    after: |
+      # Rethinking stock control
+
+      We check stock levels every morning before placing orders.
+
+      - Accuracy
+      - Speed
+
+      Every day we:
+
+      - Count
+      - Record
+      - Review
+      - Match against the month-end count
+
+      Common mistakes:
+
+      - Missed counts
+      - Gaps in the record
+      - No review

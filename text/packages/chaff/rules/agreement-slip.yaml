@@ -34,3 +34,12 @@ how_to_fix:
 levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 英語で、「these new version」のように単数と複数が合っていない所
+  en: Words that no longer agree after an edit, as in "these new version"
+example:
+  en:
+    before: These new version will ship in May.
+    after: This new version will ship in May.
