@@ -437,7 +437,7 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 
 | rule | 何を見るか |
 | --- | --- |
-| `excessive-hedging` | 逃げの表現の密度 |
+| `excessive-hedging` | 1 つの文に重ねた逃げの表現と、文書全体の逃げの表現の密度 |
 | `cushion-phrase-density` | クッション言葉の密度 |
 | `unqualified-superlative` | 比べる相手のない最上級 |
 | `repeated-conjunction` | 段落が接続詞で始まり続けていないか |

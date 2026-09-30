@@ -17,6 +17,8 @@ export type Rule = {
   readonly name: Localized;
   readonly why: Localized;
   readonly message: Localized;
+  /** The messages a rule gives for its other ways of finding (excessive-hedging's hedges stacked in one sentence). */
+  readonly otherMessages: readonly Localized[];
   readonly howToFix: Localized;
   readonly levels: Record<Lang, readonly (readonly [string, string])[]>;
   readonly useFor: readonly string[];
@@ -60,6 +62,9 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     name: localized("name"),
     why: localized("why"),
     message: readable(localized("message")),
+    otherMessages: Object.keys(ja.messages).map((variant) =>
+      readable({ ja: text(ja.messages[variant] ?? {}, "ja"), en: text(en.messages[variant] ?? {}, "en") }),
+    ),
     howToFix: localized("how_to_fix"),
     levels: { ja: levelsOf(ja), en: levelsOf(en) },
     useFor: ja.use_for,

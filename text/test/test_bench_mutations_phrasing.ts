@@ -10,6 +10,7 @@ import {
   intensify,
   padOpening,
   repeatOpener,
+  stackHedges,
 } from "../scripts/bench-mutations-phrasing.ts";
 
 // yarn bench で植える、言い回しの誤り。どの行に何を植えるか、植えないのはどんなときかを、短い自作の文書で固定する。
@@ -84,6 +85,22 @@ describe("intensify", () => {
   it("節見出しの無い文書と、節の下に段落の無い文書には植えない", () => {
     assert.equal(intensify(lines("山田様", "", "いつもお世話になっております。")), undefined);
     assert.equal(intensify(lines("## 日程", "", "| 日付 | 予定 |")), undefined);
+  });
+});
+
+describe("stackHedges", () => {
+  it("最初の節の最初の段落で、最初の文の後ろに逃げを重ねた一文を足す。文体は文書に合わせる", () => {
+    const source = lines("# 案内", "", "前置きです。", "", "## 背景", "", "予約表を作りました。困っていました。");
+    assert.deepEqual(at(stackHedges(source)), [7, "予約表を作りました。これで遅れは減るかもしれないと思われます。困っていました。"]);
+    assert.deepEqual(at(stackHedges(lines("## 背景", "", "表を作った。"))), [3, "表を作った。これで遅れは減るかもしれないと思われる。"]);
+    assert.deepEqual(at(stackHedges(lines("## Background", "", "We built a sheet. It was slow."))), [
+      3,
+      "We built a sheet. This may possibly cut the delays. It was slow.",
+    ]);
+  });
+
+  it("節見出しの無い文書には植えない", () => {
+    assert.equal(stackHedges(lines("山田様", "", "いつもお世話になっております。")), undefined);
   });
 });
 

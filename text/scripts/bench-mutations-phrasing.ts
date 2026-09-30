@@ -1,5 +1,5 @@
 // Seeded mistakes of stock phrasing for `yarn bench`, in either language: a preamble before the first heading, a
-// clichéd closing, a padded opening, an empty intensifier, one paragraph opener repeated, sentences chained with "And",
+// clichéd closing, a padded opening, an empty intensifier, hedges stacked in one sentence, one paragraph opener repeated, sentences chained with "And",
 // and a spelling the team does not use. Pure and deterministic, like scripts/bench-mutations.ts.
 import {
   isJapanese,
@@ -102,15 +102,34 @@ const emphasisFor = (source: string): string => {
   return isPoliteDocument(source) ? EMPHASIS.polite : EMPHASIS.plain;
 };
 
-/** 最初の節の最初の段落で、最初の文の後ろに中身の無い強調の一文を足す。節見出しの無い文書（挨拶で始まる手紙）には植えない。 */
-export const intensify = (source: string): Plant | undefined => {
+/** 最初の節の最初の段落で、最初の文の後ろに一文を足す。節見出しの無い文書（挨拶で始まる手紙）には植えない。 */
+const addToFirstSection = (source: string, added: string): Plant | undefined => {
   const lines = linesOf(source);
   const heading = lines.findIndex(isSection);
   const block = heading < 0 ? undefined : blocksOf(lines).find((candidate) => candidate.start > heading && isParagraph(lines, candidate));
   const [first, ...rest] = block === undefined ? [] : splitSentences(lines[block.start] ?? "");
   if (block === undefined || first === undefined) return undefined;
-  return { source: replaceLine(lines, block.start, joinSentences([first, emphasisFor(source), ...rest])), line: block.start + 1 };
+  return { source: replaceLine(lines, block.start, joinSentences([first, added, ...rest])), line: block.start + 1 };
 };
+
+/** 最初の節の最初の段落に、中身の無い強調の一文を足す。 */
+export const intensify = (source: string): Plant | undefined => addToFirstSection(source, emphasisFor(source));
+
+// --- excessive-hedging ---
+
+const STACKED_HEDGE = {
+  polite: "これで遅れは減るかもしれないと思われます。",
+  plain: "これで遅れは減るかもしれないと思われる。",
+  en: "This may possibly cut the delays.",
+};
+
+const stackedHedgeFor = (source: string): string => {
+  if (!isJapanese(source)) return STACKED_HEDGE.en;
+  return isPoliteDocument(source) ? STACKED_HEDGE.polite : STACKED_HEDGE.plain;
+};
+
+/** 最初の節の最初の段落に、逃げの表現を 1 つの文に重ねた一文を足す。 */
+export const stackHedges = (source: string): Plant | undefined => addToFirstSection(source, stackedHedgeFor(source));
 
 // --- repeated-conjunction ---
 

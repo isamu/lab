@@ -1,6 +1,6 @@
 import { hasParticle, isClosed, lastContent } from "../sentence-shape.ts";
-import { isWithinAny, quotedSpans } from "../quoted-span.ts";
-import type { Detector, Finding, Sentence, Span, Token } from "../plugin.ts";
+import { isWithinAny, quotedIn } from "../quoted-span.ts";
+import type { Detector, Finding, Span, Token } from "../plugin.ts";
 
 /**
  * 文末が名詞で終わる（体言止め）。箇条書きでは普通だが、本文では文が途中で切れて読める。
@@ -70,10 +70,6 @@ const runsOf = (tokens: readonly Token[], nesting: readonly string[], quoted: re
     if (token.pos === "PUNCT" || PARTICLE.has(token.pos)) acc.push(BREAK);
     return acc;
   }, []);
-
-/** 文の中の、鉤括弧で引いたものを括弧ごと、文書全体の座標で。 */
-const quotedIn = (sentence: Sentence): Span[] =>
-  quotedSpans(sentence.text).map((span) => ({ start: sentence.span.start + span.start - 1, end: sentence.span.start + span.end + 1 }));
 
 export const doubledParticle: Detector = (doc, options): Finding[] => {
   const nesting = (options.lexicon ?? []).map((entry) => entry.pattern);
