@@ -12,6 +12,8 @@ export type PlantContext = {
   readonly fullSentences?: Readonly<Record<string, number>>;
   /** The sample's adapter's unit of length. Without it, a mutation guesses from the text. */
   readonly lengthUnit?: "char" | "word" | undefined;
+  /** A source's length as chaff counts it (its sentences, in lengthUnit). Without it, a mutation that needs it plants nothing. */
+  readonly documentLength?: (source: string) => number;
 };
 
 type Found = { readonly index: number; readonly line: string };

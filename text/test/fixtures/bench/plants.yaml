@@ -1,0 +1,62 @@
+# Every rule in packages/chaff/rules/, and whether `yarn bench` plants a mistake for it.
+# planted: the languages the bench must plant it in, in at least one sample each. `yarn bench` fails when a run
+#   plants it in none (no sample qualifies any more), and `yarn test` fails when no mutation plants it in a language.
+# not_planted: why no single realistic edit to a sample makes the mistake. A new rule goes in one list or the other.
+planted:
+  agentless-passive: [ja, en]
+  agreement-slip: [en]
+  bold-density: [ja, en]
+  closing-cliche: [ja, en]
+  contraction-consistency: [en]
+  dangling-reference: [ja, en]
+  date-order: [ja, en]
+  date-weekday-mismatch: [ja, en]
+  double-keigo: [ja]
+  doubled-word: [ja, en]
+  duplicate-definition: [ja, en]
+  emoji-density: [ja, en]
+  empty-intensifier: [ja, en]
+  excessive-hedging: [ja, en]
+  expletive-construction: [en]
+  heading-echo: [ja, en]
+  hiragana-fukushi: [ja]
+  internal-jargon: [ja, en]
+  latin-spacing: [ja]
+  max-kanji-continuous: [ja]
+  max-paragraph-length: [ja, en]
+  max-sentence-length: [ja, en]
+  ngram-repetition: [ja, en]
+  no-doubled-joshi: [ja]
+  no-em-dash: [ja, en]
+  no-mixed-desumasu: [ja]
+  no-nakaguro-parallel: [ja]
+  numbering-gap: [ja, en]
+  oxford-comma-consistency: [en]
+  padded-intro: [ja, en]
+  preamble-length: [ja, en]
+  preferred-term: [ja, en]
+  repeated-conjunction: [ja, en]
+  required-sections: [ja, en]
+  sasete-itadaku: [ja]
+  sentence-initial-conjunction-run: [en]
+  stray-space: [ja]
+  title-case-consistency: [en]
+  total-mismatch: [ja, en]
+  undefined-acronym: [ja, en]
+not_planted:
+  adverb-overuse: a density over the whole document
+  ai-generated-composite: a composite of other signals, with no detector of its own
+  ai-tell: a density over the whole document
+  concrete-evidence-density: several sections with no number, code or link; the samples are written with figures
+  cushion-phrase-density: a density over the whole document
+  empty-conclusion: L4, judged by chaff test and never run by lint
+  paragraph-length-variance: the shape of the whole document, not one mistake
+  proper-noun-density: a density over the whole document
+  repeated-sentence-head: a run of consecutive sentences sharing their opening words; forcing one changes what the samples say
+  risk-disclosure: L4, judged by chaff test and never run by lint
+  rule-of-three: the shape of the whole document, not one mistake
+  section-length-uniformity: the shape of the whole document, not one mistake
+  sentence-rhythm: the shape of the whole document, not one mistake
+  taigen-dome-in-prose: a count over the whole document; reaching it would rewrite the sample's register
+  unqualified-superlative: more than one unqualified superlative in a document is several mistakes, not one
+  unsourced-number: L4, judged by chaff test and never run by lint

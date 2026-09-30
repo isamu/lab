@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `yarn bench` plants a repeated phrase, and fails when a rule it should plant for goes unplanted (#170)
+
+`ngram-repetition` had no plant: the audit that added plants for uncovered rules skipped it. The bench now opens one
+more paragraph than the limit with the same pet phrase, 「言うまでもないことですが、」 (「言うまでもないことだが、」 in a plain
+document) or "It goes without saying that", once per paragraph. It is planted only where the document, after the
+edit, is long enough for chaff to count repetition, so a short sample is left out rather than reported as a miss.
+
+`test/fixtures/bench/plants.yaml` now lists every rule, either with the languages the bench must plant it in or with
+the reason it is not planted. `yarn test` fails when a rule is missing from the list or a listed language has no
+mutation, and `yarn bench` (even with `--update`) fails when a run plants a listed rule in no sample of a language.
+
 ### `numbering-gap`: a decimal before a unit symbol is an amount, and 「1.4 本利用ルール」 is a heading number (#170)
 
 A line opening with a decimal followed by a unit symbol ("1.5 mM in each of the four deoxyribonucleoside
