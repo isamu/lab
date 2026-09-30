@@ -26,3 +26,22 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
 use_for: [business, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「〜が決定されました」のように、受け身で書いて、誰がしたのかが書かれていない所
+  en: A passive sentence ("the budget was approved") that never says who did it
+example:
+  ja:
+    before: 来期の予算が承認されました。
+    after: 取締役会が、来期の予算を承認しました。
+  en:
+    before: The budget for next year was approved.
+    after: The board approved the budget for next year.
+
+not_flagged:
+  ja: 「〜によって」のように、した人が同じ文に書いてある受け身は指しません。法務のジャンルは、受け身が書き方そのものなので見ません。
+  en: A passive that names the actor in the same sentence ("by the board") is not reported. Legal genres, where the passive is the form, do not run this rule.
+level_meaning:
+  ja: 一文に受け身が {limit} 個あれば指摘
+  en: reported when a sentence has {limit} passives with no actor

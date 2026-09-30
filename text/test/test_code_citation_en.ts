@@ -92,6 +92,8 @@ describe("citedCodeBefore: a numbered document named before its number", () => {
     ["the key words of BCP 14, ", "BCP 14"],
     ["the standard STD 7 § ", "STD 7"],
     ["see RFC 1122,", "RFC 1122"],
+    ["the words of RFC\n              2119, ", "RFC\n              2119"],
+    ["the key words of BCP   14, ", "BCP   14"],
   ].forEach(([text, code]) => {
     it(`valid: "${String(text)}" → ${String(code)}`, () => assert.equal(at(String(text)), code));
   });
@@ -126,7 +128,16 @@ describe("citedCodeBefore: a numbered document named before its number", () => {
 });
 
 describe("citedCodeBefore and listedTagAround over generated text around a reference", () => {
-  const SEED = Date.now() % 100_000;
+  /** 237573 generates a name several spaces from its number ("BCP   35"). CHAFF_TEST_SEEDS="3,9" or "time" runs other seeds. */
+  const FIXED_SEEDS = [1, 170, 237_573, 20_261_001];
+  const TIME_SEED_RANGE = 100_000;
+  const seedOf = (written: string): number => {
+    const seed = written.trim() === "time" ? Date.now() % TIME_SEED_RANGE : Number(written);
+    if (written.trim() === "" || !Number.isSafeInteger(seed)) throw new Error(`CHAFF_TEST_SEEDS: "${written}" is neither an integer nor "time"`);
+    return seed;
+  };
+  const writtenSeeds = process.env["CHAFF_TEST_SEEDS"]?.trim() ?? "";
+  const SEEDS = writtenSeeds === "" ? FIXED_SEEDS : writtenSeeds.split(",").map(seedOf);
   const CASES = 5_000;
   const PIECES = [
     "RFC",
@@ -155,7 +166,7 @@ describe("citedCodeBefore and listedTagAround over generated text around a refer
 
   /** What may stand between a code's name and the reference: nothing but a comma, a parenthesis, spaces and one "§". */
   const JOIN_TO_REFERENCE = /^(?:,|\s*\()?\s*(?:§\s*)?$/u;
-  const NAMED_CODE = /^(?:\d{1,3}\s+)?(?:CFR|RFC \d{1,5}|BCP \d{1,5})$/u;
+  const NAMED_CODE = /^(?:\d{1,3}\s+)?(?:CFR|(?:RFC|BCP)\s+\d{1,5})$/u;
   const CANDIDATE_TAG = /^(?:\d{1,3}|[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+)$/u;
 
   const checkCode = (before: string, code: string | undefined): void => {
@@ -176,18 +187,21 @@ describe("citedCodeBefore and listedTagAround over generated text around a refer
     if (/\[19\],?\s?$/u.test(before) && !after.includes("of")) assert.equal(tag, "19", before);
   };
 
-  it(`finds a listed-tag candidate or a numbered name only right beside the reference (seed ${String(SEED)})`, () => {
-    let seed = SEED;
-    const pick = (): string => {
-      seed = (seed * 1_103_515_245 + 12_345) % 2_147_483_648;
-      return PIECES[Math.floor(seed / 65_536) % PIECES.length] ?? "";
-    };
-    const piece = (): string => Array.from({ length: 1 + (Math.floor(seed / 65_536) % 7) }, pick).join(Math.floor(seed / 65_536) % 2 === 0 ? " " : "");
-    Array.from({ length: CASES }).forEach(() => {
-      const [before, after] = [piece(), piece()];
-      const text = `${before}Section 9${after}`;
-      checkCode(before, citedCodeBefore(text, before.length, VOCABULARY));
-      checkTag(before, after, listedTagAround(text, before.length, before.length + "Section 9".length));
+  SEEDS.forEach((SEED) => {
+    it(`finds a listed-tag candidate or a numbered name only right beside the reference (seed ${String(SEED)})`, () => {
+      let seed = SEED;
+      const pick = (): string => {
+        // Math.imul keeps the product exact: a float product past 2^53 rounds, and the generator falls into a short cycle.
+        seed = (Math.imul(seed, 1_103_515_245) + 12_345) & 0x7f_ff_ff_ff;
+        return PIECES[Math.floor(seed / 65_536) % PIECES.length] ?? "";
+      };
+      const piece = (): string => Array.from({ length: 1 + (Math.floor(seed / 65_536) % 7) }, pick).join(Math.floor(seed / 65_536) % 2 === 0 ? " " : "");
+      Array.from({ length: CASES }).forEach(() => {
+        const [before, after] = [piece(), piece()];
+        const text = `${before}Section 9${after}`;
+        checkCode(before, citedCodeBefore(text, before.length, VOCABULARY));
+        checkTag(before, after, listedTagAround(text, before.length, before.length + "Section 9".length));
+      });
     });
   });
 });

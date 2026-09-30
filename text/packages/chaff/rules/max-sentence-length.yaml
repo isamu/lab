@@ -73,3 +73,26 @@ by_genre:
     en: { strict: 35, normal: 50, relaxed: 65 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 読み終える前に主語を見失うほど長い一文
+  en: A sentence so long that the reader loses the subject before the verb
+example:
+  ja:
+    before: |
+      新しい料金体系は先週の会議で営業部から提案があったもので来月から試験的に導入することになりましたが、既存の顧客への説明のしかたと請求システムを直す時期がまだ決まっていないため、担当者を決めたうえで今週中に進め方を相談したいと考えています。
+    after: |
+      新しい料金体系を、来月から試験的に導入します。既存の顧客への説明のしかたと、請求システムを直す時期はまだ決まっていません。今週中に担当者を決め、進め方を相談します。
+  en:
+    before: |
+      The new pricing, which the sales team proposed at last week's meeting, will be trialled from next month, but because we have not yet decided how to explain it to existing customers or when to change the billing system, we would like to agree on a plan this week.
+    after: |
+      The new pricing will be trialled from next month. We have not yet decided how to explain it to existing customers, or when to change the billing system. We will agree on a plan this week.
+
+not_flagged:
+  ja: 見出し、表のセル、コードは数えません。法令や論文のように長い一文が普通の種類では、ジャンルが上限を長くします。
+  en: Headings, table cells and code are not counted. Genres where long sentences are normal (statutes, papers) raise the limit.
+level_meaning:
+  ja: 一文 {limit} 字まで
+  en: up to {limit} words in a sentence

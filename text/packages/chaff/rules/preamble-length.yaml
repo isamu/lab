@@ -24,3 +24,58 @@ how_to_fix:
 levels: { strict: 1, normal: 2, relaxed: 4 }
 
 use_for: [business, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 最初の見出しまでの前置きが長く、本題になかなか入らない所
+  en: Too many paragraphs before the first heading, which delays the point
+example:
+  ja:
+    before: |
+      # 来期の出店計画
+
+      当社はこれまで、駅前を中心に店を増やしてきました。
+
+      この十年で、店の数は二倍になりました。
+
+      一方で、郊外の店の売上は伸び悩んでいます。
+
+      ## 決めたこと
+
+      来期は、郊外の二店を閉じ、駅前に一店を開きます。
+    after: |
+      # 来期の出店計画
+
+      来期は、郊外の二店を閉じ、駅前に一店を開きます。
+
+      ## 理由
+
+      この十年で店の数は二倍になりましたが、郊外の店の売上は伸び悩んでいます。
+  en:
+    before: |
+      # Store plan for next year
+
+      Over the years we have opened most of our stores near stations.
+
+      In the last ten years the number of stores has doubled.
+
+      Suburban stores, however, have struggled to grow.
+
+      ## Decision
+
+      Next year we will close two suburban stores and open one near a station.
+    after: |
+      # Store plan for next year
+
+      Next year we will close two suburban stores and open one near a station.
+
+      ## Why
+
+      The number of stores has doubled in ten years, but suburban stores have struggled to grow.
+
+not_flagged:
+  ja: 表題より下の見出しが一つもない文書は測りません。法務やブログのジャンルでは見ません。
+  en: A document with no heading below its title is not measured. Legal and blog genres do not run this rule.
+level_meaning:
+  ja: 最初の見出しまで {limit} 段落まで
+  en: up to {limit} paragraphs before the first heading

@@ -29,3 +29,36 @@ levels:
   relaxed: 2
 
 use_for: [blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「いかがでしたか」「参考になれば幸いです」のように、何も残さない決まり文句の結び
+  en: A stock closing such as "Hope this helps" that leaves the reader nothing
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      ## まとめ
+
+      設定を一行変えるだけで、ビルドが二倍速くなりました。いかがでしたか。
+    after: |
+      ## まとめ
+
+      設定を一行変えるだけで、ビルドが二倍速くなりました。次は、テストの並列化を試します。
+  en:
+    config: { genre: blog/tech }
+    before: |
+      ## Summary
+
+      Changing one line of the settings made the build twice as fast. Hope this helps!
+    after: |
+      ## Summary
+
+      Changing one line of the settings made the build twice as fast. Next, we will try running the tests in parallel.
+
+not_flagged:
+  ja: 最後の節だけを見ます。本文の途中の「まとめると」は普通のつなぎなので指しません。
+  en: Only the last section is checked; "to sum up" in the middle of the text is an ordinary link and is not reported.
+level_meaning:
+  ja: 当てはまる結びが {limit} 箇所あれば指摘
+  en: reported once there are {limit}

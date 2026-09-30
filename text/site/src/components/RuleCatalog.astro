@@ -1,0 +1,73 @@
+---
+import { stringify } from "yaml";
+import Badge from "./Badge.astro";
+import { groupText, href, t, type Lang, type UiKey } from "../lib/i18n";
+import { catalogOf, type RunsWhen } from "../lib/ruleCatalog";
+
+type Props = { lang: Lang };
+const { lang } = Astro.props;
+const groups = catalogOf(lang);
+
+const RUNS_WHEN: Record<RunsWhen, { key: UiKey; tone: "neutral" | "warn" }> = {
+  default: { key: "runsDefault", tone: "neutral" },
+  experimental: { key: "runsExperimental", tone: "warn" },
+  team: { key: "runsTeam", tone: "warn" },
+  test: { key: "runsTest", tone: "warn" },
+};
+const LANGUAGE: Record<string, UiKey> = { ja: "langJa", en: "langEn" };
+const languagesOf = (languages: readonly string[]): string =>
+  languages.map((language) => t(lang, LANGUAGE[language] ?? "allLanguages")).join(" / ");
+const exampleBox = "mt-1 whitespace-pre-wrap rounded bg-zinc-100 p-3 font-mono text-sm leading-relaxed dark:bg-zinc-900";
+---
+
+<nav class="mt-8 text-sm">
+  <div class="text-zinc-500">{t(lang, "refContents")}</div>
+  <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+    {groups.map(({ group, entries }) => (
+      <a href={`#${group}`}>
+        {groupText(lang, group).name} ({entries.length})
+      </a>
+    ))}
+  </div>
+</nav>
+
+{groups.map(({ group, entries }) => (
+  <section>
+    <h2 id={group}>{groupText(lang, group).name}</h2>
+    <div class="mt-2 text-zinc-600 dark:text-zinc-400">{groupText(lang, group).note}</div>
+    {entries.map(({ rule, runsWhen, example, output }) => (
+      <div id={rule.id} class="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <a href={href(`${lang}/rules/${rule.id}`)} class="font-semibold">
+            {rule.name[lang]}
+          </a>
+          <span class="font-mono text-xs text-zinc-500">{rule.id}</span>
+          <Badge tone={RUNS_WHEN[runsWhen].tone}>{t(lang, RUNS_WHEN[runsWhen].key)}</Badge>
+          <Badge tone="neutral">{languagesOf(rule.languages)}</Badge>
+        </div>
+        <div class="mt-1">{rule.summary[lang]}</div>
+        <div class="mt-3 grid gap-3 md:grid-cols-2">
+          <div class="min-w-0">
+            <div class="text-xs text-zinc-500">{t(lang, "exampleLabel")}</div>
+            <div class={exampleBox}>{example.before.trimEnd()}</div>
+          </div>
+          <div class="min-w-0">
+            <div class="text-xs text-zinc-500">{t(lang, "outputLabel")}</div>
+            {output.length > 0 ? (
+              <div class={exampleBox}>{output.map((finding) => `${finding.line}:${finding.column}  ${finding.message}`).join("\n")}</div>
+            ) : (
+              <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "testOutput")}</div>
+            )}
+          </div>
+        </div>
+        {example.config !== undefined && (
+          <>
+            <div class="mt-2 text-xs text-zinc-500">{t(lang, "configLabel")}</div>
+            <div class={exampleBox}>{stringify(example.config).trimEnd()}</div>
+          </>
+        )}
+        {example.pad === true && <div class="mt-2 text-xs text-zinc-500">{t(lang, "paddedNote")}</div>}
+      </div>
+    ))}
+  </section>
+))}

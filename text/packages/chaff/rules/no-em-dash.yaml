@@ -30,3 +30,28 @@ levels:
   en: { strict: 3, normal: 8, relaxed: 20 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: ダッシュ（——）が多すぎる所。英語では、生成された文章のよく知られた印の一つでもあります
+  en: Too many dashes, which is also one of the better-known marks of generated text
+example:
+  ja:
+    pad: true
+    before: |
+      新しい料金——来月から始まります——は、請求書にも反映されます。支払いの期限——月末です——にご注意ください。
+    after: |
+      新しい料金は来月から始まり、請求書にも反映されます。支払いの期限は月末です。
+  en:
+    pad: true
+    before: |
+      The new prices — which start next month — will show on invoices. Payment is due — as before — at the end of the month.
+    after: |
+      The new prices start next month and will show on invoices. Payment is due at the end of the month, as before.
+
+not_flagged:
+  ja: 短い文書は測りません。英語では、ダッシュそのものを誤りとは言いません。
+  en: Short documents are not measured. In English a dash is not called wrong; only a heavy hand is.
+level_meaning:
+  ja: 1000 字あたり {limit} 個まで
+  en: up to {limit} per 1000 words

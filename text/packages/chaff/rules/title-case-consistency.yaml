@@ -24,3 +24,45 @@ how_to_fix:
 levels: { strict: 3, normal: 2, relaxed: 1 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 英語の見出しで、Title Case と sentence case が混ざっている所
+  en: Headings that mix Title Case and sentence case
+example:
+  en:
+    before: |
+      # User guide
+
+      ## Getting started
+
+      Install the app.
+
+      ## Changing your settings
+
+      Open the menu.
+
+      ## Sharing Files With Your Team
+
+      Press share.
+    after: |
+      # User guide
+
+      ## Getting started
+
+      Install the app.
+
+      ## Changing your settings
+
+      Open the menu.
+
+      ## Sharing files with your team
+
+      Press share.
+
+not_flagged:
+  ja: 文書の題（最初の一番上の見出し）は名前なので比べません。どちらの流儀が正しいかは決めません。
+  en: The document's title (the single top-level heading that opens it) is a name and is not compared. Neither style is called right.
+level_meaning:
+  ja: 少ないほうの流儀の見出しが {limit} 個以下のとき指摘
+  en: reported when the minority style has {limit} headings or fewer
