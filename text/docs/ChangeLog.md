@@ -33,8 +33,9 @@ corpus documents of each kind:
 - speech: greetings and thanks are a speech's form; a transcript is what was said, so none of its style is checked.
 
 `chaff genres` lists every genre under its group with what it is for, in the output language, and how to use one.
-`rules --json` and `explain` show a genre's level as the one in effect. The genres that were there before are
-unchanged, and so is every result for them.
+`rules --json` and `explain` show a genre's level as the one in effect, and now read `--genre` as a check does (before,
+they took the genre only from chaff.yaml). `tree` and `cite` read with the genre's profile. The genres that were there
+before are unchanged, and so is every check's result for them.
 
 ### `oxford-comma-consistency` reads fewer non-lists as lists (#170)
 
