@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `undefined-acronym` reads a single letter joined in front of a word as one name (#170)
+
+In `J-STAGE`, `B-GSM` or `e-Gov` the letter in front makes a new name, so the capitals after it are not an acronym
+waiting for its expansion; `STAGE` in 「J-STAGEで公開」 is no longer reported. A letter joined after an acronym
+(`ITU-T`, `GOODS-S`) marks a variant of that acronym, which is still reported, and so is an acronym joined of two
+longer parts (`RT-PCR`). The same capitals outside the name are counted as before.
+
 ### 同項, 同号 and 同条 after another law's article are not looked up in this document (#170)
 
 A 同-reference points at the provision cited last, and now also at that provision's document. After 「法第16条第1項」

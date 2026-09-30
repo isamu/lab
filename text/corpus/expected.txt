@@ -13,7 +13,7 @@ aozora-takuboku-ichiaku-no-suna  latin-spacing 2
 aozora-terada-tensai-to-kokubo  clean
 apidatagov-developer-manual  contraction-consistency 4, max-sentence-length 5, proper-noun-density 1
 arxiv-2609-27842-genai-assessment  max-sentence-length 18, ngram-repetition 1, undefined-acronym 10
-arxiv-astro-ph-new-2025-01-03  max-paragraph-length 22, max-sentence-length 27, ngram-repetition 1, undefined-acronym 131, unqualified-superlative 2
+arxiv-astro-ph-new-2025-01-03  max-paragraph-length 22, max-sentence-length 27, ngram-repetition 1, undefined-acronym 130, unqualified-superlative 2
 asf-board-minutes-2025-01  agentless-passive 318, concrete-evidence-density 36, expletive-construction 28, heading-echo 18, max-paragraph-length 8, max-sentence-length 236, ngram-repetition 1, preamble-length 1, proper-noun-density 1, undefined-acronym 153
 automattic-offer-letter-us  agentless-passive 10, contraction-consistency 2, duplicate-definition 1, max-paragraph-length 2, max-sentence-length 53, proper-noun-density 1
 automattic-privacy-policy  max-sentence-length 6, undefined-acronym 8
@@ -32,7 +32,7 @@ cloudgov-your-first-deploy  contraction-consistency 1, doubled-word 1, max-sente
 commonpaper-csa  max-sentence-length 10, oxford-comma-consistency 2, undefined-acronym 7
 commonpaper-mutual-nda  max-sentence-length 4
 crec-2024-03-07-s2256-reca  clean
-crs-r47235-budget-timeline  agentless-passive 53, max-paragraph-length 5, max-sentence-length 126, ngram-repetition 1, proper-noun-density 1, repeated-sentence-head 1, undefined-acronym 5
+crs-r47235-budget-timeline  agentless-passive 53, max-paragraph-length 5, max-sentence-length 126, ngram-repetition 1, proper-noun-density 1, repeated-sentence-head 1, undefined-acronym 4
 crs-r47585-subcontracting  agentless-passive 30, contraction-consistency 1, max-paragraph-length 3, max-sentence-length 116, ngram-repetition 1, proper-noun-density 1, undefined-acronym 10
 crs-rl32781-salt  agentless-passive 32, max-paragraph-length 8, max-sentence-length 111, ngram-repetition 1, proper-noun-density 1, undefined-acronym 5
 da-agile-review-4  agentless-passive 1, max-sentence-length 13, no-mixed-desumasu 1
@@ -90,7 +90,7 @@ jma-faq-typhoon  max-paragraph-length 1, ngram-repetition 1
 jma-tokubetsu-keiho  max-sentence-length 2
 jma-yougo-kaze  no-doubled-joshi 1
 jp-2011-056072-seiu-kenyo-gasa  hiragana-fukushi 2, max-sentence-length 3
-jstage-jkg-72-4-133  latin-spacing 6, max-kanji-continuous 1, no-mixed-desumasu 1, undefined-acronym 8
+jstage-jkg-72-4-133  latin-spacing 6, max-kanji-continuous 1, no-mixed-desumasu 1, undefined-acronym 7
 k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-consistency 1, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kaisha.txt  clean
