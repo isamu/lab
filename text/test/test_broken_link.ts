@@ -97,6 +97,10 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf("## 準備\n\n[目次][toc]\n\n[toc]: #目次\n").length, 1);
   });
 
+  it("使われていない定義は、押されるリンクではないので見ない", () => {
+    assert.deepEqual(findingsOf("本文です。\n\n[unused]: #missing\n"), []);
+  });
+
   it("テキストの文書では動かず、理由を言う", () => {
     assert.deepEqual(namedRuleRun(RULE, "[資料]()\n", ja, "a.txt").skipped, ["Markdown の文書ではないため"]);
   });

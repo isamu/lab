@@ -51,6 +51,10 @@ type Walk = {
   readonly links: MarkupLink[];
   readonly ids: Set<string>;
   readonly texts: Span[];
+  /** 参照の定義（`[label]: url`）を名前ごとに。使われた定義だけが、読み手の押すリンクになる。 */
+  readonly definitions: Map<string, MarkupLink>;
+  /** 参照の形のリンクと画像が使った名前。 */
+  readonly referenced: Set<string>;
 };
 
 const plainText = (node: MarkdownNode, source: string): string => {
@@ -119,10 +123,19 @@ const readHtml = (written: string, span: Span, walk: Walk): void => {
   });
 };
 
+/** リンクと参照の定義。定義は、使われたかを最後に見るので別に持つ。 */
+const readLink = (node: MarkdownNode, span: Span, walk: Walk): void => {
+  if (node.type === "link") walk.links.push({ destination: node.url ?? "", ...span });
+  else if (node.type === "definition") walk.definitions.set(node.identifier ?? "", { destination: node.url ?? "", ...span });
+  else if (node.type === "linkReference") walk.referenced.add(node.identifier ?? "");
+};
+
+const LINK_NODES = new Set(["link", "definition", "linkReference"]);
+
 const readNode = (node: MarkdownNode, span: Span, source: string, walk: Walk, inLink: boolean): void => {
   if (node.type === "heading") readHeading(node, span, source, walk);
   else if (node.type === "image" || node.type === "imageReference") walk.images.push({ alt: stringField(node, "alt") ?? "", ...span });
-  else if (node.type === "link" || node.type === "definition") walk.links.push({ destination: node.url ?? "", ...span });
+  else if (LINK_NODES.has(node.type)) readLink(node, span, walk);
   else if (node.type === "html") readHtml(node.value ?? "", span, walk);
   else if (node.type === "text" && !inLink) walk.texts.push(span);
 };
@@ -137,7 +150,7 @@ type Pending = { readonly node: MarkdownNode; readonly inLink: boolean };
  * GitHub の注記（`> [!NOTE]`）は書き手の言葉なので読む。本文の組み立て（document.ts）と同じ線引き。
  */
 export const markdownMarkup = (root: MarkdownNode, source: string, outside: readonly Span[] = []): Markup => {
-  const walk: Walk = { headings: [], images: [], links: [], ids: new Set(), texts: [] };
+  const walk: Walk = { headings: [], images: [], links: [], ids: new Set(), texts: [], definitions: new Map(), referenced: new Set() };
   const alertOf = alertReader(source);
   const pending: Pending[] = [{ node: root, inLink: false }];
   while (pending.length > 0) {
@@ -151,7 +164,9 @@ export const markdownMarkup = (root: MarkdownNode, source: string, outside: read
     const childInLink = inLink || LINKS.has(node.type);
     (node.children ?? []).toReversed().forEach((child) => pending.push({ node: child, inLink: childInLink }));
   }
-  return { markdown: true, ...walk };
+  const { definitions, referenced, ...found } = walk;
+  const used = [...definitions].filter(([name]) => referenced.has(name)).map(([, link]) => link);
+  return { markdown: true, ...found, links: [...found.links, ...used].toSorted((left, right) => left.start - right.start) };
 };
 
 /** Markdown でない文書。記法は無く、文書全体が字のまま見える。 */
