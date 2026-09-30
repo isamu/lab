@@ -26,3 +26,19 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
 use_for: [business, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「おっしゃられる」のように、同じ種類の敬語を二重にかけた所
+  en: A Japanese verb with the same kind of honorific applied twice
+example:
+  ja:
+    before: 部長がおっしゃられたとおり、来週から始めます。
+    after: 部長がおっしゃったとおり、来週から始めます。
+
+not_flagged:
+  ja: 一覧にある形だけを見ます。一覧にない形は、二重敬語でも指しません。
+  en: Only the forms on chaff's list are checked; a doubled honorific not on the list is not reported.
+level_meaning:
+  ja: 当てはまる形が {limit} 箇所あれば指摘
+  en: reported once there are {limit}

@@ -1,5 +1,5 @@
 import { definedLevels, resolve, severityAt } from "../levels.ts";
-import { localized, readableText } from "./text.ts";
+import { readableText } from "./text.ts";
 import { SEVERITY_NAME } from "./severity-name.ts";
 import { uiLanguageOf, type Texts, type UiLanguage } from "../ui.ts";
 import type { Level, RuleDefinition } from "../plugin.ts";
@@ -67,15 +67,12 @@ const genreNote = (rule: RuleDefinition, genre: string | undefined, text: (typeo
   return ["", `  ${text.genreNote(genre ?? text.defaultGenre, others.join(" / "))}`];
 };
 
-/** A team's rule shows its example, before and after, and says where it was defined. Built-in rules have none. */
+/** A team's rule shows its example, before and after, and says where it was defined. */
 const exampleLines = (rule: RuleDefinition, language: string, text: (typeof TEXT)["ja"]): string[] => {
-  if (rule.example === undefined) return [];
-  return [
-    "",
-    `  ${text.example}:  ${localized(rule.example.before, language)}`,
-    `      →  ${localized(rule.example.after, language)}`,
-    ...(rule.custom === undefined ? [] : ["", `  ${text.definedIn}`]),
-  ];
+  const examples = rule.guide?.examples ?? {};
+  const example = examples[language] ?? examples["en"] ?? Object.values(examples)[0];
+  if (rule.custom === undefined || example === undefined) return [];
+  return ["", `  ${text.example}:  ${example.before}`, `      →  ${example.after}`, "", `  ${text.definedIn}`];
 };
 
 /** Where the rule's settings come from: the option layers, strongest first, and the source of its level when a style set it. */

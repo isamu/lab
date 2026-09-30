@@ -1,7 +1,7 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { loadAdapter, packageFor } from "./adapter-load.ts";
-import { CONFIG_FILE, EMPTY, loadConfig, type Config } from "./config/load.ts";
+import { CONFIG_FILE, type Config } from "./config/load.ts";
 import { applyByPath } from "./config/by-path.ts";
 import { applyLevel } from "./config/write.ts";
 import { buildDocument, teamRules } from "./document.ts";
@@ -17,7 +17,7 @@ import { GENRES } from "./genre.ts";
 import { resolveGenre } from "./resolve-genre.ts";
 import { runInit } from "./init.ts";
 import { initGenre } from "./commands/init-ask.ts";
-import { targetsOf } from "./cli-args.ts";
+import { targetsOf, withExperimental } from "./cli-args.ts";
 import { rulesOf } from "./custom/load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
@@ -26,6 +26,7 @@ import { renderGenres } from "./render/genres.ts";
 import { loadGenres, presetLevels } from "./genre-load.ts";
 import { fileHeader } from "./file-header.ts";
 import { rulesJson } from "./render/rules-json.ts";
+import { rulesTable } from "./render/rules-table.ts";
 import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
 import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
@@ -34,9 +35,8 @@ import { runSkill } from "./commands/skill.ts";
 import { runFeedback, settingsOf } from "./commands/feedback.ts";
 import { homedir } from "node:os";
 import { settingWarnings } from "./config/warnings.ts";
-import { styleLevelSource, withStyle } from "./config/style.ts";
-import { loadStyles } from "./style-load.ts";
-import { optionLayersOf } from "./config/option-problems.ts";
+import { readConfigIn } from "./config/read.ts";
+import { optionLayersOf, settingSourcesOf } from "./config/option-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRulesWith } from "./run.ts";
 import type { Finding, Level, RuleDefinition } from "./plugin.ts";
@@ -48,7 +48,7 @@ import { settingProblems } from "./setting-problems.ts";
 /** Text for output that is not about one document. */
 const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.language, process.env)];
 
-const readConfig = (): Config => (existsSync(join(process.cwd(), CONFIG_FILE)) ? withStyle(loadConfig(join(process.cwd(), CONFIG_FILE)), loadStyles()) : EMPTY);
+const readConfig = (): Config => readConfigIn(process.cwd());
 
 /** resolveGenre with this run's --genre, for the commands that take it as a dependency. */
 const genreFrom =
@@ -222,8 +222,7 @@ const explain = (ruleId: string | undefined, genreFlag: string | undefined): num
   }
   const preset = genre === undefined ? {} : presetLevels(genre);
   const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
-  const settings = { optionLayers: optionLayersOf(config), levelFrom: styleLevelSource(config, rule.id) };
-  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, settings));
+  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, settingSourcesOf(config, rule.id)));
   return 0;
 };
 
@@ -260,11 +259,14 @@ type Handler = (argv: readonly string[]) => number | Promise<number>;
 /** `--` で始まらない引数。対象のパス。 */
 const positional = (argv: readonly string[]): string[] => targetsOf(argv.slice(1));
 
-const showRules = (genreFlag: string | undefined): number => {
-  const config = readConfig();
+/** `rules --json` for an AI to read; `rules` alone, a table for a person. */
+const showRules = (argv: readonly string[]): number => {
+  const config = withExperimental(readConfig(), argv);
   const language = config.language ?? hostLanguage(undefined, process.env);
   warnRuleProblems(config, language);
-  console.log(rulesJson(rulesOf(language, config), config, language, genreFlag ?? config.genre ?? "blog/tech", optionLayersOf(config)));
+  const genre = flag(argv, "--genre") ?? config.genre ?? "blog/tech";
+  const rules = rulesOf(language, config);
+  console.log(argv.includes("--json") ? rulesJson(rules, config, language, genre, optionLayersOf(config)) : rulesTable(rules, config, language, genre));
   return 0;
 };
 
@@ -294,7 +296,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
     return "error" in chosen ? 1 : 0;
   },
   genres: showGenres,
-  rules: (argv) => showRules(flag(argv, "--genre")),
+  rules: showRules,
   explain: (argv) => explain(argv[1], flag(argv, "--genre")),
   eval: (argv) => runEval(positional(argv), argv, { ...measureContext(argv), flag }),
   tree: (argv) => runTree(treeTargets(argv), argv, treeContext()),

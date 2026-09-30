@@ -1,8 +1,11 @@
 ---
+import { stringify } from "yaml";
 import Base from "../../../layouts/Base.astro";
 import Badge from "../../../components/Badge.astro";
-import { LANGS, href, isLang, t, term } from "../../../lib/i18n";
+import { LANGS, href, isLang, t, term, type UiKey } from "../../../lib/i18n";
 import { rules } from "../../../lib/rules";
+import { entryOf, type RunsWhen } from "../../../lib/ruleCatalog";
+import { standingsOf, type RuleInGenre } from "../../../lib/genres";
 
 export const getStaticPaths = () => LANGS.flatMap((lang) => rules.map((rule) => ({ params: { lang, id: rule.id } })));
 
@@ -10,6 +13,7 @@ const { lang, id } = Astro.params;
 if (!isLang(lang)) throw new Error(`unknown language ${String(lang)}`);
 const rule = rules.find((candidate) => candidate.id === id);
 if (!rule) throw new Error(`unknown rule ${String(id)}`);
+const { runsWhen, example, output } = entryOf(rule, lang);
 const facts = [
   [t(lang, "layer"), rule.layer],
   [t(lang, "status"), t(lang, rule.status)],
@@ -17,58 +21,164 @@ const facts = [
   [t(lang, "languages"), rule.languages.length === 2 ? t(lang, "allLanguages") : rule.languages.join(", ")],
   [t(lang, "usedFor"), rule.useFor.join(", ")],
 ];
+const RUNS_WHEN: Record<RunsWhen, UiKey> = { default: "runsDefault", experimental: "runsExperimental", team: "runsTeam", test: "runsTest" };
+const LANGUAGE: Record<string, UiKey> = { ja: "langJa", en: "langEn" };
+
+const meaning = rule.levelMeaning[lang];
+// A rule with nothing to count keeps severities in its levels (error, warning, info), and so does a check that reads meaning.
+const bySeverity = rule.levelSets === "severity" || rule.layer === "L4";
+const levelRows = rule.levels[lang].map(([level, value]) => [
+  level,
+  bySeverity ? term(lang, value) : meaning === "" ? value : meaning.replaceAll("{limit}", value),
+]);
+const sameEverywhere = !bySeverity && meaning === "";
+
+const standings = standingsOf(rule);
+const genresWhere = (kind: RuleInGenre["standing"]["kind"]) => standings.filter((entry) => entry.standing.kind === kind);
+const onText = (entry: RuleInGenre): string =>
+  entry.standing.kind === "on" && entry.standing.level !== "normal" ? `${entry.genre} (${entry.standing.level})` : entry.genre;
+const genreLists: [UiKey, readonly RuleInGenre[]][] = [
+  ["genreOn", genresWhere("on")],
+  ["genreExperimental", genresWhere("experimental")],
+  ["genreOff", genresWhere("genre-off")],
+  ["genreUnsuited", genresWhere("unsuited")],
+];
+
+const reason = lang === "ja" ? "理由" : "reason";
+const silencing: [UiKey, string][] = [
+  ["silenceSpot", `<!-- stet: ${rule.id} — ${reason} -->`],
+  ["silenceTeam", `npx chaffjs relax ${rule.id} --why "${reason}"`],
+  ["silenceOff", stringify({ rules: { [rule.id]: "off" } }).trimEnd()],
+  ...(rule.status === "experimental" ? [["turnOn", stringify({ rules: { [rule.id]: "normal" } }).trimEnd()] as [UiKey, string]] : []),
+];
+const box = "mt-1 whitespace-pre-wrap rounded bg-zinc-100 p-3 font-mono text-sm leading-relaxed dark:bg-zinc-900";
+const heading = "mt-10 text-xl font-semibold";
 ---
 
-<Base lang={lang} title={rule.name[lang]} path={`rules/${rule.id}`} description={rule.why[lang]}>
+<Base lang={lang} title={rule.name[lang]} path={`rules/${rule.id}`} description={rule.summary[lang]}>
   <p>
     <a href={href(`${lang}/rules`)} class="text-sm text-blue-700 underline dark:text-blue-400">
       {t(lang, "backToRules")}
     </a>
   </p>
   <h1 class="mt-4 text-3xl font-bold">{rule.name[lang]}</h1>
-  <p class="mt-1 flex items-center gap-2 font-mono text-sm text-zinc-600 dark:text-zinc-400">
+  <p class="mt-2 flex flex-wrap items-center gap-2 font-mono text-sm text-zinc-600 dark:text-zinc-400">
     {rule.id}
-    {rule.status === "experimental" && <Badge tone="warn">{t(lang, "experimental")}</Badge>}
+    <Badge tone={runsWhen === "default" ? "neutral" : "warn"}>{t(lang, RUNS_WHEN[runsWhen])}</Badge>
+    <Badge tone="neutral">{rule.languages.map((language) => t(lang, LANGUAGE[language] ?? "allLanguages")).join(" / ")}</Badge>
   </p>
-  {rule.status === "experimental" && <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "experimentalNote")}</p>}
 
-  <dl class="mt-6 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
-    {facts.map(([label, value]) => (
-      <>
-        <dt class="text-zinc-500">{label}</dt>
-        <dd>{value}</dd>
-      </>
-    ))}
-  </dl>
+  <h2 class={heading}>{t(lang, "whatItFinds")}</h2>
+  <p class="mt-2 leading-relaxed">{rule.summary[lang]}</p>
 
-  <h2 class="mt-8 text-xl font-semibold">{t(lang, "why")}</h2>
+  <h2 class={heading}>{t(lang, "why")}</h2>
   <p class="mt-2 leading-relaxed">{rule.why[lang]}</p>
 
-  <h2 class="mt-8 text-xl font-semibold">{t(lang, "message")}</h2>
+  <h2 class={heading}>{t(lang, "exampleHeading")}</h2>
+  <div class="mt-3 grid gap-3 md:grid-cols-2">
+    <div class="min-w-0">
+      <div class="text-xs text-zinc-500">{t(lang, "beforeLabel")}</div>
+      <div class={box}>{example.before.trimEnd()}</div>
+      <div class="mt-2 text-xs text-zinc-500">{t(lang, "outputLabel")}</div>
+      {output.length > 0 ? (
+        <div class={box}>{output.map((finding) => `${finding.line}:${finding.column}  ${finding.message}`).join("\n")}</div>
+      ) : (
+        <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "testOutput")}</p>
+      )}
+    </div>
+    <div class="min-w-0">
+      <div class="text-xs text-zinc-500">{t(lang, "afterLabel")}</div>
+      <div class={box}>{example.after.trimEnd()}</div>
+      {rule.layer !== "L4" && (
+        <>
+          <div class="mt-2 text-xs text-zinc-500">{t(lang, "outputLabel")}</div>
+          <div class={box}>{t(lang, "noFinding")}</div>
+        </>
+      )}
+    </div>
+  </div>
+  {example.config !== undefined && (
+    <>
+      <div class="mt-3 text-xs text-zinc-500">{t(lang, "configLabel")}</div>
+      <div class={box}>{stringify(example.config).trimEnd()}</div>
+    </>
+  )}
+  {example.pad === true && <p class="mt-2 text-xs text-zinc-500">{t(lang, "paddedNote")}</p>}
+
+  <h2 class={heading}>{t(lang, "notFlagged")}</h2>
+  <p class="mt-2 leading-relaxed">{rule.notFlagged[lang]}</p>
+
+  <h2 class={heading}>{t(lang, "howToFix")}</h2>
+  <p class="mt-2 leading-relaxed">{rule.howToFix[lang]}</p>
+
+  <h2 class={heading}>{t(lang, "levelsPlain")}</h2>
+  <p class="mt-2 text-sm">{t(lang, "levelsIntro")}</p>
+  {sameEverywhere ? (
+    <p class="mt-2 text-sm">{t(lang, "levelsSame")}</p>
+  ) : (
+    <table class="mt-2 text-sm">
+      <tbody>
+        {levelRows.map(([level, text]) => (
+          <tr>
+            <th class="py-1 pr-6 text-left font-mono font-normal text-zinc-500">{level}</th>
+            <td class="py-1">{text}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+  {rule.layer === "L4" && <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "levelsSeverity")}</p>}
+  {rule.levelSets === "severity" && <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "levelsSetSeverity")}</p>}
+  {rule.ownNumbers.length > 0 && (
+    <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+      {t(lang, "ownNumbers")} <span class="font-mono">{rule.ownNumbers.join(", ")}</span>
+    </p>
+  )}
+
+  <h2 class={heading}>{t(lang, "byGenre")}</h2>
+  <dl class="mt-2 text-sm">
+    {genreLists
+      .filter(([, entries]) => entries.length > 0)
+      .map(([key, entries]) => (
+        <>
+          <dt class="mt-3 text-zinc-500">{t(lang, key)}</dt>
+          <dd class="mt-1 font-mono leading-relaxed">
+            {entries.map((entry) => (key === "genreOn" ? onText(entry) : entry.genre)).join(", ")}
+          </dd>
+        </>
+      ))}
+  </dl>
+  <p class="mt-2 text-sm">
+    <a href={href(`${lang}/genres`)} class="text-blue-700 underline dark:text-blue-400">
+      {t(lang, "genres")}
+    </a>
+  </p>
+
+  <h2 class={heading}>{t(lang, "silenceHeading")}</h2>
+  {silencing.map(([key, code]) => (
+    <>
+      <div class="mt-3 text-sm">{t(lang, key)}</div>
+      <div class={box}>{code}</div>
+    </>
+  ))}
+
+  <h2 class={heading}>{t(lang, "message")}</h2>
   <p class="mt-2 rounded bg-zinc-100 p-3 font-mono text-sm dark:bg-zinc-900">{rule.message[lang]}</p>
   {rule.otherMessages.map((message) => (
     <p class="mt-2 rounded bg-zinc-100 p-3 font-mono text-sm dark:bg-zinc-900">{message[lang]}</p>
   ))}
 
-  <h2 class="mt-8 text-xl font-semibold">{t(lang, "howToFix")}</h2>
-  <p class="mt-2 leading-relaxed">{rule.howToFix[lang]}</p>
-
-  {rule.levels[lang].length > 0 && (
-    <>
-      <h2 class="mt-8 text-xl font-semibold">{t(lang, "levels")}</h2>
-      {rule.levelSets === "severity" && <p class="mt-2 text-sm leading-relaxed">{t(lang, "levelsSetSeverity")}</p>}
-      <table class="mt-2 text-sm">
-        <tbody>
-          {rule.levels[lang].map(([level, value]) => (
-            <tr>
-              <th class="py-1 pr-6 text-left font-mono font-normal text-zinc-500">{level}</th>
-              <td class="py-1 font-mono">{term(lang, value)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
-  )}
+  <details class="mt-10 text-sm">
+    <summary class="cursor-pointer text-zinc-500">{t(lang, "technical")}</summary>
+    <dl class="mt-3 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2">
+      {facts.map(([label, value]) => (
+        <>
+          <dt class="text-zinc-500">{label}</dt>
+          <dd>{value}</dd>
+        </>
+      ))}
+    </dl>
+  </details>
 
   <p class="mt-10 text-xs text-zinc-500">
     {t(lang, "source")}:

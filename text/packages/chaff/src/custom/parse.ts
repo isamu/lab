@@ -89,7 +89,9 @@ const conditionOf = (raw: unknown, index: number, at: string): Checked<TokenCond
   if (!isRecord(raw)) return failed({ kind: "bad-token", at, index });
   const pos = posOf(raw["pos"], at);
   if (pos.value === undefined) return failed(...pos.problems);
-  const base = nonEmpty(raw["base"]) ? raw["base"].trim() : undefined;
+  // lemma is the linguists' word for the base form; either may be written.
+  const written = raw["base"] ?? raw["lemma"];
+  const base = nonEmpty(written) ? written.trim() : undefined;
   const surface = nonEmpty(raw["surface"]) ? raw["surface"].trim() : undefined;
   if (pos.value.length === 0 && base === undefined && surface === undefined) return failed({ kind: "bad-token", at, index });
   return ok({ ...(pos.value.length === 0 ? {} : { pos: pos.value }), ...(base === undefined ? {} : { base }), ...(surface === undefined ? {} : { surface }) });
@@ -195,7 +197,19 @@ const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, us
   use_for: useFor,
   severity: parts.severity,
   custom: parts.spec,
-  example: { before: parts.texts.before, after: parts.texts.after },
+  // The reference and explain read a rule's plain-language fields from guide; a team's rule is listed with the team's words.
+  guide: {
+    group: "team",
+    summary: parts.texts.name,
+    examples: Object.fromEntries(
+      Object.keys(parts.texts.before).flatMap((language) => {
+        const [before, after] = [parts.texts.before[language], parts.texts.after[language] ?? parts.texts.after["en"] ?? parts.texts.after["ja"]];
+        return before === undefined || after === undefined ? [] : [[language, { before, after }]];
+      }),
+    ),
+    notFlagged: {},
+    levelMeaning: {},
+  },
 });
 
 const idOf = (raw: Record<string, unknown>, index: number, seen: ReadonlySet<string>, builtIn: ReadonlySet<string>): Checked<string> => {

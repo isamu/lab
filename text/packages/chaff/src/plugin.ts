@@ -1,6 +1,8 @@
 // 言語アダプタと genre pack が依存してよい唯一の面。spec §6。
 // ここに実装を置かない。型だけを置く。
 
+import type { RuleGuide } from "./rule-guide.ts";
+
 export type Span = { readonly start: number; readonly end: number };
 
 /**
@@ -446,8 +448,8 @@ export type RuleDefinition = {
   readonly options?: Readonly<Record<string, RuleOption>>;
   /** A rule a team defined under custom_rules in chaff.yaml: what it looks for. Built-in rules have none. */
   readonly custom?: CustomSpec;
-  /** A sentence the rule reports, and the same sentence fixed. A team's rule must have one, for the people who read its findings. */
-  readonly example?: { readonly before: Localized; readonly after: Localized };
+  /** What the rule reference tells a reader who is not an engineer: its group, one line, a before and after. */
+  readonly guide?: RuleGuide;
 };
 
 /** One token's condition in a custom rule's run of tokens. Each part written must hold; pos lists the tags that match. */

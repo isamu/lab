@@ -78,3 +78,21 @@ options:
       en: Words left alone; listing either way of writing one exempts both
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: カタカナ語の語末の「ー」を、同じ語で付けたり省いたりしている所（コンピューターとコンピュータ）。options で省く・付けるを決めることもできます
+  en: A katakana word written both with and without its final ー in one document (コンピューター and コンピュータ); options can set which way
+example:
+  ja:
+    before: |
+      新しいコンピューターを買いました。古いコンピュータは来月捨てます。
+    after: |
+      新しいコンピューターを買いました。古いコンピューターは来月捨てます。
+
+not_flagged:
+  ja: 違う語どうし（サーバーとブラウザ）は比べません。2 音の語（カー）、辞書が固有名詞と知っている語、chaff.yaml の names に並べた名前も見ません。
+  en: Different words (サーバー and ブラウザ) are not compared. Two-mora words (カー), words the dictionary knows as proper nouns and the names under names in chaff.yaml are left alone.
+level_meaning:
+  ja: 違う書き方の語が {limit} 箇所あれば指摘
+  en: reported once {limit} words go the other way
