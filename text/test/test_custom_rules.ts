@@ -241,6 +241,11 @@ describe("custom rules", () => {
       assert.deepEqual([at?.line, at?.column], [3, 4]);
     });
 
+    it("tokens: lemma is another name for base", () => {
+      const rule = one({ id: "team-dekiru", type: "tokens", tokens: [{ lemma: "する" }, { surface: "こと" }, { surface: "が" }, { lemma: "できる" }] });
+      assert.deepEqual(found(rule, "# 報告\n\n確認することができます。\n"), ["することができ→"]);
+    });
+
     it("tokens (en): make + a + decision by base form", () => {
       const rule = one({ id: "team-make-decision", type: "tokens", tokens: [{ base: "make" }, { pos: "DET" }, { surface: "decision" }] });
       assert.deepEqual(found(rule, "# Notes\n\nWe made a decision. We will decide.\n", en), ["made a decision→"]);
