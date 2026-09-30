@@ -2005,24 +2005,24 @@
       "format": "html"
     },
     {
-      "id": "gutenberg-moby-dick",
-      "title": "Herman Melville, Moby Dick; Or, The Whale (Project Gutenberg #2701)",
+      "id": "gutenberg-great-expectations",
+      "title": "Charles Dickens, Great Expectations (Project Gutenberg #1400)",
       "source": "url",
       "genre": "literature/fiction",
       "language": "en",
-      "url": "https://web.archive.org/web/20260927171441id_/https://www.gutenberg.org/cache/epub/2701/pg2701.txt",
-      "license": "Public domain in the United States (first published 1851); Project Gutenberg eBook #2701, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "url": "https://web.archive.org/web/20260630214721id_/https://www.gutenberg.org/cache/epub/1400/pg1400.txt",
+      "license": "Public domain in the United States (first published 1861); Project Gutenberg eBook #1400, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
       "redistribute": true,
       "format": "gutenberg"
     },
     {
-      "id": "gutenberg-dickinson-poems",
-      "title": "Poems by Emily Dickinson, Three Series, Complete (Project Gutenberg #12242)",
+      "id": "gutenberg-whitman-leaves-of-grass",
+      "title": "Walt Whitman, Leaves of Grass (Project Gutenberg #1322)",
       "source": "url",
       "genre": "literature/poetry",
       "language": "en",
-      "url": "https://web.archive.org/web/20260304121648id_/https://gutenberg.org/cache/epub/12242/pg12242.txt",
-      "license": "Public domain in the United States (first published 1890–1896); Project Gutenberg eBook #12242, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "url": "https://web.archive.org/web/20260724182829id_/https://www.gutenberg.org/cache/epub/1322/pg1322.txt",
+      "license": "Public domain in the United States (first published 1891–1892); Project Gutenberg eBook #1322, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
       "redistribute": true,
       "format": "gutenberg"
     },

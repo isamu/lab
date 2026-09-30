@@ -87,12 +87,12 @@ govuk-style-guide-a-to-z  agentless-passive 50, concrete-evidence-density 5, dan
 gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1
 gsi-maps-smartphone-howto  clean
 gutenberg-civil-disobedience  clean
-gutenberg-dickinson-poems  clean
 gutenberg-frost-a-boys-will  clean
+gutenberg-great-expectations  clean
 gutenberg-importance-of-being-earnest  clean
-gutenberg-moby-dick  clean
 gutenberg-modest-proposal  clean
 gutenberg-riders-to-the-sea  clean
+gutenberg-whitman-leaves-of-grass  clean
 gutenberg-yellow-wallpaper  clean
 ietf-draft-httpapi-ratelimit-headers-10  max-paragraph-length 1, max-sentence-length 61, ngram-repetition 1, proper-noun-density 1, undefined-acronym 14
 jma-faq-typhoon  max-paragraph-length 1, ngram-repetition 1
