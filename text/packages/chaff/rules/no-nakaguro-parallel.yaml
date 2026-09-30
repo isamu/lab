@@ -38,3 +38,10 @@ example:
 
       - 部: 営業、企画、総務、経理、人事、法務
       - 拠点: 東京、大阪、名古屋
+
+not_flagged:
+  ja: 行の頭の「・」は箇条書きの印なので数えません。
+  en: A 「・」 at the start of a line is a bullet and is not counted.
+level_meaning:
+  ja: 一文に中黒 {limit} 個まで
+  en: up to {limit} middle dots in a sentence

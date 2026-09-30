@@ -113,3 +113,10 @@ example:
       - Missed counts
       - Gaps in the record
       - No review
+
+not_flagged:
+  ja: 箇条書きが 3 つより少ない文書は見ません。ビジネス文書と技術文書のジャンルでは見ません。
+  en: Documents with fewer than three lists are not checked. Business and technical genres do not run this rule.
+level_meaning:
+  ja: 3 項目の箇条書きの割合 {limit}% まで
+  en: up to {limit}% of lists with exactly three items

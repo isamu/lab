@@ -47,3 +47,10 @@ example:
   en:
     before: It may be that the launch could perhaps slip.
     after: The launch will slip by three days, because the parts arrive next week.
+
+not_flagged:
+  ja: 逃げの表現が一つだけなら慎重さなので指しません。引用の中の逃げは、書き手ではなく話し手のものなので数えません。
+  en: A single hedge is caution and is not reported. A hedge inside a quotation is the speaker's, not the writer's, and is not counted.
+level_meaning:
+  ja: 1000 語あたり {limit} 個まで（一文に重ねた逃げは、文書の長さによらず指摘）
+  en: up to {limit} per 1000 words (hedges stacked in one sentence are reported whatever the length)

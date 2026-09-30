@@ -42,3 +42,10 @@ example:
   en:
     before: In recent years, generative AI has gained significant attention. We tried it on our internal help desk.
     after: We tried generative AI on our internal help desk, and replies now take half as long.
+
+not_flagged:
+  ja: 文書の冒頭（最初の 4 文）だけを見ます。本文の途中の「近年」は指しません。
+  en: Only the opening (the first four sentences) is checked; "in recent years" later in the text is not reported.
+level_meaning:
+  ja: 当てはまる書き出しが {limit} 箇所あれば指摘
+  en: reported once there are {limit}

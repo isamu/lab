@@ -33,6 +33,28 @@ In the corpus, the new rules report only the blanks of a published letter templa
 both languages (`test/fixtures/ai-samples/`, labelled as written by an AI) fire them; `yarn bench` plants a
 knowledge-cutoff line and a blank for the two rules that one edit can trigger.
 
+### `chaff rules` prints a table, and `rules --json` carries what an AI needs to write settings (#170)
+
+- **`chaff rules`** (without `--json`) lists every rule by group, each with the level it runs at now, whether it
+  runs by default, is experimental, needs a list in `chaff.yaml` or runs with `chaff test`, and one line on what it
+  finds. A rule for another language shows as off.
+- **`chaff rules --json` is schema 2.** Each rule adds `group`, `summary`, `example`, `not_flagged`,
+  `level_meaning`, `languages`, `requires`, `genres` (how it stands in every genre: on and at which level,
+  experimental, turned off, or not suited) and `options`. The top level adds `groups`, the steps from a team's
+  style note to `chaff.yaml`, and `style_presets`, `custom_rule_types` and `rule_options`, marked as coming with the
+  local-rules release. Every field of schema 1 is kept.
+
+### Each rule's page reads for someone who is not an engineer (#170)
+
+A rule's page on the site now says what the rule finds, why it matters, a before and after with what chaff printed
+for each, what it does not flag, its levels in words ("up to 25 words in a sentence"), which genres run it, turn it
+off or are not suited to it, and how to silence one spot or change it for the team. The rule list is grouped the
+same way as the reference.
+
+- **Two more rule fields:** `not_flagged` (ja and en) and `level_meaning` (with `{limit}` for the number; not needed
+  for a rule whose levels set a severity). The rule-file test requires them. A rule whose levels are severities shows
+  them as error, warning and info.
+
 ### The guide lists everything chaff can find, with an example and chaff's real output (#170)
 
 A new guide page, **Reference: what chaff can find** (`/guide/reference/`), lists every rule in groups a reader

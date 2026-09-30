@@ -131,7 +131,8 @@ npx chaffjs --version            chaffjs と言語パッケージの版
 npx chaffjs baseline docs/       いまある指摘を棚上げする
 npx chaffjs suppressions docs/   stet で黙らせている指摘を数える
 npx chaffjs article.md --watch   保存のたびに、変わったところだけ出す
-npx chaffjs rules --json         いまの設定を JSON で出す（AI に設定を書かせるときに渡す）
+npx chaffjs rules                ルールの一覧を、グループごとに表で出す（いまの段階つき）
+npx chaffjs rules --json         いまの設定とルールの説明を JSON で出す（AI に設定を書かせるときに渡す）
 npx chaffjs tree contract.txt    文書を番地の付いた木にする（条・項・定義・参照）
 npx chaffjs cite 原文 引用.json  引用が原文にあるかを確かめる
 npx chaffjs skill                Claude Code の skill を入れる

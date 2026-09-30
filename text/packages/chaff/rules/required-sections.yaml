@@ -66,3 +66,10 @@ example:
       ## Risks
 
       Finance will work longer hours in the month we switch.
+
+not_flagged:
+  ja: chaff.yaml の required_sections に書いた見出しだけを見ます。見出しの一部に含まれていれば満たします（「リスク」は「リスクと対策」でも満たす）。
+  en: Only the headings under required_sections in chaff.yaml are checked. A heading that contains the word counts ("Risks" is met by "Risks and mitigations").
+level_meaning:
+  ja: 無い見出しが {limit} 個あれば指摘
+  en: reported once {limit} required headings are missing

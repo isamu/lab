@@ -63,3 +63,10 @@ example:
       In-store sales fell for three months in a row. Weekday evenings fell the most.
 
       Next term we will review the evening range and hand out subscription leaflets in store.
+
+not_flagged:
+  ja: 文の数が多くても、短い文を重ねただけの段落（普通の長さの文を上限の数だけ並べたより短いもの）は指しません。
+  en: A paragraph of many short sentences is not reported, as long as it is shorter than that many sentences of ordinary length.
+level_meaning:
+  ja: 一つの段落に {limit} 文まで
+  en: up to {limit} sentences in a paragraph

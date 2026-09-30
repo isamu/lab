@@ -36,3 +36,10 @@ example:
       We shipped the update on Monday. But the login page broke. And the fix took two days. So some customers could not sign in.
     after: |
       We shipped the update on Monday, and the login page broke. The fix took two days, during which some customers could not sign in.
+
+not_flagged:
+  ja: And や But で始まる文が一つだけなら指しません。
+  en: One sentence opening with "And" or "But" is not reported.
+level_meaning:
+  ja: 接続詞で始まる文の連続 {limit} 文まで
+  en: up to {limit} sentences in a row opening with a conjunction

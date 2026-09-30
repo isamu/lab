@@ -61,3 +61,7 @@ example:
       ## Conclusion
 
       One line of settings made the build twice as fast. Next, we will run the tests in parallel.
+
+not_flagged:
+  ja: 機械では決めません。chaff test で、最後の節だけを AI が読みます。
+  en: No machine decides this. chaff test has an AI read the last section only.

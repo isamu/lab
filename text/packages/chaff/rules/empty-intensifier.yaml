@@ -40,3 +40,10 @@ example:
   en:
     before: It is important to note that the deadline is Friday.
     after: The deadline is Friday; a late delivery pushes payment into next month.
+
+not_flagged:
+  ja: 一覧にある言い回しだけを見ます。「重要です」と書いたあとに理由が続くかどうかは読みません。
+  en: Only the phrases on chaff's list are checked; whether a reason follows is not read.
+level_meaning:
+  ja: 当てはまる言い回しが {limit} 箇所あれば指摘
+  en: reported once there are {limit}

@@ -44,3 +44,10 @@ example:
       Alice and Bob from Contoso met Carol from Fabrikam in Seattle, then flew with Dave from Northwind to Boston to see Erin at Tailspin and Frank at Litware.
     after: |
       Two of our sales team met three customers on the West Coast, then flew to Boston to meet two more.
+
+not_flagged:
+  ja: chaff.yaml の names に書いた名前は、何語に分かれても 1 つと数えます。短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
+  en: A name listed under names in chaff.yaml counts as one, however many words it has. Short documents (under 200 words) are not measured.
+level_meaning:
+  ja: 1000 字あたり {limit} 個まで
+  en: up to {limit} per 1000 words

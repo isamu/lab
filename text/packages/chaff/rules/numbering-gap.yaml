@@ -72,3 +72,7 @@ example:
       ## Article 2 (Working hours)
 
       Working hours are from nine to six.
+
+not_flagged:
+  ja: 同じ親の下で隣り合う番号だけを比べます。別の章の番号どうしは比べません。
+  en: Only numbers side by side under the same parent are compared.
