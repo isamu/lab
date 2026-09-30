@@ -106,3 +106,11 @@ describe("undefined-acronym: 肩書きの後ろの大文字の姓", () => {
     it(`数える: ${String(body)}`, () => assert.deepEqual(sorted(String(body)), expected));
   });
 });
+
+// 受け入れた割り切り: 肩書きと大文字の語の後ろの大文字で始まる語は名と読むので、題の書き方（The President NASA Memo）では略語が外れる。
+// 名と普通の語は、辞書を引かないと見分けられない。
+describe("undefined-acronym: 肩書きの後ろの題の書き方（受け入れた割り切り）", () => {
+  it("The President NASA Memo の NASA は数えない", () => {
+    assert.deepEqual(reportedAcronyms(en, "# Address\n\nThe President NASA Memo remains unpublished. The DOJ agreed.\n"), ["DOJ"]);
+  });
+});
