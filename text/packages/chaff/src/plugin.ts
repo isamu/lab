@@ -17,7 +17,14 @@ export type Sentence = {
    * tokens は全角どうしに挟まれた段落内の改行を除いた文字列から作るので、改行をまたぐ語の span は改行ごと覆い、surface より長い。
    */
   readonly wrapBreaks?: readonly Span[];
+  /**
+   * 文書と違う言語で書いた文（和文の中の英文、英文の中の和文）。adapter が入れる。無ければ文書の言語の文。
+   * 長さの rule はこの単位で数え、この言語の上限と比べる。
+   */
+  readonly embeddedLanguage?: EmbeddedLanguage;
 };
+
+export type EmbeddedLanguage = { readonly id: string; readonly lengthUnit: LengthUnit };
 
 /**
  * 品詞は Universal Dependencies の UPOS に統一する。アダプタ独自の体系を露出させない。
@@ -350,6 +357,8 @@ export type DetectorOptions = {
   readonly where?: string | undefined;
   /** 普通の長さの文 1 つの長さ（adapter の単位）。段落の長さを文の数と一緒に見る rule だけが持つ。 */
   readonly fullSentence?: number | undefined;
+  /** 文書と違う言語で書いた文の上限。その言語の段から解決済み。rule がその言語の段を持たなければ無い。 */
+  readonly embeddedLimits?: Readonly<Record<string, number>> | undefined;
 };
 
 export type Detector = (doc: ProseDocument, options: DetectorOptions) => Finding[];
@@ -359,6 +368,8 @@ export type Localized = Readonly<Record<string, string>>;
 export type Level = "strict" | "normal" | "relaxed" | "off";
 
 export type LevelTable = Readonly<Partial<Record<Exclude<Level, "off">, number>>>;
+
+export type LanguageLevels = { readonly levels: LevelTable; readonly by_genre: Readonly<Record<string, LevelTable>> };
 
 export type RuleDefinition = {
   readonly id: string;
@@ -375,6 +386,8 @@ export type RuleDefinition = {
   readonly levels: LevelTable;
   /** ジャンル別の上書き。"business" は business/* 全部に効き、"business/email" が勝つ。spec §9。 */
   readonly by_genre: Readonly<Record<string, LevelTable>>;
+  /** 読み込んだ言語以外の levels と by_genre。文書と違う言語で書いた文（和文の中の英文）の上限に使う。 */
+  readonly other_languages?: Readonly<Record<string, LanguageLevels>>;
   readonly how_to_find: string;
   readonly word_list: string | undefined;
   /** word_list のほかに detector が名前で引く語彙表。どれかが無い言語では rule を動かさない。 */

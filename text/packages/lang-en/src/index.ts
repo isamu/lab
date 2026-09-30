@@ -5,7 +5,8 @@ import { splitAtQuotedStops } from "./quoted-stop.ts";
 import { reattachClosingQuotes } from "./closing-quote.ts";
 import { structure } from "./structure.ts";
 import { isReady, prepare, tokenize } from "./pos.ts";
-import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence } from "chaffjs/plugin";
+import { isJapaneseRun } from "./japanese-run.ts";
+import type { AdapterNeeds, EmbeddedLanguage, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
 
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
 
@@ -24,6 +25,10 @@ const withTokens = (sentence: Sentence): Sentence => {
     tokens: tokens.map((token) => ({ ...token, span: { start: sentence.span.start + token.span.start, end: sentence.span.start + token.span.end } })),
   };
 };
+
+const JAPANESE: EmbeddedLanguage = { id: "ja", lengthUnit: "char" };
+
+const withLanguage = (text: string, span: Span): Sentence => (isJapaneseRun(text) ? { span, text, embeddedLanguage: JAPANESE } : { span, text });
 
 /**
  * 英語は sentence-splitter の既定にほぼ任せる。"Dr." "e.g." "U.S." "$3.50" を
@@ -55,7 +60,7 @@ export const adapter: LanguageAdapter = {
   structure,
   segment: (text: string): Segmentation => {
     const quotedStops = sentenceSpans(unmarkNumberStops(text)).flatMap((span) => splitAtQuotedStops(text, span));
-    const sentences: Sentence[] = reattachClosingQuotes(text, quotedStops).map((span) => ({ span, text: text.slice(span.start, span.end) }));
+    const sentences: Sentence[] = reattachClosingQuotes(text, quotedStops).map((span) => withLanguage(text.slice(span.start, span.end), span));
     return { sentences: isReady() ? sentences.map(withTokens) : sentences };
   },
 };

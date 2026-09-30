@@ -61,6 +61,7 @@ const sentenceInSource =
       span,
       text: text.slice(span.start, span.end),
       ...(sentence.tokens === undefined ? {} : { tokens: sentence.tokens.map(tokenInSource(view)) }),
+      ...(sentence.embeddedLanguage === undefined ? {} : { embeddedLanguage: sentence.embeddedLanguage }),
     };
   };
 
