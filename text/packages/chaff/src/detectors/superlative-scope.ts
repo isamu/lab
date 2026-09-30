@@ -48,9 +48,14 @@ const namedBefore = (tokens: readonly Token[], range: TokenRange, markers: Lexic
 
 /** 最上級に続く名詞句の終わり。名詞が出るまでは修飾を、出た後は名詞の連なりを読む。 */
 export const phraseEnd = (tokens: readonly Token[], at: number, nounSeen = false): number => {
-  const token = tokens[at];
-  if (token === undefined || !(nounSeen ? NOUN_RUN : PREMODIFIER).has(token.pos)) return at;
-  return phraseEnd(tokens, at + 1, nounSeen || NOMINAL.has(token.pos));
+  let end = at;
+  let seen = nounSeen;
+  for (;;) {
+    const token = tokens[end];
+    if (token === undefined || !(seen ? NOUN_RUN : PREMODIFIER).has(token.pos)) return end;
+    seen ||= NOMINAL.has(token.pos);
+    end += 1;
+  }
 };
 
 /** 最上級 + 名詞句 + 範囲の語 + 名詞句（the best pizza in Chicago・the most famous of the sculptures）。 */

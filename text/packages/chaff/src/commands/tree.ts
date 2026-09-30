@@ -7,6 +7,7 @@ import { guessLanguage } from "../detect.ts";
 import { isMarkdownPath } from "../structure/markdown-path.ts";
 import { buildStructure } from "../structure/of.ts";
 import { toSexp } from "../structure/sexp.ts";
+import { foldPostOrder } from "../tree-walk.ts";
 import type { Config } from "../config/load.ts";
 import type { StructureNode } from "../plugin.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
@@ -22,16 +23,19 @@ const TEXT: Texts<{
   readonly usage: string;
   readonly unreadable: (path: string, why: string) => string;
   readonly noStructure: (path: string, language: string) => string;
+  readonly tooDeepForJson: (path: string, depth: number) => string;
 }> = {
   ja: {
     usage: "使い方: chaff tree <file>... [--format sexp|json] [--language ja|en|…]",
     unreadable: (path, why) => `${path} を読めませんでした: ${why}`,
     noStructure: (path, language) => `${path}: 言語 ${language} のパッケージは文書の構造を読めません（structure がありません）`,
+    tooDeepForJson: (path, depth) => `${path}: 木が ${String(depth)} 段と深すぎて、字下げした JSON に書き出せません（--format sexp なら書けることがあります）`,
   },
   en: {
     usage: "usage: chaff tree <file>... [--format sexp|json] [--language ja|en|…]",
     unreadable: (path, why) => `Could not read ${path}: ${why}`,
     noStructure: (path, language) => `${path}: the ${language} package cannot read a document's structure (it has no structure)`,
+    tooDeepForJson: (path, depth) => `${path}: the tree is ${String(depth)} levels deep, too deep to write as indented JSON (--format sexp may still write it)`,
   },
 };
 
@@ -85,10 +89,43 @@ export const readTree = async (path: string, argv: readonly string[], context: T
   return { source, tree: buildStructure({ path, source, language, markdown: isMarkdownPath(path), profile, lexicons: adapter.lexicons }, adapter.structure) };
 };
 
+/**
+ * 字下げした JSON。書けないほど深い木（言語パッケージの番号が何千段も入れ子になる）なら undefined。
+ * JSON.stringify は 1 段ごとに呼び直すのでスタックが尽き、字下げの合計は深さの二乗で増えて文字列の上限を超える。どちらも RangeError になる。
+ */
+export const treeJson = (tree: StructureNode): string | undefined => {
+  try {
+    return JSON.stringify(tree, null, 2);
+  } catch (err) {
+    if (err instanceof RangeError) return undefined;
+    throw err;
+  }
+};
+
+/** 根を 1 段目と数えた、いちばん深い葉までの段の数。 */
+export const depthOf = (tree: StructureNode): number =>
+  foldPostOrder(
+    tree,
+    (node) => node.children,
+    (_node, depths: readonly number[]) => depths.reduce((deepest, depth) => Math.max(deepest, depth), 0) + 1,
+  );
+
+/** 出力する文字列。JSON に書けないほど深い木なら、その深さ。 */
+export const renderTree = (tree: StructureNode, format: string | undefined): { readonly text: string } | { readonly tooDeep: number } => {
+  if (format !== "json") return { text: toSexp(tree) };
+  const json = treeJson(tree);
+  return json === undefined ? { tooDeep: depthOf(tree) } : { text: json };
+};
+
 const printTree = async (path: string, argv: readonly string[], context: TreeContext): Promise<boolean> => {
   const read = await readTree(path, argv, context);
   if (read === undefined) return false;
-  console.log(context.flag(argv, "--format") === "json" ? JSON.stringify(read.tree, null, 2) : toSexp(read.tree));
+  const rendered = renderTree(read.tree, context.flag(argv, "--format"));
+  if ("tooDeep" in rendered) {
+    console.error(treeText(context).tooDeepForJson(path, rendered.tooDeep));
+    return false;
+  }
+  console.log(rendered.text);
   return true;
 };
 

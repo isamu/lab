@@ -20,10 +20,13 @@ type Run = { readonly tokens: readonly Token[]; readonly last: number; readonly 
  * 閉じれば、そこまでが 1 つの地名。連なりの外（「に」「の」も 1 字）までは読まない。
  */
 const closedByUnit = (run: Run, index: number): boolean => {
-  const token = run.tokens[index];
-  if (index > run.last || token === undefined) return false;
-  if (isGeoUnit(token)) return !run.topUnits.has(token.surface);
-  return isNamePiece(token) && closedByUnit(run, index + 1);
+  for (let at = index; at <= run.last; at += 1) {
+    const token = run.tokens[at];
+    if (token === undefined) return false;
+    if (isGeoUnit(token)) return !run.topUnits.has(token.surface);
+    if (!isNamePiece(token)) return false;
+  }
+  return false;
 };
 
 /**
