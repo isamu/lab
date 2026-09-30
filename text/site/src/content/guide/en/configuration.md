@@ -6,19 +6,23 @@ You write only what differs from the defaults, and chaff runs without the file.
 ## Creating chaff.yaml
 
 ```bash
-npx chaffjs init                 create chaff.yaml
+npx chaffjs init --genre legal/contract   create chaff.yaml for contracts
+npx chaffjs init                          at a terminal, pick the genre from a numbered list
 ```
+
+At a terminal, `init` without `--genre` lists every genre with what it is for and asks for a number or a name (Enter for `blog/tech`).
+A script or CI is not asked and gets `blog/tech`.
 
 This creates `chaff.yaml` and `.gitignore` here. A real run prints:
 
 ```
-$ npx chaffjs init
+$ npx chaffjs init --genre legal/contract
 
 Created:
   …/chaff.yaml  the team's rules; commit it
   …/.gitignore  created
 
-The genre is blog/tech. If that is wrong, change genre in chaff.yaml.
+The genre is legal/contract. If that is wrong, change genre in chaff.yaml.
   List: npx chaff genres
 
 Next:
@@ -46,8 +50,12 @@ The paths on the screen are shortened. The `chaff.yaml` it writes is:
 #   npx chaff explain bold-density        read what the rule is for
 #   npx chaff rules --json                give this to an AI that writes the settings
 
-# The kind of document kept here.
-genre: blog/tech
+# The kind of document kept here (Contracts, terms of service and privacy policies). The others: npx chaffjs genres
+genre: legal/contract
+
+# The names your team writes (organisations, products). Each is read as one name, not as words to count.
+# names:
+#   - Bank of England
 
 # Only what differs from the defaults.
 rules:
@@ -58,8 +66,19 @@ If you put the API key for the checks that read meaning in `.env`, it will not b
 
 ## Choosing genre and language
 
-The genre decides which rules run and where their limits are.
-Leave it out and it is worked out from the path and the content.
+The genre is the kind of document. It decides three things:
+
+| What | How |
+| --- | --- |
+| Which rules run | A genre turns off the rules that only flag its form (a contract repeats its defined terms on purpose) and may turn on experimental ones (`legal/contract` checks references to clauses that are not there) |
+| Where the limits are | The same `normal` means a longer sentence for a statute or a paper than for an email |
+| How the document is read | `legal/statute` reads with the knowledge of statutes (see below) |
+
+A rule the genre turns off is listed under "did not run" with the genre as the reason, for example `ngram-repetition (the legal/contract genre does not check it)`.
+`rules` in `chaff.yaml` wins over the genre, so `ngram-repetition: normal` turns it back on.
+Every genre and what it changes is on the [Genres](../../genres/) page, and the table is in [Getting started](./getting-started).
+
+Leave `genre` out and it is worked out from the path and the content.
 `README.md`, `*-spec.md` and `docs/` are read as technical documents.
 Where it came from is shown on the first line of the screen.
 
@@ -67,22 +86,11 @@ Where it came from is shown on the first line of the screen.
 payment-spec.md   technical/spec · English   genre from the path
 ```
 
-When it is wrong, set `genre`. These are the genres:
+When nothing decides it, the document is checked as `blog/tech`, and when it looks like another kind the screen suggests one (`Looks like: Contract and terms. Try --genre legal/contract`).
+The suggestion never changes the genre it is checked with.
+When the genre is wrong, set `genre`.
 
-| Genre | What kind of document |
-| --- | --- |
-| `technical/spec` | A specification |
-| `technical/readme` | A README or technical document |
-| `blog/tech` | A technical blog post |
-| `blog/essay` | An essay |
-| `blog/owned-media` | Owned media (a company's own content site) |
-| `business/proposal` | A proposal |
-| `business/report` | A report |
-| `business/email` | An email |
-| `business/press-release` | A press release |
-| `business/meeting-notes` | Meeting notes |
-
-`npx chaffjs genres` lists them too.
+`npx chaffjs genres` lists every genre with what it is for.
 A genre that is not in this list stops chaff before it checks anything, and it says where the genre was written.
 A `genre:` in a file's front matter that is not in the list is not used; chaff says so and works the genre out as if it were not there.
 The language is also worked out per file; set `language` to `ja` or `en` to fix it.
@@ -94,7 +102,8 @@ A Japanese statute writes its addresses in kanji numerals (第二十二条第二
 Knowledge like that lives in settings files bundled with chaff (`profiles/*.yaml`), and applies only to the documents it is chosen for.
 The one bundled today is Japanese statutes (`statute`).
 
-Leave it out and it is chosen from the content: three or more lines that start with an article, like `第一条　`, make a statute.
+Leave it out and the genre chooses it (`legal/statute` reads with `statute`).
+With no such genre, it is chosen from the content: three or more lines that start with an article, like `第一条　`, make a statute.
 The choice is shown on the first line of `chaff tree`.
 
 ```

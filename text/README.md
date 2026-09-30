@@ -7,14 +7,62 @@
 **手引きとルールの一覧:** https://isamu.github.io/lab/ja/ （English: https://isamu.github.io/lab/en/）
 
 > chaff finds what makes writing hard to read — in Japanese and English — and never rewrites the text. On an
-> English document it speaks English. The guide and the reference of every rule are at
-> https://isamu.github.io/lab/en/.
+> English document it speaks English. Pick the kind of document (`--genre legal/contract`, `docs/manual`,
+> `academic/paper`, `literature/fiction`, …) and it checks it the way that kind is written. The guide, the genres and
+> the reference of every rule are at https://isamu.github.io/lab/en/.
 
 `coding/` の scoria がコードの品質を測るのに対して、こちらは文章の品質を測る。
 
 ```bash
 npx chaffjs article.md
 ```
+
+## 文書の種類を選ぶ
+
+契約書は長い一文で書き、小説は同じ言葉を繰り返し、発言録は話したとおりに残します。どれもその種類の書き方で、直すところではありません。
+chaff は文書の種類（ジャンル）ごとに、見るルールと閾値を用意しています。種類を選べば、設定を書かずに、その書き方に合わせて見ます。
+
+```bash
+npx chaffjs --genre legal/contract 契約書.md    この実行だけ、契約書として見る
+npx chaffjs init --genre legal/contract         この場所の chaff.yaml に書く（端末なら一覧から選べる）
+npx chaffjs genres                              ジャンルの一覧と、それぞれ何向けか
+```
+
+| 文書 | ジャンル |
+| --- | --- |
+| 仕様書・RFC・設計文書 | `technical/spec` |
+| README・開発者向けの説明 | `technical/readme` |
+| 技術記事（ジャンルを決めないときはこれ） | `blog/tech` |
+| ブログのエッセイ | `blog/essay` |
+| 会社や団体が出す記事 | `blog/owned-media` |
+| 提案書・企画書・計画書 | `business/proposal` |
+| 報告書・白書・社内文書 | `business/report` |
+| 仕事のメール・手紙 | `business/email` |
+| プレスリリース・お知らせ | `business/press-release` |
+| 議事録・議事要旨 | `business/meeting-notes` |
+| 契約書・利用規約・プライバシーポリシー | `legal/contract` |
+| 法令・規則・社内規程・通達 | `legal/statute` |
+| 判決文・決定 | `legal/judgment` |
+| 特許の明細書と請求項 | `legal/patent` |
+| 使い方の説明・手順書・ヘルプ | `docs/manual` |
+| よくある質問 | `docs/faq` |
+| 用語集 | `docs/glossary` |
+| 論文と要旨 | `academic/paper` |
+| 小説・物語 | `literature/fiction` |
+| 文学としての随筆 | `literature/essay` |
+| 詩・短歌・俳句 | `literature/poetry` |
+| 戯曲・脚本 | `literature/play` |
+| 読み上げるために書いた演説・挨拶 | `speech/address` |
+| 話したことの記録（会見・国会の会議録） | `speech/transcript` |
+
+ジャンルを決めていない文書は、技術記事（`blog/tech`）として見ます。別の種類に見えるときは、1 行目の下にそう出ます。見るジャンルは変えません。
+
+```
+契約書.txt   blog/tech · 日本語   ジャンルは既定から
+   契約書・規約のようです。--genre legal/contract を試せます
+```
+
+ジャンルごとに見ないルールと足すルールは、[サイトのジャンルのページ](https://isamu.github.io/lab/ja/genres/) にあります。同梱の `genres.yaml` から作っているので、ずれません。
 
 ## いまどこまで動くか
 
@@ -76,9 +124,9 @@ $ npx chaffjs en.md --compact
 ```bash
 npx chaffjs .                    この場所の Markdown を全部見る
 npx chaffjs docs/ README.md      ディレクトリもファイルも glob も混ぜてよい
-npx chaffjs init                 chaff.yaml を作る
+npx chaffjs init                 chaff.yaml を作る（端末ならジャンルを一覧から選ぶ。--genre でも決まる）
 npx chaffjs explain bold-density そのルールの意図と根拠を読む
-npx chaffjs genres               ジャンルの一覧
+npx chaffjs genres               ジャンル（文書の種類）の一覧と、それぞれ何向けか
 npx chaffjs --version            chaffjs と言語パッケージの版
 npx chaffjs baseline docs/       いまある指摘を棚上げする
 npx chaffjs suppressions docs/   stet で黙らせている指摘を数える
@@ -527,21 +575,23 @@ yarn example:friendly     既定の出力で
 
 CI でも毎回かけています。指摘の数では落としません（文章の好みの問題なので）が、**実文書で chaff が最後まで動かなければ落ちます**。
 
-## ジャンル
+## ジャンルが変えるもの
 
-文書の種類で、動く rule が変わります。仕様書に「つかみ」も「締め」も要りません。
+ジャンル（[文書の種類を選ぶ](#文書の種類を選ぶ)）は、動く rule と閾値を変えます。仕様書に「つかみ」も「締め」も要らず、法令の一文は長くて当然です。
 
-| ジャンル | 何を見ないか |
-| --- | --- |
-| `technical/spec` `technical/readme` | 水増しの導入 / 定型の結び / 文のリズム |
-| `blog/tech` `blog/essay` `blog/owned-media` | — |
-| `business/proposal` `business/report` | 定型の結び / 文のリズム（水増しの導入と、結びに中身があるか（`chaff test`）は見る） |
-| `business/email` `business/press-release` `business/meeting-notes` | ブログ向けの rule |
+- **どの rule を動かすか。** `packages/chaff/genres.yaml` の `rules:` に、ジャンル（と、その群）ごとの段を書いています。
+  止めた rule は「動いていない」一覧に、ジャンルを理由に出ます（`ngram-repetition（ジャンル legal/contract では見ないため）`）。
+  `legal/contract` は、試験中の構造の rule（無い条項への参照・番号の抜け・二重の定義・曜日違い・合わない合計）を既定で動かします。
+- **閾値。** 同じ `normal` でも、ジャンルで数字が違います（rule の `by_genre`）。法令・判決・論文の一文は長くてよい。
+- **文書の知識。** `legal/statute` は法令の書き方（`statute`）で読みます。
+
+`chaff.yaml` の `rules` はジャンルより強いので、ジャンルが止めた rule も `rules:` に `ngram-repetition: normal` と書けば動きます。
 
 判定はパスと内容から自動で行い、1 行目に根拠つきで出ます。`README.md`、`*-spec.md`、`docs/` は技術文書として見ます。
 `chaff.yaml` の `genre` で決めるか、その実行だけなら `--genre` で決めます（`chaff.yaml` より優先）。
 一覧（`npx chaffjs genres`）に無いジャンルを書くと、何も検査せずに止まります。
 front matter の `genre:` が一覧に無いときは、使わずにそう言い、パスと内容から決めます。
+どれでも決まらず既定に落ちた文書だけに、見当（「契約書・規約のようです」）を出します。
 
 ```
 chaff-spec.md   technical/spec · 日本語   ジャンルはパスから

@@ -7,6 +7,56 @@ Start by running it once on something you wrote.
 npx chaffjs article.md
 ```
 
+## Pick the kind of document
+
+A contract is written in long sentences, a poem repeats its words, and a transcript keeps what was said.
+Each is how that kind of document is written, not something to fix.
+Pick the kind of document (the genre) and chaff checks it the way that kind is written, with no settings to write.
+
+```bash
+npx chaffjs --genre legal/contract contract.md   check it as a contract, this run only
+npx chaffjs init --genre legal/contract          write the genre into this folder's chaff.yaml
+npx chaffjs genres                               list the genres and what each is for
+```
+
+| Document | Genre |
+| --- | --- |
+| Specifications, RFCs, design documents | `technical/spec` |
+| READMEs, documentation for developers | `technical/readme` |
+| Technical articles (the genre when none is set) | `blog/tech` |
+| Personal essays on a blog | `blog/essay` |
+| Articles an organisation publishes | `blog/owned-media` |
+| Proposals, plans, pitches | `business/proposal` |
+| Reports, white papers, internal documents | `business/report` |
+| Work email and letters | `business/email` |
+| Press releases and public notices | `business/press-release` |
+| Minutes and meeting notes | `business/meeting-notes` |
+| Contracts, terms of service, privacy policies | `legal/contract` |
+| Statutes, regulations, internal rules | `legal/statute` |
+| Court judgments and opinions | `legal/judgment` |
+| Patent specifications and claims | `legal/patent` |
+| User guides, how-to pages, help | `docs/manual` |
+| Questions and answers | `docs/faq` |
+| Glossaries | `docs/glossary` |
+| Papers and abstracts | `academic/paper` |
+| Novels and stories | `literature/fiction` |
+| Literary essays | `literature/essay` |
+| Poems and verse | `literature/poetry` |
+| Plays and scripts | `literature/play` |
+| Speeches written to be read aloud | `speech/address` |
+| Records of what was said (press conferences, debates) | `speech/transcript` |
+
+What each genre leaves out, and what it adds, is on the [Genres](../../genres/) page.
+
+With no genre set, a document is checked as a technical article (`blog/tech`).
+When it looks like another kind, the screen says so under the first line.
+The genre it is checked with does not change.
+
+```
+contract.md   blog/tech · English   genre from the default
+   Looks like: Contract and terms. Try --genre legal/contract
+```
+
 ## Run it on your own writing
 
 No settings file, no API key and no language setting are needed. Give it a file and it reads it.

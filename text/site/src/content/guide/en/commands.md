@@ -11,9 +11,9 @@ The list `npx chaffjs --help` prints, as a table.
 | --- | --- |
 | `npx chaffjs <file\|dir\|glob>...` | Checks. No settings and no API key needed |
 | `npx chaffjs .` | Checks every Markdown file here |
-| `npx chaffjs init` | Creates `chaff.yaml` |
+| `npx chaffjs init` | Creates `chaff.yaml` (asks for the genre at a terminal; `--genre` chooses it) |
 | `npx chaffjs explain <rule>` | Shows what a rule is for, and why |
-| `npx chaffjs genres` | Lists the genres |
+| `npx chaffjs genres` | Lists the genres and what each is for |
 | `npx chaffjs --version` | Prints the version of chaffjs and of its bundled language packages |
 | `npx chaffjs rules --json` | The current settings as JSON, to give to an AI |
 | `npx chaffjs relax\|strict\|off <rule>` | Changes a rule's level, with `--why "reason"` |
@@ -156,28 +156,60 @@ To change the level, give a new reason with --why.
 
 ## Listing the genres
 
-`genres` lists what you can write as `genre` in `chaff.yaml`.
+`genres` lists the genres (the kinds of document) you can pick, by group, with what each is for.
 
 ```
 $ npx chaffjs genres
-  Genres:
-    technical/spec
-    technical/readme
-    blog/tech
-    blog/essay
-    blog/owned-media
-    business/proposal
-    business/report
-    business/email
-    business/press-release
-    business/meeting-notes
 
-  Set one with genre in chaff.yaml, or with --genre.
+  Pick the genre (the kind of document) and chaff checks it the way that kind is written:
+
+  Technical
+    technical/spec          Specifications, RFCs and design documents, written so the reader cannot get it wrong
+    technical/readme        READMEs and documentation for developers
+
+  Blog
+    blog/tech               Technical articles; the genre used when none is set
+    blog/essay              Personal essays posted on a blog
+    blog/owned-media        Articles an organisation publishes for its readers
+
+  Business
+    business/proposal       Proposals, plans and pitches
+    business/report         Reports, white papers and internal documents
+    business/email          Work email and letters
+    business/press-release  Press releases and public notices
+    business/meeting-notes  Minutes and meeting notes
+
+  Legal
+    legal/contract          Contracts, terms of service and privacy policies
+    legal/statute           Statutes, regulations and internal rules
+    legal/judgment          Court judgments and opinions
+    legal/patent            Patent specifications and claims
+
+  Documentation
+    docs/manual             User guides, how-to pages and help
+    docs/faq                Pages of questions and answers
+    docs/glossary           Lists of terms and what they mean
+
+  Academic
+    academic/paper          Papers and abstracts
+
+  Literature
+    literature/fiction      Novels and stories
+    literature/essay        Literary essays; a blog essay is blog/essay
+    literature/poetry       Poems and verse
+    literature/play         Plays and scripts
+
+  Speech
+    speech/address          Speeches and addresses written to be read aloud
+    speech/transcript       Verbatim records of what was said (press conferences, parliamentary debates)
+
+  For one run:       npx chaffjs --genre legal/contract contract.md
+  For this folder:   npx chaffjs init --genre legal/contract   (writes genre in chaff.yaml)
 ```
 
 `--genre` sets the genre for one run and wins over `chaff.yaml`; the first line then says `genre from --genre`.
-To set it for good, write `genre` in `chaff.yaml`.
-What each genre is for is in the table in [Configuration](./configuration).
+To set it for good, create `chaff.yaml` with `npx chaffjs init --genre <genre>`, or write `genre` in `chaff.yaml`.
+What each genre leaves out and adds is on the [Genres](../../genres/) page.
 
 ## Shelving today's findings
 
