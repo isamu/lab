@@ -3,7 +3,7 @@ import { entryRanges, type TokenRange } from "./lexicon-match.ts";
 import { isWithinAny, quotedIn, QUOTATION_MARKS } from "../quoted-span.ts";
 
 /** 重ねたと言うのに要る数。1 つなら慎重さで、2 つ目からは読み手が何を言い切ったのか分からなくなる。 */
-export const STACKED_AT = 2;
+const STACKED_AT = 2;
 
 /**
  * 語彙表 3 つ。hedges は逃げの表現そのもの、frames はそれだけでは逃げていない包む言い方（「という状況です」、may）、
@@ -43,7 +43,10 @@ const CLAUSE_BREAK = new Set(["PUNCT", "CCONJ"]);
 
 /** 語ごとの、文の頭から数えた節の番号。 */
 const clauseOf = (tokens: readonly Token[]): number[] =>
-  tokens.reduce<number[]>((clauses, token) => [...clauses, (clauses.at(-1) ?? 0) + (CLAUSE_BREAK.has(token.pos) ? 1 : 0)], []);
+  tokens.reduce<number[]>((clauses, token) => {
+    clauses.push((clauses.at(-1) ?? 0) + (CLAUSE_BREAK.has(token.pos) ? 1 : 0));
+    return clauses;
+  }, []);
 
 const PREDICATE = new Set(["VERB", "AUX"]);
 
@@ -79,7 +82,7 @@ const stackedClause = (devices: readonly Device[], clauses: readonly number[]): 
  * 1 つの文の 1 つの節に、逃げの表現を重ねているか。business-blog-harness-spec §7.2。見せる範囲を文の中の順で返す。重ねていなければ空。
  * 品詞が無ければ語の位置が分からないので何も言わない。
  */
-export const stackedHedgeIn = (sentence: Sentence, words: HedgeWords): Span[] => {
+const stackedHedgeIn = (sentence: Sentence, words: HedgeWords): Span[] => {
   const tokens = sentence.tokens ?? [];
   return stackedClause(devicesIn(sentence, words), clauseOf(tokens))
     .toSorted((left, right) => left.range.start - right.range.start)

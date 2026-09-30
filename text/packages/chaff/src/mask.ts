@@ -1,4 +1,5 @@
 import type { Span } from "./plugin.ts";
+import { mergeSpans } from "./span-merge.ts";
 
 /**
  * 非 prose（コードブロック・インラインコード・表・見出し・URL）を、
@@ -16,18 +17,8 @@ import type { Span } from "./plugin.ts";
  */
 const blankOut = (text: string): string => text.replace(/[^\n]/gu, (char) => " ".repeat(char.length));
 
-const merge = (spans: readonly Span[]): Span[] =>
-  spans
-    .toSorted((left, right) => left.start - right.start)
-    .reduce<Span[]>((acc, span) => {
-      const last = acc.at(-1);
-      if (last !== undefined && span.start <= last.end) acc[acc.length - 1] = { start: last.start, end: Math.max(last.end, span.end) };
-      else acc.push(span);
-      return acc;
-    }, []);
-
 export const maskSpans = (source: string, spans: readonly Span[]): string => {
-  const merged = merge(spans);
+  const merged = mergeSpans(spans, true);
   const { parts, cursor } = merged.reduce<{ parts: string[]; cursor: number }>(
     (acc, span) => ({
       parts: [...acc.parts, source.slice(acc.cursor, span.start), blankOut(source.slice(span.start, span.end))],
