@@ -4,6 +4,27 @@ Newest first.
 
 ## Unreleased
 
+### Documents that mix Japanese and English (#170)
+
+A Japanese paper with an English abstract was read as if the abstract were one long Japanese sentence, because a
+Japanese sentence only ends at 。．！？. Now:
+
+- **An English paragraph in a Japanese document is split at English full stops** (. ? !), with the same care for
+  abbreviations (`Dr.`, `U.S.`) and years (`in 1997. Programs…`) as in an English document. A period after a Latin
+  word that Japanese follows on the same line (`Version 2.0. を使う`, `See Fig. 1. これは図`) still does not end a
+  sentence.
+- **`max-sentence-length` counts such a sentence in words** and compares it with the English limit for the same genre
+  and level (「この英文は 64 語あります（50 語まで）」). A Japanese sentence in an English document is counted in
+  characters against the Japanese limit. A number limit in `chaff.yaml` is in the document's own unit, so it applies
+  to the document's own sentences only.
+- **The language guess leaves reference lists out.** A list under a References or 参考文献 heading is written in the
+  language of the works it cites, and a Japanese paper citing many English works was read as English. The heading
+  words are in `reference-headings.yaml`. Under a Markdown heading the section runs to the next heading of the same
+  level; under a line that holds only the heading word, only the list right after it is left out.
+
+The other rules still run in the document's language only; English-only rules do not check English sentences in a
+Japanese document. Language adapters mark such a sentence with `embeddedLanguage` (a new optional field of `Sentence`).
+
 ### Japanese speeches written one paragraph per line; subheading lines; 「〜こと。」 items (#170)
 
 A document written one paragraph per line, with no blank line between (the 官邸's 施政方針演説), is now split line

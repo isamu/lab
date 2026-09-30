@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parse } from "yaml";
-import type { LevelTable, RuleDefinition, Severity } from "./plugin.ts";
+import type { LanguageLevels, LevelTable, RuleDefinition, Severity } from "./plugin.ts";
 
 const RULES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "rules");
 
@@ -39,6 +39,20 @@ const genreTables = (raw: unknown, language: string): Readonly<Record<string, Le
     return flattened === undefined ? [] : [[genre, flattened] as const];
   });
   return Object.fromEntries(entries);
+};
+
+/** levels を言語別に書いた rule の、loaded 以外の言語の段。言語で分けていない rule は空。 */
+const otherLanguages = (raw: Record<string, unknown>, loaded: string): Record<string, LanguageLevels> => {
+  const levels = raw["levels"];
+  if (!isRecord(levels) || isLevelTable(levels)) return {};
+  return Object.fromEntries(
+    Object.keys(levels)
+      .filter((language) => language !== loaded && language !== "default")
+      .flatMap((language) => {
+        const table = flattenLevels(levels, language);
+        return table === undefined ? [] : [[language, { levels: table, by_genre: genreTables(raw["by_genre"], language) }] as const];
+      }),
+  );
 };
 
 const SEVERITIES: readonly Severity[] = ["error", "warning", "info"];
@@ -110,6 +124,7 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     placeholders: localizedByKey(raw["placeholders"]),
     levels,
     by_genre: genreTables(raw["by_genre"], language),
+    other_languages: otherLanguages(raw, language),
     how_to_find: String(raw["how_to_find"]),
     word_list: typeof raw["word_list"] === "string" ? raw["word_list"] : undefined,
     extra_word_lists: stringList(raw["extra_word_lists"]) ?? [],

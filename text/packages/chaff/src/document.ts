@@ -204,6 +204,7 @@ const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: Langua
         text: sentence.text,
         ...(sentence.tokens === undefined ? {} : { tokens: sentence.tokens.map((token) => ({ ...token, span: shift(token.span, paragraph.start) })) }),
         ...(sentence.wrapBreaks === undefined ? {} : { wrapBreaks: sentence.wrapBreaks.map((span) => shift(span, paragraph.start)) }),
+        ...(sentence.embeddedLanguage === undefined ? {} : { embeddedLanguage: sentence.embeddedLanguage }),
       })),
   );
 

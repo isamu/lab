@@ -1,12 +1,14 @@
 import { loadLexicons } from "./lexicons.ts";
 import { closesSentence } from "./sentence-close.ts";
 import { sentenceSpans } from "./sentence-split.ts";
+import { isEnglishBoundary, isEnglishRun } from "./english-run.ts";
+import { unmarkNumberStops } from "./number-stop.ts";
 import { structure } from "./structure.ts";
 import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, readsAsOneWord, tokenize } from "./pos.ts";
 import { markSpacedCounters } from "./spaced-counter.ts";
 import { tokensWithin } from "./tokens-within.ts";
 import { distributiveVocabulary, iterationMarkReading, markReduplication } from "./reduplication.ts";
-import type { AdapterNeeds, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
+import type { AdapterNeeds, EmbeddedLanguage, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
 
 // chaff からは型だけを取る。実行時の値依存を作らない。アダプタは単体で動く。
 
@@ -25,6 +27,13 @@ const COUNTABLE = /\S/gu;
  */
 const isOpen = (text: string): boolean => text.trim().length > 0 && !closesSentence(text);
 
+/** 和文の句点で閉じていない断片は次へ続く。ただし英文どうしは、分割器が英語の文末で切ったところで切る。 */
+const continues = (before: string, after: string): boolean => isOpen(before) && !isEnglishBoundary(before, after);
+
+const ENGLISH: EmbeddedLanguage = { id: "en", lengthUnit: "word" };
+
+const withLanguage = (text: string, span: Span): Sentence => (isEnglishRun(text) ? { span, text, embeddedLanguage: ENGLISH } : { span, text });
+
 /**
  * 断片を繋ぐときは raw の連結ではなくオフセットを使う。
  * sentence-splitter は空白を別ノードに分けるため、raw を繋ぐと空白が落ちて文長が縮む。
@@ -37,11 +46,12 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] =>
       // 誤分割を閉じるためのもので、行またぎは要らない。またぐと、引用ブロックの
       // 英文と訳文のように別の行のものまで 1 文に繋がる。
       const acrossLines = last !== undefined && source.slice(last.end, span.start).includes("\n");
-      if (last !== undefined && !acrossLines && isOpen(source.slice(last.start, last.end))) acc[acc.length - 1] = { start: last.start, end: span.end };
+      if (last !== undefined && !acrossLines && continues(source.slice(last.start, last.end), source.slice(span.start, span.end)))
+        acc[acc.length - 1] = { start: last.start, end: span.end };
       else acc.push(span);
       return acc;
     }, [])
-    .map((span) => ({ span, text: source.slice(span.start, span.end) }));
+    .map((span) => withLanguage(source.slice(span.start, span.end), span));
 
 /**
  * token の span は文ではなく、segment に渡した文字列を基準にする。文の span と同じ座標系。
@@ -85,7 +95,7 @@ export const adapter: LanguageAdapter = {
   lexicons: loadLexicons(),
   structure,
   segment: (text: string): Segmentation => {
-    const sentences = merge(text, sentenceSpans(text));
+    const sentences = merge(text, sentenceSpans(unmarkNumberStops(text)));
     return { sentences: isReady() ? withTokens(text, sentences) : sentences };
   },
 };

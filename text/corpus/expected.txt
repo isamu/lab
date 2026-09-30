@@ -8,7 +8,7 @@
 18f-handbook-travel-faq  max-paragraph-length 1, max-sentence-length 65, undefined-acronym 16
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2
-aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 79
+aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 77
 aozora-kishida-kamifusen  clean
 aozora-soseki-yume-juya  clean
 aozora-takuboku-ichiaku-no-suna  clean
@@ -100,9 +100,9 @@ jma-tokubetsu-keiho  max-sentence-length 2
 jma-yougo-kaze  no-doubled-joshi 1
 jp-2011-056072-seiu-kenyo-gasa  hiragana-fukushi 2, max-sentence-length 3
 jstage-jkg-72-4-133  latin-spacing 6, max-kanji-continuous 1, no-mixed-desumasu 1, undefined-acronym 7
-jstage-jniph-74-1-2-rehabilitation  latin-spacing 7, max-kanji-continuous 23, max-paragraph-length 1, max-sentence-length 21, undefined-acronym 9
-jstage-jniph-74-2-119-wbgt  latin-spacing 12, max-kanji-continuous 10, max-paragraph-length 1, max-sentence-length 17, no-doubled-joshi 1, undefined-acronym 20
-jstage-jniph-74-2-157-heat-policy  latin-spacing 7, max-kanji-continuous 9, max-sentence-length 18, undefined-acronym 15
+jstage-jniph-74-1-2-rehabilitation  latin-spacing 7, max-kanji-continuous 23, max-paragraph-length 2, max-sentence-length 2, undefined-acronym 9
+jstage-jniph-74-2-119-wbgt  latin-spacing 12, max-kanji-continuous 10, max-paragraph-length 2, no-doubled-joshi 1, undefined-acronym 20
+jstage-jniph-74-2-157-heat-policy  latin-spacing 7, max-kanji-continuous 9, max-sentence-length 1, undefined-acronym 15
 jstage-jnlp-32-1-114-nmt  latin-spacing 11, max-sentence-length 1, undefined-acronym 7
 k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-consistency 1, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
@@ -168,7 +168,7 @@ soumu-kokumin-cyber-malware  concrete-evidence-density 3, max-sentence-length 10
 soumu-kokumin-cyber-phishing  concrete-evidence-density 3, latin-spacing 7, max-sentence-length 6
 soumu-wp-r06-ai-booms  agentless-passive 1, max-sentence-length 2, undefined-acronym 3
 soumu-wp-r06-ai-rules-japan  agentless-passive 2, latin-spacing 1, max-sentence-length 6, no-doubled-joshi 1
-soumu-wp-r06-misinformation  agentless-passive 7, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 26, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
+soumu-wp-r06-misinformation  agentless-passive 7, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 22, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
 sre-next-bunsho-kanri  clean
 sre-next-teikan  no-mixed-desumasu 1
 tc39-agenda-2026-07  adverb-overuse 1, agentless-passive 7, max-sentence-length 11, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 2
