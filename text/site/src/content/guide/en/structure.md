@@ -207,7 +207,8 @@ Line 10 is the skipped subsection, and line 14 is the reference to a section tha
 The `warning` and `info` lines are about readability; long sentences are normal in legislation.
 To check only the structure of an Act, read the `error` lines.
 
-Run it as a statute, with `--genre legal/statute --experimental`, and the limits are a statute's: only the two `error` lines are left.
+Run it as a statute, with `--genre legal/statute`, and the limits are a statute's: only the two `error` lines are left.
+`legal/statute` turns on the same structure rules as `legal/contract`, so `--experimental` is not needed.
 
 Undo the two changes and run `fixed.txt`: the `error` lines are gone.
 

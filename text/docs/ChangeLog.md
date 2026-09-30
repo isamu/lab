@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### `legal/statute` checks numbering, references and definitions without `--experimental` (#340)
+
+`legal/statute` now turns on the structure rules `legal/contract` does: `numbering-gap`, `dangling-reference`,
+`duplicate-definition`, `date-weekday-mismatch` and `total-mismatch`. A 規程 with a missing 第3条 and a reference to
+a 第9条 that is not there gets both findings under `--genre legal/statute`, as it did under `legal/contract`. The
+statutes in the corpus (the e-Gov laws with 「削除」 articles and 枝番号, the UK Acts, 16 CFR 310, a 通達 and the
+規程・規則 documents) give these rules no new findings. Two misfires the measurement found are fixed:
+
+- 「大学院学則第9条の2」 is an article of another document: 学則 joins the words that end a document's name.
+- A definition of a term as used at an address (「規則第7条に規定する『個人データ』とは」, 「法第31条第1項第1号の
+  『本人の同意』とは」, 「前項第1号に規定する『報道』とは」) is scoped to that article, like 「前項に規定する」 already
+  was, and no longer counts as a second definition of the term.
+
 ### The corpus stores 青空文庫 texts without their colophon (#170)
 
 A new `aozora` format for the corpus manifest drops the blocks 青空文庫 closes every file with (底本, 入力, 校正, the
