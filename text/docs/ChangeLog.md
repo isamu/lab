@@ -17,6 +17,14 @@ Newest first.
   the same line counts, so `1）`, an unclosed `（` and a ditto `“` join nothing. A closing bracket left at the start of a
   sentence goes back to the sentence it closes. A line that ends in a lone `\r` is a line break too.
 
+### `yarn bench` plants a polite sentence only where chaff can see it clash (#170)
+
+Since 「〜こと。」 and 「〜もの。」 endings became neutral, the requirements sample, written entirely in 「〜こと。」, had no
+plain sentence left for the planted polite one to clash with, and the bench recorded a miss. The `polite-in-plain`
+plant now measures the edited document with chaff's own reading of sentence endings, among the sentences the planted
+one is compared with (its list, its numbered run, or the body), and plants only where plain sentences remain and are
+not outnumbered. The requirements sample is left out rather than reported as a miss; the sample text is unchanged.
+
 ### `yarn bench` plants a repeated phrase, and fails when a rule it should plant for goes unplanted (#170)
 
 `ngram-repetition` had no plant: the audit that added plants for uncovered rules skipped it. The bench now opens one

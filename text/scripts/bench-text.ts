@@ -14,7 +14,14 @@ export type PlantContext = {
   readonly lengthUnit?: "char" | "word" | undefined;
   /** A source's length as chaff counts it (its sentences, in lengthUnit). Without it, a mutation that needs it plants nothing. */
   readonly documentLength?: (source: string) => number;
+  /**
+   * How many sentences chaff reads as polite and as plain, among those it compares the sentence on `line` (1-based) with.
+   * Without it, a mutation that needs it plants nothing.
+   */
+  readonly registers?: (source: string, line: number) => RegisterCounts;
 };
+
+export type RegisterCounts = { readonly polite: number; readonly plain: number };
 
 type Found = { readonly index: number; readonly line: string };
 
