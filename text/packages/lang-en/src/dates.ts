@@ -3,7 +3,12 @@ import type { Mention } from "chaffjs/plugin";
 // Dates in English text, and the weekday written beside one.
 
 const MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
-const MONTH_WORD = /\b(?<month>[A-Z][a-z]{2,8})\b/gu;
+/** "Sep", "Sept": a month cut short, which may carry a period ("Sept. 12, 2025"). */
+const ABBREVIATED: ReadonlyMap<string, number> = new Map([...MONTHS.map((name, index) => [name.slice(0, 3), index + 1] as const), ["sept", 9]]);
+/** Title case or capitals ("SEP 01, 2022" on a web page): a lower-case "mar" or "may" is never a month. */
+const MONTH_WORD = /\b(?<month>[A-Z][a-z]{2,8}|[A-Z]{3,9})\b/gu;
+/** "12-SEP-2025", the day-month-year form of labels and logs. Only a three-letter month is written this way. */
+const HYPHENATED_DATE = /(?<![\w-])(?<d>\d{1,2})-(?<month>[A-Z][a-z]{2}|[A-Z]{3})-(?<y>\d{4})(?![\w-])/gu;
 const ISO_DATE = /\b(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})\b/gu;
 const DAY_BEFORE = /(?<d>\d{1,2})(?:st|nd|rd|th)? $/u;
 const DAY_YEAR_AFTER = /^ (?<d>\d{1,2})(?:st|nd|rd|th)?,? (?<y>\d{4})\b/u;
@@ -41,10 +46,19 @@ const monthYear = (text: string, at: number, end: number, month: number): Mentio
  * The month is found first and its neighbours read with anchored patterns, never one long alternation.
  */
 const namedDate = (text: string, match: RegExpExecArray): Mention | undefined => {
-  const month = MONTHS.indexOf((match.groups?.["month"] ?? "").toLowerCase()) + 1;
+  const word = (match.groups?.["month"] ?? "").toLowerCase();
+  const full = MONTHS.indexOf(word) + 1;
+  const month = full === 0 ? (ABBREVIATED.get(word) ?? 0) : full;
   if (month === 0) return undefined;
-  const end = match.index + match[0].length;
+  const end = match.index + match[0].length + (full === 0 && text.charAt(match.index + match[0].length) === "." ? 1 : 0);
   return monthDayYear(text, match.index, end, month) ?? monthYear(text, match.index, end, month);
+};
+
+const hyphenatedDate = (match: RegExpExecArray): Mention[] => {
+  const month = ABBREVIATED.get((match.groups?.["month"] ?? "").toLowerCase());
+  if (month === undefined) return [];
+  const value = `${match.groups?.["y"] ?? ""}-${pad(String(month))}-${pad(match.groups?.["d"] ?? "")}`;
+  return [{ start: match.index, end: match.index + match[0].length, attrs: { value } }];
 };
 
 const isoDate = (match: RegExpExecArray): Mention => ({
@@ -88,6 +102,10 @@ const withWeekday = (text: string, date: Mention): Mention => {
 };
 
 export const dates = (text: string): Mention[] =>
-  [...[...text.matchAll(MONTH_WORD)].flatMap((match) => namedDate(text, match) ?? []), ...[...text.matchAll(ISO_DATE)].map(isoDate)]
+  [
+    ...[...text.matchAll(MONTH_WORD)].flatMap((match) => namedDate(text, match) ?? []),
+    ...[...text.matchAll(HYPHENATED_DATE)].flatMap(hyphenatedDate),
+    ...[...text.matchAll(ISO_DATE)].map(isoDate),
+  ]
     .toSorted((left, right) => left.start - right.start)
     .map((date) => withWeekday(text, date));

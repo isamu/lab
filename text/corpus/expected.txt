@@ -21,7 +21,7 @@ bls-glossary  agentless-passive 222, max-paragraph-length 6, max-sentence-length
 bonterms-cloud-terms  agentless-passive 20, max-paragraph-length 5, max-sentence-length 73, ngram-repetition 1, proper-noun-density 1, undefined-acronym 3
 caa-mokebanashi-chuikanki  max-sentence-length 3
 cdc-co-poisoning-basics  agentless-passive 7, concrete-evidence-density 5, contraction-consistency 2, heading-echo 1, max-sentence-length 2, proper-noun-density 1
-cfpb-blog-imposter-scams  agentless-passive 3, max-sentence-length 6, preamble-length 1, proper-noun-density 1, undefined-acronym 5
+cfpb-blog-imposter-scams  agentless-passive 3, max-sentence-length 6, preamble-length 1, proper-noun-density 1, undefined-acronym 3
 chrome-blog-pwa-origin-migration  contraction-consistency 1, heading-echo 1, max-sentence-length 5, proper-noun-density 1
 chrome-blog-pwa-origin-migration-ja  latin-spacing 1, max-sentence-length 4
 cisa-scuba-teams  bold-density 9, contraction-consistency 4, max-paragraph-length 2, max-sentence-length 32, ngram-repetition 1, numbering-gap 1, proper-noun-density 1, undefined-acronym 5
@@ -33,7 +33,7 @@ commonpaper-csa  agentless-passive 12, max-sentence-length 71, oxford-comma-cons
 commonpaper-mutual-nda  agentless-passive 8, max-sentence-length 13, proper-noun-density 1
 crec-2024-03-07-s2256-reca  agentless-passive 63, expletive-construction 15, max-paragraph-length 14, max-sentence-length 264, proper-noun-density 1, sentence-initial-conjunction-run 1, undefined-acronym 16, unqualified-superlative 2
 crs-r47235-budget-timeline  agentless-passive 53, max-paragraph-length 5, max-sentence-length 126, ngram-repetition 1, proper-noun-density 1, repeated-sentence-head 1, undefined-acronym 5
-crs-r47585-subcontracting  agentless-passive 30, contraction-consistency 1, max-paragraph-length 3, max-sentence-length 116, ngram-repetition 1, proper-noun-density 1, undefined-acronym 11
+crs-r47585-subcontracting  agentless-passive 30, contraction-consistency 1, max-paragraph-length 3, max-sentence-length 116, ngram-repetition 1, proper-noun-density 1, undefined-acronym 10
 crs-rl32781-salt  agentless-passive 32, max-paragraph-length 8, max-sentence-length 111, ngram-repetition 1, proper-noun-density 1, undefined-acronym 5
 da-agile-review-4  agentless-passive 1, max-sentence-length 13, no-mixed-desumasu 1
 da-ai-advisory-board-1  agentless-passive 6, heading-echo 1, latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 9, max-sentence-length 30, no-doubled-joshi 2, no-mixed-desumasu 1, sasete-itadaku 4, taigen-dome-in-prose 1, undefined-acronym 11
@@ -95,7 +95,7 @@ k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-
 k8s-overview-ja  max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kaisha.txt  clean
 kantei-unga81-general-debate-speech  agentless-passive 4, empty-intensifier 6, max-kanji-continuous 3, max-sentence-length 4, no-doubled-joshi 2, unqualified-superlative 3
-kantei-unga81-general-debate-speech-en  agentless-passive 19, empty-intensifier 1, max-paragraph-length 1, max-sentence-length 49, proper-noun-density 1, undefined-acronym 3
+kantei-unga81-general-debate-speech-en  agentless-passive 19, empty-intensifier 1, max-paragraph-length 1, max-sentence-length 49, proper-noun-density 1
 kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
 kimino-cleanup-notice  max-kanji-continuous 2, max-sentence-length 2
 kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1

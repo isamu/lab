@@ -10,7 +10,17 @@ import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 const listOf = (adapter: LanguageAdapter, id: string): string[] => (adapter.lexicons[id] ?? []).map((entry) => entry.pattern);
 
-const NONE: NotationWords = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [], divisions: [], honorifics: [], dateTimeUnits: [] };
+const NONE: NotationWords = {
+  meridiem: [],
+  timeZones: [],
+  currencies: [],
+  usStates: [],
+  emphasis: [],
+  divisions: [],
+  honorifics: [],
+  titles: [],
+  dateTimeUnits: [],
+};
 const spans = notAcronymSpansOf({ ...NONE, divisions: listOf(en, "numbered-division") });
 
 /** 範囲にまるごと覆われた、大文字だけの語。 */

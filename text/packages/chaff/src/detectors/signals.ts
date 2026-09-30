@@ -1,5 +1,5 @@
 import { proseText } from "../measure.ts";
-import { wordsOf } from "./structure.ts";
+import { dateSpans, wordsOf } from "./structure.ts";
 import { compacted, placeOf } from "./gram-place.ts";
 import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
 import { expansionAt, type ExpandedAt } from "./acronym-expansion.ts";
@@ -200,14 +200,35 @@ const spansOf = (text: string, notation: NotAcronymSpans): Span[] => [
 
 type AcronymHit = { readonly word: string; readonly hit: Hit };
 
+/**
+ * 言語パッケージが、大文字で書いて強調した普通の語（will NEVER call）と読んだ語。辞書がその語を名前になり得ない品詞でしか
+ * 知らないときだけ、そう読む。品詞を持たない言語パッケージでは何も外れない。
+ */
+const isEmphasised = (sentence: Sentence, offset: number): boolean =>
+  (sentence.tokens ?? []).some((token) => token.span.start === offset && token.features?.["Emph"] === "Yes");
+
 /** チームが並べた名前の中の略語（NTT Docomo の NTT）は、名前の一部であって説明を待つ略語ではない。 */
 const acronymsOf = (doc: ProseDocument, notation: NotAcronymSpans): AcronymHit[] =>
   doc.sentences.flatMap((sentence) => {
     const excluded = [...spansOf(sentence.text, notation), ...nameSpans(sentence.text, doc.names ?? [])];
     return [...sentence.text.matchAll(ACRONYM)]
       .filter((match) => !excluded.some((span) => span.start <= match.index && match.index + match[0].length <= span.end))
-      .map((match) => ({ word: match[0], hit: { sentence, offset: sentence.span.start + match.index } }));
+      .map((match) => ({ word: match[0], hit: { sentence, offset: sentence.span.start + match.index } }))
+      .filter(({ hit }) => !isEmphasised(hit.sentence, hit.offset));
   });
+
+/** 略語ごとの、最初に現れた所。 */
+const firstHits = (hits: readonly AcronymHit[]): Map<string, Hit> => {
+  const seen = new Map<string, Hit>();
+  hits.forEach(({ word, hit }) => {
+    if (!seen.has(word)) seen.set(word, hit);
+  });
+  return seen;
+};
+
+/** 日付の中の月（SEP 01, 2022）は略語ではない。 */
+const outsideDates = (hits: readonly AcronymHit[], dates: readonly Span[]): AcronymHit[] =>
+  hits.filter(({ hit }) => !dates.some((span) => span.start <= hit.offset && hit.offset < span.end));
 
 /**
  * どこか 1 か所で展開してあればよい。初出が節の見出し代わりの語（「5.3. DPA.」）で、
@@ -227,6 +248,7 @@ const notationOf = (doc: ProseDocument): NotAcronymSpans =>
     emphasis: patternsOf(doc, "emphasis-word"),
     divisions: patternsOf(doc, "numbered-division"),
     honorifics: patternsOf(doc, "honorific"),
+    titles: patternsOf(doc, "name-title"),
     dateTimeUnits: patternsOf(doc, "date-time-unit"),
   });
 
@@ -241,13 +263,13 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   // HTTP のメソッド名（GET）は略語ではないので、通じる略語と同じく展開を求めない。
   // 並べた名前（JAXA）も、繋いだ略語（JAXA-ISAS）の片割れとして説明済みに数える。
   const common = new Set([...(options.lexicon ?? []).map((entry) => entry.pattern), ...patternsOf(doc, "http-method"), ...(doc.names ?? [])]);
-  const seen = new Map<string, Hit>();
-  acronymsOf(doc, notationOf(doc)).forEach(({ word, hit }) => {
-    if (!seen.has(word)) seen.set(word, hit);
-  });
   const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
   const explainedAlone = (word: string): boolean => common.has(word) || isExpanded(body, word, expandedAt);
-  const bare = [...seen.entries()].filter(([acronym]) => !isExplained(acronym, explainedAlone));
+  const hits = acronymsOf(doc, notationOf(doc));
+  const unexplained = new Set([...firstHits(hits).keys()].filter((acronym) => !isExplained(acronym, explainedAlone)));
+  // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
+  if (unexplained.size < options.limit) return [];
+  const bare = [...firstHits(outsideDates(hits, dateSpans(doc)))].filter(([acronym]) => unexplained.has(acronym));
   if (bare.length < options.limit) return [];
   return bare.map(([acronym, hit]) => ({
     rule: "undefined-acronym",
