@@ -1,5 +1,5 @@
 import { DETECTORS } from "./detectors/index.ts";
-import { resolve } from "./levels.ts";
+import { resolve, severityAt } from "./levels.ts";
 import type { AdapterNeeds, Finding, Level, ProseDocument, RuleDefinition } from "./plugin.ts";
 import { lineStarts, placeOf } from "./position.ts";
 import { REASONS, type Reasons } from "./reasons.ts";
@@ -230,7 +230,7 @@ export const runRules = (
         fullSentence: rule.full_sentence,
         embeddedLimits: embeddedLimitsFor(rule, level, genre, embedded),
       };
-      const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: rule.severity }));
+      const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: severityAt(rule, level, genre) }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };
     },
     { findings: [], skipped: [] },

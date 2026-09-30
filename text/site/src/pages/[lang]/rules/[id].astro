@@ -25,8 +25,13 @@ const RUNS_WHEN: Record<RunsWhen, UiKey> = { default: "runsDefault", experimenta
 const LANGUAGE: Record<string, UiKey> = { ja: "langJa", en: "langEn" };
 
 const meaning = rule.levelMeaning[lang];
-const levelRows = rule.levels[lang].map(([level, value]) => [level, meaning === "" ? value : meaning.replaceAll("{limit}", value)]);
-const sameEverywhere = rule.layer !== "L4" && meaning === "";
+// A rule with nothing to count keeps severities in its levels (error, warning, info), and so does a check that reads meaning.
+const bySeverity = rule.levelSets === "severity" || rule.layer === "L4";
+const levelRows = rule.levels[lang].map(([level, value]) => [
+  level,
+  bySeverity ? term(lang, value) : meaning === "" ? value : meaning.replaceAll("{limit}", value),
+]);
+const sameEverywhere = !bySeverity && meaning === "";
 
 const standings = standingsOf(rule);
 const genresWhere = (kind: RuleInGenre["standing"]["kind"]) => standings.filter((entry) => entry.standing.kind === kind);
@@ -123,6 +128,7 @@ const heading = "mt-10 text-xl font-semibold";
     </table>
   )}
   {rule.layer === "L4" && <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "levelsSeverity")}</p>}
+  {rule.levelSets === "severity" && <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "levelsSetSeverity")}</p>}
   {rule.ownNumbers.length > 0 && (
     <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
       {t(lang, "ownNumbers")} <span class="font-mono">{rule.ownNumbers.join(", ")}</span>

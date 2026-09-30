@@ -1,6 +1,6 @@
-import { definedLevels, resolve } from "../levels.ts";
+import { definedLevels, resolve, severityAt } from "../levels.ts";
 import type { Config } from "../config/load.ts";
-import type { Localized, RuleDefinition } from "../plugin.ts";
+import type { Level, Localized, RuleDefinition } from "../plugin.ts";
 import { readableText } from "./text.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
 import { loadGenres, presetLevels } from "../genre-load.ts";
@@ -38,24 +38,29 @@ export const now = (rule: RuleDefinition, config: Config, genre: string, text: (
   const explicit = config.rules[rule.id] ?? preset[rule.id];
   if (explicit === "off" && config.rules[rule.id] === undefined) return { level: "off", why_off: text.offByGenre(genre) };
   if (explicit === "off") return { level: "off", why_off: text.offBySetting };
-  const limit = rule.layer === "L4" ? undefined : config.limits[rule.id];
+  const limit = rule.level_sets === "severity" ? undefined : config.limits[rule.id];
   if (limit !== undefined) return { level: "normal", limit, set_as: "number" };
-  if (explicit !== undefined) return { level: explicit, limit: resolve(rule, explicit, genre).limit };
+  if (explicit !== undefined) return { level: explicit, ...effectAt(rule, explicit, genre) };
   if (rule.status === "experimental" && !config.experimental) {
     return { level: "off", why_off: text.offExperimental, turn_on_with: `npx chaff lint --experimental` };
   }
-  return { level: "normal", limit: resolve(rule, "normal", genre).limit };
+  return { level: "normal", ...effectAt(rule, "normal", genre) };
 };
+
+/** What a level does to a rule: the limit it counts to, or, with nothing to count, the severity of its findings. */
+const effectAt = (rule: RuleDefinition, level: Exclude<Level, "off">, genre: string): Record<string, unknown> =>
+  rule.level_sets === "severity" ? { severity: severityAt(rule, level, genre) } : { limit: resolve(rule, level, genre).limit };
 
 const yourSetting = (rule: RuleDefinition, config: Config): Record<string, unknown> | null => {
   const level = config.rules[rule.id];
   if (level === undefined) return null;
-  const limit = rule.layer === "L4" ? undefined : config.limits[rule.id];
+  const limit = rule.level_sets === "severity" ? undefined : config.limits[rule.id];
   return limit === undefined ? { level, from: config.path } : { level, limit, from: config.path };
 };
 
 /** ジャンルで数字が変わる rule があるので、いま効いている表と既定の表の両方を出す。 */
 const levelsOf = (rule: RuleDefinition, genre: string): Record<string, unknown> => {
+  if (rule.level_sets === "severity") return { levels: severitiesOf(rule, genre) };
   const effective = Object.fromEntries(
     definedLevels(rule)
       .filter((level) => level !== "off")
@@ -64,6 +69,13 @@ const levelsOf = (rule: RuleDefinition, genre: string): Record<string, unknown> 
   const overridden = JSON.stringify(effective) !== JSON.stringify(rule.levels);
   return overridden ? { levels: effective, levels_default: rule.levels, levels_from: "by_genre" } : { levels: rule.levels };
 };
+
+const severitiesOf = (rule: RuleDefinition, genre: string): Record<string, string> =>
+  Object.fromEntries(
+    definedLevels(rule)
+      .filter((level) => level !== "off")
+      .map((level) => [level, severityAt(rule, level, genre)]),
+  );
 
 /** 指摘が無いので、置き場所は rule の言葉で読ませる。言語はどれも出す。 */
 const readableInEvery = (rule: RuleDefinition, field: Localized): Localized =>
@@ -135,6 +147,7 @@ export const rulesJson = (rules: readonly RuleDefinition[], config: Config, lang
         why: readableInEvery(rule, rule.why),
         how_to_fix: readableInEvery(rule, rule.how_to_fix),
         use_for: rule.use_for,
+        level_sets: rule.level_sets,
         ...levelsOf(rule, genre),
         levels_you_can_set: definedLevels(rule),
         your_setting: yourSetting(rule, config),

@@ -13,8 +13,9 @@ const READER_LANGUAGES = ["ja", "en"];
 
 const languagesOf = (rule: RuleDefinition): readonly string[] => rule.languages ?? READER_LANGUAGES;
 
-/** A level's number needs words only when the levels differ; L4 keeps severities there, not numbers. */
-const needsLevelMeaning = (rule: RuleDefinition): boolean => rule.layer !== "L4" && new Set(Object.values(rule.levels)).size > 1;
+/** A level's number needs words only when it is a number that changes; L4 and rules with nothing to count set severities. */
+const needsLevelMeaning = (rule: RuleDefinition): boolean =>
+  rule.layer !== "L4" && rule.level_sets !== "severity" && new Set(Object.values(rule.levels)).size > 1;
 
 const lackingOf = (rule: RuleDefinition): string[] => [
   ...(rule.guide?.group === undefined ? ["group"] : []),

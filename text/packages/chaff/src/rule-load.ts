@@ -2,7 +2,8 @@ import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parse } from "yaml";
-import type { LanguageLevels, LevelTable, RuleDefinition, Severity } from "./plugin.ts";
+import type { LanguageLevels, LevelSets, LevelTable, RuleDefinition, Severity } from "./plugin.ts";
+import { rankOfSeverity, severityAt } from "./levels.ts";
 import { ruleGuideOf } from "./rule-guide.ts";
 
 const RULES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "rules");
@@ -11,13 +12,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 
 const isLocalized = (value: unknown): value is Record<string, string> => isRecord(value) && Object.values(value).every((entry) => typeof entry === "string");
 
-const SEVERITY_BY_NAME: Readonly<Record<string, number>> = { info: 1, warning: 2, error: 3 };
-
-/** L4 は件数ではなく深刻度を段で持つ。error/warning/info を数に写して同じ器に入れる。 */
-const asNumber = (entry: unknown): number | undefined => {
-  if (typeof entry === "number") return entry;
-  return typeof entry === "string" ? SEVERITY_BY_NAME[entry] : undefined;
-};
+/** 数えるものの無い rule（L4、番号の抜け）は件数ではなく重さを段で持つ。error/warning/info を数に写して同じ器に入れる。 */
+const asNumber = (entry: unknown): number | undefined => (typeof entry === "number" ? entry : rankOfSeverity(entry));
 
 const isLevelTable = (value: unknown): value is LevelTable =>
   isRecord(value) && Object.entries(value).every(([key, entry]) => ["strict", "normal", "relaxed"].includes(key) && asNumber(entry) !== undefined);
@@ -107,40 +103,75 @@ const numberFor = (raw: unknown, language: string): number | undefined => {
 
 const stringList = (value: unknown): string[] | undefined => (Array.isArray(value) ? value.map((entry) => String(entry)) : undefined);
 
+/** The table flattenLevels reads, before its severities become numbers. */
+const writtenTable = (raw: unknown, language: string): unknown => {
+  if (isLevelTable(raw) || !isRecord(raw)) return raw;
+  return raw[language] ?? raw["default"];
+};
+
+/** Every level value written for a language: the rule's own table and each genre's. */
+const writtenValues = (raw: Record<string, unknown>, language: string): unknown[] => {
+  const genres = isRecord(raw["by_genre"]) ? Object.values(raw["by_genre"]) : [];
+  return [raw["levels"], ...genres].flatMap((written) => {
+    const table = writtenTable(written, language);
+    return isRecord(table) ? Object.values(table) : [];
+  });
+};
+
+/** Levels written as severities set the severity; a rule that mixes the two would say both. */
+const levelSetsOf = (raw: Record<string, unknown>, language: string, file: string): LevelSets => {
+  const values = writtenValues(raw, language);
+  const severities = values.filter((value) => typeof value === "string").length;
+  if (severities === 0) return "limit";
+  if (severities < values.length) throw new Error(`${file}: levels と by_genre に重さ（error / warning / info）と数を混ぜて書けません`);
+  // A genre's table would give the rule a default severity other than its severity field.
+  if (isRecord(raw["by_genre"])) throw new Error(`${file}: 重さを段に持つ rule は by_genre を持てません`);
+  return "severity";
+};
+
+/** severity は normal の段の重さそのもの。食い違うと、段を書かないときと normal と書いたときで重さが変わる。 */
+const checkedSeverity = (rule: RuleDefinition, file: string): RuleDefinition => {
+  if (rule.level_sets === "limit" || severityAt(rule, "normal") === rule.severity) return rule;
+  throw new Error(`${file}: severity ${rule.severity} が levels の normal（${severityAt(rule, "normal")}）と違います`);
+};
+
 const toRule = (raw: unknown, language: string, file: string): RuleDefinition => {
   if (!isRecord(raw)) throw new Error(`${file}: rule は object であること`);
   const levels = flattenLevels(raw["levels"], language);
   const missing = missingFields(raw, levels);
   if (missing.length > 0) throw new Error(`${file}: 必須フィールドがありません: ${missing.join(", ")}`);
   if (levels === undefined) throw new Error(`${file}: levels を解決できません`);
-  return {
-    id: String(raw["id"]),
-    layer: pick(raw["layer"], LAYERS) ?? "L1",
-    status: pick(raw["status"], STATUSES) ?? "experimental",
-    name: localizedOf(raw["name"]),
-    why: localizedOf(raw["why"]),
-    how_to_fix: localizedOf(raw["how_to_fix"]),
-    message: localizedOf(raw["message"]),
-    messages: localizedByKey(raw["messages"]),
-    placeholders: localizedByKey(raw["placeholders"]),
-    levels,
-    by_genre: genreTables(raw["by_genre"], language),
-    other_languages: otherLanguages(raw, language),
-    how_to_find: String(raw["how_to_find"]),
-    word_list: typeof raw["word_list"] === "string" ? raw["word_list"] : undefined,
-    extra_word_lists: stringList(raw["extra_word_lists"]) ?? [],
-    what_to_check: isLocalized(raw["what_to_check"]) ? raw["what_to_check"] : undefined,
-    where: typeof raw["where"] === "string" ? raw["where"] : undefined,
-    full_sentence: numberFor(raw["full_sentence"], language),
-    requires: stringList(raw["requires"]) ?? [],
-    uses: stringList(raw["uses"]) ?? [],
-    from: stringList(raw["from"]) ?? [],
-    languages: stringList(raw["languages"]),
-    use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],
-    severity: severityOf(raw["severity"], language),
-    guide: ruleGuideOf(raw),
-  };
+  return checkedSeverity(ruleOf(raw, levels, levelSetsOf(raw, language, file), language), file);
 };
+
+const ruleOf = (raw: Record<string, unknown>, levels: LevelTable, levelSets: LevelSets, language: string): RuleDefinition => ({
+  id: String(raw["id"]),
+  layer: pick(raw["layer"], LAYERS) ?? "L1",
+  status: pick(raw["status"], STATUSES) ?? "experimental",
+  name: localizedOf(raw["name"]),
+  why: localizedOf(raw["why"]),
+  how_to_fix: localizedOf(raw["how_to_fix"]),
+  message: localizedOf(raw["message"]),
+  messages: localizedByKey(raw["messages"]),
+  placeholders: localizedByKey(raw["placeholders"]),
+  levels,
+  level_sets: levelSets,
+  by_genre: genreTables(raw["by_genre"], language),
+  other_languages: otherLanguages(raw, language),
+  how_to_find: String(raw["how_to_find"]),
+  word_list: typeof raw["word_list"] === "string" ? raw["word_list"] : undefined,
+  extra_word_lists: stringList(raw["extra_word_lists"]) ?? [],
+  what_to_check: isLocalized(raw["what_to_check"]) ? raw["what_to_check"] : undefined,
+  where: typeof raw["where"] === "string" ? raw["where"] : undefined,
+  full_sentence: numberFor(raw["full_sentence"], language),
+  requires: stringList(raw["requires"]) ?? [],
+  uses: stringList(raw["uses"]) ?? [],
+  from: stringList(raw["from"]) ?? [],
+  languages: stringList(raw["languages"]),
+  use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],
+  severity: severityOf(raw["severity"], language),
+  guide: ruleGuideOf(raw),
+});
 
 /**
  * 読めない rule ファイルは、どれが何で読めないかを言う。
