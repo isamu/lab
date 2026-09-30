@@ -430,6 +430,24 @@ describe("doubled-word — 日本語", () => {
     assert.deepEqual(findingsOf("就業規則規則第3条による。", ja, "ja"), ["1:5 規則規則"]);
   });
 
+  it("valid: 動詞・形容詞を連用形や命令形のまま重ねた形（青空文庫の小説・戯曲・歌集）は数えない", () => {
+    const valid = [
+      "身は波の上。枕。流せ流せ」と囃している。",
+      "待て待て、そこで、さうしてゝ見ろ。",
+      "長く長く忘れし友に",
+      "死ね死ねと己を怒り",
+      "止せ止せ問答",
+      "早く早くしてください。",
+    ];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
+  });
+
+  it("invalid: 同じ活用の重なりでも、非自立の語・一文字の語・語尾が続く重なりは数える", () => {
+    assert.deepEqual(findingsOf("確認してくださいください。", ja, "ja"), ["1:9 くださいください"]);
+    assert.deepEqual(findingsOf("確認できできます。", ja, "ja"), ["1:5 できでき"]);
+    assert.deepEqual(findingsOf("確認ししました。", ja, "ja"), ["1:4 しし"]);
+  });
+
   it("valid: 読点で区切った同じ語は数えない", () => {
     assert.deepEqual(findingsOf("は、はい。資料、資料と言われても困ります。", ja, "ja"), []);
   });

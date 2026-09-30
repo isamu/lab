@@ -7,6 +7,10 @@
 18f-handbook-travel-faq  agentless-passive 76, max-paragraph-length 1, max-sentence-length 65, proper-noun-density 1, undefined-acronym 16
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2
+aozora-kishida-kamifusen  hiragana-fukushi 1, max-kanji-continuous 1, max-paragraph-length 5, max-sentence-length 3, taigen-dome-in-prose 1
+aozora-soseki-yume-juya  doubled-word 2, latin-spacing 2, max-kanji-continuous 1, max-paragraph-length 42, max-sentence-length 1, no-doubled-joshi 2, no-mixed-desumasu 1, section-length-uniformity 1
+aozora-takuboku-ichiaku-no-suna  doubled-word 10, hiragana-fukushi 1, latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 41, no-mixed-desumasu 2, sentence-rhythm 1
+aozora-terada-tensai-to-kokubo  excessive-hedging 3, max-kanji-continuous 2, max-paragraph-length 5, max-sentence-length 7, no-doubled-joshi 7, unqualified-superlative 2
 apidatagov-developer-manual  max-sentence-length 5, proper-noun-density 1
 arxiv-2609-27842-genai-assessment  adverb-overuse 1, agentless-passive 124, concrete-evidence-density 9, excessive-hedging 1, max-paragraph-length 16, max-sentence-length 218, ngram-repetition 1, undefined-acronym 10
 arxiv-astro-ph-new-2025-01-03  agentless-passive 116, expletive-construction 9, max-paragraph-length 78, max-sentence-length 351, ngram-repetition 1, proper-noun-density 1, undefined-acronym 131, unqualified-superlative 2
@@ -40,7 +44,7 @@ da-legal-practice  heading-echo 1, latin-spacing 4, max-kanji-continuous 2, max-
 da-machine-readability-ai-configuration  latin-spacing 2
 da-machine-readability-limitations  latin-spacing 4, max-sentence-length 1
 da-machine-readability-output-format  latin-spacing 9
-da-minister-press-conference-2026-09-18  agentless-passive 12, empty-intensifier 7, max-kanji-continuous 6, max-paragraph-length 4, max-sentence-length 51, ngram-repetition 1, undefined-acronym 6
+da-minister-press-conference-2026-09-18  agentless-passive 11, empty-intensifier 7, max-kanji-continuous 6, max-paragraph-length 4, max-sentence-length 51, ngram-repetition 1, undefined-acronym 6
 da-news-minister-handover  clean
 da-priority-policy-program  agentless-passive 1, max-kanji-continuous 1, no-doubled-joshi 1, undefined-acronym 3
 da-privacy-policy  agentless-passive 2, concrete-evidence-density 3, latin-spacing 1, max-kanji-continuous 1, max-sentence-length 3, no-doubled-joshi 3
@@ -74,10 +78,15 @@ govuk-incident-safe-browsing  agentless-passive 16, concrete-evidence-density 4,
 govuk-style-guide-a-to-z  agentless-passive 41, concrete-evidence-density 5, dangling-reference 1, heading-echo 22, max-sentence-length 23, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 39
 gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1
 gsi-maps-smartphone-howto  max-paragraph-length 1
+gutenberg-civil-disobedience  adverb-overuse 1, excessive-hedging 1, expletive-construction 11, max-paragraph-length 26, max-sentence-length 74, repeated-sentence-head 1, unqualified-superlative 5
+gutenberg-frost-a-boys-will  max-sentence-length 4, proper-noun-density 1
+gutenberg-importance-of-being-earnest  adverb-overuse 1, excessive-hedging 3, expletive-construction 22, max-paragraph-length 83, max-sentence-length 25, ngram-repetition 1, proper-noun-density 1, unqualified-superlative 5
+gutenberg-yellow-wallpaper  expletive-construction 18, max-sentence-length 14, no-em-dash 1, sentence-initial-conjunction-run 1, unqualified-superlative 2
 ietf-draft-httpapi-ratelimit-headers-10  max-paragraph-length 1, max-sentence-length 61, ngram-repetition 1, proper-noun-density 1, undefined-acronym 14
 jma-faq-typhoon  agentless-passive 2, concrete-evidence-density 4, max-paragraph-length 1, ngram-repetition 1
 jma-tokubetsu-keiho  max-kanji-continuous 1, max-sentence-length 2
 jp-2011-056072-seiu-kenyo-gasa  hiragana-fukushi 2, max-paragraph-length 1, max-sentence-length 23, ngram-repetition 1, no-doubled-joshi 11, taigen-dome-in-prose 1
+jstage-jkg-72-4-133  agentless-passive 1, latin-spacing 6, max-kanji-continuous 1, no-mixed-desumasu 1, undefined-acronym 8
 k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 kaisha.txt  clean
@@ -92,16 +101,18 @@ kobayashi-press-hananoa-2026-02  agentless-passive 2, latin-spacing 2, max-parag
 koenote-requirements  latin-spacing 56, undefined-acronym 6
 koho-tokyo-2026-06-suigai  max-kanji-continuous 1, max-paragraph-length 1, no-mixed-desumasu 2
 kojin.txt  clean
-kokkai-217-sangiin-shohisha-7  agentless-passive 45, double-keigo 1, empty-intensifier 4, excessive-hedging 1, max-kanji-continuous 31, max-paragraph-length 11, max-sentence-length 217, ngram-repetition 1, no-doubled-joshi 14, sasete-itadaku 12, taigen-dome-in-prose 1
+kokkai-217-sangiin-shohisha-7  agentless-passive 42, double-keigo 1, empty-intensifier 4, excessive-hedging 1, max-kanji-continuous 31, max-paragraph-length 11, max-sentence-length 217, ngram-repetition 1, no-doubled-joshi 14, sasete-itadaku 12, taigen-dome-in-prose 1
 loc-signal-new-online-2026-07  contraction-consistency 1, max-sentence-length 26, proper-noun-density 1, title-case-consistency 2
 meti-keiryoshi-exam-correction  latin-spacing 2, max-sentence-length 2
 meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5
 mext-heatstroke-after-holidays  hiragana-fukushi 1, max-kanji-continuous 6, max-paragraph-length 2, max-sentence-length 18, ngram-repetition 1, preamble-length 1
+mhlw-icd-committee-26-minutes  agentless-passive 5, max-kanji-continuous 24, max-sentence-length 34, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 3, sasete-itadaku 38, undefined-acronym 3
 mhlw-norovirus-qa  agentless-passive 14, concrete-evidence-density 5, latin-spacing 1, max-kanji-continuous 13, max-paragraph-length 2, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 3, no-mixed-desumasu 3, repeated-conjunction 1, undefined-acronym 5
 mhlw-pubcomment-rodohoken  agentless-passive 1, latin-spacing 1, max-kanji-continuous 6, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
 minpo.txt  clean
 mit-ocw-6-0001-syllabus  agentless-passive 13, max-paragraph-length 2, max-sentence-length 6, proper-noun-density 1
 mlit-press-planned-suspension  max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 3, no-doubled-joshi 2
+myplate-vegetable-cheese-soup  clean
 ndl-copy-fee-revision-2026  clean
 ndl-digital-transmission-individuals  heading-echo 3, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 4, no-doubled-joshi 1
 neeview-changelog-ja  doubled-word 1, heading-echo 6, latin-spacing 109, max-kanji-continuous 4, ngram-repetition 1, no-doubled-joshi 5, no-mixed-desumasu 12, undefined-acronym 19
@@ -140,7 +151,9 @@ uk-dpa2018.txt  clean
 us-6004596-crustless-sandwich  max-paragraph-length 2, max-sentence-length 22, ngram-repetition 1
 us-scotus-gideon-v-wainwright  agentless-passive 22, max-paragraph-length 6, max-sentence-length 38, oxford-comma-consistency 2, preamble-length 1, proper-noun-density 1
 utelecon-account-leave  concrete-evidence-density 3, latin-spacing 1, max-sentence-length 10, ngram-repetition 1, preamble-length 1
+utokyo-gakui-kisoku  dangling-reference 12, latin-spacing 5, max-kanji-continuous 9, max-sentence-length 8, ngram-repetition 1, no-doubled-joshi 4
 w3c-secure-contexts  excessive-hedging 1, heading-echo 2, max-sentence-length 26, ngram-repetition 1, oxford-comma-consistency 1, proper-noun-density 1
+wikipedia-ja-talk-oden  heading-echo 1, latin-spacing 4, max-paragraph-length 3, max-sentence-length 6, no-doubled-joshi 3
 wikivoyage-belgian-coast-tram  expletive-construction 6, max-paragraph-length 23, max-sentence-length 37, proper-noun-density 1
 wikivoyage-ja-shikoku-henro  latin-spacing 1, max-kanji-continuous 1
 wikivoyage-ja-shimoda  latin-spacing 3
