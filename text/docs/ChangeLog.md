@@ -4,6 +4,22 @@ Newest first.
 
 ## Unreleased
 
+### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
+
+Several checks read a whole run, sentence or line again for each character, finding or reference in it, so their
+time grew with the square of the length. Each now reads it once. The output is unchanged.
+
+- **`latin-spacing`** asks whether a number is an ordinal (第3条) or a code (073-489-5909) only where Japanese touches
+  Latin letters or digits, not at every digit of the run.
+- **`chaff baseline` and the baseline file.** The fingerprint of a finding is computed once per sentence and rule.
+  A run without `baseline` computes none unless `.chaff-baseline.json` exists.
+- **The default output** tidies each quoted sentence once, not once per finding in it.
+- **`doubled-word`** finds the first word of a sentence once per sentence.
+- **English:** the tagger's words are placed in the sentence, and `oxford-comma-consistency` counts parentheses, in one
+  pass.
+- **Statutes** (`legal/statute`): a bare 第一項 looks up the aside depth and the reference it continues from an index
+  built once per line, instead of reading the line from its start for each reference.
+
 ### Email: headers, separators, signatures and quoted replies are not the writer's prose (#170)
 
 A plain-text or Markdown email was read as one long piece of prose. Found by shape, in any genre:

@@ -13,11 +13,14 @@ const CLAUSE_BREAK = new Set([";", ":", "—"]);
 /** 各 token の前で閉じていない括弧の数。括弧の中の読点（external users (e.g., guests), and ...）は外の並列を切らない。 */
 const PAREN_STEP: Readonly<Record<string, number>> = { "(": 1, ")": -1 };
 
-const depthsOf = (tokens: readonly Token[]): number[] =>
-  tokens.reduce<{ depths: number[]; open: number }>(
-    (acc, token) => ({ depths: [...acc.depths, acc.open], open: Math.max(0, acc.open + (PAREN_STEP[token.surface] ?? 0)) }),
-    { depths: [], open: 0 },
-  ).depths;
+export const depthsOf = (tokens: readonly Token[]): number[] => {
+  let open = 0;
+  return tokens.map((token) => {
+    const before = open;
+    open = Math.max(0, open + (PAREN_STEP[token.surface] ?? 0));
+    return before;
+  });
+};
 
 /**
  * 並びを読むための語彙表。participle は解析器が分詞と読まないが読点のあとで分詞の句を始める語（meaning）、

@@ -13,6 +13,21 @@ export const fingerprint = (path: string, finding: Finding): string => {
   return createHash("sha256").update(body).digest("hex").slice(0, 16);
 };
 
+/**
+ * findings の fingerprint を順に。一つの文から出た指摘は同じ文を引くので、文と rule の組ごとに一度だけ計算する。
+ * 長い文に指摘が多いと、指摘ごとに文を読み直すのでは指摘数と文の長さの積になる。
+ */
+export const fingerprints = (path: string, findings: readonly Finding[]): string[] => {
+  const known = new Map<string, Map<string, string>>();
+  return findings.map((finding) => {
+    const byRule = known.get(finding.quote) ?? new Map<string, string>();
+    known.set(finding.quote, byRule);
+    const found = byRule.get(finding.rule) ?? fingerprint(path, finding);
+    byRule.set(finding.rule, found);
+    return found;
+  });
+};
+
 export type Baseline = { readonly version: 1; readonly created: string; readonly entries: readonly string[] };
 
 const isBaseline = (value: unknown): value is Baseline =>
@@ -40,7 +55,8 @@ export type Split = { readonly fresh: readonly Finding[]; readonly shelved: numb
 export const splitByBaseline = (path: string, findings: readonly Finding[], baseline: Baseline | undefined): Split => {
   if (baseline === undefined) return { fresh: findings, shelved: 0 };
   const known = new Set(baseline.entries);
-  const fresh = findings.filter((finding) => !known.has(fingerprint(path, finding)));
+  const prints = fingerprints(path, findings);
+  const fresh = findings.filter((_, index) => !known.has(prints[index] ?? ""));
   return { fresh, shelved: findings.length - fresh.length };
 };
 

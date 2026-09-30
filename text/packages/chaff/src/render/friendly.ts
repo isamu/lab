@@ -45,10 +45,20 @@ const QUOTE_LIMIT = 120;
 
 const indent = (text: string, pad: string): string[] => text.split("\n").map((line) => `${pad}${line}`);
 
-const quoteOf = (finding: Finding): string[] => {
-  const text = finding.quote.replace(/\s+/gu, " ").trim();
+const quoteOf = (quote: string): string[] => {
+  const text = quote.replace(/\s+/gu, " ").trim();
   if (text.length === 0) return [];
   return ["", ...indent(text.length > QUOTE_LIMIT ? `${text.slice(0, QUOTE_LIMIT)}…` : text, "    ")];
+};
+
+/** 一つの文から出た指摘は同じ文を引く。長い文に指摘が多いとき、指摘ごとに文を整え直さない。 */
+const quotesOf = (): ((quote: string) => readonly string[]) => {
+  const known = new Map<string, readonly string[]>();
+  return (quote) => {
+    const lines = known.get(quote) ?? quoteOf(quote);
+    known.set(quote, lines);
+    return lines;
+  };
 };
 
 /**
@@ -56,11 +66,11 @@ const quoteOf = (finding: Finding): string[] => {
  *   引用 / 何が起きているか / なぜ問題か / どう直すか
  * rule の id は「ゆるめる」コマンドの中にだけ出す。最初に読むのは name。
  */
-const block = (finding: Finding, rule: RuleDefinition, language: string): string[] => [
+const block = (finding: Finding, rule: RuleDefinition, language: string, quoted: readonly string[]): string[] => [
   "",
   // "12 行目" and "line 12" take the same width on a terminal, so the rule ends in the same column in both.
   `─── ${TEXT[uiLanguageOf(language)].line(finding.line)} ${"─".repeat(Math.max(0, RULE - String(finding.line).length - 8))}`,
-  ...quoteOf(finding),
+  ...quoted,
   "",
   `  ${MARK[finding.severity] ?? "·"}  ${filledText(rule.name, finding, language)}`,
   "",
@@ -82,9 +92,10 @@ export const renderFriendly = (
   notes: readonly string[] = [],
 ): string => {
   const byId = new Map(rules.map((rule) => [rule.id, rule]));
+  const quoted = quotesOf();
   const blocks = result.findings.flatMap((finding) => {
     const rule = byId.get(finding.rule);
-    return rule === undefined ? [] : block(finding, rule, language);
+    return rule === undefined ? [] : block(finding, rule, language, quoted(finding.quote));
   });
   const text = TEXT[uiLanguageOf(language)];
   const closing = [

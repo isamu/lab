@@ -230,23 +230,26 @@ const withEmphasis = (token: Token): Token =>
  * wink は位置を返さないので、表層を順に照合して復元する。
  * 見つからないものは飛ばし、カーソルは進めない。位置の当てずっぽうを下流に流さない。
  */
-const locate = (text: string, tagged: readonly Tagged[]): Token[] =>
-  tagged.reduce<{ tokens: Token[]; cursor: number }>(
-    (acc, entry, at) => {
-      const start = text.indexOf(entry.value, acc.cursor);
-      if (start === -1) return acc;
-      const end = start + entry.value.length;
-      const token = {
-        span: { start, end },
-        surface: entry.value,
-        pos: properNounChecked(entry.value, upos(entry.pos)),
-        ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
-        ...featuresOf(tagged, at),
-      };
-      return { tokens: [...acc.tokens, withEmphasis(token)], cursor: end };
-    },
-    { tokens: [], cursor: 0 },
-  ).tokens;
+const locate = (text: string, tagged: readonly Tagged[]): Token[] => {
+  // 語を足すたびに並びを作り直すと、長い文で語数の二乗になる。一つの並びに足していく。
+  const tokens: Token[] = [];
+  let cursor = 0;
+  tagged.forEach((entry, at) => {
+    const start = text.indexOf(entry.value, cursor);
+    if (start === -1) return;
+    const end = start + entry.value.length;
+    const token = {
+      span: { start, end },
+      surface: entry.value,
+      pos: properNounChecked(entry.value, upos(entry.pos)),
+      ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
+      ...featuresOf(tagged, at),
+    };
+    tokens.push(withEmphasis(token));
+    cursor = end;
+  });
+  return tokens;
+};
 
 /** 英語の語はこれより長くならない。超える並びは語として読まない。 */
 const RUN_LIMIT = 1000;

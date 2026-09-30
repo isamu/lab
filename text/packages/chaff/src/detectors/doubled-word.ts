@@ -90,7 +90,8 @@ export const doubledAt = (source: string, first: Token, second: Token, spaced: b
 export const isNameBefore = (first: Token, second: Token, opensSentence: boolean): boolean =>
   !opensSentence && !isDeterminer(first) && UPPER_START.test(first.surface) && LOWER_START.test(second.surface);
 
-const opensSentence = (tokens: readonly Token[], at: number): boolean => !tokens.slice(0, at).some((token) => LETTER.test(token.surface));
+/** 文の最初の、字のある語の位置。at 語目より前に字のある語が無ければ、at 語目は文の書き出し。 */
+const firstWordIndex = (tokens: readonly Token[]): number => tokens.findIndex((token) => LETTER.test(token.surface));
 
 const repeatsPrevious = (tokens: readonly Token[], at: number): boolean => {
   const [previous, token] = [tokens[at - 1], tokens[at]];
@@ -110,14 +111,18 @@ export const opensPhrase = (tokens: readonly Token[], at: number, phrases: Lexic
     return words.length > 1 && surfacesOf(tokens.slice(at, at + words.length)) === surfacesOf(words);
   });
 
-export const doubledIn = (source: string, tokens: readonly Token[], spaced: boolean, allowed: Lexicon, phrases: Lexicon = []): Doubled[] =>
-  tokens.flatMap((second, index) => {
+export const doubledIn = (source: string, tokens: readonly Token[], spaced: boolean, allowed: Lexicon, phrases: Lexicon = []): Doubled[] => {
+  const firstWord = firstWordIndex(tokens);
+  return tokens.flatMap((second, index) => {
     const first = tokens[index - 1];
     if (first === undefined || !doubledAt(source, first, second, spaced)) return [];
     if (isAllowed(tokens, index - 1, allowedAt(tokens, index - 1, allowed))) return [];
     if (!sameWord(first, second) && opensPhrase(tokens, index, phrases)) return [];
-    return isNameBefore(first, second, opensSentence(tokens, index - 1)) ? [] : [{ first, second }];
+    // first は字のある語なので、firstWord は見つかっていて index - 1 以下。
+    const opensSentence = firstWord >= index - 1;
+    return isNameBefore(first, second, opensSentence) ? [] : [{ first, second }];
   });
+};
 
 /** 印を挟んでいても（the [the）、見せるのは二語だけ。 */
 const wordOf = (doubled: Doubled, spaced: boolean): string => [doubled.first.surface, doubled.second.surface].join(spaced ? " " : "");
