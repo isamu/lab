@@ -1,9 +1,12 @@
-# URL だけで持っている文書（再配布できないもの）は、PR の CI では取得しない。取得先が落ちていると PR が赤くなるから。
-# そのかわり、ここで週に一度すべて取得して、corpus/expected.txt と比べる。rule の変更で結果が変わったのに
-# expected が古いまま、という状態を放っておかない。取得に失敗した文書は比べずに飛ばす（yarn corpus がそう扱う）。
-# 結果が変わっていたら issue を立てる（既にあればコメントを足す）。直し方は、手元で yarn corpus:fetch して
-# 変化を読み、意図どおりなら yarn corpus --update を PR に含めること。
-name: chaff corpus (URL-only documents)
+# 週に一度、URL で持っている文書をすべて取り直して、二つを見る。
+# - 再配布できない文書（URL だけを持つもの）は、PR の CI では取得しない。取得先が落ちていると PR が赤くなるから。
+#   ここで取得して corpus/expected.txt と比べ、rule の変更で結果が変わったのに expected が古いまま、を放っておかない。
+# - コミット済みの文書は一時ディレクトリに取り直して、コミットした写しと比べる。上流が変わった・URL が死んだ、に気づくため。
+#   写しは書き換えない。
+# 取得は一時的な失敗なら間を空けて取り直し、それでも取れなければ失敗として数える。
+# 失敗・上流の変化・結果の変化のどれかがあれば job を落とし、issue を立てる（既にあればコメントを足す）。
+# 判定は scripts/corpus-health.ts（純粋な部分は scripts/corpus-health-report.ts）。手元でも yarn corpus:health で同じことができる。
+name: chaff corpus (URL documents, weekly)
 
 on:
   schedule:
@@ -18,12 +21,14 @@ defaults:
     working-directory: text
 
 jobs:
+  # 取得と判定。外から取ってきた文書を読む job なので、token は読み取りだけ。
   corpus:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
-      issues: write
+    outputs:
+      status: ${{ steps.health.outputs.status }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -37,50 +42,47 @@ jobs:
 
       - run: yarn build
 
-      - name: fetch URL-only documents
+      - name: refetch URL documents and compare
+        id: health
         shell: bash
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          set -uo pipefail
-          ids=$(node -e 'const m=require("./corpus/manifest.json");console.log((m.documents??[]).filter(d=>d.source==="url"&&d.redistribute===false).map(d=>d.id).join("\n"))')
-          failed=()
-          for id in $ids; do
-            yarn --silent corpus:fetch "$id" || failed+=("$id")
-          done
-          if [ ${#failed[@]} -gt 0 ]; then
-            echo "::warning::not fetched: ${failed[*]}"
-          fi
-
-      - name: compare with corpus/expected.txt
-        id: compare
-        shell: bash
-        run: |
-          set -uo pipefail
-          yarn --silent corpus > corpus-report.txt 2>&1
-          status=$?
-          cat corpus-report.txt
+          # shell: bash は -e で走る。exit 1 で止まらずに status を残すため || で受ける。
+          status=0
+          yarn --silent corpus:health --report issue-body.md || status=$?
           echo "status=$status" >> "$GITHUB_OUTPUT"
           exit "$status"
 
-      - name: open or update an issue when results changed
-        if: failure() && steps.compare.outputs.status == '1'
+      - uses: actions/upload-artifact@v7
+        if: failure() && steps.health.outputs.status == '1'
+        with:
+          name: issue-body
+          path: text/issue-body.md
+          retention-days: 7
+
+  # issue を書くのはこの job だけ。判定の job が「見てほしいものがある」(exit 1) で落ちたときに走る。
+  report:
+    needs: corpus
+    if: failure() && needs.corpus.outputs.status == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: issue-body
+          path: text
+
+      - name: open or update an issue
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          title="chaff corpus: results on URL-only documents changed"
-          {
-            echo "The weekly run found documents whose results no longer match \`corpus/expected.txt\`."
-            echo
-            echo "Run: $RUN_URL"
-            echo
-            echo '```'
-            sed -n '/^Changed from/,$p' corpus-report.txt
-            echo '```'
-            echo
-            echo "Fetch them locally (\`yarn corpus:fetch <id>\`), read each change, and accept the intended ones with \`yarn corpus --update\` in a PR."
-          } > issue-body.md
+          title="chaff corpus: weekly check found fetch failures, upstream changes or drifted results"
           existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
           if [ -n "$existing" ]; then
             gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body-file issue-body.md

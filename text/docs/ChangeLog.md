@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### The weekly corpus run reports dead sources and upstream changes (#170)
+
+The weekly workflow now refetches every document kept as a URL, not only the ones that may not be redistributed. A
+committed document is fetched into a temporary directory and compared with the committed copy, which is never
+rewritten; a difference is reported as "source changed upstream". A fetch that times out or gets a 5xx or 429 is
+retried with backoff; one that still fails, or gets a 404, is reported with its error instead of being skipped with a
+warning. Any of these, or a drifted result, fails the run and opens or comments on one issue. `yarn corpus:health` runs
+the same check locally.
+
 ### English: a curly apostrophe is read like a straight one (#170)
 
 The English tagger split a contraction written with a curly apostrophe: `that’s` became `that` / `’` / `s`, with `s`
