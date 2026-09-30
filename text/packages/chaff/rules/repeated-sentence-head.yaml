@@ -26,3 +26,19 @@ levels:
   relaxed: 4
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 同じ言葉で始まる文が続き、文の切れ目がぼやける所
+  en: Several sentences in a row that open with the same words
+example:
+  ja:
+    before: |
+      この機能は、無料です。この機能は、登録なしで使えます。この機能は、スマートフォンにも対応しています。この機能は、英語でも使えます。
+    after: |
+      この機能は無料で、登録なしで使えます。スマートフォンにも対応していて、英語でも使えます。
+  en:
+    before: |
+      The tool is free. The tool is ready without an account. The tool is fine on phones too. The tool is available in Japanese as well.
+    after: |
+      The tool is free and needs no account. It works on phones too, and it speaks Japanese as well.

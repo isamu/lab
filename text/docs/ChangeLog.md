@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### The guide lists everything chaff can find, with an example and chaff's real output (#170)
+
+A new guide page, **Reference: what chaff can find** (`/guide/reference/`), lists every rule in groups a reader
+recognises (readability, wording, slips, consistency, structure, facts, signs of generated text, the team's words).
+Each row says in one line what the rule finds, shows a text it flags and what chaff printed for it, and says whether
+the rule runs by default, is experimental, needs a list in `chaff.yaml`, or runs with `chaff test`.
+
+- **Rule files carry the plain-language part.** New optional fields: `group`, `summary` (ja and en) and `example`
+  (per language: `before`, `after`, and the `config` or `pad` the example needs). Every shipped rule has them.
+- **The output cannot drift from chaff.** The site runs the command line on every example before it builds
+  (`yarn examples`), and a test checks that each `before` is reported by its rule and each `after` is not. A rule
+  file without the fields fails the test.
+
 ### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
 
 Several checks read a whole run, sentence or line again for each character, finding or reference in it, so their

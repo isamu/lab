@@ -36,3 +36,14 @@ levels: { strict: 1, normal: 1, relaxed: 3 }
 
 # 歌の行は句点で終わらないので、ジャンルを問わず数えない。
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「確認 しました」のように、ひとつながりの語句の途中に空白が紛れこんだ所
+  en: A stray space inside a Japanese phrase, usually left over from retyping
+example:
+  ja:
+    before: |
+      資料を確認しました。担当者が払いました。会議で決めました。見積もりを 送りました。
+    after: |
+      資料を確認しました。担当者が払いました。会議で決めました。見積もりを送りました。

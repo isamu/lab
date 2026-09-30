@@ -41,3 +41,17 @@ how_to_fix:
 levels: { strict: 1, normal: 3, relaxed: 6 }
 
 use_for: [business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「KGI」「PMF」のように、説明なしで出てくる略語
+  en: An acronym such as "KGI" or "PMF" used without ever being spelled out
+example:
+  ja:
+    config: { rules: { undefined-acronym: strict } }
+    before: 今期の KGI は、PMF の達成です。
+    after: 今期の最終目標（KGI, Key Goal Indicator）は、製品が市場に受け入れられること（PMF, Product Market Fit）です。
+  en:
+    config: { rules: { undefined-acronym: strict } }
+    before: Our KGI this term is to reach PMF.
+    after: Our key goal indicator (KGI) this term is to reach product-market fit (PMF).

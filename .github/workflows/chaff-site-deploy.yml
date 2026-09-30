@@ -10,6 +10,8 @@ on:
       - "text/packages/chaff/rules/**"
       - "text/packages/chaff/src/**"
       - "text/packages/chaff/package.json"
+      - "text/packages/lang-*/**"
+      - "text/scripts/rule-examples.ts"
       - "text/yarn.lock"
       - ".github/workflows/chaff-site-deploy.yml"
   workflow_dispatch:
@@ -39,6 +41,11 @@ jobs:
       - name: install chaff
         working-directory: text
         run: yarn install --frozen-lockfile
+
+      # The reference's examples are run through chaff's command line (yarn examples), which loads the built language packages.
+      - name: build chaff
+        working-directory: text
+        run: yarn build
 
       - name: install site
         working-directory: text/site

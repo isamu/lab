@@ -121,6 +121,7 @@ profile: statute
 
 ## Changing how strict a rule is
 
+Every rule you can set is listed, with examples, in the [Reference](./reference).
 A rule's strength is one of four words under `rules`.
 
 ```yaml

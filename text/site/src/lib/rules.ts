@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { loadRules } from "../../../packages/chaff/src/rule-load.ts";
 import type { RuleDefinition } from "../../../packages/chaff/src/plugin.ts";
 import { readableText, templateForReading } from "../../../packages/chaff/src/render/text.ts";
+import type { RuleExample, RuleGroup } from "../../../packages/chaff/src/rule-guide.ts";
 import type { Lang } from "./i18n";
 
 export type Localized = Record<Lang, string>;
@@ -22,6 +23,10 @@ export type Rule = {
   readonly howToFix: Localized;
   readonly levels: Record<Lang, readonly (readonly [string, string])[]>;
   readonly useFor: readonly string[];
+  /** The plain-language part of the rule file (group, summary, examples), for the reference in the guide. */
+  readonly group: RuleGroup | undefined;
+  readonly summary: Localized;
+  readonly examples: Readonly<Record<string, RuleExample>>;
 };
 
 // astro build runs in text/site.
@@ -73,6 +78,9 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     howToFix: readable("how_to_fix"),
     levels: { ja: levelsOf(ja), en: levelsOf(en) },
     useFor: ja.use_for,
+    group: ja.guide?.group,
+    summary: { ja: ja.guide?.summary["ja"] ?? "", en: ja.guide?.summary["en"] ?? "" },
+    examples: ja.guide?.examples ?? {},
   };
 };
 

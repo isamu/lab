@@ -1,12 +1,12 @@
-# chaff のドキュメントサイト（text/site）。ルールの一覧は packages/chaff/rules から作るので、そこが変わっても走らせる。
+# chaff のドキュメントサイト（text/site）。ルールの一覧は packages/chaff/rules から、例の出力は chaff を動かして作るので、chaff が変わっても走らせる。
 name: chaff site
 
 on:
   pull_request:
-    paths: ["text/site/**", "text/packages/chaff/rules/**", "text/packages/chaff/src/rule-load.ts", ".github/workflows/chaff-site.yml"]
+    paths: ["text/site/**", "text/packages/**", "text/scripts/rule-examples.ts", "text/test/cli-run.ts", ".github/workflows/chaff-site.yml"]
   push:
     branches: [main]
-    paths: ["text/site/**", "text/packages/chaff/rules/**", "text/packages/chaff/src/rule-load.ts", ".github/workflows/chaff-site.yml"]
+    paths: ["text/site/**", "text/packages/**", "text/scripts/rule-examples.ts", "text/test/cli-run.ts", ".github/workflows/chaff-site.yml"]
 
 permissions:
   contents: read
@@ -32,6 +32,11 @@ jobs:
       - name: install chaff
         working-directory: text
         run: yarn install --frozen-lockfile
+
+      # The reference's examples are run through chaff's command line (yarn examples), which loads the built language packages.
+      - name: build chaff
+        working-directory: text
+        run: yarn build
 
       - run: yarn install --frozen-lockfile
 

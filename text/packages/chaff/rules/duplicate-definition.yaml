@@ -30,3 +30,51 @@ placeholders:
 levels: { strict: 1, normal: 1, relaxed: 1 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 同じ語を、文書の二か所で定義している所
+  en: The same term defined in two places in one document
+example:
+  ja:
+    before: |
+      # 利用規約
+
+      ## 第1条（定義）
+
+      「本サービス」とは、当社が提供する予約の仕組みをいう。
+
+      ## 第2条（利用）
+
+      「本サービス」とは、当社が運営する予約のサイトをいう。利用者は、本サービスを無料で使える。
+    after: |
+      # 利用規約
+
+      ## 第1条（定義）
+
+      「本サービス」とは、当社が運営する予約のサイトをいう。
+
+      ## 第2条（利用）
+
+      利用者は、本サービスを無料で使える。
+  en:
+    before: |
+      # Terms of use
+
+      ## 1. Definitions
+
+      "Service" means the booking system we provide.
+
+      ## 2. Use
+
+      "Service" means the booking website we run. Users may use the Service free of charge.
+    after: |
+      # Terms of use
+
+      ## 1. Definitions
+
+      "Service" means the booking website we run.
+
+      ## 2. Use
+
+      Users may use the Service free of charge.

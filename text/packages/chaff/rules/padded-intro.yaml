@@ -30,3 +30,15 @@ levels:
 
 # プレスリリース・メール・議事録の冒頭は理由や用件を言う所で、つかみではない。
 use_for: [blog, business/report, business/proposal, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「近年、〜が注目されています」のように、どの文書にも当てはまる書き出し
+  en: An opening such as "In recent years, X has gained attention" that fits any document
+example:
+  ja:
+    before: 近年、生成 AI が注目を集めています。今回、社内の問い合わせ対応に試しました。
+    after: 社内の問い合わせ対応に生成 AI を試し、回答までの時間が半分になりました。
+  en:
+    before: In recent years, generative AI has gained significant attention. We tried it on our internal help desk.
+    after: We tried generative AI on our internal help desk, and replies now take half as long.
