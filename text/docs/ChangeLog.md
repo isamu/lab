@@ -25,6 +25,36 @@ Japanese sentence only ends at 。．！？. Now:
 The other rules still run in the document's language only; English-only rules do not check English sentences in a
 Japanese document. Language adapters mark such a sentence with `embeddedLanguage` (a new optional field of `Sentence`).
 
+### Japanese speeches written one paragraph per line; subheading lines; 「〜こと。」 items (#170)
+
+A document written one paragraph per line, with no blank line between (the 官邸's 施政方針演説), is now split line
+by line even when each block under a heading is short. Whether a document is written this way is decided over the
+whole document: the two-sentence lines of every block with more than one line are counted together. Before, each
+block had to show enough two-sentence lines on its own, so a speech whose sections hold a few lines each stayed one
+paragraph per section, and `max-paragraph-length` reported them. A block that splits on its own still splits, a
+block that wraps mid-sentence still does not, and one-line blocks (ordinary blank-line paragraphs) are not counted.
+
+A line that is only a short phrase in parentheses (「（経済再生）」, 「【お問い合わせ先】」, 「（目的）」) is a
+subheading. It no longer joins the sentence on the next line, so a finding on that sentence is reported on its own
+line, and the sentence's length no longer includes the subheading. Quotation marks 「」『』 are not subheadings, and
+neither is a bracketed line in the middle of a sentence, a bracketed note that ends a sentence, or a long one.
+
+`no-mixed-desumasu` no longer counts an ending in 「こと」 or 「もの」 (「〜を保持すること。」, 「〜が可能なもの。」)
+as だ・である. Requirements, licence terms and glossaries use this form in both registers, so it votes for neither.
+The words are a new lang-ja lexicon, `neutral-ending`. Other nouns before a question or a particle keep the register
+of the verb before them (「〜のかな？」 is still plain).
+
+### Corpus: footnote numbers, run-in section titles and Gutenberg's older closing line (#170)
+
+The corpus's HTML converter dropped a footnote mark written as `<sup><a>1</a></sup>` but kept one written as
+`<a href="#fn1"><sup>1</sup></a>`, so a Federal Reserve speech read "recessions.1 Over the …" and two sentences
+became one. A link to a place on the same page holding nothing but a superscript is now dropped too; a superscript
+linking to another page stays. A section title drawn as the bold first line of a paragraph
+(`<p><strong>Conclusion</strong><br />In closing, …</p>`) becomes a heading one level below the heading before it,
+instead of a line glued to the paragraph; a bold name over a role ("Joshua Gallin" / "Secretary") stays a signature. A Project Gutenberg text now also loses the closing line older eBooks put
+before the end marker ("End of Project Gutenberg's Poems, by Emily Dickinson"). Sentence splitting in lang-en is
+unchanged: plain text rarely has "word.1 Word", and only markup tells a footnote mark from a number.
+
 ### `numbering-gap`: a decimal before a unit symbol is an amount, and 「1.4 本利用ルール」 is a heading number (#170)
 
 A line opening with a decimal followed by a unit symbol ("1.5 mM in each of the four deoxyribonucleoside
