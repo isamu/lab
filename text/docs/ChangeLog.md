@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `chaff rules` prints a table, and `rules --json` carries what an AI needs to write settings (#170)
+
+- **`chaff rules`** (without `--json`) lists every rule by group, each with the level it runs at now, whether it
+  runs by default, is experimental, needs a list in `chaff.yaml` or runs with `chaff test`, and one line on what it
+  finds. A rule for another language shows as off.
+- **`chaff rules --json` is schema 2.** Each rule adds `group`, `summary`, `example`, `not_flagged`,
+  `level_meaning`, `languages`, `requires`, `genres` (how it stands in every genre: on and at which level,
+  experimental, turned off, or not suited) and `options`. The top level adds `groups`, the steps from a team's
+  style note to `chaff.yaml`, and `style_presets`, `custom_rule_types` and `rule_options`, marked as coming with the
+  local-rules release. Every field of schema 1 is kept.
+
 ### Each rule's page reads for someone who is not an engineer (#170)
 
 A rule's page on the site now says what the rule finds, why it matters, a before and after with what chaff printed
