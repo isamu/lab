@@ -1,0 +1,10 @@
+# Words that open a relative clause after a noun ("the best option which we chose", "the threats that we have seen").
+# A superlative whose noun phrase such a clause restricts says what it is the most of.
+# A language without this list puts no clause after a noun, and unqualified-superlative reads no clause or participle there.
+id: relative-word
+language: en
+entries:
+  - pattern: that
+  - pattern: which
+  - pattern: who
+  - pattern: whom

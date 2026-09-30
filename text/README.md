@@ -523,7 +523,8 @@ CI でも毎回かけています。指摘の数では落としません（文�
 | --- | --- |
 | `technical/spec` `technical/readme` | 水増しの導入 / 定型の結び / 文のリズム |
 | `blog/tech` `blog/essay` `blog/owned-media` | — |
-| `business/proposal` `business/report` ほか | ブログ向けの rule |
+| `business/proposal` `business/report` | 定型の結び / 文のリズム（水増しの導入と、結びに中身があるか（`chaff test`）は見る） |
+| `business/email` `business/press-release` `business/meeting-notes` | ブログ向けの rule |
 
 判定はパスと内容から自動で行い、1 行目に根拠つきで出ます。`README.md`、`*-spec.md`、`docs/` は技術文書として見ます。
 `chaff.yaml` の `genre` で決めるか、その実行だけなら `--genre` で決めます（`chaff.yaml` より優先）。

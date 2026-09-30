@@ -1,9 +1,11 @@
 import { joinWords } from "./word-list.ts";
 import { wordsOf } from "./structure.ts";
-import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
-import { entryIn, entryOpens, entryRanges } from "./lexicon-match.ts";
+import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Token } from "../plugin.ts";
+import { entryIn, entryOpens, entryRanges, type TokenRange } from "./lexicon-match.ts";
 import { scoped, scopeMarkersOf, type ScopeMarkers } from "./superlative-scope.ts";
 import { namesQuantity } from "./superlative-name.ts";
+import { namesAmount } from "./superlative-amount.ts";
+import { restricted, type Restrictors } from "./superlative-clause.ts";
 
 const PER = 1000;
 
@@ -43,19 +45,38 @@ export const cushionDensity = densityRule("cushion-phrase-density");
 /** 数字は語ではないので言語を問わない。数があれば測った結果を言っている。品詞の数（NUM）は "the best one" の one まで含むので使わない。 */
 const DIGIT = /\d/u;
 
-type Qualifiers = { readonly comparison: Lexicon; readonly scope: ScopeMarkers; readonly quantityNouns: Lexicon };
+type Qualifiers = {
+  readonly comparison: Lexicon;
+  readonly scope: ScopeMarkers;
+  readonly quantityNouns: Lexicon;
+  readonly amounts: Lexicon;
+  readonly restrictors: Restrictors;
+};
 
 const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
   comparison: doc.lexicons["comparison-marker"] ?? [],
   scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? []),
   quantityNouns: doc.lexicons["quantity-noun"] ?? [],
+  amounts: doc.lexicons["superlative-amount"] ?? [],
+  restrictors: {
+    relatives: doc.lexicons["relative-word"] ?? [],
+    bounds: doc.lexicons["superlative-bound"] ?? [],
+    subjects: doc.lexicons["subject-pronoun"] ?? [],
+  },
 });
 
-/** どの出現も範囲を持つか量の名前のときだけ。1 つでもそうでない出現があれば、その文には限定の無い最上級がある。 */
+/** 範囲・節・分詞・形容詞のどれかが最上級を限っているか、最上級が量か名前を言っているか。 */
+const qualifiedAt = (tokens: readonly Token[], range: TokenRange, qualifiers: Qualifiers): boolean =>
+  scoped(tokens, range, qualifiers.scope) ||
+  restricted(tokens, range, qualifiers.restrictors) ||
+  namesQuantity(tokens, range, qualifiers.quantityNouns) ||
+  namesAmount(tokens, range, qualifiers.amounts);
+
+/** どの出現も限られているか量を言うときだけ。1 つでもそうでない出現があれば、その文には限定の無い最上級がある。 */
 const everyQualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean => {
   const tokens = sentence.tokens ?? [];
   const ranges = entryRanges(sentence, entry);
-  return ranges.length > 0 && ranges.every((range) => scoped(tokens, range, qualifiers.scope) || namesQuantity(tokens, range, qualifiers.quantityNouns));
+  return ranges.length > 0 && ranges.every((range) => qualifiedAt(tokens, range, qualifiers));
 };
 
 const qualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean =>

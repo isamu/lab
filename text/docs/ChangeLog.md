@@ -17,6 +17,45 @@ fixed width stays whole. Several lines must each hold two or more whole sentence
 per line (a common Markdown style, in English above all) stays whole and is still reported when it is long. The rules
 that count paragraphs (`paragraph-length-variance`, `preamble-length`) see the same parts.
 
+### `unqualified-superlative` leaves an English amount or a restricted superlative alone (#170)
+
+"The most" followed directly by a noun names an amount, not a boast: "the most work", "the most students", "for the
+most part". A superlative that a clause or a word after it restricts already says what it is the most of: "the best we
+have measured", "the threats that we have seen", "the most scalable option discussed", "the best possible outcome",
+"the most restrained manner possible". None of these is reported any more.
+
+"The most powerful tool", "the best solution on the market" and "the best solution ever" are still reported. The
+words come from four new English lists: `superlative-amount`, `relative-word`, `subject-pronoun` and
+`superlative-bound`. Japanese has none of them, and its findings are unchanged.
+
+### `latin-spacing` leaves dates and clock times out of the count (#290)
+
+「9月」「8月」 were counted as digits packed against the next Japanese character, so a report that spaced its counts
+(「412 件」「6.2 時間」) was told its month names were the odd ones out. A date or a time written with units is packed by
+convention, so the inside of one no longer counts for or against either habit: the space between a number and its
+unit, and between one unit and the next number (「2026年9月30日」「10時5分」, also when written 「2026 年 9 月」). What
+makes a date is read from the words after the number, with three lexicons in `@chaffjs/lang-ja`: `calendar-unit`
+(月, 時, 時半: the number names a month or an hour on its own), `calendar-year-unit` (年, 年度, after a number of four
+digits) and the existing `date-time-unit`, now in order from the largest unit, which joins 日, 分 and 秒 to a date when
+they follow a larger unit (「10月1日」「15時30分」). A length stays a count: 「3ヶ月」「3 時間」「3日間」 are other words,
+and 「5日で」「5分」「3年」「5分30秒」 standing alone cannot be told from a length, so they count as before. The space
+before a date (「は 9月」) is the writer's habit before any number and still counts. A year after an era name
+(「令和8年」 on its own) still counts.
+
+### A report or a proposal is checked for a padded opening and an empty closing (#290)
+
+`--genre business/report` checked less than naming no genre at all. `padded-intro` (「近年、」, "in today's fast-paced
+world") ran only on blog posts, so a report that opened with filler was reported under the default `blog/tech` and not
+once it was called a report. `padded-intro` now runs on `business/report` and `business/proposal` too, and
+`empty-conclusion` (a closing that only restates the body) is listed for `chaff test` there. Press releases, e-mails and
+meeting notes are left out: their first lines give a reason or the business at hand (a fee notice's 「昨今の人件費の上昇のため」
+was the only place the rule fired on a business document in the corpus), and their last lines are greetings.
+
+`agentless-passive` and `excessive-hedging` stay experimental. On the corpus's business documents `agentless-passive` is
+mostly wrong (descriptive, legal and relative-clause passives such as 「適用される」「分類されています」, "is assigned"), and
+`excessive-hedging` has never fired on a real document, which is not yet evidence that it is right. Pass
+`--experimental` to run them.
+
 ### English messages agree with their counts (#170)
 
 An English message said "(1 such words)", "appears 1 times" or "1 of 1 sections" when the count was one. A rule's

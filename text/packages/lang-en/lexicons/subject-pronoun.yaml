@@ -1,0 +1,13 @@
+# Pronouns that can be the subject of a clause ("the best we have measured", "the best option they could find").
+# A reflexive or emphatic pronoun right after a noun ("The best players themselves get a bonus") is not a subject.
+# A language without this list reads no clause that starts with a pronoun after a superlative.
+id: subject-pronoun
+language: en
+entries:
+  - pattern: i
+  - pattern: you
+  - pattern: he
+  - pattern: she
+  - pattern: it
+  - pattern: we
+  - pattern: they
