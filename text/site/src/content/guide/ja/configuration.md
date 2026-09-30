@@ -6,19 +6,23 @@
 ## chaff.yaml を作る
 
 ```bash
-npx chaffjs init                 chaff.yaml を作る
+npx chaffjs init --genre legal/contract   契約書のための chaff.yaml を作る
+npx chaffjs init                          端末なら、番号の付いた一覧からジャンルを選ぶ
 ```
+
+端末で `--genre` を付けずに `init` を動かすと、ジャンルを何向けかと一緒に並べ、番号か名前を尋ねます（Enter で `blog/tech`）。
+スクリプトや CI では尋ねず、`blog/tech` にします。
 
 この場所に `chaff.yaml` と `.gitignore` ができます。実際に動かすと、次のように出ます。
 
 ```
-$ npx chaffjs init
+$ npx chaffjs init --genre legal/contract
 
 作成しました:
   …/chaff.yaml  規範の宣言。commit してください
   …/.gitignore  作成しました
 
-ジャンルは blog/tech にしました。違う場合は chaff.yaml の genre を直してください。
+ジャンルは legal/contract にしました。違う場合は chaff.yaml の genre を直してください。
   一覧: npx chaff genres
 
 次:
@@ -46,8 +50,12 @@ $ npx chaffjs init
 #   npx chaff explain bold-density        そのルールの意図を読む
 #   npx chaff rules --json                AI に設定を書かせるときに渡す
 
-# この場所に置く文書の種類。
-genre: blog/tech
+# この場所に置く文書の種類（契約書・利用規約・プライバシーポリシー）。ほかの種類: npx chaffjs genres
+genre: legal/contract
+
+# チームが書く固有名詞（組織名・製品名）。1 つの名前として読み、漢字の連なりに数えない。
+# names:
+#   - 個人情報保護委員会
 
 # 既定から変えたものだけを書く。
 rules:
@@ -58,8 +66,19 @@ rules:
 
 ## ジャンルと言語を決める
 
-ジャンルは、どのルールを動かすかと、閾値をいくつにするかを決めます。
-書かなければ、パスと内容から自動で決まります。
+ジャンルは文書の種類です。次の 3 つを決めます。
+
+| 何を | どう |
+| --- | --- |
+| 動かすルール | その種類の書き方を咎めるだけのルールを止めます（契約書は定義した言葉をわざと繰り返します）。試験中のルールを動かすこともあります（`legal/contract` は、無い条項への参照を見ます） |
+| 閾値 | 同じ `normal` でも、法令や論文の一文はメールより長くてよい |
+| 文書の読み方 | `legal/statute` は法令の書き方の知識で読みます（下の「文書の種類を決める」） |
+
+ジャンルが止めたルールは、「動いていません」の一覧にジャンルを理由に出ます。たとえば `ngram-repetition（ジャンル legal/contract では見ないため）` です。
+`chaff.yaml` の `rules` はジャンルより強いので、`ngram-repetition: normal` と書けば動きます。
+どのジャンルが何を変えるかは[ジャンルのページ](../../genres/)に、一覧の表は[はじめかた](./getting-started)にあります。
+
+`genre` を書かなければ、パスと内容から自動で決まります。
 `README.md`、`*-spec.md`、`docs/` は技術文書として見ます。
 決めた根拠は、画面の 1 行目に出ます。
 
@@ -67,22 +86,11 @@ rules:
 chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
 ```
 
-自動で決まったものが違うときは、`genre` に書きます。書けるジャンルは次のとおりです。
+どれでも決まらなければ `blog/tech` として見ます。別の種類に見えるときは、画面が見当を出します（「契約書・規約のようです。--genre legal/contract を試せます」）。
+見当を出しても、見るジャンルは変えません。
+違うときは `genre` に書きます。
 
-| ジャンル | どんな文書か |
-| --- | --- |
-| `technical/spec` | 仕様書 |
-| `technical/readme` | README や技術文書 |
-| `blog/tech` | 技術ブログ |
-| `blog/essay` | エッセイ |
-| `blog/owned-media` | オウンドメディア |
-| `business/proposal` | 提案書 |
-| `business/report` | 報告書 |
-| `business/email` | メール |
-| `business/press-release` | プレスリリース |
-| `business/meeting-notes` | 議事録 |
-
-一覧は `npx chaffjs genres` でも見られます。
+一覧は `npx chaffjs genres` で、ジャンルごとに何向けかと一緒に見られます。
 一覧に無いジャンルを書くと、chaff は何も検査せずに止まり、どこに書いたジャンルかを言います。
 文書の front matter の `genre:` が一覧に無いときは使わず、そう言ってから、書いていないときと同じようにジャンルを決めます。
 言語も自動で決まり、`language` に `ja` か `en` を書けば固定できます。
@@ -94,7 +102,8 @@ chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
 そうした種類ごとの知識は、chaff に同梱した設定ファイル（`profiles/*.yaml`）に書いてあり、選ばれた文書にだけ効きます。
 いま同梱しているのは、日本語の法令（`statute`）です。
 
-書かなければ、内容から決まります。「第一条　」のように条で始まる行が 3 行以上あれば、法令として読みます。
+書かなければ、ジャンルが決めます（`legal/statute` は `statute` で読みます）。
+ジャンルも決めていなければ、内容から決まります。「第一条　」のように条で始まる行が 3 行以上あれば、法令として読みます。
 決まった種類は、`chaff tree` の 1 行目に出ます。
 
 ```
