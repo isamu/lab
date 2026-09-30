@@ -125,6 +125,8 @@ export const rulesJson = (
         your_setting: yourSetting(rule, config),
         now: now(rule, config, genre, text, preset),
         ...(rule.options === undefined ? {} : { options: optionsJson(rule, optionLayers) }),
+        ...(rule.example === undefined ? {} : { example: rule.example }),
+        ...(rule.custom === undefined ? {} : { defined_in: "chaff.yaml custom_rules", custom: rule.custom }),
       })),
       how_to_change: {
         by_command: ["relax", "strict", "off"].map((command) => `npx chaff ${command} <rule-id> --why "${text.reason}"`),

@@ -247,6 +247,7 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
         fullSentence: rule.full_sentence,
         embeddedLimits: embeddedLimitsFor(rule, level, genre, embedded),
         ...(rule.options === undefined ? {} : { settings: optionValues(settleOptions(rule.id, rule.options, optionLayers)) }),
+        ...(rule.custom === undefined ? {} : { custom: rule.custom }),
       };
       const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: severityAt(rule, level, genre) }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };

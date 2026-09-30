@@ -20,6 +20,7 @@ import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
+import { customPattern, customTokens, customWords } from "./custom.ts";
 import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -67,6 +68,9 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "latin-spacing": latinSpacing,
   "stray-space": straySpace,
   "katakana-long-vowel": katakanaLongVowel,
+  "custom-words": customWords,
+  "custom-pattern": customPattern,
+  "custom-tokens": customTokens,
   "dangling-reference": danglingReference,
   "date-weekday-mismatch": dateWeekdayMismatch,
   "date-order": dateOrder,

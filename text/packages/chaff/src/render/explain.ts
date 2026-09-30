@@ -1,5 +1,5 @@
 import { definedLevels, resolve, severityAt } from "../levels.ts";
-import { readableText } from "./text.ts";
+import { localized, readableText } from "./text.ts";
 import { SEVERITY_NAME } from "./severity-name.ts";
 import { uiLanguageOf, type Texts, type UiLanguage } from "../ui.ts";
 import type { Level, RuleDefinition } from "../plugin.ts";
@@ -12,6 +12,8 @@ const TEXT: Texts<{
   readonly genreNote: (genre: string, others: string) => string;
   readonly experimental: string;
   readonly howToFix: string;
+  readonly example: string;
+  readonly definedIn: string;
   readonly values: (unit: string) => string;
   readonly severities: string;
   readonly now: (level: string) => string;
@@ -24,6 +26,8 @@ const TEXT: Texts<{
     genreNote: (genre, others) => `この数字は ${genre} のものです。ほかに ${others} で別の数字を持っています。`,
     experimental: "このルールはまだ試験中で、既定では動きません（--experimental で動きます）。",
     howToFix: "直しかた",
+    example: "例",
+    definedIn: "このルールはチームが chaff.yaml の custom_rules で決めたものです。",
     values: (unit) => `設定できる値（単位: ${unit}）:`,
     severities: "設定できる値（数える上限は無く、指摘の重さが変わります）:",
     now: (level) => `いまは ${level} です。`,
@@ -36,6 +40,8 @@ const TEXT: Texts<{
     genreNote: (genre, others) => `These numbers are for ${genre}. ${others} have numbers of their own.`,
     experimental: "This rule is still experimental and does not run by default (--experimental runs it).",
     howToFix: "How to fix",
+    example: "Example",
+    definedIn: "The team defined this rule under custom_rules in chaff.yaml.",
     values: (unit) => `Levels (unit: ${unit}):`,
     severities: "Levels (there is no limit to count to; a level sets how a finding is marked):",
     now: (level) => `Now: ${level}.`,
@@ -61,6 +67,17 @@ const genreNote = (rule: RuleDefinition, genre: string | undefined, text: (typeo
   return ["", `  ${text.genreNote(genre ?? text.defaultGenre, others.join(" / "))}`];
 };
 
+/** A team's rule shows its example, before and after, and says where it was defined. Built-in rules have none. */
+const exampleLines = (rule: RuleDefinition, language: string, text: (typeof TEXT)["ja"]): string[] => {
+  if (rule.example === undefined) return [];
+  return [
+    "",
+    `  ${text.example}:  ${localized(rule.example.before, language)}`,
+    `      →  ${localized(rule.example.after, language)}`,
+    ...(rule.custom === undefined ? [] : ["", `  ${text.definedIn}`]),
+  ];
+};
+
 /** Where the rule's settings come from: the option layers, strongest first, and the source of its level when a style set it. */
 export type ExplainSettings = { readonly optionLayers?: readonly OptionLayer[]; readonly levelFrom?: string | undefined };
 
@@ -77,6 +94,7 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
     `  ${readableText(rule, rule.why, language)}`,
     "",
     `  ${text.howToFix}: ${readableText(rule, rule.how_to_fix, language)}`,
+    ...exampleLines(rule, language, text),
     "",
     `  ${rule.level_sets === "severity" ? text.severities : text.values(unit)}`,
     ...definedLevels(rule).map((level) => levelLine(rule, level, current, genre, ui)),
