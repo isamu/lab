@@ -45,6 +45,7 @@ planted:
   stray-space: [ja]
   title-case-consistency: [en]
   total-mismatch: [ja, en]
+  unbalanced-bracket: [ja, en]
   undefined-acronym: [ja, en]
   url-run-on: [ja]
 not_planted:

@@ -1,0 +1,36 @@
+id: unbalanced-bracket
+layer: L1
+status: experimental
+how_to_find: unbalanced-bracket
+severity: warning
+
+name:
+  ja: 括弧が組になっていない
+  en: Unbalanced bracket
+
+why:
+  ja: 閉じ忘れた「（」や、開きの無い「」」があると、読み手はどこまでが括弧の中なのか分からなくなります。全角の「（」を半角の「)」で閉じるのも、書き換えの途中で残った印です。見出しで区切った節ごとに、「」『』（）()［］[]【】〔〕〈〉《》“” の組を数えます。詩の連や長い引用は段落をまたぐので、段落を越えて組にします。行の頭や空白の後ろの「1)」「a)」「事例）」のような三文字までの番号の印と数の後ろの「）」、コードと URL は数えません。英語の小説のように、次の段落も同じ開きで始まるなら、閉じない開きは続きとして数えません。
+  en: A "(" never closed, or a ")" never opened, leaves the reader unsure where the aside ends. A full-width "（" closed by a half-width ")" is left over from an edit too. Brackets are paired within each section under a heading ((), [], “”, and the Japanese 「」『』（）［］【】〔〕〈〉《》), across paragraphs, since a stanza or a long quotation may span several. A short label of up to three characters such as "1)", "a)" or "iv)" at the start of a line or after a space, a ")" right after a number, code and URLs are not counted. An opening quotation mark carried into a paragraph that opens with the same mark, as in fiction, is not counted.
+
+message:
+  ja: 「{mark}」が組になっていません
+  en: '"{mark}" has no partner'
+
+messages:
+  unclosed:
+    ja: 「{mark}」が閉じていません
+    en: '"{mark}" is never closed'
+  unopened:
+    ja: 「{mark}」に対応する開きがありません
+    en: '"{mark}" closes nothing that was opened'
+  mismatch:
+    ja: 「{partner}」を「{mark}」で閉じています（全角と半角が違います）
+    en: '"{partner}" is closed by "{mark}" (full-width and half-width differ)'
+
+how_to_fix:
+  ja: 足りない括弧を足すか、余分な括弧を消してください。全角と半角は、開きと閉じをそろえてください。
+  en: Add the missing bracket or remove the extra one. Make the opening and closing marks the same width.
+
+levels: { strict: 1, normal: 1, relaxed: 1 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]

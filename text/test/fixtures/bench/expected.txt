@@ -41,6 +41,7 @@ sentence-initial-conjunction-run        1      1       0             0
 stray-space                            12     12       0             0
 title-case-consistency                  7      7       0             0
 total-mismatch                          8      8       0             0
+unbalanced-bracket                      8      8       0             0
 undefined-acronym                       2      2       0             0
 url-run-on                             13     13       0             0
 ja/blog  clean sample  clean
@@ -109,6 +110,7 @@ ja/design  heading-deepened  found
 ja/design  image-unlabelled  found
 ja/design  link-to-nowhere  found
 ja/design  url-run-on  found
+ja/design  bracket-unclosed  found
 ja/email  weekday-shift  found
 ja/email  rows-swapped  found
 ja/email  plain-in-polite  found
@@ -127,6 +129,7 @@ ja/email  pet-phrase  found
 ja/email  image-unlabelled  found
 ja/email  link-to-nowhere  found
 ja/email  url-run-on  found
+ja/email  bracket-unclosed  found
 ja/figures  item-dropped  found
 ja/figures  polite-in-plain  found
 ja/figures  no-nested  found
@@ -177,6 +180,7 @@ ja/minutes  heading-deepened  found
 ja/minutes  image-unlabelled  found
 ja/minutes  link-to-nowhere  found
 ja/minutes  url-run-on  found
+ja/minutes  bracket-unclosed  found
 ja/note  plain-in-polite  found
 ja/note  no-nested  found
 ja/note  space-strayed  found
@@ -193,6 +197,7 @@ ja/policy  particle-doubled  found
 ja/policy  image-unlabelled  found
 ja/policy  link-to-nowhere  found
 ja/policy  url-run-on  found
+ja/policy  bracket-unclosed  found
 ja/press  weekday-shift  found
 ja/press  sentences-joined  found
 ja/press  plain-in-polite  found
@@ -222,6 +227,7 @@ ja/press  heading-deepened  found
 ja/press  image-unlabelled  found
 ja/press  link-to-nowhere  found
 ja/press  url-run-on  found
+ja/press  bracket-unclosed  found
 ja/proposal  item-dropped  found
 ja/proposal  plain-in-polite  found
 ja/proposal  no-nested  found
@@ -262,6 +268,7 @@ ja/quote  heading-deepened  found
 ja/quote  image-unlabelled  found
 ja/quote  link-to-nowhere  found
 ja/quote  url-run-on  found
+ja/quote  bracket-unclosed  found
 ja/readme  polite-in-plain  found
 ja/readme  no-nested  found
 ja/readme  space-strayed  found
@@ -327,6 +334,7 @@ en/design  pet-phrase  found
 en/design  heading-deepened  found
 en/design  image-unlabelled  found
 en/design  link-to-nowhere  found
+en/design  bracket-unclosed  found
 en/email  weekday-shift  found
 en/email  rows-swapped  found
 en/email  sentences-joined  found
@@ -386,6 +394,7 @@ en/minutes  hedges-stacked  found
 en/minutes  heading-deepened  found
 en/minutes  image-unlabelled  found
 en/minutes  link-to-nowhere  found
+en/minutes  bracket-unclosed  found
 en/note  sentences-joined  found
 en/note  contracted  found
 en/note  article-doubled  found

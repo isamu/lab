@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### New rules: brackets and punctuation marks (#170)
+
+Experimental rules for marks left over from an edit. Each finding in the corpus was read before the rule was added.
+
+- **`unbalanced-bracket`**: a bracket or quotation mark with no partner within its section: `（` never closed, `」`
+  never opened, `（` closed by `)`. Brackets pair across paragraphs (a stanza, a long quotation), a quotation carried
+  into a paragraph that opens with the same mark is a continuation, and a short label such as `1)`, `a)` or `事例）`
+  is not a closing bracket. A URL mask no longer hides the `）` a reader sees after `（https://…`. In the corpus it
+  finds real slips in 白書, 通知 and handbooks (`（FAO)`, `(※1）`, `“Yellowstone.` never closed); the misses are per-line
+  quotation marks in verse and a `事例5）` label inside a real `（`.
+
 ### New rules: headings, images, links and URLs in Markdown (#170)
 
 Experimental rules that read the markup rather than the prose. They run on Markdown only and say so on a `.txt`

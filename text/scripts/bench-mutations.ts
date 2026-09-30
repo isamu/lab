@@ -20,7 +20,8 @@ import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinPa
 import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa, strayParticleSpace } from "./bench-mutations-ja.ts";
 import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, pluralAfterArticle } from "./bench-mutations-en.ts";
 import * as phrasing from "./bench-mutations-phrasing.ts";
-import { imageWithoutAlt, linkToMissingSection, runOnUrl, skipHeadingLevel } from "./bench-mutations-markup.ts";
+import { MARKUP_MUTATIONS } from "./bench-mutations-markup.ts";
+import { MARK_MUTATIONS } from "./bench-mutations-marks.ts";
 
 // --- date-weekday-mismatch ---
 
@@ -398,8 +399,6 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: phrasing.chainWithAnd },
   { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: phrasing.avoidedSpelling },
   { id: "pet-phrase", rule: "ngram-repetition", languages: ["ja", "en"], plant: phrasing.repeatPetPhrase },
-  { id: "heading-deepened", rule: "heading-level-skip", languages: ["ja", "en"], plant: skipHeadingLevel },
-  { id: "image-unlabelled", rule: "image-alt-text", languages: ["ja", "en"], plant: imageWithoutAlt },
-  { id: "link-to-nowhere", rule: "broken-link", languages: ["ja", "en"], plant: linkToMissingSection },
-  { id: "url-run-on", rule: "url-run-on", languages: ["ja"], plant: runOnUrl },
+  ...MARKUP_MUTATIONS,
+  ...MARK_MUTATIONS,
 ];

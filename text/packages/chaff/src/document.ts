@@ -20,6 +20,7 @@ import { emailParts, emailVocabulary } from "./email-parts.ts";
 import { cutTextSpans } from "./span-cut.ts";
 import { markdownFigures } from "./text-figures.ts";
 import { documentMarkup } from "./markup.ts";
+import { BARE_URL } from "./bare-url.ts";
 import type {
   BulletList,
   LanguageAdapter,
@@ -82,13 +83,6 @@ const EMPHASIS = new Set(["strong", "emphasis", "delete"]);
  * 標準の Markdown には無いため段落として解析される。囲みの指定であって文章ではない。
  */
 const DIRECTIVE = /^[ \t]*:::[^\n]*/gmu;
-
-/**
- * `https://…` をそのまま書いた URL。GFM の autolink 拡張を入れていないので mdast では
- * ただのテキストになり、本文として残る。残すと、見出しと URL の中の識別子が一致して
- * 「見出しの繰り返し」と読まれる。表示される文字も本文ではない。
- */
-const BARE_URL = /https?:\/\/[^\s)<>"'\]]+/gu;
 
 const matchSpans = (source: string, pattern: RegExp): Span[] =>
   [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
