@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### The documentation starts from picking the kind of document (#170)
+
+README, the npm README and the site guide (getting started, configuration and commands, in Japanese and English) now
+begin with choosing the genre: a table of every genre with what it is for, the commands (`--genre`, `init --genre`,
+`genres`), and what the screen says when no genre is set. The site has a Genres page built from `genres.yaml`: each
+genre's summary, the rules it turns off and the experimental ones it turns on, and the profile it reads with. `--help`
+says that `init` asks for the genre and that `genres` says what each is for. A test keeps every genre in the pages that
+list them by hand.
+
 ### chaff suggests a genre when none is set, and `chaff init` asks for one (#170)
 
 A file with no genre set (none on the command line, in chaff.yaml or its front matter, and none guessed from its
