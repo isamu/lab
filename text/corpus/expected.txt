@@ -175,9 +175,9 @@ tc39-agenda-2026-07  adverb-overuse 1, agentless-passive 7, max-sentence-length 
 uk-arbitration1996.txt  clean
 uk-cra2015.txt  clean
 uk-dpa2018.txt  clean
-us-4683202-nucleic-acid-amplification  dangling-reference 2, max-paragraph-length 7, max-sentence-length 16, numbering-gap 1, undefined-acronym 23
+us-4683202-nucleic-acid-amplification  max-paragraph-length 7, max-sentence-length 17, numbering-gap 1, undefined-acronym 19
 us-6004596-crustless-sandwich  max-sentence-length 2
-us-6285999-node-ranking  max-paragraph-length 4, max-sentence-length 3, undefined-acronym 5
+us-6285999-node-ranking  max-paragraph-length 4, max-sentence-length 3, undefined-acronym 4
 us-scotus-gideon-v-wainwright  max-paragraph-length 1, max-sentence-length 3
 utelecon-account-leave  concrete-evidence-density 3, latin-spacing 1, max-sentence-length 5, ngram-repetition 1, preamble-length 1
 utokyo-gakui-kisoku  clean

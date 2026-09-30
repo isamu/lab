@@ -271,6 +271,7 @@ const notationOf = (doc: ProseDocument): NotAcronymSpans =>
     usStates: patternsOf(doc, "us-state-code"),
     emphasis: patternsOf(doc, "emphasis-word"),
     divisions: patternsOf(doc, "numbered-division"),
+    numberLabels: patternsOf(doc, "number-label"),
     honorifics: patternsOf(doc, "honorific"),
     titles: patternsOf(doc, "name-title"),
     dateTimeUnits: patternsOf(doc, "date-time-unit"),

@@ -1,5 +1,5 @@
 import { escapeRegExp } from "../orthography.ts";
-import { ROMAN_NUMERAL } from "./roman-numeral.ts";
+import { ROMAN_NUMERAL, romanRangeOf } from "./roman-numeral.ts";
 import { citationKeySpans } from "./citation-key.ts";
 import { dottedNameSpans } from "./dotted-name.ts";
 import { letterJoinedNameSpans } from "./letter-joined-name.ts";
@@ -24,6 +24,8 @@ export type NotationWords = {
   readonly emphasis: readonly string[];
   /** 番号を後ろに書く、文書の区切りの名前（Part、Section、Title）。 */
   readonly divisions: readonly string[];
+  /** 番号を後ろに書く、点の付いた略した名前（Vol.、No.、FIG.）。 */
+  readonly numberLabels: readonly string[];
   /** 速記録が大文字で書く発言者の姓の前に置く敬称（Mr.、Mrs.、Madam）。 */
   readonly honorifics: readonly string[];
   /** 大文字で書く姓の前に置く肩書き（Prime Minister、Governor）。後ろに略語も来る（the President NASA memo）ので、名前の形を求める。 */
@@ -44,10 +46,20 @@ const ANY_MERIDIEM = String.raw`[AaPp]\.?[Mm]\.?`;
 const AMOUNT = String.raw`(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?`;
 
 /**
- * 区切りの名前のすぐ後ろのローマ数字は番号（Part II、Section VIII、TITLE IV）。名前は語彙表の書き方か、全部大文字。
- * CD や CI のようにローマ数字としても読める略語は、この位置でなければ略語のまま数える。
+ * 区切りの名前や略した名前のすぐ後ろの番号（Part II、Section VIII、TITLE IV、Vol. XLIII、FIG. 3、FIGS. 1A-1C）。名前は語彙表の
+ * 書き方か、全部大文字。ローマ数字は範囲（Part II-IV）も番号。CD や CI のようにローマ数字としても読める略語は、この位置で
+ * なければ略語のまま数える。
  */
 const divisionOf = (words: readonly string[]): string => oneOf(words.flatMap((word) => [word, word.toUpperCase()]));
+
+/** 図や表の番号は短い（FIG. 3、TABLE 12、FIG. 1A）。長い数（FIG. 12345）の前の大文字は略語のまま数える。 */
+const SHORT_NUMBER = String.raw`\d{1,3}[A-Za-z]?`;
+const NUMBER_END = String.raw`(?![\p{L}\p{N}_&])`;
+
+const numberedPatterns = (words: NotationWords): readonly RegExp[] => {
+  const label = String.raw`(?<![\p{L}\p{N}_])${divisionOf([...words.divisions, ...words.numberLabels])}\s+`;
+  return [new RegExp(`${label}${romanRangeOf(ROMAN_NUMERAL)}${NUMBER_END}`, "gu"), new RegExp(`${label}${SHORT_NUMBER}${NUMBER_END}`, "gu")];
+};
 
 /** 敬称のすぐ後ろの大文字の姓（Mr. HAWLEY、Dr. O'NEIL）。速記録は発言者をこう書き、略語ではない。 */
 const SURNAME_IN_CAPITALS = String.raw`[A-Z]+(?:['’-][A-Z]+)*(?![\p{L}\p{N}_])`;
@@ -71,7 +83,7 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`(?<![\w.,])${AMOUNT}\s*${oneOf(words.currencies)}`, "gu"),
   new RegExp(String.raw`,\s+${oneOf(words.usStates)}\s+\d{5}(?:-\d{4})?(?!\d)`, "gu"),
   new RegExp(oneOf(words.emphasis), "gu"),
-  new RegExp(String.raw`(?<![\p{L}\p{N}_])${divisionOf(words.divisions)}\s+${ROMAN_NUMERAL}(?![\p{L}\p{N}_&])`, "gu"),
+  ...numberedPatterns(words),
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(words.honorifics)}\s+${SURNAME_IN_CAPITALS}`, "gu"),
   ...titledName(oneOf(words.titles)),
 ];

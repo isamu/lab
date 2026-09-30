@@ -12,6 +12,7 @@ const notAcronymSpans = notAcronymSpansOf({
   usStates: listOf("us-state-code"),
   emphasis: listOf("emphasis-word"),
   divisions: listOf("numbered-division"),
+  numberLabels: listOf("number-label"),
   honorifics: listOf("honorific"),
   titles: listOf("name-title"),
   dateTimeUnits: listOf("date-time-unit"),
@@ -122,7 +123,18 @@ describe("notAcronymSpans: 異常な入力", () => {
 });
 
 describe("notAcronymSpansOf: 語彙表の形", () => {
-  const none = { meridiem: [], timeZones: [], currencies: [], usStates: [], emphasis: [], divisions: [], honorifics: [], titles: [], dateTimeUnits: [] };
+  const none = {
+    meridiem: [],
+    timeZones: [],
+    currencies: [],
+    usStates: [],
+    emphasis: [],
+    divisions: [],
+    numberLabels: [],
+    honorifics: [],
+    titles: [],
+    dateTimeUnits: [],
+  };
 
   it("空の語彙表はどこにも当たらない（空の選択肢で文字の間に当たらない）", () => {
     assert.deepEqual(notAcronymSpansOf(none)("at 3:30 PM, USD 1,000, Berkeley, CA 94720, NOT, PART II"), []);
