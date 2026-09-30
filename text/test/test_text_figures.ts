@@ -92,6 +92,10 @@ describe("textFigures: 図の塊", () => {
       "   beta        Closes the link, then frees the buffer.",
     );
     assert.deepEqual(figureTexts(table), [lines("   Name        Meaning", "   +-----------+------------------+")]);
+    const endings = lines("   Name        Meaning", "   +-----------+------------------+", "   alpha       Sends requests.", "   beta        Closes links.");
+    assert.deepEqual(figureTexts(endings), [lines("   Name        Meaning", "   +-----------+------------------+")]);
+    const notes = lines("   1.  OPEN     --> <ID=1>      --> (back to IDLE!)", "", "   2.  IDLE                         IDLE");
+    assert.deepEqual(figureTexts(notes), [notes]);
     const prose = lines("   Right arrows (-->) mark a message sent to the peer.  Left", "   arrows (<--) mark the reverse.  Both are shown below.");
     assert.deepEqual(figureTexts(prose), []);
   });
