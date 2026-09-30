@@ -1,6 +1,7 @@
 import { definedLevels, resolve } from "../levels.ts";
 import type { Config } from "../config/load.ts";
-import type { RuleDefinition } from "../plugin.ts";
+import type { Localized, RuleDefinition } from "../plugin.ts";
+import { readableText } from "./text.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
 import { presetLevels } from "../genre-load.ts";
 import type { PresetLevels } from "../genre-parse.ts";
@@ -62,6 +63,10 @@ const levelsOf = (rule: RuleDefinition, genre: string): Record<string, unknown> 
   return overridden ? { levels: effective, levels_default: rule.levels, levels_from: "by_genre" } : { levels: rule.levels };
 };
 
+/** 指摘が無いので、置き場所は rule の言葉で読ませる。言語はどれも出す。 */
+const readableInEvery = (rule: RuleDefinition, field: Localized): Localized =>
+  Object.fromEntries(Object.keys(field).map((language) => [language, readableText(rule, field, language)]));
+
 /** AI に設定を書かせるときの入口。推測せずに書けるだけの情報を 1 つに入れる。spec §19.3。 */
 export const rulesJson = (rules: readonly RuleDefinition[], config: Config, language: string, genre: string): string => {
   const text = TEXT[uiLanguageOf(language)];
@@ -77,9 +82,9 @@ export const rulesJson = (rules: readonly RuleDefinition[], config: Config, lang
         id: rule.id,
         layer: rule.layer,
         status: rule.status,
-        name: rule.name,
-        why: rule.why,
-        how_to_fix: rule.how_to_fix,
+        name: readableInEvery(rule, rule.name),
+        why: readableInEvery(rule, rule.why),
+        how_to_fix: readableInEvery(rule, rule.how_to_fix),
         use_for: rule.use_for,
         ...levelsOf(rule, genre),
         levels_you_can_set: definedLevels(rule),

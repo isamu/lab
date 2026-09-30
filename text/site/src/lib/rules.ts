@@ -3,7 +3,7 @@
 import { resolve } from "node:path";
 import { loadRules } from "../../../packages/chaff/src/rule-load.ts";
 import type { RuleDefinition } from "../../../packages/chaff/src/plugin.ts";
-import { templateForReading } from "../../../packages/chaff/src/render/text.ts";
+import { readableText, templateForReading } from "../../../packages/chaff/src/render/text.ts";
 import type { Lang } from "./i18n";
 
 export type Localized = Record<Lang, string>;
@@ -41,7 +41,7 @@ const levelsOf = (definition: RuleDefinition): readonly (readonly [string, strin
 
 const text = (localized: Readonly<Record<string, string>>, lang: Lang): string => localized[lang] ?? localized["en"] ?? "";
 
-const readable = (message: Localized): Localized => ({ ja: templateForReading(message.ja), en: templateForReading(message.en) });
+const readableTemplate = (message: Localized): Localized => ({ ja: templateForReading(message.ja), en: templateForReading(message.en) });
 
 const byLanguage: Record<Lang, readonly RuleDefinition[]> = { ja: loadRules("ja", RULES_DIR), en: loadRules("en", RULES_DIR) };
 
@@ -49,9 +49,14 @@ const ruleOf = (ja: RuleDefinition): Rule => {
   const en = byLanguage.en.find((candidate) => candidate.id === ja.id);
   if (en === undefined) throw new Error(`${ja.id}: chaff loads it for Japanese but not for English`);
   const languages = (ja.languages ?? ["ja", "en"]).filter((lang): lang is Lang => lang === "ja" || lang === "en");
-  const localized = (field: "name" | "why" | "message" | "how_to_fix"): Localized => ({
+  const localized = (field: "message"): Localized => ({
     ja: text(ja[field], "ja"),
     en: text(en[field], "en"),
+  });
+  // The reader's texts have no finding here, so each placeholder reads as the rule's words for it.
+  const readable = (field: "name" | "why" | "how_to_fix"): Localized => ({
+    ja: readableText(ja, ja[field], "ja"),
+    en: readableText(en, en[field], "en"),
   });
   return {
     id: ja.id,
@@ -59,13 +64,13 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     status: ja.status,
     severity: { ja: ja.severity, en: en.severity },
     languages,
-    name: localized("name"),
-    why: localized("why"),
-    message: readable(localized("message")),
+    name: readable("name"),
+    why: readable("why"),
+    message: readableTemplate(localized("message")),
     otherMessages: Object.keys(ja.messages).map((variant) =>
-      readable({ ja: text(ja.messages[variant] ?? {}, "ja"), en: text(en.messages[variant] ?? {}, "en") }),
+      readableTemplate({ ja: text(ja.messages[variant] ?? {}, "ja"), en: text(en.messages[variant] ?? {}, "en") }),
     ),
-    howToFix: localized("how_to_fix"),
+    howToFix: readable("how_to_fix"),
     levels: { ja: levelsOf(ja), en: levelsOf(en) },
     useFor: ja.use_for,
   };
