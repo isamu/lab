@@ -1,0 +1,5 @@
+# 文書の名前と番地を繋ぐ助詞。「前契約の第9条」は「前契約第9条」と同じく前契約の条。飛ばして、その前の名前を読む。
+id: name-joiner
+language: ja
+entries:
+  - pattern: の
