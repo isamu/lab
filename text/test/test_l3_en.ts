@@ -351,6 +351,7 @@ describe("L3 英語", () => {
       ["both のあとの読点は項目の区切り", WITHOUT_COMMA, "We tested the parser, the renderer in both views, and the exporter."],
       ["either のあとの読点は項目の区切り", WITHOUT_COMMA, "We compared the parser, the renderer with either option, and the exporter."],
       ["between の 2 つが揃ったあとの and は並びの継ぎ目", WITH_COMMA, "We read the notes, the terms between the provider and the customer and the policies."],
+      ["and で閉じた例の句は 1 つの項目", WITHOUT_COMMA, "The menu includes apples, oranges such as navels and mandarins, and pears."],
       ["空けて書いた頭文字は e.g. ではない", WITH_COMMA, "The attendees (A. B. Clark, E. G. Evans and C. D. Ford) arrived."],
       ["続けて書いた頭文字は e.g. ではない", WITH_COMMA, "The attendees (A.B. Clark, E.G. Evans and C.D. Ford) arrived."],
       ["続けて書いた頭文字は i.e. ではない", WITH_COMMA, "We invited Alice, I.E. Evans and Carol."],

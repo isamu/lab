@@ -202,15 +202,18 @@ const exampleEnd = (clause: Clause, level: number, item: readonly Token[]): numb
 /**
  * 例の句（such as / including / e.g.）のあとが並び。句の前の項目は並びではない（the screen lock on your phone, such as a PIN or
  * phone-based fingerprint は 2 つ）。句の中の項目の形が揃わなければ句で切らない（materials such as green steel, utilizing ..., and
- * adopting ... / (e.g., by location, contract type, or contract preference)）。
+ * adopting ... / (e.g., by location, contract type, or contract preference)）。句の中に and / or があれば句はもう閉じていて、
+ * 句ごと 1 つの項目（apples, oranges such as navels and mandarins, and pears）。
  */
 const fromExample = (clause: Clause, at: number, items: readonly Token[][]): readonly Token[][] => {
   const level = clause.depths[at] ?? 0;
   const phraseAt = items.findLastIndex((item) => exampleEnd(clause, level, item) !== -1);
   const phrase = items[phraseAt];
   if (phrase === undefined) return items;
+  const examples = phrase.slice(exampleEnd(clause, level, phrase));
+  if (examples.some((token) => LIST_CONJUNCTION.has(token.surface.toLowerCase()))) return items;
   const rest = items.slice(phraseAt + 1);
-  const inPhrase = [phrase.slice(exampleEnd(clause, level, phrase)), ...rest].filter((item) => item.some(isContent));
+  const inPhrase = [examples, ...rest].filter((item) => item.some(isContent));
   return new Set(inPhrase.map(shapeOf)).size > 1 ? items : inPhrase;
 };
 
