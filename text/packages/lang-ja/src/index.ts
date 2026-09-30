@@ -115,7 +115,8 @@ export const adapter: LanguageAdapter = {
     lengthUnit: "char",
   },
   prepare: async (need: AdapterNeeds): Promise<void> => {
-    askForLongVowels.value = need.features?.includes("LongVowelEnding") ?? false;
+    // Once asked, keep marking: files are prepared in parallel, and a later prepare must not unmark an earlier file's run.
+    askForLongVowels.value ||= need.features?.includes("LongVowelEnding") ?? false;
     if (need.pos) await prepare();
   },
   detect: (source: string): number => {

@@ -8,7 +8,6 @@ import { longFormMorae, moraCount, oddLongVowels, type KanaWord } from "../packa
 import type { OptionLayer } from "../packages/chaff/src/rule-options.ts";
 import { katakanaLongVowel } from "../packages/chaff/src/detectors/long-vowel.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import type { Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 const RULE = "katakana-long-vowel";
@@ -24,8 +23,6 @@ const found = (source: string, options: Record<string, unknown> = {}, team: Team
   runRulesWith(buildDocument("t.md", source, ja, team), RULES_JA, { ...AT_NORMAL, optionLayers: settingsLayer(options) })
     .findings.filter((finding) => finding.rule === RULE)
     .map((finding) => `${String(finding.values["matched"])}→${String(finding.values["preferred"])}:${finding.variant ?? ""}`);
-
-const isDropped = (token: Token): boolean => token.features?.["LongVowelEnding"] === "Dropped";
 
 const word = (surface: string, offset: number, dropped = false): KanaWord => ({ surface, offset, long: surface.endsWith("ー"), dropped });
 
@@ -193,18 +190,6 @@ describe("katakana-long-vowel", () => {
       assert.deepEqual(neededBy(RULES_JA, {}, false, "business/report", "ja").features, []);
       assert.deepEqual(neededBy(RULES_JA, { [RULE]: "normal" }, false, "business/report", "ja").features, ["LongVowelEnding"]);
       assert.deepEqual(neededBy(RULES_JA, { [RULE]: "off" }, true, "business/report", "ja").features, []);
-    });
-
-    it("the adapter marks no dropped ー when no rule asked for it", async () => {
-      const marked = (): boolean =>
-        buildDocument("t.md", "# 報告\n\nメモリを使います。\n", ja)
-          .sentences.flatMap((sentence) => sentence.tokens ?? [])
-          .some(isDropped);
-      await ja.prepare?.({ pos: true });
-      const without = marked();
-      await ja.prepare?.({ pos: true, features: ["LongVowelEnding"] });
-      assert.equal(without, false);
-      assert.equal(marked(), true);
     });
 
     it("is off by default (experimental) and does not run on English", () => {

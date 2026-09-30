@@ -6,7 +6,8 @@ import { collectTargets, readDocumentFile } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
 import { evaluate } from "../eval.ts";
 import { renderEval } from "../render/eval.ts";
-import { neededBy, tokenFeaturesOf } from "../run.ts";
+import { neededBy, tokenFeaturesOf, wantsTags } from "../run.ts";
+import type { AdapterNeeds, RuleDefinition } from "../plugin.ts";
 import { optionLayersOf } from "../config/option-problems.ts";
 import type { Config } from "../config/load.ts";
 import { profileFor } from "../profile/for-file.ts";
@@ -25,6 +26,16 @@ const TEXT: Texts<{
     mixed: (mixes) => `Languages or genres are mixed: ${mixes}\nMeasure one at a time (for example npx chaff eval examples/blog-en/).`,
     unknownRule: (id) => `There is no rule named ${id}.`,
   },
+};
+
+/**
+ * What the adapter must prepare. eval measures a rule whatever its level, so a rule named with --rule gets the tags and the
+ * token features it reads even when lint would not run it; without --rule, the tags are what lint would prepare.
+ */
+const evalNeeds = (rules: readonly RuleDefinition[], only: string | undefined, config: Config, genre: string, language: string): AdapterNeeds => {
+  const measured = rules.filter((rule) => only === undefined || rule.id === only);
+  const lint = neededBy(rules, config.rules, config.experimental, genre, language);
+  return { pos: lint.pos || (only !== undefined && measured.some(wantsTags)), features: tokenFeaturesOf(measured) };
 };
 
 export type Context = {
@@ -54,9 +65,7 @@ export const runEval = async (targets: readonly string[], argv: readonly string[
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
       const { genre } = resolveGenre(path, source, config);
-      // eval measures a rule whatever its level, so ask for every token feature a measured rule reads.
-      const rules = loadRules(language);
-      await adapter.prepare?.({ ...neededBy(rules, config.rules, config.experimental, genre, language), features: tokenFeaturesOf(rules) });
+      await adapter.prepare?.(evalNeeds(loadRules(language), only, config, genre, language));
       return { doc: buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre)), language, genre };
     }),
   );
