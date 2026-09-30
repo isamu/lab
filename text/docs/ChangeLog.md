@@ -2,6 +2,29 @@
 
 Newest first.
 
+## Unreleased
+
+### `heading-echo` counts only the part of the heading that the sentence repeats (#170)
+
+`heading-echo` reports a first sentence that adds little besides its heading. It measured "little" as the sentence's
+length minus the whole heading's, so a sentence that repeats only part of the heading was charged for words it never
+used. 「How Do Astronauts Go on Spacewalks?」 followed by 「When astronauts go on spacewalks, they wear spacesuits to
+keep themselves safe.」 was reported, as were a 就業規則 article that goes on to set out its sanction and a changelog
+entry that says what was rebuilt. Now only the heading's repeated part is subtracted: in English its words that the
+sentence also has (a word and the same word with an ending, such as `level` and `levels`, count as one; a word of
+punctuation alone never does), in Japanese its characters that a shared trigram covers. The limits are unchanged,
+and the change can only report less. A sentence that restates the heading (「Why Do Astronauts Go on Spacewalks?」 →
+「Astronauts go on spacewalks for many reasons.」, 「キャッシュの仕組みについて説明します。」) is still reported.
+
+### Corpus round 11: tables, job postings, children's text, letters, a translated speech (#170)
+
+The corpus adds 気象庁「予報用語 風」 (a glossary laid out as a table) and 総務省「マルウェア（ウイルス等）とは？」, which
+the table reading now converts, and kinds it did not have: a 厚生労働省 期間業務職員 job posting, a 消費者庁 注意喚起,
+国税庁's page for primary-school children, the English version of the Prime Minister's UN speech (a pair with the
+Japanese one), a VOA Learning English news story, a NASA Knows page for grades K-4, Login.gov help, a CFPB consumer
+warning and Lincoln's letters to Horace Greeley (Wikisource). A さいたま市 recipe and a DailyMed drug label are kept as
+URLs only.
+
 ## 0.16.0 — 2026-09-30
 
 Pick the kind of document, and chaff checks it as that kind. New genres cover contracts, statutes, court decisions,
@@ -89,27 +112,6 @@ corpus documents of each kind:
 `rules --json` and `explain` show a genre's level as the one in effect, and now read `--genre` as a check does (before,
 they took the genre only from chaff.yaml). `tree` and `cite` read with the genre's profile. The genres that were there
 before are unchanged, and so is every check's result for them.
-
-### `heading-echo` counts only the part of the heading that the sentence repeats (#170)
-
-`heading-echo` reports a first sentence that adds little besides its heading. It measured "little" as the sentence's
-length minus the whole heading's, so a sentence that repeats only part of the heading was charged for words it never
-used. 「How Do Astronauts Go on Spacewalks?」 followed by 「When astronauts go on spacewalks, they wear spacesuits to
-keep themselves safe.」 was reported, as were a 就業規則 article that goes on to set out its sanction and a changelog
-entry that says what was rebuilt. Now only the heading's repeated part is subtracted: in English its words that the
-sentence also has (a word and the same word with an ending, such as `level` and `levels`, count as one; a word of
-punctuation alone never does), in Japanese its characters that a shared trigram covers. The limits are unchanged,
-and the change can only report less. A sentence that restates the heading (「Why Do Astronauts Go on Spacewalks?」 →
-「Astronauts go on spacewalks for many reasons.」, 「キャッシュの仕組みについて説明します。」) is still reported.
-
-### Corpus round 11: tables, job postings, children's text, letters, a translated speech (#170)
-
-The corpus adds 気象庁「予報用語 風」 (a glossary laid out as a table) and 総務省「マルウェア（ウイルス等）とは？」, which
-the table reading now converts, and kinds it did not have: a 厚生労働省 期間業務職員 job posting, a 消費者庁 注意喚起,
-国税庁's page for primary-school children, the English version of the Prime Minister's UN speech (a pair with the
-Japanese one), a VOA Learning English news story, a NASA Knows page for grades K-4, Login.gov help, a CFPB consumer
-warning and Lincoln's letters to Horace Greeley (Wikisource). A さいたま市 recipe and a DailyMed drug label are kept as
-URLs only.
 
 ### 「（1）」 directly under an article with body text is an item of the unnumbered first paragraph (#170)
 
