@@ -427,8 +427,12 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
       '<dl><dd><a href="#reader-content">本文へ</a></dd></dl><div class="pageReader"><p><a id="reader-content" tabindex="-1">ここから本文です。</a></p></div>' +
       '<h1><a id="top" tabindex=\'-1\'>日光の物語</a></h1><p>山と湖。</p><div><a id="reader-end" tabindex=-1>本文ここまでです。</a></div>' +
       '<p><a name="t1">用語</a>の説明。</p><p><a href="/x" tabindex="-1">外へ</a>行く。</p>' +
-      '<p><a id="term" tabindex="-1">サービス</a>とは、本サービスをいう。</p><p>次の <a id="d" tabindex="-1">定義</a></p>';
-    assert.equal(htmlToMarkdown(html), "# 日光の物語\n\n山と湖。\n\n用語の説明。\n\n外へ行く。\n\nサービスとは、本サービスをいう。\n\n次の 定義\n");
+      '<p><a id="term" tabindex="-1">サービス</a>とは、本サービスをいう。</p><p>次の <a id="d" tabindex="-1">定義</a></p>' +
+      "<p>x > <a id=v tabindex=-1>value</a></p><p><a id=w tabindex=-1>word</a> < y</p>";
+    assert.equal(
+      htmlToMarkdown(html),
+      "# 日光の物語\n\n山と湖。\n\n用語の説明。\n\n外へ行く。\n\nサービスとは、本サービスをいう。\n\n次の 定義\n\nx > value\n\nword < y\n",
+    );
   });
 
   it("見出しの直後で自分の節を指すリンク (Copy link to …) は落とす", () => {

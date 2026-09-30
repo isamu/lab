@@ -152,10 +152,12 @@ const isReaderOnlyClass = (range: ElementRange): boolean => {
 const isFocusTarget = (range: ElementRange): boolean =>
   !/\shref\s*=/iu.test(range.openTag) && /\stabindex\s*=\s*(?:"\s*-1\s*"|'\s*-1\s*'|-1(?=[\s/>]))/iu.test(range.openTag);
 
+// A tag (or the start or end of the page) with only spacing between it and the anchor; a ">" or "<" in text is no tag.
+const TAG_BEFORE = /(?:^|<\/?[a-z][^<>]*>)\s*$/iu;
+const TAG_AFTER = /^\s*(?:<\/?[a-z]|$)/iu;
+
 /** Nothing but markup on either side: the anchor is a block of its own, not a word in a sentence. */
-const standsAlone = (html: string, range: ElementRange): boolean =>
-  html.slice(html.lastIndexOf(">", range.start - 1) + 1, range.start).trim() === "" &&
-  html.slice(range.end, html.indexOf("<", range.end) === -1 ? html.length : html.indexOf("<", range.end)).trim() === "";
+const standsAlone = (html: string, range: ElementRange): boolean => TAG_BEFORE.test(html.slice(0, range.start)) && TAG_AFTER.test(html.slice(range.end));
 
 /**
  * Text the page writes for a screen reader and does not show. A focus target counts only standing alone outside a
