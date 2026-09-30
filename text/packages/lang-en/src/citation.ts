@@ -52,17 +52,18 @@ export const listMembers = (rest: string, plural: boolean): ListMember[] =>
  */
 const TAG = "(?<tag>[A-Z][A-Z0-9]{1,30})";
 /**
- * "[HTTP-CACHING]" is written like a contract's placeholder "[BUYER-1]". Only the document tells them apart, by listing
- * the tag or not, so this tag is a candidate that the core checks against the document (attrs.citedTag).
+ * "[HTTP-CACHING]" is written like a contract's placeholder "[BUYER-1]", and a numbered citation "[19]" like a blank to
+ * fill in. Only the document tells them apart, by listing the tag or not, so this tag is a candidate that the core checks
+ * against the document (attrs.citedTag).
  */
-const HYPHENATED_TAG = "(?<tag>[A-Z][A-Z0-9]{0,30}(?:-[A-Z0-9]{1,30}){1,4})";
+const LISTED_TAG = "(?<tag>\\d{1,3}|[A-Z][A-Z0-9]{0,30}(?:-[A-Z0-9]{1,30}){1,4})";
 const tagAfter = (tag: string): RegExp => new RegExp(`^\\[${tag}\\]`, "u");
 /** "[HTTP], Section 12.1": the tag written just before the reference. */
 const tagBefore = (tag: string): RegExp => new RegExp(`\\[${tag}\\],?\\s?$`, "u");
 const TAG_AFTER = tagAfter(TAG);
 const TAG_BEFORE = tagBefore(TAG);
-const HYPHENATED_AFTER = tagAfter(HYPHENATED_TAG);
-const HYPHENATED_BEFORE = tagBefore(HYPHENATED_TAG);
+const LISTED_AFTER = tagAfter(LISTED_TAG);
+const LISTED_BEFORE = tagBefore(LISTED_TAG);
 const TAG_REACH = 40;
 
 const tagEndingAt = (pattern: RegExp, text: string, start: number): string | undefined =>
@@ -120,9 +121,12 @@ export const citedDocumentAfter = (text: string, end: number): string | undefine
   return words.length === 1 && SELF.has(name) ? undefined : name;
 };
 
-/** A hyphenated tag right after a reference ("Section 4.2.3 of [HTTP-CACHING]") or just before it ("[HTTP-CACHING], Section 4"). */
-export const hyphenatedTagAround = (text: string, start: number, end: number): string | undefined => {
+/**
+ * A tag that names another document only if this document lists it, right after a reference ("Section 4.2.3 of
+ * [HTTP-CACHING]", "Section 4.2.2.17 of [19]") or just before it ("[HTTP-CACHING], Section 4", "[23], Section 2.17").
+ */
+export const listedTagAround = (text: string, start: number, end: number): string | undefined => {
   const named = afterOf(text, end);
-  const following = named === undefined ? undefined : HYPHENATED_AFTER.exec(named)?.groups?.["tag"];
-  return following ?? tagEndingAt(HYPHENATED_BEFORE, text, start);
+  const following = named === undefined ? undefined : LISTED_AFTER.exec(named)?.groups?.["tag"];
+  return following ?? tagEndingAt(LISTED_BEFORE, text, start);
 };

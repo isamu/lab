@@ -1,6 +1,7 @@
-# Names of codes that are cited by title and section (35 CFR §122, 42 U.S.C. § 1983). A section sign, or "Section", right
-# after one of these points into that code, not into this document. Matched as written, with an optional title number
-# before it.
+# Names of codes that are cited by title and section (35 CFR §122, 42 U.S.C. § 1983), and of numbered document series
+# cited by number and section (RFC 1122, Section 3.3.4.2). A section sign, or "Section", right after one of these points
+# into that code, not into this document. Matched as written. A code takes an optional title number before it; an entry
+# with position: before stands before its own number.
 id: document-kind
 language: en
 entries:
@@ -10,3 +11,9 @@ entries:
   - pattern: U.S.C.A.
   - pattern: USC
   - pattern: USCA
+  - pattern: RFC
+    position: before
+  - pattern: BCP
+    position: before
+  - pattern: STD
+    position: before
