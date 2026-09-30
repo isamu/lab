@@ -13,13 +13,14 @@ import { subheadingPieces } from "./subheading-line.ts";
 import { speakerLabels } from "./speaker-labels.ts";
 import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
-import { pageFurniture, textOutline } from "./page-furniture.ts";
+import { layoutMasks, textOutline } from "./page-furniture.ts";
 import { tokenizedLexicons } from "./lexicon-tokens.ts";
 import { plainSource } from "./plain-source.ts";
 import { inPageAnchors, isInPageNavigation, isNavigationList, type InPageAnchors } from "./in-page-nav.ts";
 import { eachPreOrder } from "./tree-walk.ts";
 import { emailParts, emailVocabulary } from "./email-parts.ts";
 import { cutTextSpans } from "./span-cut.ts";
+import { markdownFigures } from "./text-figures.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile, Token } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
@@ -317,8 +318,8 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
   const emailLayout = emailParts(source, emailVocabulary(adapter.lexicons));
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
   // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
-  // テキストの文書は、ページのヘッダーとフッターも本文ではない（Markdown には改ページが無い）。
-  const blocks = [...collectMasks(root, source, anchors), ...(isMarkdownPath(path) ? [] : pageFurniture(source)), ...emailLayout.furniture];
+  // ページのヘッダーとフッター（テキストの文書）と、線で描いた図も本文ではない。
+  const blocks = [...collectMasks(root, source, anchors), ...layoutMasks(root, source, isMarkdownPath(path)), ...emailLayout.furniture];
   const prose = proseOf(source, [...blocks, ...emphasisSpans(root, source)]);
   // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。メールのヘッダーや署名の行は段落から切り取る。
   const paragraphSpans = cutTextSpans(
@@ -399,7 +400,7 @@ const OPAQUE = ["code", "inlineCode", "html", "yaml", "toml"];
 /** 引用した返信も中を読まない。ほかの人の言葉の中の定義や番号は、この文書のものではない。 */
 const outlineOf = (root: Node, source: string, replyQuotes: readonly Span[]): Outline => ({
   headings: headingsOf(root, source, replyQuotes),
-  opaque: [...OPAQUE.flatMap((type) => spansOfType(root, type)), ...replyQuotes],
+  opaque: [...OPAQUE.flatMap((type) => spansOfType(root, type)), ...markdownFigures(root, source), ...replyQuotes],
 });
 
 /** 構造を読むための Markdown の手がかり。見出しと、中を読まない範囲。返信の引用は、言語パッケージの語彙表で見分ける。 */

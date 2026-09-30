@@ -4,6 +4,30 @@ Newest first.
 
 ## Unreleased
 
+### Plain text: a figure drawn with lines is not prose (#170)
+
+RFC 9293's state diagrams and message sequences were read as prose: "CLOSED CLOSED" and "LISTEN LISTEN" were doubled
+words, and the state diagram was one very long sentence. Where a figure was indented four spaces or more it was already
+an indented code block; rows at the body's own indent (numbered rows such as "1.  CLOSED … CLOSED", box edges at the
+body's margin) were not. A figure is now found by its shape, in `.txt` and in Markdown:
+
+- **Rows.** A line drawn with lines (a run such as `-->`, `+---+`, `<==` or box-drawing characters, or a line at least
+  half made of `+ - | / \ < > ^ = v`), or a line whose words are set in columns (three or more spaces between them). A
+  line with sentence punctuation ("reply. It", "link, then", 。 or 、) is never a row.
+- **A figure** is two or more rows with at most one blank line between them, at least one of them drawn with lines. A
+  short note between rows ("(Close)", "(2 MSL)") belongs to it; a line of more than four words does not, so a wrapped
+  sentence between two figures stays prose.
+- **Not a line:** a rule of one repeated character (`-----`, `=====`), so a title between two rules and a table of words
+  with a dashed underline stay prose; a `---` dash between words; a list marker ("- EU", "- /").
+- **Markdown:** only outside code, tables, HTML and headings. A block indented four spaces or more was already code and
+  still is.
+- A figure is masked like a code block, keeping offsets, and the structure rules do not read inside it.
+
+In the corpus, RFC 9293 loses the `doubled-word` findings inside its figures and the sentence made of the state
+diagram. `undefined-acronym` no longer counts the state names seen only in figures (RCVD, ESTAB, DATA) and now reports
+LISTEN, which text inside a figure had counted as explained. RFC 3693 loses the long sentences made of figure rows, and
+the ASF board minutes those made of `+----+` tables.
+
 ### Email: headers, separators, signatures and quoted replies are not the writer's prose (#170)
 
 A plain-text or Markdown email was read as one long piece of prose. Found by shape, in any genre:
