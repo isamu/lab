@@ -2,6 +2,19 @@
 
 Newest first.
 
+## Unreleased
+
+### Japanese text written with 「，．」 is split into sentences at 「．」 (#170)
+
+Papers and university pages often write 「，」 and 「．」 for 「、」 and 「。」. The Japanese adapter did not count 「．」 as
+closing a sentence, so every sentence on one line ran into one: a whole abstract was measured as a single sentence by
+`max-sentence-length`, and its middle dots were counted together by `no-nakaguro-parallel`. 「．」 now closes a
+sentence after kana, kanji, 「ー」 or a closing bracket (「低下することがある．」「（表1）．」). After a digit it is a number or a
+decimal point, so 「１．はじめに」 and 「３．５％」 are read as before. Corpus round 12 added Japanese papers from 保健医療科学 and
+自然言語処理 (J-STAGE, CC BY 4.0) and more documents for genres the corpus had few of: a Japanese licence and terms, US
+patents, English FAQs, speeches, a novel, poems, an essay, a play and a tech blog post.
+
+
 ## 0.17.0 — 2026-09-30
 
 `legal/statute` now checks numbering, references and definitions the way `legal/contract` does, without
