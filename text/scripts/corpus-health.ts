@@ -20,25 +20,49 @@ import {
   needsAttention,
   type FetchOutcome,
 } from "./corpus-health-report.ts";
-import { fetchText } from "./fetch-text.ts";
+import { fetchText, lengthenConnectTimeout } from "./fetch-text.ts";
+import { hostOf, paceWait_ms, retryDelaysFor } from "./fetch-pacing.ts";
 import { isTransientFetchError, RETRY_DELAYS_MS, withRetry } from "./retry.ts";
 
 const SCRIPTS = dirname(fileURLToPath(import.meta.url));
 const CORPUS = join(SCRIPTS, "..", "corpus");
 const PAUSE_MS = 1_000;
+/** web.archive.org holds most of the URL documents and drops connections from a client that asks too often. */
+const HOST_GAP_MS = 5_000;
+const GIVE_UP_AFTER_FAILED_DOCS = 2;
 const NEEDS_ATTENTION_EXIT = 1;
 const CRASH_EXIT = 2;
 const REPORT_MAX_BYTES = 64 * 1024 * 1024;
 
+const lastRequestAt_ms = new Map<string, number>();
+const failedDocsByHost = new Map<string, number>();
+
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-const fetchWithRetry = (doc: DocEntry): Promise<string> =>
-  withRetry(() => fetchText(doc.url), {
-    delays_ms: RETRY_DELAYS_MS,
-    isTransient: isTransientFetchError,
-    sleep,
-    onRetry: (error, delay_ms) => console.log(`${doc.id}  retrying in ${String(delay_ms)} ms: ${errorText(error)}`),
-  });
+const pacedFetch = async (url: string): Promise<string> => {
+  const host = hostOf(url);
+  await sleep(paceWait_ms({ lastRequestAt_ms, gap_ms: HOST_GAP_MS }, host, Date.now()));
+  lastRequestAt_ms.set(host, Date.now());
+  return fetchText(url);
+};
+
+const fetchWithRetry = async (doc: DocEntry): Promise<string> => {
+  const host = hostOf(doc.url);
+  const failedDocs = failedDocsByHost.get(host) ?? 0;
+  const delays_ms = retryDelaysFor(failedDocs, RETRY_DELAYS_MS, GIVE_UP_AFTER_FAILED_DOCS);
+  if (delays_ms.length === 0) console.log(`${doc.id}  trying once: ${String(failedDocs)} documents on ${host} already failed after retrying`);
+  try {
+    return await withRetry(() => pacedFetch(doc.url), {
+      delays_ms,
+      isTransient: isTransientFetchError,
+      sleep,
+      onRetry: (error, delay_ms) => console.log(`${doc.id}  retrying in ${String(delay_ms)} ms: ${errorText(error)}`),
+    });
+  } catch (err) {
+    if (isTransientFetchError(err)) failedDocsByHost.set(host, failedDocs + 1);
+    throw err;
+  }
+};
 
 /** A committed document's fresh text is written next to the others in scratch, and compared with the committed copy. */
 const checkCommitted = (doc: DocEntry, text: string, scratch: string): FetchOutcome => {
@@ -77,6 +101,7 @@ const main = async (): Promise<void> => {
   });
   const manifest: unknown = JSON.parse(readFileSync(values.manifest, "utf8"));
   const docs = docEntries(manifest).filter((doc) => positionals.length === 0 || positionals.includes(doc.id));
+  if (!(await lengthenConnectTimeout())) console.log("connect timeout left at undici's default: no undici Agent found behind fetch");
   const scratch = mkdtempSync(join(tmpdir(), "chaff-corpus-health-"));
   const outcomes = await docs.reduce<Promise<FetchOutcome[]>>(async (previous, doc) => {
     const done = await previous;

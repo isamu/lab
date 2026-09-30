@@ -3,7 +3,8 @@
 #   ここで取得して corpus/expected.txt と比べ、rule の変更で結果が変わったのに expected が古いまま、を放っておかない。
 # - コミット済みの文書は一時ディレクトリに取り直して、コミットした写しと比べる。上流が変わった・URL が死んだ、に気づくため。
 #   写しは書き換えない。
-# 取得は一時的な失敗なら間を空けて取り直し、それでも取れなければ失敗として数える。
+# 取得は一時的な失敗（5xx、接続の timeout など）なら間を広げて取り直し、それでも取れなければ失敗として数える。
+# 同じ取得先へは間を空けて頼み、接続の timeout は undici の既定より長くする。
 # 失敗・上流の変化・結果の変化のどれかがあれば job を落とし、issue を立てる（既にあればコメントを足す）。
 # 判定は scripts/corpus-health.ts（純粋な部分は scripts/corpus-health-report.ts）。手元でも yarn corpus:health で同じことができる。
 name: chaff corpus (URL documents, weekly)
@@ -24,7 +25,8 @@ jobs:
   # 取得と判定。外から取ってきた文書を読む job なので、token は読み取りだけ。
   corpus:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 取り直しの待ちが長いので余裕を持たせる。取り直しても落ちる取得先が続けば、以降は一度だけ試す（scripts/fetch-pacing.ts）。
+    timeout-minutes: 120
     permissions:
       contents: read
     outputs:
