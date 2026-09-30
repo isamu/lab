@@ -28,6 +28,9 @@ const REPORTED: readonly Case[] = [
   ["角括弧の略語で、頭文字が揃わない", "## Storm surge products [MEOW]", "MEOW"],
   ["見出しが別の略語を展開している", "## Storm surge runs of the Maximum Of Maximums (MOM)", "MEOW"],
   ["括弧の中が略語でない語", "## MEOW runs (overview)", "MEOW"],
+  ["括弧の略語が添え書きで、見出しの語から文字を拾えない（MulmoCast の記事）", "## 2. Creating with Your Own AI (LLM)", "LLM"],
+  ["略語のあとの括弧が名前でない", "## MEOW (Beta)", "MEOW"],
+  ["見出しの語から文字は拾えるが、展開の形でない", "## Maximum Envelope of Water and MEOW runs", "MEOW"],
 ];
 
 describe("undefined-acronym：見出しの中の展開", () => {
@@ -56,8 +59,8 @@ describe("undefined-acronym：見出しの中の展開", () => {
     assert.deepEqual(reportedAcronyms(en, source), ["MEOW"]);
   });
 
-  it("日本語の見出し：括弧の略語は説明済み", () => {
-    assert.deepEqual(reportedAcronyms(ja, "# 用語\n\n## サービス品質の約束（SLA）\n\nSLA を結ぶ。\n"), []);
-    assert.deepEqual(reportedAcronyms(ja, "# 用語\n\n## サービス品質の約束\n\nSLA を結ぶ。\n"), ["SLA"]);
+  it("日本語の見出し：英語の名前は揃えば説明済み、日本語の名前は確かめられない", () => {
+    assert.deepEqual(reportedAcronyms(ja, "# 用語\n\n## Service Level Agreement（SLA）\n\nSLA を結ぶ。\n"), []);
+    assert.deepEqual(reportedAcronyms(ja, "# 用語\n\n## サービス品質の約束（SLA）\n\nSLA を結ぶ。\n"), ["SLA"]);
   });
 });

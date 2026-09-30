@@ -23,9 +23,11 @@ its shape, and no longer votes. Which style is right is still not decided.
 Headings never become sentences, so an acronym spelled out only in a heading ("##### Maximum Envelope of Water (MEOW)
 runs", then "the MEOW for the cell" in the body) was reported as unexplained. Each heading is now searched with the
 same expansion forms as the body: brackets after a name, a name in brackets after the acronym, a square-bracketed
-acronym whose capitalised initials match, and the rest. A heading that only uses the acronym ("## MEOW runs") still
-explains nothing. In the corpus, MEOW and MOM (NOAA AOML hurricane FAQ), HMRC (GOV.UK CDDO roadmap) and ESL, EHC
-and EEA (GOV.UK style guide A to Z) are no longer reported.
+acronym whose capitalised initials match, and the rest. Because headings also carry bracketed labels ("Your Own AI
+(LLM)", "(Beta)"), a heading counts only when the acronym's letters can be picked, in order, from its other words (the
+check glossary headwords already use), so a Japanese name in a heading cannot be confirmed. A heading that only uses
+the acronym ("## MEOW runs") still explains nothing. In the corpus, MEOW and MOM (NOAA AOML hurricane FAQ), HMRC
+(GOV.UK CDDO roadmap) and ESL, EHC and EEA (GOV.UK style guide A to Z) are no longer reported.
 
 ### `title-case-consistency`: a curly apostrophe inside a word is part of the word (#170)
 

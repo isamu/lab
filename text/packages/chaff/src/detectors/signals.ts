@@ -4,7 +4,7 @@ import { compacted, placeAt, type Compacted } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
 import { furnitureMask, isFurniture } from "./gram-furniture.ts";
 import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
-import { expansionAt, termEntryAcronyms, type ExpandedAt } from "./acronym-expansion.ts";
+import { abbreviates, expansionAt, termEntryAcronyms, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, startsWithin } from "./concrete-evidence.ts";
@@ -261,6 +261,13 @@ const outsideDates = (hits: readonly AcronymHit[], dates: readonly Span[]): Acro
 const isExpanded = (body: string, acronym: string, expandedAt: ExpandedAt): boolean =>
   [...body.matchAll(new RegExp(`${EDGE_BEFORE}${acronym}${EDGE_AFTER}`, "gu"))].some((match) => expandedAt(body, acronym, match.index));
 
+/**
+ * 見出しは文にならないので、見出しの中の展開（Maximum Envelope of Water (MEOW) runs）は見出しの文字列で探す。
+ * 見出しの括弧は添え書き（Your Own AI (LLM)、(Beta)）にも使うので、見出しの語から略語の文字が順に拾えるときだけ認める。
+ */
+const expandsInHeading = (heading: string, acronym: string, expandedAt: ExpandedAt): boolean =>
+  isExpanded(heading, acronym, expandedAt) && abbreviates(heading.replaceAll(acronym, " "), acronym);
+
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
 const notationOf = (doc: ProseDocument): NotAcronymSpans =>
@@ -290,10 +297,9 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const common = new Set([...(options.lexicon ?? []).map((entry) => entry.pattern), ...patternsOf(doc, "http-method"), ...(doc.names ?? [])]);
   const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
   const entries = termEntryAcronyms(doc.source);
-  // 見出しは文にならない。見出しの中の展開（Maximum Envelope of Water (MEOW) runs）も、本文と同じ形で読む。
-  const headings = doc.sections.map((section) => section.heading).filter((heading) => heading !== "");
+  const headings = doc.sections.map((section) => section.heading);
   const explainedAlone = (word: string): boolean =>
-    common.has(word) || entries.has(word) || [body, ...headings].some((text) => isExpanded(text, word, expandedAt));
+    common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt) || headings.some((heading) => expandsInHeading(heading, word, expandedAt));
   const hits = acronymsOf(doc, notationOf(doc));
   const unexplained = new Set([...firstHits(hits).keys()].filter((acronym) => !isExplained(acronym, explainedAlone)));
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
