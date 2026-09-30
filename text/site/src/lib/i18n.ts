@@ -31,6 +31,7 @@ const ja = {
   languages: "対象の言語",
   allLanguages: "日本語と英語",
   levels: "段階",
+  levelsSetSeverity: "このルールには数える上限がありません。段階は指摘の重さを変えます。relaxed にすると指摘は消えずに一段軽く出ます。",
   usedFor: "向いている文章",
   why: "なぜ指摘するのか",
   message: "指摘の文",
@@ -87,6 +88,8 @@ const en: Record<UiKey, string> = {
   languages: "Languages",
   allLanguages: "Japanese and English",
   levels: "Levels",
+  levelsSetSeverity:
+    "This rule has no limit to count to. A level sets how a finding is marked: relaxed keeps the finding and marks it a step lower.",
   usedFor: "Suited to",
   why: "Why it matters",
   message: "Message",

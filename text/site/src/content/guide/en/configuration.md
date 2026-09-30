@@ -163,6 +163,31 @@ $ npx chaffjs explain max-sentence-length
 The same `normal` means a different number in a different genre.
 You write a word rather than a number so that chaff can pick the number that fits the genre.
 
+## Rules with nothing to count
+
+A gap in the numbering, or a weekday that does not match its date, is either there or not. There is no limit to count to.
+For these rules the four words set how a finding is marked. At `relaxed` the finding does not go away; it is marked a step lower.
+
+| Rules | `strict` | `normal` | `relaxed` |
+| --- | --- | --- | --- |
+| `numbering-gap` `dangling-reference` `date-weekday-mismatch` `total-mismatch` | (none) | error | warning |
+| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` | error | warning | note |
+
+chaff fails when any error is left, and passes when there are only warnings and notes.
+`explain` shows the marking in place of a number.
+
+```
+$ npx chaffjs explain numbering-gap --genre legal/statute
+(…)
+  Levels (there is no limit to count to; a level sets how a finding is marked):
+  → normal   error
+    relaxed  warning
+    off      not checked
+```
+
+When a rule needs no checking, turn it `off`.
+A number written for one of these rules only runs it at `normal`, and chaff says so when it reads the settings.
+
 ## When four words are not enough
 
 The writing you want to hold up as a model can run longer than `relaxed` allows. Then write the limit as a positive number.
@@ -311,6 +336,7 @@ The output is long, so here is one entry, with `max-sentence-length: 260` set (t
     "literature",
     "speech"
   ],
+  "level_sets": "limit",
   "levels": {
     "strict": 18,
     "normal": 25,
@@ -336,6 +362,8 @@ The output is long, so here is one entry, with `max-sentence-length: 260` set (t
 ```
 
 `now` is the value actually in effect.
+`level_sets` says what a level changes: `limit` is a limit to count to, `severity` is how a finding is marked.
+For a rule with nothing to count, `levels` and `now` hold a severity (`error` / `warning` / `info`) in place of a number.
 For an experimental rule, `now` says why it does not run and how to turn it on.
 
 ```json
