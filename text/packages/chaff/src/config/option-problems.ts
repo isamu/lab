@@ -1,13 +1,22 @@
 import { CONFIG_FILE, type Config } from "./load.ts";
 import type { RuleDefinition, RuleOption } from "../plugin.ts";
 import { optionProblems, type OptionLayer, type OptionProblem } from "../rule-options.ts";
-import { styleSource } from "./style.ts";
+import { styleLevelSource, styleSource } from "./style.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
 
 /** Where chaff.yaml's options come from, for settleOptions: the file itself. */
 export const configOptionLayer = (config: Pick<Config, "options">): OptionLayer => ({
   from: CONFIG_FILE,
   values: config.options ?? {},
+});
+
+/** Where a rule's settings come from, for explain: the option layers, and the style when it set the level. */
+export const settingSourcesOf = (
+  config: Pick<Config, "options" | "applied">,
+  ruleId: string,
+): { optionLayers: OptionLayer[]; levelFrom: string | undefined } => ({
+  optionLayers: optionLayersOf(config),
+  levelFrom: styleLevelSource(config, ruleId),
 });
 
 /** Every place options come from, strongest first: chaff.yaml, then its style. */
