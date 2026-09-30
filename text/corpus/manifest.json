@@ -1717,6 +1717,149 @@
       "license": "The recipe's source is the University of Nebraska at Lincoln (Nebraska Nutrition Education Program), not the federal government, and no licence is stated (URL only)",
       "redistribute": false,
       "format": "html"
+    },
+    {
+      "id": "jma-yougo-kaze",
+      "title": "気象庁: 予報用語 風",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260928131406id_/https://www.jma.go.jp/jma/kishou/know/yougo_hp/kaze.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0; 気象庁ホームページについて https://www.jma.go.jp/jma/kishou/info/coment.html); 出典: 気象庁ホームページ (https://www.jma.go.jp/jma/kishou/know/yougo_hp/kaze.html); Markdown に変換（加工して作成）; the glossary table is read one cell per paragraph",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "soumu-kokumin-cyber-malware",
+      "title": "総務省 国民のためのサイバーセキュリティサイト: マルウェア（ウイルス等）とは？",
+      "source": "url",
+      "genre": "blog/owned-media",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260305051520id_/https://www.soumu.go.jp/main_sosiki/cybersecurity/kokumin/basic/risk/01/",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0; 総務省「著作権について」 https://www.soumu.go.jp/menu_kyotsuu/policy/tyosaku.html); 出典: 総務省ホームページ (https://www.soumu.go.jp/main_sosiki/cybersecurity/kokumin/basic/risk/01/); Markdown に変換（加工して作成）; the page's illustrations are not included",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "mhlw-kikan-gyomu-shokuin-boshu",
+      "title": "厚生労働省: 健康・生活衛生局の募集について（期間業務職員採用情報、移植医療対策推進室）",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260918000605id_/https://www.mhlw.go.jp/stf/kouseiroudoushou/saiyou/hijoukin/hj-kenkou_seikatueiseikyoku01.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0; 厚生労働省「利用規約・リンク・著作権等」 https://www.mhlw.go.jp/chosakuken/index.html), but the posting names an individual contact person (担当者の氏名), so the text is not committed (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "caa-mokebanashi-chuikanki",
+      "title": "消費者庁: 儲け話に関する注意喚起（2022年12月22日）",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260211130617id_/https://www.caa.go.jp/notice/entry/031602/",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0; 消費者庁「利用規約・リンク・著作権等」 https://www.caa.go.jp/terms_of_use/); 出典: 消費者庁ホームページ (https://www.caa.go.jp/notice/entry/031602/); Markdown に変換（加工して作成）; the linked PDF is not included",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "nta-kids-mijika-na-zeikin",
+      "title": "国税庁 税の学習コーナー: 税って何だろう？ 身近な税金について（小学生向け）",
+      "source": "url",
+      "genre": "blog/owned-media",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260329130634id_/https://www.nta.go.jp/taxes/kids/nyumon/page02.htm",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: 国税庁ホームページ (https://www.nta.go.jp/taxes/kids/nyumon/page02.htm); 「税って何だろう？ 身近な税金について」（国税庁）を加工して作成 (converted to Markdown); the illustrations are not included",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "saitama-shokuiku-soboro-oyakodon",
+      "title": "さいたま市 食育なび: 管理栄養士おすすめ パパっと簡単！栄養満点ごはん『レンジで そぼろ親子丼』",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260208143919id_/https://www.saitamacity-shokuiku.jp/G0000001/system/common_content1/9555.html",
+      "license": "食育なび・健康なび 利用規約 (https://www.saitamacity-shokuiku.jp/about/terms.html) forbids reproduction, distribution and derivative works without permission (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "kantei-unga81-general-debate-speech-en",
+      "title": "Prime Minister's Office of Japan: Address by Prime Minister TAKAICHI Sanae at the Eighty-First Session of the United Nations General Assembly (provisional translation)",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://japan.kantei.go.jp/105/statement/202609/22enzetsu.html",
+      "license": "Public Data License (Version 1.0) (PDL1.0, compatible with CC BY 4.0; Copyright Policy https://japan.kantei.go.jp/policies/terms_e.html); Source: Prime Minister's Office of Japan website (https://japan.kantei.go.jp/105/statement/202609/22enzetsu.html); converted to Markdown (edited); the English counterpart of kantei-unga81-general-debate-speech; a speech by a single speaker, no third-party words; not archived by the Wayback Machine at the time, so the URL is the live page",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "voa-le-lunar-trailblazer",
+      "title": "VOA Learning English: NASA to Launch Instruments to Study Water on Moon (November 3, 2024)",
+      "source": "url",
+      "genre": "blog/owned-media",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260415014123id_/https://learningenglish.voanews.com/a/nasa-to-launch-instrument-to-study-water-on-moon/7846588.html",
+      "license": "Public domain (VOA Terms of Use, https://www.voanews.com/terms-use-and-privacy-notice: all text produced exclusively by the Voice of America is in the public domain); written by VOA Learning English staff based on NASA reports (no AFP/AP/Reuters text); Source: Voice of America; the image and audio are not included, only the caption",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "nasa-knows-spacewalk-k4",
+      "title": "NASA Knows: What Is a Spacewalk? (Grades K-4)",
+      "source": "url",
+      "genre": "blog/owned-media",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260712211320id_/https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-a-spacewalk-grades-k-4/",
+      "license": "Public domain (work of the US federal government, NASA; NASA Images and Media Usage Guidelines https://www.nasa.gov/nasa-brand-center/images-and-media/: NASA material is generally not subject to copyright in the United States); the page's images are not included",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "logingov-help-face-or-touch-unlock",
+      "title": "Login.gov Help: Face or touch unlock",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260809155424id_/https://www.login.gov/help/create-account/authentication-methods/face-or-touch-unlock/",
+      "license": "Public domain (work of the US federal government, GSA Technology Transformation Services; https://www.login.gov/policy/ and 17 U.S.C. 105); converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "cfpb-blog-imposter-scams",
+      "title": "CFPB blog: Beware of scammers pretending to be from the CFPB",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260416085831id_/https://www.consumerfinance.gov/about-us/blog/beware-of-scammers-pretending-to-be-from-the-cfpb/",
+      "license": "Public domain (work of the US federal government, Consumer Financial Protection Bureau; 17 U.S.C. 105); converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "wikisource-lincoln-letters-greeley",
+      "title": "Life and Works of Abraham Lincoln, Volume 9: letters and telegrams to Horace Greeley, 1848-1864 (Wikisource)",
+      "source": "url",
+      "genre": "business/email",
+      "language": "en",
+      "url": "https://en.wikisource.org/w/index.php?oldid=2329193&action=render",
+      "license": "Public domain (letters written 1848-1864; the edition was published in 1907); transcription by Wikisource (https://en.wikisource.org/wiki/Life_and_Works_of_Abraham_Lincoln/Volume_9/Greeley,_Horace); the rendered page, converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "dailymed-advil-otc-label",
+      "title": "DailyMed: Label: ADVIL- ibuprofen sodium tablet, coated (Drug Facts)",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260918124120id_/https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5be198b8-396e-4b44-8819-e2e3b5d2ad0e",
+      "license": "The label is submitted by the manufacturer (Haleon US Holdings LLC), not written by NLM, and NLM's copyright policy leaves third-party content with its owner (URL only)",
+      "redistribute": false,
+      "format": "html"
     }
   ]
 }
