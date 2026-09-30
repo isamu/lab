@@ -15,6 +15,7 @@ export type Reasons = {
   readonly noDetector: (name: string) => string;
   readonly noLexicon: (language: string, list: string) => string;
   readonly noHeadings: string;
+  readonly patternTimeout: (budgetMs: number) => string;
 };
 
 const CAPABILITY_NAME: Texts<Readonly<Record<string, string>>> = {
@@ -37,6 +38,7 @@ export const REASONS: Texts<Reasons> = {
     noDetector: (name) => `検出器 ${name} がないため`,
     noLexicon: (language, list) => `${language} の語彙表 ${list} が無いため`,
     noHeadings: "表題より下の見出しが無いため",
+    patternTimeout: (budgetMs) => `正規表現が ${String(budgetMs)} ms で終わらなかったため（chaff.yaml の pattern を単純にしてください）`,
   },
   en: {
     otherLanguage: (language) => `not a rule for ${language}`,
@@ -52,5 +54,6 @@ export const REASONS: Texts<Reasons> = {
     noDetector: (name) => `no detector named ${name}`,
     noLexicon: (language, list) => `the ${language} package has no word list ${list}`,
     noHeadings: "the document has no headings below its title",
+    patternTimeout: (budgetMs) => `the pattern did not finish within ${String(budgetMs)} ms (simplify the pattern in chaff.yaml)`,
   },
 };

@@ -2,6 +2,7 @@ import type { Detector, Finding, Sentence, Span } from "../plugin.ts";
 import { occurrencesOutside } from "../orthography.ts";
 import { tokenRuns } from "../custom/token-pattern.ts";
 import { joinedView, type JoinedView } from "../joined-view.ts";
+import { boundedMatches } from "../custom/bounded-match.ts";
 
 // The detectors behind a team's custom_rules. Each reports every place it finds, at the rule's level; the spec comes from
 // the rule (DetectorOptions.custom). Positions are the document's, like every other finding.
@@ -54,16 +55,20 @@ export const customWords: Detector = (doc, options): Finding[] => {
   });
 };
 
-/** pattern: each match of the team's regular expression in a sentence. The pattern was checked when chaff.yaml was read. */
+/** pattern: each match of the team's regular expression in a sentence. Checked when chaff.yaml was read, and run with a time limit. */
 export const customPattern: Detector = (doc, options): Finding[] => {
   const spec = options.custom;
   if (spec?.type !== "pattern") return [];
-  const pattern = new RegExp(spec.pattern, `g${spec.flags}`);
-  return doc.sentences.flatMap((sentence) => {
-    const view = readAsWritten(sentence);
-    return [...view.text.matchAll(pattern)]
-      .filter((match) => match[0] !== "")
-      .map((match) => findingOf(hitAt(sentence, view, match.index, match.index + match[0].length, "")));
+  const views = doc.sentences.map(readAsWritten);
+  const matches = boundedMatches(
+    spec.pattern,
+    spec.flags,
+    views.map((view) => view.text),
+  );
+  return doc.sentences.flatMap((sentence, at) => {
+    const view = views[at];
+    if (view === undefined) return [];
+    return (matches[at] ?? []).map((match) => findingOf(hitAt(sentence, view, match.index, match.index + match.text.length, "")));
   });
 };
 

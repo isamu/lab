@@ -5,10 +5,10 @@
 export const MAX_PATTERN_LENGTH = 500;
 
 /**
- * More unbounded repeats than this are refused. Repeats side by side (a*a*a*b) do not nest, but their work multiplies: a
- * line that almost matches costs its length to the power of their number.
+ * More repeats of varying count (*, +, {1,9}) than this are refused. Repeats side by side (a*a*a*b, a{0,99}a{0,99}…) do
+ * not nest, but their work multiplies: a line that almost matches costs its length to the power of their number.
  */
-export const MAX_UNBOUNDED_REPEATS = 3;
+export const MAX_REPEATS = 3;
 
 export type RegexRefusal = "too-long" | "nested-quantifier" | "too-many-repeats" | "backreference" | "empty-match" | "invalid";
 
@@ -68,11 +68,13 @@ const competes = (pattern: string, closed: Group, end: number): boolean =>
 const afterAtom = (pattern: string, scan: Scan, end: number, closed: Group | undefined): RegexRefusal | undefined => {
   const quantifier = quantifierAt(pattern, end);
   scan.at = end + (quantifier?.length ?? 0);
-  if (quantifier?.unbounded === true) scan.repeats += 1;
-  if (scan.repeats > MAX_UNBOUNDED_REPEATS) return "too-many-repeats";
   const repeatsVariably = quantifier !== undefined && quantifier.varies && quantifier.many;
-  if (closed !== undefined && repeatsVariably && competes(pattern, closed, end)) return "nested-quantifier";
-  if (quantifier?.varies === true || closed?.varies === true) innermost(scan).varies = true;
+  if (repeatsVariably) scan.repeats += 1;
+  if (scan.repeats > MAX_REPEATS) return "too-many-repeats";
+  // A group that can match in more than one way makes the group around it so too, quantified or not: ((a|aa))+ is (a|aa)+.
+  const closedCompetes = closed !== undefined && competes(pattern, closed, end);
+  if (closedCompetes && repeatsVariably) return "nested-quantifier";
+  if (quantifier?.varies === true || closedCompetes) innermost(scan).varies = true;
   return undefined;
 };
 

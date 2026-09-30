@@ -90,6 +90,9 @@ describe("custom rules", () => {
       ["(a|ab)+c", "nested-quantifier"],
       ["(\\w|x)+c", "nested-quantifier"],
       ["a*a*a*a*b", "too-many-repeats"],
+      ["a{0,100}a{0,100}a{0,100}a{0,100}b", "too-many-repeats"],
+      ["((a|aa))+b", "nested-quantifier"],
+      ["(x(a+))+b", "nested-quantifier"],
       ["(a{2,})+", "nested-quantifier"],
       ["(.)\\1", "backreference"],
       ["(?<w>a)\\k<w>", "backreference"],
@@ -251,6 +254,16 @@ describe("custom rules", () => {
         );
       assert.deepEqual(at("normal"), ["error"]);
       assert.deepEqual(at("relaxed"), ["warning"]);
+    });
+
+    it("a pattern that runs past its time is stopped, and the rule is listed as not run", () => {
+      const rule = one({ id: "team-slow", type: "pattern", pattern: "x" });
+      const slow: RuleDefinition = { ...rule, custom: { type: "pattern", pattern: "(a|a)+b", flags: "u" } };
+      const started = performance.now();
+      const result = runRules(buildDocument("t.md", `# P\n\n${"a".repeat(40)}.\n`, en), [slow], {}, false, "business/report");
+      assert.ok(performance.now() - started < 5000);
+      assert.deepEqual(result.findings, []);
+      assert.match(result.skipped.find((skip) => skip.rule === "team-slow")?.why ?? "", /did not finish within 1000 ms/u);
     });
 
     it("languages limits where a rule runs, and says why it did not", () => {
