@@ -3,8 +3,16 @@
 /** A sample with one planted mistake, and the 1-based line it is on. */
 export type Plant = { readonly source: string; readonly line: number };
 
-/** What a mutation needs to know about the run: each rule's limit for the sample's genre, by rule id. */
-export type PlantContext = { readonly limits: Readonly<Record<string, number>> };
+/**
+ * What a mutation needs to know about the run: each rule's limit for the sample's genre, by rule id, and the length of one
+ * ordinary sentence for a rule that also measures length (max-paragraph-length's full_sentence).
+ */
+export type PlantContext = {
+  readonly limits: Readonly<Record<string, number>>;
+  readonly fullSentences?: Readonly<Record<string, number>>;
+  /** The sample's adapter's unit of length. Without it, a mutation guesses from the text. */
+  readonly lengthUnit?: "char" | "word" | undefined;
+};
 
 type Found = { readonly index: number; readonly line: string };
 

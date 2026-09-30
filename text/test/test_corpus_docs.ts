@@ -58,6 +58,12 @@ describe("storedText", () => {
     assert.equal(storedText(entry({ format: "wikitext" }), "== A ==\n"), "## A\n");
     assert.equal(storedText(entry({ format: "html" }), "<h2>A</h2><p>B</p>"), "## A\n\nB\n");
   });
+
+  it("青空文庫の文書は、奥付を落として置く", () => {
+    const page = '<div class="main_text">本文。</div><div class="bibliographical_information">底本：「全集」</div>';
+    assert.equal(storedText(entry({ format: "aozora" }), page), "本文。\n");
+    assert.equal(storedText(entry({ format: "html" }), page), "本文。\n\n底本：「全集」\n");
+  });
 });
 
 describe("docPath / parsedAs", () => {
