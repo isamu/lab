@@ -283,6 +283,11 @@ genres:
       paths: ["(^|/)(glossary|glossaries|yogo|用語集)(/|[-_.])"]
       ja: { line: "^#{1,6}\\s*用語集", min_lines: 1 }
       en: { line: "^#{1,6}\\s*Glossary\\b", min_lines: 1 }
+    # A reader looks up one entry and reads only that. A definition is a noun phrase (風の吹いてくる方向。), and sibling
+    # entries share one wording on purpose (Portion of labor productivity change attributed to …), which no reader sees twice.
+    rules:
+      taigen-dome-in-prose: off
+      ngram-repetition: off
   - id: academic/paper
     name: { ja: 論文, en: Academic paper }
     summary:
