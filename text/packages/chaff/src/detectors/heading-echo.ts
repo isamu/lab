@@ -1,21 +1,11 @@
-import { lengthOf } from "../measure.ts";
+import { lengthOf, proseText } from "../measure.ts";
+import { echoedHeadingUnits, trigrams } from "./heading-overlap.ts";
 import { handsOver } from "./lead-in.ts";
 import { withoutQuotedVariants } from "./quoted-variant.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Section } from "../plugin.ts";
 
 /** 見出しが短すぎると、偶然の一致で 100% になる。これ未満の見出しは見ない。 */
 const MIN_GRAMS = 4;
-
-/**
- * 文字 3-gram で測る。
- * 語 n-gram にすると wordSplit capability が要り、L1（言語を問わず動く）から外れる。
- */
-const trigrams = (text: string): Set<string> => {
-  // 大文字小文字を畳む。英語では見出しが Title Case、本文が小文字になり、
-  // 同じ語でも一致しなくなる（Generating Output → generated output）。
-  const clean = [...text.toLowerCase().replace(/\s+/gu, "")];
-  return new Set(clean.slice(0, Math.max(0, clean.length - 2)).map((__char, index) => clean.slice(index, index + 3).join("")));
-};
 
 /**
  * Jaccard ではなく包含率を使う。
@@ -39,18 +29,10 @@ const containment = (heading: Set<string>, sentence: Set<string>): number => {
  */
 const NEW_MATERIAL = { word: 6, char: 20 };
 
-const headingUnits = (heading: string, unit: LengthUnit): number =>
-  unit === "word"
-    ? heading
-        .trim()
-        .split(/\s+/u)
-        .filter((word) => word.length > 0).length
-    : heading.replace(/\s+/gu, "").length;
-
 const addsLittle = (section: Section, unit: LengthUnit): boolean => {
   const first = section.firstSentence;
   if (first === undefined) return false;
-  return lengthOf(first, unit) - headingUnits(section.heading, unit) <= NEW_MATERIAL[unit];
+  return lengthOf(first, unit) - echoedHeadingUnits(section.heading, proseText(first), unit) <= NEW_MATERIAL[unit];
 };
 
 /** 最初の文が、同じ節の後ろ（箇条書き・表・コード）へ読者を渡している。 */
