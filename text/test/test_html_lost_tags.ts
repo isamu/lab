@@ -13,8 +13,8 @@ describe("withLostParagraphTagsRestored", () => {
     ["エスケープされていない >", "shall apply. P>(2) It is", "shall apply. <p>(2) It is"],
     [
       "セミコロンの後ろと、閉じ引用符の後ろ、ローマ数字と大文字の番号",
-      'the list"; p&gt;(iv) and so." P&gt;(A) Next',
-      'the list"; <p>(iv) and so." <p>(A) Next',
+      'the list"; p&gt;(iv) And so." P&gt;(A) Next',
+      'the list"; <p>(iv) And so." <p>(A) Next',
     ],
   ].forEach(([form, html, restored]) => {
     it(`valid: ${String(form)}`, () => assert.equal(withLostParagraphTagsRestored(String(html)), restored));
@@ -23,7 +23,8 @@ describe("withLostParagraphTagsRestored", () => {
   [
     ["p 値", "was significant. P&gt;0.05 in both groups"],
     ["空白を挟んだ比較", "then. P &gt; (2) holds"],
-    ["文の途中", "the ratio P&gt;(2) holds"],
+    ["文の途中（番号の後ろが大文字でも）", "the ratio P&gt;(2) High and low"],
+    ["式で始まる文（番号の後ろが小文字）", "as shown. P&gt;(2) follows from (1)"],
     ["番号の後ろに空白が無い", "shall apply. P&gt;(2)It is"],
     ["番号が長すぎる", "shall apply. P&gt;(12345) It is"],
     ["タグの属性の中", '<a title="shall apply. P&gt;(2) It is">x</a>'],
