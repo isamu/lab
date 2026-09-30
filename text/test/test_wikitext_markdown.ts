@@ -9,8 +9,30 @@ describe("wikitextToMarkdown: 見出し・段落・箇条書き", () => {
     assert.equal(wikitextToMarkdown("==Understand==\nA walk.\n\n=== Getting there ===\nBy bus."), "## Understand\nA walk.\n\n### Getting there\nBy bus.\n");
   });
 
-  it("* は - 、# は 1. 、入れ子は字下げ。: と ; は印を外して本文だけ", () => {
-    assert.equal(wikitextToMarkdown("* One\n** Inner\n# First\n: Indented note\n; Term"), "- One\n  - Inner\n1. First\nIndented note\nTerm\n");
+  it("* は - 、# は 1. 、入れ子は字下げ。: と ; は印を外して本文だけの段落", () => {
+    assert.equal(wikitextToMarkdown("* One\n** Inner\n# First\n: Indented note\n; Term"), "- One\n  - Inner\n1. First\n\nIndented note\n\nTerm\n");
+  });
+
+  it(": と :: の返信は、1 行ずつ別の段落（ページでは行ごとに別の塊）。前後の地の文ともつながらない", () => {
+    const thread = "最初の投稿です。--A\n:返信です。--B\n::返信の返信です。--C\n: 次の返信です。--D\n締めの地の文。";
+    assert.equal(wikitextToMarkdown(thread), "最初の投稿です。--A\n\n返信です。--B\n\n返信の返信です。--C\n\n次の返信です。--D\n\n締めの地の文。\n");
+  });
+
+  it("*: や #: は箇条書きの項目の続きなので、段落を分けない。中身の無い : の行は空行", () => {
+    assert.equal(wikitextToMarkdown("* Item\n*: more of the item\n#: next"), "- Item\nmore of the item\nnext\n");
+    assert.equal(wikitextToMarkdown("Text.\n:\nMore."), "Text.\n\nMore.\n");
+  });
+
+  it("; の見出し語の行も、前後の地の文とは別の段落", () => {
+    assert.equal(wikitextToMarkdown("Text.\n; Term\nMore."), "Text.\n\nTerm\n\nMore.\n");
+  });
+
+  it(":* は返信の中の箇条書き。項目どうしは段落を分けず、一続きの箇条書き", () => {
+    assert.equal(wikitextToMarkdown(": Reply\n:* point\n:* other"), "Reply\n\n  - point\n  - other\n");
+  });
+
+  it("地の文の行どうしは、これまでどおり 1 つの段落", () => {
+    assert.equal(wikitextToMarkdown("One line\nand the next."), "One line\nand the next.\n");
   });
 
   it("中身が消えた箇条書きの行と、続く空行は残さない", () => {
@@ -55,6 +77,16 @@ describe("wikitextToMarkdown: テンプレート", () => {
       wikitextToMarkdown("Stop at {{Marker|type=see|lat=1|long=2|name=Clock Tower}}, walk {{convert|700|m|yd}} and pay {{EUR|3}} or {{usd|4}}."),
       "Stop at Clock Tower, walk 700 m and pay €3 or $4.\n",
     );
+  });
+
+  it("リンクだけのテンプレートは、ページに出る文字を残す（検索の語、波括弧つきのテンプレート名）", () => {
+    assert.equal(wikitextToMarkdown("方法は {{google|強制再読み込み}} を参考に。"), "方法は 強制再読み込み を参考に。\n");
+    assert.equal(wikitextToMarkdown("ページに{{tlx|要出典}}を貼り、{{tl|Stub}}も外す。"), "ページに{{要出典}}を貼り、{{Stub}}も外す。\n");
+    assert.equal(wikitextToMarkdown("See {{Google|harbour tram}} results."), "See harbour tram results.\n");
+  });
+
+  it("中身の無いリンクのテンプレートは落としたものと同じく、何も残さない", () => {
+    assert.equal(wikitextToMarkdown("A {{google}} b."), "A b.\n");
   });
 
   it("施設の一覧は名前と説明を一行に。入れ子のテンプレートも読む", () => {
@@ -120,7 +152,7 @@ describe("wikitextToMarkdown: テンプレート", () => {
     assert.equal(wikitextToMarkdown("The {{center|middle}} word."), "The\n\nmiddle\n\nword.\n");
     assert.equal(wikitextToMarkdown("Lead {{center|Centered}}\nNext."), "Lead\n\nCentered\n\nNext.\n");
     assert.equal(wikitextToMarkdown("{{center|Centered}} tail\nNext."), "Centered\n\ntail\nNext.\n");
-    assert.equal(wikitextToMarkdown("== {{center|主文}} ==\n* {{right|署名}} と日付\n: {{c|注}} を見よ"), "## 主文\n- 署名 と日付\n注 を見よ\n");
+    assert.equal(wikitextToMarkdown("== {{center|主文}} ==\n* {{right|署名}} と日付\n: {{c|注}} を見よ"), "## 主文\n- 署名 と日付\n\n注 を見よ\n");
   });
 
   it("大きさを変えるテンプレートは文の中で文字だけ。resize は値が二つなら二つ目が文字", () => {

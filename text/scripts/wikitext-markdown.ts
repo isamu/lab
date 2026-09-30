@@ -69,6 +69,17 @@ const measured =
   (params: Params): string =>
     `${params.positional[0] ?? ""} ${unit}`;
 
+/**
+ * A link whose text is its first value: a web search ({{google|query}}), and a link to a template, shown with its braces
+ * ({{tlx|name}}). With no value it shows nothing, like a dropped template.
+ */
+const linkText =
+  (shown: (text: string) => string) =>
+  (params: Params): string => {
+    const text = params.positional[0] ?? "";
+    return text === "" ? DROPPED : shown(text);
+  };
+
 const LISTINGS = ["see", "do", "buy", "eat", "drink", "sleep", "go", "listing", "vcard"];
 
 /** Templates that are {{convert}} with a fixed unit, and the unit they show. */
@@ -86,6 +97,9 @@ const RENDERERS: Readonly<Record<string, (params: Params) => string>> = {
   gbp: priced("£"),
   jpy: priced("¥"),
   phone: (params) => params.positional[0] ?? "",
+  google: linkText((text) => text),
+  tl: linkText((name) => `{{${name}}}`),
+  tlx: linkText((name) => `{{${name}}}`),
 };
 
 /**
@@ -227,6 +241,15 @@ const markdownLine = (line: string): string => {
   return `${"  ".repeat(marks.length - 1)}${mark}${body}`;
 };
 
+/**
+ * A line indented with `:` (a reply on a talk page) or a `;` term: the page shows each as a block of its own (<dd>,
+ * <dt>), so each is a paragraph of its own rather than one run-on paragraph with its neighbours. A `*:` or `#:` line
+ * continues a list item and is left as it was.
+ */
+const OWN_BLOCK = /^[:;]+(?=[^:;*#]|$)/u;
+
+const markdownLines = (line: string): string[] => (OWN_BLOCK.test(line) ? ["", markdownLine(line), ""] : [markdownLine(line)]);
+
 export const wikitextToMarkdown = (source: string): string => {
   const cleaned = source
     .replace(/<!--[\s\S]*?-->/gu, "")
@@ -234,5 +257,5 @@ export const wikitextToMarkdown = (source: string): string => {
     .replace(/<(ref|gallery)\b[^>]*>[\s\S]*?<\/\1\s*>/giu, "")
     .replace(/__[A-Z]+__/gu, "");
   const text = withBlocksApart(inlineText(withoutTables(cleaned.split("\n")).join("\n")));
-  return tidyLines(text.split("\n").map((line) => markdownLine(line.trim())));
+  return tidyLines(text.split("\n").flatMap((line) => markdownLines(line.trim())));
 };
