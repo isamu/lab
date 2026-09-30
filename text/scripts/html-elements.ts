@@ -33,9 +33,40 @@ export const plainText = (html: string): string => decodeEntities(stripTags(html
 /** Text put back into markup, so that decoding it again gives the same text. */
 export const asMarkup = (text: string): string => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;");
 
+/** A full stop, question or exclamation mark closing a sentence, also before a closing quote or bracket; not the point in "3.5". */
+export const CLOSED_SENTENCE = /[。．！？]|[.!?][)\]"'”’]*(?=\s|$)/u;
+
+/** Whether the markup closes a sentence, each tag read as a space so that "Done.</li><li>Next" ends one. */
+export const hasSentence = (html: string): boolean => CLOSED_SENTENCE.test(plainText(html.replace(/<\/?[a-z!][^>]*>/giu, " ")));
+
 export const hasNoWords = (text: string): boolean => !/[\p{L}\p{N}]/u.test(text);
 
 export const ANY_LINK = /<a\b[^>]*>[\s\S]*?<\/a\s*>/giu;
+
+const HREF = /\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/iu;
+
+const PAGE_EXTENSION = /^(?:[sx]?html?|php|aspx?|jsp|cgi)$/iu;
+
+// The host is not part of the path: "https://example.com" names a site, not a file ending in .com.
+const SCHEME_AND_HOST = /^(?:[a-z][a-z0-9+.-]*:)?\/\/[^/?#]*/iu;
+
+// A link that opens no page (tel:, mailto:, sms:) carries its own content, a number or an address.
+const OTHER_SCHEME = /^\s*(?!https?:)[a-z][a-z0-9+.-]*:(?!\/\/)/iu;
+
+const hrefOf = (link: string): string => {
+  const href = HREF.exec(link);
+  return href?.[1] ?? href?.[2] ?? href?.[3] ?? "";
+};
+
+/** The extension of the file a link opens ("pdf", "mp3"), or undefined for a page or a site. */
+export const fileExtension = (link: string): string | undefined => {
+  const path = hrefOf(link).replace(SCHEME_AND_HOST, "").split(/[?#]/u)[0] ?? "";
+  const extension = /\.([a-z0-9]{1,5})$/iu.exec(path.split("/").at(-1) ?? "")?.[1];
+  return extension !== undefined && !PAGE_EXTENSION.test(extension) ? extension : undefined;
+};
+
+/** A link to a file (an appendix as PDF, a table as .xlsx), or one that opens no page, is part of the document. */
+export const isFileLink = (link: string): boolean => OTHER_SCHEME.test(hrefOf(link)) || fileExtension(link) !== undefined;
 
 /** Attributes before a given one, each skipped whole so that a quoted value (title="x role=main") is not read as one. */
 export const ATTRIBUTES = String.raw`(?:\s+[^\s"'>=/]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?)*?`;
