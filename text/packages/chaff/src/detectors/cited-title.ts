@@ -1,5 +1,6 @@
 import type { Token } from "../plugin.ts";
 import { MINOR_WORDS } from "./heading-case.ts";
+import { columnOf, firstIn, lastIn, type Column } from "./token-column.ts";
 
 // 引用した題名（誌名・論文名・書名）。題名の中の読点は題名を付けた人のもので、書き手が並べかたを選んだものではない。
 
@@ -18,21 +19,38 @@ const inLeftRun = (token: Token): boolean => isTitleWord(token) || token.surface
 const adjoins = (source: string, left: Token | undefined, right: Token | undefined): boolean =>
   left === undefined || right === undefined || source.slice(left.span.end, right.span.start).trim() === "";
 
+const LIST_CONJUNCTIONS: ReadonlySet<string> = new Set(["and", "or"]);
+
+const isPhraseWord = (token: Token): boolean => (isCapitalised(token) || MINOR_WORDS.has(token.surface)) && !LIST_CONJUNCTIONS.has(token.surface);
+
+/**
+ * 題名の語の続きの切れ目。左の続きは、題名の語でも読点でもない語か、次の語との間に空白以外を挟む語で切れる。
+ * 右の続きは、題名の語でない語か、前の語との間に空白以外を挟む語で切れる。
+ */
+type Runs = { readonly leftBreak: Column; readonly rightBreak: Column; readonly capital: Column; readonly phrasePair: Column };
+
+const runsOf = (tokens: readonly Token[], source: string): Runs => ({
+  leftBreak: columnOf(tokens, (token, index) => !inLeftRun(token) || !adjoins(source, token, tokens[index + 1])),
+  rightBreak: columnOf(tokens, (token, index) => !isTitleWord(token) || !adjoins(source, tokens[index - 1], token)),
+  capital: columnOf(tokens, isCapitalised),
+  phrasePair: columnOf(tokens, (token, index) => index > 0 && isPhraseWord(token) && isPhraseWord(tokens[index - 1] ?? token)),
+});
+
 /**
  * and / or の左の、題名の語の続きの頭。最初の大文字の語から。小文字の語から始めると、引用符の中の並び（‘the UK, France and
  * Spain’）や、論文名のあとの編者の並び（," in Heather Boushey, Ryan Nunn, and Jay Shambaugh, eds.）まで題名と読む。
  */
-const leftStart = (tokens: readonly Token[], at: number, source: string): number | undefined => {
-  const stop = tokens.slice(0, at).findLastIndex((token, index) => !inLeftRun(token) || !adjoins(source, token, tokens[index + 1]));
-  const start = tokens.findIndex((token, index) => index > stop && index < at && isCapitalised(token));
+const leftStart = (runs: Runs, at: number): number | undefined => {
+  const stop = lastIn(runs.leftBreak, { start: 0, end: at });
+  const start = firstIn(runs.capital, { start: stop + 1, end: at });
   return start === -1 ? undefined : start;
 };
 
 /** and / or の右の、題名の語の続きの最後の大文字の語。 */
-const rightEnd = (tokens: readonly Token[], at: number, source: string): number | undefined => {
-  const stop = tokens.findIndex((token, index) => index > at && (!isTitleWord(token) || !adjoins(source, tokens[index - 1], token)));
-  const last = tokens.slice(at + 1, stop === -1 ? undefined : stop).findLastIndex(isCapitalised);
-  return last === -1 ? undefined : at + 1 + last;
+const rightEnd = (runs: Runs, at: number, length: number): number | undefined => {
+  const stop = firstIn(runs.rightBreak, { start: at + 1, end: length });
+  const last = lastIn(runs.capital, { start: at + 1, end: stop === -1 ? length : stop });
+  return last === -1 ? undefined : last;
 };
 
 /** 印を探す幅。いちばん長い印（***）と、読点・引用符・空白が収まる。 */
@@ -47,29 +65,32 @@ const AFTER_QUOTED_TITLE = /,\s*["'”’]\s*$/u;
 /** 誌名のあとは、巻号や頁へ続く読点か文の終わり。述語が続けば（“Done,” Smith, Jones and Brown argued）主語の並び。 */
 const VENUE_END = /^\s*(?:[,;.]|$)/u;
 
-const LIST_CONJUNCTIONS: ReadonlySet<string> = new Set(["and", "or"]);
-
-const isPhraseWord = (token: Token): boolean => (isCapitalised(token) || MINOR_WORDS.has(token.surface)) && !LIST_CONJUNCTIONS.has(token.surface);
-
 /**
  * 語の続きに、2 語以上の句があるか（Journal of Money、Their Nature、The Update）。1 語ずつの名前の並び
  * （‘Paris, Rome and Madrid’）は、引用符の中でも書き手が並べたもの。
  */
-const holdsPhrase = (run: readonly Token[]): boolean => run.some((token, index) => index > 0 && isPhraseWord(token) && isPhraseWord(run[index - 1] ?? token));
+const holdsPhrase = (runs: Runs, start: number, end: number): boolean => firstIn(runs.phrasePair, { start: start + 1, end: end + 1 }) !== -1;
 
 /**
- * at の and / or が、引用した題名の中にあるか。and / or の両隣が Title Case の語の続きで、2 語以上の句を含み、その続きが
+ * 文の and / or が、引用した題名の中にあるか。and / or の両隣が Title Case の語の続きで、2 語以上の句を含み、その続きが
  * 引用符か強調の印で囲まれているか、引用符で閉じた論文名のすぐ後ろにあって読点か文の終わりが続く（誌名）とき。
  * 本文の固有名詞の並び（Login.gov, TTS Engineering and USAi）や著者の並びは囲まれていないので、題名と読まない。
+ * 文を一度だけ読み、どの位置の問いにも続きを読み直さずに答える。
  */
-export const inCitedTitle = (tokens: readonly Token[], at: number, source: string): boolean => {
-  const start = leftStart(tokens, at, source);
-  const end = rightEnd(tokens, at, source);
-  const first = start === undefined ? undefined : tokens[start];
-  const last = end === undefined ? undefined : tokens[end];
-  if (start === undefined || end === undefined || first === undefined || last === undefined) return false;
-  if (!holdsPhrase(tokens.slice(start, end + 1))) return false;
-  const before = source.slice(Math.max(0, first.span.start - MARK_REACH), first.span.start);
-  const after = source.slice(last.span.end, last.span.end + MARK_REACH);
-  return (OPENING.test(before) && CLOSING.test(after)) || (AFTER_QUOTED_TITLE.test(before) && VENUE_END.test(after));
+export const citedTitles = (tokens: readonly Token[], source: string): ((at: number) => boolean) => {
+  const runs = runsOf(tokens, source);
+  return (at) => {
+    const start = leftStart(runs, at);
+    const end = rightEnd(runs, at, tokens.length);
+    const first = start === undefined ? undefined : tokens[start];
+    const last = end === undefined ? undefined : tokens[end];
+    if (start === undefined || end === undefined || first === undefined || last === undefined) return false;
+    if (!holdsPhrase(runs, start, end)) return false;
+    const before = source.slice(Math.max(0, first.span.start - MARK_REACH), first.span.start);
+    const after = source.slice(last.span.end, last.span.end + MARK_REACH);
+    return (OPENING.test(before) && CLOSING.test(after)) || (AFTER_QUOTED_TITLE.test(before) && VENUE_END.test(after));
+  };
 };
+
+/** at の and / or が、引用した題名の中にあるか。 */
+export const inCitedTitle = (tokens: readonly Token[], at: number, source: string): boolean => citedTitles(tokens, source)(at);
