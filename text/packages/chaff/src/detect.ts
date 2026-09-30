@@ -1,4 +1,10 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
 import { japaneseRatio, latinRatio } from "./detect-language.ts";
+import { referenceListSpans } from "./reference-lists.ts";
+import { withoutSpans } from "./soft-break.ts";
 
 export type LanguageGuess = { readonly language: string; readonly confidence: number; readonly from: string };
 
@@ -8,8 +14,28 @@ export type LanguageGuess = { readonly language: string; readonly confidence: nu
  */
 const JAPANESE_FLOOR = 0.15;
 
+const HEADINGS_FILE = join(dirname(fileURLToPath(import.meta.url)), "..", "reference-headings.yaml");
+
+const isStringList = (value: unknown): value is string[] => Array.isArray(value) && value.every((entry) => typeof entry === "string");
+
+const readHeadings = (): string[] => {
+  const raw: unknown = parse(readFileSync(HEADINGS_FILE, "utf8"));
+  const headings: unknown = typeof raw === "object" && raw !== null && "headings" in raw ? raw.headings : undefined;
+  if (!isStringList(headings)) throw new Error(`${HEADINGS_FILE}: headings は文字列の並びであること`);
+  return headings;
+};
+
+const REFERENCE_HEADINGS = readHeadings();
+
+/** 本文だけ。文献一覧は引いた文献の言語で書かれるので数えない。本文に字が無ければ（文献一覧だけの文書）全体。 */
+const bodyOf = (source: string): string => {
+  const body = withoutSpans(source, referenceListSpans(source, REFERENCE_HEADINGS));
+  return body.trim() === "" ? source : body;
+};
+
 export const guessLanguage = (source: string): LanguageGuess => {
-  const japanese = japaneseRatio(source);
+  const body = bodyOf(source);
+  const japanese = japaneseRatio(body);
   if (japanese >= JAPANESE_FLOOR) return { language: "ja", confidence: japanese, from: "content" };
-  return { language: "en", confidence: latinRatio(source), from: "content" };
+  return { language: "en", confidence: latinRatio(body), from: "content" };
 };

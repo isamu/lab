@@ -160,6 +160,19 @@ export type Limits = Readonly<Record<string, number>>;
 
 const limitFor = (rule: RuleDefinition, level: Level, genre: string, limits: Limits): number => limits[rule.id] ?? resolve(rule, level, genre).limit;
 
+/** 文書と違う言語で書いた文の上限。chaff.yaml の数値は文書の言語の単位で書いたものなので、ここには効かせない。 */
+const embeddedLimitsFor = (rule: RuleDefinition, level: Level, genre: string, embedded: readonly string[]): Record<string, number> =>
+  Object.fromEntries(
+    embedded.flatMap((language) => {
+      const tables = rule.other_languages?.[language];
+      return tables === undefined ? [] : [[language, resolve({ ...rule, ...tables }, level, genre).limit] as const];
+    }),
+  );
+
+const embeddedLanguagesOf = (doc: ProseDocument): string[] => [
+  ...new Set(doc.sentences.flatMap((sentence) => (sentence.embeddedLanguage === undefined ? [] : [sentence.embeddedLanguage.id]))),
+];
+
 export const runRules = (
   doc: ProseDocument,
   rules: readonly RuleDefinition[],
@@ -171,6 +184,7 @@ export const runRules = (
   const preset = presetLevels(genre);
   const starts = lineStarts(doc.source);
   const applicable = forGenre(rules, genre);
+  const embedded = embeddedLanguagesOf(doc);
   const experimentalOn = applicable.filter((rule) => rule.status === "experimental" && levelFor(rule, settings, experimental, preset) !== "off");
   const forced = experimentalOn.filter((rule) => settings[rule.id] !== undefined).map((rule) => rule.id);
   const presetOn = experimentalOn.filter((rule) => settings[rule.id] === undefined && preset[rule.id] !== undefined).map((rule) => rule.id);
@@ -205,6 +219,7 @@ export const runRules = (
         lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
         where: rule.where,
         fullSentence: rule.full_sentence,
+        embeddedLimits: embeddedLimitsFor(rule, level, genre, embedded),
       };
       const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: rule.severity }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };
