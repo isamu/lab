@@ -4,6 +4,20 @@ Newest first.
 
 ## Unreleased
 
+### Genre suggestions: fewer wrong ones, and literature by its content (#170)
+
+The suggestion shown when no genre is set was wrong on three corpus documents. An offer letter that encloses an
+agreement was suggested as a contract: a genre can now be suggested by how the body opens (the first line past front
+matter and headings), which outweighs any count of lines but not the path. `business/email` opens with `Dear …,`,
+`Subject:`, `拝啓` or `件名:`; an addressee line (`〇〇御中`, `To:`) is not a cue, because quotes and proposals open with
+one too. A tech blog and a specification were suggested as manuals because of step and procedure headings, which are
+as common outside manuals: `docs/manual` is now suggested by its path only.
+
+Literature was suggested by path only. It is now also suggested by content: verse lines for `literature/poetry` (short
+unpunctuated lines, many of them), a speaker's name before the line for `literature/play` in Japanese (`妻　　…`), and
+spoken lines for `literature/fiction` in Japanese (`「…」と云った`). A 青空文庫 colophon or Gutenberg front matter says
+the text is literature but not which kind, so it suggests nothing on its own.
+
 ### `contraction-consistency` counts `don’t` as a contraction (#170)
 
 The rule compared the text as written, so a contraction with a curly apostrophe (`don’t`, `it’s`) counted as neither
