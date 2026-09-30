@@ -38,11 +38,15 @@ const ENDS_SENTENCE = /(?:[。．！？!?]|(?<!\b[A-Z][A-Za-z]{0,3}|\.[A-Za-z])\
 
 const holdsSentence = (cell: Cell): boolean => ENDS_SENTENCE.test(plainText(cell.html));
 
+// A cell that opens with a number and holds no word of the Latin alphabet: a row number ("1", "2."), a figure or a
+// range ("0.3 以上 1.6未満", "１未満"), a section ("302(c)"). "401(k) plan" and "24/7 desk" are names.
+const isNumberLabel = (text: string): boolean => /^\p{Nd}/u.test(text) && !/[A-Za-z]{2,}/u.test(text);
+
 /**
- * A cell kept as a block: one with a sentence, or a label in words. A label that opens with a number (a row number, a
- * range of figures) is read by no prose rule, and alone on a line it would read as a section number.
+ * A cell kept as a block: one with a sentence, or a label in words. A number label is read by no prose rule, and alone
+ * on a line it would read as a section number.
  */
-const isKept = (cell: Cell): boolean => holdsSentence(cell) || (hasText(cell) && !/^\p{Nd}/u.test(plainText(cell.html)));
+const isKept = (cell: Cell): boolean => holdsSentence(cell) || (hasText(cell) && !isNumberLabel(plainText(cell.html)));
 
 /** A row of nothing but header cells labels the columns. */
 const isHeaderRow = (row: Row): boolean => row.length > 0 && row.every((cell) => cell.header);

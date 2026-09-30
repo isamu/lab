@@ -648,6 +648,8 @@ describe("htmlToMarkdown: 表", () => {
     const english =
       "<table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody><tr><td>API_KEY_MISSING</td><td>No key was sent.</td></tr></tbody></table>";
     assert.equal(htmlToMarkdown(english), "API_KEY_MISSING\n\nNo key was sent.\n");
+    const named = "<table><tr><td>401(k) plan</td><td>A plan for savings.</td></tr><tr><td>24/7 desk</td><td>It never closes.</td></tr></table>";
+    assert.equal(htmlToMarkdown(named), "401(k) plan\n\nA plan for savings.\n\n24/7 desk\n\nIt never closes.\n");
     const twoHeaders =
       "<table><thead><tr><th colspan=2>Definitions</th></tr><tr><th>Term</th><th>Meaning</th></tr></thead>" +
       "<tbody><tr><td>Applicant</td><td>A person who applies.</td></tr></tbody></table>";
