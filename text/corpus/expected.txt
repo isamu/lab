@@ -40,7 +40,7 @@ da-legal-practice  heading-echo 1, latin-spacing 4, max-kanji-continuous 2, max-
 da-machine-readability-ai-configuration  latin-spacing 2
 da-machine-readability-limitations  latin-spacing 4, max-sentence-length 1
 da-machine-readability-output-format  latin-spacing 9
-da-minister-press-conference-2026-09-18  agentless-passive 12, empty-intensifier 7, max-kanji-continuous 6, max-paragraph-length 5, max-sentence-length 51, ngram-repetition 1, undefined-acronym 6
+da-minister-press-conference-2026-09-18  agentless-passive 12, empty-intensifier 7, max-kanji-continuous 6, max-paragraph-length 4, max-sentence-length 51, ngram-repetition 1, undefined-acronym 6
 da-news-minister-handover  clean
 da-priority-policy-program  agentless-passive 1, max-kanji-continuous 1, no-doubled-joshi 1, undefined-acronym 3
 da-privacy-policy  agentless-passive 2, concrete-evidence-density 3, latin-spacing 1, max-kanji-continuous 1, max-sentence-length 3, no-doubled-joshi 3
