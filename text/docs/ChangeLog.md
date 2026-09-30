@@ -31,6 +31,50 @@ names:
 
 Documents fetched from HTML change when they are fetched again.
 
+### `heading-echo` measures a Japanese sentence in content words, not characters (#170)
+
+In Japanese, `heading-echo` measured what a first sentence adds as its characters, less the part of the heading it
+repeats. A character count does not say how much is said: 「会社に勤めています」 adds two words (会社, 勤める) and
+「について説明します」 adds one (説明), in the same nine characters. Corpus round 11 found
+「こころさんのお父さんは、会社に勤めています。」 under 「こころさんのお父さんの場合」 reported as an echo.
+
+Now, when the parts of speech are read, a Japanese sentence adds little if it has at most one content word that the
+heading does not have. A content word is a noun, verb, adjective, adverb or number that stands by itself; particles,
+auxiliaries, pronouns, determiners and conjunctions are not, nor are prefixes, suffixes and dependent words (the 「ご」
+of 「ご案内」, the 「さん」 of 「こころさん」, the 「いる」 of 「勤めている」) or the 「する」 that makes a verb of a noun
+(「説明します」). Words are matched by their base form, so 「変えました」 repeats 「変える」. `lang-ja` marks these
+tokens (`Bound=Yes`, `VerbType=Light`), and the count is a pure function in `chaffjs` that takes tokens. English is
+unchanged, and so is Japanese read without parts of speech.
+
+On the Japanese corpus documents this only removes findings: the two 「こころさんの…の場合」 sections, changelog entries
+that say what was added or how, and a meeting minute that names who explained what. A sentence that only restates its
+heading (「詳細：デジタル庁の組織づくり」, 「ブック メニューを拡充しました」, 「キャッシュの仕組みについて説明します。」) is
+still reported. Findings a reader might have kept went with them: a talk page's
+「一次資料の扱いに関して一つ問題を提起させて頂きます。」 and a changelog's 「スライドショーの機能を強化しました。」, which add
+two content words each.
+
+### The corpus checks each document with the preset for its kind (#170)
+
+`corpus/manifest.json` gave every document one of the original ten genres, so `yarn corpus` never ran the presets
+added in 0.16.0. Statutes and internal rules, contracts and privacy policies, court decisions, patents, manuals, FAQs,
+glossaries, papers, literature, speeches and transcripts now carry `legal/*`, `docs/*`, `academic/paper`,
+`literature/*` and `speech/*`, so a regression in a preset shows in `corpus/expected.txt`. The statutes in
+`corpus/laws/` are read as `legal/statute`, which names the statute profile; they were already read with it from
+their content, and their structure results do not change.
+
+### `stray-space`: a space inside a Japanese phrase (#170)
+
+A new experimental rule reports a half-width or full-width space inside what reads as one phrase: after a particle
+(「こころさんが 払った」) or before a word that cannot start a phrase (「アプリ が」, 「確認 しました」). Which joint is
+which comes from the parts of speech, so the rule needs the tagger. It takes no side on style: the two kinds of joint
+are counted separately, and a space is reported only when the document spaces that kind less often than it does not.
+A document that spaces every phrase on purpose (分かち書き in text for children) is left alone. So are spaces
+between two nouns (a label and its value, a name, a compound), lines that do not end with a full stop (verse,
+labels, table-like lines), headings, tables, a full-width indent, the space after an item mark at the start of a line,
+a Markdown line break, quotations in 「」 and boundaries with Latin letters or digits. On the Japanese corpus
+(`yarn corpus`), every space it reports is stray except one, which separates a lead-in from its explanation in a
+bullet whose line break was lost in conversion; the rule stays experimental until it has been measured further.
+
 ### `undefined-acronym` no longer asks to expand emphasis, a month in a date, a surname after a title or a qualified expansion (#170)
 
 Four kinds of capital word that corpus round 11 reported are not acronyms, and are no longer counted:

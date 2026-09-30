@@ -25,7 +25,12 @@ const shape = (tokens: readonly Token[]): string[] =>
 describe("markSpacedCounters", () => {
   it("re-reads a counter after a number and one space, dropping the place-name reading", () => {
     const tokens = [token(0, "10", "NOUN", CARD), token(2, " ", "PUNCT"), token(3, "日", "PROPN", { NameType: "Geo" }), token(4, "で", "ADP")];
-    assert.deepEqual(shape(markSpacedCounters(tokens, counters)), ["10/NOUN" + JSON.stringify(CARD), " /PUNCT", '日/NOUN{"NounType":"Class"}', "で/ADP"]);
+    assert.deepEqual(shape(markSpacedCounters(tokens, counters)), [
+      "10/NOUN" + JSON.stringify(CARD),
+      " /PUNCT",
+      '日/NOUN{"NounType":"Class","Bound":"Yes"}',
+      "で/ADP",
+    ]);
   });
 
   it("keeps the lemma of the re-read word", () => {

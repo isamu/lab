@@ -903,6 +903,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `no-mixed-desumasu` ✅ | ですます調とである調の混在 | pos |
 | `taigen-dome-in-prose` ✅ | 箇条書き外の体言止め | pos |
 | `no-doubled-joshi` ✅ | 名詞を繋ぐ助詞の入れ子 | pos |
+| `stray-space` ✅ | 語句の途中の空白。空けた所が文書の中で少ないときだけ | pos |
 | `double-keigo` ✅ | 二重敬語 | - |
 | `sasete-itadaku` ✅ | 「させていただく」の回数。上限の回数までは通す | - |
 | `no-nakaguro-parallel` ✅ | 中黒の並列 | - |
