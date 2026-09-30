@@ -17,7 +17,7 @@ import { GENRES } from "./genre.ts";
 import { resolveGenre } from "./resolve-genre.ts";
 import { runInit } from "./init.ts";
 import { initGenre } from "./commands/init-ask.ts";
-import { targetsOf } from "./cli-args.ts";
+import { targetsOf, withExperimental } from "./cli-args.ts";
 import { loadRules } from "./rule-load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
@@ -262,12 +262,11 @@ const positional = (argv: readonly string[]): string[] => targetsOf(argv.slice(1
 
 /** `rules --json` for an AI to read; `rules` alone, a table for a person. */
 const showRules = (argv: readonly string[]): number => {
-  const config = readConfig();
+  const config = withExperimental(readConfig(), argv);
   const language = config.language ?? hostLanguage(undefined, process.env);
   warnRuleProblems(config, language);
   const render = argv.includes("--json") ? rulesJson : rulesTable;
-  const settings = { ...config, experimental: config.experimental || argv.includes("--experimental") };
-  console.log(render(loadRules(language), settings, language, flag(argv, "--genre") ?? config.genre ?? "blog/tech"));
+  console.log(render(loadRules(language), config, language, flag(argv, "--genre") ?? config.genre ?? "blog/tech"));
   return 0;
 };
 
