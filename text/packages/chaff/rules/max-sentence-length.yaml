@@ -16,6 +16,15 @@ message:
   ja: この文は {count} 文字あります（{limit} 文字まで）
   en: "This sentence runs {count} {count|word|words} (limit {limit})"
 
+# 文書と違う言語で書いた文。和文の中の英文は語で、英文の中の和文は文字で数え、その言語の段と比べる。
+messages:
+  embedded-en:
+    ja: この英文は {count} 語あります（{limit} 語まで）
+    en: "This English sentence runs {count} {count|word|words} (limit {limit})"
+  embedded-ja:
+    ja: この和文は {count} 文字あります（{limit} 文字まで）
+    en: "This Japanese sentence runs {count} {count|character|characters} (limit {limit})"
+
 how_to_fix:
   ja: 接続助詞のところで 2 文に割ってください。それだけで読めるようになります。
   en: Split it in two at the conjunction.

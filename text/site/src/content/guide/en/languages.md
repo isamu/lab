@@ -30,6 +30,20 @@ memo.md   blog/tech · 日本語   ジャンルは既定から
 
 When the language is wrong, fix it with `language: ja` or `language: en` in `chaff.yaml` ([Configuration](./configuration)).
 
+The language is worked out from the body text. A list under a "References" or 「参考文献」 heading is not counted,
+because a reference list is written in the language of the works it cites. A Japanese paper that cites many English
+works is still read as Japanese.
+
+## Documents that mix Japanese and English
+
+One document can hold both languages, such as a Japanese paper with an English abstract.
+In a Japanese document, an English paragraph is split into sentences at English full stops (. ? !).
+Each English sentence is counted in words and compared with the English limit of `max-sentence-length`.
+In an English document, a Japanese sentence is counted in characters and compared with the Japanese limit.
+
+Other rules run in the document's language only, so the English-only rules do not check English sentences in a Japanese document.
+To check them too, put the English part in a file of its own.
+
 ## Rules that work in any language
 
 The rules on sentence length, repeated headings and the like are the same in Japanese and English.

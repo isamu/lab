@@ -21,9 +21,10 @@ latin-spacing                           1      1       0             0
 max-kanji-continuous                    5      5       0             0
 max-paragraph-length                   10     10       0             0
 max-sentence-length                    11     11       0             0
+ngram-repetition                        9      9       0             0
 no-doubled-joshi                       12     12       0             0
 no-em-dash                              8      8       0             0
-no-mixed-desumasu                      13     13       0             0
+no-mixed-desumasu                      13     12       1             0
 no-nakaguro-parallel                    2      2       0             0
 numbering-gap                           6      6       0             0
 oxford-comma-consistency                2      2       0             0
@@ -80,6 +81,7 @@ ja/blog  cliche-closing  found
 ja/blog  padded-opening  found
 ja/blog  intensified  found
 ja/blog  hedges-stacked  found
+ja/blog  pet-phrase  found
 ja/design  reference-broken  found
 ja/design  number-skipped  found
 ja/design  defined-twice  found
@@ -94,6 +96,7 @@ ja/design  intensified  found
 ja/design  hedges-stacked  found
 ja/design  opener-repeated  found
 ja/design  spelling-avoided  found
+ja/design  pet-phrase  found
 ja/email  weekday-shift  found
 ja/email  rows-swapped  found
 ja/email  plain-in-polite  found
@@ -108,6 +111,7 @@ ja/email  humble-overused  found
 ja/email  adverb-kanji  found
 ja/email  particle-doubled  found
 ja/email  spelling-avoided  found
+ja/email  pet-phrase  found
 ja/figures  item-dropped  found
 ja/figures  polite-in-plain  found
 ja/figures  no-nested  found
@@ -180,6 +184,7 @@ ja/press  intensified  found
 ja/press  hedges-stacked  found
 ja/press  opener-repeated  found
 ja/press  spelling-avoided  found
+ja/press  pet-phrase  found
 ja/proposal  item-dropped  found
 ja/proposal  plain-in-polite  found
 ja/proposal  no-nested  found
@@ -202,6 +207,7 @@ ja/proposal  intensified  found
 ja/proposal  hedges-stacked  found
 ja/proposal  opener-repeated  found
 ja/proposal  spelling-avoided  found
+ja/proposal  pet-phrase  found
 ja/quote  weekday-shift  found
 ja/quote  item-dropped  found
 ja/quote  plain-in-polite  found
@@ -224,7 +230,7 @@ ja/readme  hedges-stacked  found
 ja/readme  spelling-avoided  found
 ja/requirements  reference-broken  found
 ja/requirements  number-skipped  found
-ja/requirements  polite-in-plain  found
+ja/requirements  polite-in-plain  missed
 ja/requirements  no-nested  found
 ja/requirements  space-strayed  found
 ja/requirements  section-dropped  found
@@ -247,6 +253,7 @@ en/blog  cliche-closing  found
 en/blog  padded-opening  found
 en/blog  intensified  found
 en/blog  hedges-stacked  found
+en/blog  pet-phrase  found
 en/design  reference-broken  found
 en/design  number-skipped  found
 en/design  defined-twice  found
@@ -261,6 +268,7 @@ en/design  plural-after-article  found
 en/design  intensified  found
 en/design  hedges-stacked  found
 en/design  spelling-avoided  found
+en/design  pet-phrase  found
 en/email  weekday-shift  found
 en/email  rows-swapped  found
 en/email  sentences-joined  found
@@ -336,6 +344,7 @@ en/press  hedges-stacked  found
 en/press  opener-repeated  found
 en/press  and-chained  found
 en/press  spelling-avoided  found
+en/press  pet-phrase  found
 en/proposal  item-dropped  found
 en/proposal  sentences-joined  found
 en/proposal  paragraphs-joined  found
@@ -352,6 +361,7 @@ en/proposal  plural-after-article  found
 en/proposal  padded-opening  found
 en/proposal  intensified  found
 en/proposal  hedges-stacked  found
+en/proposal  pet-phrase  found
 en/quote  weekday-shift  found
 en/quote  item-dropped  found
 en/quote  section-dropped  found

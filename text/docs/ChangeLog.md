@@ -30,6 +30,57 @@ the word "Fed" followed by a lowercase word "s", and the Title Case heading was 
 now read with the same apostrophe fold as `contraction-consistency` and the English tagger: `’` between a letter or
 digit and a letter, and every `ʼ`, reads as `'`. A closing quote (`‘Board’ Reviews`) is still outside the word.
 
+### `yarn bench` plants a repeated phrase, and fails when a rule it should plant for goes unplanted (#170)
+
+`ngram-repetition` had no plant: the audit that added plants for uncovered rules skipped it. The bench now opens one
+more paragraph than the limit with the same pet phrase, 「言うまでもないことですが、」 (「言うまでもないことだが、」 in a plain
+document) or "It goes without saying that", once per paragraph. It is planted only where the document, after the
+edit, is long enough for chaff to count repetition, so a short sample is left out rather than reported as a miss.
+
+`test/fixtures/bench/plants.yaml` now lists every rule, either with the languages the bench must plant it in or with
+the reason it is not planted. `yarn test` fails when a rule is missing from the list or a listed language has no
+mutation, and `yarn bench` (even with `--update`) fails when a run plants a listed rule in no sample of a language.
+
+### Documents that mix Japanese and English (#170)
+
+A Japanese paper with an English abstract was read as if the abstract were one long Japanese sentence, because a
+Japanese sentence only ends at 。．！？. Now:
+
+- **An English paragraph in a Japanese document is split at English full stops** (. ? !), with the same care for
+  abbreviations (`Dr.`, `U.S.`) and years (`in 1997. Programs…`) as in an English document. A period after a Latin
+  word that Japanese follows on the same line (`Version 2.0. を使う`, `See Fig. 1. これは図`) still does not end a
+  sentence.
+- **`max-sentence-length` counts such a sentence in words** and compares it with the English limit for the same genre
+  and level (「この英文は 64 語あります（50 語まで）」). A Japanese sentence in an English document is counted in
+  characters against the Japanese limit. A number limit in `chaff.yaml` is in the document's own unit, so it applies
+  to the document's own sentences only.
+- **The language guess leaves reference lists out.** A list under a References or 参考文献 heading is written in the
+  language of the works it cites, and a Japanese paper citing many English works was read as English. The heading
+  words are in `reference-headings.yaml`. Under a Markdown heading the section runs to the next heading of the same
+  level; under a line that holds only the heading word, only the list right after it is left out.
+
+The other rules still run in the document's language only; English-only rules do not check English sentences in a
+Japanese document. Language adapters mark such a sentence with `embeddedLanguage` (a new optional field of `Sentence`).
+
+### Japanese speeches written one paragraph per line; subheading lines; 「〜こと。」 items (#170)
+
+A document written one paragraph per line, with no blank line between (the 官邸's 施政方針演説), is now split line
+by line even when each block under a heading is short. Whether a document is written this way is decided over the
+whole document: the two-sentence lines of every block with more than one line are counted together. Before, each
+block had to show enough two-sentence lines on its own, so a speech whose sections hold a few lines each stayed one
+paragraph per section, and `max-paragraph-length` reported them. A block that splits on its own still splits, a
+block that wraps mid-sentence still does not, and one-line blocks (ordinary blank-line paragraphs) are not counted.
+
+A line that is only a short phrase in parentheses (「（経済再生）」, 「【お問い合わせ先】」, 「（目的）」) is a
+subheading. It no longer joins the sentence on the next line, so a finding on that sentence is reported on its own
+line, and the sentence's length no longer includes the subheading. Quotation marks 「」『』 are not subheadings, and
+neither is a bracketed line in the middle of a sentence, a bracketed note that ends a sentence, or a long one.
+
+`no-mixed-desumasu` no longer counts an ending in 「こと」 or 「もの」 (「〜を保持すること。」, 「〜が可能なもの。」)
+as だ・である. Requirements, licence terms and glossaries use this form in both registers, so it votes for neither.
+The words are a new lang-ja lexicon, `neutral-ending`. Other nouns before a question or a particle keep the register
+of the verb before them (「〜のかな？」 is still plain).
+
 ### Corpus: footnote numbers, run-in section titles and Gutenberg's older closing line (#170)
 
 The corpus's HTML converter dropped a footnote mark written as `<sup><a>1</a></sup>` but kept one written as
