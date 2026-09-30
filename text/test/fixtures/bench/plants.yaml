@@ -25,6 +25,7 @@ planted:
   hiragana-fukushi: [ja]
   image-alt-text: [ja, en]
   internal-jargon: [ja, en]
+  kutoten-consistency: [ja]
   latin-spacing: [ja]
   max-kanji-continuous: [ja]
   max-paragraph-length: [ja, en]

@@ -25,6 +25,7 @@ import { brokenLink } from "./broken-link.ts";
 import { urlRunOn } from "./url-run-on.ts";
 import { unbalancedBracket } from "./unbalanced-bracket.ts";
 import { doubledPunctuation } from "./doubled-punctuation.ts";
+import { kutotenConsistency } from "./kutoten-consistency.ts";
 import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -83,4 +84,5 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "url-run-on": urlRunOn,
   "unbalanced-bracket": unbalancedBracket,
   "doubled-punctuation": doubledPunctuation,
+  "kutoten-consistency": kutotenConsistency,
 };

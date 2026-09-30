@@ -1,6 +1,6 @@
 // Seeded mistakes of punctuation marks for `yarn bench`: a bracket left unclosed, a mark typed twice, and a Japanese
 // comma written the other way. Pure and deterministic, like scripts/bench-mutations.ts.
-import { isProse, rewriteFirst, type Mutation, type Plant } from "./bench-text.ts";
+import { isJapanese, isProse, rewriteFirst, type Mutation, type Plant } from "./bench-text.ts";
 
 // --- unbalanced-bracket ---
 
@@ -27,7 +27,18 @@ export const doublePeriod = (source: string): Plant | undefined =>
     },
   );
 
+// --- kutoten-consistency ---
+
+/** 読点を「、」で書いた文書の、最初の「、」を「，」にする。論文から貼り付けた文。 */
+export const westernComma = (source: string): Plant | undefined =>
+  rewriteFirst(
+    source,
+    (line) => isProse(line) && isJapanese(line) && line.includes("、") && !line.includes("「"),
+    (line) => line.replace("、", "，"),
+  );
+
 export const MARK_MUTATIONS: readonly Mutation[] = [
   { id: "bracket-unclosed", rule: "unbalanced-bracket", languages: ["ja", "en"], plant: dropClosingBracket },
   { id: "period-doubled", rule: "doubled-punctuation", languages: ["ja", "en"], plant: doublePeriod },
+  { id: "comma-western", rule: "kutoten-consistency", languages: ["ja"], plant: westernComma },
 ];

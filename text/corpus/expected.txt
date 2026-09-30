@@ -102,7 +102,7 @@ jma-tokubetsu-keiho  heading-level-skip 1, max-sentence-length 2
 jma-yougo-kaze  heading-level-skip 1, no-doubled-joshi 1
 jp-2011-056072-seiu-kenyo-gasa  hiragana-fukushi 2, max-sentence-length 3, url-run-on 1
 jsprimer-loop  max-sentence-length 1
-jstage-jkg-72-4-133  latin-spacing 6, max-kanji-continuous 1, no-mixed-desumasu 1, undefined-acronym 7
+jstage-jkg-72-4-133  kutoten-consistency 4, latin-spacing 6, max-kanji-continuous 1, no-mixed-desumasu 1, undefined-acronym 7
 jstage-jniph-74-1-2-rehabilitation  latin-spacing 7, max-kanji-continuous 23, max-paragraph-length 2, max-sentence-length 2, undefined-acronym 9
 jstage-jniph-74-2-119-wbgt  latin-spacing 12, max-kanji-continuous 10, max-paragraph-length 2, no-doubled-joshi 1, undefined-acronym 20
 jstage-jniph-74-2-157-heat-policy  latin-spacing 7, max-kanji-continuous 9, max-sentence-length 1, undefined-acronym 15
@@ -132,7 +132,7 @@ meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-le
 mext-heatstroke-after-holidays  hiragana-fukushi 1, max-kanji-continuous 5, max-paragraph-length 2, max-sentence-length 18, ngram-repetition 1, preamble-length 1
 mhlw-icd-committee-26-minutes  agentless-passive 5, max-kanji-continuous 24, max-sentence-length 34, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 1, sasete-itadaku 38, unbalanced-bracket 2, undefined-acronym 3
 mhlw-kikan-gyomu-shokuin-boshu  max-kanji-continuous 6, unbalanced-bracket 1
-mhlw-norovirus-qa  latin-spacing 1, max-kanji-continuous 12, max-paragraph-length 1, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 3, no-mixed-desumasu 3, repeated-conjunction 1, unbalanced-bracket 2, undefined-acronym 5
+mhlw-norovirus-qa  kutoten-consistency 1, latin-spacing 1, max-kanji-continuous 12, max-paragraph-length 1, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 3, no-mixed-desumasu 3, repeated-conjunction 1, unbalanced-bracket 2, undefined-acronym 5
 mhlw-pubcomment-rodohoken  agentless-passive 1, broken-link 1, heading-level-skip 1, max-kanji-continuous 5, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
 minpo.txt  clean
 mit-ocw-6-0001-syllabus  agentless-passive 13, max-paragraph-length 1, max-sentence-length 6, proper-noun-density 1
@@ -189,7 +189,7 @@ us-4683202-nucleic-acid-amplification  max-paragraph-length 7, max-sentence-leng
 us-6004596-crustless-sandwich  max-sentence-length 2
 us-6285999-node-ranking  max-paragraph-length 4, max-sentence-length 3, undefined-acronym 4
 us-scotus-gideon-v-wainwright  max-paragraph-length 1, max-sentence-length 3
-utelecon-account-leave  concrete-evidence-density 3, latin-spacing 1, max-sentence-length 5, ngram-repetition 1, preamble-length 1
+utelecon-account-leave  concrete-evidence-density 3, kutoten-consistency 2, latin-spacing 1, max-sentence-length 5, ngram-repetition 1, preamble-length 1
 utokyo-gakui-kisoku  clean
 vite-plugin-legacy-changelog  bold-density 1, contraction-consistency 7, heading-level-skip 1, ngram-repetition 1, undefined-acronym 3
 voa-le-lunar-trailblazer  max-sentence-length 8, proper-noun-density 1

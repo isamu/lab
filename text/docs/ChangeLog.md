@@ -17,6 +17,10 @@ Experimental rules for marks left over from an edit. Each finding in the corpus 
 - **`doubled-punctuation`**: two punctuation marks side by side (`。。`, `、。`, `,,`, `i.e.,,`). Three or more of
   one mark are drawn out on purpose; `e.g.,`, `etc.;`, `、.NET`, `1..10` and `../` are not slips; `!!` and colons
   are not checked. Every corpus finding is a slip.
+- **`kutoten-consistency`** (ja): a document that writes its commas both `、` and `，`, or its periods both `。` and
+  `．`, reported on the minority, like `latin-spacing`. Marks inside numbers (`１，０００`), after a list number or a
+  Latin letter (`１．`, `Ｑ．`), inside `「」`, and in a note or citation line (a note number, or a URL) are not
+  counted: 白書 notes cite with `，` by convention.
 
 ### New rules: headings, images, links and URLs in Markdown (#170)
 

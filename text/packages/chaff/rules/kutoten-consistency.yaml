@@ -1,0 +1,35 @@
+id: kutoten-consistency
+layer: L3
+status: experimental
+how_to_find: kutoten-consistency
+languages: [ja]
+severity: warning
+
+name:
+  ja: 句読点の書き方がそろっていない
+  en: Japanese commas and periods are mixed
+
+why:
+  ja: 読点を「、」と「，」、句点を「。」と「．」のどちらで書くかは、どちらでも読めます（横書きの論文や公用文には「，」があります）。困るのは一つの文書の中で混ざることで、貼り付けた文や別の人が書いた段落が、そこだけ違って見えます。chaff はどちらが正しいかを決めず、読点と句点のそれぞれで、文書の中で少ないほうを指摘します。数の中の「，」「．」（１，０００、３．５）、番号の後ろの点（１．はじめに）、英字の後ろの点（Ｑ．）、鉤括弧で引いたものの中と、注の番号で始まる行や URL を含む文（文献や出典の書き方に従う）は数えません。
+  en: Whether Japanese text uses 、 or ， for its commas and 。 or ． for its periods is a choice either way (， is common in horizontal academic and official writing). What reads badly is mixing both in one document, which makes a pasted sentence or another writer's paragraph stand out. chaff does not decide which is right; for commas and for periods separately, it points at whichever the document uses less. Marks inside a number (１，０００, ３．５), after a list number (１．), after a Latin letter (Ｑ．), inside a 「」 quotation, and in a sentence that starts with a note number or holds a URL (a citation follows its own style) are not counted.
+
+message:
+  ja: 「{mark}」と書いています（この文書はふつう「{usual}」。{of} 箇所のうち {count} 箇所が違う）
+  en: '"{mark}" here, where the document usually writes "{usual}" ({count} of {of})'
+
+messages:
+  comma:
+    ja: 読点を「{mark}」と書いています（この文書はふつう「{usual}」。{of} 箇所のうち {count} 箇所が違う）
+    en: 'The Japanese comma is written "{mark}" here, where the document usually writes "{usual}" ({count} of {of})'
+  period:
+    ja: 句点を「{mark}」と書いています（この文書はふつう「{usual}」。{of} 箇所のうち {count} 箇所が違う）
+    en: 'The Japanese period is written "{mark}" here, where the document usually writes "{usual}" ({count} of {of})'
+
+how_to_fix:
+  ja: 文書の多いほうの書き方に合わせてください。チームで決めているなら、STYLE.md に書いておくと迷いません。
+  en: Match the way the rest of the document does it. If the team has decided, write it in the style guide.
+
+# 何箇所違えば指摘するか。1 は「1 箇所でも混ざっていれば」。
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]

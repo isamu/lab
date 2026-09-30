@@ -349,6 +349,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `max-kanji-continuous` | 漢字の連続（情報処理推進機構認定試験） |
 | `no-nakaguro-parallel` | 1 文に中黒の並列が何組も入る |
 | `latin-spacing` | 英字・数字の前後の空白の有無が文書の中で混ざる（試験中） |
+| `kutoten-consistency` | 読点（、と，）と句点（。と．）の書き方が文書の中で混ざる（試験中） |
 
 英語固有の rule:
 

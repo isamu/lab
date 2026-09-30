@@ -917,6 +917,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `no-nakaguro-parallel` ✅ | 中黒の並列 | - |
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
+| `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
 
 `double-keigo` と `hiragana-fukushi` は spec の初版で `pos` を要求するとしていたが、
 **語彙表で足りる**。品詞から二重敬語を組み立てるより、割れない形だけを列挙するほうが精度が高い。
