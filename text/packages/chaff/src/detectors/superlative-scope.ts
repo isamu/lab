@@ -21,14 +21,14 @@ export const scopeMarkersOf = (lexicon: Lexicon): ScopeMarkers => ({
 const NOMINAL = new Set(["NOUN", "PROPN"]);
 
 /** 名詞句の始まり。the world・Chicago・our products・the three・all。 */
-const PHRASE_START = new Set(["DET", "NOUN", "PROPN", "PRON", "NUM", "ADJ"]);
+export const PHRASE_START = new Set(["DET", "NOUN", "PROPN", "PRON", "NUM", "ADJ"]);
 
 /** 名詞の前に来る修飾（most skilled・widely used・stuffed）。名詞が出た後は名詞の連なりだけが続く。 */
 const PREMODIFIER = new Set(["ADJ", "ADV", "VERB", "NOUN", "PROPN", "NUM"]);
 const NOUN_RUN = new Set(["NOUN", "PROPN", "NUM"]);
 
 /** 範囲の前に置ける語。修飾だけで終わった句（the best is in …）は範囲ではなく述語。 */
-const PHRASE_END = new Set(["NOUN", "PROPN", "NUM", "ADJ"]);
+export const PHRASE_END = new Set(["NOUN", "PROPN", "NUM", "ADJ"]);
 
 const isMarker = (token: Token | undefined, markers: Lexicon): boolean =>
   token !== undefined && markers.some((entry) => entry.pattern.toLowerCase() === token.surface.toLowerCase());
@@ -47,7 +47,7 @@ const namedBefore = (tokens: readonly Token[], range: TokenRange, markers: Lexic
   isMarker(tokens[range.start - 1], markers) && isNamed(tokens[range.start - 2]);
 
 /** 最上級に続く名詞句の終わり。名詞が出るまでは修飾を、出た後は名詞の連なりを読む。 */
-const phraseEnd = (tokens: readonly Token[], at: number, nounSeen = false): number => {
+export const phraseEnd = (tokens: readonly Token[], at: number, nounSeen = false): number => {
   const token = tokens[at];
   if (token === undefined || !(nounSeen ? NOUN_RUN : PREMODIFIER).has(token.pos)) return at;
   return phraseEnd(tokens, at + 1, nounSeen || NOMINAL.has(token.pos));

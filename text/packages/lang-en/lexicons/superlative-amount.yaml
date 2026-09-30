@@ -1,0 +1,7 @@
+# Superlatives that also name an amount. With a noun right after them and nothing else joined to that noun ("the most
+# work", "the most students", "for the most part"), they say which has the largest amount, not that anything is best.
+# A language without this list reads no superlative as an amount.
+id: superlative-amount
+language: en
+entries:
+  - pattern: the most

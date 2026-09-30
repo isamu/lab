@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `unqualified-superlative` leaves an English amount or a restricted superlative alone (#170)
+
+"The most" followed directly by a noun names an amount, not a boast: "the most work", "the most students", "for the
+most part". A superlative that a clause or a word after it restricts already says what it is the most of: "the best we
+have measured", "the threats that we have seen", "the most scalable option discussed", "the best possible outcome",
+"the most restrained manner possible". None of these is reported any more.
+
+"The most powerful tool", "the best solution on the market" and "the best solution ever" are still reported. The
+words come from four new English lists: `superlative-amount`, `relative-word`, `subject-pronoun` and
+`superlative-bound`. Japanese has none of them, and its findings are unchanged.
+
 ### `latin-spacing` leaves dates and clock times out of the count (#290)
 
 「9月」「8月」 were counted as digits packed against the next Japanese character, so a report that spaced its counts
