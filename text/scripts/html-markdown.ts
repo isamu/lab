@@ -10,7 +10,7 @@
 // link's target), a heading's link to its own section beside or after its title,
 // lines of nothing but in-page or script links (never a heading), a heading drawn as an image unless its alt text is the page's
 // title, blocks of nothing but links closing the page, and a copyright notice closing the page, with an address just
-// before it, are dropped. Markup's spacing collapses; U+3000 is text and stays. Pure; a regular-expression reading that
+// before it, are dropped. A paragraph tag that lost its "<" upstream (html-lost-tags.ts) opens its paragraph again. Markup's spacing collapses; U+3000 is text and stays. Pure; a regular-expression reading that
 // is enough for the documents in the corpus, not a parser for any HTML.
 import {
   ANY_LINK,
@@ -34,6 +34,7 @@ import {
 } from "./html-elements.ts";
 import { contentBlock } from "./html-content-block.ts";
 import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
+import { withLostParagraphTagsRestored } from "./html-lost-tags.ts";
 import { withoutReaderOnlyText } from "./html-reader-only.ts";
 import { withoutWidgets } from "./html-widgets.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
@@ -456,7 +457,7 @@ const MARKUP_SPACE = /[^\S\u3000]+/gu;
 const INVISIBLE_ONLY = /^[\s\p{Cf}]*$/u;
 
 export const htmlToMarkdown = (html: string): string => {
-  const uncommented = withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "");
+  const uncommented = withLostParagraphTagsRestored(withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""));
   const preformatted = withPreformattedStashed(withTablesRead(DROPPED.reduce(withoutElement, withoutRubyText(uncommented))));
   const kept = withoutHeadingSelfLinks(withoutWidgets(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(preformatted.html))))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
