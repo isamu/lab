@@ -8,6 +8,7 @@ import { hasTitle } from "./heading-title.ts";
 import { maskSpans } from "./mask.ts";
 import { spansWithin, unmaskedSoftBreaks } from "./soft-break.ts";
 import { segmentJoined } from "./joined-view.ts";
+import { lineParagraphs } from "./line-paragraphs.ts";
 import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { pageFurniture, textOutline } from "./page-furniture.ts";
@@ -221,12 +222,32 @@ const sectionsOf = (headings: readonly Heading[], sentences: readonly Sentence[]
     });
 };
 
-const paragraphsOf = (spans: readonly Span[], sentences: readonly Sentence[], listSpans: readonly Span[]): Paragraph[] =>
+/** sentences（並び順）の中で、start が offset 以上の最初の添字。1 行 1 段落の何万行でも、段落ごとに全部をなめない。 */
+const firstStartingAt = (sentences: readonly Sentence[], offset: number): number => {
+  const search = (low: number, high: number): number => {
+    if (low >= high) return low;
+    const middle = (low + high) >> 1;
+    return (sentences[middle]?.span.start ?? Number.POSITIVE_INFINITY) >= offset ? search(low, middle) : search(middle + 1, high);
+  };
+  return search(0, sentences.length);
+};
+
+const sentencesWithin = (sentences: readonly Sentence[], span: Span): Sentence[] =>
+  sentences.slice(firstStartingAt(sentences, span.start), firstStartingAt(sentences, span.end));
+
+const paragraphsOf = (prose: string, spans: readonly Span[], sentences: readonly Sentence[], listSpans: readonly Span[]): Paragraph[] =>
   spans
     // 箇条書きの中の段落は「段落」として数えない。項目 1 つを 1 段落と読むと、
     // 段落あたりの文数も長さのばらつきも、箇条書きの多い文書で壊れる。
     .filter((span) => !listSpans.some((list) => span.start >= list.start && span.start < list.end))
-    .map((span) => ({ span, sentences: sentences.filter((sentence) => within(sentence.span, span.start, span.end)) }));
+    .flatMap((span) =>
+      lineParagraphs(
+        prose,
+        span,
+        sentencesWithin(sentences, span).map((sentence) => sentence.span),
+      ),
+    )
+    .map((span) => ({ span, sentences: sentencesWithin(sentences, span) }));
 
 /** 箇条書きは list ノードの直下の項目を数える。入れ子の項目は内側の list のものとして数える。目次のような案内だけの箇条書きは数えない。 */
 const listsOf = (root: Node, source: string, anchors: InPageAnchors): BulletList[] => {
@@ -305,7 +326,7 @@ export const buildDocument = (
     sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root, blocks), source.length),
     sentences,
     listSpans: listItems,
-    paragraphs: paragraphsOf(paragraphSpans, sentences, listItems),
+    paragraphs: paragraphsOf(prose, paragraphSpans, sentences, listItems),
     lists: listsOf(root, source, anchors),
     links: [...spansOfType(root, "link"), ...spansOfType(root, "linkReference")],
     lexicons: tagged ? tokenizedLexicons(lexicons, adapter) : lexicons,

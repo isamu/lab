@@ -4,6 +4,19 @@ Newest first.
 
 ## Unreleased
 
+### A paragraph written one per line is counted line by line (#170)
+
+Text that puts each paragraph on one line with no blank line between them (青空文庫 texts, minutes, HTML that breaks
+lines with `<br>`) was read as one huge paragraph, so `max-paragraph-length` reported a whole essay or a whole set of
+minutes as a single paragraph. Such a paragraph is now split at the line breaks where a sentence ends, and each part
+is counted as a paragraph. Sentences are not changed: a sentence that runs over a line break stays whole, and a
+speaker's name on its own line stays with what they said.
+
+Only a paragraph of that shape is split. At least half of its lines must end a sentence, so a paragraph wrapped at a
+fixed width stays whole. Several lines must each hold two or more whole sentences, so a paragraph written one sentence
+per line (a common Markdown style, in English above all) stays whole and is still reported when it is long. The rules
+that count paragraphs (`paragraph-length-variance`, `preamble-length`) see the same parts.
+
 ### `unqualified-superlative` leaves an English amount or a restricted superlative alone (#170)
 
 "The most" followed directly by a noun names an amount, not a boast: "the most work", "the most students", "for the
