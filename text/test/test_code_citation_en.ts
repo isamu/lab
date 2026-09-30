@@ -153,7 +153,30 @@ describe("citedCodeBefore and listedTagAround over generated text around a refer
     "BCP 14 (",
   ];
 
-  it(`finds only a listed-tag candidate or a numbered name that is written there (seed ${String(SEED)})`, () => {
+  /** What may stand between a code's name and the reference: nothing but a comma, a parenthesis, spaces and one "§". */
+  const JOIN_TO_REFERENCE = /^(?:,|\s*\()?\s*(?:§\s*)?$/u;
+  const NAMED_CODE = /^(?:\d{1,3}\s+)?(?:CFR|RFC \d{1,5}|BCP \d{1,5})$/u;
+  const CANDIDATE_TAG = /^(?:\d{1,3}|[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+)$/u;
+
+  const checkCode = (before: string, code: string | undefined): void => {
+    if (code !== undefined) {
+      assert.match(code, NAMED_CODE);
+      assert.match(before.slice(before.lastIndexOf(code) + code.length), JOIN_TO_REFERENCE, `${before} → ${code}`);
+    }
+    if (/(?:^|[\s(,;])RFC 1122, $/u.test(before)) assert.equal(code, "RFC 1122", before);
+  };
+
+  const checkTag = (before: string, after: string, tag: string | undefined): void => {
+    if (tag !== undefined) {
+      assert.match(tag, CANDIDATE_TAG);
+      const at = before.lastIndexOf(`[${tag}]`);
+      const justBefore = at !== -1 && /^,?\s?$/u.test(before.slice(at + tag.length + 2));
+      assert.ok(justBefore || after.includes(`[${tag}]`), `${before}Section 9${after} → ${tag}`);
+    }
+    if (/\[19\],?\s?$/u.test(before) && !after.includes("of")) assert.equal(tag, "19", before);
+  };
+
+  it(`finds a listed-tag candidate or a numbered name only right beside the reference (seed ${String(SEED)})`, () => {
     let seed = SEED;
     const pick = (): string => {
       seed = (seed * 1_103_515_245 + 12_345) % 2_147_483_648;
@@ -163,10 +186,8 @@ describe("citedCodeBefore and listedTagAround over generated text around a refer
     Array.from({ length: CASES }).forEach(() => {
       const [before, after] = [piece(), piece()];
       const text = `${before}Section 9${after}`;
-      const code = citedCodeBefore(text, before.length, VOCABULARY);
-      const tag = listedTagAround(text, before.length, before.length + "Section 9".length);
-      assert.ok(code === undefined || (before.includes(code) && /^(?:\d{1,3}\s+)?(?:CFR|RFC \d{1,5}|BCP \d{1,5})$/u.test(code)), `${text} → ${String(code)}`);
-      assert.ok(tag === undefined || (text.includes(`[${tag}]`) && /^(?:\d{1,3}|[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+)$/u.test(tag)), `${text} → ${String(tag)}`);
+      checkCode(before, citedCodeBefore(text, before.length, VOCABULARY));
+      checkTag(before, after, listedTagAround(text, before.length, before.length + "Section 9".length));
     });
   });
 });
