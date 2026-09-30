@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### A blockquote or list nested thousands of levels deep no longer crashes chaff (#170)
+
+`>>>>…` or `- - - …` nested a few thousand levels deep is valid Markdown, and chaff stopped with "Maximum call stack
+size exceeded". Every walk over the Markdown tree and the structure tree now keeps its own stack, so lint, `tree` and
+the structure rules read such a document like any other. The output of every other document is unchanged.
+
 ### `oxford-comma-consistency` no longer reads an example aside or an "and" inside one item as a list (#170)
 
 A list needs three items, and four shapes made two items, or an "and" inside one item, look like three:
