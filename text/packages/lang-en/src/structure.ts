@@ -1,6 +1,6 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
 import { citedDocumentAfter, citedDocumentBefore, listedTagAround } from "./citation.ts";
-import { citedCodeBefore, codeVocabulary } from "./code-citation.ts";
+import { citedCodeBefore, codeVocabulary, titledCodeAt } from "./code-citation.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { membersAfter } from "./reference-list.ts";
 import { parseRoman } from "./roman.ts";
@@ -290,8 +290,12 @@ const CONTINUES_WORD = /^[\p{Script=Latin}\p{Nd}_-]/u;
 
 const startsWithMeasureUnit = (rest: string): boolean => MEASURE_UNITS.some((unit) => rest.startsWith(unit) && !CONTINUES_WORD.test(rest.slice(unit.length)));
 
-/** "2.5 days", "1.5 times" and "1.5 mM in each" are amounts, not section 2.5 titled "days". */
-const countedAfter = (_number: string, rest: string): boolean => unitAfter(` ${rest}`, 0) !== undefined || startsWithMeasureUnit(rest);
+/**
+ * "2.5 days", "1.5 times" and "1.5 mM in each" are amounts, not section 2.5 titled "days". "40 CFR § 163.25" is title 40 of
+ * another code, not section 40 of this document.
+ */
+const countedAfter = (_number: string, rest: string): boolean =>
+  unitAfter(` ${rest}`, 0) !== undefined || startsWithMeasureUnit(rest) || titledCodeAt(rest, CODES);
 
 export const structure: StructurePatterns = {
   numbered,
