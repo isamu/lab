@@ -40,6 +40,17 @@ describe("doc.markup", () => {
     assert.deepEqual(markup.images, []);
   });
 
+  it("<script> と <style> の中は、ページの要素ではない", () => {
+    const markup = markupOf('<script>\nconst s = \'<a id="x"></a><img src="y.png">\';\n</script>\n\n<style>\n#a { }\n</style>\n');
+    assert.deepEqual([...markup.ids], []);
+    assert.deepEqual(markup.images, []);
+  });
+
+  it("字の途中のテンプレートの記法は、字のまま見える範囲から外す", () => {
+    const source = "Text {{ https://example.jp/aを }} here.\n";
+    assert.deepEqual(textsOf(source), ["Text ", " here."]);
+  });
+
   it("リンクの行き先と、参照の定義の行き先", () => {
     const markup = markupOf("[a](https://x.jp) [b]() [c][Ref]\n\n[Ref]: #top\n");
     assert.deepEqual(

@@ -2,6 +2,7 @@ import { spanOf, type MarkdownNode } from "./markdown-node.ts";
 import { headingText } from "./heading-text.ts";
 import { eachPreOrder } from "./tree-walk.ts";
 import { alertReader } from "./template-syntax.ts";
+import { cutSpans } from "./span-cut.ts";
 import type { Markup, MarkupHeading, MarkupImage, MarkupLink, Span } from "./plugin.ts";
 
 /** mdast の節のうち、ここで読む値。MarkdownNode の型には無いものを、型を見て取り出す。 */
@@ -113,7 +114,11 @@ const HTML_COMMENT = /<!--[\s\S]*?-->/gu;
 /** コメントを同じ長さの空白にする。位置は変えない。 */
 const withoutComments = (html: string): string => html.replace(HTML_COMMENT, (comment) => " ".repeat(comment.length));
 
+/** 中身が表示されない要素（`<script>`、`<style>`）で始まる HTML。中の `<img>` や id は字の並びで、ページの要素ではない。 */
+const SOURCE_ELEMENT = /^\s*<(?:script|style)\b/iu;
+
 const readHtml = (written: string, span: Span, walk: Walk): void => {
+  if (SOURCE_ELEMENT.test(written)) return;
   const value = withoutComments(written);
   [...value.matchAll(HTML_ID)].forEach((match) => walk.ids.add(decodedAttribute(match[1] ?? match[2] ?? match[3] ?? "")));
   [...value.matchAll(IMG_TAG)].forEach((match) => {
@@ -166,7 +171,9 @@ export const markdownMarkup = (root: MarkdownNode, source: string, outside: read
   }
   const { definitions, referenced, ...found } = walk;
   const used = [...definitions].filter(([name]) => referenced.has(name)).map(([, link]) => link);
-  return { markdown: true, ...found, links: [...found.links, ...used].toSorted((left, right) => left.start - right.start) };
+  // 字の節の途中から始まる記法（`{{ … }}`）も、字のまま見える範囲から切り取る。
+  const texts = cutSpans(found.texts, outside);
+  return { markdown: true, ...found, texts, links: [...found.links, ...used].toSorted((left, right) => left.start - right.start) };
 };
 
 /** Markdown でない文書。記法は無く、文書全体が字のまま見える。 */
