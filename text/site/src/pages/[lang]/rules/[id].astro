@@ -46,6 +46,9 @@ const facts = [
 
   <h2 class="mt-8 text-xl font-semibold">{t(lang, "message")}</h2>
   <p class="mt-2 rounded bg-zinc-100 p-3 font-mono text-sm dark:bg-zinc-900">{rule.message[lang]}</p>
+  {rule.otherMessages.map((message) => (
+    <p class="mt-2 rounded bg-zinc-100 p-3 font-mono text-sm dark:bg-zinc-900">{message[lang]}</p>
+  ))}
 
   <h2 class="mt-8 text-xl font-semibold">{t(lang, "howToFix")}</h2>
   <p class="mt-2 leading-relaxed">{rule.howToFix[lang]}</p>

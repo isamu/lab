@@ -1,12 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { loneNumeralSpans } from "../packages/chaff/src/detectors/name-numeral.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // ローマ数字と . だけの文（Survey Title. VII. Subtitle の VII.）は、続き物の番号で略語ではない。例文は自作。
 // arXiv の抄録の題名（Filter. VII. Water-Bearing Objects、Euclid. II. The VIS Instrument）で報告されていた。
@@ -45,25 +42,22 @@ describe("loneNumeralSpans", () => {
   });
 });
 
-const reported = (adapter: LanguageAdapter, source: string): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
-
 describe("undefined-acronym と続き物の番号", () => {
   it("en: 題名の間の番号は数えず、副題の VIS は数える", () => {
-    assert.deepEqual(reported(en, "# Papers\n\nTitle: A Survey of Cool Stars. VII. The Inner Disk\n\nTitle: Euclid. II. The VIS Instrument\n"), ["VIS"]);
+    assert.deepEqual(reportedAcronyms(en, "# Papers\n\nTitle: A Survey of Cool Stars. VII. The Inner Disk\n\nTitle: Euclid. II. The VIS Instrument\n"), [
+      "VIS",
+    ]);
   });
 
   it("en: 文の終わりの IV は数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nGive 1 g IV. Monitor the patient.\n"), ["IV"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nGive 1 g IV. Monitor the patient.\n"), ["IV"]);
   });
 
   it("en: 括弧の名前の後ろの番号は数える（見送り: (adult dose) IV と見分けられない）", () => {
-    assert.deepEqual(reported(en, "# Papers\n\nTitle: Gas Flows (GASFLOW) XII. Rationale and design\n"), ["XII"]);
+    assert.deepEqual(reportedAcronyms(en, "# Papers\n\nTitle: Gas Flows (GASFLOW) XII. Rationale and design\n"), ["XII"]);
   });
 
   it("ja: 題名の間の番号は数えず、SRE は数える", () => {
-    assert.deepEqual(reported(ja, "# 論文\n\nA Survey of Cool Stars. VII. The Inner Disk\n\nSREも見ます。\n"), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(ja, "# 論文\n\nA Survey of Cool Stars. VII. The Inner Disk\n\nSREも見ます。\n"), ["SRE"]);
   });
 });

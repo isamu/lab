@@ -1,5 +1,6 @@
 import type { Finding } from "../plugin.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
+import { counted } from "./plural.ts";
 
 export type FileOutcome = { readonly path: string; readonly findings: readonly Finding[]; readonly notRun: number };
 
@@ -21,9 +22,9 @@ const TEXT: Texts<{
   },
   en: {
     counts: {
-      error: (n) => `${n} error${n === 1 ? "" : "s"}`,
-      warning: (n) => `${n} warning${n === 1 ? "" : "s"}`,
-      info: (n) => `${n} note${n === 1 ? "" : "s"}`,
+      error: (n) => counted(n, "error"),
+      warning: (n) => counted(n, "warning"),
+      info: (n) => counted(n, "note"),
     },
     join: ", ",
     none: "No findings",

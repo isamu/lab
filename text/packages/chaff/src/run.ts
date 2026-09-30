@@ -41,11 +41,11 @@ const reasonsFor = (doc: ProseDocument): Reasons => REASONS[uiLanguageOf(doc.lan
  * 読むので、番号を読めなかった文書でも動く。どちらも capability ではなく、adapter が木を作れるかで決まる。
  */
 const TREE_NEEDS: ReadonlySet<string> = new Set(["structure", "dates", "quantities"]);
-const VALUE_NEEDS: readonly string[] = ["dates", "quantities"];
+const VALUE_NEEDS: ReadonlySet<string> = new Set(["dates", "quantities"]);
 
 const treeNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
   if (rule.requires.includes("structure")) return treeProblem(doc);
-  return rule.requires.some((need) => VALUE_NEEDS.includes(need)) && doc.structure === undefined ? reasonsFor(doc).noStructure(doc.language) : undefined;
+  return rule.requires.some((need) => VALUE_NEEDS.has(need)) && doc.structure === undefined ? reasonsFor(doc).noStructure(doc.language) : undefined;
 };
 
 const treeProblem = (doc: ProseDocument): string | undefined => {
@@ -200,5 +200,5 @@ export const runRules = (
     .filter((rule) => rule.from.length > 0 && levelFor(rule, settings, experimental) !== "off")
     .flatMap((rule) => compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental), genre, limits), starts, doc.language));
   const all = [...outcome.findings, ...composites];
-  return { ...outcome, findings: [...all].sort((left, right) => left.line - right.line), forcedExperimental: forced };
+  return { ...outcome, findings: all.toSorted((left, right) => left.line - right.line), forcedExperimental: forced };
 };

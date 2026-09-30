@@ -1,6 +1,6 @@
 import { hasParticle, isClosed, lastContent } from "../sentence-shape.ts";
-import { isWithinAny, quotedSpans } from "../quoted-span.ts";
-import type { Detector, Finding, Sentence, Span, Token } from "../plugin.ts";
+import { isWithinAny, quotedIn } from "../quoted-span.ts";
+import type { Detector, Finding, Span, Token } from "../plugin.ts";
 
 /**
  * 文末が名詞で終わる（体言止め）。箇条書きでは普通だが、本文では文が途中で切れて読める。
@@ -45,10 +45,11 @@ export const nounEnding: Detector = (doc, options): Finding[] => {
  */
 type Run = { readonly surface: string; readonly tokens: readonly Token[] };
 
-const extend = (runs: readonly Run[], token: Token): Run[] => {
+const extend = (runs: Run[], token: Token): Run[] => {
   const last = runs.at(-1);
-  if (last !== undefined && last.surface === token.surface) return [...runs.slice(0, -1), { surface: last.surface, tokens: [...last.tokens, token] }];
-  return [...runs, { surface: token.surface, tokens: [token] }];
+  if (last !== undefined && last.surface === token.surface) runs[runs.length - 1] = { surface: last.surface, tokens: [...last.tokens, token] };
+  else runs.push({ surface: token.surface, tokens: [token] });
+  return runs;
 };
 
 const PARTICLE = new Set(["ADP", "SCONJ", "PART", "CCONJ"]);
@@ -66,12 +67,9 @@ const runsOf = (tokens: readonly Token[], nesting: readonly string[], quoted: re
   tokens.reduce<Run[]>((acc, token) => {
     if (isWithinAny(quoted, token.span)) return acc;
     if (nesting.includes(token.surface)) return extend(acc, token);
-    return token.pos === "PUNCT" || PARTICLE.has(token.pos) ? [...acc, BREAK] : acc;
+    if (token.pos === "PUNCT" || PARTICLE.has(token.pos)) acc.push(BREAK);
+    return acc;
   }, []);
-
-/** 文の中の、鉤括弧で引いたものを括弧ごと、文書全体の座標で。 */
-const quotedIn = (sentence: Sentence): Span[] =>
-  quotedSpans(sentence.text).map((span) => ({ start: sentence.span.start + span.start - 1, end: sentence.span.start + span.end + 1 }));
 
 export const doubledParticle: Detector = (doc, options): Finding[] => {
   const nesting = (options.lexicon ?? []).map((entry) => entry.pattern);

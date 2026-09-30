@@ -211,7 +211,7 @@ const leading = (text: string, char: string): number => {
 
 /** `== Heading ==` at levels 1 to 6: the level is the shorter of the two runs of `=`. */
 const headingOf = (line: string): string | undefined => {
-  const level = Math.min(leading(line, "="), leading(Array.from(line).reverse().join(""), "="), 6);
+  const level = Math.min(leading(line, "="), leading(Array.from(line).toReversed().join(""), "="), 6);
   if (level === 0 || line.length <= level * 2) return undefined;
   return `${"#".repeat(level)} ${line.slice(level, line.length - level).trim()}`;
 };

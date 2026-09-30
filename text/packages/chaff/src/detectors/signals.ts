@@ -6,6 +6,7 @@ import { expansionAt, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, startsWithin } from "./concrete-evidence.ts";
+import { letteredIndexEntries } from "./lettered-index.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
 
@@ -117,7 +118,7 @@ export const ngramRepetition: Detector = (doc, options): Finding[] => {
   const sentenceWith = (gram: string): Sentence | undefined => doc.sentences.find((sentence) => gramText(sentence, doc.lengthUnit).includes(gram));
   const worst = [...gramsOf(doc).entries()]
     .filter(([gram, count]) => count > options.limit && isPhrasing(gram, doc.lengthUnit))
-    .sort(([, left], [, right]) => right - left)
+    .toSorted(([, left], [, right]) => right - left)
     .map(([gram, count]) => ({ gram, count, at: sentenceWith(gram) }))
     .find(({ gram, at }) => at === undefined || hasPredicate(gram, at, doc.lengthUnit));
   if (worst === undefined) return [];
@@ -273,7 +274,8 @@ const openingOf = (sentence: Sentence | undefined, unit: ProseDocument["lengthUn
 const hasNumeralIn = (section: Section): boolean => section.sentences.some((sentence) => hasNumeral(sentence.tokens ?? []));
 
 export const concreteEvidence: Detector = (doc, options): Finding[] => {
-  const sections = doc.sections.filter((section) => section.sentences.length >= 3);
+  const entries = letteredIndexEntries(doc.sections);
+  const sections = doc.sections.filter((section) => section.sentences.length >= 3 && !entries.has(section));
   const bare = sections.filter(
     (section) => !CONCRETE.test(doc.source.slice(section.span.start, section.span.end)) && !hasNumeralIn(section) && !startsWithin(section.span, doc.links),
   );

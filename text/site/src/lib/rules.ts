@@ -3,6 +3,7 @@
 import { resolve } from "node:path";
 import { loadRules } from "../../../packages/chaff/src/rule-load.ts";
 import type { RuleDefinition } from "../../../packages/chaff/src/plugin.ts";
+import { templateForReading } from "../../../packages/chaff/src/render/text.ts";
 import type { Lang } from "./i18n";
 
 export type Localized = Record<Lang, string>;
@@ -16,6 +17,8 @@ export type Rule = {
   readonly name: Localized;
   readonly why: Localized;
   readonly message: Localized;
+  /** The messages a rule gives for its other ways of finding (excessive-hedging's hedges stacked in one sentence). */
+  readonly otherMessages: readonly Localized[];
   readonly howToFix: Localized;
   readonly levels: Record<Lang, readonly (readonly [string, string])[]>;
   readonly useFor: readonly string[];
@@ -38,6 +41,8 @@ const levelsOf = (definition: RuleDefinition): readonly (readonly [string, strin
 
 const text = (localized: Readonly<Record<string, string>>, lang: Lang): string => localized[lang] ?? localized["en"] ?? "";
 
+const readable = (message: Localized): Localized => ({ ja: templateForReading(message.ja), en: templateForReading(message.en) });
+
 const byLanguage: Record<Lang, readonly RuleDefinition[]> = { ja: loadRules("ja", RULES_DIR), en: loadRules("en", RULES_DIR) };
 
 const ruleOf = (ja: RuleDefinition): Rule => {
@@ -56,7 +61,10 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     languages,
     name: localized("name"),
     why: localized("why"),
-    message: localized("message"),
+    message: readable(localized("message")),
+    otherMessages: Object.keys(ja.messages).map((variant) =>
+      readable({ ja: text(ja.messages[variant] ?? {}, "ja"), en: text(en.messages[variant] ?? {}, "en") }),
+    ),
     howToFix: localized("how_to_fix"),
     levels: { ja: levelsOf(ja), en: levelsOf(en) },
     useFor: ja.use_for,

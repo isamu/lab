@@ -4,7 +4,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { passiveVocabulary, readsAsPassive, type PassiveVocabulary } from "../packages/lang-ja/src/passive-reading.ts";
+import { outsideTheReport, passiveVocabulary, readsAsPassive, type PassiveVocabulary } from "../packages/lang-ja/src/passive-reading.ts";
 import type { Morpheme } from "../packages/lang-ja/src/counter-tsu.ts";
 import type { Lexicon } from "../packages/chaff/src/plugin.ts";
 
@@ -12,27 +12,40 @@ const lexiconOf = (...patterns: string[]): Lexicon => patterns.map((pattern) => 
 
 const VOCABULARY: PassiveVocabulary = passiveVocabulary({
   "spontaneous-verb": lexiconOf("考える", "思う"),
-  "stative-passive-verb": lexiconOf("含む"),
+  "stative-passive-verb": lexiconOf("含む", "適用", "定める"),
   "honorific-formula": lexiconOf("におかれましては", "におかれては、"),
   "intransitive-verb": lexiconOf("来る", "取り組む", "参加", "辞任"),
   "naming-verb": lexiconOf("呼ぶ"),
 });
 
-/** "決定/名詞,サ変接続 さ/動詞,自立,する れる/動詞,接尾,れる" の形で書いた列を形態素にする。原形を省けば表層と同じ。 */
+/**
+ * "決定/名詞,サ変接続 さ/動詞,自立,する れる/動詞,接尾,れる" の形で書いた列を形態素にする。原形を省けば表層と同じ。
+ * 四つ目は活用の型（"変え/動詞,自立,変える,一段"）。
+ */
 const morphemesOf = (source: string): Morpheme[] =>
   source.split(" ").map((entry) => {
     const [surface = "", tags = ""] = entry.split("/");
-    const [pos = "", detail = "*", basic = surface] = tags.split(",");
-    return { surface_form: surface, pos, pos_detail_1: detail, pos_detail_2: "*", basic_form: basic };
+    const [pos = "", detail = "*", basic = surface, conjugation] = tags.split(",");
+    return {
+      surface_form: surface,
+      pos,
+      pos_detail_1: detail,
+      pos_detail_2: "*",
+      basic_form: basic,
+      ...(conjugation === undefined ? {} : { conjugated_type: conjugation }),
+    };
   });
+
+const passiveIndex = (morphemes: readonly Morpheme[]): number => morphemes.findIndex((morpheme) => morpheme.pos_detail_1 === "接尾" && morpheme.pos === "動詞");
 
 const passiveAt = (source: string, vocabulary: PassiveVocabulary = VOCABULARY): boolean => {
   const morphemes = morphemesOf(source);
-  return readsAsPassive(
-    morphemes,
-    morphemes.findIndex((morpheme) => morpheme.pos_detail_1 === "接尾" && morpheme.pos === "動詞"),
-    vocabulary,
-  );
+  return readsAsPassive(morphemes, passiveIndex(morphemes), vocabulary);
+};
+
+const outsideAt = (source: string): boolean => {
+  const morphemes = morphemesOf(source);
+  return outsideTheReport(morphemes, passiveIndex(morphemes));
 };
 
 describe("readsAsPassive: 受動と読める「れる/られる」", () => {
@@ -257,5 +270,176 @@ describe("agentless-passive（日本語）: 受動でない「れる/られる�
 
   it("invalid: 自発の文と同じ文にほかの受動があれば、そちらを指摘する", () => {
     assert.equal(reported("検討課題が相当残されていると思われます。"), true);
+  });
+});
+
+describe("readsAsPassive: 状態・決まりの受動、ら抜き、可能", () => {
+  it("状態や決まりを言う動詞は、サ変名詞も「する」の前で見る", () => {
+    assert.equal(passiveAt("各号/名詞,一般 が/助詞,格助詞 適用/名詞,サ変接続 さ/動詞,自立,する れる/動詞,接尾,れる"), false);
+    assert.equal(passiveAt("法令/名詞,一般 で/助詞,格助詞 定め/動詞,自立,定める られ/動詞,接尾,られる て/助詞,接続助詞 いる/動詞,非自立,いる"), false);
+  });
+
+  it("サ変名詞が「する」の直前になければ見ない", () => {
+    assert.equal(passiveAt("適用/名詞,サ変接続 を/助詞,格助詞 さ/動詞,自立,する れ/動詞,接尾,れる まし/助動詞,*,ます"), true);
+  });
+
+  it("「た」で終わる出来事は、状態の動詞でも誰かのした動作の受動", () => {
+    assert.equal(passiveAt("割引/名詞,一般 が/助詞,格助詞 適用/名詞,サ変接続 さ/動詞,自立,する れ/動詞,接尾,れる まし/助動詞,*,ます た/助動詞,*,た"), true);
+    assert.equal(passiveAt("規程/名詞,一般 が/助詞,格助詞 定め/動詞,自立,定める られ/動詞,接尾,られる た/助動詞,*,た"), true);
+  });
+
+  it("「ていた」は過去の状態で、状態の動詞なら受動に数えない", () => {
+    assert.equal(
+      passiveAt("法令/名詞,一般 で/助詞,格助詞 定め/動詞,自立,定める られ/動詞,接尾,られる て/助詞,接続助詞 い/動詞,非自立,いる た/助動詞,*,た"),
+      false,
+    );
+  });
+
+  it("一段動詞に直に付いた「れる」は、ら抜きか誤字の読み違いで受動ではない", () => {
+    assert.equal(passiveAt("と/助詞,格助詞 とらえ/動詞,自立,とらえる,一段 れ/動詞,接尾,れる いただけれ/動詞,自立,いただける"), false);
+  });
+
+  it("五段動詞の「れる」と一段動詞の「られる」は受動のまま", () => {
+    assert.equal(passiveAt("会議/名詞,一般 で/助詞,格助詞 決め/動詞,自立,決める,一段 られ/動詞,接尾,られる た/助動詞,*,た"), true);
+    assert.equal(passiveAt("注文/名詞,サ変接続 を/助詞,格助詞 断ら/動詞,自立,断る,五段・ラ行 れ/動詞,接尾,れる た/助動詞,*,た"), true);
+  });
+
+  it("一段動詞の「られる」に打ち消しが直に続けば、可能に読む", () => {
+    assert.equal(passiveAt("他人/名詞,一般 は/助詞,係助詞 変え/動詞,自立,変える,一段 られ/動詞,接尾,られる ない/助動詞,*,ない"), false);
+    assert.equal(passiveAt("質問/名詞,サ変接続 に/助詞,格助詞 答え/動詞,自立,答える,一段 られ/動詞,接尾,られる ず/助動詞,*,ぬ"), false);
+  });
+
+  it("「ている」を挟んだ打ち消しや、一段でない動詞の打ち消しは受動のまま", () => {
+    assert.equal(
+      passiveAt("設定/名詞,サ変接続 は/助詞,係助詞 変え/動詞,自立,変える,一段 られ/動詞,接尾,られる て/助詞,接続助詞 い/動詞,非自立,いる ない/助動詞,*,ない"),
+      true,
+    );
+    assert.equal(passiveAt("評価/名詞,サ変接続 さ/動詞,自立,する,サ変・スル れ/動詞,接尾,れる ない/助動詞,*,ない"), true);
+  });
+});
+
+describe("outsideTheReport: 文が報告する動作の外にある受動", () => {
+  it("仮定の「ば」「と」の節は外", () => {
+    assert.equal(outsideAt("立証/名詞,サ変接続 さ/動詞,自立,する れれ/動詞,接尾,れる ば/助詞,接続助詞"), true);
+    assert.equal(outsideAt("整理/名詞,サ変接続 さ/動詞,自立,する れ/動詞,接尾,れる て/助詞,接続助詞 いる/動詞,非自立,いる と/助詞,接続助詞"), true);
+  });
+
+  it("逆接の「が」「けど」の節は、起きたことを言い切っているので報告の中", () => {
+    assert.equal(
+      outsideAt("確認/名詞,サ変接続 さ/動詞,自立,する れ/動詞,接尾,れる て/助詞,接続助詞 い/動詞,非自立,いる ない/助動詞,*,ない が/助詞,接続助詞 、/記号,読点"),
+      false,
+    );
+    assert.equal(outsideAt("共有/名詞,サ変接続 さ/動詞,自立,する れ/動詞,接尾,れる た/助動詞,*,た けど/助詞,接続助詞"), false);
+  });
+
+  it("義務の「なければならない」の「ば」は仮定ではない", () => {
+    assert.equal(
+      outsideAt("見直さ/動詞,自立,見直す れ/動詞,接尾,れる なけれ/助動詞,*,ない ば/助詞,接続助詞 なり/動詞,自立,なる ませ/助動詞,*,ます ん/助動詞,*,ん"),
+      false,
+    );
+    assert.equal(outsideAt("図ら/動詞,自立,図る れ/動詞,接尾,れる なけれ/助動詞,*,ない ば/助詞,接続助詞 いけ/動詞,自立,いける ない/助動詞,*,ない"), false);
+    assert.equal(
+      outsideAt(
+        "統一/名詞,サ変接続 さ/動詞,自立,する れ/動詞,接尾,れる て/助詞,接続助詞 い/動詞,非自立,いる なけれ/助動詞,*,ない ば/助詞,接続助詞 、/記号,読点",
+      ),
+      true,
+    );
+  });
+
+  it("起きやすさ・起こりうることを言う形は外", () => {
+    ["やすい/形容詞,非自立", "にくい/形容詞,非自立", "づらい/形容詞,非自立", "得る/動詞,非自立", "うる/動詞,非自立", "がち/名詞,接尾"].forEach((after) =>
+      assert.equal(outsideAt(`理解/名詞,サ変接続 さ/動詞,自立,する れ/動詞,接尾,れる ${after}`), true, after),
+    );
+  });
+
+  it("文末、「〜され、」で続く述語、理由の「ので」は報告の中", () => {
+    assert.equal(
+      outsideAt("確認/名詞,サ変接続 さ/動詞,自立,する れ/動詞,接尾,れる て/助詞,接続助詞 い/動詞,非自立,いる ませ/助動詞,*,ます ん/助動詞,*,ん 。/記号,句点"),
+      false,
+    );
+    assert.equal(outsideAt("変更/名詞,サ変接続 さ/動詞,自立,する れ/動詞,接尾,れる 、/記号,読点"), false);
+    assert.equal(outsideAt("紛失/名詞,サ変接続 さ/動詞,自立,する れ/動詞,接尾,れる た/助動詞,*,た ので/助詞,接続助詞"), false);
+    assert.equal(outsideAt("決定/名詞,サ変接続 さ/動詞,自立,する れる/動詞,接尾,れる"), false);
+  });
+
+  it("引用の「と」（格助詞）は接続助詞の「と」ではない", () => {
+    assert.equal(outsideAt("残さ/動詞,自立,残す れ/動詞,接尾,れる て/助詞,接続助詞 いる/動詞,非自立,いる と/助詞,格助詞 思わ/動詞,自立,思う"), false);
+  });
+
+  it("空の列や、後ろに何も無い「れる」でも投げない", () => {
+    assert.equal(outsideTheReport([], 0), false);
+    assert.equal(outsideTheReport(morphemesOf("れる/動詞,接尾,れる"), 0), false);
+  });
+});
+
+describe("agentless-passive（日本語）: 状態・決まり・文書の中身を言う受動", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const reported = (source: string): boolean =>
+    runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, true, "business/report").findings.some((finding) => finding.rule === "agentless-passive");
+
+  it("valid: 決まりや分類を言う受動は指摘しない", () => {
+    [
+      "本規程は、全社員に適用される。",
+      "対象の機器は3つに分類されています。",
+      "申請の様式は法令上定められていない。",
+      "この手当は就業規則で規定されている。",
+      "委員会は5名で構成されている。",
+      "上位の規程が優先される。",
+      "複数の書面を合わせて一つの記録とすることは妨げられない。",
+      "本部の役割は中期計画の柱として位置付けられている。",
+    ].forEach((source) => assert.equal(reported(source), false, source));
+  });
+
+  it("valid: 文書の中身を言う受動は指摘しない", () => {
+    [
+      "詳細はガイドラインに記載されています。",
+      "等風速線が破線で示されています。",
+      "利用者の特性が列記されている。",
+      "必要な事項が網羅されている。",
+      "手順の確認について触れられている。",
+      "代表的な手口が挙げられます。",
+    ].forEach((source) => assert.equal(reported(source), false, source));
+  });
+
+  it("valid: 名詞を修飾する受動、仮定の節、起きやすさの形は指摘しない", () => {
+    [
+      "定められた手続に従って申請する。",
+      "要件が立証されれば、処分の対象となる。",
+      "情報が整理されていると、探しやすい。",
+      "図があった方が理解されやすい。",
+      "受託の現場では勉強会が開催されづらい。",
+      "全ての選択肢に誤りがないと解釈され得る。",
+    ].forEach((source) => assert.equal(reported(source), false, source));
+  });
+
+  it("valid: 可能の「られない」と、ら抜きの読み違いは指摘しない", () => {
+    ["他人は変えられないので、自分が動くしかない。", "この線が偏西風の位置ととらえれいただければと思います。"].forEach((source) =>
+      assert.equal(reported(source), false, source),
+    );
+  });
+
+  it("invalid: 責任の所在を隠す受動は指摘する", () => {
+    [
+      "二次被害は確認されていません。",
+      "よくある質問のページを更新することが検討されています。",
+      "同条項は早急に削除されるべきです。",
+      "国連憲章も見直されなければなりません。",
+      "技術の拡散も懸念されます。",
+      "申請は業務負担を理由に断られた。",
+      "仕様は変更され、担当者が確認した。",
+      "二次被害は確認されていないが、担当部署は公表していません。",
+      "不正アクセスは認められていません。",
+    ].forEach((source) => assert.equal(reported(source), true, source));
+  });
+
+  it("invalid: 状態の動詞でも、「た」で終わる出来事は指摘する", () => {
+    ["割引が適用されました。", "新しい規程が定められた。", "手当の対象が限定されました。"].forEach((source) => assert.equal(reported(source), true, source));
+  });
+
+  it("invalid: 一段動詞の受動と、「ている」を挟んだ打ち消しは指摘する", () => {
+    ["設定が変えられた。", "設定はまだ変えられていない。"].forEach((source) => assert.equal(reported(source), true, source));
   });
 });

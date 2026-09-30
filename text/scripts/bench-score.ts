@@ -34,7 +34,7 @@ export const outcomeOf = (sample: string, mutation: string, planted: Planted, fi
 export const falseAlarms = (clean: readonly Located[], measured: ReadonlySet<string>): ReadonlyMap<string, number> =>
   clean
     .filter((finding) => measured.has(finding.rule))
-    .reduce((counts, finding) => new Map([...counts, [finding.rule, (counts.get(finding.rule) ?? 0) + 1]]), new Map<string, number>());
+    .reduce((counts, finding) => counts.set(finding.rule, (counts.get(finding.rule) ?? 0) + 1), new Map<string, number>());
 
 const rowOf = (rule: string, outcomes: readonly Outcome[], alarms: ReadonlyMap<string, number>): RuleRow => {
   const planted = outcomes.filter((outcome) => outcome.rule === rule);
@@ -44,7 +44,7 @@ const rowOf = (rule: string, outcomes: readonly Outcome[], alarms: ReadonlyMap<s
 
 /** One row per measured rule, in the order of the rule ids. */
 export const ruleTable = (measured: ReadonlySet<string>, outcomes: readonly Outcome[], alarms: ReadonlyMap<string, number>): RuleRow[] =>
-  [...measured].sort((left, right) => left.localeCompare(right, "en")).map((rule) => rowOf(rule, outcomes, alarms));
+  [...measured].toSorted((left, right) => left.localeCompare(right, "en")).map((rule) => rowOf(rule, outcomes, alarms));
 
 const COLUMNS: readonly string[] = ["rule", "planted", "found", "missed", "false alarms"];
 
@@ -71,7 +71,7 @@ export const outcomeLine = (outcome: Outcome): string => {
 /** A clean sample's line: "clean", or the measured rules that reported on it. */
 export const cleanLine = (sample: string, clean: readonly Located[], measured: ReadonlySet<string>): string => {
   const counts = falseAlarms(clean, measured);
-  const parts = [...counts.keys()].sort((left, right) => left.localeCompare(right, "en")).map((rule) => `${rule} ${String(counts.get(rule) ?? 0)}`);
+  const parts = [...counts.keys()].toSorted((left, right) => left.localeCompare(right, "en")).map((rule) => `${rule} ${String(counts.get(rule) ?? 0)}`);
   return `${sample}  clean sample  ${parts.length === 0 ? "clean" : parts.join(", ")}`;
 };
 

@@ -107,12 +107,23 @@ jobs:
       - run: yarn build
 
       # 指摘の数では落とさない。文章の好みの問題なので。
-      # 落ちるのは chaff が最後まで動かなかったときだけ。
+      # 落ちるのは chaff が最後まで動かなかったとき（SARIF を書かずに終わったとき）だけ。
+      # chaff は error の指摘でも 1 で終わるので、終了コードは捨てずに表示し、判定は SARIF で行う。
+      #
+      # 見るのはこの repo の文書だけ。examples/ と test/fixtures/ は検査にかける入力で、誤りをわざと
+      # 含む（examples/ は chaff-ci.yml で毎回かけている）。既にあった指摘は .chaff-baseline.json に
+      # 棚上げしてあり、新しく増えたものだけが出る。対象を変えたら同じ対象で baseline を取り直す:
+      #   node packages/chaff/bin/chaff.js baseline "*.md" docs packages samples site/src/content
       - name: Run chaff on its own documents
         run: |
-          set -euo pipefail
-          node packages/chaff/bin/chaff.js . README.md --compact --sarif report/chaff.sarif || true
-          test -s report/chaff.sarif
+          set -uo pipefail
+          status=0
+          node packages/chaff/bin/chaff.js "*.md" docs packages samples site/src/content --compact --sarif report/chaff.sarif || status=$?
+          echo "chaff exited ${status}."
+          if [ ! -s report/chaff.sarif ]; then
+            echo "::error::chaff exited ${status} without writing report/chaff.sarif"
+            exit 1
+          fi
 
       - name: Upload SARIF to Code Scanning
         uses: github/codeql-action/upload-sarif@v4

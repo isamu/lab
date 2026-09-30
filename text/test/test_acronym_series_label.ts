@@ -1,12 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { reportedAcronyms } from "./rule-run.ts";
 import { seriesLabelSpans } from "../packages/chaff/src/detectors/series-label.ts";
-import { buildDocument } from "../packages/chaff/src/document.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 番号の前の大文字の語は、文書番号の一部（SP 800-61、BOD 25-01、NSF 19-582）で、略語ではない。例文は自作。
 // cloud.gov の手順書の NIST SP 800-61 で SP が報告されていた。発行元の NIST は番号の直前ではないので、略語のまま数える。
@@ -49,29 +46,26 @@ describe("seriesLabelSpans", () => {
   });
 });
 
-const reported = (adapter: LanguageAdapter, source: string): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "undefined-acronym": "strict" }, true, "business/report")
-    .findings.filter((finding) => finding.rule === "undefined-acronym")
-    .map((finding) => String(finding.values["word"]));
-
 describe("undefined-acronym と文書番号", () => {
   it("en: 番号の前の SP は数えず、発行元の NIST は数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nWe define it broadly, following [NIST SP 800-61](https://example.gov/sp.pdf), as a violation.\n"), ["NIST"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nWe define it broadly, following [NIST SP 800-61](https://example.gov/sp.pdf), as a violation.\n"), [
+      "NIST",
+    ]);
   });
 
   it("en: 番号の外の SP は数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nThe SP 800-61 guide applies. The SP signs it.\n"), ["SP"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe SP 800-61 guide applies. The SP signs it.\n"), ["SP"]);
   });
 
   it("en: 範囲の前の SRE は数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nThe SRE 1-2 handoff failed.\n"), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe SRE 1-2 handoff failed.\n"), ["SRE"]);
   });
 
   it("en: 年の範囲の前の FY は数える", () => {
-    assert.deepEqual(reported(en, "# Notes\n\nThe FY 2024-25 budget is final.\n"), ["FY"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe FY 2024-25 budget is final.\n"), ["FY"]);
   });
 
   it("ja: 番号の前の SP は数えず、SRE は数える", () => {
-    assert.deepEqual(reported(ja, "# 手引き\n\nNIST SP 800-61（米国標準技術研究所の文書）に従います。SREも見ます。\n"), ["NIST", "SRE"]);
+    assert.deepEqual(reportedAcronyms(ja, "# 手引き\n\nNIST SP 800-61（米国標準技術研究所の文書）に従います。SREも見ます。\n"), ["NIST", "SRE"]);
   });
 });

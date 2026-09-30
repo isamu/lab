@@ -35,15 +35,15 @@ const TEXT: Texts<{
   },
 };
 
-export const treeText = (context: TreeContext): (typeof TEXT)["ja"] => TEXT[context.ui ?? "ja"];
+const treeText = (context: TreeContext): (typeof TEXT)["ja"] => TEXT[context.ui ?? "ja"];
 
-const FORMATS = ["sexp", "json"];
+const FORMATS: ReadonlySet<string> = new Set(["sexp", "json"]);
 
 /** 値を取るフラグ。その次の引数は値で、対象のファイルではない。 */
-const VALUED = ["--format", "--language"];
+const VALUED: ReadonlySet<string> = new Set(["--format", "--language"]);
 
 export const treeTargets = (argv: readonly string[]): string[] =>
-  argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.includes(all[index - 1] ?? ""));
+  argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.has(all[index - 1] ?? ""));
 
 export const readSource = async (path: string, context: TreeContext): Promise<string | undefined> => {
   try {
@@ -108,7 +108,7 @@ export const inOrder = async (paths: readonly string[], each: (path: string) => 
  */
 export const runTree = async (paths: readonly string[], argv: readonly string[], context: TreeContext): Promise<number> => {
   const format = context.flag(argv, "--format") ?? "sexp";
-  if (paths.length === 0 || !FORMATS.includes(format)) {
+  if (paths.length === 0 || !FORMATS.has(format)) {
     console.error(treeText(context).usage);
     return 1;
   }

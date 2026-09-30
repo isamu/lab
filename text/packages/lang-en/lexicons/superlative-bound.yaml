@@ -1,0 +1,8 @@
+# Adjectives that bound a superlative to what can be had: right after it ("the best possible outcome") or after its noun
+# ("the best education possible", "the best evidence available"). The superlative is the most of what is possible.
+# A language without this list reads no superlative as bounded.
+id: superlative-bound
+language: en
+entries:
+  - pattern: possible
+  - pattern: available

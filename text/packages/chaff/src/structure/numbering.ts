@@ -46,4 +46,4 @@ export const numberingBreaks = (tree: StructureNode): StructureIssue[] =>
   inDocumentOrder(tree)
     .flatMap(sequencesOf)
     .flatMap(breaksIn)
-    .sort((left, right) => left.offset - right.offset);
+    .toSorted((left, right) => left.offset - right.offset);

@@ -73,7 +73,7 @@ const addressedNodes = (tree: StructureNode): Addressed[] => {
     const current = pending.pop();
     if (current === undefined) break;
     if (current.node.address !== "") found.push(current);
-    [...current.node.children].reverse().forEach((child) => pending.push({ node: child, depth: current.depth + 1 }));
+    current.node.children.toReversed().forEach((child) => pending.push({ node: child, depth: current.depth + 1 }));
   }
   return found;
 };

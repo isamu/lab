@@ -71,7 +71,7 @@ $ npx chaffjs article.md --watch
   Watching 1 file. 2 findings now.
   Each save prints only what changed. Ctrl-C to stop.
 
-08:21:10  article.md  ✓ 2 → 1 findings   (-1 max-sentence-length)
+08:21:10  article.md  ✓ 2 → 1 finding   (-1 max-sentence-length)
 08:21:15  article.md  ✗ 1 → 2 findings   (+1 max-sentence-length)
 ```
 

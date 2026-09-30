@@ -165,7 +165,7 @@ const references = (text: string): Mention[] => {
     const numbering = /^[Aa]/u.test(match.groups?.["word"] ?? "") ? "article" : "section";
     const shared = { numbering, ...citation(text, match.index, end, document) };
     const first = { start: match.index, end, attrs: { target: [main, ...parts].join("."), label: text.slice(match.index, end), ...shared } };
-    const [plural, roman] = [/s$/u.test(match.groups?.["word"] ?? ""), /^[IVXLC]+$/u.test(match.groups?.["n"] ?? "")];
+    const [plural, roman] = [(match.groups?.["word"] ?? "").endsWith("s"), /^[IVXLC]+$/u.test(match.groups?.["n"] ?? "")];
     return [first, ...membersAfter(text, end, [main, ...parts], shared, plural, roman)];
   });
 };
@@ -219,7 +219,7 @@ const obligations = (text: string): Mention[] => {
       kept.push({ start, end, attrs: { marker, type } });
     });
   });
-  return kept.sort((left, right) => left.start - right.start);
+  return kept.toSorted((left, right) => left.start - right.start);
 };
 
 /** Find the number first, then look at what is right before (a currency) and right after (a unit). */

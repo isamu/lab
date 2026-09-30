@@ -14,7 +14,7 @@ why:
 
 message:
   ja: 箇条書き {total} 個のうち {count} 個が 3 項目です（{limit}% まで）
-  en: "{count} of {total} lists have exactly three items ({limit}% allowed)"
+  en: "{count} of {total} {total|list|lists} {count|has|have} exactly three items ({limit}% allowed)"
 
 how_to_fix:
   ja: 数を合わせるために足した項目を消してください。2 つで足りるなら 2 つで。

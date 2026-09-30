@@ -1,5 +1,6 @@
 import type { Suppressed, Suppression } from "../stet.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
+import { counted } from "./plural.ts";
 
 const TEXT: Texts<{
   readonly nudge: string;
@@ -23,7 +24,7 @@ const TEXT: Texts<{
   },
   en: {
     nudge: "  <- consider changing the setting instead",
-    more: (n) => ` and ${n} more file${n === 1 ? "" : "s"}`,
+    more: (n) => ` and ${counted(n, "more file")}`,
     count: (n) => `${String(n).padStart(3)}`,
     reasons: (list) => `reasons: ${list}`,
     relaxAll: (rule) => `relax the whole rule: npx chaff relax ${rule} --why "..."`,
@@ -53,7 +54,7 @@ const groupByRule = (files: readonly PerFile[]): Group[] => {
         reasons: [...new Set(mine.flatMap((row) => (row.reason === undefined ? [] : [row.reason])))],
       };
     })
-    .sort((left, right) => right.count - left.count);
+    .toSorted((left, right) => right.count - left.count);
 };
 
 const groupLines = (group: Group, ui: UiLanguage): string[] => {

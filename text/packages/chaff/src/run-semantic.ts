@@ -129,7 +129,7 @@ export const runSemantic = async (
     ),
   );
   return {
-    findings: answers.filter((finding) => finding !== undefined).sort((left, right) => left.line - right.line),
+    findings: answers.filter((finding) => finding !== undefined).toSorted((left, right) => left.line - right.line),
     skipped,
     asked: live.reduce((sum, job) => sum + job.candidates.length, 0),
     sentencesSeen: doc.sentences.length,

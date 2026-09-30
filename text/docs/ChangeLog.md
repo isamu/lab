@@ -21,6 +21,130 @@ Will and Wilde's The Importance of Being Earnest from Project Gutenberg. URL onl
 Japanese Wikipedia talk page, the minutes of a 厚生労働省 council, 東京大学学位規則, and a MyPlate recipe. A Project
 Gutenberg eBook (format `gutenberg`) is stored as the work alone, without Project Gutenberg's header and licence.
 
+### Japanese `agentless-passive` leaves descriptive and legal passives alone (#290)
+
+The rule is about a passive that hides who is responsible (「二次被害は確認されていません」「〜が検討されています」). On
+the corpus's business documents most of its findings were passives where no one is hiding: a rule's scope
+(「次の各号が適用される」「法令上定められていない」), what a document says (「ガイドラインに記載されている」「図に示されて
+いる」), a classification (「3 つに分類されている」). These are no longer reported:
+
+- `stative-passive-verb` in `@chaffjs/lang-ja` now holds rule, document-content and state verbs (適用, 規定, 定める,
+  分類, 構成, 位置付ける, 記載, 示す, 言及 …). A サ変 noun is matched before する. An event in the past
+  (「割引が適用されました」「新しい規程が定められた」) is still reported. 求める and 認める are left out:
+  「一定の協力が求められます」 hides that the writer's organisation is the one asking, and 「不正アクセスは認められて
+  いません」 hides who looked.
+- A passive in a conditional clause (「立証されれば」「整理されていると、」) or followed by a tendency word
+  (「理解されやすい」「解釈され得る」) is not reported. 「見直されなければなりません」 is an obligation and still is.
+- A れる attached directly to an ichidan verb (a ら抜き form, or a typo the parser read as passive) and an ichidan
+  られる followed directly by ない or ず (「他人は変えられない」, a potential) are not passives.
+
+The rule stays experimental: most of what remains on business documents is a generic action (「使用されます」「行われ
+ます」) that morphology cannot tell from a hidden actor.
+
+### `sasete-itadaku` lets the number of uses its message allows pass (#170)
+
+The message says 「3 回あります（3 回まで）」: three uses are allowed. The rule nevertheless reported a document with
+exactly three, so it spoke at the limit its own message allows. It now reports only when a document uses the form
+more often than the limit; at `strict` one use passes, as the rule's reason (once is polite) says. A numeric setting
+such as `sasete-itadaku: 3` now means three are allowed, as it does for the other rules whose message states a limit.
+
+Every other rule whose message states its limit already agreed: a value equal to an upper limit ("N まで", "limit N",
+"N% allowed") passes, and so does a value equal to a lower limit ("N% 以上ほしい", "want N%"). A new test holds this
+for every such rule in both languages.
+
+### `excessive-hedging` reports hedges stacked in one sentence (#290)
+
+The rule measured only hedges per 1000 characters and skipped documents under 500 characters, so a short report
+with 「〜という状況であると考えられます」 got nothing, and on the corpus it had never fired. It now also reports a
+sentence that stacks two or more hedging devices in one clause (「〜という状況であると考えられます」「〜かもしれないと思われます」
+「〜かと思われる可能性があります」, "may possibly", "it could perhaps be argued"), on a document of any length. At least one device
+must be a hedge; the others may be words that soften without hedging on their own, from the new lexicons `hedge-frame`
+(「という状況だ」「かと」, may, might, could). Hedges that say where a claim holds rather than how sure the writer is
+(`hedge-scope`: 「場合がある」, "in some cases") never stack. Punctuation and a conjunction such as "and" end a clause, and a
+hedge in a quotation is the speaker's. A sentence reported this way is not reported again by the density check. The
+Japanese hedges are matched by their base form, so 「と思われる」 also finds 「と思われます」 and 「と思われた」; English gains
+"perhaps", "possibly", "presumably", "conceivably", "apparently" and "seemingly". A rule can now give a message per way
+of finding (`messages`, chosen by a finding's `variant`), and the rule reference shows both.
+
+`excessive-hedging` stays experimental. On the corpus the stacked check fires seven times, and each finding was read and
+judged right; on `examples/` it fires never. Seven findings, one of them Japanese, are too few to show a false-positive
+rate under 5%, and promoting the rule would also turn on its density check, which still has not fired on a real
+document. Pass `--experimental` to run it.
+
+### A paragraph written one per line is counted line by line (#170)
+
+Text that puts each paragraph on one line with no blank line between them (青空文庫 texts, minutes, HTML that breaks
+lines with `<br>`) was read as one huge paragraph, so `max-paragraph-length` reported a whole essay or a whole set of
+minutes as a single paragraph. Such a paragraph is now split at the line breaks where a sentence ends, and each part
+is counted as a paragraph. Sentences are not changed: a sentence that runs over a line break stays whole, and a
+speaker's name on its own line stays with what they said.
+
+Only a paragraph of that shape is split. At least half of its lines must end a sentence, so a paragraph wrapped at a
+fixed width stays whole. Several lines must each hold two or more whole sentences, so a paragraph written one sentence
+per line (a common Markdown style, in English above all) stays whole and is still reported when it is long. The rules
+that count paragraphs (`paragraph-length-variance`, `preamble-length`) see the same parts.
+
+### `unqualified-superlative` leaves an English amount or a restricted superlative alone (#170)
+
+"The most" followed directly by a noun names an amount, not a boast: "the most work", "the most students", "for the
+most part". A superlative that a clause or a word after it restricts already says what it is the most of: "the best we
+have measured", "the threats that we have seen", "the most scalable option discussed", "the best possible outcome",
+"the most restrained manner possible". None of these is reported any more.
+
+"The most powerful tool", "the best solution on the market" and "the best solution ever" are still reported. The
+words come from four new English lists: `superlative-amount`, `relative-word`, `subject-pronoun` and
+`superlative-bound`. Japanese has none of them, and its findings are unchanged.
+
+### `latin-spacing` leaves dates and clock times out of the count (#290)
+
+「9月」「8月」 were counted as digits packed against the next Japanese character, so a report that spaced its counts
+(「412 件」「6.2 時間」) was told its month names were the odd ones out. A date or a time written with units is packed by
+convention, so the inside of one no longer counts for or against either habit: the space between a number and its
+unit, and between one unit and the next number (「2026年9月30日」「10時5分」, also when written 「2026 年 9 月」). What
+makes a date is read from the words after the number, with three lexicons in `@chaffjs/lang-ja`: `calendar-unit`
+(月, 時, 時半: the number names a month or an hour on its own), `calendar-year-unit` (年, 年度, after a number of four
+digits) and the existing `date-time-unit`, now in order from the largest unit, which joins 日, 分 and 秒 to a date when
+they follow a larger unit (「10月1日」「15時30分」). A length stays a count: 「3ヶ月」「3 時間」「3日間」 are other words,
+and 「5日で」「5分」「3年」「5分30秒」 standing alone cannot be told from a length, so they count as before. The space
+before a date (「は 9月」) is the writer's habit before any number and still counts. A year after an era name
+(「令和8年」 on its own) still counts.
+
+### A report or a proposal is checked for a padded opening and an empty closing (#290)
+
+`--genre business/report` checked less than naming no genre at all. `padded-intro` (「近年、」, "in today's fast-paced
+world") ran only on blog posts, so a report that opened with filler was reported under the default `blog/tech` and not
+once it was called a report. `padded-intro` now runs on `business/report` and `business/proposal` too, and
+`empty-conclusion` (a closing that only restates the body) is listed for `chaff test` there. Press releases, e-mails and
+meeting notes are left out: their first lines give a reason or the business at hand (a fee notice's 「昨今の人件費の上昇のため」
+was the only place the rule fired on a business document in the corpus), and their last lines are greetings.
+
+`agentless-passive` and `excessive-hedging` stay experimental. On the corpus's business documents `agentless-passive` is
+mostly wrong (descriptive, legal and relative-clause passives such as 「適用される」「分類されています」, "is assigned"), and
+`excessive-hedging` has never fired on a real document, which is not yet evidence that it is right. Pass
+`--experimental` to run them.
+
+### English messages agree with their counts (#170)
+
+An English message said "(1 such words)", "appears 1 times" or "1 of 1 sections" when the count was one. A rule's
+message can now choose a form by a value. `{count|word|words}` gives "word" for exactly one and "words" for anything
+else. So `{count} such {count|word|words}` reads "1 such word" and "2 such words". A verb agrees the same way
+(`{count|has|have}`).
+
+Every English rule message that carries a count uses it. The rule reference on the site shows each form as its
+plural. The command line agrees too: `--watch` says "2 → 1 finding". A contract whose numbering could not be read says
+"only 1 was read as a numbered line". Japanese messages are unchanged.
+
+### `concrete-evidence-density` leaves the entries of a glossary alone (#170)
+
+A glossary or an A to Z style guide was reported entry by entry, because a definition carries no number, code or link.
+Entries are now recognised by structure: headings of a single letter (`## A`, `## B`, `## あ`, `## い`) with nothing under
+them but deeper headings, two or more of them in a row and in the order of their letters, divide an index when most of
+the headings right under them start with their letter (case, accents and voicing marks aside, katakana read as
+hiragana). Every section under such a divider is an entry, and entries are neither reported nor counted in the section
+total. The rest of the document (the introduction, "how to suggest a change") is checked as before, and so are FAQs,
+sections headed by a single word or phrase, and sections merely grouped under `## A` / `## B`. An index divided by `あ行`,
+or whose entries sit at the same heading level as the letters, is not recognised.
+
 ### A document profile chaff does not bundle stops the run instead of turning profiles off (#170)
 
 A `profile` in `chaff.yaml`, or in one of its `by_path` entries, that names no bundled profile (`profile: statue`)
