@@ -242,8 +242,15 @@ const plantEnding = (source: string, ending: RegExp, swaps: Readonly<Record<stri
     (line) => line.replace(ending, (_, word: string) => `${swaps[word] ?? word}。`),
   );
 
-/** である調の文書に、です・ます調の文を一つ混ぜる。 */
-export const politeInPlain = (source: string): Plant | undefined => (isPoliteDocument(source) ? undefined : plantEnding(source, PLAIN_ENDING, TO_POLITE));
+/**
+ * である調の文書に、です・ます調の文を一つ混ぜる。混ぜた文と比べ合う文（同じ箇条書き・本文）に、混ぜた後で chaff の読む である調の
+ * 文が一つも無いか、です・ます調より少なければ植えない: 混ぜた文が少数派にならない。文がみな「こと」で終わる要件一覧がこれ。
+ */
+export const politeInPlain = (source: string, context: PlantContext): Plant | undefined => {
+  const plant = isPoliteDocument(source) ? undefined : plantEnding(source, PLAIN_ENDING, TO_POLITE);
+  const counts = plant === undefined ? undefined : context.registers?.(plant.source, plant.line);
+  return counts !== undefined && counts.plain > 0 && counts.plain >= counts.polite ? plant : undefined;
+};
 
 /** です・ます調の文書に、である調の文を一つ混ぜる。 */
 export const plainInPolite = (source: string): Plant | undefined =>
