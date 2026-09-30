@@ -438,7 +438,7 @@ const CLOSING_BLOCKS = ["div", "section", "p"];
 
 const HREF = /\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/iu;
 
-const PAGE_EXTENSION = /^(?:html?|php|aspx?|jsp|cgi)$/iu;
+const PAGE_EXTENSION = /^(?:[sx]?html?|php|aspx?|jsp|cgi)$/iu;
 
 // The host is not part of the path: "https://example.com" names a site, not a file ending in .com.
 const SCHEME_AND_HOST = /^(?:[a-z][a-z0-9+.-]*:)?\/\/[^/?#]*/iu;

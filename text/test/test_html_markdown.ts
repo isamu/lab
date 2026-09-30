@@ -304,7 +304,7 @@ describe("htmlToMarkdown: 落とすもの", () => {
     const twoBlocks = '<h1>Notice</h1><p>Text.</p><p><a href="/list">Back to the list</a></p><div><div><a href="/">Home</a></div></div>';
     assert.equal(htmlToMarkdown(twoBlocks), "# Notice\n\nText.\n");
     const pages =
-      '<h1>Report</h1><p>Text.</p><p><a href="/list/">List</a></p><p><a href="index.php?p=1">Index</a></p><p><a href="/r/a.html#top">Top</a></p>' +
+      '<h1>Report</h1><p>Text.</p><p><a href="/list/">List</a></p><p><a href="/b.shtml">Back</a></p><p><a href="/c.xhtml">Next</a></p><p><a href="index.php?p=1">Index</a></p><p><a href="/r/a.html#top">Top</a></p>' +
       '<p><a href="https://example.com">Home</a></p><p><a href="//example.org/?q=a.b">Search</a></p>';
     assert.equal(htmlToMarkdown(pages), "# Report\n\nText.\n");
   });
