@@ -583,7 +583,7 @@ CI でも毎回かけています。指摘の数では落としません（文�
 
 - **どの rule を動かすか。** `packages/chaff/genres.yaml` の `rules:` に、ジャンル（と、その群）ごとの段を書いています。
   止めた rule は「動いていない」一覧に、ジャンルを理由に出ます（`ngram-repetition（ジャンル legal/contract では見ないため）`）。
-  `legal/contract` は、試験中の構造の rule（無い条項への参照・番号の抜け・二重の定義・曜日違い・合わない合計）を既定で動かします。
+  `legal/contract` と `legal/statute` は、試験中の構造の rule（無い条項への参照・番号の抜け・二重の定義・曜日違い・合わない合計）を既定で動かします。
 - **閾値。** 同じ `normal` でも、ジャンルで数字が違います（rule の `by_genre`）。法令・判決・論文の一文は長くてよい。
 - **文書の知識。** `legal/statute` は法令の書き方（`statute`）で読みます。
 

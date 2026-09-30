@@ -244,9 +244,32 @@ describe("既定の段で動かす", () => {
   });
 
   it("ジャンルが入れていない試験中の rule は、試験中を理由に止まる", () => {
-    const result = runJa(JA_REPORT, "legal/statute", {}, false);
+    const result = runJa(JA_REPORT, "business/report", {}, false);
     assert.equal(why(result, "numbering-gap"), REASONS.ja.experimental);
     assert.deepEqual(result.presetExperimental, []);
+  });
+
+  it("法令・規程のジャンルは、契約書と同じ構造の rule を入れる", () => {
+    assert.deepEqual(
+      runJa(JA_REPORT, "legal/statute", {}, false).presetExperimental.toSorted((left, right) => left.localeCompare(right)),
+      ["dangling-reference", "date-weekday-mismatch", "duplicate-definition", "numbering-gap", "total-mismatch"],
+    );
+  });
+
+  it("法令・規程のジャンルは、条の抜けと無い条への参照を既定で見つける", () => {
+    const source = [
+      "# 備品管理規程",
+      "## 第1条（目的）",
+      "この規程は、会社の備品の貸出と返却の手続きを定める。",
+      "## 第2条（貸出）",
+      "社員は、第9条に定める台帳に記入して、備品を借りることができる。",
+      "## 第4条（返却）",
+      "借りた備品は、借りた日から7日以内に返さなければならない。",
+      "",
+    ].join("\n");
+    const document = buildDocument("kitei.md", source, ja, undefined, profileFor(EMPTY, "kitei.md", source, "ja", "legal/statute"));
+    const found = runRules(document, loadRules("ja"), {}, false, "legal/statute").findings.map((finding) => `${String(finding.line)} ${finding.rule}`);
+    assert.deepEqual(found, ["5 dangling-reference", "6 numbering-gap"]);
   });
 
   it("契約書のジャンルは、無い条項への参照を既定で見つける", () => {

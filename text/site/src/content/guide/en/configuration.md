@@ -70,7 +70,7 @@ The genre is the kind of document. It decides three things:
 
 | What | How |
 | --- | --- |
-| Which rules run | A genre turns off the rules that only flag its form (a contract repeats its defined terms on purpose) and may turn on experimental ones (`legal/contract` checks references to clauses that are not there) |
+| Which rules run | A genre turns off the rules that only flag its form (a contract repeats its defined terms on purpose) and may turn on experimental ones (`legal/contract` and `legal/statute` check references to clauses that are not there) |
 | Where the limits are | The same `normal` means a longer sentence for a statute or a paper than for an email |
 | How the document is read | `legal/statute` reads with the knowledge of statutes (see below) |
 

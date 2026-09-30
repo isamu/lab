@@ -2,7 +2,7 @@ import { proseText } from "../measure.ts";
 import { dateSpans, wordsOf } from "./structure.ts";
 import { compacted, placeOf } from "./gram-place.ts";
 import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
-import { expansionAt, type ExpandedAt } from "./acronym-expansion.ts";
+import { expansionAt, termEntryAcronyms, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, startsWithin } from "./concrete-evidence.ts";
@@ -264,7 +264,8 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   // 並べた名前（JAXA）も、繋いだ略語（JAXA-ISAS）の片割れとして説明済みに数える。
   const common = new Set([...(options.lexicon ?? []).map((entry) => entry.pattern), ...patternsOf(doc, "http-method"), ...(doc.names ?? [])]);
   const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
-  const explainedAlone = (word: string): boolean => common.has(word) || isExpanded(body, word, expandedAt);
+  const entries = termEntryAcronyms(doc.source);
+  const explainedAlone = (word: string): boolean => common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt);
   const hits = acronymsOf(doc, notationOf(doc));
   const unexplained = new Set([...firstHits(hits).keys()].filter((acronym) => !isExplained(acronym, explainedAlone)));
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。

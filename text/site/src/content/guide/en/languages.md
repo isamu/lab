@@ -99,7 +99,7 @@ Japanese is `@chaffjs/lang-ja`, English is `@chaffjs/lang-en`.
 
 | Package | What it holds |
 | --- | --- |
-| `@chaffjs/lang-ja` | Where sentences end (`。！？` and ASCII `!?`), and the word lists |
+| `@chaffjs/lang-ja` | Where sentences end (`。！？`, `．` after a word, and ASCII `!?`), and the word lists |
 | `@chaffjs/lang-en` | Where sentences end, and the word lists |
 
 Both ship with chaff, so there is nothing to install separately.
