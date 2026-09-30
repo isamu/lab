@@ -158,6 +158,14 @@ describe("同梱の genres.yaml", () => {
     assert.deepEqual(GENRES.flatMap(outsideUseFor), []);
   });
 
+  it("段を持つ群には、意味を読む検査を除くどの rule も当たる（止めるなら段で止め、一覧に出す）", () => {
+    const presetGroups = data.groups.filter((group) => Object.keys(group.rules).length > 0).map((group) => group.id);
+    const missing = rules.en
+      .filter((rule) => rule.layer !== "L4")
+      .flatMap((rule) => presetGroups.filter((group) => !rule.use_for.includes(group)).map((group) => `${rule.id}: ${group}`));
+    assert.deepEqual(missing, []);
+  });
+
   it("書いた profile はどれも実在する", () => {
     const known = new Set(loadProfiles().map((profile) => profile.id));
     data.genres.forEach((genre) => assert.ok(genre.profile === undefined || known.has(genre.profile), genre.id));
