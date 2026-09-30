@@ -36,6 +36,10 @@ const TEXT: Texts<{
 # この場所に置く文書の種類。
 genre: ${genre}
 
+# チームが書く固有名詞（組織名・製品名）。1 つの名前として読み、漢字の連なりに数えない。
+# names:
+#   - 個人情報保護委員会
+
 # 既定から変えたものだけを書く。
 rules:
 `,
@@ -70,6 +74,10 @@ rules:
 
 # The kind of document kept here.
 genre: ${genre}
+
+# The names your team writes (organisations, products). Each is read as one name, not as words to count.
+# names:
+#   - Bank of England
 
 # Only what differs from the defaults.
 rules:

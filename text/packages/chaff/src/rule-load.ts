@@ -68,6 +68,10 @@ const missingFields = (raw: Record<string, unknown>, levels: LevelTable | undefi
 
 const localizedOf = (value: unknown): Record<string, string> => (isLocalized(value) ? value : {});
 
+/** 見つけ方ごとの message。読めないものは捨てる。 */
+const messagesOf = (value: unknown): Record<string, Record<string, string>> =>
+  isRecord(value) ? Object.fromEntries(Object.entries(value).flatMap(([variant, text]) => (isLocalized(text) ? [[variant, text]] : []))) : {};
+
 /**
  * severity も言語別に書ける。levels と同じ畳みかた。
  * 記号の許容度は言語で大きく違う（ダッシュは英語では普通、日本語の組版では扱いが難しい）。
@@ -95,6 +99,7 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
     why: localizedOf(raw["why"]),
     how_to_fix: localizedOf(raw["how_to_fix"]),
     message: localizedOf(raw["message"]),
+    messages: messagesOf(raw["messages"]),
     levels,
     by_genre: genreTables(raw["by_genre"], language),
     how_to_find: String(raw["how_to_find"]),

@@ -19,6 +19,10 @@ export const templateForReading = (template: string): string =>
     singular === undefined || plural === undefined ? whole : plural,
   );
 
-export const messageOf = (rule: RuleDefinition, finding: Finding, language: string): string => fill(localized(rule.message, language), finding.values);
+const templateOf = (rule: RuleDefinition, finding: Finding): Localized =>
+  (finding.variant === undefined ? undefined : rule.messages[finding.variant]) ?? rule.message;
+
+export const messageOf = (rule: RuleDefinition, finding: Finding, language: string): string =>
+  fill(localized(templateOf(rule, finding), language), finding.values);
 
 export const MARK: Readonly<Record<string, string>> = { error: "✖", warning: "⚠", info: "·" };

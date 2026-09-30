@@ -5,7 +5,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
-import type { DocumentProfile } from "../packages/chaff/src/plugin.ts";
+import type { DocumentProfile, Finding } from "../packages/chaff/src/plugin.ts";
 
 const RULES = loadRules("ja");
 
@@ -172,6 +172,30 @@ describe("L3 日本語 — 文字と語彙", () => {
 
     it("valid: 1 度なら指摘しない", () => {
       assert.ok(!idsFor("検討させていただきます。来週までに結論を出します。").includes("sasete-itadaku"));
+    });
+
+    // message は「（3 回まで）」と言う。3 回は許した数なので、指摘は 4 回目から。
+    const humble = (times: number): string =>
+      ["検討", "調整", "確認", "報告", "共有"]
+        .slice(0, times)
+        .map((verb) => `${verb}させていただきます。`)
+        .join("");
+    const counted = (source: string, level: "strict" | "normal"): Finding | undefined =>
+      runRules(buildDocument("t.md", source, ja), RULES, { "sasete-itadaku": level }, true, "business/report").findings.find(
+        (finding) => finding.rule === "sasete-itadaku",
+      );
+
+    it("valid: 上限（normal は 3 回）ちょうどは指摘しない", () => {
+      assert.equal(counted(humble(3), "normal"), undefined);
+    });
+
+    it("invalid: 上限を 1 回超えたら指摘し、回数は上限より多い", () => {
+      assert.deepEqual([counted(humble(4), "normal")?.values["count"], counted(humble(4), "normal")?.values["limit"]], [4, 3]);
+    });
+
+    it("strict は 1 回を通し、2 回目から言う（why の「1 度なら丁寧」）", () => {
+      assert.equal(counted(humble(1), "strict"), undefined);
+      assert.equal(counted(humble(2), "strict")?.values["count"], 2);
     });
   });
 

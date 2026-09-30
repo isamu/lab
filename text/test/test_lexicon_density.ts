@@ -1,4 +1,4 @@
-import { describe, it } from "node:test";
+import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -24,6 +24,12 @@ describe("L2 の語彙表と密度", () => {
   });
 
   describe("excessive-hedging", () => {
+    // 語彙表は活用する語を原形で書いている。原形で照らすには品詞が要る（CLI は rule の uses: [pos] で用意する）。
+    before(async () => {
+      await ja.prepare?.({ pos: true });
+      await en.prepare?.({ pos: true });
+    });
+
     it("invalid: 逃げの表現が重なる", () => {
       const hedges = "効果はあるかもしれません。改善すると思われます。影響が出る可能性があります。一概には言えません。".repeat(2);
       assert.ok(idsFor(`# 報告\n\n${hedges}${BULK}`).includes("excessive-hedging"));
