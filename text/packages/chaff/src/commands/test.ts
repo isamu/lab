@@ -11,10 +11,10 @@ import { counted } from "../render/plural.ts";
 import { CHECKS_FILE, loadChecks, type UserCheck } from "../checks.ts";
 import { CACHE_DIR, credentialHint, describeFailure, hasCredentials, type JudgeOptions } from "../judge.ts";
 import { ENV_FILE, loadEnvFile } from "../env.ts";
-import { planSemantic, runSemantic } from "../run-semantic.ts";
+import { planSemantic, runSemantic, semanticNeeds } from "../run-semantic.ts";
 import { machineBanner, renderPlan, renderSemantic } from "../render/semantic.ts";
 import type { Config } from "../config/load.ts";
-import type { Finding, RuleDefinition } from "../plugin.ts";
+import type { Finding, ProseDocument, RuleDefinition } from "../plugin.ts";
 import type { BackendName, Failure } from "../backends/types.ts";
 import { profileFor } from "../profile/for-file.ts";
 import { CLI_TEXT } from "../cli-text.ts";
@@ -83,6 +83,20 @@ export type TestContext = {
   readonly clients?: Pick<JudgeOptions, "anthropicClient" | "openaiClient">;
 };
 
+type SemanticDocument = { readonly doc: ProseDocument; readonly rules: RuleDefinition[]; readonly language: string; readonly genre: string };
+
+/** 意味を読む検査に渡す文書。絞り込みが品詞を使うなら、解析器を読み込んでから作る。dry-run も本番も同じ文書を見る。 */
+const semanticDocument = async (path: string, config: Config, resolveGenre: TestContext["resolveGenre"]): Promise<SemanticDocument> => {
+  const source = plainSource(await readFile(path, "utf8"));
+  const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
+  const adapter = await loadAdapter(language);
+  const { genre } = resolveGenre(path, source, config);
+  const rules = loadRules(language);
+  await adapter.prepare?.(semanticNeeds(rules, config.rules, genre));
+  const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
+  return { doc, rules, language, genre };
+};
+
 type Judged = { path: string; outcome: Awaited<ReturnType<typeof runSemantic>>; rules: RuleDefinition[]; language: string };
 
 const judgeAll = async (
@@ -94,12 +108,7 @@ const judgeAll = async (
 ): Promise<Judged[]> =>
   Promise.all(
     paths.map(async (path) => {
-      const source = plainSource(await readFile(path, "utf8"));
-      const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
-      const adapter = await loadAdapter(language);
-      const { genre } = resolveGenre(path, source, config);
-      const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
-      const rules = loadRules(language);
+      const { doc, rules, language, genre } = await semanticDocument(path, config, resolveGenre);
       return { path, outcome: await runSemantic(doc, rules, checks, config.rules, genre, options), rules, language };
     }),
   );
@@ -114,12 +123,8 @@ const dryRun = async (
 ): Promise<void> => {
   const plans = await Promise.all(
     paths.map(async (path) => {
-      const source = plainSource(await readFile(path, "utf8"));
-      const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
-      const adapter = await loadAdapter(language);
-      const { genre } = resolveGenre(path, source, config);
-      const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
-      return { path, jobs: planSemantic(doc, loadRules(language), checks, config.rules, genre), sentences: doc.sentences.length, language };
+      const { doc, rules, language, genre } = await semanticDocument(path, config, resolveGenre);
+      return { path, jobs: planSemantic(doc, rules, checks, config.rules, genre), sentences: doc.sentences.length, language };
     }),
   );
   plans.forEach(({ path, jobs, sentences, language }) => console.log(renderPlan(path, jobs, sentences, language).join("\n")));

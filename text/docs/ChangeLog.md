@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### `empty-conclusion` sends a closing that only repeats the body's numbers (#290, #170)
+
+The filter that picks closings for `chaff test` skipped any closing with a digit in it, taking the digit as
+evidence. A 「まとめ」 such as 「以上のように、9月は問い合わせが増え…」 was never sent, though 9月 is the report's month
+and the rest repeats the body. A number now counts as evidence only when the closing is the first place it is written.
+Numbers are compared as written: a date or clock time with its unit (「9月」, found with the date lexicons that
+`latin-spacing` uses), anything else by its digits, so a title's 「9月」 covers a closing's 「9月」 but not its 「9 件」.
+Headings and tables are read too; they have no tags, so there a date is told by the unit written right after the
+number. A new date or a new target in the closing (「10月1日から」, 「300 件以下」) still keeps it from being sent.
+`chaff test` now loads the tagger when a rule it will run declares `uses: [pos]`, so `--dry-run` and a real run
+decide the same way whatever the machine checks need.
+
 ### `heading-echo` counts only the part of the heading that the sentence repeats (#170)
 
 `heading-echo` reports a first sentence that adds little besides its heading. It measured "little" as the sentence's
@@ -24,6 +36,7 @@ the table reading now converts, and kinds it did not have: a 厚生労働省 期
 Japanese one), a VOA Learning English news story, a NASA Knows page for grades K-4, Login.gov help, a CFPB consumer
 warning and Lincoln's letters to Horace Greeley (Wikisource). A さいたま市 recipe, a DailyMed drug label and the job
 posting, which names an individual contact person, are kept as URLs only.
+
 ### `contraction-consistency` counts `don’t` as a contraction (#170)
 
 The rule compared the text as written, so a contraction with a curly apostrophe (`don’t`, `it’s`) counted as neither
