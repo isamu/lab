@@ -12,6 +12,42 @@ in a guideline numbered by headings (「1 目的」), 「同項」 is article 16
 After an article of this document (「第三条第二項…同項」) the reference is still looked up here and reported when
 missing. In `chaff tree`, such references now carry the `unitWord` of the reference they follow.
 
+### The corpus HTML converter drops players, share rows, language switches and paging bars, and finds the body of a page with no `<main>` (#170)
+
+Corpus round 11 found page chrome in the stored text. Each part is told by its structure, not by a site's class
+names:
+
+- **A media player.** The outermost block holding an `<audio>` or `<video>` and no sentence goes with its controls
+  ("Embed", "share", "0:00", "Direct link"); the words a browser shows when it cannot play the media do not count, and
+  a block with a sentence, a `<figcaption>` or a link to a file other than media (a transcript in PDF) stays. A `role="tooltip"` element ("The code has been copied to your
+  clipboard.") goes too.
+- **A scripted button.** A `div`, `p`, `span` or `li` with an event handler (`onclick`) that holds only a link ("Start
+  Quiz") is a button. A link inside a sentence stays. A rule drawn with characters (`_____`) no longer counts as
+  something under a heading, so a quiz's heading with nothing left under it goes.
+- **A language switch.** A list whose every link carries `hreflang` and opens a page (not a file), and whose other
+  items are only labels ("English", "Español").
+- **A row of icons.** The innermost block holding a list with no words (share buttons, social links) and something
+  else, when that is only a one-line label ("Share & print", "Share this page"). A label with a sentence, more than
+  one line, or a heading beside the icons stays.
+- **A paging bar.** The innermost block that opens with a back arrow and closes with a forward one around two or
+  more links to pages (not files), with no sentence beside the links (a work's header: "← Gray, John P. | Volume 9 | Green, Duff →").
+- **Text marked not to be spoken** (`style="speak: none"`), and a line of nothing but zero-width characters.
+- **A page with no `<main>`, `role="main"` or sole `<article>`.** When it has an `<h1>`, only the innermost block that
+  holds every heading and at least nine tenths of the text written in sentences, with no sentence before it, is read,
+  so a site's menus, side column and footer fall outside. A sentence that only repeats the title (in a breadcrumb)
+  does not count. Without an `<h1>`, or when no block qualifies, the whole page is read as before.
+
+Documents fetched from HTML change when they are fetched again.
+
+### The `docs/glossary` preset reads a glossary the way it is written (#170)
+
+A glossary is looked up one entry at a time. Its definitions are noun phrases (「風の吹いてくる方向。」), and sibling
+entries share one wording on purpose, so under `docs/glossary` `taigen-dome-in-prose` and `ngram-repetition` are off
+and listed under "did not run" with the genre as the reason. An English definition stacks its qualifiers into one
+sentence, so `max-sentence-length` allows 40 words at normal (30 strict, 50 relaxed) instead of 25; what it still
+reports are definitions packed with lists and long notes. Japanese glossaries keep the usual limit, which already
+reported only their longest sentences. Other genres do not change.
+
 ### `heading-echo` measures a Japanese sentence in content words, not characters (#170)
 
 In Japanese, `heading-echo` measured what a first sentence adds as its characters, less the part of the heading it
