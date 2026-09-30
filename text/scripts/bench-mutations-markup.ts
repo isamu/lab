@@ -64,3 +64,13 @@ export const linkToMissingSection = (source: string): Plant | undefined =>
     (line) => isProse(line) && SENTENCE_END.test(line.trimEnd()) && !line.startsWith("|"),
     (line) => (isJapanese(line) ? `${line}詳しくは[付録](#付録)を参照してください。` : `${line} See [the appendix](#appendix).`),
   );
+
+// --- url-run-on ---
+
+/** 最初の日本語の文の行に、空白を置かずに言葉が続く URL を足す。 */
+export const runOnUrl = (source: string): Plant | undefined =>
+  rewriteFirst(
+    source,
+    (line) => isProse(line) && isJapanese(line) && line.trimEnd().endsWith("。") && !line.startsWith("|"),
+    (line) => `${line}案内は https://example.jp/guideにあります。`,
+  );

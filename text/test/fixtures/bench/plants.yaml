@@ -46,6 +46,7 @@ planted:
   title-case-consistency: [en]
   total-mismatch: [ja, en]
   undefined-acronym: [ja, en]
+  url-run-on: [ja]
 not_planted:
   adverb-overuse: a density over the whole document
   ai-generated-composite: a composite of other signals, with no detector of its own

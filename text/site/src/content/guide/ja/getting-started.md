@@ -87,7 +87,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  39 件の rule は動いていません:
+  40 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
@@ -127,6 +127,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       title-case-consistency（ja 向けの rule ではないため）
       total-mismatch（まだ試験中のため）
       unqualified-superlative（まだ試験中のため）
+      url-run-on（まだ試験中のため）
 ```
 
 指摘があるときは、1 件ずつ区切って出ます。次は実際の記事にかけた例です。

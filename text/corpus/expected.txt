@@ -42,7 +42,7 @@ da-agile-review-4  agentless-passive 1, max-sentence-length 13, no-mixed-desumas
 da-ai-advisory-board-1  agentless-passive 6, latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 9, max-sentence-length 30, no-doubled-joshi 2, no-mixed-desumasu 1, sasete-itadaku 4, taigen-dome-in-prose 1, undefined-acronym 11
 da-annual-report-2024  concrete-evidence-density 3, heading-echo 1, max-sentence-length 1, ngram-repetition 1
 da-area-data-map-format  no-mixed-desumasu 1
-da-area-data-model  max-sentence-length 5
+da-area-data-model  max-sentence-length 5, url-run-on 1
 da-copyright-policy  latin-spacing 2, numbering-gap 1
 da-data-strategy  agentless-passive 1, empty-intensifier 1, max-kanji-continuous 2, max-sentence-length 4
 da-gss-incident  agentless-passive 1, latin-spacing 1, max-kanji-continuous 1, max-sentence-length 3, ngram-repetition 1, preamble-length 1
@@ -76,7 +76,7 @@ fr-2026-16371-nvd-rfi  agentless-passive 17, concrete-evidence-density 7, max-se
 ftc-phishing-scams  agentless-passive 1, concrete-evidence-density 3, contraction-consistency 1, max-sentence-length 3, no-em-dash 1, title-case-consistency 2
 gds-user-research-weeknotes-2014-07-04  concrete-evidence-density 3, max-sentence-length 2, proper-noun-density 1, title-case-consistency 1
 genai-web-api  latin-spacing 4
-genai-web-procedure  latin-spacing 29, max-sentence-length 1, undefined-acronym 3
+genai-web-procedure  latin-spacing 29, max-sentence-length 1, undefined-acronym 3, url-run-on 1
 ghdocs-basic-writing-and-formatting  contraction-consistency 3, max-sentence-length 15, oxford-comma-consistency 2, proper-noun-density 1, title-case-consistency 1
 gitlab-jd-instructional-designer  agentless-passive 10, concrete-evidence-density 4, heading-echo 5, max-sentence-length 7, oxford-comma-consistency 1, proper-noun-density 1
 gitlab-meetings  agentless-passive 54, max-paragraph-length 2, max-sentence-length 41, title-case-consistency 1, undefined-acronym 10
@@ -100,7 +100,7 @@ ietf-draft-httpapi-ratelimit-headers-10  max-paragraph-length 1, max-sentence-le
 jma-faq-typhoon  max-paragraph-length 1, ngram-repetition 1
 jma-tokubetsu-keiho  heading-level-skip 1, max-sentence-length 2
 jma-yougo-kaze  heading-level-skip 1, no-doubled-joshi 1
-jp-2011-056072-seiu-kenyo-gasa  hiragana-fukushi 2, max-sentence-length 3
+jp-2011-056072-seiu-kenyo-gasa  hiragana-fukushi 2, max-sentence-length 3, url-run-on 1
 jsprimer-loop  max-sentence-length 1
 jstage-jkg-72-4-133  latin-spacing 6, max-kanji-continuous 1, no-mixed-desumasu 1, undefined-acronym 7
 jstage-jniph-74-1-2-rehabilitation  latin-spacing 7, max-kanji-continuous 23, max-paragraph-length 2, max-sentence-length 2, undefined-acronym 9
@@ -120,7 +120,7 @@ kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1, stray-space 
 kimino-opendata-site  max-kanji-continuous 1
 kimino-staff-exam-guide  clean
 kobayashi-nento-shokan-2026  max-paragraph-length 1, max-sentence-length 2
-kobayashi-press-hananoa-2026-02  agentless-passive 2, max-sentence-length 1, no-mixed-desumasu 2, preamble-length 1, undefined-acronym 3
+kobayashi-press-hananoa-2026-02  agentless-passive 2, max-sentence-length 1, no-mixed-desumasu 2, preamble-length 1, undefined-acronym 3, url-run-on 3
 koenote-requirements  latin-spacing 56, undefined-acronym 6
 koho-tokyo-2026-06-suigai  max-kanji-continuous 1, no-mixed-desumasu 2
 kojin.txt  clean

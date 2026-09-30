@@ -42,6 +42,7 @@ stray-space                            12     12       0             0
 title-case-consistency                  7      7       0             0
 total-mismatch                          8      8       0             0
 undefined-acronym                       2      2       0             0
+url-run-on                             13     13       0             0
 ja/blog  clean sample  clean
 ja/design  clean sample  clean
 ja/email  clean sample  clean
@@ -88,6 +89,7 @@ ja/blog  pet-phrase  found
 ja/blog  heading-deepened  found
 ja/blog  image-unlabelled  found
 ja/blog  link-to-nowhere  found
+ja/blog  url-run-on  found
 ja/design  reference-broken  found
 ja/design  number-skipped  found
 ja/design  defined-twice  found
@@ -106,6 +108,7 @@ ja/design  pet-phrase  found
 ja/design  heading-deepened  found
 ja/design  image-unlabelled  found
 ja/design  link-to-nowhere  found
+ja/design  url-run-on  found
 ja/email  weekday-shift  found
 ja/email  rows-swapped  found
 ja/email  plain-in-polite  found
@@ -123,6 +126,7 @@ ja/email  spelling-avoided  found
 ja/email  pet-phrase  found
 ja/email  image-unlabelled  found
 ja/email  link-to-nowhere  found
+ja/email  url-run-on  found
 ja/figures  item-dropped  found
 ja/figures  polite-in-plain  found
 ja/figures  no-nested  found
@@ -142,6 +146,7 @@ ja/figures  opener-repeated  found
 ja/figures  heading-deepened  found
 ja/figures  image-unlabelled  found
 ja/figures  link-to-nowhere  found
+ja/figures  url-run-on  found
 ja/itinerary  weekday-shift  found
 ja/itinerary  rows-swapped  found
 ja/itinerary  item-dropped  found
@@ -158,6 +163,7 @@ ja/itinerary  hedges-stacked  found
 ja/itinerary  heading-deepened  found
 ja/itinerary  image-unlabelled  found
 ja/itinerary  link-to-nowhere  found
+ja/itinerary  url-run-on  found
 ja/minutes  weekday-shift  found
 ja/minutes  rows-swapped  found
 ja/minutes  polite-in-plain  found
@@ -170,12 +176,14 @@ ja/minutes  hedges-stacked  found
 ja/minutes  heading-deepened  found
 ja/minutes  image-unlabelled  found
 ja/minutes  link-to-nowhere  found
+ja/minutes  url-run-on  found
 ja/note  plain-in-polite  found
 ja/note  no-nested  found
 ja/note  space-strayed  found
 ja/note  particle-doubled  found
 ja/note  image-unlabelled  found
 ja/note  link-to-nowhere  found
+ja/note  url-run-on  found
 ja/policy  reference-broken  found
 ja/policy  number-skipped  found
 ja/policy  defined-twice  found
@@ -184,6 +192,7 @@ ja/policy  space-strayed  found
 ja/policy  particle-doubled  found
 ja/policy  image-unlabelled  found
 ja/policy  link-to-nowhere  found
+ja/policy  url-run-on  found
 ja/press  weekday-shift  found
 ja/press  sentences-joined  found
 ja/press  plain-in-polite  found
@@ -212,6 +221,7 @@ ja/press  pet-phrase  found
 ja/press  heading-deepened  found
 ja/press  image-unlabelled  found
 ja/press  link-to-nowhere  found
+ja/press  url-run-on  found
 ja/proposal  item-dropped  found
 ja/proposal  plain-in-polite  found
 ja/proposal  no-nested  found
@@ -238,6 +248,7 @@ ja/proposal  pet-phrase  found
 ja/proposal  heading-deepened  found
 ja/proposal  image-unlabelled  found
 ja/proposal  link-to-nowhere  found
+ja/proposal  url-run-on  found
 ja/quote  weekday-shift  found
 ja/quote  item-dropped  found
 ja/quote  plain-in-polite  found
@@ -250,6 +261,7 @@ ja/quote  spelling-avoided  found
 ja/quote  heading-deepened  found
 ja/quote  image-unlabelled  found
 ja/quote  link-to-nowhere  found
+ja/quote  url-run-on  found
 ja/readme  polite-in-plain  found
 ja/readme  no-nested  found
 ja/readme  space-strayed  found
@@ -264,6 +276,7 @@ ja/readme  spelling-avoided  found
 ja/readme  heading-deepened  found
 ja/readme  image-unlabelled  found
 ja/readme  link-to-nowhere  found
+ja/readme  url-run-on  found
 ja/requirements  reference-broken  found
 ja/requirements  number-skipped  found
 ja/requirements  no-nested  found
@@ -277,6 +290,7 @@ ja/requirements  spelling-avoided  found
 ja/requirements  heading-deepened  found
 ja/requirements  image-unlabelled  found
 ja/requirements  link-to-nowhere  found
+ja/requirements  url-run-on  found
 en/blog  sentences-joined  found
 en/blog  paragraphs-joined  found
 en/blog  heading-echoed  found

@@ -87,7 +87,7 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  42 rules did not run:
+  43 rules did not run:
       adverb-overuse (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
@@ -130,6 +130,7 @@ article.md   blog/tech · English   genre from the default
       title-case-consistency (still experimental)
       total-mismatch (still experimental)
       unqualified-superlative (still experimental)
+      url-run-on (still experimental)
 
 ```
 

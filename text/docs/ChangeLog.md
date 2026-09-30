@@ -11,13 +11,22 @@ Experimental rules that read the markup rather than the prose. They run on Markd
 read before the rule was added.
 
 - **`heading-level-skip`**: a heading two or more levels deeper than the one before it (`##` then `####`). The first
-  heading may start at any level, and after a skip the deeper level is the new baseline (markdownlint's MD001).
+  heading may start at any level, and after a skip the deeper level is the new baseline (markdownlint's MD001). In the
+  corpus every finding is a real skip, mostly pages that pick a level for its size (a changelog with `####` under each
+  `##`); good documents do this often enough that the rule stays experimental.
 - **`image-alt-text`**: an image with no alt text (`![](chart.png)`), or an HTML `<img>` with no `alt` attribute.
-  `alt=""` marks decoration and is left alone (markdownlint's MD045).
+  `alt=""` marks decoration and is left alone (markdownlint's MD045). The corpus converters drop images, so it has
+  not fired there yet.
 - **`broken-link`**: a link with an empty destination (`[report]()`), a `#…` link to a heading or id the page does
   not have, and a reference-style link with no definition (`[report][1]` with no `[1]:` line). Heading names are
   compared on letters and digits only, since renderers build anchors differently; `[1][2]` citation numbers and
-  `A[i][j]` subscripts are not references (markdownlint's MD042, MD051 and MD052).
+  `A[i][j]` subscripts are not references (markdownlint's MD042, MD051 and MD052). In the corpus it finds F Prime's
+  `#bufferGetCallee` links to numbered headings (`3.6.1 bufferGetCallee`), which have other anchors; it also reports
+  a 厚労省 page's `[Excel:28KB][PDF:47KB]`, which the writer meant as plain text.
+- **`url-run-on`**: a URL written as plain text followed straight away by a character outside ASCII
+  (`https://example.jp/をご覧ください`, `（https://example.jp/）`). GitHub's automatic links and many mail clients take
+  everything up to the next space as the URL. Link syntax, `<…>` and code are not read, nor is an invisible character
+  such as a zero-width space. Also runs on `.txt`. In the corpus it finds press releases that write `（https://…）`.
 
 ### Long runs, long sentences and long lines of references take time in proportion to their length (#170)
 

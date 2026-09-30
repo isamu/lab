@@ -639,6 +639,7 @@ genres:
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
+| `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | ~~`list-length-variance`~~ | 箇条書き項目の長さのばらつき | 落とした（下記） | info |
 
 設計上の注意:
