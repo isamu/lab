@@ -1,0 +1,37 @@
+# メールのヘッダーの項目名。メッセージの頭か区切りの行の後で、これを名乗る「項目: 値」の行の塊は、書いた人の文章ではなくヘッダー。
+# 日本語の画面でも英語の項目名が出るので、英語の名前も入れる。大文字小文字は区別しない。
+id: email-header-field
+language: ja
+entries:
+  - pattern: 件名
+  - pattern: 差出人
+  - pattern: 送信者
+  - pattern: 宛先
+  - pattern: 宛て先
+  - pattern: 送信日時
+  - pattern: 受信日時
+  - pattern: 日付
+  - pattern: 返信先
+  - pattern: From
+  - pattern: To
+  - pattern: Cc
+  - pattern: Bcc
+  - pattern: Subject
+  - pattern: Date
+  - pattern: Sent
+  - pattern: Reply-To
+  - pattern: Message-ID
+  - pattern: In-Reply-To
+  - pattern: References
+  - pattern: Received
+  - pattern: Return-Path
+  - pattern: Delivered-To
+  - pattern: Sender
+  - pattern: Organization
+  - pattern: Importance
+  - pattern: MIME-Version
+  - pattern: Content-Type
+  - pattern: Content-Transfer-Encoding
+  - pattern: User-Agent
+  - pattern: X-Mailer
+  - pattern: List-Id

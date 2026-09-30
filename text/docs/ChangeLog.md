@@ -4,6 +4,33 @@ Newest first.
 
 ## Unreleased
 
+### Email: headers, separators, signatures and quoted replies are not the writer's prose (#170)
+
+A plain-text or Markdown email was read as one long piece of prose. Found by shape, in any genre:
+
+- **Header.** A block of `Field: value` lines that names known fields (`From:`, `Subject:`, `Message-ID:`, 件名 /
+  差出人 / 宛先 …) is a header: at the top of a message, or after a separator line, one known field is enough;
+  elsewhere two. An archive's envelope line (`From x  Mon Mar 14 …`) and folded lines belong to it. The fields the
+  writer types (Subject, To, Cc, 件名, 宛先) keep their value as a line of its own, so a typo in the subject is still
+  found; the other fields (addresses, dates, message ids) are not prose. The field names are in the new lexicons
+  `email-header-field` and `email-written-field` of both language packages.
+- **Separator lines** (`-----Original Message-----`, a row of underscores, `---------- Forwarded message ----------`)
+  and **signatures** (the `-- ` line and at most four lines after it) are not prose. Paragraphs are cut around all of
+  these, so a header no longer runs into the greeting as one sentence.
+- **Quoted reply.** An attribution line (ending in "wrote:", 「書きました:」, or a sender's address and a colon; the new
+  lexicon `email-attribution`) followed by `>` lines is someone else's words. Quoted text was already outside the prose
+  rules as a blockquote; now the attribution line is not prose either, a heading inside the quote is not a section of
+  this document, and the structure rules (`duplicate-definition`, `numbering-gap`, `dangling-reference`) do not read
+  the quote. A blockquote the writer introduces without an attribution is treated as before.
+- **`preamble-length` needs a heading.** On a document with no heading below its title it did nothing and said
+  nothing; it is now listed as not run, "the document has no headings below its title"
+  (「表題より下の見出しが無いため」). A rule declares this with `requires: [headings]`.
+
+In the corpus, the mailing-list archive loses the findings on its headers, signatures, the definition repeated inside
+a quoted reply, and the sentences that ran a header into the next line. With the headers no longer counted as words,
+it gains `adverb-overuse`. Its `preamble-length` stays: its only heading is inside release notes the writer quoted
+with `>` without an attribution.
+
 ### `oxford-comma-consistency`: a cited title does not vote (#170)
 
 A title's commas belong to whoever named it, not to the writer, yet "Journal of Money, Credit and Banking" in a

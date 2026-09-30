@@ -4,6 +4,7 @@ import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { preambleParagraphs } from "../preamble-paragraphs.ts";
 import { isTooLongParagraph } from "../paragraph-length.ts";
+import { bodySectionOf } from "../body-section.ts";
 
 /**
  * ばらつきは変動係数（標準偏差 ÷ 平均）で測る。
@@ -118,12 +119,10 @@ const withoutDateStamps = (doc: ProseDocument, paragraphs: readonly Paragraph[])
 
 /**
  * 本題に入るまでが長い。業務文書では、読み手は結論を探しに来ている。
- *
- * 「本題」は最初の中見出し（深さ 2 以上）とする。表題（深さ 1）の直後から数えると、
- * 表題しか無い文書で全文が前置きになる。中見出しが無い文書では何も言わない。
+ * 「本題」は最初の中見出し。中見出しが無い文書では、rule が requires の headings で動かず、動かなかった理由が出る。
  */
 export const preambleLength: Detector = (doc, options): Finding[] => {
-  const body = doc.sections.find((section) => section.depth >= 2);
+  const body = bodySectionOf(doc.sections);
   if (body === undefined) return [];
   const all = preambleParagraphs(doc.paragraphs, body.span.start);
   if (all.length <= options.limit) return [];

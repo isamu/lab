@@ -11,6 +11,7 @@ import { maskSpans } from "./mask.ts";
 import { textOutline } from "./page-furniture.ts";
 import { uiLanguageOf } from "./ui.ts";
 import { presetLevels } from "./genre-load.ts";
+import { bodySectionOf } from "./body-section.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
 
@@ -68,7 +69,7 @@ const treeProblem = (doc: ProseDocument): string | undefined => {
 
 /** 木が読んだのと同じ本文。Markdown はコードを覆ったもの、.txt はページの飾りだけを覆ったもの（.txt の字下げはコードではない）。 */
 const textTheTreeRead = (doc: ProseDocument): string =>
-  isMarkdownPath(doc.path) ? (doc.prose ?? doc.source) : maskSpans(doc.source, textOutline(doc.source).opaque);
+  isMarkdownPath(doc.path) ? (doc.prose ?? doc.source) : maskSpans(doc.source, textOutline(doc.source, doc.replyQuotes).opaque);
 
 const unreadByDocument = new WeakMap<ProseDocument, Unread | undefined>();
 
@@ -77,6 +78,12 @@ const unreadOf = (doc: ProseDocument): Unread | undefined => {
   if (!unreadByDocument.has(doc)) unreadByDocument.set(doc, doc.structure === undefined ? undefined : unreadStructure(textTheTreeRead(doc), doc.structure));
   return unreadByDocument.get(doc);
 };
+
+/** 見出しを読む rule の要求。表題より下の見出しが無い文書では、本題の前を測れない。0 件を「前置きが短い」に見せない。 */
+const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings"]);
+
+const headingNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined =>
+  rule.requires.includes("headings") && bodySectionOf(doc.sections) === undefined ? reasonsFor(doc).noHeadings : undefined;
 
 /** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
 const has = (capabilities: ProseDocument["capabilities"], need: string): boolean => {
@@ -97,7 +104,7 @@ const hasTokens = (doc: ProseDocument): boolean => doc.sentences.length === 0 ||
 /** 要求を満たさない rule は動かせない。満たさないまま動かすと「指摘 0 件」が保証に見える。 */
 const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
   if (rule.languages !== undefined && !rule.languages.includes(doc.language)) return reasonsFor(doc).otherLanguage(doc.language);
-  const missing = rule.requires.filter((need) => !TREE_NEEDS.has(need)).find((need) => !has(doc.capabilities, need));
+  const missing = rule.requires.filter((need) => !TREE_NEEDS.has(need) && !DOCUMENT_NEEDS.has(need)).find((need) => !has(doc.capabilities, need));
   if (missing !== undefined) return reasonsFor(doc).noCapability(missing);
   return undefined;
 };
@@ -205,6 +212,8 @@ export const runRules = (
       // 段階を見た後で聞く。doc.structure は触れたときに木を作るので、止めている rule のために作らない。
       const noTree = treeNeed(rule, doc);
       if (noTree !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTree }] };
+      const noHeadings = headingNeed(rule, doc);
+      if (noHeadings !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noHeadings }] };
       // 複合シグナルは二段目で扱う。一段目では「検出器が無い」と言わせない。
       if (rule.from.length > 0) return acc;
       const detector = DETECTORS[rule.how_to_find];

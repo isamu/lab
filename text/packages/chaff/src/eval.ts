@@ -2,6 +2,7 @@ import { DETECTORS } from "./detectors/index.ts";
 import { charLength } from "./measure.ts";
 import type { ProseDocument, RuleDefinition } from "./plugin.ts";
 import { missingList } from "./declared-lists.ts";
+import { bodySectionOf } from "./body-section.ts";
 
 /**
  * 閾値の較正。
@@ -71,6 +72,8 @@ const meets = (need: string, docs: readonly ProseDocument[]): boolean => {
   if (need === "lemma") return capabilities?.lemma === true;
   // 木は adapter が structure を持つときだけ作れる。無いまま測ると、どの閾値でも 0 件になる。
   if (need === "structure") return docs.length > 0 && docs.every((doc) => doc.structure !== undefined);
+  // 見出しの無い文書では lint が動かない。見出しのある文書が 1 つも無ければ、どの閾値でも 0 件になる。
+  if (need === "headings") return docs.some((doc) => bodySectionOf(doc.sections) !== undefined);
   return false;
 };
 
