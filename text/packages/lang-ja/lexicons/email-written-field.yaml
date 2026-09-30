@@ -1,0 +1,11 @@
+# ヘッダーのうち、書いた人が値を書く項目。件名と、文書の宛て先。値はそれだけの 1 行として読む。
+# ほかの項目（アドレス、日時、メッセージの ID）は文章ではない。
+id: email-written-field
+language: ja
+entries:
+  - pattern: 件名
+  - pattern: 宛先
+  - pattern: 宛て先
+  - pattern: Subject
+  - pattern: To
+  - pattern: Cc

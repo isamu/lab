@@ -41,5 +41,8 @@ export const pageFurniture = (source: string): Span[] => {
   });
 };
 
-/** テキストの文書の外形。見出しもコードも無く、ページの飾りだけを覆う。木を作る入口はどれもこれを使う。 */
-export const textOutline = (source: string): Outline => ({ ...NO_OUTLINE, opaque: pageFurniture(source) });
+/** テキストの文書の外形。見出しもコードも無く、ページの飾りとメールの引用した返信だけを覆う。木を作る入口はどれもこれを使う。 */
+export const textOutline = (source: string, replyQuotes: readonly Span[] = []): Outline => ({
+  ...NO_OUTLINE,
+  opaque: [...pageFurniture(source), ...replyQuotes],
+});

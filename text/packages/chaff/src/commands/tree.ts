@@ -82,7 +82,7 @@ export const readTree = async (path: string, argv: readonly string[], context: T
   // 日本語は形態素で数量と日付を読む。解析器が無ければ単位の表で読むので、木は作れる。
   await adapter.prepare?.({ pos: true });
   const profile = profileFor(context.config, path, source, language, resolveGenre(path, source, context.config, context.flag(argv, "--genre")).genre);
-  return { source, tree: buildStructure({ path, source, language, markdown: isMarkdownPath(path), profile }, adapter.structure) };
+  return { source, tree: buildStructure({ path, source, language, markdown: isMarkdownPath(path), profile, lexicons: adapter.lexicons }, adapter.structure) };
 };
 
 const printTree = async (path: string, argv: readonly string[], context: TreeContext): Promise<boolean> => {
