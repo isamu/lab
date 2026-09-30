@@ -4,6 +4,32 @@ Newest first.
 
 ## Unreleased
 
+### Genre suggestions: fewer wrong ones, and literature by its content (#170)
+
+The suggestion shown when no genre is set was wrong on three corpus documents. An offer letter that encloses an
+agreement was suggested as a contract: a genre can now be suggested by how the body opens (the first line past front
+matter and headings), which outweighs any count of lines but not the path. `business/email` opens with `Dear …,`,
+`Subject:`, `拝啓` or `件名:`; an addressee line (`〇〇御中`, `To:`) is not a cue, because quotes and proposals open with
+one too. A tech blog and a specification were suggested as manuals because of step and procedure headings, which are
+as common outside manuals: `docs/manual` is now suggested by its path only.
+
+Literature was suggested by path only. It is now also suggested by content: verse lines for `literature/poetry` (short
+unpunctuated lines, many of them), a speaker's name before the line for `literature/play` in Japanese (`妻　　…`), and
+spoken lines for `literature/fiction` in Japanese (`「…」と云った`). A 青空文庫 colophon or Gutenberg front matter says
+the text is literature but not which kind, so it suggests nothing on its own.
+
+### `empty-conclusion` sends a closing that only repeats the body's numbers (#290, #170)
+
+The filter that picks closings for `chaff test` skipped any closing with a digit in it, taking the digit as
+evidence. A 「まとめ」 such as 「以上のように、9月は問い合わせが増え…」 was never sent, though 9月 is the report's month
+and the rest repeats the body. A number now counts as evidence only when the closing is the first place it is written.
+Numbers are compared as written: a date or clock time with its unit (「9月」, found with the date lexicons that
+`latin-spacing` uses), anything else by its digits, so a title's 「9月」 covers a closing's 「9月」 but not its 「9 件」.
+Headings and tables are read too; they have no tags, so there a date is told by the unit written right after the
+number. A new date or a new target in the closing (「10月1日から」, 「300 件以下」) still keeps it from being sent.
+`chaff test` now loads the tagger when a rule it will run declares `uses: [pos]`, so `--dry-run` and a real run
+decide the same way whatever the machine checks need.
+
 ### `heading-echo` counts only the part of the heading that the sentence repeats (#170)
 
 `heading-echo` reports a first sentence that adds little besides its heading. It measured "little" as the sentence's
@@ -24,6 +50,7 @@ the table reading now converts, and kinds it did not have: a 厚生労働省 期
 Japanese one), a VOA Learning English news story, a NASA Knows page for grades K-4, Login.gov help, a CFPB consumer
 warning and Lincoln's letters to Horace Greeley (Wikisource). A さいたま市 recipe, a DailyMed drug label and the job
 posting, which names an individual contact person, are kept as URLs only.
+
 ### `contraction-consistency` counts `don’t` as a contraction (#170)
 
 The rule compared the text as written, so a contraction with a curly apostrophe (`don’t`, `it’s`) counted as neither

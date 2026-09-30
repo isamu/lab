@@ -112,6 +112,9 @@ const untagged = (rule: RuleDefinition, doc: ProseDocument): string | undefined 
 const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] =>
   rules.filter((rule) => rule.use_for.some((target) => genre.startsWith(target)));
 
+/** rule が品詞か見出し語を要求するか、使えるなら使うか。 */
+export const wantsTags = (rule: RuleDefinition): boolean => [...rule.requires, ...rule.uses].some((need) => need === "pos" || need === "lemma");
+
 /**
  * 解析器の初期化に払う代金を決める。動く rule が 1 本も要求しないなら読み込まない。
  * capabilities は「払えばできる」の宣言なので、ここでは見ない。
@@ -120,7 +123,7 @@ export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, e
   pos: forGenre(rules, genre)
     .filter((rule) => rule.layer !== "L4" && levelFor(rule, settings, experimental, presetLevels(genre)) !== "off")
     .filter((rule) => rule.languages === undefined || rule.languages.includes(language))
-    .some((rule) => [...rule.requires, ...rule.uses].some((need) => need === "pos" || need === "lemma")),
+    .some(wantsTags),
 });
 
 const place = (starts: readonly number[], finding: Finding): Finding => {
