@@ -1,5 +1,5 @@
 import { digitRunAround } from "./number-name.ts";
-import type { Span, Token } from "./plugin.ts";
+import type { ProseDocument, Span, Token } from "./plugin.ts";
 
 /**
  * 日付・時刻として書かれた数（9月、3時、2026年、10月1日、10時5分）。数を詰めて書くのが決まりで、空け方の好みではない。
@@ -12,17 +12,17 @@ import type { Span, Token } from "./plugin.ts";
  */
 export type CalendarUnits = { readonly chained: readonly string[]; readonly positional: ReadonlySet<string>; readonly year: ReadonlySet<string> };
 
-/** 日付・時刻の数の並び。first は日付の頭の数、inner は前の単位に続く数（2026年9月の 9）。 */
-export type CalendarRun = { readonly run: Span; readonly place: "first" | "inner" };
+/** 日付・時刻の数の並び。first は日付の頭の数、inner は前の単位に続く数（2026年9月の 9）。unit は数の後ろの単位（月）。 */
+export type CalendarRun = { readonly run: Span; readonly place: "first" | "inner"; readonly unit: string };
 
 /** 数の並びと、その後ろの単位の終わり（文の中の位置）。rank は chained の中の単位の順（無ければ -1）、anchored は単位だけで日付・時刻と分かるもの。 */
-type Part = { readonly run: Span; readonly unitEnd: number; readonly rank: number; readonly anchored: boolean };
+type Part = { readonly run: Span; readonly unit: string; readonly unitEnd: number; readonly rank: number; readonly anchored: boolean };
 
 const DIGIT = /\d/u;
 const CALENDAR_YEAR = /^\d{4}$/u;
 
 /** text の中の数の並び（数字・小数点・ハイフン）を左から。 */
-const digitRuns = (text: string): Span[] => {
+export const digitRuns = (text: string): Span[] => {
   const runs: Span[] = [];
   let at = 0;
   while (at < text.length) {
@@ -46,7 +46,7 @@ const partOf = (text: string, run: Span, tokens: readonly Token[], base: number,
   const unit = tokens.find((token) => token.span.start === base + pastSpace(text, run.end));
   if (unit === undefined || !isUnit(unit.surface, units)) return undefined;
   const rank = units.chained.indexOf(unit.surface);
-  return { run, unitEnd: unit.span.end - base, rank, anchored: isAnchor(text.slice(run.start, run.end), unit.surface, units) };
+  return { run, unit: unit.surface, unitEnd: unit.span.end - base, rank, anchored: isAnchor(text.slice(run.start, run.end), unit.surface, units) };
 };
 
 /** 前の組の単位のすぐ後ろ（空白 1 つまで）から始まり、単位が前より小さい組か。 */
@@ -71,5 +71,14 @@ export const calendarRuns = (text: string, tokens: readonly Token[] | undefined,
   const parts = digitRuns(text).flatMap((run) => partOf(text, run, tokens, base, units) ?? []);
   return chainsOf(text, parts)
     .filter((chain) => chain.some((part) => part.anchored))
-    .flatMap((chain) => chain.map((part, index): CalendarRun => ({ run: part.run, place: index === 0 ? "first" : "inner" })));
+    .flatMap((chain) => chain.map((part, index): CalendarRun => ({ run: part.run, place: index === 0 ? "first" : "inner", unit: part.unit })));
 };
+
+const patternList = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
+
+/** 文書の言語の、日付・時刻の単位の語彙表。表の無い言語では空で、日付・時刻の数は見つからない。 */
+export const calendarUnitsOf = (doc: ProseDocument): CalendarUnits => ({
+  chained: patternList(doc, "date-time-unit"),
+  positional: new Set(patternList(doc, "calendar-unit")),
+  year: new Set(patternList(doc, "calendar-year-unit")),
+});

@@ -3,6 +3,7 @@ layer: L4
 status: stable
 how_to_find: empty-conclusion
 severity: warning
+uses: [pos]
 
 name:
   ja: 結びに中身がない

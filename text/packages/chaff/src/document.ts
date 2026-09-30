@@ -9,6 +9,7 @@ import { maskSpans } from "./mask.ts";
 import { spansWithin, unmaskedSoftBreaks } from "./soft-break.ts";
 import { segmentJoined } from "./joined-view.ts";
 import { lineParagraphs } from "./line-paragraphs.ts";
+import { speakerLabels } from "./speaker-labels.ts";
 import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { pageFurniture, textOutline } from "./page-furniture.ts";
@@ -290,6 +291,15 @@ export const teamRules = (config: {
   names: config.names ?? [],
 });
 
+/**
+ * masked を覆った本文から、話し手の名前（戯曲・議事録）も覆う。名前は誰が話すかの印で、文でも本文でもない。
+ * 名前は覆った後の本文で探す。コードや表の中の行頭を話し手と数えない。
+ */
+const proseOf = (source: string, masked: readonly Span[]): string => {
+  const unlabelled = maskSpans(source, masked);
+  return maskSpans(unlabelled, speakerLabels(unlabelled));
+};
+
 export const buildDocument = (
   path: string,
   source: string,
@@ -304,7 +314,7 @@ export const buildDocument = (
   // テキストの文書は、ページのヘッダーとフッターも本文ではない（Markdown には改ページが無い）。
   const blocks = [...collectMasks(root, source, anchors), ...(isMarkdownPath(path) ? [] : pageFurniture(source))];
   const masked = [...blocks, ...emphasisSpans(root, source)];
-  const prose = maskSpans(source, masked);
+  const prose = proseOf(source, masked);
   // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。
   const paragraphSpans = spansOfType(root, "paragraph", (node) => !isInPageNavigation(node, anchors));
   const listItems = spansOfType(root, "listItem");
