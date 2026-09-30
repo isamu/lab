@@ -26,6 +26,20 @@ describe("htmlToMarkdown: 見出し・段落・箇条書き", () => {
     assert.equal(htmlToMarkdown(""), "");
     assert.equal(htmlToMarkdown("<html><head><title>T</title></head><body></body></html>"), "");
   });
+
+  it("全角の空白 (U+3000) は文字なのでまとめない。行頭の字下げは行の空白として落とす", () => {
+    assert.equal(htmlToMarkdown("<div>2　学士の学位は、学部を卒業した者に授与する。</div>"), "2　学士の学位は、学部を卒業した者に授与する。\n");
+    assert.equal(htmlToMarkdown("<h2>第1章　総則</h2><p>号の間　\n　にも。</p>"), "## 第1章　総則\n\n号の間　 　にも。\n");
+    assert.equal(htmlToMarkdown("<p>　議長、始めます。<br>　次に進みます。</p>"), "議長、始めます。\n次に進みます。\n");
+  });
+
+  it("p ごとの段落と、br を二つ重ねた段落の間は空行。br 一つは行を改めるだけ", () => {
+    assert.equal(htmlToMarkdown("<p>一つ目の段落です。</p><p>二つ目の段落です。</p>"), "一つ目の段落です。\n\n二つ目の段落です。\n");
+    assert.equal(
+      htmlToMarkdown("<p>一つ目の段落です。<br><br>二つ目の段落です。<br />\n<br>三つ目。</p>"),
+      "一つ目の段落です。\n\n二つ目の段落です。\n\n三つ目。\n",
+    );
+  });
 });
 
 describe("htmlToMarkdown: 落とすもの", () => {
@@ -128,8 +142,8 @@ describe("htmlToMarkdown: 落とすもの", () => {
     const html =
       '<p><a href="javascript:void(0)" onclick="window.print();return false;"><span class="i"></span>印刷</a></p><h1>お知らせ</h1>' +
       '<p>詳しくは<a href="javascript:openMap()">地図</a>をご覧ください。</p><p><a href=\' JavaScript:share()\'>共有</a> | <a href="#top">上へ</a></p>' +
-      '<p><a href="/javascript-guide.html">JavaScript の手引き</a></p><p><a href=javascript.html>JS</a></p>';
-    assert.equal(htmlToMarkdown(html), "# お知らせ\n\n詳しくは地図をご覧ください。\n\nJavaScript の手引き\n\nJS\n");
+      '<p><a href="/javascript-guide.html">JavaScript の手引き</a></p><p><a href=javascript.html>JS</a></p><p>以上。</p>';
+    assert.equal(htmlToMarkdown(html), "# お知らせ\n\n詳しくは地図をご覧ください。\n\nJavaScript の手引き\n\nJS\n\n以上。\n");
   });
 
   it("表題 (h1) の前にあり、リンクだけの項目が二つ以上続いて最後の項目が表題そのものの一覧はパンくずとして落とす", () => {
@@ -236,7 +250,7 @@ describe("htmlToMarkdown: 落とすもの", () => {
     assert.equal(htmlToMarkdown(`<div><a href="/guide">Read the guide first.</a></div>${title}`), "Read the guide first.\n\n# Plan\n\nText.\n");
     assert.equal(htmlToMarkdown(`<div><a href="/n1"><h3>News one</h3><p>Summary</p></a></div>${title}`), "### News one\n\nSummary\n\n# Plan\n\nText.\n");
     assert.equal(htmlToMarkdown(`<p>Kept</p><div><a href="/en/">English</a></div><h2>Plan</h2><p>Text.</p>`), "Kept\n\nEnglish\n\n## Plan\n\nText.\n");
-    assert.equal(htmlToMarkdown(`${title}<div><a href="/en/">English</a></div>`), "# Plan\n\nText.\n\nEnglish\n");
+    assert.equal(htmlToMarkdown(`${title}<div><a href="/en/">English</a></div><p>End.</p>`), "# Plan\n\nText.\n\nEnglish\n\nEnd.\n");
   });
 
   it("aside・footer・form (検索窓) を落とす", () => {
@@ -280,6 +294,24 @@ describe("htmlToMarkdown: 落とすもの", () => {
       htmlToMarkdown(html),
       "# Chapter 2\n\nText.\n\nFull report (PDF)\n\n### News one\n\nFirst summary.\n\n### News two\n\nSecond summary.\n\nA and B apply.\n",
     );
+  });
+
+  it("ページを閉じるリンクだけのブロック (一覧に戻る) は一つでも落とし、中身の無くなった後ろの見出しも落ちる", () => {
+    const speech =
+      '<main><h1>演説</h1><p>御清聴ありがとうございました。</p><div><h2>新着記事</h2><div data-parts-url="/parts/news.html"></div></div>' +
+      '<div class="u-txc"><a href="/list.html" class="button">一覧に戻る</a></div><div class="gradation" inert></div></main>';
+    assert.equal(htmlToMarkdown(speech), "# 演説\n\n御清聴ありがとうございました。\n");
+    const twoBlocks = '<h1>Notice</h1><p>Text.</p><p><a href="/list">Back to the list</a></p><div><div><a href="/">Home</a></div></div>';
+    assert.equal(htmlToMarkdown(twoBlocks), "# Notice\n\nText.\n");
+  });
+
+  it("後ろに文の続くリンク一つのブロック、文の中のリンク、カードのリンクは閉じていても残す", () => {
+    const middle = '<h1>Notice</h1><p><a href="/r.pdf">Full report (PDF)</a></p><p>Text.</p>';
+    assert.equal(htmlToMarkdown(middle), "# Notice\n\nFull report (PDF)\n\nText.\n");
+    const sentence = '<h1>Notice</h1><p>Text.</p><p>See <a href="/list">the list</a>.</p>';
+    assert.equal(htmlToMarkdown(sentence), "# Notice\n\nText.\n\nSee the list.\n");
+    const card = '<h1>Notice</h1><p>Text.</p><div><a href="/n1"><h3>News one</h3><p>First summary.</p></a></div>';
+    assert.equal(htmlToMarkdown(card), "# Notice\n\nText.\n\n### News one\n\nFirst summary.\n");
   });
 
   it("ページ内リンクと ▲ や | のような記号だけの行は落とし、rel=next のリンクも文の中なら文字を残す", () => {
@@ -358,14 +390,37 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
     assert.equal(htmlToMarkdown("<h3>Step 2 <button>Expand</button></h3><p>Sign.</p>"), "### Step 2 Expand\n\nSign.\n");
   });
 
-  it("hidden 属性の要素は落とす。until-found・aria-hidden・class の hidden は残す", () => {
+  it("hidden 属性の要素は落とす。until-found・aria-hidden は残す", () => {
     const tooltip = "<h1>Moving a site<span hidden data-x><span>Save this page</span></span></h1><p>Plan first.</p>";
     assert.equal(htmlToMarkdown(tooltip), "# Moving a site\n\nPlan first.\n");
     assert.equal(htmlToMarkdown('<div hidden="">Menu</div><p>Kept.</p><ul hidden="hidden"><li>A</li></ul>'), "Kept.\n");
     assert.equal(htmlToMarkdown('<div hidden="until-found"><p>Answer.</p></div>'), "Answer.\n");
     assert.equal(htmlToMarkdown('<div hidden=until-found><p>Answer.</p></div><div hidden="until-found-later">Menu</div>'), "Answer.\n");
-    assert.equal(htmlToMarkdown('<p aria-hidden="true">Shown.</p><p class="hidden">Too.</p><p data-hidden>And.</p>'), "Shown.\n\nToo.\n\nAnd.\n");
+    assert.equal(htmlToMarkdown('<p aria-hidden="true">Shown.</p><p data-hidden>And.</p>'), "Shown.\n\nAnd.\n");
     assert.equal(htmlToMarkdown('<p title="not hidden">Plain.</p><p hidden-note="1">Noted.</p>'), "Plain.\n\nNoted.\n");
+  });
+
+  it("画面に出さず読み上げだけに書く文字 (よくある class の名前) は落とす", () => {
+    const html =
+      '<span class="hidden">ここからサブメニューです。</span><p>Fees rose.<span class="visually-hidden"> (opens in new tab)</span></p>' +
+      "<p class='sr-only'>Skip.</p><p class=visuallyhidden>Skip.</p><div class=\"note govuk-visually-hidden\"><p>Contents</p></div>" +
+      '<p><span class="screen-reader-text">Posted on</span> May 1</p><p><span class="u-sr-only element-invisible">Menu</span>Kept.</p>';
+    assert.equal(htmlToMarkdown(html), "Fees rose.\n\nMay 1\n\nKept.\n");
+  });
+
+  it("hidden を含むだけの class・画面の幅で見せる hidden・class でない属性の値は残す", () => {
+    const html =
+      '<p class="hidden-xs">Wide.</p><p class="overflow-hidden">Clip.</p><p class="is-hidden-later">Later.</p>' +
+      '<p class="hidden md:block">Desktop.</p><p data-class="sr-only">Data.</p><p title="class=sr-only">Title.</p><p class="sr-only-note">Note.</p>';
+    assert.equal(htmlToMarkdown(html), "Wide.\n\nClip.\n\nLater.\n\nDesktop.\n\nData.\n\nTitle.\n\nNote.\n");
+  });
+
+  it("スキップリンクが移す先 (href の無い tabindex=-1 のリンク) の読み上げ文は落とす。見出しの中と、ふつうの名前付きの印は残す", () => {
+    const html =
+      '<dl><dd><a href="#reader-content">本文へ</a></dd></dl><div class="pageReader"><p><a id="reader-content" tabindex="-1">ここから本文です。</a></p></div>' +
+      '<h1><a id="top" tabindex=\'-1\'>日光の物語</a></h1><p>山と湖。</p><div><a id="reader-end" tabindex=-1>本文ここまでです。</a></div>' +
+      '<p><a name="t1">用語</a>の説明。</p><p><a href="/x" tabindex="-1">外へ</a>行く。</p>';
+    assert.equal(htmlToMarkdown(html), "# 日光の物語\n\n山と湖。\n\n用語の説明。\n\n外へ行く。\n");
   });
 
   it("見出しの直後で自分の節を指すリンク (Copy link to …) は落とす", () => {

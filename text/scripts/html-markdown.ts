@@ -4,10 +4,12 @@
 // element or by role, and breadcrumbs), asides, footers, forms, tables, footnote marks, lists and blocks of nothing but
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
 // title), a block before the page's title that holds a menu or only links and no sentence (the site's header, with its tagline and
-// labels), buttons outside a heading, hidden elements, a heading's link to its own section beside or after its title,
+// labels), buttons outside a heading, hidden elements, text for a screen reader only (a visually-hidden class, a skip
+// link's target), a heading's link to its own section beside or after its title,
 // lines of nothing but in-page or script links (never a heading), a heading drawn as an image unless its alt text is the page's
-// title, and a copyright notice closing the page, with an address just before it, are dropped. Pure; a regular-expression reading that is enough for the documents in the corpus, not a parser
-// for any HTML.
+// title, blocks of nothing but links closing the page, and a copyright notice closing the page, with an address just
+// before it, are dropped. Markup's spacing collapses; U+3000 is text and stays. Pure; a regular-expression reading that
+// is enough for the documents in the corpus, not a parser for any HTML.
 import {
   ANY_LINK,
   ATTRIBUTES,
@@ -128,12 +130,40 @@ const withoutHiddenElements = (html: string): string => withoutElementsOpening(h
 
 const HEADING_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"];
 
+const headingRanges = (html: string): ElementRange[] => HEADING_TAGS.flatMap((tag) => elementRanges(html, tag));
+
+// The class names that frameworks and style guides give text written for a screen reader alone (sr-only,
+// visually-hidden, govuk-visually-hidden, screen-reader-text); "hidden" only as a whole name (not hidden-xs).
+const READER_ONLY_CLASS = /^(?:[a-z0-9]+-)*(?:sr-only|visually-?hidden|screen-reader-text|element-invisible)$/iu;
+
+const CLASS_OPENING = /<([a-z][a-z0-9-]*)\b[^>]*\sclass\s*=/giu;
+
+const CLASS_VALUE = new RegExp(String.raw`^<[a-z][a-z0-9-]*${ATTRIBUTES}\s+class\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))`, "iu");
+
+/** A breakpoint variant (md:block) shows the element on a wider screen, so "hidden" beside one hides it only on some. */
+const isReaderOnlyClass = (range: ElementRange): boolean => {
+  const value = CLASS_VALUE.exec(range.openTag);
+  const names = (value?.[1] ?? value?.[2] ?? value?.[3] ?? "").split(/\s+/u);
+  return names.some((name) => READER_ONLY_CLASS.test(name)) || (names.includes("hidden") && !names.some((name) => name.includes(":")));
+};
+
+/** An anchor with no href that only a script can focus: where a skip link moves the reader ("ここから本文です。"). */
+const isFocusTarget = (range: ElementRange): boolean =>
+  !/\shref\s*=/iu.test(range.openTag) && /\stabindex\s*=\s*(?:"\s*-1\s*"|'\s*-1\s*'|-1(?=[\s/>]))/iu.test(range.openTag);
+
+/** Text the page writes for a screen reader and does not show; a focus target inside a heading is the heading's title. */
+const withoutReaderOnlyText = (html: string): string => {
+  const headings = headingRanges(html);
+  const targets = withoutElementsWhere(html, "a", (anchor) => isFocusTarget(anchor) && !headings.some((heading) => isInside(heading, anchor)));
+  return withoutElementsOpening(targets, CLASS_OPENING, isReaderOnlyClass);
+};
+
 /**
  * Buttons are controls ("Close", "Share", "Cite this publication"), not prose, except one inside a heading, which is
  * how an accordion draws its section's title.
  */
 const withoutButtons = (html: string): string => {
-  const headings = HEADING_TAGS.flatMap((tag) => elementRanges(html, tag));
+  const headings = headingRanges(html);
   return withoutElementsWhere(html, "button", (button) => !headings.some((heading) => isInside(heading, button)));
 };
 
@@ -391,13 +421,30 @@ const withoutClosingAddress = (html: string): string => {
   return isFooter ? `${html.slice(0, last.index)} ${html.slice(end)}` : html;
 };
 
+const CLOSING_BLOCKS = ["div", "section", "p"];
+
+/** Blocks of nothing but links with nothing after them ("一覧に戻る"): a way around the site, as a menu is above the title. */
+const withoutClosingLinks = (html: string): string =>
+  untilStable(html, (text) => {
+    const closing = CLOSING_BLOCKS.flatMap((tag) => elementRanges(text, tag)).filter(
+      (range) => isLinksOnly(range) && textLines(text.slice(range.end)).length === 0,
+    );
+    return withoutRanges(
+      text,
+      closing.toSorted((left, right) => left.start - right.start),
+    );
+  });
+
+// Markup's own spacing, collapsed as HTML does; U+3000 is a character Japanese text writes (a clause number and its text), so it stays.
+const MARKUP_SPACE = /[^\S\u3000]+/gu;
+
 export const htmlToMarkdown = (html: string): string => {
   const uncommented = withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "");
   const preformatted = withPreformattedStashed(DROPPED.reduce(withoutElement, withoutRubyText(uncommented)));
-  const kept = withoutHeadingSelfLinks(withoutButtons(withoutHiddenElements(mainContent(preformatted.html))))
+  const kept = withoutHeadingSelfLinks(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(preformatted.html)))))
     .replace(/<sup\b[^>]*>\s*<a\b[^>]*>[^<]*<\/a\s*>\s*<\/sup\s*>/giu, "")
-    .replace(/\s+/gu, " ");
-  const content = withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))));
+    .replace(MARKUP_SPACE, " ");
+  const content = withoutClosingLinks(withoutLinkGroups(withoutNavigation(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept))))));
   const text = decodeEntities(stripTags(asLines(markChromeLinks(withImageHeadingsRead(content, documentTitle(uncommented))))));
   const lines = text
     .split("\n")
