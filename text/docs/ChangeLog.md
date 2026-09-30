@@ -17,6 +17,35 @@ statutes in the corpus (the e-Gov laws with 「削除」 articles and 枝番号,
   『本人の同意』とは」, 「前項第1号に規定する『報道』とは」) is scoped to that article, like 「前項に規定する」 already
   was, and no longer counts as a second definition of the term.
 
+### `undefined-acronym` reads an acronym glossary's headwords as defined when their name follows them (#170)
+
+In a glossary of abbreviations, the headword is the acronym and its name is the definition right after it. The
+rule reported the headword anyway. An acronym now counts as defined when it stands alone as a term and the text
+directly attached to it spells it out:
+
+- a heading or a line of its own (`## AFD`, `**AFD**`), and the next line;
+- a table cell (`| AFD | Area Forecast Discussion |`), and the cell next to it;
+- a bold term or a list term with a separator (`**AFD**: …`, `- AFD — …`), and the text after it.
+
+A plain line starting "RTO: …" is not read as an entry, since notes are written that way too, and nothing inside a
+code block (fenced or indented) or the front matter counts.
+
+The name is checked the way a bracketed name is: its initials must match the acronym exactly ("At or above" for AOA),
+or a single word must hold its letters in order ("Above" for ABV). A name that does not match, or a Japanese name, still
+leaves the acronym reported, as does an acronym used in prose with no expansion. The corpus gains the National Weather
+Service glossary, letter A (`docs/glossary`); its headwords whose names match are no longer reported, and the acronyms
+inside definitions still are.
+
+### `max-paragraph-length` no longer reports a paragraph of many short sentences (#170)
+
+The rule counted sentences only, so text written in short sentences (children's pages, a list of releases, a Q&A)
+was reported as a wall: every paragraph of NASA's spacewalk page for grades K-4 was. A paragraph is now reported only
+when it has more sentences than the limit and is also longer than that many sentences of ordinary length. That length is
+data in the rule's YAML (`full_sentence`, in characters for Japanese and words for English) and is multiplied by the
+limit, so the levels, the genres and a number in `chaff.yaml` move both together. The message still gives the number of
+sentences. A dense paragraph of long sentences is reported as before. The bench's joined-paragraph plant now joins
+paragraphs (across a heading if it must) into one line until both limits are passed.
+
 ### The corpus stores 青空文庫 texts without their colophon (#170)
 
 A new `aozora` format for the corpus manifest drops the blocks 青空文庫 closes every file with (底本, 入力, 校正, the

@@ -18,12 +18,16 @@ import { resolve } from "../packages/chaff/src/levels.ts";
 import { GENRES } from "../packages/chaff/src/genre.ts";
 import { presetLevels } from "../packages/chaff/src/genre-load.ts";
 import { BENCH_GENRES, benchGenreOf, benchLevelOf, runsInBench } from "./bench-genres.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 const BENCH = join(dirname(fileURLToPath(import.meta.url)), "..", "test", "fixtures", "bench");
 const EXPECTED = join(BENCH, "expected.txt");
 const LANGUAGES: readonly string[] = ["ja", "en"];
 const verbose = process.argv.includes("--verbose");
 const update = process.argv.includes("--update");
+
+const LENGTH_UNITS: Readonly<Record<string, "char" | "word">> = { ja: ja.capabilities.lengthUnit, en: en.capabilities.lengthUnit };
 
 type Sample = { readonly name: string; readonly language: string; readonly genre: string; readonly path: string; readonly source: string };
 
@@ -46,6 +50,8 @@ const contextOf = (sample: Sample): PlantContext => ({
   limits: Object.fromEntries(
     loadRules(sample.language).map((rule) => [rule.id, resolve(rule, benchLevelOf(rule.id, presetLevels(sample.genre)), sample.genre).limit]),
   ),
+  lengthUnit: LENGTH_UNITS[sample.language],
+  fullSentences: Object.fromEntries(loadRules(sample.language).flatMap((rule) => (rule.full_sentence === undefined ? [] : [[rule.id, rule.full_sentence]]))),
 });
 
 /** Whether chaff runs the rule on this sample at all: its languages, a genre in its use_for, and not off in the genre's preset. */

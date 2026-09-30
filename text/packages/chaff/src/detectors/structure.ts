@@ -3,6 +3,7 @@ import type { BulletList, Detector, Finding, Paragraph, ProseDocument, Section, 
 import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { preambleParagraphs } from "../preamble-paragraphs.ts";
+import { isTooLongParagraph } from "../paragraph-length.ts";
 
 /**
  * ばらつきは変動係数（標準偏差 ÷ 平均）で測る。
@@ -41,7 +42,13 @@ const uniformity = (doc: ProseDocument, values: readonly number[], span: { start
 /** 1 段落に文を詰めすぎると、読み手はどこで息継ぎしていいか分からなくなる。 */
 export const paragraphLength: Detector = (doc, options): Finding[] =>
   doc.paragraphs
-    .filter((paragraph) => paragraph.sentences.length > options.limit)
+    .filter((paragraph) =>
+      isTooLongParagraph(
+        paragraph.sentences.map((sentence) => lengthOf(sentence, doc.lengthUnit)),
+        options.limit,
+        options.fullSentence,
+      ),
+    )
     .map((paragraph) => ({
       rule: "max-paragraph-length",
       severity: "warning",

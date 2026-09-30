@@ -72,7 +72,11 @@ const ADAPTERS: ReadonlyArray<readonly [string, LanguageAdapter]> = [
 
 ADAPTERS.forEach(([language, adapter]) => {
   describe(`limit agreement (${language}): a limit the message allows is not reported, one past it is`, () => {
-    const all = loadRules(language).filter((rule) => rule.languages === undefined || rule.languages.includes(language));
+    // The message states the sentence limit only. The length a paragraph must also pass (full_sentence) is tested in
+    // test_paragraph_length.ts; without it the rule reports a superset, so the side the message says still holds.
+    const all = loadRules(language)
+      .filter((rule) => rule.languages === undefined || rule.languages.includes(language))
+      .map((rule) => ({ ...rule, full_sentence: undefined }));
     let doc: ProseDocument;
 
     before(async () => {
