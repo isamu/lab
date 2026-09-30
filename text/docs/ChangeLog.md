@@ -14,6 +14,21 @@ are the same contraction. The message names the lexicon's form (`don't`). The ap
 reported: which shape to use is a typographic choice, not a register one, and mixed shapes are common in published
 text, statutes included.
 
+### A speaker's name in a play or the minutes is not a sentence (#170)
+
+In a play or a record of what was said, each turn starts with who speaks: `ALGERNON.` on its own line (Project
+Gutenberg), `夫` and full-width spaces before the line (青空文庫), `○事務局` or `○委員長（…君）` (minutes, the Diet). chaff
+read each name as text. `ALGERNON.` was a sentence of its own, so paragraphs ran one sentence longer; every turn added
+a proper noun to `proper-noun-density`; and a name joined the speech after it in `max-sentence-length` and
+`ngram-repetition`.
+
+chaff now reads a line-initial name as a speaker's name when it has one of those shapes (also `NAME:`, `Mr. SMITH.` and
+`名前「…」`), more than one name of that shape recurs, and speech follows each. Such names are left
+out of the text the rules read, like a page header; the speech is checked as before. A single recurring label
+(`○　注意事項`), numbered items and headings (`一　`, `第一節　`, `A.`), and mixed-case field names (`Title:`, `Notes:`)
+are not read as speakers. This holds with the default genre too; `literature/play` and `speech/transcript` already
+turn these rules off.
+
 ## 0.16.0 — 2026-09-30
 
 Pick the kind of document, and chaff checks it as that kind. New genres cover contracts, statutes, court decisions,
