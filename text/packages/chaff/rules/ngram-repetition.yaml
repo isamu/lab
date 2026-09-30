@@ -11,8 +11,8 @@ name:
   en: Repeated phrasing
 
 why:
-  ja: 同じ言い回しが何度も出ると、読み手は新しいことが書かれていないと感じます。文字の並びで見ているので、どの言語でも同じように効きます。
-  en: The same phrasing again and again reads as nothing new being said. Measured on character n-grams, so it works the same in any language.
+  ja: 同じ言い回しが何度も出ると、読み手は新しいことが書かれていないと感じます。日本語は文字の並びで、英語は語の切れ目にそろえた並びで数えます。一覧の項目ごとに付く括弧の札・リンクの文字・記号は、書き手の言い回しではないので数えません。
+  en: The same phrasing again and again reads as nothing new being said. Counted on runs of whole words in English and of characters in Japanese. Bracketed tags, link text and symbols that a listing repeats on every entry are not the writer's phrasing, and are not counted.
 
 message:
   ja: 「{word}」が {count} 回出てきます（{limit} 回まで）

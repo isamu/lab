@@ -1,6 +1,8 @@
 import { proseText } from "../measure.ts";
 import { dateSpans, wordsOf } from "./structure.ts";
-import { compacted, placeOf } from "./gram-place.ts";
+import { compacted, placeAt, type Compacted } from "./gram-place.ts";
+import { charWindows, wordWindows } from "./gram-windows.ts";
+import { furnitureMask, isFurniture } from "./gram-furniture.ts";
 import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
 import { expansionAt, termEntryAcronyms, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
@@ -55,26 +57,17 @@ export const emojiDensity: Detector = (doc, options): Finding[] => {
 };
 
 /**
- * 同じ言い回しの繰り返し。character n-gram で見るので、語の区切りが要らない。
+ * 同じ言い回しの繰り返し。文字の並びで見るので、adapter の語の区切り（wordSplit）が要らない。英語の窓は空白で語の切れ目にそろえる。
  * spec §10 が n-gram を選んだのはこのためで、新しい言語でそのまま動く。
  */
 /**
  * 窓の幅は単位で分ける。同じ 8 文字でも、日本語では 4〜5 形態素だが英語では 1 語半にしかならない。
- * 実文書（英語 11 本）で 8 文字にしたら、上位は " generat"（generate）のような**語の断片**だった。
+ * 英語の窓は語の切れ目にそろえ、18 文字に届くまで語を足す。文字で切ると " generat" のような語の断片が上位に来る。
+ * 18 は、文字で切っていた頃の 20 文字の窓から前後の空白を除いた長さ（" juxtaposed to said "）。
  */
-const GRAM = { char: 8, word: 20 };
+const GRAM = { char: 8, word: 18 };
 
-/** 並べた名前にかかる語句は数えない。名前が繰り返されれば、その前後（「the …」）も一緒に繰り返されるのは当たり前。 */
-const countGrams = (text: string, width: number, names: readonly string[]): Map<string, number> => {
-  const counts = new Map<string, number>();
-  const named = nameSpans(text, names);
-  Array.from({ length: Math.max(0, text.length - width + 1) }).forEach((_, index) => {
-    if (touchesAny(named, index, index + width)) return;
-    const gram = text.slice(index, index + width);
-    counts.set(gram, (counts.get(gram) ?? 0) + 1);
-  });
-  return counts;
-};
+const windowsOf = (text: string, unit: ProseDocument["lengthUnit"]): Span[] => (unit === "char" ? charWindows(text, GRAM.char) : wordWindows(text, GRAM.word));
 
 /**
  * 名前ではなく言い回しだけを数える。実文書で測ったら、上位は
@@ -93,49 +86,80 @@ const CONNECTIVE = { char: /[ぁ-ゖ].*[ぁ-ゖ].*[ぁ-ゖ]/u, word: /\S \S.*\S 
 
 const isPhrasing = (gram: string, unit: ProseDocument["lengthUnit"]): boolean => CONNECTIVE[unit].test(gram);
 
-/** 文をまたいで数えない。文の終わりと次の文の始まりが繋がると、固有名詞が言い回しに見える。 */
-const gramsOf = (doc: ProseDocument): Map<string, number> => {
-  const counts = new Map<string, number>();
-  doc.sentences.forEach((sentence) => {
-    const text = doc.lengthUnit === "char" ? proseText(sentence).replace(/\s+/gu, "") : proseText(sentence);
-    const names = doc.lengthUnit === "char" ? (doc.names ?? []).map((name) => name.replace(/\s+/gu, "")) : (doc.names ?? []);
-    countGrams(text, GRAM[doc.lengthUnit], names).forEach((count, gram) => counts.set(gram, (counts.get(gram) ?? 0) + count));
-  });
-  return counts;
+/** 語句が最初に数えられた所。書かれたままの語句と、文と、文の中の範囲（sentence.text の位置）。 */
+type FirstSeen = { readonly gram: string; readonly sentence: Sentence; readonly place: Span };
+
+type Tally = { readonly counts: Map<string, number>; readonly first: Map<string, FirstSeen> };
+
+/** 詰めた文の index 番目の文字が、リンクの文字か。 */
+const linkedIn = (doc: ProseDocument, sentence: Sentence, source: Compacted): ((index: number) => boolean) => {
+  const links = doc.links.filter((link) => link.start < sentence.span.end && sentence.span.start < link.end);
+  return (index) => {
+    const at = sentence.span.start + (source.offsets[index] ?? -1);
+    return links.some((link) => link.start <= at && at < link.end);
+  };
 };
 
-/** 数えたときと同じ形の文。char 単位では空白を詰めてから数えている。 */
-const gramText = (sentence: Sentence, unit: ProseDocument["lengthUnit"]): string => compacted(sentence.text, unit).text;
+/** 英語は大文字と小文字を区別せずに数える。文頭の "Proposals submitted via" も文中の "proposals submitted via" も同じ言い回し。 */
+const keyOf = (gram: string, unit: ProseDocument["lengthUnit"]): string => (unit === "word" ? gram.toLowerCase() : gram);
+
+const namesOf = (doc: ProseDocument): readonly string[] =>
+  doc.lengthUnit === "char" ? (doc.names ?? []).map((name) => name.replace(/\s+/gu, "")) : (doc.names ?? []);
+
+/**
+ * 文をまたいで数えない。文の終わりと次の文の始まりが繋がると、固有名詞が言い回しに見える。
+ * 並べた名前にかかる語句も数えない。名前が繰り返されれば、その前後（「the …」）も一緒に繰り返されるのは当たり前。
+ * 一覧の飾り（gram-furniture.ts）も数えない。項目ごとに繰り返すのはひな形で、書き手ではない。
+ */
+const tallySentence = (doc: ProseDocument, sentence: Sentence, tally: Tally): void => {
+  const source = compacted(sentence.text, doc.lengthUnit);
+  const named = nameSpans(source.text, namesOf(doc));
+  const mask = furnitureMask(source.text, linkedIn(doc, sentence, source));
+  windowsOf(source.text, doc.lengthUnit)
+    .filter((window) => !touchesAny(named, window.start, window.end) && !isFurniture(source.text, mask, window))
+    .forEach((window) => {
+      const gram = source.text.slice(window.start, window.end);
+      const key = keyOf(gram, doc.lengthUnit);
+      tally.counts.set(key, (tally.counts.get(key) ?? 0) + 1);
+      const place = placeAt(source, window);
+      if (!tally.first.has(key) && place !== undefined) tally.first.set(key, { gram, sentence, place });
+    });
+};
+
+const gramsOf = (doc: ProseDocument): Tally => {
+  const tally: Tally = { counts: new Map(), first: new Map() };
+  doc.sentences.forEach((sentence) => tallySentence(doc, sentence, tally));
+  return tally;
+};
 
 /**
  * 語句が文の中で占める範囲に、述語になる動詞か助動詞があるか（gram-predicate.ts）。
  * 品詞が無ければ見分けられないので、これまでどおり言い回しとして数える。
  */
-const hasPredicate = (gram: string, sentence: Sentence, unit: ProseDocument["lengthUnit"]): boolean => {
-  if (sentence.tokens === undefined) return true;
-  const place = placeOf(compacted(sentence.text, unit), gram);
-  if (place === undefined) return true;
-  return hasPredicateIn(sentence.tokens, { start: sentence.span.start + place.start, end: sentence.span.start + place.end }, unit);
+const hasPredicate = (at: FirstSeen | undefined, unit: ProseDocument["lengthUnit"]): boolean => {
+  if (at?.sentence.tokens === undefined) return true;
+  const start = at.sentence.span.start;
+  return hasPredicateIn(at.sentence.tokens, { start: start + at.place.start, end: start + at.place.end }, unit);
 };
 
 export const ngramRepetition: Detector = (doc, options): Finding[] => {
   if (wordsOf(doc) < FLOOR[doc.lengthUnit]) return [];
-  const sentenceWith = (gram: string): Sentence | undefined => doc.sentences.find((sentence) => gramText(sentence, doc.lengthUnit).includes(gram));
-  const worst = [...gramsOf(doc).entries()]
-    .filter(([gram, count]) => count > options.limit && isPhrasing(gram, doc.lengthUnit))
+  const tally = gramsOf(doc);
+  const worst = [...tally.counts.entries()]
+    .filter(([key, count]) => count > options.limit && isPhrasing(key, doc.lengthUnit))
     .toSorted(([, left], [, right]) => right - left)
-    .map(([gram, count]) => ({ gram, count, at: sentenceWith(gram) }))
-    .find(({ gram, at }) => at === undefined || hasPredicate(gram, at, doc.lengthUnit));
+    .map(([key, count]) => ({ key, count, at: tally.first.get(key) }))
+    .find(({ at }) => hasPredicate(at, doc.lengthUnit));
   if (worst === undefined) return [];
-  const at = worst.at;
+  const at = worst.at?.sentence;
   return [
     {
       rule: "ngram-repetition",
       severity: "info",
       line: 0,
       column: 0,
-      quote: at?.text.trim() ?? worst.gram,
-      values: { word: worst.gram, count: worst.count, limit: options.limit, offset: at?.span.start ?? 0 },
+      quote: at?.text.trim() ?? worst.key,
+      values: { word: worst.at?.gram ?? worst.key, count: worst.count, limit: options.limit, offset: at?.span.start ?? 0 },
     },
   ];
 };

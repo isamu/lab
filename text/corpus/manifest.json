@@ -1871,6 +1871,192 @@
       "license": "The label is submitted by the manufacturer (Haleon US Holdings LLC), not written by NLM, and NLM's copyright policy leaves third-party content with its owner (URL only)",
       "redistribute": false,
       "format": "html"
+    },
+    {
+      "id": "jstage-jniph-74-1-2-rehabilitation",
+      "title": "J-STAGE: 日本における障害児者・高齢者に対する重層的なリハビリテーション提供体制（保健医療科学 74巻1号, 2025）全文HTMLページ",
+      "source": "url",
+      "genre": "academic/paper",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20250405074901id_/https://www.jstage.jst.go.jp/article/jniph/74/1/74_2/_html/-char/ja",
+      "license": "The article is CC BY 4.0 (the page reads \"© 2025 国立保健医療科学院 This article is licensed under a Creative Commons [Attribution 4.0 International] license. https://creativecommons.org/licenses/by/4.0/\"; https://doi.org/10.20683/jniph.74.1_2), but the page also carries J-STAGE's own interface text, which that licence does not cover (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "jstage-jniph-74-2-119-wbgt",
+      "title": "J-STAGE: 熱中症発生確率の回帰モデルによる熱中症発生の地域差に関する評価（保健医療科学 74巻2号, 2025）全文HTMLページ",
+      "source": "url",
+      "genre": "academic/paper",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20250609223321id_/https://www.jstage.jst.go.jp/article/jniph/74/2/74_119/_html/-char/ja",
+      "license": "The article is CC BY 4.0 (the page reads \"© 2025 国立保健医療科学院 This article is licensed under a Creative Commons [Attribution 4.0 International] license. https://creativecommons.org/licenses/by/4.0/\"; https://doi.org/10.20683/jniph.74.2_119), but the page also carries J-STAGE's own interface text, which that licence does not cover (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "jstage-jniph-74-2-157-heat-policy",
+      "title": "J-STAGE: 主要国における熱中症対策（保健医療科学 74巻2号, 2025）全文HTMLページ",
+      "source": "url",
+      "genre": "academic/paper",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20250609223148id_/https://www.jstage.jst.go.jp/article/jniph/74/2/74_157/_html/-char/ja",
+      "license": "The article is CC BY 4.0 (the page reads \"© 2025 国立保健医療科学院 This article is licensed under a Creative Commons [Attribution 4.0 International] license. https://creativecommons.org/licenses/by/4.0/\"; https://doi.org/10.20683/jniph.74.2_157), but the page also carries J-STAGE's own interface text, which that licence does not cover (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "jstage-jnlp-32-1-114-nmt",
+      "title": "J-STAGE: 文内コンテキストを利用した分割統治ニューラル機械翻訳（自然言語処理 32巻1号, 2025）抄録ページ",
+      "source": "url",
+      "genre": "academic/paper",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260316204732id_/https://www.jstage.jst.go.jp/article/jnlp/32/1/32_114/_article/-char/ja/",
+      "license": "The article is CC BY 4.0 (the page reads \"© 2025 一般社団法人 言語処理学会 Licensed under CC BY 4.0 https://creativecommons.org/licenses/by/4.0/\"; https://doi.org/10.5715/jnlp.32.114), but the page also carries J-STAGE's own interface text, which that licence does not cover (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "cc-by-4-legalcode-ja",
+      "title": "クリエイティブ・コモンズ 表示 4.0 国際 パブリック・ライセンス（日本語版リーガルコード）",
+      "source": "url",
+      "genre": "legal/contract",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260924185632id_/https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+      "license": "CC0 1.0 for the licence text (the page reads 「クリエイティブ・コモンズ・パブリック・ライセンスの文章はCC0パブリック・ドメイン宣言のもとで提供されています。」); the notices around it are Creative Commons website content under CC BY 4.0 (https://creativecommons.org/policies/); converted to Markdown",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "da-copyright-policy",
+      "title": "デジタル庁: コピーライトポリシー",
+      "source": "url",
+      "genre": "legal/contract",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260927073139id_/https://www.digital.go.jp/copyright-policy",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0); 出典: デジタル庁ウェブサイト (https://www.digital.go.jp/copyright-policy), converted to Markdown (加工して作成)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "us-6285999-node-ranking",
+      "title": "US 6,285,999: Method for node ranking in a linked database",
+      "source": "url",
+      "genre": "legal/patent",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260927200659id_/https://patents.google.com/patent/US6285999B1/en",
+      "format": "google-patents",
+      "license": "Public domain (text of a US patent, which carries no copyright notice under 37 CFR 1.71(d); per the USPTO, the text of a patent is typically not subject to copyright); only the abstract, description and claims are kept, from Google Patents as archived by the Internet Archive",
+      "redistribute": true
+    },
+    {
+      "id": "us-4683202-nucleic-acid-amplification",
+      "title": "US 4,683,202: Process for amplifying nucleic acid sequences",
+      "source": "url",
+      "genre": "legal/patent",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260928025317id_/https://patents.google.com/patent/US4683202A/en",
+      "format": "google-patents",
+      "license": "Public domain (text of a US patent, which carries no copyright notice under 37 CFR 1.71(d); per the USPTO, the text of a patent is typically not subject to copyright); only the abstract, description and claims are kept, from Google Patents as archived by the Internet Archive",
+      "redistribute": true
+    },
+    {
+      "id": "nps-yellowstone-faqs",
+      "title": "National Park Service: Yellowstone National Park, Frequently Asked Questions",
+      "source": "url",
+      "genre": "docs/faq",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260717053624id_/https://www.nps.gov/yell/faqs.htm",
+      "license": "Public domain (work of the US federal government: National Park Service)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "aoml-hurricane-faq",
+      "title": "NOAA AOML Hurricane Research Division: Hurricanes Frequently Asked Questions",
+      "source": "url",
+      "genre": "docs/faq",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260928150257id_/https://www.aoml.noaa.gov/hrd-faq/",
+      "license": "Public domain (work of the US federal government: NOAA), but the page names individual contact persons with their telephone numbers; URL only",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "fed-powell-2025-08-22-framework-review",
+      "title": "Federal Reserve Board: Jerome H. Powell, Monetary Policy and the Fed's Framework Review (speech, August 22, 2025)",
+      "source": "url",
+      "genre": "speech/address",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260929001413id_/https://www.federalreserve.gov/newsevents/speech/powell20250822a.htm",
+      "license": "Public domain (the Board's Website Policies: \"Unless otherwise indicated, information on Board's website is in the public domain and may be copied and distributed without permission. Please cite to the Board as the source of the information.\" https://www.federalreserve.gov/disclaimer.htm); a speech by a single speaker, with its notes",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "kantei-221-shisei-hoshin",
+      "title": "首相官邸: 第２２１回国会における高市内閣総理大臣施政方針演説（令和8年2月20日）",
+      "source": "url",
+      "genre": "speech/address",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260921002036id_/https://www.kantei.go.jp/jp/105/statement/2026/0220shiseihoshin.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0; 首相官邸ホームページ利用規約 https://www.kantei.go.jp/jp/terms.html); 出典: 首相官邸ホームページ (https://www.kantei.go.jp/jp/105/statement/2026/0220shiseihoshin.html); Markdown に変換（加工して作成）; a speech by a single speaker, no third-party words",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "gutenberg-great-expectations",
+      "title": "Charles Dickens, Great Expectations (Project Gutenberg #1400)",
+      "source": "url",
+      "genre": "literature/fiction",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260630214721id_/https://www.gutenberg.org/cache/epub/1400/pg1400.txt",
+      "license": "Public domain in the United States (first published 1861); Project Gutenberg eBook #1400, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "redistribute": true,
+      "format": "gutenberg"
+    },
+    {
+      "id": "gutenberg-whitman-leaves-of-grass",
+      "title": "Walt Whitman, Leaves of Grass (Project Gutenberg #1322)",
+      "source": "url",
+      "genre": "literature/poetry",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260724182829id_/https://www.gutenberg.org/cache/epub/1322/pg1322.txt",
+      "license": "Public domain in the United States (first published 1891–1892); Project Gutenberg eBook #1322, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "redistribute": true,
+      "format": "gutenberg"
+    },
+    {
+      "id": "gutenberg-modest-proposal",
+      "title": "Jonathan Swift, A Modest Proposal (Project Gutenberg #1080)",
+      "source": "url",
+      "genre": "literature/essay",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260916063119id_/https://www.gutenberg.org/cache/epub/1080/pg1080.txt",
+      "license": "Public domain in the United States (first published 1729); Project Gutenberg eBook #1080, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "redistribute": true,
+      "format": "gutenberg"
+    },
+    {
+      "id": "gutenberg-riders-to-the-sea",
+      "title": "J. M. Synge, Riders to the Sea (Project Gutenberg #994)",
+      "source": "url",
+      "genre": "literature/play",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260807183313id_/https://www.gutenberg.org/cache/epub/994/pg994.txt",
+      "license": "Public domain in the United States (first published 1904); Project Gutenberg eBook #994, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "redistribute": true,
+      "format": "gutenberg"
+    },
+    {
+      "id": "18f-blog-oracle-databases",
+      "title": "18F blog: Working with Oracle databases in open-source projects",
+      "source": "url",
+      "genre": "blog/tech",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/18F/18f.gsa.gov/292605ab095af8e70e2087aca63c2319ce892a4c/content/posts/2024-07-17-working-with-oracle-databases-in-open-source-projects.md",
+      "license": "CC0-1.0 (US government work, public domain; the repository's LICENSE.md)",
+      "redistribute": true
     }
   ]
 }

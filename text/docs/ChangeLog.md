@@ -17,6 +17,31 @@ writes into chaff.yaml and the site's rule reference), a placeholder now reads a
 mistakes and fails if any rendered finding still shows a placeholder, and another fails if a rule uses a placeholder
 in its name, why or how to fix without giving words for it.
 
+### `ngram-repetition` counts whole English words and leaves out listing furniture (#170)
+
+English phrases were counted on 20-character slices, so a reported phrase could start or end in the middle of a
+word ("roductivity change a"). They are now counted on runs of whole words at least 18 characters long, the length a
+phrase had inside the old slice between its two spaces. Punctuation at a word's edge is not part of the phrase
+("described," and "described" are the same word), and case is ignored ("Proposals submitted" at the start of a
+sentence is the same phrase as "proposals submitted" in the middle). The finding quotes the phrase as first written.
+
+A phrase made mostly of what a listing repeats on every entry is not counted either: symbols and punctuation, link
+text, and bracketed tags, where a tag is a bracket holding one word or a list of single words (`(replaced)`,
+`[pdf, html, other]`). A bracket holding a phrase is still the writer's text ("Select Save (if applicable)."). On the
+arXiv listing, `" (replaced) [pdf, ht"` is no longer reported. The furniture check applies to Japanese too; no Japanese
+finding in the corpus moved.
+
+### Japanese text written with 「，．」 is split into sentences at 「．」 (#170)
+
+Papers and university pages often write 「，」 and 「．」 for 「、」 and 「。」. The Japanese adapter did not count 「．」 as
+closing a sentence, so every sentence on one line ran into one: a whole abstract was measured as a single sentence by
+`max-sentence-length`, and its middle dots were counted together by `no-nakaguro-parallel`. 「．」 now closes a
+sentence after kana, kanji, 「ー」 or a closing bracket (「低下することがある．」「（表1）．」). After a digit it is a number or a
+decimal point, so 「１．はじめに」 and 「３．５％」 are read as before. Corpus round 12 added Japanese papers from 保健医療科学 and
+自然言語処理 (J-STAGE, CC BY 4.0) and more documents for genres the corpus had few of: a Japanese licence and terms, US
+patents, English FAQs, speeches, a novel, poems, an essay, a play and a tech blog post.
+
+
 ## 0.17.0 — 2026-09-30
 
 `legal/statute` now checks numbering, references and definitions the way `legal/contract` does, without
