@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### The `docs/glossary` preset reads a glossary the way it is written (#170)
+
+A glossary is looked up one entry at a time. Its definitions are noun phrases (「風の吹いてくる方向。」), and sibling
+entries share one wording on purpose, so under `docs/glossary` `taigen-dome-in-prose` and `ngram-repetition` are off
+and listed under "did not run" with the genre as the reason. An English definition stacks its qualifiers into one
+sentence, so `max-sentence-length` allows 40 words at normal (30 strict, 50 relaxed) instead of 25; what it still
+reports are definitions packed with lists and long notes. Japanese glossaries keep the usual limit, which already
+reported only their longest sentences. Other genres do not change.
+
 ### The corpus checks each document with the preset for its kind (#170)
 
 `corpus/manifest.json` gave every document one of the original ten genres, so `yarn corpus` never ran the presets
