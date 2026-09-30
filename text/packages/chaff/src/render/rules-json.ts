@@ -108,7 +108,7 @@ export const rulesJson = (
       schema_version: 1,
       config_file: "chaff.yaml",
       detected: { genre, language },
-      style: styleOf(config),
+      ...(config.applied === undefined ? {} : { style: styleOf(config) }),
       values_you_can_use: ["strict", "normal", "relaxed", "off"],
       values_note: text.valuesNote,
       rules: rules.map((rule) => ({

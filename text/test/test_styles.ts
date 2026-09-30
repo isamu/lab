@@ -7,6 +7,7 @@ import { optionProblems, settleOptions } from "../packages/chaff/src/rule-option
 import { EMPTY, type Config } from "../packages/chaff/src/config/load.ts";
 import { withStyle } from "../packages/chaff/src/config/style.ts";
 import { optionLayersOf } from "../packages/chaff/src/config/option-problems.ts";
+import { settingsOf } from "../packages/chaff/src/commands/feedback.ts";
 import { runCli } from "./cli-run.ts";
 
 const RULE = "katakana-long-vowel";
@@ -110,6 +111,12 @@ describe("house styles", () => {
       assert.deepEqual(settled["min_morae"], { value: 4, from: "chaff.yaml" });
     });
 
+    it("feedback reports the style, not the levels it decided, and still chaff.yaml's own", () => {
+      const applied = withStyle(config({ style: "house", rules: { "bold-density": "off" } }), styles);
+      assert.equal(settingsOf(applied, [RULE, "bold-density"]), "style: house\nrules:\n  bold-density: off");
+      assert.equal(settingsOf(applied, [RULE]), "style: house");
+    });
+
     it("no style, or one chaff does not have, changes nothing", () => {
       const plain = config({ rules: { "bold-density": "relaxed" } });
       assert.equal(withStyle(plain, styles), plain);
@@ -130,6 +137,11 @@ describe("house styles", () => {
     it("style: bunkacho does not report サーバー", async () => {
       const run = await runCli({ "chaff.yaml": "language: ja\nstyle: bunkacho\n", "a.md": REPORT }, ["a.md", "--compact"]);
       assert.doesNotMatch(run.out, /katakana-long-vowel/u);
+    });
+
+    it("rules --json has no style field when chaff.yaml names none", async () => {
+      const run = await runCli({ "chaff.yaml": "language: ja\n" }, ["rules", "--json"]);
+      assert.doesNotMatch(run.out, /"style":/u);
     });
 
     it("an unknown style stops the run and lists the styles", async () => {
