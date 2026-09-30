@@ -3,8 +3,10 @@ import type { Config } from "../config/load.ts";
 import type { Localized, RuleDefinition } from "../plugin.ts";
 import { readableText } from "./text.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
-import { presetLevels } from "../genre-load.ts";
-import type { PresetLevels } from "../genre-parse.ts";
+import { loadGenres, presetLevels } from "../genre-load.ts";
+import { presetLevelsOf, type PresetLevels } from "../genre-parse.ts";
+import { RULE_GROUPS, groupTextOf } from "../rule-guide.ts";
+import { standingIn } from "../rule-genres.ts";
 
 const TEXT: Texts<{
   readonly offBySetting: string;
@@ -32,7 +34,7 @@ const TEXT: Texts<{
   },
 };
 
-const now = (rule: RuleDefinition, config: Config, genre: string, text: (typeof TEXT)["ja"], preset: PresetLevels): Record<string, unknown> => {
+export const now = (rule: RuleDefinition, config: Config, genre: string, text: (typeof TEXT)["ja"], preset: PresetLevels): Record<string, unknown> => {
   const explicit = config.rules[rule.id] ?? preset[rule.id];
   if (explicit === "off" && config.rules[rule.id] === undefined) return { level: "off", why_off: text.offByGenre(genre) };
   if (explicit === "off") return { level: "off", why_off: text.offBySetting };
@@ -67,17 +69,64 @@ const levelsOf = (rule: RuleDefinition, genre: string): Record<string, unknown> 
 const readableInEvery = (rule: RuleDefinition, field: Localized): Localized =>
   Object.fromEntries(Object.keys(field).map((language) => [language, readableText(rule, field, language)]));
 
+const READER_LANGUAGES = ["ja", "en"];
+
+/** How the rule stands in every genre with no chaff.yaml, so an AI can pick a genre before it picks levels. */
+const genresOf = (rule: RuleDefinition): Record<string, Record<string, string>> => {
+  const data = loadGenres();
+  return Object.fromEntries(
+    data.genres.map((genre) => {
+      const standing = standingIn(rule, genre.id, presetLevelsOf(data, genre.id));
+      return [genre.id, standing.kind === "on" ? { runs: "on", level: standing.level } : { runs: standing.kind }];
+    }),
+  );
+};
+
+/** The plain-language part of the rule file: what it finds, an example, what it leaves alone, what a level means. */
+const guideOf = (rule: RuleDefinition): Record<string, unknown> => ({
+  group: rule.guide?.group ?? null,
+  summary: rule.guide?.summary ?? {},
+  example: rule.guide?.examples ?? {},
+  not_flagged: rule.guide?.notFlagged ?? {},
+  level_meaning: rule.guide?.levelMeaning ?? {},
+  languages: rule.languages ?? READER_LANGUAGES,
+  requires: rule.requires,
+  genres: genresOf(rule),
+  options: [],
+});
+
+const groupsOf = (): Record<string, unknown>[] =>
+  RULE_GROUPS.map((group) => ({
+    id: group,
+    name: Object.fromEntries(READER_LANGUAGES.map((language) => [language, groupTextOf(language, group).name])),
+    note: Object.fromEntries(READER_LANGUAGES.map((language) => [language, groupTextOf(language, group).note])),
+  }));
+
+/**
+ * What the local-rules release adds. Named now so an AI reading the JSON knows they are coming and does not invent them.
+ * Filled in when they ship: the style presets under style:, the custom_rules types, and each rule's options.
+ */
+const COMING = {
+  style_presets: { status: "coming", presets: [] },
+  custom_rule_types: { status: "coming", planned: ["words", "pattern", "tokens", "module"] },
+  rule_options: { status: "coming", note: "Each rule's options (with their types and allowed values) will be listed under options." },
+};
+
 /** AI に設定を書かせるときの入口。推測せずに書けるだけの情報を 1 つに入れる。spec §19.3。 */
 export const rulesJson = (rules: readonly RuleDefinition[], config: Config, language: string, genre: string): string => {
   const text = TEXT[uiLanguageOf(language)];
   const preset = presetLevels(genre);
   return JSON.stringify(
     {
-      schema_version: 1,
+      // 2: rules gained group, summary, example, not_flagged, level_meaning, languages, requires, genres and options,
+      // and groups and the coming local-rules fields were added. Nothing from 1 was removed or renamed.
+      schema_version: 2,
       config_file: "chaff.yaml",
       detected: { genre, language },
       values_you_can_use: ["strict", "normal", "relaxed", "off"],
       values_note: text.valuesNote,
+      groups: groupsOf(),
+      ...COMING,
       rules: rules.map((rule) => ({
         id: rule.id,
         layer: rule.layer,
@@ -90,6 +139,7 @@ export const rulesJson = (rules: readonly RuleDefinition[], config: Config, lang
         levels_you_can_set: definedLevels(rule),
         your_setting: yourSetting(rule, config),
         now: now(rule, config, genre, text, preset),
+        ...guideOf(rule),
       })),
       how_to_change: {
         by_command: ["relax", "strict", "off"].map((command) => `npx chaff ${command} <rule-id> --why "${text.reason}"`),
