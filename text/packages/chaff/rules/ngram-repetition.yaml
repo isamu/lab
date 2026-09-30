@@ -19,8 +19,8 @@ message:
   en: '"{word}" appears {count} {count|time|times} (limit {limit})'
 
 how_to_fix:
-  ja: 2 回目以降を言い換えるか、まとめて 1 度にしてください。
-  en: Rephrase the repeats, or say it once.
+  ja: 2 回目以降を言い換えるか、まとめて 1 度にしてください。繰り返しているのが組織名や製品名なら、chaff.yaml の names に並べると数えません。
+  en: Rephrase the repeats, or say it once. If what repeats is an organisation or product name, list it under names in chaff.yaml and it is not counted.
 
 levels: { strict: 3, normal: 5, relaxed: 9 }
 

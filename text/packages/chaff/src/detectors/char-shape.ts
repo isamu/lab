@@ -6,6 +6,9 @@ import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
 import { proseText } from "../measure.ts";
 import { parallelDotCount } from "./middle-dot.ts";
+import { maskSpans } from "../mask.ts";
+import { quotedSpans } from "../quoted-span.ts";
+import { nameSpans } from "../team-names.ts";
 
 /**
  * 文字の並びを見る検出。漢字の連なりが住所か名前かだけは、形態素解析の固有名詞と数で決める。
@@ -13,8 +16,8 @@ import { parallelDotCount } from "./middle-dot.ts";
  */
 const KANJI_RUN = /[一-鿿]+/gu;
 
-/** 漢字の連なりと、その文書全体の座標での範囲。 */
-type KanjiRun = { readonly text: string; readonly span: Span | undefined };
+/** 漢字の連なりと、その文書全体の座標での範囲。quoted は鉤括弧の中身がまるごとこの連なりであること。 */
+type KanjiRun = { readonly text: string; readonly span: Span | undefined; readonly quoted: boolean };
 
 const SPACE = /\s/gu;
 
@@ -22,14 +25,22 @@ const SPACE = /\s/gu;
  * 同じ連なりが文に二度出ても、それぞれの位置で読む。proseText は空白を詰めたり除いたりするだけなので、
  * 空白でない k 文字目は元の文でも空白でない k 文字目。番地の覆いは長さを保つので、proseText の位置がそのまま使える。
  */
-const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined): KanjiRun[] => {
+/** 番地と、チームが並べた名前を空白で覆う。名前は読み手が 1 語と知っているので、前後は別の連なりになる。 */
+const maskedProse = (prose: string, profile: DocumentProfile | undefined, names: readonly string[]): string =>
+  maskSpans(maskAddresses(prose, profile), nameSpans(prose, names));
+
+/** 鉤括弧の中身が、ちょうどこの範囲（文の先頭からの位置）か。括弧でくくった漢字だけの語は、書き手が 1 つの名前として示したもの。 */
+const fillsQuote = (sentence: Sentence, start: number, end: number): boolean =>
+  quotedSpans(sentence.text).some((span) => span.start === start && span.end === end);
+
+const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names: readonly string[]): KanjiRun[] => {
   const prose = proseText(sentence);
   const printed = compacted(sentence.text, "char").offsets;
-  return [...maskAddresses(prose, profile).matchAll(KANJI_RUN)].map((match) => {
+  return [...maskedProse(prose, profile, names).matchAll(KANJI_RUN)].map((match) => {
     const before = prose.slice(0, match.index).replace(SPACE, "").length;
     const [start, last] = [printed[before], printed[before + match[0].length - 1]];
-    const span = start === undefined || last === undefined ? undefined : { start: sentence.span.start + start, end: sentence.span.start + last + 1 };
-    return { text: match[0], span };
+    if (start === undefined || last === undefined) return { text: match[0], span: undefined, quoted: false };
+    return { text: match[0], span: { start: sentence.span.start + start, end: sentence.span.start + last + 1 }, quoted: fillsQuote(sentence, start, last + 1) };
   });
 };
 
@@ -44,14 +55,15 @@ const isPlaceName = (tokens: readonly Token[], span: Span, topUnits: ReadonlySet
  * 住所か名前かは、助数詞を外した残りで決める（1日日本銀行の「日本銀行」）。品詞が無ければ判定しない。
  */
 const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, topUnits: ReadonlySet<string>): string => {
+  if (run.quoted) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
   const counter = leadingCounter(tokens, run.span.start, run.text);
   const rest = counter === undefined ? run.span : { start: counter.span.end, end: run.span.end };
   return isPlaceName(tokens, rest, topUnits) ? "" : run.text.slice(counter?.surface.length ?? 0);
 };
 
-const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, topUnits: ReadonlySet<string>): string =>
-  runsOf(sentence, profile)
+const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, topUnits: ReadonlySet<string>, names: readonly string[]): string =>
+  runsOf(sentence, profile, names)
     .map((run) => measuredRun(sentence.tokens, run, topUnits))
     .reduce((longest, run) => (run.length > longest.length ? run : longest), "");
 
@@ -62,7 +74,7 @@ const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, 
 export const kanjiRun: Detector = (doc, options): Finding[] => {
   const topUnits = new Set((doc.lexicons["prefecture-unit"] ?? []).map((entry) => entry.pattern));
   return doc.sentences
-    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile, topUnits) }))
+    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile, topUnits, doc.names ?? []) }))
     .filter(({ run }) => run.length > options.limit)
     .map(({ sentence, run }) => ({
       rule: "max-kanji-continuous",

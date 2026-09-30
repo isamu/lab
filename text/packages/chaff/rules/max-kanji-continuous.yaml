@@ -4,6 +4,7 @@ status: experimental
 how_to_find: kanji-run
 # 品詞があれば、住所（地名と数だけでできた連なり）と 1 つの名前（辞書の固有名詞 1 語、人の姓と名）を数えない。無くても文字だけで動く。
 uses: [pos]
+# chaff.yaml の names に並べた名前は連なりを切る。鉤括弧の中身がまるごと 1 つの連なりなら数えない（書き手が 1 つの名前と示している）。
 # 住所の先頭にしか来ない単位（都道府県）。地名の後ろに付けば、割られた町名ではなく地名の並び。
 extra_word_lists: [prefecture-unit]
 languages: [ja]
@@ -22,8 +23,8 @@ message:
   en: '"{word}" runs {count} kanji together (limit {limit})'
 
 how_to_fix:
-  ja: ひらがなを 1 つ挟むか、助詞で割ってください。「情報処理推進機構の認定試験」に。
-  en: Break it with a particle or kana.
+  ja: ひらがなを 1 つ挟むか、助詞で割ってください。「情報処理推進機構の認定試験」に。割れない正式名称なら、chaff.yaml の names に並べると数えません。鉤括弧でまるごとくくった名前（「英国大使館別荘記念公園」）も数えません。
+  en: Break it with a particle or kana. If it is an official name that cannot be broken, list it under names in chaff.yaml and it is not counted. A name that fills a 「」 quotation exactly is not counted either.
 
 levels: { strict: 6, normal: 8, relaxed: 12 }
 

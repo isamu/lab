@@ -76,7 +76,7 @@ gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-con
 gsi-maps-smartphone-howto  max-paragraph-length 1
 ietf-draft-httpapi-ratelimit-headers-10  max-paragraph-length 1, max-sentence-length 61, ngram-repetition 1, proper-noun-density 1, undefined-acronym 14
 jma-faq-typhoon  agentless-passive 4, concrete-evidence-density 4, max-paragraph-length 1, ngram-repetition 1
-jma-tokubetsu-keiho  max-kanji-continuous 1, max-sentence-length 2
+jma-tokubetsu-keiho  max-sentence-length 2
 jp-2011-056072-seiu-kenyo-gasa  hiragana-fukushi 2, max-paragraph-length 1, max-sentence-length 23, ngram-repetition 1, no-doubled-joshi 11, taigen-dome-in-prose 1
 k8s-overview-en  contraction-consistency 1, max-sentence-length 8, oxford-comma-consistency 2, proper-noun-density 1, undefined-acronym 4
 k8s-overview-ja  max-paragraph-length 1, max-sentence-length 3, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
@@ -97,8 +97,8 @@ loc-signal-new-online-2026-07  contraction-consistency 1, max-sentence-length 26
 meti-keiryoshi-exam-correction  agentless-passive 2, latin-spacing 2, max-sentence-length 2
 meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5
 mext-heatstroke-after-holidays  hiragana-fukushi 1, max-kanji-continuous 6, max-paragraph-length 2, max-sentence-length 18, ngram-repetition 1, preamble-length 1
-mhlw-norovirus-qa  agentless-passive 18, concrete-evidence-density 5, latin-spacing 1, max-kanji-continuous 13, max-paragraph-length 2, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 3, no-mixed-desumasu 3, repeated-conjunction 1, undefined-acronym 5
-mhlw-pubcomment-rodohoken  agentless-passive 1, latin-spacing 1, max-kanji-continuous 6, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
+mhlw-norovirus-qa  agentless-passive 18, concrete-evidence-density 5, latin-spacing 1, max-kanji-continuous 12, max-paragraph-length 2, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 3, no-mixed-desumasu 3, repeated-conjunction 1, undefined-acronym 5
+mhlw-pubcomment-rodohoken  agentless-passive 1, latin-spacing 1, max-kanji-continuous 5, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
 minpo.txt  clean
 mit-ocw-6-0001-syllabus  agentless-passive 13, max-paragraph-length 2, max-sentence-length 6, proper-noun-density 1
 mlit-press-planned-suspension  max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 3, no-doubled-joshi 2
@@ -115,7 +115,7 @@ nttcom-onboarding-week1  agentless-passive 1, concrete-evidence-density 6, hirag
 nws-heat-wave-safety  agentless-passive 4, concrete-evidence-density 3, contraction-consistency 4, max-paragraph-length 1, max-sentence-length 6, preamble-length 1, proper-noun-density 1
 oecd-global-drought-outlook-summary  adverb-overuse 1, agentless-passive 2, max-paragraph-length 2, max-sentence-length 12, proper-noun-density 1
 pep-0020-zen-of-python  proper-noun-density 1
-ppc-guidelines-tsusoku  agentless-passive 36, duplicate-definition 14, latin-spacing 14, max-kanji-continuous 565, max-sentence-length 502, ngram-repetition 1, no-doubled-joshi 103, repeated-conjunction 9, taigen-dome-in-prose 1, undefined-acronym 3
+ppc-guidelines-tsusoku  agentless-passive 36, duplicate-definition 14, latin-spacing 14, max-kanji-continuous 559, max-sentence-length 502, ngram-repetition 1, no-doubled-joshi 103, repeated-conjunction 9, taigen-dome-in-prose 1, undefined-acronym 3
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-paragraph-length 2, max-sentence-length 1, oxford-comma-consistency 1
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, proper-noun-density 1, undefined-acronym 22

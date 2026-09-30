@@ -1,7 +1,8 @@
 import { proseText } from "../measure.ts";
 import { joinWords } from "./word-list.ts";
 import { wordsOf } from "./structure.ts";
-import type { Detector, Finding, Sentence, Token } from "../plugin.ts";
+import { nameSpans } from "../team-names.ts";
+import type { Detector, Finding, Sentence, Span, Token } from "../plugin.ts";
 
 /**
  * チームの言葉。社内でしか通じない語を、チームが chaff.yaml に自分で並べる。
@@ -76,8 +77,23 @@ const isProperNoun = (token: Token): boolean => token.pos === "PROPN";
  * spec は未知語率としていたが、**品詞解析があれば PROPN を数えるだけで足りる**。
  * 辞書を別に持つ必要はない。
  */
+const within = (spans: readonly Span[], token: Token): Span | undefined => spans.find((span) => token.span.start >= span.start && token.span.end <= span.end);
+
+/** 並べた名前は、何語に割れても 1 つの固有名詞（Bank of England は 2 つでなく 1 つ）。名前の中の 2 語目からを落とす。 */
+const properNounsOf = (sentence: Sentence, names: readonly string[]): Token[] => {
+  const named = nameSpans(sentence.text, names).map((span) => ({ start: sentence.span.start + span.start, end: sentence.span.start + span.end }));
+  const counted = new Set<Span>();
+  return (sentence.tokens ?? []).filter(isProperNoun).filter((token) => {
+    const name = within(named, token);
+    if (name === undefined) return true;
+    if (counted.has(name)) return false;
+    counted.add(name);
+    return true;
+  });
+};
+
 export const properNounDensity: Detector = (doc, options): Finding[] => {
-  const hits = doc.sentences.flatMap((sentence) => (sentence.tokens ?? []).filter(isProperNoun).map((token) => ({ sentence, token })));
+  const hits = doc.sentences.flatMap((sentence) => properNounsOf(sentence, doc.names ?? []).map((token) => ({ sentence, token })));
   const length = wordsOf(doc);
   const rate = length === 0 ? 0 : Math.round((hits.length / length) * PER);
   const first = hits[0];

@@ -215,6 +215,34 @@ Both are experimental, so give `internal-jargon` and `required-sections` a stren
 `required_sections` is an `error` by default.
 It is not a matter of taste: the team decided on it and the document does not have it.
 
+## Listing your team's names
+
+An official name cannot be broken up: 「個人情報保護委員会」 is one name, however many kanji it runs to.
+The dictionary splits such names into common nouns (厚生 + 労働省), so chaff cannot tell that they are names.
+Your team knows which names are its own, so list them under `names`.
+
+```yaml
+names:
+  - 個人情報保護委員会
+  - Bank of England
+  - Ministry of Land, Infrastructure, Transport and Tourism
+```
+
+A listed name matches as written, capital letters included, and these rules read it as one name:
+
+| Rule | What happens to a listed name |
+| --- | --- |
+| `max-kanji-continuous` | The name inside a run of kanji is not counted. Kanji before or after it are measured as separate runs |
+| `ngram-repetition` | Phrases that touch the name are not counted. Writing the name many times is not repeated phrasing |
+| `undefined-acronym` | A listed name (`JAXA`), and an acronym inside one (`NTT` in `NTT Docomo`), need no expansion |
+| `proper-noun-density` | A name split into several words counts as one proper noun. Names still count, so the density check stays |
+
+Kanji outside the name are still counted: in 「個人情報保護委員会事務局総務課長補佐」 the rule measures 「事務局総務課長補佐」.
+`names` is a list of names; a number such as `2025` is read as text. Anything else is skipped, and the run says so first.
+
+A run of kanji that fills a 「」 or 『』 quotation exactly is not counted, even without `names`.
+In 「英国大使館別荘記念公園」 the writer has marked it as one name. If the quotation also holds kana, the runs inside it are counted as before.
+
 ## Changing settings per path
 
 One place can hold different kinds of documents. `by_path` changes the settings per path.
