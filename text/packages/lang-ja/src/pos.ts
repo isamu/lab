@@ -245,12 +245,7 @@ export const tokenize = (text: string): Token[] | undefined => {
   const sequence = read.map(({ morpheme }) => morpheme);
   const inflections = read.map(({ morpheme, start }) => inflectionOf(morpheme, start));
   return read.map(({ morpheme, start }, index) =>
-    toToken(
-      morpheme,
-      start,
-      readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index),
-      isInflectedEcho(inflections, index),
-    ),
+    toToken(morpheme, start, readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index), isInflectedEcho(inflections, index)),
   );
 };
 
