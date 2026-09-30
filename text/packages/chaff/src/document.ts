@@ -18,6 +18,8 @@ import { tokenizedLexicons } from "./lexicon-tokens.ts";
 import { plainSource } from "./plain-source.ts";
 import { inPageAnchors, isInPageNavigation, isNavigationList, type InPageAnchors } from "./in-page-nav.ts";
 import { eachPreOrder } from "./tree-walk.ts";
+import { emailParts, emailVocabulary } from "./email-parts.ts";
+import { cutTextSpans } from "./span-cut.ts";
 import type { BulletList, LanguageAdapter, Paragraph, ProseDocument, Section, Sentence, Span, StructureNode, DocumentProfile, Token } from "./plugin.ts";
 
 type Place = { readonly offset?: number | undefined };
@@ -134,13 +136,14 @@ const textOf = (node: Node, source: string): string => {
 
 export type Heading = { readonly depth: number; readonly text: string; readonly start: number; readonly end: number };
 
-const headingsOf = (root: Node, source: string): Heading[] => {
+/** 引用した返信（outside）の中の見出しは、ほかの人の文書の見出しなので数えない。 */
+const headingsOf = (root: Node, source: string, outside: readonly Span[] = []): Heading[] => {
   const found: Heading[] = [];
   eachPreOrder(root, (node) => {
     if (node.type !== "heading") return;
     const span = spanOf(node);
     const depth = typeof node === "object" && "depth" in node && typeof node.depth === "number" ? node.depth : 1;
-    if (span === undefined) return;
+    if (span === undefined || startsInside(span, outside)) return;
     // ATX（行頭が #）なら閉じの # も外す。setext の見出しの末尾の # は言葉なので残す。
     const read = source.startsWith("#", span.start) ? atxHeadingText : headingText;
     const text = read(textOf(node, source));
@@ -311,14 +314,19 @@ const proseOf = (source: string, masked: readonly Span[]): string => {
 const documentOf = (path: string, source: string, adapter: LanguageAdapter, team: TeamRules, profile: DocumentProfile | undefined): ProseDocument => {
   const root = parse(source);
   const anchors = inPageAnchors(root);
+  const emailLayout = emailParts(source, emailVocabulary(adapter.lexicons));
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
   // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
   // テキストの文書は、ページのヘッダーとフッターも本文ではない（Markdown には改ページが無い）。
-  const blocks = [...collectMasks(root, source, anchors), ...(isMarkdownPath(path) ? [] : pageFurniture(source))];
-  const masked = [...blocks, ...emphasisSpans(root, source)];
-  const prose = proseOf(source, masked);
-  // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。
-  const paragraphSpans = spansOfType(root, "paragraph", (node) => !isInPageNavigation(node, anchors));
+  const blocks = [...collectMasks(root, source, anchors), ...(isMarkdownPath(path) ? [] : pageFurniture(source)), ...emailLayout.furniture];
+  const prose = proseOf(source, [...blocks, ...emphasisSpans(root, source)]);
+  // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。メールのヘッダーや署名の行は段落から切り取る。
+  const paragraphSpans = cutTextSpans(
+    spansOfType(root, "paragraph", (node) => !isInPageNavigation(node, anchors)),
+    emailLayout.furniture,
+    source,
+  );
+  const headings = headingsOf(root, source, emailLayout.replyQuotes);
   const listItems = spansOfType(root, "listItem");
   // Markdown は段落を流し込んで表示するので、段落の中の改行は読み手に見えない。テキストの文書は行をそのまま見せる（法令は 1 行 1 号）。
   const softBreaks = isMarkdownPath(path) ? unmaskedSoftBreaks(source, prose) : [];
@@ -339,7 +347,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     language: adapter.id,
     lengthUnit: adapter.capabilities.lengthUnit,
     capabilities: adapter.capabilities,
-    sections: sectionsOf(headingsOf(root, source), sentences, strongSpans(root, blocks), source.length, (heading) => headingTokensOf(adapter, tagged, heading)),
+    sections: sectionsOf(headings, sentences, strongSpans(root, blocks), source.length, (heading) => headingTokensOf(adapter, tagged, heading)),
     sentences,
     listSpans: listItems,
     paragraphs: paragraphsOf(prose, paragraphSpans, sentences, listItems),
@@ -359,7 +367,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
                 source,
                 language: adapter.id,
                 // テキストの文書は、ページの飾りを覆って読む。フッターの「Section 9」を木の節にしない。
-                outline: isMarkdownPath(path) ? outlineOf(root, source) : textOutline(source),
+                outline: isMarkdownPath(path) ? outlineOf(root, source, emailLayout.replyQuotes) : textOutline(source, emailLayout.replyQuotes),
                 markdown: isMarkdownPath(path),
                 profile,
               },
@@ -369,6 +377,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     },
     profile,
     prose,
+    replyQuotes: emailLayout.replyQuotes,
   };
 };
 
@@ -387,10 +396,12 @@ export const buildDocument = (
 /** 番号を探してはいけない範囲。コードの中の「第3条」は条ではなく、参照でもない。 */
 const OPAQUE = ["code", "inlineCode", "html", "yaml", "toml"];
 
-const outlineOf = (root: Node, source: string): Outline => ({
-  headings: headingsOf(root, source),
-  opaque: OPAQUE.flatMap((type) => spansOfType(root, type)),
+/** 引用した返信も中を読まない。ほかの人の言葉の中の定義や番号は、この文書のものではない。 */
+const outlineOf = (root: Node, source: string, replyQuotes: readonly Span[]): Outline => ({
+  headings: headingsOf(root, source, replyQuotes),
+  opaque: [...OPAQUE.flatMap((type) => spansOfType(root, type)), ...replyQuotes],
 });
 
-/** 構造を読むための Markdown の手がかり。見出しと、中を読まない範囲。 */
-export const markdownOutline = (source: string): Outline => outlineOf(parse(source), source);
+/** 構造を読むための Markdown の手がかり。見出しと、中を読まない範囲。返信の引用は、言語パッケージの語彙表で見分ける。 */
+export const markdownOutline = (source: string, lexicons: LanguageAdapter["lexicons"] = {}): Outline =>
+  outlineOf(parse(source), source, emailParts(source, emailVocabulary(lexicons)).replyQuotes);

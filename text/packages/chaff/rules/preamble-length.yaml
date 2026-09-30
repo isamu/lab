@@ -2,6 +2,7 @@ id: preamble-length
 layer: L1
 status: stable
 how_to_find: preamble-length
+requires: [headings]
 severity: info
 
 name:

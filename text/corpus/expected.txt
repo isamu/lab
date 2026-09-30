@@ -132,7 +132,7 @@ meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-le
 mext-heatstroke-after-holidays  hiragana-fukushi 1, max-kanji-continuous 5, max-paragraph-length 2, max-sentence-length 18, ngram-repetition 1, preamble-length 1
 mhlw-icd-committee-26-minutes  agentless-passive 5, max-kanji-continuous 24, max-sentence-length 34, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 1, sasete-itadaku 38, undefined-acronym 3
 mhlw-kikan-gyomu-shokuin-boshu  max-kanji-continuous 6
-mhlw-norovirus-qa  latin-spacing 1, max-kanji-continuous 12, max-paragraph-length 1, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 3, no-mixed-desumasu 2, repeated-conjunction 1, undefined-acronym 5
+mhlw-norovirus-qa  latin-spacing 1, max-kanji-continuous 12, max-paragraph-length 1, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 3, no-mixed-desumasu 3, repeated-conjunction 1, undefined-acronym 5
 mhlw-pubcomment-rodohoken  agentless-passive 1, max-kanji-continuous 5, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
 minpo.txt  clean
 mit-ocw-6-0001-syllabus  agentless-passive 13, max-paragraph-length 1, max-sentence-length 6, proper-noun-density 1
@@ -158,7 +158,7 @@ openapi-spec-3-1-0  contraction-consistency 1, heading-echo 4, max-sentence-leng
 pep-0020-zen-of-python  proper-noun-density 1
 plainlanguage-use-tables  agentless-passive 2, contraction-consistency 1, dangling-reference 1, max-sentence-length 5, numbering-gap 1, preamble-length 1
 ppc-guidelines-tsusoku  duplicate-definition 11, latin-spacing 3, max-sentence-length 9, repeated-conjunction 9, undefined-acronym 4
-python-code-quality-list-2016-03  agentless-passive 15, duplicate-definition 1, max-sentence-length 42, ngram-repetition 1, preamble-length 1, proper-noun-density 1, undefined-acronym 3
+python-code-quality-list-2016-03  adverb-overuse 1, agentless-passive 13, max-sentence-length 23, ngram-repetition 1, preamble-length 1, proper-noun-density 1
 react-ja-thinking  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 2
 readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-sentence-length 1, oxford-comma-consistency 1
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 81, proper-noun-density 1, undefined-acronym 22
