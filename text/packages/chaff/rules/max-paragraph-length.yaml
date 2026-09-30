@@ -9,8 +9,8 @@ name:
   en: Paragraph too long
 
 why:
-  ja: 1 段落に文を詰めると、読み手はどこで息継ぎしていいか分からなくなります。
-  en: A dense paragraph gives the reader nowhere to pause.
+  ja: 1 段落に文を詰めると、読み手はどこで息継ぎしていいか分からなくなります。短い文をいくつ並べても壁にはならないので、段落が普通の長さの文を上限の数だけ並べたより長いときだけ指摘します。
+  en: A dense paragraph gives the reader nowhere to pause. Short sentences do not make a wall, so it is reported only when it is also longer than that many sentences of ordinary length.
 
 message:
   ja: この段落は {count} 文あります（{limit} 文まで）
@@ -21,6 +21,13 @@ how_to_fix:
   en: Split it where the topic turns.
 
 levels: { strict: 3, normal: 5, relaxed: 8 }
+
+# 普通の長さの文 1 つの長さ。単位は adapter の lengthUnit（日本語は文字、英語は語）。
+# 文の数が上限を超えても、段落の長さが「上限 × この長さ」以下なら指摘しない。子ども向けの文章のように短い文を重ねた段落は、息継ぎの場所がいくらでもある。
+# corpus で、これより短い段落は短い文の積み重ね（子ども向けの解説、リリースの一覧、Q&A）だけだった。上限と掛けるので、段階・ジャンル・chaff.yaml の数値がそのまま効く。
+full_sentence:
+  ja: 70
+  en: 18
 
 # 条文・判決・論文の段落は、一つの規定や論点をまとめて書く。corpus のその種類の文書で、normal が最も長い一握りの段落だけを指すように測って置いた。
 by_genre:

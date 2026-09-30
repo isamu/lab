@@ -99,7 +99,6 @@ ja/email  rows-swapped  found
 ja/email  plain-in-polite  found
 ja/email  no-nested  found
 ja/email  space-strayed  found
-ja/email  paragraphs-joined  found
 ja/email  emoji-decorated  found
 ja/email  commas-dashed  found
 ja/email  jargon-used  found
@@ -113,7 +112,6 @@ ja/figures  item-dropped  found
 ja/figures  polite-in-plain  found
 ja/figures  no-nested  found
 ja/figures  space-strayed  found
-ja/figures  paragraphs-joined  found
 ja/figures  heading-echoed  found
 ja/figures  bold-heavy  found
 ja/figures  jargon-used  found
@@ -254,6 +252,7 @@ en/design  number-skipped  found
 en/design  defined-twice  found
 en/design  sentences-joined  found
 en/design  gloss-dropped  found
+en/design  paragraphs-joined  found
 en/design  heading-echoed  found
 en/design  section-dropped  found
 en/design  oxford-flipped  found
@@ -370,6 +369,7 @@ en/readme  intensified  found
 en/readme  hedges-stacked  found
 en/requirements  reference-broken  found
 en/requirements  number-skipped  found
+en/requirements  paragraphs-joined  found
 en/requirements  heading-echoed  found
 en/requirements  section-dropped  found
 en/requirements  heading-recased  found
