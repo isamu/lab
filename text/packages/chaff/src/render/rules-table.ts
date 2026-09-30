@@ -61,9 +61,12 @@ const levelNow = (now: Record<string, unknown>): string => {
 
 type Row = { readonly id: string; readonly level: string; readonly runs: string; readonly summary: string };
 
+/** A rule for one language only does not run on the others' documents, whatever its level says. */
+const forLanguage = (rule: RuleDefinition, language: string): boolean => rule.languages === undefined || rule.languages.includes(language);
+
 const rowOf = (rule: RuleDefinition, config: Config, language: string, genre: string): Row => ({
   id: rule.id,
-  level: levelNow(nowFor(rule, config, language, genre)),
+  level: forLanguage(rule, language) ? levelNow(nowFor(rule, config, language, genre)) : `off (${(rule.languages ?? []).join("/")})`,
   runs: TEXT[uiLanguageOf(language)].runsWhen[runsWhenOf(rule)],
   summary: rule.guide?.summary[uiLanguageOf(language)] ?? "",
 });
