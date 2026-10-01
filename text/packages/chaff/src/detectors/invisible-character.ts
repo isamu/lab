@@ -32,15 +32,20 @@ const kindOf = (char: string): InvisibleKind | undefined => KIND_OF.find(([patte
 /** 接合子（ZWJ・ZWNJ）で字の形を変える文字体系。アラビア文字やインドの文字では、見えない接合子が綴りの一部。 */
 const JOINING_SCRIPT = /[\p{L}\p{M}]/u;
 const NON_JOINING_SCRIPT = /[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+/** どの文字体系にも付くアクセント（U+0301 など）。ラテン文字の後ろの接合子を、接合子を使う文字体系のものと読まない。 */
+const INHERITED = /\p{Script=Inherited}/u;
 
 /** 右から左に書く文字。この字の隣の向きの印（LRM・RLM）は、英数字と混ぜて正しく並べるためのもの。 */
 const RIGHT_TO_LEFT = /[\p{Script=Hebrew}\p{Script=Arabic}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}\p{Script=Samaritan}]/u;
 
+/** 字の向きを強制する印（LRO・RLO）。右から左の文字の隣でも、見える順を入れ替えるのに使えるので、いつも指摘する。 */
+const OVERRIDE = /[\u202D\u202E]/u;
+
 /** 絵文字の部品。ZWJ でつないだ絵文字（家族・職業）と、肌の色や異体字の指定を挟んだもの。 */
 const PICTOGRAPH = /[\p{Extended_Pictographic}\p{Emoji_Modifier}\uFE0F]/u;
 
-/** 黒い旗の絵文字の後ろにタグ文字を並べた、地域の旗（イングランドなど）の書きかけ。地域の名は六字まで。 */
-const FLAG_SO_FAR = /\u{1F3F4}[\u{E0020}-\u{E007E}]{0,6}$/u;
+/** 黒い旗の絵文字。後ろにタグ文字を並べて地域の旗（イングランドなど）を書く。地域の名は六字までで、旗は字の数で十四単位に収まる。 */
+const BLACK_FLAG = String.fromCodePoint(0x1f3f4);
 const FLAG_REACH = 14;
 const TAG = /[\u{E0020}-\u{E007F}]/u;
 
@@ -67,11 +72,15 @@ const charAt = (source: string, at: number): string => {
   return code === undefined ? "" : String.fromCodePoint(code);
 };
 
-const isJoiningLetter = (char: string): boolean => JOINING_SCRIPT.test(char) && !NON_JOINING_SCRIPT.test(char);
+const isJoiningLetter = (char: string): boolean => JOINING_SCRIPT.test(char) && !NON_JOINING_SCRIPT.test(char) && !INHERITED.test(char);
 
 const isJapaneseSide = (char: string): boolean => isJapanese(char) || JAPANESE_MARK.test(char);
 
-const isInFlag = (source: string, at: number): boolean => FLAG_SO_FAR.test(source.slice(Math.max(0, at - FLAG_REACH), at));
+/** タグ文字の並びをさかのぼった先が黒い旗なら、地域の旗の中。 */
+const isInFlag = (source: string, at: number): boolean => {
+  const before = [...source.slice(Math.max(0, at - FLAG_REACH), at)];
+  return before[before.findLastIndex((char) => !TAG.test(char))] === BLACK_FLAG;
+};
 
 /** 字が普通に使う異体字の指定は一つ。二つ以上続く指定は、字に何かを隠した並び。 */
 const isLoneSelector = (source: string, at: number, length: number): boolean =>
@@ -79,17 +88,29 @@ const isLoneSelector = (source: string, at: number, length: number): boolean =>
 
 const lineBefore = (source: string, at: number): string => source.slice(source.lastIndexOf("\n", at - 1) + 1, at);
 
-/** 書き手が意味を持たせて置いた見えない字か。そうでないものだけを指摘する。 */
-const isIntended = (source: string, at: number, char: string, kind: InvisibleKind): boolean => {
-  const [before, after] = [charBefore(source, at), charAt(source, at + char.length)];
-  if (char === "\u200D") return (PICTOGRAPH.test(before) && PICTOGRAPH.test(after)) || isJoiningLetter(before) || isJoiningLetter(after);
-  if (char === "\u200C") return isJoiningLetter(before) || isJoiningLetter(after);
-  if (/^[\u200E\u200F\u061C]$/u.test(char)) return RIGHT_TO_LEFT.test(before) || RIGHT_TO_LEFT.test(after);
-  if (kind === "control") return LAYOUT_CONTROL.test(char);
-  if (kind === "hidden") return TAG.test(char) ? isInFlag(source, at) : isLoneSelector(source, at, char.length);
-  if (kind === "nbsp") return !BLOCK_MARKER.test(lineBefore(source, at)) && !isJapaneseSide(before) && !isJapaneseSide(after);
-  return false;
+/** 見えない字一つと、その前後の字。 */
+type Place = { readonly source: string; readonly at: number; readonly char: string; readonly before: string; readonly after: string };
+
+const ZERO_WIDTH_JOINER = "\u200D";
+const ZERO_WIDTH_NON_JOINER = "\u200C";
+
+const joinsLetters = ({ before, after }: Place): boolean => isJoiningLetter(before) || isJoiningLetter(after);
+
+/** 種類ごとの、書き手が意味を持たせて置いた見えない字。そうでないものだけを指摘する。 */
+const INTENDED: Readonly<Record<InvisibleKind, (place: Place) => boolean>> = {
+  "zero-width": (place) => {
+    if (place.char === ZERO_WIDTH_JOINER) return (PICTOGRAPH.test(place.before) && PICTOGRAPH.test(place.after)) || joinsLetters(place);
+    return place.char === ZERO_WIDTH_NON_JOINER && joinsLetters(place);
+  },
+  "soft-hyphen": () => false,
+  direction: ({ char, before, after }) => !OVERRIDE.test(char) && (RIGHT_TO_LEFT.test(before) || RIGHT_TO_LEFT.test(after)),
+  control: ({ char }) => LAYOUT_CONTROL.test(char),
+  hidden: ({ source, at, char }) => (TAG.test(char) ? isInFlag(source, at) : isLoneSelector(source, at, char.length)),
+  nbsp: ({ source, at, before, after }) => !BLOCK_MARKER.test(lineBefore(source, at)) && !isJapaneseSide(before) && !isJapaneseSide(after),
 };
+
+const isIntended = (source: string, at: number, char: string, kind: InvisibleKind): boolean =>
+  INTENDED[kind]({ source, at, char, before: charBefore(source, at), after: charAt(source, at + char.length) });
 
 export type InvisibleRun = { readonly span: Span; readonly kind: InvisibleKind; readonly codes: readonly string[] };
 

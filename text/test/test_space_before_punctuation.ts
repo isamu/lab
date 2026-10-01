@@ -23,6 +23,10 @@ describe("space-before-punctuation: 句読点の前に空白がある", () => {
     assert.deepEqual(marksIn('Is it done ? Yes ; it is ! He said "fine ." (see above .)'), ["?", ";", "!", ".", "."]);
   });
 
+  it("閉じ括弧や閉じ引用符の後ろの空白も数える", () => {
+    assert.deepEqual(marksIn('The status is "approved" . Submit Form A (revised) , then wait.'), [".", ","]);
+  });
+
   it("コロンは欄の印として空けるので見ない", () => {
     assert.deepEqual(marksIn("Note : read this. ISSN : 1234."), []);
   });

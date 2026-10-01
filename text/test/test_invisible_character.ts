@@ -42,6 +42,15 @@ describe("invisible-character: 見えない字がある", () => {
     assert.deepEqual(kindsIn("the word שלום\u200E (peace) and مرحبا\u200F!"), []);
   });
 
+  it("右から左の文字を囲む向きの分離（RLI・PDI）は書き方。向きを強制する印（RLO）は隣に右から左の文字があっても指摘する", () => {
+    assert.deepEqual(kindsIn("See \u2067שלום\u2069 today."), []);
+    assert.deepEqual(kindsIn("name \u202Eשלום"), ["direction U+202E"]);
+  });
+
+  it("アクセント（結合文字）の後ろの ZWJ・ZWNJ は、ラテン文字の後ろと同じに指摘する", () => {
+    assert.deepEqual(kindsIn("Cafe\u0301\u200Dmenu e\u0301\u200Cmail"), ["zero-width U+200D", "zero-width U+200C"]);
+  });
+
   it("絵文字の中の ZWJ、アラビア文字やインドの文字の接合子は綴りの一部", () => {
     assert.deepEqual(kindsIn("family 👨\u200D👩\u200D👧 and 👩🏽\u200D💻, क्\u200Dष, می\u200Cخواهم"), []);
   });
@@ -53,6 +62,8 @@ describe("invisible-character: 見えない字がある", () => {
   it("地域の旗のタグ文字は書き方の一部、ふつうの字の後ろのタグ文字は隠れた文", () => {
     const flag = "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}";
     assert.deepEqual(kindsIn(`England ${flag} flag`), []);
+    const texas = "\u{1F3F4}\u{E0075}\u{E0073}\u{E0074}\u{E0078}\u{E007F}";
+    assert.deepEqual(kindsIn(`Texas ${texas} flag`), []);
     assert.deepEqual(kindsIn("Hello\u{E0069}\u{E0067}\u{E006E} world"), ["hidden U+E0069 U+E0067 U+E006E"]);
   });
 
