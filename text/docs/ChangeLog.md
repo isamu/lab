@@ -4,6 +4,20 @@ Newest first.
 
 ## Unreleased
 
+### Meeting notes leave `agentless-passive` out, press releases `proper-noun-density` (#170)
+
+Two presets from the corpus, both for experimental rules, so the findings of a default run do not change; only the
+reason in the "did not run" list does (the genre, instead of "still experimental").
+
+- **business/meeting-notes: `agentless-passive` off.** Minutes record what the meeting did (「了承された」, "the meeting
+  was held"); the actor is the meeting by the form. It fired on nearly every set of minutes in the corpus, English
+  (FOMC, ASF board, Rust lang team, a TC39 agenda, Node.js TSC) and Japanese (デジタル庁 councils, 厚労省 ICD committee,
+  Entaku.rb).
+- **business/press-release: `proper-noun-density` off.** A release names the agency, the people quoted, the mission
+  and the place; that is its news. Every English release in the corpus (GSA, NASA, NOAA) was over the limit.
+
+The genres that existed before presets now may carry a level, but only `off` on an experimental rule; the test says so.
+
 ### `fullwidth-alnum-consistency` leaves the rest of a version number to its name (#170)
 
 In a document that writes 第１条 in full-width digits, the 2 of 「TLS1.2」 was reported as a half-width digit. A digit run
