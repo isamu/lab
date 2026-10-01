@@ -1,6 +1,6 @@
 import type { LexiconEntry, Sentence, Token } from "../plugin.ts";
 import { proseText } from "../measure.ts";
-import { straightApostrophes } from "../orthography.ts";
+import { escapeRegExp, straightApostrophes } from "../orthography.ts";
 
 /** 活用する品詞。"best" を "good" と同じ語にはしない。 */
 const INFLECTING = new Set(["VERB", "AUX"]);
@@ -47,6 +47,20 @@ export const entryRanges = (sentence: Sentence, entry: LexiconEntry): TokenRange
   const words = entry.tokens;
   if (tokens === undefined || words === undefined || words.length === 0) return [];
   return tokens.flatMap((_token, start) => (runsAt(tokens, words, start) ? [{ start, end: start + words.length }] : []));
+};
+
+const endsInText = (text: string, word: string): number[] =>
+  word === "" ? [] : [...text.matchAll(new RegExp(escapeRegExp(word), "gu"))].map((match) => match.index + word.length);
+
+/**
+ * 語彙の語が文の中で終わる位置（文の中の字の位置）。出現ごとに一つ。終わりの位置で数えると、重なる二つの語
+ * （「させていただく」と「せていただく」）が同じ一回の出現を二度数えない。品詞が無ければ、空白をまとめた文字列の上の位置。
+ */
+export const entryEnds = (sentence: Sentence, entry: LexiconEntry): number[] => {
+  const tokens = sentence.tokens;
+  const words = entry.tokens;
+  if (tokens === undefined || words === undefined || words.length === 0) return endsInText(comparableText(sentence), comparableWords(entry.pattern));
+  return entryRanges(sentence, entry).map((range) => tokens[range.end - 1]?.span.end ?? range.end);
 };
 
 /** 語彙の語が、文の end 番目の語のちょうど手前で終わるか（「SES との最大」の「との」）。品詞が無ければ位置を言えないので当たらない。 */

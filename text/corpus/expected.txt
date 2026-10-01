@@ -130,7 +130,7 @@ logingov-help-face-or-touch-unlock  contraction-consistency 1, max-sentence-leng
 meti-keiryoshi-exam-correction  latin-spacing 1, max-sentence-length 2
 meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5, unbalanced-bracket 1
 mext-heatstroke-after-holidays  fullwidth-alnum-consistency 1, hiragana-fukushi 1, max-kanji-continuous 5, max-paragraph-length 2, max-sentence-length 18, ngram-repetition 1, preamble-length 1
-mhlw-icd-committee-26-minutes  agentless-passive 5, fullwidth-alnum-consistency 2, max-kanji-continuous 24, max-sentence-length 34, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 1, sasete-itadaku 38, unbalanced-bracket 2, undefined-acronym 3
+mhlw-icd-committee-26-minutes  agentless-passive 5, fullwidth-alnum-consistency 2, max-kanji-continuous 24, max-sentence-length 34, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 1, sasete-itadaku 42, unbalanced-bracket 2, undefined-acronym 3
 mhlw-kikan-gyomu-shokuin-boshu  fullwidth-alnum-consistency 3, max-kanji-continuous 6, unbalanced-bracket 1
 mhlw-norovirus-qa  fullwidth-alnum-consistency 1, kutoten-consistency 1, latin-spacing 1, max-kanji-continuous 12, max-paragraph-length 1, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 3, no-mixed-desumasu 3, repeated-conjunction 1, unbalanced-bracket 2, undefined-acronym 5
 mhlw-pubcomment-rodohoken  agentless-passive 1, broken-link 1, fullwidth-alnum-consistency 4, heading-level-skip 1, max-kanji-continuous 5, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
