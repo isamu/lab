@@ -4,6 +4,7 @@ import { CONFIG_FILE, type Config } from "../config/load.ts";
 import { modulePathOf } from "../custom/module-path.ts";
 import { loadGenres } from "../genre-load.ts";
 import { importDefault } from "./import-default.ts";
+import { staysInside } from "./real-path.ts";
 import { isPluginPath, pluginNameOfPackage } from "./plugin-name.ts";
 import { parsePlugin, type ParsedPlugin, type PluginOrigin, type PluginProblem } from "./plugin-parse.ts";
 
@@ -33,7 +34,8 @@ const locate = (written: string, baseDir: string): Located => {
     const path = modulePathOf(written, baseDir);
     if ("refusal" in path) return problemOf("outside", written);
     const file = resolveFrom(baseDir, path.file);
-    return file === undefined ? problemOf("not-found", written) : { origin: { written, file, expectedName: undefined } };
+    if (file === undefined) return problemOf("not-found", written);
+    return staysInside(written, file, baseDir) ? { origin: { written, file, expectedName: undefined } } : problemOf("outside", written);
   }
   const expectedName = pluginNameOfPackage(written);
   if (expectedName === undefined) return problemOf("bad-specifier", written);

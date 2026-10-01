@@ -1,11 +1,13 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { modulePathOf } from "../packages/chaff/src/custom/module-path.ts";
 import { parseCustomRules } from "../packages/chaff/src/custom/parse.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { detectorExport } from "../packages/chaff/src/extension/rule-export.ts";
+import { staysInside } from "../packages/chaff/src/extension/real-path.ts";
 import { moduleDetector, PluginRuleFailure, type UntrustedDetector } from "../packages/chaff/src/extension/module-detector.ts";
 import { failureReason } from "../packages/chaff/src/extension/failure-text.ts";
 import { API_VERSION, defineRule, type Detector } from "../packages/chaff/src/api.ts";
@@ -54,6 +56,21 @@ describe("type: module custom rules", () => {
         const path = modulePathOf(written, PROJECT);
         assert.deepEqual(path, file === undefined ? { refusal: "outside" } : { file });
       });
+    });
+  });
+
+  describe("staysInside: the same check on real paths, so a link cannot lead outside", () => {
+    it("refuses a relative path through a link to outside; keeps an absolute one", () => {
+      const root = mkdtempSync(join(tmpdir(), "chaff-link-"));
+      const [project, outside] = [join(root, "project"), join(root, "outside")];
+      mkdirSync(join(project, "rules"), { recursive: true });
+      mkdirSync(outside);
+      writeFileSync(join(project, "rules", "in.mjs"), "export default () => [];\n");
+      writeFileSync(join(outside, "out.mjs"), "export default () => [];\n");
+      symlinkSync(outside, join(project, "linked"), "junction");
+      assert.equal(staysInside("./rules/in.mjs", join(project, "rules", "in.mjs"), project), true);
+      assert.equal(staysInside("./linked/out.mjs", join(project, "linked", "out.mjs"), project), false);
+      assert.equal(staysInside(join(outside, "out.mjs"), join(outside, "out.mjs"), project), true);
     });
   });
 

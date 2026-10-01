@@ -8,7 +8,8 @@ export type ModulePathRefusal = "outside";
 
 export type ModulePath = { readonly file: string } | { readonly refusal: ModulePathRefusal };
 
-const isInside = (dir: string, file: string): boolean => {
+/** Whether file is inside dir (dir itself is not). Reads no file: the same check runs on real paths at load time. */
+export const isInside = (dir: string, file: string): boolean => {
   const fromDir = relative(dir, file);
   const leaves = fromDir === ".." || fromDir.startsWith(`..${sep}`);
   return fromDir !== "" && !leaves && !isAbsolute(fromDir);

@@ -146,6 +146,7 @@ describe("the plugin API", () => {
       ["undefined", undefined, "not-a-list"],
       ["one finding, not a list", { start: 0 }, "not-a-list"],
       ["a number in the list", [3], "not-a-finding"],
+      ["a hole in a sparse list", new Array<unknown>(1), "not-a-finding"],
       ["no start", [{ end: 3 }], "bad-start"],
       ["a start past the end", [{ start: SOURCE.length + 1 }], "bad-start"],
       ["a start that is not whole", [{ start: 1.5 }], "bad-start"],
