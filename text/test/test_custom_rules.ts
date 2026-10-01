@@ -206,6 +206,17 @@ describe("custom rules", () => {
       assert.deepEqual(Object.keys(jaOnly.guide?.examples ?? {}), ["ja"]);
       const both = one({ id: "e", type: "pattern", pattern: "x", example: { before: { ja: "前", en: "Before" }, after: { ja: "後", en: "After" } } });
       assert.deepEqual(both.guide?.examples, { ja: { before: "前", after: "後" }, en: { before: "Before", after: "After" } });
+      const french = one({ id: "g", type: "pattern", pattern: "x", languages: ["fr"], example: { before: "La date est TBD.", after: "Le 1 octobre." } });
+      assert.deepEqual(french.guide?.examples, { fr: { before: "La date est TBD.", after: "Le 1 octobre." } });
+      const frenchMap = one({
+        id: "h",
+        type: "pattern",
+        pattern: "x",
+        languages: ["fr"],
+        why: { fr: "Parce que" },
+        example: { before: { fr: "Avant" }, after: { fr: "Après" } },
+      });
+      assert.deepEqual([frenchMap.why, Object.keys(frenchMap.guide?.examples ?? {})], [{ fr: "Parce que" }, ["fr"]]);
       const mixed = parsed([{ ...EXPLAINED, id: "f", type: "pattern", pattern: "x", example: { before: { ja: "前" }, after: { en: "After" } } }]);
       assert.deepEqual(mixed, { ids: [], problems: ["unpaired-example"] });
     });

@@ -40,13 +40,20 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 
 const nonEmpty = (value: unknown): value is string => typeof value === "string" && value.trim() !== "";
 
-/** A text in ja and/or en, or one string for both. undefined when there is none. */
-const localizedOf = (value: unknown): Localized | undefined => {
-  if (nonEmpty(value)) return { ja: value.trim(), en: value.trim() };
+/** Texts by language ({ ja, en } or any language's id). undefined when there is none. */
+const byLanguageOf = (value: unknown): Localized | undefined => {
   if (!isRecord(value)) return undefined;
-  const entries = Object.entries(value).filter((entry): entry is [string, string] => (entry[0] === "ja" || entry[0] === "en") && nonEmpty(entry[1]));
+  const entries = Object.entries(value).filter((entry): entry is [string, string] => nonEmpty(entry[1]));
   return entries.length === 0 ? undefined : Object.fromEntries(entries.map(([language, text]) => [language, text.trim()]));
 };
+
+/** A text by language, or one string for ja and en (and, through the "en" fallback, for any other language). */
+const localizedOf = (value: unknown): Localized | undefined => (nonEmpty(value) ? { ja: value.trim(), en: value.trim() } : byLanguageOf(value));
+
+/** The key an example side written as one string is kept under: it reads the same in every language. */
+const EVERY_LANGUAGE = "*";
+
+const exampleSideOf = (value: unknown): Localized | undefined => (nonEmpty(value) ? { [EVERY_LANGUAGE]: value.trim() } : byLanguageOf(value));
 
 /** One rule's own problems, with the rule's id (or its place in the list) as where. */
 type Checked<T> = { readonly value: T | undefined; readonly problems: readonly CustomProblem[] };
@@ -139,8 +146,8 @@ const textsOf = (raw: Record<string, unknown>, at: string): Checked<Texts> => {
     name: localizedOf(raw["name"]),
     why: localizedOf(raw["why"]),
     how_to_fix: localizedOf(raw["how_to_fix"]),
-    before: localizedOf(example["before"]),
-    after: localizedOf(example["after"]),
+    before: exampleSideOf(example["before"]),
+    after: exampleSideOf(example["after"]),
   };
   const missing = Object.entries(found).flatMap(([field, text]) =>
     text === undefined ? [{ kind: "missing" as const, at, field: field === "before" || field === "after" ? `example.${field}` : field }] : [],
@@ -186,7 +193,7 @@ const READER_LANGUAGES: readonly string[] = ["ja", "en"];
 const examplesOf = (texts: Texts, languages: readonly string[] | undefined): Record<string, Example> =>
   Object.fromEntries(
     (languages ?? READER_LANGUAGES).flatMap((language) => {
-      const [before, after] = [texts.before[language], texts.after[language]];
+      const [before, after] = [texts.before[language] ?? texts.before[EVERY_LANGUAGE], texts.after[language] ?? texts.after[EVERY_LANGUAGE]];
       return before === undefined || after === undefined ? [] : [[language, { before, after }]];
     }),
   );
