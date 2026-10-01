@@ -52,3 +52,11 @@ The next meeting is on the tenth. The agenda will follow by email. The slides ar
 ## On the day
 
 The key point is the key. Here's the thing: the map matters. Honestly, time is short.
+
+## 🚀 Before
+
+Bring the key.
+
+## ✅ After
+
+Return the key.

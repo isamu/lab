@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### New rule: `emoji-heading`, headings decorated with emoji (experimental)
+
+- Points at every heading with an emoji in it (「## 🚀 はじめに」, "## ✅ Summary") once a document has enough of them.
+  It counts headings, not a density. Only characters drawn as emoji count: an arrow or ™ is text. Documentation, legal,
+  academic and literary genres do not run it. In Qiita articles the shape is rare in 2016–2021 and clearly more
+  common in 2025–2026.
+
 ### New rule: `requirement-modal`, and `style: jis-z8301-2019` (experimental)
 
 - `requirement-modal` checks a provision's verb form against a house rule a team picks under `options`; with none, it

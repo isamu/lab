@@ -75,6 +75,7 @@ not_planted:
   concrete-evidence-density: several sections with no number, code or link; the samples are written with figures
   contrast-framing: a density over the whole document
   cushion-phrase-density: a density over the whole document
+  emoji-heading: a count of decorated headings over the whole document; one is not a mistake
   empty-conclusion: L4, judged by chaff test and never run by lint
   paragraph-length-variance: the shape of the whole document, not one mistake
   proper-noun-density: a density over the whole document
