@@ -10,6 +10,8 @@ Newest first.
   (Ⅲ－3 ア: check a sentence once it reaches 50 to 60 characters), です・ます mixed with である (Ⅲ－1 イ), and a
   katakana word without its final ー (Ⅰ－3 エ). English documents keep the level's limit, since the document gives none.
 - A style can set a rule's number by language under `limits:`. chaff.yaml's own level or number for the rule still wins.
+- `chaff explain` now says when a number sets a rule's limit (a style's, or one written in chaff.yaml's `rules:`), and
+  no longer marks a level as current then.
 
 ### New rules: a document's outline (#170)
 

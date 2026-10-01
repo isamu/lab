@@ -17,6 +17,7 @@ const TEXT: Texts<{
   readonly values: (unit: string) => string;
   readonly severities: string;
   readonly now: (level: string) => string;
+  readonly nowNumber: (limit: number) => string;
   readonly from: (source: string) => string;
   readonly change: (id: string) => string;
 }> = {
@@ -31,6 +32,7 @@ const TEXT: Texts<{
     values: (unit) => `設定できる値（単位: ${unit}）:`,
     severities: "設定できる値（数える上限は無く、指摘の重さが変わります）:",
     now: (level) => `いまは ${level} です。`,
+    nowNumber: (limit) => `いまは段階ではなく数で ${limit} です。`,
     from: (source) => `（${source} で決めています）`,
     change: (id) => `変える:  npx chaff relax ${id} --why "理由"`,
   },
@@ -45,6 +47,7 @@ const TEXT: Texts<{
     values: (unit) => `Levels (unit: ${unit}):`,
     severities: "Levels (there is no limit to count to; a level sets how a finding is marked):",
     now: (level) => `Now: ${level}.`,
+    nowNumber: (limit) => `Now: ${limit}, set as a number rather than a level.`,
     from: (source) => ` (set by ${source})`,
     change: (id) => `Change it:  npx chaff relax ${id} --why "reason"`,
   },
@@ -54,7 +57,8 @@ const TEXT: Texts<{
 const valueAt = (rule: RuleDefinition, level: Exclude<Level, "off">, genre: string | undefined, ui: UiLanguage): string =>
   rule.level_sets === "severity" ? SEVERITY_NAME[ui][severityAt(rule, level, genre)] : String(resolve(rule, level, genre).limit);
 
-const levelLine = (rule: RuleDefinition, level: Level, current: Level, genre: string | undefined, ui: UiLanguage): string => {
+/** current is undefined when a number, not a level, sets the limit: no level is marked. */
+const levelLine = (rule: RuleDefinition, level: Level, current: Level | undefined, genre: string | undefined, ui: UiLanguage): string => {
   const mark = level === current ? "→" : " ";
   const name = level.padEnd(9);
   return level === "off" ? `  ${mark} ${name}${TEXT[ui].off}` : `  ${mark} ${name}${valueAt(rule, level, genre, ui)}`;
@@ -76,11 +80,17 @@ const exampleLines = (rule: RuleDefinition, language: string, text: (typeof TEXT
 };
 
 /** Where the rule's settings come from: the option layers, strongest first, and the source of its level when a style set it. */
-export type ExplainSettings = { readonly optionLayers?: readonly OptionLayer[]; readonly levelFrom?: string | undefined };
+/** limit: a number chaff.yaml or its style set for the rule (rules: { id: 80 }, a style's limits), which a level does not show. */
+export type ExplainSettings = {
+  readonly optionLayers?: readonly OptionLayer[];
+  readonly levelFrom?: string | undefined;
+  readonly limit?: number | undefined;
+};
 
 /** rule の意図と根拠を読む。指摘に納得できないときの入口。 */
 export const renderExplain = (rule: RuleDefinition, current: Level, language: string, unit: string, genre?: string, settings: ExplainSettings = {}): string => {
-  const { optionLayers = [], levelFrom } = settings;
+  const { optionLayers = [], levelFrom, limit } = settings;
+  const marked = limit === undefined ? current : undefined;
   const ui = uiLanguageOf(language);
   const text = TEXT[ui];
   const experimental = rule.status === "experimental" ? [`  ${text.experimental}`] : [];
@@ -94,11 +104,11 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
     ...exampleLines(rule, language, text),
     "",
     `  ${rule.level_sets === "severity" ? text.severities : text.values(unit)}`,
-    ...definedLevels(rule).map((level) => levelLine(rule, level, current, genre, ui)),
+    ...definedLevels(rule).map((level) => levelLine(rule, level, marked, genre, ui)),
     ...genreNote(rule, genre, text),
     ...optionLines(rule, optionLayers, language),
     "",
-    `  ${text.now(current)}${levelFrom === undefined ? "" : text.from(levelFrom)}`,
+    `  ${limit === undefined ? text.now(current) : text.nowNumber(limit)}${levelFrom === undefined ? "" : text.from(levelFrom)}`,
     ...experimental,
     "",
     `  ${text.change(rule.id)}`,
