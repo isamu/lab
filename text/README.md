@@ -111,10 +111,10 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 ```
 $ npx chaffjs en.md --compact
 
-  3:67   warning "it is important to note that" emphasises without saying anything
-                 empty-intensifier
   3:1    warning "in today's fast-paced world" is an opening that fits any article
                  padded-intro
+  3:67   warning "it is important to note that" emphasises without saying anything
+                 empty-intensifier
   11:1   warning Closes with "in conclusion"
                  closing-cliche
 ```

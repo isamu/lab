@@ -13,6 +13,7 @@ import { uiLanguageOf } from "./ui.ts";
 import { presetLevels } from "./genre-load.ts";
 import { bodySectionOf } from "./body-section.ts";
 import { optionValues, settleOptions, type OptionLayer } from "./rule-options.ts";
+import { byPosition } from "./finding-order.ts";
 import { PatternTimeout } from "./custom/bounded-match.ts";
 
 export type Skipped = {
@@ -285,5 +286,5 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
       compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental, preset), genre, limits), starts, doc.language),
     );
   const all = [...outcome.findings, ...composites];
-  return { ...outcome, findings: all.toSorted((left, right) => left.line - right.line), forcedExperimental: forced, presetExperimental: presetOn };
+  return { ...outcome, findings: all.toSorted(byPosition), forcedExperimental: forced, presetExperimental: presetOn };
 };
