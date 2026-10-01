@@ -377,10 +377,13 @@ After rewriting, npx chaffjs compare before.md <rewritten> checks that every fac
 
 `--compact` gives one fact per line. `--json` gives every fact with its kind, key, text and line, for an AI to keep as its inventory while it writes.
 
-### Measuring the outline
+## Measuring the outline
 
 A rewrite that smooths the sentences can leave the skeleton as it was: the same headings, the same lists, the same bold. `outline` shows the skeleton and measures it, so a restructure shows up as numbers, not as an impression.
-It lists each heading, indented by depth, with its line and the length of its own text, and measures four things: the number of headings, the average section length (characters for Japanese, words for English; sections with no text of their own are left out), the share of the text in list items, and the bold spans.
+
+It lists each heading, indented by depth, with its line and the length of its own text. It measures four things: the number of headings, the average section length, the share of the text in list items, and the bold spans.
+Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the average.
+
 Given two files, it shows both and how each measure moved.
 
 ```

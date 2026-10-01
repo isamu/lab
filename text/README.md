@@ -614,7 +614,7 @@ npx chaffjs facts before.md            種類ごとのチェックリスト（�
 npx chaffjs facts before.md --json     AI が控えとして持つ（--compact は 1 件 1 行）
 ```
 
-構成を変えたかどうかは `outline` で測ります。見出しの構成と、見出しの数・節の平均の長さ・箇条書きの割合・太字の数を出し、2 つ渡すと前と後を並べます。
+構成を変えたかどうかは `outline` で測ります。見出しの構成を出し、見出しの数、節の平均の長さ、箇条書きの割合、太字の数を測ります。2 つ渡すと前と後を並べます。
 
 ```bash
 npx chaffjs outline before.md after.md       見出しの数 6 → 3 のように、形がどう動いたかを並べる
