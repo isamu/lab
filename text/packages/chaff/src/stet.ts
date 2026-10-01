@@ -64,7 +64,13 @@ const covers = (suppression: Suppression, finding: Finding, sectionEnds: readonl
 
 export type Suppressed = { readonly finding: Finding; readonly suppression: Suppression };
 
-export type Applied = { readonly kept: readonly Finding[]; readonly suppressed: readonly Suppressed[]; readonly unusedReasonless: readonly Suppression[] };
+export type Applied = {
+  readonly kept: readonly Finding[];
+  readonly suppressed: readonly Suppressed[];
+  readonly unusedReasonless: readonly Suppression[];
+  /** Every rule a stet in the document names, whether or not it silenced anything. */
+  readonly named: readonly string[];
+};
 
 export const applySuppressions = (source: string, findings: readonly Finding[], sections: readonly Span[]): Applied => {
   const suppressions = parseSuppressions(source);
@@ -75,5 +81,6 @@ export const applySuppressions = (source: string, findings: readonly Finding[], 
     kept: matched.filter((entry) => entry.suppression === undefined).map((entry) => entry.finding),
     suppressed: matched.flatMap((entry) => (entry.suppression === undefined ? [] : [{ finding: entry.finding, suppression: entry.suppression }])),
     unusedReasonless: suppressions.filter((entry) => entry.reason === undefined),
+    named: [...new Set(suppressions.flatMap((entry) => entry.rules))],
   };
 };
