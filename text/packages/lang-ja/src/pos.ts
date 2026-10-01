@@ -5,6 +5,7 @@ import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
 import { outsideTheReport, isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { isEchoAt, type Inflection } from "./reduplication.ts";
+import { isRaDroppedAt, raDroppedVocabulary } from "./ra-dropped.ts";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import type { Token } from "chaffjs/plugin";
@@ -113,7 +114,11 @@ export const upos = (pos: string, detail: string): string => BY_DETAIL[detail] ?
  * （自発や状態を言う動詞、名付けの「と呼ばれる」、尊敬の形と決まり文句、ら抜きと可能）と、文が報告する動作の外にあるもの
  * （仮定の節、「〜されやすい」）は passive-reading.ts が外す。残りは「受動の形」として印を付ける。
  */
-const PASSIVE_VOCABULARY = passiveVocabulary(loadLexicons());
+const LEXICONS = loadLexicons();
+
+const PASSIVE_VOCABULARY = passiveVocabulary(LEXICONS);
+
+const RA_DROPPED_VOCABULARY = raDroppedVocabulary(LEXICONS);
 
 /**
  * 非自立名詞（の・こと・もの・ため・はず）。品詞は名詞だが、単独では何も指さない。
@@ -146,14 +151,17 @@ export const isReady = (): boolean => state.ready !== undefined;
  * span は渡した文字列の先頭を 0 とする。位置は kuromoji の word_position ではなく、語の文字を本文と照らして決める（surface-starts.ts）。
  * 形の違うものが混ざったら、その 1 つを落とす。位置が NaN の token を下流に流さない。
  */
-const toToken = (morpheme: Morpheme, start: number, passive: boolean, echo: boolean, light: boolean): Token => ({
+/** 形態素を語にするときに、前後の形態素から決まる印。 */
+type Marks = { readonly passive: boolean; readonly echo: boolean; readonly light: boolean; readonly raDropped: boolean };
+
+const toToken = (morpheme: Morpheme, start: number, { passive, echo, light, raDropped }: Marks): Token => ({
   span: { start, end: start + morpheme.surface_form.length },
   surface: morpheme.surface_form,
   // UD の日本語では「れる/られる」は AUX。IPADIC の「動詞,接尾」をそこへ寄せる。
   pos: isPassiveForm(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
   ...(morpheme.basic_form === "*" ? {} : { lemma: morpheme.basic_form }),
   ...(typeof morpheme.reading !== "string" || morpheme.reading === "*" ? {} : { reading: morpheme.reading }),
-  ...withEcho(withWordStatus(featuresOf(morpheme, passive), isBound(morpheme), light), echo),
+  ...withRaDropped(withEcho(withWordStatus(featuresOf(morpheme, passive), isBound(morpheme), light), echo), raDropped),
 });
 
 /**
@@ -182,6 +190,10 @@ const withWordStatus = (
 /** 重ね言葉の二つ目（UD の Echo=Rdp）。ほかの印は残す。 */
 const withEcho = (found: { features?: Readonly<Record<string, string>> }, echo: boolean): { features?: Readonly<Record<string, string>> } =>
   echo ? { features: { ...found.features, Echo: "Rdp" } } : found;
+
+/** ら抜き言葉の一部（「食べれる」の 食べ と れる、「見れる」）。日本語に固有の印で、UD の FEATS の言語別拡張。 */
+const withRaDropped = (found: { features?: Readonly<Record<string, string>> }, raDropped: boolean): { features?: Readonly<Record<string, string>> } =>
+  raDropped ? { features: { ...found.features, PotentialRa: "Dropped" } } : found;
 
 /**
  * 数（名詞,数）。UPOS では名詞に寄せるので、数であることは UD の NumType=Card で渡す。
@@ -269,13 +281,12 @@ export const tokenize = (text: string): Token[] | undefined => {
   const sequence = read.map(({ morpheme }) => morpheme);
   const inflections = read.map(({ morpheme, start }) => inflectionOf(morpheme, start));
   return read.map(({ morpheme, start }, index) =>
-    toToken(
-      morpheme,
-      start,
-      readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index),
-      isEchoAt(inflections, index),
-      isLightVerbAt(sequence, index),
-    ),
+    toToken(morpheme, start, {
+      passive: readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index),
+      echo: isEchoAt(inflections, index),
+      light: isLightVerbAt(sequence, index),
+      raDropped: isRaDroppedAt(sequence, index, RA_DROPPED_VOCABULARY),
+    }),
   );
 };
 
