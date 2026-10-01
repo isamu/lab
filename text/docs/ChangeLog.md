@@ -13,6 +13,13 @@ loads anything else, and stops with "chaff needs Node.js 24 or later. This is v1
 https://nodejs.org/en" (in Japanese under a Japanese locale), exit code 1. The entry point is written so that Node.js 12
 and later can parse it. This also stops Node.js 22 and 23, which `engines` already excluded.
 
+### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
+
+Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted
+by line, then column, in every output (friendly, `--compact`, SARIF, `chaff test`). In `--compact`, the
+`line:column` column widens to the longest position in the document plus one space, so `1070:131` no longer runs into
+`warning`; a document whose positions are all short prints exactly as before.
+
 ### New rules: notation that should agree with itself, double negatives and ら抜き言葉 (#170)
 
 Experimental rules. Each finding in the corpus was read before the rule was added.
