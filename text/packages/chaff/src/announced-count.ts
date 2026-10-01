@@ -86,10 +86,14 @@ const isHedged = (sentence: string, phrase: Phrase, words: CountWords): boolean 
 
 const COLON_END = /[:：][ \t]*$/u;
 
-/** 数字か、語の切れ目で区切った英語の数の語（two）。漢数字は「一緒」「一般」の中にもあるので数えない。 */
+/**
+ * 数字か、語の切れ目で区切った英語の数の語（two）。英字や点に続く数字は版や名前の一部（v2、1.2）なので数えない。
+ * 漢数字は「一緒」「一般」の中にもあるので数えない。
+ */
 const numberPattern = (words: CountWords): RegExp => {
   const latin = words.numbers.filter((number) => isLatin(number[0]));
-  return latin.length === 0 ? /\p{Nd}/u : new RegExp(`\\p{Nd}|(?<![A-Za-z])(?:${alternation(latin)})(?![A-Za-z])`, "iu");
+  const digits = String.raw`(?<![A-Za-z.])\p{Nd}`;
+  return new RegExp(latin.length === 0 ? digits : `${digits}|(?<![A-Za-z])(?:${alternation(latin)})(?![A-Za-z])`, "iu");
 };
 
 type Patterns = { readonly phrase: RegExp; readonly number: RegExp };
@@ -142,14 +146,17 @@ const hasNeighbour = (source: string, list: Span, neighbours: Neighbours): boole
 
 /**
  * 分類した箇条書き（「- **実運用**: CLI / Telegram」）の行は、ラベルの後ろに項目を区切って並べる。予告の数は区切った項目の数かもしれない。
- * 区切りは「/」「／」「、」「,」「，」。
+ * 区切りは斜線だけ。読点とコンマは項目の説明の文の中にも書くので（「UI: rename the button to Save, continue」）区切りに数えない。
+ * 行内のコードの中の斜線（`a/b`）も数えない。
  */
 const CATEGORY_ITEM = /^[ \t]*(?:[-*+]|\d{1,9}[.)])[ \t]+[^:：\n]{1,40}[:：][ \t]*(?<members>\S[^\n]*)/u;
-const MEMBER_SEPARATOR = /[/／、,，]/u;
+const MEMBER_SEPARATOR = /[/／]/u;
+const INLINE_CODE = /`[^`\n]*`/gu;
 
 const membersOf = (item: string): number | undefined =>
   CATEGORY_ITEM.exec(item)
-    ?.groups?.["members"]?.split(MEMBER_SEPARATOR)
+    ?.groups?.["members"]?.replace(INLINE_CODE, "code")
+    .split(MEMBER_SEPARATOR)
     .filter((member) => member.trim() !== "").length;
 
 /** どの行も分類の形なら、区切って並べた項目の数の和。一行でも違えば undefined。 */

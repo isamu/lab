@@ -110,18 +110,25 @@ describe("announced-count-mismatch", () => {
     assert.deepEqual(found(doc("つながるサービスが 12 種類に揃いました:", ...services), ja), []);
     assert.deepEqual(
       found(
-        doc("We support 12 options:", "- **Stable**: CLI, Telegram", "- **Tested**: LINE", "- **Experimental**: Slack / Discord / A / B / C / D / E / F / G"),
+        doc("We support 12 options:", "- **Stable**: CLI / Telegram", "- **Tested**: LINE", "- **Experimental**: Slack / Discord / A / B / C / D / E / F / G"),
       ),
       [],
     );
-    assert.deepEqual(found(doc("We support 11 options:", "- **Stable**: CLI, Telegram", "- **Tested**: LINE", "- **Experimental**: Slack")), ["11 options/3"]);
+    assert.deepEqual(found(doc("We support 11 options:", "- **Stable**: CLI / Telegram", "- **Tested**: LINE", "- **Experimental**: Slack")), ["11 options/3"]);
     assert.deepEqual(found(doc("つながるサービスが 3 種類に揃いました:", ...services), ja), []);
     assert.deepEqual(found(doc("つながるサービスが 11 種類に揃いました:", ...services), ja), ["11 種類/3"]);
   });
 
   it("a list counted by members only when every item is a label with members", () => {
-    assert.deepEqual(found(doc("次の2点を確認してください。", "- **書類**: 住民票、印鑑証明", "- 口座", "- 印鑑"), ja), ["2点/3"]);
-    assert.deepEqual(found(doc("次の4点を確認してください。", "- 住民票、印鑑証明", "- 口座、印鑑"), ja), ["4点/2"]);
+    assert.deepEqual(found(doc("次の2点を確認してください。", "- **書類**: 住民票 / 印鑑証明", "- 口座", "- 印鑑"), ja), ["2点/3"]);
+    assert.deepEqual(found(doc("次の4点を確認してください。", "- 住民票 / 印鑑証明", "- 口座 / 印鑑"), ja), ["4点/2"]);
+  });
+
+  it("members are split at slashes only, and not inside inline code", () => {
+    const changes = ["- UI: rename the button to `Save, continue`", "- API: add retry handling", "- Docs: fix setup typo"];
+    assert.deepEqual(found(doc("The release has 4 changes:", ...changes)), ["4 changes/3"]);
+    assert.deepEqual(found(doc("次の4点を変えました:", "- **画面**: ボタンの名前、色", "- **API**: 再試行", "- **文書**: 誤字"), ja), ["4点/3"]);
+    assert.deepEqual(found(doc("The release has 4 changes:", "- UI: read `a/b`", "- API: retry", "- Docs: typo")), ["4 changes/3"]);
   });
 
   it("with only a colon pointing ahead, the colon announces the nearest number", () => {
@@ -129,6 +136,10 @@ describe("announced-count-mismatch", () => {
     assert.deepEqual(found(doc("これまで「Scheduler」という 1 つのページにまとめていましたが、独立した 2 ページに分けました:", ...pages), ja), []);
     assert.deepEqual(found(doc("We merged three tasks into 2 pages:", "- Calendar", "- Actions")), []);
     assert.deepEqual(found(doc("We merged three tasks into two pages:", "- Calendar", "- Actions")), []);
+  });
+
+  it("a digit inside a version after the phrase is not another number", () => {
+    assert.deepEqual(found(doc("We shipped 3 changes in v2:", "- API", "- UI")), ["3 changes/2"]);
   });
 
   it("a word pointing ahead still names the count, whatever number follows it", () => {

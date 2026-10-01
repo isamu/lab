@@ -9,8 +9,8 @@ Newest first.
 Two misreadings are fixed. When only a colon at the end of a sentence announces the list (no 以下の / following), the
 colon announces the number nearest to it, so a number with another number after it is no longer taken as the count
 (「これまで 1 つのページにまとめていましたが、2 ページに分けました:」). A list whose every item is a label and its members
-(`- **実験的**: Slack / Discord / Matrix`) is not reported when the members, split at `/`, `／`, `、`, `,` or `，`, add up
-to the announced count. A word pointing ahead still names the count whatever number follows it.
+(`- **実験的**: Slack / Discord / Matrix`) is not reported when the members, split at `/` or `／`, add up to the announced
+count. Commas and 読点 are not separators: they also occur inside an item's description. A word pointing ahead still names the count whatever number follows it.
 
 ### `stet` covers the block right below it, not the next six lines (#401)
 
