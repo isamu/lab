@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### A heading with its title right after the number is numbered (#431)
+
+`## 7.委託`, `## 7．委託` and `## 2.Overview` were not read as numbered, so `numbering-gap` reported "6 then 8" as an
+error. In a heading, a number closed by a dot (`.` or `．`) may now be followed directly by its title, unless the next
+character is a digit (`1.5万人`) or a lowercase letter (`2.x 系`). In Japanese, `## 第7条委託` and `## 第2章概要` are
+read too, unless what follows is hiragana (`第3条に定める`), another number (`第2章第1節`) or a joining word
+(`第4条及び第5条`). Body lines are read as before. `heading-echo` reads the same label.
+
 ### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
 
 Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted

@@ -13,6 +13,12 @@ const SPACE = "[ \\t\\u3000]";
 
 /** 見出しとして読めるのは、番号の直後が空白・括弧・行末のとき。「第3条に定める」は本文。 */
 const ARTICLE = new RegExp(`^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
+/**
+ * 見出しの行では、題を詰めて書いた「第7条委託」「第2章概要」も読む。後ろが平仮名（「第3条に定める」「第2章では」）、
+ * 次の番号（「第2章第1節」）、並べる語（「第4条及び第5条」）なら、番号は題の札でないので読まない。
+ */
+const TIGHT_TITLE = "(?<rest>[^\\s\\p{Script=Hiragana}0-9０-９第及又並].*)";
+const ARTICLE_TIGHT = new RegExp(`^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?${TIGHT_TITLE}$`, "u");
 /** 「第四十三条から第五十五条まで 削除」「第五百十六条及び第五百十七条 削除」。削られた条を一行でまとめる法令の書き方。 */
 const ARTICLE_RANGE = new RegExp(
   `^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?(?:から第(?<m>${NUMBER})条(?:の(?<msub>${NUMBER}))?まで|及び第(?<m2>${NUMBER})条(?:の(?<msub2>${NUMBER}))?)(?<rest>(?:${SPACE}|（|\\().*|)$`,
@@ -36,6 +42,9 @@ const headingOf = (rest: string, whole: boolean): string => {
   // 法令の「第三条 事業者は、…。」は見出しの無い条で、後ろは本文。文を見出しにしない。
   return bracketed ?? (whole && !trimmed.includes("。") ? trimmed : "");
 };
+
+const headingGroups = (pattern: RegExp, line: string, context: NumberingContext): Readonly<Record<string, string | undefined>> | undefined =>
+  context.isHeading ? pattern.exec(line)?.groups : undefined;
 
 const numberOf = (text: string | undefined): string | undefined => {
   const value = text === undefined ? undefined : parseJapaneseNumber(text);
@@ -88,8 +97,8 @@ const articleRange = (line: string): NumberedLine | undefined => {
   };
 };
 
-const article = (line: string): NumberedLine | undefined => {
-  const groups = ARTICLE.exec(line)?.groups;
+const article = (line: string, context: NumberingContext): NumberedLine | undefined => {
+  const groups = ARTICLE.exec(line)?.groups ?? headingGroups(ARTICLE_TIGHT, line, context);
   const main = numberOf(groups?.["n"]);
   if (groups === undefined || main === undefined) return undefined;
   const sub = numberOf(groups["sub"]);
@@ -155,14 +164,15 @@ const item = (line: string, context: NumberingContext): NumberedLine | undefined
  * 章と節は親の番地に続ける（第2編第1章 → pt2.ch1、その第3節 → pt2.ch1.3）。条は通し番号のまま。
  */
 const CHAPTER = new RegExp(`^${SPACE}*第(?<n>${NUMBER})(?<unit>[編章節])(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
+const CHAPTER_TIGHT = new RegExp(`^${SPACE}*第(?<n>${NUMBER})(?<unit>[編章節])${TIGHT_TITLE}$`, "u");
 const CHAPTER_SHAPES: Readonly<Record<string, { readonly depth: number; readonly prefix: string }>> = {
   編: { depth: -2, prefix: "pt" },
   章: { depth: -1, prefix: "ch" },
   節: { depth: 0, prefix: "" },
 };
 
-const chapter = (line: string): NumberedLine | undefined => {
-  const groups = CHAPTER.exec(line)?.groups;
+const chapter = (line: string, context: NumberingContext): NumberedLine | undefined => {
+  const groups = CHAPTER.exec(line)?.groups ?? headingGroups(CHAPTER_TIGHT, line, context);
   const number = numberOf(groups?.["n"]);
   const shape = CHAPTER_SHAPES[groups?.["unit"] ?? ""];
   if (groups === undefined || number === undefined || shape === undefined) return undefined;
@@ -181,7 +191,7 @@ const chapter = (line: string): NumberedLine | undefined => {
 };
 
 const numbered = (line: string, context: NumberingContext): NumberedLine | undefined =>
-  chapter(line) ?? articleRange(line) ?? article(line) ?? item(line, context);
+  chapter(line, context) ?? articleRange(line) ?? article(line, context) ?? item(line, context);
 
 /** 正規表現の一致を Mention にする。g フラグ付きのものだけを渡す。 */
 const mentions = (
