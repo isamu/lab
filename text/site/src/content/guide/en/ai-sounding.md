@@ -19,7 +19,7 @@ npx chaffjs article.md --experimental    also run the experimental rules
 | `contrast-framing` | Contrast frames piling up ("not just X, but Y", "It's not X. It's Y") |
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
-| `colon-lead-in` | Too many sentences ending in a colon that hand off to a list ("Here's what you need:") |
+| `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
@@ -72,8 +72,10 @@ A bold rewrite changes the shape of the whole document rather than each finding.
    Where the original has the writer's own experience or concrete numbers, put them at the centre of the paragraph.
 4. Run chaff with `--experimental` again and compare with the signals from step 1.
    Show the change with chaff's output, not with adjectives.
-5. Check that no fact was dropped. `chaff compare <old> <new>`, which lists every number, date, URL, code span, proper noun, link and heading added or dropped, is on its way.
-   Once it is available, run it and restore every dropped fact.
+5. Run `npx chaffjs compare <before> <after>` and check every fact dropped or added.
+   It matches numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes before and after.
+   Restore every dropped fact. For what is not a fact (a number inside a metaphor, the heading of a section you cut), note why it stays out.
+   A kind you cut on purpose can be excluded with `--allow-dropped <kind>`.
 
 ## Rules for both
 
@@ -174,7 +176,7 @@ ai.md   blog/tech · English   genre from --genre
   47:1    warning Closes with "hope this helps"
                   closing-cliche
 
-9 findings, 11 rules not run
+9 findings, 13 rules not run
 ```
 
 The article after:
@@ -213,7 +215,7 @@ rewritten.md   blog/tech · English   genre from --genre
   3:27    info    44 proper nouns per 1000 words (limit 40)
                   proper-noun-density
 
-1 finding, 11 rules not run
+1 finding, 13 rules not run
 ```
 
 What changed, and why:
@@ -231,6 +233,35 @@ What changed, and why:
 
 Every number (once every 30 runs, three weeks, 12 minutes, two weeks), command and setting is kept.
 The `proper-noun-density` left after the rewrite counts the API and setting names, which a tech article needs.
+
+Last, `chaff compare` checks that no fact was lost:
+
+```text
+$ npx chaffjs compare ai.md rewritten.md
+ai.md → rewritten.md
+
+✗ 3 facts dropped (in ai.md, not in rewritten.md)
+  name: CI  (ai.md:22)
+  name: Workflow  (ai.md:34)
+  heading: Conclusion  (ai.md:43)
+
+i 4 facts written another way
+  heading: Solving Our Flaky Test Problem — The Hidden Trap of Time Zon… → Our flaky test was a time zone problem  (line 1 → line 1)
+  heading: What Was Happening → What was happening  (line 5 → line 5)
+  heading: Investigating the Root Cause → Finding the cause  (line 15 → line 9)
+  heading: The Solution → The fix  (line 29 → line 15)
+
+Facts checked: 26 → 23: numbers 2→2, dates 0→0, times 1→1, URLs 0→0, code 6→6, names 11→9, quotations 0→0, headings 6→5, references 0→0, footnotes 0→0
+3 facts dropped, 0 facts added
+```
+
+None of the three is a fact the rewrite lost, so none was restored.
+
+| Dropped | Why it stays out |
+| --- | --- |
+| name "CI" | The opening sentence that said "on CI" a third time was cut; the other two mentions remain |
+| name "Workflow" | A bold list label read as a name; the sentence now says "the workflow sets" |
+| heading "Conclusion" | The section went with its stock closing |
 
 ## Further reading
 

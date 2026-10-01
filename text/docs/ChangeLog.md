@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### Making AI-sounding text sound human: the rewrite harness (#170)
+
+chaff still never rewrites; the skill and a new guide page say how an AI (or a person) should, in two modes.
+
+- **Light**: fix only the spots the AI-shape rules flag, keep meaning, numbers, conditions and constraints, at most two
+  passes.
+- **Bold**: rewrite section by section toward a human voice (less bold, fewer one-line paragraphs, contrast frames,
+  list-only sections and em dashes; paragraphs that carry an argument), report the document-level signals from chaff
+  before and after, then run `chaff compare` and restore every dropped fact.
+- The guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human" has per-genre advice and a worked bold
+  rewrite of a self-written article, with real chaff and `chaff compare` output from both versions.
+
 ### AI-sounding Japanese technical prose, and a bench for the AI-shape rules (#170)
 
 Each entry below was measured before it went in: on Qiita articles written before generated text was common (human),

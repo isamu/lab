@@ -102,7 +102,7 @@ committing `chaff.yaml`. The guide page "Adding a rule" covers each way and how 
 ## Making AI-sounding text sound human
 
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
-`contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, and the signals
+`contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `assistant-residue`, and the signals
 `ai-generated-composite` reads). They are experimental: run with `--experimental`. None of them says the text was
 generated. When asked to make a text sound less generated, pick one of two modes and say which.
 
@@ -122,8 +122,9 @@ generated. When asked to make a text sound less generated, pick one of two modes
    items connect; fewer em dashes; no announcing openers. Each paragraph carries one claim, joined to the last by a
    connective, built around the writer's own experience or numbers where the original has them.
 3. Run chaff again and report the same signals before and after, from chaff's output.
-4. Run `chaff compare <old> <new>` (coming; until it lands, compare numbers, dates, URLs, code, names, links and
-   headings by hand) and restore every dropped fact.
+4. Run `npx chaffjs compare <old> <new>` (exit 1 on a dropped or added fact; `--json` to act on it). Restore every
+   dropped fact; for one that is not a fact (a number inside a metaphor, the heading of a section you cut), say why it
+   stays out. `--allow-dropped <kind>` excludes a kind you cut on purpose. Never leave an added fact.
 
 In both modes:
 
