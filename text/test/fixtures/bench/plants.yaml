@@ -17,6 +17,7 @@ planted:
   date-range-reversed: [ja, en]
   date-weekday-mismatch: [ja, en]
   double-keigo: [ja]
+  doubled-punctuation: [ja, en]
   doubled-word: [ja, en]
   duplicate-definition: [ja, en]
   emoji-density: [ja, en]
@@ -29,6 +30,7 @@ planted:
   image-alt-text: [ja, en]
   internal-jargon: [ja, en]
   katakana-long-vowel: [ja]
+  kutoten-consistency: [ja]
   latin-spacing: [ja]
   max-kanji-continuous: [ja]
   max-paragraph-length: [ja, en]
@@ -51,9 +53,10 @@ planted:
   stray-space: [ja]
   title-case-consistency: [en]
   total-mismatch: [ja, en]
+  unbalanced-bracket: [ja, en]
   undefined-acronym: [ja, en]
-  url-run-on: [ja]
   unfilled-placeholder: [ja, en]
+  url-run-on: [ja]
 not_planted:
   adverb-overuse: a density over the whole document
   ai-generated-composite: a composite of other signals, with no detector of its own

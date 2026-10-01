@@ -55,8 +55,8 @@ example:
       Attach the receipt and submit it by the end of the month.
 
 not_flagged:
-  ja: 短い見出し（言葉が少なく、重なりを測れないもの）は見ません。
-  en: Headings too short to measure an overlap are not checked.
+  ja: 短い見出し（言葉が少なく、重なりを測れないもの）は見ません。見出しの頭の番号の札（例 3：、Step 3:、1.、第2章）は重なりに数えません。
+  en: Headings too short to measure an overlap are not checked. A number label at the head of a heading (Step 3:, Example 4:, 1., Chapter 2:) is not counted in the overlap.
 level_meaning:
   ja: 見出しと直後の文の重なりが {limit}% 以上なら指摘
   en: reported when the first sentence overlaps the heading by {limit}% or more
