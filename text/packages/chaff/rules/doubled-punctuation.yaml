@@ -41,5 +41,5 @@ example:
       We will send the file today, as agreed.
 
 not_flagged:
-  ja: 「...」「。。。」のように三つ以上並べたもの、「e.g.,」「etc.;」のような略語の後ろ、「1..10」「../」のような範囲と道のり、「!!」「??」とコロンは指しません。
-  en: Three or more of one mark ("...", "。。。"), the mark after an abbreviation ("e.g.,", "etc.;"), ranges and paths ("1..10", "../"), "!!", "??" and colons are not reported.
+  ja: 「...」「。。。」のように三つ以上並べたものと、そのすぐ後ろの一つの印（「...。」「、、、。」）、「e.g.,」「etc.;」のような略語の後ろ、「1..10」「../」のような範囲と道のり、「!!」「??」とコロンは指しません。
+  en: Three or more of one mark ("...", "。。。") and one mark right after them ("...。", "、、、。"), the mark after an abbreviation ("e.g.,", "etc.;"), ranges and paths ("1..10", "../"), "!!", "??" and colons are not reported.
