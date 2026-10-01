@@ -207,12 +207,12 @@ describe("relax and strict say what they did", () => {
 
 describe("explain and rules --json show severities, not a limit", () => {
   it("explain lists the severity at each level, in both languages", () => {
-    const text = renderExplain(ruleOf("numbering-gap"), "relaxed", "ja", "回");
+    const text = renderExplain(ruleOf("numbering-gap"), "relaxed", "ja");
     assert.match(text, /指摘の重さ/u);
     assert.match(text, /normal +エラー/u);
     assert.match(text, /→ relaxed +注意/u);
     assert.doesNotMatch(text, /回/u);
-    const en = renderExplain(ruleOf("duplicate-definition", RULES_EN), "normal", "en", "times");
+    const en = renderExplain(ruleOf("duplicate-definition", RULES_EN), "normal", "en");
     assert.match(en, /strict +error/u);
     assert.match(en, /→ normal +warning/u);
     assert.match(en, /relaxed +note/u);
