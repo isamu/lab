@@ -69,7 +69,7 @@ const calendarStarts = (sentence: Sentence, units: CalendarUnits): ReadonlySet<n
  * 日付・時刻は前の境目（「は 9月」「午後3時」「令和 3 年」）も数えない。日付はまとめて一つの書き方で、数量の空け方の票にはしない。
  */
 const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContext, calendar: ReadonlySet<number>): boolean => {
-  if (boundary.offset <= ITEM_NUMBER_REACH && context.itemNumber?.test(sentence.text.slice(0, boundary.offset)) === true) return false;
+  if (boundary.spaced && boundary.offset <= ITEM_NUMBER_REACH && context.itemNumber?.test(sentence.text.slice(0, boundary.offset)) === true) return false;
   if (boundary.kind !== "after-digit" && endsWithDivisionLabel(sentence.text.slice(0, boundary.offset), context.divisions)) return false;
   if (boundary.kind === "letter") return true;
   const run = digitRunAround(sentence.text, digitBeside(boundary));

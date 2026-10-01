@@ -255,6 +255,13 @@ describe("latin-spacing", () => {
     ]);
   });
 
+  it("counts an item number written without the space (三JSON) as touching", () => {
+    assert.deepEqual(spacing("# 文字\n\nAPI を呼び、JSON を返し、ID を保存する。\n\n一 JIS の文字\n\n二 XML の形式\n\n三CSVの形式\n"), [
+      "英字:詰めています",
+      "英字:詰めています",
+    ]);
+  });
+
   it("still counts a kanji numeral that is not an item number", () => {
     assert.deepEqual(spacing("# 文字\n\n使える文字はUTF-8で送り、APIで受け取り、十 GBまで使う。\n"), ["英字:空けています"]);
     assert.deepEqual(spacing("# 文字\n\n使える文字はUTF-8で送り、APIで受け取る。\n\n一つ JISの文字\n"), ["英字:空けています"]);
