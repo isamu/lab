@@ -199,4 +199,20 @@ describe("katakana-long-vowel", () => {
       assert.ok(english.skipped.some((skip) => skip.rule === RULE));
     });
   });
+
+  // 自作の文。#434: 語末の「ー」を付けると別の語になる語（フリ＝振り、フリー＝free）は、同じ語の書き分けではない。
+  describe("a word that becomes another word with a final ー", () => {
+    it("「知ってるフリ」 and 「フリー」 are two words", () => {
+      assert.deepEqual(found("# 試し\n\n分かっているのに、知ってるフリをしました。フリーのソフトを使います。フリーの素材も使います。\n"), []);
+      assert.deepEqual(found("# 試し\n\n相手がスキを見せました。スキーに行きます。スキーの板です。\n"), []);
+    });
+
+    it("is not asked for its ー when ending is keep", () => {
+      assert.deepEqual(found("# 試し\n\n知ってるフリをしました。メモリを使います。\n", { ending: "keep" }), ["メモリ→メモリー:keep"]);
+    });
+
+    it("other words written both ways are still found", () => {
+      assert.deepEqual(found("# 試し\n\n知ってるフリをしました。サーバーを立てます。サーバを止めます。サーバーを消します。\n"), ["サーバ→サーバー:same-word"]);
+    });
+  });
 });

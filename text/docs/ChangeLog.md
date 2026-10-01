@@ -12,6 +12,37 @@ counts the potential and negative forms (させていただけますか, させ�
 words (させていただく and せていただく) count as one use. A one-step verb with させる (見させていただく) is still not counted:
 the analyser reads its させ as one word, which no entry in the word list can match.
 
+### `katakana-long-vowel` keeps フリ apart from フリー, and `colon-lead-in` counts only Japanese sentences (#434)
+
+`katakana-long-vowel` read 「知ってるフリ」 (振り) and 「フリー」 (free) as one word written two ways. The tagger reads both
+as nouns, so lang-ja now has a word list, `long-vowel-distinct`, of words that become another word with a final ー
+(フリ, スキ). Those words are left out as if listed under `except`, in every `ending`. `colon-lead-in`, which runs
+on Japanese documents only, also counted the English sentences inside one (`Examples include:`). It now counts only the
+sentences in the document's language, as `max-sentence-length` measures each sentence by its own language.
+
+### `doubled-punctuation` leaves a mark that closes a drawn-out one (#433)
+
+Three or more of one mark (`...`, `、、、`) were already read as a drawn-out mark, but the mark that closes it
+(`立たない...。`, `そうですね、、、。`) made the whole run a slip. One mark right after a drawn-out run is now read as its
+close and not reported; two (`...。。`), or a run of only two (`、、。`), still is. This covers the transcript's `、、、。`
+in every genre, so no genre rule is added for it.
+
+### `announced-count-mismatch` reads a categorised list and the number nearest the colon (#432)
+
+Two misreadings are fixed. When only a colon at the end of a sentence announces the list (no 以下の / following), the
+colon announces the number nearest to it, so a number with another number after it is no longer taken as the count
+(「これまで 1 つのページにまとめていましたが、2 ページに分けました:」). A list whose every item is a label and its members
+(`- **実験的**: Slack / Discord / Matrix`) is not reported when the members, split at `/` or `／`, add up to the announced
+count. Commas and 読点 are not separators: they also occur inside an item's description. A word pointing ahead still names the count whatever number follows it.
+
+### A heading with its title right after the number is numbered (#431)
+
+`## 7.委託`, `## 7．委託` and `## 2.Overview` were not read as numbered, so `numbering-gap` reported "6 then 8" as an
+error. In a heading, a number closed by a dot (`.` or `．`) may now be followed directly by its title, unless the next
+character is a digit (`1.5万人`) or a lowercase letter (`2.x 系`). In Japanese, `## 第7条委託` and `## 第2章概要` are
+read too, unless what follows is hiragana (`第3条に定める`), another number (`第2章第1節`) or a joining word
+(`第4条及び第5条`, `第2条若しくは第3条`). Body lines are read as before. `heading-echo` reads the same label.
+
 ### `section-length-uniformity` and `paragraph-length-variance` need enough sections and paragraphs to measure
 
 Both rules compare lengths by their coefficient of variation. Over two or three values that number is small by chance,
