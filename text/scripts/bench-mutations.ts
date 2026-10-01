@@ -23,17 +23,6 @@ import * as phrasing from "./bench-mutations-phrasing.ts";
 import { imageWithoutAlt, linkToMissingSection, runOnUrl, skipHeadingLevel } from "./bench-mutations-markup.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
 
-export type Mutation = {
-  readonly id: string;
-  /** The rule that exists to find this mistake. */
-  readonly rule: string;
-  readonly languages: readonly string[];
-  /** "document" when the rule reports on the whole document rather than on a line: any finding of it counts. */
-  readonly reportsOn?: "document";
-  /** undefined when the sample has nothing to plant this mistake in. */
-  readonly plant: (source: string, context: PlantContext) => Plant | undefined;
-};
-
 // --- date-weekday-mismatch ---
 
 const JA_WEEKDAYS = "月火水木金土日";
