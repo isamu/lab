@@ -62,6 +62,7 @@ describe("解析器を読むまで tokens は無い", () => {
         .sort((left, right) => left.localeCompare(right)),
       [
         "ai-tell",
+        "announcing-opener",
         "assistant-residue",
         "closing-cliche",
         "concrete-evidence-density",

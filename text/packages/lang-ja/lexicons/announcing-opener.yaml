@@ -1,0 +1,11 @@
+# 中身の前に「これから大事なことを言う」と予告する文頭。文の途中の「このポイントは」は数えない。
+# 「大事なのは」「結論から言うと」「要するに」は生成 AI 以前の人の記事にも同じくらいあるので入れない。
+id: announcing-opener
+language: ja
+entries:
+  - pattern: 重要なのは
+  - pattern: ポイントは
+  - pattern: 正直に言うと
+  - pattern: 注目すべきは
+  - pattern: 注目すべき点は
+  - pattern: ここで注目すべきは

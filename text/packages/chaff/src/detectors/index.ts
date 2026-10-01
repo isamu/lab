@@ -48,7 +48,7 @@ import { spellingVariety } from "./spelling-variety.ts";
 import { raNuki } from "./ra-nuki.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
-import { assistantResidue, contrastFraming, stockTransition, unfilledPlaceholder } from "./ai-phrasing.ts";
+import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -88,7 +88,9 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "repeated-conjunction": repeatedConjunction,
   "ai-tell": aiTell,
   "contrast-framing": contrastFraming,
-  "stock-transition": stockTransition,
+  "stock-transition": openerDensity,
+  "opener-pile": openerPile,
+  "colon-lead-in": colonLeadIn,
   "assistant-residue": assistantResidue,
   "unfilled-placeholder": unfilledPlaceholder,
   "contraction-mix": contractionMix,

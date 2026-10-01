@@ -1,5 +1,5 @@
 # 番号と組んで、題や設問に名前を付ける語。position は番号のどちら側に書くか。
-# before は番号のすぐ前（問3、図2）。語として照らす（「質問3」の「問」は照らさない）。後ろの語が助数詞や助詞なら数量として数える（図3枚、問3の）。
+# before は番号のすぐ前（問3、図2、例 3：）。見出しの頭にあれば札で、見出しと文の重なり（heading-echo）には数えない。語として照らす（「質問3」の「問」は照らさない）。後ろの語が助数詞や助詞なら数量として数える（図3枚、問3の）。
 # after は「第」と番号の後ろ（第1節、第2章）。その後ろの空白は題との区切りで、空け方の好みではない。字面どおりに照らす。
 id: numbered-label
 language: ja
@@ -19,6 +19,14 @@ entries:
   - pattern: 別紙
     position: before
   - pattern: 様式
+    position: before
+  - pattern: 例
+    position: before
+  - pattern: 手順
+    position: before
+  - pattern: ステップ
+    position: before
+  - pattern: Step
     position: before
   - pattern: 編
     position: after

@@ -13,15 +13,21 @@ const KAGI_MARKS: Marks = { "「": "」", "『": "』" };
 export const QUOTATION_MARKS: Marks = { ...KAGI_MARKS, "“": "”", '"': '"' };
 
 type Open = { readonly closer: string; readonly at: number };
-type Scan = { readonly open: readonly Open[]; readonly spans: readonly Span[] };
+/** 1 回の読みの中だけで足し引きする。字ごとに配列を作り直すと、括弧が何万もある文で二乗に遅くなる。 */
+type Scan = { readonly open: Open[]; readonly spans: Span[] };
 
 const step =
   (marks: Marks) =>
   (scan: Scan, char: string, at: number): Scan => {
     const last = scan.open.at(-1);
-    if (last !== undefined && last.closer === char) return { open: scan.open.slice(0, -1), spans: [...scan.spans, { start: last.at + 1, end: at }] };
+    if (last !== undefined && last.closer === char) {
+      scan.open.pop();
+      scan.spans.push({ start: last.at + 1, end: at });
+      return scan;
+    }
     const closer = marks[char];
-    return closer === undefined ? scan : { open: [...scan.open, { closer, at }], spans: scan.spans };
+    if (closer !== undefined) scan.open.push({ closer, at });
+    return scan;
   };
 
 /**

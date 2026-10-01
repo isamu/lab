@@ -49,6 +49,8 @@ groups:
       ai-generated-composite: off
       contrast-framing: off
       stock-transition: off
+      announcing-opener: off
+      colon-lead-in: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
@@ -77,6 +79,8 @@ groups:
       ai-generated-composite: off
       contrast-framing: off
       stock-transition: off
+      announcing-opener: off
+      colon-lead-in: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
@@ -144,6 +148,8 @@ groups:
       ai-generated-composite: off
       contrast-framing: off
       stock-transition: off
+      announcing-opener: off
+      colon-lead-in: off
       dangling-reference: off
       duplicate-definition: off
       date-order: off
@@ -173,6 +179,8 @@ groups:
       paragraph-length-variance: off
       contrast-framing: off
       stock-transition: off
+      announcing-opener: off
+      colon-lead-in: off
       # A transcript keeps the speaker's words: hedges and ら dropped as spoken.
       double-negative: off
       ra-nuki: off
