@@ -5,6 +5,7 @@ import type { Detector, RuleDefinition } from "../plugin.ts";
 import { customRulesOf } from "../custom/load.ts";
 import { moduleDetector } from "./module-detector.ts";
 import { detectorExport, type ExportProblem } from "./rule-export.ts";
+import { staysInside } from "./real-path.ts";
 
 // The code chaff.yaml names, loaded once before anything runs: each type: module rule's file. Loading runs the file's
 // code, which is why only chaff.yaml can name one. What cannot be loaded stops the run (settingProblems), like any rule
@@ -12,7 +13,7 @@ import { detectorExport, type ExportProblem } from "./rule-export.ts";
 
 /** A rule whose file could not be loaded. file is the path as chaff.yaml writes it; detail: why, or what ExportProblem says. */
 export type LoadProblem = {
-  readonly kind: "missing-file" | "import-failed" | ExportProblem["kind"];
+  readonly kind: "missing-file" | "outside" | "import-failed" | ExportProblem["kind"];
   readonly rule: string;
   readonly file: string;
   readonly detail: string;
@@ -38,9 +39,10 @@ const importDefault = async (file: string): Promise<{ readonly exported: unknown
 /** A type: module rule: its id, its file, and the path as chaff.yaml writes it, which every message names. */
 type ModuleRule = { readonly id: string; readonly file: string; readonly written: string };
 
-const loadRule = async ({ id, file, written }: ModuleRule): Promise<Loaded> => {
+const loadRule = async ({ id, file, written }: ModuleRule, baseDir: string): Promise<Loaded> => {
   const at = { rule: id, file: written };
   if (!existsSync(file)) return { problem: { ...at, kind: "missing-file", detail: "" } };
+  if (!staysInside(written, file, baseDir)) return { problem: { ...at, kind: "outside", detail: "" } };
   const imported = await importDefault(file);
   if ("message" in imported) return { problem: { ...at, kind: "import-failed", detail: imported.message } };
   const read = detectorExport(imported.exported);
@@ -53,7 +55,7 @@ const moduleRulesOf = (rules: readonly RuleDefinition[]): ModuleRule[] =>
 /** Every type: module rule in chaff.yaml, loaded. One by one, in the order written, so the same chaff.yaml loads the same way. */
 const loadExtensions = async (config: Config): Promise<Extensions> => {
   const loaded = await moduleRulesOf(customRulesOf(config).rules).reduce<Promise<{ id: string; loaded: Loaded }[]>>(
-    async (done, rule) => [...(await done), { id: rule.id, loaded: await loadRule(rule) }],
+    async (done, rule) => [...(await done), { id: rule.id, loaded: await loadRule(rule, config.baseDir) }],
     Promise.resolve([]),
   );
   return {
