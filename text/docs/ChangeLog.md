@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### A Japanese article full of code is read as Japanese (#399)
+
+The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
+code blocks came out English: the Japanese rules did not run and the English ones read Japanese headings. The guess
+now leaves out fenced code blocks, inline code, HTML (comments included), front matter and URLs. Indented text is kept,
+because in plain text it is prose. A document that is nothing but code is still judged from all of it. `chaff`,
+`chaff test`, `chaff eval` and `chaff tree` all guess the same way.
+
 ### `chaff compare <before> <after>`: did a rewrite keep its facts?
 
 The guardrail for rewriting AI-sounding text boldly: an AI rewrites, chaff shows, without a model, that no fact was lost
