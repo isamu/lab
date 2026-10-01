@@ -21,25 +21,31 @@ const hitsFor = (doc: ProseDocument, lexicon: Lexicon): Hit[] =>
   doc.sentences.flatMap((sentence) => lexicon.filter((entry) => entryIn(sentence, entry)).map((entry) => ({ sentence, matched: entry.pattern })));
 
 /**
- * 床より短い文書の扱い。skip は測らない。at-floor は床の長さの文書として測る（数で言えば、床の長さに許す数を超えたら言う）。
+ * 床より短い文書の扱い。skip は測らない。at-floor は SHORT_LENGTH の長さの文書として測り、一つだけなら言わない（一つは礼儀）。
  * クッション言葉はメールや手紙のような短い文書に重なるので at-floor。逃げの表現は短い文書でも一文に重ねた形で見つかるので skip。
  */
 type ShortDocuments = "skip" | "at-floor";
+
+/** 短い文書を測るときの長さ。どちらの言語でも、既定の水準で三つ目から言う長さ（二つは「お忙しいところ恐れ入りますが」のように普通に重なる）。 */
+const SHORT_LENGTH = { word: 400, char: 500 };
+
+/** 短い文書でも、これより少なければ言わない。 */
+const SHORT_MINIMUM_HITS = 2;
 
 const perThousand = (count: number, length: number): number => (length === 0 ? 0 : Math.round((count / length) * PER));
 
 /**
  * 単位長あたりの出現率。件数で数えると長い文書ほど当たる（bold-density と同じ）。
- * rule の id は呼び出し側が持つ。detector は「密度が閾値を超えたか」しか知らない。指摘が言う密度は、床で測ったときも文書の実際の長さでの値。
+ * rule の id は呼び出し側が持つ。detector は「密度が閾値を超えたか」しか知らない。指摘が言う密度は、短い文書でも文書の実際の長さでの値。
  */
 const densityRule =
   (rule: string, short: ShortDocuments = "skip"): Detector =>
   (doc, options): Finding[] => {
     const hits = hitsFor(doc, options.lexicon ?? []);
     const length = wordsOf(doc);
-    const floor = FLOOR[doc.lengthUnit];
-    if (hits.length === 0 || (length < floor && short === "skip")) return [];
-    if (perThousand(hits.length, Math.max(length, floor)) <= options.limit) return [];
+    const isShort = length < FLOOR[doc.lengthUnit];
+    if (hits.length === 0 || (isShort && (short === "skip" || hits.length < SHORT_MINIMUM_HITS))) return [];
+    if (perThousand(hits.length, isShort ? SHORT_LENGTH[doc.lengthUnit] : length) <= options.limit) return [];
     const density = perThousand(hits.length, length);
     return hits.map((hit) => ({
       rule,
