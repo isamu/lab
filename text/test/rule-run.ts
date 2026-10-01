@@ -46,9 +46,16 @@ export const superlativeReported = (adapter: LanguageAdapter, sentence: string):
 /** 一つの rule だけを名指しで動かした、指摘の message と止まった理由。experimental は切ったまま。 */
 export type NamedRun = { readonly findings: readonly string[]; readonly skipped: readonly string[] };
 
-export const namedRuleRun = (rule: string, source: string, adapter: LanguageAdapter, path = "a.md", genre = "business/report"): NamedRun => {
+export const namedRuleRun = (
+  rule: string,
+  source: string,
+  adapter: LanguageAdapter,
+  path = "a.md",
+  genre = "business/report",
+  level: Settings[string] = "normal",
+): NamedRun => {
   const rules = rulesOf(adapter.id);
-  const result = runRules(buildDocument(path, source, adapter), rules, { [rule]: "normal" }, false, genre);
+  const result = runRules(buildDocument(path, source, adapter), rules, { [rule]: level }, false, genre);
   const definition = rules.find((entry) => entry.id === rule);
   if (definition === undefined) throw new Error(`no rule ${rule}`);
   return {

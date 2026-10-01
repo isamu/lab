@@ -135,6 +135,7 @@ npx chaffjs rules                ルールの一覧を、グループごとに�
 npx chaffjs rules --json         いまの設定とルールの説明を JSON で出す（AI に設定を書かせるときに渡す）
 npx chaffjs tree contract.txt    文書を番地の付いた木にする（条・項・定義・参照）
 npx chaffjs cite 原文 引用.json  引用が原文にあるかを確かめる
+npx chaffjs compare 前.md 後.md  書き換えで事実（数・日付・URL・名前など）が落ちても足されてもいないかを確かめる
 npx chaffjs skill                Claude Code の skill を入れる
 npx chaffjs feedback a.md --rule max-sentence-length --line 42   誤った指摘を報告する下書きを作る
 ```
@@ -428,6 +429,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `max-kanji-continuous` | 漢字の連続（情報処理推進機構認定試験） |
 | `no-nakaguro-parallel` | 1 文に中黒の並列が何組も入る |
 | `latin-spacing` | 英字・数字の前後の空白の有無が文書の中で混ざる（試験中） |
+| `kutoten-consistency` | 読点（、と，）と句点（。と．）の書き方が文書の中で混ざる（試験中） |
 
 英語固有の rule:
 
@@ -452,6 +454,13 @@ Markdown の記法と URL を見る rule（ja / en、試験中）:
 | `url-run-on` | そのまま書いた URL のすぐ後ろに日本語や全角の記号が続き、リンクがそこまで伸びる（`https://example.jp/をご覧ください`）。`.txt` でも見る |
 
 記法の rule は Markdown の文書でだけ動き、`.txt` では「Markdown の文書ではないため」と出して止まります。
+
+括弧と句読点を見る rule（ja / en、試験中）:
+
+| rule | 何を見るか |
+| --- | --- |
+| `unbalanced-bracket` | 組になっていない括弧。閉じ忘れた「（」、開きの無い「」」、全角の「（」を半角の「)」で閉じたもの。「1)」「事例）」のような番号の印は数えない |
+| `doubled-punctuation` | 句読点の重なり（`。。`、`、。`、`,,`、`i.e.,,`）。`...` や `。。。` のように三つ以上並べたものは数えない |
 
 ## 判定役は Anthropic でも OpenAI でも
 
@@ -550,6 +559,37 @@ npx chaffjs cite contract.txt quotes.json
 ```
 
 `quotes.json` は `[{ "address": "4.2", "quote": "…" }]`。`tree` と同じく `--format json` と `--language` を取ります。回答や要約の引用が原文のその番地に本当にあるかを確かめ、一つでも無ければ 1 で終わります。AI の回答を単体試験のように検査できます。chaff は確かめるだけで、書き換えません。
+
+## 書き換えで事実が落ちていないか
+
+AI っぽい文章を AI に大きく書き換えさせたあと、事実が落ちていないか、増えていないかを機械で確かめます。
+
+```bash
+npx chaffjs compare before.md after.md                      人が読む
+npx chaffjs compare before.md after.md --json               AI が読んで直す（--compact は 1 件 1 行）
+npx chaffjs compare before.md after.md --allow-dropped url  わざと削った種類は失敗にしない
+```
+
+数（単位・通貨つき）、日付、時刻、URL、コード、固有名詞と `names:`、「」や "…" の引用、見出し、条項の参照、脚注を、lint と同じ読み手で取り出し、位置を見ずに数で比べます。
+
+```
+✗ 落ちた事実 2 件（before.md にあって after.md に無い）
+  数: 1,200円  (before.md:3)
+  URL: https://example.com/price  (before.md:3)
+
+✗ 足された事実 1 件（after.md にだけある）
+  数: 1,300円  (after.md:3)
+
+i 書き方だけ変わった事実 3 件
+  見出し: 料金改定のお知らせ → 料金が変わります  (1 行目 → 1 行目)
+  日付: 2026年4月1日 → 2026/4/1  (3 行目 → 3 行目)
+  数: 1,000円 → 1000円  (3 行目 → 3 行目)
+
+照合した事実 5 件 → 4 件: 数 2→2、日付 1→1、時刻 0→0、URL 1→0、コード 0→0、固有名詞 0→0、引用 0→0、見出し 1→1、条項の参照 0→0、脚注 0→0
+落ちた事実 2 件、足された事実 1 件
+```
+
+落ちた事実か足された事実があれば 1 で終わります。1,000 と 1000、2026年4月1日 と 2026/4/1 のような書き方の違いは情報として出すだけです。読めなかった種類（品詞の解析器が無いなど）は理由を添えて出します。
 
 ## Claude Code の skill
 
