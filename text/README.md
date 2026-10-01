@@ -428,6 +428,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `max-kanji-continuous` | 漢字の連続（情報処理推進機構認定試験） |
 | `no-nakaguro-parallel` | 1 文に中黒の並列が何組も入る |
 | `latin-spacing` | 英字・数字の前後の空白の有無が文書の中で混ざる（試験中） |
+| `kutoten-consistency` | 読点（、と，）と句点（。と．）の書き方が文書の中で混ざる（試験中） |
 
 英語固有の rule:
 
@@ -452,6 +453,13 @@ Markdown の記法と URL を見る rule（ja / en、試験中）:
 | `url-run-on` | そのまま書いた URL のすぐ後ろに日本語や全角の記号が続き、リンクがそこまで伸びる（`https://example.jp/をご覧ください`）。`.txt` でも見る |
 
 記法の rule は Markdown の文書でだけ動き、`.txt` では「Markdown の文書ではないため」と出して止まります。
+
+括弧と句読点を見る rule（ja / en、試験中）:
+
+| rule | 何を見るか |
+| --- | --- |
+| `unbalanced-bracket` | 組になっていない括弧。閉じ忘れた「（」、開きの無い「」」、全角の「（」を半角の「)」で閉じたもの。「1)」「事例）」のような番号の印は数えない |
+| `doubled-punctuation` | 句読点の重なり（`。。`、`、。`、`,,`、`i.e.,,`）。`...` や `。。。` のように三つ以上並べたものは数えない |
 
 ## 判定役は Anthropic でも OpenAI でも
 
