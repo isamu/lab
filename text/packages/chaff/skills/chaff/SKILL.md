@@ -171,8 +171,8 @@ repeats the body. The writer usually wants the structure changed, not only the s
    - `npx chaffjs <old> --experimental` and `npx chaffjs <new> --experimental`: the AI signals before and after.
    - `npx chaffjs outline <old> <new>`: headings, average section length, text in lists, bold, before and after. A
      restructure shows up here, not only in rule counts.
-   - `npx chaffjs compare <old> <new> --allow-dropped heading`: the headings are the structure you threw away on
-     purpose; every other dropped fact is restored and no fact is added. A fact the old text only repeated (in a cut
+   - `npx chaffjs compare <old> <new> --allow-dropped heading --allow-added heading`: the headings are the structure
+     you rebuilt on purpose; every other dropped fact is restored and no other fact is added. A fact the old text only repeated (in a cut
      まとめ) may stay out with that reason.
 6. **Stop** when all of these hold, or after two full passes, whichever comes first:
    - `ai-generated-composite` does not fire;

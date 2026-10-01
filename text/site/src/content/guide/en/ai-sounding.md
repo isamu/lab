@@ -122,10 +122,10 @@ Leave the old sentences alone. Take an inventory of what the document says, and 
 npx chaffjs old.md --experimental                          # the AI signals before
 npx chaffjs new.md --experimental                          # and after
 npx chaffjs outline old.md new.md                          # headings, average section, lists and bold, before and after
-npx chaffjs compare old.md new.md --allow-dropped heading  # no fact other than a heading dropped or added
+npx chaffjs compare old.md new.md --allow-dropped heading --allow-added heading  # no fact other than a heading dropped or added
 ```
 
-   The headings are the structure you threw away on purpose, so `--allow-dropped heading` excludes them. Restore any other dropped fact and remove any added one.
+   The headings are the structure you rebuilt on purpose, so `--allow-dropped heading --allow-added heading` excludes them. Restore any other dropped fact and remove any added one.
    A fact the old text only repeated (a number in the summary you cut) may stay out, with the reason written down.
 6. Stop when all of these hold. Two full passes at most.
    - `ai-generated-composite` does not fire.
@@ -478,7 +478,7 @@ How the shape changed (demo.md → demo-full.md)
 `compare` checks the facts, with the headings set aside as the structure thrown away on purpose:
 
 ```text
-$ npx chaffjs compare demo.md demo-full.md --allow-dropped heading
+$ npx chaffjs compare demo.md demo-full.md --allow-dropped heading --allow-added heading
 demo.md → demo-full.md
 
 ✗ 4 facts dropped (in demo.md, not in demo-full.md)

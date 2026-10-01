@@ -16,7 +16,7 @@ of generated text: a heading every few paragraphs, bold lead-ins, symmetric sect
   Restructure before writing: reorder, merge and split, cut restating sections and the まとめ, drop lone headings,
   turn point lists into a story, break three-point symmetry, move the writer's experience, open on the point. Show
   the old and new outline first, then write a fresh draft in the writer's voice. Check with `--experimental`,
-  `chaff outline` and `chaff compare --allow-dropped heading`, stop on stated criteria, and end with a before/after
+  `chaff outline` and `chaff compare --allow-dropped heading --allow-added heading`, stop on stated criteria, and end with a before/after
   table taken from chaff's output.
 - A checklist of AI patterns chaff cannot detect by machine, to check by reading.
 - Worked examples (ja and en, written for the page): a blog post rewritten from scratch, with real chaff, `outline`

@@ -124,10 +124,10 @@ npx chaffjs article.md --experimental    # 試験中のルールも動かす
 npx chaffjs old.md --experimental                       # 書き直す前の AI っぽさの特徴
 npx chaffjs new.md --experimental                       # 書き直した後の特徴
 npx chaffjs outline old.md new.md                       # 見出しの数・節の平均・箇条書き・太字を前と後で並べる
-npx chaffjs compare old.md new.md --allow-dropped heading   # 見出し以外の事実が落ちても足されてもいないか
+npx chaffjs compare old.md new.md --allow-dropped heading --allow-added heading   # 見出し以外の事実が落ちても足されてもいないか
 ```
 
-   見出しは、わざと捨てた構成なので `--allow-dropped heading` で外します。ほかに落ちた事実は戻し、足された事実は消します。
+   見出しは、わざと作り直した構成なので `--allow-dropped heading --allow-added heading` で外します。ほかに落ちた事実は戻し、足された事実は消します。
    元の文書が繰り返していただけの事実（消した「まとめ」の中の数など）は、理由を書いて外してかまいません。
 6. 次のどれもが成り立ったら止めます。全面書き直しは 2 回までにします。
    - `ai-generated-composite` が出ない
@@ -570,7 +570,7 @@ study-full.md の構成: 見出し 3、節の平均 187 字、箇条書き 0%、
 元の記事には「5 分」が一度しか無いので、二度目は足したことになります。「その長さなら」と言い換えて、もう一度かけた結果です。
 
 ```text
-$ npx chaffjs compare study.md study-full.md --allow-dropped heading
+$ npx chaffjs compare study.md study-full.md --allow-dropped heading --allow-added heading
 study.md → study-full.md
 
 ✗ 落ちた事実 11 件（study.md にあって study-full.md に無い）
@@ -595,7 +595,7 @@ i 書き方だけ変わった事実 3 件
 落ちた事実も足された事実もありません
 ```
 
-落ちた事実は見出しだけで、わざと捨てた構成なので `--allow-dropped heading` で外しています。数、日付、時刻、固有名詞はすべて残っています。
+落ちた事実は見出しだけで、わざと作り直した構成なので `--allow-dropped heading` と `--allow-added heading` で外しています。数、日付、時刻、固有名詞はすべて残っています。
 
 変えたことと、その理由です。
 

@@ -2222,4 +2222,4 @@ npx chaffjs outline before.md after.md --json  # before / after それぞれの 
 
 1. 書く前に `facts` で事実の控えを取り、`outline` で元の構成を出す。
 2. 書いた後に `outline <前> <後>` で構成の変化を、`--experimental` で AI っぽさの特徴を、前と後で並べる。
-3. `compare <前> <後> --allow-dropped heading` で、見出し以外の事実が落ちても足されてもいないことを確かめる。見出しは、わざと捨てた構成なので外す。
+3. `compare <前> <後> --allow-dropped heading --allow-added heading` で、見出し以外の事実が落ちても足されてもいないことを確かめる。見出しは、わざと作り直した構成なので、落ちたものも足されたものも外す。
