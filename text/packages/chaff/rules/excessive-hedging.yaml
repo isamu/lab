@@ -35,6 +35,7 @@ how_to_fix:
 levels: { strict: 3, normal: 6, relaxed: 12 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+sources: [femmer-2017]
 
 group: wording
 summary:

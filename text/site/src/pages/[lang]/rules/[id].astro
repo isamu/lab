@@ -6,6 +6,7 @@ import { LANGS, href, isLang, t, term, type UiKey } from "../../../lib/i18n";
 import { rules } from "../../../lib/rules";
 import { entryOf, type RunsWhen } from "../../../lib/ruleCatalog";
 import { standingsOf, type RuleInGenre } from "../../../lib/genres";
+import { sourceLinks } from "../../../lib/bibliography";
 
 export const getStaticPaths = () => LANGS.flatMap((lang) => rules.map((rule) => ({ params: { lang, id: rule.id } })));
 
@@ -51,6 +52,7 @@ const silencing: [UiKey, string][] = [
   ["silenceOff", stringify({ rules: { [rule.id]: "off" } }).trimEnd()],
   ...(rule.status === "experimental" ? [["turnOn", stringify({ rules: { [rule.id]: "normal" } }).trimEnd()] as [UiKey, string]] : []),
 ];
+const sources = sourceLinks(rule.sources, lang);
 const box = "mt-1 whitespace-pre-wrap rounded bg-zinc-100 p-3 font-mono text-sm leading-relaxed dark:bg-zinc-900";
 const heading = "mt-10 text-xl font-semibold";
 ---
@@ -110,6 +112,21 @@ const heading = "mt-10 text-xl font-semibold";
 
   <h2 class={heading}>{t(lang, "howToFix")}</h2>
   <p class="mt-2 leading-relaxed">{rule.howToFix[lang]}</p>
+
+  {sources.length > 0 && (
+    <>
+      <h2 class={heading}>{t(lang, "sources")}</h2>
+      <ul class="mt-2 list-disc pl-5">
+        {sources.map((source) => (
+          <li>
+            <a href={source.url} class="text-blue-700 underline dark:text-blue-400">
+              {source.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
 
   <h2 class={heading}>{t(lang, "levelsPlain")}</h2>
   <p class="mt-2 text-sm">{t(lang, "levelsIntro")}</p>

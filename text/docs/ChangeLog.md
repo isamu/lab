@@ -4,6 +4,11 @@ Newest first.
 
 ## Unreleased
 
+### Rule pages link to the papers and standards behind them
+
+- A rule file lists the works it rests on under `sources`, by their anchor on the bibliography page. The rule's page on
+  the site lists them, and each links to its entry.
+
 ### New rules: invisible characters, half-width katakana and a space before punctuation (#170)
 
 Experimental rules for single characters a paste or an edit leaves behind. Each finding in the corpus was read before

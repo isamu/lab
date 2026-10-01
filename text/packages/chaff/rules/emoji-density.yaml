@@ -24,6 +24,7 @@ how_to_fix:
 levels: { strict: 3, normal: 8, relaxed: 20 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+sources: [zhang-2024]
 
 group: readability
 summary:

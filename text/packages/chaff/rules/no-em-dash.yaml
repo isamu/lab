@@ -30,6 +30,7 @@ levels:
   en: { strict: 3, normal: 8, relaxed: 20 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+sources: [freeburg-2026]
 
 group: ai-tells
 summary:
