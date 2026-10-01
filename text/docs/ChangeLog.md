@@ -27,6 +27,14 @@ reduplication (UD `Echo=Rdp`), and the rule skips them:
 
 The rule's `why` and `not_flagged` now describe what it actually skips.
 
+### Japanese density messages say 1000 字, the unit they measure (#402)
+
+`proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in
+Japanese while dividing by the document's length, which a Japanese document measures in characters. They now say
+「1000 字あたり」, as their level descriptions already did; `excessive-hedging`'s level description said 語 too and is
+fixed with them. A test reads every rule's per-1000 messages and level descriptions in both languages and checks the
+unit against what the rule divides by.
+
 ### `feedback` and `suppressions` say when the rule asked about did not run (#397)
 
 `chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and
