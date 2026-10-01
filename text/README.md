@@ -584,6 +584,7 @@ AI っぽい文章を AI に大きく書き換えさせたあと、事実が落�
 npx chaffjs compare before.md after.md                      人が読む
 npx chaffjs compare before.md after.md --json               AI が読んで直す（--compact は 1 件 1 行）
 npx chaffjs compare before.md after.md --allow-dropped url  わざと削った種類は失敗にしない
+npx chaffjs compare before.md after.md --distinct           一度でも書いてある事実は残ったとみなす（繰り返しを消してよい）
 ```
 
 数（単位・通貨つき）、日付、時刻、URL、コード、固有名詞と `names:`、「」や "…" の引用、見出し、条項の参照、脚注を、lint と同じ読み手で取り出し、位置を見ずに数で比べます。
