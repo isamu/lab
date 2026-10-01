@@ -54,7 +54,8 @@ const checkedFinding = (entry: unknown, index: number, source: string, sentences
 /** The findings a detector returned, placed in the document, or the first thing wrong with them. index counts from 1. */
 export const returnedFindings = (returned: unknown, source: string, sentences: readonly Sentence[]): Returned => {
   if (!Array.isArray(returned)) return { problem: { kind: "not-a-list", returned: describeValue(returned) } };
-  const checked = returned.map((entry: unknown, at) => checkedFinding(entry, at + 1, source, sentences));
+  // Array.from reads a hole in a sparse list as undefined, so it is refused rather than skipped.
+  const checked = Array.from(returned, (entry: unknown, at) => checkedFinding(entry, at + 1, source, sentences));
   const wrong = checked.find((entry) => "problem" in entry);
   if (wrong !== undefined && "problem" in wrong) return { problem: wrong.problem };
   return { findings: checked.flatMap((entry) => ("finding" in entry ? [entry.finding] : [])) };
