@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { isLinkLine } from "../packages/chaff/src/link-line.ts";
-import { standaloneLines, subheadingPieces } from "../packages/chaff/src/subheading-line.ts";
+import { closingRun, standaloneLines, subheadingPieces, type Line } from "../packages/chaff/src/subheading-line.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -67,6 +67,20 @@ describe("standaloneLines / subheadingPieces with a line test", () => {
   });
 });
 
+describe("closingRun", () => {
+  const line = (start: number, end: number, next: number): Line => ({ start, end, next });
+
+  it("段落の終わりまで切れ目なく続く後ろの行だけ", () => {
+    assert.deepEqual(closingRun([line(0, 4, 5), line(10, 14, 15), line(15, 19, 19)], 19), [line(10, 14, 15), line(15, 19, 19)]);
+    assert.deepEqual(closingRun([line(0, 4, 5), line(5, 9, 9)], 9), [line(0, 4, 5), line(5, 9, 9)]);
+  });
+
+  it("終わりに届かない行、空の並びは何も返さない", () => {
+    assert.deepEqual(closingRun([line(0, 4, 5)], 19), []);
+    assert.deepEqual(closingRun([], 19), []);
+  });
+});
+
 describe("リンクだけの行を並べた段落", () => {
   const LIST = [
     "[Context Management 2025 - 第1回 モダンなContext Managementアーキテクチャ](https://example.com/1)",
@@ -91,6 +105,34 @@ describe("リンクだけの行を並べた段落", () => {
       .map((line) => `- ${line}`)
       .join("\n")}\n`;
     assert.deepEqual(run(`# 関連記事\n\n本文です。\n\n${LIST}\n`), run(listed));
+  });
+
+  it("「：」の行に続くリンクの行も、箇条書きと同じに段落の外", () => {
+    const many = Array.from({ length: 12 }, (_unused, index) => `[Context Management 2025 - 第${String(index + 1)}回](https://example.com/${String(index)})`);
+    const bullets = many.map((line) => `- ${line}`);
+    const bare = `# 関連記事\n\n本文です。\n\n関連記事：\n${many.join("\n")}\n`;
+    const listed = `# 関連記事\n\n本文です。\n\n関連記事：\n${bullets.join("\n")}\n`;
+    assert.ok(!run(bare).includes("max-paragraph-length"));
+    assert.ok(!run(bare).includes("max-sentence-length"));
+    assert.deepEqual(
+      buildDocument("a.md", bare, ja).paragraphs.map((paragraph) => paragraph.sentences.length),
+      buildDocument("a.md", listed, ja).paragraphs.map((paragraph) => paragraph.sentences.length),
+    );
+  });
+
+  it("本文の途中のリンクの行は、その段落の文のまま", () => {
+    const source = [
+      "# FAQ",
+      "",
+      "First, check the voucher. Then open the summary. Compare the totals. Check the charge line.",
+      "[More information about managing the travel card account.](https://a.example)",
+      "If it does, there is still a balance. Pay it.",
+      "",
+    ].join("\n");
+    assert.deepEqual(
+      buildDocument("a.md", source, en).paragraphs.map((paragraph) => paragraph.sentences.length),
+      [7],
+    );
   });
 
   it("英語の文書でも行ごとに一つの文", () => {

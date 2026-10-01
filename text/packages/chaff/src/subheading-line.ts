@@ -71,6 +71,16 @@ export const standaloneLines = (text: string, standsAlone: StandsAlone = () => f
   return lines.filter((line, index) => alone(line) && startsFresh(lines[index - 1]));
 };
 
+/**
+ * lines のうち、段落の終わり（end）まで切れ目なく続く後ろの並び。lines は text の順で、行は次の行の頭（next）で隣の行に続く。
+ * 段落の途中の 1 行は本文の文の一つで、終わりまで続く並びだけが本文の後に置いた一覧。
+ */
+export const closingRun = (lines: readonly Line[], end: number): readonly Line[] =>
+  lines.reduceRight<{ readonly run: readonly Line[]; readonly until: number }>(
+    (acc, line) => (line.next === acc.until ? { run: [line, ...acc.run], until: line.start } : acc),
+    { run: [], until: end },
+  ).run;
+
 /** 段落 text を、一つで立つ行の後ろで切った片。切る所が無ければ text 全体の 1 片。片は改行を含まない端で終わる。 */
 export const subheadingPieces = (text: string, standsAlone: StandsAlone = () => false): Span[] => {
   const byStart = new Map(linesOf(text).map((line) => [line.start, line]));

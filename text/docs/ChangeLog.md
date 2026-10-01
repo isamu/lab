@@ -9,9 +9,10 @@ Newest first.
 Links listed one per line without a bullet (a series index at the end of an article) were read as one long sentence,
 because Markdown joins the lines of a paragraph. A line that is exactly one link now ends its item, the way a
 bracketed subheading line already did, as long as the line before it ends a sentence, ends with 「：」, or is such a line
-itself; a link inside a sentence wrapped across lines stays in that sentence. These lines are read as list items, so
-`max-sentence-length`, `repeated-sentence-head` and the other list-aware rules treat them as they treat the same
-lines written with `- `. Every rule that reads sentences takes this path.
+itself; a link inside a sentence wrapped across lines stays in that sentence. When such lines run to the end of the
+paragraph they are read as list items, so `repeated-sentence-head`, `max-paragraph-length` and the other list-aware
+rules treat them as they treat the same lines written with `- `; one link line in the middle of a paragraph stays one
+of its sentences. Every rule that reads sentences takes this path.
 
 ### `chaff compare <before> <after>`: did a rewrite keep its facts?
 
