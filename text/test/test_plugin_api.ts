@@ -116,11 +116,7 @@ describe("the plugin API", () => {
 
     it("places each finding, quotes its sentence and fills {matched}", () => {
       const result = returnedFindings(
-        [
-          { start: at, end: at + 3 },
-          { start: at, values: { matched: "launch date", count: 2 } },
-          { start: at },
-        ],
+        [{ start: at, end: at + 3 }, { start: at, values: { matched: "launch date", count: 2 } }, { start: at }],
         doc.source,
         doc.sentences,
       );
