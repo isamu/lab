@@ -1,3 +1,4 @@
+import { unlabeledReader } from "./heading-label.ts";
 import { atxHeadingText, headingText } from "./heading-text.ts";
 import { hasTitle } from "./heading-title.ts";
 import { maskSpans } from "./mask.ts";
@@ -198,12 +199,14 @@ const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: Langua
 const headingTokensOf = (adapter: LanguageAdapter, tagged: boolean, heading: string): { headingTokens?: readonly Token[] } =>
   tagged && heading !== "" ? { headingTokens: adapter.segment(heading).sentences.flatMap((sentence) => sentence.tokens ?? []) } : {};
 
+type HeadingReaders = { readonly tokensOf: (heading: string) => { headingTokens?: readonly Token[] }; readonly unlabeledOf: (heading: string) => () => string };
+
 const sectionsOf = (
   headings: readonly Heading[],
   sentences: readonly Sentence[],
   strongs: readonly Span[],
   length: number,
-  tokensOf: (heading: string) => { headingTokens?: readonly Token[] },
+  readers: HeadingReaders,
 ): Section[] => {
   const bounds = headings.map((heading, index) => ({ heading, from: heading.end, to: headings[index + 1]?.start ?? length }));
   const lead = { heading: { depth: 0, text: "", start: 0, end: 0 }, from: 0, to: headings[0]?.start ?? length };
@@ -211,10 +214,14 @@ const sectionsOf = (
     .filter((bound) => bound.to > bound.from)
     .map(({ heading, from, to }) => {
       const inside = sentences.filter((sentence) => within(sentence.span, from, to));
+      const unlabeled = readers.unlabeledOf(heading.text);
       return {
         depth: heading.depth,
         heading: heading.text,
-        ...tokensOf(heading.text),
+        ...readers.tokensOf(heading.text),
+        get unlabeledHeading(): string {
+          return unlabeled();
+        },
         span: { start: from, end: to },
         sentences: inside,
         strongCount: strongs.filter((span) => within(span, from, to)).length,
@@ -333,7 +340,10 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     language: adapter.id,
     lengthUnit: adapter.capabilities.lengthUnit,
     capabilities: adapter.capabilities,
-    sections: sectionsOf(headings, sentences, strongSpans(root, blocks), source.length, (heading) => headingTokensOf(adapter, tagged, heading)),
+    sections: sectionsOf(headings, sentences, strongSpans(root, blocks), source.length, {
+      tokensOf: (heading) => headingTokensOf(adapter, tagged, heading),
+      unlabeledOf: unlabeledReader(adapter.structure, lexicons),
+    }),
     sentences,
     listSpans: listItems,
     paragraphs: paragraphsOf(prose, paragraphSpans, sentences, listItems),

@@ -219,6 +219,8 @@ export type Section = {
   readonly heading: string;
   /** 見出しを文と同じ解析器で語に分けたもの。文が tokens を持つときだけ入る。 */
   readonly headingTokens?: readonly Token[];
+  /** 見出しの頭の番号の札（「例 3：」「1.」「第2章」「Step 3:」）を除いた題。札が無ければ見出しのまま。 */
+  readonly unlabeledHeading?: string;
   readonly span: Span;
   readonly sentences: readonly Sentence[];
   /** この節に含まれる強調（Markdown の ** **）の数。 */
