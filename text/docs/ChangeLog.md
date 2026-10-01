@@ -13,6 +13,14 @@ as the rule reference on the site does: `strict   up to 3 emoji per 1000 words`,
 dashes, proper nouns…), in the unit of the document's language, as their messages do since #402. A team's custom rule,
 which has no level description, still shows its limits as a number of times.
 
+### `announced-count-mismatch` reads a categorised list and the number nearest the colon (#432)
+
+Two misreadings are fixed. When only a colon at the end of a sentence announces the list (no 以下の / following), the
+colon announces the number nearest to it, so a number with another number after it is no longer taken as the count
+(「これまで 1 つのページにまとめていましたが、2 ページに分けました:」). A list whose every item is a label and its members
+(`- **実験的**: Slack / Discord / Matrix`) is not reported when the members, split at `/` or `／`, add up to the announced
+count. Commas and 読点 are not separators: they also occur inside an item's description. A word pointing ahead still names the count whatever number follows it.
+
 ### A heading with its title right after the number is numbered (#431)
 
 `## 7.委託`, `## 7．委託` and `## 2.Overview` were not read as numbered, so `numbering-gap` reported "6 then 8" as an
