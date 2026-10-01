@@ -4,6 +4,21 @@ Newest first.
 
 ## Unreleased
 
+### `chaff outline <file> [<after>]`: a restructure, measured (#439)
+
+A rewrite that smooths every sentence can keep the skeleton of generated text: the same headings, lists and bold.
+`outline` shows the outline (each heading indented by depth, with its line and the length of its own text) and measures
+its shape: the number of headings, the average section length (characters for Japanese, words for English; sections
+with no text of their own are left out), the share of the text in list items, and the bold spans. Given two files it
+shows both and how each measure moved.
+
+- Read with lint's own document model (`doc.sections`, sentences, list spans); no new parser.
+- `--compact` (one section per line) and `--json` (`before` / `after` for two files). It only measures: exit 0 once
+  the files are read, 1 for no file, three files or an unreadable one.
+- `chaff compare` and `chaff facts` now read a file through one shared reader (`commands/read-document.ts`); their
+  output is unchanged (compared before and after over every Markdown file in `examples/`, `samples/` and the site's
+  guide: `facts --json`, `compare --json` on neighbouring pairs and a file against itself).
+
 ### `chaff facts <file>`: the facts to keep, before a rewrite (#439)
 
 Lists every fact atom `chaff compare` reads in one document — numbers, dates, times, URLs, code, names, quotations,
