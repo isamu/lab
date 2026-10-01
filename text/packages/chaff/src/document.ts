@@ -233,21 +233,28 @@ export type TeamRules = {
   readonly prefer?: Readonly<Record<string, string>>;
   /** チームの固有名詞。1 つの名前として読む rule が見る。 */
   readonly names?: readonly string[];
+  /** The word lists the plugins ship for the document's language, by name. */
+  readonly lexicons?: LanguageAdapter["lexicons"];
 };
 
 const EMPTY_TEAM: TeamRules = { jargon: [], requiredSections: [] };
 
-/** Config から取り出す。document は Config の形を知らない。 */
-export const teamRules = (config: {
-  readonly jargon: readonly string[];
-  readonly requiredSections: readonly string[];
-  readonly prefer?: Readonly<Record<string, string>>;
-  readonly names?: readonly string[];
-}): TeamRules => ({
+/** Config から取り出す。document は Config の形を知らない。language: the document's, for the plugins' word lists. */
+export const teamRules = (
+  config: {
+    readonly jargon: readonly string[];
+    readonly requiredSections: readonly string[];
+    readonly prefer?: Readonly<Record<string, string>>;
+    readonly names?: readonly string[];
+    readonly extensions?: { readonly lexicons: Readonly<Record<string, LanguageAdapter["lexicons"]>> };
+  },
+  language?: string,
+): TeamRules => ({
   jargon: config.jargon,
   prefer: config.prefer ?? {},
   requiredSections: config.requiredSections,
   names: config.names ?? [],
+  lexicons: language === undefined ? {} : (config.extensions?.lexicons[language] ?? {}),
 });
 
 /**
@@ -261,6 +268,7 @@ const proseOf = (source: string, masked: readonly Span[]): string => {
 
 const teamLexicons = (adapter: LanguageAdapter, team: TeamRules): LanguageAdapter["lexicons"] => ({
   ...adapter.lexicons,
+  ...team.lexicons,
   "internal-jargon": team.jargon.map((pattern) => ({ pattern })),
   // 使わない書き方を pattern に、使う書き方を instead_of に置く。語彙表の「同じことの別の書き方」と同じ向き。
   "preferred-term": Object.entries(team.prefer ?? {}).map(([pattern, use]) => ({ pattern, instead_of: use })),

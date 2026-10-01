@@ -59,10 +59,16 @@ const optionsOf = (value: unknown, where: string): Record<string, Readonly<Recor
 
 /** One style file. Throws on anything it cannot read: the file ships with chaff, so a wrong entry is chaff's bug. */
 export const parseStyle = (raw: unknown, file: string): StyleDefinition => {
-  if (!isRecord(raw)) throw new Error(`${file}: a style must be a map`);
+  const id = isRecord(raw) ? raw["id"] : undefined;
+  if (isRecord(raw) && (typeof id !== "string" || `${id}.yaml` !== file)) throw new Error(`${file}: id must be the file's name without .yaml`);
+  return styleOf(raw, file);
+};
+
+/** One style, wherever it was written (where names it in what is thrown). Throws on anything it cannot read. */
+export const styleOf = (raw: unknown, where: string): StyleDefinition => {
+  if (!isRecord(raw)) throw new Error(`${where}: a style must be a map`);
   const id = raw["id"];
-  if (typeof id !== "string" || `${id}.yaml` !== file) throw new Error(`${file}: id must be the file's name without .yaml`);
-  const where = `${file}`;
+  if (typeof id !== "string" || id === "") throw new Error(`${where}: a style needs an id`);
   const rules = levelsOf(raw["rules"], where);
   const options = optionsOf(raw["options"], where);
   if (Object.keys(rules).length === 0 && Object.keys(options).length === 0) throw new Error(`${where}: a style must set rules or options`);

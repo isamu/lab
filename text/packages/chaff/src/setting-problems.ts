@@ -26,7 +26,7 @@ const profileProblems = (command: string, config: Config, text: CliText): string
 export const settingProblems = (command: string, genreFlag: string | undefined, config: Config, text: CliText, ui: UiLanguage = "en"): string[] => [
   ...genreProblems(command, genreFlag, config, text),
   ...profileProblems(command, config, text),
-  ...styleProblems(config, loadStyles(), ui),
+  ...styleProblems(config, [...loadStyles(), ...(config.extensions?.styles ?? [])], ui),
   ...customRuleProblems(config, ui),
   ...extensionProblems(config, ui),
 ];

@@ -1,4 +1,5 @@
 import type { Finding, Span } from "./plugin.ts";
+import { RULE_ID } from "./extension/plugin-name.ts";
 
 export type Suppression = {
   readonly rules: readonly string[];
@@ -22,8 +23,6 @@ const SCOPE: Readonly<Record<string, Suppression["scope"]>> = { stet: "next", "s
 
 /** 理由は em dash のあと。書かなくてもよいが、書かないと chaff suppressions に並ぶ。 */
 const REASON_MARK = "\u2014";
-
-const RULE_ID = /^[a-z][a-z0-9-]*$/u;
 
 const lineOf = (source: string, offset: number): number => source.slice(0, offset).split("\n").length;
 

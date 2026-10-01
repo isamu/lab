@@ -93,7 +93,7 @@ const yourSetting = (rule: RuleDefinition, config: Config): Record<string, unkno
 
 /** The house style chaff.yaml names: what it decides and the guideline it follows, so an AI can say where a setting came from. */
 const styleOf = (config: Config): Record<string, unknown> | null => {
-  const style = loadStyles().find((entry) => entry.id === config.applied?.style);
+  const style = [...loadStyles(), ...(config.extensions?.styles ?? [])].find((entry) => entry.id === config.applied?.style);
   return style === undefined ? null : { id: style.id, name: style.name, summary: style.summary, source: style.source };
 };
 
@@ -198,7 +198,9 @@ export const rulesJson = (
         your_setting: yourSetting(rule, config),
         now: now(rule, config, genre, text, preset),
         ...(rule.options === undefined ? {} : { options: optionsJson(rule, optionLayers) }),
-        ...(rule.custom === undefined ? {} : { defined_in: "chaff.yaml custom_rules", custom: rule.custom }),
+        ...(rule.custom === undefined
+          ? {}
+          : { defined_in: rule.plugin === undefined ? "chaff.yaml custom_rules" : `plugin ${rule.plugin}`, custom: rule.custom }),
         ...guideOf(rule),
       })),
       how_to_write_settings_from_a_style_note: text.fromStyleNote,

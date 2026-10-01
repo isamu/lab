@@ -98,7 +98,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const rules = rulesOf(language, config);
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
-  const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
+  const doc = buildDocument(path, source, adapter, teamRules(config, language), profileFor(config, path, source, language, genre));
   const raw = runRulesWith(doc, rules, {
     settings: config.rules,
     experimental,

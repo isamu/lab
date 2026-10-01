@@ -73,6 +73,16 @@ describe("type: module custom rules", () => {
       const pattern = parsedRule({ id: "c", type: "pattern", pattern: "x", requires: ["pos"] });
       assert.deepEqual([pattern?.requires, pattern?.layer], [[], "L2"]);
     });
+
+    it("a module may name a word list; the other types carry their words themselves", () => {
+      assert.equal(parsedRule({ id: "d", type: "module", module: "./d.mjs", word_list: " hedging " })?.word_list, "hedging");
+      assert.equal(parsedRule({ id: "e", type: "pattern", pattern: "x", word_list: "hedging" })?.word_list, undefined);
+      const bad = parseCustomRules([{ ...EXPLAINED, id: "f", type: "module", module: "./f.mjs", word_list: 3 }], CONTEXT);
+      assert.deepEqual(
+        bad.problems.map((problem) => problem.kind),
+        ["bad-word-list"],
+      );
+    });
   });
 
   describe("detectorExport: what the module exports by default", () => {
