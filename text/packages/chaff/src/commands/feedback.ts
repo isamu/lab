@@ -7,6 +7,8 @@ import { messageOf } from "../render/text.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
 import { excerptsAround } from "../feedback/excerpt.ts";
 import { feedbackDraft, type FeedbackDraft, type FeedbackKind, type ReportedFinding } from "../feedback/draft.ts";
+import { notRunAmong } from "../not-run.ts";
+import type { Skipped } from "../run.ts";
 
 export const FEEDBACK_FILE = ".chaff-feedback.md";
 const NEW_ISSUE = "https://github.com/isamu/lab/issues/new";
@@ -18,6 +20,10 @@ export type Checked = {
   readonly rules: readonly RuleDefinition[];
   readonly language: string;
   readonly genre: string;
+  /** The rules this check did not run, and why. */
+  readonly skipped: readonly Skipped[];
+  /** How the check was run, as the reader of a report would repeat it (runConditions). */
+  readonly conditions: readonly string[];
 };
 
 export type FeedbackContext = {
@@ -36,6 +42,8 @@ const TEXT: Texts<{
   readonly notFound: (path: string) => string;
   readonly badLine: (lines: number) => string;
   readonly noMatch: (list: string) => string;
+  readonly notRun: (rule: string, why: string) => string;
+  readonly runExperimental: string;
   readonly several: (list: string) => string;
   readonly none: string;
   readonly written: (file: string, lines: string) => string;
@@ -51,6 +59,8 @@ const TEXT: Texts<{
     notFound: (path) => `${path} がありません。`,
     badLine: (lines) => `--line には 1〜${String(lines)} の行番号を書いてください。`,
     noMatch: (list) => `その指摘が見つかりません。この文書の指摘:\n${list}`,
+    notRun: (rule, why) => `${rule} は今回動いていません（${why}）。`,
+    runExperimental: "試験中の rule です。--experimental を付けてかけ直してください。",
     several: (list) => `その rule の指摘がいくつもあります。--line で一つ選んでください:\n${list}`,
     none: "  （指摘はありません）",
     written: (file, lines) => `報告の下書きを ${file} に書きました。文書から載せたのは ${lines} だけです。送る前に読んで、要らない所は消してください。`,
@@ -66,6 +76,8 @@ const TEXT: Texts<{
     notFound: (path) => `${path} does not exist.`,
     badLine: (lines) => `--line must be a line number from 1 to ${String(lines)}.`,
     noMatch: (list) => `No such finding. The findings in this document:\n${list}`,
+    notRun: (rule, why) => `${rule} did not run in this check (${why}).`,
+    runExperimental: "It is experimental: run again with --experimental.",
     several: (list) => `That rule has several findings here. Pick one with --line:\n${list}`,
     none: "  (no findings)",
     written: (file, lines) =>
@@ -157,13 +169,32 @@ const sendInstructions = (title: string, lines: readonly number[], ui: UiLanguag
   ].join("\n");
 };
 
+/**
+ * Pure: how a check was run, in the words a reader would type to run it again: the flags that change what is found.
+ * Experimental rules switched on in chaff.yaml count too, said as chaff.yaml says it.
+ */
+export const runConditions = (argv: readonly string[], genreFlag: string | undefined, experimentalInConfig: boolean): string[] => {
+  const experimental = argv.includes("--experimental") ? ["--experimental"] : [];
+  const fromConfig = experimental.length === 0 && experimentalInConfig ? ["experimental: true (chaff.yaml)"] : [];
+  return [...experimental, ...fromConfig, ...(genreFlag === undefined ? [] : [`--genre ${genreFlag}`])];
+};
+
+/** No finding matched: say so with the findings there are, and first why the asked-for rule did not run, if it did not. */
+const noMatch = (request: Request, checked: Checked, ui: UiLanguage): string => {
+  const text = TEXT[ui];
+  const list = text.noMatch(describe(checked.findings, text.none));
+  const [notRun] = request.rule === undefined ? [] : notRunAmong([request.rule], checked.skipped);
+  if (notRun === undefined) return list;
+  return [text.notRun(notRun.rule, notRun.why), ...(notRun.needsExperimental ? [text.runExperimental] : []), list].join("\n");
+};
+
 /** Why the request cannot be drafted, or the findings to report. */
 const pick = (request: Request, checked: Checked, lineCount: number, ui: UiLanguage): { readonly error: string } | { readonly findings: Finding[] } => {
   const text = TEXT[ui];
   if (request.line !== undefined && (request.line < 1 || request.line > lineCount)) return { error: text.badLine(lineCount) };
   const picked = chosen(checked.findings, request.rule, request.line);
   if (request.kind === "missed") return { findings: picked };
-  if (picked.length === 0) return { error: text.noMatch(describe(checked.findings, text.none)) };
+  if (picked.length === 0) return { error: noMatch(request, checked, ui) };
   // One finding per report: a rule picked alone could otherwise pull excerpts from all over the document.
   if (picked.length > 1) return { error: text.several(describe(picked, text.none)) };
   return { findings: picked };
@@ -204,6 +235,7 @@ export const runFeedback = async (targets: readonly string[], argv: readonly str
       fileName: basename(request.path),
       language: checked.language,
       genre: checked.genre,
+      conditions: checked.conditions,
       findings,
       line: lines[0] ?? 0,
       excerpts: excerptsAround(source, lines),
