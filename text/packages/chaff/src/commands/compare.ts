@@ -1,8 +1,4 @@
-import { loadAdapter } from "../adapter-load.ts";
-import { buildDocument, teamRules } from "../document.ts";
 import { readMarkdown } from "../markdown-read.ts";
-import { profileFor } from "../profile/for-file.ts";
-import { resolveGenre } from "../resolve-genre.ts";
 import { isMarkdownPath } from "../structure/markdown-path.ts";
 import { uiLanguageOf } from "../ui.ts";
 import { ATOM_KINDS, isAtomKind, type AtomKind } from "../compare/atom.ts";
@@ -10,7 +6,8 @@ import { extractFacts } from "../compare/extract.ts";
 import { outcomeOf, type Allowed, type Compared } from "../compare/outcome.ts";
 import { renderCompact, renderFriendly, renderJson } from "../compare/render.ts";
 import { COMPARE_TEXT } from "../compare/text.ts";
-import { readSource, treeLanguage, type TreeContext } from "./tree.ts";
+import { readDocument } from "./read-document.ts";
+import type { TreeContext } from "./tree.ts";
 
 /** Options whose value is the next argument. That value is not a file. */
 const VALUED: ReadonlySet<string> = new Set(["--language", "--genre", "--allow-dropped", "--allow-added"]);
@@ -34,20 +31,15 @@ const parseAllowed = (argv: readonly string[]): ParsedAllowed => {
   return { allowed: { dropped: kinds(dropped), added: kinds(added) } };
 };
 
-type Read = Compared & { readonly language: string };
+export type DocumentFacts = Compared & { readonly language: string };
 
 /** One document's facts, read as lint reads it: its language, the team's names, and the parts of speech. */
-const readFacts = async (path: string, argv: readonly string[], context: TreeContext): Promise<Read | undefined> => {
-  const source = await readSource(path, context);
-  if (source === undefined) return undefined;
-  const language = treeLanguage(path, source, argv, context);
-  const adapter = await loadAdapter(language);
-  await adapter.prepare?.({ pos: true });
-  const genre = resolveGenre(path, source, context.config, context.flag(argv, "--genre")).genre;
-  const doc = buildDocument(path, source, adapter, teamRules(context.config), profileFor(context.config, path, source, language, genre));
-  const root = isMarkdownPath(path) ? readMarkdown(doc.source).root : undefined;
-  const extraction = extractFacts({ doc, root, structure: adapter.structure, names: context.config.names ?? [] });
-  return { path, extraction, language };
+export const readFacts = async (path: string, argv: readonly string[], context: TreeContext): Promise<DocumentFacts | undefined> => {
+  const prose = await readDocument(path, argv, context, true);
+  if (prose === undefined) return undefined;
+  const root = isMarkdownPath(path) ? readMarkdown(prose.doc.source).root : undefined;
+  const extraction = extractFacts({ doc: prose.doc, root, structure: prose.structure, names: context.config.names ?? [] });
+  return { path, extraction, language: prose.language };
 };
 
 const renderFor = (argv: readonly string[]): typeof renderFriendly => {
