@@ -632,12 +632,20 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 | `stock-transition` | 「さらに」「加えて」「Moreover」で始まる文の密度（試験中） |
 | `assistant-residue` | チャットの返事の名残（「私の知識は」「As of my last knowledge update」「お役に立てれば幸いです」）（試験中） |
 | `unfilled-placeholder` | 埋め忘れた雛形の空欄（「【会社名】」「[Your Name]」）（試験中） |
+| `announcing-opener` | 「重要なのは、」「ポイントは、」「Here's the thing」のように予告で始まる文が重なっていないか（試験中） |
+| `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度（日本語のみ、試験中） |
 
 `ai-tell` は**単独で「AI が書いた」とは言いません**。どれも 1 つでは普通の日本語なので、
 重みを足し合わせた点だけを出します。
 `contrast-framing` と `stock-transition` も、1 つなら普通の書き方なので密度だけを見ます。
 `assistant-residue` は、知識の期限や AI としての断り書きなら 1 つで、人も書く礼の言葉は 2 つ重なったときに言います。
 `unfilled-placeholder` は文体ではなく埋め忘れなので 1 つで言います。例として置いた「○○」は数えません。
+`announcing-opener` は文頭の予告を数で見ます（人の記事も長さによらず 1 つ 2 つは書くため）。
+`colon-lead-in` は説明書・法務・技術文書のジャンルでは見ません。英語の文書は、人も同じくらいこの形で書くので見ません。
+`ai-tell`（日本語）には、技術文の比喩（「静かに壊れる」「黙って無視される」「時間を溶かす」）も入っています。
+入れるかどうかは、生成 AI 以前の技術記事と corpus で測って決めました。「解像度を上げる」「腹落ち」のように、以前から人が同じくらい書いていた語は入れていません。
+
+AI っぽい rule がどれだけ正確かは `yarn bench:ai` で測れます。同じ中身を、人の書きぶり・生成文の書きぶり・書き直した版の 3 通りで書いた見本（`test/fixtures/ai-samples/paired/`）と corpus にかけ、rule ごとに生成文の版に当たった数と、それ以外に当たった数（誤報）を出します。
 
 ## チームが決める rule
 

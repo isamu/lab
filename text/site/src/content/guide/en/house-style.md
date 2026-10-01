@@ -2,7 +2,7 @@
 
 Every team has writing rules it wants kept: a journal's author guidelines, a company's style guide.
 With chaff you write those rules in `chaff.yaml`, and a machine checks them. No code is needed.
-The features on this page ship in the release after 0.17.0.
+The features on this page are in chaff 0.18.0 and later.
 
 There are three ways to set them.
 
