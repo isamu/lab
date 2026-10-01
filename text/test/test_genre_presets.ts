@@ -18,6 +18,7 @@ import { rulesJson } from "../packages/chaff/src/render/rules-json.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { firedRules, namedRuleRun } from "./rule-run.ts";
 
 const localized = (text: string): { ja: string; en: string } => ({ ja: `${text}（ja）`, en: text });
 
@@ -444,5 +445,23 @@ describe("用語集のジャンル", () => {
     (["strict", "normal", "relaxed"] as const).forEach((level) =>
       assert.equal(resolve(rule, level, "docs/glossary").limit, resolve(rule, level, "docs/manual").limit, level),
     );
+  });
+});
+
+describe("議事録とプレスリリースの段（corpus の実文書から）", () => {
+  const MINUTES = "# Minutes\n\nThe budget was approved. The plan was reviewed. The date was moved.\n";
+  const NAMES = "Alice and Bob from Contoso met Carol from Fabrikam in Seattle, then Dave from Northwind joined Erin at Tailspin.";
+  const RELEASE = `# Release\n\n${Array.from({ length: 12 }, () => NAMES).join(" ")}\n`;
+
+  it("議事録は agentless-passive を見ない。報告書では見る。chaff.yaml で入れれば議事録でも見る", () => {
+    assert.ok(!firedRules(en, MINUTES, "business/meeting-notes").includes("agentless-passive"));
+    assert.ok(firedRules(en, MINUTES, "business/report").includes("agentless-passive"));
+    assert.ok(namedRuleRun("agentless-passive", MINUTES, en, "a.md", "business/meeting-notes").findings.length > 0);
+  });
+
+  it("プレスリリースは proper-noun-density を見ない。報告書では見る。chaff.yaml で入れればリリースでも見る", () => {
+    assert.ok(!firedRules(en, RELEASE, "business/press-release").includes("proper-noun-density"));
+    assert.ok(firedRules(en, RELEASE, "business/report").includes("proper-noun-density"));
+    assert.ok(namedRuleRun("proper-noun-density", RELEASE, en, "a.md", "business/press-release").findings.length > 0);
   });
 });
