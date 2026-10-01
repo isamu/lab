@@ -28,6 +28,7 @@ levels:
   relaxed: 40
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+sources: [zhang-2024]
 
 group: readability
 summary:
