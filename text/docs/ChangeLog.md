@@ -12,6 +12,15 @@ counts the potential and negative forms (させていただけますか, させ�
 words (させていただく and せていただく) count as one use. A one-step verb with させる (見させていただく) is still not counted:
 the analyser reads its させ as one word, which no entry in the word list can match.
 
+### `style: koyobun`: 公用文作成の考え方 (2022)
+
+- `style: koyobun` checks a document the way 文化審議会「公用文作成の考え方」 asks: a Japanese sentence over 60 characters
+  (Ⅲ－3 ア: check a sentence once it reaches 50 to 60 characters), です・ます mixed with である (Ⅲ－1 イ), and a
+  katakana word without its final ー (Ⅰ－3 エ). English documents keep the level's limit, since the document gives none.
+- A style can set a rule's number by language under `limits:`. chaff.yaml's own level or number for the rule still wins.
+- `chaff explain` now says when a number sets a rule's limit (a style's, or one written in chaff.yaml's `rules:`), and
+  no longer marks a level as current then. The number is shown in the rule's own words ("一文 60 字まで").
+
 ### New rule: `requirement-modal`, and `style: jis-z8301-2019` (experimental)
 
 - `requirement-modal` checks a provision's verb form against a house rule a team picks under `options`; with none, it
