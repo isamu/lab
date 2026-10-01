@@ -21,6 +21,10 @@ import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
 import { announcedCount } from "./announced-count.ts";
 import { danglingFigure } from "./dangling-figure.ts";
+import { nominalization } from "./nominalization.ts";
+import { requirementSmell } from "./requirement-smell.ts";
+import { requirementModal } from "./requirement-modal.ts";
+import { vagueFigurePointer } from "./vague-figure-pointer.ts";
 import {
   danglingReference,
   dateOrder,
@@ -38,6 +42,14 @@ import { urlRunOn } from "./url-run-on.ts";
 import { unbalancedBracket } from "./unbalanced-bracket.ts";
 import { doubledPunctuation } from "./doubled-punctuation.ts";
 import { kutotenConsistency } from "./kutoten-consistency.ts";
+import { hankakuKana } from "./hankaku-kana.ts";
+import { invisibleCharacter } from "./invisible-character.ts";
+import { spaceBeforePunctuation } from "./space-before-punctuation.ts";
+import { duplicateHeading } from "./duplicate-heading.ts";
+import { emptySection } from "./empty-section.ts";
+import { fullwidthAlnum } from "./fullwidth-alnum.ts";
+import { spellingVariety } from "./spelling-variety.ts";
+import { raNuki } from "./ra-nuki.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
 import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
@@ -104,6 +116,10 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "duplicate-definition": duplicateDefinition,
   "announced-count": announcedCount,
   "dangling-figure": danglingFigure,
+  nominalization: nominalization,
+  "requirement-smell": requirementSmell,
+  "requirement-modal": requirementModal,
+  "vague-figure-pointer": vagueFigurePointer,
   "date-range-reversed": dateRangeReversed,
   "percent-sum-mismatch": percentSumMismatch,
   "heading-level-skip": headingLevelSkip,
@@ -113,4 +129,12 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "unbalanced-bracket": unbalancedBracket,
   "doubled-punctuation": doubledPunctuation,
   "kutoten-consistency": kutotenConsistency,
+  "hankaku-kana": hankakuKana,
+  "invisible-character": invisibleCharacter,
+  "space-before-punctuation": spaceBeforePunctuation,
+  "duplicate-heading": duplicateHeading,
+  "empty-section": emptySection,
+  "fullwidth-alnum": fullwidthAlnum,
+  "spelling-variety": spellingVariety,
+  "ra-nuki": raNuki,
 };

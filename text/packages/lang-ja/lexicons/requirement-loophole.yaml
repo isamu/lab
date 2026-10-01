@@ -1,0 +1,13 @@
+# 要求に抜け道を開ける言い方（Femmer ほか 2017 の loophole、ISO/IEC/IEEE 29148 の避ける語）。
+# どこまでしたら満たしたことになるのかを、読み手が決められない。
+id: requirement-loophole
+language: ja
+entries:
+  - pattern: 可能な限り
+  - pattern: できる限り
+  - pattern: 可能なかぎり
+  - pattern: できるかぎり
+  - pattern: できるだけ
+  - pattern: なるべく
+  - pattern: 必要に応じて
+  - pattern: 場合によっては

@@ -147,10 +147,10 @@ $ npx chaffjs explain max-sentence-length
 
   How to fix: Split it in two at the conjunction.
 
-  Levels (unit: words):
-    strict   18
-  → normal   25
-    relaxed  35
+  Levels:
+    strict   up to 18 words in a sentence
+  → normal   up to 25 words in a sentence
+    relaxed  up to 35 words in a sentence
     off      not checked
 
   These numbers are for the default genre. business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / docs/glossary / academic have numbers of their own.

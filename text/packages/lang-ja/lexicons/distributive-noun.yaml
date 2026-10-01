@@ -1,5 +1,6 @@
-# 重ねて「それぞれの」を言える名詞。まとまり（会社・部署・家庭）と、場合や時（場面・時代）を指すもの。
-# 「会社会社で考え方が違う」「場面場面で使い分ける」「段階段階で確認する」。ここに無い名詞の重なり（資料資料の）は、doubled-word が書き損じとして数える。
+# 重ねて「それぞれの」を言える名詞。人（個人・各人）、まとまり（会社・部署・家庭）、単位（一行・一語）、場所（地域・各地）、場合や時（場面・時代）を指すもの。
+# 「会社会社で考え方が違う」「場面場面で使い分ける」「一行一行を読む」。ここに無い漢語の名詞の重なり（資料資料・確認確認）は、doubled-word が書き損じとして数える。
+# 漢字の名詞でも、時を言う副詞的な名詞（毎年・各自）と形容動詞の語幹（駄目）は、アダプタが品詞の細分類で重ね言葉と読むので、ここには要らない。
 id: distributive-noun
 language: ja
 entries:
@@ -15,12 +16,23 @@ entries:
   - pattern: 学校
   - pattern: 家庭
   - pattern: 地域
+  - pattern: 地方
+  - pattern: 各地
   - pattern: 国
   - pattern: 個人
+  - pattern: 各人
   - pattern: 場面
   - pattern: 場所
   - pattern: 時代
   - pattern: 時期
+  - pattern: 年度
+  - pattern: 世代
   - pattern: 季節
   - pattern: 段階
   - pattern: 案件
+  - pattern: 部分
+  - pattern: 一行
+  - pattern: 一文
+  - pattern: 一語
+  - pattern: 一言
+  - pattern: 一品

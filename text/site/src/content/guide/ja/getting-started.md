@@ -87,7 +87,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  49 件の rule は動いていません:
+  58 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
@@ -104,17 +104,23 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       date-order（まだ試験中のため）
       date-range-reversed（まだ試験中のため）
       date-weekday-mismatch（まだ試験中のため）
+      double-negative（まだ試験中のため）
       doubled-punctuation（まだ試験中のため）
       doubled-word（まだ試験中のため）
       duplicate-definition（まだ試験中のため）
+      duplicate-heading（まだ試験中のため）
       emoji-density（まだ試験中のため）
       empty-conclusion（意味を読む検査のため（npx chaff test で動きます））
+      empty-section（まだ試験中のため）
       excessive-hedging（まだ試験中のため）
       expletive-construction（ja 向けの rule ではないため）
+      fullwidth-alnum-consistency（まだ試験中のため）
+      hankaku-kana（まだ試験中のため）
       heading-level-skip（まだ試験中のため）
       hiragana-fukushi（まだ試験中のため）
       image-alt-text（まだ試験中のため）
       internal-jargon（まだ試験中のため）
+      invisible-character（まだ試験中のため）
       kutoten-consistency（まだ試験中のため）
       latin-spacing（まだ試験中のため）
       max-kanji-continuous（まだ試験中のため）
@@ -126,6 +132,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       percent-sum-mismatch（まだ試験中のため）
       preferred-term（まだ試験中のため）
       proper-noun-density（まだ試験中のため）
+      ra-nuki（まだ試験中のため）
       repeated-conjunction（まだ試験中のため）
       required-sections（まだ試験中のため）
       rule-of-three（まだ試験中のため）
@@ -133,6 +140,8 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       section-length-uniformity（まだ試験中のため）
       sentence-initial-conjunction-run（ja 向けの rule ではないため）
       sentence-rhythm（まだ試験中のため）
+      space-before-punctuation（ja 向けの rule ではないため）
+      spelling-consistency（ja 向けの rule ではないため）
       stock-transition（まだ試験中のため）
       stray-space（まだ試験中のため）
       title-case-consistency（ja 向けの rule ではないため）
@@ -218,7 +227,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
 
 | 書き方 | 黙らせる範囲 |
 | --- | --- |
-| `<!-- stet: bold-density — 用語集なので意図的 -->` | 直後の数行（6 行まで） |
+| `<!-- stet: bold-density — 用語集なので意図的 -->` | すぐ下の段落（見出し・箇条書き・表なら、その 1 つ） |
 | `<!-- stet-section: bold-density — 一覧なので -->` | 次の見出しまで |
 | `<!-- stet-file: ai-tell, rule-of-three — 引用が多い -->` | ファイル全体 |
 

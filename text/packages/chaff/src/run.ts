@@ -13,11 +13,18 @@ import { uiLanguageOf } from "./ui.ts";
 import { presetLevels } from "./genre-load.ts";
 import { bodySectionOf } from "./body-section.ts";
 import { optionValues, settleOptions, type OptionLayer } from "./rule-options.ts";
+import { byPosition } from "./finding-order.ts";
 import { PatternTimeout } from "./custom/bounded-match.ts";
 import { PluginRuleFailure } from "./extension/module-detector.ts";
 import { failureReason } from "./extension/failure-text.ts";
+import { tagCoverage } from "./tag-coverage.ts";
 
-export type Skipped = { readonly rule: string; readonly why: string };
+export type Skipped = {
+  readonly rule: string;
+  readonly why: string;
+  /** Off only because it is experimental: --experimental (or chaff.yaml's experimental) would run it. */
+  readonly offUntilExperimental?: true;
+};
 
 export type RunResult = {
   readonly findings: readonly Finding[];
@@ -42,9 +49,10 @@ const levelFor = (rule: RuleDefinition, settings: Settings, experimental: boolea
 };
 
 /** Why a rule at off did not run: chaff.yaml turned it off, the genre's preset did, or it is experimental. */
-const offReason = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): string => {
-  if (settings[rule.id] !== undefined) return reasons.turnedOff;
-  return preset[rule.id] === undefined ? reasons.experimental : reasons.presetOff(genre);
+const offSkip = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): Skipped => {
+  if (settings[rule.id] !== undefined) return { rule: rule.id, why: reasons.turnedOff };
+  if (preset[rule.id] !== undefined) return { rule: rule.id, why: reasons.presetOff(genre) };
+  return { rule: rule.id, why: reasons.experimental, offUntilExperimental: true };
 };
 
 const reasonsFor = (doc: ProseDocument): Reasons => REASONS[uiLanguageOf(doc.language)];
@@ -104,9 +112,13 @@ const has = (capabilities: ProseDocument["capabilities"], need: string): boolean
  *
  * `capabilities.pos: true` と言いながら token を返さないアダプタでも、rule は
  * `sentence.tokens ?? []` を見るので**例外にならず、指摘 0 件で終わる**。
- * 0 件は「問題なし」と見分けがつかない。
+ * 0 件は「問題なし」と見分けがつかない。一部の文にだけ token が無いとき（解析器が読めなかった段落）も、その段落の 0 件が同じく保証に見える。
  */
-const hasTokens = (doc: ProseDocument): boolean => doc.sentences.length === 0 || doc.sentences.some((sentence) => sentence.tokens !== undefined);
+const tagReason = (doc: ProseDocument): string | undefined => {
+  const coverage = tagCoverage(doc.sentences);
+  if (coverage === "all") return undefined;
+  return coverage === "none" ? reasonsFor(doc).noTags : reasonsFor(doc).unreadTags;
+};
 
 /** 要求を満たさない rule は動かせない。満たさないまま動かすと「指摘 0 件」が保証に見える。 */
 const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
@@ -121,7 +133,7 @@ const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => 
  * 先に聞くと、止めている rule まで「アダプタが品詞を返さなかった」と、違う理由で出る。
  */
 const untagged = (rule: RuleDefinition, doc: ProseDocument): string | undefined =>
-  rule.requires.some((need) => need === "pos" || need === "lemma") && !hasTokens(doc) ? reasonsFor(doc).noTags : undefined;
+  rule.requires.some((need) => need === "pos" || need === "lemma") ? tagReason(doc) : undefined;
 
 const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] =>
   rules.filter((rule) => rule.use_for.some((target) => genre.startsWith(target)));
@@ -248,8 +260,7 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
       const blocked = unmet(rule, doc);
       if (blocked !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: blocked }] };
       const level = levelFor(rule, settings, experimental, preset);
-      if (level === "off")
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: offReason(rule, settings, preset, genre, reasonsFor(doc)) }] };
+      if (level === "off") return { findings: acc.findings, skipped: [...acc.skipped, offSkip(rule, settings, preset, genre, reasonsFor(doc))] };
       const noTags = untagged(rule, doc);
       if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
       // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
@@ -289,5 +300,5 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
       compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental, preset), genre, limits), starts, doc.language),
     );
   const all = [...outcome.findings, ...composites];
-  return { ...outcome, findings: all.toSorted((left, right) => left.line - right.line), forcedExperimental: forced, presetExperimental: presetOn };
+  return { ...outcome, findings: all.toSorted(byPosition), forcedExperimental: forced, presetExperimental: presetOn };
 };

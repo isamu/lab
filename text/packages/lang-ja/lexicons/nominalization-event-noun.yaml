@@ -1,0 +1,13 @@
+# サ変名詞のうち、「〜を実施する」「〜を行う」が「催す・開く」の意味になる語。nominalization はこれを数えない。
+# 「研修を実施する」（研修を開く）と「研修する」（研修を受ける）、「試験を実施する」（試験を課す）と「試験する」（試してみる）は、
+# 言っていることが違う。名詞に「する」を付けても同じことにならないので、回りくどい言い方ではない。
+id: nominalization-event-noun
+language: ja
+entries:
+  - pattern: 研修
+  - pattern: 試験
+  - pattern: 会議
+  - pattern: 選挙
+  - pattern: 講習
+  - pattern: 演習
+  - pattern: 検定

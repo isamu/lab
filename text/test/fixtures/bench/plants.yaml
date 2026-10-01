@@ -17,18 +17,24 @@ planted:
   date-range-reversed: [ja, en]
   date-weekday-mismatch: [ja, en]
   double-keigo: [ja]
+  double-negative: [ja, en]
   doubled-punctuation: [ja, en]
   doubled-word: [ja, en]
   duplicate-definition: [ja, en]
+  duplicate-heading: [ja, en]
   emoji-density: [ja, en]
+  fullwidth-alnum-consistency: [ja]
   empty-intensifier: [ja, en]
+  empty-section: [ja, en]
   excessive-hedging: [ja, en]
   expletive-construction: [en]
   heading-echo: [ja, en]
+  hankaku-kana: [ja]
   heading-level-skip: [ja, en]
   hiragana-fukushi: [ja]
   image-alt-text: [ja, en]
   internal-jargon: [ja, en]
+  invisible-character: [ja, en]
   katakana-long-vowel: [ja]
   kutoten-consistency: [ja]
   latin-spacing: [ja]
@@ -46,10 +52,13 @@ planted:
   percent-sum-mismatch: [ja, en]
   preamble-length: [ja, en]
   preferred-term: [ja, en]
+  ra-nuki: [ja]
   repeated-conjunction: [ja, en]
   required-sections: [ja, en]
+  requirement-smell: [ja, en]
   sasete-itadaku: [ja]
   sentence-initial-conjunction-run: [en]
+  space-before-punctuation: [en]
   stray-space: [ja]
   title-case-consistency: [en]
   total-mismatch: [ja, en]
@@ -57,6 +66,7 @@ planted:
   undefined-acronym: [ja, en]
   unfilled-placeholder: [ja, en]
   url-run-on: [ja]
+  vague-figure-reference: [ja, en]
 not_planted:
   adverb-overuse: a density over the whole document
   ai-generated-composite: a composite of other signals, with no detector of its own
@@ -67,13 +77,16 @@ not_planted:
   contrast-framing: a density over the whole document
   cushion-phrase-density: a density over the whole document
   empty-conclusion: L4, judged by chaff test and never run by lint
+  nominalization: a density over the whole document
   paragraph-length-variance: the shape of the whole document, not one mistake
   proper-noun-density: a density over the whole document
   repeated-sentence-head: a run of consecutive sentences sharing their opening words; forcing one changes what the samples say
+  requirement-modal: checks nothing until options pick a house rule, and the bench runs with none
   risk-disclosure: L4, judged by chaff test and never run by lint
   rule-of-three: the shape of the whole document, not one mistake
   section-length-uniformity: the shape of the whole document, not one mistake
   sentence-rhythm: the shape of the whole document, not one mistake
+  spelling-consistency: the English samples use at most one word with a British or American spelling, so no single edit mixes them
   stock-transition: a density over the whole document
   taigen-dome-in-prose: a count over the whole document; reaching it would rewrite the sample's register
   unqualified-superlative: more than one unqualified superlative in a document is several mistakes, not one

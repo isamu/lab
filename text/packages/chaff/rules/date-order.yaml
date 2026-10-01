@@ -24,6 +24,7 @@ how_to_fix:
 levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+sources: [de-marneffe-2008]
 
 group: facts
 summary:

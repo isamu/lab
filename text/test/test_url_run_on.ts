@@ -53,4 +53,12 @@ describe("url-run-on: URL のすぐ後ろに続く字", () => {
     assert.deepEqual(runOnUrls("x https://a.jp/b。", [{ start: 0, end: 17 }]), [{ url: { start: 2, end: 16 }, next: "。" }]);
     assert.deepEqual(runOnUrls("", [{ start: 0, end: 0 }]), []);
   });
+
+  it("続く字はサロゲートの対を割らず、範囲の終わりの URL には続く字が無い", () => {
+    assert.deepEqual(runOnUrls("https://a.jp/b😀x", [{ start: 0, end: 17 }]), [{ url: { start: 0, end: 14 }, next: "😀" }]);
+    assert.deepEqual(runOnUrls("https://a.jp/b𠮷", [{ start: 0, end: 16 }]), [{ url: { start: 0, end: 14 }, next: "𠮷" }]);
+    assert.deepEqual(runOnUrls("https://a.jp/b\uD83D", [{ start: 0, end: 15 }]), [{ url: { start: 0, end: 14 }, next: "\uD83D" }]);
+    assert.deepEqual(runOnUrls("https://a.jp/b", [{ start: 0, end: 14 }]), []);
+    assert.deepEqual(runOnUrls("https://a.jp/b。", [{ start: 0, end: 14 }]), []);
+  });
 });

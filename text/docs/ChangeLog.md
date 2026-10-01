@@ -68,6 +68,419 @@ part of speech and lemma when the rule asks for them, word lists and markup) and
   else is refused as a whole, with what was wrong.
 - `chaffjs/plugin`, the language adapters' surface, is unchanged.
 
+### New rule: `nominalization`, verbs hidden in nouns (experimental)
+
+- chaff counts verbs written as nouns and carried by another verb: 調査を実施した for 調査した, 確認を行う for 確認する,
+  "make a decision" for "decide", "conduct an analysis" for "analyze". It speaks only when they are dense for the
+  document's length (per 1000 characters or words), at `info`. Sources: the plain-Japanese guideline for foreign
+  residents (2020), the Federal Plain Language Guidelines and GOV.UK's "Use clear language".
+- Japanese reads morphology: the adapter now marks a サ変 noun with `VerbForm=Vnoun` (not a symbol the dictionary files
+  there), and the rule looks for it before を行う / を実施する / を実行する / を執り行う. English reads a list of phrases.
+  Legal documents and literature leave it off: legal drafting writes 「…を行う」 as its register.
+
+### New rule: `requirement-smell`, wording that leaves a requirement open (experimental)
+
+- In a sentence that states a requirement (one that ends in しなければならない, ものとする or 〜こと; one with shall, must or is required to),
+  chaff points at a loophole (可能な限り, 必要に応じて; as far as possible, if necessary), an open-ended list (等, など;
+  etc., but not limited to) and "and/or" (及び／又は). Sources: Femmer et al. (2017), Berry et al. (2003) and
+  ISO/IEC/IEEE 29148. It runs on specifications, contracts, manuals and FAQs; statutes, which define their 等 terms,
+  and glossaries, whose 〜のこと and 〜すること define a word, are left out. The words are in each language's lexicons.
+
+### Meeting notes leave `agentless-passive` out, press releases `proper-noun-density` (#170)
+
+Two presets from the corpus, both for experimental rules, so the findings of a default run do not change; only the
+reason in the "did not run" list does (the genre, instead of "still experimental").
+
+- **business/meeting-notes: `agentless-passive` off.** Minutes record what the meeting did (「了承された」, "the meeting
+  was held"); the actor is the meeting by the form. It fired on nearly every set of minutes in the corpus, English
+  (FOMC, ASF board, Rust lang team, a TC39 agenda, Node.js TSC) and Japanese (デジタル庁 councils, 厚労省 ICD committee,
+  Entaku.rb).
+- **business/press-release: `proper-noun-density` off.** A release names the agency, the people quoted, the mission
+  and the place; that is its news. Every English release in the corpus (GSA, NASA, NOAA) was over the limit.
+
+The genres that existed before presets now may carry a level, but only `off` on an experimental rule; the test says so.
+
+### `fullwidth-alnum-consistency` leaves the rest of a version number to its name (#170)
+
+In a document that writes 第１条 in full-width digits, the 2 of 「TLS1.2」 was reported as a half-width digit. A digit run
+after a dot that follows a name ending in letters and digits (TLS1, Python3, and on through Python3.12.4) is part of
+that name when written in the name's width, so it is no vote on how the document writes its numbers. A decimal
+(1.5), a number after a name without a dot (「EC2 8台」) and a tail in the other width (「TLS1.２」) still count.
+
+### `latin-spacing` skips the space after an item number at the head of a line (#170)
+
+Terms and statutes number their items with a kanji numeral and a space: 「一 JIS X 0201として規格化されている英数字」.
+That space separates the number from the item, so it is no vote on how the document spaces Japanese and Latin text.
+The numbers (一 to 二十, and イ, ロ, ハ … for sub-items) are the lang-ja lexicon `item-number`, in order. A number counts
+as an item only where the number before or after it also opens a line, so 「十 GBまで…」 is still a quantity; only the
+separating space is skipped (「二CSV」 still counts as touching).
+
+### `dangling-reference` reads another document's articles the way terms and web databases write them (#170)
+
+Two shapes in the round 14 documents were read as this document's missing articles:
+
+- **Connectors written in kana.** 「著作権法第27条および第28条」: terms of service and notices write および・ならびに・
+  もしくは・または, so 第28条 is 著作権法's too, as it already was after 及び.
+- **A promulgation number in half-width parentheses.** The MHLW 法令等データベース writes 「保険医療養担当規則(昭和三十二年
+  厚生省令第十五号)第二条の六」. The number is now skipped in either width, and a name with one is another document even
+  when it ends in no kind word (「…に関する基準(昭和五十八年厚生省告示第十四号)第二条の六」). A parenthetical aside
+  inside a chain (「民法第709条(同法第710条において準用する場合を含む。)、第711条」) no longer breaks it in either width (an opener and a closer of different widths are not a pair). A name
+  preceded by この (「この基準(…号)第9条」「この就業規則第9条」) is still this document.
+
+### Corpus round 14: documents of kinds the corpus had few of (#170)
+
+Terms of service and privacy statements (GitHub's, under CC0; a ministry's 電子申請 terms and the Tokyo app's terms,
+URL only), press releases and a media advisory (NASA, NOAA, a 気象庁 release that points at its own 図 and 表), a
+告示 with 別表 (厚生労働省), an IRS customer FAQ, job postings (USAJOBS; a デジタル庁 posting, URL only), Japanese tech
+blogs from Zenn and Qiita, API documentation and its Japanese translation (MDN, URL only), an XState API reference in
+Japanese, release notes (Ruby 3.4.0 in Japanese, Go 1.23), Node.js TSC minutes, arXiv and J-STAGE abstract pages, a
+recipe in Japanese and English (農林水産省 うちの郷土料理), a school's いじめ防止基本方針 and a university's course
+registration notice, and Dr Jekyll and Mr Hyde. Each document's licence is in `corpus/manifest.json`.
+
+### `style: koyobun`: 公用文作成の考え方 (2022)
+
+- `style: koyobun` checks a document the way 文化審議会「公用文作成の考え方」 asks: a Japanese sentence over 60 characters
+  (Ⅲ－3 ア: check a sentence once it reaches 50 to 60 characters), です・ます mixed with である (Ⅲ－1 イ), and a
+  katakana word without its final ー (Ⅰ－3 エ). English documents keep the level's limit, since the document gives none.
+- A style can set a rule's number by language under `limits:`. chaff.yaml's own level or number for the rule still wins.
+- `chaff explain` now says when a number sets a rule's limit (a style's, or one written in chaff.yaml's `rules:`), and
+  no longer marks a level as current then. The number is shown in the rule's own words ("一文 60 字まで").
+
+### New rule: `requirement-modal`, and `style: jis-z8301-2019` (experimental)
+
+- `requirement-modal` checks a provision's verb form against a house rule a team picks under `options`; with none, it
+  checks nothing. `standard: jis-z8301-2019` points at a closing すべきである / すべきでない (7.3) and a closing できる /
+  できない (7.4, 7.5: use してもよい or 可能である), as the Japanese Standards Association's drafting guide summarises the
+  2019 edition. できる in the middle of a sentence, which JIS keeps for an ability, is left alone. `shall: must` points
+  at "shall" in English and asks for "must", as the Federal Plain Language Guidelines do; a quoted "SHALL" (the RFC 2119
+  boilerplate) is a mention, not a use. The forms are in each language's lexicons.
+- `style: jis-z8301-2019` turns it on with JIS's forms. It does not decide the final ー of loanwords, which the 2019
+  edition leaves to each industry.
+
+### New rule: `vague-figure-reference`, 上記の図 where a number would do (experimental)
+
+- In a document that numbers its figures or tables (図1, Table 2 at the start of a line), chaff points at a pointer by
+  place: 上記の図, 下の表, the figure below, the above table. JIS Z 8301:2019 10.6 rules such pointers out. A kind the
+  document never numbers is not checked, since there is no number to use. It reads the figure labels the way
+  `dangling-figure-reference` does; the phrases and the kind each points at are in each language's lexicon.
+
+### Rule pages link to the papers and standards behind them
+
+- A rule file lists the works it rests on under `sources`, by their anchor on the bibliography page. The rule's page on
+  the site lists them, and each links to its entry.
+
+### Making AI-sounding text sound human: a Full rewrite mode (#439)
+
+The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human" get a third mode, beside Light
+and Bold. **Full** (全面書き直し) rewrites the whole document from scratch, because a Light or Bold pass keeps the skeleton
+of generated text: a heading every few paragraphs, bold lead-ins, symmetric sections, a まとめ that repeats the body.
+
+- Full is the recommended mode for `blog/*` (`blog/essay` included) and `literature/essay`, whenever
+  `ai-generated-composite` fires, and when the request says 「全面的に」 or "from scratch".
+- Steps: take an inventory (`chaff facts`, the old outline from `chaff outline`, the writer's claims and episodes).
+  Restructure before writing: reorder, merge and split, cut restating sections and the まとめ, drop lone headings,
+  turn point lists into a story, break three-point symmetry, move the writer's experience, open on the point. Show
+  the old and new outline first, then write a fresh draft in the writer's voice. Check with `--experimental`,
+  `chaff outline` and `chaff compare --allow-dropped heading --allow-added heading`, stop on stated criteria, and end with a before/after
+  table taken from chaff's output.
+- A checklist of AI patterns chaff cannot detect by machine, to check by reading.
+- Worked examples (ja and en, written for the page): a blog post rewritten from scratch, with real chaff, `outline`
+  and `compare` output before and after.
+- The skill's description now routes 「AIっぽさをなくして」「AI臭さを消して」「人間らしく書き直して」 and "make this sound
+  human" to this section.
+
+### A NUL character no longer stops a Japanese run (#420)
+
+- **lang-ja replaces NUL (U+0000) before analysis**, as it already did lone surrogates. kuromoji threw on it, and the
+  whole run died with exit code 1 and no findings. The placeholder (U+FFFD) has the same length, so every position
+  still points at the same character.
+- **If the analyser throws anyway, the run goes on.** lang-ja returns that paragraph without parts of speech; rules
+  that need them are listed as not run, 「言語のパッケージがこの文書を読めなかったため」 / "the language package could
+  not read this document". The other rules run. Before, a document with some paragraphs tagged and some not ran the
+  part-of-speech rules on the tagged part only, so the untagged part's silence looked like a pass.
+- lang-en was checked the same way, with generated text full of control characters, lone surrogates and long runs; it
+  did not throw. A test now runs both adapters, and the whole run, over such text.
+- The NUL itself is reported by the experimental `invisible-character` rule (`⟨U+0000⟩`), now that the run reaches it.
+
+### `chaff explain` says what each level means, not "unit: times"
+
+`explain` printed a bare number for each level under one unit, and for most rules that unit was "times" (「回」),
+including the density rules, which count per 1000 characters or words. Each level now reads in the rule's own words,
+as the rule reference on the site does: `strict   up to 3 emoji per 1000 words`, `strict   1000 字あたり絵文字 3 個まで`,
+`strict   up to 18 words in a sentence`. The density rules' level descriptions now name what they count (emoji, hedges,
+dashes, proper nouns…), in the unit of the document's language, as their messages do since #402. A team's custom rule,
+which has no level description, still shows its limits as a number of times.
+
+### Guide: what chaff does for more kinds of document, in Japanese
+
+「文書の種類ごとにできること」 is now a chooser: find the kind of document you have, go to its page. New pages,
+written for people who have never used a command line, join the statute and report pages: 技術記事（Zenn・Qiita）,
+契約書・利用規約, 仕事のメール, 議事録, 説明書・API の文書, プレスリリース・お知らせ and 論文・要旨 (`style: ieice`).
+Each runs chaff on a short self-written sample with realistic mistakes, shows chaff's real screen, says what every
+finding means and how to fix it, says what chaff does not check for that kind, and gives the genre and a starter
+`chaff.yaml` that turns on the experimental rules the kind needs.
+
+### `compare --distinct` compares facts as sets (#446)
+
+`compare` counts how many times each fact is stated, so a full rewrite that cuts a summary repeating the body reported
+every repeat as dropped. With `--distinct`, a fact counts as kept when the other document states it at least once; a
+fact the other document never states is still dropped or added. The default is unchanged.
+
+### `compare` reads a wrapped or bold quotation as the same quotation, and 「8時間」 as a length of time (#435, #446)
+
+- A line break between two wide characters (`系の` / `システム`) vanishes when Markdown is rendered, but `compare` read
+  it as a space, so joining the lines of a Japanese quotation was reported as one quotation dropped and another added.
+  Bold marks inside a quotation (`「**終わったな**」`) were read as part of it too. Quotations and names are now keyed,
+  and the team's `names:` found, without what a reader never sees, the way the rules already read the text: a line break between wide characters (not
+  one next to inline code or a link's marks) and the marks of bold, italics and strikethrough. Such a change is reported
+  as the same fact written another way. A plain-text document shows its line breaks, so there they still count, and a
+  space actually written inside a Japanese quotation is still a different quotation.
+- `8時間` was read as the time `08:00`, and `1.2時間` as `2時`. 時間 after the hour now makes it a length of time, and
+  an hour that ends a longer number (`1.2`, `123`) is not read as one.
+
+### `katakana-long-vowel` keeps フリ apart from フリー, and `colon-lead-in` counts only Japanese sentences (#434)
+
+`katakana-long-vowel` read 「知ってるフリ」 (振り) and 「フリー」 (free) as one word written two ways. The tagger reads both
+as nouns, so lang-ja now has a word list, `long-vowel-distinct`, of words that become another word with a final ー
+(フリ, スキ). Those words are left out as if listed under `except`, in every `ending`. `colon-lead-in`, which runs
+on Japanese documents only, also counted the English sentences inside one (`Examples include:`). It now counts only the
+sentences in the document's language, as `max-sentence-length` measures each sentence by its own language.
+
+### `doubled-punctuation` leaves a mark that closes a drawn-out one (#433)
+
+Three or more of one mark (`...`, `、、、`) were already read as a drawn-out mark, but the mark that closes it
+(`立たない...。`, `そうですね、、、。`) made the whole run a slip. One mark right after a drawn-out run is now read as its
+close and not reported; two (`...。。`), or a run of only two (`、、。`), still is. This covers the transcript's `、、、。`
+in every genre, so no genre rule is added for it.
+
+### `announced-count-mismatch` reads a categorised list and the number nearest the colon (#432)
+
+Two misreadings are fixed. When only a colon at the end of a sentence announces the list (no 以下の / following), the
+colon announces the number nearest to it, so a number with another number after it is no longer taken as the count
+(「これまで 1 つのページにまとめていましたが、2 ページに分けました:」). A list whose every item is a label and its members
+(`- **実験的**: Slack / Discord / Matrix`) is not reported when the members, split at `/` or `／`, add up to the announced
+count. Commas and 読点 are not separators: they also occur inside an item's description. A word pointing ahead still names the count whatever number follows it.
+
+### A heading with its title right after the number is numbered (#431)
+
+`## 7.委託`, `## 7．委託` and `## 2.Overview` were not read as numbered, so `numbering-gap` reported "6 then 8" as an
+error. In a heading, a number closed by a dot (`.` or `．`) may now be followed directly by its title, unless the next
+character is a digit (`1.5万人`) or a lowercase letter (`2.x 系`). In Japanese, `## 第7条委託` and `## 第2章概要` are
+read too, unless what follows is hiragana (`第3条に定める`), another number (`第2章第1節`) or a joining word
+(`第4条及び第5条`, `第2条若しくは第3条`). Body lines are read as before. `heading-echo` reads the same label.
+
+### `section-length-uniformity` and `paragraph-length-variance` need enough sections and paragraphs to measure
+
+Both rules compare lengths by their coefficient of variation. Over two or three values that number is small by chance,
+so human writing looked "too uniform". In pre-2022 human Qiita articles the findings clustered in articles with two to
+four sections or paragraphs. Each rule now has a `count` option: `min_sections` (default 5) and `min_paragraphs`
+(default 6). With fewer, the rule does not measure, and `not_flagged` says so. On the paired samples in `yarn bench:ai`
+the generated-style hits stay, and the human, rewritten and corpus false alarms of these two rules drop. Two corpus
+documents (a national-park story and a government security page) lose a `section-length-uniformity` finding they
+should not have had.
+
+### `closing-cliche` reads only the end of the last section (#413)
+
+- In a document without headings the whole text was one "last section", so 「簡単にまとめると、以下の三点です」 near the
+  top, or a host's 「いかがでしょうか」 in the middle of a transcript, was reported as the closing. A long last section had
+  the same problem. The rule now reads the last four paragraphs of the last section, headings or not, and never the
+  document's first paragraph. A list item is not a closing.
+- Why four and not only the last paragraph: in pre-2022 human Qiita articles a stock closing is often followed by a
+  remark, an update note or a sign-off (「いかがでしたでしょうか。」 → 感想 → 「それではよいお年を！」). Reading only the last
+  paragraph missed most of those; every finding that was really in the body sat further from the end than four
+  paragraphs.
+
+### `doubled-word` (ja) no longer reports reduplication that is the right way to write (#412)
+
+On a set of real Japanese site articles, many of the findings were correct Japanese. lang-ja now marks these as
+reduplication (UD `Echo=Rdp`), and the rule skips them:
+
+- **A whole content word written twice**: a noun (個人個人, 一行一行, 駄目駄目, それそれ, もちもち) or an adjective in
+  its plain form (えらいえらい, 若い若い). A slip is a particle or an auxiliary written twice (をを, にに, たた, がが, よよ)
+  or a bound word (いるいる, さんさん), and those are still reported. A one-kanji noun (法法, 金金), a loanword
+  (ユーザーユーザー, データデータ) and a run of three (早め早め早め) are still reported too.
+- **A Sino-Japanese (kanji-only) noun only when it really reduplicates**: a person, a unit, a time or a place
+  (個人個人, 一行一行, 時代時代, 地域地域; the lexicon `distributive-noun`), a noun the analyser reads as adverbial
+  (毎年毎年, 各自各自) and the stem of a na-adjective (駄目駄目, 大変大変). Any other doubled kanji noun is a slip and is
+  still reported (確認確認, 資料資料, 対応対応).
+- **Katakana onomatopoeia**: a katakana word of two or three morae, with any long vowel only at its end, repeated
+  where an adverb stands: before と or に, at the end of a line, or right before a verb (ムクムクと, ブスブスと,
+  ババババと, ブイブイ言わせる). Elsewhere a doubled katakana word is a loanword slip (テストテストを, メモメモ。,
+  ユーザーユーザー) and is still reported.
+- **Laughter and one-kana onomatopoeia**: the same は-row hiragana or katakana three or more times, not attached to
+  the word before it (ははは, あははは, ふふふ, ドドド). Each 「ははは」 used to give two findings. A run of a particle
+  (ををを, よよよ) or a run attached to a word (私ははは, 行ったたた) is still a slip.
+- **Set phrases** in the lexicon `doubled-word`: などなど, あるある, ほどほどに, 代わる代わる, めでたしめでたし, またまた,
+  えへへ, and 知ったかか (知ったか is not in the dictionary, so its last か looked doubled). The analyser reads these as
+  particles, verbs, classical adjectives or conjunctions, so only the lexicon can say they are whole phrases.
+
+The rule's `why` and `not_flagged` now describe what it actually skips.
+
+### `chaff outline <file> [<after>]`: a restructure, measured (#439)
+
+A rewrite that smooths every sentence can keep the skeleton of generated text: the same headings, lists and bold.
+`outline` lists each heading, indented by depth, with its line and the length of its own text. It measures four
+things: the number of headings, the average section length, the share of the text in list items, and the bold spans.
+Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the
+average. Given two files it shows both and how each measure moved.
+
+- Read with lint's own document model (`doc.sections`, sentences, list spans); no new parser.
+- `--compact` (one section per line) and `--json` (`before` / `after` for two files). It only measures: exit 0 once
+  the files are read, 1 for no file, three files or an unreadable one.
+- `chaff compare` and `chaff facts` now read a file through one shared reader (`commands/read-document.ts`). Their
+  output is unchanged. It was compared before and after over every Markdown file in `examples/`, `samples/` and the
+  site's guide: `facts --json`, `compare --json` on neighbouring pairs, and a file against itself.
+
+### `chaff facts <file>`: the facts to keep, before a rewrite (#439)
+
+Lists every fact atom `chaff compare` reads in one document as a checklist, with the line of each. The kinds are
+numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes. A rewrite from scratch can
+then start from the inventory instead of the old text. It is compare's own extractor, not a new parser: the counts
+are the ones compare holds the rewrite to.
+
+- The first line counts every kind, zeros included; a kind that could not be read is listed with the reason.
+- `--compact` (one fact per line, kind in English) and `--json` (path, language, counts, unread kinds, every fact with
+  kind, key, text and line). The screen follows the document's language.
+- One file per run; none or more than one is a usage error (exit 1).
+
+### Guide: what chaff does for more kinds of document, in English
+
+"What chaff does for each kind of document" is now a chooser: find the kind of document you have, go to its page. New
+pages join the statute and report pages: tech articles, contracts and terms, business email, meeting minutes, manuals
+and API docs, press releases, and papers. Each runs chaff on a short self-written sample with realistic mistakes, shows
+chaff's real screen, says what every finding means and how to fix it, says what chaff does not check for that kind,
+and gives the genre and a starter `chaff.yaml`.
+
+### A line holding only a link ends its own sentence (#400)
+
+Links listed one per line without a bullet (a series index at the end of an article) were read as one long sentence,
+because Markdown joins the lines of a paragraph. A line that is exactly one link now ends its item, the way a
+bracketed subheading line already did, as long as the line before it ends a sentence, ends with 「：」, or is such a line
+itself; a link inside a sentence wrapped across lines stays in that sentence. When such lines run to the end of the
+paragraph they are read as list items, so `repeated-sentence-head`, `max-paragraph-length` and the other list-aware
+rules treat them as they treat the same lines written with `- `; one link line in the middle of a paragraph stays one
+of its sentences. Every rule that reads sentences takes this path.
+
+### `latin-spacing` skips link text and version numbers, and reports a two-way document once (#395)
+
+### `unqualified-superlative` reads 「〜のほうが」「〜との」 and quotations (#394)
+
+- 「後者のほうが圧倒的に長い」「他社と比べて」 name what is compared, anywhere in the sentence, like より and に比べる
+  already did. 「の方が」 is not added: in 「担当の方が最も詳しい」 the 方 is a person, not a comparison.
+- 「SES との最大の分岐点」: 「との」 names the counterpart only right before the superlative, so 「チームとの会議で最高の成果」
+  is still reported. A comparison marker with `position: before` in the `comparison-marker` lexicon works this way.
+- A superlative inside 「」『』 or quotation marks ("…", “…”) is someone else's words and is not reported; one outside
+  the quotation in the same sentence still is.
+
+Superlatives limited by a clause before them (「バグを検出できる唯一のルール」) are still reported: the same shape is
+also a boast (「誰もが認める最高の品質」), and is left for a decision.
+
+### Japanese density messages say 1000 字, the unit they measure (#402)
+
+`proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in
+Japanese while dividing by the document's length, which a Japanese document measures in characters. They now say
+「1000 字あたり」, as their level descriptions already did; `excessive-hedging`'s level description said 語 too and is
+fixed with them. A test reads every rule's per-1000 messages and level descriptions in both languages and checks the
+unit against what the rule divides by.
+
+### `feedback` and `suppressions` say when the rule asked about did not run (#397)
+
+`chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and
+`--experimental` was not given, although the finding had been on screen a moment before. It now says the rule did not
+run in this check and why, and, for an experimental rule, to run again with `--experimental`. A draft made with
+`--experimental` or `--genre` (or with `experimental: true` in chaff.yaml) records them under Environment ("Run with"),
+so whoever reads the report can run the same check. `chaff suppressions` likewise lists the rules that stets name but
+that did not run in this check, which it could not count, instead of only "No findings are silenced".
+
+### A Japanese article full of code is read as Japanese (#399)
+
+The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
+code blocks came out English: the Japanese rules did not run and the English ones read Japanese headings. The guess
+now leaves out fenced code blocks, inline code, HTML tags, comments and code blocks (the text between other tags still counts), YAML
+front matter, MDX imports and component lines, and URLs. Indented text is kept, because in plain text it is prose. A document that is nothing but code is still judged from all of it. `chaff`,
+`chaff test`, `chaff eval` and `chaff tree` all guess the same way.
+
+### `stet` covers the block right below it, not the next six lines (#401)
+
+`<!-- stet: rule — reason -->` silenced the rule on the six lines after the comment, whatever they held: a finding of
+the same rule in the next paragraph was silenced too, and the end of a long wrapped paragraph was not. Now it covers
+the block right after the comment, as the guide and the spec describe, and as the Markdown parser reads it: a
+paragraph, a heading, a whole list, a table, a code block, a quote. Inside a list item it covers the item's next
+block, not the next item. A comment with text on its own line covers that line, and one inside a paragraph covers the
+rest of the paragraph. In plain text a paragraph runs to the blank line. `stet-section` and `stet-file` are unchanged.
+
+### On a Node.js older than 24, `chaff` says which version it needs instead of failing with a SyntaxError (#398)
+
+npm runs a package whose `engines` the Node.js does not meet, with a warning at most, and the CLI then failed while
+loading (`The requested module 'node:fs' does not provide an export named 'globSync'`), which does not point at the
+version. `bin/chaff.js` now checks `process.versions.node` against `engines.node` in its own `package.json` before it
+loads anything else, and stops with "chaff needs Node.js 24 or later. This is v18.20.8. Install the LTS from
+https://nodejs.org/en" (in Japanese under a Japanese locale), exit code 1. The entry point is written so that Node.js 12
+and later can parse it. This also stops Node.js 22 and 23, which `engines` already excluded.
+
+### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
+
+Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted
+by line, then column, in every output (friendly, `--compact`, SARIF, `chaff test`). In `--compact`, the
+`line:column` column widens to the longest position in the document plus one space, so `1070:131` no longer runs into
+`warning`; a document whose positions are all short prints exactly as before.
+
+### New rules: notation that should agree with itself, double negatives and ら抜き言葉 (#170)
+
+- The text of a Markdown link is not counted. It is usually the title of the page it points to, so its spacing
+  belongs to the source, as inside 「」. The spacing around the link is still the writer's and still counts.
+- Three or more numbers joined by dots (`1.0.0`, `手順2.1.2で`) are a version or an item number, not a quantity, and
+  are not counted, like `073-489-5909`. Two (`1.5 倍`) are a decimal and still count.
+- When the less common way is more than a fifth of one kind of boundary, and at least five places, the document is
+  written two ways rather than slipping. It is reported once with both counts (「空ける所が 56 箇所、詰める所が 67
+  箇所あります」) instead of once per place, so chaff does not call one side wrong in a near-even document.
+
+### New rules: a document's outline (#170)
+
+Experimental rules that read the headings of a Markdown document. Each finding in the corpus was read before the rule
+was added.
+
+- **`duplicate-heading`**: two headings with the same words under the same parent (markdownlint's MD024 with
+  `siblings_only`). A changelog's "Added" and "Fixed" under each version have different parents and are fine. Case,
+  full-width forms and spacing are ignored when comparing. In the corpus it finds the OpenAPI specification's second
+  "Examples" under "Link Object" and a recipe page that repeats its title; the miss is an offer letter that writes each
+  party's signature block under the same company name as a heading.
+- **`empty-section`**: a heading followed straight away by a heading of the same or a higher level, or by the end of the
+  document. A heading followed by a deeper one only splits its section, and a section holding only an HTML comment is
+  empty. In the corpus it finds Wikivoyage articles with
+  their 観る・買う sections left empty, an empty "Announcements" item in meeting minutes, a court page's empty 裁判要旨
+  and a changelog version with no entries; the misses are two labels in the Congressional Record set at the same level
+  as the heading below them, and an offer letter's "Accepted and Agreed to:" above the signature block.
+
+Both rules skip a heading with no words (`## ---`), as the document model already does, and a setext heading that runs
+over two lines or ends like a sentence: in a plain-text mail it is a paragraph above a `-----` separator, not a heading
+(an e-Tax mail template collection would otherwise report its repeated footer). An ATX heading's text in the markup
+now drops its closing `#` before an attribute (`## Install ## {#install}` reads "Install"), as the document model does.
+
+### New rules: invisible characters, half-width katakana and a space before punctuation (#170)
+
+Experimental rules for single characters a paste or an edit leaves behind. Each finding in the corpus was read before
+the rule was added.
+
+- **`invisible-character`** (ja / en): characters that do not show on screen: a zero-width space or joiner, a byte
+  order mark mid-text, a soft hyphen, a direction mark or override, a control character other than a tab, a line
+  break or a page break, tag characters hidden after a letter, two or more variation selectors in a row, and a
+  no-break space after a Markdown marker or next to Japanese text. Code is read too, since a copied command breaks.
+  A joiner inside an emoji or in a script that joins letters (Arabic, Indic), a direction mark or isolate next to
+  right-to-left text, a regional flag's tags and a single variation selector are part of the writing; a direction
+  override (LRO, RLO) is always reported. A run of the same kind is one
+  finding, and the quote shows each character as `⟨U+200B⟩`. In the corpus every finding is a zero-width space: in
+  a 年次報告, a 自治体 notice, a Federal Register URL, the GOV.UK style guide and a Wikisource letter.
+- **`hankaku-kana`** (ja): half-width katakana and half-width Japanese punctuation (`ﾒｰﾙ`, `｡｢｣､･`), with the
+  full-width form in the message. Code, link text and a name quoted in brackets are not counted. The one corpus
+  finding, a `･` in a 就業規則, is a slip.
+- **`space-before-punctuation`** (en): a single space between a word (or a closing bracket or quote after one) and
+  `.`, `,`, `;`, `?` or `!` ("word .", "(word) ,"). A
+  colon (a label such as "ISSN : "), dots spaced out as an ellipsis or a leader, a dot that starts the next word
+  (`.NET`, `.5`), a mark after a number (a formula's `[ 1 , N ]`) and a mark after two or more spaces are not counted.
+  In the corpus it finds slips in board minutes, an arXiv listing, a CFPB post and a Gutenberg play; the one miss is
+  a line of a DNA diagram in a patent.
+
 ## 0.18.0 — 2026-10-01
 
 A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of

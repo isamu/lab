@@ -5,6 +5,7 @@ import { parse } from "yaml";
 import { japaneseRatio, latinRatio } from "./detect-language.ts";
 import { referenceListSpans } from "./reference-lists.ts";
 import { withoutSpans } from "./soft-break.ts";
+import { languageSample } from "./language-sample.ts";
 
 export type LanguageGuess = { readonly language: string; readonly confidence: number; readonly from: string };
 
@@ -33,9 +34,15 @@ const bodyOf = (source: string): string => {
   return body.trim() === "" ? source : body;
 };
 
+/** The body without code, URLs and markup, or the whole body when nothing else is left (a document of only code). */
+const proseOf = (body: string): string => {
+  const sample = languageSample(body);
+  return sample.trim() === "" ? body : sample;
+};
+
 export const guessLanguage = (source: string): LanguageGuess => {
-  const body = bodyOf(source);
-  const japanese = japaneseRatio(body);
+  const prose = proseOf(bodyOf(source));
+  const japanese = japaneseRatio(prose);
   if (japanese >= JAPANESE_FLOOR) return { language: "ja", confidence: japanese, from: "content" };
-  return { language: "en", confidence: latinRatio(body), from: "content" };
+  return { language: "en", confidence: latinRatio(prose), from: "content" };
 };
