@@ -12,6 +12,73 @@ colon announces the number nearest to it, so a number with another number after 
 (`- **実験的**: Slack / Discord / Matrix`) is not reported when the members, split at `/` or `／`, add up to the announced
 count. Commas and 読点 are not separators: they also occur inside an item's description. A word pointing ahead still names the count whatever number follows it.
 
+### A heading with its title right after the number is numbered (#431)
+
+`## 7.委託`, `## 7．委託` and `## 2.Overview` were not read as numbered, so `numbering-gap` reported "6 then 8" as an
+error. In a heading, a number closed by a dot (`.` or `．`) may now be followed directly by its title, unless the next
+character is a digit (`1.5万人`) or a lowercase letter (`2.x 系`). In Japanese, `## 第7条委託` and `## 第2章概要` are
+read too, unless what follows is hiragana (`第3条に定める`), another number (`第2章第1節`) or a joining word
+(`第4条及び第5条`, `第2条若しくは第3条`). Body lines are read as before. `heading-echo` reads the same label.
+
+### `section-length-uniformity` and `paragraph-length-variance` need enough sections and paragraphs to measure
+
+Both rules compare lengths by their coefficient of variation. Over two or three values that number is small by chance,
+so human writing looked "too uniform". In pre-2022 human Qiita articles the findings clustered in articles with two to
+four sections or paragraphs. Each rule now has a `count` option: `min_sections` (default 5) and `min_paragraphs`
+(default 6). With fewer, the rule does not measure, and `not_flagged` says so. On the paired samples in `yarn bench:ai`
+the generated-style hits stay, and the human, rewritten and corpus false alarms of these two rules drop. Two corpus
+documents (a national-park story and a government security page) lose a `section-length-uniformity` finding they
+should not have had.
+
+### `closing-cliche` reads only the end of the last section (#413)
+
+- In a document without headings the whole text was one "last section", so 「簡単にまとめると、以下の三点です」 near the
+  top, or a host's 「いかがでしょうか」 in the middle of a transcript, was reported as the closing. A long last section had
+  the same problem. The rule now reads the last four paragraphs of the last section, headings or not, and never the
+  document's first paragraph. A list item is not a closing.
+- Why four and not only the last paragraph: in pre-2022 human Qiita articles a stock closing is often followed by a
+  remark, an update note or a sign-off (「いかがでしたでしょうか。」 → 感想 → 「それではよいお年を！」). Reading only the last
+  paragraph missed most of those; every finding that was really in the body sat further from the end than four
+  paragraphs.
+
+### `doubled-word` (ja) no longer reports reduplication that is the right way to write (#412)
+
+On a set of real Japanese site articles, many of the findings were correct Japanese. lang-ja now marks these as
+reduplication (UD `Echo=Rdp`), and the rule skips them:
+
+- **A whole content word written twice**: a noun (個人個人, 一行一行, 駄目駄目, それそれ, もちもち) or an adjective in
+  its plain form (えらいえらい, 若い若い). A slip is a particle or an auxiliary written twice (をを, にに, たた, がが, よよ)
+  or a bound word (いるいる, さんさん), and those are still reported. A one-kanji noun (法法, 金金), a loanword
+  (ユーザーユーザー, データデータ) and a run of three (資料資料資料) are still reported too. This is a change of
+  stance: a doubled two-kanji noun such as 確認確認 or 資料資料, which the rule used to report, now reads as reduplication.
+- **Katakana onomatopoeia**: a katakana word of two or three morae, with any long vowel only at its end, repeated
+  where an adverb stands: before と or に, at the end of a line, or right before a verb (ムクムクと, ブスブスと,
+  ババババと, ブイブイ言わせる). Elsewhere a doubled katakana word is a loanword slip (テストテストを, メモメモ。,
+  ユーザーユーザー) and is still reported.
+- **Laughter and one-kana onomatopoeia**: the same は-row hiragana or katakana three or more times, not attached to
+  the word before it (ははは, あははは, ふふふ, ドドド). Each 「ははは」 used to give two findings. A run of a particle
+  (ををを, よよよ) or a run attached to a word (私ははは, 行ったたた) is still a slip.
+- **Set phrases** in the lexicon `doubled-word`: などなど, あるある, ほどほどに, 代わる代わる, めでたしめでたし, またまた,
+  えへへ, and 知ったかか (知ったか is not in the dictionary, so its last か looked doubled). The analyser reads these as
+  particles, verbs, classical adjectives or conjunctions, so only the lexicon can say they are whole phrases.
+
+The rule's `why` and `not_flagged` now describe what it actually skips.
+
+### `chaff outline <file> [<after>]`: a restructure, measured (#439)
+
+A rewrite that smooths every sentence can keep the skeleton of generated text: the same headings, lists and bold.
+`outline` lists each heading, indented by depth, with its line and the length of its own text. It measures four
+things: the number of headings, the average section length, the share of the text in list items, and the bold spans.
+Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the
+average. Given two files it shows both and how each measure moved.
+
+- Read with lint's own document model (`doc.sections`, sentences, list spans); no new parser.
+- `--compact` (one section per line) and `--json` (`before` / `after` for two files). It only measures: exit 0 once
+  the files are read, 1 for no file, three files or an unreadable one.
+- `chaff compare` and `chaff facts` now read a file through one shared reader (`commands/read-document.ts`). Their
+  output is unchanged. It was compared before and after over every Markdown file in `examples/`, `samples/` and the
+  site's guide: `facts --json`, `compare --json` on neighbouring pairs, and a file against itself.
+
 ### `chaff facts <file>`: the facts to keep, before a rewrite (#439)
 
 Lists every fact atom `chaff compare` reads in one document as a checklist, with the line of each. The kinds are
