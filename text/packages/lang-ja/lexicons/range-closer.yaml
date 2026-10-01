@@ -1,0 +1,5 @@
+# 期間の終わりの日付のすぐ後ろに書いて、range-opener の語と組で期間を作る語（4月1日から4月3日まで）。
+id: range-closer
+language: ja
+entries:
+  - pattern: まで

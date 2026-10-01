@@ -197,6 +197,7 @@ export const rulesJson = (
         your_setting: yourSetting(rule, config),
         now: now(rule, config, genre, text, preset),
         ...(rule.options === undefined ? {} : { options: optionsJson(rule, optionLayers) }),
+        ...(rule.custom === undefined ? {} : { defined_in: "chaff.yaml custom_rules", custom: rule.custom }),
         ...guideOf(rule),
       })),
       how_to_write_settings_from_a_style_note: text.fromStyleNote,

@@ -4,13 +4,17 @@
 # not_planted: why no single realistic edit to a sample makes the mistake. A new rule goes in one list or the other.
 planted:
   agentless-passive: [ja, en]
+  announced-count-mismatch: [ja, en]
   agreement-slip: [en]
   assistant-residue: [ja, en]
   bold-density: [ja, en]
+  broken-link: [ja, en]
   closing-cliche: [ja, en]
   contraction-consistency: [en]
+  dangling-figure-reference: [ja, en]
   dangling-reference: [ja, en]
   date-order: [ja, en]
+  date-range-reversed: [ja, en]
   date-weekday-mismatch: [ja, en]
   double-keigo: [ja]
   doubled-word: [ja, en]
@@ -20,7 +24,9 @@ planted:
   excessive-hedging: [ja, en]
   expletive-construction: [en]
   heading-echo: [ja, en]
+  heading-level-skip: [ja, en]
   hiragana-fukushi: [ja]
+  image-alt-text: [ja, en]
   internal-jargon: [ja, en]
   katakana-long-vowel: [ja]
   latin-spacing: [ja]
@@ -35,6 +41,7 @@ planted:
   numbering-gap: [ja, en]
   oxford-comma-consistency: [en]
   padded-intro: [ja, en]
+  percent-sum-mismatch: [ja, en]
   preamble-length: [ja, en]
   preferred-term: [ja, en]
   repeated-conjunction: [ja, en]
@@ -45,6 +52,7 @@ planted:
   title-case-consistency: [en]
   total-mismatch: [ja, en]
   undefined-acronym: [ja, en]
+  url-run-on: [ja]
   unfilled-placeholder: [ja, en]
 not_planted:
   adverb-overuse: a density over the whole document

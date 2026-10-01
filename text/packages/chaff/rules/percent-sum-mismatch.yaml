@@ -1,0 +1,58 @@
+id: percent-sum-mismatch
+layer: L3
+status: experimental
+how_to_find: percent-sum-mismatch
+requires: [quantities]
+severity: warning
+
+name:
+  ja: 内訳の割合を足しても 100% にならない
+  en: Shares of a whole that do not add up to 100%
+
+why:
+  ja: 構成比や内訳の百分率を足して 100% にならないと、読み手はどの数字が違うのか、項目が抜けたのかを確かめることになります。項目を足したり消したり、数字を一つだけ直したりしたときに起きます。表のその列の見出しか、箇条書きや表のすぐ上の文・見出しに、全体を分けた割合の語（構成比、内訳、シェア）があるときだけ足します。丸めの誤差は、項目ごとに最後の桁の半分まで（少なくとも 1 ポイント）認めます。
+  en: When the shares of a whole do not add up to 100%, the reader has to work out which figure is wrong or which item is missing. It happens when an item is added or removed, or when one figure is changed. The percentages are added only when the column's header, or the sentence or heading right above the list or the table, names the parts of a whole (breakdown, market share, composition). Rounding is allowed, up to half the last digit per item (at least one point).
+
+message:
+  ja: 内訳の割合の和が {sum} で、100% になりません
+  en: The shares add up to {sum}, not 100%
+
+how_to_fix:
+  ja: 数字を確かめて、違う数字を直すか、抜けた項目（その他など）を足してください。
+  en: Check the figures. Correct the wrong one, or add the missing item (such as "Other").
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 構成比や内訳の百分率を足しても 100% にならない所
+  en: A breakdown whose percentages do not add up to 100%
+example:
+  ja:
+    before: |
+      売上の構成比は次のとおりです。
+
+      - 国内：60%
+      - 海外：30%
+    after: |
+      売上の構成比は次のとおりです。
+
+      - 国内：60%
+      - 海外：40%
+  en:
+    before: |
+      Revenue breakdown by region:
+
+      - US: 60%
+      - Europe: 30%
+    after: |
+      Revenue breakdown by region:
+
+      - US: 60%
+      - Europe: 40%
+
+not_flagged:
+  ja: 割合の語の無い百分率（利用率、伸び率）、複数回答の集計、符号の付いた増減（+3%）、合計の行がある表（合計が内訳の和と合わない の対象）、項目が一つだけのものは足しません。
+  en: 'Percentages not named as shares (rates, growth), multiple-answer counts, signed changes (+3%), a table with a total row (left to "A total that is not the sum of its items"), and a single item are not added.'

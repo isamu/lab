@@ -27,7 +27,7 @@ type Cell = { readonly column: number; readonly unit: string };
 type Placed = Amount & Cell & { readonly cents: number | undefined };
 type Entry = { readonly label: boolean; readonly amounts: readonly Placed[] };
 
-const columnOf = (source: string, line: Line, offset: number): number => source.slice(line.start, offset).split(CELL_SEPARATOR).length - 1;
+export const columnOf = (source: string, line: Line, offset: number): number => source.slice(line.start, offset).split(CELL_SEPARATOR).length - 1;
 
 const isNegative = (source: string, line: Line, amount: Amount): boolean => {
   const before = source.slice(line.start, amount.offset);
@@ -48,7 +48,7 @@ const leadingText = (text: string): string =>
  */
 const AFTER_LABEL = /^[*_]*[ \t\u3000]*(?:$|[:：|（(]|[-−▲△$€£¥￥\p{N}])/u;
 
-const isTotalLabel = (text: string, labels: readonly string[]): boolean => {
+export const isTotalLabel = (text: string, labels: readonly string[]): boolean => {
   const lead = leadingText(text).toLowerCase();
   return labels.some((label) => lead.startsWith(label.toLowerCase()) && AFTER_LABEL.test(lead.slice(label.length)));
 };

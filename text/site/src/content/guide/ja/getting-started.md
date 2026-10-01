@@ -87,16 +87,20 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  40 件の rule は動いていません:
+  44 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
       ai-tell（まだ試験中のため）
+      announced-count-mismatch（まだ試験中のため）
       assistant-residue（まだ試験中のため）
+      broken-link（まだ試験中のため）
       contraction-consistency（ja 向けの rule ではないため）
       contrast-framing（まだ試験中のため）
+      dangling-figure-reference（まだ試験中のため）
       dangling-reference（まだ試験中のため）
       date-order（まだ試験中のため）
+      date-range-reversed（まだ試験中のため）
       date-weekday-mismatch（まだ試験中のため）
       doubled-word（まだ試験中のため）
       duplicate-definition（まだ試験中のため）
@@ -104,7 +108,9 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       empty-conclusion（意味を読む検査のため（npx chaff test で動きます））
       excessive-hedging（まだ試験中のため）
       expletive-construction（ja 向けの rule ではないため）
+      heading-level-skip（まだ試験中のため）
       hiragana-fukushi（まだ試験中のため）
+      image-alt-text（まだ試験中のため）
       internal-jargon（まだ試験中のため）
       latin-spacing（まだ試験中のため）
       max-kanji-continuous（まだ試験中のため）
@@ -113,6 +119,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       numbering-gap（まだ試験中のため）
       oxford-comma-consistency（ja 向けの rule ではないため）
       paragraph-length-variance（まだ試験中のため）
+      percent-sum-mismatch（まだ試験中のため）
       preferred-term（まだ試験中のため）
       proper-noun-density（まだ試験中のため）
       repeated-conjunction（まだ試験中のため）
@@ -128,6 +135,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       total-mismatch（まだ試験中のため）
       unfilled-placeholder（まだ試験中のため）
       unqualified-superlative（まだ試験中のため）
+      url-run-on（まだ試験中のため）
 ```
 
 指摘があるときは、1 件ずつ区切って出ます。次は実際の記事にかけた例です。

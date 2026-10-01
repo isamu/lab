@@ -341,6 +341,32 @@ export type ProseDocument = {
   readonly prose?: string | undefined;
   /** メールの引用した返信（前置きの行と「> 」の行）。ほかの人の言葉なので、見出しにも木にも入れない。 */
   readonly replyQuotes?: readonly Span[] | undefined;
+  /** 記法の手がかり（見出し・画像・リンク）。記法を読む rule だけが触れ、触れたときに作る。 */
+  readonly markup?: Markup | undefined;
+};
+
+/** 見出し 1 つ。text は属性（`{#id}`）を外した言葉。 */
+export type MarkupHeading = { readonly depth: number; readonly text: string; readonly start: number; readonly end: number };
+
+/** 画像 1 つ。alt は代替テキスト。HTML の `<img>` で alt 属性が無ければ undefined。 */
+export type MarkupImage = { readonly alt: string | undefined; readonly start: number; readonly end: number };
+
+/** リンクの行き先 1 つ（`[text](url)` と、参照の定義 `[label]: url`）。 */
+export type MarkupLink = { readonly destination: string; readonly start: number; readonly end: number };
+
+/**
+ * 文書の記法。Markdown でない文書（.txt）は markdown が false で、見出し・画像・リンクを持たず、texts が文書全体。
+ * 位置はすべて doc.source の上。
+ */
+export type Markup = {
+  readonly markdown: boolean;
+  readonly headings: readonly MarkupHeading[];
+  readonly images: readonly MarkupImage[];
+  readonly links: readonly MarkupLink[];
+  /** 書き手が付けたページ内の名前（見出しの `{#id}`、HTML の id と name）。 */
+  readonly ids: ReadonlySet<string>;
+  /** 読み手に字のまま見える範囲（リンクの外のテキスト）。 */
+  readonly texts: readonly Span[];
 };
 
 export type Severity = "error" | "warning" | "info";
@@ -371,6 +397,8 @@ export type DetectorOptions = {
   readonly embeddedLimits?: Readonly<Record<string, number>> | undefined;
   /** The rule's options (RuleDefinition.options), each at the value the settings chose or its default. Only a rule with options has them. */
   readonly settings?: Readonly<Record<string, OptionValue>> | undefined;
+  /** A custom rule's spec (RuleDefinition.custom). */
+  readonly custom?: CustomSpec | undefined;
 };
 
 /** The value of one rule option: a choice, a count, or a list of words. */
@@ -446,6 +474,24 @@ export type RuleDefinition = {
   readonly severity: Severity;
   /** Options beyond the level (the direction and length for katakana-long-vowel). Most rules have none. */
   readonly options?: Readonly<Record<string, RuleOption>>;
+  /** A rule a team defined under custom_rules in chaff.yaml: what it looks for. Built-in rules have none. */
+  readonly custom?: CustomSpec;
   /** What the rule reference tells a reader who is not an engineer: its group, one line, a before and after. */
   readonly guide?: RuleGuide;
 };
+
+/** One token's condition in a custom rule's run of tokens. Each part written must hold; pos lists the tags that match. */
+export type TokenCondition = {
+  readonly pos?: readonly string[] | undefined;
+  readonly base?: string | undefined;
+  readonly surface?: string | undefined;
+};
+
+/**
+ * What a team's rule looks for. words: spellings to avoid, each with the one to use (or none, to only point at it).
+ * pattern: a regular expression, checked before it runs. tokens: a run of tokens from the language adapter.
+ */
+export type CustomSpec =
+  | { readonly type: "words"; readonly words: readonly { readonly avoid: string; readonly use: string }[] }
+  | { readonly type: "pattern"; readonly pattern: string; readonly flags: string }
+  | { readonly type: "tokens"; readonly tokens: readonly TokenCondition[] };

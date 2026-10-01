@@ -1,0 +1,7 @@
+# Words that point at what comes next. A sentence with one of these before a number ("the following three steps")
+# announces how many items the list right below it has.
+id: count-anchor
+language: en
+entries:
+  - pattern: following
+  - pattern: below
