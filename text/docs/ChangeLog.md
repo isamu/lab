@@ -2,6 +2,17 @@
 
 Newest first.
 
+## Unreleased
+
+### `feedback` and `suppressions` say when the rule asked about did not run (#397)
+
+`chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and
+`--experimental` was not given, although the finding had been on screen a moment before. It now says the rule did not
+run in this check and why, and, for an experimental rule, to run again with `--experimental`. A draft made with
+`--experimental` or `--genre` (or with `experimental: true` in chaff.yaml) records them under Environment ("Run with"),
+so whoever reads the report can run the same check. `chaff suppressions` likewise lists the rules that stets name but
+that did not run in this check, which it could not count, instead of only "No findings are silenced".
+
 ## 0.18.0 — 2026-10-01
 
 A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
@@ -20,15 +31,6 @@ it needs to write chaff.yaml. Many false reports from real documents are gone.
 📦 [`chaffjs@0.18.0`](https://www.npmjs.com/package/chaffjs/v/0.18.0) ·
 [`@chaffjs/lang-ja@0.17.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.17.0) ·
 [`@chaffjs/lang-en@0.16.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.16.0)
-
-### `feedback` and `suppressions` say when the rule asked about did not run (#397)
-
-`chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and
-`--experimental` was not given, although the finding had been on screen a moment before. It now says the rule did not
-run in this check and why, and, for an experimental rule, to run again with `--experimental`. A draft made with
-`--experimental` or `--genre` (or with `experimental: true` in chaff.yaml) records them under Environment ("Run with"),
-so whoever reads the report can run the same check. `chaff suppressions` likewise lists the rules that stets name but
-that did not run in this check, which it could not count, instead of only "No findings are silenced".
 
 ### Making AI-sounding text sound human: the rewrite harness (#170)
 
