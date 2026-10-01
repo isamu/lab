@@ -22,8 +22,6 @@ export type Checked = {
   readonly genre: string;
   /** The rules this check did not run, and why. */
   readonly skipped: readonly Skipped[];
-  /** Whether experimental rules ran (--experimental, or chaff.yaml's experimental). */
-  readonly experimental: boolean;
   /** How the check was run, as the reader of a report would repeat it (runConditions). */
   readonly conditions: readonly string[];
 };
@@ -185,7 +183,7 @@ export const runConditions = (argv: readonly string[], genreFlag: string | undef
 const noMatch = (request: Request, checked: Checked, ui: UiLanguage): string => {
   const text = TEXT[ui];
   const list = text.noMatch(describe(checked.findings, text.none));
-  const [notRun] = request.rule === undefined ? [] : notRunAmong([request.rule], checked.skipped, checked.rules, checked.experimental);
+  const [notRun] = request.rule === undefined ? [] : notRunAmong([request.rule], checked.skipped);
   if (notRun === undefined) return list;
   return [text.notRun(notRun.rule, notRun.why), ...(notRun.needsExperimental ? [text.runExperimental] : []), list].join("\n");
 };

@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { notRunAmong } from "../packages/chaff/src/not-run.ts";
 import { runConditions } from "../packages/chaff/src/commands/feedback.ts";
 import { renderSuppressions, type PerFile } from "../packages/chaff/src/render/suppressions.ts";
-import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import type { Skipped } from "../packages/chaff/src/run.ts";
 import { applySuppressions } from "../packages/chaff/src/stet.ts";
 import type { Finding } from "../packages/chaff/src/plugin.ts";
 import { runCli } from "./cli-run.ts";
@@ -14,27 +14,20 @@ import { runCli } from "./cli-run.ts";
 
 const EXPERIMENTAL = "unqualified-superlative";
 const STABLE = "max-sentence-length";
-const rules = loadRules("ja");
-const skipped = [
-  { rule: EXPERIMENTAL, why: "まだ試験中のため" },
+const skipped: readonly Skipped[] = [
+  { rule: EXPERIMENTAL, why: "まだ試験中のため", offUntilExperimental: true },
   { rule: STABLE, why: "設定で切っているため" },
 ];
 
 describe("notRunAmong", () => {
-  it("keeps only the named rules that were skipped, and marks the experimental ones a plain run left off", () => {
-    assert.deepEqual(notRunAmong([EXPERIMENTAL, "heading-echo"], skipped, rules, false), [
-      { rule: EXPERIMENTAL, why: "まだ試験中のため", needsExperimental: true },
-    ]);
-    assert.deepEqual(notRunAmong([STABLE], skipped, rules, false), [{ rule: STABLE, why: "設定で切っているため", needsExperimental: false }]);
-  });
-
-  it("does not suggest --experimental to a run that had it", () => {
-    assert.deepEqual(notRunAmong([EXPERIMENTAL], skipped, rules, true), [{ rule: EXPERIMENTAL, why: "まだ試験中のため", needsExperimental: false }]);
+  it("keeps only the named rules that were skipped", () => {
+    assert.deepEqual(notRunAmong([EXPERIMENTAL, "heading-echo"], skipped), [{ rule: EXPERIMENTAL, why: "まだ試験中のため", needsExperimental: true }]);
+    assert.deepEqual(notRunAmong([STABLE], skipped), [{ rule: STABLE, why: "設定で切っているため", needsExperimental: false }]);
   });
 
   it("is empty when nothing named was skipped", () => {
-    assert.deepEqual(notRunAmong([], skipped, rules, false), []);
-    assert.deepEqual(notRunAmong([EXPERIMENTAL], [], rules, false), []);
+    assert.deepEqual(notRunAmong([], skipped), []);
+    assert.deepEqual(notRunAmong([EXPERIMENTAL], []), []);
   });
 });
 
@@ -94,6 +87,16 @@ describe("chaff feedback and suppressions on an experimental rule (#397)", () =>
     const run = await runCli({ "a.md": DOC }, ["feedback", "a.md", "--rule", EXPERIMENTAL, "--line", "3"], "en_US.UTF-8");
     assert.equal(run.code, 1);
     assert.match(run.err, /unqualified-superlative did not run in this check \(.+\)\.\nIt is experimental: run again with --experimental\./u);
+  });
+
+  it("feedback does not suggest --experimental for a rule chaff.yaml turned off", async () => {
+    const run = await runCli(
+      { "a.md": DOC, "chaff.yaml": `rules:\n  ${EXPERIMENTAL}: off\n` },
+      ["feedback", "a.md", "--rule", EXPERIMENTAL, "--line", "3"],
+      "en_US.UTF-8",
+    );
+    assert.match(run.err, /unqualified-superlative did not run in this check/u);
+    assert.doesNotMatch(run.err, /run again with --experimental/u);
   });
 
   it("feedback with --experimental writes the conditions into the draft", async () => {

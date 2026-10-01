@@ -113,7 +113,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const split = splitByBaseline(path, applied.kept, baseline);
   const result = { ...raw, findings: split.fresh };
   const { header, notes } = fileHeader(path, source, language, { genre, from, unread }, { shelved: split.shelved, hushed: applied.suppressed.length });
-  const notRun = notRunAmong(applied.named, raw.skipped, rules, experimental);
+  const notRun = notRunAmong(applied.named, raw.skipped);
   const text = argv.includes("--compact") ? renderCompact(header, result, rules, language) : renderFriendly(header, result, rules, language, notes);
   return {
     text,
@@ -122,7 +122,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
     genre,
     outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
     perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless, notRun },
-    checked: { findings: split.fresh, rules, language, genre, skipped: raw.skipped, experimental },
+    checked: { findings: split.fresh, rules, language, genre, skipped: raw.skipped },
     kept: applied.kept,
   };
 };

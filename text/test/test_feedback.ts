@@ -143,7 +143,7 @@ describe("chaff feedback", () => {
       out.push(parts.join(" "));
     };
     console.error = console.log;
-    const checked: Checked = { findings, rules, language: "ja", genre: "blog/tech", skipped, experimental: false, conditions: [] };
+    const checked: Checked = { findings, rules, language: "ja", genre: "blog/tech", skipped, conditions: [] };
     const context: FeedbackContext = {
       cwd,
       ui: "en",
@@ -233,7 +233,7 @@ describe("chaff feedback", () => {
     const experimental = await run(
       ["a.md", "--rule", "unqualified-superlative", "--line", "5"],
       [],
-      [{ rule: "unqualified-superlative", why: "まだ試験中のため" }],
+      [{ rule: "unqualified-superlative", why: "まだ試験中のため", offUntilExperimental: true }],
     );
     assert.equal(experimental.code, 1);
     assert.match(
