@@ -119,10 +119,10 @@ $ npx chaffjs explain max-sentence-length
 
   直しかた: 接続助詞のところで 2 文に割ってください。それだけで読めるようになります。
 
-  設定できる値（単位: 文字）:
-    strict   70
-  → normal   100
-    relaxed  140
+  設定できる値:
+    strict   一文 70 字まで
+  → normal   一文 100 字まで
+    relaxed  一文 140 字まで
     off      見ない
 
   この数字は 既定 のものです。ほかに business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / legal/judgment / academic で別の数字を持っています。

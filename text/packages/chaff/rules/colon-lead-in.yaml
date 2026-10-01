@@ -55,5 +55,5 @@ not_flagged:
   ja: 1 つだけのコロンの前置きと、コロンで終わらない前置き（「次のとおりとする。」）は数えません。説明書・法務・技術文書のジャンルでは見ません。短い文書は測りません。英語の文書は、人もよくこの形で書くので見ません。
   en: A single colon lead-in, and a lead-in that does not end in a colon, are not counted. Documentation, legal and technical genres do not run this rule. Short documents are not measured. Japanese documents only.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 characters
+  ja: コロンで箇条書きへ渡す文が 1000 字あたり {limit} 個まで
+  en: "colon lead-ins to lists: up to {limit} per 1000 characters"
