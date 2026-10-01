@@ -366,16 +366,80 @@ describe("doubled-word — 日本語", () => {
     await ja.prepare?.({ pos: true });
   });
 
-  it("invalid: 同じ語が続けば、二つ目の位置で出す", () => {
+  it("invalid: 付属語（助詞・助動詞）が続けば、二つ目の位置で出す", () => {
     assert.deepEqual(findingsOf("資料をを送ります。", ja, "ja"), ["1:4 をを"]);
     assert.deepEqual(findingsOf("私のの本です。", ja, "ja"), ["1:3 のの"]);
-    assert.deepEqual(findingsOf("内容を確認確認します。", ja, "ja"), ["1:6 確認確認"]);
-    assert.deepEqual(findingsOf("会議会議を開きます。", ja, "ja"), ["1:3 会議会議"]);
-    assert.deepEqual(findingsOf("資料資料が届きました。", ja, "ja"), ["1:3 資料資料"]);
-    assert.deepEqual(findingsOf("資料資料の確認をお願いします。", ja, "ja"), ["1:3 資料資料"]);
-    assert.deepEqual(findingsOf("資料資料で確認してください。", ja, "ja"), ["1:3 資料資料"]);
-    assert.deepEqual(findingsOf("会社会社を訪問します。", ja, "ja"), ["1:3 会社会社"]);
+  });
+
+  // #412 の実文書で当たりだった重なり。語句だけを使った自作の文。
+  it("invalid: 付属語の重なりと、付く先のある非自立の語の重なりは数える", () => {
+    assert.deepEqual(findingsOf("プロダクトをを作ります。", ja, "ja"), ["1:7 をを"]);
+    assert.deepEqual(findingsOf("その話にに出ました。", ja, "ja"), ["1:5 にに"]);
+    assert.deepEqual(findingsOf("新しい方式に置き換えられたた。", ja, "ja"), ["1:14 たた"]);
+    assert.deepEqual(findingsOf("世の中がが変わります。", ja, "ja"), ["1:5 がが"]);
+    assert.deepEqual(findingsOf("資料を配っているいる。", ja, "ja"), ["1:9 いるいる"]);
+    assert.deepEqual(findingsOf("そうですよよね。", ja, "ja"), ["1:6 よよ"]);
+  });
+
+  it("invalid: 内容語でも三つ続けば、二つ目と三つ目の重なりを出す", () => {
     assert.deepEqual(findingsOf("早め早め早めに動きます。", ja, "ja"), ["1:5 早め早め"]);
+    assert.deepEqual(findingsOf("資料資料資料が届きました。", ja, "ja"), ["1:5 資料資料"]);
+  });
+
+  it("valid: 内容語（名詞・形容詞）を丸ごと重ねた形は畳語か強めで、数えない（#412）", () => {
+    const valid = [
+      "個人個人の考えを聞きます。",
+      "一行一行を読み直します。",
+      "それそれ、と頷きました。",
+      "駄目駄目です。",
+      "嫌い嫌い。",
+      "えらいえらい。",
+      "若い若い。",
+      "蓼食う虫も好き好きです。",
+      "そんなのはお茶の子さいさいです。",
+      "このパンはもちもちです。",
+      "雲がムクムクと湧きます。",
+      "車でブイブイ言わせます。",
+      "煙がブスブスと出ます。",
+      "ババババと音がします。",
+      "内容を確認確認します。",
+      "資料資料が届きました。",
+      "会社会社を訪問します。",
+    ];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
+  });
+
+  it("valid: 一字の仮名の三つ以上の並び（笑い声）と、語彙表の決まった言い回しは数えない（#412）", () => {
+    const valid = [
+      "ははは、と笑いました。",
+      "あははは、と笑いました。",
+      "ふふふと笑う。",
+      "りんご、みかん、などなど。",
+      "それはあるあるです。",
+      "知ったかか、と言われました。",
+      "前置きはほどほどにします。",
+      "代わる代わるコーディングします。",
+      "めでたしめでたし。",
+      "またまた基礎の話です。",
+      "これは私の研究です、えへへ。",
+    ];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
+  });
+
+  it("invalid: 片仮名の外来語の重なりは、擬音の形でも副詞の位置に立たなければ書き損じ", () => {
+    assert.deepEqual(findingsOf("テストテストを実行します。", ja, "ja"), ["1:4 テストテスト"]);
+    assert.deepEqual(findingsOf("メモメモ。", ja, "ja"), ["1:3 メモメモ"]);
+    assert.deepEqual(findingsOf("ユーザーユーザー、確認します。", ja, "ja"), ["1:5 ユーザーユーザー"]);
+  });
+
+  it("invalid: 一字の仮名は二つなら書き損じ。三つでも前の語に付いていれば書き損じ", () => {
+    assert.deepEqual(findingsOf("私ははそう思います。", ja, "ja"), ["1:3 はは"]);
+    assert.deepEqual(findingsOf("資料ををを送ります。", ja, "ja"), ["1:4 をを", "1:5 をを"]);
+    assert.deepEqual(findingsOf("世の中ががが変わります。", ja, "ja"), ["1:5 がが", "1:6 がが"]);
+    assert.deepEqual(findingsOf("昨日行ったたたので疲れた。", ja, "ja"), ["1:6 たた", "1:7 たた"]);
+    assert.deepEqual(findingsOf("ををを送ります。", ja, "ja"), ["1:2 をを", "1:3 をを"]);
+    assert.deepEqual(findingsOf("よよよね。", ja, "ja"), ["1:2 よよ", "1:3 よよ"]);
+    assert.deepEqual(findingsOf("私ははは元気です。", ja, "ja"), ["1:3 はは", "1:4 はは"]);
   });
 
   it("valid: 重ね言葉と繰り返し記号は数えない", () => {
@@ -421,7 +485,6 @@ describe("doubled-word — 日本語", () => {
   });
 
   it("invalid: 重ね言葉と同じ形でも書き損じは数える", () => {
-    assert.deepEqual(findingsOf("段階段階を踏みます。", ja, "ja"), ["1:3 段階段階"]);
     assert.deepEqual(findingsOf("昨日行ったたので疲れた。", ja, "ja"), ["1:6 たた"]);
   });
 
@@ -434,12 +497,8 @@ describe("doubled-word — 日本語", () => {
     valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
   });
 
-  it("invalid: 番地が続かない略称、種類の語でない語の重なり、番地の前でも名前でない重なりは数える", () => {
+  it("invalid: 番地が続かない一字の略称は数える", () => {
     assert.deepEqual(findingsOf("法法の規定による。", ja, "ja"), ["1:2 法法"]);
-    assert.deepEqual(findingsOf("民法民法第709条の規定による。", ja, "ja"), ["1:3 民法民法"]);
-    assert.deepEqual(findingsOf("資料資料第3条を見てください。", ja, "ja"), ["1:3 資料資料"]);
-    assert.deepEqual(findingsOf("規則規則第3条による。", ja, "ja"), ["1:3 規則規則"]);
-    assert.deepEqual(findingsOf("就業規則規則第3条による。", ja, "ja"), ["1:5 規則規則"]);
   });
 
   it("valid: 動詞・形容詞を連用形や命令形のまま重ねた形（青空文庫の小説・戯曲・歌集）は数えない", () => {
@@ -481,7 +540,6 @@ describe("doubled-word — 日本語", () => {
 
   it("invalid: 仮名の語でも、接尾語・語尾・助詞の重なりや、副詞の位置に立たない重なりは数える", () => {
     assert.deepEqual(findingsOf("田中さんさんに連絡します。", ja, "ja"), ["1:5 さんさん"]);
-    assert.deepEqual(findingsOf("まとめまとめを作ります。", ja, "ja"), ["1:4 まとめまとめ"]);
     assert.deepEqual(findingsOf("確認できるできるように準備します。", ja, "ja"), ["1:6 できるできる"]);
     assert.deepEqual(findingsOf("着いたらたら連絡します。", ja, "ja"), ["1:5 たらたら"]);
     assert.deepEqual(findingsOf("本日は確認ですです。", ja, "ja"), ["1:8 ですです"]);
