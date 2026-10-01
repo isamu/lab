@@ -6,6 +6,7 @@ import { defaultModel } from "../judge.ts";
 import { isBackend, type BackendName } from "../backends/types.ts";
 import type { Level } from "../plugin.ts";
 import type { PathRule } from "./by-path.ts";
+import type { Extensions } from "../extension/load.ts";
 import type { StyleLimits } from "../style-parse.ts";
 
 export const CONFIG_FILE = "chaff.yaml";
@@ -48,6 +49,8 @@ export type Config = {
   readonly applied?: AppliedStyle | undefined;
   /** custom_rules as written: the team's own rules. custom/parse.ts reads and checks them. */
   readonly customRules?: unknown;
+  /** The code chaff.yaml names, once loaded (extension/load.ts). Reading chaff.yaml does not load it. */
+  readonly extensions?: Extensions;
 };
 
 export type AppliedStyle = {

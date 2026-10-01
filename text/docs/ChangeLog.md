@@ -11,6 +11,41 @@ superlative (国内最大, 業界最速) is read as its scope and is not reporte
 finding that never came. The summary and the example now use 「最速」, and `not_flagged` says that a joined noun or a
 name with で is a scope. What the rule reports is unchanged.
 
+### `custom_rules: type: module`: a team's rule as a small Node function
+
+```yaml
+custom_rules:
+  - id: team-no-tbd-dates
+    type: module
+    module: ./chaff-rules/no-tbd-dates.mjs # relative to chaff.yaml
+    level: warning
+    name: …, why: …, how_to_fix: …, example: … # as for any custom rule
+```
+
+- The module default-exports a detector `(doc, options) => findings`, or `defineRule({ detect })` from `chaffjs/api`.
+  It is loaded once before anything runs. `requires: [pos]` gives the sentences tokens.
+- A missing file, a file that cannot be loaded, a default export that is not a detector and a rule written for another
+  plugin API stop the run, naming the rule and the file as chaff.yaml writes it.
+- A detector that throws or returns anything but findings fails on that document only: its rule is listed as not run
+  with the reason and the file, and every other rule still runs.
+- Loading a module runs its code. A relative path may not leave the folder chaff.yaml is in; a file outside is named by
+  its absolute path. Determinism is the author's job: a detector should read nothing but the document.
+- `chaff rules --json`: `custom_rule_types` is `available`, with `words`, `pattern`, `tokens` and `module`.
+
+### `chaffjs/api`: the plugin API
+
+A small, stable surface for writing rules in code, the first step toward `type: module` custom rules and plugin
+packages. `import { API_VERSION, defineRule, definePlugin } from "chaffjs/api"`, with the types a rule author needs:
+`Detector`, `Finding`, `DetectorOptions`, `RuleDocument` (sentences, paragraphs, sections, lists, links, tokens with
+part of speech and lemma when the rule asks for them, word lists and markup) and the shapes they are made of.
+
+- `API_VERSION` is 1. `defineRule` and `definePlugin` stamp it, so chaff can refuse a plugin written for another one.
+- A detector reads a frozen copy of the document with only the public fields, so chaff's own shapes can change
+  without breaking a plugin, and one rule cannot change what the next one reads.
+- A detector returns `{ start, end?, values? }`; chaff places it, quotes its sentence and fills `{matched}`. Anything
+  else is refused as a whole, with what was wrong.
+- `chaffjs/plugin`, the language adapters' surface, is unchanged.
+
 ### New rule: `nominalization`, verbs hidden in nouns (experimental)
 
 - chaff counts verbs written as nouns and carried by another verb: 調査を実施した for 調査した, 確認を行う for 確認する,

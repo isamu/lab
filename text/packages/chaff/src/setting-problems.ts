@@ -4,6 +4,7 @@ import type { UiLanguage } from "./ui.ts";
 import { styleProblems } from "./config/style.ts";
 import { loadStyles } from "./style-load.ts";
 import { customRuleProblems } from "./custom/problems.ts";
+import { extensionProblems } from "./extension/problem-text.ts";
 import { GENRES } from "./genre.ts";
 import { unknownGenres, writtenGenres } from "./genre-check.ts";
 import { loadProfiles } from "./profile/load.ts";
@@ -27,4 +28,5 @@ export const settingProblems = (command: string, genreFlag: string | undefined, 
   ...profileProblems(command, config, text),
   ...styleProblems(config, loadStyles(), ui),
   ...customRuleProblems(config, ui),
+  ...extensionProblems(config, ui),
 ];
