@@ -151,12 +151,12 @@ notice.md   blog/tech · 日本語   ジャンルは既定から
                   katakana-long-vowel
   3:14    info    「確認を行い」は「〜する」で書けます
                   team-wo-okonau
-  5:32    warning 「下さい」は「ください」と書きます
-                  team-kudasai
-  5:22    warning 「致します」は「いたします」と書きます
-                  team-kudasai
   5:6     error   決まっていないことが残っている:「TBD」
                   team-tbd
+  5:22    warning 「致します」は「いたします」と書きます
+                  team-kudasai
+  5:32    warning 「下さい」は「ください」と書きます
+                  team-kudasai
 
 指摘 5 件、動いていない rule 36 件
 ```

@@ -1,5 +1,5 @@
 import type { Detector, Finding, Sentence, Span } from "../plugin.ts";
-import { minorityStyle } from "../orthography.ts";
+import { minorityOf } from "../orthography.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 
 /** 日本語の読点と句点の、二つの書き方。「、。」と、横書きの論文や公用文に多い「，．」。どちらが正しいかは決めない。 */
@@ -86,7 +86,7 @@ export const kutotenConsistency: Detector = (doc, options): Finding[] => {
     .flatMap((sentence) => marksIn(sentence).map((entry) => ({ sentence, entry })));
   return KINDS.flatMap((kind) => {
     const ofKind = located.filter(({ entry }) => entry.kind === kind.id);
-    const minority = minorityStyle(ofKind.map(({ entry }) => ({ spaced: entry.western })));
+    const minority = minorityOf(ofKind.map(({ entry }) => entry.western));
     if (minority === undefined) return [];
     const odd = ofKind.filter(({ entry }) => entry.western === minority);
     if (odd.length < options.limit) return [];

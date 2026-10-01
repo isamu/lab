@@ -111,10 +111,10 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 ```
 $ npx chaffjs en.md --compact
 
-  3:67   warning "it is important to note that" emphasises without saying anything
-                 empty-intensifier
   3:1    warning "in today's fast-paced world" is an opening that fits any article
                  padded-intro
+  3:67   warning "it is important to note that" emphasises without saying anything
+                 empty-intensifier
   11:1   warning Closes with "in conclusion"
                  closing-cliche
 ```
@@ -419,6 +419,8 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `taigen-dome-in-prose` | 本文の体言止めが続く（ja） |
 | `stray-space` | 語句の途中の空白（こころさんが 払った / 確認 しました）。空けた所が文書の中で少ないときだけ（ja、試験中） |
 | `katakana-long-vowel` | カタカナ語の語末の「ー」（コンピューター / コンピュータ）。既定は同じ語の混在だけ。`options` で省く・付けるを決める（ja、試験中） |
+| `ra-nuki` | ら抜き言葉（見れる / 食べれる / 来れる）。一段・カ変動詞の未然形に付いた「れる」を品詞解析で読む。五段の可能（走れる）は指さない（ja、試験中） |
+| `double-negative` | 二重否定（〜ないわけではない / not uncommon）。言い回しは語彙表（ja / en、試験中） |
 
 品詞が要らない日本語の rule:
 
@@ -431,6 +433,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `no-nakaguro-parallel` | 1 文に中黒の並列が何組も入る |
 | `latin-spacing` | 英字・数字の前後の空白の有無が文書の中で混ざる（試験中） |
 | `kutoten-consistency` | 読点（、と，）と句点（。と．）の書き方が文書の中で混ざる（試験中） |
+| `fullwidth-alnum-consistency` | 英字・数字の全角（ＡＢＣ１２３）と半角（ABC123）が文書の中で混ざる。英字一字・語・数字一字・並びを別に比べる（試験中） |
 
 英語固有の rule:
 
@@ -442,6 +445,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `title-case-consistency` | 見出しの大文字化が文書内で揃っているか |
 | `oxford-comma-consistency` | 並列の読点が文書内で揃っているか |
 | `contraction-consistency` | 短縮形の使いかたが文書内で揃っているか |
+| `spelling-consistency` | イギリスとアメリカの綴り（colour / color）が文書内で揃っているか。-ise / -ize は別に比べる（試験中） |
 
 揃っているかを見る rule は**どちらが正しいかを決めません**。1 つの文書で揃っているかだけを見て、少数派を指摘します。
 

@@ -18,6 +18,7 @@ import {
 import { execFileSync } from "node:child_process";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import type { Finding } from "../packages/chaff/src/plugin.ts";
+import type { Skipped } from "../packages/chaff/src/run.ts";
 import type { Config } from "../packages/chaff/src/config/load.ts";
 
 const DOC = Array.from({ length: 12 }, (_, index) => `line ${String(index + 1)}`).join("\n");
@@ -57,6 +58,7 @@ const input = (overrides: Partial<FeedbackInput> = {}): FeedbackInput => ({
   fileName: "a.md",
   language: "ja",
   genre: "blog/tech",
+  conditions: [],
   findings: [{ rule: "max-sentence-length", line: 5, message: "この文は 102 文字あります（100 文字まで）" }],
   line: 5,
   excerpts: excerptsAround(DOC, [5]),
@@ -78,6 +80,15 @@ describe("報告の下書き", () => {
   it("見逃し: 題にファイルと行", () => {
     // The reported line, not the first line of the excerpt around it.
     assert.equal(feedbackDraft(input({ kind: "missed", findings: [], line: 5 }), "en").title, "Missed: a.md line 5");
+  });
+
+  it("実行の条件があれば環境に書き、無ければ書かない", () => {
+    assert.match(
+      feedbackDraft(input({ conditions: ["--experimental", "--genre business/report"] }), "en").body,
+      /^- Run with: --experimental --genre business\/report$/mu,
+    );
+    assert.match(feedbackDraft(input({ conditions: ["--experimental"] }), "ja").body, /^- 実行の条件: --experimental$/mu);
+    assert.doesNotMatch(feedbackDraft(input(), "en").body, /Run with/u);
   });
 
   it("chaff.yaml があれば載せる", () => {
@@ -122,7 +133,7 @@ describe("送り方の表示", () => {
 describe("chaff feedback", () => {
   const rules = loadRules("ja");
   const finding = (rule: string, line: number): Finding => ({ rule, severity: "warning", line, column: 1, quote: "", values: { length: 102, limit: 100 } });
-  const run = async (argv: readonly string[], findings: readonly Finding[] = [finding("max-sentence-length", 5)]) => {
+  const run = async (argv: readonly string[], findings: readonly Finding[] = [finding("max-sentence-length", 5)], skipped: readonly Skipped[] = []) => {
     const cwd = mkdtempSync(join(tmpdir(), "chaff-feedback-"));
     writeFileSync(join(cwd, "a.md"), DOC);
     writeFileSync(join(cwd, "chaff.yaml"), "jargon:\n  - 社外秘の語\nrules:\n  max-sentence-length: relaxed\n");
@@ -132,7 +143,7 @@ describe("chaff feedback", () => {
       out.push(parts.join(" "));
     };
     console.error = console.log;
-    const checked: Checked = { findings, rules, language: "ja", genre: "blog/tech" };
+    const checked: Checked = { findings, rules, language: "ja", genre: "blog/tech", skipped, conditions: [] };
     const context: FeedbackContext = {
       cwd,
       ui: "en",
@@ -216,6 +227,27 @@ describe("chaff feedback", () => {
     const result = await run(["a.md", "--rule", "heading-echo"]);
     assert.equal(result.code, 1);
     assert.match(result.out, /5 {2}max-sentence-length/u);
+  });
+
+  it("名指しした rule が動いていなければ、理由を言う。試験中なら --experimental を案内する", async () => {
+    const experimental = await run(
+      ["a.md", "--rule", "unqualified-superlative", "--line", "5"],
+      [],
+      [{ rule: "unqualified-superlative", why: "まだ試験中のため", offUntilExperimental: true }],
+    );
+    assert.equal(experimental.code, 1);
+    assert.match(
+      experimental.out,
+      /^unqualified-superlative did not run in this check \(まだ試験中のため\)\.\nIt is experimental: run again with --experimental\.\nNo such finding/u,
+    );
+    const stable = await run(["a.md", "--rule", "heading-echo"], [], [{ rule: "heading-echo", why: "設定で切っているため" }]);
+    assert.match(stable.out, /^heading-echo did not run in this check \(設定で切っているため\)\.\nNo such finding/u);
+    assert.doesNotMatch(stable.out, /--experimental/u);
+  });
+
+  it("動いた rule に指摘が無いだけなら、これまでどおり", async () => {
+    const result = await run(["a.md", "--rule", "heading-echo"], [finding("max-sentence-length", 5)], [{ rule: "bold-density", why: "x" }]);
+    assert.match(result.out, /^No such finding/u);
   });
 
   it("行番号でないものは断る", async () => {

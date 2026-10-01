@@ -1,0 +1,25 @@
+# Double negatives: a negation of a negative word, which says a positive without committing to it. The reader turns
+# the sentence over twice. "not without" is left out: "do not enter without a badge" is a plain prohibition.
+id: double-negative
+language: en
+entries:
+  - pattern: not uncommon
+  - pattern: not unusual
+  - pattern: not unlike
+  - pattern: not unreasonable
+  - pattern: not insignificant
+  - pattern: not inconsiderable
+  - pattern: not impossible
+  - pattern: not unlikely
+  - pattern: not unknown
+  - pattern: not unheard of
+  - pattern: not infrequently
+  - pattern: not infrequent
+  - pattern: not unimportant
+  - pattern: not dissimilar
+  - pattern: not unaware
+  - pattern: not unhelpful
+  - pattern: not ineffective
+  - pattern: not inconsistent
+  - pattern: not insubstantial
+  - pattern: not unwilling

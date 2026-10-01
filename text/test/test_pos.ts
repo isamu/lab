@@ -69,6 +69,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "contrast-framing",
         "cushion-phrase-density",
         "double-keigo",
+        "double-negative",
         "empty-conclusion",
         "empty-intensifier",
         "excessive-hedging",
