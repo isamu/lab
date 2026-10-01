@@ -16,12 +16,18 @@ name:
   en: Spacing around Latin text is inconsistent
 
 why:
-  ja: 日本語と英字・数字のあいだを空けるか詰めるかは、どちらでも読めます。困るのは一つの文書の中で混ざることで、読み手には違いに意味があるように見えます。chaff はどちらが正しいかを決めず、文書の中で少ないほうを指摘します。英字と、数字の前、数字の後ろは別々に数えます。「を 3回」のように、数字の前は空けて助数詞とは詰める書き方がふつうにあるからです。「3GBの」のように数字に続く単位は、英字ではなく数字の側として数えます。逆に「H30 等」「EC2 で」「Phase 1 は」のように英字で始まって数字で終わる名前は、英字の側として数えます。「073-489-5909」「2026-06-02」のような番号は数量ではないので数えません。日付・時刻（「9月」「2026年」「令和8年」「10月1日」「3時」「10時5分」）も、数と単位を詰めて書く決まりなので、その中の境目も、前の境目（「は 9月」「午後3時」）も数えません。長さ（「3ヶ月」「3 時間」「5日で」「3年」）は数量として数えます。題や注の番号として書かれた数（「3.1 リサーチの原則」の節番号、※1 の注番号、行の頭に続き番号で並べた注の番号、番号が増えていく箇条書きの頭の番号、「問3」「図2」のように語のすぐ後ろに書いた番号）、0 で始まる組を含む番号（102-0094）、〒の後ろの郵便番号（〒100-8916）、市・区・町まで下りた地名のすぐ後ろの番地（千代田区紀尾井町1-3）も、後ろの空白が番号と題・項目の区切りなので数えません。「第1節 AI の…」の「第1節」の後ろの空白も同じです。鉤括弧（「」『』）で引いた題名や発言の中も、空け方は引いた元のものなので数えません。
-  en: Whether to put a space between Japanese and Latin letters or digits is a choice either way. What reads badly is mixing both in one document, which suggests the difference means something. chaff does not decide which is right; it points at whichever the document uses less. Letters, the space before a digit and the space after one are counted separately, since spacing before a number but not before its counter is common. A unit after a number (3GB) counts with the number; a name that starts with a letter and ends in a digit (H30, EC2, Phase 1) counts with the letters. A code such as a phone number or a date (073-489-5909, 2026-06-02) is not a quantity and is not counted. Nor is a date or a time written with units (9月, 2026年, 令和8年, 10月1日, 3時, 10時5分), which is packed by convention; neither its inside nor the space before it (は 9月, 午後3時) counts. A length of time (3ヶ月, 3 時間, 5日で, 3年) is a quantity and counts. Neither is a number written as the label of a title or a note (a section number such as 3.1 before its title, a note number after ※, the numbers of notes listed one per line in sequence, numbers opening the items of a list that go up, a number written right after a word such as 問 or 図), a code with a part starting with 0 (102-0094), a postal code after 〒 (〒100-8916), or a hyphenated address number right after a city, ward or town (千代田区紀尾井町1-3), since the space after it separates the label from its title or the next item. The same goes for the space after a division such as 第1節. Nor is the spacing inside a title or a quotation in 「」 or 『』, which is the source's, not the writer's.
+  ja: 日本語と英字・数字のあいだを空けるか詰めるかは、どちらでも読めます。困るのは一つの文書の中で混ざることで、読み手には違いに意味があるように見えます。chaff はどちらが正しいかを決めず、文書の中で少ないほうを指摘します。英字と、数字の前、数字の後ろは別々に数えます。「を 3回」のように、数字の前は空けて助数詞とは詰める書き方がふつうにあるからです。「3GBの」のように数字に続く単位は、英字ではなく数字の側として数えます。逆に「H30 等」「EC2 で」「Phase 1 は」のように英字で始まって数字で終わる名前は、英字の側として数えます。「073-489-5909」「2026-06-02」のような番号や、「1.0.0」のような版番号は数量ではないので数えません。日付・時刻（「9月」「2026年」「令和8年」「10月1日」「3時」「10時5分」）も、数と単位を詰めて書く決まりなので、その中の境目も、前の境目（「は 9月」「午後3時」）も数えません。長さ（「3ヶ月」「3 時間」「5日で」「3年」）は数量として数えます。題や注の番号として書かれた数（「3.1 リサーチの原則」の節番号、※1 の注番号、行の頭に続き番号で並べた注の番号、番号が増えていく箇条書きの頭の番号、「問3」「図2」のように語のすぐ後ろに書いた番号）、0 で始まる組を含む番号（102-0094）、〒の後ろの郵便番号（〒100-8916）、市・区・町まで下りた地名のすぐ後ろの番地（千代田区紀尾井町1-3）も、後ろの空白が番号と題・項目の区切りなので数えません。「第1節 AI の…」の「第1節」の後ろの空白も同じです。鉤括弧（「」『』）で引いた題名や発言の中も、リンクの文字の中も、空け方は引いた元のものなので数えません。
+  en: Whether to put a space between Japanese and Latin letters or digits is a choice either way. What reads badly is mixing both in one document, which suggests the difference means something. chaff does not decide which is right; it points at whichever the document uses less. Letters, the space before a digit and the space after one are counted separately, since spacing before a number but not before its counter is common. A unit after a number (3GB) counts with the number; a name that starts with a letter and ends in a digit (H30, EC2, Phase 1) counts with the letters. A code such as a phone number, a date or a version (073-489-5909, 2026-06-02, 1.0.0) is not a quantity and is not counted. Nor is a date or a time written with units (9月, 2026年, 令和8年, 10月1日, 3時, 10時5分), which is packed by convention; neither its inside nor the space before it (は 9月, 午後3時) counts. A length of time (3ヶ月, 3 時間, 5日で, 3年) is a quantity and counts. Neither is a number written as the label of a title or a note (a section number such as 3.1 before its title, a note number after ※, the numbers of notes listed one per line in sequence, numbers opening the items of a list that go up, a number written right after a word such as 問 or 図), a code with a part starting with 0 (102-0094), a postal code after 〒 (〒100-8916), or a hyphenated address number right after a city, ward or town (千代田区紀尾井町1-3), since the space after it separates the label from its title or the next item. The same goes for the space after a division such as 第1節. Nor is the spacing inside a title or a quotation in 「」 or 『』, or inside the text of a link, which is the source's, not the writer's.
 
 message:
   ja: "日本語と{kind}のあいだを{style}（この文書はふつう{usual}。{of} 箇所のうち {count} 箇所が違う）"
   en: "Spacing between Japanese and {kind} differs here ({count} of {of})"
+
+# 少ないほうが 5 箇所以上で、全体の 2 割を超えるとき。書き損じではなく書き方が二通りあるので、1 件にまとめて両方の数を言う。
+messages:
+  mixed:
+    ja: "日本語と{kind}のあいだを、空ける所が {spaced} 箇所、詰める所が {touching} 箇所あります。この文書には書き方が二通りあります"
+    en: "Spacing between Japanese and {kind} is done two ways in this document ({spaced} spaced, {touching} not)"
 
 how_to_fix:
   ja: 文書の多いほうの書き方に合わせてください。チームで決めているなら、STYLE.md に書いておくと迷いません。
@@ -44,8 +50,8 @@ example:
       表は Excel で作り、Word に貼ります。図は PowerPoint で描きます。最後に PDF にします。
 
 not_flagged:
-  ja: 電話番号や日付のような番号、単位つきの日付や時刻（9月、10時5分）、見出しの番号、「」の中は数えません。どちらの空け方が正しいかは決めません。
-  en: Codes such as phone numbers and dates, dates and times with units (9月, 10時5分), heading numbers and quotations are not counted. Neither way is called right.
+  ja: 電話番号や日付のような番号、版番号（1.0.0）、単位つきの日付や時刻（9月、10時5分）、見出しの番号、「」の中、リンクの文字の中は数えません。どちらの空け方が正しいかは決めません。少ないほうが全体の 2 割を超えるほど多ければ（5 箇所以上）、1 箇所ずつではなく、書き方が二通りあることを 1 件で言います。
+  en: Codes such as phone numbers, dates and version numbers (1.0.0), dates and times with units (9月, 10時5分), heading numbers, quotations and the text of links are not counted. Neither way is called right. When the less common way is more than a fifth of the places (and at least five), it is reported once, as a document written two ways, rather than place by place.
 level_meaning:
   ja: 少ないほうの空け方が {limit} 箇所あれば指摘
   en: reported once {limit} places go against the document's habit
