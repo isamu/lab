@@ -1,5 +1,6 @@
 import type { Finding, Span } from "./plugin.ts";
-import { lineOf, stetBlockEnd } from "./stet-block.ts";
+import { stetBlockEnd } from "./stet-block.ts";
+import { lineStarts, placeOf } from "./position.ts";
 import { parse } from "./markdown-read.ts";
 
 export type Suppression = {
@@ -47,8 +48,15 @@ const splitBody = (body: string): { rules: string[]; reason: string | undefined 
 
 const scopeOf = (match: RegExpMatchArray): Suppression["scope"] => SCOPE[match[1] ?? "stet"] ?? "next";
 
+/** 1-based line of an offset, from a table built once: a document can hold thousands of stets. */
+const lineFinder = (source: string): ((offset: number) => number) => {
+  const starts = lineStarts(source);
+  return (offset) => placeOf(starts, offset).line;
+};
+
 export const parseSuppressions = (source: string): Suppression[] => {
   const matches = [...source.matchAll(PATTERN)];
+  const lineAt = lineFinder(source);
   // Only a plain stet needs the tree, to find the block it stops at; a stet-file alone does not pay for a parse.
   const root = matches.some((match) => scopeOf(match) === "next") ? parse(source) : undefined;
   return matches.map((match) => {
@@ -56,8 +64,8 @@ export const parseSuppressions = (source: string): Suppression[] => {
     const scope = scopeOf(match);
     return {
       ...splitBody(match[2] ?? ""),
-      line: lineOf(source, match.index),
-      blockEnd: root !== undefined && scope === "next" ? stetBlockEnd(source, root, comment) : lineOf(source, comment.end),
+      line: lineAt(match.index),
+      blockEnd: root !== undefined && scope === "next" ? stetBlockEnd(source, root, comment, lineAt) : lineAt(comment.end),
       scope,
     };
   });
@@ -79,7 +87,8 @@ export type Applied = { readonly kept: readonly Finding[]; readonly suppressed: 
 
 export const applySuppressions = (source: string, findings: readonly Finding[], sections: readonly Span[]): Applied => {
   const suppressions = parseSuppressions(source);
-  const sectionEnds = sections.map((span) => lineOf(source, span.end));
+  const lineAt = lineFinder(source);
+  const sectionEnds = sections.map((span) => lineAt(span.end));
   const lastLine = source.split("\n").length;
   const matched = findings.map((finding) => ({ finding, suppression: suppressions.find((entry) => covers(entry, finding, sectionEnds, lastLine)) }));
   return {

@@ -12,12 +12,19 @@ const BLOCK_CONTAINERS: ReadonlySet<string> = new Set(["root", "listItem", "bloc
 
 type Holder = { readonly parent: MarkdownNode; readonly index: number };
 
-/** 1-based line of an offset. */
-export const lineOf = (source: string, offset: number): number => source.slice(0, offset).split("\n").length;
-
-const holds = (node: MarkdownNode, offset: number): boolean => {
-  const span = spanOf(node);
-  return span !== undefined && span.start <= offset && offset < span.end;
+/** The child holding `offset`, or -1. Binary search: siblings are in source order, and a document can hold thousands of stets. */
+const childHolding = (children: readonly MarkdownNode[], offset: number): number => {
+  let low = 0;
+  let high = children.length - 1;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    const span = spanOf(children[middle] ?? { type: "" });
+    if (span === undefined) return -1;
+    if (offset < span.start) high = middle - 1;
+    else if (offset >= span.end) low = middle + 1;
+    else return middle;
+  }
+  return -1;
 };
 
 /** The deepest node holding `offset`, as its parent and its place among the parent's children. A loop: quotes nest without limit. */
@@ -26,7 +33,7 @@ const holderOf = (root: MarkdownNode, offset: number): Holder | undefined => {
   let parent: MarkdownNode | undefined = root;
   while (parent !== undefined) {
     const children: readonly MarkdownNode[] = parent.children ?? [];
-    const index = children.findIndex((child) => holds(child, offset));
+    const index = childHolding(children, offset);
     if (index !== -1) found = { parent, index };
     parent = children[index];
   }
@@ -45,10 +52,9 @@ const coveredNode = (source: string, holder: Holder, comment: Span): MarkdownNod
 };
 
 /** The last line a `stet` (scope next) covers, for the comment at `comment` in a document parsed as `root`. */
-export const stetBlockEnd = (source: string, root: MarkdownNode, comment: Span): number => {
-  const closingLine = lineOf(source, comment.end);
+export const stetBlockEnd = (source: string, root: MarkdownNode, comment: Span, lineAt: (offset: number) => number): number => {
   const holder = holderOf(root, comment.start);
   const covered = holder === undefined ? undefined : coveredNode(source, holder, comment);
   const end = covered === undefined ? undefined : spanOf(covered)?.end;
-  return end === undefined ? closingLine : lineOf(source, end);
+  return lineAt(end ?? comment.end);
 };
