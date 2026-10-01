@@ -37,17 +37,26 @@ const digitBeside = (boundary: Boundary): number => {
  * 文書全体で一度だけ読むもの（number-name.ts の NameContext に加えて）。calendar は日付・時刻の単位、
  * divisions は「第1節」のように「第」と番号の後ろに書く区切りの語。
  */
-type NumberContext = NameContext & { readonly calendar: CalendarUnits; readonly divisions: ReadonlySet<string> };
+type NumberContext = NameContext & {
+  readonly calendar: CalendarUnits;
+  readonly divisions: ReadonlySet<string>;
+  readonly itemNumber: RegExp | undefined;
+};
+
+/** 行の頭の項目の番号だけ（語彙表 item-number）。「一 JIS X 0201…」の空白は項目の区切り。 */
+const itemNumberHead = (patterns: readonly string[]): RegExp | undefined =>
+  patterns.length === 0 ? undefined : new RegExp(`^[\\s\\-*+]*(?:${patterns.join("|")})$`, "u");
 
 /** 文の中の日付・時刻の数の、並びの頭の位置。 */
 const calendarStarts = (sentence: Sentence, units: CalendarUnits): ReadonlySet<number> =>
   new Set(calendarRuns(sentence.text, sentence.tokens, sentence.span.start, units).map(({ run }) => run.start));
 
 /**
- * 番号・識別子として書かれた数（number-name.ts）、日付・時刻の数、「第1節」の後ろの境目は、空け方の好みではないので数えない。
+ * 番号・識別子として書かれた数（number-name.ts）、日付・時刻の数、「第1節」の後ろの境目、文頭の項目の番号（「一 JIS」）の後ろの境目は、空け方の好みではないので数えない。
  * 日付・時刻は前の境目（「は 9月」「午後3時」「令和 3 年」）も数えない。日付はまとめて一つの書き方で、数量の空け方の票にはしない。
  */
 const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContext, calendar: ReadonlySet<number>): boolean => {
+  if (context.itemNumber?.test(sentence.text.slice(0, boundary.offset)) === true) return false;
   if (boundary.kind !== "after-digit" && endsWithDivisionLabel(sentence.text.slice(0, boundary.offset), context.divisions)) return false;
   if (boundary.kind === "letter") return true;
   const run = digitRunAround(sentence.text, digitBeside(boundary));
@@ -118,6 +127,7 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
     labelWords: labelsAt(doc, "before"),
     calendar: calendarUnitsOf(doc),
     divisions: labelsAt(doc, "after"),
+    itemNumber: itemNumberHead(patternList(doc, "item-number")),
   };
   const located: Located[] = doc.sentences.flatMap((sentence) => {
     const quoted = quotedSpans(sentence.text);

@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` skips the space after an item number at the head of a line (#170)
+
+Terms and statutes number their items with a kanji numeral and a space: 「一 JIS X 0201として規格化されている英数字」.
+That space separates the number from the item, so it is no vote on how the document spaces Japanese and Latin text.
+The numbers (一, 二 … 十, and イ, ロ, ハ for sub-items) are the lang-ja lexicon `item-number`.
+
 ### Corpus round 14: documents of kinds the corpus had few of (#170)
 
 Terms of service and privacy statements (GitHub's, under CC0; a ministry's 電子申請 terms and the Tokyo app's terms,

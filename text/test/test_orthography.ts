@@ -241,6 +241,18 @@ describe("latin-spacing", () => {
     assert.deepEqual(spacing("# 参考\n\nAPI を呼び、JSON を返し、「APIの手引き」「IDの表」を読み、IDを返す。\n"), ["英字:詰めています"]);
   });
 
+  // 電波利用電子申請の利用規約: 号の番号の後ろの半角空白は、番号と本文の区切り。
+  it("does not count the space after an item number at the head of a line (一 JIS)", () => {
+    const items = "# 文字\n\n使える文字はUTF-8で送り、APIで受け取る。\n\n一 JIS X 0201の英数字\n\n二 JIS第一水準漢字\n\nイ ASCIIの記号\n";
+    assert.deepEqual(spacing(items), []);
+  });
+
+  it("still counts a kanji numeral that is not an item number", () => {
+    assert.deepEqual(spacing("# 文字\n\n使える文字はUTF-8で送り、APIで受け取り、十 GBまで使う。\n"), ["英字:空けています"]);
+    assert.deepEqual(spacing("# 文字\n\n使える文字はUTF-8で送り、APIで受け取る。\n\n一つ JISの文字\n"), ["英字:空けています"]);
+    assert.deepEqual(spacing("# 文字\n\n使える文字はUTF-8で送り、APIで受け取る。\n\n一つの JIS文字\n"), ["英字:空けています"]);
+  });
+
   it("on relaxed, one odd place is not enough", () => {
     assert.deepEqual(spacing("# 使い方\n\nAPI を呼び、JSON を受け取り、IDを返す。\n", "relaxed"), []);
   });
