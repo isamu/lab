@@ -17,7 +17,8 @@
     "rewriteRelativeImportExtensions": true,
     "erasableSyntaxOnly": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "allowJs": true
   },
-  "include": ["packages/*/src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts", "eslint.config.js"]
+  "include": ["packages/*/src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts", "eslint.config.js", "examples/chaff-plugin-example/**/*.mjs"]
 }

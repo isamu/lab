@@ -1,0 +1,21 @@
+{
+  "name": "chaff-plugin-example",
+  "version": "0.0.0",
+  "private": true,
+  "description": "An example chaff plugin: one rule written in code, one rule driven by a word list, and a house style.",
+  "type": "module",
+  "main": "index.mjs",
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "rules"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "peerDependencies": {
+    "chaffjs": ">=0.18.0"
+  }
+}

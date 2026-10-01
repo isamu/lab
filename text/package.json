@@ -21,7 +21,7 @@
     "format:check": "prettier --check .",
     "knip": "knip",
     "lint": "eslint .",
-    "test": "node --test \"test/test_*.ts\"",
+    "test": "node --test \"test/test_*.ts\" \"examples/chaff-plugin-example/test/test_*.mjs\"",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
