@@ -16,6 +16,6 @@
     "test": "node --test"
   },
   "peerDependencies": {
-    "chaffjs": ">=0.18.0"
+    "chaffjs": ">=0.19.0"
   }
 }
