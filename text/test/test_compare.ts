@@ -5,10 +5,10 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { readMarkdown } from "../packages/chaff/src/markdown-read.ts";
 import { extractFacts } from "../packages/chaff/src/compare/extract.ts";
-import { outcomeOf, type Outcome } from "../packages/chaff/src/compare/outcome.ts";
+import { outcomeOf, type Compared, type Outcome } from "../packages/chaff/src/compare/outcome.ts";
 import { factKey } from "../packages/chaff/src/compare/fact-key.ts";
 import { clockTimes } from "../packages/chaff/src/compare/clock-time.ts";
-import type { AtomKind, Extraction } from "../packages/chaff/src/compare/atom.ts";
+import type { Atom, AtomKind, Extraction } from "../packages/chaff/src/compare/atom.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { runCli } from "./cli-run.ts";
 
@@ -206,6 +206,24 @@ describe("what is read once, and what is not a fact", () => {
     assert.deepEqual([moved.dropped, moved.added], [["quote:「系の\n`x`システム」"], ["quote:「系のシステム」"]]);
   });
 
+  it("a name wrapped between two wide characters is the same name", () => {
+    const names = (text: string): string[] =>
+      factsOf(ja, "a.md", text)
+        .atoms.filter((atom) => atom.kind === "name")
+        .map((atom) => atom.key);
+    assert.deepEqual(names("# 試し\n\n昨日、日本\n銀行の発表を読んだ。\n"), names("# 試し\n\n昨日、日本銀行の発表を読んだ。\n"));
+  });
+
+  it("a team name wrapped between two wide characters is still written in the other document", () => {
+    const team = ["日本銀行"];
+    const outcome = outcomeOf(
+      { path: "before.md", extraction: factsOf(ja, "a.md", "# 試し\n\n昨日、日本銀行の発表を読んだ。\n", team) },
+      { path: "after.md", extraction: factsOf(ja, "a.md", "# 試し\n\n昨日、日本\n銀行の発表を読んだ。\n", team) },
+    );
+    assert.deepEqual(changes(outcome).dropped, []);
+    assert.ok(factsOf(ja, "a.md", "# 試し\n\n昨日、日本\n銀行の発表を読んだ。\n").nameText.includes("日本銀行"));
+  });
+
   it("a plain-text document shows its line breaks, so a joined line there is another quotation", () => {
     const plain = changes(compare(ja, "依頼は「系の\nシステム」でした。", "依頼は「系のシステム」でした。", "a.txt"));
     assert.deepEqual([plain.dropped, plain.added], [["quote:「系の\nシステム」"], ["quote:「系のシステム」"]]);
@@ -314,6 +332,13 @@ describe("--distinct: facts compared as sets", () => {
 
   it("a repeat added is not a new fact either", () => {
     assert.deepEqual(changes(distinct(body, body + summary)).added, []);
+  });
+
+  it("a name the other document writes, though its tagger did not read it as a name, is stated", () => {
+    const acme = (line: number): Atom => ({ kind: "name", key: "Acme", text: "Acme", line });
+    const side = (path: string, atoms: Atom[], nameText: string): Compared => ({ path, extraction: { atoms, unread: [], nameText } });
+    const outcome = outcomeOf(side("before.md", [acme(1), acme(2)], "Acme Acme"), side("after.md", [], "acme Acme"), undefined, "distinct");
+    assert.deepEqual(outcome.dropped, []);
   });
 
   it("a fact the other document never states is still dropped or added", () => {
