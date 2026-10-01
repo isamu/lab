@@ -125,14 +125,16 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
   試験中の rule を 5 件、ジャンルの既定で有効にしています: dangling-reference, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  47 件の rule は動いていません:
+  49 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agentless-passive（ジャンル legal/statute では見ないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（ジャンル legal/statute では見ないため）
       ai-tell（ジャンル legal/statute では見ないため）
+      announcing-opener（ジャンル legal/statute では見ないため）
       assistant-residue（まだ試験中のため）
       closing-cliche（ジャンル legal/statute では見ないため）
+      colon-lead-in（ジャンル legal/statute では見ないため）
       concrete-evidence-density（ジャンル legal/statute では見ないため）
       contraction-consistency（ja 向けの rule ではないため）
       contrast-framing（ジャンル legal/statute では見ないため）
@@ -259,7 +261,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから   stet 1 �
   16:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 2 件、動いていない rule 43 件
+指摘 2 件、動いていない rule 45 件
 ```
 
 ## チームで決まりを変える
@@ -303,7 +305,7 @@ kitei.md   legal/statute · 日本語   ジャンルはchaff.yamlから
   15:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 3 件、動いていない rule 43 件
+指摘 3 件、動いていない rule 45 件
 ```
 
 エラーが 1 件でも残ると、chaff は失敗で終わります。注意だけなら成功で終わるので、CI を止めません。

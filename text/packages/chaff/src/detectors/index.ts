@@ -24,7 +24,7 @@ import { imageAltText } from "./image-alt-text.ts";
 import { brokenLink } from "./broken-link.ts";
 import { urlRunOn } from "./url-run-on.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
-import { assistantResidue, contrastFraming, stockTransition, unfilledPlaceholder } from "./ai-phrasing.ts";
+import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
 import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -65,7 +65,9 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "repeated-conjunction": repeatedConjunction,
   "ai-tell": aiTell,
   "contrast-framing": contrastFraming,
-  "stock-transition": stockTransition,
+  "stock-transition": openerDensity,
+  "opener-pile": openerPile,
+  "colon-lead-in": colonLeadIn,
   "assistant-residue": assistantResidue,
   "unfilled-placeholder": unfilledPlaceholder,
   "contraction-mix": contractionMix,

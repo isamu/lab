@@ -4,6 +4,7 @@ import { MIN_DOCUMENT_LENGTH } from "./signals.ts";
 import { entryIn, entryOpens } from "./lexicon-match.ts";
 import { contrastSentences, type ContrastWords } from "./contrast-frame.ts";
 import { placeholderSpans } from "./placeholder-text.ts";
+import { colonLeadIns } from "./list-lead-in.ts";
 
 // 生成文に多い形。語はどれも言語パッケージの語彙表が持ち、ここは形だけを知る。
 
@@ -53,13 +54,28 @@ export const contrastFraming: Detector = (doc, options): Finding[] => {
   return densityFindings(doc, hits, options.limit);
 };
 
-/** 文頭の決まった接ぎ（Moreover、さらに）。話を運ぶ語（However、また）は語彙表に入れない。 */
-export const stockTransition: Detector = (doc, options): Finding[] => {
-  const lexicon = options.lexicon ?? [];
-  const hits = doc.sentences.flatMap((sentence) => {
+/** 語彙表の語で始まる文。 */
+const openerHits = (doc: ProseDocument, lexicon: Lexicon): Hit[] =>
+  doc.sentences.flatMap((sentence) => {
     const opener = lexicon.find((entry) => entryOpens(sentence, entry));
     return opener === undefined ? [] : [{ sentence, matched: opener.pattern }];
   });
+
+/** 文頭の決まった接ぎ（Moreover、さらに）の密度。話を運ぶ語（However、また）は語彙表に入れない。 */
+export const openerDensity: Detector = (doc, options): Finding[] => densityFindings(doc, openerHits(doc, options.lexicon ?? []), options.limit);
+
+/**
+ * 予告の文頭（重要なのは、Here's the thing）の数。limit は指摘に要る数。
+ * 密度ではなく数で見る。人の記事も長さによらず 1 つ 2 つは書き、生成文は短い記事にも重ねる。
+ */
+export const openerPile: Detector = (doc, options): Finding[] => {
+  const hits = openerHits(doc, options.lexicon ?? []);
+  return hits.length === 0 || hits.length < options.limit ? [] : hits.map((hit) => findingOf(hit, { count: hits.length, limit: options.limit }));
+};
+
+/** コロンで箇条書きへ渡す文（以下の通りです：）。1 つなら案内だが、節ごとに続くと説明が箇条書きの前置きだけになる。 */
+export const colonLeadIn: Detector = (doc, options): Finding[] => {
+  const hits = colonLeadIns(doc.sentences, doc.lists, doc.listSpans, doc.source).map((sentence) => ({ sentence, matched: sentence.text.trim() }));
   return densityFindings(doc, hits, options.limit);
 };
 

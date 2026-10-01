@@ -125,13 +125,15 @@ enquiries.md   business/report · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  45 rules did not run:
+  47 rules did not run:
       adverb-overuse (still experimental)
       agentless-passive (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
+      announcing-opener (still experimental)
       assistant-residue (still experimental)
+      colon-lead-in (still experimental)
       contraction-consistency (still experimental)
       contrast-framing (still experimental)
       cushion-phrase-density (still experimental)
