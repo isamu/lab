@@ -2,6 +2,7 @@ import { QUOTATION_MARKS, quotedSpans } from "../quoted-span.ts";
 import type { Span } from "../plugin.ts";
 import type { Atom } from "./atom.ts";
 import { coversOffset, overlapsAny, spanIndex, type SpanIndex } from "./spans.ts";
+import { factKey } from "./fact-key.ts";
 
 /** Where a reader looks, and how it says where it found something. */
 export type TextInput = { readonly text: string; readonly source: string; readonly lineOf: (offset: number) => number };
@@ -63,14 +64,14 @@ const paragraphsOf = (text: string): Span[] => {
   return [-1, ...breaks].map((from, index) => ({ start: from + 1, end: breaks[index] ?? text.length }));
 };
 
-/** What is quoted, as one spelling: line breaks and runs of spaces are how it was wrapped, not what it says. */
-const quoteKey = (inner: string): string => inner.normalize("NFKC").replace(/\s+/gu, " ").trim();
-
-/** Quoted strings: 「」『』, “” and "". The key is what is inside; the marks are how it is written. */
-export const quotations = (input: TextInput): Atom[] =>
+/**
+ * Quoted strings: 「」『』, “” and "". The key is what is inside, as one spelling: line breaks, runs of spaces and bold
+ * marks are how it is written, not what it says. unseen: what a reader never sees (FactText.unseen).
+ */
+export const quotations = (input: TextInput, unseen: readonly Span[]): Atom[] =>
   paragraphsOf(input.text).flatMap((paragraph) =>
     quotedSpans(input.text.slice(paragraph.start, paragraph.end), QUOTATION_MARKS).flatMap((inner) => {
-      const key = quoteKey(input.text.slice(paragraph.start + inner.start, paragraph.start + inner.end));
+      const key = factKey(input.text, { start: paragraph.start + inner.start, end: paragraph.start + inner.end }, unseen).trim();
       const span = { start: paragraph.start + inner.start - 1, end: paragraph.start + inner.end + 1 };
       return key === "" ? [] : atomsOf([{ ...span, key }], "quote", input);
     }),

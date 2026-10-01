@@ -62,6 +62,7 @@ unbalanced-bracket                      9      9       0             0
 undefined-acronym                       2      2       0             0
 unfilled-placeholder                   20     20       0             0
 url-run-on                             13     13       0             0
+vague-figure-reference                  2      2       0             0
 ja/blog  clean sample  clean
 ja/design  clean sample  clean
 ja/email  clean sample  clean
@@ -208,6 +209,7 @@ ja/figures  heading-copied  found
 ja/figures  section-emptied  found
 ja/figures  number-fullwidth  found
 ja/figures  hedge-double-negative-ja  found
+ja/figures  figure-pointed-by-place  found
 ja/itinerary  weekday-shift  found
 ja/itinerary  rows-swapped  found
 ja/itinerary  item-dropped  found
@@ -536,6 +538,7 @@ en/figures  period-spaced  found
 en/figures  heading-copied  found
 en/figures  section-emptied  found
 en/figures  hedge-double-negative-en  found
+en/figures  figure-pointed-by-place  found
 en/itinerary  weekday-shift  found
 en/itinerary  rows-swapped  found
 en/itinerary  item-dropped  found

@@ -49,5 +49,5 @@ not_flagged:
   ja: chaff.yaml の names に書いた名前は、何語に分かれても 1 つと数えます。短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
   en: A name listed under names in chaff.yaml counts as one, however many words it has. Short documents (under 200 words) are not measured.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 words
+  ja: 1000 字あたり固有名詞 {limit} 個まで
+  en: up to {limit} proper nouns per 1000 words

@@ -13,15 +13,25 @@ Anything that needs the meaning to decide (does the conclusion say something?) i
 `npx chaffjs test` sends only the passages the machine narrowed down to an AI, and has it read them.
 Using an AI is your choice. Without one, every machine check still runs.
 
-## Pages by kind of document
+## What kind of document do you have?
 
-| Kind of document | Genre | What chaff finds |
-| --- | --- | --- |
-| [Internal rules and regulations](./documents-statute) | `legal/statute` | Skipped article numbers, references to articles that are not there, a term defined twice |
-| [Business reports](./documents-report) | `business/report` | Openings that fit any document, stacked hedges, passives that never say who acts, sentences that run too long |
+Pick the one closest to yours, and go to its page.
+Each page names the genre to use, runs chaff on a short sample and shows the real screen.
 
-There are no pages for the other kinds yet.
-The [genres page](../../genres/) shows which rules run for each kind.
+| Your document, and its page | What chaff finds |
+| --- | --- |
+| [Tech articles and blog posts](./documents-blog): a tech article or a team blog post | Stock openings and closings, shapes of generated text, counts that do not match, links that go nowhere |
+| [Contracts and terms of service](./documents-contract): a contract, terms of service or a privacy policy | Periods that run backwards, totals that do not add up, references to missing articles, skipped numbers, wrong weekdays |
+| [Internal rules and regulations](./documents-statute): internal rules, regulations or official notices | Skipped article numbers, references to articles that are not there, a term defined twice |
+| [Business email](./documents-email): an email or a letter to a client | Sentences too long to follow, stacked hedges, wrong weekdays, blanks left in |
+| [Meeting minutes](./documents-minutes): minutes or meeting notes | Wrong weekdays, skipped item numbers, counts that do not match, decisions with nobody behind them |
+| [Business reports](./documents-report): a monthly report, a white paper or an internal document | Openings that fit any document, stacked hedges, passives that never say who acts, sentences that run too long |
+| [Manuals and API docs](./documents-manual): a user guide, an API doc or a help page | Links that go nowhere, images with no description, skipped heading levels, empty sections |
+| [Press releases and announcements](./documents-press): a press release or an announcement | Wrong weekdays, periods that run backwards, totals and breakdowns that do not add up |
+| [Papers and abstracts](./documents-paper): a paper, an abstract or a conference submission | Mixed British and American spelling, doubled words, references to missing figures |
+
+If none fits, find the closest genre on the [genres page](../../genres/), which also shows which rules run for each kind.
+With no genre set, chaff reads a document as a tech article. When the file name or the content says otherwise, it suggests a genre on the screen.
 
 ## Getting ready
 

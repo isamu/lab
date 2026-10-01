@@ -160,6 +160,7 @@ groups:
       dangling-figure-reference: off
       date-range-reversed: off
       percent-sum-mismatch: off
+      vague-figure-reference: off
       # A narrator may hedge, speak with ら dropped, and spell as the work's time and place did.
       double-negative: off
       ra-nuki: off

@@ -28,6 +28,7 @@ import { CHARACTER_MUTATIONS } from "./bench-mutations-characters.ts";
 import { OUTLINE_MUTATIONS } from "./bench-mutations-outline.ts";
 import { WORDING_MUTATIONS } from "./bench-mutations-wording.ts";
 import { REQUIREMENT_MUTATIONS } from "./bench-mutations-requirements.ts";
+import { POINTER_MUTATIONS } from "./bench-mutations-pointers.ts";
 
 // --- date-weekday-mismatch ---
 
@@ -385,4 +386,5 @@ export const MUTATIONS: readonly Mutation[] = [
   ...OUTLINE_MUTATIONS,
   ...WORDING_MUTATIONS,
   ...REQUIREMENT_MUTATIONS,
+  ...POINTER_MUTATIONS,
 ];
