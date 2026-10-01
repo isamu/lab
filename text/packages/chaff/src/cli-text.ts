@@ -108,7 +108,6 @@ export type CliText = {
   readonly watching: (files: number, findings: number) => string;
   readonly watchHint: string;
   readonly baselineDone: (files: number, entries: number, file: string) => readonly string[];
-  readonly unit: (ruleId: string, language: string) => string;
 };
 
 export const CLI_TEXT: Texts<CliText> = {
@@ -163,11 +162,6 @@ export const CLI_TEXT: Texts<CliText> = {
       `  ${file} を commit してください。`,
       "",
     ],
-    unit: (ruleId, language) => {
-      if (ruleId === "bold-density") return "1000 字あたりの箇所数";
-      if (ruleId !== "max-sentence-length") return "回";
-      return language === "ja" ? "文字" : "語";
-    },
   },
   en: {
     usage: USAGE_EN,
@@ -217,10 +211,5 @@ export const CLI_TEXT: Texts<CliText> = {
       `  Commit ${file}.`,
       "",
     ],
-    unit: (ruleId, language) => {
-      if (ruleId === "bold-density") return "places per 1000 characters";
-      if (ruleId !== "max-sentence-length") return "times";
-      return language === "ja" ? "characters" : "words";
-    },
   },
 };

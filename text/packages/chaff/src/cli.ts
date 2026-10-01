@@ -227,7 +227,7 @@ const explain = (ruleId: string | undefined, genreFlag: string | undefined): num
   }
   const preset = genre === undefined ? {} : presetLevels(genre);
   const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
-  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, settingSourcesOf(config, rule.id)));
+  console.log(renderExplain(rule, current, language, genre, settingSourcesOf(config, rule.id)));
   return 0;
 };
 

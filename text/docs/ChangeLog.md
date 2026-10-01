@@ -15,6 +15,15 @@ message is still the document's own. `excessive-hedging` keeps skipping short do
 one sentence). The English word list gains "hope this email finds you well" (and the "message" and plain forms),
 "sorry to trouble", "just reaching out" and "just checking in".
 
+### `chaff explain` says what each level means, not "unit: times"
+
+`explain` printed a bare number for each level under one unit, and for most rules that unit was "times" (「回」),
+including the density rules, which count per 1000 characters or words. Each level now reads in the rule's own words,
+as the rule reference on the site does: `strict   up to 3 emoji per 1000 words`, `strict   1000 字あたり絵文字 3 個まで`,
+`strict   up to 18 words in a sentence`. The density rules' level descriptions now name what they count (emoji, hedges,
+dashes, proper nouns…), in the unit of the document's language, as their messages do since #402. A team's custom rule,
+which has no level description, still shows its limits as a number of times.
+
 ### Guide: what chaff does for more kinds of document, in Japanese
 
 「文書の種類ごとにできること」 is now a chooser: find the kind of document you have, go to its page. New pages,
