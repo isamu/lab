@@ -97,14 +97,16 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  46 件の rule は動いていません:
+  48 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agentless-passive（まだ試験中のため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
       ai-tell（まだ試験中のため）
       announced-count-mismatch（まだ試験中のため）
+      announcing-opener（まだ試験中のため）
       assistant-residue（まだ試験中のため）
+      colon-lead-in（まだ試験中のため）
       contraction-consistency（ja 向けの rule ではないため）
       contrast-framing（まだ試験中のため）
       cushion-phrase-density（まだ試験中のため）

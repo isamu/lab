@@ -1,0 +1,19 @@
+# Sentence openers that announce a point before making it. Only at the start of a sentence.
+# "The truth is", "Make no mistake" and "The key is" are left out: speeches and RFCs in the corpus use them.
+id: announcing-opener
+language: en
+entries:
+  - pattern: The key point is
+  - pattern: The key takeaway is
+  - pattern: Here's the thing
+  - pattern: Here's why
+  - pattern: Honestly,
+  - pattern: To be honest,
+  - pattern: What matters is
+  - pattern: What matters most is
+  - pattern: What's important is
+  - pattern: The important thing is
+  - pattern: The bottom line is
+  - pattern: The short answer is
+  - pattern: The real question is
+  - pattern: It's worth noting
