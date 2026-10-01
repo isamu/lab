@@ -1,0 +1,78 @@
+id: duplicate-heading
+layer: L1
+status: experimental
+how_to_find: duplicate-heading
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 同じ見出しが兄弟に二つある
+  en: Duplicate sibling heading
+
+why:
+  ja: 同じ親の見出しの下に、同じ言葉の見出しが二つあると、目次では区別できず、ページ内リンクはどちらか一方にしか行けません。節を写して見出しを直し忘れたか、同じ話を二か所に書いたときに起きます。親が違えば同じ言葉でもかまいません（変更履歴の版ごとの「追加」「修正」、各章の「まとめ」）。全角と半角、大文字と小文字、空白の数は同じ見出しとして比べます。
+  en: Two headings with the same words under the same parent cannot be told apart in a table of contents, and an in-page link reaches only one of them. It happens when a section is copied and its heading is not changed, or when the same topic is written in two places. Under different parents the same words are fine (a changelog's "Added" and "Fixed" under each version, a "Summary" in each chapter). Case, full-width and half-width forms, and the number of spaces are ignored when comparing.
+
+message:
+  ja: 見出し「{heading}」は、同じ親の下の {firstLine} 行目の見出しと同じです
+  en: 'The heading "{heading}" repeats the one on line {firstLine} under the same parent'
+
+how_to_fix:
+  ja: 二つの節を一つにまとめるか、違いが分かる見出しに直してください。
+  en: Merge the two sections, or give each a heading that says how they differ.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 同じ親の見出しの下に、同じ言葉の見出しが二つある所
+  en: Two headings with the same words under the same parent heading
+example:
+  ja:
+    before: |
+      # 手順書
+
+      ## 準備
+
+      道具をそろえます。
+
+      ## 準備
+
+      手袋をはめます。
+    after: |
+      # 手順書
+
+      ## 準備
+
+      道具をそろえます。
+
+      ## 安全の確認
+
+      手袋をはめます。
+  en:
+    before: |
+      # Setup guide
+
+      ## Before you start
+
+      Gather the tools.
+
+      ## Before you start
+
+      Wear gloves.
+    after: |
+      # Setup guide
+
+      ## Before you start
+
+      Gather the tools.
+
+      ## Safety
+
+      Wear gloves.
+
+not_flagged:
+  ja: 親が違う見出しどうし（版ごとの「追加」「修正」、章ごとの「まとめ」）は比べません。Markdown の文書でだけ動きます。
+  en: Headings under different parents (each version's "Added" and "Fixed", each chapter's "Summary") are not compared. It runs on Markdown only.
