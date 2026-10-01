@@ -34,6 +34,7 @@ import { VERSION, VERSION_LINES } from "./version.ts";
 import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
 import { citeTargets, runCite } from "./commands/cite.ts";
 import { compareTargets, runCompare } from "./commands/compare.ts";
+import { factsTargets, runFacts } from "./commands/facts.ts";
 import { runSkill } from "./commands/skill.ts";
 import { runConditions, runFeedback, settingsOf, type Checked } from "./commands/feedback.ts";
 import { homedir } from "node:os";
@@ -300,6 +301,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   tree: (argv) => runTree(treeTargets(argv), argv, treeContext()),
   cite: (argv) => runCite(citeTargets(argv), argv, treeContext()),
   compare: (argv) => runCompare(compareTargets(argv), argv, treeContext()),
+  facts: (argv) => runFacts(factsTargets(argv), argv, treeContext()),
   test: (argv) => runTest(positional(argv), argv, { ...measureContext(argv), inspect }),
   baseline: (argv) => runBaseline(positional(argv), argv),
   suppressions: (argv) => runSuppressions(positional(argv), inspectAll(readConfig(), argv), hostLanguage(readConfig().language, process.env)),
