@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `doubled-punctuation` leaves a mark that closes a drawn-out one (#433)
+
+Three or more of one mark (`...`, `、、、`) were already read as a drawn-out mark, but the mark that closes it
+(`立たない...。`, `そうですね、、、。`) made the whole run a slip. One mark right after a drawn-out run is now read as its
+close and not reported; two (`...。。`), or a run of only two (`、、。`), still is. This covers the transcript's `、、、。`
+in every genre, so no genre rule is added for it.
+
 ### `announced-count-mismatch` reads a categorised list and the number nearest the colon (#432)
 
 Two misreadings are fixed. When only a colon at the end of a sentence announces the list (no 以下の / following), the
