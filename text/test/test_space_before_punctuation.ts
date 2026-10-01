@@ -24,7 +24,7 @@ describe("space-before-punctuation: 句読点の前に空白がある", () => {
   });
 
   it("閉じ括弧や閉じ引用符の後ろの空白も数える", () => {
-    assert.deepEqual(marksIn('The status is "approved" . Submit Form A (revised) , then wait.'), [".", ","]);
+    assert.deepEqual(marksIn(`The status is "approved" . Submit Form A (revised) , then wait. It is 'done' . Use {approved} .`), [".", ",", ".", "."]);
   });
 
   it("コロンは欄の印として空けるので見ない", () => {

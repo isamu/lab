@@ -47,6 +47,13 @@ describe("invisible-character: 見えない字がある", () => {
     assert.deepEqual(kindsIn("name \u202Eשלום"), ["direction U+202E"]);
   });
 
+  it("Codex の指摘: 文書の頭の BOM、括弧を挟んで右から左の文字を囲む分離、閉じない旗のタグ、付く字の無い異体字の指定", () => {
+    assert.deepEqual(kindsIn("\uFEFFTitle"), []);
+    assert.deepEqual(kindsIn("See \u2067(שלום)\u2069 today."), []);
+    assert.deepEqual(kindsIn("Pay \u{1F3F4}\u{E0070}\u{E0077} now"), ["hidden U+E0070 U+E0077"]);
+    assert.deepEqual(kindsIn("\uFE0FTitle and note \uFE0F text"), ["hidden U+FE0F", "hidden U+FE0F"]);
+  });
+
   it("アクセント（結合文字）の後ろの ZWJ・ZWNJ は、ラテン文字の後ろと同じに指摘する", () => {
     assert.deepEqual(kindsIn("Cafe\u0301\u200Dmenu e\u0301\u200Cmail"), ["zero-width U+200D", "zero-width U+200C"]);
   });
