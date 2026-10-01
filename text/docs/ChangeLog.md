@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `style: jis-z8301-2019` turns on `vague-figure-reference`, which now reads clause pointers too
+
+- JIS Z 8301:2019 10.6 rules out 「上記の図」 and 「以下の箇条」 alike, so the style turns the rule on.
+- The rule now also points at 以下の箇条, 上記の箇条, 後述の箇条 and the like, and at `the clause below` / `the above clause`.
+  It does so where the document numbers its clauses. In `chaff tree`, that is a numbered chapter or an article numbered
+  at the top level (「1 適用範囲」, 第1条, "2 Payment"). A numbered list, or only dotted numbers such as a changelog's
+  `## 0.18.0`, is no numbered clause. The phrases are the new lexicon
+  `vague-clause-pointer` in each language. No corpus document writes one, so the corpus findings do not move.
+
 ### New rule: `nominalization`, verbs hidden in nouns (experimental)
 
 - chaff counts verbs written as nouns and carried by another verb: 調査を実施した for 調査した, 確認を行う for 確認する,

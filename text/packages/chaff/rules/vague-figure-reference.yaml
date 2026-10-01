@@ -3,33 +3,34 @@ layer: L2
 status: experimental
 how_to_find: vague-figure-pointer
 # 置き場所で指す言い方と、その言い方が指す種類（図・表）。図・表に名前を付ける語は dangling-figure-reference と同じ figure-label。
+# 箇条を置き場所で指す言い方は vague-clause-pointer。文書の構造の木に番号付きの条か章があるときだけ見る。
 word_list: vague-figure-pointer
-extra_word_lists: [figure-label]
+extra_word_lists: [figure-label, vague-clause-pointer]
 severity: warning
 
 name:
-  ja: 図や表を「上記の図」のように指している
-  en: A figure or table pointed at by where it is
+  ja: 図や表、箇条を「上記の図」のように指している
+  en: A figure, table or clause pointed at by where it is
 
 why:
-  ja: 「上記の図」「下の表」は、どの図のことかを読み手に探させます。図を足したり動かしたりすると、指す先が黙って変わります。印刷やページの区切り、画面の幅で「上」「下」も変わります。JIS Z 8301:2019 の 10.6 は「上記の図」「以下の箇条」のような引用をしないとしています。図や表に番号を付けている文書なら、「図 3」のように番号で指せます。図か表に一つも番号を付けていない文書は、その種類を見ません。
-  en: '"The figure above" makes the reader search for the figure. When a figure is added or moved, what it points at changes without a word. Printing, page breaks and the width of the screen change what is above and below as well. JIS Z 8301:2019, 10.6, rules out pointers such as "the figure above". A document that numbers its figures and tables can name them ("Figure 3"). A kind that the document never numbers is not checked.'
+  ja: 「上記の図」「下の表」は、どの図のことかを読み手に探させます。図を足したり動かしたりすると、指す先が黙って変わります。印刷やページの区切り、画面の幅で「上」「下」も変わります。JIS Z 8301:2019 の 10.6 は「上記の図」「以下の箇条」のような引用をしないとしています。図や表に番号を付けている文書なら、「図 3」のように番号で指せます。箇条も、条や章に番号を付けている文書なら「箇条 4」のように指せます。番号を一つも付けていない種類は見ません。
+  en: '"The figure above" makes the reader search for the figure. When a figure is added or moved, what it points at changes without a word. Printing, page breaks and the width of the screen change what is above and below as well. JIS Z 8301:2019, 10.6, rules out pointers such as "the figure above". A document that numbers its figures and tables can name them ("Figure 3"), and one that numbers its clauses can name a clause ("Clause 4"). A kind that the document never numbers is not checked.'
 
 message:
   ja: 「{matched}」ではなく、番号で指してください（この文書は{kind}に番号を付けています）
   en: 'Name it by its number instead of "{matched}" (this document numbers its {kind}s)'
 
 how_to_fix:
-  ja: 指している図や表の番号を書いてください。「上記の図のとおり」は「図 3 のとおり」に。
-  en: 'Write the number of the figure or table: "as the figure above shows" becomes "as Figure 3 shows".'
+  ja: 指している図や表、箇条の番号を書いてください。「上記の図のとおり」は「図 3 のとおり」に、「以下の箇条による」は「箇条 5 による」に。
+  en: 'Write the number of the figure, table or clause. "As the figure above shows" becomes "as Figure 3 shows"; "under the clause below" becomes "under Clause 5".'
 
 placeholders:
   matched:
     ja: 見つけた言い方
     en: the phrase found
   kind:
-    ja: 図や表
-    en: figure or table
+    ja: 図、表や箇条
+    en: figure, table or clause
 
 levels: { strict: error, normal: warning, relaxed: info }
 
@@ -38,8 +39,8 @@ sources: [jis-z8301-2019]
 
 group: structure
 summary:
-  ja: 図や表に番号を付けた文書で、「上記の図」「下の表」のように置き場所で指している所
-  en: '"The figure above" or "the table below" in a document that numbers its figures and tables'
+  ja: 図や表、条に番号を付けた文書で、「上記の図」「下の表」「以下の箇条」のように置き場所で指している所
+  en: '"The figure above", "the table below" or "the clause below" in a document that numbers its figures, tables or clauses'
 example:
   ja:
     before: |
@@ -61,5 +62,5 @@ example:
       Figure 1: Sales by month
 
 not_flagged:
-  ja: 図や表に一つも番号を付けていない文書（番号で指しようがない）、番号を添えた言い方（上の図1）、長い語の一部（向上の図、上の図表）、コードの中は見ません。
-  en: 'A document that numbers no figure or table (there is no number to use), "Figure 2 below" (it has the number), a phrase inside a longer word, and code are not checked.'
+  ja: 番号を一つも付けていない種類（番号で指しようがない）、番号を添えた言い方（上の図1）、長い語の一部（向上の図、上の図表）、コードの中は見ません。
+  en: 'A kind the document never numbers is not checked: there is no number to use. Nor are "Figure 2 below" (it has the number), a phrase inside a longer word, and code.'
