@@ -87,14 +87,16 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  50 rules did not run:
+  52 rules did not run:
       adverb-overuse (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
       announced-count-mismatch (still experimental)
+      announcing-opener (still experimental)
       assistant-residue (still experimental)
       broken-link (still experimental)
+      colon-lead-in (not a rule for en)
       contraction-consistency (still experimental)
       contrast-framing (still experimental)
       dangling-figure-reference (still experimental)
