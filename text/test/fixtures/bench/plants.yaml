@@ -8,6 +8,7 @@ planted:
   agreement-slip: [en]
   assistant-residue: [ja, en]
   bold-density: [ja, en]
+  broken-link: [ja, en]
   closing-cliche: [ja, en]
   contraction-consistency: [en]
   dangling-figure-reference: [ja, en]
@@ -23,7 +24,9 @@ planted:
   excessive-hedging: [ja, en]
   expletive-construction: [en]
   heading-echo: [ja, en]
+  heading-level-skip: [ja, en]
   hiragana-fukushi: [ja]
+  image-alt-text: [ja, en]
   internal-jargon: [ja, en]
   katakana-long-vowel: [ja]
   latin-spacing: [ja]
@@ -49,6 +52,7 @@ planted:
   title-case-consistency: [en]
   total-mismatch: [ja, en]
   undefined-acronym: [ja, en]
+  url-run-on: [ja]
   unfilled-placeholder: [ja, en]
 not_planted:
   adverb-overuse: a density over the whole document

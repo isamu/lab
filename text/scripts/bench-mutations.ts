@@ -21,6 +21,7 @@ import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanji
 import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, pluralAfterArticle } from "./bench-mutations-en.ts";
 import * as phrasing from "./bench-mutations-phrasing.ts";
 import { FACT_MUTATIONS } from "./bench-mutations-facts.ts";
+import { imageWithoutAlt, linkToMissingSection, runOnUrl, skipHeadingLevel } from "./bench-mutations-markup.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
 
 // --- date-weekday-mismatch ---
@@ -373,4 +374,8 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "plural-after-article", rule: "agreement-slip", languages: ["en"], plant: pluralAfterArticle },
   ...phrasing.PHRASING_MUTATIONS,
   { id: "long-vowel-dropped", rule: "katakana-long-vowel", languages: ["ja"], plant: dropOneLongVowel },
+  { id: "heading-deepened", rule: "heading-level-skip", languages: ["ja", "en"], plant: skipHeadingLevel },
+  { id: "image-unlabelled", rule: "image-alt-text", languages: ["ja", "en"], plant: imageWithoutAlt },
+  { id: "link-to-nowhere", rule: "broken-link", languages: ["ja", "en"], plant: linkToMissingSection },
+  { id: "url-run-on", rule: "url-run-on", languages: ["ja"], plant: runOnUrl },
 ];
