@@ -14,8 +14,8 @@ fact the other document never states is still dropped or added. The default is u
 
 - A line break between two wide characters (`系の` / `システム`) vanishes when Markdown is rendered, but `compare` read
   it as a space, so joining the lines of a Japanese quotation was reported as one quotation dropped and another added.
-  Bold marks inside a quotation (`「**終わったな**」`) were read as part of it too. Quotations and names are now keyed
-  without what a reader never sees, the way the rules already read the text: a line break between wide characters (not
+  Bold marks inside a quotation (`「**終わったな**」`) were read as part of it too. Quotations and names are now keyed,
+  and the team's `names:` found, without what a reader never sees, the way the rules already read the text: a line break between wide characters (not
   one next to inline code or a link's marks) and the marks of bold, italics and strikethrough. Such a change is reported
   as the same fact written another way. A plain-text document shows its line breaks, so there they still count, and a
   space actually written inside a Japanese quotation is still a different quotation.

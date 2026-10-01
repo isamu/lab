@@ -6,7 +6,7 @@ import { clockTimes } from "./clock-time.ts";
 import { factTextOf, type FactText } from "./fact-text.ts";
 import { codeAtoms, headingAtoms, urlAtoms } from "./markup-atoms.ts";
 import { properNouns, readsProperNouns } from "./proper-nouns.ts";
-import { factKey } from "./fact-key.ts";
+import { factKey, seenTextOf, wholeSpanOf } from "./fact-key.ts";
 import { spanIndex } from "./spans.ts";
 import { atomsOf, bareNumbers, footnotes, numericDates, quotations, teamNames, type TextInput } from "./text-atoms.ts";
 import { treeFacts, type TreeFacts } from "./tree-atoms.ts";
@@ -40,7 +40,8 @@ const proseFacts = (input: ExtractInput, readers: Readers, tree: TreeFacts, time
   const { facts, text, lineOf } = readers;
   const marks = footnotes(facts.codeless);
   const dates = numericDates(facts.text, spanIndex([...tree.taken, ...times]));
-  const names = teamNames(facts.text, input.names);
+  const seen = seenTextOf(facts.text, facts.unseen);
+  const names = teamNames(seen.text, input.names).map((found) => wholeSpanOf(seen, found));
   const taken = [...tree.taken, ...times, ...marks, ...dates];
   return [
     ...atomsOf(dates, "date", text),

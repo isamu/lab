@@ -61,9 +61,17 @@ const markdownParts = (root: MarkdownNode, source: string): MarkdownParts => {
   return parts;
 };
 
-/** Line breaks are read the way the rules read them: one next to blanked code or a link's marks is kept. */
-const unseenOf = (source: string, text: string, root: MarkdownNode | undefined): Span[] =>
-  root === undefined ? [] : [...unmaskedSoftBreaks(source, text), ...emphasisSpans(root, source)].toSorted((left, right) => left.start - right.start);
+/**
+ * Line breaks are read the way the rules read them: one next to blanked code or a link's marks is kept. Bold marks are
+ * read through, as a reader does not see them: 「系の\n**システム**」 joins too. The break and the marks may touch, so the
+ * spans are merged.
+ */
+const unseenOf = (source: string, text: string, root: MarkdownNode | undefined): readonly Span[] => {
+  if (root === undefined) return [];
+  const emphasis = emphasisSpans(root, source);
+  const breaks = unmaskedSoftBreaks(maskSpans(source, emphasis), maskSpans(text, emphasis));
+  return spanIndex([...breaks, ...emphasis]);
+};
 
 /** root is the Markdown tree, or undefined for a plain-text document, where nothing is code and URLs are bare. */
 export const factTextOf = (source: string, root: MarkdownNode | undefined): FactText => {

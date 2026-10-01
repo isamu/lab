@@ -6,7 +6,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { readMarkdown } from "../packages/chaff/src/markdown-read.ts";
 import { extractFacts } from "../packages/chaff/src/compare/extract.ts";
 import { outcomeOf, type Compared, type Outcome } from "../packages/chaff/src/compare/outcome.ts";
-import { factKey } from "../packages/chaff/src/compare/fact-key.ts";
+import { factKey, seenTextOf, wholeSpanOf } from "../packages/chaff/src/compare/fact-key.ts";
 import { clockTimes } from "../packages/chaff/src/compare/clock-time.ts";
 import type { Atom, AtomKind, Extraction } from "../packages/chaff/src/compare/atom.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -224,6 +224,25 @@ describe("what is read once, and what is not a fact", () => {
     assert.ok(factsOf(ja, "a.md", "# 試し\n\n昨日、日本\n銀行の発表を読んだ。\n").nameText.includes("日本銀行"));
   });
 
+  it("a wrapped line that starts with bold joins too", () => {
+    const outcome = changes(compare(ja, "依頼は「系の\n**システム**」でした。", "依頼は「系のシステム」でした。"));
+    assert.deepEqual([outcome.dropped, outcome.added], [[], []]);
+  });
+
+  it("a team name wrapped between two wide characters is read, so dropping it is reported", () => {
+    const team = ["そよかぜ会議"];
+    const names = (text: string): string[] =>
+      factsOf(ja, "a.md", text, team)
+        .atoms.filter((atom) => atom.kind === "name")
+        .map((atom) => `${atom.key}@${String(atom.line)}`);
+    assert.deepEqual(names("# 試し\n\n昨日、そよかぜ\n会議の発表を読んだ。\n"), ["そよかぜ会議@3"]);
+    const outcome = outcomeOf(
+      { path: "before.md", extraction: factsOf(ja, "a.md", "# 試し\n\n昨日、そよかぜ\n会議の発表を読んだ。\n", team) },
+      { path: "after.md", extraction: factsOf(ja, "a.md", "# 試し\n\n昨日、発表を読んだ。\n", team) },
+    );
+    assert.deepEqual(changes(outcome).dropped, ["name:そよかぜ\n会議"]);
+  });
+
   it("a plain-text document shows its line breaks, so a joined line there is another quotation", () => {
     const plain = changes(compare(ja, "依頼は「系の\nシステム」でした。", "依頼は「系のシステム」でした。", "a.txt"));
     assert.deepEqual([plain.dropped, plain.added], [["quote:「系の\nシステム」"], ["quote:「系のシステム」"]]);
@@ -345,6 +364,24 @@ describe("--distinct: facts compared as sets", () => {
     const outcome = changes(distinct(body + summary, "# 料金\n\n新しい価格は1,300円です。\n"));
     assert.deepEqual(outcome.dropped, ["number:1,200円", "name:Acme", "number:1,200円", "name:Acme"]);
     assert.deepEqual(outcome.added, ["number:1,300円"]);
+  });
+});
+
+describe("seenTextOf: the text as a reader sees it, and back", () => {
+  it("removes the unseen parts and maps each kept character to its place", () => {
+    const seen = seenTextOf("日本\n銀行**です**", [
+      { start: 2, end: 3 },
+      { start: 5, end: 7 },
+      { start: 9, end: 11 },
+    ]);
+    assert.deepEqual([seen.text, seen.offsets], ["日本銀行です", [0, 1, 3, 4, 7, 8]]);
+    assert.deepEqual(wholeSpanOf(seen, { start: 0, end: 4 }), { start: 0, end: 5 });
+    assert.deepEqual(wholeSpanOf(seen, { start: 4, end: 6 }), { start: 7, end: 9 });
+  });
+
+  it("with nothing unseen, it is the text itself", () => {
+    assert.deepEqual(seenTextOf("abc", []), { text: "abc", offsets: [0, 1, 2] });
+    assert.deepEqual(seenTextOf("", []), { text: "", offsets: [] });
   });
 });
 
