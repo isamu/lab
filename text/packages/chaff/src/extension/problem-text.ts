@@ -21,6 +21,8 @@ const API = String(API_VERSION);
 const MODULE_TEXT: Texts<ModuleText> = {
   ja: {
     "missing-file": (rule, file) => `custom_rules の ${rule}: module のファイル ${file} がありません`,
+    outside: (rule, file) =>
+      `custom_rules の ${rule}: ${file} はリンクをたどると chaff.yaml のあるフォルダの外です。読み込むとそのコードが動くので、外のファイルは絶対パスで名指ししてください`,
     "import-failed": (rule, file, detail) => `custom_rules の ${rule}: ${file} を読み込めませんでした（${detail}）`,
     "bad-export": (rule, file, detail) =>
       `custom_rules の ${rule}: ${file} の default export が検出器ではありません（${detail}）。関数か defineRule({ detect }) を export default してください`,
@@ -28,6 +30,8 @@ const MODULE_TEXT: Texts<ModuleText> = {
   },
   en: {
     "missing-file": (rule, file) => `custom_rules ${rule}: the module file ${file} does not exist`,
+    outside: (rule, file) =>
+      `custom_rules ${rule}: ${file} leads outside the folder chaff.yaml is in through a link. Loading a module runs its code, so name a file outside by its absolute path`,
     "import-failed": (rule, file, detail) => `custom_rules ${rule}: cannot load ${file} (${detail})`,
     "bad-export": (rule, file, detail) =>
       `custom_rules ${rule}: the default export of ${file} is not a detector (${detail}); export default a function or defineRule({ detect })`,
