@@ -69,5 +69,14 @@ export const citedDocument = (text: string, reference: number, vocabulary: Citat
   const name = vocabulary.kanaTitleKinds.includes(plain) ? nameBefore(text, at, TITLE_CHAR) : plain;
   const numbered = at !== afterName && name !== "";
   if (!numbered && !endsWithKind(name, vocabulary.kinds)) return undefined;
-  return vocabulary.selfPrefixes.some((prefix) => name.startsWith(prefix)) ? undefined : name;
+  return namesThisDocument(text, at - name.length, name, vocabulary.selfPrefixes) ? undefined : name;
+};
+
+/** 自分を指す頭の語の長さの上限（この・本・当）。後ろ向きに読む長さを抑える。 */
+const MAX_PREFIX_LENGTH = 4;
+
+/** 名前が自分を指す頭の語で始まるか、そのすぐ前に仮名の頭の語がある（「この基準(…号)第9条」の「この」）。 */
+const namesThisDocument = (text: string, nameStart: number, name: string, selfPrefixes: readonly string[]): boolean => {
+  const lead = text.slice(Math.max(0, nameStart - MAX_PREFIX_LENGTH), nameStart);
+  return selfPrefixes.some((prefix) => name.startsWith(prefix) || lead.endsWith(prefix));
 };
