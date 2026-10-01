@@ -48,5 +48,5 @@ not_flagged:
   ja: クッション言葉が一つだけなら礼儀なので指しません。短い文書は測りません。
   en: One softener is courtesy and is not reported. Short documents are not measured.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 words
+  ja: 1000 字あたりクッション言葉 {limit} 個まで
+  en: up to {limit} softeners per 1000 words
