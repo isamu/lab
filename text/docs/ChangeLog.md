@@ -12,6 +12,95 @@ JIS Z 8301, the JTF style guide). It also covers essay scoring, grammar correcti
 requirements quality. Each entry was checked against its original record. It says what the work found, and which rules
 it supports or that it is background only. No rule changed.
 
+### New rules: brackets and punctuation marks (#170)
+
+Experimental rules for marks left over from an edit. Each finding in the corpus was read before the rule was added.
+
+- **`unbalanced-bracket`**: a bracket or quotation mark with no partner within its section: `（` never closed, `」`
+  never opened, `（` closed by `)`. Brackets pair across paragraphs (a stanza, a long quotation), a quotation carried
+  into a paragraph that opens with the same mark is a continuation, and a short label such as `1)`, `a)` or `事例）`
+  is not a closing bracket. A URL mask no longer hides the `）` a reader sees after `（https://…`. In the corpus it
+  finds real slips in 白書, 通知 and handbooks (`（FAO)`, `(※1）`, `“Yellowstone.` never closed); the misses are per-line
+  quotation marks in verse and a `事例5）` label inside a real `（`.
+- **`doubled-punctuation`**: two punctuation marks side by side (`。。`, `、。`, `,,`, `i.e.,,`). Three or more of
+  one mark are drawn out on purpose; `e.g.,`, `etc.;`, `、.NET`, `1..10` and `../` are not slips; `!!` and colons
+  are not checked. Every corpus finding is a slip.
+- **`kutoten-consistency`** (ja): a document that writes its commas both `、` and `，`, or its periods both `。` and
+  `．`, reported on the minority, like `latin-spacing`. Marks inside numbers (`１，０００`), after a list number or a
+  Latin letter (`１．`, `Ｑ．`), inside `「」`, and in a note or citation line (a note number, or a URL) are not
+  counted: 白書 notes cite with `，` by convention.
+
+### `custom_rules:` — a team's own rules, without code (#170)
+
+A team can now write its own deterministic rules in chaff.yaml. Each one works like a built-in rule: findings,
+`explain` (with its example), `rules --json`, `stet`, `relax`, the baseline and SARIF.
+
+- **`type: words`** takes a list of words, or `avoid: use` pairs (`下さい: ください`).
+- **`type: pattern`** takes a regular expression (`TBD|未定`), with `ignore_case` if needed.
+- **`type: tokens`** takes a run of token conditions on part of speech, base form or surface. For example,
+  `[{pos: 名詞}, {surface: を}, {base: 行う}]` finds 「調査を行いました」. It works in Japanese and English, and
+  parts of speech are UD tags or everyday names (名詞, verb).
+- Every rule needs `name`, `why`, `how_to_fix` and an `example` with `before` and `after`, in ja and/or en.
+  `level` is `error`, `warning` or `info`.
+- A rule that cannot run stops the run and says why. Causes include a bad regex, a missing field, an id that is
+  already one of chaff's, and an unknown part of speech.
+- Regular expressions are checked before they run. A pattern longer than 500 characters is refused, and so is a
+  backreference, a pattern that matches the empty string, a repeat around a group that already repeats or
+  alternates (`(a+)+`, though plain words with different first letters such as `(cat|dog)+` pass), and more than
+  three repeats of varying count (`a*a*a*a*b`). A pattern that still runs longer than a second on one document is
+  stopped, and the rule is listed as not run, with the reason.
+- `type: module` (a small Node function) is reserved and refused for now.
+
+### Four experimental rules that catch a document disagreeing with itself (#170)
+
+Each compares two things the document itself says, so the result needs no judgement. All four are experimental; the
+legal presets (`legal/contract`, `legal/statute`) turn on the two that read references and dates, and `literature`
+turns all four off.
+
+- **`announced-count-mismatch`**: "the following three items" / 「以下の3点」 with a list right below that has another
+  number of items. Only the last sentence before the list is read, and only when it points ahead (「以下の」「次の」,
+  "following") or ends with a colon. An estimate (約3点, at least three), a rank (3つ目, the first three), a number to
+  pick (以下から1つ選ぶ, choose two) or a sentence with two numbers is not compared. Counters, number words and these
+  exceptions are lexicons (`count-anchor`, `count-number`, `count-counter`, `count-hedge`).
+- **`dangling-figure-reference`**: 「図3」「表2」「別表第二」 / "Figure 3", "Table 2", "Appendix B" referred to in the text
+  but labelled nowhere. A label is the number at the start of a line followed by a caption's break (a colon, a bracket,
+  a space and a title, or the end of the line), or in a heading; a prose sentence that starts with 「図3の例では」 is a
+  reference, not a label. A kind the document never labels is not checked (its figures may be in another file),
+  nor is a figure named as a link's text.
+- **`date-range-reversed`**: 「2026年4月1日〜2026年3月31日」 / "5 April 2026 – 2 April 2026", a period that ends before it
+  starts. Two dates joined by a range mark, or by から … まで, through, until. "from … to" is not a period (it may move a
+  date), and a period without a year may cross into the next one.
+- **`percent-sum-mismatch`**: the shares of a breakdown (構成比, 内訳, breakdown, market share) that do not add up to 100%,
+  allowing half the last digit per item. Only a column headed with such a word, or a list or table right below one, is
+  added; a multiple-answer count, signed changes and a table with a total row are not.
+
+On the corpus (`yarn corpus`) the four report one finding, a true one: a Kubernetes enhancement proposal that says
+"This allows 2 things:" and lists one. `yarn bench` plants each of them in both languages.
+
+### New rules: headings, images, links and URLs in Markdown (#170)
+
+Experimental rules that read the markup rather than the prose. They run on Markdown only and say so on a `.txt`
+("the document is not Markdown"), except `url-run-on`, which also reads plain text. Each finding in the corpus was
+read before the rule was added.
+
+- **`heading-level-skip`**: a heading two or more levels deeper than the one before it (`##` then `####`). The first
+  heading may start at any level, and after a skip the deeper level is the new baseline (markdownlint's MD001). In the
+  corpus every finding is a real skip, mostly pages that pick a level for its size (a changelog with `####` under each
+  `##`); good documents do this often enough that the rule stays experimental.
+- **`image-alt-text`**: an image with no alt text (`![](chart.png)`), or an HTML `<img>` with no `alt` attribute.
+  `alt=""` marks decoration and is left alone (markdownlint's MD045). The corpus converters drop images, so it has
+  not fired there yet.
+- **`broken-link`**: a link with an empty destination (`[report]()`), a `#…` link to a heading or id the page does
+  not have, and a reference-style link with no definition (`[report][1]` with no `[1]:` line). Heading names are
+  compared on letters and digits only, since renderers build anchors differently; `[1][2]` citation numbers and
+  `A[i][j]` subscripts are not references (markdownlint's MD042, MD051 and MD052). In the corpus it finds F Prime's
+  `#bufferGetCallee` links to numbered headings (`3.6.1 bufferGetCallee`), which have other anchors; it also reports
+  a 厚労省 page's `[Excel:28KB][PDF:47KB]`, which the writer meant as plain text.
+- **`url-run-on`**: a URL written as plain text followed straight away by a character outside ASCII
+  (`https://example.jp/をご覧ください`, `（https://example.jp/）`). GitHub's automatic links and many mail clients take
+  everything up to the next space as the URL. Link syntax, `<…>` and code are not read, nor is an invisible character
+  such as a zero-width space. Also runs on `.txt`. In the corpus it finds press releases that write `（https://…）`.
+
 ### House styles: `style: ieice` and friends (#170)
 
 A well-known style guide can now be picked by name in chaff.yaml. The style sets rule levels and options, and cites

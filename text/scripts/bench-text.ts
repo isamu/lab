@@ -23,6 +23,18 @@ export type PlantContext = {
 
 export type RegisterCounts = { readonly polite: number; readonly plain: number };
 
+/** One kind of mistake `yarn bench` plants, and the rule that exists to find it. */
+export type Mutation = {
+  readonly id: string;
+  /** The rule that exists to find this mistake. */
+  readonly rule: string;
+  readonly languages: readonly string[];
+  /** "document" when the rule reports on the whole document rather than on a line: any finding of it counts. */
+  readonly reportsOn?: "document";
+  /** undefined when the sample has nothing to plant this mistake in. */
+  readonly plant: (source: string, context: PlantContext) => Plant | undefined;
+};
+
 type Found = { readonly index: number; readonly line: string };
 
 export const linesOf = (source: string): string[] => source.split("\n");

@@ -636,9 +636,17 @@ genres:
 | `preamble-length` ✅ | 本題前の段落数 | business | warning |
 | `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
+| `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
+| `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
+| `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
+| `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
+| `unbalanced-bracket` ✅ | 節の中で組にならない括弧・引用符、全角と半角の組み違い | 両方 | warning |
+| `doubled-punctuation` ✅ | 二つ並んだ句読点（三つ以上は伸ばした書き方として数えない） | 両方 | warning |
 | ~~`list-length-variance`~~ | 箇条書き項目の長さのばらつき | 落とした（下記） | info |
 
 設計上の注意:
+
+記法の rule（`heading-level-skip` など）は `requires: [markdown]` を持ち、`.txt` では理由を言って止まる。記法は `doc.markup`（見出し・画像・リンクの行き先・書き手が付けた名前・字のまま見える範囲）だけから読む。`.txt` の `doc.markup` は記法を持たず、文書全体が字のまま見える範囲になる。
 
 `heading-echo` と `ngram-repetition` は **character n-gram** を使う。word n-gram にすると `wordSplit` capability を要求することになり L2 に落ちる。character trigram なら日本語でも英語でも同じ実装で動き、精度も実用に足りる。`ngram-repetition` の英語（語単位の言語）の窓は、空白で区切った語の切れ目にそろえる。空白を見るだけなので `wordSplit` は要らない。
 
@@ -913,6 +921,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `no-nakaguro-parallel` ✅ | 中黒の並列 | - |
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
+| `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
 
 `katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。
@@ -1500,6 +1509,31 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 | `ieice` | `katakana-long-vowel`: `drop`、3 音 | 和文論文誌 投稿のしおり 2.4 (b)（用語は学術用語集 電気工学編）。(d) の句読点は rule が無いので書かない |
 | `jis-z8301-2011` | `katakana-long-vowel`: `drop`、3 音 | JIS Z 8301:2011 附属書 G 表 G.3。2019 年版は外来語の表記によるとした |
 | `bunkacho` | `katakana-long-vowel`: `keep` | 外来語の表記 留意事項その 2 Ⅲ 3 注 3 |
+
+### 18.7 チームのルール（`custom_rules:`）
+
+チームは chaff.yaml に決定的なルールを足せる。コードは書かせない。どれも組み込みの rule と同じ `RuleDefinition` になり、
+指摘・`explain`・`rules --json`・`stet`・`relax`・baseline・SARIF がそのまま扱う。
+
+| `type` | 見るもの | detector |
+| --- | --- | --- |
+| `words` | 語の並び、または「使わない書き方: 使う書き方」。使う書き方の中の一部は数えない（preferred-term と同じ） | `custom-words` |
+| `pattern` | 正規表現。文ごとに当てる。`ignore_case: true` で `i` | `custom-pattern` |
+| `tokens` | 語の条件の並び。条件は `pos`（UPOS か 名詞・動詞・noun・verb などの名前）、`base`（原形）、`surface`（表記） | `custom-tokens`（`requires: [pos]`） |
+
+- 必須は `id`（英小文字・数字・ハイフン。chaff の rule と同じ id は不可）、`type`、`name`、`why`、`how_to_fix`、
+  `example.before`、`example.after`。文言は 1 つの文字列か `{ ja, en }`。`message` を書かなければ種類ごとの既定の文。
+- `level` は重さ（`error` / `warning` / `info`）。段階は重さの段（§18.1 の `level_sets: severity`）で、`relax` は一段軽く、
+  `strict` は一段重くする。status は `stable`（チームが名指しで書いたものなので、既定で動く）。use_for は全ジャンル。
+- **読めないものは実行を止める。** チームのルールが黙って動かないと、きれいな文書に見える。
+- **正規表現は動かす前に確かめる。** 長さ 500 字まで。後方参照（`\1`、`\k<name>`）と、空文字列に当たるもの、
+  上限の無い繰り返しの中に上限の無い繰り返しか選択肢を持つ群に、上限の無い繰り返しを付けた形（`(a+)+`、`(a|aa)*`、
+  `((a+)b)+`）は断る。V8 の正規表現は後戻りするので、この形は長い行で指数時間になる。ただし、先頭の字が互いに違う
+  ただの語の選択肢（`(cat|dog)+`）は取り合わないので通す。回数の決まらない繰り返し（`*`、`+`、`{1,9}`）は 3 つまで。
+  並んだ繰り返し（`a*a*a*a*b`）は入れ子でなくても、文の長さの「繰り返しの数」乗の時間がかかる。
+- **それでも止まらないものは時間で止める。** 形を読むだけでは、すべての危ない形を見分けられない。正規表現は `node:vm` の
+  中で 1 文書 1 ルールあたり 1000 ms までで動かし、超えたらそのルールを「動いていない」一覧に理由付きで出す。
+- `type: module`（Node の関数）は予約した。いまは「まだ使えない」と言って止める。
 
 ---
 

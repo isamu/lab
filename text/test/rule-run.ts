@@ -2,6 +2,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules, type Settings } from "../packages/chaff/src/run.ts";
 import type { LanguageAdapter, RuleDefinition } from "../packages/chaff/src/plugin.ts";
+import { messageOf } from "../packages/chaff/src/render/text.ts";
 
 // What one rule reports when the whole pipeline runs, for the tests that check a detector's edge through the rule.
 
@@ -41,3 +42,24 @@ export const superlativeReported = (adapter: LanguageAdapter, sentence: string):
   runRules(buildDocument("t.md", `# T\n\n${sentence}\n`, adapter), rulesOf(adapter.id), { [SUPERLATIVE]: "strict" }, true, "business/report", {
     [SUPERLATIVE]: 1,
   }).findings.some((finding) => finding.rule === SUPERLATIVE);
+
+/** 一つの rule だけを名指しで動かした、指摘の message と止まった理由。experimental は切ったまま。 */
+export type NamedRun = { readonly findings: readonly string[]; readonly skipped: readonly string[] };
+
+export const namedRuleRun = (
+  rule: string,
+  source: string,
+  adapter: LanguageAdapter,
+  path = "a.md",
+  genre = "business/report",
+  level: Settings[string] = "normal",
+): NamedRun => {
+  const rules = rulesOf(adapter.id);
+  const result = runRules(buildDocument(path, source, adapter), rules, { [rule]: level }, false, genre);
+  const definition = rules.find((entry) => entry.id === rule);
+  if (definition === undefined) throw new Error(`no rule ${rule}`);
+  return {
+    findings: result.findings.filter((finding) => finding.rule === rule).map((finding) => messageOf(definition, finding, adapter.id)),
+    skipped: result.skipped.filter((entry) => entry.rule === rule).map((entry) => entry.why),
+  };
+};

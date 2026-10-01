@@ -12,6 +12,7 @@ import {
   replaceLine,
   rewriteFirst,
   splitSentences,
+  type Mutation,
   type Plant,
   type PlantContext,
 } from "./bench-text.ts";
@@ -19,18 +20,10 @@ import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinPa
 import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa, strayParticleSpace } from "./bench-mutations-ja.ts";
 import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, pluralAfterArticle } from "./bench-mutations-en.ts";
 import * as phrasing from "./bench-mutations-phrasing.ts";
+import { MARKUP_MUTATIONS } from "./bench-mutations-markup.ts";
+import { MARK_MUTATIONS } from "./bench-mutations-marks.ts";
+import { FACT_MUTATIONS } from "./bench-mutations-facts.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
-
-export type Mutation = {
-  readonly id: string;
-  /** The rule that exists to find this mistake. */
-  readonly rule: string;
-  readonly languages: readonly string[];
-  /** "document" when the rule reports on the whole document rather than on a line: any finding of it counts. */
-  readonly reportsOn?: "document";
-  /** undefined when the sample has nothing to plant this mistake in. */
-  readonly plant: (source: string, context: PlantContext) => Plant | undefined;
-};
 
 // --- date-weekday-mismatch ---
 
@@ -348,6 +341,7 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "weekday-shift", rule: "date-weekday-mismatch", languages: ["ja", "en"], plant: shiftWeekday },
   { id: "rows-swapped", rule: "date-order", languages: ["ja", "en"], plant: swapDatedRows },
   { id: "item-dropped", rule: "total-mismatch", languages: ["ja", "en"], plant: dropItem },
+  ...FACT_MUTATIONS,
   { id: "reference-broken", rule: "dangling-reference", languages: ["ja", "en"], plant: breakReference },
   { id: "number-skipped", rule: "numbering-gap", languages: ["ja", "en"], plant: skipLastNumber },
   { id: "defined-twice", rule: "duplicate-definition", languages: ["ja", "en"], plant: defineTwice },
@@ -381,4 +375,6 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "plural-after-article", rule: "agreement-slip", languages: ["en"], plant: pluralAfterArticle },
   ...phrasing.PHRASING_MUTATIONS,
   { id: "long-vowel-dropped", rule: "katakana-long-vowel", languages: ["ja"], plant: dropOneLongVowel },
+  ...MARKUP_MUTATIONS,
+  ...MARK_MUTATIONS,
 ];

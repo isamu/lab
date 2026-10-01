@@ -1,0 +1,45 @@
+id: url-run-on
+layer: L1
+status: experimental
+how_to_find: url-run-on
+severity: warning
+
+name:
+  ja: URL のすぐ後ろに字が続いている
+  en: Text runs on after a URL
+
+why:
+  ja: 「https://example.jp/をご覧ください」のように、そのまま書いた URL の直後に空白を置かずに日本語や全角の記号（。」）など）が続くと、GitHub などの自動リンクや多くのメールソフトは空白が来るまでを URL と読みます。押すと存在しないページが開きます。ASCII でない字が続くときだけを指摘します。リンクの記法（[資料](https://…) と <https://…>）で書いたものと、コードの中は数えません。
+  en: When a URL written as plain text is followed straight away by a character outside ASCII ("https://example.com/—see", "https://example.jp/をご覧ください"), GitHub's automatic links and many mail clients read everything up to the next space as the URL, and clicking it opens a page that does not exist. Only a character outside ASCII right after the URL is reported. A URL written with link syntax ([docs](https://…) or <https://…>) and URLs in code are not counted.
+
+message:
+  ja: URL「{url}」の直後に「{next}」が続いています。リンクがそこまで伸びます
+  en: 'The URL "{url}" is followed by "{next}" with no space; the link runs on into it'
+
+how_to_fix:
+  ja: URL の後ろに空白を入れるか、<https://…> または [説明](https://…) の形で書いてください。
+  en: Put a space after the URL, or write it as <https://…> or [text](https://…).
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「https://example.jp/をご覧ください」のように、URL のすぐ後ろに字が続き、リンクがそこまで伸びる所
+  en: A URL followed straight away by a character outside ASCII, which the link swallows
+example:
+  ja:
+    before: |
+      詳しくは https://example.jp/guideをご覧ください。
+    after: |
+      詳しくは https://example.jp/guide をご覧ください。
+  en:
+    before: |
+      See https://example.com/guide—it has the details.
+    after: |
+      See https://example.com/guide — it has the details.
+
+not_flagged:
+  ja: リンクの記法（[説明](URL) と <URL>）で書いた URL、コードの中、空白や ASCII の記号が続く URL、ゼロ幅の空白のような見えない字は指しません。
+  en: URLs written with link syntax ([text](URL) or <URL>), URLs in code, a URL followed by a space or an ASCII mark, and invisible characters such as a zero-width space are not reported.

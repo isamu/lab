@@ -1,6 +1,6 @@
 import { DETECTORS } from "./detectors/index.ts";
 import { resolve, severityAt } from "./levels.ts";
-import type { AdapterNeeds, Finding, Level, ProseDocument, RuleDefinition } from "./plugin.ts";
+import type { AdapterNeeds, Detector, DetectorOptions, Finding, Level, ProseDocument, RuleDefinition } from "./plugin.ts";
 import { lineStarts, placeOf } from "./position.ts";
 import { REASONS, type Reasons } from "./reasons.ts";
 import { joinWords } from "./detectors/word-list.ts";
@@ -13,6 +13,7 @@ import { uiLanguageOf } from "./ui.ts";
 import { presetLevels } from "./genre-load.ts";
 import { bodySectionOf } from "./body-section.ts";
 import { optionValues, settleOptions, type OptionLayer } from "./rule-options.ts";
+import { PatternTimeout } from "./custom/bounded-match.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
 
@@ -81,10 +82,13 @@ const unreadOf = (doc: ProseDocument): Unread | undefined => {
 };
 
 /** 見出しを読む rule の要求。表題より下の見出しが無い文書では、本題の前を測れない。0 件を「前置きが短い」に見せない。 */
-const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings"]);
+/** 記法を読む rule の要求（markdown）。.txt には見出しの記法も画像もリンクの記法も無いので、0 件を「問題なし」に見せない。 */
+const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings", "markdown"]);
 
-const headingNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined =>
-  rule.requires.includes("headings") && bodySectionOf(doc.sections) === undefined ? reasonsFor(doc).noHeadings : undefined;
+const documentNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
+  if (rule.requires.includes("markdown") && !isMarkdownPath(doc.path)) return reasonsFor(doc).notMarkdown;
+  return rule.requires.includes("headings") && bodySectionOf(doc.sections) === undefined ? reasonsFor(doc).noHeadings : undefined;
+};
 
 /** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
 const has = (capabilities: ProseDocument["capabilities"], need: string): boolean => {
@@ -136,6 +140,20 @@ export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, e
 
 /** The token features the rules read (RuleDefinition.token_features), each once. */
 export const tokenFeaturesOf = (rules: readonly RuleDefinition[]): string[] => [...new Set(rules.flatMap((rule) => rule.token_features ?? []))];
+
+/** A detector's findings, or how long it ran before a team's pattern was stopped (bounded-match.ts). Other errors are chaff's bugs and propagate. */
+const runDetector = (
+  detector: Detector,
+  doc: ProseDocument,
+  options: DetectorOptions,
+): { readonly findings: readonly Finding[] } | { readonly timedOut: number } => {
+  try {
+    return { findings: detector(doc, options) };
+  } catch (error) {
+    if (error instanceof PatternTimeout) return { timedOut: error.budget_ms };
+    throw error;
+  }
+};
 
 const place = (starts: readonly number[], finding: Finding): Finding => {
   const offset = finding.values["offset"];
@@ -229,8 +247,8 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
       // 段階を見た後で聞く。doc.structure は触れたときに木を作るので、止めている rule のために作らない。
       const noTree = treeNeed(rule, doc);
       if (noTree !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTree }] };
-      const noHeadings = headingNeed(rule, doc);
-      if (noHeadings !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noHeadings }] };
+      const noDocumentNeed = documentNeed(rule, doc);
+      if (noDocumentNeed !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noDocumentNeed }] };
       // 複合シグナルは二段目で扱う。一段目では「検出器が無い」と言わせない。
       if (rule.from.length > 0) return acc;
       const detector = DETECTORS[rule.how_to_find];
@@ -247,8 +265,11 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
         fullSentence: rule.full_sentence,
         embeddedLimits: embeddedLimitsFor(rule, level, genre, embedded),
         ...(rule.options === undefined ? {} : { settings: optionValues(settleOptions(rule.id, rule.options, optionLayers)) }),
+        ...(rule.custom === undefined ? {} : { custom: rule.custom }),
       };
-      const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: severityAt(rule, level, genre) }));
+      const ran = runDetector(detector, doc, options);
+      if ("timedOut" in ran) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).patternTimeout(ran.timedOut) }] };
+      const found = ran.findings.map((finding) => place(starts, { ...finding, rule: rule.id, severity: severityAt(rule, level, genre) }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };
     },
     { findings: [], skipped: [] },
