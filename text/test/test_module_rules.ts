@@ -113,6 +113,35 @@ describe("type: module custom rules", () => {
       await new Promise((settle) => setImmediate(settle));
     });
 
+    it("a return that throws when read is a throw, not a crash", () => {
+      const trap = new Proxy([], {
+        get: () => {
+          throw new Error("read me not");
+        },
+      });
+      assert.deepEqual(failureOf(() => trap).failure, { kind: "threw", message: "read me not" });
+      const getter = Object.defineProperty({}, "start", {
+        get: () => {
+          throw new Error("no start");
+        },
+      });
+      assert.deepEqual(failureOf(() => [getter]).failure, { kind: "threw", message: "no start" });
+    });
+
+    it("something thrown that cannot be printed still fails only its rule", () => {
+      class Unprintable extends Error {
+        override get message(): string {
+          throw new Error("no");
+        }
+      }
+      assert.deepEqual(
+        failureOf(() => {
+          throw new Unprintable();
+        }).failure,
+        { kind: "threw", message: "an error that cannot be printed" },
+      );
+    });
+
     it("the reason names the file and what went wrong, in both languages", () => {
       const threw = { kind: "threw", message: "boom" } as const;
       assert.equal(failureReason("./rule.mjs", threw, "en"), "the detector in ./rule.mjs threw an error (boom)");
