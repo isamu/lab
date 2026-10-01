@@ -15,7 +15,7 @@ why:
   en: A run of product, company and person names hides the shape of the sentence from anyone who does not already know them. It reads fine to the person who wrote it.
 
 message:
-  ja: 1000 語あたり {density} 個の固有名詞があります（{limit} 個まで）
+  ja: 1000 字あたり {density} 個の固有名詞があります（{limit} 個まで）
   en: "{density} proper {density|noun|nouns} per 1000 words (limit {limit})"
 
 how_to_fix:

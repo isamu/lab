@@ -308,6 +308,7 @@ describe("the command line's counts agree", () => {
           fileName: "a.md",
           language: "en",
           genre: "blog",
+          conditions: [],
           findings: [],
           line: from,
           excerpts: [{ from, to, lines: ["x"] }],
