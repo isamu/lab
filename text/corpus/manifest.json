@@ -2200,6 +2200,324 @@
       "license": "CC-BY-SA-4.0 (URL only)",
       "redistribute": false,
       "format": "wikitext"
+    },
+    {
+      "id": "github-terms-of-service",
+      "title": "GitHub Terms of Service",
+      "source": "url",
+      "genre": "legal/contract",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/github/site-policy/b9578b546d2506febda1da2cd7431644d58e512c/Policies/github-terms/github-terms-of-service.md",
+      "license": "CC0-1.0 (the github/site-policy repository's LICENSE: \"Creative Commons Zero v1.0 Universal\")",
+      "redistribute": true
+    },
+    {
+      "id": "github-general-privacy-statement",
+      "title": "GitHub General Privacy Statement",
+      "source": "url",
+      "genre": "legal/contract",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/github/site-policy/b9578b546d2506febda1da2cd7431644d58e512c/Policies/privacy-policies/github-general-privacy-statement.md",
+      "license": "CC0-1.0 (the github/site-policy repository's LICENSE: \"Creative Commons Zero v1.0 Universal\")",
+      "redistribute": true
+    },
+    {
+      "id": "denpa-shinsei-riyo-kiyaku",
+      "title": "総務省 電波利用電子申請 利用規約",
+      "source": "url",
+      "genre": "legal/contract",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20261001075830id_/https://www.denpa.soumu.go.jp/terms/contents_terms/index.html",
+      "license": "総務省「著作権について」(PDL1.0) names the 総務省ホームページ; this page is on the separate 電波利用電子申請 site, which states no licence of its own (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "tokyoapp-service-terms",
+      "title": "東京都公式アプリ（東京アプリ）サービス利用規約",
+      "source": "url",
+      "genre": "legal/contract",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260916102200id_/https://www.tokyoapp.metro.tokyo.lg.jp/terms/",
+      "license": "The page's own site policy: 著作権法上認められた場合を除き、無断で複製・転用することはできない (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "nasa-press-prima-new-mission-class",
+      "title": "NASA Selects Far-Infrared Telescope as First in New Mission Class (release 26-076)",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260929172157id_/https://www.nasa.gov/news-release/nasa-selects-far-infrared-telescope-as-first-in-new-mission-class/",
+      "license": "Public domain (work of the US federal government, NASA; NASA Images and Media Usage Guidelines: \"NASA content ... generally are not subject to copyright in the United States\")",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "nasa-advisory-crew-13-coverage",
+      "title": "NASA Sets Crew-13 Launch, Docking Coverage (media advisory)",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260930233612id_/https://www.nasa.gov/news-release/nasa-sets-crew-13-launch-docking-coverage/",
+      "license": "Public domain (work of the US federal government, NASA; NASA Images and Media Usage Guidelines: \"NASA content ... generally are not subject to copyright in the United States\")",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "noaa-press-flood-mapping",
+      "title": "NOAA flood mapping tool now covers nearly 100% of U.S.",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260925023310id_/https://www.noaa.gov/news-release/noaa-flood-mapping-tool-now-covers-nearly-100-of-us",
+      "license": "Public domain (work of the US federal government, NOAA; noaa.gov's disclaimer: information on the site is in the public domain unless specifically noted otherwise)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "jma-press-hot-2026-07",
+      "title": "気象庁 報道発表「2026年7月中旬～下旬の顕著な高温と今後の見通しについて」（図・表つき）",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260926202611id_/https://www.jma.go.jp/jma/press/2608/03b/japan_hot20260803.html",
+      "license": "公共データ利用規約（第1.0版）(PDL1.0, compatible with CC BY 4.0; 気象庁ホームページについて https://www.jma.go.jp/jma/kishou/info/coment.html); 出典: 気象庁ホームページ",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "mhlw-kokuji-h18-107-keiji-jiko",
+      "title": "療担規則及び薬担規則並びに療担基準に基づき厚生労働大臣が定める掲示事項等（平成18年厚生労働省告示第107号）1ページ目（別表つき）",
+      "source": "url",
+      "genre": "legal/statute",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260422210529id_/https://www.mhlw.go.jp/web/t_doc?dataId=84aa7837&dataType=0&pageNo=1",
+      "license": "著作権法第13条第2号（国の機関が発する告示は著作権の目的とならない）; 出典: 厚生労働省法令等データベースサービス",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "irs-online-account-faq",
+      "title": "IRS: Online account for individuals, frequently asked questions",
+      "source": "url",
+      "genre": "docs/faq",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260914142743id_/https://www.irs.gov/payments/online-account-for-individuals-frequently-asked-questions",
+      "license": "Public domain (work of the US federal government, IRS)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "usajobs-va-it-specialist-customer-support",
+      "title": "USAJOBS: IT Specialist (System Analyst/Customer Support), Department of Veterans Affairs (job announcement 26-DE-MC-13046813-BU)",
+      "source": "url",
+      "genre": "business/report",
+      "language": "en",
+      "url": "https://web.archive.org/web/20260925181828id_/https://www.usajobs.gov/job/886156800",
+      "license": "Public domain (work of the US federal government: a job announcement written by the Department of Veterans Affairs and published by OPM)",
+      "redistribute": true,
+      "format": "html"
+    },
+    {
+      "id": "herp-da-data-product-manager",
+      "title": "デジタル庁 求人「データプロダクトマネージャー（情報連携）」（HERP Careers）",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20260626030936id_/https://herp.careers/v1/digitalsaiyo/0wzjKgkCuC49",
+      "license": "No licence stated for the job posting on HERP Careers (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "zenn-kaityo256-happy-presentation",
+      "title": "Zenn: プレゼンテーションの準備と評価の仕方覚書（kaityo256）",
+      "source": "url",
+      "genre": "blog/tech",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/kaityo256/zenn-content/9bdb769bf4b106eb8512523509302efc7b97f3e3/articles/happy_presentation.md",
+      "license": "CC-BY-4.0 (the kaityo256/zenn-content repository's LICENSE: \"Creative Commons Attribution 4.0 International\"); © H. Watanabe (kaityo256)",
+      "redistribute": true
+    },
+    {
+      "id": "zenn-kaityo256-what-is-linker",
+      "title": "Zenn: リンカのお仕事（kaityo256）",
+      "source": "url",
+      "genre": "blog/tech",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/kaityo256/zenn-content/9bdb769bf4b106eb8512523509302efc7b97f3e3/articles/what_is_linker.md",
+      "license": "CC-BY-4.0 (the kaityo256/zenn-content repository's LICENSE: \"Creative Commons Attribution 4.0 International\"); © H. Watanabe (kaityo256)",
+      "redistribute": true
+    },
+    {
+      "id": "zenn-coji-ai-smell-lint",
+      "title": "Zenn: AI臭は語彙よりリズムに出る - 自然な日本語を書くAgent Skillと7モデル×406本の実測（coji）",
+      "source": "url",
+      "genre": "blog/tech",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/coji/zenn-content/91bccf1ed56c8c5045b634159a2e5bb5ec23cc36/articles/natural-japanese-ai-smell-lint.md",
+      "license": "MIT (the coji/zenn-content repository's LICENSE); URL only",
+      "redistribute": false
+    },
+    {
+      "id": "zenn-coji-xstate-api-reference",
+      "title": "Zenn: XState と @xstate/react API リファレンス（TypeScript版）（coji）",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/coji/zenn-content/91bccf1ed56c8c5045b634159a2e5bb5ec23cc36/articles/xstate-ts-api-reference.md",
+      "license": "MIT (the coji/zenn-content repository's LICENSE); URL only",
+      "redistribute": false
+    },
+    {
+      "id": "qiita-jnchito-good-sample-code",
+      "title": "Qiita: 「よいサンプルコード」ってどんなサンプルコード？ 〜Qiitaや技術ブログを書くときに気を付けること〜（jnchito）",
+      "source": "url",
+      "genre": "blog/tech",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20261001075541id_/https://qiita.com/jnchito/items/da33f793de2e29e470f4.md",
+      "license": "The author's copyright (Qiita's terms leave it with the author); URL only",
+      "redistribute": false
+    },
+    {
+      "id": "mdn-using-fetch-en",
+      "title": "MDN: Using the Fetch API",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/mdn/content/bacd00c353f643d8f5be0ce769015b1a66b4251a/files/en-us/web/api/fetch_api/using_fetch/index.md",
+      "license": "CC-BY-SA-2.5 (the mdn/content repository's LICENSE.md for prose); URL only",
+      "redistribute": false
+    },
+    {
+      "id": "mdn-using-fetch-ja",
+      "title": "MDN: フェッチ API の使用",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/mdn/translated-content/b0ea36c2198d9e4dc453266a2550e7685748b80b/files/ja/web/api/fetch_api/using_fetch/index.md",
+      "license": "CC-BY-SA-2.5 (the mdn/translated-content repository's LICENSE.md for prose); URL only",
+      "redistribute": false
+    },
+    {
+      "id": "ruby-3-4-0-released-ja",
+      "title": "Ruby 3.4.0 リリース（ruby-lang.org ニュース）",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "ja",
+      "url": "https://raw.githubusercontent.com/ruby/www.ruby-lang.org/ea820b08c69b84d92b6364fbb52d000fafa8634c/ja/news/_posts/2024-12-25-ruby-3-4-0-released.md",
+      "license": "No licence stated in the ruby/www.ruby-lang.org repository (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "go-1-23-release-notes",
+      "title": "Go 1.23 Release Notes",
+      "source": "url",
+      "genre": "technical/readme",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/golang/website/af871f5d42e869aac0512d7fa773bc3cd7913f4d/_content/doc/go1.23.md",
+      "license": "CC BY 4.0 for the site's content (go.dev footer), BSD-3-Clause for the repository's code; URL only",
+      "redistribute": false
+    },
+    {
+      "id": "nodejs-tsc-minutes-2026-05-06",
+      "title": "Node.js Technical Steering Committee (TSC) Meeting 2026-05-06",
+      "source": "url",
+      "genre": "business/meeting-notes",
+      "language": "en",
+      "url": "https://raw.githubusercontent.com/nodejs/TSC/fc3b389314796714c984a07a79304a07f2a95053/meetings/2026-05-06.md",
+      "license": "No licence stated in the nodejs/TSC repository (URL only)",
+      "redistribute": false
+    },
+    {
+      "id": "arxiv-2609-38203-abs-verbal-fluency",
+      "title": "arXiv 2609.38203v1 abstract page: Automatic estimation of verbal fluency index in people with Motor Neuron Disease using ASR alignment and pause modelling",
+      "source": "url",
+      "genre": "academic/paper",
+      "language": "en",
+      "url": "https://arxiv.org/abs/2609.38203v1",
+      "license": "The paper is CC BY 4.0 (as declared on arXiv), but the abstract page also carries arXiv's own interface text, which that licence does not cover (URL only; the v1 URL pins the version)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "arxiv-2609-38219-abs-tamazight-speech",
+      "title": "arXiv 2609.38219v1 abstract page: TutlAit v1, a crowdsourced Moroccan Tamazight speech dataset",
+      "source": "url",
+      "genre": "academic/paper",
+      "language": "en",
+      "url": "https://arxiv.org/abs/2609.38219v1",
+      "license": "The paper is CC BY 4.0 (as declared on arXiv), but the abstract page also carries arXiv's own interface text, which that licence does not cover (URL only; the v1 URL pins the version)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "jstage-jnlp-32-1-114-nmt-en",
+      "title": "J-STAGE: Divide-and-Conquer Neural Machine Translation Using Intra-Sentence Context (Journal of Natural Language Processing 32(1), 2025), English abstract page",
+      "source": "url",
+      "genre": "academic/paper",
+      "language": "en",
+      "url": "https://web.archive.org/web/20250315004349id_/https://www.jstage.jst.go.jp/article/jnlp/32/1/32_114/_article/-char/en/",
+      "license": "The article is CC BY 4.0 (\"© 2025 The Association for Natural Language Processing Licensed under CC BY 4.0\"; https://doi.org/10.5715/jnlp.32.114), but the page also carries J-STAGE's own interface text, which that licence does not cover (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "maff-kyodo-ryori-okaisan-ja",
+      "title": "農林水産省 うちの郷土料理「おかいさん／茶がゆ 和歌山県」（レシピ）",
+      "source": "url",
+      "genre": "docs/manual",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20250915124401id_/https://www.maff.go.jp/j/keikaku/syokubunka/k_ryouri/search_menu/menu/okaisan_wakayama.html",
+      "license": "The recipe is provided by 和歌山県生活研究グループ連絡協議会・和歌山県 (named on the page), a third party the ministry's PDL1.0 terms do not cover (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "maff-kyodo-ryori-okaisan-en",
+      "title": "MAFF Our Regional Cuisines: Okaisan/Chagayu, Wakayama (recipe)",
+      "source": "url",
+      "genre": "docs/manual",
+      "language": "en",
+      "url": "https://web.archive.org/web/20231206151802id_/https://local-cuisine.maff.go.jp/en/recipe/739",
+      "license": "The recipe is provided by a third party (和歌山県生活研究グループ連絡協議会・和歌山県), which the ministry's PDL1.0 terms do not cover (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "moriguchi-satsuki-gakuen-ijime-houshin",
+      "title": "守口市立さつき学園「学校いじめ防止基本方針」",
+      "source": "url",
+      "genre": "business/report",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20261001075521id_/https://www.city.moriguchi.osaka.jp/kakukanoannai/moriguchishikyoikuiinkai/gakko/gimukyouikugakko/satsukigakuen/houshin/gakkouijimeboushi/1107.html",
+      "license": "守口市「著作権について」: 私的使用・引用など著作権法上認められた場合を除き無断で複製・転用できない (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "tcu-rishu-toroku-2026-kouki",
+      "title": "東京都市大学 世田谷キャンパス「2026年度後期 履修登録期間について」",
+      "source": "url",
+      "genre": "business/press-release",
+      "language": "ja",
+      "url": "https://web.archive.org/web/20261001075623id_/https://www.asc.tcu.ac.jp/8097/",
+      "license": "No licence stated for the university's notices (URL only)",
+      "redistribute": false,
+      "format": "html"
+    },
+    {
+      "id": "gutenberg-jekyll-and-hyde",
+      "title": "The Strange Case of Dr. Jekyll and Mr. Hyde (Robert Louis Stevenson), Project Gutenberg eBook #43",
+      "source": "url",
+      "genre": "literature/fiction",
+      "language": "en",
+      "url": "https://web.archive.org/web/20261001075512id_/https://www.gutenberg.org/cache/epub/43/pg43.txt",
+      "license": "Public domain in the United States (first published 1886); Project Gutenberg eBook #43, stored without Project Gutenberg's header and licence, which the Project Gutenberg License allows for a public-domain work",
+      "redistribute": true,
+      "format": "gutenberg"
     }
   ]
 }
