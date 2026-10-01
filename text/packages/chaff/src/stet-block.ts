@@ -12,16 +12,21 @@ const UNDER_ITEM = /^(?: {2,}|\t)\S/u;
 
 const isBlank = (line: string): boolean => BLANK.test(line);
 
-/** The index of the first non-blank line at or after `from`, or undefined at the end of the text. */
-const firstFilled = (lines: readonly string[], from: number): number | undefined => {
-  const offset = lines.slice(from).findIndex((line) => !isBlank(line));
-  return offset === -1 ? undefined : from + offset;
+/**
+ * The index of the first line at or after `from` that passes `test`, or undefined. A plain loop: one stet can sit
+ * above a list of thousands of items, and copying the rest of the text per item would be quadratic.
+ */
+const indexFrom = (lines: readonly string[], from: number, test: (line: string) => boolean): number | undefined => {
+  for (let index = from; index < lines.length; index += 1) if (test(lines[index] ?? "")) return index;
+  return undefined;
 };
+
+const firstFilled = (lines: readonly string[], from: number): number | undefined => indexFrom(lines, from, (line) => !isBlank(line));
 
 /** The index of the last line of the run of lines from `start` that a blank line or a heading ends. */
 const runEnd = (lines: readonly string[], start: number): number => {
-  const offset = lines.slice(start + 1).findIndex((line) => isBlank(line) || HEADING.test(line));
-  return offset === -1 ? lines.length - 1 : start + offset;
+  const stop = indexFrom(lines, start + 1, (line) => isBlank(line) || HEADING.test(line));
+  return (stop ?? lines.length) - 1;
 };
 
 /** After a list's run ending at `end`, the index where the list goes on past blank lines, or undefined where it ends. */
@@ -32,10 +37,15 @@ const listResumesAt = (lines: readonly string[], end: number): number | undefine
   return LIST_ITEM.test(line) || UNDER_ITEM.test(line) ? next : undefined;
 };
 
+/** A list's last line: its runs, joined across the blank lines between items. A loop, not recursion, for long lists. */
 const listEnd = (lines: readonly string[], start: number): number => {
-  const end = runEnd(lines, start);
-  const resumed = listResumesAt(lines, end);
-  return resumed === undefined ? end : listEnd(lines, resumed);
+  let end = runEnd(lines, start);
+  let resumed = listResumesAt(lines, end);
+  while (resumed !== undefined) {
+    end = runEnd(lines, resumed);
+    resumed = listResumesAt(lines, end);
+  }
+  return end;
 };
 
 /**

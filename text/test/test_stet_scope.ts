@@ -104,8 +104,10 @@ describe("stetBlockEnd", () => {
     assert.equal(stetBlockEnd([], 1, false), 1);
   });
 
-  it("reads a long block without recursing per line", () => {
+  it("reads a long paragraph and a long loose list without recursing or copying per line", () => {
     const lines = [STET, ...Array.from({ length: 200_000 }, () => "行。")];
     assert.equal(stetBlockEnd(lines, 1, false), lines.length);
+    const looseList = [STET, ...Array.from({ length: 40_000 }, (_, index) => (index % 2 === 0 ? `- 項目 ${String(index)}` : ""))];
+    assert.equal(stetBlockEnd(looseList, 1, false), looseList.length - 1);
   });
 });

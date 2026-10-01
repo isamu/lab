@@ -9,7 +9,7 @@ Newest first.
 `<!-- stet: rule — reason -->` silenced the rule on the six lines after the comment, whatever they held: a finding of
 the same rule in the next paragraph was silenced too, and the end of a long wrapped paragraph was not. Now it covers
 the block right below the comment, as the guide and the spec describe: a paragraph or a table up to the next blank
-line, a heading on its own, a whole list (blank lines between its items included). Blank lines between the comment
+line, a Markdown heading (`#`) on its own, a whole list (blank lines between its items included). Blank lines between the comment
 and the block are skipped; text after the comment on its own line starts the block. `stet-section` and `stet-file` are
 unchanged.
 
