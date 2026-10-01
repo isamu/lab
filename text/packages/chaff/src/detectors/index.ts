@@ -22,6 +22,7 @@ import { straySpace } from "./stray-space.ts";
 import { announcedCount } from "./announced-count.ts";
 import { danglingFigure } from "./dangling-figure.ts";
 import { nominalization } from "./nominalization.ts";
+import { requirementSmell } from "./requirement-smell.ts";
 import { requirementModal } from "./requirement-modal.ts";
 import { vagueFigurePointer } from "./vague-figure-pointer.ts";
 import {
@@ -116,6 +117,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "announced-count": announcedCount,
   "dangling-figure": danglingFigure,
   nominalization: nominalization,
+  "requirement-smell": requirementSmell,
   "requirement-modal": requirementModal,
   "vague-figure-pointer": vagueFigurePointer,
   "date-range-reversed": dateRangeReversed,

@@ -121,6 +121,7 @@ The rules themselves are listed in the [Reference](./reference).
     Documents for the public use です・ます, loanwords keep the final ー (コンピューター), and full-width and half-width characters are used consistently.
   - In chaff: `max-sentence-length`, `no-mixed-desumasu`,
     [`katakana-long-vowel`](../../rules/katakana-long-vowel/) and [`latin-spacing`](../../rules/latin-spacing/) check these points.
+    `style: koyobun` in `chaff.yaml` sets a Japanese sentence's limit to 60 characters, and checks mixed です・ます and a dropped final ー.
 - <a id="gairaigo-1991"></a>**Cabinet notice (1991)** [bunka.go.jp](https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/gairai/honbun06.html)
   - 「外来語の表記」 (how to write loanwords)
   - Appeared in: Cabinet notice No. 2 of 1991.
@@ -263,12 +264,13 @@ Several of them also show how often human writing is mistaken for generated text
 - <a id="iso-29148"></a>**ISO/IEC/IEEE 29148:2018** [standards.ieee.org](https://standards.ieee.org/ieee/29148/6937/)
   - Systems and software engineering — Life cycle processes — Requirements engineering
   - Found: The international standard for what makes a good requirement. It also names words to avoid, such as loopholes and vague adverbs.
-  - In chaff: [background] Femmer et al., below, turned its language criteria into machine checks.
+  - In chaff: [`requirement-smell`](../../rules/requirement-smell/) looks for the loopholes it names ("if possible", "as appropriate")
+    and its open-ended "but not limited to" in a requirement.
 - <a id="berry-2003"></a>**Berry, Kamsties, Krieger (2003)** [cs.uwaterloo.ca (PDF)](https://cs.uwaterloo.ca/~dberry/handbook/ambiguityHandbook.pdf)
   - From Contract Drafting to Software Specification: Linguistic Sources of Ambiguity
   - Found: A handbook of words that let contracts and specifications be read two ways.
     It covers "and/or", "all" against "each", where "only" goes, and pronouns that point at nothing clear.
-  - In chaff: [background] most of these are not chaff rules yet.
+  - In chaff: `requirement-smell` looks for "and/or" (及び／又は) in a requirement. Most of the others are not chaff rules yet.
 - <a id="femmer-2017"></a>**Femmer et al. (2017)** [doi.org](https://doi.org/10.1016/j.jss.2016.02.047)
   - Rapid quality assurance with Requirements Smells
   - Appeared in: Journal of Systems and Software 123, 190–213.
@@ -277,6 +279,8 @@ Several of them also show how often human writing is mistaken for generated text
     On average 59% of the findings were right, and 82% of the real problems were found.
   - In chaff: supports [`unqualified-superlative`](../../rules/unqualified-superlative/),
     [`excessive-hedging`](../../rules/excessive-hedging/) and `dangling-reference`.
+    `requirement-smell` looks for loopholes and open-ended lists ("etc.", 等) in a requirement. It stays experimental,
+    since only about 6 in 10 of the study's findings were right.
     It also matches chaff's view that a person confirms what a machine finds.
 - <a id="gervasi-zowghi-2005"></a>**Gervasi, Zowghi (2005)** [doi.org](https://doi.org/10.1145/1072997.1072999)
   - Reasoning about inconsistencies in natural language requirements
