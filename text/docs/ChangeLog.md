@@ -2,6 +2,20 @@
 
 Newest first.
 
+## Unreleased
+
+### A NUL character no longer stops a Japanese run (#420)
+
+- **lang-ja replaces NUL (U+0000) before analysis**, as it already did lone surrogates. kuromoji threw on it, and the
+  whole run died with exit code 1 and no findings. The placeholder (U+FFFD) has the same length, so every position
+  still points at the same character.
+- **If the analyser throws anyway, the run goes on.** lang-ja returns that paragraph without parts of speech; rules
+  that need them are listed as not run, 「言語のパッケージがこの文書を読めなかったため」 / "the language package could
+  not read this document". The other rules run. Before, a document with some paragraphs tagged and some not ran the
+  part-of-speech rules on the tagged part only, so the untagged part's silence looked like a pass.
+- lang-en was checked the same way, with generated text full of control characters, lone surrogates and long runs; it
+  did not throw. A test now runs both adapters, and the whole run, over such text.
+
 ## 0.18.0 — 2026-10-01
 
 A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
