@@ -25,6 +25,7 @@ import { MARK_MUTATIONS } from "./bench-mutations-marks.ts";
 import { FACT_MUTATIONS } from "./bench-mutations-facts.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
 import { CHARACTER_MUTATIONS } from "./bench-mutations-characters.ts";
+import { OUTLINE_MUTATIONS } from "./bench-mutations-outline.ts";
 
 // --- date-weekday-mismatch ---
 
@@ -379,4 +380,5 @@ export const MUTATIONS: readonly Mutation[] = [
   ...MARKUP_MUTATIONS,
   ...MARK_MUTATIONS,
   ...CHARACTER_MUTATIONS,
+  ...OUTLINE_MUTATIONS,
 ];

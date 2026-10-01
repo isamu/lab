@@ -1,6 +1,6 @@
 import type { Detector, Finding, MarkupHeading } from "../plugin.ts";
 import { lineNumberAt, linesOf } from "../structure/lines.ts";
-import { findingAt, markupOf } from "./markup-finding.ts";
+import { findingAt, writtenHeadings } from "./markup-finding.ts";
 
 /** 見出しの言葉を比べる形。全角と半角、大文字と小文字、空白の数は同じ見出しの違いにしない。 */
 export const headingKey = (text: string): string => text.normalize("NFKC").toLowerCase().replace(/\s+/gu, " ").trim();
@@ -41,7 +41,7 @@ export const repeatedSiblingHeadings = (headings: readonly MarkupHeading[]): Rep
 
 export const duplicateHeading: Detector = (doc): Finding[] => {
   const lines = linesOf(doc.source);
-  return repeatedSiblingHeadings(markupOf(doc)?.headings ?? []).map(({ heading, first }) =>
+  return repeatedSiblingHeadings(writtenHeadings(doc)).map(({ heading, first }) =>
     findingAt(doc, heading, { heading: heading.text, firstLine: lineNumberAt(lines, first.start) ?? 0 }),
   );
 };

@@ -87,7 +87,7 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  53 rules did not run:
+  55 rules did not run:
       adverb-overuse (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
@@ -105,8 +105,10 @@ article.md   blog/tech · English   genre from the default
       doubled-punctuation (still experimental)
       doubled-word (still experimental)
       duplicate-definition (still experimental)
+      duplicate-heading (still experimental)
       emoji-density (still experimental)
       empty-conclusion (it reads meaning; npx chaff test runs it)
+      empty-section (still experimental)
       excessive-hedging (still experimental)
       expletive-construction (still experimental)
       hankaku-kana (not a rule for en)
