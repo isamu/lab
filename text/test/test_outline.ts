@@ -82,6 +82,17 @@ describe("the outline of a document", () => {
     );
   });
 
+  it("gives the text above the first heading the line it starts on, below the front matter", () => {
+    const measured = outline(en, lines("---", "title: Draft", "---", "", "Intro sentence here.", "", "## Body", "", "Body sentence."));
+    assert.deepEqual(
+      measured.entries.map((entry) => [entry.depth, entry.line]),
+      [
+        [0, 5],
+        [2, 7],
+      ],
+    );
+  });
+
   it("counts English in words", () => {
     const measured = outline(en, lines("# Notes", "", "We met on Tuesday and agreed on the plan."));
     assert.equal(measured.unit, "word");

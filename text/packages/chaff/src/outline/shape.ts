@@ -26,10 +26,13 @@ const lengthOfAll = (sentences: readonly Sentence[], unit: LengthUnit): number =
 /** The text before the first heading is listed only when there is some: a title line alone has nothing above it. */
 const isListed = (entry: OutlineEntry): boolean => entry.depth > 0 || entry.length > 0;
 
+/** A heading's own line; for the text above the first heading, the line its text starts on, below any front matter. */
+const startOf = (section: Section): number => (section.depth === 0 ? (section.sentences[0]?.span.start ?? section.span.start) : section.span.start);
+
 const entryOf = (section: Section, unit: LengthUnit, lineOf: (offset: number) => number): OutlineEntry => ({
   depth: section.depth,
   heading: section.heading,
-  line: lineOf(section.span.start),
+  line: lineOf(startOf(section)),
   length: lengthOfAll(section.sentences, unit),
 });
 
