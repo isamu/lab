@@ -6,6 +6,7 @@ export type Reasons = {
   readonly otherLanguage: (language: string) => string;
   readonly noCapability: (capability: string) => string;
   readonly noTags: string;
+  readonly unreadTags: string;
   readonly semantic: string;
   readonly experimental: string;
   readonly turnedOff: string;
@@ -29,6 +30,7 @@ export const REASONS: Texts<Reasons> = {
     otherLanguage: (language) => `${language} 向けの rule ではないため`,
     noCapability: (capability) => `この言語では${CAPABILITY_NAME.ja[capability] ?? capability}が使えないため`,
     noTags: "アダプタが品詞を返さなかったため",
+    unreadTags: "言語のパッケージがこの文書を読めなかったため（品詞の取れない段落があります）",
     semantic: "意味を読む検査のため（npx chaff test で動きます）",
     experimental: "まだ試験中のため",
     turnedOff: "設定で止めているため",
@@ -46,6 +48,7 @@ export const REASONS: Texts<Reasons> = {
     otherLanguage: (language) => `not a rule for ${language}`,
     noCapability: (capability) => `${CAPABILITY_NAME.en[capability] ?? capability} is not available for this language`,
     noTags: "the language package returned no parts of speech",
+    unreadTags: "the language package could not read this document (some paragraphs have no parts of speech)",
     semantic: "it reads meaning; npx chaff test runs it",
     experimental: "still experimental",
     turnedOff: "turned off in the settings",
