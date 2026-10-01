@@ -87,7 +87,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  52 件の rule は動いていません:
+  54 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
@@ -107,8 +107,10 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       doubled-punctuation（まだ試験中のため）
       doubled-word（まだ試験中のため）
       duplicate-definition（まだ試験中のため）
+      duplicate-heading（まだ試験中のため）
       emoji-density（まだ試験中のため）
       empty-conclusion（意味を読む検査のため（npx chaff test で動きます））
+      empty-section（まだ試験中のため）
       excessive-hedging（まだ試験中のため）
       expletive-construction（ja 向けの rule ではないため）
       hankaku-kana（まだ試験中のため）
