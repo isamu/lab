@@ -53,6 +53,7 @@ The rules themselves are listed in the [Reference](./reference).
     It sets no number of characters per sentence.
   - In chaff: `max-sentence-length`, [`no-mixed-desumasu`](../../rules/no-mixed-desumasu/) and
     [`agentless-passive`](../../rules/agentless-passive/) check three of these points.
+    [`nominalization`](../../rules/nominalization/) checks its example of 調査を実施した rewritten as 調査した.
 - <a id="iori-2016"></a>**庵功雄 (Iori, 2016)** [iwanami.co.jp](https://www.iwanami.co.jp/book/b243840.html)
   - 『やさしい日本語―多文化共生社会へ』 (plain Japanese, toward a multicultural society)
   - Appeared in: Iwanami Shinsho (a book).
@@ -103,6 +104,7 @@ The rules themselves are listed in the [Reference](./reference).
   - Found: Split sentences over 25 words. Keep paragraphs to 5 sentences or fewer.
   - In chaff: the `normal` level of `max-sentence-length` for English (25 words) and of
     [`max-paragraph-length`](../../rules/max-paragraph-length/) (5 sentences) match these numbers.
+    `nominalization` checks its advice to use the verb ("decide", not "make a decision").
 - <a id="iso-24495-1"></a>**ISO 24495-1:2023** [cdn.standards.iteh.ai (PDF)](https://cdn.standards.iteh.ai/samples/78907/d194fac21d6a45f38bfcfec9657f7498/ISO-24495-1-2023.pdf)
   - Plain language — Part 1: Governing principles and guidelines
   - Appeared in: ISO. The link is the sample PDF published by the reseller iTeh.
@@ -212,7 +214,7 @@ Several of them also show how often human writing is mistaken for generated text
   - Do LLMs write like humans? Variation in grammatical and rhetorical styles
   - Appeared in: PNAS.
   - Found: Instruction-tuned models use participle clauses and nominalizations several times as often as people, and list nouns more.
-  - In chaff: supports [`rule-of-three`](../../rules/rule-of-three/).
+  - In chaff: supports [`rule-of-three`](../../rules/rule-of-three/), and `nominalization`, which counts hidden verbs.
 - <a id="kobak-2025"></a>**Kobak et al. (2025)** [arxiv.org](https://arxiv.org/abs/2406.07016)
   - Delving into LLM-assisted writing in biomedical publications through excess vocabulary
   - Appeared in: Science Advances 11(27).
@@ -262,12 +264,13 @@ Several of them also show how often human writing is mistaken for generated text
 - <a id="iso-29148"></a>**ISO/IEC/IEEE 29148:2018** [standards.ieee.org](https://standards.ieee.org/ieee/29148/6937/)
   - Systems and software engineering — Life cycle processes — Requirements engineering
   - Found: The international standard for what makes a good requirement. It also names words to avoid, such as loopholes and vague adverbs.
-  - In chaff: [background] Femmer et al., below, turned its language criteria into machine checks.
+  - In chaff: [`requirement-smell`](../../rules/requirement-smell/) looks for the loopholes it names ("if possible", "as appropriate")
+    and its open-ended "but not limited to" in a requirement.
 - <a id="berry-2003"></a>**Berry, Kamsties, Krieger (2003)** [cs.uwaterloo.ca (PDF)](https://cs.uwaterloo.ca/~dberry/handbook/ambiguityHandbook.pdf)
   - From Contract Drafting to Software Specification: Linguistic Sources of Ambiguity
   - Found: A handbook of words that let contracts and specifications be read two ways.
     It covers "and/or", "all" against "each", where "only" goes, and pronouns that point at nothing clear.
-  - In chaff: [background] most of these are not chaff rules yet.
+  - In chaff: `requirement-smell` looks for "and/or" (及び／又は) in a requirement. Most of the others are not chaff rules yet.
 - <a id="femmer-2017"></a>**Femmer et al. (2017)** [doi.org](https://doi.org/10.1016/j.jss.2016.02.047)
   - Rapid quality assurance with Requirements Smells
   - Appeared in: Journal of Systems and Software 123, 190–213.
@@ -276,6 +279,8 @@ Several of them also show how often human writing is mistaken for generated text
     On average 59% of the findings were right, and 82% of the real problems were found.
   - In chaff: supports [`unqualified-superlative`](../../rules/unqualified-superlative/),
     [`excessive-hedging`](../../rules/excessive-hedging/) and `dangling-reference`.
+    `requirement-smell` looks for loopholes and open-ended lists ("etc.", 等) in a requirement. It stays experimental,
+    since only about 6 in 10 of the study's findings were right.
     It also matches chaff's view that a person confirms what a machine finds.
 - <a id="gervasi-zowghi-2005"></a>**Gervasi, Zowghi (2005)** [doi.org](https://doi.org/10.1145/1072997.1072999)
   - Reasoning about inconsistencies in natural language requirements
