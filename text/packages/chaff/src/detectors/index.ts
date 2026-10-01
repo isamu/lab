@@ -35,6 +35,9 @@ import { headingLevelSkip } from "./heading-level-skip.ts";
 import { imageAltText } from "./image-alt-text.ts";
 import { brokenLink } from "./broken-link.ts";
 import { urlRunOn } from "./url-run-on.ts";
+import { hankakuKana } from "./hankaku-kana.ts";
+import { invisibleCharacter } from "./invisible-character.ts";
+import { spaceBeforePunctuation } from "./space-before-punctuation.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { assistantResidue, contrastFraming, stockTransition, unfilledPlaceholder } from "./ai-phrasing.ts";
 
@@ -101,4 +104,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "image-alt-text": imageAltText,
   "broken-link": brokenLink,
   "url-run-on": urlRunOn,
+  "hankaku-kana": hankakuKana,
+  "invisible-character": invisibleCharacter,
+  "space-before-punctuation": spaceBeforePunctuation,
 };

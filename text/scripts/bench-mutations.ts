@@ -23,6 +23,7 @@ import * as phrasing from "./bench-mutations-phrasing.ts";
 import { FACT_MUTATIONS } from "./bench-mutations-facts.ts";
 import { imageWithoutAlt, linkToMissingSection, runOnUrl, skipHeadingLevel } from "./bench-mutations-markup.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
+import { CHARACTER_MUTATIONS } from "./bench-mutations-characters.ts";
 
 // --- date-weekday-mismatch ---
 
@@ -378,4 +379,5 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "image-unlabelled", rule: "image-alt-text", languages: ["ja", "en"], plant: imageWithoutAlt },
   { id: "link-to-nowhere", rule: "broken-link", languages: ["ja", "en"], plant: linkToMissingSection },
   { id: "url-run-on", rule: "url-run-on", languages: ["ja"], plant: runOnUrl },
+  ...CHARACTER_MUTATIONS,
 ];

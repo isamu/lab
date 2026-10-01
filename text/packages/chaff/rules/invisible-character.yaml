@@ -1,0 +1,63 @@
+id: invisible-character
+layer: L1
+status: experimental
+how_to_find: invisible-character
+severity: warning
+
+name:
+  ja: 見えない字がある
+  en: Invisible character
+
+why:
+  ja: ゼロ幅の空白、途中に残った BOM、任意の改行位置の印（ソフトハイフン）、文字の向きの指定、制御文字は、画面では見えないまま本文に残ります。Web ページや PDF から貼り付けると入り、検索に当たらない語、押しても開かない URL、動かないコマンドの原因になります。向きの指定や、字の後ろに隠したタグ文字は、読み手に見える文と機械が読む文を食い違わせることにも使えるので、安全のための目印でもあります。見出しや箇条の印の後ろのノーブレークスペースは印を印でなくし、日本語の隣のノーブレークスペースは貼り付けの名残です。コードの中も数えます（コピーしたコマンドが動かなくなるため）。絵文字をつなぐ接合子、アラビア文字やインドの文字の接合子、右から左に書く文字の隣の向きの印、地域の旗のタグ文字、字に一つ付いた異体字の指定は書き方の一部なので数えません。
+  en: A zero-width space, a byte order mark left mid-text, a soft hyphen, a direction mark and a control character stay in the text without showing on screen. They come in with text pasted from a web page or a PDF, and make a word that search does not find, a URL that does not open and a command that does not run. Direction marks and tag characters hidden after a letter can also make what a reader sees differ from what a machine reads, so they are a safety signal too. A no-break space after a heading or list marker stops the marker from working, and one next to Japanese text is left over from a paste. Code is checked too, since a copied command stops working. A joiner inside an emoji or in Arabic or Indic script, a direction mark next to right-to-left text, the tag characters of a regional flag and a single variation selector after a character are part of the writing and are not counted.
+
+message:
+  ja: 見えない字（{code}）があります
+  en: "Invisible character ({code})"
+
+messages:
+  zero-width:
+    ja: ゼロ幅の字（{code}）が {count} 字あります。検索やコピーで語が切れます
+    en: "{count} zero-width {count|character|characters} ({code}): search and copy break the word here"
+  soft-hyphen:
+    ja: 見えないソフトハイフン（{code}）が {count} 字あります。検索で語が切れます
+    en: "{count} soft {count|hyphen|hyphens} ({code}): search breaks the word here"
+  direction:
+    ja: 文字の向きの指定（{code}）が {count} 字あります。見える順と読まれる順が食い違うことがあります
+    en: "{count} direction {count|mark|marks} ({code}): the order a reader sees can differ from the order a machine reads"
+  control:
+    ja: 制御文字（{code}）が {count} 字あります
+    en: "{count} control {count|character|characters} ({code})"
+  hidden:
+    ja: 字の後ろに隠れた印（{code}）が {count} 字あります。読み手に見えない文を運べます
+    en: "{count} hidden {count|tag|tags} ({code}) after a character: they can carry text a reader cannot see"
+  nbsp:
+    ja: 普通の空白の所にノーブレークスペース（{code}）があります
+    en: "A no-break space ({code}) where an ordinary space belongs"
+
+how_to_fix:
+  ja: 見えない字を消してください。ノーブレークスペースは普通の空白にしてください。エディタの「不可視文字を表示」で場所が見えます。
+  en: Delete the invisible character, and replace a no-break space with an ordinary space. An editor's "show invisibles" setting shows where they are.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: ゼロ幅の空白、途中の BOM、ソフトハイフン、文字の向きの指定、制御文字、隠れたタグ文字のような、画面に出ない字
+  en: Characters that do not show on screen, such as a zero-width space, a stray byte order mark, a soft hyphen, a direction mark or hidden tag characters
+example:
+  ja:
+    before: "申込書は\u200B総務課へ送ってください。\n"
+    after: |
+      申込書は総務課へ送ってください。
+  en:
+    before: "Send the form to the\u200B office.\n"
+    after: |
+      Send the form to the office.
+
+not_flagged:
+  ja: 絵文字をつなぐ接合子、アラビア文字やインドの文字の接合子、右から左に書く文字の隣の向きの印、地域の旗のタグ文字、字に一つ付いた異体字の指定、ファイルの頭の BOM、英文の語と語のあいだのノーブレークスペースは指しません。
+  en: A joiner inside an emoji or in Arabic or Indic script, a direction mark next to right-to-left text, the tag characters of a regional flag, a single variation selector after a character, a byte order mark at the start of the file and a no-break space between English words are not reported.

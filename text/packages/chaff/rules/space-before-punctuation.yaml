@@ -1,0 +1,41 @@
+id: space-before-punctuation
+layer: L1
+status: experimental
+how_to_find: space-before-punctuation
+languages: [en]
+severity: warning
+
+name:
+  ja: 句読点の前に空白がある
+  en: Space before punctuation
+
+why:
+  ja: '英文では句読点を前の語に付けて書きます。「word .」「word ,」のように前に空白があると、行の折り返しで句読点だけが次の行の頭に落ちることがあり、書き換えの途中で残った空白に見えます。ピリオド・カンマ・セミコロン・疑問符・感嘆符を見ます。コロン（"Note : "）、空白で区切った省略の点や目次の点線（". . ."）、".NET" や ".5" のように次の語の頭の点、数の後ろ（式の "[ 1 , N ]"）、コードと URL は数えません。前の空白が二つ以上の所（表のように並べた行）も数えません。'
+  en: 'English attaches punctuation to the word before it. A space before it ("word .", "word ,") can leave the mark alone at the start of the next line, and reads as a space left over from an edit. Periods, commas, semicolons, question marks and exclamation marks are checked. A colon ("Note : "), dots spaced out as an ellipsis or a leader in a table of contents (". . ."), a dot that starts the next word (".NET", ".5"), a mark after a number ("[ 1 , N ]" in a formula), code and URLs are not counted, nor are two or more spaces before the mark (a line laid out like a table).'
+
+message:
+  ja: 「{mark}」の前に空白があります
+  en: 'A space before "{mark}"'
+
+how_to_fix:
+  ja: 空白を消して、句読点を前の語に付けてください。
+  en: Delete the space and attach the mark to the word before it.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 英文の「word .」「word ,」のように、句読点の前に空白がある所
+  en: A space before a period, comma, semicolon, question mark or exclamation mark, as in "word ."
+example:
+  en:
+    before: |
+      The form is ready , and the office has a copy .
+    after: |
+      The form is ready, and the office has a copy.
+
+not_flagged:
+  ja: コロン、空白で区切った省略の点や目次の点線（「. . .」）、「.NET」「.5」のような語の頭の点、数の後ろの句読点、二つ以上の空白の後ろの句読点、コードと URL は指しません。
+  en: Colons, dots spaced out as an ellipsis or a leader (". . ."), a dot that starts a word (".NET", ".5"), a mark after a number or after two or more spaces, code and URLs are not reported.
