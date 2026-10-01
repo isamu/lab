@@ -9,7 +9,7 @@ uses: [pos]
 # 番地（千代田区紀尾井町1-3）を、都道府県までの地名の後ろの範囲（東京都2-3 営業日）と分ける。
 # 日付・時刻（9月、2026年、令和8年、10時5分）を、長さ（3ヶ月、3 時間）と分ける。
 # 番号と組んで名前を付ける語（問3、第1節）を見分ける。
-extra_word_lists: [prefecture-unit, date-time-unit, calendar-unit, calendar-year-unit, calendar-era, numbered-label]
+extra_word_lists: [prefecture-unit, date-time-unit, calendar-unit, calendar-year-unit, calendar-era, numbered-label, item-number]
 
 name:
   ja: 英数字の前後の空白がそろっていない
@@ -51,8 +51,8 @@ example:
       表は Excel で作り、Word に貼ります。図は PowerPoint で描きます。最後に PDF にします。
 
 not_flagged:
-  ja: 電話番号や日付のような番号、版番号（1.0.0）、単位つきの日付や時刻（9月、10時5分）、見出しの番号、「」の中、リンクの文字の中は数えません。どちらの空け方が正しいかは決めません。少ないほうが全体の 2 割を超えるほど多ければ（5 箇所以上）、1 箇所ずつではなく、書き方が二通りあることを 1 件で言います。
-  en: Codes such as phone numbers, dates and version numbers (1.0.0), dates and times with units (9月, 10時5分), heading numbers, quotations and the text of links are not counted. Neither way is called right. When the less common way is more than a fifth of the places (and at least five), it is reported once, as a document written two ways, rather than place by place.
+  ja: 電話番号や日付のような番号、版番号（1.0.0）、単位つきの日付や時刻（9月、10時5分）、見出しの番号、行の頭の項目の番号（「一 JIS…」の一、イ）の後ろ、「」の中、リンクの文字の中は数えません。どちらの空け方が正しいかは決めません。少ないほうが全体の 2 割を超えるほど多ければ（5 箇所以上）、1 箇所ずつではなく、書き方が二通りあることを 1 件で言います。
+  en: Codes such as phone numbers, dates and version numbers (1.0.0), dates and times with units (9月, 10時5分), heading numbers, the space after an item number at the head of a line (一 JIS…), quotations and the text of links are not counted. Neither way is called right. When the less common way is more than a fifth of the places (and at least five), it is reported once, as a document written two ways, rather than place by place.
 level_meaning:
   ja: 少ないほうの空け方が {limit} 箇所あれば指摘
   en: reported once {limit} places go against the document's habit

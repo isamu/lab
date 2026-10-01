@@ -55,6 +55,7 @@ planted:
   ra-nuki: [ja]
   repeated-conjunction: [ja, en]
   required-sections: [ja, en]
+  requirement-smell: [ja, en]
   sasete-itadaku: [ja]
   sentence-initial-conjunction-run: [en]
   space-before-punctuation: [en]
@@ -76,6 +77,7 @@ not_planted:
   contrast-framing: a density over the whole document
   cushion-phrase-density: a density over the whole document
   empty-conclusion: L4, judged by chaff test and never run by lint
+  nominalization: a density over the whole document
   paragraph-length-variance: the shape of the whole document, not one mistake
   proper-noun-density: a density over the whole document
   repeated-sentence-head: a run of consecutive sentences sharing their opening words; forcing one changes what the samples say

@@ -53,6 +53,8 @@ groups:
       colon-lead-in: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
+      # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
+      nominalization: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -102,6 +104,7 @@ groups:
       section-length-uniformity: off
       paragraph-length-variance: off
       stock-transition: off
+      requirement-smell: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
@@ -150,6 +153,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      nominalization: off
       dangling-reference: off
       duplicate-definition: off
       date-order: off
@@ -164,6 +168,7 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      requirement-smell: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -185,6 +190,7 @@ groups:
       # A transcript keeps the speaker's words: hedges and ら dropped as spoken.
       double-negative: off
       ra-nuki: off
+      requirement-smell: off
 
 genres:
   - id: technical/spec
@@ -237,11 +243,19 @@ genres:
     summary:
       ja: プレスリリースと、お知らせ
       en: Press releases and public notices
+    # A release names the agency, the people quoted, the mission and the place: that is its news, not a crowd of
+    # names to thin out. Every English release in the corpus (GSA, NASA, NOAA) is over the limit.
+    rules:
+      proper-noun-density: off
   - id: business/meeting-notes
     name: { ja: 議事録, en: Meeting notes }
     summary:
       ja: 議事録・議事要旨
       en: Minutes and meeting notes
+    # Minutes record what the meeting did (the meeting was held, 了承された): the actor is the meeting, by the form.
+    # In the corpus the rule fires on nearly every set of minutes, English and Japanese.
+    rules:
+      agentless-passive: off
   - id: legal/contract
     name: { ja: 契約書・規約, en: Contract and terms }
     summary:
@@ -285,6 +299,8 @@ genres:
       total-mismatch: normal
       dangling-figure-reference: normal
       date-range-reversed: normal
+      # A statute defines its 等 terms (以下「個人情報等」という) and uses them in its obligations.
+      requirement-smell: off
   - id: legal/judgment
     name: { ja: 判決, en: Court decision }
     summary:
@@ -293,6 +309,9 @@ genres:
     suggest:
       ja: { line: "^(?:#{1,6}\\s*)?(?:主\\s*文|理\\s*由|判\\s*決)\\s*$", min_lines: 2 }
       en: { line: "delivered the opinion of the Court|^(?:Reversed|Affirmed)\\.?$", min_lines: 1 }
+    # requirement-smell is for the documents that state requirements: specifications, contracts and documentation.
+    rules:
+      requirement-smell: off
   - id: legal/patent
     name: { ja: 特許明細書, en: Patent }
     summary:
@@ -301,6 +320,9 @@ genres:
     suggest:
       ja: { line: "【(?:課題|解決手段|請求項[0-9０-９]+|選択図|技術分野|背景技術|発明の詳細な説明|特許請求の範囲)】", min_lines: 2 }
       en: { line: "^#{1,6}\\s*(?:BACKGROUND OF THE INVENTION|SUMMARY OF THE INVENTION|Claims\\b)|\\bof claim \\d+", min_lines: 3 }
+    # requirement-smell is for the documents that state requirements: specifications, contracts and documentation.
+    rules:
+      requirement-smell: off
   - id: docs/manual
     name: { ja: マニュアル・手順書, en: Manual and how-to }
     summary:
@@ -332,6 +354,8 @@ genres:
     rules:
       taigen-dome-in-prose: off
       ngram-repetition: off
+      # An entry that ends 〜すること or 〜のこと defines a word; it is no requirement.
+      requirement-smell: off
   - id: academic/paper
     name: { ja: 論文, en: Academic paper }
     summary:

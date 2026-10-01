@@ -1,0 +1,5 @@
+# "and/or" (Berry et al. 2003): the reader cannot tell whether both are meant, or either one is enough.
+id: requirement-either
+language: en
+entries:
+  - pattern: and/or
