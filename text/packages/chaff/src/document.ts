@@ -20,6 +20,7 @@ import { emailParts, emailVocabulary } from "./email-parts.ts";
 import { cutTextSpans } from "./span-cut.ts";
 import { markdownFigures } from "./text-figures.ts";
 import { documentMarkup } from "./markup.ts";
+import { BARE_URL } from "./bare-url.ts";
 import type {
   BulletList,
   LanguageAdapter,
@@ -44,7 +45,7 @@ import type {
 const NOT_PROSE = new Set(["code", "inlineCode", "html", "yaml", "toml", "table", "blockquote", "thematicBreak", "definition", "image", "imageReference"]);
 
 /** link は `[text](url)` の外側だけを覆う。表示される文字は本文なので残す。 */
-const linkChrome = (node: Node): Span[] => {
+export const linkChrome = (node: Node): Span[] => {
   const whole = spanOf(node);
   const first = node.children?.[0];
   const last = node.children?.at(-1);
@@ -83,12 +84,7 @@ const EMPHASIS = new Set(["strong", "emphasis", "delete"]);
  */
 const DIRECTIVE = /^[ \t]*:::[^\n]*/gmu;
 
-/**
- * `https://…` をそのまま書いた URL。GFM の autolink 拡張を入れていないので mdast では
- * ただのテキストになり、本文として残る。残すと、見出しと URL の中の識別子が一致して
- * 「見出しの繰り返し」と読まれる。表示される文字も本文ではない。
- */
-const BARE_URL = /https?:\/\/[^\s)<>"'\]]+/gu;
+// そのまま書いた URL も覆う。残すと、見出しと URL の中の識別子が一致して「見出しの繰り返し」と読まれる。
 
 const matchSpans = (source: string, pattern: RegExp): Span[] =>
   [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
