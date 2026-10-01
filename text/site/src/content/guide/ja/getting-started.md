@@ -93,8 +93,10 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       ai-generated-composite（まだ試験中のため）
       ai-tell（まだ試験中のため）
       announced-count-mismatch（まだ試験中のため）
+      announcing-opener（まだ試験中のため）
       assistant-residue（まだ試験中のため）
       broken-link（まだ試験中のため）
+      colon-lead-in（まだ試験中のため）
       contraction-consistency（ja 向けの rule ではないため）
       contrast-framing（まだ試験中のため）
       dangling-figure-reference（まだ試験中のため）

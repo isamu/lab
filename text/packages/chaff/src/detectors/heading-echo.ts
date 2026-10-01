@@ -1,6 +1,7 @@
 import { lengthOf, proseText } from "../measure.ts";
 import { newContentMorphemes } from "./content-morphemes.ts";
 import { echoedHeadingUnits, trigrams } from "./heading-overlap.ts";
+import { titleTokens } from "../heading-label.ts";
 import { handsOver } from "./lead-in.ts";
 import { withoutQuotedVariants } from "./quoted-variant.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Section } from "../plugin.ts";
@@ -37,12 +38,15 @@ const NEW_MATERIAL = { word: 6, char: 20 };
  */
 const NEW_CONTENT_MORPHEMES = 1;
 
+/** 重なりを測る見出し。頭の番号の札（例 3：、Step 3:、1.）は本文で繰り返されないので、数えると短い見出しほど重なりが下がる。 */
+const measuredHeading = (section: Section): string => section.unlabeledHeading ?? section.heading;
+
 const addsLittle = (section: Section, unit: LengthUnit): boolean => {
   const first = section.firstSentence;
   if (first === undefined) return false;
   if (unit === "char" && first.tokens !== undefined && section.headingTokens !== undefined)
-    return newContentMorphemes(section.headingTokens, first.tokens) <= NEW_CONTENT_MORPHEMES;
-  return lengthOf(first, unit) - echoedHeadingUnits(section.heading, proseText(first), unit) <= NEW_MATERIAL[unit];
+    return newContentMorphemes(titleTokens(section.heading, measuredHeading(section), section.headingTokens), first.tokens) <= NEW_CONTENT_MORPHEMES;
+  return lengthOf(first, unit) - echoedHeadingUnits(measuredHeading(section), proseText(first), unit) <= NEW_MATERIAL[unit];
 };
 
 /** 最初の文が、同じ節の後ろ（箇条書き・表・コード）へ読者を渡している。 */
@@ -52,14 +56,14 @@ const leadsIn = (doc: ProseDocument, section: Section, phrases: readonly string[
 };
 
 /** 見出しとの重なりを測る文。用語集や表記の手引きは見出しの語の別の書き方を引用する（Not “datacentre”）ので、それは数えない。 */
-const echoedText = (section: Section): string => withoutQuotedVariants(section.firstSentence?.text ?? "", section.heading);
+const echoedText = (section: Section): string => withoutQuotedVariants(section.firstSentence?.text ?? "", measuredHeading(section));
 
 export const headingEcho: Detector = (doc, options): Finding[] => {
   const leadIns = (doc.lexicons["lead-in"] ?? []).map((entry) => entry.pattern);
   return doc.sections
     .filter((section) => section.heading.length > 0 && section.firstSentence !== undefined && addsLittle(section, doc.lengthUnit))
     .filter((section) => !leadsIn(doc, section, leadIns))
-    .map((section) => ({ section, overlap: Math.round(containment(trigrams(section.heading), trigrams(echoedText(section))) * 100) }))
+    .map((section) => ({ section, overlap: Math.round(containment(trigrams(measuredHeading(section)), trigrams(echoedText(section))) * 100) }))
     .filter(({ overlap }) => overlap >= options.limit)
     .map(({ section, overlap }) => ({
       rule: "heading-echo",

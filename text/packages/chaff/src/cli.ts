@@ -31,6 +31,7 @@ import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
 import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
 import { citeTargets, runCite } from "./commands/cite.ts";
+import { compareTargets, runCompare } from "./commands/compare.ts";
 import { runSkill } from "./commands/skill.ts";
 import { runFeedback, settingsOf } from "./commands/feedback.ts";
 import { homedir } from "node:os";
@@ -245,12 +246,8 @@ const runSuppressions = async (targets: readonly string[], argv: readonly string
   const paths = collectTargets(targets.length > 0 ? targets : ["."]);
   const config = readConfig();
   const results = await Promise.all(paths.map((path) => inspect(path, config, [...argv, "--show-baseline"])));
-  console.log(
-    renderSuppressions(
-      results.map((result) => result.perFile),
-      hostLanguage(config.language, process.env),
-    ),
-  );
+  const perFile = results.map((result) => result.perFile);
+  console.log(renderSuppressions(perFile, hostLanguage(config.language, process.env)));
   return 0;
 };
 
@@ -301,6 +298,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   eval: (argv) => runEval(positional(argv), argv, { ...measureContext(argv), flag }),
   tree: (argv) => runTree(treeTargets(argv), argv, treeContext()),
   cite: (argv) => runCite(citeTargets(argv), argv, treeContext()),
+  compare: (argv) => runCompare(compareTargets(argv), argv, treeContext()),
   test: (argv) => runTest(positional(argv), argv, { ...measureContext(argv), inspect }),
   baseline: (argv) => runBaseline(positional(argv), argv),
   suppressions: (argv) => runSuppressions(positional(argv), argv),

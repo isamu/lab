@@ -16,6 +16,8 @@ from:
   - contrast-framing
   - stock-transition
   - assistant-residue
+  - announcing-opener
+  - colon-lead-in
 
 name:
   ja: 生成文の特徴がそろっている

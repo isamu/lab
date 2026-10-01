@@ -5,6 +5,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
 import { countedAfter, quantities } from "../packages/lang-ja/src/quantities.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
+import { dottedNumber, isAmount } from "../packages/chaff/src/structure/universal.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import type { LanguageAdapter, StructurePatterns } from "../packages/chaff/src/plugin.ts";
@@ -131,5 +132,73 @@ describe("日本語: 小数の後ろが単位の記号なら数量、接頭詞�
   it("試薬の並び（1.5 mM → 0.25 mM）は番号の飛びではない", () => {
     const source = lines("# 方法", "", "1.5 mM の塩化マグネシウム", "", "0.25 mM のジチオトレイトール");
     assert.deepEqual(gapsOf(ja, source), []);
+  });
+});
+
+// 自作の文。点で閉じた見出しの番号（「5. 」）の後ろに単位と読める語（ページ・Days）が来ても、それは札で、数量ではない。
+describe("a number closed by a dot is a label, even before a word that reads as a unit", () => {
+  const heading = { open: [], isHeading: true };
+  const countsEverything = (): boolean => true;
+  const amountOf = (line: string): boolean | undefined => {
+    const dotted = dottedNumber(line, heading);
+    return dotted === undefined ? undefined : isAmount(dotted, countsEverything);
+  };
+
+  it("「5. ページ」「4.2. GB」 are labels; 「1.5 万人」「5 ページ」 may be amounts", () => {
+    assert.equal(amountOf("5. ページ自身の通信から分かること"), false);
+    assert.equal(amountOf("4.2. GB の上限"), false);
+    assert.equal(amountOf("1.5 万人が参加した"), true);
+    assert.equal(amountOf("5 ページ自身の通信"), true);
+  });
+
+  it("without a language's reading of units, nothing is an amount", () => {
+    const dotted = dottedNumber("1.5 万人", heading);
+    assert.ok(dotted !== undefined);
+    assert.equal(isAmount(dotted, undefined), false);
+  });
+
+  it("日本語: 「### 5. ページ自身の通信から分かること」は 4 と 6 のあいだの番号で、抜けは無い", () => {
+    const source = lines(
+      "# 道具",
+      "",
+      "## 見ていること",
+      "",
+      "### 4. 運営元",
+      "",
+      "本文です。",
+      "",
+      "### 5. ページ自身の通信から分かること",
+      "",
+      "本文です。",
+      "",
+      "### 6. 入力するページ",
+      "",
+      "本文です。",
+    );
+    assert.deepEqual(gapsOf(ja, source), []);
+  });
+
+  it("日本語: 本当の抜け（4 の次が 6）は、点で閉じた番号でも言う", () => {
+    const source = lines("# 道具", "", "### 4. 運営元", "", "本文です。", "", "### 6. ページの入力欄", "", "本文です。");
+    assert.deepEqual(gapsOf(ja, source), [["4", "6"]]);
+  });
+
+  it("English: 「## 2. % of tickets closed」 is section 2, between 1 and 3", () => {
+    const source = lines(
+      "# Support",
+      "",
+      "## 1. Volume",
+      "",
+      "Text here.",
+      "",
+      "## 2. % of tickets closed",
+      "",
+      "Text here.",
+      "",
+      "## 3. Backlog",
+      "",
+      "Text here.",
+    );
+    assert.deepEqual(gapsOf(en, source), []);
   });
 });

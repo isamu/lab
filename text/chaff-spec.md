@@ -827,6 +827,8 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `stock-transition` ✅ | 文頭の決まった接ぎの密度 | blog | info |
 | `assistant-residue` ✅ | weighted phrase-match（会話の返事の名残。重み 1 は 1 つで、0.5 は 2 つで届く） | 両方 | warning |
 | `unfilled-placeholder` ✅ | 括弧の中が雛形の語（[Your Name]、【会社名】）の空欄 | 両方 | warning |
+| `announcing-opener` ✅ | 文頭の予告（重要なのは、Here's the thing）の数。密度ではなく数で見る | blog | info |
+| `colon-lead-in` ✅ | コロンで終わり、すぐ後ろに箇条書きが来る地の文の密度（ja のみ） | blog | info |
 | `padded-intro` | phrase-match（冒頭限定） | blog | warning |
 | `closing-cliche` | phrase-match（末尾限定） | blog | warning |
 | `proper-noun-density` ✅ | 固有名詞の密度 | blog | info |
@@ -1550,6 +1552,7 @@ npx chaffjs lint article.md              # deterministic のみ（L1 / L2 / L3�
 npx chaffjs test article.md              # L4 を含む
 npx chaffjs eval corpus/ja/blog/         # rule の評価と閾値 sweep
 npx chaffjs explain sentence-rhythm      # rule の意図と根拠
+npx chaffjs compare before.md after.md   # 書き換えで事実が落ちても足されてもいないか（§28）
 npx chaffjs init
 npx chaffjs setup ja                     # 品詞解析器の取得
 
@@ -1717,7 +1720,7 @@ bold-density: strict       # 2026-09-11 図の説明で太字を多用するた�
 
 ### 20.2 複合シグナル
 
-✅ 実装済み。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` / `no-em-dash` / `contrast-framing` / `stock-transition` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に 1 件の warning を足す。
+✅ 実装済み。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` / `no-em-dash` / `contrast-framing` / `stock-transition` / `announcing-opener` / `colon-lead-in` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に 1 件の warning を足す。
 
 **元の指摘は消さない。** spec の初版は「集約する」としていたが、`from` に並ぶ rule のうち
 `padded-intro` と `closing-cliche` は stable な warning で、単独でも正しい指摘である。
@@ -1743,6 +1746,8 @@ ai-generated-composite:
       - contrast-framing
       - stock-transition
       - assistant-residue
+      - announcing-opener
+      - colon-lead-in
 ```
 
 集約 rule 自体も rule として定義する。言語別に有効なシグナルが違う（英語では `no-em-dash` が強く、日本語では弱い）ため、`from` は genre profile で言語別に上書きできる。
@@ -1861,7 +1866,8 @@ experimental 開始（corpus 評価が必要）
     ai-tell, rule-of-three, section-length-uniformity, sentence-rhythm,
     concrete-evidence-density, padded-intro, cushion-phrase-density,
     proper-noun-density,
-    contrast-framing, stock-transition, assistant-residue, unfilled-placeholder
+    contrast-framing, stock-transition, assistant-residue, unfilled-placeholder,
+    announcing-opener, colon-lead-in
 ```
 
 CI:
@@ -2104,3 +2110,60 @@ npx chaffjs cite contract.txt claims.json --format json
 - 二つの項にまたがる引用は、両方を含む条を指していれば一致。`quote-elsewhere` の `foundAt` も、引用の全体を含むいちばん内側の番地。原文に二か所あれば最初の場所。
 - コードブロックとインラインコードの中の文も、それを含む節の中身として引用できる。木がコードを覆うのは、コードの中の番号を番号や参照と読まないためで、節の範囲から外すためではない。
 - 一つでも外れていれば終了コード 1。AI の回答を単体試験のように検査できる。書き換えはしない。
+
+## 28. 書き換えで事実が落ちていないか（`chaff compare`）
+
+AI っぽい文章を人の文章に大きく書き換えるのは AI の仕事で、chaff の仕事はその後ろにある。
+書き換えが大胆なほど、数字が一つ消えた、日付が一日ずれた、URL が抜けた、元に無い数字が増えた、を人が読んで見つけるのは難しい。
+`chaff compare` は書き換える前と後の文書から「事実の粒」を同じ読み方で取り出して比べ、落ちたものと足されたものを示す。
+判定に model は使わない。同じ二つの文書からは、いつも同じ結果が出る。chaff は比べるだけで、書き換えない。
+
+```bash
+npx chaffjs compare before.md after.md                        # 人が読む
+npx chaffjs compare before.md after.md --compact              # 1 件 1 行
+npx chaffjs compare before.md after.md --json                 # AI が読んで直す
+npx chaffjs compare before.md after.md --allow-dropped url    # わざと削った種類は通す
+```
+
+### 28.1 事実の粒
+
+新しい読み手は作らず、lint と `chaff tree` が使う読み手で取り出す。
+
+| 種類 | 何を読むか | 読み手 |
+| --- | --- | --- |
+| `number` | 単位や通貨の付いた数（1,200円、$12.50、25%、３万人）と、単位の付かない数 | 構造の木の `quantity`。木が読まなかった数字は、単位の無い数として読む |
+| `date` | 日付 | 構造の木の `date`（2026年4月1日、April 1, 2026）と、年を先に書いた数字だけの日付（2026/4/1、2026-04-01） |
+| `time` | 時刻 | 10:30、15:30:05、3 p.m.、午後3時30分、10時半。24 時間の `HH:MM` にそろえる |
+| `url` | リンク先と、そのまま書いた URL | `doc.markup` のリンク（使われた参照の定義と autolink も）と `bare-url.ts`。文末の句読点は URL に入れない |
+| `code` | インラインコードとコードブロック | Markdown の木。中身を書いたまま比べる |
+| `name` | 固有名詞と `chaff.yaml` の `names:` | 品詞の解析器が `PROPN` とした語の並び。`names:` は書いたとおりに探す |
+| `quote` | 「」『』 “” "" で引いた言葉 | `quoted-span.ts`。中身を比べ、括弧の種類は書き方とみなす |
+| `heading` | Markdown の見出しと、条・章 | 見出しは深さを比べ、言葉は書き方とみなす。条と章は番地を比べる |
+| `reference` | 条項への参照（第5条第2項、Section 4.2） | 構造の木の `reference`。番地と、Section / Article の別を比べる |
+| `footnote` | 脚注の印 `[^1]` と脚注 `[^1]:` | 印を書いたまま比べる |
+
+一つの数字は一つの事実として数える。日付・時刻・参照・脚注の中の数字と、番号付きの箇条書きの `1.` は、数として読み直さない。
+コードと URL の中の数字も数として読まない。
+
+### 28.2 比べ方
+
+- **多重集合として比べる。** 位置は見ない。段落を入れ替えても、事実が動いただけなら何も報告しない。同じ事実を二度書いた文書が一度にすれば、一つ落ちている。
+- **落ちた（dropped）**: 前にあって後に無い。失敗。
+- **足された（added）**: 後にだけある。失敗。大胆な書き換えでも、事実を作ってはいけない。
+- **書き方だけ変わった（reformed）**: 同じ事実の別の書き方。1,000 と 1000、５ と 5、2026年4月1日 と 2026/4/1、午後3時30分 と 15:30、言い換えた見出し。情報として出し、失敗にしない。
+- 単位の違う同じ数（5件 と 5人）は別の事実。片方の単位を読み手が読めなかっただけ（30GB と ３０ＧＢ）なら、同じ数の別の書き方とみなす。
+- 品詞の解析器は語を文脈で読むので、書き換えで同じ名前が固有名詞と読まれたり読まれなかったりする。名前は、相手の文書がその綴りを同じ回数書いていれば落ちていない。文頭で大文字になっただけの語（同じ文書が小文字でも書く語）は名前にしない。見出しの中の語は名前として読まない（見出しは見出しとして比べる）。
+- 一件ごとに、前と後のファイルの行を示す。
+
+### 28.3 出力と終了コード
+
+- 既定は人が読む画面、`--compact` は 1 件 1 行（`dropped` / `added` / `reformed` と種類の名は英語のまま。grep が読む）、`--json` は AI が読む。
+- 最後に、種類ごとの数を前と後で並べる（`数 3→2、日付 1→1、…`）。0 件の種類も並べる。「落ちたものは無い」が「何も見ていない」と読まれないため。
+- 読めなかった種類は理由を付けて言う（§17.4）。言語パッケージが構造を読まない（単位・日付・参照）、日付を読まない、品詞の解析器が無い（`names:` だけを比べる）、Markdown でない（コードの記法が無い）。
+- 落ちた事実か足された事実が一つでもあれば終了コード 1、無ければ 0。
+- `--allow-dropped <種類>` と `--allow-added <種類>` は、わざと削った・足した種類を失敗から外す（繰り返すか、`url,quote` のようにカンマで並べる）。外したものも一覧には残る。
+- 画面の言語は前の文書の言語に従う。
+
+### 28.4 速さ
+
+文書の長さに比例して読む。何万もの引用・範囲・同じ数がある文書でも、一つごとに全体を読み直さない（`test/test_compare_linear.ts`）。
