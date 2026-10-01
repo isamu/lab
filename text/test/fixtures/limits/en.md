@@ -48,3 +48,7 @@ A third list follows.
 ## Next
 
 The next meeting is on the tenth. The agenda will follow by email. The slides are due the day before. The owners are named in the tracker. The budget line is in the shared sheet. The review closes on Friday at noon. The venue is the main office on the third floor. Questions go to the program manager, who will answer within a day. Late items move to the following week without discussion. Each owner reports status in one line. Blockers are raised first, then risks, then decisions. Notes are posted within an hour of the meeting ending.
+
+## On the day
+
+The key point is the key. Here's the thing: the map matters. Honestly, time is short.
