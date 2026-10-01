@@ -4,7 +4,7 @@ import { analyserPieces } from "./analyser-pieces.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
 import { outsideTheReport, isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
-import { isEchoAt, type Inflection } from "./reduplication.ts";
+import { distributiveVocabulary, isEchoAt, type Inflection } from "./reduplication.ts";
 import { isRaDroppedAt, raDroppedVocabulary } from "./ra-dropped.ts";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -119,6 +119,8 @@ const LEXICONS = loadLexicons();
 const PASSIVE_VOCABULARY = passiveVocabulary(LEXICONS);
 
 const RA_DROPPED_VOCABULARY = raDroppedVocabulary(LEXICONS);
+
+const REDUPLICATING_NOUNS = distributiveVocabulary(LEXICONS).nouns;
 
 /**
  * 非自立名詞（の・こと・もの・ため・はず）。品詞は名詞だが、単独では何も指さない。
@@ -282,16 +284,21 @@ const inflectionOf = (morpheme: Morpheme, start: number): Inflection => ({
   start,
 });
 
+/** 解析器を読み込んでいないか、読めなかったら undefined。 */
+const readReady = (text: string): Placed[] | undefined => (state.ready === undefined ? undefined : readWith(state.ready, text));
+
 export const tokenize = (text: string): Token[] | undefined => {
-  const tokenizer = state.ready;
-  if (tokenizer === undefined) return undefined;
-  const read = readAll(tokenizer, text);
+  const read = readReady(text);
+  return read === undefined ? undefined : tokensOf(read);
+};
+
+const tokensOf = (read: readonly Placed[]): Token[] => {
   const sequence = read.map(({ morpheme }) => morpheme);
   const inflections = read.map(({ morpheme, start }) => inflectionOf(morpheme, start));
   return read.map(({ morpheme, start }, index) =>
     toToken(morpheme, start, {
       passive: readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index),
-      echo: isEchoAt(inflections, index),
+      echo: isEchoAt(inflections, index, REDUPLICATING_NOUNS),
       light: isLightVerbAt(sequence, index),
       raDropped: isRaDroppedAt(sequence, index, RA_DROPPED_VOCABULARY),
     }),
@@ -304,14 +311,23 @@ const PIECE_LIMIT = 1000;
 const analyse = (tokenizer: Tokenizer, text: string): Morpheme[] =>
   readCounterTsu(analyserPieces(text, PIECE_LIMIT).flatMap((piece) => toArray(callMethod(tokenizer, "tokenize", [piece])).flatMap(toMorpheme)));
 
-/** 解析器は片割れのサロゲートで例外を投げる。数量の後ろを数文字だけ読み直すと、絵文字を半分に切ることがある。 */
-const readAll = (tokenizer: Tokenizer, text: string): { readonly morpheme: Morpheme; readonly start: number }[] => {
+type Placed = { readonly morpheme: Morpheme; readonly start: number };
+
+/**
+ * 読めない文字は先に置き換える（wellFormed）。それでも解析器が投げたら undefined を返し、品詞の無い文として渡す。
+ * 一つの文書のために run 全体を止めない。品詞が要る rule は、core が「読めなかった」として動かさない。
+ */
+export const readWith = (tokenizer: Tokenizer, text: string): Placed[] | undefined => {
   const readable = wellFormed(text);
-  return placed(readable, analyse(tokenizer, readable));
+  try {
+    return placed(readable, analyse(tokenizer, readable));
+  } catch {
+    return undefined;
+  }
 };
 
 /** 形態素と、本文の中での始まり。本文に見つからないものは落とす。 */
-const placed = (text: string, raws: readonly Morpheme[]): { readonly morpheme: Morpheme; readonly start: number }[] => {
+const placed = (text: string, raws: readonly Morpheme[]): Placed[] => {
   const starts = surfaceStarts(
     text,
     raws.map((raw) => raw.surface_form),
@@ -335,11 +351,9 @@ export type Morph = {
   readonly detail2: string;
 };
 
-/** 解析器を読み込んでいなければ undefined。呼ぶ側は、形態素なしの読み方に戻る。 */
-export const morphemes = (text: string): Morph[] | undefined => {
-  const tokenizer = state.ready;
-  if (tokenizer === undefined) return undefined;
-  return readAll(tokenizer, text).map(({ morpheme: raw, start }) => ({
+/** 解析器を読み込んでいないか、読めなければ undefined。呼ぶ側は、形態素なしの読み方に戻る。 */
+export const morphemes = (text: string): Morph[] | undefined =>
+  readReady(text)?.map(({ morpheme: raw, start }) => ({
     start,
     end: start + raw.surface_form.length,
     surface: raw.surface_form,
@@ -347,7 +361,6 @@ export const morphemes = (text: string): Morph[] | undefined => {
     detail1: raw.pos_detail_1,
     detail2: raw.pos_detail_2,
   }));
-};
 
 const isCounterMorph = (morph: Morph): boolean => morph.pos === "名詞" && morph.detail1 === "接尾" && morph.detail2 === "助数詞";
 

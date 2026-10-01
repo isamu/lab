@@ -27,6 +27,7 @@ how_to_fix:
 levels: { strict: 10, normal: 10, relaxed: 20 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+sources: [hayashi-aizawa-2026]
 
 group: ai-tells
 summary:
