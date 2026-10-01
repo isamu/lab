@@ -16,6 +16,13 @@ const DEFAULT_MIN_MORAE = 3;
 const exemptStems = (except: readonly string[]): ReadonlySet<string> => new Set(except.map((word) => stemOf(word.trim())));
 
 /**
+ * Words that become another word with a final ー (フリ, as in 振り, and フリー, free): the language's long-vowel-distinct word list.
+ * Both are nouns to the tagger, so only the list tells them apart; they are left out as if listed under except.
+ * The list is optional: without it the rule still runs and compares every word.
+ */
+const distinctWordsOf = (doc: ProseDocument): string[] => (doc.lexicons["long-vowel-distinct"] ?? []).map((entry) => entry.pattern);
+
+/**
  * The katakana nouns of a sentence, as the language adapter split them: ユーザー inside ユーザーインターフェース is its own word.
  * Proper nouns (PROPN) and the team's names keep their own spelling (ディズニー).
  */
@@ -42,7 +49,7 @@ const quoteAt = (doc: ProseDocument, offset: number): string =>
 export const katakanaLongVowel: Detector = (doc, options): Finding[] => {
   const settings = options.settings ?? {};
   const minMorae = typeof settings["min_morae"] === "number" ? settings["min_morae"] : DEFAULT_MIN_MORAE;
-  const exempt = exemptStems(wordsOf(settings["except"]));
+  const exempt = exemptStems([...wordsOf(settings["except"]), ...distinctWordsOf(doc)]);
   const words = doc.sentences.flatMap((sentence) => kanaWordsOf(sentence, doc.names ?? [], exempt));
   const odd = oddLongVowels(words, endingOf(settings["ending"]), minMorae);
   if (odd.length === 0 || odd.length < options.limit) return [];

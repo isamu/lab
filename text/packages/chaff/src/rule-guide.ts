@@ -91,6 +91,8 @@ export type RuleGuide = {
   readonly notFlagged: Localized;
   /** What a level's number means, with {limit} for the number ("一文 {limit} 字まで"). None when every level is the same. */
   readonly levelMeaning: Localized;
+  /** The bibliography entries the rule rests on: the anchors of site/src/content/guide/{ja,en}/bibliography.md. */
+  readonly sources: readonly string[];
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -128,6 +130,7 @@ export const ruleGuideOf = (raw: Readonly<Record<string, unknown>>): RuleGuide =
   examples: examplesOf(raw["example"]),
   notFlagged: localizedOf(raw["not_flagged"]),
   levelMeaning: localizedOf(raw["level_meaning"]),
+  sources: Array.isArray(raw["sources"]) ? raw["sources"].filter(isText) : [],
 });
 
 /** The rules in each group, in the order the reference lists them. A rule with no group is in none, which the test on rule files reports. */
