@@ -22,6 +22,14 @@ how_to_fix:
 
 levels: { strict: 45, normal: 35, relaxed: 25 }
 
+options:
+  min_sections:
+    kind: count
+    default: 5
+    about:
+      ja: 測る節の数の下限。節が少ないと長さのばらつきは偶然で小さく出て、人の書いた文書でも揃って見えます
+      en: The fewest sections measured. With few sections, the variation is small by chance, and a person's writing looks uniform too
+
 use_for: [blog, legal, docs, academic, literature, speech]
 
 group: ai-tells
@@ -49,6 +57,10 @@ example:
       ## 確かめる
 
       試しの文書を置いて、指摘が画面に出るかを見ます。
+
+      ## 更新する
+
+      新しい版が出たら、同じ公式のページから入れ直します。
     after: |
       # 新しい道具の紹介
 
@@ -67,6 +79,10 @@ example:
       ## 確かめる
 
       試しの文書を置いて、指摘が画面に出るかを見ます。
+
+      ## 更新する
+
+      新しい版は同じページにあります。
   en:
     config: { genre: blog/tech }
     before: |
@@ -87,6 +103,10 @@ example:
       ## Check
 
       Add a sample document and look for findings on the screen.
+
+      ## Update
+
+      When a new version comes out, install it again from the same page.
     after: |
       # Introducing the new tool
 
@@ -106,9 +126,13 @@ example:
 
       Add a sample document and look for findings on the screen.
 
+      ## Update
+
+      New versions are on the same page.
+
 not_flagged:
-  ja: ビジネス文書と技術文書のジャンルでは見ません。
-  en: Business and technical genres do not run this rule.
+  ja: 中身のある節が 5 より少ない文書は見ません（min_sections で変えられます）。ビジネス文書と技術文書のジャンルでは見ません。
+  en: Documents with fewer than 5 sections are not checked (min_sections changes it). Business and technical genres do not run this rule.
 level_meaning:
   ja: 節の長さのばらつきが {limit}% 未満なら指摘
   en: reported when section length varies by less than {limit}%

@@ -1,5 +1,5 @@
 import { charLength, lengthOf } from "../measure.ts";
-import type { BulletList, Detector, Finding, Paragraph, ProseDocument, Section, Span } from "../plugin.ts";
+import type { BulletList, Detector, DetectorOptions, Finding, Paragraph, ProseDocument, Section, Span } from "../plugin.ts";
 import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { preambleParagraphs } from "../preamble-paragraphs.ts";
@@ -24,6 +24,18 @@ export const coefficientOfVariation = (values: readonly number[]): number | unde
 const PERCENT = 100;
 
 const asPercent = (value: number): number => Math.round(value * PERCENT);
+
+/**
+ * 揃いすぎを測るのに要る、値の数の下限（rule の options）。値が少ないと変動係数は偶然で小さく出る。
+ * 人の書いた記事では、指摘が節や段落の少ない文書に偏っていた。
+ */
+const minimumCount = (options: DetectorOptions, name: string, fallback: number): number => {
+  const value = options.settings?.[name];
+  return typeof value === "number" ? value : fallback;
+};
+
+const DEFAULT_MIN_SECTIONS = 5;
+const DEFAULT_MIN_PARAGRAPHS = 6;
 
 const uniformity = (doc: ProseDocument, values: readonly number[], span: { start: number }, limit: number, rule: string): Finding[] => {
   const cv = coefficientOfVariation(values);
@@ -65,7 +77,8 @@ const charsOf = (paragraph: Paragraph): number => paragraph.sentences.reduce((su
 export const paragraphVariance: Detector = (doc, options): Finding[] => {
   const lengths = doc.paragraphs.map(charsOf).filter((length) => length > 0);
   const first = doc.paragraphs[0];
-  return first === undefined ? [] : uniformity(doc, lengths, first.span, options.limit, "paragraph-length-variance");
+  if (first === undefined || lengths.length < minimumCount(options, "min_paragraphs", DEFAULT_MIN_PARAGRAPHS)) return [];
+  return uniformity(doc, lengths, first.span, options.limit, "paragraph-length-variance");
 };
 
 const sectionChars = (section: Section): number => section.sentences.reduce((sum, sentence) => sum + charLength(sentence), 0);
@@ -74,7 +87,8 @@ const sectionChars = (section: Section): number => section.sentences.reduce((sum
 export const sectionUniformity: Detector = (doc, options): Finding[] => {
   const lengths = doc.sections.map(sectionChars).filter((length) => length > 0);
   const first = doc.sections[0];
-  return first === undefined ? [] : uniformity(doc, lengths, first.span, options.limit, "section-length-uniformity");
+  if (first === undefined || lengths.length < minimumCount(options, "min_sections", DEFAULT_MIN_SECTIONS)) return [];
+  return uniformity(doc, lengths, first.span, options.limit, "section-length-uniformity");
 };
 
 /**

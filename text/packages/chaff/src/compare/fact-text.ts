@@ -1,8 +1,9 @@
 import { bareUrls, type BareUrl } from "../bare-url.ts";
-import { linkChrome } from "../document.ts";
+import { emphasisSpans, linkChrome } from "../document.ts";
 import { opaqueSpans } from "../markdown-read.ts";
 import { spanOf, type MarkdownNode } from "../markdown-node.ts";
 import { maskSpans } from "../mask.ts";
+import { unmaskedSoftBreaks } from "../soft-break.ts";
 import { eachPreOrder } from "../tree-walk.ts";
 import type { Span } from "../plugin.ts";
 import { overlapsAny, spanIndex, type SpanIndex } from "./spans.ts";
@@ -22,6 +23,11 @@ export type FactText = {
   readonly bareUrls: readonly BareUrl[];
   /** Ordered-list markers (`1.`): they number the list, they do not state a number. */
   readonly listMarkers: readonly Span[];
+  /**
+   * What a reader of the rendered Markdown never sees, sorted: a line break between two wide characters (「系の\nシステム」)
+   * and the marks of bold. A plain-text document shows its line breaks, so it has none.
+   */
+  readonly unseen: readonly Span[];
 };
 
 /** Nodes whose whole span is not read as prose: a link reference definition's URL is read as a URL, an image is not text. */
@@ -55,6 +61,18 @@ const markdownParts = (root: MarkdownNode, source: string): MarkdownParts => {
   return parts;
 };
 
+/**
+ * Line breaks are read the way the rules read them: one next to blanked code or a link's marks is kept. Bold marks are
+ * read through, as a reader does not see them: 「系の\n**システム**」 joins too. The break and the marks may touch, so the
+ * spans are merged.
+ */
+const unseenOf = (source: string, text: string, root: MarkdownNode | undefined): readonly Span[] => {
+  if (root === undefined) return [];
+  const emphasis = emphasisSpans(root, source);
+  const breaks = unmaskedSoftBreaks(maskSpans(source, emphasis), maskSpans(text, emphasis));
+  return spanIndex([...breaks, ...emphasis]);
+};
+
 /** root is the Markdown tree, or undefined for a plain-text document, where nothing is code and URLs are bare. */
 export const factTextOf = (source: string, root: MarkdownNode | undefined): FactText => {
   const code = root === undefined ? [] : opaqueSpans(root);
@@ -64,5 +82,6 @@ export const factTextOf = (source: string, root: MarkdownNode | undefined): Fact
   // An autolink's text is its URL: it is read once, as the link.
   const bare = bareUrls(codeless).filter((url) => !overlapsAny(insideLinks, url));
   const blanked = [...code, ...parts.chrome, ...bare];
-  return { text: maskSpans(source, blanked), codeless, blanked: spanIndex(blanked), bareUrls: bare, listMarkers: parts.listMarkers };
+  const text = maskSpans(source, blanked);
+  return { text, codeless, blanked: spanIndex(blanked), bareUrls: bare, listMarkers: parts.listMarkers, unseen: unseenOf(source, text, root) };
 };

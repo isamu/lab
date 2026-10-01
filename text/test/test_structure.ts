@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules } from "../packages/chaff/src/run.ts";
+import { runRules, runRulesWith } from "../packages/chaff/src/run.ts";
 import { coefficientOfVariation } from "../packages/chaff/src/detectors/structure.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
@@ -10,6 +10,15 @@ const RULES = loadRules("ja");
 
 const idsFor = (source: string, genre = "blog/tech"): string[] =>
   runRules(buildDocument("t.md", source, ja), RULES, {}, true, genre).findings.map((finding) => finding.rule);
+
+/** 規則の options を chaff.yaml で変えたときの段。 */
+const idsWithOption = (source: string, rule: string, values: Record<string, unknown>): string[] =>
+  runRulesWith(buildDocument("t.md", source, ja), RULES, {
+    settings: {},
+    experimental: true,
+    genre: "blog/tech",
+    optionLayers: [{ from: "chaff.yaml", values: { [rule]: values } }],
+  }).findings.map((finding) => finding.rule);
 
 const SENTENCE = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめも。";
 
@@ -53,8 +62,20 @@ describe("paragraph-length-variance", () => {
   });
 
   it("valid: 長さが揺れていれば指摘しない", () => {
-    const varied = ["短い。", SENTENCE, `${SENTENCE}${SENTENCE}${SENTENCE}`, "ごく短い。", `${SENTENCE}${SENTENCE}`].join("\n\n");
+    const varied = ["短い。", SENTENCE, `${SENTENCE}${SENTENCE}${SENTENCE}`, "ごく短い。", `${SENTENCE}${SENTENCE}`, SENTENCE].join("\n\n");
     assert.ok(!idsFor(`# 見出し\n\n${varied}`).includes("paragraph-length-variance"));
+  });
+
+  // 段落が少ないと、変動係数は偶然で小さく出る。人の書いた記事で、指摘は段落の少ない文書に偏っていた。
+  it("valid: 段落が min_paragraphs（既定 6）より少なければ、揃っていても測らない", () => {
+    const five = `# 見出し\n\n${Array(5).fill(SENTENCE).join("\n\n")}`;
+    assert.ok(!idsFor(five).includes("paragraph-length-variance"));
+    assert.ok(idsWithOption(five, "paragraph-length-variance", { min_paragraphs: 5 }).includes("paragraph-length-variance"));
+    assert.ok(
+      !idsWithOption(`# 見出し\n\n${Array(6).fill(SENTENCE).join("\n\n")}`, "paragraph-length-variance", { min_paragraphs: 7 }).includes(
+        "paragraph-length-variance",
+      ),
+    );
   });
 });
 
@@ -65,8 +86,21 @@ describe("section-length-uniformity", () => {
   });
 
   it("valid: 節の量が違えば指摘しない", () => {
-    const sections = ["## 一\n\n短い。", `## 二\n\n${SENTENCE}${SENTENCE}${SENTENCE}`, `## 三\n\n${SENTENCE}`].join("\n\n");
+    const sections = [
+      "## 一\n\n短い。",
+      `## 二\n\n${SENTENCE}${SENTENCE}${SENTENCE}`,
+      `## 三\n\n${SENTENCE}`,
+      "## 四\n\nごく短い。",
+      `## 五\n\n${SENTENCE}${SENTENCE}`,
+    ].join("\n\n");
     assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("section-length-uniformity"));
+  });
+
+  it("valid: 中身のある節が min_sections（既定 5）より少なければ、揃っていても測らない", () => {
+    const sections = Array.from({ length: 4 }, (_, index) => `## 節${String(index)}\n\n${SENTENCE}`).join("\n\n");
+    const four = `# 表題\n\n${sections}`;
+    assert.ok(!idsFor(four).includes("section-length-uniformity"));
+    assert.ok(idsWithOption(four, "section-length-uniformity", { min_sections: 4 }).includes("section-length-uniformity"));
   });
 });
 
