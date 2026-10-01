@@ -19,13 +19,28 @@ import { aiTell, contractionMix, cushionDensity, hedging, repeatedConjunction, u
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
+import { announcedCount } from "./announced-count.ts";
+import { danglingFigure } from "./dangling-figure.ts";
+import {
+  danglingReference,
+  dateOrder,
+  dateRangeReversed,
+  dateWeekdayMismatch,
+  duplicateDefinition,
+  numberingGap,
+  percentSumMismatch,
+  totalMismatch,
+} from "./structure-tree.ts";
 import { headingLevelSkip } from "./heading-level-skip.ts";
 import { imageAltText } from "./image-alt-text.ts";
 import { brokenLink } from "./broken-link.ts";
 import { urlRunOn } from "./url-run-on.ts";
+import { unbalancedBracket } from "./unbalanced-bracket.ts";
+import { doubledPunctuation } from "./doubled-punctuation.ts";
+import { kutotenConsistency } from "./kutoten-consistency.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
+import { customPattern, customTokens, customWords } from "./custom.ts";
 import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
-import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -78,14 +93,24 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "latin-spacing": latinSpacing,
   "stray-space": straySpace,
   "katakana-long-vowel": katakanaLongVowel,
+  "custom-words": customWords,
+  "custom-pattern": customPattern,
+  "custom-tokens": customTokens,
   "dangling-reference": danglingReference,
   "date-weekday-mismatch": dateWeekdayMismatch,
   "date-order": dateOrder,
   "total-mismatch": totalMismatch,
   "numbering-gap": numberingGap,
   "duplicate-definition": duplicateDefinition,
+  "announced-count": announcedCount,
+  "dangling-figure": danglingFigure,
+  "date-range-reversed": dateRangeReversed,
+  "percent-sum-mismatch": percentSumMismatch,
   "heading-level-skip": headingLevelSkip,
   "image-alt-text": imageAltText,
   "broken-link": brokenLink,
   "url-run-on": urlRunOn,
+  "unbalanced-bracket": unbalancedBracket,
+  "doubled-punctuation": doubledPunctuation,
+  "kutoten-consistency": kutotenConsistency,
 };

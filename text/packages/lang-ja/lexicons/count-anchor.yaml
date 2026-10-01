@@ -1,0 +1,10 @@
+# 後ろに並べるものを指す語。「以下の3点」「次の2つ」のように、この語のあとに数を書いた文は、すぐ下の箇条書きの数を言っている。
+id: count-anchor
+language: ja
+entries:
+  - pattern: 以下の
+  - pattern: 以下に
+  - pattern: 次の
+  - pattern: 次に
+  - pattern: 下記の
+  - pattern: 下記に

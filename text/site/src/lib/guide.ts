@@ -9,11 +9,13 @@ const ORDER = [
   "documents-report",
   "configuration",
   "reference",
+  "house-style",
   "adding-rules",
   "commands",
   "structure",
   "languages",
   "ci",
+  "bibliography",
 ];
 
 export type GuidePage = { readonly lang: Lang; readonly slug: string; readonly entry: CollectionEntry<"guide"> };

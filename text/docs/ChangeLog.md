@@ -29,6 +29,96 @@ corpus rarely use it; the measurements are in the PR.
 - Measured and not added: the share of bullet lines, runs of short sentences, and 「（いわゆる〜）」. Human articles
   had as many of each.
 
+### Fixes from a real article: numbering-gap, no-mixed-desumasu, heading-echo (#390, #391, #392)
+
+- **numbering-gap no longer misses a heading whose number is closed by a dot** (#390). `### 5. ページ自身の通信から分かること`
+  was read as the amount 「5 ページ」, so the section dropped out of the sequence and chaff reported 「4 の次が 6」 as an
+  error. A number closed by a dot (`5.`, `4.2.`) is a label; an amount is not written that way. `1.5 万人` is still an
+  amount.
+- **no-mixed-desumasu no longer points at a sentence in the document's register inside a list** (#391). A list and a
+  run of numbered paragraphs are still compared within themselves, but when the list's minority is the whole document's
+  majority (a です/ます sentence among plain bullets in a です/ます article), the rule stays silent. Following its advice
+  would have moved the sentence to the document's minority. The count now names the group it was counted in:
+  「本文の中で N 文」 / 「この箇条書きの中で N 文」 ("N in the body text" / "N in this list").
+- **heading-echo measures a heading without its number label** (#392). 「例 3：」, `Step 3:`, `1.`, 「第2章」,
+  `Chapter 2:` are never repeated by the text below, so counting them made short headings miss. Numbers are read the way
+  the structure tree reads them; label words come from the lexicon `numbered-label` (`position: before`), which gains
+  例・手順・ステップ・Step in Japanese and a new English list (Step, Example, Case, …). latin-spacing already treats a
+  number after these words as a name (like 問3), so 「手順1」 is no longer a spacing vote.
+
+### Docs: a bibliography of the papers and standards behind the rules
+
+The site's guide has a new page, 「参考文献」 / "Bibliography", linked from the rule reference. It covers readability
+research in Japanese and English, plain-language guidance and Japanese style standards (公用文作成の考え方, 外来語の表記,
+JIS Z 8301, the JTF style guide). It also covers essay scoring, grammar correction, studies of generated text, and
+requirements quality. Each entry was checked against its original record. It says what the work found, and which rules
+it supports or that it is background only. No rule changed.
+
+### New rules: brackets and punctuation marks (#170)
+
+Experimental rules for marks left over from an edit. Each finding in the corpus was read before the rule was added.
+
+- **`unbalanced-bracket`**: a bracket or quotation mark with no partner within its section: `（` never closed, `」`
+  never opened, `（` closed by `)`. Brackets pair across paragraphs (a stanza, a long quotation), a quotation carried
+  into a paragraph that opens with the same mark is a continuation, and a short label such as `1)`, `a)` or `事例）`
+  is not a closing bracket. A URL mask no longer hides the `）` a reader sees after `（https://…`. In the corpus it
+  finds real slips in 白書, 通知 and handbooks (`（FAO)`, `(※1）`, `“Yellowstone.` never closed); the misses are per-line
+  quotation marks in verse and a `事例5）` label inside a real `（`.
+- **`doubled-punctuation`**: two punctuation marks side by side (`。。`, `、。`, `,,`, `i.e.,,`). Three or more of
+  one mark are drawn out on purpose; `e.g.,`, `etc.;`, `、.NET`, `1..10` and `../` are not slips; `!!` and colons
+  are not checked. Every corpus finding is a slip.
+- **`kutoten-consistency`** (ja): a document that writes its commas both `、` and `，`, or its periods both `。` and
+  `．`, reported on the minority, like `latin-spacing`. Marks inside numbers (`１，０００`), after a list number or a
+  Latin letter (`１．`, `Ｑ．`), inside `「」`, and in a note or citation line (a note number, or a URL) are not
+  counted: 白書 notes cite with `，` by convention.
+
+### `custom_rules:` — a team's own rules, without code (#170)
+
+A team can now write its own deterministic rules in chaff.yaml. Each one works like a built-in rule: findings,
+`explain` (with its example), `rules --json`, `stet`, `relax`, the baseline and SARIF.
+
+- **`type: words`** takes a list of words, or `avoid: use` pairs (`下さい: ください`).
+- **`type: pattern`** takes a regular expression (`TBD|未定`), with `ignore_case` if needed.
+- **`type: tokens`** takes a run of token conditions on part of speech, base form or surface. For example,
+  `[{pos: 名詞}, {surface: を}, {base: 行う}]` finds 「調査を行いました」. It works in Japanese and English, and
+  parts of speech are UD tags or everyday names (名詞, verb).
+- Every rule needs `name`, `why`, `how_to_fix` and an `example` with `before` and `after`, in ja and/or en.
+  `level` is `error`, `warning` or `info`.
+- A rule that cannot run stops the run and says why. Causes include a bad regex, a missing field, an id that is
+  already one of chaff's, and an unknown part of speech.
+- Regular expressions are checked before they run. A pattern longer than 500 characters is refused, and so is a
+  backreference, a pattern that matches the empty string, a repeat around a group that already repeats or
+  alternates (`(a+)+`, though plain words with different first letters such as `(cat|dog)+` pass), and more than
+  three repeats of varying count (`a*a*a*a*b`). A pattern that still runs longer than a second on one document is
+  stopped, and the rule is listed as not run, with the reason.
+- `type: module` (a small Node function) is reserved and refused for now.
+
+### Four experimental rules that catch a document disagreeing with itself (#170)
+
+Each compares two things the document itself says, so the result needs no judgement. All four are experimental; the
+legal presets (`legal/contract`, `legal/statute`) turn on the two that read references and dates, and `literature`
+turns all four off.
+
+- **`announced-count-mismatch`**: "the following three items" / 「以下の3点」 with a list right below that has another
+  number of items. Only the last sentence before the list is read, and only when it points ahead (「以下の」「次の」,
+  "following") or ends with a colon. An estimate (約3点, at least three), a rank (3つ目, the first three), a number to
+  pick (以下から1つ選ぶ, choose two) or a sentence with two numbers is not compared. Counters, number words and these
+  exceptions are lexicons (`count-anchor`, `count-number`, `count-counter`, `count-hedge`).
+- **`dangling-figure-reference`**: 「図3」「表2」「別表第二」 / "Figure 3", "Table 2", "Appendix B" referred to in the text
+  but labelled nowhere. A label is the number at the start of a line followed by a caption's break (a colon, a bracket,
+  a space and a title, or the end of the line), or in a heading; a prose sentence that starts with 「図3の例では」 is a
+  reference, not a label. A kind the document never labels is not checked (its figures may be in another file),
+  nor is a figure named as a link's text.
+- **`date-range-reversed`**: 「2026年4月1日〜2026年3月31日」 / "5 April 2026 – 2 April 2026", a period that ends before it
+  starts. Two dates joined by a range mark, or by から … まで, through, until. "from … to" is not a period (it may move a
+  date), and a period without a year may cross into the next one.
+- **`percent-sum-mismatch`**: the shares of a breakdown (構成比, 内訳, breakdown, market share) that do not add up to 100%,
+  allowing half the last digit per item. Only a column headed with such a word, or a list or table right below one, is
+  added; a multiple-answer count, signed changes and a table with a total row are not.
+
+On the corpus (`yarn corpus`) the four report one finding, a true one: a Kubernetes enhancement proposal that says
+"This allows 2 things:" and lists one. `yarn bench` plants each of them in both languages.
+
 ### New rules: headings, images, links and URLs in Markdown (#170)
 
 Experimental rules that read the markup rather than the prose. They run on Markdown only and say so on a `.txt`

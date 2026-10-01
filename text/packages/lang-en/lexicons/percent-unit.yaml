@@ -1,0 +1,7 @@
+# The marks and words written as the unit of a percentage.
+id: percent-unit
+language: en
+entries:
+  - pattern: "%"
+  - pattern: percent
+  - pattern: per cent

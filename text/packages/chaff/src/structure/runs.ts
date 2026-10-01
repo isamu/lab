@@ -5,9 +5,9 @@
 type Kind = "list" | "table";
 
 const LIST_ITEM = /^[ \t]{0,12}(?:[-*+]|\d{1,3}[.)])[ \t]/u;
-const TABLE_ROW = /^[ \t]{0,12}\|/u;
+export const TABLE_ROW = /^[ \t]{0,12}\|/u;
 
-const TABLE_RULE = /^[ \t]{0,12}\|?[ \t]{0,4}:?-{3,}/u;
+export const TABLE_RULE = /^[ \t]{0,12}\|?[ \t]{0,4}:?-{3,}/u;
 const INDENT = /^[ \t]*/u;
 
 export type Line = { readonly start: number; readonly end: number; readonly kind: Kind | undefined; readonly indent: number; readonly rule: boolean };

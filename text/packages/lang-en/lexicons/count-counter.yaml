@@ -1,0 +1,40 @@
+# Nouns that name what a list holds ("three steps", "two reasons"). Only a number followed by one of these (up to two
+# words may stand between: "three key steps") is read as the count of the list below.
+id: count-counter
+language: en
+entries:
+  - pattern: items
+  - pattern: steps
+  - pattern: reasons
+  - pattern: points
+  - pattern: things
+  - pattern: ways
+  - pattern: questions
+  - pattern: options
+  - pattern: conditions
+  - pattern: requirements
+  - pattern: rules
+  - pattern: changes
+  - pattern: goals
+  - pattern: principles
+  - pattern: areas
+  - pattern: factors
+  - pattern: criteria
+  - pattern: stages
+  - pattern: phases
+  - pattern: categories
+  - pattern: types
+  - pattern: kinds
+  - pattern: tips
+  - pattern: benefits
+  - pattern: risks
+  - pattern: issues
+  - pattern: tasks
+  - pattern: actions
+  - pattern: parts
+  - pattern: components
+  - pattern: features
+  - pattern: methods
+  - pattern: lessons
+  - pattern: takeaways
+  - pattern: recommendations

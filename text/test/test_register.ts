@@ -1,6 +1,16 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { continuesInto, groupOf, outermostList, registerOf, slipsOf, type Judged, type Register } from "../packages/chaff/src/detectors/register.ts";
+import {
+  continuesInto,
+  followsDocument,
+  groupOf,
+  majorityOf,
+  outermostList,
+  registerOf,
+  slipsOf,
+  type Judged,
+  type Register,
+} from "../packages/chaff/src/detectors/register.ts";
 import { enumeratedRuns, enumeratorStarts, numberedStarts } from "../packages/chaff/src/detectors/enumerated-runs.ts";
 import { isPoliteWord } from "../packages/chaff/src/detectors/polite-word.ts";
 import type { LexiconEntry, Sentence, Span, StructureKind, StructureNode, Token } from "../packages/chaff/src/plugin.ts";
@@ -233,9 +243,53 @@ describe("slipsOf: 本文と箇条書きごとの少数派", () => {
     assert.deepEqual(indicesOf(entries, 2), [3, 4]);
   });
 
+  it("箇条書きの中の少数派が文書全体の多数派なら指さない（常体の多い箇条書きに混ざった、ですます調の文書の文）", () => {
+    const body = [judged("polite"), judged("polite"), judged("polite"), judged("polite")];
+    assert.deepEqual(indicesOf([...body, judged("plain", 50), judged("plain", 50), judged("polite", 50)]), []);
+  });
+
+  it("逆向き: 箇条書きの中の少数派が文書全体でも少数派なら指す。数は箇条書きの中の数", () => {
+    const body = [judged("polite"), judged("polite"), judged("polite"), judged("polite")];
+    const entries = [...body, judged("polite", 50), judged("polite", 50), judged("plain", 50)];
+    assert.deepEqual(indicesOf(entries), [6]);
+    assert.deepEqual(
+      slipsOf(entries, 3).map((slip) => slip.count),
+      [1],
+    );
+  });
+
+  it("である調の文書でも同じ: 箇条書きの中の少ないほうが常体なら指さない", () => {
+    const body = [judged("plain"), judged("plain"), judged("plain"), judged("plain")];
+    assert.deepEqual(indicesOf([...body, judged("polite", 50), judged("polite", 50), judged("plain", 50)]), []);
+    assert.deepEqual(indicesOf([...body, judged("plain", 50), judged("plain", 50), judged("polite", 50)]), [6]);
+  });
+
+  it("本文の少数派は、文書全体の多数派でも指す（本文は本文どうしで比べる）", () => {
+    const list = [judged("plain", 50), judged("plain", 50), judged("plain", 50), judged("plain", 50), judged("plain", 50)];
+    assert.deepEqual(indicesOf([judged("polite"), judged("polite"), judged("plain"), ...list]), [2]);
+  });
+
   it("指す順は judged の順で、群ごとではない", () => {
     const entries = [judged("polite", 50), judged("polite"), judged("polite"), judged("plain"), judged("polite", 50), judged("plain", 50)];
     assert.deepEqual(indicesOf(entries), [3, 5]);
+  });
+});
+
+describe("majorityOf / followsDocument: 文書全体の多いほう", () => {
+  it("多いほう。同数・空なら無し", () => {
+    assert.equal(majorityOf([judged("polite"), judged("polite"), judged("plain")]), "polite");
+    assert.equal(majorityOf([judged("plain"), judged("plain", 5), judged("polite")]), "plain");
+    assert.equal(majorityOf([judged("plain"), judged("polite")]), undefined);
+    assert.equal(majorityOf([]), undefined);
+  });
+
+  it("箇条書きの中の少数派が文書の多数派のときだけ true。本文、同数の文書、少数派が文書でも少数なら false", () => {
+    const politeDocument = [judged("polite"), judged("polite"), judged("plain", 50)];
+    assert.equal(followsDocument(50, "polite", politeDocument), true);
+    assert.equal(followsDocument(50, "plain", politeDocument), false);
+    assert.equal(followsDocument(undefined, "polite", politeDocument), false);
+    assert.equal(followsDocument(50, "polite", [judged("polite"), judged("plain", 50)]), false);
+    assert.equal(followsDocument(50, "polite", []), false);
   });
 });
 

@@ -1,0 +1,46 @@
+id: date-range-reversed
+layer: L3
+status: experimental
+how_to_find: date-range-reversed
+requires: [dates]
+severity: warning
+
+name:
+  ja: 期間の終わりが始まりより前
+  en: A period that ends before it starts
+
+why:
+  ja: 「2026年4月1日〜2026年3月31日」のように、期間の終わりの日付が始まりより前だと、読み手はどちらの日付が正しいのかを問い合わせることになります。年を書き写し間違えたときや、日付を片方だけ直したときに起きます。二つの日付の間が範囲の記号（〜、–）だけのときと、「から」でつなぎ終わりの日付のあとに「まで」が続くときを期間として比べます。年の無い期間（12月28日〜1月4日）は年をまたぐかもしれないので比べません。
+  en: 'When a period such as "5 April 2026 – 2 April 2026" ends before it starts, the reader has to ask which date is right. It happens when a year is copied wrong, or when only one of the two dates is changed. Two dates are read as a period when only a range mark (–, —) or a word such as "through" or "until" stands between them. A period without a year ("28 December – 4 January") may run into the next year and is not compared.'
+
+message:
+  ja: 期間「{period}」の終わりが始まりより前です
+  en: 'The period "{period}" ends before it starts'
+
+how_to_fix:
+  ja: 始まりと終わりの日付を確かめて、書き間違えたほうを直してください。
+  en: Check both dates and correct the one that is wrong.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「4月1日〜3月31日」のように、期間の終わりが始まりより前の所
+  en: A period whose end date comes before its start date
+example:
+  ja:
+    before: |
+      申し込みの期間は2026年4月1日〜2026年3月31日です。
+    after: |
+      申し込みの期間は2026年4月1日〜2027年3月31日です。
+  en:
+    before: |
+      Applications are open 1 April 2026 – 31 March 2026.
+    after: |
+      Applications are open 1 April 2026 – 31 March 2027.
+
+not_flagged:
+  ja: 年の無い期間（12月28日〜1月4日）、「から」だけで「まで」の無いもの（10日から3日に変更）、日付の間に言葉のあるものは比べません。
+  en: 'A period without a year, "from … to …" (it may move a date rather than span a period), and two dates with words between them are not compared.'

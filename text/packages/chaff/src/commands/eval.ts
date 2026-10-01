@@ -3,7 +3,7 @@ import { applyByPath } from "../config/by-path.ts";
 import { buildDocument, teamRules } from "../document.ts";
 import { guessLanguage } from "../detect.ts";
 import { collectTargets, readDocumentFile } from "../files.ts";
-import { loadRules } from "../rule-load.ts";
+import { rulesOf } from "../custom/load.ts";
 import { evaluate } from "../eval.ts";
 import { renderEval } from "../render/eval.ts";
 import { neededBy, tokenFeaturesOf, wantsTags } from "../run.ts";
@@ -65,7 +65,7 @@ export const runEval = async (targets: readonly string[], argv: readonly string[
       const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
       const adapter = await loadAdapter(language);
       const { genre } = resolveGenre(path, source, config);
-      await adapter.prepare?.(evalNeeds(loadRules(language), only, config, genre, language));
+      await adapter.prepare?.(evalNeeds(rulesOf(language, config), only, config, genre, language));
       return { doc: buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre)), language, genre };
     }),
   );
@@ -77,7 +77,7 @@ export const runEval = async (targets: readonly string[], argv: readonly string[
     console.error(TEXT[ui].mixed([...mixed].join(", ")));
     return 1;
   }
-  const rules = loadRules(language).filter((rule) => only === undefined || rule.id === only);
+  const rules = rulesOf(language, config).filter((rule) => only === undefined || rule.id === only);
   if (rules.length === 0) {
     console.error(TEXT[ui].unknownRule(only ?? CLI_TEXT[ui].unnamed));
     return 1;
