@@ -38,6 +38,9 @@ import { urlRunOn } from "./url-run-on.ts";
 import { unbalancedBracket } from "./unbalanced-bracket.ts";
 import { doubledPunctuation } from "./doubled-punctuation.ts";
 import { kutotenConsistency } from "./kutoten-consistency.ts";
+import { hankakuKana } from "./hankaku-kana.ts";
+import { invisibleCharacter } from "./invisible-character.ts";
+import { spaceBeforePunctuation } from "./space-before-punctuation.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
 import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
@@ -113,4 +116,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "unbalanced-bracket": unbalancedBracket,
   "doubled-punctuation": doubledPunctuation,
   "kutoten-consistency": kutotenConsistency,
+  "hankaku-kana": hankakuKana,
+  "invisible-character": invisibleCharacter,
+  "space-before-punctuation": spaceBeforePunctuation,
 };
