@@ -1,0 +1,7 @@
+# 二つの日付の間に置いて、終わりの日付のあとに range-closer の語が続くときだけ期間を作る語（4月1日から4月3日まで）。
+# 「から」だけでは、日付を変える文（10日から3日に変更）と見分けられない。
+id: range-opener
+language: ja
+entries:
+  - pattern: から
+  - pattern: より

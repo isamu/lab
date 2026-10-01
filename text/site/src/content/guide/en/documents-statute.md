@@ -28,6 +28,8 @@ These rules run for this genre. Each one reads the document as a tree of numbere
 | `duplicate-definition` | A term defined in two places |
 | `date-weekday-mismatch` | A weekday written next to a date that does not match the calendar |
 | `total-mismatch` | A total that is not the sum of its items |
+| `dangling-figure-reference` | A reference to a figure, table or appendix (Figure 3, Appendix B) the document does not label |
+| `date-range-reversed` | A period whose end date comes before its start date |
 
 Some things are left out on purpose.
 
@@ -123,14 +125,15 @@ rules.md   legal/statute · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  5 experimental rules turned on by the genre: dangling-reference, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
+  7 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  48 rules did not run:
+  50 rules did not run:
       adverb-overuse (the legal/statute genre does not check it)
       agentless-passive (the legal/statute genre does not check it)
       agreement-slip (still experimental)
       ai-generated-composite (the legal/statute genre does not check it)
       ai-tell (the legal/statute genre does not check it)
+      announced-count-mismatch (still experimental)
       assistant-residue (still experimental)
       closing-cliche (the legal/statute genre does not check it)
       concrete-evidence-density (the legal/statute genre does not check it)
@@ -156,6 +159,7 @@ rules.md   legal/statute · English   genre from --genre
       oxford-comma-consistency (still experimental)
       padded-intro (the legal/statute genre does not check it)
       paragraph-length-variance (the legal/statute genre does not check it)
+      percent-sum-mismatch (still experimental)
       preamble-length (the legal/statute genre does not check it)
       preferred-term (still experimental)
       proper-noun-density (the legal/statute genre does not check it)
@@ -198,7 +202,7 @@ That way "no findings" is never mistaken for "checked everything and found nothi
 | not a rule for en | The rule is for Japanese documents only |
 | still experimental | The rule is still being checked for false alarms. `--experimental` turns it on |
 
-Above it, "5 experimental rules turned on by the genre" names five rules that are still experimental elsewhere.
+Above it, "7 experimental rules turned on by the genre" names seven rules that are still experimental elsewhere.
 They have been checked on rules and regulations, so this genre runs them.
 
 ## Not typing the genre every time
@@ -357,7 +361,7 @@ rules-fixed.md   legal/statute · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  5 experimental rules turned on by the genre: dangling-reference, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
+  7 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 ```
 
 The "did not run" list below this is the same as before.

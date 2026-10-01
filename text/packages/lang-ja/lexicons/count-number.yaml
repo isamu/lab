@@ -1,0 +1,16 @@
+# 漢数字で書いた数。一から順に並べる（並びの位置が数）。算用数字は語彙表なしで読む。
+id: count-number
+language: ja
+entries:
+  - pattern: 一
+  - pattern: 二
+  - pattern: 三
+  - pattern: 四
+  - pattern: 五
+  - pattern: 六
+  - pattern: 七
+  - pattern: 八
+  - pattern: 九
+  - pattern: 十
+  - pattern: 十一
+  - pattern: 十二

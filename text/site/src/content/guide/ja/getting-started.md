@@ -92,12 +92,15 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
       ai-tell（まだ試験中のため）
+      announced-count-mismatch（まだ試験中のため）
       assistant-residue（まだ試験中のため）
       broken-link（まだ試験中のため）
       contraction-consistency（ja 向けの rule ではないため）
       contrast-framing（まだ試験中のため）
+      dangling-figure-reference（まだ試験中のため）
       dangling-reference（まだ試験中のため）
       date-order（まだ試験中のため）
+      date-range-reversed（まだ試験中のため）
       date-weekday-mismatch（まだ試験中のため）
       doubled-word（まだ試験中のため）
       duplicate-definition（まだ試験中のため）
@@ -116,6 +119,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       numbering-gap（まだ試験中のため）
       oxford-comma-consistency（ja 向けの rule ではないため）
       paragraph-length-variance（まだ試験中のため）
+      percent-sum-mismatch（まだ試験中のため）
       preferred-term（まだ試験中のため）
       proper-noun-density（まだ試験中のため）
       repeated-conjunction（まだ試験中のため）
