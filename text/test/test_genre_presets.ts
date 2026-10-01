@@ -453,6 +453,10 @@ describe("議事録とプレスリリースの段（corpus の実文書から）
   const NAMES = "Alice and Bob from Contoso met Carol from Fabrikam in Seattle, then Dave from Northwind joined Erin at Tailspin.";
   const RELEASE = `# Release\n\n${Array.from({ length: 12 }, () => NAMES).join(" ")}\n`;
 
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
   it("議事録は agentless-passive を見ない。報告書では見る。chaff.yaml で入れれば議事録でも見る", () => {
     assert.ok(!firedRules(en, MINUTES, "business/meeting-notes").includes("agentless-passive"));
     assert.ok(firedRules(en, MINUTES, "business/report").includes("agentless-passive"));
