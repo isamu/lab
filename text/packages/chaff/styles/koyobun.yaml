@@ -1,0 +1,35 @@
+# 文化審議会「公用文作成の考え方」（令和 4 年 1 月 7 日 建議）の書き方。chaff.yaml に style: koyobun と書くと使える。
+# ここに置くのは、建議が言っていて、機械で確かめられることだけ。建議に無いことは足さない。
+#
+# Ⅲ－3 ア「一文を短くする」: 「適当な長さは一概に決められないが、50～60 字ほどになってきたら読みにくくなっていないか
+#   意識するとよい」。chaff の上限は「ここを超えたら見直す」所なので、その上の端の 60 字を和文の上限にする。英文には言っていないので、英文の上限は変えない。
+# Ⅲ－1 イ「一つの文書内では、常体と敬体のどちらかで統一する」: no-mixed-desumasu。どちらにするかは文書の相手で決まる（Ⅲ－1 ア）ので、決めない。
+# Ⅰ－3 エ「長音は、原則として長音符号を使って書く」: 英語の語末の -er、-or、-ar などは長音符号を付ける（コンピューター）。katakana-long-vowel の keep。
+id: koyobun
+
+name:
+  ja: 文化審議会「公用文作成の考え方」
+  en: 公用文作成の考え方 (Council for Cultural Affairs, 2022)
+
+summary:
+  ja: 一文が 60 字を超えたら見直します。一つの文書の中で「です・ます」と「である」を混ぜません。カタカナ語の語末の「ー」は付けます（コンピューター）。
+  en: Flags a Japanese sentence over 60 characters, a document that mixes です・ます with である, and a katakana word that drops its final ー (コンピューター).
+
+source:
+  title:
+    ja: 文化審議会「公用文作成の考え方」（令和 4 年 1 月 7 日 建議）Ⅲ－3 ア、Ⅲ－1 イ、Ⅰ－3 エ
+    en: 公用文作成の考え方 (recommendation of the Council for Cultural Affairs, 7 January 2022), III-3 a, III-1 b and I-3 d
+  url: https://www.bunka.go.jp/seisaku/bunkashingikai/kokugo/hokoku/pdf/93651301_01.pdf
+
+rules:
+  max-sentence-length: normal
+  no-mixed-desumasu: normal
+  katakana-long-vowel: normal
+
+limits:
+  max-sentence-length:
+    ja: 60
+
+options:
+  katakana-long-vowel:
+    ending: keep
