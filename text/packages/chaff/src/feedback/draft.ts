@@ -12,6 +12,8 @@ export type FeedbackInput = {
   readonly fileName: string;
   readonly language: string;
   readonly genre: string;
+  /** How the check was run (--experimental, --genre …), so the reader can run the same check. */
+  readonly conditions: readonly string[];
   readonly findings: readonly ReportedFinding[];
   /** The line the person reported: the finding's line, or for a miss the line they named. */
   readonly line: number;
@@ -26,6 +28,7 @@ const TEXT: Texts<{
   readonly titleMissed: (fileName: string, line: number) => string;
   readonly what: Readonly<Record<FeedbackKind, string>>;
   readonly environment: string;
+  readonly ranWith: string;
   readonly findings: string;
   readonly excerpt: string;
   readonly config: string;
@@ -38,6 +41,7 @@ const TEXT: Texts<{
     titleMissed: (fileName, line) => `見逃し: ${fileName} の ${String(line)} 行目`,
     what: { "false-positive": "この指摘は誤りだと思います。", missed: "ここで chaff は何か言うべきだと思います。" },
     environment: "環境",
+    ranWith: "実行の条件",
     findings: "指摘",
     excerpt: "文書の該当箇所（この部分だけを載せています）",
     config: "chaff.yaml",
@@ -53,6 +57,7 @@ const TEXT: Texts<{
     titleMissed: (fileName, line) => `Missed: ${fileName} line ${String(line)}`,
     what: { "false-positive": "I think this finding is wrong.", missed: "I think chaff should say something here." },
     environment: "Environment",
+    ranWith: "Run with",
     findings: "Findings",
     excerpt: "The part of the document (only these lines are included)",
     config: "chaff.yaml",
@@ -85,6 +90,7 @@ export const feedbackDraft = (input: FeedbackInput, ui: UiLanguage): FeedbackDra
     `- chaffjs ${input.version}`,
     `- ${input.runtime}`,
     `- ${input.fileName} · ${input.language} · ${input.genre}`,
+    ...(input.conditions.length === 0 ? [] : [`- ${text.ranWith}: ${input.conditions.join(" ")}`]),
     ...(input.findings.length === 0
       ? []
       : ["", `## ${text.findings}`, "", ...input.findings.map((finding) => `- \`${finding.rule}\` (${String(finding.line)}): ${finding.message}`)]),
