@@ -12,6 +12,7 @@ import {
   replaceLine,
   rewriteFirst,
   splitSentences,
+  type Mutation,
   type Plant,
   type PlantContext,
 } from "./bench-text.ts";
@@ -19,18 +20,8 @@ import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinPa
 import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa, strayParticleSpace } from "./bench-mutations-ja.ts";
 import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, pluralAfterArticle } from "./bench-mutations-en.ts";
 import * as phrasing from "./bench-mutations-phrasing.ts";
+import { imageWithoutAlt, linkToMissingSection, runOnUrl, skipHeadingLevel } from "./bench-mutations-markup.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
-
-export type Mutation = {
-  readonly id: string;
-  /** The rule that exists to find this mistake. */
-  readonly rule: string;
-  readonly languages: readonly string[];
-  /** "document" when the rule reports on the whole document rather than on a line: any finding of it counts. */
-  readonly reportsOn?: "document";
-  /** undefined when the sample has nothing to plant this mistake in. */
-  readonly plant: (source: string, context: PlantContext) => Plant | undefined;
-};
 
 // --- date-weekday-mismatch ---
 
@@ -381,4 +372,8 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "plural-after-article", rule: "agreement-slip", languages: ["en"], plant: pluralAfterArticle },
   ...phrasing.PHRASING_MUTATIONS,
   { id: "long-vowel-dropped", rule: "katakana-long-vowel", languages: ["ja"], plant: dropOneLongVowel },
+  { id: "heading-deepened", rule: "heading-level-skip", languages: ["ja", "en"], plant: skipHeadingLevel },
+  { id: "image-unlabelled", rule: "image-alt-text", languages: ["ja", "en"], plant: imageWithoutAlt },
+  { id: "link-to-nowhere", rule: "broken-link", languages: ["ja", "en"], plant: linkToMissingSection },
+  { id: "url-run-on", rule: "url-run-on", languages: ["ja"], plant: runOnUrl },
 ];

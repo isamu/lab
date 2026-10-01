@@ -339,6 +339,32 @@ export type ProseDocument = {
   readonly prose?: string | undefined;
   /** メールの引用した返信（前置きの行と「> 」の行）。ほかの人の言葉なので、見出しにも木にも入れない。 */
   readonly replyQuotes?: readonly Span[] | undefined;
+  /** 記法の手がかり（見出し・画像・リンク）。記法を読む rule だけが触れ、触れたときに作る。 */
+  readonly markup?: Markup | undefined;
+};
+
+/** 見出し 1 つ。text は属性（`{#id}`）を外した言葉。 */
+export type MarkupHeading = { readonly depth: number; readonly text: string; readonly start: number; readonly end: number };
+
+/** 画像 1 つ。alt は代替テキスト。HTML の `<img>` で alt 属性が無ければ undefined。 */
+export type MarkupImage = { readonly alt: string | undefined; readonly start: number; readonly end: number };
+
+/** リンクの行き先 1 つ（`[text](url)` と、参照の定義 `[label]: url`）。 */
+export type MarkupLink = { readonly destination: string; readonly start: number; readonly end: number };
+
+/**
+ * 文書の記法。Markdown でない文書（.txt）は markdown が false で、見出し・画像・リンクを持たず、texts が文書全体。
+ * 位置はすべて doc.source の上。
+ */
+export type Markup = {
+  readonly markdown: boolean;
+  readonly headings: readonly MarkupHeading[];
+  readonly images: readonly MarkupImage[];
+  readonly links: readonly MarkupLink[];
+  /** 書き手が付けたページ内の名前（見出しの `{#id}`、HTML の id と name）。 */
+  readonly ids: ReadonlySet<string>;
+  /** 読み手に字のまま見える範囲（リンクの外のテキスト）。 */
+  readonly texts: readonly Span[];
 };
 
 export type Severity = "error" | "warning" | "info";

@@ -87,12 +87,13 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  43 rules did not run:
+  47 rules did not run:
       adverb-overuse (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
       assistant-residue (still experimental)
+      broken-link (still experimental)
       contraction-consistency (still experimental)
       contrast-framing (still experimental)
       dangling-reference (still experimental)
@@ -104,7 +105,9 @@ article.md   blog/tech · English   genre from the default
       empty-conclusion (it reads meaning; npx chaff test runs it)
       excessive-hedging (still experimental)
       expletive-construction (still experimental)
+      heading-level-skip (still experimental)
       hiragana-fukushi (not a rule for en)
+      image-alt-text (still experimental)
       internal-jargon (still experimental)
       latin-spacing (not a rule for en)
       max-kanji-continuous (not a rule for en)
@@ -131,6 +134,7 @@ article.md   blog/tech · English   genre from the default
       total-mismatch (still experimental)
       unfilled-placeholder (still experimental)
       unqualified-superlative (still experimental)
+      url-run-on (still experimental)
 
 ```
 

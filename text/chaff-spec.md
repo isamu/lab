@@ -636,9 +636,15 @@ genres:
 | `preamble-length` ✅ | 本題前の段落数 | business | warning |
 | `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
+| `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
+| `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
+| `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
+| `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | ~~`list-length-variance`~~ | 箇条書き項目の長さのばらつき | 落とした（下記） | info |
 
 設計上の注意:
+
+記法の rule（`heading-level-skip` など）は `requires: [markdown]` を持ち、`.txt` では理由を言って止まる。記法は `doc.markup`（見出し・画像・リンクの行き先・書き手が付けた名前・字のまま見える範囲）だけから読む。`.txt` の `doc.markup` は記法を持たず、文書全体が字のまま見える範囲になる。
 
 `heading-echo` と `ngram-repetition` は **character n-gram** を使う。word n-gram にすると `wordSplit` capability を要求することになり L2 に落ちる。character trigram なら日本語でも英語でも同じ実装で動き、精度も実用に足りる。`ngram-repetition` の英語（語単位の言語）の窓は、空白で区切った語の切れ目にそろえる。空白を見るだけなので `wordSplit` は要らない。
 

@@ -19,6 +19,10 @@ import { aiTell, contractionMix, cushionDensity, hedging, repeatedConjunction, u
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
+import { headingLevelSkip } from "./heading-level-skip.ts";
+import { imageAltText } from "./image-alt-text.ts";
+import { brokenLink } from "./broken-link.ts";
+import { urlRunOn } from "./url-run-on.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
 import { assistantResidue, contrastFraming, stockTransition, unfilledPlaceholder } from "./ai-phrasing.ts";
@@ -82,4 +86,8 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "total-mismatch": totalMismatch,
   "numbering-gap": numberingGap,
   "duplicate-definition": duplicateDefinition,
+  "heading-level-skip": headingLevelSkip,
+  "image-alt-text": imageAltText,
+  "broken-link": brokenLink,
+  "url-run-on": urlRunOn,
 };
