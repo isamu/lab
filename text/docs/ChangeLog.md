@@ -13,7 +13,7 @@ Newest first.
 - Filled in for the AI-shape rules and the common readability rules: `ai-tell`, `contrast-framing`,
   `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`,
   `bold-density`, `no-em-dash`, `rule-of-three`, `sentence-rhythm`, `max-sentence-length`, `taigen-dome-in-prose`,
-  `agentless-passive`, `excessive-hedging`, `empty-intensifier`, `cushion-phrase-density`. A test requires it for these.
+  `agentless-passive`, `excessive-hedging`, `empty-intensifier`, `cushion-phrase-density`, `nominalization`. A test requires it for these.
 - An `ai-tell` lexicon entry may carry its own `rewrite` hint: 「時間を溶かす」 → 「時間がかかった（何に、どれだけ）」,
   「静かに壊れる」 → 「エラーを出さずに失敗する」, "delve into" → "look at, or explain".
 
