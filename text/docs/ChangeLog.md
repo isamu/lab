@@ -13,6 +13,29 @@ Each runs chaff on a short self-written sample with realistic mistakes, shows ch
 finding means and how to fix it, says what chaff does not check for that kind, and gives the genre and a starter
 `chaff.yaml` that turns on the experimental rules the kind needs.
 
+### `doubled-word` (ja) no longer reports reduplication that is the right way to write (#412)
+
+On a set of real Japanese site articles, many of the findings were correct Japanese. lang-ja now marks these as
+reduplication (UD `Echo=Rdp`), and the rule skips them:
+
+- **A whole content word written twice**: a noun (個人個人, 一行一行, 駄目駄目, それそれ, もちもち) or an adjective in
+  its plain form (えらいえらい, 若い若い). A slip is a particle or an auxiliary written twice (をを, にに, たた, がが, よよ)
+  or a bound word (いるいる, さんさん), and those are still reported. A one-kanji noun (法法, 金金), a loanword
+  (ユーザーユーザー, データデータ) and a run of three (資料資料資料) are still reported too. This is a change of
+  stance: a doubled two-kanji noun such as 確認確認 or 資料資料, which the rule used to report, now reads as reduplication.
+- **Katakana onomatopoeia**: a katakana word of two or three morae, with any long vowel only at its end, repeated
+  where an adverb stands: before と or に, at the end of a line, or right before a verb (ムクムクと, ブスブスと,
+  ババババと, ブイブイ言わせる). Elsewhere a doubled katakana word is a loanword slip (テストテストを, メモメモ。,
+  ユーザーユーザー) and is still reported.
+- **Laughter and one-kana onomatopoeia**: the same は-row hiragana or katakana three or more times, not attached to
+  the word before it (ははは, あははは, ふふふ, ドドド). Each 「ははは」 used to give two findings. A run of a particle
+  (ををを, よよよ) or a run attached to a word (私ははは, 行ったたた) is still a slip.
+- **Set phrases** in the lexicon `doubled-word`: などなど, あるある, ほどほどに, 代わる代わる, めでたしめでたし, またまた,
+  えへへ, and 知ったかか (知ったか is not in the dictionary, so its last か looked doubled). The analyser reads these as
+  particles, verbs, classical adjectives or conjunctions, so only the lexicon can say they are whole phrases.
+
+The rule's `why` and `not_flagged` now describe what it actually skips.
+
 ### `chaff outline <file> [<after>]`: a restructure, measured (#439)
 
 A rewrite that smooths every sentence can keep the skeleton of generated text: the same headings, lists and bold.
