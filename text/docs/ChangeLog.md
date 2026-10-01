@@ -17,6 +17,23 @@ Newest first.
   did not throw. A test now runs both adapters, and the whole run, over such text.
 - The NUL itself is reported by the experimental `invisible-character` rule (`⟨U+0000⟩`), now that the run reaches it.
 
+### Japanese density messages say 1000 字, the unit they measure (#402)
+
+`proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in
+Japanese while dividing by the document's length, which a Japanese document measures in characters. They now say
+「1000 字あたり」, as their level descriptions already did; `excessive-hedging`'s level description said 語 too and is
+fixed with them. A test reads every rule's per-1000 messages and level descriptions in both languages and checks the
+unit against what the rule divides by.
+
+### `feedback` and `suppressions` say when the rule asked about did not run (#397)
+
+`chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and
+`--experimental` was not given, although the finding had been on screen a moment before. It now says the rule did not
+run in this check and why, and, for an experimental rule, to run again with `--experimental`. A draft made with
+`--experimental` or `--genre` (or with `experimental: true` in chaff.yaml) records them under Environment ("Run with"),
+so whoever reads the report can run the same check. `chaff suppressions` likewise lists the rules that stets name but
+that did not run in this check, which it could not count, instead of only "No findings are silenced".
+
 ### A Japanese article full of code is read as Japanese (#399)
 
 The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
