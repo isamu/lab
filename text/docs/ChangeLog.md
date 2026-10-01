@@ -17,6 +17,27 @@ Newest first.
 - An `ai-tell` lexicon entry may carry its own `rewrite` hint: 「時間を溶かす」 → 「時間がかかった（何に、どれだけ）」,
   「静かに壊れる」 → 「エラーを出さずに失敗する」, "delve into" → "look at, or explain".
 
+### `custom_rules: type: module`: a team's rule as a small Node function
+
+```yaml
+custom_rules:
+  - id: team-no-tbd-dates
+    type: module
+    module: ./chaff-rules/no-tbd-dates.mjs # relative to chaff.yaml
+    level: warning
+    name: …, why: …, how_to_fix: …, example: … # as for any custom rule
+```
+
+- The module default-exports a detector `(doc, options) => findings`, or `defineRule({ detect })` from `chaffjs/api`.
+  It is loaded once before anything runs. `requires: [pos]` gives the sentences tokens.
+- A missing file, a file that cannot be loaded, a default export that is not a detector and a rule written for another
+  plugin API stop the run, naming the rule and the file as chaff.yaml writes it.
+- A detector that throws or returns anything but findings fails on that document only: its rule is listed as not run
+  with the reason and the file, and every other rule still runs.
+- Loading a module runs its code. A relative path may not leave the folder chaff.yaml is in; a file outside is named by
+  its absolute path. Determinism is the author's job: a detector should read nothing but the document.
+- `chaff rules --json`: `custom_rule_types` is `available`, with `words`, `pattern`, `tokens` and `module`.
+
 ### `chaffjs/api`: the plugin API
 
 A small, stable surface for writing rules in code, the first step toward `type: module` custom rules and plugin
