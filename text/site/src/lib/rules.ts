@@ -34,6 +34,8 @@ export type Rule = {
   readonly levelMeaning: Localized;
   /** The genres that set their own numbers for the levels. */
   readonly ownNumbers: readonly string[];
+  /** The bibliography entries the rule rests on, by anchor. */
+  readonly sources: readonly string[];
 };
 
 // astro build runs in text/site.
@@ -90,6 +92,7 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     notFlagged: { ja: ja.guide?.notFlagged["ja"] ?? "", en: ja.guide?.notFlagged["en"] ?? "" },
     levelMeaning: { ja: ja.guide?.levelMeaning["ja"] ?? "", en: ja.guide?.levelMeaning["en"] ?? "" },
     ownNumbers: Object.keys(ja.by_genre),
+    sources: ja.guide?.sources ?? [],
   };
 };
 

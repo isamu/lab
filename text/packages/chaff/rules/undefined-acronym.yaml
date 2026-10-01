@@ -41,6 +41,7 @@ how_to_fix:
 levels: { strict: 1, normal: 3, relaxed: 6 }
 
 use_for: [business, technical, legal, docs, academic, literature, speech]
+sources: [plain-2011, jis-z8301-2019]
 
 group: readability
 summary:

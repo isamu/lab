@@ -34,6 +34,7 @@ how_to_fix:
 levels: { strict: 5, normal: 3, relaxed: 1 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+sources: [yasashii-nihongo-2020, koyobun-2022, jtf-style-guide]
 
 group: consistency
 summary:

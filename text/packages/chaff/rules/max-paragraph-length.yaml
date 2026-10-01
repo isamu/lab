@@ -37,6 +37,7 @@ by_genre:
   academic: { strict: 5, normal: 9, relaxed: 12 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+sources: [gov-uk-clear-language]
 
 group: readability
 summary:
