@@ -11,6 +11,28 @@ Newest first.
   katakana word without its final ー (Ⅰ－3 エ). English documents keep the level's limit, since the document gives none.
 - A style can set a rule's number by language under `limits:`. chaff.yaml's own level or number for the rule still wins.
 
+### New rules: a document's outline (#170)
+
+Experimental rules that read the headings of a Markdown document. Each finding in the corpus was read before the rule
+was added.
+
+- **`duplicate-heading`**: two headings with the same words under the same parent (markdownlint's MD024 with
+  `siblings_only`). A changelog's "Added" and "Fixed" under each version have different parents and are fine. Case,
+  full-width forms and spacing are ignored when comparing. In the corpus it finds the OpenAPI specification's second
+  "Examples" under "Link Object" and a recipe page that repeats its title; the miss is an offer letter that writes each
+  party's signature block under the same company name as a heading.
+- **`empty-section`**: a heading followed straight away by a heading of the same or a higher level, or by the end of the
+  document. A heading followed by a deeper one only splits its section, and a section holding only an HTML comment is
+  empty. In the corpus it finds Wikivoyage articles with
+  their 観る・買う sections left empty, an empty "Announcements" item in meeting minutes, a court page's empty 裁判要旨
+  and a changelog version with no entries; the misses are two labels in the Congressional Record set at the same level
+  as the heading below them, and an offer letter's "Accepted and Agreed to:" above the signature block.
+
+Both rules skip a heading with no words (`## ---`), as the document model already does, and a setext heading that runs
+over two lines or ends like a sentence: in a plain-text mail it is a paragraph above a `-----` separator, not a heading
+(an e-Tax mail template collection would otherwise report its repeated footer). An ATX heading's text in the markup
+now drops its closing `#` before an attribute (`## Install ## {#install}` reads "Install"), as the document model does.
+
 ### New rules: invisible characters, half-width katakana and a space before punctuation (#170)
 
 Experimental rules for single characters a paste or an edit leaves behind. Each finding in the corpus was read before
