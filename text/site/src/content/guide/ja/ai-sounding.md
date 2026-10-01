@@ -20,6 +20,7 @@ npx chaffjs article.md --experimental    # 試験中のルールも動かす
 | `stock-transition` | 「さらに、」「加えて、」で始まる文の密度 |
 | `announcing-opener` | 「重要なのは、」「ポイントは、」「正直に言うと、」で始まる文の重なり |
 | `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度 |
+| `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ（日本語の文書だけ） |
 | `assistant-residue` | 「お役に立てれば幸いです」のような、チャットの返事の名残 |
 | `closing-cliche` | 「いかがでしたでしょうか」で締める終わり方 |
 | `bold-density` | 太字の多さ |

@@ -51,6 +51,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      bold-label-list: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
@@ -81,6 +82,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      bold-label-list: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
@@ -102,6 +104,7 @@ groups:
       section-length-uniformity: off
       paragraph-length-variance: off
       stock-transition: off
+      bold-label-list: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
@@ -150,6 +153,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      bold-label-list: off
       dangling-reference: off
       duplicate-definition: off
       date-order: off
