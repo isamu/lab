@@ -80,8 +80,18 @@ describe("日本語: 見出しの「第7条委託」「第2章概要」", () => 
 
   it("後ろが平仮名・次の番号・並べる語なら読まない。本文の行でも読まない", () => {
     assert.deepEqual(
-      ["第3条に定める事項", "第2章では", "第2章第1節", "第7条2項", "第4条及び第5条の扱い", "第4条又は第5条", "第4条並びに第5条"].map((line) => numbered(line)),
-      [undefined, undefined, undefined, undefined, undefined, undefined, undefined],
+      [
+        "第3条に定める事項",
+        "第2章では",
+        "第2章第1節",
+        "第7条2項",
+        "第4条及び第5条の扱い",
+        "第4条又は第5条",
+        "第4条並びに第5条",
+        "第2条若しくは第3条の場合",
+        "第2条乃至第5条",
+      ].map((line) => numbered(line)),
+      [undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined],
     );
     assert.equal(numbered("第7条委託", IN_BODY), undefined);
   });

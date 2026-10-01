@@ -15,9 +15,9 @@ const SPACE = "[ \\t\\u3000]";
 const ARTICLE = new RegExp(`^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
 /**
  * 見出しの行では、題を詰めて書いた「第7条委託」「第2章概要」も読む。後ろが平仮名（「第3条に定める」「第2章では」）、
- * 次の番号（「第2章第1節」）、並べる語（「第4条及び第5条」）なら、番号は題の札でないので読まない。
+ * 次の番号（「第2章第1節」）、並べる語（「第4条及び第5条」「第2条若しくは第3条」「第2条乃至第5条」）なら、番号は題の札でないので読まない。
  */
-const TIGHT_TITLE = "(?<rest>[^\\s\\p{Script=Hiragana}0-9０-９第及又並].*)";
+const TIGHT_TITLE = "(?<rest>[^\\s\\p{Script=Hiragana}0-9０-９第及又並若乃].*)";
 const ARTICLE_TIGHT = new RegExp(`^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?${TIGHT_TITLE}$`, "u");
 /** 「第四十三条から第五十五条まで 削除」「第五百十六条及び第五百十七条 削除」。削られた条を一行でまとめる法令の書き方。 */
 const ARTICLE_RANGE = new RegExp(
