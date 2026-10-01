@@ -406,4 +406,23 @@ describe("isKanaRepeat", () => {
     assert.deepEqual(kanaRepeatAt(apart), []);
     assert.deepEqual(kanaRepeatAt([]), []);
   });
+
+  it("前の語に付いた並びは助詞・助動詞の書き損じ（資料ををを・行ったたた）。記号・フィラーの後ろと文の頭は立つ", () => {
+    assert.deepEqual(kanaRepeatAt(wordsOf(NOUN("資料"), PARTICLE("を"), PARTICLE("を"), PARTICLE("を"))), []);
+    assert.deepEqual(
+      kanaRepeatAt(
+        wordsOf(["行っ", "動詞", "自立", "連用タ接続"], ["た", "助動詞", "*", "基本形"], ["た", "助動詞", "*", "基本形"], ["た", "助動詞", "*", "基本形"]),
+      ),
+      [],
+    );
+    assert.deepEqual(kanaRepeatAt(wordsOf(["「", "記号", "括弧開", "*"], PARTICLE("は"), PARTICLE("は"), PARTICLE("は"))), [2, 3]);
+    assert.deepEqual(kanaRepeatAt(wordsOf(["あ", "感動詞", "*", "*"], PARTICLE("は"), PARTICLE("は"), PARTICLE("は"))), [2, 3]);
+    const afterSpace: Inflection[] = [
+      { surface: "笑い", pos: "名詞", detail: "一般", form: "*", conjugation: "*", start: 0 },
+      { surface: "は", pos: "助詞", detail: "係助詞", form: "*", conjugation: "*", start: 3 },
+      { surface: "は", pos: "助詞", detail: "係助詞", form: "*", conjugation: "*", start: 4 },
+      { surface: "は", pos: "助詞", detail: "係助詞", form: "*", conjugation: "*", start: 5 },
+    ];
+    assert.deepEqual(kanaRepeatAt(afterSpace), [2, 3]);
+  });
 });

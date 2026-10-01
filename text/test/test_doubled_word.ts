@@ -421,8 +421,11 @@ describe("doubled-word — 日本語", () => {
     valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
   });
 
-  it("invalid: 一字の仮名は二つなら書き損じ", () => {
+  it("invalid: 一字の仮名は二つなら書き損じ。三つでも前の語に付いていれば書き損じ", () => {
     assert.deepEqual(findingsOf("私ははそう思います。", ja, "ja"), ["1:3 はは"]);
+    assert.deepEqual(findingsOf("資料ををを送ります。", ja, "ja"), ["1:4 をを", "1:5 をを"]);
+    assert.deepEqual(findingsOf("世の中ががが変わります。", ja, "ja"), ["1:5 がが", "1:6 がが"]);
+    assert.deepEqual(findingsOf("昨日行ったたたので疲れた。", ja, "ja"), ["1:6 たた", "1:7 たた"]);
   });
 
   it("valid: 重ね言葉と繰り返し記号は数えない", () => {

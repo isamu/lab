@@ -253,9 +253,24 @@ export const isWholeWordEcho = (words: readonly Inflection[], index: number): bo
 
 const ONE_KANA = /^[\p{Script=Hiragana}\p{Script=Katakana}]$/u;
 
+/** 前の語に付かずに立つ並びの、前に来てよい語。記号（「・、）と、笑い声の頭の「あ」（フィラー・感動詞）。 */
+const FREE_BEFORE = new Set(["記号", "フィラー", "感動詞"]);
+
+/** index の語を含む、同じ語が接して続く並びの最初の位置。 */
+const runStart = (words: readonly Inflection[], index: number): number => {
+  const before = words.slice(0, index + 1).findLastIndex((word, at) => !sameAndTouching(words[at - 1], word));
+  return Math.max(before, 0);
+};
+
+/** 並びが前の語に付いていない（文の頭、空白の後ろ、記号やフィラーの後ろ）。付いていれば助詞・助動詞の書き損じ（資料ををを・行ったたた）。 */
+const standsFree = (words: readonly Inflection[], start: number): boolean => {
+  const [before, first] = [words[start - 1], words[start]];
+  return before === undefined || first === undefined || !touches(before, first) || FREE_BEFORE.has(before.pos);
+};
+
 /**
- * 同じ一字の仮名が三つ以上続く並び（ははは・あははは・ふふふ）は笑い声か擬音。解析器は一字ずつ助詞などに切る。
- * 二つだけの重なり（をを・たた・よよ・かか）は書き損じのまま。
+ * 同じ一字の仮名が三つ以上続き、前の語に付かずに立つ並び（ははは・あははは・ふふふ）は笑い声か擬音。解析器は一字ずつ助詞などに切る。
+ * 二つだけの重なり（をを・たた・よよ・かか）と、前の語に付いた並び（資料ををを）は書き損じのまま。
  */
 export const isKanaRepeat = (words: readonly Inflection[], index: number): boolean => {
   const [before, first, second, after] = [words[index - 2], words[index - 1], words[index], words[index + 1]];
@@ -263,7 +278,8 @@ export const isKanaRepeat = (words: readonly Inflection[], index: number): boole
     second !== undefined &&
     ONE_KANA.test(second.surface) &&
     sameAndTouching(first, second) &&
-    (sameAndTouching(before, first) || sameAndTouching(second, after))
+    (sameAndTouching(before, first) || sameAndTouching(second, after)) &&
+    standsFree(words, runStart(words, index))
   );
 };
 
