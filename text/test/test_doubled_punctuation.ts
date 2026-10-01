@@ -30,6 +30,15 @@ describe("doubled-punctuation: 句読点が重なっている", () => {
     assert.deepEqual(runsOf("えーと。。。 Well... ，，， for...in 文"), []);
   });
 
+  it("伸ばした印のすぐ後ろの一つの印（...。 、、、。 ...,）は文を閉じる印", () => {
+    assert.deepEqual(runsOf("メドが立たない...。そうですね、、、。待って。。。、それで.... Well...,"), []);
+    assert.deepEqual(findingsOf("成果が出せるメドが立たない...。\n\nそうですね、、、。\n"), []);
+  });
+
+  it("伸ばした印の後ろでも、閉じる印が二つ以上か、伸ばしが二つまでなら重なり", () => {
+    assert.deepEqual(runsOf("立たない...。。 ね、、。 a..。"), ["...。。", "、、。", "..。"]);
+  });
+
   it("略語の点の後ろの読点とセミコロン、次の語の頭の点", () => {
     assert.deepEqual(runsOf("e.g., etc.; Inc., すでに、.NET を入れ、.well-known に置く"), []);
   });
