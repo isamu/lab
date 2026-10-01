@@ -49,12 +49,31 @@ describe("empty-section: 中身の無い節", () => {
     assert.deepEqual(emptyIn(["## A", "<!-- 後で書く -->", "", "## B", "<!-- toc -->", "- [A](#a)", "<!-- /toc -->", "", "## C", "text"]), ["A"]);
   });
 
-  it("コロンで終わる見出しは、後ろの見出しの前置き（署名欄の「Accepted and agreed to:」）", () => {
-    assert.deepEqual(emptyIn(["## Accepted and agreed to:", "", "## Example Inc.", "", "By: signature", "", "## 確認欄：", "", "## 担当", "", "山田"]), []);
+  it("コロンで終わる見出しも、後ろに何も無ければ空", () => {
+    assert.deepEqual(emptyIn(["# 計画", "", "## 課題：", "", "## 対策", "", "未定"]), ["課題："]);
+  });
+
+  it("題の無い見出し（## ---）は見出しとして読まない", () => {
+    assert.deepEqual(findingsOf("# 題\n\n## ---\n\n## 次\n\n本文です。\n"), []);
+  });
+
+  it("句点で終わる一行の下線の見出しは、区切り線の上の文", () => {
+    assert.deepEqual(findingsOf("# お知らせ\n\n返信は受け付けておりません。\n----------\n"), []);
+    assert.deepEqual(findingsOf("# Notice\n\nPlease do not reply.\n----------\n", en), []);
   });
 
   it("二行にわたる下線の見出し（メールの区切り線の上の段落）は見出しとして読まない", () => {
     assert.deepEqual(findingsOf("# お知らせ\n\n※ 本メールは送信専用です。\nご了承ください。\n----------\n"), []);
+  });
+
+  it("句点の無い二行の下線の見出しも、区切り線の上の段落", () => {
+    assert.deepEqual(findingsOf("# お知らせ\n\n発行元\n総務課\n----------\n"), []);
+  });
+
+  it("# で書いた見出しは、疑問符で終わっても見出し（FAQ の問い）", () => {
+    assert.deepEqual(findingsOf("# FAQ\n\n## How do I reset my password?\n\n## Who can see my data?\n\nOnly you.\n", en), [
+      'Nothing under the heading "How do I reset my password?"',
+    ]);
   });
 
   it("中身があれば何も言わない", () => {

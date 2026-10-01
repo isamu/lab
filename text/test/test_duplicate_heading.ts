@@ -97,6 +97,17 @@ describe("duplicate-heading: 同じ見出しが兄弟に二つある", () => {
     assert.deepEqual(findingsOf(`# お知らせ\n\n本文です。\n\n${footer}次のお知らせです。\n\n${footer}`), []);
   });
 
+  it("閉じの # と属性を付けた ATX の見出しも、見える言葉で比べる", () => {
+    assert.deepEqual(findingsOf("# Guide\n\n## Install ## {#install}\n\nA.\n\n## Install\n\nB.\n", en), [
+      'The heading "Install" repeats the one on line 3 under the same parent',
+    ]);
+  });
+
+  it("句点の無い二行の下線の見出しも、区切り線の上の段落", () => {
+    const footer = "発行元\n総務課\n----------\n\n";
+    assert.deepEqual(findingsOf(`# お知らせ\n\n本文です。\n\n${footer}次の本文です。\n\n${footer}`), []);
+  });
+
   it("違う見出しなら何も言わない", () => {
     assert.deepEqual(findingsOf("# 手順書\n\n## 準備\n\n道具をそろえます。\n\n## 安全の確認\n\n手袋をはめます。\n"), []);
     assert.deepEqual(repeatedIn([]), []);
