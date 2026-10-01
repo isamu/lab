@@ -15,6 +15,7 @@ const TEXT: Texts<{
   readonly values: (unit: string) => string;
   readonly severities: string;
   readonly now: (level: string) => string;
+  readonly from: (source: string) => string;
   readonly change: (id: string) => string;
 }> = {
   ja: {
@@ -26,6 +27,7 @@ const TEXT: Texts<{
     values: (unit) => `設定できる値（単位: ${unit}）:`,
     severities: "設定できる値（数える上限は無く、指摘の重さが変わります）:",
     now: (level) => `いまは ${level} です。`,
+    from: (source) => `（${source} で決めています）`,
     change: (id) => `変える:  npx chaff relax ${id} --why "理由"`,
   },
   en: {
@@ -37,6 +39,7 @@ const TEXT: Texts<{
     values: (unit) => `Levels (unit: ${unit}):`,
     severities: "Levels (there is no limit to count to; a level sets how a finding is marked):",
     now: (level) => `Now: ${level}.`,
+    from: (source) => ` (set by ${source})`,
     change: (id) => `Change it:  npx chaff relax ${id} --why "reason"`,
   },
 };
@@ -58,15 +61,12 @@ const genreNote = (rule: RuleDefinition, genre: string | undefined, text: (typeo
   return ["", `  ${text.genreNote(genre ?? text.defaultGenre, others.join(" / "))}`];
 };
 
+/** Where the rule's settings come from: the option layers, strongest first, and the source of its level when a style set it. */
+export type ExplainSettings = { readonly optionLayers?: readonly OptionLayer[]; readonly levelFrom?: string | undefined };
+
 /** rule の意図と根拠を読む。指摘に納得できないときの入口。 */
-export const renderExplain = (
-  rule: RuleDefinition,
-  current: Level,
-  language: string,
-  unit: string,
-  genre?: string,
-  optionLayers: readonly OptionLayer[] = [],
-): string => {
+export const renderExplain = (rule: RuleDefinition, current: Level, language: string, unit: string, genre?: string, settings: ExplainSettings = {}): string => {
+  const { optionLayers = [], levelFrom } = settings;
   const ui = uiLanguageOf(language);
   const text = TEXT[ui];
   const experimental = rule.status === "experimental" ? [`  ${text.experimental}`] : [];
@@ -83,7 +83,7 @@ export const renderExplain = (
     ...genreNote(rule, genre, text),
     ...optionLines(rule, optionLayers, language),
     "",
-    `  ${text.now(current)}`,
+    `  ${text.now(current)}${levelFrom === undefined ? "" : text.from(levelFrom)}`,
     ...experimental,
     "",
     `  ${text.change(rule.id)}`,

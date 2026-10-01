@@ -1,5 +1,8 @@
 import type { Config } from "./config/load.ts";
 import type { CliText } from "./cli-text.ts";
+import type { UiLanguage } from "./ui.ts";
+import { styleProblems } from "./config/style.ts";
+import { loadStyles } from "./style-load.ts";
 import { GENRES } from "./genre.ts";
 import { unknownGenres, writtenGenres } from "./genre-check.ts";
 import { loadProfiles } from "./profile/load.ts";
@@ -18,7 +21,8 @@ const profileProblems = (command: string, config: Config, text: CliText): string
 };
 
 /** Settings that name something chaff does not have. Each would silently check less than was asked, so the run stops on them. */
-export const settingProblems = (command: string, genreFlag: string | undefined, config: Config, text: CliText): string[] => [
+export const settingProblems = (command: string, genreFlag: string | undefined, config: Config, text: CliText, ui: UiLanguage = "en"): string[] => [
   ...genreProblems(command, genreFlag, config, text),
   ...profileProblems(command, config, text),
+  ...styleProblems(config, loadStyles(), ui),
 ];

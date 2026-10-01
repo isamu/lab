@@ -1,7 +1,7 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { loadAdapter, packageFor } from "./adapter-load.ts";
-import { CONFIG_FILE, EMPTY, loadConfig, type Config } from "./config/load.ts";
+import { CONFIG_FILE, type Config } from "./config/load.ts";
 import { applyByPath } from "./config/by-path.ts";
 import { applyLevel } from "./config/write.ts";
 import { buildDocument, teamRules } from "./document.ts";
@@ -35,7 +35,8 @@ import { runSkill } from "./commands/skill.ts";
 import { runFeedback, settingsOf } from "./commands/feedback.ts";
 import { homedir } from "node:os";
 import { settingWarnings } from "./config/warnings.ts";
-import { optionLayersOf } from "./config/option-problems.ts";
+import { readConfigIn } from "./config/read.ts";
+import { optionLayersOf, settingSourcesOf } from "./config/option-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 import { neededBy, runRulesWith } from "./run.ts";
 import type { Finding, Level, RuleDefinition } from "./plugin.ts";
@@ -47,7 +48,7 @@ import { settingProblems } from "./setting-problems.ts";
 /** Text for output that is not about one document. */
 const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.language, process.env)];
 
-const readConfig = (): Config => (existsSync(join(process.cwd(), CONFIG_FILE)) ? loadConfig(join(process.cwd(), CONFIG_FILE)) : EMPTY);
+const readConfig = (): Config => readConfigIn(process.cwd());
 
 /** resolveGenre with this run's --genre, for the commands that take it as a dependency. */
 const genreFrom =
@@ -221,7 +222,7 @@ const explain = (ruleId: string | undefined, genreFlag: string | undefined): num
   }
   const preset = genre === undefined ? {} : presetLevels(genre);
   const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
-  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, optionLayersOf(config)));
+  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, settingSourcesOf(config, rule.id)));
   return 0;
 };
 
@@ -339,7 +340,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
   }
   // 知らないジャンルではどの rule も当たらず、知らない文書の種類では種類の知識が外れる。どちらも素通りに見えるので、何かする前に止める。
   const config = readConfig();
-  const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config));
+  const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config), hostLanguage(config.language, process.env));
   problems.forEach((problem) => console.error(problem));
   if (problems.length > 0) return 1;
   const handler = HANDLERS[first];
