@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### A heading with its title right after the number is numbered (#431)
+
+`## 7.委託`, `## 7．委託` and `## 2.Overview` were not read as numbered, so `numbering-gap` reported "6 then 8" as an
+error. In a heading, a number closed by a dot (`.` or `．`) may now be followed directly by its title, unless the next
+character is a digit (`1.5万人`) or a lowercase letter (`2.x 系`). In Japanese, `## 第7条委託` and `## 第2章概要` are
+read too, unless what follows is hiragana (`第3条に定める`), another number (`第2章第1節`) or a joining word
+(`第4条及び第5条`, `第2条若しくは第3条`). Body lines are read as before. `heading-echo` reads the same label.
+
 ### `section-length-uniformity` and `paragraph-length-variance` need enough sections and paragraphs to measure
 
 Both rules compare lengths by their coefficient of variation. Over two or three values that number is small by chance,
