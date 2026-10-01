@@ -80,6 +80,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "ngram-repetition",
         "padded-intro",
         "repeated-conjunction",
+        "requirement-modal",
         "sasete-itadaku",
         "stock-transition",
         "undefined-acronym",
