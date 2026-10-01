@@ -84,6 +84,8 @@ npx chaffjs explain katakana-long-vowel     このルールの設定と、決め
 どのルールにも、名前・理由・直し方・例を書きます。指摘を読む人が、なぜ直すのかを分かるようにするためです。
 
 ```yaml
+style: ieice
+
 custom_rules:
   - id: team-kudasai
     type: words
@@ -158,7 +160,7 @@ notice.md   blog/tech · 日本語   ジャンルは既定から
 指摘 5 件、動いていない rule 36 件
 ```
 
-この例の `chaff.yaml` には `style: ieice` も書いてあるので、1 件目はスタイルからの指摘です。
+この例の `chaff.yaml` は `style: ieice` も選んでいるので、1 件目はスタイルからの指摘です。
 
 チームのルールは、chaff のルールと同じように扱えます。
 `explain` には、書いた理由と例がそのまま出ます。

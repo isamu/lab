@@ -5,7 +5,8 @@ import { customRulesOf } from "./load.ts";
 import { MAX_PATTERN_LENGTH, MAX_REPEATS, type RegexRefusal } from "./regex-safety.ts";
 import { POS_WRITTEN_NAMES } from "./token-pattern.ts";
 
-type Text = { readonly problem: (problem: CustomProblem) => string; readonly refusal: Readonly<Record<RegexRefusal, string>> };
+/** Each problem's sentence, with {at}, {written}, {field}, {index}, {refusal} and {names} filled in from the problem. */
+type Text = { readonly problems: Readonly<Record<CustomProblem["kind"], string>>; readonly refusal: Readonly<Record<RegexRefusal, string>> };
 
 const TEXT: Texts<Text> = {
   ja: {
@@ -17,23 +18,23 @@ const TEXT: Texts<Text> = {
       "empty-match": "何も無い所にも当たります。すべての文で指摘が出てしまいます",
       invalid: "正規表現として読めません",
     },
-    problem: (problem) => {
-      if (problem.kind === "not-a-list") return "custom_rules はルールの並び（- id: …）で書いてください";
-      const at = `custom_rules の ${problem.at}`;
-      if (problem.kind === "not-a-map") return `${at}: id や type を持つ項目として書いてください`;
-      if (problem.kind === "bad-id") return `${at}: id は英小文字で始まり、英小文字・数字・ハイフンだけで書きます（例: team-no-tbd）`;
-      if (problem.kind === "duplicate-id") return `${at}: 同じ id のルールがもう一つあります`;
-      if (problem.kind === "built-in-id") return `${at}: chaff のルールと同じ id です。別の id にしてください`;
-      if (problem.kind === "unknown-type") return `${at}: type: ${problem.written} は使えません（words / pattern / tokens）`;
-      if (problem.kind === "not-yet") return `${at}: type: ${problem.written} はまだ使えません（words / pattern / tokens）`;
-      if (problem.kind === "missing") return `${at}: ${problem.field} がありません`;
-      if (problem.kind === "bad-level") return `${at}: level: ${problem.written} は読めません（error / warning / info）`;
-      if (problem.kind === "bad-languages") return `${at}: languages は言語の並びで書いてください（[ja] や [ja, en]）`;
-      if (problem.kind === "no-words") return `${at}: words に語がありません（「使わない書き方: 使う書き方」か語の並び）`;
-      if (problem.kind === "no-tokens") return `${at}: tokens に語の条件がありません（- { pos: 名詞 } のように並べます）`;
-      if (problem.kind === "bad-token") return `${at}: tokens の ${String(problem.index)} 番目に pos・base・surface のどれもありません`;
-      if (problem.kind === "unknown-pos") return `${at}: 品詞 ${problem.written} は知りません（${POS_WRITTEN_NAMES.join(" / ")}）`;
-      return `${at}: pattern を使えません。${TEXT.ja.refusal[problem.refusal]}`;
+    problems: {
+      "not-a-list": "custom_rules はルールの並び（- id: …）で書いてください",
+      "not-a-map": "custom_rules の {at}: id や type を持つ項目として書いてください",
+      "bad-id": "custom_rules の {at}: id は英小文字で始まり、英小文字・数字・ハイフンだけで書きます（例: team-no-tbd）",
+      "duplicate-id": "custom_rules の {at}: 同じ id のルールがもう一つあります",
+      "built-in-id": "custom_rules の {at}: chaff のルールと同じ id です。別の id にしてください",
+      "unknown-type": "custom_rules の {at}: type: {written} は使えません（words / pattern / tokens）",
+      "not-yet": "custom_rules の {at}: type: {written} はまだ使えません（words / pattern / tokens）",
+      missing: "custom_rules の {at}: {field} がありません",
+      "unpaired-example": "custom_rules の {at}: example の before と after を、ルールが見る言語の同じ言語で書いてください",
+      "bad-level": "custom_rules の {at}: level: {written} は読めません（error / warning / info）",
+      "bad-languages": "custom_rules の {at}: languages は言語の並びで書いてください（[ja] や [ja, en]）",
+      "no-words": "custom_rules の {at}: words に語がありません（「使わない書き方: 使う書き方」か語の並び）",
+      "no-tokens": "custom_rules の {at}: tokens に語の条件がありません（- { pos: 名詞 } のように並べます）",
+      "bad-token": "custom_rules の {at}: tokens の {index} 番目に pos・base・surface のどれもありません",
+      "unknown-pos": "custom_rules の {at}: 品詞 {written} は知りません（{names}）",
+      "bad-pattern": "custom_rules の {at}: pattern を使えません。{refusal}",
     },
   },
   en: {
@@ -45,27 +46,44 @@ const TEXT: Texts<Text> = {
       "empty-match": "it matches an empty string, so it would report every sentence",
       invalid: "it is not a regular expression",
     },
-    problem: (problem) => {
-      if (problem.kind === "not-a-list") return "write custom_rules as a list of rules (- id: …)";
-      const at = `custom_rules ${problem.at}`;
-      if (problem.kind === "not-a-map") return `${at}: write each rule as an entry with id and type`;
-      if (problem.kind === "bad-id") return `${at}: an id starts with a lowercase letter and has only lowercase letters, digits and hyphens (team-no-tbd)`;
-      if (problem.kind === "duplicate-id") return `${at}: another rule has the same id`;
-      if (problem.kind === "built-in-id") return `${at}: chaff has a rule with this id; choose another`;
-      if (problem.kind === "unknown-type") return `${at}: type: ${problem.written} is not a type (words / pattern / tokens)`;
-      if (problem.kind === "not-yet") return `${at}: type: ${problem.written} is not supported yet (words / pattern / tokens)`;
-      if (problem.kind === "missing") return `${at}: ${problem.field} is missing`;
-      if (problem.kind === "bad-level") return `${at}: cannot read level: ${problem.written} (error / warning / info)`;
-      if (problem.kind === "bad-languages") return `${at}: write languages as a list ([en] or [ja, en])`;
-      if (problem.kind === "no-words") return `${at}: words has no words (avoid: use pairs, or a list)`;
-      if (problem.kind === "no-tokens") return `${at}: tokens has no conditions (- { pos: noun } and so on)`;
-      if (problem.kind === "bad-token") return `${at}: token ${String(problem.index)} has none of pos, base and surface`;
-      if (problem.kind === "unknown-pos") return `${at}: unknown part of speech ${problem.written} (${POS_WRITTEN_NAMES.join(" / ")})`;
-      return `${at}: the pattern cannot be used: ${TEXT.en.refusal[problem.refusal]}`;
+    problems: {
+      "not-a-list": "write custom_rules as a list of rules (- id: …)",
+      "not-a-map": "custom_rules {at}: write each rule as an entry with id and type",
+      "bad-id": "custom_rules {at}: an id starts with a lowercase letter and has only lowercase letters, digits and hyphens (team-no-tbd)",
+      "duplicate-id": "custom_rules {at}: another rule has the same id",
+      "built-in-id": "custom_rules {at}: chaff has a rule with this id; choose another",
+      "unknown-type": "custom_rules {at}: type: {written} is not a type (words / pattern / tokens)",
+      "not-yet": "custom_rules {at}: type: {written} is not supported yet (words / pattern / tokens)",
+      missing: "custom_rules {at}: {field} is missing",
+      "unpaired-example": "custom_rules {at}: write example's before and after in the same language, one the rule checks",
+      "bad-level": "custom_rules {at}: cannot read level: {written} (error / warning / info)",
+      "bad-languages": "custom_rules {at}: write languages as a list ([en] or [ja, en])",
+      "no-words": "custom_rules {at}: words has no words (avoid: use pairs, or a list)",
+      "no-tokens": "custom_rules {at}: tokens has no conditions (- { pos: noun } and so on)",
+      "bad-token": "custom_rules {at}: token {index} has none of pos, base and surface",
+      "unknown-pos": "custom_rules {at}: unknown part of speech {written} ({names})",
+      "bad-pattern": "custom_rules {at}: the pattern cannot be used: {refusal}",
     },
   },
 };
 
+const PLACEHOLDER = /\{(at|written|field|index|refusal|names)\}/gu;
+
+/** The values a problem's sentence names. Each kind carries only some of them. */
+const valuesOf = (problem: CustomProblem, text: Text): Readonly<Record<string, string>> => ({
+  at: "at" in problem ? problem.at : "",
+  written: "written" in problem ? problem.written : "",
+  field: "field" in problem ? problem.field : "",
+  index: "index" in problem ? String(problem.index) : "",
+  refusal: "refusal" in problem ? text.refusal[problem.refusal] : "",
+  names: POS_WRITTEN_NAMES.join(" / "),
+});
+
+const sentenceOf = (problem: CustomProblem, text: Text): string => {
+  const values = valuesOf(problem, text);
+  return text.problems[problem.kind].replace(PLACEHOLDER, (_whole, key: string) => values[key] ?? "");
+};
+
 /** What in custom_rules cannot run. Each stops the run: a team's rule that silently does not run looks like a clean document. */
 export const customRuleProblems = (config: Pick<Config, "customRules" | "path">, ui: UiLanguage): string[] =>
-  customRulesOf(config).problems.map((problem) => `chaff: ${config.path ?? "chaff.yaml"}: ${TEXT[ui].problem(problem)}`);
+  customRulesOf(config).problems.map((problem) => `chaff: ${config.path ?? "chaff.yaml"}: ${sentenceOf(problem, TEXT[ui])}`);

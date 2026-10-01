@@ -19,6 +19,7 @@ export type CustomProblem =
   | { readonly kind: "unknown-type"; readonly at: string; readonly written: string }
   | { readonly kind: "not-yet"; readonly at: string; readonly written: string }
   | { readonly kind: "missing"; readonly at: string; readonly field: string }
+  | { readonly kind: "unpaired-example"; readonly at: string }
   | { readonly kind: "bad-level"; readonly at: string; readonly written: string }
   | { readonly kind: "bad-languages"; readonly at: string }
   | { readonly kind: "no-words"; readonly at: string }
@@ -169,7 +170,26 @@ const PLACEHOLDERS: Readonly<Record<string, Localized>> = {
 
 const HOW_TO_FIND: Readonly<Record<CustomSpec["type"], string>> = { words: "custom-words", pattern: "custom-pattern", tokens: "custom-tokens" };
 
-type Parts = { readonly spec: CustomSpec; readonly severity: Severity; readonly texts: Texts; readonly languages: readonly string[] | undefined };
+type Example = { readonly before: string; readonly after: string };
+
+type Parts = {
+  readonly spec: CustomSpec;
+  readonly severity: Severity;
+  readonly texts: Texts;
+  readonly languages: readonly string[] | undefined;
+  readonly examples: Readonly<Record<string, Example>>;
+};
+
+const READER_LANGUAGES: readonly string[] = ["ja", "en"];
+
+/** The example in each language the rule checks, where both before and after are written in it. A string counts for both. */
+const examplesOf = (texts: Texts, languages: readonly string[] | undefined): Record<string, Example> =>
+  Object.fromEntries(
+    (languages ?? READER_LANGUAGES).flatMap((language) => {
+      const [before, after] = [texts.before[language], texts.after[language]];
+      return before === undefined || after === undefined ? [] : [[language, { before, after }]];
+    }),
+  );
 
 const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, useFor: readonly string[]): RuleDefinition => ({
   id,
@@ -201,12 +221,7 @@ const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, us
   guide: {
     group: "team",
     summary: parts.texts.name,
-    examples: Object.fromEntries(
-      Object.keys(parts.texts.before).flatMap((language) => {
-        const [before, after] = [parts.texts.before[language], parts.texts.after[language] ?? parts.texts.after["en"] ?? parts.texts.after["ja"]];
-        return before === undefined || after === undefined ? [] : [[language, { before, after }]];
-      }),
-    ),
+    examples: parts.examples,
     notFlagged: {},
     levelMeaning: {},
   },
@@ -229,10 +244,13 @@ const ruleOf = (raw: unknown, index: number, seen: ReadonlySet<string>, context:
   const severity = severityOf(raw["level"], at);
   const texts = textsOf(raw, at);
   const languages = languagesOf(raw["languages"], at);
-  const problems = [id, type, spec, severity, texts, languages].flatMap((checked) => checked.problems);
+  const examples = texts.value === undefined ? {} : examplesOf(texts.value, languages.value);
+  const unpaired: CustomProblem[] = texts.value !== undefined && Object.keys(examples).length === 0 ? [{ kind: "unpaired-example", at }] : [];
+  const problems = [...[id, type, spec, severity, texts, languages].flatMap((checked) => checked.problems), ...unpaired];
   if (id.value === undefined || spec.value === undefined || severity.value === undefined || texts.value === undefined || problems.length > 0)
     return failed(...problems);
-  return ok(definitionOf(id.value, raw, { spec: spec.value, severity: severity.value, texts: texts.value, languages: languages.value }, context.useFor));
+  const parts = { spec: spec.value, severity: severity.value, texts: texts.value, languages: languages.value, examples };
+  return ok(definitionOf(id.value, raw, parts, context.useFor));
 };
 
 /** custom_rules as written. Every problem is reported; a rule with a problem is left out, and the run is stopped by the caller. */

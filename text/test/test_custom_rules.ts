@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { regexRefusal, MAX_PATTERN_LENGTH } from "../packages/chaff/src/custom/regex-safety.ts";
 import { posTags, tokenRuns } from "../packages/chaff/src/custom/token-pattern.ts";
 import { parseCustomRules, type CustomContext } from "../packages/chaff/src/custom/parse.ts";
+import { customRuleProblems } from "../packages/chaff/src/custom/problems.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import type { RuleDefinition, Token } from "../packages/chaff/src/plugin.ts";
@@ -198,6 +199,42 @@ describe("custom rules", () => {
         assert.deepEqual(result.ids, []);
         assert.ok(result.problems.includes(kind), `${kind} in ${result.problems.join(", ")}`);
       });
+    });
+
+    it("examples only in the languages the rule checks, before and after in the same language", () => {
+      const jaOnly = one({ id: "d", type: "pattern", pattern: "x", languages: ["ja"], example: { before: "前", after: "後" } });
+      assert.deepEqual(Object.keys(jaOnly.guide?.examples ?? {}), ["ja"]);
+      const both = one({ id: "e", type: "pattern", pattern: "x", example: { before: { ja: "前", en: "Before" }, after: { ja: "後", en: "After" } } });
+      assert.deepEqual(both.guide?.examples, { ja: { before: "前", after: "後" }, en: { before: "Before", after: "After" } });
+      const mixed = parsed([{ ...EXPLAINED, id: "f", type: "pattern", pattern: "x", example: { before: { ja: "前" }, after: { en: "After" } } }]);
+      assert.deepEqual(mixed, { ids: [], problems: ["unpaired-example"] });
+    });
+
+    it("every problem reads as a sentence in both languages, its values filled in", () => {
+      const raw = [
+        "x",
+        { ...EXPLAINED, id: "Bad_Id", type: "pattern", pattern: "x" },
+        { ...EXPLAINED, id: "preferred-term", type: "pattern", pattern: "x" },
+        { ...EXPLAINED, id: "a", type: "regex" },
+        { ...EXPLAINED, id: "b", type: "module" },
+        { ...EXPLAINED, id: "c", type: "pattern" },
+        { ...EXPLAINED, id: "d", type: "pattern", pattern: "(a+)+", level: "loud", languages: [""] },
+        { ...EXPLAINED, id: "e", type: "words", words: {} },
+        { ...EXPLAINED, id: "f", type: "tokens", tokens: [{}, { pos: "めいし" }] },
+        { ...EXPLAINED, id: "g", type: "tokens" },
+        { ...EXPLAINED, id: "h", type: "pattern", pattern: "x", example: { before: { ja: "前" }, after: { en: "After" } } },
+      ];
+      const kinds = new Set(parseCustomRules(raw, CONTEXT).problems.map((problem) => problem.kind));
+      assert.equal(kinds.size, 14);
+      const unfilled = (sentence: string): boolean => /\{(?:at|written|field|index|refusal|names)\}/u.test(sentence);
+      (["ja", "en"] as const).forEach((ui) => {
+        const sentences = customRuleProblems({ customRules: raw, path: "chaff.yaml" }, ui);
+        assert.equal(sentences.length, parseCustomRules(raw, CONTEXT).problems.length);
+        assert.deepEqual(sentences.filter(unfilled), []);
+      });
+      assert.deepEqual(customRuleProblems({ customRules: "x", path: "chaff.yaml" }, "en"), [
+        "chaff: chaff.yaml: write custom_rules as a list of rules (- id: …)",
+      ]);
     });
 
     it("the second rule with an id is reported; the first still runs", () => {
