@@ -1,0 +1,260 @@
+# British and American spellings of the same word (colour / color, centre / center, travelled / traveled, analyse / analyze).
+# pattern is the British spelling, instead_of the American. Neither is wrong: spelling-consistency points at whichever the
+# document uses less. -ise / -ize is in spelling-ize, compared on its own, since Oxford spelling writes colour and organize.
+# Words with another meaning in one variety are left out: meter (a device), check (a verb), tire (a verb), program, license,
+# practice, judgment (a court's), dialog and analog (in software and electronics), analyses (the plural of analysis).
+id: spelling-variant
+language: en
+entries:
+  - pattern: colour
+    instead_of: color
+  - pattern: colours
+    instead_of: colors
+  - pattern: coloured
+    instead_of: colored
+  - pattern: colouring
+    instead_of: coloring
+  - pattern: colourful
+    instead_of: colorful
+  - pattern: colourless
+    instead_of: colorless
+  - pattern: favour
+    instead_of: favor
+  - pattern: favours
+    instead_of: favors
+  - pattern: favoured
+    instead_of: favored
+  - pattern: favouring
+    instead_of: favoring
+  - pattern: favourable
+    instead_of: favorable
+  - pattern: favourite
+    instead_of: favorite
+  - pattern: favourites
+    instead_of: favorites
+  - pattern: honour
+    instead_of: honor
+  - pattern: honours
+    instead_of: honors
+  - pattern: honoured
+    instead_of: honored
+  - pattern: honouring
+    instead_of: honoring
+  - pattern: honourable
+    instead_of: honorable
+  - pattern: labour
+    instead_of: labor
+  - pattern: labours
+    instead_of: labors
+  - pattern: laboured
+    instead_of: labored
+  - pattern: labouring
+    instead_of: laboring
+  - pattern: behaviour
+    instead_of: behavior
+  - pattern: behaviours
+    instead_of: behaviors
+  - pattern: behavioural
+    instead_of: behavioral
+  - pattern: neighbour
+    instead_of: neighbor
+  - pattern: neighbours
+    instead_of: neighbors
+  - pattern: neighbourhood
+    instead_of: neighborhood
+  - pattern: neighbourhoods
+    instead_of: neighborhoods
+  - pattern: neighbouring
+    instead_of: neighboring
+  - pattern: humour
+    instead_of: humor
+  - pattern: humours
+    instead_of: humors
+  - pattern: rumour
+    instead_of: rumor
+  - pattern: rumours
+    instead_of: rumors
+  - pattern: rumoured
+    instead_of: rumored
+  - pattern: harbour
+    instead_of: harbor
+  - pattern: harbours
+    instead_of: harbors
+  - pattern: endeavour
+    instead_of: endeavor
+  - pattern: endeavours
+    instead_of: endeavors
+  - pattern: endeavoured
+    instead_of: endeavored
+  - pattern: endeavouring
+    instead_of: endeavoring
+  - pattern: flavour
+    instead_of: flavor
+  - pattern: flavours
+    instead_of: flavors
+  - pattern: flavoured
+    instead_of: flavored
+  - pattern: flavouring
+    instead_of: flavoring
+  - pattern: vapour
+    instead_of: vapor
+  - pattern: vapours
+    instead_of: vapors
+  - pattern: savour
+    instead_of: savor
+  - pattern: savours
+    instead_of: savors
+  - pattern: savoury
+    instead_of: savory
+  - pattern: centre
+    instead_of: center
+  - pattern: centres
+    instead_of: centers
+  - pattern: centred
+    instead_of: centered
+  - pattern: theatre
+    instead_of: theater
+  - pattern: theatres
+    instead_of: theaters
+  - pattern: fibre
+    instead_of: fiber
+  - pattern: fibres
+    instead_of: fibers
+  - pattern: litre
+    instead_of: liter
+  - pattern: litres
+    instead_of: liters
+  - pattern: kilometre
+    instead_of: kilometer
+  - pattern: kilometres
+    instead_of: kilometers
+  - pattern: centimetre
+    instead_of: centimeter
+  - pattern: centimetres
+    instead_of: centimeters
+  - pattern: millimetre
+    instead_of: millimeter
+  - pattern: millimetres
+    instead_of: millimeters
+  - pattern: calibre
+    instead_of: caliber
+  - pattern: sombre
+    instead_of: somber
+  - pattern: analyse
+    instead_of: analyze
+  - pattern: analysed
+    instead_of: analyzed
+  - pattern: analysing
+    instead_of: analyzing
+  - pattern: analyser
+    instead_of: analyzer
+  - pattern: analysers
+    instead_of: analyzers
+  - pattern: paralyse
+    instead_of: paralyze
+  - pattern: paralysed
+    instead_of: paralyzed
+  - pattern: paralysing
+    instead_of: paralyzing
+  - pattern: catalyse
+    instead_of: catalyze
+  - pattern: catalysed
+    instead_of: catalyzed
+  - pattern: catalysing
+    instead_of: catalyzing
+  - pattern: defence
+    instead_of: defense
+  - pattern: defences
+    instead_of: defenses
+  - pattern: offence
+    instead_of: offense
+  - pattern: offences
+    instead_of: offenses
+  - pattern: pretence
+    instead_of: pretense
+  - pattern: pretences
+    instead_of: pretenses
+  - pattern: travelled
+    instead_of: traveled
+  - pattern: travelling
+    instead_of: traveling
+  - pattern: traveller
+    instead_of: traveler
+  - pattern: travellers
+    instead_of: travelers
+  - pattern: cancelled
+    instead_of: canceled
+  - pattern: cancelling
+    instead_of: canceling
+  - pattern: labelled
+    instead_of: labeled
+  - pattern: labelling
+    instead_of: labeling
+  - pattern: modelled
+    instead_of: modeled
+  - pattern: modelling
+    instead_of: modeling
+  - pattern: signalled
+    instead_of: signaled
+  - pattern: signalling
+    instead_of: signaling
+  - pattern: fuelled
+    instead_of: fueled
+  - pattern: fuelling
+    instead_of: fueling
+  - pattern: totalled
+    instead_of: totaled
+  - pattern: totalling
+    instead_of: totaling
+  - pattern: catalogue
+    instead_of: catalog
+  - pattern: catalogues
+    instead_of: catalogs
+  - pattern: catalogued
+    instead_of: cataloged
+  - pattern: grey
+    instead_of: gray
+  - pattern: greys
+    instead_of: grays
+  - pattern: greyer
+    instead_of: grayer
+  - pattern: greyest
+    instead_of: grayest
+  - pattern: aluminium
+    instead_of: aluminum
+  - pattern: enrol
+    instead_of: enroll
+  - pattern: enrols
+    instead_of: enrolls
+  - pattern: enrolment
+    instead_of: enrollment
+  - pattern: enrolments
+    instead_of: enrollments
+  - pattern: fulfil
+    instead_of: fulfill
+  - pattern: fulfils
+    instead_of: fulfills
+  - pattern: fulfilment
+    instead_of: fulfillment
+  - pattern: instalment
+    instead_of: installment
+  - pattern: instalments
+    instead_of: installments
+  - pattern: acknowledgement
+    instead_of: acknowledgment
+  - pattern: acknowledgements
+    instead_of: acknowledgments
+  - pattern: ageing
+    instead_of: aging
+  - pattern: manoeuvre
+    instead_of: maneuver
+  - pattern: manoeuvres
+    instead_of: maneuvers
+  - pattern: paediatric
+    instead_of: pediatric
+  - pattern: paediatrics
+    instead_of: pediatrics
+  - pattern: anaesthesia
+    instead_of: anesthesia
+  - pattern: oestrogen
+    instead_of: estrogen

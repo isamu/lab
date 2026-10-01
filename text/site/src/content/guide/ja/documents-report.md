@@ -320,10 +320,10 @@ $ npx chaffjs houkoku.md --genre business/report --experimental --compact
 
 houkoku.md   business/report · 日本語   ジャンルは--genreから   stet 1 件
 
-  5:68    warning この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
-                  excessive-hedging
   5:1     warning 「近年」は、どの記事にも当てはまる書き出しです
                   padded-intro
+  5:68    warning この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
+                  excessive-hedging
 
 指摘 2 件、動いていない rule 10 件
 ```
