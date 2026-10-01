@@ -89,7 +89,9 @@ export type ExplainSettings = {
 
 /** rule の意図と根拠を読む。指摘に納得できないときの入口。 */
 export const renderExplain = (rule: RuleDefinition, current: Level, language: string, unit: string, genre?: string, settings: ExplainSettings = {}): string => {
-  const { optionLayers = [], levelFrom, limit } = settings;
+  const { optionLayers = [], levelFrom } = settings;
+  // A rule with nothing to count has no number to set; chaff.yaml's number on it is reported as a problem and ignored.
+  const limit = rule.level_sets === "severity" ? undefined : settings.limit;
   const marked = limit === undefined ? current : undefined;
   const ui = uiLanguageOf(language);
   const text = TEXT[ui];

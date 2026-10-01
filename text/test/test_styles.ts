@@ -220,6 +220,9 @@ describe("house styles", () => {
     it("explain shows a number chaff.yaml sets, and an English document under koyobun at its level", async () => {
       const numbered = await runCli({ "chaff.yaml": "language: ja\nrules:\n  max-sentence-length: 80\n" }, ["explain", "max-sentence-length"]);
       assert.match(numbered.out, /いまは段階ではなく数で 80 です。\n/u);
+      const severityOnly = await runCli({ "chaff.yaml": "language: ja\nrules:\n  numbering-gap: 3\n" }, ["explain", "numbering-gap"]);
+      assert.doesNotMatch(severityOnly.out, /数で 3/u);
+      assert.match(severityOnly.out, /→ normal/u);
       const english = await runCli({ "chaff.yaml": "language: en\nstyle: koyobun\n" }, ["explain", "max-sentence-length"]);
       assert.match(english.out, /→ normal/u);
       assert.match(english.out, /Now: normal\. \(set by style: koyobun\)/u);
