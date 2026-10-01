@@ -45,8 +45,8 @@ example:
       Could you check the quote by Friday? The total on page two changed.
 
 not_flagged:
-  ja: クッション言葉が一つだけなら礼儀なので指しません。短い文書は測りません。
-  en: One softener is courtesy and is not reported. Short documents are not measured.
+  ja: クッション言葉が一つだけなら礼儀なので指しません。短い文書（メールなど）は、測れる最短の長さの文書として測るので、短いメールに一つだけなら指しません。
+  en: One softener is courtesy and is not reported. A short document, such as an email, is measured as if it were as long as the shortest document that can be measured, so one softener in a short email is not reported.
 level_meaning:
   ja: 1000 字あたり {limit} 個まで
   en: up to {limit} per 1000 words

@@ -54,6 +54,38 @@ describe("L2 の語彙表と密度", () => {
     it("valid: 用件から始めていれば指摘しない", () => {
       assert.ok(!idsFor(`# 依頼\n\n11 日までに返信をお願いします。${BULK}`).includes("cushion-phrase-density"));
     });
+
+    const SHORT_EMAIL = (body: string): string => `# Follow-up\n\nHi Dana,\n\n${body}\n\nBest regards,\nSam\n`;
+    const cushionFindings = (source: string, adapter: LanguageAdapter = en): readonly { readonly values: Record<string, unknown> }[] =>
+      runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "cushion-phrase-density": "normal" }, true, "business/email").findings.filter(
+        (finding) => finding.rule === "cushion-phrase-density",
+      );
+
+    it("invalid: a short email is measured as if it were as long as the floor, so softeners piled into it are reported", () => {
+      const body =
+        "I hope this email finds you well. I just wanted to reach out about the invoice we sent last week. Sorry to bother you, but could you confirm the payment date?";
+      const findings = cushionFindings(SHORT_EMAIL(body));
+      assert.deepEqual(
+        findings.map((finding) => finding.values["matched"]),
+        ["hope this email finds you well", "just wanted to", "sorry to bother"],
+      );
+      assert.ok(Number(findings[0]?.values["density"]) > 50, "the density shown is the document's own");
+    });
+
+    it("valid: one softener in a short email is courtesy", () => {
+      assert.deepEqual(cushionFindings(SHORT_EMAIL("Sorry to bother you, but could you confirm the payment date by Friday?")), []);
+    });
+
+    it("invalid: 短い日本語のメールでも、クッション言葉が重なれば指摘する", () => {
+      const body = "お忙しいところ恐れ入りますが、請求書をご確認ください。差し支えなければ、金曜までにご返信ください。";
+      assert.equal(cushionFindings(`# ご確認のお願い\n\n${body}\n`, ja).length, 3);
+      assert.deepEqual(cushionFindings(`# ご確認のお願い\n\n恐れ入りますが、請求書をご確認ください。\n`, ja), []);
+    });
+
+    it("valid: a short document is still not measured for hedges (they are found stacked in one sentence instead)", () => {
+      const hedges = "It may be useful. Perhaps it helps.";
+      assert.ok(!idsFor(`# Note\n\n${hedges}\n`, en).includes("excessive-hedging"));
+    });
   });
 
   describe("unqualified-superlative", () => {

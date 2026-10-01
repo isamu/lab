@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `cushion-phrase-density` reads short emails
+
+A short work email with three softeners ("I hope this email finds you well. I just wanted to reach out … Sorry to
+bother you, but …") was never reported: density rules skip documents shorter than a floor, and softeners pile up in
+exactly those short emails and letters. The rule now measures a short document as if it were as long as the floor, so a
+short email is reported when its softeners would be too many even at that length; one softener is still courtesy. The
+density in the message is still the document's own. `excessive-hedging` keeps skipping short documents (its stacked
+hedges are found in one sentence). The English word list gains "hope this email finds you well" (and the "message" and
+plain forms), "sorry to trouble", "just reaching out" and "just checking in".
+
 ### Guide: what chaff does for more kinds of document, in Japanese
 
 「文書の種類ごとにできること」 is now a chooser: find the kind of document you have, go to its page. New pages,
