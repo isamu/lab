@@ -86,17 +86,30 @@ const isHedged = (sentence: string, phrase: Phrase, words: CountWords): boolean 
 
 const COLON_END = /[:：][ \t]*$/u;
 
-/** 数える語の無い数は、先を指す語のすぐ後ろでだけ（the following two:）。「under $75:」の金額を数に読まない。 */
-const pointsAhead = (sentence: string, phrase: Phrase, anchors: readonly string[]): boolean => {
+/** 数字か、語の切れ目で区切った英語の数の語（two）。漢数字は「一緒」「一般」の中にもあるので数えない。 */
+const numberPattern = (words: CountWords): RegExp => {
+  const latin = words.numbers.filter((number) => isLatin(number[0]));
+  return latin.length === 0 ? /\p{Nd}/u : new RegExp(`\\p{Nd}|(?<![A-Za-z])(?:${alternation(latin)})(?![A-Za-z])`, "iu");
+};
+
+type Patterns = { readonly phrase: RegExp; readonly number: RegExp };
+
+/**
+ * 数える語の無い数は、先を指す語のすぐ後ろでだけ（the following two:）。「under $75:」の金額を数に読まない。
+ * 先を指す語が無く、終わりのコロンだけが予告なら、コロンが渡すのはその手前のいちばん近い数。数の後ろにまだ数があれば
+ * （「1 つのページにまとめていましたが、2 ページに分けました:」）、その数は予告の数ではない。
+ */
+const pointsAhead = (sentence: string, phrase: Phrase, anchors: readonly string[], number: RegExp): boolean => {
   const before = sentence.slice(0, phrase.start).toLowerCase();
   const lowered = anchors.map((anchor) => anchor.toLowerCase());
   if (!phrase.counted) return lowered.some((anchor) => endsWithWord(before.trimEnd(), anchor));
-  return COLON_END.test(sentence.trimEnd()) || lowered.some((anchor) => before.includes(anchor));
+  if (lowered.some((anchor) => before.includes(anchor))) return true;
+  return COLON_END.test(sentence.trimEnd()) && !number.test(sentence.slice(phrase.end));
 };
 
 /** 最後の一文の予告。数がちょうど一つで、目安や順番でなく、先を指しているときだけ。 */
-const announcedIn = (sentence: string, words: CountWords, pattern: RegExp): Phrase | undefined => {
-  const phrases = [...sentence.matchAll(pattern)].map((match) => ({
+const announcedIn = (sentence: string, words: CountWords, patterns: Patterns): Phrase | undefined => {
+  const phrases = [...sentence.matchAll(patterns.phrase)].map((match) => ({
     start: match.index,
     numberEnd: match.index + (match[1] ?? "").length,
     end: match.index + match[0].length,
@@ -105,7 +118,7 @@ const announcedIn = (sentence: string, words: CountWords, pattern: RegExp): Phra
   }));
   const only = phrases.length === 1 ? phrases[0] : undefined;
   if (only === undefined || only.announced < 1 || isHedged(sentence, only, words)) return undefined;
-  return pointsAhead(sentence, only, words.anchors) ? only : undefined;
+  return pointsAhead(sentence, only, words.anchors, patterns.number) ? only : undefined;
 };
 
 /** 位置から空白と改行を読み飛ばした先。 */
@@ -127,22 +140,44 @@ const neighboursOf = (source: string, lists: readonly BulletList[]): Neighbours 
 const hasNeighbour = (source: string, list: Span, neighbours: Neighbours): boolean =>
   neighbours.ends.has(list.start) || neighbours.starts.has(pastSpace(source, list.end));
 
-type Context = { readonly source: string; readonly words: CountWords; readonly pattern: RegExp; readonly neighbours: Neighbours };
+/**
+ * 分類した箇条書き（「- **実運用**: CLI / Telegram」）の行は、ラベルの後ろに項目を区切って並べる。予告の数は区切った項目の数かもしれない。
+ * 区切りは「/」「／」「、」「,」「，」。
+ */
+const CATEGORY_ITEM = /^[ \t]*(?:[-*+]|\d{1,9}[.)])[ \t]+[^:：\n]{1,40}[:：][ \t]*(?<members>\S[^\n]*)/u;
+const MEMBER_SEPARATOR = /[/／、,，]/u;
 
-const mismatchOf = ({ source, words, pattern, neighbours }: Context, list: BulletList): CountMismatch[] => {
+const membersOf = (item: string): number | undefined =>
+  CATEGORY_ITEM.exec(item)
+    ?.groups?.["members"]?.split(MEMBER_SEPARATOR)
+    .filter((member) => member.trim() !== "").length;
+
+/** どの行も分類の形なら、区切って並べた項目の数の和。一行でも違えば undefined。 */
+export const categorisedCount = (source: string, list: BulletList): number | undefined => {
+  const counts = list.itemSpans.map((item) => membersOf(source.slice(item.start, item.end)));
+  return counts.every((count) => count !== undefined) ? counts.reduce<number>((sum, count) => sum + (count ?? 0), 0) : undefined;
+};
+
+/** 予告の数が、行の数か、分類した行に並べた項目の数に合う。 */
+const matchesList = (announced: number, source: string, list: BulletList): boolean =>
+  announced === list.items.length || announced === categorisedCount(source, list);
+
+type Context = { readonly source: string; readonly words: CountWords; readonly patterns: Patterns; readonly neighbours: Neighbours };
+
+const mismatchOf = ({ source, words, patterns, neighbours }: Context, list: BulletList): CountMismatch[] => {
   if (hasNeighbour(source, list.span, neighbours)) return [];
   const lead = leadBefore(source, list.span.start);
   if (lead === undefined) return [];
   const sentenceStart = lastSentenceStart(lead.text);
   const sentence = lead.text.slice(sentenceStart);
-  const phrase = announcedIn(sentence, words, pattern);
-  if (phrase === undefined || phrase.announced === list.items.length) return [];
+  const phrase = announcedIn(sentence, words, patterns);
+  if (phrase === undefined || matchesList(phrase.announced, source, list)) return [];
   const offset = lead.start + sentenceStart + phrase.start;
   return [{ offset, phrase: sentence.slice(phrase.start, phrase.end).trim(), announced: phrase.announced, listed: list.items.length }];
 };
 
 export const announcedCountMismatches = (source: string, lists: readonly BulletList[], words: CountWords): CountMismatch[] => {
   if (words.counters.length === 0) return [];
-  const context = { source, words, pattern: phrasePattern(words), neighbours: neighboursOf(source, lists) };
+  const context = { source, words, patterns: { phrase: phrasePattern(words), number: numberPattern(words) }, neighbours: neighboursOf(source, lists) };
   return lists.flatMap((list) => mismatchOf(context, list));
 };

@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `announced-count-mismatch` reads a categorised list and the number nearest the colon (#432)
+
+Two misreadings are fixed. When only a colon at the end of a sentence announces the list (no 以下の / following), the
+colon announces the number nearest to it, so a number with another number after it is no longer taken as the count
+(「これまで 1 つのページにまとめていましたが、2 ページに分けました:」). A list whose every item is a label and its members
+(`- **実験的**: Slack / Discord / Matrix`) is not reported when the members, split at `/`, `／`, `、`, `,` or `，`, add up
+to the announced count. A word pointing ahead still names the count whatever number follows it.
+
 ### On a Node.js older than 24, `chaff` says which version it needs instead of failing with a SyntaxError (#398)
 
 npm runs a package whose `engines` the Node.js does not meet, with a warning at most, and the CLI then failed while

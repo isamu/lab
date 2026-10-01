@@ -99,4 +99,44 @@ describe("announced-count-mismatch", () => {
     const quoted = ["# Notice", "", "> Check the following three items:", ">", "> - A", "> - B", ""].join("\n");
     assert.deepEqual(found(quoted), []);
   });
+
+  // 自作の文。#432 の形：分類した箇条書きと、コロンの手前の別の数。
+  it("a categorised list: the count may be the members listed after each label", () => {
+    const services = [
+      "- **実運用**: CLI / Telegram",
+      "- **動作確認済み**: LINE",
+      "- **実験的**: Slack / Discord / WhatsApp / Matrix / IRC / Mattermost / Zulip / Messenger / Google Chat",
+    ];
+    assert.deepEqual(found(doc("つながるサービスが 12 種類に揃いました:", ...services), ja), []);
+    assert.deepEqual(
+      found(
+        doc("We support 12 options:", "- **Stable**: CLI, Telegram", "- **Tested**: LINE", "- **Experimental**: Slack / Discord / A / B / C / D / E / F / G"),
+      ),
+      [],
+    );
+    assert.deepEqual(found(doc("We support 11 options:", "- **Stable**: CLI, Telegram", "- **Tested**: LINE", "- **Experimental**: Slack")), ["11 options/3"]);
+    assert.deepEqual(found(doc("つながるサービスが 3 種類に揃いました:", ...services), ja), []);
+    assert.deepEqual(found(doc("つながるサービスが 11 種類に揃いました:", ...services), ja), ["11 種類/3"]);
+  });
+
+  it("a list counted by members only when every item is a label with members", () => {
+    assert.deepEqual(found(doc("次の2点を確認してください。", "- **書類**: 住民票、印鑑証明", "- 口座", "- 印鑑"), ja), ["2点/3"]);
+    assert.deepEqual(found(doc("次の4点を確認してください。", "- 住民票、印鑑証明", "- 口座、印鑑"), ja), ["4点/2"]);
+  });
+
+  it("with only a colon pointing ahead, the colon announces the nearest number", () => {
+    const pages = ["- **Calendar**：予定", "- **Actions**：タスク"];
+    assert.deepEqual(found(doc("これまで「Scheduler」という 1 つのページにまとめていましたが、独立した 2 ページに分けました:", ...pages), ja), []);
+    assert.deepEqual(found(doc("We merged three tasks into 2 pages:", "- Calendar", "- Actions")), []);
+    assert.deepEqual(found(doc("We merged three tasks into two pages:", "- Calendar", "- Actions")), []);
+  });
+
+  it("a word pointing ahead still names the count, whatever number follows it", () => {
+    assert.deepEqual(found(doc("以下の3点を、2週間以内に確認してください:", "- A", "- B"), ja), ["3点/2"]);
+    assert.deepEqual(found(doc("Check the following three items within 2 weeks:", "- A", "- B")), ["three items/2"]);
+  });
+
+  it("the number nearest the colon is still compared", () => {
+    assert.deepEqual(found(doc("改善したのは 3 つの画面です:", "- A", "- B"), ja), ["3 つ/2"]);
+  });
 });
