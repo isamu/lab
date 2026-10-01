@@ -345,7 +345,7 @@ npx chaffjs compare before.md after.md --json                     # for an AI to
 The kinds are `number`, `date`, `time`, `url`, `code`, `name`, `quote`, `heading`, `reference` and `footnote`.
 `--json` lists every dropped and added fact with its line, so it can go straight back to the AI that did the rewrite.
 
-### Listing the facts before a rewrite
+## Listing the facts before a rewrite
 
 A rewrite from scratch starts from what the document says, not from its sentences. `facts` lists that: every fact `compare` will check, kind by kind, with the line each is on.
 It uses `compare`'s own reader, so the list is exactly what the rewrite will be held to.
@@ -374,7 +374,7 @@ references: 1
 After rewriting, npx chaffjs compare before.md <rewritten> checks that every fact on this list is still there
 ```
 
-`--compact` gives one fact per line, and `--json` gives every fact with its kind, key, text and line, for an AI to keep as its inventory while it writes.
+`--compact` gives one fact per line. `--json` gives every fact with its kind, key, text and line, for an AI to keep as its inventory while it writes.
 
 ## Checks that read meaning, and re-measuring the limits
 
