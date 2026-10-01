@@ -53,6 +53,8 @@ groups:
       colon-lead-in: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
+      # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
+      nominalization: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -151,6 +153,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      nominalization: off
       dangling-reference: off
       duplicate-definition: off
       date-order: off
