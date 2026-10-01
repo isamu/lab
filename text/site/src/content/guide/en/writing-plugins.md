@@ -55,7 +55,7 @@ First, make a folder and a `package.json`. Name the package `chaff-plugin-<name>
   "name": "chaff-plugin-example",
   "type": "module",
   "main": "index.mjs",
-  "peerDependencies": { "chaffjs": ">=0.18.0" }
+  "peerDependencies": { "chaffjs": ">=0.19.0" }
 }
 ```
 

@@ -55,7 +55,7 @@ chaff が行と桁を数え、その位置の文を引用し、ルールの `mes
   "name": "chaff-plugin-example",
   "type": "module",
   "main": "index.mjs",
-  "peerDependencies": { "chaffjs": ">=0.18.0" }
+  "peerDependencies": { "chaffjs": ">=0.19.0" }
 }
 ```
 
