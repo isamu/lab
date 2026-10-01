@@ -1,0 +1,15 @@
+# 要求の文の目印。requirement-smell は、これで終わる文だけを要求として見る。
+# 日本語の文は述語が終わりに来るので、目印はどれも文の終わりにあるときだけ当たる（position: after）。
+# 文の途中の「回避されてはならないものとされる諸手段をいいます」は語の定義で、要求ではない。
+id: requirement-marker
+language: ja
+entries:
+  - { pattern: なければならない, position: after }
+  - { pattern: なければなりません, position: after }
+  - { pattern: てはならない, position: after }
+  - { pattern: てはなりません, position: after }
+  - { pattern: ものとする, position: after }
+  - { pattern: ものとします, position: after }
+  - { pattern: 必要がある, position: after }
+  - { pattern: 必要があります, position: after }
+  - { pattern: こと, position: after }

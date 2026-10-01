@@ -52,6 +52,7 @@ chaff のルールが何を根拠にしているかを、論文と規格ごと�
     一文の字数の上限は書いていません。
   - chaff では：`max-sentence-length`、[`no-mixed-desumasu`](../../rules/no-mixed-desumasu/)、
     [`agentless-passive`](../../rules/agentless-passive/) の裏付けです。
+    「調査を実施した」を「調査した」に直す例は、[`nominalization`](../../rules/nominalization/) が見ます。
 - <a id="iori-2016"></a>**庵功雄（2016）** [iwanami.co.jp](https://www.iwanami.co.jp/book/b243840.html)
   - 『やさしい日本語―多文化共生社会へ』
   - 載った所：岩波新書。
@@ -103,6 +104,7 @@ chaff のルールが何を根拠にしているかを、論文と規格ごと�
   - 分かったこと：25 語を超える文は分ける、1 段落は 5 文まで、と数で書いています。
   - chaff では：英語の `max-sentence-length` の normal（25 語）と、
     [`max-paragraph-length`](../../rules/max-paragraph-length/) の normal（5 文）がこれと同じです。
+    動詞を名詞にしない（"make a decision" ではなく "decide"）は `nominalization` が見ます。
 - <a id="iso-24495-1"></a>**ISO 24495-1:2023** [cdn.standards.iteh.ai (PDF)](https://cdn.standards.iteh.ai/samples/78907/d194fac21d6a45f38bfcfec9657f7498/ISO-24495-1-2023.pdf)
   - Plain language — Part 1: Governing principles and guidelines
   - 載った所：ISO。リンク先は、販売元の iTeh が出している見本の PDF です。
@@ -119,6 +121,7 @@ chaff のルールが何を根拠にしているかを、論文と規格ごと�
     外向けの文書は です・ます で書き、外来語の語末の「ー」は付け（コンピューター）、全角と半角を揃えます。
   - chaff では：`max-sentence-length`、`no-mixed-desumasu`、
     [`katakana-long-vowel`](../../rules/katakana-long-vowel/)、[`latin-spacing`](../../rules/latin-spacing/) の裏付けです。
+    `chaff.yaml` に `style: koyobun` と書くと、和文の一文を 60 字までとし、です・ますの混在と、語末の「ー」を省いた語を見ます。
 - <a id="gairaigo-1991"></a>**内閣告示（1991）** [bunka.go.jp](https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/gairai/honbun06.html)
   - 「外来語の表記」
   - 載った所：平成 3 年 内閣告示第 2 号。
@@ -211,7 +214,7 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
   - Do LLMs write like humans? Variation in grammatical and rhetorical styles
   - 載った所：PNAS。
   - 分かったこと：指示に従うよう調整したモデルは、分詞の節や名詞化を人の何倍も使い、名詞を並べる書きかたも多いと示しました。
-  - chaff では：[`rule-of-three`](../../rules/rule-of-three/) の裏付けです。
+  - chaff では：[`rule-of-three`](../../rules/rule-of-three/) の裏付けです。名詞化の多さは `nominalization` が見ます。
 - <a id="kobak-2025"></a>**Kobak ほか（2025）** [arxiv.org](https://arxiv.org/abs/2406.07016)
   - Delving into LLM-assisted writing in biomedical publications through excess vocabulary
   - 載った所：Science Advances、11 巻 27 号。
@@ -263,12 +266,13 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
 - <a id="iso-29148"></a>**ISO/IEC/IEEE 29148:2018** [standards.ieee.org](https://standards.ieee.org/ieee/29148/6937/)
   - Systems and software engineering — Life cycle processes — Requirements engineering
   - 分かったこと：良い要件とは何かを定めた国際規格です。抜け道になる言い回しや曖昧な副詞など、避ける言葉も挙げています。
-  - chaff では：【背景】下の Femmer ほかが、この規格の言葉の決まりを機械の検査にしています。
+  - chaff では：[`requirement-smell`](../../rules/requirement-smell/) が、この規格の挙げる抜け道（if possible、as appropriate）と、
+    閉じない列挙（but not limited to）を、要求の文の中で探します。
 - <a id="berry-2003"></a>**Berry, Kamsties, Krieger（2003）** [cs.uwaterloo.ca (PDF)](https://cs.uwaterloo.ca/~dberry/handbook/ambiguityHandbook.pdf)
   - From Contract Drafting to Software Specification: Linguistic Sources of Ambiguity
   - 分かったこと：契約書と仕様書で、読みかたが割れる言葉を集めた手引きです。
     and/or、all と each、only の位置、何を指すか分からない代名詞などを挙げています。
-  - chaff では：【背景】ここに並ぶ言葉の多くは、まだ chaff のルールになっていません。
+  - chaff では：and/or（及び／又は）は `requirement-smell` が要求の文の中で探します。ほかの言葉の多くは、まだ chaff のルールになっていません。
 - <a id="femmer-2017"></a>**Femmer ほか（2017）** [doi.org](https://doi.org/10.1016/j.jss.2016.02.047)
   - Rapid quality assurance with Requirements Smells
   - 載った所：Journal of Systems and Software、123 巻、190–213 頁。
@@ -277,6 +281,7 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
     指摘のうち当たりは平均 59%、悪い兆しのうち見つけた割合は平均 82% でした。
   - chaff では：[`unqualified-superlative`](../../rules/unqualified-superlative/)、
     [`excessive-hedging`](../../rules/excessive-hedging/)、`dangling-reference` の裏付けです。
+    `requirement-smell` は、抜け道と閉じない列挙（等、etc.）を要求の文の中で探します。この研究でも当たりは指摘の 6 割ほどだったので、試験中のルールにしています。
     機械の指摘は人が確かめる、という chaff の考えとも同じです。
 - <a id="gervasi-zowghi-2005"></a>**Gervasi, Zowghi（2005）** [doi.org](https://doi.org/10.1145/1072997.1072999)
   - Reasoning about inconsistencies in natural language requirements

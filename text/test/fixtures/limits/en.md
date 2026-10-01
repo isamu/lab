@@ -53,6 +53,8 @@ The next meeting is on the tenth. The agenda will follow by email. The slides ar
 
 The key point is the key. Here's the thing: the map matters. Honestly, time is short.
 
+The board made a decision last week, and the team will conduct an analysis of the results.
+
 ## 🚀 Before
 
 Bring the key.
