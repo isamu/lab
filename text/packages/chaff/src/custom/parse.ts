@@ -231,6 +231,7 @@ const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, us
     examples: parts.examples,
     notFlagged: {},
     levelMeaning: {},
+    sources: [],
   },
 });
 
