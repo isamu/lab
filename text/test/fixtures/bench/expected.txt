@@ -51,6 +51,7 @@ preferred-term                         12     12       0             0
 ra-nuki                                 2      2       0             0
 repeated-conjunction                    7      7       0             0
 required-sections                      20     20       0             0
+requirement-smell                       2      2       0             0
 sasete-itadaku                          3      3       0             0
 sentence-initial-conjunction-run        1      1       0             0
 space-before-punctuation               13     13       0             0
@@ -433,6 +434,7 @@ ja/requirements  heading-copied  found
 ja/requirements  section-emptied  found
 ja/requirements  hedge-double-negative-ja  found
 ja/requirements  ra-dropped  found
+ja/requirements  requirement-loosened  found
 en/blog  sentences-joined  found
 en/blog  paragraphs-joined  found
 en/blog  heading-echoed  found
@@ -718,3 +720,4 @@ en/requirements  period-spaced  found
 en/requirements  heading-copied  found
 en/requirements  section-emptied  found
 en/requirements  hedge-double-negative-en  found
+en/requirements  requirement-loosened  found

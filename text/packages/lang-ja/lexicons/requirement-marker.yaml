@@ -1,0 +1,16 @@
+# 要求の文の目印。requirement-smell は、これのある文だけを要求として見る。
+# position: after は、文の終わりにあるときだけ目印になる語（「予約できること。」の「こと」）。文の途中の「こと」は要求ではない。
+# 活用する語は原形で書く。
+id: requirement-marker
+language: ja
+entries:
+  - pattern: なければならない
+  - pattern: なければなりません
+  - pattern: てはならない
+  - pattern: てはなりません
+  - pattern: ものとする
+  - pattern: ものとします
+  - pattern: 必要がある
+  - pattern: 必要があります
+  - pattern: こと
+    position: after

@@ -1,0 +1,10 @@
+# 「及び」と「又は」を重ねた書き方（Berry ほか 2003 の and/or）。両方なのか、片方でよいのかを読み手が決められない。
+id: requirement-either
+language: ja
+entries:
+  - pattern: 及び/又は
+  - pattern: 及び／又は
+  - pattern: および/または
+  - pattern: および／または
+  - pattern: かつ/または
+  - pattern: かつ／または
