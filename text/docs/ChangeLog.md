@@ -21,10 +21,10 @@ shows both and how each measure moved.
 
 ### `chaff facts <file>`: the facts to keep, before a rewrite (#439)
 
-Lists every fact atom `chaff compare` reads in one document — numbers, dates, times, URLs, code, names, quotations,
-headings, references, footnotes — as a checklist with the line of each, so a rewrite from scratch can start from the
-inventory instead of the old text. It is compare's own extractor, not a new parser: the counts are the ones compare
-holds the rewrite to.
+Lists every fact atom `chaff compare` reads in one document as a checklist, with the line of each. The kinds are
+numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes. A rewrite from scratch can then start from
+the inventory instead of the old text. It is compare's own extractor, not a new parser: the counts are the ones
+compare holds the rewrite to.
 
 - The first line counts every kind, zeros included; a kind that could not be read is listed with the reason.
 - `--compact` (one fact per line, kind in English) and `--json` (path, language, counts, unread kinds, every fact with
