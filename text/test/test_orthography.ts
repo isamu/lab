@@ -255,6 +255,16 @@ describe("latin-spacing", () => {
     ]);
   });
 
+  it("skips the space after an indented item number in plain text (the sentence starts at the number), and still counts the spaces in its item", () => {
+    const spacingOf = (source: string): string[] =>
+      runRules(buildDocument("a.txt", source, ja), loadRules("ja"), { "latin-spacing": "normal" }, false, "technical/readme")
+        .findings.filter((finding) => finding.rule === "latin-spacing")
+        .map((finding) => `${String(finding.values["kind"])}:${String(finding.values["style"])}`);
+    const indent = " ".repeat(2);
+    assert.deepEqual(spacingOf(`APIを呼び、JSONを返す。\n\n${indent}一 JISの英数字\n\n${indent}二 ASCIIの記号\n`), []);
+    assert.deepEqual(spacingOf(`APIを呼び、JSONを返す。\n\n${indent}一 JISの英数字\n\n${indent}二 ASCII の記号\n`), ["英字:空けています"]);
+  });
+
   it("counts an item number written without the space (三JSON) as touching", () => {
     assert.deepEqual(spacing("# 文字\n\nAPI を呼び、JSON を返し、ID を保存する。\n\n一 JIS の文字\n\n二 XML の形式\n\n三CSVの形式\n"), [
       "英字:詰めています",
