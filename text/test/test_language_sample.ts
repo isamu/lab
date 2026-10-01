@@ -19,9 +19,18 @@ describe("guessLanguage reads the prose, not the code (#399)", () => {
       .map((line) => `\`${line}\``)
       .join(" ");
     const urls = Array.from({ length: 12 }, (_, index) => `https://example.com/some/long/english/path/${String(index)}`).join(" ");
-    const comment = `<!-- ${CODE_LINES.join(" ")} -->`;
+    const comment = `<!-- a -> b ${CODE_LINES.join(" ")} -->`;
     const frontMatter = ["---", ...Array.from({ length: 20 }, (_, index) => `english_key_${String(index)}: some english value`), "---"].join("\n");
     assert.equal(guessLanguage(`${frontMatter}\n\n${JAPANESE}\n\n${inline}\n\n${urls}\n\n${comment}\n`).language, "ja");
+  });
+
+  it("the prose inside HTML or MDX components counts, their tags do not", () => {
+    const code = fenced(CODE_LINES);
+    assert.equal(guessLanguage(`<Tabs>\n${JAPANESE}\n</Tabs>\n\n${code}\n`).language, "ja");
+    assert.equal(guessLanguage(`<details>\n<summary>${JAPANESE}</summary>\n\n${JAPANESE}\n</details>\n\n${code}\n`).language, "ja");
+    const imports = Array.from({ length: 10 }, (_, index) => `import { Component${String(index)} } from "@site/components/component-${String(index)}";`);
+    assert.equal(guessLanguage(`${imports.join("\n")}\n\n${JAPANESE}\n`).language, "ja");
+    assert.equal(guessLanguage(`<div>${JAPANESE}</div>\n\n${ENGLISH}\n`).language, "ja");
   });
 
   it("an English article with Japanese only in its code stays English", () => {

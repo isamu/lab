@@ -8,8 +8,8 @@ Newest first.
 
 The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
 code blocks came out English: the Japanese rules did not run and the English ones read Japanese headings. The guess
-now leaves out fenced code blocks, inline code, HTML (comments included), front matter and URLs. Indented text is kept,
-because in plain text it is prose. A document that is nothing but code is still judged from all of it. `chaff`,
+now leaves out fenced code blocks, inline code, HTML tags and comments (the text between tags still counts), YAML
+front matter, MDX imports and component lines, and URLs. Indented text is kept, because in plain text it is prose. A document that is nothing but code is still judged from all of it. `chaff`,
 `chaff test`, `chaff eval` and `chaff tree` all guess the same way.
 
 ### `chaff compare <before> <after>`: did a rewrite keep its facts?
