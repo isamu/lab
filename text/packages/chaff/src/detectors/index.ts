@@ -36,6 +36,7 @@ import { imageAltText } from "./image-alt-text.ts";
 import { brokenLink } from "./broken-link.ts";
 import { urlRunOn } from "./url-run-on.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
+import { customPattern, customTokens, customWords } from "./custom.ts";
 import { assistantResidue, contrastFraming, stockTransition, unfilledPlaceholder } from "./ai-phrasing.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -87,6 +88,9 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "latin-spacing": latinSpacing,
   "stray-space": straySpace,
   "katakana-long-vowel": katakanaLongVowel,
+  "custom-words": customWords,
+  "custom-pattern": customPattern,
+  "custom-tokens": customTokens,
   "dangling-reference": danglingReference,
   "date-weekday-mismatch": dateWeekdayMismatch,
   "date-order": dateOrder,

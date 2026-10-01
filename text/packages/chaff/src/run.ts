@@ -1,6 +1,6 @@
 import { DETECTORS } from "./detectors/index.ts";
 import { resolve, severityAt } from "./levels.ts";
-import type { AdapterNeeds, Finding, Level, ProseDocument, RuleDefinition } from "./plugin.ts";
+import type { AdapterNeeds, Detector, DetectorOptions, Finding, Level, ProseDocument, RuleDefinition } from "./plugin.ts";
 import { lineStarts, placeOf } from "./position.ts";
 import { REASONS, type Reasons } from "./reasons.ts";
 import { joinWords } from "./detectors/word-list.ts";
@@ -13,6 +13,7 @@ import { uiLanguageOf } from "./ui.ts";
 import { presetLevels } from "./genre-load.ts";
 import { bodySectionOf } from "./body-section.ts";
 import { optionValues, settleOptions, type OptionLayer } from "./rule-options.ts";
+import { PatternTimeout } from "./custom/bounded-match.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
 
@@ -140,6 +141,20 @@ export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, e
 /** The token features the rules read (RuleDefinition.token_features), each once. */
 export const tokenFeaturesOf = (rules: readonly RuleDefinition[]): string[] => [...new Set(rules.flatMap((rule) => rule.token_features ?? []))];
 
+/** A detector's findings, or how long it ran before a team's pattern was stopped (bounded-match.ts). Other errors are chaff's bugs and propagate. */
+const runDetector = (
+  detector: Detector,
+  doc: ProseDocument,
+  options: DetectorOptions,
+): { readonly findings: readonly Finding[] } | { readonly timedOut: number } => {
+  try {
+    return { findings: detector(doc, options) };
+  } catch (error) {
+    if (error instanceof PatternTimeout) return { timedOut: error.budget_ms };
+    throw error;
+  }
+};
+
 const place = (starts: readonly number[], finding: Finding): Finding => {
   const offset = finding.values["offset"];
   const at = placeOf(starts, typeof offset === "number" ? offset : 0);
@@ -250,8 +265,11 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
         fullSentence: rule.full_sentence,
         embeddedLimits: embeddedLimitsFor(rule, level, genre, embedded),
         ...(rule.options === undefined ? {} : { settings: optionValues(settleOptions(rule.id, rule.options, optionLayers)) }),
+        ...(rule.custom === undefined ? {} : { custom: rule.custom }),
       };
-      const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: severityAt(rule, level, genre) }));
+      const ran = runDetector(detector, doc, options);
+      if ("timedOut" in ran) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).patternTimeout(ran.timedOut) }] };
+      const found = ran.findings.map((finding) => place(starts, { ...finding, rule: rule.id, severity: severityAt(rule, level, genre) }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };
     },
     { findings: [], skipped: [] },

@@ -3,6 +3,7 @@ import type { CliText } from "./cli-text.ts";
 import type { UiLanguage } from "./ui.ts";
 import { styleProblems } from "./config/style.ts";
 import { loadStyles } from "./style-load.ts";
+import { customRuleProblems } from "./custom/problems.ts";
 import { GENRES } from "./genre.ts";
 import { unknownGenres, writtenGenres } from "./genre-check.ts";
 import { loadProfiles } from "./profile/load.ts";
@@ -25,4 +26,5 @@ export const settingProblems = (command: string, genreFlag: string | undefined, 
   ...genreProblems(command, genreFlag, config, text),
   ...profileProblems(command, config, text),
   ...styleProblems(config, loadStyles(), ui),
+  ...customRuleProblems(config, ui),
 ];
