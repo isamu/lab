@@ -15,6 +15,28 @@ Newest first.
 - `style: jis-z8301-2019` turns it on with JIS's forms. It does not decide the final ー of loanwords, which the 2019
   edition leaves to each industry.
 
+### `chaff facts <file>`: the facts to keep, before a rewrite (#439)
+
+Lists every fact atom `chaff compare` reads in one document as a checklist, with the line of each. The kinds are
+numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes. A rewrite from scratch can
+then start from the inventory instead of the old text. It is compare's own extractor, not a new parser: the counts
+are the ones compare holds the rewrite to.
+
+- The first line counts every kind, zeros included; a kind that could not be read is listed with the reason.
+- `--compact` (one fact per line, kind in English) and `--json` (path, language, counts, unread kinds, every fact with
+  kind, key, text and line). The screen follows the document's language.
+- One file per run; none or more than one is a usage error (exit 1).
+
+### A line holding only a link ends its own sentence (#400)
+
+Links listed one per line without a bullet (a series index at the end of an article) were read as one long sentence,
+because Markdown joins the lines of a paragraph. A line that is exactly one link now ends its item, the way a
+bracketed subheading line already did, as long as the line before it ends a sentence, ends with 「：」, or is such a line
+itself; a link inside a sentence wrapped across lines stays in that sentence. When such lines run to the end of the
+paragraph they are read as list items, so `repeated-sentence-head`, `max-paragraph-length` and the other list-aware
+rules treat them as they treat the same lines written with `- `; one link line in the middle of a paragraph stays one
+of its sentences. Every rule that reads sentences takes this path.
+
 ### `latin-spacing` skips link text and version numbers, and reports a two-way document once (#395)
 
 ### `unqualified-superlative` reads 「〜のほうが」「〜との」 and quotations (#394)
