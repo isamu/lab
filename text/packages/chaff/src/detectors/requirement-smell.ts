@@ -1,5 +1,5 @@
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
-import { comparableText, comparableWords, entryIn, entryRanges } from "./lexicon-match.ts";
+import { entryCloses, entryIn, entryRanges } from "./lexicon-match.ts";
 
 // Requirements smells (Femmer et al. 2017; Berry et al. 2003; ISO/IEC/IEEE 29148): a loophole, an open-ended list and
 // "and/or", in a sentence that states a requirement. What makes a sentence a requirement, and each smell's words, come
@@ -16,20 +16,8 @@ const MARKERS = "requirement-marker";
 /** Sentence ends that look like a marker and are not one (「…のこと。」 defines a term). The language may have none. */
 const NOT_MARKERS = "requirement-not-marker";
 
-/** Marks and closing brackets that may follow the last word of a sentence (こと。」, must.). */
-const TRAILING_MARKS = new Set([..." \t\n。．.!！?？」』)）\"'”’"]);
-
-const withoutTrailingMarks = (text: string): string => {
-  const chars = [...text];
-  return chars.slice(0, chars.findLastIndex((char) => !TRAILING_MARKS.has(char)) + 1).join("");
-};
-
-/** Whether the sentence ends with the entry, past its closing marks. */
-const closesWith = (sentence: Sentence, entry: LexiconEntry): boolean =>
-  withoutTrailingMarks(comparableText(sentence)).endsWith(comparableWords(entry.pattern));
-
 /** A marker with position: after counts only at the end of the sentence (「…できること。」); any other, anywhere in it. */
-const isMarkedBy = (sentence: Sentence, entry: LexiconEntry): boolean => (entry.position === "after" ? closesWith(sentence, entry) : entryIn(sentence, entry));
+const isMarkedBy = (sentence: Sentence, entry: LexiconEntry): boolean => (entry.position === "after" ? entryCloses(sentence, entry) : entryIn(sentence, entry));
 
 export const isRequirement = (sentence: Sentence, markers: Lexicon, notMarkers: Lexicon): boolean =>
   markers.some((entry) => isMarkedBy(sentence, entry)) && !notMarkers.some((entry) => isMarkedBy(sentence, entry));

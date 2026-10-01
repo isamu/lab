@@ -59,3 +59,15 @@ export const entryOpens = (sentence: Sentence, entry: LexiconEntry): boolean => 
   const first = tokens.findIndex((token) => !LEADING_MARK.has(token.pos));
   return runsAt(tokens, words, first);
 };
+
+/** Marks and closing brackets that may follow the last word of a sentence (こと。」, must.). */
+const TRAILING_MARKS = new Set([..." \t\n。．.!！?？」』)）\"'”’"]);
+
+const withoutTrailingMarks = (text: string): string => {
+  const chars = [...text];
+  return chars.slice(0, chars.findLastIndex((char) => !TRAILING_MARKS.has(char)) + 1).join("");
+};
+
+/** Whether the sentence ends with the lexicon's word, past its closing marks (「…できること。」 ends with こと). */
+export const entryCloses = (sentence: Sentence, entry: LexiconEntry): boolean =>
+  withoutTrailingMarks(comparableText(sentence)).endsWith(comparableWords(entry.pattern));
