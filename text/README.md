@@ -136,6 +136,7 @@ npx chaffjs rules --json         いまの設定とルールの説明を JSON �
 npx chaffjs tree contract.txt    文書を番地の付いた木にする（条・項・定義・参照）
 npx chaffjs cite 原文 引用.json  引用が原文にあるかを確かめる
 npx chaffjs compare 前.md 後.md  書き換えで事実（数・日付・URL・名前など）が落ちても足されてもいないかを確かめる
+npx chaffjs facts 前.md          compare が照合する事実を一覧にする（書き直す前の控え）
 npx chaffjs skill                Claude Code の skill を入れる
 npx chaffjs feedback a.md --rule max-sentence-length --line 42   誤った指摘を報告する下書きを作る
 ```
@@ -604,6 +605,13 @@ i 書き方だけ変わった事実 3 件
 ```
 
 落ちた事実か足された事実があれば 1 で終わります。1,000 と 1000、2026年4月1日 と 2026/4/1 のような書き方の違いは情報として出すだけです。読めなかった種類（品詞の解析器が無いなど）は理由を添えて出します。
+
+全面的に書き直す前には、`facts` で事実の一覧を控えておけます。`compare` と同じ読み手で取り出すので、ここに並んだものが `compare` の照合する事実です。
+
+```bash
+npx chaffjs facts before.md            種類ごとのチェックリスト（行番号つき）
+npx chaffjs facts before.md --json     AI が控えとして持つ（--compact は 1 件 1 行）
+```
 
 ## Claude Code の skill
 

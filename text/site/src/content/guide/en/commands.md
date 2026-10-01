@@ -23,6 +23,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs tree <file>` | Turns a document into a tree of addresses |
 | `npx chaffjs cite <source> <quotes.json>` | Checks that quoted passages are in the source |
 | `npx chaffjs compare <before> <after>` | Checks that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…) |
+| `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
 | `npx chaffjs skill` | Installs the Claude Code skill |
 | `npx chaffjs feedback <file> --rule <rule>` | Drafts a report of a wrong or missed finding |
 | `npx chaffjs test <file\|dir>...` | Also runs the checks that read meaning. Needs an API key |
@@ -343,6 +344,37 @@ npx chaffjs compare before.md after.md --json                     # for an AI to
 
 The kinds are `number`, `date`, `time`, `url`, `code`, `name`, `quote`, `heading`, `reference` and `footnote`.
 `--json` lists every dropped and added fact with its line, so it can go straight back to the AI that did the rewrite.
+
+### Listing the facts before a rewrite
+
+A rewrite from scratch starts from what the document says, not from its sentences. `facts` lists that: every fact `compare` will check, kind by kind, with the line each is on.
+It uses `compare`'s own reader, so the list is exactly what the rewrite will be held to.
+
+```
+$ npx chaffjs facts before.md
+before.md: 7 facts (numbers 3, dates 1, times 0, URLs 1, code 0, names 0, quotations 0, headings 1, references 1, footnotes 0)
+
+numbers: 3
+  - [ ] 10  (before.md:3)
+  - [ ] 12.50  (before.md:3)
+  - [ ] 25%  (before.md:3)
+
+dates: 1
+  - [ ] April 1, 2026  (before.md:3)
+
+URLs: 1
+  - [ ] https://example.com/price  (before.md:3)
+
+headings: 1
+  - [ ] Pricing update  (before.md:1)
+
+references: 1
+  - [ ] Section 4.2  (before.md:3)
+
+After rewriting, npx chaffjs compare before.md <rewritten> checks that every fact on this list is still there
+```
+
+`--compact` gives one fact per line, and `--json` gives every fact with its kind, key, text and line, for an AI to keep as its inventory while it writes.
 
 ## Checks that read meaning, and re-measuring the limits
 

@@ -23,6 +23,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs tree <file>` | 文書を番地の付いた木にします |
 | `npx chaffjs cite <原文> <引用.json>` | 回答の引用が原文にあるかを確かめます |
 | `npx chaffjs compare <前> <後>` | 書き換えで事実（数・日付・URL・コード・名前・引用など）が落ちても足されてもいないかを確かめます |
+| `npx chaffjs facts <file>` | `compare` が照合する事実を、書き直す前の控えとして一覧にします |
 | `npx chaffjs skill` | Claude Code の skill を入れます。`--global` を付けると `~/.claude/` に入れます |
 | `npx chaffjs feedback <file> --rule <rule>` | 誤った指摘や見逃しの報告の下書きを作ります。何も送りません |
 | `npx chaffjs test <file\|dir>...` | 意味を読む検査も動かします。API key が要ります |
@@ -326,6 +327,33 @@ npx chaffjs compare before.md after.md --json                     # AI が読ん
 
 種類の名前は `number`、`date`、`time`、`url`、`code`、`name`、`quote`、`heading`、`reference`、`footnote` です。
 `--json` には、落ちた事実と足された事実が行番号つきで入るので、書き換えた AI にそのまま渡して直させられます。
+
+### 書き直す前に事実を控える
+
+一から書き直すときは、元の文を直すのではなく、文書が言っている事実から書き起こします。`facts` はその一覧を出します。`compare` が照合する事実を、種類ごとに行番号つきで並べます。
+`compare` と同じ読み手で取り出すので、ここに並んだものが、書き直した後に照合される事実そのものです。
+
+```
+$ npx chaffjs facts before.md
+before.md の事実 5 件（数 2、日付 1、時刻 0、URL 1、コード 0、固有名詞 0、引用 0、見出し 1、条項の参照 0、脚注 0）
+
+数 2 件
+  - [ ] 1,000円  (before.md:3)
+  - [ ] 1,200円  (before.md:3)
+
+日付 1 件
+  - [ ] 2026年4月1日  (before.md:3)
+
+URL 1 件
+  - [ ] https://example.com/price  (before.md:3)
+
+見出し 1 件
+  - [ ] 料金改定のお知らせ  (before.md:1)
+
+書き直したら npx chaffjs compare before.md <書き直した後> で、この一覧が残っているかを確かめます
+```
+
+`--compact` は 1 件 1 行、`--json` は種類・照合の鍵・書いたままの文字・行番号を全部出します。書き直す AI に控えとして持たせられます。
 
 ## 意味を読む検査と閾値の測り直し
 

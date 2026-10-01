@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### `chaff facts <file>`: the facts to keep, before a rewrite (#439)
+
+Lists every fact atom `chaff compare` reads in one document — numbers, dates, times, URLs, code, names, quotations,
+headings, references, footnotes — as a checklist with the line of each, so a rewrite from scratch can start from the
+inventory instead of the old text. It is compare's own extractor, not a new parser: the counts are the ones compare
+holds the rewrite to.
+
+- The first line counts every kind, zeros included; a kind that could not be read is listed with the reason.
+- `--compact` (one fact per line, kind in English) and `--json` (path, language, counts, unread kinds, every fact with
+  kind, key, text and line). The screen follows the document's language.
+- One file per run; none or more than one is a usage error (exit 1).
+
 ### New rules: notation that should agree with itself, double negatives and ら抜き言葉 (#170)
 
 Experimental rules. Each finding in the corpus was read before the rule was added.
