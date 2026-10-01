@@ -22,15 +22,15 @@ const hitsFor = (doc: ProseDocument, lexicon: Lexicon): Hit[] =>
 
 /**
  * 単位長あたりの出現率。件数で数えると長い文書ほど当たる（bold-density と同じ）。
- * rule の id は呼び出し側が持つ。detector は「密度が閾値を超えたか」しか知らない。
+ * 短すぎて測らない文書、1 つも無いとき、閾値に収まるときは undefined。
  */
-/** The rate per 1000 units of the document, or undefined when the document is too short to measure, nothing was found, or the rate stays within the limit. */
 export const rateOver = (doc: ProseDocument, count: number, limit: number): number | undefined => {
   const length = wordsOf(doc);
   const rate = length === 0 ? 0 : Math.round((count / length) * PER);
   return length < FLOOR[doc.lengthUnit] || count === 0 || rate <= limit ? undefined : rate;
 };
 
+/** rule の id は呼び出し側が持つ。detector は「密度が閾値を超えたか」しか知らない。 */
 const densityRule =
   (rule: string): Detector =>
   (doc, options): Finding[] => {
