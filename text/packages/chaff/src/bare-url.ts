@@ -11,12 +11,15 @@ export const BARE_URL = /https?:\/\/[^\s)<>"'\]]+/gu;
 /** 文の終わりの句読点。URL の最後の字としてはまず書かれず、URL の後ろの文の字。 */
 const PUNCTUATION: ReadonlySet<string> = new Set([".", ",", ";", ":", "!", "?"]);
 
-/** ASCII の外の最初の字。そのまま書いた URL に続けた日本語は、URL ではなく文。 */
-const NOT_ASCII = /[^\x21-\x7e]/u;
+/**
+ * そのまま書いた URL に続けた文の始まり: ひらがなと全角の句読点・括弧（「…/をご覧ください」「…/。」）。
+ * 漢字やカタカナは道の名前（/東京、/カタログ）にもなるので切らない。
+ */
+const SENTENCE_AFTER = /[\p{Script=Hiragana}　-〿！-／：-＠]/u;
 
-/** URL として読む長さ。ASCII の外の字の手前で切り、後ろの句読点を外す。正規表現の `[…]+$` は句読点の長い並びで後戻りが二乗になる。 */
+/** URL として読む長さ。続けた文の手前で切り、後ろの句読点を外す。正規表現の `[…]+$` は句読点の長い並びで後戻りが二乗になる。 */
 const urlLength = (written: string): number => {
-  const cut = NOT_ASCII.exec(written)?.index ?? written.length;
+  const cut = SENTENCE_AFTER.exec(written)?.index ?? written.length;
   let end = cut;
   while (end > 0 && PUNCTUATION.has(written.charAt(end - 1))) end -= 1;
   return end;

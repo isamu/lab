@@ -35,10 +35,16 @@ const hourOf = (hour: number, afternoon: boolean | undefined): number => {
 
 const padded = (value: number): string => String(value).padStart(PADDED, "0");
 
-/** The key, or undefined when the numbers are not a time of day (25:00, 3:75). */
+/** Whether the hour is one on its clock: up to 12 with a.m. or p.m., else up to 23, and 24 only as 24:00. */
+const isHour = ({ hour, minute, second, afternoon }: Reading): boolean => {
+  if (afternoon !== undefined) return hour <= NOON;
+  return hour < LAST_HOUR || (hour === LAST_HOUR && minute === 0 && (second ?? 0) === 0);
+};
+
+/** The key, or undefined when the numbers are not a time of day (24:30, 13 p.m., 3:75). */
 const keyOf = (reading: Reading): string | undefined => {
   const { hour, minute, second } = reading;
-  if (hour > LAST_HOUR || minute >= MINUTES_PER_HOUR || (second ?? 0) >= MINUTES_PER_HOUR) return undefined;
+  if (!isHour(reading) || minute >= MINUTES_PER_HOUR || (second ?? 0) >= MINUTES_PER_HOUR) return undefined;
   const parts = [hourOf(hour, reading.afternoon), minute, ...(second === undefined ? [] : [second])];
   return parts.map(padded).join(":");
 };

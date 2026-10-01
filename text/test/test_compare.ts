@@ -199,6 +199,15 @@ describe("what is read once, and what is not a fact", () => {
     assert.deepEqual(changes(compare(en, "We have 1,000 users.", "We have 1,001 users.")).dropped, ["number:1,000"]);
   });
 
+  it("numbers that are no time of day are not read as a time", () => {
+    assert.deepEqual(kindsOf(en, "The vote was 24:30, at 13 p.m. or 3:75; the day ended at 24:00.", "time"), ["24:00"]);
+  });
+
+  it("a URL keeps a path in kanji, and stops where a Japanese sentence goes on", () => {
+    assert.deepEqual(changes(compare(ja, "https://example.com/東京 を見る。", "https://example.com/大阪 を見る。")).dropped, ["url:https://example.com/東京"]);
+    assert.deepEqual(kindsOf(ja, "詳しくは https://example.jp/資料をご覧ください。", "url"), ["https://example.jp/資料"]);
+  });
+
   it("10時半 is half past ten", () => {
     assert.equal(compare(ja, "開始は10時半です。", "開始は10:30です。").ok, true);
   });
