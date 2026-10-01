@@ -1,4 +1,5 @@
 import { escapeRegExp } from "./orthography.ts";
+import { lowerBound } from "./detectors/token-column.ts";
 import type { CitedDocument, Span } from "./plugin.ts";
 
 /**
@@ -118,13 +119,27 @@ const citedLabelsIn = (prose: string, labels: readonly LabelWord[], citedDocumen
     .filter((match) => citedDocument(prose, match.index) !== undefined)
     .map((match) => ({ start: match.index, kind: kindOf(match[1] ?? "", labels) }));
 
+/** offset を含む文の頭。文の外（見出し）なら offset。文は文書の順に並んでいる。 */
+const sentenceStartAt = (sentences: readonly Span[], starts: readonly number[], offset: number): number => {
+  const sentence = sentences[lowerBound(starts, offset + 1) - 1];
+  return sentence !== undefined && offset < sentence.end ? sentence.start : offset;
+};
+
 /**
  * 他の文書の図か。名前のすぐ後ろに書いたか、同じ文の前のほうで同じ種類の図を他の文書のものとして書いた。
  * 「(…告示第五十九号)別表第一…及び別表第二」「…別表第一から別表第三まで」の後ろの番号も、その告示の別表。
+ * 文と名前の位置は二分探索で引く。参照先の無い番号が何万あっても、文書の長さの二乗にしない。
  */
-const citedElsewhere = (mention: Mention, cited: readonly CitedLabel[], sentences: readonly Span[]): boolean => {
-  const from = sentences.find((sentence) => sentence.start <= mention.start && mention.start < sentence.end)?.start ?? mention.start;
-  return cited.some((label) => label.kind === mention.kind && from <= label.start && label.start <= mention.start);
+const citedElsewhere = (cited: readonly CitedLabel[], sentences: readonly Span[]): ((mention: Mention) => boolean) => {
+  const starts = sentences.map((sentence) => sentence.start);
+  const byKind = new Map(
+    [...new Set(cited.map((label) => label.kind))].map((kind) => [kind, cited.filter((label) => label.kind === kind).map((label) => label.start)]),
+  );
+  return (mention) => {
+    const labels = byKind.get(mention.kind) ?? [];
+    const first = labels[lowerBound(labels, sentenceStartAt(sentences, starts, mention.start))];
+    return first !== undefined && first <= mention.start;
+  };
 };
 
 /**
@@ -148,7 +163,6 @@ export const danglingFigures = (
     .filter((mention) => pointsHere(prose, mention, words) && !links.some((link) => link.start <= mention.start && mention.end <= link.end));
   // 他の文書の名前は、参照先の無い番号があるときだけ読む。図の語のたびに名前を後ろ向きに読む代金を、ふつうの文書に払わせない。
   const cited = dangling.length === 0 || citations === undefined ? [] : citedLabelsIn(prose, words.labels, citations.citedDocument);
-  return dangling
-    .filter((mention) => citations === undefined || !citedElsewhere(mention, cited, citations.sentences))
-    .map((mention) => ({ offset: mention.start, label: mention.written }));
+  const elsewhere = cited.length === 0 || citations === undefined ? () => false : citedElsewhere(cited, citations.sentences);
+  return dangling.filter((mention) => !elsewhere(mention)).map((mention) => ({ offset: mention.start, label: mention.written }));
 };
