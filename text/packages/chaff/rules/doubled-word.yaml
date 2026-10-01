@@ -11,7 +11,7 @@ name:
   en: Word written twice
 
 why:
-  ja: 「資料をを送ります」「話にに出ました」のように助詞や助動詞が続くのは、消し忘れか、書き換えの途中で残った語です。読み手はつまずき、急いで書いた文書に見えます。名詞や形容詞を丸ごと重ねた形（「個人個人」「一行一行」「若い若い」）、擬音・擬態語（「ムクムク」「もちもち」）、笑い声（「ははは」）、決まった言い回し（「などなど」「あるある」）は、重ねるのが正しい書き方なので数えていません。
+  ja: 「資料をを送ります」「確認確認します」のように同じ語が続くのは、消し忘れか、書き換えの途中で残った語です。読み手はつまずき、急いで書いた文書に見えます。重ねて「それぞれの」を言う名詞（人・単位・時・場所。「個人個人」「一行一行」「毎年毎年」）、名詞や形容詞を重ねて強める形（「駄目駄目」「若い若い」）、擬音・擬態語（「ムクムク」「もちもち」）、笑い声（「ははは」）、決まった言い回し（「などなど」「あるある」）は、重ねるのが正しい書き方なので数えていません。
   en: The same word twice in a row ("the the"), or two words where English takes one ("our the platform"), is left over from an edit. The reader stumbles, and the document looks rushed. Repeats that grammar allows ("had had", "that that", "is, is") and repeats for emphasis ("very very") are not counted.
 
 message:
@@ -39,5 +39,5 @@ example:
     after: We will send the file tomorrow.
 
 not_flagged:
-  ja: 品詞の違う同じ語、名詞や形容詞を丸ごと重ねた形（「個人個人」「駄目駄目」「えらいえらい」）、仮名の擬音・擬態語（「ムクムク」「もちもち」）、同じ一字の仮名が三つ以上続く笑い声（「ははは」）、決まった言い回し（「などなど」「あるある」）、重ねて強める書き方（「そうそう」「very very」）は指しません。外来語の重なり（「ユーザーユーザー」）と、三つ続く重なり（「資料資料資料」）は指します。英語で文法が許す重なり（had had、that that）も指しません。
+  ja: 品詞の違う同じ語、重ねて「それぞれの」を言う名詞（「個人個人」「一行一行」「毎年毎年」）、名詞や形容詞を重ねて強める形（「駄目駄目」「えらいえらい」）、仮名の擬音・擬態語（「ムクムク」「もちもち」）、同じ一字の仮名が三つ以上続く笑い声（「ははは」）、決まった言い回し（「などなど」「あるある」）、重ねて強める書き方（「そうそう」「very very」）は指しません。ほかの漢語の名詞の重なり（「確認確認」「資料資料」）、外来語の重なり（「ユーザーユーザー」）、三つ続く重なり（「早め早め早め」）は指します。英語で文法が許す重なり（had had、that that）も指しません。
   en: Repeats that grammar allows ("had had", "that that"), repeats for emphasis ("very very"), and the same word in two different parts of speech are not reported.
