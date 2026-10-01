@@ -1,5 +1,5 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
-import { danglingFigures, type LabelWords } from "../figure-references.ts";
+import { danglingFigures, type Citations, type LabelWords } from "../figure-references.ts";
 import { quoteAt } from "./structure-tree.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
@@ -11,9 +11,12 @@ export const labelWordsOf = (doc: ProseDocument): LabelWords => ({
   counters: patternsOf(doc, "count-counter"),
 });
 
-/** 本文が指す図・表・付録の番号が、キャプションにも見出しにも無い。 */
+const citationsOf = (doc: ProseDocument): Citations | undefined =>
+  doc.citedDocument === undefined ? undefined : { citedDocument: doc.citedDocument, sentences: doc.sentences.map((sentence) => sentence.span) };
+
+/** 本文が指す図・表・付録の番号が、キャプションにも見出しにも無い。他の文書の名前の後ろに書いた番号は、その文書の図。 */
 export const danglingFigure: Detector = (doc): Finding[] =>
-  danglingFigures(doc.source, doc.prose ?? doc.source, labelWordsOf(doc), doc.links).map((dangling) => ({
+  danglingFigures(doc.source, doc.prose ?? doc.source, labelWordsOf(doc), doc.links, citationsOf(doc)).map((dangling) => ({
     rule: "dangling-figure-reference",
     severity: "warning",
     line: 0,

@@ -419,4 +419,5 @@ export const structure: StructurePatterns = {
   countedAfter: countedAfterNumber,
   continuesSentence: startsWithParticle,
   number,
+  citedDocument: (text, at) => citedDocument(text, at, CITATION),
 };

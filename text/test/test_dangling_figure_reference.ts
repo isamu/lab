@@ -80,6 +80,31 @@ describe("dangling-figure-reference", () => {
     assert.deepEqual(found(source, ja), []);
   });
 
+  it("a 別表 written after another instrument's name or promulgation number is that instrument's", () => {
+    const cited = (text: string): string[] => found(lines(text, "", "別表第一（第二条関係）"), ja);
+    assert.deepEqual(cited("料金は、手数料の額を定める件(平成二十年厚生労働省告示第五十九号)別表第二に定める額とする。"), []);
+    assert.deepEqual(cited("料金は、手数料の額(手数料基準)(平成二十年厚生労働省告示第六十号)別表第二に定める額とする。"), []);
+    assert.deepEqual(cited("料金は、手数料規則の別表第三に定める額とする。"), []);
+  });
+
+  it("later numbers of the same kind in the same sentence belong to the cited instrument too", () => {
+    const cited = (text: string): string[] => found(lines(text, "", "別表第一（第二条関係）"), ja);
+    assert.deepEqual(cited("病院は、手数料の額を定める件(平成二十年厚生労働省告示第五十九号)別表第二から別表第四までに掲げる病院とする。"), []);
+    assert.deepEqual(
+      cited("物品は、物品の価格(価格基準)(平成二十年厚生労働省告示第六十号)の別表に収載された物品(別表第2に収載された物品を除く。)とする。"),
+      [],
+    );
+  });
+
+  it("a 別表 of this document is still looked for: in another sentence, before the citation, of another kind, or named as this one", () => {
+    const cited = (text: string): string[] => found(lines(text, "", "別表第一（第二条関係）", "", "図1　様式"), ja);
+    assert.deepEqual(cited("料金は、手数料規則の別表第二による。期限は別表第三による。"), ["別表第三"]);
+    assert.deepEqual(cited("期限は別表第三により、料金は手数料規則の別表第二による。"), ["別表第三"]);
+    assert.deepEqual(cited("料金は、手数料規則の別表第二により、様式は図2による。"), ["図2"]);
+    assert.deepEqual(cited("料金は、この規則の別表第二による。"), ["別表第二"]);
+    assert.deepEqual(found(lines("料金は、手数料規則の表示に従い、表3による。", "", "表1　料金"), ja), ["表3"]);
+  });
+
   it("a count of figures is not a reference to one", () => {
     assert.deepEqual(found(lines("図3枚を添える。", "", "図1　売上"), ja), []);
   });

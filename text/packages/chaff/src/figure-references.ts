@@ -1,5 +1,5 @@
 import { escapeRegExp } from "./orthography.ts";
-import type { Span } from "./plugin.ts";
+import type { CitedDocument, Span } from "./plugin.ts";
 
 /**
  * 本文で番号を指した図・表・付録（図3、Table 2、Appendix B）と、それを行の頭に書いた所（キャプション、見出し）。
@@ -31,13 +31,18 @@ export const FIGURE_NUMBER = "[ \\t\\u00a0]?(?:第?(\\p{Nd}+(?:[.\\-－]\\p{Nd}+
 
 const forms = (word: string): string[] => [...new Set([word, word.toUpperCase()])];
 
-const mentionPattern = (labels: readonly LabelWord[]): RegExp => {
-  const words = labels
+const labelAlternation = (labels: readonly LabelWord[]): string =>
+  labels
     .flatMap((label) => forms(label.word))
     .toSorted((a, b) => b.length - a.length)
-    .map(escapeRegExp);
-  return new RegExp(`${INSIDE_WORD}(${words.join("|")})${FIGURE_NUMBER}`, "gu");
-};
+    .map(escapeRegExp)
+    .join("|");
+
+const mentionPattern = (labels: readonly LabelWord[]): RegExp => new RegExp(`${INSIDE_WORD}(${labelAlternation(labels)})${FIGURE_NUMBER}`, "gu");
+
+/** 番号の付いた図か、番号の無い図（「…の別表に」）。番号が無ければ後ろが長い語の続きでない（表示、別表第一の「第」は番号）。 */
+const labelPattern = (labels: readonly LabelWord[]): RegExp =>
+  new RegExp(`${INSIDE_WORD}(${labelAlternation(labels)})(?:${FIGURE_NUMBER}|(?![\\p{Script=Han}\\p{Script=Katakana}A-Za-z]))`, "gu");
 
 const kindOf = (written: string, labels: readonly LabelWord[]): string => labels.find((label) => forms(label.word).includes(written))?.kind ?? written;
 
@@ -102,18 +107,48 @@ const labelledIn = (source: string, labels: readonly LabelWord[]): Mention[] => 
 export const labelledKindsIn = (source: string, words: LabelWords): ReadonlySet<string> =>
   new Set(labelledIn(source, words.labels).map((mention) => mention.kind));
 
+/** 他の文書の名前を読む言語の知識と、その名前が届く範囲（文）。 */
+export type Citations = { readonly citedDocument: CitedDocument; readonly sentences: readonly Span[] };
+
+type CitedLabel = { readonly start: number; readonly kind: string };
+
+/** 他の文書の名前のすぐ後ろに書いた図の語（「…(平成二十年厚生労働省告示第五十九号)別表第一」「…号)の別表」）。 */
+const citedLabelsIn = (prose: string, labels: readonly LabelWord[], citedDocument: CitedDocument): CitedLabel[] =>
+  [...prose.matchAll(labelPattern(labels))]
+    .filter((match) => citedDocument(prose, match.index) !== undefined)
+    .map((match) => ({ start: match.index, kind: kindOf(match[1] ?? "", labels) }));
+
+/**
+ * 他の文書の図か。名前のすぐ後ろに書いたか、同じ文の前のほうで同じ種類の図を他の文書のものとして書いた。
+ * 「(…告示第五十九号)別表第一…及び別表第二」「…別表第一から別表第三まで」の後ろの番号も、その告示の別表。
+ */
+const citedElsewhere = (mention: Mention, cited: readonly CitedLabel[], sentences: readonly Span[]): boolean => {
+  const from = sentences.find((sentence) => sentence.start <= mention.start && mention.start < sentence.end)?.start ?? mention.start;
+  return cited.some((label) => label.kind === mention.kind && from <= label.start && label.start <= mention.start);
+};
+
 /**
  * 参照先の無い番号。source は行の頭を読み、prose（コードを覆った本文）は参照を読む。位置は同じ。
  * 番号は、キャプションが 1 と書けば 1a や 1(b) の参照も 1 に当たる（番号の後ろの字は読まない）。
  * リンクの字（[Figure 2](figures.md)）は、そのリンクが行き先を持つので参照として見ない。
  */
-export const danglingFigures = (source: string, prose: string, words: LabelWords, links: readonly Span[] = []): DanglingFigure[] => {
+export const danglingFigures = (
+  source: string,
+  prose: string,
+  words: LabelWords,
+  links: readonly Span[] = [],
+  citations: Citations | undefined = undefined,
+): DanglingFigure[] => {
   if (words.labels.length === 0) return [];
   const labelled = labelledIn(source, words.labels);
   const labelledKeys = new Set(labelled.map((mention) => mention.key));
   const labelledKinds = new Set(labelled.map((mention) => mention.kind));
-  return mentionsIn(prose, words.labels)
+  const dangling = mentionsIn(prose, words.labels)
     .filter((mention) => labelledKinds.has(mention.kind) && !labelledKeys.has(mention.key))
-    .filter((mention) => pointsHere(prose, mention, words) && !links.some((link) => link.start <= mention.start && mention.end <= link.end))
+    .filter((mention) => pointsHere(prose, mention, words) && !links.some((link) => link.start <= mention.start && mention.end <= link.end));
+  // 他の文書の名前は、参照先の無い番号があるときだけ読む。図の語のたびに名前を後ろ向きに読む代金を、ふつうの文書に払わせない。
+  const cited = dangling.length === 0 || citations === undefined ? [] : citedLabelsIn(prose, words.labels, citations.citedDocument);
+  return dangling
+    .filter((mention) => citations === undefined || !citedElsewhere(mention, cited, citations.sentences))
     .map((mention) => ({ offset: mention.start, label: mention.written }));
 };
