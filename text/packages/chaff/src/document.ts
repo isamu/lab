@@ -99,7 +99,7 @@ const collectMasks = (root: Node, source: string, anchors: InPageAnchors, syntax
   return spans;
 };
 
-const emphasisSpans = (root: Node, source: string): Span[] => {
+export const emphasisSpans = (root: Node, source: string): Span[] => {
   const spans: Span[] = [];
   eachPreOrder(root, (node) => {
     if (EMPHASIS.has(node.type)) spans.push(...emphasisChrome(node, source));
