@@ -2,6 +2,17 @@
 
 Newest first.
 
+## Unreleased
+
+### On a Node.js older than 24, `chaff` says which version it needs instead of failing with a SyntaxError (#398)
+
+npm runs a package whose `engines` the Node.js does not meet, with a warning at most, and the CLI then failed while
+loading (`The requested module 'node:fs' does not provide an export named 'globSync'`), which does not point at the
+version. `bin/chaff.js` now checks `process.versions.node` against `engines.node` in its own `package.json` before it
+loads anything else, and stops with "chaff needs Node.js 24 or later. This is v18.20.8. Install the LTS from
+https://nodejs.org/en" (in Japanese under a Japanese locale), exit code 1. The entry point is written so that Node.js 12
+and later can parse it. This also stops Node.js 22 and 23, which `engines` already excluded.
+
 ## 0.18.0 — 2026-10-01
 
 A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
@@ -58,15 +69,6 @@ corpus rarely use it; the measurements are in the PR.
   corpus, and compares the table with `expected.txt`. CI runs it.
 - Measured and not added: the share of bullet lines, runs of short sentences, and 「（いわゆる〜）」. Human articles
   had as many of each.
-
-### On a Node.js older than 24, `chaff` says which version it needs instead of failing with a SyntaxError (#398)
-
-npm runs a package whose `engines` the Node.js does not meet, with a warning at most, and the CLI then failed while
-loading (`The requested module 'node:fs' does not provide an export named 'globSync'`), which does not point at the
-version. `bin/chaff.js` now checks `process.versions.node` against `engines.node` in its own `package.json` before it
-loads anything else, and stops with "chaff needs Node.js 24 or later. This is v18.20.8. Install the LTS from
-https://nodejs.org/en" (in Japanese under a Japanese locale), exit code 1. The entry point is written so that Node.js 12
-and later can parse it. This also stops Node.js 22 and 23, which `engines` already excluded.
 
 ### `chaff compare <before> <after>`: did a rewrite keep its facts?
 
