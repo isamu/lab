@@ -1,11 +1,16 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { predicateFrameAt } from "../packages/lang-ja/src/predicate-frame.ts";
+import { predicateFrameAfter, predicateFrameAt } from "../packages/lang-ja/src/predicate-frame.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 
 // 受動のすぐ後ろの述語の型（ことになる・こととなる）を、語の原形をつないで照らす。例文はすべて自作。
 
-const token = (surface: string, lemma?: string): Token => ({ span: { start: 0, end: 0 }, surface, pos: "X", ...(lemma === undefined ? {} : { lemma }) });
+const token = (surface: string, lemma?: string, start = 0): Token => ({
+  span: { start, end: start + surface.length },
+  surface,
+  pos: "X",
+  ...(lemma === undefined ? {} : { lemma }),
+});
 
 const FRAMES = ["ことになる", "こととなる"];
 
@@ -45,5 +50,21 @@ describe("predicateFrameAt", () => {
     assert.equal(predicateFrameAt([], 0, FRAMES), 0);
     assert.equal(predicateFrameAt(TOTONATTA, 99, FRAMES), 0);
     assert.equal(predicateFrameAt(TOTONATTA, 3, []), 0);
+  });
+});
+
+describe("predicateFrameAfter", () => {
+  const frame = (...words: [string, string][]): Token[] =>
+    words.reduce<Token[]>((made, [surface, lemma]) => [...made, token(surface, lemma, made.at(-1)?.span.end ?? 0)], []);
+
+  it("型の後ろが仮定かどうか", () => {
+    assert.deepEqual(predicateFrameAfter(frame(["こと", "こと"], ["と", "と"], ["なっ", "なる"], ["た", "た"]), 0, FRAMES), { conditional: false });
+    assert.deepEqual(predicateFrameAfter(frame(["こと", "こと"], ["と", "と"], ["なれ", "なる"], ["ば", "ば"]), 0, FRAMES), { conditional: true });
+    assert.deepEqual(predicateFrameAfter(frame(["こと", "こと"], ["に", "に"], ["なる", "なる"], ["と", "と"]), 0, FRAMES), { conditional: true });
+  });
+
+  it("型が無ければ undefined", () => {
+    assert.equal(predicateFrameAfter(frame(["こと", "こと"], ["が", "が"], ["ある", "ある"]), 0, FRAMES), undefined);
+    assert.equal(predicateFrameAfter([], 0, FRAMES), undefined);
   });
 });

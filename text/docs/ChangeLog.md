@@ -8,9 +8,10 @@ Newest first.
 
 「本件は検討されることとなった。」 and 「見直しが実施されることになりました。」 were not reported: the こと after the
 passive looked like a noun the passive modifies (as in 「開催される BootCamp」). The new lang-ja word list
-`passive-predicate-frame` (ことになる, こととなる) names the frames whose noun is part of the predicate; the passive before
-one is judged like a passive at the end of a sentence. A noun after the frame (「検討されることとなった案」) still makes it a
-modifier, and other uses of こと (「延期されることがある」) are unchanged.
+`passive-predicate-frame` (ことになる, こととなる, with も or は inside, and with 事) names the frames whose noun is part of
+the predicate; the passive before one is judged like a passive at the end of a sentence. A content noun after the frame
+(「検討されることとなった案」) still makes it a modifier, a bound noun does not (「〜ことになったため」), a conditional after the
+frame (「〜こととなれば」, 「〜ことになると」) is not reported, and other uses of こと (「延期されることがある」) are unchanged.
 
 ### A heading with its title right after the number is numbered (#431)
 

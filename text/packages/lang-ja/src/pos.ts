@@ -4,7 +4,7 @@ import { analyserPieces } from "./analyser-pieces.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
 import { outsideTheReport, isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
-import { predicateFrameAt } from "./predicate-frame.ts";
+import { predicateFrameAfter } from "./predicate-frame.ts";
 import { isEchoAt, type Inflection } from "./reduplication.ts";
 import { isRaDroppedAt, raDroppedVocabulary } from "./ra-dropped.ts";
 import { createRequire } from "node:module";
@@ -259,20 +259,27 @@ const BREAK = new Set(["、", "，", ",", "。", "．", "."]);
 const clauseEnd = (tokens: readonly Token[], from: number): number =>
   tokens.find((token) => token.span.start >= from && BREAK.has(token.surface))?.span.start ?? Number.MAX_SAFE_INTEGER;
 
-/** 受動のすぐ後ろの述語の型（「検討されることとなった」の「こととなる」）の終わり。型が無ければ受動の終わり。 */
-const frameEnd = (tokens: readonly Token[], index: number, passive: Token): number => {
-  const length = predicateFrameAt(tokens, index + 1, PREDICATE_FRAMES);
-  return length === 0 ? passive.span.end : (tokens[index + length]?.span.end ?? passive.span.end);
+const unmarked = (token: Token): Token => ({
+  span: token.span,
+  surface: token.surface,
+  pos: token.pos,
+  ...(token.lemma === undefined ? {} : { lemma: token.lemma }),
+});
+
+const isDependentToken = (token: Token): boolean => token.features?.["NounType"] === "Dependent";
+
+/** 受動の後ろ（from から節の終わりまで）に、受動が修飾する名詞があるか。型があれば、型の「こと」と後ろの「ため」のような非自立名詞は数えない。 */
+const nounModifiedAfter = (tokens: readonly Token[], from: number, framed: boolean): boolean => {
+  const end = clauseEnd(tokens, from);
+  return tokens.some((other) => other.span.start >= from && other.span.end <= end && NOMINAL.has(other.pos) && !(framed && isDependentToken(other)));
 };
 
 export const predicateOnly = (tokens: readonly Token[]): Token[] =>
   tokens.map((token, index) => {
     if (token.features?.["Voice"] !== "Pass") return token;
-    const end = clauseEnd(tokens, token.span.end);
-    const after = frameEnd(tokens, index, token);
-    const modifiesNoun = tokens.some((other) => other.span.start >= after && other.span.end <= end && NOMINAL.has(other.pos));
-    if (!modifiesNoun) return token;
-    return { span: token.span, surface: token.surface, pos: token.pos, ...(token.lemma === undefined ? {} : { lemma: token.lemma }) };
+    const frame = predicateFrameAfter(tokens, index + 1, PREDICATE_FRAMES);
+    if (frame === undefined) return nounModifiedAfter(tokens, token.span.end, false) ? unmarked(token) : token;
+    return frame.conditional || nounModifiedAfter(tokens, token.span.end, true) ? unmarked(token) : token;
   });
 
 const inflectionOf = (morpheme: Morpheme, start: number): Inflection => ({
