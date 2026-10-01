@@ -245,7 +245,7 @@ There are three reaches to choose from.
 
 | Written as | Silences |
 | --- | --- |
-| `<!-- stet: bold-density — a glossary, on purpose -->` | The lines just below it (up to six) |
+| `<!-- stet: bold-density — a glossary, on purpose -->` | The paragraph just below it (or the one heading, list or table) |
 | `<!-- stet-section: bold-density — a list -->` | Up to the next heading |
 | `<!-- stet-file: ai-tell, rule-of-three — mostly quotations -->` | The whole file |
 
