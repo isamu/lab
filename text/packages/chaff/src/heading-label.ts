@@ -1,4 +1,4 @@
-import type { Lexicon, NumberingContext, StructurePatterns } from "./plugin.ts";
+import type { Lexicon, NumberingContext, StructurePatterns, Token } from "./plugin.ts";
 import { universalNumber } from "./structure/universal.ts";
 
 const ON_HEADING: NumberingContext = { open: [], isHeading: true };
@@ -43,4 +43,13 @@ export const unlabeledReader = (patterns: StructurePatterns | undefined, lexicon
     const memo: { value?: string } = {};
     return () => (memo.value ??= unlabeledHeading(heading, patterns, labelPattern));
   };
+};
+
+/**
+ * 見出しの語のうち、札より後ろ（題）のもの。tokens の位置は見出しの中の位置。札の語（例・Step）を見出しにある語と数えると、
+ * 文が札の語を使っただけ（例として…）で「見出しに無い語を足していない」ことになる。
+ */
+export const titleTokens = (heading: string, title: string, tokens: readonly Token[]): readonly Token[] => {
+  const titleStart = heading.lastIndexOf(title);
+  return tokens.filter((token) => token.span.start >= titleStart);
 };

@@ -1,12 +1,12 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { labelPatternOf, unlabeledHeading } from "../packages/chaff/src/heading-label.ts";
+import { labelPatternOf, titleTokens, unlabeledHeading } from "../packages/chaff/src/heading-label.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, Token } from "../packages/chaff/src/plugin.ts";
 
 // A number label at the head of a heading (例 3：, Step 3:, 1., 第2章) is never repeated by the text below it, so
 // heading-echo measures the heading without it. Every text here is self-written.
@@ -76,6 +76,26 @@ describe("unlabeledHeading: the heading without its number label", () => {
   });
 });
 
+describe("titleTokens: the heading's words after its label", () => {
+  const token = (surface: string, start: number): Token => ({ surface, pos: "NOUN", span: { start, end: start + surface.length } });
+  const surfaces = (heading: string, title: string, tokens: readonly Token[]): string[] => titleTokens(heading, title, tokens).map((kept) => kept.surface);
+  const labelled = [token("例", 0), token("6", 2), token("：", 3), token("銀行", 4), token("の", 6), token("サイト", 7)];
+
+  it("drops the label's words, keeps the title's", () => {
+    assert.deepEqual(surfaces("例 6：銀行のサイト", "銀行のサイト", labelled), ["銀行", "の", "サイト"]);
+    assert.deepEqual(surfaces("第3条（支払）", "支払", [token("第", 0), token("3", 1), token("条", 2), token("（", 3), token("支払", 4), token("）", 6)]), [
+      "支払",
+      "）",
+    ]);
+  });
+
+  it("keeps every word when there is no label, or the title is not found", () => {
+    assert.deepEqual(surfaces("銀行のサイト", "銀行のサイト", labelled.slice(3)), ["銀行", "の", "サイト"]);
+    assert.deepEqual(surfaces("例 6：銀行のサイト", "別の題", labelled).length, labelled.length);
+    assert.deepEqual(surfaces("", "", []), []);
+  });
+});
+
 const echoesOf = (adapter: LanguageAdapter, source: string): string[] =>
   runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, false, "blog/tech-blog")
     .findings.filter((finding) => finding.rule === "heading-echo")
@@ -90,6 +110,21 @@ describe("heading-echo measures the heading without its label", () => {
   it("日本語: 札を除いても、中身を足す文は言い直しではない", () => {
     const source = ["# 試した結果", "", "### 例 6：銀行のサイト", "", "ログインの画面で、別のドメインのスクリプトが三つ動いていました。"].join("\n");
     assert.deepEqual(echoesOf(ja, source), []);
+  });
+
+  it("日本語: 札を除いた題をそのまま引用した文も言い直し（別の書き方の引用ではない）", () => {
+    const source = ["# 試した結果", "", "### 例 6：銀行のサイト", "", "「銀行のサイト」について説明します。"].join("\n");
+    assert.deepEqual(echoesOf(ja, source), ["例 6：銀行のサイト"]);
+  });
+
+  it("日本語: 札の語（例）を使っただけの文は、見出しに無い語を足している", () => {
+    const source = ["# 試した結果", "", "### 例 6：銀行のサイト", "", "例として銀行のサイトを検証します。"].join("\n");
+    assert.deepEqual(echoesOf(ja, source), []);
+  });
+
+  it("English: a quote of the heading without its label is an echo", () => {
+    const source = ["# Setup", "", "## Step 3: Install the tool", "", "“Install the tool” is the next step."].join("\n");
+    assert.deepEqual(echoesOf(en, source), ["Step 3: Install the tool"]);
   });
 
   it("English: under 「Step 3: Install the tool」, 「Install the tool.」 only repeats the heading", () => {
