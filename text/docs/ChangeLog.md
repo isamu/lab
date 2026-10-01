@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `dangling-reference` reads another document's articles the way terms and web databases write them (#170)
+
+Two shapes in the round 14 documents were read as this document's missing articles:
+
+- **Connectors written in kana.** 「著作権法第27条および第28条」: terms of service and notices write および・ならびに・
+  もしくは・または, so 第28条 is 著作権法's too, as it already was after 及び.
+- **A promulgation number in half-width parentheses.** The MHLW 法令等データベース writes 「保険医療養担当規則(昭和三十二年
+  厚生省令第十五号)第二条の六」. The number is now skipped in either width, and a name with one is another document even
+  when it ends in no kind word (「…に関する基準(昭和五十八年厚生省告示第十四号)第二条の六」).
+
 ### Corpus round 14: documents of kinds the corpus had few of (#170)
 
 Terms of service and privacy statements (GitHub's, under CC0; a ministry's 電子申請 terms and the Tokyo app's terms,

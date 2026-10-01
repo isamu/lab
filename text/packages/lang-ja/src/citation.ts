@@ -51,15 +51,23 @@ const beforeJoiner = (text: string, at: number, joiners: readonly string[]): num
   return joiner === undefined ? at : at - joiner.length;
 };
 
+/** 名前が種類の語で終わり、種類の語より長い（「民法」。「契約」だけではどの文書か決まらない）。 */
+const endsWithKind = (name: string, kinds: readonly string[]): boolean => {
+  const kind = kinds.find((candidate) => name.endsWith(candidate));
+  return kind !== undefined && name.length > kind.length;
+};
+
 /**
  * reference の直前に書かれた文書名。「民法第709条」「民法の第709条」なら「民法」。この文書の条を指すなら undefined。
  * 名前が種類の語だけ（「契約第3条」）のときも、どの文書か決まらないので undefined にする。
+ * 公布の番号を添えた名前（「…に関する基準(昭和五十八年厚生省告示第十四号)第二条」）は、種類の語が無くても文書の名前。
  */
 export const citedDocument = (text: string, reference: number, vocabulary: CitationVocabulary): string | undefined => {
-  const at = beforeNote(text, beforeJoiner(text, reference, vocabulary.joiners), vocabulary.notes);
+  const afterName = beforeJoiner(text, reference, vocabulary.joiners);
+  const at = beforeNote(text, afterName, vocabulary.notes);
   const plain = nameBefore(text, at, NAME_CHAR);
   const name = vocabulary.kanaTitleKinds.includes(plain) ? nameBefore(text, at, TITLE_CHAR) : plain;
-  const kind = vocabulary.kinds.find((candidate) => name.endsWith(candidate));
-  if (kind === undefined || name.length === kind.length) return undefined;
+  const numbered = at !== afterName && name !== "";
+  if (!numbered && !endsWithKind(name, vocabulary.kinds)) return undefined;
   return vocabulary.selfPrefixes.some((prefix) => name.startsWith(prefix)) ? undefined : name;
 };
