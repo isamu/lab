@@ -161,10 +161,10 @@ $ npx chaffjs draft.txt --experimental --compact
 draft.txt   blog/tech · 日本語   ジャンルは既定から
    法令・規程のようです。--genre legal/statute を試せます
 
-  6:82    error   「第三号」（番地 21.1.3）はこの文書にありません
-                  dangling-reference
   6:39    warning この文は 125 文字あります（100 文字まで）
                   max-sentence-length
+  6:82    error   「第三号」（番地 21.1.3）はこの文書にありません
+                  dangling-reference
   9:1     error   「二」の次が「四」です（3 番目のはず）
                   numbering-gap
   11:1    warning この文は 131 文字あります（100 文字まで）
