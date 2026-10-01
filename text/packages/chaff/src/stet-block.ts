@@ -20,13 +20,17 @@ const holds = (node: MarkdownNode, offset: number): boolean => {
   return span !== undefined && span.start <= offset && offset < span.end;
 };
 
-/** The deepest node holding `offset`, as its parent and its place among the parent's children. */
-const holderOf = (parent: MarkdownNode, offset: number): Holder | undefined => {
-  const children = parent.children ?? [];
-  const index = children.findIndex((child) => holds(child, offset));
-  const child = children[index];
-  if (child === undefined) return undefined;
-  return holderOf(child, offset) ?? { parent, index };
+/** The deepest node holding `offset`, as its parent and its place among the parent's children. A loop: quotes nest without limit. */
+const holderOf = (root: MarkdownNode, offset: number): Holder | undefined => {
+  let found: Holder | undefined;
+  let parent: MarkdownNode | undefined = root;
+  while (parent !== undefined) {
+    const children: readonly MarkdownNode[] = parent.children ?? [];
+    const index = children.findIndex((child) => holds(child, offset));
+    if (index !== -1) found = { parent, index };
+    parent = children[index];
+  }
+  return found;
 };
 
 /** The node a stet covers: the next block when the comment stands alone, else the block the comment is part of. */

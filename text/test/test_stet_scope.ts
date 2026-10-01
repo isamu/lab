@@ -117,6 +117,11 @@ describe("stet-section and stet-file keep their reach", () => {
 });
 
 describe("stet on large documents", () => {
+  it("a deeply nested quote", () => {
+    const depth = ">".repeat(10_000);
+    assert.deepEqual(keptLines([`${depth} ${STET}`, `${depth} 段落。`, "", "次。"].join("\n")), [3, 4]);
+  });
+
   it("a long paragraph and a long loose list", () => {
     const paragraph = [STET, ...Array.from({ length: 20_000 }, () => "行。"), "", "次。"].join("\n");
     assert.deepEqual(keptLines(paragraph).slice(0, 2), [20_002, 20_003]);
