@@ -31,6 +31,7 @@ placeholders:
 levels: { strict: 1, normal: 1, relaxed: 3 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+sources: [plain-2011, kyodo-2022]
 
 group: team
 summary:
