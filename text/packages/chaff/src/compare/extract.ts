@@ -5,7 +5,8 @@ import type { Atom, Extraction, Unread } from "./atom.ts";
 import { clockTimes } from "./clock-time.ts";
 import { factTextOf, type FactText } from "./fact-text.ts";
 import { codeAtoms, headingAtoms, urlAtoms } from "./markup-atoms.ts";
-import { nameKey, properNouns, readsProperNouns } from "./proper-nouns.ts";
+import { properNouns, readsProperNouns } from "./proper-nouns.ts";
+import { factKey } from "./fact-key.ts";
 import { spanIndex } from "./spans.ts";
 import { atomsOf, bareNumbers, footnotes, numericDates, quotations, teamNames, type TextInput } from "./text-atoms.ts";
 import { treeFacts, type TreeFacts } from "./tree-atoms.ts";
@@ -46,9 +47,9 @@ const proseFacts = (input: ExtractInput, readers: Readers, tree: TreeFacts, time
     ...atomsOf(marks, "footnote", text),
     ...atomsOf(names, "name", text),
     ...bareNumbers(text, spanIndex([...taken, ...facts.listMarkers])),
-    ...quotations(text),
+    ...quotations(text, facts.unseen),
     // "April" in a date and "Section" in a reference are read with them, not again as names.
-    ...properNouns({ doc: input.doc, taken: spanIndex([...taken, ...names, ...facts.blanked]), lineOf }),
+    ...properNouns({ doc: input.doc, taken: spanIndex([...taken, ...names, ...facts.blanked]), lineOf, unseen: facts.unseen }),
   ];
 };
 
@@ -74,5 +75,5 @@ export const extractFacts = (input: ExtractInput): Extraction => {
     ...(input.root === undefined ? [] : codeAtoms(input.root, lineOf)),
     ...headingAtoms(input.doc.markup, lineOf),
   ];
-  return { atoms, unread: unreadOf(input), nameText: nameKey(facts.text) };
+  return { atoms, unread: unreadOf(input), nameText: factKey(facts.text, { start: 0, end: source.length }, facts.unseen) };
 };

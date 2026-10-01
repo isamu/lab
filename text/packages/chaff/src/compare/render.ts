@@ -2,14 +2,13 @@ import { ATOM_KINDS, type Atom, type AtomKind } from "./atom.ts";
 import type { Reformed } from "./match.ts";
 import type { Change, Outcome, Side } from "./outcome.ts";
 import type { CompareText } from "./text.ts";
-import { unwrappedText } from "./unwrapped.ts";
 
 /** How much of a fact is shown: a code block is shown by its first line. */
 const SHOWN_WIDTH = 60;
 
 /** One line of a fact as written: a code block or a wrapped quotation is shown on one line, cut at SHOWN_WIDTH. */
 const shown = (text: string): string => {
-  const oneLine = unwrappedText(text).trim();
+  const oneLine = text.replace(/\s+/gu, " ").trim();
   return oneLine.length > SHOWN_WIDTH ? `${oneLine.slice(0, SHOWN_WIDTH)}…` : oneLine;
 };
 

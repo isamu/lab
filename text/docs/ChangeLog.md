@@ -4,14 +4,17 @@ Newest first.
 
 ## Unreleased
 
-### `compare` reads a Japanese quotation wrapped between two characters as the same quotation (#435)
+### `compare` reads a wrapped or bold quotation as the same quotation, and 「8時間」 as a length of time (#435, #446)
 
-A line break between two wide characters (`系の` / `システム`) vanishes when Markdown is rendered, but `compare` read it as
-a space, so joining the lines of a Japanese quotation was reported as one quotation dropped and another added. Quotations
-and names are now keyed the way `chaff` already reads such breaks for its rules: a line break between wide characters is
-removed, any other white space is one space. The joined quotation is reported as written another way, like an English
-one, and the report shows it without a space that a reader never sees. A space actually written inside a Japanese
-quotation is still a different quotation.
+- A line break between two wide characters (`系の` / `システム`) vanishes when Markdown is rendered, but `compare` read
+  it as a space, so joining the lines of a Japanese quotation was reported as one quotation dropped and another added.
+  Bold marks inside a quotation (`「**終わったな**」`) were read as part of it too. Quotations and names are now keyed
+  without what a reader never sees, the way the rules already read the text: a line break between wide characters (not
+  one next to inline code or a link's marks) and the marks of bold, italics and strikethrough. Such a change is reported
+  as the same fact written another way. A plain-text document shows its line breaks, so there they still count, and a
+  space actually written inside a Japanese quotation is still a different quotation.
+- `8時間` was read as the time `08:00`, and `1.2時間` as `2時`. 時間 after the hour now makes it a length of time, and
+  an hour that ends a longer number (`1.2`, `123`) is not read as one.
 
 ### `unqualified-superlative` reads 「〜のほうが」「〜との」 and quotations (#394)
 

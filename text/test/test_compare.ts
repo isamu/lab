@@ -6,8 +6,8 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { readMarkdown } from "../packages/chaff/src/markdown-read.ts";
 import { extractFacts } from "../packages/chaff/src/compare/extract.ts";
 import { outcomeOf, type Outcome } from "../packages/chaff/src/compare/outcome.ts";
-import { unwrappedKey, unwrappedText } from "../packages/chaff/src/compare/unwrapped.ts";
-import { nameKey } from "../packages/chaff/src/compare/proper-nouns.ts";
+import { factKey } from "../packages/chaff/src/compare/fact-key.ts";
+import { clockTimes } from "../packages/chaff/src/compare/clock-time.ts";
 import type { AtomKind, Extraction } from "../packages/chaff/src/compare/atom.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { runCli } from "./cli-run.ts";
@@ -194,6 +194,27 @@ describe("what is read once, and what is not a fact", () => {
     assert.deepEqual(changes(compare(ja, "彼は「MulmoClaude\nに入れる」と言った。", "彼は「MulmoClaude に入れる」と言った。")).dropped, []);
   });
 
+  it("bold inside a quotation is how it is written, not what it says", () => {
+    const bold = changes(compare(ja, "僕は「**終わったな**」と思った。", "僕は「終わったな」と思った。"));
+    assert.deepEqual([bold.dropped, bold.added], [[], []]);
+    assert.deepEqual(bold.reformed, ["quote:「**終わったな**」→「終わったな」"]);
+    assert.equal(compare(ja, "彼は「とても**大事**です」と言った。", "彼は「とても大事です」と言った。").ok, true);
+  });
+
+  it("a line break next to inline code is read as the rules read it, so text moved out of a quotation is not hidden", () => {
+    const moved = changes(compare(ja, "依頼は「系の\n`x`システム」でした。", "依頼は「系のシステム」でした。`x`"));
+    assert.deepEqual([moved.dropped, moved.added], [["quote:「系の\n`x`システム」"], ["quote:「系のシステム」"]]);
+  });
+
+  it("a plain-text document shows its line breaks, so a joined line there is another quotation", () => {
+    const plain = changes(compare(ja, "依頼は「系の\nシステム」でした。", "依頼は「系のシステム」でした。", "a.txt"));
+    assert.deepEqual([plain.dropped, plain.added], [["quote:「系の\nシステム」"], ["quote:「系のシステム」"]]);
+  });
+
+  it("a hard line break inside a quotation is a visible break, read as a space", () => {
+    assert.equal(compare(ja, "依頼は「系の  \nシステム」でした。", "依頼は「系の システム」でした。").ok, true);
+  });
+
   it("a space written inside a Japanese quotation is still another quotation", () => {
     const spaced = changes(compare(ja, "依頼は「系の システムにしたい」でした。", "依頼は「系のシステムにしたい」でした。"));
     assert.deepEqual([spaced.dropped, spaced.added], [["quote:「系の システムにしたい」"], ["quote:「系のシステムにしたい」"]]);
@@ -243,20 +264,49 @@ describe("what is read once, and what is not a fact", () => {
   });
 });
 
-describe("unwrappedKey: a fact's text as one spelling", () => {
-  it("removes a line break between wide characters, and makes any other white space one space", () => {
-    assert.equal(unwrappedKey("系の\nシステム"), "系のシステム");
-    assert.equal(unwrappedKey("日本\n  銀行"), "日本銀行");
-    assert.equal(unwrappedKey("keep the\nsame key"), "keep the same key");
-    assert.equal(unwrappedKey("MulmoClaude\nに"), "MulmoClaude に");
-    assert.equal(unwrappedKey("系の  \nシステム"), "系の システム");
-    assert.equal(unwrappedKey("ＡＢＣ１２３"), "ABC123");
-    assert.equal(unwrappedKey(""), "");
+describe("factKey: a fact's text as one spelling", () => {
+  const whole = (text: string): { start: number; end: number } => ({ start: 0, end: text.length });
+
+  it("removes what a reader never sees, and makes any other white space one space", () => {
+    assert.equal(factKey("系の\nシステム", whole("系の\nシステム"), [{ start: 2, end: 3 }]), "系のシステム");
+    assert.equal(
+      factKey("**終わった**", whole("**終わった**"), [
+        { start: 0, end: 2 },
+        { start: 6, end: 8 },
+      ]),
+      "終わった",
+    );
+    assert.equal(factKey("keep the\nsame key", whole("keep the\nsame key"), []), "keep the same key");
+    assert.equal(factKey("ＡＢＣ１２３", whole("ＡＢＣ１２３"), []), "ABC123");
+    assert.equal(factKey("", whole(""), []), "");
   });
 
-  it("a name wrapped between wide characters is the name written on one line", () => {
-    assert.equal(nameKey("日本\n銀行"), nameKey("日本銀行"));
-    assert.equal(unwrappedText("ＡＢ　系の\nシステム"), "ＡＢ 系のシステム");
+  it("reads only the unseen parts inside the span, on the span's own positions", () => {
+    const text = "前\n後の「系の\nシステム」";
+    const quote = { start: 5, end: 12 };
+    assert.equal(
+      factKey(text, quote, [
+        { start: 1, end: 2 },
+        { start: 7, end: 8 },
+      ]),
+      "系のシステム",
+    );
+    assert.equal(factKey(text, quote, [{ start: 1, end: 2 }]), "系の システム");
+  });
+});
+
+describe("a duration is not a time of day", () => {
+  it("「8時間」「1.2時間」「24時間」 are lengths of time; 「8時」「午後3時半」 are times", () => {
+    const keys = (text: string): string[] => clockTimes(text).map((time) => time.key);
+    assert.deepEqual(keys("8時間ノンストップで進めた。中央値1.2時間。24時間営業。123時。"), []);
+    assert.deepEqual(keys("8時に始め、午後3時半に終えた。10時30分に集合。"), ["08:00", "15:30", "10:30"]);
+  });
+
+  it("chaff facts does not list 「8時間」 as a time", () => {
+    assert.deepEqual(
+      factsOf(ja, "a.md", "寝る前に「8時間ノンストップで進めておいて」と頼みます。").atoms.filter((atom) => atom.kind === "time"),
+      [],
+    );
   });
 });
 
@@ -430,11 +480,11 @@ describe("chaff compare on the command line", () => {
     assert.equal(parsed.ok, false);
   });
 
-  it("shows a Japanese quotation joined across a line break without a space a reader never sees", async () => {
+  it("passes a Japanese quotation joined across a line break, as written another way", async () => {
     const wrapped = { "a.md": "# 試し\n\n依頼は「系の\nシステムにしたい」でした。\n", "b.md": "# 試し\n\n依頼は「系のシステムにしたい」でした。\n" };
     const run = await runCli(wrapped, ["compare", "a.md", "b.md"], "ja_JP.UTF-8");
     assert.equal(run.code, 0, run.out);
-    assert.match(run.out, /引用: 「系のシステムにしたい」 → 「系のシステムにしたい」/u);
+    assert.match(run.out, /書き方だけ変わった事実 1 件/u);
   });
 
   it("speaks the document's language", async () => {

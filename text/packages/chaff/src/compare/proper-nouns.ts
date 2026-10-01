@@ -1,7 +1,7 @@
 import type { ProseDocument, Span, Token } from "../plugin.ts";
 import type { Atom } from "./atom.ts";
 import { overlapsAny, type SpanIndex } from "./spans.ts";
-import { unwrappedKey } from "./unwrapped.ts";
+import { factKey } from "./fact-key.ts";
 
 const PROPER_NOUN = "PROPN";
 
@@ -41,10 +41,9 @@ export type NounInput = {
   /** Facts other readers took and what is not prose: a proper noun inside one is read as that, not again here. */
   readonly taken: SpanIndex;
   readonly lineOf: (offset: number) => number;
+  /** What a reader never sees (FactText.unseen): a line break inside a name does not make another name. */
+  readonly unseen: readonly Span[];
 };
-
-/** A name as one spelling: full-width letters and line breaks inside a name do not make another name. */
-export const nameKey = (written: string): string => unwrappedKey(written);
 
 /** Whether the language package tagged parts of speech: without them, a document with sentences has no proper nouns to read. */
 export const readsProperNouns = (doc: ProseDocument): boolean => doc.sentences.length === 0 || doc.sentences.some((sentence) => sentence.tokens !== undefined);
@@ -60,7 +59,7 @@ export const properNouns = (input: NounInput): Atom[] => {
     runsOf(sentence.tokens ?? [], source).flatMap((run): Atom[] => {
       const text = source.slice(run.start, run.end);
       if (overlapsAny(input.taken, run) || isCommonWord(run, text, lowerCase)) return [];
-      return [{ kind: "name", key: nameKey(text), text, line: input.lineOf(run.start) }];
+      return [{ kind: "name", key: factKey(source, run, input.unseen), text, line: input.lineOf(run.start) }];
     }),
   );
 };
