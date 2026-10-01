@@ -1,6 +1,7 @@
 import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
 import { calendarRuns, calendarUnitsOf, type CalendarUnits } from "../calendar-number.ts";
-import { latinBoundaries, minorityStyle, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
+import { latinBoundaries, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
+import { minorityReport } from "../spacing-minority.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStarts, type NameContext } from "../number-name.ts";
 
@@ -69,6 +70,43 @@ const labelsAt = (doc: ProseDocument, position: "before" | "after"): ReadonlySet
 const isQuoted = (quoted: readonly Span[], boundary: Boundary): boolean => isWithinAny(quoted, { start: boundary.offset, end: boundary.offset });
 
 /**
+ * リンクの文字の中の境目。リンクの文字は引いた記事や資料の題であることが多く、空け方は元のものなので、鉤括弧の中と同じに数えない。
+ * リンクの外側の端（「を [記事]」の空白）は書き手の空け方なので数える。at は文書全体の位置。
+ */
+const isInsideLink = (links: readonly Span[], at: number): boolean => links.some((link) => link.start < at && at < link.end);
+
+const findingAt = (entry: Located, values: Finding["values"], variant?: string): Finding => ({
+  rule: "",
+  severity: "warning",
+  line: 0,
+  column: 0,
+  quote: entry.sentence.text.trim(),
+  ...(variant === undefined ? {} : { variant }),
+  values: { ...values, offset: entry.sentence.span.start + entry.offset },
+});
+
+/** 一つの種類の境目の指摘。少ないほうを 1 箇所ずつか、書き方が二通りあれば 1 件で（spacing-minority.ts）。 */
+const findingsOf = (kind: SpacingKind, ofKind: readonly Located[], limit: number): Finding[] => {
+  const report = minorityReport(ofKind, limit);
+  if (report === undefined) return [];
+  if (report.mode === "mixed") {
+    const { first, odd, spaced, touching } = report;
+    return [findingAt(first, { kind: KIND_NAME[kind], spaced, touching, count: odd, of: ofKind.length, limit }, "mixed")];
+  }
+  const minority = report.odd[0]?.spaced ?? false;
+  return report.odd.map((entry) =>
+    findingAt(entry, {
+      kind: KIND_NAME[kind],
+      style: minority ? "空けています" : "詰めています",
+      usual: minority ? "詰める" : "空ける",
+      count: report.odd.length,
+      of: ofKind.length,
+      limit,
+    }),
+  );
+};
+
+/**
  * 日本語と英字・数字のあいだを、空けるか詰めるか。文書の中で混ざっていたら、少ないほうを指摘する。
  * どちらが正しいかは決めない。決めるのはチームで、chaff はそろっているかだけを見る。
  */
@@ -85,30 +123,15 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
     const quoted = quotedSpans(sentence.text);
     const calendar = calendarStarts(sentence, context.calendar);
     return latinBoundaries(sentence.text, doc.source.slice(sentence.span.start, sentence.span.end))
-      .filter((boundary) => !isQuoted(quoted, boundary) && isCounted(sentence, boundary, context, calendar))
+      .filter((boundary) => !isQuoted(quoted, boundary) && !isInsideLink(doc.links, sentence.span.start + boundary.offset))
+      .filter((boundary) => isCounted(sentence, boundary, context, calendar))
       .map((boundary) => ({ sentence, ...boundary }));
   });
-  return KINDS.flatMap((kind) => {
-    const ofKind = located.filter((entry) => entry.kind === kind);
-    const minority = minorityStyle(ofKind);
-    if (minority === undefined) return [];
-    const odd = ofKind.filter((entry) => entry.spaced === minority);
-    if (odd.length < options.limit) return [];
-    return odd.map((entry) => ({
-      rule: "",
-      severity: "warning",
-      line: 0,
-      column: 0,
-      quote: entry.sentence.text.trim(),
-      values: {
-        kind: KIND_NAME[kind],
-        style: minority ? "空けています" : "詰めています",
-        usual: minority ? "詰める" : "空ける",
-        count: odd.length,
-        of: ofKind.length,
-        limit: options.limit,
-        offset: entry.sentence.span.start + entry.offset,
-      },
-    }));
-  });
+  return KINDS.flatMap((kind) =>
+    findingsOf(
+      kind,
+      located.filter((entry) => entry.kind === kind),
+      options.limit,
+    ),
+  );
 };
