@@ -17,6 +17,65 @@ Newest first.
 - An `ai-tell` lexicon entry may carry its own `rewrite` hint: 「時間を溶かす」 → 「時間がかかった（何に、どれだけ）」,
   「静かに壊れる」 → 「エラーを出さずに失敗する」, "delve into" → "look at, or explain".
 
+### New rule: `nominalization`, verbs hidden in nouns (experimental)
+
+- chaff counts verbs written as nouns and carried by another verb: 調査を実施した for 調査した, 確認を行う for 確認する,
+  "make a decision" for "decide", "conduct an analysis" for "analyze". It speaks only when they are dense for the
+  document's length (per 1000 characters or words), at `info`. Sources: the plain-Japanese guideline for foreign
+  residents (2020), the Federal Plain Language Guidelines and GOV.UK's "Use clear language".
+- Japanese reads morphology: the adapter now marks a サ変 noun with `VerbForm=Vnoun` (not a symbol the dictionary files
+  there), and the rule looks for it before を行う / を実施する / を実行する / を執り行う. English reads a list of phrases.
+  Legal documents and literature leave it off: legal drafting writes 「…を行う」 as its register.
+
+### New rule: `requirement-smell`, wording that leaves a requirement open (experimental)
+
+- In a sentence that states a requirement (one that ends in しなければならない, ものとする or 〜こと; one with shall, must or is required to),
+  chaff points at a loophole (可能な限り, 必要に応じて; as far as possible, if necessary), an open-ended list (等, など;
+  etc., but not limited to) and "and/or" (及び／又は). Sources: Femmer et al. (2017), Berry et al. (2003) and
+  ISO/IEC/IEEE 29148. It runs on specifications, contracts, manuals and FAQs; statutes, which define their 等 terms,
+  and glossaries, whose 〜のこと and 〜すること define a word, are left out. The words are in each language's lexicons.
+
+### Meeting notes leave `agentless-passive` out, press releases `proper-noun-density` (#170)
+
+Two presets from the corpus, both for experimental rules, so the findings of a default run do not change; only the
+reason in the "did not run" list does (the genre, instead of "still experimental").
+
+- **business/meeting-notes: `agentless-passive` off.** Minutes record what the meeting did (「了承された」, "the meeting
+  was held"); the actor is the meeting by the form. It fired on nearly every set of minutes in the corpus, English
+  (FOMC, ASF board, Rust lang team, a TC39 agenda, Node.js TSC) and Japanese (デジタル庁 councils, 厚労省 ICD committee,
+  Entaku.rb).
+- **business/press-release: `proper-noun-density` off.** A release names the agency, the people quoted, the mission
+  and the place; that is its news. Every English release in the corpus (GSA, NASA, NOAA) was over the limit.
+
+The genres that existed before presets now may carry a level, but only `off` on an experimental rule; the test says so.
+
+### `fullwidth-alnum-consistency` leaves the rest of a version number to its name (#170)
+
+In a document that writes 第１条 in full-width digits, the 2 of 「TLS1.2」 was reported as a half-width digit. A digit run
+after a dot that follows a name ending in letters and digits (TLS1, Python3, and on through Python3.12.4) is part of
+that name when written in the name's width, so it is no vote on how the document writes its numbers. A decimal
+(1.5), a number after a name without a dot (「EC2 8台」) and a tail in the other width (「TLS1.２」) still count.
+
+### `latin-spacing` skips the space after an item number at the head of a line (#170)
+
+Terms and statutes number their items with a kanji numeral and a space: 「一 JIS X 0201として規格化されている英数字」.
+That space separates the number from the item, so it is no vote on how the document spaces Japanese and Latin text.
+The numbers (一 to 二十, and イ, ロ, ハ … for sub-items) are the lang-ja lexicon `item-number`, in order. A number counts
+as an item only where the number before or after it also opens a line, so 「十 GBまで…」 is still a quantity; only the
+separating space is skipped (「二CSV」 still counts as touching).
+
+### `dangling-reference` reads another document's articles the way terms and web databases write them (#170)
+
+Two shapes in the round 14 documents were read as this document's missing articles:
+
+- **Connectors written in kana.** 「著作権法第27条および第28条」: terms of service and notices write および・ならびに・
+  もしくは・または, so 第28条 is 著作権法's too, as it already was after 及び.
+- **A promulgation number in half-width parentheses.** The MHLW 法令等データベース writes 「保険医療養担当規則(昭和三十二年
+  厚生省令第十五号)第二条の六」. The number is now skipped in either width, and a name with one is another document even
+  when it ends in no kind word (「…に関する基準(昭和五十八年厚生省告示第十四号)第二条の六」). A parenthetical aside
+  inside a chain (「民法第709条(同法第710条において準用する場合を含む。)、第711条」) no longer breaks it in either width (an opener and a closer of different widths are not a pair). A name
+  preceded by この (「この基準(…号)第9条」「この就業規則第9条」) is still this document.
+
 ### Corpus round 14: documents of kinds the corpus had few of (#170)
 
 Terms of service and privacy statements (GitHub's, under CC0; a ministry's 電子申請 terms and the Tokyo app's terms,
