@@ -137,6 +137,7 @@ npx chaffjs tree contract.txt    文書を番地の付いた木にする（条�
 npx chaffjs cite 原文 引用.json  引用が原文にあるかを確かめる
 npx chaffjs compare 前.md 後.md  書き換えで事実（数・日付・URL・名前など）が落ちても足されてもいないかを確かめる
 npx chaffjs facts 前.md          compare が照合する事実を一覧にする（書き直す前の控え）
+npx chaffjs outline 前.md 後.md  見出しの構成と形（見出しの数・節の平均・箇条書きの割合・太字）を前と後で並べる
 npx chaffjs skill                Claude Code の skill を入れる
 npx chaffjs feedback a.md --rule max-sentence-length --line 42   誤った指摘を報告する下書きを作る
 ```
@@ -583,6 +584,7 @@ AI っぽい文章を AI に大きく書き換えさせたあと、事実が落�
 npx chaffjs compare before.md after.md                      人が読む
 npx chaffjs compare before.md after.md --json               AI が読んで直す（--compact は 1 件 1 行）
 npx chaffjs compare before.md after.md --allow-dropped url  わざと削った種類は失敗にしない
+npx chaffjs compare before.md after.md --distinct           一度でも書いてある事実は残ったとみなす（繰り返しを消してよい）
 ```
 
 数（単位・通貨つき）、日付、時刻、URL、コード、固有名詞と `names:`、「」や "…" の引用、見出し、条項の参照、脚注を、lint と同じ読み手で取り出し、位置を見ずに数で比べます。
@@ -611,6 +613,12 @@ i 書き方だけ変わった事実 3 件
 ```bash
 npx chaffjs facts before.md            種類ごとのチェックリスト（行番号つき）
 npx chaffjs facts before.md --json     AI が控えとして持つ（--compact は 1 件 1 行）
+```
+
+構成を変えたかどうかは `outline` で測ります。見出しの構成を出し、見出しの数、節の平均の長さ、箇条書きの割合、太字の数を測ります。2 つ渡すと前と後を並べます。
+
+```bash
+npx chaffjs outline before.md after.md       見出しの数 6 → 3 のように、形がどう動いたかを並べる
 ```
 
 ## Claude Code の skill
@@ -662,6 +670,10 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 入れるかどうかは、生成 AI 以前の技術記事と corpus で測って決めました。「解像度を上げる」「腹落ち」のように、以前から人が同じくらい書いていた語は入れていません。
 
 AI っぽい rule がどれだけ正確かは `yarn bench:ai` で測れます。同じ中身を、人の書きぶり・生成文の書きぶり・書き直した版の 3 通りで書いた見本（`test/fixtures/ai-samples/paired/`）と corpus にかけ、rule ごとに生成文の版に当たった数と、それ以外に当たった数（誤報）を出します。
+
+直し方は 3 つあります。指摘された所だけ直す部分直し、構成を残して節ごとに直す書き直し、構成から作り直す全面書き直しです。
+ブログとエッセイ、`ai-generated-composite` が出た文書には全面書き直しを勧めます。`facts` で事実の控えを取り、`outline` で構成の変化を測り、`compare` で事実が残ったかを確かめます。
+手順と例は手引きの「AIっぽさを直す」に、AI 向けの手順は `npx chaffjs skill` で入る skill にあります。
 
 ## チームが決める rule
 
