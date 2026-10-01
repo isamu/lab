@@ -213,6 +213,15 @@ describe("colonLeadIns", () => {
     assert.deepEqual(leadInsOf("# 題\n\n設定は次の通りです：\n\n| 名前 | 値 |\n| --- | --- |\n| a | 1 |\n\n- 鍵\n"), []);
   });
 
+  it("does not count a colon sentence with a thematic break between it and the list", () => {
+    ["***", "___", "---"].forEach((rule) => assert.deepEqual(leadInsOf(`# 題\n\n準備：\n\n${rule}\n\n- 鍵\n`), [], rule));
+  });
+
+  it("finds a bold label whose colon is inside or outside the bold", () => {
+    assert.equal(leadInsOf("# 題\n\n**準備:**\n\n- 鍵\n").length, 1);
+    assert.equal(leadInsOf("# 題\n\n準備**:**\n\n- 鍵\n").length, 1);
+  });
+
   it("finds a lead-in with no blank line before its list", () => {
     assert.deepEqual(leadInsOf("# 題\n\n準備は次の通りです：\n- 鍵\n- 地図\n"), ["準備は次の通りです："]);
   });
@@ -248,14 +257,9 @@ describe("colon-lead-in", () => {
     ["docs/manual", "legal/contract", "literature/essay"].forEach((genre) => assert.ok(!idsFor(dense, ja, genre).includes("colon-lead-in"), genre));
   });
 
-  it("measures English per 1000 words with its own limit", () => {
+  it("does not run on English, where people hand off to a list after a colon as a matter of course", () => {
     const dense = `# Post\n\n${BULK_EN.slice(0, 1300)}\n\nBring:\n\n- A key\n\nPlan:\n\n- Meet\n\nAfter:\n\n- Clean\n`;
-    assert.ok(idsFor(dense, en).includes("colon-lead-in"));
-  });
-
-  it("lets English human prose keep more colon lead-ins than Japanese (a few per 1000 words pass)", () => {
-    const spread = `# Post\n\n${BULK_EN}\n\nBring:\n\n- A key\n\nPlan:\n\n- Meet\n`;
-    assert.ok(!idsFor(spread, en).includes("colon-lead-in"));
+    assert.ok(!idsFor(dense, en).includes("colon-lead-in"));
   });
 });
 

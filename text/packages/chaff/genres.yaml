@@ -153,6 +153,10 @@ groups:
       date-order: off
       date-weekday-mismatch: off
       total-mismatch: off
+      announced-count-mismatch: off
+      dangling-figure-reference: off
+      date-range-reversed: off
+      percent-sum-mismatch: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -248,6 +252,8 @@ genres:
       dangling-reference: normal
       date-weekday-mismatch: normal
       total-mismatch: normal
+      dangling-figure-reference: normal
+      date-range-reversed: normal
   - id: legal/statute
     name: { ja: 法令・規程, en: Statute and regulation }
     summary:
@@ -267,6 +273,8 @@ genres:
       dangling-reference: normal
       date-weekday-mismatch: normal
       total-mismatch: normal
+      dangling-figure-reference: normal
+      date-range-reversed: normal
   - id: legal/judgment
     name: { ja: 判決, en: Court decision }
     summary:

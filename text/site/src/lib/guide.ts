@@ -10,11 +10,13 @@ const ORDER = [
   "ai-sounding",
   "configuration",
   "reference",
+  "house-style",
   "adding-rules",
   "commands",
   "structure",
   "languages",
   "ci",
+  "bibliography",
 ];
 
 export type GuidePage = { readonly lang: Lang; readonly slug: string; readonly entry: CollectionEntry<"guide"> };

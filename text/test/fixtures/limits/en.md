@@ -51,14 +51,4 @@ The next meeting is on the tenth. The agenda will follow by email. The slides ar
 
 ## On the day
 
-Here is what to bring:
-
-- A key
-- A map
-
-Here is the plan:
-
-- Meet
-- Leave
-
 The key point is the key. Here's the thing: the map matters. Honestly, time is short.

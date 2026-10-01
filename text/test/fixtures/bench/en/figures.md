@@ -4,9 +4,11 @@ Facilities team, 9 October 2026
 
 ## Summary
 
-We compared the booked hours of each meeting room with the hours people actually spent in it. The figures come from the booking system and the door panels. We shared the results with every department at the end of September.
+We compared the booked hours of each meeting room with the hours people actually spent in it (1 April 2026 – 30 September 2026). The figures come from the booking system and the door panels. We shared the results with every department at the end of September.
 
 ## Hours by room
+
+Table 1: Meeting room use, April to September
 
 | Room | Hours booked | Hours used |
 | --- | --- | --- |
@@ -18,12 +20,21 @@ We compared the booked hours of each meeting room with the hours people actually
 
 ## What the figures show
 
-Nobody used about 20% of the booked hours. Most of these are meetings that ended early and kept their slot. Room C has a large window facing the station, and people avoid it on summer afternoons.
+As Table 1 shows, nobody used about 20% of the booked hours. Most of these are meetings that ended early and kept their slot. Room C has a large window facing the station, and people avoid it on summer afternoons.
 
 The lost hours cluster at 9:00, when the morning stand-up ends after 15 minutes. The same pattern shows up around lunch. The booking screen does not show freed time, so nobody else knows the room is empty.
 
+Breakdown of the unused hours:
+
+- Morning slots: 45%
+- Around lunch: 30%
+- Other times: 25%
+
 ## Next steps
 
-In the second half we will try door panels that free the rest of a slot. Room C will get blinds by November. The facilities team should review the process with the office managers before the trial.
+In the second half we will make the following two changes:
+
+- Door panels will free the rest of a slot.
+- Room C will get blinds by November. The facilities team should review the process with the office managers before the trial.
 
 Department heads can discuss the choice of rooms for the trial with the facilities team. Each department will receive its own figures by email. We will publish the next figures in April.

@@ -1,0 +1,8 @@
+# Words right after a figure's number that place it in another document ("Figure 5 of the 2024 report", "Table 9 in
+# the annual report"). Such a reference is not looked for in this document.
+id: figure-elsewhere
+language: en
+entries:
+  - pattern: of
+  - pattern: in
+  - pattern: from

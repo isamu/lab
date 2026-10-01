@@ -12,12 +12,12 @@ import {
   replaceLine,
   rewriteFirst,
   splitSentences,
+  type Mutation,
   type Plant,
   type PlantContext,
 } from "./bench-text.ts";
 import { SECTION, blocksOf, isParagraph, type Block } from "./bench-mutations-layout.ts";
 import { MIN_DOCUMENT_LENGTH } from "../packages/chaff/src/detectors/signals.ts";
-import type { Mutation } from "./bench-text.ts";
 
 const SENTENCE_END = /[。.!?]$/u;
 

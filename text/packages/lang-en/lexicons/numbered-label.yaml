@@ -1,0 +1,26 @@
+# Words written before a number to name an item of a series (Step 3, Example 4). At the head of a heading they are a
+# label, which the text below never repeats, so heading-echo does not count them in the overlap. position is the side
+# of the number the word is written on. Matched as written.
+id: numbered-label
+language: en
+entries:
+  - pattern: Step
+    position: before
+  - pattern: Example
+    position: before
+  - pattern: Case
+    position: before
+  - pattern: Exercise
+    position: before
+  - pattern: Question
+    position: before
+  - pattern: Problem
+    position: before
+  - pattern: Lesson
+    position: before
+  - pattern: Stage
+    position: before
+  - pattern: Figure
+    position: before
+  - pattern: Table
+    position: before

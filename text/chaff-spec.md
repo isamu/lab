@@ -640,6 +640,8 @@ genres:
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
+| `unbalanced-bracket` ✅ | 節の中で組にならない括弧・引用符、全角と半角の組み違い | 両方 | warning |
+| `doubled-punctuation` ✅ | 二つ並んだ句読点（三つ以上は伸ばした書き方として数えない） | 両方 | warning |
 | ~~`list-length-variance`~~ | 箇条書き項目の長さのばらつき | 落とした（下記） | info |
 
 設計上の注意:
@@ -823,7 +825,7 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `assistant-residue` ✅ | weighted phrase-match（会話の返事の名残。重み 1 は 1 つで、0.5 は 2 つで届く） | 両方 | warning |
 | `unfilled-placeholder` ✅ | 括弧の中が雛形の語（[Your Name]、【会社名】）の空欄 | 両方 | warning |
 | `announcing-opener` ✅ | 文頭の予告（重要なのは、Here's the thing）の数。密度ではなく数で見る | blog | info |
-| `colon-lead-in` ✅ | コロンで終わり、すぐ後ろに箇条書きが来る地の文の密度 | blog | info |
+| `colon-lead-in` ✅ | コロンで終わり、すぐ後ろに箇条書きが来る地の文の密度（ja のみ） | blog | info |
 | `padded-intro` | phrase-match（冒頭限定） | blog | warning |
 | `closing-cliche` | phrase-match（末尾限定） | blog | warning |
 | `proper-noun-density` ✅ | 固有名詞の密度 | blog | info |
@@ -921,6 +923,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `no-nakaguro-parallel` ✅ | 中黒の並列 | - |
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
+| `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
 
 `katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。
@@ -1509,6 +1512,31 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 | `jis-z8301-2011` | `katakana-long-vowel`: `drop`、3 音 | JIS Z 8301:2011 附属書 G 表 G.3。2019 年版は外来語の表記によるとした |
 | `bunkacho` | `katakana-long-vowel`: `keep` | 外来語の表記 留意事項その 2 Ⅲ 3 注 3 |
 
+### 18.7 チームのルール（`custom_rules:`）
+
+チームは chaff.yaml に決定的なルールを足せる。コードは書かせない。どれも組み込みの rule と同じ `RuleDefinition` になり、
+指摘・`explain`・`rules --json`・`stet`・`relax`・baseline・SARIF がそのまま扱う。
+
+| `type` | 見るもの | detector |
+| --- | --- | --- |
+| `words` | 語の並び、または「使わない書き方: 使う書き方」。使う書き方の中の一部は数えない（preferred-term と同じ） | `custom-words` |
+| `pattern` | 正規表現。文ごとに当てる。`ignore_case: true` で `i` | `custom-pattern` |
+| `tokens` | 語の条件の並び。条件は `pos`（UPOS か 名詞・動詞・noun・verb などの名前）、`base`（原形）、`surface`（表記） | `custom-tokens`（`requires: [pos]`） |
+
+- 必須は `id`（英小文字・数字・ハイフン。chaff の rule と同じ id は不可）、`type`、`name`、`why`、`how_to_fix`、
+  `example.before`、`example.after`。文言は 1 つの文字列か `{ ja, en }`。`message` を書かなければ種類ごとの既定の文。
+- `level` は重さ（`error` / `warning` / `info`）。段階は重さの段（§18.1 の `level_sets: severity`）で、`relax` は一段軽く、
+  `strict` は一段重くする。status は `stable`（チームが名指しで書いたものなので、既定で動く）。use_for は全ジャンル。
+- **読めないものは実行を止める。** チームのルールが黙って動かないと、きれいな文書に見える。
+- **正規表現は動かす前に確かめる。** 長さ 500 字まで。後方参照（`\1`、`\k<name>`）と、空文字列に当たるもの、
+  上限の無い繰り返しの中に上限の無い繰り返しか選択肢を持つ群に、上限の無い繰り返しを付けた形（`(a+)+`、`(a|aa)*`、
+  `((a+)b)+`）は断る。V8 の正規表現は後戻りするので、この形は長い行で指数時間になる。ただし、先頭の字が互いに違う
+  ただの語の選択肢（`(cat|dog)+`）は取り合わないので通す。回数の決まらない繰り返し（`*`、`+`、`{1,9}`）は 3 つまで。
+  並んだ繰り返し（`a*a*a*a*b`）は入れ子でなくても、文の長さの「繰り返しの数」乗の時間がかかる。
+- **それでも止まらないものは時間で止める。** 形を読むだけでは、すべての危ない形を見分けられない。正規表現は `node:vm` の
+  中で 1 文書 1 ルールあたり 1000 ms までで動かし、超えたらそのルールを「動いていない」一覧に理由付きで出す。
+- `type: module`（Node の関数）は予約した。いまは「まだ使えない」と言って止める。
+
 ---
 
 ## 19. CLI と出力例
@@ -1519,6 +1547,7 @@ npx chaffjs lint article.md              # deterministic のみ（L1 / L2 / L3�
 npx chaffjs test article.md              # L4 を含む
 npx chaffjs eval corpus/ja/blog/         # rule の評価と閾値 sweep
 npx chaffjs explain sentence-rhythm      # rule の意図と根拠
+npx chaffjs compare before.md after.md   # 書き換えで事実が落ちても足されてもいないか（§28）
 npx chaffjs init
 npx chaffjs setup ja                     # 品詞解析器の取得
 
@@ -2076,3 +2105,60 @@ npx chaffjs cite contract.txt claims.json --format json
 - 二つの項にまたがる引用は、両方を含む条を指していれば一致。`quote-elsewhere` の `foundAt` も、引用の全体を含むいちばん内側の番地。原文に二か所あれば最初の場所。
 - コードブロックとインラインコードの中の文も、それを含む節の中身として引用できる。木がコードを覆うのは、コードの中の番号を番号や参照と読まないためで、節の範囲から外すためではない。
 - 一つでも外れていれば終了コード 1。AI の回答を単体試験のように検査できる。書き換えはしない。
+
+## 28. 書き換えで事実が落ちていないか（`chaff compare`）
+
+AI っぽい文章を人の文章に大きく書き換えるのは AI の仕事で、chaff の仕事はその後ろにある。
+書き換えが大胆なほど、数字が一つ消えた、日付が一日ずれた、URL が抜けた、元に無い数字が増えた、を人が読んで見つけるのは難しい。
+`chaff compare` は書き換える前と後の文書から「事実の粒」を同じ読み方で取り出して比べ、落ちたものと足されたものを示す。
+判定に model は使わない。同じ二つの文書からは、いつも同じ結果が出る。chaff は比べるだけで、書き換えない。
+
+```bash
+npx chaffjs compare before.md after.md                        # 人が読む
+npx chaffjs compare before.md after.md --compact              # 1 件 1 行
+npx chaffjs compare before.md after.md --json                 # AI が読んで直す
+npx chaffjs compare before.md after.md --allow-dropped url    # わざと削った種類は通す
+```
+
+### 28.1 事実の粒
+
+新しい読み手は作らず、lint と `chaff tree` が使う読み手で取り出す。
+
+| 種類 | 何を読むか | 読み手 |
+| --- | --- | --- |
+| `number` | 単位や通貨の付いた数（1,200円、$12.50、25%、３万人）と、単位の付かない数 | 構造の木の `quantity`。木が読まなかった数字は、単位の無い数として読む |
+| `date` | 日付 | 構造の木の `date`（2026年4月1日、April 1, 2026）と、年を先に書いた数字だけの日付（2026/4/1、2026-04-01） |
+| `time` | 時刻 | 10:30、15:30:05、3 p.m.、午後3時30分、10時半。24 時間の `HH:MM` にそろえる |
+| `url` | リンク先と、そのまま書いた URL | `doc.markup` のリンク（使われた参照の定義と autolink も）と `bare-url.ts`。文末の句読点は URL に入れない |
+| `code` | インラインコードとコードブロック | Markdown の木。中身を書いたまま比べる |
+| `name` | 固有名詞と `chaff.yaml` の `names:` | 品詞の解析器が `PROPN` とした語の並び。`names:` は書いたとおりに探す |
+| `quote` | 「」『』 “” "" で引いた言葉 | `quoted-span.ts`。中身を比べ、括弧の種類は書き方とみなす |
+| `heading` | Markdown の見出しと、条・章 | 見出しは深さを比べ、言葉は書き方とみなす。条と章は番地を比べる |
+| `reference` | 条項への参照（第5条第2項、Section 4.2） | 構造の木の `reference`。番地と、Section / Article の別を比べる |
+| `footnote` | 脚注の印 `[^1]` と脚注 `[^1]:` | 印を書いたまま比べる |
+
+一つの数字は一つの事実として数える。日付・時刻・参照・脚注の中の数字と、番号付きの箇条書きの `1.` は、数として読み直さない。
+コードと URL の中の数字も数として読まない。
+
+### 28.2 比べ方
+
+- **多重集合として比べる。** 位置は見ない。段落を入れ替えても、事実が動いただけなら何も報告しない。同じ事実を二度書いた文書が一度にすれば、一つ落ちている。
+- **落ちた（dropped）**: 前にあって後に無い。失敗。
+- **足された（added）**: 後にだけある。失敗。大胆な書き換えでも、事実を作ってはいけない。
+- **書き方だけ変わった（reformed）**: 同じ事実の別の書き方。1,000 と 1000、５ と 5、2026年4月1日 と 2026/4/1、午後3時30分 と 15:30、言い換えた見出し。情報として出し、失敗にしない。
+- 単位の違う同じ数（5件 と 5人）は別の事実。片方の単位を読み手が読めなかっただけ（30GB と ３０ＧＢ）なら、同じ数の別の書き方とみなす。
+- 品詞の解析器は語を文脈で読むので、書き換えで同じ名前が固有名詞と読まれたり読まれなかったりする。名前は、相手の文書がその綴りを同じ回数書いていれば落ちていない。文頭で大文字になっただけの語（同じ文書が小文字でも書く語）は名前にしない。見出しの中の語は名前として読まない（見出しは見出しとして比べる）。
+- 一件ごとに、前と後のファイルの行を示す。
+
+### 28.3 出力と終了コード
+
+- 既定は人が読む画面、`--compact` は 1 件 1 行（`dropped` / `added` / `reformed` と種類の名は英語のまま。grep が読む）、`--json` は AI が読む。
+- 最後に、種類ごとの数を前と後で並べる（`数 3→2、日付 1→1、…`）。0 件の種類も並べる。「落ちたものは無い」が「何も見ていない」と読まれないため。
+- 読めなかった種類は理由を付けて言う（§17.4）。言語パッケージが構造を読まない（単位・日付・参照）、日付を読まない、品詞の解析器が無い（`names:` だけを比べる）、Markdown でない（コードの記法が無い）。
+- 落ちた事実か足された事実が一つでもあれば終了コード 1、無ければ 0。
+- `--allow-dropped <種類>` と `--allow-added <種類>` は、わざと削った・足した種類を失敗から外す（繰り返すか、`url,quote` のようにカンマで並べる）。外したものも一覧には残る。
+- 画面の言語は前の文書の言語に従う。
+
+### 28.4 速さ
+
+文書の長さに比例して読む。何万もの引用・範囲・同じ数がある文書でも、一つごとに全体を読み直さない（`test/test_compare_linear.ts`）。

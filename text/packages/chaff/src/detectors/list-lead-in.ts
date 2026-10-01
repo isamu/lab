@@ -1,8 +1,8 @@
 import type { BulletList, Sentence, Span } from "../plugin.ts";
 import { endsWithColon } from "./lead-in.ts";
 
-/** Between a lead-in and its list: only blanks and the closing marks of bold (`**Steps**:`). */
-const ONLY_BLANKS = /^[\s*_]*$/u;
+/** Between a lead-in and its list: only blank space. A thematic break (`***`) separates them; bold marks sit inside the sentence. */
+const ONLY_BLANKS = /^\s*$/u;
 
 /** How many sentences end at or before an offset. Sentences are in document order, so a binary search. */
 const countEndingBy = (sentences: readonly Sentence[], offset: number): number => {

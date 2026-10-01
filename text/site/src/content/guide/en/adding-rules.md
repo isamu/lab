@@ -80,7 +80,7 @@ sample.md   technical/spec · 日本語   ジャンルはchaff.yamlから
 
   3:1     warning この文は 84 文字あります（80 文字まで）
                   max-sentence-length
-  5:31    warning この文だけ他と文末の調子が違います（文書の中で 1 文）
+  5:31    warning この文だけ他と文末の調子が違います（本文の中で 1 文）
                   no-mixed-desumasu
 ```
 
@@ -105,10 +105,8 @@ Afterwards, the `npx chaffjs rules` table shows the level each rule now runs at.
 
 ## Options on a rule (next release)
 
-> Coming in the next release (#380). The shape may change.
-
-Besides its level, a rule will take its own settings under `options`.
-The first is `katakana-long-vowel`, which checks the final ー of katakana loanwords.
+Besides its level, a rule can take its own settings under `options`.
+The rule that has them now is `katakana-long-vowel`, which checks the final ー of katakana loanwords.
 IEICE's house style, for one, drops the final ー from words of three morae or more, which reads like this.
 
 ```yaml
@@ -121,38 +119,50 @@ options:
     except: [カー]     # never reported, either way
 ```
 
+The single line `style: ieice` sets the same.
 `npx chaffjs explain katakana-long-vowel` and `rules --json` list each option and the values it takes.
+[Define your team's writing rules](./house-style) has the details.
 
 ## A words or regular-expression rule (next release)
 
-> Planned for the next release. The shape below is the plan and may change.
-
-A rule that flags a fixed phrase or pattern with the team's own message, written under `custom_rules` in
-`chaff.yaml`. `words` is a list of words, matched in any inflection; `pattern` is a regular expression.
+A rule that flags a fixed phrase or pattern with the team's own words, written under `custom_rules` in
+`chaff.yaml`. `words` is a list of words, or pairs of the spelling to avoid and the one to use; `pattern` is a
+regular expression. Every rule has a `name`, a `why`, a `how_to_fix` and an `example` (before and after), so whoever
+reads a finding knows why to change it.
 
 ```yaml
 custom_rules:
   - id: no-our-company
     type: words
     words: [our company]
-    message:
-      en: Write "we" in external documents
+    name: '"Our company" in external copy'
+    message: 'Write "we", not "{matched}"'
+    why: External documents speak as "we".
+    how_to_fix: Write "we".
+    example:
+      before: Our company ships on Friday.
+      after: We ship on Friday.
   - id: date-with-slash
     type: pattern
     pattern: '\d{4}/\d{1,2}/\d{1,2}'
-    message:
-      en: Write dates as "1 October 2026"
+    name: A date written with slashes
+    message: 'Write "{matched}" as "1 October 2026"'
+    why: One way of writing dates saves the reader a moment on every one.
+    how_to_fix: Write the day, the month's name and the year.
+    example:
+      before: The deadline is 2026/10/1.
+      after: The deadline is 1 October 2026.
 ```
 
+`words` matches the words as written; for inflected words, use a morphology rule.
 Like a built-in rule, a team rule takes a level under `rules`, and `stet` silences one spot.
+A regular expression is checked before it runs, and shapes that can run away on a long line (`(a+)+`) are refused.
 
 ## A morphology rule (next release)
 
-> Planned for the next release. The shape below is the plan and may change.
-
 A rule that matches words by part of speech or by dictionary form.
 "Is able to" for "can" takes one pattern per inflection when written as text ("was able to", "are able to").
-As a sequence of analysed words it takes one.
+As a sequence of analysed words it takes one. A condition is `pos`, `base` (also written `lemma`) or `surface`.
 
 ```yaml
 custom_rules:
@@ -162,15 +172,20 @@ custom_rules:
       - { lemma: be }
       - { surface: able }
       - { surface: to }
-    message:
-      en: Write "can" instead of "is able to"
+    name: '"Is able to" where "can" will do'
+    message: 'Write "can" instead of "{matched}"'
+    why: '"Is able to" says in three words what "can" says in one.'
+    how_to_fix: Use "can".
+    example:
+      before: The team is able to ship on Friday.
+      after: The team can ship on Friday.
 ```
 
 How a sentence is split depends on the sentence. Check the rule on samples it must match and samples it must not.
 
 ## A Node function rule (a later release)
 
-> `type: module` is reserved by name and does not run yet.
+> `type: module` is reserved by name and does not run yet. Written in chaff.yaml, it stops the run and says so.
 
 Counting, comparing, anything none of the above can say, is planned as a Node function.
 It takes the document and returns a list of findings, the same shape as chaff's own detectors

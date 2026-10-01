@@ -17,8 +17,14 @@ why:
   en: Mixing polite and plain endings leaves the reader unsure who the document addresses. Neither register is wrong; consistency within one document is the point.
 
 message:
-  ja: この文だけ他と文末の調子が違います（文書の中で {count} 文）
-  en: "This sentence's ending register differs from the rest ({count} in this document)"
+  ja: この文だけ他と文末の調子が違います（本文の中で {count} 文）
+  en: "This sentence's ending register differs from the rest ({count} in the body text)"
+
+# 数えるのは、文が属するまとまりの中。message は本文、list は箇条書き 1 つ（番号で始まる段落の並びも）。
+messages:
+  list:
+    ja: この文だけ他と文末の調子が違います（この箇条書きの中で {count} 文）
+    en: "This sentence's ending register differs from the rest ({count} in this list)"
 
 how_to_fix:
   ja: 多いほうに揃えてください。少数派のほうを直すのが、いちばん手数が少なくて済みます。
@@ -41,8 +47,8 @@ example:
       新しい料金は来月から始まります。請求書の形式も変わります。支払いの期限は月末です。古い料金は三月で終わります。
 
 not_flagged:
-  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。
-  en: Neither register is called right; only the sentences in the minority are pointed at.
+  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。本文と箇条書きは別々に数えます。箇条書きの中の少ないほうが文書全体では多いほうなら、その文は指しません。
+  en: Neither register is called right; only the sentences in the minority are pointed at. The body and each list are counted apart, and a sentence in a list's minority is left alone when its register is the document's majority.
 level_meaning:
   ja: 少ないほうの調子の文が {limit} 文以下のとき、それを指摘
   en: reported when the minority register has {limit} sentences or fewer

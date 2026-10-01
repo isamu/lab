@@ -125,20 +125,23 @@ enquiries.md   business/report · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  47 rules did not run:
+  51 rules did not run:
       adverb-overuse (still experimental)
       agentless-passive (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
+      announced-count-mismatch (still experimental)
       announcing-opener (still experimental)
       assistant-residue (still experimental)
-      colon-lead-in (still experimental)
+      colon-lead-in (not a rule for en)
       contraction-consistency (still experimental)
       contrast-framing (still experimental)
       cushion-phrase-density (still experimental)
+      dangling-figure-reference (still experimental)
       dangling-reference (still experimental)
       date-order (still experimental)
+      date-range-reversed (still experimental)
       date-weekday-mismatch (still experimental)
       double-keigo (not a rule for en)
       doubled-word (still experimental)
@@ -157,6 +160,7 @@ enquiries.md   business/report · English   genre from --genre
       no-nakaguro-parallel (not a rule for en)
       numbering-gap (still experimental)
       oxford-comma-consistency (still experimental)
+      percent-sum-mismatch (still experimental)
       preferred-term (still experimental)
       proper-noun-density (still experimental)
       repeated-conjunction (still experimental)
@@ -220,7 +224,7 @@ enquiries.md   business/report · English   genre from --genre
   15:93   warning This sentence is passive ("discussed") but never says who did it
                   agentless-passive
 
-7 findings, 13 rules not run
+7 findings, 14 rules not run
 ```
 
 The four new findings, in plain words:
@@ -320,7 +324,7 @@ enquiries.md   business/report · English   genre from --genre   2 stet
   9:66    warning This sentence runs 37 words (limit 25)
                   max-sentence-length
 
-5 findings, 13 rules not run
+5 findings, 14 rules not run
 ```
 
 ## Changing a rule for the whole team
@@ -382,7 +386,8 @@ enquiries-fixed.md   business/report · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  13 rules did not run:
+  14 rules did not run:
+      colon-lead-in (not a rule for en)
       double-keigo (not a rule for en)
       empty-conclusion (it reads meaning; npx chaff test runs it)
       hiragana-fukushi (not a rule for en)

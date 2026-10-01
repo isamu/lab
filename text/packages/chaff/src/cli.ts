@@ -18,7 +18,7 @@ import { resolveGenre } from "./resolve-genre.ts";
 import { runInit } from "./init.ts";
 import { initGenre } from "./commands/init-ask.ts";
 import { targetsOf, withExperimental } from "./cli-args.ts";
-import { loadRules } from "./rule-load.ts";
+import { rulesOf } from "./custom/load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
 import { renderFriendly } from "./render/friendly.ts";
@@ -31,6 +31,7 @@ import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
 import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
 import { citeTargets, runCite } from "./commands/cite.ts";
+import { compareTargets, runCompare } from "./commands/compare.ts";
 import { runSkill } from "./commands/skill.ts";
 import { runFeedback, settingsOf } from "./commands/feedback.ts";
 import { homedir } from "node:os";
@@ -61,7 +62,7 @@ const findRule = (rules: readonly RuleDefinition[], id: string | undefined): Rul
 const changeSetting = (command: Level, ruleId: string | undefined, why: string | undefined): number => {
   const config = readConfig();
   const language = config.language ?? hostLanguage(undefined, process.env);
-  const rule = findRule(loadRules(language), ruleId);
+  const rule = findRule(rulesOf(language, config), ruleId);
   if (rule === undefined) {
     console.error(hostText(config).unknownRule(ruleId ?? hostText(config).unnamed));
     return 1;
@@ -94,7 +95,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const adapter = await loadAdapter(language);
   const { genre, from, unread } = resolveGenre(path, source, config, flag(argv, "--genre"));
   if (unread !== undefined) console.error(`chaff: ${CLI_TEXT[uiLanguageOf(language)].unreadFrontMatterGenre(path, unread, GENRES)}`);
-  const rules = loadRules(language);
+  const rules = rulesOf(language, config);
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
   const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
@@ -139,7 +140,7 @@ const writeSarif = (results: readonly Inspected[], argv: readonly string[]): voi
 
 /** 効いていない設定は、結果の前に一度だけ言う。標準エラーに出すので、JSON や SARIF の出力は汚さない。 */
 const warnRuleProblems = (config: Config, language: string): void =>
-  settingWarnings(config, loadRules(language), hostLanguage(config.language, process.env)).forEach((problem) => console.error(`chaff: ${problem}`));
+  settingWarnings(config, rulesOf(language, config), hostLanguage(config.language, process.env)).forEach((problem) => console.error(`chaff: ${problem}`));
 
 /** Several files end with one summary: in their language when they share one, else the host's. */
 const summaryLanguage = (results: readonly Inspected[], config: Config): UiLanguage => {
@@ -213,7 +214,7 @@ const explain = (ruleId: string | undefined, genreFlag: string | undefined): num
   // The rule's limits differ by language (characters for Japanese, words for English): explain in the one being written.
   const language = config.language ?? hostLanguage(undefined, process.env);
   const text = CLI_TEXT[uiLanguageOf(language)];
-  const rules = loadRules(language);
+  const rules = rulesOf(language, config);
   const rule = findRule(rules, ruleId);
   if (rule === undefined) {
     const list = rules.map((entry) => `  ${entry.id}`).join("\n");
@@ -245,12 +246,8 @@ const runSuppressions = async (targets: readonly string[], argv: readonly string
   const paths = collectTargets(targets.length > 0 ? targets : ["."]);
   const config = readConfig();
   const results = await Promise.all(paths.map((path) => inspect(path, config, [...argv, "--show-baseline"])));
-  console.log(
-    renderSuppressions(
-      results.map((result) => result.perFile),
-      hostLanguage(config.language, process.env),
-    ),
-  );
+  const perFile = results.map((result) => result.perFile);
+  console.log(renderSuppressions(perFile, hostLanguage(config.language, process.env)));
   return 0;
 };
 
@@ -265,7 +262,7 @@ const showRules = (argv: readonly string[]): number => {
   const language = config.language ?? hostLanguage(undefined, process.env);
   warnRuleProblems(config, language);
   const genre = flag(argv, "--genre") ?? config.genre ?? "blog/tech";
-  const rules = loadRules(language);
+  const rules = rulesOf(language, config);
   console.log(argv.includes("--json") ? rulesJson(rules, config, language, genre, optionLayersOf(config)) : rulesTable(rules, config, language, genre));
   return 0;
 };
@@ -301,6 +298,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   eval: (argv) => runEval(positional(argv), argv, { ...measureContext(argv), flag }),
   tree: (argv) => runTree(treeTargets(argv), argv, treeContext()),
   cite: (argv) => runCite(citeTargets(argv), argv, treeContext()),
+  compare: (argv) => runCompare(compareTargets(argv), argv, treeContext()),
   test: (argv) => runTest(positional(argv), argv, { ...measureContext(argv), inspect }),
   baseline: (argv) => runBaseline(positional(argv), argv),
   suppressions: (argv) => runSuppressions(positional(argv), argv),
