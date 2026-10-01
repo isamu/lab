@@ -14,6 +14,26 @@ Newest first.
   there), and the rule looks for it before を行う / を実施する / を実行する / を執り行う. English reads a list of phrases.
   Legal documents and literature leave it off: legal drafting writes 「…を行う」 as its register.
 
+### `unqualified-superlative` reads 「〜のほうが」「〜との」 and quotations (#394)
+
+- 「後者のほうが圧倒的に長い」「他社と比べて」 name what is compared, anywhere in the sentence, like より and に比べる
+  already did. 「の方が」 is not added: in 「担当の方が最も詳しい」 the 方 is a person, not a comparison.
+- 「SES との最大の分岐点」: 「との」 names the counterpart only right before the superlative, so 「チームとの会議で最高の成果」
+  is still reported. A comparison marker with `position: before` in the `comparison-marker` lexicon works this way.
+- A superlative inside 「」『』 or quotation marks ("…", “…”) is someone else's words and is not reported; one outside
+  the quotation in the same sentence still is.
+
+Superlatives limited by a clause before them (「バグを検出できる唯一のルール」) are still reported: the same shape is
+also a boast (「誰もが認める最高の品質」), and is left for a decision.
+
+### Japanese density messages say 1000 字, the unit they measure (#402)
+
+`proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in
+Japanese while dividing by the document's length, which a Japanese document measures in characters. They now say
+「1000 字あたり」, as their level descriptions already did; `excessive-hedging`'s level description said 語 too and is
+fixed with them. A test reads every rule's per-1000 messages and level descriptions in both languages and checks the
+unit against what the rule divides by.
+
 ### `feedback` and `suppressions` say when the rule asked about did not run (#397)
 
 `chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and
