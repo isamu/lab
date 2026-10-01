@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `examples/chaff-plugin-example`: a plugin to copy
+
+A small plugin package in the repository (not published): `example/no-tbd-dates`, a rule written in code;
+`example/weasel-words`, a rule driven by the plugin's word list `example/weasel` in English and Japanese; and
+`example/careful`, a house style that raises both. Its own tests run with `yarn test`, and
+`test/test_example_plugin.ts` runs it through chaff. Its README says how to publish your own. The example's files are
+checked with `// @ts-check` against `chaffjs/api`'s types.
+
 ### `plugins:` in chaff.yaml: rules, word lists and house styles from a package
 
 ```yaml
