@@ -19,3 +19,89 @@ entries:
     weight: 0.7
   - pattern: unlock the potential
     weight: 0.8
+  - pattern: deep dive
+    weight: 0.5
+  - pattern: intricate
+    weight: 0.5
+  - pattern: intricacies
+    weight: 0.5
+  - pattern: meticulous
+    weight: 0.6
+  - pattern: meticulously
+    weight: 0.6
+  - pattern: pivotal
+    weight: 0.5
+  - pattern: in the realm of
+    weight: 0.6
+  - pattern: showcasing
+    weight: 0.6
+  - pattern: showcases
+    weight: 0.5
+  - pattern: showcased
+    weight: 0.5
+  - pattern: underscores
+    weight: 0.5
+  - pattern: underscoring
+    weight: 0.6
+  - pattern: underscored
+    weight: 0.5
+  - pattern: vibrant
+    weight: 0.5
+  - pattern: boasts
+    weight: 0.6
+  - pattern: garnered
+    weight: 0.5
+  - pattern: bolstered
+    weight: 0.5
+  - pattern: evolving landscape
+    weight: 0.8
+  - pattern: ever-evolving
+    weight: 0.6
+  - pattern: fostering
+    weight: 0.5
+  - pattern: nestled
+    weight: 0.6
+  - pattern: in the heart of
+    weight: 0.5
+  - pattern: stands as
+    weight: 0.6
+  - pattern: valuable insights
+    weight: 0.5
+  - pattern: resonate with
+    weight: 0.5
+  - pattern: indelible mark
+    weight: 0.8
+  - pattern: deeply rooted
+    weight: 0.4
+  - pattern: setting the stage for
+    weight: 0.6
+  - pattern: a vital role
+    weight: 0.6
+  - pattern: diverse array
+    weight: 0.7
+  - pattern: focal point
+    weight: 0.4
+  - pattern: key turning point
+    weight: 0.7
+  - pattern: seamlessly
+    weight: 0.5
+  - pattern: empowering
+    weight: 0.5
+  - pattern: game-changer
+    weight: 0.7
+  - pattern: embark on
+    weight: 0.6
+  - pattern: harness the power
+    weight: 0.8
+  - pattern: multifaceted
+    weight: 0.6
+  - pattern: reflecting broader
+    weight: 0.8
+  - pattern: symbolizing
+    weight: 0.5
+  - pattern: it's worth noting
+    weight: 0.5
+  - pattern: faces several challenges
+    weight: 0.8
+  - pattern: despite these challenges
+    weight: 0.7

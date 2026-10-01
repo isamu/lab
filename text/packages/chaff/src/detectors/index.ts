@@ -20,6 +20,7 @@ import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
+import { assistantResidue, contrastFraming, stockTransition, unfilledPlaceholder } from "./ai-phrasing.ts";
 import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -59,6 +60,10 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "unqualified-superlative": unqualifiedSuperlative,
   "repeated-conjunction": repeatedConjunction,
   "ai-tell": aiTell,
+  "contrast-framing": contrastFraming,
+  "stock-transition": stockTransition,
+  "assistant-residue": assistantResidue,
+  "unfilled-placeholder": unfilledPlaceholder,
   "contraction-mix": contractionMix,
   "internal-jargon": internalJargon,
   "required-sections": requiredSections,
