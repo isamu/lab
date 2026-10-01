@@ -1,0 +1,74 @@
+id: empty-section
+layer: L1
+status: experimental
+how_to_find: empty-section
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 中身の無い節
+  en: Empty section
+
+why:
+  ja: 見出しのすぐ後ろに、同じ深さか浅い見出しが来ると、その節には何も書かれていません。書くつもりで見出しだけ立てたか、中身を消したときに見出しが残ったものです。目次には載るので、読み手は開いて何も無いことに気づきます。深い見出しが続く（節を小さな節に分けた）ときは中身があるので指摘しません。文書の最後の見出しも、後ろに何も無ければ指摘します。HTML のコメントだけの節は空と数えます。
+  en: A heading followed straight away by a heading of the same or a higher level has nothing under it. A heading was put up to be filled in later, or its content was deleted and the heading left behind. It still shows in the table of contents, and a reader who opens it finds nothing. A heading followed by a deeper one (a section split into subsections) has content and is not reported. The last heading of the document is reported if nothing follows it. A section holding only an HTML comment counts as empty.
+
+message:
+  ja: 見出し「{heading}」の下に中身がありません
+  en: 'Nothing under the heading "{heading}"'
+
+how_to_fix:
+  ja: 節の中身を書くか、見出しを消してください。
+  en: Write the section, or remove the heading.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 見出しのすぐ後ろに同じ深さか浅い見出しが来て、何も書かれていない節
+  en: A heading with nothing under it before the next heading of the same or a higher level
+example:
+  ja:
+    before: |
+      # 手順書
+
+      ## 準備
+
+      ## 作業
+
+      部品を取り付けます。
+    after: |
+      # 手順書
+
+      ## 準備
+
+      道具をそろえます。
+
+      ## 作業
+
+      部品を取り付けます。
+  en:
+    before: |
+      # Setup guide
+
+      ## Before you start
+
+      ## Steps
+
+      Fit the parts.
+    after: |
+      # Setup guide
+
+      ## Before you start
+
+      Gather the tools.
+
+      ## Steps
+
+      Fit the parts.
+
+not_flagged:
+  ja: すぐ後ろに深い見出しが来る節（小さな節に分けたもの）は指しません。Markdown の文書でだけ動きます。
+  en: A heading followed by a deeper heading (a section split into subsections) is not reported. It runs on Markdown only.
