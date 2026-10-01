@@ -11,6 +11,8 @@ export type Hidden = { readonly sentence: Sentence; readonly offset: number; rea
 
 const PHRASES = "nominalization-phrase";
 const LIGHT_VERBS = "nominalization-light-verb";
+/** Verbal nouns whose carrying verb means "hold" (研修を実施する is not 研修する): not hidden verbs. */
+const EVENT_NOUNS = "nominalization-event-noun";
 
 const isVerbalNoun = (token: Token | undefined): token is Token => token?.features?.["VerbForm"] === "Vnoun";
 
@@ -34,22 +36,27 @@ const phrasesIn = (sentence: Sentence, source: string, phrases: Lexicon): Hidden
  * A carrying verb right after a verbal noun: 調査 + を実施した. Both sides are named in the dictionary form, the noun and the
  * entry (調査を実施する), and the verb to write is the noun and the entry's instead_of (調査 + する).
  */
-const lightVerbsIn = (sentence: Sentence, lightVerbs: Lexicon): Hidden[] => {
+const lightVerbsIn = (sentence: Sentence, lightVerbs: Lexicon, eventNouns: ReadonlySet<string>): Hidden[] => {
   const tokens = sentence.tokens ?? [];
   return lightVerbs.flatMap((entry) =>
     entryRanges(sentence, entry).flatMap((range): Hidden[] => {
       const noun = tokens[range.start - 1];
-      if (!isVerbalNoun(noun)) return [];
+      if (!isVerbalNoun(noun) || eventNouns.has(noun.surface)) return [];
       return [{ sentence, offset: noun.span.start, matched: `${noun.surface}${entry.pattern}`, preferred: `${noun.surface}${entry.instead_of ?? ""}` }];
     }),
   );
 };
 
 /** Pure: every hidden verb in the document, in the order they are written. */
-export const hiddenVerbs = (doc: Pick<ProseDocument, "sentences" | "source" | "lexicons">): Hidden[] =>
-  doc.sentences
-    .flatMap((sentence) => [...phrasesIn(sentence, doc.source, doc.lexicons[PHRASES] ?? []), ...lightVerbsIn(sentence, doc.lexicons[LIGHT_VERBS] ?? [])])
+export const hiddenVerbs = (doc: Pick<ProseDocument, "sentences" | "source" | "lexicons">): Hidden[] => {
+  const eventNouns = new Set((doc.lexicons[EVENT_NOUNS] ?? []).map((entry) => entry.pattern));
+  return doc.sentences
+    .flatMap((sentence) => [
+      ...phrasesIn(sentence, doc.source, doc.lexicons[PHRASES] ?? []),
+      ...lightVerbsIn(sentence, doc.lexicons[LIGHT_VERBS] ?? [], eventNouns),
+    ])
     .toSorted((left, right) => left.offset - right.offset);
+};
 
 export const nominalization: Detector = (doc, options): Finding[] => {
   const hidden = hiddenVerbs(doc);

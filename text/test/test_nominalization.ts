@@ -45,6 +45,10 @@ describe("nominalization (ja): a verbal noun carried by を行う / を実施す
     assert.deepEqual(hidden("来月、イベントを行う。", ja), []);
   });
 
+  it("an event noun, whose carrying verb means to hold it, is not a hidden verb (研修を実施する is not 研修する)", () => {
+    assert.deepEqual(hidden("新人の研修を実施した。期末の試験を行う。来週、会議を行う。", ja), []);
+  });
+
   it("〜をする is ordinary and not counted", () => {
     assert.deepEqual(hidden("毎日、勉強をする。", ja), []);
   });
