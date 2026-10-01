@@ -239,8 +239,16 @@ const featuresOf = (morpheme: Morpheme, passive: boolean): { features?: Readonly
   const name = placeType(morpheme) ?? personOrOrganisation(morpheme);
   if (name !== undefined) return { features: { NameType: name } };
   if (isCounter(morpheme)) return { features: { NounType: "Class" } };
+  if (isVerbalNoun(morpheme)) return { features: { VerbForm: "Vnoun" } };
   return {};
 };
+
+/**
+ * サ変名詞（調査・確認）。「する」を付ければ動詞になる名詞。UD の VerbForm=Vnoun。
+ * 辞書は知らない記号（「(VM)を」の「)」）もサ変接続に入れるので、字（漢字・かな・英字）を含む語だけ。
+ */
+const LETTER = /\p{L}/u;
+const isVerbalNoun = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "サ変接続" && LETTER.test(morpheme.surface_form);
 
 /**
  * 名詞を修飾しているだけの受動から印を外す。「使用されるフレームワーク」
