@@ -5,7 +5,7 @@
 18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 6, excessive-hedging 2, expletive-construction 6, max-paragraph-length 1, max-sentence-length 43, preamble-length 1, title-case-consistency 2, undefined-acronym 3
 18f-handbook-projects-in-distress  agentless-passive 16, max-paragraph-length 1, max-sentence-length 28, undefined-acronym 6
 18f-handbook-travel  max-sentence-length 14, title-case-consistency 2, undefined-acronym 5
-18f-handbook-travel-faq  heading-level-skip 1, max-paragraph-length 1, max-sentence-length 65, unbalanced-bracket 5, undefined-acronym 16
+18f-handbook-travel-faq  heading-level-skip 1, max-paragraph-length 1, max-sentence-length 65, requirement-smell 1, unbalanced-bracket 5, undefined-acronym 16
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2, unfilled-placeholder 3
 aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 77
@@ -50,7 +50,7 @@ da-data-strategy  agentless-passive 1, empty-intensifier 1, max-kanji-continuous
 da-gss-incident  agentless-passive 1, latin-spacing 1, max-kanji-continuous 1, max-sentence-length 3, ngram-repetition 1, preamble-length 1
 da-legal-practice  latin-spacing 2, max-kanji-continuous 2, max-sentence-length 6, repeated-sentence-head 1
 da-machine-readability-ai-configuration  latin-spacing 2
-da-machine-readability-limitations  fullwidth-alnum-consistency 2, latin-spacing 4, max-sentence-length 1
+da-machine-readability-limitations  fullwidth-alnum-consistency 2, latin-spacing 4, max-sentence-length 1, requirement-smell 1
 da-machine-readability-output-format  latin-spacing 3
 da-minister-press-conference-2026-09-18  clean
 da-news-minister-handover  clean
@@ -62,7 +62,7 @@ da-service-design-guidelines-2  concrete-evidence-density 4, dangling-reference 
 dailymed-advil-otc-label  max-sentence-length 4, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
 denkiyagi-ryohi-kitei  heading-level-skip 1
 denkiyagi-shugyo-kisoku  fullwidth-alnum-consistency 1, hankaku-kana 1
-denpa-shinsei-riyo-kiyaku  unbalanced-bracket 1
+denpa-shinsei-riyo-kiyaku  requirement-smell 15, unbalanced-bracket 1
 docusaurus-admonitions-mdx  contraction-consistency 2, heading-echo 3, max-sentence-length 1, title-case-consistency 1
 dwango-nicolive-manifest-generator  latin-spacing 9, max-sentence-length 1, undefined-acronym 3
 ecfr-16-cfr-310-telemarketing  dangling-reference 4, heading-level-skip 5, max-sentence-length 1, title-case-consistency 2, unbalanced-bracket 2, undefined-acronym 7
@@ -175,7 +175,7 @@ nttcom-onboarding-week1  agentless-passive 1, concrete-evidence-density 6, hirag
 nws-glossary-a  agreement-slip 1, doubled-word 1, max-paragraph-length 4, max-sentence-length 2, spelling-consistency 2, undefined-acronym 33
 nws-heat-wave-safety  agentless-passive 4, concrete-evidence-density 4, contraction-consistency 4, heading-level-skip 3, max-paragraph-length 1, max-sentence-length 6, preamble-length 1
 oecd-global-drought-outlook-summary  adverb-overuse 1, agentless-passive 2, heading-level-skip 1, max-paragraph-length 2, max-sentence-length 12, proper-noun-density 1
-openapi-spec-3-1-0  contraction-consistency 1, duplicate-heading 1, heading-echo 4, heading-level-skip 2, max-sentence-length 40, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
+openapi-spec-3-1-0  contraction-consistency 1, duplicate-heading 1, heading-echo 4, heading-level-skip 2, max-sentence-length 40, ngram-repetition 1, oxford-comma-consistency 2, proper-noun-density 1, requirement-smell 1, title-case-consistency 1, undefined-acronym 4
 pep-0020-zen-of-python  proper-noun-density 1
 plainlanguage-use-tables  agentless-passive 2, contraction-consistency 1, dangling-reference 1, max-sentence-length 5, preamble-length 1
 ppc-guidelines-tsusoku  duplicate-definition 11, fullwidth-alnum-consistency 13, latin-spacing 3, max-sentence-length 9, repeated-conjunction 9, unbalanced-bracket 23, undefined-acronym 4
@@ -185,7 +185,7 @@ react-ja-thinking  heading-level-skip 1, max-sentence-length 1, ngram-repetition
 readygov-power-outages  agentless-passive 3, concrete-evidence-density 3, max-sentence-length 1, oxford-comma-consistency 1
 rfc3693-geopriv-requirements  max-paragraph-length 2, max-sentence-length 79, proper-noun-density 1, undefined-acronym 22
 rfc9293-tcp  dangling-reference 1, duplicate-definition 1, empty-intensifier 1, excessive-hedging 3, max-paragraph-length 14, max-sentence-length 262, ngram-repetition 1, proper-noun-density 1, undefined-acronym 38
-rfc9457  max-sentence-length 54, proper-noun-density 1, undefined-acronym 15
+rfc9457  max-sentence-length 54, proper-noun-density 1, requirement-smell 1, undefined-acronym 15
 rouki.txt  clean
 ruby-3-4-0-released-ja  doubled-punctuation 1, latin-spacing 21, max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 6
 rust-lang-minutes-2022-11-22  agreement-slip 1, contraction-consistency 2, empty-section 1, max-sentence-length 3, spelling-consistency 1, undefined-acronym 3
@@ -205,7 +205,7 @@ sre-next-teikan  no-mixed-desumasu 1
 tc39-agenda-2026-07  adverb-overuse 1, max-sentence-length 11, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 2
 tcu-rishu-toroku-2026-kouki  agentless-passive 3, concrete-evidence-density 5, heading-echo 3, heading-level-skip 1, kutoten-consistency 2, max-kanji-continuous 11, max-sentence-length 6, no-doubled-joshi 1, no-mixed-desumasu 3
 textlint-preset-ja-technical-writing-readme  latin-spacing 4, ngram-repetition 1, undefined-acronym 3
-tokyoapp-service-terms  duplicate-definition 11, fullwidth-alnum-consistency 7, hankaku-kana 1, katakana-long-vowel 2, latin-spacing 1, unbalanced-bracket 1
+tokyoapp-service-terms  duplicate-definition 11, fullwidth-alnum-consistency 7, hankaku-kana 1, katakana-long-vowel 2, latin-spacing 1, requirement-smell 15, unbalanced-bracket 1
 typescript-5-4-release-notes  heading-echo 1, max-sentence-length 10, title-case-consistency 1
 uk-arbitration1996.txt  clean
 uk-cra2015.txt  clean

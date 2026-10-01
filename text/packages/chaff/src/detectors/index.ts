@@ -21,6 +21,7 @@ import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
 import { announcedCount } from "./announced-count.ts";
 import { danglingFigure } from "./dangling-figure.ts";
+import { requirementSmell } from "./requirement-smell.ts";
 import { requirementModal } from "./requirement-modal.ts";
 import { vagueFigurePointer } from "./vague-figure-pointer.ts";
 import {
@@ -114,6 +115,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "duplicate-definition": duplicateDefinition,
   "announced-count": announcedCount,
   "dangling-figure": danglingFigure,
+  "requirement-smell": requirementSmell,
   "requirement-modal": requirementModal,
   "vague-figure-pointer": vagueFigurePointer,
   "date-range-reversed": dateRangeReversed,

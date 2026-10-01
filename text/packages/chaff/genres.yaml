@@ -102,6 +102,7 @@ groups:
       section-length-uniformity: off
       paragraph-length-variance: off
       stock-transition: off
+      requirement-smell: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
@@ -164,6 +165,7 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      requirement-smell: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -185,6 +187,7 @@ groups:
       # A transcript keeps the speaker's words: hedges and ら dropped as spoken.
       double-negative: off
       ra-nuki: off
+      requirement-smell: off
 
 genres:
   - id: technical/spec
@@ -293,6 +296,8 @@ genres:
       total-mismatch: normal
       dangling-figure-reference: normal
       date-range-reversed: normal
+      # A statute defines its 等 terms (以下「個人情報等」という) and uses them in its obligations.
+      requirement-smell: off
   - id: legal/judgment
     name: { ja: 判決, en: Court decision }
     summary:
@@ -301,6 +306,9 @@ genres:
     suggest:
       ja: { line: "^(?:#{1,6}\\s*)?(?:主\\s*文|理\\s*由|判\\s*決)\\s*$", min_lines: 2 }
       en: { line: "delivered the opinion of the Court|^(?:Reversed|Affirmed)\\.?$", min_lines: 1 }
+    # requirement-smell is for the documents that state requirements: specifications, contracts and documentation.
+    rules:
+      requirement-smell: off
   - id: legal/patent
     name: { ja: 特許明細書, en: Patent }
     summary:
@@ -309,6 +317,9 @@ genres:
     suggest:
       ja: { line: "【(?:課題|解決手段|請求項[0-9０-９]+|選択図|技術分野|背景技術|発明の詳細な説明|特許請求の範囲)】", min_lines: 2 }
       en: { line: "^#{1,6}\\s*(?:BACKGROUND OF THE INVENTION|SUMMARY OF THE INVENTION|Claims\\b)|\\bof claim \\d+", min_lines: 3 }
+    # requirement-smell is for the documents that state requirements: specifications, contracts and documentation.
+    rules:
+      requirement-smell: off
   - id: docs/manual
     name: { ja: マニュアル・手順書, en: Manual and how-to }
     summary:
@@ -340,6 +351,8 @@ genres:
     rules:
       taigen-dome-in-prose: off
       ngram-repetition: off
+      # An entry that ends 〜すること or 〜のこと defines a word; it is no requirement.
+      requirement-smell: off
   - id: academic/paper
     name: { ja: 論文, en: Academic paper }
     summary:

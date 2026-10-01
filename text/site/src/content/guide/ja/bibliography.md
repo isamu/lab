@@ -264,12 +264,13 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
 - <a id="iso-29148"></a>**ISO/IEC/IEEE 29148:2018** [standards.ieee.org](https://standards.ieee.org/ieee/29148/6937/)
   - Systems and software engineering — Life cycle processes — Requirements engineering
   - 分かったこと：良い要件とは何かを定めた国際規格です。抜け道になる言い回しや曖昧な副詞など、避ける言葉も挙げています。
-  - chaff では：【背景】下の Femmer ほかが、この規格の言葉の決まりを機械の検査にしています。
+  - chaff では：[`requirement-smell`](../../rules/requirement-smell/) が、この規格の挙げる抜け道（if possible、as appropriate）と、
+    閉じない列挙（but not limited to）を、要求の文の中で探します。
 - <a id="berry-2003"></a>**Berry, Kamsties, Krieger（2003）** [cs.uwaterloo.ca (PDF)](https://cs.uwaterloo.ca/~dberry/handbook/ambiguityHandbook.pdf)
   - From Contract Drafting to Software Specification: Linguistic Sources of Ambiguity
   - 分かったこと：契約書と仕様書で、読みかたが割れる言葉を集めた手引きです。
     and/or、all と each、only の位置、何を指すか分からない代名詞などを挙げています。
-  - chaff では：【背景】ここに並ぶ言葉の多くは、まだ chaff のルールになっていません。
+  - chaff では：and/or（及び／又は）は `requirement-smell` が要求の文の中で探します。ほかの言葉の多くは、まだ chaff のルールになっていません。
 - <a id="femmer-2017"></a>**Femmer ほか（2017）** [doi.org](https://doi.org/10.1016/j.jss.2016.02.047)
   - Rapid quality assurance with Requirements Smells
   - 載った所：Journal of Systems and Software、123 巻、190–213 頁。
@@ -278,6 +279,7 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
     指摘のうち当たりは平均 59%、悪い兆しのうち見つけた割合は平均 82% でした。
   - chaff では：[`unqualified-superlative`](../../rules/unqualified-superlative/)、
     [`excessive-hedging`](../../rules/excessive-hedging/)、`dangling-reference` の裏付けです。
+    `requirement-smell` は、抜け道と閉じない列挙（等、etc.）を要求の文の中で探します。この研究でも当たりは指摘の 6 割ほどだったので、試験中のルールにしています。
     機械の指摘は人が確かめる、という chaff の考えとも同じです。
 - <a id="gervasi-zowghi-2005"></a>**Gervasi, Zowghi（2005）** [doi.org](https://doi.org/10.1145/1072997.1072999)
   - Reasoning about inconsistencies in natural language requirements
