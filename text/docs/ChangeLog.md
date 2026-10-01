@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` skips the space after an item number at the head of a line (#170)
+
+Terms and statutes number their items with a kanji numeral and a space: 「一 JIS X 0201として規格化されている英数字」.
+That space separates the number from the item, so it is no vote on how the document spaces Japanese and Latin text.
+The numbers (一 to 二十, and イ, ロ, ハ … for sub-items) are the lang-ja lexicon `item-number`, in order. A number counts
+as an item only where the number before or after it also opens a line, so 「十 GBまで…」 is still a quantity; only the
+separating space is skipped (「二CSV」 still counts as touching).
+
 ### `dangling-reference` reads another document's articles the way terms and web databases write them (#170)
 
 Two shapes in the round 14 documents were read as this document's missing articles:
