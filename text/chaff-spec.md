@@ -1558,6 +1558,7 @@ npx chaffjs eval corpus/ja/blog/         # rule の評価と閾値 sweep
 npx chaffjs explain sentence-rhythm      # rule の意図と根拠
 npx chaffjs compare before.md after.md   # 書き換えで事実が落ちても足されてもいないか（§28）
 npx chaffjs facts before.md              # compare が照合する事実の一覧（§28.5）
+npx chaffjs outline before.md after.md   # 見出しの構成と形を前と後で測る（§28.6）
 npx chaffjs init
 npx chaffjs setup ja                     # 品詞解析器の取得
 
@@ -2191,3 +2192,26 @@ npx chaffjs facts before.md --json     # path・language・counts・unread・fac
 - 並びは `compare` の種類の順、その中は行の順。同じ事実を二度書いていれば二度並ぶ（`compare` は多重集合で比べる）。
 - 最初の行に種類ごとの数を 0 件も含めて並べる。読めなかった種類は理由を付けて言う（§28.3 と同じ）。
 - 画面の言語は文書の言語に従う。ファイルは一つ。無い、二つ以上、読めないときは終了コード 1。
+
+### 28.6 構成を測る（`chaff outline`）
+
+文を直しても骨組みが元のままなら、生成文の形は残る。構成を変えたかどうかを、印象でなく数で示すために測る。
+読み手は lint と同じ `buildDocument` の節（`doc.sections`）・文・箇条書きの範囲で、新しい読み手は作らない。
+
+```bash
+npx chaffjs outline before.md                  # 見出しの構成と形
+npx chaffjs outline before.md after.md         # 2 つを並べ、形の値が前と後でどう動いたか
+npx chaffjs outline before.md --compact        # 1 節 1 行
+npx chaffjs outline before.md after.md --json  # before / after それぞれの path・language・unit・shape・outline
+```
+
+| 値 | 測り方 |
+| --- | --- |
+| 見出しの数 | 深さ 1 以上の節の数 |
+| 節の平均 | 節ごとの本文の長さ（日本語は字数、英語は語数。`lengthOf` と同じ）の平均。本文の無い節（題だけの h1 など）は数えない |
+| 箇条書き | 本文の長さのうち、箇条書きの項目の中にある文の割合（%） |
+| 太字 | Markdown の強調（`**…**`）の数 |
+
+- 構成の一覧は、見出しを深さで字下げし、行と、その節だけの本文の長さを付ける。最初の見出しより前の本文は、本文があるときだけ一行に出す（front matter や画像だけなら出さない）。
+- 判定はしない。値が良いか悪いかは言わず、ファイルが読めれば終了コード 0。ファイルが無い、三つ以上、読めないときは 1。
+- 画面の言語は最初の文書の言語に従う。

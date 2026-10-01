@@ -262,11 +262,12 @@ const listsOf = (root: Node, source: string, anchors: InPageAnchors): BulletList
     if (node.type !== "list" || isNavigationList(node, anchors)) return;
     const span = spanOf(node);
     if (span === undefined) return;
-    const items = (node.children ?? []).flatMap((child) => {
+    const itemSpans = (node.children ?? []).flatMap((child) => {
       const item = spanOf(child);
-      return child.type === "listItem" && item !== undefined ? [source.slice(item.start, item.end).replace(/\s+/gu, "").length] : [];
+      return child.type === "listItem" && item !== undefined ? [item] : [];
     });
-    if (items.length > 0) found.push({ span, items });
+    const items = itemSpans.map((item) => source.slice(item.start, item.end).replace(/\s+/gu, "").length);
+    if (items.length > 0) found.push({ span, items, itemSpans });
   });
   return found;
 };
