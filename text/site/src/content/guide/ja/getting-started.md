@@ -87,7 +87,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  54 件の rule は動いていません:
+  58 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
@@ -104,6 +104,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       date-order（まだ試験中のため）
       date-range-reversed（まだ試験中のため）
       date-weekday-mismatch（まだ試験中のため）
+      double-negative（まだ試験中のため）
       doubled-punctuation（まだ試験中のため）
       doubled-word（まだ試験中のため）
       duplicate-definition（まだ試験中のため）
@@ -113,6 +114,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       empty-section（まだ試験中のため）
       excessive-hedging（まだ試験中のため）
       expletive-construction（ja 向けの rule ではないため）
+      fullwidth-alnum-consistency（まだ試験中のため）
       hankaku-kana（まだ試験中のため）
       heading-level-skip（まだ試験中のため）
       hiragana-fukushi（まだ試験中のため）
@@ -130,6 +132,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       percent-sum-mismatch（まだ試験中のため）
       preferred-term（まだ試験中のため）
       proper-noun-density（まだ試験中のため）
+      ra-nuki（まだ試験中のため）
       repeated-conjunction（まだ試験中のため）
       required-sections（まだ試験中のため）
       rule-of-three（まだ試験中のため）
@@ -138,6 +141,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       sentence-initial-conjunction-run（ja 向けの rule ではないため）
       sentence-rhythm（まだ試験中のため）
       space-before-punctuation（ja 向けの rule ではないため）
+      spelling-consistency（ja 向けの rule ではないため）
       stock-transition（まだ試験中のため）
       stray-space（まだ試験中のため）
       title-case-consistency（ja 向けの rule ではないため）
