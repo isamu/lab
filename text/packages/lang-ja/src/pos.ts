@@ -4,6 +4,7 @@ import { analyserPieces } from "./analyser-pieces.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
 import { outsideTheReport, isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
+import { predicateFrameAt } from "./predicate-frame.ts";
 import { isEchoAt, type Inflection } from "./reduplication.ts";
 import { isRaDroppedAt, raDroppedVocabulary } from "./ra-dropped.ts";
 import { createRequire } from "node:module";
@@ -119,6 +120,8 @@ const LEXICONS = loadLexicons();
 const PASSIVE_VOCABULARY = passiveVocabulary(LEXICONS);
 
 const RA_DROPPED_VOCABULARY = raDroppedVocabulary(LEXICONS);
+
+const PREDICATE_FRAMES = (LEXICONS["passive-predicate-frame"] ?? []).map((entry) => entry.pattern);
 
 /**
  * 非自立名詞（の・こと・もの・ため・はず）。品詞は名詞だが、単独では何も指さない。
@@ -256,11 +259,18 @@ const BREAK = new Set(["、", "，", ",", "。", "．", "."]);
 const clauseEnd = (tokens: readonly Token[], from: number): number =>
   tokens.find((token) => token.span.start >= from && BREAK.has(token.surface))?.span.start ?? Number.MAX_SAFE_INTEGER;
 
+/** 受動のすぐ後ろの述語の型（「検討されることとなった」の「こととなる」）の終わり。型が無ければ受動の終わり。 */
+const frameEnd = (tokens: readonly Token[], index: number, passive: Token): number => {
+  const length = predicateFrameAt(tokens, index + 1, PREDICATE_FRAMES);
+  return length === 0 ? passive.span.end : (tokens[index + length]?.span.end ?? passive.span.end);
+};
+
 export const predicateOnly = (tokens: readonly Token[]): Token[] =>
-  tokens.map((token) => {
+  tokens.map((token, index) => {
     if (token.features?.["Voice"] !== "Pass") return token;
     const end = clauseEnd(tokens, token.span.end);
-    const modifiesNoun = tokens.some((other) => other.span.start >= token.span.end && other.span.end <= end && NOMINAL.has(other.pos));
+    const after = frameEnd(tokens, index, token);
+    const modifiesNoun = tokens.some((other) => other.span.start >= after && other.span.end <= end && NOMINAL.has(other.pos));
     if (!modifiesNoun) return token;
     return { span: token.span, surface: token.surface, pos: token.pos, ...(token.lemma === undefined ? {} : { lemma: token.lemma }) };
   });

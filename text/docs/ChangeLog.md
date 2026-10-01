@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `agentless-passive` (ja) reads 「〜されることとなった」 as a predicate
+
+「本件は検討されることとなった。」 and 「見直しが実施されることになりました。」 were not reported: the こと after the
+passive looked like a noun the passive modifies (as in 「開催される BootCamp」). The new lang-ja word list
+`passive-predicate-frame` (ことになる, こととなる) names the frames whose noun is part of the predicate; the passive before
+one is judged like a passive at the end of a sentence. A noun after the frame (「検討されることとなった案」) still makes it a
+modifier, and other uses of こと (「延期されることがある」) are unchanged.
+
 ### A heading with its title right after the number is numbered (#431)
 
 `## 7.委託`, `## 7．委託` and `## 2.Overview` were not read as numbered, so `numbering-gap` reported "6 then 8" as an
