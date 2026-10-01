@@ -1,0 +1,61 @@
+id: dangling-figure-reference
+layer: L3
+status: experimental
+how_to_find: dangling-figure
+severity: warning
+
+name:
+  ja: 図や表の参照先が無い
+  en: Reference to a missing figure or table
+
+why:
+  ja: 本文が「図3を参照」と書いているのに、図3がどこにも無いと、読み手は探し回ったうえで、図が抜けたのか番号がずれたのかを確かめることになります。図や表を消したり入れ替えたりしたあとに、本文の番号を直し忘れると起きます。行の頭に書いた番号（「図1　売上の推移」のようなキャプションや、「## 付録A」のような見出し）を図の置き場所とし、本文の番号がその中に無ければ指します。図・表・付録の種類ごとに、行の頭に一つも書いていない文書は見ません（図を別の紙に付けているかもしれないため）。
+  en: 'When the text says "see Figure 3" and there is no Figure 3, the reader searches for it and then has to work out whether the figure was dropped or the numbers shifted. It happens when a figure or a table is removed or reordered and the text is not updated. A number written at the start of a line (a caption such as "Figure 1: Sales by month", or a heading such as "## Appendix A") is where that figure is, and a number in the text that is none of them is pointed out. A kind (figures, tables, appendices) that the document never labels at the start of a line is not checked, because its figures may be in another file.'
+
+message:
+  ja: 「{label}」を指していますが、この文書に{label}がありません
+  en: "{label} is referred to, but the document has no {label}"
+
+how_to_fix:
+  ja: 番号がずれていないか確かめて、本文の番号を直すか、抜けた図や表を足してください。
+  en: Check whether the numbers shifted. Correct the number in the text, or add the missing figure or table.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 本文が指す「図3」「表2」が、文書のどこにも無い所
+  en: A figure or table the text refers to that the document does not have
+example:
+  ja:
+    before: |
+      売上は図1のとおり伸び、費用は図3のとおり減った。
+
+      図1　売上の推移
+
+      図2　費用の推移
+    after: |
+      売上は図1のとおり伸び、費用は図2のとおり減った。
+
+      図1　売上の推移
+
+      図2　費用の推移
+  en:
+    before: |
+      Sales rose (Figure 1) and costs fell (Figure 3).
+
+      Figure 1: Sales by month
+
+      Figure 2: Costs by month
+    after: |
+      Sales rose (Figure 1) and costs fell (Figure 2).
+
+      Figure 1: Sales by month
+
+      Figure 2: Costs by month
+
+not_flagged:
+  ja: 図や表を行の頭に一つも書いていない文書、長い語の一部（地図3、一覧表2）、別の法令の別表（法別表第二）、図の数（図3枚）、コードの中は見ません。
+  en: 'A document that labels no figure or table at the start of a line, a figure of another document ("Figure 5 of the 2024 report"), and code are not checked.'

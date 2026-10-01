@@ -19,7 +19,18 @@ import { aiTell, contractionMix, cushionDensity, hedging, repeatedConjunction, u
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
-import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
+import { announcedCount } from "./announced-count.ts";
+import { danglingFigure } from "./dangling-figure.ts";
+import {
+  danglingReference,
+  dateOrder,
+  dateRangeReversed,
+  dateWeekdayMismatch,
+  duplicateDefinition,
+  numberingGap,
+  percentSumMismatch,
+  totalMismatch,
+} from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -71,4 +82,8 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "total-mismatch": totalMismatch,
   "numbering-gap": numberingGap,
   "duplicate-definition": duplicateDefinition,
+  "announced-count": announcedCount,
+  "dangling-figure": danglingFigure,
+  "date-range-reversed": dateRangeReversed,
+  "percent-sum-mismatch": percentSumMismatch,
 };

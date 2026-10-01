@@ -28,6 +28,8 @@ chaff は、その番号と参照がかみ合っているかを機械で確か�
 | `duplicate-definition` | 同じ語を二度定義している所 |
 | `date-weekday-mismatch` | 日付に添えた曜日が、暦と合っていない所 |
 | `total-mismatch` | 合計が内訳の和と合わない所 |
+| `dangling-figure-reference` | 文書に無い図・表・別表（別表第一など）を指す所 |
+| `date-range-reversed` | 期間の終わりが始まりより前の所 |
 
 見ないことも決めてあります。
 
@@ -123,14 +125,15 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  試験中の rule を 5 件、ジャンルの既定で有効にしています: dangling-reference, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
+  試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  43 件の rule は動いていません:
+  45 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agentless-passive（ジャンル legal/statute では見ないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（ジャンル legal/statute では見ないため）
       ai-tell（ジャンル legal/statute では見ないため）
+      announced-count-mismatch（まだ試験中のため）
       closing-cliche（ジャンル legal/statute では見ないため）
       concrete-evidence-density（ジャンル legal/statute では見ないため）
       contraction-consistency（ja 向けの rule ではないため）
@@ -153,6 +156,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
       oxford-comma-consistency（ja 向けの rule ではないため）
       padded-intro（ジャンル legal/statute では見ないため）
       paragraph-length-variance（ジャンル legal/statute では見ないため）
+      percent-sum-mismatch（まだ試験中のため）
       preamble-length（ジャンル legal/statute では見ないため）
       preferred-term（まだ試験中のため）
       proper-noun-density（ジャンル legal/statute では見ないため）
@@ -195,7 +199,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 | ja 向けの rule ではないため | 英語の文書だけに使うルールです |
 | まだ試験中のため | 誤りが出ないか確かめている最中のルールです。`--experimental` を付けると動きます |
 
-その上の「試験中の rule を 5 件、ジャンルの既定で有効にしています」は、
+その上の「試験中の rule を 7 件、ジャンルの既定で有効にしています」は、
 試験中のルールのうち、規程で確かめ終えた 5 件をこのジャンルでは動かしている、という意味です。
 
 ## ジャンルを毎回書かずに済ませる
@@ -351,7 +355,7 @@ kitei-fixed.md   legal/statute · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  試験中の rule を 5 件、ジャンルの既定で有効にしています: dangling-reference, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
+  試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 ```
 
 この下に並ぶ「動いていない」一覧は、直す前と同じです。

@@ -1,0 +1,7 @@
+# 百分率の単位として書く字と語。
+id: percent-unit
+language: ja
+entries:
+  - pattern: "%"
+  - pattern: ％
+  - pattern: パーセント

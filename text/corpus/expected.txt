@@ -113,7 +113,7 @@ kaisha.txt  clean
 kantei-221-shisei-hoshin  empty-intensifier 2, max-kanji-continuous 4, max-sentence-length 8, ngram-repetition 1, no-doubled-joshi 2
 kantei-unga81-general-debate-speech  empty-intensifier 6, max-kanji-continuous 3, max-sentence-length 4, no-doubled-joshi 2, unqualified-superlative 3
 kantei-unga81-general-debate-speech-en  empty-intensifier 1, max-paragraph-length 1, max-sentence-length 49, oxford-comma-consistency 2
-kep-2214-indexed-job  max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
+kep-2214-indexed-job  announced-count-mismatch 1, max-sentence-length 16, proper-noun-density 1, undefined-acronym 6
 kimino-cleanup-notice  max-kanji-continuous 2, max-sentence-length 2
 kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1
 kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1, stray-space 1

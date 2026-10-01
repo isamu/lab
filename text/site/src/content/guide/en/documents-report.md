@@ -125,16 +125,19 @@ enquiries.md   business/report · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  41 rules did not run:
+  45 rules did not run:
       adverb-overuse (still experimental)
       agentless-passive (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
+      announced-count-mismatch (still experimental)
       contraction-consistency (still experimental)
       cushion-phrase-density (still experimental)
+      dangling-figure-reference (still experimental)
       dangling-reference (still experimental)
       date-order (still experimental)
+      date-range-reversed (still experimental)
       date-weekday-mismatch (still experimental)
       double-keigo (not a rule for en)
       doubled-word (still experimental)
@@ -153,6 +156,7 @@ enquiries.md   business/report · English   genre from --genre
       no-nakaguro-parallel (not a rule for en)
       numbering-gap (still experimental)
       oxford-comma-consistency (still experimental)
+      percent-sum-mismatch (still experimental)
       preferred-term (still experimental)
       proper-noun-density (still experimental)
       repeated-conjunction (still experimental)

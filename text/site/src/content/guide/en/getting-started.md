@@ -87,14 +87,17 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  39 rules did not run:
+  43 rules did not run:
       adverb-overuse (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
+      announced-count-mismatch (still experimental)
       contraction-consistency (still experimental)
+      dangling-figure-reference (still experimental)
       dangling-reference (still experimental)
       date-order (still experimental)
+      date-range-reversed (still experimental)
       date-weekday-mismatch (still experimental)
       doubled-word (still experimental)
       duplicate-definition (still experimental)
@@ -113,6 +116,7 @@ article.md   blog/tech · English   genre from the default
       numbering-gap (still experimental)
       oxford-comma-consistency (still experimental)
       paragraph-length-variance (still experimental)
+      percent-sum-mismatch (still experimental)
       preferred-term (still experimental)
       proper-noun-density (still experimental)
       repeated-conjunction (still experimental)

@@ -4,6 +4,32 @@ Newest first.
 
 ## Unreleased
 
+### Four experimental rules that catch a document disagreeing with itself (#170)
+
+Each compares two things the document itself says, so the result needs no judgement. All four are experimental; the
+legal presets (`legal/contract`, `legal/statute`) turn on the two that read references and dates, and `literature`
+turns all four off.
+
+- **`announced-count-mismatch`**: "the following three items" / 「以下の3点」 with a list right below that has another
+  number of items. Only the last sentence before the list is read, and only when it points ahead (「以下の」「次の」,
+  "following") or ends with a colon. An estimate (約3点, at least three), a rank (3つ目, the first three), a number to
+  pick (以下から1つ選ぶ, choose two) or a sentence with two numbers is not compared. Counters, number words and these
+  exceptions are lexicons (`count-anchor`, `count-number`, `count-counter`, `count-hedge`).
+- **`dangling-figure-reference`**: 「図3」「表2」「別表第二」 / "Figure 3", "Table 2", "Appendix B" referred to in the text
+  but labelled nowhere. A label is the number at the start of a line followed by a caption's break (a colon, a bracket,
+  a space and a title, or the end of the line), or in a heading; a prose sentence that starts with 「図3の例では」 is a
+  reference, not a label. A kind the document never labels is not checked (its figures may be in another file),
+  nor is a figure named as a link's text.
+- **`date-range-reversed`**: 「2026年4月1日〜2026年3月31日」 / "5 April 2026 – 2 April 2026", a period that ends before it
+  starts. Two dates joined by a range mark, or by から … まで, through, until. "from … to" is not a period (it may move a
+  date), and a period without a year may cross into the next one.
+- **`percent-sum-mismatch`**: the shares of a breakdown (構成比, 内訳, breakdown, market share) that do not add up to 100%,
+  allowing half the last digit per item. Only a column headed with such a word, or a list or table right below one, is
+  added; a multiple-answer count, signed changes and a table with a total row are not.
+
+On the corpus (`yarn corpus`) the four report one finding, a true one: a Kubernetes enhancement proposal that says
+"This allows 2 things:" and lists one. `yarn bench` plants each of them in both languages.
+
 ### The guide lists everything chaff can find, with an example and chaff's real output (#170)
 
 A new guide page, **Reference: what chaff can find** (`/guide/reference/`), lists every rule in groups a reader

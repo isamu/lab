@@ -1,0 +1,17 @@
+# 数のすぐ後ろに付けて、並べるものを数える語（3点、2つ、4項目）。これが付いた数だけを、並べる数の予告として読む。
+id: count-counter
+language: ja
+entries:
+  - pattern: つ
+  - pattern: 点
+  - pattern: 項目
+  - pattern: 件
+  - pattern: 個
+  - pattern: 種類
+  - pattern: 段階
+  - pattern: 条件
+  - pattern: 通り
+  - pattern: ステップ
+  - pattern: 原則
+  - pattern: 要素
+  - pattern: 枚

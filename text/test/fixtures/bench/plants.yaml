@@ -4,12 +4,15 @@
 # not_planted: why no single realistic edit to a sample makes the mistake. A new rule goes in one list or the other.
 planted:
   agentless-passive: [ja, en]
+  announced-count-mismatch: [ja, en]
   agreement-slip: [en]
   bold-density: [ja, en]
   closing-cliche: [ja, en]
   contraction-consistency: [en]
+  dangling-figure-reference: [ja, en]
   dangling-reference: [ja, en]
   date-order: [ja, en]
+  date-range-reversed: [ja, en]
   date-weekday-mismatch: [ja, en]
   double-keigo: [ja]
   doubled-word: [ja, en]
@@ -33,6 +36,7 @@ planted:
   numbering-gap: [ja, en]
   oxford-comma-consistency: [en]
   padded-intro: [ja, en]
+  percent-sum-mismatch: [ja, en]
   preamble-length: [ja, en]
   preferred-term: [ja, en]
   repeated-conjunction: [ja, en]
