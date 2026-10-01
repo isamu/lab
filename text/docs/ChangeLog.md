@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `announced-count-mismatch` (en) knows more nouns that name what a list holds
+
+"The board made three decisions:" was not read as an announcement, though "three points:" was. The English word list
+`count-counter` now also has nouns such as decisions, findings, examples, objectives, priorities, outcomes, problems,
+concerns, constraints, assumptions, limitations, roles, values, sections, tools, policies, metrics
+and milestones. A plural before a colon is still not enough on its own: a plural that measures ("over the past three
+years:", "two hours:") or a verb ending in s ("Release 2 includes:") does not announce a list.
+
 ### `doubled-punctuation` leaves a mark that closes a drawn-out one (#433)
 
 Three or more of one mark (`...`, `、、、`) were already read as a drawn-out mark, but the mark that closes it
