@@ -381,9 +381,19 @@ describe("doubled-word — 日本語", () => {
     assert.deepEqual(findingsOf("そうですよよね。", ja, "ja"), ["1:6 よよ"]);
   });
 
+  it("invalid: 漢語の名詞の重なりは、人・単位・時・場所のまとまりを言う名詞でなければ書き損じ", () => {
+    assert.deepEqual(findingsOf("内容を確認確認します。", ja, "ja"), ["1:6 確認確認"]);
+    assert.deepEqual(findingsOf("資料資料が届きました。", ja, "ja"), ["1:3 資料資料"]);
+    assert.deepEqual(findingsOf("問い合わせに対応対応します。", ja, "ja"), ["1:9 対応対応"]);
+  });
+
   it("invalid: 内容語でも三つ続けば、二つ目と三つ目の重なりを出す", () => {
     assert.deepEqual(findingsOf("早め早め早めに動きます。", ja, "ja"), ["1:5 早め早め"]);
-    assert.deepEqual(findingsOf("資料資料資料が届きました。", ja, "ja"), ["1:5 資料資料"]);
+  });
+
+  it("invalid: 書き損じの漢語の名詞が三つ続けば、どちらの重なりも出す", () => {
+    assert.deepEqual(findingsOf("資料資料資料が届きました。", ja, "ja"), ["1:3 資料資料", "1:5 資料資料"]);
+    assert.deepEqual(findingsOf("個人個人個人を集めます。", ja, "ja"), ["1:5 個人個人"]);
   });
 
   it("valid: 内容語（名詞・形容詞）を丸ごと重ねた形は畳語か強めで、数えない（#412）", () => {
@@ -402,9 +412,11 @@ describe("doubled-word — 日本語", () => {
       "車でブイブイ言わせます。",
       "煙がブスブスと出ます。",
       "ババババと音がします。",
-      "内容を確認確認します。",
-      "資料資料が届きました。",
       "会社会社を訪問します。",
+      "毎年毎年同じ話をします。",
+      "各自各自で準備します。",
+      "それは大変大変でした。",
+      "地域地域の事情を聞きます。",
     ];
     valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
   });
