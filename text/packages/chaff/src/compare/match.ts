@@ -11,7 +11,7 @@ export type Comparison = {
   readonly reformed: readonly Reformed[];
 };
 
-const identity = (atom: Atom): string => `${atom.kind}\u0000${atom.key}`;
+export const identity = (atom: Atom): string => `${atom.kind}\u0000${atom.key}`;
 
 const groupBy = <T>(items: readonly T[], keyOf: (item: T) => string): Map<string, T[]> => {
   const groups = new Map<string, T[]>();
