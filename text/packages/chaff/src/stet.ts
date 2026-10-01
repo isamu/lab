@@ -6,7 +6,7 @@ export type Suppression = {
   readonly rules: readonly string[];
   readonly reason: string | undefined;
   readonly line: number;
-  /** The last line a `stet` (scope next) covers: the end of the block right below the comment. */
+  /** The last line a `stet` (scope next) covers: the end of the block right below the comment. Other scopes: the comment's last line. */
   readonly blockEnd: number;
   readonly scope: "next" | "section" | "file";
 };
@@ -45,18 +45,20 @@ const splitBody = (body: string): { rules: string[]; reason: string | undefined 
   };
 };
 
+const scopeOf = (match: RegExpMatchArray): Suppression["scope"] => SCOPE[match[1] ?? "stet"] ?? "next";
+
 export const parseSuppressions = (source: string): Suppression[] => {
   const matches = [...source.matchAll(PATTERN)];
-  // The parse is for where a stet stops; a document without one does not pay for it.
-  if (matches.length === 0) return [];
-  const root = parse(source);
+  // Only a plain stet needs the tree, to find the block it stops at; a stet-file alone does not pay for a parse.
+  const root = matches.some((match) => scopeOf(match) === "next") ? parse(source) : undefined;
   return matches.map((match) => {
     const comment = { start: match.index, end: match.index + match[0].length };
+    const scope = scopeOf(match);
     return {
       ...splitBody(match[2] ?? ""),
       line: lineOf(source, match.index),
-      blockEnd: stetBlockEnd(source, root, comment),
-      scope: SCOPE[match[1] ?? "stet"] ?? "next",
+      blockEnd: root !== undefined && scope === "next" ? stetBlockEnd(source, root, comment) : lineOf(source, comment.end),
+      scope,
     };
   });
 };
