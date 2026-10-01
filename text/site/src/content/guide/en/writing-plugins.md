@@ -191,6 +191,8 @@ That way a `chaff.yaml` copied from elsewhere cannot reach for code with `../../
   this; the author keeps to it.
 - **Never change the document.** Fixing it is the writer's job.
 - **Always return.** chaff cannot stop a function that runs forever.
+- **Leave nothing behind.** The function runs in chaff's own process. chaff cannot guard against timers, ending the
+  process, or changes to built-in objects.
 - **Leave meaning to `chaff test`.** A rule decides only what a machine can.
 
 ## Publishing
