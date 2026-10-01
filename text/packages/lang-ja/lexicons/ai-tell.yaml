@@ -61,3 +61,30 @@ entries:
     weight: 0.4
   - pattern: することが大切です
     weight: 0.4
+  # 技術文の比喩の動詞と、英語の直訳（silently fails）。生成 AI 以前の技術記事ではほとんど使われず、その後に増えた言い回し。
+  # 1 つなら人も書くので重みは低い。
+  - pattern: 地味に効く
+    weight: 0.4
+  - pattern: 効いてくる
+    weight: 0.3
+  - pattern: 時間を溶かす
+    weight: 0.4
+  - pattern: 一つずつ潰す
+    weight: 0.3
+  - pattern: ひとつずつ潰す
+    weight: 0.3
+  - pattern: 静かに壊れる
+    weight: 0.5
+  - pattern: 静かに失敗する
+    weight: 0.5
+  - pattern: 黙って無視される
+    weight: 0.5
+  - pattern: 黙って捨てられる
+    weight: 0.5
+  - pattern: 黙って失敗する
+    weight: 0.5
+  # 手で触れられるもののように言う抽象語。「解像度」「腹落ち」「肌感」は人の記事にも同じくらいあるので入れない。
+  - pattern: 温度感
+    weight: 0.3
+  - pattern: 血の通った
+    weight: 0.4
