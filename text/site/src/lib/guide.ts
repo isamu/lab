@@ -14,6 +14,7 @@ const ORDER = [
   "structure",
   "languages",
   "ci",
+  "bibliography",
 ];
 
 export type GuidePage = { readonly lang: Lang; readonly slug: string; readonly entry: CollectionEntry<"guide"> };
