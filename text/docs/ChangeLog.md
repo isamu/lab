@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### Corpus round 14: documents of kinds the corpus had few of (#170)
+
+Terms of service and privacy statements (GitHub's, under CC0; a ministry's 電子申請 terms and the Tokyo app's terms,
+URL only), press releases and a media advisory (NASA, NOAA, a 気象庁 release that points at its own 図 and 表), a
+告示 with 別表 (厚生労働省), an IRS customer FAQ, job postings (USAJOBS; a デジタル庁 posting, URL only), Japanese tech
+blogs from Zenn and Qiita, API documentation and its Japanese translation (MDN, URL only), an XState API reference in
+Japanese, release notes (Ruby 3.4.0 in Japanese, Go 1.23), Node.js TSC minutes, arXiv and J-STAGE abstract pages, a
+recipe in Japanese and English (農林水産省 うちの郷土料理), a school's いじめ防止基本方針 and a university's course
+registration notice, and Dr Jekyll and Mr Hyde. Each document's licence is in `corpus/manifest.json`.
+
 ### `chaff facts <file>`: the facts to keep, before a rewrite (#439)
 
 Lists every fact atom `chaff compare` reads in one document as a checklist, with the line of each. The kinds are
