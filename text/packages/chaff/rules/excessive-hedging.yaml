@@ -18,7 +18,7 @@ why:
   en: The more the text avoids claiming, the less the reader can tell what was decided. One hedge is caution; many mean nobody is accountable. chaff looks two ways. A sentence that stacks hedges ("may possibly", "it could perhaps be argued") is reported on its own, even in a short document. Too many hedges across the whole document is measured only on longer documents. When counting hedges stacked in a sentence, a hedge inside a quotation is the speaker's, not the writer's, and is left out.
 
 message:
-  ja: 「{matched}」など、逃げの表現が 1000 語あたり {density} 個あります（{limit} 個まで）
+  ja: 「{matched}」など、逃げの表現が 1000 字あたり {density} 個あります（{limit} 個まで）
   en: '"{matched}" and other hedges: {density} per 1000 words (limit {limit})'
 
 # 1 つの文に重ねたもの。上の message は文書全体の密度。
@@ -31,7 +31,7 @@ how_to_fix:
   ja: 言い切れるものは言い切ってください。言い切れないなら、何が分かれば言い切れるのかを書いてください。重ねた逃げは、1 つ残すか、全部外して言い切ってください。
   en: Commit where you can. Where you cannot, say what you would need to know. Where hedges are stacked, keep one or drop them all and commit.
 
-# 文書全体の、1000 語あたりの数の上限。1 つの文に 2 つ以上重ねたものは、どの段でも指摘する。
+# 文書全体の、1000 語（日本語は 1000 字）あたりの数の上限。1 つの文に 2 つ以上重ねたものは、どの段でも指摘する。
 levels: { strict: 3, normal: 6, relaxed: 12 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
@@ -53,5 +53,5 @@ not_flagged:
   ja: 逃げの表現が一つだけなら慎重さなので指しません。引用の中の逃げは、書き手ではなく話し手のものなので数えません。
   en: A single hedge is caution and is not reported. A hedge inside a quotation is the speaker's, not the writer's, and is not counted.
 level_meaning:
-  ja: 1000 語あたり {limit} 個まで（一文に重ねた逃げは、文書の長さによらず指摘）
+  ja: 1000 字あたり {limit} 個まで（一文に重ねた逃げは、文書の長さによらず指摘）
   en: up to {limit} per 1000 words (hedges stacked in one sentence are reported whatever the length)

@@ -1,0 +1,53 @@
+id: fullwidth-alnum-consistency
+layer: L3
+status: experimental
+how_to_find: fullwidth-alnum
+languages: [ja]
+severity: warning
+
+name:
+  ja: 英数字の全角と半角が混ざっている
+  en: Full-width and half-width letters and digits are mixed
+
+why:
+  ja: 英字と数字を全角（ＡＢＣ１２３）で書くか半角（ABC123）で書くかは、どちらでも読めます。困るのは一つの文書の中で混ざることで、検索で別の語になり、貼り付けた文がそこだけ違って見えます。chaff はどちらが正しいかを決めず、英字一字・英字の語・数字一字・数字の並びの組ごとに、文書の中で少ないほうを指摘します（「１桁は全角、２桁以上は半角」と決めている文書は組の中でそろっています）。少ないほうが組の三分の一を超える文書は、使い分けている（数え方の語だけ全角にする、など）と見て言いません。鉤括弧で引いたもの、項目と注の番号（「１．」「（１）」「※１」）、箇条書きの頭の番号、注の番号で始まる行と URL を含む文、日本語の中の英文は数えません。
+  en: Whether Japanese text writes letters and digits full-width (ＡＢＣ１２３) or half-width (ABC123) is a choice either way. What reads badly is mixing both in one document, which makes search treat them as different words and makes a pasted sentence stand out. chaff does not decide which is right; for single letters, words, single digits and longer numbers separately, it points at whichever the document uses less (a document that writes one-digit numbers full-width and longer ones half-width is consistent within each group). It says nothing when the minority is more than a third of its group, since the document then uses the two on purpose (full-width only for counters, for example). Quotations in brackets, item and note numbers (１．, （１）, ※１), a number at the head of a list item, a sentence that starts with a note number or holds a URL, and English sentences inside Japanese text are not counted.
+
+message:
+  ja: 「{written}」と書いています（ほかは「{other}」の書き方。{of} 箇所のうち {count} 箇所が違う）
+  en: '"{written}" here, where the document usually writes "{other}" ({count} of {of})'
+
+messages:
+  fullwidth:
+    ja: 全角の「{written}」と書いています（この文書はふつう半角の「{other}」。{of} 箇所のうち {count} 箇所が違う）
+    en: 'Full-width "{written}" here, where the document usually writes half-width "{other}" ({count} of {of})'
+  halfwidth:
+    ja: 半角の「{written}」と書いています（この文書はふつう全角の「{other}」。{of} 箇所のうち {count} 箇所が違う）
+    en: 'Half-width "{written}" here, where the document usually writes full-width "{other}" ({count} of {of})'
+
+how_to_fix:
+  ja: 文書の多いほうの書き方に合わせてください。チームで決めているなら、STYLE.md に書いておくと迷いません。
+  en: Match the way the rest of the document does it. If the team has decided, write it in the style guide.
+
+# 少ないほうが組の何パーセントまでなら「混ざっている」と見るか。これを超えたら、文書が使い分けている。
+levels: { strict: 49, normal: 34, relaxed: 20 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 英字や数字を、全角（ＡＢＣ１２３）と半角（ABC123）で混ぜて書いている所
+  en: Letters and digits written both full-width (ＡＢＣ１２３) and half-width (ABC123) in one Japanese document
+example:
+  ja:
+    before: |
+      申込は2024年4月10日までです。説明会は2024年4月3日と２０２４年４月５日に開きます。
+    after: |
+      申込は2024年4月10日までです。説明会は2024年4月3日と2024年4月5日に開きます。
+
+not_flagged:
+  ja: 鉤括弧で引いたもの、項目と注の番号（「１．」「（１）」「※１」）、箇条書きの頭の番号、注や URL を含む文は数えません。英字一字・英字の語・数字一字・数字の並びは別々に比べるので、「１桁は全角、２桁以上は半角」はそろっていると見ます。どちらの書き方が正しいかは決めません。
+  en: Quotations in brackets, item and note numbers (１．, （１）, ※１), a number at the head of a list item, and notes or sentences with a URL are not counted. Single letters, words, single digits and longer numbers are compared separately, so "one digit full-width, more digits half-width" counts as consistent. Neither way is called right.
+level_meaning:
+  ja: 少ないほうが組の {limit}% 以下のとき指摘
+  en: reported when the minority form is {limit}% of its group or less

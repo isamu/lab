@@ -201,13 +201,30 @@ export const latinBoundaries = (text: string, written: string = text): Boundary[
 };
 
 /**
- * 混ざっているとき、そろえるべき少数派。種類（英字・数字の前・数字の後ろ）ごとに数える。
+ * 二通りの書き方（true と false）が混ざっているとき、そろえるべき少数派。どちらか一方しか無ければ undefined。
  * 同数なら、文書が先に使った書き方をその文書の書き方とみなし、後から出た書き方を少数派にする。
  */
-export const minorityStyle = (boundaries: readonly { readonly spaced: boolean }[]): boolean | undefined => {
-  const spaced = boundaries.filter((boundary) => boundary.spaced).length;
-  const touching = boundaries.length - spaced;
-  if (spaced === 0 || touching === 0) return undefined;
-  if (spaced !== touching) return spaced < touching;
-  return !(boundaries[0]?.spaced ?? false);
+export const minorityOf = (written: readonly boolean[]): boolean | undefined => {
+  const yes = written.filter(Boolean).length;
+  const no = written.length - yes;
+  if (yes === 0 || no === 0) return undefined;
+  if (yes !== no) return yes < no;
+  return !(written[0] ?? false);
 };
+
+const PERCENT = 100;
+
+/**
+ * 二通りに書き分けたもの（side が true か false）のうち、少ないほうのもの。少ないほうが全体の limitPercent パーセントを超えるなら、
+ * 文書が使い分けていると見て空。どちらか一方しか無くても空。
+ */
+export const minorityWithin = <T>(items: readonly T[], side: (item: T) => boolean, limitPercent: number): T[] => {
+  const minority = minorityOf(items.map(side));
+  if (minority === undefined) return [];
+  const odd = items.filter((item) => side(item) === minority);
+  return odd.length * PERCENT > limitPercent * items.length ? [] : odd;
+};
+
+/** 空けるか詰めるかの少数派。種類（英字・数字の前・数字の後ろ）ごとに数える。 */
+export const minorityStyle = (boundaries: readonly { readonly spaced: boolean }[]): boolean | undefined =>
+  minorityOf(boundaries.map((boundary) => boundary.spaced));
