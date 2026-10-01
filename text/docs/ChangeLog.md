@@ -15,6 +15,66 @@ Newest first.
   paragraph missed most of those; every finding that was really in the body sat further from the end than four
   paragraphs.
 
+### `doubled-word` (ja) no longer reports reduplication that is the right way to write (#412)
+
+On a set of real Japanese site articles, many of the findings were correct Japanese. lang-ja now marks these as
+reduplication (UD `Echo=Rdp`), and the rule skips them:
+
+- **A whole content word written twice**: a noun (個人個人, 一行一行, 駄目駄目, それそれ, もちもち) or an adjective in
+  its plain form (えらいえらい, 若い若い). A slip is a particle or an auxiliary written twice (をを, にに, たた, がが, よよ)
+  or a bound word (いるいる, さんさん), and those are still reported. A one-kanji noun (法法, 金金), a loanword
+  (ユーザーユーザー, データデータ) and a run of three (資料資料資料) are still reported too. This is a change of
+  stance: a doubled two-kanji noun such as 確認確認 or 資料資料, which the rule used to report, now reads as reduplication.
+- **Katakana onomatopoeia**: a katakana word of two or three morae, with any long vowel only at its end, repeated
+  where an adverb stands: before と or に, at the end of a line, or right before a verb (ムクムクと, ブスブスと,
+  ババババと, ブイブイ言わせる). Elsewhere a doubled katakana word is a loanword slip (テストテストを, メモメモ。,
+  ユーザーユーザー) and is still reported.
+- **Laughter and one-kana onomatopoeia**: the same は-row hiragana or katakana three or more times, not attached to
+  the word before it (ははは, あははは, ふふふ, ドドド). Each 「ははは」 used to give two findings. A run of a particle
+  (ををを, よよよ) or a run attached to a word (私ははは, 行ったたた) is still a slip.
+- **Set phrases** in the lexicon `doubled-word`: などなど, あるある, ほどほどに, 代わる代わる, めでたしめでたし, またまた,
+  えへへ, and 知ったかか (知ったか is not in the dictionary, so its last か looked doubled). The analyser reads these as
+  particles, verbs, classical adjectives or conjunctions, so only the lexicon can say they are whole phrases.
+
+The rule's `why` and `not_flagged` now describe what it actually skips.
+
+### `chaff outline <file> [<after>]`: a restructure, measured (#439)
+
+A rewrite that smooths every sentence can keep the skeleton of generated text: the same headings, lists and bold.
+`outline` lists each heading, indented by depth, with its line and the length of its own text. It measures four
+things: the number of headings, the average section length, the share of the text in list items, and the bold spans.
+Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the
+average. Given two files it shows both and how each measure moved.
+
+- Read with lint's own document model (`doc.sections`, sentences, list spans); no new parser.
+- `--compact` (one section per line) and `--json` (`before` / `after` for two files). It only measures: exit 0 once
+  the files are read, 1 for no file, three files or an unreadable one.
+- `chaff compare` and `chaff facts` now read a file through one shared reader (`commands/read-document.ts`). Their
+  output is unchanged. It was compared before and after over every Markdown file in `examples/`, `samples/` and the
+  site's guide: `facts --json`, `compare --json` on neighbouring pairs, and a file against itself.
+
+### `chaff facts <file>`: the facts to keep, before a rewrite (#439)
+
+Lists every fact atom `chaff compare` reads in one document as a checklist, with the line of each. The kinds are
+numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes. A rewrite from scratch can
+then start from the inventory instead of the old text. It is compare's own extractor, not a new parser: the counts
+are the ones compare holds the rewrite to.
+
+- The first line counts every kind, zeros included; a kind that could not be read is listed with the reason.
+- `--compact` (one fact per line, kind in English) and `--json` (path, language, counts, unread kinds, every fact with
+  kind, key, text and line). The screen follows the document's language.
+- One file per run; none or more than one is a usage error (exit 1).
+
+### A line holding only a link ends its own sentence (#400)
+
+Links listed one per line without a bullet (a series index at the end of an article) were read as one long sentence,
+because Markdown joins the lines of a paragraph. A line that is exactly one link now ends its item, the way a
+bracketed subheading line already did, as long as the line before it ends a sentence, ends with 「：」, or is such a line
+itself; a link inside a sentence wrapped across lines stays in that sentence. When such lines run to the end of the
+paragraph they are read as list items, so `repeated-sentence-head`, `max-paragraph-length` and the other list-aware
+rules treat them as they treat the same lines written with `- `; one link line in the middle of a paragraph stays one
+of its sentences. Every rule that reads sentences takes this path.
+
 ### `latin-spacing` skips link text and version numbers, and reports a two-way document once (#395)
 
 ### `unqualified-superlative` reads 「〜のほうが」「〜との」 and quotations (#394)

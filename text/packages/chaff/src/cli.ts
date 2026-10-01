@@ -30,9 +30,8 @@ import { rulesJson } from "./render/rules-json.ts";
 import { rulesTable } from "./render/rules-table.ts";
 import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
-import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
-import { citeTargets, runCite } from "./commands/cite.ts";
-import { compareTargets, runCompare } from "./commands/compare.ts";
+import type { TreeContext } from "./commands/tree.ts";
+import { documentCommands } from "./commands/document-commands.ts";
 import { runSkill } from "./commands/skill.ts";
 import { runConditions, runFeedback, settingsOf, type Checked } from "./commands/feedback.ts";
 import { homedir } from "node:os";
@@ -295,9 +294,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   rules: showRules,
   explain: (argv) => explain(argv[1], flag(argv, "--genre")),
   eval: (argv) => runEval(positional(argv), argv, { ...measureContext(argv), flag }),
-  tree: (argv) => runTree(treeTargets(argv), argv, treeContext()),
-  cite: (argv) => runCite(citeTargets(argv), argv, treeContext()),
-  compare: (argv) => runCompare(compareTargets(argv), argv, treeContext()),
+  ...documentCommands(treeContext),
   test: (argv) => runTest(positional(argv), argv, { ...measureContext(argv), inspect }),
   baseline: (argv) => runBaseline(positional(argv), argv),
   suppressions: (argv) => runSuppressions(positional(argv), inspectAll(readConfig(), argv), hostLanguage(readConfig().language, process.env)),
