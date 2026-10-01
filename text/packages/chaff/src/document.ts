@@ -1,4 +1,4 @@
-import { unlabeledReader } from "./heading-label.ts";
+import { headingReadersOf, sectionsOf } from "./document-sections.ts";
 import { atxHeadingText, headingText } from "./heading-text.ts";
 import { hasTitle } from "./heading-title.ts";
 import { maskSpans } from "./mask.ts";
@@ -21,19 +21,7 @@ import { emailParts, emailVocabulary } from "./email-parts.ts";
 import { cutTextSpans } from "./span-cut.ts";
 import { markdownFigures } from "./text-figures.ts";
 import { documentMarkup } from "./markup.ts";
-import type {
-  BulletList,
-  LanguageAdapter,
-  Markup,
-  Paragraph,
-  ProseDocument,
-  Section,
-  Sentence,
-  Span,
-  StructureNode,
-  DocumentProfile,
-  Token,
-} from "./plugin.ts";
+import type { BulletList, LanguageAdapter, Markup, Paragraph, ProseDocument, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
 /**
  * 本文として数えないもの。
@@ -178,8 +166,6 @@ const strongSpans = (root: Node, masked: readonly Span[]): Span[] => {
   return found;
 };
 
-const within = (span: Span, from: number, to: number): boolean => span.start >= from && span.start < to;
-
 /**
  * 文の分割は**段落ごと**に行う。
  *
@@ -207,41 +193,6 @@ const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: Langua
         ...(sentence.embeddedLanguage === undefined ? {} : { embeddedLanguage: sentence.embeddedLanguage }),
       })),
   );
-
-/** 見出しの語。品詞を読んでいない文書（文が tokens を持たない）では分けない。 */
-const headingTokensOf = (adapter: LanguageAdapter, tagged: boolean, heading: string): { headingTokens?: readonly Token[] } =>
-  tagged && heading !== "" ? { headingTokens: adapter.segment(heading).sentences.flatMap((sentence) => sentence.tokens ?? []) } : {};
-
-type HeadingReaders = { readonly tokensOf: (heading: string) => { headingTokens?: readonly Token[] }; readonly unlabeledOf: (heading: string) => () => string };
-
-const sectionsOf = (
-  headings: readonly Heading[],
-  sentences: readonly Sentence[],
-  strongs: readonly Span[],
-  length: number,
-  readers: HeadingReaders,
-): Section[] => {
-  const bounds = headings.map((heading, index) => ({ heading, from: heading.end, to: headings[index + 1]?.start ?? length }));
-  const lead = { heading: { depth: 0, text: "", start: 0, end: 0 }, from: 0, to: headings[0]?.start ?? length };
-  return [lead, ...bounds]
-    .filter((bound) => bound.to > bound.from)
-    .map(({ heading, from, to }) => {
-      const inside = sentences.filter((sentence) => within(sentence.span, from, to));
-      const unlabeled = readers.unlabeledOf(heading.text);
-      return {
-        depth: heading.depth,
-        heading: heading.text,
-        ...readers.tokensOf(heading.text),
-        get unlabeledHeading(): string {
-          return unlabeled();
-        },
-        span: { start: from, end: to },
-        sentences: inside,
-        strongCount: strongs.filter((span) => within(span, from, to)).length,
-        firstSentence: inside[0],
-      };
-    });
-};
 
 /** sentences（並び順）の中で、start が offset 以上の最初の添字。1 行 1 段落の何万行でも、段落ごとに全部をなめない。 */
 const firstStartingAt = (sentences: readonly Sentence[], offset: number): number => {
@@ -353,10 +304,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     language: adapter.id,
     lengthUnit: adapter.capabilities.lengthUnit,
     capabilities: adapter.capabilities,
-    sections: sectionsOf(headings, sentences, strongSpans(root, blocks), source.length, {
-      tokensOf: (heading) => headingTokensOf(adapter, tagged, heading),
-      unlabeledOf: unlabeledReader(adapter.structure, lexicons),
-    }),
+    sections: sectionsOf(headings, sentences, strongSpans(root, blocks), source.length, headingReadersOf(adapter, tagged, lexicons)),
     sentences,
     listSpans: listItems,
     paragraphs: paragraphsOf(prose, paragraphSpans, sentences, listItems),
