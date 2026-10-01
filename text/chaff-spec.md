@@ -640,9 +640,12 @@ genres:
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
+| `duplicate-heading` ✅ | 同じ親の下の同じ言葉の見出し（MD024 siblings_only） | 両方 | warning |
+| `empty-section` ✅ | 中身の無い節（すぐ後ろに同じ深さか浅い見出し） | 両方 | warning |
 | `unbalanced-bracket` ✅ | 節の中で組にならない括弧・引用符、全角と半角の組み違い | 両方 | warning |
 | `doubled-punctuation` ✅ | 二つ並んだ句読点（三つ以上は伸ばした書き方として数えない） | 両方 | warning |
 | `invisible-character` ✅ | 見えない字（ゼロ幅の字・途中の BOM・ソフトハイフン・向きの指定・制御文字・隠れたタグ文字・印の後ろのノーブレークスペース）。コードの中も見る | 両方 | warning |
+| `double-negative` ✅ | 二重否定（ないわけではない / not uncommon）。語彙表の言い回し | 両方 | info |
 | ~~`list-length-variance`~~ | 箇条書き項目の長さのばらつき | 落とした（下記） | info |
 
 設計上の注意:
@@ -925,6 +928,8 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
 | `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
+| `fullwidth-alnum-consistency` ✅ | 英数字の全角と半角の混在。英字一字・語・数字一字・並びごとに少ないほうを指摘 | - |
+| `ra-nuki` ✅ | ら抜き言葉。lang-ja が一段・カ変動詞の未然形＋「れる」に `PotentialRa=Dropped` を付ける | pos |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
 | `hankaku-kana` ✅ | 半角の片仮名と半角の句読点。コード・リンク・引いた名前の中は除く | - |
 
@@ -966,6 +971,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `sentence-initial-conjunction-run` ✅ | And / But / So で始まる文の連続 | - |
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
+| `spelling-consistency` ✅ | イギリスとアメリカの綴りの一貫性。語彙表 spelling-variant と spelling-ize の組ごとに少ないほうを指摘 | - |
 | `space-before-punctuation` ✅ | 句読点の前の空白（"word ."）。コロン・空白で区切った点・数の後ろは除く | - |
 
 英語固有 rule は「どちらが正しいか」を決めず、**文書内の一貫性**だけを見るものを優先する。Oxford comma の是非のようにスタイルガイドで割れる論点に立場を取ると、rule が使われなくなる。
