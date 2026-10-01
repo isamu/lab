@@ -4,12 +4,12 @@ import type { Finding, Sentence } from "../plugin.ts";
 // { start, end?, values? } inside the document is refused as a whole, with what was wrong: a rule that half works
 // would report some places and silently drop others. Pure.
 
-export type ShapeProblem =
-  | { readonly kind: "not-a-list"; readonly returned: string }
-  | { readonly kind: "not-a-finding"; readonly index: number }
-  | { readonly kind: "bad-start"; readonly index: number; readonly written: string }
-  | { readonly kind: "bad-end"; readonly index: number; readonly written: string }
-  | { readonly kind: "bad-values"; readonly index: number };
+/** What was wrong, at which finding (from 1; 0 for the whole return), and what was there instead. */
+export type ShapeProblem = {
+  readonly kind: "not-a-list" | "not-a-finding" | "bad-start" | "bad-end" | "bad-values";
+  readonly index: number;
+  readonly written: string;
+};
 
 export type Returned = { readonly findings: readonly Finding[] } | { readonly problem: ShapeProblem };
 
@@ -42,18 +42,18 @@ const quoteAt = (source: string, sentences: readonly Sentence[], offset: number)
 type Checked = { readonly finding: Finding } | { readonly problem: ShapeProblem };
 
 const checkedFinding = (entry: unknown, index: number, source: string, sentences: readonly Sentence[]): Checked => {
-  if (!isRecord(entry)) return { problem: { kind: "not-a-finding", index } };
+  if (!isRecord(entry)) return { problem: { kind: "not-a-finding", index, written: describeValue(entry) } };
   const { start, end = start, values = {} } = entry;
   if (!isOffsetIn(start, 0, source.length)) return { problem: { kind: "bad-start", index, written: printed(start) } };
   if (!isOffsetIn(end, start, source.length)) return { problem: { kind: "bad-end", index, written: printed(end) } };
-  if (!isRecord(values) || !Object.values(values).every(isValue)) return { problem: { kind: "bad-values", index } };
+  if (!isRecord(values) || !Object.values(values).every(isValue)) return { problem: { kind: "bad-values", index, written: printed(values) } };
   const filled = { matched: source.slice(start, end), ...values, offset: start };
   return { finding: { rule: "", severity: "warning", line: 0, column: 0, quote: quoteAt(source, sentences, start), values: filled } };
 };
 
 /** The findings a detector returned, placed in the document, or the first thing wrong with them. index counts from 1. */
 export const returnedFindings = (returned: unknown, source: string, sentences: readonly Sentence[]): Returned => {
-  if (!Array.isArray(returned)) return { problem: { kind: "not-a-list", returned: describeValue(returned) } };
+  if (!Array.isArray(returned)) return { problem: { kind: "not-a-list", index: 0, written: describeValue(returned) } };
   const checked = returned.map((entry: unknown, at) => checkedFinding(entry, at + 1, source, sentences));
   const wrong = checked.find((entry) => "problem" in entry);
   if (wrong !== undefined && "problem" in wrong) return { problem: wrong.problem };

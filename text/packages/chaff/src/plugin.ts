@@ -490,8 +490,10 @@ export type TokenCondition = {
 /**
  * What a team's rule looks for. words: spellings to avoid, each with the one to use (or none, to only point at it).
  * pattern: a regular expression, checked before it runs. tokens: a run of tokens from the language adapter.
+ * module: a detector the team wrote in JavaScript; module as written in chaff.yaml, file where it resolved to.
  */
 export type CustomSpec =
   | { readonly type: "words"; readonly words: readonly { readonly avoid: string; readonly use: string }[] }
   | { readonly type: "pattern"; readonly pattern: string; readonly flags: string }
-  | { readonly type: "tokens"; readonly tokens: readonly TokenCondition[] };
+  | { readonly type: "tokens"; readonly tokens: readonly TokenCondition[] }
+  | { readonly type: "module"; readonly module: string; readonly file: string };

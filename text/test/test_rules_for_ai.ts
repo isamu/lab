@@ -81,10 +81,11 @@ describe("chaff rules --json — everything an AI needs to write settings", () =
     assert.ok(groups.every((group) => inBoth(group["name"]) && inBoth(group["note"])));
     const steps = json["how_to_write_settings_from_a_style_note"];
     assert.ok(Array.isArray(steps) && steps.length > 0 && steps.every((step) => typeof step === "string"));
-    ["style_presets", "custom_rule_types", "rule_options"].forEach((field) => {
+    ["style_presets", "rule_options"].forEach((field) => {
       const coming = json[field];
       assert.ok(isRecord(coming) && coming["status"] === "coming", field);
     });
+    assert.deepEqual(json["custom_rule_types"], { status: "available", types: ["words", "pattern", "tokens", "module"] });
   });
 });
 

@@ -14,6 +14,8 @@ import { presetLevels } from "./genre-load.ts";
 import { bodySectionOf } from "./body-section.ts";
 import { optionValues, settleOptions, type OptionLayer } from "./rule-options.ts";
 import { PatternTimeout } from "./custom/bounded-match.ts";
+import { PluginRuleFailure } from "./extension/module-detector.ts";
+import { failureReason } from "./extension/failure-text.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
 
@@ -141,16 +143,21 @@ export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, e
 /** The token features the rules read (RuleDefinition.token_features), each once. */
 export const tokenFeaturesOf = (rules: readonly RuleDefinition[]): string[] => [...new Set(rules.flatMap((rule) => rule.token_features ?? []))];
 
-/** A detector's findings, or how long it ran before a team's pattern was stopped (bounded-match.ts). Other errors are chaff's bugs and propagate. */
+/**
+ * A detector's findings, or why the rule did not run: a team's pattern stopped at its time limit (bounded-match.ts), or a
+ * plugin's detector that threw or returned something else than findings (module-detector.ts). Other errors are chaff's
+ * bugs and propagate.
+ */
 const runDetector = (
   detector: Detector,
   doc: ProseDocument,
   options: DetectorOptions,
-): { readonly findings: readonly Finding[] } | { readonly timedOut: number } => {
+): { readonly findings: readonly Finding[] } | { readonly notRun: string } => {
   try {
     return { findings: detector(doc, options) };
   } catch (error) {
-    if (error instanceof PatternTimeout) return { timedOut: error.budget_ms };
+    if (error instanceof PatternTimeout) return { notRun: reasonsFor(doc).patternTimeout(error.budget_ms) };
+    if (error instanceof PluginRuleFailure) return { notRun: failureReason(error.origin, error.failure, uiLanguageOf(doc.language)) };
     throw error;
   }
 };
@@ -210,6 +217,8 @@ export type RunContext = {
   readonly limits?: Limits;
   /** Where rule options come from, strongest first (chaff.yaml). An option no layer sets is at its default. */
   readonly optionLayers?: readonly OptionLayer[];
+  /** The detectors loaded from the code chaff.yaml names, by rule id. They come before chaff's own table. */
+  readonly detectors?: Readonly<Record<string, Detector>>;
 };
 
 export const runRules = (
@@ -222,7 +231,7 @@ export const runRules = (
 ): RunResult => runRulesWith(doc, rules, { settings, experimental, genre, limits });
 
 export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[], context: RunContext): RunResult => {
-  const { settings, experimental, genre, limits = {}, optionLayers = [] } = context;
+  const { settings, experimental, genre, limits = {}, optionLayers = [], detectors = {} } = context;
   const preset = presetLevels(genre);
   const starts = lineStarts(doc.source);
   const applicable = forGenre(rules, genre);
@@ -251,7 +260,7 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
       if (noDocumentNeed !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noDocumentNeed }] };
       // 複合シグナルは二段目で扱う。一段目では「検出器が無い」と言わせない。
       if (rule.from.length > 0) return acc;
-      const detector = DETECTORS[rule.how_to_find];
+      const detector = detectors[rule.id] ?? DETECTORS[rule.how_to_find];
       if (detector === undefined)
         return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noDetector(rule.how_to_find) }] };
       // 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
@@ -268,7 +277,7 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
         ...(rule.custom === undefined ? {} : { custom: rule.custom }),
       };
       const ran = runDetector(detector, doc, options);
-      if ("timedOut" in ran) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).patternTimeout(ran.timedOut) }] };
+      if ("notRun" in ran) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: ran.notRun }] };
       const found = ran.findings.map((finding) => place(starts, { ...finding, rule: rule.id, severity: severityAt(rule, level, genre) }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };
     },

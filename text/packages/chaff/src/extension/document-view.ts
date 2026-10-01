@@ -94,6 +94,9 @@ const viewOf = (doc: ProseDocument): Api.RuleDocument => {
   });
 };
 
+/** A word list as a detector is given it (DetectorOptions.lexicon): public fields only, frozen. */
+export const frozenLexiconOf = (lexicon: Lexicon): Api.Lexicon => deepFreeze(lexiconOf(lexicon));
+
 const views = new WeakMap<ProseDocument, Api.RuleDocument>();
 
 /** The document as a plugin's detector sees it. Made once per document, however many plugin rules read it. */
