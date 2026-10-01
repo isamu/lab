@@ -327,6 +327,52 @@ describe("the lexicon additions", () => {
     assert.ok(idsFor(source, ja).includes("ai-tell"));
   });
 
+  it("ai-tell: 生成 AI 以後の記事で増えた言い回しも、活用した形で積み上がる", () => {
+    const source = [
+      "# 記事",
+      "",
+      "調査で課題が浮き彫りになりました。性能を最大限に引き出すには設定が要ります。大規模な案件で真価を発揮しました。",
+      "強力な武器になります。ステップバイステップで進めます。多角的な視点と包括的な分析を行います。",
+      "シームレスに連携できます。速度が大幅に向上しました。処理が劇的に速くなります。",
+    ].join("\n");
+    assert.ok(idsFor(source, ja).includes("ai-tell"));
+  });
+
+  it("ai-tell: 増えた言い回しは、どれも活用した形の文に当たる", () => {
+    const cases: readonly (readonly [string, string])[] = [
+      ["浮き彫りになる", "調査で課題が浮き彫りになりました。"],
+      ["最大限に引き出す", "性能を最大限に引き出しています。"],
+      ["真価を発揮する", "大規模な案件で真価を発揮しました。"],
+      ["強力な武器", "型は強力な武器になります。"],
+      ["ステップバイステップ", "ステップバイステップで進めます。"],
+      ["多角的な", "多角的な視点で見ます。"],
+      ["包括的な", "包括的な分析を行います。"],
+      ["シームレスに", "シームレスに連携できます。"],
+      ["大幅に向上する", "速度が大幅に向上しました。"],
+      ["劇的に", "処理が劇的に速くなります。"],
+    ];
+    cases.forEach(([pattern, sentence]) => {
+      const doc = buildDocument("t.md", `# 記事\n\n${sentence}`, ja);
+      const entry = (doc.lexicons["ai-tell"] ?? []).find((candidate) => candidate.pattern === pattern);
+      const first = doc.sentences.find((candidate) => candidate.text.includes(sentence.slice(0, 4)));
+      assert.ok(entry !== undefined && first !== undefined && entryIn(first, entry), `${pattern} / ${sentence}`);
+    });
+  });
+
+  it("ai-tell: 増えた言い回しが 1 つだけなら言わない", () => {
+    assert.ok(!idsFor("# 記事\n\n調査で課題が浮き彫りになりました。来月に直します。", ja).includes("ai-tell"));
+  });
+
+  it("stock-transition: 「これにより、」で始まる文が続く", () => {
+    const opened = "設定を変えました。これにより、速くなりました。これにより、ログが減りました。これにより、費用も下がりました。".repeat(2);
+    assert.ok(idsFor(`# 記事\n\n${opened}${BULK_JA}`, ja).includes("stock-transition"));
+  });
+
+  it("stock-transition: 文の途中の「これにより」は数えない", () => {
+    const inside = "設定を変え、これにより速くなりました。ログを減らし、これにより費用も下がりました。".repeat(3);
+    assert.ok(!idsFor(`# 記事\n\n${inside}${BULK_JA}`, ja).includes("stock-transition"));
+  });
+
   it("closing-cliche: 「いかがでしたでしょうか」で締める", () => {
     assert.ok(idsFor("# 題\n\n本文です。\n\n## まとめ\n\nいかがでしたでしょうか。", ja).includes("closing-cliche"));
   });

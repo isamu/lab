@@ -88,3 +88,24 @@ entries:
     weight: 0.3
   - pattern: 血の通った
     weight: 0.4
+  # 2016〜2021 年の Qiita の記事ではほとんど使われず、2025〜2026 年の記事で目立って増えた言い回し。1 つなら人も書くので重みは低い。
+  - pattern: 浮き彫りになる
+    weight: 0.4
+  - pattern: 最大限に引き出す
+    weight: 0.4
+  - pattern: 真価を発揮する
+    weight: 0.4
+  - pattern: 強力な武器
+    weight: 0.4
+  - pattern: ステップバイステップ
+    weight: 0.3
+  - pattern: 多角的な
+    weight: 0.3
+  - pattern: 包括的な
+    weight: 0.3
+  - pattern: シームレスに
+    weight: 0.3
+  - pattern: 大幅に向上する
+    weight: 0.3
+  - pattern: 劇的に
+    weight: 0.3
