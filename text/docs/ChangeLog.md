@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `section-length-uniformity` and `paragraph-length-variance` need enough sections and paragraphs to measure
+
+Both rules compare lengths by their coefficient of variation. Over two or three values that number is small by chance,
+so human writing looked "too uniform". In pre-2022 human Qiita articles the findings clustered in articles with two to
+four sections or paragraphs. Each rule now has a `count` option: `min_sections` (default 5) and `min_paragraphs`
+(default 6). With fewer, the rule does not measure, and `not_flagged` says so. On the paired samples in `yarn bench:ai`
+the generated-style hits stay; the human, rewritten and corpus false alarms of these two rules are gone. Two corpus
+documents (a national-park story and a government security page) lose a `section-length-uniformity` finding they
+should not have had.
+
 ### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
 
 Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted

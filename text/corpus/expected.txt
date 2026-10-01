@@ -66,7 +66,7 @@ ecfr-16-cfr-310-telemarketing  dangling-reference 4, heading-level-skip 5, max-s
 eip-1559-fee-market  contraction-consistency 2, max-paragraph-length 3, max-sentence-length 33, undefined-acronym 3
 entaku-rb-4  agentless-passive 7, latin-spacing 1
 entaku-rb-5  no-mixed-desumasu 1
-env-nikko-national-park-story  fullwidth-alnum-consistency 1, max-kanji-continuous 2, proper-noun-density 1, section-length-uniformity 1, taigen-dome-in-prose 1
+env-nikko-national-park-story  fullwidth-alnum-consistency 1, max-kanji-continuous 2, proper-noun-density 1, taigen-dome-in-prose 1
 etax-oshirase-mail-templates  agentless-passive 7, concrete-evidence-density 57, fullwidth-alnum-consistency 4, latin-spacing 9, max-kanji-continuous 11, max-paragraph-length 1, max-sentence-length 51, ngram-repetition 1, no-doubled-joshi 21
 fac-adr-0016-file-uploads  max-sentence-length 3, proper-noun-density 1, undefined-acronym 5
 fed-powell-2025-08-22-framework-review  adverb-overuse 1, expletive-construction 5, max-paragraph-length 6, max-sentence-length 65, undefined-acronym 3
@@ -172,7 +172,7 @@ saikosai-h26-09-02-nagano  empty-section 1, fullwidth-alnum-consistency 3, max-s
 saikosai-s57-09-28-shorai-kyufu  hiragana-fukushi 1
 saitama-shokuiku-soboro-oyakodon  clean
 soumu-kokumin-cyber-glossary-a  max-sentence-length 2, undefined-acronym 3
-soumu-kokumin-cyber-malware  concrete-evidence-density 3, max-sentence-length 10, no-doubled-joshi 1, section-length-uniformity 1
+soumu-kokumin-cyber-malware  concrete-evidence-density 3, max-sentence-length 10, no-doubled-joshi 1
 soumu-kokumin-cyber-phishing  concrete-evidence-density 3, katakana-long-vowel 1, latin-spacing 7, max-sentence-length 6
 soumu-wp-r06-ai-booms  agentless-passive 1, katakana-long-vowel 1, max-sentence-length 2, undefined-acronym 3
 soumu-wp-r06-ai-rules-japan  agentless-passive 2, latin-spacing 1, max-sentence-length 6, no-doubled-joshi 1
