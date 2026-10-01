@@ -1,8 +1,9 @@
 # A word before the first date and a word between the two dates that together make a period: "from 1 May 2026 to
-# 31 May 2026", "between 1 May 2026 and 31 May 2026". Written as "lead … joint". "to" alone is not a range-connector
-# because "moved from March 10 to March 3" changes a date; date-change-word says when the frame is a change instead.
+# 31 May 2026". Written as "lead … joint". "to" alone is not a range-connector because "moved from March 10 to March 3"
+# changes a date; date-change-word says when the frame is a change instead. "between … and" is not a frame: "choose
+# between 1 May and 30 April" names two dates to pick from.
 id: range-frame
 language: en
 entries:
   - pattern: from … to
-  - pattern: between … and
+  - pattern: from … up to

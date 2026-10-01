@@ -16,7 +16,7 @@ export type RangeWords = {
   readonly closers: readonly string[];
   /** 始まりの日付の前の語と、二つの日付の間の語の組で期間を作るもの（from … to、between … and）。 */
   readonly frames: readonly RangeFrame[];
-  /** 同じ文の組の前にあれば、期間ではなく日付の変更と読む語（moved from … to）。 */
+  /** 同じ文にあれば、組を期間ではなく日付の変更と読む語（moved from … to、… was postponed）。 */
   readonly changes: readonly string[];
 };
 
@@ -65,26 +65,38 @@ const endsWithWord = (text: string, word: string): boolean => wordPattern(word, 
 
 const hasWord = (text: string, word: string): boolean => wordPattern(word, "").test(text);
 
-/** 始まりの日付の前の、同じ文の同じ行の字（小文字）。文の終わり（. ! ? の後ろの空白）より前は含まない。 */
-const sentenceBefore = (source: string, start: DatedSpan): string => {
-  const line = source.slice(source.lastIndexOf("\n", start.offset - 1) + 1, start.offset).toLowerCase();
-  const ends = [...line.matchAll(/[.!?](?=\s)/gu)].map((match) => match.index + 1);
-  return line.slice(ends.at(-1) ?? 0).trimEnd();
+/** 段落の切れ目（空行）。 */
+const PARAGRAPH_BREAK = "\n\n";
+
+/** 文の終わり。後ろが大文字のときだけ切る（"in Jan. from" は切らない）。切りそこねると文が長くなり、変更の語を見つけやすくなるだけ。 */
+const SENTENCE_BREAK = /[.!?]\s+(?=[A-Z])/gu;
+
+/** 二つの日付を含む文（小文字、空白は一つに）と、その中の始まりの日付の位置。行の折り返しをまたいで読む。 */
+const sentenceAround = (source: string, start: DatedSpan, end: DatedSpan): { readonly text: string; readonly before: string } => {
+  const previousBreak = source.lastIndexOf(PARAGRAPH_BREAK, start.offset);
+  const paragraphStart = previousBreak === -1 ? 0 : previousBreak + PARAGRAPH_BREAK.length;
+  const paragraphEnd = source.indexOf(PARAGRAPH_BREAK, end.end);
+  const head = source.slice(paragraphStart, start.offset);
+  const tail = source.slice(end.end, paragraphEnd === -1 ? source.length : paragraphEnd);
+  const from = [...head.matchAll(SENTENCE_BREAK)].map((match) => match.index + match[0].length).at(-1) ?? 0;
+  const to = [...tail.matchAll(SENTENCE_BREAK)][0]?.index ?? tail.length;
+  const flat = (text: string): string => text.replace(/\s+/gu, " ").toLowerCase();
+  return { text: flat(source.slice(paragraphStart + from, end.end + to)), before: flat(head.slice(from)).trimEnd() };
 };
 
-/** 前の語と間の語の組（from … to）。同じ文の組の前に変更の語（moved）があれば、日付を動かした文で、期間ではない。 */
-const framed = (source: string, start: DatedSpan, joint: string, words: RangeWords): boolean => {
-  const before = sentenceBefore(source, start);
-  const frame = words.frames.find((candidate) => candidate.joint === joint && endsWithWord(before, candidate.lead));
-  if (frame === undefined) return false;
-  const lead = before.slice(0, before.length - frame.lead.length);
-  return !words.changes.some((change) => hasWord(lead, change.toLowerCase()));
+/** 前の語と間の語の組（from … to）。同じ文のどこかに変更の語（moved、postponed）があれば、日付を動かした文で、期間ではない。 */
+const framed = (source: string, start: DatedSpan, end: DatedSpan, joint: string, words: RangeWords): boolean => {
+  const sentence = sentenceAround(source, start, end);
+  const frame = words.frames.find((candidate) => candidate.joint === joint && endsWithWord(sentence.before, candidate.lead));
+  return frame !== undefined && !words.changes.some((change) => hasWord(sentence.text, change.toLowerCase()));
 };
 
 const isRange = (source: string, start: DatedSpan, end: DatedSpan, words: RangeWords): boolean => {
   const joint = jointOf(source, start, end);
   if (joint === undefined) return false;
-  return isOneOf(joint, words.connectors) || (isOneOf(joint, words.openers) && closedAfter(source, end, words.closers)) || framed(source, start, joint, words);
+  return (
+    isOneOf(joint, words.connectors) || (isOneOf(joint, words.openers) && closedAfter(source, end, words.closers)) || framed(source, start, end, joint, words)
+  );
 };
 
 /** 書いたままの期間。行をまたいだ期間は一行にする。 */

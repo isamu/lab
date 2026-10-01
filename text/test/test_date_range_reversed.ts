@@ -73,12 +73,15 @@ describe("date-range-reversed", () => {
     assert.deepEqual(found(doc("The review moved from March 10, 2026 to March 3, 2026.")), []);
     assert.deepEqual(found(doc("The deadline was brought forward from 30 June 2026 to 15 June 2026.")), []);
     assert.deepEqual(found(doc("We rescheduled the audit from 10 March 2026 to 3 March 2026.")), []);
+    assert.deepEqual(found(doc("The meeting from March 10, 2026 to March 3, 2026 was postponed.")), []);
+    assert.deepEqual(found(doc("The review was rescheduled", "from March 10, 2026 to March 3, 2026.")), []);
+    assert.deepEqual(found(doc("The launch was moved in Jan. from March 10, 2026 to March 3, 2026.")), []);
   });
 
-  it("from … to and between … and are a period, day first or month first", () => {
+  it("from … to and from … up to are a period, day first or month first", () => {
     assert.deepEqual(found(doc("The agreement runs from 1 November 2026 to 31 October 2026.")), ["2026-11-01>2026-10-31"]);
     assert.deepEqual(found(doc("It runs from November 1, 2026 to October 31, 2026.")), ["2026-11-01>2026-10-31"]);
-    assert.deepEqual(found(doc("Valid between 1 May 2026 and 30 April 2026.")), ["2026-05-01>2026-04-30"]);
+    assert.deepEqual(found(doc("The promotion runs from 1 November 2026 up to 31 October 2026.")), ["2026-11-01>2026-10-31"]);
     assert.deepEqual(found(doc("The agreement runs from 1 November 2026 to 31 October 2027.")), []);
   });
 
@@ -91,9 +94,17 @@ describe("date-range-reversed", () => {
     assert.deepEqual(found(doc("It was removed from 1 November 2026 to 31 October 2026.")), ["2026-11-01>2026-10-31"]);
   });
 
-  it("a lead with the other joint is not a frame (from … and, between … to)", () => {
+  it("a lead with another joint is not a frame, and between … and names two dates to choose from", () => {
     assert.deepEqual(found(doc("Sent from 1 November 2026 and 31 October 2026.")), []);
-    assert.deepEqual(found(doc("Valid between 1 May 2026 to 30 April 2026.")), []);
+    assert.deepEqual(found(doc("Choose between 1 May 2026 and 30 April 2026 for the workshop.")), []);
+  });
+
+  it("a change word in another sentence or paragraph does not stop the period", () => {
+    assert.deepEqual(found(doc("The office moved. It is open from 1 November 2026 to 31 October 2026.")), ["2026-11-01>2026-10-31"]);
+    assert.deepEqual(found(doc("It runs from 1 November 2026 to 31 October 2026. The date was then changed.")), ["2026-11-01>2026-10-31"]);
+    assert.deepEqual(found(["# Plan", "", "Office moved", "", "from 1 November 2026 to 31 October 2026 the desk is open.", ""].join("\n")), [
+      "2026-11-01>2026-10-31",
+    ]);
   });
 
   it("times inside a period are read past", () => {
@@ -109,7 +120,7 @@ describe("date-range-reversed", () => {
 describe("rangeFrameOf", () => {
   it("splits a lead and a joint at …", () => {
     assert.deepEqual(rangeFrameOf("from … to"), { lead: "from", joint: "to" });
-    assert.deepEqual(rangeFrameOf("Between…And"), { lead: "between", joint: "and" });
+    assert.deepEqual(rangeFrameOf("From…Up To"), { lead: "from", joint: "up to" });
   });
 
   it("is undefined without exactly two non-empty parts", () => {

@@ -1,5 +1,5 @@
-# Words that, earlier in the same sentence as "from … to", make it a change of date rather than a period: "the review
-# moved from March 10, 2026 to March 3, 2026", "the deadline was brought forward from 30 June to 15 June".
+# Words that, anywhere in the same sentence as "from … to", make it a change of date rather than a period: "the review
+# moved from March 10, 2026 to March 3, 2026", "the meeting from March 10 to March 3 was postponed".
 id: date-change-word
 language: en
 entries:
