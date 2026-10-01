@@ -1,9 +1,12 @@
 import type { Finding, Span } from "./plugin.ts";
+import { stetBlockEnd } from "./stet-block.ts";
 
 export type Suppression = {
   readonly rules: readonly string[];
   readonly reason: string | undefined;
   readonly line: number;
+  /** The last line a `stet` (scope next) covers: the end of the block right below the comment. */
+  readonly blockEnd: number;
   readonly scope: "next" | "section" | "file";
 };
 
@@ -43,22 +46,32 @@ const splitBody = (body: string): { rules: string[]; reason: string | undefined 
   };
 };
 
-export const parseSuppressions = (source: string): Suppression[] =>
-  [...source.matchAll(PATTERN)].map((match) => ({
-    ...splitBody(match[2] ?? ""),
-    line: lineOf(source, match.index),
-    scope: SCOPE[match[1] ?? "stet"] ?? "next",
-  }));
+/** Whether anything but blanks follows the comment on the line where it closes. */
+const textAfter = (source: string, end: number): boolean => {
+  const newline = source.indexOf("\n", end);
+  return source.slice(end, newline === -1 ? source.length : newline).trim() !== "";
+};
 
-/** stet が効く範囲。next は直後の塊、section は次の見出しまで、file は全体。 */
-const NEXT_LINES = 6;
+export const parseSuppressions = (source: string): Suppression[] => {
+  const lines = source.split("\n");
+  return [...source.matchAll(PATTERN)].map((match) => {
+    const end = match.index + match[0].length;
+    return {
+      ...splitBody(match[2] ?? ""),
+      line: lineOf(source, match.index),
+      blockEnd: stetBlockEnd(lines, lineOf(source, end), textAfter(source, end)),
+      scope: SCOPE[match[1] ?? "stet"] ?? "next",
+    };
+  });
+};
 
+/** stet が効く範囲。next は直後の塊（段落・見出し・箇条書き・表）の終わりまで、section は次の見出しまで、file は全体。 */
 const covers = (suppression: Suppression, finding: Finding, sectionEnds: readonly number[], lastLine: number): boolean => {
   if (!suppression.rules.includes(finding.rule)) return false;
   if (suppression.scope === "file") return true;
   // 抑制は「この先の箇所」に対して書く。遡って効くと、意図せず黙る範囲が広がる。
   if (finding.line < suppression.line) return false;
-  if (suppression.scope === "next") return finding.line - suppression.line <= NEXT_LINES;
+  if (suppression.scope === "next") return finding.line <= suppression.blockEnd;
   return finding.line <= (sectionEnds.find((line) => line > suppression.line) ?? lastLine);
 };
 

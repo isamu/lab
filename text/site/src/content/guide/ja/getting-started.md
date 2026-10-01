@@ -216,7 +216,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
 
 | 書き方 | 黙らせる範囲 |
 | --- | --- |
-| `<!-- stet: bold-density — 用語集なので意図的 -->` | 直後の数行（6 行まで） |
+| `<!-- stet: bold-density — 用語集なので意図的 -->` | すぐ下の段落（見出し・箇条書き・表なら、その 1 つ） |
 | `<!-- stet-section: bold-density — 一覧なので -->` | 次の見出しまで |
 | `<!-- stet-file: ai-tell, rule-of-three — 引用が多い -->` | ファイル全体 |
 

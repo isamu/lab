@@ -1753,6 +1753,8 @@ ai-generated-composite:
 <!-- stet-file: bold-density, emoji-density -->
 ```
 
+`stet` はすぐ下の塊（段落・見出し・箇条書き・表）に、`stet-section` は次の見出しまで、`stet-file` は文書全体に効く。
+
 理由なしの抑制を減らすため、`--require-stet-reason` で理由の記述を必須にできる。
 
 ```markdown
