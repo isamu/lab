@@ -62,7 +62,7 @@ describe("paragraph-length-variance", () => {
   });
 
   it("valid: 長さが揺れていれば指摘しない", () => {
-    const varied = ["短い。", SENTENCE, `${SENTENCE}${SENTENCE}${SENTENCE}`, "ごく短い。", `${SENTENCE}${SENTENCE}`].join("\n\n");
+    const varied = ["短い。", SENTENCE, `${SENTENCE}${SENTENCE}${SENTENCE}`, "ごく短い。", `${SENTENCE}${SENTENCE}`, SENTENCE].join("\n\n");
     assert.ok(!idsFor(`# 見出し\n\n${varied}`).includes("paragraph-length-variance"));
   });
 
@@ -86,7 +86,13 @@ describe("section-length-uniformity", () => {
   });
 
   it("valid: 節の量が違えば指摘しない", () => {
-    const sections = ["## 一\n\n短い。", `## 二\n\n${SENTENCE}${SENTENCE}${SENTENCE}`, `## 三\n\n${SENTENCE}`].join("\n\n");
+    const sections = [
+      "## 一\n\n短い。",
+      `## 二\n\n${SENTENCE}${SENTENCE}${SENTENCE}`,
+      `## 三\n\n${SENTENCE}`,
+      "## 四\n\nごく短い。",
+      `## 五\n\n${SENTENCE}${SENTENCE}`,
+    ].join("\n\n");
     assert.ok(!idsFor(`# 表題\n\n${sections}`).includes("section-length-uniformity"));
   });
 
