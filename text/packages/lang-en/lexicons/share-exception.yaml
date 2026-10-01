@@ -1,0 +1,10 @@
+# Words that mark a count whose percentages need not add up to 100%. When the header or the text above has one, the
+# percentages are not added.
+id: share-exception
+language: en
+entries:
+  - pattern: multiple answers
+  - pattern: multiple responses
+  - pattern: more than one
+  - pattern: select all
+  - pattern: all that apply

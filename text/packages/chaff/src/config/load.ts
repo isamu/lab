@@ -45,6 +45,8 @@ export type Config = {
   readonly style?: string | undefined;
   /** The style once applied (config/style.ts): its id, the rules whose level it decided, and its options. */
   readonly applied?: AppliedStyle | undefined;
+  /** custom_rules as written: the team's own rules. custom/parse.ts reads and checks them. */
+  readonly customRules?: unknown;
 };
 
 export type AppliedStyle = {
@@ -181,5 +183,6 @@ export const loadConfig = (path: string): Config => {
     options: isRecord(options) ? options : {},
     unreadableOptions: options === undefined || options === null || isRecord(options) ? undefined : printed(options),
     style: raw["style"] === undefined || raw["style"] === null ? undefined : (str(raw["style"]) ?? printed(raw["style"])),
+    customRules: raw["custom_rules"],
   };
 };

@@ -1,0 +1,7 @@
+# 割合を足しても 100% にならない集計を示す語。見出しか上の文にあれば、百分率を足さない。
+id: share-exception
+language: ja
+entries:
+  - pattern: 複数回答
+  - pattern: 複数選択
+  - pattern: 重複あり

@@ -1,0 +1,14 @@
+# Words that name a figure, a table or an appendix by its number (Figure 3, Table 2, Appendix B). A reference in the
+# text is looked for among the ones labelled at the start of a line (a caption or a heading). instead_of names the
+# word an abbreviation stands for, so that "Fig. 3" and "Figure 3" are the same figure. Matched as written, or in capitals.
+id: figure-label
+language: en
+entries:
+  - pattern: Figure
+  - pattern: Fig.
+    instead_of: Figure
+  - pattern: Table
+  - pattern: Appendix
+  - pattern: Annex
+  - pattern: Exhibit
+  - pattern: Chart

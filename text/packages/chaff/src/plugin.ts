@@ -395,6 +395,8 @@ export type DetectorOptions = {
   readonly embeddedLimits?: Readonly<Record<string, number>> | undefined;
   /** The rule's options (RuleDefinition.options), each at the value the settings chose or its default. Only a rule with options has them. */
   readonly settings?: Readonly<Record<string, OptionValue>> | undefined;
+  /** A custom rule's spec (RuleDefinition.custom). */
+  readonly custom?: CustomSpec | undefined;
 };
 
 /** The value of one rule option: a choice, a count, or a list of words. */
@@ -470,6 +472,24 @@ export type RuleDefinition = {
   readonly severity: Severity;
   /** Options beyond the level (the direction and length for katakana-long-vowel). Most rules have none. */
   readonly options?: Readonly<Record<string, RuleOption>>;
+  /** A rule a team defined under custom_rules in chaff.yaml: what it looks for. Built-in rules have none. */
+  readonly custom?: CustomSpec;
   /** What the rule reference tells a reader who is not an engineer: its group, one line, a before and after. */
   readonly guide?: RuleGuide;
 };
+
+/** One token's condition in a custom rule's run of tokens. Each part written must hold; pos lists the tags that match. */
+export type TokenCondition = {
+  readonly pos?: readonly string[] | undefined;
+  readonly base?: string | undefined;
+  readonly surface?: string | undefined;
+};
+
+/**
+ * What a team's rule looks for. words: spellings to avoid, each with the one to use (or none, to only point at it).
+ * pattern: a regular expression, checked before it runs. tokens: a run of tokens from the language adapter.
+ */
+export type CustomSpec =
+  | { readonly type: "words"; readonly words: readonly { readonly avoid: string; readonly use: string }[] }
+  | { readonly type: "pattern"; readonly pattern: string; readonly flags: string }
+  | { readonly type: "tokens"; readonly tokens: readonly TokenCondition[] };

@@ -22,6 +22,7 @@ import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, p
 import * as phrasing from "./bench-mutations-phrasing.ts";
 import { MARKUP_MUTATIONS } from "./bench-mutations-markup.ts";
 import { MARK_MUTATIONS } from "./bench-mutations-marks.ts";
+import { FACT_MUTATIONS } from "./bench-mutations-facts.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
 
 // --- date-weekday-mismatch ---
@@ -340,6 +341,7 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "weekday-shift", rule: "date-weekday-mismatch", languages: ["ja", "en"], plant: shiftWeekday },
   { id: "rows-swapped", rule: "date-order", languages: ["ja", "en"], plant: swapDatedRows },
   { id: "item-dropped", rule: "total-mismatch", languages: ["ja", "en"], plant: dropItem },
+  ...FACT_MUTATIONS,
   { id: "reference-broken", rule: "dangling-reference", languages: ["ja", "en"], plant: breakReference },
   { id: "number-skipped", rule: "numbering-gap", languages: ["ja", "en"], plant: skipLastNumber },
   { id: "defined-twice", rule: "duplicate-definition", languages: ["ja", "en"], plant: defineTwice },

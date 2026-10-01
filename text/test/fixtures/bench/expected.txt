@@ -1,19 +1,22 @@
 rule                              planted  found  missed  false alarms
 agentless-passive                       4      4       0             0
 agreement-slip                          4      4       0             0
+announced-count-mismatch                2      2       0             0
 assistant-residue                      20     20       0             0
 bold-density                           10     10       0             0
 broken-link                            26     26       0             0
 closing-cliche                          2      2       0             0
 contraction-consistency                 2      2       0             0
+dangling-figure-reference               2      2       0             0
 dangling-reference                      6      6       0             0
 date-order                              6      6       0             0
+date-range-reversed                     2      2       0             0
 date-weekday-mismatch                  10     10       0             0
 double-keigo                            3      3       0             0
 doubled-punctuation                    26     26       0             0
 doubled-word                           25     25       0             0
 duplicate-definition                    4      4       0             0
-emoji-density                           8      8       0             0
+emoji-density                          10     10       0             0
 empty-intensifier                      20     20       0             0
 excessive-hedging                      20     20       0             0
 expletive-construction                  4      4       0             0
@@ -26,16 +29,17 @@ katakana-long-vowel                     2      2       0             0
 kutoten-consistency                    13     13       0             0
 latin-spacing                           1      1       0             0
 max-kanji-continuous                    5      5       0             0
-max-paragraph-length                   10     10       0             0
+max-paragraph-length                    9      9       0             0
 max-sentence-length                    11     11       0             0
-ngram-repetition                        9      9       0             0
+ngram-repetition                       10     10       0             0
 no-doubled-joshi                       12     12       0             0
-no-em-dash                              8      8       0             0
+no-em-dash                             10     10       0             0
 no-mixed-desumasu                      12     12       0             0
 no-nakaguro-parallel                    2      2       0             0
 numbering-gap                           6      6       0             0
 oxford-comma-consistency                2      2       0             0
 padded-intro                           10     10       0             0
+percent-sum-mismatch                    2      2       0             0
 preamble-length                         2      2       0             0
 preferred-term                         12     12       0             0
 repeated-conjunction                    7      7       0             0
@@ -147,11 +151,17 @@ ja/email  bracket-unclosed  found
 ja/email  period-doubled  found
 ja/email  comma-western  found
 ja/figures  item-dropped  found
+ja/figures  announced-item-dropped  found
+ja/figures  figure-renumbered  found
+ja/figures  period-swapped  found
+ja/figures  share-shifted  found
 ja/figures  polite-in-plain  found
 ja/figures  no-nested  found
 ja/figures  space-strayed  found
 ja/figures  heading-echoed  found
 ja/figures  bold-heavy  found
+ja/figures  emoji-decorated  found
+ja/figures  commas-dashed  found
 ja/figures  jargon-used  found
 ja/figures  section-dropped  found
 ja/figures  kanji-glued  found
@@ -164,6 +174,7 @@ ja/figures  hedges-stacked  found
 ja/figures  residue-left  found
 ja/figures  blank-left  found
 ja/figures  opener-repeated  found
+ja/figures  pet-phrase  found
 ja/figures  heading-deepened  found
 ja/figures  image-unlabelled  found
 ja/figures  link-to-nowhere  found
@@ -408,10 +419,15 @@ en/email  image-unlabelled  found
 en/email  link-to-nowhere  found
 en/email  period-doubled  found
 en/figures  item-dropped  found
+en/figures  announced-item-dropped  found
+en/figures  figure-renumbered  found
+en/figures  period-swapped  found
+en/figures  share-shifted  found
 en/figures  sentences-joined  found
-en/figures  paragraphs-joined  found
 en/figures  heading-echoed  found
 en/figures  bold-heavy  found
+en/figures  emoji-decorated  found
+en/figures  commas-dashed  found
 en/figures  jargon-used  found
 en/figures  section-dropped  found
 en/figures  passive-en  found
