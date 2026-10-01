@@ -11,6 +11,7 @@ import { optionsJson } from "./options.ts";
 import { limitsFor, styleLevelSource } from "../config/style.ts";
 import { loadStyles } from "../style-load.ts";
 import type { OptionLayer } from "../rule-options.ts";
+import { CUSTOM_TYPES } from "../custom/parse.ts";
 
 const TEXT: Texts<{
   readonly offBySetting: string;
@@ -155,11 +156,11 @@ const groupsOf = (): Record<string, unknown>[] =>
 
 /**
  * What the local-rules release adds. Named now so an AI reading the JSON knows they are coming and does not invent them.
- * Filled in when they ship: the style presets under style:, the custom_rules types, and each rule's options.
+ * Filled in as they ship: the style presets under style:, each rule's options. The custom_rules types have shipped.
  */
 const COMING = {
   style_presets: { status: "coming", presets: [] },
-  custom_rule_types: { status: "coming", planned: ["words", "pattern", "tokens", "module"] },
+  custom_rule_types: { status: "available", types: CUSTOM_TYPES },
   rule_options: { status: "coming", note: "Each rule's options (with their types and allowed values) will be listed under options." },
 };
 

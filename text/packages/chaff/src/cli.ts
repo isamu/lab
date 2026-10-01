@@ -32,7 +32,7 @@ import { rulesTable } from "./render/rules-table.ts";
 import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
 import type { TreeContext } from "./commands/tree.ts";
-import { documentCommands } from "./commands/document-commands.ts";
+import { DOCUMENT_COMMANDS } from "./commands/document-commands.ts";
 import { runSkill } from "./commands/skill.ts";
 import { fixPlanTargets, runFixPlan } from "./commands/fix-plan.ts";
 import { runConditions, runFeedback, settingsOf, type Checked } from "./commands/feedback.ts";
@@ -48,6 +48,7 @@ import { hostLanguage, sharedLanguage, uiLanguageOf, type UiLanguage } from "./u
 import { profileFor } from "./profile/for-file.ts";
 import { notRunAmong } from "./not-run.ts";
 import { settingProblems } from "./setting-problems.ts";
+import { withExtensions } from "./extension/load.ts";
 
 /** Text for output that is not about one document. */
 const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.language, process.env)];
@@ -62,8 +63,7 @@ const genreFrom =
 
 const findRule = (rules: readonly RuleDefinition[], id: string | undefined): RuleDefinition | undefined => rules.find((rule) => rule.id === id);
 
-const changeSetting = (command: Level, ruleId: string | undefined, why: string | undefined): number => {
-  const config = readConfig();
+const changeSetting = (config: Config, command: Level, ruleId: string | undefined, why: string | undefined): number => {
   const language = config.language ?? hostLanguage(undefined, process.env);
   const rule = findRule(rulesOf(language, config), ruleId);
   if (rule === undefined) {
@@ -103,8 +103,14 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
   const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
-  const limits = limitsFor(config, language);
-  const raw = runRulesWith(doc, rules, { settings: config.rules, experimental, genre, limits, optionLayers: optionLayersOf(config) });
+  const raw = runRulesWith(doc, rules, {
+    settings: config.rules,
+    experimental,
+    genre,
+    limits: limitsFor(config, language),
+    optionLayers: optionLayersOf(config),
+    detectors: config.extensions?.detectors ?? {},
+  });
   // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
   const applied = applySuppressions(
     source,
@@ -133,7 +139,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
  * 指摘を PR の変更行に出すための出口。--sarif <path> を書いたときだけ作る。
  * 端末の出力は変えない。CI で上げるためのファイルが増えるだけ。
  */
-const writeSarif = (results: readonly Inspected[], argv: readonly string[]): void => {
+const writeSarif = (results: readonly Inspected[], argv: readonly string[], config: Config): void => {
   const path = flag(argv, "--sarif");
   if (path === undefined) return;
   // 文言はファイルの言語で描く。by_path で 1 つの repo に 2 言語が混ざるため。
@@ -142,7 +148,7 @@ const writeSarif = (results: readonly Inspected[], argv: readonly string[]): voi
   );
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, renderSarif(located, VERSION), "utf8");
-  console.log(hostText(readConfig()).sarifWritten(path, located.length));
+  console.log(hostText(config).sarifWritten(path, located.length));
 };
 
 /** 効いていない設定は、結果の前に一度だけ言う。標準エラーに出すので、JSON や SARIF の出力は汚さない。 */
@@ -155,9 +161,8 @@ const summaryLanguage = (results: readonly Inspected[], config: Config): UiLangu
   return sharedLanguage(languages, hostLanguage(config.language, process.env));
 };
 
-const lint = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
+const lint = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
   const paths = collectTargets(targets);
-  const config = readConfig();
   if (paths.length === 0) {
     // 0 件を成功にすると「CI は通っているが何も検証していない」状態が続く。§14。
     console.error(hostText(config).noMarkdown(targets.join(", ")));
@@ -170,7 +175,7 @@ const lint = async (targets: readonly string[], argv: readonly string[]): Promis
   }
   warnRuleProblems(config, language);
   const results = await Promise.all(paths.map((path) => inspect(path, config, argv)));
-  writeSarif(results, argv);
+  writeSarif(results, argv, config);
   results.filter((result) => result.outcome.findings.length > 0 || paths.length === 1).forEach((result) => console.log(result.text));
   renderSummary(
     results.map((result) => result.outcome),
@@ -183,9 +188,8 @@ const lint = async (targets: readonly string[], argv: readonly string[]): Promis
  * 書いている最中は、全件を出し直されても何が変わったのか分からない。
  * 差分だけを出す。workflow spec §11。
  */
-const runWatch = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
+const runWatch = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
   const paths = collectTargets(targets);
-  const config = readConfig();
   const text = hostText(config);
   if (paths.length === 0) {
     console.error(text.noMarkdown(targets.join(", ")));
@@ -215,8 +219,7 @@ const runWatch = async (targets: readonly string[], argv: readonly string[]): Pr
 };
 
 /** genreFlag: --genre, which wins over chaff.yaml's genre here as it does in a run. */
-const explain = (ruleId: string | undefined, genreFlag: string | undefined): number => {
-  const config = readConfig();
+const explain = (config: Config, ruleId: string | undefined, genreFlag: string | undefined): number => {
   const genre = genreFlag ?? config.genre;
   // The rule's limits differ by language (characters for Japanese, words for English): explain in the one being written.
   const language = config.language ?? hostLanguage(undefined, process.env);
@@ -234,9 +237,8 @@ const explain = (ruleId: string | undefined, genreFlag: string | undefined): num
   return 0;
 };
 
-const runBaseline = async (targets: readonly string[], argv: readonly string[]): Promise<number> => {
+const runBaseline = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
   const paths = collectTargets(targets.length > 0 ? targets : ["."]);
-  const config = readConfig();
   if (paths.length === 0) {
     console.error(hostText(config).noMarkdownHere);
     return 1;
@@ -252,14 +254,15 @@ const runBaseline = async (targets: readonly string[], argv: readonly string[]):
 /** A file's findings, shelved ones included: commands that look findings up are not asking what is new. */
 const inspectAll = (config: Config, argv: readonly string[]) => (path: string) => inspect(path, config, [...argv, "--show-baseline"]);
 
-type Handler = (argv: readonly string[]) => number | Promise<number>;
+/** A subcommand, given the command line and chaff.yaml as read once, with the code it names loaded. */
+type Handler = (argv: readonly string[], config: Config) => number | Promise<number>;
 
 /** `--` で始まらない引数。対象のパス。 */
 const positional = (argv: readonly string[]): string[] => targetsOf(argv.slice(1));
 
 /** `rules --json` for an AI to read; `rules` alone, a table for a person. */
-const showRules = (argv: readonly string[]): number => {
-  const config = withExperimental(readConfig(), argv);
+const showRules = (argv: readonly string[], written: Config): number => {
+  const config = withExperimental(written, argv);
   const language = config.language ?? hostLanguage(undefined, process.env);
   warnRuleProblems(config, language);
   const genre = flag(argv, "--genre") ?? config.genre ?? "blog/tech";
@@ -268,46 +271,43 @@ const showRules = (argv: readonly string[]): number => {
   return 0;
 };
 
-const showGenres = (): number => {
-  console.log(renderGenres(loadGenres(), hostLanguage(readConfig().language, process.env)));
+const showGenres = (config: Config): number => {
+  console.log(renderGenres(loadGenres(), hostLanguage(config.language, process.env)));
   return 0;
 };
 
-const treeContext = (): TreeContext => {
-  const config = readConfig();
+const treeContext = (config: Config): TreeContext => {
   return { config, flag, ui: hostLanguage(config.language, process.env) };
 };
 
 /** What eval and test share: the settings, this run's genre, and the language for what is not about one document. */
-const measureContext = (argv: readonly string[]): { config: Config; resolveGenre: ReturnType<typeof genreFrom>; ui: UiLanguage } => {
-  const config = readConfig();
+const measureContext = (argv: readonly string[], config: Config): { config: Config; resolveGenre: ReturnType<typeof genreFrom>; ui: UiLanguage } => {
   return { config, resolveGenre: genreFrom(argv), ui: hostLanguage(config.language, process.env) };
 };
 
 /** 分岐を数珠つなぎにせず表にする。足すときに main を太らせない。 */
 const HANDLERS: Readonly<Record<string, Handler>> = {
-  init: async (argv) => {
-    const ui = hostLanguage(readConfig().language, process.env);
+  init: async (argv, config) => {
+    const ui = hostLanguage(config.language, process.env);
     const chosen = await initGenre(flag(argv, "--genre"), ui, process.cwd());
     if ("error" in chosen) console.error(chosen.error);
     else runInit(process.cwd(), chosen.genre, ui).forEach((line) => console.log(line));
     return "error" in chosen ? 1 : 0;
   },
-  genres: showGenres,
+  genres: (_argv, config) => showGenres(config),
   rules: showRules,
-  explain: (argv) => explain(argv[1], flag(argv, "--genre")),
-  eval: (argv) => runEval(positional(argv), argv, { ...measureContext(argv), flag }),
-  ...documentCommands(treeContext),
-  test: (argv) => runTest(positional(argv), argv, { ...measureContext(argv), inspect }),
-  "fix-plan": (argv) =>
-    runFixPlan(fixPlanTargets(argv), argv, { ...treeContext(), check: async (path) => (await inspectAll(readConfig(), argv)(path)).checked }),
-  baseline: (argv) => runBaseline(positional(argv), argv),
-  suppressions: (argv) => runSuppressions(positional(argv), inspectAll(readConfig(), argv), hostLanguage(readConfig().language, process.env)),
-  relax: (argv) => changeSetting("relaxed", argv[1], flag(argv, "--why")),
-  strict: (argv) => changeSetting("strict", argv[1], flag(argv, "--why")),
-  off: (argv) => changeSetting("off", argv[1], flag(argv, "--why")),
-  feedback: (argv) => {
-    const config = readConfig();
+  explain: (argv, config) => explain(config, argv[1], flag(argv, "--genre")),
+  eval: (argv, config) => runEval(positional(argv), argv, { ...measureContext(argv, config), flag }),
+  ...Object.fromEntries(Object.entries(DOCUMENT_COMMANDS).map(([name, run]): [string, Handler] => [name, (argv, config) => run(argv, treeContext(config))])),
+  test: (argv, config) => runTest(positional(argv), argv, { ...measureContext(argv, config), inspect }),
+  "fix-plan": (argv, config) =>
+    runFixPlan(fixPlanTargets(argv), argv, { ...treeContext(config), check: async (path) => (await inspectAll(config, argv)(path)).checked }),
+  baseline: (argv, config) => runBaseline(positional(argv), argv, config),
+  suppressions: (argv, config) => runSuppressions(positional(argv), inspectAll(config, argv), hostLanguage(config.language, process.env)),
+  relax: (argv, config) => changeSetting(config, "relaxed", argv[1], flag(argv, "--why")),
+  strict: (argv, config) => changeSetting(config, "strict", argv[1], flag(argv, "--why")),
+  off: (argv, config) => changeSetting(config, "off", argv[1], flag(argv, "--why")),
+  feedback: (argv, config) => {
     return runFeedback(positional(argv), argv, {
       cwd: process.cwd(),
       ui: hostLanguage(config.language, process.env),
@@ -321,7 +321,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
       }),
     });
   },
-  skill: (argv) => runSkill(argv, { cwd: process.cwd(), home: homedir(), ui: hostLanguage(readConfig().language, process.env) }),
+  skill: (argv, config) => runSkill(argv, { cwd: process.cwd(), home: homedir(), ui: hostLanguage(config.language, process.env) }),
 };
 
 /** Every subcommand. Anything else on the command line is a file to check. */
@@ -338,12 +338,12 @@ export const main = async (argv: readonly string[]): Promise<number> => {
     return 0;
   }
   // 知らないジャンルではどの rule も当たらず、知らない文書の種類では種類の知識が外れる。どちらも素通りに見えるので、何かする前に止める。
-  const config = readConfig();
+  const config = await withExtensions(readConfig());
   const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config), hostLanguage(config.language, process.env));
   problems.forEach((problem) => console.error(problem));
   if (problems.length > 0) return 1;
   const handler = HANDLERS[first];
-  if (handler !== undefined) return handler(argv);
+  if (handler !== undefined) return handler(argv, config);
   const targets = targetsOf(first === "lint" ? argv.slice(1) : argv);
-  return argv.includes("--watch") ? runWatch(targets, argv) : lint(targets, argv);
+  return argv.includes("--watch") ? runWatch(targets, argv, config) : lint(targets, argv, config);
 };
