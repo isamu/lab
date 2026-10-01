@@ -51,5 +51,5 @@ not_flagged:
   ja: 話を運ぶ接続詞（「また」「そのため」「しかし」）と、文の途中の接ぎは数えません。短い文書は測りません。
   en: Words that carry the argument (However, Therefore), a transition inside a sentence, and "In addition to …" are not counted. Short documents are not measured.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 words
+  ja: 決まった接ぎで始まる文が 1000 字あたり {limit} 個まで
+  en: up to {limit} sentences per 1000 words opening with a stock transition

@@ -231,8 +231,8 @@ export type Section = {
 
 export type Paragraph = { readonly span: Span; readonly sentences: readonly Sentence[] };
 
-/** 箇条書き 1 つ。項目は項目の文字数で持つ。長さのばらつきしか見ないため。 */
-export type BulletList = { readonly span: Span; readonly items: readonly number[] };
+/** 箇条書き 1 つ。items は項目の文字数（空白を除く）、itemSpans は同じ順の項目の範囲。 */
+export type BulletList = { readonly span: Span; readonly items: readonly number[]; readonly itemSpans: readonly Span[] };
 
 /**
  * detector に渡る唯一の入り口。core が I/O を済ませてから呼ぶ。

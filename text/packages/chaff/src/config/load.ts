@@ -7,6 +7,7 @@ import { isBackend, type BackendName } from "../backends/types.ts";
 import type { Level } from "../plugin.ts";
 import type { PathRule } from "./by-path.ts";
 import type { Extensions } from "../extension/load.ts";
+import type { StyleLimits } from "../style-parse.ts";
 
 export const CONFIG_FILE = "chaff.yaml";
 
@@ -58,6 +59,8 @@ export type AppliedStyle = {
   readonly style: string;
   readonly levelsFrom: readonly string[];
   readonly options: Readonly<Record<string, unknown>>;
+  /** The style's numbers, by rule and language, for the rules whose level it decided. */
+  readonly limits: StyleLimits;
 };
 
 /** 判定の質が誤検知に直結するので、既定は最上位のモデル。cost は絞り込みで削る。spec §14。 */

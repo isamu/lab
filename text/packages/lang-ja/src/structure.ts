@@ -13,6 +13,12 @@ const SPACE = "[ \\t\\u3000]";
 
 /** 見出しとして読めるのは、番号の直後が空白・括弧・行末のとき。「第3条に定める」は本文。 */
 const ARTICLE = new RegExp(`^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
+/**
+ * 見出しの行では、題を詰めて書いた「第7条委託」「第2章概要」も読む。後ろが平仮名（「第3条に定める」「第2章では」）、
+ * 次の番号（「第2章第1節」）、並べる語（「第4条及び第5条」「第2条若しくは第3条」「第2条乃至第5条」）なら、番号は題の札でないので読まない。
+ */
+const TIGHT_TITLE = "(?<rest>[^\\s\\p{Script=Hiragana}0-9０-９第及又並若乃].*)";
+const ARTICLE_TIGHT = new RegExp(`^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?${TIGHT_TITLE}$`, "u");
 /** 「第四十三条から第五十五条まで 削除」「第五百十六条及び第五百十七条 削除」。削られた条を一行でまとめる法令の書き方。 */
 const ARTICLE_RANGE = new RegExp(
   `^${SPACE}*第(?<n>${NUMBER})条(?:の(?<sub>${NUMBER}))?(?:から第(?<m>${NUMBER})条(?:の(?<msub>${NUMBER}))?まで|及び第(?<m2>${NUMBER})条(?:の(?<msub2>${NUMBER}))?)(?<rest>(?:${SPACE}|（|\\().*|)$`,
@@ -36,6 +42,9 @@ const headingOf = (rest: string, whole: boolean): string => {
   // 法令の「第三条 事業者は、…。」は見出しの無い条で、後ろは本文。文を見出しにしない。
   return bracketed ?? (whole && !trimmed.includes("。") ? trimmed : "");
 };
+
+const headingGroups = (pattern: RegExp, line: string, context: NumberingContext): Readonly<Record<string, string | undefined>> | undefined =>
+  context.isHeading ? pattern.exec(line)?.groups : undefined;
 
 const numberOf = (text: string | undefined): string | undefined => {
   const value = text === undefined ? undefined : parseJapaneseNumber(text);
@@ -88,8 +97,8 @@ const articleRange = (line: string): NumberedLine | undefined => {
   };
 };
 
-const article = (line: string): NumberedLine | undefined => {
-  const groups = ARTICLE.exec(line)?.groups;
+const article = (line: string, context: NumberingContext): NumberedLine | undefined => {
+  const groups = ARTICLE.exec(line)?.groups ?? headingGroups(ARTICLE_TIGHT, line, context);
   const main = numberOf(groups?.["n"]);
   if (groups === undefined || main === undefined) return undefined;
   const sub = numberOf(groups["sub"]);
@@ -155,14 +164,15 @@ const item = (line: string, context: NumberingContext): NumberedLine | undefined
  * 章と節は親の番地に続ける（第2編第1章 → pt2.ch1、その第3節 → pt2.ch1.3）。条は通し番号のまま。
  */
 const CHAPTER = new RegExp(`^${SPACE}*第(?<n>${NUMBER})(?<unit>[編章節])(?<rest>(?:${SPACE}|（|\\().*|)$`, "u");
+const CHAPTER_TIGHT = new RegExp(`^${SPACE}*第(?<n>${NUMBER})(?<unit>[編章節])${TIGHT_TITLE}$`, "u");
 const CHAPTER_SHAPES: Readonly<Record<string, { readonly depth: number; readonly prefix: string }>> = {
   編: { depth: -2, prefix: "pt" },
   章: { depth: -1, prefix: "ch" },
   節: { depth: 0, prefix: "" },
 };
 
-const chapter = (line: string): NumberedLine | undefined => {
-  const groups = CHAPTER.exec(line)?.groups;
+const chapter = (line: string, context: NumberingContext): NumberedLine | undefined => {
+  const groups = CHAPTER.exec(line)?.groups ?? headingGroups(CHAPTER_TIGHT, line, context);
   const number = numberOf(groups?.["n"]);
   const shape = CHAPTER_SHAPES[groups?.["unit"] ?? ""];
   if (groups === undefined || number === undefined || shape === undefined) return undefined;
@@ -181,7 +191,7 @@ const chapter = (line: string): NumberedLine | undefined => {
 };
 
 const numbered = (line: string, context: NumberingContext): NumberedLine | undefined =>
-  chapter(line) ?? articleRange(line) ?? article(line) ?? item(line, context);
+  chapter(line, context) ?? articleRange(line) ?? article(line, context) ?? item(line, context);
 
 /** 正規表現の一致を Mention にする。g フラグ付きのものだけを渡す。 */
 const mentions = (
@@ -227,11 +237,20 @@ const REFERENCE = new RegExp(`第(?<a>${NUMBER})条(?:の(?<s>${NUMBER}))?(?:第
  */
 /**
  * 他の文書の参照に続く並び（「民事訴訟法第百条第一項、第百一条、第百二条の二」）は、同じ文書の条を指す。
- * 間が読点・接続の語・号や項の断片・括弧書きだけなら、前の参照の文書を引き継ぐ。
+ * 間が読点・接続の語・号や項の断片・括弧書きだけなら、前の参照の文書を引き継ぐ。接続の語は、規約や案内が仮名で書く形（および）も同じ。
  */
-const CONNECTORS = /及び|並びに|若しくは|又は|から|まで|ただし書|前段|後段|[、，\s]/gu;
+const CONNECTORS = /及び|並びに|若しくは|又は|および|ならびに|もしくは|または|から|まで|ただし書|前段|後段|[、，\s]/gu;
 const FRAGMENT = new RegExp(`第${NUMBER}[項号](?:の${NUMBER})*`, "gu");
-const PARENTHESES = /（[^（）]*）/gu;
+/** 括弧書きの括弧。全角でも半角でもよい（厚生労働省法令等データベースは半角で書く）が、開きと閉じは同じ幅で組む。 */
+const OPENER_OF: ReadonlyMap<string, string> = new Map([
+  ["）", "（"],
+  [")", "("],
+]);
+const isOpening = (char: string): boolean => char === "（" || char === "(";
+const PARENTHESES = /（[^（）()]*）|\([^（）()]*\)/gu;
+
+/** 閉じの括弧が、開いたままの最後の括弧と組になるか。 */
+const closes = (char: string, opened: string | undefined): boolean => opened !== undefined && OPENER_OF.get(char) === opened;
 
 /** 間の文字列が、接続の語・読点・項や号の断片・括弧書きだけでできているか。 */
 const isContinuation = (gap: string): boolean => gap.replace(PARENTHESES, "").replace(FRAGMENT, "").replace(CONNECTORS, "") === "";
@@ -239,11 +258,11 @@ const isContinuation = (gap: string): boolean => gap.replace(PARENTHESES, "").re
 /** 行を一度だけ読んで、位置ごとの括弧の深さを出す。参照ごとに行を読み直さない。 */
 const depthsOf = (text: string): Int32Array => {
   const depth = new Int32Array(text.length + 1);
-  const open = { parentheses: 0 };
+  const opened: string[] = [];
   text.split("").forEach((char, at) => {
-    depth[at] = open.parentheses;
-    if (char === "（") open.parentheses += 1;
-    if (char === "）") open.parentheses = Math.max(0, open.parentheses - 1);
+    depth[at] = opened.length;
+    if (isOpening(char)) opened.push(char);
+    else if (closes(char, opened.at(-1))) opened.pop();
   });
   return depth;
 };
@@ -262,10 +281,12 @@ const withoutClosedParentheses = (gap: string): string => {
   const kept: string[] = [];
   const opens: number[] = [];
   for (const char of gap) {
-    const opened = char === "）" ? opens.pop() : undefined;
-    if (opened !== undefined) kept.splice(opened);
-    else {
-      if (char === "（") opens.push(kept.length);
+    const last = opens.at(-1);
+    if (last !== undefined && closes(char, kept[last])) {
+      opens.pop();
+      kept.splice(last);
+    } else {
+      if (isOpening(char)) opens.push(kept.length);
       kept.push(char);
     }
   }

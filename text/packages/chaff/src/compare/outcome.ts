@@ -1,6 +1,7 @@
 import { type Atom, type AtomKind, type Extraction, type Unread } from "./atom.ts";
 import { compareAtoms, type Reformed } from "./match.ts";
 import { unwrittenNames } from "./written-names.ts";
+import { unstatedChanges } from "./distinct.ts";
 
 /** One document as compared: where it is, how many facts of each kind it states, and what could not be read. */
 export type Side = {
@@ -27,6 +28,9 @@ export type Allowed = { readonly dropped: ReadonlySet<AtomKind>; readonly added:
 
 const NOTHING_ALLOWED: Allowed = { dropped: new Set(), added: new Set() };
 
+/** How facts are counted: as-stated compares how many times each is stated, distinct only whether it is stated (--distinct). */
+export type Counting = "as-stated" | "distinct";
+
 const NO_FACTS: Readonly<Record<AtomKind, number>> = {
   number: 0,
   date: 0,
@@ -40,7 +44,7 @@ const NO_FACTS: Readonly<Record<AtomKind, number>> = {
   footnote: 0,
 };
 
-const countsOf = (atoms: readonly Atom[]): Record<AtomKind, number> => {
+export const countsOf = (atoms: readonly Atom[]): Record<AtomKind, number> => {
   const counts = { ...NO_FACTS };
   atoms.forEach((atom) => {
     counts[atom.kind] += 1;
@@ -54,11 +58,17 @@ const marked = (atoms: readonly Atom[], allowed: ReadonlySet<AtomKind>): Change[
 
 export type Compared = { readonly path: string; readonly extraction: Extraction };
 
+/** The changes of one side that the other side does not state: as many times (as-stated), or at all (distinct). */
+const changesOf = (changes: readonly Atom[], own: Extraction, other: Extraction, counting: Counting): Atom[] => {
+  const unwritten = unwrittenNames(changes, own.atoms, other.nameText);
+  return counting === "distinct" ? unstatedChanges(unwritten, other.atoms, other.nameText) : unwritten;
+};
+
 /** What `chaff compare` reports: the comparison of two documents' facts, with the allowed kinds set aside. */
-export const outcomeOf = (before: Compared, after: Compared, allowed: Allowed = NOTHING_ALLOWED): Outcome => {
+export const outcomeOf = (before: Compared, after: Compared, allowed: Allowed = NOTHING_ALLOWED, counting: Counting = "as-stated"): Outcome => {
   const comparison = compareAtoms(before.extraction.atoms, after.extraction.atoms);
-  const dropped = marked(unwrittenNames(comparison.dropped, before.extraction.atoms, after.extraction.nameText), allowed.dropped);
-  const added = marked(unwrittenNames(comparison.added, after.extraction.atoms, before.extraction.nameText), allowed.added);
+  const dropped = marked(changesOf(comparison.dropped, before.extraction, after.extraction, counting), allowed.dropped);
+  const added = marked(changesOf(comparison.added, after.extraction, before.extraction, counting), allowed.added);
   return {
     before: sideOf(before.path, before.extraction),
     after: sideOf(after.path, after.extraction),

@@ -5,8 +5,10 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { readMarkdown } from "../packages/chaff/src/markdown-read.ts";
 import { extractFacts } from "../packages/chaff/src/compare/extract.ts";
-import { outcomeOf, type Outcome } from "../packages/chaff/src/compare/outcome.ts";
-import type { AtomKind, Extraction } from "../packages/chaff/src/compare/atom.ts";
+import { outcomeOf, type Compared, type Outcome } from "../packages/chaff/src/compare/outcome.ts";
+import { factKey, seenTextOf, wholeSpanOf } from "../packages/chaff/src/compare/fact-key.ts";
+import { clockTimes } from "../packages/chaff/src/compare/clock-time.ts";
+import type { Atom, AtomKind, Extraction } from "../packages/chaff/src/compare/atom.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { runCli } from "./cli-run.ts";
 
@@ -182,6 +184,79 @@ describe("what is read once, and what is not a fact", () => {
     assert.deepEqual(changes(compare(en, 'He said "keep the\nsame key" twice.', 'He said "keep the same key" twice.')).dropped, []);
   });
 
+  it("a Japanese quotation wrapped between two wide characters is the same quotation, written another way", () => {
+    const wrapped = changes(compare(ja, "依頼は「`mc-` 系の\nシステムスキルにしたい」でした。", "依頼は「`mc-` 系のシステムスキルにしたい」でした。"));
+    assert.deepEqual([wrapped.dropped, wrapped.added], [[], []]);
+    assert.deepEqual(wrapped.reformed, ["quote:「`mc-` 系の\nシステムスキルにしたい」→「`mc-` 系のシステムスキルにしたい」"]);
+  });
+
+  it("a line break next to a Latin letter reads as a space, so it is the same as a space", () => {
+    assert.deepEqual(changes(compare(ja, "彼は「MulmoClaude\nに入れる」と言った。", "彼は「MulmoClaude に入れる」と言った。")).dropped, []);
+  });
+
+  it("bold inside a quotation is how it is written, not what it says", () => {
+    const bold = changes(compare(ja, "僕は「**終わったな**」と思った。", "僕は「終わったな」と思った。"));
+    assert.deepEqual([bold.dropped, bold.added], [[], []]);
+    assert.deepEqual(bold.reformed, ["quote:「**終わったな**」→「終わったな」"]);
+    assert.equal(compare(ja, "彼は「とても**大事**です」と言った。", "彼は「とても大事です」と言った。").ok, true);
+  });
+
+  it("a line break next to inline code is read as the rules read it, so text moved out of a quotation is not hidden", () => {
+    const moved = changes(compare(ja, "依頼は「系の\n`x`システム」でした。", "依頼は「系のシステム」でした。`x`"));
+    assert.deepEqual([moved.dropped, moved.added], [["quote:「系の\n`x`システム」"], ["quote:「系のシステム」"]]);
+  });
+
+  it("a name wrapped between two wide characters is the same name", () => {
+    const names = (text: string): string[] =>
+      factsOf(ja, "a.md", text)
+        .atoms.filter((atom) => atom.kind === "name")
+        .map((atom) => atom.key);
+    assert.deepEqual(names("# 試し\n\n昨日、日本\n銀行の発表を読んだ。\n"), names("# 試し\n\n昨日、日本銀行の発表を読んだ。\n"));
+  });
+
+  it("a team name wrapped between two wide characters is still written in the other document", () => {
+    const team = ["日本銀行"];
+    const outcome = outcomeOf(
+      { path: "before.md", extraction: factsOf(ja, "a.md", "# 試し\n\n昨日、日本銀行の発表を読んだ。\n", team) },
+      { path: "after.md", extraction: factsOf(ja, "a.md", "# 試し\n\n昨日、日本\n銀行の発表を読んだ。\n", team) },
+    );
+    assert.deepEqual(changes(outcome).dropped, []);
+    assert.ok(factsOf(ja, "a.md", "# 試し\n\n昨日、日本\n銀行の発表を読んだ。\n").nameText.includes("日本銀行"));
+  });
+
+  it("a wrapped line that starts with bold joins too", () => {
+    const outcome = changes(compare(ja, "依頼は「系の\n**システム**」でした。", "依頼は「系のシステム」でした。"));
+    assert.deepEqual([outcome.dropped, outcome.added], [[], []]);
+  });
+
+  it("a team name wrapped between two wide characters is read, so dropping it is reported", () => {
+    const team = ["そよかぜ会議"];
+    const names = (text: string): string[] =>
+      factsOf(ja, "a.md", text, team)
+        .atoms.filter((atom) => atom.kind === "name")
+        .map((atom) => `${atom.key}@${String(atom.line)}`);
+    assert.deepEqual(names("# 試し\n\n昨日、そよかぜ\n会議の発表を読んだ。\n"), ["そよかぜ会議@3"]);
+    const outcome = outcomeOf(
+      { path: "before.md", extraction: factsOf(ja, "a.md", "# 試し\n\n昨日、そよかぜ\n会議の発表を読んだ。\n", team) },
+      { path: "after.md", extraction: factsOf(ja, "a.md", "# 試し\n\n昨日、発表を読んだ。\n", team) },
+    );
+    assert.deepEqual(changes(outcome).dropped, ["name:そよかぜ\n会議"]);
+  });
+
+  it("a plain-text document shows its line breaks, so a joined line there is another quotation", () => {
+    const plain = changes(compare(ja, "依頼は「系の\nシステム」でした。", "依頼は「系のシステム」でした。", "a.txt"));
+    assert.deepEqual([plain.dropped, plain.added], [["quote:「系の\nシステム」"], ["quote:「系のシステム」"]]);
+  });
+
+  it("a hard line break inside a quotation is a visible break, read as a space", () => {
+    assert.equal(compare(ja, "依頼は「系の  \nシステム」でした。", "依頼は「系の システム」でした。").ok, true);
+  });
+
+  it("a space written inside a Japanese quotation is still another quotation", () => {
+    const spaced = changes(compare(ja, "依頼は「系の システムにしたい」でした。", "依頼は「系のシステムにしたい」でした。"));
+    assert.deepEqual([spaced.dropped, spaced.added], [["quote:「系の システムにしたい」"], ["quote:「系のシステムにしたい」"]]);
+  });
+
   it("a heading moved to another level is dropped at one level and added at the other", () => {
     const outcome = changes(compare(en, "# A\n\n## B\n\ntext\n", "# A\n\n### B\n\ntext\n"));
     assert.deepEqual([outcome.dropped, outcome.added], [["heading:B"], ["heading:B"]]);
@@ -223,6 +298,105 @@ describe("what is read once, and what is not a fact", () => {
 
   it("digits in code and URLs are not read again as numbers", () => {
     assert.deepEqual(kindsOf(en, "Run `sleep 30` and open https://example.com/2026/7.", "number"), []);
+  });
+});
+
+describe("factKey: a fact's text as one spelling", () => {
+  const whole = (text: string): { start: number; end: number } => ({ start: 0, end: text.length });
+
+  it("removes what a reader never sees, and makes any other white space one space", () => {
+    assert.equal(factKey("系の\nシステム", whole("系の\nシステム"), [{ start: 2, end: 3 }]), "系のシステム");
+    assert.equal(
+      factKey("**終わった**", whole("**終わった**"), [
+        { start: 0, end: 2 },
+        { start: 6, end: 8 },
+      ]),
+      "終わった",
+    );
+    assert.equal(factKey("keep the\nsame key", whole("keep the\nsame key"), []), "keep the same key");
+    assert.equal(factKey("ＡＢＣ１２３", whole("ＡＢＣ１２３"), []), "ABC123");
+    assert.equal(factKey("", whole(""), []), "");
+  });
+
+  it("reads only the unseen parts inside the span, on the span's own positions", () => {
+    const text = "前\n後の「系の\nシステム」";
+    const quote = { start: 5, end: 12 };
+    assert.equal(
+      factKey(text, quote, [
+        { start: 1, end: 2 },
+        { start: 7, end: 8 },
+      ]),
+      "系のシステム",
+    );
+    assert.equal(factKey(text, quote, [{ start: 1, end: 2 }]), "系の システム");
+  });
+});
+
+describe("--distinct: facts compared as sets", () => {
+  const distinct = (beforeText: string, afterText: string): Outcome =>
+    outcomeOf(
+      { path: "before.md", extraction: factsOf(ja, "a.md", beforeText) },
+      { path: "after.md", extraction: factsOf(ja, "a.md", afterText) },
+      undefined,
+      "distinct",
+    );
+  const body = "# 料金\n\n新しい価格は1,200円で、Acme が販売します。\n";
+  const summary = "\nまとめると、価格は1,200円で、Acme が販売します。\n";
+
+  it("a summary that repeated the body can be cut: each fact is still stated once", () => {
+    assert.deepEqual(changes(compare(ja, body + summary, body)).dropped, ["number:1,200円", "name:Acme"]);
+    assert.deepEqual(changes(distinct(body + summary, body)), { dropped: [], added: [], reformed: [] });
+    assert.equal(distinct(body + summary, body).ok, true);
+  });
+
+  it("a repeat added is not a new fact either", () => {
+    assert.deepEqual(changes(distinct(body, body + summary)).added, []);
+  });
+
+  it("a name the other document writes, though its tagger did not read it as a name, is stated", () => {
+    const acme = (line: number): Atom => ({ kind: "name", key: "Acme", text: "Acme", line });
+    const side = (path: string, atoms: Atom[], nameText: string): Compared => ({ path, extraction: { atoms, unread: [], nameText } });
+    const outcome = outcomeOf(side("before.md", [acme(1), acme(2)], "Acme Acme"), side("after.md", [], "acme Acme"), undefined, "distinct");
+    assert.deepEqual(outcome.dropped, []);
+  });
+
+  it("a fact the other document never states is still dropped or added", () => {
+    const outcome = changes(distinct(body + summary, "# 料金\n\n新しい価格は1,300円です。\n"));
+    assert.deepEqual(outcome.dropped, ["number:1,200円", "name:Acme", "number:1,200円", "name:Acme"]);
+    assert.deepEqual(outcome.added, ["number:1,300円"]);
+  });
+});
+
+describe("seenTextOf: the text as a reader sees it, and back", () => {
+  it("removes the unseen parts and maps each kept character to its place", () => {
+    const seen = seenTextOf("日本\n銀行**です**", [
+      { start: 2, end: 3 },
+      { start: 5, end: 7 },
+      { start: 9, end: 11 },
+    ]);
+    assert.deepEqual([seen.text, seen.offsets], ["日本銀行です", [0, 1, 3, 4, 7, 8]]);
+    assert.deepEqual(wholeSpanOf(seen, { start: 0, end: 4 }), { start: 0, end: 5 });
+    assert.deepEqual(wholeSpanOf(seen, { start: 4, end: 6 }), { start: 7, end: 9 });
+  });
+
+  it("with nothing unseen, it is the text itself", () => {
+    assert.deepEqual(seenTextOf("abc", []), { text: "abc", offsets: [0, 1, 2] });
+    assert.deepEqual(seenTextOf("", []), { text: "", offsets: [] });
+  });
+});
+
+describe("a duration is not a time of day", () => {
+  it("「8時間」「1.2時間」「24時間」 are lengths of time; 「8時」「午後3時半」 are times", () => {
+    const keys = (text: string): string[] => clockTimes(text).map((time) => time.key);
+    assert.deepEqual(keys("8時間ノンストップで進めた。中央値1.2時間。24時間営業。123時。"), []);
+    assert.deepEqual(keys("8時に始め、午後3時半に終えた。10時30分に集合。"), ["08:00", "15:30", "10:30"]);
+  });
+
+  it("chaff facts does not list 「8時間」 as a time", () => {
+    assert.deepEqual(
+      factsOf(ja, "a.md", "寝る前に「8時間ノンストップで進めておいて」と頼みます。").atoms.filter((atom) => atom.kind === "time"),
+      [],
+    );
   });
 });
 
@@ -394,6 +568,21 @@ describe("chaff compare on the command line", () => {
     assert.ok(typeof parsed === "object" && parsed !== null && "dropped" in parsed && "ok" in parsed);
     assert.deepEqual(parsed.dropped, [{ kind: "name", key: "Boston", text: "Boston", line: 5, allowed: false }]);
     assert.equal(parsed.ok, false);
+  });
+
+  it("passes a Japanese quotation joined across a line break, as written another way", async () => {
+    const wrapped = { "a.md": "# 試し\n\n依頼は「系の\nシステムにしたい」でした。\n", "b.md": "# 試し\n\n依頼は「系のシステムにしたい」でした。\n" };
+    const run = await runCli(wrapped, ["compare", "a.md", "b.md"], "ja_JP.UTF-8");
+    assert.equal(run.code, 0, run.out);
+    assert.match(run.out, /書き方だけ変わった事実 1 件/u);
+  });
+
+  it("--distinct passes a cut summary that only repeated the body", async () => {
+    const body = "# 料金\n\n新しい価格は1,200円です。\n";
+    const files = { "a.md": `${body}\nまとめると、価格は1,200円です。\n`, "b.md": body };
+    assert.equal((await runCli(files, ["compare", "a.md", "b.md"], "ja_JP.UTF-8")).code, 1);
+    const run = await runCli(files, ["compare", "a.md", "b.md", "--distinct"], "ja_JP.UTF-8");
+    assert.equal(run.code, 0, run.out);
   });
 
   it("speaks the document's language", async () => {
