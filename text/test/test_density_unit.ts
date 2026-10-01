@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { localized } from "../packages/chaff/src/render/text.ts";
+import { renderExplain } from "../packages/chaff/src/render/explain.ts";
 import { uiLanguageOf } from "../packages/chaff/src/ui.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -64,5 +65,47 @@ describe("density messages name the unit they measure", () => {
       KNOWN.filter((id) => !measured.has(id)),
       [],
     );
+  });
+});
+
+/** A level line of chaff explain is "  → normal   <value>": the level's name from column 4, padded to 9, then the value. */
+const NAME_COLUMNS = { start: 4, end: 13 } as const;
+const COUNTED_LEVELS = new Set(["strict", "normal", "relaxed"]);
+
+const levelValuesOf = (explained: string): string[] =>
+  explained
+    .split("\n")
+    .filter((line) => COUNTED_LEVELS.has(line.slice(NAME_COLUMNS.start, NAME_COLUMNS.end).trim()))
+    .map((line) => line.slice(NAME_COLUMNS.end));
+
+/** The density rules of this adapter, once each. */
+const densityRulesOf = (adapter: LanguageAdapter): RuleDefinition[] => [...new Map(casesOf(adapter).map(({ rule }) => [rule.id, rule])).values()];
+
+/** A level that says only "1000 字あたり N 個" or "up to N per 1000 words" does not say what is counted. */
+const COUNT_ONLY = /^1000 ?[字語]あたり \d+ 個|^up to \d+ per 1000/u;
+
+describe("explain says what a density level counts, per 1000 of the unit it measures", () => {
+  const densityCases = [ja, en].flatMap((adapter) => densityRulesOf(adapter).map((rule) => ({ adapter, rule })));
+  densityCases.forEach(({ adapter, rule }) => {
+    it(`${adapter.id}: ${rule.id}`, () => {
+      const values = levelValuesOf(renderExplain(rule, "normal", adapter.id));
+      assert.notEqual(values.length, 0);
+      values.forEach((value) => {
+        assert.match(value, UNIT_WORD[uiLanguageOf(adapter.id)][unitOf(rule, adapter)]);
+        assert.doesNotMatch(value, COUNT_ONLY);
+      });
+    });
+  });
+
+  it("a rule that does not say what a level means shows its limits as a number of times", () => {
+    const [rule] = densityRulesOf(en);
+    assert.ok(rule?.guide !== undefined);
+    const unsaid: RuleDefinition = { ...rule, guide: { ...rule.guide, levelMeaning: {} } };
+    const english = levelValuesOf(renderExplain(unsaid, "normal", "en"));
+    assert.notEqual(english.length, 0);
+    english.forEach((value) => assert.match(value, /^\d+(\.\d+)? times$/u));
+    const japanese = levelValuesOf(renderExplain(unsaid, "normal", "ja"));
+    assert.notEqual(japanese.length, 0);
+    japanese.forEach((value) => assert.match(value, /^\d+(\.\d+)? 回$/u));
   });
 });

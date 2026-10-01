@@ -80,8 +80,7 @@ describe("画面の言語", () => {
 
   it("explain は英語なら語で数え、英語の上限を出す", async () => {
     const result = await runIn({}, ["explain", "max-sentence-length"], "en_US.UTF-8");
-    assert.match(result.out, /Levels \(unit: words\)/u);
-    assert.match(result.out, /→ normal {3}25/u);
+    assert.match(result.out, /→ normal {3}up to 25 words in a sentence/u);
   });
 
   it("relax の返事と、新しく作る chaff.yaml も端末の言語", async () => {

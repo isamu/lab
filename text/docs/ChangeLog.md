@@ -22,6 +22,15 @@ Japanese, release notes (Ruby 3.4.0 in Japanese, Go 1.23), Node.js TSC minutes, 
 recipe in Japanese and English (農林水産省 うちの郷土料理), a school's いじめ防止基本方針 and a university's course
 registration notice, and Dr Jekyll and Mr Hyde. Each document's licence is in `corpus/manifest.json`.
 
+### `chaff explain` says what each level means, not "unit: times"
+
+`explain` printed a bare number for each level under one unit, and for most rules that unit was "times" (「回」),
+including the density rules, which count per 1000 characters or words. Each level now reads in the rule's own words,
+as the rule reference on the site does: `strict   up to 3 emoji per 1000 words`, `strict   1000 字あたり絵文字 3 個まで`,
+`strict   up to 18 words in a sentence`. The density rules' level descriptions now name what they count (emoji, hedges,
+dashes, proper nouns…), in the unit of the document's language, as their messages do since #402. A team's custom rule,
+which has no level description, still shows its limits as a number of times.
+
 ### Guide: what chaff does for more kinds of document, in Japanese
 
 「文書の種類ごとにできること」 is now a chooser: find the kind of document you have, go to its page. New pages,
@@ -109,8 +118,11 @@ reduplication (UD `Echo=Rdp`), and the rule skips them:
 - **A whole content word written twice**: a noun (個人個人, 一行一行, 駄目駄目, それそれ, もちもち) or an adjective in
   its plain form (えらいえらい, 若い若い). A slip is a particle or an auxiliary written twice (をを, にに, たた, がが, よよ)
   or a bound word (いるいる, さんさん), and those are still reported. A one-kanji noun (法法, 金金), a loanword
-  (ユーザーユーザー, データデータ) and a run of three (資料資料資料) are still reported too. This is a change of
-  stance: a doubled two-kanji noun such as 確認確認 or 資料資料, which the rule used to report, now reads as reduplication.
+  (ユーザーユーザー, データデータ) and a run of three (早め早め早め) are still reported too.
+- **A Sino-Japanese (kanji-only) noun only when it really reduplicates**: a person, a unit, a time or a place
+  (個人個人, 一行一行, 時代時代, 地域地域; the lexicon `distributive-noun`), a noun the analyser reads as adverbial
+  (毎年毎年, 各自各自) and the stem of a na-adjective (駄目駄目, 大変大変). Any other doubled kanji noun is a slip and is
+  still reported (確認確認, 資料資料, 対応対応).
 - **Katakana onomatopoeia**: a katakana word of two or three morae, with any long vowel only at its end, repeated
   where an adverb stands: before と or に, at the end of a line, or right before a verb (ムクムクと, ブスブスと,
   ババババと, ブイブイ言わせる). Elsewhere a doubled katakana word is a loanword slip (テストテストを, メモメモ。,
@@ -150,6 +162,14 @@ are the ones compare holds the rewrite to.
 - `--compact` (one fact per line, kind in English) and `--json` (path, language, counts, unread kinds, every fact with
   kind, key, text and line). The screen follows the document's language.
 - One file per run; none or more than one is a usage error (exit 1).
+
+### Guide: what chaff does for more kinds of document, in English
+
+"What chaff does for each kind of document" is now a chooser: find the kind of document you have, go to its page. New
+pages join the statute and report pages: tech articles, contracts and terms, business email, meeting minutes, manuals
+and API docs, press releases, and papers. Each runs chaff on a short self-written sample with realistic mistakes, shows
+chaff's real screen, says what every finding means and how to fix it, says what chaff does not check for that kind,
+and gives the genre and a starter `chaff.yaml`.
 
 ### A line holding only a link ends its own sentence (#400)
 

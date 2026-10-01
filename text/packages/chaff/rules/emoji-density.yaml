@@ -47,5 +47,5 @@ not_flagged:
   ja: 短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
   en: Documents under 200 words are not measured.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 words
+  ja: 1000 字あたり絵文字 {limit} 個まで
+  en: up to {limit} emoji per 1000 words

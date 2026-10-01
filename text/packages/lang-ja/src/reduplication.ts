@@ -210,9 +210,22 @@ const isContentNoun = (word: Inflection): boolean => word.pos === "名詞" && !D
 /** 言い切りの形の形容詞（えらい・若い）。続く形（長く長く）は isInflectedEcho が見る。 */
 const isPlainAdjective = (word: Inflection): boolean => word.pos === "形容詞" && word.detail === "自立" && word.form === "基本形";
 
+/** 漢字だけで書いた名詞。漢語（確認・資料）の重なりはたいてい書き損じ。 */
+const KANJI_ONLY = /^\p{Script=Han}+$/u;
+
+/** 漢字の名詞でも重ねて言うもの。時を言う副詞的な名詞（毎年・各自・一瞬）と、形容動詞の語幹（駄目・大変）。 */
+const REDUPLICATING_DETAIL = new Set(["副詞可能", "形容動詞語幹"]);
+
+/**
+ * 重ねて言える名詞か。漢字だけの名詞は、人・単位・時・場所のまとまりを言うもの（個人・一行・時代・地域。語彙表 distributive-noun）と
+ * REDUPLICATING_DETAIL の細分類だけ。仮名や送り仮名のある名詞（それ・もちもち・早め）は丸ごと重ねれば畳語か強め。
+ */
+const reduplicates = (noun: Inflection, kanjiNouns: ReadonlySet<string>): boolean =>
+  !KANJI_ONLY.test(noun.surface) || REDUPLICATING_DETAIL.has(noun.detail) || kanjiNouns.has(noun.surface);
+
 /** 二つ目の名詞は、解析器が前の名詞に付く接尾語と読むことがある（好き好き・嫌い嫌い の二つ目）。 */
-const isWholeWordPair = (first: Inflection, second: Inflection): boolean =>
-  (isContentNoun(first) && second.pos === "名詞") || (isPlainAdjective(first) && isPlainAdjective(second));
+const isWholeWordPair = (first: Inflection, second: Inflection, kanjiNouns: ReadonlySet<string>): boolean =>
+  (isContentNoun(first) && second.pos === "名詞" && reduplicates(first, kanjiNouns)) || (isPlainAdjective(first) && isPlainAdjective(second));
 
 const KATAKANA = /^[\p{Script=Katakana}ー]+$/u;
 
@@ -246,15 +259,15 @@ const sameAndTouching = (first: Inflection | undefined, second: Inflection | und
 
 /**
  * 内容語（名詞・形容詞）を丸ごと重ねた形は畳語か強め（個人個人・一行一行・駄目駄目・えらいえらい・それそれ・もちもち）。
- * 書き損じは付属語の重なり（をを・たた）か語の切れ端なので、語が丸ごと二度なら重ね言葉と読む。
+ * 漢語の名詞は reduplicates が認めるものだけで、ほかの重なり（確認確認・資料資料）は書き損じ。kanjiNouns は pos.ts が語彙表から渡す。
  * 一字の漢字（法法・金金）は isIteratedKanji、外来語（ユーザーユーザー）と三つ続く重なり（早め早め早め）は書き損じのまま。
  */
-export const isWholeWordEcho = (words: readonly Inflection[], index: number): boolean => {
+export const isWholeWordEcho = (words: readonly Inflection[], index: number, kanjiNouns: ReadonlySet<string>): boolean => {
   const [before, first, second] = [words[index - 2], words[index - 1], words[index]];
   return (
     first !== undefined &&
     second !== undefined &&
-    isWholeWordPair(first, second) &&
+    isWholeWordPair(first, second, kanjiNouns) &&
     sameAndTouching(first, second) &&
     first.surface.length >= MIN_ECHO_LENGTH &&
     !isLoanwordPair(second, words[index + 1]) &&
@@ -299,5 +312,5 @@ export const isKanaRepeat = (words: readonly Inflection[], index: number): boole
 };
 
 /** 活用した語・仮名の語・内容語の重なりか、一字の仮名の三つ以上の並び。pos.ts が二つ目に Echo=Rdp を付ける。 */
-export const isEchoAt = (words: readonly Inflection[], index: number): boolean =>
-  isInflectedEcho(words, index) || isKanaEcho(words, index) || isWholeWordEcho(words, index) || isKanaRepeat(words, index);
+export const isEchoAt = (words: readonly Inflection[], index: number, kanjiNouns: ReadonlySet<string>): boolean =>
+  isInflectedEcho(words, index) || isKanaEcho(words, index) || isWholeWordEcho(words, index, kanjiNouns) || isKanaRepeat(words, index);
