@@ -18,6 +18,7 @@ const exemptStems = (except: readonly string[]): ReadonlySet<string> => new Set(
 /**
  * Words that become another word with a final ー (フリ, as in 振り, and フリー, free): the language's long-vowel-distinct word list.
  * Both are nouns to the tagger, so only the list tells them apart; they are left out as if listed under except.
+ * The list is optional: without it the rule still runs and compares every word.
  */
 const distinctWordsOf = (doc: ProseDocument): string[] => (doc.lexicons["long-vowel-distinct"] ?? []).map((entry) => entry.pattern);
 

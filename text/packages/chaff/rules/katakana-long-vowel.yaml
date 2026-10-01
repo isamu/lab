@@ -6,8 +6,6 @@ how_to_find: katakana-long-vowel
 requires: [pos]
 # ending: keep が読む、辞書が「ー」付きで知る語の印。この rule が動くときだけ lang-ja が辞書に聞く。
 token_features: [LongVowelEnding]
-# 「ー」を付けると別の語になる語（フリ／フリー）。同じ語の書き分けとして比べない。
-extra_word_lists: [long-vowel-distinct]
 languages: [ja]
 severity: warning
 
