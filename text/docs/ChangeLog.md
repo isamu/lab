@@ -2,6 +2,17 @@
 
 Newest first.
 
+## Unreleased
+
+### `stet` covers the block right below it, not the next six lines (#401)
+
+`<!-- stet: rule — reason -->` silenced the rule on the six lines after the comment, whatever they held: a finding of
+the same rule in the next paragraph was silenced too, and the end of a long wrapped paragraph was not. Now it covers
+the block right after the comment, as the guide and the spec describe, and as the Markdown parser reads it: a
+paragraph, a heading, a whole list, a table, a code block, a quote. Inside a list item it covers the item's next
+block, not the next item. A comment with text on its own line covers that line, and one inside a paragraph covers the
+rest of the paragraph. In plain text a paragraph runs to the blank line. `stet-section` and `stet-file` are unchanged.
+
 ## 0.18.0 — 2026-10-01
 
 A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
@@ -58,15 +69,6 @@ corpus rarely use it; the measurements are in the PR.
   corpus, and compares the table with `expected.txt`. CI runs it.
 - Measured and not added: the share of bullet lines, runs of short sentences, and 「（いわゆる〜）」. Human articles
   had as many of each.
-
-### `stet` covers the block right below it, not the next six lines (#401)
-
-`<!-- stet: rule — reason -->` silenced the rule on the six lines after the comment, whatever they held: a finding of
-the same rule in the next paragraph was silenced too, and the end of a long wrapped paragraph was not. Now it covers
-the block right after the comment, as the guide and the spec describe, and as the Markdown parser reads it: a
-paragraph, a heading, a whole list, a table, a code block, a quote. Inside a list item it covers the item's next
-block, not the next item. A comment with text on its own line covers that line, and one inside a paragraph covers the
-rest of the paragraph. In plain text a paragraph runs to the blank line. `stet-section` and `stet-file` are unchanged.
 
 ### `chaff compare <before> <after>`: did a rewrite keep its facts?
 
