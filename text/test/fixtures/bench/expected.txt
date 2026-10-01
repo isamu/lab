@@ -49,7 +49,7 @@ sentence-initial-conjunction-run        1      1       0             0
 stray-space                            12     12       0             0
 title-case-consistency                  7      7       0             0
 total-mismatch                          8      8       0             0
-unbalanced-bracket                      8      8       0             0
+unbalanced-bracket                      9      9       0             0
 undefined-acronym                       2      2       0             0
 unfilled-placeholder                   20     20       0             0
 url-run-on                             13     13       0             0
@@ -443,6 +443,7 @@ en/figures  spelling-avoided  found
 en/figures  heading-deepened  found
 en/figures  image-unlabelled  found
 en/figures  link-to-nowhere  found
+en/figures  bracket-unclosed  found
 en/figures  period-doubled  found
 en/itinerary  weekday-shift  found
 en/itinerary  rows-swapped  found
