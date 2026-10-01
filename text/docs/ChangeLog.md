@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
+
+Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted
+by line, then column, in every output (friendly, `--compact`, SARIF, `chaff test`). In `--compact`, the
+`line:column` column widens to the longest position in the document plus one space, so `1070:131` no longer runs into
+`warning`; a document whose positions are all short prints exactly as before.
+
 ### Four experimental rules that catch a document disagreeing with itself (#170)
 
 Each compares two things the document itself says, so the result needs no judgement. All four are experimental; the

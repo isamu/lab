@@ -207,14 +207,14 @@ $ npx chaffjs enquiries.md --genre business/report --experimental --compact
 
 enquiries.md   business/report · English   genre from --genre
 
-  5:129   warning This sentence is passive ("argued") but never says who did it
-                  agentless-passive
-  5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
-                  excessive-hedging
   5:1     warning This sentence runs 34 words (limit 25)
                   max-sentence-length
   5:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
+  5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
+                  excessive-hedging
+  5:129   warning This sentence is passive ("argued") but never says who did it
+                  agentless-passive
   9:66    warning This sentence runs 37 words (limit 25)
                   max-sentence-length
   15:54   warning This sentence is passive ("considered") but never says who did it
@@ -311,14 +311,14 @@ $ npx chaffjs enquiries.md --genre business/report --experimental --compact
 
 enquiries.md   business/report · English   genre from --genre   2 stet
 
-  5:129   warning This sentence is passive ("argued") but never says who did it
-                  agentless-passive
-  5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
-                  excessive-hedging
   5:1     warning This sentence runs 34 words (limit 25)
                   max-sentence-length
   5:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
+  5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
+                  excessive-hedging
+  5:129   warning This sentence is passive ("argued") but never says who did it
+                  agentless-passive
   9:66    warning This sentence runs 37 words (limit 25)
                   max-sentence-length
 
