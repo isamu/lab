@@ -81,10 +81,26 @@ export const closingRun = (lines: readonly Line[], end: number): readonly Line[]
     { run: [], until: end },
   ).run;
 
-/** 段落 text を、一つで立つ行の後ろで切った片。切る所が無ければ text 全体の 1 片。片は改行を含まない端で終わる。 */
+/** 片の切れ目。前の片は end で終わり、次の片は next から始まる。 */
+type Cut = { readonly end: number; readonly next: number };
+
+/**
+ * 一つで立つ行（lines[index]）の切れ目。後ろに続く行があれば後ろで切る。前の行が「：」で終わる導きなら前でも切る。
+ * 文で終わる前の行は文の分割器が切るので、前では切らない。
+ */
+const cutsAround = (text: string, lines: readonly Line[], index: number): Cut[] => {
+  const [previous, line, following] = [lines[index - 1], lines[index], lines[index + 1]];
+  if (line === undefined) return [];
+  const leadsIn = previous !== undefined && LEADS_IN.test(text.slice(previous.start, previous.end).trimEnd());
+  return [...(leadsIn ? [{ end: previous.end, next: line.start }] : []), ...(hasText(text, following) ? [{ end: line.end, next: line.next }] : [])];
+};
+
+/** 段落 text を、一つで立つ行の後ろ（と、導きの行に続くときは前）で切った片。切る所が無ければ text 全体の 1 片。片は改行を含まない端で終わる。 */
 export const subheadingPieces = (text: string, standsAlone: StandsAlone = () => false): Span[] => {
-  const byStart = new Map(linesOf(text).map((line) => [line.start, line]));
-  const cuts = standaloneLines(text, standsAlone).filter((line) => hasText(text, byStart.get(line.next)));
-  const starts = [0, ...cuts.map((line) => line.next)];
-  return starts.map((start, index) => ({ start, end: cuts[index]?.end ?? text.length }));
+  const lines = linesOf(text);
+  const indexOf = new Map(lines.map((line, index) => [line.start, index]));
+  const cuts = standaloneLines(text, standsAlone).flatMap((line) => cutsAround(text, lines, indexOf.get(line.start) ?? 0));
+  const ordered = [...new Map(cuts.map((cut) => [cut.next, cut])).values()].toSorted((left, right) => left.next - right.next);
+  const starts = [0, ...ordered.map((cut) => cut.next)];
+  return starts.map((start, index) => ({ start, end: ordered[index]?.end ?? text.length }));
 };

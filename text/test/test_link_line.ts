@@ -47,7 +47,8 @@ describe("standaloneLines / subheadingPieces with a line test", () => {
   it("文で終わる行や「：」で終わる行の後ろのリンクの行も切る", () => {
     assert.deepEqual(pieces("本文です。\n[一](https://a.example)\n次の文です。"), ["本文です。\n[一](https://a.example)", "次の文です。"]);
     assert.deepEqual(pieces("関連記事：\n[一](https://a.example)\n[二](https://b.example)"), [
-      "関連記事：\n[一](https://a.example)",
+      "関連記事：",
+      "[一](https://a.example)",
       "[二](https://b.example)",
     ]);
   });
@@ -113,6 +114,8 @@ describe("リンクだけの行を並べた段落", () => {
     const bare = `# 関連記事\n\n本文です。\n\n関連記事：\n${many.join("\n")}\n`;
     const listed = `# 関連記事\n\n本文です。\n\n関連記事：\n${bullets.join("\n")}\n`;
     assert.ok(!run(bare).includes("max-paragraph-length"));
+    const longTitle = `[${"あ".repeat(96)}](https://example.com)`;
+    assert.deepEqual(run(`# T\n\n関連記事：\n${longTitle}\n`), run(`# T\n\n関連記事：\n- ${longTitle}\n`));
     assert.ok(!run(bare).includes("max-sentence-length"));
     assert.deepEqual(
       buildDocument("a.md", bare, ja).paragraphs.map((paragraph) => paragraph.sentences.length),
