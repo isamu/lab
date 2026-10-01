@@ -33,6 +33,7 @@ import { VERSION, VERSION_LINES } from "./version.ts";
 import type { TreeContext } from "./commands/tree.ts";
 import { documentCommands } from "./commands/document-commands.ts";
 import { runSkill } from "./commands/skill.ts";
+import { fixPlanTargets, runFixPlan } from "./commands/fix-plan.ts";
 import { runConditions, runFeedback, settingsOf, type Checked } from "./commands/feedback.ts";
 import { homedir } from "node:os";
 import { settingWarnings } from "./config/warnings.ts";
@@ -296,6 +297,8 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   eval: (argv) => runEval(positional(argv), argv, { ...measureContext(argv), flag }),
   ...documentCommands(treeContext),
   test: (argv) => runTest(positional(argv), argv, { ...measureContext(argv), inspect }),
+  "fix-plan": (argv) =>
+    runFixPlan(fixPlanTargets(argv), argv, { ...treeContext(), check: async (path) => (await inspectAll(readConfig(), argv)(path)).checked }),
   baseline: (argv) => runBaseline(positional(argv), argv),
   suppressions: (argv) => runSuppressions(positional(argv), inspectAll(readConfig(), argv), hostLanguage(readConfig().language, process.env)),
   relax: (argv) => changeSetting("relaxed", argv[1], flag(argv, "--why")),

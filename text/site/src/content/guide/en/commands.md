@@ -25,6 +25,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs compare <before> <after>` | Checks that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…) |
 | `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
 | `npx chaffjs outline <file> [<after>]` | Shows the outline and measures its shape (headings, average section length, text in lists, bold); two files side by side |
+| `npx chaffjs fix-plan <file>` | Prints a plan for whoever rewrites the file: the findings by rule, how to rewrite each, and the checks to run after |
 | `npx chaffjs skill` | Installs the Claude Code skill |
 | `npx chaffjs feedback <file> --rule <rule>` | Drafts a report of a wrong or missed finding |
 | `npx chaffjs test <file\|dir>...` | Also runs the checks that read meaning. Needs an API key |
@@ -415,6 +416,24 @@ How the shape changed (before.md → after.md)
 ```
 
 In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, and `--json` gives the outline and the shape (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
+
+## Planning a rewrite
+
+`fix-plan` turns the findings into a plan for whoever rewrites the file, a person or an AI.
+chaff still does not rewrite; the plan says how.
+
+```bash
+npx chaffjs fix-plan article.md --experimental           # the plan, as Markdown
+npx chaffjs fix-plan article.md --experimental --json    # the same plan as JSON
+```
+
+The plan is written in the document's language. It starts with the constraints every rewrite keeps: no fact changed or added, ask the writer instead of inventing, two passes at most.
+Next comes the recommended way to rewrite (Light, Bold or Full) and the document-level signals with the outline's numbers.
+
+For each rule that found something, the plan gives its direction, what to keep, what to avoid, one before-and-after example and the spots.
+It ends with the `chaff`, `compare` and `outline` commands to run on the rewrite.
+The same file gives the same plan every time, and nothing is sent anywhere.
+The page [Making AI-sounding text sound human](./ai-sounding) has an example that goes from the plan to the checks.
 
 ## Checks that read meaning, and re-measuring the limits
 
