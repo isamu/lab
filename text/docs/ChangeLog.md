@@ -6,7 +6,7 @@ Newest first.
 
 ### New rule: `requirement-smell`, wording that leaves a requirement open (experimental)
 
-- In a sentence that states a requirement (しなければならない, ものとする, a closing 〜こと; shall, must, is required to),
+- In a sentence that states a requirement (one that ends in しなければならない, ものとする or 〜こと; one with shall, must or is required to),
   chaff points at a loophole (可能な限り, 必要に応じて; as far as possible, if necessary), an open-ended list (等, など;
   etc., but not limited to) and "and/or" (及び／又は). Sources: Femmer et al. (2017), Berry et al. (2003) and
   ISO/IEC/IEEE 29148. It runs on specifications, contracts, manuals and FAQs; statutes, which define their 等 terms,

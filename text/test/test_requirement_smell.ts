@@ -45,6 +45,16 @@ describe("requirement-smell (ja)", () => {
     assert.deepEqual(found("ログ等の保存について説明する。", ja), []);
   });
 
+  it("及び又は and およびまたは without a slash, and a polite ending", () => {
+    assert.deepEqual(found("管理者及び又は利用者に通知しなければなりません。", ja), ["either:及び又は"]);
+    assert.deepEqual(found("管理者およびまたは利用者に通知するものとします。", ja), ["either:およびまたは"]);
+  });
+
+  it("a marker inside a clause does not make a definition a requirement: the predicate closes a Japanese sentence", () => {
+    assert.deepEqual(found("「保護手段」とは、回避されてはならないものとされる手段等をいいます。", ja), []);
+    assert.deepEqual(found("報告しなければならない事項等を定める。", ja), []);
+  });
+
   it("「〜のこと。」 defines a term and is no requirement; こと in the middle of a sentence is no marker", () => {
     assert.deepEqual(found("サーバやネットワークなどに接続できる権利のこと。", ja), []);
     assert.deepEqual(found("ログ等を保存することがある。", ja), []);

@@ -4,7 +4,10 @@ language: ja
 entries:
   - pattern: 及び/又は
   - pattern: 及び／又は
+  - pattern: 及び又は
   - pattern: および/または
   - pattern: および／または
+  - pattern: およびまたは
   - pattern: かつ/または
   - pattern: かつ／または
+  - pattern: かつまたは

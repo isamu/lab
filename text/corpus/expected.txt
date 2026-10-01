@@ -22,7 +22,7 @@ automattic-privacy-policy  max-sentence-length 6, undefined-acronym 8
 bls-glossary  max-paragraph-length 6, max-sentence-length 69, unbalanced-bracket 2, undefined-acronym 6
 bonterms-cloud-terms  max-sentence-length 11, undefined-acronym 3
 caa-mokebanashi-chuikanki  max-sentence-length 3
-cc-by-4-legalcode-ja  fullwidth-alnum-consistency 1, latin-spacing 2, max-sentence-length 1, no-nakaguro-parallel 1, requirement-smell 1, stray-space 2, undefined-acronym 3
+cc-by-4-legalcode-ja  fullwidth-alnum-consistency 1, latin-spacing 2, max-sentence-length 1, no-nakaguro-parallel 1, stray-space 2, undefined-acronym 3
 cdc-co-poisoning-basics  agentless-passive 7, concrete-evidence-density 5, contraction-consistency 2, heading-echo 1, max-sentence-length 2, proper-noun-density 1
 cfpb-blog-imposter-scams  agentless-passive 3, max-sentence-length 6, preamble-length 1, proper-noun-density 1, space-before-punctuation 1, undefined-acronym 3
 chrome-blog-pwa-origin-migration  contraction-consistency 1, heading-echo 1, max-sentence-length 5, proper-noun-density 1
