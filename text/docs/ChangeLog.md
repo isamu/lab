@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### On a Node.js older than 24, `chaff` says which version it needs instead of failing with a SyntaxError (#398)
+
+npm runs a package whose `engines` the Node.js does not meet, with a warning at most, and the CLI then failed while
+loading (`The requested module 'node:fs' does not provide an export named 'globSync'`), which does not point at the
+version. `bin/chaff.js` now checks `process.versions.node` against `engines.node` in its own `package.json` before it
+loads anything else, and stops with "chaff needs Node.js 24 or later. This is v18.20.8. Install the LTS from
+https://nodejs.org/en" (in Japanese under a Japanese locale), exit code 1. The entry point is written so that Node.js 12
+and later can parse it. This also stops Node.js 22 and 23, which `engines` already excluded.
+
 ### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
 
 Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted
