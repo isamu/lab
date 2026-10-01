@@ -15,7 +15,7 @@ why:
   en: One softener is courtesy. Several push the point further away, and the reader has to hunt for it.
 
 message:
-  ja: 「{matched}」など、クッション言葉が 1000 語あたり {density} 個あります（{limit} 個まで）
+  ja: 「{matched}」など、クッション言葉が 1000 字あたり {density} 個あります（{limit} 個まで）
   en: '"{matched}" and other softeners: {density} per 1000 words (limit {limit})'
 
 how_to_fix:
