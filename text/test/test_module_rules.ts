@@ -1,7 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { modulePathOf } from "../packages/chaff/src/custom/module-path.ts";
 import { parseCustomRules } from "../packages/chaff/src/custom/parse.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
@@ -17,6 +17,9 @@ import { runCli } from "./cli-run.ts";
 // type: module custom rules: a detector a team writes in JavaScript, named in chaff.yaml. Example sentences are self-written.
 
 const noFindings: Detector = () => [];
+
+/** A project folder, written the way this platform writes an absolute path. */
+const PROJECT = resolve("/project");
 
 const failureOf = (detect: UntrustedDetector): PluginRuleFailure => {
   const doc = buildDocument("a.md", "# Plan\n\nThe date is TBD.\n", en);
@@ -37,9 +40,9 @@ describe("type: module custom rules", () => {
 
   describe("modulePathOf: a module's file may not leave the project unless named by its absolute path", () => {
     const cases: readonly (readonly [string, string | undefined])[] = [
-      ["./rules/no-tbd.mjs", "/project/rules/no-tbd.mjs"],
-      ["rules/no-tbd.mjs", "/project/rules/no-tbd.mjs"],
-      ["./..hidden.mjs", "/project/..hidden.mjs"],
+      ["./rules/no-tbd.mjs", resolve(PROJECT, "rules/no-tbd.mjs")],
+      ["rules/no-tbd.mjs", resolve(PROJECT, "rules/no-tbd.mjs")],
+      ["./..hidden.mjs", resolve(PROJECT, "..hidden.mjs")],
       ["/shared/rules/no-tbd.mjs", "/shared/rules/no-tbd.mjs"],
       ["../shared/no-tbd.mjs", undefined],
       ["./rules/../../no-tbd.mjs", undefined],
@@ -48,14 +51,14 @@ describe("type: module custom rules", () => {
     ];
     cases.forEach(([written, file]) => {
       it(`${written} → ${file ?? "refused"}`, () => {
-        const path = modulePathOf(written, "/project");
+        const path = modulePathOf(written, PROJECT);
         assert.deepEqual(path, file === undefined ? { refusal: "outside" } : { file });
       });
     });
   });
 
   describe("parseCustomRules: a module rule", () => {
-    const CONTEXT = { builtIn: new Set<string>(), useFor: ["blog"], baseDir: "/project" };
+    const CONTEXT = { builtIn: new Set<string>(), useFor: ["blog"], baseDir: PROJECT };
     const EXPLAINED = { name: "N", why: "W", how_to_fix: "H", example: { before: "B", after: "A" } };
     const parsedRule = (raw: Record<string, unknown>): RuleDefinition | undefined => parseCustomRules([{ ...EXPLAINED, ...raw }], CONTEXT).rules[0];
 
@@ -63,7 +66,7 @@ describe("type: module custom rules", () => {
       const plain = parsedRule({ id: "a", type: "module", module: "./rules/a.mjs" });
       assert.deepEqual(
         [plain?.custom, plain?.how_to_find, plain?.requires, plain?.layer],
-        [{ type: "module", module: "./rules/a.mjs", file: "/project/rules/a.mjs" }, "module", [], "L2"],
+        [{ type: "module", module: "./rules/a.mjs", file: resolve(PROJECT, "rules/a.mjs") }, "module", [], "L2"],
       );
       const tagged = parsedRule({ id: "b", type: "module", module: "./b.mjs", requires: ["pos", "pos"] });
       assert.deepEqual([tagged?.requires, tagged?.layer], [["pos"], "L3"]);
