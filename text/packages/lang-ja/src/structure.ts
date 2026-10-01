@@ -241,7 +241,10 @@ const REFERENCE = new RegExp(`第(?<a>${NUMBER})条(?:の(?<s>${NUMBER}))?(?:第
  */
 const CONNECTORS = /及び|並びに|若しくは|又は|および|ならびに|もしくは|または|から|まで|ただし書|前段|後段|[、，\s]/gu;
 const FRAGMENT = new RegExp(`第${NUMBER}[項号](?:の${NUMBER})*`, "gu");
-const PARENTHESES = /（[^（）]*）/gu;
+/** 括弧書きの括弧。全角でも半角でもよい（厚生労働省法令等データベースは半角で書く）。 */
+const OPENING = new Set(["（", "("]);
+const CLOSING = new Set(["）", ")"]);
+const PARENTHESES = /[（(][^（）()]*[）)]/gu;
 
 /** 間の文字列が、接続の語・読点・項や号の断片・括弧書きだけでできているか。 */
 const isContinuation = (gap: string): boolean => gap.replace(PARENTHESES, "").replace(FRAGMENT, "").replace(CONNECTORS, "") === "";
@@ -252,8 +255,8 @@ const depthsOf = (text: string): Int32Array => {
   const open = { parentheses: 0 };
   text.split("").forEach((char, at) => {
     depth[at] = open.parentheses;
-    if (char === "（") open.parentheses += 1;
-    if (char === "）") open.parentheses = Math.max(0, open.parentheses - 1);
+    if (OPENING.has(char)) open.parentheses += 1;
+    if (CLOSING.has(char)) open.parentheses = Math.max(0, open.parentheses - 1);
   });
   return depth;
 };
@@ -272,10 +275,10 @@ const withoutClosedParentheses = (gap: string): string => {
   const kept: string[] = [];
   const opens: number[] = [];
   for (const char of gap) {
-    const opened = char === "）" ? opens.pop() : undefined;
+    const opened = CLOSING.has(char) ? opens.pop() : undefined;
     if (opened !== undefined) kept.splice(opened);
     else {
-      if (char === "（") opens.push(kept.length);
+      if (OPENING.has(char)) opens.push(kept.length);
       kept.push(char);
     }
   }

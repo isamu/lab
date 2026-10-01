@@ -12,7 +12,8 @@ Two shapes in the round 14 documents were read as this document's missing articl
   もしくは・または, so 第28条 is 著作権法's too, as it already was after 及び.
 - **A promulgation number in half-width parentheses.** The MHLW 法令等データベース writes 「保険医療養担当規則(昭和三十二年
   厚生省令第十五号)第二条の六」. The number is now skipped in either width, and a name with one is another document even
-  when it ends in no kind word (「…に関する基準(昭和五十八年厚生省告示第十四号)第二条の六」).
+  when it ends in no kind word (「…に関する基準(昭和五十八年厚生省告示第十四号)第二条の六」). A parenthetical aside
+  inside a chain (「民法第709条(同法第710条において準用する場合を含む。)、第711条」) no longer breaks it in either width.
 
 ### Corpus round 14: documents of kinds the corpus had few of (#170)
 
