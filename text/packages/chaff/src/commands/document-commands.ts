@@ -4,16 +4,16 @@ import { factsTargets, runFacts } from "./facts.ts";
 import { outlineTargets, runOutline } from "./outline.ts";
 import { runTree, treeTargets, type TreeContext } from "./tree.ts";
 
-type DocumentCommand = (argv: readonly string[]) => Promise<number>;
+type DocumentCommand = (argv: readonly string[], context: TreeContext) => Promise<number>;
 
 /**
  * The commands that read one or two documents and report on them without linting: the tree, quotations, facts and
- * outline. Each reads the settings when it runs, through `contextOf`.
+ * outline. Each is given the settings the command line read once.
  */
-export const documentCommands = (contextOf: () => TreeContext): Readonly<Record<string, DocumentCommand>> => ({
-  tree: (argv) => runTree(treeTargets(argv), argv, contextOf()),
-  cite: (argv) => runCite(citeTargets(argv), argv, contextOf()),
-  compare: (argv) => runCompare(compareTargets(argv), argv, contextOf()),
-  facts: (argv) => runFacts(factsTargets(argv), argv, contextOf()),
-  outline: (argv) => runOutline(outlineTargets(argv), argv, contextOf()),
-});
+export const DOCUMENT_COMMANDS: Readonly<Record<string, DocumentCommand>> = {
+  tree: (argv, context) => runTree(treeTargets(argv), argv, context),
+  cite: (argv, context) => runCite(citeTargets(argv), argv, context),
+  compare: (argv, context) => runCompare(compareTargets(argv), argv, context),
+  facts: (argv, context) => runFacts(factsTargets(argv), argv, context),
+  outline: (argv, context) => runOutline(outlineTargets(argv), argv, context),
+};
