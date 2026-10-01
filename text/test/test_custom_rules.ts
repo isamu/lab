@@ -13,7 +13,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { runCli } from "./cli-run.ts";
 
-const CONTEXT: CustomContext = { builtIn: new Set(["preferred-term"]), useFor: ["business", "blog"] };
+const CONTEXT: CustomContext = { builtIn: new Set(["preferred-term"]), useFor: ["business", "blog"], baseDir: "/project" };
 const EXPLAINED = {
   name: { ja: "名前", en: "Name" },
   why: "理由",
@@ -180,7 +180,13 @@ describe("custom rules", () => {
       ["a built-in id", [{ ...EXPLAINED, id: "preferred-term", type: "pattern", pattern: "x" }], "built-in-id"],
       ["no type", [{ ...EXPLAINED, id: "x" }], "missing"],
       ["an unknown type", [{ ...EXPLAINED, id: "x", type: "regex", pattern: "x" }], "unknown-type"],
-      ["type module, not yet", [{ ...EXPLAINED, id: "x", type: "module", file: "./x.js" }], "not-yet"],
+      ["type module without a module", [{ ...EXPLAINED, id: "x", type: "module", file: "./x.js" }], "missing"],
+      ["a module outside the project", [{ ...EXPLAINED, id: "x", type: "module", module: "../x.mjs" }], "bad-module"],
+      [
+        "a module that requires what cannot be asked for",
+        [{ ...EXPLAINED, id: "x", type: "module", module: "./x.mjs", requires: ["structure"] }],
+        "bad-requires",
+      ],
       ["no example", [{ ...EXPLAINED, example: { before: "前" }, id: "x", type: "pattern", pattern: "x" }], "missing"],
       ["no why", [{ ...EXPLAINED, why: "", id: "x", type: "pattern", pattern: "x" }], "missing"],
       ["a bad level", [{ ...EXPLAINED, id: "x", type: "pattern", pattern: "x", level: "loud" }], "bad-level"],
@@ -227,7 +233,7 @@ describe("custom rules", () => {
         { ...EXPLAINED, id: "Bad_Id", type: "pattern", pattern: "x" },
         { ...EXPLAINED, id: "preferred-term", type: "pattern", pattern: "x" },
         { ...EXPLAINED, id: "a", type: "regex" },
-        { ...EXPLAINED, id: "b", type: "module" },
+        { ...EXPLAINED, id: "b", type: "module", module: "../b.mjs", requires: "lemma" },
         { ...EXPLAINED, id: "c", type: "pattern" },
         { ...EXPLAINED, id: "d", type: "pattern", pattern: "(a+)+", level: "loud", languages: [""] },
         { ...EXPLAINED, id: "e", type: "words", words: {} },
@@ -236,14 +242,14 @@ describe("custom rules", () => {
         { ...EXPLAINED, id: "h", type: "pattern", pattern: "x", example: { before: { ja: "前" }, after: { en: "After" } } },
       ];
       const kinds = new Set(parseCustomRules(raw, CONTEXT).problems.map((problem) => problem.kind));
-      assert.equal(kinds.size, 14);
+      assert.equal(kinds.size, 15);
       const unfilled = (sentence: string): boolean => /\{(?:at|written|field|index|refusal|names)\}/u.test(sentence);
       (["ja", "en"] as const).forEach((ui) => {
-        const sentences = customRuleProblems({ customRules: raw, path: "chaff.yaml" }, ui);
+        const sentences = customRuleProblems({ customRules: raw, path: "chaff.yaml", baseDir: "/project" }, ui);
         assert.equal(sentences.length, parseCustomRules(raw, CONTEXT).problems.length);
         assert.deepEqual(sentences.filter(unfilled), []);
       });
-      assert.deepEqual(customRuleProblems({ customRules: "x", path: "chaff.yaml" }, "en"), [
+      assert.deepEqual(customRuleProblems({ customRules: "x", path: "chaff.yaml", baseDir: "/project" }, "en"), [
         "chaff: chaff.yaml: write custom_rules as a list of rules (- id: …)",
       ]);
     });
