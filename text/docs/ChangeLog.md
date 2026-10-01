@@ -13,6 +13,20 @@ the predicate; the passive before one is judged like a passive at the end of a s
 (「検討されることとなった案」) still makes it a modifier, a bound noun does not (「〜ことになったため」), a conditional after the
 frame (「〜こととなれば」, 「〜ことになると」) is not reported, and other uses of こと (「延期されることがある」) are unchanged.
 
+### `chaffjs/api`: the plugin API
+
+A small, stable surface for writing rules in code, the first step toward `type: module` custom rules and plugin
+packages. `import { API_VERSION, defineRule, definePlugin } from "chaffjs/api"`, with the types a rule author needs:
+`Detector`, `Finding`, `DetectorOptions`, `RuleDocument` (sentences, paragraphs, sections, lists, links, tokens with
+part of speech and lemma when the rule asks for them, word lists and markup) and the shapes they are made of.
+
+- `API_VERSION` is 1. `defineRule` and `definePlugin` stamp it, so chaff can refuse a plugin written for another one.
+- A detector reads a frozen copy of the document with only the public fields, so chaff's own shapes can change
+  without breaking a plugin, and one rule cannot change what the next one reads.
+- A detector returns `{ start, end?, values? }`; chaff places it, quotes its sentence and fills `{matched}`. Anything
+  else is refused as a whole, with what was wrong.
+- `chaffjs/plugin`, the language adapters' surface, is unchanged.
+
 ### New rule: `nominalization`, verbs hidden in nouns (experimental)
 
 - chaff counts verbs written as nouns and carried by another verb: 調査を実施した for 調査した, 確認を行う for 確認する,
