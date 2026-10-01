@@ -1,0 +1,32 @@
+# 二重否定。打ち消しを打ち消して、言い切らずに肯定する言い方。読み手は二度ひっくり返して読む。
+# 「ざるを得ない」「なければならない」は決まった言い方（義務・やむを得ないこと）なので入れない。
+# 最後の「ない」は形容詞で、活用した形には当たらないので、過去の形（なかった）も並べる。
+id: double-negative
+language: ja
+entries:
+  - pattern: ないわけではない
+  - pattern: ないわけでもない
+  - pattern: ないわけではなかった
+  - pattern: ないわけでもなかった
+  - pattern: ないわけではありません
+  - pattern: ないわけでもありません
+  - pattern: ないことはない
+  - pattern: ないこともない
+  - pattern: ないことはなかった
+  - pattern: ないこともなかった
+  - pattern: ないことはありません
+  - pattern: ないこともありません
+  - pattern: なくはない
+  - pattern: なくもない
+  - pattern: なくはありません
+  - pattern: なくもありません
+  - pattern: ないではない
+  - pattern: ないでもない
+  - pattern: ないとは言えない
+  - pattern: ないとはいえない
+  - pattern: ないとは言えません
+  - pattern: ないとはいえません
+  - pattern: ないとは限らない
+  - pattern: ないとも限らない
+  - pattern: ないとは限りません
+  - pattern: ないとも限りません
