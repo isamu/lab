@@ -14,6 +14,14 @@ the generated-style hits stay, and the human, rewritten and corpus false alarms 
 documents (a national-park story and a government security page) lose a `section-length-uniformity` finding they
 should not have had.
 
+### A Japanese article full of code is read as Japanese (#399)
+
+The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
+code blocks came out English: the Japanese rules did not run and the English ones read Japanese headings. The guess
+now leaves out fenced code blocks, inline code, HTML tags, comments and code blocks (the text between other tags still counts), YAML
+front matter, MDX imports and component lines, and URLs. Indented text is kept, because in plain text it is prose. A document that is nothing but code is still judged from all of it. `chaff`,
+`chaff test`, `chaff eval` and `chaff tree` all guess the same way.
+
 ### `stet` covers the block right below it, not the next six lines (#401)
 
 `<!-- stet: rule — reason -->` silenced the rule on the six lines after the comment, whatever they held: a finding of
