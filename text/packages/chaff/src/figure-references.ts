@@ -27,7 +27,7 @@ type Mention = { readonly start: number; readonly end: number; readonly written:
 /** 語の前の字が漢字・カタカナ・英数字なら、長い語の一部（地図3、一覧表2、法別表第二、SubFigure）。 */
 const INSIDE_WORD = "(?<![\\p{Script=Han}\\p{Script=Katakana}\\p{N}A-Za-z])";
 /** 番号。数字（3、3.2、第3）、「第」の後の漢数字（別表第一）、大文字一つかローマ数字（Appendix B、Annex II）。 */
-const NUMBER = "[ \\t\\u00a0]?(?:第?(\\p{Nd}+(?:[.\\-－]\\p{Nd}+)*)|第([一二三四五六七八九十百]+)|([IVX]{2,5}|[A-ZＡ-Ｚ])(?![A-Za-z]))";
+export const FIGURE_NUMBER = "[ \\t\\u00a0]?(?:第?(\\p{Nd}+(?:[.\\-－]\\p{Nd}+)*)|第([一二三四五六七八九十百]+)|([IVX]{2,5}|[A-ZＡ-Ｚ])(?![A-Za-z]))";
 
 const forms = (word: string): string[] => [...new Set([word, word.toUpperCase()])];
 
@@ -36,7 +36,7 @@ const mentionPattern = (labels: readonly LabelWord[]): RegExp => {
     .flatMap((label) => forms(label.word))
     .toSorted((a, b) => b.length - a.length)
     .map(escapeRegExp);
-  return new RegExp(`${INSIDE_WORD}(${words.join("|")})${NUMBER}`, "gu");
+  return new RegExp(`${INSIDE_WORD}(${words.join("|")})${FIGURE_NUMBER}`, "gu");
 };
 
 const kindOf = (written: string, labels: readonly LabelWord[]): string => labels.find((label) => forms(label.word).includes(written))?.kind ?? written;
@@ -95,6 +95,13 @@ const pointsHere = (text: string, mention: Mention, words: LabelWords): boolean 
   return !elsewhere && !words.counters.some((word) => after.startsWith(word));
 };
 
+/** 行の頭に書いた番号（キャプションや見出し）。図の置き場所。 */
+const labelledIn = (source: string, labels: readonly LabelWord[]): Mention[] => mentionsIn(source, labels).filter((mention) => isLabelled(source, mention));
+
+/** 文書が行の頭に番号を書いている種類（図、Table）。番号で名指しできる種類。 */
+export const labelledKindsIn = (source: string, words: LabelWords): ReadonlySet<string> =>
+  new Set(labelledIn(source, words.labels).map((mention) => mention.kind));
+
 /**
  * 参照先の無い番号。source は行の頭を読み、prose（コードを覆った本文）は参照を読む。位置は同じ。
  * 番号は、キャプションが 1 と書けば 1a や 1(b) の参照も 1 に当たる（番号の後ろの字は読まない）。
@@ -102,7 +109,7 @@ const pointsHere = (text: string, mention: Mention, words: LabelWords): boolean 
  */
 export const danglingFigures = (source: string, prose: string, words: LabelWords, links: readonly Span[] = []): DanglingFigure[] => {
   if (words.labels.length === 0) return [];
-  const labelled = mentionsIn(source, words.labels).filter((mention) => isLabelled(source, mention));
+  const labelled = labelledIn(source, words.labels);
   const labelledKeys = new Set(labelled.map((mention) => mention.key));
   const labelledKinds = new Set(labelled.map((mention) => mention.kind));
   return mentionsIn(prose, words.labels)
