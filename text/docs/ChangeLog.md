@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### `compare --distinct` compares facts as sets (#446)
+
+`compare` counts how many times each fact is stated, so a full rewrite that cuts a summary repeating the body reported
+every repeat as dropped. With `--distinct`, a fact counts as kept when the other document states it at least once; a
+fact the other document never states is still dropped or added. The default is unchanged.
+
 ### `compare` reads a wrapped or bold quotation as the same quotation, and 「8時間」 as a length of time (#435, #446)
 
 - A line break between two wide characters (`系の` / `システム`) vanishes when Markdown is rendered, but `compare` read

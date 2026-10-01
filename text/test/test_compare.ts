@@ -295,6 +295,34 @@ describe("factKey: a fact's text as one spelling", () => {
   });
 });
 
+describe("--distinct: facts compared as sets", () => {
+  const distinct = (beforeText: string, afterText: string): Outcome =>
+    outcomeOf(
+      { path: "before.md", extraction: factsOf(ja, "a.md", beforeText) },
+      { path: "after.md", extraction: factsOf(ja, "a.md", afterText) },
+      undefined,
+      "distinct",
+    );
+  const body = "# 料金\n\n新しい価格は1,200円で、Acme が販売します。\n";
+  const summary = "\nまとめると、価格は1,200円で、Acme が販売します。\n";
+
+  it("a summary that repeated the body can be cut: each fact is still stated once", () => {
+    assert.deepEqual(changes(compare(ja, body + summary, body)).dropped, ["number:1,200円", "name:Acme"]);
+    assert.deepEqual(changes(distinct(body + summary, body)), { dropped: [], added: [], reformed: [] });
+    assert.equal(distinct(body + summary, body).ok, true);
+  });
+
+  it("a repeat added is not a new fact either", () => {
+    assert.deepEqual(changes(distinct(body, body + summary)).added, []);
+  });
+
+  it("a fact the other document never states is still dropped or added", () => {
+    const outcome = changes(distinct(body + summary, "# 料金\n\n新しい価格は1,300円です。\n"));
+    assert.deepEqual(outcome.dropped, ["number:1,200円", "name:Acme", "number:1,200円", "name:Acme"]);
+    assert.deepEqual(outcome.added, ["number:1,300円"]);
+  });
+});
+
 describe("a duration is not a time of day", () => {
   it("「8時間」「1.2時間」「24時間」 are lengths of time; 「8時」「午後3時半」 are times", () => {
     const keys = (text: string): string[] => clockTimes(text).map((time) => time.key);
@@ -485,6 +513,14 @@ describe("chaff compare on the command line", () => {
     const run = await runCli(wrapped, ["compare", "a.md", "b.md"], "ja_JP.UTF-8");
     assert.equal(run.code, 0, run.out);
     assert.match(run.out, /書き方だけ変わった事実 1 件/u);
+  });
+
+  it("--distinct passes a cut summary that only repeated the body", async () => {
+    const body = "# 料金\n\n新しい価格は1,200円です。\n";
+    const files = { "a.md": `${body}\nまとめると、価格は1,200円です。\n`, "b.md": body };
+    assert.equal((await runCli(files, ["compare", "a.md", "b.md"], "ja_JP.UTF-8")).code, 1);
+    const run = await runCli(files, ["compare", "a.md", "b.md", "--distinct"], "ja_JP.UTF-8");
+    assert.equal(run.code, 0, run.out);
   });
 
   it("speaks the document's language", async () => {

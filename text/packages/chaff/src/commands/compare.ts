@@ -58,6 +58,7 @@ const renderFor = (argv: readonly string[]): typeof renderFriendly => {
 /**
  * Whether a rewrite kept every fact: numbers, dates, URLs, code, names, quotations, headings, references and footnotes.
  * Compares; never rewrites. Ends with 1 when a fact was dropped or added, so a rewrite can be checked like a test.
+ * --distinct counts a fact as kept when the other document states it at least once.
  */
 export const runCompare = async (targets: readonly string[], argv: readonly string[], context: TreeContext): Promise<number> => {
   const host = COMPARE_TEXT[context.ui ?? "ja"];
@@ -74,7 +75,7 @@ export const runCompare = async (targets: readonly string[], argv: readonly stri
   const before = await readFacts(beforePath, argv, context);
   const after = before === undefined ? undefined : await readFacts(afterPath, argv, context);
   if (before === undefined || after === undefined) return 1;
-  const outcome = outcomeOf(before, after, parsed.allowed);
+  const outcome = outcomeOf(before, after, parsed.allowed, argv.includes("--distinct") ? "distinct" : "as-stated");
   console.log(renderFor(argv)(outcome, COMPARE_TEXT[uiLanguageOf(before.language)]));
   return outcome.ok ? 0 : 1;
 };

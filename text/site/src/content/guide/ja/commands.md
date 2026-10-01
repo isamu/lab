@@ -320,12 +320,14 @@ i 書き方だけ変わった事実 3 件
 ```bash
 npx chaffjs compare before.md after.md --allow-dropped url        # URL は消してよい
 npx chaffjs compare before.md after.md --allow-dropped url,quote  # カンマで並べられる
+npx chaffjs compare before.md after.md --distinct                 # 一度でも書いてあれば残ったとみなす
 npx chaffjs compare before.md after.md --compact                  # 1 件 1 行
 npx chaffjs compare before.md after.md --json                     # AI が読んで直す
 ```
 
 種類の名前は `number`、`date`、`time`、`url`、`code`、`name`、`quote`、`heading`、`reference`、`footnote` です。
 `--json` には、落ちた事実と足された事実が行番号つきで入るので、書き換えた AI にそのまま渡して直させられます。
+ふだんは、同じ事実を書いた回数も比べます。本文を言い直すだけの「まとめ」を消すと、繰り返していた事実が一つずつ落ちたと出ます。`--distinct` を付けると、相手の文書に一度でも書いてある事実は残ったとみなします。相手のどこにも無い事実は、これまでどおり落ちた・足されたと出ます。
 
 ## 意味を読む検査と閾値の測り直し
 
