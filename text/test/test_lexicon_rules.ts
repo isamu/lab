@@ -69,6 +69,37 @@ describe("closing-cliche", () => {
   it("valid: 結びが具体的なら指摘しない", () => {
     assert.ok(!idsFor("# 題\n\n本文です。\n\n## まとめ\n\nTTL は実測してから決めてください。").includes("closing-cliche"));
   });
+
+  // #413 の再現（自作の文）。見出しの無い文書は本文全体が最後の節なので、節だけで切ると冒頭まで結びになる。
+  it("valid: 見出しの無い文書の冒頭の「まとめると」は結びではない", () => {
+    const body =
+      "# 試し\n\nとても重要な教訓があります。簡単にまとめると、以下の三点です。\n\n一つ目の点です。二つ目の点です。三つ目の点です。\n\nここから別の話を始めます。この段落には中身があります。\n\n最後の段落です。具体的な話で終わります。\n";
+    assert.ok(!idsFor(body).includes("closing-cliche"));
+  });
+
+  it("valid: 長い最後の節の途中の「いかがでしょうか」は結びではない", () => {
+    const later = Array.from({ length: 5 }, (_, index) => `${String(index + 1)} 番目の手順です。`).join("\n\n");
+    const body = `# 題\n\n## 一\n\n本文です。\n\n## 二\n\n手で作ってみるのはいかがでしょうか。\n\n${later}\n`;
+    assert.ok(!idsFor(body).includes("closing-cliche"));
+  });
+
+  it("invalid: 決まり文句の後ろに一言や追記が続いても、終わりの段落なら結び", () => {
+    assert.ok(
+      idsFor("# 題\n\n## 一\n\n本文です。\n\n## まとめ\n\nいかがでしたでしょうか。\n\n個人的には便利でした。\n\nそれではよいお年を！\n").includes(
+        "closing-cliche",
+      ),
+    );
+  });
+
+  it("invalid: 見出しの無い文書でも、終わりの段落の決まり文句は結び", () => {
+    assert.ok(idsFor("# 題\n\n本文です。\n\n次の段落です。\n\nいかがでしたか。\n").includes("closing-cliche"));
+    assert.ok(idsFor("本文です。\n\n参考になれば幸いです。\n").includes("closing-cliche"));
+  });
+
+  it("valid: 最後の節が箇条書きで終われば、その前の段落が結び。箇条書きの中は結びに数えない", () => {
+    assert.ok(idsFor("# 題\n\n## まとめ\n\nいかがでしたか。\n\n- 参考になれば幸いです\n").includes("closing-cliche"));
+    assert.ok(!idsFor("# 題\n\n## まとめ\n\n- 参考になれば幸いです\n").includes("closing-cliche"));
+  });
 });
 
 describe("語彙表が無い言語", () => {

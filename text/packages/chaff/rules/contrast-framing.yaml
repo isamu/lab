@@ -53,5 +53,5 @@ not_flagged:
   ja: 一つだけの対比、打ち消しを返していない「単なる」（「単なる設定ミスです」）、「A ではなく B です」だけの文、続けて並べた打ち消し（「まだです。まだ試していません。」）は指しません。短い文書は測りません。
   en: A single contrast, a denial nobody answers, and two denials in a row ("It's not ready. It's not tested.") are not reported. Short documents are not measured.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 words
+  ja: 1000 字あたり対比の枠 {limit} 個まで
+  en: up to {limit} contrast frames per 1000 words

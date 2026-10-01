@@ -1,8 +1,9 @@
 import type { Lexicon, Token } from "chaffjs/plugin";
 
 /**
- * 名詞を重ねて「それぞれの」を言う形（会社会社で、部署部署の）。重ねられるのは、まとまりや場合を指す名詞だけで、
- * 後ろに助詞が続く。二つ目の名詞に UD の Echo=Rdp を付ける。「資料資料の」「確認確認する」は書き損じのまま。
+ * 名詞を重ねて「それぞれの」を言う形（会社会社で、チームチームの）。重ねられるのは、まとまりや場合を指す名詞だけで、
+ * 後ろに助詞が続く。二つ目の名詞に UD の Echo=Rdp を付ける。二字以上の和語・漢語の重なりは isWholeWordEcho も拾うので、
+ * ここが要るのは外来語（チーム）と一字の語（国）。
  */
 export type Distributive = { readonly nouns: ReadonlySet<string>; readonly particles: ReadonlySet<string> };
 
@@ -153,8 +154,8 @@ const FREE_WORD = new Set(["名詞", "動詞", "形容詞"]);
 /** 接尾語が付く語。 */
 const HOST = new Set(["名詞", "動詞", "形容詞", "助動詞"]);
 
-/** 拍に数えない小さい仮名（ちょ・しゃ）。 */
-const SMALL_KANA = /[ぁぃぅぇぉゃゅょゎ]/gu;
+/** 拍に数えない小さい仮名（ちょ・しゃ・ティ）。 */
+const SMALL_KANA = /[ぁぃぅぇぉゃゅょゎァィゥェォャュョヮ]/gu;
 
 /** 擬音・擬態語の根は二拍（すう・きし・ちょん）。動詞に読まれた重なりは二拍までが擬音で、長い動詞の重なり（できるできる）は書き損じ。 */
 const MIMETIC_ROOT_MORAE = 2;
@@ -177,7 +178,7 @@ const isAttachedSuffix = (before: Inflection | undefined, word: Inflection): boo
 
 /**
  * 擬音・擬態語は副詞として立つ。後ろに「と」「に」が続くか、行が終わる（歌の行末。解析器は改行を「記号,空白」と読む）。
- * 句読点の前は、名詞の書き損じ（まとめまとめ、）と見分けられない。
+ * 句読点の前は、動詞の書き損じ（できるできる、）と見分けられない。
  */
 const ADVERB_MARK = new Set(["と", "に"]);
 
@@ -187,7 +188,7 @@ const endsAsAdverb = (second: Inflection, next: Inflection | undefined): boolean
 /**
  * 平仮名だけの語を丸ごと重ねた形（きしきし・ちょんちょん・すうすう・しだいしだい・あはれあはれ）は擬音・擬態語か感動詞。
  * 解析器は辞書に無い擬音を、表層の合う名詞や動詞に切って読む（すう = 吸う）ので、品詞ではなく平仮名であることと、副詞の位置に立つことで見分ける。
- * 前の語に付いた接尾語（田中さんさん）と、副詞の位置に立たない重なり（まとめまとめを・できるできるように）は書き損じのまま。
+ * 前の語に付いた接尾語（田中さんさん）と、副詞の位置に立たない動詞の重なり（できるできるように）は書き損じのまま。名詞の重なりは isWholeWordEcho が見る。
  */
 export const isKanaEcho = (words: readonly Inflection[], index: number): boolean => {
   const [before, first, second] = [words[index - 2], words[index - 1], words[index]];
@@ -201,5 +202,115 @@ export const isKanaEcho = (words: readonly Inflection[], index: number): boolean
   );
 };
 
-/** 活用した語の重なりか、仮名の語の重なり。pos.ts が二つ目に Echo=Rdp を付ける。 */
-export const isEchoAt = (words: readonly Inflection[], index: number): boolean => isInflectedEcho(words, index) || isKanaEcho(words, index);
+/** 名詞の細分類のうち、それだけでは語にならないもの（こと・の、さん・的、数）。 */
+const DEPENDENT_NOUN = new Set(["非自立", "接尾", "数"]);
+
+const isContentNoun = (word: Inflection): boolean => word.pos === "名詞" && !DEPENDENT_NOUN.has(word.detail);
+
+/** 言い切りの形の形容詞（えらい・若い）。続く形（長く長く）は isInflectedEcho が見る。 */
+const isPlainAdjective = (word: Inflection): boolean => word.pos === "形容詞" && word.detail === "自立" && word.form === "基本形";
+
+/** 漢字だけで書いた名詞。漢語（確認・資料）の重なりはたいてい書き損じ。 */
+const KANJI_ONLY = /^\p{Script=Han}+$/u;
+
+/** 漢字の名詞でも重ねて言うもの。時を言う副詞的な名詞（毎年・各自・一瞬）と、形容動詞の語幹（駄目・大変）。 */
+const REDUPLICATING_DETAIL = new Set(["副詞可能", "形容動詞語幹"]);
+
+/**
+ * 重ねて言える名詞か。漢字だけの名詞は、人・単位・時・場所のまとまりを言うもの（個人・一行・時代・地域。語彙表 distributive-noun）と
+ * REDUPLICATING_DETAIL の細分類だけ。仮名や送り仮名のある名詞（それ・もちもち・早め）は丸ごと重ねれば畳語か強め。
+ */
+const reduplicates = (noun: Inflection, kanjiNouns: ReadonlySet<string>): boolean =>
+  !KANJI_ONLY.test(noun.surface) || REDUPLICATING_DETAIL.has(noun.detail) || kanjiNouns.has(noun.surface);
+
+/** 二つ目の名詞は、解析器が前の名詞に付く接尾語と読むことがある（好き好き・嫌い嫌い の二つ目）。 */
+const isWholeWordPair = (first: Inflection, second: Inflection, kanjiNouns: ReadonlySet<string>): boolean =>
+  (isContentNoun(first) && second.pos === "名詞" && reduplicates(first, kanjiNouns)) || (isPlainAdjective(first) && isPlainAdjective(second));
+
+const KATAKANA = /^[\p{Script=Katakana}ー]+$/u;
+
+/** 擬音・擬態語の根の拍の数（ムク・ブイ・ゴロン・ブー）。 */
+const MIMETIC_UNIT = { fewest: 2, most: 3 } as const;
+
+/** 伸ばす音が根の途中にある語（データ）は外来語。擬音の伸ばす音は根の終わりに来る（ブーブー）。 */
+const INNER_LONG_VOWEL = /ー./u;
+
+const isMimeticUnit = (surface: string): boolean => {
+  const morae = moraeOf(surface);
+  return morae >= MIMETIC_UNIT.fewest && morae <= MIMETIC_UNIT.most && !INNER_LONG_VOWEL.test(surface);
+};
+
+/** 「する」は名詞を動詞にするだけで、擬音の後ろの動詞（ブイブイ言わせる）とは違い、外来語の重なり（テストテストする）にも付く。 */
+const LIGHT_VERB = "する";
+
+/** 擬音は副詞として立つ。後ろに「と」「に」が続くか、行が終わるか（endsAsAdverb）、動詞に直接かかる（ブイブイ言わせる）。 */
+const standsAsMimetic = (second: Inflection, next: Inflection | undefined): boolean =>
+  endsAsAdverb(second, next) || (next !== undefined && next.pos === "動詞" && next.detail === "自立" && next.surface !== LIGHT_VERB && touches(second, next));
+
+/**
+ * 片仮名の語はたいてい外来語（ユーザー・テスト・メモ）で、重ねれば書き損じ。擬音（ムクムクと・ブイブイ言わせる）は、根が擬音の形で、
+ * 副詞の位置に立つものだけ。解析器は擬音の根も名詞（椋・ブイ）と読むので、品詞では見分けられない。
+ */
+const isLoanwordPair = (second: Inflection, next: Inflection | undefined): boolean =>
+  KATAKANA.test(second.surface) && !(isMimeticUnit(second.surface) && standsAsMimetic(second, next));
+
+const sameAndTouching = (first: Inflection | undefined, second: Inflection | undefined): boolean =>
+  first !== undefined && second !== undefined && first.surface === second.surface && touches(first, second);
+
+/**
+ * 内容語（名詞・形容詞）を丸ごと重ねた形は畳語か強め（個人個人・一行一行・駄目駄目・えらいえらい・それそれ・もちもち）。
+ * 漢語の名詞は reduplicates が認めるものだけで、ほかの重なり（確認確認・資料資料）は書き損じ。kanjiNouns は pos.ts が語彙表から渡す。
+ * 一字の漢字（法法・金金）は isIteratedKanji、外来語（ユーザーユーザー）と三つ続く重なり（早め早め早め）は書き損じのまま。
+ */
+export const isWholeWordEcho = (words: readonly Inflection[], index: number, kanjiNouns: ReadonlySet<string>): boolean => {
+  const [before, first, second] = [words[index - 2], words[index - 1], words[index]];
+  return (
+    first !== undefined &&
+    second !== undefined &&
+    isWholeWordPair(first, second, kanjiNouns) &&
+    sameAndTouching(first, second) &&
+    first.surface.length >= MIN_ECHO_LENGTH &&
+    !isLoanwordPair(second, words[index + 1]) &&
+    !sameAndTouching(before, first)
+  );
+};
+
+/**
+ * 重ねて笑い声や擬音になる一字の仮名。平仮名は笑い声の行（ははは・ふふふ・へへへ）だけで、助詞（ををを・ににに・よよよ）は書き損じ。
+ * 片仮名の一字（ババババ・ドドド）は擬音で、片仮名の助詞は書かない。
+ */
+const REPEATED_KANA = /^[はひふへほ\p{Script=Katakana}]$/u;
+
+/** 前の語に付かずに立つ並びの、前に来てよい語。記号（「・、）と、笑い声の頭の「あ」（フィラー・感動詞）。 */
+const FREE_BEFORE = new Set(["記号", "フィラー", "感動詞"]);
+
+/** index の語を含む、同じ語が接して続く並びの最初の位置。 */
+const runStart = (words: readonly Inflection[], index: number): number => {
+  const before = words.slice(0, index + 1).findLastIndex((word, at) => !sameAndTouching(words[at - 1], word));
+  return Math.max(before, 0);
+};
+
+/** 並びが前の語に付いていない（文の頭、空白の後ろ、記号やフィラーの後ろ）。付いていれば助詞・助動詞の書き損じ（資料ををを・行ったたた）。 */
+const standsFree = (words: readonly Inflection[], start: number): boolean => {
+  const [before, first] = [words[start - 1], words[start]];
+  return before === undefined || first === undefined || !touches(before, first) || FREE_BEFORE.has(before.pos);
+};
+
+/**
+ * 笑い声・擬音の一字の仮名が三つ以上続き、前の語に付かずに立つ並び（ははは・あははは・ふふふ・ドドド）は笑い声か擬音。解析器は一字ずつ助詞などに切る。
+ * 二つだけの重なり（をを・たた・よよ・かか）、助詞の仮名の並び（ををを）、前の語に付いた並び（私ははは）は書き損じのまま。
+ */
+export const isKanaRepeat = (words: readonly Inflection[], index: number): boolean => {
+  const [before, first, second, after] = [words[index - 2], words[index - 1], words[index], words[index + 1]];
+  return (
+    second !== undefined &&
+    REPEATED_KANA.test(second.surface) &&
+    sameAndTouching(first, second) &&
+    (sameAndTouching(before, first) || sameAndTouching(second, after)) &&
+    standsFree(words, runStart(words, index))
+  );
+};
+
+/** 活用した語・仮名の語・内容語の重なりか、一字の仮名の三つ以上の並び。pos.ts が二つ目に Echo=Rdp を付ける。 */
+export const isEchoAt = (words: readonly Inflection[], index: number, kanjiNouns: ReadonlySet<string>): boolean =>
+  isInflectedEcho(words, index) || isKanaEcho(words, index) || isWholeWordEcho(words, index, kanjiNouns) || isKanaRepeat(words, index);

@@ -24,6 +24,7 @@ how_to_fix:
 levels: { strict: 3, normal: 8, relaxed: 20 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+sources: [zhang-2024]
 
 group: readability
 summary:
@@ -47,5 +48,5 @@ not_flagged:
   ja: 短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
   en: Documents under 200 words are not measured.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 words
+  ja: 1000 字あたり絵文字 {limit} 個まで
+  en: up to {limit} emoji per 1000 words

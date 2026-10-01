@@ -1,7 +1,7 @@
 import { definedLevels, resolve, severityAt } from "../levels.ts";
-import { readableText } from "./text.ts";
+import { fill, localized, readableText } from "./text.ts";
 import { SEVERITY_NAME } from "./severity-name.ts";
-import { uiLanguageOf, type Texts, type UiLanguage } from "../ui.ts";
+import { uiLanguageOf, type Texts } from "../ui.ts";
 import type { Level, RuleDefinition } from "../plugin.ts";
 import { optionLines } from "./options.ts";
 import type { OptionLayer } from "../rule-options.ts";
@@ -14,7 +14,8 @@ const TEXT: Texts<{
   readonly howToFix: string;
   readonly example: string;
   readonly definedIn: string;
-  readonly values: (unit: string) => string;
+  readonly values: string;
+  readonly times: string;
   readonly severities: string;
   readonly now: (level: string) => string;
   readonly from: (source: string) => string;
@@ -28,7 +29,8 @@ const TEXT: Texts<{
     howToFix: "直しかた",
     example: "例",
     definedIn: "このルールはチームが chaff.yaml の custom_rules で決めたものです。",
-    values: (unit) => `設定できる値（単位: ${unit}）:`,
+    values: "設定できる値:",
+    times: "回",
     severities: "設定できる値（数える上限は無く、指摘の重さが変わります）:",
     now: (level) => `いまは ${level} です。`,
     from: (source) => `（${source} で決めています）`,
@@ -42,7 +44,8 @@ const TEXT: Texts<{
     howToFix: "How to fix",
     example: "Example",
     definedIn: "The team defined this rule under custom_rules in chaff.yaml.",
-    values: (unit) => `Levels (unit: ${unit}):`,
+    values: "Levels:",
+    times: "times",
     severities: "Levels (there is no limit to count to; a level sets how a finding is marked):",
     now: (level) => `Now: ${level}.`,
     from: (source) => ` (set by ${source})`,
@@ -50,14 +53,25 @@ const TEXT: Texts<{
   },
 };
 
-/** What a level holds: the limit a detector counts to, or the severity a rule with nothing to count gives. */
-const valueAt = (rule: RuleDefinition, level: Exclude<Level, "off">, genre: string | undefined, ui: UiLanguage): string =>
-  rule.level_sets === "severity" ? SEVERITY_NAME[ui][severityAt(rule, level, genre)] : String(resolve(rule, level, genre).limit);
+/**
+ * A limit in the rule's words for what it counts ("up to 8 emoji per 1000 words"), as the rule reference shows it.
+ * A rule that says nothing (a team's custom rule) counts matches, so its limit is a number of times.
+ */
+const limitText = (rule: RuleDefinition, limit: number, language: string): string => {
+  const meaning = localized(rule.guide?.levelMeaning ?? {}, language);
+  return meaning === "" ? `${String(limit)} ${TEXT[uiLanguageOf(language)].times}` : fill(meaning, { limit });
+};
 
-const levelLine = (rule: RuleDefinition, level: Level, current: Level, genre: string | undefined, ui: UiLanguage): string => {
+/** What a level holds: the limit a detector counts to, or the severity a rule with nothing to count gives. */
+const valueAt = (rule: RuleDefinition, level: Exclude<Level, "off">, genre: string | undefined, language: string): string =>
+  rule.level_sets === "severity"
+    ? SEVERITY_NAME[uiLanguageOf(language)][severityAt(rule, level, genre)]
+    : limitText(rule, resolve(rule, level, genre).limit, language);
+
+const levelLine = (rule: RuleDefinition, level: Level, current: Level, genre: string | undefined, language: string): string => {
   const mark = level === current ? "→" : " ";
   const name = level.padEnd(9);
-  return level === "off" ? `  ${mark} ${name}${TEXT[ui].off}` : `  ${mark} ${name}${valueAt(rule, level, genre, ui)}`;
+  return level === "off" ? `  ${mark} ${name}${TEXT[uiLanguageOf(language)].off}` : `  ${mark} ${name}${valueAt(rule, level, genre, language)}`;
 };
 
 /** ジャンルで数字が変わる rule は、それを言わないと「設定したのに効かない」に見える。 */
@@ -79,7 +93,7 @@ const exampleLines = (rule: RuleDefinition, language: string, text: (typeof TEXT
 export type ExplainSettings = { readonly optionLayers?: readonly OptionLayer[]; readonly levelFrom?: string | undefined };
 
 /** rule の意図と根拠を読む。指摘に納得できないときの入口。 */
-export const renderExplain = (rule: RuleDefinition, current: Level, language: string, unit: string, genre?: string, settings: ExplainSettings = {}): string => {
+export const renderExplain = (rule: RuleDefinition, current: Level, language: string, genre?: string, settings: ExplainSettings = {}): string => {
   const { optionLayers = [], levelFrom } = settings;
   const ui = uiLanguageOf(language);
   const text = TEXT[ui];
@@ -93,8 +107,8 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
     `  ${text.howToFix}: ${readableText(rule, rule.how_to_fix, language)}`,
     ...exampleLines(rule, language, text),
     "",
-    `  ${rule.level_sets === "severity" ? text.severities : text.values(unit)}`,
-    ...definedLevels(rule).map((level) => levelLine(rule, level, current, genre, ui)),
+    `  ${rule.level_sets === "severity" ? text.severities : text.values}`,
+    ...definedLevels(rule).map((level) => levelLine(rule, level, current, genre, language)),
     ...genreNote(rule, genre, text),
     ...optionLines(rule, optionLayers, language),
     "",
