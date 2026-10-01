@@ -54,9 +54,11 @@ const VERSION_SO_FAR = /[A-Za-zＡ-Ｚａ-ｚ][0-9０-９]+(?:\.[0-9０-９]+)*$
 /** 版の番号を後ろ向きに読む長さの上限。長い行で点ごとに行の頭から読み直さない。 */
 const VERSION_REACH = 32;
 
-/** 版の番号の続き（TLS1.2 の 2、Python3.12.4 の 12 と 4）。幅は名前の英字に従い、文書の数の書き方の票にはしない。 */
-const continuesVersion = (text: string, start: number): boolean =>
-  text.charAt(start - 1) === "." && VERSION_SO_FAR.test(text.slice(Math.max(0, start - 1 - VERSION_REACH), start - 1));
+/** 版の番号の続き（TLS1.2 の 2、Python3.12.4 の 12 と 4）。名前の数字と同じ幅なら、幅は名前に従い、文書の数の書き方の票にはしない（TLS1.２ の ２ は数える）。 */
+const continuesVersion = (text: string, start: number, run: string): boolean =>
+  text.charAt(start - 1) === "." &&
+  FULLWIDTH.test(run) === FULLWIDTH.test(text.charAt(start - 2)) &&
+  VERSION_SO_FAR.test(text.slice(Math.max(0, start - 1 - VERSION_REACH), start - 1));
 
 const isListItemNumber = (source: string, offset: number): boolean => LIST_ITEM_HEAD.test(source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset));
 
@@ -74,7 +76,7 @@ export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
     .filter((match) => !isLabel(sentence.text, match.index, match.index + match[0].length))
     .filter((match) => !isListItemNumber(source, sentence.span.start + match.index))
     .filter((match) => !isInAddress(sentence.text, match.index, match.index + match[0].length))
-    .filter((match) => !continuesVersion(sentence.text, match.index))
+    .filter((match) => !continuesVersion(sentence.text, match.index, match[0]))
     .map((match) => ({ kind: kindOf(match[0]), fullwidth: FULLWIDTH.test(match[0]), written: match[0], offset: sentence.span.start + match.index }));
 };
 

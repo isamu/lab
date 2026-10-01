@@ -65,6 +65,10 @@ describe("fullwidth-alnum-consistency: 英数字の全角と半角が混ざっ�
     assert.deepEqual(findingsOf(`${fullwidth}ブラウザが TLS1.2 に対応していること。Python3.12 で動きます。Python3.12.4 も動きます。\n`), []);
   });
 
+  it("版の番号でも、名前の数字と幅が違う続き（TLS1.２）は数える", () => {
+    assert.deepEqual(findingsOf(`${PLAIN}対応は TLS1.２ です。\n`), ["全角の「２」と書いています（この文書はふつう半角の「2」。5 箇所のうち 1 箇所が違う）"]);
+  });
+
   it("名前（EC2）の後ろでも、点でつながっていない数は数える", () => {
     const fullwidth = "部屋は２つ、窓は３つ、机は４つ、椅子は６つ、棚は７つです。";
     assert.deepEqual(findingsOf(`${fullwidth}サーバーは EC2 8台です。\n`), [
