@@ -78,11 +78,20 @@ describe("closing-cliche", () => {
   });
 
   it("valid: 長い最後の節の途中の「いかがでしょうか」は結びではない", () => {
-    const body = "# 題\n\n## 一\n\n本文です。\n\n## 二\n\n手で作ってみるのはいかがでしょうか。\n\n次に、設定を一行変えます。ビルドが速くなりました。\n";
+    const later = Array.from({ length: 5 }, (_, index) => `${String(index + 1)} 番目の手順です。`).join("\n\n");
+    const body = `# 題\n\n## 一\n\n本文です。\n\n## 二\n\n手で作ってみるのはいかがでしょうか。\n\n${later}\n`;
     assert.ok(!idsFor(body).includes("closing-cliche"));
   });
 
-  it("invalid: 見出しの無い文書でも、最後の段落の決まり文句は結び", () => {
+  it("invalid: 決まり文句の後ろに一言や追記が続いても、終わりの段落なら結び", () => {
+    assert.ok(
+      idsFor("# 題\n\n## 一\n\n本文です。\n\n## まとめ\n\nいかがでしたでしょうか。\n\n個人的には便利でした。\n\nそれではよいお年を！\n").includes(
+        "closing-cliche",
+      ),
+    );
+  });
+
+  it("invalid: 見出しの無い文書でも、終わりの段落の決まり文句は結び", () => {
     assert.ok(idsFor("# 題\n\n本文です。\n\n次の段落です。\n\nいかがでしたか。\n").includes("closing-cliche"));
     assert.ok(idsFor("本文です。\n\n参考になれば幸いです。\n").includes("closing-cliche"));
   });
