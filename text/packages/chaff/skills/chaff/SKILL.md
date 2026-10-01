@@ -167,13 +167,26 @@ repeats the body. The writer usually wants the structure changed, not only the s
    - the register of the writer's other paragraphs (です/ます or だ/である) and of the platform (Zenn, a company
      report, an email);
    - nothing the inventory does not have: no new facts, people, numbers, causes or consequences.
+
+   Three principles while writing:
+   - **Undo personification.** A thing or an idea as the subject of a verb of will (秩序が壊れる, 文化が醸成される,
+     アーキテクチャが要求する) becomes what a person or the system does. 「チームにレビューの文化が醸成された」 →
+     「チームで互いのコードをレビューするようになった」. If the original does not say who, ask the writer.
+   - **Turn noun endings and noun chains back into sentences with a verb.** 「キュー滞留によるメッセージ処理遅延の発生。」 →
+     「キューにメッセージが溜まり、処理が遅れた。」 A noun ending hides who did what and when.
+   - **Never invent specifics.** A vague sentence may read better with a concrete example. If the writer did not give
+     one, ask for it, or mark your guess for them to confirm. Never write it as fact.
+     「チームの雰囲気が良くなった」 stays as it is, with a question: 「雰囲気が良くなったと感じたのは、どんな場面でしたか」.
+     `chaff compare` catches an added number or name, but not added wording such as 「朝会で冗談が出るようになり」, so
+     this one is yours to keep.
 5. **Check.**
    - `npx chaffjs <old> --experimental` and `npx chaffjs <new> --experimental`: the AI signals before and after.
    - `npx chaffjs outline <old> <new>`: headings, average section length, text in lists, bold, before and after. A
      restructure shows up here, not only in rule counts.
-   - `npx chaffjs compare <old> <new> --allow-dropped heading --allow-added heading`: the headings are the structure
-     you rebuilt on purpose; every other dropped fact is restored and no other fact is added. A fact the old text only repeated (in a cut
-     まとめ) may stay out with that reason.
+   - `npx chaffjs compare <old> <new> --distinct --allow-dropped heading --allow-added heading`: the headings are the
+     structure you rebuilt on purpose; every other dropped fact is restored and no other fact is added. A cut まとめ
+     restates facts the body still holds, so `--distinct` counts a fact as kept when the new text states it at least
+     once.
 6. **Stop** when all of these hold, or after two full passes, whichever comes first:
    - `ai-generated-composite` does not fire;
    - the density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits;

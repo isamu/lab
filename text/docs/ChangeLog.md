@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### Full rewrite: three principles, and `compare --distinct` in the check
+
+The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human":
+
+- The Full mode's check runs `chaff compare <old> <new> --distinct --allow-dropped heading --allow-added heading`. A cut
+  まとめ restates facts the body still holds; `--distinct` counts a fact as kept when the new text states it once.
+- Three principles for writing, each with a before and after: undo personification (文化が醸成される becomes what
+  people do), turn noun endings and noun chains back into sentences with a verb (「〜の発生。」), and never invent
+  specifics: ask the writer, or mark the guess for them to confirm. `chaff compare` catches an added number or name but
+  not added wording, so the last is the rewriter's to keep.
+
 ### New rule: `nominalization`, verbs hidden in nouns (experimental)
 
 - chaff counts verbs written as nouns and carried by another verb: 調査を実施した for 調査した, 確認を行う for 確認する,
