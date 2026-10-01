@@ -4,7 +4,8 @@ import { analyserPieces } from "./analyser-pieces.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
 import { outsideTheReport, isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
-import { isEchoAt, type Inflection } from "./reduplication.ts";
+import { distributiveVocabulary, isEchoAt, type Inflection } from "./reduplication.ts";
+import { isRaDroppedAt, raDroppedVocabulary } from "./ra-dropped.ts";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import type { Token } from "chaffjs/plugin";
@@ -113,7 +114,13 @@ export const upos = (pos: string, detail: string): string => BY_DETAIL[detail] ?
  * （自発や状態を言う動詞、名付けの「と呼ばれる」、尊敬の形と決まり文句、ら抜きと可能）と、文が報告する動作の外にあるもの
  * （仮定の節、「〜されやすい」）は passive-reading.ts が外す。残りは「受動の形」として印を付ける。
  */
-const PASSIVE_VOCABULARY = passiveVocabulary(loadLexicons());
+const LEXICONS = loadLexicons();
+
+const PASSIVE_VOCABULARY = passiveVocabulary(LEXICONS);
+
+const RA_DROPPED_VOCABULARY = raDroppedVocabulary(LEXICONS);
+
+const REDUPLICATING_NOUNS = distributiveVocabulary(LEXICONS).nouns;
 
 /**
  * 非自立名詞（の・こと・もの・ため・はず）。品詞は名詞だが、単独では何も指さない。
@@ -146,14 +153,17 @@ export const isReady = (): boolean => state.ready !== undefined;
  * span は渡した文字列の先頭を 0 とする。位置は kuromoji の word_position ではなく、語の文字を本文と照らして決める（surface-starts.ts）。
  * 形の違うものが混ざったら、その 1 つを落とす。位置が NaN の token を下流に流さない。
  */
-const toToken = (morpheme: Morpheme, start: number, passive: boolean, echo: boolean, light: boolean): Token => ({
+/** 形態素を語にするときに、前後の形態素から決まる印。 */
+type Marks = { readonly passive: boolean; readonly echo: boolean; readonly light: boolean; readonly raDropped: boolean };
+
+const toToken = (morpheme: Morpheme, start: number, { passive, echo, light, raDropped }: Marks): Token => ({
   span: { start, end: start + morpheme.surface_form.length },
   surface: morpheme.surface_form,
   // UD の日本語では「れる/られる」は AUX。IPADIC の「動詞,接尾」をそこへ寄せる。
   pos: isPassiveForm(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
   ...(morpheme.basic_form === "*" ? {} : { lemma: morpheme.basic_form }),
   ...(typeof morpheme.reading !== "string" || morpheme.reading === "*" ? {} : { reading: morpheme.reading }),
-  ...withEcho(withWordStatus(featuresOf(morpheme, passive), isBound(morpheme), light), echo),
+  ...withRaDropped(withEcho(withWordStatus(featuresOf(morpheme, passive), isBound(morpheme), light), echo), raDropped),
 });
 
 /**
@@ -182,6 +192,10 @@ const withWordStatus = (
 /** 重ね言葉の二つ目（UD の Echo=Rdp）。ほかの印は残す。 */
 const withEcho = (found: { features?: Readonly<Record<string, string>> }, echo: boolean): { features?: Readonly<Record<string, string>> } =>
   echo ? { features: { ...found.features, Echo: "Rdp" } } : found;
+
+/** ら抜き言葉の一部（「食べれる」の 食べ と れる、「見れる」）。日本語に固有の印で、UD の FEATS の言語別拡張。 */
+const withRaDropped = (found: { features?: Readonly<Record<string, string>> }, raDropped: boolean): { features?: Readonly<Record<string, string>> } =>
+  raDropped ? { features: { ...found.features, PotentialRa: "Dropped" } } : found;
 
 /**
  * 数（名詞,数）。UPOS では名詞に寄せるので、数であることは UD の NumType=Card で渡す。
@@ -222,8 +236,16 @@ const featuresOf = (morpheme: Morpheme, passive: boolean): { features?: Readonly
   const name = placeType(morpheme) ?? personOrOrganisation(morpheme);
   if (name !== undefined) return { features: { NameType: name } };
   if (isCounter(morpheme)) return { features: { NounType: "Class" } };
+  if (isVerbalNoun(morpheme)) return { features: { VerbForm: "Vnoun" } };
   return {};
 };
+
+/**
+ * サ変名詞（調査・確認）。「する」を付ければ動詞になる名詞。UD の VerbForm=Vnoun。
+ * 辞書は知らない記号（「(VM)を」の「)」）もサ変接続に入れるので、字（漢字・かな・英字）を含む語だけ。
+ */
+const LETTER = /\p{L}/u;
+const isVerbalNoun = (morpheme: Morpheme): boolean => morpheme.pos === "名詞" && morpheme.pos_detail_1 === "サ変接続" && LETTER.test(morpheme.surface_form);
 
 /**
  * 名詞を修飾しているだけの受動から印を外す。「使用されるフレームワーク」
@@ -262,20 +284,24 @@ const inflectionOf = (morpheme: Morpheme, start: number): Inflection => ({
   start,
 });
 
+/** 解析器を読み込んでいないか、読めなかったら undefined。 */
+const readReady = (text: string): Placed[] | undefined => (state.ready === undefined ? undefined : readWith(state.ready, text));
+
 export const tokenize = (text: string): Token[] | undefined => {
-  const tokenizer = state.ready;
-  if (tokenizer === undefined) return undefined;
-  const read = readAll(tokenizer, text);
+  const read = readReady(text);
+  return read === undefined ? undefined : tokensOf(read);
+};
+
+const tokensOf = (read: readonly Placed[]): Token[] => {
   const sequence = read.map(({ morpheme }) => morpheme);
   const inflections = read.map(({ morpheme, start }) => inflectionOf(morpheme, start));
   return read.map(({ morpheme, start }, index) =>
-    toToken(
-      morpheme,
-      start,
-      readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index),
-      isEchoAt(inflections, index),
-      isLightVerbAt(sequence, index),
-    ),
+    toToken(morpheme, start, {
+      passive: readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index),
+      echo: isEchoAt(inflections, index, REDUPLICATING_NOUNS),
+      light: isLightVerbAt(sequence, index),
+      raDropped: isRaDroppedAt(sequence, index, RA_DROPPED_VOCABULARY),
+    }),
   );
 };
 
@@ -285,14 +311,23 @@ const PIECE_LIMIT = 1000;
 const analyse = (tokenizer: Tokenizer, text: string): Morpheme[] =>
   readCounterTsu(analyserPieces(text, PIECE_LIMIT).flatMap((piece) => toArray(callMethod(tokenizer, "tokenize", [piece])).flatMap(toMorpheme)));
 
-/** 解析器は片割れのサロゲートで例外を投げる。数量の後ろを数文字だけ読み直すと、絵文字を半分に切ることがある。 */
-const readAll = (tokenizer: Tokenizer, text: string): { readonly morpheme: Morpheme; readonly start: number }[] => {
+type Placed = { readonly morpheme: Morpheme; readonly start: number };
+
+/**
+ * 読めない文字は先に置き換える（wellFormed）。それでも解析器が投げたら undefined を返し、品詞の無い文として渡す。
+ * 一つの文書のために run 全体を止めない。品詞が要る rule は、core が「読めなかった」として動かさない。
+ */
+export const readWith = (tokenizer: Tokenizer, text: string): Placed[] | undefined => {
   const readable = wellFormed(text);
-  return placed(readable, analyse(tokenizer, readable));
+  try {
+    return placed(readable, analyse(tokenizer, readable));
+  } catch {
+    return undefined;
+  }
 };
 
 /** 形態素と、本文の中での始まり。本文に見つからないものは落とす。 */
-const placed = (text: string, raws: readonly Morpheme[]): { readonly morpheme: Morpheme; readonly start: number }[] => {
+const placed = (text: string, raws: readonly Morpheme[]): Placed[] => {
   const starts = surfaceStarts(
     text,
     raws.map((raw) => raw.surface_form),
@@ -316,11 +351,9 @@ export type Morph = {
   readonly detail2: string;
 };
 
-/** 解析器を読み込んでいなければ undefined。呼ぶ側は、形態素なしの読み方に戻る。 */
-export const morphemes = (text: string): Morph[] | undefined => {
-  const tokenizer = state.ready;
-  if (tokenizer === undefined) return undefined;
-  return readAll(tokenizer, text).map(({ morpheme: raw, start }) => ({
+/** 解析器を読み込んでいないか、読めなければ undefined。呼ぶ側は、形態素なしの読み方に戻る。 */
+export const morphemes = (text: string): Morph[] | undefined =>
+  readReady(text)?.map(({ morpheme: raw, start }) => ({
     start,
     end: start + raw.surface_form.length,
     surface: raw.surface_form,
@@ -328,7 +361,6 @@ export const morphemes = (text: string): Morph[] | undefined => {
     detail1: raw.pos_detail_1,
     detail2: raw.pos_detail_2,
   }));
-};
 
 const isCounterMorph = (morph: Morph): boolean => morph.pos === "名詞" && morph.detail1 === "接尾" && morph.detail2 === "助数詞";
 

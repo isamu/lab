@@ -152,12 +152,24 @@ export const hyphenGroups = (text: string): string[] => text.split(HYPHEN).filte
 
 const isCodeChar = (char: string | undefined): boolean => DIGIT.test(char ?? "") || isHyphen(char);
 
-const isCode = (chars: readonly string[], digit: number): boolean => {
+/** digit を含む、isPart の字の並び。 */
+const runAround = (chars: readonly string[], digit: number, isPart: (char: string | undefined) => boolean): string => {
   let [first, last] = [digit, digit];
-  while (first > 0 && isCodeChar(chars[first - 1])) first -= 1;
-  while (last < chars.length - 1 && isCodeChar(chars[last + 1])) last += 1;
-  return hyphenGroups(chars.slice(first, last + 1).join("")).length >= MIN_CODE_GROUPS;
+  while (first > 0 && isPart(chars[first - 1])) first -= 1;
+  while (last < chars.length - 1 && isPart(chars[last + 1])) last += 1;
+  return chars.slice(first, last + 1).join("");
 };
+
+const isDottedChar = (char: string | undefined): boolean => DIGIT.test(char ?? "") || char === ".";
+
+/** 「1.0.0」「3.1.2」のように . でつないだ 3 組以上の数字は、版や項目の番号で数量ではない。2 組（「1.5 倍」）は小数なので数える。 */
+const isDottedCode = (chars: readonly string[], digit: number): boolean =>
+  runAround(chars, digit, isDottedChar)
+    .split(".")
+    .filter((group) => group !== "").length >= MIN_CODE_GROUPS;
+
+const isCode = (chars: readonly string[], digit: number): boolean =>
+  hyphenGroups(runAround(chars, digit, isCodeChar)).length >= MIN_CODE_GROUPS || isDottedCode(chars, digit);
 
 /** 日本語との境目にある数字が、数えない書き方（「第3条」の番地、「073-489-5909」の符号）か。 */
 const isUncountedNumber = (chars: readonly string[], index: number): boolean => {
@@ -201,13 +213,30 @@ export const latinBoundaries = (text: string, written: string = text): Boundary[
 };
 
 /**
- * 混ざっているとき、そろえるべき少数派。種類（英字・数字の前・数字の後ろ）ごとに数える。
+ * 二通りの書き方（true と false）が混ざっているとき、そろえるべき少数派。どちらか一方しか無ければ undefined。
  * 同数なら、文書が先に使った書き方をその文書の書き方とみなし、後から出た書き方を少数派にする。
  */
-export const minorityStyle = (boundaries: readonly { readonly spaced: boolean }[]): boolean | undefined => {
-  const spaced = boundaries.filter((boundary) => boundary.spaced).length;
-  const touching = boundaries.length - spaced;
-  if (spaced === 0 || touching === 0) return undefined;
-  if (spaced !== touching) return spaced < touching;
-  return !(boundaries[0]?.spaced ?? false);
+export const minorityOf = (written: readonly boolean[]): boolean | undefined => {
+  const yes = written.filter(Boolean).length;
+  const no = written.length - yes;
+  if (yes === 0 || no === 0) return undefined;
+  if (yes !== no) return yes < no;
+  return !(written[0] ?? false);
 };
+
+const PERCENT = 100;
+
+/**
+ * 二通りに書き分けたもの（side が true か false）のうち、少ないほうのもの。少ないほうが全体の limitPercent パーセントを超えるなら、
+ * 文書が使い分けていると見て空。どちらか一方しか無くても空。
+ */
+export const minorityWithin = <T>(items: readonly T[], side: (item: T) => boolean, limitPercent: number): T[] => {
+  const minority = minorityOf(items.map(side));
+  if (minority === undefined) return [];
+  const odd = items.filter((item) => side(item) === minority);
+  return odd.length * PERCENT > limitPercent * items.length ? [] : odd;
+};
+
+/** 空けるか詰めるかの少数派。種類（英字・数字の前・数字の後ろ）ごとに数える。 */
+export const minorityStyle = (boundaries: readonly { readonly spaced: boolean }[]): boolean | undefined =>
+  minorityOf(boundaries.map((boundary) => boundary.spaced));

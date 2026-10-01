@@ -13,17 +13,18 @@ why:
   en: One emoji marks a spot. Many turn the text into decoration, and a screen reader has to say all of them.
 
 message:
-  ja: 1000 語あたり {density} 個の絵文字があります（{limit} 個まで）
+  ja: 1000 字あたり {density} 個の絵文字があります（{limit} 個まで）
   en: "{density} emoji per 1000 words (limit {limit})"
 
 how_to_fix:
   ja: 見出しや強調で代えられるものは代えてください。
   en: Where a heading or emphasis would do the same job, use that instead.
 
-# 1000 語あたりの個数。件数で数えると長い文書ほど当たる。
+# 1000 語（日本語は 1000 字）あたりの個数。件数で数えると長い文書ほど当たる。
 levels: { strict: 3, normal: 8, relaxed: 20 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+sources: [zhang-2024]
 
 group: readability
 summary:
@@ -47,5 +48,5 @@ not_flagged:
   ja: 短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
   en: Documents under 200 words are not measured.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 words
+  ja: 1000 字あたり絵文字 {limit} 個まで
+  en: up to {limit} emoji per 1000 words

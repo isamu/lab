@@ -15,7 +15,7 @@ why:
   en: A run of product, company and person names hides the shape of the sentence from anyone who does not already know them. It reads fine to the person who wrote it.
 
 message:
-  ja: 1000 語あたり {density} 個の固有名詞があります（{limit} 個まで）
+  ja: 1000 字あたり {density} 個の固有名詞があります（{limit} 個まで）
   en: "{density} proper {density|noun|nouns} per 1000 words (limit {limit})"
 
 how_to_fix:
@@ -49,5 +49,5 @@ not_flagged:
   ja: chaff.yaml の names に書いた名前は、何語に分かれても 1 つと数えます。短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
   en: A name listed under names in chaff.yaml counts as one, however many words it has. Short documents (under 200 words) are not measured.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 words
+  ja: 1000 字あたり固有名詞 {limit} 個まで
+  en: up to {limit} proper nouns per 1000 words

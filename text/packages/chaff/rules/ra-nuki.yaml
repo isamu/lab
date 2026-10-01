@@ -1,0 +1,43 @@
+id: ra-nuki
+layer: L2
+status: experimental
+how_to_find: ra-nuki
+# 一段動詞かどうかは品詞解析で読む。品詞が無ければ動かない。
+requires: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: ら抜き言葉
+  en: Potential form without ra
+
+why:
+  ja: 一段動詞とカ変動詞の可能の形は「られる」です（見られる・食べられる・来られる）。「見れる」「食べれる」「来れる」は話し言葉では広く使われますが、書き言葉では誤りと読まれます。五段動詞の可能の形（走れる・帰れる）は正しいので指しません。どの動詞が一段動詞かは品詞解析で読みます。鉤括弧や引用符で引いた言葉（話した言葉をそのまま引いたもの）は数えません。話し言葉と文学のジャンルでは既定で止めています。
+  en: The potential form of an ichidan verb or of 来る takes られる (見られる, 食べられる, 来られる). 見れる, 食べれる and 来れる are common in speech but read as mistakes in writing. The potential of a godan verb (走れる, 帰れる) is correct and is not reported. Which verbs are ichidan is read by the morphological analyser. Words quoted in brackets or quotation marks (speech quoted as spoken) are not counted. The speech and literature presets turn it off.
+
+message:
+  ja: 「{matched}」は「ら」の抜けた形です
+  en: '"{matched}" drops the ら of the potential form'
+
+how_to_fix:
+  ja: 「ら」を入れてください（見れる → 見られる、食べれる → 食べられる、来れる → 来られる）。
+  en: Put the ら back (見れる → 見られる, 食べれる → 食べられる, 来れる → 来られる).
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「見れる」「食べれる」「来れる」のような、ら抜き言葉
+  en: A Japanese potential form without ら, such as 見れる for 見られる
+example:
+  ja:
+    before: |
+      資料は明日から見れます。
+    after: |
+      資料は明日から見られます。
+
+not_flagged:
+  ja: 五段動詞の可能の形（走れる・帰れる）、鉤括弧や引用符で引いた言葉は指しません。話し言葉と文学のジャンルでは既定で止めています。
+  en: The potential of godan verbs (走れる, 帰れる) and quoted words are not reported. The speech and literature presets turn it off.

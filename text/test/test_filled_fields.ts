@@ -156,7 +156,7 @@ describe("where no finding exists, a placeholder reads as the rule's words for i
 
     it(`explain shows no placeholder (${language})`, () => {
       assert.deepEqual(
-        rules.flatMap((rule) => shownIn(renderExplain(rule, "normal", language, "char"), rule, [language])),
+        rules.flatMap((rule) => shownIn(renderExplain(rule, "normal", language), rule, [language])),
         [],
       );
     });
@@ -238,7 +238,7 @@ describe("every field the reader sees, not only how_to_fix", () => {
   });
 
   it("explain reads name, why and how_to_fix in the rule's words", () => {
-    const text = renderExplain(rule, "normal", "en", "word");
+    const text = renderExplain(rule, "normal", "en");
     ["Name READING", "Why READING", "Fix READING"].forEach((expected) => assert.ok(text.includes(expected), expected));
   });
 

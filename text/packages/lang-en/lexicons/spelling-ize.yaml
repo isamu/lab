@@ -1,0 +1,273 @@
+# -ise and -ize (organise / organize, organisation / organization). pattern is -ise, instead_of -ize.
+# Compared apart from spelling-variant: British writing uses both, and Oxford spelling writes -ize with colour.
+id: spelling-ize
+language: en
+entries:
+  - pattern: organise
+    instead_of: organize
+  - pattern: organises
+    instead_of: organizes
+  - pattern: organised
+    instead_of: organized
+  - pattern: organising
+    instead_of: organizing
+  - pattern: organisation
+    instead_of: organization
+  - pattern: organisations
+    instead_of: organizations
+  - pattern: organiser
+    instead_of: organizer
+  - pattern: organisers
+    instead_of: organizers
+  - pattern: recognise
+    instead_of: recognize
+  - pattern: recognises
+    instead_of: recognizes
+  - pattern: recognised
+    instead_of: recognized
+  - pattern: recognising
+    instead_of: recognizing
+  - pattern: realise
+    instead_of: realize
+  - pattern: realises
+    instead_of: realizes
+  - pattern: realised
+    instead_of: realized
+  - pattern: realising
+    instead_of: realizing
+  - pattern: realisation
+    instead_of: realization
+  - pattern: prioritise
+    instead_of: prioritize
+  - pattern: prioritises
+    instead_of: prioritizes
+  - pattern: prioritised
+    instead_of: prioritized
+  - pattern: prioritising
+    instead_of: prioritizing
+  - pattern: prioritisation
+    instead_of: prioritization
+  - pattern: minimise
+    instead_of: minimize
+  - pattern: minimises
+    instead_of: minimizes
+  - pattern: minimised
+    instead_of: minimized
+  - pattern: minimising
+    instead_of: minimizing
+  - pattern: maximise
+    instead_of: maximize
+  - pattern: maximises
+    instead_of: maximizes
+  - pattern: maximised
+    instead_of: maximized
+  - pattern: maximising
+    instead_of: maximizing
+  - pattern: optimise
+    instead_of: optimize
+  - pattern: optimises
+    instead_of: optimizes
+  - pattern: optimised
+    instead_of: optimized
+  - pattern: optimising
+    instead_of: optimizing
+  - pattern: optimisation
+    instead_of: optimization
+  - pattern: optimisations
+    instead_of: optimizations
+  - pattern: customise
+    instead_of: customize
+  - pattern: customises
+    instead_of: customizes
+  - pattern: customised
+    instead_of: customized
+  - pattern: customising
+    instead_of: customizing
+  - pattern: customisation
+    instead_of: customization
+  - pattern: customisable
+    instead_of: customizable
+  - pattern: standardise
+    instead_of: standardize
+  - pattern: standardises
+    instead_of: standardizes
+  - pattern: standardised
+    instead_of: standardized
+  - pattern: standardising
+    instead_of: standardizing
+  - pattern: standardisation
+    instead_of: standardization
+  - pattern: summarise
+    instead_of: summarize
+  - pattern: summarises
+    instead_of: summarizes
+  - pattern: summarised
+    instead_of: summarized
+  - pattern: summarising
+    instead_of: summarizing
+  - pattern: emphasise
+    instead_of: emphasize
+  - pattern: emphasises
+    instead_of: emphasizes
+  - pattern: emphasised
+    instead_of: emphasized
+  - pattern: emphasising
+    instead_of: emphasizing
+  - pattern: authorise
+    instead_of: authorize
+  - pattern: authorises
+    instead_of: authorizes
+  - pattern: authorised
+    instead_of: authorized
+  - pattern: authorising
+    instead_of: authorizing
+  - pattern: authorisation
+    instead_of: authorization
+  - pattern: authorisations
+    instead_of: authorizations
+  - pattern: categorise
+    instead_of: categorize
+  - pattern: categorises
+    instead_of: categorizes
+  - pattern: categorised
+    instead_of: categorized
+  - pattern: categorising
+    instead_of: categorizing
+  - pattern: categorisation
+    instead_of: categorization
+  - pattern: finalise
+    instead_of: finalize
+  - pattern: finalises
+    instead_of: finalizes
+  - pattern: finalised
+    instead_of: finalized
+  - pattern: finalising
+    instead_of: finalizing
+  - pattern: utilise
+    instead_of: utilize
+  - pattern: utilises
+    instead_of: utilizes
+  - pattern: utilised
+    instead_of: utilized
+  - pattern: utilising
+    instead_of: utilizing
+  - pattern: utilisation
+    instead_of: utilization
+  - pattern: apologise
+    instead_of: apologize
+  - pattern: apologises
+    instead_of: apologizes
+  - pattern: apologised
+    instead_of: apologized
+  - pattern: apologising
+    instead_of: apologizing
+  - pattern: criticise
+    instead_of: criticize
+  - pattern: criticises
+    instead_of: criticizes
+  - pattern: criticised
+    instead_of: criticized
+  - pattern: criticising
+    instead_of: criticizing
+  - pattern: specialise
+    instead_of: specialize
+  - pattern: specialises
+    instead_of: specializes
+  - pattern: specialised
+    instead_of: specialized
+  - pattern: specialising
+    instead_of: specializing
+  - pattern: specialisation
+    instead_of: specialization
+  - pattern: visualise
+    instead_of: visualize
+  - pattern: visualises
+    instead_of: visualizes
+  - pattern: visualised
+    instead_of: visualized
+  - pattern: visualising
+    instead_of: visualizing
+  - pattern: visualisation
+    instead_of: visualization
+  - pattern: visualisations
+    instead_of: visualizations
+  - pattern: initialise
+    instead_of: initialize
+  - pattern: initialises
+    instead_of: initializes
+  - pattern: initialised
+    instead_of: initialized
+  - pattern: initialising
+    instead_of: initializing
+  - pattern: initialisation
+    instead_of: initialization
+  - pattern: normalise
+    instead_of: normalize
+  - pattern: normalises
+    instead_of: normalizes
+  - pattern: normalised
+    instead_of: normalized
+  - pattern: normalising
+    instead_of: normalizing
+  - pattern: normalisation
+    instead_of: normalization
+  - pattern: synchronise
+    instead_of: synchronize
+  - pattern: synchronises
+    instead_of: synchronizes
+  - pattern: synchronised
+    instead_of: synchronized
+  - pattern: synchronising
+    instead_of: synchronizing
+  - pattern: synchronisation
+    instead_of: synchronization
+  - pattern: modernise
+    instead_of: modernize
+  - pattern: modernises
+    instead_of: modernizes
+  - pattern: modernised
+    instead_of: modernized
+  - pattern: modernising
+    instead_of: modernizing
+  - pattern: modernisation
+    instead_of: modernization
+  - pattern: digitise
+    instead_of: digitize
+  - pattern: digitises
+    instead_of: digitizes
+  - pattern: digitised
+    instead_of: digitized
+  - pattern: digitising
+    instead_of: digitizing
+  - pattern: digitisation
+    instead_of: digitization
+  - pattern: localise
+    instead_of: localize
+  - pattern: localises
+    instead_of: localizes
+  - pattern: localised
+    instead_of: localized
+  - pattern: localising
+    instead_of: localizing
+  - pattern: localisation
+    instead_of: localization
+  - pattern: centralise
+    instead_of: centralize
+  - pattern: centralises
+    instead_of: centralizes
+  - pattern: centralised
+    instead_of: centralized
+  - pattern: centralising
+    instead_of: centralizing
+  - pattern: centralisation
+    instead_of: centralization
+  - pattern: characterise
+    instead_of: characterize
+  - pattern: characterises
+    instead_of: characterizes
+  - pattern: characterised
+    instead_of: characterized
+  - pattern: characterising
+    instead_of: characterizing
+  - pattern: characterisation
+    instead_of: characterization

@@ -28,6 +28,7 @@ levels:
   relaxed: 20
 
 use_for: [blog, legal, docs, academic, literature, speech]
+sources: [iwamoto-2026]
 
 group: readability
 summary:

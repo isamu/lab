@@ -3,7 +3,7 @@ import { quoteAround } from "./quote-around.ts";
 
 /**
  * 句読点が二つ並んだところ（「。。」「、。」「,,」「..」）。打ち直しで残った印。
- * 同じ印を三つ以上並べたもの（「...」「。。。」）は、わざと伸ばした書き方なので数えない。
+ * 同じ印を三つ以上並べたもの（「...」「。。。」）は、わざと伸ばした書き方なので数えない。その後ろに一つだけ付けた印（「...。」）も数えない。
  * コロンは「::」（C++ の名前、IPv6）があるので見ない。
  */
 const PUNCTUATION_RUN = /[、。，．,.;；]{2,}/gu;
@@ -18,6 +18,9 @@ const JOINED = /[\p{L}\p{N}/]/u;
 
 const isDrawnOut = (run: string): boolean => run.length >= 3 && [...run].every((mark) => mark === run.charAt(0));
 
+/** 伸ばした印（「...」「、、、」）は三点リーダーの代わりで、すぐ後ろの一つの印（「...。」「、、、。」）は文を閉じる印。 */
+const isDrawnOutThenClosed = (run: string): boolean => isDrawnOut(run.slice(0, -1));
+
 const isJoinedDots = (text: string, start: number, run: string): boolean =>
   run === ".." && (JOINED.test(text.charAt(start + run.length)) || text.charAt(start - 1) === "/");
 
@@ -30,7 +33,7 @@ const withoutWordDot = (text: string, found: DoubledMarks): DoubledMarks =>
     : found;
 
 const isSlip = (text: string, { start, run }: DoubledMarks): boolean =>
-  run.length >= 2 && !isDrawnOut(run) && !AFTER_ABBREVIATION.test(run) && !isJoinedDots(text, start, run);
+  run.length >= 2 && !isDrawnOut(run) && !isDrawnOutThenClosed(run) && !AFTER_ABBREVIATION.test(run) && !isJoinedDots(text, start, run);
 
 /** text の中の、句読点が重なった並び（位置と並び）。 */
 export const doubledMarks = (text: string): DoubledMarks[] =>

@@ -1,0 +1,9 @@
+# Words that leave a list open (Femmer et al. 2017, open-ended terms; ISO/IEC/IEEE 29148 names "but not limited to").
+# In a requirement the reader cannot tell what else it covers.
+id: requirement-open-end
+language: en
+entries:
+  - pattern: etc.
+  - pattern: and so on
+  - pattern: and the like
+  - pattern: but not limited to
