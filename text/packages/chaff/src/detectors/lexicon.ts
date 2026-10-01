@@ -8,6 +8,7 @@ import { namesQuantity } from "./superlative-name.ts";
 import { namesAmount } from "./superlative-amount.ts";
 import { restricted, type Restrictors } from "./superlative-clause.ts";
 import { stackedHedges, type StackedHedge } from "./stacked-hedge.ts";
+import { comparisonMarkersOf, counterpartBefore, quotedRange, type ComparisonMarkers } from "./superlative-comparison.ts";
 
 const PER = 1000;
 
@@ -83,7 +84,7 @@ export const hedging: Detector = (doc, options): Finding[] => {
 const DIGIT = /\d/u;
 
 type Qualifiers = {
-  readonly comparison: Lexicon;
+  readonly comparison: ComparisonMarkers;
   readonly scope: ScopeMarkers;
   readonly quantityNouns: Lexicon;
   readonly amounts: Lexicon;
@@ -91,7 +92,7 @@ type Qualifiers = {
 };
 
 const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
-  comparison: doc.lexicons["comparison-marker"] ?? [],
+  comparison: comparisonMarkersOf(doc.lexicons["comparison-marker"] ?? []),
   scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? []),
   quantityNouns: doc.lexicons["quantity-noun"] ?? [],
   amounts: doc.lexicons["superlative-amount"] ?? [],
@@ -102,22 +103,23 @@ const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
   },
 });
 
-/** 範囲・節・分詞・形容詞のどれかが最上級を限っているか、最上級が量か名前を言っているか。 */
+/** 範囲・節・分詞・形容詞・すぐ前の相手のどれかが最上級を限っているか、最上級が量か名前を言っているか。 */
 const qualifiedAt = (tokens: readonly Token[], range: TokenRange, qualifiers: Qualifiers): boolean =>
+  counterpartBefore(tokens, range, qualifiers.comparison.before) ||
   scoped(tokens, range, qualifiers.scope) ||
   restricted(tokens, range, qualifiers.restrictors) ||
   namesQuantity(tokens, range, qualifiers.quantityNouns) ||
   namesAmount(tokens, range, qualifiers.amounts);
 
-/** どの出現も限られているか量を言うときだけ。1 つでもそうでない出現があれば、その文には限定の無い最上級がある。 */
+/** どの出現も引いた言葉か、限られているか、量を言うときだけ。1 つでもそうでない出現があれば、その文には限定の無い最上級がある。 */
 const everyQualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean => {
   const tokens = sentence.tokens ?? [];
   const ranges = entryRanges(sentence, entry);
-  return ranges.length > 0 && ranges.every((range) => qualifiedAt(tokens, range, qualifiers));
+  return ranges.length > 0 && ranges.every((range) => quotedRange(sentence, range) || qualifiedAt(tokens, range, qualifiers));
 };
 
 const qualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean =>
-  DIGIT.test(sentence.text) || qualifiers.comparison.some((marker) => entryIn(sentence, marker)) || everyQualified(sentence, entry, qualifiers);
+  DIGIT.test(sentence.text) || qualifiers.comparison.anywhere.some((marker) => entryIn(sentence, marker)) || everyQualified(sentence, entry, qualifiers);
 
 const bareHits = (doc: ProseDocument, lexicon: Lexicon): Hit[] => {
   const qualifiers = qualifiersOf(doc);

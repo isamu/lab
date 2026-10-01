@@ -4,6 +4,18 @@ Newest first.
 
 ## Unreleased
 
+### `unqualified-superlative` reads 「〜のほうが」「〜との」 and quotations (#394)
+
+- 「後者のほうが圧倒的に長い」「こちらの方が」「他社と比べて」 name what is compared, anywhere in the sentence, like
+  より and に比べる already did.
+- 「SES との最大の分岐点」: 「との」 names the counterpart only right before the superlative, so 「チームとの会議で最高の成果」
+  is still reported. A comparison marker with `position: before` in the `comparison-marker` lexicon works this way.
+- A superlative inside 「」『』 or quotation marks ("…", “…”) is someone else's words and is not reported; one outside
+  the quotation in the same sentence still is.
+
+Superlatives limited by a clause before them (「バグを検出できる唯一のルール」) are still reported: the same shape is
+also a boast (「誰もが認める最高の品質」), and is left for a decision.
+
 ### `custom_rules:` — a team's own rules, without code (#170)
 
 A team can now write its own deterministic rules in chaff.yaml. Each one works like a built-in rule: findings,
