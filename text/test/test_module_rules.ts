@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { modulePathOf } from "../packages/chaff/src/custom/module-path.ts";
+import { parseCustomRules } from "../packages/chaff/src/custom/parse.ts";
+import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { detectorExport } from "../packages/chaff/src/extension/rule-export.ts";
 import { moduleDetector, PluginRuleFailure, type UntrustedDetector } from "../packages/chaff/src/extension/module-detector.ts";
 import { failureReason } from "../packages/chaff/src/extension/failure-text.ts";
@@ -49,6 +51,27 @@ describe("type: module custom rules", () => {
         const path = modulePathOf(written, "/project");
         assert.deepEqual(path, file === undefined ? { refusal: "outside" } : { file });
       });
+    });
+  });
+
+  describe("parseCustomRules: a module rule", () => {
+    const CONTEXT = { builtIn: new Set<string>(), useFor: ["blog"], baseDir: "/project" };
+    const EXPLAINED = { name: "N", why: "W", how_to_fix: "H", example: { before: "B", after: "A" } };
+    const parsedRule = (raw: Record<string, unknown>): RuleDefinition | undefined => parseCustomRules([{ ...EXPLAINED, ...raw }], CONTEXT).rules[0];
+
+    it("keeps the path as written and where it resolved, and asks for tokens only when told", () => {
+      const plain = parsedRule({ id: "a", type: "module", module: "./rules/a.mjs" });
+      assert.deepEqual(
+        [plain?.custom, plain?.how_to_find, plain?.requires, plain?.layer],
+        [{ type: "module", module: "./rules/a.mjs", file: "/project/rules/a.mjs" }, "module", [], "L2"],
+      );
+      const tagged = parsedRule({ id: "b", type: "module", module: "./b.mjs", requires: ["pos", "pos"] });
+      assert.deepEqual([tagged?.requires, tagged?.layer], [["pos"], "L3"]);
+    });
+
+    it("requires means nothing to the types that know what they need", () => {
+      const pattern = parsedRule({ id: "c", type: "pattern", pattern: "x", requires: ["pos"] });
+      assert.deepEqual([pattern?.requires, pattern?.layer], [[], "L2"]);
     });
   });
 
