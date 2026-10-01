@@ -53,6 +53,7 @@ The rules themselves are listed in the [Reference](./reference).
     It sets no number of characters per sentence.
   - In chaff: `max-sentence-length`, [`no-mixed-desumasu`](../../rules/no-mixed-desumasu/) and
     [`agentless-passive`](../../rules/agentless-passive/) check three of these points.
+    [`nominalization`](../../rules/nominalization/) checks its example of 調査を実施した rewritten as 調査した.
 - <a id="iori-2016"></a>**庵功雄 (Iori, 2016)** [iwanami.co.jp](https://www.iwanami.co.jp/book/b243840.html)
   - 『やさしい日本語―多文化共生社会へ』 (plain Japanese, toward a multicultural society)
   - Appeared in: Iwanami Shinsho (a book).
@@ -96,12 +97,14 @@ The rules themselves are listed in the [Reference](./reference).
     Use "must", not "shall", for requirements, and keep sentences and paragraphs short. It gives no word limit.
   - In chaff: `agentless-passive`, [`preferred-term`](../../rules/preferred-term/) and
     [`undefined-acronym`](../../rules/undefined-acronym/) check the voice, the terms and the abbreviations.
+    With `shall: must` under `requirement-modal` in `options`, chaff points at "shall" and asks for "must".
 - <a id="gov-uk-clear-language"></a>**Government Digital Service (UK)** [guidance.publishing.service.gov.uk](https://guidance.publishing.service.gov.uk/writing-to-gov-uk-standards/writing-guidelines/clear-language/)
   - Use clear language
   - Appeared in: GOV.UK content and publishing guidance.
   - Found: Split sentences over 25 words. Keep paragraphs to 5 sentences or fewer.
   - In chaff: the `normal` level of `max-sentence-length` for English (25 words) and of
     [`max-paragraph-length`](../../rules/max-paragraph-length/) (5 sentences) match these numbers.
+    `nominalization` checks its advice to use the verb ("decide", not "make a decision").
 - <a id="iso-24495-1"></a>**ISO 24495-1:2023** [cdn.standards.iteh.ai (PDF)](https://cdn.standards.iteh.ai/samples/78907/d194fac21d6a45f38bfcfec9657f7498/ISO-24495-1-2023.pdf)
   - Plain language — Part 1: Governing principles and guidelines
   - Appeared in: ISO. The link is the sample PDF published by the reseller iTeh.
@@ -118,6 +121,7 @@ The rules themselves are listed in the [Reference](./reference).
     Documents for the public use です・ます, loanwords keep the final ー (コンピューター), and full-width and half-width characters are used consistently.
   - In chaff: `max-sentence-length`, `no-mixed-desumasu`,
     [`katakana-long-vowel`](../../rules/katakana-long-vowel/) and [`latin-spacing`](../../rules/latin-spacing/) check these points.
+    `style: koyobun` in `chaff.yaml` sets a Japanese sentence's limit to 60 characters, and checks mixed です・ます and a dropped final ー.
 - <a id="gairaigo-1991"></a>**Cabinet notice (1991)** [bunka.go.jp](https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/gairai/honbun06.html)
   - 「外来語の表記」 (how to write loanwords)
   - Appeared in: Cabinet notice No. 2 of 1991.
@@ -133,6 +137,7 @@ The rules themselves are listed in the [Reference](./reference).
   - In chaff: `undefined-acronym` and [`dangling-reference`](../../rules/dangling-reference/) check the abbreviations and the pointers.
     [`vague-figure-reference`](../../rules/vague-figure-reference/) points at 「上記の図」 in a document that numbers its figures and tables (10.6).
     `style: jis-z8301-2011` runs `katakana-long-vowel` by the 2011 edition's rule.
+    `style: jis-z8301-2019` makes [`requirement-modal`](../../rules/requirement-modal/) point at a closing すべきである or できる (7.3 to 7.5).
 - <a id="kyodo-2022"></a>**Kyodo News, ed. (2022)** [kyodo.co.jp](https://www.kyodo.co.jp/publish/%E8%A8%98%E8%80%85%E3%83%8F%E3%83%B3%E3%83%89%E3%83%96%E3%83%83%E3%82%AF%E3%80%80%E6%96%B0%E8%81%9E%E7%94%A8%E5%AD%97%E7%94%A8%E8%AA%9E%E9%9B%86%E3%80%80%E7%AC%AC%EF%BC%91%EF%BC%94%E7%89%88/)
   - 『記者ハンドブック 新聞用字用語集 第 14 版』 (the Kyodo reporters' handbook, 14th edition)
   - Found: A book of the spellings and word choices used in Japanese newspapers. Press officers and web writers use it as well as reporters.
@@ -209,7 +214,7 @@ Several of them also show how often human writing is mistaken for generated text
   - Do LLMs write like humans? Variation in grammatical and rhetorical styles
   - Appeared in: PNAS.
   - Found: Instruction-tuned models use participle clauses and nominalizations several times as often as people, and list nouns more.
-  - In chaff: supports [`rule-of-three`](../../rules/rule-of-three/).
+  - In chaff: supports [`rule-of-three`](../../rules/rule-of-three/), and `nominalization`, which counts hidden verbs.
 - <a id="kobak-2025"></a>**Kobak et al. (2025)** [arxiv.org](https://arxiv.org/abs/2406.07016)
   - Delving into LLM-assisted writing in biomedical publications through excess vocabulary
   - Appeared in: Science Advances 11(27).
@@ -259,12 +264,13 @@ Several of them also show how often human writing is mistaken for generated text
 - <a id="iso-29148"></a>**ISO/IEC/IEEE 29148:2018** [standards.ieee.org](https://standards.ieee.org/ieee/29148/6937/)
   - Systems and software engineering — Life cycle processes — Requirements engineering
   - Found: The international standard for what makes a good requirement. It also names words to avoid, such as loopholes and vague adverbs.
-  - In chaff: [background] Femmer et al., below, turned its language criteria into machine checks.
+  - In chaff: [`requirement-smell`](../../rules/requirement-smell/) looks for the loopholes it names ("if possible", "as appropriate")
+    and its open-ended "but not limited to" in a requirement.
 - <a id="berry-2003"></a>**Berry, Kamsties, Krieger (2003)** [cs.uwaterloo.ca (PDF)](https://cs.uwaterloo.ca/~dberry/handbook/ambiguityHandbook.pdf)
   - From Contract Drafting to Software Specification: Linguistic Sources of Ambiguity
   - Found: A handbook of words that let contracts and specifications be read two ways.
     It covers "and/or", "all" against "each", where "only" goes, and pronouns that point at nothing clear.
-  - In chaff: [background] most of these are not chaff rules yet.
+  - In chaff: `requirement-smell` looks for "and/or" (及び／又は) in a requirement. Most of the others are not chaff rules yet.
 - <a id="femmer-2017"></a>**Femmer et al. (2017)** [doi.org](https://doi.org/10.1016/j.jss.2016.02.047)
   - Rapid quality assurance with Requirements Smells
   - Appeared in: Journal of Systems and Software 123, 190–213.
@@ -273,6 +279,8 @@ Several of them also show how often human writing is mistaken for generated text
     On average 59% of the findings were right, and 82% of the real problems were found.
   - In chaff: supports [`unqualified-superlative`](../../rules/unqualified-superlative/),
     [`excessive-hedging`](../../rules/excessive-hedging/) and `dangling-reference`.
+    `requirement-smell` looks for loopholes and open-ended lists ("etc.", 等) in a requirement. It stays experimental,
+    since only about 6 in 10 of the study's findings were right.
     It also matches chaff's view that a person confirms what a machine finds.
 - <a id="gervasi-zowghi-2005"></a>**Gervasi, Zowghi (2005)** [doi.org](https://doi.org/10.1145/1072997.1072999)
   - Reasoning about inconsistencies in natural language requirements

@@ -9,6 +9,7 @@ import { renderEval } from "../render/eval.ts";
 import { neededBy, tokenFeaturesOf, wantsTags } from "../run.ts";
 import type { AdapterNeeds, RuleDefinition } from "../plugin.ts";
 import { optionLayersOf } from "../config/option-problems.ts";
+import { limitsFor } from "../config/style.ts";
 import type { Config } from "../config/load.ts";
 import { profileFor } from "../profile/for-file.ts";
 import { CLI_TEXT } from "../cli-text.ts";
@@ -89,7 +90,7 @@ export const runEval = async (targets: readonly string[], argv: readonly string[
         rules,
         genre,
         language,
-        config.limits,
+        limitsFor(config, language),
         optionLayersOf(config),
       ),
       docs.length,
