@@ -1,6 +1,6 @@
 ---
 name: chaff
-description: "Check prose with chaff (npx chaffjs): pick the genre preset for the kind of document (contract, statute, manual, FAQ, paper, fiction, transcript…), run it on Markdown or text, read each finding, fix the text or record why not, and tune chaff.yaml with rules --json and relax --why. Use when asked to lint, proofread or tighten documents, or to set up a team's writing rules."
+description: "Check prose with chaff (npx chaffjs): pick the genre preset for the kind of document (contract, statute, manual, FAQ, paper, fiction, transcript…), run it on Markdown or text, read each finding, fix the text or record why not, and tune chaff.yaml with rules --json and relax --why. Use when asked to lint, proofread or tighten documents, or to set up a team's writing rules. Also use when asked to make text sound less AI-generated (「AIっぽさをなくして」「AI臭さを消して」「人間らしく書き直して」, 'make this sound human'): Light, Bold or Full mode, with Full (全面書き直し) when the request says 「全面的に」 or 'from scratch'."
 ---
 
 # Checking writing with chaff
@@ -101,19 +101,32 @@ committing `chaff.yaml`. The guide page "Adding a rule" covers each way and how 
 
 ## Making AI-sounding text sound human
 
+Use this section when asked to make a text sound less generated: 「AIっぽさをなくして」「AI臭さを消して」「人間らしく
+書き直して」, "make this sound human", "this reads like AI wrote it".
+
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
 `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `assistant-residue`, and the signals
 `ai-generated-composite` reads). Most are experimental: run with `--experimental`. None of them says the text was
-generated. When asked to make a text sound less generated, pick one of two modes and say which.
+generated. chaff never rewrites; the rewriting is yours. Pick one of three modes and say which.
 
-**Light** (only the flagged spots), when the content and structure are fine:
+| Mode | Changes | Pick it when |
+| --- | --- | --- |
+| **Light** | only the flagged spots | the content and the structure are fine and only some phrasing is off |
+| **Bold** | each section's prose, keeping the outline | the outline is fixed (a report template, a manual, required sections) |
+| **Full** | the whole document, from scratch | the request says 「全面的に」「一から」「全部書き直して」 / "from scratch" / "rewrite the whole thing"; or the genre is `blog/*` or an essay (`literature/essay`); or `ai-generated-composite` fires |
+
+For a blog or an essay, and whenever `ai-generated-composite` fires, recommend Full. A Light or Bold pass leaves the
+skeleton of generated text: a heading every few paragraphs, bold lead-ins, symmetric sections, a closing まとめ that
+repeats the body. The writer usually wants the structure changed, not only the sentences.
+
+**Light** (only the flagged spots):
 
 1. `npx chaffjs <file> --experimental` (or with the genre's `--genre`); collect the AI-shape findings.
 2. Rewrite only those spots. Keep the meaning, numbers, conditions and technical constraints.
 3. Run chaff again. At most two rewrite passes.
 4. Show the rewritten text and a short list of what changed and why.
 
-**Bold** (section by section), when a light pass still leaves it reading as generated:
+**Bold** (section by section, outline kept):
 
 1. Run chaff with `--experimental` and note the document-level signals: the `ai-generated-composite` inputs,
    `bold-density`, `contrast-framing`, `stock-transition`, `sentence-rhythm`.
@@ -126,7 +139,62 @@ generated. When asked to make a text sound less generated, pick one of two modes
    dropped fact; for one that is not a fact (a number inside a metaphor, the heading of a section you cut), say why it
    stays out. `--allow-dropped <kind>` excludes a kind you cut on purpose. Never leave an added fact.
 
-In both modes:
+**Full** (全面書き直し, from scratch):
+
+1. **Take inventory before writing.** `npx chaffjs facts <file> --json` lists every fact `compare` will hold you to
+   (numbers, dates, times, URLs, code, names, quotations, headings, references, footnotes). `npx chaffjs outline <file>`
+   gives the old outline and its shape. Then write down, one line each, the writer's actual claims and every concrete
+   experience, example and opinion in the original. This inventory is what you write from; the old sentences are not.
+2. **Throw away the structure.** Decide what the piece is for and who reads it. Choose one angle or story for the
+   whole piece, and outline it the way a person would. Do these before writing:
+   - reorder: put the conclusion, or the most interesting episode, first;
+   - merge thin sections and split overloaded ones, so a section is a real unit, not one heading per paragraph;
+   - cut sections that only restate, the closing まとめ / "Conclusion" included;
+   - drop a heading that wraps a single paragraph;
+   - turn a list-of-points section into a narrative with one through-line;
+   - no symmetric three-point sections unless the content really has three parts;
+   - move the writer's concrete experience to where it carries the argument;
+   - open with the point or a concrete scene, not a generic opener.
+3. **Show the new outline first.** Put the old outline (headings from `chaff outline`) next to the proposed one:
+   headings, and one line per section on what it says. The writer then sees the structural change at a glance. Wait
+   for a yes, unless the person asked for it to be done without asking; then go straight on.
+4. **Write it fresh**, in the writer's voice, from the inventory:
+   - paragraphs that argue, joined by connectives; sentence lengths that vary;
+   - plain verbs instead of metaphors ("静かに壊れる", "silently fails" → what actually happens);
+   - the writer's own episodes and numbers kept; generic filler cut;
+   - bold only where a reader truly must not miss something; lists only for real enumerations, steps or commands;
+   - no hedges stacked on a claim, no announcing what you are about to say, no "it's not X, it's Y", no em dashes;
+   - the register of the writer's other paragraphs (です/ます or だ/である) and of the platform (Zenn, a company
+     report, an email);
+   - nothing the inventory does not have: no new facts, people, numbers, causes or consequences.
+5. **Check.**
+   - `npx chaffjs <old> --experimental` and `npx chaffjs <new> --experimental`: the AI signals before and after.
+   - `npx chaffjs outline <old> <new>`: headings, average section length, text in lists, bold, before and after. A
+     restructure shows up here, not only in rule counts.
+   - `npx chaffjs compare <old> <new> --allow-dropped heading --allow-added heading`: the headings are the structure
+     you rebuilt on purpose; every other dropped fact is restored and no other fact is added. A fact the old text only repeated (in a cut
+     まとめ) may stay out with that reason.
+6. **Stop** when all of these hold, or after two full passes, whichever comes first:
+   - `ai-generated-composite` does not fire;
+   - the density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits;
+   - `compare` is clean, or every exclusion has a stated reason.
+7. **Show** the new text, a short "what changed and why" list, then a table of the signals and the shape before and
+   after, taken from chaff's output.
+
+**Read for these too.** chaff cannot detect them mechanically, so check them by reading, in every mode:
+
+- a generic opener or closer ("本記事では〜解説します", "いかがでしたでしょうか", "In today's fast-paced world");
+- explaining what every reader already knows;
+- every section the same length and the same shape;
+- a list of benefits with no cost or trade-off;
+- no first-hand detail: nothing the writer saw, measured or did;
+- the same enthusiasm everywhere, so nothing stands out;
+- politeness piled on politeness;
+- a definition nobody asked for;
+- headings that are full sentences or slogans;
+- a まとめ / "Conclusion" that repeats the body.
+
+In every mode:
 
 - Never add facts, people, numbers or causes the original does not have.
 - Keep a domain term a word rule trips when it is right in context.
@@ -136,7 +204,8 @@ In both modes:
   and commands as lists; in a business document, put the conclusion and who does what first and keep tables and
   figures; in an essay, fold punchlines back in and replace big words ("真理", "new possibilities") with the scene.
 
-The guide page "Making AI-sounding text sound human" has a worked example with chaff's output before and after.
+The guide page "Making AI-sounding text sound human" has worked examples of a Bold and a Full rewrite, with chaff's
+output before and after.
 
 ## Structured documents
 
