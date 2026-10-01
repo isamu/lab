@@ -96,6 +96,7 @@ chaff のルールが何を根拠にしているかを、論文と規格ごと�
     義務には shall でなく must を使い、文と段落を短くする、とも書いています。字数の上限は書いていません。
   - chaff では：`agentless-passive`、[`preferred-term`](../../rules/preferred-term/)、
     [`undefined-acronym`](../../rules/undefined-acronym/) の裏付けです。
+    `requirement-modal` の options で `shall: must` と決めると、英語の "shall" を指して "must" と書かせます。
 - <a id="gov-uk-clear-language"></a>**Government Digital Service（英国政府）** [guidance.publishing.service.gov.uk](https://guidance.publishing.service.gov.uk/writing-to-gov-uk-standards/writing-guidelines/clear-language/)
   - Use clear language
   - 載った所：GOV.UK content and publishing guidance。
@@ -131,7 +132,9 @@ chaff のルールが何を根拠にしているかを、論文と規格ごと�
     「上記の図」のような曖昧な参照を避け、略語は全体で同じにします。
     2011 年版は、3 音以上の外来語では語末の「ー」を省いていました。
   - chaff では：`undefined-acronym` と [`dangling-reference`](../../rules/dangling-reference/) の裏付けです。
+    [`vague-figure-reference`](../../rules/vague-figure-reference/) は、図や表に番号を付けた文書の「上記の図」を指します（10.6）。
     `style: jis-z8301-2011` と書くと、2011 年版の書きかたで `katakana-long-vowel` が動きます。
+    `style: jis-z8301-2019` と書くと、[`requirement-modal`](../../rules/requirement-modal/) が文末の「すべきである」「できる」を指します（7.3〜7.5）。
 - <a id="kyodo-2022"></a>**共同通信社 編著（2022）** [kyodo.co.jp](https://www.kyodo.co.jp/publish/%E8%A8%98%E8%80%85%E3%83%8F%E3%83%B3%E3%83%89%E3%83%96%E3%83%83%E3%82%AF%E3%80%80%E6%96%B0%E8%81%9E%E7%94%A8%E5%AD%97%E7%94%A8%E8%AA%9E%E9%9B%86%E3%80%80%E7%AC%AC%EF%BC%91%EF%BC%94%E7%89%88/)
   - 『記者ハンドブック 新聞用字用語集 第 14 版』
   - 分かったこと：新聞の用字と用語の決まりを集めた本です。報道のほか、広報やウェブの書き手にも使われています。
