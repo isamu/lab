@@ -7,6 +7,7 @@ const ORDER = [
   "documents",
   "documents-statute",
   "documents-report",
+  "ai-sounding",
   "configuration",
   "reference",
   "house-style",
@@ -15,6 +16,7 @@ const ORDER = [
   "structure",
   "languages",
   "ci",
+  "bibliography",
 ];
 
 export type GuidePage = { readonly lang: Lang; readonly slug: string; readonly entry: CollectionEntry<"guide"> };

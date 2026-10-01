@@ -135,6 +135,7 @@ npx chaffjs rules                ルールの一覧を、グループごとに�
 npx chaffjs rules --json         いまの設定とルールの説明を JSON で出す（AI に設定を書かせるときに渡す）
 npx chaffjs tree contract.txt    文書を番地の付いた木にする（条・項・定義・参照）
 npx chaffjs cite 原文 引用.json  引用が原文にあるかを確かめる
+npx chaffjs compare 前.md 後.md  書き換えで事実（数・日付・URL・名前など）が落ちても足されてもいないかを確かめる
 npx chaffjs skill                Claude Code の skill を入れる
 npx chaffjs feedback a.md --rule max-sentence-length --line 42   誤った指摘を報告する下書きを作る
 ```
@@ -567,6 +568,37 @@ npx chaffjs cite contract.txt quotes.json
 
 `quotes.json` は `[{ "address": "4.2", "quote": "…" }]`。`tree` と同じく `--format json` と `--language` を取ります。回答や要約の引用が原文のその番地に本当にあるかを確かめ、一つでも無ければ 1 で終わります。AI の回答を単体試験のように検査できます。chaff は確かめるだけで、書き換えません。
 
+## 書き換えで事実が落ちていないか
+
+AI っぽい文章を AI に大きく書き換えさせたあと、事実が落ちていないか、増えていないかを機械で確かめます。
+
+```bash
+npx chaffjs compare before.md after.md                      人が読む
+npx chaffjs compare before.md after.md --json               AI が読んで直す（--compact は 1 件 1 行）
+npx chaffjs compare before.md after.md --allow-dropped url  わざと削った種類は失敗にしない
+```
+
+数（単位・通貨つき）、日付、時刻、URL、コード、固有名詞と `names:`、「」や "…" の引用、見出し、条項の参照、脚注を、lint と同じ読み手で取り出し、位置を見ずに数で比べます。
+
+```
+✗ 落ちた事実 2 件（before.md にあって after.md に無い）
+  数: 1,200円  (before.md:3)
+  URL: https://example.com/price  (before.md:3)
+
+✗ 足された事実 1 件（after.md にだけある）
+  数: 1,300円  (after.md:3)
+
+i 書き方だけ変わった事実 3 件
+  見出し: 料金改定のお知らせ → 料金が変わります  (1 行目 → 1 行目)
+  日付: 2026年4月1日 → 2026/4/1  (3 行目 → 3 行目)
+  数: 1,000円 → 1000円  (3 行目 → 3 行目)
+
+照合した事実 5 件 → 4 件: 数 2→2、日付 1→1、時刻 0→0、URL 1→0、コード 0→0、固有名詞 0→0、引用 0→0、見出し 1→1、条項の参照 0→0、脚注 0→0
+落ちた事実 2 件、足された事実 1 件
+```
+
+落ちた事実か足された事実があれば 1 で終わります。1,000 と 1000、2026年4月1日 と 2026/4/1 のような書き方の違いは情報として出すだけです。読めなかった種類（品詞の解析器が無いなど）は理由を添えて出します。
+
 ## Claude Code の skill
 
 ```bash
@@ -602,12 +634,20 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 | `stock-transition` | 「さらに」「加えて」「Moreover」で始まる文の密度（試験中） |
 | `assistant-residue` | チャットの返事の名残（「私の知識は」「As of my last knowledge update」「お役に立てれば幸いです」）（試験中） |
 | `unfilled-placeholder` | 埋め忘れた雛形の空欄（「【会社名】」「[Your Name]」）（試験中） |
+| `announcing-opener` | 「重要なのは、」「ポイントは、」「Here's the thing」のように予告で始まる文が重なっていないか（試験中） |
+| `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度（日本語のみ、試験中） |
 
 `ai-tell` は**単独で「AI が書いた」とは言いません**。どれも 1 つでは普通の日本語なので、
 重みを足し合わせた点だけを出します。
 `contrast-framing` と `stock-transition` も、1 つなら普通の書き方なので密度だけを見ます。
 `assistant-residue` は、知識の期限や AI としての断り書きなら 1 つで、人も書く礼の言葉は 2 つ重なったときに言います。
 `unfilled-placeholder` は文体ではなく埋め忘れなので 1 つで言います。例として置いた「○○」は数えません。
+`announcing-opener` は文頭の予告を数で見ます（人の記事も長さによらず 1 つ 2 つは書くため）。
+`colon-lead-in` は説明書・法務・技術文書のジャンルでは見ません。英語の文書は、人も同じくらいこの形で書くので見ません。
+`ai-tell`（日本語）には、技術文の比喩（「静かに壊れる」「黙って無視される」「時間を溶かす」）も入っています。
+入れるかどうかは、生成 AI 以前の技術記事と corpus で測って決めました。「解像度を上げる」「腹落ち」のように、以前から人が同じくらい書いていた語は入れていません。
+
+AI っぽい rule がどれだけ正確かは `yarn bench:ai` で測れます。同じ中身を、人の書きぶり・生成文の書きぶり・書き直した版の 3 通りで書いた見本（`test/fixtures/ai-samples/paired/`）と corpus にかけ、rule ごとに生成文の版に当たった数と、それ以外に当たった数（誤報）を出します。
 
 ## チームが決める rule
 

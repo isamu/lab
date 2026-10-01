@@ -28,6 +28,88 @@ the rule was added.
   In the corpus it finds slips in board minutes, an arXiv listing, a CFPB post and a Gutenberg play; the one miss is
   a line of a DNA diagram in a patent.
 
+### Making AI-sounding text sound human: the rewrite harness (#170)
+
+chaff still never rewrites; the skill and a new guide page say how an AI (or a person) should, in two modes.
+
+- **Light**: fix only the spots the AI-shape rules flag, keep meaning, numbers, conditions and constraints, at most two
+  passes.
+- **Bold**: rewrite section by section toward a human voice (less bold, fewer one-line paragraphs, contrast frames,
+  list-only sections and em dashes; paragraphs that carry an argument), report the document-level signals from chaff
+  before and after, then run `chaff compare` and restore every dropped fact.
+- The guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human" has per-genre advice and a worked bold
+  rewrite of a self-written article, with real chaff and `chaff compare` output from both versions.
+
+### AI-sounding Japanese technical prose, and a bench for the AI-shape rules (#170)
+
+Each entry below was measured before it went in: on Qiita articles written before generated text was common (human),
+on Qiita articles from 2025 and 2026 (mixed), and on the corpus. An entry stays only if the human articles and the
+corpus rarely use it; the measurements are in the PR.
+
+- **`ai-tell` (ja)** gains the metaphors and English calques of technical prose: 「静かに壊れる」「静かに失敗する」
+  「黙って無視される／捨てられる／失敗する」「時間を溶かす」「一つずつ潰す」「地味に効く」「効いてくる」, and
+  「温度感」「血の通った」. Low weights: one of them never fires the rule. Left out because people wrote them as much
+  before: 「解像度を上げる」「腹落ち」「肌感」「安全側に倒す」「した瞬間、」, the essay nouns 「真理」「境地」「深淵」
+  「宿命」, and the closing labels 「というわけです」「に他なりません」.
+- **`announcing-opener`** (experimental): sentences that open by announcing a point (「重要なのは、」「ポイントは、」
+  「正直に言うと、」「注目すべきは」, "The key point is", "Here's the thing", "Honestly,"). Counted, not divided by
+  length: people write one or two in an article of any length. Only the start of a sentence counts.
+- **`colon-lead-in`** (experimental, Japanese only): prose sentences that end in a colon and hand straight to a
+  list (「以下の通りです：」), as a density per 1000 characters. A list item ending in a colon is not counted. Off for
+  documentation, legal text, literature and speeches. English is left out: a self-written English sample with two
+  such lead-ins already passed the limit the generated-style samples reached.
+- `ai-generated-composite` also reads the two new rules.
+- **`yarn bench:ai`**: the same content written three ways (human style, generated style, and the generated style
+  rewritten) in Japanese and English, for tech, business and essay (`test/fixtures/ai-samples/paired/`). For each
+  AI-shape rule it prints the hits on the generated style and the false alarms on the others and on the committed
+  corpus, and compares the table with `expected.txt`. CI runs it.
+- Measured and not added: the share of bullet lines, runs of short sentences, and 「（いわゆる〜）」. Human articles
+  had as many of each.
+
+### `chaff compare <before> <after>`: did a rewrite keep its facts?
+
+The guardrail for rewriting AI-sounding text boldly: an AI rewrites, chaff shows, without a model, that no fact was lost
+or invented. Both documents are read with chaff's own readers into fact atoms — numbers with their unit or currency,
+dates, times, URLs and link targets, inline code and code blocks, proper nouns and `names:`, quotations (「」『』 “” ""),
+headings, article and section references, footnotes — and compared as multisets, so a fact that moved is fine.
+
+- **Dropped** (before only) and **added** (after only) facts fail the run (exit 1). A fact **written another way**
+  (1,000 / 1000, ５ / 5, 2026年4月1日 / 2026/4/1, 午後3時30分 / 15:30, a reworded heading) is information.
+- Each fact shows its line in each file. The closing line counts every kind before and after, zeros included, and a
+  kind that could not be read (no structure reader, no part-of-speech tagger, plain text) is listed with the reason.
+- `--compact` (one line per fact), `--json` (for an AI to act on), `--allow-dropped <kind>` / `--allow-added <kind>`
+  for intended cuts. The screen follows the first document's language.
+- A word the tagger reads as a name in one document and not the other is not a dropped name when the other document
+  spells it as often; a capitalised word the same document also writes in lower case is not a name.
+- `maskSpans` and `quotedSpans` no longer rebuild an array per span or per character, so a document with tens of
+  thousands of masked spans or quotation marks is read in linear time (same output; checked against the old code on
+  generated inputs).
+
+### Fixes from a real article: numbering-gap, no-mixed-desumasu, heading-echo (#390, #391, #392)
+
+- **numbering-gap no longer misses a heading whose number is closed by a dot** (#390). `### 5. ページ自身の通信から分かること`
+  was read as the amount 「5 ページ」, so the section dropped out of the sequence and chaff reported 「4 の次が 6」 as an
+  error. A number closed by a dot (`5.`, `4.2.`) is a label; an amount is not written that way. `1.5 万人` is still an
+  amount.
+- **no-mixed-desumasu no longer points at a sentence in the document's register inside a list** (#391). A list and a
+  run of numbered paragraphs are still compared within themselves, but when the list's minority is the whole document's
+  majority (a です/ます sentence among plain bullets in a です/ます article), the rule stays silent. Following its advice
+  would have moved the sentence to the document's minority. The count now names the group it was counted in:
+  「本文の中で N 文」 / 「この箇条書きの中で N 文」 ("N in the body text" / "N in this list").
+- **heading-echo measures a heading without its number label** (#392). 「例 3：」, `Step 3:`, `1.`, 「第2章」,
+  `Chapter 2:` are never repeated by the text below, so counting them made short headings miss. Numbers are read the way
+  the structure tree reads them; label words come from the lexicon `numbered-label` (`position: before`), which gains
+  例・手順・ステップ・Step in Japanese and a new English list (Step, Example, Case, …). latin-spacing already treats a
+  number after these words as a name (like 問3), so 「手順1」 is no longer a spacing vote.
+
+### Docs: a bibliography of the papers and standards behind the rules
+
+The site's guide has a new page, 「参考文献」 / "Bibliography", linked from the rule reference. It covers readability
+research in Japanese and English, plain-language guidance and Japanese style standards (公用文作成の考え方, 外来語の表記,
+JIS Z 8301, the JTF style guide). It also covers essay scoring, grammar correction, studies of generated text, and
+requirements quality. Each entry was checked against its original record. It says what the work found, and which rules
+it supports or that it is background only. No rule changed.
+
 ### New rules: brackets and punctuation marks (#170)
 
 Experimental rules for marks left over from an edit. Each finding in the corpus was read before the rule was added.

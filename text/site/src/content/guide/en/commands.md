@@ -22,6 +22,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs suppressions <dir>` | Counts the findings silenced with `stet` |
 | `npx chaffjs tree <file>` | Turns a document into a tree of addresses |
 | `npx chaffjs cite <source> <quotes.json>` | Checks that quoted passages are in the source |
+| `npx chaffjs compare <before> <after>` | Checks that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…) |
 | `npx chaffjs skill` | Installs the Claude Code skill |
 | `npx chaffjs feedback <file> --rule <rule>` | Drafts a report of a wrong or missed finding |
 | `npx chaffjs test <file\|dir>...` | Also runs the checks that read meaning. Needs an API key |
@@ -57,7 +58,7 @@ sample.md   blog/tech · English   genre from the default
   142:1   warning The first sentence repeats the heading "agentFunctionInfo"
                   heading-echo
 
-3 findings, 43 rules not run
+3 findings, 45 rules not run
 ```
 
 The last line counts the findings and the rules that did not run.
@@ -302,6 +303,46 @@ $ npx chaffjs feedback sample.md --rule heading-echo --line 142
 
   chaff has not sent anything.
 ```
+
+## Checking that a rewrite kept its facts
+
+Sometimes you want text that sounds like an AI wrote it rewritten boldly, so it reads as a person's: sentences rebuilt, paragraphs moved, the throat-clearing cut.
+An AI can do the rewriting. But the bolder the rewrite, the harder it is for a person to notice that a number went missing, a date moved by a day, a URL fell out, or a figure appeared that was never in the original.
+
+`compare` is the guardrail that catches it. It reads the facts out of the text before and after the rewrite the same way — numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes — and compares them.
+Position does not matter, so a fact that moved with its paragraph is fine. No AI makes the call: the same two documents always give the same result. chaff only compares; it never rewrites.
+
+```
+$ npx chaffjs compare before.md after.md
+before.md → after.md
+
+✗ 2 facts dropped (in before.md, not in after.md)
+  number: 25%  (before.md:3)
+  URL: https://example.com/price  (before.md:3)
+
+i 2 facts written another way
+  heading: Pricing update → What changes in pricing  (line 1 → line 1)
+  date: April 1, 2026 → 2026-04-01  (line 3 → line 3)
+
+Facts checked: 7 → 5: numbers 3→2, dates 1→1, times 0→0, URLs 1→0, code 0→0, names 0→0, quotations 0→0, headings 1→1, references 1→1, footnotes 0→0
+2 facts dropped, 0 facts added
+```
+
+- A **dropped** fact and an **added** fact are failures: either one ends the run with 1. Even a bold rewrite must not invent facts.
+- A fact **written another way** is information: 1,000 and 1000, ５ and 5, April 1, 2026 and 2026-04-01, a reworded heading.
+- The last lines count each kind before and after, zeros included, so "nothing dropped" never reads as "nothing looked at". A kind that could not be read (no part-of-speech tagger, say) is listed with the reason.
+
+To let an intended cut through, name its kind with `--allow-dropped`; for an intended addition, `--allow-added`. What they let through is still listed.
+
+```bash
+npx chaffjs compare before.md after.md --allow-dropped url        # the URL may go
+npx chaffjs compare before.md after.md --allow-dropped url,quote  # several kinds, with commas
+npx chaffjs compare before.md after.md --compact                  # one line per fact
+npx chaffjs compare before.md after.md --json                     # for an AI to act on
+```
+
+The kinds are `number`, `date`, `time`, `url`, `code`, `name`, `quote`, `heading`, `reference` and `footnote`.
+`--json` lists every dropped and added fact with its line, so it can go straight back to the AI that did the rewrite.
 
 ## Checks that read meaning, and re-measuring the limits
 

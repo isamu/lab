@@ -141,7 +141,7 @@ myplate-vegetable-cheese-soup  clean
 nasa-knows-spacewalk-k4  contraction-consistency 1, heading-echo 1, proper-noun-density 1
 ndl-copy-fee-revision-2026  clean
 ndl-digital-transmission-individuals  max-kanji-continuous 1, max-sentence-length 4, no-doubled-joshi 1
-neeview-changelog-ja  doubled-word 1, heading-echo 1, heading-level-skip 39, katakana-long-vowel 10, latin-spacing 109, max-kanji-continuous 4, ngram-repetition 1, no-doubled-joshi 5, no-mixed-desumasu 12, undefined-acronym 19
+neeview-changelog-ja  doubled-word 1, heading-echo 1, heading-level-skip 39, katakana-long-vowel 10, latin-spacing 109, max-kanji-continuous 4, ngram-repetition 1, no-doubled-joshi 5, no-mixed-desumasu 7, undefined-acronym 19
 nextcloud-user-2fa  contraction-consistency 2, max-sentence-length 4
 nih-research-matters-hpv-one-dose  heading-level-skip 1, max-paragraph-length 2, max-sentence-length 7, proper-noun-density 1
 nps-yellowstone-faqs  max-paragraph-length 1, max-sentence-length 3, unbalanced-bracket 1

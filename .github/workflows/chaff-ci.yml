@@ -88,3 +88,8 @@ jobs:
       - name: bench
         if: runner.os == 'Linux'
         run: yarn bench
+
+      # AI っぽさの rule が、生成文の見本に当たり、人の書きぶりの見本と corpus/docs に当たらないかの表。
+      - name: bench (AI-shape rules)
+        if: runner.os == 'Linux'
+        run: yarn bench:ai
