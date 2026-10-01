@@ -571,9 +571,16 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 | `unqualified-superlative` | 比べる相手のない最上級 |
 | `repeated-conjunction` | 段落が接続詞で始まり続けていないか |
 | `ai-tell` | 生成文にありがちな言い回し（重み付き） |
+| `contrast-framing` | 「単なる X ではなく Y」「It's not X, it's Y」の対比の枠の密度（試験中） |
+| `stock-transition` | 「さらに」「加えて」「Moreover」で始まる文の密度（試験中） |
+| `assistant-residue` | チャットの返事の名残（「私の知識は」「As of my last knowledge update」「お役に立てれば幸いです」）（試験中） |
+| `unfilled-placeholder` | 埋め忘れた雛形の空欄（「【会社名】」「[Your Name]」）（試験中） |
 
 `ai-tell` は**単独で「AI が書いた」とは言いません**。どれも 1 つでは普通の日本語なので、
 重みを足し合わせた点だけを出します。
+`contrast-framing` と `stock-transition` も、1 つなら普通の書き方なので密度だけを見ます。
+`assistant-residue` は、知識の期限や AI としての断り書きなら 1 つで、人も書く礼の言葉は 2 つ重なったときに言います。
+`unfilled-placeholder` は文体ではなく埋め忘れなので 1 つで言います。例として置いた「○○」は数えません。
 
 ## チームが決める rule
 

@@ -1,0 +1,17 @@
+# What a template writes inside the brackets of a blank: [Your Name], [Insert Date], [Company Name].
+# A bracket counts when it holds one of these, alone or followed by more words.
+id: placeholder-word
+language: en
+entries:
+  - pattern: your
+  - pattern: insert
+  - pattern: recipient
+  - pattern: name
+  - pattern: company name
+  - pattern: client name
+  - pattern: project name
+  - pattern: product name
+  - pattern: date
+  - pattern: describe
+  - pattern: specific
+  - pattern: add

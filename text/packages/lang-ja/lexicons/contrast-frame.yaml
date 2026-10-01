@@ -1,0 +1,9 @@
+# 1 つで対比の枠になる語。「X だけでなく Y も」。1 つなら普通の書き方で、密度の rule が数える。
+id: contrast-frame
+language: ja
+entries:
+  - pattern: だけではなく
+  - pattern: だけでなく
+  - pattern: のみならず
+  - pattern: にとどまらず
+  - pattern: だけではありません

@@ -1,0 +1,37 @@
+# チャットの返事を文書に貼ったときに残る言葉。重み 1 は名残そのもの（AI としての断り、知識の期限）で、1 つで言う。
+# 重み 0.5 は人も書く礼の言葉で、2 つ重なったときだけ言う。
+id: assistant-residue
+language: ja
+entries:
+  - pattern: AI言語モデルとして
+    weight: 1
+  - pattern: 言語モデルとして
+    weight: 1
+  - pattern: AIアシスタントとして
+    weight: 1
+  - pattern: 私の知識は
+    weight: 1
+  - pattern: 知識のカットオフ
+    weight: 1
+  - pattern: 私の学習データ
+    weight: 1
+  - pattern: リアルタイムの情報にはアクセスできません
+    weight: 1
+  - pattern: お役に立てれば幸いです
+    weight: 0.5
+  - pattern: お役に立てば幸いです
+    weight: 0.5
+  - pattern: 良い質問ですね
+    weight: 0.5
+  - pattern: 素晴らしい質問ですね
+    weight: 0.5
+  - pattern: 他にご質問があれば
+    weight: 0.5
+  - pattern: 何か他にお手伝いできることがあれば
+    weight: 0.5
+  - pattern: 以下に修正版を示します
+    weight: 0.5
+  - pattern: 混乱を招いてしまい申し訳ありません
+    weight: 0.5
+  - pattern: お気軽にお尋ねください
+    weight: 0.5

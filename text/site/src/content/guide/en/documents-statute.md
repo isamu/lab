@@ -125,15 +125,17 @@ rules.md   legal/statute · English   genre from --genre
 
   5 experimental rules turned on by the genre: dangling-reference, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  44 rules did not run:
+  48 rules did not run:
       adverb-overuse (the legal/statute genre does not check it)
       agentless-passive (the legal/statute genre does not check it)
       agreement-slip (still experimental)
       ai-generated-composite (the legal/statute genre does not check it)
       ai-tell (the legal/statute genre does not check it)
+      assistant-residue (still experimental)
       closing-cliche (the legal/statute genre does not check it)
       concrete-evidence-density (the legal/statute genre does not check it)
       contraction-consistency (still experimental)
+      contrast-framing (the legal/statute genre does not check it)
       cushion-phrase-density (the legal/statute genre does not check it)
       date-order (still experimental)
       double-keigo (not a rule for en)
@@ -165,10 +167,12 @@ rules.md   legal/statute · English   genre from --genre
       section-length-uniformity (the legal/statute genre does not check it)
       sentence-initial-conjunction-run (still experimental)
       sentence-rhythm (the legal/statute genre does not check it)
+      stock-transition (the legal/statute genre does not check it)
       stray-space (not a rule for en)
       taigen-dome-in-prose (not a rule for en)
       title-case-consistency (still experimental)
       undefined-acronym (still experimental)
+      unfilled-placeholder (still experimental)
       unqualified-superlative (the legal/statute genre does not check it)
 ```
 
