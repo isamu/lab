@@ -38,9 +38,12 @@ import { urlRunOn } from "./url-run-on.ts";
 import { unbalancedBracket } from "./unbalanced-bracket.ts";
 import { doubledPunctuation } from "./doubled-punctuation.ts";
 import { kutotenConsistency } from "./kutoten-consistency.ts";
+import { hankakuKana } from "./hankaku-kana.ts";
+import { invisibleCharacter } from "./invisible-character.ts";
+import { spaceBeforePunctuation } from "./space-before-punctuation.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
-import { assistantResidue, contrastFraming, stockTransition, unfilledPlaceholder } from "./ai-phrasing.ts";
+import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
 export const DETECTORS: Readonly<Record<string, Detector>> = {
@@ -80,7 +83,9 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "repeated-conjunction": repeatedConjunction,
   "ai-tell": aiTell,
   "contrast-framing": contrastFraming,
-  "stock-transition": stockTransition,
+  "stock-transition": openerDensity,
+  "opener-pile": openerPile,
+  "colon-lead-in": colonLeadIn,
   "assistant-residue": assistantResidue,
   "unfilled-placeholder": unfilledPlaceholder,
   "contraction-mix": contractionMix,
@@ -111,4 +116,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "unbalanced-bracket": unbalancedBracket,
   "doubled-punctuation": doubledPunctuation,
   "kutoten-consistency": kutotenConsistency,
+  "hankaku-kana": hankakuKana,
+  "invisible-character": invisibleCharacter,
+  "space-before-punctuation": spaceBeforePunctuation,
 };
