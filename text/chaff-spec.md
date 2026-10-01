@@ -913,6 +913,19 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `no-nakaguro-parallel` ✅ | 中黒の並列 | - |
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
+| `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
+
+`katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。
+音は「コ・ン・ピュ・ー・タ・ー」と数え、語末の「ー」も含める（カーは 2 音）。小さい「ャュョァィゥェォ」は前の字と
+合わせて 1 音、「ッ」「ン」「ー」は 1 音ずつ。
+
+- **既定は立場を取らない。** 同じ語が両方で書かれた所（サーバーとサーバ）だけを、少ないほうで指摘する。
+  違う語どうし（サーバーとブラウザ）は比べない。自作の bench の文書で比べたら、ふつうの文書が両方を混ぜていた。
+- **`ending: drop`** は `min_morae` 音以上で「ー」付きの語を指摘する（電子情報通信学会、JIS Z 8301:2011 まで）。
+- **`ending: keep`** は「ー」の無い語を指摘する。ただし、辞書がその語を「ー」付きでも知っている（メモリ → メモリー）か、
+  文書がほかで「ー」付きで書いているときだけ。辞書が知っているかは lang-ja が `LongVowelEnding=Dropped` で渡す。
+  辞書に無い語（データ）は、もとから「ー」が無いかもしれない。
+- 辞書が固有名詞と知っている語（PROPN）、`names:` に並べた名前、`except` に並べた語は見ない。
 
 `double-keigo` と `hiragana-fukushi` は spec の初版で `pos` を要求するとしていたが、
 **語彙表で足りる**。品詞から二重敬語を組み立てるより、割れない形だけを列挙するほうが精度が高い。
@@ -1441,6 +1454,27 @@ rule が experimental で、chaff.yaml に normal と記載 -> 動く
 ```text
 experimental な rule を 2 件、設定により有効にしています: padded-intro, rule-of-three
 ```
+
+### 18.5 rule のオプション
+
+段階の 4 語で言えない決まり（語末の「ー」を省くか付けるか、何音から見るか）は、rule が **オプション** として持つ。
+オプションは rule の YAML に宣言する。種類（`choice` / `count` / `words`）、既定、何を決めるか（`about`）、選択肢ごとの意味。
+宣言が読めない rule ファイルは読み込み時に止まる（chaff の不具合なので）。
+
+```yaml
+# chaff.yaml
+options:
+  katakana-long-vowel:
+    ending: drop      # consistent / drop / keep
+    min_morae: 3
+    except: [カー]
+```
+
+- 効かない書き方（知らない rule、オプションの無い rule、知らないオプション、合わない値）は、
+  `rules:` と同じく実行のたびに標準エラーで言い、合わない値は既定のまま動く。
+- `chaff explain <rule>` はオプションごとに、いまの値、どこから来たか（`chaff.yaml` か `既定`）、選択肢の意味を出す。
+  `chaff rules --json` は `options.<名前>` に `kind`・`about`・`choices`・`default`・`now`・`from` を出す。
+- detector はオプションの出所を知らない。解決した値だけを `DetectorOptions.settings` で受け取る。
 
 ---
 

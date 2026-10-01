@@ -37,6 +37,10 @@ export type Config = {
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
   readonly byPath: readonly PathRule[];
   readonly baseDir: string;
+  /** Options set on rules that take them: { rule id: { option: value } }, as written. rule-options.ts checks them against the rules. */
+  readonly options?: Readonly<Record<string, unknown>>;
+  /** options as written when it is not a map. Dropping it silently would leave a team thinking its options apply. */
+  readonly unreadableOptions?: string | undefined;
 };
 
 /** 判定の質が誤検知に直結するので、既定は最上位のモデル。cost は絞り込みで削る。spec §14。 */
@@ -144,6 +148,7 @@ export const loadConfig = (path: string): Config => {
   const declared: unknown = raw["ai_backend"];
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;
   const names = namesOf(raw["names"]);
+  const options: unknown = raw["options"];
   return {
     genre: str(raw["genre"]),
     profile: str(raw["profile"]),
@@ -163,5 +168,7 @@ export const loadConfig = (path: string): Config => {
     unreadableNames: names.unreadable,
     byPath: byPathOf(raw["by_path"]),
     baseDir: dirname(path),
+    options: isRecord(options) ? options : {},
+    unreadableOptions: options === undefined || options === null || isRecord(options) ? undefined : printed(options),
   };
 };
