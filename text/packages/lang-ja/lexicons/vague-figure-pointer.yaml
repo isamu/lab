@@ -1,0 +1,23 @@
+# 図や表を、番号ではなく置き場所で指す言い方（JIS Z 8301:2019 10.6 が避ける「上記の図」）。
+# instead_of は、指している種類。figure-label の種類（図、表）と同じ名前で書く。文書がその種類に番号を付けているときだけ見る。
+id: vague-figure-pointer
+language: ja
+entries:
+  - { pattern: 上記の図, instead_of: 図 }
+  - { pattern: 下記の図, instead_of: 図 }
+  - { pattern: 上の図, instead_of: 図 }
+  - { pattern: 下の図, instead_of: 図 }
+  - { pattern: 以下の図, instead_of: 図 }
+  - { pattern: 以上の図, instead_of: 図 }
+  - { pattern: 前記の図, instead_of: 図 }
+  - { pattern: 前述の図, instead_of: 図 }
+  - { pattern: 後述の図, instead_of: 図 }
+  - { pattern: 上記の表, instead_of: 表 }
+  - { pattern: 下記の表, instead_of: 表 }
+  - { pattern: 上の表, instead_of: 表 }
+  - { pattern: 下の表, instead_of: 表 }
+  - { pattern: 以下の表, instead_of: 表 }
+  - { pattern: 以上の表, instead_of: 表 }
+  - { pattern: 前記の表, instead_of: 表 }
+  - { pattern: 前述の表, instead_of: 表 }
+  - { pattern: 後述の表, instead_of: 表 }
