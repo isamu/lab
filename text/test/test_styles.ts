@@ -213,15 +213,18 @@ describe("house styles", () => {
 
     it("explain shows koyobun's 60 as the current limit, marks no level, and names the style", async () => {
       const run = await runCli({ "chaff.yaml": "language: ja\nstyle: koyobun\n" }, ["explain", "max-sentence-length"]);
-      assert.match(run.out, /いまは段階ではなく数で 60 です。（style: koyobun で決めています）/u);
+      assert.match(run.out, /いまは段階ではなく数です: 一文 60 字まで。（style: koyobun で決めています）/u);
       assert.doesNotMatch(run.out, /→/u);
     });
 
     it("explain shows a number chaff.yaml sets, and an English document under koyobun at its level", async () => {
       const numbered = await runCli({ "chaff.yaml": "language: ja\nrules:\n  max-sentence-length: 80\n" }, ["explain", "max-sentence-length"]);
-      assert.match(numbered.out, /いまは段階ではなく数で 80 です。\n/u);
+      assert.match(numbered.out, /いまは段階ではなく数です: 一文 80 字まで。\n/u);
+      const numberedEn = await runCli({ "chaff.yaml": "language: en\nrules:\n  max-sentence-length: 20\n" }, ["explain", "max-sentence-length"]);
+      assert.match(numberedEn.out, /Now: up to 20 words in a sentence, set as a number rather than a level\./u);
+      assert.doesNotMatch(numberedEn.out, /→/u);
       const severityOnly = await runCli({ "chaff.yaml": "language: ja\nrules:\n  numbering-gap: 3\n" }, ["explain", "numbering-gap"]);
-      assert.doesNotMatch(severityOnly.out, /数で 3/u);
+      assert.doesNotMatch(severityOnly.out, /段階ではなく数です/u);
       assert.match(severityOnly.out, /→ normal/u);
       const english = await runCli({ "chaff.yaml": "language: en\nstyle: koyobun\n" }, ["explain", "max-sentence-length"]);
       assert.match(english.out, /→ normal/u);

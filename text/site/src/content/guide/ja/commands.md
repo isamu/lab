@@ -24,6 +24,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs cite <原文> <引用.json>` | 回答の引用が原文にあるかを確かめます |
 | `npx chaffjs compare <前> <後>` | 書き換えで事実（数・日付・URL・コード・名前・引用など）が落ちても足されてもいないかを確かめます |
 | `npx chaffjs facts <file>` | `compare` が照合する事実を、書き直す前の控えとして一覧にします |
+| `npx chaffjs outline <file> [<後>]` | 見出しの構成を出し、形（見出しの数・節の平均の長さ・箇条書きの割合・太字）を測ります。2 つなら前と後を並べます |
 | `npx chaffjs skill` | Claude Code の skill を入れます。`--global` を付けると `~/.claude/` に入れます |
 | `npx chaffjs feedback <file> --rule <rule>` | 誤った指摘や見逃しの報告の下書きを作ります。何も送りません |
 | `npx chaffjs test <file\|dir>...` | 意味を読む検査も動かします。API key が要ります |
@@ -118,10 +119,10 @@ $ npx chaffjs explain max-sentence-length
 
   直しかた: 接続助詞のところで 2 文に割ってください。それだけで読めるようになります。
 
-  設定できる値（単位: 文字）:
-    strict   70
-  → normal   100
-    relaxed  140
+  設定できる値:
+    strict   一文 70 字まで
+  → normal   一文 100 字まで
+    relaxed  一文 140 字まで
     off      見ない
 
   この数字は 既定 のものです。ほかに business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / legal/judgment / academic で別の数字を持っています。
@@ -321,12 +322,14 @@ i 書き方だけ変わった事実 3 件
 ```bash
 npx chaffjs compare before.md after.md --allow-dropped url        # URL は消してよい
 npx chaffjs compare before.md after.md --allow-dropped url,quote  # カンマで並べられる
+npx chaffjs compare before.md after.md --distinct                 # 一度でも書いてあれば残ったとみなす
 npx chaffjs compare before.md after.md --compact                  # 1 件 1 行
 npx chaffjs compare before.md after.md --json                     # AI が読んで直す
 ```
 
 種類の名前は `number`、`date`、`time`、`url`、`code`、`name`、`quote`、`heading`、`reference`、`footnote` です。
 `--json` には、落ちた事実と足された事実が行番号つきで入るので、書き換えた AI にそのまま渡して直させられます。
+ふだんは、同じ事実を書いた回数も比べます。本文を言い直すだけの「まとめ」を消すと、繰り返していた事実が一つずつ落ちたと出ます。`--distinct` を付けると、相手の文書に一度でも書いてある事実は残ったとみなします。相手のどこにも無い事実は、これまでどおり落ちた・足されたと出ます。
 
 ## 書き直す前に事実を控える
 
@@ -354,6 +357,40 @@ URL 1 件
 ```
 
 `--compact` は 1 件 1 行、`--json` は種類・照合の鍵・書いたままの文字・行番号を全部出します。書き直す AI に控えとして持たせられます。
+
+## 構成を測る
+
+文を滑らかにする書き直しでは、骨組みが元のまま残ることがあります。見出しも、箇条書きも、太字も同じです。`outline` は骨組みを出して測ります。構成を変えたかどうかが、印象ではなく数で分かります。
+見出しを深さで字下げして並べ、それぞれの行と、その節だけの本文の長さを出します。測るのは 4 つです。見出しの数、節の平均の長さ（日本語は字数、英語は語数。本文の無い節は数えません）、本文のうち箇条書きの中にある割合、太字の数です。
+ファイルを 2 つ渡すと、両方を出し、それぞれの値がどう動いたかを並べます。
+
+```
+$ npx chaffjs outline before.md after.md
+before.md の構成: 見出し 6、節の平均 113 字、箇条書き 17%、太字 8
+
+  # CI のテストがたまに落ちる問題を解決した話——時差という見えない罠  (before.md:1)  52 字
+    ## 何が起きていたのか  (before.md:5)  169 字
+    ## 原因の調査  (before.md:15)  204 字
+    ## 解決策  (before.md:29)  116 字
+    ## 結果  (before.md:39)  25 字
+    ## まとめ  (before.md:43)  113 字
+
+after.md の構成: 見出し 5、節の平均 101 字、箇条書き 0%、太字 0
+
+  # CI のテストがたまに落ちる問題は時差が原因だった  (after.md:1)  72 字
+    ## 何が起きていたのか  (after.md:5)  74 字
+    ## 原因の調査  (after.md:9)  160 字
+    ## 直したこと  (after.md:15)  112 字
+    ## 結果  (after.md:19)  88 字
+
+構成の変化（before.md → after.md）
+  見出し: 6 → 5
+  節の平均: 113 字 → 101 字
+  箇条書き: 17% → 0%
+  太字: 8 → 0
+```
+
+この例では、文は滑らかになり、箇条書きと太字は消えましたが、見出しはほとんど残っていて、構成はあまり動いていません。`--compact` は 1 節 1 行、`--json` は構成と形を出します（2 つなら `before` と `after`）。測るだけなので、ファイルが読めれば終了コードはいつも 0 です。
 
 ## 意味を読む検査と閾値の測り直し
 
