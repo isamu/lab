@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `unqualified-superlative`: the rule text no longer uses 業界最速 as its example
+
+The summary and the example named 「業界最速」 as an unqualified superlative, but since #170 a noun joined to the
+superlative (国内最大, 業界最速) is read as its scope and is not reported, so a writer following the summary expected a
+finding that never came. The summary and the example now use 「最速」, and `not_flagged` says that a joined noun or a
+name with で is a scope. What the rule reports is unchanged.
+
 ### Guide: what chaff does for more kinds of document, in Japanese
 
 「文書の種類ごとにできること」 is now a chooser: find the kind of document you have, go to its page. New pages,
