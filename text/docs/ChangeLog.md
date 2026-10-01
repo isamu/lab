@@ -31,6 +31,14 @@ are the ones compare holds the rewrite to.
   kind, key, text and line). The screen follows the document's language.
 - One file per run; none or more than one is a usage error (exit 1).
 
+### Guide: what chaff does for more kinds of document, in English
+
+"What chaff does for each kind of document" is now a chooser: find the kind of document you have, go to its page. New
+pages join the statute and report pages: tech articles, contracts and terms, business email, meeting minutes, manuals
+and API docs, press releases, and papers. Each runs chaff on a short self-written sample with realistic mistakes, shows
+chaff's real screen, says what every finding means and how to fix it, says what chaff does not check for that kind,
+and gives the genre and a starter `chaff.yaml`.
+
 ### A line holding only a link ends its own sentence (#400)
 
 Links listed one per line without a bullet (a series index at the end of an article) were read as one long sentence,
