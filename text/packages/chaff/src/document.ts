@@ -34,7 +34,7 @@ import type { BulletList, LanguageAdapter, Markup, Paragraph, ProseDocument, Sen
 const NOT_PROSE = new Set(["code", "inlineCode", "html", "yaml", "toml", "table", "blockquote", "thematicBreak", "definition", "image", "imageReference"]);
 
 /** link は `[text](url)` の外側だけを覆う。表示される文字は本文なので残す。 */
-const linkChrome = (node: Node): Span[] => {
+export const linkChrome = (node: Node): Span[] => {
   const whole = spanOf(node);
   const first = node.children?.[0];
   const last = node.children?.at(-1);
