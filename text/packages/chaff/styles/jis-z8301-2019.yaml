@@ -1,0 +1,30 @@
+# JIS Z 8301:2019「規格票の様式及び作成方法」の書き方。chaff.yaml に style: jis-z8301-2019 と書くと使える。
+# ここに置くのは、規格が決めていて、機械で確かめられることだけ。
+#
+# 7.3（推奨事項）: 文末の「…すべきである」「…すべきでない」は用いない。
+# 7.4（許容事項）・7.5（可能性・能力事項）: 文末の「…できる」「…できない」は用いない（能力を示す文の途中は除く）。
+#   どちらも requirement-modal の standard: jis-z8301-2019。
+# 外来語の語末の「ー」は、2019 年版は外来語の表記によるとしつつ、慣用で省くかは各業界に任せている（手引 Q&A 6-14）ので、決めない。
+# 10.6 の「上記の図」のような参照は vague-figure-reference が見る。このスタイルにはまだ入れていない。
+id: jis-z8301-2019
+
+name:
+  ja: JIS Z 8301:2019 規格票の様式及び作成方法
+  en: JIS Z 8301:2019, rules for the structure and drafting of standards
+
+summary:
+  ja: 規定の文末に「すべきである」「すべきでない」と、文末の「できる」「できない」を使いません。推奨は「することが望ましい」、許容は「してもよい」、可能性は「可能である」と書きます。
+  en: "Does not end a provision with すべきである, すべきでない, できる or できない: a recommendation is することが望ましい, a permission してもよい, a possibility 可能である."
+
+source:
+  title:
+    ja: JIS Z 8301:2019 7.3〜7.5。日本規格協会「JIS 原案作成のための手引 第 24 版」資料 7「JIS Z 8301:2019 の主な改正点」による
+    en: JIS Z 8301:2019, 7.3 to 7.5, as summarised in the Japanese Standards Association's drafting guide (24th edition), material 7
+  url: https://webdesk.jsa.or.jp/pdf/dev/md_6650.pdf
+
+rules:
+  requirement-modal: normal
+
+options:
+  requirement-modal:
+    standard: jis-z8301-2019

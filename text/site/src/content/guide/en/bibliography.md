@@ -96,6 +96,7 @@ The rules themselves are listed in the [Reference](./reference).
     Use "must", not "shall", for requirements, and keep sentences and paragraphs short. It gives no word limit.
   - In chaff: `agentless-passive`, [`preferred-term`](../../rules/preferred-term/) and
     [`undefined-acronym`](../../rules/undefined-acronym/) check the voice, the terms and the abbreviations.
+    With `shall: must` under `requirement-modal` in `options`, chaff points at "shall" and asks for "must".
 - <a id="gov-uk-clear-language"></a>**Government Digital Service (UK)** [guidance.publishing.service.gov.uk](https://guidance.publishing.service.gov.uk/writing-to-gov-uk-standards/writing-guidelines/clear-language/)
   - Use clear language
   - Appeared in: GOV.UK content and publishing guidance.
@@ -118,6 +119,7 @@ The rules themselves are listed in the [Reference](./reference).
     Documents for the public use です・ます, loanwords keep the final ー (コンピューター), and full-width and half-width characters are used consistently.
   - In chaff: `max-sentence-length`, `no-mixed-desumasu`,
     [`katakana-long-vowel`](../../rules/katakana-long-vowel/) and [`latin-spacing`](../../rules/latin-spacing/) check these points.
+    `style: koyobun` in `chaff.yaml` sets a Japanese sentence's limit to 60 characters, and checks mixed です・ます and a dropped final ー.
 - <a id="gairaigo-1991"></a>**Cabinet notice (1991)** [bunka.go.jp](https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/gairai/honbun06.html)
   - 「外来語の表記」 (how to write loanwords)
   - Appeared in: Cabinet notice No. 2 of 1991.
@@ -133,6 +135,7 @@ The rules themselves are listed in the [Reference](./reference).
   - In chaff: `undefined-acronym` and [`dangling-reference`](../../rules/dangling-reference/) check the abbreviations and the pointers.
     [`vague-figure-reference`](../../rules/vague-figure-reference/) points at 「上記の図」 in a document that numbers its figures and tables (10.6).
     `style: jis-z8301-2011` runs `katakana-long-vowel` by the 2011 edition's rule.
+    `style: jis-z8301-2019` makes [`requirement-modal`](../../rules/requirement-modal/) point at a closing すべきである or できる (7.3 to 7.5).
 - <a id="kyodo-2022"></a>**Kyodo News, ed. (2022)** [kyodo.co.jp](https://www.kyodo.co.jp/publish/%E8%A8%98%E8%80%85%E3%83%8F%E3%83%B3%E3%83%89%E3%83%96%E3%83%83%E3%82%AF%E3%80%80%E6%96%B0%E8%81%9E%E7%94%A8%E5%AD%97%E7%94%A8%E8%AA%9E%E9%9B%86%E3%80%80%E7%AC%AC%EF%BC%91%EF%BC%94%E7%89%88/)
   - 『記者ハンドブック 新聞用字用語集 第 14 版』 (the Kyodo reporters' handbook, 14th edition)
   - Found: A book of the spellings and word choices used in Japanese newspapers. Press officers and web writers use it as well as reporters.
