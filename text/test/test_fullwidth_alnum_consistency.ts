@@ -62,7 +62,7 @@ describe("fullwidth-alnum-consistency: 英数字の全角と半角が混ざっ�
   // 東京アプリの利用規約: 第１条と全角で書く文書の「TLS1.2」。
   it("版の番号の続き（TLS1.2 の 2）は、数字の書き方として数えない", () => {
     const fullwidth = "会場は１２階です。受付は１５時です。控室は１３号室です。予備は１４号室です。部屋は２つ、窓は３つ、机は４つです。";
-    assert.deepEqual(findingsOf(`${fullwidth}ブラウザが TLS1.2 に対応していること。Python3.12 で動きます。\n`), []);
+    assert.deepEqual(findingsOf(`${fullwidth}ブラウザが TLS1.2 に対応していること。Python3.12 で動きます。Python3.12.4 も動きます。\n`), []);
   });
 
   it("名前（EC2）の後ろでも、点でつながっていない数は数える", () => {

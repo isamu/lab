@@ -48,11 +48,15 @@ const isInAddress = (text: string, start: number, end: number): boolean =>
   (text.charAt(start - 1) === "." && LETTER_BESIDE.test(text.charAt(start - 2))) ||
   (text.charAt(end) === "." && LETTER_BESIDE.test(text.charAt(end + 1)));
 
-/** 英字の後ろに数字を続けた名前（TLS1、Python3）の終わり。版の番号の頭になる。 */
-const NAME_WITH_DIGIT = /[A-Za-zＡ-Ｚａ-ｚ][0-9０-９]+$/u;
+/** 英字の後ろに数字を続けた名前（TLS1、Python3）と、その後ろの点でつないだ番号（Python3.12）。版の番号の頭になる。 */
+const VERSION_SO_FAR = /[A-Za-zＡ-Ｚａ-ｚ][0-9０-９]+(?:\.[0-9０-９]+)*$/u;
 
-/** 版の番号の続き（TLS1.2 の 2、Python3.12 の 12）。幅は名前の英字に従い、文書の数の書き方の票にはしない。 */
-const continuesVersion = (text: string, start: number): boolean => text.charAt(start - 1) === "." && NAME_WITH_DIGIT.test(text.slice(0, start - 1));
+/** 版の番号を後ろ向きに読む長さの上限。長い行で点ごとに行の頭から読み直さない。 */
+const VERSION_REACH = 32;
+
+/** 版の番号の続き（TLS1.2 の 2、Python3.12.4 の 12 と 4）。幅は名前の英字に従い、文書の数の書き方の票にはしない。 */
+const continuesVersion = (text: string, start: number): boolean =>
+  text.charAt(start - 1) === "." && VERSION_SO_FAR.test(text.slice(Math.max(0, start - 1 - VERSION_REACH), start - 1));
 
 const isListItemNumber = (source: string, offset: number): boolean => LIST_ITEM_HEAD.test(source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset));
 
