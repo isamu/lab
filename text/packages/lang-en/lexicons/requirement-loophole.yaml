@@ -1,0 +1,17 @@
+# Phrases that open a loophole in a requirement or leave it unverifiable (Femmer et al. 2017; the terms ISO/IEC/IEEE
+# 29148 says to avoid). The reader cannot tell how much is enough to meet it.
+id: requirement-loophole
+language: en
+entries:
+  - pattern: as far as possible
+  - pattern: as much as possible
+  - pattern: as soon as possible
+  - pattern: as fast as possible
+  - pattern: to the extent possible
+  - pattern: if possible
+  - pattern: where possible
+  - pattern: as appropriate
+  - pattern: where appropriate
+  - pattern: as applicable
+  - pattern: if necessary
+  - pattern: as needed

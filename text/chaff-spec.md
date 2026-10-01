@@ -599,7 +599,7 @@ genres:
 - ジャンルが入れた試験中の rule は、設定で入れたもの（§18.4）とは別に知らせる。
 - 数字は §9.1 のとおり rule の `by_genre` に置く。ジャンルの段は 4 語だけを書く。
 - profile の強さは by_path > chaff.yaml の `profile` > ジャンルの `profile` > 内容。
-- 前からあるジャンルには段も profile も無い。結果は変わらない。
+- 前からあるジャンルは profile を持たず、段は試験中の rule を止めることだけに使う。既定で出る指摘は変わらない（変わるのは「動いていない」一覧の理由だけ）。止めるのは corpus の実文書が理由を示したときだけ（議事録の agentless-passive、プレスリリースの proper-noun-density）。
 
 ### 9.3 ジャンルを決めていない文書には、見当を出す
 
@@ -1513,6 +1513,8 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 - スタイルのオプションは chaff.yaml の `options:` の下の層。合わない値は次の層（既定）に落ちる。
 - `rules --json` は `style`（id・名前・要約・出典）を出し、スタイルが決めた段階の `your_setting.from` とオプションの
   `from` を `style: ieice` とする。`explain` も同じ。
+- スタイルは `limits:` で、rule の上限を言語ごとの数で決められる（`max-sentence-length: { ja: 60 }`）。その言語の文書だけに効き、
+  chaff.yaml がその rule の段階か数を書けば、chaff.yaml が勝つ。数を決める rule は、スタイルの `rules:` にも動く段階で書く。
 - 知らないスタイル名は、知らないジャンルと同じく実行を止め、使える名前を並べる。
 - 同梱のスタイルは test がすべての rule 名とオプションを確かめる。読めないスタイルファイルは chaff の不具合として止まる。
 
@@ -1522,6 +1524,7 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 | `jis-z8301-2011` | `katakana-long-vowel`: `drop`、3 音 | JIS Z 8301:2011 附属書 G 表 G.3。2019 年版は外来語の表記によるとした |
 | `bunkacho` | `katakana-long-vowel`: `keep` | 外来語の表記 留意事項その 2 Ⅲ 3 注 3 |
 | `jis-z8301-2019` | `requirement-modal`: `standard: jis-z8301-2019` | JIS Z 8301:2019 7.3〜7.5（JSA「JIS 原案作成のための手引」資料 7）。外来語の長音は業界に任せている（同 Q&A 6-14）ので決めない |
+| `koyobun` | `max-sentence-length`: 和文 60 字（`limits`）、`no-mixed-desumasu`、`katakana-long-vowel`: `keep` | 公用文作成の考え方（2022）Ⅲ－3 ア（50～60 字ほどで見直す）、Ⅲ－1 イ、Ⅰ－3 エ。英文の数は言っていないので変えない |
 
 ### 18.7 チームのルール（`custom_rules:`）
 

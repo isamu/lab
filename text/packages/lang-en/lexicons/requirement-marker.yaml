@@ -1,0 +1,9 @@
+# What makes a sentence a requirement for requirement-smell: the forms ISO/IEC/IEEE 29148 and the Federal Plain Language
+# Guidelines use for an obligation. Only a sentence with one of them is read as a requirement.
+id: requirement-marker
+language: en
+entries:
+  - pattern: shall
+  - pattern: must
+  - pattern: is required to
+  - pattern: are required to
