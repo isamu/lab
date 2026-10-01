@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `section-length-uniformity` and `paragraph-length-variance` need enough sections and paragraphs to measure
+
+Both rules compare lengths by their coefficient of variation. Over two or three values that number is small by chance,
+so human writing looked "too uniform". In pre-2022 human Qiita articles the findings clustered in articles with two to
+four sections or paragraphs. Each rule now has a `count` option: `min_sections` (default 5) and `min_paragraphs`
+(default 6). With fewer, the rule does not measure, and `not_flagged` says so. On the paired samples in `yarn bench:ai`
+the generated-style hits stay, and the human, rewritten and corpus false alarms of these two rules drop. Two corpus
+documents (a national-park story and a government security page) lose a `section-length-uniformity` finding they
+should not have had.
+
 ### `closing-cliche` reads only the end of the last section (#413)
 
 - In a document without headings the whole text was one "last section", so 「簡単にまとめると、以下の三点です」 near the
