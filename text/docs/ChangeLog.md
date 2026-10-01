@@ -12,6 +12,18 @@ The numbers (一 to 二十, and イ, ロ, ハ … for sub-items) are the lang-ja
 as an item only where the number before or after it also opens a line, so 「十 GBまで…」 is still a quantity; only the
 separating space is skipped (「二CSV」 still counts as touching).
 
+### `dangling-reference` reads another document's articles the way terms and web databases write them (#170)
+
+Two shapes in the round 14 documents were read as this document's missing articles:
+
+- **Connectors written in kana.** 「著作権法第27条および第28条」: terms of service and notices write および・ならびに・
+  もしくは・または, so 第28条 is 著作権法's too, as it already was after 及び.
+- **A promulgation number in half-width parentheses.** The MHLW 法令等データベース writes 「保険医療養担当規則(昭和三十二年
+  厚生省令第十五号)第二条の六」. The number is now skipped in either width, and a name with one is another document even
+  when it ends in no kind word (「…に関する基準(昭和五十八年厚生省告示第十四号)第二条の六」). A parenthetical aside
+  inside a chain (「民法第709条(同法第710条において準用する場合を含む。)、第711条」) no longer breaks it in either width (an opener and a closer of different widths are not a pair). A name
+  preceded by この (「この基準(…号)第9条」「この就業規則第9条」) is still this document.
+
 ### Corpus round 14: documents of kinds the corpus had few of (#170)
 
 Terms of service and privacy statements (GitHub's, under CC0; a ministry's 電子申請 terms and the Tokyo app's terms,
@@ -21,6 +33,15 @@ blogs from Zenn and Qiita, API documentation and its Japanese translation (MDN, 
 Japanese, release notes (Ruby 3.4.0 in Japanese, Go 1.23), Node.js TSC minutes, arXiv and J-STAGE abstract pages, a
 recipe in Japanese and English (農林水産省 うちの郷土料理), a school's いじめ防止基本方針 and a university's course
 registration notice, and Dr Jekyll and Mr Hyde. Each document's licence is in `corpus/manifest.json`.
+
+### `style: koyobun`: 公用文作成の考え方 (2022)
+
+- `style: koyobun` checks a document the way 文化審議会「公用文作成の考え方」 asks: a Japanese sentence over 60 characters
+  (Ⅲ－3 ア: check a sentence once it reaches 50 to 60 characters), です・ます mixed with である (Ⅲ－1 イ), and a
+  katakana word without its final ー (Ⅰ－3 エ). English documents keep the level's limit, since the document gives none.
+- A style can set a rule's number by language under `limits:`. chaff.yaml's own level or number for the rule still wins.
+- `chaff explain` now says when a number sets a rule's limit (a style's, or one written in chaff.yaml's `rules:`), and
+  no longer marks a level as current then. The number is shown in the rule's own words ("一文 60 字まで").
 
 ### New rule: `requirement-modal`, and `style: jis-z8301-2019` (experimental)
 
