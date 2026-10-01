@@ -7,6 +7,10 @@ import { loadGenres, presetLevels } from "../genre-load.ts";
 import { presetLevelsOf, type PresetLevels } from "../genre-parse.ts";
 import { RULE_GROUPS, groupTextOf } from "../rule-guide.ts";
 import { standingIn } from "../rule-genres.ts";
+import { optionsJson } from "./options.ts";
+import { styleLevelSource } from "../config/style.ts";
+import { loadStyles } from "../style-load.ts";
+import type { OptionLayer } from "../rule-options.ts";
 
 const TEXT: Texts<{
   readonly offBySetting: string;
@@ -16,6 +20,7 @@ const TEXT: Texts<{
   readonly valuesNote: string;
   readonly reason: string;
   readonly byFile: string;
+  readonly optionsByFile: string;
   readonly fromStyleNote: readonly string[];
 }> = {
   ja: {
@@ -26,6 +31,7 @@ const TEXT: Texts<{
     valuesNote: "この 4 語のかわりに数字を直接書いてもよい。4 語のほうを勧める。",
     reason: "<理由>",
     byFile: "chaff.yaml の rules に <rule-id>: <level> を足す。既定のままのものは書かない。",
+    optionsByFile: "options を持つ rule は、chaff.yaml の options に <rule-id>: { <option>: <value> } を足す。",
     fromStyleNote: [
       "チームの書き方の決まり（例: です・ます、1 文 80 字まで）を一つずつ読む。",
       "決まりごとに、summary と level_meaning が合う rule を選ぶ。数の決まりは levels の数と比べ、合う段階を選ぶか数を直接書く。",
@@ -42,6 +48,7 @@ const TEXT: Texts<{
     valuesNote: "A number may be written instead of these four words. The words are recommended.",
     reason: "<reason>",
     byFile: "Add <rule-id>: <level> under rules in chaff.yaml. Leave out anything at its default.",
+    optionsByFile: "For a rule with options, add <rule-id>: { <option>: <value> } under options in chaff.yaml.",
     fromStyleNote: [
       "Read the team's style note one requirement at a time (for example: polite endings, sentences of at most 80 characters).",
       "For each requirement, pick the rule whose summary and level_meaning match. For a number, compare it with the rule's levels and pick a level, or write the number itself.",
@@ -78,8 +85,15 @@ const effectAt = (rule: RuleDefinition, level: Exclude<Level, "off">, genre: str
 const yourSetting = (rule: RuleDefinition, config: Config): Record<string, unknown> | null => {
   const level = config.rules[rule.id];
   if (level === undefined) return null;
+  const from = styleLevelSource(config, rule.id) ?? config.path;
   const limit = rule.level_sets === "severity" ? undefined : config.limits[rule.id];
-  return limit === undefined ? { level, from: config.path } : { level, limit, from: config.path };
+  return limit === undefined ? { level, from } : { level, limit, from };
+};
+
+/** The house style chaff.yaml names: what it decides and the guideline it follows, so an AI can say where a setting came from. */
+const styleOf = (config: Config): Record<string, unknown> | null => {
+  const style = loadStyles().find((entry) => entry.id === config.applied?.style);
+  return style === undefined ? null : { id: style.id, name: style.name, summary: style.summary, source: style.source };
 };
 
 /** ジャンルで数字が変わる rule があるので、いま効いている表と既定の表の両方を出す。 */
@@ -148,7 +162,13 @@ const COMING = {
 };
 
 /** AI に設定を書かせるときの入口。推測せずに書けるだけの情報を 1 つに入れる。spec §19.3。 */
-export const rulesJson = (rules: readonly RuleDefinition[], config: Config, language: string, genre: string): string => {
+export const rulesJson = (
+  rules: readonly RuleDefinition[],
+  config: Config,
+  language: string,
+  genre: string,
+  optionLayers: readonly OptionLayer[] = [],
+): string => {
   const text = TEXT[uiLanguageOf(language)];
   const preset = presetLevels(genre);
   return JSON.stringify(
@@ -158,6 +178,7 @@ export const rulesJson = (rules: readonly RuleDefinition[], config: Config, lang
       schema_version: 2,
       config_file: "chaff.yaml",
       detected: { genre, language },
+      ...(config.applied === undefined ? {} : { style: styleOf(config) }),
       values_you_can_use: ["strict", "normal", "relaxed", "off"],
       values_note: text.valuesNote,
       groups: groupsOf(),
@@ -175,12 +196,14 @@ export const rulesJson = (rules: readonly RuleDefinition[], config: Config, lang
         levels_you_can_set: definedLevels(rule),
         your_setting: yourSetting(rule, config),
         now: now(rule, config, genre, text, preset),
+        ...(rule.options === undefined ? {} : { options: optionsJson(rule, optionLayers) }),
         ...guideOf(rule),
       })),
       how_to_write_settings_from_a_style_note: text.fromStyleNote,
       how_to_change: {
         by_command: ["relax", "strict", "off"].map((command) => `npx chaff ${command} <rule-id> --why "${text.reason}"`),
         by_file: text.byFile,
+        options_by_file: text.optionsByFile,
       },
     },
     null,

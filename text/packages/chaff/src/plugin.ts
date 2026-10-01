@@ -81,7 +81,11 @@ export type AdapterCapabilities = {
 };
 
 /** prepare に渡す要求。動く rule が要らないものの代金を払わせない。 */
-export type AdapterNeeds = { readonly pos: boolean };
+export type AdapterNeeds = {
+  readonly pos: boolean;
+  /** Token features that cost the adapter extra work (LongVowelEnding asks the dictionary about each katakana word). Only the running rules' are asked for. */
+  readonly features?: readonly string[];
+};
 
 export type LanguageAdapter = {
   readonly kind: "language";
@@ -389,6 +393,25 @@ export type DetectorOptions = {
   readonly fullSentence?: number | undefined;
   /** 文書と違う言語で書いた文の上限。その言語の段から解決済み。rule がその言語の段を持たなければ無い。 */
   readonly embeddedLimits?: Readonly<Record<string, number>> | undefined;
+  /** The rule's options (RuleDefinition.options), each at the value the settings chose or its default. Only a rule with options has them. */
+  readonly settings?: Readonly<Record<string, OptionValue>> | undefined;
+};
+
+/** The value of one rule option: a choice, a count, or a list of words. */
+export type OptionValue = string | number | readonly string[];
+
+/**
+ * One option a rule takes, beyond its level. The rule's YAML declares it; a team sets it under options in chaff.yaml.
+ * choice takes one of choices, count a whole number of 1 or more, words a list of words.
+ */
+export type RuleOption = {
+  readonly kind: "choice" | "count" | "words";
+  readonly choices: readonly string[];
+  readonly default: OptionValue;
+  /** What the option decides, in plain words. */
+  readonly about: Localized;
+  /** What each choice means, in plain words. Only a choice has them. */
+  readonly choiceNames: Readonly<Record<string, Localized>>;
 };
 
 export type Detector = (doc: ProseDocument, options: DetectorOptions) => Finding[];
@@ -437,12 +460,16 @@ export type RuleDefinition = {
   readonly requires: readonly string[];
   /** 使えるなら用意してほしい capability（"pos"）。requires と違い、満たせなくても動かす（品詞が無ければ文字だけで見る）。 */
   readonly uses: readonly string[];
+  /** Token features the rule reads that the adapter computes only when asked (AdapterNeeds.features). */
+  readonly token_features?: readonly string[];
   /** 複合シグナル。ここに並べた rule のうち何本が出たかを見る。spec §20.2。 */
   readonly from: readonly string[];
   /** 動かす言語。未指定は全言語。「ですます調」のように言語に固有の rule が使う。 */
   readonly languages: readonly string[] | undefined;
   readonly use_for: readonly string[];
   readonly severity: Severity;
+  /** Options beyond the level (the direction and length for katakana-long-vowel). Most rules have none. */
+  readonly options?: Readonly<Record<string, RuleOption>>;
   /** What the rule reference tells a reader who is not an engineer: its group, one line, a before and after. */
   readonly guide?: RuleGuide;
 };

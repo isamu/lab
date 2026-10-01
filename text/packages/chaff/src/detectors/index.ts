@@ -26,6 +26,8 @@ import { urlRunOn } from "./url-run-on.ts";
 import { unbalancedBracket } from "./unbalanced-bracket.ts";
 import { doubledPunctuation } from "./doubled-punctuation.ts";
 import { kutotenConsistency } from "./kutoten-consistency.ts";
+import { katakanaLongVowel } from "./long-vowel.ts";
+import { assistantResidue, contrastFraming, stockTransition, unfilledPlaceholder } from "./ai-phrasing.ts";
 import { danglingReference, dateOrder, dateWeekdayMismatch, duplicateDefinition, numberingGap, totalMismatch } from "./structure-tree.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -65,6 +67,10 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "unqualified-superlative": unqualifiedSuperlative,
   "repeated-conjunction": repeatedConjunction,
   "ai-tell": aiTell,
+  "contrast-framing": contrastFraming,
+  "stock-transition": stockTransition,
+  "assistant-residue": assistantResidue,
+  "unfilled-placeholder": unfilledPlaceholder,
   "contraction-mix": contractionMix,
   "internal-jargon": internalJargon,
   "required-sections": requiredSections,
@@ -72,6 +78,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "preferred-term": preferredTerm,
   "latin-spacing": latinSpacing,
   "stray-space": straySpace,
+  "katakana-long-vowel": katakanaLongVowel,
   "dangling-reference": danglingReference,
   "date-weekday-mismatch": dateWeekdayMismatch,
   "date-order": dateOrder,

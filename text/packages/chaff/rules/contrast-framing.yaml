@@ -1,0 +1,57 @@
+id: contrast-framing
+layer: L2
+status: experimental
+how_to_find: contrast-framing
+word_list: contrast-frame
+# 打ち消し（it's not）と、それを返す語（it's、but）。後ろに返しが来たときだけ対比の枠になる。
+extra_word_lists: [contrast-lead, contrast-turn]
+uses: [pos]
+severity: info
+
+name:
+  ja: 対比の枠が多い
+  en: Too many contrast frames
+
+why:
+  ja: 「単なる X ではなく Y」「X だけでなく Y も」は、1 つなら論点を整理します。重なると、誰も言っていない X を打ち消し続ける文章になります。生成文によく見られる癖として知られています。
+  en: '"It''s not X, it''s Y" and "not just X, but Y" sort out a point when used once. Piled up, the text keeps knocking down an X nobody said, a habit well known in generated text.'
+
+message:
+  ja: 「{matched}」など、対比の枠が 1000 字あたり {density} 個あります（{limit} 個まで）
+  en: '"{matched}" and other contrast frames: {density} per 1000 words (limit {limit})'
+
+how_to_fix:
+  ja: 打ち消した側（X）を消して、言いたいこと（Y）だけを書いてください。
+  en: Drop the X you knocked down and say Y directly.
+
+# 1000 語（日本語は 1000 字）あたりの数。
+levels:
+  ja: { strict: 1, normal: 1.5, relaxed: 3 }
+  en: { strict: 2, normal: 3, relaxed: 6 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 「単なる X ではなく Y」「X だけでなく Y も」のような対比の枠が重なり、誰も言っていない X を打ち消し続けている所
+  en: 'Contrast frames piling up ("It''s not X, it''s Y", "not just X, but Y"), knocking down an X nobody said'
+example:
+  ja:
+    pad: true
+    before: |
+      この仕組みは単なる道具ではなく、チームの文化です。速さだけでなく、安心も届けます。
+    after: |
+      この仕組みで、見積もりの作成が一件あたり十分短くなりました。
+  en:
+    pad: true
+    before: |
+      This tool is not just software, but a culture. It's not a feature. It's a promise.
+    after: |
+      This tool cut the time to draft a quote by ten minutes.
+
+not_flagged:
+  ja: 一つだけの対比、打ち消しを返していない「単なる」（「単なる設定ミスです」）、「A ではなく B です」だけの文、続けて並べた打ち消し（「まだです。まだ試していません。」）は指しません。短い文書は測りません。
+  en: A single contrast, a denial nobody answers, and two denials in a row ("It's not ready. It's not tested.") are not reported. Short documents are not measured.
+level_meaning:
+  ja: 1000 字あたり {limit} 個まで
+  en: up to {limit} per 1000 words

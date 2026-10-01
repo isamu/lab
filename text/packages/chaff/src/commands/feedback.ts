@@ -86,15 +86,21 @@ const chosen = (findings: readonly Finding[], rule: string | undefined, line: nu
 const describe = (findings: readonly Finding[], none: string): string =>
   findings.length === 0 ? none : findings.map((finding) => `  ${String(finding.line)}  ${finding.rule}`).join("\n");
 
-/** Pure: the reported rules' own lines of chaff.yaml's rules (a numeric limit wins over a level), or undefined when none is set. */
-export const settingsOf = (config: Pick<Config, "rules" | "limits">, ruleIds: readonly string[]): string | undefined => {
+/**
+ * Pure: the reported rules' own lines of chaff.yaml's rules (a numeric limit wins over a level), under the style chaff.yaml
+ * names, or undefined when none is set. A level the style decided is the style's, so only the style line reproduces it.
+ */
+export const settingsOf = (config: Pick<Config, "rules" | "limits" | "applied">, ruleIds: readonly string[]): string | undefined => {
+  const fromStyle = new Set(config.applied?.levelsFrom ?? []);
   const lines = [...new Set(ruleIds)].flatMap((id) => {
     const limit = config.limits[id];
     const level = config.rules[id];
     if (limit !== undefined) return [`  ${id}: ${String(limit)}`];
-    return level === undefined ? [] : [`  ${id}: ${level}`];
+    return level === undefined || fromStyle.has(id) ? [] : [`  ${id}: ${level}`];
   });
-  return lines.length === 0 ? undefined : ["rules:", ...lines].join("\n");
+  const style = config.applied === undefined ? [] : [`style: ${config.applied.style}`];
+  const rules = lines.length === 0 ? [] : ["rules:", ...lines];
+  return style.length + rules.length === 0 ? undefined : [...style, ...rules].join("\n");
 };
 
 /** Pure: a title on one line, no longer than GitHub shows. */

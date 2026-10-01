@@ -1,0 +1,17 @@
+# Sentence openers that glue without saying how. Words that carry the argument (However, Therefore, Thus) are not here.
+# "In addition," keeps its comma: "In addition to X" opens a phrase, not a transition.
+id: stock-transition
+language: en
+entries:
+  - pattern: Additionally
+  - pattern: Moreover
+  - pattern: Furthermore
+  - pattern: In addition,
+  - pattern: Notably
+  - pattern: Importantly
+  - pattern: Crucially
+  - pattern: Ultimately
+  - pattern: Overall,
+  - pattern: In conclusion
+  - pattern: In summary
+  - pattern: That said

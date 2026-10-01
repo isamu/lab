@@ -1,5 +1,6 @@
 // Seeded mistakes of stock phrasing for `yarn bench`, in either language: a preamble before the first heading, a
-// clichéd closing, a padded opening, an empty intensifier, hedges stacked in one sentence, one paragraph opener repeated, sentences chained with "And",
+// clichéd closing, a padded opening, an empty intensifier, hedges stacked in one sentence, a chat reply's knowledge-cutoff line, a template
+// blank left unfilled, one paragraph opener repeated, sentences chained with "And",
 // a spelling the team does not use, and a pet phrase used in paragraph after paragraph. Pure and deterministic, like scripts/bench-mutations.ts.
 import {
   isJapanese,
@@ -16,6 +17,7 @@ import {
 } from "./bench-text.ts";
 import { SECTION, blocksOf, isParagraph, type Block } from "./bench-mutations-layout.ts";
 import { MIN_DOCUMENT_LENGTH } from "../packages/chaff/src/detectors/signals.ts";
+import type { Mutation } from "./bench-text.ts";
 
 const SENTENCE_END = /[。.!?]$/u;
 
@@ -132,6 +134,38 @@ const stackedHedgeFor = (source: string): string => {
 
 /** 最初の節の最初の段落に、逃げの表現を 1 つの文に重ねた一文を足す。 */
 export const stackHedges = (source: string): Plant | undefined => addToFirstSection(source, stackedHedgeFor(source));
+
+// --- assistant-residue ---
+
+const RESIDUE = {
+  polite: "私の知識は昨年時点のものです。",
+  plain: "私の知識は昨年時点のものである。",
+  en: "As of my last knowledge update, this was still the plan.",
+};
+
+const residueFor = (source: string): string => {
+  if (!isJapanese(source)) return RESIDUE.en;
+  return isPoliteDocument(source) ? RESIDUE.polite : RESIDUE.plain;
+};
+
+/** 最初の節の最初の段落に、チャットの返事に残る知識の期限の断り書きを足す。 */
+export const leaveResidue = (source: string): Plant | undefined => addToFirstSection(source, residueFor(source));
+
+// --- unfilled-placeholder ---
+
+const BLANK = {
+  polite: "詳しくは【担当者名】までご連絡ください。",
+  plain: "詳しくは【担当者名】に問い合わせる。",
+  en: "For details, contact [Your Name].",
+};
+
+const blankFor = (source: string): string => {
+  if (!isJapanese(source)) return BLANK.en;
+  return isPoliteDocument(source) ? BLANK.polite : BLANK.plain;
+};
+
+/** 最初の節の最初の段落に、雛形の空欄を埋め忘れた一文を足す。 */
+export const leaveBlank = (source: string): Plant | undefined => addToFirstSection(source, blankFor(source));
 
 // --- repeated-conjunction ---
 
@@ -251,3 +285,18 @@ const avoidedIn = (line: string): string | undefined => {
 
 /** チームが決めた書き方の一つを、使わないと決めた書き方にする。 */
 export const avoidedSpelling = (source: string): Plant | undefined => rewriteFirst(source, (line) => isProse(line) && avoidedIn(line) !== undefined, avoidedIn);
+
+/** The mistakes of stock phrasing, in the order `yarn bench` plants them after the others. */
+export const PHRASING_MUTATIONS: readonly Mutation[] = [
+  { id: "heading-dropped", rule: "preamble-length", languages: ["ja", "en"], reportsOn: "document", plant: dropFirstHeading },
+  { id: "cliche-closing", rule: "closing-cliche", languages: ["ja", "en"], plant: closeWithCliche },
+  { id: "padded-opening", rule: "padded-intro", languages: ["ja", "en"], plant: padOpening },
+  { id: "intensified", rule: "empty-intensifier", languages: ["ja", "en"], plant: intensify },
+  { id: "hedges-stacked", rule: "excessive-hedging", languages: ["ja", "en"], plant: stackHedges },
+  { id: "residue-left", rule: "assistant-residue", languages: ["ja", "en"], plant: leaveResidue },
+  { id: "blank-left", rule: "unfilled-placeholder", languages: ["ja", "en"], plant: leaveBlank },
+  { id: "opener-repeated", rule: "repeated-conjunction", languages: ["ja", "en"], plant: repeatOpener },
+  { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: chainWithAnd },
+  { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: avoidedSpelling },
+  { id: "pet-phrase", rule: "ngram-repetition", languages: ["ja", "en"], plant: repeatPetPhrase },
+];

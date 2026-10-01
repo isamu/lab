@@ -820,6 +820,10 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `preferred-term` | チームの表記（`prefer`） | 両方 | warning |
 | `repeated-conjunction` ✅ | 段落先頭の語彙照合 | 両方 | warning |
 | `ai-tell` ✅ | weighted phrase-match | blog | info |
+| `contrast-framing` ✅ | 対比の枠（frame の語、または打ち消しとそれを返す語）の密度 | blog | info |
+| `stock-transition` ✅ | 文頭の決まった接ぎの密度 | blog | info |
+| `assistant-residue` ✅ | weighted phrase-match（会話の返事の名残。重み 1 は 1 つで、0.5 は 2 つで届く） | 両方 | warning |
+| `unfilled-placeholder` ✅ | 括弧の中が雛形の語（[Your Name]、【会社名】）の空欄 | 両方 | warning |
 | `padded-intro` | phrase-match（冒頭限定） | blog | warning |
 | `closing-cliche` | phrase-match（末尾限定） | blog | warning |
 | `proper-noun-density` ✅ | 固有名詞の密度 | blog | info |
@@ -918,6 +922,19 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
 | `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
+| `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
+
+`katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。
+音は「コ・ン・ピュ・ー・タ・ー」と数え、語末の「ー」も含める（カーは 2 音）。小さい「ャュョァィゥェォ」は前の字と
+合わせて 1 音、「ッ」「ン」「ー」は 1 音ずつ。
+
+- **既定は立場を取らない。** 同じ語が両方で書かれた所（サーバーとサーバ）だけを、少ないほうで指摘する。
+  違う語どうし（サーバーとブラウザ）は比べない。自作の bench の文書で比べたら、ふつうの文書が両方を混ぜていた。
+- **`ending: drop`** は `min_morae` 音以上で「ー」付きの語を指摘する（電子情報通信学会、JIS Z 8301:2011 まで）。
+- **`ending: keep`** は「ー」の無い語を指摘する。ただし、辞書がその語を「ー」付きでも知っている（メモリ → メモリー）か、
+  文書がほかで「ー」付きで書いているときだけ。辞書が知っているかは lang-ja が `LongVowelEnding=Dropped` で渡す。
+  辞書に無い語（データ）は、もとから「ー」が無いかもしれない。
+- 辞書が固有名詞と知っている語（PROPN）、`names:` に並べた名前、`except` に並べた語は見ない。
 
 `double-keigo` と `hiragana-fukushi` は spec の初版で `pos` を要求するとしていたが、
 **語彙表で足りる**。品詞から二重敬語を組み立てるより、割れない形だけを列挙するほうが精度が高い。
@@ -1447,6 +1464,52 @@ rule が experimental で、chaff.yaml に normal と記載 -> 動く
 experimental な rule を 2 件、設定により有効にしています: padded-intro, rule-of-three
 ```
 
+### 18.5 rule のオプション
+
+段階の 4 語で言えない決まり（語末の「ー」を省くか付けるか、何音から見るか）は、rule が **オプション** として持つ。
+オプションは rule の YAML に宣言する。種類（`choice` / `count` / `words`）、既定、何を決めるか（`about`）、選択肢ごとの意味。
+宣言が読めない rule ファイルは読み込み時に止まる（chaff の不具合なので）。
+
+```yaml
+# chaff.yaml
+options:
+  katakana-long-vowel:
+    ending: drop      # consistent / drop / keep
+    min_morae: 3
+    except: [カー]
+```
+
+- 効かない書き方（知らない rule、オプションの無い rule、知らないオプション、合わない値）は、
+  `rules:` と同じく実行のたびに標準エラーで言い、合わない値は既定のまま動く。
+- `chaff explain <rule>` はオプションごとに、いまの値、どこから来たか（`chaff.yaml` か `既定`）、選択肢の意味を出す。
+  `chaff rules --json` は `options.<名前>` に `kind`・`about`・`choices`・`default`・`now`・`from` を出す。
+- detector はオプションの出所を知らない。解決した値だけを `DetectorOptions.settings` で受け取る。
+
+### 18.6 スタイル（`style:`）
+
+よく知られた書き方の決まり（学会の執筆要項、規格、告示）を `packages/chaff/styles/*.yaml` に置き、`style: ieice` で選ぶ。
+スタイルは rule の段階（`rules:`）とオプション（`options:`）を決め、出典（`source.title` と `source.url`）を持つ。
+**書くのは出典が言っていることだけ。** 出典が決めていても、それを見る rule が chaff に無いもの（IEICE の句読点「．」「，」）は
+YAML のコメントに残し、段階もオプションも書かない。
+
+```text
+chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）  >  既定
+```
+
+- スタイルの段階は chaff.yaml の `rules:` に下から足す（chaff.yaml が書いたものはそのまま）。だから `--experimental` と
+  「設定により有効にしています」の一覧は、スタイルが入れた rule も設定で入れたものとして扱う。
+- スタイルのオプションは chaff.yaml の `options:` の下の層。合わない値は次の層（既定）に落ちる。
+- `rules --json` は `style`（id・名前・要約・出典）を出し、スタイルが決めた段階の `your_setting.from` とオプションの
+  `from` を `style: ieice` とする。`explain` も同じ。
+- 知らないスタイル名は、知らないジャンルと同じく実行を止め、使える名前を並べる。
+- 同梱のスタイルは test がすべての rule 名とオプションを確かめる。読めないスタイルファイルは chaff の不具合として止まる。
+
+| id | 決めること | 出典 |
+| --- | --- | --- |
+| `ieice` | `katakana-long-vowel`: `drop`、3 音 | 和文論文誌 投稿のしおり 2.4 (b)（用語は学術用語集 電気工学編）。(d) の句読点は rule が無いので書かない |
+| `jis-z8301-2011` | `katakana-long-vowel`: `drop`、3 音 | JIS Z 8301:2011 附属書 G 表 G.3。2019 年版は外来語の表記によるとした |
+| `bunkacho` | `katakana-long-vowel`: `keep` | 外来語の表記 留意事項その 2 Ⅲ 3 注 3 |
+
 ---
 
 ## 19. CLI と出力例
@@ -1624,9 +1687,9 @@ bold-density: strict       # 2026-09-11 図の説明で太字を多用するた�
 
 ### 20.2 複合シグナル
 
-✅ 実装済み。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` / `no-em-dash` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に 1 件の warning を足す。
+✅ 実装済み。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` / `no-em-dash` / `contrast-framing` / `stock-transition` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に 1 件の warning を足す。
 
-**元の指摘は消さない。** spec の初版は「集約する」としていたが、`from` に並ぶ 7 本のうち
+**元の指摘は消さない。** spec の初版は「集約する」としていたが、`from` に並ぶ rule のうち
 `padded-intro` と `closing-cliche` は stable な warning で、単独でも正しい指摘である。
 まとめるために消すと、本物の指摘が見えなくなる。
 
@@ -1647,6 +1710,9 @@ ai-generated-composite:
       - padded-intro
       - closing-cliche
       - no-em-dash
+      - contrast-framing
+      - stock-transition
+      - assistant-residue
 ```
 
 集約 rule 自体も rule として定義する。言語別に有効なシグナルが違う（英語では `no-em-dash` が強く、日本語では弱い）ため、`from` は genre profile で言語別に上書きできる。
@@ -1764,7 +1830,8 @@ L3  no-mixed-desumasu, no-nakaguro-parallel (ja) / oxford-comma-consistency (en)
 experimental 開始（corpus 評価が必要）
     ai-tell, rule-of-three, section-length-uniformity, sentence-rhythm,
     concrete-evidence-density, padded-intro, cushion-phrase-density,
-    proper-noun-density
+    proper-noun-density,
+    contrast-framing, stock-transition, assistant-residue, unfilled-placeholder
 ```
 
 CI:

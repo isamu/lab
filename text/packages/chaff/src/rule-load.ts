@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { parse } from "yaml";
 import type { LanguageLevels, LevelSets, LevelTable, RuleDefinition, Severity } from "./plugin.ts";
 import { rankOfSeverity, severityAt } from "./levels.ts";
+import { optionsOf } from "./rule-options.ts";
 import { ruleGuideOf } from "./rule-guide.ts";
 
 const RULES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "rules");
@@ -103,6 +104,12 @@ const numberFor = (raw: unknown, language: string): number | undefined => {
 
 const stringList = (value: unknown): string[] | undefined => (Array.isArray(value) ? value.map((entry) => String(entry)) : undefined);
 
+/** What only some rules declare: options beyond the level, and token features the adapter computes on request. */
+const extrasOf = (raw: Record<string, unknown>, file: string): Pick<RuleDefinition, "options" | "token_features"> => ({
+  ...(raw["options"] === undefined ? {} : { options: optionsOf(raw["options"], file) }),
+  ...(raw["token_features"] === undefined ? {} : { token_features: stringList(raw["token_features"]) ?? [] }),
+});
+
 /** The table flattenLevels reads, before its severities become numbers. */
 const writtenTable = (raw: unknown, language: string): unknown => {
   if (isLevelTable(raw) || !isRecord(raw)) return raw;
@@ -141,10 +148,10 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
   const missing = missingFields(raw, levels);
   if (missing.length > 0) throw new Error(`${file}: 必須フィールドがありません: ${missing.join(", ")}`);
   if (levels === undefined) throw new Error(`${file}: levels を解決できません`);
-  return checkedSeverity(ruleOf(raw, levels, levelSetsOf(raw, language, file), language), file);
+  return checkedSeverity(ruleOf(raw, levels, levelSetsOf(raw, language, file), language, file), file);
 };
 
-const ruleOf = (raw: Record<string, unknown>, levels: LevelTable, levelSets: LevelSets, language: string): RuleDefinition => ({
+const ruleOf = (raw: Record<string, unknown>, levels: LevelTable, levelSets: LevelSets, language: string, file: string): RuleDefinition => ({
   id: String(raw["id"]),
   layer: pick(raw["layer"], LAYERS) ?? "L1",
   status: pick(raw["status"], STATUSES) ?? "experimental",
@@ -170,6 +177,7 @@ const ruleOf = (raw: Record<string, unknown>, levels: LevelTable, levelSets: Lev
   languages: stringList(raw["languages"]),
   use_for: Array.isArray(raw["use_for"]) ? raw["use_for"].map((entry) => String(entry)) : [],
   severity: severityOf(raw["severity"], language),
+  ...extrasOf(raw, file),
   guide: ruleGuideOf(raw),
 });
 

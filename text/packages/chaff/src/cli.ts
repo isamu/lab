@@ -1,7 +1,7 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { loadAdapter, packageFor } from "./adapter-load.ts";
-import { CONFIG_FILE, EMPTY, loadConfig, type Config } from "./config/load.ts";
+import { CONFIG_FILE, type Config } from "./config/load.ts";
 import { applyByPath } from "./config/by-path.ts";
 import { applyLevel } from "./config/write.ts";
 import { buildDocument, teamRules } from "./document.ts";
@@ -34,10 +34,11 @@ import { citeTargets, runCite } from "./commands/cite.ts";
 import { runSkill } from "./commands/skill.ts";
 import { runFeedback, settingsOf } from "./commands/feedback.ts";
 import { homedir } from "node:os";
-import { ruleProblems } from "./config/rule-problems.ts";
-import { nameProblems } from "./config/name-problems.ts";
+import { settingWarnings } from "./config/warnings.ts";
+import { readConfigIn } from "./config/read.ts";
+import { optionLayersOf, settingSourcesOf } from "./config/option-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
-import { neededBy, runRules } from "./run.ts";
+import { neededBy, runRulesWith } from "./run.ts";
 import type { Finding, Level, RuleDefinition } from "./plugin.ts";
 import { CLI_TEXT, type CliText, type GenreSource } from "./cli-text.ts";
 import { hostLanguage, sharedLanguage, uiLanguageOf, type UiLanguage } from "./ui.ts";
@@ -47,7 +48,7 @@ import { settingProblems } from "./setting-problems.ts";
 /** Text for output that is not about one document. */
 const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.language, process.env)];
 
-const readConfig = (): Config => (existsSync(join(process.cwd(), CONFIG_FILE)) ? loadConfig(join(process.cwd(), CONFIG_FILE)) : EMPTY);
+const readConfig = (): Config => readConfigIn(process.cwd());
 
 /** resolveGenre with this run's --genre, for the commands that take it as a dependency. */
 const genreFrom =
@@ -97,7 +98,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
   const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
-  const raw = runRules(doc, rules, config.rules, experimental, genre, config.limits);
+  const raw = runRulesWith(doc, rules, { settings: config.rules, experimental, genre, limits: config.limits, optionLayers: optionLayersOf(config) });
   // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
   const applied = applySuppressions(
     source,
@@ -137,10 +138,8 @@ const writeSarif = (results: readonly Inspected[], argv: readonly string[]): voi
 };
 
 /** 効いていない設定は、結果の前に一度だけ言う。標準エラーに出すので、JSON や SARIF の出力は汚さない。 */
-const warnRuleProblems = (config: Config, language: string): void => {
-  const ui = hostLanguage(config.language, process.env);
-  [...ruleProblems(config, loadRules(language), ui), ...nameProblems(config, ui)].forEach((problem) => console.error(`chaff: ${problem}`));
-};
+const warnRuleProblems = (config: Config, language: string): void =>
+  settingWarnings(config, loadRules(language), hostLanguage(config.language, process.env)).forEach((problem) => console.error(`chaff: ${problem}`));
 
 /** Several files end with one summary: in their language when they share one, else the host's. */
 const summaryLanguage = (results: readonly Inspected[], config: Config): UiLanguage => {
@@ -223,7 +222,7 @@ const explain = (ruleId: string | undefined, genreFlag: string | undefined): num
   }
   const preset = genre === undefined ? {} : presetLevels(genre);
   const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
-  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre));
+  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, settingSourcesOf(config, rule.id)));
   return 0;
 };
 
@@ -265,8 +264,9 @@ const showRules = (argv: readonly string[]): number => {
   const config = withExperimental(readConfig(), argv);
   const language = config.language ?? hostLanguage(undefined, process.env);
   warnRuleProblems(config, language);
-  const render = argv.includes("--json") ? rulesJson : rulesTable;
-  console.log(render(loadRules(language), config, language, flag(argv, "--genre") ?? config.genre ?? "blog/tech"));
+  const genre = flag(argv, "--genre") ?? config.genre ?? "blog/tech";
+  const rules = loadRules(language);
+  console.log(argv.includes("--json") ? rulesJson(rules, config, language, genre, optionLayersOf(config)) : rulesTable(rules, config, language, genre));
   return 0;
 };
 
@@ -340,7 +340,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
   }
   // 知らないジャンルではどの rule も当たらず、知らない文書の種類では種類の知識が外れる。どちらも素通りに見えるので、何かする前に止める。
   const config = readConfig();
-  const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config));
+  const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config), hostLanguage(config.language, process.env));
   problems.forEach((problem) => console.error(problem));
   if (problems.length > 0) return 1;
   const handler = HANDLERS[first];

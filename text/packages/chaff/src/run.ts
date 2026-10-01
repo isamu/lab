@@ -12,6 +12,7 @@ import { textOutline } from "./page-furniture.ts";
 import { uiLanguageOf } from "./ui.ts";
 import { presetLevels } from "./genre-load.ts";
 import { bodySectionOf } from "./body-section.ts";
+import { optionValues, settleOptions, type OptionLayer } from "./rule-options.ts";
 
 export type Skipped = { readonly rule: string; readonly why: string };
 
@@ -129,12 +130,15 @@ export const wantsTags = (rule: RuleDefinition): boolean => [...rule.requires, .
  * 解析器の初期化に払う代金を決める。動く rule が 1 本も要求しないなら読み込まない。
  * capabilities は「払えばできる」の宣言なので、ここでは見ない。
  */
-export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, experimental: boolean, genre: string, language: string): AdapterNeeds => ({
-  pos: forGenre(rules, genre)
+export const neededBy = (rules: readonly RuleDefinition[], settings: Settings, experimental: boolean, genre: string, language: string): AdapterNeeds => {
+  const running = forGenre(rules, genre)
     .filter((rule) => rule.layer !== "L4" && levelFor(rule, settings, experimental, presetLevels(genre)) !== "off")
-    .filter((rule) => rule.languages === undefined || rule.languages.includes(language))
-    .some(wantsTags),
-});
+    .filter((rule) => rule.languages === undefined || rule.languages.includes(language));
+  return { pos: running.some(wantsTags), features: tokenFeaturesOf(running) };
+};
+
+/** The token features the rules read (RuleDefinition.token_features), each once. */
+export const tokenFeaturesOf = (rules: readonly RuleDefinition[]): string[] => [...new Set(rules.flatMap((rule) => rule.token_features ?? []))];
 
 const place = (starts: readonly number[], finding: Finding): Finding => {
   const offset = finding.values["offset"];
@@ -183,6 +187,16 @@ const embeddedLanguagesOf = (doc: ProseDocument): string[] => [
   ...new Set(doc.sentences.flatMap((sentence) => (sentence.embeddedLanguage === undefined ? [] : [sentence.embeddedLanguage.id]))),
 ];
 
+/** What a run is set to: the levels chaff.yaml names, whether experimental rules run, the genre, and the numbers and options set. */
+export type RunContext = {
+  readonly settings: Settings;
+  readonly experimental: boolean;
+  readonly genre: string;
+  readonly limits?: Limits;
+  /** Where rule options come from, strongest first (chaff.yaml). An option no layer sets is at its default. */
+  readonly optionLayers?: readonly OptionLayer[];
+};
+
 export const runRules = (
   doc: ProseDocument,
   rules: readonly RuleDefinition[],
@@ -190,7 +204,10 @@ export const runRules = (
   experimental: boolean,
   genre: string,
   limits: Limits = {},
-): RunResult => {
+): RunResult => runRulesWith(doc, rules, { settings, experimental, genre, limits });
+
+export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[], context: RunContext): RunResult => {
+  const { settings, experimental, genre, limits = {}, optionLayers = [] } = context;
   const preset = presetLevels(genre);
   const starts = lineStarts(doc.source);
   const applicable = forGenre(rules, genre);
@@ -232,6 +249,7 @@ export const runRules = (
         where: rule.where,
         fullSentence: rule.full_sentence,
         embeddedLimits: embeddedLimitsFor(rule, level, genre, embedded),
+        ...(rule.options === undefined ? {} : { settings: optionValues(settleOptions(rule.id, rule.options, optionLayers)) }),
       };
       const found = detector(doc, options).map((finding) => place(starts, { ...finding, rule: rule.id, severity: severityAt(rule, level, genre) }));
       return { findings: [...acc.findings, ...found], skipped: acc.skipped };
