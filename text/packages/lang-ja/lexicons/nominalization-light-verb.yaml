@@ -1,0 +1,10 @@
+# 動詞にできる名詞（サ変名詞: 調査、確認）の後ろに付けて、動詞の代わりをさせる言い方。nominalization が読む。
+# 「調査を実施した」は「調査した」で足りる（在留支援のためのやさしい日本語ガイドライン）。前の語がサ変名詞のときだけ当たる。
+# instead_of は、名詞の後ろに付けて動詞にする語（調査 + する）。「〜をする」（勉強をする）は普通の言い方なので入れない。
+id: nominalization-light-verb
+language: ja
+entries:
+  - { pattern: を行う, instead_of: する }
+  - { pattern: を実施する, instead_of: する }
+  - { pattern: を実行する, instead_of: する }
+  - { pattern: を執り行う, instead_of: する }

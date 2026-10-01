@@ -1,0 +1,70 @@
+id: requirement-smell
+layer: L2
+status: experimental
+how_to_find: requirement-smell
+# 要求の文の目印と、三つの見つけ方の語。語はすべて言語ごとの語彙表にある。
+word_list: requirement-marker
+extra_word_lists: [requirement-loophole, requirement-open-end, requirement-either]
+uses: [pos]
+severity: warning
+
+name:
+  ja: 要求の文に、決めきれない言い方がある
+  en: A requirement that leaves its reader to decide
+
+why:
+  ja: 仕様書や契約書の要求は、満たしたかどうかを誰が読んでも同じに決められる必要があります。「可能な限り」「必要に応じて」は、どこまでしたら満たしたことになるのかを書き手が決めずに残します。要求の文の「等」「など」は、ほかに何が含まれるのかを残し、「及び／又は」は両方なのか片方でよいのかを残します。要求の書き方を調べた研究（Femmer ほか 2017、Berry ほか 2003）と ISO/IEC/IEEE 29148 が、どれも避ける言い方に挙げています。要求の文（「〜しなければならない」「〜ものとする」「〜こと。」で終わる文）だけを見ます。
+  en: 'A requirement in a specification or a contract must be one that any reader can check the same way. "As far as possible" and "if necessary" leave open how much is enough. "Etc." in a requirement leaves open what else it covers, and "and/or" leaves open whether both are meant or one is enough. Studies of requirements (Femmer et al. 2017; Berry et al. 2003) and ISO/IEC/IEEE 29148 all list these among the phrases to avoid. Only a sentence that states a requirement (with shall, must or is required to) is checked.'
+
+message:
+  ja: 「{matched}」は、要求を決めきらずに残しています
+  en: '"{matched}" leaves the requirement open'
+
+messages:
+  loophole:
+    ja: 「{matched}」は、どこまでしたら満たしたことになるのかを決めていません
+    en: '"{matched}" does not say how much is enough to meet the requirement'
+  open-end:
+    ja: 要求の中の「{matched}」は、ほかに何が含まれるのかを決めていません
+    en: '"{matched}" in a requirement does not say what else it covers'
+  either:
+    ja: 「{matched}」は、両方なのか片方でよいのかを決めていません
+    en: '"{matched}" does not say whether both are meant or either is enough'
+
+how_to_fix:
+  ja: 満たしたかどうかを確かめられる形に書き直してください。「可能な限り速く」なら「3 秒以内に」、「ログ等を保存すること」なら保存するものを全部並べる、「A 及び／又は B」なら「A 又は B（両方でもよい）」のように。
+  en: 'Rewrite it so that meeting it can be checked: "as fast as possible" becomes "within 3 seconds", "logs, etc." becomes the full list, and "A and/or B" becomes "A, B, or both".'
+
+placeholders:
+  matched:
+    ja: 見つけた語
+    en: the phrase found
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+# 要求を書く文書だけ。仕様書、契約書・規約、説明書（マニュアル・FAQ）。ほかの法務・説明書のジャンルと、学術・文学・話し言葉は
+# genres.yaml で止める（法令は「等」を定義して使う、用語集の「〜すること。」は語の説明）。
+use_for: [technical/spec, legal, docs, academic, literature, speech]
+sources: [femmer-2017, berry-2003, iso-29148]
+
+group: wording
+summary:
+  ja: 仕様書や契約書の要求の文にある「可能な限り」「必要に応じて」「等」「及び／又は」
+  en: '"As far as possible", "if necessary", "etc." or "and/or" in a requirement of a specification or a contract'
+example:
+  ja:
+    before: |
+      予約の画面は、可能な限り速く表示されなければならない。
+    after: |
+      予約の画面は、3 秒以内に表示されなければならない。
+    config: { genre: technical/spec }
+  en:
+    before: |
+      The booking page must load as fast as possible.
+    after: |
+      The booking page must load within 3 seconds.
+    config: { genre: technical/spec }
+
+not_flagged:
+  ja: 要求の文でない文（説明や背景）、法令、ブログやビジネス文書は見ません。語彙表にない言い方は指しません。
+  en: Sentences that state no requirement (background, explanation), statutes, and blogs and business documents are not checked. Phrases not on chaff's lists are not reported.
