@@ -4,6 +4,85 @@ Newest first.
 
 ## Unreleased
 
+### Guide: what chaff does for more kinds of document, in Japanese
+
+「文書の種類ごとにできること」 is now a chooser: find the kind of document you have, go to its page. New pages,
+written for people who have never used a command line, join the statute and report pages: 技術記事（Zenn・Qiita）,
+契約書・利用規約, 仕事のメール, 議事録, 説明書・API の文書, プレスリリース・お知らせ and 論文・要旨 (`style: ieice`).
+Each runs chaff on a short self-written sample with realistic mistakes, shows chaff's real screen, says what every
+finding means and how to fix it, says what chaff does not check for that kind, and gives the genre and a starter
+`chaff.yaml` that turns on the experimental rules the kind needs.
+
+### `compare --distinct` compares facts as sets (#446)
+
+`compare` counts how many times each fact is stated, so a full rewrite that cuts a summary repeating the body reported
+every repeat as dropped. With `--distinct`, a fact counts as kept when the other document states it at least once; a
+fact the other document never states is still dropped or added. The default is unchanged.
+
+### `compare` reads a wrapped or bold quotation as the same quotation, and 「8時間」 as a length of time (#435, #446)
+
+- A line break between two wide characters (`系の` / `システム`) vanishes when Markdown is rendered, but `compare` read
+  it as a space, so joining the lines of a Japanese quotation was reported as one quotation dropped and another added.
+  Bold marks inside a quotation (`「**終わったな**」`) were read as part of it too. Quotations and names are now keyed,
+  and the team's `names:` found, without what a reader never sees, the way the rules already read the text: a line break between wide characters (not
+  one next to inline code or a link's marks) and the marks of bold, italics and strikethrough. Such a change is reported
+  as the same fact written another way. A plain-text document shows its line breaks, so there they still count, and a
+  space actually written inside a Japanese quotation is still a different quotation.
+- `8時間` was read as the time `08:00`, and `1.2時間` as `2時`. 時間 after the hour now makes it a length of time, and
+  an hour that ends a longer number (`1.2`, `123`) is not read as one.
+
+### `katakana-long-vowel` keeps フリ apart from フリー, and `colon-lead-in` counts only Japanese sentences (#434)
+
+`katakana-long-vowel` read 「知ってるフリ」 (振り) and 「フリー」 (free) as one word written two ways. The tagger reads both
+as nouns, so lang-ja now has a word list, `long-vowel-distinct`, of words that become another word with a final ー
+(フリ, スキ). Those words are left out as if listed under `except`, in every `ending`. `colon-lead-in`, which runs
+on Japanese documents only, also counted the English sentences inside one (`Examples include:`). It now counts only the
+sentences in the document's language, as `max-sentence-length` measures each sentence by its own language.
+
+### `doubled-punctuation` leaves a mark that closes a drawn-out one (#433)
+
+Three or more of one mark (`...`, `、、、`) were already read as a drawn-out mark, but the mark that closes it
+(`立たない...。`, `そうですね、、、。`) made the whole run a slip. One mark right after a drawn-out run is now read as its
+close and not reported; two (`...。。`), or a run of only two (`、、。`), still is. This covers the transcript's `、、、。`
+in every genre, so no genre rule is added for it.
+
+### `announced-count-mismatch` reads a categorised list and the number nearest the colon (#432)
+
+Two misreadings are fixed. When only a colon at the end of a sentence announces the list (no 以下の / following), the
+colon announces the number nearest to it, so a number with another number after it is no longer taken as the count
+(「これまで 1 つのページにまとめていましたが、2 ページに分けました:」). A list whose every item is a label and its members
+(`- **実験的**: Slack / Discord / Matrix`) is not reported when the members, split at `/` or `／`, add up to the announced
+count. Commas and 読点 are not separators: they also occur inside an item's description. A word pointing ahead still names the count whatever number follows it.
+
+### A heading with its title right after the number is numbered (#431)
+
+`## 7.委託`, `## 7．委託` and `## 2.Overview` were not read as numbered, so `numbering-gap` reported "6 then 8" as an
+error. In a heading, a number closed by a dot (`.` or `．`) may now be followed directly by its title, unless the next
+character is a digit (`1.5万人`) or a lowercase letter (`2.x 系`). In Japanese, `## 第7条委託` and `## 第2章概要` are
+read too, unless what follows is hiragana (`第3条に定める`), another number (`第2章第1節`) or a joining word
+(`第4条及び第5条`, `第2条若しくは第3条`). Body lines are read as before. `heading-echo` reads the same label.
+
+### `section-length-uniformity` and `paragraph-length-variance` need enough sections and paragraphs to measure
+
+Both rules compare lengths by their coefficient of variation. Over two or three values that number is small by chance,
+so human writing looked "too uniform". In pre-2022 human Qiita articles the findings clustered in articles with two to
+four sections or paragraphs. Each rule now has a `count` option: `min_sections` (default 5) and `min_paragraphs`
+(default 6). With fewer, the rule does not measure, and `not_flagged` says so. On the paired samples in `yarn bench:ai`
+the generated-style hits stay, and the human, rewritten and corpus false alarms of these two rules drop. Two corpus
+documents (a national-park story and a government security page) lose a `section-length-uniformity` finding they
+should not have had.
+
+### `closing-cliche` reads only the end of the last section (#413)
+
+- In a document without headings the whole text was one "last section", so 「簡単にまとめると、以下の三点です」 near the
+  top, or a host's 「いかがでしょうか」 in the middle of a transcript, was reported as the closing. A long last section had
+  the same problem. The rule now reads the last four paragraphs of the last section, headings or not, and never the
+  document's first paragraph. A list item is not a closing.
+- Why four and not only the last paragraph: in pre-2022 human Qiita articles a stock closing is often followed by a
+  remark, an update note or a sign-off (「いかがでしたでしょうか。」 → 感想 → 「それではよいお年を！」). Reading only the last
+  paragraph missed most of those; every finding that was really in the body sat further from the end than four
+  paragraphs.
+
 ### `doubled-word` (ja) no longer reports reduplication that is the right way to write (#412)
 
 On a set of real Japanese site articles, many of the findings were correct Japanese. lang-ja now marks these as
@@ -56,6 +135,14 @@ are the ones compare holds the rewrite to.
 - `--compact` (one fact per line, kind in English) and `--json` (path, language, counts, unread kinds, every fact with
   kind, key, text and line). The screen follows the document's language.
 - One file per run; none or more than one is a usage error (exit 1).
+
+### Guide: what chaff does for more kinds of document, in English
+
+"What chaff does for each kind of document" is now a chooser: find the kind of document you have, go to its page. New
+pages join the statute and report pages: tech articles, contracts and terms, business email, meeting minutes, manuals
+and API docs, press releases, and papers. Each runs chaff on a short self-written sample with realistic mistakes, shows
+chaff's real screen, says what every finding means and how to fix it, says what chaff does not check for that kind,
+and gives the genre and a starter `chaff.yaml`.
 
 ### A line holding only a link ends its own sentence (#400)
 

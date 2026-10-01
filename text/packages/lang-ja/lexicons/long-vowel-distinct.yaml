@@ -1,0 +1,7 @@
+# 語末の「ー」を付けると別の語になるカタカナ語の、「ー」の無い形（フリ ＝ 振り、フリー ＝ free）。
+# 品詞はどちらも名詞なので見分けられない。katakana-long-vowel は、ここに並べた語を同じ語の書き分けとして比べない。
+id: long-vowel-distinct
+language: ja
+entries:
+  - pattern: フリ
+  - pattern: スキ
