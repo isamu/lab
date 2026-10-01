@@ -2,6 +2,16 @@
 
 Newest first.
 
+## Unreleased
+
+### A Japanese article full of code is read as Japanese (#399)
+
+The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
+code blocks came out English: the Japanese rules did not run and the English ones read Japanese headings. The guess
+now leaves out fenced code blocks, inline code, HTML tags, comments and code blocks (the text between other tags still counts), YAML
+front matter, MDX imports and component lines, and URLs. Indented text is kept, because in plain text it is prose. A document that is nothing but code is still judged from all of it. `chaff`,
+`chaff test`, `chaff eval` and `chaff tree` all guess the same way.
+
 ## 0.18.0 — 2026-10-01
 
 A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
@@ -58,14 +68,6 @@ corpus rarely use it; the measurements are in the PR.
   corpus, and compares the table with `expected.txt`. CI runs it.
 - Measured and not added: the share of bullet lines, runs of short sentences, and 「（いわゆる〜）」. Human articles
   had as many of each.
-
-### A Japanese article full of code is read as Japanese (#399)
-
-The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
-code blocks came out English: the Japanese rules did not run and the English ones read Japanese headings. The guess
-now leaves out fenced code blocks, inline code, HTML tags, comments and code blocks (the text between other tags still counts), YAML
-front matter, MDX imports and component lines, and URLs. Indented text is kept, because in plain text it is prose. A document that is nothing but code is still judged from all of it. `chaff`,
-`chaff test`, `chaff eval` and `chaff tree` all guess the same way.
 
 ### `chaff compare <before> <after>`: did a rewrite keep its facts?
 
