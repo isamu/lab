@@ -140,6 +140,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 
    The headings are the structure you rebuilt on purpose, so `--allow-dropped heading --allow-added heading` excludes them. Restore any other dropped fact and remove any added one.
    A summary you cut restated facts the body still holds. `--distinct` counts a fact as kept when the new text states it at least once, so those repeats do not read as dropped.
+
 6. Stop when all of these hold. Two full passes at most.
    - `ai-generated-composite` does not fire.
    - The density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits.

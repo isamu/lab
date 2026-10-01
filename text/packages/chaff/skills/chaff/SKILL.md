@@ -171,7 +171,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
    Three principles while writing:
    - **Undo personification.** A thing or an idea as the subject of a verb of will (秩序が壊れる, 文化が醸成される,
      アーキテクチャが要求する) becomes what a person or the system does. 「チームにレビューの文化が醸成された」 →
-     「チームで互いのコードをレビューするようになった」. If the original does not say who, ask the writer.
+     「チームで互いにレビューをするようになった」. If the original does not say who, ask the writer.
    - **Turn noun endings and noun chains back into sentences with a verb.** 「キュー滞留によるメッセージ処理遅延の発生。」 →
      「キューにメッセージが溜まり、処理が遅れた。」 A noun ending hides who did what and when.
    - **Never invent specifics.** A vague sentence may read better with a concrete example. If the writer did not give
