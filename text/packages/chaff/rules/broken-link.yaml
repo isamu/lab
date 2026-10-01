@@ -1,0 +1,65 @@
+id: broken-link
+layer: L1
+status: experimental
+how_to_find: broken-link
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 行き先の無いリンク
+  en: Link that goes nowhere
+
+why:
+  ja: 押しても何も起きないリンクは、読み手に「あるはずの情報が無い」と思わせます。三つを見ます。行き先が空のリンク（[資料]()）、同じページの見出しを指すのにその見出しが無いリンク（[手順](#手順) で「手順」の見出しを消した・書き換えた）、参照の形で書いたのに定義が無いもの（[資料][1] で「[1]:」の行が無い。そのまま字で表示されます）。見出しから名前を作る決まりは表示するものごとに違うので、字と数字だけを比べ、大文字小文字・空白・記号の違いは問いません。[1][2] のように数だけの括弧は文献の番号として数えません（markdownlint の MD042・MD051・MD052）。
+  en: A link that does nothing when clicked tells the reader something is missing. Three kinds are checked. A link with an empty destination ("[report]()"); a link to a heading on the same page that the page does not have ("[Setup](#setup)" after the heading was renamed or removed); and a reference-style link whose label is never defined ("[report][1]" with no "[1]:" line), which is shown as plain brackets. Renderers build heading anchors differently, so only letters and digits are compared; case, spaces and punctuation do not matter. Brackets holding only numbers ("[1][2]") are citation numbers and are not counted (markdownlint's MD042, MD051 and MD052).
+
+message:
+  ja: リンク「{link}」の行き先がありません
+  en: 'The link "{link}" goes nowhere'
+
+messages:
+  empty:
+    ja: リンク「{link}」の行き先が空です
+    en: 'The link "{link}" has an empty destination'
+  anchor:
+    ja: リンク「{link}」が指す「{target}」の見出しがこの文書にありません
+    en: 'The link "{link}" points to "{target}", which is not a heading on this page'
+  reference:
+    ja: 「{link}」は参照の形ですが、名前の定義がありません（字のまま表示されます）
+    en: '"{link}" is a reference-style link with no definition (it shows as plain text)'
+
+how_to_fix:
+  ja: "行き先を書いてください。見出しを指すなら、今の見出しの言葉に合わせてください。参照の形なら、文書のどこかに「[名前]: URL」の行を足してください。"
+  en: 'Fill in the destination. For a heading, match the heading as it is now written. For a reference-style link, add a "[label]: URL" line somewhere in the document.'
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 行き先が空のリンク、文書に無い見出しを指すリンク、定義の無い参照の形のリンク
+  en: A link with no destination, a link to a heading the page does not have, or a reference-style link with no definition
+example:
+  ja:
+    before: |
+      ## 準備
+
+      道具をそろえます。詳しくは[手順](#手順)を見てください。
+    after: |
+      ## 準備
+
+      道具をそろえます。詳しくは[準備](#準備)を見てください。
+  en:
+    before: |
+      ## Setup
+
+      Gather the tools. See [Install](#install) for more.
+    after: |
+      ## Setup
+
+      Gather the tools. See [Setup](#setup) for more.
+
+not_flagged:
+  ja: 見出しの名前は字と数字だけで比べ、大文字小文字や記号の違いは問いません。「[1][2]」のような文献の番号、「A[i][j]」のような添字、使われていない定義も指しません。
+  en: Heading anchors are compared on letters and digits only, ignoring case and punctuation. Citation numbers ("[1][2]"), subscripts ("A[i][j]") and definitions no link uses are not reported.
