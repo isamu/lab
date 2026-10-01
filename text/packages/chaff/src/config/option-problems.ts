@@ -1,6 +1,7 @@
 import { CONFIG_FILE, type Config } from "./load.ts";
 import type { RuleDefinition, RuleOption } from "../plugin.ts";
 import { optionProblems, type OptionLayer, type OptionProblem } from "../rule-options.ts";
+import { styleLevelSource, styleSource } from "./style.ts";
 import type { Texts, UiLanguage } from "../ui.ts";
 
 /** Where chaff.yaml's options come from, for settleOptions: the file itself. */
@@ -9,8 +10,20 @@ export const configOptionLayer = (config: Pick<Config, "options">): OptionLayer 
   values: config.options ?? {},
 });
 
-/** Every place options come from, strongest first. */
-export const optionLayersOf = (config: Pick<Config, "options">): OptionLayer[] => [configOptionLayer(config)];
+/** Where a rule's settings come from, for explain: the option layers, and the style when it set the level. */
+export const settingSourcesOf = (
+  config: Pick<Config, "options" | "applied">,
+  ruleId: string,
+): { optionLayers: OptionLayer[]; levelFrom: string | undefined } => ({
+  optionLayers: optionLayersOf(config),
+  levelFrom: styleLevelSource(config, ruleId),
+});
+
+/** Every place options come from, strongest first: chaff.yaml, then its style. */
+export const optionLayersOf = (config: Pick<Config, "options" | "applied">): OptionLayer[] => [
+  configOptionLayer(config),
+  ...(config.applied === undefined ? [] : [{ from: styleSource(config.applied.style), values: config.applied.options }]),
+];
 
 type ProblemText = {
   readonly notAMap: (where: string, value: string) => string;

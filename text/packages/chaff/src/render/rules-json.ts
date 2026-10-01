@@ -8,6 +8,8 @@ import { presetLevelsOf, type PresetLevels } from "../genre-parse.ts";
 import { RULE_GROUPS, groupTextOf } from "../rule-guide.ts";
 import { standingIn } from "../rule-genres.ts";
 import { optionsJson } from "./options.ts";
+import { styleLevelSource } from "../config/style.ts";
+import { loadStyles } from "../style-load.ts";
 import type { OptionLayer } from "../rule-options.ts";
 
 const TEXT: Texts<{
@@ -83,8 +85,15 @@ const effectAt = (rule: RuleDefinition, level: Exclude<Level, "off">, genre: str
 const yourSetting = (rule: RuleDefinition, config: Config): Record<string, unknown> | null => {
   const level = config.rules[rule.id];
   if (level === undefined) return null;
+  const from = styleLevelSource(config, rule.id) ?? config.path;
   const limit = rule.level_sets === "severity" ? undefined : config.limits[rule.id];
-  return limit === undefined ? { level, from: config.path } : { level, limit, from: config.path };
+  return limit === undefined ? { level, from } : { level, limit, from };
+};
+
+/** The house style chaff.yaml names: what it decides and the guideline it follows, so an AI can say where a setting came from. */
+const styleOf = (config: Config): Record<string, unknown> | null => {
+  const style = loadStyles().find((entry) => entry.id === config.applied?.style);
+  return style === undefined ? null : { id: style.id, name: style.name, summary: style.summary, source: style.source };
 };
 
 /** ジャンルで数字が変わる rule があるので、いま効いている表と既定の表の両方を出す。 */
@@ -169,6 +178,7 @@ export const rulesJson = (
       schema_version: 2,
       config_file: "chaff.yaml",
       detected: { genre, language },
+      ...(config.applied === undefined ? {} : { style: styleOf(config) }),
       values_you_can_use: ["strict", "normal", "relaxed", "off"],
       values_note: text.valuesNote,
       groups: groupsOf(),

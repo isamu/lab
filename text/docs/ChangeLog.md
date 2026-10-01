@@ -4,10 +4,25 @@ Newest first.
 
 ## Unreleased
 
+### House styles: `style: ieice` and friends (#170)
+
+A well-known style guide can now be picked by name in chaff.yaml. The style sets rule levels and options, and cites
+its source. chaff ships three styles, each setting `katakana-long-vowel`:
+
+- **`ieice`** drops the final ー on words of three morae or more. The source is IEICE's submission guide for papers
+  in Japanese, 2.4 (b); its terms follow 学術用語集 電気工学編. Its full-width 「．」「，」 rule (2.4 (d)) is noted in
+  the file but not set, since chaff has no punctuation rule yet.
+- **`jis-z8301-2011`** is the same rule, from JIS Z 8301:2011 Table G.3. The 2019 edition dropped it.
+- **`bunkacho`** keeps the ー, following 外来語の表記 (1991), notes part 2, III 3, note 3.
+
+chaff.yaml's own `rules:` and `options:` win over the style, which wins over the genre's preset. `explain` and
+`rules --json` say `style: ieice` for a setting the style decided, and `rules --json` also gives the style's name,
+summary and source. An unknown style stops the run and lists the styles.
+
 ### New rule `katakana-long-vowel`, and options on rules (#170)
 
 A team or a publisher often decides how a katakana loanword ends: IEICE papers and JIS Z 8301 up to its 2011 edition
-drop the final ー on words of three morae or more (コンピュータ), newspapers and the Agency for Cultural Affairs keep it
+drop the final ー on words of three morae or more (コンピュータ), the Agency for Cultural Affairs and JIS Z 8301:2019 keep it
 (コンピューター). The new experimental rule `katakana-long-vowel` (Japanese, needs the part-of-speech reading) checks it.
 
 - **With no setting it takes no side.** It reports a word written both ways in one document (サーバー and サーバ), at

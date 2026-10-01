@@ -1476,6 +1476,31 @@ options:
   `chaff rules --json` は `options.<名前>` に `kind`・`about`・`choices`・`default`・`now`・`from` を出す。
 - detector はオプションの出所を知らない。解決した値だけを `DetectorOptions.settings` で受け取る。
 
+### 18.6 スタイル（`style:`）
+
+よく知られた書き方の決まり（学会の執筆要項、規格、告示）を `packages/chaff/styles/*.yaml` に置き、`style: ieice` で選ぶ。
+スタイルは rule の段階（`rules:`）とオプション（`options:`）を決め、出典（`source.title` と `source.url`）を持つ。
+**書くのは出典が言っていることだけ。** 出典が決めていても、それを見る rule が chaff に無いもの（IEICE の句読点「．」「，」）は
+YAML のコメントに残し、段階もオプションも書かない。
+
+```text
+chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）  >  既定
+```
+
+- スタイルの段階は chaff.yaml の `rules:` に下から足す（chaff.yaml が書いたものはそのまま）。だから `--experimental` と
+  「設定により有効にしています」の一覧は、スタイルが入れた rule も設定で入れたものとして扱う。
+- スタイルのオプションは chaff.yaml の `options:` の下の層。合わない値は次の層（既定）に落ちる。
+- `rules --json` は `style`（id・名前・要約・出典）を出し、スタイルが決めた段階の `your_setting.from` とオプションの
+  `from` を `style: ieice` とする。`explain` も同じ。
+- 知らないスタイル名は、知らないジャンルと同じく実行を止め、使える名前を並べる。
+- 同梱のスタイルは test がすべての rule 名とオプションを確かめる。読めないスタイルファイルは chaff の不具合として止まる。
+
+| id | 決めること | 出典 |
+| --- | --- | --- |
+| `ieice` | `katakana-long-vowel`: `drop`、3 音 | 和文論文誌 投稿のしおり 2.4 (b)（用語は学術用語集 電気工学編）。(d) の句読点は rule が無いので書かない |
+| `jis-z8301-2011` | `katakana-long-vowel`: `drop`、3 音 | JIS Z 8301:2011 附属書 G 表 G.3。2019 年版は外来語の表記によるとした |
+| `bunkacho` | `katakana-long-vowel`: `keep` | 外来語の表記 留意事項その 2 Ⅲ 3 注 3 |
+
 ---
 
 ## 19. CLI と出力例
