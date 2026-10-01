@@ -1,0 +1,12 @@
+# Marks and words that, alone between two dates, make a period ("5 April – 9 April", "May 1 through May 5").
+# "to" is not one: "moved from March 10 to March 3" changes a date rather than spanning a period.
+id: range-connector
+language: en
+entries:
+  - pattern: "-"
+  - pattern: –
+  - pattern: —
+  - pattern: through
+  - pattern: thru
+  - pattern: until
+  - pattern: till

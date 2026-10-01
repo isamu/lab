@@ -226,7 +226,15 @@ describe("既定の段で動かす", () => {
     assert.equal(why(result, "numbering-gap"), undefined);
     assert.deepEqual(
       result.presetExperimental.toSorted((left, right) => left.localeCompare(right)),
-      ["dangling-reference", "date-weekday-mismatch", "duplicate-definition", "numbering-gap", "total-mismatch"],
+      [
+        "dangling-figure-reference",
+        "dangling-reference",
+        "date-range-reversed",
+        "date-weekday-mismatch",
+        "duplicate-definition",
+        "numbering-gap",
+        "total-mismatch",
+      ],
     );
     assert.deepEqual(result.forcedExperimental, ["latin-spacing"]);
   });
@@ -252,7 +260,15 @@ describe("既定の段で動かす", () => {
   it("法令・規程のジャンルは、契約書と同じ構造の rule を入れる", () => {
     assert.deepEqual(
       runJa(JA_REPORT, "legal/statute", {}, false).presetExperimental.toSorted((left, right) => left.localeCompare(right)),
-      ["dangling-reference", "date-weekday-mismatch", "duplicate-definition", "numbering-gap", "total-mismatch"],
+      [
+        "dangling-figure-reference",
+        "dangling-reference",
+        "date-range-reversed",
+        "date-weekday-mismatch",
+        "duplicate-definition",
+        "numbering-gap",
+        "total-mismatch",
+      ],
     );
   });
 

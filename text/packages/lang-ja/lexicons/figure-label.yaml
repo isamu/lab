@@ -1,0 +1,11 @@
+# 番号と組んで、図・表・付録に名前を付ける語（図3、表2、別表第一、付録A）。本文の参照を、行の頭に書いたもの（キャプションや見出し）の中から探す。
+# instead_of は、略した書き方がどの語と同じものを指すか。
+id: figure-label
+language: ja
+entries:
+  - pattern: 図
+  - pattern: 表
+  - pattern: 別表
+  - pattern: 別紙
+  - pattern: 付録
+  - pattern: 様式

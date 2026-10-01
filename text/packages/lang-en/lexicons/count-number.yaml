@@ -1,0 +1,16 @@
+# Numbers written as words, in order from one (the position is the number). Digits are read without a lexicon.
+id: count-number
+language: en
+entries:
+  - pattern: one
+  - pattern: two
+  - pattern: three
+  - pattern: four
+  - pattern: five
+  - pattern: six
+  - pattern: seven
+  - pattern: eight
+  - pattern: nine
+  - pattern: ten
+  - pattern: eleven
+  - pattern: twelve

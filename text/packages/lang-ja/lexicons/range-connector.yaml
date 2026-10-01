@@ -1,0 +1,11 @@
+# 二つの日付の間に置いて、それだけで期間を作る記号（4月1日〜4月3日）。
+id: range-connector
+language: ja
+entries:
+  - pattern: 〜
+  - pattern: ～
+  - pattern: "-"
+  - pattern: －
+  - pattern: ‐
+  - pattern: –
+  - pattern: —

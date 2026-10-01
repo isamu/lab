@@ -1,0 +1,61 @@
+# 数のすぐ前（before）かすぐ後ろ（after）にあると、その数は下の箇条書きの数ではない語。
+# 目安（約3点、3つ以上）、順番（第3、3つ目）、選ぶ数（以下から1つ選ぶ、3つまで）、範囲（2〜3点）。
+id: count-hedge
+language: ja
+entries:
+  - pattern: 約
+    position: before
+  - pattern: およそ
+    position: before
+  - pattern: 最大
+    position: before
+  - pattern: 最低
+    position: before
+  - pattern: 少なくとも
+    position: before
+  - pattern: 第
+    position: before
+  - pattern: から
+    position: before
+  - pattern: うち
+    position: before
+  - pattern: 中
+    position: before
+  - pattern: 〜
+    position: before
+  - pattern: ～
+    position: before
+  - pattern: 目
+    position: after
+  - pattern: 以上
+    position: after
+  - pattern: 以下
+    position: after
+  - pattern: 未満
+    position: after
+  - pattern: 程度
+    position: after
+  - pattern: ほど
+    position: after
+  - pattern: 前後
+    position: after
+  - pattern: 余り
+    position: after
+  - pattern: あまり
+    position: after
+  - pattern: など
+    position: after
+  - pattern: ずつ
+    position: after
+  - pattern: まで
+    position: after
+  - pattern: 選
+    position: after
+  - pattern: を選
+    position: after
+  - pattern: のうち
+    position: after
+  - pattern: 〜
+    position: after
+  - pattern: ～
+    position: after

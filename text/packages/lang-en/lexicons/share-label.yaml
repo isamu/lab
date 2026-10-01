@@ -1,0 +1,12 @@
+# Words that name the parts of one whole (they add up to 100%). When a table's header, or the sentence or heading right
+# above a list or a table, has one of these, its percentages are added and compared with 100%.
+# "rate" and "percentage" are left out: they also name a rate per row. So is a bare "share" ("share price return").
+id: share-label
+language: en
+entries:
+  - pattern: breakdown
+  - pattern: market share
+  - pattern: share of
+  - pattern: composition
+  - pattern: split
+  - pattern: allocation

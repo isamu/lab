@@ -1,0 +1,57 @@
+id: announced-count-mismatch
+layer: L3
+status: experimental
+how_to_find: announced-count
+severity: warning
+
+name:
+  ja: 予告した数と箇条書きの数が合わない
+  en: A list that does not have the number of items announced
+
+why:
+  ja: 「以下の3点」と書いたのに、すぐ下の箇条書きが2つや4つだと、読み手は抜けた項目があるのか、数え間違いなのかを確かめることになります。項目を足したり消したりしたあとに、予告の数を直し忘れると起きます。箇条書きのすぐ前の文が、「以下の」「次の」のような先を指す語か、終わりのコロン（：）と一緒に数（3点、2つ、4項目）を書いているときだけ、その数を箇条書きのいちばん外側の項目の数と比べます。
+  en: When a sentence says "the following three steps" and the list right below it has two or four, the reader has to check whether an item is missing or the count is wrong. It happens when an item is added or removed and the count is not updated. The number is compared with the items at the top level of the list only when the sentence right before the list announces it, with a word pointing ahead ("following", "below") or a colon at its end, and the number names what the list holds ("three steps", "two reasons").
+
+message:
+  ja: 「{phrase}」と予告していますが、すぐ下の箇条書きは{listed}項目です
+  en: '"{phrase}" is announced, but the number of items in the list below is {listed}'
+
+how_to_fix:
+  ja: 項目が抜けていないか確かめて、足りなければ足し、数が違うなら予告の数を直してください。
+  en: Check whether an item is missing. Add it, or correct the number in the announcement.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「以下の3点」と書いたのに、下の箇条書きの数が違う所
+  en: A list whose number of items differs from the number announced just before it
+example:
+  ja:
+    before: |
+      申し込みの前に、次の3点を確認してください。
+
+      - 本人確認の書類
+      - 振込先の口座
+    after: |
+      申し込みの前に、次の2点を確認してください。
+
+      - 本人確認の書類
+      - 振込先の口座
+  en:
+    before: |
+      Before you apply, check the following three items:
+
+      - Your ID
+      - Your bank account
+    after: |
+      Before you apply, check the following two items:
+
+      - Your ID
+      - Your bank account
+
+not_flagged:
+  ja: 目安の数（約3点、3つ以上）、順番（3つ目）、選ぶ数（以下から1つ選ぶ）、見出しや表の前の数、箇条書きがすぐ後ろに無い数は比べません。予告の文に数が二つあるときも比べません。
+  en: An estimate (about three, three or more), a rank (the first three), how many to pick (choose two), a number before a heading or a table, and a number with no list right after it are not compared. Nor is a sentence with two numbers in it.

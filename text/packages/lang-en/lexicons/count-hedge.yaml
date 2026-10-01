@@ -1,0 +1,67 @@
+# Words right before (before) or right after (after) a number that make it something other than the count of the list
+# below: an estimate (about three, three or more), a rank (the first three), how many to pick (choose two), a range.
+id: count-hedge
+language: en
+entries:
+  - pattern: about
+    position: before
+  - pattern: around
+    position: before
+  - pattern: approximately
+    position: before
+  - pattern: at least
+    position: before
+  - pattern: at most
+    position: before
+  - pattern: up to
+    position: before
+  - pattern: more than
+    position: before
+  - pattern: fewer than
+    position: before
+  - pattern: less than
+    position: before
+  - pattern: over
+    position: before
+  - pattern: first
+    position: before
+  - pattern: last
+    position: before
+  - pattern: top
+    position: before
+  - pattern: next
+    position: before
+  - pattern: another
+    position: before
+  - pattern: choose
+    position: before
+  - pattern: select
+    position: before
+  - pattern: pick
+    position: before
+  - pattern: any
+    position: before
+  - pattern: or
+    position: before
+  - pattern: to
+    position: before
+  - pattern: "-"
+    position: before
+  - pattern: "–"
+    position: before
+  - pattern: or more
+    position: after
+  - pattern: or fewer
+    position: after
+  - pattern: or so
+    position: after
+  - pattern: of
+    position: after
+  - pattern: to
+    position: after
+  - pattern: or
+    position: after
+  - pattern: "-"
+    position: after
+  - pattern: "–"
+    position: after
