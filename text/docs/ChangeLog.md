@@ -30,6 +30,24 @@ turns all four off.
 On the corpus (`yarn corpus`) the four report one finding, a true one: a Kubernetes enhancement proposal that says
 "This allows 2 things:" and lists one. `yarn bench` plants each of them in both languages.
 
+### New rule `katakana-long-vowel`, and options on rules (#170)
+
+A team or a publisher often decides how a katakana loanword ends: IEICE papers and JIS Z 8301 up to its 2011 edition
+drop the final ー on words of three morae or more (コンピュータ), newspapers and the Agency for Cultural Affairs keep it
+(コンピューター). The new experimental rule `katakana-long-vowel` (Japanese, needs the part-of-speech reading) checks it.
+
+- **With no setting it takes no side.** It reports a word written both ways in one document (サーバー and サーバ), at
+  the form used less. Different words are not compared.
+- **`options:` in chaff.yaml** sets what the four levels cannot say. `katakana-long-vowel` takes `ending`
+  (`consistent`, `drop` or `keep`), `min_morae` (default 3) and `except` (words left alone).
+- Morae are counted with the final ー (カー is two, コンピューター six); a small ャュョァィゥェォ joins the kana before it.
+  Words come from the morphological reading, so ユーザー inside ユーザーインターフェース is its own word. Proper nouns
+  the dictionary knows and the team's `names:` keep their spelling.
+- `keep` reports a word without a final ー only when the dictionary knows it with one (メモリ → メモリー) or the
+  document writes it with one elsewhere. lang-ja marks such tokens `LongVowelEnding=Dropped`.
+- An option that does not apply (an unknown rule or option, a value that does not fit) is said on stderr on every run.
+  `chaff explain` shows each option's value and where it came from; `chaff rules --json` carries `options`.
+
 ### Rules for the documented shapes of generated text, and more words for `ai-tell` (#170)
 
 Four new experimental rules check the marks of AI-sounding writing that style guides, Wikipedia's "Signs of AI

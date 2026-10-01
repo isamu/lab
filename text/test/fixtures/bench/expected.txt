@@ -21,6 +21,7 @@ expletive-construction                  4      4       0             0
 heading-echo                           15     15       0             0
 hiragana-fukushi                        6      6       0             0
 internal-jargon                        12     12       0             0
+katakana-long-vowel                     2      2       0             0
 latin-spacing                           1      1       0             0
 max-kanji-continuous                    5      5       0             0
 max-paragraph-length                    9      9       0             0
@@ -107,6 +108,7 @@ ja/design  blank-left  found
 ja/design  opener-repeated  found
 ja/design  spelling-avoided  found
 ja/design  pet-phrase  found
+ja/design  long-vowel-dropped  found
 ja/email  weekday-shift  found
 ja/email  rows-swapped  found
 ja/email  plain-in-polite  found
@@ -259,6 +261,7 @@ ja/readme  hedges-stacked  found
 ja/readme  residue-left  found
 ja/readme  blank-left  found
 ja/readme  spelling-avoided  found
+ja/readme  long-vowel-dropped  found
 ja/requirements  reference-broken  found
 ja/requirements  number-skipped  found
 ja/requirements  no-nested  found

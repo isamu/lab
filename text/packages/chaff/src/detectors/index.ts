@@ -31,6 +31,7 @@ import {
   percentSumMismatch,
   totalMismatch,
 } from "./structure-tree.ts";
+import { katakanaLongVowel } from "./long-vowel.ts";
 import { assistantResidue, contrastFraming, stockTransition, unfilledPlaceholder } from "./ai-phrasing.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -81,6 +82,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "preferred-term": preferredTerm,
   "latin-spacing": latinSpacing,
   "stray-space": straySpace,
+  "katakana-long-vowel": katakanaLongVowel,
   "dangling-reference": danglingReference,
   "date-weekday-mismatch": dateWeekdayMismatch,
   "date-order": dateOrder,

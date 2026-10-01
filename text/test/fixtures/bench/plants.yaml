@@ -25,6 +25,7 @@ planted:
   heading-echo: [ja, en]
   hiragana-fukushi: [ja]
   internal-jargon: [ja, en]
+  katakana-long-vowel: [ja]
   latin-spacing: [ja]
   max-kanji-continuous: [ja]
   max-paragraph-length: [ja, en]
