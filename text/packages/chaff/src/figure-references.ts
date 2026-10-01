@@ -95,6 +95,13 @@ const pointsHere = (text: string, mention: Mention, words: LabelWords): boolean 
   return !elsewhere && !words.counters.some((word) => after.startsWith(word));
 };
 
+/** 行の頭に書いた番号（キャプションや見出し）。図の置き場所。 */
+const labelledIn = (source: string, labels: readonly LabelWord[]): Mention[] => mentionsIn(source, labels).filter((mention) => isLabelled(source, mention));
+
+/** 文書が行の頭に番号を書いている種類（図、Table）。番号で名指しできる種類。 */
+export const labelledKindsIn = (source: string, words: LabelWords): ReadonlySet<string> =>
+  new Set(labelledIn(source, words.labels).map((mention) => mention.kind));
+
 /**
  * 参照先の無い番号。source は行の頭を読み、prose（コードを覆った本文）は参照を読む。位置は同じ。
  * 番号は、キャプションが 1 と書けば 1a や 1(b) の参照も 1 に当たる（番号の後ろの字は読まない）。
@@ -102,7 +109,7 @@ const pointsHere = (text: string, mention: Mention, words: LabelWords): boolean 
  */
 export const danglingFigures = (source: string, prose: string, words: LabelWords, links: readonly Span[] = []): DanglingFigure[] => {
   if (words.labels.length === 0) return [];
-  const labelled = mentionsIn(source, words.labels).filter((mention) => isLabelled(source, mention));
+  const labelled = labelledIn(source, words.labels);
   const labelledKeys = new Set(labelled.map((mention) => mention.key));
   const labelledKinds = new Set(labelled.map((mention) => mention.kind));
   return mentionsIn(prose, words.labels)

@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### New rule: `vague-figure-reference`, 上記の図 where a number would do (experimental)
+
+- In a document that numbers its figures or tables (図1, Table 2 at the start of a line), chaff points at a pointer by
+  place: 上記の図, 下の表, the figure below, the above table. JIS Z 8301:2019 10.6 rules such pointers out. A kind the
+  document never numbers is not checked, since there is no number to use. It reads the figure labels the way
+  `dangling-figure-reference` does; the phrases and the kind each points at are in each language's lexicon.
+
 ### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
 
 Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted

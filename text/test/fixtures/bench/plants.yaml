@@ -65,6 +65,7 @@ planted:
   undefined-acronym: [ja, en]
   unfilled-placeholder: [ja, en]
   url-run-on: [ja]
+  vague-figure-reference: [ja, en]
 not_planted:
   adverb-overuse: a density over the whole document
   ai-generated-composite: a composite of other signals, with no detector of its own
