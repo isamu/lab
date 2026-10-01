@@ -36,8 +36,15 @@ const perThousand = (count: number, length: number): number => (length === 0 ? 0
 
 /**
  * 単位長あたりの出現率。件数で数えると長い文書ほど当たる（bold-density と同じ）。
- * rule の id は呼び出し側が持つ。detector は「密度が閾値を超えたか」しか知らない。指摘が言う密度は、短い文書でも文書の実際の長さでの値。
+ * 短すぎて測らない文書、1 つも無いとき、閾値に収まるときは undefined。
  */
+export const rateOver = (doc: ProseDocument, count: number, limit: number): number | undefined => {
+  const length = wordsOf(doc);
+  const rate = perThousand(count, length);
+  return length < FLOOR[doc.lengthUnit] || count === 0 || rate <= limit ? undefined : rate;
+};
+
+/** rule の id は呼び出し側が持つ。detector は「密度が閾値を超えたか」しか知らない。指摘が言う密度は、短い文書でも文書の実際の長さでの値。 */
 const densityRule =
   (rule: string, short: ShortDocuments = "skip"): Detector =>
   (doc, options): Finding[] => {
