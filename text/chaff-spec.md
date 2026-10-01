@@ -642,6 +642,7 @@ genres:
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | `unbalanced-bracket` ✅ | 節の中で組にならない括弧・引用符、全角と半角の組み違い | 両方 | warning |
 | `doubled-punctuation` ✅ | 二つ並んだ句読点（三つ以上は伸ばした書き方として数えない） | 両方 | warning |
+| `invisible-character` ✅ | 見えない字（ゼロ幅の字・途中の BOM・ソフトハイフン・向きの指定・制御文字・隠れたタグ文字・印の後ろのノーブレークスペース）。コードの中も見る | 両方 | warning |
 | ~~`list-length-variance`~~ | 箇条書き項目の長さのばらつき | 落とした（下記） | info |
 
 設計上の注意:
@@ -824,6 +825,8 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `stock-transition` ✅ | 文頭の決まった接ぎの密度 | blog | info |
 | `assistant-residue` ✅ | weighted phrase-match（会話の返事の名残。重み 1 は 1 つで、0.5 は 2 つで届く） | 両方 | warning |
 | `unfilled-placeholder` ✅ | 括弧の中が雛形の語（[Your Name]、【会社名】）の空欄 | 両方 | warning |
+| `announcing-opener` ✅ | 文頭の予告（重要なのは、Here's the thing）の数。密度ではなく数で見る | blog | info |
+| `colon-lead-in` ✅ | コロンで終わり、すぐ後ろに箇条書きが来る地の文の密度（ja のみ） | blog | info |
 | `padded-intro` | phrase-match（冒頭限定） | blog | warning |
 | `closing-cliche` | phrase-match（末尾限定） | blog | warning |
 | `proper-noun-density` ✅ | 固有名詞の密度 | blog | info |
@@ -923,6 +926,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
 | `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
+| `hankaku-kana` ✅ | 半角の片仮名と半角の句読点。コード・リンク・引いた名前の中は除く | - |
 
 `katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。
 音は「コ・ン・ピュ・ー・タ・ー」と数え、語末の「ー」も含める（カーは 2 音）。小さい「ャュョァィゥェォ」は前の字と
@@ -962,6 +966,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `sentence-initial-conjunction-run` ✅ | And / But / So で始まる文の連続 | - |
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
+| `space-before-punctuation` ✅ | 句読点の前の空白（"word ."）。コロン・空白で区切った点・数の後ろは除く | - |
 
 英語固有 rule は「どちらが正しいか」を決めず、**文書内の一貫性**だけを見るものを優先する。Oxford comma の是非のようにスタイルガイドで割れる論点に立場を取ると、rule が使われなくなる。
 
@@ -1713,7 +1718,7 @@ bold-density: strict       # 2026-09-11 図の説明で太字を多用するた�
 
 ### 20.2 複合シグナル
 
-✅ 実装済み。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` / `no-em-dash` / `contrast-framing` / `stock-transition` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に 1 件の warning を足す。
+✅ 実装済み。`ai-tell` / `rule-of-three` / `section-length-uniformity` / `sentence-rhythm` / `no-em-dash` / `contrast-framing` / `stock-transition` / `announcing-opener` / `colon-lead-in` はいずれも単独では info だが、同一文書で 3 つ以上そろった場合に 1 件の warning を足す。
 
 **元の指摘は消さない。** spec の初版は「集約する」としていたが、`from` に並ぶ rule のうち
 `padded-intro` と `closing-cliche` は stable な warning で、単独でも正しい指摘である。
@@ -1739,6 +1744,8 @@ ai-generated-composite:
       - contrast-framing
       - stock-transition
       - assistant-residue
+      - announcing-opener
+      - colon-lead-in
 ```
 
 集約 rule 自体も rule として定義する。言語別に有効なシグナルが違う（英語では `no-em-dash` が強く、日本語では弱い）ため、`from` は genre profile で言語別に上書きできる。
@@ -1857,7 +1864,8 @@ experimental 開始（corpus 評価が必要）
     ai-tell, rule-of-three, section-length-uniformity, sentence-rhythm,
     concrete-evidence-density, padded-intro, cushion-phrase-density,
     proper-noun-density,
-    contrast-framing, stock-transition, assistant-residue, unfilled-placeholder
+    contrast-framing, stock-transition, assistant-residue, unfilled-placeholder,
+    announcing-opener, colon-lead-in
 ```
 
 CI:

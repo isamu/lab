@@ -1,0 +1,51 @@
+id: announcing-opener
+layer: L2
+status: experimental
+how_to_find: opener-pile
+word_list: announcing-opener
+uses: [pos]
+severity: info
+
+name:
+  ja: 予告で始まる文が多い
+  en: Too many sentences that announce before they say
+
+why:
+  ja: 「重要なのは、」「ポイントは、」「正直に言うと、」は、中身の前に「これから大事なことを言う」と予告します。1 つなら目印ですが、重なるとどの文も同じ重さに見え、予告だけが残ります。生成文によく見られる癖として知られています。
+  en: '"The key point is", "Here''s the thing" and "Honestly," announce a point before making it. Once, that is a signpost; piled up, every sentence claims the same weight and the announcements are all that stand out. A habit well known in generated text.'
+
+message:
+  ja: 「{matched}」など、予告で始まる文が {count} 個あります（{limit} 個から）
+  en: '"{matched}" and other announcing openers start {count} sentences ({limit} needed)'
+
+how_to_fix:
+  ja: 予告を消して、中身から書き始めてください。本当に一番大事な一つだけなら、予告を残してもかまいません。
+  en: Delete the announcement and start with the point. If it really is the one point that matters most, keep that one.
+
+# 指摘に要る数。長さで割らない：人の記事は長くても 1 つ 2 つで、生成文は短くても重ねる。
+levels: { strict: 2, normal: 3, relaxed: 5 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 「重要なのは、」「ポイントは、」「正直に言うと、」のように、中身の前に予告する文頭が重なっている所
+  en: 'Openers that announce a point before making it ("The key point is", "Here''s the thing", "Honestly,") piling up'
+example:
+  ja:
+    before: |
+      重要なのは、設定を先に確かめることです。ポイントは、ログを残すことです。正直に言うと、手順書は古くなっています。
+    after: |
+      まず設定を確かめ、そのときのログを残してください。手順書は去年の版のままなので、画面の名前が違います。
+  en:
+    before: |
+      The key point is that settings come first. Here's the thing: logs matter too. Honestly, the manual is out of date.
+    after: |
+      Check the settings first and keep the log of that check. The manual is last year's, so the screen names differ.
+
+not_flagged:
+  ja: 文の途中の「このポイントは」と、指摘に要る数に届かない予告は言いません。「大事なのは」「結論から言うと」は、生成 AI 以前の人の記事にも同じくらいあるので数えません。
+  en: An announcing phrase inside a sentence, and fewer than the level needs, are not reported.
+level_meaning:
+  ja: 予告で始まる文が {limit} 個あれば指摘
+  en: reported once {limit} sentences open with an announcement

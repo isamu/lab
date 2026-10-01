@@ -25,10 +25,12 @@ planted:
   excessive-hedging: [ja, en]
   expletive-construction: [en]
   heading-echo: [ja, en]
+  hankaku-kana: [ja]
   heading-level-skip: [ja, en]
   hiragana-fukushi: [ja]
   image-alt-text: [ja, en]
   internal-jargon: [ja, en]
+  invisible-character: [ja, en]
   katakana-long-vowel: [ja]
   kutoten-consistency: [ja]
   latin-spacing: [ja]
@@ -50,6 +52,7 @@ planted:
   required-sections: [ja, en]
   sasete-itadaku: [ja]
   sentence-initial-conjunction-run: [en]
+  space-before-punctuation: [en]
   stray-space: [ja]
   title-case-consistency: [en]
   total-mismatch: [ja, en]
@@ -61,6 +64,8 @@ not_planted:
   adverb-overuse: a density over the whole document
   ai-generated-composite: a composite of other signals, with no detector of its own
   ai-tell: a density over the whole document
+  announcing-opener: several announcing openers in one document; one is not a mistake
+  colon-lead-in: a density over the whole document
   concrete-evidence-density: several sections with no number, code or link; the samples are written with figures
   contrast-framing: a density over the whole document
   cushion-phrase-density: a density over the whole document
