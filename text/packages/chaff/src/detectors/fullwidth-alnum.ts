@@ -48,12 +48,18 @@ const isInAddress = (text: string, start: number, end: number): boolean =>
   (text.charAt(start - 1) === "." && LETTER_BESIDE.test(text.charAt(start - 2))) ||
   (text.charAt(end) === "." && LETTER_BESIDE.test(text.charAt(end + 1)));
 
+/** 英字の後ろに数字を続けた名前（TLS1、Python3）の終わり。版の番号の頭になる。 */
+const NAME_WITH_DIGIT = /[A-Za-zＡ-Ｚａ-ｚ][0-9０-９]+$/u;
+
+/** 版の番号の続き（TLS1.2 の 2、Python3.12 の 12）。幅は名前の英字に従い、文書の数の書き方の票にはしない。 */
+const continuesVersion = (text: string, start: number): boolean => text.charAt(start - 1) === "." && NAME_WITH_DIGIT.test(text.slice(0, start - 1));
+
 const isListItemNumber = (source: string, offset: number): boolean => LIST_ITEM_HEAD.test(source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset));
 
 export type AlnumRun = { readonly kind: AlnumKind; readonly fullwidth: boolean; readonly written: string; readonly offset: number };
 
 /**
- * 文の中の英字・数字の並び。全角と半角が混ざった並び、鉤括弧で引いたものの中、項目と注の番号、箇条書きの頭の番号は数えない。
+ * 文の中の英字・数字の並び。全角と半角が混ざった並び、鉤括弧で引いたものの中、項目と注の番号、箇条書きの頭の番号、版の番号の続き（TLS1.2 の 2）は数えない。
  * offset は文書の中の位置。
  */
 export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
@@ -64,6 +70,7 @@ export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
     .filter((match) => !isLabel(sentence.text, match.index, match.index + match[0].length))
     .filter((match) => !isListItemNumber(source, sentence.span.start + match.index))
     .filter((match) => !isInAddress(sentence.text, match.index, match.index + match[0].length))
+    .filter((match) => !continuesVersion(sentence.text, match.index))
     .map((match) => ({ kind: kindOf(match[0]), fullwidth: FULLWIDTH.test(match[0]), written: match[0], offset: sentence.span.start + match.index }));
 };
 

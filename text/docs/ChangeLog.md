@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `fullwidth-alnum-consistency` leaves the rest of a version number to its name (#170)
+
+In a document that writes 第１条 in full-width digits, the 2 of 「TLS1.2」 was reported as a half-width digit. A digit run
+after a dot that follows a name ending in letters and digits (TLS1, Python3) is part of that name, which is written
+with half-width letters, so it is no vote on how the document writes its numbers. A decimal (1.5) and a number after
+a name without a dot (「EC2 8台」) still count.
+
 ### Corpus round 14: documents of kinds the corpus had few of (#170)
 
 Terms of service and privacy statements (GitHub's, under CC0; a ministry's 電子申請 terms and the Tokyo app's terms,
