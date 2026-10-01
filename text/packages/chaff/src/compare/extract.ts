@@ -5,7 +5,8 @@ import type { Atom, Extraction, Unread } from "./atom.ts";
 import { clockTimes } from "./clock-time.ts";
 import { factTextOf, type FactText } from "./fact-text.ts";
 import { codeAtoms, headingAtoms, urlAtoms } from "./markup-atoms.ts";
-import { nameKey, properNouns, readsProperNouns } from "./proper-nouns.ts";
+import { properNouns, readsProperNouns } from "./proper-nouns.ts";
+import { factKey, seenTextOf, wholeSpanOf } from "./fact-key.ts";
 import { spanIndex } from "./spans.ts";
 import { atomsOf, bareNumbers, footnotes, numericDates, quotations, teamNames, type TextInput } from "./text-atoms.ts";
 import { treeFacts, type TreeFacts } from "./tree-atoms.ts";
@@ -39,16 +40,17 @@ const proseFacts = (input: ExtractInput, readers: Readers, tree: TreeFacts, time
   const { facts, text, lineOf } = readers;
   const marks = footnotes(facts.codeless);
   const dates = numericDates(facts.text, spanIndex([...tree.taken, ...times]));
-  const names = teamNames(facts.text, input.names);
+  const seen = seenTextOf(facts.text, facts.unseen);
+  const names = teamNames(seen.text, input.names).map((found) => wholeSpanOf(seen, found));
   const taken = [...tree.taken, ...times, ...marks, ...dates];
   return [
     ...atomsOf(dates, "date", text),
     ...atomsOf(marks, "footnote", text),
     ...atomsOf(names, "name", text),
     ...bareNumbers(text, spanIndex([...taken, ...facts.listMarkers])),
-    ...quotations(text),
+    ...quotations(text, facts.unseen),
     // "April" in a date and "Section" in a reference are read with them, not again as names.
-    ...properNouns({ doc: input.doc, taken: spanIndex([...taken, ...names, ...facts.blanked]), lineOf }),
+    ...properNouns({ doc: input.doc, taken: spanIndex([...taken, ...names, ...facts.blanked]), lineOf, unseen: facts.unseen }),
   ];
 };
 
@@ -74,5 +76,5 @@ export const extractFacts = (input: ExtractInput): Extraction => {
     ...(input.root === undefined ? [] : codeAtoms(input.root, lineOf)),
     ...headingAtoms(input.doc.markup, lineOf),
   ];
-  return { atoms, unread: unreadOf(input), nameText: nameKey(facts.text) };
+  return { atoms, unread: unreadOf(input), nameText: factKey(facts.text, { start: 0, end: source.length }, facts.unseen) };
 };
