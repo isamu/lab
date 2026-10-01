@@ -1,6 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { requiredMajorOf, tooOldMessage } from "../packages/chaff/src/node-version.ts";
 
 const CHAFF = new URL("../packages/chaff/", import.meta.url);
@@ -60,9 +63,20 @@ describe("tooOldMessage", () => {
 });
 
 describe("the entry point on an old Node.js", () => {
-  it("loads nothing but node:fs and the check before the check has run", () => {
+  it("loads nothing but fs and the check before the check has run", () => {
     const imports = [...read("bin/chaff.js").matchAll(/^import .* from "([^"]+)";$/gmu)].map((match) => match[1]);
-    assert.deepEqual(imports, ["node:fs", "../dist/node-version.js"]);
+    assert.deepEqual(imports, ["fs", "../dist/node-version.js"]);
+  });
+
+  it("has no top-level await, which Node.js before 14.8 cannot parse", () => {
+    // With its imports set aside, the entry point must parse as CommonJS, where a top-level await is an error.
+    const body = read("bin/chaff.js")
+      .replace(/^#!.*$/mu, "")
+      .replaceAll(/^import .*$/gmu, "")
+      .replaceAll("import.meta.url", '"file:///"');
+    const file = join(mkdtempSync(join(tmpdir(), "chaff-bin-")), "entry.cjs");
+    writeFileSync(file, body);
+    assert.doesNotThrow(() => execFileSync(process.execPath, ["--check", file], { stdio: "pipe" }));
   });
 
   it("keeps the check free of imports and of syntax old releases cannot parse", () => {
