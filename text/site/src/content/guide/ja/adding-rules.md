@@ -11,7 +11,9 @@ AI やエンジニアに頼むときは、このページをそのまま渡せ�
 | 組み込みルールの設定を変える | 既にあるルールで足りる（上限、表記の組、社内用語、必須の見出し） | `chaff.yaml` | いま |
 | 語や正規表現のルール | 決まった語句や文字の並びに、チームの言葉で指摘を付けたい（「弊社」を社外向けに使わない、など） | `chaff.yaml` の `custom_rules` | 次のリリース |
 | 形態素解析のルール | 品詞や活用で決まる書き方（名詞のあとの「する」など） | `chaff.yaml` の `custom_rules` | 次のリリース |
-| Node の関数のルール | 数える・比べるなど、上の 3 つで書けないもの | `.js` のファイル | その後のリリース |
+| Node の関数のルール | 数える・比べるなど、上の 3 つで書けないもの | `.mjs` のファイルと `custom_rules` | 次のリリース |
+
+ほかのチームとも使うルールは、プラグインのパッケージにまとめて配れます。[プラグインを作る](./writing-plugins) にあります。
 
 まず、既にあるルールで足りないかを確かめます。
 どんなルールがあるかは、[リファレンス](./reference) に例と一緒に並べてあります。
@@ -183,19 +185,40 @@ custom_rules:
 
 どう分かれるかは文によって違います。書いたら、当てたい文と当てたくない文の見本で確かめます。
 
-## Node の関数のルール（その後のリリース）
+## Node の関数のルール（次のリリース）
 
-> `type: module` は名前だけ決めてあり、まだ動きません。書くと、まだ使えないと言って止まります。
-
-数える・比べるなど、上のどれでも書けないものは、Node の関数で書く予定です。
-関数は文書を受け取り、指摘の一覧を返します。chaff 本体の見つける処理（`packages/chaff/src/detectors/`）と同じ形です。
+数える・比べるなど、上のどれでも書けないものは、Node の関数で書きます。
+関数は文書を受け取り、指摘の一覧を返します。`chaff.yaml` には、ほかのルールと同じく名前・理由・直し方・例を書き、
+`type: module` と、関数のファイルの場所（`module`）を書きます。場所は `chaff.yaml` から見た相対パスです。
 
 ```yaml
 custom_rules:
-  - id: max-list-items
+  - id: team-no-tbd-dates
     type: module
-    module: ./chaff-rules/max-list-items.js
+    module: ./chaff-rules/no-tbd-dates.mjs
+    level: warning
+    name: 未定のままの日付
+    why: 読み手は日付をもとに予定を立てます。
+    how_to_fix: 日付を書くか、決める人と期限を書きます。
+    example:
+      before: 公開日は未定です。
+      after: 公開日は 10 月 1 日です。
 ```
+
+ファイルは、関数を `export default` します。指摘は、文書の中の位置（`start` と `end`）で返します。
+
+```js
+// chaff-rules/no-tbd-dates.mjs
+export default (doc) =>
+  doc.sentences.flatMap((sentence) => {
+    const at = sentence.text.indexOf("未定");
+    return at === -1 ? [] : [{ start: sentence.span.start + at, end: sentence.span.start + at + 2 }];
+  });
+```
+
+品詞を読むルールは `requires: [pos]` を、語の一覧を読むルールは `word_list` を書きます。
+関数に渡るもの、返すもの、テストの書き方、壊れたときの出力は [プラグインを作る](./writing-plugins) にあります。
+`chaff.yaml` と同じフォルダより外にあるファイルは、絶対パスで書いたときだけ読みます。読み込むと、そのコードが動くためです。
 
 ## chaff 本体にルールを足す
 

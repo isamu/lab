@@ -1512,7 +1512,7 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 
 ### 18.7 チームのルール（`custom_rules:`）
 
-チームは chaff.yaml に決定的なルールを足せる。コードは書かせない。どれも組み込みの rule と同じ `RuleDefinition` になり、
+チームは chaff.yaml に決定的なルールを足せる。初めの 3 つはコードが要らない。どれも組み込みの rule と同じ `RuleDefinition` になり、
 指摘・`explain`・`rules --json`・`stet`・`relax`・baseline・SARIF がそのまま扱う。
 
 | `type` | 見るもの | detector |
@@ -1520,6 +1520,7 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 | `words` | 語の並び、または「使わない書き方: 使う書き方」。使う書き方の中の一部は数えない（preferred-term と同じ） | `custom-words` |
 | `pattern` | 正規表現。文ごとに当てる。`ignore_case: true` で `i` | `custom-pattern` |
 | `tokens` | 語の条件の並び。条件は `pos`（UPOS か 名詞・動詞・noun・verb などの名前）、`base`（原形）、`surface`（表記） | `custom-tokens`（`requires: [pos]`） |
+| `module` | チームが書いた Node の関数が返す所（§18.8） | `module`（ルールの id で引く） |
 
 - 必須は `id`（英小文字・数字・ハイフン。chaff の rule と同じ id は不可）、`type`、`name`、`why`、`how_to_fix`、
   `example.before`、`example.after`。文言は 1 つの文字列か `{ ja, en }`。`message` を書かなければ種類ごとの既定の文。
@@ -1533,7 +1534,44 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
   並んだ繰り返し（`a*a*a*a*b`）は入れ子でなくても、文の長さの「繰り返しの数」乗の時間がかかる。
 - **それでも止まらないものは時間で止める。** 形を読むだけでは、すべての危ない形を見分けられない。正規表現は `node:vm` の
   中で 1 文書 1 ルールあたり 1000 ms までで動かし、超えたらそのルールを「動いていない」一覧に理由付きで出す。
-- `type: module`（Node の関数）は予約した。いまは「まだ使えない」と言って止める。
+- `type: module` は、チームが書いた Node の関数（§18.8）。`module:` に `chaff.yaml` から見た相対パスを書く。
+  そのフォルダの外へ出る相対パスは断り、外のファイルは絶対パスで書いたときだけ読む（読み込むとコードが動くため）。
+  `requires: [pos]` で文に語が付き、`word_list:` で語彙表が関数に渡る。
+
+### 18.8 コードで書くルールとプラグイン（`chaffjs/api`、`plugins:`）
+
+語・正規表現・品詞の並びで書けないもの（数える・比べる）は、Node の関数で書ける。関数は `(doc, options) => 指摘の並び`。
+型と補助は `chaffjs/api` が出す。`chaffjs/plugin` は言語アダプタの面で、内部の形を含むので、ルールを書く人には出さない。
+
+| 出すもの | 中身 |
+| --- | --- |
+| `API_VERSION` | プラグイン API の版。いまは 1。形を壊す変更で上げる |
+| `defineRule({ detect })` / `definePlugin({ name, rules, lexicons, styles })` | 渡したものに `apiVersion` を付けて返すだけ。使わなくても書ける |
+| `RuleDocument` | `path` `source` `language` `lengthUnit` `sentences`（`tokens` 付き）`paragraphs` `sections` `lists` `listItems` `links` `lexicons` `markup` |
+| `Finding` | `{ start, end?, values? }`。位置は `source` の中。行・桁・引用・重さは chaff が付ける |
+| `DetectorOptions` | `{ lexicon }`。ルールの `word_list` の、文書の言語の語彙表 |
+
+- **関数が読むのは写しで、凍らせてある。** 内部の形（木、文書の種類、覆った本文）は渡さない。内部を変えてもプラグインが壊れず、
+  一つのルールが次のルールの見るものを変えられない。
+- **返したものは丸ごと確かめる。** 並びでない、`start` が文書の外、`end` が `start` より前、`values` に文字列と数でないもの。
+  一つでもあれば全部を捨て、そのルールを「動いていない」一覧に、何が悪かったかと出所（ファイルかパッケージ）を付けて出す。
+  関数がエラーを投げたときも同じ。どちらも実行は止めず、ほかのルールは動く。
+- **読み込めないものは実行を止める。** ファイルが無い、読み込めない、`export default` が関数でも `{ detect }` でもない、版が違う。
+  §18.7 の読めないルールと同じ理由で、黙って動かないルールはきれいな文書に見える。
+- **時間で止められない。** 正規表現と違い、関数は同じスレッドで動くので途中で止められない。決定的であること、終わることは書く人が守る。
+
+`plugins:` はパッケージ（`chaff-plugin-<名前>`、`@scope/chaff-plugin-<名前>`）か、手元のファイル（`./` で始まるパス）を並べる。
+パッケージは `chaff.yaml` のあるフォルダから Node の `require.resolve` と同じに探す。
+
+- プラグインは `definePlugin` を `export default` する。`name` はパッケージの名前から決まり（`chaff-plugin-foo` は `foo`）、違えば断る。
+- ルールは `custom_rules` の項目と同じに読み（同じ欄、同じ確かめ）、コードのルールは `type: module` の代わりに `detect` を持つ。
+- 出すもの全部に名前を前に付ける。ルール `foo/no-tbd`、語彙表 `foo/weasel`、スタイル `foo/house`。chaff のルールとも、ほかのプラグインとも重ならない。
+- プラグインのルールは指摘、`explain`、`rules --json`（`defined_in: plugin foo`）、`relax`、`stet`、baseline、SARIF で chaff のルールと同じに扱う。
+- 語彙表は言語ごとに持つ。文書の言語の語彙表が無ければ、そのルールは理由付きで動かない（§16）。
+- スタイルは §18.6 と同じ形で、`style: foo/house` で選ぶ。プリセットはスタイルだけ（ジャンルは genres.yaml の固定の一覧）。
+- 見つからない、読み込めない、版が違う、名前が合わない、同じ名前が二つ、ルール・語彙表・スタイルが読めない。どれも実行を止め、`chaff.yaml` に書いたとおりの名前で言う。
+
+例は `examples/chaff-plugin-example`（公開しない）。手引きは「プラグインを作る」。
 
 ---
 
@@ -1632,6 +1670,8 @@ article.md  [ja · blog/tech]
 ### 19.3 `chaff rules --json` は AI のための入口
 
 AI に設定を書かせるとき、これを渡せば推測せずに書ける。現在値、使える値、数値との対応、なぜ今 off なのか、変更コマンドまでが 1 つに入る。
+`custom_rule_types` は書ける `custom_rules` の種類（`status: available`、`types: [words, pattern, tokens, module]`）。
+チームとプラグインのルールは `defined_in`（`chaff.yaml custom_rules` か `plugin <名前>`）と `custom` を持つ。
 `level_sets` は段が何を変えるかを言う。`limit` は数える上限、`severity` は指摘の重さ（§18.1 の数えるもののない rule）。後者の `levels` と `now` には数ではなく重さが入る。
 
 ```json

@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### Docs: Writing a plugin
+
+- A new guide page, 「プラグインを作る」 / "Writing a plugin": the two forms (a `type: module` rule, a plugin package),
+  what a detector is given and returns, a step-by-step plugin, word lists and styles, testing a rule as a plain
+  function, what a broken one prints, versions, security and the rules a detector keeps to, and publishing.
+- Adding a rule: the Node function section shows a working `type: module` rule instead of "not yet".
+- House style: a plugin's style is chosen as `style: <plugin>/<style>`.
+- README, the package README and chaff-spec §18.7–18.8 and §19.3 describe `type: module`, `plugins:` and
+  `chaffjs/api`.
+
 ### `examples/chaff-plugin-example`: a plugin to copy
 
 A small plugin package in the repository (not published): `example/no-tbd-dates`, a rule written in code;

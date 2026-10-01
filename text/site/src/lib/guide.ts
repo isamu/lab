@@ -11,6 +11,7 @@ const ORDER = [
   "reference",
   "house-style",
   "adding-rules",
+  "writing-plugins",
   "commands",
   "structure",
   "languages",

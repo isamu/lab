@@ -39,6 +39,9 @@ The finding is in Japanese because the document is. There are three styles for n
 Morae are counted as コ・ン・ピュ・ー・タ・ー. A small ャ, ュ or ョ joins the kana before it.
 Every one of these styles keeps the ー on two-mora words such as カー and キー.
 
+A plugin can ship styles too. A style from a plugin listed under `plugins:` is chosen with the plugin's name in front
+(`style: example/careful`). [Writing a plugin](./writing-plugins) shows how to make one.
+
 ## Decide which way one rule goes
 
 You can also decide one rule's direction without a style.

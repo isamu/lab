@@ -11,7 +11,9 @@ There are four ways, from the easiest to the most powerful.
 | Set an option on a built-in rule | A rule chaff has already covers it (a limit, a spelling, in-house words, required headings) | `chaff.yaml` | now |
 | A words or regular-expression rule | A fixed phrase or pattern, flagged with the team's own message (no "our company" in external copy) | `custom_rules` in `chaff.yaml` | next release |
 | A morphology rule | Writing decided by part of speech or inflection | `custom_rules` in `chaff.yaml` | next release |
-| A Node function rule | Counting, comparing, anything the three above cannot say | a `.js` file | a later release |
+| A Node function rule | Counting, comparing, anything the three above cannot say | a `.mjs` file and `custom_rules` | next release |
+
+Rules to share with other teams can be packed into a plugin package; see [Writing a plugin](./writing-plugins).
 
 First, check whether a rule chaff already has is enough.
 The [Reference](./reference) lists every rule with an example.
@@ -183,20 +185,42 @@ custom_rules:
 
 How a sentence is split depends on the sentence. Check the rule on samples it must match and samples it must not.
 
-## A Node function rule (a later release)
+## A Node function rule (next release)
 
-> `type: module` is reserved by name and does not run yet. Written in chaff.yaml, it stops the run and says so.
-
-Counting, comparing, anything none of the above can say, is planned as a Node function.
-It takes the document and returns a list of findings, the same shape as chaff's own detectors
-(`packages/chaff/src/detectors/`).
+Counting, comparing, anything none of the above can say, is written as a Node function.
+The function takes the document and returns a list of findings.
+In `chaff.yaml` the rule has a name, a reason, a fix and an example like any other.
+It adds `type: module`, and `module`: where the function's file is, relative to `chaff.yaml`.
 
 ```yaml
 custom_rules:
-  - id: max-list-items
+  - id: team-no-tbd-dates
     type: module
-    module: ./chaff-rules/max-list-items.js
+    module: ./chaff-rules/no-tbd-dates.mjs
+    level: warning
+    name: A date left undecided
+    why: A reader plans around a date.
+    how_to_fix: Write the date, or who decides it and by when.
+    example:
+      before: The launch date is TBD.
+      after: The launch date is 1 October.
 ```
+
+The file default-exports the function. A finding is a place in the document (`start` and `end`).
+
+```js
+// chaff-rules/no-tbd-dates.mjs
+export default (doc) =>
+  doc.sentences.flatMap((sentence) => {
+    const at = sentence.text.indexOf("TBD");
+    return at === -1 ? [] : [{ start: sentence.span.start + at, end: sentence.span.start + at + 3 }];
+  });
+```
+
+A rule that reads parts of speech writes `requires: [pos]`; one that reads a word list writes `word_list`.
+What the function is given and returns, how to test it and what a broken one prints are in
+[Writing a plugin](./writing-plugins).
+A file outside the folder `chaff.yaml` is in is read only when written as an absolute path, since loading it runs its code.
 
 ## Adding a rule to chaff itself
 

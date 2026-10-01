@@ -345,13 +345,14 @@ style: ieice
 強さは chaff.yaml の `rules:` と `options:` が最も強く、次にスタイル、次にジャンル、最後に既定。
 `explain` と `rules --json` は、どの値がスタイルから来たかを `style: ieice` と出す。知らないスタイル名は、実行を止めて使える名前を並べる。
 
-チームだけの決まりは `custom_rules:` にルールとして書ける。プログラムは要らない。種類は 3 つ。
+チームだけの決まりは `custom_rules:` にルールとして書ける。初めの 3 つはプログラムが要らない。
 
 | `type:` | 見つけるもの | 書くもの |
 | --- | --- | --- |
 | `words` | 決めた語（直す先があればそれも） | `words: { 下さい: ください }` か語の並び |
 | `pattern` | 正規表現に当たる所 | `pattern:`（`ignore_case: true` で大文字小文字を区別しない） |
 | `tokens` | 品詞・原形・表記の並び（ja / en） | `tokens: [{ pos: 名詞 }, { surface: を }, { base: 行う }]` |
+| `module` | 書いた Node の関数が返す所 | `module: ./chaff-rules/no-tbd.mjs`（`chaff.yaml` からの相対パス） |
 
 どのルールにも `id`、`name`、`why`、`how_to_fix`、`example`（`before` と `after`）を書く。読む人に理由と直し方を伝えるため。
 `level`（`error` / `warning` / `info`、既定は `warning`）と `languages` は任意。
@@ -378,7 +379,12 @@ custom_rules:
 チームのルールは chaff のルールと同じに扱う。`explain` は例も出し、`rules --json`、`stet`、`relax`、baseline、SARIF もそのまま効く。
 書き間違い（読めない正規表現、足りない説明、chaff のルールと同じ id）は、実行を止めて何が悪いかを言う。
 `(a+)+` のように長い行で止まらなくなる正規表現、回数の決まらない繰り返し（`*`・`+`・`{1,9}`）が 4 つ以上あるもの、後方参照は、動かす前に断る。
-それでも 1 文書に 1 秒以上かかった正規表現は止め、そのルールを「動いていない」一覧に理由付きで出す。`type: module`（Node の関数）は予約済みで、まだ使えない。
+それでも 1 文書に 1 秒以上かかった正規表現は止め、そのルールを「動いていない」一覧に理由付きで出す。
+
+`type: module` のファイルは、文書を受け取って指摘（`{ start, end }`）の一覧を返す関数を `export default` する。型と `defineRule` は `chaffjs/api` にある。
+読み込めないファイルは実行を止め、文書を見ている途中で関数がエラーを投げたら、そのルールだけを「動いていない」一覧に理由付きで出す。
+いくつものチームで使うルール・語の一覧・スタイルは、プラグイン（`plugins: [chaff-plugin-foo]`）にまとめて配れる。ルールの名前は `foo/rule-id` になり、chaff のルールとぶつからない。
+読み込むとそのコードが動くので、信頼できるものだけを入れる。作り方は手引きの「プラグインを作る」と [examples/chaff-plugin-example](examples/chaff-plugin-example) にある。
 
 知らない rule 名（たいていは綴り違い）と読めない値は、検査と `rules --json` が標準エラーに出す。黙って捨てると、効いていない設定を効いていると思い込むため。
 
