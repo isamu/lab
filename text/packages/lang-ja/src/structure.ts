@@ -241,10 +241,16 @@ const REFERENCE = new RegExp(`第(?<a>${NUMBER})条(?:の(?<s>${NUMBER}))?(?:第
  */
 const CONNECTORS = /及び|並びに|若しくは|又は|および|ならびに|もしくは|または|から|まで|ただし書|前段|後段|[、，\s]/gu;
 const FRAGMENT = new RegExp(`第${NUMBER}[項号](?:の${NUMBER})*`, "gu");
-/** 括弧書きの括弧。全角でも半角でもよい（厚生労働省法令等データベースは半角で書く）。 */
-const OPENING = new Set(["（", "("]);
-const CLOSING = new Set(["）", ")"]);
-const PARENTHESES = /[（(][^（）()]*[）)]/gu;
+/** 括弧書きの括弧。全角でも半角でもよい（厚生労働省法令等データベースは半角で書く）が、開きと閉じは同じ幅で組む。 */
+const OPENER_OF: ReadonlyMap<string, string> = new Map([
+  ["）", "（"],
+  [")", "("],
+]);
+const isOpening = (char: string): boolean => char === "（" || char === "(";
+const PARENTHESES = /（[^（）()]*）|\([^（）()]*\)/gu;
+
+/** 閉じの括弧が、開いたままの最後の括弧と組になるか。 */
+const closes = (char: string, opened: string | undefined): boolean => opened !== undefined && OPENER_OF.get(char) === opened;
 
 /** 間の文字列が、接続の語・読点・項や号の断片・括弧書きだけでできているか。 */
 const isContinuation = (gap: string): boolean => gap.replace(PARENTHESES, "").replace(FRAGMENT, "").replace(CONNECTORS, "") === "";
@@ -252,11 +258,11 @@ const isContinuation = (gap: string): boolean => gap.replace(PARENTHESES, "").re
 /** 行を一度だけ読んで、位置ごとの括弧の深さを出す。参照ごとに行を読み直さない。 */
 const depthsOf = (text: string): Int32Array => {
   const depth = new Int32Array(text.length + 1);
-  const open = { parentheses: 0 };
+  const opened: string[] = [];
   text.split("").forEach((char, at) => {
-    depth[at] = open.parentheses;
-    if (OPENING.has(char)) open.parentheses += 1;
-    if (CLOSING.has(char)) open.parentheses = Math.max(0, open.parentheses - 1);
+    depth[at] = opened.length;
+    if (isOpening(char)) opened.push(char);
+    else if (closes(char, opened.at(-1))) opened.pop();
   });
   return depth;
 };
@@ -275,10 +281,12 @@ const withoutClosedParentheses = (gap: string): string => {
   const kept: string[] = [];
   const opens: number[] = [];
   for (const char of gap) {
-    const opened = CLOSING.has(char) ? opens.pop() : undefined;
-    if (opened !== undefined) kept.splice(opened);
-    else {
-      if (OPENING.has(char)) opens.push(kept.length);
+    const last = opens.at(-1);
+    if (last !== undefined && closes(char, kept[last])) {
+      opens.pop();
+      kept.splice(last);
+    } else {
+      if (isOpening(char)) opens.push(kept.length);
       kept.push(char);
     }
   }
