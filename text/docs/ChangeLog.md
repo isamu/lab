@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### Guide: what chaff does for more kinds of document, in Japanese
+
+「文書の種類ごとにできること」 is now a chooser: find the kind of document you have, go to its page. New pages,
+written for people who have never used a command line, join the statute and report pages: 技術記事（Zenn・Qiita）,
+契約書・利用規約, 仕事のメール, 議事録, 説明書・API の文書, プレスリリース・お知らせ and 論文・要旨 (`style: ieice`).
+Each runs chaff on a short self-written sample with realistic mistakes, shows chaff's real screen, says what every
+finding means and how to fix it, says what chaff does not check for that kind, and gives the genre and a starter
+`chaff.yaml` that turns on the experimental rules the kind needs.
+
 ### `compare --distinct` compares facts as sets (#446)
 
 `compare` counts how many times each fact is stated, so a full rewrite that cuts a summary repeating the body reported
