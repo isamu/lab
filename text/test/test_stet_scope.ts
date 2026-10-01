@@ -38,6 +38,11 @@ describe("stet covers the block right below it", () => {
     assert.deepEqual(keptLines([STET, "## 第4条（返却）", "", "本文。"].join("\n")), [3, 4]);
   });
 
+  it("a Setext heading alone, up to its underline", () => {
+    assert.deepEqual(keptLines([STET, "A Setext Heading", "================", "Body paragraph.", "", "Next."].join("\n")), [4, 5, 6]);
+    assert.deepEqual(keptLines([STET, "見出し", "---", "本文。"].join("\n")), [4]);
+  });
+
   it("a paragraph up to a heading that follows it without a blank line", () => {
     assert.deepEqual(keptLines([STET, "段落。", "# 見出し", "本文。"].join("\n")), [3, 4]);
   });

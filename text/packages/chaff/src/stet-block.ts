@@ -1,11 +1,13 @@
 /**
  * Where a `<!-- stet: … -->` stops: the end of the block right below it, as a writer sees blocks in Markdown or plain
- * text. A blank line ends a paragraph or a table; a heading is a block of its own; a list runs on across the blank
+ * text. A blank line ends a paragraph or a table; a heading (`#`, or a Setext underline) is a block of its own; a list runs on across the blank
  * lines between its items. Line numbers count from 1, as findings do.
  */
 
 const BLANK = /^\s*$/u;
 const HEADING = /^ {0,3}#{1,6}(?:\s|$)/u;
+/** The underline of a Setext heading: the lines above it, up to it, are the heading. */
+const SETEXT_UNDERLINE = /^ {0,3}(?:=+|-+)\s*$/u;
 const LIST_ITEM = /^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:\s|$)/u;
 /** A line indented under a list item: its continuation, or a nested list. */
 const UNDER_ITEM = /^(?: {2,}|\t)\S/u;
@@ -23,10 +25,11 @@ const indexFrom = (lines: readonly string[], from: number, test: (line: string) 
 
 const firstFilled = (lines: readonly string[], from: number): number | undefined => indexFrom(lines, from, (line) => !isBlank(line));
 
-/** The index of the last line of the run of lines from `start` that a blank line or a heading ends. */
+/** The index of the last line of the run from `start`: before a blank line or a heading, or at a Setext underline. */
 const runEnd = (lines: readonly string[], start: number): number => {
-  const stop = indexFrom(lines, start + 1, (line) => isBlank(line) || HEADING.test(line));
-  return (stop ?? lines.length) - 1;
+  const stop = indexFrom(lines, start + 1, (line) => isBlank(line) || HEADING.test(line) || SETEXT_UNDERLINE.test(line));
+  if (stop === undefined) return lines.length - 1;
+  return SETEXT_UNDERLINE.test(lines[stop] ?? "") ? stop : stop - 1;
 };
 
 /** After a list's run ending at `end`, the index where the list goes on past blank lines, or undefined where it ends. */
