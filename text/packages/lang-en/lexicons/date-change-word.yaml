@@ -1,0 +1,27 @@
+# Words that, earlier in the same sentence as "from … to", make it a change of date rather than a period: "the review
+# moved from March 10, 2026 to March 3, 2026", "the deadline was brought forward from 30 June to 15 June".
+id: date-change-word
+language: en
+entries:
+  - pattern: moved
+  - pattern: move
+  - pattern: moving
+  - pattern: changed
+  - pattern: change
+  - pattern: changing
+  - pattern: postponed
+  - pattern: rescheduled
+  - pattern: reschedule
+  - pattern: brought forward
+  - pattern: bring forward
+  - pattern: pushed back
+  - pattern: push back
+  - pattern: delayed
+  - pattern: shifted
+  - pattern: advanced
+  - pattern: extended
+  - pattern: shortened
+  - pattern: updated
+  - pattern: corrected
+  - pattern: revised
+  - pattern: amended

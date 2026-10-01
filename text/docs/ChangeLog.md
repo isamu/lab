@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `date-range-reversed` (en) reads "from … to …" and "between … and …"
+
+"The agreement runs from 1 November 2026 to 31 October 2026" was not compared, though the same dates joined by
+"through" were. The day-first date was read fine; "to" was the gap, left out because "moved from March 10 to March 3"
+changes a date. Two new English word lists close it: `range-frame` ("from … to", "between … and") makes a period of a
+lead word right before the first date and a joint word between the dates, and `date-change-word` (moved, postponed,
+brought forward, rescheduled …) earlier in the same sentence makes it a change of date instead. Japanese keeps reading
+から … まで with range-opener and range-closer, and has neither list.
+
 ### `katakana-long-vowel` keeps フリ apart from フリー, and `colon-lead-in` counts only Japanese sentences (#434)
 
 `katakana-long-vowel` read 「知ってるフリ」 (振り) and 「フリー」 (free) as one word written two ways. The tagger reads both

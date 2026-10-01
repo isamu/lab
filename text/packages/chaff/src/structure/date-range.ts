@@ -1,3 +1,4 @@
+import { escapeRegExp } from "../orthography.ts";
 import type { StructureIssue } from "./issues.ts";
 
 /**
@@ -13,6 +14,18 @@ export type RangeWords = {
   /** 終わりの日付に閉じの語が続くときだけ期間を作る語（から）。 */
   readonly openers: readonly string[];
   readonly closers: readonly string[];
+  /** 始まりの日付の前の語と、二つの日付の間の語の組で期間を作るもの（from … to、between … and）。 */
+  readonly frames: readonly RangeFrame[];
+  /** 同じ文の組の前にあれば、期間ではなく日付の変更と読む語（moved from … to）。 */
+  readonly changes: readonly string[];
+};
+
+export type RangeFrame = { readonly lead: string; readonly joint: string };
+
+/** 語彙表の「from … to」を、前の語と間の語に分ける。「…」の無い語は組ではない。 */
+export const rangeFrameOf = (pattern: string): RangeFrame | undefined => {
+  const [lead, joint, ...rest] = pattern.split("…").map((part) => part.trim().toLowerCase());
+  return lead === undefined || joint === undefined || lead === "" || joint === "" || rest.length > 0 ? undefined : { lead, joint };
 };
 
 const COMPARABLE = [/^\d{4}-\d{2}-\d{2}$/u, /^\d{4}-\d{2}$/u];
@@ -45,10 +58,33 @@ const jointOf = (source: string, start: DatedSpan, end: DatedSpan): string | und
   return next.every((line) => line.trim() === "") ? bare(first) : undefined;
 };
 
+/** 英字の語は語の切れ目で照らす（from が therefrom に当たらず、moved が removed に当たらない）。 */
+const wordPattern = (word: string, tail: string): RegExp => new RegExp(`(?<![a-z])${escapeRegExp(word)}(?![a-z])${tail}`, "u");
+
+const endsWithWord = (text: string, word: string): boolean => wordPattern(word, "$").test(text);
+
+const hasWord = (text: string, word: string): boolean => wordPattern(word, "").test(text);
+
+/** 始まりの日付の前の、同じ文の同じ行の字（小文字）。文の終わり（. ! ? の後ろの空白）より前は含まない。 */
+const sentenceBefore = (source: string, start: DatedSpan): string => {
+  const line = source.slice(source.lastIndexOf("\n", start.offset - 1) + 1, start.offset).toLowerCase();
+  const ends = [...line.matchAll(/[.!?](?=\s)/gu)].map((match) => match.index + 1);
+  return line.slice(ends.at(-1) ?? 0).trimEnd();
+};
+
+/** 前の語と間の語の組（from … to）。同じ文の組の前に変更の語（moved）があれば、日付を動かした文で、期間ではない。 */
+const framed = (source: string, start: DatedSpan, joint: string, words: RangeWords): boolean => {
+  const before = sentenceBefore(source, start);
+  const frame = words.frames.find((candidate) => candidate.joint === joint && endsWithWord(before, candidate.lead));
+  if (frame === undefined) return false;
+  const lead = before.slice(0, before.length - frame.lead.length);
+  return !words.changes.some((change) => hasWord(lead, change.toLowerCase()));
+};
+
 const isRange = (source: string, start: DatedSpan, end: DatedSpan, words: RangeWords): boolean => {
   const joint = jointOf(source, start, end);
   if (joint === undefined) return false;
-  return isOneOf(joint, words.connectors) || (isOneOf(joint, words.openers) && closedAfter(source, end, words.closers));
+  return isOneOf(joint, words.connectors) || (isOneOf(joint, words.openers) && closedAfter(source, end, words.closers)) || framed(source, start, joint, words);
 };
 
 /** 書いたままの期間。行をまたいだ期間は一行にする。 */
