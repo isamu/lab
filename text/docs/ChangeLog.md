@@ -4,6 +4,32 @@ Newest first.
 
 ## Unreleased
 
+### AI-sounding Japanese technical prose, and a bench for the AI-shape rules (#170)
+
+Each entry below was measured before it went in: on Qiita articles written before generated text was common (human),
+on Qiita articles from 2025 and 2026 (mixed), and on the corpus. An entry stays only if the human articles and the
+corpus rarely use it; the measurements are in the PR.
+
+- **`ai-tell` (ja)** gains the metaphors and English calques of technical prose: 「静かに壊れる」「静かに失敗する」
+  「黙って無視される／捨てられる／失敗する」「時間を溶かす」「一つずつ潰す」「地味に効く」「効いてくる」, and
+  「温度感」「血の通った」. Low weights: one of them never fires the rule. Left out because people wrote them as much
+  before: 「解像度を上げる」「腹落ち」「肌感」「安全側に倒す」「した瞬間、」, the essay nouns 「真理」「境地」「深淵」
+  「宿命」, and the closing labels 「というわけです」「に他なりません」.
+- **`announcing-opener`** (experimental): sentences that open by announcing a point (「重要なのは、」「ポイントは、」
+  「正直に言うと、」「注目すべきは」, "The key point is", "Here's the thing", "Honestly,"). Counted, not divided by
+  length: people write one or two in an article of any length. Only the start of a sentence counts.
+- **`colon-lead-in`** (experimental, Japanese only): prose sentences that end in a colon and hand straight to a
+  list (「以下の通りです：」), as a density per 1000 characters. A list item ending in a colon is not counted. Off for
+  documentation, legal text, literature and speeches. English is left out: a self-written English sample with two
+  such lead-ins already passed the limit the generated-style samples reached.
+- `ai-generated-composite` also reads the two new rules.
+- **`yarn bench:ai`**: the same content written three ways (human style, generated style, and the generated style
+  rewritten) in Japanese and English, for tech, business and essay (`test/fixtures/ai-samples/paired/`). For each
+  AI-shape rule it prints the hits on the generated style and the false alarms on the others and on the committed
+  corpus, and compares the table with `expected.txt`. CI runs it.
+- Measured and not added: the share of bullet lines, runs of short sentences, and 「（いわゆる〜）」. Human articles
+  had as many of each.
+
 ### `chaff compare <before> <after>`: did a rewrite keep its facts?
 
 The guardrail for rewriting AI-sounding text boldly: an AI rewrites, chaff shows, without a model, that no fact was lost
