@@ -247,6 +247,14 @@ describe("latin-spacing", () => {
     assert.deepEqual(spacing(items), []);
   });
 
+  it("counts a kanji numeral at the head of a line when the document numbers no items with it (十 GB)", () => {
+    assert.deepEqual(spacing("# 文字\n\n十 GBまで使える文字はUTF-8で送り、APIで受け取る。\n"), ["英字:空けています"]);
+    assert.deepEqual(spacing("# 文字\n\n使える文字はUTF-8で送り、APIで受け取る。\n\n一 JIS X 0201の英数字\n\n一 ASCIIの記号\n"), [
+      "英字:空けています",
+      "英字:空けています",
+    ]);
+  });
+
   it("still counts a kanji numeral that is not an item number", () => {
     assert.deepEqual(spacing("# 文字\n\n使える文字はUTF-8で送り、APIで受け取り、十 GBまで使う。\n"), ["英字:空けています"]);
     assert.deepEqual(spacing("# 文字\n\n使える文字はUTF-8で送り、APIで受け取る。\n\n一つ JISの文字\n"), ["英字:空けています"]);
