@@ -37,7 +37,7 @@ const SENTENCES: Readonly<
   ja: {
     bare: (superlative) => `本製品は${superlative}の性能です。`,
     measured: (superlative) => `本製品は${superlative}の性能で、処理は 3 倍です。`,
-    marked: (superlative, marker) => `本製品は他社の製品${marker === "に比べる" ? "に比べて" : marker}${superlative}の性能です。`,
+    marked: (superlative, marker) => `本製品は他社の製品${marker.endsWith("比べる") ? marker.replace(/る$/u, "て") : marker}${superlative}の性能です。`,
   },
 };
 
