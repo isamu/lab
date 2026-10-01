@@ -2,24 +2,7 @@
 
 Newest first.
 
-## 0.18.0 — 2026-10-01
-
-A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
-parts of speech, with no code. `style: ieice`, `style: jis-z8301-2011` and `style: bunkacho` set a house style.
-`options:` tunes a built-in rule, such as `katakana-long-vowel` for コンピュータ and コンピューター.
-
-New experimental rules find a document that disagrees with itself. They catch a count that does not match its list and a
-missing figure or table. They also catch a period that ends before it starts, and shares that do not add up to 100%. Others check
-Markdown links, images and headings. Others check brackets, punctuation and AI-sounding text.
-
-`chaff compare <before> <after>` checks that a rewrite kept every number, date, URL, name and quotation. The guide
-gains a reference of everything chaff can find and rule pages for non-engineers. It also gains pages on adding a rule,
-house styles and AI-sounding text, and a bibliography. `chaff rules` prints a table, and `rules --json` gives an AI what
-it needs to write chaff.yaml. Many false reports from real documents are gone.
-
-📦 [`chaffjs@0.18.0`](https://www.npmjs.com/package/chaffjs/v/0.18.0) ·
-[`@chaffjs/lang-ja@0.17.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.17.0) ·
-[`@chaffjs/lang-en@0.16.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.16.0)
+## Unreleased
 
 ### New rules: invisible characters, half-width katakana and a space before punctuation (#170)
 
@@ -44,6 +27,25 @@ the rule was added.
   (`.NET`, `.5`), a mark after a number (a formula's `[ 1 , N ]`) and a mark after two or more spaces are not counted.
   In the corpus it finds slips in board minutes, an arXiv listing, a CFPB post and a Gutenberg play; the one miss is
   a line of a DNA diagram in a patent.
+
+## 0.18.0 — 2026-10-01
+
+A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
+parts of speech, with no code. `style: ieice`, `style: jis-z8301-2011` and `style: bunkacho` set a house style.
+`options:` tunes a built-in rule, such as `katakana-long-vowel` for コンピュータ and コンピューター.
+
+New experimental rules find a document that disagrees with itself. They catch a count that does not match its list and a
+missing figure or table. They also catch a period that ends before it starts, and shares that do not add up to 100%. Others check
+Markdown links, images and headings. Others check brackets, punctuation and AI-sounding text.
+
+`chaff compare <before> <after>` checks that a rewrite kept every number, date, URL, name and quotation. The guide
+gains a reference of everything chaff can find and rule pages for non-engineers. It also gains pages on adding a rule,
+house styles and AI-sounding text, and a bibliography. `chaff rules` prints a table, and `rules --json` gives an AI what
+it needs to write chaff.yaml. Many false reports from real documents are gone.
+
+📦 [`chaffjs@0.18.0`](https://www.npmjs.com/package/chaffjs/v/0.18.0) ·
+[`@chaffjs/lang-ja@0.17.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.17.0) ·
+[`@chaffjs/lang-en@0.16.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.16.0)
 
 ### Making AI-sounding text sound human: the rewrite harness (#170)
 
