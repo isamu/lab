@@ -1,64 +1,50 @@
-/**
- * Where a `<!-- stet: … -->` stops: the end of the block right below it, as a writer sees blocks in Markdown or plain
- * text. A blank line ends a paragraph or a table; a heading (`#`, or a Setext underline) is a block of its own; a list runs on across the blank
- * lines between its items. Line numbers count from 1, as findings do.
- */
-
-const BLANK = /^\s*$/u;
-const HEADING = /^ {0,3}#{1,6}(?:\s|$)/u;
-/** The underline of a Setext heading: the lines above it, up to it, are the heading. */
-const SETEXT_UNDERLINE = /^ {0,3}(?:=+|-+)\s*$/u;
-const LIST_ITEM = /^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:\s|$)/u;
-/** A line indented under a list item: its continuation, or a nested list. */
-const UNDER_ITEM = /^(?: {2,}|\t)\S/u;
-
-const isBlank = (line: string): boolean => BLANK.test(line);
+import { spanOf, type MarkdownNode } from "./markdown-node.ts";
+import type { Span } from "./plugin.ts";
 
 /**
- * The index of the first line at or after `from` that passes `test`, or undefined. A plain loop: one stet can sit
- * above a list of thousands of items, and copying the rest of the text per item would be quadratic.
+ * Where a `<!-- stet: … -->` (scope next) stops: the end of the block right after the comment, as the Markdown parser
+ * reads it — a paragraph, a heading, a whole list, a table, a code block, a quote. Inside a list item, the item's next
+ * block. Plain text reads the same way: its paragraphs are the runs between blank lines.
  */
-const indexFrom = (lines: readonly string[], from: number, test: (line: string) => boolean): number | undefined => {
-  for (let index = from; index < lines.length; index += 1) if (test(lines[index] ?? "")) return index;
-  return undefined;
+
+/** Containers whose children are blocks. Anywhere else, an HTML comment sits inside a paragraph or a heading. */
+const BLOCK_CONTAINERS: ReadonlySet<string> = new Set(["root", "listItem", "blockquote"]);
+
+type Holder = { readonly parent: MarkdownNode; readonly index: number };
+
+/** 1-based line of an offset. */
+export const lineOf = (source: string, offset: number): number => source.slice(0, offset).split("\n").length;
+
+const holds = (node: MarkdownNode, offset: number): boolean => {
+  const span = spanOf(node);
+  return span !== undefined && span.start <= offset && offset < span.end;
 };
 
-const firstFilled = (lines: readonly string[], from: number): number | undefined => indexFrom(lines, from, (line) => !isBlank(line));
-
-/** The index of the last line of the run from `start`: before a blank line or a heading, or at a Setext underline. */
-const runEnd = (lines: readonly string[], start: number): number => {
-  const stop = indexFrom(lines, start + 1, (line) => isBlank(line) || HEADING.test(line) || SETEXT_UNDERLINE.test(line));
-  if (stop === undefined) return lines.length - 1;
-  return SETEXT_UNDERLINE.test(lines[stop] ?? "") ? stop : stop - 1;
+/** The deepest node holding `offset`, as its parent and its place among the parent's children. */
+const holderOf = (parent: MarkdownNode, offset: number): Holder | undefined => {
+  const children = parent.children ?? [];
+  const index = children.findIndex((child) => holds(child, offset));
+  const child = children[index];
+  if (child === undefined) return undefined;
+  return holderOf(child, offset) ?? { parent, index };
 };
 
-/** After a list's run ending at `end`, the index where the list goes on past blank lines, or undefined where it ends. */
-const listResumesAt = (lines: readonly string[], end: number): number | undefined => {
-  const next = firstFilled(lines, end + 1);
-  const line = next === undefined ? "" : (lines[next] ?? "");
-  if (next === undefined || HEADING.test(line)) return undefined;
-  return LIST_ITEM.test(line) || UNDER_ITEM.test(line) ? next : undefined;
+/** The node a stet covers: the next block when the comment stands alone, else the block the comment is part of. */
+const coveredNode = (source: string, holder: Holder, comment: Span): MarkdownNode | undefined => {
+  const siblings = holder.parent.children ?? [];
+  const node = siblings[holder.index];
+  if (node === undefined) return undefined;
+  if (!BLOCK_CONTAINERS.has(holder.parent.type)) return holder.parent;
+  const span = spanOf(node);
+  const alone = span !== undefined && source.slice(span.start, span.end).trim() === source.slice(comment.start, comment.end);
+  return alone ? siblings[holder.index + 1] : node;
 };
 
-/** A list's last line: its runs, joined across the blank lines between items. A loop, not recursion, for long lists. */
-const listEnd = (lines: readonly string[], start: number): number => {
-  let end = runEnd(lines, start);
-  let resumed = listResumesAt(lines, end);
-  while (resumed !== undefined) {
-    end = runEnd(lines, resumed);
-    resumed = listResumesAt(lines, end);
-  }
-  return end;
-};
-
-/**
- * The last line a `stet` (scope next) covers. `closingLine` is the line where the comment closes; `textAfter` says
- * whether text follows the comment on that line, which then starts the block.
- */
-export const stetBlockEnd = (lines: readonly string[], closingLine: number, textAfter: boolean): number => {
-  const start = firstFilled(lines, textAfter ? closingLine - 1 : closingLine);
-  if (start === undefined) return closingLine;
-  const first = lines[start] ?? "";
-  if (HEADING.test(first)) return start + 1;
-  return (LIST_ITEM.test(first) ? listEnd(lines, start) : runEnd(lines, start)) + 1;
+/** The last line a `stet` (scope next) covers, for the comment at `comment` in a document parsed as `root`. */
+export const stetBlockEnd = (source: string, root: MarkdownNode, comment: Span): number => {
+  const closingLine = lineOf(source, comment.end);
+  const holder = holderOf(root, comment.start);
+  const covered = holder === undefined ? undefined : coveredNode(source, holder, comment);
+  const end = covered === undefined ? undefined : spanOf(covered)?.end;
+  return end === undefined ? closingLine : lineOf(source, end);
 };

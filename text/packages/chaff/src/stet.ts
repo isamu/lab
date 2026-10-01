@@ -1,5 +1,6 @@
 import type { Finding, Span } from "./plugin.ts";
-import { stetBlockEnd } from "./stet-block.ts";
+import { lineOf, stetBlockEnd } from "./stet-block.ts";
+import { parse } from "./markdown-read.ts";
 
 export type Suppression = {
   readonly rules: readonly string[];
@@ -28,8 +29,6 @@ const REASON_MARK = "\u2014";
 
 const RULE_ID = /^[a-z][a-z0-9-]*$/u;
 
-const lineOf = (source: string, offset: number): number => source.slice(0, offset).split("\n").length;
-
 const splitBody = (body: string): { rules: string[]; reason: string | undefined } => {
   const at = body.indexOf(REASON_MARK);
   const head = at === -1 ? body : body.slice(0, at);
@@ -46,20 +45,17 @@ const splitBody = (body: string): { rules: string[]; reason: string | undefined 
   };
 };
 
-/** Whether anything but blanks follows the comment on the line where it closes. */
-const textAfter = (source: string, end: number): boolean => {
-  const newline = source.indexOf("\n", end);
-  return source.slice(end, newline === -1 ? source.length : newline).trim() !== "";
-};
-
 export const parseSuppressions = (source: string): Suppression[] => {
-  const lines = source.split("\n");
-  return [...source.matchAll(PATTERN)].map((match) => {
-    const end = match.index + match[0].length;
+  const matches = [...source.matchAll(PATTERN)];
+  // The parse is for where a stet stops; a document without one does not pay for it.
+  if (matches.length === 0) return [];
+  const root = parse(source);
+  return matches.map((match) => {
+    const comment = { start: match.index, end: match.index + match[0].length };
     return {
       ...splitBody(match[2] ?? ""),
       line: lineOf(source, match.index),
-      blockEnd: stetBlockEnd(lines, lineOf(source, end), textAfter(source, end)),
+      blockEnd: stetBlockEnd(source, root, comment),
       scope: SCOPE[match[1] ?? "stet"] ?? "next",
     };
   });

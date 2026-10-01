@@ -8,10 +8,10 @@ Newest first.
 
 `<!-- stet: rule — reason -->` silenced the rule on the six lines after the comment, whatever they held: a finding of
 the same rule in the next paragraph was silenced too, and the end of a long wrapped paragraph was not. Now it covers
-the block right below the comment, as the guide and the spec describe: a paragraph or a table up to the next blank
-line, a Markdown heading (`#` or Setext) on its own, a whole list (blank lines between its items included). Blank lines between the comment
-and the block are skipped; text after the comment on its own line starts the block. `stet-section` and `stet-file` are
-unchanged.
+the block right after the comment, as the guide and the spec describe, and as the Markdown parser reads it: a
+paragraph, a heading, a whole list, a table, a code block, a quote. Inside a list item it covers the item's next
+block, not the next item. A comment with text on its own line covers that line, and one inside a paragraph covers the
+rest of the paragraph. In plain text a paragraph runs to the blank line. `stet-section` and `stet-file` are unchanged.
 
 ### Fixes from a real article: numbering-gap, no-mixed-desumasu, heading-echo (#390, #391, #392)
 

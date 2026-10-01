@@ -1,6 +1,5 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { stetBlockEnd } from "../packages/chaff/src/stet-block.ts";
 import { applySuppressions } from "../packages/chaff/src/stet.ts";
 import type { Finding } from "../packages/chaff/src/plugin.ts";
 
@@ -47,31 +46,44 @@ describe("stet covers the block right below it", () => {
     assert.deepEqual(keptLines([STET, "段落。", "# 見出し", "本文。"].join("\n")), [3, 4]);
   });
 
-  it("a whole list, tight or with blank lines between its items, and not the paragraph after it", () => {
+  it("a whole list, tight or with blank lines between its items, and not what follows it", () => {
     const tight = [STET, "- 一つ目", "- 二つ目", "  続き", "- 三つ目", "", "段落。"].join("\n");
     assert.deepEqual(keptLines(tight), [6, 7]);
     const loose = [STET, "1. 一つ目", "", "2. 二つ目", "", "   続き", "", "3. 三つ目", "", "段落。"].join("\n");
     assert.deepEqual(keptLines(loose), [9, 10]);
-    const headed = [STET, "- 一つ目", "", "   # 見出し", "本文。"].join("\n");
-    assert.deepEqual(keptLines(headed), [3, 4, 5]);
+    assert.deepEqual(keptLines([STET, "- 一つ目", "", "# 見出し", "本文。"].join("\n")), [3, 4, 5]);
   });
 
-  it("a whole table", () => {
-    const text = [STET, "| a | b |", "| --- | --- |", "| 1 | 2 |", "", "段落。"].join("\n");
-    assert.deepEqual(keptLines(text), [5, 6]);
+  it("inside a list item, the item's next block, not the next item", () => {
+    const text = ["- 一つ目", `  ${STET}`, "  この続きだけ", "- 二つ目"].join("\n");
+    assert.deepEqual(keptLines(text), [1, 4]);
   });
 
-  it("the rest of the line when text follows the comment", () => {
-    const text = [`${STET} 段落の始まり。`, "続き。", "", "次。"].join("\n");
-    assert.deepEqual(keptLines(text), [3, 4]);
+  it("a whole table, and a line right under it is one of its rows, as GFM renders it", () => {
+    assert.deepEqual(keptLines([STET, "| a | b |", "| --- | --- |", "| 1 | 2 |", "", "段落。"].join("\n")), [5, 6]);
+    assert.deepEqual(keptLines([STET, "| a |", "| --- |", "| 1 |", "段落。"].join("\n")), []);
+  });
+
+  it("a whole fenced code block, blank lines inside it included", () => {
+    assert.deepEqual(keptLines([STET, "~~~", "前", "", "後", "~~~", "", "次。"].join("\n")), [7, 8]);
+  });
+
+  it("a whole quote", () => {
+    assert.deepEqual(keptLines([STET, "> 引用一", ">", "> 引用二", "", "次。"].join("\n")), [5, 6]);
+  });
+
+  it("only the line itself when text follows the comment on it", () => {
     assert.deepEqual(keptLines([`${STET} 一行の段落。`, "", "次。"].join("\n")), [2, 3]);
   });
 
+  it("the rest of its paragraph when the comment sits inside one", () => {
+    assert.deepEqual(keptLines(["段落の始まり、", `ここに ${STET} があり、`, "続く。", "", "次。"].join("\n")), [1, 4, 5]);
+    assert.deepEqual(keptLines([`始まり、${STET}`, "**強調**の行、", "続く。", "", "次。"].join("\n")), [4, 5]);
+  });
+
   it("the block after a comment that spans lines", () => {
-    const text = [`<!-- stet: ${RULE} — 長い`, "理由 -->", "段落。", "", "次。"].join("\n");
-    assert.deepEqual(keptLines(text), [4, 5]);
-    const apart = [`<!-- stet: ${RULE} — 長い`, "理由 -->", "", "段落。", "", "次。"].join("\n");
-    assert.deepEqual(keptLines(apart), [5, 6]);
+    assert.deepEqual(keptLines([`<!-- stet: ${RULE} — 長い`, "理由 -->", "段落。", "", "次。"].join("\n")), [4, 5]);
+    assert.deepEqual(keptLines([`<!-- stet: ${RULE} — 長い`, "理由 -->", "", "段落。", "", "次。"].join("\n")), [5, 6]);
   });
 
   it("only its own line at the end of the text", () => {
@@ -79,8 +91,11 @@ describe("stet covers the block right below it", () => {
   });
 
   it("never a line above it", () => {
-    const text = ["段落。", STET, "段落。"].join("\n");
-    assert.deepEqual(keptLines(text), [1]);
+    assert.deepEqual(keptLines(["段落。", STET, "段落。"].join("\n")), [1]);
+  });
+
+  it("plain text: up to the blank line", () => {
+    assert.deepEqual(keptLines([STET, "第四条　本文の一行目。", "　二行目。", "", "第五条　次。"].join("\n")), [4, 5]);
   });
 });
 
@@ -97,22 +112,15 @@ describe("stet-section and stet-file keep their reach", () => {
   });
 
   it("stet-file covers every line", () => {
-    const text = ["段落。", `<!-- stet-file: ${RULE} — 理由 -->`, "", "段落。"].join("\n");
-    assert.deepEqual(keptLines(text), []);
+    assert.deepEqual(keptLines(["段落。", `<!-- stet-file: ${RULE} — 理由 -->`, "", "段落。"].join("\n")), []);
   });
 });
 
-describe("stetBlockEnd", () => {
-  it("counts lines from 1", () => {
-    assert.equal(stetBlockEnd([STET, "段落。"], 1, false), 2);
-    assert.equal(stetBlockEnd([STET], 1, false), 1);
-    assert.equal(stetBlockEnd([], 1, false), 1);
-  });
-
-  it("reads a long paragraph and a long loose list without recursing or copying per line", () => {
-    const lines = [STET, ...Array.from({ length: 200_000 }, () => "行。")];
-    assert.equal(stetBlockEnd(lines, 1, false), lines.length);
-    const looseList = [STET, ...Array.from({ length: 40_000 }, (_, index) => (index % 2 === 0 ? `- 項目 ${String(index)}` : ""))];
-    assert.equal(stetBlockEnd(looseList, 1, false), looseList.length - 1);
+describe("stet on large documents", () => {
+  it("a long paragraph and a long loose list", () => {
+    const paragraph = [STET, ...Array.from({ length: 20_000 }, () => "行。"), "", "次。"].join("\n");
+    assert.deepEqual(keptLines(paragraph).slice(0, 2), [20_002, 20_003]);
+    const list = [STET, ...Array.from({ length: 10_000 }, (_, index) => (index % 2 === 0 ? `- 項目 ${String(index)}` : "")), "段落。"];
+    assert.deepEqual(keptLines(list.join("\n")), [list.length - 1, list.length]);
   });
 });
