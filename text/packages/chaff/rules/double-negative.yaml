@@ -47,5 +47,5 @@ not_flagged:
   ja: 「ざるを得ない」「なければならない」のような決まった言い方は指しません。法令・文学・話し言葉のジャンルでは既定で止めています（言い切らない言い方がその文書の書き方のため）。
   en: Fixed forms such as "not without" are not reported. The legal, literature and speech presets turn it off, since the hedged form is part of how those are written.
 level_meaning:
-  ja: 文書の中に {limit} 回あれば指摘
-  en: reported once it appears {limit} times in the document
+  ja: 二重否定を含む文が {limit} 文あれば指摘
+  en: reported once {limit} sentences hold one

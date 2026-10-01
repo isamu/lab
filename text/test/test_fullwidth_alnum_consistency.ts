@@ -52,6 +52,13 @@ describe("fullwidth-alnum-consistency: 英数字の全角と半角が混ざっ�
     assert.deepEqual(findingsOf(`${PLAIN}（１）を見ます。※３も見ます。\n\n１．はじめに\n\n- ４「勧告」の考え方\n`), []);
   });
 
+  it("メールアドレスとドメイン名は数えない", () => {
+    assert.deepEqual(
+      findingsOf("ＩＤを入れ、ＰＤＦを保存し、ＡＰＩを使い、ＣＳＶとＸＭＬとＨＴＭＬとＪＳＯＮとＳＱＬを送ります。連絡先はsupport@example.comです。\n"),
+      [],
+    );
+  });
+
   it("鉤括弧で引いたものの中は数えない", () => {
     assert.deepEqual(findingsOf(`${PLAIN}画面には「２０２４年度」と出ます。\n`), []);
   });

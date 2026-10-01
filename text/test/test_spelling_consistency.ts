@@ -34,6 +34,10 @@ describe("spelling-consistency: イギリスとアメリカの綴りが混ざっ
     );
   });
 
+  it("文の頭でも、大文字の語が続けば名前（Labor Day）", () => {
+    assert.deepEqual(findingsOf(`${BRITISH}Labor Day is a company holiday.\n`), []);
+  });
+
   it("文の頭の大文字は名前ではない", () => {
     assert.deepEqual(findingsOf(`${BRITISH}Color matters here.\n`), ['"Color" here, where the document usually spells it "colour" (1 of 4)']);
   });

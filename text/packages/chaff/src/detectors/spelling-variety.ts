@@ -33,10 +33,13 @@ const WORD = /\p{L}+/gu;
 const OPENING_QUOTE = /[‘'"“]/u;
 const CAPITAL = /^\p{Lu}/u;
 
+/** 大文字で始まる次の語。文の頭でも、大文字の語が続けば名前（Labor Day、Centre Court）。 */
+const CAPITALISED_NEXT = /^[ \t]+\p{Lu}/u;
+
 export type SpelledWord = { readonly written: string; readonly offset: number; readonly spelling: Spelling };
 
 /**
- * 文の中の、組に載った綴りの語。文の頭でないのに大文字で始まる語（Labor Day、World Health Organization）は名前で、名前の綴りは
+ * 文の中の、組に載った綴りの語。文の頭でないのに大文字で始まる語と、大文字の語が続く語（Labor Day、World Health Organization）は名前で、名前の綴りは
  * 変えられないので数えない。引用符で引いたものの中も、引いた元の綴りなので数えない。offset は文書の中の位置。
  */
 export const spelledWordsIn = (sentence: Sentence, spellings: ReadonlyMap<string, Spelling>): SpelledWord[] => {
@@ -44,7 +47,7 @@ export const spelledWordsIn = (sentence: Sentence, spellings: ReadonlyMap<string
   const first = sentence.text.search(/\p{L}/u);
   return [...sentence.text.matchAll(WORD)].flatMap((match) => {
     const spelling = spellings.get(match[0].toLowerCase());
-    const named = CAPITAL.test(match[0]) && match.index !== first;
+    const named = CAPITAL.test(match[0]) && (match.index !== first || CAPITALISED_NEXT.test(sentence.text.slice(match.index + match[0].length)));
     const inQuote =
       isWithinAny(quoted, { start: match.index, end: match.index + match[0].length }) || OPENING_QUOTE.test(sentence.text.charAt(match.index - 1));
     return spelling === undefined || named || inQuote ? [] : [{ written: match[0], offset: sentence.span.start + match.index, spelling }];

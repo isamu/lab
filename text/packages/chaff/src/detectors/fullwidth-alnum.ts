@@ -36,6 +36,18 @@ const isLabel = (text: string, start: number, end: number): boolean =>
   (LABEL_BEFORE.test(text.slice(Math.max(0, start - LABEL_REACH), start)) && LABEL_AFTER.test(text.slice(end, end + LABEL_REACH))) ||
   NOTE_MARK.test(text.slice(0, start));
 
+/**
+ * メールアドレスやドメイン名の一部（support@example.com の support・example・com）。字の幅を変えると宛先が壊れる。
+ * 点の向こうが英字のときだけ名前の区切りと見る。数の小数点（39.4）は数として数える。
+ */
+const LETTER_BESIDE = /[A-Za-zＡ-Ｚａ-ｚ]/u;
+
+const isInAddress = (text: string, start: number, end: number): boolean =>
+  text.charAt(start - 1) === "@" ||
+  text.charAt(end) === "@" ||
+  (text.charAt(start - 1) === "." && LETTER_BESIDE.test(text.charAt(start - 2))) ||
+  (text.charAt(end) === "." && LETTER_BESIDE.test(text.charAt(end + 1)));
+
 const isListItemNumber = (source: string, offset: number): boolean => LIST_ITEM_HEAD.test(source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset));
 
 export type AlnumRun = { readonly kind: AlnumKind; readonly fullwidth: boolean; readonly written: string; readonly offset: number };
@@ -51,6 +63,7 @@ export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
     .filter((match) => !isWithinAny(quoted, { start: match.index, end: match.index + match[0].length }))
     .filter((match) => !isLabel(sentence.text, match.index, match.index + match[0].length))
     .filter((match) => !isListItemNumber(source, sentence.span.start + match.index))
+    .filter((match) => !isInAddress(sentence.text, match.index, match.index + match[0].length))
     .map((match) => ({ kind: kindOf(match[0]), fullwidth: FULLWIDTH.test(match[0]), written: match[0], offset: sentence.span.start + match.index }));
 };
 
