@@ -29,6 +29,7 @@ const NEEDS_REWRITE = [
   "excessive-hedging",
   "empty-intensifier",
   "cushion-phrase-density",
+  "nominalization",
 ];
 
 /** Rules whose direction is to keep one of the phrases and drop the rest, so an after may hold one. */

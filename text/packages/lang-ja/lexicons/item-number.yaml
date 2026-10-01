@@ -1,0 +1,38 @@
+# 行の頭に番号だけを置き、空白で本文と区切る項目の番号。規約・法令の号（「一 JIS X 0201として…」）と、その下の細目（「イ」）。
+# 番号の後ろの空白は項目の区切りで、日本語と英数字のあいだの空け方（latin-spacing）の票にはしない。
+# 並びの順に置く。前か次の番号も行の頭にあるときだけ番号と読む（「十 GBまで」の十は、九も十一も無ければ数量）。
+id: item-number
+language: ja
+entries:
+  - pattern: 一
+  - pattern: 二
+  - pattern: 三
+  - pattern: 四
+  - pattern: 五
+  - pattern: 六
+  - pattern: 七
+  - pattern: 八
+  - pattern: 九
+  - pattern: 十
+  - pattern: 十一
+  - pattern: 十二
+  - pattern: 十三
+  - pattern: 十四
+  - pattern: 十五
+  - pattern: 十六
+  - pattern: 十七
+  - pattern: 十八
+  - pattern: 十九
+  - pattern: 二十
+  - pattern: イ
+  - pattern: ロ
+  - pattern: ハ
+  - pattern: ニ
+  - pattern: ホ
+  - pattern: ヘ
+  - pattern: ト
+  - pattern: チ
+  - pattern: リ
+  - pattern: ヌ
+  - pattern: ル
+  - pattern: ヲ
