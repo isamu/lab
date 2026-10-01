@@ -257,6 +257,16 @@ describe("colon-lead-in", () => {
     ["docs/manual", "legal/contract", "literature/essay"].forEach((genre) => assert.ok(!idsFor(dense, ja, genre).includes("colon-lead-in"), genre));
   });
 
+  // 自作の文。#434: 和文の中の英文のコロンは、英語のふつうの書き方なので数えない。
+  it("does not count English sentences inside a Japanese document", () => {
+    const pairs = (lead: (index: number) => string): string => [0, 1, 2, 3, 4, 5].map((index) => `${lead(index)}\n\n- one\n- two\n`).join("\n");
+    const bulk = `# 記事\n\n${BULK_JA}\n\n## 例\n\n`;
+    const english = bulk + pairs((index) => "Example set " + String(index) + " includes:");
+    const japanese = bulk + pairs((index) => String(index) + "番目の例は次のとおりです：");
+    assert.ok(!idsFor(english, ja).includes("colon-lead-in"));
+    assert.ok(idsFor(japanese, ja).includes("colon-lead-in"));
+  });
+
   it("does not run on English, where people hand off to a list after a colon as a matter of course", () => {
     const dense = `# Post\n\n${BULK_EN.slice(0, 1300)}\n\nBring:\n\n- A key\n\nPlan:\n\n- Meet\n\nAfter:\n\n- Clean\n`;
     assert.ok(!idsFor(dense, en).includes("colon-lead-in"));
