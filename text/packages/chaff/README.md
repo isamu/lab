@@ -89,6 +89,8 @@ npx chaffjs suppressions docs/    stet で黙らせている指摘を数える
 npx chaffjs rules --json          いまの設定を JSON で出す（AI に渡す用）
 npx chaffjs tree contract.txt     文書を番地の付いた木にする（条・項・定義・参照）
 npx chaffjs cite 原文 引用.json   引用が原文にあるかを確かめる
+npx chaffjs compare 前.md 後.md   書き換えで事実（数・日付・URL・名前など）が落ちても足されてもいないかを確かめる
+npx chaffjs facts 前.md           compare が照合する事実を一覧にする（書き直す前の控え）
 npx chaffjs skill                 Claude Code の skill を入れる（--global でホームに）
 ```
 
