@@ -1,6 +1,6 @@
 import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
 import { calendarRuns, calendarUnitsOf, type CalendarUnits } from "../calendar-number.ts";
-import { latinBoundaries, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
+import { escapeRegExp, latinBoundaries, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
 import { minorityReport } from "../spacing-minority.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStarts, type NameContext } from "../number-name.ts";
@@ -40,25 +40,29 @@ const digitBeside = (boundary: Boundary): number => {
 type NumberContext = NameContext & {
   readonly calendar: CalendarUnits;
   readonly divisions: ReadonlySet<string>;
-  readonly itemNumber: RegExp | undefined;
+  readonly itemNumbers: ReadonlySet<string>;
 };
 
 /** 文頭の項目の番号の後ろと見る境目の位置の上限。番号は短く文の頭にあるので、これより後ろの境目は番号の後ろではない。長い文で文頭からの切り出しを繰り返さない。 */
 const ITEM_NUMBER_REACH = 8;
 
-/** 番号の付いた項目の並びと読む、行の頭の違う番号の数。一行だけの「十 GBまで…」は数量。 */
-const MIN_ITEM_NUMBERS = 2;
+/** 行の頭の字下げと箇条書きの印。 */
+const ITEM_LEAD = /^[\s\-*+]*/u;
 
 /**
- * 行の頭の項目の番号だけ（語彙表 item-number）。「一 JIS X 0201…」の空白は項目の区切り。
- * 文書が行の頭に違う番号を二つ以上、空白で区切って並べているときだけ。
+ * 文書が項目の番号として行の頭に並べたもの（語彙表 item-number は並びの順）。行の頭に空白で本文と区切って書かれ、
+ * 前か次の番号も同じように書かれているものだけ。「一」「二」は番号、前後の無い「十 GBまで」の十は数量。
  */
-const itemNumberHead = (patterns: readonly string[], source: string): RegExp | undefined => {
-  if (patterns.length === 0) return undefined;
-  const alternatives = patterns.join("|");
-  const heads = new Set([...source.matchAll(new RegExp(`^[ \\t\\-*+]*(${alternatives})[ \\u3000]`, "gmu"))].map((match) => match[1]));
-  return heads.size < MIN_ITEM_NUMBERS ? undefined : new RegExp(`^[\\s\\-*+]*(?:${alternatives})$`, "u");
+const numberedItems = (ordered: readonly string[], source: string): ReadonlySet<string> => {
+  if (ordered.length === 0) return new Set();
+  const labels = ordered.toSorted((left, right) => right.length - left.length).map(escapeRegExp);
+  const atHead = new Set([...source.matchAll(new RegExp(`^[ \\t\\-*+]*(${labels.join("|")})[ \\u3000]`, "gmu"))].map((match) => match[1]));
+  return new Set(ordered.filter((label, at) => atHead.has(label) && (atHead.has(ordered[at - 1]) || atHead.has(ordered[at + 1]))));
 };
+
+/** 境目が、文頭の項目の番号と本文を分ける空白か（「一 JIS」）。 */
+const followsItemNumber = (text: string, boundary: Boundary, itemNumbers: ReadonlySet<string>): boolean =>
+  boundary.spaced && boundary.offset <= ITEM_NUMBER_REACH && itemNumbers.has(text.slice(0, boundary.offset).replace(ITEM_LEAD, ""));
 
 /** 文の中の日付・時刻の数の、並びの頭の位置。 */
 const calendarStarts = (sentence: Sentence, units: CalendarUnits): ReadonlySet<number> =>
@@ -69,7 +73,7 @@ const calendarStarts = (sentence: Sentence, units: CalendarUnits): ReadonlySet<n
  * 日付・時刻は前の境目（「は 9月」「午後3時」「令和 3 年」）も数えない。日付はまとめて一つの書き方で、数量の空け方の票にはしない。
  */
 const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContext, calendar: ReadonlySet<number>): boolean => {
-  if (boundary.spaced && boundary.offset <= ITEM_NUMBER_REACH && context.itemNumber?.test(sentence.text.slice(0, boundary.offset)) === true) return false;
+  if (followsItemNumber(sentence.text, boundary, context.itemNumbers)) return false;
   if (boundary.kind !== "after-digit" && endsWithDivisionLabel(sentence.text.slice(0, boundary.offset), context.divisions)) return false;
   if (boundary.kind === "letter") return true;
   const run = digitRunAround(sentence.text, digitBeside(boundary));
@@ -140,7 +144,7 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
     labelWords: labelsAt(doc, "before"),
     calendar: calendarUnitsOf(doc),
     divisions: labelsAt(doc, "after"),
-    itemNumber: itemNumberHead(patternList(doc, "item-number"), doc.prose ?? doc.source),
+    itemNumbers: numberedItems(patternList(doc, "item-number"), doc.prose ?? doc.source),
   };
   const located: Located[] = doc.sentences.flatMap((sentence) => {
     const quoted = quotedSpans(sentence.text);

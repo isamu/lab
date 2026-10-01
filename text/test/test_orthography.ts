@@ -243,7 +243,7 @@ describe("latin-spacing", () => {
 
   // 電波利用電子申請の利用規約: 号の番号の後ろの半角空白は、番号と本文の区切り。
   it("does not count the space after an item number at the head of a line (一 JIS)", () => {
-    const items = "# 文字\n\n使える文字はUTF-8で送り、APIで受け取る。\n\n一 JIS X 0201の英数字\n\n二 JIS第一水準漢字\n\nイ ASCIIの記号\n";
+    const items = "# 文字\n\n使える文字はUTF-8で送り、APIで受け取る。\n\n一 JIS X 0201の英数字\n\n二 JIS第一水準漢字\n\nイ ASCIIの記号\n\nロ UTF-8の文字\n";
     assert.deepEqual(spacing(items), []);
   });
 
@@ -263,6 +263,16 @@ describe("latin-spacing", () => {
     const indent = " ".repeat(2);
     assert.deepEqual(spacingOf(`APIを呼び、JSONを返す。\n\n${indent}一 JISの英数字\n\n${indent}二 ASCIIの記号\n`), []);
     assert.deepEqual(spacingOf(`APIを呼び、JSONを返す。\n\n${indent}一 JISの英数字\n\n${indent}二 ASCII の記号\n`), ["英字:空けています"]);
+  });
+
+  it("counts a kanji numeral at a line head with no neighbouring number, even in a numbered list (十 GB beside 一, 二)", () => {
+    const items = "# 文字\n\nAPIを呼び、JSONを返す。\n\n一 JISの英数字\n\n二 ASCIIの記号\n\n十 GBまで使える。\n";
+    assert.deepEqual(spacing(items), ["英字:空けています"]);
+  });
+
+  it("counts a numbered item written once without its space (二CSV) as touching", () => {
+    const items = "# 文字\n\nAPI を呼び、JSON を返し、ID を保存する。\n\n一 JIS の文字\n\n二 XML の形式\n\n二CSVの形式\n";
+    assert.deepEqual(spacing(items), ["英字:詰めています", "英字:詰めています"]);
   });
 
   it("counts an item number written without the space (三JSON) as touching", () => {

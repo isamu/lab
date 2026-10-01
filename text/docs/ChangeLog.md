@@ -8,8 +8,9 @@ Newest first.
 
 Terms and statutes number their items with a kanji numeral and a space: 「一 JIS X 0201として規格化されている英数字」.
 That space separates the number from the item, so it is no vote on how the document spaces Japanese and Latin text.
-The numbers (一, 二 … 十, and イ, ロ, ハ for sub-items) are the lang-ja lexicon `item-number`. It applies only
-when the document numbers lines with at least two different such numbers, so a single 「十 GBまで…」 is still a quantity.
+The numbers (一 to 二十, and イ, ロ, ハ … for sub-items) are the lang-ja lexicon `item-number`, in order. A number counts
+as an item only where the number before or after it also opens a line, so 「十 GBまで…」 is still a quantity; only the
+separating space is skipped (「二CSV」 still counts as touching).
 
 ### Corpus round 14: documents of kinds the corpus had few of (#170)
 
