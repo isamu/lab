@@ -15,7 +15,7 @@ const PUNCTUATION: ReadonlySet<string> = new Set([".", ",", ";", ":", "!", "?"])
  * そのまま書いた URL に続けた文の始まり: ひらがなと全角の句読点・括弧（「…/をご覧ください」「…/。」）。
  * 漢字やカタカナは道の名前（/東京、/カタログ）にもなるので切らない。
  */
-const SENTENCE_AFTER = /[\p{Script=Hiragana}　-〿！-／：-＠]/u;
+const SENTENCE_AFTER = /[\p{Script=Hiragana}\u3000-\u303f\uff01-\uff0f\uff1a-\uff20]/u;
 
 /** URL として読む長さ。続けた文の手前で切り、後ろの句読点を外す。正規表現の `[…]+$` は句読点の長い並びで後戻りが二乗になる。 */
 const urlLength = (written: string): number => {
