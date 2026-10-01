@@ -32,6 +32,8 @@ describe("boldLabelOf: an item that opens with a bold label", () => {
     ["  - **入れ子**：内側の項目です。", "入れ子"],
     ["- **速さ**：一覧が速く出ます。\n  続きの行です。", "速さ"],
     ["- **`timeout` の決め方**：短くします。", "`timeout` の決め方"],
+    ["[x] **確認**：ログを見ました。", "確認"],
+    ["- **[速さ](#speed)**：一覧が速く出ます。", "[速さ](#speed)"],
   ];
   labelled.forEach(([item, label]) => {
     it(`reads ${JSON.stringify(item)} as labelled "${label}"`, () => assert.equal(boldLabelOf(item), label));
@@ -46,6 +48,7 @@ describe("boldLabelOf: an item that opens with a bold label", () => {
     ["- 一覧は **速い**：本当です。", "the bold is not at the start"],
     ["- **`--timeout`**: seconds to wait.", "a label that is only code"],
     ["- **`timeout_ms`**：待つ時間。", "a label that is only code (full-width colon)"],
+    ["- **[`--timeout`](#timeout)**：待つ秒数です。", "a label that is only linked code"],
     ["- **a** and **b**: both.", "two bold runs, the colon after the second"],
     ["- ** 速さ**：一覧が速く出ます。", "a space just inside the opening delimiter"],
     ["- **速さ*：一覧が速く出ます。", "an unclosed label"],
@@ -93,6 +96,11 @@ describe("bold-label-list", () => {
 
   it("valid: a list of options labelled in code is reference documentation", () => {
     const options = Array.from({ length: 8 }, (_unused, index) => `- **\`--option-${index}\`**：説明を書きます。`).join("\n");
+    assert.ok(!idsFor(`# 記事\n\n${options}\n`, ja).includes("bold-label-list"));
+  });
+
+  it("valid: a list of options labelled in linked code is reference documentation", () => {
+    const options = Array.from({ length: 8 }, (_unused, index) => `- **[\`--option-${index}\`](#option-${index})**：説明を書きます。`).join("\n");
     assert.ok(!idsFor(`# 記事\n\n${options}\n`, ja).includes("bold-label-list"));
   });
 

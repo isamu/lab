@@ -3,18 +3,21 @@ import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
 /** A bold run longer than this is a bold sentence, not a label. */
 const MAX_LABEL_CHARS = 40;
 
-/** The bullet or number that opens a list item, and a task box after it. */
-const ITEM_MARKER = /^[ \t]*(?:[-*+]|\d{1,9}[.)])[ \t]+(?:\[[ xX]\][ \t]+)?/u;
+/** The bullet or number that opens a list item. */
+const ITEM_MARKER = /^[ \t]*(?:[-*+]|\d{1,9}[.)])[ \t]+/u;
+
+/** A task box, after the marker or at the start of an item whose marker was already cut. */
+const TASK_BOX = /^\[[ xX]\][ \t]+/u;
 
 /** `**Label**: text` or `**Label:** text`. The label holds no delimiter, so `**a** and **b**: text` is not one label. */
 const BOLD_LABEL = new RegExp(String.raw`^(\*\*|__)(?!\s)((?:(?!\1)[^\n]){1,${MAX_LABEL_CHARS}}?)(?:\1[ \t]*[:：]|[:：]\1)[ \t]*\S`, "u");
 
-/** A label that is only code (`--flag`, `timeout_ms`) names an option or a field: the way reference documentation lists them. */
-const CODE_ONLY = /^`[^`]+`$/u;
+/** A label that is only code (`--flag`, `timeout_ms`), linked or not, names an option or a field: the way reference documentation lists them. */
+const CODE_ONLY = /^(?:`[^`]+`|\[`[^`]+`\]\([^)\s]*\))$/u;
 
 /** The label a list item opens with in bold before a colon and more text, or undefined. `item` is the item as written, marker and all. */
 export const boldLabelOf = (item: string): string | undefined => {
-  const label = BOLD_LABEL.exec(item.replace(ITEM_MARKER, ""))?.[2]?.trim();
+  const label = BOLD_LABEL.exec(item.replace(ITEM_MARKER, "").replace(TASK_BOX, ""))?.[2]?.trim();
   return label === undefined || CODE_ONLY.test(label) ? undefined : label;
 };
 
