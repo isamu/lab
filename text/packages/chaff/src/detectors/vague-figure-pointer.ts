@@ -1,5 +1,5 @@
 import type { Detector, Finding, Lexicon } from "../plugin.ts";
-import { labelledKindsIn } from "../figure-references.ts";
+import { FIGURE_NUMBER, labelledKindsIn } from "../figure-references.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { labelWordsOf } from "./dangling-figure.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -9,10 +9,16 @@ import { quoteAt } from "./structure-tree.ts";
 
 export type VaguePointer = { readonly offset: number; readonly written: string; readonly kind: string };
 
-/** A phrase inside a longer word (向上の図, 上の図表) or followed by a number (上の図3, the figure above 2) is not one. */
+/** A phrase inside a longer word (向上の図, 上の図表) is not one. */
 const EDGE = "[\\p{Script=Han}\\p{Script=Katakana}A-Za-z0-9０-９]";
 
-const pointerPattern = (pattern: string): RegExp => new RegExp(`(?<!${EDGE})${escapeRegExp(pattern)}(?!${EDGE}|\\s?\\d)`, "giu");
+/** Matched in any case (The figure below). */
+const pointerPattern = (pattern: string): RegExp => new RegExp(`(?<!${EDGE})${escapeRegExp(pattern)}(?!${EDGE})`, "giu");
+
+/** A pointer followed by a number names the figure (上の図 １, the figure below 2, the table above IV): the numbers figure labels take. */
+const NUMBERED = new RegExp(`^${FIGURE_NUMBER}`, "u");
+/** Enough characters after a pointer to hold a figure's number (第十二, 3.2.1). */
+const NUMBER_LOOKAHEAD = 16;
 
 /** Pure: every pointer in the prose that points at a kind the document labels. */
 export const vaguePointers = (prose: string, pointers: Lexicon, labelledKinds: ReadonlySet<string>): VaguePointer[] =>
@@ -20,7 +26,9 @@ export const vaguePointers = (prose: string, pointers: Lexicon, labelledKinds: R
     .flatMap((entry) => {
       const kind = entry.instead_of;
       if (kind === undefined || !labelledKinds.has(kind)) return [];
-      return [...prose.matchAll(pointerPattern(entry.pattern))].map((match) => ({ offset: match.index, written: match[0], kind }));
+      return [...prose.matchAll(pointerPattern(entry.pattern))]
+        .filter((match) => !NUMBERED.test(prose.slice(match.index + match[0].length, match.index + match[0].length + NUMBER_LOOKAHEAD)))
+        .map((match) => ({ offset: match.index, written: match[0], kind }));
     })
     .toSorted((left, right) => left.offset - right.offset);
 

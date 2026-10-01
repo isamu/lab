@@ -36,6 +36,10 @@ describe("vague-figure-reference (ja)", () => {
     assert.deepEqual(found(ja, "上の図1のとおり伸びた。上の図表と、向上の図を見る。", "", "図1　売上の推移"), []);
   });
 
+  it("a full-width number, or 第 and a kanji numeral, after a space names the figure", () => {
+    assert.deepEqual(found(ja, "上の図 １と、下の表 第二を見る。", "", "図1　売上の推移", "", "表第二　費用"), []);
+  });
+
   it("code is not read", () => {
     assert.deepEqual(found(ja, "図1のとおり伸びた。", "", "図1　売上の推移", "", "```", "上記の図", "```"), []);
   });
@@ -52,6 +56,12 @@ describe("vague-figure-reference (en)", () => {
   it("Figure 2 below names it, and a document with no numbered figures is not checked", () => {
     assert.deepEqual(found(en, "Figure 1 below shows sales.", "", "Figure 1: Sales"), []);
     assert.deepEqual(found(en, "The figure below shows sales."), []);
+  });
+
+  it("a number in any form a figure label takes, after a space, names the figure; a lower-case word does not", () => {
+    const figures = ["", "Figure 1: Sales", "", "Figure 2: Costs", "", "Figure IV: Staff", "", "Figure A: Notes"];
+    assert.deepEqual(found(en, "See the figure below 2, the figure above IV and the figure below A.", ...figures), []);
+    assert.deepEqual(found(en, "The figure below a caption shows sales.", ...figures), ["3:The figure below"]);
   });
 
   it("the tablet below is not the table below", () => {
