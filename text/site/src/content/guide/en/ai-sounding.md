@@ -31,16 +31,20 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.
 
-## Two ways to fix it
+## Three ways to fix it
 
 | Way | What it changes | When to use it |
 | --- | --- | --- |
 | Light | Only the spots chaff flagged | The content and structure are fine and only the wording grates |
-| Bold | The shape of the whole document, section by section | After a light pass, the text still reads as generated |
+| Bold | The prose of each section; the outline stays | The outline is fixed: a report template, a manual, required sections |
+| Full | The whole document, from its structure up | The request says "from scratch" or "rewrite the whole thing"; a blog post or an essay; `ai-generated-composite` fires |
 
 A light pass removes findings one at a time. It fixes typos and long sentences, but the shape of the document stays.
-An article built from bold headings and bullet lists still reads as generated after its wording is fixed.
-That is when to choose the bold rewrite.
+A bold rewrite changes the sentences of each section, and the outline stays as it was.
+A heading every few paragraphs, bold lead-ins and a closing summary that repeats the body still read as generated after the sentences are fixed.
+
+For a blog post or an essay, choose the full rewrite. Do the same whenever `ai-generated-composite` fires.
+What the writer wants changed there is usually the structure, not the sentences.
 
 ## The light pass
 
@@ -53,7 +57,7 @@ Do not repeat a pass just to silence a warning. If a word you chose trips anothe
 
 ## The bold rewrite
 
-A bold rewrite changes the shape of the whole document rather than each finding. Go section by section.
+A bold rewrite keeps the outline and changes the prose of each section, rather than one finding at a time. Go section by section.
 
 1. Before rewriting, run chaff with `--experimental` and note the document-level signals:
    the inputs of `ai-generated-composite`, `bold-density`, `contrast-framing`, `stock-transition` and `sentence-rhythm`.
@@ -77,7 +81,75 @@ A bold rewrite changes the shape of the whole document rather than each finding.
    Restore every dropped fact. For what is not a fact (a number inside a metaphor, the heading of a section you cut), note why it stays out.
    A kind you cut on purpose can be excluded with `--allow-dropped <kind>`.
 
-## Rules for both
+## The full rewrite
+
+Leave the old sentences alone. Take an inventory of what the document says, and write from that.
+
+1. Take the inventory before writing. `npx chaffjs facts <file> --json` lists every fact `compare` will check.
+   `npx chaffjs outline <file>` shows the old outline and its shape.
+   Write down the writer's claims and every concrete experience, example and opinion, one line each. Write from this inventory, not from the old text.
+2. Throw away the structure. Decide who reads the piece and what for, and choose one angle or story for the whole of it.
+   Then make these changes to the outline before writing a sentence.
+
+| Change | What to do |
+| --- | --- |
+| Reorder | Put the conclusion, or the most interesting episode, first |
+| Merge and split | Merge thin sections and split overloaded ones; a section is a real unit, not one heading per paragraph |
+| Cut restatements | Cut sections that only restate the body, the closing summary included |
+| Drop lone headings | A heading over a single paragraph goes; the paragraph joins its neighbours |
+| Turn points into a story | A section that lists points becomes prose with one through-line |
+| Break the symmetry | No three sections or three items unless the content really has three parts |
+| Move the experience | Put the writer's concrete experience where it carries the argument |
+| Open on the point | Start with the point or a concrete scene, not a generic opener |
+
+3. Show the new outline first. Put the old outline (the headings from `chaff outline`) next to the new one, with one line per section on what it says.
+   The writer can then see the structural change at a glance and decide. If the person asked for it to be done without asking, go straight on.
+4. Write it fresh, in the writer's voice, from the inventory.
+
+| Aspect | How |
+| --- | --- |
+| Paragraphs | Each argues something and joins the last with a connective; sentence lengths vary |
+| Verbs | Plain verbs for what happens, not metaphors ("silently fails") |
+| Experience and numbers | Keep the writer's own episodes and numbers; cut filler that fits any article |
+| Bold and lists | Bold only where a reader must not miss something; lists only for real enumerations, steps or commands |
+| Shapes to avoid | Hedges stacked on a claim, announcing what comes next, "it's not X, it's Y", em dashes |
+| Register | Match the writer's other paragraphs and the platform (a blog, a company report, an email) |
+| What not to add | No fact, person, number, cause or consequence the inventory does not have |
+
+5. Check the result.
+
+```bash
+npx chaffjs new.md --experimental                          # the AI signals, before and after
+npx chaffjs outline old.md new.md                          # headings, average section, lists and bold, before and after
+npx chaffjs compare old.md new.md --allow-dropped heading  # no fact other than a heading dropped or added
+```
+
+   The headings are the structure you threw away on purpose, so `--allow-dropped heading` excludes them. Restore any other dropped fact and remove any added one.
+   A fact the old text only repeated (a number in the summary you cut) may stay out, with the reason written down.
+6. Stop when all of these hold. Two full passes at most.
+   - `ai-generated-composite` does not fire.
+   - The density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits.
+   - `compare` passes, or every exclusion has a reason.
+7. Show the new text, a short list of what changed and why, and a table of the signals and the shape before and after. Take the numbers from chaff's output.
+
+## What chaff cannot see
+
+chaff cannot find these shapes by machine. Check them by reading, whichever way you rewrite.
+
+| Shape | What to look for |
+| --- | --- |
+| Stock openers and closers | Starting with "In this post, we'll explore" or ending with "I hope this helps" |
+| Explaining the obvious | Telling readers what every one of them already knows |
+| Identical sections | Every section the same length and built the same way |
+| Benefits without a cost | Only the upside, with nothing given up for it |
+| No first-hand detail | Nothing the writer saw, measured or did |
+| Uniform enthusiasm | The same excitement everywhere, so nothing stands out |
+| Over-politeness | Courtesy and preamble piled on courtesy |
+| Unasked definitions | A term defined that no reader asked about |
+| Sentence headings | Headings written as full sentences or slogans |
+| A repeating summary | A last section that only says the body again |
+
+## Rules for every way
 
 - Do not add facts, people, numbers or causes that are not in the original.
 - Do not change the meaning, the numbers, the conditions or the technical constraints.
@@ -262,6 +334,192 @@ None of the three is a fact the rewrite lost, so none was restored.
 | name "CI" | The opening sentence that said "on CI" a third time was cut; the other two mentions remain |
 | name "Workflow" | A bold list label read as a name; the sentence now says "the workflow sets" |
 | heading "Conclusion" | The section went with its stock closing |
+
+This rewrite barely moved the outline: `npx chaffjs outline ai.md rewritten.md` shows six headings becoming five.
+When the structure itself should change, use the full rewrite, as in the next example.
+
+## Example: a full rewrite of a blog post
+
+A blog post written in the style of generated text, rewritten from scratch with the full rewrite.
+Both versions were written for this page.
+
+The post before:
+
+```markdown
+# Unlocking the Power of Weekly Demos: Key Lessons From Six Months
+
+In this post, we'll dive into how our team started a weekly demo and what we learned along the way.
+
+## Introduction
+
+In today's fast-paced world, sharing work early is more important than ever. That's why we started a weekly demo in March 2026.
+
+## The Format
+
+Here's how it worked:
+
+- **When**: every Friday, 4:00 to 4:30 p.m.
+- **Who**: the 14 people on the product team
+- **What**: three people each showed their work for 10 minutes
+
+## The Challenges
+
+Attendance dropped to 6 people within two months. It's not just a scheduling problem. It's a relevance problem.
+
+Moreover, most demos showed finished features. Nobody showed work in progress, so there was nothing to give feedback on.
+
+## The Solution
+
+The key insight is simple: make it easier to show something. We cut each slot to 3 minutes and asked people to bring whatever they were stuck on. Additionally, we posted the recording in Slack for anyone who missed it.
+
+## The Results
+
+Attendance climbed back to 12. More importantly, the demos turned into real conversations.
+
+## Conclusion
+
+Weekly demos aren't just about sharing work — they're about building a culture of feedback. By keeping slots short and welcoming unfinished work, any team can make demos that matter. I hope this helps!
+```
+
+chaff on the post before. `ai-generated-composite` fires, so the full rewrite is the one to choose.
+
+```text
+$ npx chaffjs demo.md --genre blog/tech --experimental --compact
+
+demo.md   blog/tech · English   genre from --genre
+
+  1:67    info    Section length varies by only 33% (want at least 35%)
+                  section-length-uniformity
+  7:1     warning "in today's fast-paced world" is an opening that fits any article
+                  padded-intro
+  33:184  warning Closes with "hope this helps"
+                  closing-cliche
+  33:184  warning "section-length-uniformity, padded-intro, closing-cliche" occur together in this document (3 signals, 3 needed)
+                  ai-generated-composite
+
+4 findings, 16 rules not run
+```
+
+The inventory: `npx chaffjs facts demo.md` lists 5 numbers, a date, 2 times, 2 names (Friday, Slack) and 7 headings.
+The writer's claims and experience, one line each:
+
+- attendance dropped within two months;
+- the demos showed finished features, so there was nothing to give feedback on;
+- shorter slots, showing what you are stuck on, and a recording in Slack brought people back;
+- the demos turned into real conversations.
+
+The old outline has seven headings, and its "Conclusion" says the body again.
+The new outline, shown before writing:
+
+| Old outline | New outline, and what each part says |
+| --- | --- |
+| Introduction, The Format | No heading under the title "Our weekly demo came back when we shortened the slots": when it started, how it ran, and the drop |
+| The Challenges | "Why people stopped coming": finished features left nothing to discuss |
+| The Solution, The Results | "Bring what you are stuck on": the change, and what it did to attendance |
+| Conclusion | Cut: it restated the body |
+
+The post after:
+
+```markdown
+# Our weekly demo came back when we shortened the slots
+
+We started a weekly demo in March 2026, every Friday from 4:00 to 4:30 p.m., for the 14 people on the product team. Three people showed their work for 10 minutes each. Within two months, 6 people were coming.
+
+## Why people stopped coming
+
+Most demos showed finished features. Nobody brought work in progress, so there was nothing left to give feedback on.
+
+## Bring what you are stuck on
+
+We cut each slot to 3 minutes and asked people to bring whatever they were stuck on. A short slot made it easier to show something half done, and half-done work is what gets useful comments. We also posted the recording in Slack for anyone who missed it.
+
+Attendance climbed back to 12, and the demos turned into real conversations.
+```
+
+chaff on the post after:
+
+```text
+$ npx chaffjs demo-full.md --genre blog/tech --experimental --compact
+
+demo-full.md   blog/tech · English   genre from --genre
+
+
+0 findings, 16 rules not run
+```
+
+`outline` measures how the structure changed: fewer headings, longer sections, no list and no bold.
+
+```text
+$ npx chaffjs outline demo.md demo-full.md
+demo.md outline: headings 7, average section 28 words, in lists 14%, bold 3
+
+  # Unlocking the Power of Weekly Demos: Key Lessons From Six Months  (demo.md:1)  20 words
+    ## Introduction  (demo.md:5)  22 words
+    ## The Format  (demo.md:9)  32 words
+    ## The Challenges  (demo.md:17)  37 words
+    ## The Solution  (demo.md:23)  40 words
+    ## The Results  (demo.md:27)  13 words
+    ## Conclusion  (demo.md:31)  34 words
+
+demo-full.md outline: headings 3, average section 39 words, in lists 0%, bold 0
+
+  # Our weekly demo came back when we shortened the slots  (demo-full.md:1)  39 words
+    ## Why people stopped coming  (demo-full.md:5)  19 words
+    ## Bring what you are stuck on  (demo-full.md:9)  60 words
+
+How the shape changed (demo.md → demo-full.md)
+  headings: 7 → 3
+  average section: 28 words → 39 words
+  in lists: 14% → 0%
+  bold: 3 → 0
+```
+
+`compare` checks the facts, with the headings set aside as the structure thrown away on purpose:
+
+```text
+$ npx chaffjs compare demo.md demo-full.md --allow-dropped heading
+demo.md → demo-full.md
+
+✗ 4 facts dropped (in demo.md, not in demo-full.md)
+  heading: The Challenges  (demo.md:17) (allowed by --allow-dropped)
+  heading: The Solution  (demo.md:23) (allowed by --allow-dropped)
+  heading: The Results  (demo.md:27) (allowed by --allow-dropped)
+  heading: Conclusion  (demo.md:31) (allowed by --allow-dropped)
+
+i 3 facts written another way
+  heading: Unlocking the Power of Weekly Demos: Key Lessons From Six Mo… → Our weekly demo came back when we shortened the slots  (line 1 → line 1)
+  heading: Introduction → Why people stopped coming  (line 5 → line 5)
+  heading: The Format → Bring what you are stuck on  (line 9 → line 9)
+
+Facts checked: 17 → 13: numbers 5→5, dates 1→1, times 2→2, URLs 0→0, code 0→0, names 2→2, quotations 0→0, headings 7→3, references 0→0, footnotes 0→0
+No fact dropped or added
+```
+
+Every number, the date, both times and both names are still there.
+
+What changed, and why:
+
+| Change | Why |
+| --- | --- |
+| Seven headings became three | A section is now a unit with something in it, not one heading per paragraph |
+| Cut "Introduction" and "Conclusion" | One was a stock opener ("In today's fast-paced world"), the other restated the body |
+| The format list became two sentences | The items describe one meeting; a list cannot say how they fit together |
+| Dropped "It's not just a scheduling problem. It's a relevance problem." | It knocked down an X nobody said; the next section says what the problem was |
+| Dropped "The key insight is simple", "Moreover", "Additionally" and "More importantly" | Announcements and stock transitions; the sentences start with the point instead |
+| Dropped "building a culture of feedback" and "any team can make demos that matter" | Nothing in the post supports them; keeping them would add claims |
+| Dropped "I hope this helps!" | Chat residue |
+
+The signals and the shape, before and after, from chaff's output:
+
+| Measure | Before | After |
+| --- | --- | --- |
+| Findings (`--experimental`) | 4 | 0 |
+| `ai-generated-composite` | 3 signals | does not fire |
+| Headings | 7 | 3 |
+| Average section | 28 words | 39 words |
+| In lists | 14% | 0% |
+| Bold | 3 | 0 |
+| `compare` (headings set aside) | | no fact dropped or added |
 
 ## Further reading
 

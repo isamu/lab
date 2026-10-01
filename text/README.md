@@ -670,6 +670,10 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 
 AI っぽい rule がどれだけ正確かは `yarn bench:ai` で測れます。同じ中身を、人の書きぶり・生成文の書きぶり・書き直した版の 3 通りで書いた見本（`test/fixtures/ai-samples/paired/`）と corpus にかけ、rule ごとに生成文の版に当たった数と、それ以外に当たった数（誤報）を出します。
 
+直し方は 3 つあります。指摘された所だけ直す部分直し、構成を残して節ごとに直す書き直し、構成から作り直す全面書き直しです。
+ブログとエッセイ、`ai-generated-composite` が出た文書には全面書き直しを勧めます。`facts` で事実の控えを取り、`outline` で構成の変化を測り、`compare` で事実が残ったかを確かめます。
+手順と例は手引きの「AIっぽさを直す」に、AI 向けの手順は `npx chaffjs skill` で入る skill にあります。
+
 ## チームが決める rule
 
 3 つの rule は **chaff が中身を持ちません**。`chaff.yaml` に書いたものだけを見ます。
