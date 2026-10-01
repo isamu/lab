@@ -78,6 +78,7 @@ options:
       en: Words left alone; listing either way of writing one exempts both
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+sources: [koyobun-2022, gairaigo-1991, jis-z8301-2019, jtf-style-guide]
 
 group: consistency
 summary:

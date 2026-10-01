@@ -4,7 +4,8 @@ import { quoteAt } from "./structure-tree.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
-const labelWordsOf = (doc: ProseDocument): LabelWords => ({
+/** The language's words for figures, tables and appendices, and for a number that points elsewhere or counts. */
+export const labelWordsOf = (doc: ProseDocument): LabelWords => ({
   labels: (doc.lexicons["figure-label"] ?? []).map((entry) => ({ word: entry.pattern, kind: entry.instead_of ?? entry.pattern })),
   elsewhere: patternsOf(doc, "figure-elsewhere"),
   counters: patternsOf(doc, "count-counter"),

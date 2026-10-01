@@ -15,6 +15,29 @@ message is still the document's own. `excessive-hedging` keeps skipping short do
 one sentence). The English word list gains "hope this email finds you well" (and the "message" and plain forms),
 "sorry to trouble", "just reaching out" and "just checking in".
 
+### New rule: `requirement-modal`, and `style: jis-z8301-2019` (experimental)
+
+- `requirement-modal` checks a provision's verb form against a house rule a team picks under `options`; with none, it
+  checks nothing. `standard: jis-z8301-2019` points at a closing すべきである / すべきでない (7.3) and a closing できる /
+  できない (7.4, 7.5: use してもよい or 可能である), as the Japanese Standards Association's drafting guide summarises the
+  2019 edition. できる in the middle of a sentence, which JIS keeps for an ability, is left alone. `shall: must` points
+  at "shall" in English and asks for "must", as the Federal Plain Language Guidelines do; a quoted "SHALL" (the RFC 2119
+  boilerplate) is a mention, not a use. The forms are in each language's lexicons.
+- `style: jis-z8301-2019` turns it on with JIS's forms. It does not decide the final ー of loanwords, which the 2019
+  edition leaves to each industry.
+
+### New rule: `vague-figure-reference`, 上記の図 where a number would do (experimental)
+
+- In a document that numbers its figures or tables (図1, Table 2 at the start of a line), chaff points at a pointer by
+  place: 上記の図, 下の表, the figure below, the above table. JIS Z 8301:2019 10.6 rules such pointers out. A kind the
+  document never numbers is not checked, since there is no number to use. It reads the figure labels the way
+  `dangling-figure-reference` does; the phrases and the kind each points at are in each language's lexicon.
+
+### Rule pages link to the papers and standards behind them
+
+- A rule file lists the works it rests on under `sources`, by their anchor on the bibliography page. The rule's page on
+  the site lists them, and each links to its entry.
+
 ### Making AI-sounding text sound human: a Full rewrite mode (#439)
 
 The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human" get a third mode, beside Light
