@@ -127,15 +127,17 @@ rules.md   legal/statute · English   genre from --genre
 
   7 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  50 rules did not run:
+  52 rules did not run:
       adverb-overuse (the legal/statute genre does not check it)
       agentless-passive (the legal/statute genre does not check it)
       agreement-slip (still experimental)
       ai-generated-composite (the legal/statute genre does not check it)
       ai-tell (the legal/statute genre does not check it)
       announced-count-mismatch (still experimental)
+      announcing-opener (the legal/statute genre does not check it)
       assistant-residue (still experimental)
       closing-cliche (the legal/statute genre does not check it)
+      colon-lead-in (not a rule for en)
       concrete-evidence-density (the legal/statute genre does not check it)
       contraction-consistency (still experimental)
       contrast-framing (the legal/statute genre does not check it)
@@ -265,7 +267,7 @@ rules.md   legal/statute · English   genre from --genre   1 stet
   16:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-2 findings, 44 rules not run
+2 findings, 46 rules not run
 ```
 
 ## Changing a rule for the whole team
@@ -309,7 +311,7 @@ rules.md   legal/statute · English   genre from chaff.yaml
   15:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-3 findings, 44 rules not run
+3 findings, 46 rules not run
 ```
 
 chaff fails when any error is left, and passes when there are only warnings, so a warning does not stop CI.

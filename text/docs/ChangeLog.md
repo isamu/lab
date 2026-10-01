@@ -2,7 +2,62 @@
 
 Newest first.
 
-## Unreleased
+## 0.18.0 — 2026-10-01
+
+A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
+parts of speech, with no code. `style: ieice`, `style: jis-z8301-2011` and `style: bunkacho` set a house style.
+`options:` tunes a built-in rule, such as `katakana-long-vowel` for コンピュータ and コンピューター.
+
+New experimental rules find a document that disagrees with itself. They catch a count that does not match its list and a
+missing figure or table. They also catch a period that ends before it starts, and shares that do not add up to 100%. Others check
+Markdown links, images and headings. Others check brackets, punctuation and AI-sounding text.
+
+`chaff compare <before> <after>` checks that a rewrite kept every number, date, URL, name and quotation. The guide
+gains a reference of everything chaff can find and rule pages for non-engineers. It also gains pages on adding a rule,
+house styles and AI-sounding text, and a bibliography. `chaff rules` prints a table, and `rules --json` gives an AI what
+it needs to write chaff.yaml. Many false reports from real documents are gone.
+
+📦 [`chaffjs@0.18.0`](https://www.npmjs.com/package/chaffjs/v/0.18.0) ·
+[`@chaffjs/lang-ja@0.17.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.17.0) ·
+[`@chaffjs/lang-en@0.16.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.16.0)
+
+### Making AI-sounding text sound human: the rewrite harness (#170)
+
+chaff still never rewrites; the skill and a new guide page say how an AI (or a person) should, in two modes.
+
+- **Light**: fix only the spots the AI-shape rules flag, keep meaning, numbers, conditions and constraints, at most two
+  passes.
+- **Bold**: rewrite section by section toward a human voice (less bold, fewer one-line paragraphs, contrast frames,
+  list-only sections and em dashes; paragraphs that carry an argument), report the document-level signals from chaff
+  before and after, then run `chaff compare` and restore every dropped fact.
+- The guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human" has per-genre advice and a worked bold
+  rewrite of a self-written article, with real chaff and `chaff compare` output from both versions.
+
+### AI-sounding Japanese technical prose, and a bench for the AI-shape rules (#170)
+
+Each entry below was measured before it went in: on Qiita articles written before generated text was common (human),
+on Qiita articles from 2025 and 2026 (mixed), and on the corpus. An entry stays only if the human articles and the
+corpus rarely use it; the measurements are in the PR.
+
+- **`ai-tell` (ja)** gains the metaphors and English calques of technical prose: 「静かに壊れる」「静かに失敗する」
+  「黙って無視される／捨てられる／失敗する」「時間を溶かす」「一つずつ潰す」「地味に効く」「効いてくる」, and
+  「温度感」「血の通った」. Low weights: one of them never fires the rule. Left out because people wrote them as much
+  before: 「解像度を上げる」「腹落ち」「肌感」「安全側に倒す」「した瞬間、」, the essay nouns 「真理」「境地」「深淵」
+  「宿命」, and the closing labels 「というわけです」「に他なりません」.
+- **`announcing-opener`** (experimental): sentences that open by announcing a point (「重要なのは、」「ポイントは、」
+  「正直に言うと、」「注目すべきは」, "The key point is", "Here's the thing", "Honestly,"). Counted, not divided by
+  length: people write one or two in an article of any length. Only the start of a sentence counts.
+- **`colon-lead-in`** (experimental, Japanese only): prose sentences that end in a colon and hand straight to a
+  list (「以下の通りです：」), as a density per 1000 characters. A list item ending in a colon is not counted. Off for
+  documentation, legal text, literature and speeches. English is left out: a self-written English sample with two
+  such lead-ins already passed the limit the generated-style samples reached.
+- `ai-generated-composite` also reads the two new rules.
+- **`yarn bench:ai`**: the same content written three ways (human style, generated style, and the generated style
+  rewritten) in Japanese and English, for tech, business and essay (`test/fixtures/ai-samples/paired/`). For each
+  AI-shape rule it prints the hits on the generated style and the false alarms on the others and on the committed
+  corpus, and compares the table with `expected.txt`. CI runs it.
+- Measured and not added: the share of bullet lines, runs of short sentences, and 「（いわゆる〜）」. Human articles
+  had as many of each.
 
 ### `chaffjs/api`: the plugin API
 
