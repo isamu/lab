@@ -7,7 +7,7 @@ This page shows how to use what it finds to bring a document back to a human voi
 
 ## What chaff looks for
 
-Most of these rules are experimental and run with `--experimental`; `bold-density` and `closing-cliche` run without it.
+Most of these rules are experimental and run with `--experimental`; `bold-density`, `closing-cliche` and `padded-intro` run without it.
 
 ```bash
 npx chaffjs article.md --experimental    # also run the experimental rules

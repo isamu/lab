@@ -7,7 +7,7 @@ chaff はこの形を機械で見つけますが、文章は書き換えませ�
 
 ## chaff が見る AI っぽさ
 
-AI っぽさのルールの多くは試験中で、`--experimental` を付けると動きます。`bold-density` と `closing-cliche` は付けなくても動きます。
+AI っぽさのルールの多くは試験中で、`--experimental` を付けると動きます。`bold-density`、`closing-cliche`、`padded-intro` は付けなくても動きます。
 
 ```bash
 npx chaffjs article.md --experimental    # 試験中のルールも動かす
