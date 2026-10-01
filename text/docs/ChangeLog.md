@@ -17,6 +17,13 @@ Newest first.
 - An `ai-tell` lexicon entry may carry its own `rewrite` hint: 「時間を溶かす」 → 「時間がかかった（何に、どれだけ）」,
   「静かに壊れる」 → 「エラーを出さずに失敗する」, "delve into" → "look at, or explain".
 
+### New rule: `vague-figure-reference`, 上記の図 where a number would do (experimental)
+
+- In a document that numbers its figures or tables (図1, Table 2 at the start of a line), chaff points at a pointer by
+  place: 上記の図, 下の表, the figure below, the above table. JIS Z 8301:2019 10.6 rules such pointers out. A kind the
+  document never numbers is not checked, since there is no number to use. It reads the figure labels the way
+  `dangling-figure-reference` does; the phrases and the kind each points at are in each language's lexicon.
+
 ### Rule pages link to the papers and standards behind them
 
 - A rule file lists the works it rests on under `sources`, by their anchor on the bibliography page. The rule's page on
