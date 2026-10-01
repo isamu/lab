@@ -1,0 +1,59 @@
+id: colon-lead-in
+layer: L1
+status: experimental
+how_to_find: colon-lead-in
+# English human writing hands off to a list after a colon as a matter of course: two in a short self-written English
+# document already passed any limit that the generated-style samples reached. Japanese only until a limit separates them.
+languages: [ja]
+severity: info
+
+name:
+  ja: コロンで箇条書きへ渡す文が多い
+  en: Too many colon lead-ins to lists
+
+why:
+  ja: 「以下の通りです：」「ポイントは次の 3 つ：」のように、コロンで終わる文から箇条書きへ渡す形です。1 つなら案内ですが、節ごとに続くと、説明が箇条書きの前置きだけになり、項目どうしの繋がりが書かれません。生成文によく見られる形です。
+  en: 'A sentence ending in a colon that hands the reader to a list ("Here''s what you need to know:"). Once, it guides; section after section, the prose shrinks to list captions and the links between the items go unwritten. A shape common in generated text.'
+
+message:
+  ja: コロンで箇条書きへ渡す文が 1000 字あたり {density} 個あります（{limit} 個まで）
+  en: "{density} colon lead-ins to lists per 1000 characters (limit {limit})"
+
+how_to_fix:
+  ja: 箇条書きの一部を文に戻し、項目どうしがどう繋がるのかを書いてください。手順や部品の一覧のように、本当に並べるものはそのままでかまいません。
+  en: Turn some of the lists back into sentences and say how the items connect. Real lists (steps, parts) can stay.
+
+# 1000 字あたりの数。2 つより少なければ言わない（ai-phrasing.ts の PILE）。
+levels: { strict: 1, normal: 2, relaxed: 4 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 「以下の通りです：」のように、コロンで終わる文から箇条書きへ渡す形が続き、説明が箇条書きの前置きだけになっている所
+  en: 'Sentences ending in a colon that hand off to a list ("Here''s what you need to know:"), section after section'
+example:
+  ja:
+    pad: true
+    before: |
+      準備は以下の通りです：
+
+      - 鍵
+      - 地図
+
+      当日の流れは次の通りです：
+
+      - 集合
+      - 出発
+    after: |
+      鍵と地図を用意してください。当日は駅に集合してから出発します。
+
+      - 鍵
+      - 地図
+
+not_flagged:
+  ja: 1 つだけのコロンの前置きと、コロンで終わらない前置き（「次のとおりとする。」）は数えません。説明書・法務・技術文書のジャンルでは見ません。短い文書は測りません。英語の文書は、人もよくこの形で書くので見ません。
+  en: A single colon lead-in, and a lead-in that does not end in a colon, are not counted. Documentation, legal and technical genres do not run this rule. Short documents are not measured. Japanese documents only.
+level_meaning:
+  ja: 1000 字あたり {limit} 個まで
+  en: up to {limit} per 1000 characters

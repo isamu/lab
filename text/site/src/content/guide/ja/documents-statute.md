@@ -113,7 +113,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
      「備品」は 6 行目でも定義されています
      同じ語を二か所で定義すると、二つの定義が食い違っていないかを読み手が確かめなければなりません。長い契約書では、後から足した定義が先の定義と少しずれることがよくあります。中身が食い違っているかは機械では決まらないので、chaff は二度目の定義の場所だけを示します。見出し（「『X』とは」）は語を掲げるだけなので、定義として数えません。
 
-     → 定義を一か所にまとめ、もう一方は「第2条に定める{term}」のように参照にしてください。意図して意味を変えているなら、別の語にします。
+     → 定義を一か所にまとめ、もう一方は「第2条に定める備品」のように参照にしてください。意図して意味を変えているなら、別の語にします。
 
      このルールをゆるめる:  npx chaff relax duplicate-definition
 
@@ -127,15 +127,17 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
   試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  49 件の rule は動いていません:
+  51 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agentless-passive（ジャンル legal/statute では見ないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（ジャンル legal/statute では見ないため）
       ai-tell（ジャンル legal/statute では見ないため）
       announced-count-mismatch（まだ試験中のため）
+      announcing-opener（ジャンル legal/statute では見ないため）
       assistant-residue（まだ試験中のため）
       closing-cliche（ジャンル legal/statute では見ないため）
+      colon-lead-in（ジャンル legal/statute では見ないため）
       concrete-evidence-density（ジャンル legal/statute では見ないため）
       contraction-consistency（ja 向けの rule ではないため）
       contrast-framing（ジャンル legal/statute では見ないため）
@@ -188,9 +190,6 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 | 10 | 参照先が無い | 第9条はこの規程にありません | 正しい条の番号に直すか、台帳の条を足します |
 | 12 | 番号の抜け・重なり | 第2条の次が第4条で、第3条がありません | 番号を振り直します。欠番として残すなら「第3条（削除）」と書きます |
 | 15 | 同じ語の二重定義 | 「備品」を 6 行目でも定義しています | 定義を一か所にまとめます |
-
-3 件目の直しかたに出る `{term}` は、chaff 0.17.0 の表示の誤りです。
-本来は、定義した語（ここでは「備品」）が入ります。
 
 ## 「動いていない」一覧の読み方
 
@@ -263,7 +262,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから   stet 1 �
   16:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 2 件、動いていない rule 43 件
+指摘 2 件、動いていない rule 45 件
 ```
 
 ## チームで決まりを変える
@@ -307,7 +306,7 @@ kitei.md   legal/statute · 日本語   ジャンルはchaff.yamlから
   15:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 3 件、動いていない rule 43 件
+指摘 3 件、動いていない rule 45 件
 ```
 
 エラーが 1 件でも残ると、chaff は失敗で終わります。注意だけなら成功で終わるので、CI を止めません。
