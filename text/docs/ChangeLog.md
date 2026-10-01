@@ -15,6 +15,25 @@ message is still the document's own. `excessive-hedging` keeps skipping short do
 one sentence). The English word list gains "hope this email finds you well" (and the "message" and plain forms),
 "sorry to trouble", "just reaching out" and "just checking in".
 
+### Corpus round 14: documents of kinds the corpus had few of (#170)
+
+Terms of service and privacy statements (GitHub's, under CC0; a ministry's 電子申請 terms and the Tokyo app's terms,
+URL only), press releases and a media advisory (NASA, NOAA, a 気象庁 release that points at its own 図 and 表), a
+告示 with 別表 (厚生労働省), an IRS customer FAQ, job postings (USAJOBS; a デジタル庁 posting, URL only), Japanese tech
+blogs from Zenn and Qiita, API documentation and its Japanese translation (MDN, URL only), an XState API reference in
+Japanese, release notes (Ruby 3.4.0 in Japanese, Go 1.23), Node.js TSC minutes, arXiv and J-STAGE abstract pages, a
+recipe in Japanese and English (農林水産省 うちの郷土料理), a school's いじめ防止基本方針 and a university's course
+registration notice, and Dr Jekyll and Mr Hyde. Each document's licence is in `corpus/manifest.json`.
+
+### `style: koyobun`: 公用文作成の考え方 (2022)
+
+- `style: koyobun` checks a document the way 文化審議会「公用文作成の考え方」 asks: a Japanese sentence over 60 characters
+  (Ⅲ－3 ア: check a sentence once it reaches 50 to 60 characters), です・ます mixed with である (Ⅲ－1 イ), and a
+  katakana word without its final ー (Ⅰ－3 エ). English documents keep the level's limit, since the document gives none.
+- A style can set a rule's number by language under `limits:`. chaff.yaml's own level or number for the rule still wins.
+- `chaff explain` now says when a number sets a rule's limit (a style's, or one written in chaff.yaml's `rules:`), and
+  no longer marks a level as current then. The number is shown in the rule's own words ("一文 60 字まで").
+
 ### New rule: `requirement-modal`, and `style: jis-z8301-2019` (experimental)
 
 - `requirement-modal` checks a provision's verb form against a house rule a team picks under `options`; with none, it
