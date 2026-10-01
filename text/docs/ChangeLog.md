@@ -4,6 +4,23 @@ Newest first.
 
 ## Unreleased
 
+### Fixes from a real article: numbering-gap, no-mixed-desumasu, heading-echo (#390, #391, #392)
+
+- **numbering-gap no longer misses a heading whose number is closed by a dot** (#390). `### 5. ページ自身の通信から分かること`
+  was read as the amount 「5 ページ」, so the section dropped out of the sequence and chaff reported 「4 の次が 6」 as an
+  error. A number closed by a dot (`5.`, `4.2.`) is a label; an amount is not written that way. `1.5 万人` is still an
+  amount.
+- **no-mixed-desumasu no longer points at a sentence in the document's register inside a list** (#391). A list and a
+  run of numbered paragraphs are still compared within themselves, but when the list's minority is the whole document's
+  majority (a です/ます sentence among plain bullets in a です/ます article), the rule stays silent. Following its advice
+  would have moved the sentence to the document's minority. The count now names the group it was counted in:
+  「本文の中で N 文」 / 「この箇条書きの中で N 文」 ("N in the body text" / "N in this list").
+- **heading-echo measures a heading without its number label** (#392). 「例 3：」, `Step 3:`, `1.`, 「第2章」,
+  `Chapter 2:` are never repeated by the text below, so counting them made short headings miss. Numbers are read the way
+  the structure tree reads them; label words come from the lexicon `numbered-label` (`position: before`), which gains
+  例・手順・ステップ・Step in Japanese and a new English list (Step, Example, Case, …). latin-spacing already treats a
+  number after these words as a name (like 問3), so 「手順1」 is no longer a spacing vote.
+
 ### Docs: a bibliography of the papers and standards behind the rules
 
 The site's guide has a new page, 「参考文献」 / "Bibliography", linked from the rule reference. It covers readability

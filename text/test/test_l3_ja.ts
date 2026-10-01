@@ -4,6 +4,7 @@ import { firedRules } from "./rule-run.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
+import { messageOf } from "../packages/chaff/src/render/text.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
@@ -19,6 +20,53 @@ describe("L3 日本語", () => {
   });
 
   describe("no-mixed-desumasu", () => {
+    const RULE = RULES.find((rule) => rule.id === "no-mixed-desumasu");
+    /** 指した文と、日本語・英語の文言。 */
+    const slipsFor = (source: string): { quote: string; ja: string; en: string }[] =>
+      runRules(buildDocument("t.md", source, ja), RULES, {}, true, "business/report")
+        .findings.filter((finding) => finding.rule === "no-mixed-desumasu")
+        .map((finding) => {
+          if (RULE === undefined) throw new Error("no-mixed-desumasu is not loaded");
+          return { quote: finding.quote, ja: messageOf(RULE, finding, "ja"), en: messageOf(RULE, finding, "en") };
+        });
+
+    // 自作の文。ですます調の文書の、常体の多い箇条書き。
+    const politeBody = "道具を作りました。仕組みを説明します。使い方も書きます。例も挙げます。限界も述べます。最後にお願いを書きます。";
+
+    it("valid: 常体の多い箇条書きに混ざった、文書の多数派（ですます調）の文は指さない", () => {
+      const list = [
+        "- **詳細を載せてほしい。** どの会社を使うのか。どこが持つのか。書いてあれば安心して使えます。",
+        "- **扱い方を知りたい。** どう管理しているのか。",
+      ];
+      assert.deepEqual(slipsFor([politeBody, "", ...list].join("\n")), []);
+    });
+
+    it("invalid: ですます調の箇条書きに混ざった常体の文は指す。数は箇条書きの中の数", () => {
+      const list = ["- 項目を一つ足します。", "- 二つ目の項目を足します。", "- 三つ目は来月に足す。"];
+      assert.deepEqual(slipsFor([politeBody, "", ...list].join("\n")), [
+        {
+          quote: "三つ目は来月に足す。",
+          ja: "この文だけ他と文末の調子が違います（この箇条書きの中で 1 文）",
+          en: "This sentence's ending register differs from the rest (1 in this list)",
+        },
+      ]);
+    });
+
+    it("valid: ですます調の本文の、丸ごと常体の箇条書きは指さない", () => {
+      const list = ["- 項目を一つ足す。", "- 二つ目の項目を足す。", "- 三つ目は来月に足す。"];
+      assert.deepEqual(slipsFor([politeBody, "", ...list].join("\n")), []);
+    });
+
+    it("invalid: 本文の少数派の文言は「本文の中で」", () => {
+      assert.deepEqual(slipsFor("運用を始めます。手順を作ります。研修も予定しています。効果は来期に測定する。"), [
+        {
+          quote: "効果は来期に測定する。",
+          ja: "この文だけ他と文末の調子が違います（本文の中で 1 文）",
+          en: "This sentence's ending register differs from the rest (1 in the body text)",
+        },
+      ]);
+    });
+
     it("invalid: ですます調の中に 1 文だけ である調が混ざる", () => {
       assert.ok(idsFor("運用を始めます。手順を作ります。研修も予定しています。効果は来期に測定する。").includes("no-mixed-desumasu"));
     });
@@ -212,9 +260,14 @@ describe("L3 日本語", () => {
       assert.deepEqual(desumasuQuotes(source), []);
     });
 
-    it("invalid: 番号で始まる段落の並びの中で調子が混ざる", () => {
+    it("valid: 番号で始まる段落の並びの中の少数派が、文書の多数派（ですます調）なら指さない", () => {
       const source = `${PROSE}\n\n（1）申請者は市内に住んでいる。\n\n（2）前年度の補助は受けられません。\n\n（3）税を滞納していない。\n\n審査には二週間かかります。`;
-      assert.deepEqual(desumasuQuotes(source), ["（2）前年度の補助は受けられません。"]);
+      assert.deepEqual(desumasuQuotes(source), []);
+    });
+
+    it("invalid: 番号で始まる段落の並びの中で、文書でも少数派の調子が混ざる", () => {
+      const source = `${PROSE}\n\n（1）申請者は市内に住んでいます。\n\n（2）前年度の補助は受けていない。\n\n（3）税を滞納していません。\n\n審査には二週間かかります。`;
+      assert.deepEqual(desumasuQuotes(source), ["（2）前年度の補助は受けていない。"]);
     });
 
     it("invalid: 番号で始まる段落が一つだけなら、本文と比べる", () => {
