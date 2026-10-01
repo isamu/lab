@@ -4,6 +4,26 @@ Newest first.
 
 ## Unreleased
 
+### Making AI-sounding text sound human: a Full rewrite mode (#439)
+
+The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human" get a third mode, beside Light
+and Bold. **Full** (全面書き直し) rewrites the whole document from scratch, because a Light or Bold pass keeps the skeleton
+of generated text: a heading every few paragraphs, bold lead-ins, symmetric sections, a まとめ that repeats the body.
+
+- Full is the recommended mode for `blog/*` (`blog/essay` included) and `literature/essay`, whenever
+  `ai-generated-composite` fires, and when the request says 「全面的に」 or "from scratch".
+- Steps: take an inventory (`chaff facts`, the old outline from `chaff outline`, the writer's claims and episodes).
+  Restructure before writing: reorder, merge and split, cut restating sections and the まとめ, drop lone headings,
+  turn point lists into a story, break three-point symmetry, move the writer's experience, open on the point. Show
+  the old and new outline first, then write a fresh draft in the writer's voice. Check with `--experimental`,
+  `chaff outline` and `chaff compare --allow-dropped heading --allow-added heading`, stop on stated criteria, and end with a before/after
+  table taken from chaff's output.
+- A checklist of AI patterns chaff cannot detect by machine, to check by reading.
+- Worked examples (ja and en, written for the page): a blog post rewritten from scratch, with real chaff, `outline`
+  and `compare` output before and after.
+- The skill's description now routes 「AIっぽさをなくして」「AI臭さを消して」「人間らしく書き直して」 and "make this sound
+  human" to this section.
+
 ### A NUL character no longer stops a Japanese run (#420)
 
 - **lang-ja replaces NUL (U+0000) before analysis**, as it already did lone surrogates. kuromoji threw on it, and the
