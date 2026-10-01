@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### Japanese density messages say 1000 字, the unit they measure (#402)
+
+`proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in
+Japanese while dividing by the document's length, which a Japanese document measures in characters. They now say
+「1000 字あたり」, as their level descriptions already did; `excessive-hedging`'s level description said 語 too and is
+fixed with them. A test reads every rule's per-1000 messages and level descriptions in both languages and checks the
+unit against what the rule divides by.
+
 ### Four experimental rules that catch a document disagreeing with itself (#170)
 
 Each compares two things the document itself says, so the result needs no judgement. All four are experimental; the
