@@ -12,6 +12,18 @@ Newest first.
   ISO/IEC/IEEE 29148. It runs on specifications, contracts, manuals and FAQs; statutes, which define their 等 terms,
   and glossaries, whose 〜のこと and 〜すること define a word, are left out. The words are in each language's lexicons.
 
+### `chaff facts <file>`: the facts to keep, before a rewrite (#439)
+
+Lists every fact atom `chaff compare` reads in one document as a checklist, with the line of each. The kinds are
+numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes. A rewrite from scratch can
+then start from the inventory instead of the old text. It is compare's own extractor, not a new parser: the counts
+are the ones compare holds the rewrite to.
+
+- The first line counts every kind, zeros included; a kind that could not be read is listed with the reason.
+- `--compact` (one fact per line, kind in English) and `--json` (path, language, counts, unread kinds, every fact with
+  kind, key, text and line). The screen follows the document's language.
+- One file per run; none or more than one is a usage error (exit 1).
+
 ### A line holding only a link ends its own sentence (#400)
 
 Links listed one per line without a bullet (a series index at the end of an article) were read as one long sentence,
