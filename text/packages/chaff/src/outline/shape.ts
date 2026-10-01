@@ -26,13 +26,21 @@ const lengthOfAll = (sentences: readonly Sentence[], unit: LengthUnit): number =
 /** The text before the first heading is listed only when there is some: a title line alone has nothing above it. */
 const isListed = (entry: OutlineEntry): boolean => entry.depth > 0 || entry.length > 0;
 
-/** A heading's own line; for the text above the first heading, the line its text starts on, below any front matter. */
-const startOf = (section: Section): number => (section.depth === 0 ? (section.sentences[0]?.span.start ?? section.span.start) : section.span.start);
+/** Where each heading starts, keyed by where it ends: a section begins after its heading, past a Setext underline. */
+type HeadingStarts = ReadonlyMap<number, number>;
 
-const entryOf = (section: Section, unit: LengthUnit, lineOf: (offset: number) => number): OutlineEntry => ({
+const headingStartsOf = (doc: ProseDocument): HeadingStarts => new Map((doc.markup?.headings ?? []).map((heading) => [heading.end, heading.start]));
+
+/** A heading's first line; for the text above the first heading, the line its text starts on, below any front matter. */
+const startOf = (section: Section, headingStarts: HeadingStarts): number =>
+  section.depth === 0 ? (section.sentences[0]?.span.start ?? section.span.start) : (headingStarts.get(section.span.start) ?? section.span.start);
+
+type Place = { readonly lineOf: (offset: number) => number; readonly headingStarts: HeadingStarts };
+
+const entryOf = (section: Section, unit: LengthUnit, place: Place): OutlineEntry => ({
   depth: section.depth,
   heading: section.heading,
-  line: lineOf(startOf(section)),
+  line: place.lineOf(startOf(section, place.headingStarts)),
   length: lengthOfAll(section.sentences, unit),
 });
 
@@ -52,7 +60,8 @@ const listPercentOf = (doc: ProseDocument): number => {
 /** The document's outline and its shape, measured from the same reading lint uses. */
 export const outlineOf = (doc: ProseDocument): Outline => {
   const starts = lineStarts(doc.source);
-  const entries = doc.sections.map((section) => entryOf(section, doc.lengthUnit, (offset) => placeOf(starts, offset).line)).filter(isListed);
+  const place: Place = { lineOf: (offset) => placeOf(starts, offset).line, headingStarts: headingStartsOf(doc) };
+  const entries = doc.sections.map((section) => entryOf(section, doc.lengthUnit, place)).filter(isListed);
   const shape: Shape = {
     headings: entries.filter((entry) => entry.depth > 0).length,
     averageSectionLength: averageOf(entries.map((entry) => entry.length).filter((length) => length > 0)),

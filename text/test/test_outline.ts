@@ -93,6 +93,17 @@ describe("the outline of a document", () => {
     );
   });
 
+  it("gives a Setext heading the line of its words, not of its underline", () => {
+    const measured = outline(en, lines("Title", "=====", "", "Body sentence here.", "", "Part", "----", "", "More text."));
+    assert.deepEqual(
+      measured.entries.map((entry) => [entry.depth, entry.heading, entry.line]),
+      [
+        [1, "Title", 1],
+        [2, "Part", 6],
+      ],
+    );
+  });
+
   it("counts English in words", () => {
     const measured = outline(en, lines("# Notes", "", "We met on Tuesday and agreed on the plan."));
     assert.equal(measured.unit, "word");
