@@ -227,8 +227,19 @@ const isMimeticUnit = (surface: string): boolean => {
   return morae >= MIMETIC_UNIT.fewest && morae <= MIMETIC_UNIT.most && !INNER_LONG_VOWEL.test(surface);
 };
 
-/** 片仮名の語はたいてい外来語（ユーザー・データ）で、重ねれば書き損じ。擬音の形（ムクムク・ブイブイ）だけは重ね言葉。 */
-const isLoanword = (surface: string): boolean => KATAKANA.test(surface) && !isMimeticUnit(surface);
+/** 「する」は名詞を動詞にするだけで、擬音の後ろの動詞（ブイブイ言わせる）とは違い、外来語の重なり（テストテストする）にも付く。 */
+const LIGHT_VERB = "する";
+
+/** 擬音は副詞として立つ。後ろに「と」「に」が続くか、行が終わるか（endsAsAdverb）、動詞に直接かかる（ブイブイ言わせる）。 */
+const standsAsMimetic = (second: Inflection, next: Inflection | undefined): boolean =>
+  endsAsAdverb(second, next) || (next !== undefined && next.pos === "動詞" && next.detail === "自立" && next.surface !== LIGHT_VERB && touches(second, next));
+
+/**
+ * 片仮名の語はたいてい外来語（ユーザー・テスト・メモ）で、重ねれば書き損じ。擬音（ムクムクと・ブイブイ言わせる）は、根が擬音の形で、
+ * 副詞の位置に立つものだけ。解析器は擬音の根も名詞（椋・ブイ）と読むので、品詞では見分けられない。
+ */
+const isLoanwordPair = (second: Inflection, next: Inflection | undefined): boolean =>
+  KATAKANA.test(second.surface) && !(isMimeticUnit(second.surface) && standsAsMimetic(second, next));
 
 const sameAndTouching = (first: Inflection | undefined, second: Inflection | undefined): boolean =>
   first !== undefined && second !== undefined && first.surface === second.surface && touches(first, second);
@@ -246,7 +257,7 @@ export const isWholeWordEcho = (words: readonly Inflection[], index: number): bo
     isWholeWordPair(first, second) &&
     sameAndTouching(first, second) &&
     first.surface.length >= MIN_ECHO_LENGTH &&
-    !isLoanword(first.surface) &&
+    !isLoanwordPair(second, words[index + 1]) &&
     !sameAndTouching(before, first)
   );
 };

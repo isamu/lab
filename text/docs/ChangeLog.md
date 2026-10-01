@@ -15,12 +15,15 @@ reduplication (UD `Echo=Rdp`), and the rule skips them:
   (ユーザーユーザー, データデータ) and a run of three (資料資料資料) are still reported too. This is a change of
   stance: a doubled two-kanji noun such as 確認確認 or 資料資料, which the rule used to report, now reads as reduplication.
 - **Katakana onomatopoeia**: a katakana word of two or three morae, with any long vowel only at its end, repeated
-  (ムクムク, ブイブイ, ブスブス, ババババ, ブーブー).
+  where an adverb stands: before と or に, at the end of a line, or right before a verb (ムクムクと, ブスブスと,
+  ババババと, ブイブイ言わせる). Elsewhere a doubled katakana word is a loanword slip (テストテストを, メモメモ。,
+  ユーザーユーザー) and is still reported.
 - **Laughter and one-kana onomatopoeia**: the same は-row hiragana or katakana three or more times, not attached to
   the word before it (ははは, あははは, ふふふ, ドドド). Each 「ははは」 used to give two findings. A run of a particle
   (ををを, よよよ) or a run attached to a word (私ははは, 行ったたた) is still a slip.
-- **Set phrases** in the lexicon `doubled-word`: などなど and あるある, and 知ったかか (知ったか is not in the dictionary,
-  so its last か looked doubled).
+- **Set phrases** in the lexicon `doubled-word`: などなど, あるある, ほどほどに, 代わる代わる, めでたしめでたし, またまた,
+  えへへ, and 知ったかか (知ったか is not in the dictionary, so its last か looked doubled). The analyser reads these as
+  particles, verbs, classical adjectives or conjunctions, so only the lexicon can say they are whole phrases.
 
 The rule's `why` and `not_flagged` now describe what it actually skips.
 

@@ -349,9 +349,10 @@ describe("isWholeWordEcho", () => {
     assert.deepEqual(wholeEchoAt(wordsOf(NOUN("駄目", "形容動詞語幹"), NOUN("駄目", "形容動詞語幹"))), [1]);
     assert.deepEqual(wholeEchoAt(wordsOf(NOUN("好き", "形容動詞語幹"), NOUN("好き", "接尾"))), [1]);
     assert.deepEqual(wholeEchoAt(wordsOf(PLAIN_ADJECTIVE("若い"), PLAIN_ADJECTIVE("若い"))), [1]);
-    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ムク"), NOUN("ムク"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ムク"), NOUN("ムク"), KANA_TO)), [1]);
     assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ブー"), NOUN("ブー"))), [1]);
-    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ゴロン"), NOUN("ゴロン"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ゴロン"), NOUN("ゴロン"), ["に", "助詞", "格助詞", "*"])), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ブイ"), NOUN("ブイ"), ["言わ", "動詞", "自立", "未然形"])), [1]);
   });
 
   it("付く語・数・一字の語・外来語・三つ目・形容詞の続く形・動詞は重ね言葉にしない", () => {
@@ -363,6 +364,9 @@ describe("isWholeWordEcho", () => {
     assert.deepEqual(wholeEchoAt(wordsOf(NOUN("データ"), NOUN("データ"))), []);
     assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ライブラリ"), NOUN("ライブラリ"))), []);
     assert.deepEqual(wholeEchoAt(wordsOf(NOUN("アイテム"), NOUN("アイテム"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("テスト"), NOUN("テスト"), ["を", "助詞", "格助詞", "*"])), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("テスト"), NOUN("テスト"), ["する", "動詞", "自立", "基本形"])), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("メモ"), NOUN("メモ"), ["。", "記号", "句点", "*"])), []);
     assert.deepEqual(wholeEchoAt(wordsOf(NOUN("二十", "数"), NOUN("二十", "数"))), []);
     assert.deepEqual(wholeEchoAt(wordsOf(NOUN("かけ"), ["かけ", "動詞", "自立", "連用形"])), []);
     assert.deepEqual(wholeEchoAt(wordsOf(NOUN("早め"), NOUN("早め"), NOUN("早め"))), [1]);

@@ -417,8 +417,19 @@ describe("doubled-word — 日本語", () => {
       "りんご、みかん、などなど。",
       "それはあるあるです。",
       "知ったかか、と言われました。",
+      "前置きはほどほどにします。",
+      "代わる代わるコーディングします。",
+      "めでたしめでたし。",
+      "またまた基礎の話です。",
+      "これは私の研究です、えへへ。",
     ];
     valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
+  });
+
+  it("invalid: 片仮名の外来語の重なりは、擬音の形でも副詞の位置に立たなければ書き損じ", () => {
+    assert.deepEqual(findingsOf("テストテストを実行します。", ja, "ja"), ["1:4 テストテスト"]);
+    assert.deepEqual(findingsOf("メモメモ。", ja, "ja"), ["1:3 メモメモ"]);
+    assert.deepEqual(findingsOf("ユーザーユーザー、確認します。", ja, "ja"), ["1:5 ユーザーユーザー"]);
   });
 
   it("invalid: 一字の仮名は二つなら書き損じ。三つでも前の語に付いていれば書き損じ", () => {
