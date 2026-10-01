@@ -42,3 +42,10 @@ example:
       In today's fast-paced world, data plays a crucial role. Let us delve into why.
     after: |
       We check stock levels every morning before placing orders.
+
+not_flagged:
+  ja: どの言い回しも、一つだけなら普通の文章にあります。重みの合計が上限を超えるまでは何も言いません。これだけで生成された文章だとは言いません。
+  en: Each phrase is ordinary on its own; nothing is said until the weights add up past the limit. This alone never says the text was generated.
+level_meaning:
+  ja: 言い回しの重みの合計が {limit} 点まで
+  en: up to a score of {limit}

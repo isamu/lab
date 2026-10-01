@@ -30,6 +30,81 @@ turns all four off.
 On the corpus (`yarn corpus`) the four report one finding, a true one: a Kubernetes enhancement proposal that says
 "This allows 2 things:" and lists one. `yarn bench` plants each of them in both languages.
 
+### Rules for the documented shapes of generated text, and more words for `ai-tell` (#170)
+
+Four new experimental rules check the marks of AI-sounding writing that style guides, Wikipedia's "Signs of AI
+writing" and studies of LLM vocabulary list, in Japanese and English. Each word they look for is in the language
+package's lexicon.
+
+- **`contrast-framing`**: the density of contrast frames: 「単なる X ではなく Y」「X だけでなく」, "not just X, but Y",
+  and a denial answered by a turn ("It's not a perk. It's a necessity."). One is ordinary, so a single one never counts.
+- **`stock-transition`**: the density of sentences that open with a stock transition (「さらに」「加えて」「このように」,
+  "Moreover", "Additionally", "In addition,"). Words that carry the argument (また, However, Therefore) are not counted.
+- **`assistant-residue`**: what a chat reply leaves in a document. A knowledge-cutoff line or an AI disclaimer
+  (「私の知識は」, "As of my last knowledge update") counts on its own; a courtesy people also write
+  (「お役に立てれば幸いです」, "I hope this helps") counts only when two come together.
+- **`unfilled-placeholder`**: a template blank left unfilled (「【会社名】」, "[Your Name]", "[Insert Date]"). A
+  Markdown link, a label its value follows (【氏名】山田), and an example 「○○」 are not blanks.
+
+`ai-generated-composite` also counts `contrast-framing`, `stock-transition` and `assistant-residue`. The genres that
+turn `ai-tell` off also turn off the two density rules (and academic papers `stock-transition`, speeches both);
+transcripts turn off `assistant-residue`.
+
+`ai-tell` gains the words the sources agree on (showcasing, underscores, pivotal, meticulous, "evolving landscape",
+"stands as", 「探っていきましょう」「一翼を担う」「未来をより豊かに」 and others). `closing-cliche` gains
+「いかがでしたでしょうか」 and 「お役に立てれば幸いです」. Words the sources name but human documents in the corpus use
+just as often (さまざまな, において, を実現, crucial, robust) are left out.
+
+In the corpus, the new rules report only the blanks of a published letter template (ACAS). AI-written samples in
+both languages (`test/fixtures/ai-samples/`, labelled as written by an AI) fire them; `yarn bench` plants a
+knowledge-cutoff line and a blank for the two rules that one edit can trigger.
+
+### `oxford-comma-consistency` reads a sentence once, however many "and"s it has (#170)
+
+For each "and" or "or", the check split the clause into items again from its start and read each item token by
+token, so a sentence of many "and"s took time in proportion to the square of its length, and a long one took minutes.
+It now reads the sentence once: the items are kept as it moves from one "and" to the next, and each question about an
+item is answered from counts made in that one reading. The same goes for finding a cited title around each "and". The
+output is unchanged.
+
+### `oxford-comma-consistency` judges a sentence that contains "constructor" or "toString" (#170)
+
+The parenthesis count looked each word up as an object property, so a word that names a member every object has
+(`constructor`, `toString`, `valueOf`, `hasOwnProperty`, `isPrototypeOf`) broke the count for the rest of the
+sentence, and a list after it was never judged. Such a sentence is now judged like any other. The corpus wikitext
+converter had the same lookup for template names, and `{{constructor}}` is now dropped like any unknown template.
+
+### A guide page on adding a rule, and the skill writes chaff.yaml from a style note (#170)
+
+- **Adding a rule: for AI and engineers** (`/guide/adding-rules/`) lays out the ways from easiest to most
+  powerful, with a worked example that turns "polite endings, sentences of at most 80 characters" into
+  `chaff.yaml` through `chaff rules --json`, and what a new built-in rule needs (rule file, detector, tests, a
+  planted mistake, the corpus check).
+- **The Claude Code skill** reads `rules --json` to turn a team's style note into `chaff.yaml`, says what no rule
+  covers, and tests a team rule with `explain` and a sample before committing it.
+
+### `chaff rules` prints a table, and `rules --json` carries what an AI needs to write settings (#170)
+
+- **`chaff rules`** (without `--json`) lists every rule by group, each with the level it runs at now, whether it
+  runs by default, is experimental, needs a list in `chaff.yaml` or runs with `chaff test`, and one line on what it
+  finds. A rule for another language shows as off.
+- **`chaff rules --json` is schema 2.** Each rule adds `group`, `summary`, `example`, `not_flagged`,
+  `level_meaning`, `languages`, `requires`, `genres` (how it stands in every genre: on and at which level,
+  experimental, turned off, or not suited) and `options`. The top level adds `groups`, the steps from a team's
+  style note to `chaff.yaml`, and `style_presets`, `custom_rule_types` and `rule_options`, marked as coming with the
+  local-rules release. Every field of schema 1 is kept.
+
+### Each rule's page reads for someone who is not an engineer (#170)
+
+A rule's page on the site now says what the rule finds, why it matters, a before and after with what chaff printed
+for each, what it does not flag, its levels in words ("up to 25 words in a sentence"), which genres run it, turn it
+off or are not suited to it, and how to silence one spot or change it for the team. The rule list is grouped the
+same way as the reference.
+
+- **Two more rule fields:** `not_flagged` (ja and en) and `level_meaning` (with `{limit}` for the number; not needed
+  for a rule whose levels set a severity). The rule-file test requires them. A rule whose levels are severities shows
+  them as error, warning and info.
+
 ### The guide lists everything chaff can find, with an example and chaff's real output (#170)
 
 A new guide page, **Reference: what chaff can find** (`/guide/reference/`), lists every rule in groups a reader

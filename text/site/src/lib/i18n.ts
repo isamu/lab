@@ -1,4 +1,4 @@
-import type { RuleGroup } from "../../../packages/chaff/src/rule-guide.ts";
+import { groupTextOf, type GroupText, type RuleGroup } from "../../../packages/chaff/src/rule-guide.ts";
 
 export type Lang = "ja" | "en";
 export const LANGS: readonly Lang[] = ["ja", "en"];
@@ -60,6 +60,30 @@ const ja = {
   paddedNote:
     "文書全体の割合を見るルールなので、この例の後ろに指摘のない普通の文章（日本語で 500 字、英語で 200 語ほど）を足して試しています。",
   ruleDetails: "詳しく",
+  whatItFinds: "見つけるもの",
+  exampleHeading: "例",
+  beforeLabel: "指摘される文",
+  afterLabel: "直した文",
+  noFinding: "指摘なし",
+  notFlagged: "指摘しないもの",
+  levelsPlain: "強さ（段階）",
+  levelsIntro:
+    "chaff.yaml の rules にこの名前と段階を書くと変わります。書かなければ、ジャンルが決めた段階で動きます（どのジャンルで動くかは下の「ジャンルごとの動き」にあります）。",
+  levelsSame: "どの段階でも同じように見ます。見ないときは off にします。",
+  levelsSeverity: "意味を読む検査の段階は、指摘の重さを表します。",
+  ownNumbers: "次のジャンルは、段階に別の数字を持っています（npx chaffjs explain で確かめられます）:",
+  byGenre: "ジャンルごとの動き",
+  genreOn: "既定で動くジャンル",
+  genreExperimental: "試験中なので、--experimental か chaff.yaml で動かすジャンル",
+  genreOff: "このルールを止めるジャンル",
+  genreUnsuited: "このルールが向かず、見ないジャンル",
+  silenceHeading: "黙らせる・変える",
+  silenceSpot: "この一か所だけ黙らせる（文書に書く）",
+  silenceTeam: "チームでゆるめる（理由は chaff.yaml にコメントで残ります）",
+  silenceOff: "チームで止める（chaff.yaml）",
+  turnOn: "試験中のこのルールを動かす（chaff.yaml）",
+  technical: "技術的な情報",
+  referenceLink: "例と実際の出力つきの一覧（リファレンス）",
 };
 
 export type UiKey = keyof typeof ja;
@@ -118,6 +142,30 @@ const en: Record<UiKey, string> = {
   paddedNote:
     "The rule measures the whole document, so this example was tried with an ordinary passage (about 200 words) after it that gives chaff nothing to report.",
   ruleDetails: "Details",
+  whatItFinds: "What it finds",
+  exampleHeading: "Example",
+  beforeLabel: "Flagged",
+  afterLabel: "Fixed",
+  noFinding: "no finding",
+  notFlagged: "What it does not flag",
+  levelsPlain: "Levels",
+  levelsIntro:
+    "Set a level for this rule under rules in chaff.yaml. With nothing set, it runs at the level its genre gives it (see By genre below).",
+  levelsSame: "Every level checks the same way. Use off to turn it off.",
+  levelsSeverity: "For a check that reads meaning, the level is how serious a finding is.",
+  ownNumbers: "These genres set their own numbers for the levels (npx chaffjs explain shows them):",
+  byGenre: "By genre",
+  genreOn: "Runs by default in",
+  genreExperimental: "Experimental, so it runs with --experimental or a level in chaff.yaml, in",
+  genreOff: "Turned off by the genre in",
+  genreUnsuited: "Not suited to, and not run in",
+  silenceHeading: "Silencing it or changing it",
+  silenceSpot: "Silence this one spot (in the document)",
+  silenceTeam: "Relax it for the team (the reason is kept as a comment in chaff.yaml)",
+  silenceOff: "Turn it off for the team (chaff.yaml)",
+  turnOn: "Turn this experimental rule on (chaff.yaml)",
+  technical: "Technical details",
+  referenceLink: "The list with examples and real output (Reference)",
 };
 
 const UI: Record<Lang, Record<UiKey, string>> = { ja, en };
@@ -139,53 +187,4 @@ export const href = (path: string): string => {
   return trimmed === "" ? base : `${base}${trimmed}/`;
 };
 
-type GroupText = { readonly name: string; readonly note: string };
-
-const GROUPS: Record<Lang, Record<RuleGroup, GroupText>> = {
-  ja: {
-    readability: { name: "読みやすさ", note: "長すぎる文、詰めすぎた段落、読み手がつまずく書き方。" },
-    wording: { name: "言葉づかい", note: "中身を言わずに強める言い方、決まり文句、誰がしたのかを書かない受け身。" },
-    slips: { name: "書き損じ", note: "書き換えの途中で残った語や空白。" },
-    consistency: {
-      name: "表記の揃え",
-      note: "どちらで書いても正しいものが、一つの文書の中で混ざっている所。chaff はどちらが正しいかを決めず、少ないほうを指します。",
-    },
-    structure: { name: "構造", note: "番号の抜け、無い条への参照、同じ語の二重定義、長い前置き。" },
-    facts: { name: "事実の食い違い", note: "日付と曜日、日付の順番、合計と内訳のように、暦や計算で確かめられる食い違い。" },
-    "ai-tells": {
-      name: "AIっぽさ",
-      note: "生成された文章にありがちな特徴。どれも、それだけで生成されたとは言いません。読み返す場所の目印です。",
-    },
-    team: {
-      name: "チームの表記",
-      note: "chaff.yaml にチームが書いた表記・社内用語・必須の見出しだけを見るルール。書かなければ何も言いません。",
-    },
-  },
-  en: {
-    readability: { name: "Readability", note: "Sentences that run too long, packed paragraphs, and other places a reader stumbles." },
-    wording: { name: "Wording", note: "Emphasis that says nothing, stock phrases, and passives that never say who acted." },
-    slips: { name: "Slips", note: "Words and spaces left over from an edit." },
-    consistency: {
-      name: "Consistency",
-      note: "Two ways of writing that are both right, mixed in one document. chaff does not pick a side; it points at whichever the document uses less.",
-    },
-    structure: {
-      name: "Structure",
-      note: "Skipped numbers, references to provisions that are not there, terms defined twice, long preambles.",
-    },
-    facts: {
-      name: "Facts that disagree",
-      note: "A date and its weekday, dates out of order, a total and its items: disagreements a calendar or a sum can settle.",
-    },
-    "ai-tells": {
-      name: "Signs of generated text",
-      note: "Traits common in generated text. None of them alone says the text was generated; they mark places to reread.",
-    },
-    team: {
-      name: "Your team's words",
-      note: "Rules that check only what your team lists in chaff.yaml: spellings, jargon, required headings. With nothing listed, they say nothing.",
-    },
-  },
-};
-
-export const groupText = (lang: Lang, group: RuleGroup): GroupText => GROUPS[lang][group];
+export const groupText = (lang: Lang, group: RuleGroup): GroupText => groupTextOf(lang, group);

@@ -15,7 +15,8 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs explain <rule>` | そのルールの意図と根拠を読みます |
 | `npx chaffjs genres` | ジャンルの一覧を、何向けかと一緒に出します |
 | `npx chaffjs --version` | chaffjs と、同梱の言語パッケージの版を出します |
-| `npx chaffjs rules --json` | いまの設定を JSON で出します。AI に渡す用です |
+| `npx chaffjs rules` | ルールの一覧を、グループごとに表で出します。いまの段階もわかります |
+| `npx chaffjs rules --json` | いまの設定とルールの説明を JSON で出します。AI に渡す用です |
 | `npx chaffjs relax\|strict\|off <rule>` | ルールの強さを変えます。`--why "理由"` を添えます |
 | `npx chaffjs baseline <dir>` | いまある指摘を棚上げします |
 | `npx chaffjs suppressions <dir>` | `stet` で黙らせている指摘を数えます |
@@ -60,7 +61,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
   344:1   warning この文は 129 文字あります（100 文字まで）
                   max-sentence-length
 
-指摘 5 件、動いていない rule 36 件
+指摘 5 件、動いていない rule 40 件
 ```
 
 最後の行は、指摘の数と、動かなかったルールの数です。
@@ -242,7 +243,7 @@ $ npx chaffjs docs/ --compact
 docs/a.md   technical/readme · 日本語   ジャンルはパスから   棚上げ 1 件
 
 
-指摘 0 件、動いていない rule 25 件
+指摘 0 件、動いていない rule 27 件
 ```
 
 棚上げした分も見たいときは、`--show-baseline` を付けます。
@@ -255,7 +256,7 @@ docs/a.md   technical/readme · 日本語   ジャンルはパスから
   3:1     warning この文は 108 文字あります（100 文字まで）
                   max-sentence-length
 
-指摘 1 件、動いていない rule 25 件
+指摘 1 件、動いていない rule 27 件
 ```
 
 CI に入れるときの使いかたは、[CI](./ci) で説明します。

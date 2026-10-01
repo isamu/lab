@@ -127,16 +127,18 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
   試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  45 件の rule は動いていません:
+  49 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agentless-passive（ジャンル legal/statute では見ないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（ジャンル legal/statute では見ないため）
       ai-tell（ジャンル legal/statute では見ないため）
       announced-count-mismatch（まだ試験中のため）
+      assistant-residue（まだ試験中のため）
       closing-cliche（ジャンル legal/statute では見ないため）
       concrete-evidence-density（ジャンル legal/statute では見ないため）
       contraction-consistency（ja 向けの rule ではないため）
+      contrast-framing（ジャンル legal/statute では見ないため）
       cushion-phrase-density（ジャンル legal/statute では見ないため）
       date-order（まだ試験中のため）
       double-keigo（まだ試験中のため）
@@ -168,10 +170,12 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
       section-length-uniformity（ジャンル legal/statute では見ないため）
       sentence-initial-conjunction-run（ja 向けの rule ではないため）
       sentence-rhythm（ジャンル legal/statute では見ないため）
+      stock-transition（ジャンル legal/statute では見ないため）
       stray-space（まだ試験中のため）
       taigen-dome-in-prose（ジャンル legal/statute では見ないため）
       title-case-consistency（ja 向けの rule ではないため）
       undefined-acronym（まだ試験中のため）
+      unfilled-placeholder（まだ試験中のため）
       unqualified-superlative（ジャンル legal/statute では見ないため）
 ```
 

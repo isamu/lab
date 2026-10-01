@@ -3,6 +3,7 @@
 This page lists everything chaff can find, one rule at a time.
 Each rule comes with a text it flags and what chaff actually printed for that text.
 Click a rule's name to read its full page.
+When no rule fits a team's requirement, read [Adding a rule](./adding-rules).
 
 ## How to read the list
 

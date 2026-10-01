@@ -37,3 +37,10 @@ example:
       There is a meeting on Friday to review the budget. It is the finance team that will lead it.
     after: |
       The team meets on Friday to review the budget. The finance team will lead it.
+
+not_flagged:
+  ja: 「it is raining」のように that 節を伴わない It is は数えません。
+  en: '"It is" without a that-clause ("it is raining") is not counted.'
+level_meaning:
+  ja: この形の文 {limit} 回まで
+  en: up to {limit} such sentences

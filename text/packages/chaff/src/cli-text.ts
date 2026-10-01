@@ -21,7 +21,8 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff genres                   ジャンル（文書の種類）の一覧と、それぞれ何向けか
   chaff tree <file> [--format sexp|json]  文書を番地の付いた木にする（条・項・定義・参照）
   chaff cite <原文> <引用.json>           回答の引用（番地と引用文）が原文にあるかを確かめる
-  chaff rules --json             いまの設定を JSON で出す（AI に渡す用）
+  chaff rules                    ルールの一覧を、グループごとに表で出す（いまの段階つき）
+  chaff rules --json             いまの設定とルールの説明を JSON で出す（AI に渡す用）
   chaff baseline <dir>           いまある指摘を棚上げする（既存の repo に入れるとき）
   chaff suppressions <dir>       stet で黙らせている指摘を数える
   chaff relax|strict|off <rule> [--why "理由"]
@@ -55,7 +56,8 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff genres                   list the genres (kinds of document) and what each is for
   chaff tree <file> [--format sexp|json]  the document as a tree of addresses (sections, clauses, definitions, references)
   chaff cite <source> <quotes.json>       check that quoted passages (address and text) are in the source
-  chaff rules --json             the current settings as JSON (to give to an AI)
+  chaff rules                    the rules as a table, by group, with the level each runs at now
+  chaff rules --json             the current settings and what each rule is, as JSON (to give to an AI)
   chaff baseline <dir>           shelve today's findings (when adding chaff to an existing repository)
   chaff suppressions <dir>       count the findings silenced with stet
   chaff relax|strict|off <rule> [--why "reason"]
@@ -137,7 +139,7 @@ export const CLI_TEXT: Texts<CliText> = {
     unknownProfile: (profile, where, known) =>
       `文書の種類 "${profile}" はありません（${where}）。使えるのは ${known.join("、")} と、種類を使わない none です。`,
     profileWhere: (where, files) => (where === "config" ? "chaff.yaml の profile" : `chaff.yaml の by_path、files: ${files.join(", ")}`),
-    unknownRule: (id) => `${id} というルールはありません。npx chaff rules --json で一覧が出ます。`,
+    unknownRule: (id) => `${id} というルールはありません。npx chaff rules で一覧が出ます。`,
     unknownRuleWithList: (id, list) => `${id} というルールはありません。\n一覧:\n${list}`,
     unnamed: "(名前なし)",
     sarifWritten: (path, count) => `\n  SARIF を書きました: ${path}（${count} 件）`,
@@ -191,7 +193,7 @@ export const CLI_TEXT: Texts<CliText> = {
     unknownProfile: (profile, where, known) =>
       `There is no document profile "${profile}" (${where}). The profiles are ${known.join(", ")}; none uses no profile.`,
     profileWhere: (where, files) => (where === "config" ? "profile in chaff.yaml" : `by_path in chaff.yaml, files: ${files.join(", ")}`),
-    unknownRule: (id) => `There is no rule named ${id}. npx chaff rules --json lists them.`,
+    unknownRule: (id) => `There is no rule named ${id}. npx chaff rules lists them.`,
     unknownRuleWithList: (id, list) => `There is no rule named ${id}.\nRules:\n${list}`,
     unnamed: "(no name)",
     sarifWritten: (path, count) => `\n  Wrote SARIF: ${path} (${counted(count, "finding")})`,

@@ -6,6 +6,7 @@ planted:
   agentless-passive: [ja, en]
   announced-count-mismatch: [ja, en]
   agreement-slip: [en]
+  assistant-residue: [ja, en]
   bold-density: [ja, en]
   closing-cliche: [ja, en]
   contraction-consistency: [en]
@@ -47,11 +48,13 @@ planted:
   title-case-consistency: [en]
   total-mismatch: [ja, en]
   undefined-acronym: [ja, en]
+  unfilled-placeholder: [ja, en]
 not_planted:
   adverb-overuse: a density over the whole document
   ai-generated-composite: a composite of other signals, with no detector of its own
   ai-tell: a density over the whole document
   concrete-evidence-density: several sections with no number, code or link; the samples are written with figures
+  contrast-framing: a density over the whole document
   cushion-phrase-density: a density over the whole document
   empty-conclusion: L4, judged by chaff test and never run by lint
   paragraph-length-variance: the shape of the whole document, not one mistake
@@ -61,6 +64,7 @@ not_planted:
   rule-of-three: the shape of the whole document, not one mistake
   section-length-uniformity: the shape of the whole document, not one mistake
   sentence-rhythm: the shape of the whole document, not one mistake
+  stock-transition: a density over the whole document
   taigen-dome-in-prose: a count over the whole document; reaching it would rewrite the sample's register
   unqualified-superlative: more than one unqualified superlative in a document is several mistakes, not one
   unsourced-number: L4, judged by chaff test and never run by lint

@@ -47,3 +47,10 @@ example:
       資料を確認しました。担当者が払いました。会議で決めました。見積もりを 送りました。
     after: |
       資料を確認しました。担当者が払いました。会議で決めました。見積もりを送りました。
+
+not_flagged:
+  ja: 名詞と名詞のあいだの空白（担当 田中）、句点で終わらない行、見出し、表、「」の中、英数字との境目は見ません。文書全体が文節ごとに空ける書き方なら指しません。
+  en: Spaces between two nouns, lines that do not end with a full stop, headings, tables, quotations and boundaries with Latin letters are not checked. A document that spaces every phrase on purpose is not reported.
+level_meaning:
+  ja: 少ないほうの空け方が {limit} 箇所あれば指摘
+  en: reported once {limit} spaces go against the document's habit

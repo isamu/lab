@@ -15,7 +15,8 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs explain <rule>` | Shows what a rule is for, and why |
 | `npx chaffjs genres` | Lists the genres and what each is for |
 | `npx chaffjs --version` | Prints the version of chaffjs and of its bundled language packages |
-| `npx chaffjs rules --json` | The current settings as JSON, to give to an AI |
+| `npx chaffjs rules` | Every rule as a table, by group, with the level it runs at now |
+| `npx chaffjs rules --json` | The current settings and what each rule is, as JSON, to give to an AI |
 | `npx chaffjs relax\|strict\|off <rule>` | Changes a rule's level, with `--why "reason"` |
 | `npx chaffjs baseline <dir>` | Shelves today's findings |
 | `npx chaffjs suppressions <dir>` | Counts the findings silenced with `stet` |
@@ -56,7 +57,7 @@ sample.md   blog/tech · English   genre from the default
   142:1   warning The first sentence repeats the heading "agentFunctionInfo"
                   heading-echo
 
-3 findings, 39 rules not run
+3 findings, 43 rules not run
 ```
 
 The last line counts the findings and the rules that did not run.
@@ -235,7 +236,7 @@ $ npx chaffjs docs/ --compact
 docs/a.md   technical/readme · English   genre from the path   1 shelved
 
 
-0 findings, 28 rules not run
+0 findings, 30 rules not run
 ```
 
 To see the shelved ones too, add `--show-baseline`.
@@ -248,7 +249,7 @@ docs/a.md   technical/readme · English   genre from the path
   3:1     warning This sentence runs 43 words (limit 25)
                   max-sentence-length
 
-1 finding, 28 rules not run
+1 finding, 30 rules not run
 ```
 
 How to use it in CI is in [CI](./ci).

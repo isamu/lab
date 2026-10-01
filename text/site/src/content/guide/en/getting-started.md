@@ -87,13 +87,15 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  43 rules did not run:
+  47 rules did not run:
       adverb-overuse (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
       announced-count-mismatch (still experimental)
+      assistant-residue (still experimental)
       contraction-consistency (still experimental)
+      contrast-framing (still experimental)
       dangling-figure-reference (still experimental)
       dangling-reference (still experimental)
       date-order (still experimental)
@@ -126,10 +128,12 @@ article.md   blog/tech · English   genre from the default
       section-length-uniformity (still experimental)
       sentence-initial-conjunction-run (still experimental)
       sentence-rhythm (still experimental)
+      stock-transition (still experimental)
       stray-space (not a rule for en)
       taigen-dome-in-prose (not a rule for en)
       title-case-consistency (still experimental)
       total-mismatch (still experimental)
+      unfilled-placeholder (still experimental)
       unqualified-superlative (still experimental)
 
 ```

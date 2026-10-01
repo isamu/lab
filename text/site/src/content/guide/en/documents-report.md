@@ -125,14 +125,16 @@ enquiries.md   business/report · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  45 rules did not run:
+  49 rules did not run:
       adverb-overuse (still experimental)
       agentless-passive (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
       announced-count-mismatch (still experimental)
+      assistant-residue (still experimental)
       contraction-consistency (still experimental)
+      contrast-framing (still experimental)
       cushion-phrase-density (still experimental)
       dangling-figure-reference (still experimental)
       dangling-reference (still experimental)
@@ -164,11 +166,13 @@ enquiries.md   business/report · English   genre from --genre
       risk-disclosure (it reads meaning; npx chaff test runs it)
       sasete-itadaku (not a rule for en)
       sentence-initial-conjunction-run (still experimental)
+      stock-transition (still experimental)
       stray-space (not a rule for en)
       taigen-dome-in-prose (not a rule for en)
       title-case-consistency (still experimental)
       total-mismatch (still experimental)
       undefined-acronym (still experimental)
+      unfilled-placeholder (still experimental)
       unqualified-superlative (still experimental)
       unsourced-number (it reads meaning; npx chaff test runs it)
 ```

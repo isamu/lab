@@ -1,0 +1,55 @@
+id: stock-transition
+layer: L2
+status: experimental
+how_to_find: stock-transition
+word_list: stock-transition
+uses: [pos]
+severity: info
+
+name:
+  ja: 決まった接ぎで始まる文が多い
+  en: Too many stock transitions
+
+why:
+  ja: 「さらに」「加えて」「このように」で文を始めると、前の文と何がどう繋がるのかを言わずに済んでしまいます。重なると、並べただけの文章に見えます。生成文によく見られる癖として知られています。
+  en: Opening with "Moreover" or "Additionally" lets a sentence skip saying how it follows from the last. Piled up, the text reads as a list with glue, a habit well known in generated text.
+
+message:
+  ja: 「{matched}」など、決まった接ぎで始まる文が 1000 字あたり {density} 個あります（{limit} 個まで）
+  en: '"{matched}" and other stock transitions open {density} sentences per 1000 words (limit {limit})'
+
+how_to_fix:
+  ja: 接ぎの語を消して読んでください。繋がりが要るなら、何が何の理由なのかを言葉で書いてください。
+  en: Delete the transition and reread. If the link matters, say what it is.
+
+# 1000 語（日本語は 1000 字）あたりの数。
+levels:
+  ja: { strict: 2, normal: 3, relaxed: 5 }
+  en: { strict: 4, normal: 6, relaxed: 10 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 「さらに」「加えて」「このように」で始まる文が多く、何がどう繋がるのかを言わずに並べている所
+  en: Too many sentences opening with "Moreover", "Additionally" or "Furthermore", listing without saying how they connect
+example:
+  ja:
+    pad: true
+    before: |
+      さらに、費用が下がります。加えて、作業も速くなります。このように、良い点が多くあります。
+    after: |
+      費用が下がり、見積もりも一件あたり十分早く出せるようになりました。
+  en:
+    pad: true
+    before: |
+      Moreover, costs go down. Additionally, the work gets faster. Furthermore, the team is happier.
+    after: |
+      Costs went down, so each quote now goes out ten minutes sooner.
+
+not_flagged:
+  ja: 話を運ぶ接続詞（「また」「そのため」「しかし」）と、文の途中の接ぎは数えません。短い文書は測りません。
+  en: Words that carry the argument (However, Therefore), a transition inside a sentence, and "In addition to …" are not counted. Short documents are not measured.
+level_meaning:
+  ja: 1000 字あたり {limit} 個まで
+  en: up to {limit} per 1000 words
