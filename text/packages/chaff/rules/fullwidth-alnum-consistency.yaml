@@ -46,8 +46,8 @@ example:
       申込は2024年4月10日までです。説明会は2024年4月3日と2024年4月5日に開きます。
 
 not_flagged:
-  ja: 鉤括弧で引いたもの、項目と注の番号（「１．」「（１）」「※１」）、箇条書きの頭の番号、注や URL を含む文は数えません。英字一字・英字の語・数字一字・数字の並びは別々に比べるので、「１桁は全角、２桁以上は半角」はそろっていると見ます。どちらの書き方が正しいかは決めません。
-  en: Quotations in brackets, item and note numbers (１．, （１）, ※１), a number at the head of a list item, and notes or sentences with a URL are not counted. Single letters, words, single digits and longer numbers are compared separately, so "one digit full-width, more digits half-width" counts as consistent. Neither way is called right.
+  ja: 鉤括弧で引いたもの、項目と注の番号（「１．」「（１）」「※１」）、箇条書きの頭の番号、版の番号の続き（TLS1.2 の 2）、注や URL を含む文は数えません。英字一字・英字の語・数字一字・数字の並びは別々に比べるので、「１桁は全角、２桁以上は半角」はそろっていると見ます。どちらの書き方が正しいかは決めません。
+  en: Quotations in brackets, item and note numbers (１．, （１）, ※１), a number at the head of a list item, the rest of a version number (the 2 of TLS1.2), and notes or sentences with a URL are not counted. Single letters, words, single digits and longer numbers are compared separately, so "one digit full-width, more digits half-width" counts as consistent. Neither way is called right.
 level_meaning:
   ja: 少ないほうが組の {limit}% 以下のとき指摘
   en: reported when the minority form is {limit}% of its group or less

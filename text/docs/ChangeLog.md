@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `fullwidth-alnum-consistency` leaves the rest of a version number to its name (#170)
+
+In a document that writes 第１条 in full-width digits, the 2 of 「TLS1.2」 was reported as a half-width digit. A digit run
+after a dot that follows a name ending in letters and digits (TLS1, Python3, and on through Python3.12.4) is part of
+that name when written in the name's width, so it is no vote on how the document writes its numbers. A decimal
+(1.5), a number after a name without a dot (「EC2 8台」) and a tail in the other width (「TLS1.２」) still count.
+
 ### `latin-spacing` skips the space after an item number at the head of a line (#170)
 
 Terms and statutes number their items with a kanji numeral and a space: 「一 JIS X 0201として規格化されている英数字」.
