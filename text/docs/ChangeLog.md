@@ -14,34 +14,79 @@ paragraph they are read as list items, so `repeated-sentence-head`, `max-paragra
 rules treat them as they treat the same lines written with `- `; one link line in the middle of a paragraph stays one
 of its sentences. Every rule that reads sentences takes this path.
 
+### `latin-spacing` skips link text and version numbers, and reports a two-way document once (#395)
+
+### `unqualified-superlative` reads 「〜のほうが」「〜との」 and quotations (#394)
+
+- 「後者のほうが圧倒的に長い」「他社と比べて」 name what is compared, anywhere in the sentence, like より and に比べる
+  already did. 「の方が」 is not added: in 「担当の方が最も詳しい」 the 方 is a person, not a comparison.
+- 「SES との最大の分岐点」: 「との」 names the counterpart only right before the superlative, so 「チームとの会議で最高の成果」
+  is still reported. A comparison marker with `position: before` in the `comparison-marker` lexicon works this way.
+- A superlative inside 「」『』 or quotation marks ("…", “…”) is someone else's words and is not reported; one outside
+  the quotation in the same sentence still is.
+
+Superlatives limited by a clause before them (「バグを検出できる唯一のルール」) are still reported: the same shape is
+also a boast (「誰もが認める最高の品質」), and is left for a decision.
+
+### Japanese density messages say 1000 字, the unit they measure (#402)
+
+`proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in
+Japanese while dividing by the document's length, which a Japanese document measures in characters. They now say
+「1000 字あたり」, as their level descriptions already did; `excessive-hedging`'s level description said 語 too and is
+fixed with them. A test reads every rule's per-1000 messages and level descriptions in both languages and checks the
+unit against what the rule divides by.
+
+### `feedback` and `suppressions` say when the rule asked about did not run (#397)
+
+`chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and
+`--experimental` was not given, although the finding had been on screen a moment before. It now says the rule did not
+run in this check and why, and, for an experimental rule, to run again with `--experimental`. A draft made with
+`--experimental` or `--genre` (or with `experimental: true` in chaff.yaml) records them under Environment ("Run with"),
+so whoever reads the report can run the same check. `chaff suppressions` likewise lists the rules that stets name but
+that did not run in this check, which it could not count, instead of only "No findings are silenced".
+
+### A Japanese article full of code is read as Japanese (#399)
+
+The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
+code blocks came out English: the Japanese rules did not run and the English ones read Japanese headings. The guess
+now leaves out fenced code blocks, inline code, HTML tags, comments and code blocks (the text between other tags still counts), YAML
+front matter, MDX imports and component lines, and URLs. Indented text is kept, because in plain text it is prose. A document that is nothing but code is still judged from all of it. `chaff`,
+`chaff test`, `chaff eval` and `chaff tree` all guess the same way.
+
+### `stet` covers the block right below it, not the next six lines (#401)
+
+`<!-- stet: rule — reason -->` silenced the rule on the six lines after the comment, whatever they held: a finding of
+the same rule in the next paragraph was silenced too, and the end of a long wrapped paragraph was not. Now it covers
+the block right after the comment, as the guide and the spec describe, and as the Markdown parser reads it: a
+paragraph, a heading, a whole list, a table, a code block, a quote. Inside a list item it covers the item's next
+block, not the next item. A comment with text on its own line covers that line, and one inside a paragraph covers the
+rest of the paragraph. In plain text a paragraph runs to the blank line. `stet-section` and `stet-file` are unchanged.
+
+### On a Node.js older than 24, `chaff` says which version it needs instead of failing with a SyntaxError (#398)
+
+npm runs a package whose `engines` the Node.js does not meet, with a warning at most, and the CLI then failed while
+loading (`The requested module 'node:fs' does not provide an export named 'globSync'`), which does not point at the
+version. `bin/chaff.js` now checks `process.versions.node` against `engines.node` in its own `package.json` before it
+loads anything else, and stops with "chaff needs Node.js 24 or later. This is v18.20.8. Install the LTS from
+https://nodejs.org/en" (in Japanese under a Japanese locale), exit code 1. The entry point is written so that Node.js 12
+and later can parse it. This also stops Node.js 22 and 23, which `engines` already excluded.
+
+### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
+
+Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted
+by line, then column, in every output (friendly, `--compact`, SARIF, `chaff test`). In `--compact`, the
+`line:column` column widens to the longest position in the document plus one space, so `1070:131` no longer runs into
+`warning`; a document whose positions are all short prints exactly as before.
+
 ### New rules: notation that should agree with itself, double negatives and ら抜き言葉 (#170)
 
-Experimental rules. Each finding in the corpus was read before the rule was added.
-
-- **`fullwidth-alnum-consistency`** (ja): letters and digits written both full-width (ＡＢＣ１２３) and half-width
-  (ABC123), reported on the minority like `kutoten-consistency`. Single letters, words, single digits and longer numbers
-  are compared apart, so "one digit full-width, more digits half-width" is consistent. Item and note numbers (`（１）`,
-  `１．`, `※１`), a number at the head of a list item, quotations, citations and English sentences are not counted, and
-  a minority over a third of its group (the level's limit) is read as deliberate. In the corpus it finds mixed dates
-  and article numbers in 通知 and ガイドライン (`法第４条、第９条及び第131条`), `ＵＲＬ` beside `URL` in e-Tax mails, and
-  date lines in half-width above full-width speeches; the misses are a page that names full-width characters as
-  examples (`全角英数字（Ａ、１等）`). It is the first of these rules to fire in `examples/` (`２つ` beside `1日` in
-  `business-ja/membership.md`), a true finding.
-- **`spelling-consistency`** (en): British and American spellings mixed (colour / color, centre / center, travelled /
-  traveled). The pairs are lexicons in lang-en: `spelling-variant`, and `spelling-ize` compared on its own so Oxford
-  spelling (colour with organize) is consistent. A name capitalised mid-sentence, a quotation and a word quoted on its
-  own (`‘organize’`) are not counted; the literature preset turns it off. In the corpus it finds mixed spellings in arXiv
-  listings, IETF and NSF documents and GitLab's handbook; the miss is "liter" for a truncated "literal" in chat minutes.
-- **`double-negative`** (ja / en): 「〜ないわけではない」「〜ないことはない」, "not uncommon", "not unlike", from a
-  `double-negative` lexicon in each language (phrase match, severity info). The legal, literature and speech presets
-  turn it off. Two corpus findings, both true ("not uncommon", "not dissimilar").
-- **`ra-nuki`** (ja): 見れる, 食べれる, 来れる, これない. lang-ja marks the stem of an ichidan or カ変 verb in its 未然形
-  and the れる attached to it with the token feature `PotentialRa=Dropped` (the forms the dictionary keeps as one word
-  are the lexicon `ra-dropped-verb`); a godan potential (走れる) is not touched. Quoted speech is skipped, and the speech and
-  literature presets turn it off. The one corpus finding is a typo (`とらえれいただければ`) read as a dropped ら.
-
-`minorityOf` (orthography.ts) is the two-way minority that `latin-spacing`, `kutoten-consistency` and the new
-consistency rules share; `minorityWithin` adds the share limit.
+- The text of a Markdown link is not counted. It is usually the title of the page it points to, so its spacing
+  belongs to the source, as inside 「」. The spacing around the link is still the writer's and still counts.
+- Three or more numbers joined by dots (`1.0.0`, `手順2.1.2で`) are a version or an item number, not a quantity, and
+  are not counted, like `073-489-5909`. Two (`1.5 倍`) are a decimal and still count.
+- When the less common way is more than a fifth of one kind of boundary, and at least five places, the document is
+  written two ways rather than slipping. It is reported once with both counts (「空ける所が 56 箇所、詰める所が 67
+  箇所あります」) instead of once per place, so chaff does not call one side wrong in a near-even document.
 
 ### New rules: a document's outline (#170)
 
