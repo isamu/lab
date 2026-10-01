@@ -16,7 +16,12 @@ import { optionValues, settleOptions, type OptionLayer } from "./rule-options.ts
 import { byPosition } from "./finding-order.ts";
 import { PatternTimeout } from "./custom/bounded-match.ts";
 
-export type Skipped = { readonly rule: string; readonly why: string };
+export type Skipped = {
+  readonly rule: string;
+  readonly why: string;
+  /** Off only because it is experimental: --experimental (or chaff.yaml's experimental) would run it. */
+  readonly offUntilExperimental?: true;
+};
 
 export type RunResult = {
   readonly findings: readonly Finding[];
@@ -41,9 +46,10 @@ const levelFor = (rule: RuleDefinition, settings: Settings, experimental: boolea
 };
 
 /** Why a rule at off did not run: chaff.yaml turned it off, the genre's preset did, or it is experimental. */
-const offReason = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): string => {
-  if (settings[rule.id] !== undefined) return reasons.turnedOff;
-  return preset[rule.id] === undefined ? reasons.experimental : reasons.presetOff(genre);
+const offSkip = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): Skipped => {
+  if (settings[rule.id] !== undefined) return { rule: rule.id, why: reasons.turnedOff };
+  if (preset[rule.id] !== undefined) return { rule: rule.id, why: reasons.presetOff(genre) };
+  return { rule: rule.id, why: reasons.experimental, offUntilExperimental: true };
 };
 
 const reasonsFor = (doc: ProseDocument): Reasons => REASONS[uiLanguageOf(doc.language)];
@@ -240,8 +246,7 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
       const blocked = unmet(rule, doc);
       if (blocked !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: blocked }] };
       const level = levelFor(rule, settings, experimental, preset);
-      if (level === "off")
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: offReason(rule, settings, preset, genre, reasonsFor(doc)) }] };
+      if (level === "off") return { findings: acc.findings, skipped: [...acc.skipped, offSkip(rule, settings, preset, genre, reasonsFor(doc))] };
       const noTags = untagged(rule, doc);
       if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
       // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
