@@ -31,6 +31,10 @@ describe("guessLanguage reads the prose, not the code (#399)", () => {
     const imports = Array.from({ length: 10 }, (_, index) => `import { Component${String(index)} } from "@site/components/component-${String(index)}";`);
     assert.equal(guessLanguage(`${imports.join("\n")}\n\n${JAPANESE}\n`).language, "ja");
     assert.equal(guessLanguage(`<div>${JAPANESE}</div>\n\n${ENGLISH}\n`).language, "ja");
+    ["script", "style", "pre"].forEach((tag) => {
+      assert.equal(guessLanguage(`${JAPANESE}\n\n<${tag}>\n${CODE_LINES.join("\n")}\n</${tag}>\n`).language, "ja", tag);
+    });
+    assert.equal(guessLanguage(`${JAPANESE}\n\n   <!-- a -> b ${CODE_LINES.join(" ")} -->\n`).language, "ja");
   });
 
   it("an English article with Japanese only in its code stays English", () => {
