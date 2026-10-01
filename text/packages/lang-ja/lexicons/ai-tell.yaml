@@ -5,22 +5,27 @@ language: ja
 entries:
   - pattern: 現代社会において
     weight: 0.9
+    rewrite: 消して、本題から書く
   - pattern: 急速に変化する
     weight: 0.7
   - pattern: 重要な役割を果たす
     weight: 0.8
+    rewrite: 何をするのかを書く（「発注の判断に使う」）
   - pattern: と言えるでしょう
     weight: 0.6
+    rewrite: 言い切れるなら「です」。言い切れないなら、何が分かれば言えるのかを書く
   - pattern: 様々な要因が
     weight: 0.6
   - pattern: 大きな可能性を秘める
     weight: 0.8
   - pattern: 深く掘り下げる
     weight: 0.7
+    rewrite: 説明する
   - pattern: ぜひ参考にしてみてください
     weight: 0.7
   - pattern: といえるでしょう
     weight: 0.6
+    rewrite: 言い切れるなら「です」。言い切れないなら、何が分かれば言えるのかを書く
   - pattern: と言えるのではないでしょうか
     weight: 0.7
   - pattern: 探っていきましょう
@@ -37,8 +42,10 @@ entries:
     weight: 0.6
   - pattern: 鍵となる
     weight: 0.5
+    rewrite: 何を決めるのかを書く
   - pattern: 鍵を握る
     weight: 0.5
+    rewrite: 何を決めるのかを書く
   - pattern: 欠かせない存在
     weight: 0.6
   - pattern: 未来をより豊かに
@@ -65,26 +72,36 @@ entries:
   # 1 つなら人も書くので重みは低い。
   - pattern: 地味に効く
     weight: 0.4
+    rewrite: 何に、どれだけ効いたのかを書く
   - pattern: 効いてくる
     weight: 0.3
   - pattern: 時間を溶かす
     weight: 0.4
+    rewrite: 時間がかかった（何に、どれだけ）
   - pattern: 一つずつ潰す
     weight: 0.3
+    rewrite: 一つずつ直す
   - pattern: ひとつずつ潰す
     weight: 0.3
+    rewrite: 一つずつ直す
   - pattern: 静かに壊れる
     weight: 0.5
+    rewrite: エラーを出さずに失敗する
   - pattern: 静かに失敗する
     weight: 0.5
+    rewrite: エラーを出さずに失敗する
   - pattern: 黙って無視される
     weight: 0.5
+    rewrite: エラーを出さずに無視される
   - pattern: 黙って捨てられる
     weight: 0.5
+    rewrite: 警告なしに捨てられる
   - pattern: 黙って失敗する
     weight: 0.5
+    rewrite: エラーを出さずに失敗する
   # 手で触れられるもののように言う抽象語。「解像度」「腹落ち」「肌感」は人の記事にも同じくらいあるので入れない。
   - pattern: 温度感
     weight: 0.3
+    rewrite: どれくらい急ぐのか、どれくらい本気なのかを書く
   - pattern: 血の通った
     weight: 0.4

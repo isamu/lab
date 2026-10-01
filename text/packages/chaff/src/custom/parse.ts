@@ -232,6 +232,7 @@ const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, us
     notFlagged: {},
     levelMeaning: {},
     sources: [],
+    rewrite: {},
   },
 });
 
