@@ -17,11 +17,13 @@ planted:
   date-range-reversed: [ja, en]
   date-weekday-mismatch: [ja, en]
   double-keigo: [ja]
+  double-negative: [ja, en]
   doubled-punctuation: [ja, en]
   doubled-word: [ja, en]
   duplicate-definition: [ja, en]
   duplicate-heading: [ja, en]
   emoji-density: [ja, en]
+  fullwidth-alnum-consistency: [ja]
   empty-intensifier: [ja, en]
   empty-section: [ja, en]
   excessive-hedging: [ja, en]
@@ -50,6 +52,7 @@ planted:
   percent-sum-mismatch: [ja, en]
   preamble-length: [ja, en]
   preferred-term: [ja, en]
+  ra-nuki: [ja]
   repeated-conjunction: [ja, en]
   required-sections: [ja, en]
   sasete-itadaku: [ja]
@@ -77,6 +80,7 @@ not_planted:
   rule-of-three: the shape of the whole document, not one mistake
   section-length-uniformity: the shape of the whole document, not one mistake
   sentence-rhythm: the shape of the whole document, not one mistake
+  spelling-consistency: the English samples use at most one word with a British or American spelling, so no single edit mixes them
   stock-transition: a density over the whole document
   taigen-dome-in-prose: a count over the whole document; reaching it would rewrite the sample's register
   unqualified-superlative: more than one unqualified superlative in a document is several mistakes, not one

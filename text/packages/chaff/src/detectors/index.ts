@@ -43,6 +43,9 @@ import { invisibleCharacter } from "./invisible-character.ts";
 import { spaceBeforePunctuation } from "./space-before-punctuation.ts";
 import { duplicateHeading } from "./duplicate-heading.ts";
 import { emptySection } from "./empty-section.ts";
+import { fullwidthAlnum } from "./fullwidth-alnum.ts";
+import { spellingVariety } from "./spelling-variety.ts";
+import { raNuki } from "./ra-nuki.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
 import { assistantResidue, contrastFraming, stockTransition, unfilledPlaceholder } from "./ai-phrasing.ts";
@@ -121,4 +124,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "space-before-punctuation": spaceBeforePunctuation,
   "duplicate-heading": duplicateHeading,
   "empty-section": emptySection,
+  "fullwidth-alnum": fullwidthAlnum,
+  "spelling-variety": spellingVariety,
+  "ra-nuki": raNuki,
 };

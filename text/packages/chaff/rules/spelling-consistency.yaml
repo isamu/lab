@@ -1,0 +1,47 @@
+id: spelling-consistency
+layer: L3
+status: experimental
+how_to_find: spelling-variety
+word_list: spelling-variant
+extra_word_lists: [spelling-ize]
+languages: [en]
+severity: info
+
+name:
+  ja: イギリスとアメリカの綴りが混ざっている
+  en: British and American spellings are mixed
+
+why:
+  ja: colour と color、centre と center、organise と organize のように、イギリスとアメリカの綴りはどちらも正しい英語です。困るのは一つの文書の中で混ざることで、検索で別の語になり、別の人が書いた段落がそこだけ違って見えます。chaff はどちらが正しいかを決めず、文書の中で少ないほうを指摘します。-ise と -ize は別に比べます（Oxford の綴りは colour と organize を一緒に使うため）。文の頭でないのに大文字で始まる語（Labor Day、World Health Organization）は名前なので数えず、引用符の中と引用符で引いた語（‘organize’）も数えません。古い文学の綴りは時代のものなので、文学のジャンルでは既定で止めています。少ないほうが三分の一を超える文書は、使い分けている（引用や固有の用語）と見て言いません。
+  en: British and American spellings (colour and color, centre and center, organise and organize) are both correct English. What reads badly is mixing them in one document, which makes search treat them as different words and makes another writer's paragraph stand out. chaff does not decide which is right; it points at whichever the document uses less. -ise and -ize are compared on their own, since Oxford spelling writes colour with organize. A word capitalised in the middle of a sentence (Labor Day, World Health Organization) is a name and is not counted, nor is anything in quotation marks or a word quoted on its own (‘organize’). The literature preset turns it off, since old spelling belongs to its time. It says nothing when the minority is more than a third, since the document then mixes them on purpose (quotations, fixed terms).
+
+message:
+  ja: 「{matched}」と書いています（この文書はふつう「{other}」の綴り。{of} 箇所のうち {count} 箇所が違う）
+  en: '"{matched}" here, where the document usually spells it "{other}" ({count} of {of})'
+
+how_to_fix:
+  ja: 文書の多いほうの綴りに合わせてください。チームで決めているなら、STYLE.md に書いておくと迷いません。
+  en: Match the spelling the rest of the document uses. If the team has decided, write it in the style guide.
+
+# 少ないほうが組の何パーセントまでなら「混ざっている」と見るか。これを超えたら、文書が使い分けている。
+levels: { strict: 49, normal: 34, relaxed: 20 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 英語で、colour と color のように、イギリスとアメリカの綴りが一つの文書の中で混ざっている所
+  en: British and American spellings (colour and color, centre and center) mixed in one document
+example:
+  en:
+    before: |
+      The colour of the logo is blue. The colour of the button is green. The color of the link is red.
+    after: |
+      The colour of the logo is blue. The colour of the button is green. The colour of the link is red.
+
+not_flagged:
+  ja: どちらの綴りが正しいかは決めません。-ise と -ize は別に比べるので、Oxford の綴り（colour と organize）はそろっていると見ます。文の途中で大文字で始まる名前（Labor Day）と引用符の中は数えません。
+  en: Neither spelling is called right. -ise and -ize are compared on their own, so Oxford spelling (colour with organize) is consistent. Names capitalised mid-sentence (Labor Day) and quotations are not counted.
+level_meaning:
+  ja: 少ないほうが組の {limit}% 以下のとき指摘
+  en: reported when the minority spelling is {limit}% of its group or less

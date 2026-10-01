@@ -49,6 +49,8 @@ groups:
       ai-generated-composite: off
       contrast-framing: off
       stock-transition: off
+      # Statutes and opinions write "not inconsistent with" on purpose.
+      double-negative: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -151,6 +153,10 @@ groups:
       dangling-figure-reference: off
       date-range-reversed: off
       percent-sum-mismatch: off
+      # A narrator may hedge, speak with ら dropped, and spell as the work's time and place did.
+      double-negative: off
+      ra-nuki: off
+      spelling-consistency: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -167,6 +173,9 @@ groups:
       paragraph-length-variance: off
       contrast-framing: off
       stock-transition: off
+      # A transcript keeps the speaker's words: hedges and ら dropped as spoken.
+      double-negative: off
+      ra-nuki: off
 
 genres:
   - id: technical/spec

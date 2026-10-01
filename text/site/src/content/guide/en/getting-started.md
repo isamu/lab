@@ -87,7 +87,7 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  55 rules did not run:
+  59 rules did not run:
       adverb-overuse (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
@@ -102,6 +102,7 @@ article.md   blog/tech · English   genre from the default
       date-order (still experimental)
       date-range-reversed (still experimental)
       date-weekday-mismatch (still experimental)
+      double-negative (still experimental)
       doubled-punctuation (still experimental)
       doubled-word (still experimental)
       duplicate-definition (still experimental)
@@ -111,6 +112,7 @@ article.md   blog/tech · English   genre from the default
       empty-section (still experimental)
       excessive-hedging (still experimental)
       expletive-construction (still experimental)
+      fullwidth-alnum-consistency (not a rule for en)
       hankaku-kana (not a rule for en)
       heading-level-skip (still experimental)
       hiragana-fukushi (not a rule for en)
@@ -130,6 +132,7 @@ article.md   blog/tech · English   genre from the default
       percent-sum-mismatch (still experimental)
       preferred-term (still experimental)
       proper-noun-density (still experimental)
+      ra-nuki (not a rule for en)
       repeated-conjunction (still experimental)
       required-sections (still experimental)
       rule-of-three (still experimental)
@@ -138,6 +141,7 @@ article.md   blog/tech · English   genre from the default
       sentence-initial-conjunction-run (still experimental)
       sentence-rhythm (still experimental)
       space-before-punctuation (still experimental)
+      spelling-consistency (still experimental)
       stock-transition (still experimental)
       stray-space (not a rule for en)
       taigen-dome-in-prose (not a rule for en)

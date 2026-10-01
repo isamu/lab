@@ -1,0 +1,51 @@
+id: double-negative
+layer: L2
+status: experimental
+how_to_find: phrase-match
+word_list: double-negative
+uses: [pos]
+severity: info
+
+name:
+  ja: 二重否定
+  en: Double negative
+
+why:
+  ja: 「行かないわけではない」「知らなくはない」のように打ち消しを打ち消すと、読み手は文を二度ひっくり返して読み、書き手がどちらを言いたいのかも弱まります。言い切れるなら肯定で書けます。言い切れないなら、どの程度なのかを書くほうが伝わります。「ざるを得ない」「なければならない」のような決まった言い方は数えません。言い回しの一覧は言語ごとの語彙表にあります。
+  en: Negating a negative ("not uncommon", "not unlike") makes the reader turn the sentence over twice, and blurs which way the writer leans. If the claim holds, say it positively; if it only partly holds, say how far. "not without" is not counted, since "do not enter without a badge" is a plain prohibition. The phrases are listed in each language's lexicon.
+
+message:
+  ja: 「{matched}」は二重否定です
+  en: '"{matched}" is a double negative'
+
+how_to_fix:
+  ja: 肯定で言い切るか（「行くこともある」）、どの程度なのかを書いてください（「月に一度は行く」）。
+  en: Say it positively ("common", "similar to"), or say how far it holds ("in about a third of cases").
+
+# 何回あれば指摘するか。1 は一つ目から。
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「〜ないわけではない」「〜しないことはない」のように、打ち消しを打ち消した言い方
+  en: A negative negated, such as "not uncommon" or "not unlike"
+example:
+  ja:
+    before: |
+      その案に賛成しないわけではありません。
+    after: |
+      その案には、費用の点を除けば賛成です。
+  en:
+    before: |
+      Delays are not uncommon in the second quarter.
+    after: |
+      Delays are common in the second quarter.
+
+not_flagged:
+  ja: 「ざるを得ない」「なければならない」のような決まった言い方は指しません。法令・文学・話し言葉のジャンルでは既定で止めています（言い切らない言い方がその文書の書き方のため）。
+  en: Fixed forms such as "not without" are not reported. The legal, literature and speech presets turn it off, since the hedged form is part of how those are written.
+level_meaning:
+  ja: 文書の中に {limit} 回あれば指摘
+  en: reported once it appears {limit} times in the document
