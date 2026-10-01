@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### On a Node.js older than 24, `chaff` says which version it needs instead of failing with a SyntaxError (#398)
+
+npm runs a package whose `engines` the Node.js does not meet, with a warning at most, and the CLI then failed while
+loading (`The requested module 'node:fs' does not provide an export named 'globSync'`), which does not point at the
+version. `bin/chaff.js` now checks `process.versions.node` against `engines.node` in its own `package.json` before it
+loads anything else, and stops with "chaff needs Node.js 24 or later. This is v18.20.8. Install the LTS from
+https://nodejs.org/en" (in Japanese under a Japanese locale), exit code 1. This also stops Node.js 22 and 23, which
+`engines` already excluded.
+
 ### `custom_rules:` — a team's own rules, without code (#170)
 
 A team can now write its own deterministic rules in chaff.yaml. Each one works like a built-in rule: findings,
