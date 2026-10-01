@@ -2,6 +2,16 @@
 
 Newest first.
 
+## Unreleased
+
+### Japanese density messages say 1000 字, the unit they measure (#402)
+
+`proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in
+Japanese while dividing by the document's length, which a Japanese document measures in characters. They now say
+「1000 字あたり」, as their level descriptions already did; `excessive-hedging`'s level description said 語 too and is
+fixed with them. A test reads every rule's per-1000 messages and level descriptions in both languages and checks the
+unit against what the rule divides by.
+
 ## 0.18.0 — 2026-10-01
 
 A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
@@ -58,14 +68,6 @@ corpus rarely use it; the measurements are in the PR.
   corpus, and compares the table with `expected.txt`. CI runs it.
 - Measured and not added: the share of bullet lines, runs of short sentences, and 「（いわゆる〜）」. Human articles
   had as many of each.
-
-### Japanese density messages say 1000 字, the unit they measure (#402)
-
-`proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in
-Japanese while dividing by the document's length, which a Japanese document measures in characters. They now say
-「1000 字あたり」, as their level descriptions already did; `excessive-hedging`'s level description said 語 too and is
-fixed with them. A test reads every rule's per-1000 messages and level descriptions in both languages and checks the
-unit against what the rule divides by.
 
 ### `chaff compare <before> <after>`: did a rewrite keep its facts?
 
