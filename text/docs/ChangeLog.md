@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### A line holding only a link ends its own sentence (#400)
+
+Links listed one per line without a bullet (a series index at the end of an article) were read as one long sentence,
+because Markdown joins the lines of a paragraph. A line that is exactly one link now ends its item, the way a
+bracketed subheading line already did, as long as the line before it ends a sentence, ends with 「：」, or is such a line
+itself; a link inside a sentence wrapped across lines stays in that sentence. These lines are read as list items, so
+`max-sentence-length`, `repeated-sentence-head` and the other list-aware rules treat them as they treat the same
+lines written with `- `. Every rule that reads sentences takes this path.
+
 ### `chaff compare <before> <after>`: did a rewrite keep its facts?
 
 The guardrail for rewriting AI-sounding text boldly: an AI rewrites, chaff shows, without a model, that no fact was lost

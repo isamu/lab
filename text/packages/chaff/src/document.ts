@@ -5,7 +5,8 @@ import { maskSpans } from "./mask.ts";
 import { spansWithin, unmaskedSoftBreaks } from "./soft-break.ts";
 import { segmentJoined } from "./joined-view.ts";
 import { documentLineParagraphs } from "./line-paragraphs.ts";
-import { subheadingPieces } from "./subheading-line.ts";
+import { standaloneLines, subheadingPieces, type StandsAlone } from "./subheading-line.ts";
+import { isLinkLine } from "./link-line.ts";
 import { speakerLabels } from "./speaker-labels.ts";
 import { buildTree, type Outline } from "./structure/build.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
@@ -171,9 +172,38 @@ const shift = (span: Span, by: number): Span => ({ start: by + span.start, end: 
 
 const breaksWithin = (breaks: readonly Span[], paragraph: Span): Span[] => spansWithin(breaks, paragraph).map((span) => shift(span, -paragraph.start));
 
-/** 段落を、中の小見出しの行（「（経済再生）」）の後ろで切った片。片ごとに分割すれば、小見出しが次の文に入らない。 */
-const piecesOf = (prose: string, paragraphs: readonly Span[]): Span[] =>
-  paragraphs.flatMap((paragraph) => subheadingPieces(prose.slice(paragraph.start, paragraph.end)).map((piece) => shift(piece, paragraph.start)));
+/** 段落の中の行（段落の中の位置）が、一つのリンクだけの行か。 */
+const linkLineIn =
+  (source: string, links: readonly Span[], paragraph: Span): StandsAlone =>
+  (start, end) =>
+    isLinkLine(source, shift({ start, end }, paragraph.start), links);
+
+/**
+ * 段落を、中の小見出しの行（「（経済再生）」）とリンクだけの行の後ろで切った片。片ごとに分割すれば、
+ * 小見出しが次の文に入らず、1 行ずつ並べたリンクが一つの長い文にならない。
+ */
+const piecesOf = (prose: string, paragraphs: readonly Span[], source: string, links: readonly Span[]): Span[] =>
+  paragraphs.flatMap((paragraph) =>
+    subheadingPieces(prose.slice(paragraph.start, paragraph.end), linkLineIn(source, links, paragraph)).map((piece) => shift(piece, paragraph.start)),
+  );
+
+/** 一つで立つリンクだけの行（文書の位置）。記事の一覧のように 1 行ずつ並べたリンクは、箇条書きの項目と同じに読む。 */
+const linkItemsOf = (prose: string, paragraphs: readonly Span[], source: string, links: readonly Span[]): Span[] =>
+  paragraphs.flatMap((paragraph) => {
+    const isLink = linkLineIn(source, links, paragraph);
+    return standaloneLines(prose.slice(paragraph.start, paragraph.end), isLink)
+      .filter((line) => isLink(line.start, line.end))
+      .map((line) => shift({ start: line.start, end: line.end }, paragraph.start));
+  });
+
+type LineLayout = { readonly links: readonly Span[]; readonly pieces: readonly Span[]; readonly listSpans: readonly Span[] };
+
+/** リンク、文を分ける片、箇条書きの項目と同じに読む範囲（Markdown の項目と、1 行ずつ並べたリンクの行）。 */
+const lineLayoutOf = (root: Node, source: string, prose: string, paragraphs: readonly Span[]): LineLayout => {
+  const links = [...spansOfType(root, "link"), ...spansOfType(root, "linkReference")];
+  const listSpans = [...spansOfType(root, "listItem"), ...linkItemsOf(prose, paragraphs, source, links)];
+  return { links, pieces: piecesOf(prose, paragraphs, source, links), listSpans };
+};
 
 const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: LanguageAdapter, softBreaks: readonly Span[]): Sentence[] =>
   paragraphs.flatMap((paragraph) =>
@@ -283,10 +313,10 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     source,
   );
   const headings = headingsOf(root, source, maskSpans(source, syntax), emailLayout.replyQuotes);
-  const listItems = spansOfType(root, "listItem");
   // Markdown は段落を流し込んで表示するので、段落の中の改行は読み手に見えない。テキストの文書は行をそのまま見せる（法令は 1 行 1 号）。
   const softBreaks = markdown ? unmaskedSoftBreaks(source, prose) : [];
-  const sentences = sentencesOf(prose, piecesOf(prose, paragraphSpans), adapter, softBreaks);
+  const layout = lineLayoutOf(root, source, prose, paragraphSpans);
+  const sentences = sentencesOf(prose, layout.pieces, adapter, softBreaks);
   const lexicons = teamLexicons(adapter, team);
   const tagged = sentences.some((sentence) => sentence.tokens !== undefined);
   const patterns = adapter.structure;
@@ -300,10 +330,10 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     capabilities: adapter.capabilities,
     sections: sectionsOf(headings, sentences, strongSpans(root, blocks), source.length, headingReadersOf(adapter, tagged, lexicons)),
     sentences,
-    listSpans: listItems,
-    paragraphs: paragraphsOf(prose, paragraphSpans, sentences, listItems),
+    listSpans: layout.listSpans,
+    paragraphs: paragraphsOf(prose, paragraphSpans, sentences, layout.listSpans),
     lists: listsOf(root, source, anchors),
-    links: [...spansOfType(root, "link"), ...spansOfType(root, "linkReference")],
+    links: layout.links,
     lexicons: tagged ? tokenizedLexicons(lexicons, adapter) : lexicons,
     requiredSections: team.requiredSections,
     names: team.names ?? [],
