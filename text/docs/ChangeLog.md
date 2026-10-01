@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `feedback` and `suppressions` say when the rule asked about did not run (#397)
+
+`chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and
+`--experimental` was not given, although the finding had been on screen a moment before. It now says the rule did not
+run in this check and why, and, for an experimental rule, to run again with `--experimental`. A draft made with
+`--experimental` or `--genre` (or with `experimental: true` in chaff.yaml) records them under Environment ("Run with"),
+so whoever reads the report can run the same check. `chaff suppressions` likewise lists the rules that stets name but
+that did not run in this check, which it could not count, instead of only "No findings are silenced".
+
 ### A Japanese article full of code is read as Japanese (#399)
 
 The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
