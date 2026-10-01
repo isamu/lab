@@ -22,6 +22,14 @@ how_to_fix:
 
 levels: { strict: 40, normal: 30, relaxed: 20 }
 
+options:
+  min_paragraphs:
+    kind: count
+    default: 6
+    about:
+      ja: 測る段落の数の下限。段落が少ないと長さのばらつきは偶然で小さく出て、人の書いた文書でも揃って見えます
+      en: The fewest paragraphs measured. With few paragraphs, the variation is small by chance, and a person's writing looks uniform too
+
 use_for: [blog, legal, docs, academic, literature, speech]
 
 group: ai-tells
@@ -38,6 +46,10 @@ example:
 
       続けて、仲間を招きます。左の端にある招待の画面で、相手の宛先を入れて送ってください。
 
+      それから、規則を選びます。設定の画面の中ほどで、使いたい規則の段階を一つずつ決めてください。
+
+      そのあとで、記録を残します。どの設定を変えたかを、仲間が読める場所に書き留めてください。
+
       最後に、動きを確かめます。試しの文書を一つ置いて、指摘が画面に出ることを見てください。
     after: |
       最初に、道具を手元に入れます。
@@ -45,6 +57,10 @@ example:
       次に、設定の画面を開きます。右上の歯車の印を押すと、変えられる項目の一覧が出てきます。項目は多いですが、最初に触るのは言語と文書の種類の二つだけで足ります。ほかは、使いながら必要になったときに変えてください。
 
       続けて、仲間を招きます。
+
+      それから、規則を選びます。
+
+      そのあとで、記録を残します。どの設定を変えたかを、仲間が読める場所に書き留めてください。変えた理由も一言添えておくと、半年後の自分が助かります。
 
       最後に、動きを確かめます。試しの文書を一つ置いて、指摘が画面に出ることを見てください。
   en:
@@ -56,6 +72,10 @@ example:
 
       Then, invite your team. Enter their addresses on the invite page on the left and press send.
 
+      After that, choose the rules. In the middle of the settings page, set the level of each rule you want.
+
+      Then, write it down. Note which settings you changed in a place where your team can read it.
+
       Finally, check that it works. Add a sample document and look for the findings on the screen.
     after: |
       First, install the tool.
@@ -64,11 +84,15 @@ example:
 
       Then, invite your team.
 
+      After that, choose the rules.
+
+      Then, write it down. Note which settings you changed in a place where your team can read it. Add a line on why, too; it will help you in six months.
+
       Finally, check that it works. Add a sample document and look for the findings on the screen.
 
 not_flagged:
-  ja: ビジネス文書と技術文書のジャンルでは見ません。
-  en: Business and technical genres do not run this rule.
+  ja: 段落が 6 より少ない文書は見ません（min_paragraphs で変えられます）。ビジネス文書と技術文書のジャンルでは見ません。
+  en: Documents with fewer than 6 paragraphs are not checked (min_paragraphs changes it). Business and technical genres do not run this rule.
 level_meaning:
   ja: 段落の長さのばらつきが {limit}% 未満なら指摘
   en: reported when paragraph length varies by less than {limit}%
