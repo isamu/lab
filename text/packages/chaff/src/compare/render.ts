@@ -7,7 +7,7 @@ import type { CompareText } from "./text.ts";
 const SHOWN_WIDTH = 60;
 
 /** One line of a fact as written: a code block or a wrapped quotation is shown on one line, cut at SHOWN_WIDTH. */
-const shown = (text: string): string => {
+export const shown = (text: string): string => {
   const oneLine = text.replace(/\s+/gu, " ").trim();
   return oneLine.length > SHOWN_WIDTH ? `${oneLine.slice(0, SHOWN_WIDTH)}…` : oneLine;
 };
@@ -84,7 +84,7 @@ export const renderCompact = (outcome: Outcome, text: CompareText): string => {
   ].join("\n");
 };
 
-const atomJson = (atom: Atom): Readonly<Record<string, string | number>> => ({ kind: atom.kind, key: atom.key, text: atom.text, line: atom.line });
+export const atomJson = (atom: Atom): Readonly<Record<string, string | number>> => ({ kind: atom.kind, key: atom.key, text: atom.text, line: atom.line });
 
 /** For an AI to act on: every dropped and added fact with its line, the reformed pairs, and the counts per kind. */
 export const renderJson = (outcome: Outcome): string =>
