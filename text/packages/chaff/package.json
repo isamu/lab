@@ -33,6 +33,10 @@
     "./plugin": {
       "types": "./src/plugin.ts",
       "import": "./dist/plugin.js"
+    },
+    "./api": {
+      "types": "./src/api.ts",
+      "import": "./dist/api.js"
     }
   },
   "files": [
