@@ -182,10 +182,10 @@ draft.txt   blog/tech · English   genre from the default
                   numbering-gap
   11:1    warning This sentence runs 48 words (limit 25)
                   max-sentence-length
-  14:136  error   "section 35" (address 35) is not in this document
-                  dangling-reference
   14:1    warning This sentence runs 33 words (limit 25)
                   max-sentence-length
+  14:136  error   "section 35" (address 35) is not in this document
+                  dangling-reference
   16:1    warning This paragraph runs 8 sentences (limit 5)
                   max-paragraph-length
   17:1    warning This sentence runs 30 words (limit 25)

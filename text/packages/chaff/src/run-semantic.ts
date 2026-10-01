@@ -6,6 +6,7 @@ import { localized } from "./render/text.ts";
 import type { AdapterNeeds, Finding, Level, ProseDocument, RuleDefinition, Severity } from "./plugin.ts";
 import { lineStarts, placeOf } from "./position.ts";
 import { wantsTags } from "./run.ts";
+import { byPosition } from "./finding-order.ts";
 
 export type SemanticResult = {
   readonly findings: readonly Finding[];
@@ -137,7 +138,7 @@ export const runSemantic = async (
     ),
   );
   return {
-    findings: answers.filter((finding) => finding !== undefined).toSorted((left, right) => left.line - right.line),
+    findings: answers.filter((finding) => finding !== undefined).toSorted(byPosition),
     skipped,
     asked: live.reduce((sum, job) => sum + job.candidates.length, 0),
     sentencesSeen: doc.sentences.length,
