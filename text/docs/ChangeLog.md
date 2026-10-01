@@ -28,6 +28,33 @@ Japanese, release notes (Ruby 3.4.0 in Japanese, Go 1.23), Node.js TSC minutes, 
 recipe in Japanese and English (農林水産省 うちの郷土料理), a school's いじめ防止基本方針 and a university's course
 registration notice, and Dr Jekyll and Mr Hyde. Each document's licence is in `corpus/manifest.json`.
 
+### Guide: what chaff does for more kinds of document, in Japanese
+
+「文書の種類ごとにできること」 is now a chooser: find the kind of document you have, go to its page. New pages,
+written for people who have never used a command line, join the statute and report pages: 技術記事（Zenn・Qiita）,
+契約書・利用規約, 仕事のメール, 議事録, 説明書・API の文書, プレスリリース・お知らせ and 論文・要旨 (`style: ieice`).
+Each runs chaff on a short self-written sample with realistic mistakes, shows chaff's real screen, says what every
+finding means and how to fix it, says what chaff does not check for that kind, and gives the genre and a starter
+`chaff.yaml` that turns on the experimental rules the kind needs.
+
+### `compare --distinct` compares facts as sets (#446)
+
+`compare` counts how many times each fact is stated, so a full rewrite that cuts a summary repeating the body reported
+every repeat as dropped. With `--distinct`, a fact counts as kept when the other document states it at least once; a
+fact the other document never states is still dropped or added. The default is unchanged.
+
+### `compare` reads a wrapped or bold quotation as the same quotation, and 「8時間」 as a length of time (#435, #446)
+
+- A line break between two wide characters (`系の` / `システム`) vanishes when Markdown is rendered, but `compare` read
+  it as a space, so joining the lines of a Japanese quotation was reported as one quotation dropped and another added.
+  Bold marks inside a quotation (`「**終わったな**」`) were read as part of it too. Quotations and names are now keyed,
+  and the team's `names:` found, without what a reader never sees, the way the rules already read the text: a line break between wide characters (not
+  one next to inline code or a link's marks) and the marks of bold, italics and strikethrough. Such a change is reported
+  as the same fact written another way. A plain-text document shows its line breaks, so there they still count, and a
+  space actually written inside a Japanese quotation is still a different quotation.
+- `8時間` was read as the time `08:00`, and `1.2時間` as `2時`. 時間 after the hour now makes it a length of time, and
+  an hour that ends a longer number (`1.2`, `123`) is not read as one.
+
 ### `katakana-long-vowel` keeps フリ apart from フリー, and `colon-lead-in` counts only Japanese sentences (#434)
 
 `katakana-long-vowel` read 「知ってるフリ」 (振り) and 「フリー」 (free) as one word written two ways. The tagger reads both
