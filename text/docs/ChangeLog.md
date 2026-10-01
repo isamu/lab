@@ -12,6 +12,35 @@ Japanese while dividing by the document's length, which a Japanese document meas
 fixed with them. A test reads every rule's per-1000 messages and level descriptions in both languages and checks the
 unit against what the rule divides by.
 
+### New rules: notation that should agree with itself, double negatives and ら抜き言葉 (#170)
+
+Experimental rules. Each finding in the corpus was read before the rule was added.
+
+- **`fullwidth-alnum-consistency`** (ja): letters and digits written both full-width (ＡＢＣ１２３) and half-width
+  (ABC123), reported on the minority like `kutoten-consistency`. Single letters, words, single digits and longer numbers
+  are compared apart, so "one digit full-width, more digits half-width" is consistent. Item and note numbers (`（１）`,
+  `１．`, `※１`), a number at the head of a list item, quotations, citations and English sentences are not counted, and
+  a minority over a third of its group (the level's limit) is read as deliberate. In the corpus it finds mixed dates
+  and article numbers in 通知 and ガイドライン (`法第４条、第９条及び第131条`), `ＵＲＬ` beside `URL` in e-Tax mails, and
+  date lines in half-width above full-width speeches; the misses are a page that names full-width characters as
+  examples (`全角英数字（Ａ、１等）`). It is the first of these rules to fire in `examples/` (`２つ` beside `1日` in
+  `business-ja/membership.md`), a true finding.
+- **`spelling-consistency`** (en): British and American spellings mixed (colour / color, centre / center, travelled /
+  traveled). The pairs are lexicons in lang-en: `spelling-variant`, and `spelling-ize` compared on its own so Oxford
+  spelling (colour with organize) is consistent. A name capitalised mid-sentence, a quotation and a word quoted on its
+  own (`‘organize’`) are not counted; the literature preset turns it off. In the corpus it finds mixed spellings in arXiv
+  listings, IETF and NSF documents and GitLab's handbook; the miss is "liter" for a truncated "literal" in chat minutes.
+- **`double-negative`** (ja / en): 「〜ないわけではない」「〜ないことはない」, "not uncommon", "not unlike", from a
+  `double-negative` lexicon in each language (phrase match, severity info). The legal, literature and speech presets
+  turn it off. Two corpus findings, both true ("not uncommon", "not dissimilar").
+- **`ra-nuki`** (ja): 見れる, 食べれる, 来れる, これない. lang-ja marks the stem of an ichidan or カ変 verb in its 未然形
+  and the れる attached to it with the token feature `PotentialRa=Dropped` (the forms the dictionary keeps as one word
+  are the lexicon `ra-dropped-verb`); a godan potential (走れる) is not touched. Quoted speech is skipped, and the speech and
+  literature presets turn it off. The one corpus finding is a typo (`とらえれいただければ`) read as a dropped ら.
+
+`minorityOf` (orthography.ts) is the two-way minority that `latin-spacing`, `kutoten-consistency` and the new
+consistency rules share; `minorityWithin` adds the share limit.
+
 ### New rules: a document's outline (#170)
 
 Experimental rules that read the headings of a Markdown document. Each finding in the corpus was read before the rule
