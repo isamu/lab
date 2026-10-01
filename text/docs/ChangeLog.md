@@ -4,6 +4,74 @@ Newest first.
 
 ## Unreleased
 
+### `chaff outline <file> [<after>]`: a restructure, measured (#439)
+
+A rewrite that smooths every sentence can keep the skeleton of generated text: the same headings, lists and bold.
+`outline` lists each heading, indented by depth, with its line and the length of its own text. It measures four
+things: the number of headings, the average section length, the share of the text in list items, and the bold spans.
+Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the
+average. Given two files it shows both and how each measure moved.
+
+- Read with lint's own document model (`doc.sections`, sentences, list spans); no new parser.
+- `--compact` (one section per line) and `--json` (`before` / `after` for two files). It only measures: exit 0 once
+  the files are read, 1 for no file, three files or an unreadable one.
+- `chaff compare` and `chaff facts` now read a file through one shared reader (`commands/read-document.ts`). Their
+  output is unchanged. It was compared before and after over every Markdown file in `examples/`, `samples/` and the
+  site's guide: `facts --json`, `compare --json` on neighbouring pairs, and a file against itself.
+
+### `chaff facts <file>`: the facts to keep, before a rewrite (#439)
+
+Lists every fact atom `chaff compare` reads in one document as a checklist, with the line of each. The kinds are
+numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes. A rewrite from scratch can
+then start from the inventory instead of the old text. It is compare's own extractor, not a new parser: the counts
+are the ones compare holds the rewrite to.
+
+- The first line counts every kind, zeros included; a kind that could not be read is listed with the reason.
+- `--compact` (one fact per line, kind in English) and `--json` (path, language, counts, unread kinds, every fact with
+  kind, key, text and line). The screen follows the document's language.
+- One file per run; none or more than one is a usage error (exit 1).
+
+### A line holding only a link ends its own sentence (#400)
+
+Links listed one per line without a bullet (a series index at the end of an article) were read as one long sentence,
+because Markdown joins the lines of a paragraph. A line that is exactly one link now ends its item, the way a
+bracketed subheading line already did, as long as the line before it ends a sentence, ends with 「：」, or is such a line
+itself; a link inside a sentence wrapped across lines stays in that sentence. When such lines run to the end of the
+paragraph they are read as list items, so `repeated-sentence-head`, `max-paragraph-length` and the other list-aware
+rules treat them as they treat the same lines written with `- `; one link line in the middle of a paragraph stays one
+of its sentences. Every rule that reads sentences takes this path.
+
+### `latin-spacing` skips link text and version numbers, and reports a two-way document once (#395)
+
+### `unqualified-superlative` reads 「〜のほうが」「〜との」 and quotations (#394)
+
+- 「後者のほうが圧倒的に長い」「他社と比べて」 name what is compared, anywhere in the sentence, like より and に比べる
+  already did. 「の方が」 is not added: in 「担当の方が最も詳しい」 the 方 is a person, not a comparison.
+- 「SES との最大の分岐点」: 「との」 names the counterpart only right before the superlative, so 「チームとの会議で最高の成果」
+  is still reported. A comparison marker with `position: before` in the `comparison-marker` lexicon works this way.
+- A superlative inside 「」『』 or quotation marks ("…", “…”) is someone else's words and is not reported; one outside
+  the quotation in the same sentence still is.
+
+Superlatives limited by a clause before them (「バグを検出できる唯一のルール」) are still reported: the same shape is
+also a boast (「誰もが認める最高の品質」), and is left for a decision.
+
+### Japanese density messages say 1000 字, the unit they measure (#402)
+
+`proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in
+Japanese while dividing by the document's length, which a Japanese document measures in characters. They now say
+「1000 字あたり」, as their level descriptions already did; `excessive-hedging`'s level description said 語 too and is
+fixed with them. A test reads every rule's per-1000 messages and level descriptions in both languages and checks the
+unit against what the rule divides by.
+
+### `feedback` and `suppressions` say when the rule asked about did not run (#397)
+
+`chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and
+`--experimental` was not given, although the finding had been on screen a moment before. It now says the rule did not
+run in this check and why, and, for an experimental rule, to run again with `--experimental`. A draft made with
+`--experimental` or `--genre` (or with `experimental: true` in chaff.yaml) records them under Environment ("Run with"),
+so whoever reads the report can run the same check. `chaff suppressions` likewise lists the rules that stets name but
+that did not run in this check, which it could not count, instead of only "No findings are silenced".
+
 ### A Japanese article full of code is read as Japanese (#399)
 
 The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
@@ -39,32 +107,13 @@ by line, then column, in every output (friendly, `--compact`, SARIF, `chaff test
 
 ### New rules: notation that should agree with itself, double negatives and ら抜き言葉 (#170)
 
-Experimental rules. Each finding in the corpus was read before the rule was added.
-
-- **`fullwidth-alnum-consistency`** (ja): letters and digits written both full-width (ＡＢＣ１２３) and half-width
-  (ABC123), reported on the minority like `kutoten-consistency`. Single letters, words, single digits and longer numbers
-  are compared apart, so "one digit full-width, more digits half-width" is consistent. Item and note numbers (`（１）`,
-  `１．`, `※１`), a number at the head of a list item, quotations, citations and English sentences are not counted, and
-  a minority over a third of its group (the level's limit) is read as deliberate. In the corpus it finds mixed dates
-  and article numbers in 通知 and ガイドライン (`法第４条、第９条及び第131条`), `ＵＲＬ` beside `URL` in e-Tax mails, and
-  date lines in half-width above full-width speeches; the misses are a page that names full-width characters as
-  examples (`全角英数字（Ａ、１等）`). It is the first of these rules to fire in `examples/` (`２つ` beside `1日` in
-  `business-ja/membership.md`), a true finding.
-- **`spelling-consistency`** (en): British and American spellings mixed (colour / color, centre / center, travelled /
-  traveled). The pairs are lexicons in lang-en: `spelling-variant`, and `spelling-ize` compared on its own so Oxford
-  spelling (colour with organize) is consistent. A name capitalised mid-sentence, a quotation and a word quoted on its
-  own (`‘organize’`) are not counted; the literature preset turns it off. In the corpus it finds mixed spellings in arXiv
-  listings, IETF and NSF documents and GitLab's handbook; the miss is "liter" for a truncated "literal" in chat minutes.
-- **`double-negative`** (ja / en): 「〜ないわけではない」「〜ないことはない」, "not uncommon", "not unlike", from a
-  `double-negative` lexicon in each language (phrase match, severity info). The legal, literature and speech presets
-  turn it off. Two corpus findings, both true ("not uncommon", "not dissimilar").
-- **`ra-nuki`** (ja): 見れる, 食べれる, 来れる, これない. lang-ja marks the stem of an ichidan or カ変 verb in its 未然形
-  and the れる attached to it with the token feature `PotentialRa=Dropped` (the forms the dictionary keeps as one word
-  are the lexicon `ra-dropped-verb`); a godan potential (走れる) is not touched. Quoted speech is skipped, and the speech and
-  literature presets turn it off. The one corpus finding is a typo (`とらえれいただければ`) read as a dropped ら.
-
-`minorityOf` (orthography.ts) is the two-way minority that `latin-spacing`, `kutoten-consistency` and the new
-consistency rules share; `minorityWithin` adds the share limit.
+- The text of a Markdown link is not counted. It is usually the title of the page it points to, so its spacing
+  belongs to the source, as inside 「」. The spacing around the link is still the writer's and still counts.
+- Three or more numbers joined by dots (`1.0.0`, `手順2.1.2で`) are a version or an item number, not a quantity, and
+  are not counted, like `073-489-5909`. Two (`1.5 倍`) are a decimal and still count.
+- When the less common way is more than a fifth of one kind of boundary, and at least five places, the document is
+  written two ways rather than slipping. It is reported once with both counts (「空ける所が 56 箇所、詰める所が 67
+  箇所あります」) instead of once per place, so chaff does not call one side wrong in a near-even document.
 
 ### New rules: a document's outline (#170)
 
