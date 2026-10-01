@@ -9,9 +9,9 @@ There are four ways, from the easiest to the most powerful.
 | Way | When it fits | Where it goes | Available |
 | --- | --- | --- | --- |
 | Set an option on a built-in rule | A rule chaff has already covers it (a limit, a spelling, in-house words, required headings) | `chaff.yaml` | now |
-| A words or regular-expression rule | A fixed phrase or pattern, flagged with the team's own message (no "our company" in external copy) | `custom_rules` in `chaff.yaml` | next release |
-| A morphology rule | Writing decided by part of speech or inflection | `custom_rules` in `chaff.yaml` | next release |
-| A Node function rule | Counting, comparing, anything the three above cannot say | a `.mjs` file and `custom_rules` | next release |
+| A words or regular-expression rule | A fixed phrase or pattern, flagged with the team's own message (no "our company" in external copy) | `custom_rules` in `chaff.yaml` | 0.18.0 |
+| A morphology rule | Writing decided by part of speech or inflection | `custom_rules` in `chaff.yaml` | 0.18.0 |
+| A Node function rule | Counting, comparing, anything the three above cannot say | a `.mjs` file and `custom_rules` | 0.19.0 |
 
 Rules to share with other teams can be packed into a plugin package; see [Writing a plugin](./writing-plugins).
 
@@ -105,7 +105,7 @@ This is the easiest way. Only `chaff.yaml` changes; chaff's code is not touched.
 The details are in [Configuration](./configuration).
 Afterwards, the `npx chaffjs rules` table shows the level each rule now runs at.
 
-## Options on a rule (next release)
+## Options on a rule (0.18.0)
 
 Besides its level, a rule can take its own settings under `options`.
 The rule that has them now is `katakana-long-vowel`, which checks the final ー of katakana loanwords.
@@ -125,7 +125,7 @@ The single line `style: ieice` sets the same.
 `npx chaffjs explain katakana-long-vowel` and `rules --json` list each option and the values it takes.
 [Define your team's writing rules](./house-style) has the details.
 
-## A words or regular-expression rule (next release)
+## A words or regular-expression rule (0.18.0)
 
 A rule that flags a fixed phrase or pattern with the team's own words, written under `custom_rules` in
 `chaff.yaml`. `words` is a list of words, or pairs of the spelling to avoid and the one to use; `pattern` is a
@@ -160,7 +160,7 @@ custom_rules:
 Like a built-in rule, a team rule takes a level under `rules`, and `stet` silences one spot.
 A regular expression is checked before it runs, and shapes that can run away on a long line (`(a+)+`) are refused.
 
-## A morphology rule (next release)
+## A morphology rule (0.18.0)
 
 A rule that matches words by part of speech or by dictionary form.
 "Is able to" for "can" takes one pattern per inflection when written as text ("was able to", "are able to").
@@ -185,7 +185,7 @@ custom_rules:
 
 How a sentence is split depends on the sentence. Check the rule on samples it must match and samples it must not.
 
-## A Node function rule (next release)
+## A Node function rule (0.19.0)
 
 Counting, comparing, anything none of the above can say, is written as a Node function.
 The function takes the document and returns a list of findings.
