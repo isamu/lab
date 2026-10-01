@@ -13,6 +13,7 @@ date-order                              6      6       0             0
 date-range-reversed                     2      2       0             0
 date-weekday-mismatch                  10     10       0             0
 double-keigo                            3      3       0             0
+doubled-punctuation                    26     26       0             0
 doubled-word                           25     25       0             0
 duplicate-definition                    4      4       0             0
 emoji-density                          10     10       0             0
@@ -27,6 +28,7 @@ image-alt-text                         26     26       0             0
 internal-jargon                        12     12       0             0
 invisible-character                    26     26       0             0
 katakana-long-vowel                     2      2       0             0
+kutoten-consistency                    13     13       0             0
 latin-spacing                           1      1       0             0
 max-kanji-continuous                    5      5       0             0
 max-paragraph-length                    9      9       0             0
@@ -50,6 +52,7 @@ space-before-punctuation               13     13       0             0
 stray-space                            12     12       0             0
 title-case-consistency                  7      7       0             0
 total-mismatch                          8      8       0             0
+unbalanced-bracket                      9      9       0             0
 undefined-acronym                       2      2       0             0
 unfilled-placeholder                   20     20       0             0
 url-run-on                             13     13       0             0
@@ -102,6 +105,8 @@ ja/blog  heading-deepened  found
 ja/blog  image-unlabelled  found
 ja/blog  link-to-nowhere  found
 ja/blog  url-run-on  found
+ja/blog  period-doubled  found
+ja/blog  comma-western  found
 ja/blog  kana-halfwidth  found
 ja/blog  zero-width-pasted  found
 ja/design  reference-broken  found
@@ -126,6 +131,9 @@ ja/design  heading-deepened  found
 ja/design  image-unlabelled  found
 ja/design  link-to-nowhere  found
 ja/design  url-run-on  found
+ja/design  bracket-unclosed  found
+ja/design  period-doubled  found
+ja/design  comma-western  found
 ja/design  kana-halfwidth  found
 ja/design  zero-width-pasted  found
 ja/email  weekday-shift  found
@@ -146,6 +154,9 @@ ja/email  pet-phrase  found
 ja/email  image-unlabelled  found
 ja/email  link-to-nowhere  found
 ja/email  url-run-on  found
+ja/email  bracket-unclosed  found
+ja/email  period-doubled  found
+ja/email  comma-western  found
 ja/email  kana-halfwidth  found
 ja/email  zero-width-pasted  found
 ja/figures  item-dropped  found
@@ -177,6 +188,8 @@ ja/figures  heading-deepened  found
 ja/figures  image-unlabelled  found
 ja/figures  link-to-nowhere  found
 ja/figures  url-run-on  found
+ja/figures  period-doubled  found
+ja/figures  comma-western  found
 ja/figures  zero-width-pasted  found
 ja/itinerary  weekday-shift  found
 ja/itinerary  rows-swapped  found
@@ -197,6 +210,8 @@ ja/itinerary  heading-deepened  found
 ja/itinerary  image-unlabelled  found
 ja/itinerary  link-to-nowhere  found
 ja/itinerary  url-run-on  found
+ja/itinerary  period-doubled  found
+ja/itinerary  comma-western  found
 ja/itinerary  kana-halfwidth  found
 ja/itinerary  zero-width-pasted  found
 ja/minutes  weekday-shift  found
@@ -214,6 +229,9 @@ ja/minutes  heading-deepened  found
 ja/minutes  image-unlabelled  found
 ja/minutes  link-to-nowhere  found
 ja/minutes  url-run-on  found
+ja/minutes  bracket-unclosed  found
+ja/minutes  period-doubled  found
+ja/minutes  comma-western  found
 ja/minutes  kana-halfwidth  found
 ja/minutes  zero-width-pasted  found
 ja/note  plain-in-polite  found
@@ -223,6 +241,8 @@ ja/note  particle-doubled  found
 ja/note  image-unlabelled  found
 ja/note  link-to-nowhere  found
 ja/note  url-run-on  found
+ja/note  period-doubled  found
+ja/note  comma-western  found
 ja/note  kana-halfwidth  found
 ja/note  zero-width-pasted  found
 ja/policy  reference-broken  found
@@ -234,6 +254,9 @@ ja/policy  particle-doubled  found
 ja/policy  image-unlabelled  found
 ja/policy  link-to-nowhere  found
 ja/policy  url-run-on  found
+ja/policy  bracket-unclosed  found
+ja/policy  period-doubled  found
+ja/policy  comma-western  found
 ja/policy  kana-halfwidth  found
 ja/policy  zero-width-pasted  found
 ja/press  weekday-shift  found
@@ -267,6 +290,9 @@ ja/press  heading-deepened  found
 ja/press  image-unlabelled  found
 ja/press  link-to-nowhere  found
 ja/press  url-run-on  found
+ja/press  bracket-unclosed  found
+ja/press  period-doubled  found
+ja/press  comma-western  found
 ja/press  kana-halfwidth  found
 ja/press  zero-width-pasted  found
 ja/proposal  item-dropped  found
@@ -298,6 +324,8 @@ ja/proposal  heading-deepened  found
 ja/proposal  image-unlabelled  found
 ja/proposal  link-to-nowhere  found
 ja/proposal  url-run-on  found
+ja/proposal  period-doubled  found
+ja/proposal  comma-western  found
 ja/proposal  kana-halfwidth  found
 ja/proposal  zero-width-pasted  found
 ja/quote  weekday-shift  found
@@ -315,6 +343,9 @@ ja/quote  heading-deepened  found
 ja/quote  image-unlabelled  found
 ja/quote  link-to-nowhere  found
 ja/quote  url-run-on  found
+ja/quote  bracket-unclosed  found
+ja/quote  period-doubled  found
+ja/quote  comma-western  found
 ja/quote  zero-width-pasted  found
 ja/readme  polite-in-plain  found
 ja/readme  no-nested  found
@@ -334,6 +365,8 @@ ja/readme  heading-deepened  found
 ja/readme  image-unlabelled  found
 ja/readme  link-to-nowhere  found
 ja/readme  url-run-on  found
+ja/readme  period-doubled  found
+ja/readme  comma-western  found
 ja/readme  kana-halfwidth  found
 ja/readme  zero-width-pasted  found
 ja/requirements  reference-broken  found
@@ -352,6 +385,8 @@ ja/requirements  heading-deepened  found
 ja/requirements  image-unlabelled  found
 ja/requirements  link-to-nowhere  found
 ja/requirements  url-run-on  found
+ja/requirements  period-doubled  found
+ja/requirements  comma-western  found
 ja/requirements  kana-halfwidth  found
 ja/requirements  zero-width-pasted  found
 en/blog  sentences-joined  found
@@ -374,6 +409,7 @@ en/blog  pet-phrase  found
 en/blog  heading-deepened  found
 en/blog  image-unlabelled  found
 en/blog  link-to-nowhere  found
+en/blog  period-doubled  found
 en/blog  zero-width-pasted  found
 en/blog  period-spaced  found
 en/design  reference-broken  found
@@ -396,6 +432,8 @@ en/design  pet-phrase  found
 en/design  heading-deepened  found
 en/design  image-unlabelled  found
 en/design  link-to-nowhere  found
+en/design  bracket-unclosed  found
+en/design  period-doubled  found
 en/design  zero-width-pasted  found
 en/design  period-spaced  found
 en/email  weekday-shift  found
@@ -410,6 +448,7 @@ en/email  article-doubled  found
 en/email  spelling-avoided  found
 en/email  image-unlabelled  found
 en/email  link-to-nowhere  found
+en/email  period-doubled  found
 en/email  zero-width-pasted  found
 en/email  period-spaced  found
 en/figures  item-dropped  found
@@ -437,6 +476,8 @@ en/figures  spelling-avoided  found
 en/figures  heading-deepened  found
 en/figures  image-unlabelled  found
 en/figures  link-to-nowhere  found
+en/figures  bracket-unclosed  found
+en/figures  period-doubled  found
 en/figures  zero-width-pasted  found
 en/figures  period-spaced  found
 en/itinerary  weekday-shift  found
@@ -458,6 +499,7 @@ en/itinerary  blank-left  found
 en/itinerary  heading-deepened  found
 en/itinerary  image-unlabelled  found
 en/itinerary  link-to-nowhere  found
+en/itinerary  period-doubled  found
 en/itinerary  zero-width-pasted  found
 en/itinerary  period-spaced  found
 en/minutes  weekday-shift  found
@@ -474,6 +516,8 @@ en/minutes  blank-left  found
 en/minutes  heading-deepened  found
 en/minutes  image-unlabelled  found
 en/minutes  link-to-nowhere  found
+en/minutes  bracket-unclosed  found
+en/minutes  period-doubled  found
 en/minutes  zero-width-pasted  found
 en/minutes  period-spaced  found
 en/note  sentences-joined  found
@@ -481,6 +525,7 @@ en/note  contracted  found
 en/note  article-doubled  found
 en/note  image-unlabelled  found
 en/note  link-to-nowhere  found
+en/note  period-doubled  found
 en/note  zero-width-pasted  found
 en/note  period-spaced  found
 en/policy  reference-broken  found
@@ -489,6 +534,7 @@ en/policy  defined-twice  found
 en/policy  article-doubled  found
 en/policy  image-unlabelled  found
 en/policy  link-to-nowhere  found
+en/policy  period-doubled  found
 en/policy  zero-width-pasted  found
 en/policy  period-spaced  found
 en/press  weekday-shift  found
@@ -517,6 +563,7 @@ en/press  pet-phrase  found
 en/press  heading-deepened  found
 en/press  image-unlabelled  found
 en/press  link-to-nowhere  found
+en/press  period-doubled  found
 en/press  zero-width-pasted  found
 en/press  period-spaced  found
 en/proposal  item-dropped  found
@@ -541,6 +588,7 @@ en/proposal  pet-phrase  found
 en/proposal  heading-deepened  found
 en/proposal  image-unlabelled  found
 en/proposal  link-to-nowhere  found
+en/proposal  period-doubled  found
 en/proposal  zero-width-pasted  found
 en/proposal  period-spaced  found
 en/quote  weekday-shift  found
@@ -555,6 +603,7 @@ en/quote  blank-left  found
 en/quote  heading-deepened  found
 en/quote  image-unlabelled  found
 en/quote  link-to-nowhere  found
+en/quote  period-doubled  found
 en/quote  zero-width-pasted  found
 en/quote  period-spaced  found
 en/readme  contracted  found
@@ -570,6 +619,7 @@ en/readme  blank-left  found
 en/readme  heading-deepened  found
 en/readme  image-unlabelled  found
 en/readme  link-to-nowhere  found
+en/readme  period-doubled  found
 en/readme  zero-width-pasted  found
 en/readme  period-spaced  found
 en/requirements  reference-broken  found
@@ -589,5 +639,6 @@ en/requirements  spelling-avoided  found
 en/requirements  heading-deepened  found
 en/requirements  image-unlabelled  found
 en/requirements  link-to-nowhere  found
+en/requirements  period-doubled  found
 en/requirements  zero-width-pasted  found
 en/requirements  period-spaced  found
