@@ -131,9 +131,16 @@ describe("同梱の genres.yaml", () => {
 
   it("前からあるジャンルは、同じ名前と並びのまま先頭にある", () => assert.deepEqual(GENRES.slice(0, ORIGINAL.length), ORIGINAL));
 
-  it("前からあるジャンルには既定の段も profile も無い（出力を変えない）", () => {
+  // 段は試験中の rule を止めるだけなので、既定で出る指摘は変わらない。変わるのは「動いていない」一覧の理由だけ。
+  it("前からあるジャンルは profile を持たず、段は試験中の rule を止めることだけ（既定の指摘を変えない）", () => {
+    const experimental = new Set([...rules.ja, ...rules.en].filter((rule) => rule.status === "experimental").map((rule) => rule.id));
     ORIGINAL.forEach((genre) => {
-      assert.deepEqual(presetLevels(genre), {}, genre);
+      const levels = Object.entries(presetLevels(genre));
+      assert.deepEqual(
+        levels.filter(([rule, level]) => level !== "off" || !experimental.has(rule)),
+        [],
+        genre,
+      );
       assert.equal(presetProfileOf(data, genre), undefined, genre);
     });
   });
