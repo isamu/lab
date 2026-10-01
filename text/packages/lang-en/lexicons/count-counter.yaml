@@ -1,7 +1,9 @@
 # Nouns that name what a list holds ("three steps", "two reasons"). Only a number followed by one of these (up to two
 # words may stand between: "three key steps") is read as the count of the list below.
 # Only nouns that name what a list holds. A plural that measures ("three years:", "two hours:", "30 seconds:") or a verb
-# ending in s ("Release 2 includes:") is not an announcement, so "any plural before a colon" is not used.
+# ending in s ("Release 2 includes:") is not an announcement, so "any plural before a colon" is not used. Nouns that are
+# also verbs after a label number ("Section 2 documents:", "Model 4 outputs:") or that measure a degree ("two levels:")
+# are left out too.
 id: count-counter
 language: en
 entries:
@@ -77,21 +79,12 @@ entries:
   - pattern: properties
   - pattern: attributes
   - pattern: parameters
-  - pattern: fields
   - pattern: tools
   - pattern: services
   - pattern: resources
-  - pattern: documents
-  - pattern: files
   - pattern: policies
   - pattern: guidelines
   - pattern: metrics
-  - pattern: layers
-  - pattern: levels
   - pattern: modes
-  - pattern: tiers
   - pattern: pillars
-  - pattern: outputs
-  - pattern: inputs
-  - pattern: sources
   - pattern: exceptions

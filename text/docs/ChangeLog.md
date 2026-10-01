@@ -10,7 +10,8 @@ Newest first.
 `count-counter` now also has nouns such as decisions, findings, examples, objectives, priorities, outcomes, problems,
 concerns, constraints, assumptions, limitations, roles, values, sections, tools, policies, metrics
 and milestones. A plural before a colon is still not enough on its own: a plural that measures ("over the past three
-years:", "two hours:") or a verb ending in s ("Release 2 includes:") does not announce a list.
+years:", "two hours:", "two levels:") or a verb ending in s ("Release 2 includes:", "Section 2 documents:") does not
+announce a list.
 
 ### `doubled-punctuation` leaves a mark that closes a drawn-out one (#433)
 

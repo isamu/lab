@@ -47,6 +47,8 @@ describe("announced-count-mismatch", () => {
     assert.deepEqual(found(doc("Over the past three years:", "- We grew.", "- We hired.")), []);
     assert.deepEqual(found(doc("The meeting lasted two hours:", "- Budget", "- Audit", "- Hiring")), []);
     assert.deepEqual(found(doc("Release 2 includes:", "- Search", "- Export", "- Import")), []);
+    assert.deepEqual(found(doc("Section 2 documents:", "- The approval trail.", "- The fallback owner.", "- The retention policy.")), []);
+    assert.deepEqual(found(doc("The severity rose two levels:", "- Paging started.", "- Support opened an incident.", "- The clock changed.")), []);
   });
 
   it("the items at the top level are counted; nested items and wrapped lines are not", () => {
