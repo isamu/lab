@@ -31,6 +31,26 @@ Newest first.
 - An `ai-tell` lexicon entry may carry its own `rewrite` hint: 「時間を溶かす」 → 「時間がかかった（何に、どれだけ）」,
   「静かに壊れる」 → 「エラーを出さずに失敗する」, "delve into" → "look at, or explain".
 
+### `style: koyobun`: 公用文作成の考え方 (2022)
+
+- `style: koyobun` checks a document the way 文化審議会「公用文作成の考え方」 asks: a Japanese sentence over 60 characters
+  (Ⅲ－3 ア: check a sentence once it reaches 50 to 60 characters), です・ます mixed with である (Ⅲ－1 イ), and a
+  katakana word without its final ー (Ⅰ－3 エ). English documents keep the level's limit, since the document gives none.
+- A style can set a rule's number by language under `limits:`. chaff.yaml's own level or number for the rule still wins.
+- `chaff explain` now says when a number sets a rule's limit (a style's, or one written in chaff.yaml's `rules:`), and
+  no longer marks a level as current then. The number is shown in the rule's own words ("一文 60 字まで").
+
+### New rule: `requirement-modal`, and `style: jis-z8301-2019` (experimental)
+
+- `requirement-modal` checks a provision's verb form against a house rule a team picks under `options`; with none, it
+  checks nothing. `standard: jis-z8301-2019` points at a closing すべきである / すべきでない (7.3) and a closing できる /
+  できない (7.4, 7.5: use してもよい or 可能である), as the Japanese Standards Association's drafting guide summarises the
+  2019 edition. できる in the middle of a sentence, which JIS keeps for an ability, is left alone. `shall: must` points
+  at "shall" in English and asks for "must", as the Federal Plain Language Guidelines do; a quoted "SHALL" (the RFC 2119
+  boilerplate) is a mention, not a use. The forms are in each language's lexicons.
+- `style: jis-z8301-2019` turns it on with JIS's forms. It does not decide the final ー of loanwords, which the 2019
+  edition leaves to each industry.
+
 ### New rule: `vague-figure-reference`, 上記の図 where a number would do (experimental)
 
 - In a document that numbers its figures or tables (図1, Table 2 at the start of a line), chaff points at a pointer by
