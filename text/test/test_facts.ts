@@ -1,6 +1,12 @@
-import { describe, it } from "node:test";
+import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { readMarkdown } from "../packages/chaff/src/markdown-read.ts";
+import { extractFacts } from "../packages/chaff/src/compare/extract.ts";
 import { inChecklistOrder } from "../packages/chaff/src/compare/facts-render.ts";
+import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import type { Atom } from "../packages/chaff/src/compare/atom.ts";
 import { runCli } from "./cli-run.ts";
 
@@ -49,6 +55,11 @@ const factsJson = (out: string): FactsJson => {
 };
 
 const atom = (kind: Atom["kind"], line: number, text = `${kind}${String(line)}`): Atom => ({ kind, key: text, text, line });
+
+before(async () => {
+  await ja.prepare?.({ pos: true });
+  await en.prepare?.({ pos: true });
+});
 
 describe("the order of the checklist", () => {
   it("goes kind by kind in compare's order, then by line", () => {
@@ -144,6 +155,20 @@ describe("chaff facts on the command line", () => {
       const compared: unknown = JSON.parse((await runCli({ [name]: body }, ["compare", name, name, "--json"], "en_US.UTF-8")).out);
       assert.ok(isCompareJson(compared));
       assert.deepEqual(facts.counts, compared.before.counts, name);
+    }
+  });
+
+  it("lists every fact the extractor reads, with its kind, key, text and line", async () => {
+    const documents: readonly (readonly [string, string, LanguageAdapter])[] = [
+      ["a.md", EN, en],
+      ["b.md", JA, ja],
+    ];
+    for (const [name, body, adapter] of documents) {
+      const listed = factsJson((await runCli({ [name]: body }, ["facts", name, "--json"], "en_US.UTF-8")).out).facts;
+      const doc = buildDocument(name, body, adapter);
+      const extracted = extractFacts({ doc, root: readMarkdown(doc.source).root, structure: adapter.structure, names: [] });
+      const expected = inChecklistOrder(extracted.atoms).map(({ kind, key, text, line }) => ({ kind, key, text, line }));
+      assert.deepEqual(listed, expected, name);
     }
   });
 
