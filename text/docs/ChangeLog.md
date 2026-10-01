@@ -30,6 +30,25 @@ corpus rarely use it; the measurements are in the PR.
 - Measured and not added: the share of bullet lines, runs of short sentences, and 「（いわゆる〜）」. Human articles
   had as many of each.
 
+### `chaff compare <before> <after>`: did a rewrite keep its facts?
+
+The guardrail for rewriting AI-sounding text boldly: an AI rewrites, chaff shows, without a model, that no fact was lost
+or invented. Both documents are read with chaff's own readers into fact atoms — numbers with their unit or currency,
+dates, times, URLs and link targets, inline code and code blocks, proper nouns and `names:`, quotations (「」『』 “” ""),
+headings, article and section references, footnotes — and compared as multisets, so a fact that moved is fine.
+
+- **Dropped** (before only) and **added** (after only) facts fail the run (exit 1). A fact **written another way**
+  (1,000 / 1000, ５ / 5, 2026年4月1日 / 2026/4/1, 午後3時30分 / 15:30, a reworded heading) is information.
+- Each fact shows its line in each file. The closing line counts every kind before and after, zeros included, and a
+  kind that could not be read (no structure reader, no part-of-speech tagger, plain text) is listed with the reason.
+- `--compact` (one line per fact), `--json` (for an AI to act on), `--allow-dropped <kind>` / `--allow-added <kind>`
+  for intended cuts. The screen follows the first document's language.
+- A word the tagger reads as a name in one document and not the other is not a dropped name when the other document
+  spells it as often; a capitalised word the same document also writes in lower case is not a name.
+- `maskSpans` and `quotedSpans` no longer rebuild an array per span or per character, so a document with tens of
+  thousands of masked spans or quotation marks is read in linear time (same output; checked against the old code on
+  generated inputs).
+
 ### Fixes from a real article: numbering-gap, no-mixed-desumasu, heading-echo (#390, #391, #392)
 
 - **numbering-gap no longer misses a heading whose number is closed by a dot** (#390). `### 5. ページ自身の通信から分かること`

@@ -19,12 +19,12 @@ const blankOut = (text: string): string => text.replace(/[^\n]/gu, (char) => " "
 
 export const maskSpans = (source: string, spans: readonly Span[]): string => {
   const merged = mergeSpans(spans, true);
-  const { parts, cursor } = merged.reduce<{ parts: string[]; cursor: number }>(
-    (acc, span) => ({
-      parts: [...acc.parts, source.slice(acc.cursor, span.start), blankOut(source.slice(span.start, span.end))],
-      cursor: span.end,
-    }),
-    { parts: [], cursor: 0 },
-  );
-  return [...parts, source.slice(cursor)].join("");
+  // 部品は配列に足していく。範囲ごとに配列を作り直すと、範囲が何万もある文書で二乗に遅くなる。
+  const parts: string[] = [];
+  const cursor = merged.reduce((at, span) => {
+    parts.push(source.slice(at, span.start), blankOut(source.slice(span.start, span.end)));
+    return span.end;
+  }, 0);
+  parts.push(source.slice(cursor));
+  return parts.join("");
 };

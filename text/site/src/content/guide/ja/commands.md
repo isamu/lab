@@ -22,6 +22,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs suppressions <dir>` | `stet` で黙らせている指摘を数えます |
 | `npx chaffjs tree <file>` | 文書を番地の付いた木にします |
 | `npx chaffjs cite <原文> <引用.json>` | 回答の引用が原文にあるかを確かめます |
+| `npx chaffjs compare <前> <後>` | 書き換えで事実（数・日付・URL・コード・名前・引用など）が落ちても足されてもいないかを確かめます |
 | `npx chaffjs skill` | Claude Code の skill を入れます。`--global` を付けると `~/.claude/` に入れます |
 | `npx chaffjs feedback <file> --rule <rule>` | 誤った指摘や見逃しの報告の下書きを作ります。何も送りません |
 | `npx chaffjs test <file\|dir>...` | 意味を読む検査も動かします。API key が要ります |
@@ -281,6 +282,50 @@ $ npx chaffjs suppressions docs/
 ```
 
 理由を書かずに黙らせた箇所も、ここに出ます。
+
+## 書き換えで事実が落ちていないか確かめる
+
+AI っぽい文章を、人の書いた文章へ大きく書き換えたいことがあります。言い回しを変えるだけでなく、文を組み替え、段落を入れ替え、要らない前置きを捨てる書き換えです。
+書き換えるのは AI に任せられます。けれども、大胆に書き換えるほど、数字が一つ消えた、日付が一日ずれた、URL が抜けた、元に無い数字が増えた、を人が読んで見つけるのは難しくなります。
+
+`compare` は、その見落としを機械が拾う安全網です。書き換える前と後から、数・日付・時刻・URL・コード・固有名詞・引用・見出し・条項の参照・脚注を同じ読み方で取り出して比べます。
+位置は見ないので、事実が段落ごと動いても問題にしません。判定に AI は使わず、同じ二つの文書からはいつも同じ結果が出ます。chaff は比べるだけで、書き換えません。
+
+```
+$ npx chaffjs compare before.md after.md
+before.md → after.md
+
+✗ 落ちた事実 2 件（before.md にあって after.md に無い）
+  数: 1,200円  (before.md:3)
+  URL: https://example.com/price  (before.md:3)
+
+✗ 足された事実 1 件（after.md にだけある）
+  数: 1,300円  (after.md:3)
+
+i 書き方だけ変わった事実 3 件
+  見出し: 料金改定のお知らせ → 料金が変わります  (1 行目 → 1 行目)
+  日付: 2026年4月1日 → 2026/4/1  (3 行目 → 3 行目)
+  数: 1,000円 → 1000円  (3 行目 → 3 行目)
+
+照合した事実 5 件 → 4 件: 数 2→2、日付 1→1、時刻 0→0、URL 1→0、コード 0→0、固有名詞 0→0、引用 0→0、見出し 1→1、条項の参照 0→0、脚注 0→0
+落ちた事実 2 件、足された事実 1 件
+```
+
+- **落ちた事実**と**足された事実**は失敗です。どちらかがあれば終了コードは 1 になります。書き換えでも、事実を作ってはいけないからです。
+- **書き方だけ変わった事実**は情報です。1,000 と 1000、５ と 5、2026年4月1日 と 2026/4/1、言い換えた見出しは、同じ事実の別の書き方として扱います。
+- 最後の行は、種類ごとに前と後の数を並べます。0 件の種類も出すので、「落ちたものは無い」が「何も見ていない」と読まれることはありません。品詞の解析器が無いなど、読めなかった種類があれば理由を添えて出します。
+
+わざと削った種類は `--allow-dropped`、わざと足した種類は `--allow-added` で失敗から外せます。外したものも一覧には残ります。
+
+```bash
+npx chaffjs compare before.md after.md --allow-dropped url        # URL は消してよい
+npx chaffjs compare before.md after.md --allow-dropped url,quote  # カンマで並べられる
+npx chaffjs compare before.md after.md --compact                  # 1 件 1 行
+npx chaffjs compare before.md after.md --json                     # AI が読んで直す
+```
+
+種類の名前は `number`、`date`、`time`、`url`、`code`、`name`、`quote`、`heading`、`reference`、`footnote` です。
+`--json` には、落ちた事実と足された事実が行番号つきで入るので、書き換えた AI にそのまま渡して直させられます。
 
 ## 意味を読む検査と閾値の測り直し
 
