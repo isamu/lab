@@ -1,8 +1,8 @@
 // A code span closes at the next run of exactly as many backticks as opened it: ``a ` b`` is one span.
 const CODE_SPAN = /(?<!`)(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)/gu;
 
-const OPENING = new Set([..."(\"'“‘["]);
-const CLOSING = new Set([...")\"'”’].,:;!?"]);
+const OPENING = new Set("(\"'“‘[");
+const CLOSING = new Set(")\"'”’].,:;!?");
 
 /** The word without the punctuation around it: `(optional)` is `optional`, `Setup:` is `Setup`. */
 const bareWord = (token: string): string => {

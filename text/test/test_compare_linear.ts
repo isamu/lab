@@ -6,6 +6,7 @@ import { bareUrls } from "../packages/chaff/src/bare-url.ts";
 import { readMarkdown } from "../packages/chaff/src/markdown-read.ts";
 import { compareAtoms } from "../packages/chaff/src/compare/match.ts";
 import { clockTimes } from "../packages/chaff/src/compare/clock-time.ts";
+import { seenTextOf } from "../packages/chaff/src/compare/fact-key.ts";
 import { factTextOf } from "../packages/chaff/src/compare/fact-text.ts";
 import { bareNumbers, quotations, teamNames } from "../packages/chaff/src/compare/text-atoms.ts";
 import { unwrittenNames } from "../packages/chaff/src/compare/written-names.ts";
@@ -132,9 +133,23 @@ describe("compare on long documents", () => {
     const text = "10:30 「あ」 Acme 7 ".repeat(LONG);
     const input = { text, source: text, lineOf: () => 1 };
     assert.equal(clockTimes(text).length, LONG);
-    assert.equal(quotations(input).length, LONG);
+    assert.equal(quotations(input, []).length, LONG);
     assert.equal(teamNames(text, ["Acme", "Acme Cloud"]).length, LONG);
     assert.equal(bareNumbers(input, []).length, LONG * 3);
+  });
+
+  it(`keys ${String(LONG)} quotations among as many vanishing line breaks`, { timeout: LONG_TIMEOUT_MS }, () => {
+    const text = "「系の\nシ」".repeat(LONG);
+    const unseen = Array.from({ length: LONG }, (_, index) => ({ start: index * 6 + 3, end: index * 6 + 4 }));
+    const keys = quotations({ text, source: text, lineOf: () => 1 }, unseen).map((quote) => quote.key);
+    assert.deepEqual([keys.length, keys[0], keys.at(-1)], [LONG, "系のシ", "系のシ"]);
+  });
+
+  it(`reads a text with ${String(LONG)} unseen parts as a reader sees it`, { timeout: LONG_TIMEOUT_MS }, () => {
+    const text = "日本\n銀行".repeat(LONG);
+    const unseen = Array.from({ length: LONG }, (_, index) => ({ start: index * 5 + 2, end: index * 5 + 3 }));
+    const seen = seenTextOf(text, unseen);
+    assert.deepEqual([seen.text.length, seen.offsets.at(-1)], [LONG * 4, LONG * 5 - 1]);
   });
 
   it(`blanks ${String(LONG)} pieces of code and links`, { timeout: LONG_TIMEOUT_MS }, () => {
