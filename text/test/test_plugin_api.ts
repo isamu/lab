@@ -119,6 +119,7 @@ describe("the plugin API", () => {
         [
           { start: at, end: at + 3 },
           { start: at, values: { matched: "launch date", count: 2 } },
+          { start: at },
         ],
         doc.source,
         doc.sentences,
@@ -129,6 +130,7 @@ describe("the plugin API", () => {
         [
           ["The launch is TBD.", { matched: "TBD", offset: at }],
           ["The launch is TBD.", { matched: "launch date", count: 2, offset: at }],
+          ["The launch is TBD.", { matched: "", offset: at }],
         ],
       );
     });
