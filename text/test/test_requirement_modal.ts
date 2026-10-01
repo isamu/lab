@@ -62,6 +62,12 @@ describe("requirement-modal — JIS Z 8301:2019 (ja)", () => {
     assert.deepEqual(found("直読できるので、測定操作は簡単である。", ja, JIS), []);
   });
 
+  it("a closing form in quotation marks is a mention, not a use", () => {
+    assert.deepEqual(found("規定の文末に使わない語は「べきである」。", ja, JIS), []);
+    assert.deepEqual(found("この規格は「できる」を許容に使わない。", ja, JIS), []);
+    assert.deepEqual(found("「乾燥」と書いた試料は、乾燥させるべきである。", ja, JIS), ["べきである→することが望ましい"]);
+  });
+
   it("べき modifying a noun is a requirement and is allowed (7.3)", () => {
     assert.deepEqual(found("記載すべき事項は、次による。", ja, JIS), []);
   });

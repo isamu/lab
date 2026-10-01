@@ -22,16 +22,26 @@ const spanOf = (sentence: Sentence, range: TokenRange): { start: number; end: nu
   end: sentence.tokens?.[range.end - 1]?.span.end ?? sentence.span.end,
 });
 
+/** Where the words of the form are in the sentence: only the closing one for position: after, else every one. */
+const candidateRanges = (sentence: Sentence, entry: LexiconEntry): TokenRange[] => {
+  const ranges = entryRanges(sentence, entry);
+  if (entry.position !== "after") return ranges;
+  const closing = ranges.at(-1);
+  return entryCloses(sentence, entry) && closing !== undefined ? [closing] : [];
+};
+
+/** Whether the sentence has the form at all, read on its text: for a sentence the adapter gave no tokens. */
+const presentInText = (sentence: Sentence, entry: LexiconEntry): boolean =>
+  entry.position === "after" ? entryCloses(sentence, entry) : entryIn(sentence, entry);
+
 /**
- * Where the sentence uses the form, or undefined. A form with position: after must close the sentence. Any other must
- * stand outside quotation marks: 'The key words "MUST" and "SHALL" …' mentions them, it does not use them.
+ * Where the sentence uses the form, or undefined. A form with position: after must close the sentence. Either must stand
+ * outside quotation marks: 'The key words "MUST" and "SHALL" …' and 禁止語は「べきである」。 mention a form, not use it.
  */
 const useOf = (sentence: Sentence, entry: LexiconEntry): Use | undefined => {
-  const ranges = entryRanges(sentence, entry);
-  if (entry.position === "after") return entryCloses(sentence, entry) ? { entry, offset: startOf(sentence, ranges.at(-1)) } : undefined;
-  if (ranges.length === 0) return entryIn(sentence, entry) ? { entry, offset: sentence.span.start } : undefined;
+  if (sentence.tokens === undefined) return presentInText(sentence, entry) ? { entry, offset: sentence.span.start } : undefined;
   const quoted = quotedIn(sentence, QUOTATION_MARKS);
-  const used = ranges.find((range) => !isWithinAny(quoted, spanOf(sentence, range)));
+  const used = candidateRanges(sentence, entry).find((range) => !isWithinAny(quoted, spanOf(sentence, range)));
   return used === undefined ? undefined : { entry, offset: startOf(sentence, used) };
 };
 
