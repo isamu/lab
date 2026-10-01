@@ -121,7 +121,8 @@ npx chaffjs article.md --experimental    # 試験中のルールも動かす
 5. 確かめます。
 
 ```bash
-npx chaffjs new.md --experimental                       # AI っぽさの特徴を前と後で比べる
+npx chaffjs old.md --experimental                       # 書き直す前の AI っぽさの特徴
+npx chaffjs new.md --experimental                       # 書き直した後の特徴
 npx chaffjs outline old.md new.md                       # 見出しの数・節の平均・箇条書き・太字を前と後で並べる
 npx chaffjs compare old.md new.md --allow-dropped heading   # 見出し以外の事実が落ちても足されてもいないか
 ```

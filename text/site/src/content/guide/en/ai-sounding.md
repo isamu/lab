@@ -119,7 +119,8 @@ Leave the old sentences alone. Take an inventory of what the document says, and 
 5. Check the result.
 
 ```bash
-npx chaffjs new.md --experimental                          # the AI signals, before and after
+npx chaffjs old.md --experimental                          # the AI signals before
+npx chaffjs new.md --experimental                          # and after
 npx chaffjs outline old.md new.md                          # headings, average section, lists and bold, before and after
 npx chaffjs compare old.md new.md --allow-dropped heading  # no fact other than a heading dropped or added
 ```

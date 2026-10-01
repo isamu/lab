@@ -10,8 +10,8 @@ The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding te
 and Bold. **Full** (全面書き直し) rewrites the whole document from scratch, because a Light or Bold pass keeps the skeleton
 of generated text: a heading every few paragraphs, bold lead-ins, symmetric sections, a まとめ that repeats the body.
 
-- Full is the recommended mode for `blog/*` and `blog/essay`, whenever `ai-generated-composite` fires, and when the
-  request says 「全面的に」 or "from scratch".
+- Full is the recommended mode for `blog/*` (`blog/essay` included) and `literature/essay`, whenever
+  `ai-generated-composite` fires, and when the request says 「全面的に」 or "from scratch".
 - Steps: take an inventory (`chaff facts`, the old outline from `chaff outline`, the writer's claims and episodes).
   Restructure before writing: reorder, merge and split, cut restating sections and the まとめ, drop lone headings,
   turn point lists into a story, break three-point symmetry, move the writer's experience, open on the point. Show

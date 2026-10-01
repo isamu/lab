@@ -113,7 +113,7 @@ generated. chaff never rewrites; the rewriting is yours. Pick one of three modes
 | --- | --- | --- |
 | **Light** | only the flagged spots | the content and the structure are fine and only some phrasing is off |
 | **Bold** | each section's prose, keeping the outline | the outline is fixed (a report template, a manual, required sections) |
-| **Full** | the whole document, from scratch | the request says 「全面的に」「一から」「全部書き直して」 / "from scratch" / "rewrite the whole thing"; or the genre is `blog/*` or `blog/essay`; or `ai-generated-composite` fires |
+| **Full** | the whole document, from scratch | the request says 「全面的に」「一から」「全部書き直して」 / "from scratch" / "rewrite the whole thing"; or the genre is `blog/*` or an essay (`literature/essay`); or `ai-generated-composite` fires |
 
 For a blog or an essay, and whenever `ai-generated-composite` fires, recommend Full. A Light or Bold pass leaves the
 skeleton of generated text: a heading every few paragraphs, bold lead-ins, symmetric sections, a closing まとめ that
@@ -168,7 +168,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
      report, an email);
    - nothing the inventory does not have: no new facts, people, numbers, causes or consequences.
 5. **Check.**
-   - `npx chaffjs <new> --experimental`: the AI signals before and after.
+   - `npx chaffjs <old> --experimental` and `npx chaffjs <new> --experimental`: the AI signals before and after.
    - `npx chaffjs outline <old> <new>`: headings, average section length, text in lists, bold, before and after. A
      restructure shows up here, not only in rule counts.
    - `npx chaffjs compare <old> <new> --allow-dropped heading`: the headings are the structure you threw away on
