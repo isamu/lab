@@ -8,7 +8,7 @@ import { namesQuantity } from "./superlative-name.ts";
 import { namesAmount } from "./superlative-amount.ts";
 import { restricted, type Restrictors } from "./superlative-clause.ts";
 import { stackedHedges, type StackedHedge } from "./stacked-hedge.ts";
-import { comparisonMarkersOf, counterpartBefore, quotedRange, type ComparisonMarkers } from "./superlative-comparison.ts";
+import { comparisonMarkersOf, counterpartBefore, onlyQuoted, quotedRange, type ComparisonMarkers } from "./superlative-comparison.ts";
 
 const PER = 1000;
 
@@ -119,7 +119,10 @@ const everyQualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qua
 };
 
 const qualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean =>
-  DIGIT.test(sentence.text) || qualifiers.comparison.anywhere.some((marker) => entryIn(sentence, marker)) || everyQualified(sentence, entry, qualifiers);
+  DIGIT.test(sentence.text) ||
+  onlyQuoted(sentence, entry) ||
+  qualifiers.comparison.anywhere.some((marker) => entryIn(sentence, marker)) ||
+  everyQualified(sentence, entry, qualifiers);
 
 const bareHits = (doc: ProseDocument, lexicon: Lexicon): Hit[] => {
   const qualifiers = qualifiersOf(doc);

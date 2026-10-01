@@ -6,8 +6,8 @@ Newest first.
 
 ### `unqualified-superlative` reads 「〜のほうが」「〜との」 and quotations (#394)
 
-- 「後者のほうが圧倒的に長い」「こちらの方が」「他社と比べて」 name what is compared, anywhere in the sentence, like
-  より and に比べる already did.
+- 「後者のほうが圧倒的に長い」「他社と比べて」 name what is compared, anywhere in the sentence, like より and に比べる
+  already did. 「の方が」 is not added: in 「担当の方が最も詳しい」 the 方 is a person, not a comparison.
 - 「SES との最大の分岐点」: 「との」 names the counterpart only right before the superlative, so 「チームとの会議で最高の成果」
   is still reported. A comparison marker with `position: before` in the `comparison-marker` lexicon works this way.
 - A superlative inside 「」『』 or quotation marks ("…", “…”) is someone else's words and is not reported; one outside

@@ -1,10 +1,10 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { superlativeReported } from "./rule-run.ts";
-import { comparisonMarkersOf, counterpartBefore, quotedRange } from "../packages/chaff/src/detectors/superlative-comparison.ts";
+import { comparisonMarkersOf, counterpartBefore, onlyQuoted, quotedRange } from "../packages/chaff/src/detectors/superlative-comparison.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LexiconEntry, Sentence, Token } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, LexiconEntry, Sentence, Token } from "../packages/chaff/src/plugin.ts";
 
 // 比べる相手を言う「のほうが」「との」と、引いた言葉の中の最上級。例文はすべて自作。
 
@@ -14,7 +14,6 @@ await en.prepare?.({ pos: true });
 describe("のほうが・と比べる（文のどこにあっても相手を言う）", () => {
   it("相手があれば指摘しない", () => {
     assert.ok(!superlativeReported(ja, "前者は短いです。後者のほうが圧倒的に長いです。"));
-    assert.ok(!superlativeReported(ja, "こちらの方が最も速く動きます。"));
     assert.ok(!superlativeReported(ja, "他社と比べて最も速いです。"));
     assert.ok(!superlativeReported(ja, "他社と比べると最も速いです。"));
   });
@@ -26,6 +25,7 @@ describe("のほうが・と比べる（文のどこにあっても相手を言�
 
   it("語の一部には当たらない（「方が」だけ、「比べる」だけ）", () => {
     assert.ok(superlativeReported(ja, "この方が最も詳しいです。"));
+    assert.ok(superlativeReported(ja, "担当の方が最も詳しいです。"));
     assert.ok(superlativeReported(ja, "背を比べて最も高い人です。"));
   });
 });
@@ -54,6 +54,11 @@ describe("引いた言葉の中の最上級", () => {
     assert.ok(!superlativeReported(ja, "題は『最高の一日』です。"));
     assert.ok(!superlativeReported(en, 'The tool replied "this is the best answer" and stopped.'));
     assert.ok(!superlativeReported(en, "The tool replied “this is the best answer” and stopped."));
+  });
+
+  it("括弧の外の最上級が限られていれば、中の最上級と合わせて指摘しない", () => {
+    assert.ok(!superlativeReported(ja, "「最高」と言われますが、日本で最高の店です。"));
+    assert.ok(!superlativeReported(en, 'Critics said "the best" about it, and it is the best pizza in Chicago.'));
   });
 
   it("括弧の外にもあれば、外の最上級を指摘する", () => {
@@ -124,5 +129,31 @@ describe("quotedRange", () => {
     assert.ok(!quotedRange(sentence, { start: 1, end: 4 }));
     assert.ok(!quotedRange(sentence, { start: 5, end: 6 }));
     assert.ok(!quotedRange({ text: sentence.text, span: sentence.span }, { start: 1, end: 2 }));
+  });
+});
+
+describe("onlyQuoted（品詞の無い文でも引用の中を読む）", () => {
+  const plain = (text: string): Sentence => ({ text, span: { start: 0, end: text.length } });
+  const best: LexiconEntry = { pattern: "the best" };
+
+  it("引用の中にしか無ければ真", () => {
+    assert.ok(onlyQuoted(plain('The tool replied "this is the best answer".'), best));
+    assert.ok(onlyQuoted(plain("返答は「唯一のことだ」でした。"), { pattern: "唯一の" }));
+  });
+
+  it("外にもあれば偽。閉じない引用符は中身を作らない", () => {
+    assert.ok(!onlyQuoted(plain('They call it "the best", and it is the best tool.'), best));
+    assert.ok(!onlyQuoted(plain('He said "this is the best tool.'), best));
+    assert.ok(!onlyQuoted(plain("It is the best tool."), best));
+  });
+});
+
+describe("品詞の無い文書でも、引いた言葉の中の最上級は指摘しない", () => {
+  /** 文を切るだけで品詞を読まない adapter。 */
+  const untagged: LanguageAdapter = { ...en, segment: (text) => ({ sentences: [{ text, span: { start: 0, end: text.length } }] }) };
+
+  it("引用の中だけなら指摘せず、外にあれば指摘する", () => {
+    assert.ok(!superlativeReported(untagged, 'The tool replied "this is the best answer" and stopped.'));
+    assert.ok(superlativeReported(untagged, "The tool replied that this is the best answer."));
   });
 });
