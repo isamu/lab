@@ -14,6 +14,52 @@ Newest first.
   written two ways rather than slipping. It is reported once with both counts (「空ける所が 56 箇所、詰める所が 67
   箇所あります」) instead of once per place, so chaff does not call one side wrong in a near-even document.
 
+### New rules: a document's outline (#170)
+
+Experimental rules that read the headings of a Markdown document. Each finding in the corpus was read before the rule
+was added.
+
+- **`duplicate-heading`**: two headings with the same words under the same parent (markdownlint's MD024 with
+  `siblings_only`). A changelog's "Added" and "Fixed" under each version have different parents and are fine. Case,
+  full-width forms and spacing are ignored when comparing. In the corpus it finds the OpenAPI specification's second
+  "Examples" under "Link Object" and a recipe page that repeats its title; the miss is an offer letter that writes each
+  party's signature block under the same company name as a heading.
+- **`empty-section`**: a heading followed straight away by a heading of the same or a higher level, or by the end of the
+  document. A heading followed by a deeper one only splits its section, and a section holding only an HTML comment is
+  empty. In the corpus it finds Wikivoyage articles with
+  their 観る・買う sections left empty, an empty "Announcements" item in meeting minutes, a court page's empty 裁判要旨
+  and a changelog version with no entries; the misses are two labels in the Congressional Record set at the same level
+  as the heading below them, and an offer letter's "Accepted and Agreed to:" above the signature block.
+
+Both rules skip a heading with no words (`## ---`), as the document model already does, and a setext heading that runs
+over two lines or ends like a sentence: in a plain-text mail it is a paragraph above a `-----` separator, not a heading
+(an e-Tax mail template collection would otherwise report its repeated footer). An ATX heading's text in the markup
+now drops its closing `#` before an attribute (`## Install ## {#install}` reads "Install"), as the document model does.
+
+### New rules: invisible characters, half-width katakana and a space before punctuation (#170)
+
+Experimental rules for single characters a paste or an edit leaves behind. Each finding in the corpus was read before
+the rule was added.
+
+- **`invisible-character`** (ja / en): characters that do not show on screen: a zero-width space or joiner, a byte
+  order mark mid-text, a soft hyphen, a direction mark or override, a control character other than a tab, a line
+  break or a page break, tag characters hidden after a letter, two or more variation selectors in a row, and a
+  no-break space after a Markdown marker or next to Japanese text. Code is read too, since a copied command breaks.
+  A joiner inside an emoji or in a script that joins letters (Arabic, Indic), a direction mark or isolate next to
+  right-to-left text, a regional flag's tags and a single variation selector are part of the writing; a direction
+  override (LRO, RLO) is always reported. A run of the same kind is one
+  finding, and the quote shows each character as `⟨U+200B⟩`. In the corpus every finding is a zero-width space: in
+  a 年次報告, a 自治体 notice, a Federal Register URL, the GOV.UK style guide and a Wikisource letter.
+- **`hankaku-kana`** (ja): half-width katakana and half-width Japanese punctuation (`ﾒｰﾙ`, `｡｢｣､･`), with the
+  full-width form in the message. Code, link text and a name quoted in brackets are not counted. The one corpus
+  finding, a `･` in a 就業規則, is a slip.
+- **`space-before-punctuation`** (en): a single space between a word (or a closing bracket or quote after one) and
+  `.`, `,`, `;`, `?` or `!` ("word .", "(word) ,"). A
+  colon (a label such as "ISSN : "), dots spaced out as an ellipsis or a leader, a dot that starts the next word
+  (`.NET`, `.5`), a mark after a number (a formula's `[ 1 , N ]`) and a mark after two or more spaces are not counted.
+  In the corpus it finds slips in board minutes, an arXiv listing, a CFPB post and a Gutenberg play; the one miss is
+  a line of a DNA diagram in a patent.
+
 ## 0.18.0 — 2026-10-01
 
 A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
