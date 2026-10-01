@@ -8,6 +8,7 @@ import { namesQuantity } from "./superlative-name.ts";
 import { namesAmount } from "./superlative-amount.ts";
 import { restricted, type Restrictors } from "./superlative-clause.ts";
 import { stackedHedges, type StackedHedge } from "./stacked-hedge.ts";
+import { comparisonMarkersOf, counterpartBefore, onlyQuoted, quotedRange, type ComparisonMarkers } from "./superlative-comparison.ts";
 
 const PER = 1000;
 
@@ -21,16 +22,21 @@ const hitsFor = (doc: ProseDocument, lexicon: Lexicon): Hit[] =>
 
 /**
  * 単位長あたりの出現率。件数で数えると長い文書ほど当たる（bold-density と同じ）。
- * rule の id は呼び出し側が持つ。detector は「密度が閾値を超えたか」しか知らない。
+ * 短すぎて測らない文書、1 つも無いとき、閾値に収まるときは undefined。
  */
+export const rateOver = (doc: ProseDocument, count: number, limit: number): number | undefined => {
+  const length = wordsOf(doc);
+  const rate = length === 0 ? 0 : Math.round((count / length) * PER);
+  return length < FLOOR[doc.lengthUnit] || count === 0 || rate <= limit ? undefined : rate;
+};
+
+/** rule の id は呼び出し側が持つ。detector は「密度が閾値を超えたか」しか知らない。 */
 const densityRule =
   (rule: string): Detector =>
   (doc, options): Finding[] => {
     const hits = hitsFor(doc, options.lexicon ?? []);
-    const length = wordsOf(doc);
-    const rate = length === 0 ? 0 : Math.round((hits.length / length) * PER);
-    const first = hits[0];
-    if (length < FLOOR[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];
+    const rate = rateOver(doc, hits.length, options.limit);
+    if (rate === undefined) return [];
     return hits.map((hit) => ({
       rule,
       severity: "warning",
@@ -83,7 +89,7 @@ export const hedging: Detector = (doc, options): Finding[] => {
 const DIGIT = /\d/u;
 
 type Qualifiers = {
-  readonly comparison: Lexicon;
+  readonly comparison: ComparisonMarkers;
   readonly scope: ScopeMarkers;
   readonly quantityNouns: Lexicon;
   readonly amounts: Lexicon;
@@ -91,7 +97,7 @@ type Qualifiers = {
 };
 
 const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
-  comparison: doc.lexicons["comparison-marker"] ?? [],
+  comparison: comparisonMarkersOf(doc.lexicons["comparison-marker"] ?? []),
   scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? []),
   quantityNouns: doc.lexicons["quantity-noun"] ?? [],
   amounts: doc.lexicons["superlative-amount"] ?? [],
@@ -102,22 +108,26 @@ const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
   },
 });
 
-/** 範囲・節・分詞・形容詞のどれかが最上級を限っているか、最上級が量か名前を言っているか。 */
+/** 範囲・節・分詞・形容詞・すぐ前の相手のどれかが最上級を限っているか、最上級が量か名前を言っているか。 */
 const qualifiedAt = (tokens: readonly Token[], range: TokenRange, qualifiers: Qualifiers): boolean =>
+  counterpartBefore(tokens, range, qualifiers.comparison.before) ||
   scoped(tokens, range, qualifiers.scope) ||
   restricted(tokens, range, qualifiers.restrictors) ||
   namesQuantity(tokens, range, qualifiers.quantityNouns) ||
   namesAmount(tokens, range, qualifiers.amounts);
 
-/** どの出現も限られているか量を言うときだけ。1 つでもそうでない出現があれば、その文には限定の無い最上級がある。 */
+/** どの出現も引いた言葉か、限られているか、量を言うときだけ。1 つでもそうでない出現があれば、その文には限定の無い最上級がある。 */
 const everyQualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean => {
   const tokens = sentence.tokens ?? [];
   const ranges = entryRanges(sentence, entry);
-  return ranges.length > 0 && ranges.every((range) => qualifiedAt(tokens, range, qualifiers));
+  return ranges.length > 0 && ranges.every((range) => quotedRange(sentence, range) || qualifiedAt(tokens, range, qualifiers));
 };
 
 const qualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean =>
-  DIGIT.test(sentence.text) || qualifiers.comparison.some((marker) => entryIn(sentence, marker)) || everyQualified(sentence, entry, qualifiers);
+  DIGIT.test(sentence.text) ||
+  onlyQuoted(sentence, entry) ||
+  qualifiers.comparison.anywhere.some((marker) => entryIn(sentence, marker)) ||
+  everyQualified(sentence, entry, qualifiers);
 
 const bareHits = (doc: ProseDocument, lexicon: Lexicon): Hit[] => {
   const qualifiers = qualifiersOf(doc);

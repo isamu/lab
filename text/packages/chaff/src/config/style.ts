@@ -18,11 +18,24 @@ export const withStyle = (config: Config, styles: readonly StyleDefinition[]): C
   const style = styles.find((entry) => entry.id === config.style);
   if (style === undefined) return config;
   const fromStyle = Object.keys(style.rules).filter((id) => config.rules[id] === undefined && config.limits[id] === undefined);
+  const limits = Object.fromEntries(Object.entries(style.limits).filter(([id]) => fromStyle.includes(id)));
   return {
     ...config,
     rules: { ...style.rules, ...config.rules },
-    applied: { style: style.id, levelsFrom: fromStyle, options: style.options },
+    applied: { style: style.id, levelsFrom: fromStyle, options: style.options, limits },
   };
+};
+
+/**
+ * The numeric limits a run of a document in this language uses: chaff.yaml's own, and under them the style's for this
+ * language. A style that gives a number only for Japanese leaves an English document at the level's number.
+ */
+export const limitsFor = (config: Pick<Config, "limits" | "applied">, language: string): Readonly<Record<string, number>> => {
+  const fromStyle = Object.entries(config.applied?.limits ?? {}).flatMap(([id, byLanguage]): [string, number][] => {
+    const limit = byLanguage[language];
+    return limit === undefined ? [] : [[id, limit]];
+  });
+  return { ...Object.fromEntries(fromStyle), ...config.limits };
 };
 
 const TEXT: Texts<{ readonly unknown: (where: string, style: string, known: string) => string }> = {

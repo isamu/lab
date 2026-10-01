@@ -1,5 +1,6 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
 import { entryIn } from "./lexicon-match.ts";
+import { closingSentences } from "../closing-paragraph.ts";
 
 /** 冒頭は先頭 2 段落ぶん。「どの記事にも当てはまる書き出し」は冒頭にあるときだけ問題。 */
 const OPENING_SENTENCES = 4;
@@ -10,7 +11,7 @@ const OPENING_SENTENCES = 4;
  */
 const inScope = (doc: ProseDocument, where: string | undefined): readonly Sentence[] => {
   if (where === "opening") return doc.sentences.slice(0, OPENING_SENTENCES);
-  if (where === "closing") return doc.sections.at(-1)?.sentences ?? [];
+  if (where === "closing") return closingSentences(doc.sections, doc.paragraphs);
   return doc.sentences;
 };
 

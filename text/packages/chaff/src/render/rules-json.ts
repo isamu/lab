@@ -8,7 +8,7 @@ import { presetLevelsOf, type PresetLevels } from "../genre-parse.ts";
 import { RULE_GROUPS, groupTextOf } from "../rule-guide.ts";
 import { standingIn } from "../rule-genres.ts";
 import { optionsJson } from "./options.ts";
-import { styleLevelSource } from "../config/style.ts";
+import { limitsFor, styleLevelSource } from "../config/style.ts";
 import { loadStyles } from "../style-load.ts";
 import type { OptionLayer } from "../rule-options.ts";
 import { CUSTOM_TYPES } from "../custom/parse.ts";
@@ -60,13 +60,15 @@ const TEXT: Texts<{
   },
 };
 
-const now = (rule: RuleDefinition, config: Config, genre: string, text: (typeof TEXT)["ja"], preset: PresetLevels): Record<string, unknown> => {
+type Limits = Readonly<Record<string, number>>;
+
+const now = (rule: RuleDefinition, config: Config, limits: Limits, genre: string, text: (typeof TEXT)["ja"], preset: PresetLevels): Record<string, unknown> => {
   // A run leaves out a rule whose use_for does not cover the genre before it reads any level.
   if (standingIn(rule, genre, {}).kind === "unsuited") return { level: "off", why_off: text.offUnsuited(genre) };
   const explicit = config.rules[rule.id] ?? preset[rule.id];
   if (explicit === "off" && config.rules[rule.id] === undefined) return { level: "off", why_off: text.offByGenre(genre) };
   if (explicit === "off") return { level: "off", why_off: text.offBySetting };
-  const limit = rule.level_sets === "severity" ? undefined : config.limits[rule.id];
+  const limit = rule.level_sets === "severity" ? undefined : limits[rule.id];
   if (limit !== undefined) return { level: "normal", limit, set_as: "number" };
   if (explicit !== undefined) return { level: explicit, ...effectAt(rule, explicit, genre) };
   if (rule.status === "experimental" && !config.experimental) {
@@ -77,17 +79,17 @@ const now = (rule: RuleDefinition, config: Config, genre: string, text: (typeof 
 
 /** The level a rule runs at now, and why it is off when it is: what `chaff rules` shows in its table. */
 export const nowFor = (rule: RuleDefinition, config: Config, language: string, genre: string): Record<string, unknown> =>
-  now(rule, config, genre, TEXT[uiLanguageOf(language)], presetLevels(genre));
+  now(rule, config, limitsFor(config, language), genre, TEXT[uiLanguageOf(language)], presetLevels(genre));
 
 /** What a level does to a rule: the limit it counts to, or, with nothing to count, the severity of its findings. */
 const effectAt = (rule: RuleDefinition, level: Exclude<Level, "off">, genre: string): Record<string, unknown> =>
   rule.level_sets === "severity" ? { severity: severityAt(rule, level, genre) } : { limit: resolve(rule, level, genre).limit };
 
-const yourSetting = (rule: RuleDefinition, config: Config): Record<string, unknown> | null => {
+const yourSetting = (rule: RuleDefinition, config: Config, limits: Limits): Record<string, unknown> | null => {
   const level = config.rules[rule.id];
   if (level === undefined) return null;
   const from = styleLevelSource(config, rule.id) ?? config.path;
-  const limit = rule.level_sets === "severity" ? undefined : config.limits[rule.id];
+  const limit = rule.level_sets === "severity" ? undefined : limits[rule.id];
   return limit === undefined ? { level, from } : { level, limit, from };
 };
 
@@ -172,6 +174,7 @@ export const rulesJson = (
 ): string => {
   const text = TEXT[uiLanguageOf(language)];
   const preset = presetLevels(genre);
+  const limits = limitsFor(config, language);
   return JSON.stringify(
     {
       // 2: rules gained group, summary, example, not_flagged, level_meaning, languages, requires and genres,
@@ -195,8 +198,8 @@ export const rulesJson = (
         level_sets: rule.level_sets,
         ...levelsOf(rule, genre),
         levels_you_can_set: definedLevels(rule),
-        your_setting: yourSetting(rule, config),
-        now: now(rule, config, genre, text, preset),
+        your_setting: yourSetting(rule, config, limits),
+        now: now(rule, config, limits, genre, text, preset),
         ...(rule.options === undefined ? {} : { options: optionsJson(rule, optionLayers) }),
         ...(rule.custom === undefined ? {} : { defined_in: "chaff.yaml custom_rules", custom: rule.custom }),
         ...guideOf(rule),

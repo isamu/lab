@@ -1,0 +1,6 @@
+# 列挙を閉じない語（Femmer ほか 2017 の open-ended terms）。要求の文にあると、ほかに何が含まれるのかを読み手が決められない。
+id: requirement-open-end
+language: ja
+entries:
+  - pattern: 等
+  - pattern: など

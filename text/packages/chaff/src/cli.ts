@@ -3,13 +3,15 @@ import { dirname, join } from "node:path";
 import { loadAdapter, packageFor } from "./adapter-load.ts";
 import { CONFIG_FILE, type Config } from "./config/load.ts";
 import { applyByPath } from "./config/by-path.ts";
+import { limitsFor } from "./config/style.ts";
 import { applyLevel } from "./config/write.ts";
 import { buildDocument, teamRules } from "./document.ts";
 import { guessLanguage } from "./detect.ts";
 import { collectTargets, readDocumentFile } from "./files.ts";
 import { BASELINE_FILE, fingerprints, readBaseline, splitByBaseline, writeBaseline } from "./baseline.ts";
 import { applySuppressions } from "./stet.ts";
-import { renderSuppressions, type PerFile } from "./render/suppressions.ts";
+import type { PerFile } from "./render/suppressions.ts";
+import { runSuppressions } from "./commands/suppressions.ts";
 import { clock, describeChange, snapshotOf, watchPaths, type Snapshot } from "./watch.ts";
 import { runEval } from "./commands/eval.ts";
 import { runTest } from "./commands/test.ts";
@@ -29,11 +31,10 @@ import { rulesJson } from "./render/rules-json.ts";
 import { rulesTable } from "./render/rules-table.ts";
 import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
-import { runTree, treeTargets, type TreeContext } from "./commands/tree.ts";
-import { citeTargets, runCite } from "./commands/cite.ts";
-import { compareTargets, runCompare } from "./commands/compare.ts";
+import type { TreeContext } from "./commands/tree.ts";
+import { DOCUMENT_COMMANDS } from "./commands/document-commands.ts";
 import { runSkill } from "./commands/skill.ts";
-import { runFeedback, settingsOf } from "./commands/feedback.ts";
+import { runConditions, runFeedback, settingsOf, type Checked } from "./commands/feedback.ts";
 import { homedir } from "node:os";
 import { settingWarnings } from "./config/warnings.ts";
 import { readConfigIn } from "./config/read.ts";
@@ -44,6 +45,7 @@ import type { Finding, Level, RuleDefinition } from "./plugin.ts";
 import { CLI_TEXT, type CliText, type GenreSource } from "./cli-text.ts";
 import { hostLanguage, sharedLanguage, uiLanguageOf, type UiLanguage } from "./ui.ts";
 import { profileFor } from "./profile/for-file.ts";
+import { notRunAmong } from "./not-run.ts";
 import { settingProblems } from "./setting-problems.ts";
 import { withExtensions } from "./extension/load.ts";
 
@@ -85,6 +87,7 @@ type Inspected = {
   readonly genre: string;
   readonly outcome: FileOutcome;
   readonly perFile: PerFile;
+  readonly checked: Omit<Checked, "conditions">;
   /** stet で黙らせたものを除いた、baseline で棚上げする前の指摘。fingerprint は baseline を書くときだけ作る。 */
   readonly kept: readonly Finding[];
 };
@@ -103,7 +106,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
     settings: config.rules,
     experimental,
     genre,
-    limits: config.limits,
+    limits: limitsFor(config, language),
     optionLayers: optionLayersOf(config),
     detectors: config.extensions?.detectors ?? {},
   });
@@ -117,6 +120,7 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const split = splitByBaseline(path, applied.kept, baseline);
   const result = { ...raw, findings: split.fresh };
   const { header, notes } = fileHeader(path, source, language, { genre, from, unread }, { shelved: split.shelved, hushed: applied.suppressed.length });
+  const notRun = notRunAmong(applied.named, raw.skipped);
   const text = argv.includes("--compact") ? renderCompact(header, result, rules, language) : renderFriendly(header, result, rules, language, notes);
   return {
     text,
@@ -124,7 +128,8 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
     language,
     genre,
     outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
-    perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless },
+    perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless, notRun },
+    checked: { findings: split.fresh, rules, language, genre, skipped: raw.skipped },
     kept: applied.kept,
   };
 };
@@ -227,7 +232,7 @@ const explain = (config: Config, ruleId: string | undefined, genreFlag: string |
   }
   const preset = genre === undefined ? {} : presetLevels(genre);
   const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
-  console.log(renderExplain(rule, current, language, text.unit(rule.id, language), genre, settingSourcesOf(config, rule.id)));
+  console.log(renderExplain(rule, current, language, genre, settingSourcesOf(config, rule.id, language)));
   return 0;
 };
 
@@ -245,13 +250,8 @@ const runBaseline = async (targets: readonly string[], argv: readonly string[], 
   return 0;
 };
 
-const runSuppressions = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
-  const paths = collectTargets(targets.length > 0 ? targets : ["."]);
-  const results = await Promise.all(paths.map((path) => inspect(path, config, [...argv, "--show-baseline"])));
-  const perFile = results.map((result) => result.perFile);
-  console.log(renderSuppressions(perFile, hostLanguage(config.language, process.env)));
-  return 0;
-};
+/** A file's findings, shelved ones included: commands that look findings up are not asking what is new. */
+const inspectAll = (config: Config, argv: readonly string[]) => (path: string) => inspect(path, config, [...argv, "--show-baseline"]);
 
 /** A subcommand, given the command line and chaff.yaml as read once, with the code it names loaded. */
 type Handler = (argv: readonly string[], config: Config) => number | Promise<number>;
@@ -297,12 +297,10 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   rules: showRules,
   explain: (argv, config) => explain(config, argv[1], flag(argv, "--genre")),
   eval: (argv, config) => runEval(positional(argv), argv, { ...measureContext(argv, config), flag }),
-  tree: (argv, config) => runTree(treeTargets(argv), argv, treeContext(config)),
-  cite: (argv, config) => runCite(citeTargets(argv), argv, treeContext(config)),
-  compare: (argv, config) => runCompare(compareTargets(argv), argv, treeContext(config)),
+  ...Object.fromEntries(Object.entries(DOCUMENT_COMMANDS).map(([name, run]): [string, Handler] => [name, (argv, config) => run(argv, treeContext(config))])),
   test: (argv, config) => runTest(positional(argv), argv, { ...measureContext(argv, config), inspect }),
   baseline: (argv, config) => runBaseline(positional(argv), argv, config),
-  suppressions: (argv, config) => runSuppressions(positional(argv), argv, config),
+  suppressions: (argv, config) => runSuppressions(positional(argv), inspectAll(config, argv), hostLanguage(config.language, process.env)),
   relax: (argv, config) => changeSetting(config, "relaxed", argv[1], flag(argv, "--why")),
   strict: (argv, config) => changeSetting(config, "strict", argv[1], flag(argv, "--why")),
   off: (argv, config) => changeSetting(config, "off", argv[1], flag(argv, "--why")),
@@ -314,10 +312,10 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
       runtime: `Node ${process.version} · ${process.platform} ${process.arch}`,
       flag,
       settingsOf: (ruleIds) => settingsOf(config, ruleIds),
-      check: async (path) => {
-        const inspected = await inspect(path, config, [...argv, "--show-baseline"]);
-        return { findings: inspected.outcome.findings, rules: inspected.rules, language: inspected.language, genre: inspected.genre };
-      },
+      check: async (path) => ({
+        ...(await inspectAll(config, argv)(path)).checked,
+        conditions: runConditions(argv, flag(argv, "--genre"), config.experimental),
+      }),
     });
   },
   skill: (argv, config) => runSkill(argv, { cwd: process.cwd(), home: homedir(), ui: hostLanguage(config.language, process.env) }),
