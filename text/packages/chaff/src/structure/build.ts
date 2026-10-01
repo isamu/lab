@@ -6,8 +6,7 @@ import { resolveRelative } from "./relative-resolve.ts";
 import { maskSpans } from "../mask.ts";
 import type { DocumentProfile, Mention, NumberedLine, NumberingContext, Span, StructureKind, StructureNode, StructurePatterns } from "../plugin.ts";
 import { lineNumberAt, linesOf, type Line } from "./lines.ts";
-import { dottedNumber } from "./universal.ts";
-import { numberInSentence } from "./number-in-sentence.ts";
+import { universalNumber } from "./universal.ts";
 import { unnumberedUnit, type OpenUnit } from "./unnumbered.ts";
 import { readsOnHeading } from "./heading-leaves.ts";
 import { onLine, wrappedLine, type WrappedLine } from "./wrapped-tail.ts";
@@ -151,14 +150,6 @@ const LEAVES: readonly { readonly kind: StructureKind; readonly find: LeafFinder
   { kind: "quantity", find: (patterns, text, profile) => outsideAddresses(patterns.quantities(text), text, profile) },
   { kind: "date", find: (patterns, text) => patterns.dates?.(text) ?? [] },
 ];
-
-/** 言語を問わない通し番号。後ろが単位なら数量、本文の文の続きなら文の中の数なので、番号にしない。 */
-const universalNumber = (patterns: StructurePatterns, text: string, context: NumberingContext, plainText: boolean): NumberedLine | undefined => {
-  const dotted = dottedNumber(text, context, plainText);
-  if (dotted === undefined || patterns.countedAfter?.(dotted.number, dotted.rest) === true) return undefined;
-  const numbered = { number: dotted.number, rest: dotted.rest, isHeading: context.isHeading };
-  return numberInSentence(numbered, patterns.continuesSentence) ? undefined : dotted;
-};
 
 /** 行の中の定義・参照・義務・数量を、いま開いている最も内側の節点の子にする。 */
 const enclosingArticle = (state: State): Draft | undefined => state.stack.findLast((frame) => frame.draft.kind === "article")?.draft;

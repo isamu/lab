@@ -48,12 +48,14 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
 
 export const sentenceEnding: Detector = (doc, options): Finding[] => {
   const judged = judgedSentences(doc, options.lexicon ?? []);
-  return slipsOf(judged, options.limit).map(({ entry: { sentence }, count }) => ({
+  // 数えたのは文が属するまとまりの中なので、文言もそのまとまりを名指す（本文の中で / この箇条書きの中で）。
+  return slipsOf(judged, options.limit).map(({ entry: { sentence, group }, count }) => ({
     rule: "no-mixed-desumasu",
     severity: "warning",
     line: 0,
     column: 0,
     quote: sentence.text.trim(),
+    ...(group === undefined ? {} : { variant: "list" }),
     values: { count, limit: options.limit, offset: sentence.span.start },
   }));
 };
