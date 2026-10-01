@@ -152,12 +152,24 @@ export const hyphenGroups = (text: string): string[] => text.split(HYPHEN).filte
 
 const isCodeChar = (char: string | undefined): boolean => DIGIT.test(char ?? "") || isHyphen(char);
 
-const isCode = (chars: readonly string[], digit: number): boolean => {
+/** digit を含む、isPart の字の並び。 */
+const runAround = (chars: readonly string[], digit: number, isPart: (char: string | undefined) => boolean): string => {
   let [first, last] = [digit, digit];
-  while (first > 0 && isCodeChar(chars[first - 1])) first -= 1;
-  while (last < chars.length - 1 && isCodeChar(chars[last + 1])) last += 1;
-  return hyphenGroups(chars.slice(first, last + 1).join("")).length >= MIN_CODE_GROUPS;
+  while (first > 0 && isPart(chars[first - 1])) first -= 1;
+  while (last < chars.length - 1 && isPart(chars[last + 1])) last += 1;
+  return chars.slice(first, last + 1).join("");
 };
+
+const isDottedChar = (char: string | undefined): boolean => DIGIT.test(char ?? "") || char === ".";
+
+/** 「1.0.0」「3.1.2」のように . でつないだ 3 組以上の数字は、版や項目の番号で数量ではない。2 組（「1.5 倍」）は小数なので数える。 */
+const isDottedCode = (chars: readonly string[], digit: number): boolean =>
+  runAround(chars, digit, isDottedChar)
+    .split(".")
+    .filter((group) => group !== "").length >= MIN_CODE_GROUPS;
+
+const isCode = (chars: readonly string[], digit: number): boolean =>
+  hyphenGroups(runAround(chars, digit, isCodeChar)).length >= MIN_CODE_GROUPS || isDottedCode(chars, digit);
 
 /** 日本語との境目にある数字が、数えない書き方（「第3条」の番地、「073-489-5909」の符号）か。 */
 const isUncountedNumber = (chars: readonly string[], index: number): boolean => {

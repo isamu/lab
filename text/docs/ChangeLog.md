@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `latin-spacing` skips link text and version numbers, and reports a two-way document once (#395)
+
+- The text of a Markdown link is not counted. It is usually the title of the page it points to, so its spacing
+  belongs to the source, as inside 「」. The spacing around the link is still the writer's and still counts.
+- Three or more numbers joined by dots (`1.0.0`, `手順2.1.2で`) are a version or an item number, not a quantity, and
+  are not counted, like `073-489-5909`. Two (`1.5 倍`) are a decimal and still count.
+- When the less common way is more than a fifth of one kind of boundary, and at least five places, the document is
+  written two ways rather than slipping. It is reported once with both counts (「空ける所が 56 箇所、詰める所が 67
+  箇所あります」) instead of once per place, so chaff does not call one side wrong in a near-even document.
+
 ### Fixes from a real article: numbering-gap, no-mixed-desumasu, heading-echo (#390, #391, #392)
 
 - **numbering-gap no longer misses a heading whose number is closed by a dot** (#390). `### 5. ページ自身の通信から分かること`
