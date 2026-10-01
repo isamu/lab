@@ -21,6 +21,29 @@ Japanese, release notes (Ruby 3.4.0 in Japanese, Go 1.23), Node.js TSC minutes, 
 recipe in Japanese and English (農林水産省 うちの郷土料理), a school's いじめ防止基本方針 and a university's course
 registration notice, and Dr Jekyll and Mr Hyde. Each document's licence is in `corpus/manifest.json`.
 
+### `katakana-long-vowel` keeps フリ apart from フリー, and `colon-lead-in` counts only Japanese sentences (#434)
+
+`katakana-long-vowel` read 「知ってるフリ」 (振り) and 「フリー」 (free) as one word written two ways. The tagger reads both
+as nouns, so lang-ja now has a word list, `long-vowel-distinct`, of words that become another word with a final ー
+(フリ, スキ). Those words are left out as if listed under `except`, in every `ending`. `colon-lead-in`, which runs
+on Japanese documents only, also counted the English sentences inside one (`Examples include:`). It now counts only the
+sentences in the document's language, as `max-sentence-length` measures each sentence by its own language.
+
+### `doubled-punctuation` leaves a mark that closes a drawn-out one (#433)
+
+Three or more of one mark (`...`, `、、、`) were already read as a drawn-out mark, but the mark that closes it
+(`立たない...。`, `そうですね、、、。`) made the whole run a slip. One mark right after a drawn-out run is now read as its
+close and not reported; two (`...。。`), or a run of only two (`、、。`), still is. This covers the transcript's `、、、。`
+in every genre, so no genre rule is added for it.
+
+### `announced-count-mismatch` reads a categorised list and the number nearest the colon (#432)
+
+Two misreadings are fixed. When only a colon at the end of a sentence announces the list (no 以下の / following), the
+colon announces the number nearest to it, so a number with another number after it is no longer taken as the count
+(「これまで 1 つのページにまとめていましたが、2 ページに分けました:」). A list whose every item is a label and its members
+(`- **実験的**: Slack / Discord / Matrix`) is not reported when the members, split at `/` or `／`, add up to the announced
+count. Commas and 読点 are not separators: they also occur inside an item's description. A word pointing ahead still names the count whatever number follows it.
+
 ### A heading with its title right after the number is numbered (#431)
 
 `## 7.委託`, `## 7．委託` and `## 2.Overview` were not read as numbered, so `numbering-gap` reported "6 then 8" as an
