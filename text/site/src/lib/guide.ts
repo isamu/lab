@@ -7,6 +7,7 @@ const ORDER = [
   "documents",
   "documents-statute",
   "documents-report",
+  "ai-sounding",
   "configuration",
   "reference",
   "adding-rules",

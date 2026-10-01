@@ -99,6 +99,44 @@ Pick the easiest way that can say the requirement:
 Test a new team rule the same way: `explain`, then a sample it must report and a sample it must not, before
 committing `chaff.yaml`. The guide page "Adding a rule" covers each way and how to add a rule to chaff itself.
 
+## Making AI-sounding text sound human
+
+chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
+`contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, and the signals
+`ai-generated-composite` reads). They are experimental: run with `--experimental`. None of them says the text was
+generated. When asked to make a text sound less generated, pick one of two modes and say which.
+
+**Light** (only the flagged spots), when the content and structure are fine:
+
+1. `npx chaffjs <file> --experimental` (or with the genre's `--genre`); collect the AI-shape findings.
+2. Rewrite only those spots. Keep the meaning, numbers, conditions and technical constraints.
+3. Run chaff again. At most two rewrite passes.
+4. Show the rewritten text and a short list of what changed and why.
+
+**Bold** (section by section), when a light pass still leaves it reading as generated:
+
+1. Run chaff with `--experimental` and note the document-level signals: the `ai-generated-composite` inputs,
+   `bold-density`, `contrast-framing`, `stock-transition`, `sentence-rhythm`.
+2. Rewrite each section toward a human voice: less bold; one-line paragraphs and punchlines folded back into
+   paragraphs; no "X ではありません。Y です" / "It's not X. It's Y" frames; lists turned back into sentences where the
+   items connect; fewer em dashes; no announcing openers. Each paragraph carries one claim, joined to the last by a
+   connective, built around the writer's own experience or numbers where the original has them.
+3. Run chaff again and report the same signals before and after, from chaff's output.
+4. Run `chaff compare <old> <new>` (coming; until it lands, compare numbers, dates, URLs, code, names, links and
+   headings by hand) and restore every dropped fact.
+
+In both modes:
+
+- Never add facts, people, numbers or causes the original does not have.
+- Keep a domain term a word rule trips when it is right in context.
+- Prefer a direct statement over a negated contrast. Say who does what.
+- Never loop just to silence a warning; two passes at most, and list what is left with the reason.
+- Per genre: in a tech article, replace metaphors ("静かに壊れる", "silently fails") with what happens and keep steps
+  and commands as lists; in a business document, put the conclusion and who does what first and keep tables and
+  figures; in an essay, fold punchlines back in and replace big words ("真理", "new possibilities") with the scene.
+
+The guide page "Making AI-sounding text sound human" has a worked example with chaff's output before and after.
+
 ## Structured documents
 
 - `npx chaffjs tree <file>` shows a contract or specification as a tree of addresses (`3.2` for 第3条第2項 or
