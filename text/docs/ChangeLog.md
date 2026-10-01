@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### `katakana-long-vowel` keeps フリ apart from フリー, and `colon-lead-in` counts only Japanese sentences (#434)
+
+`katakana-long-vowel` read 「知ってるフリ」 (振り) and 「フリー」 (free) as one word written two ways. The tagger reads both
+as nouns, so lang-ja now has a word list, `long-vowel-distinct`, of words that become another word with a final ー
+(フリ, スキ). Those words are left out as if listed under `except`, in every `ending`. `colon-lead-in`, which runs
+on Japanese documents only, also counted the English sentences inside one (`Examples include:`). It now counts only the
+sentences in the document's language, as `max-sentence-length` measures each sentence by its own language.
+
 ### `feedback` and `suppressions` say when the rule asked about did not run (#397)
 
 `chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and

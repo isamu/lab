@@ -6,6 +6,8 @@ how_to_find: katakana-long-vowel
 requires: [pos]
 # ending: keep が読む、辞書が「ー」付きで知る語の印。この rule が動くときだけ lang-ja が辞書に聞く。
 token_features: [LongVowelEnding]
+# 「ー」を付けると別の語になる語（フリ／フリー）。同じ語の書き分けとして比べない。
+extra_word_lists: [long-vowel-distinct]
 languages: [ja]
 severity: warning
 
@@ -91,8 +93,8 @@ example:
       新しいコンピューターを買いました。古いコンピューターは来月捨てます。
 
 not_flagged:
-  ja: 違う語どうし（サーバーとブラウザ）は比べません。2 音の語（カー）、辞書が固有名詞と知っている語、chaff.yaml の names に並べた名前も見ません。
-  en: Different words (サーバー and ブラウザ) are not compared. Two-mora words (カー), words the dictionary knows as proper nouns and the names under names in chaff.yaml are left alone.
+  ja: 違う語どうし（サーバーとブラウザ）は比べません。2 音の語（カー）、辞書が固有名詞と知っている語、chaff.yaml の names に並べた名前も見ません。「ー」を付けると別の語になる語（知ってるフリ／フリー、スキ／スキー）は、語彙表 long-vowel-distinct に並べたものを同じ語として比べません。
+  en: Different words (サーバー and ブラウザ) are not compared. Two-mora words (カー), words the dictionary knows as proper nouns and the names under names in chaff.yaml are left alone. A word that becomes another word with a final ー (フリ, 振り, and フリー, free) is not compared when it is in the long-vowel-distinct word list.
 level_meaning:
   ja: 違う書き方の語が {limit} 箇所あれば指摘
   en: reported once {limit} words go the other way
