@@ -77,6 +77,13 @@ describe(`quotedSpans (seed ${String(SEED)})`, () => {
     });
   });
 
+  it("closes the innermost quotation first, and ignores a closing mark left over", () => {
+    assert.deepEqual(quotedSpans("「『a』b」」"), [
+      { start: 2, end: 3 },
+      { start: 1, end: 5 },
+    ]);
+  });
+
   it(`reads ${String(LONG)} quotations and ${String(LONG)} unclosed openings`, { timeout: LONG_TIMEOUT_MS }, () => {
     assert.equal(quotedSpans("「あ」".repeat(LONG)).length, LONG);
     assert.equal(quotedSpans("「".repeat(LONG)).length, 0);

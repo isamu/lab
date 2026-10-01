@@ -163,6 +163,60 @@ describe("a rewrite that loses or invents a fact fails", () => {
   });
 });
 
+describe("what is read once, and what is not a fact", () => {
+  const kindsOf = (adapter: LanguageAdapter, source: string, kind: AtomKind): string[] =>
+    factsOf(adapter, "a.md", source)
+      .atoms.filter((atom) => atom.kind === kind)
+      .map((atom) => atom.key);
+
+  it("an autolink is one URL, not a link and a bare URL", () => {
+    assert.deepEqual(kindsOf(en, "See <https://example.com/a> and https://example.com/b.", "url"), ["https://example.com/a", "https://example.com/b"]);
+  });
+
+  it("an ordered list's markers are not numbers; a list turned into prose loses none", () => {
+    assert.deepEqual(kindsOf(en, "1. Apples\n2. Pears\n", "number"), []);
+    assert.equal(compare(en, "Steps:\n\n1. Build it\n2. Ship it\n", "Steps: build it, then ship it.\n").ok, true);
+  });
+
+  it("a quotation wrapped over two lines is the same quotation", () => {
+    assert.deepEqual(changes(compare(en, 'He said "keep the\nsame key" twice.', 'He said "keep the same key" twice.')).dropped, []);
+  });
+
+  it("a heading moved to another level is dropped at one level and added at the other", () => {
+    const outcome = changes(compare(en, "# A\n\n## B\n\ntext\n", "# A\n\n### B\n\ntext\n"));
+    assert.deepEqual([outcome.dropped, outcome.added], [["heading:B"], ["heading:B"]]);
+  });
+
+  it("a capitalised word the document also writes in lower case is not a name; a name of two words is one name", () => {
+    assert.deepEqual(kindsOf(en, "Scammers lie. The scammers called New York twice.", "name"), ["New York"]);
+  });
+
+  it("a unit is one unit however wide its letters", () => {
+    assert.deepEqual(changes(compare(ja, "増加は25%です。", "増加は25％です。")).reformed, ["number:25%→25％"]);
+  });
+
+  it("a number with a thousands separator is read by its value", () => {
+    assert.deepEqual(changes(compare(en, "We have 1,000 users.", "We have 1,001 users.")).dropped, ["number:1,000"]);
+  });
+
+  it("10時半 is half past ten", () => {
+    assert.equal(compare(ja, "開始は10時半です。", "開始は10:30です。").ok, true);
+  });
+
+  it("the numbered articles of a plain-text contract are headings", () => {
+    const contract = "第1条（目的）\n甲は乙に委託する。\n第2条（支払）\n甲は支払う。\n";
+    const facts = factsOf(ja, "a.txt", contract).atoms.filter((atom) => atom.kind === "heading");
+    assert.deepEqual(
+      facts.map((atom) => atom.key),
+      ["article 1", "article 2"],
+    );
+  });
+
+  it("digits in code and URLs are not read again as numbers", () => {
+    assert.deepEqual(kindsOf(en, "Run `sleep 30` and open https://example.com/2026/7.", "number"), []);
+  });
+});
+
 describe("the tagger's reading of a word is not a fact", () => {
   it("a word read as a name in one document and as a common word in the other is not dropped", () => {
     const original = "Scammers could reach you by phone. The scammers lie.";
