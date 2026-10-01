@@ -34,10 +34,10 @@ const parseAllowed = (argv: readonly string[]): ParsedAllowed => {
   return { allowed: { dropped: kinds(dropped), added: kinds(added) } };
 };
 
-type Read = Compared & { readonly language: string };
+export type DocumentFacts = Compared & { readonly language: string };
 
 /** One document's facts, read as lint reads it: its language, the team's names, and the parts of speech. */
-const readFacts = async (path: string, argv: readonly string[], context: TreeContext): Promise<Read | undefined> => {
+export const readFacts = async (path: string, argv: readonly string[], context: TreeContext): Promise<DocumentFacts | undefined> => {
   const source = await readSource(path, context);
   if (source === undefined) return undefined;
   const language = treeLanguage(path, source, argv, context);

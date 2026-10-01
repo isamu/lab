@@ -44,7 +44,7 @@ const NO_FACTS: Readonly<Record<AtomKind, number>> = {
   footnote: 0,
 };
 
-const countsOf = (atoms: readonly Atom[]): Record<AtomKind, number> => {
+export const countsOf = (atoms: readonly Atom[]): Record<AtomKind, number> => {
   const counts = { ...NO_FACTS };
   atoms.forEach((atom) => {
     counts[atom.kind] += 1;
