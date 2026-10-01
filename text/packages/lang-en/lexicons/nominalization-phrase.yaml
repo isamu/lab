@@ -1,0 +1,27 @@
+# Hidden verbs: a verb turned into a noun and carried by a weak verb ("make a decision" for "decide"). nominalization
+# reads them. The Federal Plain Language Guidelines ("Use the active voice" / "Avoid hidden verbs") and GOV.UK ("Use
+# clear language") ask for the verb. instead_of is the verb. A verb in the pattern matches its other forms (made, makes).
+id: nominalization-phrase
+language: en
+entries:
+  - { pattern: make a decision, instead_of: decide }
+  - { pattern: reach a decision, instead_of: decide }
+  - { pattern: conduct an investigation, instead_of: investigate }
+  - { pattern: carry out an investigation, instead_of: investigate }
+  - { pattern: conduct an analysis, instead_of: analyze }
+  - { pattern: perform an analysis, instead_of: analyze }
+  - { pattern: carry out an analysis, instead_of: analyze }
+  - { pattern: make an assessment, instead_of: assess }
+  - { pattern: conduct an assessment, instead_of: assess }
+  - { pattern: conduct a review, instead_of: review }
+  - { pattern: perform a review, instead_of: review }
+  - { pattern: make a recommendation, instead_of: recommend }
+  - { pattern: make a determination, instead_of: determine }
+  - { pattern: give consideration to, instead_of: consider }
+  - { pattern: provide assistance, instead_of: help }
+  - { pattern: make an application, instead_of: apply }
+  - { pattern: make a payment, instead_of: pay }
+  - { pattern: make an adjustment, instead_of: adjust }
+  - { pattern: come to a conclusion, instead_of: conclude }
+  - { pattern: have a discussion, instead_of: discuss }
+  - { pattern: make reference to, instead_of: refer to }

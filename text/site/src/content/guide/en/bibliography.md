@@ -53,6 +53,7 @@ The rules themselves are listed in the [Reference](./reference).
     It sets no number of characters per sentence.
   - In chaff: `max-sentence-length`, [`no-mixed-desumasu`](../../rules/no-mixed-desumasu/) and
     [`agentless-passive`](../../rules/agentless-passive/) check three of these points.
+    [`nominalization`](../../rules/nominalization/) checks its example of 調査を実施した rewritten as 調査した.
 - **庵功雄 (Iori, 2016)** [iwanami.co.jp](https://www.iwanami.co.jp/book/b243840.html)
   - 『やさしい日本語―多文化共生社会へ』 (plain Japanese, toward a multicultural society)
   - Appeared in: Iwanami Shinsho (a book).
@@ -102,6 +103,7 @@ The rules themselves are listed in the [Reference](./reference).
   - Found: Split sentences over 25 words. Keep paragraphs to 5 sentences or fewer.
   - In chaff: the `normal` level of `max-sentence-length` for English (25 words) and of
     [`max-paragraph-length`](../../rules/max-paragraph-length/) (5 sentences) match these numbers.
+    `nominalization` checks its advice to use the verb ("decide", not "make a decision").
 - **ISO 24495-1:2023** [cdn.standards.iteh.ai (PDF)](https://cdn.standards.iteh.ai/samples/78907/d194fac21d6a45f38bfcfec9657f7498/ISO-24495-1-2023.pdf)
   - Plain language — Part 1: Governing principles and guidelines
   - Appeared in: ISO. The link is the sample PDF published by the reseller iTeh.
@@ -208,7 +210,7 @@ Several of them also show how often human writing is mistaken for generated text
   - Do LLMs write like humans? Variation in grammatical and rhetorical styles
   - Appeared in: PNAS.
   - Found: Instruction-tuned models use participle clauses and nominalizations several times as often as people, and list nouns more.
-  - In chaff: supports [`rule-of-three`](../../rules/rule-of-three/).
+  - In chaff: supports [`rule-of-three`](../../rules/rule-of-three/), and `nominalization`, which counts hidden verbs.
 - **Kobak et al. (2025)** [arxiv.org](https://arxiv.org/abs/2406.07016)
   - Delving into LLM-assisted writing in biomedical publications through excess vocabulary
   - Appeared in: Science Advances 11(27).

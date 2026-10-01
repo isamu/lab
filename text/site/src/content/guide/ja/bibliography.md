@@ -52,6 +52,7 @@ chaff のルールが何を根拠にしているかを、論文と規格ごと�
     一文の字数の上限は書いていません。
   - chaff では：`max-sentence-length`、[`no-mixed-desumasu`](../../rules/no-mixed-desumasu/)、
     [`agentless-passive`](../../rules/agentless-passive/) の裏付けです。
+    「調査を実施した」を「調査した」に直す例は、[`nominalization`](../../rules/nominalization/) が見ます。
 - **庵功雄（2016）** [iwanami.co.jp](https://www.iwanami.co.jp/book/b243840.html)
   - 『やさしい日本語―多文化共生社会へ』
   - 載った所：岩波新書。
@@ -102,6 +103,7 @@ chaff のルールが何を根拠にしているかを、論文と規格ごと�
   - 分かったこと：25 語を超える文は分ける、1 段落は 5 文まで、と数で書いています。
   - chaff では：英語の `max-sentence-length` の normal（25 語）と、
     [`max-paragraph-length`](../../rules/max-paragraph-length/) の normal（5 文）がこれと同じです。
+    動詞を名詞にしない（"make a decision" ではなく "decide"）は `nominalization` が見ます。
 - **ISO 24495-1:2023** [cdn.standards.iteh.ai (PDF)](https://cdn.standards.iteh.ai/samples/78907/d194fac21d6a45f38bfcfec9657f7498/ISO-24495-1-2023.pdf)
   - Plain language — Part 1: Governing principles and guidelines
   - 載った所：ISO。リンク先は、販売元の iTeh が出している見本の PDF です。
@@ -208,7 +210,7 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
   - Do LLMs write like humans? Variation in grammatical and rhetorical styles
   - 載った所：PNAS。
   - 分かったこと：指示に従うよう調整したモデルは、分詞の節や名詞化を人の何倍も使い、名詞を並べる書きかたも多いと示しました。
-  - chaff では：[`rule-of-three`](../../rules/rule-of-three/) の裏付けです。
+  - chaff では：[`rule-of-three`](../../rules/rule-of-three/) の裏付けです。名詞化の多さは `nominalization` が見ます。
 - **Kobak ほか（2025）** [arxiv.org](https://arxiv.org/abs/2406.07016)
   - Delving into LLM-assisted writing in biomedical publications through excess vocabulary
   - 載った所：Science Advances、11 巻 27 号。

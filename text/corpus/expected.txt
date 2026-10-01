@@ -136,7 +136,7 @@ mhlw-norovirus-qa  fullwidth-alnum-consistency 1, kutoten-consistency 1, latin-s
 mhlw-pubcomment-rodohoken  agentless-passive 1, broken-link 1, fullwidth-alnum-consistency 4, heading-level-skip 1, max-kanji-continuous 5, max-sentence-length 2, no-doubled-joshi 1, preamble-length 1
 minpo.txt  clean
 mit-ocw-6-0001-syllabus  agentless-passive 13, max-paragraph-length 1, max-sentence-length 6, proper-noun-density 1
-mlit-press-planned-suspension  max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 4, no-doubled-joshi 2, stray-space 1
+mlit-press-planned-suspension  max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 4, no-doubled-joshi 2, nominalization 6, stray-space 1
 myplate-vegetable-cheese-soup  duplicate-heading 1
 nasa-knows-spacewalk-k4  contraction-consistency 1, heading-echo 1, proper-noun-density 1
 ndl-copy-fee-revision-2026  clean

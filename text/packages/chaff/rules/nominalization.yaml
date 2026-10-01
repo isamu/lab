@@ -1,0 +1,62 @@
+id: nominalization
+layer: L3
+status: experimental
+how_to_find: nominalization
+# 動詞を名詞にして別の動詞に運ばせる言い方。英語は語の並び（nominalization-phrase）、日本語はサ変名詞（品詞の VerbForm=Vnoun）と、
+# その後ろの「を実施する」（nominalization-light-verb）で見る。片方しか持たない言語があるので word_list には書かない（書くと、無い言語で動かなくなる）。
+requires: [pos]
+severity: info
+
+name:
+  ja: 動詞を名詞にして回りくどく書いている
+  en: Verbs hidden in nouns
+
+why:
+  ja: 「調査を実施した」は「調査した」で、「確認を行う」は「確認する」で足ります。動詞を名詞にして別の動詞に運ばせると、文が長くなり、誰が何をしたのかが遠くなります。在留支援のためのやさしい日本語ガイドラインが「調査を実施した」を「調査した」に直す例を挙げ、米国連邦政府の Plain Language Guidelines と英国政府（GOV.UK）の書き方の手引きも、"make a decision" ではなく "decide" と書くよう求めています。一つ二つは普通の言い方なので、文書の長さに対して多いときだけ指します。
+  en: '"Make a decision" says in three words what "decide" says in one. A verb turned into a noun and carried by another verb makes the sentence longer and the action harder to see. The Federal Plain Language Guidelines call these hidden verbs, and GOV.UK asks for the verb; the Japanese guideline for plain Japanese rewrites 調査を実施した as 調査した. One or two are ordinary, so chaff speaks only when they are dense for the document''s length.'
+
+message:
+  ja: 「{matched}」は「{preferred}」で足ります（動詞を名詞にした言い方が 1000 字あたり {density} 個、{limit} 個まで）
+  en: '"{matched}" can be "{preferred}" ({density} hidden verbs per 1000 words, limit {limit})'
+
+how_to_fix:
+  ja: 名詞を動詞に戻してください。「調査を実施した」は「調査した」、「確認を行います」は「確認します」に。
+  en: 'Use the verb: "made a decision" becomes "decided", "conduct an analysis" becomes "analyze".'
+
+placeholders:
+  matched:
+    ja: 見つけた言い方
+    en: the phrase found
+  preferred:
+    ja: 動詞にした形
+    en: the verb
+
+levels: { strict: 1, normal: 2, relaxed: 4 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+sources: [yasashii-nihongo-2020, plain-2011, gov-uk-clear-language, reinhart-2025]
+
+group: wording
+summary:
+  ja: 「調査を実施した」「確認を行う」のように、動詞を名詞にして別の動詞に運ばせた言い方が、文書の長さに対して多い所
+  en: Verbs hidden in nouns ("make a decision", "conduct an analysis"), many for the document's length
+example:
+  ja:
+    pad: true
+    before: |
+      先月、顧客の満足度の調査を実施しました。結果の確認を行い、改善の検討を行います。
+    after: |
+      先月、顧客の満足度を調査しました。結果を確認し、改善を検討します。
+  en:
+    pad: true
+    before: |
+      We will conduct an analysis of the results and make a decision next week.
+    after: |
+      We will analyze the results and decide next week.
+
+not_flagged:
+  ja: 「する」を付けても動詞にならない名詞（イベントを行う）、「勉強をする」のような「〜をする」、文書の長さに対して少ないものは見ません。短すぎる文書も測りません。
+  en: Phrases not on chaff's list, and a document where they are few for its length, are not reported. Very short documents are not measured.
+level_meaning:
+  ja: 1000 字あたり {limit} 個まで
+  en: up to {limit} per 1000 words

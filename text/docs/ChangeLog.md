@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### New rule: `nominalization`, verbs hidden in nouns (experimental)
+
+- chaff counts verbs written as nouns and carried by another verb: 調査を実施した for 調査した, 確認を行う for 確認する,
+  "make a decision" for "decide", "conduct an analysis" for "analyze". It speaks only when they are dense for the
+  document's length (per 1000 characters or words), at `info`. Sources: the plain-Japanese guideline for foreign
+  residents (2020), the Federal Plain Language Guidelines and GOV.UK's "Use clear language".
+- Japanese reads morphology: the adapter now marks a サ変 noun with `VerbForm=Vnoun` (not a symbol the dictionary files
+  there), and the rule looks for it before を行う / を実施する / を実行する / を執り行う. English reads a list of phrases.
+  Legal documents and literature leave it off: legal drafting writes 「…を行う」 as its register.
+
 ### `feedback` and `suppressions` say when the rule asked about did not run (#397)
 
 `chaff feedback a.md --rule unqualified-superlative` answered "No such finding" when the rule is experimental and
