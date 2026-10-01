@@ -22,6 +22,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff tree <file> [--format sexp|json]  文書を番地の付いた木にする（条・項・定義・参照）
   chaff cite <原文> <引用.json>           回答の引用（番地と引用文）が原文にあるかを確かめる
   chaff compare <前> <後>                書き換えで事実（数・日付・URL・コード・名前・引用…）が落ちても足されてもいないかを確かめる
+  chaff facts <file>                     compare が照合する事実を、書き直す前の控えとして一覧にする
   chaff rules                    ルールの一覧を、グループごとに表で出す（いまの段階つき）
   chaff rules --json             いまの設定とルールの説明を JSON で出す（AI に渡す用）
   chaff baseline <dir>           いまある指摘を棚上げする（既存の repo に入れるとき）
@@ -58,6 +59,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff tree <file> [--format sexp|json]  the document as a tree of addresses (sections, clauses, definitions, references)
   chaff cite <source> <quotes.json>       check that quoted passages (address and text) are in the source
   chaff compare <before> <after>          check that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…)
+  chaff facts <file>                      list the facts compare checks, as an inventory to keep before a rewrite
   chaff rules                    the rules as a table, by group, with the level each runs at now
   chaff rules --json             the current settings and what each rule is, as JSON (to give to an AI)
   chaff baseline <dir>           shelve today's findings (when adding chaff to an existing repository)
