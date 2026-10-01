@@ -16,8 +16,11 @@ const COLON_TIME = new RegExp(
 /** 3 p.m., 11am. */
 const MERIDIEM_TIME = new RegExp(`(?<![0-9０-９:：])(${DIGIT}{1,2})\\s?([ap])\\.?m\\.?(?![a-z])`, "giu");
 
-/** 午後3時30分, 10時半, 9時. */
-const JAPANESE_TIME = new RegExp(`(午前|午後)?(${DIGIT}{1,2})時(?:(${DIGIT}{1,2})分|(半))?`, "gu");
+/**
+ * 午後3時30分, 10時半, 9時. 時間 is a length of time (8時間), not a time of day, and the hour is not the end of a longer
+ * number (1.2時間, 123時).
+ */
+const JAPANESE_TIME = new RegExp(`(午前|午後)?(?<![0-9０-９.．])(${DIGIT}{1,2})時(?!間)(?:(${DIGIT}{1,2})分|(半))?`, "gu");
 
 const LAST_HOUR = 24;
 const MINUTES_PER_HOUR = 60;
