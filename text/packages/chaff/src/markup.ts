@@ -1,5 +1,5 @@
 import { spanOf, type MarkdownNode } from "./markdown-node.ts";
-import { headingText } from "./heading-text.ts";
+import { atxHeadingText, headingText } from "./heading-text.ts";
 import { eachPreOrder } from "./tree-walk.ts";
 import { alertReader } from "./template-syntax.ts";
 import { cutSpans } from "./span-cut.ts";
@@ -84,7 +84,9 @@ const readHeading = (node: MarkdownNode, span: Span, source: string, walk: Walk)
   // 名前は書いたままの行から読む。MDX のコメントの `*` は、解析すると強調の印になって消える。
   const { id } = namedHeading(firstLineOf(source.slice(span.start, span.end)).replace(ATX_CLOSING, ""));
   if (id !== undefined && id !== "") walk.ids.add(id);
-  const text = withoutMdxComment(headingText(plainText(node, source)));
+  // ATX（行頭が #）なら閉じの # も外す。`## Install ## {#install}` の言葉は「Install」。
+  const read = source.startsWith("#", span.start) ? atxHeadingText : headingText;
+  const text = withoutMdxComment(read(plainText(node, source)));
   walk.headings.push({ depth: numberField(node, "depth") ?? 1, text, start: span.start, end: span.end });
 };
 
