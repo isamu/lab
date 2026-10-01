@@ -58,5 +58,5 @@ not_flagged:
   ja: 「する」を付けても動詞にならない名詞（イベントを行う）、「を実施する」が催す意味になる語（研修を実施する、試験を行う）、「勉強をする」のような「〜をする」、文書の長さに対して少ないものは見ません。短すぎる文書も測りません。
   en: Phrases not on chaff's list, and a document where they are few for its length, are not reported. Very short documents are not measured.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 words
+  ja: 1000 字あたり「〜を実施する」のような名詞化した動詞 {limit} 個まで
+  en: up to {limit} nominalized verbs ("make a decision") per 1000 words
