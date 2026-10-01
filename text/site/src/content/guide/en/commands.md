@@ -23,6 +23,8 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs tree <file>` | Turns a document into a tree of addresses |
 | `npx chaffjs cite <source> <quotes.json>` | Checks that quoted passages are in the source |
 | `npx chaffjs compare <before> <after>` | Checks that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…) |
+| `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
+| `npx chaffjs outline <file> [<after>]` | Shows the outline and measures its shape (headings, average section length, text in lists, bold); two files side by side |
 | `npx chaffjs skill` | Installs the Claude Code skill |
 | `npx chaffjs feedback <file> --rule <rule>` | Drafts a report of a wrong or missed finding |
 | `npx chaffjs test <file\|dir>...` | Also runs the checks that read meaning. Needs an API key |
@@ -112,10 +114,10 @@ $ npx chaffjs explain max-sentence-length
 
   How to fix: Split it in two at the conjunction.
 
-  Levels (unit: words):
-    strict   18
-  → normal   25
-    relaxed  35
+  Levels:
+    strict   up to 18 words in a sentence
+  → normal   up to 25 words in a sentence
+    relaxed  up to 35 words in a sentence
     off      not checked
 
   These numbers are for the default genre. business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / docs/glossary / academic have numbers of their own.
@@ -337,12 +339,82 @@ To let an intended cut through, name its kind with `--allow-dropped`; for an int
 ```bash
 npx chaffjs compare before.md after.md --allow-dropped url        # the URL may go
 npx chaffjs compare before.md after.md --allow-dropped url,quote  # several kinds, with commas
+npx chaffjs compare before.md after.md --distinct                 # a fact counts as kept if it is stated once
 npx chaffjs compare before.md after.md --compact                  # one line per fact
 npx chaffjs compare before.md after.md --json                     # for an AI to act on
 ```
 
 The kinds are `number`, `date`, `time`, `url`, `code`, `name`, `quote`, `heading`, `reference` and `footnote`.
 `--json` lists every dropped and added fact with its line, so it can go straight back to the AI that did the rewrite.
+By default a fact is counted as often as it is stated, so cutting a summary that repeated the body reports each repeat as dropped. With `--distinct`, a fact counts as kept when the other document states it at least once; a fact stated nowhere in it is still dropped or added.
+
+## Listing the facts before a rewrite
+
+A rewrite from scratch starts from what the document says, not from its sentences. `facts` lists that: every fact `compare` will check, kind by kind, with the line each is on.
+It uses `compare`'s own reader, so the list is exactly what the rewrite will be held to.
+
+```
+$ npx chaffjs facts before.md
+before.md: 7 facts (numbers 3, dates 1, times 0, URLs 1, code 0, names 0, quotations 0, headings 1, references 1, footnotes 0)
+
+numbers: 3
+  - [ ] 10  (before.md:3)
+  - [ ] 12.50  (before.md:3)
+  - [ ] 25%  (before.md:3)
+
+dates: 1
+  - [ ] April 1, 2026  (before.md:3)
+
+URLs: 1
+  - [ ] https://example.com/price  (before.md:3)
+
+headings: 1
+  - [ ] Pricing update  (before.md:1)
+
+references: 1
+  - [ ] Section 4.2  (before.md:3)
+
+After rewriting, npx chaffjs compare before.md <rewritten> checks that every fact on this list is still there
+```
+
+`--compact` gives one fact per line. `--json` gives every fact with its kind, key, text and line, for an AI to keep as its inventory while it writes.
+
+## Measuring the outline
+
+A rewrite that smooths the sentences can leave the skeleton as it was: the same headings, the same lists, the same bold. `outline` shows the skeleton and measures it, so a restructure shows up as numbers, not as an impression.
+
+It lists each heading, indented by depth, with its line and the length of its own text. It measures four things: the number of headings, the average section length, the share of the text in list items, and the bold spans.
+Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the average.
+
+Given two files, it shows both and how each measure moved.
+
+```
+$ npx chaffjs outline before.md after.md
+before.md outline: headings 6, average section 47 words, in lists 19%, bold 8
+
+  # Solving Our Flaky Test Problem — The Hidden Trap of Time Zones  (before.md:1)  25 words
+    ## What Was Happening  (before.md:5)  64 words
+    ## Investigating the Root Cause  (before.md:15)  84 words
+    ## The Solution  (before.md:29)  52 words
+    ## Results  (before.md:39)  14 words
+    ## Conclusion  (before.md:43)  40 words
+
+after.md outline: headings 5, average section 41 words, in lists 0%, bold 0
+
+  # Our flaky test was a time zone problem  (after.md:1)  28 words
+    ## What was happening  (after.md:5)  23 words
+    ## Finding the cause  (after.md:9)  68 words
+    ## The fix  (after.md:15)  49 words
+    ## Results  (after.md:19)  38 words
+
+How the shape changed (before.md → after.md)
+  headings: 6 → 5
+  average section: 47 words → 41 words
+  in lists: 19% → 0%
+  bold: 8 → 0
+```
+
+In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, and `--json` gives the outline and the shape (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
 
 ## Checks that read meaning, and re-measuring the limits
 

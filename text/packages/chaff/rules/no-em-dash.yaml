@@ -30,6 +30,7 @@ levels:
   en: { strict: 3, normal: 8, relaxed: 20 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+sources: [freeburg-2026]
 
 group: ai-tells
 summary:
@@ -53,5 +54,5 @@ not_flagged:
   ja: 短い文書は測りません。英語では、ダッシュそのものを誤りとは言いません。
   en: Short documents are not measured. In English a dash is not called wrong; only a heavy hand is.
 level_meaning:
-  ja: 1000 字あたり {limit} 個まで
-  en: up to {limit} per 1000 words
+  ja: 1000 字あたりダッシュ {limit} 個まで
+  en: up to {limit} dashes per 1000 words

@@ -49,6 +49,12 @@ export const entryRanges = (sentence: Sentence, entry: LexiconEntry): TokenRange
   return tokens.flatMap((_token, start) => (runsAt(tokens, words, start) ? [{ start, end: start + words.length }] : []));
 };
 
+/** 語彙の語が、文の end 番目の語のちょうど手前で終わるか（「SES との最大」の「との」）。品詞が無ければ位置を言えないので当たらない。 */
+export const entryEndsAt = (tokens: readonly Token[], entry: LexiconEntry, end: number): boolean => {
+  const words = entry.tokens;
+  return words !== undefined && words.length > 0 && end >= words.length && runsAt(tokens, words, end - words.length);
+};
+
 const LEADING_MARK = new Set(["PUNCT", "SYM"]);
 
 /** 語彙の語で文が始まるか。文頭の記号は飛ばす。品詞が無ければ文字列の前方一致。 */
@@ -59,3 +65,15 @@ export const entryOpens = (sentence: Sentence, entry: LexiconEntry): boolean => 
   const first = tokens.findIndex((token) => !LEADING_MARK.has(token.pos));
   return runsAt(tokens, words, first);
 };
+
+/** Marks and closing brackets that may follow the last word of a sentence (こと。」, must.). */
+const TRAILING_MARKS = new Set([..." \t\n。．.!！?？」』)）\"'”’"]);
+
+const withoutTrailingMarks = (text: string): string => {
+  const chars = [...text];
+  return chars.slice(0, chars.findLastIndex((char) => !TRAILING_MARKS.has(char)) + 1).join("");
+};
+
+/** Whether the sentence ends with the lexicon's word, past its closing marks (「…できること。」 ends with こと). */
+export const entryCloses = (sentence: Sentence, entry: LexiconEntry): boolean =>
+  withoutTrailingMarks(comparableText(sentence)).endsWith(comparableWords(entry.pattern));

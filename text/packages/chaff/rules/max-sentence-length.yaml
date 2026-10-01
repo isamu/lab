@@ -73,6 +73,7 @@ by_genre:
     en: { strict: 35, normal: 50, relaxed: 65 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+sources: [shibasaki-tamaoka-2010, yasashii-nihongo-2020, koyobun-2022, gov-uk-clear-language]
 
 group: readability
 summary:

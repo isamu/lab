@@ -25,6 +25,7 @@ how_to_fix:
 levels: { normal: error, relaxed: warning }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+sources: [jis-z8301-2019, femmer-2017]
 
 group: structure
 summary:

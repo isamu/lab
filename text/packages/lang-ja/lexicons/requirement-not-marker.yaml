@@ -1,0 +1,8 @@
+# 要求の目印（requirement-marker）に見えて、要求ではない文の終わり。
+# 「〜のこと。」は語の説明（「サーバに保存すること。」は要求、「…を防ぐファイアウォールのこと。」は用語集の説明）。
+# position: after は、文の終わりにあるときだけ当たる。
+id: requirement-not-marker
+language: ja
+entries:
+  - pattern: のこと
+    position: after

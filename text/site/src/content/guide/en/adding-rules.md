@@ -230,7 +230,7 @@ chaff's own rule is that a rule decides by machine alone. Anything that needs th
 
 | What | Where | Contents |
 | --- | --- | --- |
-| The rule's definition | `packages/chaff/rules/<id>.yaml` | Name, reason, message, how to fix and levels, in Japanese and English. Also the reader's fields: `group`, `summary`, `example`, `not_flagged`, and `level_meaning` when its levels are numbers that change |
+| The rule's definition | `packages/chaff/rules/<id>.yaml` | Name, reason, message, how to fix and levels, in Japanese and English. Also the reader's fields: `group`, `summary`, `example`, `not_flagged`, and `level_meaning` when its levels are numbers that change. A rule that rests on a paper or a standard lists it under `sources`, by its anchor in the [bibliography](./bibliography), and its page links there |
 | What finds it | `packages/chaff/src/detectors/` | A function that takes the document and returns findings, registered by name in `detectors/index.ts` |
 | Word lists | `packages/lang-ja/lexicons/` and `packages/lang-en/lexicons/` | Only for a rule that finds words from a list. One per language |
 | Tests | `test/test_<id>.ts` | Examples it must report and examples it must not |

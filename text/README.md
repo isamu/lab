@@ -111,10 +111,10 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 ```
 $ npx chaffjs en.md --compact
 
-  3:67   warning "it is important to note that" emphasises without saying anything
-                 empty-intensifier
   3:1    warning "in today's fast-paced world" is an opening that fits any article
                  padded-intro
+  3:67   warning "it is important to note that" emphasises without saying anything
+                 empty-intensifier
   11:1   warning Closes with "in conclusion"
                  closing-cliche
 ```
@@ -136,6 +136,8 @@ npx chaffjs rules --json         いまの設定とルールの説明を JSON �
 npx chaffjs tree contract.txt    文書を番地の付いた木にする（条・項・定義・参照）
 npx chaffjs cite 原文 引用.json  引用が原文にあるかを確かめる
 npx chaffjs compare 前.md 後.md  書き換えで事実（数・日付・URL・名前など）が落ちても足されてもいないかを確かめる
+npx chaffjs facts 前.md          compare が照合する事実を一覧にする（書き直す前の控え）
+npx chaffjs outline 前.md 後.md  見出しの構成と形（見出しの数・節の平均・箇条書きの割合・太字）を前と後で並べる
 npx chaffjs skill                Claude Code の skill を入れる
 npx chaffjs feedback a.md --rule max-sentence-length --line 42   誤った指摘を報告する下書きを作る
 ```
@@ -332,6 +334,8 @@ options:
 | `ieice` | 3 音以上のカタカナ語は語末の「ー」を省く（コンピュータ） | 電子情報通信学会「和文論文誌 投稿のしおり」2.4 |
 | `jis-z8301-2011` | 同上（2019 年版はこの原則を外した） | JIS Z 8301:2011 表 G.3 |
 | `bunkacho` | 語末の「ー」を付ける（コンピューター） | 外来語の表記（平成 3 年内閣告示第 2 号） |
+| `jis-z8301-2019` | 規定の文末に「すべきである」と文末の「できる」を使わない（`requirement-modal`） | JIS Z 8301:2019 7.3〜7.5 |
+| `koyobun` | 和文の一文は 60 字まで。です・ますとであるを混ぜない。語末の「ー」を付ける | 文化審議会「公用文作成の考え方」（2022）Ⅲ－3 ア、Ⅲ－1 イ、Ⅰ－3 エ |
 
 ```yaml
 style: ieice
@@ -424,6 +428,8 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `taigen-dome-in-prose` | 本文の体言止めが続く（ja） |
 | `stray-space` | 語句の途中の空白（こころさんが 払った / 確認 しました）。空けた所が文書の中で少ないときだけ（ja、試験中） |
 | `katakana-long-vowel` | カタカナ語の語末の「ー」（コンピューター / コンピュータ）。既定は同じ語の混在だけ。`options` で省く・付けるを決める（ja、試験中） |
+| `ra-nuki` | ら抜き言葉（見れる / 食べれる / 来れる）。一段・カ変動詞の未然形に付いた「れる」を品詞解析で読む。五段の可能（走れる）は指さない（ja、試験中） |
+| `double-negative` | 二重否定（〜ないわけではない / not uncommon）。言い回しは語彙表（ja / en、試験中） |
 
 品詞が要らない日本語の rule:
 
@@ -436,6 +442,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `no-nakaguro-parallel` | 1 文に中黒の並列が何組も入る |
 | `latin-spacing` | 英字・数字の前後の空白の有無が文書の中で混ざる（試験中） |
 | `kutoten-consistency` | 読点（、と，）と句点（。と．）の書き方が文書の中で混ざる（試験中） |
+| `fullwidth-alnum-consistency` | 英字・数字の全角（ＡＢＣ１２３）と半角（ABC123）が文書の中で混ざる。英字一字・語・数字一字・並びを別に比べる（試験中） |
 
 英語固有の rule:
 
@@ -447,6 +454,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `title-case-consistency` | 見出しの大文字化が文書内で揃っているか |
 | `oxford-comma-consistency` | 並列の読点が文書内で揃っているか |
 | `contraction-consistency` | 短縮形の使いかたが文書内で揃っているか |
+| `spelling-consistency` | イギリスとアメリカの綴り（colour / color）が文書内で揃っているか。-ise / -ize は別に比べる（試験中） |
 
 揃っているかを見る rule は**どちらが正しいかを決めません**。1 つの文書で揃っているかだけを見て、少数派を指摘します。
 
@@ -458,6 +466,8 @@ Markdown の記法と URL を見る rule（ja / en、試験中）:
 | `image-alt-text` | 代替テキストの無い画像（`![](図.png)`、alt 属性の無い `<img>`） |
 | `broken-link` | 行き先の無いリンク（空の行き先、文書に無い見出しへのページ内リンク、定義の無い参照の形） |
 | `url-run-on` | そのまま書いた URL のすぐ後ろに日本語や全角の記号が続き、リンクがそこまで伸びる（`https://example.jp/をご覧ください`）。`.txt` でも見る |
+| `duplicate-heading` | 同じ親の見出しの下の、同じ言葉の見出し（版ごとの「Added」のように親が違えばよい） |
+| `empty-section` | 中身の無い節。見出しのすぐ後ろに同じ深さか浅い見出しが来る（深い見出しが続くのはよい） |
 
 記法の rule は Markdown の文書でだけ動き、`.txt` では「Markdown の文書ではないため」と出して止まります。
 
@@ -467,6 +477,14 @@ Markdown の記法と URL を見る rule（ja / en、試験中）:
 | --- | --- |
 | `unbalanced-bracket` | 組になっていない括弧。閉じ忘れた「（」、開きの無い「」」、全角の「（」を半角の「)」で閉じたもの。「1)」「事例）」のような番号の印は数えない |
 | `doubled-punctuation` | 句読点の重なり（`。。`、`、。`、`,,`、`i.e.,,`）。`...` や `。。。` のように三つ以上並べたものは数えない |
+
+字を見る rule（試験中）:
+
+| rule | 何を見るか |
+| --- | --- |
+| `invisible-character` | 見えない字（ゼロ幅の空白、途中の BOM、ソフトハイフン、文字の向きの指定、制御文字、字の後ろに隠れたタグ文字、見出しの印や日本語の隣のノーブレークスペース）。コードの中も見る（ja / en） |
+| `hankaku-kana` | 半角の片仮名と半角の句読点（`ﾒｰﾙ`、`｡｢｣､･`）。コード・リンク・鉤括弧で引いた名前の中は数えない（ja） |
+| `space-before-punctuation` | 句読点の前の空白（`word .`、`word ,`）。コロン、`. . .`、`.NET`、数の後ろは数えない（en） |
 
 ## 判定役は Anthropic でも OpenAI でも
 
@@ -574,6 +592,7 @@ AI っぽい文章を AI に大きく書き換えさせたあと、事実が落�
 npx chaffjs compare before.md after.md                      人が読む
 npx chaffjs compare before.md after.md --json               AI が読んで直す（--compact は 1 件 1 行）
 npx chaffjs compare before.md after.md --allow-dropped url  わざと削った種類は失敗にしない
+npx chaffjs compare before.md after.md --distinct           一度でも書いてある事実は残ったとみなす（繰り返しを消してよい）
 ```
 
 数（単位・通貨つき）、日付、時刻、URL、コード、固有名詞と `names:`、「」や "…" の引用、見出し、条項の参照、脚注を、lint と同じ読み手で取り出し、位置を見ずに数で比べます。
@@ -596,6 +615,19 @@ i 書き方だけ変わった事実 3 件
 ```
 
 落ちた事実か足された事実があれば 1 で終わります。1,000 と 1000、2026年4月1日 と 2026/4/1 のような書き方の違いは情報として出すだけです。読めなかった種類（品詞の解析器が無いなど）は理由を添えて出します。
+
+全面的に書き直す前には、`facts` で事実の一覧を控えておけます。`compare` と同じ読み手で取り出すので、ここに並んだものが `compare` の照合する事実です。
+
+```bash
+npx chaffjs facts before.md            種類ごとのチェックリスト（行番号つき）
+npx chaffjs facts before.md --json     AI が控えとして持つ（--compact は 1 件 1 行）
+```
+
+構成を変えたかどうかは `outline` で測ります。見出しの構成を出し、見出しの数、節の平均の長さ、箇条書きの割合、太字の数を測ります。2 つ渡すと前と後を並べます。
+
+```bash
+npx chaffjs outline before.md after.md       見出しの数 6 → 3 のように、形がどう動いたかを並べる
+```
 
 ## Claude Code の skill
 
@@ -646,6 +678,10 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 入れるかどうかは、生成 AI 以前の技術記事と corpus で測って決めました。「解像度を上げる」「腹落ち」のように、以前から人が同じくらい書いていた語は入れていません。
 
 AI っぽい rule がどれだけ正確かは `yarn bench:ai` で測れます。同じ中身を、人の書きぶり・生成文の書きぶり・書き直した版の 3 通りで書いた見本（`test/fixtures/ai-samples/paired/`）と corpus にかけ、rule ごとに生成文の版に当たった数と、それ以外に当たった数（誤報）を出します。
+
+直し方は 3 つあります。指摘された所だけ直す部分直し、構成を残して節ごとに直す書き直し、構成から作り直す全面書き直しです。
+ブログとエッセイ、`ai-generated-composite` が出た文書には全面書き直しを勧めます。`facts` で事実の控えを取り、`outline` で構成の変化を測り、`compare` で事実が残ったかを確かめます。
+手順と例は手引きの「AIっぽさを直す」に、AI 向けの手順は `npx chaffjs skill` で入る skill にあります。
 
 ## チームが決める rule
 

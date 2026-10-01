@@ -599,7 +599,7 @@ genres:
 - ジャンルが入れた試験中の rule は、設定で入れたもの（§18.4）とは別に知らせる。
 - 数字は §9.1 のとおり rule の `by_genre` に置く。ジャンルの段は 4 語だけを書く。
 - profile の強さは by_path > chaff.yaml の `profile` > ジャンルの `profile` > 内容。
-- 前からあるジャンルには段も profile も無い。結果は変わらない。
+- 前からあるジャンルは profile を持たず、段は試験中の rule を止めることだけに使う。既定で出る指摘は変わらない（変わるのは「動いていない」一覧の理由だけ）。止めるのは corpus の実文書が理由を示したときだけ（議事録の agentless-passive、プレスリリースの proper-noun-density）。
 
 ### 9.3 ジャンルを決めていない文書には、見当を出す
 
@@ -640,8 +640,12 @@ genres:
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
+| `duplicate-heading` ✅ | 同じ親の下の同じ言葉の見出し（MD024 siblings_only） | 両方 | warning |
+| `empty-section` ✅ | 中身の無い節（すぐ後ろに同じ深さか浅い見出し） | 両方 | warning |
 | `unbalanced-bracket` ✅ | 節の中で組にならない括弧・引用符、全角と半角の組み違い | 両方 | warning |
 | `doubled-punctuation` ✅ | 二つ並んだ句読点（三つ以上は伸ばした書き方として数えない） | 両方 | warning |
+| `invisible-character` ✅ | 見えない字（ゼロ幅の字・途中の BOM・ソフトハイフン・向きの指定・制御文字・隠れたタグ文字・印の後ろのノーブレークスペース）。コードの中も見る | 両方 | warning |
+| `double-negative` ✅ | 二重否定（ないわけではない / not uncommon）。語彙表の言い回し | 両方 | info |
 | ~~`list-length-variance`~~ | 箇条書き項目の長さのばらつき | 落とした（下記） | info |
 
 設計上の注意:
@@ -924,7 +928,10 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
 | `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
+| `fullwidth-alnum-consistency` ✅ | 英数字の全角と半角の混在。英字一字・語・数字一字・並びごとに少ないほうを指摘 | - |
+| `ra-nuki` ✅ | ら抜き言葉。lang-ja が一段・カ変動詞の未然形＋「れる」に `PotentialRa=Dropped` を付ける | pos |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
+| `hankaku-kana` ✅ | 半角の片仮名と半角の句読点。コード・リンク・引いた名前の中は除く | - |
 
 `katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。
 音は「コ・ン・ピュ・ー・タ・ー」と数え、語末の「ー」も含める（カーは 2 音）。小さい「ャュョァィゥェォ」は前の字と
@@ -964,6 +971,8 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `sentence-initial-conjunction-run` ✅ | And / But / So で始まる文の連続 | - |
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
+| `spelling-consistency` ✅ | イギリスとアメリカの綴りの一貫性。語彙表 spelling-variant と spelling-ize の組ごとに少ないほうを指摘 | - |
+| `space-before-punctuation` ✅ | 句読点の前の空白（"word ."）。コロン・空白で区切った点・数の後ろは除く | - |
 
 英語固有 rule は「どちらが正しいか」を決めず、**文書内の一貫性**だけを見るものを優先する。Oxford comma の是非のようにスタイルガイドで割れる論点に立場を取ると、rule が使われなくなる。
 
@@ -1503,6 +1512,8 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 - スタイルのオプションは chaff.yaml の `options:` の下の層。合わない値は次の層（既定）に落ちる。
 - `rules --json` は `style`（id・名前・要約・出典）を出し、スタイルが決めた段階の `your_setting.from` とオプションの
   `from` を `style: ieice` とする。`explain` も同じ。
+- スタイルは `limits:` で、rule の上限を言語ごとの数で決められる（`max-sentence-length: { ja: 60 }`）。その言語の文書だけに効き、
+  chaff.yaml がその rule の段階か数を書けば、chaff.yaml が勝つ。数を決める rule は、スタイルの `rules:` にも動く段階で書く。
 - 知らないスタイル名は、知らないジャンルと同じく実行を止め、使える名前を並べる。
 - 同梱のスタイルは test がすべての rule 名とオプションを確かめる。読めないスタイルファイルは chaff の不具合として止まる。
 
@@ -1511,6 +1522,8 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 | `ieice` | `katakana-long-vowel`: `drop`、3 音 | 和文論文誌 投稿のしおり 2.4 (b)（用語は学術用語集 電気工学編）。(d) の句読点は rule が無いので書かない |
 | `jis-z8301-2011` | `katakana-long-vowel`: `drop`、3 音 | JIS Z 8301:2011 附属書 G 表 G.3。2019 年版は外来語の表記によるとした |
 | `bunkacho` | `katakana-long-vowel`: `keep` | 外来語の表記 留意事項その 2 Ⅲ 3 注 3 |
+| `jis-z8301-2019` | `requirement-modal`: `standard: jis-z8301-2019` | JIS Z 8301:2019 7.3〜7.5（JSA「JIS 原案作成のための手引」資料 7）。外来語の長音は業界に任せている（同 Q&A 6-14）ので決めない |
+| `koyobun` | `max-sentence-length`: 和文 60 字（`limits`）、`no-mixed-desumasu`、`katakana-long-vowel`: `keep` | 公用文作成の考え方（2022）Ⅲ－3 ア（50～60 字ほどで見直す）、Ⅲ－1 イ、Ⅰ－3 エ。英文の数は言っていないので変えない |
 
 ### 18.7 チームのルール（`custom_rules:`）
 
@@ -1586,6 +1599,8 @@ npx chaffjs test article.md              # L4 を含む
 npx chaffjs eval corpus/ja/blog/         # rule の評価と閾値 sweep
 npx chaffjs explain sentence-rhythm      # rule の意図と根拠
 npx chaffjs compare before.md after.md   # 書き換えで事実が落ちても足されてもいないか（§28）
+npx chaffjs facts before.md              # compare が照合する事実の一覧（§28.5）
+npx chaffjs outline before.md after.md   # 見出しの構成と形を前と後で測る（§28.6）
 npx chaffjs init
 npx chaffjs setup ja                     # 品詞解析器の取得
 
@@ -1797,6 +1812,8 @@ ai-generated-composite:
 
 <!-- stet-file: bold-density, emoji-density -->
 ```
+
+`stet` はすぐ下の塊（段落・見出し・箇条書き・表）に、`stet-section` は次の見出しまで、`stet-file` は文書全体に効く。
 
 理由なしの抑制を減らすため、`--require-stet-reason` で理由の記述を必須にできる。
 
@@ -2197,8 +2214,57 @@ npx chaffjs compare before.md after.md --allow-dropped url    # わざと削っ�
 - 読めなかった種類は理由を付けて言う（§17.4）。言語パッケージが構造を読まない（単位・日付・参照）、日付を読まない、品詞の解析器が無い（`names:` だけを比べる）、Markdown でない（コードの記法が無い）。
 - 落ちた事実か足された事実が一つでもあれば終了コード 1、無ければ 0。
 - `--allow-dropped <種類>` と `--allow-added <種類>` は、わざと削った・足した種類を失敗から外す（繰り返すか、`url,quote` のようにカンマで並べる）。外したものも一覧には残る。
+- `--distinct` は事実を集合として比べる。相手の文書に一度でも書いてある事実は残ったとみなし、繰り返しを消しても足しても落ちた・足されたにしない。既定は書いた回数まで比べる。
 - 画面の言語は前の文書の言語に従う。
 
 ### 28.4 速さ
 
 文書の長さに比例して読む。何万もの引用・範囲・同じ数がある文書でも、一つごとに全体を読み直さない（`test/test_compare_linear.ts`）。
+
+### 28.5 書き直す前の控え（`chaff facts`）
+
+全面的に書き直すときは、元の文章を手元に置いたまま文を直すのではなく、事実の一覧から書き起こす。
+`chaff facts <file>` はその一覧を出す。取り出すのは `compare` と同じ `extractFacts` で、新しい読み手は作らない。
+だから一覧の数は、`compare` が同じ文書を前として読んだときの数と一致する（`test/test_facts.ts`）。
+
+```bash
+npx chaffjs facts before.md            # 種類ごとのチェックリスト（行番号つき）
+npx chaffjs facts before.md --compact  # 1 件 1 行。種類の名は英語のまま
+npx chaffjs facts before.md --json     # path・language・counts・unread・facts（kind / key / text / line）
+```
+
+- 並びは `compare` の種類の順、その中は行の順。同じ事実を二度書いていれば二度並ぶ（`compare` は多重集合で比べる）。
+- 最初の行に種類ごとの数を 0 件も含めて並べる。読めなかった種類は理由を付けて言う（§28.3 と同じ）。
+- 画面の言語は文書の言語に従う。ファイルは一つ。無い、二つ以上、読めないときは終了コード 1。
+
+### 28.6 構成を測る（`chaff outline`）
+
+文を直しても骨組みが元のままなら、生成文の形は残る。構成を変えたかどうかを、印象でなく数で示すために測る。
+読み手は lint と同じ `buildDocument` の節（`doc.sections`）・文・箇条書きの範囲で、新しい読み手は作らない。
+
+```bash
+npx chaffjs outline before.md                  # 見出しの構成と形
+npx chaffjs outline before.md after.md         # 2 つを並べ、形の値が前と後でどう動いたか
+npx chaffjs outline before.md --compact        # 1 節 1 行
+npx chaffjs outline before.md after.md --json  # before / after それぞれの path・language・unit・shape・outline
+```
+
+| 値 | 測り方 |
+| --- | --- |
+| 見出しの数 | 深さ 1 以上の節の数 |
+| 節の平均 | 節ごとの本文の長さ（日本語は字数、英語は語数。`lengthOf` と同じ）の平均。本文の無い節（題だけの h1 など）は数えない |
+| 箇条書き | 本文の長さのうち、箇条書きの項目の中にある文の割合（%） |
+| 太字 | Markdown の強調（`**…**`）の数 |
+
+- 構成の一覧は、見出しを深さで字下げし、行と、その節だけの本文の長さを付ける。最初の見出しより前の本文は、本文があるときだけ一行に出す（front matter や画像だけなら出さない）。
+- 判定はしない。値が良いか悪いかは言わず、ファイルが読めれば終了コード 0。ファイルが無い、三つ以上、読めないときは 1。
+- 画面の言語は最初の文書の言語に従う。
+
+### 28.7 全面書き直しの中での使い方
+
+生成文の形を構成から直す「全面書き直し」（skill と手引き「AIっぽさを直す」）は、chaff のこの 3 つで囲む。
+書き直すのは AI か人で、chaff は控えと測りと照合だけをする。
+
+1. 書く前に `facts` で事実の控えを取り、`outline` で元の構成を出す。
+2. 書いた後に `outline <前> <後>` で構成の変化を、`--experimental` で AI っぽさの特徴を、前と後で並べる。
+3. `compare <前> <後> --allow-dropped heading --allow-added heading` で、見出し以外の事実が落ちても足されてもいないことを確かめる。見出しは、わざと作り直した構成なので、落ちたものも足されたものも外す。
