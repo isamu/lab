@@ -4,6 +4,11 @@ Newest first.
 
 ## Unreleased
 
+### Rule pages link to the papers and standards behind them
+
+- A rule file lists the works it rests on under `sources`, by their anchor on the bibliography page. The rule's page on
+  the site lists them, and each links to its entry.
+
 ### Making AI-sounding text sound human: a Full rewrite mode (#439)
 
 The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human" get a third mode, beside Light
