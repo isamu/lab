@@ -642,6 +642,7 @@ genres:
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | `unbalanced-bracket` ✅ | 節の中で組にならない括弧・引用符、全角と半角の組み違い | 両方 | warning |
 | `doubled-punctuation` ✅ | 二つ並んだ句読点（三つ以上は伸ばした書き方として数えない） | 両方 | warning |
+| `invisible-character` ✅ | 見えない字（ゼロ幅の字・途中の BOM・ソフトハイフン・向きの指定・制御文字・隠れたタグ文字・印の後ろのノーブレークスペース）。コードの中も見る | 両方 | warning |
 | ~~`list-length-variance`~~ | 箇条書き項目の長さのばらつき | 落とした（下記） | info |
 
 設計上の注意:
@@ -925,6 +926,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
 | `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
+| `hankaku-kana` ✅ | 半角の片仮名と半角の句読点。コード・リンク・引いた名前の中は除く | - |
 
 `katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。
 音は「コ・ン・ピュ・ー・タ・ー」と数え、語末の「ー」も含める（カーは 2 音）。小さい「ャュョァィゥェォ」は前の字と
@@ -964,6 +966,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `sentence-initial-conjunction-run` ✅ | And / But / So で始まる文の連続 | - |
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
+| `space-before-punctuation` ✅ | 句読点の前の空白（"word ."）。コロン・空白で区切った点・数の後ろは除く | - |
 
 英語固有 rule は「どちらが正しいか」を決めず、**文書内の一貫性**だけを見るものを優先する。Oxford comma の是非のようにスタイルガイドで割れる論点に立場を取ると、rule が使われなくなる。
 
