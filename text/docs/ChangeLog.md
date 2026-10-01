@@ -4,6 +4,24 @@ Newest first.
 
 ## Unreleased
 
+### `compare --distinct` compares facts as sets (#446)
+
+`compare` counts how many times each fact is stated, so a full rewrite that cuts a summary repeating the body reported
+every repeat as dropped. With `--distinct`, a fact counts as kept when the other document states it at least once; a
+fact the other document never states is still dropped or added. The default is unchanged.
+
+### `compare` reads a wrapped or bold quotation as the same quotation, and 「8時間」 as a length of time (#435, #446)
+
+- A line break between two wide characters (`系の` / `システム`) vanishes when Markdown is rendered, but `compare` read
+  it as a space, so joining the lines of a Japanese quotation was reported as one quotation dropped and another added.
+  Bold marks inside a quotation (`「**終わったな**」`) were read as part of it too. Quotations and names are now keyed,
+  and the team's `names:` found, without what a reader never sees, the way the rules already read the text: a line break between wide characters (not
+  one next to inline code or a link's marks) and the marks of bold, italics and strikethrough. Such a change is reported
+  as the same fact written another way. A plain-text document shows its line breaks, so there they still count, and a
+  space actually written inside a Japanese quotation is still a different quotation.
+- `8時間` was read as the time `08:00`, and `1.2時間` as `2時`. 時間 after the hour now makes it a length of time, and
+  an hour that ends a longer number (`1.2`, `123`) is not read as one.
+
 ### `katakana-long-vowel` keeps フリ apart from フリー, and `colon-lead-in` counts only Japanese sentences (#434)
 
 `katakana-long-vowel` read 「知ってるフリ」 (振り) and 「フリー」 (free) as one word written two ways. The tagger reads both
