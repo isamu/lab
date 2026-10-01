@@ -2,6 +2,15 @@
 
 Newest first.
 
+## Unreleased
+
+### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
+
+Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted
+by line, then column, in every output (friendly, `--compact`, SARIF, `chaff test`). In `--compact`, the
+`line:column` column widens to the longest position in the document plus one space, so `1070:131` no longer runs into
+`warning`; a document whose positions are all short prints exactly as before.
+
 ## 0.18.0 — 2026-10-01
 
 A team can now write its own rules. `custom_rules:` adds a rule from a word list, a regular expression or a run of
@@ -58,13 +67,6 @@ corpus rarely use it; the measurements are in the PR.
   corpus, and compares the table with `expected.txt`. CI runs it.
 - Measured and not added: the share of bullet lines, runs of short sentences, and 「（いわゆる〜）」. Human articles
   had as many of each.
-
-### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
-
-Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted
-by line, then column, in every output (friendly, `--compact`, SARIF, `chaff test`). In `--compact`, the
-`line:column` column widens to the longest position in the document plus one space, so `1070:131` no longer runs into
-`warning`; a document whose positions are all short prints exactly as before.
 
 ### `chaff compare <before> <after>`: did a rewrite keep its facts?
 
