@@ -51,7 +51,7 @@ const moduleRulesOf = (rules: readonly RuleDefinition[]): ModuleRule[] =>
   rules.flatMap((rule) => (rule.custom?.type === "module" ? [{ id: rule.id, file: rule.custom.file, written: rule.custom.module }] : []));
 
 /** Every type: module rule in chaff.yaml, loaded. One by one, in the order written, so the same chaff.yaml loads the same way. */
-export const loadExtensions = async (config: Config): Promise<Extensions> => {
+const loadExtensions = async (config: Config): Promise<Extensions> => {
   const loaded = await moduleRulesOf(customRulesOf(config).rules).reduce<Promise<{ id: string; loaded: Loaded }[]>>(
     async (done, rule) => [...(await done), { id: rule.id, loaded: await loadRule(rule) }],
     Promise.resolve([]),
