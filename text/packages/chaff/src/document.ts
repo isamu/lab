@@ -84,8 +84,6 @@ const EMPHASIS = new Set(["strong", "emphasis", "delete"]);
  */
 const DIRECTIVE = /^[ \t]*:::[^\n]*/gmu;
 
-// そのまま書いた URL も覆う。残すと、見出しと URL の中の識別子が一致して「見出しの繰り返し」と読まれる。
-
 const matchSpans = (source: string, pattern: RegExp): Span[] =>
   [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 

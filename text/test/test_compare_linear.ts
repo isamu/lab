@@ -93,8 +93,10 @@ describe(`quotedSpans (seed ${String(SEED)})`, () => {
 describe("bareUrls", () => {
   it("leaves the sentence's punctuation out of the URL", () => {
     assert.deepEqual(
-      bareUrls("See https://example.com/a. Or https://example.com/b, then https://example.com/c?q=1。").map((url) => url.url),
-      ["https://example.com/a", "https://example.com/b", "https://example.com/c?q=1"],
+      bareUrls("See https://example.com/a. Or https://example.com/b, then https://example.com/c?q=1。 詳しくは https://example.jp/をご覧ください").map(
+        (url) => url.url,
+      ),
+      ["https://example.com/a", "https://example.com/b", "https://example.com/c?q=1", "https://example.jp/"],
     );
   });
 
