@@ -1,0 +1,7 @@
+# "shall" and what to write instead (instead_of), read by requirement-modal when shall: must is set.
+# The Federal Plain Language Guidelines (PLAIN 2011) say to use "must" for an obligation: "shall" is ambiguous, read as
+# an obligation, a future or a permission, and courts have read it each way.
+id: requirement-modal-must
+language: en
+entries:
+  - { pattern: shall, instead_of: must }

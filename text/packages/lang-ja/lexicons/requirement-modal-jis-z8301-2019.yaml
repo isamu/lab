@@ -1,0 +1,14 @@
+# JIS Z 8301:2019 が規定の文末に使わない形と、代わりに使う形（instead_of）。requirement-modal の standard: jis-z8301-2019 が読む。
+# 7.3（推奨事項）: 文末の「…すべきである」「…すべきでない」は用いない。推奨は「…することが望ましい」、推奨しないは「…しないほうがよい」。
+# 7.4（許容事項）・7.5（可能性・能力事項）: 文末の「…できる」「…できない」は用いない。許容は「…してもよい」、可能性は「…可能である」。
+#   7.5 は、能力を示す「できる」を文の途中で使うのは認めるので、文の終わりだけを見る（position: after）。
+# 出典は日本規格協会「JIS 原案作成のための手引」資料 7「JIS Z 8301:2019 の主な改正点」と、同書 Q&A 6-15 の修正例。
+id: requirement-modal-jis-z8301-2019
+language: ja
+entries:
+  - { pattern: べきである, position: after, instead_of: することが望ましい }
+  - { pattern: べきです, position: after, instead_of: することが望ましい }
+  - { pattern: べきでない, position: after, instead_of: しないほうがよい }
+  - { pattern: べきではない, position: after, instead_of: しないほうがよい }
+  - { pattern: できる, position: after, instead_of: してもよい（許容）、可能である（可能性） }
+  - { pattern: できない, position: after, instead_of: しなくてもよい（許容）、可能性がない（可能性） }

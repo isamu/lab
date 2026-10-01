@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### New rule: `requirement-modal`, and `style: jis-z8301-2019` (experimental)
+
+- `requirement-modal` checks a provision's verb form against a house rule a team picks under `options`; with none, it
+  checks nothing. `standard: jis-z8301-2019` points at a closing すべきである / すべきでない (7.3) and a closing できる /
+  できない (7.4, 7.5: use してもよい or 可能である), as the Japanese Standards Association's drafting guide summarises the
+  2019 edition. できる in the middle of a sentence, which JIS keeps for an ability, is left alone. `shall: must` points
+  at "shall" in English and asks for "must", as the Federal Plain Language Guidelines do; a quoted "SHALL" (the RFC 2119
+  boilerplate) is a mention, not a use. The forms are in each language's lexicons.
+- `style: jis-z8301-2019` turns it on with JIS's forms. It does not decide the final ー of loanwords, which the 2019
+  edition leaves to each industry.
+
 ### `stet` covers the block right below it, not the next six lines (#401)
 
 `<!-- stet: rule — reason -->` silenced the rule on the six lines after the comment, whatever they held: a finding of
