@@ -107,5 +107,3 @@ entries:
     weight: 0.3
   - pattern: 大幅に向上する
     weight: 0.3
-  - pattern: 劇的に
-    weight: 0.3

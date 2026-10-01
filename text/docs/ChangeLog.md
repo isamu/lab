@@ -4,12 +4,11 @@ Newest first.
 
 ## Unreleased
 
-### `ai-tell` and `stock-transition` know more Japanese phrasing that grew after LLMs
+### `ai-tell` knows more Japanese phrasing that grew after LLMs
 
 - `ai-tell` (ja) adds 浮き彫りになる, 最大限に引き出す, 真価を発揮する, 強力な武器, ステップバイステップ, 多角的な,
-  包括的な, シームレスに, 大幅に向上する and 劇的に, each at a low weight. Each is rare in Qiita articles from 2016–2021
+  包括的な, シームレスに and 大幅に向上する, each at a low weight. Each is rare in Qiita articles from 2016–2021
   and clearly more common in articles from 2025–2026. One of them alone still says nothing; they add to the score.
-- `stock-transition` (ja) counts a sentence that opens with これにより, which joins on without saying what causes what.
 
 ### New rule: `vague-figure-reference`, 上記の図 where a number would do (experimental)
 
