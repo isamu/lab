@@ -1,5 +1,5 @@
 import type * as Api from "../api.ts";
-import type { Detector, Finding } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { frozenLexiconOf, ruleDocumentOf } from "./document-view.ts";
 import { returnedFindings, type ShapeProblem } from "./returned-findings.ts";
 
@@ -24,17 +24,27 @@ export class PluginRuleFailure extends Error {
   }
 }
 
+/** The first line of what was thrown. What a plugin throws is its own object, so printing it may throw too. */
 const messageOf = (error: unknown): string => {
-  const text = error instanceof Error ? error.message : String(error);
-  return text.split("\n")[0] ?? text;
+  try {
+    const text = error instanceof Error ? error.message : String(error);
+    return text.split("\n")[0] ?? text;
+  } catch {
+    return "an error that cannot be printed";
+  }
 };
 
-/** What the detector returned, or how it failed. A Promise is a wrong return; its rejection must not end the run later. */
-const called = (detect: UntrustedDetector, doc: Api.RuleDocument, options: Api.DetectorOptions): { returned: unknown } | { failure: RuleFailure } => {
+/**
+ * What the detector returned, as findings, or how it failed. Reading the return can run the plugin's code too (a getter,
+ * a Proxy), so it is checked inside the try. A Promise is a wrong return; its rejection must not end the run later.
+ */
+const findingsOf = (detect: UntrustedDetector, doc: ProseDocument, options: Api.DetectorOptions): { findings: Finding[] } | { failure: RuleFailure } => {
+  const view = ruleDocumentOf(doc);
   try {
-    const returned: unknown = detect(doc, options);
+    const returned: unknown = detect(view, options);
     if (returned instanceof Promise) returned.catch(() => undefined);
-    return { returned };
+    const result = returnedFindings(returned, doc.source, doc.sentences);
+    return "problem" in result ? { failure: { kind: "returned", problem: result.problem } } : { findings: [...result.findings] };
   } catch (error) {
     return { failure: { kind: "threw", message: messageOf(error) } };
   }
@@ -45,9 +55,7 @@ export const moduleDetector =
   (detect: UntrustedDetector, origin: string): Detector =>
   (doc, options): Finding[] => {
     const lexicon = options.lexicon === undefined ? undefined : frozenLexiconOf(options.lexicon);
-    const call = called(detect, ruleDocumentOf(doc), Object.freeze({ lexicon }));
-    if ("failure" in call) throw new PluginRuleFailure(call.failure, origin);
-    const result = returnedFindings(call.returned, doc.source, doc.sentences);
-    if ("problem" in result) throw new PluginRuleFailure({ kind: "returned", problem: result.problem }, origin);
-    return [...result.findings];
+    const outcome = findingsOf(detect, doc, Object.freeze({ lexicon }));
+    if ("failure" in outcome) throw new PluginRuleFailure(outcome.failure, origin);
+    return outcome.findings;
   };
