@@ -1,5 +1,6 @@
 import type { LexiconEntry, Sentence, Token } from "../plugin.ts";
 import { proseText } from "../measure.ts";
+import { straightApostrophes } from "../orthography.ts";
 
 /** 活用する品詞。"best" を "good" と同じ語にはしない。 */
 const INFLECTING = new Set(["VERB", "AUX"]);
@@ -15,6 +16,12 @@ const sameWord = (written: Token, entry: Token): boolean => {
   return inflects && entry.lemma?.toLowerCase() === surface && written.lemma?.toLowerCase() === surface;
 };
 
+/** 品詞が無いときに照らす形。大文字小文字と、アポストロフィの形（it’s と it's）は語を変えない。 */
+export const comparableWords = (text: string): string => straightApostrophes(text).toLowerCase();
+
+/** 文を、品詞が無いときに照らす形に。行の折り返しの空白はまとめる。 */
+export const comparableText = (sentence: Sentence): string => comparableWords(proseText(sentence));
+
 const runsAt = (tokens: readonly Token[], entry: readonly Token[], start: number): boolean =>
   entry.every((word, offset) => {
     const written = tokens[start + offset];
@@ -28,7 +35,7 @@ const runsAt = (tokens: readonly Token[], entry: readonly Token[], start: number
 export const entryIn = (sentence: Sentence, entry: LexiconEntry): boolean => {
   const tokens = sentence.tokens;
   const words = entry.tokens;
-  if (tokens === undefined || words === undefined || words.length === 0) return proseText(sentence).toLowerCase().includes(entry.pattern.toLowerCase());
+  if (tokens === undefined || words === undefined || words.length === 0) return comparableText(sentence).includes(comparableWords(entry.pattern));
   return tokens.some((_token, start) => runsAt(tokens, words, start));
 };
 
@@ -48,7 +55,7 @@ const LEADING_MARK = new Set(["PUNCT", "SYM"]);
 export const entryOpens = (sentence: Sentence, entry: LexiconEntry): boolean => {
   const tokens = sentence.tokens;
   const words = entry.tokens;
-  if (tokens === undefined || words === undefined || words.length === 0) return proseText(sentence).toLowerCase().startsWith(entry.pattern.toLowerCase());
+  if (tokens === undefined || words === undefined || words.length === 0) return comparableText(sentence).startsWith(comparableWords(entry.pattern));
   const first = tokens.findIndex((token) => !LEADING_MARK.has(token.pos));
   return runsAt(tokens, words, first);
 };

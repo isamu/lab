@@ -1,0 +1,25 @@
+# JIS Z 8301:2011「規格票の様式及び作成方法」の外来語の書き方。chaff.yaml に style: jis-z8301-2011 と書くと使える。
+# 2019 年版はこの原則を外し、「外来語の表記」（平成 3 年内閣告示第 2 号）によるとした。2019 年版に合わせるなら style: bunkacho。
+id: jis-z8301-2011
+
+name:
+  ja: JIS Z 8301:2011 規格票の様式及び作成方法
+  en: JIS Z 8301:2011, rules for the structure and drafting of standards
+
+summary:
+  ja: 3 音以上の外来語は語末の「ー」を省き（コンピュータ）、2 音以下は付けます（カー）。2019 年版はこの原則を外しました。
+  en: Drops the final ー of loanwords of three morae or more (コンピュータ) and keeps it on shorter ones (カー). The 2019 edition dropped this principle.
+
+source:
+  title:
+    ja: JIS Z 8301:2011 附属書 G 表 G.3「外来語の表記に語尾の長音符号を省く場合の原則」
+    en: JIS Z 8301:2011 Annex G, Table G.3 (the principle for omitting the final long-vowel mark of loanwords)
+  url: https://www.jisc.go.jp/
+
+rules:
+  katakana-long-vowel: normal
+
+options:
+  katakana-long-vowel:
+    ending: drop
+    min_morae: 3

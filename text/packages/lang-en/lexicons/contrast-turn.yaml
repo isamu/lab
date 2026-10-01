@@ -1,0 +1,11 @@
+# What answers a denial (contrast-lead): later in the same sentence, or opening the next one.
+id: contrast-turn
+language: en
+entries:
+  - pattern: it's
+  - pattern: it is
+  - pattern: this is
+  - pattern: that's
+  - pattern: they're
+  - pattern: they are
+  - pattern: but

@@ -1,0 +1,50 @@
+id: unfilled-placeholder
+layer: L2
+status: experimental
+how_to_find: unfilled-placeholder
+word_list: placeholder-word
+severity: warning
+
+name:
+  ja: 埋め忘れた空欄
+  en: Unfilled placeholder
+
+why:
+  ja: 「【会社名】」「[Your Name]」は、雛形や生成した下書きに残る空欄です。文体の好みではなく、埋め忘れです。例として置いた「○○」は正しい書き方なので数えません。
+  en: '"[Your Name]" and "[Insert Date]" are the blanks a template or a generated draft leaves. This is not a matter of style: the blank was never filled.'
+
+message:
+  ja: 「{matched}」が埋まっていません
+  en: '"{matched}" was never filled in'
+
+how_to_fix:
+  ja: 中身を書いてください。例のつもりなら、例だと分かる書き方（例：山田太郎）にしてください。
+  en: Fill it in. If it is meant as an example, say so ("for example, Jane Smith").
+
+# 指摘に要る空欄の数。
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「【会社名】」「[Your Name]」のように、雛形の空欄が埋まらないまま残っている所
+  en: A template blank left unfilled, such as "[Your Name]" or "[Insert Date]"
+example:
+  ja:
+    before: |
+      【会社名】の田中です。見積もりをお送りします。
+    after: |
+      山田商事の田中です。見積もりをお送りします。
+  en:
+    before: |
+      We can meet on [Insert Date] to go through the quote.
+    after: |
+      We can meet on Friday 9 October to go through the quote.
+
+not_flagged:
+  ja: 例として置いた「○○」、Markdown のリンク、脚注の番号、チェック欄、値が続く見出しの札（【氏名】山田）は指しません。
+  en: 'Markdown links and reference definitions, footnote numbers, checkboxes, and a label its value follows ("[Date]: 2024-04-01") are not reported.'
+level_meaning:
+  ja: 空欄が {limit} 箇所あれば指摘
+  en: reported once there are {limit}

@@ -304,6 +304,46 @@ prefer:
   e-mail: email
 ```
 
+段階で言えない決まりは、その rule の `options:` に書く。いまオプションを持つのは `katakana-long-vowel` で、
+語末の「ー」を省くか（`drop`）付けるか（`keep`）と、何音の語から見るか（`min_morae`）を決める。
+書かなければ立場を取らず、同じ語が両方で書かれた所だけを指摘する。
+
+```yaml
+rules:
+  katakana-long-vowel: normal
+options:
+  katakana-long-vowel:
+    ending: drop
+    min_morae: 3
+```
+
+```
+  3:4     warning 「サーバー」は語末の「ー」を省いて「サーバ」と書きます（3 音以上の語）
+                  katakana-long-vowel
+```
+
+`npx chaffjs explain katakana-long-vowel` がオプションのいまの値と、どこで決めたかを出す。
+
+よく知られた書き方の決まりは、`style:` で名前を選ぶだけで使える。選んだスタイルが、rule の段階とオプションをまとめて決める。
+
+| `style:` | 決めること | 出典 |
+| --- | --- | --- |
+| `ieice` | 3 音以上のカタカナ語は語末の「ー」を省く（コンピュータ） | 電子情報通信学会「和文論文誌 投稿のしおり」2.4 |
+| `jis-z8301-2011` | 同上（2019 年版はこの原則を外した） | JIS Z 8301:2011 表 G.3 |
+| `bunkacho` | 語末の「ー」を付ける（コンピューター） | 外来語の表記（平成 3 年内閣告示第 2 号） |
+
+```yaml
+style: ieice
+```
+
+```
+  3:4     warning 「サーバー」は語末の「ー」を省いて「サーバ」と書きます（3 音以上の語）
+                  katakana-long-vowel
+```
+
+強さは chaff.yaml の `rules:` と `options:` が最も強く、次にスタイル、次にジャンル、最後に既定。
+`explain` と `rules --json` は、どの値がスタイルから来たかを `style: ieice` と出す。知らないスタイル名は、実行を止めて使える名前を並べる。
+
 知らない rule 名（たいていは綴り違い）と読めない値は、検査と `rules --json` が標準エラーに出す。黙って捨てると、効いていない設定を効いていると思い込むため。
 
 ## 品詞を見る rule
@@ -341,6 +381,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `no-doubled-joshi` | 「弊社の新製品の販売の計画」のような入れ子（ja） |
 | `taigen-dome-in-prose` | 本文の体言止めが続く（ja） |
 | `stray-space` | 語句の途中の空白（こころさんが 払った / 確認 しました）。空けた所が文書の中で少ないときだけ（ja、試験中） |
+| `katakana-long-vowel` | カタカナ語の語末の「ー」（コンピューター / コンピュータ）。既定は同じ語の混在だけ。`options` で省く・付けるを決める（ja、試験中） |
 
 品詞が要らない日本語の rule:
 
@@ -506,9 +547,16 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 | `unqualified-superlative` | 比べる相手のない最上級 |
 | `repeated-conjunction` | 段落が接続詞で始まり続けていないか |
 | `ai-tell` | 生成文にありがちな言い回し（重み付き） |
+| `contrast-framing` | 「単なる X ではなく Y」「It's not X, it's Y」の対比の枠の密度（試験中） |
+| `stock-transition` | 「さらに」「加えて」「Moreover」で始まる文の密度（試験中） |
+| `assistant-residue` | チャットの返事の名残（「私の知識は」「As of my last knowledge update」「お役に立てれば幸いです」）（試験中） |
+| `unfilled-placeholder` | 埋め忘れた雛形の空欄（「【会社名】」「[Your Name]」）（試験中） |
 
 `ai-tell` は**単独で「AI が書いた」とは言いません**。どれも 1 つでは普通の日本語なので、
 重みを足し合わせた点だけを出します。
+`contrast-framing` と `stock-transition` も、1 つなら普通の書き方なので密度だけを見ます。
+`assistant-residue` は、知識の期限や AI としての断り書きなら 1 つで、人も書く礼の言葉は 2 つ重なったときに言います。
+`unfilled-placeholder` は文体ではなく埋め忘れなので 1 つで言います。例として置いた「○○」は数えません。
 
 ## チームが決める rule
 

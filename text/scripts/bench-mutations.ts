@@ -21,6 +21,18 @@ import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanji
 import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, pluralAfterArticle } from "./bench-mutations-en.ts";
 import * as phrasing from "./bench-mutations-phrasing.ts";
 import { imageWithoutAlt, linkToMissingSection, runOnUrl, skipHeadingLevel } from "./bench-mutations-markup.ts";
+import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
+
+export type Mutation = {
+  readonly id: string;
+  /** The rule that exists to find this mistake. */
+  readonly rule: string;
+  readonly languages: readonly string[];
+  /** "document" when the rule reports on the whole document rather than on a line: any finding of it counts. */
+  readonly reportsOn?: "document";
+  /** undefined when the sample has nothing to plant this mistake in. */
+  readonly plant: (source: string, context: PlantContext) => Plant | undefined;
+};
 
 // --- date-weekday-mismatch ---
 
@@ -305,26 +317,6 @@ export const dropGloss = (source: string): Plant | undefined =>
   rewriteFirst(source, (line) => isProse(line) && hasJaGloss(line), dropJaGloss) ??
   rewriteFirst(source, (line) => isProse(line) && dropEnGloss(line) !== undefined, dropEnGloss);
 
-// --- latin-spacing ---
-
-const JA_CHAR = "[ぁ-んァ-ヶー一-龠々]";
-const UNSPACED_LATIN = new RegExp(`(${JA_CHAR})([A-Za-z][A-Za-z0-9]*)(?=${JA_CHAR})`, "u");
-const UNSPACED_LATIN_ALL = new RegExp(UNSPACED_LATIN.source, "gu");
-const SPACED_LATIN = new RegExp(`${JA_CHAR} [A-Za-z][A-Za-z0-9]* ${JA_CHAR}`, "u");
-const MIN_LATIN_WORDS = 3;
-
-/** 英字の前後を空けない文書で、一語だけ前後を空ける。空けない書き方が三つ以上あるときだけ。 */
-export const spaceLatin = (source: string): Plant | undefined => {
-  const body = linesOf(source).filter(isProse);
-  const unspaced = body.flatMap((line) => [...line.matchAll(UNSPACED_LATIN_ALL)]).length;
-  if (unspaced < MIN_LATIN_WORDS || body.some((line) => SPACED_LATIN.test(line))) return undefined;
-  return rewriteFirst(
-    source,
-    (line) => isProse(line) && UNSPACED_LATIN.test(line),
-    (line) => line.replace(UNSPACED_LATIN, "$1 $2 "),
-  );
-};
-
 // --- contraction-consistency ---
 
 type Swap = readonly [string, string];
@@ -389,15 +381,8 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "particle-doubled", rule: "doubled-word", languages: ["ja"], plant: doubleParticle },
   { id: "article-doubled", rule: "doubled-word", languages: ["en"], plant: doubleArticle },
   { id: "plural-after-article", rule: "agreement-slip", languages: ["en"], plant: pluralAfterArticle },
-  { id: "heading-dropped", rule: "preamble-length", languages: ["ja", "en"], reportsOn: "document", plant: phrasing.dropFirstHeading },
-  { id: "cliche-closing", rule: "closing-cliche", languages: ["ja", "en"], plant: phrasing.closeWithCliche },
-  { id: "padded-opening", rule: "padded-intro", languages: ["ja", "en"], plant: phrasing.padOpening },
-  { id: "intensified", rule: "empty-intensifier", languages: ["ja", "en"], plant: phrasing.intensify },
-  { id: "hedges-stacked", rule: "excessive-hedging", languages: ["ja", "en"], plant: phrasing.stackHedges },
-  { id: "opener-repeated", rule: "repeated-conjunction", languages: ["ja", "en"], plant: phrasing.repeatOpener },
-  { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: phrasing.chainWithAnd },
-  { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: phrasing.avoidedSpelling },
-  { id: "pet-phrase", rule: "ngram-repetition", languages: ["ja", "en"], plant: phrasing.repeatPetPhrase },
+  ...phrasing.PHRASING_MUTATIONS,
+  { id: "long-vowel-dropped", rule: "katakana-long-vowel", languages: ["ja"], plant: dropOneLongVowel },
   { id: "heading-deepened", rule: "heading-level-skip", languages: ["ja", "en"], plant: skipHeadingLevel },
   { id: "image-unlabelled", rule: "image-alt-text", languages: ["ja", "en"], plant: imageWithoutAlt },
   { id: "link-to-nowhere", rule: "broken-link", languages: ["ja", "en"], plant: linkToMissingSection },

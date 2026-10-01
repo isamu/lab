@@ -14,9 +14,9 @@ import {
   politeInPlain,
   shiftWeekday,
   skipLastNumber,
-  spaceLatin,
   swapDatedRows,
 } from "../scripts/bench-mutations.ts";
+import { spaceLatin } from "../scripts/bench-mutations-orthography.ts";
 import { isPoliteDocument, type Plant, type PlantContext } from "../scripts/bench-text.ts";
 
 // yarn bench の植える誤り。どの行に何を植えたかを、短い自作の文書で固定する。

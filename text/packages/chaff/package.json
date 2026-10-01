@@ -45,6 +45,7 @@
     "reference-headings.yaml",
     "rules",
     "skills",
+    "styles",
     "src"
   ],
   "engines": {

@@ -1,0 +1,52 @@
+id: assistant-residue
+layer: L2
+status: experimental
+how_to_find: assistant-residue
+word_list: assistant-residue
+uses: [pos]
+severity: warning
+
+name:
+  ja: 会話の返事の名残
+  en: Chat-reply residue
+
+why:
+  ja: 「私の知識は」「お役に立てれば幸いです」は、チャットの返事を文書に貼ったときに残る言葉です。知識の期限や AI としての断り書きは 1 つで言い、人も書く礼の言葉は 2 つ重なったときだけ言います。
+  en: '"As of my last knowledge update" and "I hope this helps" are what a chat reply leaves behind when pasted into a document. A knowledge-cutoff or AI disclaimer counts on its own; a courtesy people also write counts only when two come together.'
+
+message:
+  ja: 「{matched}」は会話の返事の言葉です（点 {density}、{limit} から）
+  en: '"{matched}" is chat-reply wording (score {density}, from {limit})'
+
+how_to_fix:
+  ja: 文書の読み手に向けた言葉に書き直すか、消してください。知識の期限を書いた文は、確かめた日付と出典に置き換えてください。
+  en: Rewrite it for the document's reader, or delete it. Replace a knowledge-cutoff line with the date you checked and the source.
+
+# 語彙表の重みの合計を 10 倍した点。名残そのものは重み 1 で 1 つで届き、人も書く礼は 0.5 で 2 つ重なって届く。
+# strict でも礼 1 つでは言わない。1 つなら人の書き方と区別がつかない。
+levels: { strict: 10, normal: 10, relaxed: 20 }
+
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 「私の知識は」「お役に立てれば幸いです」のような、チャットの返事を貼ったときに残る言葉
+  en: What a pasted chat reply leaves behind ("As of my last knowledge update", "I hope this helps")
+example:
+  ja:
+    before: |
+      新しい棟の計画は検討中でした。私の知識は2023年時点のものです。
+    after: |
+      新しい棟の計画は、2026年9月の議会資料では検討中でした。
+  en:
+    before: |
+      As of my last knowledge update, plans for a new wing were under discussion.
+    after: |
+      The council's minutes of September 2026 say plans for a new wing are under discussion.
+
+not_flagged:
+  ja: 人も書く礼の言葉（「お役に立てれば幸いです」）が一つだけなら、何度書いてあっても指しません。同じ文の中の二つの言い回しは一つと数えます。
+  en: A single courtesy people also write ("I hope this helps"), however often it is repeated, is not reported. Two listed phrases in one sentence count as one.
+level_meaning:
+  ja: 重みの合計が {limit} 点で指摘
+  en: reported from a score of {limit}

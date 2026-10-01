@@ -28,6 +28,68 @@ read before the rule was added.
   everything up to the next space as the URL. Link syntax, `<…>` and code are not read, nor is an invisible character
   such as a zero-width space. Also runs on `.txt`. In the corpus it finds press releases that write `（https://…）`.
 
+### House styles: `style: ieice` and friends (#170)
+
+A well-known style guide can now be picked by name in chaff.yaml. The style sets rule levels and options, and cites
+its source. chaff ships three styles, each setting `katakana-long-vowel`:
+
+- **`ieice`** drops the final ー on words of three morae or more. The source is IEICE's submission guide for papers
+  in Japanese, 2.4 (b); its terms follow 学術用語集 電気工学編. Its full-width 「．」「，」 rule (2.4 (d)) is noted in
+  the file but not set, since chaff has no punctuation rule yet.
+- **`jis-z8301-2011`** is the same rule, from JIS Z 8301:2011 Table G.3. The 2019 edition dropped it.
+- **`bunkacho`** keeps the ー, following 外来語の表記 (1991), notes part 2, III 3, note 3.
+
+chaff.yaml's own `rules:` and `options:` win over the style, which wins over the genre's preset. `explain` and
+`rules --json` say `style: ieice` for a setting the style decided, and `rules --json` also gives the style's name,
+summary and source. An unknown style stops the run and lists the styles.
+
+### New rule `katakana-long-vowel`, and options on rules (#170)
+
+A team or a publisher often decides how a katakana loanword ends: IEICE papers and JIS Z 8301 up to its 2011 edition
+drop the final ー on words of three morae or more (コンピュータ), the Agency for Cultural Affairs and JIS Z 8301:2019 keep it
+(コンピューター). The new experimental rule `katakana-long-vowel` (Japanese, needs the part-of-speech reading) checks it.
+
+- **With no setting it takes no side.** It reports a word written both ways in one document (サーバー and サーバ), at
+  the form used less. Different words are not compared.
+- **`options:` in chaff.yaml** sets what the four levels cannot say. `katakana-long-vowel` takes `ending`
+  (`consistent`, `drop` or `keep`), `min_morae` (default 3) and `except` (words left alone).
+- Morae are counted with the final ー (カー is two, コンピューター six); a small ャュョァィゥェォ joins the kana before it.
+  Words come from the morphological reading, so ユーザー inside ユーザーインターフェース is its own word. Proper nouns
+  the dictionary knows and the team's `names:` keep their spelling.
+- `keep` reports a word without a final ー only when the dictionary knows it with one (メモリ → メモリー) or the
+  document writes it with one elsewhere. lang-ja marks such tokens `LongVowelEnding=Dropped`.
+- An option that does not apply (an unknown rule or option, a value that does not fit) is said on stderr on every run.
+  `chaff explain` shows each option's value and where it came from; `chaff rules --json` carries `options`.
+
+### Rules for the documented shapes of generated text, and more words for `ai-tell` (#170)
+
+Four new experimental rules check the marks of AI-sounding writing that style guides, Wikipedia's "Signs of AI
+writing" and studies of LLM vocabulary list, in Japanese and English. Each word they look for is in the language
+package's lexicon.
+
+- **`contrast-framing`**: the density of contrast frames: 「単なる X ではなく Y」「X だけでなく」, "not just X, but Y",
+  and a denial answered by a turn ("It's not a perk. It's a necessity."). One is ordinary, so a single one never counts.
+- **`stock-transition`**: the density of sentences that open with a stock transition (「さらに」「加えて」「このように」,
+  "Moreover", "Additionally", "In addition,"). Words that carry the argument (また, However, Therefore) are not counted.
+- **`assistant-residue`**: what a chat reply leaves in a document. A knowledge-cutoff line or an AI disclaimer
+  (「私の知識は」, "As of my last knowledge update") counts on its own; a courtesy people also write
+  (「お役に立てれば幸いです」, "I hope this helps") counts only when two come together.
+- **`unfilled-placeholder`**: a template blank left unfilled (「【会社名】」, "[Your Name]", "[Insert Date]"). A
+  Markdown link, a label its value follows (【氏名】山田), and an example 「○○」 are not blanks.
+
+`ai-generated-composite` also counts `contrast-framing`, `stock-transition` and `assistant-residue`. The genres that
+turn `ai-tell` off also turn off the two density rules (and academic papers `stock-transition`, speeches both);
+transcripts turn off `assistant-residue`.
+
+`ai-tell` gains the words the sources agree on (showcasing, underscores, pivotal, meticulous, "evolving landscape",
+"stands as", 「探っていきましょう」「一翼を担う」「未来をより豊かに」 and others). `closing-cliche` gains
+「いかがでしたでしょうか」 and 「お役に立てれば幸いです」. Words the sources name but human documents in the corpus use
+just as often (さまざまな, において, を実現, crucial, robust) are left out.
+
+In the corpus, the new rules report only the blanks of a published letter template (ACAS). AI-written samples in
+both languages (`test/fixtures/ai-samples/`, labelled as written by an AI) fire them; `yarn bench` plants a
+knowledge-cutoff line and a blank for the two rules that one edit can trigger.
+
 ### `oxford-comma-consistency` reads a sentence once, however many "and"s it has (#170)
 
 For each "and" or "or", the check split the clause into items again from its start and read each item token by

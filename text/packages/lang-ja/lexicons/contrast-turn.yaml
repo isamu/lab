@@ -1,0 +1,9 @@
+# 打ち消し（contrast-lead）を返す語。同じ文の後ろか、次の文の頭に来る。
+id: contrast-turn
+language: ja
+entries:
+  - pattern: ではなく
+  - pattern: はありません
+  - pattern: ではない
+  - pattern: むしろ
+  - pattern: そうではなく
