@@ -1506,6 +1506,8 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 - スタイルのオプションは chaff.yaml の `options:` の下の層。合わない値は次の層（既定）に落ちる。
 - `rules --json` は `style`（id・名前・要約・出典）を出し、スタイルが決めた段階の `your_setting.from` とオプションの
   `from` を `style: ieice` とする。`explain` も同じ。
+- スタイルは `limits:` で、rule の上限を言語ごとの数で決められる（`max-sentence-length: { ja: 60 }`）。その言語の文書だけに効き、
+  chaff.yaml がその rule の段階か数を書けば、chaff.yaml が勝つ。数を決める rule は、スタイルの `rules:` にも動く段階で書く。
 - 知らないスタイル名は、知らないジャンルと同じく実行を止め、使える名前を並べる。
 - 同梱のスタイルは test がすべての rule 名とオプションを確かめる。読めないスタイルファイルは chaff の不具合として止まる。
 
@@ -1514,6 +1516,7 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 | `ieice` | `katakana-long-vowel`: `drop`、3 音 | 和文論文誌 投稿のしおり 2.4 (b)（用語は学術用語集 電気工学編）。(d) の句読点は rule が無いので書かない |
 | `jis-z8301-2011` | `katakana-long-vowel`: `drop`、3 音 | JIS Z 8301:2011 附属書 G 表 G.3。2019 年版は外来語の表記によるとした |
 | `bunkacho` | `katakana-long-vowel`: `keep` | 外来語の表記 留意事項その 2 Ⅲ 3 注 3 |
+| `koyobun` | `max-sentence-length`: 和文 60 字（`limits`）、`no-mixed-desumasu`、`katakana-long-vowel`: `keep` | 公用文作成の考え方（2022）Ⅲ－3 ア（50～60 字ほどで見直す）、Ⅲ－1 イ、Ⅰ－3 エ。英文の数は言っていないので変えない |
 
 ### 18.7 チームのルール（`custom_rules:`）
 

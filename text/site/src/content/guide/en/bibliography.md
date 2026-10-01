@@ -118,6 +118,7 @@ The rules themselves are listed in the [Reference](./reference).
     Documents for the public use です・ます, loanwords keep the final ー (コンピューター), and full-width and half-width characters are used consistently.
   - In chaff: `max-sentence-length`, `no-mixed-desumasu`,
     [`katakana-long-vowel`](../../rules/katakana-long-vowel/) and [`latin-spacing`](../../rules/latin-spacing/) check these points.
+    `style: koyobun` in `chaff.yaml` sets a Japanese sentence's limit to 60 characters, and checks mixed です・ます and a dropped final ー.
 - **Cabinet notice (1991)** [bunka.go.jp](https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/gairai/honbun06.html)
   - 「外来語の表記」 (how to write loanwords)
   - Appeared in: Cabinet notice No. 2 of 1991.

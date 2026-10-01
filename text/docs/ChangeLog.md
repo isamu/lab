@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `style: koyobun`: 公用文作成の考え方 (2022)
+
+- `style: koyobun` checks a document the way 文化審議会「公用文作成の考え方」 asks: a Japanese sentence over 60 characters
+  (Ⅲ－3 ア: check a sentence once it reaches 50 to 60 characters), です・ます mixed with である (Ⅲ－1 イ), and a
+  katakana word without its final ー (Ⅰ－3 エ). English documents keep the level's limit, since the document gives none.
+- A style can set a rule's number by language under `limits:`. chaff.yaml's own level or number for the rule still wins.
+
 ### New rules: invisible characters, half-width katakana and a space before punctuation (#170)
 
 Experimental rules for single characters a paste or an edit leaves behind. Each finding in the corpus was read before

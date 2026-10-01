@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { loadAdapter, packageFor } from "./adapter-load.ts";
 import { CONFIG_FILE, type Config } from "./config/load.ts";
 import { applyByPath } from "./config/by-path.ts";
+import { limitsFor } from "./config/style.ts";
 import { applyLevel } from "./config/write.ts";
 import { buildDocument, teamRules } from "./document.ts";
 import { guessLanguage } from "./detect.ts";
@@ -99,7 +100,8 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
   const experimental = config.experimental || argv.includes("--experimental");
   await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
   const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
-  const raw = runRulesWith(doc, rules, { settings: config.rules, experimental, genre, limits: config.limits, optionLayers: optionLayersOf(config) });
+  const limits = limitsFor(config, language);
+  const raw = runRulesWith(doc, rules, { settings: config.rules, experimental, genre, limits, optionLayers: optionLayersOf(config) });
   // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
   const applied = applySuppressions(
     source,
