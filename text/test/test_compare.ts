@@ -430,6 +430,13 @@ describe("chaff compare on the command line", () => {
     assert.equal(parsed.ok, false);
   });
 
+  it("shows a Japanese quotation joined across a line break without a space a reader never sees", async () => {
+    const wrapped = { "a.md": "# 試し\n\n依頼は「系の\nシステムにしたい」でした。\n", "b.md": "# 試し\n\n依頼は「系のシステムにしたい」でした。\n" };
+    const run = await runCli(wrapped, ["compare", "a.md", "b.md"], "ja_JP.UTF-8");
+    assert.equal(run.code, 0, run.out);
+    assert.match(run.out, /引用: 「系のシステムにしたい」 → 「系のシステムにしたい」/u);
+  });
+
   it("speaks the document's language", async () => {
     const run = await runCli({ "a.md": JA_BEFORE, "b.md": JA_FAITHFUL }, ["compare", "a.md", "b.md"], "en_US.UTF-8");
     assert.equal(run.code, 0, run.out);
