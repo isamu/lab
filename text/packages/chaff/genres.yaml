@@ -240,11 +240,19 @@ genres:
     summary:
       ja: プレスリリースと、お知らせ
       en: Press releases and public notices
+    # A release names the agency, the people quoted, the mission and the place: that is its news, not a crowd of
+    # names to thin out. Every English release in the corpus (GSA, NASA, NOAA) is over the limit.
+    rules:
+      proper-noun-density: off
   - id: business/meeting-notes
     name: { ja: 議事録, en: Meeting notes }
     summary:
       ja: 議事録・議事要旨
       en: Minutes and meeting notes
+    # Minutes record what the meeting did (the meeting was held, 了承された): the actor is the meeting, by the form.
+    # In the corpus the rule fires on nearly every set of minutes, English and Japanese.
+    rules:
+      agentless-passive: off
   - id: legal/contract
     name: { ja: 契約書・規約, en: Contract and terms }
     summary:

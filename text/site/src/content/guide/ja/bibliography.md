@@ -119,6 +119,7 @@ chaff のルールが何を根拠にしているかを、論文と規格ごと�
     外向けの文書は です・ます で書き、外来語の語末の「ー」は付け（コンピューター）、全角と半角を揃えます。
   - chaff では：`max-sentence-length`、`no-mixed-desumasu`、
     [`katakana-long-vowel`](../../rules/katakana-long-vowel/)、[`latin-spacing`](../../rules/latin-spacing/) の裏付けです。
+    `chaff.yaml` に `style: koyobun` と書くと、和文の一文を 60 字までとし、です・ますの混在と、語末の「ー」を省いた語を見ます。
 - <a id="gairaigo-1991"></a>**内閣告示（1991）** [bunka.go.jp](https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/gairai/honbun06.html)
   - 「外来語の表記」
   - 載った所：平成 3 年 内閣告示第 2 号。
