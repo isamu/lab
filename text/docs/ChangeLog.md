@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `compare` reads a Japanese quotation wrapped between two characters as the same quotation (#435)
+
+A line break between two wide characters (`系の` / `システム`) vanishes when Markdown is rendered, but `compare` read it as
+a space, so joining the lines of a Japanese quotation was reported as one quotation dropped and another added. Quotations
+and names are now keyed the way `chaff` already reads such breaks for its rules: a line break between wide characters is
+removed, any other white space is one space. The joined quotation is reported as written another way, like an English
+one, and the report shows it without a space that a reader never sees. A space actually written inside a Japanese
+quotation is still a different quotation.
+
 ### Japanese density messages say 1000 字, the unit they measure (#402)
 
 `proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in

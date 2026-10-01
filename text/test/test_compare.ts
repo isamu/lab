@@ -6,6 +6,8 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { readMarkdown } from "../packages/chaff/src/markdown-read.ts";
 import { extractFacts } from "../packages/chaff/src/compare/extract.ts";
 import { outcomeOf, type Outcome } from "../packages/chaff/src/compare/outcome.ts";
+import { unwrappedKey, unwrappedText } from "../packages/chaff/src/compare/unwrapped.ts";
+import { nameKey } from "../packages/chaff/src/compare/proper-nouns.ts";
 import type { AtomKind, Extraction } from "../packages/chaff/src/compare/atom.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { runCli } from "./cli-run.ts";
@@ -182,6 +184,21 @@ describe("what is read once, and what is not a fact", () => {
     assert.deepEqual(changes(compare(en, 'He said "keep the\nsame key" twice.', 'He said "keep the same key" twice.')).dropped, []);
   });
 
+  it("a Japanese quotation wrapped between two wide characters is the same quotation, written another way", () => {
+    const wrapped = changes(compare(ja, "依頼は「`mc-` 系の\nシステムスキルにしたい」でした。", "依頼は「`mc-` 系のシステムスキルにしたい」でした。"));
+    assert.deepEqual([wrapped.dropped, wrapped.added], [[], []]);
+    assert.deepEqual(wrapped.reformed, ["quote:「`mc-` 系の\nシステムスキルにしたい」→「`mc-` 系のシステムスキルにしたい」"]);
+  });
+
+  it("a line break next to a Latin letter reads as a space, so it is the same as a space", () => {
+    assert.deepEqual(changes(compare(ja, "彼は「MulmoClaude\nに入れる」と言った。", "彼は「MulmoClaude に入れる」と言った。")).dropped, []);
+  });
+
+  it("a space written inside a Japanese quotation is still another quotation", () => {
+    const spaced = changes(compare(ja, "依頼は「系の システムにしたい」でした。", "依頼は「系のシステムにしたい」でした。"));
+    assert.deepEqual([spaced.dropped, spaced.added], [["quote:「系の システムにしたい」"], ["quote:「系のシステムにしたい」"]]);
+  });
+
   it("a heading moved to another level is dropped at one level and added at the other", () => {
     const outcome = changes(compare(en, "# A\n\n## B\n\ntext\n", "# A\n\n### B\n\ntext\n"));
     assert.deepEqual([outcome.dropped, outcome.added], [["heading:B"], ["heading:B"]]);
@@ -223,6 +240,23 @@ describe("what is read once, and what is not a fact", () => {
 
   it("digits in code and URLs are not read again as numbers", () => {
     assert.deepEqual(kindsOf(en, "Run `sleep 30` and open https://example.com/2026/7.", "number"), []);
+  });
+});
+
+describe("unwrappedKey: a fact's text as one spelling", () => {
+  it("removes a line break between wide characters, and makes any other white space one space", () => {
+    assert.equal(unwrappedKey("系の\nシステム"), "系のシステム");
+    assert.equal(unwrappedKey("日本\n  銀行"), "日本銀行");
+    assert.equal(unwrappedKey("keep the\nsame key"), "keep the same key");
+    assert.equal(unwrappedKey("MulmoClaude\nに"), "MulmoClaude に");
+    assert.equal(unwrappedKey("系の  \nシステム"), "系の システム");
+    assert.equal(unwrappedKey("ＡＢＣ１２３"), "ABC123");
+    assert.equal(unwrappedKey(""), "");
+  });
+
+  it("a name wrapped between wide characters is the name written on one line", () => {
+    assert.equal(nameKey("日本\n銀行"), nameKey("日本銀行"));
+    assert.equal(unwrappedText("ＡＢ　系の\nシステム"), "ＡＢ 系のシステム");
   });
 });
 

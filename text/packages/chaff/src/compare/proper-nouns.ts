@@ -1,6 +1,7 @@
 import type { ProseDocument, Span, Token } from "../plugin.ts";
 import type { Atom } from "./atom.ts";
 import { overlapsAny, type SpanIndex } from "./spans.ts";
+import { unwrappedKey } from "./unwrapped.ts";
 
 const PROPER_NOUN = "PROPN";
 
@@ -43,7 +44,7 @@ export type NounInput = {
 };
 
 /** A name as one spelling: full-width letters and line breaks inside a name do not make another name. */
-export const nameKey = (written: string): string => written.normalize("NFKC").replace(/\s+/gu, " ");
+export const nameKey = (written: string): string => unwrappedKey(written);
 
 /** Whether the language package tagged parts of speech: without them, a document with sentences has no proper nouns to read. */
 export const readsProperNouns = (doc: ProseDocument): boolean => doc.sentences.length === 0 || doc.sentences.some((sentence) => sentence.tokens !== undefined);

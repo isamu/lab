@@ -2,6 +2,7 @@ import { QUOTATION_MARKS, quotedSpans } from "../quoted-span.ts";
 import type { Span } from "../plugin.ts";
 import type { Atom } from "./atom.ts";
 import { coversOffset, overlapsAny, spanIndex, type SpanIndex } from "./spans.ts";
+import { unwrappedKey } from "./unwrapped.ts";
 
 /** Where a reader looks, and how it says where it found something. */
 export type TextInput = { readonly text: string; readonly source: string; readonly lineOf: (offset: number) => number };
@@ -64,7 +65,7 @@ const paragraphsOf = (text: string): Span[] => {
 };
 
 /** What is quoted, as one spelling: line breaks and runs of spaces are how it was wrapped, not what it says. */
-const quoteKey = (inner: string): string => inner.normalize("NFKC").replace(/\s+/gu, " ").trim();
+const quoteKey = (inner: string): string => unwrappedKey(inner).trim();
 
 /** Quoted strings: 「」『』, “” and "". The key is what is inside; the marks are how it is written. */
 export const quotations = (input: TextInput): Atom[] =>
