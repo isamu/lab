@@ -16,7 +16,7 @@
 
 ## 直したこと
 
-テストでは `jest.useFakeTimers` と `setSystemTime` で時刻を固定し、ワークフローには `TZ=Asia/Tokyo` を足しました。本番のコードも、`Intl.DateTimeFormat` に `timeZone: "Asia/Tokyo"` を渡して日付の境目を決めるように変えています。テストだけ直しても、本番のサーバーが UTC で動けば同じずれが起きるからです。
+直したことは 3 つあります。テストでは `jest.useFakeTimers` と `setSystemTime` で時刻を固定し、ワークフローには `TZ=Asia/Tokyo` を足しました。本番のコードも、`Intl.DateTimeFormat` に `timeZone: "Asia/Tokyo"` を渡して日付の境目を決めるように変えています。テストだけ直しても、本番のサーバーが UTC で動けば同じずれが起きるからです。
 
 ## 結果
 
