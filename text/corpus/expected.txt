@@ -62,7 +62,7 @@ da-service-design-guidelines-2  agentless-passive 4, concrete-evidence-density 4
 dailymed-advil-otc-label  max-sentence-length 4, proper-noun-density 1, title-case-consistency 1, undefined-acronym 4
 denkiyagi-ryohi-kitei  heading-level-skip 1
 denkiyagi-shugyo-kisoku  fullwidth-alnum-consistency 1, hankaku-kana 1
-denpa-shinsei-riyo-kiyaku  latin-spacing 2, unbalanced-bracket 1
+denpa-shinsei-riyo-kiyaku  unbalanced-bracket 1
 docusaurus-admonitions-mdx  contraction-consistency 2, heading-echo 3, max-sentence-length 1, title-case-consistency 1
 dwango-nicolive-manifest-generator  latin-spacing 9, max-sentence-length 1, undefined-acronym 3
 ecfr-16-cfr-310-telemarketing  dangling-reference 4, heading-level-skip 5, max-sentence-length 1, title-case-consistency 2, unbalanced-bracket 2, undefined-acronym 7
