@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `closing-cliche` reads only the end of the last section (#413)
+
+- In a document without headings the whole text was one "last section", so 「簡単にまとめると、以下の三点です」 near the
+  top, or a host's 「いかがでしょうか」 in the middle of a transcript, was reported as the closing. A long last section had
+  the same problem. The rule now reads the last four paragraphs of the last section, headings or not, and never the
+  document's first paragraph. A list item is not a closing.
+- Why four and not only the last paragraph: in pre-2022 human Qiita articles a stock closing is often followed by a
+  remark, an update note or a sign-off (「いかがでしたでしょうか。」 → 感想 → 「それではよいお年を！」). Reading only the last
+  paragraph missed most of those; every finding that was really in the body sat further from the end than four
+  paragraphs.
+
 ### `doubled-word` (ja) no longer reports reduplication that is the right way to write (#412)
 
 On a set of real Japanese site articles, many of the findings were correct Japanese. lang-ja now marks these as
