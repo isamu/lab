@@ -394,6 +394,9 @@ describe("isKanaRepeat", () => {
 
   it("二つだけ、二字の語、仮名でない字、違う字、離れた字は重ね言葉にしない", () => {
     assert.deepEqual(kanaRepeatAt(wordsOf(PARTICLE("を"), PARTICLE("を"))), []);
+    assert.deepEqual(kanaRepeatAt(wordsOf(PARTICLE("を"), PARTICLE("を"), PARTICLE("を"))), []);
+    assert.deepEqual(kanaRepeatAt(wordsOf(PARTICLE("に"), PARTICLE("に"), PARTICLE("に"))), []);
+    assert.deepEqual(kanaRepeatAt(wordsOf(PARTICLE("ふ"), PARTICLE("ふ"), PARTICLE("ふ"))), [1, 2]);
     assert.deepEqual(kanaRepeatAt(wordsOf(PARTICLE("よ"), PARTICLE("よ"), PARTICLE("ね"))), []);
     assert.deepEqual(kanaRepeatAt(wordsOf(NOUN("はは"), NOUN("はは"), NOUN("はは"))), []);
     assert.deepEqual(kanaRepeatAt(wordsOf(NOUN("木"), NOUN("木"), NOUN("木"))), []);

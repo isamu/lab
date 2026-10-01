@@ -16,8 +16,9 @@ reduplication (UD `Echo=Rdp`), and the rule skips them:
   stance: a doubled two-kanji noun such as 確認確認 or 資料資料, which the rule used to report, now reads as reduplication.
 - **Katakana onomatopoeia**: a katakana word of two or three morae, with any long vowel only at its end, repeated
   (ムクムク, ブイブイ, ブスブス, ババババ, ブーブー).
-- **Laughter**: the same single kana three or more times, not attached to the word before it (ははは, あははは). Each
-  「ははは」 used to give two findings. A run attached to a word (資料ををを, 行ったたた) is still a slip.
+- **Laughter and one-kana onomatopoeia**: the same は-row hiragana or katakana three or more times, not attached to
+  the word before it (ははは, あははは, ふふふ, ドドド). Each 「ははは」 used to give two findings. A run of a particle
+  (ををを, よよよ) or a run attached to a word (私ははは, 行ったたた) is still a slip.
 - **Set phrases** in the lexicon `doubled-word`: などなど and あるある, and 知ったかか (知ったか is not in the dictionary,
   so its last か looked doubled).
 

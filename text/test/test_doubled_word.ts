@@ -426,6 +426,9 @@ describe("doubled-word — 日本語", () => {
     assert.deepEqual(findingsOf("資料ををを送ります。", ja, "ja"), ["1:4 をを", "1:5 をを"]);
     assert.deepEqual(findingsOf("世の中ががが変わります。", ja, "ja"), ["1:5 がが", "1:6 がが"]);
     assert.deepEqual(findingsOf("昨日行ったたたので疲れた。", ja, "ja"), ["1:6 たた", "1:7 たた"]);
+    assert.deepEqual(findingsOf("ををを送ります。", ja, "ja"), ["1:2 をを", "1:3 をを"]);
+    assert.deepEqual(findingsOf("よよよね。", ja, "ja"), ["1:2 よよ", "1:3 よよ"]);
+    assert.deepEqual(findingsOf("私ははは元気です。", ja, "ja"), ["1:3 はは", "1:4 はは"]);
   });
 
   it("valid: 重ね言葉と繰り返し記号は数えない", () => {
