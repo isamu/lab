@@ -86,12 +86,16 @@ describe("品詞の取れない段落がある文書", () => {
     );
   });
 
-  it("NUL を含む文書を読み、品詞の要る rule も動かす", () => {
+  it("NUL を含む文書を読み、品詞の要る rule も動かし、NUL そのものは見えない字として指す", () => {
     const source = "日本語の文です。\0ここに NUL があります。次の文です。\n";
     const result = runRules(buildDocument("nul.md", source, ja), loadRules("ja"), {}, true, "business/report");
     assert.equal(
       result.skipped.find((entry) => entry.rule === POS_RULE),
       undefined,
+    );
+    assert.deepEqual(
+      result.findings.filter((finding) => finding.rule === "invisible-character").map((finding) => finding.column),
+      [source.indexOf("\0") + 1],
     );
     assert.ok((tokenize("前\0後") ?? []).length > 0);
   });
