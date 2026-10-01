@@ -114,10 +114,10 @@ $ npx chaffjs explain max-sentence-length
 
   How to fix: Split it in two at the conjunction.
 
-  Levels (unit: words):
-    strict   18
-  → normal   25
-    relaxed  35
+  Levels:
+    strict   up to 18 words in a sentence
+  → normal   up to 25 words in a sentence
+    relaxed  up to 35 words in a sentence
     off      not checked
 
   These numbers are for the default genre. business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / docs/glossary / academic have numbers of their own.
@@ -339,12 +339,14 @@ To let an intended cut through, name its kind with `--allow-dropped`; for an int
 ```bash
 npx chaffjs compare before.md after.md --allow-dropped url        # the URL may go
 npx chaffjs compare before.md after.md --allow-dropped url,quote  # several kinds, with commas
+npx chaffjs compare before.md after.md --distinct                 # a fact counts as kept if it is stated once
 npx chaffjs compare before.md after.md --compact                  # one line per fact
 npx chaffjs compare before.md after.md --json                     # for an AI to act on
 ```
 
 The kinds are `number`, `date`, `time`, `url`, `code`, `name`, `quote`, `heading`, `reference` and `footnote`.
 `--json` lists every dropped and added fact with its line, so it can go straight back to the AI that did the rewrite.
+By default a fact is counted as often as it is stated, so cutting a summary that repeated the body reports each repeat as dropped. With `--distinct`, a fact counts as kept when the other document states it at least once; a fact stated nowhere in it is still dropped or added.
 
 ## Listing the facts before a rewrite
 

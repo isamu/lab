@@ -82,7 +82,8 @@ const UNREAD_EN: Readonly<Record<UnreadReason, (kind: AtomKind) => string>> = {
 
 export const COMPARE_TEXT: Texts<CompareText> = {
   ja: {
-    usage: "使い方: chaff compare <書き換える前> <書き換えた後> [--compact | --json] [--allow-dropped <種類>] [--allow-added <種類>] [--language ja|en|…]",
+    usage:
+      "使い方: chaff compare <書き換える前> <書き換えた後> [--compact | --json] [--allow-dropped <種類>] [--allow-added <種類>] [--distinct] [--language ja|en|…]",
     unknownKind: (kind, kinds) => `知らない種類です: ${kind}（使えるのは ${kinds}）`,
     kinds: KINDS_JA,
     kind: KINDS_JA,
@@ -100,7 +101,7 @@ export const COMPARE_TEXT: Texts<CompareText> = {
     tally: (dropped, added, reformed) => `落ちた ${String(dropped)} 件、足された ${String(added)} 件、書き方だけ ${String(reformed)} 件`,
   },
   en: {
-    usage: "usage: chaff compare <before> <after> [--compact | --json] [--allow-dropped <kind>] [--allow-added <kind>] [--language ja|en|…]",
+    usage: "usage: chaff compare <before> <after> [--compact | --json] [--allow-dropped <kind>] [--allow-added <kind>] [--distinct] [--language ja|en|…]",
     unknownKind: (kind, kinds) => `Unknown kind: ${kind} (the kinds are ${kinds})`,
     kinds: KINDS_EN,
     kind: KIND_EN,
