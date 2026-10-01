@@ -7,10 +7,10 @@ This page shows how to use what it finds to bring a document back to a human voi
 
 ## What chaff looks for
 
-The rules for these shapes are all experimental. Add `--experimental` to run them.
+Most of these rules are experimental and run with `--experimental`; `bold-density` and `closing-cliche` run without it.
 
 ```bash
-npx chaffjs article.md --experimental    also run the experimental rules
+npx chaffjs article.md --experimental    # also run the experimental rules
 ```
 
 | Rule | What it finds |
@@ -26,7 +26,7 @@ npx chaffjs article.md --experimental    also run the experimental rules
 | `no-em-dash` | Too many em dashes |
 | `sentence-rhythm` | Sentences that are all about the same length |
 | `rule-of-three` | Lists that almost all have three items |
-| `ai-generated-composite` | Three or more of the above in one document |
+| `ai-generated-composite` | Three or more of these in one document: `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity` (`bold-density` is not counted) |
 
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.

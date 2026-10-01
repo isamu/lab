@@ -103,7 +103,7 @@ committing `chaff.yaml`. The guide page "Adding a rule" covers each way and how 
 
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
 `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `assistant-residue`, and the signals
-`ai-generated-composite` reads). They are experimental: run with `--experimental`. None of them says the text was
+`ai-generated-composite` reads). Most are experimental: run with `--experimental`. None of them says the text was
 generated. When asked to make a text sound less generated, pick one of two modes and say which.
 
 **Light** (only the flagged spots), when the content and structure are fine:

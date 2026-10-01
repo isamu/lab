@@ -7,10 +7,10 @@ chaff はこの形を機械で見つけますが、文章は書き換えませ�
 
 ## chaff が見る AI っぽさ
 
-AI っぽさのルールは、どれも試験中です。`--experimental` を付けると動きます。
+AI っぽさのルールの多くは試験中で、`--experimental` を付けると動きます。`bold-density` と `closing-cliche` は付けなくても動きます。
 
 ```bash
-npx chaffjs article.md --experimental    試験中のルールも動かす
+npx chaffjs article.md --experimental    # 試験中のルールも動かす
 ```
 
 | ルール | 見つけるもの |
@@ -26,7 +26,7 @@ npx chaffjs article.md --experimental    試験中のルールも動かす
 | `no-em-dash` | ダッシュ（——）の多さ |
 | `sentence-rhythm` | 文の長さが揃いすぎている所 |
 | `rule-of-three` | 箇条書きがどれも 3 項目の所 |
-| `ai-generated-composite` | 上の特徴が 3 つ以上そろった文書 |
+| `ai-generated-composite` | 次の特徴のうち 3 つ以上がそろった文書：`ai-tell`、`contrast-framing`、`stock-transition`、`announcing-opener`、`colon-lead-in`、`assistant-residue`、`closing-cliche`、`padded-intro`、`no-em-dash`、`sentence-rhythm`、`rule-of-three`、`section-length-uniformity`（`bold-density` は数えません） |
 
 どのルールも、それだけで「AI が書いた」とは言いません。人も書く形です。
 重なったときに、読み返す場所の目印になります。
