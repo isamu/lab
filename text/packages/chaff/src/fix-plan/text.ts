@@ -3,6 +3,7 @@ import type { FixMode, ModeReason } from "./mode.ts";
 
 export type FixPlanText = {
   readonly usage: string;
+  readonly notFound: (path: string) => string;
   readonly title: (path: string) => string;
   readonly about: (language: string, genre: string) => string;
   readonly intro: string;
@@ -34,7 +35,8 @@ export type FixPlanText = {
 
 export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
   ja: {
-    usage: "使い方: chaff fix-plan <file> [--experimental] [--genre <ジャンル>] [--json] [--language ja|en|…]",
+    usage: "使い方: chaff fix-plan <file> [--experimental] [--genre <ジャンル>] [--json]",
+    notFound: (path) => `${path} がありません。`,
     title: (path) => `直す計画: ${path}`,
     about: (language, genre) => `言語 ${language}、ジャンル ${genre}`,
     intro:
@@ -81,7 +83,8 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
       "1 つめは書き直した文書の指摘、2 つめは事実が落ちていないか・足されていないか、3 つめは構成の変化です。数は chaff の出力から取り、形容詞で言わないでください。",
   },
   en: {
-    usage: "usage: chaff fix-plan <file> [--experimental] [--genre <genre>] [--json] [--language ja|en|…]",
+    usage: "usage: chaff fix-plan <file> [--experimental] [--genre <genre>] [--json]",
+    notFound: (path) => `${path} does not exist.`,
     title: (path) => `Fix plan: ${path}`,
     about: (language, genre) => `language ${language}, genre ${genre}`,
     intro:

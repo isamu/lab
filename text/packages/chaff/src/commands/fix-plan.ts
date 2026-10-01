@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { outlineOf } from "../outline/shape.ts";
 import { buildFixPlan } from "../fix-plan/plan.ts";
 import { renderFixPlanJson, renderFixPlanMarkdown } from "../fix-plan/render.ts";
@@ -27,9 +28,14 @@ export const runFixPlan = async (targets: readonly string[], argv: readonly stri
     console.error(FIX_PLAN_TEXT[context.ui ?? "ja"].usage);
     return 1;
   }
-  const prose = await readDocument(path, argv, context, false);
-  if (prose === undefined) return 1;
+  if (!existsSync(path)) {
+    console.error(FIX_PLAN_TEXT[context.ui ?? "ja"].notFound(path));
+    return 1;
+  }
   const checked = await context.check(path);
+  // The outline is read in the language lint chose, so the plan's findings and its outline describe one reading.
+  const prose = await readDocument(path, ["fix-plan", "--language", checked.language, ...argv.slice(1)], context, false);
+  if (prose === undefined) return 1;
   const plan = buildFixPlan({
     path,
     language: checked.language,

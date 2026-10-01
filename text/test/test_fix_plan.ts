@@ -185,7 +185,7 @@ describe("fix-plan — the plan for a document", () => {
     const run = await runCli({ "en-before.md": fixture("en-before.md") }, ["fix-plan", "en-before.md"]);
     assert.equal(run.code, 0, run.err);
     assert.match(run.out, /## Rules that did not run\n\nThe experimental rules did not run/u);
-    assert.doesNotMatch(run.out, /`ai-tell`/u);
+    assert.match(run.out, /\n- `ai-tell`: /u, "each rewrite rule that did not run is still named");
   });
 
   it("does not list a rule written for another language as one that did not run", async () => {
@@ -205,6 +205,18 @@ describe("fix-plan — the plan for a document", () => {
     assert.equal(first.out, second.out);
     assert.match(first.out, /^# 直す計画: ja-before\.md\n/u);
     assert.match(first.out, /\n## 勧める直し方: 全面書き直し（Full）\n/u);
+  });
+
+  it("reads the outline in the language lint chose, whatever --language says", async () => {
+    const run = await runCli({ "en-before.md": fixture("en-before.md") }, ["fix-plan", "en-before.md", "--language", "ja", "--experimental", "--json"]);
+    assert.equal(run.code, 0, run.err);
+    assert.match(run.out, /"unit": "word"/u);
+  });
+
+  it("says a missing file is missing", async () => {
+    const run = await runCli({}, ["fix-plan", "nowhere.md"]);
+    assert.equal(run.code, 1);
+    assert.match(run.err, /nowhere\.md/u);
   });
 
   it("asks for exactly one file", async () => {

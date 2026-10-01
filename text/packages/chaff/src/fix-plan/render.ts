@@ -64,7 +64,7 @@ const signalLines = (plan: FixPlan, text: FixPlanText): string[] => {
 
 const notRunLines = (plan: FixPlan, text: FixPlanText): string[] => {
   const note = plan.experimental ? [] : [text.notExperimental];
-  const listed = plan.notRun.filter((skipped) => plan.experimental || skipped.offUntilExperimental !== true);
+  const listed = plan.notRun;
   if (note.length === 0 && listed.length === 0) return [];
   return [
     "",
