@@ -72,7 +72,7 @@ const lexiconsByLanguage = (plugins: readonly ParsedPlugin[]): Record<string, Re
 };
 
 /** Everything chaff.yaml names in code, loaded. */
-export const loadExtensions = async (config: Config): Promise<Extensions> => {
+const loadExtensions = async (config: Config): Promise<Extensions> => {
   const modules = await loadModuleRules(config);
   const { plugins, problems: pluginProblems } = await loadPlugins(config);
   return {
