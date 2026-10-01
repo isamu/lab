@@ -6,7 +6,7 @@ import { quantities } from "../packages/lang-ja/src/quantities.ts";
 
 // 解析器（kuromoji）は、対になっていないサロゲートを渡すと例外で落ちる。文字列を途中で切ると、絵文字の片割れが残る。
 
-describe("wellFormed: 片割れのサロゲートだけを置き換える", () => {
+describe("wellFormed: 片割れのサロゲートと NUL だけを置き換える", () => {
   const cases: readonly (readonly [string, string])[] = [
     ["", ""],
     ["abc", "abc"],
@@ -21,6 +21,9 @@ describe("wellFormed: 片割れのサロゲートだけを置き換える", () =
     ["😀\uD83D", "😀\uFFFD"],
     ["\uD83D😀", "\uFFFD😀"],
     ["\uD83D\uD83D\uDE00", "\uFFFD😀"],
+    ["\0", "\uFFFD"],
+    ["前\0後", "前\uFFFD後"],
+    ["\u0001\u007F\t", "\u0001\u007F\t"],
   ];
   cases.forEach(([input, expected]) => {
     it(JSON.stringify(input), () => {

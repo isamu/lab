@@ -15,6 +15,7 @@ import { bodySectionOf } from "./body-section.ts";
 import { optionValues, settleOptions, type OptionLayer } from "./rule-options.ts";
 import { byPosition } from "./finding-order.ts";
 import { PatternTimeout } from "./custom/bounded-match.ts";
+import { tagCoverage } from "./tag-coverage.ts";
 
 export type Skipped = {
   readonly rule: string;
@@ -109,9 +110,13 @@ const has = (capabilities: ProseDocument["capabilities"], need: string): boolean
  *
  * `capabilities.pos: true` と言いながら token を返さないアダプタでも、rule は
  * `sentence.tokens ?? []` を見るので**例外にならず、指摘 0 件で終わる**。
- * 0 件は「問題なし」と見分けがつかない。
+ * 0 件は「問題なし」と見分けがつかない。一部の文にだけ token が無いとき（解析器が読めなかった段落）も、その段落の 0 件が同じく保証に見える。
  */
-const hasTokens = (doc: ProseDocument): boolean => doc.sentences.length === 0 || doc.sentences.some((sentence) => sentence.tokens !== undefined);
+const tagReason = (doc: ProseDocument): string | undefined => {
+  const coverage = tagCoverage(doc.sentences);
+  if (coverage === "all") return undefined;
+  return coverage === "none" ? reasonsFor(doc).noTags : reasonsFor(doc).unreadTags;
+};
 
 /** 要求を満たさない rule は動かせない。満たさないまま動かすと「指摘 0 件」が保証に見える。 */
 const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
@@ -126,7 +131,7 @@ const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => 
  * 先に聞くと、止めている rule まで「アダプタが品詞を返さなかった」と、違う理由で出る。
  */
 const untagged = (rule: RuleDefinition, doc: ProseDocument): string | undefined =>
-  rule.requires.some((need) => need === "pos" || need === "lemma") && !hasTokens(doc) ? reasonsFor(doc).noTags : undefined;
+  rule.requires.some((need) => need === "pos" || need === "lemma") ? tagReason(doc) : undefined;
 
 const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] =>
   rules.filter((rule) => rule.use_for.some((target) => genre.startsWith(target)));
