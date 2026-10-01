@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
+
+Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted
+by line, then column, in every output (friendly, `--compact`, SARIF, `chaff test`). In `--compact`, the
+`line:column` column widens to the longest position in the document plus one space, so `1070:131` no longer runs into
+`warning`; a document whose positions are all short prints exactly as before.
+
 ### New rules: notation that should agree with itself, double negatives and ら抜き言葉 (#170)
 
 Experimental rules. Each finding in the corpus was read before the rule was added.
