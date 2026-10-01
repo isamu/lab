@@ -1,0 +1,94 @@
+id: requirement-modal
+layer: L2
+status: experimental
+how_to_find: requirement-modal
+# 何を見るかは options で決める。決めなければ何も見ない。語は言語ごとの語彙表 requirement-modal-<standard> と requirement-modal-must にある。
+uses: [pos]
+severity: warning
+
+name:
+  ja: 規定の文末が、決めた書き方と違う
+  en: A provision's verb form is not the one the house rule uses
+
+why:
+  ja: 規格や規程は、要求・推奨・許容を文末の形で書き分けます。読み手は文末で、守らなければならないのか、望ましいだけなのか、してもよいのかを読み取ります。JIS Z 8301:2019 は、推奨に「…すべきである」を、許容と可能性に文末の「…できる」を使わないと決め、「…することが望ましい」「…してもよい」「…可能である」を使います。英語では、米国連邦政府の Plain Language Guidelines が、義務には曖昧な "shall" ではなく "must" を使うとしています。どちらもチームが選ぶ決まりなので、options で決めたときだけ見ます。
+  en: 'A standard or a set of rules tells a requirement from a recommendation and a permission by the form of the verb, and the reader takes from it whether something must be done, should be done or may be done. JIS Z 8301:2019 does not use 「…すべきである」 for a recommendation or a closing 「…できる」 for a permission or a possibility; it uses 「…することが望ましい」, 「…してもよい」 and 「…可能である」. In English, the Federal Plain Language Guidelines use "must" for an obligation instead of "shall", which readers and courts take in more than one way. Both are a team''s choice, so the rule checks only what options turn on.'
+
+message:
+  ja: 「{matched}」は使わない形です。「{preferred}」と書きます
+  en: 'Write "{preferred}" instead of "{matched}"'
+
+how_to_fix:
+  ja: 文が言っていることが要求・推奨・許容・可能性のどれかを決めて、その形に直してください。推奨なら「…することが望ましい」、許容なら「…してもよい」、可能性なら「…可能である」「…場合がある」です。
+  en: 'Decide whether the sentence states an obligation and write "must" ("must not" for a prohibition). Keep "shall" only where a law you quote uses it.'
+
+placeholders:
+  matched:
+    ja: 見つけた形
+    en: the form found
+  preferred:
+    ja: 使う形
+    en: the form to use
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+options:
+  standard:
+    kind: choice
+    default: none
+    about:
+      ja: 規定の文末を、どの規格の決まりで見るか（日本語）
+      en: Which standard's verbal forms a Japanese provision is checked against
+    choices:
+      none:
+        ja: 見ない
+        en: Not checked
+      jis-z8301-2019:
+        ja: JIS Z 8301:2019 の 7.3〜7.5。文末の「すべきである」「すべきでない」「できる」「できない」を指す
+        en: "JIS Z 8301:2019, 7.3 to 7.5: a closing すべきである, すべきでない, できる or できない"
+  shall:
+    kind: choice
+    default: allow
+    about:
+      ja: 英語の "shall" を見るか
+      en: Whether "shall" is checked in English
+    choices:
+      allow:
+        ja: 見ない
+        en: Not checked
+      must:
+        ja: '"shall" を指し、"must" と書かせる（Federal Plain Language Guidelines）'
+        en: 'Point at "shall" and ask for "must" (Federal Plain Language Guidelines)'
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+sources: [jis-z8301-2019, plain-2011]
+
+group: team
+summary:
+  ja: 規格・規程の文末が、チームの選んだ決まり（JIS Z 8301:2019 など）と違う所。options で決めたときだけ見ます
+  en: A provision's verb form that the house rule the team picked does not use ("shall" under the Federal Plain Language Guidelines); checked only when options pick one
+example:
+  ja:
+    before: |
+      試験の前に、試料を乾燥させるべきである。
+    after: |
+      試験の前に、試料を乾燥させることが望ましい。
+    config:
+      genre: technical/spec
+      options:
+        requirement-modal:
+          standard: jis-z8301-2019
+  en:
+    before: |
+      The supplier shall deliver the goods within 30 days.
+    after: |
+      The supplier must deliver the goods within 30 days.
+    config:
+      genre: technical/spec
+      options:
+        requirement-modal:
+          shall: must
+
+not_flagged:
+  ja: options で決めなければ何も見ません。「できる」は文の終わりだけを見ます（JIS は能力を示す「できる」を文の途中で使うのを認めています）。
+  en: Nothing is checked until options pick a standard. In Japanese, できる is checked only at the end of a sentence, since JIS allows it mid-sentence for an ability.

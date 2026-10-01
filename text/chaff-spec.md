@@ -1522,6 +1522,7 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 | `ieice` | `katakana-long-vowel`: `drop`、3 音 | 和文論文誌 投稿のしおり 2.4 (b)（用語は学術用語集 電気工学編）。(d) の句読点は rule が無いので書かない |
 | `jis-z8301-2011` | `katakana-long-vowel`: `drop`、3 音 | JIS Z 8301:2011 附属書 G 表 G.3。2019 年版は外来語の表記によるとした |
 | `bunkacho` | `katakana-long-vowel`: `keep` | 外来語の表記 留意事項その 2 Ⅲ 3 注 3 |
+| `jis-z8301-2019` | `requirement-modal`: `standard: jis-z8301-2019` | JIS Z 8301:2019 7.3〜7.5（JSA「JIS 原案作成のための手引」資料 7）。外来語の長音は業界に任せている（同 Q&A 6-14）ので決めない |
 | `koyobun` | `max-sentence-length`: 和文 60 字（`limits`）、`no-mixed-desumasu`、`katakana-long-vowel`: `keep` | 公用文作成の考え方（2022）Ⅲ－3 ア（50～60 字ほどで見直す）、Ⅲ－1 イ、Ⅰ－3 エ。英文の数は言っていないので変えない |
 
 ### 18.7 チームのルール（`custom_rules:`）

@@ -29,10 +29,10 @@ describe("house styles", () => {
     const rules = loadRules("ja");
     const optionsByRule = Object.fromEntries(rules.map((rule) => [rule.id, rule.options ?? {}]));
 
-    it("are bunkacho, ieice, jis-z8301-2011 and koyobun", () => {
+    it("are bunkacho, ieice, jis-z8301-2011, jis-z8301-2019 and koyobun", () => {
       assert.deepEqual(
         styles.map((style) => style.id),
-        ["bunkacho", "ieice", "jis-z8301-2011", "koyobun"],
+        ["bunkacho", "ieice", "jis-z8301-2011", "jis-z8301-2019", "koyobun"],
       );
     });
 
@@ -246,7 +246,7 @@ describe("house styles", () => {
       const run = await runCli({ "chaff.yaml": "language: ja\nstyle: jis-z8301\n", "a.md": REPORT }, ["a.md"]);
       assert.equal(run.code, 1);
       assert.match(run.err, /jis-z8301/u);
-      assert.match(run.err, /bunkacho, ieice, jis-z8301-2011, koyobun/u);
+      assert.match(run.err, /bunkacho, ieice, jis-z8301-2011, jis-z8301-2019, koyobun/u);
     });
 
     it("explain and rules --json say the setting came from the style", async () => {
