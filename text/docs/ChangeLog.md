@@ -4,6 +4,24 @@ Newest first.
 
 ## Unreleased
 
+### `doubled-word` (ja) no longer reports reduplication that is the right way to write (#412)
+
+On a set of real Japanese site articles, many of the findings were correct Japanese. lang-ja now marks these as
+reduplication (UD `Echo=Rdp`), and the rule skips them:
+
+- **A whole content word written twice**: a noun (個人個人, 一行一行, 駄目駄目, それそれ, もちもち) or an adjective in
+  its plain form (えらいえらい, 若い若い). A slip is a particle or an auxiliary written twice (をを, にに, たた, がが, よよ)
+  or a bound word (いるいる, さんさん), and those are still reported. A one-kanji noun (法法, 金金), a loanword
+  (ユーザーユーザー, データデータ) and a run of three (資料資料資料) are still reported too. This is a change of
+  stance: a doubled two-kanji noun such as 確認確認 or 資料資料, which the rule used to report, now reads as reduplication.
+- **Katakana onomatopoeia**: a katakana word of two or three morae, with any long vowel only at its end, repeated
+  (ムクムク, ブイブイ, ブスブス, ババババ, ブーブー).
+- **Laughter**: the same single kana three or more times (ははは, あははは). Each 「ははは」 used to give two findings.
+- **Set phrases** in the lexicon `doubled-word`: などなど and あるある, and 知ったかか (知ったか is not in the dictionary,
+  so its last か looked doubled).
+
+The rule's `why` and `not_flagged` now describe what it actually skips.
+
 ### New rules: invisible characters, half-width katakana and a space before punctuation (#170)
 
 Experimental rules for single characters a paste or an edit leaves behind. Each finding in the corpus was read before

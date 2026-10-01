@@ -4,6 +4,8 @@ import {
   distributiveVocabulary,
   isInflectedEcho,
   isKanaEcho,
+  isKanaRepeat,
+  isWholeWordEcho,
   iterationMarkReading,
   markReduplication,
   type Distributive,
@@ -329,5 +331,79 @@ describe("isKanaEcho", () => {
     ];
     assert.deepEqual(kanaEchoAt(apart), []);
     assert.deepEqual(kanaEchoAt([]), []);
+  });
+});
+
+const wholeEchoAt = (words: readonly Inflection[]): number[] => words.flatMap((_, index) => (isWholeWordEcho(words, index) ? [index] : []));
+
+const kanaRepeatAt = (words: readonly Inflection[]): number[] => words.flatMap((_, index) => (isKanaRepeat(words, index) ? [index] : []));
+
+const NOUN = (surface: string, detail = "一般"): Word => [surface, "名詞", detail, "*"];
+const PLAIN_ADJECTIVE = (surface: string): Word => [surface, "形容詞", "自立", "基本形"];
+const PARTICLE = (surface: string): Word => [surface, "助詞", "係助詞", "*"];
+
+describe("isWholeWordEcho", () => {
+  it("内容語の名詞・言い切りの形容詞を丸ごと重ねれば、二つ目が重ね言葉", () => {
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("個人"), NOUN("個人"), PARTICLE("の"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("それ", "代名詞"), NOUN("それ", "代名詞"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("駄目", "形容動詞語幹"), NOUN("駄目", "形容動詞語幹"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("好き", "形容動詞語幹"), NOUN("好き", "接尾"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(PLAIN_ADJECTIVE("若い"), PLAIN_ADJECTIVE("若い"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ムク"), NOUN("ムク"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ブー"), NOUN("ブー"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ゴロン"), NOUN("ゴロン"))), [1]);
+  });
+
+  it("付く語・数・一字の語・外来語・三つ目・形容詞の続く形・動詞は重ね言葉にしない", () => {
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("さん", "接尾"), NOUN("さん", "接尾"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("こと", "非自立"), NOUN("こと", "非自立"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("一", "数"), NOUN("一", "数"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("法"), NOUN("法"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ユーザー"), NOUN("ユーザー"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("データ"), NOUN("データ"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("ライブラリ"), NOUN("ライブラリ"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("アイテム"), NOUN("アイテム"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("二十", "数"), NOUN("二十", "数"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("かけ"), ["かけ", "動詞", "自立", "連用形"])), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("早め"), NOUN("早め"), NOUN("早め"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(["若かっ", "形容詞", "自立", "連用タ接続"], ["若かっ", "形容詞", "自立", "連用タ接続"])), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(PLAIN_ADJECTIVE("若い"), NOUN("若い"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(["できる", "動詞", "自立", "基本形"], ["できる", "動詞", "自立", "基本形"])), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("資料"), NOUN("会議"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(PARTICLE("を"), PARTICLE("を"))), []);
+  });
+
+  it("離れた二語、先頭の語、空の並び", () => {
+    const apart: Inflection[] = [
+      { surface: "個人", pos: "名詞", detail: "一般", form: "*", conjugation: "*", start: 0 },
+      { surface: "個人", pos: "名詞", detail: "一般", form: "*", conjugation: "*", start: 3 },
+    ];
+    assert.deepEqual(wholeEchoAt(apart), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("個人"))), []);
+    assert.deepEqual(wholeEchoAt([]), []);
+    assert.equal(isWholeWordEcho([], -1), false);
+  });
+});
+
+describe("isKanaRepeat", () => {
+  it("同じ一字の仮名が三つ以上接して続けば、二つ目から後ろが重ね言葉（ははは・あははは・ババババ）", () => {
+    assert.deepEqual(kanaRepeatAt(wordsOf(PARTICLE("は"), PARTICLE("は"), PARTICLE("は"))), [1, 2]);
+    assert.deepEqual(kanaRepeatAt(wordsOf(["あ", "フィラー", "*", "*"], PARTICLE("は"), PARTICLE("は"), PARTICLE("は"), ["、", "記号", "読点", "*"])), [2, 3]);
+    assert.deepEqual(kanaRepeatAt(wordsOf(NOUN("バ"), NOUN("バ"), NOUN("バ"), NOUN("バ"))), [1, 2, 3]);
+  });
+
+  it("二つだけ、二字の語、仮名でない字、違う字、離れた字は重ね言葉にしない", () => {
+    assert.deepEqual(kanaRepeatAt(wordsOf(PARTICLE("を"), PARTICLE("を"))), []);
+    assert.deepEqual(kanaRepeatAt(wordsOf(PARTICLE("よ"), PARTICLE("よ"), PARTICLE("ね"))), []);
+    assert.deepEqual(kanaRepeatAt(wordsOf(NOUN("はは"), NOUN("はは"), NOUN("はは"))), []);
+    assert.deepEqual(kanaRepeatAt(wordsOf(NOUN("木"), NOUN("木"), NOUN("木"))), []);
+    assert.deepEqual(kanaRepeatAt(wordsOf(["a", "名詞", "一般", "*"], ["a", "名詞", "一般", "*"], ["a", "名詞", "一般", "*"])), []);
+    const apart: Inflection[] = [
+      { surface: "は", pos: "助詞", detail: "係助詞", form: "*", conjugation: "*", start: 0 },
+      { surface: "は", pos: "助詞", detail: "係助詞", form: "*", conjugation: "*", start: 1 },
+      { surface: "は", pos: "助詞", detail: "係助詞", form: "*", conjugation: "*", start: 3 },
+    ];
+    assert.deepEqual(kanaRepeatAt(apart), []);
+    assert.deepEqual(kanaRepeatAt([]), []);
   });
 });
