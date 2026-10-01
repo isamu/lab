@@ -24,6 +24,7 @@ import { MARKUP_MUTATIONS } from "./bench-mutations-markup.ts";
 import { MARK_MUTATIONS } from "./bench-mutations-marks.ts";
 import { FACT_MUTATIONS } from "./bench-mutations-facts.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
+import { CHARACTER_MUTATIONS } from "./bench-mutations-characters.ts";
 
 // --- date-weekday-mismatch ---
 
@@ -377,4 +378,5 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "long-vowel-dropped", rule: "katakana-long-vowel", languages: ["ja"], plant: dropOneLongVowel },
   ...MARKUP_MUTATIONS,
   ...MARK_MUTATIONS,
+  ...CHARACTER_MUTATIONS,
 ];

@@ -1,0 +1,41 @@
+id: hankaku-kana
+layer: L1
+status: experimental
+how_to_find: hankaku-kana
+languages: [ja]
+severity: warning
+
+name:
+  ja: 半角の片仮名がある
+  en: Half-width katakana
+
+why:
+  ja: 「ｱｲｳ」のような半角の片仮名は、古い機械やシステムから貼り付けたときに残る書き方です。全角の「アイウ」と同じ語でも検索で別の語になり、読み上げや字幅もそろいません。半角の句読点・鉤括弧・中黒（｡｢｣､･）も同じです。コードとリンクの中、鉤括弧や引用符で引いた名前（画面に出る表示をそのまま引いたもの）は数えません。
+  en: Half-width katakana such as "ｱｲｳ" is left over from text pasted out of an old system. It is the same word as the full-width "アイウ" but a search treats it as a different one, and a screen reader and the character widths do not match. Half-width Japanese punctuation, brackets and the middle dot (｡｢｣､･) are the same. Code, link text and a name quoted in brackets or quotation marks (a label copied from a screen) are not counted.
+
+message:
+  ja: 半角の片仮名「{kana}」があります（全角は「{fullwidth}」）
+  en: 'Half-width katakana "{kana}" (full-width: "{fullwidth}")'
+
+how_to_fix:
+  ja: 全角の片仮名に直してください。システムの表示をそのまま引くなら、鉤括弧で囲んでください。
+  en: Write it in full-width katakana. If it quotes a system's display as it is, put it in brackets.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「ｱｲｳ」のような半角の片仮名と、半角の句読点・鉤括弧・中黒
+  en: Half-width katakana such as "ｱｲｳ", and half-width Japanese punctuation
+example:
+  ja:
+    before: |
+      申込書はﾒｰﾙで送ってください。
+    after: |
+      申込書はメールで送ってください。
+
+not_flagged:
+  ja: コードとリンクの中、鉤括弧や引用符で引いた名前（「ｶﾅ表示」のような画面の表示）は数えません。
+  en: Code, link text and a name quoted in brackets or quotation marks (a screen label such as 「ｶﾅ表示」) are not counted.
