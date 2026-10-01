@@ -4,6 +4,13 @@ Newest first.
 
 ## Unreleased
 
+### `closing-cliche` reads only the last paragraph of the last section (#413)
+
+- In a document without headings the whole text was one "last section", so 「簡単にまとめると、以下の三点です」 near the
+  top, or a host's 「いかがでしょうか」 in the middle of a transcript, was reported as the closing. A long last section had
+  the same problem. The rule now reads only the last paragraph of the last section, headings or not. A list item is not
+  a closing; when the last section ends with a list, the paragraph before it is.
+
 ### New rules: notation that should agree with itself, double negatives and ら抜き言葉 (#170)
 
 Experimental rules. Each finding in the corpus was read before the rule was added.

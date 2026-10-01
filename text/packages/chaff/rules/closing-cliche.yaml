@@ -57,8 +57,8 @@ example:
       Changing one line of the settings made the build twice as fast. Next, we will try running the tests in parallel.
 
 not_flagged:
-  ja: 最後の節だけを見ます。本文の途中の「まとめると」は普通のつなぎなので指しません。
-  en: Only the last section is checked; "to sum up" in the middle of the text is an ordinary link and is not reported.
+  ja: 最後の節の、さらに最後の段落だけを見ます。見出しの無い文書でも同じです。本文の途中や冒頭の「まとめると」は普通のつなぎなので指しません。箇条書きの中も見ません。
+  en: Only the last paragraph of the last section is checked, with or without headings; "to sum up" earlier in the text is an ordinary link and is not reported. List items are not checked.
 level_meaning:
   ja: 当てはまる結びが {limit} 箇所あれば指摘
   en: reported once there are {limit}
