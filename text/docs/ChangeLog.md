@@ -91,8 +91,11 @@ reduplication (UD `Echo=Rdp`), and the rule skips them:
 - **A whole content word written twice**: a noun (個人個人, 一行一行, 駄目駄目, それそれ, もちもち) or an adjective in
   its plain form (えらいえらい, 若い若い). A slip is a particle or an auxiliary written twice (をを, にに, たた, がが, よよ)
   or a bound word (いるいる, さんさん), and those are still reported. A one-kanji noun (法法, 金金), a loanword
-  (ユーザーユーザー, データデータ) and a run of three (資料資料資料) are still reported too. This is a change of
-  stance: a doubled two-kanji noun such as 確認確認 or 資料資料, which the rule used to report, now reads as reduplication.
+  (ユーザーユーザー, データデータ) and a run of three (早め早め早め) are still reported too.
+- **A Sino-Japanese (kanji-only) noun only when it really reduplicates**: a person, a unit, a time or a place
+  (個人個人, 一行一行, 時代時代, 地域地域; the lexicon `distributive-noun`), a noun the analyser reads as adverbial
+  (毎年毎年, 各自各自) and the stem of a na-adjective (駄目駄目, 大変大変). Any other doubled kanji noun is a slip and is
+  still reported (確認確認, 資料資料, 対応対応).
 - **Katakana onomatopoeia**: a katakana word of two or three morae, with any long vowel only at its end, repeated
   where an adverb stands: before と or に, at the end of a line, or right before a verb (ムクムクと, ブスブスと,
   ババババと, ブイブイ言わせる). Elsewhere a doubled katakana word is a loanword slip (テストテストを, メモメモ。,
