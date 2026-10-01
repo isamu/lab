@@ -25,9 +25,12 @@ const SENTENCE_END_INSIDE = /(?:[。！？!?])|(?:[.．]$)/u;
 /** 行が文で終わっている。句点の後に閉じ括弧・引用符が続いてよい。 */
 const ENDS_SENTENCE = /[。．！？.!?][」』"'”’)）\]］】〕]*$/u;
 
+/** 行が、次の行を導く印（「関連記事：」）で終わっている。その次の行は前の行の続きではない。 */
+const LEADS_IN = /[:：]$/u;
+
 const NEWLINE = /\r?\n/gu;
 
-type Line = { readonly start: number; readonly end: number; readonly next: number };
+export type Line = { readonly start: number; readonly end: number; readonly next: number };
 
 const linesOf = (text: string): Line[] => {
   const breaks = [...text.matchAll(NEWLINE)];
@@ -50,19 +53,54 @@ export const isSubheadingLine = (line: string): boolean => {
 
 const hasText = (text: string, line: Line | undefined): boolean => line !== undefined && text.slice(line.start, line.end).trim().length > 0;
 
-/** 前の行が無いか、文で終わっているか、それも小見出し。 */
-const startsFresh = (text: string, previous: Line | undefined): boolean => {
-  if (previous === undefined) return true;
-  const line = text.slice(previous.start, previous.end);
-  return ENDS_SENTENCE.test(line.trimEnd()) || isSubheadingLine(line);
+/** 行の範囲（text の中の位置）。その行だけで一つの項目として立つか。 */
+export type StandsAlone = (start: number, end: number) => boolean;
+
+/**
+ * 一つで立つ行: 小見出しの行か standsAlone が言う行（リンクだけの行など）で、前の行が無いか、文で終わっているか、
+ * 次を導く「：」で終わっているか、それも一つで立つ行。前の行が文の途中で終わるなら、その行は折り返した文の中にある。
+ */
+export const standaloneLines = (text: string, standsAlone: StandsAlone = () => false): Line[] => {
+  const lines = linesOf(text);
+  const alone = (line: Line): boolean => isSubheadingLine(text.slice(line.start, line.end)) || standsAlone(line.start, line.end);
+  const startsFresh = (previous: Line | undefined): boolean => {
+    if (previous === undefined || alone(previous)) return true;
+    const written = text.slice(previous.start, previous.end).trimEnd();
+    return ENDS_SENTENCE.test(written) || LEADS_IN.test(written);
+  };
+  return lines.filter((line, index) => alone(line) && startsFresh(lines[index - 1]));
 };
 
-/** 段落 text を、小見出しの行の後ろで切った片。切る所が無ければ text 全体の 1 片。片は改行を含まない端で終わる。 */
-export const subheadingPieces = (text: string): Span[] => {
+/**
+ * lines のうち、段落の終わり（end）まで切れ目なく続く後ろの並び。lines は text の順で、行は次の行の頭（next）で隣の行に続く。
+ * 段落の途中の 1 行は本文の文の一つで、終わりまで続く並びだけが本文の後に置いた一覧。
+ */
+export const closingRun = (lines: readonly Line[], end: number): readonly Line[] =>
+  lines.reduceRight<{ readonly run: readonly Line[]; readonly until: number }>(
+    (acc, line) => (line.next === acc.until ? { run: [line, ...acc.run], until: line.start } : acc),
+    { run: [], until: end },
+  ).run;
+
+/** 片の切れ目。前の片は end で終わり、次の片は next から始まる。 */
+type Cut = { readonly end: number; readonly next: number };
+
+/**
+ * 一つで立つ行（lines[index]）の切れ目。後ろに続く行があれば後ろで切る。前の行が「：」で終わる導きなら前でも切る。
+ * 文で終わる前の行は文の分割器が切るので、前では切らない。
+ */
+const cutsAround = (text: string, lines: readonly Line[], index: number): Cut[] => {
+  const [previous, line, following] = [lines[index - 1], lines[index], lines[index + 1]];
+  if (line === undefined) return [];
+  const leadsIn = previous !== undefined && LEADS_IN.test(text.slice(previous.start, previous.end).trimEnd());
+  return [...(leadsIn ? [{ end: previous.end, next: line.start }] : []), ...(hasText(text, following) ? [{ end: line.end, next: line.next }] : [])];
+};
+
+/** 段落 text を、一つで立つ行の後ろ（と、導きの行に続くときは前）で切った片。切る所が無ければ text 全体の 1 片。片は改行を含まない端で終わる。 */
+export const subheadingPieces = (text: string, standsAlone: StandsAlone = () => false): Span[] => {
   const lines = linesOf(text);
-  const cuts = lines.filter(
-    (line, index) => isSubheadingLine(text.slice(line.start, line.end)) && startsFresh(text, lines[index - 1]) && hasText(text, lines[index + 1]),
-  );
-  const starts = [0, ...cuts.map((line) => line.next)];
-  return starts.map((start, index) => ({ start, end: cuts[index]?.end ?? text.length }));
+  const indexOf = new Map(lines.map((line, index) => [line.start, index]));
+  const cuts = standaloneLines(text, standsAlone).flatMap((line) => cutsAround(text, lines, indexOf.get(line.start) ?? 0));
+  const ordered = [...new Map(cuts.map((cut) => [cut.next, cut])).values()].toSorted((left, right) => left.next - right.next);
+  const starts = [0, ...ordered.map((cut) => cut.next)];
+  return starts.map((start, index) => ({ start, end: ordered[index]?.end ?? text.length }));
 };
