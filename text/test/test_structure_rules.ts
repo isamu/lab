@@ -782,11 +782,12 @@ describe("the tree is built only when a structure rule reads it", () => {
     const base = en.structure;
     if (base === undefined) throw new Error("lang-en has no structure");
     let count = 0;
+    // 定義は木を組むときだけ探す。番号の読み方は heading-echo も見出しの札を除くのに使うので、木の目印にならない。
     const patterns: StructurePatterns = {
       ...base,
-      numbered: (line, context) => {
+      definitions: (text) => {
         count += 1;
-        return base.numbered(line, context);
+        return base.definitions(text);
       },
     };
     return { adapter: { ...en, structure: patterns }, calls: () => count };

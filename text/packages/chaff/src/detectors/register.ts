@@ -67,21 +67,36 @@ export const groupOf = (offset: number, lists: readonly Span[], runs: readonly S
 /** group: 文が入っているまとまり（groupOf の値）。本文なら undefined。 */
 export type Judged = { readonly register: Register; readonly group: number | undefined };
 
-/** 混ざった文と、その文が属する本文または箇条書きの中の少数派の数。 */
+/** 混ざった文と、その文が属するまとまり（本文、または箇条書き 1 つ）の中の少数派の数。文書全体の数ではない。 */
 export type Slip<T extends Judged> = { readonly entry: T; readonly count: number };
 
 const countIn = (judged: readonly Judged[], register: Register): number => judged.filter((entry) => entry.register === register).length;
 
+/** 多いほう。同数なら undefined。 */
+export const majorityOf = (judged: readonly Judged[]): Register | undefined => {
+  const difference = countIn(judged, "polite") - countIn(judged, "plain");
+  if (difference === 0) return undefined;
+  return difference > 0 ? "polite" : "plain";
+};
+
 /** 少ないほう。同数なら文書全体で少ないほう、それも同数なら丁寧体。 */
 const minorityOf = (group: readonly Judged[], whole: readonly Judged[]): Register => {
-  const difference = countIn(group, "polite") - countIn(group, "plain");
-  if (difference !== 0) return difference < 0 ? "polite" : "plain";
+  const majority = majorityOf(group);
+  if (majority !== undefined) return majority === "polite" ? "plain" : "polite";
   return countIn(whole, "polite") <= countIn(whole, "plain") ? "polite" : "plain";
 };
+
+/**
+ * 箇条書きの中の少数派が、文書全体では多数派か。それなら箇条書きの中で文書の調子に寄せた側なので、直す側ではない。
+ * 常体の多い箇条書きにですます調の文が混ざっても、ですます調の文書なら「多いほうに揃えて」は文書の少数派へ揃えることになる。
+ */
+export const followsDocument = (group: number | undefined, minority: Register, whole: readonly Judged[]): boolean =>
+  group !== undefined && majorityOf(whole) === minority;
 
 const slipsInGroup = <T extends Judged>(judged: readonly T[], group: number | undefined, limit: number): Slip<T>[] => {
   const members = judged.filter((entry) => entry.group === group);
   const minority = minorityOf(members, judged);
+  if (followsDocument(group, minority, judged)) return [];
   const slips = members.filter((entry) => entry.register === minority);
   // 片方しか無ければ揃っている。少数派が閾値を超えて多ければ、混在ではなく別の文体。
   if (slips.length === 0 || slips.length > limit) return [];
@@ -91,6 +106,7 @@ const slipsInGroup = <T extends Judged>(judged: readonly T[], group: number | un
 /**
  * 調子が混ざった文を、judged の順で。本文は本文どうし、箇条書きと番号で始まる段落の並びは 1 つずつ、その中で揃っているかを見る。
  * ですます調の本文に常体の箇条書きを置くのはよくある書き方で、箇条書きが丸ごと揃っていれば混在ではない。
+ * 箇条書きの中で混ざっていても、少数派が文書全体の多数派なら指さない（followsDocument）。
  */
 export const slipsOf = <T extends Judged>(judged: readonly T[], limit: number): Slip<T>[] => {
   const slips = [...new Set(judged.map((entry) => entry.group))].flatMap((group) => slipsInGroup(judged, group, limit));
