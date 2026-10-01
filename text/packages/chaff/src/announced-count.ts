@@ -153,7 +153,7 @@ const membersOf = (item: string): number | undefined =>
     .filter((member) => member.trim() !== "").length;
 
 /** どの行も分類の形なら、区切って並べた項目の数の和。一行でも違えば undefined。 */
-export const categorisedCount = (source: string, list: BulletList): number | undefined => {
+const categorisedCount = (source: string, list: BulletList): number | undefined => {
   const counts = list.itemSpans.map((item) => membersOf(source.slice(item.start, item.end)));
   return counts.every((count) => count !== undefined) ? counts.reduce<number>((sum, count) => sum + (count ?? 0), 0) : undefined;
 };
