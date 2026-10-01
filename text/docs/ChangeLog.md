@@ -18,9 +18,10 @@ corpus rarely use it; the measurements are in the PR.
 - **`announcing-opener`** (experimental): sentences that open by announcing a point (「重要なのは、」「ポイントは、」
   「正直に言うと、」「注目すべきは」, "The key point is", "Here's the thing", "Honestly,"). Counted, not divided by
   length: people write one or two in an article of any length. Only the start of a sentence counts.
-- **`colon-lead-in`** (experimental): prose sentences that end in a colon and hand straight to a list
-  (「以下の通りです：」, "Here's what you need:"), as a density. A list item ending in a colon is not counted. Off for
-  documentation, legal text, literature and speeches.
+- **`colon-lead-in`** (experimental, Japanese only): prose sentences that end in a colon and hand straight to a
+  list (「以下の通りです：」), as a density per 1000 characters. A list item ending in a colon is not counted. Off for
+  documentation, legal text, literature and speeches. English is left out: a self-written English sample with two
+  such lead-ins already passed the limit the generated-style samples reached.
 - `ai-generated-composite` also reads the two new rules.
 - **`yarn bench:ai`**: the same content written three ways (human style, generated style, and the generated style
   rewritten) in Japanese and English, for tech, business and essay (`test/fixtures/ai-samples/paired/`). For each

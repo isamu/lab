@@ -137,7 +137,7 @@ rules.md   legal/statute · English   genre from --genre
       announcing-opener (the legal/statute genre does not check it)
       assistant-residue (still experimental)
       closing-cliche (the legal/statute genre does not check it)
-      colon-lead-in (the legal/statute genre does not check it)
+      colon-lead-in (not a rule for en)
       concrete-evidence-density (the legal/statute genre does not check it)
       contraction-consistency (still experimental)
       contrast-framing (the legal/statute genre does not check it)

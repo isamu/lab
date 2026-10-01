@@ -248,14 +248,9 @@ describe("colon-lead-in", () => {
     ["docs/manual", "legal/contract", "literature/essay"].forEach((genre) => assert.ok(!idsFor(dense, ja, genre).includes("colon-lead-in"), genre));
   });
 
-  it("measures English per 1000 words with its own limit", () => {
+  it("does not run on English, where people hand off to a list after a colon as a matter of course", () => {
     const dense = `# Post\n\n${BULK_EN.slice(0, 1300)}\n\nBring:\n\n- A key\n\nPlan:\n\n- Meet\n\nAfter:\n\n- Clean\n`;
-    assert.ok(idsFor(dense, en).includes("colon-lead-in"));
-  });
-
-  it("lets English human prose keep more colon lead-ins than Japanese (a few per 1000 words pass)", () => {
-    const spread = `# Post\n\n${BULK_EN}\n\nBring:\n\n- A key\n\nPlan:\n\n- Meet\n`;
-    assert.ok(!idsFor(spread, en).includes("colon-lead-in"));
+    assert.ok(!idsFor(dense, en).includes("colon-lead-in"));
   });
 });
 

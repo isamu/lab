@@ -96,7 +96,7 @@ article.md   blog/tech · English   genre from the default
       announcing-opener (still experimental)
       assistant-residue (still experimental)
       broken-link (still experimental)
-      colon-lead-in (still experimental)
+      colon-lead-in (not a rule for en)
       contraction-consistency (still experimental)
       contrast-framing (still experimental)
       dangling-figure-reference (still experimental)
