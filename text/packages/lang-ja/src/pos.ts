@@ -4,7 +4,7 @@ import { analyserPieces } from "./analyser-pieces.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
 import { outsideTheReport, isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
-import { isEchoAt, type Inflection } from "./reduplication.ts";
+import { distributiveVocabulary, isEchoAt, type Inflection } from "./reduplication.ts";
 import { isRaDroppedAt, raDroppedVocabulary } from "./ra-dropped.ts";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -119,6 +119,8 @@ const LEXICONS = loadLexicons();
 const PASSIVE_VOCABULARY = passiveVocabulary(LEXICONS);
 
 const RA_DROPPED_VOCABULARY = raDroppedVocabulary(LEXICONS);
+
+const REDUPLICATING_NOUNS = distributiveVocabulary(LEXICONS).nouns;
 
 /**
  * 非自立名詞（の・こと・もの・ため・はず）。品詞は名詞だが、単独では何も指さない。
@@ -283,7 +285,7 @@ export const tokenize = (text: string): Token[] | undefined => {
   return read.map(({ morpheme, start }, index) =>
     toToken(morpheme, start, {
       passive: readsAsPassive(sequence, index, PASSIVE_VOCABULARY) && !outsideTheReport(sequence, index),
-      echo: isEchoAt(inflections, index),
+      echo: isEchoAt(inflections, index, REDUPLICATING_NOUNS),
       light: isLightVerbAt(sequence, index),
       raDropped: isRaDroppedAt(sequence, index, RA_DROPPED_VOCABULARY),
     }),

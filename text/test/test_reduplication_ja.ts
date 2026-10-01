@@ -334,7 +334,11 @@ describe("isKanaEcho", () => {
   });
 });
 
-const wholeEchoAt = (words: readonly Inflection[]): number[] => words.flatMap((_, index) => (isWholeWordEcho(words, index) ? [index] : []));
+/** 重ねて言える漢語の名詞を決め打ちした語彙表。 */
+const KANJI_NOUNS: ReadonlySet<string> = new Set(["個人", "一行"]);
+
+const wholeEchoAt = (words: readonly Inflection[], kanjiNouns: ReadonlySet<string> = KANJI_NOUNS): number[] =>
+  words.flatMap((_, index) => (isWholeWordEcho(words, index, kanjiNouns) ? [index] : []));
 
 const kanaRepeatAt = (words: readonly Inflection[]): number[] => words.flatMap((_, index) => (isKanaRepeat(words, index) ? [index] : []));
 
@@ -377,6 +381,23 @@ describe("isWholeWordEcho", () => {
     assert.deepEqual(wholeEchoAt(wordsOf(PARTICLE("を"), PARTICLE("を"))), []);
   });
 
+  it("漢字だけの名詞は、語彙表の語か、副詞的な名詞・形容動詞の語幹のときだけ重ね言葉（#412 の続き）", () => {
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("一行"), NOUN("一行"), PARTICLE("を"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("毎年", "副詞可能"), NOUN("毎年", "副詞可能"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("各自", "副詞可能"), NOUN("各自", "副詞可能"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("大変", "形容動詞語幹"), NOUN("大変", "形容動詞語幹"))), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("確認", "サ変接続"), NOUN("確認", "サ変接続"), ["し", "動詞", "自立", "連用形"])), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("資料"), NOUN("資料"), PARTICLE("が"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("対応", "サ変接続"), NOUN("対応", "サ変接続"))), []);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("個人"), NOUN("個人"), PARTICLE("の")), new Set()), []);
+  });
+
+  it("仮名や送り仮名のある名詞は、語彙表に無くても丸ごと重ねれば重ね言葉", () => {
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("早め"), NOUN("早め")), new Set()), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("もちもち"), NOUN("もちもち")), new Set()), [1]);
+    assert.deepEqual(wholeEchoAt(wordsOf(NOUN("それ", "代名詞"), NOUN("それ", "代名詞")), new Set()), [1]);
+  });
+
   it("離れた二語、先頭の語、空の並び", () => {
     const apart: Inflection[] = [
       { surface: "個人", pos: "名詞", detail: "一般", form: "*", conjugation: "*", start: 0 },
@@ -385,7 +406,7 @@ describe("isWholeWordEcho", () => {
     assert.deepEqual(wholeEchoAt(apart), []);
     assert.deepEqual(wholeEchoAt(wordsOf(NOUN("個人"))), []);
     assert.deepEqual(wholeEchoAt([]), []);
-    assert.equal(isWholeWordEcho([], -1), false);
+    assert.equal(isWholeWordEcho([], -1, KANJI_NOUNS), false);
   });
 });
 
