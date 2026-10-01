@@ -146,10 +146,10 @@ npx chaffjs plan.md --compact     each finding on two lines
 ```
 plan.md   blog/tech · English   genre from the default
 
-  3:56    error   Something is still undecided: "TBD"
-                  team-tbd
   3:4     info    "made a decision" can be "decide"
                   team-make-decision
+  3:56    error   Something is still undecided: "TBD"
+                  team-tbd
   5:19    warning Write "email", not "e-mail"
                   team-email
 

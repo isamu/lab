@@ -27,6 +27,39 @@ reduplication (UD `Echo=Rdp`), and the rule skips them:
 
 The rule's `why` and `not_flagged` now describe what it actually skips.
 
+### A Japanese article full of code is read as Japanese (#399)
+
+The document's language was guessed from all of its text, code included, so a technical article in Japanese with long
+code blocks came out English: the Japanese rules did not run and the English ones read Japanese headings. The guess
+now leaves out fenced code blocks, inline code, HTML tags, comments and code blocks (the text between other tags still counts), YAML
+front matter, MDX imports and component lines, and URLs. Indented text is kept, because in plain text it is prose. A document that is nothing but code is still judged from all of it. `chaff`,
+`chaff test`, `chaff eval` and `chaff tree` all guess the same way.
+
+### `stet` covers the block right below it, not the next six lines (#401)
+
+`<!-- stet: rule — reason -->` silenced the rule on the six lines after the comment, whatever they held: a finding of
+the same rule in the next paragraph was silenced too, and the end of a long wrapped paragraph was not. Now it covers
+the block right after the comment, as the guide and the spec describe, and as the Markdown parser reads it: a
+paragraph, a heading, a whole list, a table, a code block, a quote. Inside a list item it covers the item's next
+block, not the next item. A comment with text on its own line covers that line, and one inside a paragraph covers the
+rest of the paragraph. In plain text a paragraph runs to the blank line. `stet-section` and `stet-file` are unchanged.
+
+### On a Node.js older than 24, `chaff` says which version it needs instead of failing with a SyntaxError (#398)
+
+npm runs a package whose `engines` the Node.js does not meet, with a warning at most, and the CLI then failed while
+loading (`The requested module 'node:fs' does not provide an export named 'globSync'`), which does not point at the
+version. `bin/chaff.js` now checks `process.versions.node` against `engines.node` in its own `package.json` before it
+loads anything else, and stops with "chaff needs Node.js 24 or later. This is v18.20.8. Install the LTS from
+https://nodejs.org/en" (in Japanese under a Japanese locale), exit code 1. The entry point is written so that Node.js 12
+and later can parse it. This also stops Node.js 22 and 23, which `engines` already excluded.
+
+### Findings on one line come in column order, and `--compact` keeps a space after a long `line:column` (#396)
+
+Findings were sorted by line only, so on one line they came grouped by rule, and in rule order. Now they are sorted
+by line, then column, in every output (friendly, `--compact`, SARIF, `chaff test`). In `--compact`, the
+`line:column` column widens to the longest position in the document plus one space, so `1070:131` no longer runs into
+`warning`; a document whose positions are all short prints exactly as before.
+
 ### New rules: notation that should agree with itself, double negatives and ら抜き言葉 (#170)
 
 Experimental rules. Each finding in the corpus was read before the rule was added.
