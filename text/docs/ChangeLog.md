@@ -21,6 +21,14 @@ Newest first.
   例・手順・ステップ・Step in Japanese and a new English list (Step, Example, Case, …). latin-spacing already treats a
   number after these words as a name (like 問3), so 「手順1」 is no longer a spacing vote.
 
+### Docs: a bibliography of the papers and standards behind the rules
+
+The site's guide has a new page, 「参考文献」 / "Bibliography", linked from the rule reference. It covers readability
+research in Japanese and English, plain-language guidance and Japanese style standards (公用文作成の考え方, 外来語の表記,
+JIS Z 8301, the JTF style guide). It also covers essay scoring, grammar correction, studies of generated text, and
+requirements quality. Each entry was checked against its original record. It says what the work found, and which rules
+it supports or that it is background only. No rule changed.
+
 ### New rules: brackets and punctuation marks (#170)
 
 Experimental rules for marks left over from an edit. Each finding in the corpus was read before the rule was added.
