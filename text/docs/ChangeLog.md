@@ -13,6 +13,18 @@ removed, any other white space is one space. The joined quotation is reported as
 one, and the report shows it without a space that a reader never sees. A space actually written inside a Japanese
 quotation is still a different quotation.
 
+### `unqualified-superlative` reads 「〜のほうが」「〜との」 and quotations (#394)
+
+- 「後者のほうが圧倒的に長い」「他社と比べて」 name what is compared, anywhere in the sentence, like より and に比べる
+  already did. 「の方が」 is not added: in 「担当の方が最も詳しい」 the 方 is a person, not a comparison.
+- 「SES との最大の分岐点」: 「との」 names the counterpart only right before the superlative, so 「チームとの会議で最高の成果」
+  is still reported. A comparison marker with `position: before` in the `comparison-marker` lexicon works this way.
+- A superlative inside 「」『』 or quotation marks ("…", “…”) is someone else's words and is not reported; one outside
+  the quotation in the same sentence still is.
+
+Superlatives limited by a clause before them (「バグを検出できる唯一のルール」) are still reported: the same shape is
+also a boast (「誰もが認める最高の品質」), and is left for a decision.
+
 ### Japanese density messages say 1000 字, the unit they measure (#402)
 
 `proper-noun-density`, `cushion-phrase-density`, `emoji-density` and `excessive-hedging` said 「1000 語あたり」 in
