@@ -1872,6 +1872,47 @@
         "falseAlarms": 0
       }
     },
+    "heading-numbering-mix": {
+      "groups": {
+        "academic": {
+          "documents": 6,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 1
+        },
+        "business": {
+          "documents": 77,
+          "fired": 3
+        },
+        "docs": {
+          "documents": 20,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 28,
+          "fired": 3
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 45,
+          "fired": 2
+        }
+      },
+      "bench": {
+        "planted": 14,
+        "found": 14,
+        "falseAlarms": 0
+      }
+    },
     "hiragana-fukushi": {
       "groups": {
         "academic": {
@@ -2034,6 +2075,38 @@
         "planted": 26,
         "found": 26,
         "falseAlarms": 0
+      }
+    },
+    "katakana-density": {
+      "groups": {
+        "academic": {
+          "documents": 1,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 14,
+          "fired": 1
+        },
+        "business": {
+          "documents": 39,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 2
+        },
+        "legal": {
+          "documents": 21,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 4,
+          "fired": 0
+        }
       }
     },
     "katakana-long-vowel": {
