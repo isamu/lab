@@ -82,13 +82,8 @@ $ npx chaffjs baseline docs/
   Commit .chaff-baseline.json.
 ```
 
-From then on, shelved findings are not reported, and only new ones are.
 Commit `.chaff-baseline.json` and the whole team starts from the same point.
-
-## Why the shelf survives edits
-
 A shelved finding is recognised by its content, not its line number,
 so adding paragraphs before or after it does not bring it back.
-
 To see the shelved ones too, add `--show-baseline`.
 There is an example in [Commands](./commands).

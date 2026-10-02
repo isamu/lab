@@ -147,7 +147,8 @@ npx chaffjs tree contract.txt     文書を番地の付いた木にする（条�
 npx chaffjs cite 原文 引用.json   引用が原文にあるかを確かめる
 npx chaffjs fix-plan 前.md        指摘をルールごとにまとめ、直す方向と確かめのコマンドを付けた「直す計画」を出す
 npx chaffjs facts 前.md           compare が照合する事実を一覧にする（書き直す前の控え）
-npx chaffjs outline 前.md 後.md   見出しの構成と形（見出しの数・節の平均・箇条書きの割合・太字）を前と後で並べる
+npx chaffjs outline 前.md 後.md   見出しの構成と形（見出しの数・節の平均・箇条書きの割合・太字）、構成の AI らしさを前と後で並べる
+npx chaffjs grade 出力.jsonl      model の出力を JSONL のまま採点する（指摘の率・事実・引用・合否。何も送らない）
 npx chaffjs compare 前.md 後.md   書き換えで事実（数・日付・URL・名前など）が落ちても足されてもいないかを確かめる
 npx chaffjs skill                 Claude Code の skill を入れる（--global でホームに）
 ```
@@ -170,7 +171,7 @@ npx chaffjs skill                 Claude Code の skill を入れる（--global 
 chaff brings two habits from programming to ordinary writing. A linter checks that code follows rules; a unit test
 checks that a change did not break what must hold. chaff lints contracts, blog posts and technical documents for
 readability, consistency and contradictions. Its `compare`, `cite` and `test` commands check that a rewrite kept the
-facts, the quotations and the team's requirements.
+facts, the quotations and the team's requirements. `grade` runs the same checks on a JSONL file of a model's outputs.
 
 Every command returns an exit code, so it runs in CI on every change.
 It reads Japanese and English and never rewrites the text.
