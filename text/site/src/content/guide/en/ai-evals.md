@@ -351,7 +351,7 @@ prompt-b.md   blog/tech · English   genre from the default
 ```
 
 Across many tasks, compare the rates rather than single outputs. `chaff grade` gives each rule's rate, and `--baseline` puts two runs side by side.
-The 28 rules not run are the Japanese-only rules, the rules the blog/tech genre does not check, one rule that needs headings below the title, and one rule that reads meaning. Without `--compact`, each is listed with its reason.
+The rules not run are the Japanese-only rules, the rules the blog/tech genre does not check, one rule that needs headings below the title, and one rule that reads meaning. Without `--compact`, each is listed with its reason.
 
 To feed the findings back into a regeneration step, have `fix-plan` turn them into instructions.
 This is an excerpt; the plan goes on with a direction, an example and the spots for each rule.

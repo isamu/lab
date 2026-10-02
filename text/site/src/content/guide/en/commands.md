@@ -131,8 +131,9 @@ $ npx chaffjs explain max-sentence-length
 ## Changing a rule with a command
 
 `relax`, `strict` and `off` change a rule's level without opening `chaff.yaml`.
-`relax` loosens it, `strict` tightens it, and `off` stops it.
-For a rule with nothing to count, such as a gap in the numbering, `relax` keeps the finding and marks it a step lower ([Rules with nothing to count](./configuration#rules-with-nothing-to-count)).
+`relax` loosens it, `strict` tightens it and `off` stops it.
+A rule with nothing to count, such as a gap in the numbering, keeps its finding under `relax`, marked a step lower.
+See [Rules with nothing to count](./configuration#rules-with-nothing-to-count).
 
 ```
 $ npx chaffjs relax bold-density --why "figure captions use a lot of bold"
@@ -315,10 +316,12 @@ $ npx chaffjs feedback sample.md --rule heading-echo --line 142
 
 ## Checking that a rewrite kept its facts
 
-Sometimes you want text that sounds like an AI wrote it rewritten boldly, so it reads as a person's: sentences rebuilt, paragraphs moved, the throat-clearing cut.
-An AI can do the rewriting. But the bolder the rewrite, the harder it is for a person to notice that a number went missing, a date moved by a day, a URL fell out, or a figure appeared that was never in the original.
+Sometimes text that sounds like an AI wrote it needs a bold rewrite: sentences rebuilt, paragraphs moved, the throat-clearing cut.
+An AI can do the rewriting. But the bolder the rewrite, the harder it is for a person to notice what changed.
+A number goes missing, a date moves by a day, a URL falls out, or a figure appears that was never in the original.
 
-`compare` is the guardrail that catches it. It reads the facts out of the text before and after the rewrite the same way — numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes — and compares them.
+`compare` is the guardrail that catches it. It reads the facts out of the text before and after the rewrite, the same way for both, and compares them.
+The facts are numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes.
 Position does not matter, so a fact that moved with its paragraph is fine. No AI makes the call: the same two documents always give the same result. chaff only compares; it never rewrites.
 
 ```
@@ -392,7 +395,7 @@ After rewriting, npx chaffjs compare before.md <rewritten> checks that every fac
 
 A rewrite that smooths the sentences can leave the skeleton as it was: the same headings, the same lists, the same bold. `outline` shows the skeleton and measures it, so a restructure shows up as numbers, not as an impression.
 
-It lists each heading, indented by depth, with its line and the length of its own text. It measures four things: the number of headings, the average section length, the share of the text in list items, and the bold spans.
+It lists each heading, indented by depth, with its line and the length of its own text. It measures four things: the number of headings, the average section length, the share of the text in list items and the bold spans.
 Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the average.
 
 Below the outline comes the structure block. Each structure measure (headings per 1000 words, sections of one or two paragraphs, section length variation, headings in a stock form, headings split into three, introduction and conclusion headings, a closing that restates the body, three-item lists, bold-label list items, emoji headings, paired pros and cons) is set against articles written before generated text was common: what share of them the value lies past, and, where it lies past 90% of them, the human median and that line, marked ✗.

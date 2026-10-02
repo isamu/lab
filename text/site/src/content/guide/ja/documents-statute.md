@@ -151,8 +151,8 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 | ja 向けの rule ではないため | 英語の文書だけに使うルールです |
 | まだ試験中のため | 誤りが出ないか確かめている最中のルールです。`--experimental` を付けると動きます |
 
-その上の「試験中の rule を 7 件、ジャンルの既定で有効にしています」は、
-試験中のルールのうち、規程で確かめ終えた 5 件をこのジャンルでは動かしている、という意味です。
+その上の「試験中の rule を 7 件、ジャンルの既定で有効にしています」は、ほかのジャンルではまだ試験中の 7 件です。
+規程で確かめてあるので、このジャンルでは動かします。
 
 ## ジャンルを毎回書かずに済ませる
 
@@ -307,7 +307,9 @@ kitei-fixed.md   legal/statute · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
+  試験中の rule を 1 件、設定により有効にしています: numbering-gap
+
+  試験中の rule を 6 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, total-mismatch
 ```
 
 この下に並ぶ「動いていない」一覧は、直す前と同じです。
