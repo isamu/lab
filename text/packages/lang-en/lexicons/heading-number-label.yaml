@@ -1,0 +1,29 @@
+# Words that carry a number in a heading (Chapter 2, Step 3). Read by heading-numbering-mix to tell numbering styles
+# apart. position is the side of the number the word stands on; English puts them all before.
+id: heading-number-label
+language: en
+entries:
+  - pattern: Chapter
+    position: before
+  - pattern: Section
+    position: before
+  - pattern: Part
+    position: before
+  - pattern: Step
+    position: before
+  - pattern: Appendix
+    position: before
+  - pattern: Phase
+    position: before
+  - pattern: Lesson
+    position: before
+  - pattern: Module
+    position: before
+  - pattern: Unit
+    position: before
+  - pattern: Stage
+    position: before
+  - pattern: Day
+    position: before
+  - pattern: Week
+    position: before

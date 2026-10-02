@@ -1,0 +1,28 @@
+# 本文の前後に置き、番号を付けないのがふつうの見出し（目次、参考文献）。heading-numbering-mix は兄弟の数に入れない。
+# 見出しの言葉全体がこの語か、この語に区切り（「付録: 用語」「付録 A」）が続くときだけ。本文の見出しになりうる語（概要、まとめ、はじめに）は置かない。
+id: unnumbered-heading
+language: ja
+entries:
+  - pattern: 目次
+  - pattern: 要旨
+  - pattern: 要約
+  - pattern: 参考文献
+  - pattern: 引用文献
+  - pattern: 文献
+  - pattern: 謝辞
+  - pattern: 付録
+  - pattern: 附則
+  - pattern: 別表
+  - pattern: Appendix
+  - pattern: 索引
+  - pattern: 注
+  - pattern: 脚注
+  - pattern: 著者紹介
+  - pattern: 変更履歴
+  - pattern: 更新履歴
+  - pattern: 改訂履歴
+  - pattern: はしがき
+  - pattern: あとがき
+  - pattern: 序文
+  - pattern: References
+  - pattern: Abstract
