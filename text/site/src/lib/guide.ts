@@ -15,6 +15,7 @@ const ORDER = [
   "documents-press",
   "documents-paper",
   "ai-sounding",
+  "ai-evals",
   "configuration",
   "reference",
   "house-style",

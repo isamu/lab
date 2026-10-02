@@ -87,7 +87,7 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  61 rules did not run:
+  68 rules did not run:
       adverb-overuse (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
@@ -118,9 +118,9 @@ article.md   blog/tech · English   genre from the default
       hankaku-kana (not a rule for en)
       heading-level-skip (still experimental)
       hiragana-fukushi (not a rule for en)
-      image-alt-text (still experimental)
       internal-jargon (still experimental)
       invisible-character (still experimental)
+      katakana-long-vowel (not a rule for en)
       kutoten-consistency (not a rule for en)
       latin-spacing (not a rule for en)
       max-kanji-continuous (not a rule for en)
@@ -128,6 +128,7 @@ article.md   blog/tech · English   genre from the default
       no-em-dash (still experimental)
       no-mixed-desumasu (not a rule for en)
       no-nakaguro-parallel (not a rule for en)
+      nominalization (still experimental)
       numbering-gap (still experimental)
       oxford-comma-consistency (still experimental)
       paragraph-length-variance (still experimental)
@@ -137,6 +138,7 @@ article.md   blog/tech · English   genre from the default
       ra-nuki (not a rule for en)
       repeated-conjunction (still experimental)
       required-sections (still experimental)
+      requirement-modal (still experimental)
       rule-of-three (still experimental)
       sasete-itadaku (not a rule for en)
       section-length-uniformity (still experimental)
@@ -153,6 +155,7 @@ article.md   blog/tech · English   genre from the default
       unfilled-placeholder (still experimental)
       unqualified-superlative (still experimental)
       url-run-on (still experimental)
+      vague-figure-reference (still experimental)
 
 ```
 
