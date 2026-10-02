@@ -1,22 +1,19 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { parseItems, type ItemVocabulary } from "../packages/chaff/src/grade/item.ts";
 import { rateOf, ratesOf } from "../packages/chaff/src/grade/rates.ts";
 import { defaultVerdict, type Graded } from "../packages/chaff/src/grade/verdict.ts";
-import { summaryOf, type GradeSummary } from "../packages/chaff/src/grade/summary.ts";
+import { summaryOf } from "../packages/chaff/src/grade/summary.ts";
 import { canonicalJson, digestOf, settingsOf } from "../packages/chaff/src/grade/stamp.ts";
-import { sourcePathOf } from "../packages/chaff/src/grade/grade-item.ts";
-import type { GradeFact, GradeFinding, GradeResult } from "../packages/chaff/src/grade/result.ts";
+import { sourcePathOf } from "../packages/chaff/src/grade/checks.ts";
+import type { GradeResult } from "../packages/chaff/src/grade/result.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import { runCli } from "./cli-run.ts";
+import { fact, finding, isSummary, jsonl, resultsIn } from "./grade-run.ts";
 
 // chaff grade: the input JSONL, the default pass or fail, the rates and summary, the stamp, and the command line in both languages.
 
 const VOCABULARY: ItemVocabulary = { isLanguage: (language) => ["ja", "en"].includes(language), genres: ["blog/tech", "business/report"] };
-
-const jsonl = (...rows: unknown[]): string => rows.map((row) => (typeof row === "string" ? row : JSON.stringify(row))).join("\n");
 
 const problemsOf = (text: string): string[] => {
   const parsed = parseItems(text, VOCABULARY);
@@ -87,8 +84,6 @@ describe("rates per 1,000 units", () => {
   });
 });
 
-const finding = (level: GradeFinding["level"], rule = "some-rule"): GradeFinding => ({ rule, level, line: 1, column: 1, message: "" });
-const fact = (allowed = false): GradeFact => ({ kind: "number", key: "6", text: "6", line: 1, allowed });
 const graded = (overrides: Partial<Graded>): Graded => ({ findings: [], facts: null, citations: null, ...overrides });
 
 describe("the default pass or fail", () => {
@@ -201,21 +196,6 @@ const JA_ITEMS = jsonl(
   { id: "落とした", output: "# 第3四半期の報告\n\n今期は 4,812 件に答え、返信は速くなった。\n", reference: JA_SOURCE },
   { id: "合わない合計", output: "# お見積り\n\n| 項目 | 金額 |\n| --- | --- |\n| 設計 | 40,000円 |\n| 実装 | 120,000円 |\n| 合計 | 150,000円 |\n" },
 );
-
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null;
-
-/** The fields these tests read. The shape itself is the type's; the command line is what is under test. */
-const isGradeResult = (value: unknown): value is GradeResult =>
-  isRecord(value) && typeof value["id"] === "string" && Array.isArray(value["findings"]) && isRecord(value["stamp"]) && isRecord(value["size"]);
-
-const isSummary = (value: unknown): value is GradeSummary => isRecord(value) && typeof value["total"] === "number" && Array.isArray(value["failed"]);
-
-const resultsIn = (dir: string, name = "out.jsonl"): GradeResult[] =>
-  readFileSync(join(dir, name), "utf8")
-    .trim()
-    .split("\n")
-    .map((line): unknown => JSON.parse(line))
-    .filter(isGradeResult);
 
 describe("chaff grade on the command line", () => {
   it("in English: passes what kept its facts and quotations, fails what did not, and writes one result per output", async () => {

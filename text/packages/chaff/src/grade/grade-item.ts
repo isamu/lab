@@ -1,30 +1,21 @@
-import { checkSource, documentLanguage, type SourceCheck } from "../check-source.ts";
-import type { Config } from "../config/load.ts";
-import { outcomeOf } from "../compare/outcome.ts";
-import { factsOf } from "../commands/compare.ts";
-import { documentFromSource } from "../commands/read-document.ts";
-import { treeFromSource } from "../commands/tree.ts";
+import { checkSource, type SourceCheck } from "../check-source.ts";
+import type { Allowed } from "../compare/outcome.ts";
+import { missingSections } from "../detectors/team.ts";
 import { messageOf } from "../render/text.ts";
-import { checkCitations, type CitationResult } from "../structure/cite.ts";
-import { uiLanguageOf } from "../ui.ts";
-import type { Finding, StructureNode } from "../plugin.ts";
-import type { GradeCitation, GradeItem } from "./item.ts";
-import { ratesOf, sizeOf } from "./rates.ts";
-import type { FailedCitation, GradeCitations, GradeFact, GradeFacts, GradeFinding, GradeResult, NotRunEntry, Stamp } from "./result.ts";
+import { uiLanguageOf, type UiLanguage } from "../ui.ts";
+import type { Finding } from "../plugin.ts";
+import { citationsAgainst, factsAgainst, OUTPUT_PATH, type CitationsRead, type ItemReading } from "./checks.ts";
+import type { GradeItem } from "./item.ts";
+import { ratesOf, sizeOf, type OutputSize } from "./rates.ts";
+import type { GradeCitations, GradeFacts, GradeFinding, GradeResult, GradeScore, NotRunEntry, Stamp } from "./result.ts";
+import type { Rubric } from "./rubric.ts";
+import { rubricVerdict } from "./rubric-verdict.ts";
 import type { GradeSettings } from "./stamp.ts";
 import { GRADE_TEXT } from "./text.ts";
-import { defaultVerdict } from "./verdict.ts";
+import { defaultVerdict, type Verdict } from "./verdict.ts";
 
-/** One run's settings, and its stamp, which every result carries. */
-export type GradeSetup = GradeSettings & { readonly stamp: Stamp };
-
-// The texts are read from memory, under names that say which part of the item each one is.
-const OUTPUT_PATH = "output.md";
-const REFERENCE_PATH = "reference.md";
-const READ_AS_NAMED = /\.(?:md|markdown|mdx|txt)$/iu;
-
-/** A source is Markdown unless its name says it is a plain text file (a contract without headings, read by its numbering). */
-export const sourcePathOf = (name: string): string => (READ_AS_NAMED.test(name) ? name : `${name}.md`);
+/** One run's settings, its `grade:` rubric when chaff.yaml has one, and its stamp, which every result carries. */
+export type GradeSetup = GradeSettings & { readonly stamp: Stamp; readonly rubric?: Rubric | undefined };
 
 const findingOf = (finding: Finding, check: SourceCheck): GradeFinding => {
   const rule = check.rules.find((entry) => entry.id === finding.rule);
@@ -37,88 +28,81 @@ const findingOf = (finding: Finding, check: SourceCheck): GradeFinding => {
   };
 };
 
-/** The genre and how this run reads every text of one item: the output's genre, so a source's profile follows the task. */
-type ItemReading = { readonly genre: string; readonly config: Config };
+/** The fact kinds the rubric lets change (`allow_dropped`, `allow_added`), as compare's --allow-dropped and --allow-added. */
+const allowedBy = (rubric: Rubric | undefined): Allowed => ({
+  dropped: new Set(rubric?.facts?.allowDropped ?? []),
+  added: new Set(rubric?.facts?.allowAdded ?? []),
+});
 
-const factOf = (change: GradeFact): GradeFact => ({ kind: change.kind, key: change.key, text: change.text, line: change.line, allowed: change.allowed });
-
-/** `compare`'s outcome, the reference before and the output after, read as `chaff compare` reads two files. */
-const factsAgainst = async (reference: string, output: string, outputLanguage: string, reading: ItemReading): Promise<GradeFacts> => {
-  const { config, genre } = reading;
-  const names = config.names;
-  const before = await documentFromSource(REFERENCE_PATH, reference, { language: documentLanguage(REFERENCE_PATH, reference, config), genre }, config, true);
-  const after = await documentFromSource(OUTPUT_PATH, output, { language: outputLanguage, genre }, config, true);
-  const outcome = outcomeOf(factsOf(REFERENCE_PATH, before, names), factsOf(OUTPUT_PATH, after, names));
-  return { dropped: outcome.dropped.map(factOf), added: outcome.added.map(factOf), reformed: outcome.reformed.length };
+/** One output as read: linted, measured, and checked against its reference and sources. */
+type Checked = {
+  readonly check: SourceCheck;
+  readonly ui: UiLanguage;
+  readonly findings: readonly GradeFinding[];
+  readonly size: OutputSize;
+  readonly facts: GradeFacts | null;
+  readonly cited: CitationsRead | undefined;
 };
 
-type SourceTreeRead = { readonly tree: StructureNode } | { readonly language: string };
-
-const sourceTree = async (name: string, text: string, reading: ItemReading): Promise<SourceTreeRead> => {
-  const path = sourcePathOf(name);
-  const language = documentLanguage(path, text, reading.config);
-  const tree = await treeFromSource(path, text, language, reading.genre, reading.config);
-  return tree === undefined ? { language } : { tree };
+const checkItem = async (item: GradeItem, setup: GradeSetup): Promise<Checked> => {
+  const choice = { language: item.language, genre: item.genre ?? setup.genre, experimental: setup.experimental };
+  const check = await checkSource(OUTPUT_PATH, item.output, setup.config, choice);
+  const ui = uiLanguageOf(check.language);
+  const reading: ItemReading = { genre: check.genre.genre, config: setup.config };
+  const texts = { reference: item.reference ?? "", output: item.output, outputLanguage: check.language };
+  return {
+    check,
+    ui,
+    findings: check.applied.kept.map((finding) => findingOf(finding, check)),
+    size: sizeOf(check.doc),
+    facts: item.reference === undefined ? null : await factsAgainst(texts, reading, allowedBy(setup.rubric)),
+    cited: item.citations === undefined ? undefined : await citationsAgainst(item, item.citations, reading, ui),
+  };
 };
 
-const failedOf = (source: string, result: CitationResult): FailedCitation[] =>
-  result.status === "ok"
-    ? []
-    : [{ source, address: result.citation.address, quote: result.citation.quote, status: result.status, foundAt: result.foundAt, line: result.line }];
+const citationsOf = (checked: Checked): GradeCitations | null => (checked.cited !== undefined && "citations" in checked.cited ? checked.cited.citations : null);
 
-type CitationsRead = { readonly citations: GradeCitations } | { readonly notRun: NotRunEntry };
+/** The rubric's rules this output's rules do not include: a misspelt id would otherwise pass every output silently. */
+const unknownRubricRules = (checked: Checked, rubric: Rubric | undefined): NotRunEntry[] =>
+  Object.keys(rubric?.rules ?? {})
+    .filter((id) => !checked.check.rules.some((rule) => rule.id === id))
+    .map((rule) => ({ rule, reason: GRADE_TEXT[checked.ui].unknownRule }));
 
-/** Each citation checked against the source it names, as `chaff cite` checks it. A source chaff cannot read as a tree is not a failed quotation. */
-const citationsAgainst = async (item: GradeItem, citations: readonly GradeCitation[], reading: ItemReading, ui: "ja" | "en"): Promise<CitationsRead> => {
-  const names = [...new Set(citations.map((citation) => citation.source))];
-  const trees = await Promise.all(names.map(async (name) => ({ name, read: await sourceTree(name, item.sources[name] ?? "", reading) })));
-  const unread = trees.find((entry) => !("tree" in entry.read));
-  if (unread !== undefined && "language" in unread.read)
-    return { notRun: { rule: "cite", reason: GRADE_TEXT[ui].noStructure(unread.name, unread.read.language) } };
-  const failed = trees.flatMap(({ name, read }) => {
-    if (!("tree" in read)) return [];
-    const own = citations.filter((citation) => citation.source === name);
-    return checkCitations(item.sources[name] ?? "", read.tree, own).flatMap((result) => failedOf(name, result));
-  });
-  return { citations: { checked: citations.length, failed } };
+const notRunOf = (checked: Checked, rubric: Rubric | undefined): NotRunEntry[] => [
+  ...checked.check.raw.skipped.map((skipped) => ({ rule: skipped.rule, reason: skipped.why })),
+  ...unknownRubricRules(checked, rubric),
+  ...(checked.facts === null ? [{ rule: "compare", reason: GRADE_TEXT[checked.ui].noReference }] : []),
+  ...(checked.cited === undefined ? [{ rule: "cite", reason: GRADE_TEXT[checked.ui].noCitations }] : []),
+  ...(checked.cited !== undefined && "notRun" in checked.cited ? [checked.cited.notRun] : []),
+];
+
+/** Pass or fail: by the rubric when chaff.yaml has `grade:`, with its penalty score; else by the default of spec §29.3. */
+const judge = (item: GradeItem, checked: Checked, setup: GradeSetup): { readonly verdict: Verdict; readonly score?: GradeScore } => {
+  const graded = { findings: checked.findings, facts: checked.facts, citations: citationsOf(checked) };
+  if (setup.rubric === undefined) return { verdict: defaultVerdict(graded) };
+  const wanted = setup.rubric.requiredSections ?? checked.check.doc.requiredSections;
+  const uncited = Object.keys(item.sources).length > 0 && item.citations === undefined;
+  return rubricVerdict({ ...graded, size: checked.size, missingSections: missingSections(checked.check.doc, wanted), uncited }, setup.rubric);
 };
-
-const notRunOf = (check: SourceCheck): NotRunEntry[] => check.raw.skipped.map((skipped) => ({ rule: skipped.rule, reason: skipped.why }));
 
 /** Grades one output (spec §29.3): its findings and their rates, the facts against its reference, its quotations, and pass or fail. */
 export const gradeItem = async (item: GradeItem, setup: GradeSetup): Promise<GradeResult> => {
-  const check = await checkSource(OUTPUT_PATH, item.output, setup.config, {
-    language: item.language,
-    genre: item.genre ?? setup.genre,
-    experimental: setup.experimental,
-  });
-  const ui = uiLanguageOf(check.language);
-  const reading = { genre: check.genre.genre, config: setup.config };
-  const findings = check.applied.kept.map((finding) => findingOf(finding, check));
-  const size = sizeOf(check.doc);
-  const facts = item.reference === undefined ? null : await factsAgainst(item.reference, item.output, check.language, reading);
-  const cited = item.citations === undefined ? undefined : await citationsAgainst(item, item.citations, reading, ui);
-  const citations = cited !== undefined && "citations" in cited ? cited.citations : null;
-  const notRun = [
-    ...notRunOf(check),
-    ...(facts === null ? [{ rule: "compare", reason: GRADE_TEXT[ui].noReference }] : []),
-    ...(cited === undefined ? [{ rule: "cite", reason: GRADE_TEXT[ui].noCitations }] : []),
-    ...(cited !== undefined && "notRun" in cited ? [cited.notRun] : []),
-  ];
-  const verdict = defaultVerdict({ findings, facts, citations });
+  const checked = await checkItem(item, setup);
+  const { verdict, score } = judge(item, checked, setup);
   return {
     id: item.id,
-    language: check.language,
-    genre: check.genre.genre,
-    size,
-    findings,
+    language: checked.check.language,
+    genre: checked.check.genre.genre,
+    size: checked.size,
+    findings: checked.findings,
     rates: ratesOf(
-      findings.map((finding) => finding.rule),
-      size,
+      checked.findings.map((finding) => finding.rule),
+      checked.size,
     ),
-    notRun,
-    facts,
-    citations,
+    notRun: notRunOf(checked, setup.rubric),
+    facts: checked.facts,
+    citations: citationsOf(checked),
+    ...(score === undefined ? {} : { score }),
     pass: verdict.pass,
     failedBecause: verdict.failedBecause,
     stamp: setup.stamp,

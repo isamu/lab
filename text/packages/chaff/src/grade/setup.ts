@@ -6,6 +6,7 @@ import { loadProfiles } from "../profile/load.ts";
 import { VERSION_LINES } from "../version.ts";
 import type { GradeSetup } from "./grade-item.ts";
 import { compareText } from "./order.ts";
+import type { Rubric } from "./rubric.ts";
 import { stampOf, type RuleSet } from "./stamp.ts";
 
 /** The languages every stamp covers, whatever a run's outputs are written in, so two runs over different outputs stay comparable. */
@@ -27,13 +28,14 @@ const ruleSetOf = async (config: Config, languages: readonly string[]): Promise<
   };
 };
 
-/** A run's settings and stamp. `languages`: those the items name, beyond the bundled ones. Throws when a language package cannot be loaded. */
+/** A run's settings, rubric and stamp. `languages`: those the items name, beyond the bundled ones. Throws when a language package cannot be loaded. */
 export const gradeSetup = async (
   config: Config,
   run: { readonly experimental: boolean; readonly genre: string | undefined },
   languages: readonly string[],
+  rubric: Rubric | undefined,
 ): Promise<GradeSetup> => {
   const all = [...new Set([...BUNDLED_LANGUAGES, ...languages])].toSorted(compareText);
   const settings = { config, experimental: run.experimental, genre: run.genre };
-  return { ...settings, stamp: stampOf(VERSION_LINES, await ruleSetOf(config, all), settings) };
+  return { ...settings, rubric, stamp: stampOf(VERSION_LINES, await ruleSetOf(config, all), settings) };
 };

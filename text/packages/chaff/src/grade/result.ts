@@ -36,6 +36,12 @@ export type NotRunEntry = { readonly rule: string; readonly reason: string };
 /** What makes two results comparable (spec §29.7): the same rules and settings. */
 export type Stamp = { readonly chaff: string; readonly rules: string; readonly settings: string };
 
+/** One finding's penalty points, so every point names the finding it came from. */
+export type ScoreItem = { readonly points: number; readonly rule: string; readonly line: number };
+
+/** The penalty sum under a `grade:` rubric (spec §29.4). Never a score out of a maximum. */
+export type GradeScore = { readonly penalty: number; readonly items: readonly ScoreItem[] };
+
 export type GradeResult = {
   readonly id: string;
   readonly language: string;
@@ -48,6 +54,8 @@ export type GradeResult = {
   readonly facts: GradeFacts | null;
   /** Null when the item gave no citations. */
   readonly citations: GradeCitations | null;
+  /** Only with a `grade:` rubric. */
+  readonly score?: GradeScore | undefined;
   readonly pass: boolean;
   /** Each condition the output failed, with how far: `facts.dropped 3 > 0`. */
   readonly failedBecause: readonly string[];

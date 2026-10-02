@@ -1,10 +1,15 @@
 import type { Texts } from "../ui.ts";
+import { ATOM_KINDS } from "../compare/atom.ts";
 import type { ItemProblem, ItemProblemKind } from "./item.ts";
+import type { Expected, RubricProblem } from "./rubric.ts";
 
 export type GradeText = {
   readonly usage: string;
   readonly noReference: string;
   readonly noCitations: string;
+  readonly unknownRule: string;
+  readonly rubricProblem: (problem: RubricProblem) => string;
+  readonly penalty: (total: number) => string;
   readonly noStructure: (source: string, language: string) => string;
   readonly unreadable: (path: string, why: string) => string;
   readonly problem: (problem: ItemProblem) => string;
@@ -58,6 +63,26 @@ const PROBLEM_EN: typeof PROBLEM_JA = {
   empty: () => "no output to grade: the file has no item",
 };
 
+const EXPECTED_JA: Readonly<Record<Expected, string>> = {
+  map: "キーと値の組（{ … }）",
+  count: " 0 以上の整数",
+  number: " 0 以上の数",
+  boolean: " true か false",
+  words: "空でない文字列の並び",
+  kinds: `事実の種類（${ATOM_KINDS.join("・")}）の並び`,
+  "known-key": "知っているキーだけ",
+};
+
+const EXPECTED_EN: Readonly<Record<Expected, string>> = {
+  map: "a map ({ … })",
+  count: "a whole number from 0",
+  number: "a number from 0",
+  boolean: "true or false",
+  words: "a list of non-empty strings",
+  kinds: `a list of fact kinds (${ATOM_KINDS.join(", ")})`,
+  "known-key": "a key chaff knows",
+};
+
 /** A bracketed aside, or nothing when there is nothing to say. */
 const aside = (open: string, inner: string, close: string): string => (inner === "" ? "" : [open, inner, close].join(""));
 
@@ -66,6 +91,9 @@ export const GRADE_TEXT: Texts<GradeText> = {
     usage: "使い方: chaff grade <items.jsonl> [--out <results.jsonl>] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
     noReference: "reference が無い（事実は reference と照らす）",
     noCitations: "citations が無い（chaff は出力から引用を推測しない）",
+    unknownRule: "grade: に書かれているが、chaff の知らないルール",
+    rubricProblem: (problem) => `chaff.yaml の ${problem.path} は${EXPECTED_JA[problem.expected]}で書いてください（書かれていたのは ${problem.written}）`,
+    penalty: (total) => `減点の和: ${String(total)}`,
     noStructure: (source, language) => `原文 ${source} の言語 ${language} のパッケージは文書の構造を読めない`,
     unreadable: (path, why) => `${path} を読めませんでした: ${why}`,
     problem: (problem) => PROBLEM_JA[problem.kind](problem),
@@ -87,6 +115,9 @@ export const GRADE_TEXT: Texts<GradeText> = {
     usage: "usage: chaff grade <items.jsonl> [--out <results.jsonl>] [--json] [--compact] [--experimental] [--genre <genre>]",
     noReference: "no reference given (facts are checked against a reference)",
     noCitations: "no citations given (chaff does not guess quotations from the output)",
+    unknownRule: "named under grade: but not a rule chaff knows",
+    rubricProblem: (problem) => `chaff.yaml: ${problem.path} must be ${EXPECTED_EN[problem.expected]} (found ${problem.written})`,
+    penalty: (total) => `Penalty points: ${String(total)}`,
     noStructure: (source, language) => `the ${language} package cannot read the structure of source ${source}`,
     unreadable: (path, why) => `Could not read ${path}: ${why}`,
     problem: (problem) => PROBLEM_EN[problem.kind](problem),
