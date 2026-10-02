@@ -70,6 +70,10 @@ groups:
       number-style-consistency: off
       # An enumeration of conditions mixes 〜こと and 〜とき by what each condition is.
       list-item-form-mix: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -101,6 +105,10 @@ groups:
       emoji-heading: off
       bold-label-list: off
       ai-structure: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
@@ -126,6 +134,10 @@ groups:
       bold-label-list: off
       ai-structure: off
       requirement-smell: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
@@ -205,6 +217,10 @@ groups:
       list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -236,6 +252,10 @@ groups:
       # Spoken numbers are transcribed as heard.
       number-style-consistency: off
       list-item-form-mix: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
 
 genres:
   - id: technical/spec
