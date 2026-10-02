@@ -1,7 +1,10 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
-import { markersIn } from "../packages/chaff/src/detectors/chat-citation.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
+import { markersIn, showsInProse } from "../packages/chaff/src/detectors/chat-citation.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter, Lexicon } from "../packages/chaff/src/plugin.ts";
@@ -45,6 +48,12 @@ describe("markersIn: every place a marker is written", () => {
   });
 });
 
+describe("showsInProse: a span with prose left in it", () => {
+  it("reads a span with text", () => assert.ok(showsInProse("ab cd", { start: 1, end: 4 })));
+  it("does not read a blanked span", () => assert.ok(!showsInProse("a    d", { start: 1, end: 5 })));
+  it("does not read an empty span", () => assert.ok(!showsInProse("abc", { start: 1, end: 1 })));
+});
+
 describe("chat-citation-residue", () => {
   it("invalid: a link that came from a chat answer (ja)", () => {
     assert.ok(idsFor("# 記事\n\n手順は[公式の説明](https://example.com/setup?utm_source=chatgpt.com)のとおりです。\n", ja).includes("chat-citation-residue"));
@@ -79,6 +88,22 @@ describe("chat-citation-residue", () => {
       (adapter.lexicons["chat-citation-marker"] ?? []).map((entry) => entry.pattern).toSorted((left, right) => left.localeCompare(right));
     assert.deepEqual(patternsOf(ja), patternsOf(en));
     assert.ok(patternsOf(ja).includes("oaicite"));
+  });
+
+  it("invalid: an image whose address came from a chat answer", () => {
+    assert.ok(idsFor("# Post\n\n![diagram](https://example.com/a.png?utm_source=chatgpt.com)\n", en).includes("chat-citation-residue"));
+  });
+
+  it("invalid: a citation mark that Markdown splits into a text and a reference", () => {
+    const source = "# Post\n\nThe plan costs $5. :contentReference[oaicite:0]{index=0}\n\n[oaicite:0]: https://example.com/source\n";
+    const matched = runRules(buildDocument("t.md", source, en), loadRules("en"), {}, true, "blog/tech")
+      .findings.filter((finding) => finding.rule === "chat-citation-residue")
+      .map((finding) => finding.values["matched"]);
+    assert.ok(matched.includes("contentReference["), JSON.stringify(matched));
+  });
+
+  it("valid: a marker in a quote is someone else's words", () => {
+    assert.ok(!idsFor("# Post\n\n> See https://example.com/?utm_source=chatgpt.com\n", en).includes("chat-citation-residue"));
   });
 
   it("valid: another utm_source value", () => {
