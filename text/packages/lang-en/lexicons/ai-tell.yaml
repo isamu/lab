@@ -5,20 +5,27 @@ language: en
 entries:
   - pattern: delve into
     weight: 0.9
+    rewrite: look at, or explain
   - pattern: in today's fast-paced world
     weight: 0.9
+    rewrite: delete it and start with the point
   - pattern: tapestry
     weight: 0.6
+    rewrite: name the parts
   - pattern: it's not just
     weight: 0.7
   - pattern: plays a crucial role
     weight: 0.8
+    rewrite: say what it does
   - pattern: navigate the complexities
     weight: 0.8
+    rewrite: name the hard part and say how it is handled
   - pattern: a testament to
     weight: 0.7
+    rewrite: shows
   - pattern: unlock the potential
     weight: 0.8
+    rewrite: say what becomes possible
   - pattern: deep dive
     weight: 0.5
   - pattern: intricate
@@ -27,10 +34,13 @@ entries:
     weight: 0.5
   - pattern: meticulous
     weight: 0.6
+    rewrite: careful, and say what was checked
   - pattern: meticulously
     weight: 0.6
+    rewrite: carefully, and say what was checked
   - pattern: pivotal
     weight: 0.5
+    rewrite: say what depends on it
   - pattern: in the realm of
     weight: 0.6
   - pattern: showcasing
@@ -85,6 +95,7 @@ entries:
     weight: 0.7
   - pattern: seamlessly
     weight: 0.5
+    rewrite: say what the reader no longer has to do
   - pattern: empowering
     weight: 0.5
   - pattern: game-changer
@@ -101,6 +112,7 @@ entries:
     weight: 0.5
   - pattern: it's worth noting
     weight: 0.5
+    rewrite: delete it and state the point
   - pattern: faces several challenges
     weight: 0.8
   - pattern: despite these challenges

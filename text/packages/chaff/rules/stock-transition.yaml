@@ -53,3 +53,34 @@ not_flagged:
 level_meaning:
   ja: 決まった接ぎで始まる文が 1000 字あたり {limit} 個まで
   en: up to {limit} sentences per 1000 words opening with a stock transition
+rewrite:
+  ja:
+    direction: 文頭の接ぎの語を消して読み返してください。繋がりが分からなくなる所だけ、前の文との関係（理由、例外、順番）を言葉で書きます。
+    pairs:
+      - before: さらに、ログの保存期間も延ばしました。
+        after: ログの保存期間も延ばしました。
+      - before: 費用が下がりました。加えて、速度も上がりました。
+        after: 費用が下がり、速度も上がりました。
+      - before: このように、設定は三か所で変わります。
+        after: 設定が変わるのは、この三か所です。
+    keep:
+      - 文の順番
+      - 書き手が書いた理由や対比
+    avoid:
+      - 「さらに」を「また」「そして」に替えるだけで済ませる
+      - 書き手が書いていない因果（「〜なので」）を作る
+  en:
+    direction: Delete the transition at the start of the sentence and reread. Only where the link is lost, say what it is (a reason, an exception, an order).
+    pairs:
+      - before: Moreover, we extended log retention.
+        after: We also extended log retention.
+      - before: Costs fell. Additionally, speed improved.
+        after: Costs fell and speed improved.
+      - before: In conclusion, the settings change in three places.
+        after: The settings change in three places.
+    keep:
+      - the order of the sentences
+      - a reason or contrast the writer stated
+    avoid:
+      - swapping "Moreover" for "Also" at the start of every sentence
+      - inventing a cause ("because") the writer did not state

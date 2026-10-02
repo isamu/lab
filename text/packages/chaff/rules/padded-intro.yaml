@@ -49,3 +49,28 @@ not_flagged:
 level_meaning:
   ja: 当てはまる書き出しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
+rewrite:
+  ja:
+    direction: どの文書にも当てはまる書き出し（「近年、〜が注目されています」）を消し、この文書だけが扱う状況か主張から始めてください。それが本文に無ければ書き手に聞きます。
+    pairs:
+      - before: 近年、生成 AI が注目されています。本記事では、社内での使い方を紹介します。
+        after: 社内で生成 AI を使うときの手順を紹介します。
+      - before: テレワークが普及する中、会議の進め方が見直されています。当社では週次会議を 30 分に短くしました。
+        after: 当社では週次会議を 30 分に短くしました。
+    keep:
+      - この文書だけの状況と主張
+    avoid:
+      - 書き出しを別の一般論（「今や〜は欠かせません」）に替える
+      - 本文に無い場面や逸話を作る
+  en:
+    direction: Delete the opening that fits any document ("In recent years, X has gained attention") and start from the situation or the claim only this piece has. If the body has none, ask the writer.
+    pairs:
+      - before: In recent years, generative AI has gained attention. This article shows how we use it internally.
+        after: This article shows how we use generative AI internally.
+      - before: As remote work spreads, meetings are being rethought. We cut our weekly meeting to 30 minutes.
+        after: We cut our weekly meeting to 30 minutes.
+    keep:
+      - the situation and claim only this piece has
+    avoid:
+      - swapping the opening for another generality ("X is now essential")
+      - inventing a scene or an anecdote that is not in the body
