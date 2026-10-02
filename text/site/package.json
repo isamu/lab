@@ -7,6 +7,7 @@
     "dev": "yarn examples && astro dev",
     "build": "yarn examples && astro build",
     "preview": "astro preview",
+    "docs:links": "node ../scripts/docs-links.ts dist",
     "typecheck": "yarn examples && astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

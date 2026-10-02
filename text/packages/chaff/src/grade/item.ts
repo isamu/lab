@@ -116,6 +116,12 @@ const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVoca
   return { value: { id, output, ...fields.value, sources: sources.value, citations: citations.value } };
 };
 
+/** One item from a value already parsed, as `grade()` receives it; `line` is 0 when it came from no file. */
+export const readItem = (raw: unknown, vocabulary: ItemVocabulary, line = 0): { readonly item: GradeItem } | { readonly problem: ItemProblem } => {
+  const read = isRecord(raw) ? itemOf(raw, line, vocabulary) : { problem: { kind: "not-object" as const, line } };
+  return "value" in read ? { item: read.value } : read;
+};
+
 const parseLine = (text: string, line: number, vocabulary: ItemVocabulary): Parsed<GradeItem> => {
   try {
     const raw: unknown = JSON.parse(text);

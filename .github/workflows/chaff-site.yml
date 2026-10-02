@@ -3,10 +3,10 @@ name: chaff site
 
 on:
   pull_request:
-    paths: ["text/site/**", "text/packages/**", "text/scripts/rule-examples.ts", "text/scripts/guide-screens.ts", "text/scripts/guide-screens-parse.ts", "text/test/cli-run.ts", ".github/workflows/chaff-site.yml"]
+    paths: ["text/site/**", "text/packages/**", "text/scripts/rule-examples.ts", "text/scripts/guide-screens.ts", "text/scripts/guide-screens-parse.ts", "text/test/cli-run.ts", "text/scripts/docs-links.ts", "text/scripts/site-links.ts", "text/README.md", ".github/workflows/chaff-site.yml"]
   push:
     branches: [main]
-    paths: ["text/site/**", "text/packages/**", "text/scripts/rule-examples.ts", "text/scripts/guide-screens.ts", "text/scripts/guide-screens-parse.ts", "text/test/cli-run.ts", ".github/workflows/chaff-site.yml"]
+    paths: ["text/site/**", "text/packages/**", "text/scripts/rule-examples.ts", "text/scripts/guide-screens.ts", "text/scripts/guide-screens-parse.ts", "text/test/cli-run.ts", "text/scripts/docs-links.ts", "text/scripts/site-links.ts", "text/README.md", ".github/workflows/chaff-site.yml"]
 
 permissions:
   contents: read
@@ -48,3 +48,8 @@ jobs:
 
       - name: build
         run: yarn build
+
+      # Every link of the built site and the READMEs: no page or anchor missing, no guide page only the menu reaches,
+      # and each guide page links to the same pages in Japanese and English.
+      - name: docs:links
+        run: yarn docs:links

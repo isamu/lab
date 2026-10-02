@@ -1,0 +1,12 @@
+table  11  11  0  0
+ja/itinerary  sentences-joined  found
+ja/press  sentences-joined  found
+en/blog  sentences-joined  found
+en/design  sentences-joined  found
+en/email  sentences-joined  found
+en/figures  sentences-joined  found
+en/itinerary  sentences-joined  found
+en/minutes  sentences-joined  found
+en/note  sentences-joined  found
+en/press  sentences-joined  found
+en/proposal  sentences-joined  found

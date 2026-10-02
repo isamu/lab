@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/blog  cliche-closing  found
+en/blog  cliche-closing  found
