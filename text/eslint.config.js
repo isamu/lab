@@ -67,7 +67,7 @@ export default tseslint.config(
 
   {
     // arrange ブロックは性質として重複し、その長さは理解の問題ではない。
-    files: ["test/**/*.ts"],
+    files: ["test/**/*.ts", "examples/*/test/**/*.mjs"],
     rules: {
       "max-lines": "off",
       "max-lines-per-function": "off",
