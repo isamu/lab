@@ -4,7 +4,7 @@ import { numberingBreaks } from "../structure/numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
-import { reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
+import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
 
 const QUOTE_LENGTH = 80;
@@ -106,6 +106,8 @@ const rangeWordsOf = (doc: ProseDocument): RangeWords => ({
   connectors: (doc.lexicons["range-connector"] ?? []).map((entry) => entry.pattern),
   openers: (doc.lexicons["range-opener"] ?? []).map((entry) => entry.pattern),
   closers: (doc.lexicons["range-closer"] ?? []).map((entry) => entry.pattern),
+  frames: (doc.lexicons["range-frame"] ?? []).flatMap((entry) => rangeFrameOf(entry.pattern) ?? []),
+  changes: (doc.lexicons["date-change-word"] ?? []).map((entry) => entry.pattern),
 });
 
 /** 期間の終わりが始まりより前。範囲の記号と語は言語パッケージの語彙表（range-connector、range-opener、range-closer）から取る。 */

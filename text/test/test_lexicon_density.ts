@@ -54,6 +54,46 @@ describe("L2 の語彙表と密度", () => {
     it("valid: 用件から始めていれば指摘しない", () => {
       assert.ok(!idsFor(`# 依頼\n\n11 日までに返信をお願いします。${BULK}`).includes("cushion-phrase-density"));
     });
+
+    const SHORT_EMAIL = (body: string): string => `# Follow-up\n\nHi Dana,\n\n${body}\n\nBest regards,\nSam\n`;
+    const cushionFindings = (
+      source: string,
+      adapter: LanguageAdapter = en,
+      level: "strict" | "normal" = "normal",
+    ): readonly { readonly values: Record<string, unknown> }[] =>
+      runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), { "cushion-phrase-density": level }, true, "business/email").findings.filter(
+        (finding) => finding.rule === "cushion-phrase-density",
+      );
+
+    it("invalid: three softeners piled into a short email are reported, with the document's own density", () => {
+      const body =
+        "I hope this email finds you well. I just wanted to reach out about the invoice we sent last week. Sorry to bother you, but could you confirm the payment date?";
+      const findings = cushionFindings(SHORT_EMAIL(body));
+      assert.deepEqual(
+        findings.map((finding) => finding.values["matched"]),
+        ["hope this email finds you well", "just wanted to", "sorry to bother"],
+      );
+      assert.ok(Number(findings[0]?.values["density"]) > 50, "the density shown is the document's own");
+    });
+
+    it("valid: in a short email, two softeners pass at normal and one passes even at strict", () => {
+      const two = "Sorry to bother you, but could you review this when you get a chance?";
+      assert.deepEqual(cushionFindings(SHORT_EMAIL(two)), []);
+      assert.equal(cushionFindings(SHORT_EMAIL(two), en, "strict").length, 2);
+      assert.deepEqual(cushionFindings(SHORT_EMAIL("Sorry to bother you, but could you confirm the payment date by Friday?"), en, "strict"), []);
+    });
+
+    it("短い日本語のメール: 三つで指摘し、「お忙しいところ恐れ入りますが」の二つは通す", () => {
+      const three = "お忙しいところ恐れ入りますが、請求書をご確認ください。差し支えなければ、金曜までにご返信ください。";
+      assert.equal(cushionFindings(`# ご確認のお願い\n\n${three}\n`, ja).length, 3);
+      assert.deepEqual(cushionFindings(`# ご確認のお願い\n\nお忙しいところ恐れ入りますが、請求書をご確認ください。\n`, ja), []);
+      assert.deepEqual(cushionFindings(`# ご確認のお願い\n\n恐れ入りますが、請求書をご確認ください。\n`, ja, "strict"), []);
+    });
+
+    it("valid: a short document is still not measured for hedges (they are found stacked in one sentence instead)", () => {
+      const hedges = "It may be useful. Perhaps it helps. Arguably it works. Possibly it scales.";
+      assert.ok(!idsFor(`# Note\n\n${hedges}\n`, en).includes("excessive-hedging"));
+    });
   });
 
   describe("unqualified-superlative", () => {

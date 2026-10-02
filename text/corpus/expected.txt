@@ -199,7 +199,7 @@ soumu-kokumin-cyber-malware  concrete-evidence-density 3, max-sentence-length 10
 soumu-kokumin-cyber-phishing  concrete-evidence-density 3, katakana-long-vowel 1, latin-spacing 7, max-sentence-length 6
 soumu-wp-r06-ai-booms  agentless-passive 1, katakana-long-vowel 1, max-sentence-length 2, undefined-acronym 3
 soumu-wp-r06-ai-rules-japan  agentless-passive 2, latin-spacing 1, max-sentence-length 6, no-doubled-joshi 1
-soumu-wp-r06-misinformation  agentless-passive 7, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 22, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
+soumu-wp-r06-misinformation  agentless-passive 8, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 22, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
 sre-next-bunsho-kanri  clean
 sre-next-teikan  no-mixed-desumasu 1
 tc39-agenda-2026-07  adverb-overuse 1, max-sentence-length 11, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 2

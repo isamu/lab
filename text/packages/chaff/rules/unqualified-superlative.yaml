@@ -30,19 +30,19 @@ sources: [femmer-2017]
 
 group: wording
 summary:
-  ja: 「業界最速」「最高の品質」のように、何と比べたのかを書いていない最上級
+  ja: 「最速」「最高の品質」のように、何と比べたのかを書いていない最上級
   en: A superlative such as "the fastest" with nothing to compare it against
 example:
   ja:
-    before: 当社の新製品は業界最速で、最高の品質です。圧倒的な使いやすさです。
+    before: 当社の新製品は最速で、最高の品質です。圧倒的な使いやすさです。
     after: 当社の新製品は、従来品より処理が二割速くなりました。
   en:
     before: Our new product is the fastest on the market, with unmatched quality and unparalleled ease of use.
     after: Our new product processes orders a fifth faster than the previous model.
 
 not_flagged:
-  ja: 「当社比」「〜の中で」「〜のほうが」のように、比べる相手や範囲が同じ文にあれば指しません。「SES との最大の違い」のように、最上級のすぐ前に相手があるときも同じです。「」や引用符で引いた言葉の中の最上級は、書き手の主張ではないので指しません。
-  en: A superlative with its comparison or scope in the same sentence ("in our range", "than last year") is not reported, nor is one inside quotation marks, which are someone else's words.
+  ja: 「当社比」「〜の中で」「〜のほうが」のように、比べる相手や範囲が同じ文にあれば指しません。「SES との最大の違い」のように、最上級のすぐ前に相手があるときも同じです。「国内最大」「業界最速」のように名詞がじかに付いた最上級と、「日本で最も」のように名前と「で」が前にある最上級は、範囲を言っているので指しません。「」や引用符で引いた言葉の中の最上級は、書き手の主張ではないので指しません。
+  en: A superlative with its comparison or scope in the same sentence ("in our range", "than last year", "the fastest in the industry") is not reported, nor is one inside quotation marks, which are someone else's words.
 level_meaning:
   ja: 比べる相手のない最上級が {limit} 箇所あれば指摘
   en: reported once there are {limit} such claims

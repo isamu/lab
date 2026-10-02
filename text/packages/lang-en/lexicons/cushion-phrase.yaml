@@ -9,3 +9,9 @@ entries:
   - pattern: when you get a chance
   - pattern: no rush but
   - pattern: apologies for
+  - pattern: hope this email finds you well
+  - pattern: hope this message finds you well
+  - pattern: hope this finds you well
+  - pattern: sorry to trouble
+  - pattern: just reaching out
+  - pattern: just checking in
