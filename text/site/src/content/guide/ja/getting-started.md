@@ -108,7 +108,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
 
      → 文を割るか、箇条書きにしてください。組の切れ目がはっきりします。
 
-     このルールをゆるめる:  npx chaff relax no-nakaguro-parallel
+     このルールをゆるめる:  npx chaffjs relax no-nakaguro-parallel
 
 
 ─── 83 行目 ──────────────────────────────────────────────────
@@ -122,7 +122,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
 
      → 接続助詞のところで 2 文に割ってください。それだけで読めるようになります。
 
-     このルールをゆるめる:  npx chaff relax max-sentence-length
+     このルールをゆるめる:  npx chaffjs relax max-sentence-length
 ```
 
 上から順に、次のことが書かれています。
@@ -141,9 +141,6 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
 
 同じ文章なら、何度かけても同じ結果が出ます。
 動いていないルールも理由つきで並ぶので、何を見て何を見なかったのかが分かります。
-
-画面には `npx chaff relax` と出ますが、自分で打つときは `npx chaffjs relax` と打ちます。
-この手引きのコマンドも、自分で打つ形の `npx chaffjs` で書いています。
 
 ## 指摘されたら、道は 3 つ
 

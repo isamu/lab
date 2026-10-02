@@ -87,7 +87,7 @@ enquiries.md   business/report · English   genre from --genre
 
      → Split it in two at the conjunction.
 
-     Relax this rule:  npx chaff relax max-sentence-length
+     Relax this rule:  npx chaffjs relax max-sentence-length
 
 
 ─── line 5 ───────────────────────────────────────────────────
@@ -101,7 +101,7 @@ enquiries.md   business/report · English   genre from --genre
 
      → Start from a concrete situation, or from the claim only this piece makes.
 
-     Relax this rule:  npx chaff relax padded-intro
+     Relax this rule:  npx chaffjs relax padded-intro
 
 
 ─── line 9 ───────────────────────────────────────────────────
@@ -115,7 +115,7 @@ enquiries.md   business/report · English   genre from --genre
 
      → Split it in two at the conjunction.
 
-     Relax this rule:  npx chaff relax max-sentence-length
+     Relax this rule:  npx chaffjs relax max-sentence-length
 
 
 ────────────────────────────────────────────────────────────
@@ -146,7 +146,7 @@ That way "no findings" is never mistaken for "checked everything and found nothi
 | --- | --- |
 | still experimental | The rule is still being checked for false alarms. `--experimental` turns it on |
 | not a rule for en | The rule is for Japanese documents only |
-| it reads meaning; npx chaff test runs it | A machine alone cannot decide it. It runs when an AI reads the passage, with `npx chaffjs test` |
+| it reads meaning; npx chaffjs test runs it | A machine alone cannot decide it. It runs when an AI reads the passage, with `npx chaffjs test` |
 
 ## Running the experimental rules too
 
@@ -235,10 +235,10 @@ After saying it created `chaff.yaml` (the settings file) and `.gitignore`, it sh
 
 ```
 The genre is business/report. If that is wrong, change genre in chaff.yaml.
-  List: npx chaff genres
+  List: npx chaffjs genres
 
 Next:
-  npx chaff .            check every Markdown file here
+  npx chaffjs .            check every Markdown file here
 ```
 
 From then on, `npx chaffjs enquiries.md` in this folder checks the file as a report.

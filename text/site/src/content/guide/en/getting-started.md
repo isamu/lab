@@ -109,7 +109,7 @@ sample.md   blog/tech · English   genre from the default
 
      → Split it in two at the conjunction.
 
-     Relax this rule:  npx chaff relax max-sentence-length
+     Relax this rule:  npx chaffjs relax max-sentence-length
 
 
 ─── line 21 ──────────────────────────────────────────────────
@@ -123,7 +123,7 @@ sample.md   blog/tech · English   genre from the default
 
      → Split it in two at the conjunction.
 
-     Relax this rule:  npx chaff relax max-sentence-length
+     Relax this rule:  npx chaffjs relax max-sentence-length
 
 
 ─── line 142 ─────────────────────────────────────────────────
@@ -137,7 +137,7 @@ sample.md   blog/tech · English   genre from the default
 
      → Start from what the heading promised, not from the heading itself.
 
-     Relax this rule:  npx chaff relax heading-echo
+     Relax this rule:  npx chaffjs relax heading-echo
 ```
 
 From top to bottom, the screen says:
@@ -156,9 +156,6 @@ From top to bottom, the screen says:
 
 The same text gives the same result every time.
 Rules that did not run are listed with their reasons, so you can see what was checked and what was not.
-
-The screen says `npx chaff relax`; when you type it yourself, type `npx chaffjs relax`.
-This guide writes commands the way you type them, as `npx chaffjs`.
 
 ## Three ways to respond to a finding
 

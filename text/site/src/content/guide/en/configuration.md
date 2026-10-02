@@ -23,10 +23,10 @@ Created:
   …/.gitignore  created
 
 The genre is legal/contract. If that is wrong, change genre in chaff.yaml.
-  List: npx chaff genres
+  List: npx chaffjs genres
 
 Next:
-  npx chaff .            check every Markdown file here
+  npx chaffjs .            check every Markdown file here
 ```
 
 The paths on the screen are shortened. The `chaff.yaml` it writes is:
@@ -46,9 +46,9 @@ The paths on the screen are shortened. The `chaff.yaml` it writes is:
 #
 # Commands change it too, and leave the reason as a comment.
 #
-#   npx chaff relax bold-density --why "figure captions use a lot of bold"
-#   npx chaff explain bold-density        read what the rule is for
-#   npx chaff rules --json                give this to an AI that writes the settings
+#   npx chaffjs relax bold-density --why "figure captions use a lot of bold"
+#   npx chaffjs explain bold-density        read what the rule is for
+#   npx chaffjs rules --json                give this to an AI that writes the settings
 
 # The kind of document kept here (Contracts, terms of service and privacy policies). The others: npx chaffjs genres
 genre: legal/contract
@@ -159,7 +159,7 @@ $ npx chaffjs explain max-sentence-length
 
   Now: normal.
 
-  Change it:  npx chaff relax max-sentence-length --why "reason"
+  Change it:  npx chaffjs relax max-sentence-length --why "reason"
 ```
 
 The same `normal` means a different number in a different genre.
@@ -373,7 +373,7 @@ For an experimental rule, `now` says why it does not run and how to turn it on.
     "now": {
       "level": "off",
       "why_off": "experimental rules do not run by default",
-      "turn_on_with": "npx chaff lint --experimental"
+      "turn_on_with": "npx chaffjs lint --experimental"
     }
 ```
 
@@ -390,7 +390,7 @@ rules:
 <!-- chaff-screen: typo -->
 ```
 $ npx chaffjs article.md
-chaff: …/chaff.yaml: there is no rule named max-sentense-length (npx chaff rules --json lists them)
+chaff: …/chaff.yaml: there is no rule named max-sentense-length (npx chaffjs rules --json lists them)
 chaff: …/chaff.yaml: cannot read "loose" as the level of bold-density (strict / normal / relaxed / off, or a positive number)
 …
 ```

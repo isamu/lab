@@ -6,6 +6,7 @@ When you type one yourself, put `npx` in front: `npx chaffjs`.
 ## The commands
 
 The list `npx chaffjs --help` prints, as a table.
+`--help` after a command, as in `npx chaffjs init --help`, prints only that command's lines and runs nothing.
 
 | Command | What happens |
 | --- | --- |
@@ -125,7 +126,7 @@ $ npx chaffjs explain max-sentence-length
 
   Now: normal.
 
-  Change it:  npx chaff relax max-sentence-length --why "reason"
+  Change it:  npx chaffjs relax max-sentence-length --why "reason"
 ```
 
 ## Changing a rule with a command
@@ -275,7 +276,7 @@ $ npx chaffjs suppressions docs/
   bold-density                7  <- consider changing the setting instead
       docs/g1.md, docs/g2.md, docs/g3.md and 4 more files
       reasons: a glossary, so the bold is on purpose
-      relax the whole rule: npx chaff relax bold-density --why "..."
+      relax the whole rule: npx chaffjs relax bold-density --why "..."
 
   Silenced without a reason: 1
       docs/x.md

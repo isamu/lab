@@ -78,7 +78,7 @@ Make one sample that breaks both requirements, and run it. This is the real outp
 ```
 $ npx chaffjs sample.md --compact
 
-sample.md   technical/spec · 日本語   ジャンルはchaff.yamlから
+sample.md   technical/spec · 日本語   ジャンルは chaff.yaml から
 
   3:1     warning この文は 84 文字あります（80 文字まで）
                   max-sentence-length
