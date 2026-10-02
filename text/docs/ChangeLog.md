@@ -15,6 +15,42 @@ message is still the document's own. `excessive-hedging` keeps skipping short do
 one sentence). The English word list gains "hope this email finds you well" (and the "message" and plain forms),
 "sorry to trouble", "just reaching out" and "just checking in".
 
+### `date-range-reversed` (en) reads "from … to …"
+
+"The agreement runs from 1 November 2026 to 31 October 2026" was not compared, though the same dates joined by
+"through" were. The day-first date was read fine; "to" was the gap, left out because "moved from March 10 to March 3"
+changes a date. Two new English word lists close it: `range-frame` ("from … to", "from … up to") makes a period of a
+lead word right before the first date and a joint word between the dates, and a word from `date-change-word` (moved,
+postponed, brought forward, rescheduled …) anywhere in the same sentence, across line wraps, makes it a change of date
+instead. "between … and" is not read as a period: it also names two dates to choose from. Japanese keeps reading
+から … まで with range-opener and range-closer.
+
+### `announced-count-mismatch` (en) knows more nouns that name what a list holds
+
+"The board made three decisions:" was not read as an announcement, though "three points:" was. The English word list
+`count-counter` now also has nouns such as decisions, findings, examples, objectives, priorities, outcomes, problems,
+concerns, constraints, assumptions, limitations, roles, values, sections, tools, policies, metrics
+and milestones. A plural before a colon is still not enough on its own: a plural that measures ("over the past three
+years:", "two hours:", "two levels:") or a verb ending in s ("Release 2 includes:", "Section 2 documents:") does not
+announce a list.
+
+### `agentless-passive` (ja) reads 「〜されることとなった」 as a predicate
+
+「本件は検討されることとなった。」 and 「見直しが実施されることになりました。」 were not reported: the こと after the
+passive looked like a noun the passive modifies (as in 「開催される BootCamp」). The new lang-ja word list
+`passive-predicate-frame` (ことになる, こととなる, with も or は inside, and with 事) names the frames whose noun is part of
+the predicate; the passive before one is judged like a passive at the end of a sentence. A content noun after the frame
+(「検討されることとなった案」) still makes it a modifier, a bound noun does not (「〜ことになったため」), a conditional after the
+frame (「〜こととなれば」, 「〜ことになると」) is not reported, and other uses of こと (「延期されることがある」) are unchanged.
+
+### `sasete-itadaku` counts each use, and its potential and godan forms
+
+The rule counted sentences, so 「配布させていただき、説明させていただきます。」 was one use; it is now two. It also
+counts the potential and negative forms (させていただけますか, させていただけない, させていただければ) and the godan form
+(入らせていただきます, 読ませていただく), which the analyser reads as other words. Two entries that cover the same
+words (させていただく and せていただく) count as one use. A one-step verb with させる (見させていただく) is still not counted:
+the analyser reads its させ as one word, which no entry in the word list can match.
+
 ### Docs: Writing a plugin
 
 - A new guide page, 「プラグインを作る」 / "Writing a plugin": the two forms (a `type: module` rule, a plugin package),
