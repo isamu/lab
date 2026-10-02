@@ -18,6 +18,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs rules` | Every rule as a table, by group, with the level it runs at now |
 | `npx chaffjs rules --json` | The current settings and what each rule is, as JSON, to give to an AI |
 | `npx chaffjs relax\|strict\|off <rule>` | Changes a rule's level, with `--why "reason"` |
+| `npx chaffjs enable <rule>` | Turns on one experimental rule alone (writes `<rule>: normal` in `chaff.yaml`). See [Configuration](./configuration#turning-on-one-experimental-rule) |
 | `npx chaffjs baseline <dir>` | Shelves today's findings |
 | `npx chaffjs suppressions <dir>` | Counts the findings silenced with `stet` |
 | `npx chaffjs tree <file>` | Turns a document into a tree of addresses |
