@@ -1,7 +1,25 @@
 # 語末の「ー」を付けると別の語になるカタカナ語の、「ー」の無い形（フリ ＝ 振り、フリー ＝ free）。
-# 品詞はどちらも名詞なので見分けられない。katakana-long-vowel は、ここに並べた語を同じ語の書き分けとして比べない。
+# 品詞はどちらも名詞で、辞書（IPADIC）は両方を別の見出しとして持つだけで、同じ語の書き分けか別の語かを言わない。
+# katakana-long-vowel は、ここに並べた語を同じ語の書き分けとして比べず、keep でも「ー」を足させない。
+# タブ以下は、style: bunkacho（keep）でコーパスに出たもの（タブ → タブー、ベタ → ベター）と、同じ形の言い換えの組。
 id: long-vowel-distinct
 language: ja
 entries:
   - pattern: フリ
   - pattern: スキ
+  # tab / taboo
+  - pattern: タブ
+  # 塗りつぶし、ありきたり / better
+  - pattern: ベタ
+  # eco / echo
+  - pattern: エコ
+  # 蛇 / heavy
+  - pattern: ヘビ
+  # drama / drummer
+  - pattern: ドラマ
+  # café / カフェー（大正・昭和の飲食店）
+  - pattern: カフェ
+  # career / carrier
+  - pattern: キャリア
+  # 河馬 / cover
+  - pattern: カバ

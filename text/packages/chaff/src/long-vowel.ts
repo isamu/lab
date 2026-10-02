@@ -29,8 +29,11 @@ export type KanaWord = {
   readonly dropped: boolean;
 };
 
-/** The morae of the word written with its final ー: カー is two, コンピューター six. The guidelines count the word that way. */
-export const longFormMorae = (surface: string): number => moraCount(stemOf(surface)) + 1;
+/**
+ * The morae of the word before its final ー: カー is one, カバー two, コンピューター five. JIS Z 8301:2011 Table G.3 counts so:
+ * カバー is its example of a word of two sounds or fewer, which keeps the ー.
+ */
+export const stemMorae = (surface: string): number => moraCount(stemOf(surface));
 
 export type Ending = "consistent" | "drop" | "keep";
 
@@ -81,14 +84,21 @@ const sameWordGroups = (words: readonly KanaWord[]): KanaWord[][] => {
  */
 const inconsistent = (words: readonly KanaWord[]): Odd[] => sameWordGroups(words).flatMap((group) => minorityOf(group, "same-word"));
 
+/** Whether drop reaches the word: its final ー follows one of the kana the guideline drops it after (ア段: -er, -or, -ar). Any, when none are given. */
+const droppable = (word: KanaWord, dropAfter: ReadonlySet<string> | undefined): boolean =>
+  dropAfter === undefined || dropAfter.has(Array.from(stemOf(word.surface)).at(-1) ?? "");
+
 /**
- * The words that go against the chosen way. drop: a word of minMorae or more written with its final ー. keep: a word written
- * without one where the dictionary, or the document itself, has the form with one. consistent: see inconsistent.
- * Words shorter than minMorae are left alone whichever way: the guidelines that drop the ー keep it on them (カー).
+ * The words that go against the chosen way. drop: a word of minMorae or more written with its final ー after a kana of dropAfter.
+ * keep: a word written without one where the dictionary, or the document itself, has the form with one. consistent: see inconsistent.
+ * Words shorter than minMorae are left alone whichever way: the guidelines that drop the ー keep it on them (カー, カバー).
  */
-export const oddLongVowels = (words: readonly KanaWord[], ending: Ending, minMorae: number): Odd[] => {
-  const counted = words.filter((word) => longFormMorae(word.surface) >= minMorae);
-  if (ending === "drop") return counted.filter((word) => word.long).map((word) => ({ word, variant: "drop", preferred: otherForm(word), count: 0, of: 0 }));
+export const oddLongVowels = (words: readonly KanaWord[], ending: Ending, minMorae: number, dropAfter?: ReadonlySet<string>): Odd[] => {
+  const counted = words.filter((word) => stemMorae(word.surface) >= minMorae);
+  if (ending === "drop")
+    return counted
+      .filter((word) => word.long && droppable(word, dropAfter))
+      .map((word) => ({ word, variant: "drop", preferred: otherForm(word), count: 0, of: 0 }));
   if (ending === "keep") {
     const longStems = new Set(counted.filter((word) => word.long).map((word) => stemOf(word.surface)));
     return counted

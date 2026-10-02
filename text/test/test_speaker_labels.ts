@@ -280,7 +280,7 @@ describe("話し手の名前は文でも本文でもない", () => {
 
   it("台詞の固有名詞は数える", () => {
     const names = "Lane met Jack and Algernon near Shropshire with Gwendolen, Cecily, Chasuble and Prism.";
-    assert.ok(findingsOf(repeated(`${EARNEST}\n\nJACK.\n${names} ${names}`, 4), en).includes("proper-noun-density"));
+    assert.ok(findingsOf(repeated(`${EARNEST}\n\nJACK.\n${Array.from({ length: 6 }, () => names).join(" ")}`, 4), en).includes("proper-noun-density"));
   });
 
   /** 台詞は毎回違う。同じなのは話し手の名前と、台詞の頭の短い「I think the」だけ。 */

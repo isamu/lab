@@ -1,0 +1,10 @@
+# Pointing at a clause by where it is instead of by its number (JIS Z 8301:2019 10.6 avoids "the clause below").
+# instead_of names the kind in the message. Only a document that numbers its clauses or chapters (a numbered article
+# or chapter in its structure tree) is checked. Matched in any case.
+id: vague-clause-pointer
+language: en
+entries:
+  - { pattern: the above clause, instead_of: clause }
+  - { pattern: the clause above, instead_of: clause }
+  - { pattern: the below clause, instead_of: clause }
+  - { pattern: the clause below, instead_of: clause }

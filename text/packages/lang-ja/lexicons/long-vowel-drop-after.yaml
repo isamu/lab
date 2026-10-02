@@ -1,0 +1,25 @@
+# katakana-long-vowel の ending: drop が語末の「ー」を省く、その「ー」の前の字（ア段。小さい字はその字で終わる拗音・外来音）。
+# JIS Z 8301:2011 G.6.2.2 は、語末の長音符号の扱いを英語の語末の -er、-or、-ar など、ア列の長音に当たるものについて定め、
+# 表 G.3 がそれを省く原則を置く。学術用語集についての注記も同じ語尾を挙げる。ュー（レビュー、メニュー）、エー（グレー）、
+# イー（コピー）は、これらの案内が省くとは言っていないので、drop でも見ない。
+id: long-vowel-drop-after
+language: ja
+entries:
+  - pattern: ア
+  - pattern: カ
+  - pattern: ガ
+  - pattern: サ
+  - pattern: ザ
+  - pattern: タ
+  - pattern: ダ
+  - pattern: ナ
+  - pattern: ハ
+  - pattern: バ
+  - pattern: パ
+  - pattern: マ
+  - pattern: ヤ
+  - pattern: ラ
+  - pattern: ワ
+  - pattern: ャ
+  - pattern: ァ
+  - pattern: ヮ

@@ -1,0 +1,32 @@
+# 名前の組を言う語（製品が動く OS、対応する環境）。outside-announced-list は、語のすぐ後ろ（position: before）か
+# すぐ前（position: after）の名前を読み、同じ組（group）の後の文を、最初に二つ以上の名前を挙げた一覧と比べる。
+id: enumeration-frame
+language: ja
+entries:
+  - pattern: 対応OSは
+    position: before
+    group: platform
+  - pattern: 対応環境は
+    position: before
+    group: platform
+  - pattern: 動作環境は
+    position: before
+    group: platform
+  - pattern: に対応
+    position: after
+    group: platform
+  - pattern: にも対応
+    position: after
+    group: platform
+  - pattern: で動作
+    position: after
+    group: platform
+  - pattern: でも動作
+    position: after
+    group: platform
+  - pattern: 版
+    position: after
+    group: platform
+  - pattern: 向け
+    position: after
+    group: platform
