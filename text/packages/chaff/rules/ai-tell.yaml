@@ -50,3 +50,36 @@ not_flagged:
 level_meaning:
   ja: 言い回しの重みの合計が {limit} 点まで
   en: up to a score of {limit}
+rewrite:
+  ja:
+    direction: 決まった言い回しを、その文が実際に言っている中身（誰が、何を、どれだけ）に置き換えてください。中身の無い文は消してください。
+    pairs:
+      - before: 現代社会において、在庫データは発注の判断で重要な役割を果たしています。
+        after: 発注は在庫データを見て決めています。
+      - before: 原因の調査に三日間、時間を溶かしました。
+        after: 原因の調査に三日かかりました。
+      - before: 本記事では、キャッシュの仕組みについて深く掘り下げていきます。
+        after: この記事では、キャッシュの仕組みを説明します。
+    keep:
+      - 数字、日付、名前、条件
+      - 書き手の確かさ（言い切りか、推量か）
+    avoid:
+      - 書き手が書いていない例や数字を作る
+      - 決まり文句を別の決まり文句に替える（「重要な役割を果たす」を「欠かせない存在だ」に）
+      - どの段落も同じ形に書き揃える
+  en:
+    direction: Replace the stock phrase with what the sentence actually claims, who does what and how much. If nothing is claimed, delete the sentence.
+    pairs:
+      - before: In today's fast-paced world, stock data plays a crucial role in ordering.
+        after: Orders are decided from stock data.
+      - before: Let's delve into how the cache works.
+        after: This section explains how the cache works.
+      - before: The release is a testament to the team's meticulous planning.
+        after: The team planned the release in detail.
+    keep:
+      - numbers, dates, names and conditions
+      - how sure the writer is
+    avoid:
+      - inventing an example or a number the writer did not give
+      - trading one stock phrase for another ("plays a crucial role" for "is pivotal")
+      - giving every paragraph the same shape

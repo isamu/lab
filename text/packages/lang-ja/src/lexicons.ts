@@ -14,11 +14,13 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
   if (!isRecord(raw) || typeof raw["pattern"] !== "string") return undefined;
   const weight = raw["weight"];
   const instead = raw["instead_of"];
+  const rewrite = raw["rewrite"];
   return {
     pattern: raw["pattern"],
     weight: typeof weight === "number" ? weight : undefined,
     instead_of: typeof instead === "string" ? instead : undefined,
     position: POSITIONS.find((position) => position === raw["position"]),
+    rewrite: typeof rewrite === "string" ? rewrite : undefined,
   };
 };
 
