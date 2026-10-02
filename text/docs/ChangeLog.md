@@ -10,6 +10,43 @@ Newest first.
   包括的な, シームレスに and 大幅に向上する, each at a low weight. Each is rare in Qiita articles from 2016–2021
   and clearly more common in articles from 2025–2026. One of them alone still says nothing; they add to the score.
 
+### `unqualified-superlative`: the rule text no longer uses 業界最速 as its example
+
+The summary and the example named 「業界最速」 as an unqualified superlative, but since #170 a noun joined to the
+superlative (国内最大, 業界最速) is read as its scope and is not reported, so a writer following the summary expected a
+finding that never came. The summary and the example now use 「最速」, and `not_flagged` says that a joined noun or a
+name with で is a scope. What the rule reports is unchanged.
+
+### `cushion-phrase-density` reads short emails
+
+A short work email with three softeners ("I hope this email finds you well. I just wanted to reach out … Sorry to
+bother you, but …") was never reported: density rules skip documents shorter than a floor, and softeners pile up in
+exactly those short emails and letters. The rule now measures a short document as if it were as long as a short letter,
+chosen so that at the default level the third softener is the first reported in either language (two, as in
+「お忙しいところ恐れ入りますが」, are ordinary), and a single softener is never reported at any level. The density in the
+message is still the document's own. `excessive-hedging` keeps skipping short documents (its stacked hedges are found in
+one sentence). The English word list gains "hope this email finds you well" (and the "message" and plain forms),
+"sorry to trouble", "just reaching out" and "just checking in".
+
+### `date-range-reversed` (en) reads "from … to …"
+
+"The agreement runs from 1 November 2026 to 31 October 2026" was not compared, though the same dates joined by
+"through" were. The day-first date was read fine; "to" was the gap, left out because "moved from March 10 to March 3"
+changes a date. Two new English word lists close it: `range-frame` ("from … to", "from … up to") makes a period of a
+lead word right before the first date and a joint word between the dates, and a word from `date-change-word` (moved,
+postponed, brought forward, rescheduled …) anywhere in the same sentence, across line wraps, makes it a change of date
+instead. "between … and" is not read as a period: it also names two dates to choose from. Japanese keeps reading
+から … まで with range-opener and range-closer.
+
+### `announced-count-mismatch` (en) knows more nouns that name what a list holds
+
+"The board made three decisions:" was not read as an announcement, though "three points:" was. The English word list
+`count-counter` now also has nouns such as decisions, findings, examples, objectives, priorities, outcomes, problems,
+concerns, constraints, assumptions, limitations, roles, values, sections, tools, policies, metrics
+and milestones. A plural before a colon is still not enough on its own: a plural that measures ("over the past three
+years:", "two hours:", "two levels:") or a verb ending in s ("Release 2 includes:", "Section 2 documents:") does not
+announce a list.
+
 ### `agentless-passive` (ja) reads 「〜されることとなった」 as a predicate
 
 「本件は検討されることとなった。」 and 「見直しが実施されることになりました。」 were not reported: the こと after the
