@@ -49,6 +49,7 @@ import { profileFor } from "./profile/for-file.ts";
 import { notRunAmong } from "./not-run.ts";
 import { settingProblems } from "./setting-problems.ts";
 import { withExtensions } from "./extension/load.ts";
+import { stoppingOnYamlFileError } from "./config/yaml-file.ts";
 
 /** Text for output that is not about one document. */
 const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.language, process.env)];
@@ -327,7 +328,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
 /** Every subcommand. Anything else on the command line is a file to check. */
 export const COMMANDS: readonly string[] = Object.keys(HANDLERS);
 
-export const main = async (argv: readonly string[]): Promise<number> => {
+const dispatch = async (argv: readonly string[]): Promise<number> => {
   const first = argv[0];
   if (first === undefined || first === "--help" || first === "-h") {
     console.log(hostText(readConfig()).usage);
@@ -347,3 +348,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
   const targets = targetsOf(first === "lint" ? argv.slice(1) : argv);
   return argv.includes("--watch") ? runWatch(targets, argv, config) : lint(targets, argv, config);
 };
+
+/** A chaff.yaml or checks.yaml that is not YAML stops the run with its path and position, not a stack trace. */
+export const main = (argv: readonly string[]): Promise<number> =>
+  stoppingOnYamlFileError(() => dispatch(argv), process.cwd(), hostLanguage(undefined, process.env));
