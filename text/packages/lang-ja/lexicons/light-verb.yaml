@@ -1,0 +1,10 @@
+# 中身を持たない動詞（原形）。absolute-exception が義務の行為を探すとき、これらを飛ばして隣の語を取る
+# （「消滅するものとする」の行為は「する」ではなく「消滅」）。
+id: light-verb
+language: ja
+entries:
+  - pattern: する
+  - pattern: ある
+  - pattern: いる
+  - pattern: なる
+  - pattern: できる
