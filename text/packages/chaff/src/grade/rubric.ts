@@ -12,14 +12,14 @@ export type RuleLimit = {
   readonly weight?: number | undefined;
 };
 
-export type FactLimits = {
+type FactLimits = {
   readonly dropped?: number | undefined;
   readonly added?: number | undefined;
   readonly allowDropped: readonly AtomKind[];
   readonly allowAdded: readonly AtomKind[];
 };
 
-export type CitationLimits = { readonly failed?: number | undefined; readonly required: boolean };
+type CitationLimits = { readonly failed?: number | undefined; readonly required: boolean };
 
 export type Rubric = {
   readonly rules: Readonly<Record<string, RuleLimit>>;

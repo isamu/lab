@@ -43,7 +43,7 @@ const isNotRun = (value: unknown): boolean => isRecord(value) && isString(value[
 const isRates = (value: unknown): boolean => isRecord(value) && Object.values(value).every(isNumber);
 
 /** A line `--out` writes, every field checked: a line that only looks like one would be compared as if it had been graded. */
-export const isGradeResult = (value: unknown): value is GradeResult =>
+const isGradeResult = (value: unknown): value is GradeResult =>
   isRecord(value) &&
   isString(value["id"]) &&
   isString(value["language"]) &&

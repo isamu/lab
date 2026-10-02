@@ -2310,7 +2310,7 @@ npx chaffjs fix-plan before.md --experimental --json   # 同じものを JSON �
 
 ## 29. AI の評価に使う（eval の採点役）
 
-状態: `chaff grade`（§29.3）、採点の基準（§29.4）、A/B と回帰（§29.5）、再現の印（§29.7）は使える。ライブラリの API は予定（#488）。
+状態: `chaff grade`（§29.3）、採点の基準（§29.4）、A/B と回帰（§29.5）、ライブラリの API（§29.6）、再現の印（§29.7）は使える。評価基盤への組み込みの例は予定（#488）。
 
 LLM の評価（eval）では、出力を model に採点させることが多い。model の採点は意味を読めるが、同じ出力に毎回同じ点を付けるとは限らず、なぜその点かも検算できない。
 chaff の判定は同じ文書なら同じ結果になり、指摘ごとに行とルールと理由が付き、ルールの版も分かる。
@@ -2489,20 +2489,26 @@ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl   # B を A と比�
 - run: npx chaffjs grade outputs.jsonl --baseline eval/baseline.results.jsonl
 ```
 
-### 29.6 ライブラリの API（予定）
+### 29.6 ライブラリの API（`chaffjs/grade`）
 
 ```ts
-import { grade } from "chaffjs/api";
+import { grade } from "chaffjs/grade";
 
 const result = await grade(output, { reference, sources, citations, language: "en", config: "chaff.yaml" });
 if (!result.pass) console.log(result.failedBecause);
 ```
 
-- 返すものは §29.3 の 1 行と同じ形。CLI とライブラリで結果がずれないように、`chaff grade` もこの関数を呼ぶ。
-- 引数は本文と、`reference`・`sources`・`citations`・`language`・`genre`・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。ファイルを読むのは `config` にパスを渡したときだけで、ファイルに書くことはない。
-- 非同期にする。言語パッケージと品詞の解析器を、初めて使うときに読み込むため（§17）。
-- 決めていないこと: `chaffjs/api` は今、プラグイン API（§6）の型と `defineRule` だけを出し、`API_VERSION` がその互換を守っている。
-  そこに採点の関数を足すと、プラグインの互換と採点の結果の互換が同じ番号で縛られる。#488 は `chaffjs/api` と書いているが、`chaffjs/grade` に分ける案と比べて、実装の前に決める。
+- 返すものは §29.3 の 1 行と同じ形。CLI とライブラリで結果がずれないように、`chaff grade` と `grade()` は同じ関数（1 出力を採点する `gradeItem`）を同じ設定と `stamp` で呼ぶ。同じ出力なら `--out` の 1 行と `grade()` の戻り値は一致する。
+- 引数は本文と、`id`（省けば `output`）・`reference`・`sources`・`citations`・`language`・`genre`・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。
+  ファイルを読むのは `config` にパスを渡したときだけで、作業場所の `chaff.yaml` を探しには行かない。ファイルに書くことはない。
+  パスを渡したときは、コマンドと同じくハウススタイルを当て、プラグインを読み込む。読んだ後の設定を渡したときも、設定の誤りはコマンドと同じに確かめる。
+- `experimental` を省くと `chaff.yaml` の `experimental` に従う。`genre` は出力ごとのジャンルで、`chaff grade --genre` のように実行全体のジャンルではない。
+- `chaff grade` が終了コード 2 で断る入力（読めない引用、知らない言語・ジャンル、書き誤った `grade:` や `chaff.yaml`、読み込めない言語パッケージ）では、`GradeInputError` を投げる。`problems` に理由を並べ、行番号は付けない。
+- 非同期にする。言語パッケージと品詞の解析器を、初めて使うときに読み込むため（§17）。同じ設定での 2 回目からは、言語パッケージの読み込みとルールのハッシュを使い回す。
+  使い回すのは同じ設定のオブジェクト、パスなら同じファイルの同じ更新時刻のときだけにする。中身が同じでも置き場所が違えば、読み込むプラグインのコードが違いうるため。
+- `chaff.yaml` の `language` と `by_path` の言語は、採点の前に読み込む。入っていない言語パッケージは、`chaff grade` では終了コード 2、`grade()` では `GradeInputError` になる。
+- 置き場所は `chaffjs/grade` とし、`chaffjs/api` には入れない。`chaffjs/api` はプラグイン API（§6）の型と `defineRule` を出し、`API_VERSION` がその互換を守っている。
+  そこに採点の関数を足すと、プラグインの互換と採点の結果の互換が同じ番号で縛られる。採点の結果の形は chaffjs の版（semver）で守る。
 
 **評価基盤への組み込み（予定）。** 例は手引きに置く。どれも `grade()` か `chaff grade` を呼ぶだけで、chaff の側に基盤ごとの処理は持たない。
 
@@ -2549,7 +2555,7 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 | `chaff grade`、入力の JSONL、出力ごとの結果、要約、終了コード | 使える |
 | `grade:` の基準 | 使える |
 | `--baseline` と回帰の終了コード | 使える |
-| `grade()` | 予定（#488 の 3）。置き場所は §29.6 で未決 |
+| `grade()` | 使える（`chaffjs/grade`） |
 | `stamp` | 使える |
 | promptfoo・Inspect AI・LangSmith・GitHub Action の例 | 予定（#488 の 4） |
 | 自作の比べる例 | 予定（#488 の 5） |

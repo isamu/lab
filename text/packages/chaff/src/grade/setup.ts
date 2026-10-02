@@ -35,7 +35,9 @@ export const gradeSetup = async (
   languages: readonly string[],
   rubric: Rubric | undefined,
 ): Promise<GradeSetup> => {
-  const all = [...new Set([...BUNDLED_LANGUAGES, ...languages])].toSorted(compareText);
+  // chaff.yaml's language and its by_path languages are loaded here too, so a missing package stops the run before grading.
+  const named = [config.language, ...config.byPath.map((rule) => rule.language)].filter((language) => language !== undefined);
+  const all = [...new Set([...BUNDLED_LANGUAGES, ...named, ...languages])].toSorted(compareText);
   const settings = { config, experimental: run.experimental, genre: run.genre };
   return { ...settings, rubric, stamp: stampOf(VERSION_LINES, await ruleSetOf(config, all), settings) };
 };

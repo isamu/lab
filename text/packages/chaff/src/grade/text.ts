@@ -27,39 +27,42 @@ export type GradeText = {
   readonly stamp: string;
 };
 
+/** Where the problem is, when it is on a line of a file. An item given to grade() has none. */
+const lineJa = (problem: ItemProblem): string => (problem.line > 0 ? `${String(problem.line)} 行目: ` : "");
+
+const lineEn = (problem: ItemProblem): string => (problem.line > 0 ? `line ${String(problem.line)}: ` : "");
+
 const PROBLEM_JA: Readonly<Record<ItemProblemKind, (problem: ItemProblem) => string>> = {
-  "not-json": (problem) => `${String(problem.line)} 行目: JSON として読めません（${problem.detail ?? ""}）`,
-  "not-object": (problem) => `${String(problem.line)} 行目: 1 行に 1 つのオブジェクト {…} を書いてください`,
-  "no-id": (problem) => `${String(problem.line)} 行目: id（空でない文字列）がありません`,
-  "no-output": (problem) => `${String(problem.line)} 行目: output（文字列）がありません`,
-  "not-string": (problem) => `${String(problem.line)} 行目: ${problem.detail ?? ""} は文字列で書いてください`,
-  "not-text-map": (problem) => `${String(problem.line)} 行目: ${problem.detail ?? ""} は { "名前": "本文" } の形で書いてください`,
-  "not-citations": (problem) => `${String(problem.line)} 行目: citations は [{ "source", "address", "quote" }] の配列で書いてください`,
-  "citations-without-sources": (problem) =>
-    `${String(problem.line)} 行目: citations があるのに sources がありません。引用を照らす原文を sources に入れてください`,
-  "duplicate-id": (problem) => `${String(problem.line)} 行目: id "${problem.detail ?? ""}" は ${String(problem.first ?? 0)} 行目と同じです`,
-  "unknown-source": (problem) => `${String(problem.line)} 行目: 引用の source "${problem.detail ?? ""}" が sources にありません`,
-  "which-source": (problem) =>
-    `${String(problem.line)} 行目: 番地 ${problem.detail ?? ""} の引用に source がありません。原文が二つ以上あるときは名前を書いてください`,
-  "unknown-language": (problem) => `${String(problem.line)} 行目: language "${problem.detail ?? ""}" は読めません`,
-  "unknown-genre": (problem) => `${String(problem.line)} 行目: genre "${problem.detail ?? ""}" は chaff の知らないジャンルです（chaff genres で一覧）`,
+  "not-json": (problem) => `${lineJa(problem)}JSON として読めません（${problem.detail ?? ""}）`,
+  "not-object": (problem) => `${lineJa(problem)}1 行に 1 つのオブジェクト {…} を書いてください`,
+  "no-id": (problem) => `${lineJa(problem)}id（空でない文字列）がありません`,
+  "no-output": (problem) => `${lineJa(problem)}output（文字列）がありません`,
+  "not-string": (problem) => `${lineJa(problem)}${problem.detail ?? ""} は文字列で書いてください`,
+  "not-text-map": (problem) => `${lineJa(problem)}${problem.detail ?? ""} は { "名前": "本文" } の形で書いてください`,
+  "not-citations": (problem) => `${lineJa(problem)}citations は [{ "source", "address", "quote" }] の配列で書いてください`,
+  "citations-without-sources": (problem) => `${lineJa(problem)}citations があるのに sources がありません。引用を照らす原文を sources に入れてください`,
+  "duplicate-id": (problem) => `${lineJa(problem)}id "${problem.detail ?? ""}" は ${String(problem.first ?? 0)} 行目と同じです`,
+  "unknown-source": (problem) => `${lineJa(problem)}引用の source "${problem.detail ?? ""}" が sources にありません`,
+  "which-source": (problem) => `${lineJa(problem)}番地 ${problem.detail ?? ""} の引用に source がありません。原文が二つ以上あるときは名前を書いてください`,
+  "unknown-language": (problem) => `${lineJa(problem)}language "${problem.detail ?? ""}" は読めません`,
+  "unknown-genre": (problem) => `${lineJa(problem)}genre "${problem.detail ?? ""}" は chaff の知らないジャンルです（chaff genres で一覧）`,
   empty: () => "採点する出力が 1 行もありません",
 };
 
 const PROBLEM_EN: typeof PROBLEM_JA = {
-  "not-json": (problem) => `line ${String(problem.line)}: not valid JSON (${problem.detail ?? ""})`,
-  "not-object": (problem) => `line ${String(problem.line)}: write one object {…} per line`,
-  "no-id": (problem) => `line ${String(problem.line)}: no id (a non-empty string)`,
-  "no-output": (problem) => `line ${String(problem.line)}: no output (a string)`,
-  "not-string": (problem) => `line ${String(problem.line)}: ${problem.detail ?? ""} must be a string`,
-  "not-text-map": (problem) => `line ${String(problem.line)}: ${problem.detail ?? ""} must be { "name": "text" }`,
-  "not-citations": (problem) => `line ${String(problem.line)}: citations must be an array of { "source", "address", "quote" }`,
-  "citations-without-sources": (problem) => `line ${String(problem.line)}: citations without sources; put the text they quote in sources`,
-  "duplicate-id": (problem) => `line ${String(problem.line)}: id "${problem.detail ?? ""}" is already on line ${String(problem.first ?? 0)}`,
-  "unknown-source": (problem) => `line ${String(problem.line)}: the citation's source "${problem.detail ?? ""}" is not in sources`,
-  "which-source": (problem) => `line ${String(problem.line)}: the citation of ${problem.detail ?? ""} names no source; with two or more sources, name one`,
-  "unknown-language": (problem) => `line ${String(problem.line)}: language "${problem.detail ?? ""}" cannot be read`,
-  "unknown-genre": (problem) => `line ${String(problem.line)}: genre "${problem.detail ?? ""}" is not one chaff knows (chaff genres lists them)`,
+  "not-json": (problem) => `${lineEn(problem)}not valid JSON (${problem.detail ?? ""})`,
+  "not-object": (problem) => `${lineEn(problem)}write one object {…} per line`,
+  "no-id": (problem) => `${lineEn(problem)}no id (a non-empty string)`,
+  "no-output": (problem) => `${lineEn(problem)}no output (a string)`,
+  "not-string": (problem) => `${lineEn(problem)}${problem.detail ?? ""} must be a string`,
+  "not-text-map": (problem) => `${lineEn(problem)}${problem.detail ?? ""} must be { "name": "text" }`,
+  "not-citations": (problem) => `${lineEn(problem)}citations must be an array of { "source", "address", "quote" }`,
+  "citations-without-sources": (problem) => `${lineEn(problem)}citations without sources; put the text they quote in sources`,
+  "duplicate-id": (problem) => `${lineEn(problem)}id "${problem.detail ?? ""}" is already on line ${String(problem.first ?? 0)}`,
+  "unknown-source": (problem) => `${lineEn(problem)}the citation's source "${problem.detail ?? ""}" is not in sources`,
+  "which-source": (problem) => `${lineEn(problem)}the citation of ${problem.detail ?? ""} names no source; with two or more sources, name one`,
+  "unknown-language": (problem) => `${lineEn(problem)}language "${problem.detail ?? ""}" cannot be read`,
+  "unknown-genre": (problem) => `${lineEn(problem)}genre "${problem.detail ?? ""}" is not one chaff knows (chaff genres lists them)`,
   empty: () => "no output to grade: the file has no item",
 };
 
