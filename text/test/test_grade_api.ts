@@ -102,6 +102,9 @@ describe("grade()", () => {
     assert.deepEqual(await rejection("x", { config: { ...EMPTY, grade: { penalty: "ten" } } }), [
       'chaff.yaml: grade.penalty must be a number from 0 (found "ten")',
     ]);
+    assert.match((await rejection("x", { config: { ...EMPTY, genre: "poetry" } })).join(""), /poetry/u);
+    assert.match((await rejection("x", { config: { ...EMPTY, language: "xx" } })).join(""), /^Cannot load a language package: No package for language xx/u);
+    assert.match((await rejection("x", { config: "/nowhere/chaff.yaml" })).join(""), /^Could not read \/nowhere\/chaff\.yaml/u);
     const dir = mkdtempSync(join(tmpdir(), "chaff-grade-api-"));
     writeFileSync(join(dir, "chaff.yaml"), "genre: poetry\n");
     const problems = await rejection("x", { config: join(dir, "chaff.yaml") });

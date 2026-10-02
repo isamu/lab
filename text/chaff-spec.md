@@ -2486,10 +2486,12 @@ if (!result.pass) console.log(result.failedBecause);
 - 返すものは §29.3 の 1 行と同じ形。CLI とライブラリで結果がずれないように、`chaff grade` と `grade()` は同じ関数（1 出力を採点する `gradeItem`）を同じ設定と `stamp` で呼ぶ。同じ出力なら `--out` の 1 行と `grade()` の戻り値は一致する。
 - 引数は本文と、`id`（省けば `output`）・`reference`・`sources`・`citations`・`language`・`genre`・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。
   ファイルを読むのは `config` にパスを渡したときだけで、作業場所の `chaff.yaml` を探しには行かない。ファイルに書くことはない。
-  パスを渡したときは、コマンドと同じくハウススタイルを当て、プラグインを読み込み、設定の誤りを確かめる。
+  パスを渡したときは、コマンドと同じくハウススタイルを当て、プラグインを読み込む。読んだ後の設定を渡したときも、設定の誤りはコマンドと同じに確かめる。
 - `experimental` を省くと `chaff.yaml` の `experimental` に従う。`genre` は出力ごとのジャンルで、`chaff grade --genre` のように実行全体のジャンルではない。
 - `chaff grade` が終了コード 2 で断る入力（読めない引用、知らない言語・ジャンル、書き誤った `grade:` や `chaff.yaml`、読み込めない言語パッケージ）では、`GradeInputError` を投げる。`problems` に理由を並べ、行番号は付けない。
 - 非同期にする。言語パッケージと品詞の解析器を、初めて使うときに読み込むため（§17）。同じ設定での 2 回目からは、言語パッケージの読み込みとルールのハッシュを使い回す。
+  使い回すのは同じ設定のオブジェクト、パスなら同じファイルの同じ更新時刻のときだけにする。中身が同じでも置き場所が違えば、読み込むプラグインのコードが違いうるため。
+- `chaff.yaml` の `language` と `by_path` の言語は、採点の前に読み込む。入っていない言語パッケージは、`chaff grade` では終了コード 2、`grade()` では `GradeInputError` になる。
 - 置き場所は `chaffjs/grade` とし、`chaffjs/api` には入れない。`chaffjs/api` はプラグイン API（§6）の型と `defineRule` を出し、`API_VERSION` がその互換を守っている。
   そこに採点の関数を足すと、プラグインの互換と採点の結果の互換が同じ番号で縛られる。採点の結果の形は chaffjs の版（semver）で守る。
 

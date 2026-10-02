@@ -1,6 +1,7 @@
 // `chaffjs/grade`: chaff's grader for an in-process eval harness (spec §29.6). One output at a time, with the same
 // result as one line of `chaff grade --out`: both go through gradeItem with the same settings and stamp. A separate entry
 // from `chaffjs/api`, so the plugin API's version and the result's shape are not bound to one number.
+import { statSync } from "node:fs";
 import { resolve } from "node:path";
 import { packageFor } from "./adapter-load.ts";
 import { CLI_TEXT } from "./cli-text.ts";
@@ -13,7 +14,6 @@ import { readItem } from "./grade/item.ts";
 import type { GradeResult } from "./grade/result.ts";
 import { parseRubric, type Rubric } from "./grade/rubric.ts";
 import { gradeSetup } from "./grade/setup.ts";
-import { digestOf, settingsOf } from "./grade/stamp.ts";
 import { GRADE_TEXT } from "./grade/text.ts";
 import { settingProblems } from "./setting-problems.ts";
 import { loadStyles } from "./style-load.ts";
@@ -62,11 +62,39 @@ export class GradeInputError extends Error {
 
 const TEXT = GRADE_TEXT.en;
 
-/** chaff.yaml read as the command line reads it: its style applied and the code it names loaded, then checked. */
+/** Each chaff.yaml read, by its path and when it was last changed: one file is read and its code loaded once. */
+const readConfigs = new Map<string, Config>();
+
+const KEPT = 16;
+
+/** Adds to a cache, dropping the oldest entry past KEPT. */
+const remember = <T>(cache: Map<string, T>, key: string, value: T): T => {
+  cache.set(key, value);
+  const [oldest] = cache.keys();
+  if (cache.size > KEPT && oldest !== undefined) cache.delete(oldest);
+  return value;
+};
+
+/** chaff.yaml read as the command line reads it: its style applied and the code it names loaded. */
+const readConfig = async (path: string): Promise<Config> => {
+  const file = resolve(path);
+  const key = `${file}\n${String(statSync(file).mtimeMs)}`;
+  return readConfigs.get(key) ?? remember(readConfigs, key, await withExtensions(withStyle(loadConfig(file), loadStyles())));
+};
+
+/** A chaff.yaml that is missing or not YAML is an input grade() cannot use, as it is for the command line. */
+const readNamedConfig = async (path: string): Promise<Config> => {
+  try {
+    return await readConfig(path);
+  } catch (error) {
+    throw new GradeInputError([TEXT.unreadable(path, error instanceof Error ? error.message : String(error))]);
+  }
+};
+
+/** The settings to grade with, checked as the command line checks them, whether read here or given already read. */
 const configOf = async (given: string | Config | undefined): Promise<Config> => {
   if (given === undefined) return EMPTY;
-  if (typeof given !== "string") return given;
-  const config = await withExtensions(withStyle(loadConfig(resolve(given)), loadStyles()));
+  const config = typeof given === "string" ? await readNamedConfig(given) : given;
   const problems = settingProblems("grade", undefined, config, CLI_TEXT.en);
   if (problems.length > 0) throw new GradeInputError(problems);
   return config;
@@ -78,22 +106,22 @@ const rubricOf = (config: Config): Rubric | undefined => {
   return parsed.rubric;
 };
 
-/** Setups by what decides them, so a harness grading many outputs loads the language packages and hashes the rules once. */
-const setups = new Map<string, Promise<GradeSetup>>();
-
-const SETUPS_KEPT = 16;
+/**
+ * Setups for each settings object, by what else decides them, so a harness grading many outputs loads the language
+ * packages and hashes the rules once. Keyed by the object itself: two chaff.yaml files that read alike may load other code.
+ */
+const setups = new WeakMap<Config, Map<string, Promise<GradeSetup>>>();
 
 const setupFor = (config: Config, experimental: boolean, languages: readonly string[]): Promise<GradeSetup> => {
   const run = { experimental, genre: undefined };
-  const key = digestOf({ settings: settingsOf({ config, ...run }), customRules: config.customRules ?? null, plugins: config.plugins ?? null, languages });
-  const known = setups.get(key);
+  const own = setups.get(config) ?? new Map<string, Promise<GradeSetup>>();
+  setups.set(config, own);
+  const key = `${String(experimental)}\n${languages.join(",")}`;
+  const known = own.get(key);
   if (known !== undefined) return known;
-  const made = gradeSetup(config, run, languages, rubricOf(config));
-  setups.set(key, made);
+  const made = remember(own, key, gradeSetup(config, run, languages, rubricOf(config)));
   // A language package that failed to load may be installed before the next call: do not keep the failure.
-  made.catch(() => setups.delete(key));
-  const [oldest] = setups.keys();
-  if (setups.size > SETUPS_KEPT && oldest !== undefined) setups.delete(oldest);
+  made.catch(() => own.delete(key));
   return made;
 };
 
