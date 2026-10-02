@@ -37,7 +37,7 @@ export type RunResult = {
 
 export type Settings = Readonly<Record<string, Level>>;
 
-const levelFor = (rule: RuleDefinition, settings: Settings, experimental: boolean, preset: Settings): Level => {
+export const levelFor = (rule: RuleDefinition, settings: Settings, experimental: boolean, preset: Settings): Level => {
   const explicit = settings[rule.id];
   // 明示設定は status の既定に勝つ。名指しで有効にしたものを黙って無効にしない。
   if (explicit !== undefined) return explicit;
@@ -93,11 +93,13 @@ const unreadOf = (doc: ProseDocument): Unread | undefined => {
 
 /** 見出しを読む rule の要求。表題より下の見出しが無い文書では、本題の前を測れない。0 件を「前置きが短い」に見せない。 */
 /** 記法を読む rule の要求（markdown）。.txt には見出しの記法も画像もリンクの記法も無いので、0 件を「問題なし」に見せない。 */
-const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings", "markdown"]);
+/** documents: a rule that compares the documents of one run (cross-run.ts). Run on one document, it says so instead of finding nothing. */
+const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings", "markdown", "documents"]);
 
 const documentNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
   if (rule.requires.includes("markdown") && !isMarkdownPath(doc.path)) return reasonsFor(doc).notMarkdown;
-  return rule.requires.includes("headings") && bodySectionOf(doc.sections) === undefined ? reasonsFor(doc).noHeadings : undefined;
+  if (rule.requires.includes("headings") && bodySectionOf(doc.sections) === undefined) return reasonsFor(doc).noHeadings;
+  return rule.requires.includes("documents") ? reasonsFor(doc).oneDocument : undefined;
 };
 
 /** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
@@ -174,7 +176,7 @@ const runDetector = (
   }
 };
 
-const place = (starts: readonly number[], finding: Finding): Finding => {
+export const place = (starts: readonly number[], finding: Finding): Finding => {
   const offset = finding.values["offset"];
   const at = placeOf(starts, typeof offset === "number" ? offset : 0);
   return { ...finding, line: at.line, column: at.column };
@@ -206,7 +208,7 @@ const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: num
 /** chaff.yaml の rules に数値で書いた上限。段階の表より先に効く。 */
 export type Limits = Readonly<Record<string, number>>;
 
-const limitFor = (rule: RuleDefinition, level: Level, genre: string, limits: Limits): number => limits[rule.id] ?? resolve(rule, level, genre).limit;
+export const limitFor = (rule: RuleDefinition, level: Level, genre: string, limits: Limits): number => limits[rule.id] ?? resolve(rule, level, genre).limit;
 
 /** 文書と違う言語で書いた文の上限。chaff.yaml の数値は文書の言語の単位で書いたものなので、ここには効かせない。 */
 const embeddedLimitsFor = (rule: RuleDefinition, level: Level, genre: string, embedded: readonly string[]): Record<string, number> =>

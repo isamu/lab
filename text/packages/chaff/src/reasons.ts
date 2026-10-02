@@ -18,6 +18,8 @@ export type Reasons = {
   readonly noHeadings: string;
   readonly patternTimeout: (budgetMs: number) => string;
   readonly notMarkdown: string;
+  /** A rule that compares documents, in a run of one: it runs when chaff is given two or more files, or a folder. */
+  readonly oneDocument: string;
 };
 
 const CAPABILITY_NAME: Texts<Readonly<Record<string, string>>> = {
@@ -43,6 +45,7 @@ export const REASONS: Texts<Reasons> = {
     noHeadings: "表題より下の見出しが無いため",
     patternTimeout: (budgetMs) => `正規表現が ${String(budgetMs)} ms で終わらなかったため（chaff.yaml の pattern を単純にしてください）`,
     notMarkdown: "Markdown の文書ではないため",
+    oneDocument: "文書どうしを比べる rule で、比べる文書が一つのため（二つ以上のファイルかフォルダを渡すと動きます）",
   },
   en: {
     otherLanguage: (language) => `not a rule for ${language}`,
@@ -61,5 +64,6 @@ export const REASONS: Texts<Reasons> = {
     noHeadings: "the document has no headings below its title",
     patternTimeout: (budgetMs) => `the pattern did not finish within ${String(budgetMs)} ms (simplify the pattern in chaff.yaml)`,
     notMarkdown: "the document is not Markdown",
+    oneDocument: "it compares documents, and there is only one to compare (it runs when chaff is given two or more files, or a folder)",
   },
 };

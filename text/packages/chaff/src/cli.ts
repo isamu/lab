@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { packageFor } from "./adapter-load.ts";
-import { checkSource } from "./check-source.ts";
+import { checkSource, crossChecked, type SourceCheck } from "./check-source.ts";
 import { CONFIG_FILE, type Config } from "./config/load.ts";
 import { applyLevel } from "./config/write.ts";
 import { collectTargets, readDocumentFile } from "./files.ts";
@@ -89,10 +89,14 @@ type Inspected = {
   readonly kept: readonly Finding[];
 };
 
-const inspect = async (path: string, config: Config, argv: readonly string[]): Promise<Inspected> => {
-  const source = await readDocumentFile(path);
+const checkFile = async (path: string, config: Config, argv: readonly string[]): Promise<SourceCheck> => {
   const experimental = config.experimental || argv.includes("--experimental");
-  const { language, genre: resolved, rules, raw, applied } = await checkSource(path, source, config, { genre: flag(argv, "--genre"), experimental });
+  return checkSource(path, await readDocumentFile(path), config, { genre: flag(argv, "--genre"), experimental });
+};
+
+const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
+  const { language, genre: resolved, rules, raw, applied } = check;
+  const { path, source } = check.doc;
   const { genre, from, unread } = resolved;
   if (unread !== undefined) console.error(`chaff: ${CLI_TEXT[uiLanguageOf(language)].unreadFrontMatterGenre(path, unread, GENRES)}`);
   const baseline = argv.includes("--show-baseline") ? undefined : readBaseline(join(process.cwd(), BASELINE_FILE));
@@ -112,6 +116,12 @@ const inspect = async (path: string, config: Config, argv: readonly string[]): P
     kept: applied.kept,
   };
 };
+
+const inspect = async (path: string, config: Config, argv: readonly string[]): Promise<Inspected> => present(await checkFile(path, config, argv), argv);
+
+/** Every file of one run, with the rules that compare documents run over all of them. */
+const inspectRun = async (paths: readonly string[], config: Config, argv: readonly string[]): Promise<Inspected[]> =>
+  crossChecked(await Promise.all(paths.map((path) => checkFile(path, config, argv)))).map((check) => present(check, argv));
 
 /**
  * 指摘を PR の変更行に出すための出口。--sarif <path> を書いたときだけ作る。
@@ -152,7 +162,7 @@ const lint = async (targets: readonly string[], argv: readonly string[], config:
     return 1;
   }
   warnRuleProblems(config, language);
-  const results = await Promise.all(paths.map((path) => inspect(path, config, argv)));
+  const results = await inspectRun(paths, config, argv);
   writeSarif(results, argv, config);
   results.filter((result) => result.outcome.findings.length > 0 || paths.length === 1).forEach((result) => console.log(result.text));
   renderSummary(
@@ -221,7 +231,7 @@ const runBaseline = async (targets: readonly string[], argv: readonly string[], 
     console.error(hostText(config).noMarkdownHere);
     return 1;
   }
-  const results = await Promise.all(paths.map((path) => inspect(path, config, [...argv, "--show-baseline"])));
+  const results = await inspectRun(paths, config, [...argv, "--show-baseline"]);
   const entries = results.flatMap((result) => fingerprints(result.outcome.path, result.kept));
   const file = join(process.cwd(), BASELINE_FILE);
   writeBaseline(file, entries);
@@ -281,7 +291,8 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   "fix-plan": (argv, config) =>
     runFixPlan(fixPlanTargets(argv), argv, { ...treeContext(config), check: async (path) => (await inspectAll(config, argv)(path)).checked }),
   baseline: (argv, config) => runBaseline(positional(argv), argv, config),
-  suppressions: (argv, config) => runSuppressions(positional(argv), inspectAll(config, argv), hostLanguage(config.language, process.env)),
+  suppressions: (argv, config) =>
+    runSuppressions(positional(argv), (paths) => inspectRun(paths, config, [...argv, "--show-baseline"]), hostLanguage(config.language, process.env)),
   relax: (argv, config) => changeSetting(config, "relaxed", argv[1], flag(argv, "--why")),
   strict: (argv, config) => changeSetting(config, "strict", argv[1], flag(argv, "--why")),
   off: (argv, config) => changeSetting(config, "off", argv[1], flag(argv, "--why")),
