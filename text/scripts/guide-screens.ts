@@ -5,6 +5,7 @@
 //   node scripts/guide-screens.ts <out.json>
 //   node scripts/guide-screens.ts --check en/commands.md ...   print each screen of these pages that differs from chaff
 import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { ELISION, asScreen, fillsFor, hasFill, missingFills, screenMatches, screensIn, type Screen } from "./guide-screens-parse.ts";
 import { withScreenFills, type PageFills, type ScreenFills } from "../site/src/lib/screenFills.ts";
@@ -39,11 +40,35 @@ const filesFor = (page: GuidePage, documents: Readonly<Record<string, string>>, 
   ...(screen.setup === undefined ? {} : filesUnder(screenFolder(page, screen.setup))),
 });
 
+const CREDENTIALS = ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_IDENTITY_TOKEN", "ANTHROPIC_IDENTITY_TOKEN_FILE", "OPENAI_API_KEY"];
+const NO_PROFILE = join(tmpdir(), "chaff-guide-screens-no-anthropic-profile");
+
+/**
+ * Runs with no API key and no `ant auth login` profile in sight: `test --dry-run` says whether it found credentials,
+ * and a page shows a reader's first run, without them, whatever the machine running the screens has.
+ */
+const withoutCredentials = async <T>(run: () => Promise<T>): Promise<T> => {
+  const names = [...CREDENTIALS, "ANTHROPIC_CONFIG_DIR"];
+  const saved = new Map(names.map((name) => [name, process.env[name]]));
+  CREDENTIALS.forEach((name) => {
+    delete process.env[name];
+  });
+  process.env["ANTHROPIC_CONFIG_DIR"] = NO_PROFILE;
+  try {
+    return await run();
+  } finally {
+    saved.forEach((value, name) => {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    });
+  }
+};
+
 /** Chaff's output for one screen, as a page would show it, in a fresh folder holding the screen's files. */
 export const runScreen = async (page: GuidePage, documents: Readonly<Record<string, string>>, screen: Screen): Promise<string> => {
   if (screen.setup !== undefined && !existsSync(screenFolder(page, screen.setup)))
     throw new Error(`guide-screens: ${pageName(page)}: "${screen.command}": no folder ${relative(process.cwd(), screenFolder(page, screen.setup))}`);
-  const run = await runCli(filesFor(page, documents, screen), screen.args, LOCALES[page.language]);
+  const run = await withoutCredentials(() => runCli(filesFor(page, documents, screen), screen.args, LOCALES[page.language]));
   const folders = [realpathSync(run.dir), run.dir];
   rmSync(run.dir, { recursive: true, force: true });
   // The run's folder is a fresh temporary one; a page writes the folder a reader runs in as "…".
@@ -111,9 +136,28 @@ export const checkScreen = async (page: GuidePage, documents: Readonly<Record<st
  * The screens no test runs, by page and command, with why. Anything else on a guide page is run and compared with
  * chaff, so a screen that cannot be run is listed here rather than silently left out.
  */
+const WATCH = "--watch waits for the file to be saved, and its lines carry the time";
+const REAL_ARTICLE = "an excerpt of a real article, which the repository does not keep";
+const GRADE_BASELINE =
+  "reads a.results.jsonl that the run before it wrote; a kept copy carries the chaff version and the rules' hash, and goes stale with every rule";
+
 export const UNCHECKED: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  "ja/commands.md": { "$ npx chaffjs article.md --watch": "--watch waits for the file to be saved, and its lines carry the time" },
-  "en/commands.md": { "$ npx chaffjs article.md --watch": "--watch waits for the file to be saved, and its lines carry the time" },
+  "ja/getting-started.md": { "$ npx chaffjs sample.md": REAL_ARTICLE },
+  "en/getting-started.md": { "$ npx chaffjs sample.md": REAL_ARTICLE },
+  "ja/commands.md": { "$ npx chaffjs article.md --watch": WATCH, "$ npx chaffjs sample.md --compact": REAL_ARTICLE },
+  "en/commands.md": {
+    "$ npx chaffjs article.md --watch": WATCH,
+    "$ npx chaffjs sample.md --compact": REAL_ARTICLE,
+    "$ npx chaffjs feedback sample.md --rule heading-echo --line 142": REAL_ARTICLE,
+  },
+  "ja/ai-evals.md": {
+    "$ npx chaffjs grade prompt-a.jsonl --experimental --out a.results.jsonl": GRADE_BASELINE,
+    "$ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl": GRADE_BASELINE,
+  },
+  "en/ai-evals.md": {
+    "$ npx chaffjs grade prompt-a.jsonl --experimental --out a.results.jsonl": GRADE_BASELINE,
+    "$ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl": GRADE_BASELINE,
+  },
 };
 
 /** A page's screens that are run and compared with chaff: every one not listed in UNCHECKED. */
