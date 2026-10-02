@@ -126,6 +126,8 @@ enquiries.md   business/report · English   genre from --genre
   The text was not changed. Fixing it is the writer's job.
 
   {not-run}
+
+  Turn on one experimental rule alone by naming it: npx chaffjs enable acronym-expansion-conflict (the same as rules: { acronym-expansion-conflict: normal } in chaff.yaml). --experimental turns on all of them.
 ```
 
 There are three findings.

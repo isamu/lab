@@ -98,6 +98,8 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
   文章は書き換えていません。直すのは書いた人です。
 
   {not-run}
+
+  試験中のルールを 1 つだけ動かすには、npx chaffjs enable acronym-expansion-conflict のように名指しします（chaff.yaml の rules に acronym-expansion-conflict: normal と書くのと同じです）。--experimental はすべてを動かします。
 ```
 
 指摘は 1 件です。5 行目の「近年、」は、どの報告書にも書ける書き出しです。
