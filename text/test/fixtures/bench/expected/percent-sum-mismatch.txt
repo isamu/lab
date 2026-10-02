@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/figures  share-shifted  found
+en/figures  share-shifted  found
