@@ -1,0 +1,88 @@
+id: name-variant
+layer: L3
+status: experimental
+how_to_find: name-variant
+requires: [pos]
+severity: warning
+
+name:
+  ja: 同じ名前の書き分け
+  en: One name written two ways
+
+why:
+  ja: 人や会社や製品の名前を、ある所では「山田太郎」、別の所では「山田太朗」と書くと、読み手は同じ人か別の人か分かりません。契約書なら当事者の特定が揺らぎます。多いのは打ち間違いと、別の文書から写した段落です。どちらの形が正しいかは決めず、文書の中で少ないほうを指します。
+  en: A person, company or product written as "GitHub" in one place and "Github" in another leaves the reader unsure whether they are the same. In a contract it blurs who the party is. The usual causes are a typo and a paragraph pasted from another document. chaff does not decide which form is right; it points at the one the document uses less.
+
+message:
+  ja: 「{name}」は、ほかの所では「{usual}」と書いています
+  en: '"{name}" is written "{usual}" elsewhere in the document'
+
+messages:
+  spelling:
+    ja: 「{name}」は、ほかの所では「{usual}」と書いています（字の大小・幅・記号の違い）
+    en: '"{name}" is written "{usual}" elsewhere in the document (case, width or punctuation)'
+  reading:
+    ja: 「{name}」は、ほかの所では同じ読みの「{usual}」と書いています
+    en: '"{name}" is written "{usual}", read the same, elsewhere in the document'
+  near:
+    ja: 「{name}」は、ほかの所で何度も書いた「{usual}」と一字違いです
+    en: '"{name}" is one letter away from "{usual}", which the document uses more than once'
+
+how_to_fix:
+  ja: 正しい形を確かめ、一つに揃えてください。本当に別の人や会社なら、そのままで構いません。
+  en: Check the right form and use it throughout. If they really are different people or companies, leave them.
+
+placeholders:
+  name:
+    ja: 名前
+    en: the name
+  usual:
+    ja: 別の形
+    en: another form
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 同じ人・会社・製品の名前を、少しだけ違う形で書いている所（山田太郎 と 山田太朗、GitHub と Github）
+  en: The same person, company or product written in slightly different forms (GitHub and Github, Acme, Inc. and Acme Inc.)
+example:
+  ja:
+    before: |
+      担当は山田太郎です。見積もりは山田太郎が作り、請求書は山田太朗が送ります。
+    after: |
+      担当は山田太郎です。見積もりは山田太郎が作り、請求書も山田太郎が送ります。
+  en:
+    before: |
+      The code lives on GitHub. Reviews happen on GitHub, and releases are tagged on Github.
+    after: |
+      The code lives on GitHub. Reviews happen on GitHub, and releases are tagged on GitHub.
+
+not_flagged:
+  ja: 品詞解析が固有名詞と読んだ語だけを見ます。大文字だけの名前（ACME INC、NASA）は見ません。一字違いの英字の名前は、6 字以上で、多いほうが二度以上、少ないほうが一度だけのときに限ります（Iran と Iraq は別の名前）。
+  en: Only words the tagger reads as proper nouns are checked. Names in capitals only (ACME INC, NASA) are left out. Names one letter apart are reported only when six letters or longer, with the usual form used at least twice and the other once (Iran and Iraq are different names).
+rewrite:
+  ja:
+    direction: 少ないほうの形を、多いほうの形に替えてください。どちらが正しいか本文から分からなければ、書き手に聞きます。別の人や会社なら替えません。
+    pairs:
+      - before: 見積もりは山田太郎が作り、請求書は山田太朗が送ります。
+        after: 見積もりは山田太郎が作り、請求書も山田太郎が送ります。
+      - before: 発注先は株式会社ミナト商事です。納品はミナト商時が行います。
+        after: 発注先は株式会社ミナト商事です。納品はミナト商事が行います。
+    keep:
+      - 名前の正しい形
+    avoid:
+      - 別の人や会社の名前を一つにまとめる
+  en:
+    direction: Replace the less frequent form with the usual one. If the text does not show which is right, ask the writer. Leave names that belong to different people or companies.
+    pairs:
+      - before: Reviews happen on GitHub, and releases are tagged on Github.
+        after: Reviews happen on GitHub, and releases are tagged on GitHub.
+      - before: Acme Inc. signs the order. Payment goes to Acme, Inc. within thirty days.
+        after: Acme Inc. signs the order. Payment goes to Acme Inc. within thirty days.
+    keep:
+      - the name's right form
+    avoid:
+      - merging the names of two different people or companies

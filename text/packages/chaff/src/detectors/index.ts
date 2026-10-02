@@ -17,6 +17,7 @@ import { paragraphLength, paragraphVariance, preambleLength, ruleOfThree, sectio
 import { concreteEvidence, dashDensity, emojiDensity, ngramRepetition, undefinedAcronym } from "./signals.ts";
 import { aiTell, contractionMix, cushionDensity, hedging, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
+import { nameVariant } from "./name-variant.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
 import { announcedCount } from "./announced-count.ts";
@@ -25,6 +26,7 @@ import { danglingFigure } from "./dangling-figure.ts";
 import { nominalization } from "./nominalization.ts";
 import { requirementSmell } from "./requirement-smell.ts";
 import { requirementModal } from "./requirement-modal.ts";
+import { modalConflict } from "./modal-conflict.ts";
 import { vagueFigurePointer } from "./vague-figure-pointer.ts";
 import {
   danglingReference,
@@ -54,6 +56,7 @@ import { raNuki } from "./ra-nuki.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
 import { boldLabelList } from "./bold-label.ts";
+import { acronymExpansionConflict, unusedDefinition, useBeforeDefinition } from "./definition-use.ts";
 import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -103,6 +106,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "internal-jargon": internalJargon,
   "required-sections": requiredSections,
   "proper-noun-density": properNounDensity,
+  "name-variant": nameVariant,
   "preferred-term": preferredTerm,
   "latin-spacing": latinSpacing,
   "stray-space": straySpace,
@@ -122,6 +126,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   nominalization: nominalization,
   "requirement-smell": requirementSmell,
   "requirement-modal": requirementModal,
+  "modal-conflict": modalConflict,
   "vague-figure-pointer": vagueFigurePointer,
   "date-range-reversed": dateRangeReversed,
   "percent-sum-mismatch": percentSumMismatch,
@@ -141,4 +146,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "spelling-variety": spellingVariety,
   "ra-nuki": raNuki,
   "bold-label-list": boldLabelList,
+  "unused-definition": unusedDefinition,
+  "use-before-definition": useBeforeDefinition,
+  "acronym-expansion-conflict": acronymExpansionConflict,
 };

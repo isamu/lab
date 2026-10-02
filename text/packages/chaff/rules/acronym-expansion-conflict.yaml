@@ -1,0 +1,82 @@
+id: acronym-expansion-conflict
+layer: L3
+status: experimental
+how_to_find: acronym-expansion-conflict
+severity: warning
+
+name:
+  ja: 同じ略語の二通りの展開
+  en: Abbreviation expanded two ways
+
+why:
+  ja: 同じ略語を二か所で違う名前に展開すると、読み手は二つが同じものか別のものか分かりません。片方は書き違いか、別の文書から貼った文であることが多いです。
+  en: An abbreviation spelled out as two different names leaves the reader unsure whether they are the same thing. One of them is usually a slip, or a sentence pasted from another document.
+
+message:
+  ja: 「{acronym}」をここでは「{name}」と、{firstLine} 行目では「{first}」と展開しています
+  en: '"{acronym}" is expanded as "{name}" here and as "{first}" on line {firstLine}'
+
+how_to_fix:
+  ja: どちらの名前が正しいかを確かめ、一つに揃えてください。別のものなら、別の略語にします。
+  en: Check which name is right and use it in both places. If they are different things, give them different abbreviations.
+
+placeholders:
+  acronym:
+    ja: 略語
+    en: the abbreviation
+  name:
+    ja: 名前
+    en: one name
+  first:
+    ja: 別の名前
+    en: another
+  firstLine:
+    ja: 〇
+    en: N
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 同じ略語を、文書の中で違う名前に展開している所
+  en: The same abbreviation spelled out as two different names in one document
+example:
+  ja:
+    before: |
+      SLA（サービス品質保証）を毎月見直します。障害が続いた月は、SLA（サービスレベル契約）に従って返金します。
+    after: |
+      SLA（サービス品質保証）を毎月見直します。障害が続いた月は、SLA に従って返金します。
+  en:
+    before: |
+      We review the Service Level Agreement (SLA) every month. After an outage, refunds follow the Support Level Agreement (SLA).
+    after: |
+      We review the Service Level Agreement (SLA) every month. After an outage, refunds follow the SLA.
+
+not_flagged:
+  ja: 名前の大文字小文字、ハイフン、終わりの複数の s の違いは同じ名前と見ます。英語の名前は、頭文字が略語と揃うときだけ展開と読みます。
+  en: Differences of case, hyphens and a final plural s are not counted. An English name counts as an expansion only when its initials spell the abbreviation.
+rewrite:
+  ja:
+    direction: 二つの展開のうち正しいほうを書き手に確かめ、もう一方を消すか正しい名前に替えてください。二度目以降は略語だけで書けます。
+    pairs:
+      - before: SLA（サービス品質保証）を毎月見直します。障害が続いた月は、SLA（サービスレベル契約）に従って返金します。
+        after: SLA（サービス品質保証）を毎月見直します。障害が続いた月は、SLA に従って返金します。
+      - before: CI（継続的インテグレーション）で毎晩試験します。失敗したら CI（構成情報）を見直します。
+        after: CI（継続的インテグレーション）で毎晩試験します。失敗したら構成情報を見直します。（二つが別のものであるとき）
+    keep:
+      - 正しいほうの名前
+    avoid:
+      - どちらが正しいかを書き手に聞かずに決める
+  en:
+    direction: Ask the writer which expansion is right, then remove or correct the other. After the first, the abbreviation alone is enough.
+    pairs:
+      - before: We review the Service Level Agreement (SLA) every month. After an outage, refunds follow the Support Level Agreement (SLA).
+        after: We review the Service Level Agreement (SLA) every month. After an outage, refunds follow the SLA.
+      - before: Tests run nightly in CI (Continuous Integration). On a failure, check the CI (Configuration Item).
+        after: Tests run nightly in CI (Continuous Integration). On a failure, check the configuration item. (when the two are different things)
+    keep:
+      - the right name
+    avoid:
+      - picking one without asking the writer
