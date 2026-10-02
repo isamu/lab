@@ -37,6 +37,10 @@
     "./api": {
       "types": "./src/api.ts",
       "import": "./dist/api.js"
+    },
+    "./grade": {
+      "types": "./src/grade-api.ts",
+      "import": "./dist/grade-api.js"
     }
   },
   "files": [

@@ -6,7 +6,7 @@ import { extractFacts } from "../compare/extract.ts";
 import { outcomeOf, type Allowed, type Compared } from "../compare/outcome.ts";
 import { renderCompact, renderFriendly, renderJson } from "../compare/render.ts";
 import { COMPARE_TEXT } from "../compare/text.ts";
-import { readDocument } from "./read-document.ts";
+import { readDocument, type ReadDocument } from "./read-document.ts";
 import type { TreeContext } from "./tree.ts";
 
 /** Options whose value is the next argument. That value is not a file. */
@@ -33,13 +33,17 @@ const parseAllowed = (argv: readonly string[]): ParsedAllowed => {
 
 export type DocumentFacts = Compared & { readonly language: string };
 
+/** A document's facts, read with the team's names. */
+export const factsOf = (path: string, prose: ReadDocument, names: readonly string[]): DocumentFacts => {
+  const root = isMarkdownPath(path) ? readMarkdown(prose.doc.source).root : undefined;
+  const extraction = extractFacts({ doc: prose.doc, root, structure: prose.structure, names });
+  return { path, extraction, language: prose.language };
+};
+
 /** One document's facts, read as lint reads it: its language, the team's names, and the parts of speech. */
 export const readFacts = async (path: string, argv: readonly string[], context: TreeContext): Promise<DocumentFacts | undefined> => {
   const prose = await readDocument(path, argv, context, true);
-  if (prose === undefined) return undefined;
-  const root = isMarkdownPath(path) ? readMarkdown(prose.doc.source).root : undefined;
-  const extraction = extractFacts({ doc: prose.doc, root, structure: prose.structure, names: context.config.names ?? [] });
-  return { path, extraction, language: prose.language };
+  return prose === undefined ? undefined : factsOf(path, prose, context.config.names ?? []);
 };
 
 const renderFor = (argv: readonly string[]): typeof renderFriendly => {

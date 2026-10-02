@@ -81,7 +81,7 @@ export const entryOpens = (sentence: Sentence, entry: LexiconEntry): boolean => 
 };
 
 /** Marks and closing brackets that may follow the last word of a sentence (こと。」, must.). */
-const TRAILING_MARKS = new Set([..." \t\n。．.!！?？」』)）\"'”’"]);
+const TRAILING_MARKS = new Set(" \t\n。．.!！?？」』)）\"'”’");
 
 const withoutTrailingMarks = (text: string): string => {
   const chars = [...text];
