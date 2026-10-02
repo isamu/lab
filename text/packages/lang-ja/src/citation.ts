@@ -1,4 +1,4 @@
-import type { Lexicon } from "chaffjs/plugin";
+import type { Lexicon, NamedDocument } from "chaffjs/plugin";
 
 // 他の文書を指す参照。「民法第709条」の第709条はこの文書の条ではない。どの語が文書の名前を作るかは語彙表が持つ。
 
@@ -58,18 +58,26 @@ const endsWithKind = (name: string, kinds: readonly string[]): boolean => {
 };
 
 /**
- * reference の直前に書かれた文書名。「民法第709条」「民法の第709条」なら「民法」。この文書の条を指すなら undefined。
- * 名前が種類の語だけ（「契約第3条」）のときも、どの文書か決まらないので undefined にする。
+ * reference の直前に書かれた文書名。「民法第709条」「民法の第709条」なら「民法」、「この規則の別表」「本規約第3条」ならこの文書（self）。
+ * 名前が種類の語だけ（「契約第3条」）のときは、どの文書か決まらないので undefined にする。
  * 公布の番号を添えた名前（「…に関する基準(昭和五十八年厚生省告示第十四号)第二条」）は、種類の語が無くても文書の名前。
  */
-export const citedDocument = (text: string, reference: number, vocabulary: CitationVocabulary): string | undefined => {
+export const namedDocument = (text: string, reference: number, vocabulary: CitationVocabulary): NamedDocument | undefined => {
   const afterName = beforeJoiner(text, reference, vocabulary.joiners);
   const at = beforeNote(text, afterName, vocabulary.notes);
   const plain = nameBefore(text, at, NAME_CHAR);
   const name = vocabulary.kanaTitleKinds.includes(plain) ? nameBefore(text, at, TITLE_CHAR) : plain;
+  const self = namesThisDocument(text, at - name.length, name, vocabulary.selfPrefixes);
+  if (self && vocabulary.kinds.some((kind) => name.endsWith(kind))) return { name, self };
   const numbered = at !== afterName && name !== "";
   if (!numbered && !endsWithKind(name, vocabulary.kinds)) return undefined;
-  return namesThisDocument(text, at - name.length, name, vocabulary.selfPrefixes) ? undefined : name;
+  return { name, self };
+};
+
+/** reference の直前に書かれた他の文書の名前。この文書を指すか、名前が無ければ undefined。 */
+export const citedDocument = (text: string, reference: number, vocabulary: CitationVocabulary): string | undefined => {
+  const named = namedDocument(text, reference, vocabulary);
+  return named === undefined || named.self ? undefined : named.name;
 };
 
 /** 自分を指す頭の語の長さの上限（この・本・当）。後ろ向きに読む長さを抑える。 */

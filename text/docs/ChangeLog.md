@@ -11,7 +11,7 @@ Newest first.
   already reads 「民法第709条」. Later numbers of the same kind in the same sentence go with it (「別表第一から別表第三まで」,
   「…の別表に収載されている医薬品(…別表第2に収載されている医薬品を除く。)」). A number in another sentence, before the
   citation, of another kind, or after 「この規則の」 is still looked for in this document.
-- The language package reads the name (`StructurePatterns.citedDocument`; Japanese has it, English reads "of" after the
+- The language package reads the name (`StructurePatterns.namedDocument`; Japanese has it, English reads "of" after the
   number as before). The Japanese `name-note` list also reads a short title in brackets before the promulgation
   number (「使用薬剤の薬価(薬価基準)(平成二十年厚生労働省告示第六十号)」), for articles as well as tables.
 - Found by the corpus's 厚生労働省告示 (round 14); every finding there was another 告示's 別表.

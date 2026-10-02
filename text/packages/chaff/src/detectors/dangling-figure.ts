@@ -12,7 +12,7 @@ export const labelWordsOf = (doc: ProseDocument): LabelWords => ({
 });
 
 const citationsOf = (doc: ProseDocument): Citations | undefined =>
-  doc.citedDocument === undefined ? undefined : { citedDocument: doc.citedDocument, sentences: doc.sentences.map((sentence) => sentence.span) };
+  doc.namedDocument === undefined ? undefined : { namedDocument: doc.namedDocument, sentences: doc.sentences.map((sentence) => sentence.span) };
 
 /** 本文が指す図・表・付録の番号が、キャプションにも見出しにも無い。他の文書の名前の後ろに書いた番号は、その文書の図。 */
 export const danglingFigure: Detector = (doc): Finding[] =>

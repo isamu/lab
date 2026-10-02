@@ -366,7 +366,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     },
     profile,
     prose,
-    citedDocument: adapter.structure?.citedDocument,
+    namedDocument: adapter.structure?.namedDocument,
     replyQuotes: emailLayout.replyQuotes,
     get markup(): Markup {
       return documentMarkup(root, source, markdown, [...emailLayout.replyQuotes, ...syntax]);

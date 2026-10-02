@@ -8,8 +8,8 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import type { Finding, LanguageAdapter, StructurePatterns } from "../packages/chaff/src/plugin.ts";
-import { citationVocabulary, citedDocument } from "../packages/lang-ja/src/citation.ts";
+import type { Finding, LanguageAdapter, NamedDocument, StructurePatterns } from "../packages/chaff/src/plugin.ts";
+import { citationVocabulary, citedDocument, namedDocument } from "../packages/lang-ja/src/citation.ts";
 import { citedDocumentAfter } from "../packages/lang-en/src/citation.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 
@@ -629,6 +629,21 @@ describe("日本語: 他の文書の条を指す参照は、この文書では�
   names.forEach(([text, expected]) => {
     it(`citedDocument: ${text} → ${String(expected)}`, () =>
       assert.equal(citedDocument(text, text.lastIndexOf("第"), citationVocabulary(ja.lexicons)), expected));
+  });
+
+  const named: readonly (readonly [string, NamedDocument | undefined])[] = [
+    ["民法の別表", { name: "民法", self: false }],
+    ["この規則の別表", { name: "規則", self: true }],
+    ["本規則の別表", { name: "本規則", self: true }],
+    ["当規約別表", { name: "当規約", self: true }],
+    ["この基準(昭和五十八年厚生省告示第十四号)別表", { name: "基準", self: true }],
+    ["規則の別表", undefined],
+    ["この点の別表", undefined],
+    ["手数料の別表", undefined],
+  ];
+  named.forEach(([text, expected]) => {
+    it(`namedDocument: ${text} → ${JSON.stringify(expected)}`, () =>
+      assert.deepEqual(namedDocument(text, text.lastIndexOf("別表"), citationVocabulary(ja.lexicons)), expected));
   });
 
   it("文書の種類の語は、語彙表の並びによらず長いものから当てる。「法律」だけの名前は「法」の文書にしない", () => {

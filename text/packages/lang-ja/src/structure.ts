@@ -1,6 +1,6 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
 import { parseJapaneseNumber, toHalfWidth } from "./numbers.ts";
-import { citationVocabulary, citedDocument } from "./citation.ts";
+import { citationVocabulary, citedDocument, namedDocument } from "./citation.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { countedAfter, dates, quantities } from "./quantities.ts";
 import { sectionReferences, sectionVocabulary } from "./section-reference.ts";
@@ -419,5 +419,5 @@ export const structure: StructurePatterns = {
   countedAfter: countedAfterNumber,
   continuesSentence: startsWithParticle,
   number,
-  citedDocument: (text, at) => citedDocument(text, at, CITATION),
+  namedDocument: (text, at) => namedDocument(text, at, CITATION),
 };

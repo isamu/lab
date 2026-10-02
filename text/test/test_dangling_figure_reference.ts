@@ -102,6 +102,8 @@ describe("dangling-figure-reference", () => {
     assert.deepEqual(cited("期限は別表第三により、料金は手数料規則の別表第二による。"), ["別表第三"]);
     assert.deepEqual(cited("料金は、手数料規則の別表第二により、様式は図2による。"), ["図2"]);
     assert.deepEqual(cited("料金は、この規則の別表第二による。"), ["別表第二"]);
+    assert.deepEqual(cited("料金は、手数料規則の別表第二により、この規則の別表第三による。"), ["別表第三"]);
+    assert.deepEqual(cited("料金は、手数料規則の別表第二により、本規則の別表第三及び別表第四による。"), ["別表第三", "別表第四"]);
     assert.deepEqual(found(lines("料金は、手数料規則の表示に従い、表3による。", "", "表1　料金"), ja), ["表3"]);
   });
 

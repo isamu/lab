@@ -1,6 +1,6 @@
 import { escapeRegExp } from "./orthography.ts";
 import { lowerBound } from "./detectors/token-column.ts";
-import type { CitedDocument, Span } from "./plugin.ts";
+import type { DocumentNamer, Span } from "./plugin.ts";
 
 /**
  * 本文で番号を指した図・表・付録（図3、Table 2、Appendix B）と、それを行の頭に書いた所（キャプション、見出し）。
@@ -108,16 +108,17 @@ const labelledIn = (source: string, labels: readonly LabelWord[]): Mention[] => 
 export const labelledKindsIn = (source: string, words: LabelWords): ReadonlySet<string> =>
   new Set(labelledIn(source, words.labels).map((mention) => mention.kind));
 
-/** 他の文書の名前を読む言語の知識と、その名前が届く範囲（文）。 */
-export type Citations = { readonly citedDocument: CitedDocument; readonly sentences: readonly Span[] };
+/** 文書の名前を読む言語の知識と、その名前が届く範囲（文）。 */
+export type Citations = { readonly namedDocument: DocumentNamer; readonly sentences: readonly Span[] };
 
-type CitedLabel = { readonly start: number; readonly kind: string };
+type NamedLabel = { readonly start: number; readonly kind: string; readonly self: boolean };
 
-/** 他の文書の名前のすぐ後ろに書いた図の語（「…(平成二十年厚生労働省告示第五十九号)別表第一」「…号)の別表」）。 */
-const citedLabelsIn = (prose: string, labels: readonly LabelWord[], citedDocument: CitedDocument): CitedLabel[] =>
-  [...prose.matchAll(labelPattern(labels))]
-    .filter((match) => citedDocument(prose, match.index) !== undefined)
-    .map((match) => ({ start: match.index, kind: kindOf(match[1] ?? "", labels) }));
+/** 文書の名前のすぐ後ろに書いた図の語（「…(平成二十年厚生労働省告示第五十九号)別表第一」「…号)の別表」「この規則の別表第三」）。 */
+const namedLabelsIn = (prose: string, labels: readonly LabelWord[], namedDocument: DocumentNamer): NamedLabel[] =>
+  [...prose.matchAll(labelPattern(labels))].flatMap((match) => {
+    const named = namedDocument(prose, match.index);
+    return named === undefined ? [] : [{ start: match.index, kind: kindOf(match[1] ?? "", labels), self: named.self }];
+  });
 
 /** offset を含む文の頭。文の外（見出し）なら offset。文は文書の順に並んでいる。 */
 const sentenceStartAt = (sentences: readonly Span[], starts: readonly number[], offset: number): number => {
@@ -126,19 +127,23 @@ const sentenceStartAt = (sentences: readonly Span[], starts: readonly number[], 
 };
 
 /**
- * 他の文書の図か。名前のすぐ後ろに書いたか、同じ文の前のほうで同じ種類の図を他の文書のものとして書いた。
+ * 他の文書の図か。同じ文の中で、その番号の位置までに名前を添えて書いた同じ種類の図のうち、いちばん近いものが他の文書のもの。
  * 「(…告示第五十九号)別表第一…及び別表第二」「…別表第一から別表第三まで」の後ろの番号も、その告示の別表。
+ * 「…手数料規則の別表第二により、この規則の別表第三による」の別表第三は、この文書のものと名指している。
  * 文と名前の位置は二分探索で引く。参照先の無い番号が何万あっても、文書の長さの二乗にしない。
  */
-const citedElsewhere = (cited: readonly CitedLabel[], sentences: readonly Span[]): ((mention: Mention) => boolean) => {
+const citedElsewhere = (named: readonly NamedLabel[], sentences: readonly Span[]): ((mention: Mention) => boolean) => {
   const starts = sentences.map((sentence) => sentence.start);
   const byKind = new Map(
-    [...new Set(cited.map((label) => label.kind))].map((kind) => [kind, cited.filter((label) => label.kind === kind).map((label) => label.start)]),
+    [...new Set(named.map((label) => label.kind))].map((kind) => {
+      const labels = named.filter((label) => label.kind === kind);
+      return [kind, { labels, starts: labels.map((label) => label.start) }];
+    }),
   );
   return (mention) => {
-    const labels = byKind.get(mention.kind) ?? [];
-    const first = labels[lowerBound(labels, sentenceStartAt(sentences, starts, mention.start))];
-    return first !== undefined && first <= mention.start;
+    const ofKind = byKind.get(mention.kind);
+    const nearest = ofKind?.labels[lowerBound(ofKind.starts, mention.start + 1) - 1];
+    return nearest !== undefined && !nearest.self && nearest.start >= sentenceStartAt(sentences, starts, mention.start);
   };
 };
 
@@ -162,7 +167,7 @@ export const danglingFigures = (
     .filter((mention) => labelledKinds.has(mention.kind) && !labelledKeys.has(mention.key))
     .filter((mention) => pointsHere(prose, mention, words) && !links.some((link) => link.start <= mention.start && mention.end <= link.end));
   // 他の文書の名前は、参照先の無い番号があるときだけ読む。図の語のたびに名前を後ろ向きに読む代金を、ふつうの文書に払わせない。
-  const cited = dangling.length === 0 || citations === undefined ? [] : citedLabelsIn(prose, words.labels, citations.citedDocument);
-  const elsewhere = cited.length === 0 || citations === undefined ? () => false : citedElsewhere(cited, citations.sentences);
+  const named = dangling.length === 0 || citations === undefined ? [] : namedLabelsIn(prose, words.labels, citations.namedDocument);
+  const elsewhere = named.length === 0 || citations === undefined ? () => false : citedElsewhere(named, citations.sentences);
   return dangling.filter((mention) => !elsewhere(mention)).map((mention) => ({ offset: mention.start, label: mention.written }));
 };
