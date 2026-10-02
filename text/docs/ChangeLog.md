@@ -18,6 +18,7 @@ Newest first.
   `long-vowel-distinct` list gains the pairs the corpus showed under `style: bunkacho` (タブ, ベタ, エコ, ヘビ, ドラマ,
   カフェ, キャリア) and カバ; the dictionary lists both forms as separate words and cannot tell a variant from another
   word.
+
 ### `sasete-itadaku` counts each use, and its potential and godan forms
 
 The rule counted sentences, so 「配布させていただき、説明させていただきます。」 was one use; it is now two. It also
