@@ -84,18 +84,34 @@ export const danglingReferences = (tree: StructureNode, source: string): Structu
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
 };
 
-type Definition = { readonly node: StructureNode; readonly article: string };
+type Definition = { readonly node: StructureNode; readonly article: string; readonly instrument: string };
 
-/** 定義を文書の順に、それが置かれた条の番地と一緒に並べる。範囲を限った定義は、その条の中でだけ比べるため。 */
+const firstArticleOf = (node: StructureNode): StructureNode | undefined => node.children.find((child) => child.kind === "article");
+
+/**
+ * 条の番号を初めからやり直す節。1 つのページに 2 つの文書を載せたもの（利用規約のあとに個人情報保護方針、それぞれ第１条から）。
+ * 節の最初の条が、文書の最初の条と同じ番号で始まる節を数え、2 つ以上あるときだけ、それぞれを別の文書とみなす。1 つなら文書は 1 つ。
+ */
+const instrumentsOf = (tree: StructureNode): ReadonlySet<StructureNode> => {
+  const nodes = inDocumentOrder(tree);
+  const first = nodes.find((node) => node.kind === "article");
+  if (first === undefined) return new Set();
+  const restarts = nodes.filter((node) => node.kind !== "article" && firstArticleOf(node)?.address === first.address);
+  return restarts.length >= 2 ? new Set(restarts) : new Set();
+};
+
+/** 定義を文書の順に、それが置かれた条と文書の番地と一緒に並べる。範囲を限った定義は、その条の中でだけ比べるため。 */
 const definitionsInOrder = (tree: StructureNode): Definition[] => {
+  const instruments = instrumentsOf(tree);
   const found: Definition[] = [];
-  const pending: Definition[] = [{ node: tree, article: "" }];
+  const pending: Definition[] = [{ node: tree, article: "", instrument: "" }];
   while (pending.length > 0) {
     const current = pending.pop();
     if (current === undefined) break;
     if (current.node.kind === "definition") found.push(current);
     const article = current.node.kind === "article" ? current.node.address : current.article;
-    current.node.children.toReversed().forEach((child) => pending.push({ node: child, article }));
+    const instrument = instruments.has(current.node) ? current.node.address : current.instrument;
+    current.node.children.toReversed().forEach((child) => pending.push({ node: child, article, instrument }));
   }
   return found;
 };
@@ -103,13 +119,14 @@ const definitionsInOrder = (tree: StructureNode): Definition[] => {
 /**
  * 同じ語の二度目以降の定義。どちらが正しいかは決めず、両方の場所を示す。
  * 範囲を限った定義（この条において「X」とは）は、同じ条の中でだけ比べる。別の条で定義し直すのは正しい書き方。
+ * 1 つのページに載せた別々の文書（条の番号をやり直す節）は、それぞれの中でだけ比べる。
  */
 export const duplicateDefinitions = (tree: StructureNode): StructureIssue[] => {
   const first = new Map<string, StructureNode>();
-  return definitionsInOrder(tree).flatMap(({ node, article }) => {
+  return definitionsInOrder(tree).flatMap(({ node, article, instrument }) => {
     const term = textOf(node, "term");
     const within = node.attrs["within"] === undefined ? article : textOf(node, "within");
-    const key = node.attrs["scope"] === "local" ? `${within}\u0000${term}` : term;
+    const key = node.attrs["scope"] === "local" ? `${instrument}\u0000${within}\u0000${term}` : `${instrument}\u0000${term}`;
     const earlier = first.get(key);
     if (earlier === undefined) {
       first.set(key, node);

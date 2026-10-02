@@ -4,6 +4,16 @@ Newest first.
 
 ## Unreleased
 
+### `duplicate-definition` compares definitions within each instrument on a page (#170)
+
+- A page that holds two instruments, each numbered from its own 第１条 under its own heading (an app's 利用規約 and
+  its 個人情報保護方針), defines the same words in each (都, 本アプリ). Each is now compared only within its own
+  instrument. chaff reads an instrument from the structure tree: a heading whose first article has the same number as
+  the document's first article. Only when two or more headings restart the numbering; a single instrument, a
+  statute or numbering that carries on under the next heading is compared as before.
+- Found by the 東京都公式アプリ terms in the corpus (round 14): every finding there was the second instrument's
+  definition.
+
 ### `unqualified-superlative`: the rule text no longer uses 業界最速 as its example
 
 The summary and the example named 「業界最速」 as an unqualified superlative, but since #170 a noun joined to the

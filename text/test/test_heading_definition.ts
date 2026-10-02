@@ -76,3 +76,39 @@ describe("duplicate-definition と見出し", () => {
     assert.deepEqual(duplicates(en, source), ["Controller"]);
   });
 });
+
+describe("duplicate-definition と、1 つのページに載せた 2 つの文書", () => {
+  const instrument = (heading: string, first: number): string[] => [
+    `## ${heading}`,
+    "",
+    `第${String(first)}条\u3000本規約（以下「本規約」という。）は、市（以下「市」という。）が提供するアプリ（以下「本アプリ」という。）について定める。`,
+    "",
+    `第${String(first + 1)}条\u3000利用者は、本アプリを使うことができる。`,
+    "",
+  ];
+
+  it("valid: 条の番号を第1条からやり直す見出しごとに、同じ語を定義し直してよい（利用規約と個人情報保護方針）", () => {
+    const source = lines("# サービス利用規約", "", ...instrument("アプリ利用規約", 1), ...instrument("個人情報保護方針", 1));
+    assert.deepEqual(duplicates(ja, source), []);
+  });
+
+  it("valid: 条の中に限った定義も、文書ごとの同じ番号の条で別々に定義してよい", () => {
+    const local = (heading: string): string[] => [`## ${heading}`, "", "第1条　この条において「利用者」とは、アプリを使う者をいう。", ""];
+    assert.deepEqual(duplicates(ja, lines("# サービス利用規約", "", ...local("アプリ利用規約"), ...local("個人情報保護方針"))), []);
+  });
+
+  it("invalid: 1 つの文書の中で二度定義すれば、これまでどおり指摘する", () => {
+    const source = lines("# サービス利用規約", "", ...instrument("アプリ利用規約", 1), ...instrument("個人情報保護方針", 1), "第3条　「市」とは、県をいう。");
+    assert.deepEqual(duplicates(ja, source), ["市"]);
+  });
+
+  it("invalid: 番号が続く見出し（第3条から）は同じ文書の続きなので、定義し直せば指摘する", () => {
+    const source = lines("# サービス利用規約", "", ...instrument("総則", 1), ...instrument("利用", 3));
+    assert.deepEqual(duplicates(ja, source), ["本規約", "市", "本アプリ"]);
+  });
+
+  it("invalid: 第1条から始まる見出しが 1 つだけなら文書は 1 つで、見出しの外の定義とも比べる", () => {
+    const source = lines("# サービス利用規約", "", "「市」とは、この規約を定めた市をいう。", "", ...instrument("アプリ利用規約", 1));
+    assert.deepEqual(duplicates(ja, source), ["市"]);
+  });
+});
