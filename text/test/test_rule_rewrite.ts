@@ -60,9 +60,12 @@ const flaggedPhrases = (rule: RuleDefinition, language: string): string[] =>
     .map((entry) => entry.pattern.toLowerCase());
 
 /** Each pair's after that still holds a phrase the rule flags, as "rule language: phrase in after". */
+/** Rules whose word list says how words sound (article-sound's vowel letters), not phrases the rule flags. */
+const SOUND_LISTS: ReadonlySet<string> = new Set(["article-sound"]);
+
 const relapsesOf = (rule: RuleDefinition): string[] =>
   Object.entries(rewritesOf(rule)).flatMap(([language, rewrite]) => {
-    const phrases = flaggedPhrases(rule, language);
+    const phrases = SOUND_LISTS.has(rule.id) ? [] : flaggedPhrases(rule, language);
     const afters = rewrite.pairs.map((pair) => pair.after);
     return afters.flatMap((after) =>
       phrases.filter((phrase) => after.toLowerCase().includes(phrase)).map((phrase) => `${rule.id} ${language}: "${phrase}" in "${after}"`),
