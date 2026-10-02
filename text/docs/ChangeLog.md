@@ -12,6 +12,19 @@ Newest first.
   Code and other `utm_source` values are not read. The marks are a word list in each language package. In Qiita
   articles none appear in 2016–2021, and they appear in a small share of 2025–2026 ones.
 
+### Rules say how to rewrite what they flag
+
+- A rule file may carry a `rewrite:` block per language: a `direction` (what to do with a flagged spot), two or three
+  self-written `pairs` (before and after), what to `keep` (facts, conditions, the writer's certainty) and what to
+  `avoid` (inventing an example, trading one stock phrase for another). chaff still never rewrites; this is data for
+  the AI or the person who does.
+- Filled in for the AI-shape rules and the common readability rules: `ai-tell`, `contrast-framing`,
+  `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`,
+  `bold-density`, `no-em-dash`, `rule-of-three`, `sentence-rhythm`, `max-sentence-length`, `taigen-dome-in-prose`,
+  `agentless-passive`, `excessive-hedging`, `empty-intensifier`, `cushion-phrase-density`, `nominalization`. A test requires it for these.
+- An `ai-tell` lexicon entry may carry its own `rewrite` hint: 「時間を溶かす」 → 「時間がかかった（何に、どれだけ）」,
+  「静かに壊れる」 → 「エラーを出さずに失敗する」, "delve into" → "look at, or explain".
+
 ### `dangling-figure-reference` leaves another instrument's 別表 to that instrument (#170)
 
 - A 別表, 図 or 表 written right after another document's name or promulgation number is that document's
