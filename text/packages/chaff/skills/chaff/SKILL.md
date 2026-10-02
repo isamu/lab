@@ -107,7 +107,24 @@ Use this section when asked to make a text sound less generated: 「AIっぽさ�
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
 `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `assistant-residue`, and the signals
 `ai-generated-composite` reads). Most are experimental: run with `--experimental`. None of them says the text was
-generated. chaff never rewrites; the rewriting is yours. Pick one of three modes and say which.
+generated. chaff never rewrites; the rewriting is yours.
+
+**Start with the plan.** Run `npx chaffjs fix-plan <file> --experimental` (with the genre's `--genre`; `--json` to
+read it as data). It prints, in the document's language:
+
+- the constraints: keep facts, numbers, conditions and names; add no fact; ask the writer instead of inventing a
+  specific; two passes at most;
+- the recommended mode and why, and the document-level signals with the outline's numbers;
+- for each rule that fired: its rewrite direction, what to keep, what to avoid, one before/after pair, hints for the
+  `ai-tell` phrases found, and the spots (line and sentence);
+- the check commands to run on the rewrite.
+
+Follow it. Rewrite in the mode it recommends; a request that says 「全面的に」 or "from scratch" means Full whatever it
+says. Apply each rule's direction at its spots. Where a fix needs a specific the text does not give, leave ［ ］ and
+ask. Save the result under the name the plan gives, run its check commands, and report the mode and the checks'
+output. The mode steps below say the rest.
+
+Pick one of three modes and say which.
 
 | Mode | Changes | Pick it when |
 | --- | --- | --- |
@@ -121,8 +138,9 @@ repeats the body. The writer usually wants the structure changed, not only the s
 
 **Light** (only the flagged spots):
 
-1. `npx chaffjs <file> --experimental` (or with the genre's `--genre`); collect the AI-shape findings.
-2. Rewrite only those spots. Keep the meaning, numbers, conditions and technical constraints.
+1. `npx chaffjs fix-plan <file> --experimental` (or with the genre's `--genre`).
+2. Rewrite only the flagged spots, each by its rule's direction in the plan. Keep the meaning, numbers, conditions and
+   technical constraints.
 3. Run chaff again. At most two rewrite passes.
 4. Show the rewritten text and a short list of what changed and why.
 
