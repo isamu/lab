@@ -196,6 +196,7 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      redundant-expression: off
       requirement-smell: off
       # Dialogue may misuse an idiom on purpose, to draw the speaker.
       idiom-misuse: off
