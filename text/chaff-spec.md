@@ -2295,7 +2295,7 @@ npx chaffjs fix-plan before.md --experimental --json   # 同じものを JSON �
 
 ## 29. AI の評価に使う（eval の採点役）
 
-状態: `chaff grade`（§29.3）、採点の基準（§29.4）、A/B と回帰（§29.5）、ライブラリの API（§29.6）、再現の印（§29.7）は使える。評価基盤への組み込みの例は予定（#488）。
+状態: 使える。`chaff grade`（§29.3）、採点の基準（§29.4）、A/B と回帰（§29.5）、ライブラリの API と評価基盤への組み込み（§29.6）、再現の印（§29.7）。自作の比べる例は予定（#488）。
 
 LLM の評価（eval）では、出力を model に採点させることが多い。model の採点は意味を読めるが、同じ出力に毎回同じ点を付けるとは限らず、なぜその点かも検算できない。
 chaff の判定は同じ文書なら同じ結果になり、指摘ごとに行とルールと理由が付き、ルールの版も分かる。
@@ -2320,8 +2320,8 @@ chaff が見ないもの（主張が正しいか、質問に答えているか�
 
 ### 29.2 いま使えるもの
 
-次の 5 つは今の版で動く。どれも 1 回の呼び出しで 1 つの出力を見る。
-多数の出力を回して集めるのは呼び出す側のスクリプトで、手引き「AI の評価（AI evals）に使う」に例と実際の出力を置く。
+次の 5 つは 1 回の呼び出しで 1 つの出力を見る。多数の出力をまとめて採点するのは `chaff grade`（§29.3）で、中ではこれらと同じ処理を通る。
+手引き「AI の評価（AI evals）に使う」に、どちらも実際の出力付きで置く。
 
 | 見たいこと | コマンド | 機械が読む出力 | 終了コード |
 | --- | --- | --- | --- |
@@ -2364,7 +2364,7 @@ npx chaffjs grade items.jsonl --compact                # 1 出力 1 行（id・�
 `citations` があって `sources` が無い行は、照らす原文が無いので読めない入力（終了コード 2）とする。
 原文は名前が `.txt` で終われば番号で読むテキストの文書、それ以外は Markdown として読む（`chaff tree` がファイルの拡張子で決めるのと同じ）。
 
-**出力ごとの結果。** `--out` の 1 行。形は次のとおり（予定の形で、値は説明のためのもの。実際の出力ではない）。
+**出力ごとの結果。** `--out` の 1 行。形は次のとおり（値は説明のためのもの。実際の出力は手引きにある）。
 
 ```json
 {
@@ -2495,14 +2495,34 @@ if (!result.pass) console.log(result.failedBecause);
 - 置き場所は `chaffjs/grade` とし、`chaffjs/api` には入れない。`chaffjs/api` はプラグイン API（§6）の型と `defineRule` を出し、`API_VERSION` がその互換を守っている。
   そこに採点の関数を足すと、プラグインの互換と採点の結果の互換が同じ番号で縛られる。採点の結果の形は chaffjs の版（semver）で守る。
 
-**評価基盤への組み込み（予定）。** 例は手引きに置く。どれも `grade()` か `chaff grade` を呼ぶだけで、chaff の側に基盤ごとの処理は持たない。
+**採点役の形（`toScorer`）。** 評価基盤の多くは、採点役に「点・合否・理由・付帯情報」の形を求める。`chaffjs/grade` の `toScorer(result)` は、結果の 1 行をその形に写す。写しであって、元の結果の形は変えない。
+
+| 欄 | 中身 |
+| --- | --- |
+| `name` | `chaff` |
+| `score` | 通れば 1、落ちれば 0。`grade:` があっても点の和を 0〜1 に写さない（下の理由） |
+| `pass` | 結果の `pass` |
+| `reason` | `passed` か `failed: <failedBecause を ; でつなぐ>`、ルールごとの指摘の数、`grade:` があれば点の和を ` — ` でつなぐ |
+| `metadata` | `pass` を除いた結果の 1 行すべて（指摘、率、動かなかったもの、事実、引用、点の内訳、`stamp`） |
+
+CLI から使う基盤（Python の DeepEval・Inspect AI など）は、`--out` の 1 行から同じ写しを作る。手引きの例はその作り方を一つの関数にしてある。
+
+**評価基盤への組み込み。** 例は `examples/evals/` に置き、手引きから指す。どれも `grade()` か `chaff grade` を呼ぶだけで、chaff の側に基盤ごとの処理は持たない。基盤のパッケージはこのリポジトリに入れない。
 
 | 基盤 | 形 |
 | --- | --- |
-| promptfoo | `type: javascript` の assertion から `grade()` を呼ぶ。`pass` をそのまま返し、`score` は通れば 1、落ちれば 0、`reason` に `failedBecause` と点の和を入れる |
-| Inspect AI | scorer から `chaff grade` を呼び、結果の 1 行を `Score` の `value` と `explanation` にする |
-| OpenAI Evals / LangSmith | §29.3 の JSONL を受け渡しの形にし、結果の 1 行を feedback として載せる |
-| GitHub Action | `chaff grade --baseline` を走らせ、終了コードで止める |
+| promptfoo | `type: javascript` の assertion（`promptfoo/chaff-assertion.cjs`）から `grade()` を呼び、`toScorer` の `pass`・`score`・`reason` を返す |
+| autoevals・Braintrust | `({ output, expected }) => { name, score, metadata }` の採点役（`autoevals/chaff-scorer.mjs`）。`expected` を `reference` にする |
+| evalite | `createScorer` の採点役（`evalite/chaff.eval.ts`） |
+| Langfuse | trace に `langfuse.score.create()` で `score` と `reason` を付ける（`langfuse/push-score.mjs`、コードのみ） |
+| DeepEval | `chaff grade` を呼ぶ `BaseMetric`（`deepeval/chaff_metric.py`） |
+| Ragas | `Faithfulness` の横に `compare` の照合を置く（`ragas/chaff_with_faithfulness.py`、コードのみ） |
+| Inspect AI | `chaff grade` を呼ぶ `@scorer`。結果の 1 行を `Score` の `value`・`explanation`・`metadata` にする（`inspect/chaff_scorer.py`） |
+| OpenAI Evals | `samples.jsonl`（`input`・`ideal`）と生成した出力を §29.3 の JSONL に変え、`ideal` を `reference` にする（`openai-evals/`） |
+| GitHub Action | `chaff grade --baseline` を走らせ、終了コードで止める（`examples/evals/README.md`） |
+
+lm-evaluation-harness と Arize Phoenix には専用の例を置かない。出力を `grade()` か `chaff grade` で採点し、ほかの指標と同じに載せるだけで足りる。
+promptfoo の assertion、autoevals の採点役、OpenAI Evals の変換は、通信も API key も使わずに試験する。
 
 promptfoo の `score` に点の和を 0〜1 に写したものを使わないのは、写し方を chaff が決めると、それが満点のある尺度になるためである（§29.4）。
 
@@ -2536,11 +2556,11 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 | --- | --- |
 | 出力ごとの指摘（SARIF）、`compare --json`、`cite --format json`、`fix-plan --json`、`outline --json` | 使える（§29.2） |
 | 矛盾を見るルール（`total-mismatch`、`percent-sum-mismatch`、`date-weekday-mismatch`、`announced-count-mismatch`） | 使える。試験中なので `--experimental` で動く。増やす作業は #484 |
-| 多数の出力を回して集めるスクリプト | 手引きに例を置いた。chaff の外のスクリプト |
+| 多数の出力を回して集める | `chaff grade` に置き換えた |
 | `chaff grade`、入力の JSONL、出力ごとの結果、要約、終了コード | 使える |
 | `grade:` の基準 | 使える |
 | `--baseline` と回帰の終了コード | 使える |
 | `grade()` | 使える（`chaffjs/grade`） |
 | `stamp` | 使える |
-| promptfoo・Inspect AI・LangSmith・GitHub Action の例 | 予定（#488 の 4） |
+| 評価基盤の例（promptfoo・autoevals・evalite・Langfuse・DeepEval・Ragas・Inspect AI・OpenAI Evals・GitHub Action）と `toScorer` | 使える（`examples/evals/`） |
 | 自作の比べる例 | 予定（#488 の 5） |

@@ -21,6 +21,8 @@ export type BaselineText = {
   readonly regressionsHeading: (count: number) => string;
   readonly noRegression: string;
   readonly none: string;
+  /** Between the parts of one output's line. */
+  readonly separator: string;
 };
 
 export const BASELINE_TEXT: Texts<BaselineText> = {
@@ -47,6 +49,7 @@ export const BASELINE_TEXT: Texts<BaselineText> = {
     regressionsHeading: (count) => `回帰 ${String(count)} 件`,
     noRegression: "回帰はありません",
     none: "なし",
+    separator: "、",
   },
   en: {
     unreadable: (path, lines) => `${path}: not the results of one chaff grade --out run (line ${lines}: another shape, or an id already used)`,
@@ -72,5 +75,6 @@ export const BASELINE_TEXT: Texts<BaselineText> = {
     regressionsHeading: (count) => `${String(count)} ${count === 1 ? "regression" : "regressions"}`,
     noRegression: "No regression",
     none: "none",
+    separator: "; ",
   },
 };
