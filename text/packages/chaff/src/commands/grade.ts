@@ -14,11 +14,15 @@ import { rulesOf } from "../custom/load.ts";
 import { summaryOf } from "../grade/summary.ts";
 import { GRADE_TEXT, type GradeText } from "../grade/text.ts";
 import { sharedLanguage, type UiLanguage } from "../ui.ts";
+import { compareRuns, type Comparison } from "../grade/baseline.ts";
+import { BASELINE_TEXT } from "../grade/baseline-text.ts";
+import { renderComparison, renderComparisonCompact } from "../grade/render-baseline.ts";
+import { chooseBaseline } from "./grade-baseline.ts";
 
 /** Exit codes (spec §29.3). 2 keeps "the grader did not run" apart from "an output is bad" at a CI gate. */
 export const GRADE_EXIT = { passed: 0, failed: 1, unreadable: 2 } as const;
 
-const VALUED: ReadonlySet<string> = new Set(["--out", "--genre"]);
+const VALUED: ReadonlySet<string> = new Set(["--out", "--genre", "--baseline"]);
 
 export const gradeTargets = (argv: readonly string[]): string[] =>
   argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.has(all[index - 1] ?? ""));
@@ -85,11 +89,27 @@ const writeResults = (path: string | undefined, results: readonly GradeResult[],
   console.error(text.wrote(path, results.length));
 };
 
-const printSummary = (path: string, results: readonly GradeResult[], argv: readonly string[], text: GradeText): void => {
+/** The baseline compared with, when there is one: where it was read from and how this run moved against it. */
+type Compared = { readonly path: string; readonly comparison: Comparison } | undefined;
+
+const printSummary = (path: string, results: readonly GradeResult[], argv: readonly string[], compared: Compared, ui: UiLanguage): void => {
   const summary = summaryOf(results);
-  if (argv.includes("--json")) console.log(JSON.stringify(summary, null, 2));
-  else if (argv.includes("--compact")) console.log(renderCompact(path, results, summary, text));
-  else console.log(renderSummary(path, summary, text));
+  const text = GRADE_TEXT[ui];
+  const baselineText = BASELINE_TEXT[ui];
+  if (argv.includes("--json")) {
+    console.log(JSON.stringify(compared === undefined ? summary : { ...summary, baseline: compared.comparison }, null, 2));
+    return;
+  }
+  const compact = argv.includes("--compact");
+  console.log(compact ? renderCompact(path, results, summary, text) : renderSummary(path, summary, text));
+  if (compared === undefined) return;
+  console.log(compact ? renderComparisonCompact(compared.comparison, baselineText) : `\n${renderComparison(compared.path, compared.comparison, baselineText)}`);
+};
+
+/** With a baseline, the exit code says whether this run regressed (spec §29.5); without one, whether every output passed. */
+const exitCodeOf = (results: readonly GradeResult[], compared: Compared): number => {
+  if (compared !== undefined) return compared.comparison.regressions.length === 0 ? GRADE_EXIT.passed : GRADE_EXIT.failed;
+  return results.every((result) => result.pass) ? GRADE_EXIT.passed : GRADE_EXIT.failed;
 };
 
 /**
@@ -107,19 +127,17 @@ export const runGrade = async (argv: readonly string[], context: GradeContext): 
   const items = rubric === undefined ? undefined : await readItems(path, host);
   const setup = items === undefined || rubric === undefined ? undefined : await setupFor(items, rubric.rubric, argv, context, host);
   if (setup === undefined || items === undefined) return GRADE_EXIT.unreadable;
+  const baseline = await chooseBaseline(context.flag(argv, "--baseline"), setup.stamp, argv.includes("--allow-stamp-mismatch"), context.ui);
+  if (baseline.kind === "stop") return GRADE_EXIT.unreadable;
   warnUnknownRules(setup.rubric, context.config, host);
   const results = await gradeInOrder(items, setup);
   writeResults(context.flag(argv, "--out"), results, host);
-  printSummary(
-    path,
-    results,
-    argv,
-    GRADE_TEXT[
-      sharedLanguage(
-        results.map((result) => result.language),
-        context.ui,
-      )
-    ],
+  const rubricRules = new Set(Object.keys(setup.rubric?.rules ?? {}));
+  const compared = baseline.kind === "compare" ? { path: baseline.path, comparison: compareRuns(baseline.before, results, rubricRules) } : undefined;
+  const ui = sharedLanguage(
+    results.map((result) => result.language),
+    context.ui,
   );
-  return results.every((result) => result.pass) ? GRADE_EXIT.passed : GRADE_EXIT.failed;
+  printSummary(path, results, argv, compared, ui);
+  return exitCodeOf(results, compared);
 };
