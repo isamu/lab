@@ -12,8 +12,12 @@ export const customRulesOf = (config: Pick<Config, "customRules" | "baseDir">): 
     baseDir: config.baseDir,
   });
 
-/** Every rule a run knows for a language: chaff's own, then the team's. Where the team's cannot be read, settingProblems stops the run. */
-export const rulesOf = (language: string, config: Pick<Config, "customRules" | "baseDir">): RuleDefinition[] => [
+/**
+ * Every rule a run knows for a language: chaff's own, the team's, then the plugins'. Where the team's or a plugin's
+ * cannot be read, settingProblems stops the run.
+ */
+export const rulesOf = (language: string, config: Pick<Config, "customRules" | "baseDir" | "extensions">): RuleDefinition[] => [
   ...loadRules(language),
   ...customRulesOf(config).rules,
+  ...(config.extensions?.rules ?? []),
 ];
