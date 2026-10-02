@@ -33,8 +33,8 @@ describe("idiom-misuse: 慣用句の誤用", () => {
     assert.deepEqual(findingsOf("押しも押されもせぬ大企業です。部長が采配を振った。\n"), []);
   });
 
-  it("一文に一つだけ言う", () => {
-    assert.equal(findingsOf("的を得た指摘で汚名挽回した。\n").length, 1);
+  it("一文に一つだけ、語彙表で先に書いた形を言う", () => {
+    assert.deepEqual(findingsOf("的を得た指摘で汚名挽回した。\n"), ["「的を得る」は誤用とされる形です。「的を射る」と書きます"]);
   });
 
   it("文学のジャンルでは動かない", () => {
