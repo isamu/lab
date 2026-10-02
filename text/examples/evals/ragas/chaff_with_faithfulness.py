@@ -21,7 +21,7 @@ async def both(user_input: str, response: str, contexts: list[str]) -> dict:
     judged = await faithfulness.ascore(user_input=user_input, response=response, retrieved_contexts=contexts)
     # The contexts joined are the reference: a fact the response states that none of them does is "added".
     checked = grade_with_chaff(response, reference="\n\n".join(contexts))
-    return {"faithfulness": judged, "chaff_pass": checked["pass"], "chaff_reason": reason_of(checked)}
+    return {"faithfulness": judged.value, "chaff_pass": checked["pass"], "chaff_reason": reason_of(checked)}
 
 
 if __name__ == "__main__":

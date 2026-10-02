@@ -14,6 +14,7 @@ from typing import Any, Optional
 
 # chaff grade's exit codes: 0 every output passed, 1 one failed, 2 the input or chaff.yaml could not be read.
 UNREADABLE = 2
+GRADED = (0, 1)
 
 # How to run chaff: `npx chaffjs` by default, or e.g. CHAFF_BIN="node node_modules/chaffjs/bin/chaff.js".
 CHAFF = shlex.split(os.environ.get("CHAFF_BIN", "npx chaffjs"))
@@ -47,7 +48,13 @@ def grade_with_chaff(
         )
         if run.returncode == UNREADABLE:
             raise ValueError(f"chaff could not grade the input: {run.stderr.strip()}")
-        return json.loads(results.read_text(encoding="utf-8").splitlines()[0])
+        # Node exits 1 on its own errors too, so a missing results file means chaff never ran.
+        if run.returncode not in GRADED or not results.exists():
+            raise RuntimeError(f"chaff did not run (exit {run.returncode}): {run.stderr.strip() or run.stdout.strip()}")
+        lines = results.read_text(encoding="utf-8").splitlines()
+        if len(lines) != 1:
+            raise RuntimeError(f"chaff wrote {len(lines)} result lines for one output")
+        return json.loads(lines[0])
 
 
 def reason_of(result: dict[str, Any]) -> str:

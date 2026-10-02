@@ -16,12 +16,19 @@ const linesOf = (path) =>
     .filter((line) => line.trim() !== "")
     .map((line) => /** @type {unknown} */ (JSON.parse(line)));
 
-/** An `ideal` may be a list of acceptable answers; the first is the reference. @param {string | string[] | undefined} ideal */
-const referenceOf = (ideal) => (Array.isArray(ideal) ? ideal[0] : ideal);
+/**
+ * The reference: `ideal`, or its one entry. Several acceptable answers are refused: grading against one of them would fail
+ * a completion that matches another. @param {string | string[] | undefined} ideal @param {number} sample
+ */
+const referenceOf = (ideal, sample) => {
+  if (!Array.isArray(ideal)) return ideal;
+  if (ideal.length > 1) throw new Error(`sample ${String(sample)} has ${String(ideal.length)} ideal answers; give chaff one reference`);
+  return ideal[0];
+};
 
 /** @param {readonly Sample[]} samples @param {readonly Completion[]} completions @returns {ChaffItem[]} */
 export const toChaffItems = (samples, completions) =>
-  completions.map(({ sample, completion }) => ({ id: `sample-${String(sample)}`, output: completion, reference: referenceOf(samples[sample]?.ideal) }));
+  completions.map(({ sample, completion }) => ({ id: `sample-${String(sample)}`, output: completion, reference: referenceOf(samples[sample]?.ideal, sample) }));
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [samplesPath = "samples.jsonl", completionsPath = "completions.jsonl"] = process.argv.slice(2);

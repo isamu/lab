@@ -99,6 +99,11 @@ describe("the examples", () => {
       items.map((item) => item.id),
       ["sample-0", "sample-1"],
     );
+    assert.throws(() => toChaffItems([{ input: "q", ideal: ["one", "two"] }], [{ sample: 0, completion: "one" }]), /sample 0 has 2 ideal answers/u);
+    assert.deepEqual(
+      toChaffItems([{ input: "q", ideal: ["one"] }], [{ sample: 0, completion: "one" }]).map((item) => item.reference),
+      ["one"],
+    );
     const run = await runCli({ "items.jsonl": jsonl(...items) }, ["grade", "items.jsonl", "--compact"], "en_US.UTF-8");
     assert.equal(run.code, 1);
     assert.match(run.out, /^sample-0\tpass\nsample-1\tfail\tfacts\.dropped 1 > 0, facts\.added 1 > 0/u);
