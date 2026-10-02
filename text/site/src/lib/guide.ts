@@ -25,8 +25,8 @@ const ORDER = [
   "reference",
   "ai-sounding",
   "ai-evals",
-  "writing-plugins",
   "adding-rules",
+  "writing-plugins",
   "bibliography",
 ];
 

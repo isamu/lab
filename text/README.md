@@ -244,8 +244,8 @@ chaff は何も送りません。届いた報告は、そのまま試験と修�
 - [リファレンス](https://isamu.github.io/lab/ja/guide/reference/) と [ルールの一覧](https://isamu.github.io/lab/ja/rules/)
 - [AIっぽさを直す](https://isamu.github.io/lab/ja/guide/ai-sounding/)
 - [AI の評価（AI evals）に使う](https://isamu.github.io/lab/ja/guide/ai-evals/)
-- [プラグインを作る](https://isamu.github.io/lab/ja/guide/writing-plugins/)
 - [ルールを足す：AI やエンジニアに頼むとき](https://isamu.github.io/lab/ja/guide/adding-rules/)
+- [プラグインを作る](https://isamu.github.io/lab/ja/guide/writing-plugins/)
 - [参考文献](https://isamu.github.io/lab/ja/guide/bibliography/)
 
 ## 開発
