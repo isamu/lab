@@ -1,0 +1,6 @@
+# 年齢の単位（elapsed-years-mismatch）。
+id: age-unit
+language: ja
+entries:
+  - pattern: "歳"
+  - pattern: "才"

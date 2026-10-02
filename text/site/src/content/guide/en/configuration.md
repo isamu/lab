@@ -164,6 +164,27 @@ $ npx chaffjs explain max-sentence-length
 The same `normal` means a different number in a different genre.
 You write a word rather than a number so that chaff can pick the number that fits the genre.
 
+## Turning on one experimental rule
+
+An experimental rule does not run by default.
+Naming it under `rules` turns that rule on, and no other.
+`--experimental` turns on every experimental rule at once.
+
+```yaml
+rules:
+  announced-count-mismatch: normal
+```
+
+`enable` writes the same line, with a comment explaining the rule, as `relax` does.
+
+```
+$ npx chaffjs enable announced-count-mismatch
+Set announced-count-mismatch to normal (…/chaff.yaml)
+```
+
+The check then names it once: `1 experimental rule turned on in the settings: announced-count-mismatch`.
+`explain` on an experimental rule that is off shows the same command, and so does the list of rules that did not run.
+
 ## Rules with nothing to count
 
 A gap in the numbering, or a weekday that does not match its date, is either there or not. There is no limit to count to.
@@ -298,6 +319,28 @@ by_path:
 The last match wins. Paths are matched from the folder that holds the settings file,
 so the result is the same wherever you run it.
 
+## Checking files other than Markdown
+
+Given a folder, chaff checks the Markdown in it (`.md`, `.markdown`, `.mdx`).
+`include` adds other files to that walk, by file-name glob. `--include` does the same for one run.
+
+```yaml
+include:
+  - "*.yaml"
+  - "*.txt"
+```
+
+```bash
+npx chaffjs tests/fixtures/ --include "*.yaml"
+```
+
+A YAML file (`.yaml`, `.yml`) is checked by its string values.
+Keys, quotes, comments, numbers and `true` are not prose, and each value is read on its own.
+A finding points at the line and column in the file, so a `custom_rules` pattern finds `TODO:` in a test fixture's expected output.
+A YAML file that cannot be parsed is read as plain text.
+Any other file, such as `.txt`, is read as plain text.
+A file named on the command line is checked whatever its extension.
+
 ## Checking that the settings took effect
 
 `chaff rules --json` shows the current settings.
@@ -365,13 +408,13 @@ The output is long, so here is one entry, with `max-sentence-length: 260` set (t
 `now` is the value actually in effect.
 `level_sets` says what a level changes: `limit` is a limit to count to, `severity` is how a finding is marked.
 For a rule with nothing to count, `levels` and `now` hold a severity (`error` / `warning` / `info`) in place of a number.
-For an experimental rule, `now` says why it does not run and how to turn it on.
+For an experimental rule, `now` says why it does not run and how to turn it on alone. Here is `doubled-word`:
 
 ```json
     "now": {
       "level": "off",
       "why_off": "experimental rules do not run by default",
-      "turn_on_with": "npx chaff lint --experimental"
+      "turn_on_with": "npx chaffjs enable doubled-word"
     }
 ```
 
