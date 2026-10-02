@@ -160,7 +160,7 @@ plan.md   blog/tech · English   genre from the default
   5:19    warning Write "email", not "e-mail"
                   team-email
 
-3 findings, 40 rules not run
+3 findings, 48 rules not run
 ```
 
 chaff treats your rules like its own. `explain` shows the reason and the example you wrote.
