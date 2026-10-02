@@ -137,6 +137,7 @@ i 書き方だけ変わった事実 3 件
 ```
 
 この README も、この手順で全面的に書き直しました。手順と例は手引きの [AIっぽさを直す](https://isamu.github.io/lab/ja/guide/ai-sounding/) にあります。
+モデルの出力を `compare`、`cite`、chaff のルールで確かめる評価（AI evals）のやり方は、[AI の評価（AI evals）に使う](https://isamu.github.io/lab/ja/guide/ai-evals/) にあります。
 
 ## 条文と引用を確かめる
 
@@ -234,13 +235,18 @@ chaff は何も送りません。届いた報告は、そのまま試験と修�
 
 - [はじめかた](https://isamu.github.io/lab/ja/guide/getting-started/)
 - [文書の種類ごとにできること](https://isamu.github.io/lab/ja/guide/documents/)
-- [コマンド](https://isamu.github.io/lab/ja/guide/commands/)
-- [設定](https://isamu.github.io/lab/ja/guide/configuration/)
-- [言語](https://isamu.github.io/lab/ja/guide/languages/)
-- [AIっぽさを直す](https://isamu.github.io/lab/ja/guide/ai-sounding/)
 - [構造と引用](https://isamu.github.io/lab/ja/guide/structure/)
+- [設定](https://isamu.github.io/lab/ja/guide/configuration/)
+- [チームの表記ルールを決める](https://isamu.github.io/lab/ja/guide/house-style/)
+- [言語](https://isamu.github.io/lab/ja/guide/languages/)
 - [CI](https://isamu.github.io/lab/ja/guide/ci/)
+- [コマンド](https://isamu.github.io/lab/ja/guide/commands/)
 - [リファレンス](https://isamu.github.io/lab/ja/guide/reference/) と [ルールの一覧](https://isamu.github.io/lab/ja/rules/)
+- [AIっぽさを直す](https://isamu.github.io/lab/ja/guide/ai-sounding/)
+- [AI の評価（AI evals）に使う](https://isamu.github.io/lab/ja/guide/ai-evals/)
+- [プラグインを作る](https://isamu.github.io/lab/ja/guide/writing-plugins/)
+- [ルールを足す：AI やエンジニアに頼むとき](https://isamu.github.io/lab/ja/guide/adding-rules/)
+- [参考文献](https://isamu.github.io/lab/ja/guide/bibliography/)
 
 ## 開発
 
@@ -301,4 +307,7 @@ chaff finds what makes a document hard to read, and the mistakes a machine can c
 text gives the same result every time, and chaff never rewrites it. Run `npx chaffjs article.md`; on an English
 document the screen is in English. Pick the kind of document with `--genre` (`legal/contract`, `docs/manual`,
 `academic/paper`, `literature/fiction`, and so on) and chaff checks it the way that kind is written. The guide, the
-genres and the reference of every rule are at https://isamu.github.io/lab/en/
+genres and the reference of every rule are at https://isamu.github.io/lab/en/.
+
+How to rewrite AI-sounding text is in [Making AI-sounding text sound human](https://isamu.github.io/lab/en/guide/ai-sounding/).
+How to check a model's output with `compare`, `cite` and the rules is in [Using chaff for AI evals](https://isamu.github.io/lab/en/guide/ai-evals/).

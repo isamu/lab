@@ -1,7 +1,9 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import type { Lang } from "./i18n";
 
-// The order a reader takes the guide in. A page not listed here follows, by name.
+// The order a newcomer reads the guide in: a first run, then their kind of document, then fitting chaff to the team,
+// the reference, and last the uses that build on all of it (AI-written text, AI evals, rules of your own).
+// A page not listed here follows, by name.
 const ORDER = [
   "getting-started",
   "documents",
@@ -14,17 +16,17 @@ const ORDER = [
   "documents-manual",
   "documents-press",
   "documents-paper",
-  "ai-sounding",
-  "ai-evals",
-  "configuration",
-  "reference",
-  "house-style",
-  "adding-rules",
-  "writing-plugins",
-  "commands",
   "structure",
+  "configuration",
+  "house-style",
   "languages",
   "ci",
+  "commands",
+  "reference",
+  "ai-sounding",
+  "ai-evals",
+  "writing-plugins",
+  "adding-rules",
   "bibliography",
 ];
 

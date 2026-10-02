@@ -801,3 +801,9 @@ The signals and the shape, before and after, from chaff's output:
 | --- | --- |
 | Kobak et al., "[Delving into LLM-assisted writing in biomedical publications through excess vocabulary](https://arxiv.org/abs/2406.07016)" (Science Advances, 2025) | Comparing word use before and after generated text spread, and picking the words that grew. The Japanese `ai-tell` entries were chosen the same way. |
 | Hayashi and Aizawa, "[LLM による日本語生成におけるモデル固有表現パターンの分析](https://www.anlp.jp/proceedings/annual_meeting/2026/pdf_dir/B9-17.pdf)" (NLP 2026) | Japanese generated text also carries model-specific phrasing and structure (conclusion first, numbered structure, announcing the steps). |
+
+## What to read next
+
+- Every option of `fix-plan`, `facts`, `outline` and `compare` is in [Commands](./commands#planning-a-rewrite).
+- Checking a model's output in an eval with the same rules is in [Using chaff for AI evals](./ai-evals).
+- Each AI-shape rule, with an example and its real output, is in the [Reference](./reference).
