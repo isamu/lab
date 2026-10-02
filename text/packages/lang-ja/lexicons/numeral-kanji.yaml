@@ -1,0 +1,20 @@
+# 漢数字として数を書く字。これだけの並びが数え方の語の前にあれば、数を漢数字で書いたと読む。
+# 「一」だけの数は数えない（一つ・一人・一回は言い回しとして漢字で書く文書が多く、書き方の選び方の票にならない）。
+id: numeral-kanji
+language: ja
+entries:
+  - pattern: 〇
+  - pattern: 一
+  - pattern: 二
+  - pattern: 三
+  - pattern: 四
+  - pattern: 五
+  - pattern: 六
+  - pattern: 七
+  - pattern: 八
+  - pattern: 九
+  - pattern: 十
+  - pattern: 百
+  - pattern: 千
+  - pattern: 万
+  - pattern: 億
