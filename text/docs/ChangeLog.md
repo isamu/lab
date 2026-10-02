@@ -15,6 +15,46 @@ message is still the document's own. `excessive-hedging` keeps skipping short do
 one sentence). The English word list gains "hope this email finds you well" (and the "message" and plain forms),
 "sorry to trouble", "just reaching out" and "just checking in".
 
+### Docs: Writing a plugin
+
+- A new guide page, 「プラグインを作る」 / "Writing a plugin": the two forms (a `type: module` rule, a plugin package),
+  what a detector is given and returns, a step-by-step plugin, word lists and styles, testing a rule as a plain
+  function, what a broken one prints, versions, security and the rules a detector keeps to, and publishing.
+- Adding a rule: the Node function section shows a working `type: module` rule instead of "not yet", and the page
+  names the version each way arrived in (0.18.0, 0.19.0) instead of "next release".
+- House style: a plugin's style is chosen as `style: <plugin>/<style>`.
+- README, the package README and chaff-spec §18.7–18.8 and §19.3 describe `type: module`, `plugins:` and
+  `chaffjs/api`.
+
+### `examples/chaff-plugin-example`: a plugin to copy
+
+A small plugin package in the repository (not published): `example/no-tbd-dates`, a rule written in code;
+`example/weasel-words`, a rule driven by the plugin's word list `example/weasel` in English and Japanese; and
+`example/careful`, a house style that raises both. Its own tests run with `yarn test`, and
+`test/test_example_plugin.ts` runs it through chaff. Its README says how to publish your own. The example's files are
+checked with `// @ts-check` against `chaffjs/api`'s types.
+
+### `plugins:` in chaff.yaml: rules, word lists and house styles from a package
+
+```yaml
+plugins: [chaff-plugin-foo, "@acme/chaff-plugin-house", ./chaff-plugins/team.mjs]
+```
+
+- A plugin default-exports `definePlugin({ name, rules, lexicons, styles })` from `chaffjs/api`. A rule is a
+  `custom_rules` entry with `detect` in place of `type: module`, or a rule without code (`words`, `pattern`, `tokens`).
+- Every id a plugin ships is prefixed with its name: `foo/no-tbd`, the word list `foo/weasel`, the style `foo/house`.
+  A package `chaff-plugin-foo` is named `foo`, `@acme/chaff-plugin-house` is `@acme/house`; a plugin that declares
+  another name is refused. Its rules cannot collide with chaff's.
+- Plugin rules appear wherever chaff's do: findings, `explain` ("This rule comes from the plugin foo"),
+  `rules --json` (`defined_in: plugin foo`), `relax`, `stet` (`<!-- stet: foo/no-tbd -->`), baseline and SARIF.
+- A rule's `word_list` names one of the plugin's own lists; its detector gets it as `options.lexicon`. Where the
+  plugin has no list for the document's language, the rule is listed as not run. `type: module` rules in custom_rules
+  may name a `word_list` too.
+- `style: foo/house` chooses a style a plugin ships.
+- A package is found from the folder chaff.yaml is in, as Node finds it. A plugin that cannot be found or loaded,
+  is written for another plugin API, or has a rule, word list or style that cannot be read stops the run, naming the
+  plugin as chaff.yaml writes it. A rule that throws is listed as not run, naming the plugin.
+
 ### `custom_rules: type: module`: a team's rule as a small Node function
 
 ```yaml
