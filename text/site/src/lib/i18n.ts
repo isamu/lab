@@ -58,6 +58,7 @@ const ja = {
   outputLabel: "chaff の出力",
   testOutput: "この検査は機械では決めません。npx chaffjs test で、AI がこの箇所を読みます。",
   configLabel: "この例で使った chaff.yaml",
+  otherFileLabel: "一緒に渡したファイル（other.md）。指摘される文と直した文は、それぞれこのファイルと比べます",
   paddedNote:
     "文書全体の割合を見るルールなので、この例の後ろに指摘のない普通の文章（日本語で 500 字、英語で 200 語ほど）を足して試しています。",
   ruleDetails: "詳しく",
@@ -141,6 +142,7 @@ const en: Record<UiKey, string> = {
   outputLabel: "What chaff prints",
   testOutput: "No machine decides this one. npx chaffjs test has an AI read the passage.",
   configLabel: "chaff.yaml used for this example",
+  otherFileLabel: "The file checked together with it (other.md). The flagged and the fixed text are each compared with it",
   paddedNote:
     "The rule measures the whole document, so this example was tried with an ordinary passage (about 200 words) after it that gives chaff nothing to report.",
   ruleDetails: "Details",
