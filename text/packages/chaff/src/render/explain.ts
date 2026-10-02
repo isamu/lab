@@ -13,7 +13,7 @@ const TEXT: Texts<{
   readonly experimental: string;
   readonly howToFix: string;
   readonly example: string;
-  readonly definedIn: string;
+  readonly definedIn: (plugin: string | undefined) => string;
   readonly values: string;
   readonly times: string;
   readonly severities: string;
@@ -29,7 +29,8 @@ const TEXT: Texts<{
     experimental: "このルールはまだ試験中で、既定では動きません（--experimental で動きます）。",
     howToFix: "直しかた",
     example: "例",
-    definedIn: "このルールはチームが chaff.yaml の custom_rules で決めたものです。",
+    definedIn: (plugin) =>
+      plugin === undefined ? "このルールはチームが chaff.yaml の custom_rules で決めたものです。" : `このルールはプラグイン ${plugin} のものです。`,
     values: "設定できる値:",
     times: "回",
     severities: "設定できる値（数える上限は無く、指摘の重さが変わります）:",
@@ -45,7 +46,8 @@ const TEXT: Texts<{
     experimental: "This rule is still experimental and does not run by default (--experimental runs it).",
     howToFix: "How to fix",
     example: "Example",
-    definedIn: "The team defined this rule under custom_rules in chaff.yaml.",
+    definedIn: (plugin) =>
+      plugin === undefined ? "The team defined this rule under custom_rules in chaff.yaml." : `This rule comes from the plugin ${plugin}.`,
     values: "Levels:",
     times: "times",
     severities: "Levels (there is no limit to count to; a level sets how a finding is marked):",
@@ -90,7 +92,7 @@ const exampleLines = (rule: RuleDefinition, language: string, text: (typeof TEXT
   const examples = rule.guide?.examples ?? {};
   const example = examples[language] ?? examples["en"] ?? Object.values(examples)[0];
   if (rule.custom === undefined || example === undefined) return [];
-  return ["", `  ${text.example}:  ${example.before}`, `      →  ${example.after}`, "", `  ${text.definedIn}`];
+  return ["", `  ${text.example}:  ${example.before}`, `      →  ${example.after}`, "", `  ${text.definedIn(rule.plugin)}`];
 };
 
 /** Where the rule's settings come from: the option layers, strongest first, and the source of its level when a style set it. */

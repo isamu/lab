@@ -4,6 +4,7 @@ import type { UiLanguage } from "./ui.ts";
 import { styleProblems } from "./config/style.ts";
 import { loadStyles } from "./style-load.ts";
 import { customRuleProblems } from "./custom/problems.ts";
+import { extensionProblems } from "./extension/problem-text.ts";
 import { GENRES } from "./genre.ts";
 import { unknownGenres, writtenGenres } from "./genre-check.ts";
 import { loadProfiles } from "./profile/load.ts";
@@ -25,6 +26,7 @@ const profileProblems = (command: string, config: Config, text: CliText): string
 export const settingProblems = (command: string, genreFlag: string | undefined, config: Config, text: CliText, ui: UiLanguage = "en"): string[] => [
   ...genreProblems(command, genreFlag, config, text),
   ...profileProblems(command, config, text),
-  ...styleProblems(config, loadStyles(), ui),
+  ...styleProblems(config, [...loadStyles(), ...(config.extensions?.styles ?? [])], ui),
   ...customRuleProblems(config, ui),
+  ...extensionProblems(config, ui),
 ];

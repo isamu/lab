@@ -1,4 +1,5 @@
 import type { Finding, Span } from "./plugin.ts";
+import { RULE_ID } from "./extension/plugin-name.ts";
 import { stetBlockEnd } from "./stet-block.ts";
 import { lineStarts, placeOf } from "./position.ts";
 import { parse } from "./markdown-read.ts";
@@ -27,8 +28,6 @@ const SCOPE: Readonly<Record<string, Suppression["scope"]>> = { stet: "next", "s
 
 /** 理由は em dash のあと。書かなくてもよいが、書かないと chaff suppressions に並ぶ。 */
 const REASON_MARK = "\u2014";
-
-const RULE_ID = /^[a-z][a-z0-9-]*$/u;
 
 const splitBody = (body: string): { rules: string[]; reason: string | undefined } => {
   const at = body.indexOf(REASON_MARK);
