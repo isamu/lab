@@ -3,9 +3,9 @@
 // new rule changes no guide page. A screen reads the page's ```markdown file=<name> block, or else
 // site/src/screens/<lang>/<name> for a document the page does not show.
 //   node scripts/guide-screens.ts <out.json>
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { notRunBlock, screensIn, type Screen } from "./guide-screens-parse.ts";
+import { documentArg, notRunBlock, screensIn, type Screen } from "./guide-screens-parse.ts";
 import { runCli } from "../test/cli-run.ts";
 
 const SITE = join(import.meta.dirname, "..", "site", "src");
@@ -16,16 +16,25 @@ const LOCALES: Readonly<Record<string, string>> = { ja: "ja_JP.UTF-8", en: "en_U
 /** page ("ja/getting-started.md") → command → the list as chaff prints it. */
 type GuideScreens = Record<string, Record<string, string>>;
 
-const documentFor = (language: string, name: string, documents: Readonly<Record<string, string>>): string => {
-  const inPage = documents[name];
-  if (inPage !== undefined) return inPage;
-  const path = join(SCREEN_DOCUMENTS, language, name);
-  if (!existsSync(path)) throw new Error(`guide-screens: ${language}: no \`\`\`markdown file=${name} block on the page, and no ${path}`);
-  return readFileSync(path, "utf8");
-};
+const screenDocument = (language: string, name: string): string => join(SCREEN_DOCUMENTS, language, name);
+
+const isFile = (path: string): boolean => existsSync(path) && statSync(path).isFile();
+
+/** Whether a screen's argument names a document: a block on the page, or a file in site/src/screens/<language>/. */
+export const hasDocumentIn =
+  (language: string, documents: Readonly<Record<string, string>>) =>
+  (name: string): boolean =>
+    documents[name] !== undefined || isFile(screenDocument(language, name));
+
+const documentFor = (language: string, name: string, documents: Readonly<Record<string, string>>): string =>
+  documents[name] ?? readFileSync(screenDocument(language, name), "utf8");
 
 const listFor = async (page: string, language: string, documents: Readonly<Record<string, string>>, screen: Screen): Promise<string> => {
-  const [file = ""] = screen.args;
+  const file = documentArg(screen.args, hasDocumentIn(language, documents));
+  if (file === undefined)
+    throw new Error(
+      `guide-screens: ${page}: "${screen.command}" names no \`\`\`markdown file=<name> block on the page, and no file in ${join(SCREEN_DOCUMENTS, language)}`,
+    );
   const run = await runCli({ [file]: documentFor(language, file, documents) }, screen.args, LOCALES[language]);
   rmSync(run.dir, { recursive: true, force: true });
   const block = notRunBlock(run.out);

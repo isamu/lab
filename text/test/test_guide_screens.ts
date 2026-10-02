@@ -1,8 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { notRunBlock, screensIn } from "../scripts/guide-screens-parse.ts";
+import { documentArg, notRunBlock, screensIn } from "../scripts/guide-screens-parse.ts";
+import { hasDocumentIn } from "../scripts/guide-screens.ts";
 import { NOT_RUN_MARKER, withNotRunList } from "../site/src/lib/notRunLists.ts";
 
 // 手引きの画面にある「動いていない rule」の一覧は、ページに書き写さず、サイトを作るときに chaff の出力から入れる。
@@ -10,7 +11,6 @@ import { NOT_RUN_MARKER, withNotRunList } from "../site/src/lib/notRunLists.ts";
 
 const FENCE = "```";
 const GUIDE = join(import.meta.dirname, "..", "site", "src", "content", "guide");
-const SCREEN_DOCUMENTS = join(import.meta.dirname, "..", "site", "src", "screens");
 
 const page = [
   `${FENCE}markdown file=report.md`,
@@ -47,6 +47,20 @@ describe("screensIn", () => {
     const other = [`${FENCE}markdown`, "# Draft", FENCE, `${FENCE}bash`, `npm i chaffjs`, `  ${NOT_RUN_MARKER}`, FENCE, ""].join("\n");
     assert.deepEqual(screensIn(other), { documents: {}, screens: [] });
     assert.deepEqual(screensIn(""), { documents: {}, screens: [] });
+  });
+});
+
+describe("documentArg", () => {
+  const known = (name: string): boolean => name === "article.md";
+
+  it("オプションの前でも後でも、文書のある引数を返す", () => {
+    assert.equal(documentArg(["article.md", "--genre", "blog/tech"], known), "article.md");
+    assert.equal(documentArg(["--genre", "blog/tech", "--experimental", "article.md"], known), "article.md");
+  });
+
+  it("文書のある引数が無ければ何も返さない", () => {
+    assert.equal(documentArg(["--compact", "other.md"], known), undefined);
+    assert.equal(documentArg([], known), undefined);
   });
 });
 
@@ -93,9 +107,9 @@ describe("手引きのページ", () => {
   it("印のある画面は、読む文書をページか site/src/screens/<言語>/ に持つ", () => {
     pages.forEach(({ language, file }) => {
       const { documents, screens } = screensIn(readFileSync(join(GUIDE, language, file), "utf8"));
-      screens.forEach(({ args }) => {
-        const [name = ""] = args;
-        assert.ok(documents[name] !== undefined || existsSync(join(SCREEN_DOCUMENTS, language, name)), `${language}/${file}: ${name}`);
+      screens.forEach(({ command, args }) => {
+        const name = documentArg(args, hasDocumentIn(language, documents));
+        assert.ok(name !== undefined, `${language}/${file}: ${command}`);
       });
     });
   });

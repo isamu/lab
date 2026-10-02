@@ -42,6 +42,9 @@ export const screensIn = (page: string): PageScreens => {
   return { documents, screens };
 };
 
+/** The argument that names the screen's document: the first one a document exists for, wherever the options are. */
+export const documentArg = (args: readonly string[], hasDocument: (name: string) => boolean): string | undefined => args.find(hasDocument);
+
 /** The "N rules did not run:" line and the rule lines under it, from chaff's screen; undefined when the screen has none. */
 export const notRunBlock = (output: string): string | undefined => {
   const lines = output.split("\n");
