@@ -1,0 +1,67 @@
+# Words that say when. Dates and clock times are read from the document's dates and times, not from this list.
+id: request-deadline
+language: en
+entries:
+  - pattern: by monday
+  - pattern: by tuesday
+  - pattern: by wednesday
+  - pattern: by thursday
+  - pattern: by friday
+  - pattern: by saturday
+  - pattern: by sunday
+  - pattern: by tomorrow
+  - pattern: by today
+  - pattern: by tonight
+  - pattern: by noon
+  - pattern: by the end
+  - pattern: by end
+  - pattern: by next
+  - pattern: by eod
+  - pattern: before
+  - pattern: until
+  - pattern: due
+  - pattern: deadline
+  - pattern: today
+  - pattern: tomorrow
+  - pattern: tonight
+  - pattern: this week
+  - pattern: next week
+  - pattern: this month
+  - pattern: next month
+  - pattern: eod
+  - pattern: end of day
+  - pattern: asap
+  - pattern: as soon as
+  - pattern: at your earliest
+  - pattern: monday
+  - pattern: tuesday
+  - pattern: wednesday
+  - pattern: thursday
+  - pattern: friday
+  - pattern: saturday
+  - pattern: sunday
+  - pattern: january
+  - pattern: february
+  - pattern: march
+  - pattern: april
+  - pattern: june
+  - pattern: july
+  - pattern: august
+  - pattern: september
+  - pattern: october
+  - pattern: november
+  - pattern: december
+  - pattern: jan
+  - pattern: feb
+  - pattern: mar
+  - pattern: apr
+  - pattern: jun
+  - pattern: jul
+  - pattern: aug
+  - pattern: sep
+  - pattern: sept
+  - pattern: oct
+  - pattern: nov
+  - pattern: dec
+  - pattern: immediately
+  - pattern: urgently
