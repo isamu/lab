@@ -81,6 +81,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "ngram-repetition",
         "number-style-consistency",
         "padded-intro",
+        "redundant-expression",
         "repeated-conjunction",
         "requirement-modal",
         "requirement-smell",
@@ -91,6 +92,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "undefined-acronym",
         "unit-mismatch",
         "unqualified-superlative",
+        "vague-word-density",
       ],
     );
   });

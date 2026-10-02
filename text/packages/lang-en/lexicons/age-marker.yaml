@@ -1,0 +1,10 @@
+# Marks of an age (elapsed-years-mismatch): "aged 45", "45 years old".
+id: age-marker
+language: en
+entries:
+  - pattern: "aged"
+    position: before
+  - pattern: "age"
+    position: before
+  - pattern: "old"
+    position: after
