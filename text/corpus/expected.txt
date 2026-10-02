@@ -28,7 +28,7 @@ cc-by-4-legalcode-ja  fullwidth-alnum-consistency 1, latin-spacing 2, max-senten
 cdc-co-poisoning-basics  agentless-passive 7, concrete-evidence-density 5, contraction-consistency 2, heading-echo 1, max-sentence-length 2
 cfpb-blog-imposter-scams  agentless-passive 3, max-sentence-length 6, preamble-length 1, space-before-punctuation 1, undefined-acronym 3
 chrome-blog-pwa-origin-migration  contraction-consistency 1, heading-echo 1, max-sentence-length 5
-chrome-blog-pwa-origin-migration-ja  latin-spacing 1, max-sentence-length 4, stray-space 4
+chrome-blog-pwa-origin-migration-ja  empty-list-item 1, latin-spacing 1, max-sentence-length 4, stray-space 4
 cisa-scuba-teams  bold-density 9, contraction-consistency 4, heading-level-skip 1, max-paragraph-length 2, max-sentence-length 32, ngram-repetition 1, numbering-gap 1, undefined-acronym 5
 cloudgov-changelog-2023-11-27  max-sentence-length 2, undefined-acronym 3
 cloudgov-security-ir-guide  agentless-passive 31, concrete-evidence-density 4, contraction-consistency 2, max-sentence-length 24, name-variant 1, unbalanced-bracket 1, undefined-acronym 10
@@ -44,7 +44,7 @@ da-agile-review-4  max-sentence-length 13, no-mixed-desumasu 1
 da-ai-advisory-board-1  katakana-long-vowel 1, latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 9, max-sentence-length 30, no-doubled-joshi 2, no-mixed-desumasu 1, sasete-itadaku 4, taigen-dome-in-prose 1, undefined-acronym 11
 da-annual-report-2024  concrete-evidence-density 3, heading-echo 1, invisible-character 38, max-sentence-length 1, ngram-repetition 1
 da-area-data-map-format  no-mixed-desumasu 1
-da-area-data-model  max-sentence-length 5, url-run-on 1
+da-area-data-model  empty-table-cell 15, max-sentence-length 5, url-run-on 1
 da-copyright-policy  latin-spacing 2, numbering-gap 1
 da-data-strategy  agentless-passive 1, empty-intensifier 1, max-kanji-continuous 2, max-sentence-length 4
 da-gss-incident  agentless-passive 1, latin-spacing 1, max-kanji-continuous 1, max-sentence-length 3, ngram-repetition 1, preamble-length 1
@@ -124,7 +124,7 @@ kaisha.txt  clean
 kantei-221-shisei-hoshin  empty-intensifier 2, fullwidth-alnum-consistency 3, heading-level-skip 1, max-kanji-continuous 4, max-sentence-length 8, ngram-repetition 1, no-doubled-joshi 2
 kantei-unga81-general-debate-speech  empty-intensifier 6, fullwidth-alnum-consistency 3, max-kanji-continuous 3, max-sentence-length 4, name-variant 1, no-doubled-joshi 2, unqualified-superlative 3
 kantei-unga81-general-debate-speech-en  empty-intensifier 1, max-paragraph-length 1, max-sentence-length 49, oxford-comma-consistency 2
-kep-2214-indexed-job  announced-count-mismatch 1, heading-level-skip 6, max-sentence-length 16, undefined-acronym 6
+kep-2214-indexed-job  announced-count-mismatch 1, empty-list-item 1, heading-level-skip 6, max-sentence-length 16, undefined-acronym 6
 kimino-cleanup-notice  invisible-character 1, max-kanji-continuous 2, max-sentence-length 2, unbalanced-bracket 1
 kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1
 kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1, stray-space 1
@@ -177,7 +177,7 @@ nws-heat-wave-safety  agentless-passive 4, concrete-evidence-density 4, contract
 oecd-global-drought-outlook-summary  adverb-overuse 1, agentless-passive 2, heading-level-skip 1, max-paragraph-length 2, max-sentence-length 12
 openapi-spec-3-1-0  contraction-consistency 1, duplicate-heading 1, heading-echo 4, heading-level-skip 2, max-sentence-length 40, ngram-repetition 1, oxford-comma-consistency 2, requirement-smell 1, title-case-consistency 1, undefined-acronym 4
 pep-0020-zen-of-python  clean
-plainlanguage-use-tables  agentless-passive 2, contraction-consistency 1, dangling-reference 1, max-sentence-length 5, preamble-length 1
+plainlanguage-use-tables  agentless-passive 2, contraction-consistency 1, dangling-reference 1, empty-table-cell 1, max-sentence-length 5, preamble-length 1
 ppc-guidelines-tsusoku  duplicate-definition 11, fullwidth-alnum-consistency 13, latin-spacing 3, max-sentence-length 9, repeated-conjunction 9, unbalanced-bracket 23, undefined-acronym 4, unused-definition 4, use-before-definition 10
 python-code-quality-list-2016-03  adverb-overuse 1, agentless-passive 7, max-sentence-length 23, preamble-length 1, proper-noun-density 1
 qiita-jnchito-good-sample-code  concrete-evidence-density 6, heading-echo 1, max-sentence-length 7, name-variant 1, ngram-repetition 1, unqualified-superlative 3
@@ -188,7 +188,7 @@ rfc9293-tcp  dangling-reference 1, duplicate-definition 1, empty-intensifier 1, 
 rfc9457  max-sentence-length 54, requirement-smell 1, undefined-acronym 15
 rouki.txt  clean
 ruby-3-4-0-released-ja  doubled-punctuation 1, latin-spacing 21, max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 6
-rust-lang-minutes-2022-11-22  agreement-slip 1, contraction-consistency 2, empty-section 1, max-sentence-length 3, spelling-consistency 1, undefined-acronym 3
+rust-lang-minutes-2022-11-22  agreement-slip 1, contraction-consistency 2, empty-list-item 1, empty-section 1, max-sentence-length 3, spelling-consistency 1, undefined-acronym 3
 rust-rfc-2094-nll  doubled-punctuation 1, excessive-hedging 1, heading-echo 1, max-paragraph-length 11, max-sentence-length 120, undefined-acronym 19, use-before-definition 1
 saikosai-h18-09-14-bengoshi-chokai  doubled-word 1, heading-level-skip 1, max-sentence-length 1
 saikosai-h26-09-02-nagano  empty-section 1, fullwidth-alnum-consistency 3, max-sentence-length 1, unbalanced-bracket 1

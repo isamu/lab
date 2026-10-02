@@ -22,7 +22,9 @@ duplicate-definition                    4      4       0             0
 duplicate-heading                      20     20       0             0
 emoji-density                          10     10       0             0
 empty-intensifier                      20     20       0             0
+empty-list-item                         7      7       0             0
 empty-section                          20     20       0             0
+empty-table-cell                        9      9       0             0
 excessive-hedging                      20     20       0             0
 expletive-construction                  4      4       0             0
 fullwidth-alnum-consistency             5      5       0             0
@@ -197,6 +199,7 @@ ja/email  kana-halfwidth  found
 ja/email  zero-width-pasted  found
 ja/email  hedge-double-negative-ja  found
 ja/email  modal-opposite-ja  found
+ja/email  list-value-dropped  found
 ja/email  definition-unused-ja  found
 ja/email  definition-late-ja  found
 ja/email  acronym-two-ways-ja  found
@@ -241,6 +244,8 @@ ja/figures  number-fullwidth  found
 ja/figures  hedge-double-negative-ja  found
 ja/figures  modal-opposite-ja  found
 ja/figures  figure-pointed-by-place  found
+ja/figures  table-cell-blanked  found
+ja/figures  list-value-dropped  found
 ja/figures  definition-unused-ja  found
 ja/figures  definition-late-ja  found
 ja/figures  acronym-two-ways-ja  found
@@ -274,6 +279,8 @@ ja/itinerary  heading-copied  found
 ja/itinerary  section-emptied  found
 ja/itinerary  hedge-double-negative-ja  found
 ja/itinerary  modal-opposite-ja  found
+ja/itinerary  table-cell-blanked  found
+ja/itinerary  list-value-dropped  found
 ja/itinerary  definition-unused-ja  found
 ja/itinerary  definition-late-ja  found
 ja/itinerary  acronym-two-ways-ja  found
@@ -305,6 +312,7 @@ ja/minutes  section-emptied  found
 ja/minutes  number-fullwidth  found
 ja/minutes  hedge-double-negative-ja  found
 ja/minutes  modal-opposite-ja  found
+ja/minutes  table-cell-blanked  found
 ja/minutes  definition-unused-ja  found
 ja/minutes  definition-late-ja  found
 ja/minutes  acronym-two-ways-ja  found
@@ -435,6 +443,7 @@ ja/proposal  section-emptied  found
 ja/proposal  number-fullwidth  found
 ja/proposal  hedge-double-negative-ja  found
 ja/proposal  modal-opposite-ja  found
+ja/proposal  table-cell-blanked  found
 ja/proposal  definition-unused-ja  found
 ja/proposal  definition-late-ja  found
 ja/proposal  acronym-two-ways-ja  found
@@ -497,6 +506,7 @@ ja/readme  heading-copied  found
 ja/readme  section-emptied  found
 ja/readme  hedge-double-negative-ja  found
 ja/readme  modal-opposite-ja  found
+ja/readme  table-cell-blanked  found
 ja/readme  definition-unused-ja  found
 ja/readme  definition-late-ja  found
 ja/readme  acronym-two-ways-ja  found
@@ -618,6 +628,7 @@ en/email  zero-width-pasted  found
 en/email  period-spaced  found
 en/email  hedge-double-negative-en  found
 en/email  modal-opposite-en  found
+en/email  list-value-dropped  found
 en/email  definition-unused-en  found
 en/email  definition-late-en  found
 en/email  acronym-two-ways-en  found
@@ -658,6 +669,8 @@ en/figures  section-emptied  found
 en/figures  hedge-double-negative-en  found
 en/figures  modal-opposite-en  found
 en/figures  figure-pointed-by-place  found
+en/figures  table-cell-blanked  found
+en/figures  list-value-dropped  found
 en/figures  definition-unused-en  found
 en/figures  definition-late-en  found
 en/figures  acronym-two-ways-en  found
@@ -690,6 +703,8 @@ en/itinerary  heading-copied  found
 en/itinerary  section-emptied  found
 en/itinerary  hedge-double-negative-en  found
 en/itinerary  modal-opposite-en  found
+en/itinerary  table-cell-blanked  found
+en/itinerary  list-value-dropped  found
 en/itinerary  definition-unused-en  found
 en/itinerary  definition-late-en  found
 en/itinerary  acronym-two-ways-en  found
@@ -718,6 +733,7 @@ en/minutes  heading-copied  found
 en/minutes  section-emptied  found
 en/minutes  hedge-double-negative-en  found
 en/minutes  modal-opposite-en  found
+en/minutes  list-value-dropped  found
 en/minutes  definition-unused-en  found
 en/minutes  definition-late-en  found
 en/minutes  acronym-two-ways-en  found
@@ -822,6 +838,7 @@ en/proposal  heading-copied  found
 en/proposal  section-emptied  found
 en/proposal  hedge-double-negative-en  found
 en/proposal  modal-opposite-en  found
+en/proposal  table-cell-blanked  found
 en/proposal  definition-unused-en  found
 en/proposal  definition-late-en  found
 en/proposal  acronym-two-ways-en  found
@@ -873,6 +890,7 @@ en/readme  heading-copied  found
 en/readme  section-emptied  found
 en/readme  hedge-double-negative-en  found
 en/readme  modal-opposite-en  found
+en/readme  table-cell-blanked  found
 en/readme  definition-unused-en  found
 en/readme  definition-late-en  found
 en/readme  acronym-two-ways-en  found
