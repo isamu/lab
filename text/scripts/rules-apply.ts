@@ -10,8 +10,9 @@ export const withStatus = (ruleYaml: string, status: "experimental" | "stable"):
   return ruleYaml.replace(STATUS_LINE, `status: ${status}`);
 };
 
-const SEVERITY_LINE = /^severity: \w+$/mu;
 const LEVELS_LINE = /^levels: \{([^}]*)\}$/mu;
+/** Levels written per language (levels:, then ja: and en: under it) are not rewritten here. */
+const LEVELS_BLOCK = /^levels:$/mu;
 const SEVERITIES: readonly string[] = ["info", "warning", "error"];
 
 const lowerOne = (entry: string, steps: number): string => {
@@ -26,15 +27,27 @@ const lowered = (entries: string, steps: number): string =>
     .map((entry) => lowerOne(entry, steps))
     .join(",")} `;
 
+/** "severity: info", in place of "severity: warning" or of a severity written per language (severity:, then ja: and en: under it). */
+const withInfoSeverity = (ruleYaml: string): string => {
+  const lines = ruleYaml.split("\n");
+  const start = lines.findIndex((line) => line === "severity:" || /^severity: \w+$/u.test(line));
+  if (start === -1) throw new Error("the rule has no severity line");
+  const perLanguage = lines.slice(start + 1).findIndex((line) => !line.startsWith("  "));
+  const blockLength = perLanguage === -1 ? lines.length - start - 1 : perLanguage;
+  const end = start + 1 + (lines[start] === "severity:" ? blockLength : 0);
+  return [...lines.slice(0, start), "severity: info", ...lines.slice(end)].join("\n");
+};
+
 /**
  * The rule reports at info by default. A rule that counts (its levels are numbers) changes its severity; a rule whose
  * levels are severities moves every level down until normal is info, so strict stays one step above it.
  */
 export const withInfoAtNormal = (ruleYaml: string): string => {
-  if (!SEVERITY_LINE.test(ruleYaml)) throw new Error("the rule has no severity line");
+  const withSeverity = withInfoSeverity(ruleYaml);
   const levels = LEVELS_LINE.exec(ruleYaml)?.[1];
   const normal = levels === undefined ? undefined : /normal: (info|warning|error)/u.exec(levels)?.[1];
-  const withSeverity = ruleYaml.replace(SEVERITY_LINE, "severity: info");
+  if (levels === undefined && LEVELS_BLOCK.test(ruleYaml) && /normal: (?:warning|error)\b/u.test(ruleYaml))
+    throw new Error("the rule writes its severity levels per language; set them by hand");
   if (levels === undefined || normal === undefined) return withSeverity;
   return withSeverity.replace(LEVELS_LINE, `levels: {${lowered(levels, SEVERITIES.indexOf(normal))}}`);
 };

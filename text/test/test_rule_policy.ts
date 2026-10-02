@@ -179,6 +179,14 @@ describe("rules-apply", () => {
     assert.throws(() => withInfoAtNormal("id: x\n"), /no severity line/u);
   });
 
+  it("言語ごとに書いた重さは一つの info にまとめる。言語ごとに書いた重さの段は書き換えずに止まる", () => {
+    const perLanguage = "id: z\nseverity:\n  ja: warning\n  en: info\n\nlevels: { strict: 3, normal: 8, relaxed: 20 }\n";
+    assert.equal(withInfoAtNormal(perLanguage), "id: z\nseverity: info\n\nlevels: { strict: 3, normal: 8, relaxed: 20 }\n");
+    assert.equal(withInfoAtNormal("severity:\n  ja: warning\n  en: info"), "severity: info");
+    const levelsPerLanguage = "severity: warning\nlevels:\n  ja: { strict: error, normal: warning }\n  en: { strict: error, normal: warning }\n";
+    assert.throws(() => withInfoAtNormal(levelsPerLanguage), /per language/u);
+  });
+
   const genres = [
     "groups:",
     "  - id: technical",

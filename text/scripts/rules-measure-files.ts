@@ -5,6 +5,7 @@ import { parse } from "yaml";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { parseGenres, type GenreData } from "../packages/chaff/src/genre-parse.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
+import { severityAt } from "../packages/chaff/src/levels.ts";
 import { disagreements, handOffGroups, standingOf, type Standing } from "./rule-policy.ts";
 import { measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "./rules-apply.ts";
 import { isMeasurement, type Measurement } from "./rules-measure-score.ts";
@@ -24,6 +25,10 @@ export const readMeasurement = (path: string = MEASURE_FILE): Measurement => {
 /** The rules of both languages, one definition per id (the Japanese one where both load it). */
 export const allRules = (): RuleDefinition[] => [...new Map([...loadRules("en"), ...loadRules("ja")].map((rule) => [rule.id, rule])).values()];
 
+const bothLanguages = (): RuleDefinition[] => [...loadRules("ja"), ...loadRules("en")];
+
+const reportsBelowInfo = (id: string): boolean => bothLanguages().some((rule) => rule.id === id && severityAt(rule, "normal") !== "info");
+
 export const readGenresText = (): string => readFileSync(GENRES_FILE, "utf8");
 export const genreDataOf = (text: string): GenreData => parseGenres(parse(text));
 
@@ -40,12 +45,13 @@ export const policyProblems = (measurement: Measurement): string[] => {
   const text = readGenresText();
   const data = genreDataOf(text);
   const marks = measuredOffsOf(text);
-  const rules = allRules();
-  const standings = standingsOf(measurement, rules, data);
-  return rules.flatMap((rule) => {
+  const standings = standingsOf(measurement, allRules(), data);
+  // Each language's definition: a rule may write its severity per language.
+  const problems = bothLanguages().flatMap((rule) => {
     const standing = standings.get(rule.id);
     return standing === undefined ? [] : disagreements(rule, standing, data, marks);
   });
+  return [...new Set(problems)];
 };
 
 const rewriteRule = (rule: RuleDefinition, standing: Standing): string | undefined => {
@@ -53,7 +59,7 @@ const rewriteRule = (rule: RuleDefinition, standing: Standing): string | undefin
   const path = join(RULES_DIR, `${rule.id}.yaml`);
   const before = readFileSync(path, "utf8");
   const status = withStatus(before, standing.kind === "experimental" ? "experimental" : "stable");
-  const after = standing.kind === "info" && rule.severity !== "info" ? withInfoAtNormal(status) : status;
+  const after = standing.kind === "info" && reportsBelowInfo(rule.id) ? withInfoAtNormal(status) : status;
   if (after === before) return undefined;
   writeFileSync(path, after);
   return `${rule.id}: ${standing.kind}`;
