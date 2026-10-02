@@ -84,6 +84,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "requirement-smell",
         "sasete-itadaku",
         "stock-transition",
+        "translationese-density",
         "undefined-acronym",
         "unqualified-superlative",
       ],

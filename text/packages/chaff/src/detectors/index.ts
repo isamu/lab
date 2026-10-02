@@ -15,7 +15,7 @@ import { adverbDensity, conjunctionRun, expletive, titleCaseMix } from "./en-sha
 import { oxfordComma } from "./oxford-comma.ts";
 import { paragraphLength, paragraphVariance, preambleLength, ruleOfThree, sectionUniformity } from "./structure.ts";
 import { concreteEvidence, dashDensity, emojiDensity, ngramRepetition, undefinedAcronym } from "./signals.ts";
-import { aiTell, contractionMix, cushionDensity, hedging, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
+import { aiTell, contractionMix, cushionDensity, hedging, phraseDensity, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { nameVariant } from "./name-variant.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
@@ -95,6 +95,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "concrete-evidence": concreteEvidence,
   hedging: hedging,
   "cushion-density": cushionDensity,
+  "phrase-density": phraseDensity,
   "unqualified-superlative": unqualifiedSuperlative,
   "repeated-conjunction": repeatedConjunction,
   "ai-tell": aiTell,

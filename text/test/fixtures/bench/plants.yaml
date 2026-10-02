@@ -98,5 +98,6 @@ not_planted:
   spelling-consistency: the English samples use at most one word with a British or American spelling, so no single edit mixes them
   stock-transition: a density over the whole document
   taigen-dome-in-prose: a count over the whole document; reaching it would rewrite the sample's register
+  translationese-density: a density over the whole document
   unqualified-superlative: more than one unqualified superlative in a document is several mistakes, not one
   unsourced-number: L4, judged by chaff test and never run by lint
