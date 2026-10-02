@@ -4,7 +4,7 @@ import { existsSync, globSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { BENCH } from "./bench-samples.ts";
 import { runFindings, type CorpusFinding } from "./corpus-findings.ts";
-import type { SitePlant } from "./bench-text.ts";
+import type { Mutation, SitePlant } from "./bench-text.ts";
 
 /** A docs site's genre: the pages of a manual. */
 const SITE_GENRE = "docs/manual";
@@ -36,6 +36,15 @@ export const rewriteInSite = (files: ReadonlyMap<string, string>, name: string, 
   const line = source.slice(0, at).split("\n").length;
   return { files: new Map([...files, [path, source.replaceAll(from, to)]]), path, line };
 };
+
+/** A mistake planted only in a site, for a rule that compares the files of one run. */
+export const siteMutation = (rule: string, id: string, language: string, site: (files: ReadonlyMap<string, string>) => SitePlant | undefined): Mutation => ({
+  id,
+  rule,
+  languages: [language],
+  plant: () => undefined,
+  site,
+});
 
 /** Every rule's findings on the site's files as one run, by path. */
 export const siteFindings = (site: Site, files: ReadonlyMap<string, string> = site.files): Promise<Map<string, CorpusFinding[]>> =>
