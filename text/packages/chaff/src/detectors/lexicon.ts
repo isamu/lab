@@ -21,34 +21,51 @@ const hitsFor = (doc: ProseDocument, lexicon: Lexicon): Hit[] =>
   doc.sentences.flatMap((sentence) => lexicon.filter((entry) => entryIn(sentence, entry)).map((entry) => ({ sentence, matched: entry.pattern })));
 
 /**
+ * 床より短い文書の扱い。skip は測らない。at-floor は SHORT_LENGTH の長さの文書として測り、一つだけなら言わない（一つは礼儀）。
+ * クッション言葉はメールや手紙のような短い文書に重なるので at-floor。逃げの表現は短い文書でも一文に重ねた形で見つかるので skip。
+ */
+type ShortDocuments = "skip" | "at-floor";
+
+/** 短い文書を測るときの長さ。どちらの言語でも、既定の水準で三つ目から言う長さ（二つは「お忙しいところ恐れ入りますが」のように普通に重なる）。 */
+const SHORT_LENGTH = { word: 400, char: 500 };
+
+/** 短い文書でも、これより少なければ言わない。 */
+const SHORT_MINIMUM_HITS = 2;
+
+const perThousand = (count: number, length: number): number => (length === 0 ? 0 : Math.round((count / length) * PER));
+
+/**
  * 単位長あたりの出現率。件数で数えると長い文書ほど当たる（bold-density と同じ）。
  * 短すぎて測らない文書、1 つも無いとき、閾値に収まるときは undefined。
  */
 export const rateOver = (doc: ProseDocument, count: number, limit: number): number | undefined => {
   const length = wordsOf(doc);
-  const rate = length === 0 ? 0 : Math.round((count / length) * PER);
+  const rate = perThousand(count, length);
   return length < FLOOR[doc.lengthUnit] || count === 0 || rate <= limit ? undefined : rate;
 };
 
-/** rule の id は呼び出し側が持つ。detector は「密度が閾値を超えたか」しか知らない。 */
+/** rule の id は呼び出し側が持つ。detector は「密度が閾値を超えたか」しか知らない。指摘が言う密度は、短い文書でも文書の実際の長さでの値。 */
 const densityRule =
-  (rule: string): Detector =>
+  (rule: string, short: ShortDocuments = "skip"): Detector =>
   (doc, options): Finding[] => {
     const hits = hitsFor(doc, options.lexicon ?? []);
-    const rate = rateOver(doc, hits.length, options.limit);
-    if (rate === undefined) return [];
+    const length = wordsOf(doc);
+    const isShort = length < FLOOR[doc.lengthUnit];
+    if (hits.length === 0 || (isShort && (short === "skip" || hits.length < SHORT_MINIMUM_HITS))) return [];
+    if (perThousand(hits.length, isShort ? SHORT_LENGTH[doc.lengthUnit] : length) <= options.limit) return [];
+    const density = perThousand(hits.length, length);
     return hits.map((hit) => ({
       rule,
       severity: "warning",
       line: 0,
       column: 0,
       quote: hit.sentence.text.trim(),
-      values: { matched: hit.matched, count: hits.length, density: rate, limit: options.limit, offset: hit.sentence.span.start },
+      values: { matched: hit.matched, count: hits.length, density, limit: options.limit, offset: hit.sentence.span.start },
     }));
   };
 
 const hedgingDensity = densityRule("excessive-hedging");
-export const cushionDensity = densityRule("cushion-phrase-density");
+export const cushionDensity = densityRule("cushion-phrase-density", "at-floor");
 
 /** 書いたとおりの字。行の折り返しをまたいでいたら空白 1 つに。 */
 const writtenAt = (source: string, span: Span): string => source.slice(span.start, span.end).replace(/\s+/gu, " ").trim();

@@ -1,5 +1,6 @@
 import { escapeRegExp } from "./orthography.ts";
-import type { Span } from "./plugin.ts";
+import { lowerBound } from "./detectors/token-column.ts";
+import type { DocumentNamer, Span } from "./plugin.ts";
 
 /**
  * 本文で番号を指した図・表・付録（図3、Table 2、Appendix B）と、それを行の頭に書いた所（キャプション、見出し）。
@@ -31,13 +32,18 @@ export const FIGURE_NUMBER = "[ \\t\\u00a0]?(?:第?(\\p{Nd}+(?:[.\\-－]\\p{Nd}+
 
 const forms = (word: string): string[] => [...new Set([word, word.toUpperCase()])];
 
-const mentionPattern = (labels: readonly LabelWord[]): RegExp => {
-  const words = labels
+const labelAlternation = (labels: readonly LabelWord[]): string =>
+  labels
     .flatMap((label) => forms(label.word))
     .toSorted((a, b) => b.length - a.length)
-    .map(escapeRegExp);
-  return new RegExp(`${INSIDE_WORD}(${words.join("|")})${FIGURE_NUMBER}`, "gu");
-};
+    .map(escapeRegExp)
+    .join("|");
+
+const mentionPattern = (labels: readonly LabelWord[]): RegExp => new RegExp(`${INSIDE_WORD}(${labelAlternation(labels)})${FIGURE_NUMBER}`, "gu");
+
+/** 番号の付いた図か、番号の無い図（「…の別表に」）。番号が無ければ後ろが長い語の続きでない（表示、別表第一の「第」は番号）。 */
+const labelPattern = (labels: readonly LabelWord[]): RegExp =>
+  new RegExp(`${INSIDE_WORD}(${labelAlternation(labels)})(?:${FIGURE_NUMBER}|(?![\\p{Script=Han}\\p{Script=Katakana}A-Za-z]))`, "gu");
 
 const kindOf = (written: string, labels: readonly LabelWord[]): string => labels.find((label) => forms(label.word).includes(written))?.kind ?? written;
 
@@ -102,18 +108,66 @@ const labelledIn = (source: string, labels: readonly LabelWord[]): Mention[] => 
 export const labelledKindsIn = (source: string, words: LabelWords): ReadonlySet<string> =>
   new Set(labelledIn(source, words.labels).map((mention) => mention.kind));
 
+/** 文書の名前を読む言語の知識と、その名前が届く範囲（文）。 */
+export type Citations = { readonly namedDocument: DocumentNamer; readonly sentences: readonly Span[] };
+
+type NamedLabel = { readonly start: number; readonly kind: string; readonly self: boolean };
+
+/** 文書の名前のすぐ後ろに書いた図の語（「…(平成二十年厚生労働省告示第五十九号)別表第一」「…号)の別表」「この規則の別表第三」）。 */
+const namedLabelsIn = (prose: string, labels: readonly LabelWord[], namedDocument: DocumentNamer): NamedLabel[] =>
+  [...prose.matchAll(labelPattern(labels))].flatMap((match) => {
+    const named = namedDocument(prose, match.index);
+    return named === undefined ? [] : [{ start: match.index, kind: kindOf(match[1] ?? "", labels), self: named.self }];
+  });
+
+/** offset を含む文の頭。文の外（見出し）なら offset。文は文書の順に並んでいる。 */
+const sentenceStartAt = (sentences: readonly Span[], starts: readonly number[], offset: number): number => {
+  const sentence = sentences[lowerBound(starts, offset + 1) - 1];
+  return sentence !== undefined && offset < sentence.end ? sentence.start : offset;
+};
+
+/**
+ * 他の文書の図か。同じ文の中で、その番号の位置までに名前を添えて書いた同じ種類の図のうち、いちばん近いものが他の文書のもの。
+ * 「(…告示第五十九号)別表第一…及び別表第二」「…別表第一から別表第三まで」の後ろの番号も、その告示の別表。
+ * 「…手数料規則の別表第二により、この規則の別表第三による」の別表第三は、この文書のものと名指している。
+ * 文と名前の位置は二分探索で引く。参照先の無い番号が何万あっても、文書の長さの二乗にしない。
+ */
+const citedElsewhere = (named: readonly NamedLabel[], sentences: readonly Span[]): ((mention: Mention) => boolean) => {
+  const starts = sentences.map((sentence) => sentence.start);
+  const byKind = new Map(
+    [...new Set(named.map((label) => label.kind))].map((kind) => {
+      const labels = named.filter((label) => label.kind === kind);
+      return [kind, { labels, starts: labels.map((label) => label.start) }];
+    }),
+  );
+  return (mention) => {
+    const ofKind = byKind.get(mention.kind);
+    const nearest = ofKind?.labels[lowerBound(ofKind.starts, mention.start + 1) - 1];
+    return nearest !== undefined && !nearest.self && nearest.start >= sentenceStartAt(sentences, starts, mention.start);
+  };
+};
+
 /**
  * 参照先の無い番号。source は行の頭を読み、prose（コードを覆った本文）は参照を読む。位置は同じ。
  * 番号は、キャプションが 1 と書けば 1a や 1(b) の参照も 1 に当たる（番号の後ろの字は読まない）。
  * リンクの字（[Figure 2](figures.md)）は、そのリンクが行き先を持つので参照として見ない。
  */
-export const danglingFigures = (source: string, prose: string, words: LabelWords, links: readonly Span[] = []): DanglingFigure[] => {
+export const danglingFigures = (
+  source: string,
+  prose: string,
+  words: LabelWords,
+  links: readonly Span[] = [],
+  citations: Citations | undefined = undefined,
+): DanglingFigure[] => {
   if (words.labels.length === 0) return [];
   const labelled = labelledIn(source, words.labels);
   const labelledKeys = new Set(labelled.map((mention) => mention.key));
   const labelledKinds = new Set(labelled.map((mention) => mention.kind));
-  return mentionsIn(prose, words.labels)
+  const dangling = mentionsIn(prose, words.labels)
     .filter((mention) => labelledKinds.has(mention.kind) && !labelledKeys.has(mention.key))
-    .filter((mention) => pointsHere(prose, mention, words) && !links.some((link) => link.start <= mention.start && mention.end <= link.end))
-    .map((mention) => ({ offset: mention.start, label: mention.written }));
+    .filter((mention) => pointsHere(prose, mention, words) && !links.some((link) => link.start <= mention.start && mention.end <= link.end));
+  // 他の文書の名前は、参照先の無い番号があるときだけ読む。図の語のたびに名前を後ろ向きに読む代金を、ふつうの文書に払わせない。
+  const named = dangling.length === 0 || citations === undefined ? [] : namedLabelsIn(prose, words.labels, citations.namedDocument);
+  const elsewhere = named.length === 0 || citations === undefined ? () => false : citedElsewhere(named, citations.sentences);
+  return dangling.filter((mention) => !elsewhere(mention)).map((mention) => ({ offset: mention.start, label: mention.written }));
 };

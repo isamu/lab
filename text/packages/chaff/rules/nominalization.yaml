@@ -60,3 +60,30 @@ not_flagged:
 level_meaning:
   ja: 1000 字あたり「〜を実施する」のような名詞化した動詞 {limit} 個まで
   en: up to {limit} nominalized verbs ("make a decision") per 1000 words
+rewrite:
+  ja:
+    direction: 「〜を実施する」「〜を行う」の名詞を動詞に戻し、運び役の動詞を消してください。誰がしたのかが書かれていれば、その人を主語に残します。
+    pairs:
+      - before: 先月、顧客満足度の調査を実施しました。
+        after: 先月、顧客満足度を調査しました。
+      - before: 結果の確認を行い、改善の検討を行います。
+        after: 結果を確認し、改善を検討します。
+    keep:
+      - 何を、いつ、誰がしたのか
+      - 催す意味の「実施する」（研修を実施する、試験を行う）
+    avoid:
+      - 「実施する」を「行う」「図る」のような別の運び役に替える
+      - 動詞に戻すときに目的語や時期を落とす
+  en:
+    direction: Turn the noun back into its verb and drop the verb that was carrying it ("make a decision" becomes "decide"). Keep who acted as the subject.
+    pairs:
+      - before: We will conduct an analysis of the results next week.
+        after: We will analyze the results next week.
+      - before: The board made a decision to postpone the launch.
+        after: The board decided to postpone the launch.
+    keep:
+      - what was done, to what, and when
+      - who acted
+    avoid:
+      - swapping one carrying verb for another ("perform", "carry out")
+      - dropping the object or the time while making the verb
