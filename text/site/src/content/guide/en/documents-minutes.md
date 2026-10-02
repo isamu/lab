@@ -96,7 +96,7 @@ minutes.md   business/meeting-notes · English   genre from --genre
   20:1    warning The first sentence repeats the heading "4. Launch date"
                   heading-echo
 
-3 findings, 67 rules not run
+3 findings, 69 rules not run
 ```
 
 Only `heading-echo` runs by default. The rules that help minutes most are experimental.

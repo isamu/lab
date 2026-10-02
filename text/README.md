@@ -459,7 +459,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 
 揃っているかを見る rule は**どちらが正しいかを決めません**。1 つの文書で揃っているかだけを見て、少数派を指摘します。
 
-Markdown の記法と URL を見る rule（ja / en、試験中）:
+Markdown の記法と URL を見る rule（ja / en。`image-alt-text` は既定で動き、ほかは試験中）:
 
 | rule | 何を見るか |
 | --- | --- |
