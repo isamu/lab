@@ -9,7 +9,7 @@ import { quoteAt } from "./structure-tree.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
-const wordsOf = (doc: ProseDocument): FactWords => ({
+export const factWordsOf = (doc: ProseDocument): FactWords => ({
   separators: patternsOf(doc, "fact-separator"),
   valueEnds: patternsOf(doc, "fact-value-end"),
   determiners: patternsOf(doc, "fact-label-drop"),
@@ -21,7 +21,7 @@ const factsByDocument = new WeakMap<ProseDocument, readonly ScopedFact[]>();
 
 const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
   const values = factValues(tree, doc.source, nameSpans(doc));
-  const facts = [...labelledFacts(doc.source, values, wordsOf(doc)), ...tableFacts(doc.source, values)];
+  const facts = [...labelledFacts(doc.source, values, factWordsOf(doc)), ...tableFacts(doc.source, values)];
   return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
 };
 

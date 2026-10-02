@@ -1,0 +1,24 @@
+# 長さ（基準はメートル）の単位（unit-mismatch）。weight は基準の単位への倍率。同じ単位を二度書けば倍率が二つで、どちらで合ってもよい。
+id: unit-length
+language: ja
+entries:
+  - pattern: "km"
+    weight: 1000
+  - pattern: "m"
+    weight: 1
+  - pattern: "cm"
+    weight: 0.01
+  - pattern: "mm"
+    weight: 0.001
+  - pattern: "キロメートル"
+    weight: 1000
+  - pattern: "メートル"
+    weight: 1
+  - pattern: "センチメートル"
+    weight: 0.01
+  - pattern: "センチ"
+    weight: 0.01
+  - pattern: "ミリメートル"
+    weight: 0.001
+  - pattern: "ミリ"
+    weight: 0.001

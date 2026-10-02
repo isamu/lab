@@ -1,0 +1,28 @@
+# データの量（基準はバイト。KB から TB は 1000 倍と 1024 倍の両方）の単位（unit-mismatch）。weight は基準の単位への倍率。同じ単位を二度書けば倍率が二つで、どちらで合ってもよい。
+id: unit-data
+language: ja
+entries:
+  - pattern: "KB"
+    weight: 1000
+  - pattern: "KB"
+    weight: 1024
+  - pattern: "MB"
+    weight: 1000000
+  - pattern: "MB"
+    weight: 1048576
+  - pattern: "GB"
+    weight: 1000000000
+  - pattern: "GB"
+    weight: 1073741824
+  - pattern: "TB"
+    weight: 1000000000000
+  - pattern: "TB"
+    weight: 1099511627776
+  - pattern: "KiB"
+    weight: 1024
+  - pattern: "MiB"
+    weight: 1048576
+  - pattern: "GiB"
+    weight: 1073741824
+  - pattern: "TiB"
+    weight: 1099511627776

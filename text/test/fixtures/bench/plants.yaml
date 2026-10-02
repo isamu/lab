@@ -87,6 +87,7 @@ not_planted:
   rule-of-three: the shape of the whole document, not one mistake
   section-length-uniformity: the shape of the whole document, not one mistake
   sentence-rhythm: the shape of the whole document, not one mistake
+  unit-mismatch: needs one item written twice with a label and a measured value in two units; the samples state each item once
   summary-fact-mismatch: needs an opening or summary that repeats a labelled body value; the samples have none
   spelling-consistency: the English samples use at most one word with a British or American spelling, so no single edit mixes them
   stock-transition: a density over the whole document
