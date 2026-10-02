@@ -56,6 +56,10 @@ describe("emoji-heading", () => {
     assert.ok(!idsFor(`# 記事\n\n\`\`\`md\n## 🚀 a\n## 🛠️ b\n## ✅ c\n\`\`\`\n`, ja).includes("emoji-heading"));
   });
 
+  it("valid: quoted headings are someone else's words", () => {
+    assert.ok(!idsFor("# 記事\n\n> ## 🚀 a\n>\n> ## 🛠️ b\n>\n> ## ✅ c\n", ja).includes("emoji-heading"));
+  });
+
   it("valid: documentation is not checked", () => {
     assert.ok(!idsFor(withHeadings(["🚀 はじめに", "🛠️ 手順", "✅ まとめ"]), ja, "docs/manual").includes("emoji-heading"));
   });
