@@ -35,6 +35,8 @@ export type Config = {
   readonly names: readonly string[];
   /** names に書かれていたが名前として読めなかった値。黙って捨てると、並べたつもりの名前が効いていないことに気づけない。 */
   readonly unreadableNames: readonly string[];
+  /** File-name globs (*.yaml) a directory walk checks besides Markdown. --include adds to them. */
+  readonly include?: readonly string[];
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
   readonly byPath: readonly PathRule[];
   readonly baseDir: string;
@@ -187,6 +189,7 @@ export const loadConfig = (path: string): Config => {
     requiredSections: wordsOf(raw["required_sections"]),
     names: names.names,
     unreadableNames: names.unreadable,
+    include: globsOf(raw["include"]),
     byPath: byPathOf(raw["by_path"]),
     baseDir: dirname(path),
     options: isRecord(options) ? options : {},
