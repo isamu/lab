@@ -4,7 +4,7 @@ import { firedRules } from "./rule-run.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { markersIn, showsInProse } from "../packages/chaff/src/detectors/chat-citation.ts";
+import { destinationOf, markersIn, showsInProse } from "../packages/chaff/src/detectors/chat-citation.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter, Lexicon } from "../packages/chaff/src/plugin.ts";
@@ -52,6 +52,34 @@ describe("showsInProse: a span with prose left in it", () => {
   it("reads a span with text", () => assert.ok(showsInProse("ab cd", { start: 1, end: 4 })));
   it("does not read a blanked span", () => assert.ok(!showsInProse("a    d", { start: 1, end: 5 })));
   it("does not read an empty span", () => assert.ok(!showsInProse("abc", { start: 1, end: 1 })));
+});
+
+describe("destinationOf: the destination part of a link or an image", () => {
+  const spanOf = (source: string, written: string): { start: number; end: number } => ({
+    start: source.indexOf(written),
+    end: source.indexOf(written) + written.length,
+  });
+  it("an inline link: after the label", () => {
+    const source = "x [a](https://e.com/?q) y";
+    const span = destinationOf(source, spanOf(source, "[a](https://e.com/?q)"));
+    assert.equal(source.slice(span.start, span.end), "https://e.com/?q)");
+  });
+  it("a linked image: after the outer label, which holds the image", () => {
+    const source = "[![a](i.png) b](https://e.com/)";
+    assert.equal(source.slice(destinationOf(source, { start: 0, end: source.length }).start), "https://e.com/)");
+  });
+  it("an image: after the alt text", () => {
+    const source = "![alt](a.png)";
+    assert.equal(source.slice(destinationOf(source, { start: 0, end: source.length }).start), "a.png)");
+  });
+  it("a definition: after the label", () => {
+    const source = "[g]: https://e.com/";
+    assert.equal(source.slice(destinationOf(source, { start: 0, end: source.length }).start), " https://e.com/");
+  });
+  it("an autolink: the whole of it", () => {
+    const source = "<https://e.com/>";
+    assert.deepEqual(destinationOf(source, { start: 0, end: source.length }), { start: 0, end: source.length });
+  });
 });
 
 describe("chat-citation-residue", () => {
@@ -104,6 +132,10 @@ describe("chat-citation-residue", () => {
 
   it("valid: a marker in a quote is someone else's words", () => {
     assert.ok(!idsFor("# Post\n\n> See https://example.com/?utm_source=chatgpt.com\n", en).includes("chat-citation-residue"));
+  });
+
+  it("valid: the parameter in code inside a link's text", () => {
+    assert.ok(!idsFor("# Post\n\nSee [the `utm_source=chatgpt.com` parameter](https://example.com) first.\n", en).includes("chat-citation-residue"));
   });
 
   it("valid: another utm_source value", () => {

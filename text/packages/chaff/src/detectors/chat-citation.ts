@@ -22,11 +22,24 @@ const within = (outer: readonly Span[], span: Span): boolean => outer.some((rang
 /** Whether any of the span is left as prose: code, HTML and quotes are blanked out of `prose`, so a marker there shows nothing. */
 export const showsInProse = (prose: string, span: Span): boolean => prose.slice(span.start, span.end).trim() !== "";
 
+/**
+ * The destination part of a link or an image as written: after `](` for `[text](url)`, after `]:` for a definition, and
+ * the whole of an autolink. The label is left out, so code in a link's text stays code.
+ */
+export const destinationOf = (source: string, span: Span): Span => {
+  const written = source.slice(span.start, span.end);
+  const inline = written.lastIndexOf("](");
+  if (inline !== -1) return { start: span.start + inline + "](".length, end: span.end };
+  const defined = written.indexOf("]:");
+  return defined === -1 ? span : { start: span.start + defined + "]:".length, end: span.end };
+};
+
 /** Where a marker reaches the reader: the prose (a marker may straddle Markdown's nodes), the visible text (a bare URL), or a link's or an image's destination. */
 const reachesReader = (doc: ProseDocument, span: Span): boolean => {
   const markup = markupOf(doc);
   if (markup === undefined || doc.prose === undefined) return true;
-  return showsInProse(doc.prose, span) || within([...markup.texts, ...markup.links, ...markup.images], span);
+  const destinations = [...markup.links, ...markup.images].map((target) => destinationOf(doc.source, target));
+  return showsInProse(doc.prose, span) || within([...markup.texts, ...destinations], span);
 };
 
 /** Each marker is a leftover in its own right, so each is reported, from the first. */
