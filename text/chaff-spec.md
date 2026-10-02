@@ -1885,34 +1885,58 @@ Precision / Recall
 
 ---
 
-### 21.1 昇格の条件
+### 21.1 既定で動かす条件（測って決める）
 
-`experimental` から `stable`（既定で動く）へ移す条件は 3 つ。**実文書で発火したこと**を要る。
+rule を既定で動かすかどうかは、**人の書いた文書で測った数で、機械的に決める**。rule ごとに人が読んで昇格させる
+やり方はやめた。読んで決めると、rule が増えるほど判断が追いつかず、ほとんどの rule が `experimental` のまま
+既定で動かない状態になっていた。いまは大半の rule が `--experimental` 無しで動く。
 
-1. `examples/` の実文書で発火した
-2. 出た指摘を読んで、正しいと判断できた
-3. `chaff eval` の目標（誤検知率 5% 未満）を満たしている
+**測るもの（`yarn rules:measure`）。** rule ごと、ジャンルの group（技術文書、ブログ、ビジネス文書、法務……）ごとに:
 
-**一度も発火していない rule は昇格させない。** 合成した文書で動くことは「壊れていない」証拠であって、
-「既定で出してよい」証拠ではない。0 件は、良い rule と壊れた rule を見分けない。
+1. **人の文書で出る割合。** corpus（`corpus/docs`、`corpus/laws`、取得した `corpus/.cache`）の各文書を、
+   その文書のジャンルの段で読む。ジャンルが止めている rule も normal で動かして測る（止めた rule も測り続けるため）。
+   分母は、その rule が実際に動いた文書（記法や見出しが無くて動けなかった文書は入れない）。
+2. **bench で指摘が正しかった割合。** 植えた誤りを見つけた数と、きれいな見本での誤報の数（`yarn bench`）、
+   AI の形の見本での当たりと、人の見本・書き直した見本での誤報（`yarn bench:ai`）。コミット済みの期待値から読む。
+3. **手元の基準の文書で出る割合（任意）。** `--baseline <dir>` に置いた文書（たとえば LLM 以前の Qiita 記事）。
+   再配布できない文書なので、コミットするものには入れない。参考の列で、判断には使わない。
 
-`agentless-passive` は 1 と 3 を満たすが 2 で止めている。実文書 5 件中 4 件が真で、
-残る 1 件は「れる・られる」の多義（§26-6）。**8 割は既定で出すには足りない。**
-corpus の日本語業務文書では、決まり・文書の中身・状態を言う受動と、仮定の節を外したあとも、
-残る指摘の大半は誰も隠していない一般的な動作（「使用されます」「行われます」）で、2 と 3 のどちらも満たさない（#290）。
+結果は表で出る。`--json` で JSON、`--write` で corpus の分だけを `corpus/rules-measure.json` に書く。
 
-`title-case-consistency` と `contraction-consistency` は 3 で止めている。eval が
-「どの閾値でも目標を満たさない」と言っている。
+**決め方。** 数は `scripts/rule-policy.ts` の定数が持つ。
 
-`image-alt-text` は 3 つとも満たしたので既定で動かす。`examples/` で 1 件（`blog-en/mulmocast-vision-en.md` の
-`![](…)`）が出て、読んで正しい。段が重さを決める rule なので eval は掃引しないが、人の書いた文書では
-corpus では出ず、LLM 以前の Qiita 記事でも目標の 5% を下回る文書にしか出ない。読んだ指摘はどれも本当に代替テキストが無い。
+| 区分 | 条件 | どうなるか |
+| --- | --- | --- |
+| 既定で動く | 動くどの group でも、出る文書が 10% 以下。bench の指摘がすべて正しく、見逃しも無い | `status: stable`、自分の段で |
+| 既定で info として動く | 上のどちらかを満たさない | `status: stable`、normal の重さが info |
+| ジャンルで止める | その group の文書の過半（50% を超える）に出る | `genres.yaml` の group に `off # measured` |
+| experimental のまま | 文書が 10 件以上ある group で一度も動いていない（新しい rule） | `--experimental` か chaff.yaml で動く |
+
+- **10% の理由。** 判断に使う group は文書が 10 件以上ある。10 件の group では、1 件に出るだけで 10% になる。
+  閾値をそれより下に置くと、たまたま 1 件に出た rule と、どの文書にも出る rule を区別できない。また、
+  測った分布でも、10% のすぐ上に rule の並ばない切れ目がある（`yarn rules:measure` の表）。以前の目標（5% 未満）は、10 件の group では 0 と見分けられない。
+- **info は「読み飛ばしてよい情報」。** 実行を失敗にしない（終了コードを決めるのは error だけ）。新しい区分は作らず、
+  rule が持つ重さで表す。数える rule は `severity: info`、重さを段に持つ rule は段を一つずつ下げて normal を info にする。
+  黙らせたいときは `chaff off <rule>`（または chaff.yaml の `rules:` に `off`）。
+- **過半で止める理由。** 人の文書の大半に出る指摘は、そのジャンルの書き方を言っているのであって、誤りを言っていない。
+  止めた rule は「動かなかった rule」に、ジャンルを理由として並ぶ（0 件を「確かめて問題なし」に見せない）。
+- `genres.yaml` に手で書いた `off`（理由をコメントに書いたもの）は、測った結果より強い。測って止めた行だけが
+  `# measured` を持ち、測った結果が変われば外れる。
+- 意味を読む L4 の rule は `chaff test` のもので、ここでは決めない。
+
+**当てはめ方。** `yarn rules:measure --write` で測り直し、`yarn rules:measure --apply` で rule の `status` と重さ、
+`genres.yaml` の `# measured` の行を書き換える。`test/test_rule_policy.ts` は、どの rule も
+`corpus/rules-measure.json` の言うとおりになっているかを確かめ、食い違えば落ちる。新しい rule は、測るまでは
+`experimental` のままで、測って `--apply` すれば、人が rule ごとに書き換えなくても区分が決まる。
+
+`chaff eval` は別の道具で、rule の閾値を掃引して、手元の文書に合う値を提案する。ここで決めるのは、
+閾値を変えずに既定で動かすかどうかだけ。
 
 ## 22. Rule Status と CI
 
 ```text
-experimental   corpus 評価前。既定で無効。--experimental で有効化
-stable         corpus 評価済み。FP 目標を満たす
+experimental   まだ測っていない（corpus で動いていない）。既定で無効。--experimental で有効化
+stable         測って既定で動く（重さは info のこともある。§21.1）
 deprecated     置き換え済み
 ```
 
