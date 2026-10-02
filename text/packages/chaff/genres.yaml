@@ -448,6 +448,8 @@ genres:
       agreement-slip: off
       sasete-itadaku: off
       double-keigo: off
+      # Labelled speaker turns (- **記者**：…) are how a transcript is laid out.
+      bold-label-list: off
       cushion-phrase-density: off
       excessive-hedging: off
       unqualified-superlative: off

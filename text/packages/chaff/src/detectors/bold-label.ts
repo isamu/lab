@@ -26,11 +26,14 @@ export const boldLabelOf = (item: string): string | undefined => {
   return label === undefined || isCodeOnly(label) ? undefined : label;
 };
 
-/** The list items, in document order, that open with a bold label. */
+/** Whether the line holding `offset` is quoted (`> - **a**：…`): someone else's words, not the writer's to fix. */
+export const isQuotedAt = (source: string, offset: number): boolean => source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset).includes(">");
+
+/** The list items, in document order, that open with a bold label and are not quoted. */
 export const boldLabelItems = (doc: ProseDocument): Span[] =>
   doc.lists
     .flatMap((list) => list.itemSpans)
-    .filter((span) => boldLabelOf(doc.source.slice(span.start, span.end)) !== undefined)
+    .filter((span) => !isQuotedAt(doc.source, span.start) && boldLabelOf(doc.source.slice(span.start, span.end)) !== undefined)
     .toSorted((left, right) => left.start - right.start);
 
 /** A count, not a density: a person writes one or two labels even in a long article. */

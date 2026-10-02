@@ -1,7 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
-import { boldLabelOf } from "../packages/chaff/src/detectors/bold-label.ts";
+import { boldLabelOf, isQuotedAt } from "../packages/chaff/src/detectors/bold-label.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -78,6 +78,15 @@ describe("boldLabelOf: an item that opens with a bold label", () => {
   it("takes a label of exactly the longest length", () => assert.equal(boldLabelOf(`- **${"長".repeat(40)}**：説明です。`), "長".repeat(40)));
 });
 
+describe("isQuotedAt: an offset on a quoted line", () => {
+  const source = "本文\n> - **a**：x\n>> - **b**：y\n- **c**：z\n";
+  it("reads a quoted item", () => assert.ok(isQuotedAt(source, source.indexOf("- **a**"))));
+  it("reads a nested quote", () => assert.ok(isQuotedAt(source, source.indexOf("- **b**"))));
+  it("does not read an item on its own line", () => assert.ok(!isQuotedAt(source, source.indexOf("- **c**"))));
+  it("does not read the first line of the source", () => assert.ok(!isQuotedAt("- **a**：x", 0)));
+  it("does not look past the start of the line", () => assert.ok(!isQuotedAt("> 引用\n- **a**：x", "> 引用\n".length)));
+});
+
 describe("bold-label-list", () => {
   it("invalid: five items open with a bold label", () => {
     assert.ok(idsFor(`# 新しい在庫システム\n\n${labelledList(5)}\n`, ja).includes("bold-label-list"));
@@ -110,6 +119,19 @@ describe("bold-label-list", () => {
   it("valid: the labelled fields at the head of meeting notes are their form", () => {
     const fields = ["日時", "場所", "出席者", "司会", "記録"].map((field) => `- **${field}**：未定です。`).join("\n");
     assert.ok(!idsFor(`# 議事録\n\n${fields}\n`, ja, "business/meeting-notes").includes("bold-label-list"));
+  });
+
+  it("valid: a quoted list is someone else's words", () => {
+    const quoted = labelledList(6)
+      .split("\n")
+      .map((line) => `> ${line}`)
+      .join("\n");
+    assert.ok(!idsFor(`# 記事\n\n${quoted}\n`, ja).includes("bold-label-list"));
+  });
+
+  it("valid: the labelled speaker turns of a transcript are its form", () => {
+    const turns = ["記者", "大臣", "記者", "大臣", "司会"].map((speaker) => `- **${speaker}**：話した言葉です。`).join("\n");
+    assert.ok(!idsFor(`# 会見録\n\n${turns}\n`, ja, "speech/transcript").includes("bold-label-list"));
   });
 
   it("valid: a bold label in a code block is not a list item", () => {
