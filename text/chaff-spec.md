@@ -639,6 +639,7 @@ genres:
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
+| `cross-doc-broken-link` ✅ | 一緒に見たほかのファイルへの相対リンクで、行き先のファイルか見出しが無いもの（ファイルが二つ以上のときだけ） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | `duplicate-heading` ✅ | 同じ親の下の同じ言葉の見出し（MD024 siblings_only） | 両方 | warning |
 | `empty-section` ✅ | 中身の無い節（すぐ後ろに同じ深さか浅い見出し） | 両方 | warning |

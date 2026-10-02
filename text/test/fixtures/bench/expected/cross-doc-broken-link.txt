@@ -1,0 +1,5 @@
+table  4  4  0  0
+ja/site  link-to-renamed-file-ja  found
+ja/site  link-to-reworded-heading-ja  found
+en/site  link-to-renamed-file-en  found
+en/site  link-to-reworded-heading-en  found

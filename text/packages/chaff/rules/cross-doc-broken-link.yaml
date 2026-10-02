@@ -1,0 +1,83 @@
+id: cross-doc-broken-link
+layer: L1
+status: experimental
+how_to_find: cross-doc-broken-link
+# documents: compares the files of one run, so it runs only when chaff is given two or more files, or a folder.
+requires: [markdown, documents]
+severity: warning
+
+name:
+  ja: ほかのファイルへの行き先の無いリンク
+  en: Link to another file that goes nowhere
+
+why:
+  ja: 説明書や文書の束では、ページどうしを相対パスのリンクでつなぎます（[料金](./pricing.md#月額料金)）。ファイルの名前を変えたり見出しを書き換えたりすると、ほかのページからのリンクが行き先を失います。一つのファイルだけを見ても、行き先のファイルや見出しがあるかは分かりません。一度に渡したファイルどうしを突き合わせ、行き先のファイルが無いリンクと、行き先のファイルに無い見出しを指すリンクを指します。見出しの名前は字と数字だけで比べます。
+  en: 'A manual or a bundle of documents links its pages to each other with relative paths ("[Fees](./pricing.md#monthly-fee)"). Renaming a file or rewording a heading leaves the links from other pages with nowhere to go, and no single file shows it. The files given together are checked against each other: a link whose file is not there, and a link to a heading that file does not have, are pointed out. Heading anchors are compared on letters and digits only.'
+
+message:
+  ja: リンク「{link}」の行き先がありません
+  en: 'The link "{link}" goes nowhere'
+
+messages:
+  file:
+    ja: リンク「{link}」が指すファイル「{target}」が、一緒に見たファイルの中にありません
+    en: 'The link "{link}" points to "{target}", which is not among the files checked'
+  anchor:
+    ja: リンク「{link}」が指す「{target}」の見出しが、そのファイルにありません
+    en: 'The link "{link}" points to "{target}", but that file has no such heading'
+
+how_to_fix:
+  ja: 行き先のファイルの今の名前と、今の見出しの言葉に合わせてください。ファイルや見出しを消したなら、リンクも消すか、代わりのページを指してください。
+  en: Match the file's current name and the heading as it is now written. If the file or the heading is gone, remove the link or point it at the page that replaced it.
+
+placeholders:
+  link:
+    ja: 〇〇
+    en: the link
+  target:
+    ja: 行き先
+    en: the target
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 一緒に見たほかのファイルへのリンクで、行き先のファイルか見出しが無いもの
+  en: A link to another of the files checked together whose file or heading is not there
+example:
+  ja:
+    other: |
+      # 手順
+
+      ## 準備
+
+      道具をそろえます。
+    before: |
+      # 案内
+
+      始める前に[準備](./other.md#用意)を読んでください。
+    after: |
+      # 案内
+
+      始める前に[準備](./other.md#準備)を読んでください。
+  en:
+    other: |
+      # Steps
+
+      ## Setup
+
+      Gather the tools.
+    before: |
+      # Guide
+
+      Before you start, read [Setup](./other.md#preparation).
+    after: |
+      # Guide
+
+      Before you start, read [Setup](./other.md#setup).
+
+not_flagged:
+  ja: URL、サイトの根からのパス（/guide/）、同じページの中へのリンク（broken-link が見ます）、Markdown でないファイル（画像やスクリプト）へのリンクは見ません。行き先のファイルが無くても、一緒に見たファイルのどれも置かれていないフォルダのものと、フォルダを指すリンク（./guide/）は、確かめようがないので指しません。拡張子を書かないリンク（./reference）は、.md などを補って探します。
+  en: URLs, paths from the site's root ("/guide/"), links within the same page (broken-link checks those) and links to files that are not Markdown (images, scripts) are not checked. A missing file in a folder that none of the files checked are in, and a link to a folder ("./guide/"), cannot be confirmed and are not reported. A link without an extension ("./reference") is looked up as .md and the like.
