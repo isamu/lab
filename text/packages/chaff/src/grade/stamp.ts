@@ -40,7 +40,8 @@ export const settingsOf = (settings: GradeSettings): Record<string, unknown> => 
     requiredSections: config.requiredSections,
     names: config.names,
     byPath: config.byPath,
-    grade: config.grade ?? null,
+    // A bare `grade:` reads as null and is an empty rubric, which grades otherwise than no `grade:` at all.
+    grade: config.grade === undefined ? "none" : config.grade,
   };
 };
 

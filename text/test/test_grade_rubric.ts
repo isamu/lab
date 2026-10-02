@@ -35,9 +35,9 @@ describe("reading grade:", () => {
     assert.equal(rubric.penalty, 10);
   });
 
-  it("is no rubric when chaff.yaml has no grade:, and an empty one when grade: is an empty map", () => {
+  it("is no rubric when chaff.yaml has no grade:, and an empty one when grade: is bare or an empty map", () => {
     assert.deepEqual(parseRubric(undefined), { rubric: undefined });
-    assert.deepEqual(parseRubric(null), { rubric: undefined });
+    assert.deepEqual(parseRubric(null), { rubric: { rules: {} } });
     assert.deepEqual(rubricOf({}).rules, {});
   });
 
@@ -82,6 +82,25 @@ describe("pass or fail under a rubric", () => {
     assert.deepEqual(reasons(rubric, { findings: [finding("info", "ai-tell"), finding("info", "ai-tell"), finding("info", "ai-tell")] }), [
       "rules.ai-tell.rate 6 > 4",
     ]);
+  });
+
+  it("checks a rate against its limit unrounded: one finding in three words is over 333.3 per 1,000", () => {
+    const rubric = rubricOf({ rules: { "ai-tell": { max_rate: 333.3 } } });
+    const failed = reasons(rubric, { findings: [finding("info", "ai-tell")], size: { unit: "word", value: 3 } });
+    assert.equal(failed.length, 1);
+    assert.equal(failed[0], `rules.ai-tell.rate ${String(1000 / 3)} > 333.3`);
+  });
+
+  it("turns the default off with a bare grade:, so an error finding of an unnamed rule no longer fails", async () => {
+    const items = jsonl({ id: "a", output: "# Quote\n\n| Item | Price |\n| --- | --- |\n| Design | $400 |\n| Build | $1,200 |\n| Total | $1,500 |\n" });
+    const bare = await runCli(
+      { "items.jsonl": items, "chaff.yaml": "grade:\n" },
+      ["grade", "items.jsonl", "--experimental", "--out", "out.jsonl"],
+      "en_US.UTF-8",
+    );
+    const none = await runCli({ "items.jsonl": items }, ["grade", "items.jsonl", "--experimental", "--out", "out.jsonl"], "en_US.UTF-8");
+    assert.deepEqual([bare.code, none.code], [0, 1]);
+    assert.notEqual(resultsIn(bare.dir)[0]?.stamp.settings, resultsIn(none.dir)[0]?.stamp.settings);
   });
 
   it("decides only by what it names: an error finding of another rule is a rate, not a failure", () => {

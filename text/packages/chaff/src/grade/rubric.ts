@@ -128,9 +128,13 @@ const citationsOf = (raw: unknown): Read<CitationLimits | undefined> => {
 
 const RUBRIC_KEYS: readonly string[] = ["rules", "required_sections", "facts", "citations", "penalty"];
 
-/** The rubric, or every problem in it. No `grade:` at all is no rubric: the default pass or fail applies (spec §29.3). */
+/**
+ * The rubric, or every problem in it. No `grade:` key is no rubric: the default pass or fail applies (spec §29.3). A bare
+ * `grade:` (null) is an empty rubric, so writing the key alone still turns the default off, as the spec says it does.
+ */
 export const parseRubric = (raw: unknown): { readonly rubric: Rubric | undefined } | { readonly problems: readonly RubricProblem[] } => {
-  if (raw === undefined || raw === null) return { rubric: undefined };
+  if (raw === undefined) return { rubric: undefined };
+  if (raw === null) return { rubric: { rules: {} } };
   if (!isRecord(raw)) return { problems: [problem("grade", "map", raw)] };
   const rules = rulesOf(raw["rules"]);
   const sections = wordsOf(raw["required_sections"], "grade.required_sections");

@@ -1,4 +1,4 @@
-import { rateOf, type OutputSize } from "./rates.ts";
+import { exactRateOf, type OutputSize } from "./rates.ts";
 import type { GradeScore } from "./result.ts";
 import type { Rubric, RuleLimit } from "./rubric.ts";
 import { counted, overLimit, verdictOf, type Graded, type Verdict } from "./verdict.ts";
@@ -19,7 +19,7 @@ const countOf = (input: RubricInput, rule: string): number => input.findings.fil
 
 const ruleFailures = (input: RubricInput, rule: string, limit: RuleLimit): string[] => {
   const count = countOf(input, rule);
-  const rate = rateOf(count, input.size.value);
+  const rate = exactRateOf(count, input.size.value);
   return [
     ...(limit.max === undefined ? [] : overLimit(`rules.${rule}`, count, limit.max)),
     ...(limit.maxRate === undefined || rate === undefined ? [] : overLimit(`rules.${rule}.rate`, rate, limit.maxRate)),
