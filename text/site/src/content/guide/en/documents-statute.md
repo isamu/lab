@@ -311,7 +311,9 @@ rules-fixed.md   legal/statute · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  7 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
+  1 experimental rule turned on in the settings: numbering-gap
+
+  6 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, total-mismatch
 ```
 
 The "did not run" list below this is the same as before.

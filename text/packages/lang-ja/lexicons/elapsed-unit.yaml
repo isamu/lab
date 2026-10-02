@@ -1,0 +1,7 @@
+# 起点から数えた年数の単位（elapsed-years-mismatch）。
+id: elapsed-unit
+language: ja
+entries:
+  - pattern: "年"
+  - pattern: "年目"
+  - pattern: "周年"

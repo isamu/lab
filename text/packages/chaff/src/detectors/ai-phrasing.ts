@@ -126,16 +126,14 @@ export const assistantResidue: Detector = (doc, options): Finding[] => {
   return tally.hits.map((hit) => findingOf(hit, { count: tally.counted.size, density: score, limit: options.limit }));
 };
 
-/** 埋め忘れた雛形の空欄（[Your Name]、【会社名】）。limit は指摘に要る数。 */
-export const unfilledPlaceholder: Detector = (doc, options): Finding[] => {
-  const words = options.lexicon ?? [];
-  const blanks = doc.sentences.flatMap((sentence) =>
-    placeholderSpans(sentence.text, words).map((span) => ({
-      sentence,
-      matched: sentence.text.slice(span.start, span.end),
-      offset: sentence.span.start + span.start,
-    })),
-  );
-  if (blanks.length === 0 || blanks.length < options.limit) return [];
-  return blanks.map((blank) => findingOf(blank, { count: blanks.length, limit: options.limit }));
-};
+/** 埋め忘れた雛形の空欄（[Your Name]、【会社名】、TBD: …）。1 つでも埋め忘れなので、段は数ではなく指摘の重さを決める。 */
+export const unfilledPlaceholder: Detector = (doc, options): Finding[] =>
+  doc.sentences
+    .flatMap((sentence) =>
+      placeholderSpans(sentence.text, options.lexicon ?? []).map((span) => ({
+        sentence,
+        matched: sentence.text.slice(span.start, span.end),
+        offset: sentence.span.start + span.start,
+      })),
+    )
+    .map((blank) => findingOf(blank, {}));

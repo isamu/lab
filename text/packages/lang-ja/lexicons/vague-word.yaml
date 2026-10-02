@@ -1,0 +1,32 @@
+# あいまいな語。どこまで・いつまで・何をしたら済むのかを、読み手が決めることになる語。vague-word-density が文書の長さに対して数える。
+# 一つ二つは普通の言い方。重なると、文書の言っていることの多くを読み手が決めることになる。
+# 要求の文の中の「可能な限り」「必要に応じて」は requirement-smell も見る（こちらは文書全体の密度）。
+id: vague-word
+language: ja
+entries:
+  - pattern: 適宜
+  - pattern: 適切に
+  - pattern: 適切な
+  - pattern: 適正に
+  - pattern: 適正な
+  - pattern: なるべく
+  - pattern: 極力
+  - pattern: 必要に応じて
+  - pattern: 状況に応じて
+  - pattern: 場合によっては
+  - pattern: 可能な限り
+  - pattern: できる限り
+  - pattern: できるだけ
+  - pattern: ある程度
+  - pattern: 一定の
+  - pattern: 相当の
+  - pattern: 若干
+  - pattern: 随時
+  - pattern: 適時
+  - pattern: しかるべき
+  - pattern: 然るべき
+  - pattern: 柔軟に
+  - pattern: 前向きに
+  - pattern: 鋭意
+  - pattern: 早急に
+  - pattern: 早めに
