@@ -136,6 +136,7 @@ describe("L3 英語", () => {
       assert.ok(!judgedAgainst(WITHOUT_COMMA, "The office in Lyon, France, and the team in Austin, Texas, met."));
       assert.ok(!judgedAgainst(WITHOUT_COMMA, "We met the mayor of Portland, Oregon, and the governor."));
       assert.ok(!judgedAgainst(WITHOUT_COMMA, "We met the mayor of Albany, New York, and the governor."));
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "We visited Washington, D.C., and a museum in Baltimore."));
     });
 
     it("invalid: 州や国そのものの並びと、地名に州を添えた項目の並びは、並び", () => {

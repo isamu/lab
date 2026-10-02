@@ -68,11 +68,12 @@ const isComma = (token: Token): boolean => token.surface === ",";
 
 const surfacesOf = ({ pattern, tokens: words = [] }: LexiconEntry): string[] => (words.length > 0 ? words.map((word) => word.surface) : pattern.split(" "));
 
-/** start から州や国の名が書いてあれば、その後ろの位置。無ければ -1。語ごとに書いたとおりに照らす。 */
-const regionEnd = (tokens: readonly Token[], start: number, regions: Lexicon): number => {
-  const name = regions.map(surfacesOf).find((surfaces) => surfaces.every((surface, offset) => tokens[start + offset]?.surface === surface));
-  return name === undefined ? -1 : start + name.length;
-};
+const writtenAt = (tokens: readonly Token[], start: number, entry: LexiconEntry): boolean =>
+  surfacesOf(entry).every((surface, offset) => tokens[start + offset]?.surface === surface);
+
+/** start から書いてある州や国の名。語ごとに書いたとおりに照らす。 */
+const regionAt = (tokens: readonly Token[], start: number, regions: Lexicon): LexiconEntry | undefined =>
+  regions.find((entry) => writtenAt(tokens, start, entry));
 
 /** 名の後ろが文や句の切れ目（, . ; : ) か文の終わり）。New London, Wisconsin, and … の Wisconsin。 */
 const closesName = (token: Token | undefined): boolean => token === undefined || [",", ".", ";", ":", ")"].includes(token.surface);
@@ -81,19 +82,21 @@ const closesName = (token: Token | undefined): boolean => token === undefined ||
 const endsWithRegion = (tokens: readonly Token[], at: number, regions: Lexicon): boolean =>
   regions.some((entry) => {
     const start = at - surfacesOf(entry).length;
-    return start >= 0 && regionEnd(tokens, start, [entry]) === at;
+    return start >= 0 && writtenAt(tokens, start, entry);
   });
 
 /**
  * 地名と、それに添えた州や国の名のあいだの読点（New London, Wisconsin, and a photo / Lyon, France, then）。並びの区切りではない。
  * 前が固有名詞で、それ自身が州や国の名でなく（Texas, Florida, and Ohio は州の並び）、後ろの名が切れ目で閉じるときだけ。
+ * 地名の後ろにしか書かない名（position: after。Washington, D.C.）は、前が州の名でも地名に添えたもの。
  */
 const regionCommasOf = (tokens: readonly Token[], regions: Lexicon): ReadonlySet<number> =>
   new Set(
     tokens.flatMap((token, at) => {
       if (!isComma(token) || tokens[at - 1]?.pos !== "PROPN") return [];
-      const end = regionEnd(tokens, at + 1, regions);
-      return end !== -1 && closesName(tokens[end]) && !endsWithRegion(tokens, at, regions) ? [at] : [];
+      const region = regionAt(tokens, at + 1, regions);
+      if (region === undefined || !closesName(tokens[at + 1 + surfacesOf(region).length])) return [];
+      return region.position === "after" || !endsWithRegion(tokens, at, regions) ? [at] : [];
     }),
   );
 

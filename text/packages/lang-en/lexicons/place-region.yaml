@@ -1,6 +1,7 @@
 # The names a place is followed by, after a comma, to say where it is: US states and the District of Columbia, and
 # countries ("New London, Wisconsin, and …", "Lyon, France, and …"). The comma between a place and its state or country
-# is part of the name, not a list's comma. Matched as written, word by word.
+# is part of the name, not a list's comma. Matched as written, word by word. A name with position: after is written only
+# after a place's name (Washington, D.C.), so it is read as one even after a state's name.
 id: place-region
 language: en
 entries:
@@ -55,6 +56,7 @@ entries:
   - pattern: Wisconsin
   - pattern: Wyoming
   - pattern: D.C.
+    position: after
   - pattern: Puerto Rico
   - pattern: Guam
   - pattern: Afghanistan

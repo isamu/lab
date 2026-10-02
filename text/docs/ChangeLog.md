@@ -11,7 +11,7 @@ Newest first.
 - The names are an English word list, `place-region` (the states, D.C., some territories, the countries and the
   Canadian provinces). The comma counts as a name's only after a proper noun that is not itself on the list, and when
   the name ends at punctuation: "Texas, Florida, and Ohio" and "Austin, Texas, Boston, Massachusetts, and Denver,
-  Colorado" are still lists.
+  Colorado" are still lists. A name written only after a place (Washington, D.C.) is marked `position: after`.
 
 ### `agentless-passive` (ja) reads 「〜されることとなった」 as a predicate
 
