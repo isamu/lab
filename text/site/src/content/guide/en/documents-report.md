@@ -43,7 +43,7 @@ Some things are left out on purpose.
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The report below was saved as `enquiries.md`.
 
-```markdown
+```markdown file=enquiries.md
 # Report on customer enquiries in September
 
 ## Background
@@ -125,58 +125,7 @@ enquiries.md   business/report · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  51 rules did not run:
-      adverb-overuse (still experimental)
-      agentless-passive (still experimental)
-      agreement-slip (still experimental)
-      ai-generated-composite (still experimental)
-      ai-tell (still experimental)
-      announced-count-mismatch (still experimental)
-      announcing-opener (still experimental)
-      assistant-residue (still experimental)
-      colon-lead-in (not a rule for en)
-      contraction-consistency (still experimental)
-      contrast-framing (still experimental)
-      cushion-phrase-density (still experimental)
-      dangling-figure-reference (still experimental)
-      dangling-reference (still experimental)
-      date-order (still experimental)
-      date-range-reversed (still experimental)
-      date-weekday-mismatch (still experimental)
-      double-keigo (not a rule for en)
-      doubled-word (still experimental)
-      duplicate-definition (still experimental)
-      emoji-density (still experimental)
-      empty-conclusion (it reads meaning; npx chaff test runs it)
-      excessive-hedging (still experimental)
-      expletive-construction (still experimental)
-      hiragana-fukushi (not a rule for en)
-      internal-jargon (still experimental)
-      latin-spacing (not a rule for en)
-      max-kanji-continuous (not a rule for en)
-      no-doubled-joshi (not a rule for en)
-      no-em-dash (still experimental)
-      no-mixed-desumasu (not a rule for en)
-      no-nakaguro-parallel (not a rule for en)
-      numbering-gap (still experimental)
-      oxford-comma-consistency (still experimental)
-      percent-sum-mismatch (still experimental)
-      preferred-term (still experimental)
-      proper-noun-density (still experimental)
-      repeated-conjunction (still experimental)
-      required-sections (still experimental)
-      risk-disclosure (it reads meaning; npx chaff test runs it)
-      sasete-itadaku (not a rule for en)
-      sentence-initial-conjunction-run (still experimental)
-      stock-transition (still experimental)
-      stray-space (not a rule for en)
-      taigen-dome-in-prose (not a rule for en)
-      title-case-consistency (still experimental)
-      total-mismatch (still experimental)
-      undefined-acronym (still experimental)
-      unfilled-placeholder (still experimental)
-      unqualified-superlative (still experimental)
-      unsourced-number (it reads meaning; npx chaff test runs it)
+  {not-run}
 ```
 
 There are three findings.
@@ -352,7 +301,7 @@ The reason stays in the file, so whoever comes later can see why it was relaxed.
 The report now opens with what happened, drops the hedges, and says who does what and when.
 The summary became what the next report will show.
 
-```markdown
+```markdown file=enquiries-fixed.md
 # Report on customer enquiries in September
 
 ## In short
@@ -386,21 +335,7 @@ enquiries-fixed.md   business/report · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  14 rules did not run:
-      colon-lead-in (not a rule for en)
-      double-keigo (not a rule for en)
-      empty-conclusion (it reads meaning; npx chaff test runs it)
-      hiragana-fukushi (not a rule for en)
-      latin-spacing (not a rule for en)
-      max-kanji-continuous (not a rule for en)
-      no-doubled-joshi (not a rule for en)
-      no-mixed-desumasu (not a rule for en)
-      no-nakaguro-parallel (not a rule for en)
-      risk-disclosure (it reads meaning; npx chaff test runs it)
-      sasete-itadaku (not a rule for en)
-      stray-space (not a rule for en)
-      taigen-dome-in-prose (not a rule for en)
-      unsourced-number (it reads meaning; npx chaff test runs it)
+  {not-run}
 ```
 
 No findings, experimental rules included.

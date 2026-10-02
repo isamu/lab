@@ -1,0 +1,6 @@
+# 属性の言い回し（fact-conflict、summary-fact-mismatch）。値の後ろ（after）に書く。「東京に本社を置く」の 東京 が本社の値。
+id: fact-attribute
+language: ja
+entries:
+  - pattern: に本社を置
+    position: after

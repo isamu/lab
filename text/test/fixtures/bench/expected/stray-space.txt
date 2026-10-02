@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/blog  space-strayed  found
+ja/design  space-strayed  found
+ja/email  space-strayed  found
+ja/figures  space-strayed  found
+ja/itinerary  space-strayed  found
+ja/minutes  space-strayed  found
+ja/note  space-strayed  found
+ja/policy  space-strayed  found
+ja/press  space-strayed  found
+ja/proposal  space-strayed  found
+ja/readme  space-strayed  found
+ja/requirements  space-strayed  found

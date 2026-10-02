@@ -252,3 +252,9 @@ $ npx chaffjs cite contract.txt claims.json
 
 chaff がするのは、壊れていないかの判定だけです。文書を書き換えることはありません。
 文書を読んで答えるのは AI の側で、chaff はその前後で確かめる役です。
+
+## 次に読むページ
+
+- 構造の検査を動かした社内規程の実例は、[社内規程・規則でできること](./documents-statute)にあります。
+- `cite` で RAG の答えの引用を評価の中で確かめるやり方は、[AI の評価（AI evals）に使う](./ai-evals)にあります。
+- `tree` と `cite` は、ほかのコマンドと一緒に[コマンド](./commands)に並んでいます。

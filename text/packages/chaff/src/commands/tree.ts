@@ -1,9 +1,8 @@
 import { readDocumentFile } from "../files.ts";
 import { loadAdapter } from "../adapter-load.ts";
-import { applyByPath } from "../config/by-path.ts";
 import { profileFor } from "../profile/for-file.ts";
 import { resolveGenre } from "../resolve-genre.ts";
-import { guessLanguage } from "../detect.ts";
+import { documentLanguage } from "../check-source.ts";
 import { isMarkdownPath } from "../structure/markdown-path.ts";
 import { buildStructure } from "../structure/of.ts";
 import { toSexp } from "../structure/sexp.ts";
@@ -63,12 +62,19 @@ export const readSource = async (path: string, context: TreeContext): Promise<st
  * その前に --language を置く。混在するリポジトリで、英語の契約書を日本語として読まないため。
  */
 export const treeLanguage = (path: string, source: string, argv: readonly string[], context: TreeContext): string =>
-  context.flag(argv, "--language") ??
-  applyByPath(context.config.byPath, context.config.baseDir, path).language ??
-  context.config.language ??
-  guessLanguage(source).language;
+  context.flag(argv, "--language") ?? documentLanguage(path, source, context.config);
 
 export type SourceTree = { readonly source: string; readonly tree: StructureNode };
+
+/** A text's tree of addresses, read as `chaff tree` reads a file; undefined when the language package cannot read structure. */
+export const treeFromSource = async (path: string, source: string, language: string, genre: string, config: Config): Promise<StructureNode | undefined> => {
+  const adapter = await loadAdapter(language);
+  if (adapter.structure === undefined) return undefined;
+  // 日本語は形態素で数量と日付を読む。解析器が無ければ単位の表で読むので、木は作れる。
+  await adapter.prepare?.({ pos: true });
+  const profile = profileFor(config, path, source, language, genre);
+  return buildStructure({ path, source, language, markdown: isMarkdownPath(path), profile, lexicons: adapter.lexicons }, adapter.structure);
+};
 
 /**
  * 1 ファイルを読んで木にする。読めない・言語パッケージが構造を読めないときは、黙らずに言って undefined を返す。
@@ -78,15 +84,13 @@ export const readTree = async (path: string, argv: readonly string[], context: T
   const source = await readSource(path, context);
   if (source === undefined) return undefined;
   const language = treeLanguage(path, source, argv, context);
-  const adapter = await loadAdapter(language);
-  if (adapter.structure === undefined) {
+  const genre = resolveGenre(path, source, context.config, context.flag(argv, "--genre")).genre;
+  const tree = await treeFromSource(path, source, language, genre, context.config);
+  if (tree === undefined) {
     console.error(treeText(context).noStructure(path, language));
     return undefined;
   }
-  // 日本語は形態素で数量と日付を読む。解析器が無ければ単位の表で読むので、木は作れる。
-  await adapter.prepare?.({ pos: true });
-  const profile = profileFor(context.config, path, source, language, resolveGenre(path, source, context.config, context.flag(argv, "--genre")).genre);
-  return { source, tree: buildStructure({ path, source, language, markdown: isMarkdownPath(path), profile, lexicons: adapter.lexicons }, adapter.structure) };
+  return { source, tree };
 };
 
 /**

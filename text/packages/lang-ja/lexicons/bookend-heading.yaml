@@ -1,0 +1,33 @@
+# 本文を挟む見出し。「はじめに」で始めて「まとめ」で閉じる組み立ては、生成した記事に多い形です。
+# position: before は本文の前に立つ見出し、after は本文の後に立つ見出し。見出しがこの語で始まれば当たります（「まとめ：〜」も）。
+id: bookend-heading
+language: ja
+entries:
+  - pattern: はじめに
+    position: before
+  - pattern: 始めに
+    position: before
+  - pattern: まえがき
+    position: before
+  - pattern: 前書き
+    position: before
+  - pattern: イントロダクション
+    position: before
+  - pattern: 序論
+    position: before
+  - pattern: まとめ
+    position: after
+  - pattern: おわりに
+    position: after
+  - pattern: 終わりに
+    position: after
+  - pattern: さいごに
+    position: after
+  - pattern: 最後に
+    position: after
+  - pattern: 結論
+    position: after
+  - pattern: 総括
+    position: after
+  - pattern: あとがき
+    position: after

@@ -1,9 +1,11 @@
 import type { LengthUnit } from "../plugin.ts";
 import type { Outline, OutlineEntry, Shape } from "./shape.ts";
 import type { OutlineText } from "./text.ts";
+import type { StructureScore } from "../structure-shape/score.ts";
+import { structureChangeLines, structureCompact, structureJson, structureLines } from "./structure-render.ts";
 
-/** One file's outline as `chaff outline` shows it. */
-export type DocumentOutline = { readonly path: string; readonly language: string; readonly outline: Outline };
+/** One file's outline as `chaff outline` shows it, with its structure measures placed against human articles. */
+export type DocumentOutline = { readonly path: string; readonly language: string; readonly outline: Outline; readonly structure: StructureScore };
 
 type Measure = { readonly name: string; readonly value: (shape: Shape, unit: LengthUnit) => string };
 
@@ -37,6 +39,8 @@ const outlineBlock = (document: DocumentOutline, text: OutlineText): string[] =>
   shapeLine(document, text),
   "",
   ...document.outline.entries.map((entry) => entryLine(entry, document, text)),
+  "",
+  ...structureLines(document.structure, document.language, document.outline.unit, text.structure),
 ];
 
 /** Each measure before and after, so a restructure shows as numbers that moved. */
@@ -46,6 +50,7 @@ const changeBlock = (before: DocumentOutline, after: DocumentOutline, text: Outl
   ...measuresOf(text).map(
     (measure) => `  ${measure.name}: ${measure.value(before.outline.shape, before.outline.unit)} → ${measure.value(after.outline.shape, after.outline.unit)}`,
   ),
+  ...structureChangeLines(before.structure, after.structure, [before.outline.unit, after.outline.unit], text.structure),
 ];
 
 /** For a person: each file's shape and outline, then, for two files, how each measure moved. */
@@ -67,6 +72,7 @@ export const renderOutlineCompact = (documents: readonly DocumentOutline[], text
   [
     ...documents.flatMap((document) => document.outline.entries.map((entry) => compactEntry(entry, document))),
     ...documents.map((document) => shapeLine(document, text)),
+    ...documents.map((document) => structureCompact(document.path, document.structure)),
   ].join("\n");
 
 const outlineJson = (document: DocumentOutline): Readonly<Record<string, unknown>> => ({
@@ -75,6 +81,7 @@ const outlineJson = (document: DocumentOutline): Readonly<Record<string, unknown
   unit: document.outline.unit,
   shape: document.outline.shape,
   outline: document.outline.entries,
+  structure: structureJson(document.structure),
 });
 
 /** For an AI: one file's outline and shape, or `before` and `after` for two. */
