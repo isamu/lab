@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  blank-left  found
+ja/design  blank-left  found
+ja/figures  blank-left  found
+ja/itinerary  blank-left  found
+ja/minutes  blank-left  found
+ja/press  blank-left  found
+ja/proposal  blank-left  found
+ja/quote  blank-left  found
+ja/readme  blank-left  found
+ja/requirements  blank-left  found
+en/blog  blank-left  found
+en/design  blank-left  found
+en/figures  blank-left  found
+en/itinerary  blank-left  found
+en/minutes  blank-left  found
+en/press  blank-left  found
+en/proposal  blank-left  found
+en/quote  blank-left  found
+en/readme  blank-left  found
+en/requirements  blank-left  found
