@@ -99,7 +99,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
   {not-run}
 
-  試験中のルールを 1 つだけ動かすには、npx chaffjs enable acronym-expansion-conflict のように名指しします（chaff.yaml の rules に acronym-expansion-conflict: normal と書くのと同じです）。--experimental はすべてを動かします。
+  試験中のルールを 1 つだけ動かすには、npx chaffjs enable absolute-exception のように名指しします（chaff.yaml の rules に absolute-exception: normal と書くのと同じです）。--experimental はすべてを動かします。
 ```
 
 指摘は 1 件です。5 行目の「近年、」は、どの報告書にも書ける書き出しです。

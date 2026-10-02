@@ -129,7 +129,7 @@ rules.md   legal/statute · English   genre from --genre
 
   {not-run}
 
-  Turn on one experimental rule alone by naming it: npx chaffjs enable acronym-expansion-conflict (the same as rules: { acronym-expansion-conflict: normal } in chaff.yaml). --experimental turns on all of them.
+  Turn on one experimental rule alone by naming it: npx chaffjs enable absolute-exception (the same as rules: { absolute-exception: normal } in chaff.yaml). --experimental turns on all of them.
 ```
 
 ## What each finding means
