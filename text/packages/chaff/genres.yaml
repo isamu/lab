@@ -180,6 +180,8 @@ groups:
       ra-nuki: off
       spelling-consistency: off
       requirement-smell: off
+      # Dialogue may misuse an idiom on purpose, to draw the speaker.
+      idiom-misuse: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
