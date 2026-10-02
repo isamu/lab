@@ -56,3 +56,26 @@ not_flagged:
 level_meaning:
   ja: 1000 字あたりダッシュ {limit} 個まで
   en: up to {limit} dashes per 1000 words
+rewrite:
+  ja:
+    direction: 挟み込みのダッシュは括弧に、言い換えや補足のダッシュは読点に替えるか、二文に分けてください。
+    pairs:
+      - before: この設定——とくに保存期間——は慎重に決めてください。
+        after: この設定（とくに保存期間）は慎重に決めてください。
+      - before: 答えは一つ——締め切りを守ることです。
+        after: 答えは一つ、締め切りを守ることです。
+    keep:
+      - 挟み込んだ中身と、それが掛かる語
+    avoid:
+      - ダッシュを全角コロンや別の線の記号に替えるだけで済ませる
+  en:
+    direction: Turn an aside between dashes into commas or brackets, and a dash before an explanation into a comma, a colon or a new sentence.
+    pairs:
+      - before: The setting — especially retention — needs care.
+        after: The setting, especially retention, needs care.
+      - before: There is one answer — meet the deadline.
+        after: There is one answer. Meet the deadline.
+    keep:
+      - the aside and what it belongs to
+    avoid:
+      - swapping every dash for a colon or a semicolon

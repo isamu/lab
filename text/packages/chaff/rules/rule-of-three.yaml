@@ -121,3 +121,48 @@ not_flagged:
 level_meaning:
   ja: 3 項目の箇条書きの割合 {limit}% まで
   en: up to {limit}% of lists with exactly three items
+rewrite:
+  ja:
+    direction: 三つ並んだ箇条書きのうち、ほかの項目と同じことを言っている項目を消すか、一つにまとめてください。本当に三つあるリストはそのままにします。
+    pairs:
+      - before: |
+          - 速い
+          - 高速に動く
+          - 安い
+        after: |
+          - 速い
+          - 安い
+      - before: |
+          - 費用の削減
+          - コストの低減
+          - 保守の手間が減る
+        after: |
+          - 費用が下がる
+          - 保守の手間が減る
+    keep:
+      - 互いに別のことを言っている項目
+    avoid:
+      - 別々のことを一つにまとめて意味を変える
+      - 三つを避けるために四つ目を作る
+  en:
+    direction: In each list of three, delete or merge the item that says what another item already says. A list that really has three items stays.
+    pairs:
+      - before: |
+          - fast
+          - quick to run
+          - cheap
+        after: |
+          - fast
+          - cheap
+      - before: |
+          - lower costs
+          - reduced spending
+          - less maintenance
+        after: |
+          - lower costs
+          - less maintenance
+    keep:
+      - items that say different things
+    avoid:
+      - merging two different things into one and changing the meaning
+      - inventing a fourth item to get away from three
