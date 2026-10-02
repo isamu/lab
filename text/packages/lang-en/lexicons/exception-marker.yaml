@@ -1,0 +1,10 @@
+# Words that make an exception. absolute-exception reads a sentence holding one against an earlier absolute obligation.
+id: exception-marker
+language: en
+entries:
+  - pattern: except
+  - pattern: unless
+  - pattern: other than
+  - pattern: excluding
+  - pattern: with the exception of
+  - pattern: exempt
