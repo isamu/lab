@@ -1,0 +1,9 @@
+table  8  8  0  0
+ja/figures  item-dropped  found
+ja/itinerary  item-dropped  found
+ja/proposal  item-dropped  found
+ja/quote  item-dropped  found
+en/figures  item-dropped  found
+en/itinerary  item-dropped  found
+en/proposal  item-dropped  found
+en/quote  item-dropped  found

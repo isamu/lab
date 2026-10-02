@@ -1,0 +1,5 @@
+# Words after a length of time that point after the base date (relative-date-mismatch): "two weeks later, on May 15".
+id: relative-after
+language: en
+entries:
+  - pattern: "later"

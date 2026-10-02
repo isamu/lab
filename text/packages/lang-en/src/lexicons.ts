@@ -15,12 +15,14 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
   const weight = raw["weight"];
   const instead = raw["instead_of"];
   const rewrite = raw["rewrite"];
+  const group = raw["group"];
   return {
     pattern: raw["pattern"],
     weight: typeof weight === "number" ? weight : undefined,
     instead_of: typeof instead === "string" ? instead : undefined,
     position: POSITIONS.find((position) => position === raw["position"]),
     rewrite: typeof rewrite === "string" ? rewrite : undefined,
+    ...(typeof group === "string" ? { group } : {}),
   };
 };
 

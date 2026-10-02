@@ -12,6 +12,8 @@ on:
       - "text/packages/chaff/package.json"
       - "text/packages/lang-*/**"
       - "text/scripts/rule-examples.ts"
+      - "text/scripts/guide-screens.ts"
+      - "text/scripts/guide-screens-parse.ts"
       - "text/yarn.lock"
       - ".github/workflows/chaff-site-deploy.yml"
   workflow_dispatch:
