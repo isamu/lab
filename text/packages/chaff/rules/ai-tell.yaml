@@ -25,8 +25,8 @@ how_to_fix:
 # 重みの合計を 10 倍した点。0.9 の言い回しが 2 つで 18。
 levels: { strict: 10, normal: 18, relaxed: 30 }
 
-use_for: [blog, business, legal, docs, academic, literature, speech]
-sources: [kobak-2025, liang-2024]
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
+sources: [kobak-2025, liang-2024, juzek-ward-2025]
 
 group: ai-tells
 summary:

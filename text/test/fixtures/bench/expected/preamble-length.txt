@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/press  heading-dropped  found
+en/press  heading-dropped  found

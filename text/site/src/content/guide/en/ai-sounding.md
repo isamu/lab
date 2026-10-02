@@ -24,6 +24,7 @@ The plan has these parts.
 | Constraints | Keep facts, numbers, conditions and names. Add no fact. Ask the writer instead of inventing a specific. At most two passes |
 | Recommended way | Light, Bold or Full, and why, decided the same way as in "Three ways to fix it" below |
 | Document-level signals | What `ai-generated-composite` and the density rules said, and the outline's numbers from `chaff outline` |
+| Structure targets | The structure score (how many structure measures lie past 90% of human articles) and a target for each measure past that line. The targets come from articles written before generated text was common ("at most this many headings for this length") |
 | How to rewrite, rule by rule | The direction, what to keep, what to avoid, a before-and-after example, and each spot found (line and sentence) |
 | Check after rewriting | The `chaff`, `chaff compare` and `chaff outline` commands to run on the rewrite |
 
@@ -51,17 +52,25 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
+| `emoji-heading` | Headings with an emoji in them, one after another ("## 🚀 Getting started") |
 | `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") (Japanese documents only) |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
+| `chat-citation-residue` | Marks a pasted chat answer leaves: links ending in "?utm_source=chatgpt.com", "oaicite" |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
 | `no-em-dash` | Too many em dashes |
 | `sentence-rhythm` | Sentences that are all about the same length |
 | `rule-of-three` | Lists that almost all have three items |
-| `ai-generated-composite` | Three or more of these in one document: `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity` (`bold-density` is not counted) |
+| `ai-structure` | An outline past 90% of human articles on several structure measures at once (heading density, headings split into three, bold labels, uniform sections, a closing that restates). Blog and essay genres only |
+| `ai-generated-composite` | Three or more of these in one document: `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure` (`bold-density` is not counted) |
 
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.
+
+The Japanese word list of `ai-tell` includes the metaphors of technical writing (静かに壊れる "fails silently",
+黙って無視される "is ignored without a word", 時間を溶かす "melts your time").
+Which phrases go in was measured on technical articles written before generative AI and on the corpus.
+Phrases people already wrote as often before (解像度を上げる, 腹落ち) are left out.
 
 ## Three ways to fix it
 
@@ -69,7 +78,7 @@ Piled up, they mark a place to reread.
 | --- | --- | --- |
 | Light | Only the spots chaff flagged | The content and structure are fine and only the wording grates |
 | Bold | The prose of each section; the outline stays | The outline is fixed: a report template, a manual, required sections |
-| Full | The whole document, from its structure up | The request says "from scratch" or "rewrite the whole thing"; a blog post or an essay; `ai-generated-composite` fires |
+| Full | The whole document, from its structure up | The request says "from scratch" or "rewrite the whole thing"; a blog post or an essay; `ai-generated-composite` fires; the plan's structure score reaches its limit |
 
 A light pass removes findings one at a time. It fixes typos and long sentences, but the shape of the document stays.
 A bold rewrite changes the sentences of each section, and the outline stays as it was.
@@ -118,7 +127,7 @@ A bold rewrite keeps the outline and changes the prose of each section, rather t
 Leave the old sentences alone. Take an inventory of what the document says, and write from that.
 
 1. Take the inventory before writing. `npx chaffjs facts <file> --json` lists every fact `compare` will check.
-   `npx chaffjs outline <file>` shows the old outline and its shape.
+   `npx chaffjs outline <file>` shows the old outline, its shape and its structure score; a measure past 90% of human articles is marked ✗.
    Write down the writer's claims and every concrete experience, example and opinion, one line each. Write from this inventory, not from the old text.
 2. Throw away the structure. Decide who reads the piece and what for, and choose one angle or story for the whole of it.
    Then make these changes to the outline before writing a sentence.
@@ -133,6 +142,8 @@ Leave the old sentences alone. Take an inventory of what the document says, and 
 | Break the symmetry | No three sections or three items unless the content really has three parts |
 | Move the experience | Put the writer's concrete experience where it carries the argument |
 | Open on the point | Start with the point or a concrete scene, not a generic opener |
+
+   Size the new outline by the plan's structure targets: no more headings than the target allows, no heading split into three unless the content has three parts, no bold-label lists and no closing that restates the body.
 
 3. Show the new outline first. Put the old outline (the headings from `chaff outline`) next to the new one, with one line per section on what it says.
    The writer can then see the structural change at a glance and decide. If the person asked for it to be done without asking, go straight on.
@@ -166,7 +177,7 @@ Leave the old sentences alone. Take an inventory of what the document says, and 
 ```bash
 npx chaffjs old.md --experimental                          # the AI signals before
 npx chaffjs new.md --experimental                          # and after
-npx chaffjs outline old.md new.md                          # headings, average section, lists and bold, before and after
+npx chaffjs outline old.md new.md                          # headings, average section, lists, bold and the structure score, before and after
 npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-added heading  # no fact other than a heading dropped or added
 ```
 
@@ -177,6 +188,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
    - `ai-generated-composite` does not fire.
    - The density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits.
    - `compare` passes, or every exclusion has a reason.
+   - `chaff outline old.md new.md` shows the new structure score under the plan's limit, with no ✗ left on the measures the plan listed as targets.
 7. Show the new text, a short list of what changed and why, and a table of the signals and the shape before and after. Take the numbers from chaff's output.
 
 ## What chaff cannot see
@@ -187,14 +199,14 @@ chaff cannot find these shapes by machine. Check them by reading, whichever way 
 | --- | --- |
 | Stock openers and closers | Starting with "In this post, we'll explore" or ending with "I hope this helps" |
 | Explaining the obvious | Telling readers what every one of them already knows |
-| Identical sections | Every section the same length and built the same way |
+| Identical sections | Every section built the same way (`chaff outline` measures the lengths and the heading forms) |
 | Benefits without a cost | Only the upside, with nothing given up for it |
 | No first-hand detail | Nothing the writer saw, measured or did |
 | Uniform enthusiasm | The same excitement everywhere, so nothing stands out |
 | Over-politeness | Courtesy and preamble piled on courtesy |
 | Unasked definitions | A term defined that no reader asked about |
 | Sentence headings | Headings written as full sentences or slogans |
-| A repeating summary | A last section that only says the body again |
+| A repeating summary | A last section that only says the body again in other words (`chaff outline` measures the repeated wording) |
 
 ## Rules for every way
 
@@ -265,6 +277,12 @@ ai-generated-composite fires. Fixing the wording would leave the skeleton of gen
 - `padded-intro`: "in today's fast-paced world" is an opening that fits any article
 - `closing-cliche`: Closes with "in conclusion"
 - Outline: headings 1, average section 171 words, in lists 0%, bold 0
+
+## Structure targets
+
+Structure score: 0 (measures past 90% of human articles, of 3 compared). At 3 or more, rewrite from the outline.
+
+Every structure measure is within the range of human articles.
 
 ## How to rewrite, rule by rule
 
@@ -373,6 +391,12 @@ after:
 - line 11: "I hope this helps!"
   Closes with "hope this helps"
 
+## Rules that did not run
+
+- `agentless-passive`: the blog/tech genre does not check it
+- `ai-structure`: the document has no headings below its title
+- `cushion-phrase-density`: the blog/tech genre does not check it
+
 ## Check after rewriting
 
 Save the rewrite as draft.rewritten.md and run:
@@ -409,7 +433,7 @@ $ npx chaffjs draft.rewritten.md --experimental --compact
 draft.rewritten.md   blog/tech · English   genre from the default
 
 
-0 findings, 16 rules not run
+0 findings, 28 rules not run
 
 $ npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
 draft.md → draft.rewritten.md
@@ -422,15 +446,27 @@ draft.md outline: headings 1, average section 171 words, in lists 0%, bold 0
 
   # Moving Our Builds to a Shared Cache  (draft.md:1)  171 words
 
+Structure score: 0 (measures past 90% of human articles, of 3 compared against 641 human articles)
+  · usual in human articles: headings split into three 0, list items opening with a bold label 0, headings with an emoji 0
+  not measured: headings (the document is short), sections of one or two paragraphs (few sections with text), section length variation (few sections with text), headings in a stock form (few headings), introduction / conclusion headings (few headings), closing that restates the body (no closing section), three-item lists (fewer than three lists), pros / cons pairs (few headings)
+
 draft.rewritten.md outline: headings 1, average section 87 words, in lists 0%, bold 0
 
   # Moving Our Builds to a Shared Cache  (draft.rewritten.md:1)  87 words
+
+Structure score: 0 (measures past 90% of human articles, of 3 compared against 641 human articles)
+  · usual in human articles: headings split into three 0, list items opening with a bold label 0, headings with an emoji 0
+  not measured: headings (the document is short), sections of one or two paragraphs (few sections with text), section length variation (few sections with text), headings in a stock form (few headings), introduction / conclusion headings (few headings), closing that restates the body (no closing section), three-item lists (fewer than three lists), pros / cons pairs (few headings)
 
 How the shape changed (draft.md → draft.rewritten.md)
   headings: 1 → 1
   average section: 171 words → 87 words
   in lists: 0% → 0%
   bold: 0 → 0
+  structure score: 0 → 0
+  headings split into three: 0 → 0
+  list items opening with a bold label: 0 → 0
+  headings with an emoji: 0 → 0
 ```
 
 Every number and date (14 minutes, 3 minutes, March 2026) is still there, and no fact was added.
@@ -519,7 +555,7 @@ ai.md   blog/tech · English   genre from --genre
   47:1    warning Closes with "hope this helps"
                   closing-cliche
 
-9 findings, 13 rules not run
+9 findings, 27 rules not run
 ```
 
 The article after:
@@ -555,10 +591,8 @@ $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 
 rewritten.md   blog/tech · English   genre from --genre
 
-  3:27    info    44 proper nouns per 1000 words (limit 40)
-                  proper-noun-density
 
-1 finding, 13 rules not run
+0 findings, 27 rules not run
 ```
 
 What changed, and why:
@@ -575,7 +609,7 @@ What changed, and why:
 | Dropped "I hope this helps! Let me know…" | Chat residue |
 
 Every number (once every 30 runs, three weeks, 12 minutes, two weeks), command and setting is kept.
-The `proper-noun-density` left after the rewrite counts the API and setting names, which a tech article needs.
+The API and setting names left after the rewrite, which a tech article needs, are well within `proper-noun-density`'s limit.
 
 Last, `chaff compare` checks that no fact was lost:
 
@@ -661,14 +695,16 @@ demo.md   blog/tech · English   genre from --genre
 
   1:67    info    Section length varies by only 33% (want at least 35%)
                   section-length-uniformity
+  5:1     info    4 structure measures lie past 90% of human articles (3 needed): sections of one or two paragraphs, headings in a stock form, introduction / conclusion headings, list items opening with a bold label
+                  ai-structure
+  5:1     warning "section-length-uniformity, padded-intro, closing-cliche, ai-structure" occur together in this document (4 signals, 3 needed)
+                  ai-generated-composite
   7:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
   33:184  warning Closes with "hope this helps"
                   closing-cliche
-  33:184  warning "section-length-uniformity, padded-intro, closing-cliche" occur together in this document (3 signals, 3 needed)
-                  ai-generated-composite
 
-4 findings, 16 rules not run
+5 findings, 27 rules not run
 ```
 
 The inventory: `npx chaffjs facts demo.md` lists 5 numbers, a date, 2 times, 2 names (Friday, Slack) and 7 headings.
@@ -679,7 +715,7 @@ The writer's claims and experience, one line each:
 - shorter slots, showing what you are stuck on, and a recording in Slack brought people back;
 - the demos turned into real conversations.
 
-The old outline has seven headings, and its "Conclusion" says the body again.
+The old outline has seven headings, and its "Conclusion" says the body again. Its structure score is 4: sections of one or two paragraphs, headings in a stock form, the introduction and conclusion headings, and bold labels lie past 90% of human articles, and the plan's structure targets name the same four.
 The new outline, shown before writing:
 
 | Old outline | New outline, and what each part says |
@@ -715,7 +751,7 @@ $ npx chaffjs demo-full.md --genre blog/tech --experimental --compact
 demo-full.md   blog/tech · English   genre from --genre
 
 
-0 findings, 16 rules not run
+0 findings, 27 rules not run
 ```
 
 `outline` measures how the structure changed: fewer headings, longer sections, no list and no bold.
@@ -732,17 +768,40 @@ demo.md outline: headings 7, average section 28 words, in lists 14%, bold 3
     ## The Results  (demo.md:27)  13 words
     ## Conclusion  (demo.md:31)  34 words
 
+Structure score: 4 (measures past 90% of human articles, of 9 compared against 641 human articles)
+  ✗ sections of one or two paragraphs: 100% (mean 1.2 paragraphs)  higher than 90% of human articles (human median 50, 90th percentile 95)
+  · section length variation: 33%  more uniform than 85% of human articles
+  ✗ headings in a stock form: 25% (most: "challenges")  higher than 90% of human articles (human median 0, 90th percentile 17)
+  ✗ introduction / conclusion headings: 2 (opening and closing)  higher than 95% of human articles (human median 0, 90th percentile 1)
+  ✗ list items opening with a bold label: 3  higher than 95% of human articles (human median 0, 90th percentile 0)
+  · usual in human articles: headings split into three 0, closing that restates the body 3% ("Conclusion"), headings with an emoji 0, pros / cons pairs 0
+  not measured: headings (the document is short), three-item lists (fewer than three lists)
+
 demo-full.md outline: headings 3, average section 39 words, in lists 0%, bold 0
 
   # Our weekly demo came back when we shortened the slots  (demo-full.md:1)  39 words
     ## Why people stopped coming  (demo-full.md:5)  19 words
     ## Bring what you are stuck on  (demo-full.md:9)  60 words
 
+Structure score: 0 (measures past 90% of human articles, of 5 compared against 641 human articles)
+  · usual in human articles: headings split into three 0, introduction / conclusion headings 0, list items opening with a bold label 0, headings with an emoji 0, pros / cons pairs 0
+  not measured: headings (the document is short), sections of one or two paragraphs (few sections with text), section length variation (few sections with text), headings in a stock form (few headings), closing that restates the body (no closing section), three-item lists (fewer than three lists)
+
 How the shape changed (demo.md → demo-full.md)
   headings: 7 → 3
   average section: 28 words → 39 words
   in lists: 14% → 0%
   bold: 3 → 0
+  structure score: 4 → 0
+  sections of one or two paragraphs: 100% (mean 1.2 paragraphs) → —
+  section length variation: 33% → —
+  headings in a stock form: 25% (most: "challenges") → —
+  headings split into three: 0 → 0
+  introduction / conclusion headings: 2 (opening and closing) → 0
+  closing that restates the body: 3% ("Conclusion") → —
+  list items opening with a bold label: 3 → 0
+  headings with an emoji: 0 → 0
+  pros / cons pairs: 0 → 0
 ```
 
 `compare` checks the facts, with the headings set aside as the structure thrown away on purpose:
@@ -784,8 +843,9 @@ The signals and the shape, before and after, from chaff's output:
 
 | Measure | Before | After |
 | --- | --- | --- |
-| Findings (`--experimental`) | 4 | 0 |
-| `ai-generated-composite` | 3 signals | does not fire |
+| Findings (`--experimental`) | 5 | 0 |
+| `ai-generated-composite` | 4 signals | does not fire |
+| Structure score (`chaff outline`) | 4 (short sections, stock heading forms, introduction and conclusion, bold labels) | 0 |
 | Headings | 7 | 3 |
 | Average section | 28 words | 39 words |
 | In lists | 14% | 0% |
@@ -798,3 +858,9 @@ The signals and the shape, before and after, from chaff's output:
 | --- | --- |
 | Kobak et al., "[Delving into LLM-assisted writing in biomedical publications through excess vocabulary](https://arxiv.org/abs/2406.07016)" (Science Advances, 2025) | Comparing word use before and after generated text spread, and picking the words that grew. The Japanese `ai-tell` entries were chosen the same way. |
 | Hayashi and Aizawa, "[LLM による日本語生成におけるモデル固有表現パターンの分析](https://www.anlp.jp/proceedings/annual_meeting/2026/pdf_dir/B9-17.pdf)" (NLP 2026) | Japanese generated text also carries model-specific phrasing and structure (conclusion first, numbered structure, announcing the steps). |
+
+## What to read next
+
+- Every option of `fix-plan`, `facts`, `outline` and `compare` is in [Commands](./commands#planning-a-rewrite).
+- Checking a model's output in an eval with the same rules is in [Using chaff for AI evals](./ai-evals).
+- Each AI-shape rule, with an example and its real output, is in the [Reference](./reference).

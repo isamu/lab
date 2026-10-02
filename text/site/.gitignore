@@ -1,5 +1,5 @@
 dist/
 node_modules/
 .astro/
-# yarn examples: what chaff prints on each rule's example, made before every build.
+# yarn examples: what chaff prints on each rule's example and on the guide's screens, made before every build.
 src/generated/

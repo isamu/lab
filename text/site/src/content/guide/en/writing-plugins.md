@@ -39,7 +39,7 @@ Every position is a place in `doc.source`, counted in UTF-16 units.
 ## What it returns
 
 A finding is `{ start, end, values }`; `end` and `values` may be left out.
-chaff counts the line and column, quotes the sentence there, and puts the text from `start` to `end` into `{matched}` in
+chaff counts the line and column, quotes the sentence there and puts the text from `start` to `end` into `{matched}` in
 the rule's `message`. Each entry in `values` fills `{name}` in the message too.
 When nothing is found, return an empty list.
 
@@ -128,7 +128,7 @@ styles: [{ id: "careful", name: "Careful with dates", summary: "An undecided dat
 ## Testing a plugin
 
 A rule's function only takes a document, so it can be tested without running chaff.
-Build the part of the document the function reads, call it, and compare what it returns.
+Build the part of the document the function reads, call it and compare what it returns.
 
 ```js
 import { test } from "node:test";

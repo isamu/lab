@@ -1,15 +1,18 @@
 ## ja
 rule                       hits (b) ai  false (a) human  false (c) rewritten  false corpus
 ai-generated-composite     2/3          0/3              0/3                  0/63
+ai-structure               0/3          0/3              0/3                  0/63
 ai-tell                    2/3          0/3              0/3                  0/63
 announcing-opener          3/3          0/3              0/3                  0/63
 assistant-residue          0/3          0/3              0/3                  0/63
 bold-density               0/3          0/3              0/3                  0/63
 bold-label-list            0/3          0/3              0/3                  0/63
+chat-citation-residue      0/3          0/3              0/3                  0/63
 closing-cliche             1/3          0/3              0/3                  0/63
 colon-lead-in              2/3          0/3              0/3                  0/63
 contrast-framing           2/3          0/3              0/3                  0/63
 emoji-density              0/3          0/3              0/3                  0/63
+emoji-heading              0/3          0/3              0/3                  0/63
 no-em-dash                 0/3          0/3              0/3                  0/63
 padded-intro               0/3          0/3              0/3                  0/63
 paragraph-length-variance  0/3          0/3              0/3                  0/63
@@ -22,20 +25,23 @@ unfilled-placeholder       0/3          0/3              0/3                  0/
 ## en
 rule                       hits (b) ai  false (a) human  false (c) rewritten  false corpus
 ai-generated-composite     2/3          0/3              0/3                  0/74
+ai-structure               0/3          0/3              0/3                  0/74
 ai-tell                    1/3          0/3              0/3                  0/74
 announcing-opener          3/3          0/3              0/3                  0/74
 assistant-residue          0/3          0/3              0/3                  0/74
 bold-density               0/3          0/3              0/3                  1/74
 bold-label-list            0/3          0/3              0/3                  0/74
+chat-citation-residue      0/3          0/3              0/3                  0/74
 closing-cliche             1/3          0/3              0/3                  0/74
 colon-lead-in              0/3          0/3              0/3                  0/74
 contrast-framing           2/3          0/3              0/3                  0/74
 emoji-density              0/3          0/3              0/3                  0/74
+emoji-heading              0/3          0/3              0/3                  0/74
 no-em-dash                 0/3          0/3              0/3                  2/74
 padded-intro               0/3          0/3              0/3                  0/74
 paragraph-length-variance  0/3          0/3              0/3                  0/74
 rule-of-three              0/3          0/3              0/3                  0/74
 section-length-uniformity  1/3          0/3              0/3                  0/74
-sentence-rhythm            0/3          0/3              0/3                  0/74
+sentence-rhythm            0/3          0/3              0/3                  1/74
 stock-transition           1/3          0/3              0/3                  0/74
 unfilled-placeholder       0/3          0/3              0/3                  1/74

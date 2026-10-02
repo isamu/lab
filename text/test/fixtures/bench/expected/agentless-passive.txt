@@ -1,0 +1,5 @@
+table  4  4  0  0
+ja/figures  passive-ja  found
+ja/press  passive-ja  found
+en/figures  passive-en  found
+en/press  passive-en  found

@@ -5,6 +5,7 @@ Each rule comes with a text it flags and what chaff actually printed for that te
 Click a rule's name to read its full page.
 When no rule fits a team's requirement, read [Adding a rule](./adding-rules).
 The papers and standards behind the rules are listed in the [Bibliography](./bibliography).
+To grade a model's outputs with these checks, read [Using chaff for AI evals](./ai-evals).
 
 ## How to read the list
 
@@ -36,6 +37,9 @@ To turn on just one, give it a level under `rules` in `chaff.yaml`.
 rules:
   doubled-word: normal
 ```
+
+The rules that read Markdown syntax (heading depth, image alt text, link targets and so on) run on Markdown documents only.
+On a `.txt` file they stop with "the document is not Markdown".
 
 Some genres turn experimental rules on by default.
 The [genres page](../../genres/) shows which rules each genre runs.

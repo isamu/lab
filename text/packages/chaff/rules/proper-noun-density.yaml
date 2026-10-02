@@ -22,7 +22,11 @@ how_to_fix:
   ja: 2 度目からは「その製品」「そのチーム」のように受けてください。初出で何者かを一言添えると、知らない人も読めます。
   en: After first use, refer back to it. One phrase saying what it is lets a stranger keep reading.
 
-levels: { strict: 20, normal: 40, relaxed: 80 }
+# 英語は 1000 語あたり。英語の人の書いた文書（コーパスと Project Gutenberg の小説・随筆）で測ると、名前の多さの分布の
+# 95 パーセンタイルあたりに normal を置く。測り方とその値は PR に残した（数字はここに書かない）。
+levels:
+  ja: { strict: 20, normal: 40, relaxed: 80 }
+  en: { strict: 150, normal: 200, relaxed: 260 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 
@@ -39,11 +43,16 @@ example:
     after: |
       営業部の二人が、取引先三社の展示を見てから、大阪で別の取引先の担当者と会いました。翌日は関西の二社を回り、名古屋に戻って取引先二社に報告しました。
   en:
+    config: { rules: { proper-noun-density: strict } }
     pad: true
     before: |
-      Alice and Bob from Contoso met Carol from Fabrikam in Seattle, then flew with Dave from Northwind to Boston to see Erin at Tailspin and Frank at Litware.
+      Alice Moreno and Bob Tanaka from Contoso met Carol Diaz from Fabrikam in Seattle, then flew with Dave Okafor from Northwind to Boston to see Erin Walsh at Tailspin and Frank Liu at Litware.
+      In Chicago, Grace Kim of Proseware and Henry Park of Wingtip joined Ivan Petrov of Adatum, and Julia Rossi of Contoso brought Kevin Shah of Fabrikam.
+      From Denver, Laura Chen of Northwind and Mark Evans of Tailspin called Nina Alvarez of Litware, Oscar Grant of Proseware and Paula Novak of Wingtip.
     after: |
       Two of our sales team met three customers on the West Coast, then flew to Boston to meet two more.
+      In Chicago, three partners joined them, and our account lead brought a fourth.
+      From Denver, two of the team called the remaining customers.
 
 not_flagged:
   ja: chaff.yaml の names に書いた名前は、何語に分かれても 1 つと数えます。短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。

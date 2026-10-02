@@ -98,7 +98,7 @@ $ npx chaffjs release.md --genre business/press-release --compact
 release.md   business/press-release · English   genre from --genre
 
 
-0 findings, 67 rules not run
+0 findings, 98 rules not run
 ```
 
 Add `--experimental` to run them.
@@ -122,7 +122,7 @@ release.md   business/press-release · English   genre from --genre
   39:12   error   The total $360 is not the sum of the amounts above it ($350)
                   total-mismatch
 
-6 findings, 18 rules not run
+6 findings, 31 rules not run
 ```
 
 `error` means the figures disagree, so one of them is certainly wrong.

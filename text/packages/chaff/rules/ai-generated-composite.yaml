@@ -18,6 +18,7 @@ from:
   - assistant-residue
   - announcing-opener
   - colon-lead-in
+  - ai-structure
 
 name:
   ja: 生成文の特徴がそろっている
@@ -38,7 +39,7 @@ how_to_fix:
 # 何種そろったら出すか。spec §20.2 は 3。
 levels: { strict: 2, normal: 3, relaxed: 5 }
 
-use_for: [blog, business, legal, docs, academic, literature, speech]
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 
 group: ai-tells
 summary:

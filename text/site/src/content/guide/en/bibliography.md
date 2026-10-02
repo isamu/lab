@@ -258,6 +258,44 @@ Several of them also show how often human writing is mistaken for generated text
   - Appeared in: the 32nd annual meeting of the Association for Natural Language Processing (Japan), P9-11.
   - Found: In poems, lyrics, haiku and short stories alike, generated Japanese text varied less in sentence length.
   - In chaff: supports [`sentence-rhythm`](../../rules/sentence-rhythm/).
+- <a id="juzek-ward-2025"></a>**Juzek, Ward (2025)** [aclanthology.org](https://aclanthology.org/2025.coling-main.426/)
+  - Why Does ChatGPT "Delve" So Much? Exploring the Sources of Lexical Overrepresentation in Large Language Models
+  - Appeared in: COLING 2025, pp. 6397–6411.
+  - Found: 21 words that suddenly rose in scientific abstracts (delve, intricate, underscore and others) are the ones ChatGPT overuses.
+    Training data and model design did not explain it; the authors point to the stage that tunes models on human feedback as a likely part.
+  - In chaff: why [`ai-tell`](../../rules/ai-tell/) picks its words by comparing writing from before and after LLMs.
+- <a id="sun-2025"></a>**Sun et al. (2025)** [arxiv.org](https://arxiv.org/abs/2502.12150)
+  - Idiosyncrasies in Large Language Models
+  - Appeared in: ICML 2025.
+  - Found: which model wrote a text (ChatGPT, Claude, Grok, Gemini, DeepSeek) can be told with high accuracy from word choice alone.
+    The habits survive a rewrite, a translation or a summary by another model.
+  - In chaff: [background] chaff uses no classifier. That the habits sit in word choice is why a word list is a fair instrument.
+- <a id="shaib-2025"></a>**Shaib et al. (2025)** [arxiv.org](https://arxiv.org/abs/2509.19163)
+  - Measuring AI "Slop" in Text
+  - Appeared in: arXiv (preprint).
+  - Found: from interviews with experts, the paper splits low-quality generated text into density, relevance, factuality, repetition, templatedness, tone, verbosity and coherence.
+    Judging a text as "slop" varies between people, but the judgement tracks these dimensions.
+  - In chaff: [background] templatedness and repetition are the parts chaff can count.
+- <a id="wikipedia-signs-of-ai-writing"></a>**Wikipedia (WikiProject AI Cleanup)** [en.wikipedia.org](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
+  - Wikipedia:Signs of AI writing
+  - Appeared in: an editors' guide on the English Wikipedia; the version read in October 2026.
+  - Found: a field list, with real examples, of the shapes generated drafts leave.
+    Among them: list items led by a bold label, emoji in headings, and links ending in "?utm_source=chatgpt.com" or citation marks such as oaicite.
+  - In chaff: the basis of `bold-label-list`, `emoji-heading` and
+    `chat-citation-residue`.
+- <a id="fibujrsl-2026"></a>**fibujrsl (2026)** [zenn.dev](https://zenn.dev/fibujrsl/articles/4958a844214709)
+  - 生成AIっぽい文章の特徴をまとめる (The features of AI-sounding writing)
+  - Appeared in: Zenn, 14 February 2026.
+  - Found: three signs of generated Japanese. They are left-over emphasis marks, lists dressed up with symbols and emoji,
+    and words stressed again and again with brackets or symbols.
+    The fix it gives is to drop the decoration and let the position of the conclusion and its evidence carry the stress.
+  - In chaff: the fix behind `bold-label-list` and `emoji-heading`.
+- <a id="writers-hub-2026"></a>**Writers-hub (2026)** [writers-hub.co.jp](https://writers-hub.co.jp/blog/qiita-generative-ai-article)
+  - Qiitaで生成AI記事を書く｜評価される記事とAI臭さの消し方 (Writing about generative AI on Qiita)
+  - Appeared in: the Writers-hub LLC blog, 26 July 2026.
+  - Found: in generated Qiita articles, lists take up most of the text, colons are overused, and paragraphs end in abstract noun phrases.
+    It advises turning the parts that retreated into lists back into prose.
+  - In chaff: the basis of `bold-label-list` and [`colon-lead-in`](../../rules/colon-lead-in/).
 
 ## Requirements and contradictions
 

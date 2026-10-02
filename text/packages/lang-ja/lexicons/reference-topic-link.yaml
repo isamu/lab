@@ -1,0 +1,14 @@
+# 参照と話題のあいだの言い回し（reference-topic-missing）。「第2章で述べた料金体系」の で述べた。
+id: reference-topic-link
+language: ja
+entries:
+  - pattern: "で述べた"
+  - pattern: "で述べる"
+  - pattern: "で説明した"
+  - pattern: "で説明する"
+  - pattern: "で示した"
+  - pattern: "で示す"
+  - pattern: "で触れた"
+  - pattern: "で扱った"
+  - pattern: "で扱う"
+  - pattern: "で紹介した"

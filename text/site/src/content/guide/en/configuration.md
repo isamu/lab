@@ -94,6 +94,7 @@ When the genre is wrong, set `genre`.
 A genre that is not in this list stops chaff before it checks anything, and it says where the genre was written.
 A `genre:` in a file's front matter that is not in the list is not used; chaff says so and works the genre out as if it were not there.
 The language is also worked out per file; set `language` to `ja` or `en` to fix it.
+How the language is chosen, documents that mix both, and which rules run in which language are in [Languages](./languages).
 
 ## Choosing the kind of document
 
@@ -171,7 +172,7 @@ For these rules the four words set how a finding is marked. At `relaxed` the fin
 | Rules | `strict` | `normal` | `relaxed` |
 | --- | --- | --- | --- |
 | `numbering-gap` `dangling-reference` `date-weekday-mismatch` `total-mismatch` | (none) | error | warning |
-| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` | error | warning | note |
+| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` `unfilled-placeholder` | error | warning | note |
 
 chaff fails when any error is left, and passes when there are only warnings and notes.
 `explain` shows the marking in place of a number.
