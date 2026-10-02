@@ -15,6 +15,14 @@ The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding te
   specifics: ask the writer, or mark the guess for them to confirm. `chaff compare` catches an added number or name but
   not added wording, so the last is the rewriter's to keep.
 
+### `sasete-itadaku` counts each use, and its potential and godan forms
+
+The rule counted sentences, so 「配布させていただき、説明させていただきます。」 was one use; it is now two. It also
+counts the potential and negative forms (させていただけますか, させていただけない, させていただければ) and the godan form
+(入らせていただきます, 読ませていただく), which the analyser reads as other words. Two entries that cover the same
+words (させていただく and せていただく) count as one use. A one-step verb with させる (見させていただく) is still not counted:
+the analyser reads its させ as one word, which no entry in the word list can match.
+
 ### Docs: Writing a plugin
 
 - A new guide page, 「プラグインを作る」 / "Writing a plugin": the two forms (a `type: module` rule, a plugin package),
