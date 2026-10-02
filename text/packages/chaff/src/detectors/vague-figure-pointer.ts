@@ -1,11 +1,13 @@
-import type { Detector, Finding, Lexicon } from "../plugin.ts";
+import type { Detector, Finding, Lexicon, ProseDocument } from "../plugin.ts";
 import { FIGURE_NUMBER, labelledKindsIn } from "../figure-references.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { labelWordsOf } from "./dangling-figure.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { numbersClauses } from "../structure/numbered-clauses.ts";
 
 // A figure or a table pointed at by where it is (上記の図, the table below) in a document that numbers that kind and
-// could name it (図3, Table 2). JIS Z 8301:2019 10.6. The phrases and the kind each points at come from the lexicon.
+// could name it (図3, Table 2), and a clause (以下の箇条, the clause below) in a document that numbers its clauses.
+// JIS Z 8301:2019 10.6. The phrases and the kind each points at come from the lexicons.
 
 export type VaguePointer = { readonly offset: number; readonly written: string; readonly kind: string };
 
@@ -32,9 +34,20 @@ export const vaguePointers = (prose: string, pointers: Lexicon, labelledKinds: R
     })
     .toSorted((left, right) => left.offset - right.offset);
 
+const kindsOf = (pointers: Lexicon): Set<string> => new Set(pointers.flatMap((entry) => entry.instead_of ?? []));
+
+/** The clause kinds to check. The tree is built only when a clause pointer is written, so other documents do not pay for it. */
+const clauseKindsIn = (doc: ProseDocument, prose: string, pointers: Lexicon): string[] => {
+  const kinds = kindsOf(pointers);
+  if (vaguePointers(prose, pointers, kinds).length === 0) return [];
+  return doc.structure !== undefined && numbersClauses(doc.structure) ? [...kinds] : [];
+};
+
 export const vagueFigurePointer: Detector = (doc): Finding[] => {
-  const kinds = labelledKindsIn(doc.source, labelWordsOf(doc));
-  return vaguePointers(doc.prose ?? doc.source, doc.lexicons["vague-figure-pointer"] ?? [], kinds).map((pointer) => ({
+  const prose = doc.prose ?? doc.source;
+  const clausePointers = doc.lexicons["vague-clause-pointer"] ?? [];
+  const kinds = new Set([...labelledKindsIn(doc.source, labelWordsOf(doc)), ...clauseKindsIn(doc, prose, clausePointers)]);
+  return vaguePointers(prose, [...(doc.lexicons["vague-figure-pointer"] ?? []), ...clausePointers], kinds).map((pointer) => ({
     rule: "",
     severity: "warning",
     line: 0,

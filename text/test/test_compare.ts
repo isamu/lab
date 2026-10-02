@@ -365,6 +365,29 @@ describe("--distinct: facts compared as sets", () => {
     assert.deepEqual(outcome.dropped, ["number:1,200円", "name:Acme", "number:1,200円", "name:Acme"]);
     assert.deepEqual(outcome.added, ["number:1,300円"]);
   });
+
+  it("a heading cut is dropped though another heading of its level is kept", () => {
+    const sections = "# 計画\n\n## 予算\n\n費用は1,200円です。\n\n## リスク\n\n特にありません。\n";
+    const merged = "# 計画\n\n## 予算\n\n費用は1,200円です。特にありません。\n";
+    assert.deepEqual(changes(distinct(sections, merged)), changes(compare(ja, sections, merged)));
+    assert.deepEqual(changes(distinct(sections, merged)).dropped, ["heading:リスク"]);
+    assert.deepEqual(changes(distinct(merged, sections)).added, ["heading:リスク"]);
+  });
+
+  it("a heading repeated and cut to one is still stated; a reworded heading is still reformed", () => {
+    const twice = "## まとめ\n\n費用は1,200円です。\n\n## まとめ\n\n以上です。\n";
+    assert.deepEqual(changes(distinct(twice, "## まとめ\n\n費用は1,200円です。以上です。\n")), { dropped: [], added: [], reformed: [] });
+    assert.deepEqual(changes(distinct("## まとめ\n\n費用は1,200円です。\n", "## 要点\n\n費用は1,200円です。\n")).reformed, ["heading:まとめ→要点"]);
+  });
+
+  it("a heading moved to another level is still dropped at one level and added at the other", () => {
+    const outcome = changes(distinct("# A\n\n## B\n\ntext\n", "# A\n\n### B\n\ntext\n"));
+    assert.deepEqual([outcome.dropped, outcome.added], [["heading:B"], ["heading:B"]]);
+  });
+
+  it("a repeat written another way is stated: only a heading's wording counts, not a number's", () => {
+    assert.deepEqual(changes(distinct(`${body}\n費用は1200円です。\n`, body)).dropped, []);
+  });
 });
 
 describe("seenTextOf: the text as a reader sees it, and back", () => {
