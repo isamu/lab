@@ -1,0 +1,32 @@
+# Units of time (base: second) (unit-mismatch). weight is the factor to the base unit; a unit written twice has two factors, and either may match.
+id: unit-time
+language: en
+entries:
+  - pattern: "h"
+    weight: 3600
+  - pattern: "hr"
+    weight: 3600
+  - pattern: "hrs"
+    weight: 3600
+  - pattern: "hours"
+    weight: 3600
+  - pattern: "hour"
+    weight: 3600
+  - pattern: "min"
+    weight: 60
+  - pattern: "mins"
+    weight: 60
+  - pattern: "minutes"
+    weight: 60
+  - pattern: "minute"
+    weight: 60
+  - pattern: "s"
+    weight: 1
+  - pattern: "sec"
+    weight: 1
+  - pattern: "seconds"
+    weight: 1
+  - pattern: "second"
+    weight: 1
+  - pattern: "ms"
+    weight: 0.001

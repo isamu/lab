@@ -156,6 +156,7 @@ custom_rules:
 
 `words` は書いたとおりの語に当たります。活用する語は、次の形態素解析のルールで書きます。
 書いたルールは、組み込みのルールと同じく `rules` で強さを変えられ、`stet` で一か所だけ黙らせられます。
+`pattern` に `ignore_case: true` を添えると、大文字と小文字を区別せずに当てます。
 正規表現は動かす前に確かめ、長い行で止まらなくなる形（`(a+)+` など）は断ります。
 
 ## 形態素解析のルール（0.18.0）
@@ -229,11 +230,13 @@ chaff の決まりで、ルールは機械で決まるものだけです。意�
 | 書くもの | 場所 | 中身 |
 | --- | --- | --- |
 | ルールの定義 | `packages/chaff/rules/<id>.yaml` | 名前・理由・指摘の文・直し方・段階を日本語と英語で。読み手向けの `group` `summary` `example` `not_flagged` も書く。段階が数で変わるルールは `level_meaning` も。論文や規格に拠るルールは、[参考文献](./bibliography) の項目の印を `sources` に並べる。ルールのページから、その項目へリンクが張られる。書き直される箇所を指すルール（AIっぽさ、読みやすさ）は `rewrite` も書く。言語ごとに、直す方向（`direction`）、自分で書いた直す前と後の組を 2〜3 個（`pairs`）、変えてはいけないもの（`keep`）、書き直す人がやりがちな間違い（`avoid`） |
-| 見つける処理 | `packages/chaff/src/detectors/` | 文書を受け取って指摘を返す関数。`detectors/index.ts` に名前で登録する |
+| 見つける処理 | `packages/chaff/src/detectors/` | 文書を受け取って指摘を返す関数。登録は専用のファイル `detectors/registry/<how_to_find>.ts` で、関数を `detector` という名前で出す。検出器の共有の一覧は書き換えない |
 | 語の一覧 | `packages/lang-ja/lexicons/` と `packages/lang-en/lexicons/` | 語の一覧で見つけるルールだけ。言語ごとに書く |
 | テスト | `test/test_<id>.ts` | 指摘すべき例と、指摘してはいけない例の両方 |
-| 見本への仕込み | `scripts/bench-mutations*.ts` と `test/fixtures/bench/plants.yaml` | きれいな見本に誤りを一つ入れて、見つかるかを測る。仕込めないときは理由を書く |
+| 見本への仕込み | `test/fixtures/bench/plants/<id>.yaml` と `scripts/bench-plants/` のモジュール | きれいな見本に誤りを一つ入れて、見つかるかを測る。YAML には `planted: [ja, en]`（仕込む言語）か、仕込めない理由の `not_planted:` を書く。モジュールは仕込む誤りを `MUTATIONS` として出す。どちらも共有の一覧ではない |
 | ChangeLog | `docs/ChangeLog.md` の `Unreleased` | 何が見つかるようになったか |
+
+手引きの画面に、動いていないルールの一覧は書き写しません。画面には `{not-run}` と書き、サイトを作るときに chaff の出力から一覧を入れます。新しいルールのために手引きのページを書き換えることはありません。
 
 ルールの定義に、そのルールに要る読み手向けの欄が欠けていると、`yarn test` が止まります。
 `example` の `before` が指摘されないとき、`after` が指摘されるときも止まります。
@@ -244,9 +247,10 @@ chaff の決まりで、ルールは機械で決まるものだけです。意�
 ```bash
 yarn test     テストをすべて動かす
 yarn bench    見本に仕込んだ誤りを、ルールが見つけるかを測る
-yarn corpus   集めた実際の文書にかけて、corpus/expected.txt からの増減を見る
+yarn corpus   集めた実際の文書にかけて、corpus/expected/ からの増減を見る
 ```
 
 `yarn corpus` で増えた指摘は、一つずつ読みます。誤った指摘なら、その形を例にしてテストに足し、直します。
-増えた指摘が正しいと確かめたら、`yarn corpus --update` で `corpus/expected.txt` を更新します。
-見本の結果も同じで、`yarn bench --update` で `test/fixtures/bench/expected.txt` を更新します。
+増えた指摘が正しいと確かめたら、`yarn corpus --update` で `corpus/expected/` を更新します。
+ルールごとに 1 ファイル（`<id>.txt`、文書ごとの件数）と、文書の一覧（`_documents.txt`）に分けてあります。新しいルールは自分のファイルを足すだけで、ほかのルールの PR と同じ行を書き換えません。
+見本の結果も同じで、`yarn bench --update` で `test/fixtures/bench/expected/` を更新します。ルールごとに 1 ファイル（表の行と、仕込んだ誤りの結果）なので、新しいルールはここでも自分のファイルを足すだけです。

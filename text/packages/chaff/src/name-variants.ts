@@ -1,0 +1,217 @@
+import type { Token } from "./plugin.ts";
+
+// 同じ名前（人・会社・製品）を、文書の中で少しだけ違う形に書いた所。どの形が正しいかは決めず、少ないほうを指す。
+// 三通りで同じ名前と見る。書き方の違いだけ（GitHub と Github、Mac OS と macOS）、読みが同じ（山田太郎 と 山田太朗）、
+// 英字の一字違い（Microsoft と Microsft）。一字違いは別の名前でもありうるので、多いほうが二度以上、少ないほうが一度だけのときに限る。
+
+/** words は名前の語（記号を除く）。読みが同じ二つの名前が、どの語で違うかを見るため。 */
+export type NameMention = { readonly surface: string; readonly offset: number; readonly reading: string | undefined; readonly words: readonly string[] };
+
+export type NameVariant = { readonly mention: NameMention; readonly usual: string; readonly kind: "spelling" | "reading" | "near" };
+
+const NAME = "PROPN";
+/**
+ * 名前の語のあいだに挟まってよい記号（AT&T、Rolls-Royce、ジョン・スミス）。読点は挟まない。
+ * 並べた名前（Zeebrugge, Kerk、Cook, Lisa）を一つの名前にしてしまう。
+ */
+const JOINERS: ReadonlySet<string> = new Set(["&", "-", "・"]);
+const LETTER = /\p{L}/u;
+
+/** 名前の語。字を含むもの。記号だけの語（wiki の '' ）を固有名詞と読む解析器がある。 */
+const isName = (token: Token | undefined): boolean => token?.pos === NAME && LETTER.test(token.surface);
+
+/** 固有名詞の続き。記号一つを挟んで固有名詞が続けば、一つの名前。 */
+const runsOf = (tokens: readonly Token[]): Token[][] => {
+  const runs: Token[][] = [];
+  const current: Token[] = [];
+  const close = (): void => {
+    if (current.length > 0) runs.push(current.splice(0));
+  };
+  tokens.forEach((token, index) => {
+    const bridges = JOINERS.has(token.surface) && current.length > 0 && isName(tokens[index + 1]);
+    if (isName(token) || bridges) current.push(token);
+    else close();
+  });
+  close();
+  return runs;
+};
+
+const LOWER = /\p{Ll}/u;
+const UPPER = /\p{Lu}/u;
+const isUpperOnly = (text: string): boolean => UPPER.test(text) && !LOWER.test(text);
+/** 小文字の英字だけの語（the、issue）。日本語の解析器は英単語を固有名詞と読むので、ふつうの語と名前の区別がつかない。 */
+const LOWER_LATIN_ONLY = /^[a-z\s-]+$/u;
+/** 行末で切った語のハイフン（Internet-⏎Drafts）。空白をまとめると "Internet- Drafts" になる。 */
+const WRAPPED_HYPHEN = /-\s+/gu;
+/** 名前の前後に付いた引用の印（wiki の斜体 ''、Hbase'）。名前の一部ではない。 */
+const QUOTE_MARKS: ReadonlySet<string> = new Set(["'", "’", '"', "“", "”"]);
+
+const withoutEdgeQuotes = (text: string): string => {
+  const chars = [...text];
+  const start = chars.findIndex((char) => !QUOTE_MARKS.has(char));
+  const end = chars.findLastIndex((char) => !QUOTE_MARKS.has(char));
+  return start < 0 ? "" : chars.slice(start, end + 1).join("");
+};
+/**
+ * 名前として比べないもの。@ で始まる SNS のアカウント（@SpaceX は SpaceX の別の書き方ではない）と、一字の語を含むもの
+ * （Attachment S、Appendix B は札で、空白を詰めると Attachments と同じ形になる）。
+ */
+const NOT_COMPARED = /@|(?:^|\s)\p{L}(?:\s|$)/u;
+
+/**
+ * 文の語から、名前の現れ。surface は source の上の書いたまま（折り返しの空白は一つにまとめる）。
+ * 大文字だけの名前（ACME INC、NASA）は外す。契約書の署名欄や略語で、ふつうの書き方の別の形ではない。小文字の英字だけの語も外す。
+ */
+export const mentionsIn = (tokens: readonly Token[], source: string): NameMention[] =>
+  runsOf(tokens).flatMap((run) => {
+    const first = run[0];
+    const last = run.at(-1);
+    if (first === undefined || last === undefined) return [];
+    const written = source.slice(first.span.start, last.span.end).replaceAll(WRAPPED_HYPHEN, "-").replaceAll(/\s+/gu, " ");
+    const surface = withoutEdgeQuotes(written);
+    if (surface === "" || isUpperOnly(surface) || LOWER_LATIN_ONLY.test(surface) || NOT_COMPARED.test(surface)) return [];
+    const words = run.filter((token) => !JOINERS.has(token.surface));
+    const readings = words.map((token) => token.reading);
+    const reading = readings.every((value) => value !== undefined && value !== "") ? readings.join("") : undefined;
+    return [{ surface, offset: first.span.start, reading, words: words.map((token) => token.surface) }];
+  });
+
+/** 比べる形。幅（ＡＷＳ と AWS）、大文字小文字、空白と記号は名前を変えない。 */
+export const nameKey = (surface: string): string =>
+  surface
+    .normalize("NFKC")
+    .toLowerCase()
+    .replaceAll(/[\s\p{P}\p{S}]/gu, "");
+
+type Tally = { readonly surface: string; readonly first: NameMention; readonly count: number };
+
+const talliesOf = (mentions: readonly NameMention[]): Tally[] => {
+  const tallies = new Map<string, { surface: string; first: NameMention; count: number }>();
+  mentions.forEach((mention) => {
+    const tally = tallies.get(mention.surface);
+    if (tally === undefined) tallies.set(mention.surface, { surface: mention.surface, first: mention, count: 1 });
+    else tally.count += 1;
+  });
+  return [...tallies.values()];
+};
+
+/** 多いほう。同数なら先に書いたほう。 */
+const usualOf = (group: readonly Tally[]): Tally | undefined =>
+  group.toSorted((left, right) => right.count - left.count || left.first.offset - right.first.offset)[0];
+
+const groupBy = (tallies: readonly Tally[], keysOf: (tally: Tally) => readonly string[]): Tally[][] => {
+  const groups = new Map<string, Tally[]>();
+  tallies.forEach((tally) =>
+    keysOf(tally).forEach((key) => {
+      const group = groups.get(key);
+      if (group === undefined) groups.set(key, [tally]);
+      else group.push(tally);
+    }),
+  );
+  return [...groups.values()].filter((group) => group.length > 1);
+};
+
+/**
+ * 組の中で、それぞれの書き方を、同じ名前と言える相手（alike）のうち多いほうと比べる。組全体で一番多いものとだけ比べると、
+ * 同じ読みの別の名前（山田太郎 と 矢間田多労）が多ければ、本当の書き分け（山田太朗）が隠れる。
+ */
+const variantsIn = (groups: readonly Tally[][], kind: NameVariant["kind"], alike: (tally: Tally, other: Tally) => boolean = () => true): NameVariant[] =>
+  groups.flatMap((group) =>
+    group.flatMap((tally) => {
+      const usual = usualOf([tally, ...group.filter((other) => other !== tally && alike(tally, other))]);
+      return usual === undefined || usual === tally ? [] : [{ mention: tally.first, usual: usual.surface, kind }];
+    }),
+  );
+
+/**
+ * 読みが同じでも、別の名前のことが多い（毅 と 敦士、札幌 と サッポロ）。語が二つ以上あり、違うのが一語だけのとき
+ * （山田太郎 と 山田太朗）に限る。
+ */
+const oneWordApart = (tally: Tally, usual: Tally): boolean => {
+  const words = tally.first.words;
+  const others = usual.first.words;
+  return words.length >= 2 && words.length === others.length && words.filter((word, index) => word !== others[index]).length === 1;
+};
+
+/** 一字違いを比べる語の長さ。短い語（Iran と Iraq、RET と REU、II と VI）は一字違いでも別の語。 */
+const MIN_NEAR_LENGTH = 5;
+const LATIN_WORD = /^[a-z]+$/u;
+
+const wordsOf = (surface: string): string[] => surface.toLowerCase().split(/[\s-]+/u);
+
+/** 一字の置き換えか、隣どうしの入れ替え（Microsfot）。 */
+const isSwapOrReplace = (left: string, right: string): boolean => {
+  const differ = [...left].flatMap((char, index) => (char === right.charAt(index) ? [] : [index]));
+  const [first, second] = differ;
+  if (differ.length === 1) return true;
+  return (
+    differ.length === 2 &&
+    first !== undefined &&
+    second === first + 1 &&
+    left.charAt(first) === right.charAt(second) &&
+    left.charAt(second) === right.charAt(first)
+  );
+};
+
+/**
+ * 語の中の一字の抜け。語の終わりの抜け（Service と Services、America と American）は語の形の違い、頭の抜け（State と XState）は
+ * 別の名前で、書き損じではない。
+ */
+const isInnerDrop = (longer: string, shorter: string): boolean =>
+  [...longer].some((_char, index) => index > 0 && index < longer.length - 1 && longer.slice(0, index) + longer.slice(index + 1) === shorter);
+
+/** 二つの語が一字違いか。英字だけの、長さ 5 以上の語で。 */
+export const isNearWord = (left: string, right: string): boolean => {
+  if (left === right || !LATIN_WORD.test(left) || !LATIN_WORD.test(right) || Math.min(left.length, right.length) < MIN_NEAR_LENGTH) return false;
+  if (left.length === right.length) return isSwapOrReplace(left, right);
+  if (left.length === right.length + 1) return isInnerDrop(left, right);
+  return right.length === left.length + 1 && isInnerDrop(right, left);
+};
+
+/** 語の一つを伏せた形。ほかの語が同じ二つの名前は、同じ形を一つ持つ。 */
+const maskedKeys = (tally: Tally): string[] => {
+  const words = wordsOf(tally.surface);
+  return words.map((_word, index) => words.map((word, at) => (at === index ? "*" : word)).join(" "));
+};
+
+const differingWords = (left: Tally, right: Tally): readonly [string, string] | undefined => {
+  const leftWords = wordsOf(left.surface);
+  const rightWords = wordsOf(right.surface);
+  const at = leftWords.findIndex((word, index) => word !== rightWords[index]);
+  const [leftWord, rightWord] = [leftWords[at], rightWords[at]];
+  return leftWords.length === rightWords.length && leftWord !== undefined && rightWord !== undefined ? [leftWord, rightWord] : undefined;
+};
+
+/** 一語だけが一字違いで、相手が二度以上、こちらが一度だけ。 */
+const isSlipOf = (tally: Tally, other: Tally): boolean => {
+  if (tally.count !== 1 || other.count < 2) return false;
+  const words = differingWords(tally, other);
+  return words !== undefined && isNearWord(...words);
+};
+
+const nearVariants = (tallies: readonly Tally[]): NameVariant[] => variantsIn(groupBy(tallies, maskedKeys), "near", isSlipOf);
+
+/** 同じ名前の、少ないほうの書き方。書き方ごとに最初の現れを一つ。同じ現れを二つの見方が言えば、先の見方だけ。 */
+export const nameVariants = (mentions: readonly NameMention[]): NameVariant[] => {
+  const tallies = talliesOf(mentions);
+  const found = [
+    ...variantsIn(
+      groupBy(tallies, (tally) => [nameKey(tally.surface)]),
+      "spelling",
+    ),
+    ...variantsIn(
+      groupBy(tallies, (tally) => (tally.first.reading === undefined ? [] : [tally.first.reading])),
+      "reading",
+      oneWordApart,
+    ),
+    ...nearVariants(tallies),
+  ];
+  const reported = new Set<string>();
+  return found
+    .filter((variant) => {
+      if (reported.has(variant.mention.surface)) return false;
+      reported.add(variant.mention.surface);
+      return true;
+    })
+    .toSorted((left, right) => left.mention.offset - right.mention.offset);
+};

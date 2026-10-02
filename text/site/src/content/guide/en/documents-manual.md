@@ -15,7 +15,7 @@ A manual grows a section for every feature, and sections get moved. Each time, l
 | A heading level skipped | `####` straight after `##` |
 | An empty section | The heading was written first, and the text never came |
 | The same heading twice | A section was moved, and the old one was not deleted |
-| A URL run into the next character | "see https://example.com/docs/bookings。", pasted from a Japanese page |
+| A URL run into the next character | `see https://example.com/docs/bookings。`, pasted from a Japanese page |
 
 The last one makes the link swallow the "。", so clicking it opens a page that does not exist.
 

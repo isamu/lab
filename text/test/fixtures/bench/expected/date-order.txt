@@ -1,0 +1,7 @@
+table  6  6  0  0
+ja/email  rows-swapped  found
+ja/itinerary  rows-swapped  found
+ja/minutes  rows-swapped  found
+en/email  rows-swapped  found
+en/itinerary  rows-swapped  found
+en/minutes  rows-swapped  found
