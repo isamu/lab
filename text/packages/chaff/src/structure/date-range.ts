@@ -1,3 +1,4 @@
+import { escapeRegExp } from "../orthography.ts";
 import type { StructureIssue } from "./issues.ts";
 
 /**
@@ -13,6 +14,18 @@ export type RangeWords = {
   /** 終わりの日付に閉じの語が続くときだけ期間を作る語（から）。 */
   readonly openers: readonly string[];
   readonly closers: readonly string[];
+  /** 始まりの日付の前の語と、二つの日付の間の語の組で期間を作るもの（from … to、between … and）。 */
+  readonly frames: readonly RangeFrame[];
+  /** 同じ文にあれば、組を期間ではなく日付の変更と読む語（moved from … to、… was postponed）。 */
+  readonly changes: readonly string[];
+};
+
+export type RangeFrame = { readonly lead: string; readonly joint: string };
+
+/** 語彙表の「from … to」を、前の語と間の語に分ける。「…」の無い語は組ではない。 */
+export const rangeFrameOf = (pattern: string): RangeFrame | undefined => {
+  const [lead, joint, ...rest] = pattern.split("…").map((part) => part.trim().toLowerCase());
+  return lead === undefined || joint === undefined || lead === "" || joint === "" || rest.length > 0 ? undefined : { lead, joint };
 };
 
 const COMPARABLE = [/^\d{4}-\d{2}-\d{2}$/u, /^\d{4}-\d{2}$/u];
@@ -45,10 +58,45 @@ const jointOf = (source: string, start: DatedSpan, end: DatedSpan): string | und
   return next.every((line) => line.trim() === "") ? bare(first) : undefined;
 };
 
+/** 英字の語は語の切れ目で照らす（from が therefrom に当たらず、moved が removed に当たらない）。 */
+const wordPattern = (word: string, tail: string): RegExp => new RegExp(`(?<![a-z])${escapeRegExp(word)}(?![a-z])${tail}`, "u");
+
+const endsWithWord = (text: string, word: string): boolean => wordPattern(word, "$").test(text);
+
+const hasWord = (text: string, word: string): boolean => wordPattern(word, "").test(text);
+
+/** 段落の切れ目（空行）。 */
+const PARAGRAPH_BREAK = "\n\n";
+
+/** 文の終わり。後ろが大文字のときだけ切る（"in Jan. from" は切らない）。切りそこねると文が長くなり、変更の語を見つけやすくなるだけ。 */
+const SENTENCE_BREAK = /[.!?]\s+(?=[A-Z])/gu;
+
+/** 二つの日付を含む文（小文字、空白は一つに）と、その中の始まりの日付の位置。行の折り返しをまたいで読む。 */
+const sentenceAround = (source: string, start: DatedSpan, end: DatedSpan): { readonly text: string; readonly before: string } => {
+  const previousBreak = source.lastIndexOf(PARAGRAPH_BREAK, start.offset);
+  const paragraphStart = previousBreak === -1 ? 0 : previousBreak + PARAGRAPH_BREAK.length;
+  const paragraphEnd = source.indexOf(PARAGRAPH_BREAK, end.end);
+  const head = source.slice(paragraphStart, start.offset);
+  const tail = source.slice(end.end, paragraphEnd === -1 ? source.length : paragraphEnd);
+  const from = [...head.matchAll(SENTENCE_BREAK)].map((match) => match.index + match[0].length).at(-1) ?? 0;
+  const to = [...tail.matchAll(SENTENCE_BREAK)][0]?.index ?? tail.length;
+  const flat = (text: string): string => text.replace(/\s+/gu, " ").toLowerCase();
+  return { text: flat(source.slice(paragraphStart + from, end.end + to)), before: flat(head.slice(from)).trimEnd() };
+};
+
+/** 前の語と間の語の組（from … to）。同じ文のどこかに変更の語（moved、postponed）があれば、日付を動かした文で、期間ではない。 */
+const framed = (source: string, start: DatedSpan, end: DatedSpan, joint: string, words: RangeWords): boolean => {
+  const sentence = sentenceAround(source, start, end);
+  const frame = words.frames.find((candidate) => candidate.joint === joint && endsWithWord(sentence.before, candidate.lead));
+  return frame !== undefined && !words.changes.some((change) => hasWord(sentence.text, change.toLowerCase()));
+};
+
 const isRange = (source: string, start: DatedSpan, end: DatedSpan, words: RangeWords): boolean => {
   const joint = jointOf(source, start, end);
   if (joint === undefined) return false;
-  return isOneOf(joint, words.connectors) || (isOneOf(joint, words.openers) && closedAfter(source, end, words.closers));
+  return (
+    isOneOf(joint, words.connectors) || (isOneOf(joint, words.openers) && closedAfter(source, end, words.closers)) || framed(source, start, end, joint, words)
+  );
 };
 
 /** 書いたままの期間。行をまたいだ期間は一行にする。 */
