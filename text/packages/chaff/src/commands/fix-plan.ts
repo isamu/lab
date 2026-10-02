@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { outlineOf } from "../outline/shape.ts";
+import { structureOf } from "../structure-shape/of-document.ts";
 import { buildFixPlan } from "../fix-plan/plan.ts";
 import { renderFixPlanJson, renderFixPlanMarkdown } from "../fix-plan/render.ts";
 import { FIX_PLAN_TEXT } from "../fix-plan/text.ts";
@@ -20,7 +21,7 @@ export type FixPlanContext = TreeContext & {
 
 /**
  * An instruction document for whoever rewrites the file: the findings grouped by rule, each rule's rewrite direction,
- * the document-level signals, a recommended mode and the checks to run after. Deterministic; sends nothing anywhere.
+ * the document-level signals, the structure targets from human articles, a recommended mode and the checks to run after. Deterministic; sends nothing anywhere.
  */
 export const runFixPlan = async (targets: readonly string[], argv: readonly string[], context: FixPlanContext): Promise<number> => {
   const [path] = targets;
@@ -46,6 +47,7 @@ export const runFixPlan = async (targets: readonly string[], argv: readonly stri
     rules: checked.rules,
     skipped: checked.skipped,
     outline: outlineOf(prose.doc),
+    structure: structureOf(prose.doc),
     phrases: prose.doc.lexicons["ai-tell"] ?? [],
   });
   console.log(argv.includes("--json") ? renderFixPlanJson(plan) : renderFixPlanMarkdown(plan));

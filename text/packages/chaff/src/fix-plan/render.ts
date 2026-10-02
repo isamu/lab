@@ -4,6 +4,7 @@ import { OUTLINE_TEXT } from "../outline/text.ts";
 import { uiLanguageOf } from "../ui.ts";
 import type { FixPlan, PhraseHint, PlanSpot, RulePlan } from "./plan.ts";
 import { FIX_PLAN_TEXT, type FixPlanText } from "./text.ts";
+import { STRUCTURE_TARGET_TEXT } from "./structure-target-text.ts";
 
 /** A phrase quoted the way the document's language quotes: 「…」 in Japanese, "…" otherwise. */
 const quoted = (text: string, language: string): string => (language === "ja" ? `「${text}」` : `"${text}"`);
@@ -62,6 +63,22 @@ const signalLines = (plan: FixPlan, text: FixPlanText): string[] => {
   return ["", `## ${text.signalsHeading}`, "", ...said, ...bullets([...plan.signals.map((signal) => `\`${signal.rule}\`: ${signal.message}`), outline])];
 };
 
+/** The structure score and, for each measure past the human limit, the target from the baseline; then when to stop. */
+const structureLines = (plan: FixPlan): string[] => {
+  const text = STRUCTURE_TARGET_TEXT[uiLanguageOf(plan.language)];
+  const targets = plan.targets.map((target) => text.target[target.id](target));
+  const stop = targets.length === 0 ? [] : ["", text.stop(plan.structure.limit)];
+  return [
+    "",
+    `## ${text.heading}`,
+    "",
+    text.score(plan.structure.score, plan.structure.limit, plan.structure.compared),
+    "",
+    ...(targets.length === 0 ? [text.noTargets] : bullets(targets)),
+    ...stop,
+  ];
+};
+
 const notRunLines = (plan: FixPlan, text: FixPlanText): string[] => {
   const note = plan.experimental ? [] : [text.notExperimental];
   const listed = plan.notRun;
@@ -106,6 +123,7 @@ export const renderFixPlanMarkdown = (plan: FixPlan): string => {
     ...text.constraints.map((constraint, index) => `${String(index + 1)}. ${constraint}`),
     ...modeLines(plan, text),
     ...signalLines(plan, text),
+    ...structureLines(plan),
     ...(plan.rules.length === 0 ? [] : ["", `## ${text.rulesHeading}`]),
     ...plan.rules.flatMap((rule) => rulePlanLines(rule, text, plan.language)),
     ...notRunLines(plan, text),

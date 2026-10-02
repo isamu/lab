@@ -85,7 +85,7 @@ github-general-privacy-statement  max-paragraph-length 1, max-sentence-length 1,
 github-terms-of-service  max-sentence-length 9
 gitlab-jd-instructional-designer  agentless-passive 10, concrete-evidence-density 4, heading-echo 5, max-sentence-length 7, oxford-comma-consistency 1
 gitlab-meetings  agentless-passive 54, double-negative 1, max-paragraph-length 2, max-sentence-length 41, spelling-consistency 4, title-case-consistency 1, undefined-acronym 10
-gitlab-values  agentless-passive 83, bold-density 1, concrete-evidence-density 27, expletive-construction 12, heading-echo 9, heading-level-skip 8, max-paragraph-length 23, max-sentence-length 137, spelling-consistency 3, undefined-acronym 10, unqualified-superlative 10
+gitlab-values  agentless-passive 83, bold-density 1, concrete-evidence-density 27, emoji-heading 6, expletive-construction 12, heading-echo 9, heading-level-skip 8, max-paragraph-length 23, max-sentence-length 137, spelling-consistency 3, undefined-acronym 10, unqualified-superlative 10
 go-1-23-release-notes  heading-echo 1, max-sentence-length 22, title-case-consistency 1, undefined-acronym 9
 govuk-adr-0014-replace-terraform-cloud  max-sentence-length 1, undefined-acronym 3
 govuk-cddo-roadmap-2022-2025  agentless-passive 22, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 88, ngram-repetition 1, undefined-acronym 10

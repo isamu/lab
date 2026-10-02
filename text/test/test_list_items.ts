@@ -46,6 +46,7 @@ import { citedTitles } from "../packages/chaff/src/detectors/cited-title.ts";
 import { MINOR_WORDS } from "../packages/chaff/src/detectors/heading-case.ts";
 import type { Lexicon, Token } from "../packages/chaff/src/plugin.ts";
 import type { TokenRange } from "../packages/chaff/src/detectors/token-column.ts";
+import { assertLinearGrowth } from "./growth.ts";
 
 // oxford-comma-consistency reads each sentence once: the items before each and / or come from a reader that moves left to
 // right (list-items.ts), a list cut down to a part is a view of it (list-view.ts), and each question about an item is
@@ -423,48 +424,42 @@ describe(`item questions: each column answer matches reading the item's tokens (
 });
 
 describe("listVerdicts: one sentence of many items takes time in proportion to its length", () => {
-  const LONG = 40_000;
+  const WORDS_IN_SMALL_RUN = 10_000;
   const LONG_TIMEOUT_MS = 30_000;
   const noun = (surface: string, index: number): Token => ({ span: { start: index, end: index + 1 }, surface, pos: surface === "," ? "PUNCT" : "NOUN" });
-  /** The test runner's timeout cannot stop a synchronous call, so the time is also checked after it returns. */
-  const timedVerdicts = (tokens: readonly Token[]): (boolean | undefined)[] => {
-    const started = performance.now();
-    const result = listVerdicts(tokens, WORDS, "");
-    assert.ok(performance.now() - started < LONG_TIMEOUT_MS, "took longer than the timeout");
-    return result;
-  };
   const verdicts = (surfaces: readonly string[]): (boolean | undefined)[] =>
-    timedVerdicts(surfaces.map((surface, index) => (["and", "or"].includes(surface) ? { ...noun(surface, index), pos: "CCONJ" } : noun(surface, index))));
+    listVerdicts(
+      surfaces.map((surface, index) => (["and", "or"].includes(surface) ? { ...noun(surface, index), pos: "CCONJ" } : noun(surface, index))),
+      WORDS,
+      "",
+    );
+  const cycled = (pattern: readonly string[], length: number): string[] => Array.from({ length }, (_, index) => pattern[index % pattern.length] ?? "");
 
-  it(`judges ${String(LONG / 2)} and's in one sentence`, { timeout: LONG_TIMEOUT_MS }, () => {
-    const result = verdicts(Array.from({ length: LONG }, (_, index) => (index % 2 === 1 ? "and" : "apples")));
-    assert.equal(result.length, LONG / 2);
+  it("judges every and in one sentence", { timeout: LONG_TIMEOUT_MS }, () => {
+    assertLinearGrowth((length) => assert.equal(verdicts(cycled(["apples", "and"], length)).length, length / 2), WORDS_IN_SMALL_RUN);
   });
 
-  it(`judges ${String(LONG / 4)} and's between ${String(LONG / 4)} commas`, { timeout: LONG_TIMEOUT_MS }, () => {
-    const result = verdicts(Array.from({ length: LONG }, (_, index) => ["the", ",", "the", "and"][index % 4] ?? "the"));
-    assert.equal(result.length, LONG / 4);
+  it("judges every and between as many commas", { timeout: LONG_TIMEOUT_MS }, () => {
+    assertLinearGrowth((length) => assert.equal(verdicts(cycled(["the", ",", "the", "and"], length)).length, length / 4), WORDS_IN_SMALL_RUN);
   });
 
-  it(`judges ${String(LONG / 4)} and's inside and outside parentheses`, { timeout: LONG_TIMEOUT_MS }, () => {
-    const result = verdicts(Array.from({ length: LONG }, (_, index) => ["(", "pears", "and", ")", "and", "apples", ","][index % 7] ?? "apples"));
-    assert.ok(result.length > LONG / 4);
+  it("judges every and inside and outside parentheses", { timeout: LONG_TIMEOUT_MS }, () => {
+    const pattern = ["(", "pears", "and", ")", "and", "apples", ","];
+    assertLinearGrowth((length) => assert.ok(verdicts(cycled(pattern, length)).length > length / 4), WORDS_IN_SMALL_RUN);
   });
 
   // Quadratic reading of these commas is cheap per step, so it takes a longer sentence to show.
-  const LONGER = 200_000;
+  const LONGER_SMALL_RUN = 50_000;
+  const TAGS = new Map([
+    ["(", "PUNCT"],
+    [")", "PUNCT"],
+    [",", "NUM"],
+  ]);
 
-  it(`judges ${String(LONGER / 4)} and's after commas inside parentheses that the tagger read as numbers`, { timeout: LONG_TIMEOUT_MS }, () => {
-    const surfaces = Array.from({ length: LONGER }, (_, index) => ["(", ",", ")", "and"][index % 4] ?? "and");
-    const tokens = surfaces.map((surface, index): Token => {
-      const pos = new Map([
-        ["(", "PUNCT"],
-        [")", "PUNCT"],
-        [",", "NUM"],
-      ]).get(surface);
-      return { span: { start: index, end: index + 1 }, surface, pos: pos ?? "CCONJ" };
-    });
-    assert.equal(timedVerdicts(tokens).length, LONGER / 4);
+  it("judges every and after commas inside parentheses that the tagger read as numbers", { timeout: LONG_TIMEOUT_MS }, () => {
+    const tokensOf = (length: number): Token[] =>
+      cycled(["(", ",", ")", "and"], length).map((surface, index) => ({ span: { start: index, end: index + 1 }, surface, pos: TAGS.get(surface) ?? "CCONJ" }));
+    assertLinearGrowth((length) => assert.equal(listVerdicts(tokensOf(length), WORDS, "").length, length / 4), LONGER_SMALL_RUN);
   });
 });
 

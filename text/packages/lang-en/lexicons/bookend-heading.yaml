@@ -1,0 +1,30 @@
+# Headings that bracket the body. Opening with "Introduction" and closing with "Conclusion" is a common shape of
+# generated articles. position: before stands ahead of the body, after behind it. A heading that starts with the
+# phrase matches ("Conclusion: what we learned" too); case is ignored.
+id: bookend-heading
+language: en
+entries:
+  - pattern: introduction
+    position: before
+  - pattern: intro
+    position: before
+  - pattern: conclusion
+    position: after
+  - pattern: conclusions
+    position: after
+  - pattern: in conclusion
+    position: after
+  - pattern: summary
+    position: after
+  - pattern: final thoughts
+    position: after
+  - pattern: closing thoughts
+    position: after
+  - pattern: wrapping up
+    position: after
+  - pattern: wrap-up
+    position: after
+  - pattern: key takeaways
+    position: after
+  - pattern: takeaways
+    position: after

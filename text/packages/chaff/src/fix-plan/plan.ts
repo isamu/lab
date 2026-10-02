@@ -5,6 +5,8 @@ import type { Outline, Shape } from "../outline/shape.ts";
 import { localized, messageOf } from "../render/text.ts";
 import { splitWords } from "../detectors/word-list.ts";
 import { COMPOSITE_RULE, recommendMode, type ModeChoice } from "./mode.ts";
+import type { StructureScore } from "../structure-shape/score.ts";
+import { structureTargetsOf, type StructureTarget } from "./structure-targets.ts";
 
 /** One flagged spot, where it is and what chaff said about it. */
 export type PlanSpot = { readonly line: number; readonly column: number; readonly quote: string; readonly message: string };
@@ -39,6 +41,10 @@ export type FixPlan = {
   readonly mode: ModeChoice;
   readonly signals: readonly DocumentSignal[];
   readonly outline: { readonly unit: LengthUnit; readonly shape: Shape };
+  /** The structure score, the count at which the plan rewrites from the outline, and how many measures were compared. */
+  readonly structure: { readonly score: number; readonly limit: number; readonly compared: number };
+  /** The structure measures past 90% of human articles, each with the human numbers to bring it back to. */
+  readonly targets: readonly StructureTarget[];
   readonly rules: readonly RulePlan[];
   /** The rewrite and signal rules that did not run, and why: silence from them is not "checked and fine". */
   readonly notRun: readonly Skipped[];
@@ -56,11 +62,16 @@ export type PlanInput = {
   readonly rules: readonly RuleDefinition[];
   readonly skipped: readonly Skipped[];
   readonly outline: Outline;
+  /** The document's structure measures against human articles (chaff outline's structure block). */
+  readonly structure: StructureScore;
   /** The ai-tell lexicon of the document's language, whose entries may carry their own hint. */
   readonly phrases: Lexicon;
 };
 
 const BOLD_DENSITY_RULE = "bold-density";
+const STRUCTURE_RULE = "ai-structure";
+/** ai-structure's count at its normal level, when its rule file does not say. */
+const DEFAULT_STRUCTURE_LIMIT = 3;
 const AI_TELL_RULE = "ai-tell";
 
 /** ai-generated-composite's inputs and bold-density: the rules the guide reads as document-level signals. */
@@ -161,10 +172,18 @@ const checksOf = (input: PlanInput, choice: ModeChoice): string[] => {
   ];
 };
 
-/** The plan for one document: deterministic, from chaff's findings and the rule files alone. */
+/** The count ai-structure fires at by default: the same line decides when the plan rewrites from the outline. */
+const structureLimitOf = (rules: readonly RuleDefinition[]): number =>
+  rules.find((rule) => rule.id === STRUCTURE_RULE)?.levels.normal ?? DEFAULT_STRUCTURE_LIMIT;
+
+const documentLength = (outline: Outline): number => outline.entries.reduce((sum, entry) => sum + entry.length, 0);
+
+/** The plan for one document: deterministic, from chaff's findings, the rule files and the human baseline alone. */
 export const buildFixPlan = (input: PlanInput): FixPlan => {
   const signalRules = signalRulesOf(input.rules);
-  const mode = recommendMode({ genre: input.genre, firedRules: new Set(input.findings.map((finding) => finding.rule)), signalRules });
+  const structure = { score: input.structure.score, limit: structureLimitOf(input.rules), compared: input.structure.compared };
+  const firedRules = new Set(input.findings.map((finding) => finding.rule));
+  const mode = recommendMode({ genre: input.genre, firedRules, signalRules, structure });
   return {
     path: input.path,
     rewrittenPath: rewrittenPathOf(input.path),
@@ -174,6 +193,8 @@ export const buildFixPlan = (input: PlanInput): FixPlan => {
     mode,
     signals: signalsOf(input, signalRules),
     outline: { unit: input.outline.unit, shape: input.outline.shape },
+    structure,
+    targets: structureTargetsOf(input.structure, documentLength(input.outline)),
     rules: rulePlansOf(input),
     notRun: notRunOf(input, signalRules),
     checks: checksOf(input, mode),
