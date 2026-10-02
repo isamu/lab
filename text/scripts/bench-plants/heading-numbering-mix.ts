@@ -1,6 +1,6 @@
 // Seeded heading numbering for `yarn bench`: sibling headings numbered, all but the last one.
 // Pure and deterministic, like scripts/bench-mutations.ts.
-import { codeLines, linesOf, type Mutation, type Plant } from "./bench-text.ts";
+import { codeLines, linesOf, type Mutation, type Plant } from "../bench-text.ts";
 
 const HEADING = /^(#{2,6})\s+(\S.*)$/u;
 
@@ -40,6 +40,6 @@ const numberAllButLast = (source: string): Plant | undefined => {
   return { source: lines.map((line, index) => numbered.get(index) ?? line).join("\n"), line: last.index + 1 };
 };
 
-export const HEADING_NUMBER_MUTATIONS: readonly Mutation[] = [
+export const MUTATIONS: readonly Mutation[] = [
   { id: "heading-numbered-but-last", rule: "heading-numbering-mix", languages: ["ja", "en"], plant: numberAllButLast },
 ];
