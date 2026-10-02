@@ -1,0 +1,38 @@
+# Words a document uses for its reader. instead_of is the form a word counts as (the word itself when absent).
+#
+# No form is right. person-consistency only asks whether one document names the same party two ways. A word written in
+# capitals (YOU in a heading) is not counted. "one" counts only as the generic subject of a modal verb ("one can").
+#
+# "I" and "we" are not here. In English writing they usually name two parties, not one written two ways: the speaker and
+# the institution in a speech ("I think we should"), the writer and the team in a report, several speakers in minutes.
+# On the corpus a "we / I" pair fired on speeches, minutes, letters and papers, and none of it was a slip.
+id: person-word
+language: en
+entries:
+  - pattern: you
+  - pattern: your
+    instead_of: you
+  - pattern: yours
+    instead_of: you
+  - pattern: yourself
+    instead_of: you
+  - pattern: one can
+    instead_of: one
+  - pattern: one cannot
+    instead_of: one
+  - pattern: one must
+    instead_of: one
+  - pattern: one should
+    instead_of: one
+  - pattern: one may
+    instead_of: one
+  - pattern: one might
+    instead_of: one
+  - pattern: one could
+    instead_of: one
+  - pattern: one would
+    instead_of: one
+  - pattern: one needs
+    instead_of: one
+  - pattern: one's
+    instead_of: one

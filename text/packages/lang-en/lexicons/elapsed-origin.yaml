@@ -1,0 +1,8 @@
+# Words that start a count of years (elapsed-years-mismatch): "founded in 2015" and "10 years since its founding".
+id: elapsed-origin
+language: en
+entries:
+  - pattern: "founded"
+  - pattern: "founding"
+  - pattern: "established"
+  - pattern: "incorporated"

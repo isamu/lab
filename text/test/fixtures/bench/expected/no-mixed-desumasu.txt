@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/blog  plain-in-polite  found
+ja/design  polite-in-plain  found
+ja/email  plain-in-polite  found
+ja/figures  polite-in-plain  found
+ja/itinerary  plain-in-polite  found
+ja/minutes  polite-in-plain  found
+ja/note  plain-in-polite  found
+ja/policy  polite-in-plain  found
+ja/press  plain-in-polite  found
+ja/proposal  plain-in-polite  found
+ja/quote  plain-in-polite  found
+ja/readme  polite-in-plain  found

@@ -22,7 +22,7 @@ how_to_fix:
 
 levels: { strict: 50, normal: 70, relaxed: 90 }
 
-use_for: [blog, legal, docs, academic, literature, speech]
+use_for: [technical/readme, blog, legal, docs, academic, literature, speech]
 sources: [reinhart-2025, zhang-2024]
 
 group: ai-tells
@@ -116,8 +116,8 @@ example:
       - No review
 
 not_flagged:
-  ja: 箇条書きが 3 つより少ない文書は見ません。ビジネス文書と技術文書のジャンルでは見ません。
-  en: Documents with fewer than three lists are not checked. Business and technical genres do not run this rule.
+  ja: 箇条書きが 3 つより少ない文書は見ません。ビジネス文書と仕様書（technical/spec）のジャンルでは見ません。
+  en: Documents with fewer than three lists are not checked. Business and specification (technical/spec) genres do not run this rule.
 level_meaning:
   ja: 3 項目の箇条書きの割合 {limit}% まで
   en: up to {limit}% of lists with exactly three items
