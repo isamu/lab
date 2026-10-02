@@ -34,6 +34,7 @@ import { VERSION, VERSION_LINES } from "./version.ts";
 import type { TreeContext } from "./commands/tree.ts";
 import { DOCUMENT_COMMANDS } from "./commands/document-commands.ts";
 import { runSkill } from "./commands/skill.ts";
+import { fixPlanTargets, runFixPlan } from "./commands/fix-plan.ts";
 import { runConditions, runFeedback, settingsOf, type Checked } from "./commands/feedback.ts";
 import { homedir } from "node:os";
 import { settingWarnings } from "./config/warnings.ts";
@@ -299,6 +300,8 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   eval: (argv, config) => runEval(positional(argv), argv, { ...measureContext(argv, config), flag }),
   ...Object.fromEntries(Object.entries(DOCUMENT_COMMANDS).map(([name, run]): [string, Handler] => [name, (argv, config) => run(argv, treeContext(config))])),
   test: (argv, config) => runTest(positional(argv), argv, { ...measureContext(argv, config), inspect }),
+  "fix-plan": (argv, config) =>
+    runFixPlan(fixPlanTargets(argv), argv, { ...treeContext(config), check: async (path) => (await inspectAll(config, argv)(path)).checked }),
   baseline: (argv, config) => runBaseline(positional(argv), argv, config),
   suppressions: (argv, config) => runSuppressions(positional(argv), inspectAll(config, argv), hostLanguage(config.language, process.env)),
   relax: (argv, config) => changeSetting(config, "relaxed", argv[1], flag(argv, "--why")),

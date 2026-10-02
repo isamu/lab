@@ -138,6 +138,7 @@ npx chaffjs cite 原文 引用.json  引用が原文にあるかを確かめる
 npx chaffjs compare 前.md 後.md  書き換えで事実（数・日付・URL・名前など）が落ちても足されてもいないかを確かめる
 npx chaffjs facts 前.md          compare が照合する事実を一覧にする（書き直す前の控え）
 npx chaffjs outline 前.md 後.md  見出しの構成と形（見出しの数・節の平均・箇条書きの割合・太字）を前と後で並べる
+npx chaffjs fix-plan 前.md      指摘をルールごとにまとめ、直す方向と確かめのコマンドを付けた「直す計画」を出す（書き直す人や AI 向け）
 npx chaffjs skill                Claude Code の skill を入れる
 npx chaffjs feedback a.md --rule max-sentence-length --line 42   誤った指摘を報告する下書きを作る
 ```
@@ -680,6 +681,8 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 入れるかどうかは、生成 AI 以前の技術記事と corpus で測って決めました。「解像度を上げる」「腹落ち」のように、以前から人が同じくらい書いていた語は入れていません。
 
 AI っぽい rule がどれだけ正確かは `yarn bench:ai` で測れます。同じ中身を、人の書きぶり・生成文の書きぶり・書き直した版の 3 通りで書いた見本（`test/fixtures/ai-samples/paired/`）と corpus にかけ、rule ごとに生成文の版に当たった数と、それ以外に当たった数（誤報）を出します。
+
+直すときは、まず `npx chaffjs fix-plan article.md --experimental` で「直す計画」を出します。指摘をルールごとにまとめ、ルールのファイルの `rewrite:` に書いた直す方向、変えないもの、やりがちな間違い、直す前と後の例を付け、勧める直し方と、直したあとにかけるコマンドを並べます。chaff は書き直さず、計画を読む人か AI が書き直します。
 
 直し方は 3 つあります。指摘された所だけ直す部分直し、構成を残して節ごとに直す書き直し、構成から作り直す全面書き直しです。
 ブログとエッセイ、`ai-generated-composite` が出た文書には全面書き直しを勧めます。`facts` で事実の控えを取り、`outline` で構成の変化を測り、`compare` で事実が残ったかを確かめます。

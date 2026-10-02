@@ -1602,6 +1602,7 @@ npx chaffjs explain sentence-rhythm      # rule の意図と根拠
 npx chaffjs compare before.md after.md   # 書き換えで事実が落ちても足されてもいないか（§28）
 npx chaffjs facts before.md              # compare が照合する事実の一覧（§28.5）
 npx chaffjs outline before.md after.md   # 見出しの構成と形を前と後で測る（§28.6）
+npx chaffjs fix-plan before.md          # 指摘をルールごとの「直す計画」にする（§28.8）
 npx chaffjs init
 npx chaffjs setup ja                     # 品詞解析器の取得
 
@@ -2269,3 +2270,26 @@ npx chaffjs outline before.md after.md --json  # before / after それぞれの 
 1. 書く前に `facts` で事実の控えを取り、`outline` で元の構成を出す。
 2. 書いた後に `outline <前> <後>` で構成の変化を、`--experimental` で AI っぽさの特徴を、前と後で並べる。
 3. `compare <前> <後> --allow-dropped heading --allow-added heading` で、見出し以外の事実が落ちても足されてもいないことを確かめる。見出しは、わざと作り直した構成なので、落ちたものも足されたものも外す。
+
+### 28.8 直す計画（`chaff fix-plan`）
+
+指摘を見つけても、どう直すかが書き手ごと・AI ごとに違えば、直した結果を確かめにくい。直す方向をルールのデータとして持ち、指摘ごとに渡す。
+chaff は書き直さない。計画を読む人か AI が書き直し、chaff は計画と確かめだけをする。
+
+```bash
+npx chaffjs fix-plan before.md --experimental          # 直す計画（Markdown）
+npx chaffjs fix-plan before.md --experimental --json   # 同じものを JSON で
+```
+
+- 直す方向はルールのファイルの `rewrite:` に言語ごとに書く。`direction`（直し方を一、二文で）、`pairs`（自分で書いた直す前と後の組を 2〜3 個）、`keep`（変えてはいけないもの）、`avoid`（書き直す人がやりがちな間違い）。AI っぽさのルールとよく出る読みやすさのルールには必須で、試験が確かめる。`rewrite:` の無いルールは `how_to_fix` を直す方向に使う。
+- 語彙表の項目は、その言い回しだけの手がかりを `rewrite:` に持てる（`ai-tell` の「時間を溶かす」→「時間がかかった（何に、どれだけ）」）。計画には、`ai-tell` の指摘に名前の出た言い回しのものだけを出す。
+- 計画の中身は次のとおり。
+  - 守ること（事実、数、条件、名前を変えない。無い事実を足さない。分からない具体は作らずに書き手に聞く。書き直しは 2 回まで）
+  - 勧める直し方とその理由
+  - 文書全体の目印（`ai-generated-composite` とその入力、`bold-density` の指摘、`outline` と同じ構成の数）
+  - 指摘のあったルールごとの、直す方向、変えないもの、やりがちな間違い、例の 1 組、見つけた箇所
+  - 動かなかったルールと、直したあとの確かめのコマンド
+- 勧める直し方: 指摘が無ければ「直すところなし」。`ai-generated-composite` が出ていれば全面書き直し。ジャンルが `blog/*` か `literature/essay` なら全面書き直し。文書全体の目印のルールが 2 つ以上出ていれば節ごとの書き直し。それ以外は部分直し。頼まれた内容が「全面的に」なら全面書き直しになることは、chaff には読めないので計画に言葉で書く。
+- 確かめのコマンドは、書き直したものを `<名前>.rewritten.<拡張子>` に置いたものとして出す。全面書き直しでは `compare` に `--distinct --allow-dropped heading --allow-added heading` を付ける。
+- 決定的で、同じ文書なら同じ計画になる。どこにも送らない。ファイルは一つ。無い、二つ以上のときは終了コード 1。
+- 画面の言語は文書の言語に従う。

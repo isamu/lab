@@ -12,6 +12,20 @@ Newest first.
   business documents and speech only, and not meeting notes, whose header of labelled fields is their form. In Qiita articles from 2016–2021 the shape is rare; in articles from 2025–2026 it is common. English
   writers use it as a matter of course (handbooks, minutes, policies), so English documents are not checked.
 
+### `chaff fix-plan`: a plan for whoever rewrites the file
+
+- `npx chaffjs fix-plan <file> [--experimental] [--genre X] [--json]` prints an instruction document for a person or an
+  AI agent, in the document's language. It is deterministic and sends nothing anywhere.
+- The plan opens with the constraints every rewrite keeps: no fact changed or added, ask the writer instead of
+  inventing a specific, two passes at most. Then come the recommended mode (Light, Bold or Full) with its reason, and
+  the document-level signals with the outline's numbers.
+- For each rule that fired, it gives the rule's `rewrite` direction, what to keep, what to avoid, one before/after
+  pair, the `ai-tell` phrase hints and the spots. It ends with the `chaff`, `compare` and `outline` commands to run on
+  the rewrite.
+- The skill's AI-sounding section and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human" now start
+  with `fix-plan`, and the page has a worked example in each language: a draft, its plan, the rewrite, and the checks
+  coming back clean.
+
 ### Rules say how to rewrite what they flag
 
 - A rule file may carry a `rewrite:` block per language: a `direction` (what to do with a flagged spot), two or three
