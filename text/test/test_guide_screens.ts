@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { countsLine, fillsFor, missingFills, notRunBlock, screenMatches, screensIn } from "../scripts/guide-screens-parse.ts";
+import { argsOf, countsLine, fillsFor, missingFills, notRunBlock, screenMatches, screensIn } from "../scripts/guide-screens-parse.ts";
 import { COUNTS_MARKER, NOT_RUN_MARKER, fillPage, withScreenFills } from "../site/src/lib/screenFills.ts";
 
 // 手引きの画面にある「動いていない rule」の一覧と、--compact の最後の集計の行は、ページに書き写さず、サイトを作るときに
@@ -59,6 +59,38 @@ describe("screensIn", () => {
     const other = [`${FENCE}markdown`, "# Draft", FENCE, `${FENCE}bash`, `npx chaffjs x.md`, FENCE, ""].join("\n");
     assert.deepEqual(screensIn(other), { documents: {}, screens: [] });
     assert.deepEqual(screensIn(""), { documents: {}, screens: [] });
+  });
+});
+
+describe("screensIn: 字下げした塊", () => {
+  it("箇条書きの下で字下げした塊も、字下げを外して読む", () => {
+    const listed = ["1. Run it:", "", `   ${FENCE}`, "   $ npx chaffjs a.md --compact", "", `   ${COUNTS_MARKER}`, `   ${FENCE}`, ""].join("\n");
+    assert.deepEqual(screensIn(listed).screens, [
+      { command: "$ npx chaffjs a.md --compact", args: ["a.md", "--compact"], shown: `$ npx chaffjs a.md --compact\n\n${COUNTS_MARKER}\n` },
+    ]);
+  });
+});
+
+describe("screensIn: 長い塊", () => {
+  it("``` を含む ```` の塊は、同じ長さの ```` で閉じる。後の塊の組も崩れない", () => {
+    const long = ["````", "$ npx chaffjs fix-plan a.md", "", "```bash", "npx chaffjs a.md", "```", "````", "", "```markdown file=a.md", "# A", "```", ""].join(
+      "\n",
+    );
+    const { documents, screens } = screensIn(long);
+    assert.deepEqual(documents, { "a.md": "# A\n" });
+    assert.deepEqual(
+      screens.map((screen) => screen.shown),
+      ["$ npx chaffjs fix-plan a.md\n\n```bash\nnpx chaffjs a.md\n```\n"],
+    );
+  });
+});
+
+describe("argsOf", () => {
+  it("引用符の中の空白と、\\ で逃がした空白では切らない", () => {
+    assert.deepEqual(argsOf('$ npx chaffjs relax x --why "a b c"'), ["relax", "x", "--why", "a b c"]);
+    assert.deepEqual(argsOf("$ npx chaffjs off 'x y'"), ["off", "x y"]);
+    assert.deepEqual(argsOf("$ npx chaffjs my\\ file.md --compact"), ["my file.md", "--compact"]);
+    assert.deepEqual(argsOf("$ npx chaffjs "), []);
   });
 });
 
@@ -124,6 +156,13 @@ describe("screenMatches", () => {
     assert.equal(screenMatches("$ x\n…", "$ x\na\nb"), true);
     assert.equal(screenMatches("$ x\n…\nz", "$ x\na\nb"), false);
     assert.equal(screenMatches("$ x\n…\nb\n…\nd", "$ x\na\nb\nc\nd"), true);
+  });
+
+  it("「…」が多く、同じ行が続いても、すぐに終わる", () => {
+    const shown = ["$ x", ...Array.from({ length: 40 }, () => ["…", "a"]).flat(), "…", "z"].join("\n");
+    const actual = ["$ x", ...Array.from({ length: 400 }, () => "a")].join("\n");
+    assert.equal(screenMatches(shown, actual), false);
+    assert.equal(screenMatches(shown, `${actual}\nz`), true);
   });
 });
 

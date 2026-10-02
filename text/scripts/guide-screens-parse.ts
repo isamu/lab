@@ -8,7 +8,9 @@
 import { COUNTS_MARKER, NOT_RUN_MARKER, type ScreenFills } from "../site/src/lib/screenFills.ts";
 
 const PROMPT = "$ npx chaffjs ";
-const FENCE = /^(?:<!-- chaff-screen: (\S+) -->\n)?```([^\n]*)\n([\s\S]*?)^```$/gmu;
+// A fence may be indented, as under a list item, and longer than three backticks, to hold ``` in its body. It closes
+// at the same indent and length; the body loses the indent.
+const FENCE = /^(?:[ \t]*<!-- chaff-screen: (\S+) -->\n)?( *)(`{3,})([^`\n]*)\n([\s\S]*?)^\2\3[ \t]*$/gmu;
 const FILE_META = /(?:^|\s)file=(\S+)/u;
 const NOT_RUN_HEADER = /^ *(?:\d+ rules? did not run:|\d+ 件の rule は動いていません:)$/u;
 const LIST_ENTRY = /^ {6}\S/u;
@@ -21,15 +23,24 @@ export type Screen = { readonly command: string; readonly args: readonly string[
 
 export type PageScreens = { readonly documents: Readonly<Record<string, string>>; readonly screens: readonly Screen[] };
 
-const ARG = /"([^"]*)"|'([^']*)'|(\S+)/gu;
+const ARG = /"([^"]*)"|'([^']*)'|((?:\\.|[^\s"'\\])+)/gu;
+const ESCAPED = /\\(.)/gu;
 
 /** The arguments a shell would pass for the command: split at spaces, a quoted argument kept whole without its quotes. */
 export const argsOf = (command: string): string[] =>
-  [...command.slice(PROMPT.length).matchAll(ARG)].map(([, double, single, bare]) => double ?? single ?? bare ?? "");
+  [...command.slice(PROMPT.length).matchAll(ARG)].map(([, double, single, bare]) => double ?? single ?? bare?.replace(ESCAPED, "$1") ?? "");
+
+const dedent = (body: string, indent: string): string =>
+  indent === ""
+    ? body
+    : body
+        .split("\n")
+        .map((line) => (line.startsWith(indent) ? line.slice(indent.length) : line.trimStart()))
+        .join("\n");
 
 /** The documents (```<lang> file=<name>) and every screen ("$ npx chaffjs ...") of one guide page, in page order. */
 export const screensIn = (page: string): PageScreens => {
-  const blocks = [...page.matchAll(FENCE)].map(([, setup, info = "", body = ""]) => ({ setup, info, body }));
+  const blocks = [...page.matchAll(FENCE)].map(([, setup, indent = "", , info = "", body = ""]) => ({ setup, info, body: dedent(body, indent) }));
   const documents = Object.fromEntries(
     blocks.flatMap(({ info, body }) => {
       const name = FILE_META.exec(info)?.[1];
@@ -86,14 +97,24 @@ const linesOf = (text: string): string[] => {
   return [prompt, ...(first === -1 ? [] : output.slice(first, last + 1))];
 };
 
-const matchFrom = (shown: readonly string[], actual: readonly string[], i: number, j: number): boolean => {
-  if (i === shown.length) return j === actual.length;
-  if (shown[i]?.trim() === ELISION) return Array.from({ length: actual.length - j + 1 }, (_, skip) => j + skip).some((k) => matchFrom(shown, actual, i + 1, k));
-  return j < actual.length && shown[i] === actual[j] && matchFrom(shown, actual, i + 1, j + 1);
-};
+/** The places in chaff's lines that one more line of the screen can leave the match at, from the places before it. */
+const step =
+  (actual: readonly string[]) =>
+  (reached: ReadonlySet<number>, line: string): Set<number> => {
+    if (line.trim() === ELISION) {
+      const from = Math.min(...reached);
+      return new Set(Array.from({ length: Math.max(actual.length - from + 1, 0) }, (_, skip) => from + skip));
+    }
+    return new Set([...reached].filter((at) => actual[at] === line).map((at) => at + 1));
+  };
 
 /**
  * Whether a screen as the page shows it (markers filled in) is what chaff printed: line for line, ignoring trailing
  * spaces and the blank lines around the output, where a line holding only "…" stands for any number of chaff's lines.
  */
-export const screenMatches = (shown: string, actual: string): boolean => matchFrom(linesOf(shown), linesOf(actual), 0, 0);
+export const screenMatches = (shown: string, actual: string): boolean => {
+  const actualLines = linesOf(actual);
+  return linesOf(shown)
+    .reduce(step(actualLines), new Set([0]))
+    .has(actualLines.length);
+};

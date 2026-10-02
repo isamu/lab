@@ -46,11 +46,10 @@ export const runScreen = async (page: GuidePage, documents: Readonly<Record<stri
   const run = await runCli(filesFor(page, documents, screen), screen.args, LOCALES[page.language]);
   const folders = [realpathSync(run.dir), run.dir];
   rmSync(run.dir, { recursive: true, force: true });
-  const printed = [run.out, run.err].filter((part) => part !== "").join("\n");
   // The run's folder is a fresh temporary one; a page writes the folder a reader runs in as "…".
   return asScreen(
     screen.command,
-    folders.reduce((text, folder) => text.replaceAll(folder, ELISION), printed),
+    folders.reduce((text, folder) => text.replaceAll(folder, ELISION), run.both),
   );
 };
 
