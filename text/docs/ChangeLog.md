@@ -19,6 +19,56 @@ Newest first.
   カフェ, キャリア) and カバ; the dictionary lists both forms as separate words and cannot tell a variant from another
   word.
 
+### Bibliography: more works on what generated text looks like
+
+- The bibliography adds Juzek and Ward (COLING 2025) on why ChatGPT overuses some words, Sun et al. (ICML 2025) on
+  the habits that tell models apart, Shaib et al. (2025) on measuring low-quality generated text, the editors' guide
+  "Signs of AI writing" on the English Wikipedia, and two Japanese articles on AI-sounding writing (Zenn, Writers-hub).
+  `ai-tell` now cites Juzek and Ward. The entries name the rules they back: `bold-label-list`, `emoji-heading`,
+  `chat-citation-residue` and `colon-lead-in`.
+
+### New rule: `bold-label-list`, list items led by a bold label (experimental, Japanese)
+
+- Points at a document where many list items open with a bold label and a colon (「- **速さ**：一覧が速く出ます」), the
+  shape that turns an explanation into a row of equal-weight captions. It counts items, not a density, and reports once
+  the count reaches the level. A label that is only code, linked or not (a list of options), is not counted. Blogs,
+  business documents and speech only, and not meeting notes, whose header of labelled fields is their form. In Qiita articles from 2016–2021 the shape is rare; in articles from 2025–2026 it is common. English
+  writers use it as a matter of course (handbooks, minutes, policies), so English documents are not checked.
+
+### `style: jis-z8301-2019` turns on `vague-figure-reference`, which now reads clause pointers too
+
+- JIS Z 8301:2019 10.6 rules out 「上記の図」 and 「以下の箇条」 alike, so the style turns the rule on.
+- The rule now also points at 以下の箇条, 上記の箇条, 後述の箇条 and the like, and at `the clause below` / `the above clause`.
+  It does so where the document numbers its clauses. In `chaff tree`, that is a numbered chapter or an article numbered
+  at the top level (「1 適用範囲」, 第1条, "2 Payment"). A numbered list, or only dotted numbers such as a changelog's
+  `## 0.18.0`, is no numbered clause. The phrases are the new lexicon
+  `vague-clause-pointer` in each language. No corpus document writes one, so the corpus findings do not move.
+
+### Full rewrite: three principles, and `compare --distinct` in the check
+
+The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human":
+
+- The Full mode's check runs `chaff compare <old> <new> --distinct --allow-dropped heading --allow-added heading`. A cut
+  まとめ restates facts the body still holds; `--distinct` counts a fact as kept when the new text states it once.
+- Three principles for writing, each with a before and after: undo personification (文化が醸成される becomes what
+  people do), turn noun endings and noun chains back into sentences with a verb (「〜の発生。」), and never invent
+  specifics: ask the writer, or mark the guess for them to confirm. `chaff compare` catches an added number or name but
+  not added wording, so the last is the rewriter's to keep.
+
+### `chaff fix-plan`: a plan for whoever rewrites the file
+
+- `npx chaffjs fix-plan <file> [--experimental] [--genre X] [--json]` prints an instruction document for a person or an
+  AI agent, in the document's language. It is deterministic and sends nothing anywhere.
+- The plan opens with the constraints every rewrite keeps: no fact changed or added, ask the writer instead of
+  inventing a specific, two passes at most. Then come the recommended mode (Light, Bold or Full) with its reason, and
+  the document-level signals with the outline's numbers.
+- For each rule that fired, it gives the rule's `rewrite` direction, what to keep, what to avoid, one before/after
+  pair, the `ai-tell` phrase hints and the spots. It ends with the `chaff`, `compare` and `outline` commands to run on
+  the rewrite.
+- The skill's AI-sounding section and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human" now start
+  with `fix-plan`, and the page has a worked example in each language: a draft, its plan, the rewrite, and the checks
+  coming back clean.
+
 ### Rules say how to rewrite what they flag
 
 - A rule file may carry a `rewrite:` block per language: a `direction` (what to do with a flagged spot), two or three

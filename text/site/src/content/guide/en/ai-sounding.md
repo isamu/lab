@@ -5,6 +5,37 @@ Its sentences open with "The key point is", and its sections hand off to a list 
 chaff finds these shapes by machine, and it never rewrites the text.
 This page shows how to use what it finds to bring a document back to a human voice.
 
+## Start with a fix plan
+
+Before rewriting, have `chaff fix-plan` print a plan.
+
+```bash
+npx chaffjs fix-plan article.md --experimental           # the plan, as Markdown
+npx chaffjs fix-plan article.md --experimental --json    # the same plan as JSON, to hand to an AI
+```
+
+The plan turns what chaff found into instructions, rule by rule: how to rewrite each kind of spot.
+Whoever reads it does the rewriting, a person or an AI. chaff does not rewrite, and sends nothing anywhere.
+
+The plan has these parts.
+
+| Part | What it says |
+| --- | --- |
+| Constraints | Keep facts, numbers, conditions and names. Add no fact. Ask the writer instead of inventing a specific. At most two passes |
+| Recommended way | Light, Bold or Full, and why, decided the same way as in "Three ways to fix it" below |
+| Document-level signals | What `ai-generated-composite` and the density rules said, and the outline's numbers from `chaff outline` |
+| How to rewrite, rule by rule | The direction, what to keep, what to avoid, a before-and-after example, and each spot found (line and sentence) |
+| Check after rewriting | The `chaff`, `chaff compare` and `chaff outline` commands to run on the rewrite |
+
+The directions and examples come from the rule files (`rewrite:`), so the same finding always gets the same direction.
+The steps are the same whether a person rewrites or an AI does.
+
+1. Run `npx chaffjs fix-plan article.md --experimental`.
+2. Rewrite following the plan, and save the result under the name its last part gives. To have an AI do it, hand it the plan as it is.
+3. Run the checks. They show whether findings remain, whether a fact was dropped or added, and how the outline moved.
+
+The example "Example: from a fix plan to a clean check" further down this page goes from the plan to the checks.
+
 ## What chaff looks for
 
 Most of these rules are experimental and run with `--experimental`; `bold-density`, `closing-cliche` and `padded-intro` run without it.
@@ -20,6 +51,7 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
+| `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") (Japanese documents only) |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
@@ -48,8 +80,8 @@ What the writer wants changed there is usually the structure, not the sentences.
 
 ## The light pass
 
-1. Run `npx chaffjs article.md --experimental` and collect the findings of the AI-shape rules.
-2. Rewrite only the flagged spots. Keep the meaning, the numbers, the conditions and the technical constraints.
+1. Run `npx chaffjs fix-plan article.md --experimental` for the plan.
+2. Rewrite only the flagged spots, following each rule's direction in the plan. Keep the meaning, the numbers, the conditions and the technical constraints.
 3. Run chaff again. Stop after two rewrites.
 4. Keep the rewritten text and a short list of what changed and why.
 
@@ -116,17 +148,31 @@ Leave the old sentences alone. Take an inventory of what the document says, and 
 | Register | Match the writer's other paragraphs and the platform (a blog, a company report, an email) |
 | What not to add | No fact, person, number, cause or consequence the inventory does not have |
 
+   Three principles hold while you write.
+
+| Principle | Before | After |
+| --- | --- | --- |
+| Undo personification | A culture of code review was fostered across the team. | People on the team started reviewing each other's code. |
+| Turn noun chains back into verbs | Occurrence of message processing delays due to queue backlog. | Messages piled up in the queue, so processing slowed down. |
+| Never invent specifics | The team's mood improved. | The sentence stays, and the writer is asked: "When did you notice the mood improve?" |
+
+   - Undo personification. Watch for a thing or an idea as the subject of a verb of will: "order breaks down", "a culture is fostered", "the architecture demands". Write it as what a person or the system does. If the original does not say who, ask the writer.
+   - Turn noun endings and noun chains back into sentences with a verb. A string of nouns hides who did what, and when.
+   - Never invent specifics. A vague sentence may read better with a concrete example. If the writer did not give one, ask for it, or mark your guess for the writer to confirm. Never write it as fact.
+     `chaff compare` catches an added number or name. It does not catch added wording: "people started joking at the morning stand-up" adds no number and no name, and `compare` says nothing. Keeping this rule is up to the rewriter.
+
 5. Check the result.
 
 ```bash
 npx chaffjs old.md --experimental                          # the AI signals before
 npx chaffjs new.md --experimental                          # and after
 npx chaffjs outline old.md new.md                          # headings, average section, lists and bold, before and after
-npx chaffjs compare old.md new.md --allow-dropped heading --allow-added heading  # no fact other than a heading dropped or added
+npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-added heading  # no fact other than a heading dropped or added
 ```
 
    The headings are the structure you rebuilt on purpose, so `--allow-dropped heading --allow-added heading` excludes them. Restore any other dropped fact and remove any added one.
-   A fact the old text only repeated (a number in the summary you cut) may stay out, with the reason written down.
+   A summary you cut restated facts the body still holds. `--distinct` counts a fact as kept when the new text states it at least once, so those repeats do not read as dropped.
+
 6. Stop when all of these hold. Two full passes at most.
    - `ai-generated-composite` does not fire.
    - The density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits.
@@ -165,6 +211,230 @@ chaff cannot find these shapes by machine. Check them by reading, whichever way 
 | Tech blog (`blog/tech`) | Replace metaphors ("silently breaks", "the error is swallowed") with what happens ("returns without raising an exception"). Keep steps and commands as lists. |
 | Business (`business/report`) | Put the conclusion first, then who does what by when. Drop decoration such as "not just a tool, but a turning point". Keep tables and figures as they are. |
 | Essay (`blog/essay`) | Fold one-line paragraphs and punchlines back into the text. Replace big words ("profound truth", "new possibilities") with what happened in that scene. |
+
+## Example: from a fix plan to a clean check
+
+A short post written in the style of generated text, rewritten by following the plan from `chaff fix-plan`.
+Both versions were written for this page.
+
+The post before the rewrite (`draft.md`):
+
+```markdown
+# Moving Our Builds to a Shared Cache
+
+In today's fast-paced world, build speed plays a crucial role in how a team ships. Let's delve into how we moved our builds to a shared cache.
+
+The key point is that the cache is not just a speed-up. It's a change in how the whole team works. Moreover, it removed a whole class of flaky failures. Additionally, it cut our cloud bill.
+
+Here's the thing: before the change, a full build took 14 minutes on every pull request. After the change, a typical build takes 3 minutes, because only the packages that changed are rebuilt. Furthermore, the cache key now includes the lockfile hash, so a dependency update can no longer reuse a stale result.
+
+The migration was planned meticulously. It was rolled out over two weeks in March 2026, one repository at a time. A rollback switch was kept in place — just in case — and it was never used.
+
+In conclusion, the shared cache is a testament to what careful engineering can achieve. I hope this helps!
+```
+
+The plan `chaff fix-plan` printed:
+
+````markdown
+$ npx chaffjs fix-plan draft.md --experimental
+# Fix plan: draft.md
+
+language en, genre blog/tech
+
+What chaff found by machine, and how to rewrite each kind of spot. chaff does not rewrite; whoever reads this plan does, a person or an AI. When done, run the checks at the end.
+
+## Constraints
+
+1. Keep every fact, number, date, condition and name.
+2. Add no fact, person, number, cause or example the original does not have.
+3. Where a fix needs a specific the text does not give (who, when, how much), do not invent it: leave [ ] and ask the writer.
+4. At most two passes. Do not rewrite again just to silence a finding.
+
+## Recommended way: Full rewrite
+
+ai-generated-composite fires. Fixing the wording would leave the skeleton of generated text.
+
+- Light: only the flagged spots.
+- Bold: keep the outline, rewrite the prose of each section.
+- Full: take an inventory of the facts and claims, then rewrite from the structure up. If the request says "from scratch", choose this.
+
+## Document-level signals
+
+- `ai-generated-composite`: "ai-tell, padded-intro, closing-cliche" occur together in this document (3 signals, 3 needed)
+- `ai-tell`: "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 18)
+- `padded-intro`: "in today's fast-paced world" is an opening that fits any article
+- `closing-cliche`: Closes with "in conclusion"
+- Outline: headings 1, average section 171 words, in lists 0%, bold 0
+
+## How to rewrite, rule by rule
+
+### `ai-tell` Phrasing common in generated text
+
+**Direction**: Replace the stock phrase with what the sentence actually claims, who does what and how much. If nothing is claimed, delete the sentence.
+
+**Keep**
+
+- numbers, dates, names and conditions
+- how sure the writer is
+
+**Avoid**
+
+- inventing an example or a number the writer did not give
+- trading one stock phrase for another ("plays a crucial role" for "is pivotal")
+- giving every paragraph the same shape
+
+**Example**
+
+before:
+
+> In today's fast-paced world, stock data plays a crucial role in ordering.
+
+after:
+
+> Orders are decided from stock data.
+
+**Hints for the phrases found**
+
+- "delve into" → look at, or explain
+- "in today's fast-paced world" → delete it and start with the point
+- "plays a crucial role" → say what it does
+- "a testament to" → shows
+- "meticulously" → carefully, and say what was checked
+
+**Spots**
+
+- line 3: "In today's fast-paced world, build speed plays a crucial role in how a team ships."
+  "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 18)
+
+### `padded-intro` Padded opening
+
+**Direction**: Delete the opening that fits any document ("In recent years, X has gained attention") and start from the situation or the claim only this piece has. If the body has none, ask the writer.
+
+**Keep**
+
+- the situation and claim only this piece has
+
+**Avoid**
+
+- swapping the opening for another generality ("X is now essential")
+- inventing a scene or an anecdote that is not in the body
+
+**Example**
+
+before:
+
+> In recent years, generative AI has gained attention. This article shows how we use it internally.
+
+after:
+
+> This article shows how we use generative AI internally.
+
+**Spots**
+
+- line 3: "In today's fast-paced world, build speed plays a crucial role in how a team ships."
+  "in today's fast-paced world" is an opening that fits any article
+
+### `contraction-consistency` Contraction use is inconsistent
+
+**Direction**: Match the majority.
+
+**Spots**
+
+- line 5: "It's a change in how the whole team works."
+  "it's" is written differently from the rest of the document
+
+### `closing-cliche` Cliched closing
+
+**Direction**: Delete the stock closing. If the piece already ends on its conclusion, stop there; if not, state in one sentence the one thing from the body the reader should take away.
+
+**Keep**
+
+- the conclusion the body reached
+
+**Avoid**
+
+- adding a conclusion or a call to action that is not in the body
+- swapping "Hope this helps" for "Give it a try"
+
+**Example**
+
+before:
+
+> The setting lives in one place on the admin page. Hope this helps!
+
+after:
+
+> The setting lives in one place on the admin page.
+
+**Spots**
+
+- line 11: "In conclusion, the shared cache is a testament to what careful engineering can achieve."
+  Closes with "in conclusion"
+- line 11: "I hope this helps!"
+  Closes with "hope this helps"
+
+## Check after rewriting
+
+Save the rewrite as draft.rewritten.md and run:
+
+```bash
+npx chaffjs draft.rewritten.md --experimental
+npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
+npx chaffjs outline draft.md draft.rewritten.md
+```
+
+The first lists the rewrite's findings, the second checks that no fact was dropped or added, the third shows how the outline moved. Take the numbers from chaff's output, not adjectives.
+````
+
+The plan recommends a full rewrite, because `ai-generated-composite` fires.
+Following the hints for the phrases found, "In today's fast-paced world" and "Let's delve into" went, and the opening now starts with the build times.
+The closing "In conclusion … I hope this helps!" was cut, since the body already ends on what happened. A full rewrite goes beyond the flagged spots, so "Moreover", "Additionally", "Furthermore" and the contrast "not just a speed-up" went too.
+
+The rewrite (`draft.rewritten.md`):
+
+```markdown
+# Moving Our Builds to a Shared Cache
+
+Before the change, a full build took 14 minutes on every pull request. Now a typical build takes 3 minutes, because only the packages that changed are rebuilt.
+
+The shared cache also removed a whole class of flaky failures and cut our cloud bill. Its key includes the lockfile hash, so a dependency update can no longer reuse a stale result.
+
+We rolled it out over two weeks in March 2026, one repository at a time. We kept a rollback switch in place and never used it.
+```
+
+The checks from the plan:
+
+```text
+$ npx chaffjs draft.rewritten.md --experimental --compact
+draft.rewritten.md   blog/tech · English   genre from the default
+
+
+0 findings, 16 rules not run
+
+$ npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
+draft.md → draft.rewritten.md
+
+Facts checked: 4 → 4: numbers 2→2, dates 1→1, times 0→0, URLs 0→0, code 0→0, names 0→0, quotations 0→0, headings 1→1, references 0→0, footnotes 0→0
+No fact dropped or added
+
+$ npx chaffjs outline draft.md draft.rewritten.md
+draft.md outline: headings 1, average section 171 words, in lists 0%, bold 0
+
+  # Moving Our Builds to a Shared Cache  (draft.md:1)  171 words
+
+draft.rewritten.md outline: headings 1, average section 87 words, in lists 0%, bold 0
+
+  # Moving Our Builds to a Shared Cache  (draft.rewritten.md:1)  87 words
+
+How the shape changed (draft.md → draft.rewritten.md)
+  headings: 1 → 1
+  average section: 171 words → 87 words
+  in lists: 0% → 0%
+  bold: 0 → 0
+```
+
+Every number and date (14 minutes, 3 minutes, March 2026) is still there, and no fact was added.
+The passive sentences about the rollout name who did it ("We rolled it out"), because the post is written as "we" from its first paragraph.
 
 ## Example: a bold rewrite of a tech article
 

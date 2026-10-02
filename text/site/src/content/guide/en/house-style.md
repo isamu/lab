@@ -35,7 +35,7 @@ The finding is in Japanese because the document is. There are five styles for no
 | `ieice` | Drop the final ー from words of three morae or more | IEICE, submission guide for papers in Japanese, 2.4 |
 | `jis-z8301-2011` | The same (the 2019 edition dropped this rule) | JIS Z 8301:2011, Table G.3 |
 | `bunkacho` | Keep the final ー (コンピューター) | 外来語の表記, the 1991 Cabinet notice |
-| `jis-z8301-2019` | No すべきである and no closing できる in a provision | JIS Z 8301:2019, 7.3 to 7.5 |
+| `jis-z8301-2019` | No すべきである and no closing できる in a provision; a numbered figure, table or clause is named by its number, not 上記の図 or 以下の箇条 | JIS Z 8301:2019, 7.3 to 7.5 and 10.6 |
 | `koyobun` | A Japanese sentence of at most 60 characters, no mixing of です・ます with である, and the final ー kept | 公用文作成の考え方 (Council for Cultural Affairs, 2022), III-3 a, III-1 b, I-3 d |
 
 Morae are counted before the final ー, as コ・ン・ピュ・ー・タ (as JIS Z 8301:2011 Table G.3 counts). A small ャ, ュ or ョ joins the kana before it.

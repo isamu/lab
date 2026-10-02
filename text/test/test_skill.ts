@@ -18,7 +18,7 @@ describe("同梱の skill", () => {
   });
 
   it("skill が挙げるコマンドは、chaff に実際にある", () => {
-    const mentioned = [...skill.matchAll(/npx chaffjs ([a-z]+)\b/gu)].map((match) => match[1] ?? "");
+    const mentioned = [...skill.matchAll(/npx chaffjs ([a-z]+(?:-[a-z]+)*)\b/gu)].map((match) => match[1] ?? "");
     const unknown = mentioned.filter((command) => !COMMANDS.includes(command));
     assert.deepEqual(unknown, []);
     assert.ok(mentioned.length > 5);
