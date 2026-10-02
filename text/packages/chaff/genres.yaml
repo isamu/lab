@@ -146,6 +146,7 @@ groups:
       double-keigo: off
       no-em-dash: off
       emoji-density: off
+      elapsed-years-mismatch: off
       sentence-rhythm: off
       rule-of-three: off
       section-length-uniformity: off

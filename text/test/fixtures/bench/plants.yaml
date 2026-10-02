@@ -77,6 +77,8 @@ not_planted:
   concrete-evidence-density: several sections with no number, code or link; the samples are written with figures
   contrast-framing: a density over the whole document
   cushion-phrase-density: a density over the whole document
+  duration-mismatch: needs a start, a length and an end in one sentence; the samples write no such period
+  elapsed-years-mismatch: needs a founding or birth year, a count of years and a dated document; the samples have none
   empty-conclusion: L4, judged by chaff test and never run by lint
   nominalization: a density over the whole document
   paragraph-length-variance: the shape of the whole document, not one mistake
