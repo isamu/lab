@@ -1,0 +1,6 @@
+# 名詞に付いて形容動詞を作る接尾の「的」（効果的、具体的）。teki-overuse が一文の中の数を数える。
+# 語として読むので、「目的」「的確」のように「的」で一語になったものは数えない。
+id: teki-suffix
+language: ja
+entries:
+  - pattern: 的
