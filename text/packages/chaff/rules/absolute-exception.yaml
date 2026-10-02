@@ -1,0 +1,83 @@
+id: absolute-exception
+layer: L3
+status: experimental
+how_to_find: absolute-exception
+word_list: absolute-word
+extra_word_lists: [exception-marker, light-verb]
+requires: [structure, pos]
+severity: warning
+
+name:
+  ja: 言い切った決まりに、別の所で例外がある
+  en: An absolute rule with an exception written elsewhere
+
+why:
+  ja: 「すべての〜は…しなければならない」「一切…してはならない」と例外なしに言い切った決まりに、後の別の条や段落で「ただし…を除く」と例外を書くと、言い切った文だけを読んだ人は例外を知らずに従います。後から足した条や、別の文書から写した例外で起きます。例外を言い切った文と同じ条や段落に書いていれば（ただし書）、それは決まりの一部なので、ここには出ません。二つの文が同じ行為について言っているかは、中身の語の重なりで見ます。
+  en: 'A rule stated without exception ("all staff must", "must never") that a later article or paragraph makes an exception to ("except", "unless") misleads a reader who stops at the rule. It happens when an exception is added later or copied from another document. An exception in the same article or paragraph is the rule''s own proviso and is not reported. Whether two sentences are about the same act is read from the content words they share.'
+
+message:
+  ja: 「{word}」と言い切っていますが、{otherLine} 行目に同じ行為の例外（「{exception}」）があります
+  en: 'This says "{word}", but line {otherLine} makes an exception ("{exception}") for the same act'
+
+how_to_fix:
+  ja: 言い切った文に例外を書き足すか（「次条に定める場合を除き」）、例外のほうを消すかを決めてください。
+  en: Either add the exception to the absolute rule ("except as set out in section 5") or remove the exception.
+
+placeholders:
+  word:
+    ja: すべて
+    en: always
+  exception:
+    ja: ただし
+    en: except
+  otherLine:
+    ja: 〇
+    en: N
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「すべての〜は…しなければならない」と言い切った決まりに、別の条や段落で「ただし…を除く」と例外を書いた所
+  en: 'A rule stated without exception ("must always") that another article or paragraph makes an exception to ("except")'
+example:
+  ja:
+    before: |
+      ## 第1条（提出）
+
+      社員は、すべての経費の領収書を経理部に提出しなければならない。
+
+      ## 第2条（少額の経費）
+
+      千円未満の経費は、領収書を経理部に提出する対象から除く。
+    after: |
+      ## 第1条（提出）
+
+      社員は、次条に定めるものを除き、すべての経費の領収書を経理部に提出しなければならない。
+
+      ## 第2条（少額の経費）
+
+      千円未満の経費は、領収書を経理部に提出する対象から除く。
+  en:
+    before: |
+      ## 1. Receipts
+
+      Staff must always send the receipt for every expense to the finance team.
+
+      ## 2. Small expenses
+
+      Staff need not send the receipt to the finance team for an expense under ten dollars, except for travel.
+    after: |
+      ## 1. Receipts
+
+      Except as set out in section 2, staff must always send the receipt for every expense to the finance team.
+
+      ## 2. Small expenses
+
+      Staff need not send the receipt to the finance team for an expense under ten dollars, except for travel.
+
+not_flagged:
+  ja: 例外を言い切った文と同じ条や段落に書いた文（ただし書）、言い切った文そのものが例外を持つ文、言い切った文の中身の語を半分以上くり返さない例外は指摘しません。義務の語（しなければならない・してはならない）の無い言い切りと、鉤括弧の中の語も見ません。
+  en: An exception in the same article or paragraph (a proviso), an absolute rule that carries its own exception, and an exception that does not repeat most of the rule's content words are not reported. A statement with no obligation word (must, shall, must not) and words inside quotation marks are not read.

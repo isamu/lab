@@ -1,0 +1,61 @@
+id: misconversion
+layer: L2
+status: experimental
+how_to_find: known-correction
+word_list: misconversion
+uses: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: 変換の誤り
+  en: Wrong kanji conversion
+
+why:
+  ja: 仮名漢字変換は読みの同じ語（意外・以外、初めて・始めて、確率・確立）を取り違えます。どれも正しい語なので、字を見ただけでは誤りに気づきにくいです。chaff は前後の語で誤りと決まる形（「以外と簡単」「始めて会う」「確立が高い」）と、それ自体が誤りの形（不可決、絶対絶命）だけを語彙表から探します。前後で決まらない取り違えは指しません。
+  en: Japanese input methods confuse words with the same reading (意外 and 以外, 初めて and 始めて, 確率 and 確立). Each is a real word, so the slip is hard to see. chaff looks only for forms its lexicon lists, where the words around make the slip certain (以外と簡単, 始めて会う, 確立が高い), or where the form is wrong by itself (不可決, 絶対絶命). A swap the context does not settle is not reported.
+
+message:
+  ja: 「{matched}」は「{suggestion}」の変換の誤りです
+  en: '"{matched}" is a wrong conversion of "{suggestion}"'
+
+how_to_fix:
+  ja: 正しい字に直してください。
+  en: Correct the kanji.
+
+placeholders:
+  matched:
+    ja: 書いた形
+    en: the form as written
+  suggestion:
+    ja: 正しい形
+    en: the intended form
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「以外と簡単」「始めて会う」「不可決」のような、仮名漢字変換の取り違え
+  en: A Japanese homophone picked by the input method in the wrong place, such as 以外と簡単 for 意外と簡単
+example:
+  ja:
+    before: 設定は以外と簡単でした。
+    after: 設定は意外と簡単でした。
+
+not_flagged:
+  ja: 前後の語で決まらない取り違えは指しません（「以外と」だけでは「日本以外と比べて」と区別できないので、「以外と簡単」「以外と多い」のように後ろの語まで語彙表に書いたものだけを探します）。語の途中には当てません。
+  en: A swap the surrounding words do not settle is not reported (以外と alone also appears in 日本以外と比べて, so only listed phrases such as 以外と簡単 are looked for). A form inside a longer word is not reported.
+rewrite:
+  ja:
+    direction: 指された語を正しい字に直してください。直すのは取り違えた語だけで、文の言い回しは変えません。
+    pairs:
+      - before: 設定は以外と簡単でした。
+        after: 設定は意外と簡単でした。
+      - before: 始めて会う人にも分かるように書きます。
+        after: 初めて会う人にも分かるように書きます。
+    keep:
+      - 文の言い回しと語順
+    avoid:
+      - 前後で決まらない同音の語まで書き換える
