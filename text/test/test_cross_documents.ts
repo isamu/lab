@@ -88,6 +88,14 @@ describe("cross-document pass: who takes part", () => {
     assert.deepEqual(b === undefined ? [] : reasonsOf(b), [ONE_DOCUMENT]);
   });
 
+  it("a rule whose word list the language lacks says so, and its file does not take part", async () => {
+    const seen: string[][] = [];
+    const rule = crossRule({ extra_word_lists: ["no-such-list"] });
+    const [a] = crossChecked([await checkOf("a.md", "beta\n", rule), await checkOf("b.md", "beta\n", rule)], { [RULE]: recording(seen) });
+    assert.deepEqual(seen, []);
+    assert.deepEqual(a === undefined ? [] : reasonsOf(a), [REASONS.en.noLexicon("en", "no-such-list")]);
+  });
+
   it("a rule without its detector says which detector is missing, in every file that took part", async () => {
     const checks = [await checkOf("a.md", "beta\n", crossRule()), await checkOf("b.md", "beta\n", crossRule())];
     const reasons = crossChecked(checks, {}).map(reasonsOf);
