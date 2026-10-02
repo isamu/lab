@@ -197,12 +197,12 @@ describe("rules-apply", () => {
     "    rules:",
     "      hand-off: off",
     "      # why",
-    "      old: off  # measured",
+    "      old: off # measured",
     "",
     "genres:",
     "  - id: legal/contract",
     "    rules:",
-    "      fake: off  # measured",
+    "      fake: off # measured",
     "",
   ].join("\n");
 
@@ -223,8 +223,8 @@ describe("rules-apply", () => {
         "  - id: technical",
         "    name: { ja: 技術文書, en: Technical }",
         "    rules:",
-        "      a-rule: off  # measured",
-        "      b-rule: off  # measured",
+        "      a-rule: off # measured",
+        "      b-rule: off # measured",
         "  # comment of the next group",
         "  - id: legal",
         "    name: { ja: 法務, en: Legal }",
@@ -235,7 +235,7 @@ describe("rules-apply", () => {
         "genres:",
         "  - id: legal/contract",
         "    rules:",
-        "      fake: off  # measured",
+        "      fake: off # measured",
         "",
       ].join("\n"),
     );
@@ -248,7 +248,7 @@ describe("rules-apply", () => {
   });
 
   it("measured の行がすべて消えた group の rules: は残さない", () => {
-    const only = ["groups:", "  - id: blog", "    name: { ja: ブログ, en: Blog }", "    rules:", "      x: off  # measured", "", "genres:"].join("\n");
+    const only = ["groups:", "  - id: blog", "    name: { ja: ブログ, en: Blog }", "    rules:", "      x: off # measured", "", "genres:"].join("\n");
     assert.equal(withMeasuredOffs(only, []), ["groups:", "  - id: blog", "    name: { ja: ブログ, en: Blog }", "", "genres:"].join("\n"));
   });
 });
