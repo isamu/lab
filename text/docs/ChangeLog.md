@@ -12,6 +12,89 @@ Newest first.
   business documents and speech only, and not meeting notes, whose header of labelled fields is their form. In Qiita articles from 2016–2021 the shape is rare; in articles from 2025–2026 it is common. English
   writers use it as a matter of course (handbooks, minutes, policies), so English documents are not checked.
 
+### `sasete-itadaku` counts each use, and its potential and godan forms
+
+The rule counted sentences, so 「配布させていただき、説明させていただきます。」 was one use; it is now two. It also
+counts the potential and negative forms (させていただけますか, させていただけない, させていただければ) and the godan form
+(入らせていただきます, 読ませていただく), which the analyser reads as other words. Two entries that cover the same
+words (させていただく and せていただく) count as one use. A one-step verb with させる (見させていただく) is still not counted:
+the analyser reads its させ as one word, which no entry in the word list can match.
+
+### Docs: Writing a plugin
+
+- A new guide page, 「プラグインを作る」 / "Writing a plugin": the two forms (a `type: module` rule, a plugin package),
+  what a detector is given and returns, a step-by-step plugin, word lists and styles, testing a rule as a plain
+  function, what a broken one prints, versions, security and the rules a detector keeps to, and publishing.
+- Adding a rule: the Node function section shows a working `type: module` rule instead of "not yet", and the page
+  names the version each way arrived in (0.18.0, 0.19.0) instead of "next release".
+- House style: a plugin's style is chosen as `style: <plugin>/<style>`.
+- README, the package README and chaff-spec §18.7–18.8 and §19.3 describe `type: module`, `plugins:` and
+  `chaffjs/api`.
+
+### `examples/chaff-plugin-example`: a plugin to copy
+
+A small plugin package in the repository (not published): `example/no-tbd-dates`, a rule written in code;
+`example/weasel-words`, a rule driven by the plugin's word list `example/weasel` in English and Japanese; and
+`example/careful`, a house style that raises both. Its own tests run with `yarn test`, and
+`test/test_example_plugin.ts` runs it through chaff. Its README says how to publish your own. The example's files are
+checked with `// @ts-check` against `chaffjs/api`'s types.
+
+### `plugins:` in chaff.yaml: rules, word lists and house styles from a package
+
+```yaml
+plugins: [chaff-plugin-foo, "@acme/chaff-plugin-house", ./chaff-plugins/team.mjs]
+```
+
+- A plugin default-exports `definePlugin({ name, rules, lexicons, styles })` from `chaffjs/api`. A rule is a
+  `custom_rules` entry with `detect` in place of `type: module`, or a rule without code (`words`, `pattern`, `tokens`).
+- Every id a plugin ships is prefixed with its name: `foo/no-tbd`, the word list `foo/weasel`, the style `foo/house`.
+  A package `chaff-plugin-foo` is named `foo`, `@acme/chaff-plugin-house` is `@acme/house`; a plugin that declares
+  another name is refused. Its rules cannot collide with chaff's.
+- Plugin rules appear wherever chaff's do: findings, `explain` ("This rule comes from the plugin foo"),
+  `rules --json` (`defined_in: plugin foo`), `relax`, `stet` (`<!-- stet: foo/no-tbd -->`), baseline and SARIF.
+- A rule's `word_list` names one of the plugin's own lists; its detector gets it as `options.lexicon`. Where the
+  plugin has no list for the document's language, the rule is listed as not run. `type: module` rules in custom_rules
+  may name a `word_list` too.
+- `style: foo/house` chooses a style a plugin ships.
+- A package is found from the folder chaff.yaml is in, as Node finds it. A plugin that cannot be found or loaded,
+  is written for another plugin API, or has a rule, word list or style that cannot be read stops the run, naming the
+  plugin as chaff.yaml writes it. A rule that throws is listed as not run, naming the plugin.
+
+### `custom_rules: type: module`: a team's rule as a small Node function
+
+```yaml
+custom_rules:
+  - id: team-no-tbd-dates
+    type: module
+    module: ./chaff-rules/no-tbd-dates.mjs # relative to chaff.yaml
+    level: warning
+    name: …, why: …, how_to_fix: …, example: … # as for any custom rule
+```
+
+- The module default-exports a detector `(doc, options) => findings`, or `defineRule({ detect })` from `chaffjs/api`.
+  It is loaded once before anything runs. `requires: [pos]` gives the sentences tokens.
+- A missing file, a file that cannot be loaded, a default export that is not a detector and a rule written for another
+  plugin API stop the run, naming the rule and the file as chaff.yaml writes it.
+- A detector that throws or returns anything but findings fails on that document only: its rule is listed as not run
+  with the reason and the file, and every other rule still runs.
+- Loading a module runs its code. A relative path may not leave the folder chaff.yaml is in; a file outside is named by
+  its absolute path. Determinism is the author's job: a detector should read nothing but the document.
+- `chaff rules --json`: `custom_rule_types` is `available`, with `words`, `pattern`, `tokens` and `module`.
+
+### `chaffjs/api`: the plugin API
+
+A small, stable surface for writing rules in code, the first step toward `type: module` custom rules and plugin
+packages. `import { API_VERSION, defineRule, definePlugin } from "chaffjs/api"`, with the types a rule author needs:
+`Detector`, `Finding`, `DetectorOptions`, `RuleDocument` (sentences, paragraphs, sections, lists, links, tokens with
+part of speech and lemma when the rule asks for them, word lists and markup) and the shapes they are made of.
+
+- `API_VERSION` is 1. `defineRule` and `definePlugin` stamp it, so chaff can refuse a plugin written for another one.
+- A detector reads a frozen copy of the document with only the public fields, so chaff's own shapes can change
+  without breaking a plugin, and one rule cannot change what the next one reads.
+- A detector returns `{ start, end?, values? }`; chaff places it, quotes its sentence and fills `{matched}`. Anything
+  else is refused as a whole, with what was wrong.
+- `chaffjs/plugin`, the language adapters' surface, is unchanged.
+
 ### New rule: `nominalization`, verbs hidden in nouns (experimental)
 
 - chaff counts verbs written as nouns and carried by another verb: 調査を実施した for 調査した, 確認を行う for 確認する,

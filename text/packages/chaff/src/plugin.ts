@@ -474,8 +474,10 @@ export type RuleDefinition = {
   readonly severity: Severity;
   /** Options beyond the level (the direction and length for katakana-long-vowel). Most rules have none. */
   readonly options?: Readonly<Record<string, RuleOption>>;
-  /** A rule a team defined under custom_rules in chaff.yaml: what it looks for. Built-in rules have none. */
+  /** A rule a team defined under custom_rules in chaff.yaml, or a plugin ships: what it looks for. Built-in rules have none. */
   readonly custom?: CustomSpec;
+  /** The name of the plugin that ships the rule, which is also its id's prefix (foo in foo/rule-id). Only a plugin's rules have it. */
+  readonly plugin?: string;
   /** What the rule reference tells a reader who is not an engineer: its group, one line, a before and after. */
   readonly guide?: RuleGuide;
 };
@@ -490,8 +492,10 @@ export type TokenCondition = {
 /**
  * What a team's rule looks for. words: spellings to avoid, each with the one to use (or none, to only point at it).
  * pattern: a regular expression, checked before it runs. tokens: a run of tokens from the language adapter.
+ * module: a detector the team wrote in JavaScript; module as written in chaff.yaml, file where it resolved to.
  */
 export type CustomSpec =
   | { readonly type: "words"; readonly words: readonly { readonly avoid: string; readonly use: string }[] }
   | { readonly type: "pattern"; readonly pattern: string; readonly flags: string }
-  | { readonly type: "tokens"; readonly tokens: readonly TokenCondition[] };
+  | { readonly type: "tokens"; readonly tokens: readonly TokenCondition[] }
+  | { readonly type: "module"; readonly module: string; readonly file: string };
