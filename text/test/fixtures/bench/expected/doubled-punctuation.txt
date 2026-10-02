@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  period-doubled  found
+ja/design  period-doubled  found
+ja/email  period-doubled  found
+ja/figures  period-doubled  found
+ja/itinerary  period-doubled  found
+ja/minutes  period-doubled  found
+ja/note  period-doubled  found
+ja/policy  period-doubled  found
+ja/press  period-doubled  found
+ja/proposal  period-doubled  found
+ja/quote  period-doubled  found
+ja/readme  period-doubled  found
+ja/requirements  period-doubled  found
+en/blog  period-doubled  found
+en/design  period-doubled  found
+en/email  period-doubled  found
+en/figures  period-doubled  found
+en/itinerary  period-doubled  found
+en/minutes  period-doubled  found
+en/note  period-doubled  found
+en/policy  period-doubled  found
+en/press  period-doubled  found
+en/proposal  period-doubled  found
+en/quote  period-doubled  found
+en/readme  period-doubled  found
+en/requirements  period-doubled  found

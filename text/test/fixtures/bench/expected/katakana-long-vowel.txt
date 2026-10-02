@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/design  long-vowel-dropped  found
+ja/readme  long-vowel-dropped  found

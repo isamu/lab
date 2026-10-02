@@ -43,7 +43,7 @@ chaff は、その伝わり方を邪魔する書き癖を機械で見つけま�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 次の報告書を `houkoku.md` という名前で保存しました。
 
-```markdown
+```markdown file=houkoku.md
 # 9月の問い合わせ対応についての報告
 
 ## 背景
@@ -97,55 +97,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  48 件の rule は動いていません:
-      adverb-overuse（ja 向けの rule ではないため）
-      agentless-passive（まだ試験中のため）
-      agreement-slip（ja 向けの rule ではないため）
-      ai-generated-composite（まだ試験中のため）
-      ai-tell（まだ試験中のため）
-      announced-count-mismatch（まだ試験中のため）
-      announcing-opener（まだ試験中のため）
-      assistant-residue（まだ試験中のため）
-      colon-lead-in（まだ試験中のため）
-      contraction-consistency（ja 向けの rule ではないため）
-      contrast-framing（まだ試験中のため）
-      cushion-phrase-density（まだ試験中のため）
-      dangling-figure-reference（まだ試験中のため）
-      dangling-reference（まだ試験中のため）
-      date-order（まだ試験中のため）
-      date-range-reversed（まだ試験中のため）
-      date-weekday-mismatch（まだ試験中のため）
-      double-keigo（まだ試験中のため）
-      doubled-word（まだ試験中のため）
-      duplicate-definition（まだ試験中のため）
-      emoji-density（まだ試験中のため）
-      empty-conclusion（意味を読む検査のため（npx chaff test で動きます））
-      excessive-hedging（まだ試験中のため）
-      expletive-construction（ja 向けの rule ではないため）
-      hiragana-fukushi（まだ試験中のため）
-      internal-jargon（まだ試験中のため）
-      latin-spacing（まだ試験中のため）
-      max-kanji-continuous（まだ試験中のため）
-      no-em-dash（まだ試験中のため）
-      no-mixed-desumasu（まだ試験中のため）
-      numbering-gap（まだ試験中のため）
-      oxford-comma-consistency（ja 向けの rule ではないため）
-      percent-sum-mismatch（まだ試験中のため）
-      preferred-term（まだ試験中のため）
-      proper-noun-density（まだ試験中のため）
-      repeated-conjunction（まだ試験中のため）
-      required-sections（まだ試験中のため）
-      risk-disclosure（意味を読む検査のため（npx chaff test で動きます））
-      sasete-itadaku（まだ試験中のため）
-      sentence-initial-conjunction-run（ja 向けの rule ではないため）
-      stock-transition（まだ試験中のため）
-      stray-space（まだ試験中のため）
-      title-case-consistency（ja 向けの rule ではないため）
-      total-mismatch（まだ試験中のため）
-      undefined-acronym（まだ試験中のため）
-      unfilled-placeholder（まだ試験中のため）
-      unqualified-superlative（まだ試験中のため）
-      unsourced-number（意味を読む検査のため（npx chaff test で動きます））
+  {not-run}
 ```
 
 指摘は 1 件です。5 行目の「近年、」は、どの報告書にも書ける書き出しです。
@@ -220,17 +172,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  10 件の rule は動いていません:
-      adverb-overuse（ja 向けの rule ではないため）
-      agreement-slip（ja 向けの rule ではないため）
-      contraction-consistency（ja 向けの rule ではないため）
-      empty-conclusion（意味を読む検査のため（npx chaff test で動きます））
-      expletive-construction（ja 向けの rule ではないため）
-      oxford-comma-consistency（ja 向けの rule ではないため）
-      risk-disclosure（意味を読む検査のため（npx chaff test で動きます））
-      sentence-initial-conjunction-run（ja 向けの rule ではないため）
-      title-case-consistency（ja 向けの rule ではないため）
-      unsourced-number（意味を読む検査のため（npx chaff test で動きます））
+  {not-run}
 ```
 
 | 行 | 指摘 | 意味 | 直しかた |
@@ -325,7 +267,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから   stet 
   5:68    warning この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
                   excessive-hedging
 
-指摘 2 件、動いていない rule 10 件
+指摘 2 件、動いていない rule 17 件
 ```
 
 ## チームで決まりを変える
@@ -353,7 +295,7 @@ npx chaffjs relax padded-intro --why "背景の節は、決まった書き出し
 数字から書き始め、逃げの表現を外し、する人と時期を書きました。
 「まとめ」は、次の報告で示すことに変えました。
 
-```markdown
+```markdown file=houkoku-fixed.md
 # 9月の問い合わせ対応についての報告
 
 ## 要点
@@ -387,17 +329,7 @@ houkoku-fixed.md   business/report · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  10 件の rule は動いていません:
-      adverb-overuse（ja 向けの rule ではないため）
-      agreement-slip（ja 向けの rule ではないため）
-      contraction-consistency（ja 向けの rule ではないため）
-      empty-conclusion（意味を読む検査のため（npx chaff test で動きます））
-      expletive-construction（ja 向けの rule ではないため）
-      oxford-comma-consistency（ja 向けの rule ではないため）
-      risk-disclosure（意味を読む検査のため（npx chaff test で動きます））
-      sentence-initial-conjunction-run（ja 向けの rule ではないため）
-      title-case-consistency（ja 向けの rule ではないため）
-      unsourced-number（意味を読む検査のため（npx chaff test で動きます））
+  {not-run}
 ```
 
 試験中のルールも含めて、指摘はありません。

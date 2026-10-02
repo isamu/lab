@@ -10,7 +10,7 @@ const LEADING_NUMBER = /^第?[\d０-９]+(?:[.\-．][\d０-９]+)*(?:[章節.)�
 /** A leading decoration: an emoji or a symbol, with its joiners and variation selectors. */
 const LEADING_DECORATION = /^[\p{So}\p{Sk}\p{Extended_Pictographic}\u{FE0F}\u{200D}]+\s*/u;
 
-const CLOSING_MARKS: ReadonlySet<string> = new Set([..." \t?？!！。.:："]);
+const CLOSING_MARKS: ReadonlySet<string> = new Set(" \t?？!！。.:：");
 
 /** The text without the closing marks at its end, scanned from the end rather than by a pattern that backtracks. */
 const withoutClosingMarks = (text: string): string => {

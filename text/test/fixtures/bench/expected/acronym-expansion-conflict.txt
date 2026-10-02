@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  acronym-two-ways-ja  found
+ja/design  acronym-two-ways-ja  found
+ja/email  acronym-two-ways-ja  found
+ja/figures  acronym-two-ways-ja  found
+ja/itinerary  acronym-two-ways-ja  found
+ja/minutes  acronym-two-ways-ja  found
+ja/note  acronym-two-ways-ja  found
+ja/policy  acronym-two-ways-ja  found
+ja/press  acronym-two-ways-ja  found
+ja/proposal  acronym-two-ways-ja  found
+ja/quote  acronym-two-ways-ja  found
+ja/readme  acronym-two-ways-ja  found
+ja/requirements  acronym-two-ways-ja  found
+en/blog  acronym-two-ways-en  found
+en/design  acronym-two-ways-en  found
+en/email  acronym-two-ways-en  found
+en/figures  acronym-two-ways-en  found
+en/itinerary  acronym-two-ways-en  found
+en/minutes  acronym-two-ways-en  found
+en/note  acronym-two-ways-en  found
+en/policy  acronym-two-ways-en  found
+en/press  acronym-two-ways-en  found
+en/proposal  acronym-two-ways-en  found
+en/quote  acronym-two-ways-en  found
+en/readme  acronym-two-ways-en  found
+en/requirements  acronym-two-ways-en  found

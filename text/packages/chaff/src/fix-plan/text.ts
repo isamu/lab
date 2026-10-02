@@ -53,6 +53,7 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
     modeReason: {
       "nothing-found": "chaff は何も見つけませんでした。",
       composite: "ai-generated-composite が出ています。文の言い回しを直しても、生成文の骨組みが残ります。",
+      structure: "構成の項目のいくつもが、人の記事の 9 割を超えています（下の「構成の目標」）。文を直しても、見出しの立て方と節の形が残ります。",
       genre: "ブログやエッセイは、構成から書き直すほうが書き手の望みに合います。",
       signals: "文書全体を測るルールが 2 つ以上出ています。見出しの構成は残し、節ごとに文を書き直します。",
       spots: "指摘は箇所ごとです。指摘された所だけを直します。",
@@ -101,6 +102,8 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
     modeReason: {
       "nothing-found": "chaff found nothing.",
       composite: "ai-generated-composite fires. Fixing the wording would leave the skeleton of generated text.",
+      structure:
+        'Several structure measures lie past 90% of human articles (see "Structure targets" below). Fixing the sentences would leave the headings and the shape of the sections.',
       genre: "For a blog post or an essay, what the writer wants changed is usually the structure.",
       signals: "Two or more rules that measure the whole document fire. Keep the outline and rewrite the prose section by section.",
       spots: "The findings are single spots. Rewrite only those.",

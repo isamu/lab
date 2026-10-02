@@ -26,7 +26,7 @@ how_to_fix:
 # 1000 字あたりの数。2 つより少なければ言わない（ai-phrasing.ts の PILE）。
 levels: { strict: 1, normal: 2, relaxed: 4 }
 
-use_for: [blog, business, legal, docs, academic, literature, speech]
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 
 group: ai-tells
 summary:
@@ -52,8 +52,8 @@ example:
       - 地図
 
 not_flagged:
-  ja: 1 つだけのコロンの前置きと、コロンで終わらない前置き（「次のとおりとする。」）は数えません。説明書・法務・技術文書のジャンルでは見ません。短い文書は測りません。英語の文書は、人もよくこの形で書くので見ません。日本語の文書の中の英文（Examples include:）も数えません。
-  en: A single colon lead-in, and a lead-in that does not end in a colon, are not counted. Documentation, legal and technical genres do not run this rule. Short documents are not measured. Japanese documents only, and in them only Japanese sentences; an English sentence inside (Examples include:) is not counted.
+  ja: 1 つだけのコロンの前置きと、コロンで終わらない前置き（「次のとおりとする。」）は数えません。説明書・法務・仕様書（technical/spec）のジャンルでは見ません。短い文書は測りません。英語の文書は、人もよくこの形で書くので見ません。日本語の文書の中の英文（Examples include:）も数えません。
+  en: A single colon lead-in, and a lead-in that does not end in a colon, are not counted. Documentation, legal and specification (technical/spec) genres do not run this rule. Short documents are not measured. Japanese documents only, and in them only Japanese sentences; an English sentence inside (Examples include:) is not counted.
 level_meaning:
   ja: コロンで箇条書きへ渡す文が 1000 字あたり {limit} 個まで
   en: "colon lead-ins to lists: up to {limit} per 1000 characters"

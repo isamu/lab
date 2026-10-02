@@ -1,0 +1,16 @@
+# 値のすぐ後ろに来てよい語（fact-conflict、summary-fact-mismatch）。ここに無い語が続く値（「3,000円から」「10月5日に開催」）は、
+# 条件の付いた値として読まない。行の終わりと表の升の終わりは、ここに書かなくても終わり。
+id: fact-value-end
+language: ja
+entries:
+  - pattern: "。"
+  - pattern: "、"
+  - pattern: "，"
+  - pattern: です
+  - pattern: でした
+  - pattern: でございます
+  - pattern: である
+  - pattern: だ
+  - pattern: まで
+  - pattern: となります
+  - pattern: となっております

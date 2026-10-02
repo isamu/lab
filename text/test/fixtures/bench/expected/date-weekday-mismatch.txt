@@ -1,0 +1,11 @@
+table  10  10  0  0
+ja/email  weekday-shift  found
+ja/itinerary  weekday-shift  found
+ja/minutes  weekday-shift  found
+ja/press  weekday-shift  found
+ja/quote  weekday-shift  found
+en/email  weekday-shift  found
+en/itinerary  weekday-shift  found
+en/minutes  weekday-shift  found
+en/press  weekday-shift  found
+en/quote  weekday-shift  found
