@@ -133,9 +133,9 @@ const draftsOf = (random: Random): Draft[] => {
 
 const featuresOf = (random: Random, draft: Draft): Record<string, string> | undefined => {
   if (random() < 0.6) return undefined;
-  if (/s$/u.test(draft.surface) && random() < 0.7) return { Number: "Plur" };
-  if (/ing$/u.test(draft.surface)) return { VerbForm: "Ger" };
-  if (/ed$/u.test(draft.surface)) return { VerbForm: "Part" };
+  if (draft.surface.endsWith("s") && random() < 0.7) return { Number: "Plur" };
+  if (draft.surface.endsWith("ing")) return { VerbForm: "Ger" };
+  if (draft.surface.endsWith("ed")) return { VerbForm: "Part" };
   return { VerbForm: pick(random, ["Part", "Ger", "Fin"], "Fin") };
 };
 
@@ -157,7 +157,7 @@ const EXAMPLE: Lexicon = [
   { pattern: "untokenized" },
 ];
 
-const WORDS: ListWords = { participle: new Set(["meaning"]), example: EXAMPLE, pair: new Set(["between and", "both and", "either or", ", and"]) };
+const WORDS: ListWords = { participle: new Set(["meaning"]), example: EXAMPLE, pair: new Set(["between and", "both and", "either or", ", and"]), region: [] };
 
 type Case = { readonly tokens: readonly Token[]; readonly sentence: ListSentence };
 

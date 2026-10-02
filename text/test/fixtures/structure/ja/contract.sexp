@@ -1,6 +1,6 @@
 (doc :language "ja" :path "ja/contract.txt" :line 1
-  (definition :term "甲" :line 3)
-  (definition :term "乙" :line 3)
+  (definition :placement "inline" :term "甲" :line 3)
+  (definition :placement "inline" :term "乙" :line 3)
   (article "1" :heading "目的" :label "第1条" :line 5
     (reference :label "第3条" :target "3" :unitWord "条" :line 6))
   (article "2" :heading "定義" :label "第2条" :line 8

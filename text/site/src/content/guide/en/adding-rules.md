@@ -158,6 +158,7 @@ custom_rules:
 
 `words` matches the words as written; for inflected words, use a morphology rule.
 Like a built-in rule, a team rule takes a level under `rules`, and `stet` silences one spot.
+Add `ignore_case: true` to a `pattern` rule to match regardless of case.
 A regular expression is checked before it runs, and shapes that can run away on a long line (`(a+)+`) are refused.
 
 ## A morphology rule (0.18.0)

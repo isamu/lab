@@ -51,6 +51,7 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
+| `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") (Japanese documents only) |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
@@ -61,6 +62,11 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.
+
+The Japanese word list of `ai-tell` includes the metaphors of technical writing (静かに壊れる "fails silently",
+黙って無視される "is ignored without a word", 時間を溶かす "melts your time"). Which phrases go in was measured on
+technical articles written before generative AI and on the corpus; phrases people already wrote as often before
+(解像度を上げる, 腹落ち) are left out.
 
 ## Three ways to fix it
 
@@ -554,10 +560,8 @@ $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 
 rewritten.md   blog/tech · English   genre from --genre
 
-  3:27    info    44 proper nouns per 1000 words (limit 40)
-                  proper-noun-density
 
-1 finding, 13 rules not run
+0 findings, 16 rules not run
 ```
 
 What changed, and why:
@@ -574,7 +578,7 @@ What changed, and why:
 | Dropped "I hope this helps! Let me know…" | Chat residue |
 
 Every number (once every 30 runs, three weeks, 12 minutes, two weeks), command and setting is kept.
-The `proper-noun-density` left after the rewrite counts the API and setting names, which a tech article needs.
+The API and setting names left after the rewrite, which a tech article needs, are well within `proper-noun-density`'s limit.
 
 Last, `chaff compare` checks that no fact was lost:
 
