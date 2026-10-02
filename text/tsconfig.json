@@ -20,5 +20,13 @@
     "noEmit": true,
     "allowJs": true
   },
-  "include": ["packages/*/src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts", "eslint.config.js", "examples/chaff-plugin-example/**/*.mjs"]
+  "include": [
+    "packages/*/src/**/*.ts",
+    "test/**/*.ts",
+    "scripts/**/*.ts",
+    "eslint.config.js",
+    "examples/chaff-plugin-example/**/*.mjs",
+    "examples/evals/**/*.mjs",
+    "examples/evals/**/*.cjs"
+  ]
 }

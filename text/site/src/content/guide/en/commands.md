@@ -24,7 +24,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs cite <source> <quotes.json>` | Checks that quoted passages are in the source |
 | `npx chaffjs compare <before> <after>` | Checks that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…) |
 | `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
-| `npx chaffjs outline <file> [<after>]` | Shows the outline and measures its shape (headings, average section length, text in lists, bold); two files side by side |
+| `npx chaffjs outline <file> [<after>]` | Shows the outline, measures its shape (headings, average section length, text in lists, bold) and scores its structure against human articles; two files side by side |
 | `npx chaffjs fix-plan <file>` | Prints a plan for whoever rewrites the file: the findings by rule, how to rewrite each, and the checks to run after |
 | `npx chaffjs skill` | Installs the Claude Code skill |
 | `npx chaffjs feedback <file> --rule <rule>` | Drafts a report of a wrong or missed finding |
@@ -240,7 +240,7 @@ $ npx chaffjs docs/ --compact
 docs/a.md   technical/readme · English   genre from the path   1 shelved
 
 
-0 findings, 57 rules not run
+0 findings, 59 rules not run
 ```
 
 To see the shelved ones too, add `--show-baseline`.
@@ -253,7 +253,7 @@ docs/a.md   technical/readme · English   genre from the path
   3:1     warning This sentence runs 43 words (limit 25)
                   max-sentence-length
 
-1 finding, 57 rules not run
+1 finding, 59 rules not run
 ```
 
 How to use it in CI is in [CI](./ci).
@@ -289,11 +289,17 @@ Wrote the Claude Code skill: …/.claude/skills/chaff/SKILL.md
 Reopen Claude Code and it is available as /chaff.
 ```
 
+The skill covers how to run chaff, how to read a finding, when to fix, `stet` or `relax --why`, setting things up
+with `rules --json`, and `tree` and `cite`. Running it again replaces the skill with the new version. A file whose
+contents differ may have been edited by hand, so it is replaced only with `--force`.
+
 ## Reporting a wrong or missed finding
 
 When a finding is wrong, or chaff missed something, `feedback` drafts a report from your own document.
 It keeps only the lines around the finding, and sends nothing itself.
 `--missed --line N` reports something chaff should have said; `--with-config` adds all of `chaff.yaml`.
+The draft, `.chaff-feedback.md`, holds the version and OS, the one finding with two lines on each side, and that rule's setting in `chaff.yaml`.
+A report becomes a test and a fix.
 
 ```
 $ npx chaffjs feedback sample.md --rule heading-echo --line 142
@@ -348,6 +354,8 @@ npx chaffjs compare before.md after.md --json                     # for an AI to
 The kinds are `number`, `date`, `time`, `url`, `code`, `name`, `quote`, `heading`, `reference` and `footnote`.
 `--json` lists every dropped and added fact with its line, so it can go straight back to the AI that did the rewrite.
 By default a fact is counted as often as it is stated, so cutting a summary that repeated the body reports each repeat as dropped. With `--distinct`, a fact counts as kept when the other document states it at least once; a fact stated nowhere in it is still dropped or added.
+This also means `--distinct` lets the rewrite state a fact more often than the original does, or less often: it checks only that each fact is there.
+A heading counts as stated when the other document has a heading at the same level with the same wording, so a cut heading is still listed when other headings of its level remain.
 
 ## Listing the facts before a rewrite
 
@@ -387,7 +395,10 @@ A rewrite that smooths the sentences can leave the skeleton as it was: the same 
 It lists each heading, indented by depth, with its line and the length of its own text. It measures four things: the number of headings, the average section length, the share of the text in list items, and the bold spans.
 Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the average.
 
-Given two files, it shows both and how each measure moved.
+Below the outline comes the structure block. Each structure measure (headings per 1000 words, sections of one or two paragraphs, section length variation, headings in a stock form, headings split into three, introduction and conclusion headings, a closing that restates the body, three-item lists, bold-label list items, emoji headings, paired pros and cons) is set against articles written before generated text was common: what share of them the value lies past, and, where it lies past 90% of them, the human median and that line, marked ✗.
+The structure score is the count of ✗, out of the measures compared; nothing is weighted or hidden. A measure the document is too small for is listed as not measured, with the reason. The human percentiles are data, in `structure-baseline.yaml`.
+
+Given two files, it shows both and how each measure moved, the structure score included.
 
 ```
 $ npx chaffjs outline before.md after.md
@@ -400,6 +411,15 @@ before.md outline: headings 6, average section 47 words, in lists 19%, bold 8
     ## Results  (before.md:39)  14 words
     ## Conclusion  (before.md:43)  40 words
 
+Structure score: 1 (measures past 90% of human articles, of 10 compared against 641 human articles)
+  · headings: 17.9 per 1000 words  higher than 75% of human articles
+  · sections of one or two paragraphs: 60% (mean 2.6 paragraphs)  higher than 55% of human articles
+  · section length variation: 50%  more uniform than 60% of human articles
+  · introduction / conclusion headings: 1 (closing)  higher than 65% of human articles
+  ✗ list items opening with a bold label: 3  higher than 95% of human articles (human median 0, 90th percentile 0)
+  · usual in human articles: headings in a stock form 0%, headings split into three 0, closing that restates the body 3% ("Conclusion"), headings with an emoji 0, pros / cons pairs 0
+  not measured: three-item lists (fewer than three lists)
+
 after.md outline: headings 5, average section 41 words, in lists 0%, bold 0
 
   # Our flaky test was a time zone problem  (after.md:1)  28 words
@@ -408,14 +428,32 @@ after.md outline: headings 5, average section 41 words, in lists 0%, bold 0
     ## The fix  (after.md:15)  49 words
     ## Results  (after.md:19)  38 words
 
+Structure score: 1 (measures past 90% of human articles, of 9 compared against 641 human articles)
+  · headings: 19.4 per 1000 words  higher than 80% of human articles
+  ✗ sections of one or two paragraphs: 100% (mean 1.3 paragraphs)  higher than 90% of human articles (human median 50, 90th percentile 95)
+  · section length variation: 39%  more uniform than 80% of human articles
+  · usual in human articles: headings in a stock form 0%, headings split into three 0, introduction / conclusion headings 0, list items opening with a bold label 0, headings with an emoji 0, pros / cons pairs 0
+  not measured: closing that restates the body (no closing section), three-item lists (fewer than three lists)
+
 How the shape changed (before.md → after.md)
   headings: 6 → 5
   average section: 47 words → 41 words
   in lists: 19% → 0%
   bold: 8 → 0
+  structure score: 1 → 1
+  headings: 17.9 per 1000 words → 19.4 per 1000 words
+  sections of one or two paragraphs: 60% (mean 2.6 paragraphs) → 100% (mean 1.3 paragraphs)
+  section length variation: 50% → 39%
+  headings in a stock form: 0% → 0%
+  headings split into three: 0 → 0
+  introduction / conclusion headings: 1 (closing) → 0
+  closing that restates the body: 3% ("Conclusion") → —
+  list items opening with a bold label: 3 → 0
+  headings with an emoji: 0 → 0
+  pros / cons pairs: 0 → 0
 ```
 
-In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, and `--json` gives the outline and the shape (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
+In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, then a line per file with the structure score and the measures past the line, and `--json` gives the outline, the shape and every structure measure with where it stands (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
 
 ## Planning a rewrite
 
@@ -428,18 +466,118 @@ npx chaffjs fix-plan article.md --experimental --json    # the same plan as JSON
 ```
 
 The plan is written in the document's language. It starts with the constraints every rewrite keeps: no fact changed or added, ask the writer instead of inventing, two passes at most.
-Next comes the recommended way to rewrite (Light, Bold or Full) and the document-level signals with the outline's numbers.
+Next comes the recommended way to rewrite (Light, Bold or Full), the document-level signals with the outline's numbers, and the structure targets: the structure score and a target for each measure past 90% of human articles. A score at its limit is itself a reason to recommend Full.
 
 For each rule that found something, the plan gives its direction, what to keep, what to avoid, one before-and-after example and the spots.
 It ends with the `chaff`, `compare` and `outline` commands to run on the rewrite.
 The same file gives the same plan every time, and nothing is sent anywhere.
 The page [Making AI-sounding text sound human](./ai-sounding) has an example that goes from the plan to the checks.
 
-## Checks that read meaning, and re-measuring the limits
+## Checks that read meaning
 
-This guide only names these two.
+`chaff test` has an AI read what a machine cannot judge. It needs an API key. Without one it runs the machine
+checks only and says so; it never passes in silence.
 
-| Command | What happens |
-| --- | --- |
-| `npx chaffjs test <dir>` | Has an AI read what a machine cannot judge. Needs an API key |
-| `npx chaffjs eval <dir>` | Re-measures whether the limits fit, on your own documents |
+```bash
+npx chaffjs test docs/
+```
+
+It never hands the whole document to the AI. The machine narrows the candidates first and the AI reads only those
+passages. `risk-disclosure` does not even ask when a heading already names the risks.
+
+| Rule | What it looks at | Narrowed to |
+| --- | --- | --- |
+| `risk-disclosure` | whether a proposal states its risks | nothing, when a heading names a risk section |
+| `empty-conclusion` | whether the closing only summarises the body | only when the last section has no number, code or link the body did not have |
+| `unsourced-number` | whether a number claiming an effect has a source | only when a number and an effect word share a sentence with no source |
+
+The same question asked twice is answered from `.chaff-cache/`, so running it on every CI build is not billed again.
+
+`--dry-run` shows what would be sent, without an API key and without calling the API:
+
+```
+$ npx chaffjs test proposal.md --genre business/proposal --dry-run
+…
+proposal.md   sends 2 passages out of 4 sentences (the API was not called)
+
+      1 to send  Empty conclusion  (narrowed by machine)
+      1 to send  No risk disclosed  (narrowed by machine)
+      0 to send  Number without a source  (narrowed by machine)
+…
+  2 passages in all would be sent. With --dry-run the API was not called.
+  Sent to: anthropic / claude-opus-5 (no credentials)
+```
+
+A team's own checks go in `checks.yaml`, written in plain language, not code.
+With `look_at` (say, `look_at: sentences with "please confirm"`), only the sentences holding the quoted words are sent.
+A check that cannot be narrowed sends the whole text, and the screen says so.
+
+```yaml
+checks:
+  - name: A proposal names who decides
+    use_for: business
+    check: |
+      A document that asks for a decision says who makes it.
+      A job title or a name will do. If no one can be identified, it breaks the rule.
+    level: normal
+    how_to_fix: Name the person who decides, as in "approval from the head of finance".
+```
+
+The judge can be Anthropic or OpenAI. The rules and the shape the AI must answer in stay the same.
+
+```yaml
+ai_backend: openai     # anthropic by default
+ai_model: gpt-5
+```
+
+| Backend | Credentials | Default model |
+| --- | --- | --- |
+| `anthropic` | `ANTHROPIC_API_KEY`, or `ant auth login` | `claude-opus-5` |
+| `openai` | `OPENAI_API_KEY` | `gpt-5` |
+
+The key can also be written in `.env`. A variable set in the shell wins, so you can try another key for one run.
+Keep `.env` in `.gitignore`; the `.gitignore` that `chaff init` writes has it.
+A Claude subscription (Pro or Max for Claude Code) does not work here.
+The API is billed separately, and its credentials live elsewhere (`~/.claude` and `~/.config/anthropic`).
+
+## Re-measuring the limits on your own documents
+
+The default limits are a general guess. Whether they fit your writing can only be measured. `chaff eval` treats the
+documents you give it as good writing that people published, and shows how many findings each limit would give.
+
+```bash
+npx chaffjs eval examples/blog-en/
+```
+
+```
+  Measured 38 rules on 11 files as a corpus.
+
+  The documents here are taken as good documents that people wrote and published.
+  A rule that fires often on them may have a limit that does not fit real writing (target: under 5%).
+
+  Note: the corpus has only 11 documents. Showing 5% takes at least 20.
+     For now each share is either 0 or all, so read the density on the right (findings per 10,000 characters).
+
+  Too many -ly adverbs   (adverb-overuse)
+
+         8     9 docs ( 81.8%)     9 findings   3.6 per 10,000 characters
+        10     9 docs ( 81.8%)     9 findings   3.6 per 10,000 characters
+        11     8 docs ( 72.7%)     8 findings   3.2 per 10,000 characters
+        13     8 docs ( 72.7%)     8 findings   3.2 per 10,000 characters
+        15     6 docs ( 54.5%)     6 findings   2.4 per 10,000 characters  ← current
+        19     4 docs ( 36.4%)     4 findings   1.6 per 10,000 characters
+        23     1 doc  (  9.1%)     1 finding    0.4 per 10,000 characters
+        25     1 doc  (  9.1%)     1 finding    0.4 per 10,000 characters
+        30     1 doc  (  9.1%)     1 finding    0.4 per 10,000 characters
+        45     0 docs (  0.0%)     0 findings   0.0 per 10,000 characters  ← recommended
+
+    At the current limit 54.5% of the documents are hit, over the target (under 5%).
+    Recommended: 45
+
+    In chaff.yaml:  rules:
+                      adverb-overuse: 45
+```
+
+It prints a recommended value and the line to put in `chaff.yaml`, but it never changes a limit itself.
+The result answers for these documents, not for all writing, so a person decides.
+With fewer than 20 documents each share swings between 0 and all, so read the density on the right instead.

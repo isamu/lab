@@ -1,0 +1,74 @@
+id: bracket-nesting
+layer: L3
+status: experimental
+how_to_find: bracket-nesting
+severity: info
+
+name:
+  ja: 括弧の中に括弧が重なっている
+  en: Brackets nested too deep
+
+why:
+  ja: 括弧の中に括弧があり、その中にまた括弧があると、読み手は開いた括弧をいくつも覚えたまま読み進めることになり、どこで本文に戻ったのかを見失います。二重までは注や引用でよくある形ですが、それより深いものは、文を分けるか、注を外に出すほうが読めます。数えるのは丸括弧・角括弧・鉤括弧・隅付き括弧と、開きと閉じの形が違う引用符です。開きの無い閉じ括弧（箇条の「1)」）と、数式（$…$）の中の括弧は数えません。
+  en: A bracket inside a bracket inside a bracket makes the reader hold every open one while reading on, and lose where the sentence resumed. Two levels are common in notes and quotations; deeper than that reads better as a separate sentence or a note. Round and square brackets, Japanese corner brackets and curly double quotes are counted. A closing bracket with no opener (the "1)" of a list) and brackets inside a formula ($…$) are not.
+
+message:
+  ja: 括弧が {count} 重になっています（{limit} 重まで）
+  en: Brackets nested {count} deep (limit {limit})
+
+how_to_fix:
+  ja: 一番内側の括弧を外して、別の文にするか注にしてください。
+  en: Take the innermost bracket out into its own sentence or a note.
+
+levels: { strict: 1, normal: 2, relaxed: 3 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「（注（a（b）））」のように、括弧の中に括弧が何重にも重なった文
+  en: Brackets inside brackets inside brackets in one sentence
+example:
+  ja:
+    before: |
+      費用は本部が負担します（ただし、出張費（交通費（特急料金を除く）を含む）は各部の負担）。
+    after: |
+      費用は本部が負担します。ただし、出張費は各部が負担します。出張費には交通費を含み、特急料金は含みません。
+  en:
+    before: |
+      The fee is waived (for members (including student members (under 25))) on request.
+    after: |
+      The fee is waived on request for members, including student members under 25.
+
+not_flagged:
+  ja: 二重までの括弧、開きの無い閉じ括弧（「1)」）、コードと数式（$…$）の中の括弧、波括弧は数えません。
+  en: Two levels of brackets, a closing bracket with no opener ("1)"), brackets in code or in a formula ($…$), and curly braces are not counted.
+level_meaning:
+  ja: 括弧の重なり {limit} 重まで
+  en: brackets nested up to {limit} deep
+rewrite:
+  ja:
+    direction: 一番内側の括弧を外して、別の文か注にしてください。括弧の中身は落とさずに残します。
+    pairs:
+      - before: 費用は本部が負担します（ただし、出張費（交通費（特急料金を除く）を含む）は各部の負担）。
+        after: 費用は本部が負担します。ただし、出張費は各部が負担します。出張費には交通費を含み、特急料金は含みません。
+      - before: 申請書（様式1（別紙（記入例）参照））を出してください。
+        after: 申請書（様式1）を出してください。記入例は別紙にあります。
+    keep:
+      - 括弧の中に書いてあった条件や例外
+      - 何がどこに係るのか
+    avoid:
+      - 括弧の中身を消す
+      - 括弧を読点やダッシュに替えて、同じ重なりを残す
+  en:
+    direction: Take the innermost bracket out into its own sentence or a note. Keep everything the brackets said.
+    pairs:
+      - before: The fee is waived (for members (including student members (under 25))) on request.
+        after: The fee is waived on request for members, including student members under 25.
+      - before: Submit the form (Form A (see the sample (Annex 2))) by Friday.
+        after: Submit Form A by Friday. A sample is in Annex 2.
+    keep:
+      - every condition and exception the brackets held
+    avoid:
+      - deleting what was in the brackets
+      - swapping the brackets for dashes and keeping the same nesting

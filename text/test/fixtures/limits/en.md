@@ -13,6 +13,7 @@ This is not only a report but also a plan. As of my last knowledge update, the v
 The team quickly and quietly reviewed the plan — then happily and eagerly approved it — and finally, rapidly and carefully, shipped it.
 Arguably, it seems the plan works. It may possibly be late. It could be fine, to some extent, in some cases.
 Sorry to bother you, but if you don't mind, I just wanted to ask. I was wondering if you could check it 😀.
+The fee is waived (for members (and students)) on request.
 
 Moreover, the budget is fixed.
 
@@ -54,3 +55,11 @@ The next meeting is on the tenth. The agenda will follow by email. The slides ar
 The key point is the key. Here's the thing: the map matters. Honestly, time is short.
 
 The board made a decision last week, and the team will conduct an analysis of the results.
+
+## 🚀 Before
+
+Bring the key.
+
+## ✅ After
+
+Return the key.

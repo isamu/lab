@@ -43,7 +43,7 @@ Some things are left out on purpose.
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The report below was saved as `enquiries.md`.
 
-```markdown
+```markdown file=enquiries.md
 # Report on customer enquiries in September
 
 ## Background
@@ -125,84 +125,7 @@ enquiries.md   business/report · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  77 rules did not run:
-      adverb-overuse (still experimental)
-      agentless-passive (still experimental)
-      agreement-slip (still experimental)
-      ai-generated-composite (still experimental)
-      ai-tell (still experimental)
-      announced-count-mismatch (still experimental)
-      announcing-opener (still experimental)
-      assistant-residue (still experimental)
-      bold-label-list (not a rule for en)
-      broken-link (still experimental)
-      closing-cliche (the business/report genre does not check it)
-      colon-lead-in (not a rule for en)
-      contraction-consistency (still experimental)
-      contrast-framing (still experimental)
-      cushion-phrase-density (still experimental)
-      dangling-figure-reference (still experimental)
-      dangling-reference (still experimental)
-      date-order (still experimental)
-      date-range-reversed (still experimental)
-      date-weekday-mismatch (still experimental)
-      double-keigo (not a rule for en)
-      double-negative (still experimental)
-      doubled-punctuation (still experimental)
-      doubled-word (still experimental)
-      duplicate-definition (still experimental)
-      duplicate-heading (still experimental)
-      emoji-density (still experimental)
-      empty-conclusion (it reads meaning; npx chaff test runs it)
-      empty-section (still experimental)
-      excessive-hedging (still experimental)
-      expletive-construction (still experimental)
-      fullwidth-alnum-consistency (not a rule for en)
-      hankaku-kana (not a rule for en)
-      heading-level-skip (still experimental)
-      hiragana-fukushi (not a rule for en)
-      internal-jargon (still experimental)
-      invisible-character (still experimental)
-      katakana-long-vowel (not a rule for en)
-      kutoten-consistency (not a rule for en)
-      latin-spacing (not a rule for en)
-      max-kanji-continuous (not a rule for en)
-      no-doubled-joshi (not a rule for en)
-      no-em-dash (still experimental)
-      no-mixed-desumasu (not a rule for en)
-      no-nakaguro-parallel (not a rule for en)
-      nominalization (still experimental)
-      numbering-gap (still experimental)
-      oxford-comma-consistency (still experimental)
-      paragraph-length-variance (the business/report genre does not check it)
-      percent-sum-mismatch (still experimental)
-      preferred-term (still experimental)
-      proper-noun-density (still experimental)
-      ra-nuki (not a rule for en)
-      repeated-conjunction (still experimental)
-      required-sections (still experimental)
-      requirement-modal (still experimental)
-      requirement-smell (the business/report genre does not check it)
-      risk-disclosure (it reads meaning; npx chaff test runs it)
-      rule-of-three (the business/report genre does not check it)
-      sasete-itadaku (not a rule for en)
-      section-length-uniformity (the business/report genre does not check it)
-      sentence-initial-conjunction-run (still experimental)
-      sentence-rhythm (the business/report genre does not check it)
-      space-before-punctuation (still experimental)
-      spelling-consistency (still experimental)
-      stock-transition (still experimental)
-      stray-space (not a rule for en)
-      taigen-dome-in-prose (not a rule for en)
-      title-case-consistency (still experimental)
-      total-mismatch (still experimental)
-      unbalanced-bracket (still experimental)
-      undefined-acronym (still experimental)
-      unfilled-placeholder (still experimental)
-      unqualified-superlative (still experimental)
-      unsourced-number (it reads meaning; npx chaff test runs it)
-      url-run-on (still experimental)
-      vague-figure-reference (still experimental)
+  {not-run}
 ```
 
 There are three findings.
@@ -250,7 +173,7 @@ enquiries.md   business/report · English   genre from --genre
   15:93   warning This sentence is passive ("discussed") but never says who did it
                   agentless-passive
 
-7 findings, 26 rules not run
+7 findings, 29 rules not run
 ```
 
 The four new findings, in plain words:
@@ -350,7 +273,7 @@ enquiries.md   business/report · English   genre from --genre   2 stet
   9:66    warning This sentence runs 37 words (limit 25)
                   max-sentence-length
 
-5 findings, 20 rules not run
+5 findings, 21 rules not run
 ```
 
 ## Changing a rule for the whole team
@@ -378,7 +301,7 @@ The reason stays in the file, so whoever comes later can see why it was relaxed.
 The report now opens with what happened, drops the hedges, and says who does what and when.
 The summary became what the next report will show.
 
-```markdown
+```markdown file=enquiries-fixed.md
 # Report on customer enquiries in September
 
 ## In short
@@ -412,27 +335,7 @@ enquiries-fixed.md   business/report · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  20 rules did not run:
-      closing-cliche (the business/report genre does not check it)
-      colon-lead-in (not a rule for en)
-      double-keigo (not a rule for en)
-      empty-conclusion (it reads meaning; npx chaff test runs it)
-      hiragana-fukushi (not a rule for en)
-      latin-spacing (not a rule for en)
-      max-kanji-continuous (not a rule for en)
-      no-doubled-joshi (not a rule for en)
-      no-mixed-desumasu (not a rule for en)
-      no-nakaguro-parallel (not a rule for en)
-      paragraph-length-variance (the business/report genre does not check it)
-      requirement-smell (the business/report genre does not check it)
-      risk-disclosure (it reads meaning; npx chaff test runs it)
-      rule-of-three (the business/report genre does not check it)
-      sasete-itadaku (not a rule for en)
-      section-length-uniformity (the business/report genre does not check it)
-      sentence-rhythm (the business/report genre does not check it)
-      stray-space (not a rule for en)
-      taigen-dome-in-prose (not a rule for en)
-      unsourced-number (it reads meaning; npx chaff test runs it)
+  {not-run}
 ```
 
 No findings, experimental rules included.

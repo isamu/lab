@@ -3,7 +3,7 @@
 chaff は、model の出力の採点役として、model による採点の横に置けます。
 同じ出力にはいつも同じ結果を返し、一つ一つの指摘が行とルールを指し、どこにも何も送りません。
 意味は読みません。答えが正しいかどうかは、これまでどおり model の採点か人が決めます。
-このページでは、いま動くことを手順と実際の出力で示し、予定していることも書きます。
+このページでは、出力をまとめて採点する、基準を書く、2 つの回を比べる、関数で呼ぶ、評価基盤につなぐ、の順に、手順と実際の出力で示します。
 
 ## 出力の何を確かめられるか
 
@@ -13,9 +13,10 @@ chaff は、model の出力の採点役として、model による採点の横�
 | RAG の回答の引用が、本当に原文にあるか | `npx chaffjs cite <原文> <引用.json> --format json` | 引用がその番地に無い |
 | 回答が自分と矛盾していないか | `npx chaffjs <出力> --experimental` | 合計が内訳の和と合わない、日付と曜日が合わない |
 | 生成文らしい形や、読みにくさ | `npx chaffjs <出力> --experimental --sarif <path>` | `error` の指摘だけ。ほかは数として数えます |
+| 上のすべてを、たくさんの出力に | `npx chaffjs grade <items.jsonl> --out <results.jsonl>` | 落ちた出力がある（入力が読めなければ 2） |
 | 作り直しの段で何を直させるか | `npx chaffjs fix-plan <出力> --experimental --json` | なりません。直す指示を出すだけです |
 
-ふつうの検査には `--json` がありません。指摘は SARIF で読みます。下の「指摘を SARIF で受け取る」で説明します。
+たくさんの出力には、下の `chaff grade` を使います。ふつうの検査には `--json` が無いので、指摘は SARIF で読みます（「指摘を SARIF で受け取る」）。
 
 ## 始める前に
 
@@ -24,111 +25,174 @@ Node.js 24 以上が要ります。`npx chaffjs` は、初めて使うときに 
 どの回も同じ版で動き、同じ出力には同じ結果が返るためです。
 実行する場所に `chaff.yaml` があれば、どの検査にも効きます（[設定](./configuration)）。
 
-## 初めての評価を回す
+## `chaff grade` で初めての評価を回す
 
 1. **出力を JSONL に並べます。** 1 行に 1 つの出力です。`id` と `output` は必須です。
-   事実を元の文書と照らすときは `reference` を、引用を確かめるときは `source` と `citations` を足します。
+   出力の元になった文書と事実を照らすときは `reference` を足します。
+   引用を確かめるときは、`sources`（原文の名前と本文）と `citations` を足します。
+   原文が一つなら、引用の `source` は省けます。
 
    ```json
    {
      "id": "refund",
      "output": "商品が届いた日から 30 日以内なら返金を求められ、送料も戻ります（第2条第2項）。",
-     "source": "# 返金の決まり\n\n第1条（対象）\n…",
-     "citations": [{ "address": "2.1", "quote": "商品が届いた日から 30 日以内" }]
+     "sources": { "policy": "# 返金の決まり\n\n第1条（対象）\n…" },
+     "citations": [
+       { "address": "2.1", "quote": "商品が届いた日から 30 日以内" },
+       { "address": "2.2", "quote": "送料も全額を返金する。" }
+     ]
    }
    ```
 
-2. **下のスクリプトを `eval-chaff.mjs` として保存します。** 1 行ずつ上のコマンドにかけ、結果を集めます。
-3. **1 つのファイルに、または 2 つを並べてかけます。**
-   `prompt-a.jsonl` と `prompt-b.jsonl` は、同じ 3 つの題に 2 つの prompt で答えさせた出力です。中身は下の例 1〜3 にあります。
+   回答のどの文が引用なのかを、chaff は推測しません。引用は、回答と一緒に返すよう model に頼みます。
+   `language` と `genre` は出力ごとに書けます。書かなければ、ふつうのファイルと同じに決まります。
+
+2. **ファイルを採点します。** `prompt-a.jsonl` と `prompt-b.jsonl` は、同じ 3 つの題に 2 つの prompt で答えさせた出力です。中身は下の例 1〜3 にあります。
+   `--out` は出力ごとの結果を書き出し、画面には要約が出ます。
 
    ```
-   $ node eval-chaff.mjs prompt-a.jsonl prompt-b.jsonl
-   {"run":"prompt-a.jsonl","id":"deploy","pass":true,"chars":137,"findings":0,"dropped":[],"added":[],"unsupported":0}
-   {"run":"prompt-a.jsonl","id":"q3","pass":true,"chars":89,"findings":0,"dropped":[],"added":[],"unsupported":0}
-   {"run":"prompt-a.jsonl","id":"refund","pass":true,"chars":50,"findings":0,"dropped":[],"added":[],"unsupported":0}
-   {"run":"prompt-b.jsonl","id":"deploy","pass":true,"chars":230,"findings":5,"dropped":[],"added":[],"unsupported":0}
-   {"run":"prompt-b.jsonl","id":"q3","pass":false,"chars":76,"findings":0,"dropped":["6 時間","2.5 時間","2026年7月14日"],"added":["2026年7月1日"],"unsupported":0}
-   {"run":"prompt-b.jsonl","id":"refund","pass":false,"chars":40,"findings":0,"dropped":[],"added":[],"unsupported":1}
-   rule (per 1000 chars)	prompt-a.jsonl	prompt-b.jsonl
-   ai-generated-composite	0.0	2.9
-   ai-tell	0.0	2.9
-   closing-cliche	0.0	5.8
-   padded-intro	0.0	2.9
-   passed	3/3	1/3
+   $ npx chaffjs grade prompt-b.jsonl --experimental --out b.results.jsonl
+   出力ごとの結果を書きました: b.results.jsonl（3 行）
+   prompt-b.jsonl: 3 件の出力、1 件が通り、2 件が落ちた
+
+   落ちた出力
+     ✗ q3: facts.dropped 3 > 0, facts.added 1 > 0
+     ✗ refund: citations.failed 1 > 0
+
+   ルールごとの率（1,000 字あたり、指摘のあった出力の数）
+     ai-generated-composite  3.1  1 件
+     ai-tell                 3.1  1 件
+     closing-cliche          6.1  1 件
+     padded-intro            3.1  1 件
+
+   事実: 落ちた 3（date 1, number 2）、足された 1（date 1）
+   引用: 2 件を照らし、1 件が外れた
+
+   動かなかったもの 12 件
+     adverb-overuse                    3 件の出力  ja 向けの rule ではないため
+     cite                              2 件の出力  citations が無い（chaff は出力から引用を推測しない）
+     compare                           2 件の出力  reference が無い（事実は reference と照らす）
+     empty-conclusion                  3 件の出力  意味を読む検査のため（npx chaff test で動きます）
+   …
+
+   再現の印: chaffjs 0.18.0, @chaffjs/lang-en 0.16.0, @chaffjs/lang-ja 0.17.0
+     rules sha256:3c19ebcf1dc64d8d6d3129a2489e4938fa14bfd6927e300c2b0919a39de0e26a
+     settings sha256:18f9e63d4e51a582d46a29f30359c872c912fc3f08dfe0545875636e94272347
    ```
 
-4. **結果を読みます。** JSON の 1 行が 1 つの出力です。`dropped` と `added` は `compare` が見つけた事実です。
-   `unsupported` は、`cite` が原文に見つけられなかった引用の数です。
-   表は、ルールごとの指摘を、回全体の 1,000 字あたりにしたものです。長い出力と短い出力を同じ物差しで比べられます。
-5. **合否を決めます。** このスクリプトでは、`error` の指摘、落ちた・足された事実、外れた引用のどれかがあれば落とします。
-   形の指摘では落としません。prompt や model を比べるための数として使います。
-   落ちた出力が一つでもあれば終了コード 1 で終わるので、CI で止められます。`pass` の行は評価に合わせて変えます。
+3. **結果を読みます。** 次のどれかがあれば、その出力は落ちます。
+   - `error` の指摘
+   - `reference` に対して落ちた事実、足された事実
+   - 原文に見つからない引用
 
-```js
-// node eval-chaff.mjs run-a.jsonl [run-b.jsonl ...]
-// Each line: {"id", "output", "reference"?, "source"?, "citations"?}
-import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+   形の指摘で落ちることはありません。1,000 字あたり（英語なら 1,000 語あたり）の率として、prompt や model を比べるのに使います。
+   「動かなかったもの」は、何を確かめていないかとその理由です。指摘 0 件を「確かめて問題なし」と読ませないためです。
+   `--compact` は 1 出力 1 行で、CI のログ向けです。`--json` は要約を JSON で出します。
 
-const dir = mkdtempSync(join(tmpdir(), "chaff-eval-"));
-const chaff = (...args) => spawnSync("npx", ["chaffjs", ...args], { encoding: "utf8" });
-const save = (name, text) => {
-  writeFileSync(join(dir, name), text);
-  return join(dir, name);
-};
-const chars = (text) => text.replace(/\s+/g, "").length;
+   ```
+   $ npx chaffjs grade prompt-b.jsonl --experimental --compact
+   q3	fail	facts.dropped 3 > 0, facts.added 1 > 0
+   refund	fail	citations.failed 1 > 0
+   deploy	pass
+   prompt-b.jsonl: 3 件の出力、1 件が通り、2 件が落ちた
+   ```
 
-const lint = (id, file) => {
-  const sarif = join(dir, `${id}.sarif`);
-  chaff(file, "--experimental", "--sarif", sarif);
-  const results = JSON.parse(readFileSync(sarif, "utf8")).runs[0].results;
-  return results.map((result) => ({ rule: result.ruleId.replace("chaff/", ""), level: result.level }));
-};
+4. **終了コードを使います。** すべて通れば 0、落ちた出力があれば 1 です。
+   入力か `chaff.yaml` が読めなければ 2 です。JSON でない行、`id` の欠けや重なり、知らない言語などがこれに当たります。
+   CI の門は、2 を見れば「出力が悪い」のではなく「採点が動いていない」と分かります。
 
-const compare = (id, reference, file) => {
-  const facts = JSON.parse(chaff("compare", save(`${id}.ref.md`, reference), file, "--json").stdout);
-  return { dropped: facts.dropped.map((fact) => fact.text), added: facts.added.map((fact) => fact.text) };
-};
+`b.results.jsonl` の 1 行には、1 つの出力の指摘、率、動かなかったルール、事実、引用が入ります。
+合否とその理由、再現の印も入ります。1 行目の始めはこうです。
 
-const cite = (id, source, citations) => {
-  const args = ["cite", save(`${id}.src.md`, source), save(`${id}.quotes.json`, JSON.stringify(citations))];
-  return JSON.parse(chaff(...args, "--format", "json").stdout).filter((check) => check.status !== "ok").length;
-};
-
-const grade = (item) => {
-  const file = save(`${item.id}.md`, item.output);
-  const findings = lint(item.id, file);
-  const facts = item.reference ? compare(item.id, item.reference, file) : { dropped: [], added: [] };
-  const unsupported = item.source ? cite(item.id, item.source, item.citations) : 0;
-  const errors = findings.filter((finding) => finding.level === "error").length;
-  const pass = errors === 0 && facts.dropped.length + facts.added.length + unsupported === 0;
-  return { id: item.id, pass, chars: chars(item.output), findings, ...facts, unsupported };
-};
-
-const rates = (rows) => {
-  const total = rows.reduce((sum, row) => sum + row.chars, 0);
-  const counts = rows.flatMap((row) => row.findings).reduce((acc, { rule }) => ({ ...acc, [rule]: (acc[rule] ?? 0) + 1 }), {});
-  return Object.fromEntries(Object.entries(counts).map(([rule, count]) => [rule, (count * 1000) / total]));
-};
-
-const runs = process.argv.slice(2).map((path) => {
-  const rows = readFileSync(path, "utf8").split("\n").filter(Boolean).map((line) => grade(JSON.parse(line)));
-  rows.forEach((row) => console.log(JSON.stringify({ run: path, ...row, findings: row.findings.length })));
-  return { path, passed: rows.filter((row) => row.pass).length, total: rows.length, rates: rates(rows) };
-});
-
-const rules = [...new Set(runs.flatMap((run) => Object.keys(run.rates)))].sort();
-console.log(["rule (per 1000 chars)", ...runs.map((run) => run.path)].join("\t"));
-rules.forEach((rule) => console.log([rule, ...runs.map((run) => (run.rates[rule] ?? 0).toFixed(1))].join("\t")));
-console.log(["passed", ...runs.map((run) => `${run.passed}/${run.total}`)].join("\t"));
-process.exitCode = runs.every((run) => run.passed === run.total) ? 0 : 1;
+```json
+{"id":"q3","language":"ja","genre":"blog/tech","size":{"unit":"char","value":73},"findings":[],"rates":{},"notRun":[…],
+ "facts":{"dropped":[{"kind":"number","key":"6 時間","text":"6 時間","line":4,"allowed":false},…],"added":[…],"reformed":1},
+ "citations":null,"pass":false,"failedBecause":["facts.dropped 3 > 0","facts.added 1 > 0"],"stamp":{…}}
 ```
 
-スクリプトは chaff が書き出したファイルを読むので、コマンドで打つときと同じルールが動きます。
-長さは空白を除いた字数で数えます。英語の出力なら、語の数で数えるほうが合います。
+再現の印（`stamp`）には、chaff の版と、ルールのハッシュと、設定のハッシュが入ります。ハッシュが 2 つとも同じ回どうしなら比べられます。
+
+## 採点の基準を chaff.yaml に書く
+
+`chaff.yaml` に `grade:` を書くと、書いたものだけで合否を決め、出力ごとに減点を数えます。
+
+```yaml
+grade:
+  rules:
+    total-mismatch: { max: 0 } # 1 件でもあれば落とす
+    closing-cliche: { max: 0, weight: 3 } # 落とし、1 件 3 点
+    ai-tell: { max_rate: 5, weight: 2 } # 1,000 字（英語は語）あたり 5 件を超えたら落とす
+  facts: { dropped: 0, added: 0, allow_dropped: [heading] }
+  citations: { failed: 0, required: true } # required: sources があって citations が無い出力を落とす
+  penalty: 10 # 点の和がこれを超えたら落とす
+```
+
+```
+$ npx chaffjs grade prompt-b.jsonl --experimental --compact
+q3	fail	penalty 0	facts.dropped 3 > 0, facts.added 1 > 0
+refund	fail	penalty 0	citations.failed 1 > 0
+deploy	fail	penalty 8	rules.closing-cliche 2 > 0
+prompt-b.jsonl: 3 件の出力、0 件が通り、3 件が落ちた
+```
+
+点は減点の和で、満点からの点数ではありません。一点ごとに、どの指摘から来たかが分かります（`deploy` の結果の行）。
+
+```json
+"score": { "penalty": 8, "items": [
+  { "points": 2, "rule": "ai-tell", "line": 3 },
+  { "points": 3, "rule": "closing-cliche", "line": 12 },
+  { "points": 3, "rule": "closing-cliche", "line": 12 } ] }
+```
+
+`grade:` が無ければ点は出ません。`grade:` に読めない値があれば、場所を示して終了コード 2 で止まります。
+chaff の知らないルールの名前は、そう言ったうえで「動かなかったもの」に並べます。
+`max_rate` の単位は出力の言語で決まります。上の例では、英語の出力は 1,000 語あたり、日本語の出力は 1,000 字あたりの 5 件です。
+
+## 2 つの回を比べる（`--baseline`）
+
+前の prompt の出力を `--out` 付きで採点し、新しい prompt の出力をそれと比べます。組は `id` で作ります。
+
+```
+$ npx chaffjs grade prompt-a.jsonl --experimental --out a.results.jsonl
+$ npx chaffjs grade prompt-b.jsonl --experimental --baseline a.results.jsonl
+…上と同じ要約…
+
+a.results.jsonl と比べた: 3 件の出力が組になった
+
+ルールごとの率（1,000 字あたり、前 → 後）
+  ai-generated-composite  0.0 → 3.1  (+3.1)  増えた: deploy
+  ai-tell                 0.0 → 3.1  (+3.1)  増えた: deploy
+  closing-cliche          0.0 → 6.1  (+6.1)  増えた: deploy
+  padded-intro            0.0 → 3.1  (+3.1)  増えた: deploy
+
+新しく落ちた: q3, refund
+新しく通った: なし
+
+新しく落ちた・足された事実と、新しく外れた引用
+  q3: 落ちた number 6 時間, number 2.5 時間, date 2026年7月14日、足された date 2026年7月1日
+  refund: 落ちた なし、足された なし、外れた引用 policy 2.2
+
+回帰 2 件
+  ✗ q3: passed, now fails
+  ✗ refund: passed, now fails
+```
+
+回帰とは、次のどれかです。
+- 前は通った出力が落ちた
+- `grade.rules` に書いたルールの指摘が、どれかの出力で増えた
+- 点の和が増えた
+
+`--baseline` を付けると、回帰があれば終了コード 1、無ければ 0 です。prompt や model の変更を CI で止められます。
+`grade.rules` に無いルールの増減は表に出しますが、回帰には数えません。
+
+2 つの回は、ルールと設定が同じでなければなりません。違えば比べずに止まります。設定の違いを model の違いと読ませないためです。
+
+```
+$ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl
+a.results.jsonl とは比べません: 設定が違います。ルールか設定が変わった差を、prompt や model の差として読まないため（--allow-stamp-mismatch で比べる）
+```
+
+終了コード 2 で終わります。前の回は `--experimental` 付きで、今回は付いていません。
 
 ## 例 1: 要約は元の事実を守っているか
 
@@ -262,7 +326,7 @@ $ npx chaffjs prompt-a.md --experimental --compact
 prompt-a.md   blog/tech · 日本語   ジャンルは既定から
 
 
-指摘 0 件、動いていない rule 18 件
+指摘 0 件、動いていない rule 19 件
 ```
 
 ```
@@ -281,11 +345,11 @@ prompt-b.md   blog/tech · 日本語   ジャンルは既定から
   12:9    warning 「参考になれば幸いです」で締めています
                   closing-cliche
 
-指摘 5 件、動いていない rule 18 件
+指摘 5 件、動いていない rule 19 件
 ```
 
-たくさんの題で比べるときは、一つの出力ではなく率を比べます。手順 3 のスクリプトの表が、2 つを並べて出します。
-動いていない 10 件は、英語だけのルールと、意味を読むルール 1 件です。`--compact` を外すと、理由と一緒に並びます。
+たくさんの題で比べるときは、一つの出力ではなく率を比べます。`chaff grade` がルールごとの率を出し、`--baseline` が 2 つの回を並べます。
+動いていない 19 件は、英語だけのルール、ジャンル blog/tech では見ないルール、表題より下の見出しが要るルール 1 件、意味を読むルール 1 件です。`--compact` を外すと、理由と一緒に並びます。
 
 指摘を作り直しの段に戻すときは、`fix-plan` で直す指示にします。
 次は抜粋です。この後に、ルールごとの直す方向、例、見つけた箇所が続きます。
@@ -351,11 +415,11 @@ answer.md   blog/tech · 日本語   ジャンルは既定から
   9:5     error   「2026-10-06」は火曜日です（月曜日と書いてあります）
                   date-weekday-mismatch
 
-指摘 2 件、動いていない rule 18 件
+指摘 2 件、動いていない rule 19 件
 ```
 
-どちらも `error` なので終了コード 1 で終わり、スクリプトもこの出力を落とします。
-これらのルールは試験中です。`--experimental` を付けないと動かず、最後の行がそう言います（`指摘 0 件、動いていない rule 66 件`）。
+どちらも `error` なので終了コード 1 で終わり、`chaff grade` もこの出力を落とします。
+これらのルールは試験中です。`--experimental` を付けないと動かず、最後の行がそう言います（`指摘 0 件、動いていない rule 94 件`）。
 
 ## 指摘を SARIF で受け取る
 
@@ -399,70 +463,74 @@ prompt-b.md   blog/tech · 日本語   ジャンルは既定から
 
 重さは `error`、`warning`、`note`（chaff の `info`）です。同じファイルで PR の行に指摘を出せます（[CI](./ci)）。
 
-## 予定: `chaff grade` ほか（#488）
+## 評価の仕組みの中から呼ぶ（`grade()` と採点役の形）
 
-この節に書いたものは、まだ動きません。予定しているコマンドの使い方を示し、いま書く仕組みを後で移しやすくするためです。
-設計は仕様書の 29 節にあり、作業は [#488](https://github.com/isamu/lab/issues/488) で追っています。
-
-**`chaff grade`** は、上のスクリプトがしていることを 1 つのコマンドでします。入力は同じ形の JSONL です。
-`sources` に原文を名前つきで複数並べ、引用ごとにどの原文から引いたかを書けるようにします。
-
-```bash
-npx chaffjs grade items.jsonl                       # 合否と率を画面に
-npx chaffjs grade items.jsonl --out results.jsonl   # 出力ごとの結果を JSONL に
-```
-
-結果の 1 行には、指摘、ルールごとの率、動かなかったルールとその理由、落ちた・足された事実が入ります。
-外れた引用、合否と落ちた理由、再現の印（`stamp`）も入ります。
-終了コードは、すべて通れば 0、落ちた出力があれば 1、入力が読めなければ 2 です。
-
-**採点の基準を `chaff.yaml` に書きます。** 何で落とすか、指摘 1 件が何点かを決めます。
-点は減点の和で、一点ごとにどの指摘から来たかが付きます。
-`grade:` を書かなければ点は出さず、合否と率だけを出します。
-
-```yaml
-grade:
-  rules:
-    total-mismatch: { max: 0 } # 1 件でもあれば落とす
-    closing-cliche: { max: 0, weight: 3 } # 落とし、1 件 3 点
-    ai-tell: { max_rate: 5, weight: 2 } # 1,000 字あたり 5 件を超えたら落とす
-    max-sentence-length: { weight: 1 } # 落とさず、1 件 1 点
-  required_sections: [結論, 根拠]
-  facts: { dropped: 0, added: 0, allow_dropped: [heading] }
-  citations: { failed: 0, required: true }
-  penalty: 10 # 点の和がこれを超えたら落とす
-```
-
-**A/B と回帰。** `--baseline` で、前の回の結果と出力ごとに比べます（`id` で組にします）。
-回帰とは、前に通った出力が落ちたこと、基準に書いたルールの指摘が増えたこと、点の和が増えたことです。
-回帰があれば終了コード 1 なので、prompt や model の変更を CI で止められます。
-2 つの回でルールか設定が違えば、比べません。その差は model から来たものではないためです。
-
-```bash
-npx chaffjs grade prompt-a.jsonl --out a.results.jsonl
-npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl
-```
-
-**再現の印（`stamp`）** には、chaff の版、ルール一式のハッシュ、設定のハッシュを入れます。
-ルール一式と設定が同じ結果どうしだけを比べます。
-
-**ライブラリの関数** を用意し、同じプロセスで動く評価の仕組みからシェルを通さずに呼べるようにします。どこから出すかは未定です。
+`chaffjs/grade` は 1 つの出力をその場で採点し、`--out` の 1 行と同じ結果を返します。
+`chaff.yaml` を読むのは `config` で名指したときだけで、ファイルに書くことはありません。
 
 ```js
-import { grade } from "chaffjs/api";
+import { grade, toScorer } from "chaffjs/grade";
 
-const result = await grade(output, { reference: source, language: "ja" });
-if (!result.pass) console.log(result.failedBecause);
+const result = await grade(output, { id: "q3", reference, config: "chaff.yaml" });
+console.log(result.pass, result.failedBecause); // false [ 'facts.dropped 2 > 0' ]
+
+const scored = toScorer(result);
+console.log(scored.score, scored.reason); // 0 failed: facts.dropped 2 > 0 — no findings
 ```
 
-**評価基盤への組み込み** は、`grade()` か `chaff grade` を呼ぶだけにし、基盤ごとの処理を chaff の中に持ちません。
+`toScorer()` は、多くの評価基盤が受け取る形に直します。
+- `name`
+- `score`: 通れば 1、落ちれば 0
+- `pass`
+- `reason`: 落ちた条件、ルールごとの指摘、点の和の順
+- `metadata`: 結果のすべて
 
-| 基盤 | つなぎ方 |
-| --- | --- |
-| promptfoo | `javascript` の assertion から `grade()` を呼び、`pass`、通れば 1・落ちれば 0 の点、理由を返します |
-| Inspect AI | scorer から `chaff grade` を呼び、結果の 1 行を `Score` とその説明にします |
-| OpenAI Evals、LangSmith | 上の JSONL を受け渡しの形にし、結果の 1 行を feedback として載せます |
-| GitHub Action | ワークフローで `chaff grade --baseline` を走らせ、回帰でジョブを止めます |
+chaff は満点を持たないので、点の和を 0〜1 に写すことはしません。段階のある数が欲しい評価基盤は、`metadata.score.penalty` を読んで自分で写します。
+`chaff grade` が終了コード 2 で断る入力では、`GradeInputError` を投げます。
+
+## 評価基盤への組み込み
+
+どの例も `grade()` か `chaff grade` を呼ぶだけで、chaff の中に基盤ごとの処理は持ちません。
+例は [`examples/evals`](https://github.com/isamu/lab/tree/main/text/examples/evals) にあります。
+基盤は自分のプロジェクトに入れてください。chaff の依存にはなりません。
+
+| 基盤 | 例 | つなぎ方 |
+| --- | --- | --- |
+| promptfoo | `promptfoo/chaff-assertion.cjs` | `javascript` の assertion が `pass`・`score`・`reason` を返す |
+| autoevals、Braintrust | `autoevals/chaff-scorer.mjs` | 採点の関数 `({ output, expected }) => { name, score, metadata }` |
+| evalite | `evalite/chaff.eval.ts` | `createScorer` で作る採点役 |
+| Langfuse | `langfuse/push-score.mjs` | trace に `langfuse.score.create()` で点を付ける |
+| DeepEval | `deepeval/chaff_metric.py` | CLI を呼ぶ `BaseMetric` |
+| Ragas | `ragas/chaff_with_faithfulness.py` | `Faithfulness` の横に chaff の事実の照合を置く |
+| Inspect AI | `inspect/chaff_scorer.py` | CLI を呼ぶ `@scorer` |
+| OpenAI Evals | `openai-evals/` | `samples.jsonl`（`input`・`ideal`）と生成した出力を、`chaff grade` の入力に変える |
+| GitHub Actions | `README.md` | workflow の一段で `chaff grade --baseline` を走らせる |
+
+promptfoo の assertion、autoevals の採点役、OpenAI Evals の変換は、このリポジトリで試験しています。
+どの試験も、通信も API key も使いません。
+
+```yaml
+# promptfooconfig.yaml
+tests:
+  - vars:
+      reference: "The team answered 4,812 tickets this quarter."
+    assert:
+      - type: javascript
+        value: file://chaff-assertion.cjs
+```
+
+## 評価の中での chaff の持ち場
+
+model による採点は意味を読みます。答えが正しいか、問いに合っているか、元の文書に忠実かを見ます。
+ただ、同じ出力でも回ごとに点が揺れることがあり、理由は文章で返ります。
+chaff は同じ出力にいつも同じ結果を返し、落ちた理由はすべて行とルールを指します。
+答えるのは、機械で決まることだけです。
+- 元の文書の事実を守っているか
+- 引用が本当に原文にあるか
+- 合計と曜日が合っているか
+- チームの決まりを守っているか、形の指摘がどれだけあるか
+
+model の採点や人の目の代わりにではなく、その横に置いて使います。
 
 ## ここで chaff がしないこと
 

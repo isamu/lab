@@ -34,6 +34,22 @@ The language is worked out from the body text. A list under a "References" or ã€
 because a reference list is written in the language of the works it cites. A Japanese paper that cites many English
 works is still read as Japanese.
 
+## The language of the screen
+
+The findings are shown in the document's language: Japanese for a Japanese document, English for any other.
+When several files are checked, the closing line uses their language if they share one, and the rule below if they do not.
+`chaff eval` reports in the language of the documents it measured, and does not measure documents of mixed languages together.
+
+`chaff test` works the same way. The headings of the machine and AI checks are in the document's language, and so are
+the AI's findings and the `--dry-run` preview. The closing lines (the totals, the notice when it could not run, the
+note about the key) use the shared language. When the files differ, they follow the rule below.
+
+Some output is tied to no document: `--help`, `genres`, `init`, `explain`, `relax`, `rules --json`, warnings about
+the settings and so on. It uses `language` in `chaff.yaml`, then the terminal's locale (`LC_ALL`, `LC_MESSAGES`,
+`LANG`), then English. Where the locale is `C`, as on CI, write `language: ja` in `chaff.yaml` to get Japanese.
+The numbers in `explain` and `rules --json` are counted the way that language counts (characters for Japanese, words
+for English).
+
 ## Documents that mix Japanese and English
 
 One document can hold both languages, such as a Japanese paper with an English abstract.

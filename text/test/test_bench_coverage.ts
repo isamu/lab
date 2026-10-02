@@ -1,12 +1,12 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { parse } from "yaml";
-import { planOf, planProblems, unplanted, type PlantPlan } from "../scripts/bench-coverage.ts";
+import { planOf, planOfFiles, planProblems, unplanted, type PlantPlan } from "../scripts/bench-coverage.ts";
 import { MUTATIONS } from "../scripts/bench-mutations.ts";
+import { loadPlan } from "../scripts/bench-plants.ts";
 
-// yarn bench が誤りを植えるはずの rule の一覧（test/fixtures/bench/plants.yaml）。植える先が消えても、新しい rule が来ても、黙って通さない。
+// yarn bench が誤りを植えるはずの rule の一覧（test/fixtures/bench/plants/<rule>.yaml）。植える先が消えても、新しい rule が来ても、黙って通さない。
 
 const plan: PlantPlan = {
   planted: { "doubled-word": ["ja", "en"], "latin-spacing": ["ja"] },
@@ -43,11 +43,11 @@ describe("planProblems", () => {
 
   it("一覧に無い rule、無くなった rule、両方に書いた rule を言う", () => {
     assert.deepEqual(planProblems(plan, [...RULES, "rule-of-three"], MUTATED), [
-      "rule-of-three: not in test/fixtures/bench/plants.yaml (planted or not_planted)",
+      "rule-of-three: no test/fixtures/bench/plants/rule-of-three.yaml (planted or not_planted)",
     ]);
-    assert.deepEqual(planProblems(plan, ["doubled-word", "latin-spacing"], MUTATED), ["sentence-rhythm: in test/fixtures/bench/plants.yaml but no such rule"]);
+    assert.deepEqual(planProblems(plan, ["doubled-word", "latin-spacing"], MUTATED), ["sentence-rhythm: in test/fixtures/bench/plants/ but no such rule"]);
     assert.deepEqual(planProblems({ ...plan, notPlanted: { ...plan.notPlanted, "latin-spacing": "x" } }, RULES, MUTATED), [
-      "latin-spacing: both planted and not_planted in test/fixtures/bench/plants.yaml",
+      "latin-spacing: both planted and not_planted in test/fixtures/bench/plants/",
       "latin-spacing: listed as not_planted, but a mutation plants it",
     ]);
   });
@@ -81,8 +81,33 @@ describe("unplanted", () => {
   });
 });
 
-describe("test/fixtures/bench/plants.yaml", () => {
-  const committed = planOf(parse(readFileSync(join(import.meta.dirname, "fixtures", "bench", "plants.yaml"), "utf8")));
+describe("planOfFiles", () => {
+  it("rule ごとのファイルを、planted と not_planted に分けて読む", () => {
+    const files = new Map<string, unknown>([
+      ["doubled-word", { planted: ["ja", "en"] }],
+      ["sentence-rhythm", { not_planted: "a shape" }],
+    ]);
+    assert.deepEqual(planOfFiles(files), { planted: { "doubled-word": ["ja", "en"] }, notPlanted: { "sentence-rhythm": "a shape" } });
+  });
+
+  it("ファイルが無ければ、どちらも空", () => {
+    assert.deepEqual(planOfFiles(new Map()), { planted: {}, notPlanted: {} });
+  });
+
+  it("両方・どちらも無い・ほかの鍵・形の違うファイルは止まり、ファイルの名前を言う", () => {
+    [{ planted: ["ja"], not_planted: "x" }, {}, { plant: ["ja"] }, undefined, ["ja"], "planted"].forEach((raw) =>
+      assert.throws(() => planOfFiles(new Map([["doubled-word", raw]])), /plants\/doubled-word\.yaml/u, JSON.stringify(raw)),
+    );
+  });
+
+  it("中身の形は planOf と同じに確かめる（言語の無い planted、理由の無い not_planted）", () => {
+    assert.throws(() => planOfFiles(new Map([["doubled-word", { planted: [] }]])), /doubled-word/u);
+    assert.throws(() => planOfFiles(new Map([["sentence-rhythm", { not_planted: " " }]])), /sentence-rhythm/u);
+  });
+});
+
+describe("test/fixtures/bench/plants/", () => {
+  const committed = loadPlan();
   const rules = readdirSync(join(import.meta.dirname, "..", "packages", "chaff", "rules"))
     .filter((file) => file.endsWith(".yaml"))
     .map((file) => file.replace(/\.yaml$/u, ""));

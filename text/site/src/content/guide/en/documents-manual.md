@@ -15,7 +15,7 @@ A manual grows a section for every feature, and sections get moved. Each time, l
 | A heading level skipped | `####` straight after `##` |
 | An empty section | The heading was written first, and the text never came |
 | The same heading twice | A section was moved, and the old one was not deleted |
-| A URL run into the next character | "see https://example.com/docs/bookings。", pasted from a Japanese page |
+| A URL run into the next character | `see https://example.com/docs/bookings。`, pasted from a Japanese page |
 
 The last one makes the link swallow the "。", so clicking it opens a page that does not exist.
 
@@ -97,7 +97,7 @@ manual.md   blog/tech · English   genre from the default
   9:1     warning Image "![](images/settings.png)" has no alt text
                   image-alt-text
 
-1 finding, 77 rules not run
+1 finding, 97 rules not run
 ```
 
 Add the genre, as suggested, and the experimental rules too.
@@ -121,7 +121,7 @@ manual.md   docs/manual · English   genre from --genre
   27:1    warning The heading "Making a booking" repeats the one on line 11 under the same parent
                   duplicate-heading
 
-6 findings, 41 rules not run
+6 findings, 45 rules not run
 ```
 
 ## What each finding means

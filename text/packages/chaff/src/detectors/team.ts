@@ -2,7 +2,7 @@ import { proseText } from "../measure.ts";
 import { joinWords } from "./word-list.ts";
 import { wordsOf } from "./structure.ts";
 import { nameSpans } from "../team-names.ts";
-import type { Detector, Finding, Sentence, Span, Token } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
 /**
  * チームの言葉。社内でしか通じない語を、チームが chaff.yaml に自分で並べる。
@@ -40,6 +40,12 @@ export const internalJargon: Detector = (doc, options): Finding[] => {
 
 const has = (headings: readonly string[], wanted: string): boolean => headings.some((heading) => heading.includes(wanted));
 
+/** The wanted sections no heading names. A heading names one when it contains it: 「主なリスク」 has 「リスク」. */
+export const missingSections = (doc: Pick<ProseDocument, "sections">, wanted: readonly string[]): string[] => {
+  const headings = doc.sections.map((section) => section.heading);
+  return wanted.filter((name) => !has(headings, name));
+};
+
 /**
  * この種類の文書に無いと困る見出し。チームが chaff.yaml で決める。
  *
@@ -49,8 +55,7 @@ const has = (headings: readonly string[], wanted: string): boolean => headings.s
 export const requiredSections: Detector = (doc, options): Finding[] => {
   const wanted = doc.requiredSections;
   if (wanted.length === 0) return [];
-  const headings = doc.sections.map((section) => section.heading);
-  const missing = wanted.filter((name) => !has(headings, name));
+  const missing = missingSections(doc, wanted);
   if (missing.length < options.limit) return [];
   return [
     {
@@ -58,7 +63,10 @@ export const requiredSections: Detector = (doc, options): Finding[] => {
       severity: "error",
       line: 0,
       column: 0,
-      quote: headings.filter((heading) => heading.length > 0).join(" / "),
+      quote: doc.sections
+        .map((section) => section.heading)
+        .filter((heading) => heading.length > 0)
+        .join(" / "),
       values: { word: joinWords(missing, doc.language), count: missing.length, limit: options.limit, offset: 0 },
     },
   ];
