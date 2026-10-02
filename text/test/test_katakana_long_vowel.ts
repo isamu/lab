@@ -189,6 +189,11 @@ describe("katakana-long-vowel", () => {
       ]);
     });
 
+    it("consistent and keep with no min_morae: two morae before the ー (パワ) are checked, one (カ) is not", () => {
+      assert.deepEqual(found("# 報告\n\nパワーとパワとカーとカを見ます。\n"), ["パワ→パワー:same-word"]);
+      assert.deepEqual(found("# 報告\n\nパワとカを見ます。\n", { ending: "keep" }), ["パワ→パワー:keep"]);
+    });
+
     it("drop with no min_morae: two morae before the ー (パワー) are checked, one (カー) is not", () => {
       assert.deepEqual(found("# 報告\n\nパワーとカーを見ます。\n", { ending: "drop" }), ["パワー→パワ:drop"]);
       const doc = buildDocument("t.md", "# 報告\n\nパワーとカーを見ます。\n", ja);
