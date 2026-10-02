@@ -1,0 +1,63 @@
+# Stock heading forms. Generated articles tend to cast every heading in one of these ("What is X", "Benefits of X").
+# One alone is an ordinary heading; the document's structure measures (chaff outline) compare the share of headings in
+# these forms with human articles. position: before stands at the start of the heading, after at its end. Matching
+# ignores case, a leading number and a trailing "?" or "!".
+id: heading-form
+language: en
+entries:
+  - pattern: what is
+    position: before
+  - pattern: what are
+    position: before
+  - pattern: why
+    position: before
+  - pattern: how to
+    position: before
+  - pattern: how does
+    position: before
+  - pattern: benefits of
+    position: before
+  - pattern: advantages of
+    position: before
+  - pattern: challenges of
+    position: before
+  - pattern: key
+    position: before
+  - pattern: understanding
+    position: before
+  - pattern: the importance of
+    position: before
+  - pattern: the role of
+    position: before
+  - pattern: the power of
+    position: before
+  - pattern: best practices
+    position: before
+  - pattern: tips for
+    position: before
+  - pattern: common
+    position: before
+  - pattern: real-world
+    position: before
+  - pattern: getting started with
+    position: before
+  - pattern: introduction to
+    position: before
+  - pattern: overview of
+    position: before
+  - pattern: step
+    position: before
+  - pattern: matters
+    position: after
+  - pattern: explained
+    position: after
+  - pattern: best practices
+    position: after
+  - pattern: considerations
+    position: after
+  - pattern: use cases
+    position: after
+  - pattern: benefits
+    position: after
+  - pattern: challenges
+    position: after

@@ -167,6 +167,22 @@ const blankFor = (source: string): string => {
 /** 最初の節の最初の段落に、雛形の空欄を埋め忘れた一文を足す。 */
 export const leaveBlank = (source: string): Plant | undefined => addToFirstSection(source, blankFor(source));
 
+// --- chat-citation-residue ---
+
+const CHAT_LINK = {
+  polite: "手順は[公式の説明](https://example.com/setup?utm_source=chatgpt.com)のとおりです。",
+  plain: "手順は[公式の説明](https://example.com/setup?utm_source=chatgpt.com)のとおりである。",
+  en: "The steps follow [the official guide](https://example.com/setup?utm_source=chatgpt.com).",
+};
+
+const chatLinkFor = (source: string): string => {
+  if (!isJapanese(source)) return CHAT_LINK.en;
+  return isPoliteDocument(source) ? CHAT_LINK.polite : CHAT_LINK.plain;
+};
+
+/** 最初の節の最初の段落に、チャットの答えから貼ったままのリンクを足す。 */
+export const pasteChatLink = (source: string): Plant | undefined => addToFirstSection(source, chatLinkFor(source));
+
 // --- repeated-conjunction ---
 
 const OPENER = { ja: "また、", en: "Also, " };
@@ -295,6 +311,7 @@ export const PHRASING_MUTATIONS: readonly Mutation[] = [
   { id: "hedges-stacked", rule: "excessive-hedging", languages: ["ja", "en"], plant: stackHedges },
   { id: "residue-left", rule: "assistant-residue", languages: ["ja", "en"], plant: leaveResidue },
   { id: "blank-left", rule: "unfilled-placeholder", languages: ["ja", "en"], plant: leaveBlank },
+  { id: "chat-link-pasted", rule: "chat-citation-residue", languages: ["ja", "en"], plant: pasteChatLink },
   { id: "opener-repeated", rule: "repeated-conjunction", languages: ["ja", "en"], plant: repeatOpener },
   { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: chainWithAnd },
   { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: avoidedSpelling },

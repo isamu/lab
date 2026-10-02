@@ -38,6 +38,9 @@ rules:
   doubled-word: normal
 ```
 
+The rules that read Markdown syntax (heading depth, image alt text, link targets and so on) run on Markdown documents only.
+On a `.txt` file they stop with "the document is not Markdown".
+
 Some genres turn experimental rules on by default.
 The [genres page](../../genres/) shows which rules each genre runs.
 

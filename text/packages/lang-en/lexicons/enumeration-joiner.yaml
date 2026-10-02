@@ -1,0 +1,9 @@
+# Words and marks that join the names of one list ("Windows, macOS and Linux"). Each entry is one token.
+id: enumeration-joiner
+language: en
+entries:
+  - pattern: ","
+  - pattern: and
+  - pattern: or
+  - pattern: "&"
+  - pattern: /

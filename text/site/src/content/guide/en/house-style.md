@@ -38,8 +38,9 @@ The finding is in Japanese because the document is. There are five styles for no
 | `jis-z8301-2019` | No すべきである and no closing できる in a provision; a numbered figure, table or clause is named by its number, not 上記の図 or 以下の箇条 | JIS Z 8301:2019, 7.3 to 7.5 and 10.6 |
 | `koyobun` | A Japanese sentence of at most 60 characters, no mixing of です・ます with である, and the final ー kept | 公用文作成の考え方 (Council for Cultural Affairs, 2022), III-3 a, III-1 b, I-3 d |
 
-Morae are counted as コ・ン・ピュ・ー・タ・ー. A small ャ, ュ or ョ joins the kana before it.
-Every one of these styles keeps the ー on two-mora words such as カー and キー.
+Morae are counted before the final ー, as コ・ン・ピュ・ー・タ (as JIS Z 8301:2011 Table G.3 counts). A small ャ, ュ or ョ joins the kana before it.
+Every one of these styles keeps the ー on words of two morae or fewer before it, such as カー, カバー and シャワー.
+`ieice` and `jis-z8301-2011` drop only a ー that stands for English -er, -or, -ar (after a kana of the ア row); words ending in ュー, エー or イー (メニュー, グレー, コピー) are left alone.
 
 A plugin can ship styles too. A style from a plugin listed under `plugins:` is chosen with the plugin's name in front
 (`style: example/careful`). [Writing a plugin](./writing-plugins) shows how to make one.

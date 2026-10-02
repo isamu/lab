@@ -77,7 +77,7 @@ email.md   blog/tech · English   genre from the default
   17:74   warning Closes with "hope this helps"
                   closing-cliche
 
-2 findings, 66 rules not run
+2 findings, 68 rules not run
 ```
 
 Add the genre, as suggested, and the experimental rules too.
