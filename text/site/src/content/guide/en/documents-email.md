@@ -78,7 +78,7 @@ email.md   blog/tech · English   genre from the default
   17:74   warning Closes with "hope this helps"
                   closing-cliche
 
-2 findings, 97 rules not run
+{counts}
 ```
 
 Add the genre, as suggested, and the experimental rules too.
@@ -106,7 +106,7 @@ email.md   business/email · English   genre from --genre
   15:91   warning "[Your Name]" was never filled in
                   unfilled-placeholder
 
-8 findings, 31 rules not run
+{counts}
 ```
 
 Without `--experimental`, only the long sentence on line 7 appears.

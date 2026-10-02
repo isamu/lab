@@ -96,7 +96,7 @@ keiyaku.md   blog/tech · 日本語   ジャンルは既定から
    契約書・規約のようです。--genre legal/contract を試せます
 
 
-指摘 0 件、動いていない rule 94 件
+{counts}
 ```
 
 勧められたとおり、`--genre legal/contract` を付けてかけ直します。
@@ -120,7 +120,7 @@ keiyaku.md   legal/contract · 日本語   ジャンルは--genreから
   31:9    warning 「本業務」は 7 行目でも定義されています
                   duplicate-definition
 
-指摘 6 件、動いていない rule 95 件
+{counts}
 ```
 
 `error` は、数や参照が食い違っていて、どちらかが必ず間違っている所です。

@@ -114,7 +114,7 @@ contract.txt   blog/tech · 日本語   ジャンルは既定から
   11:6    error   「第9条」（番地 9）はこの文書にありません
                   dangling-reference
 
-指摘 4 件、動いていない rule 16 件
+{counts}
 ```
 
 1 行目の下の行は、契約書として見ることを勧めています。
@@ -174,7 +174,7 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
   15:2    warning この文は 101 文字あります（100 文字まで）
                   max-sentence-length
 
-指摘 6 件、動いていない rule 16 件
+{counts}
 ```
 
 `error` の 3 件は、変えた 2 か所から出ています。9 行目は号の抜けで、6 行目は抜けた第三号を指す参照です。
@@ -202,7 +202,7 @@ fixed.txt   blog/tech · 日本語   ジャンルは既定から
   16:2    warning この文は 101 文字あります（100 文字まで）
                   max-sentence-length
 
-指摘 3 件、動いていない rule 16 件
+{counts}
 ```
 
 施行中の法令は食い違いが無いはずです。

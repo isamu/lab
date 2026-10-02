@@ -102,7 +102,7 @@ kiji.md   blog/tech · 日本語   ジャンルは--genreから
   39:13   warning 「お役に立てれば幸いです」で締めています
                   closing-cliche
 
-指摘 3 件、動いていない rule 94 件
+{counts}
 ```
 
 書き出しと結びの 3 件です。生成文の形は、試験中のルールが見ます。
@@ -146,7 +146,7 @@ kiji.md   blog/tech · 日本語   ジャンルは--genreから
   39:13   warning 「お役に立てれば幸いです」で締めています
                   closing-cliche
 
-指摘 16 件、動いていない rule 18 件
+{counts}
 ```
 
 行の頭の `3:1` は、3 行目の 1 字目という意味です。

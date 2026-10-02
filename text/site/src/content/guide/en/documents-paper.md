@@ -73,7 +73,7 @@ paper.md   blog/tech · English   genre from the default
    Looks like: Academic paper. Try --genre academic/paper
 
 
-0 findings, 97 rules not run
+{counts}
 ```
 
 Add the genre, as suggested, and the experimental rules too.
@@ -91,7 +91,7 @@ paper.md   academic/paper · English   genre from --genre
   19:142  info    "behaviour" here, where the document usually spells it "behavior" (1 of 3)
                   spelling-consistency
 
-3 findings, 40 rules not run
+{counts}
 ```
 
 ## What each finding means

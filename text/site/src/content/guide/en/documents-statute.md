@@ -215,7 +215,7 @@ rules.md   legal/statute · English   genre from --genre   1 stet
   16:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-2 findings, 49 rules not run
+{counts}
 ```
 
 ## Changing a rule for the whole team
@@ -259,7 +259,7 @@ rules.md   legal/statute · English   genre from chaff.yaml
   15:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-3 findings, 49 rules not run
+{counts}
 ```
 
 chaff fails when any error is left, and passes when there are only warnings, so a warning does not stop CI.

@@ -433,7 +433,7 @@ $ npx chaffjs draft.rewritten.md --experimental --compact
 draft.rewritten.md   blog/tech · English   genre from the default
 
 
-0 findings, 28 rules not run
+{counts}
 
 $ npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
 draft.md → draft.rewritten.md
@@ -555,7 +555,7 @@ ai.md   blog/tech · English   genre from --genre
   47:1    warning Closes with "hope this helps"
                   closing-cliche
 
-9 findings, 27 rules not run
+{counts}
 ```
 
 The article after:
@@ -592,7 +592,7 @@ $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 rewritten.md   blog/tech · English   genre from --genre
 
 
-0 findings, 27 rules not run
+{counts}
 ```
 
 What changed, and why:
@@ -704,7 +704,7 @@ demo.md   blog/tech · English   genre from --genre
   33:184  warning Closes with "hope this helps"
                   closing-cliche
 
-5 findings, 27 rules not run
+{counts}
 ```
 
 The inventory: `npx chaffjs facts demo.md` lists 5 numbers, a date, 2 times, 2 names (Friday, Slack) and 7 headings.
@@ -751,7 +751,7 @@ $ npx chaffjs demo-full.md --genre blog/tech --experimental --compact
 demo-full.md   blog/tech · English   genre from --genre
 
 
-0 findings, 27 rules not run
+{counts}
 ```
 
 `outline` measures how the structure changed: fewer headings, longer sections, no list and no bold.

@@ -211,7 +211,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから   stet 1 �
   16:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 2 件、動いていない rule 48 件
+{counts}
 ```
 
 ## チームで決まりを変える
@@ -255,7 +255,7 @@ kitei.md   legal/statute · 日本語   ジャンルはchaff.yamlから
   15:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 3 件、動いていない rule 48 件
+{counts}
 ```
 
 エラーが 1 件でも残ると、chaff は失敗で終わります。注意だけなら成功で終わるので、CI を止めません。

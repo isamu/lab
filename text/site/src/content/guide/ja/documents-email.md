@@ -79,7 +79,7 @@ mail.md   blog/tech · 日本語   ジャンルは既定から
    メール・手紙のようです。--genre business/email を試せます
 
 
-指摘 0 件、動いていない rule 94 件
+{counts}
 ```
 
 勧められたとおり、ジャンルを付けて、試験中のルールも動かします。
@@ -105,7 +105,7 @@ mail.md   business/email · 日本語   ジャンルは--genreから
   22:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
                   sasete-itadaku
 
-指摘 7 件、動いていない rule 21 件
+{counts}
 ```
 
 `--experimental` を付けないと、出るのは 10 行目の長い一文だけです。
