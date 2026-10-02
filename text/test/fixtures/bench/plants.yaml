@@ -73,6 +73,7 @@ planted:
   vague-figure-reference: [ja, en]
   unused-definition: [ja, en]
   use-before-definition: [ja, en]
+  vague-link-text: [ja, en]
   acronym-expansion-conflict: [ja, en]
 not_planted:
   adverb-overuse: a density over the whole document

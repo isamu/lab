@@ -1,11 +1,11 @@
 18f-blog-oracle-databases  max-sentence-length 33, unbalanced-bracket 1
 18f-content-voice-and-tone  agentless-passive 1, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 7, no-em-dash 1
 18f-engineering-code-review  max-sentence-length 1, undefined-acronym 4
-18f-engineering-on-call  contraction-consistency 1, excessive-hedging 1, max-sentence-length 15
+18f-engineering-on-call  contraction-consistency 1, excessive-hedging 1, max-sentence-length 15, vague-link-text 2
 18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 6, excessive-hedging 2, expletive-construction 6, max-paragraph-length 1, max-sentence-length 43, preamble-length 1, title-case-consistency 2, undefined-acronym 3
 18f-handbook-projects-in-distress  agentless-passive 16, max-paragraph-length 1, max-sentence-length 28, undefined-acronym 6
-18f-handbook-travel  max-sentence-length 14, title-case-consistency 2, undefined-acronym 5
-18f-handbook-travel-faq  heading-level-skip 1, max-paragraph-length 1, max-sentence-length 65, name-variant 1, requirement-smell 1, unbalanced-bracket 5, undefined-acronym 16
+18f-handbook-travel  max-sentence-length 14, title-case-consistency 2, undefined-acronym 5, vague-link-text 1
+18f-handbook-travel-faq  heading-level-skip 1, max-paragraph-length 1, max-sentence-length 65, name-variant 1, requirement-smell 1, unbalanced-bracket 5, undefined-acronym 16, vague-link-text 6
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2, unfilled-placeholder 3
 aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 77
@@ -20,7 +20,7 @@ arxiv-2609-38219-abs-tamazight-speech  max-sentence-length 1, oxford-comma-consi
 arxiv-astro-ph-new-2025-01-03  agreement-slip 1, heading-level-skip 1, max-paragraph-length 22, max-sentence-length 27, name-variant 3, ngram-repetition 1, space-before-punctuation 1, spelling-consistency 15, undefined-acronym 130, unqualified-superlative 2
 asf-board-minutes-2025-01  concrete-evidence-density 36, expletive-construction 28, heading-echo 18, max-paragraph-length 5, max-sentence-length 233, name-variant 8, ngram-repetition 1, preamble-length 1, space-before-punctuation 3, spelling-consistency 1, unbalanced-bracket 1, undefined-acronym 153
 automattic-offer-letter-us  agentless-passive 10, contraction-consistency 2, duplicate-definition 1, duplicate-heading 1, empty-section 1, heading-level-skip 2, max-paragraph-length 2, max-sentence-length 53
-automattic-privacy-policy  max-sentence-length 6, name-variant 1, undefined-acronym 8
+automattic-privacy-policy  max-sentence-length 6, name-variant 1, undefined-acronym 8, vague-link-text 1
 bls-glossary  acronym-expansion-conflict 2, max-paragraph-length 6, max-sentence-length 69, name-variant 2, unbalanced-bracket 2, undefined-acronym 6
 bonterms-cloud-terms  max-sentence-length 11, name-variant 1, undefined-acronym 3, unused-definition 4
 caa-mokebanashi-chuikanki  max-sentence-length 3
@@ -81,11 +81,11 @@ gds-user-research-weeknotes-2014-07-04  concrete-evidence-density 3, max-sentenc
 genai-web-api  latin-spacing 4
 genai-web-procedure  latin-spacing 9, max-sentence-length 1, undefined-acronym 3, url-run-on 1
 ghdocs-basic-writing-and-formatting  contraction-consistency 3, max-sentence-length 15, oxford-comma-consistency 2, title-case-consistency 1
-github-general-privacy-statement  max-paragraph-length 1, max-sentence-length 1, undefined-acronym 4, use-before-definition 1
+github-general-privacy-statement  max-paragraph-length 1, max-sentence-length 1, undefined-acronym 4, use-before-definition 1, vague-link-text 1
 github-terms-of-service  max-sentence-length 9
 gitlab-jd-instructional-designer  agentless-passive 10, concrete-evidence-density 4, heading-echo 5, max-sentence-length 7, oxford-comma-consistency 1
 gitlab-meetings  agentless-passive 54, double-negative 1, max-paragraph-length 2, max-sentence-length 41, spelling-consistency 4, title-case-consistency 1, undefined-acronym 10
-gitlab-values  agentless-passive 83, bold-density 1, concrete-evidence-density 27, emoji-heading 6, expletive-construction 12, heading-echo 9, heading-level-skip 8, max-paragraph-length 23, max-sentence-length 137, spelling-consistency 3, undefined-acronym 10, unqualified-superlative 10
+gitlab-values  agentless-passive 83, bold-density 1, concrete-evidence-density 27, emoji-heading 6, expletive-construction 12, heading-echo 9, heading-level-skip 8, max-paragraph-length 23, max-sentence-length 137, spelling-consistency 3, undefined-acronym 10, unqualified-superlative 10, vague-link-text 1
 go-1-23-release-notes  heading-echo 1, max-sentence-length 22, title-case-consistency 1, undefined-acronym 9
 govuk-adr-0014-replace-terraform-cloud  max-sentence-length 1, undefined-acronym 3
 govuk-cddo-roadmap-2022-2025  agentless-passive 22, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 88, ngram-repetition 1, undefined-acronym 10
@@ -160,7 +160,7 @@ nasa-knows-spacewalk-k4  contraction-consistency 1, heading-echo 1
 nasa-press-prima-new-mission-class  agentless-passive 3, heading-level-skip 1, max-sentence-length 15, oxford-comma-consistency 1
 ndl-copy-fee-revision-2026  clean
 ndl-digital-transmission-individuals  max-kanji-continuous 1, max-sentence-length 4, no-doubled-joshi 1
-neeview-changelog-ja  doubled-word 1, heading-echo 1, heading-level-skip 39, katakana-long-vowel 10, latin-spacing 5, max-kanji-continuous 4, ngram-repetition 1, no-doubled-joshi 5, no-mixed-desumasu 7, undefined-acronym 19
+neeview-changelog-ja  doubled-word 1, heading-echo 1, heading-level-skip 39, katakana-long-vowel 10, latin-spacing 5, max-kanji-continuous 4, ngram-repetition 1, no-doubled-joshi 5, no-mixed-desumasu 7, undefined-acronym 19, vague-link-text 2
 nextcloud-user-2fa  contraction-consistency 2, max-sentence-length 4
 nih-research-matters-hpv-one-dose  heading-level-skip 1, max-paragraph-length 2, max-sentence-length 7, proper-noun-density 1
 noaa-press-flood-mapping  contraction-consistency 1, max-sentence-length 12, oxford-comma-consistency 1, title-case-consistency 1, undefined-acronym 6
