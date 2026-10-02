@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/press  commas-dotted  found
+ja/proposal  commas-dotted  found

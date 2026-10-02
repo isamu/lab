@@ -1,0 +1,8 @@
+table  7  7  0  0
+en/blog  heading-recased  found
+en/figures  heading-recased  found
+en/itinerary  heading-recased  found
+en/press  heading-recased  found
+en/proposal  heading-recased  found
+en/readme  heading-recased  found
+en/requirements  heading-recased  found

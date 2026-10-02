@@ -303,8 +303,8 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
 - <a id="iso-29148"></a>**ISO/IEC/IEEE 29148:2018** [standards.ieee.org](https://standards.ieee.org/ieee/29148/6937/)
   - Systems and software engineering — Life cycle processes — Requirements engineering
   - 分かったこと：良い要件とは何かを定めた国際規格です。抜け道になる言い回しや曖昧な副詞など、避ける言葉も挙げています。
-  - chaff では：[`requirement-smell`](../../rules/requirement-smell/) が、この規格の挙げる抜け道（if possible、as appropriate）と、
-    閉じない列挙（but not limited to）を、要求の文の中で探します。
+  - chaff では：[`requirement-smell`](../../rules/requirement-smell/) が、要求の文の中で次の 2 つを探します。
+    この規格の挙げる抜け道（if possible、as appropriate）と、閉じない列挙（but not limited to）です。
 - <a id="berry-2003"></a>**Berry, Kamsties, Krieger（2003）** [cs.uwaterloo.ca (PDF)](https://cs.uwaterloo.ca/~dberry/handbook/ambiguityHandbook.pdf)
   - From Contract Drafting to Software Specification: Linguistic Sources of Ambiguity
   - 分かったこと：契約書と仕様書で、読みかたが割れる言葉を集めた手引きです。

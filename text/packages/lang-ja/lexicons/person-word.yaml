@@ -1,0 +1,20 @@
+# 文書が自分や読み手を呼ぶ語。instead_of は、その語をどの呼び方に数えるか（書かなければ語そのもの）。
+#
+# どれが正しいかは決めない。一つの文書が、同じ相手を二通りに呼んでいるかだけを見る（person-consistency）。
+# 漢字の語は、前後に漢字かカタカナが続けば別の語の一部と読む（東京本社、当社比、公僕、私立）。
+id: person-word
+language: ja
+entries:
+  - pattern: 私たち
+  - pattern: 私達
+    instead_of: 私たち
+  - pattern: 私ども
+  - pattern: 我々
+  - pattern: われわれ
+    instead_of: 我々
+  - pattern: 弊社
+  - pattern: 当社
+  - pattern: 本社
+  - pattern: 私
+  - pattern: 筆者
+  - pattern: 僕

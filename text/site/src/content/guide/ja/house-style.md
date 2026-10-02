@@ -163,7 +163,7 @@ notice.md   blog/tech · 日本語   ジャンルは既定から
   5:32    warning 「下さい」は「ください」と書きます
                   team-kudasai
 
-指摘 5 件、動いていない rule 36 件
+指摘 5 件、動いていない rule 44 件
 ```
 
 この例の `chaff.yaml` は `style: ieice` も選んでいるので、1 件目はスタイルからの指摘です。
@@ -212,4 +212,5 @@ chaff: …/chaff.yaml: custom_rules の team-tbd: example.after がありませ�
 英語の文書なら noun・verb のような名前か、`NOUN`・`VERB` のような記号です。
 `base` は原形（行う）、`surface` は書かれたままの形（を）です。一つの語に、いくつ書いても構いません。
 
-Node の関数で書くルール（`type: module`）は、まだ使えません。書くと、まだ使えないと言って止まります。
+数える・比べるなど、ここにある書き方で言えないルールは、Node の関数（`type: module`）で書けます（0.19.0 から）。
+書き方は[ルールを足す](./adding-rules#node-の関数のルール0190)に、パッケージにして配る方法は[プラグインを作る](./writing-plugins)にあります。

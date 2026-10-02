@@ -1,0 +1,112 @@
+id: table-header-variant
+layer: L2
+status: experimental
+how_to_find: table-header-variant
+requires: [markdown]
+severity: info
+
+name:
+  ja: 表の見出しの書き方が表ごとに違う
+  en: One table header written two ways
+
+why:
+  ja: 同じ欄を、ある表では「担当者」、別の表では「担当」と書くと、読み手は別の欄かと迷い、表を見比べるときに手が止まります。chaff は表の見出しの行と、二列の表の左の欄（項目名）を集め、幅・大文字小文字・空白・ハイフン・中黒をそろえたうえで、名前を変えない字（者・欄・名・等）を外すと同じになる見出しを、同じ欄の書き方と見ます。そのうえで、文書の中で少ないほうの書き方を指摘します。どちらが正しいかは決めません。
+  en: When one table says "Owner" and another says "Owners" for the same column, the reader wonders whether they are different columns and stops to compare. chaff collects the header row of every table and the left cell of every two-column table (a field name). It treats two headers as one label when they are the same after folding width, case, spaces, hyphens and middle dots and dropping an ending that leaves the meaning alone (s, es). It then points at the less common spelling in the document, without deciding which is right.
+
+message:
+  ja: 表の見出しを「{written}」と書いています（この文書のほかの表は「{usual}」。{of} 箇所のうち {count} 箇所が違う）
+  en: 'The table header "{written}" here, where the document''s other tables write "{usual}" ({count} of {of})'
+
+how_to_fix:
+  ja: 同じ欄なら、文書の多いほうの書き方にそろえてください。本当に別の欄なら、違いが分かる名前にします。
+  en: If it is the same column, write it the way the rest of the document does. If it really is a different column, give it a name that shows the difference.
+
+# 少ないほうの書き方が、その見出しの何パーセントまでなら「混ざっている」と見るか。1 対 1 も指摘する。
+levels: { strict: 50, normal: 50, relaxed: 34 }
+
+use_for: [blog, business, technical, docs, academic, legal, literature, speech]
+
+group: consistency
+summary:
+  ja: 同じ欄の見出しを、表によって「担当者」と「担当」のように書き分けている所
+  en: The same column header written two ways across a document's tables, such as Owner and Owners
+
+example:
+  ja:
+    config: { genre: business/report }
+    before: |
+      | 作業 | 担当者 |
+      | --- | --- |
+      | 発注 | 山田 |
+
+      | 作業 | 担当 |
+      | --- | --- |
+      | 検品 | 鈴木 |
+    after: |
+      | 作業 | 担当者 |
+      | --- | --- |
+      | 発注 | 山田 |
+
+      | 作業 | 担当者 |
+      | --- | --- |
+      | 検品 | 鈴木 |
+  en:
+    config: { genre: business/report }
+    before: |
+      | Task | Owner |
+      | --- | --- |
+      | Order | Kim |
+
+      | Task | Owners |
+      | --- | --- |
+      | Check | Lee |
+    after: |
+      | Task | Owner |
+      | --- | --- |
+      | Order | Kim |
+
+      | Task | Owner |
+      | --- | --- |
+      | Check | Lee |
+
+not_flagged:
+  ja: 文字の無い見出し（数や記号だけ）、コードの例の中の表、見出しの違いが名前を変える場合（「日付」と「日時」）は見ません。二列の表でなければ、左の欄は見出しとして集めません。
+  en: Headers without letters (numbers or symbols only), tables inside a code sample, and headers that differ in meaning (Date and Time) are not compared. The left cell is collected only in two-column tables.
+level_meaning:
+  ja: 少ないほうの書き方が、その見出しの {limit}% 以下のとき指摘
+  en: reported when the less common spelling is {limit}% of the header's uses or less
+rewrite:
+  ja:
+    direction: 同じ欄の見出しを、文書の中で多いほうの書き方にそろえてください。表の中身と並びは変えません。
+    pairs:
+      - before: |
+          | 作業 | 担当 |
+        after: |
+          | 作業 | 担当者 |
+      - before: |
+          | 備考欄 | 金額 |
+        after: |
+          | 備考 | 金額 |
+    keep:
+      - 表の行と列の並び
+      - 升の中身
+    avoid:
+      - 別の欄を同じ名前にする
+      - 多いほうの書き方を少ないほうに合わせる
+  en:
+    direction: Rename the odd header to the spelling the document's other tables use for that column. Keep the cells and their order.
+    pairs:
+      - before: |
+          | Task | Owners |
+        after: |
+          | Task | Owner |
+      - before: |
+          | E-mail | Phone |
+        after: |
+          | Email | Phone |
+    keep:
+      - the rows and columns of every table
+      - the content of every cell
+    avoid:
+      - giving two different columns the same name
+      - changing the common spelling to match the odd one
