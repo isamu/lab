@@ -22,6 +22,7 @@ import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, p
 import * as phrasing from "./bench-mutations-phrasing.ts";
 import { MARKUP_MUTATIONS } from "./bench-mutations-markup.ts";
 import { MARK_MUTATIONS } from "./bench-mutations-marks.ts";
+import { NAME_MUTATIONS } from "./bench-mutations-names.ts";
 import { FACT_MUTATIONS } from "./bench-mutations-facts.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
 import { CHARACTER_MUTATIONS } from "./bench-mutations-characters.ts";
@@ -382,6 +383,7 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "long-vowel-dropped", rule: "katakana-long-vowel", languages: ["ja"], plant: dropOneLongVowel },
   ...MARKUP_MUTATIONS,
   ...MARK_MUTATIONS,
+  ...NAME_MUTATIONS,
   ...CHARACTER_MUTATIONS,
   ...OUTLINE_MUTATIONS,
   ...WORDING_MUTATIONS,
