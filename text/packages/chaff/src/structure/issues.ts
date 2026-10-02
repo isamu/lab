@@ -84,6 +84,28 @@ export const danglingReferences = (tree: StructureNode, source: string): Structu
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
 };
 
+/**
+ * 参照が指す節点。danglingReferences と同じ引き方（番地、章の短い番地、fallback）で、番号の付いたまとまりを引く。
+ * 同じ鍵の節点が二つ以上ある（番号の振り直しや別表の条）ときは、どれを指すのか決まらないので undefined。
+ */
+export const referenceResolver = (tree: StructureNode): ((reference: StructureNode) => StructureNode | undefined) => {
+  const byKey = new Map<string, StructureNode | null>();
+  inDocumentOrder(tree)
+    .filter((node) => NUMBERED.has(node.kind))
+    .forEach((node) => keysOf(node).forEach((key) => byKey.set(key, byKey.has(key) && byKey.get(key) !== node ? null : node)));
+  const resolve = (reference: StructureNode): StructureNode | undefined => {
+    const target = byKey.get(textOf(reference, "target"));
+    if (target !== undefined) return target ?? undefined;
+    return reference.attrs["fallback"] === undefined ? undefined : (byKey.get(fallbackKey(reference)) ?? undefined);
+  };
+  // Article 6 は Section 6 ではない。番号の書き方が両方にあって違えば、別の文書の条かもしれないので引かない。
+  return (reference) => {
+    const target = resolve(reference);
+    const written = numbering(reference);
+    return target === undefined || typeof written !== "string" || target.numbering === undefined || target.numbering === written ? target : undefined;
+  };
+};
+
 type Definition = { readonly node: StructureNode; readonly article: string };
 
 /** 定義を文書の順に、それが置かれた条の番地と一緒に並べる。範囲を限った定義は、その条の中でだけ比べるため。 */

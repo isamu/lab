@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  section-dropped  found
+ja/design  section-dropped  found
+ja/figures  section-dropped  found
+ja/itinerary  section-dropped  found
+ja/minutes  section-dropped  found
+ja/press  section-dropped  found
+ja/proposal  section-dropped  found
+ja/quote  section-dropped  found
+ja/readme  section-dropped  found
+ja/requirements  section-dropped  found
+en/blog  section-dropped  found
+en/design  section-dropped  found
+en/figures  section-dropped  found
+en/itinerary  section-dropped  found
+en/minutes  section-dropped  found
+en/press  section-dropped  found
+en/proposal  section-dropped  found
+en/quote  section-dropped  found
+en/readme  section-dropped  found
+en/requirements  section-dropped  found

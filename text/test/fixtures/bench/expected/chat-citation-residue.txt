@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  chat-link-pasted  found
+ja/design  chat-link-pasted  found
+ja/figures  chat-link-pasted  found
+ja/itinerary  chat-link-pasted  found
+ja/minutes  chat-link-pasted  found
+ja/press  chat-link-pasted  found
+ja/proposal  chat-link-pasted  found
+ja/quote  chat-link-pasted  found
+ja/readme  chat-link-pasted  found
+ja/requirements  chat-link-pasted  found
+en/blog  chat-link-pasted  found
+en/design  chat-link-pasted  found
+en/figures  chat-link-pasted  found
+en/itinerary  chat-link-pasted  found
+en/minutes  chat-link-pasted  found
+en/press  chat-link-pasted  found
+en/proposal  chat-link-pasted  found
+en/quote  chat-link-pasted  found
+en/readme  chat-link-pasted  found
+en/requirements  chat-link-pasted  found
