@@ -235,7 +235,7 @@ chaff's own rule is that a rule decides by machine alone. Anything that needs th
 | What finds it | `packages/chaff/src/detectors/` | A function that takes the document and returns findings. It is registered by a file of its own, `detectors/registry/<how_to_find>.ts`, that exports it as `detector`; no shared list of detectors is edited |
 | Word lists | `packages/lang-ja/lexicons/` and `packages/lang-en/lexicons/` | Only for a rule that finds words from a list. One per language |
 | Tests | `test/test_<id>.ts` | Examples it must report and examples it must not |
-| A planted mistake | `scripts/bench-mutations*.ts` and `test/fixtures/bench/plants.yaml` | One mistake put into a clean sample, to measure whether the rule finds it. When none can be planted, say why |
+| A planted mistake | `test/fixtures/bench/plants/<id>.yaml` and a module in `scripts/bench-plants/` | One mistake put into a clean sample, to measure whether the rule finds it. The YAML file holds `planted: [ja, en]` (the languages it is planted in) or `not_planted:` with why none can be planted; the module exports `MUTATIONS`, the mistakes it plants. Neither is a shared list |
 | ChangeLog | `Unreleased` in `docs/ChangeLog.md` | What chaff can now find |
 
 `yarn test` stops when a rule file lacks a reader's field that the rule needs.

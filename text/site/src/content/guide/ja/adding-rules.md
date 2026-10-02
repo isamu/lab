@@ -233,7 +233,7 @@ chaff の決まりで、ルールは機械で決まるものだけです。意�
 | 見つける処理 | `packages/chaff/src/detectors/` | 文書を受け取って指摘を返す関数。登録は専用のファイル `detectors/registry/<how_to_find>.ts` で、関数を `detector` という名前で出す。検出器の共有の一覧は書き換えない |
 | 語の一覧 | `packages/lang-ja/lexicons/` と `packages/lang-en/lexicons/` | 語の一覧で見つけるルールだけ。言語ごとに書く |
 | テスト | `test/test_<id>.ts` | 指摘すべき例と、指摘してはいけない例の両方 |
-| 見本への仕込み | `scripts/bench-mutations*.ts` と `test/fixtures/bench/plants.yaml` | きれいな見本に誤りを一つ入れて、見つかるかを測る。仕込めないときは理由を書く |
+| 見本への仕込み | `test/fixtures/bench/plants/<id>.yaml` と `scripts/bench-plants/` のモジュール | きれいな見本に誤りを一つ入れて、見つかるかを測る。YAML には `planted: [ja, en]`（仕込む言語）か、仕込めない理由の `not_planted:` を書く。モジュールは仕込む誤りを `MUTATIONS` として出す。どちらも共有の一覧ではない |
 | ChangeLog | `docs/ChangeLog.md` の `Unreleased` | 何が見つかるようになったか |
 
 ルールの定義に、そのルールに要る読み手向けの欄が欠けていると、`yarn test` が止まります。
