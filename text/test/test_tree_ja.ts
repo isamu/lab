@@ -43,7 +43,7 @@ describe("日本語の契約書を木にする", () => {
         '  (article "1" :heading "目的" :label "第1条" :line 1)',
         '  (article "2" :heading "定義" :label "第2条" :line 3',
         '    (definition :term "本件商品" :line 4)',
-        '    (definition :term "本件代金" :line 5)',
+        '    (definition :placement "inline" :term "本件代金" :line 5)',
         '    (reference :label "第3条" :target "3" :unitWord "条" :line 5))',
         '  (article "3" :heading "支払" :label "第3条" :line 6',
         '    (quantity :unit "日" :value 30 :line 7)',

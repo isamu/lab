@@ -1,0 +1,7 @@
+table  6  6  0  0
+ja/design  reference-broken  found
+ja/policy  reference-broken  found
+ja/requirements  reference-broken  found
+en/design  reference-broken  found
+en/policy  reference-broken  found
+en/requirements  reference-broken  found

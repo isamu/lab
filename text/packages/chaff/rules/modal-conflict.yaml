@@ -1,0 +1,106 @@
+id: modal-conflict
+layer: L3
+status: experimental
+how_to_find: modal-conflict
+requires: [structure, pos]
+severity: warning
+
+name:
+  ja: 同じ行為への逆の決まり
+  en: Opposite obligations on the same act
+
+why:
+  ja: 同じ人の同じ行為を、ある文では「しなければならない」「することができる」と、別の文では「してはならない」と書くと、読み手はどちらに従えばよいか分かりません。後から足した条や、別の文書から写した文で起きます。条件や例外を書き分けていれば、二つの文の中身の語が違うので、ここには出ません。
+  en: The same act by the same party written as "must" or "may" in one sentence and "must not" in another leaves the reader unable to tell which to follow. It happens when a clause is added later or copied from another document. A condition or an exception changes the sentence's words, so a carefully scoped pair is not reported.
+
+message:
+  ja: 「{marker}」と書いていますが、{otherLine} 行目では同じ行為を「{other}」と書いています
+  en: 'This says "{marker}", but line {otherLine} says "{other}" about the same act'
+
+how_to_fix:
+  ja: どちらが正しいかを決め、もう一方を消すか、条件や例外（「書面で承諾を得た場合を除き」）を書き足して二つの範囲を分けてください。
+  en: Decide which one holds and delete the other, or add the condition or exception ("unless the Customer agrees in writing") that separates them.
+
+placeholders:
+  marker:
+    ja: してはならない
+    en: must not
+  other:
+    ja: することができる
+    en: may
+  otherLine:
+    ja: 〇
+    en: N
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 同じ主語の同じ行為を、ある文では義務や許可に、別の文では禁止にしている所
+  en: The same act by the same party required or allowed in one sentence and forbidden in another
+example:
+  ja:
+    before: |
+      ## 第5条（再委託）
+
+      受託者は、本件業務を第三者に委託してはならない。
+
+      ## 第9条（体制）
+
+      受託者は、本件業務を第三者に委託することができる。
+    after: |
+      ## 第5条（再委託）
+
+      受託者は、委託者の書面による承諾を得た場合を除き、本件業務を第三者に委託してはならない。
+
+      ## 第9条（体制）
+
+      受託者は、委託者の書面による承諾を得て、本件業務を第三者に委託することができる。
+  en:
+    before: |
+      ## 5. Confidentiality
+
+      The Supplier must not disclose Confidential Information to third parties.
+
+      ## 9. Advisers
+
+      The Supplier may disclose Confidential Information to third parties.
+    after: |
+      ## 5. Confidentiality
+
+      The Supplier must not disclose Confidential Information to third parties.
+
+      ## 9. Advisers
+
+      The Supplier may disclose Confidential Information to its legal advisers.
+
+not_flagged:
+  ja: 中身の語（名詞・動詞・形容詞）がまったく同じ二つの文だけを比べます。様相の語を二つ以上持つ文と、中身の語が一つしか無い文は見ません。「しなければならない」と「することができる」は食い違いと見ません。
+  en: Only two sentences with exactly the same content words (nouns, verbs, adjectives) are compared. A sentence with two or more modal markers, or with fewer than two content words, is not checked. "Must" and "may" are not counted as a conflict.
+rewrite:
+  ja:
+    direction: どちらの文が正しいかを書き手に確かめてください。両方が正しいなら、それぞれの条件や例外を本文から書き足して範囲を分けます。本文に条件が無ければ作らず、書き手に聞きます。
+    pairs:
+      - before: 受託者は、本件業務を第三者に委託してはならない。（第9条）受託者は、本件業務を第三者に委託することができる。
+        after: 受託者は、委託者の書面による承諾を得た場合を除き、本件業務を第三者に委託してはならない。（第9条）受託者は、委託者の書面による承諾を得て、本件業務を第三者に委託することができる。（承諾の条件が本文にあるとき）
+      - before: 利用者は、本サービスを商用に使ってはならない。（第12条）利用者は、本サービスを商用に使うことができる。
+        after: 利用者は、本サービスを商用に使ってはならない。（第12条を消す。書き手が禁止を正しいとしたとき）
+    keep:
+      - 正しいとされた方の決まりの中身
+    avoid:
+      - 本文に無い条件や例外を作る
+      - どちらが正しいかを書き手に聞かずに決める
+  en:
+    direction: Ask the writer which sentence holds. If both do, separate them with the condition or exception the text gives; if the text gives none, ask rather than invent one.
+    pairs:
+      - before: The Supplier must not disclose Confidential Information to third parties. (Section 9) The Supplier may disclose Confidential Information to third parties.
+        after: The Supplier must not disclose Confidential Information to third parties. (Section 9) The Supplier may disclose Confidential Information to its legal advisers. (when Section 9 is about advisers)
+      - before: Users must not resell the Service. (Section 12) Users may resell the Service.
+        after: Users must not resell the Service. (Section 12 deleted, when the writer confirms the ban)
+    keep:
+      - what the rule that holds says
+    avoid:
+      - inventing a condition or exception
+      - picking a side without asking the writer

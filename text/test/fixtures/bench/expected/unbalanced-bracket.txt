@@ -1,0 +1,10 @@
+table  9  9  0  0
+ja/design  bracket-unclosed  found
+ja/email  bracket-unclosed  found
+ja/minutes  bracket-unclosed  found
+ja/policy  bracket-unclosed  found
+ja/press  bracket-unclosed  found
+ja/quote  bracket-unclosed  found
+en/design  bracket-unclosed  found
+en/figures  bracket-unclosed  found
+en/minutes  bracket-unclosed  found

@@ -115,6 +115,8 @@ read it as data). It prints, in the document's language:
 - the constraints: keep facts, numbers, conditions and names; add no fact; ask the writer instead of inventing a
   specific; two passes at most;
 - the recommended mode and why, and the document-level signals with the outline's numbers;
+- the structure targets: the structure score (how many structure measures lie past 90% of human articles) and, for
+  each measure past that line, a target from the human baseline ("fewer headings: N now, M at most for this length");
 - for each rule that fired: its rewrite direction, what to keep, what to avoid, one before/after pair, hints for the
   `ai-tell` phrases found, and the spots (line and sentence);
 - the check commands to run on the rewrite.
@@ -130,7 +132,7 @@ Pick one of three modes and say which.
 | --- | --- | --- |
 | **Light** | only the flagged spots | the content and the structure are fine and only some phrasing is off |
 | **Bold** | each section's prose, keeping the outline | the outline is fixed (a report template, a manual, required sections) |
-| **Full** | the whole document, from scratch | the request says 「全面的に」「一から」「全部書き直して」 / "from scratch" / "rewrite the whole thing"; or the genre is `blog/*` or an essay (`literature/essay`); or `ai-generated-composite` fires |
+| **Full** | the whole document, from scratch | the request says 「全面的に」「一から」「全部書き直して」 / "from scratch" / "rewrite the whole thing"; or the genre is `blog/*` or an essay (`literature/essay`); or `ai-generated-composite` fires; or the plan's structure score reaches its limit |
 
 For a blog or an essay, and whenever `ai-generated-composite` fires, recommend Full. A Light or Bold pass leaves the
 skeleton of generated text: a heading every few paragraphs, bold lead-ins, symmetric sections, a closing まとめ that
@@ -161,7 +163,8 @@ repeats the body. The writer usually wants the structure changed, not only the s
 
 1. **Take inventory before writing.** `npx chaffjs facts <file> --json` lists every fact `compare` will hold you to
    (numbers, dates, times, URLs, code, names, quotations, headings, references, footnotes). `npx chaffjs outline <file>`
-   gives the old outline and its shape. Then write down, one line each, the writer's actual claims and every concrete
+   gives the old outline, its shape and its structure block: each structure measure against human articles, with ✗ on
+   those past 90% of them. Then write down, one line each, the writer's actual claims and every concrete
    experience, example and opinion in the original. This inventory is what you write from; the old sentences are not.
 2. **Throw away the structure.** Decide what the piece is for and who reads it. Choose one angle or story for the
    whole piece, and outline it the way a person would. Do these before writing:
@@ -173,6 +176,9 @@ repeats the body. The writer usually wants the structure changed, not only the s
    - no symmetric three-point sections unless the content really has three parts;
    - move the writer's concrete experience to where it carries the argument;
    - open with the point or a concrete scene, not a generic opener.
+
+   Size the new outline by the plan's structure targets: as many headings as the target allows for this length, no
+   heading split into three unless the content has three parts, no bold-label lists, no closing that restates.
 3. **Show the new outline first.** Put the old outline (headings from `chaff outline`) next to the proposed one:
    headings, and one line per section on what it says. The writer then sees the structural change at a glance. Wait
    for a yes, unless the person asked for it to be done without asking; then go straight on.
@@ -199,8 +205,8 @@ repeats the body. The writer usually wants the structure changed, not only the s
      this one is yours to keep.
 5. **Check.**
    - `npx chaffjs <old> --experimental` and `npx chaffjs <new> --experimental`: the AI signals before and after.
-   - `npx chaffjs outline <old> <new>`: headings, average section length, text in lists, bold, before and after. A
-     restructure shows up here, not only in rule counts.
+   - `npx chaffjs outline <old> <new>`: headings, average section length, text in lists, bold, and the structure score
+     and each structure measure, before and after. A restructure shows up here, not only in rule counts.
    - `npx chaffjs compare <old> <new> --distinct --allow-dropped heading --allow-added heading`: the headings are the
      structure you rebuilt on purpose; every other dropped fact is restored and no other fact is added. A cut まとめ
      restates facts the body still holds, so `--distinct` counts a fact as kept when the new text states it at least
@@ -208,6 +214,8 @@ repeats the body. The writer usually wants the structure changed, not only the s
 6. **Stop** when all of these hold, or after two full passes, whichever comes first:
    - `ai-generated-composite` does not fire;
    - the density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits;
+   - `chaff outline <old> <new>` shows the new structure score under the plan's limit, with no ✗ left on the measures
+     the plan listed as targets;
    - `compare` is clean, or every exclusion has a stated reason.
 7. **Show** the new text, a short "what changed and why" list, then a table of the signals and the shape before and
    after, taken from chaff's output.
@@ -216,14 +224,14 @@ repeats the body. The writer usually wants the structure changed, not only the s
 
 - a generic opener or closer ("本記事では〜解説します", "いかがでしたでしょうか", "In today's fast-paced world");
 - explaining what every reader already knows;
-- every section the same length and the same shape;
+- every section the same shape (chaff measures the lengths and the heading forms, not what each section does);
 - a list of benefits with no cost or trade-off;
 - no first-hand detail: nothing the writer saw, measured or did;
 - the same enthusiasm everywhere, so nothing stands out;
 - politeness piled on politeness;
 - a definition nobody asked for;
 - headings that are full sentences or slogans;
-- a まとめ / "Conclusion" that repeats the body.
+- a まとめ / "Conclusion" that repeats the body in other words (chaff counts only the repeated wording).
 
 In every mode:
 

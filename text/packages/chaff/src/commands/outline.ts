@@ -3,6 +3,7 @@ import { outlineOf } from "../outline/shape.ts";
 import { renderOutlineCompact, renderOutlineFriendly, renderOutlineJson, type DocumentOutline } from "../outline/render.ts";
 import { OUTLINE_TEXT } from "../outline/text.ts";
 import { readDocument } from "./read-document.ts";
+import { structureOf } from "../structure-shape/of-document.ts";
 import type { TreeContext } from "./tree.ts";
 
 /** Options whose value is the next argument. That value is not a file. */
@@ -15,7 +16,7 @@ const MOST_FILES = 2;
 
 const readOutline = async (path: string, argv: readonly string[], context: TreeContext): Promise<DocumentOutline | undefined> => {
   const prose = await readDocument(path, argv, context, false);
-  return prose === undefined ? undefined : { path, language: prose.language, outline: outlineOf(prose.doc) };
+  return prose === undefined ? undefined : { path, language: prose.language, outline: outlineOf(prose.doc), structure: structureOf(prose.doc) };
 };
 
 /** The files in the order given, or undefined once one cannot be read (its error is already printed). */
@@ -34,8 +35,8 @@ const renderFor = (argv: readonly string[], documents: readonly DocumentOutline[
 };
 
 /**
- * A document's outline and shape (headings, average section length, text in lists, bold), or two documents' side by
- * side: a restructure measured by machine. Measures; never judges, so it always ends with 0 once the files are read.
+ * A document's outline and shape (headings, average section length, text in lists, bold) and its structure measures
+ * against human articles, or two documents' side by side: a restructure measured by machine. Measures; never judges, so it always ends with 0 once the files are read.
  */
 export const runOutline = async (targets: readonly string[], argv: readonly string[], context: TreeContext): Promise<number> => {
   if (targets.length === 0 || targets.length > MOST_FILES) {

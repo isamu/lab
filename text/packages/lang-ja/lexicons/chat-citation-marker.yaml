@@ -1,0 +1,11 @@
+# チャットの答えを貼ったときに残る印。リンクの追跡用の値と、出典の印。書いたとおりに（大文字・小文字も）探す。
+# utm_source のほかの値（qiita、twitter）は人も付けるので入れない。
+id: chat-citation-marker
+language: ja
+entries:
+  - pattern: utm_source=chatgpt.com
+  - pattern: utm_source=openai
+  - pattern: oaicite
+  - pattern: contentReference[
+  - pattern: †source】
+  - pattern: citeturn

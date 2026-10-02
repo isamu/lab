@@ -1,0 +1,10 @@
+# 文を打ち消す語。打ち消した一覧の文（Linux には対応していません）は一覧から外す名前を言うので、outside-announced-list は読まない。
+# 一つの語ずつ。原形でも書いた形でも当たる。
+id: enumeration-negation
+language: ja
+entries:
+  - pattern: ない
+  - pattern: ん
+  - pattern: ず
+  - pattern: 非
+  - pattern: 未

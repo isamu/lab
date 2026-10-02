@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  heading-copied  found
+ja/design  heading-copied  found
+ja/figures  heading-copied  found
+ja/itinerary  heading-copied  found
+ja/minutes  heading-copied  found
+ja/press  heading-copied  found
+ja/proposal  heading-copied  found
+ja/quote  heading-copied  found
+ja/readme  heading-copied  found
+ja/requirements  heading-copied  found
+en/blog  heading-copied  found
+en/design  heading-copied  found
+en/figures  heading-copied  found
+en/itinerary  heading-copied  found
+en/minutes  heading-copied  found
+en/press  heading-copied  found
+en/proposal  heading-copied  found
+en/quote  heading-copied  found
+en/readme  heading-copied  found
+en/requirements  heading-copied  found

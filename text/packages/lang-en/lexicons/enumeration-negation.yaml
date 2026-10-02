@@ -1,0 +1,13 @@
+# Words that negate a sentence. A negated listing ("neither image is available on Docker Hub") names what is left out
+# of a list, not what belongs to it, so outside-announced-list does not read it. Each entry is one token.
+id: enumeration-negation
+language: en
+entries:
+  - pattern: not
+  - pattern: n't
+  - pattern: never
+  - pattern: neither
+  - pattern: nor
+  - pattern: "no"
+  - pattern: cannot
+  - pattern: unsupported
