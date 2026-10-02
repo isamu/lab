@@ -25,7 +25,7 @@ how_to_fix:
 # 指摘に要る数。長さで割らない：人の記事は長くても 1 つ 2 つで、生成文は短くても重ねる。
 levels: { strict: 2, normal: 3, relaxed: 5 }
 
-use_for: [blog, business, legal, docs, academic, literature, speech]
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 
 group: ai-tells
 summary:

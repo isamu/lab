@@ -265,7 +265,7 @@ $ npx chaffjs prompt-a.md --experimental --compact
 prompt-a.md   blog/tech · English   genre from the default
 
 
-0 findings, 16 rules not run
+0 findings, 25 rules not run
 ```
 
 ```
@@ -286,7 +286,7 @@ prompt-b.md   blog/tech · English   genre from the default
   12:70   warning Closes with "hope this helps"
                   closing-cliche
 
-6 findings, 16 rules not run
+6 findings, 25 rules not run
 ```
 
 Across many tasks, compare the rates rather than single outputs. The table from the script in step 3 puts them side by side.
@@ -355,7 +355,7 @@ answer.md   blog/tech · English   genre from the default
   9:25    error   2026-10-06 is a Tuesday, not a Monday
                   date-weekday-mismatch
 
-2 findings, 16 rules not run
+2 findings, 25 rules not run
 ```
 
 These findings are errors, so the run ends with exit code 1 and the script fails the output.

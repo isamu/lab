@@ -146,8 +146,9 @@ const writeSarif = (results: readonly Inspected[], argv: readonly string[], conf
   const located = results.flatMap((result) =>
     result.outcome.findings.map((finding) => ({ path: result.outcome.path, finding, language: result.language, rules: result.rules })),
   );
+  const notRun = results.flatMap((result) => result.checked.skipped.map((entry) => ({ path: result.outcome.path, rule: entry.rule, why: entry.why })));
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, renderSarif(located, VERSION), "utf8");
+  writeFileSync(path, renderSarif(located, VERSION, notRun), "utf8");
   console.log(hostText(config).sarifWritten(path, located.length));
 };
 

@@ -97,7 +97,7 @@ manual.md   blog/tech · 日本語   ジャンルは既定から
   9:1     warning 画像「![](images/settings.png)」に代替テキストがありません
                   image-alt-text
 
-指摘 1 件、動いていない rule 65 件
+指摘 1 件、動いていない rule 74 件
 ```
 
 勧められたとおり、ジャンルを付けて、試験中のルールも動かします。
@@ -121,7 +121,7 @@ manual.md   docs/manual · 日本語   ジャンルは--genreから
   27:1    warning 見出し「予約を作る」は、同じ親の下の 11 行目の見出しと同じです
                   duplicate-heading
 
-指摘 6 件、動いていない rule 30 件
+指摘 6 件、動いていない rule 34 件
 ```
 
 ## 指摘の意味と直しかた

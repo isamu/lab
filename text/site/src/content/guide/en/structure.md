@@ -113,7 +113,7 @@ contract.txt   blog/tech · English   genre from the default
   11:66   error   "Section 9" (address 9) is not in this document
                   dangling-reference
 
-4 findings, 10 rules not run
+4 findings, 30 rules not run
 ```
 
 The line under the first one suggests checking it as a contract.
@@ -199,7 +199,7 @@ draft.txt   blog/tech · English   genre from the default
   25:1    warning This sentence runs 26 words (limit 25)
                   max-sentence-length
 
-13 findings, 10 rules not run
+13 findings, 18 rules not run
 ```
 
 The two `error` lines come from the two changes.
@@ -242,7 +242,7 @@ fixed.txt   blog/tech · English   genre from the default
   26:1    warning This sentence runs 26 words (limit 25)
                   max-sentence-length
 
-12 findings, 10 rules not run
+12 findings, 18 rules not run
 ```
 
 An Act in force should have no such breaks.

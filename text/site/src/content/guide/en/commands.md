@@ -61,7 +61,7 @@ sample.md   blog/tech · English   genre from the default
   142:1   warning The first sentence repeats the heading "agentFunctionInfo"
                   heading-echo
 
-3 findings, 45 rules not run
+3 findings, 53 rules not run
 ```
 
 The last line counts the findings and the rules that did not run.
@@ -240,7 +240,7 @@ $ npx chaffjs docs/ --compact
 docs/a.md   technical/readme · English   genre from the path   1 shelved
 
 
-0 findings, 30 rules not run
+0 findings, 57 rules not run
 ```
 
 To see the shelved ones too, add `--show-baseline`.
@@ -253,7 +253,7 @@ docs/a.md   technical/readme · English   genre from the path
   3:1     warning This sentence runs 43 words (limit 25)
                   max-sentence-length
 
-1 finding, 30 rules not run
+1 finding, 57 rules not run
 ```
 
 How to use it in CI is in [CI](./ci).

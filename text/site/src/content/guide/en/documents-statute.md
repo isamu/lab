@@ -127,7 +127,7 @@ rules.md   legal/statute · English   genre from --genre
 
   7 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  52 rules did not run:
+  76 rules did not run:
       adverb-overuse (the legal/statute genre does not check it)
       agentless-passive (the legal/statute genre does not check it)
       agreement-slip (still experimental)
@@ -136,6 +136,8 @@ rules.md   legal/statute · English   genre from --genre
       announced-count-mismatch (still experimental)
       announcing-opener (the legal/statute genre does not check it)
       assistant-residue (still experimental)
+      bold-label-list (not a rule for en)
+      broken-link (still experimental)
       closing-cliche (the legal/statute genre does not check it)
       colon-lead-in (not a rule for en)
       concrete-evidence-density (the legal/statute genre does not check it)
@@ -144,13 +146,24 @@ rules.md   legal/statute · English   genre from --genre
       cushion-phrase-density (the legal/statute genre does not check it)
       date-order (still experimental)
       double-keigo (not a rule for en)
+      double-negative (the legal/statute genre does not check it)
+      doubled-punctuation (still experimental)
       doubled-word (still experimental)
+      duplicate-heading (still experimental)
       emoji-density (still experimental)
+      empty-conclusion (the legal/statute genre does not check it)
+      empty-section (still experimental)
       excessive-hedging (the legal/statute genre does not check it)
       expletive-construction (the legal/statute genre does not check it)
+      fullwidth-alnum-consistency (not a rule for en)
+      hankaku-kana (not a rule for en)
       heading-echo (the legal/statute genre does not check it)
+      heading-level-skip (still experimental)
       hiragana-fukushi (not a rule for en)
       internal-jargon (still experimental)
+      invisible-character (still experimental)
+      katakana-long-vowel (not a rule for en)
+      kutoten-consistency (not a rule for en)
       latin-spacing (not a rule for en)
       max-kanji-continuous (not a rule for en)
       ngram-repetition (the legal/statute genre does not check it)
@@ -158,6 +171,7 @@ rules.md   legal/statute · English   genre from --genre
       no-em-dash (still experimental)
       no-mixed-desumasu (not a rule for en)
       no-nakaguro-parallel (not a rule for en)
+      nominalization (the legal/statute genre does not check it)
       oxford-comma-consistency (still experimental)
       padded-intro (the legal/statute genre does not check it)
       paragraph-length-variance (the legal/statute genre does not check it)
@@ -165,21 +179,31 @@ rules.md   legal/statute · English   genre from --genre
       preamble-length (the legal/statute genre does not check it)
       preferred-term (still experimental)
       proper-noun-density (the legal/statute genre does not check it)
+      ra-nuki (not a rule for en)
       repeated-conjunction (still experimental)
       repeated-sentence-head (the legal/statute genre does not check it)
       required-sections (still experimental)
+      requirement-modal (still experimental)
+      requirement-smell (the legal/statute genre does not check it)
+      risk-disclosure (the legal/statute genre does not check it)
       rule-of-three (the legal/statute genre does not check it)
       sasete-itadaku (not a rule for en)
       section-length-uniformity (the legal/statute genre does not check it)
       sentence-initial-conjunction-run (still experimental)
       sentence-rhythm (the legal/statute genre does not check it)
+      space-before-punctuation (still experimental)
+      spelling-consistency (still experimental)
       stock-transition (the legal/statute genre does not check it)
       stray-space (not a rule for en)
       taigen-dome-in-prose (not a rule for en)
       title-case-consistency (still experimental)
+      unbalanced-bracket (still experimental)
       undefined-acronym (still experimental)
       unfilled-placeholder (still experimental)
       unqualified-superlative (the legal/statute genre does not check it)
+      unsourced-number (the legal/statute genre does not check it)
+      url-run-on (still experimental)
+      vague-figure-reference (still experimental)
 ```
 
 ## What each finding means
@@ -267,7 +291,7 @@ rules.md   legal/statute · English   genre from --genre   1 stet
   16:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-2 findings, 46 rules not run
+2 findings, 49 rules not run
 ```
 
 ## Changing a rule for the whole team
@@ -311,7 +335,7 @@ rules.md   legal/statute · English   genre from chaff.yaml
   15:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-3 findings, 46 rules not run
+3 findings, 49 rules not run
 ```
 
 chaff fails when any error is left, and passes when there are only warnings, so a warning does not stop CI.

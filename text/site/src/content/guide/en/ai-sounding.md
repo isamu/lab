@@ -237,6 +237,7 @@ The plan `chaff fix-plan` printed:
 
 ````markdown
 $ npx chaffjs fix-plan draft.md --experimental
+
 # Fix plan: draft.md
 
 language en, genre blog/tech
@@ -372,6 +373,11 @@ after:
   Closes with "in conclusion"
 - line 11: "I hope this helps!"
   Closes with "hope this helps"
+
+## Rules that did not run
+
+- `agentless-passive`: the blog/tech genre does not check it
+- `cushion-phrase-density`: the blog/tech genre does not check it
 
 ## Check after rewriting
 
@@ -519,7 +525,7 @@ ai.md   blog/tech · English   genre from --genre
   47:1    warning Closes with "hope this helps"
                   closing-cliche
 
-9 findings, 13 rules not run
+9 findings, 21 rules not run
 ```
 
 The article after:
@@ -556,7 +562,7 @@ $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 rewritten.md   blog/tech · English   genre from --genre
 
 
-0 findings, 16 rules not run
+0 findings, 24 rules not run
 ```
 
 What changed, and why:
@@ -666,7 +672,7 @@ demo.md   blog/tech · English   genre from --genre
   33:184  warning "section-length-uniformity, padded-intro, closing-cliche" occur together in this document (3 signals, 3 needed)
                   ai-generated-composite
 
-4 findings, 16 rules not run
+4 findings, 24 rules not run
 ```
 
 The inventory: `npx chaffjs facts demo.md` lists 5 numbers, a date, 2 times, 2 names (Friday, Slack) and 7 headings.
@@ -713,7 +719,7 @@ $ npx chaffjs demo-full.md --genre blog/tech --experimental --compact
 demo-full.md   blog/tech · English   genre from --genre
 
 
-0 findings, 16 rules not run
+0 findings, 24 rules not run
 ```
 
 `outline` measures how the structure changed: fewer headings, longer sections, no list and no bold.

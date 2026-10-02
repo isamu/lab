@@ -127,7 +127,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
   試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  51 件の rule は動いていません:
+  75 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agentless-passive（ジャンル legal/statute では見ないため）
       agreement-slip（ja 向けの rule ではないため）
@@ -136,6 +136,8 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
       announced-count-mismatch（まだ試験中のため）
       announcing-opener（ジャンル legal/statute では見ないため）
       assistant-residue（まだ試験中のため）
+      bold-label-list（ジャンル legal/statute では見ないため）
+      broken-link（まだ試験中のため）
       closing-cliche（ジャンル legal/statute では見ないため）
       colon-lead-in（ジャンル legal/statute では見ないため）
       concrete-evidence-density（ジャンル legal/statute では見ないため）
@@ -144,19 +146,31 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
       cushion-phrase-density（ジャンル legal/statute では見ないため）
       date-order（まだ試験中のため）
       double-keigo（まだ試験中のため）
+      double-negative（ジャンル legal/statute では見ないため）
+      doubled-punctuation（まだ試験中のため）
       doubled-word（まだ試験中のため）
+      duplicate-heading（まだ試験中のため）
       emoji-density（まだ試験中のため）
+      empty-conclusion（ジャンル legal/statute では見ないため）
+      empty-section（まだ試験中のため）
       excessive-hedging（ジャンル legal/statute では見ないため）
       expletive-construction（ja 向けの rule ではないため）
+      fullwidth-alnum-consistency（まだ試験中のため）
+      hankaku-kana（まだ試験中のため）
       heading-echo（ジャンル legal/statute では見ないため）
+      heading-level-skip（まだ試験中のため）
       hiragana-fukushi（まだ試験中のため）
       internal-jargon（まだ試験中のため）
+      invisible-character（まだ試験中のため）
+      katakana-long-vowel（まだ試験中のため）
+      kutoten-consistency（まだ試験中のため）
       latin-spacing（まだ試験中のため）
       max-kanji-continuous（ジャンル legal/statute では見ないため）
       ngram-repetition（ジャンル legal/statute では見ないため）
       no-doubled-joshi（ジャンル legal/statute では見ないため）
       no-em-dash（まだ試験中のため）
       no-mixed-desumasu（まだ試験中のため）
+      nominalization（ジャンル legal/statute では見ないため）
       oxford-comma-consistency（ja 向けの rule ではないため）
       padded-intro（ジャンル legal/statute では見ないため）
       paragraph-length-variance（ジャンル legal/statute では見ないため）
@@ -164,21 +178,31 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
       preamble-length（ジャンル legal/statute では見ないため）
       preferred-term（まだ試験中のため）
       proper-noun-density（ジャンル legal/statute では見ないため）
+      ra-nuki（まだ試験中のため）
       repeated-conjunction（まだ試験中のため）
       repeated-sentence-head（ジャンル legal/statute では見ないため）
       required-sections（まだ試験中のため）
+      requirement-modal（まだ試験中のため）
+      requirement-smell（ジャンル legal/statute では見ないため）
+      risk-disclosure（ジャンル legal/statute では見ないため）
       rule-of-three（ジャンル legal/statute では見ないため）
       sasete-itadaku（ジャンル legal/statute では見ないため）
       section-length-uniformity（ジャンル legal/statute では見ないため）
       sentence-initial-conjunction-run（ja 向けの rule ではないため）
       sentence-rhythm（ジャンル legal/statute では見ないため）
+      space-before-punctuation（ja 向けの rule ではないため）
+      spelling-consistency（ja 向けの rule ではないため）
       stock-transition（ジャンル legal/statute では見ないため）
       stray-space（まだ試験中のため）
       taigen-dome-in-prose（ジャンル legal/statute では見ないため）
       title-case-consistency（ja 向けの rule ではないため）
+      unbalanced-bracket（まだ試験中のため）
       undefined-acronym（まだ試験中のため）
       unfilled-placeholder（まだ試験中のため）
       unqualified-superlative（ジャンル legal/statute では見ないため）
+      unsourced-number（ジャンル legal/statute では見ないため）
+      url-run-on（まだ試験中のため）
+      vague-figure-reference（まだ試験中のため）
 ```
 
 ## 指摘の読み方
@@ -262,7 +286,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから   stet 1 �
   16:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 2 件、動いていない rule 45 件
+指摘 2 件、動いていない rule 48 件
 ```
 
 ## チームで決まりを変える
@@ -306,7 +330,7 @@ kitei.md   legal/statute · 日本語   ジャンルはchaff.yamlから
   15:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 3 件、動いていない rule 45 件
+指摘 3 件、動いていない rule 48 件
 ```
 
 エラーが 1 件でも残ると、chaff は失敗で終わります。注意だけなら成功で終わるので、CI を止めません。

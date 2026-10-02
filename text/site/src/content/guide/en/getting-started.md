@@ -87,8 +87,9 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  68 rules did not run:
+  76 rules did not run:
       adverb-overuse (still experimental)
+      agentless-passive (the blog/tech genre does not check it)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
       ai-tell (still experimental)
@@ -99,11 +100,13 @@ article.md   blog/tech · English   genre from the default
       colon-lead-in (not a rule for en)
       contraction-consistency (still experimental)
       contrast-framing (still experimental)
+      cushion-phrase-density (the blog/tech genre does not check it)
       dangling-figure-reference (still experimental)
       dangling-reference (still experimental)
       date-order (still experimental)
       date-range-reversed (still experimental)
       date-weekday-mismatch (still experimental)
+      double-keigo (not a rule for en)
       double-negative (still experimental)
       doubled-punctuation (still experimental)
       doubled-word (still experimental)
@@ -133,12 +136,15 @@ article.md   blog/tech · English   genre from the default
       oxford-comma-consistency (still experimental)
       paragraph-length-variance (still experimental)
       percent-sum-mismatch (still experimental)
+      preamble-length (the blog/tech genre does not check it)
       preferred-term (still experimental)
       proper-noun-density (still experimental)
       ra-nuki (not a rule for en)
       repeated-conjunction (still experimental)
       required-sections (still experimental)
       requirement-modal (still experimental)
+      requirement-smell (the blog/tech genre does not check it)
+      risk-disclosure (the blog/tech genre does not check it)
       rule-of-three (still experimental)
       sasete-itadaku (not a rule for en)
       section-length-uniformity (still experimental)
@@ -152,8 +158,10 @@ article.md   blog/tech · English   genre from the default
       title-case-consistency (still experimental)
       total-mismatch (still experimental)
       unbalanced-bracket (still experimental)
+      undefined-acronym (the blog/tech genre does not check it)
       unfilled-placeholder (still experimental)
       unqualified-superlative (still experimental)
+      unsourced-number (the blog/tech genre does not check it)
       url-run-on (still experimental)
       vague-figure-reference (still experimental)
 

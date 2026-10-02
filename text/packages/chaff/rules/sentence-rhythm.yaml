@@ -27,7 +27,7 @@ levels:
   normal: 30
   relaxed: 20
 
-use_for: [blog, legal, docs, academic, literature, speech]
+use_for: [technical/readme, blog, legal, docs, academic, literature, speech]
 sources: [iwamoto-2026]
 
 group: readability

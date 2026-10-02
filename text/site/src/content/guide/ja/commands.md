@@ -65,7 +65,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
   344:1   warning この文は 129 文字あります（100 文字まで）
                   max-sentence-length
 
-指摘 5 件、動いていない rule 42 件
+指摘 5 件、動いていない rule 50 件
 ```
 
 最後の行は、指摘の数と、動かなかったルールの数です。
@@ -247,7 +247,7 @@ $ npx chaffjs docs/ --compact
 docs/a.md   technical/readme · 日本語   ジャンルはパスから   棚上げ 1 件
 
 
-指摘 0 件、動いていない rule 27 件
+指摘 0 件、動いていない rule 54 件
 ```
 
 棚上げした分も見たいときは、`--show-baseline` を付けます。
@@ -260,7 +260,7 @@ docs/a.md   technical/readme · 日本語   ジャンルはパスから
   3:1     warning この文は 108 文字あります（100 文字まで）
                   max-sentence-length
 
-指摘 1 件、動いていない rule 27 件
+指摘 1 件、動いていない rule 54 件
 ```
 
 CI に入れるときの使いかたは、[CI](./ci) で説明します。

@@ -262,7 +262,7 @@ $ npx chaffjs prompt-a.md --experimental --compact
 prompt-a.md   blog/tech · 日本語   ジャンルは既定から
 
 
-指摘 0 件、動いていない rule 10 件
+指摘 0 件、動いていない rule 18 件
 ```
 
 ```
@@ -281,7 +281,7 @@ prompt-b.md   blog/tech · 日本語   ジャンルは既定から
   12:9    warning 「参考になれば幸いです」で締めています
                   closing-cliche
 
-指摘 5 件、動いていない rule 10 件
+指摘 5 件、動いていない rule 18 件
 ```
 
 たくさんの題で比べるときは、一つの出力ではなく率を比べます。手順 3 のスクリプトの表が、2 つを並べて出します。
@@ -351,7 +351,7 @@ answer.md   blog/tech · 日本語   ジャンルは既定から
   9:5     error   「2026-10-06」は火曜日です（月曜日と書いてあります）
                   date-weekday-mismatch
 
-指摘 2 件、動いていない rule 10 件
+指摘 2 件、動いていない rule 18 件
 ```
 
 どちらも `error` なので終了コード 1 で終わり、スクリプトもこの出力を落とします。

@@ -6,7 +6,7 @@
 18f-handbook-projects-in-distress  agentless-passive 16, max-paragraph-length 1, max-sentence-length 28, undefined-acronym 6
 18f-handbook-travel  max-sentence-length 14, title-case-consistency 2, undefined-acronym 5
 18f-handbook-travel-faq  heading-level-skip 1, max-paragraph-length 1, max-sentence-length 65, requirement-smell 1, unbalanced-bracket 5, undefined-acronym 16
-abr-geocoder-abrg-readme-ja  clean
+abr-geocoder-abrg-readme-ja  colon-lead-in 2
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2, unfilled-placeholder 3
 aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 77
 aozora-kishida-kamifusen  clean
@@ -217,7 +217,7 @@ us-scotus-gideon-v-wainwright  empty-section 1, max-paragraph-length 1, max-sent
 usajobs-va-it-specialist-customer-support  agentless-passive 102, concrete-evidence-density 7, contraction-consistency 1, duplicate-heading 2, heading-level-skip 1, max-paragraph-length 1, max-sentence-length 63, ngram-repetition 1, undefined-acronym 42
 utelecon-account-leave  concrete-evidence-density 3, kutoten-consistency 2, latin-spacing 1, max-sentence-length 5, ngram-repetition 1, preamble-length 1
 utokyo-gakui-kisoku  clean
-vite-plugin-legacy-changelog  bold-density 1, contraction-consistency 7, empty-section 1, heading-level-skip 1, ngram-repetition 1, undefined-acronym 3
+vite-plugin-legacy-changelog  bold-density 1, contraction-consistency 7, empty-section 1, heading-level-skip 1, ngram-repetition 1, sentence-rhythm 1, undefined-acronym 3
 voa-le-lunar-trailblazer  max-sentence-length 8
 vue-docs-ja-reactivity-fundamentals  katakana-long-vowel 1, max-sentence-length 1, no-doubled-joshi 1
 w3c-secure-contexts  excessive-hedging 1, heading-echo 2, max-sentence-length 26, ngram-repetition 1, oxford-comma-consistency 1
@@ -233,6 +233,6 @@ wikivoyage-magnificent-mile  contraction-consistency 5, max-paragraph-length 4, 
 yamano-akashi-api  latin-spacing 3
 yamano-akashi-architecture  undefined-acronym 5
 zenn-coji-ai-smell-lint  max-sentence-length 1, no-doubled-joshi 2, taigen-dome-in-prose 1
-zenn-coji-xstate-api-reference  no-doubled-joshi 1, undefined-acronym 3
+zenn-coji-xstate-api-reference  bold-label-list 1, no-doubled-joshi 1, undefined-acronym 3
 zenn-kaityo256-happy-presentation  concrete-evidence-density 5, empty-intensifier 1, max-paragraph-length 2, max-sentence-length 7, ngram-repetition 1
 zenn-kaityo256-what-is-linker  max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 1

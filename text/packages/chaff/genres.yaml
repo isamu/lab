@@ -9,7 +9,8 @@
 #            paths (the file's path), then per language an opening (the body's first line, past front matter and
 #            headings) or a line with min_lines (how many lines must have that shape). A wrong suggestion misleads
 #            more than none, so a cue is added only where the corpus shows it does not fire on other kinds.
-# Which genres a rule applies to at all is the rule's use_for; the numbers behind a level are the rule's by_genre.
+# Which genres a rule applies to at all is the rule's use_for (a rule it leaves out is listed under "did not run" the same
+# way); the numbers behind a level are the rule's by_genre.
 
 groups:
   - id: technical

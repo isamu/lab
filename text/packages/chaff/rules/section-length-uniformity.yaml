@@ -30,7 +30,7 @@ options:
       ja: 測る節の数の下限。節が少ないと長さのばらつきは偶然で小さく出て、人の書いた文書でも揃って見えます
       en: The fewest sections measured. With few sections, the variation is small by chance, and a person's writing looks uniform too
 
-use_for: [blog, legal, docs, academic, literature, speech]
+use_for: [technical/readme, blog, legal, docs, academic, literature, speech]
 
 group: ai-tells
 summary:
@@ -131,8 +131,8 @@ example:
       New versions are on the same page.
 
 not_flagged:
-  ja: 中身のある節が 5 より少ない文書は見ません（min_sections で変えられます）。ビジネス文書と技術文書のジャンルでは見ません。
-  en: Documents with fewer than 5 sections are not checked (min_sections changes it). Business and technical genres do not run this rule.
+  ja: 中身のある節が 5 より少ない文書は見ません（min_sections で変えられます）。ビジネス文書と仕様書（technical/spec）のジャンルでは見ません。
+  en: Documents with fewer than 5 sections are not checked (min_sections changes it). Business and specification (technical/spec) genres do not run this rule.
 level_meaning:
   ja: 節の長さのばらつきが {limit}% 未満なら指摘
   en: reported when section length varies by less than {limit}%

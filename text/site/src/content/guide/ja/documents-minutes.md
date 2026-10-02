@@ -92,7 +92,7 @@ $ npx chaffjs gijiroku.md --compact
 gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
 
 
-指摘 0 件、動いていない rule 66 件
+指摘 0 件、動いていない rule 75 件
 ```
 
 `--experimental` を付けて、試験中のルールも動かします。
@@ -122,7 +122,7 @@ gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
   24:9    warning 「3 点」と予告していますが、すぐ下の箇条書きは2項目です
                   announced-count-mismatch
 
-指摘 9 件、動いていない rule 11 件
+指摘 9 件、動いていない rule 19 件
 ```
 
 ## 指摘の意味と直しかた

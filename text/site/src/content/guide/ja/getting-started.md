@@ -87,8 +87,9 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  65 件の rule は動いていません:
+  73 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
+      agentless-passive（ジャンル blog/tech では見ないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
       ai-tell（まだ試験中のため）
@@ -99,11 +100,13 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       colon-lead-in（まだ試験中のため）
       contraction-consistency（ja 向けの rule ではないため）
       contrast-framing（まだ試験中のため）
+      cushion-phrase-density（ジャンル blog/tech では見ないため）
       dangling-figure-reference（まだ試験中のため）
       dangling-reference（まだ試験中のため）
       date-order（まだ試験中のため）
       date-range-reversed（まだ試験中のため）
       date-weekday-mismatch（まだ試験中のため）
+      double-keigo（ジャンル blog/tech では見ないため）
       double-negative（まだ試験中のため）
       doubled-punctuation（まだ試験中のため）
       doubled-word（まだ試験中のため）
@@ -131,12 +134,15 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       oxford-comma-consistency（ja 向けの rule ではないため）
       paragraph-length-variance（まだ試験中のため）
       percent-sum-mismatch（まだ試験中のため）
+      preamble-length（ジャンル blog/tech では見ないため）
       preferred-term（まだ試験中のため）
       proper-noun-density（まだ試験中のため）
       ra-nuki（まだ試験中のため）
       repeated-conjunction（まだ試験中のため）
       required-sections（まだ試験中のため）
       requirement-modal（まだ試験中のため）
+      requirement-smell（ジャンル blog/tech では見ないため）
+      risk-disclosure（ジャンル blog/tech では見ないため）
       rule-of-three（まだ試験中のため）
       sasete-itadaku（まだ試験中のため）
       section-length-uniformity（まだ試験中のため）
@@ -149,8 +155,10 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       title-case-consistency（ja 向けの rule ではないため）
       total-mismatch（まだ試験中のため）
       unbalanced-bracket（まだ試験中のため）
+      undefined-acronym（ジャンル blog/tech では見ないため）
       unfilled-placeholder（まだ試験中のため）
       unqualified-superlative（まだ試験中のため）
+      unsourced-number（ジャンル blog/tech では見ないため）
       url-run-on（まだ試験中のため）
       vague-figure-reference（まだ試験中のため）
 ```
