@@ -48,6 +48,7 @@ import { spaceBeforePunctuation } from "./space-before-punctuation.ts";
 import { duplicateHeading } from "./duplicate-heading.ts";
 import { emptySection } from "./empty-section.ts";
 import { fullwidthAlnum } from "./fullwidth-alnum.ts";
+import { noLead, titleLength } from "./document-shape.ts";
 import { spellingVariety } from "./spelling-variety.ts";
 import { raNuki } from "./ra-nuki.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
@@ -135,6 +136,8 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "space-before-punctuation": spaceBeforePunctuation,
   "duplicate-heading": duplicateHeading,
   "empty-section": emptySection,
+  "no-lead": noLead,
+  "title-length": titleLength,
   "fullwidth-alnum": fullwidthAlnum,
   "spelling-variety": spellingVariety,
   "ra-nuki": raNuki,

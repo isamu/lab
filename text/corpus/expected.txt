@@ -44,7 +44,7 @@ da-agile-review-4  max-sentence-length 13, no-mixed-desumasu 1
 da-ai-advisory-board-1  katakana-long-vowel 1, latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 9, max-sentence-length 30, no-doubled-joshi 2, no-mixed-desumasu 1, sasete-itadaku 4, taigen-dome-in-prose 1, undefined-acronym 11
 da-annual-report-2024  concrete-evidence-density 3, heading-echo 1, invisible-character 38, max-sentence-length 1, ngram-repetition 1
 da-area-data-map-format  no-mixed-desumasu 1
-da-area-data-model  max-sentence-length 5, url-run-on 1
+da-area-data-model  max-sentence-length 5, title-length 1, url-run-on 1
 da-copyright-policy  latin-spacing 2, numbering-gap 1
 da-data-strategy  agentless-passive 1, empty-intensifier 1, max-kanji-continuous 2, max-sentence-length 4
 da-gss-incident  agentless-passive 1, latin-spacing 1, max-kanji-continuous 1, max-sentence-length 3, ngram-repetition 1, preamble-length 1
@@ -59,7 +59,7 @@ da-privacy-policy  latin-spacing 1
 da-recruitment-career-faq  max-sentence-length 1
 da-recruitment-office-visit  max-kanji-continuous 4, unbalanced-bracket 1
 da-service-design-guidelines-2  concrete-evidence-density 4, dangling-reference 1, latin-spacing 2, max-kanji-continuous 3, max-sentence-length 31, no-doubled-joshi 1, undefined-acronym 7
-dailymed-advil-otc-label  max-sentence-length 4, title-case-consistency 1, undefined-acronym 4
+dailymed-advil-otc-label  max-sentence-length 4, title-case-consistency 1, title-length 1, undefined-acronym 4
 denkiyagi-ryohi-kitei  heading-level-skip 1
 denkiyagi-shugyo-kisoku  fullwidth-alnum-consistency 1, hankaku-kana 1
 denpa-shinsei-riyo-kiyaku  requirement-smell 15, unbalanced-bracket 1
@@ -88,8 +88,8 @@ gitlab-meetings  agentless-passive 54, double-negative 1, max-paragraph-length 2
 gitlab-values  agentless-passive 83, bold-density 1, concrete-evidence-density 27, expletive-construction 12, heading-echo 9, heading-level-skip 8, max-paragraph-length 23, max-sentence-length 137, spelling-consistency 3, undefined-acronym 10, unqualified-superlative 10
 go-1-23-release-notes  heading-echo 1, max-sentence-length 22, title-case-consistency 1, undefined-acronym 9
 govuk-adr-0014-replace-terraform-cloud  max-sentence-length 1, undefined-acronym 3
-govuk-cddo-roadmap-2022-2025  agentless-passive 22, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 88, ngram-repetition 1, undefined-acronym 10
-govuk-guidance-academy-senior-pay  agentless-passive 37, concrete-evidence-density 16, contraction-consistency 1, max-sentence-length 21, ngram-repetition 1, oxford-comma-consistency 1, unqualified-superlative 3
+govuk-cddo-roadmap-2022-2025  agentless-passive 22, concrete-evidence-density 3, max-paragraph-length 1, max-sentence-length 88, ngram-repetition 1, title-length 1, undefined-acronym 10
+govuk-guidance-academy-senior-pay  agentless-passive 37, concrete-evidence-density 16, contraction-consistency 1, max-sentence-length 21, ngram-repetition 1, no-lead 1, oxford-comma-consistency 1, unqualified-superlative 3
 govuk-incident-safe-browsing  agentless-passive 16, concrete-evidence-density 4, max-sentence-length 10, title-case-consistency 2, undefined-acronym 3
 govuk-style-guide-a-to-z  agentless-passive 50, concrete-evidence-density 5, dangling-reference 1, expletive-construction 6, heading-echo 20, invisible-character 1, max-sentence-length 23, ngram-repetition 1, oxford-comma-consistency 2, undefined-acronym 36
 gsa-press-pif-2026  agentless-passive 1, max-sentence-length 8, oxford-comma-consistency 2
@@ -124,13 +124,13 @@ kaisha.txt  clean
 kantei-221-shisei-hoshin  empty-intensifier 2, fullwidth-alnum-consistency 3, heading-level-skip 1, max-kanji-continuous 4, max-sentence-length 8, ngram-repetition 1, no-doubled-joshi 2
 kantei-unga81-general-debate-speech  empty-intensifier 6, fullwidth-alnum-consistency 3, max-kanji-continuous 3, max-sentence-length 4, no-doubled-joshi 2, unqualified-superlative 3
 kantei-unga81-general-debate-speech-en  empty-intensifier 1, max-paragraph-length 1, max-sentence-length 49, oxford-comma-consistency 2
-kep-2214-indexed-job  announced-count-mismatch 1, heading-level-skip 6, max-sentence-length 16, undefined-acronym 6
+kep-2214-indexed-job  announced-count-mismatch 1, heading-level-skip 6, max-sentence-length 16, title-length 1, undefined-acronym 6
 kimino-cleanup-notice  invisible-character 1, max-kanji-continuous 2, max-sentence-length 2, unbalanced-bracket 1
 kimino-mayor-2022-09  agentless-passive 1, max-kanji-continuous 1, max-paragraph-length 1, max-sentence-length 1, no-doubled-joshi 1
 kimino-oishi-kogen-traffic  agentless-passive 1, preamble-length 1, stray-space 1
 kimino-opendata-site  max-kanji-continuous 1
 kimino-staff-exam-guide  clean
-kobayashi-nento-shokan-2026  max-paragraph-length 1, max-sentence-length 2
+kobayashi-nento-shokan-2026  max-paragraph-length 1, max-sentence-length 2, title-length 1
 kobayashi-press-hananoa-2026-02  agentless-passive 2, max-sentence-length 1, no-mixed-desumasu 2, preamble-length 1, undefined-acronym 3, url-run-on 3
 koenote-requirements  latin-spacing 1, undefined-acronym 6
 koho-tokyo-2026-06-suigai  max-kanji-continuous 1, no-mixed-desumasu 2
@@ -139,7 +139,7 @@ kokkai-217-sangiin-shohisha-7  clean
 loc-signal-new-online-2026-07  contraction-consistency 2, max-sentence-length 26, title-case-consistency 2
 logingov-help-face-or-touch-unlock  contraction-consistency 1, max-sentence-length 7
 maff-kyodo-ryori-okaisan-en  max-paragraph-length 1, max-sentence-length 5, oxford-comma-consistency 1, title-case-consistency 1
-maff-kyodo-ryori-okaisan-ja  stray-space 1
+maff-kyodo-ryori-okaisan-ja  stray-space 1, title-length 1
 mdn-using-fetch-en  max-sentence-length 19
 mdn-using-fetch-ja  latin-spacing 1, max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 1, stray-space 1
 meti-keiryoshi-exam-correction  latin-spacing 1, max-sentence-length 2

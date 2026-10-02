@@ -562,6 +562,8 @@ doc.md   全 6 文のうち 5 箇所を送ります（API は呼んでいませ�
 | `section-length-uniformity` | 節の長さが揃いすぎていないか |
 | `rule-of-three` | 箇条書きが 3 項目ばかりになっていないか |
 | `preamble-length` | 本題に入るまでが長くないか |
+| `no-lead` | 題のすぐ後の段落が、題を言い直すだけで何も足していないか（試験中） |
+| `title-length` | 題や見出しが長すぎないか。日本語は文字、英語は語で数え、報告書や仕様書は上限が高い（試験中） |
 | `ngram-repetition` | 同じ言い回しの繰り返し |
 | `emoji-density` | 絵文字の密度 |
 | `undefined-acronym` | 略語が説明なしで出てこないか |
