@@ -4,6 +4,7 @@ import { profileFor } from "../profile/for-file.ts";
 import { resolveGenre } from "../resolve-genre.ts";
 import { documentLanguage } from "../check-source.ts";
 import { isMarkdownPath } from "../structure/markdown-path.ts";
+import { structureText } from "../document-reading.ts";
 import { buildStructure } from "../structure/of.ts";
 import { toSexp } from "../structure/sexp.ts";
 import { foldPostOrder } from "../tree-walk.ts";
@@ -85,12 +86,14 @@ export const readTree = async (path: string, argv: readonly string[], context: T
   if (source === undefined) return undefined;
   const language = treeLanguage(path, source, argv, context);
   const genre = resolveGenre(path, source, context.config, context.flag(argv, "--genre")).genre;
-  const tree = await treeFromSource(path, source, language, genre, context.config);
+  // A YAML file's tree is read from its values alone, as a check reads it.
+  const text = structureText(path, source);
+  const tree = await treeFromSource(path, text, language, genre, context.config);
   if (tree === undefined) {
     console.error(treeText(context).noStructure(path, language));
     return undefined;
   }
-  return { source, tree };
+  return { source: text, tree };
 };
 
 /**

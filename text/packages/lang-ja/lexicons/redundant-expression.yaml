@@ -1,0 +1,67 @@
+# 重言。同じ意味の語を重ねた言い回し。redundant-expression が読む。rewrite は重ねを外した形。
+# 載せるのは、重ねずに言える形がはっきりしていて、ふつうの文書で重ねる理由の無いものだけ。
+# 辞書が一語として載せる慣用（排気ガス、射程距離、製造メーカー）と、重ねて強める書き方として定着したもの
+# （犯罪を犯す、あらかじめ予約）は載せない。動詞は原形で書けば活用した形にも当たる。
+id: redundant-expression
+language: ja
+entries:
+  - pattern: 頭痛が痛い
+    rewrite: 頭が痛い、または頭痛がする
+  - pattern: 一番最初
+    rewrite: 最初
+  - pattern: 一番最後
+    rewrite: 最後
+  - pattern: 後で後悔
+    rewrite: 後悔
+  - pattern: 後から後悔
+    rewrite: 後悔
+  - pattern: 過半数を超える
+    rewrite: 過半数を占める、または半数を超える
+  - pattern: 過半数以上
+    rewrite: 過半数
+  - pattern: 返事を返す
+    rewrite: 返事をする
+  - pattern: 返信を返す
+    rewrite: 返信する
+  - pattern: 違和感を感じる
+    rewrite: 違和感がある、または違和感を覚える
+  - pattern: 被害を被る
+    rewrite: 被害を受ける
+  - pattern: 必ず必要
+    rewrite: 必要
+  - pattern: 必ず必須
+    rewrite: 必須
+  - pattern: 今の現状
+    rewrite: 現状
+  - pattern: 馬から落馬
+    rewrite: 落馬
+  - pattern: 古来から
+    rewrite: 古来、または昔から
+  - pattern: 従来から
+    rewrite: 従来、または以前から
+  - pattern: 炎天下の下
+    rewrite: 炎天下
+  - pattern: 元旦の朝
+    rewrite: 元旦
+  - pattern: 日本に来日
+    rewrite: 来日
+  - pattern: 未だ未解決
+    rewrite: 未解決
+  - pattern: 挙式を挙げる
+    rewrite: 式を挙げる
+  - pattern: 内定が決まる
+    rewrite: 内定する、または内定が出る
+  - pattern: 期待して待つ
+    rewrite: 期待する
+  - pattern: 一番ベスト
+    rewrite: ベスト
+  - pattern: 最もベスト
+    rewrite: ベスト
+  - pattern: 最も最適
+    rewrite: 最適
+  - pattern: 一番最適
+    rewrite: 最適
+  - pattern: 第一日目
+    rewrite: 一日目、または第一日
+  - pattern: 収入が入る
+    rewrite: 収入がある
