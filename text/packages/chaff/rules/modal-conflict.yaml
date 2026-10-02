@@ -1,6 +1,6 @@
 id: modal-conflict
 layer: L3
-status: experimental
+status: stable
 how_to_find: modal-conflict
 requires: [structure, pos]
 severity: warning

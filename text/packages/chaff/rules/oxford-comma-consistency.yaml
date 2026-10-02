@@ -1,6 +1,6 @@
 id: oxford-comma-consistency
 layer: L3
-status: experimental
+status: stable
 how_to_find: oxford-comma
 languages: [en]
 extra_word_lists: [participle-word, example-marker, pair-opener]

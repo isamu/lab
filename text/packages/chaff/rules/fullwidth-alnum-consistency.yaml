@@ -1,9 +1,9 @@
 id: fullwidth-alnum-consistency
 layer: L3
-status: experimental
+status: stable
 how_to_find: fullwidth-alnum
 languages: [ja]
-severity: warning
+severity: info
 
 name:
   ja: 英数字の全角と半角が混ざっている

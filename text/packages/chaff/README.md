@@ -106,7 +106,7 @@ style: koyobun                # 同梱の表記スタイル（公用文作成の
 rules:                        # ルールごとの強さ: strict / normal / relaxed / off、または上限の数
   max-sentence-length: 80
   bold-density: off
-  ai-tell: normal              # 試験中のルールも、名指しすれば動く
+  ai-tell: strict              # 名指しして強さを変える（ほとんどのルールは既定で動く）
   preferred-term: normal
 
 prefer:                       # チームの表記（左を見つけたら右を勧める）

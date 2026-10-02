@@ -1,9 +1,9 @@
 id: reference-title-mismatch
 layer: L3
-status: experimental
+status: stable
 how_to_find: reference-title-mismatch
 requires: [structure]
-severity: warning
+severity: info
 
 name:
   ja: 参照に添えた名前が、参照先の見出しと違う
@@ -21,7 +21,7 @@ how_to_fix:
   ja: 番号と名前のどちらが正しいかを確かめて、もう一方を直してください。番号がずれたのなら、ほかの参照も同じようにずれていないかを見てください。
   en: Check whether the number or the name is right and correct the other. If the numbers shifted, check the other references too.
 
-levels: { normal: warning, relaxed: info }
+levels: { normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 

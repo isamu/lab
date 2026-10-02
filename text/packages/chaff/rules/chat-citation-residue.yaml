@@ -1,6 +1,6 @@
 id: chat-citation-residue
 layer: L2
-status: experimental
+status: stable
 how_to_find: chat-citation-residue
 word_list: chat-citation-marker
 severity: warning

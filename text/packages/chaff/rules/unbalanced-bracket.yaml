@@ -1,8 +1,8 @@
 id: unbalanced-bracket
 layer: L1
-status: experimental
+status: stable
 how_to_find: unbalanced-bracket
-severity: warning
+severity: info
 
 name:
   ja: 括弧が組になっていない
@@ -31,7 +31,7 @@ how_to_fix:
   ja: 足りない括弧を足すか、余分な括弧を消してください。全角と半角は、開きと閉じをそろえてください。
   en: Add the missing bracket or remove the extra one. Make the opening and closing marks the same width.
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 

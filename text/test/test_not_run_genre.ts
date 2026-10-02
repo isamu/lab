@@ -38,9 +38,9 @@ describe("rules use_for keeps out of the genre", () => {
     assert.equal(whyOf(runEn("technical/spec"), "ai-tell"), REASONS.en.presetOff("technical/spec"));
   });
 
-  it("the AI-shape rules run in technical/readme as experimental rules", () => {
+  it("the AI-shape rules run in technical/readme, by default since they were measured (spec §21.1)", () => {
     const shapes = ["ai-tell", "section-length-uniformity", "rule-of-three", "bold-label-list", "ai-generated-composite"];
-    shapes.forEach((rule) => assert.equal(whyOf(runJa("technical/readme"), rule), REASONS.ja.experimental, rule));
+    shapes.forEach((rule) => assert.equal(whyOf(runJa("technical/readme"), rule), undefined, rule));
     shapes.forEach((rule) => assert.equal(whyOf(runJa("technical/readme", true), rule), undefined, rule));
   });
 

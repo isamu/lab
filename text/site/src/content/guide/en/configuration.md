@@ -70,7 +70,7 @@ The genre is the kind of document. It decides three things:
 
 | What | How |
 | --- | --- |
-| Which rules run | A genre turns off the rules that only flag its form (a contract repeats its defined terms on purpose) and may turn on experimental ones (`legal/contract` and `legal/statute` check references to clauses that are not there) |
+| Which rules run | A genre turns off the rules that only flag its form (a contract repeats its defined terms on purpose). A rule that reports on most human documents of that kind is turned off too, by measurement |
 | Where the limits are | The same `normal` means a longer sentence for a statute or a paper than for an email |
 | How the document is read | `legal/statute` reads with the knowledge of statutes (see below) |
 
@@ -119,6 +119,27 @@ A profile that is not bundled stops chaff before it checks anything, and it says
 ```yaml
 profile: statute
 ```
+
+## The rules that run by default
+
+Most rules run with nothing in `chaff.yaml` and without `--experimental`.
+Which ones run is decided by measuring how often each rule reports on real documents people wrote (see "Which rules run by default" in the [Reference](./reference)).
+
+| Mark | How it runs |
+| --- | --- |
+| on by default | Seldom reports on human documents. It reports as it is |
+| on by default (info) | Often reports on human documents too. Its findings are `info` and never fail the run |
+| off for a genre | Reports on most documents of that genre. It is listed under "did not run", with the genre as the reason |
+| experimental | A new rule not measured yet. It runs with `--experimental`, or with a strength under `rules` |
+
+To hear less from an info rule, relax it or turn it off.
+
+```bash
+npx chaffjs relax ngram-repetition --why "we repeat phrases on purpose"
+npx chaffjs off ngram-repetition --why "not checked in this team"
+```
+
+To run a rule a genre turns off, give it a strength under `rules` (`max-sentence-length: normal`).
 
 ## Changing how strict a rule is
 
@@ -209,14 +230,10 @@ List the spelling to avoid and the one to use under `prefer`.
 ```yaml
 prefer:
   e-mail: email
-
-rules:
-  preferred-term: normal
 ```
 
 When `preferred-term` finds the left-hand spelling, it asks for the right-hand one.
 With nothing under `prefer`, it says nothing.
-The rule is experimental, so give it a strength under `rules` to turn it on.
 
 ## Deciding the team's jargon and required headings
 
@@ -245,8 +262,6 @@ required_sections: # headings this kind of document must have
 | --- | --- |
 | `jargon` | As written, capital letters included; a single word also finds its other forms (`leverage` finds "leveraged") |
 | `required_sections` | Part of a heading: `Risks` is met by "Risks and mitigations" too |
-
-Both are experimental, so give `internal-jargon` and `required-sections` a strength under `rules` as well.
 
 `required_sections` is an `error` by default.
 It is not a matter of taste: the team decided on it and the document does not have it.
@@ -365,7 +380,7 @@ The output is long, so here is one entry, with `max-sentence-length: 260` set (t
 `now` is the value actually in effect.
 `level_sets` says what a level changes: `limit` is a limit to count to, `severity` is how a finding is marked.
 For a rule with nothing to count, `levels` and `now` hold a severity (`error` / `warning` / `info`) in place of a number.
-For an experimental rule, `now` says why it does not run and how to turn it on.
+For an experimental rule (a new one not measured yet), `now` says why it does not run and how to turn it on.
 
 ```json
     "now": {

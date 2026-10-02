@@ -1,6 +1,6 @@
 id: date-order
 layer: L3
-status: experimental
+status: stable
 how_to_find: date-order
 requires: [dates]
 severity: warning

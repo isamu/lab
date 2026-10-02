@@ -54,7 +54,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 npx chaffjs .                          この場所の Markdown を全部見る
 npx chaffjs docs/ README.md            ディレクトリもファイルも glob も混ぜてよい
 npx chaffjs article.md --watch         保存のたびに、変わったところだけ出す
-npx chaffjs article.md --experimental  試験中のルールも動かす
+npx chaffjs article.md --experimental  試験中のルール（まだ測っていない新しいルール）も動かす
 npx chaffjs init                       chaff.yaml を作る（端末ならジャンルを一覧から選ぶ）
 ```
 
@@ -105,7 +105,7 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 ## AI が書いた文章、AI が直した文章
 
 生成された文章には、よく出る形があります。太字の多さ、「X ではありません。Y です」の対比、「さらに、」で始まる文の続き、
-「お役に立てれば幸いです」のようなチャットの名残などです。`--experimental` を付けると、chaff はこうした形を数えます。
+「お役に立てれば幸いです」のようなチャットの名残などです。chaff はこうした形を既定で数えます。
 どれも人が書く形なので、一つ見つけただけで「AI が書いた」とは言いません。重なったときに、読み返す場所の目印として出します。
 
 直すときは、まず `fix-plan` で直す計画を出します。指摘をルールごとにまとめ、直す方向、変えてはいけないもの、直す前と後の例、
@@ -113,7 +113,7 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 人が直すときも AI に頼むときも、この計画を読んで書き直します。
 
 ```bash
-npx chaffjs fix-plan article.md --experimental    直す計画を出す（--json で AI に渡す形）
+npx chaffjs fix-plan article.md                   直す計画を出す（--json で AI に渡す形）
 npx chaffjs facts article.md                      書き直す前に、数・日付・URL・名前などの事実を控える
 npx chaffjs outline article.md after.md           見出しの数、節の長さ、箇条書きの割合、太字を前と後で並べる
 npx chaffjs compare article.md after.md           書き直しで事実が落ちていないか、足されていないかを確かめる

@@ -1,6 +1,6 @@
 id: ai-structure
 layer: L1
-status: experimental
+status: stable
 how_to_find: ai-structure
 requires: [headings]
 severity: info

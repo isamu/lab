@@ -1,6 +1,6 @@
 id: double-negative
 layer: L2
-status: experimental
+status: stable
 how_to_find: phrase-match
 word_list: double-negative
 uses: [pos]

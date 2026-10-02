@@ -1,6 +1,6 @@
 id: internal-jargon
 layer: L2
-status: experimental
+status: stable
 how_to_find: internal-jargon
 word_list: internal-jargon
 severity: warning

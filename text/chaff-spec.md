@@ -1908,7 +1908,7 @@ rule を既定で動かすかどうかは、**人の書いた文書で測った�
 | --- | --- | --- |
 | 既定で動く | 動くどの group でも、出る文書が 10% 以下。bench の指摘がすべて正しく、見逃しも無い | `status: stable`、自分の段で |
 | 既定で info として動く | 上のどちらかを満たさない | `status: stable`、normal の重さが info |
-| ジャンルで止める | その group の文書の過半（50% を超える）に出る | `genres.yaml` の group に `off  # measured` |
+| ジャンルで止める | その group の文書の過半（50% を超える）に出る | `genres.yaml` の group に `off # measured` |
 | experimental のまま | 文書が 10 件以上ある group で一度も動いていない（新しい rule） | `--experimental` か chaff.yaml で動く |
 
 - **10% の理由。** 判断に使う group は文書が 10 件以上ある。10 件の group では、1 件に出るだけで 10% になる。

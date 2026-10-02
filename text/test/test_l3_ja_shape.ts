@@ -6,14 +6,17 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 import type { DocumentProfile, Finding } from "../packages/chaff/src/plugin.ts";
+import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
 const RULES = loadRules("ja");
 
 const idsFor = (source: string, profile?: DocumentProfile): string[] =>
-  runRules(buildDocument("t.md", source, ja, undefined, profile), RULES, {}, true, "business/report").findings.map((finding) => finding.rule);
+  runRules(buildDocument("t.md", source, ja, undefined, profile), RULES, measuredOffOn("business/report"), true, "business/report").findings.map(
+    (finding) => finding.rule,
+  );
 
 const kanjiWords = (source: string): string[] =>
-  runRules(buildDocument("t.md", source, ja), RULES, {}, true, "business/report")
+  runRules(buildDocument("t.md", source, ja), RULES, measuredOffOn("business/report"), true, "business/report")
     .findings.filter((finding) => finding.rule === "max-kanji-continuous")
     .map((finding) => String(finding.values?.["word"]));
 

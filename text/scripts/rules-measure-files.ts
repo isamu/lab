@@ -6,6 +6,8 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { parseGenres, type GenreData } from "../packages/chaff/src/genre-parse.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { severityAt } from "../packages/chaff/src/levels.ts";
+import { loadGenres } from "../packages/chaff/src/genre-load.ts";
+import type { Settings } from "../packages/chaff/src/run.ts";
 import { disagreements, handOffGroups, standingOf, type Standing } from "./rule-policy.ts";
 import { measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "./rules-apply.ts";
 import { isMeasurement, type Measurement } from "./rules-measure-score.ts";
@@ -30,6 +32,21 @@ const bothLanguages = (): RuleDefinition[] => [...loadRules("ja"), ...loadRules(
 const reportsBelowInfo = (id: string): boolean => bothLanguages().some((rule) => rule.id === id && severityAt(rule, "normal") !== "info");
 
 export const readGenresText = (): string => readFileSync(GENRES_FILE, "utf8");
+
+/**
+ * The rules a genre is off for only because the measurement says so, at normal. The bench and the detector tests turn
+ * them back on: they read whether a detector finds a mistake, not whether it runs by default. A rule the genre turns off
+ * by hand stays off.
+ */
+export const measuredOffOn = (genre: string): Settings => {
+  const own = loadGenres().genres.find((entry) => entry.id === genre)?.rules ?? {};
+  const group = genre.split("/")[0];
+  return Object.fromEntries(
+    measuredOffsOf(readGenresText())
+      .filter((off) => off.group === group && own[off.rule] === undefined)
+      .map((off) => [off.rule, "normal"] as const),
+  );
+};
 export const genreDataOf = (text: string): GenreData => parseGenres(parse(text));
 
 /** Each rule's standing under the measurement, in rule id order. */

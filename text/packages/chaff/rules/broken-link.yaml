@@ -1,6 +1,6 @@
 id: broken-link
 layer: L1
-status: experimental
+status: stable
 how_to_find: broken-link
 requires: [markdown]
 severity: warning

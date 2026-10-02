@@ -53,7 +53,7 @@ export const withInfoAtNormal = (ruleYaml: string): string => {
 };
 
 const MARK = "# measured";
-const MEASURED_LINE = /^ {6}([a-z0-9-]+): off {2}# measured$/u;
+const MEASURED_LINE = /^ {6}([a-z0-9-]+): off # measured$/u;
 const GROUP_LINE = /^ {2}- id: (\S+)$/u;
 /** A line of the group's own block: its fields, its rules and their comments, all indented past the "- id:". */
 const IN_BLOCK = /^ {4}/u;
@@ -67,7 +67,7 @@ const splitAtGenres = (genresYaml: string): [string[], string[]] => {
   return end === -1 ? [lines, []] : [lines.slice(0, end), lines.slice(end)];
 };
 
-/** The "<rule>: off  # measured" lines of genres.yaml's groups, with the group each sits in. */
+/** The "<rule>: off # measured" lines of genres.yaml's groups, with the group each sits in. */
 export const measuredOffsOf = (genresYaml: string): MeasuredOff[] =>
   splitAtGenres(genresYaml)[0].reduce<{ group: string; found: MeasuredOff[] }>(
     (state, line) => {
@@ -92,7 +92,7 @@ const addToGroup = (lines: readonly string[], group: string, rules: readonly str
   if (block === undefined) throw new Error(`genres.yaml has no group ${group}`);
   const [start, end] = block;
   const hasRules = lines.slice(start, end).includes(RULES_LINE);
-  const added = rules.map((rule) => `${RULE_INDENT}${rule}: off  ${MARK}`);
+  const added = rules.map((rule) => `${RULE_INDENT}${rule}: off ${MARK}`);
   return [...lines.slice(0, end), ...(hasRules ? [] : [RULES_LINE]), ...added, ...lines.slice(end)];
 };
 

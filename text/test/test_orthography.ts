@@ -180,11 +180,11 @@ describe("preferred-term", () => {
     assert.deepEqual(configFrom("prefer:\n  サーバ: サーバ\n  空: ''\n  数: 3\n  ユーザ: ユーザー\n").prefer, { ユーザ: "ユーザー" });
   });
 
-  it("stays off unless it is turned on, like every experimental rule", () => {
+  it("runs once prefer lists a pair, with no level in rules (on by default since it was measured, spec §21.1)", () => {
     const config = configFrom("prefer:\n  サーバー: サーバ\n");
     const doc = buildDocument("a.md", "# 設定\n\nサーバーを起動する。\n", ja, teamRules(config));
     const ids = runRules(doc, loadRules("ja"), {}, false, "technical/readme").findings.map((finding) => finding.rule);
-    assert.ok(!ids.includes("preferred-term"));
+    assert.ok(ids.includes("preferred-term"));
   });
 });
 

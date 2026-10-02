@@ -1,6 +1,6 @@
 id: relative-date-mismatch
 layer: L3
-status: experimental
+status: stable
 how_to_find: relative-date-mismatch
 requires: [dates]
 severity: warning

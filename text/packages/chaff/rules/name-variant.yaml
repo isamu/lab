@@ -1,9 +1,9 @@
 id: name-variant
 layer: L3
-status: experimental
+status: stable
 how_to_find: name-variant
 requires: [pos]
-severity: warning
+severity: info
 
 name:
   ja: 同じ名前の書き分け
@@ -40,7 +40,7 @@ placeholders:
     ja: 別の形
     en: another form
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 

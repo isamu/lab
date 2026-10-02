@@ -1,6 +1,6 @@
 id: contrast-framing
 layer: L2
-status: experimental
+status: stable
 how_to_find: contrast-framing
 word_list: contrast-frame
 # 打ち消し（it's not）と、それを返す語（it's、but）。後ろに返しが来たときだけ対比の枠になる。

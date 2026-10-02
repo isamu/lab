@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runCli } from "./cli-run.ts";
 import { allRulesRun } from "../scripts/corpus-findings.ts";
+import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 import { MUTATIONS } from "../scripts/bench-mutations.ts";
 import { contextOf, runsOn, samplesOf, teamOf, type Sample } from "../scripts/bench-samples.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -93,7 +94,10 @@ const benchRenderings = async (): Promise<BenchRun> => {
   );
   const runs = await Promise.all(
     planted.map(async ({ mutation, sample, source }) => {
-      const { result, rules } = await allRulesRun(sample.path, source, sample.language, sample.genre, teamOf(sample));
+      const { result, rules } = await allRulesRun(sample.path, source, sample.language, sample.genre, {
+        team: teamOf(sample),
+        settings: measuredOffOn(sample.genre),
+      });
       const where = `${sample.name} ${mutation.id}`;
       const found = result.findings.some((finding) => finding.rule === mutation.rule);
       return { rendered: renderedFor(result, rules, sample.language, where), missed: found ? [] : [where] };

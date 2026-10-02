@@ -9,7 +9,13 @@ export const getStaticPaths = () => LANGS.map((lang) => ({ params: { lang } }));
 const { lang } = Astro.params;
 if (!isLang(lang)) throw new Error(`unknown language ${String(lang)}`);
 const groups = catalogOf(lang);
-const RUNS_WHEN = { default: "runsDefault", experimental: "runsExperimental", team: "runsTeam", test: "runsTest" } as const;
+const RUNS_WHEN = {
+  default: "runsDefault",
+  info: "runsInfo",
+  experimental: "runsExperimental",
+  team: "runsTeam",
+  test: "runsTest",
+} as const;
 ---
 
 <Base lang={lang} title={t(lang, "rules")} path="rules">
@@ -32,7 +38,7 @@ const RUNS_WHEN = { default: "runsDefault", experimental: "runsExperimental", te
                 {rule.name[lang]}
               </a>
               <span class="font-mono text-xs text-zinc-500">{rule.id}</span>
-              {runsWhen !== "default" && <Badge tone="warn">{t(lang, RUNS_WHEN[runsWhen])}</Badge>}
+              {runsWhen !== "default" && <Badge tone={runsWhen === "info" ? "neutral" : "warn"}>{t(lang, RUNS_WHEN[runsWhen])}</Badge>}
               {rule.languages.length === 1 && <Badge tone="neutral">{rule.languages[0]}</Badge>}
             </div>
             <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{rule.summary[lang]}</div>

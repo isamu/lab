@@ -1,6 +1,6 @@
 id: url-run-on
 layer: L1
-status: experimental
+status: stable
 how_to_find: url-run-on
 severity: warning
 

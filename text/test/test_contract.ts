@@ -11,6 +11,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { checkAdapter } from "../packages/chaff/src/adapter-load.ts";
 import type { LanguageAdapter, RuleDefinition } from "../packages/chaff/src/plugin.ts";
+import { asExperimental } from "./rule-run.ts";
 
 /** 契約を満たさないものを通すと、例外ではなく「指摘 0 件」で終わる。0 件は問題なしと区別できない。 */
 describe("契約を満たさないものを黙って通さない", () => {
@@ -25,7 +26,13 @@ describe("契約を満たさないものを黙って通さない", () => {
       lexicons: ja.lexicons,
       segment: (text) => ({ sentences: ja.segment(text).sentences.map(({ span, text: body }) => ({ span, text: body })) }),
     };
-    const result = runRules(buildDocument("t.md", "一定の協力が求められます。", liar), loadRules("ja"), {}, true, "business/report");
+    const result = runRules(
+      buildDocument("t.md", "一定の協力が求められます。", liar),
+      loadRules("ja"),
+      { "agentless-passive": "normal" },
+      true,
+      "business/report",
+    );
     const skipped = result.skipped.find((entry) => entry.rule === "agentless-passive");
     assert.match(skipped?.why ?? "", /品詞を返さなかった/u);
     assert.ok(!result.findings.some((finding) => finding.rule === "agentless-passive"));
@@ -36,8 +43,10 @@ describe("契約を満たさないものを黙って通さない", () => {
       ...en,
       segment: (text) => ({ sentences: en.segment(text).sentences.map(({ span, text: body }) => ({ span, text: body })) }),
     };
-    const result = runRules(buildDocument("t.md", "There are many reasons. It really matters.", untaggedEnglish), loadRules("en"), {}, false, "blog/tech");
-    ["adverb-overuse", "expletive-construction"].forEach((id) => {
+    const experimental = ["adverb-overuse", "expletive-construction"];
+    const rules = asExperimental(loadRules("en"), experimental);
+    const result = runRules(buildDocument("t.md", "There are many reasons. It really matters.", untaggedEnglish), rules, {}, false, "blog/tech");
+    experimental.forEach((id) => {
       assert.equal(result.skipped.find((entry) => entry.rule === id)?.why, "still experimental");
     });
   });

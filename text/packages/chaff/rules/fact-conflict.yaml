@@ -1,6 +1,6 @@
 id: fact-conflict
 layer: L3
-status: experimental
+status: stable
 how_to_find: fact-conflict
 requires: [quantities]
 uses: [pos]

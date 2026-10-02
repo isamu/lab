@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { BENCH_MIN_PRECISION, MIN_DOCUMENTS, NORMAL_MAX_SHARE, OFF_MIN_SHARE, disagreements, standingOf, type Standing } from "../scripts/rule-policy.ts";
@@ -13,7 +12,7 @@ import {
   type RuleMeasure,
 } from "../scripts/rules-measure-score.ts";
 import { measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "../scripts/rules-apply.ts";
-import { MEASURE_FILE, policyProblems, readMeasurement } from "../scripts/rules-measure-files.ts";
+import { policyProblems, readMeasurement } from "../scripts/rules-measure-files.ts";
 import { parseGenres } from "../packages/chaff/src/genre-parse.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -197,12 +196,12 @@ describe("rules-apply", () => {
     "    rules:",
     "      hand-off: off",
     "      # why",
-    "      old: off  # measured",
+    "      old: off # measured",
     "",
     "genres:",
     "  - id: legal/contract",
     "    rules:",
-    "      fake: off  # measured",
+    "      fake: off # measured",
     "",
   ].join("\n");
 
@@ -223,8 +222,8 @@ describe("rules-apply", () => {
         "  - id: technical",
         "    name: { ja: 技術文書, en: Technical }",
         "    rules:",
-        "      a-rule: off  # measured",
-        "      b-rule: off  # measured",
+        "      a-rule: off # measured",
+        "      b-rule: off # measured",
         "  # comment of the next group",
         "  - id: legal",
         "    name: { ja: 法務, en: Legal }",
@@ -235,7 +234,7 @@ describe("rules-apply", () => {
         "genres:",
         "  - id: legal/contract",
         "    rules:",
-        "      fake: off  # measured",
+        "      fake: off # measured",
         "",
       ].join("\n"),
     );
@@ -248,14 +247,13 @@ describe("rules-apply", () => {
   });
 
   it("measured の行がすべて消えた group の rules: は残さない", () => {
-    const only = ["groups:", "  - id: blog", "    name: { ja: ブログ, en: Blog }", "    rules:", "      x: off  # measured", "", "genres:"].join("\n");
+    const only = ["groups:", "  - id: blog", "    name: { ja: ブログ, en: Blog }", "    rules:", "      x: off # measured", "", "genres:"].join("\n");
     assert.equal(withMeasuredOffs(only, []), ["groups:", "  - id: blog", "    name: { ja: ブログ, en: Blog }", "", "genres:"].join("\n"));
   });
 });
 
 describe("committed measurement", () => {
-  const skip = existsSync(MEASURE_FILE) ? false : "no corpus/rules-measure.json yet (yarn rules:measure --write)";
-  it(`every rule's status, severity and genre offs agree with corpus/rules-measure.json (yarn rules:measure --apply)`, { skip }, () => {
+  it(`every rule's status, severity and genre offs agree with corpus/rules-measure.json (yarn rules:measure --apply)`, () => {
     assert.deepEqual(policyProblems(readMeasurement()), []);
   });
 });

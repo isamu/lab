@@ -8,6 +8,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import type { ExampleFinding, ExampleOutcome, RuleExample } from "../packages/chaff/src/rule-guide.ts";
 import { runCli } from "../test/cli-run.ts";
+import { measuredOffOn } from "./rules-measure-files.ts";
 
 const BEFORE = "before.md";
 const AFTER = "after.md";
@@ -41,8 +42,17 @@ const findingsIn = (results: readonly SarifResult[], rule: string, file: string)
 /** The genre the reference says its examples run with. An example that needs another names it in its config. */
 const EXAMPLE_GENRE = "business/report";
 
-/** The example's chaff.yaml: the language pinned, plus what the example says it needs. */
-const configOf = (language: string, example: RuleExample): string => stringify({ language, genre: EXAMPLE_GENRE, ...example.config });
+const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> => typeof value === "object" && value !== null && !Array.isArray(value);
+
+/**
+ * The example's chaff.yaml: the language pinned, plus what the example says it needs. The rules the genre is off for only
+ * by measurement run too: the reference shows what a rule finds, and its page says where it does not run by default.
+ */
+const configOf = (language: string, example: RuleExample): string => {
+  const genre = typeof example.config?.["genre"] === "string" ? example.config["genre"] : EXAMPLE_GENRE;
+  const named = isRecord(example.config?.["rules"]) ? example.config["rules"] : {};
+  return stringify({ language, genre: EXAMPLE_GENRE, ...example.config, rules: { ...measuredOffOn(genre), ...named } });
+};
 
 /**
  * The ordinary passage put after a padded example: long enough for the rules that measure a whole document

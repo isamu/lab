@@ -1,6 +1,6 @@
 id: required-sections
 layer: L1
-status: experimental
+status: stable
 how_to_find: required-sections
 severity: error
 

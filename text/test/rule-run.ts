@@ -3,6 +3,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules, type Settings } from "../packages/chaff/src/run.ts";
 import type { LanguageAdapter, RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
+import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
 // What one rule reports when the whole pipeline runs, for the tests that check a detector's edge through the rule.
 
@@ -17,9 +18,9 @@ const rulesOf = (language: string): readonly RuleDefinition[] => {
   return rules;
 };
 
-/** The ids of every finding in a source, experimental rules on and every level at its default. */
+/** The ids of every finding in a source, experimental rules on, every level at its default, and the rules measured off in the genre on. */
 export const firedRules = (adapter: LanguageAdapter, source: string, genre = "business/report"): string[] =>
-  runRules(buildDocument("t.md", source, adapter), rulesOf(adapter.id), {}, true, genre).findings.map((finding) => finding.rule);
+  runRules(buildDocument("t.md", source, adapter), rulesOf(adapter.id), measuredOffOn(genre), true, genre).findings.map((finding) => finding.rule);
 
 /** The words undefined-acronym reports in a Markdown source, with the rule at strict and experimental rules on. */
 export const reportedAcronyms = (adapter: LanguageAdapter, source: string, genre = "business/report"): string[] =>
@@ -63,3 +64,7 @@ export const namedRuleRun = (
     skipped: result.skipped.filter((entry) => entry.rule === rule).map((entry) => entry.why),
   };
 };
+
+/** The rules with these marked experimental: a test of how chaff treats an experimental rule, whichever rules are experimental today. */
+export const asExperimental = (rules: readonly RuleDefinition[], ids: readonly string[]): RuleDefinition[] =>
+  rules.map((rule) => (ids.includes(rule.id) ? { ...rule, status: "experimental" } : rule));

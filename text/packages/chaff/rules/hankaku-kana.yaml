@@ -1,6 +1,6 @@
 id: hankaku-kana
 layer: L1
-status: experimental
+status: stable
 how_to_find: hankaku-kana
 languages: [ja]
 severity: warning

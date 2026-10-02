@@ -102,35 +102,21 @@ sample.md   blog/tech · English   genre from the default
 
     If you imagine MCP, it’s easier to understand: a ToolsAgent is an agent that allows an LLM to call functions (Agents) by…
 
-  ⚠  Sentence too long
+  ·  Contraction use is inconsistent
 
-     This sentence runs 31 words (limit 25)
-     In a long sentence the reader loses the subject before reaching the verb.
+     "it's" is written differently from the rest of the document
+     Whether to use contractions is a choice of register, and neither is wrong. Mixed within one document, the reader re-measures the distance sentence by sentence.
 
-     → Split it in two at the conjunction.
+     → Match the majority.
 
-     Relax this rule:  npx chaff relax max-sentence-length
-
-
-─── line 21 ──────────────────────────────────────────────────
-
-    Internally, it passes the tools schema to an OpenAI LLM agent, then dynamically calls the appropriate agent(s) within Gr…
-
-  ⚠  Sentence too long
-
-     This sentence runs 27 words (limit 25)
-     In a long sentence the reader loses the subject before reaching the verb.
-
-     → Split it in two at the conjunction.
-
-     Relax this rule:  npx chaff relax max-sentence-length
+     Relax this rule:  npx chaff relax contraction-consistency
 
 
 ─── line 142 ─────────────────────────────────────────────────
 
     Set the tools schema in agentFunctionInfo.
 
-  ⚠  Heading echoed
+  ·  Heading echoed
 
      The first sentence repeats the heading "agentFunctionInfo"
      When the first sentence repeats the heading, the reader gains nothing by reading on.
@@ -140,6 +126,8 @@ sample.md   blog/tech · English   genre from the default
      Relax this rule:  npx chaff relax heading-echo
 ```
 
+(The real screen goes on with more findings; two are shown here.)
+
 From top to bottom, the screen says:
 
 | Part of the screen | What it means |
@@ -147,7 +135,7 @@ From top to bottom, the screen says:
 | First line | The file, its genre, its language, and where the genre came from |
 | `─── line 21 ───` | One finding starts here; the number is the line |
 | The indented sentence | The sentence the finding is about |
-| `⚠` and `·` | How serious the finding is, followed by its title |
+| `⚠` and `·` | How serious the finding is: `⚠` a warning, `·` information. Its title follows |
 | The two lines under the title | What is happening, and why it is hard to read |
 | The line starting with `→` | How to fix it |
 | Relax this rule | The command that adjusts that rule for your team |
@@ -156,6 +144,22 @@ From top to bottom, the screen says:
 
 The same text gives the same result every time.
 Rules that did not run are listed with their reasons, so you can see what was checked and what was not.
+
+### The rules that run by default
+
+Most rules run with no settings and without `--experimental`.
+Which ones run is decided by measuring them on real documents people wrote.
+A rule that often reports on human documents too shows as `·` (information). Information never fails the run, so you can scan past it.
+A rule that reports on most documents of one kind is off for that kind, and is listed under the rules that did not run, with the reason.
+
+When the information is more than you want, relax the rule or turn it off.
+
+```bash
+npx chaffjs relax heading-echo --why "our help pages open by restating the heading"
+npx chaffjs off heading-echo --why "not checked in this team"
+```
+
+"The rules that run by default" in [Configuration](./configuration) says more.
 
 The screen says `npx chaff relax`; when you type it yourself, type `npx chaffjs relax`.
 This guide writes commands the way you type them, as `npx chaffjs`.
