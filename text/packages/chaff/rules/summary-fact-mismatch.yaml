@@ -1,0 +1,122 @@
+id: summary-fact-mismatch
+layer: L3
+status: experimental
+how_to_find: summary-fact-mismatch
+requires: [quantities]
+uses: [pos]
+severity: warning
+
+name:
+  ja: 冒頭や要約の値が本文と違う
+  en: A summary value that differs from the body
+
+why:
+  ja: 冒頭や「概要」の節は、本文を読まない人も読みます。そこに書いた値が本文と違うと、要約だけを読んだ人が間違った値を持ち帰ります。本文を直したあとに、要約を直し忘れると起きます。最初の見出しより前の文と、概要・要約・まとめの節の「項目：値」「項目は値です」を、本文の同じ項目の値と比べます。本文の値が一通りに揃っていて、要約の値がそれと違うときだけ指します。
+  en: 'The opening and the summary are read by people who never read the body. A value there that differs from the body sends them away with the wrong one. It happens when the body is corrected and the summary is not. Values written as "Item: value" or "The item is value" before the first heading, or in a section headed Summary, Abstract or Overview, are compared with the body''s values for the same item; it is pointed out only when the body gives one value throughout and the summary gives another.'
+
+message:
+  ja: 冒頭・要約の「{label}」 {value} が、本文の {other} と違います
+  en: 'The summary gives "{label}" as {value}, but the body gives {other}'
+
+how_to_fix:
+  ja: 本文と要約のどちらが正しいかを確かめて、もう一方を直してください。
+  en: Check which is right, the summary or the body, and correct the other.
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 冒頭や概要の節に書いた値（締切、料金など）が、本文の同じ項目の値と違う所
+  en: A value in the opening or the summary (a deadline, a fee) that differs from the same item in the body
+example:
+  ja:
+    before: |
+      # 説明会
+
+      参加費は3,000円です。
+
+      ## 申し込み
+
+      参加費は3,500円です。
+    after: |
+      # 説明会
+
+      参加費は3,500円です。
+
+      ## 申し込み
+
+      参加費は3,500円です。
+  en:
+    before: |
+      # Workshop
+
+      The fee is $300.
+
+      ## Registration
+
+      The fee is $350.
+    after: |
+      # Workshop
+
+      The fee is $350.
+
+      ## Registration
+
+      The fee is $350.
+
+not_flagged:
+  ja: 本文に同じ項目の値が二通り以上あるとき（回ごと、対象ごとの値）は、要約がどれと合うべきか決まらないので言いません。単位の違う値、条件の付いた値（「3,000円から」）も比べません。
+  en: When the body gives the item more than one value (per session, per group), which one the summary should match is not settled, so nothing is said. Values in different units and values with a condition ("from $300") are not compared.
+rewrite:
+  ja:
+    direction: 要約と本文のどちらの値が正しいかを書き手に確かめ、もう一方を直してください。要約の値を本文から写すときは、単位と条件も一緒に写します。
+    pairs:
+      - before: |
+          概要：締切は10月5日です。
+          （本文）締切は10月7日です。
+        after: |
+          概要：締切は10月7日です。
+          （本文）締切は10月7日です。
+      - before: |
+          ## 概要
+          定員：30名
+          ## 詳細
+          定員：40名
+        after: |
+          ## 概要
+          定員：40名
+          ## 詳細
+          定員：40名
+    keep:
+      - 本文で確かめた値
+      - 要約の短さ
+    avoid:
+      - どちらが正しいかを推測で決める
+      - 要約から値を消して、ぼかした言い方にする
+  en:
+    direction: Ask the writer whether the summary or the body is right, and correct the other. When copying a value into the summary, copy its unit and condition too.
+    pairs:
+      - before: |
+          Summary: the deadline is May 3.
+          (body) The deadline is May 5.
+        after: |
+          Summary: the deadline is May 5.
+          (body) The deadline is May 5.
+      - before: |
+          ## Overview
+          Seats: 30
+          ## Details
+          Seats: 40
+        after: |
+          ## Overview
+          Seats: 40
+          ## Details
+          Seats: 40
+    keep:
+      - the value confirmed in the body
+      - the summary's brevity
+    avoid:
+      - guessing which value is right
+      - removing the value from the summary and writing something vaguer

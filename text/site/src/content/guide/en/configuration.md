@@ -94,6 +94,7 @@ When the genre is wrong, set `genre`.
 A genre that is not in this list stops chaff before it checks anything, and it says where the genre was written.
 A `genre:` in a file's front matter that is not in the list is not used; chaff says so and works the genre out as if it were not there.
 The language is also worked out per file; set `language` to `ja` or `en` to fix it.
+How the language is chosen, documents that mix both, and which rules run in which language are in [Languages](./languages).
 
 ## Choosing the kind of document
 

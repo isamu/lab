@@ -1,0 +1,101 @@
+id: reference-title-mismatch
+layer: L3
+status: experimental
+how_to_find: reference-title-mismatch
+requires: [structure]
+severity: warning
+
+name:
+  ja: 参照に添えた名前が、参照先の見出しと違う
+  en: A reference whose name does not match its target's heading
+
+why:
+  ja: 「第5条（秘密保持）」の第5条が、実は「第5条（損害賠償）」だと、読み手は番号と名前のどちらを信じればよいか分かりません。条や章を足したり消したりして番号がずれたのに、参照を直し忘れると起きます。参照のすぐ後ろの括弧か引用符の中の名前を、参照先の見出しと比べます。どちらかがどちらかを含めば合っているとみなします。
+  en: 'When "Section 5 (Confidentiality)" points at a Section 5 headed "Liability", the reader cannot tell whether the number or the name is right. It happens when sections are added or removed and the numbers shift, but the references are not updated. The name in brackets or quotes right after a reference is compared with the target''s heading; they agree when either contains the other.'
+
+message:
+  ja: "{label}に「{name}」と添えていますが、{label}の見出しは「{heading}」です"
+  en: '{label} is called "{name}" here, but its heading is "{heading}"'
+
+how_to_fix:
+  ja: 番号と名前のどちらが正しいかを確かめて、もう一方を直してください。番号がずれたのなら、ほかの参照も同じようにずれていないかを見てください。
+  en: Check whether the number or the name is right and correct the other. If the numbers shifted, check the other references too.
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「第5条（秘密保持）」のように参照に添えた名前が、その条や章の見出しと違う所
+  en: A name given with a reference ("Section 5 (Confidentiality)") that differs from that section's heading
+example:
+  ja:
+    before: |
+      # 規約
+
+      ## 第1章 総則
+
+      料金は第2章「返金」を見てください。
+
+      ## 第2章 料金
+
+      月額です。
+    after: |
+      # 規約
+
+      ## 第1章 総則
+
+      料金は第2章「料金」を見てください。
+
+      ## 第2章 料金
+
+      月額です。
+  en:
+    before: |
+      # Terms
+
+      ## 1. Scope
+
+      For fees, see Section 2 (Refunds).
+
+      ## 2. Pricing
+
+      The fee is monthly.
+    after: |
+      # Terms
+
+      ## 1. Scope
+
+      For fees, see Section 2 (Pricing).
+
+      ## 2. Pricing
+
+      The fee is monthly.
+
+not_flagged:
+  ja: 参照先が見出しを持たないとき、参照先が一つに決まらないとき、他の文書の条（民法第709条）、括弧の中が数字を含むか「前述」「参照」のような語のときは見ません。
+  en: References whose target has no heading or cannot be told apart, references to another document, and brackets holding a number or a word like "above" or "see" are left alone.
+rewrite:
+  ja:
+    direction: 番号と名前のどちらが正しいかを書き手に確かめ、もう一方を直してください。名前を添える意味が無ければ、名前を消して番号だけにしてもかまいません。
+    pairs:
+      - before: 第2章「返金」を見てください。
+        after: 第2章「料金」を見てください。
+      - before: 第5条（秘密保持）に定めるとおり
+        after: 第6条（秘密保持）に定めるとおり
+    keep:
+      - 参照先の番号と見出しの対応
+    avoid:
+      - どちらが正しいかを推測で決める
+  en:
+    direction: Ask the writer whether the number or the name is right, and correct the other. If the name adds nothing, the reference can carry the number alone.
+    pairs:
+      - before: see Section 2 (Refunds)
+        after: see Section 2 (Pricing)
+      - before: as set out in Section 5 (Confidentiality)
+        after: as set out in Section 6 (Confidentiality)
+    keep:
+      - which numbered section has which heading
+    avoid:
+      - guessing which value is right

@@ -1,0 +1,7 @@
+table  6  6  0  0
+ja/design  number-skipped  found
+ja/policy  number-skipped  found
+ja/requirements  number-skipped  found
+en/design  number-skipped  found
+en/policy  number-skipped  found
+en/requirements  number-skipped  found

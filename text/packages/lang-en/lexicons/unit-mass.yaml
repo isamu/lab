@@ -1,0 +1,30 @@
+# Units of mass (base: gram) (unit-mismatch). weight is the factor to the base unit; a unit written twice has two factors, and either may match.
+id: unit-mass
+language: en
+entries:
+  - pattern: "t"
+    weight: 1000000
+  - pattern: "kg"
+    weight: 1000
+  - pattern: "g"
+    weight: 1
+  - pattern: "mg"
+    weight: 0.001
+  - pattern: "lb"
+    weight: 453.59237
+  - pattern: "lbs"
+    weight: 453.59237
+  - pattern: "pounds"
+    weight: 453.59237
+  - pattern: "oz"
+    weight: 28.349523125
+  - pattern: "kilograms"
+    weight: 1000
+  - pattern: "grams"
+    weight: 1
+  - pattern: "pound"
+    weight: 453.59237
+  - pattern: "kilogram"
+    weight: 1000
+  - pattern: "gram"
+    weight: 1

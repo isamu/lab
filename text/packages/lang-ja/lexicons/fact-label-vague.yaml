@@ -1,0 +1,13 @@
+# 名前にならない語（fact-conflict）。指すだけの語は、何の値かを言っていない。
+id: fact-label-vague
+language: ja
+entries:
+  - pattern: それ
+  - pattern: これ
+  - pattern: あれ
+  - pattern: こちら
+  - pattern: そちら
+  - pattern: 私
+  - pattern: 私たち
+  - pattern: 彼
+  - pattern: 彼女

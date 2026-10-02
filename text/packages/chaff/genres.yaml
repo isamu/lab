@@ -51,11 +51,17 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      emoji-heading: off
       bold-label-list: off
+      # A clause, a definition or a claim is a paragraph of one sentence by form.
+      one-sentence-paragraph-run: off
+      ai-structure: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
       # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
       nominalization: off
+      # An enumeration of conditions mixes 〜こと and 〜とき by what each condition is.
+      list-item-form-mix: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -84,7 +90,9 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      emoji-heading: off
       bold-label-list: off
+      ai-structure: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
@@ -106,7 +114,9 @@ groups:
       section-length-uniformity: off
       paragraph-length-variance: off
       stock-transition: off
+      emoji-heading: off
       bold-label-list: off
+      ai-structure: off
       requirement-smell: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
@@ -148,6 +158,8 @@ groups:
       double-keigo: off
       no-em-dash: off
       emoji-density: off
+      fact-conflict: off
+      summary-fact-mismatch: off
       sentence-rhythm: off
       rule-of-three: off
       section-length-uniformity: off
@@ -158,6 +170,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      emoji-heading: off
       bold-label-list: off
       nominalization: off
       dangling-reference: off
@@ -175,6 +188,9 @@ groups:
       ra-nuki: off
       spelling-consistency: off
       requirement-smell: off
+      list-item-form-mix: off
+      # Dialogue and verse set each line apart.
+      one-sentence-paragraph-run: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -193,10 +209,12 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      ai-structure: off
       # A transcript keeps the speaker's words: hedges and ら dropped as spoken.
       double-negative: off
       ra-nuki: off
       requirement-smell: off
+      list-item-form-mix: off
 
 genres:
   - id: technical/spec
@@ -262,6 +280,8 @@ genres:
     # In the corpus the rule fires on nearly every set of minutes, English and Japanese.
     # A header block of labelled fields (- **日時**：…, - **出席者**：…) is the form of minutes, not a list of captions.
     rules:
+      # Minutes jot points down as they come: a noun, a remark, a decision, side by side.
+      list-item-form-mix: off
       agentless-passive: off
       bold-label-list: off
   - id: legal/contract

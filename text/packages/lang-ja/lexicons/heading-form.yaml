@@ -1,0 +1,64 @@
+# 見出しの決まった形。生成した記事は、見出しをこの形で揃えがちです（「〜とは」「〜のメリット」「〜のポイント」）。
+# 1 つだけなら普通の見出しで、文書の構成の数（chaff outline の構成の目印）が、見出しのうちこの形の割合を人の記事と比べます。
+# position: after は見出しの終わりに立つ形、before は頭に立つ形。見出しの終わりの「？」「!」と番号は外してから照らします。
+id: heading-form
+language: ja
+entries:
+  - pattern: とは
+    position: after
+  - pattern: とは何か
+    position: after
+  - pattern: について
+    position: after
+  - pattern: のメリット
+    position: after
+  - pattern: のデメリット
+    position: after
+  - pattern: のポイント
+    position: after
+  - pattern: の方法
+    position: after
+  - pattern: のやり方
+    position: after
+  - pattern: の手順
+    position: after
+  - pattern: のコツ
+    position: after
+  - pattern: の注意点
+    position: after
+  - pattern: の特徴
+    position: after
+  - pattern: の違い
+    position: after
+  - pattern: の仕組み
+    position: after
+  - pattern: の使い方
+    position: after
+  - pattern: の重要性
+    position: after
+  - pattern: の基本
+    position: after
+  - pattern: の課題
+    position: after
+  - pattern: の解決策
+    position: after
+  - pattern: の活用法
+    position: after
+  - pattern: の選び方
+    position: after
+  - pattern: の始め方
+    position: after
+  - pattern: の効果
+    position: after
+  - pattern: の事例
+    position: after
+  - pattern: なのか
+    position: after
+  - pattern: べき理由
+    position: after
+  - pattern: を解説
+    position: after
+  - pattern: を紹介
+    position: after
+  - pattern: なぜ
+    position: before

@@ -1,0 +1,6 @@
+table  5  5  0  0
+ja/blog  kanji-glued  found
+ja/email  kanji-glued  found
+ja/figures  kanji-glued  found
+ja/press  kanji-glued  found
+ja/proposal  kanji-glued  found

@@ -1,0 +1,28 @@
+# Units of data (base: byte); KB to TB are both decimal and binary (unit-mismatch). weight is the factor to the base unit; a unit written twice has two factors, and either may match.
+id: unit-data
+language: en
+entries:
+  - pattern: "KB"
+    weight: 1000
+  - pattern: "KB"
+    weight: 1024
+  - pattern: "MB"
+    weight: 1000000
+  - pattern: "MB"
+    weight: 1048576
+  - pattern: "GB"
+    weight: 1000000000
+  - pattern: "GB"
+    weight: 1073741824
+  - pattern: "TB"
+    weight: 1000000000000
+  - pattern: "TB"
+    weight: 1099511627776
+  - pattern: "KiB"
+    weight: 1024
+  - pattern: "MiB"
+    weight: 1048576
+  - pattern: "GiB"
+    weight: 1073741824
+  - pattern: "TiB"
+    weight: 1099511627776
