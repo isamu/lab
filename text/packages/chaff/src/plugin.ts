@@ -188,7 +188,14 @@ export type StructurePatterns = {
   readonly continuesSentence?: (number: string, rest: string) => boolean;
   /** 数の書き方（「二十二」「3」）を数にする。相対の参照の「前二項」「前条第二項」が使う。 */
   readonly number?: (text: string) => number | undefined;
+  /** text の at のすぐ前に書いた文書の名前（「民法の」「…(平成二十年厚生労働省告示第五十九号)」「この規則の」）。名前が無ければ undefined。 */
+  readonly namedDocument?: DocumentNamer;
 };
+
+/** 位置のすぐ前に書いた文書の名前。self はこの文書を指す名前（「この規則」「本規約」）。 */
+export type NamedDocument = { readonly name: string; readonly self: boolean };
+
+export type DocumentNamer = (text: string, at: number) => NamedDocument | undefined;
 
 export type StructureKind = "doc" | "section" | "chapter" | "article" | "item" | "definition" | "reference" | "obligation" | "quantity" | "date";
 
@@ -339,6 +346,8 @@ export type ProseDocument = {
   readonly profile?: DocumentProfile | undefined;
   /** 本文でないもの（コード・HTML・強調の印）を同じ長さの空白で覆った source。位置は source と同じ。 */
   readonly prose?: string | undefined;
+  /** 位置のすぐ前に書いた文書の名前を読む。言語パッケージが読めなければ無い。 */
+  readonly namedDocument?: DocumentNamer | undefined;
   /** メールの引用した返信（前置きの行と「> 」の行）。ほかの人の言葉なので、見出しにも木にも入れない。 */
   readonly replyQuotes?: readonly Span[] | undefined;
   /** 記法の手がかり（見出し・画像・リンク）。記法を読む rule だけが触れ、触れたときに作る。 */
