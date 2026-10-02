@@ -97,7 +97,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  48 件の rule は動いていません:
+  68 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agentless-passive（まだ試験中のため）
       agreement-slip（ja 向けの rule ではないため）
@@ -106,6 +106,8 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
       announced-count-mismatch（まだ試験中のため）
       announcing-opener（まだ試験中のため）
       assistant-residue（まだ試験中のため）
+      bold-label-list（まだ試験中のため）
+      broken-link（まだ試験中のため）
       colon-lead-in（まだ試験中のため）
       contraction-consistency（ja 向けの rule ではないため）
       contrast-framing（まだ試験中のため）
@@ -116,36 +118,54 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
       date-range-reversed（まだ試験中のため）
       date-weekday-mismatch（まだ試験中のため）
       double-keigo（まだ試験中のため）
+      double-negative（まだ試験中のため）
+      doubled-punctuation（まだ試験中のため）
       doubled-word（まだ試験中のため）
       duplicate-definition（まだ試験中のため）
+      duplicate-heading（まだ試験中のため）
       emoji-density（まだ試験中のため）
       empty-conclusion（意味を読む検査のため（npx chaff test で動きます））
+      empty-section（まだ試験中のため）
       excessive-hedging（まだ試験中のため）
       expletive-construction（ja 向けの rule ではないため）
+      fullwidth-alnum-consistency（まだ試験中のため）
+      hankaku-kana（まだ試験中のため）
+      heading-level-skip（まだ試験中のため）
       hiragana-fukushi（まだ試験中のため）
       internal-jargon（まだ試験中のため）
+      invisible-character（まだ試験中のため）
+      katakana-long-vowel（まだ試験中のため）
+      kutoten-consistency（まだ試験中のため）
       latin-spacing（まだ試験中のため）
       max-kanji-continuous（まだ試験中のため）
       no-em-dash（まだ試験中のため）
       no-mixed-desumasu（まだ試験中のため）
+      nominalization（まだ試験中のため）
       numbering-gap（まだ試験中のため）
       oxford-comma-consistency（ja 向けの rule ではないため）
       percent-sum-mismatch（まだ試験中のため）
       preferred-term（まだ試験中のため）
       proper-noun-density（まだ試験中のため）
+      ra-nuki（まだ試験中のため）
       repeated-conjunction（まだ試験中のため）
       required-sections（まだ試験中のため）
+      requirement-modal（まだ試験中のため）
       risk-disclosure（意味を読む検査のため（npx chaff test で動きます））
       sasete-itadaku（まだ試験中のため）
       sentence-initial-conjunction-run（ja 向けの rule ではないため）
+      space-before-punctuation（ja 向けの rule ではないため）
+      spelling-consistency（ja 向けの rule ではないため）
       stock-transition（まだ試験中のため）
       stray-space（まだ試験中のため）
       title-case-consistency（ja 向けの rule ではないため）
       total-mismatch（まだ試験中のため）
+      unbalanced-bracket（まだ試験中のため）
       undefined-acronym（まだ試験中のため）
       unfilled-placeholder（まだ試験中のため）
       unqualified-superlative（まだ試験中のため）
       unsourced-number（意味を読む検査のため（npx chaff test で動きます））
+      url-run-on（まだ試験中のため）
+      vague-figure-reference（まだ試験中のため）
 ```
 
 指摘は 1 件です。5 行目の「近年、」は、どの報告書にも書ける書き出しです。
@@ -175,20 +195,6 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
     近年、お客様からの問い合わせはますます多様化しており、私たちサポートチームとしてもその変化にしっかりと対応していくことが求められているという状況であると考えられます。
 
-  ⚠  逃げの表現が多い
-
-     この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
-     断言を避けるほど、読み手は何が決まったのか分からなくなります。1 つなら慎重さですが、重なると誰も責任を取らない文書になります。chaff は 2 つの見方で探します。1 つの文に逃げを重ねたもの（「〜という状況であると考えられます」「〜かもしれないと思われます」）は、短い文書でも 1 文で指摘します。文書全体で逃げの表現が多すぎるものは、短い文書では測りません。重なりを数えるとき、鉤括弧や引用符で引いた発言の中の逃げは、話した人のものなので数えません。
-
-     → 言い切れるものは言い切ってください。言い切れないなら、何が分かれば言い切れるのかを書いてください。重ねた逃げは、1 つ残すか、全部外して言い切ってください。
-
-     このルールをゆるめる:  npx chaff relax excessive-hedging
-
-
-─── 5 行目 ───────────────────────────────────────────────────
-
-    近年、お客様からの問い合わせはますます多様化しており、私たちサポートチームとしてもその変化にしっかりと対応していくことが求められているという状況であると考えられます。
-
   ⚠  水増しの導入
 
      「近年」は、どの記事にも当てはまる書き出しです
@@ -197,6 +203,20 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
      → 具体的な状況か、この記事だけの主張から始めてください。
 
      このルールをゆるめる:  npx chaff relax padded-intro
+
+
+─── 5 行目 ───────────────────────────────────────────────────
+
+    近年、お客様からの問い合わせはますます多様化しており、私たちサポートチームとしてもその変化にしっかりと対応していくことが求められているという状況であると考えられます。
+
+  ⚠  逃げの表現が多い
+
+     この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
+     断言を避けるほど、読み手は何が決まったのか分からなくなります。1 つなら慎重さですが、重なると誰も責任を取らない文書になります。chaff は 2 つの見方で探します。1 つの文に逃げを重ねたもの（「〜という状況であると考えられます」「〜かもしれないと思われます」）は、短い文書でも 1 文で指摘します。文書全体で逃げの表現が多すぎるものは、短い文書では測りません。重なりを数えるとき、鉤括弧や引用符で引いた発言の中の逃げは、話した人のものなので数えません。
+
+     → 言い切れるものは言い切ってください。言い切れないなら、何が分かれば言い切れるのかを書いてください。重ねた逃げは、1 つ残すか、全部外して言い切ってください。
+
+     このルールをゆるめる:  npx chaff relax excessive-hedging
 
 
 ─── 15 行目 ──────────────────────────────────────────────────
@@ -220,7 +240,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  10 件の rule は動いていません:
+  12 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agreement-slip（ja 向けの rule ではないため）
       contraction-consistency（ja 向けの rule ではないため）
@@ -229,6 +249,8 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
       oxford-comma-consistency（ja 向けの rule ではないため）
       risk-disclosure（意味を読む検査のため（npx chaff test で動きます））
       sentence-initial-conjunction-run（ja 向けの rule ではないため）
+      space-before-punctuation（ja 向けの rule ではないため）
+      spelling-consistency（ja 向けの rule ではないため）
       title-case-consistency（ja 向けの rule ではないため）
       unsourced-number（意味を読む検査のため（npx chaff test で動きます））
 ```
@@ -325,7 +347,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから   stet 
   5:68    warning この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
                   excessive-hedging
 
-指摘 2 件、動いていない rule 10 件
+指摘 2 件、動いていない rule 12 件
 ```
 
 ## チームで決まりを変える
@@ -387,7 +409,7 @@ houkoku-fixed.md   business/report · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  10 件の rule は動いていません:
+  12 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agreement-slip（ja 向けの rule ではないため）
       contraction-consistency（ja 向けの rule ではないため）
@@ -396,6 +418,8 @@ houkoku-fixed.md   business/report · 日本語   ジャンルは--genreから
       oxford-comma-consistency（ja 向けの rule ではないため）
       risk-disclosure（意味を読む検査のため（npx chaff test で動きます））
       sentence-initial-conjunction-run（ja 向けの rule ではないため）
+      space-before-punctuation（ja 向けの rule ではないため）
+      spelling-consistency（ja 向けの rule ではないため）
       title-case-consistency（ja 向けの rule ではないため）
       unsourced-number（意味を読む検査のため（npx chaff test で動きます））
 ```

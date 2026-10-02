@@ -64,9 +64,9 @@ None of these rules says the text was generated. People write every one of these
 Piled up, they mark a place to reread.
 
 The Japanese word list of `ai-tell` includes the metaphors of technical writing (静かに壊れる "fails silently",
-黙って無視される "is ignored without a word", 時間を溶かす "melts your time"). Which phrases go in was measured on
-technical articles written before generative AI and on the corpus; phrases people already wrote as often before
-(解像度を上げる, 腹落ち) are left out.
+黙って無視される "is ignored without a word", 時間を溶かす "melts your time").
+Which phrases go in was measured on technical articles written before generative AI and on the corpus.
+Phrases people already wrote as often before (解像度を上げる, 腹落ち) are left out.
 
 ## Three ways to fix it
 
@@ -414,7 +414,7 @@ $ npx chaffjs draft.rewritten.md --experimental --compact
 draft.rewritten.md   blog/tech · English   genre from the default
 
 
-0 findings, 16 rules not run
+0 findings, 17 rules not run
 
 $ npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
 draft.md → draft.rewritten.md
@@ -524,7 +524,7 @@ ai.md   blog/tech · English   genre from --genre
   47:1    warning Closes with "hope this helps"
                   closing-cliche
 
-9 findings, 13 rules not run
+9 findings, 17 rules not run
 ```
 
 The article after:
@@ -561,7 +561,7 @@ $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 rewritten.md   blog/tech · English   genre from --genre
 
 
-0 findings, 16 rules not run
+0 findings, 17 rules not run
 ```
 
 What changed, and why:
@@ -671,7 +671,7 @@ demo.md   blog/tech · English   genre from --genre
   33:184  warning "section-length-uniformity, padded-intro, closing-cliche" occur together in this document (3 signals, 3 needed)
                   ai-generated-composite
 
-4 findings, 16 rules not run
+4 findings, 17 rules not run
 ```
 
 The inventory: `npx chaffjs facts demo.md` lists 5 numbers, a date, 2 times, 2 names (Friday, Slack) and 7 headings.
@@ -718,7 +718,7 @@ $ npx chaffjs demo-full.md --genre blog/tech --experimental --compact
 demo-full.md   blog/tech · English   genre from --genre
 
 
-0 findings, 16 rules not run
+0 findings, 17 rules not run
 ```
 
 `outline` measures how the structure changed: fewer headings, longer sections, no list and no bold.

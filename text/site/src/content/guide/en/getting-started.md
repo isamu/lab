@@ -87,7 +87,7 @@ article.md   blog/tech · English   genre from the default
 
   The text was not changed. Fixing it is the writer's job.
 
-  68 rules did not run:
+  69 rules did not run:
       adverb-overuse (still experimental)
       agreement-slip (still experimental)
       ai-generated-composite (still experimental)
@@ -95,6 +95,7 @@ article.md   blog/tech · English   genre from the default
       announced-count-mismatch (still experimental)
       announcing-opener (still experimental)
       assistant-residue (still experimental)
+      bold-label-list (not a rule for en)
       broken-link (still experimental)
       colon-lead-in (not a rule for en)
       contraction-consistency (still experimental)
@@ -156,7 +157,6 @@ article.md   blog/tech · English   genre from the default
       unqualified-superlative (still experimental)
       url-run-on (still experimental)
       vague-figure-reference (still experimental)
-
 ```
 
 With findings, each one gets its own block. This is a run on a real article.

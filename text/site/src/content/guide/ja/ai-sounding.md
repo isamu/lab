@@ -509,7 +509,7 @@ ai.md   blog/tech · 日本語   ジャンルは--genreから
   47:13   warning 「お役に立てれば幸いです」で締めています
                   closing-cliche
 
-指摘 12 件、動いていない rule 8 件
+指摘 12 件、動いていない rule 10 件
 ```
 
 書き直した後の記事です。
@@ -548,7 +548,7 @@ rewritten.md   blog/tech · 日本語   ジャンルは--genreから
   1:28    info    節の長さのばらつきが 32% しかありません（35% 以上ほしい）
                   section-length-uniformity
 
-指摘 1 件、動いていない rule 8 件
+指摘 1 件、動いていない rule 10 件
 ```
 
 変えたことと、その理由です。
@@ -688,6 +688,8 @@ study.md   blog/tech · 日本語   ジャンルは--genreから
                   empty-intensifier
   13:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 2.3 個あります（2 個まで）
                   colon-lead-in
+  15:1    info    「頻度」など、太字の札で始まる項目が 6 個あります（5 個から）
+                  bold-label-list
   23:26   info    「単なる」など、対比の枠が 1000 字あたり 3.5 個あります（1.5 個まで）
                   contrast-framing
   35:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
@@ -707,7 +709,7 @@ study.md   blog/tech · 日本語   ジャンルは--genreから
   67:1    warning 「いかがでしたでしょうか」で締めています
                   closing-cliche
 
-指摘 11 件、動いていない rule 10 件
+指摘 12 件、動いていない rule 10 件
 ```
 
 控えを取ります。`npx chaffjs facts study.md` の一覧には、数 11 件、日付 1 件、時刻 2 件、固有名詞 2 件（Rust、Notion）、見出し 14 件が並びます。
@@ -867,7 +869,7 @@ i 書き方だけ変わった事実 3 件
 
 | 測ったもの | 前 | 後 |
 | --- | --- | --- |
-| 指摘（`--experimental`） | 11 件 | 0 件 |
+| 指摘（`--experimental`） | 12 件 | 0 件 |
 | `ai-generated-composite` | 4 種がそろう | 出ない |
 | 見出し | 14 | 3 |
 | 節の平均 | 67 字 | 187 字 |
