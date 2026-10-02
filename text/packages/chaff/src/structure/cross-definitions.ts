@@ -15,12 +15,27 @@ export type DefinitionOutOfStep = {
   readonly files: number;
 };
 
-/** Marks that do not change what a definition says: spaces, and the punctuation at its two ends. */
-const EDGE = /^[\s、，,:：]+|[\s。．.]+$/gu;
+/** Marks that do not change what a definition says: the punctuation at its two ends. Spaces are evened out apart. */
+const LEADING: ReadonlySet<string> = new Set(["、", "，", ",", ":", "："]);
+const TRAILING: ReadonlySet<string> = new Set(["。", "．", "."]);
 const SPACE = /\s+/gu;
 
+const SPACE_CHAR = /\s/u;
+
+/** The text without spaces and the marks of a set at its start, or at its end. */
+const trimStartOf = (text: string, marks: ReadonlySet<string>): string => {
+  const first = text.split("").findIndex((char) => !marks.has(char) && !SPACE_CHAR.test(char));
+  return first === -1 ? "" : text.slice(first);
+};
+
+const trimEndOf = (text: string, marks: ReadonlySet<string>): string =>
+  text.slice(0, text.split("").findLastIndex((char) => !marks.has(char) && !SPACE_CHAR.test(char)) + 1);
+
 /** The wording compared: width, spaces and the punctuation at the ends evened out. */
-export const definitionKey = (body: string): string => body.normalize("NFKC").replace(EDGE, "").replace(SPACE, " ").trim();
+export const definitionKey = (body: string): string =>
+  trimEndOf(trimStartOf(body.normalize("NFKC"), LEADING), TRAILING)
+    .replace(SPACE, " ")
+    .trim();
 
 /** A file's vote for a term: its first definition of it (a second one in the same file is duplicate-definition's). */
 const voteOf = (file: FileDefinitions, term: string): Vote<WrittenDefinition>[] => {

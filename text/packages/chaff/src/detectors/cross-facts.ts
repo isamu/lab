@@ -4,6 +4,7 @@ import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { factValues } from "../facts/fact-values.ts";
 import { labelledFacts, type Fact } from "../facts/labelled-facts.ts";
 import { tableFacts } from "../facts/table-facts.ts";
+import { emailSpans, versionSpans } from "../facts/address-values.ts";
 import { scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { factsOutOfStep, writtenValue, type FactOutOfStep } from "../facts/cross-facts.ts";
 import { factWordsOf } from "./fact-consistency.ts";
@@ -12,15 +13,9 @@ import { quoteAt } from "./structure-tree.ts";
 // cross-doc-fact-conflict reads facts as fact-conflict does (fact-consistency.ts), with two more kinds of value that a docs
 // site repeats from page to page: an email address and a version of three parts or more (2.4.1, v3).
 
-const EMAIL = /[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu;
-const VERSION = /(?<![\p{L}\p{N}.])(?:v\d+(?:\.\d+)*|\d+\.\d+\.\d+(?:\.\d+)?)(?![\p{L}\p{N}]|\.\d)/gu;
-
-const spansOf = (source: string, pattern: RegExp): Span[] =>
-  [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
-
 /** The proper nouns, and the addresses and versions, read as values named by what they are. A name inside an address is the address. */
 const namedValues = (doc: ProseDocument): Span[] => {
-  const extra = [...spansOf(doc.source, EMAIL), ...spansOf(doc.source, VERSION)];
+  const extra = [...emailSpans(doc.source), ...versionSpans(doc.source)];
   const taken = spanIndex(extra);
   return [...nameSpans(doc).filter((span) => !overlapsAny(taken, span)), ...extra];
 };
