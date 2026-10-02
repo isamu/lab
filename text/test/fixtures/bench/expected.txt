@@ -1,4 +1,5 @@
 rule                              planted  found  missed  false alarms
+absolute-exception                     26     26       0             0
 acronym-expansion-conflict             26     26       0             0
 agentless-passive                       4      4       0             0
 agreement-slip                          4      4       0             0
@@ -128,6 +129,7 @@ ja/blog  heading-copied  found
 ja/blog  section-emptied  found
 ja/blog  hedge-double-negative-ja  found
 ja/blog  modal-opposite-ja  found
+ja/blog  absolute-exception-ja  found
 ja/blog  definition-unused-ja  found
 ja/blog  definition-late-ja  found
 ja/blog  acronym-two-ways-ja  found
@@ -164,6 +166,7 @@ ja/design  heading-copied  found
 ja/design  section-emptied  found
 ja/design  hedge-double-negative-ja  found
 ja/design  modal-opposite-ja  found
+ja/design  absolute-exception-ja  found
 ja/design  definition-unused-ja  found
 ja/design  definition-late-ja  found
 ja/design  acronym-two-ways-ja  found
@@ -194,6 +197,7 @@ ja/email  kana-halfwidth  found
 ja/email  zero-width-pasted  found
 ja/email  hedge-double-negative-ja  found
 ja/email  modal-opposite-ja  found
+ja/email  absolute-exception-ja  found
 ja/email  definition-unused-ja  found
 ja/email  definition-late-ja  found
 ja/email  acronym-two-ways-ja  found
@@ -236,6 +240,7 @@ ja/figures  section-emptied  found
 ja/figures  number-fullwidth  found
 ja/figures  hedge-double-negative-ja  found
 ja/figures  modal-opposite-ja  found
+ja/figures  absolute-exception-ja  found
 ja/figures  figure-pointed-by-place  found
 ja/figures  definition-unused-ja  found
 ja/figures  definition-late-ja  found
@@ -269,6 +274,7 @@ ja/itinerary  heading-copied  found
 ja/itinerary  section-emptied  found
 ja/itinerary  hedge-double-negative-ja  found
 ja/itinerary  modal-opposite-ja  found
+ja/itinerary  absolute-exception-ja  found
 ja/itinerary  definition-unused-ja  found
 ja/itinerary  definition-late-ja  found
 ja/itinerary  acronym-two-ways-ja  found
@@ -299,6 +305,7 @@ ja/minutes  section-emptied  found
 ja/minutes  number-fullwidth  found
 ja/minutes  hedge-double-negative-ja  found
 ja/minutes  modal-opposite-ja  found
+ja/minutes  absolute-exception-ja  found
 ja/minutes  definition-unused-ja  found
 ja/minutes  definition-late-ja  found
 ja/minutes  acronym-two-ways-ja  found
@@ -317,6 +324,7 @@ ja/note  kana-halfwidth  found
 ja/note  zero-width-pasted  found
 ja/note  hedge-double-negative-ja  found
 ja/note  modal-opposite-ja  found
+ja/note  absolute-exception-ja  found
 ja/note  definition-unused-ja  found
 ja/note  definition-late-ja  found
 ja/note  acronym-two-ways-ja  found
@@ -337,6 +345,7 @@ ja/policy  name-slipped-ja  found
 ja/policy  kana-halfwidth  found
 ja/policy  zero-width-pasted  found
 ja/policy  modal-opposite-ja  found
+ja/policy  absolute-exception-ja  found
 ja/policy  definition-unused-ja  found
 ja/policy  definition-late-ja  found
 ja/policy  acronym-two-ways-ja  found
@@ -384,6 +393,7 @@ ja/press  number-fullwidth  found
 ja/press  hedge-double-negative-ja  found
 ja/press  ra-dropped  found
 ja/press  modal-opposite-ja  found
+ja/press  absolute-exception-ja  found
 ja/press  definition-unused-ja  found
 ja/press  definition-late-ja  found
 ja/press  acronym-two-ways-ja  found
@@ -427,6 +437,7 @@ ja/proposal  section-emptied  found
 ja/proposal  number-fullwidth  found
 ja/proposal  hedge-double-negative-ja  found
 ja/proposal  modal-opposite-ja  found
+ja/proposal  absolute-exception-ja  found
 ja/proposal  definition-unused-ja  found
 ja/proposal  definition-late-ja  found
 ja/proposal  acronym-two-ways-ja  found
@@ -456,6 +467,7 @@ ja/quote  section-emptied  found
 ja/quote  number-fullwidth  found
 ja/quote  hedge-double-negative-ja  found
 ja/quote  modal-opposite-ja  found
+ja/quote  absolute-exception-ja  found
 ja/quote  definition-unused-ja  found
 ja/quote  definition-late-ja  found
 ja/quote  acronym-two-ways-ja  found
@@ -487,6 +499,7 @@ ja/readme  heading-copied  found
 ja/readme  section-emptied  found
 ja/readme  hedge-double-negative-ja  found
 ja/readme  modal-opposite-ja  found
+ja/readme  absolute-exception-ja  found
 ja/readme  definition-unused-ja  found
 ja/readme  definition-late-ja  found
 ja/readme  acronym-two-ways-ja  found
@@ -517,6 +530,7 @@ ja/requirements  section-emptied  found
 ja/requirements  hedge-double-negative-ja  found
 ja/requirements  ra-dropped  found
 ja/requirements  modal-opposite-ja  found
+ja/requirements  absolute-exception-ja  found
 ja/requirements  requirement-loosened  found
 ja/requirements  definition-unused-ja  found
 ja/requirements  definition-late-ja  found
@@ -550,6 +564,7 @@ en/blog  heading-copied  found
 en/blog  section-emptied  found
 en/blog  hedge-double-negative-en  found
 en/blog  modal-opposite-en  found
+en/blog  absolute-exception-en  found
 en/blog  definition-unused-en  found
 en/blog  definition-late-en  found
 en/blog  acronym-two-ways-en  found
@@ -583,6 +598,7 @@ en/design  heading-copied  found
 en/design  section-emptied  found
 en/design  hedge-double-negative-en  found
 en/design  modal-opposite-en  found
+en/design  absolute-exception-en  found
 en/design  definition-unused-en  found
 en/design  definition-late-en  found
 en/design  acronym-two-ways-en  found
@@ -605,6 +621,7 @@ en/email  zero-width-pasted  found
 en/email  period-spaced  found
 en/email  hedge-double-negative-en  found
 en/email  modal-opposite-en  found
+en/email  absolute-exception-en  found
 en/email  definition-unused-en  found
 en/email  definition-late-en  found
 en/email  acronym-two-ways-en  found
@@ -643,6 +660,7 @@ en/figures  heading-copied  found
 en/figures  section-emptied  found
 en/figures  hedge-double-negative-en  found
 en/figures  modal-opposite-en  found
+en/figures  absolute-exception-en  found
 en/figures  figure-pointed-by-place  found
 en/figures  definition-unused-en  found
 en/figures  definition-late-en  found
@@ -675,6 +693,7 @@ en/itinerary  heading-copied  found
 en/itinerary  section-emptied  found
 en/itinerary  hedge-double-negative-en  found
 en/itinerary  modal-opposite-en  found
+en/itinerary  absolute-exception-en  found
 en/itinerary  definition-unused-en  found
 en/itinerary  definition-late-en  found
 en/itinerary  acronym-two-ways-en  found
@@ -702,6 +721,7 @@ en/minutes  heading-copied  found
 en/minutes  section-emptied  found
 en/minutes  hedge-double-negative-en  found
 en/minutes  modal-opposite-en  found
+en/minutes  absolute-exception-en  found
 en/minutes  definition-unused-en  found
 en/minutes  definition-late-en  found
 en/minutes  acronym-two-ways-en  found
@@ -717,6 +737,7 @@ en/note  zero-width-pasted  found
 en/note  period-spaced  found
 en/note  hedge-double-negative-en  found
 en/note  modal-opposite-en  found
+en/note  absolute-exception-en  found
 en/note  definition-unused-en  found
 en/note  definition-late-en  found
 en/note  acronym-two-ways-en  found
@@ -732,6 +753,7 @@ en/policy  name-slipped-en  found
 en/policy  zero-width-pasted  found
 en/policy  period-spaced  found
 en/policy  modal-opposite-en  found
+en/policy  absolute-exception-en  found
 en/policy  definition-unused-en  found
 en/policy  definition-late-en  found
 en/policy  acronym-two-ways-en  found
@@ -770,6 +792,7 @@ en/press  heading-copied  found
 en/press  section-emptied  found
 en/press  hedge-double-negative-en  found
 en/press  modal-opposite-en  found
+en/press  absolute-exception-en  found
 en/press  definition-unused-en  found
 en/press  definition-late-en  found
 en/press  acronym-two-ways-en  found
@@ -804,6 +827,7 @@ en/proposal  heading-copied  found
 en/proposal  section-emptied  found
 en/proposal  hedge-double-negative-en  found
 en/proposal  modal-opposite-en  found
+en/proposal  absolute-exception-en  found
 en/proposal  definition-unused-en  found
 en/proposal  definition-late-en  found
 en/proposal  acronym-two-ways-en  found
@@ -828,6 +852,7 @@ en/quote  heading-copied  found
 en/quote  section-emptied  found
 en/quote  hedge-double-negative-en  found
 en/quote  modal-opposite-en  found
+en/quote  absolute-exception-en  found
 en/quote  definition-unused-en  found
 en/quote  definition-late-en  found
 en/quote  acronym-two-ways-en  found
@@ -853,6 +878,7 @@ en/readme  heading-copied  found
 en/readme  section-emptied  found
 en/readme  hedge-double-negative-en  found
 en/readme  modal-opposite-en  found
+en/readme  absolute-exception-en  found
 en/readme  definition-unused-en  found
 en/readme  definition-late-en  found
 en/readme  acronym-two-ways-en  found
@@ -882,6 +908,7 @@ en/requirements  heading-copied  found
 en/requirements  section-emptied  found
 en/requirements  hedge-double-negative-en  found
 en/requirements  modal-opposite-en  found
+en/requirements  absolute-exception-en  found
 en/requirements  requirement-loosened  found
 en/requirements  definition-unused-en  found
 en/requirements  definition-late-en  found

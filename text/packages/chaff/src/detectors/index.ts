@@ -27,6 +27,7 @@ import { nominalization } from "./nominalization.ts";
 import { requirementSmell } from "./requirement-smell.ts";
 import { requirementModal } from "./requirement-modal.ts";
 import { modalConflict } from "./modal-conflict.ts";
+import { absoluteException } from "./absolute-exception.ts";
 import { vagueFigurePointer } from "./vague-figure-pointer.ts";
 import {
   danglingReference,
@@ -127,6 +128,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "requirement-smell": requirementSmell,
   "requirement-modal": requirementModal,
   "modal-conflict": modalConflict,
+  "absolute-exception": absoluteException,
   "vague-figure-pointer": vagueFigurePointer,
   "date-range-reversed": dateRangeReversed,
   "percent-sum-mismatch": percentSumMismatch,

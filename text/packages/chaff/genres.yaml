@@ -113,6 +113,8 @@ groups:
   - id: literature
     name: { ja: 文学, en: Literature }
     rules:
+      # A character who says "never" and later makes an exception is the story, not a drafting slip.
+      absolute-exception: off
       max-sentence-length: off
       max-paragraph-length: off
       ngram-repetition: off

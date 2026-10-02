@@ -1,0 +1,9 @@
+# Verbs that carry no act of their own (lemmas). absolute-exception steps past them when it looks for the act an
+# obligation binds ("must be sent" binds "send", not "be").
+id: light-verb
+language: en
+entries:
+  - pattern: be
+  - pattern: have
+  - pattern: do
+  - pattern: get
