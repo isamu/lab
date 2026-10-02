@@ -476,8 +476,10 @@ export type RuleDefinition = {
   readonly severity: Severity;
   /** Options beyond the level (the direction and length for katakana-long-vowel). Most rules have none. */
   readonly options?: Readonly<Record<string, RuleOption>>;
-  /** A rule a team defined under custom_rules in chaff.yaml: what it looks for. Built-in rules have none. */
+  /** A rule a team defined under custom_rules in chaff.yaml, or a plugin ships: what it looks for. Built-in rules have none. */
   readonly custom?: CustomSpec;
+  /** The name of the plugin that ships the rule, which is also its id's prefix (foo in foo/rule-id). Only a plugin's rules have it. */
+  readonly plugin?: string;
   /** What the rule reference tells a reader who is not an engineer: its group, one line, a before and after. */
   readonly guide?: RuleGuide;
 };
