@@ -33,6 +33,7 @@ planted:
   hankaku-kana: [ja]
   heading-level-skip: [ja, en]
   hiragana-fukushi: [ja]
+  humble-for-others: [ja]
   image-alt-text: [ja, en]
   internal-jargon: [ja, en]
   name-variant: [ja, en]
@@ -80,6 +81,7 @@ not_planted:
   ai-structure: the outline of the whole document measured against human articles, not one mistake
   ai-tell: a density over the whole document
   announcing-opener: several announcing openers in one document; one is not a mistake
+  baito-keigo: the samples hold no counter talk (よろしいでしょうか, こちらです) that one edit could turn into it
   bold-label-list: a count of labelled items over the whole document; one is not a mistake
   colon-lead-in: a density over the whole document
   concrete-evidence-density: several sections with no number, code or link; the samples are written with figures
