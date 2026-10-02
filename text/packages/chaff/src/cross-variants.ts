@@ -1,5 +1,6 @@
 // One word written one way in some files of a run and another way in the others (サーバ / サーバー, e-mail / email).
 // Pure: the words come in already read from each document, each with the key both spellings share.
+import { tallyVotes, type Vote } from "./cross-votes.ts";
 
 /** One written word: the key both its spellings share, the spelling as written (in a form that compares), and where. */
 export type KeyedWord = { readonly key: string; readonly form: string; readonly offset: number };
@@ -29,31 +30,21 @@ const usagesByKey = (docs: readonly DocumentWords[]): Map<string, Usage[]> => {
 };
 
 /** A file's vote: the one form it writes the key in. A file writing it two ways does not vote (its own rules point at that). */
-type Vote = { readonly usage: Usage; readonly form: string };
-
-const votesOf = (usages: readonly Usage[]): Vote[] =>
+const votesOf = (usages: readonly Usage[]): Vote<string>[] =>
   usages.flatMap((usage) => {
     const [form] = usage.forms;
-    return usage.forms.size === 1 && form !== undefined ? [{ usage, form }] : [];
+    return usage.forms.size === 1 && form !== undefined ? [{ path: usage.path, value: form }] : [];
   });
 
-/** The form most files use; on a tie, the form of the first of those files in the run's order. */
-const usualOf = (votes: readonly Vote[]): string | undefined => {
-  const counts = new Map<string, number>();
-  votes.forEach((vote) => counts.set(vote.form, (counts.get(vote.form) ?? 0) + 1));
-  const most = Math.max(...counts.values());
-  return votes.find((vote) => counts.get(vote.form) === most)?.form;
-};
-
 const oddAmong = (usages: readonly Usage[]): OddSpelling[] => {
-  const votes = votesOf(usages);
-  const usual = usualOf(votes);
-  const usualVotes = votes.filter((vote) => vote.form === usual);
-  const example = usualVotes[0]?.usage.path;
-  if (usual === undefined || example === undefined) return [];
-  return votes
-    .filter((vote) => vote.form !== usual)
-    .map((vote) => ({ path: vote.usage.path, word: vote.usage.first, usual, files: usualVotes.length, example }));
+  const tally = tallyVotes(votesOf(usages), (left, right) => left === right);
+  const [example] = tally?.usual ?? [];
+  if (tally === undefined || example === undefined) return [];
+  const firstIn = new Map(usages.map((usage) => [usage.path, usage.first]));
+  return tally.odd.flatMap((vote) => {
+    const word = firstIn.get(vote.path);
+    return word === undefined ? [] : [{ path: vote.path, word, usual: example.value, files: tally.usual.length, example: example.path }];
+  });
 };
 
 /**
