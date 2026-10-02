@@ -104,6 +104,8 @@ export type ExplainSettings = {
   readonly optionLayers?: readonly OptionLayer[];
   readonly levelFrom?: string | undefined;
   readonly limit?: number | undefined;
+  /** The rule is off only because it is experimental, so naming it would run it: say how. */
+  readonly offOnlyAsExperimental?: boolean;
 };
 
 /** rule の意図と根拠を読む。指摘に納得できないときの入口。 */
@@ -113,7 +115,8 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
   const limit = rule.level_sets === "severity" ? undefined : settings.limit;
   const marked = limit === undefined ? current : undefined;
   const text = TEXT[uiLanguageOf(language)];
-  const experimental = rule.status === "experimental" ? [`  ${text.experimental}`, ...(current === "off" ? [`  ${text.alone(rule.id)}`] : [])] : [];
+  const experimental =
+    rule.status === "experimental" ? [`  ${text.experimental}`, ...(settings.offOnlyAsExperimental === true ? [`  ${text.alone(rule.id)}`] : [])] : [];
   return [
     "",
     `  ${readableText(rule, rule.name, language)}   (${rule.id})`,

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { runCli } from "./cli-run.ts";
+import { offOnlyAsExperimental } from "../packages/chaff/src/experimental-alone.ts";
 
 // An experimental rule can be turned on alone by naming it in chaff.yaml. enable writes that line, and explain, the list
 // of rules that did not run, and rules --json each point to it.
@@ -68,6 +69,27 @@ describe("explain on an experimental rule", () => {
   });
 });
 
+describe("explain where enable would change nothing", () => {
+  it("does not offer it for a rule chaff.yaml turned off with a reason", async () => {
+    const run = await runCli({ "chaff.yaml": `rules:\n  ${RULE}: off # 2026-10-02 not for us / writer\n` }, ["explain", RULE], "en_US.UTF-8");
+    assert.doesNotMatch(run.out, /npx chaffjs enable/u);
+  });
+
+  it("does not offer it in a genre the rule does not serve", async () => {
+    const run = await runCli({}, ["explain", "agentless-passive", "--genre", "blog/tech"], "en_US.UTF-8");
+    assert.doesNotMatch(run.out, /npx chaffjs enable/u);
+    const served = await runCli({}, ["explain", "agentless-passive", "--genre", "business/report"], "en_US.UTF-8");
+    assert.match(served.out, /npx chaffjs enable agentless-passive/u);
+  });
+
+  it("does not offer it in a language the rule does not read", async () => {
+    const japanese = await runCli({ "chaff.yaml": "language: ja\n" }, ["explain", "oxford-comma-consistency"]);
+    assert.doesNotMatch(japanese.out, /npx chaffjs enable/u);
+    const english = await runCli({ "chaff.yaml": "language: en\n" }, ["explain", "oxford-comma-consistency"], "en_US.UTF-8");
+    assert.match(english.out, /npx chaffjs enable oxford-comma-consistency/u);
+  });
+});
+
 describe("the list of rules that did not run", () => {
   it("says once how to turn one experimental rule on alone", async () => {
     const run = await runCli({ "t.md": DOC_EN }, ["t.md"], "en_US.UTF-8");
@@ -99,5 +121,36 @@ describe("rules --json", () => {
     const run = await runCli({}, ["rules", "--json"], "en_US.UTF-8");
     const parsed: unknown = JSON.parse(run.out);
     assert.match(JSON.stringify(parsed), new RegExp(`"turn_on_with":"npx chaffjs enable ${RULE}"`, "u"));
+  });
+
+  it("gives no command for a rule the language does not read", async () => {
+    const run = await runCli({ "chaff.yaml": "language: ja\n" }, ["rules", "--json"]);
+    const text = JSON.stringify(JSON.parse(run.out));
+    assert.doesNotMatch(text, /npx chaffjs enable oxford-comma-consistency/u);
+    assert.match(text, new RegExp(`npx chaffjs enable ${RULE}`, "u"));
+  });
+});
+
+describe("offOnlyAsExperimental", () => {
+  const rule: Parameters<typeof offOnlyAsExperimental>[0] = { id: "r", status: "experimental", use_for: ["blog"], languages: ["en"] };
+  const written = { rules: {}, experimental: false };
+
+  it("is true for an experimental rule left off in a genre and language it serves", () => {
+    assert.equal(offOnlyAsExperimental(rule, written, "blog/tech", {}, "en"), true);
+    assert.equal(offOnlyAsExperimental({ ...rule, languages: undefined }, written, "blog/tech", {}, "ja"), true);
+  });
+
+  const falses: readonly (readonly [string, Parameters<typeof offOnlyAsExperimental>])[] = [
+    ["a stable rule", [{ ...rule, status: "stable" }, written, "blog/tech", {}, "en"]],
+    ["--experimental already on", [rule, { rules: {}, experimental: true }, "blog/tech", {}, "en"]],
+    ["a rule chaff.yaml names", [rule, { rules: { r: "off" }, experimental: false }, "blog/tech", {}, "en"]],
+    ["a genre it does not serve", [rule, written, "business/report", {}, "en"]],
+    ["a genre preset that decides it", [rule, written, "blog/tech", { r: "off" }, "en"]],
+    ["a language it does not read", [rule, written, "blog/tech", {}, "ja"]],
+  ];
+  falses.forEach(([label, args]) => {
+    it(`is false for ${label}`, () => {
+      assert.equal(offOnlyAsExperimental(...args), false);
+    });
   });
 });
