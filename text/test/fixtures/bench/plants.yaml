@@ -41,6 +41,7 @@ planted:
   max-kanji-continuous: [ja]
   max-paragraph-length: [ja, en]
   max-sentence-length: [ja, en]
+  modal-conflict: [ja, en]
   ngram-repetition: [ja, en]
   no-doubled-joshi: [ja]
   no-em-dash: [ja, en]
