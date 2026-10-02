@@ -39,6 +39,7 @@ import {
   totalMismatch,
 } from "./structure-tree.ts";
 import { headingLevelSkip } from "./heading-level-skip.ts";
+import { dateFormat } from "./date-format.ts";
 import { imageAltText } from "./image-alt-text.ts";
 import { brokenLink } from "./broken-link.ts";
 import { urlRunOn } from "./url-run-on.ts";
@@ -132,6 +133,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "modal-conflict": modalConflict,
   "vague-figure-pointer": vagueFigurePointer,
   "date-range-reversed": dateRangeReversed,
+  "date-format": dateFormat,
   "percent-sum-mismatch": percentSumMismatch,
   "heading-level-skip": headingLevelSkip,
   "image-alt-text": imageAltText,

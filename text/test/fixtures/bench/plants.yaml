@@ -14,6 +14,7 @@ planted:
   contraction-consistency: [en]
   dangling-figure-reference: [ja, en]
   dangling-reference: [ja, en]
+  date-format-consistency: [ja, en]
   date-order: [ja, en]
   date-range-reversed: [ja, en]
   date-weekday-mismatch: [ja, en]

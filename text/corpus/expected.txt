@@ -17,8 +17,8 @@ apidatagov-developer-manual  agreement-slip 1, contraction-consistency 4, max-se
 arxiv-2609-27842-genai-assessment  heading-level-skip 1, max-sentence-length 18, spelling-consistency 8, undefined-acronym 10
 arxiv-2609-38203-abs-verbal-fluency  undefined-acronym 3
 arxiv-2609-38219-abs-tamazight-speech  max-sentence-length 1, oxford-comma-consistency 1, undefined-acronym 5
-arxiv-astro-ph-new-2025-01-03  agreement-slip 1, heading-level-skip 1, max-paragraph-length 22, max-sentence-length 27, name-variant 3, ngram-repetition 1, space-before-punctuation 1, spelling-consistency 15, undefined-acronym 130, unqualified-superlative 2
-asf-board-minutes-2025-01  concrete-evidence-density 36, expletive-construction 28, heading-echo 18, max-paragraph-length 5, max-sentence-length 233, name-variant 8, ngram-repetition 1, preamble-length 1, space-before-punctuation 3, spelling-consistency 1, unbalanced-bracket 1, undefined-acronym 153
+arxiv-astro-ph-new-2025-01-03  agreement-slip 1, date-format-consistency 3, heading-level-skip 1, max-paragraph-length 22, max-sentence-length 27, name-variant 3, ngram-repetition 1, space-before-punctuation 1, spelling-consistency 15, undefined-acronym 130, unqualified-superlative 2
+asf-board-minutes-2025-01  concrete-evidence-density 36, date-format-consistency 5, expletive-construction 28, heading-echo 18, max-paragraph-length 5, max-sentence-length 233, name-variant 8, ngram-repetition 1, preamble-length 1, space-before-punctuation 3, spelling-consistency 1, unbalanced-bracket 1, undefined-acronym 153
 automattic-offer-letter-us  agentless-passive 10, contraction-consistency 2, duplicate-definition 1, duplicate-heading 1, empty-section 1, heading-level-skip 2, max-paragraph-length 2, max-sentence-length 53
 automattic-privacy-policy  max-sentence-length 6, name-variant 1, undefined-acronym 8
 bls-glossary  acronym-expansion-conflict 2, max-paragraph-length 6, max-sentence-length 69, name-variant 2, unbalanced-bracket 2, undefined-acronym 6
@@ -27,12 +27,12 @@ caa-mokebanashi-chuikanki  max-sentence-length 3
 cc-by-4-legalcode-ja  fullwidth-alnum-consistency 1, latin-spacing 2, max-sentence-length 1, no-nakaguro-parallel 1, stray-space 2, undefined-acronym 3
 cdc-co-poisoning-basics  agentless-passive 7, concrete-evidence-density 5, contraction-consistency 2, heading-echo 1, max-sentence-length 2
 cfpb-blog-imposter-scams  agentless-passive 3, max-sentence-length 6, preamble-length 1, space-before-punctuation 1, undefined-acronym 3
-chrome-blog-pwa-origin-migration  contraction-consistency 1, heading-echo 1, max-sentence-length 5
+chrome-blog-pwa-origin-migration  contraction-consistency 1, date-format-consistency 1, heading-echo 1, max-sentence-length 5
 chrome-blog-pwa-origin-migration-ja  latin-spacing 1, max-sentence-length 4, stray-space 4
 cisa-scuba-teams  bold-density 9, contraction-consistency 4, heading-level-skip 1, max-paragraph-length 2, max-sentence-length 32, ngram-repetition 1, numbering-gap 1, undefined-acronym 5
 cloudgov-changelog-2023-11-27  max-sentence-length 2, undefined-acronym 3
 cloudgov-security-ir-guide  agentless-passive 31, concrete-evidence-density 4, contraction-consistency 2, max-sentence-length 24, name-variant 1, unbalanced-bracket 1, undefined-acronym 10
-cloudgov-v2api-eol-notice  agentless-passive 4, contraction-consistency 1, doubled-word 1, max-sentence-length 1, title-case-consistency 1
+cloudgov-v2api-eol-notice  agentless-passive 4, contraction-consistency 1, date-format-consistency 1, doubled-word 1, max-sentence-length 1, title-case-consistency 1
 cloudgov-your-first-deploy  contraction-consistency 1, doubled-word 1, max-sentence-length 2, undefined-acronym 5
 commonpaper-csa  max-sentence-length 10, undefined-acronym 7
 commonpaper-mutual-nda  max-sentence-length 4, use-before-definition 1
@@ -145,7 +145,7 @@ mdn-using-fetch-ja  latin-spacing 1, max-sentence-length 1, ngram-repetition 1, 
 meti-keiryoshi-exam-correction  latin-spacing 1, max-sentence-length 2
 meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5, unbalanced-bracket 1
 mext-heatstroke-after-holidays  fullwidth-alnum-consistency 1, hiragana-fukushi 1, max-kanji-continuous 5, max-paragraph-length 2, max-sentence-length 18, ngram-repetition 1, preamble-length 1
-mhlw-icd-committee-26-minutes  fullwidth-alnum-consistency 2, max-kanji-continuous 24, max-sentence-length 34, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 1, sasete-itadaku 42, unbalanced-bracket 2, undefined-acronym 3
+mhlw-icd-committee-26-minutes  date-format-consistency 2, fullwidth-alnum-consistency 2, max-kanji-continuous 24, max-sentence-length 34, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 1, sasete-itadaku 42, unbalanced-bracket 2, undefined-acronym 3
 mhlw-kikan-gyomu-shokuin-boshu  fullwidth-alnum-consistency 3, max-kanji-continuous 6, unbalanced-bracket 1
 mhlw-kokuji-h18-107-keiji-jiko  dangling-reference 43, duplicate-heading 1, max-sentence-length 6, no-nakaguro-parallel 2, undefined-acronym 8, use-before-definition 3
 mhlw-norovirus-qa  fullwidth-alnum-consistency 1, kutoten-consistency 1, latin-spacing 1, max-kanji-continuous 12, max-paragraph-length 1, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 3, no-mixed-desumasu 3, repeated-conjunction 1, unbalanced-bracket 2, undefined-acronym 5
@@ -166,8 +166,8 @@ nih-research-matters-hpv-one-dose  heading-level-skip 1, max-paragraph-length 2,
 noaa-press-flood-mapping  contraction-consistency 1, max-sentence-length 12, oxford-comma-consistency 1, title-case-consistency 1, undefined-acronym 6
 nodejs-tsc-minutes-2026-05-06  contraction-consistency 6, doubled-punctuation 1, empty-section 1, max-sentence-length 1, name-variant 1, undefined-acronym 5
 nps-yellowstone-faqs  max-paragraph-length 1, max-sentence-length 3, name-variant 1, unbalanced-bracket 1
-nsf-19-582-reu-solicitation  agentless-passive 154, concrete-evidence-density 3, expletive-construction 4, heading-echo 1, max-paragraph-length 10, max-sentence-length 207, ngram-repetition 1, spelling-consistency 1, undefined-acronym 4, unused-definition 1
-nstac-microdata-forum  agentless-passive 1, latin-spacing 1, max-kanji-continuous 9, max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
+nsf-19-582-reu-solicitation  agentless-passive 154, concrete-evidence-density 3, date-format-consistency 2, expletive-construction 4, heading-echo 1, max-paragraph-length 10, max-sentence-length 207, ngram-repetition 1, spelling-consistency 1, undefined-acronym 4, unused-definition 1
+nstac-microdata-forum  agentless-passive 1, date-format-consistency 2, latin-spacing 1, max-kanji-continuous 9, max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 3
 nta-kids-mijika-na-zeikin  latin-spacing 1, no-mixed-desumasu 3, stray-space 1
 nta-taxanswer-1120  latin-spacing 1, max-kanji-continuous 8, max-sentence-length 6, ngram-repetition 1, no-doubled-joshi 4
 nta-tsutatsu-shohi-05-01  unused-definition 1
@@ -198,11 +198,11 @@ soumu-kokumin-cyber-glossary-a  max-sentence-length 2, undefined-acronym 3
 soumu-kokumin-cyber-malware  concrete-evidence-density 3, max-sentence-length 10, no-doubled-joshi 1
 soumu-kokumin-cyber-phishing  concrete-evidence-density 3, katakana-long-vowel 1, latin-spacing 7, max-sentence-length 6
 soumu-wp-r06-ai-booms  agentless-passive 1, katakana-long-vowel 1, max-sentence-length 2, undefined-acronym 3
-soumu-wp-r06-ai-rules-japan  agentless-passive 2, latin-spacing 1, max-sentence-length 6, no-doubled-joshi 1
+soumu-wp-r06-ai-rules-japan  agentless-passive 2, date-format-consistency 2, latin-spacing 1, max-sentence-length 6, no-doubled-joshi 1
 soumu-wp-r06-misinformation  agentless-passive 8, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 22, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
 sre-next-bunsho-kanri  use-before-definition 1
 sre-next-teikan  no-mixed-desumasu 1
-tc39-agenda-2026-07  adverb-overuse 1, max-sentence-length 11, oxford-comma-consistency 1, title-case-consistency 2
+tc39-agenda-2026-07  adverb-overuse 1, date-format-consistency 1, max-sentence-length 11, oxford-comma-consistency 1, title-case-consistency 2
 tcu-rishu-toroku-2026-kouki  agentless-passive 3, concrete-evidence-density 5, heading-echo 3, heading-level-skip 1, kutoten-consistency 2, max-kanji-continuous 11, max-sentence-length 6, no-doubled-joshi 1, no-mixed-desumasu 3
 textlint-preset-ja-technical-writing-readme  latin-spacing 4, ngram-repetition 1, undefined-acronym 3
 tokyoapp-service-terms  duplicate-definition 11, fullwidth-alnum-consistency 7, hankaku-kana 1, katakana-long-vowel 2, latin-spacing 1, requirement-smell 15, unbalanced-bracket 1, use-before-definition 2
