@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { UNCHECKED, differingScreens, guidePages, pageName, readGuidePage, type GuidePage } from "../scripts/guide-screens.ts";
+import { UNCHECKED, UNCHECKED_ON_WINDOWS, differingScreens, guidePages, pageName, readGuidePage, type GuidePage } from "../scripts/guide-screens.ts";
 
 // 手引きの画面は、その画面の文書に chaff を実際にかけた出力と同じでなければならない。古い画面は、読み手に今の chaff と
 // 違うものを見せる。画面の文書は、ページの file= の塊と site/src/screens/<言語>/<ページ>/ に置く。
@@ -23,7 +23,7 @@ describe("手引きの画面", () => {
 
   it("かけない画面の一覧は、どれもページにある", () => {
     assert.deepEqual(
-      Object.entries(UNCHECKED).flatMap(([page, commands]) => notOnPage(page, Object.keys(commands))),
+      [...Object.entries(UNCHECKED), ...Object.entries(UNCHECKED_ON_WINDOWS)].flatMap(([page, commands]) => notOnPage(page, Object.keys(commands))),
       [],
     );
   });

@@ -161,9 +161,18 @@ export const UNCHECKED: Readonly<Record<string, Readonly<Record<string, string>>
 };
 
 /** A page's screens that are run and compared with chaff: every one not listed in UNCHECKED. */
+const SHELF_PATHS = "chaff's baseline fingerprint holds the path with Windows' \\, so the baseline made elsewhere shelves nothing";
+
+/** The screens no test runs on Windows only, by page and command, with why. */
+export const UNCHECKED_ON_WINDOWS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  "ja/commands.md": { "$ npx chaffjs docs/ --compact": SHELF_PATHS, "$ npx chaffjs docs/ --show-baseline --compact": SHELF_PATHS },
+  "en/commands.md": { "$ npx chaffjs docs/ --compact": SHELF_PATHS, "$ npx chaffjs docs/ --show-baseline --compact": SHELF_PATHS },
+};
+
+/** A page's screens that are run and compared with chaff here: every one not listed for this platform. */
 export const checkedScreens = (page: GuidePage): { documents: Readonly<Record<string, string>>; screens: Screen[] } => {
   const { documents, screens } = readGuidePage(page);
-  const unchecked = UNCHECKED[pageName(page)] ?? {};
+  const unchecked = { ...UNCHECKED[pageName(page)], ...(process.platform === "win32" ? UNCHECKED_ON_WINDOWS[pageName(page)] : {}) };
   return { documents, screens: screens.filter((screen) => unchecked[screen.command] === undefined) };
 };
 
