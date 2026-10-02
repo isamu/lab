@@ -1,0 +1,80 @@
+id: outside-announced-list
+layer: L3
+status: experimental
+how_to_find: outside-announced-list
+requires: [pos]
+severity: warning
+
+name:
+  ja: 挙げた一覧に無い名前
+  en: A name outside the announced list
+
+why:
+  ja: 「対応 OS は Windows と macOS です」と挙げたあとに「Linux にも対応しています」と書くと、どちらが本当の一覧なのか読み手は決められません。対応先を足したときに最初の一覧を直し忘れたか、別の製品の文を写したことが多いです。chaff はどちらが正しいかを決めず、一覧に無い名前を指します。一覧を言う語は言語ごとの語彙表にあり、同じ組（対応する OS、対応する言語）の語どうしだけを比べます。
+  en: Listing "supported on Windows and macOS" and later writing "also runs on Linux" leaves the reader unable to tell which list is true. Usually a platform was added and the first list was not updated, or a sentence came from another product's page. chaff does not decide which is right; it points at the name the first list does not have. The words that announce a list are in each language's lexicon, and only words of the same group (platforms, languages) are compared.
+
+message:
+  ja: 「{name}」は、{listLine} 行目で挙げた一覧（{list}）にありません
+  en: '"{name}" is not in the list given on line {listLine} ({list})'
+
+how_to_fix:
+  ja: 一覧が古いなら一覧に足し、後の文が誤りなら直してください。
+  en: If the list is out of date, add the name to it; if the later sentence is wrong, correct it.
+
+placeholders:
+  name:
+    ja: 名前
+    en: the name
+  list:
+    ja: 一覧
+    en: the list
+  listLine:
+    ja: 〇
+    en: N
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「対応 OS は Windows と macOS」と挙げたあとで、一覧に無い「Linux」に対応すると書いている所
+  en: A later sentence naming a platform or language that the list given earlier does not have
+example:
+  ja:
+    before: |
+      対応OSはWindowsとmacOSです。インストールは五分で終わります。Linuxにも対応しています。
+    after: |
+      対応OSはWindowsとmacOSとLinuxです。インストールは五分で終わります。Linuxにも対応しています。
+  en:
+    before: |
+      The app is supported on Windows and macOS. Setup takes five minutes. It is also supported on Linux.
+    after: |
+      The app is supported on Windows, macOS and Linux. Setup takes five minutes. It is also supported on Linux.
+
+not_flagged:
+  ja: 一覧を言う語（対応OSは、に対応、版）のすぐ隣に並べた固有名詞だけを読みます。最初に二つ以上の名前を挙げた文を一覧とし、それより前の文は見ません。組の違う語（対応する OS と、対応する言語）は比べません。
+  en: Only proper nouns right next to a listing word (supported on, available in, version) are read. The first sentence naming two or more is the list, and earlier sentences are not checked. Words of different groups (platforms and languages) are not compared.
+rewrite:
+  ja:
+    direction: 一覧と後の文のどちらが正しいかを書き手に確かめてください。後の文が正しければ一覧に名前を足し、一覧が正しければ後の文を直すか消します。
+    pairs:
+      - before: 対応OSはWindowsとmacOSです。（中略）Linuxにも対応しています。
+        after: 対応OSはWindowsとmacOSとLinuxです。（中略）Linuxにも対応しています。（Linux に対応しているとき）
+      - before: 本製品はiOSとAndroidに対応しています。（中略）Windows版では設定画面が違います。
+        after: 本製品はiOSとAndroidに対応しています。（中略の後の文を消す。Windows 版が無いとき）
+    keep:
+      - 一覧の名前と、それぞれの文の中身
+    avoid:
+      - 書き手に確かめずに一覧を足したり減らしたりする
+  en:
+    direction: Ask the writer whether the list or the later sentence is right. If the later sentence is right, add the name to the list; if the list is right, correct or delete the later sentence.
+    pairs:
+      - before: The app is supported on Windows and macOS. (...) It is also supported on Linux.
+        after: The app is supported on Windows, macOS and Linux. (...) It is also supported on Linux. (when Linux is supported)
+      - before: The guide is available in English and French. (...) It is also available in German.
+        after: The guide is available in English and French. (the later sentence deleted, when there is no German edition)
+    keep:
+      - the names in the list and what each sentence says
+    avoid:
+      - adding to or trimming the list without asking the writer

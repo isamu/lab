@@ -20,6 +20,7 @@ import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
 import { announcedCount } from "./announced-count.ts";
+import { outsideAnnouncedList } from "./outside-announced-list.ts";
 import { danglingFigure } from "./dangling-figure.ts";
 import { nominalization } from "./nominalization.ts";
 import { requirementSmell } from "./requirement-smell.ts";
@@ -116,6 +117,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "numbering-gap": numberingGap,
   "duplicate-definition": duplicateDefinition,
   "announced-count": announcedCount,
+  "outside-announced-list": outsideAnnouncedList,
   "dangling-figure": danglingFigure,
   nominalization: nominalization,
   "requirement-smell": requirementSmell,

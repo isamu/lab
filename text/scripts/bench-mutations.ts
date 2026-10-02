@@ -23,6 +23,7 @@ import * as phrasing from "./bench-mutations-phrasing.ts";
 import { MARKUP_MUTATIONS } from "./bench-mutations-markup.ts";
 import { MARK_MUTATIONS } from "./bench-mutations-marks.ts";
 import { FACT_MUTATIONS } from "./bench-mutations-facts.ts";
+import { LIST_MUTATIONS } from "./bench-mutations-lists.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
 import { CHARACTER_MUTATIONS } from "./bench-mutations-characters.ts";
 import { OUTLINE_MUTATIONS } from "./bench-mutations-outline.ts";
@@ -347,6 +348,7 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "rows-swapped", rule: "date-order", languages: ["ja", "en"], plant: swapDatedRows },
   { id: "item-dropped", rule: "total-mismatch", languages: ["ja", "en"], plant: dropItem },
   ...FACT_MUTATIONS,
+  ...LIST_MUTATIONS,
   { id: "reference-broken", rule: "dangling-reference", languages: ["ja", "en"], plant: breakReference },
   { id: "number-skipped", rule: "numbering-gap", languages: ["ja", "en"], plant: skipLastNumber },
   { id: "defined-twice", rule: "duplicate-definition", languages: ["ja", "en"], plant: defineTwice },

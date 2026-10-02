@@ -47,6 +47,7 @@ planted:
   no-mixed-desumasu: [ja]
   no-nakaguro-parallel: [ja]
   numbering-gap: [ja, en]
+  outside-announced-list: [ja, en]
   oxford-comma-consistency: [en]
   padded-intro: [ja, en]
   percent-sum-mismatch: [ja, en]
