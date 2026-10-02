@@ -83,6 +83,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "padded-intro",
         "redundant-expression",
         "repeated-conjunction",
+        "request-without-deadline",
         "requirement-modal",
         "requirement-smell",
         "sasete-itadaku",
