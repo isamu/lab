@@ -2077,6 +2077,47 @@
         "falseAlarms": 0
       }
     },
+    "known-misspelling": {
+      "groups": {
+        "academic": {
+          "documents": 6,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 78,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 20,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 1
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 48,
+          "fired": 0
+        }
+      },
+      "bench": {
+        "planted": 26,
+        "found": 26,
+        "falseAlarms": 0
+      }
+    },
     "kutoten-consistency": {
       "groups": {
         "academic": {
@@ -2315,6 +2356,47 @@
       "bench": {
         "planted": 11,
         "found": 11,
+        "falseAlarms": 0
+      }
+    },
+    "misconversion": {
+      "groups": {
+        "academic": {
+          "documents": 1,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 14,
+          "fired": 0
+        },
+        "business": {
+          "documents": 39,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 21,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 4,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 22,
+          "fired": 0
+        }
+      },
+      "bench": {
+        "planted": 13,
+        "found": 13,
         "falseAlarms": 0
       }
     },
@@ -4525,6 +4607,47 @@
       "bench": {
         "planted": 2,
         "found": 2,
+        "falseAlarms": 0
+      }
+    },
+    "vague-link-text": {
+      "groups": {
+        "academic": {
+          "documents": 6,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 77,
+          "fired": 1
+        },
+        "docs": {
+          "documents": 20,
+          "fired": 2
+        },
+        "legal": {
+          "documents": 28,
+          "fired": 2
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 45,
+          "fired": 2
+        }
+      },
+      "bench": {
+        "planted": 26,
+        "found": 26,
         "falseAlarms": 0
       }
     },

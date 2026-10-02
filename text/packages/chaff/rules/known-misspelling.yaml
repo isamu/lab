@@ -1,6 +1,6 @@
 id: known-misspelling
 layer: L2
-status: experimental
+status: stable
 how_to_find: known-correction
 word_list: known-misspelling
 uses: [pos]
