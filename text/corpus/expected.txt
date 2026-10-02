@@ -163,7 +163,7 @@ ndl-digital-transmission-individuals  max-kanji-continuous 1, max-sentence-lengt
 neeview-changelog-ja  doubled-word 1, heading-echo 1, heading-level-skip 39, katakana-long-vowel 10, latin-spacing 5, max-kanji-continuous 4, ngram-repetition 1, no-doubled-joshi 5, no-mixed-desumasu 7, undefined-acronym 19
 nextcloud-user-2fa  contraction-consistency 2, max-sentence-length 4
 nih-research-matters-hpv-one-dose  heading-level-skip 1, max-paragraph-length 2, max-sentence-length 7, proper-noun-density 1
-noaa-press-flood-mapping  contraction-consistency 1, max-sentence-length 12, oxford-comma-consistency 2, title-case-consistency 1, undefined-acronym 6
+noaa-press-flood-mapping  contraction-consistency 1, max-sentence-length 12, oxford-comma-consistency 1, title-case-consistency 1, undefined-acronym 6
 nodejs-tsc-minutes-2026-05-06  contraction-consistency 6, doubled-punctuation 1, empty-section 1, max-sentence-length 1, proper-noun-density 1, undefined-acronym 5
 nps-yellowstone-faqs  max-paragraph-length 1, max-sentence-length 3, unbalanced-bracket 1
 nsf-19-582-reu-solicitation  agentless-passive 154, concrete-evidence-density 3, expletive-construction 4, heading-echo 1, max-paragraph-length 10, max-sentence-length 207, ngram-repetition 1, proper-noun-density 1, spelling-consistency 1, undefined-acronym 4
