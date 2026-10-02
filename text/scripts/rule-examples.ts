@@ -11,8 +11,9 @@ import { runCli } from "../test/cli-run.ts";
 
 const BEFORE = "before.md";
 const AFTER = "after.md";
-/** The third file of a rule that compares documents: before and after are each compared with it (and with each other). */
-const OTHER = "other.md";
+/** The third file of a rule that compares documents: before and after are each compared with it (and with each other). Its name
+ * sorts first, so a message that names a file of the usual way names this one. */
+const OTHER = "a.md";
 const SARIF = "out.sarif";
 const ARGS = [BEFORE, AFTER, "--experimental", "--compact", "--sarif", SARIF];
 
