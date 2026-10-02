@@ -41,6 +41,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `--genre <ジャンル>` | この回だけジャンルを決めます。`chaff.yaml` より優先します |
 | `--show-baseline` | 棚上げした分も含めて全部見ます |
 | `--sarif <path>` | 指摘を SARIF で書き出します。GitHub の PR の行に出すためです |
+| `--include <glob>` | フォルダの中の Markdown のほかに、glob に合うファイルも検査します（`--include "*.yaml"`）。[設定](./configuration) を見てください |
 
 `tree` と `cite` は [構造と引用](./structure) で、`--sarif` は [CI](./ci) で詳しく説明します。
 
