@@ -28,6 +28,10 @@ how_to_fix:
 
 levels: { strict: 6, normal: 8, relaxed: 12 }
 
+# ビジネス文書、特にお知らせは、組織名や制度名を漢字のまま並べる。既定の上限では group の文書の過半に出たので、測って上げた（spec §21.1）。
+by_genre:
+  business: { strict: 8, normal: 10, relaxed: 14 }
+
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 sources: [shibasaki-tamaoka-2010, lee-2016]
 

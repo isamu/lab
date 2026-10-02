@@ -187,7 +187,7 @@ describe("house styles", () => {
     // 67 characters: over koyobun's 60 and under the level's 100.
     const LONG_JA = "新しい料金体系は先週の会議で営業部から提案があったもので、既存の顧客への説明を済ませたうえで来月から試験的に導入することになりました。\n";
     const LONG_EN =
-      "The new pricing that the sales team proposed at last week's meeting will be trialled from next month in two regions and then everywhere after the board has reviewed the results.\n";
+      "The new pricing that the sales team proposed at last week's meeting will be trialled from next month in two regions and then everywhere after the board has reviewed the results and the finance team has agreed on how the change is explained to existing customers.\n";
 
     it("style: koyobun reports a Japanese sentence over 60 characters, and leaves English at the level's limit", async () => {
       const ja = await runCli({ "chaff.yaml": "language: ja\nstyle: koyobun\n", "a.md": `# 報告\n\n${LONG_JA}` }, ["a.md", "--compact"]);
@@ -195,7 +195,7 @@ describe("house styles", () => {
       const plain = await runCli({ "chaff.yaml": "language: ja\n", "a.md": `# 報告\n\n${LONG_JA}` }, ["a.md", "--compact"]);
       assert.doesNotMatch(plain.out, /max-sentence-length/u);
       const en = await runCli({ "chaff.yaml": "language: en\nstyle: koyobun\n", "a.md": `# Report\n\n${LONG_EN}` }, ["a.md", "--compact"]);
-      assert.match(en.out, /limit 25\)/u);
+      assert.match(en.out, /limit 40\)/u);
     });
 
     it("style: koyobun reports です・ます mixed with である, and コンピュータ without its ー", async () => {

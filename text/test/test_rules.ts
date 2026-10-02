@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
+import { resolve } from "../packages/chaff/src/levels.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
@@ -38,11 +39,15 @@ describe("bold-density", () => {
 });
 
 describe("max-sentence-length", () => {
-  it("invalid: 100 文字を超える文", () => {
-    assert.ok(idsFor(`${"あ".repeat(120)}。`).includes("max-sentence-length"));
+  // 上限はジャンルの段で、測って動く（spec §21.1）。ここでは上限の前後だけを見る。
+  const rule = RULES.find((entry) => entry.id === "max-sentence-length");
+  if (rule === undefined) throw new Error("no max-sentence-length");
+  const limit = resolve(rule, "normal", "blog/tech").limit;
+  it("invalid: 上限を超える文", () => {
+    assert.ok(idsFor(`${"あ".repeat(limit)}。`).includes("max-sentence-length"));
   });
-  it("valid: 100 文字ちょうどは通す", () => {
-    assert.ok(!idsFor(`${"あ".repeat(99)}。`).includes("max-sentence-length"));
+  it("valid: 上限ちょうどは通す", () => {
+    assert.ok(!idsFor(`${"あ".repeat(limit - 1)}。`).includes("max-sentence-length"));
   });
   it("valid: 長いコードブロックは文ではない", () => {
     // 誤検知しやすい正常な文章。これを数えると全ての技術記事が落ちる。

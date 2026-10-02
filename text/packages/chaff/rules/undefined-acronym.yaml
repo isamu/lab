@@ -40,6 +40,10 @@ how_to_fix:
 
 levels: { strict: 1, normal: 3, relaxed: 6 }
 
+# 技術文書の読み手は、分野の略語を知っている。既定の数では group の文書の過半に出たので、測って上げた（spec §21.1）。
+by_genre:
+  technical: { strict: 3, normal: 5, relaxed: 8 }
+
 use_for: [business, technical, legal, docs, academic, literature, speech]
 sources: [plain-2011, jis-z8301-2019]
 

@@ -36,6 +36,10 @@ how_to_fix:
 # 何箇所違えば指摘するか。1 は「1 箇所でも混ざっていれば」。
 levels: { strict: 1, normal: 1, relaxed: 3 }
 
+# 技術文書は、識別子やコマンド名の前後で空け方が揺れやすい。一箇所でも指すと group の文書の過半に出たので、測って上げた（spec §21.1）。
+by_genre:
+  technical: { strict: 1, normal: 2, relaxed: 4 }
+
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
 sources: [koyobun-2022, jtf-style-guide]
 

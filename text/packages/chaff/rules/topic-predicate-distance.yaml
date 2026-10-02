@@ -24,6 +24,10 @@ how_to_fix:
 
 levels: { strict: 60, normal: 80, relaxed: 100 }
 
+# 法令と契約は、主題の後に要件と例外を挟んでから述語を置く。既定の上限では group の文書の大半に出たので、測って上げた（spec §21.1）。
+by_genre:
+  legal: { strict: 160, normal: 200, relaxed: 260 }
+
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
 group: readability

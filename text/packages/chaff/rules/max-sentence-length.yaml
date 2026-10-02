@@ -2,7 +2,7 @@ id: max-sentence-length
 layer: L1
 status: stable
 how_to_find: sentence-length
-severity: warning
+severity: info
 
 name:
   ja: 一文が長すぎる
@@ -34,28 +34,31 @@ levels:
   ja: { strict: 70, normal: 100, relaxed: 140 }
   en: { strict: 18, normal: 25, relaxed: 35 }
 
-# ジャンルで読まれかたが違う。spec §9 の初期値。
-# 社内メールの 1 文と随筆の 1 文に同じ上限を課すと、どちらかが必ず間違う。
+# ジャンルで読まれかたが違う。社内メールの 1 文と随筆の 1 文に同じ上限を課すと、どちらかが必ず間違う。
+# 技術文書・ブログ・ビジネス文書・説明書の normal は、人の書いた文書で測って置いた（spec §21.1、yarn rules:measure）。
+# 既定の上限では group の文書の大半に出て、group ごと止まっていた。いまは過半を十分下回るが、info で出る線は超える。
 by_genre:
+  technical:
+    ja: { strict: 100, normal: 140, relaxed: 180 }
+    en: { strict: 30, normal: 40, relaxed: 50 }
+  blog:
+    ja: { strict: 120, normal: 160, relaxed: 200 }
+    en: { strict: 30, normal: 40, relaxed: 50 }
+  blog/essay:
+    ja: { strict: 140, normal: 180, relaxed: 220 }
+    en: { strict: 35, normal: 45, relaxed: 55 }
+  business:
+    ja: { strict: 100, normal: 140, relaxed: 180 }
+    en: { strict: 35, normal: 45, relaxed: 55 }
+  # メールは短く書く。spec §9 の初期値のまま、他のビジネス文書より上限を低く置く。
   business/email:
     ja: { strict: 50, normal: 70, relaxed: 100 }
     en: { strict: 12, normal: 18, relaxed: 25 }
-  business/meeting-notes:
-    ja: { strict: 60, normal: 80, relaxed: 110 }
-    en: { strict: 14, normal: 20, relaxed: 28 }
-  business/proposal:
-    ja: { strict: 65, normal: 90, relaxed: 125 }
-    en: { strict: 16, normal: 22, relaxed: 30 }
-  business/press-release:
-    ja: { strict: 65, normal: 90, relaxed: 125 }
-    en: { strict: 16, normal: 22, relaxed: 30 }
-  blog/essay:
+  docs:
     ja: { strict: 100, normal: 140, relaxed: 180 }
-    en: { strict: 25, normal: 35, relaxed: 45 }
-  blog/owned-media:
-    ja: { strict: 65, normal: 90, relaxed: 125 }
-    en: { strict: 16, normal: 22, relaxed: 30 }
+    en: { strict: 30, normal: 40, relaxed: 50 }
   # 法令・契約・判決・論文は、長い一文がその種類の書き方。corpus のその種類の文書で、normal が最も長い一握りの文だけを指すように測って置いた。
+  # 法務は、この上限でも文書の過半に出るので既定では動かない（genres.yaml）。
   legal:
     ja: { strict: 120, normal: 200, relaxed: 300 }
     en: { strict: 40, normal: 60, relaxed: 80 }
@@ -65,9 +68,9 @@ by_genre:
   legal/judgment:
     ja: { strict: 250, normal: 350, relaxed: 450 }
   # 英語の定義は、限定を重ねた名詞句の一文になる。英語の用語集で測り、normal が列挙を詰めた定義や長い注記だけを指すように置いた。
-  # 日本語は既定の上限のままで、すでに最も長い一握りだけを指していた。
+  # 日本語は説明書の上限のまま。
   docs/glossary:
-    en: { strict: 30, normal: 40, relaxed: 50 }
+    en: { strict: 40, normal: 50, relaxed: 60 }
   academic:
     ja: { strict: 100, normal: 140, relaxed: 180 }
     en: { strict: 35, normal: 50, relaxed: 65 }
@@ -82,9 +85,9 @@ summary:
 example:
   ja:
     before: |
-      新しい料金体系は先週の会議で営業部から提案があったもので来月から試験的に導入することになりましたが、既存の顧客への説明のしかたと請求システムを直す時期がまだ決まっていないため、担当者を決めたうえで今週中に進め方を相談したいと考えています。
+      新しい料金体系は先週の会議で営業部から提案があったもので来月から試験的に導入することになりましたが、既存の顧客への説明のしかたと請求システムを直す時期がまだ決まっておらず、社内の手引きを書き直す人もまだ決まっていないため、担当者を決めたうえで今週中に進め方を相談したいと考えています。
     after: |
-      新しい料金体系を、来月から試験的に導入します。既存の顧客への説明のしかたと、請求システムを直す時期はまだ決まっていません。今週中に担当者を決め、進め方を相談します。
+      新しい料金体系を、来月から試験的に導入します。既存の顧客への説明のしかたと、請求システムを直す時期はまだ決まっていません。社内の手引きを書き直す人も未定です。今週中に担当者を決め、進め方を相談します。
   en:
     before: |
       The new pricing, which the sales team proposed at last week's meeting, will be trialled from next month, but because we have not yet decided how to explain it to existing customers or when to change the billing system, we would like to agree on a plan this week.

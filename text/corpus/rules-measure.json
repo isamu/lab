@@ -628,7 +628,7 @@
         },
         "legal": {
           "documents": 21,
-          "fired": 12
+          "fired": 7
         },
         "literature": {
           "documents": 4,
@@ -2109,7 +2109,7 @@
         },
         "technical": {
           "documents": 22,
-          "fired": 12
+          "fired": 10
         }
       },
       "bench": {
@@ -2166,7 +2166,7 @@
         },
         "business": {
           "documents": 39,
-          "fired": 21
+          "fired": 15
         },
         "docs": {
           "documents": 10,
@@ -2190,8 +2190,8 @@
         }
       },
       "bench": {
-        "planted": 5,
-        "found": 5,
+        "planted": 2,
+        "found": 2,
         "falseAlarms": 0
       }
     },
@@ -2244,15 +2244,15 @@
         },
         "blog": {
           "documents": 23,
-          "fired": 16
+          "fired": 10
         },
         "business": {
           "documents": 78,
-          "fired": 69
+          "fired": 33
         },
         "docs": {
           "documents": 20,
-          "fired": 14
+          "fired": 6
         },
         "legal": {
           "documents": 35,
@@ -2268,12 +2268,12 @@
         },
         "technical": {
           "documents": 48,
-          "fired": 33
+          "fired": 16
         }
       },
       "bench": {
-        "planted": 11,
-        "found": 11,
+        "planted": 7,
+        "found": 7,
         "falseAlarms": 0
       }
     },
@@ -4029,7 +4029,7 @@
         },
         "legal": {
           "documents": 21,
-          "fired": 18
+          "fired": 8
         },
         "literature": {
           "documents": 4,
@@ -4155,7 +4155,7 @@
         },
         "technical": {
           "documents": 48,
-          "fired": 25
+          "fired": 13
         }
       },
       "bench": {

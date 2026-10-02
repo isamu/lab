@@ -15,7 +15,7 @@ before(async () => {
 const RULES = loadRules("en");
 
 const reportedIn = (path: string, source: string): string[] =>
-  runRules(buildDocument(path, source, en), RULES, { "undefined-acronym": "strict" }, true, "technical/spec")
+  runRules(buildDocument(path, source, en), RULES, { "undefined-acronym": "strict" }, true, "technical/spec", { "undefined-acronym": 1 })
     .findings.filter((finding) => finding.rule === "undefined-acronym")
     .map((finding) => String(finding.values["word"]));
 

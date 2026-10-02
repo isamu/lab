@@ -10,13 +10,21 @@ import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
 const RULES = loadRules("ja");
 
+/** max-kanji-continuous at the rule's own normal: business raises it by genre, and these read the detector, not the genre. */
+const KANJI_AT_NORMAL = { "max-kanji-continuous": RULES.find((rule) => rule.id === "max-kanji-continuous")?.levels.normal ?? 0 };
+
 const idsFor = (source: string, profile?: DocumentProfile): string[] =>
-  runRules(buildDocument("t.md", source, ja, undefined, profile), RULES, measuredOffOn("business/report"), true, "business/report").findings.map(
-    (finding) => finding.rule,
-  );
+  runRules(
+    buildDocument("t.md", source, ja, undefined, profile),
+    RULES,
+    measuredOffOn("business/report"),
+    true,
+    "business/report",
+    KANJI_AT_NORMAL,
+  ).findings.map((finding) => finding.rule);
 
 const kanjiWords = (source: string): string[] =>
-  runRules(buildDocument("t.md", source, ja), RULES, measuredOffOn("business/report"), true, "business/report")
+  runRules(buildDocument("t.md", source, ja), RULES, measuredOffOn("business/report"), true, "business/report", KANJI_AT_NORMAL)
     .findings.filter((finding) => finding.rule === "max-kanji-continuous")
     .map((finding) => String(finding.values?.["word"]));
 

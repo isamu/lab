@@ -330,7 +330,7 @@ describe("latin-spacing with parts of speech", () => {
     await ja.prepare?.({ pos: true });
   });
 
-  const spacing = (source: string): string[] => latinSpacing(ja, source, "technical/readme");
+  const spacing = (source: string): string[] => latinSpacing(ja, source, "business/report");
 
   it("does not count a section number quoted before its title", () => {
     assert.deepEqual(spacing("# 意見\n\n- 「1.2 背景と課題」を読み、3回確認した。\n- 「2.4 同意の要件」は5件直す。\n- 以下3点を直す。\n"), []);
