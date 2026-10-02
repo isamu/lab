@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  redundant-ja  found
+ja/design  redundant-ja  found
+ja/email  redundant-ja  found
+ja/figures  redundant-ja  found
+ja/itinerary  redundant-ja  found
+ja/minutes  redundant-ja  found
+ja/note  redundant-ja  found
+ja/policy  redundant-ja  found
+ja/press  redundant-ja  found
+ja/proposal  redundant-ja  found
+ja/quote  redundant-ja  found
+ja/readme  redundant-ja  found
+ja/requirements  redundant-ja  found
+en/blog  redundant-en  found
+en/design  redundant-en  found
+en/email  redundant-en  found
+en/figures  redundant-en  found
+en/itinerary  redundant-en  found
+en/minutes  redundant-en  found
+en/note  redundant-en  found
+en/policy  redundant-en  found
+en/press  redundant-en  found
+en/proposal  redundant-en  found
+en/quote  redundant-en  found
+en/readme  redundant-en  found
+en/requirements  redundant-en  found
