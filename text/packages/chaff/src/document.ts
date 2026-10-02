@@ -11,13 +11,14 @@ import { speakerLabels } from "./speaker-labels.ts";
 import type { Outline } from "./structure/build.ts";
 import { lazyTree } from "./structure/lazy-tree.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
+import { readingOf } from "./document-reading.ts";
 import { layoutMasks, textOutline } from "./page-furniture.ts";
 import { tokenizedLexicons } from "./lexicon-tokens.ts";
 import { plainSource } from "./plain-source.ts";
 import { inPageAnchors, isInPageNavigation, isNavigationList, type InPageAnchors } from "./in-page-nav.ts";
 import { eachPreOrder } from "./tree-walk.ts";
 import { alertReader } from "./template-syntax.ts";
-import { opaqueSpans, parse, readMarkdown, spansOfType } from "./markdown-read.ts";
+import { opaqueSpans, readMarkdown, spansOfType } from "./markdown-read.ts";
 import { spanOf, type MarkdownNode as Node } from "./markdown-node.ts";
 import { emailParts, emailVocabulary } from "./email-parts.ts";
 import { cutTextSpans } from "./span-cut.ts";
@@ -324,13 +325,13 @@ const teamLexicons = (adapter: LanguageAdapter, team: TeamRules): LanguageAdapte
 
 const documentOf = (path: string, source: string, adapter: LanguageAdapter, team: TeamRules, profile: DocumentProfile | undefined): ProseDocument => {
   const markdown = isMarkdownPath(path);
-  const { root, syntax } = markdown ? readMarkdown(source) : { root: parse(source), syntax: [] };
+  const { root, syntax, text, extra } = readingOf(path, source);
   const anchors = inPageAnchors(root);
-  const emailLayout = emailParts(source, emailVocabulary(adapter.lexicons));
+  const emailLayout = emailParts(text, emailVocabulary(adapter.lexicons));
   // 強調の記号は「本文でないもの」だが、太字の数を数えるときの「覆われた場所」ではない。
   // 同じ集合にすると、太字が自分の記号のせいで覆われた場所にあることになり、1 つも数えられなくなる。
   // ページのヘッダーとフッター（テキストの文書）と、線で描いた図も本文ではない。
-  const blocks = [...collectMasks(root, source, anchors, syntax), ...layoutMasks(root, source, markdown), ...emailLayout.furniture];
+  const blocks = [...collectMasks(root, source, anchors, syntax), ...layoutMasks(root, text, markdown), ...emailLayout.furniture, ...extra];
   const prose = proseOf(source, [...blocks, ...emphasisSpans(root, source)]);
   // ページの案内は段落としても数えない。数えると、目次の行が「本題までの段落」に入る。メールのヘッダーや署名の行は段落から切り取る。
   const paragraphSpans = cutTextSpans(
@@ -347,10 +348,10 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
   const tagged = sentences.some((sentence) => sentence.tokens !== undefined);
   const structure = lazyTree(adapter.structure, () => ({
     path,
-    source,
+    source: text,
     language: adapter.id,
     // テキストの文書は、ページの飾りを覆って読む。フッターの「Section 9」を木の節にしない。
-    outline: markdown ? outlineOf(root, source, syntax, emailLayout.replyQuotes) : textOutline(source, emailLayout.replyQuotes),
+    outline: markdown ? outlineOf(root, source, syntax, emailLayout.replyQuotes) : textOutline(text, emailLayout.replyQuotes),
     markdown,
     profile,
   }));
