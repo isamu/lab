@@ -1,0 +1,40 @@
+# Capitalised words that a year follows without being an author: "(March 2020)", "Spring (2021)". An author-year
+# citation whose first author is one of these is not read as a citation.
+id: citation-not-author
+language: en
+entries:
+  - pattern: January
+  - pattern: February
+  - pattern: March
+  - pattern: April
+  - pattern: May
+  - pattern: June
+  - pattern: July
+  - pattern: August
+  - pattern: September
+  - pattern: October
+  - pattern: November
+  - pattern: December
+  - pattern: Jan
+  - pattern: Feb
+  - pattern: Mar
+  - pattern: Apr
+  - pattern: Jun
+  - pattern: Jul
+  - pattern: Aug
+  - pattern: Sep
+  - pattern: Sept
+  - pattern: Oct
+  - pattern: Nov
+  - pattern: Dec
+  - pattern: Spring
+  - pattern: Summer
+  - pattern: Fall
+  - pattern: Autumn
+  - pattern: Winter
+  - pattern: Since
+  - pattern: In
+  - pattern: From
+  - pattern: Until
+  - pattern: Version
+  - pattern: Copyright
