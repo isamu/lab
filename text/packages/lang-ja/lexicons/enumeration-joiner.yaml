@@ -1,0 +1,15 @@
+# 一つの一覧の名前をつなぐ語と記号（Windows と macOS、Windows・macOS・Linux）。一つの語ずつ。
+id: enumeration-joiner
+language: ja
+entries:
+  - pattern: と
+  - pattern: 、
+  - pattern: ，
+  - pattern: ・
+  - pattern: や
+  - pattern: 及び
+  - pattern: および
+  - pattern: 又は
+  - pattern: または
+  - pattern: ／
+  - pattern: /

@@ -51,6 +51,7 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
+| `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") (Japanese documents only) |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
@@ -61,6 +62,11 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.
+
+The Japanese word list of `ai-tell` includes the metaphors of technical writing (静かに壊れる "fails silently",
+黙って無視される "is ignored without a word", 時間を溶かす "melts your time"). Which phrases go in was measured on
+technical articles written before generative AI and on the corpus; phrases people already wrote as often before
+(解像度を上げる, 腹落ち) are left out.
 
 ## Three ways to fix it
 
@@ -147,17 +153,31 @@ Leave the old sentences alone. Take an inventory of what the document says, and 
 | Register | Match the writer's other paragraphs and the platform (a blog, a company report, an email) |
 | What not to add | No fact, person, number, cause or consequence the inventory does not have |
 
+   Three principles hold while you write.
+
+| Principle | Before | After |
+| --- | --- | --- |
+| Undo personification | A culture of code review was fostered across the team. | People on the team started reviewing each other's code. |
+| Turn noun chains back into verbs | Occurrence of message processing delays due to queue backlog. | Messages piled up in the queue, so processing slowed down. |
+| Never invent specifics | The team's mood improved. | The sentence stays, and the writer is asked: "When did you notice the mood improve?" |
+
+   - Undo personification. Watch for a thing or an idea as the subject of a verb of will: "order breaks down", "a culture is fostered", "the architecture demands". Write it as what a person or the system does. If the original does not say who, ask the writer.
+   - Turn noun endings and noun chains back into sentences with a verb. A string of nouns hides who did what, and when.
+   - Never invent specifics. A vague sentence may read better with a concrete example. If the writer did not give one, ask for it, or mark your guess for the writer to confirm. Never write it as fact.
+     `chaff compare` catches an added number or name. It does not catch added wording: "people started joking at the morning stand-up" adds no number and no name, and `compare` says nothing. Keeping this rule is up to the rewriter.
+
 5. Check the result.
 
 ```bash
 npx chaffjs old.md --experimental                          # the AI signals before
 npx chaffjs new.md --experimental                          # and after
 npx chaffjs outline old.md new.md                          # headings, average section, lists and bold, before and after
-npx chaffjs compare old.md new.md --allow-dropped heading --allow-added heading  # no fact other than a heading dropped or added
+npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-added heading  # no fact other than a heading dropped or added
 ```
 
    The headings are the structure you rebuilt on purpose, so `--allow-dropped heading --allow-added heading` excludes them. Restore any other dropped fact and remove any added one.
-   A fact the old text only repeated (a number in the summary you cut) may stay out, with the reason written down.
+   A summary you cut restated facts the body still holds. `--distinct` counts a fact as kept when the new text states it at least once, so those repeats do not read as dropped.
+
 6. Stop when all of these hold. Two full passes at most.
    - `ai-generated-composite` does not fire.
    - The density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits.
@@ -540,10 +560,8 @@ $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 
 rewritten.md   blog/tech · English   genre from --genre
 
-  3:27    info    44 proper nouns per 1000 words (limit 40)
-                  proper-noun-density
 
-1 finding, 13 rules not run
+0 findings, 16 rules not run
 ```
 
 What changed, and why:
@@ -560,7 +578,7 @@ What changed, and why:
 | Dropped "I hope this helps! Let me know…" | Chat residue |
 
 Every number (once every 30 runs, three weeks, 12 minutes, two weeks), command and setting is kept.
-The `proper-noun-density` left after the rewrite counts the API and setting names, which a tech article needs.
+The API and setting names left after the rewrite, which a tech article needs, are well within `proper-noun-density`'s limit.
 
 Last, `chaff compare` checks that no fact was lost:
 

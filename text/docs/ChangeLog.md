@@ -4,6 +4,75 @@ Newest first.
 
 ## Unreleased
 
+### `proper-noun-density` sets its English limit from human documents (#170)
+
+- English counts per 1000 words, and the limit was the Japanese one (per 1000 characters), so the rule fired on most
+  English documents in the corpus. Measured over every English corpus document and a sample of Project Gutenberg
+  novels and essays, `normal` now sits at about the 95th percentile of those human documents, `strict` near the 85th
+  and `relaxed` near the top. Japanese is unchanged. The measurement is in the PR.
+- The generated samples of `yarn bench:ai` name fewer things than their human versions, so the rule never told them
+  apart; it is a readability check, not an AI-shape one.
+
+### `oxford-comma-consistency` reads "City, State," as one name (#170)
+
+- The comma between a place and its US state or country ("New London, Wisconsin, and a photo of …", "Lyon, France,")
+  is part of the name, not a list's comma. A NOAA release in the corpus was counted as writing an Oxford comma there.
+- The names are an English word list, `place-region` (the states, D.C., some territories, the countries and the
+  Canadian provinces). The comma counts as a name's only after a proper noun that is not itself on the list, and when
+  the name ends at punctuation: "Texas, Florida, and Ohio" and "Austin, Texas, Boston, Massachusetts, and Denver,
+  Colorado" are still lists. A name written only after a place (Washington, D.C.) is marked `position: after`.
+
+### `katakana-long-vowel` under styles: counts as JIS Z 8301 does, drops only -er/-or/-ar, leaves homographs (#170)
+
+- **Morae are counted before the final ー**, as JIS Z 8301:2011 Table G.3 counts: its own examples keep カバー (two
+  sounds) and シャワー (a 拗音 is not a sound of its own). chaff counted the ー too, so `style: ieice` and
+  `style: jis-z8301-2011` dropped the ー of カバー, エラー, カラー, レビュー and メニュー. `min_morae` now means the
+  morae before the ー; its default goes from 3 to 2, which checks the same words as before. A `chaff.yaml` that set
+  `min_morae` itself now reaches one mora further.
+- **drop reaches only a ー after a kana of the ア row**: JIS Z 8301:2011 G.6.2.2 and its note on 学術用語 speak of the
+  English endings -er, -or, -ar (ア列の長音). Words ending in ュー, エー or イー (メニュー, グレー, コピー, エネルギー)
+  are left alone. The kana are a lang-ja word list, `long-vowel-drop-after`; without it drop reaches every ー.
+- **keep leaves homographs**: タブ (tab) is not a dropped タブー (taboo), nor ベタ a dropped ベター. The
+  `long-vowel-distinct` list gains the pairs the corpus showed under `style: bunkacho` (タブ, ベタ, エコ, ヘビ, ドラマ,
+  カフェ, キャリア) and カバ; the dictionary lists both forms as separate words and cannot tell a variant from another
+  word.
+
+### Bibliography: more works on what generated text looks like
+
+- The bibliography adds Juzek and Ward (COLING 2025) on why ChatGPT overuses some words, Sun et al. (ICML 2025) on
+  the habits that tell models apart, Shaib et al. (2025) on measuring low-quality generated text, the editors' guide
+  "Signs of AI writing" on the English Wikipedia, and two Japanese articles on AI-sounding writing (Zenn, Writers-hub).
+  `ai-tell` now cites Juzek and Ward. The entries name the rules they back: `bold-label-list`, `emoji-heading`,
+  `chat-citation-residue` and `colon-lead-in`.
+
+### New rule: `bold-label-list`, list items led by a bold label (experimental, Japanese)
+
+- Points at a document where many list items open with a bold label and a colon (「- **速さ**：一覧が速く出ます」), the
+  shape that turns an explanation into a row of equal-weight captions. It counts items, not a density, and reports once
+  the count reaches the level. A label that is only code, linked or not (a list of options), is not counted. Blogs,
+  business documents and speech only, and not meeting notes, whose header of labelled fields is their form. In Qiita articles from 2016–2021 the shape is rare; in articles from 2025–2026 it is common. English
+  writers use it as a matter of course (handbooks, minutes, policies), so English documents are not checked.
+
+### `style: jis-z8301-2019` turns on `vague-figure-reference`, which now reads clause pointers too
+
+- JIS Z 8301:2019 10.6 rules out 「上記の図」 and 「以下の箇条」 alike, so the style turns the rule on.
+- The rule now also points at 以下の箇条, 上記の箇条, 後述の箇条 and the like, and at `the clause below` / `the above clause`.
+  It does so where the document numbers its clauses. In `chaff tree`, that is a numbered chapter or an article numbered
+  at the top level (「1 適用範囲」, 第1条, "2 Payment"). A numbered list, or only dotted numbers such as a changelog's
+  `## 0.18.0`, is no numbered clause. The phrases are the new lexicon
+  `vague-clause-pointer` in each language. No corpus document writes one, so the corpus findings do not move.
+
+### Full rewrite: three principles, and `compare --distinct` in the check
+
+The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human":
+
+- The Full mode's check runs `chaff compare <old> <new> --distinct --allow-dropped heading --allow-added heading`. A cut
+  まとめ restates facts the body still holds; `--distinct` counts a fact as kept when the new text states it once.
+- Three principles for writing, each with a before and after: undo personification (文化が醸成される becomes what
+  people do), turn noun endings and noun chains back into sentences with a verb (「〜の発生。」), and never invent
+  specifics: ask the writer, or mark the guess for them to confirm. `chaff compare` catches an added number or name but
+  not added wording, so the last is the rewriter's to keep.
+
 ### `chaff fix-plan`: a plan for whoever rewrites the file
 
 - `npx chaffjs fix-plan <file> [--experimental] [--genre X] [--json]` prints an instruction document for a person or an
