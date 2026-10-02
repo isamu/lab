@@ -165,6 +165,27 @@ $ npx chaffjs explain max-sentence-length
 同じ `normal` でも、ジャンルによって数字が違います。
 数字ではなく言葉で書くのは、ジャンルに合った数字を chaff に選ばせるためです。
 
+## 試験中のルールを 1 つだけ動かす
+
+試験中のルールは、既定では動きません。
+`rules` に名前を書くと、そのルールだけが動きます。
+`--experimental` は、試験中のルールをすべて一度に動かします。
+
+```yaml
+rules:
+  announced-count-mismatch: normal
+```
+
+`enable` は、`relax` と同じように、ルールの説明のコメントを付けてこの行を書きます。
+
+```
+$ npx chaffjs enable announced-count-mismatch
+announced-count-mismatch を normal にしました（…/chaff.yaml）
+```
+
+検査は、動かしたルールを一度だけ言います（`試験中の rule を 1 件、設定により有効にしています: announced-count-mismatch`）。
+止まっている試験中のルールの `explain` と、動いていないルールの一覧にも、同じコマンドが出ます。
+
 ## 数えるもののないルール
 
 番号の抜けや、日付と曜日の食い違いは、あるか無いかだけです。数える上限がありません。
@@ -300,6 +321,28 @@ by_path:
 後に書いたものが勝ちます。照合は設定ファイルのある場所からの相対です。
 どこで実行しても、結果が変わりません。
 
+## Markdown 以外のファイルも見る
+
+フォルダを渡すと、chaff はその中の Markdown（`.md` `.markdown` `.mdx`）を検査します。
+`include` に書いたファイル名の glob に合うファイルも、あわせて検査します。`--include` を付けると、その実行だけ同じことをします。
+
+```yaml
+include:
+  - "*.yaml"
+  - "*.txt"
+```
+
+```bash
+npx chaffjs tests/fixtures/ --include "*.yaml"
+```
+
+YAML（`.yaml` `.yml`）は、文字列の値だけを読みます。
+キー、引用符、コメント、数や `true` は文章ではありません。値は 1 つずつ別に読みます。
+指摘はファイルの行と桁を指すので、`custom_rules` の pattern でテストの期待値に残った `TODO:` も見つけられます。
+YAML として読めないファイルは、ただのテキストとして読みます。
+`.txt` のようなほかのファイルも、ただのテキストとして読みます。
+コマンドラインで名前を挙げたファイルは、拡張子にかかわらず検査します。
+
 ## 設定が効いているか確かめる
 
 いまの設定は、`chaff rules --json` で確かめます。
@@ -367,13 +410,13 @@ npx chaffjs rules --json         いまの設定を JSON で出す
 `now` が、いま実際に効いている値です。
 `level_sets` は、段階が何を変えるかです。`limit` は数える上限、`severity` は指摘の重さです。
 数えるもののないルールでは、`levels` と `now` に数の代わりに重さ（`error` / `warning` / `info`）が出ます。
-試験中のルールなら、`now` に動いていない理由と動かしかたが出ます。
+試験中のルールなら、`now` に動いていない理由と、そのルールだけを動かすコマンドが出ます。`doubled-word` なら次のとおりです。
 
 ```json
   "now": {
     "level": "off",
     "why_off": "experimental な rule は既定で動かさない",
-    "turn_on_with": "npx chaff lint --experimental"
+    "turn_on_with": "npx chaffjs enable doubled-word"
   }
 ```
 

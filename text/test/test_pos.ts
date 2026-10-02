@@ -76,11 +76,14 @@ describe("解析器を読むまで tokens は無い", () => {
         "fact-conflict",
         "heading-echo",
         "hiragana-fukushi",
+        "known-misspelling",
         "latin-spacing",
         "max-kanji-continuous",
+        "misconversion",
         "ngram-repetition",
         "number-style-consistency",
         "padded-intro",
+        "redundant-expression",
         "repeated-conjunction",
         "requirement-modal",
         "requirement-smell",
@@ -90,6 +93,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "undefined-acronym",
         "unit-mismatch",
         "unqualified-superlative",
+        "vague-word-density",
       ],
     );
   });
