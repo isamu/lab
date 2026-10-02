@@ -60,3 +60,30 @@ not_flagged:
 level_meaning:
   ja: 1000 字あたり太字 {limit} 箇所まで
   en: up to {limit} bold spans per 1000 characters
+rewrite:
+  ja:
+    direction: 太字をいったん全部外し、見落とすと困る所（期限、禁止、金額）を 1〜2 か所だけ太字に戻してください。
+    pairs:
+      - before: "**申請**は**金曜日**までに**必ず**行ってください。"
+        after: 申請は**金曜日まで**に行ってください。
+      - before: "この設定は**とても重要**で、**本番環境**にも**影響します**。"
+        after: この設定は本番環境にも影響します。
+    keep:
+      - 文の中身
+      - 見落とすと困る一か所の強調
+    avoid:
+      - 太字の代わりに「」や記号、絵文字で強める
+      - 太字を外したぶん、強める語を足す
+  en:
+    direction: Unbold everything, then bold again only the one or two spots a reader must not miss (a deadline, a prohibition, an amount).
+    pairs:
+      - before: "Submit the **form** by **Friday** without **fail**."
+        after: Submit the form by **Friday**.
+      - before: "This setting is **very important** and **affects production**."
+        after: This setting affects production.
+    keep:
+      - what the sentences say
+      - one emphasis on what must not be missed
+    avoid:
+      - emphasising with quotes, capitals or emoji instead
+      - adding intensifiers to make up for the removed bold
