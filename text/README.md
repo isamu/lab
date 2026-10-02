@@ -577,7 +577,7 @@ npx chaffjs tree contract.txt --format json    JSON で出す
 npx chaffjs tree contract.txt --language en    言語を決めて読む（推定や chaff.yaml より優先）
 ```
 
-第3条第2項は `3.2`、Section 4.2(a) は `4.2.a` という番地になります。試験中の構造の rule が、存在しない条への参照（`dangling-reference`）、番号の抜け（`numbering-gap`）、同じ語の二重の定義（`duplicate-definition`）を見ます。
+第3条第2項は `3.2`、Section 4.2(a) は `4.2.a` という番地になります。試験中の構造の rule が、存在しない条への参照（`dangling-reference`）、番号の抜け（`numbering-gap`）、同じ語の二重の定義（`duplicate-definition`）、定義したのに使っていない語（`unused-definition`）、括弧で定義した語の定義より前での使用（`use-before-definition`）を見ます。同じ略語の二通りの展開（`acronym-expansion-conflict`）は木を使わずに見ます。
 
 ```bash
 npx chaffjs cite contract.txt quotes.json
