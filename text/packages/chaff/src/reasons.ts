@@ -45,7 +45,7 @@ export const REASONS: Texts<Reasons> = {
     noHeadings: "表題より下の見出しが無いため",
     patternTimeout: (budgetMs) => `正規表現が ${String(budgetMs)} ms で終わらなかったため（chaff.yaml の pattern を単純にしてください）`,
     notMarkdown: "Markdown の文書ではないため",
-    oneDocument: "文書どうしを比べる rule で、比べる文書が一つのため（二つ以上のファイルかフォルダを渡すと動きます）",
+    oneDocument: "比べるほかの文書が無いため（ファイルを二つ以上かフォルダを渡すと動きます）",
   },
   en: {
     otherLanguage: (language) => `not a rule for ${language}`,
