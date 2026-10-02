@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  absolute-exception-ja  found
+ja/design  absolute-exception-ja  found
+ja/email  absolute-exception-ja  found
+ja/figures  absolute-exception-ja  found
+ja/itinerary  absolute-exception-ja  found
+ja/minutes  absolute-exception-ja  found
+ja/note  absolute-exception-ja  found
+ja/policy  absolute-exception-ja  found
+ja/press  absolute-exception-ja  found
+ja/proposal  absolute-exception-ja  found
+ja/quote  absolute-exception-ja  found
+ja/readme  absolute-exception-ja  found
+ja/requirements  absolute-exception-ja  found
+en/blog  absolute-exception-en  found
+en/design  absolute-exception-en  found
+en/email  absolute-exception-en  found
+en/figures  absolute-exception-en  found
+en/itinerary  absolute-exception-en  found
+en/minutes  absolute-exception-en  found
+en/note  absolute-exception-en  found
+en/policy  absolute-exception-en  found
+en/press  absolute-exception-en  found
+en/proposal  absolute-exception-en  found
+en/quote  absolute-exception-en  found
+en/readme  absolute-exception-en  found
+en/requirements  absolute-exception-en  found
