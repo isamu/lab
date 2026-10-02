@@ -12,6 +12,26 @@ Newest first.
   business documents and speech only, and not meeting notes, whose header of labelled fields is their form. In Qiita articles from 2016–2021 the shape is rare; in articles from 2025–2026 it is common. English
   writers use it as a matter of course (handbooks, minutes, policies), so English documents are not checked.
 
+### `style: jis-z8301-2019` turns on `vague-figure-reference`, which now reads clause pointers too
+
+- JIS Z 8301:2019 10.6 rules out 「上記の図」 and 「以下の箇条」 alike, so the style turns the rule on.
+- The rule now also points at 以下の箇条, 上記の箇条, 後述の箇条 and the like, and at `the clause below` / `the above clause`.
+  It does so where the document numbers its clauses. In `chaff tree`, that is a numbered chapter or an article numbered
+  at the top level (「1 適用範囲」, 第1条, "2 Payment"). A numbered list, or only dotted numbers such as a changelog's
+  `## 0.18.0`, is no numbered clause. The phrases are the new lexicon
+  `vague-clause-pointer` in each language. No corpus document writes one, so the corpus findings do not move.
+
+### Full rewrite: three principles, and `compare --distinct` in the check
+
+The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human":
+
+- The Full mode's check runs `chaff compare <old> <new> --distinct --allow-dropped heading --allow-added heading`. A cut
+  まとめ restates facts the body still holds; `--distinct` counts a fact as kept when the new text states it once.
+- Three principles for writing, each with a before and after: undo personification (文化が醸成される becomes what
+  people do), turn noun endings and noun chains back into sentences with a verb (「〜の発生。」), and never invent
+  specifics: ask the writer, or mark the guess for them to confirm. `chaff compare` catches an added number or name but
+  not added wording, so the last is the rewriter's to keep.
+
 ### `chaff fix-plan`: a plan for whoever rewrites the file
 
 - `npx chaffjs fix-plan <file> [--experimental] [--genre X] [--json]` prints an instruction document for a person or an
