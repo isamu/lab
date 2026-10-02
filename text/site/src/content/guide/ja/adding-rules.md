@@ -79,7 +79,7 @@ $ npx chaffjs sample.md --compact
 
 sample.md   technical/spec · 日本語   ジャンルはchaff.yamlから
 
-  3:1     warning この文は 84 文字あります（80 文字まで）
+  3:1     info    この文は 84 文字あります（80 文字まで）
                   max-sentence-length
   5:31    warning この文だけ他と文末の調子が違います（本文の中で 1 文）
                   no-mixed-desumasu

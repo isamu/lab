@@ -82,7 +82,7 @@ $ npx chaffjs tree contract.txt
 | `numbering-gap` | 番号の抜けや重なり（第3条の次が第5条、第2項が二つ） |
 | `duplicate-definition` | 同じ語を二度定義している所 |
 
-どれも試験中なので、`--experimental` を付けるか、`chaff.yaml` で動かします。
+どれも、設定を書かなくても動きます。
 次の例は、条をいくつか消したあとの短い契約書 `contract.txt` にかけたものです。
 
 ```
@@ -100,7 +100,7 @@ $ npx chaffjs tree contract.txt
 ```
 
 ```
-$ npx chaffjs contract.txt --experimental --compact
+$ npx chaffjs contract.txt --compact
 
 contract.txt   blog/tech · 日本語   ジャンルは既定から
    契約書・規約のようです。--genre legal/contract を試せます
@@ -114,12 +114,11 @@ contract.txt   blog/tech · 日本語   ジャンルは既定から
   11:6    error   「第9条」（番地 9）はこの文書にありません
                   dangling-reference
 
-指摘 4 件、動いていない rule 16 件
+指摘 4 件、動いていない rule 28 件
 ```
 
 1 行目の下の行は、契約書として見ることを勧めています。
-`legal/contract` は、この 3 つのルールを動かします。
-`npx chaffjs contract.txt --genre legal/contract` なら、`--experimental` を付けなくても同じ 4 件が出ます。
+`npx chaffjs contract.txt --genre legal/contract` でも、同じ 4 件が出ます。
 
 「民法第709条」「前契約の第9条」のように他の文書を指す参照は、探しません。「本契約の第9条」「この契約の第9条」はこの文書の条として探します。
 番号を比べるのは、同じ親の中で並ぶもの同士だけです。
@@ -153,56 +152,49 @@ contract.txt   blog/tech · 日本語   ジャンルは既定から
 
 ```
 
-構造のルールは試験中なので、`--experimental` を付けてかけます。
+何も付けずにかけます。
 
 ```
-$ npx chaffjs draft.txt --experimental --compact
+$ npx chaffjs draft.txt --compact
 
 draft.txt   blog/tech · 日本語   ジャンルは既定から
    法令・規程のようです。--genre legal/statute を試せます
 
-  6:39    warning この文は 125 文字あります（100 文字まで）
-                  max-sentence-length
   6:82    error   「第三号」（番地 21.1.3）はこの文書にありません
                   dangling-reference
   9:1     error   「二」の次が「四」です（3 番目のはず）
                   numbering-gap
-  11:1    warning この文は 131 文字あります（100 文字まで）
-                  max-sentence-length
   13:7    error   「第二十三条第一項」（番地 23.1）はこの文書にありません
                   dangling-reference
-  15:2    warning この文は 101 文字あります（100 文字まで）
-                  max-sentence-length
+  15:2    info    「は」で出した主題から述語まで 94 字あります（80 字まで）
+                  topic-predicate-distance
 
-指摘 6 件、動いていない rule 16 件
+指摘 4 件、動いていない rule 28 件
 ```
 
 `error` の 3 件は、変えた 2 か所から出ています。9 行目は号の抜けで、6 行目は抜けた第三号を指す参照です。
 13 行目は、文書に無い条への参照です。
 
-`warning` は読みやすさの指摘で、法令の書き方としては長い文も普通です。
+`info` は読みやすさの目印で、法令の書き方としては主題と述語が離れるのも普通です。
 法令の構造だけを確かめるときは、`error` の行を見ます。
 
 1 行目の下の行は、法令として見ることを勧めています。
 `--genre legal/statute` でかけると閾値が法令のものになり、`error` の 3 件だけが残ります。
-`legal/statute` も `legal/contract` と同じ構造のルールを動かすので、`--experimental` は要りません。
 
 2 か所を元に戻して `fixed.txt` にかけ直すと、`error` は消えます。
 
 ```
-$ npx chaffjs fixed.txt --experimental --compact
+$ npx chaffjs fixed.txt --compact
 
 fixed.txt   blog/tech · 日本語   ジャンルは既定から
    法令・規程のようです。--genre legal/statute を試せます
 
-  6:39    warning この文は 125 文字あります（100 文字まで）
-                  max-sentence-length
-  12:1    warning この文は 131 文字あります（100 文字まで）
-                  max-sentence-length
-  16:2    warning この文は 101 文字あります（100 文字まで）
-                  max-sentence-length
+  12:1    info    この段落は 6 文あります（5 文まで）
+                  max-paragraph-length
+  16:2    info    「は」で出した主題から述語まで 94 字あります（80 字まで）
+                  topic-predicate-distance
 
-指摘 3 件、動いていない rule 16 件
+指摘 2 件、動いていない rule 28 件
 ```
 
 施行中の法令は食い違いが無いはずです。

@@ -25,13 +25,13 @@ These are the main rules for this genre.
 | --- | --- | --- |
 | `padded-intro` | An opening that fits any article | Always |
 | `closing-cliche` | A stock closing | Always |
-| `ai-tell` | Phrases common in generated text ("delve into") piling up | With `--experimental` |
-| `announcing-opener` | Sentences opening with "The key point is" and the like, piling up | With `--experimental` |
-| `ai-generated-composite` | Three or more signals of generated text in one article | With `--experimental` |
-| `contraction-consistency` | "isn't" and "is not" mixed in one article | With `--experimental` |
-| `title-case-consistency` | Headings that mix Title Case and sentence case | With `--experimental` |
-| `announced-count-mismatch` | A count announced that differs from the list below it | With `--experimental` |
-| `broken-link` | A link to a heading the article does not have | With `--experimental` |
+| `ai-tell` | Phrases common in generated text ("delve into") piling up | Always (info) |
+| `announcing-opener` | Sentences opening with "The key point is" and the like, piling up | Always (info) |
+| `ai-generated-composite` | Three or more signals of generated text in one article | Always |
+| `contraction-consistency` | "isn't" and "is not" mixed in one article | Always (info) |
+| `title-case-consistency` | Headings that mix Title Case and sentence case | Always (info) |
+| `announced-count-mismatch` | A count announced that differs from the list below it | Always |
+| `broken-link` | A link to a heading the article does not have | Always |
 | `empty-conclusion` | A conclusion that says nothing new | When an AI reads it, with `npx chaffjs test` |
 
 What it does not do is decided too.
@@ -88,28 +88,10 @@ Builds went from 9 minutes to 2 minutes. It's not just faster builds, it's a dra
 I hope this helps! Happy coding!
 ```
 
-First, run it with nothing added. `--compact` prints each finding on two lines.
+Run it with the genre. `--compact` prints each finding on two lines.
 
 ```
 $ npx chaffjs article.md --genre blog/tech --compact
-
-article.md   blog/tech · English   genre from --genre
-
-  3:1     warning "in today's fast-paced world" is an opening that fits any article
-                  padded-intro
-  39:1    warning Closes with "hope this helps"
-                  closing-cliche
-  39:20   warning Closes with "happy coding"
-                  closing-cliche
-
-3 findings, 97 rules not run
-```
-
-That is the opening and the closing. The shapes of generated text are checked by experimental rules.
-Add `--experimental` and run it again.
-
-```
-$ npx chaffjs article.md --genre blog/tech --experimental --compact
 
 article.md   blog/tech · English   genre from --genre
 
@@ -148,7 +130,7 @@ article.md   blog/tech · English   genre from --genre
 ```
 
 `3:1` at the start of a line means line 3, character 1.
-`warning` is worth fixing; `info` marks a place to reread.
+`warning` is worth fixing; `info` marks a place to reread, and never fails a run.
 
 ## What each finding means
 
@@ -165,7 +147,6 @@ article.md   blog/tech · English   genre from --genre
 | 1 | `section-length-uniformity` | Every section is about the same length | Give more room to the sections with more to say; do not pad to match |
 | 3 | `ai-generated-composite` | Several of these shapes occur together in one article | If a light pass is not enough, rewrite it (see below) |
 
-The rules that appear only with `--experimental` are still being checked for wrong findings, so they do not run by default.
 "This isn't just waiting time" is a contrast frame, and "quietly eating hours" is a metaphor common in generated text.
 chaff does not flag either in this article. A machine does not find every habit.
 
@@ -212,24 +193,14 @@ To have an AI read the passages, you need an API key. How to set it is in the [R
 ## A starter chaff.yaml
 
 Put this `chaff.yaml` in the folder that holds your articles.
-It keeps on the experimental rules from above that help a tech article.
 
 ```yaml
 genre: blog/tech
 language: en
-
-rules:
-  ai-tell: normal
-  ai-generated-composite: normal
-  announcing-opener: normal
-  contraction-consistency: normal
-  title-case-consistency: normal
-  announced-count-mismatch: normal
-  broken-link: normal
 ```
 
 With this file in place, `npx chaffjs article.md --compact` alone shows the findings above.
-Only `section-length-uniformity` is left out, so it does not appear, and `ai-generated-composite` no longer counts it.
+A rule whose `info` you do not want is turned off under `rules:` (`section-length-uniformity: off`, for example).
 When your team settles how it writes, add it as described in [Define your team's writing rules](./house-style).
 
 ## What to read next

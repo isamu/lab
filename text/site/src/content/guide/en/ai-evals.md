@@ -11,10 +11,10 @@ This page shows how, step by step and with real output: grading a file of output
 | --- | --- | --- |
 | Did a summary or a rewrite drop a fact, or invent one? | `npx chaffjs compare <source> <output> --json` | a number, date, URL, name or quotation was dropped or added |
 | Are a RAG answer's quotations really in the source? | `npx chaffjs cite <source> <quotes.json> --format json` | a quotation is not at its address |
-| Does the output contradict itself? | `npx chaffjs <output> --experimental` | a total is not the sum of its items, a date has the wrong weekday |
-| Does it read as generated, or hard to read? | `npx chaffjs <output> --experimental --sarif <path>` | only `error` findings fail; the rest are counted |
+| Does the output contradict itself? | `npx chaffjs <output>` | a total is not the sum of its items, a date has the wrong weekday |
+| Does it read as generated, or hard to read? | `npx chaffjs <output> --sarif <path>` | only `error` findings fail; the rest are counted |
 | All of the above, for a file of outputs | `npx chaffjs grade <items.jsonl> --out <results.jsonl>` | an output failed (2 when the input cannot be read) |
-| What should a regeneration step fix? | `npx chaffjs fix-plan <output> --experimental --json` | never; it is a set of instructions |
+| What should a regeneration step fix? | `npx chaffjs fix-plan <output> --json` | never; it is a set of instructions |
 
 For many outputs, use `chaff grade`, below. The plain check has no `--json`; read its findings from SARIF, as shown under "Findings as SARIF".
 
@@ -51,7 +51,7 @@ A `chaff.yaml` in the folder you run from applies to every check, as in the [con
    `--out` writes one result per output; the screen shows the summary.
 
    ```
-   $ npx chaffjs grade prompt-b.jsonl --experimental --out b.results.jsonl
+   $ npx chaffjs grade prompt-b.jsonl --out b.results.jsonl
    Wrote one result per output: b.results.jsonl (3 lines)
    prompt-b.jsonl: 3 outputs, 1 passed, 2 failed
 
@@ -87,7 +87,7 @@ A `chaff.yaml` in the folder you run from applies to every check, as in the [con
    `--compact` gives one line per output, for a CI log, and `--json` gives the summary as JSON.
 
    ```
-   $ npx chaffjs grade prompt-b.jsonl --experimental --compact
+   $ npx chaffjs grade prompt-b.jsonl --compact
    q3	fail	facts.dropped 3 > 0, facts.added 1 > 0
    refund	fail	citations.failed 1 > 0
    deploy	pass
@@ -125,7 +125,7 @@ grade:
 ```
 
 ```
-$ npx chaffjs grade prompt-b.jsonl --experimental --compact
+$ npx chaffjs grade prompt-b.jsonl --compact
 q3	fail	penalty 0	facts.dropped 3 > 0, facts.added 1 > 0
 refund	fail	penalty 0	citations.failed 1 > 0
 deploy	fail	penalty 8	rules.closing-cliche 2 > 0, rules.ai-tell.rate 9.804 > 5
@@ -149,8 +149,8 @@ A rule chaff does not know is reported, and listed as not run.
 Grade the earlier prompt with `--out`, then grade the new one against it. Outputs are paired by `id`.
 
 ```
-$ npx chaffjs grade prompt-a.jsonl --experimental --out a.results.jsonl
-$ npx chaffjs grade prompt-b.jsonl --experimental --baseline a.results.jsonl
+$ npx chaffjs grade prompt-a.jsonl --out a.results.jsonl
+$ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl
 …the summary, as above…
 
 Compared with a.results.jsonl: 3 paired outputs
@@ -189,7 +189,7 @@ $ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl
 Not compared with a.results.jsonl: the settings differ. A change of rules or settings would read as a change of prompt or model (--allow-stamp-mismatch compares anyway)
 ```
 
-The run ends with exit code 2. Here the earlier run had `--experimental` and this one did not.
+The run ends with exit code 2. Here `rules:` in `chaff.yaml` was changed after the earlier run.
 
 ## Example 1: is a summary faithful?
 
@@ -318,10 +318,10 @@ The fix is a testament to careful engineering: we will meticulously add the colu
 In conclusion, robust migrations are the key to a seamless pipeline. I hope this helps!
 ```
 
-Run both with the experimental rules, which include the signals of generated text.
+Run both. The rules for the signals of generated text run with no settings.
 
 ```
-$ npx chaffjs prompt-a.md --experimental --compact
+$ npx chaffjs prompt-a.md --compact
 
 prompt-a.md   blog/tech · English   genre from the default
 
@@ -330,7 +330,7 @@ prompt-a.md   blog/tech · English   genre from the default
 ```
 
 ```
-$ npx chaffjs prompt-b.md --experimental --compact
+$ npx chaffjs prompt-b.md --compact
 
 prompt-b.md   blog/tech · English   genre from the default
 
@@ -357,7 +357,7 @@ To feed the findings back into a regeneration step, have `fix-plan` turn them in
 This is an excerpt; the plan goes on with a direction, an example and the spots for each rule.
 
 ````
-$ npx chaffjs fix-plan prompt-b.md --experimental
+$ npx chaffjs fix-plan prompt-b.md
 # Fix plan: prompt-b.md
 
 language en, genre blog/tech
@@ -380,7 +380,7 @@ ai-generated-composite fires. Fixing the wording would leave the skeleton of gen
 Save the rewrite as prompt-b.rewritten.md and run:
 
 ```bash
-npx chaffjs prompt-b.rewritten.md --experimental
+npx chaffjs prompt-b.rewritten.md
 npx chaffjs compare prompt-b.md prompt-b.rewritten.md --distinct --allow-dropped heading --allow-added heading
 npx chaffjs outline prompt-b.md prompt-b.rewritten.md
 ```
@@ -407,7 +407,7 @@ We can start on Monday, October 6, 2026.
 ```
 
 ```
-$ npx chaffjs answer.md --experimental --compact
+$ npx chaffjs answer.md --compact
 
 answer.md   blog/tech · English   genre from the default
 
@@ -420,14 +420,13 @@ answer.md   blog/tech · English   genre from the default
 ```
 
 These findings are errors, so the run ends with exit code 1, and `chaff grade` fails the output.
-The rules are experimental. Without `--experimental` they do not run, and the last line says so (`0 findings, 97 rules not run`).
 
 ## Findings as SARIF
 
 `--sarif` writes the findings of every file checked to one SARIF file. The screen output does not change.
 
 ```
-$ npx chaffjs prompt-b.md --experimental --compact --sarif out/prompt-b.sarif
+$ npx chaffjs prompt-b.md --compact --sarif out/prompt-b.sarif
   Wrote SARIF: out/prompt-b.sarif (6 findings)
 
 prompt-b.md   blog/tech · English   genre from the default

@@ -24,13 +24,13 @@ These are the main rules for this genre.
 | Rule | What it finds | When it runs |
 | --- | --- | --- |
 | `padded-intro` | An opening that fits any document | Always |
-| `max-sentence-length` | A sentence that runs too long | Always |
-| `excessive-hedging` | Hedges stacked together | With `--experimental` |
-| `agentless-passive` | A passive that never says who did it | With `--experimental` |
+| `max-sentence-length` | A sentence that runs too long | Always (info) |
+| `excessive-hedging` | Hedges stacked together | Always |
+| `agentless-passive` | A passive that never says who did it | When `chaff.yaml` turns it on |
 | `empty-conclusion` | A conclusion with nothing in it | When an AI reads it, with `npx chaffjs test` |
 
-`--experimental` also runs the rules that are still experimental.
-Those rules are still being checked for false alarms. In chaff 0.17.0, the two above are among them.
+`agentless-passive` reports on most business documents people write, so it is off for this genre until you turn it on (below).
+`info` marks a place to reread; it never fails a run.
 
 Some things are left out on purpose.
 
@@ -52,7 +52,7 @@ In today's fast-paced world, the enquiries we receive from customers are becomin
 
 ## September
 
-We received 412 enquiries in September, up from 356 in August. **In particular**, enquiries about billing rose **sharply**; most came from customers who had moved to the new price plan and could not read their invoice, so many of them took a long time to answer.
+We received 412 enquiries in September, up from 356 in August. **In particular**, enquiries about billing rose **sharply**; most came from customers who had moved to the new price plan and could not read their invoice, so many of them took a long time to answer and for several of them we needed help from the billing team before anyone could reply.
 
 The first reply took 6.2 hours on average, over our target of 4 hours.
 
@@ -80,20 +80,6 @@ enquiries.md   business/report · English   genre from --genre
 
     In today's fast-paced world, the enquiries we receive from customers are becoming more and more varied, and it could per…
 
-  ⚠  Sentence too long
-
-     This sentence runs 34 words (limit 25)
-     In a long sentence the reader loses the subject before reaching the verb.
-
-     → Split it in two at the conjunction.
-
-     Relax this rule:  npx chaff relax max-sentence-length
-
-
-─── line 5 ───────────────────────────────────────────────────
-
-    In today's fast-paced world, the enquiries we receive from customers are becoming more and more varied, and it could per…
-
   ⚠  Padded opening
 
      "in today's fast-paced world" is an opening that fits any article
@@ -104,13 +90,27 @@ enquiries.md   business/report · English   genre from --genre
      Relax this rule:  npx chaff relax padded-intro
 
 
+─── line 5 ───────────────────────────────────────────────────
+
+    In today's fast-paced world, the enquiries we receive from customers are becoming more and more varied, and it could per…
+
+  ⚠  Too much hedging
+
+     This sentence stacks 3 hedges ("could, perhaps, may")
+     The more the text avoids claiming, the less the reader can tell what was decided. One hedge is caution; many mean nobody is accountable. chaff looks two ways. A sentence that stacks hedges ("may possibly", "it could perhaps be argued") is reported on its own, even in a short document. Too many hedges across the whole document is measured only on longer documents. When counting hedges stacked in a sentence, a hedge inside a quotation is the speaker's, not the writer's, and is left out.
+
+     → Commit where you can. Where you cannot, say what you would need to know. Where hedges are stacked, keep one or drop them all and commit.
+
+     Relax this rule:  npx chaff relax excessive-hedging
+
+
 ─── line 9 ───────────────────────────────────────────────────
 
     In particular , enquiries about billing rose sharply ; most came from customers who had moved to the new price plan and …
 
-  ⚠  Sentence too long
+  ·  Sentence too long
 
-     This sentence runs 37 words (limit 25)
+     This sentence runs 53 words (limit 45)
      In a long sentence the reader loses the subject before reaching the verb.
 
      → Split it in two at the conjunction.
@@ -120,7 +120,7 @@ enquiries.md   business/report · English   genre from --genre
 
 ────────────────────────────────────────────────────────────
 
-  3 warnings   All judged by machine
+  2 warnings, 1 note   All judged by machine
               (the same text gives the same result every time)
 
   The text was not changed. Fixing it is the writer's job.
@@ -133,9 +133,9 @@ Under each line number, chaff shows the start of the sentence it is about.
 
 | Line | Finding | What it means | How to fix the text |
 | --- | --- | --- | --- |
-| 5 | Sentence too long | 34 words, over the limit of 25 | Split it. Say what changed in one sentence and what the team does in the next |
 | 5 | Padded opening | "In today's fast-paced world" could open any report | Start from what happened in September |
-| 9 | Sentence too long | 37 words, over the limit of 25 | Split at the semicolon and at "so" |
+| 5 | Too much hedging | "could", "perhaps" and "may" in one sentence | Say it outright. If you cannot, say what you would need to know first |
+| 9 | Sentence too long | 53 words, over this genre's limit | Split at the semicolon and at "so" |
 
 ## Reading the "did not run" list
 
@@ -144,44 +144,48 @@ That way "no findings" is never mistaken for "checked everything and found nothi
 
 | Reason | What it means |
 | --- | --- |
-| still experimental | The rule is still being checked for false alarms. `--experimental` turns it on |
+| the genre does not check it | The genre leaves the rule out, by a written reason or because the rule reports on most documents of its kind. `rules:` in `chaff.yaml` turns it on |
 | not a rule for en | The rule is for Japanese documents only |
 | it reads meaning; npx chaff test runs it | A machine alone cannot decide it. It runs when an AI reads the passage, with `npx chaffjs test` |
 
-## Running the experimental rules too
+## Turning on the passive check
 
-With `--experimental`, chaff also looks for hedges and passives.
+`agentless-passive` is off for business documents, because most reports people write use the passive somewhere.
+A team that wants every report to say who acts turns it on in `chaff.yaml`:
+
+```yaml
+rules:
+  agentless-passive: normal
+```
+
 Here `--compact` prints each finding on two lines: the line and column, then the rule's name.
 
 ```
-$ npx chaffjs enquiries.md --genre business/report --experimental --compact
+$ npx chaffjs enquiries.md --genre business/report --compact
 
 enquiries.md   business/report · English   genre from --genre
 
-  5:1     warning This sentence runs 34 words (limit 25)
-                  max-sentence-length
   5:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
   5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
                   excessive-hedging
   5:129   warning This sentence is passive ("argued") but never says who did it
                   agentless-passive
-  9:66    warning This sentence runs 37 words (limit 25)
+  9:66    info    This sentence runs 53 words (limit 45)
                   max-sentence-length
   15:54   warning This sentence is passive ("considered") but never says who did it
                   agentless-passive
   15:93   warning This sentence is passive ("discussed") but never says who did it
                   agentless-passive
 
-7 findings, 29 rules not run
+6 findings, 29 rules not run
 ```
 
-The four new findings, in plain words:
+The three new findings, in plain words:
 
 | Line | Finding | What it means | How to fix the text |
 | --- | --- | --- | --- |
 | 5 | Passive with no actor | "it could be argued": argued by whom? | Say who thinks so, or just say it |
-| 5 | Too much hedging | "could", "perhaps" and "may" in one sentence | Say it outright. If you cannot, say what you would need to know first |
 | 15 | Passive with no actor | "is being considered": by whom? | "The support team will add ..." |
 | 15 | Passive with no actor | "is being discussed": by whom? | "The head of support will decide ..." |
 
@@ -258,22 +262,20 @@ It is a Markdown comment, so nobody opening the document sees it.
 Run it again and the two passive findings on line 15 are gone, and the first line counts what was silenced.
 
 ```
-$ npx chaffjs enquiries.md --genre business/report --experimental --compact
+$ npx chaffjs enquiries.md --genre business/report --compact
 
 enquiries.md   business/report · English   genre from --genre   2 stet
 
-  5:1     warning This sentence runs 34 words (limit 25)
-                  max-sentence-length
   5:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
   5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
                   excessive-hedging
   5:129   warning This sentence is passive ("argued") but never says who did it
                   agentless-passive
-  9:66    warning This sentence runs 37 words (limit 25)
+  9:66    info    This sentence runs 53 words (limit 45)
                   max-sentence-length
 
-5 findings, 21 rules not run
+4 findings, 29 rules not run
 ```
 
 ## Changing a rule for the whole team
@@ -324,7 +326,7 @@ Whether the first reply in October was back within the 4-hour target.
 ```
 
 ```
-$ npx chaffjs enquiries-fixed.md --genre business/report --experimental
+$ npx chaffjs enquiries-fixed.md --genre business/report
 
 enquiries-fixed.md   business/report · English   genre from --genre
 
@@ -338,7 +340,7 @@ enquiries-fixed.md   business/report · English   genre from --genre
   {not-run}
 ```
 
-No findings, experimental rules included.
+No findings.
 The three checks that read meaning run only when an AI reads the passages.
 
 ## What to read next
