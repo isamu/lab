@@ -58,6 +58,10 @@ groups:
       ai-structure: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
+      # Drafting writes "in the event that" and "for the purpose of" on purpose.
+      wordy-phrase: off
+      weasel-word: off
+      sentence-initial-so: off
       # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
       nominalization: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
@@ -186,6 +190,11 @@ groups:
       requirement-smell: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # A narrator and a character speak as they speak: dialect ("would of"), "So," and hearsay are the voice.
+      homophone-slip: off
+      wordy-phrase: off
+      weasel-word: off
+      sentence-initial-so: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -209,6 +218,10 @@ groups:
       double-negative: off
       ra-nuki: off
       requirement-smell: off
+      homophone-slip: off
+      wordy-phrase: off
+      weasel-word: off
+      sentence-initial-so: off
 
 genres:
   - id: technical/spec
