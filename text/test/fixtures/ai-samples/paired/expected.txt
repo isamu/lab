@@ -5,6 +5,7 @@ ai-tell                    2/3          0/3              0/3                  0/
 announcing-opener          3/3          0/3              0/3                  0/63
 assistant-residue          0/3          0/3              0/3                  0/63
 bold-density               0/3          0/3              0/3                  0/63
+bold-label-list            0/3          0/3              0/3                  0/63
 closing-cliche             1/3          0/3              0/3                  0/63
 colon-lead-in              2/3          0/3              0/3                  0/63
 contrast-framing           2/3          0/3              0/3                  0/63
@@ -25,6 +26,7 @@ ai-tell                    1/3          0/3              0/3                  0/
 announcing-opener          3/3          0/3              0/3                  0/74
 assistant-residue          0/3          0/3              0/3                  0/74
 bold-density               0/3          0/3              0/3                  1/74
+bold-label-list            0/3          0/3              0/3                  0/74
 closing-cliche             1/3          0/3              0/3                  0/74
 colon-lead-in              0/3          0/3              0/3                  0/74
 contrast-framing           2/3          0/3              0/3                  0/74

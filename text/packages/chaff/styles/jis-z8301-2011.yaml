@@ -1,4 +1,7 @@
 # JIS Z 8301:2011「規格票の様式及び作成方法」の外来語の書き方。chaff.yaml に style: jis-z8301-2011 と書くと使える。
+# G.6.2.2 は英語の語末の -er、-or、-ar など（ア列の長音）の扱いを定め、表 G.3 がその「ー」を省く原則を置く。
+# a) 3 音以上の語は付けない（エレベータ）、b) 2 音以下は付ける（カー、カバー）、d) 長音・撥音・促音は 1 音、拗音は 1 音と認めない
+# （シャワー）。カバーが 2 音なので、語末の「ー」は数えない。chaff の min_morae も同じ数え方。
 # 2019 年版はこの原則を外し、「外来語の表記」（平成 3 年内閣告示第 2 号）によるとした。2019 年版に合わせるなら style: bunkacho。
 id: jis-z8301-2011
 
@@ -7,8 +10,8 @@ name:
   en: JIS Z 8301:2011, rules for the structure and drafting of standards
 
 summary:
-  ja: 3 音以上の外来語は語末の「ー」を省き（コンピュータ）、2 音以下は付けます（カー）。2019 年版はこの原則を外しました。
-  en: Drops the final ー of loanwords of three morae or more (コンピュータ) and keeps it on shorter ones (カー). The 2019 edition dropped this principle.
+  ja: 英語の -er、-or、-ar に当たる語末の「ー」を、「ー」を除いて 3 音以上の語では省き（コンピュータ）、2 音以下は付けます（カー、カバー、シャワー）。2019 年版はこの原則を外しました。
+  en: Drops the final ー that stands for English -er, -or, -ar on words of three morae or more before it (コンピュータ) and keeps it on shorter ones (カー, カバー, シャワー). The 2019 edition dropped this principle.
 
 source:
   title:
