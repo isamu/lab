@@ -53,6 +53,7 @@ import { raNuki } from "./ra-nuki.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
 import { boldLabelList } from "./bold-label.ts";
+import { listItemFormMix } from "./list-parallel.ts";
 import { acronymExpansionConflict, unusedDefinition, useBeforeDefinition } from "./definition-use.ts";
 import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
 
@@ -138,6 +139,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "empty-section": emptySection,
   "fullwidth-alnum": fullwidthAlnum,
   "spelling-variety": spellingVariety,
+  "list-item-form-mix": listItemFormMix,
   "ra-nuki": raNuki,
   "bold-label-list": boldLabelList,
   "unused-definition": unusedDefinition,
