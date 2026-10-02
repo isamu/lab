@@ -11,6 +11,24 @@ Newest first.
   academic and literary genres do not run it. In Qiita articles the shape is rare in 2016–2021 and clearly more
   common in 2025–2026.
 
+### `dangling-figure-reference` leaves another instrument's 別表 to that instrument (#170)
+
+- A 別表, 図 or 表 written right after another document's name or promulgation number is that document's
+  (「診療報酬の算定方法(平成二十年厚生労働省告示第五十九号)別表第一」, 「…規則の別表第三」), as `dangling-reference`
+  already reads 「民法第709条」. Later numbers of the same kind in the same sentence go with it (「別表第一から別表第三まで」,
+  「…の別表に収載されている医薬品(…別表第2に収載されている医薬品を除く。)」). A number in another sentence, before the
+  citation, of another kind, or after 「この規則の」 is still looked for in this document.
+- The language package reads the name (`StructurePatterns.namedDocument`; Japanese has it, English reads "of" after the
+  number as before). The Japanese `name-note` list also reads a short title in brackets before the promulgation
+  number (「使用薬剤の薬価(薬価基準)(平成二十年厚生労働省告示第六十号)」), for articles as well as tables.
+- Found by the corpus's 厚生労働省告示 (round 14); every finding there was another 告示's 別表.
+
+### `ai-tell` knows more Japanese phrasing that grew after LLMs
+
+- `ai-tell` (ja) adds 浮き彫りになる, 最大限に引き出す, 真価を発揮する, 強力な武器, ステップバイステップ, 多角的な,
+  包括的な, シームレスに and 大幅に向上する, each at a low weight. Each is rare in Qiita articles from 2016–2021
+  and clearly more common in articles from 2025–2026. One of them alone still says nothing; they add to the score.
+
 ### `unqualified-superlative`: the rule text no longer uses 業界最速 as its example
 
 The summary and the example named 「業界最速」 as an unqualified superlative, but since #170 a noun joined to the
