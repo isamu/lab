@@ -152,6 +152,8 @@ groups:
       double-keigo: off
       no-em-dash: off
       emoji-density: off
+      fact-conflict: off
+      summary-fact-mismatch: off
       sentence-rhythm: off
       rule-of-three: off
       section-length-uniformity: off

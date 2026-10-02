@@ -1,0 +1,13 @@
+# Headings of a summary section (summary-fact-mismatch). Its values are compared with the body's values of the same
+# name. The whole heading must match, after any leading number; case does not matter.
+id: summary-heading
+language: en
+entries:
+  - pattern: summary
+  - pattern: executive summary
+  - pattern: abstract
+  - pattern: overview
+  - pattern: at a glance
+  - pattern: key facts
+  - pattern: highlights
+  - pattern: tl;dr
