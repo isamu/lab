@@ -47,6 +47,23 @@ describe("reading an earlier run's results", () => {
     assert.deepEqual(parseResults(JSON.stringify({ ...result("a"), stamp: { chaff: "x" } })), { badLines: [1] });
     assert.deepEqual(parseResults("\n"), { badLines: [0] });
   });
+
+  it("refuses a line that only looks like a result, and an id that a line before already has", () => {
+    const line = (value: unknown): string => JSON.stringify(value);
+    const good = result("a");
+    const failed = { source: "s", address: "1", quote: "q", status: "quote-not-found" };
+    const shapes: readonly unknown[] = [
+      { ...good, rates: undefined },
+      { ...good, notRun: undefined },
+      { ...good, findings: [{ rule: "x", level: "warning", line: 1 }] },
+      { ...good, facts: { dropped: [{ kind: "number", key: "6", allowed: false }], added: [], reformed: 0 } },
+      { ...good, citations: { checked: 1, failed: [{ ...failed, source: undefined }] } },
+      { ...good, score: { penalty: 1 } },
+    ];
+    shapes.forEach((shape) => assert.deepEqual(parseResults(line(shape)), { badLines: [1] }, line(shape)));
+    assert.ok("results" in parseResults(line({ ...good, citations: { checked: 1, failed: [failed] }, score: { penalty: 1, items: [] } })));
+    assert.deepEqual(parseResults([line(good), line(result("b")), line(result("a", { pass: false }))].join("\n")), { badLines: [3] });
+  });
 });
 
 describe("comparing stamps", () => {
@@ -58,6 +75,10 @@ describe("comparing stamps", () => {
     assert.deepEqual(stampCheck([result("a")], { ...STAMP, rules: "sha256:other" }), { comparable: false, differ: ["rules"] });
     assert.deepEqual(stampCheck([result("a")], { ...STAMP, rules: "sha256:x", settings: "sha256:y" }), { comparable: false, differ: ["rules", "settings"] });
     assert.deepEqual(stampCheck([result("a"), result("b", {}, { stamp: { ...STAMP, settings: "sha256:other" } })], STAMP), {
+      comparable: false,
+      differ: ["mixed"],
+    });
+    assert.deepEqual(stampCheck([result("a"), result("b", {}, { stamp: { ...STAMP, chaff: "chaffjs 9" } })], STAMP), {
       comparable: false,
       differ: ["mixed"],
     });
@@ -209,7 +230,7 @@ describe("chaff grade --baseline on the command line", () => {
   it("ends with 2 on a baseline that is not results, before grading anything", async () => {
     const run = await runCli({ "b.jsonl": EN_B, "a.jsonl": EN_A }, ["grade", "b.jsonl", "--baseline", "a.jsonl"], "ja_JP.UTF-8");
     assert.equal(run.code, 2);
-    assert.match(run.err, /a\.jsonl: chaff grade --out の結果として読めない行があります（1, 2 行目）/u);
+    assert.match(run.err, /a\.jsonl: chaff grade --out の 1 回分の結果として読めない行があります（1, 2 行目/u);
     const missing = await runCli({ "b.jsonl": EN_B }, ["grade", "b.jsonl", "--baseline", "none.jsonl"], "en_US.UTF-8");
     assert.equal(missing.code, 2);
   });

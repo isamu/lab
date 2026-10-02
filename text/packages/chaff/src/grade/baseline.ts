@@ -47,7 +47,8 @@ export type StampCheck = { readonly comparable: true } | { readonly comparable: 
 const STAMP_PARTS: readonly ("rules" | "settings")[] = ["rules", "settings"];
 
 export const stampCheck = (before: readonly GradeResult[], current: Stamp): StampCheck => {
-  const stamps = new Set(before.map((result) => `${result.stamp.rules}\n${result.stamp.settings}`));
+  // One earlier run has one stamp, its chaff version included; results joined from several runs are not one baseline.
+  const stamps = new Set(before.map((result) => `${result.stamp.chaff}\n${result.stamp.rules}\n${result.stamp.settings}`));
   const [first] = before;
   if (stamps.size > 1 || first === undefined) return { comparable: false, differ: ["mixed"] };
   const differ = STAMP_PARTS.filter((part) => first.stamp[part] !== current[part]);

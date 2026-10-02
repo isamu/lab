@@ -25,7 +25,7 @@ export type BaselineText = {
 
 export const BASELINE_TEXT: Texts<BaselineText> = {
   ja: {
-    unreadable: (path, lines) => `${path}: chaff grade --out の結果として読めない行があります（${lines} 行目）`,
+    unreadable: (path, lines) => `${path}: chaff grade --out の 1 回分の結果として読めない行があります（${lines} 行目。形が違うか、id が重なっている）`,
     notComparable: (path, differ) =>
       `${path} とは比べません: ${differ}が違います。ルールか設定が変わった差を、prompt や model の差として読まないため（--allow-stamp-mismatch で比べる）`,
     mismatchAllowed: (path, differ) =>
@@ -49,7 +49,7 @@ export const BASELINE_TEXT: Texts<BaselineText> = {
     none: "なし",
   },
   en: {
-    unreadable: (path, lines) => `${path}: not results written by chaff grade --out (line ${lines})`,
+    unreadable: (path, lines) => `${path}: not the results of one chaff grade --out run (line ${lines}: another shape, or an id already used)`,
     notComparable: (path, differ) =>
       `Not compared with ${path}: the ${differ} differ. A change of rules or settings would read as a change of prompt or model (--allow-stamp-mismatch compares anyway)`,
     mismatchAllowed: (path, differ) =>
