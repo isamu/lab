@@ -1,0 +1,30 @@
+# 見出しで番号を持つ語。heading-numbering-mix が番号の書き方を読む。position は語が番号のどちら側に立つか。
+# after は番号の後ろ（第1章、2節）で、頭の「第」は有っても無くてもよい。before は番号の前（ステップ1、Chapter 2）。
+# 日本語の文書も英語の区切りの名前（Chapter 1）を見出しに使うので、英語の語も置く。
+id: heading-number-label
+language: ja
+entries:
+  - pattern: 章
+    position: after
+  - pattern: 節
+    position: after
+  - pattern: 部
+    position: after
+  - pattern: 編
+    position: after
+  - pattern: 回
+    position: after
+  - pattern: ステップ
+    position: before
+  - pattern: その
+    position: before
+  - pattern: Step
+    position: before
+  - pattern: Chapter
+    position: before
+  - pattern: Section
+    position: before
+  - pattern: Part
+    position: before
+  - pattern: Appendix
+    position: before
