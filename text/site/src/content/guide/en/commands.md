@@ -348,6 +348,8 @@ npx chaffjs compare before.md after.md --json                     # for an AI to
 The kinds are `number`, `date`, `time`, `url`, `code`, `name`, `quote`, `heading`, `reference` and `footnote`.
 `--json` lists every dropped and added fact with its line, so it can go straight back to the AI that did the rewrite.
 By default a fact is counted as often as it is stated, so cutting a summary that repeated the body reports each repeat as dropped. With `--distinct`, a fact counts as kept when the other document states it at least once; a fact stated nowhere in it is still dropped or added.
+This also means `--distinct` lets the rewrite state a fact more often than the original does, or less often: it checks only that each fact is there.
+A heading counts as stated when the other document has a heading at the same level with the same wording, so a cut heading is still listed when other headings of its level remain.
 
 ## Listing the facts before a rewrite
 
