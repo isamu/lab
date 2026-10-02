@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### Bibliography: more works on what generated text looks like
+
+- The bibliography adds Juzek and Ward (COLING 2025) on why ChatGPT overuses some words, Sun et al. (ICML 2025) on
+  the habits that tell models apart, Shaib et al. (2025) on measuring low-quality generated text, the editors' guide
+  "Signs of AI writing" on the English Wikipedia, and two Japanese articles on AI-sounding writing (Zenn, Writers-hub).
+  `ai-tell` now cites Juzek and Ward. The entries name the rules they back: `bold-label-list`, `emoji-heading`,
+  `chat-citation-residue` and `colon-lead-in`.
+
 ### `date-range-reversed` (en) reads "from … to …"
 
 "The agreement runs from 1 November 2026 to 31 October 2026" was not compared, though the same dates joined by
