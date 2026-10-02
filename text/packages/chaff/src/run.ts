@@ -99,7 +99,10 @@ const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings", "markdown", "do
 const documentNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
   if (rule.requires.includes("markdown") && !isMarkdownPath(doc.path)) return reasonsFor(doc).notMarkdown;
   if (rule.requires.includes("headings") && bodySectionOf(doc.sections) === undefined) return reasonsFor(doc).noHeadings;
-  return rule.requires.includes("documents") ? reasonsFor(doc).oneDocument : undefined;
+  if (!rule.requires.includes("documents")) return undefined;
+  // Set aside only what the cross pass can run: a missing word list is said here, as for any rule.
+  const absent = missingList(rule, doc.lexicons);
+  return absent === undefined ? reasonsFor(doc).oneDocument : reasonsFor(doc).noLexicon(doc.language, absent);
 };
 
 /** 知らない要求は満たされていないものとして扱う。黙って無視すると、要求なしで動いてしまう。 */
