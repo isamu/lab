@@ -55,3 +55,34 @@ not_flagged:
 level_meaning:
   ja: 1000 字あたり対比の枠 {limit} 個まで
   en: up to {limit} contrast frames per 1000 words
+rewrite:
+  ja:
+    direction: 打ち消している側（X）を消し、言いたい側（Y）を普通の文で書いてください。X が誰かの実際の誤解なら、その誤解を書いたうえで一度だけ打ち消してください。
+    pairs:
+      - before: この仕組みは単なる道具ではなく、チームの文化です。
+        after: この仕組みは、チームの文化になっています。
+      - before: 問題はツールではなく、運用です。
+        after: 問題は運用にあります。
+      - before: 速さだけでなく、安心も届けます。
+        after: 速く、安心して使えます。
+    keep:
+      - 言いたい側（Y）の中身
+      - 誰かが実際に言った X への反論
+    avoid:
+      - 「ではなく」を「というより」「むしろ」に替えて、同じ枠を残す
+      - 消した X の代わりに、書き手が言っていない主張を足す
+  en:
+    direction: Delete the side you knock down (X) and state the side you mean (Y) as a plain sentence. If X is a real belief someone holds, name it and answer it once.
+    pairs:
+      - before: This tool is not just software, but a culture.
+        after: This tool has become part of how the team works.
+      - before: The problem isn't the tool, it's the process.
+        after: The problem is the process.
+      - before: We don't just ship fast; we ship safely.
+        after: We ship fast and safely.
+    keep:
+      - what Y says
+      - an answer to an X someone actually said
+    avoid:
+      - swapping "not X but Y" for "less X than Y" or "rather than X", which keeps the frame
+      - adding a claim the writer did not make in place of the deleted X

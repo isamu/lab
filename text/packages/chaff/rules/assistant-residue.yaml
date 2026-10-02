@@ -51,3 +51,32 @@ not_flagged:
 level_meaning:
   ja: 重みの合計が {limit} 点で指摘
   en: reported from a score of {limit}
+rewrite:
+  ja:
+    direction: チャットの相手に向けた言葉（「お役に立てれば」「ご質問があれば」）を消してください。知識の期限を書いた文は、確かめた日付と出典に置き換えます。分からなければ［ ］で空けて書き手に聞きます。
+    pairs:
+      - before: お役に立てれば幸いです。ほかにご質問があればお知らせください。
+        after: （削除）
+      - before: 私の知識は 2023 年までのものですが、料金は三段階です。
+        after: ［確かめた日付］に［出典］で確かめたところ、料金は三段階です。
+      - before: もちろんです！以下に手順をまとめました。
+        after: 手順をまとめます。
+    keep:
+      - 返事の言葉の後ろにある本文
+    avoid:
+      - 確かめた日付や出典を作る
+      - 返事の言葉を、別の丁寧な結び（「ご参考まで」）に替える
+  en:
+    direction: Delete words addressed to a chat partner ("I hope this helps", "Let me know if"). Replace a knowledge-cutoff line with the date checked and the source; if you do not know them, leave [ ] for the writer to fill.
+    pairs:
+      - before: I hope this helps! Let me know if you have any other questions.
+        after: (deleted)
+      - before: As of my last knowledge update, the API had three tiers.
+        after: As of [date checked], [source] lists three tiers.
+      - before: Certainly! Here is a summary of the steps.
+        after: The steps are below.
+    keep:
+      - the content behind the reply words
+    avoid:
+      - inventing the date checked or the source
+      - swapping the reply line for another polite close ("For your reference")

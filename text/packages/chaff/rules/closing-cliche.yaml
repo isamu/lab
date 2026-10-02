@@ -62,3 +62,28 @@ not_flagged:
 level_meaning:
   ja: 当てはまる結びが {limit} 箇所あれば指摘
   en: reported once there are {limit}
+rewrite:
+  ja:
+    direction: 決まり文句の結びを消してください。本文の結論がすでに最後にあれば、そこで終えます。無ければ、本文で分かったことのうち持ち帰ってほしい一つを一文で書きます。
+    pairs:
+      - before: 設定は管理画面の一か所で変えられます。いかがでしたか？参考になれば幸いです。
+        after: 設定は管理画面の一か所で変えられます。
+      - before: 以上、キャッシュの消し方について解説しました。
+        after: キャッシュは、設定を変えるたびに消してください。（本文の結論がこれであるとき）
+    keep:
+      - 本文の結論
+    avoid:
+      - 本文に無い結論や呼びかけを足す
+      - 「いかがでしたか」を「ぜひ試してみてください」に替える
+  en:
+    direction: Delete the stock closing. If the piece already ends on its conclusion, stop there; if not, state in one sentence the one thing from the body the reader should take away.
+    pairs:
+      - before: The setting lives in one place on the admin page. Hope this helps!
+        after: The setting lives in one place on the admin page.
+      - before: In conclusion, we have explored how to clear the cache.
+        after: Clear the cache after every settings change. (when that is what the body found)
+    keep:
+      - the conclusion the body reached
+    avoid:
+      - adding a conclusion or a call to action that is not in the body
+      - swapping "Hope this helps" for "Give it a try"

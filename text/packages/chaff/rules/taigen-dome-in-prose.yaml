@@ -44,3 +44,17 @@ not_flagged:
 level_meaning:
   ja: 本文の体言止め {limit} 文まで
   en: up to {limit} noun-ending sentences in the body
+rewrite:
+  ja:
+    direction: 本文で名詞で止めた文に、文書の文体に合わせた述語（です・ます、または、だ・である）を足してください。見出し、箇条書き、表はそのままにします。
+    pairs:
+      - before: 次の課題は費用。
+        after: 次の課題は費用です。
+      - before: 導入は来月から。対象は営業部。
+        after: 導入は来月からです。対象は営業部です。
+    keep:
+      - 見出し、箇条書き、表の体言止め
+      - 文書の文体（です・ます、または、だ・である）
+    avoid:
+      - 文末を「〜となります」「〜になります」に揃えて別の癖を作る
+      - 述語を足すときに強める（「大きな課題です」）

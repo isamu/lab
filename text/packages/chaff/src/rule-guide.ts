@@ -80,6 +80,20 @@ export type ExampleOutcome = {
   readonly after: readonly ExampleFinding[];
 };
 
+/** One spot written the way the rule flags it, and the same spot rewritten without adding a fact. */
+export type RewritePair = { readonly before: string; readonly after: string };
+
+/**
+ * How to rewrite a spot the rule flags, for an AI or a person doing the fix (chaff fix-plan prints it).
+ * direction: what to do; keep: what must not change; avoid: the mistakes a rewriter makes here.
+ */
+export type RuleRewrite = {
+  readonly direction: string;
+  readonly pairs: readonly RewritePair[];
+  readonly keep: readonly string[];
+  readonly avoid: readonly string[];
+};
+
 /** The plain-language part of a rule file: what the reference tells a reader, apart from the texts chaff prints. */
 export type RuleGuide = {
   readonly group: RuleGroup | undefined;
@@ -93,6 +107,8 @@ export type RuleGuide = {
   readonly levelMeaning: Localized;
   /** The bibliography entries the rule rests on: the anchors of site/src/content/guide/{ja,en}/bibliography.md. */
   readonly sources: readonly string[];
+  /** By language, optional per rule. */
+  readonly rewrite: Readonly<Record<string, RuleRewrite>>;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -123,6 +139,24 @@ const examplesOf = (value: unknown): Readonly<Record<string, RuleExample>> =>
       )
     : {};
 
+const textsOf = (value: unknown): string[] => (Array.isArray(value) ? value.filter(isText) : []);
+
+const pairOf = (value: unknown): RewritePair[] =>
+  isRecord(value) && isText(value["before"]) && isText(value["after"]) ? [{ before: value["before"], after: value["after"] }] : [];
+
+/** A block that is written reads field by field; what is missing reads as empty, and the test on rule files names it. */
+const rewriteOf = (value: Readonly<Record<string, unknown>>): RuleRewrite => ({
+  direction: isText(value["direction"]) ? value["direction"] : "",
+  pairs: Array.isArray(value["pairs"]) ? value["pairs"].flatMap(pairOf) : [],
+  keep: textsOf(value["keep"]),
+  avoid: textsOf(value["avoid"]),
+});
+
+const rewritesOf = (value: unknown): Readonly<Record<string, RuleRewrite>> =>
+  isRecord(value)
+    ? Object.fromEntries(Object.entries(value).flatMap(([language, entry]) => (isRecord(entry) ? [[language, rewriteOf(entry)] as const] : [])))
+    : {};
+
 /** A field that is missing or malformed reads as empty; the test on rule files names what a rule lacks. */
 export const ruleGuideOf = (raw: Readonly<Record<string, unknown>>): RuleGuide => ({
   group: RULE_GROUPS.find((group) => group === raw["group"]),
@@ -130,7 +164,8 @@ export const ruleGuideOf = (raw: Readonly<Record<string, unknown>>): RuleGuide =
   examples: examplesOf(raw["example"]),
   notFlagged: localizedOf(raw["not_flagged"]),
   levelMeaning: localizedOf(raw["level_meaning"]),
-  sources: Array.isArray(raw["sources"]) ? raw["sources"].filter(isText) : [],
+  sources: textsOf(raw["sources"]),
+  rewrite: rewritesOf(raw["rewrite"]),
 });
 
 /** The rules in each group, in the order the reference lists them. A rule with no group is in none, which the test on rule files reports. */

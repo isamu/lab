@@ -107,7 +107,24 @@ Use this section when asked to make a text sound less generated: 「AIっぽさ�
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
 `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `assistant-residue`, and the signals
 `ai-generated-composite` reads). Most are experimental: run with `--experimental`. None of them says the text was
-generated. chaff never rewrites; the rewriting is yours. Pick one of three modes and say which.
+generated. chaff never rewrites; the rewriting is yours.
+
+**Start with the plan.** Run `npx chaffjs fix-plan <file> --experimental` (with the genre's `--genre`; `--json` to
+read it as data). It prints, in the document's language:
+
+- the constraints: keep facts, numbers, conditions and names; add no fact; ask the writer instead of inventing a
+  specific; two passes at most;
+- the recommended mode and why, and the document-level signals with the outline's numbers;
+- for each rule that fired: its rewrite direction, what to keep, what to avoid, one before/after pair, hints for the
+  `ai-tell` phrases found, and the spots (line and sentence);
+- the check commands to run on the rewrite.
+
+Follow it. Rewrite in the mode it recommends; a request that says 「全面的に」 or "from scratch" means Full whatever it
+says. Apply each rule's direction at its spots. Where a fix needs a specific the text does not give, leave ［ ］ and
+ask. Save the result under the name the plan gives, run its check commands, and report the mode and the checks'
+output. The mode steps below say the rest.
+
+Pick one of three modes and say which.
 
 | Mode | Changes | Pick it when |
 | --- | --- | --- |
@@ -121,8 +138,9 @@ repeats the body. The writer usually wants the structure changed, not only the s
 
 **Light** (only the flagged spots):
 
-1. `npx chaffjs <file> --experimental` (or with the genre's `--genre`); collect the AI-shape findings.
-2. Rewrite only those spots. Keep the meaning, numbers, conditions and technical constraints.
+1. `npx chaffjs fix-plan <file> --experimental` (or with the genre's `--genre`).
+2. Rewrite only the flagged spots, each by its rule's direction in the plan. Keep the meaning, numbers, conditions and
+   technical constraints.
 3. Run chaff again. At most two rewrite passes.
 4. Show the rewritten text and a short list of what changed and why.
 
@@ -167,13 +185,26 @@ repeats the body. The writer usually wants the structure changed, not only the s
    - the register of the writer's other paragraphs (です/ます or だ/である) and of the platform (Zenn, a company
      report, an email);
    - nothing the inventory does not have: no new facts, people, numbers, causes or consequences.
+
+   Three principles while writing:
+   - **Undo personification.** A thing or an idea as the subject of a verb of will (秩序が壊れる, 文化が醸成される,
+     アーキテクチャが要求する) becomes what a person or the system does. 「チームにレビューの文化が醸成された」 →
+     「チームで互いにレビューをするようになった」. If the original does not say who, ask the writer.
+   - **Turn noun endings and noun chains back into sentences with a verb.** 「キュー滞留によるメッセージ処理遅延の発生。」 →
+     「キューにメッセージが溜まり、処理が遅れた。」 A noun ending hides who did what and when.
+   - **Never invent specifics.** A vague sentence may read better with a concrete example. If the writer did not give
+     one, ask for it, or mark your guess for them to confirm. Never write it as fact.
+     「チームの雰囲気が良くなった」 stays as it is, with a question: 「雰囲気が良くなったと感じたのは、どんな場面でしたか」.
+     `chaff compare` catches an added number or name, but not added wording such as 「朝会で冗談が出るようになり」, so
+     this one is yours to keep.
 5. **Check.**
    - `npx chaffjs <old> --experimental` and `npx chaffjs <new> --experimental`: the AI signals before and after.
    - `npx chaffjs outline <old> <new>`: headings, average section length, text in lists, bold, before and after. A
      restructure shows up here, not only in rule counts.
-   - `npx chaffjs compare <old> <new> --allow-dropped heading --allow-added heading`: the headings are the structure
-     you rebuilt on purpose; every other dropped fact is restored and no other fact is added. A fact the old text only repeated (in a cut
-     まとめ) may stay out with that reason.
+   - `npx chaffjs compare <old> <new> --distinct --allow-dropped heading --allow-added heading`: the headings are the
+     structure you rebuilt on purpose; every other dropped fact is restored and no other fact is added. A cut まとめ
+     restates facts the body still holds, so `--distinct` counts a fact as kept when the new text states it at least
+     once.
 6. **Stop** when all of these hold, or after two full passes, whichever comes first:
    - `ai-generated-composite` does not fire;
    - the density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits;

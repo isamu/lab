@@ -55,3 +55,30 @@ not_flagged:
 level_meaning:
   ja: 1000 字あたり逃げの表現 {limit} 個まで（一文に重ねた逃げは、文書の長さによらず指摘）
   en: up to {limit} hedges per 1000 words (hedges stacked in one sentence are reported whatever the length)
+rewrite:
+  ja:
+    direction: 重ねた逃げは一つだけ残すか、確かめたことなら全部外して言い切ってください。言い切れないなら、何が分かれば言い切れるかを書きます。
+    pairs:
+      - before: 遅延の原因はキャッシュにある可能性があるかもしれません。
+        after: 遅延の原因はキャッシュかもしれません。
+      - before: この方法で改善できる場合もあると考えられるのではないでしょうか。
+        after: この方法で改善できる場合があります。
+    keep:
+      - 書き手が確かめていないことの推量
+      - 根拠の強さ
+    avoid:
+      - 確かめていないことを言い切りにする
+      - 推量を作った数字（「8 割の確率で」）に替える
+  en:
+    direction: Where hedges are stacked, keep one, or drop them all and commit if the point was checked. Where you cannot commit, say what would settle it.
+    pairs:
+      - before: The delay may possibly be caused by the cache.
+        after: The delay may be caused by the cache.
+      - before: It could perhaps be argued that this approach might help in some cases.
+        after: This approach helps in some cases.
+    keep:
+      - doubt about what the writer has not checked
+      - how strong the evidence is
+    avoid:
+      - committing to something nobody checked
+      - turning a hedge into an invented figure ("80% likely")
