@@ -21,10 +21,10 @@ const TEXT: Texts<{
     ungrouped: "（グループ未設定）",
     footer: [
       "既定: 何も書かなくても動く   試験中: --experimental か chaff.yaml で動く",
-      "要設定: chaff.yaml に語や見出しを書いたときだけ   AI: npx chaff test で動く",
+      "要設定: chaff.yaml に語や見出しを書いたときだけ   AI: npx chaffjs test で動く",
       "",
-      "詳しく:    npx chaff explain <rule>",
-      "AI に渡す: npx chaff rules --json",
+      "詳しく:    npx chaffjs explain <rule>",
+      "AI に渡す: npx chaffjs rules --json",
     ],
   },
   en: {
@@ -33,10 +33,10 @@ const TEXT: Texts<{
     ungrouped: "(no group yet)",
     footer: [
       "default: runs with no settings   experimental: runs with --experimental or a level in chaff.yaml",
-      "needs list: runs only on words or headings listed in chaff.yaml   AI: runs with npx chaff test",
+      "needs list: runs only on words or headings listed in chaff.yaml   AI: runs with npx chaffjs test",
       "",
-      "More on one rule:  npx chaff explain <rule>",
-      "For an AI:         npx chaff rules --json",
+      "More on one rule:  npx chaffjs explain <rule>",
+      "For an AI:         npx chaffjs rules --json",
     ],
   },
 };

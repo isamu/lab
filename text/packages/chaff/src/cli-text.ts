@@ -5,6 +5,11 @@ import { counted, formFor } from "./render/plural.ts";
 import type { GenreSetting } from "./genre-check.ts";
 import type { ProfileSetting } from "./profile/check.ts";
 
+const ASCII_AT = /[\x21-\x7e]/u;
+
+/** A word set in Japanese text with a space on each side where it starts or ends with Latin text, as the guide writes it. */
+const spacedInJapanese = (word: string): string => `${ASCII_AT.test(word.at(0) ?? "") ? " " : ""}${word}${ASCII_AT.test(word.at(-1) ?? "") ? " " : ""}`;
+
 /** Where a file's genre came from, as the header names it. */
 export type GenreSource = "--genre" | "by_path" | "config" | "default" | "front-matter" | "path" | "content";
 
@@ -92,6 +97,8 @@ A rule's level is one of strict / normal / relaxed / off.
 
 export type CliText = {
   readonly usage: string;
+  /** Under one command's lines of the usage, for `chaff <command> --help`. */
+  readonly moreHelp: string;
   readonly languageName: (language: string) => string;
   readonly genreSource: Readonly<Record<GenreSource, string>>;
   readonly header: (path: string, genre: string, language: string, from: string, shelved: number, hushed: number) => string;
@@ -119,6 +126,7 @@ export type CliText = {
 export const CLI_TEXT: Texts<CliText> = {
   ja: {
     usage: USAGE_JA,
+    moreHelp: "すべてのコマンドと共通の指定は npx chaffjs --help で出ます。",
     languageName: (language) => (language === "ja" ? "日本語" : "英語"),
     genreSource: {
       "--genre": "--genre",
@@ -130,9 +138,11 @@ export const CLI_TEXT: Texts<CliText> = {
       content: "内容",
     },
     header: (path, genre, language, from, shelved, hushed) =>
-      [`${path}   ${genre} · ${language}   ジャンルは${from}から`, shelved > 0 ? `   棚上げ ${shelved} 件` : "", hushed > 0 ? `   stet ${hushed} 件` : ""].join(
-        "",
-      ),
+      [
+        `${path}   ${genre} · ${language}   ジャンルは${spacedInJapanese(from)}から`,
+        shelved > 0 ? `   棚上げ ${shelved} 件` : "",
+        hushed > 0 ? `   stet ${hushed} 件` : "",
+      ].join(""),
     suggested: (name, genre) => `   ${name}のようです。--genre ${genre} を試せます`,
     suggestedNote: (name, genre, used) =>
       `  ジャンルを決めていないので、${used} として見ました。${name}なら、--genre ${genre} でその種類の書き方に合わせて見ます（npx chaffjs genres で一覧）。`,
@@ -140,7 +150,7 @@ export const CLI_TEXT: Texts<CliText> = {
     noMarkdownHere: "Markdown が 1 つも見つかりませんでした。",
     noAdapter: (language) => `言語 "${language}" のアダプタがありません。`,
     unknownGenre: (genre, where, known) =>
-      `ジャンル "${genre}" はありません（${where}）。使えるのは ${known.join("、")} です。npx chaff genres で一覧が出ます。`,
+      `ジャンル "${genre}" はありません（${where}）。使えるのは ${known.join("、")} です。npx chaffjs genres で一覧が出ます。`,
     genreWhere: (where, files) => {
       if (where === "config") return "chaff.yaml の genre";
       return where === "by_path" ? `chaff.yaml の by_path、files: ${files.join(", ")}` : "--genre";
@@ -150,7 +160,7 @@ export const CLI_TEXT: Texts<CliText> = {
     unknownProfile: (profile, where, known) =>
       `文書の種類 "${profile}" はありません（${where}）。使えるのは ${known.join("、")} と、種類を使わない none です。`,
     profileWhere: (where, files) => (where === "config" ? "chaff.yaml の profile" : `chaff.yaml の by_path、files: ${files.join(", ")}`),
-    unknownRule: (id) => `${id} というルールはありません。npx chaff rules で一覧が出ます。`,
+    unknownRule: (id) => `${id} というルールはありません。npx chaffjs rules で一覧が出ます。`,
     unknownRuleWithList: (id, list) => `${id} というルールはありません。\n一覧:\n${list}`,
     unnamed: "(名前なし)",
     sarifWritten: (path, count) => `\n  SARIF を書きました: ${path}（${count} 件）`,
@@ -171,6 +181,7 @@ export const CLI_TEXT: Texts<CliText> = {
   },
   en: {
     usage: USAGE_EN,
+    moreHelp: "npx chaffjs --help lists every command and the options they share.",
     languageName: (language) => (language === "ja" ? "Japanese" : "English"),
     genreSource: {
       "--genre": "--genre",
@@ -189,7 +200,7 @@ export const CLI_TEXT: Texts<CliText> = {
     noMarkdown: (targets) => `No Markdown files found: ${targets}`,
     noMarkdownHere: "No Markdown files found.",
     noAdapter: (language) => `No language package for "${language}".`,
-    unknownGenre: (genre, where, known) => `There is no genre "${genre}" (${where}). The genres are ${known.join(", ")}. npx chaff genres lists them.`,
+    unknownGenre: (genre, where, known) => `There is no genre "${genre}" (${where}). The genres are ${known.join(", ")}. npx chaffjs genres lists them.`,
     genreWhere: (where, files) => {
       if (where === "config") return "genre in chaff.yaml";
       return where === "by_path" ? `by_path in chaff.yaml, files: ${files.join(", ")}` : "--genre";
@@ -199,7 +210,7 @@ export const CLI_TEXT: Texts<CliText> = {
     unknownProfile: (profile, where, known) =>
       `There is no document profile "${profile}" (${where}). The profiles are ${known.join(", ")}; none uses no profile.`,
     profileWhere: (where, files) => (where === "config" ? "profile in chaff.yaml" : `by_path in chaff.yaml, files: ${files.join(", ")}`),
-    unknownRule: (id) => `There is no rule named ${id}. npx chaff rules lists them.`,
+    unknownRule: (id) => `There is no rule named ${id}. npx chaffjs rules lists them.`,
     unknownRuleWithList: (id, list) => `There is no rule named ${id}.\nRules:\n${list}`,
     unnamed: "(no name)",
     sarifWritten: (path, count) => `\n  Wrote SARIF: ${path} (${counted(count, "finding")})`,

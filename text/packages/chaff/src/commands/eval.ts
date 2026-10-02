@@ -20,11 +20,11 @@ const TEXT: Texts<{
   readonly unknownRule: (id: string) => string;
 }> = {
   ja: {
-    mixed: (mixes) => `言語かジャンルが混ざっています: ${mixes}\n1 つに絞って測ってください（例: npx chaff eval examples/blog-ja/）。`,
+    mixed: (mixes) => `言語かジャンルが混ざっています: ${mixes}\n1 つに絞って測ってください（例: npx chaffjs eval examples/blog-ja/）。`,
     unknownRule: (id) => `${id} という rule はありません。`,
   },
   en: {
-    mixed: (mixes) => `Languages or genres are mixed: ${mixes}\nMeasure one at a time (for example npx chaff eval examples/blog-en/).`,
+    mixed: (mixes) => `Languages or genres are mixed: ${mixes}\nMeasure one at a time (for example npx chaffjs eval examples/blog-en/).`,
     unknownRule: (id) => `There is no rule named ${id}.`,
   },
 };

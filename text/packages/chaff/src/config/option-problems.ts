@@ -36,7 +36,7 @@ const TEXT: Texts<ProblemText> = {
   ja: {
     notAMap: (where, value) => `${where}: options の ${value} は読めません。ルールの名前の下に、オプションの名前と値を並べてください`,
     problem: (where, problem) => {
-      if (problem.kind === "unknown-rule") return `${where}: options の ${problem.rule} というルールはありません（npx chaff rules --json で一覧が出ます）`;
+      if (problem.kind === "unknown-rule") return `${where}: options の ${problem.rule} というルールはありません（npx chaffjs rules --json で一覧が出ます）`;
       if (problem.kind === "no-options") return `${where}: ${problem.rule} にはオプションがありません。options に書いても何も変わりません`;
       if (problem.kind === "not-a-map") return `${where}: options の ${problem.rule} の下には、オプションの名前と値を並べてください`;
       if (problem.kind === "unknown-option")
@@ -47,7 +47,7 @@ const TEXT: Texts<ProblemText> = {
   en: {
     notAMap: (where, value) => `${where}: cannot read ${value} under options. Under each rule's name, list option names and values`,
     problem: (where, problem) => {
-      if (problem.kind === "unknown-rule") return `${where}: there is no rule named ${problem.rule} under options (npx chaff rules --json lists them)`;
+      if (problem.kind === "unknown-rule") return `${where}: there is no rule named ${problem.rule} under options (npx chaffjs rules --json lists them)`;
       if (problem.kind === "no-options") return `${where}: ${problem.rule} takes no options, so writing some changes nothing`;
       if (problem.kind === "not-a-map") return `${where}: under options, ${problem.rule} needs option names and values`;
       if (problem.kind === "unknown-option") return `${where}: ${problem.rule} has no option ${problem.option} (it takes ${problem.known.join(" / ")})`;

@@ -29,6 +29,7 @@ import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
 import type { TreeContext } from "./commands/tree.ts";
 import { DOCUMENT_COMMANDS } from "./commands/document-commands.ts";
+import { asksForHelp, commandHelp } from "./command-help.ts";
 import { runSkill } from "./commands/skill.ts";
 import { GRADE_EXIT, runGrade } from "./commands/grade.ts";
 import { fixPlanTargets, runFixPlan } from "./commands/fix-plan.ts";
@@ -308,6 +309,13 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
 /** Every subcommand. Anything else on the command line is a file to check. */
 export const COMMANDS: readonly string[] = Object.keys(HANDLERS);
 
+/** `chaff <command> --help` prints the command's usage and runs nothing: `init --help` must not write chaff.yaml. */
+const printCommandHelp = (command: string): number => {
+  const text = hostText(readConfig());
+  console.log(commandHelp(text.usage, command, text.moreHelp));
+  return 0;
+};
+
 const dispatch = async (argv: readonly string[]): Promise<number> => {
   const first = argv[0];
   if (first === undefined || first === "--help" || first === "-h") {
@@ -318,6 +326,7 @@ const dispatch = async (argv: readonly string[]): Promise<number> => {
     console.log(VERSION_LINES.join("\n"));
     return 0;
   }
+  if ((first === "lint" || HANDLERS[first] !== undefined) && asksForHelp(argv)) return printCommandHelp(first);
   // 知らないジャンルではどの rule も当たらず、知らない文書の種類では種類の知識が外れる。どちらも素通りに見えるので、何かする前に止める。
   const config = await withExtensions(readConfig());
   const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config), hostLanguage(config.language, process.env));

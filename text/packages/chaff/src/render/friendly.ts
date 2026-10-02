@@ -79,7 +79,7 @@ const block = (finding: Finding, rule: RuleDefinition, language: string, quoted:
   "",
   ...indent(`→ ${filledText(rule.how_to_fix, finding, language)}`, "     "),
   "",
-  `     ${TEXT[uiLanguageOf(language)].relax}:  npx chaff relax ${finding.rule}`,
+  `     ${TEXT[uiLanguageOf(language)].relax}:  npx chaffjs relax ${finding.rule}`,
   "",
 ];
 
