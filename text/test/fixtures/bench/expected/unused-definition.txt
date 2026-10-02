@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  definition-unused-ja  found
+ja/design  definition-unused-ja  found
+ja/email  definition-unused-ja  found
+ja/figures  definition-unused-ja  found
+ja/itinerary  definition-unused-ja  found
+ja/minutes  definition-unused-ja  found
+ja/note  definition-unused-ja  found
+ja/policy  definition-unused-ja  found
+ja/press  definition-unused-ja  found
+ja/proposal  definition-unused-ja  found
+ja/quote  definition-unused-ja  found
+ja/readme  definition-unused-ja  found
+ja/requirements  definition-unused-ja  found
+en/blog  definition-unused-en  found
+en/design  definition-unused-en  found
+en/email  definition-unused-en  found
+en/figures  definition-unused-en  found
+en/itinerary  definition-unused-en  found
+en/minutes  definition-unused-en  found
+en/note  definition-unused-en  found
+en/policy  definition-unused-en  found
+en/press  definition-unused-en  found
+en/proposal  definition-unused-en  found
+en/quote  definition-unused-en  found
+en/readme  definition-unused-en  found
+en/requirements  definition-unused-en  found

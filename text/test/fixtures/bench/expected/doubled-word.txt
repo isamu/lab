@@ -1,0 +1,26 @@
+table  25  25  0  0
+ja/blog  particle-doubled  found
+ja/design  particle-doubled  found
+ja/email  particle-doubled  found
+ja/figures  particle-doubled  found
+ja/itinerary  particle-doubled  found
+ja/minutes  particle-doubled  found
+ja/note  particle-doubled  found
+ja/policy  particle-doubled  found
+ja/press  particle-doubled  found
+ja/proposal  particle-doubled  found
+ja/readme  particle-doubled  found
+ja/requirements  particle-doubled  found
+en/blog  article-doubled  found
+en/design  article-doubled  found
+en/email  article-doubled  found
+en/figures  article-doubled  found
+en/itinerary  article-doubled  found
+en/minutes  article-doubled  found
+en/note  article-doubled  found
+en/policy  article-doubled  found
+en/press  article-doubled  found
+en/proposal  article-doubled  found
+en/quote  article-doubled  found
+en/readme  article-doubled  found
+en/requirements  article-doubled  found

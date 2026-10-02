@@ -1,0 +1,5 @@
+table  4  4  0  0
+en/email  expletives  found
+en/figures  expletives  found
+en/press  expletives  found
+en/proposal  expletives  found

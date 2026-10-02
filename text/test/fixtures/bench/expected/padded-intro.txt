@@ -1,0 +1,11 @@
+table  10  10  0  0
+ja/blog  padded-opening  found
+ja/figures  padded-opening  found
+ja/itinerary  padded-opening  found
+ja/proposal  padded-opening  found
+ja/quote  padded-opening  found
+en/blog  padded-opening  found
+en/figures  padded-opening  found
+en/itinerary  padded-opening  found
+en/proposal  padded-opening  found
+en/quote  padded-opening  found

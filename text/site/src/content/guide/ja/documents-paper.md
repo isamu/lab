@@ -148,6 +148,7 @@ rules:
 ```
 
 この `chaff.yaml` を置くと、`npx chaffjs ronbun.md --compact` だけで、上の指摘がすべて出ます。
+`chaff.yaml` に書けることの全体は[設定](./configuration)にあります。
 学会ごとの細かい決まり（「下さい」ではなく「ください」など）は、`custom_rules:` で足せます。
 書き方は [チームの表記ルールを決める](./house-style) にあります。
 

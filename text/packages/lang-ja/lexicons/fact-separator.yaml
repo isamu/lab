@@ -1,0 +1,8 @@
+# 名前と値の区切り（fact-conflict、summary-fact-mismatch）。「締切：10月5日」「参加費は3,000円です」の ： と は。
+# 区切りの前の、文の頭からの語が名前になる。
+id: fact-separator
+language: ja
+entries:
+  - pattern: "："
+  - pattern: ":"
+  - pattern: は

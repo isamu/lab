@@ -1,0 +1,16 @@
+# 期間の単位（duration-mismatch）。木の数量の単位がこれなら、始まりに足す期間として読む。
+id: duration-month
+language: ja
+entries:
+  - pattern: "か月"
+  - pattern: "ヶ月"
+  - pattern: "カ月"
+  - pattern: "ヵ月"
+  - pattern: "ケ月"
+  - pattern: "か月間"
+  - pattern: "ヶ月間"
+  - pattern: "カ月間"
+  - pattern: "ヵ月間"
+  - pattern: "ケ月間"
+  - pattern: "箇月"
+  - pattern: "箇月間"

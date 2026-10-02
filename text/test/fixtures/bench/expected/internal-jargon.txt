@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/blog  jargon-used  found
+ja/email  jargon-used  found
+ja/figures  jargon-used  found
+ja/press  jargon-used  found
+ja/proposal  jargon-used  found
+ja/readme  jargon-used  found
+en/blog  jargon-used  found
+en/email  jargon-used  found
+en/figures  jargon-used  found
+en/itinerary  jargon-used  found
+en/press  jargon-used  found
+en/proposal  jargon-used  found

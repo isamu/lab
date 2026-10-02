@@ -293,3 +293,9 @@ so an answer's quotations can be checked like a unit test.
 
 chaff only decides whether something is broken. It never rewrites the document.
 Reading the document and answering is the AI's side; chaff checks before and after.
+
+## What to read next
+
+- A worked example on internal rules, with the structural checks turned on, is in [Internal rules and regulations](./documents-statute).
+- Checking a RAG answer's quotations with `cite` inside an eval is in [Using chaff for AI evals](./ai-evals).
+- `tree` and `cite` are listed with the other commands in [Commands](./commands).

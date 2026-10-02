@@ -1,0 +1,14 @@
+table  13  13  0  0
+en/blog  period-spaced  found
+en/design  period-spaced  found
+en/email  period-spaced  found
+en/figures  period-spaced  found
+en/itinerary  period-spaced  found
+en/minutes  period-spaced  found
+en/note  period-spaced  found
+en/policy  period-spaced  found
+en/press  period-spaced  found
+en/proposal  period-spaced  found
+en/quote  period-spaced  found
+en/readme  period-spaced  found
+en/requirements  period-spaced  found

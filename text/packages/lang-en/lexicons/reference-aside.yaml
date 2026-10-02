@@ -1,0 +1,21 @@
+# Words that are not the name of the target when written in brackets after a reference (reference-title-mismatch): "Section 3 (above)".
+id: reference-aside
+language: en
+entries:
+  - pattern: "above"
+  - pattern: "below"
+  - pattern: "see"
+  - pattern: "as amended"
+  - pattern: "emphasis"
+  - pattern: "if any"
+  - pattern: "repealed"
+  - pattern: "reserved"
+  - pattern: "deleted"
+  - pattern: "omitted"
+  - pattern: "supra"
+  - pattern: "infra"
+  - pattern: "et seq"
+  - pattern: "as applicable"
+  - pattern: "as appropriate"
+  - pattern: "or"
+  - pattern: "and following"

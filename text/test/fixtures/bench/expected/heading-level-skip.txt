@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  heading-deepened  found
+ja/design  heading-deepened  found
+ja/figures  heading-deepened  found
+ja/itinerary  heading-deepened  found
+ja/minutes  heading-deepened  found
+ja/press  heading-deepened  found
+ja/proposal  heading-deepened  found
+ja/quote  heading-deepened  found
+ja/readme  heading-deepened  found
+ja/requirements  heading-deepened  found
+en/blog  heading-deepened  found
+en/design  heading-deepened  found
+en/figures  heading-deepened  found
+en/itinerary  heading-deepened  found
+en/minutes  heading-deepened  found
+en/press  heading-deepened  found
+en/proposal  heading-deepened  found
+en/quote  heading-deepened  found
+en/readme  heading-deepened  found
+en/requirements  heading-deepened  found
