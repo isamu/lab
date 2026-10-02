@@ -458,7 +458,7 @@ npx chaffjs fix-plan article.md --experimental --json    # the same plan as JSON
 ```
 
 The plan is written in the document's language. It starts with the constraints every rewrite keeps: no fact changed or added, ask the writer instead of inventing, two passes at most.
-Next comes the recommended way to rewrite (Light, Bold or Full) and the document-level signals with the outline's numbers.
+Next comes the recommended way to rewrite (Light, Bold or Full), the document-level signals with the outline's numbers, and the structure targets: the structure score and a target for each measure past 90% of human articles. A score at its limit is itself a reason to recommend Full.
 
 For each rule that found something, the plan gives its direction, what to keep, what to avoid, one before-and-after example and the spots.
 It ends with the `chaff`, `compare` and `outline` commands to run on the rewrite.
