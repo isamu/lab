@@ -1,6 +1,6 @@
 // Seeded link text that does not say where it goes, for `yarn bench`: a sentence linking from "こちら" or "here".
 // Pure and deterministic, like scripts/bench-mutations.ts.
-import { isJapanese, isListItem, isProse, rewriteFirst, type Mutation, type Plant } from "./bench-text.ts";
+import { isJapanese, isListItem, isProse, rewriteFirst, type Mutation, type Plant } from "../bench-text.ts";
 
 const VAGUE_LINK: Readonly<Record<string, string>> = {
   ja: "手順の詳細は[こちら](https://example.com/guide)です。",
@@ -17,7 +17,7 @@ const vagueLinkIn =
       (line) => `${line.trimEnd()}${language === "ja" ? "" : " "}${VAGUE_LINK[language] ?? ""}`,
     );
 
-export const LINK_TEXT_MUTATIONS: readonly Mutation[] = ["ja", "en"].map((language) => ({
+export const MUTATIONS: readonly Mutation[] = ["ja", "en"].map((language) => ({
   id: `vague-link-${language}`,
   rule: "vague-link-text",
   languages: [language],

@@ -25,7 +25,6 @@ import { MARK_MUTATIONS } from "./bench-mutations-marks.ts";
 import { NAME_MUTATIONS } from "./bench-mutations-names.ts";
 import { FACT_MUTATIONS } from "./bench-mutations-facts.ts";
 import { LIST_MUTATIONS } from "./bench-mutations-lists.ts";
-import { LINK_TEXT_MUTATIONS } from "./bench-mutations-links.ts";
 import { REDUNDANCY_MUTATIONS } from "./bench-mutations-redundancy.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
 import { CHARACTER_MUTATIONS } from "./bench-mutations-characters.ts";
@@ -355,7 +354,6 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "item-dropped", rule: "total-mismatch", languages: ["ja", "en"], plant: dropItem },
   ...FACT_MUTATIONS,
   ...LIST_MUTATIONS,
-  ...LINK_TEXT_MUTATIONS,
   ...REDUNDANCY_MUTATIONS,
   { id: "reference-broken", rule: "dangling-reference", languages: ["ja", "en"], plant: breakReference },
   { id: "number-skipped", rule: "numbering-gap", languages: ["ja", "en"], plant: skipLastNumber },
