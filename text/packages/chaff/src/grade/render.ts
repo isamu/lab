@@ -51,6 +51,7 @@ export const renderSummary = (path: string, summary: GradeSummary, text: GradeTe
     "",
     factsLine(summary, text),
     text.citations(summary.citations.checked, summary.citations.failed),
+    ...(summary.penalty === undefined ? [] : [text.penalty(summary.penalty)]),
     ...block(text.notRunHeading(summary.notRun.length), table(summary.notRun.map((entry) => [entry.rule, text.inOutputs(entry.outputs), entry.reason]))),
     ...stampLines(summary, text),
   ].join("\n");
@@ -58,6 +59,13 @@ export const renderSummary = (path: string, summary: GradeSummary, text: GradeTe
 /** For grep and a CI log: one line per output, its id, pass or fail and why, then the totals. */
 export const renderCompact = (path: string, results: readonly GradeResult[], summary: GradeSummary, text: GradeText): string =>
   [
-    ...results.map((result) => [result.id, result.pass ? "pass" : "fail", ...(result.pass ? [] : [result.failedBecause.join(", ")])].join("\t")),
+    ...results.map((result) =>
+      [
+        result.id,
+        result.pass ? "pass" : "fail",
+        ...(result.score === undefined ? [] : [`penalty ${String(result.score.penalty)}`]),
+        ...(result.pass ? [] : [result.failedBecause.join(", ")]),
+      ].join("\t"),
+    ),
     text.totals(path, summary.total, summary.passed),
   ].join("\n");

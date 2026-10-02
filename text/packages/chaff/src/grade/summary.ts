@@ -19,6 +19,8 @@ export type GradeSummary = {
   readonly facts: { readonly dropped: Readonly<Record<string, number>>; readonly added: Readonly<Record<string, number>> };
   readonly citations: { readonly checked: number; readonly failed: number };
   readonly notRun: readonly (NotRunEntry & { readonly outputs: number })[];
+  /** The penalty points of every output, added up. Only with a `grade:` rubric. */
+  readonly penalty?: number | undefined;
   readonly stamp: Stamp | undefined;
 };
 
@@ -65,6 +67,11 @@ const notRunOf = (results: readonly GradeResult[]): GradeSummary["notRun"] => {
   return [...counts.values()].map(({ entry, outputs }) => ({ ...entry, outputs })).toSorted((left, right) => compareText(left.rule, right.rule));
 };
 
+const penaltyOf = (results: readonly GradeResult[]): { readonly penalty?: number } => {
+  const scored = results.flatMap((result) => (result.score === undefined ? [] : [result.score.penalty]));
+  return scored.length === 0 ? {} : { penalty: scored.reduce((sum, points) => sum + points, 0) };
+};
+
 export const summaryOf = (results: readonly GradeResult[]): GradeSummary => {
   const sizes = sizesOf(results);
   return {
@@ -82,6 +89,7 @@ export const summaryOf = (results: readonly GradeResult[]): GradeSummary => {
       failed: results.reduce((sum, result) => sum + (result.citations?.failed.length ?? 0), 0),
     },
     notRun: notRunOf(results),
+    ...penaltyOf(results),
     stamp: results[0]?.stamp,
   };
 };

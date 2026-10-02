@@ -2295,7 +2295,7 @@ npx chaffjs fix-plan before.md --experimental --json   # 同じものを JSON �
 
 ## 29. AI の評価に使う（eval の採点役）
 
-状態: `chaff grade`（§29.3）と再現の印（§29.7）は使える。採点の基準・A/B・ライブラリの API は予定（#488）。
+状態: `chaff grade`（§29.3）、採点の基準（§29.4）、再現の印（§29.7）は使える。A/B・ライブラリの API は予定（#488）。
 
 LLM の評価（eval）では、出力を model に採点させることが多い。model の採点は意味を読めるが、同じ出力に毎回同じ点を付けるとは限らず、なぜその点かも検算できない。
 chaff の判定は同じ文書なら同じ結果になり、指摘ごとに行とルールと理由が付き、ルールの版も分かる。
@@ -2414,7 +2414,7 @@ npx chaffjs grade items.jsonl --compact                # 1 出力 1 行（id・�
 他のコマンドは使い方の誤りも 1 で返すが、`grade` は 1 と 2 を分ける。CI の門で「出力が悪い」と「採点が動いていない」を取り違えないためである。
 読めない行は一つ目で止めず、すべての行を行番号付きで標準エラーに並べる。
 
-### 29.4 採点の基準（`chaff.yaml` の `grade:`、予定）
+### 29.4 採点の基準（`chaff.yaml` の `grade:`）
 
 ```yaml
 grade:
@@ -2440,6 +2440,11 @@ grade:
 - `grade:` を書くと、§29.3 の既定の合否（`error` の指摘で落とす）は使わない。書いたものだけで決める。基準が二重になると、なぜ落ちたかを `grade:` から読み取れなくなる。
 - `required_sections` の照合は、最上位の `required_sections` と同じ部分一致（§10）。`grade:` に無ければ最上位のものを使う。
 - 無いルールの名前や、その言語で動かないルールを書いたときは、他の設定と同じく標準エラーに言う。そのルールは `notRun` に理由付きで出る。
+- `facts` と `citations` も、書いた上限だけで決める。`facts:` に `dropped` を書かなければ、落ちた事実は合否に入らない。`allow_dropped`・`allow_added` は `compare` の `--allow-dropped`・`--allow-added` と同じく、その種類の事実に `allowed: true` を付けて数えない。
+- `citations.required` が真のとき、`sources` があって `citations` が無い出力は `citations.required` で落ちる。
+- 読めない値（数でない上限、知らない事実の種類、知らないキー）が一つでもあれば、どの出力も採点せずに終了コード 2 で終わり、場所（`grade.rules.ai-tell.max_rte` のような道筋）を標準エラーに並べる。書き誤った上限が黙って効かないと、落とすはずの出力が通るため。
+- `failedBecause` は条件の名前と数で書く: `rules.<id> N > max`、`rules.<id>.rate R > max_rate`、`required_sections.missing N > 0: <見出し>`、`facts.dropped N > 上限`、`facts.added N > 上限`、`citations.failed N > 上限`、`citations.required: …`、`score.penalty P > penalty`。
+- 要約には全出力の点の和（`penalty`）が入る。画面では `--compact` の 1 行ごとにも点を出す。
 - 基準の中身（重みと上限）は `stamp` の `settings` に入る。基準を変えた前後の点は比べない（§29.5）。
 
 ### 29.5 A/B と回帰（予定）
@@ -2519,7 +2524,7 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 | 矛盾を見るルール（`total-mismatch`、`percent-sum-mismatch`、`date-weekday-mismatch`、`announced-count-mismatch`） | 使える。試験中なので `--experimental` で動く。増やす作業は #484 |
 | 多数の出力を回して集めるスクリプト | 手引きに例を置いた。chaff の外のスクリプト |
 | `chaff grade`、入力の JSONL、出力ごとの結果、要約、終了コード | 使える |
-| `grade:` の基準 | 予定（#488 の 1） |
+| `grade:` の基準 | 使える |
 | `--baseline` と回帰の終了コード | 予定（#488 の 2） |
 | `grade()` | 予定（#488 の 3）。置き場所は §29.6 で未決 |
 | `stamp` | 使える |

@@ -9,6 +9,8 @@ import { parseItems, type GradeItem } from "../grade/item.ts";
 import { renderCompact, renderSummary } from "../grade/render.ts";
 import type { GradeResult } from "../grade/result.ts";
 import { gradeSetup } from "../grade/setup.ts";
+import { parseRubric, type Rubric } from "../grade/rubric.ts";
+import { rulesOf } from "../custom/load.ts";
 import { summaryOf } from "../grade/summary.ts";
 import { GRADE_TEXT, type GradeText } from "../grade/text.ts";
 import { sharedLanguage, type UiLanguage } from "../ui.ts";
@@ -38,11 +40,33 @@ const readItems = async (path: string, text: GradeText): Promise<readonly GradeI
   return undefined;
 };
 
-const setupFor = async (items: readonly GradeItem[], argv: readonly string[], context: GradeContext, text: GradeText): Promise<GradeSetup | undefined> => {
+/** The `grade:` rubric, or undefined after saying what is wrong with it. `rubric: undefined` is a run with no rubric. */
+const readRubric = (config: Config, text: GradeText): { readonly rubric: Rubric | undefined } | undefined => {
+  const parsed = parseRubric(config.grade);
+  if ("rubric" in parsed) return parsed;
+  parsed.problems.forEach((problem) => console.error(`chaff: ${text.rubricProblem(problem)}`));
+  return undefined;
+};
+
+/** A rule id under grade.rules that chaff does not know. Said once here; each result also lists it as not run. */
+const warnUnknownRules = (rubric: Rubric | undefined, config: Config, text: GradeText): void => {
+  const known = new Set(rulesOf(config.language ?? "en", config).map((rule) => rule.id));
+  Object.keys(rubric?.rules ?? {})
+    .filter((id) => !known.has(id))
+    .forEach((id) => console.error(`chaff: grade.rules.${id}: ${text.unknownRule}`));
+};
+
+const setupFor = async (
+  items: readonly GradeItem[],
+  rubric: Rubric | undefined,
+  argv: readonly string[],
+  context: GradeContext,
+  text: GradeText,
+): Promise<GradeSetup | undefined> => {
   const languages = items.flatMap((item) => (item.language === undefined ? [] : [item.language]));
   const run = { experimental: context.config.experimental || argv.includes("--experimental"), genre: context.flag(argv, "--genre") };
   try {
-    return await gradeSetup(context.config, run, languages);
+    return await gradeSetup(context.config, run, languages, rubric);
   } catch (error) {
     console.error(text.cannotLoad(error instanceof Error ? error.message : String(error)));
     return undefined;
@@ -79,9 +103,11 @@ export const runGrade = async (argv: readonly string[], context: GradeContext): 
     console.error(host.usage);
     return GRADE_EXIT.unreadable;
   }
-  const items = await readItems(path, host);
-  const setup = items === undefined ? undefined : await setupFor(items, argv, context, host);
-  if (items === undefined || setup === undefined) return GRADE_EXIT.unreadable;
+  const rubric = readRubric(context.config, host);
+  const items = rubric === undefined ? undefined : await readItems(path, host);
+  const setup = items === undefined || rubric === undefined ? undefined : await setupFor(items, rubric.rubric, argv, context, host);
+  if (setup === undefined || items === undefined) return GRADE_EXIT.unreadable;
+  warnUnknownRules(setup.rubric, context.config, host);
   const results = await gradeInOrder(items, setup);
   writeResults(context.flag(argv, "--out"), results, host);
   printSummary(

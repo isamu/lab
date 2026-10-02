@@ -40,6 +40,7 @@ export const settingsOf = (settings: GradeSettings): Record<string, unknown> => 
     requiredSections: config.requiredSections,
     names: config.names,
     byPath: config.byPath,
+    grade: config.grade ?? null,
   };
 };
 
