@@ -1,14 +1,12 @@
 import type { CustomSpec, LevelTable, Localized, RuleDefinition, Severity, TokenCondition } from "../plugin.ts";
 import { regexRefusal, type RegexRefusal } from "./regex-safety.ts";
 import { posTags } from "./token-pattern.ts";
+import { modulePathOf, type ModulePathRefusal } from "./module-path.ts";
 
 // custom_rules in chaff.yaml: a team's own deterministic rules, written without code. Each becomes a RuleDefinition like the
 // built-in ones, so findings, explain, rules --json, stet, the baseline and SARIF treat it the same. Pure: the YAML comes in parsed.
 
-export const CUSTOM_TYPES = ["words", "pattern", "tokens"] as const;
-
-/** Reserved for a small Node function a team writes. Refused with its own message until it is supported. */
-const RESERVED_TYPES: readonly string[] = ["module"];
+export const CUSTOM_TYPES = ["words", "pattern", "tokens", "module"] as const;
 
 export type CustomProblem =
   | { readonly kind: "not-a-list" }
@@ -17,7 +15,9 @@ export type CustomProblem =
   | { readonly kind: "duplicate-id"; readonly at: string }
   | { readonly kind: "built-in-id"; readonly at: string }
   | { readonly kind: "unknown-type"; readonly at: string; readonly written: string }
-  | { readonly kind: "not-yet"; readonly at: string; readonly written: string }
+  | { readonly kind: "bad-module"; readonly at: string; readonly written: string; readonly refusal: ModulePathRefusal }
+  | { readonly kind: "bad-requires"; readonly at: string; readonly written: string }
+  | { readonly kind: "bad-word-list"; readonly at: string; readonly written: string }
   | { readonly kind: "missing"; readonly at: string; readonly field: string }
   | { readonly kind: "unpaired-example"; readonly at: string }
   | { readonly kind: "bad-level"; readonly at: string; readonly written: string }
@@ -30,8 +30,11 @@ export type CustomProblem =
 
 export type CustomRules = { readonly rules: readonly RuleDefinition[]; readonly problems: readonly CustomProblem[] };
 
-/** What parsing needs to know: the built-in rule ids (a team's rule may not take one) and the genres a rule applies to. */
-export type CustomContext = { readonly builtIn: ReadonlySet<string>; readonly useFor: readonly string[] };
+/**
+ * What parsing needs to know: the built-in rule ids (a team's rule may not take one), the genres a rule applies to, and
+ * the folder a module's path is relative to (where chaff.yaml is).
+ */
+export type CustomContext = { readonly builtIn: ReadonlySet<string>; readonly useFor: readonly string[]; readonly baseDir: string };
 
 const RULE_ID = /^[a-z][a-z0-9-]*$/u;
 const SEVERITIES: readonly Severity[] = ["info", "warning", "error"];
@@ -113,16 +116,24 @@ const tokensOf = (raw: unknown, at: string): Checked<CustomSpec> => {
   return problems.length > 0 ? failed(...problems) : ok({ type: "tokens", tokens });
 };
 
-const specOf = (raw: Record<string, unknown>, type: string, at: string): Checked<CustomSpec> => {
+const moduleOf = (raw: Record<string, unknown>, at: string, baseDir: string): Checked<CustomSpec> => {
+  const written = raw["module"];
+  if (!nonEmpty(written)) return failed({ kind: "missing", at, field: "module" });
+  const path = modulePathOf(written.trim(), baseDir);
+  if ("refusal" in path) return failed({ kind: "bad-module", at, written, refusal: path.refusal });
+  return ok({ type: "module", module: written.trim(), file: path.file });
+};
+
+const specOf = (raw: Record<string, unknown>, type: string, at: string, baseDir: string): Checked<CustomSpec> => {
   if (type === "words") return wordsOf(raw["words"], at);
   if (type === "pattern") return patternOf(raw, at);
+  if (type === "module") return moduleOf(raw, at, baseDir);
   return tokensOf(raw["tokens"], at);
 };
 
 const typeOf = (raw: Record<string, unknown>, at: string): Checked<string> => {
   const type = raw["type"];
   if (!nonEmpty(type)) return failed({ kind: "missing", at, field: "type" });
-  if (RESERVED_TYPES.includes(type)) return failed({ kind: "not-yet", at, written: type });
   return CUSTOM_TYPES.some((known) => known === type) ? ok(type) : failed({ kind: "unknown-type", at, written: type });
 };
 
@@ -157,6 +168,33 @@ const textsOf = (raw: Record<string, unknown>, at: string): Checked<Texts> => {
   return ok({ name, why, how_to_fix: howToFix, before, after });
 };
 
+/** What a module's detector may ask the adapter for. Only parts of speech: without them, sentences have no tokens. */
+const REQUIRABLE: readonly string[] = ["pos"];
+
+const requiresOf = (raw: unknown, type: string, at: string): Checked<readonly string[]> => {
+  if (type === "tokens") return ok(["pos"]);
+  if (raw === undefined || type !== "module") return ok([]);
+  const written = (Array.isArray(raw) ? raw : [raw]).map((entry: unknown) => (typeof entry === "string" ? entry : printed(entry)));
+  const unknown = written.find((need) => !REQUIRABLE.includes(need));
+  return unknown === undefined ? ok([...new Set(written)]) : failed({ kind: "bad-requires", at, written: unknown });
+};
+
+/** A module's word list by name; its detector gets it as options.lexicon. The other types carry their words themselves. */
+const wordListOf = (raw: unknown, type: string, at: string): Checked<string | undefined> => {
+  if (raw === undefined || type !== "module") return ok(undefined);
+  return nonEmpty(raw) ? ok(raw.trim()) : failed({ kind: "bad-word-list", at, written: printed(raw) });
+};
+
+/** What a rule's detector needs besides the document: tokens from the adapter, and a word list. */
+type Needs = { readonly requires: readonly string[]; readonly wordList: string | undefined };
+
+const needsOf = (raw: Record<string, unknown>, type: string, at: string): Checked<Needs> => {
+  const requires = requiresOf(raw["requires"], type, at);
+  const wordList = wordListOf(raw["word_list"], type, at);
+  if (requires.value === undefined || wordList.problems.length > 0) return failed(...requires.problems, ...wordList.problems);
+  return ok({ requires: requires.value, wordList: wordList.value });
+};
+
 const languagesOf = (raw: unknown, at: string): Checked<readonly string[] | undefined> => {
   if (raw === undefined) return ok(undefined);
   const list = Array.isArray(raw) ? raw : [raw];
@@ -175,12 +213,19 @@ const PLACEHOLDERS: Readonly<Record<string, Localized>> = {
   preferred: { ja: "使う書き方", en: "the spelling to use" },
 };
 
-const HOW_TO_FIND: Readonly<Record<CustomSpec["type"], string>> = { words: "custom-words", pattern: "custom-pattern", tokens: "custom-tokens" };
+/** A module's detector is not in chaff's table: it is loaded from the module and found by the rule's id. */
+const HOW_TO_FIND: Readonly<Record<CustomSpec["type"], string>> = {
+  words: "custom-words",
+  pattern: "custom-pattern",
+  tokens: "custom-tokens",
+  module: "module",
+};
 
 type Example = { readonly before: string; readonly after: string };
 
 type Parts = {
   readonly spec: CustomSpec;
+  readonly needs: Needs;
   readonly severity: Severity;
   readonly texts: Texts;
   readonly languages: readonly string[] | undefined;
@@ -200,7 +245,7 @@ const examplesOf = (texts: Texts, languages: readonly string[] | undefined): Rec
 
 const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, useFor: readonly string[]): RuleDefinition => ({
   id,
-  layer: parts.spec.type === "tokens" ? "L3" : "L2",
+  layer: parts.needs.requires.includes("pos") ? "L3" : "L2",
   status: "stable",
   name: parts.texts.name,
   why: parts.texts.why,
@@ -212,12 +257,12 @@ const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, us
   level_sets: "severity",
   by_genre: {},
   how_to_find: HOW_TO_FIND[parts.spec.type],
-  word_list: undefined,
+  word_list: parts.needs.wordList,
   extra_word_lists: [],
   what_to_check: undefined,
   where: undefined,
   full_sentence: undefined,
-  requires: parts.spec.type === "tokens" ? ["pos"] : [],
+  requires: parts.needs.requires,
   uses: [],
   from: [],
   languages: parts.languages,
@@ -248,16 +293,18 @@ const ruleOf = (raw: unknown, index: number, seen: ReadonlySet<string>, context:
   const id = idOf(raw, index, seen, context.builtIn);
   const at = id.value ?? (nonEmpty(raw["id"]) ? raw["id"] : `#${String(index + 1)}`);
   const type = typeOf(raw, at);
-  const spec = type.value === undefined ? failed<CustomSpec>() : specOf(raw, type.value, at);
+  const spec = type.value === undefined ? failed<CustomSpec>() : specOf(raw, type.value, at, context.baseDir);
+  const needs = needsOf(raw, type.value ?? "", at);
   const severity = severityOf(raw["level"], at);
   const texts = textsOf(raw, at);
   const languages = languagesOf(raw["languages"], at);
   const examples = texts.value === undefined ? {} : examplesOf(texts.value, languages.value);
   const unpaired: CustomProblem[] = texts.value !== undefined && Object.keys(examples).length === 0 ? [{ kind: "unpaired-example", at }] : [];
-  const problems = [...[id, type, spec, severity, texts, languages].flatMap((checked) => checked.problems), ...unpaired];
-  if (id.value === undefined || spec.value === undefined || severity.value === undefined || texts.value === undefined || problems.length > 0)
-    return failed(...problems);
-  const parts = { spec: spec.value, severity: severity.value, texts: texts.value, languages: languages.value, examples };
+  const problems = [...[id, type, spec, needs, severity, texts, languages].flatMap((checked) => checked.problems), ...unpaired];
+  if (problems.length > 0) return failed(...problems);
+  if (id.value === undefined || spec.value === undefined || needs.value === undefined || severity.value === undefined || texts.value === undefined)
+    return failed();
+  const parts = { spec: spec.value, needs: needs.value, severity: severity.value, texts: texts.value, languages: languages.value, examples };
   return ok(definitionOf(id.value, raw, parts, context.useFor));
 };
 

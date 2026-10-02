@@ -183,6 +183,34 @@ describe("agentless-passive（日本語）", () => {
     // 「開催される BootCamp」は動作主を隠しているのではなく、名前の付けかた。
     assert.ok(!idsFor("定期的に開催されるBootCampに参加してください。", ja).includes("agentless-passive"));
   });
+
+  it("invalid: 「〜されることとなった」「〜されることになった」の「こと」は述語の一部で、修飾される名詞ではない", () => {
+    assert.ok(idsFor("本件は来期に改めて検討されることとなった。", ja).includes("agentless-passive"));
+    assert.ok(idsFor("予算の見直しが実施されることになりました。", ja).includes("agentless-passive"));
+  });
+
+  it("valid: 型の後ろにさらに名詞が続けば、受動はその名詞の修飾", () => {
+    assert.ok(!idsFor("検討されることとなった案を説明します。", ja).includes("agentless-passive"));
+  });
+
+  it("invalid: 「も」「は」を挟んだ型、漢字の「事」、型の後ろの非自立名詞（ため）", () => {
+    [
+      "本件は検討されることにもなった。",
+      "本件は検討されることとはなりませんでした。",
+      "本件は検討される事となった。",
+      "本件は検討されることになったため、予定を変えます。",
+    ].forEach((source) => assert.ok(idsFor(source, ja).includes("agentless-passive"), source));
+  });
+
+  it("valid: 型の後ろが仮定の節（となれば・になると）なら、起きたことではない", () => {
+    ["本件は検討されることとなれば、別途連絡します。", "本件は検討されることになると困ります。"].forEach((source) =>
+      assert.ok(!idsFor(source, ja).includes("agentless-passive"), source),
+    );
+  });
+
+  it("valid: 型でない「こと」（されることがある）は今までどおり修飾に読む", () => {
+    assert.ok(!idsFor("会議は延期されることがある。", ja).includes("agentless-passive"));
+  });
 });
 
 describe("agentless-passive（英語）", () => {
