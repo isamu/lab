@@ -664,6 +664,7 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 | `stock-transition` | 「さらに」「加えて」「Moreover」で始まる文の密度（試験中） |
 | `assistant-residue` | チャットの返事の名残（「私の知識は」「As of my last knowledge update」「お役に立てれば幸いです」）（試験中） |
 | `unfilled-placeholder` | 埋め忘れた雛形の空欄（「【会社名】」「[Your Name]」）（試験中） |
+| `chat-citation-residue` | チャットの答えを貼ったときに残る印（「?utm_source=chatgpt.com」の付いたリンク、oaicite）（試験中） |
 | `announcing-opener` | 「重要なのは、」「ポイントは、」「Here's the thing」のように予告で始まる文が重なっていないか（試験中） |
 | `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度（日本語のみ、試験中） |
 
@@ -672,6 +673,7 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 `contrast-framing` と `stock-transition` も、1 つなら普通の書き方なので密度だけを見ます。
 `assistant-residue` は、知識の期限や AI としての断り書きなら 1 つで、人も書く礼の言葉は 2 つ重なったときに言います。
 `unfilled-placeholder` は文体ではなく埋め忘れなので 1 つで言います。例として置いた「○○」は数えません。
+`chat-citation-residue` も貼った後に確かめていない印なので 1 つで言います。コードの中と、チャット以外の utm_source の値は数えません。
 `announcing-opener` は文頭の予告を数で見ます（人の記事も長さによらず 1 つ 2 つは書くため）。
 `colon-lead-in` は説明書・法務・技術文書のジャンルでは見ません。英語の文書は、人も同じくらいこの形で書くので見ません。
 `ai-tell`（日本語）には、技術文の比喩（「静かに壊れる」「黙って無視される」「時間を溶かす」）も入っています。

@@ -5,6 +5,7 @@ announced-count-mismatch                2      2       0             0
 assistant-residue                      20     20       0             0
 bold-density                           10     10       0             0
 broken-link                            26     26       0             0
+chat-citation-residue                  20     20       0             0
 closing-cliche                          2      2       0             0
 contraction-consistency                 2      2       0             0
 dangling-figure-reference               2      2       0             0
@@ -107,6 +108,7 @@ ja/blog  intensified  found
 ja/blog  hedges-stacked  found
 ja/blog  residue-left  found
 ja/blog  blank-left  found
+ja/blog  chat-link-pasted  found
 ja/blog  pet-phrase  found
 ja/blog  heading-deepened  found
 ja/blog  image-unlabelled  found
@@ -133,6 +135,7 @@ ja/design  intensified  found
 ja/design  hedges-stacked  found
 ja/design  residue-left  found
 ja/design  blank-left  found
+ja/design  chat-link-pasted  found
 ja/design  opener-repeated  found
 ja/design  spelling-avoided  found
 ja/design  pet-phrase  found
@@ -196,6 +199,7 @@ ja/figures  intensified  found
 ja/figures  hedges-stacked  found
 ja/figures  residue-left  found
 ja/figures  blank-left  found
+ja/figures  chat-link-pasted  found
 ja/figures  opener-repeated  found
 ja/figures  pet-phrase  found
 ja/figures  heading-deepened  found
@@ -225,6 +229,7 @@ ja/itinerary  intensified  found
 ja/itinerary  hedges-stacked  found
 ja/itinerary  residue-left  found
 ja/itinerary  blank-left  found
+ja/itinerary  chat-link-pasted  found
 ja/itinerary  heading-deepened  found
 ja/itinerary  image-unlabelled  found
 ja/itinerary  link-to-nowhere  found
@@ -247,6 +252,7 @@ ja/minutes  intensified  found
 ja/minutes  hedges-stacked  found
 ja/minutes  residue-left  found
 ja/minutes  blank-left  found
+ja/minutes  chat-link-pasted  found
 ja/minutes  heading-deepened  found
 ja/minutes  image-unlabelled  found
 ja/minutes  link-to-nowhere  found
@@ -310,6 +316,7 @@ ja/press  intensified  found
 ja/press  hedges-stacked  found
 ja/press  residue-left  found
 ja/press  blank-left  found
+ja/press  chat-link-pasted  found
 ja/press  opener-repeated  found
 ja/press  spelling-avoided  found
 ja/press  pet-phrase  found
@@ -349,6 +356,7 @@ ja/proposal  intensified  found
 ja/proposal  hedges-stacked  found
 ja/proposal  residue-left  found
 ja/proposal  blank-left  found
+ja/proposal  chat-link-pasted  found
 ja/proposal  opener-repeated  found
 ja/proposal  spelling-avoided  found
 ja/proposal  pet-phrase  found
@@ -374,6 +382,7 @@ ja/quote  intensified  found
 ja/quote  hedges-stacked  found
 ja/quote  residue-left  found
 ja/quote  blank-left  found
+ja/quote  chat-link-pasted  found
 ja/quote  spelling-avoided  found
 ja/quote  heading-deepened  found
 ja/quote  image-unlabelled  found
@@ -399,6 +408,7 @@ ja/readme  intensified  found
 ja/readme  hedges-stacked  found
 ja/readme  residue-left  found
 ja/readme  blank-left  found
+ja/readme  chat-link-pasted  found
 ja/readme  spelling-avoided  found
 ja/readme  long-vowel-dropped  found
 ja/readme  heading-deepened  found
@@ -422,6 +432,7 @@ ja/requirements  intensified  found
 ja/requirements  hedges-stacked  found
 ja/requirements  residue-left  found
 ja/requirements  blank-left  found
+ja/requirements  chat-link-pasted  found
 ja/requirements  opener-repeated  found
 ja/requirements  spelling-avoided  found
 ja/requirements  heading-deepened  found
@@ -453,6 +464,7 @@ en/blog  intensified  found
 en/blog  hedges-stacked  found
 en/blog  residue-left  found
 en/blog  blank-left  found
+en/blog  chat-link-pasted  found
 en/blog  pet-phrase  found
 en/blog  heading-deepened  found
 en/blog  image-unlabelled  found
@@ -478,6 +490,7 @@ en/design  intensified  found
 en/design  hedges-stacked  found
 en/design  residue-left  found
 en/design  blank-left  found
+en/design  chat-link-pasted  found
 en/design  spelling-avoided  found
 en/design  pet-phrase  found
 en/design  heading-deepened  found
@@ -527,6 +540,7 @@ en/figures  intensified  found
 en/figures  hedges-stacked  found
 en/figures  residue-left  found
 en/figures  blank-left  found
+en/figures  chat-link-pasted  found
 en/figures  spelling-avoided  found
 en/figures  heading-deepened  found
 en/figures  image-unlabelled  found
@@ -555,6 +569,7 @@ en/itinerary  intensified  found
 en/itinerary  hedges-stacked  found
 en/itinerary  residue-left  found
 en/itinerary  blank-left  found
+en/itinerary  chat-link-pasted  found
 en/itinerary  heading-deepened  found
 en/itinerary  image-unlabelled  found
 en/itinerary  link-to-nowhere  found
@@ -575,6 +590,7 @@ en/minutes  intensified  found
 en/minutes  hedges-stacked  found
 en/minutes  residue-left  found
 en/minutes  blank-left  found
+en/minutes  chat-link-pasted  found
 en/minutes  heading-deepened  found
 en/minutes  image-unlabelled  found
 en/minutes  link-to-nowhere  found
@@ -622,6 +638,7 @@ en/press  intensified  found
 en/press  hedges-stacked  found
 en/press  residue-left  found
 en/press  blank-left  found
+en/press  chat-link-pasted  found
 en/press  opener-repeated  found
 en/press  and-chained  found
 en/press  spelling-avoided  found
@@ -653,6 +670,7 @@ en/proposal  intensified  found
 en/proposal  hedges-stacked  found
 en/proposal  residue-left  found
 en/proposal  blank-left  found
+en/proposal  chat-link-pasted  found
 en/proposal  pet-phrase  found
 en/proposal  heading-deepened  found
 en/proposal  image-unlabelled  found
@@ -672,6 +690,7 @@ en/quote  intensified  found
 en/quote  hedges-stacked  found
 en/quote  residue-left  found
 en/quote  blank-left  found
+en/quote  chat-link-pasted  found
 en/quote  heading-deepened  found
 en/quote  image-unlabelled  found
 en/quote  link-to-nowhere  found
@@ -691,6 +710,7 @@ en/readme  intensified  found
 en/readme  hedges-stacked  found
 en/readme  residue-left  found
 en/readme  blank-left  found
+en/readme  chat-link-pasted  found
 en/readme  heading-deepened  found
 en/readme  image-unlabelled  found
 en/readme  link-to-nowhere  found
@@ -712,6 +732,7 @@ en/requirements  intensified  found
 en/requirements  hedges-stacked  found
 en/requirements  residue-left  found
 en/requirements  blank-left  found
+en/requirements  chat-link-pasted  found
 en/requirements  opener-repeated  found
 en/requirements  spelling-avoided  found
 en/requirements  heading-deepened  found

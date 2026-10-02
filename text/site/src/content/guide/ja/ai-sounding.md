@@ -21,6 +21,7 @@ npx chaffjs article.md --experimental    # 試験中のルールも動かす
 | `announcing-opener` | 「重要なのは、」「ポイントは、」「正直に言うと、」で始まる文の重なり |
 | `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度 |
 | `assistant-residue` | 「お役に立てれば幸いです」のような、チャットの返事の名残 |
+| `chat-citation-residue` | 「?utm_source=chatgpt.com」の付いたリンクや「oaicite」のような、チャットの答えを貼ったときに残る印 |
 | `closing-cliche` | 「いかがでしたでしょうか」で締める終わり方 |
 | `bold-density` | 太字の多さ |
 | `no-em-dash` | ダッシュ（——）の多さ |

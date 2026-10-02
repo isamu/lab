@@ -9,6 +9,7 @@ planted:
   assistant-residue: [ja, en]
   bold-density: [ja, en]
   broken-link: [ja, en]
+  chat-citation-residue: [ja, en]
   closing-cliche: [ja, en]
   contraction-consistency: [en]
   dangling-figure-reference: [ja, en]

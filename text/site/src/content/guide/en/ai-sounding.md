@@ -21,6 +21,7 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
+| `chat-citation-residue` | Marks a pasted chat answer leaves: links ending in "?utm_source=chatgpt.com", "oaicite" |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
 | `no-em-dash` | Too many em dashes |

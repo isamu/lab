@@ -44,7 +44,7 @@ const corpusInputs = (language: string): Input[] =>
     .filter((input) => existsSync(input.file));
 
 /** Shapes of generated text whose rules sit in another group of the reference (a markup density, a template blank). */
-const ALSO_AI_SHAPES: readonly string[] = ["bold-density", "emoji-density", "unfilled-placeholder"];
+const ALSO_AI_SHAPES: readonly string[] = ["bold-density", "chat-citation-residue", "emoji-density", "unfilled-placeholder"];
 
 /** The rules of group ai-tells, the signals ai-generated-composite reads, and ALSO_AI_SHAPES, in rule-file order. */
 const aiShapeRules = (language: string): string[] => {

@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### New rule: `chat-citation-residue`, marks a pasted chat answer leaves (experimental)
+
+- Reports each link or piece of text that carries a mark a chat interface leaves when its answer is pasted: a link
+  ending in `?utm_source=chatgpt.com` (or `utm_source=openai`), and citation marks such as `oaicite`,
+  `contentReference[`, `†source】` and `citeturn`. One is enough, at `warning`: it shows the paste was never checked.
+  Code and other `utm_source` values are not read. The marks are a word list in each language package. In Qiita
+  articles none appear in 2016–2021, and they appear in a small share of 2025–2026 ones.
+
 ### `agentless-passive` (ja) reads 「〜されることとなった」 as a predicate
 
 「本件は検討されることとなった。」 and 「見直しが実施されることになりました。」 were not reported: the こと after the
