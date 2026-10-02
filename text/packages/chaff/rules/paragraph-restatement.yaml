@@ -1,0 +1,96 @@
+id: paragraph-restatement
+layer: L2
+status: experimental
+how_to_find: paragraph-restatement
+requires: [pos]
+severity: info
+
+name:
+  ja: 前の段落を言い直すだけの段落
+  en: A paragraph that only restates the one before
+
+why:
+  ja: 「つまり」「このように」「言い換えれば」で始まる段落が、すぐ前の段落と同じ語ばかりで書かれていると、読み手は同じことを二度読むことになります。まとめは、前の段落に無いこと（結論、次に何をするか、数字）を足してはじめて役に立ちます。chaff は、言い直しを告げる語（語彙表）で始まる段落の内容語（名詞・動詞・形容詞・副詞・数）のうち、前の段落にすでにある語の割合を数えます。
+  en: When a paragraph opens with "In other words" or "In short" and then uses mostly the words of the paragraph before it, the reader reads the same thing twice. A summary helps only when it adds something the paragraph before did not say (the conclusion, what to do next, a figure). chaff counts, for a paragraph that opens with a restating word (from the lexicon), the share of its content words (nouns, verbs, adjectives, adverbs, numbers) already in the paragraph before.
+
+message:
+  ja: 「{opener}」で始まるこの段落は、内容語の {share}% が前の段落の繰り返しです
+  en: 'This paragraph opens with "{opener}" and {share}% of its content words repeat the paragraph before'
+
+how_to_fix:
+  ja: 段落を消して、前の段落で言い切ってください。まとめが要るなら、前の段落に無いこと（結論、次の一手、数字）を書きます。
+  en: Cut the paragraph and let the one before stand. If a summary is needed, make it say what the paragraph before did not (the conclusion, the next step, a figure).
+
+# 言い直しを告げる語で始まる段落の内容語のうち、前の段落にある語の割合（パーセント）。これ以上で指摘。
+levels: { strict: 40, normal: 50, relaxed: 60 }
+
+use_for: [blog, business, technical, docs, academic, legal, literature, speech]
+
+group: readability
+summary:
+  ja: 「つまり」「このように」で始まり、前の段落の語をほとんど繰り返すだけの段落
+  en: A paragraph that opens with "In other words" or "In short" and mostly repeats the paragraph before
+
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      新しい在庫システムでは、店舗の在庫を一つの画面で数えられます。棚卸しの時間も短くなります。
+
+      このように、新しい在庫システムでは店舗の在庫を一つの画面で数えられ、棚卸しの時間が短くなります。
+    after: |
+      新しい在庫システムでは、店舗の在庫を一つの画面で数えられます。棚卸しの時間も短くなります。
+
+      来月から全店で使い始め、最初の棚卸しは 4 月 10 日です。
+  en:
+    config: { genre: blog/tech }
+    before: |
+      The new inventory system counts every store's stock on one screen, and a stocktake takes less time.
+
+      In other words, the new inventory system counts the stock of every store on one screen, so a stocktake takes less time.
+    after: |
+      The new inventory system counts every store's stock on one screen, and a stocktake takes less time.
+
+      Every store switches next month, and the first stocktake is on April 10.
+
+not_flagged:
+  ja: 言い直しを告げる語で始まらない段落、内容語が 4 つに満たない段落、見出し・箇条書き・表・コードを挟んだ段落は見ません。前の段落の語の割合だけを見るので、まとめが前の数段落を受けていても、すぐ前の段落と比べます。法務・文学・話し言葉のジャンルでは見ません。
+  en: 'A paragraph that does not open with a restating word, one with fewer than four content words, and one separated from the paragraph before by a heading, a list, a table or code are not checked. Words that open other sentences too ("That is why", "Again the drums") count only with a comma after them ("That is,"). Legal, literary and speech genres do not run this rule.'
+level_meaning:
+  ja: 内容語の {limit}% 以上が前の段落の繰り返しのとき指摘
+  en: reported when {limit}% or more of the paragraph's content words repeat the paragraph before
+rewrite:
+  ja:
+    direction: 言い直しの段落を消すか、前の段落に無いことを書く段落に変えてください。結論・次にすること・数字のうち、本文にあるものを書きます。「つまり」「このように」で前の段落をなぞるだけの文は残しません。
+    pairs:
+      - before: |
+          このように、新しい在庫システムでは店舗の在庫を一つの画面で数えられ、棚卸しの時間が短くなります。
+        after: |
+          来月から全店で使い始め、最初の棚卸しは 4 月 10 日です。
+      - before: |
+          つまり、申込書は月末までに出す必要があり、遅れると受け付けられません。
+        after: |
+          郵送の場合は、月末の消印まで有効です。
+    keep:
+      - 前の段落の中身
+      - 本文にある日付・数字・名前
+    avoid:
+      - 本文に無い事実を足す
+      - 前の段落を別の言い方でもう一度書く
+  en:
+    direction: Cut the restating paragraph, or turn it into one that says what the paragraph before did not. Use the conclusion, the next step or a figure the text gives. Do not keep a sentence that only walks over the previous paragraph again after "In other words".
+    pairs:
+      - before: |
+          In other words, the new inventory system counts the stock of every store on one screen, so a stocktake takes less time.
+        after: |
+          Every store switches next month, and the first stocktake is on April 10.
+      - before: |
+          In short, the form must reach us by the end of the month, or it will not be accepted.
+        after: |
+          A posted form counts if it is postmarked by the last day of the month.
+    keep:
+      - what the paragraph before says
+      - the dates, figures and names in the text
+    avoid:
+      - adding a fact the text does not have
+      - saying the paragraph before again in other words

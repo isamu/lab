@@ -1,0 +1,16 @@
+# 体積（基準はリットル）の単位（unit-mismatch）。weight は基準の単位への倍率。同じ単位を二度書けば倍率が二つで、どちらで合ってもよい。
+id: unit-volume
+language: ja
+entries:
+  - pattern: "L"
+    weight: 1
+  - pattern: "l"
+    weight: 1
+  - pattern: "mL"
+    weight: 0.001
+  - pattern: "ml"
+    weight: 0.001
+  - pattern: "リットル"
+    weight: 1
+  - pattern: "ミリリットル"
+    weight: 0.001

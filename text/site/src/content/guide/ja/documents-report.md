@@ -267,7 +267,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから   stet 
   5:68    warning この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
                   excessive-hedging
 
-指摘 2 件、動いていない rule 10 件
+指摘 2 件、動いていない rule 17 件
 ```
 
 ## チームで決まりを変える

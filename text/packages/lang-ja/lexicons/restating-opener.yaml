@@ -1,0 +1,18 @@
+# 段落の頭に置いて、前に書いたことを言い直すと告げる語。これで始まる段落が前の段落の語をほとんど繰り返すなら、言い直しだけの段落と読む。
+# 読点まで書いたものは、読点が無いと別の言い方になる語（このようにして作る、以上のように定める）。
+id: restating-opener
+language: ja
+entries:
+  - pattern: つまり
+  - pattern: 要するに
+  - pattern: 言い換えれば
+  - pattern: 言い換えると
+  - pattern: 換言すれば
+  - pattern: すなわち
+  - pattern: このように、
+  - pattern: 以上のように、
+  - pattern: まとめると
+  - pattern: 総じて
+  - pattern: 結局
+  - pattern: 繰り返しになりますが
+  - pattern: 改めて
