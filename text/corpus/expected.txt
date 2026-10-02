@@ -99,7 +99,7 @@ gutenberg-frost-a-boys-will  clean
 gutenberg-great-expectations  name-variant 8
 gutenberg-importance-of-being-earnest  space-before-punctuation 2
 gutenberg-jekyll-and-hyde  clean
-gutenberg-modest-proposal  clean
+gutenberg-modest-proposal  known-misspelling 1
 gutenberg-riders-to-the-sea  doubled-punctuation 1
 gutenberg-whitman-leaves-of-grass  name-variant 23, unbalanced-bracket 6
 gutenberg-yellow-wallpaper  clean
