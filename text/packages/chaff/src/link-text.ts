@@ -24,7 +24,7 @@ export const linkTextOf = (written: string): string | undefined => {
 };
 
 /** 言葉を包む強調の印と鉤括弧（前後とも）、終わりの句読点（後ろだけ）。「**こちら**」も「こちら。」も「こちら」と読む。 */
-const LEADING = new Set([..." \t\n*_「『\"“'"]);
+const LEADING = new Set(" \t\n*_「『\"“'");
 const TRAILING = new Set([...LEADING, ..."」』”。．.、，,!！?？:："]);
 
 const trimmed = (chars: readonly string[]): string => {
