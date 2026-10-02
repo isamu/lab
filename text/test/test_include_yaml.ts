@@ -239,3 +239,18 @@ describe("the command line on a folder of YAML", () => {
     assert.match(run.out, /4:6 +error +Scaffolded fixture/u);
   });
 });
+
+describe("chaff tree on a YAML file", () => {
+  const YAML_DOC = '第1条: "第2条 この規程は、会議の進め方を定める。"\n第3条（定義）: 説明\n';
+
+  it("builds the tree from the values, not the keys", async () => {
+    const run = await runCli({ "t.yaml": YAML_DOC }, ["tree", "t.yaml"]);
+    assert.match(run.out, /\(article "2" :label "第2条" :line 1\)/u);
+    assert.doesNotMatch(run.out, /第1条|第3条/u);
+  });
+
+  it("reads the keys too when the same text is plain text", async () => {
+    const run = await runCli({ "t.txt": YAML_DOC }, ["tree", "t.txt"]);
+    assert.match(run.out, /第3条/u);
+  });
+});

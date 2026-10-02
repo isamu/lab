@@ -5,6 +5,7 @@ import { profileFor } from "../profile/for-file.ts";
 import { resolveGenre } from "../resolve-genre.ts";
 import { guessLanguage } from "../detect.ts";
 import { isMarkdownPath } from "../structure/markdown-path.ts";
+import { structureText } from "../document-reading.ts";
 import { buildStructure } from "../structure/of.ts";
 import { toSexp } from "../structure/sexp.ts";
 import { foldPostOrder } from "../tree-walk.ts";
@@ -86,7 +87,12 @@ export const readTree = async (path: string, argv: readonly string[], context: T
   // 日本語は形態素で数量と日付を読む。解析器が無ければ単位の表で読むので、木は作れる。
   await adapter.prepare?.({ pos: true });
   const profile = profileFor(context.config, path, source, language, resolveGenre(path, source, context.config, context.flag(argv, "--genre")).genre);
-  return { source, tree: buildStructure({ path, source, language, markdown: isMarkdownPath(path), profile, lexicons: adapter.lexicons }, adapter.structure) };
+  // A YAML file's tree is read from its values alone, as a check reads it.
+  const text = structureText(path, source);
+  return {
+    source: text,
+    tree: buildStructure({ path, source: text, language, markdown: isMarkdownPath(path), profile, lexicons: adapter.lexicons }, adapter.structure),
+  };
 };
 
 /**
