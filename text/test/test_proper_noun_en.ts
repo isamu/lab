@@ -211,3 +211,41 @@ describe("proper-noun-density は、文頭の大文字の語を名前に数え�
     assert.equal(densityFindings(NAMED), 1);
   });
 });
+
+describe("proper-noun-density の英語の上限は、人の書いた文書の分布から決めた", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  const densityAt = (source: string, level: "strict" | "normal" | "relaxed"): number =>
+    runRules(buildDocument("t.md", source, en), loadRules("en"), { "proper-noun-density": level }, true, "business/report").findings.filter(
+      (finding) => finding.rule === "proper-noun-density",
+    ).length;
+
+  const NAMED_SENTENCE = "Alice Moreno from Contoso met Bob Tanaka in Seattle.";
+  const PLAIN_SENTENCES = [
+    "The team reviewed the plan and agreed on the next steps.",
+    "The budget stayed within the limit set last spring.",
+    "Everyone left with a clear list of tasks for the month.",
+    "Nobody asked for more time.",
+  ];
+  const repeated = (sentences: readonly string[]): string => Array.from({ length: 8 }, () => sentences.join(" ")).join("\n\n");
+  // 名前の文 1 つに名前の無い文 4 つ。人の書いた報告書ではふつうの多さ（コーパスの中ほど）。
+  const REPORT = repeated([NAMED_SENTENCE, ...PLAIN_SENTENCES]);
+  // 名前の文 1 つに短い名前の無い文 3 つ。strict と normal の上限のあいだ。
+  const NAME_HEAVY = repeated([NAMED_SENTENCE, PLAIN_SENTENCES[0] ?? "", PLAIN_SENTENCES[1] ?? "", "Everyone left with a clear list."]);
+  // 名前ばかりの文章（著者の並んだ抄録のページ）。
+  const NAMES = Array.from({ length: 20 }, () => "Alice Moreno met Bob Tanaka in Chicago. Kubernetes runs on Azure and Google Cloud.").join("\n\n");
+
+  it("valid: ふつうの多さの名前は、strict でも指摘しない", () => {
+    assert.equal(densityAt(REPORT, "strict"), 0);
+    assert.equal(densityAt(REPORT, "normal"), 0);
+  });
+
+  it("名前の多い文章は strict だけが指摘し、名前ばかりの文章はどの段でも指摘する", () => {
+    assert.equal(densityAt(NAME_HEAVY, "strict"), 1);
+    assert.equal(densityAt(NAME_HEAVY, "normal"), 0);
+    assert.equal(densityAt(NAMES, "normal"), 1);
+    assert.equal(densityAt(NAMES, "relaxed"), 1);
+  });
+});
