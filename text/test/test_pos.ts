@@ -79,6 +79,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "max-kanji-continuous",
         "ngram-repetition",
         "padded-intro",
+        "redundant-expression",
         "repeated-conjunction",
         "requirement-modal",
         "requirement-smell",

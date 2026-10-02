@@ -53,6 +53,7 @@ percent-sum-mismatch                    2      2       0             0
 preamble-length                         2      2       0             0
 preferred-term                         12     12       0             0
 ra-nuki                                 2      2       0             0
+redundant-expression                   26     26       0             0
 repeated-conjunction                    7      7       0             0
 required-sections                      20     20       0             0
 requirement-smell                       2      2       0             0
@@ -96,6 +97,7 @@ en/quote  clean sample  clean
 en/readme  clean sample  clean
 en/requirements  clean sample  clean
 ja/blog  list-grown-ja  found
+ja/blog  redundant-ja  found
 ja/blog  plain-in-polite  found
 ja/blog  no-nested  found
 ja/blog  space-strayed  found
@@ -132,6 +134,7 @@ ja/blog  definition-unused-ja  found
 ja/blog  definition-late-ja  found
 ja/blog  acronym-two-ways-ja  found
 ja/design  list-grown-ja  found
+ja/design  redundant-ja  found
 ja/design  reference-broken  found
 ja/design  number-skipped  found
 ja/design  defined-twice  found
@@ -170,6 +173,7 @@ ja/design  acronym-two-ways-ja  found
 ja/email  weekday-shift  found
 ja/email  rows-swapped  found
 ja/email  list-grown-ja  found
+ja/email  redundant-ja  found
 ja/email  plain-in-polite  found
 ja/email  no-nested  found
 ja/email  space-strayed  found
@@ -203,6 +207,7 @@ ja/figures  figure-renumbered  found
 ja/figures  period-swapped  found
 ja/figures  share-shifted  found
 ja/figures  list-grown-ja  found
+ja/figures  redundant-ja  found
 ja/figures  polite-in-plain  found
 ja/figures  no-nested  found
 ja/figures  space-strayed  found
@@ -244,6 +249,7 @@ ja/itinerary  weekday-shift  found
 ja/itinerary  rows-swapped  found
 ja/itinerary  item-dropped  found
 ja/itinerary  list-grown-ja  found
+ja/itinerary  redundant-ja  found
 ja/itinerary  sentences-joined  found
 ja/itinerary  plain-in-polite  found
 ja/itinerary  no-nested  found
@@ -275,6 +281,7 @@ ja/itinerary  acronym-two-ways-ja  found
 ja/minutes  weekday-shift  found
 ja/minutes  rows-swapped  found
 ja/minutes  list-grown-ja  found
+ja/minutes  redundant-ja  found
 ja/minutes  polite-in-plain  found
 ja/minutes  no-nested  found
 ja/minutes  space-strayed  found
@@ -303,6 +310,7 @@ ja/minutes  definition-unused-ja  found
 ja/minutes  definition-late-ja  found
 ja/minutes  acronym-two-ways-ja  found
 ja/note  list-grown-ja  found
+ja/note  redundant-ja  found
 ja/note  plain-in-polite  found
 ja/note  no-nested  found
 ja/note  space-strayed  found
@@ -321,6 +329,7 @@ ja/note  definition-unused-ja  found
 ja/note  definition-late-ja  found
 ja/note  acronym-two-ways-ja  found
 ja/policy  list-grown-ja  found
+ja/policy  redundant-ja  found
 ja/policy  reference-broken  found
 ja/policy  number-skipped  found
 ja/policy  defined-twice  found
@@ -342,6 +351,7 @@ ja/policy  definition-late-ja  found
 ja/policy  acronym-two-ways-ja  found
 ja/press  weekday-shift  found
 ja/press  list-grown-ja  found
+ja/press  redundant-ja  found
 ja/press  sentences-joined  found
 ja/press  plain-in-polite  found
 ja/press  no-nested  found
@@ -389,6 +399,7 @@ ja/press  definition-late-ja  found
 ja/press  acronym-two-ways-ja  found
 ja/proposal  item-dropped  found
 ja/proposal  list-grown-ja  found
+ja/proposal  redundant-ja  found
 ja/proposal  plain-in-polite  found
 ja/proposal  no-nested  found
 ja/proposal  space-strayed  found
@@ -433,6 +444,7 @@ ja/proposal  acronym-two-ways-ja  found
 ja/quote  weekday-shift  found
 ja/quote  item-dropped  found
 ja/quote  list-grown-ja  found
+ja/quote  redundant-ja  found
 ja/quote  plain-in-polite  found
 ja/quote  no-nested  found
 ja/quote  section-dropped  found
@@ -460,6 +472,7 @@ ja/quote  definition-unused-ja  found
 ja/quote  definition-late-ja  found
 ja/quote  acronym-two-ways-ja  found
 ja/readme  list-grown-ja  found
+ja/readme  redundant-ja  found
 ja/readme  polite-in-plain  found
 ja/readme  no-nested  found
 ja/readme  space-strayed  found
@@ -491,6 +504,7 @@ ja/readme  definition-unused-ja  found
 ja/readme  definition-late-ja  found
 ja/readme  acronym-two-ways-ja  found
 ja/requirements  list-grown-ja  found
+ja/requirements  redundant-ja  found
 ja/requirements  reference-broken  found
 ja/requirements  number-skipped  found
 ja/requirements  no-nested  found
@@ -522,6 +536,7 @@ ja/requirements  definition-unused-ja  found
 ja/requirements  definition-late-ja  found
 ja/requirements  acronym-two-ways-ja  found
 en/blog  list-grown-en  found
+en/blog  redundant-en  found
 en/blog  sentences-joined  found
 en/blog  paragraphs-joined  found
 en/blog  heading-echoed  found
@@ -554,6 +569,7 @@ en/blog  definition-unused-en  found
 en/blog  definition-late-en  found
 en/blog  acronym-two-ways-en  found
 en/design  list-grown-en  found
+en/design  redundant-en  found
 en/design  reference-broken  found
 en/design  number-skipped  found
 en/design  defined-twice  found
@@ -589,6 +605,7 @@ en/design  acronym-two-ways-en  found
 en/email  weekday-shift  found
 en/email  rows-swapped  found
 en/email  list-grown-en  found
+en/email  redundant-en  found
 en/email  sentences-joined  found
 en/email  paragraphs-joined  found
 en/email  emoji-decorated  found
@@ -614,6 +631,7 @@ en/figures  figure-renumbered  found
 en/figures  period-swapped  found
 en/figures  share-shifted  found
 en/figures  list-grown-en  found
+en/figures  redundant-en  found
 en/figures  sentences-joined  found
 en/figures  heading-echoed  found
 en/figures  bold-heavy  found
@@ -651,6 +669,7 @@ en/itinerary  weekday-shift  found
 en/itinerary  rows-swapped  found
 en/itinerary  item-dropped  found
 en/itinerary  list-grown-en  found
+en/itinerary  redundant-en  found
 en/itinerary  sentences-joined  found
 en/itinerary  heading-echoed  found
 en/itinerary  bold-heavy  found
@@ -681,6 +700,7 @@ en/itinerary  acronym-two-ways-en  found
 en/minutes  weekday-shift  found
 en/minutes  rows-swapped  found
 en/minutes  list-grown-en  found
+en/minutes  redundant-en  found
 en/minutes  sentences-joined  found
 en/minutes  heading-echoed  found
 en/minutes  bold-heavy  found
@@ -706,6 +726,7 @@ en/minutes  definition-unused-en  found
 en/minutes  definition-late-en  found
 en/minutes  acronym-two-ways-en  found
 en/note  list-grown-en  found
+en/note  redundant-en  found
 en/note  sentences-joined  found
 en/note  contracted  found
 en/note  article-doubled  found
@@ -721,6 +742,7 @@ en/note  definition-unused-en  found
 en/note  definition-late-en  found
 en/note  acronym-two-ways-en  found
 en/policy  list-grown-en  found
+en/policy  redundant-en  found
 en/policy  reference-broken  found
 en/policy  number-skipped  found
 en/policy  defined-twice  found
@@ -737,6 +759,7 @@ en/policy  definition-late-en  found
 en/policy  acronym-two-ways-en  found
 en/press  weekday-shift  found
 en/press  list-grown-en  found
+en/press  redundant-en  found
 en/press  sentences-joined  found
 en/press  paragraphs-joined  found
 en/press  heading-echoed  found
@@ -775,6 +798,7 @@ en/press  definition-late-en  found
 en/press  acronym-two-ways-en  found
 en/proposal  item-dropped  found
 en/proposal  list-grown-en  found
+en/proposal  redundant-en  found
 en/proposal  sentences-joined  found
 en/proposal  paragraphs-joined  found
 en/proposal  heading-echoed  found
@@ -810,6 +834,7 @@ en/proposal  acronym-two-ways-en  found
 en/quote  weekday-shift  found
 en/quote  item-dropped  found
 en/quote  list-grown-en  found
+en/quote  redundant-en  found
 en/quote  section-dropped  found
 en/quote  article-doubled  found
 en/quote  padded-opening  found
@@ -832,6 +857,7 @@ en/quote  definition-unused-en  found
 en/quote  definition-late-en  found
 en/quote  acronym-two-ways-en  found
 en/readme  list-grown-en  found
+en/readme  redundant-en  found
 en/readme  contracted  found
 en/readme  heading-echoed  found
 en/readme  bold-heavy  found
@@ -857,6 +883,7 @@ en/readme  definition-unused-en  found
 en/readme  definition-late-en  found
 en/readme  acronym-two-ways-en  found
 en/requirements  list-grown-en  found
+en/requirements  redundant-en  found
 en/requirements  reference-broken  found
 en/requirements  number-skipped  found
 en/requirements  paragraphs-joined  found
