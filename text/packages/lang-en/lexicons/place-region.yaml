@@ -1,0 +1,245 @@
+# The names a place is followed by, after a comma, to say where it is: US states and the District of Columbia, and
+# countries ("New London, Wisconsin, and …", "Lyon, France, and …"). The comma between a place and its state or country
+# is part of the name, not a list's comma. Matched as written, word by word.
+id: place-region
+language: en
+entries:
+  - pattern: Alabama
+  - pattern: Alaska
+  - pattern: Arizona
+  - pattern: Arkansas
+  - pattern: California
+  - pattern: Colorado
+  - pattern: Connecticut
+  - pattern: Delaware
+  - pattern: Florida
+  - pattern: Georgia
+  - pattern: Hawaii
+  - pattern: Idaho
+  - pattern: Illinois
+  - pattern: Indiana
+  - pattern: Iowa
+  - pattern: Kansas
+  - pattern: Kentucky
+  - pattern: Louisiana
+  - pattern: Maine
+  - pattern: Maryland
+  - pattern: Massachusetts
+  - pattern: Michigan
+  - pattern: Minnesota
+  - pattern: Mississippi
+  - pattern: Missouri
+  - pattern: Montana
+  - pattern: Nebraska
+  - pattern: Nevada
+  - pattern: New Hampshire
+  - pattern: New Jersey
+  - pattern: New Mexico
+  - pattern: New York
+  - pattern: North Carolina
+  - pattern: North Dakota
+  - pattern: Ohio
+  - pattern: Oklahoma
+  - pattern: Oregon
+  - pattern: Pennsylvania
+  - pattern: Rhode Island
+  - pattern: South Carolina
+  - pattern: South Dakota
+  - pattern: Tennessee
+  - pattern: Texas
+  - pattern: Utah
+  - pattern: Vermont
+  - pattern: Virginia
+  - pattern: Washington
+  - pattern: West Virginia
+  - pattern: Wisconsin
+  - pattern: Wyoming
+  - pattern: D.C.
+  - pattern: Puerto Rico
+  - pattern: Guam
+  - pattern: Afghanistan
+  - pattern: Albania
+  - pattern: Algeria
+  - pattern: Andorra
+  - pattern: Angola
+  - pattern: Argentina
+  - pattern: Armenia
+  - pattern: Australia
+  - pattern: Austria
+  - pattern: Azerbaijan
+  - pattern: Bahamas
+  - pattern: Bahrain
+  - pattern: Bangladesh
+  - pattern: Barbados
+  - pattern: Belarus
+  - pattern: Belgium
+  - pattern: Belize
+  - pattern: Benin
+  - pattern: Bhutan
+  - pattern: Bolivia
+  - pattern: Bosnia and Herzegovina
+  - pattern: Botswana
+  - pattern: Brazil
+  - pattern: Brunei
+  - pattern: Bulgaria
+  - pattern: Burkina Faso
+  - pattern: Burundi
+  - pattern: Cambodia
+  - pattern: Cameroon
+  - pattern: Canada
+  - pattern: Chad
+  - pattern: Chile
+  - pattern: China
+  - pattern: Colombia
+  - pattern: Costa Rica
+  - pattern: Croatia
+  - pattern: Cuba
+  - pattern: Cyprus
+  - pattern: Czechia
+  - pattern: Czech Republic
+  - pattern: Denmark
+  - pattern: Djibouti
+  - pattern: Dominican Republic
+  - pattern: Ecuador
+  - pattern: Egypt
+  - pattern: El Salvador
+  - pattern: England
+  - pattern: Eritrea
+  - pattern: Estonia
+  - pattern: Eswatini
+  - pattern: Ethiopia
+  - pattern: Fiji
+  - pattern: Finland
+  - pattern: France
+  - pattern: Gabon
+  - pattern: Gambia
+  - pattern: Germany
+  - pattern: Ghana
+  - pattern: Greece
+  - pattern: Guatemala
+  - pattern: Guinea
+  - pattern: Guyana
+  - pattern: Haiti
+  - pattern: Honduras
+  - pattern: Hungary
+  - pattern: Iceland
+  - pattern: India
+  - pattern: Indonesia
+  - pattern: Iran
+  - pattern: Iraq
+  - pattern: Ireland
+  - pattern: Israel
+  - pattern: Italy
+  - pattern: Jamaica
+  - pattern: Japan
+  - pattern: Jordan
+  - pattern: Kazakhstan
+  - pattern: Kenya
+  - pattern: Kosovo
+  - pattern: Kuwait
+  - pattern: Kyrgyzstan
+  - pattern: Laos
+  - pattern: Latvia
+  - pattern: Lebanon
+  - pattern: Lesotho
+  - pattern: Liberia
+  - pattern: Libya
+  - pattern: Liechtenstein
+  - pattern: Lithuania
+  - pattern: Luxembourg
+  - pattern: Madagascar
+  - pattern: Malawi
+  - pattern: Malaysia
+  - pattern: Maldives
+  - pattern: Mali
+  - pattern: Malta
+  - pattern: Mauritania
+  - pattern: Mauritius
+  - pattern: Mexico
+  - pattern: Moldova
+  - pattern: Monaco
+  - pattern: Mongolia
+  - pattern: Montenegro
+  - pattern: Morocco
+  - pattern: Mozambique
+  - pattern: Myanmar
+  - pattern: Namibia
+  - pattern: Nepal
+  - pattern: Netherlands
+  - pattern: New Zealand
+  - pattern: Nicaragua
+  - pattern: Niger
+  - pattern: Nigeria
+  - pattern: North Korea
+  - pattern: North Macedonia
+  - pattern: Northern Ireland
+  - pattern: Norway
+  - pattern: Oman
+  - pattern: Pakistan
+  - pattern: Panama
+  - pattern: Papua New Guinea
+  - pattern: Paraguay
+  - pattern: Peru
+  - pattern: Philippines
+  - pattern: Poland
+  - pattern: Portugal
+  - pattern: Qatar
+  - pattern: Romania
+  - pattern: Russia
+  - pattern: Rwanda
+  - pattern: Saudi Arabia
+  - pattern: Scotland
+  - pattern: Senegal
+  - pattern: Serbia
+  - pattern: Sierra Leone
+  - pattern: Singapore
+  - pattern: Slovakia
+  - pattern: Slovenia
+  - pattern: Somalia
+  - pattern: South Africa
+  - pattern: South Korea
+  - pattern: South Sudan
+  - pattern: Spain
+  - pattern: Sri Lanka
+  - pattern: Sudan
+  - pattern: Suriname
+  - pattern: Sweden
+  - pattern: Switzerland
+  - pattern: Syria
+  - pattern: Taiwan
+  - pattern: Tajikistan
+  - pattern: Tanzania
+  - pattern: Thailand
+  - pattern: Togo
+  - pattern: Trinidad and Tobago
+  - pattern: Tunisia
+  - pattern: Turkey
+  - pattern: Türkiye
+  - pattern: Turkmenistan
+  - pattern: Uganda
+  - pattern: Ukraine
+  - pattern: United Arab Emirates
+  - pattern: United Kingdom
+  - pattern: UK
+  - pattern: U.K.
+  - pattern: United States
+  - pattern: USA
+  - pattern: U.S.
+  - pattern: U.S.A.
+  - pattern: Uruguay
+  - pattern: Uzbekistan
+  - pattern: Venezuela
+  - pattern: Vietnam
+  - pattern: Wales
+  - pattern: Yemen
+  - pattern: Zambia
+  - pattern: Zimbabwe
+  - pattern: Alberta
+  - pattern: British Columbia
+  - pattern: Manitoba
+  - pattern: New Brunswick
+  - pattern: Newfoundland and Labrador
+  - pattern: Nova Scotia
+  - pattern: Ontario
+  - pattern: Quebec
+  - pattern: Saskatchewan

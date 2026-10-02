@@ -1,12 +1,18 @@
-import type { Lexicon, Token } from "../plugin.ts";
+import type { Lexicon, LexiconEntry, Token } from "../plugin.ts";
 import { citedTitles } from "./cited-title.ts";
 import { columnOf, type Column } from "./token-column.ts";
 
 /**
  * 並びを読むための語彙表。participle は解析器が分詞と読まないが読点のあとで分詞の句を始める語（meaning）、
- * example は例を挙げる句（such as, e.g.）、pair は 2 つだけを結ぶ語とその接続詞（between and / either or）。
+ * example は例を挙げる句（such as, e.g.）、pair は 2 つだけを結ぶ語とその接続詞（between and / either or）、
+ * region は地名のあとに読点を挟んで添える州や国の名（New London, Wisconsin）。
  */
-export type ListWords = { readonly participle: ReadonlySet<string>; readonly example: Lexicon; readonly pair: ReadonlySet<string> };
+export type ListWords = {
+  readonly participle: ReadonlySet<string>;
+  readonly example: Lexicon;
+  readonly pair: ReadonlySet<string>;
+  readonly region: Lexicon;
+};
 
 const LIST_CONJUNCTION: ReadonlySet<string> = new Set(["and", "or"]);
 
@@ -59,6 +65,37 @@ const byDepth = (depths: readonly number[], test: (index: number) => boolean): R
   }, new Map<number, number[]>());
 
 const isComma = (token: Token): boolean => token.surface === ",";
+
+const surfacesOf = ({ pattern, tokens: words = [] }: LexiconEntry): string[] => (words.length > 0 ? words.map((word) => word.surface) : pattern.split(" "));
+
+/** start から州や国の名が書いてあれば、その後ろの位置。無ければ -1。語ごとに書いたとおりに照らす。 */
+const regionEnd = (tokens: readonly Token[], start: number, regions: Lexicon): number => {
+  const name = regions.map(surfacesOf).find((surfaces) => surfaces.every((surface, offset) => tokens[start + offset]?.surface === surface));
+  return name === undefined ? -1 : start + name.length;
+};
+
+/** 名の後ろが文や句の切れ目（, . ; : ) か文の終わり）。New London, Wisconsin, and … の Wisconsin。 */
+const closesName = (token: Token | undefined): boolean => token === undefined || [",", ".", ";", ":", ")"].includes(token.surface);
+
+/** at の直前が州や国の名で終わる（Texas, Florida, … の Texas）。名の長さの分だけ前から照らす。 */
+const endsWithRegion = (tokens: readonly Token[], at: number, regions: Lexicon): boolean =>
+  regions.some((entry) => {
+    const start = at - surfacesOf(entry).length;
+    return start >= 0 && regionEnd(tokens, start, [entry]) === at;
+  });
+
+/**
+ * 地名と、それに添えた州や国の名のあいだの読点（New London, Wisconsin, and a photo / Lyon, France, then）。並びの区切りではない。
+ * 前が固有名詞で、それ自身が州や国の名でなく（Texas, Florida, and Ohio は州の並び）、後ろの名が切れ目で閉じるときだけ。
+ */
+const regionCommasOf = (tokens: readonly Token[], regions: Lexicon): ReadonlySet<number> =>
+  new Set(
+    tokens.flatMap((token, at) => {
+      if (!isComma(token) || tokens[at - 1]?.pos !== "PROPN") return [];
+      const end = regionEnd(tokens, at + 1, regions);
+      return end !== -1 && closesName(tokens[end]) && !endsWithRegion(tokens, at, regions) ? [at] : [];
+    }),
+  );
 
 /** 項目への問いの列。読点は項目に入ったり入らなかったりするので、脇に置いて問いごとに数える（token-column.ts）。 */
 const columnsOf = (tokens: readonly Token[], depths: readonly number[]) => {
@@ -143,6 +180,7 @@ export const listSentenceOf = (tokens: readonly Token[], words: ListWords, sourc
   const depths = depthsOf(tokens);
   const column = columnsOf(tokens, depths);
   const exampleEnds = exampleEndsOf(tokens, depths, column, words.example);
+  const regionCommas = regionCommasOf(tokens, words.region);
   return {
     tokens,
     depths,
@@ -151,7 +189,7 @@ export const listSentenceOf = (tokens: readonly Token[], words: ListWords, sourc
     exampleEnds,
     exampleStarts: byDepth(depths, (index) => (exampleEnds[index]?.length ?? 0) > 0),
     pairOpeners: pairOpenersOf(tokens, depths, words.pair),
-    commas: byDepth(depths, (index) => tokens[index]?.surface === ","),
+    commas: byDepth(depths, (index) => tokens[index]?.surface === "," && !regionCommas.has(index)),
     inCitedTitle: citedTitles(tokens, source),
   };
 };

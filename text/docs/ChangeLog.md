@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `oxford-comma-consistency` reads "City, State," as one name (#170)
+
+- The comma between a place and its US state or country ("New London, Wisconsin, and a photo of …", "Lyon, France,")
+  is part of the name, not a list's comma. A NOAA release in the corpus was counted as writing an Oxford comma there.
+- The names are an English word list, `place-region` (the states, D.C., some territories, the countries and the
+  Canadian provinces). The comma counts as a name's only after a proper noun that is not itself on the list, and when
+  the name ends at punctuation: "Texas, Florida, and Ohio" and "Austin, Texas, Boston, Massachusetts, and Denver,
+  Colorado" are still lists.
+
 ### `agentless-passive` (ja) reads 「〜されることとなった」 as a predicate
 
 「本件は検討されることとなった。」 and 「見直しが実施されることになりました。」 were not reported: the こと after the
