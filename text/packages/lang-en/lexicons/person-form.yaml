@@ -1,0 +1,9 @@
+# A form (person-word's instead_of) and the party it names. Forms with the same instead_of should agree in one document.
+#   reader: the reader addressed as you or as one
+id: person-form
+language: en
+entries:
+  - pattern: you
+    instead_of: reader
+  - pattern: one
+    instead_of: reader

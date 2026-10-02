@@ -1,0 +1,59 @@
+id: person-consistency
+layer: L2
+status: experimental
+how_to_find: person-mix
+word_list: person-word
+extra_word_lists: [person-form]
+severity: info
+
+name:
+  ja: 自分や読み手の呼び方が揃っていない
+  en: The document names itself or its reader two ways
+
+why:
+  ja: 文書が自分を「私たち」と呼ぶか「弊社」「当社」と呼ぶか、書き手を「私」と書くか「筆者」と書くか、英語で読み手を you と呼ぶか one と呼ぶかは文体の選択で、どれが正しいかは決めません。一つの文書の中で混ざると、読み手は話し手が変わったのか、別の誰かのことなのかを考えます。継ぎ合わせた文書や、別の人が足した段落によく起きます。chaff は呼び方ごとに文書の中で多いほうを文書の書き方とし、少ないほうを指します。鉤括弧と引用符の中、引用の段落、コードは数えません。英語の we と I は、多くの文書で別の相手（組織と話し手）を指すので比べません。
+  en: Whether a Japanese document calls itself 私たち or 弊社 and its writer 私 or 筆者, and whether an English document addresses its reader as "you" or as "one", is a choice of voice, and chaff does not pick one. Mixed in one document, the reader wonders whether the speaker changed or someone else is meant; it happens most where text was stitched together or another writer added a paragraph. chaff takes the form the document uses most as its habit and points at the other. Quotations, quoted blocks and code are not counted. English "we" and "I" are not compared, since in most documents they name two parties (the organisation and the speaker).
+
+message:
+  ja: 「{matched}」と書いています（この文書はふつう「{usual}」。{of} 箇所のうち {count} 箇所が違う）
+  en: '"{matched}" here, where the document usually says "{usual}" ({count} of {of})'
+
+placeholders:
+  matched:
+    ja: 見つけた呼び方
+    en: the form found
+  usual:
+    ja: 文書でふつうの呼び方
+    en: the form the document usually uses
+
+how_to_fix:
+  ja: 同じ相手を指しているなら、文書の多いほうの呼び方に揃えてください。別の相手（会社と、書き手個人）を指しているなら、その違いが読み手に分かるように書きます。
+  en: If the same party is meant, use the form the rest of the document uses. If another party is meant (the company and the writer), make the difference clear to the reader.
+
+# 少ないほうの呼び方が、その呼び方全体の何パーセントまでなら混ざりと見るか。超えたら、文書が使い分けている。
+levels: { strict: 30, normal: 20, relaxed: 10 }
+
+use_for: [technical, blog, business, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「私たち」と「弊社」、「私」と「筆者」のように、一つの文書が自分や読み手を二通りに呼んでいる所
+  en: 'One document naming itself two ways (私たち and 弊社) or its reader two ways ("you" and "one")'
+example:
+  ja:
+    before: |
+      弊社は、来月から新しい窓口を開きます。弊社の担当者が、平日の午前に受け付けます。私たちは、相談の内容を記録に残します。弊社は、記録を一年間保管します。保管した記録は、弊社の外には出しません。
+    after: |
+      弊社は、来月から新しい窓口を開きます。弊社の担当者が、平日の午前に受け付けます。弊社は、相談の内容を記録に残します。弊社は、記録を一年間保管します。保管した記録は、弊社の外には出しません。
+  en:
+    before: |
+      You can book a slot online. Your booking shows on the next page. If you miss it, you can book again. One can also call the desk.
+    after: |
+      You can book a slot online. Your booking shows on the next page. If you miss it, you can book again. You can also call the desk.
+
+not_flagged:
+  ja: 呼び方が一通りの文書と、少ないほうが決まった割合を超える文書（使い分けていると見ます）は指摘しません。多いほうが 3 箇所に満たない文書も見ません。鉤括弧と引用符の中、引用の段落、コード、前後に漢字やカタカナが続く語（東京本社、当社比）は数えません。英語の one は、can や must の前の主語の one だけを数え、no one や the one や前置詞の後ろの one は数えません。どの呼び方が正しいかは決めません。
+  en: A document with one form, or whose other form passes a set share of the places (it uses both on purpose), is not reported, nor one whose usual form appears fewer than 3 times. Quotations, quoted blocks, code and words joined to longer ones (東京本社) are not counted. Only "one" as the subject of a modal verb is counted, not "no one", "the one" or "one" after a preposition. Which form is right is not decided.
+level_meaning:
+  ja: 少ないほうの呼び方が全体の {limit} パーセント以下のとき指摘
+  en: reported when the other form is {limit} percent of the places or fewer

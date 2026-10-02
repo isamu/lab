@@ -33,7 +33,7 @@ import { MODAL_MUTATIONS } from "./bench-mutations-modal.ts";
 import { ABSOLUTE_MUTATIONS } from "./bench-mutations-absolute.ts";
 import { REQUIREMENT_MUTATIONS } from "./bench-mutations-requirements.ts";
 import { POINTER_MUTATIONS } from "./bench-mutations-pointers.ts";
-import { DEFINITION_MUTATIONS } from "./bench-mutations-definitions.ts";
+import { registeredMutations } from "./bench-plants.ts";
 
 // --- date-weekday-mismatch ---
 
@@ -347,6 +347,7 @@ export const contract = (source: string): Plant | undefined => {
   });
 };
 
+// A new rule's mutations go in a module of their own in scripts/bench-plants/, not in this list (bench-plants.ts).
 export const MUTATIONS: readonly Mutation[] = [
   { id: "weekday-shift", rule: "date-weekday-mismatch", languages: ["ja", "en"], plant: shiftWeekday },
   { id: "rows-swapped", rule: "date-order", languages: ["ja", "en"], plant: swapDatedRows },
@@ -396,5 +397,5 @@ export const MUTATIONS: readonly Mutation[] = [
   ...ABSOLUTE_MUTATIONS,
   ...REQUIREMENT_MUTATIONS,
   ...POINTER_MUTATIONS,
-  ...DEFINITION_MUTATIONS,
+  ...registeredMutations(),
 ];

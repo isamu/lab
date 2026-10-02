@@ -1,0 +1,5 @@
+table  4  4  0  0
+en/design  plural-after-article  found
+en/itinerary  plural-after-article  found
+en/proposal  plural-after-article  found
+en/requirements  plural-after-article  found

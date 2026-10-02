@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  section-emptied  found
+ja/design  section-emptied  found
+ja/figures  section-emptied  found
+ja/itinerary  section-emptied  found
+ja/minutes  section-emptied  found
+ja/press  section-emptied  found
+ja/proposal  section-emptied  found
+ja/quote  section-emptied  found
+ja/readme  section-emptied  found
+ja/requirements  section-emptied  found
+en/blog  section-emptied  found
+en/design  section-emptied  found
+en/figures  section-emptied  found
+en/itinerary  section-emptied  found
+en/minutes  section-emptied  found
+en/press  section-emptied  found
+en/proposal  section-emptied  found
+en/quote  section-emptied  found
+en/readme  section-emptied  found
+en/requirements  section-emptied  found

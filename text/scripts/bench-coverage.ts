@@ -1,7 +1,7 @@
-// Which rules `yarn bench` must plant a mistake for (test/fixtures/bench/plants.yaml), and what is wrong when it does not.
+// Which rules `yarn bench` must plant a mistake for (test/fixtures/bench/plants/<rule>.yaml), and what is wrong when it does not.
 // A rule whose plant never lands (no sample qualifies, a sample changed) would otherwise just leave the table. Pure.
 
-const PLANTS_FILE = "test/fixtures/bench/plants.yaml";
+const PLANTS_FILE = "test/fixtures/bench/plants/";
 
 /** planted: the rules the bench plants, with the languages it must plant them in. notPlanted: the other rules, with why. */
 export type PlantPlan = { readonly planted: Readonly<Record<string, readonly string[]>>; readonly notPlanted: Readonly<Record<string, string>> };
@@ -40,10 +40,27 @@ export const planOf = (raw: unknown): PlantPlan => {
   };
 };
 
+/**
+ * The plan from one file per rule (test/fixtures/bench/plants/<rule>.yaml), by rule id: each file holds either
+ * `planted: [languages]` or `not_planted: reason`, so a new rule adds its own file and edits no shared list.
+ */
+export const planOfFiles = (files: ReadonlyMap<string, unknown>): PlantPlan => {
+  const entries = [...files.entries()].map(([rule, raw]) => {
+    const keys = isRecord(raw) ? Object.keys(raw) : [];
+    const [key] = keys;
+    if (!isRecord(raw) || keys.length !== 1 || (key !== "planted" && key !== "not_planted"))
+      throw new Error(`${PLANTS_FILE}${rule}.yaml: needs planted or not_planted, and only one of them`);
+    return { rule, key, value: raw[key] };
+  });
+  const section = (key: string): Record<string, unknown> =>
+    Object.fromEntries(entries.filter((entry) => entry.key === key).map((entry) => [entry.rule, entry.value]));
+  return planOf({ planted: section("planted"), not_planted: section("not_planted") });
+};
+
 const listingProblems = (plan: PlantPlan, rules: readonly string[]): string[] => {
   const listed = [...Object.keys(plan.planted), ...Object.keys(plan.notPlanted)];
   return [
-    ...rules.filter((rule) => !listed.includes(rule)).map((rule) => `${rule}: not in ${PLANTS_FILE} (planted or not_planted)`),
+    ...rules.filter((rule) => !listed.includes(rule)).map((rule) => `${rule}: no ${PLANTS_FILE}${rule}.yaml (planted or not_planted)`),
     ...listed.filter((rule) => !rules.includes(rule)).map((rule) => `${rule}: in ${PLANTS_FILE} but no such rule`),
     ...Object.keys(plan.planted)
       .filter((rule) => Object.hasOwn(plan.notPlanted, rule))
