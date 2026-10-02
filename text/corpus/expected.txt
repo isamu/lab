@@ -145,7 +145,7 @@ mdn-using-fetch-ja  latin-spacing 1, max-sentence-length 1, ngram-repetition 1, 
 meti-keiryoshi-exam-correction  latin-spacing 1, max-sentence-length 2
 meti-press-level4-bus  latin-spacing 2, max-kanji-continuous 2, max-paragraph-length 1, max-sentence-length 5, unbalanced-bracket 1
 mext-heatstroke-after-holidays  fullwidth-alnum-consistency 1, hiragana-fukushi 1, max-kanji-continuous 5, max-paragraph-length 2, max-sentence-length 18, ngram-repetition 1, preamble-length 1
-mhlw-icd-committee-26-minutes  fullwidth-alnum-consistency 2, max-kanji-continuous 24, max-sentence-length 34, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 1, sasete-itadaku 38, unbalanced-bracket 2, undefined-acronym 3
+mhlw-icd-committee-26-minutes  fullwidth-alnum-consistency 2, max-kanji-continuous 24, max-sentence-length 34, ngram-repetition 1, no-doubled-joshi 4, no-mixed-desumasu 1, sasete-itadaku 42, unbalanced-bracket 2, undefined-acronym 3
 mhlw-kikan-gyomu-shokuin-boshu  fullwidth-alnum-consistency 3, max-kanji-continuous 6, unbalanced-bracket 1
 mhlw-kokuji-h18-107-keiji-jiko  dangling-reference 43, duplicate-heading 1, max-sentence-length 6, no-nakaguro-parallel 2, undefined-acronym 8
 mhlw-norovirus-qa  fullwidth-alnum-consistency 1, kutoten-consistency 1, latin-spacing 1, max-kanji-continuous 12, max-paragraph-length 1, max-sentence-length 28, ngram-repetition 1, no-doubled-joshi 3, no-mixed-desumasu 3, repeated-conjunction 1, unbalanced-bracket 2, undefined-acronym 5
@@ -199,7 +199,7 @@ soumu-kokumin-cyber-malware  concrete-evidence-density 3, max-sentence-length 10
 soumu-kokumin-cyber-phishing  concrete-evidence-density 3, katakana-long-vowel 1, latin-spacing 7, max-sentence-length 6
 soumu-wp-r06-ai-booms  agentless-passive 1, katakana-long-vowel 1, max-sentence-length 2, undefined-acronym 3
 soumu-wp-r06-ai-rules-japan  agentless-passive 2, latin-spacing 1, max-sentence-length 6, no-doubled-joshi 1
-soumu-wp-r06-misinformation  agentless-passive 7, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 22, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
+soumu-wp-r06-misinformation  agentless-passive 8, max-kanji-continuous 1, max-paragraph-length 2, max-sentence-length 22, no-doubled-joshi 2, padded-intro 1, taigen-dome-in-prose 1, undefined-acronym 9
 sre-next-bunsho-kanri  clean
 sre-next-teikan  no-mixed-desumasu 1
 tc39-agenda-2026-07  adverb-overuse 1, max-sentence-length 11, oxford-comma-consistency 1, proper-noun-density 1, title-case-consistency 2
