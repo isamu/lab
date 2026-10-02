@@ -57,11 +57,11 @@ example:
     before: |
       # 案内
 
-      始める前に[準備](./other.md#用意)を読んでください。
+      始める前に[準備](./a.md#用意)を読んでください。
     after: |
       # 案内
 
-      始める前に[準備](./other.md#準備)を読んでください。
+      始める前に[準備](./a.md#準備)を読んでください。
   en:
     other: |
       # Steps
@@ -72,11 +72,11 @@ example:
     before: |
       # Guide
 
-      Before you start, read [Setup](./other.md#preparation).
+      Before you start, read [Setup](./a.md#preparation).
     after: |
       # Guide
 
-      Before you start, read [Setup](./other.md#setup).
+      Before you start, read [Setup](./a.md#setup).
 
 not_flagged:
   ja: URL、サイトの根からのパス（/guide/）、同じページの中へのリンク（broken-link が見ます）、Markdown でないファイル（画像やスクリプト）へのリンクは見ません。行き先のファイルが無くても、一緒に見たファイルのどれも置かれていないフォルダのものと、フォルダを指すリンク（./guide/）は、確かめようがないので指しません。拡張子を書かないリンク（./reference）は、.md などを補って探します。
