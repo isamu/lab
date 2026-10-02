@@ -1,0 +1,5 @@
+# Words after a length of time that point before the base date (relative-date-mismatch): "three days earlier, on May 2".
+id: relative-before
+language: en
+entries:
+  - pattern: "earlier"

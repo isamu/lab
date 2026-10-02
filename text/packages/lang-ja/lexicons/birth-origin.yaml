@@ -1,0 +1,5 @@
+# 生まれた年の語（elapsed-years-mismatch）。同じ文の年齢と比べる。
+id: birth-origin
+language: ja
+entries:
+  - pattern: "生まれ"

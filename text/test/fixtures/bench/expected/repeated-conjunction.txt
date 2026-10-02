@@ -1,0 +1,8 @@
+table  7  7  0  0
+ja/design  opener-repeated  found
+ja/figures  opener-repeated  found
+ja/press  opener-repeated  found
+ja/proposal  opener-repeated  found
+ja/requirements  opener-repeated  found
+en/press  opener-repeated  found
+en/requirements  opener-repeated  found

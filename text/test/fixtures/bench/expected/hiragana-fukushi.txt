@@ -1,0 +1,7 @@
+table  6  6  0  0
+ja/blog  adverb-kanji  found
+ja/email  adverb-kanji  found
+ja/figures  adverb-kanji  found
+ja/press  adverb-kanji  found
+ja/proposal  adverb-kanji  found
+ja/readme  adverb-kanji  found

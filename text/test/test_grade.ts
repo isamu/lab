@@ -295,6 +295,9 @@ describe("chaff grade on the command line", () => {
     const usage = await runCli({}, ["grade"], "ja_JP.UTF-8");
     assert.equal(usage.code, 2);
     assert.match(usage.err, /使い方: chaff grade/u);
+    const language = await runCli({ "items.jsonl": jsonl({ id: "a", output: "x" }), "chaff.yaml": "language: xx\n" }, ["grade", "items.jsonl"], "en_US.UTF-8");
+    assert.equal(language.code, 2);
+    assert.match(language.err, /Cannot load a language package/u);
     const setting = await runCli({ "items.jsonl": jsonl({ id: "a", output: "x" }), "chaff.yaml": "genre: poetry\n" }, ["grade", "items.jsonl"], "en_US.UTF-8");
     assert.equal(setting.code, 2);
   });

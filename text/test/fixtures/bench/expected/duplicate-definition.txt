@@ -1,0 +1,5 @@
+table  4  4  0  0
+ja/design  defined-twice  found
+ja/policy  defined-twice  found
+en/design  defined-twice  found
+en/policy  defined-twice  found

@@ -10,8 +10,8 @@ name:
   en: Unfilled placeholder
 
 why:
-  ja: 「【会社名】」「[Your Name]」は、雛形や生成した下書きに残る空欄です。文体の好みではなく、埋め忘れです。例として置いた「○○」は正しい書き方なので数えません。
-  en: '"[Your Name]" and "[Insert Date]" are the blanks a template or a generated draft leaves. This is not a matter of style: the blank was never filled.'
+  ja: "「【会社名】」「[Your Name]」「（ここに会社名を書く）」は、雛形や生成した下書きに残る空欄です。値に「TODO: …」「未定」とだけ書いたものも、後で埋めるつもりの空欄です。文体の好みではなく、埋め忘れです。例として置いた「○○」は正しい書き方なので数えません。"
+  en: '"[Your Name]" and "[Insert Date]" are the blanks a template or a generated draft leaves. A value that only says "TODO: …" or "TBD" is a blank too, left to fill in later. This is not a matter of style: the blank was never filled.'
 
 message:
   ja: 「{matched}」が埋まっていません
@@ -21,15 +21,15 @@ how_to_fix:
   ja: 中身を書いてください。例のつもりなら、例だと分かる書き方（例：山田太郎）にしてください。
   en: Fill it in. If it is meant as an example, say so ("for example, Jane Smith").
 
-# 指摘に要る空欄の数。
-levels: { strict: 1, normal: 1, relaxed: 2 }
+# 空欄は 1 つでも埋め忘れなので、段は数ではなく指摘の重さを決める。
+levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 
 group: slips
 summary:
-  ja: 「【会社名】」「[Your Name]」のように、雛形の空欄が埋まらないまま残っている所
-  en: A template blank left unfilled, such as "[Your Name]" or "[Insert Date]"
+  ja: "「【会社名】」「[Your Name]」「TODO: …」のように、雛形の空欄や後で埋めるつもりの値が埋まらないまま残っている所"
+  en: 'A template blank or a to-do value left unfilled, such as "[Your Name]", "[Insert Date]" or "TODO: …"'
 example:
   ja:
     before: |
@@ -43,8 +43,5 @@ example:
       We can meet on Friday 9 October to go through the quote.
 
 not_flagged:
-  ja: 例として置いた「○○」、Markdown のリンク、脚注の番号、チェック欄、値が続く見出しの札（【氏名】山田）は指しません。
-  en: 'Markdown links and reference definitions, footnote numbers, checkboxes, and a label its value follows ("[Date]: 2024-04-01") are not reported.'
-level_meaning:
-  ja: 空欄が {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  ja: "例として置いた「○○」、Markdown のリンク、脚注の番号、チェック欄とチェックリストの項目（- [ ] TODO: …）、値が続く見出しの札（【氏名】山田）、コードとコードのコメント（// TODO）、文の中の「未定」（日程は未定です）は指しません。"
+  en: 'Markdown links and reference definitions, footnote numbers, checkboxes and checklist items ("- [ ] TODO: …"), a label its value follows ("[Date]: 2024-04-01"), code and code comments ("// TODO"), and "TBD" inside a sentence ("the date is TBD") are not reported.'

@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/press  ra-dropped  found
+ja/requirements  ra-dropped  found

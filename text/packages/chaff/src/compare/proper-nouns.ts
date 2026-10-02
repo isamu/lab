@@ -54,12 +54,16 @@ export const readsProperNouns = (doc: ProseDocument): boolean => doc.sentences.l
  */
 export const properNouns = (input: NounInput): Atom[] => {
   const { source } = input.doc;
-  const lowerCase = lowerCaseWords(source);
-  return input.doc.sentences.flatMap((sentence) =>
-    runsOf(sentence.tokens ?? [], source).flatMap((run): Atom[] => {
-      const text = source.slice(run.start, run.end);
-      if (overlapsAny(input.taken, run) || isCommonWord(run, text, lowerCase)) return [];
-      return [{ kind: "name", key: factKey(source, run, input.unseen), text, line: input.lineOf(run.start) }];
-    }),
+  return nameSpans(input.doc).flatMap((run): Atom[] => {
+    if (overlapsAny(input.taken, run)) return [];
+    return [{ kind: "name", key: factKey(source, run, input.unseen), text: source.slice(run.start, run.end), line: input.lineOf(run.start) }];
+  });
+};
+
+/** Where the tagger's proper nouns are written, each run of them one name, without the common words that began a sentence. */
+export const nameSpans = (doc: ProseDocument): Span[] => {
+  const lowerCase = lowerCaseWords(doc.source);
+  return doc.sentences.flatMap((sentence) =>
+    runsOf(sentence.tokens ?? [], doc.source).filter((run) => !isCommonWord(run, doc.source.slice(run.start, run.end), lowerCase)),
   );
 };

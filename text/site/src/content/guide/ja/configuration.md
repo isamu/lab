@@ -94,6 +94,7 @@ chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
 一覧に無いジャンルを書くと、chaff は何も検査せずに止まり、どこに書いたジャンルかを言います。
 文書の front matter の `genre:` が一覧に無いときは使わず、そう言ってから、書いていないときと同じようにジャンルを決めます。
 言語も自動で決まり、`language` に `ja` か `en` を書けば固定できます。
+言語の決まり方、日英の混ざった文書、どのルールがどの言語で動くかは[言語](./languages)にあります。
 
 ## 文書の種類を決める
 
@@ -192,7 +193,7 @@ announced-count-mismatch を normal にしました（…/chaff.yaml）
 | ルール | `strict` | `normal` | `relaxed` |
 | --- | --- | --- | --- |
 | `numbering-gap` `dangling-reference` `date-weekday-mismatch` `total-mismatch` | （無い） | エラー | 注意 |
-| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` | エラー | 注意 | 参考 |
+| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` `unfilled-placeholder` | エラー | 注意 | 参考 |
 
 エラーが 1 件でも残ると、chaff は失敗で終わります。注意と参考だけなら成功で終わります。
 `explain` でも、数字の代わりに重さが出ます。

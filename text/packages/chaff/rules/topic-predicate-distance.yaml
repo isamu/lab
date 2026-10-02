@@ -1,0 +1,59 @@
+id: topic-predicate-distance
+layer: L3
+status: experimental
+how_to_find: topic-predicate-distance
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 主題と述語が離れている
+  en: Topic far from its predicate
+
+why:
+  ja: 日本語の文は述語が最後に来るので、「会議は」と主題を出してから述語までが長いと、読み手は主題を覚えたまま、間の修飾や節を全部読み終えるまで「会議は何なのか」を待つことになります。文の長さが上限に収まっていても、主題が文の頭にあって述語が遠ければ起きます。chaff は文の最初の「名詞＋は」から文の終わりの述語までの字数を数えます（述語を厳密に探すのではなく、文の終わりに置く日本語の形を使った近似です）。鉤括弧で引いたものの中は数えません。
+  en: A Japanese sentence puts its predicate last, so after a topic (会議は) the reader waits for everything in between before learning what the topic does. chaff counts the characters from the first noun followed by は to the end of the sentence, where Japanese puts the predicate; it is an approximation, not a parse. Anything quoted in 「」 is not counted.
+
+message:
+  ja: 「は」で出した主題から述語まで {count} 字あります（{limit} 字まで）
+  en: "{count} characters between the topic (は) and the predicate (limit {limit})"
+
+how_to_fix:
+  ja: 主題を述語の近くに動かすか、間に挟んだ説明を別の文にしてください。「会議は、〜のため、〜について、〜した結果、延期になった」は「〜した結果、会議は延期になった」のように。
+  en: Move the topic next to the predicate, or take what stands between them into its own sentence.
+
+levels: { strict: 60, normal: 80, relaxed: 100 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「会議は」のように主題を出してから、文の終わりの述語まで長く待たせる文
+  en: A Japanese sentence that names its topic (〜は) early and makes the reader wait long for its predicate
+example:
+  ja:
+    before: |
+      来週の定例会議は、新しい担当者の紹介と、先月から続いている予算の見直しと、春に予定している本社の移転の準備と、秋の採用計画の確認と、年末の懇親会の段取りについて話し合う必要があるため、二時間に延長します。
+    after: |
+      来週は、新しい担当者の紹介、先月から続く予算の見直し、春の本社移転の準備、秋の採用計画の確認、年末の懇親会の段取りを話し合います。そのため定例会議は二時間に延長します。
+
+not_flagged:
+  ja: 主題（名詞＋は）の無い文、鉤括弧で引いたものの中、上限までの距離は見ません。英語の文書には使いません。
+  en: Sentences with no topic (noun + は), quotations in 「」, and distances up to the limit are not counted. Not used on English documents.
+level_meaning:
+  ja: 主題から述語まで {limit} 字まで
+  en: up to {limit} characters between the topic and the predicate
+rewrite:
+  ja:
+    direction: 主題（〜は）を述語の近くに動かすか、主題と述語の間に挟んだ説明を前の文に出してください。
+    pairs:
+      - before: 来週の定例会議は、新しい担当者の紹介と、先月から続いている予算の見直しと、春に予定している本社の移転の準備と、秋の採用計画の確認と、年末の懇親会の段取りについて話し合う必要があるため、二時間に延長します。
+        after: 来週は、新しい担当者の紹介、先月から続く予算の見直し、春の本社移転の準備、秋の採用計画の確認、年末の懇親会の段取りを話し合います。そのため定例会議は二時間に延長します。
+      - before: この機能は、利用者が設定画面で通知の頻度や送り先を変えたときに、変更前の設定と変更した日時と変更した人の名前を記録として一週間保存しておき、あとで元に戻せるようにするために使います。
+        after: 利用者が設定画面で通知の頻度や送り先を変えたとき、変更前の設定と日時と変更した人の名前を一週間保存し、あとで元に戻せるようにします。この機能はそのために使います。
+    keep:
+      - 主題と述語の組み合わせ（何が・どうなる）
+      - 間に挟んだ条件や理由
+    avoid:
+      - 間の説明を消す
+      - 主題を消して、何の話なのか分からなくする

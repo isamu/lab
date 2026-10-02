@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  name-slipped-ja  found
+ja/design  name-slipped-ja  found
+ja/email  name-slipped-ja  found
+ja/figures  name-slipped-ja  found
+ja/itinerary  name-slipped-ja  found
+ja/minutes  name-slipped-ja  found
+ja/note  name-slipped-ja  found
+ja/policy  name-slipped-ja  found
+ja/press  name-slipped-ja  found
+ja/proposal  name-slipped-ja  found
+ja/quote  name-slipped-ja  found
+ja/readme  name-slipped-ja  found
+ja/requirements  name-slipped-ja  found
+en/blog  name-slipped-en  found
+en/design  name-slipped-en  found
+en/email  name-slipped-en  found
+en/figures  name-slipped-en  found
+en/itinerary  name-slipped-en  found
+en/minutes  name-slipped-en  found
+en/note  name-slipped-en  found
+en/policy  name-slipped-en  found
+en/press  name-slipped-en  found
+en/proposal  name-slipped-en  found
+en/quote  name-slipped-en  found
+en/readme  name-slipped-en  found
+en/requirements  name-slipped-en  found

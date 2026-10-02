@@ -34,7 +34,7 @@ const itemLine = (change: ItemChange, text: BaselineText): string =>
   [
     `  ${change.id}: ${text.droppedAdded(factsOf(change.dropped, text), factsOf(change.added, text))}`,
     ...(change.citations.length === 0 ? [] : [text.newCitations(change.citations.map((citation) => `${citation.source} ${citation.address}`).join(", "))]),
-  ].join("; ");
+  ].join(text.separator);
 
 const unpairedLines = (comparison: Comparison, text: BaselineText): string[] =>
   comparison.onlyBefore.length + comparison.onlyAfter.length + comparison.readOtherwise.length === 0

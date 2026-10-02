@@ -45,7 +45,7 @@ chaff は、その番号と参照がかみ合っているかを機械で確か�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 次の規程を `kitei.md` という名前で保存しました。崩れを 3 つ入れてあります。
 
-```markdown
+```markdown file=kitei.md
 # 備品管理規程
 
 ## 第1条（目的）
@@ -127,58 +127,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
   試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  51 件の rule は動いていません:
-      adverb-overuse（ja 向けの rule ではないため）
-      agentless-passive（ジャンル legal/statute では見ないため）
-      agreement-slip（ja 向けの rule ではないため）
-      ai-generated-composite（ジャンル legal/statute では見ないため）
-      ai-tell（ジャンル legal/statute では見ないため）
-      announced-count-mismatch（まだ試験中のため）
-      announcing-opener（ジャンル legal/statute では見ないため）
-      assistant-residue（まだ試験中のため）
-      closing-cliche（ジャンル legal/statute では見ないため）
-      colon-lead-in（ジャンル legal/statute では見ないため）
-      concrete-evidence-density（ジャンル legal/statute では見ないため）
-      contraction-consistency（ja 向けの rule ではないため）
-      contrast-framing（ジャンル legal/statute では見ないため）
-      cushion-phrase-density（ジャンル legal/statute では見ないため）
-      date-order（まだ試験中のため）
-      double-keigo（まだ試験中のため）
-      doubled-word（まだ試験中のため）
-      emoji-density（まだ試験中のため）
-      excessive-hedging（ジャンル legal/statute では見ないため）
-      expletive-construction（ja 向けの rule ではないため）
-      heading-echo（ジャンル legal/statute では見ないため）
-      hiragana-fukushi（まだ試験中のため）
-      internal-jargon（まだ試験中のため）
-      latin-spacing（まだ試験中のため）
-      max-kanji-continuous（ジャンル legal/statute では見ないため）
-      ngram-repetition（ジャンル legal/statute では見ないため）
-      no-doubled-joshi（ジャンル legal/statute では見ないため）
-      no-em-dash（まだ試験中のため）
-      no-mixed-desumasu（まだ試験中のため）
-      oxford-comma-consistency（ja 向けの rule ではないため）
-      padded-intro（ジャンル legal/statute では見ないため）
-      paragraph-length-variance（ジャンル legal/statute では見ないため）
-      percent-sum-mismatch（まだ試験中のため）
-      preamble-length（ジャンル legal/statute では見ないため）
-      preferred-term（まだ試験中のため）
-      proper-noun-density（ジャンル legal/statute では見ないため）
-      repeated-conjunction（まだ試験中のため）
-      repeated-sentence-head（ジャンル legal/statute では見ないため）
-      required-sections（まだ試験中のため）
-      rule-of-three（ジャンル legal/statute では見ないため）
-      sasete-itadaku（ジャンル legal/statute では見ないため）
-      section-length-uniformity（ジャンル legal/statute では見ないため）
-      sentence-initial-conjunction-run（ja 向けの rule ではないため）
-      sentence-rhythm（ジャンル legal/statute では見ないため）
-      stock-transition（ジャンル legal/statute では見ないため）
-      stray-space（まだ試験中のため）
-      taigen-dome-in-prose（ジャンル legal/statute では見ないため）
-      title-case-consistency（ja 向けの rule ではないため）
-      undefined-acronym（まだ試験中のため）
-      unfilled-placeholder（まだ試験中のため）
-      unqualified-superlative（ジャンル legal/statute では見ないため）
+  {not-run}
 ```
 
 ## 指摘の読み方
@@ -202,8 +151,8 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 | ja 向けの rule ではないため | 英語の文書だけに使うルールです |
 | まだ試験中のため | 誤りが出ないか確かめている最中のルールです。`--experimental` を付けると動きます |
 
-その上の「試験中の rule を 7 件、ジャンルの既定で有効にしています」は、
-試験中のルールのうち、規程で確かめ終えた 5 件をこのジャンルでは動かしている、という意味です。
+その上の「試験中の rule を 7 件、ジャンルの既定で有効にしています」は、ほかのジャンルではまだ試験中の 7 件です。
+規程で確かめてあるので、このジャンルでは動かします。
 
 ## ジャンルを毎回書かずに済ませる
 
@@ -262,7 +211,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから   stet 1 �
   16:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 2 件、動いていない rule 45 件
+指摘 2 件、動いていない rule 48 件
 ```
 
 ## チームで決まりを変える
@@ -306,7 +255,7 @@ kitei.md   legal/statute · 日本語   ジャンルはchaff.yamlから
   15:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 3 件、動いていない rule 45 件
+指摘 3 件、動いていない rule 48 件
 ```
 
 エラーが 1 件でも残ると、chaff は失敗で終わります。注意だけなら成功で終わるので、CI を止めません。
@@ -358,7 +307,9 @@ kitei-fixed.md   legal/statute · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
+  試験中の rule を 1 件、設定により有効にしています: numbering-gap
+
+  試験中の rule を 6 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, total-mismatch
 ```
 
 この下に並ぶ「動いていない」一覧は、直す前と同じです。
