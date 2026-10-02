@@ -27,6 +27,7 @@ import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
 import { CHARACTER_MUTATIONS } from "./bench-mutations-characters.ts";
 import { OUTLINE_MUTATIONS } from "./bench-mutations-outline.ts";
 import { WORDING_MUTATIONS } from "./bench-mutations-wording.ts";
+import { MODAL_MUTATIONS } from "./bench-mutations-modal.ts";
 import { REQUIREMENT_MUTATIONS } from "./bench-mutations-requirements.ts";
 import { POINTER_MUTATIONS } from "./bench-mutations-pointers.ts";
 
@@ -385,6 +386,7 @@ export const MUTATIONS: readonly Mutation[] = [
   ...CHARACTER_MUTATIONS,
   ...OUTLINE_MUTATIONS,
   ...WORDING_MUTATIONS,
+  ...MODAL_MUTATIONS,
   ...REQUIREMENT_MUTATIONS,
   ...POINTER_MUTATIONS,
 ];

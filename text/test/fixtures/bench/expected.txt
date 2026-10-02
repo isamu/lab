@@ -37,6 +37,7 @@ latin-spacing                           1      1       0             0
 max-kanji-continuous                    5      5       0             0
 max-paragraph-length                    9      9       0             0
 max-sentence-length                    11     11       0             0
+modal-conflict                         26     26       0             0
 ngram-repetition                       10     10       0             0
 no-doubled-joshi                       12     12       0             0
 no-em-dash                             10     10       0             0
@@ -119,6 +120,7 @@ ja/blog  zero-width-pasted  found
 ja/blog  heading-copied  found
 ja/blog  section-emptied  found
 ja/blog  hedge-double-negative-ja  found
+ja/blog  modal-opposite-ja  found
 ja/design  reference-broken  found
 ja/design  number-skipped  found
 ja/design  defined-twice  found
@@ -149,6 +151,7 @@ ja/design  zero-width-pasted  found
 ja/design  heading-copied  found
 ja/design  section-emptied  found
 ja/design  hedge-double-negative-ja  found
+ja/design  modal-opposite-ja  found
 ja/email  weekday-shift  found
 ja/email  rows-swapped  found
 ja/email  plain-in-polite  found
@@ -173,6 +176,7 @@ ja/email  comma-western  found
 ja/email  kana-halfwidth  found
 ja/email  zero-width-pasted  found
 ja/email  hedge-double-negative-ja  found
+ja/email  modal-opposite-ja  found
 ja/figures  item-dropped  found
 ja/figures  announced-item-dropped  found
 ja/figures  figure-renumbered  found
@@ -210,6 +214,7 @@ ja/figures  section-emptied  found
 ja/figures  number-fullwidth  found
 ja/figures  hedge-double-negative-ja  found
 ja/figures  figure-pointed-by-place  found
+ja/figures  modal-opposite-ja  found
 ja/itinerary  weekday-shift  found
 ja/itinerary  rows-swapped  found
 ja/itinerary  item-dropped  found
@@ -236,6 +241,7 @@ ja/itinerary  zero-width-pasted  found
 ja/itinerary  heading-copied  found
 ja/itinerary  section-emptied  found
 ja/itinerary  hedge-double-negative-ja  found
+ja/itinerary  modal-opposite-ja  found
 ja/minutes  weekday-shift  found
 ja/minutes  rows-swapped  found
 ja/minutes  polite-in-plain  found
@@ -260,6 +266,7 @@ ja/minutes  heading-copied  found
 ja/minutes  section-emptied  found
 ja/minutes  number-fullwidth  found
 ja/minutes  hedge-double-negative-ja  found
+ja/minutes  modal-opposite-ja  found
 ja/note  plain-in-polite  found
 ja/note  no-nested  found
 ja/note  space-strayed  found
@@ -272,6 +279,7 @@ ja/note  comma-western  found
 ja/note  kana-halfwidth  found
 ja/note  zero-width-pasted  found
 ja/note  hedge-double-negative-ja  found
+ja/note  modal-opposite-ja  found
 ja/policy  reference-broken  found
 ja/policy  number-skipped  found
 ja/policy  defined-twice  found
@@ -286,6 +294,7 @@ ja/policy  period-doubled  found
 ja/policy  comma-western  found
 ja/policy  kana-halfwidth  found
 ja/policy  zero-width-pasted  found
+ja/policy  modal-opposite-ja  found
 ja/press  weekday-shift  found
 ja/press  sentences-joined  found
 ja/press  plain-in-polite  found
@@ -327,6 +336,7 @@ ja/press  section-emptied  found
 ja/press  number-fullwidth  found
 ja/press  hedge-double-negative-ja  found
 ja/press  ra-dropped  found
+ja/press  modal-opposite-ja  found
 ja/proposal  item-dropped  found
 ja/proposal  plain-in-polite  found
 ja/proposal  no-nested  found
@@ -364,6 +374,7 @@ ja/proposal  heading-copied  found
 ja/proposal  section-emptied  found
 ja/proposal  number-fullwidth  found
 ja/proposal  hedge-double-negative-ja  found
+ja/proposal  modal-opposite-ja  found
 ja/quote  weekday-shift  found
 ja/quote  item-dropped  found
 ja/quote  plain-in-polite  found
@@ -387,6 +398,7 @@ ja/quote  heading-copied  found
 ja/quote  section-emptied  found
 ja/quote  number-fullwidth  found
 ja/quote  hedge-double-negative-ja  found
+ja/quote  modal-opposite-ja  found
 ja/readme  polite-in-plain  found
 ja/readme  no-nested  found
 ja/readme  space-strayed  found
@@ -412,6 +424,7 @@ ja/readme  zero-width-pasted  found
 ja/readme  heading-copied  found
 ja/readme  section-emptied  found
 ja/readme  hedge-double-negative-ja  found
+ja/readme  modal-opposite-ja  found
 ja/requirements  reference-broken  found
 ja/requirements  number-skipped  found
 ja/requirements  no-nested  found
@@ -437,6 +450,7 @@ ja/requirements  section-emptied  found
 ja/requirements  hedge-double-negative-ja  found
 ja/requirements  ra-dropped  found
 ja/requirements  requirement-loosened  found
+ja/requirements  modal-opposite-ja  found
 en/blog  sentences-joined  found
 en/blog  paragraphs-joined  found
 en/blog  heading-echoed  found
@@ -463,6 +477,7 @@ en/blog  period-spaced  found
 en/blog  heading-copied  found
 en/blog  section-emptied  found
 en/blog  hedge-double-negative-en  found
+en/blog  modal-opposite-en  found
 en/design  reference-broken  found
 en/design  number-skipped  found
 en/design  defined-twice  found
@@ -490,6 +505,7 @@ en/design  period-spaced  found
 en/design  heading-copied  found
 en/design  section-emptied  found
 en/design  hedge-double-negative-en  found
+en/design  modal-opposite-en  found
 en/email  weekday-shift  found
 en/email  rows-swapped  found
 en/email  sentences-joined  found
@@ -506,6 +522,7 @@ en/email  period-doubled  found
 en/email  zero-width-pasted  found
 en/email  period-spaced  found
 en/email  hedge-double-negative-en  found
+en/email  modal-opposite-en  found
 en/figures  item-dropped  found
 en/figures  announced-item-dropped  found
 en/figures  figure-renumbered  found
@@ -539,6 +556,7 @@ en/figures  heading-copied  found
 en/figures  section-emptied  found
 en/figures  hedge-double-negative-en  found
 en/figures  figure-pointed-by-place  found
+en/figures  modal-opposite-en  found
 en/itinerary  weekday-shift  found
 en/itinerary  rows-swapped  found
 en/itinerary  item-dropped  found
@@ -564,6 +582,7 @@ en/itinerary  period-spaced  found
 en/itinerary  heading-copied  found
 en/itinerary  section-emptied  found
 en/itinerary  hedge-double-negative-en  found
+en/itinerary  modal-opposite-en  found
 en/minutes  weekday-shift  found
 en/minutes  rows-swapped  found
 en/minutes  sentences-joined  found
@@ -585,6 +604,7 @@ en/minutes  period-spaced  found
 en/minutes  heading-copied  found
 en/minutes  section-emptied  found
 en/minutes  hedge-double-negative-en  found
+en/minutes  modal-opposite-en  found
 en/note  sentences-joined  found
 en/note  contracted  found
 en/note  article-doubled  found
@@ -594,6 +614,7 @@ en/note  period-doubled  found
 en/note  zero-width-pasted  found
 en/note  period-spaced  found
 en/note  hedge-double-negative-en  found
+en/note  modal-opposite-en  found
 en/policy  reference-broken  found
 en/policy  number-skipped  found
 en/policy  defined-twice  found
@@ -603,6 +624,7 @@ en/policy  link-to-nowhere  found
 en/policy  period-doubled  found
 en/policy  zero-width-pasted  found
 en/policy  period-spaced  found
+en/policy  modal-opposite-en  found
 en/press  weekday-shift  found
 en/press  sentences-joined  found
 en/press  paragraphs-joined  found
@@ -635,6 +657,7 @@ en/press  period-spaced  found
 en/press  heading-copied  found
 en/press  section-emptied  found
 en/press  hedge-double-negative-en  found
+en/press  modal-opposite-en  found
 en/proposal  item-dropped  found
 en/proposal  sentences-joined  found
 en/proposal  paragraphs-joined  found
@@ -663,6 +686,7 @@ en/proposal  period-spaced  found
 en/proposal  heading-copied  found
 en/proposal  section-emptied  found
 en/proposal  hedge-double-negative-en  found
+en/proposal  modal-opposite-en  found
 en/quote  weekday-shift  found
 en/quote  item-dropped  found
 en/quote  section-dropped  found
@@ -681,6 +705,7 @@ en/quote  period-spaced  found
 en/quote  heading-copied  found
 en/quote  section-emptied  found
 en/quote  hedge-double-negative-en  found
+en/quote  modal-opposite-en  found
 en/readme  contracted  found
 en/readme  heading-echoed  found
 en/readme  bold-heavy  found
@@ -700,6 +725,7 @@ en/readme  period-spaced  found
 en/readme  heading-copied  found
 en/readme  section-emptied  found
 en/readme  hedge-double-negative-en  found
+en/readme  modal-opposite-en  found
 en/requirements  reference-broken  found
 en/requirements  number-skipped  found
 en/requirements  paragraphs-joined  found
@@ -724,3 +750,4 @@ en/requirements  heading-copied  found
 en/requirements  section-emptied  found
 en/requirements  hedge-double-negative-en  found
 en/requirements  requirement-loosened  found
+en/requirements  modal-opposite-en  found
