@@ -8,7 +8,8 @@ import { documentLineParagraphs } from "./line-paragraphs.ts";
 import { closingRun, standaloneLines, subheadingPieces, type StandsAlone } from "./subheading-line.ts";
 import { isLinkLine } from "./link-line.ts";
 import { speakerLabels } from "./speaker-labels.ts";
-import { buildTree, type Outline } from "./structure/build.ts";
+import type { Outline } from "./structure/build.ts";
+import { lazyTree } from "./structure/lazy-tree.ts";
 import { isMarkdownPath } from "./structure/markdown-path.ts";
 import { layoutMasks, textOutline } from "./page-furniture.ts";
 import { tokenizedLexicons } from "./lexicon-tokens.ts";
@@ -344,9 +345,15 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
   const sentences = sentencesOf(prose, layout.pieces, adapter, softBreaks);
   const lexicons = teamLexicons(adapter, team);
   const tagged = sentences.some((sentence) => sentence.tokens !== undefined);
-  const patterns = adapter.structure;
-  // null は「作ったが構造を読めない言語だった」、undefined は「まだ作っていない」。
-  const tree: { value: StructureNode | null | undefined } = { value: undefined };
+  const structure = lazyTree(adapter.structure, () => ({
+    path,
+    source,
+    language: adapter.id,
+    // テキストの文書は、ページの飾りを覆って読む。フッターの「Section 9」を木の節にしない。
+    outline: markdown ? outlineOf(root, source, syntax, emailLayout.replyQuotes) : textOutline(source, emailLayout.replyQuotes),
+    markdown,
+    profile,
+  }));
   return {
     path,
     source,
@@ -362,27 +369,12 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     lexicons: tagged ? tokenizedLexicons(lexicons, adapter) : lexicons,
     requiredSections: team.requiredSections,
     names: team.names ?? [],
-    // 構造の rule（参照先が無い・番号の抜け）が読む木。どの rule も読まなければ作らない。何万行の契約書で、他の rule の lint に代金を払わせない。
     get structure(): StructureNode | undefined {
-      tree.value ??=
-        patterns === undefined
-          ? null
-          : buildTree(
-              {
-                path,
-                source,
-                language: adapter.id,
-                // テキストの文書は、ページの飾りを覆って読む。フッターの「Section 9」を木の節にしない。
-                outline: markdown ? outlineOf(root, source, syntax, emailLayout.replyQuotes) : textOutline(source, emailLayout.replyQuotes),
-                markdown: isMarkdownPath(path),
-                profile,
-              },
-              patterns,
-            );
-      return tree.value ?? undefined;
+      return structure();
     },
     profile,
     prose,
+    namedDocument: adapter.structure?.namedDocument,
     replyQuotes: emailLayout.replyQuotes,
     get markup(): Markup {
       return documentMarkup(root, source, markdown, [...emailLayout.replyQuotes, ...syntax]);
