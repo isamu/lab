@@ -55,6 +55,7 @@ import { spellingVariety } from "./spelling-variety.ts";
 import { raNuki } from "./ra-nuki.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
+import { chatCitationResidue } from "./chat-citation.ts";
 import { emojiHeading } from "./emoji-heading.ts";
 import { boldLabelList } from "./bold-label.ts";
 import { acronymExpansionConflict, unusedDefinition, useBeforeDefinition } from "./definition-use.ts";
@@ -146,6 +147,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "fullwidth-alnum": fullwidthAlnum,
   "spelling-variety": spellingVariety,
   "ra-nuki": raNuki,
+  "chat-citation-residue": chatCitationResidue,
   "emoji-heading": emojiHeading,
   "bold-label-list": boldLabelList,
   "unused-definition": unusedDefinition,
