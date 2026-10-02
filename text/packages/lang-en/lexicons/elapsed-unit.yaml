@@ -1,0 +1,6 @@
+# Units of a count of years from an origin (elapsed-years-mismatch).
+id: elapsed-unit
+language: en
+entries:
+  - pattern: "year"
+  - pattern: "years"
