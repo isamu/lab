@@ -12,7 +12,7 @@ const commonPrefix = (left: string, right: string): number => {
 /** 二つの形の違う所。前の同じ字を先に除き、残りから後ろの同じ字を除く（「ですす」と「です」は、後ろの「す」を足した所）。 */
 export const editBetween = (wrong: string, right: string): Edit => {
   const start = commonPrefix(wrong, right);
-  const tail = commonPrefix([...wrong.slice(start)].reverse().join(""), [...right.slice(start)].reverse().join(""));
+  const tail = commonPrefix(Array.from(wrong.slice(start)).reverse().join(""), Array.from(right.slice(start)).reverse().join(""));
   return { start, end: wrong.length - tail, replacement: right.slice(start, right.length - tail) };
 };
 
