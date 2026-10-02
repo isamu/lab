@@ -4,6 +4,21 @@ Newest first.
 
 ## Unreleased
 
+### `katakana-long-vowel` under styles: counts as JIS Z 8301 does, drops only -er/-or/-ar, leaves homographs (#170)
+
+- **Morae are counted before the final ー**, as JIS Z 8301:2011 Table G.3 counts: its own examples keep カバー (two
+  sounds) and シャワー (a 拗音 is not a sound of its own). chaff counted the ー too, so `style: ieice` and
+  `style: jis-z8301-2011` dropped the ー of カバー, エラー, カラー, レビュー and メニュー. `min_morae` now means the
+  morae before the ー; its default goes from 3 to 2, which checks the same words as before. A `chaff.yaml` that set
+  `min_morae` itself now reaches one mora further.
+- **drop reaches only a ー after a kana of the ア row**: JIS Z 8301:2011 G.6.2.2 and its note on 学術用語 speak of the
+  English endings -er, -or, -ar (ア列の長音). Words ending in ュー, エー or イー (メニュー, グレー, コピー, エネルギー)
+  are left alone. The kana are a lang-ja word list, `long-vowel-drop-after`; without it drop reaches every ー.
+- **keep leaves homographs**: タブ (tab) is not a dropped タブー (taboo), nor ベタ a dropped ベター. The
+  `long-vowel-distinct` list gains the pairs the corpus showed under `style: bunkacho` (タブ, ベタ, エコ, ヘビ, ドラマ,
+  カフェ, キャリア) and カバ; the dictionary lists both forms as separate words and cannot tell a variant from another
+  word.
+
 ### Bibliography: more works on what generated text looks like
 
 - The bibliography adds Juzek and Ward (COLING 2025) on why ChatGPT overuses some words, Sun et al. (ICML 2025) on
