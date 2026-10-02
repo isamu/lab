@@ -357,7 +357,9 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 
 ## 動かなかったルール
 
+- `agentless-passive`: ジャンル blog/tech では見ないため
 - `ai-structure`: 表題より下の見出しが無いため
+- `cushion-phrase-density`: ジャンル blog/tech では見ないため
 
 ## 直したあとの確かめ
 
@@ -395,7 +397,7 @@ $ npx chaffjs draft.rewritten.md --experimental --compact
 draft.rewritten.md   blog/tech · 日本語   ジャンルは既定から
 
 
-指摘 0 件、動いていない rule 10 件
+指摘 0 件、動いていない rule 19 件
 
 $ npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
 draft.md → draft.rewritten.md
@@ -538,7 +540,7 @@ ai.md   blog/tech · 日本語   ジャンルは--genreから
   47:13   warning 「お役に立てれば幸いです」で締めています
                   closing-cliche
 
-指摘 12 件、動いていない rule 8 件
+指摘 12 件、動いていない rule 18 件
 ```
 
 書き直した後の記事です。
@@ -577,7 +579,7 @@ rewritten.md   blog/tech · 日本語   ジャンルは--genreから
   1:28    info    節の長さのばらつきが 32% しかありません（35% 以上ほしい）
                   section-length-uniformity
 
-指摘 1 件、動いていない rule 8 件
+指摘 1 件、動いていない rule 18 件
 ```
 
 変えたことと、その理由です。
@@ -740,7 +742,7 @@ study.md   blog/tech · 日本語   ジャンルは--genreから
   67:1    warning 「いかがでしたでしょうか」で締めています
                   closing-cliche
 
-指摘 13 件、動いていない rule 10 件
+指摘 13 件、動いていない rule 18 件
 ```
 
 控えを取ります。`npx chaffjs facts study.md` の一覧には、数 11 件、日付 1 件、時刻 2 件、固有名詞 2 件（Rust、Notion）、見出し 14 件が並びます。
@@ -826,7 +828,7 @@ $ npx chaffjs study-full.md --genre blog/tech --experimental --compact
 study-full.md   blog/tech · 日本語   ジャンルは--genreから
 
 
-指摘 0 件、動いていない rule 10 件
+指摘 0 件、動いていない rule 18 件
 ```
 
 構成の変わり方を `outline` で測った結果です。見出しが減って節が長くなり、箇条書きと太字は無くなりました。
@@ -954,3 +956,9 @@ i 書き方だけ変わった事実 3 件
 | --- | --- |
 | Kobak ほか「[Delving into LLM-assisted writing in biomedical publications through excess vocabulary](https://arxiv.org/abs/2406.07016)」（Science Advances, 2025） | 生成 AI が広まる前と後の文章で語の使われ方を比べ、増えた語を選ぶ方法。`ai-tell` の語もこの考え方で選びました |
 | 林・相澤「[LLM による日本語生成におけるモデル固有表現パターンの分析](https://www.anlp.jp/proceedings/annual_meeting/2026/pdf_dir/B9-17.pdf)」（言語処理学会 第32回年次大会, 2026） | 日本語でも、モデルごとに決まった言い回しや構成（結論の先出し、番号付きの構成、手順を予告する書き出し）が出ること |
+
+## 次に読むページ
+
+- `fix-plan`、`facts`、`outline`、`compare` のオプションは、[コマンド](./commands#直す計画を出す)にあります。
+- 同じルールでモデルの出力を評価するやり方は、[AI の評価（AI evals）に使う](./ai-evals)にあります。
+- AI らしさのルールごとの例と実際の出力は、[リファレンス](./reference)にあります。

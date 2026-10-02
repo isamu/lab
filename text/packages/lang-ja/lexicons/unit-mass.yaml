@@ -1,0 +1,22 @@
+# 重さ（基準はグラム）の単位（unit-mismatch）。weight は基準の単位への倍率。同じ単位を二度書けば倍率が二つで、どちらで合ってもよい。
+id: unit-mass
+language: ja
+entries:
+  - pattern: "t"
+    weight: 1000000
+  - pattern: "kg"
+    weight: 1000
+  - pattern: "g"
+    weight: 1
+  - pattern: "mg"
+    weight: 0.001
+  - pattern: "トン"
+    weight: 1000000
+  - pattern: "キログラム"
+    weight: 1000
+  - pattern: "キロ"
+    weight: 1000
+  - pattern: "グラム"
+    weight: 1
+  - pattern: "ミリグラム"
+    weight: 0.001

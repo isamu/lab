@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/design  spelling-avoided  found
+ja/email  spelling-avoided  found
+ja/press  spelling-avoided  found
+ja/proposal  spelling-avoided  found
+ja/quote  spelling-avoided  found
+ja/readme  spelling-avoided  found
+ja/requirements  spelling-avoided  found
+en/design  spelling-avoided  found
+en/email  spelling-avoided  found
+en/figures  spelling-avoided  found
+en/press  spelling-avoided  found
+en/requirements  spelling-avoided  found

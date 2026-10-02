@@ -19,3 +19,22 @@ entries:
   - pattern: 電話番号
   - pattern: メールアドレス
   - pattern: ここに
+  # group: marker — 後で埋めるつもりで置いた値。値そのもの（「未定」）か、値の頭でコロンが続くとき（「TODO: 期待する出力を書く」）に数える。
+  # 文の中の「日程は未定です」は、決まっていないことを書いた文なので数えない。
+  - pattern: TODO
+    group: marker
+  - pattern: TBD
+    group: marker
+  - pattern: TBC
+    group: marker
+  - pattern: FIXME
+    group: marker
+  - pattern: 未定
+    group: marker
+  - pattern: 未記入
+    group: marker
+  - pattern: 要記入
+    group: marker
+  # group: instruction — 丸括弧の中の、書き手に向けた指示の書き出し（（ここに会社名を書く））。丸括弧は、ほかの語では空欄と数えない。
+  - pattern: ここに
+    group: instruction

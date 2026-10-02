@@ -1,0 +1,11 @@
+table  10  10  0  0
+ja/blog  pet-phrase  found
+ja/design  pet-phrase  found
+ja/email  pet-phrase  found
+ja/figures  pet-phrase  found
+ja/press  pet-phrase  found
+ja/proposal  pet-phrase  found
+en/blog  pet-phrase  found
+en/design  pet-phrase  found
+en/press  pet-phrase  found
+en/proposal  pet-phrase  found

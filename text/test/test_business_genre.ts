@@ -34,7 +34,6 @@ const run = (source: string, genre: string, experimental = false): RunResult =>
 
 const firedIn = (result: RunResult, rule: string): number[] => result.findings.filter((finding) => finding.rule === rule).map((finding) => finding.line);
 const whyNotRun = (result: RunResult, rule: string): string | undefined => result.skipped.find((entry) => entry.rule === rule)?.why;
-const considered = (result: RunResult, rule: string): boolean => firedIn(result, rule).length > 0 || whyNotRun(result, rule) !== undefined;
 
 describe("business/report で既定の検査が弱くならない", () => {
   before(async () => {
@@ -51,9 +50,11 @@ describe("business/report で既定の検査が弱くならない", () => {
 
   it("プレスリリース・メール・議事録では書き出しを見ない", () => {
     // 告知の「昨今の人件費の上昇のため」は値上げの理由で、書き出しの水増しではない。
-    ["business/press-release", "business/email", "business/meeting-notes"].forEach((genre) =>
-      assert.equal(considered(run(PADDED_REPORT, genre), "padded-intro"), false, genre),
-    );
+    ["business/press-release", "business/email", "business/meeting-notes"].forEach((genre) => {
+      const result = run(PADDED_REPORT, genre);
+      assert.deepEqual(firedIn(result, "padded-intro"), [], genre);
+      assert.equal(whyNotRun(result, "padded-intro"), REASONS.ja.presetOff(genre), genre);
+    });
   });
 
   it("試験中の rule は、動いていない理由とともに一覧に残る", () => {

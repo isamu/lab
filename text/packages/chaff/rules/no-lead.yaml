@@ -1,0 +1,95 @@
+id: no-lead
+layer: L1
+status: experimental
+how_to_find: no-lead
+requires: [pos]
+severity: info
+
+name:
+  ja: 題の後の段落が題を言い直しているだけ
+  en: The lead only restates the title
+
+why:
+  ja: 題のすぐ後の段落（リード）は、読者がこの先を読むかを決める所です。そこが「この記事では〇〇について説明します」のように題を言い直すだけだと、読者は何も受け取らないまま本文へ進みます。chaff は、リードが題の文字の並びの半分以上を繰り返し、しかも題に無い内容語（名詞・動詞・形容詞・副詞・数）をわずかしか足していないときに言います。日付や書き手の名前だけの行は題を繰り返さないので言いません。
+  en: The paragraph right under the title (the lead) is where a reader decides whether to read on. When it only restates the title ("This article explains X"), the reader gets nothing before the body starts. chaff reports a lead that repeats at least half of the title's character sequence and adds only a few content words (nouns, verbs, adjectives, adverbs, numbers) the title does not have. A line with only a date or a byline does not repeat the title, so it is not reported.
+
+message:
+  ja: 題「{title}」の後の段落は、題に無い語を {count} 個しか足していません
+  en: 'The paragraph after the title "{title}" adds only {count} {count|word|words} the title does not have'
+
+how_to_fix:
+  ja: リードには、題だけでは分からないこと（結論、数字、誰に関係するか、いつからか）を書いてください。言うことが無ければ、リードを消して本文から始めます。
+  en: Put in the lead what the title alone does not say (the conclusion, a figure, who it affects, from when). If there is nothing to add, drop the lead and start with the body.
+
+# 題に無い内容語がこの数より少ないと指摘する。
+levels: { strict: 6, normal: 5, relaxed: 3 }
+
+use_for: [blog, business, technical, docs, academic, legal, literature, speech]
+
+group: structure
+summary:
+  ja: 題のすぐ後の段落が、題を言い直すだけで何も足していない所
+  en: A first paragraph under the title that only says the title again
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      # 新しい在庫システム
+
+      この記事では、新しい在庫システムについて紹介します。
+    after: |
+      # 新しい在庫システム
+
+      来月から全店の在庫を一つの画面で数えられるようになり、棚卸しは半日で終わります。
+  en:
+    config: { genre: blog/tech }
+    before: |
+      # The new inventory system
+
+      This article introduces the new inventory system.
+    after: |
+      # The new inventory system
+
+      From next month every store counts its stock on one screen, and a stocktake takes half a day.
+
+not_flagged:
+  ja: 題の文字の並びの半分以上を繰り返していない段落（日付、書き手の名前、別の話題で始まるリード）は言いません。題のすぐ下が箇条書き・表・画像なら、リードが無いものとして見ません。題（最初の # 見出し）だけを見ます。法務・文学・話し言葉のジャンルでは見ません。
+  en: A paragraph that repeats less than half of the title's character sequence (a date, a byline, a lead on another point) is not reported. When a list, a table or an image comes right under the title, there is no lead to check. Only the title (the first top-level heading) is checked. Legal, literary and speech genres do not run this rule.
+level_meaning:
+  ja: 題に無い内容語が {limit} 個より少ないとき指摘
+  en: reported when the lead adds fewer than {limit} content words the title does not have
+rewrite:
+  ja:
+    direction: リードを、題だけでは分からないことから書き直してください。結論・数字・対象・時期のうち、本文にあるものを一つか二つ前に出します。題の語を繰り返して「〜について説明します」と予告する文は消します。
+    pairs:
+      - before: |
+          この記事では、新しい在庫システムについて紹介します。
+        after: |
+          来月から全店の在庫を一つの画面で数えられるようになり、棚卸しは半日で終わります。
+      - before: |
+          本ページでは、窓口の受付時間の変更についてお知らせします。
+        after: |
+          4月1日から、窓口の受付は平日の午前9時から午後4時までになります。
+    keep:
+      - 本文にある数字・日付・名前
+      - 題の言葉づかい
+    avoid:
+      - 本文に無い事実をリードに足す
+      - 題をもう一度別の言葉で言い直す
+  en:
+    direction: Rewrite the lead from what the title alone does not tell the reader. Bring forward one or two of the conclusion, a figure, who it affects and when, taken from the body. Cut a sentence that repeats the title to announce what comes next.
+    pairs:
+      - before: |
+          This article introduces the new inventory system.
+        after: |
+          From next month every store counts its stock on one screen, and a stocktake takes half a day.
+      - before: |
+          This page explains the change to our office hours.
+        after: |
+          From April 1 the front desk is open 9 a.m. to 4 p.m. on weekdays.
+    keep:
+      - the figures, dates and names the body gives
+      - the title's wording
+    avoid:
+      - adding to the lead a fact the body does not have
+      - saying the title again in other words

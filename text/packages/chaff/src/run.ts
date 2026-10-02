@@ -37,6 +37,8 @@ export type RunResult = {
 
 export type Settings = Readonly<Record<string, Level>>;
 
+type Outcome = { readonly findings: Finding[]; readonly skipped: Skipped[] };
+
 const levelFor = (rule: RuleDefinition, settings: Settings, experimental: boolean, preset: Settings): Level => {
   const explicit = settings[rule.id];
   // 明示設定は status の既定に勝つ。名指しで有効にしたものを黙って無効にしない。
@@ -121,8 +123,12 @@ const tagReason = (doc: ProseDocument): string | undefined => {
 };
 
 /** 要求を満たさない rule は動かせない。満たさないまま動かすと「指摘 0 件」が保証に見える。 */
+const otherLanguage = (rule: RuleDefinition, doc: ProseDocument): string | undefined =>
+  rule.languages !== undefined && !rule.languages.includes(doc.language) ? reasonsFor(doc).otherLanguage(doc.language) : undefined;
+
 const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
-  if (rule.languages !== undefined && !rule.languages.includes(doc.language)) return reasonsFor(doc).otherLanguage(doc.language);
+  const language = otherLanguage(rule, doc);
+  if (language !== undefined) return language;
   const missing = rule.requires.filter((need) => !TREE_NEEDS.has(need) && !DOCUMENT_NEEDS.has(need)).find((need) => !has(doc.capabilities, need));
   if (missing !== undefined) return reasonsFor(doc).noCapability(missing);
   return undefined;
@@ -135,8 +141,13 @@ const unmet = (rule: RuleDefinition, doc: ProseDocument): string | undefined => 
 const untagged = (rule: RuleDefinition, doc: ProseDocument): string | undefined =>
   rule.requires.some((need) => need === "pos" || need === "lemma") ? tagReason(doc) : undefined;
 
-const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] =>
-  rules.filter((rule) => rule.use_for.some((target) => genre.startsWith(target)));
+const suitsGenre = (rule: RuleDefinition, genre: string): boolean => rule.use_for.some((target) => genre.startsWith(target));
+
+const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] => rules.filter((rule) => suitsGenre(rule, genre));
+
+/** A rule use_for keeps out of the genre. A rule for another language says that first: no genre would run it here. */
+const unsuited = (rule: RuleDefinition, doc: ProseDocument, genre: string): string | undefined =>
+  suitsGenre(rule, genre) ? undefined : (otherLanguage(rule, doc) ?? reasonsFor(doc).presetOff(genre));
 
 /** rule が品詞か見出し語を要求するか、使えるなら使うか。 */
 export const wantsTags = (rule: RuleDefinition): boolean => [...rule.requires, ...rule.uses].some((need) => need === "pos" || need === "lemma");
@@ -251,46 +262,51 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
   const experimentalOn = applicable.filter((rule) => rule.status === "experimental" && levelFor(rule, settings, experimental, preset) !== "off");
   const forced = experimentalOn.filter((rule) => settings[rule.id] !== undefined).map((rule) => rule.id);
   const presetOn = experimentalOn.filter((rule) => settings[rule.id] === undefined && preset[rule.id] !== undefined).map((rule) => rule.id);
-  const outcome = applicable.reduce<{ findings: Finding[]; skipped: Skipped[] }>(
+  const runOne = (acc: Outcome, rule: RuleDefinition): Outcome => {
+    // L4 は意味を読む検査。chaff test が扱う。ここで「検出器が無い」と言わせない。
+    if (rule.layer === "L4") {
+      return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).semantic }] };
+    }
+    const blocked = unmet(rule, doc);
+    if (blocked !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: blocked }] };
+    const level = levelFor(rule, settings, experimental, preset);
+    if (level === "off") return { findings: acc.findings, skipped: [...acc.skipped, offSkip(rule, settings, preset, genre, reasonsFor(doc))] };
+    const noTags = untagged(rule, doc);
+    if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
+    // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
+    // 段階を見た後で聞く。doc.structure は触れたときに木を作るので、止めている rule のために作らない。
+    const noTree = treeNeed(rule, doc);
+    if (noTree !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTree }] };
+    const noDocumentNeed = documentNeed(rule, doc);
+    if (noDocumentNeed !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noDocumentNeed }] };
+    // 複合シグナルは二段目で扱う。一段目では「検出器が無い」と言わせない。
+    if (rule.from.length > 0) return acc;
+    const detector = detectors[rule.id] ?? DETECTORS[rule.how_to_find];
+    if (detector === undefined)
+      return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noDetector(rule.how_to_find) }] };
+    // 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
+    const absent = missingList(rule, doc.lexicons);
+    if (absent !== undefined)
+      return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noLexicon(doc.language, absent) }] };
+    const options = {
+      limit: limitFor(rule, level, genre, limits),
+      lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
+      where: rule.where,
+      fullSentence: rule.full_sentence,
+      embeddedLimits: embeddedLimitsFor(rule, level, genre, embedded),
+      ...(rule.options === undefined ? {} : { settings: optionValues(settleOptions(rule.id, rule.options, optionLayers)) }),
+      ...(rule.custom === undefined ? {} : { custom: rule.custom }),
+    };
+    const ran = runDetector(detector, doc, options);
+    if ("notRun" in ran) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: ran.notRun }] };
+    const found = ran.findings.map((finding) => place(starts, { ...finding, rule: rule.id, severity: severityAt(rule, level, genre) }));
+    return { findings: [...acc.findings, ...found], skipped: acc.skipped };
+  };
+  const outcome = rules.reduce<Outcome>(
     (acc, rule) => {
-      // L4 は意味を読む検査。chaff test が扱う。ここで「検出器が無い」と言わせない。
-      if (rule.layer === "L4") {
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).semantic }] };
-      }
-      const blocked = unmet(rule, doc);
-      if (blocked !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: blocked }] };
-      const level = levelFor(rule, settings, experimental, preset);
-      if (level === "off") return { findings: acc.findings, skipped: [...acc.skipped, offSkip(rule, settings, preset, genre, reasonsFor(doc))] };
-      const noTags = untagged(rule, doc);
-      if (noTags !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTags }] };
-      // 木は capability ではなく、adapter が structure を持つかで決まる。持たない言語で動かすと「参照先が無い」が 0 件に見える。
-      // 段階を見た後で聞く。doc.structure は触れたときに木を作るので、止めている rule のために作らない。
-      const noTree = treeNeed(rule, doc);
-      if (noTree !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noTree }] };
-      const noDocumentNeed = documentNeed(rule, doc);
-      if (noDocumentNeed !== undefined) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: noDocumentNeed }] };
-      // 複合シグナルは二段目で扱う。一段目では「検出器が無い」と言わせない。
-      if (rule.from.length > 0) return acc;
-      const detector = detectors[rule.id] ?? DETECTORS[rule.how_to_find];
-      if (detector === undefined)
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noDetector(rule.how_to_find) }] };
-      // 語彙表を要求する rule で、その言語に語彙表が無ければ動かせない。黙って通さない。
-      const absent = missingList(rule, doc.lexicons);
-      if (absent !== undefined)
-        return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: reasonsFor(doc).noLexicon(doc.language, absent) }] };
-      const options = {
-        limit: limitFor(rule, level, genre, limits),
-        lexicon: rule.word_list === undefined ? undefined : doc.lexicons[rule.word_list],
-        where: rule.where,
-        fullSentence: rule.full_sentence,
-        embeddedLimits: embeddedLimitsFor(rule, level, genre, embedded),
-        ...(rule.options === undefined ? {} : { settings: optionValues(settleOptions(rule.id, rule.options, optionLayers)) }),
-        ...(rule.custom === undefined ? {} : { custom: rule.custom }),
-      };
-      const ran = runDetector(detector, doc, options);
-      if ("notRun" in ran) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: ran.notRun }] };
-      const found = ran.findings.map((finding) => place(starts, { ...finding, rule: rule.id, severity: severityAt(rule, level, genre) }));
-      return { findings: [...acc.findings, ...found], skipped: acc.skipped };
+      // Listed, not dropped: a clean run in a genre that leaves rules out is not "checked and fine".
+      const notForGenre = unsuited(rule, doc, genre);
+      return notForGenre === undefined ? runOne(acc, rule) : { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: notForGenre }] };
     },
     { findings: [], skipped: [] },
   );

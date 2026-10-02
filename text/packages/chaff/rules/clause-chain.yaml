@@ -1,0 +1,59 @@
+id: clause-chain
+layer: L3
+status: experimental
+how_to_find: clause-chain
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 一文に節がつながりすぎている
+  en: Too many clauses chained in one sentence
+
+why:
+  ja: 「調べて、まとめ、報告したが、返事がないので、もう一度送ったところ、」のように、「て」「が」「ので」や読点で節を次々につなぐと、読み手はどの節がどれに係るのかを覚えたまま最後まで読むことになります。文の長さが上限に収まっていても起きます。数えるのは、接続助詞（て・が・ので・から・ば・たら・ながら など）と、読点で止めた動詞・形容詞（まとめ、）です。「調べている」「読んでもらう」のような補助動詞へのつなぎは一つの述語なので数えません。鉤括弧で引いたものの中も数えません。
+  en: In Japanese, chaining clause after clause with て, が, ので or a comma after a verb makes the reader hold how each one attaches until the end of the sentence, even when the sentence is within the length limit. Conjunctive particles and verbs or adjectives stopped by a comma are counted; て joining a helper verb (調べている) is one predicate and is not. Anything in 「」 is not counted.
+
+message:
+  ja: 一文に節が {count} つつながっています（{limit} つまで）
+  en: "{count} clauses chained in one sentence (limit {limit})"
+
+how_to_fix:
+  ja: 節のつなぎ目のどこかで文を切ってください。「〜が、」「〜ので、」の所で切ると、前後の関係を「しかし」「そのため」で言い直せます。
+  en: Split the sentence at one of the joins, and say how the parts relate with a connective at the start of the next sentence.
+
+levels: { strict: 4, normal: 5, relaxed: 7 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「〜て、〜し、〜が、〜ので、」のように、一文の中で節を次々につないでいる所
+  en: A Japanese sentence that chains clause after clause with て, が, ので and commas
+example:
+  ja:
+    before: |
+      資料を調べて、内容をまとめ、課長に報告したが、返事がないので、もう一度送ってみたところ、翌日に返事が来て、修正を頼まれた。
+    after: |
+      資料を調べて内容をまとめ、課長に報告しました。返事がないのでもう一度送ると、翌日に返事が来ました。修正を頼まれています。
+
+not_flagged:
+  ja: 補助動詞へのつなぎ（調べている、読んでもらう）、鉤括弧で引いたものの中、上限までの節は数えません。英語の文書には使いません。
+  en: Joins to a helper verb, anything quoted in 「」, and clauses up to the limit are not counted. Not used on English documents.
+level_meaning:
+  ja: 一文の節 {limit} つまで
+  en: up to {limit} clauses in one sentence
+rewrite:
+  ja:
+    direction: 節のつなぎ目（「〜が、」「〜ので、」「〜て、」）のどこかで文を切り、切った所の関係を次の文の頭で言い直してください。
+    pairs:
+      - before: 資料を調べて、内容をまとめ、課長に報告したが、返事がないので、もう一度送った。
+        after: 資料を調べて内容をまとめ、課長に報告しました。しかし返事がないので、もう一度送りました。
+      - before: 会場を予約し、案内を送り、出欠を集めたが、人数が足りないので、日程を変えて、もう一度案内した。
+        after: 会場を予約し、案内を送って出欠を集めました。人数が足りなかったため、日程を変えてもう一度案内しました。
+    keep:
+      - 出来事の順序と、原因と結果の関係
+      - 誰が何をしたのか
+    avoid:
+      - 節を落として意味を変える
+      - 読点を消すだけで、同じ数の節をつないだままにする
