@@ -42,6 +42,7 @@ These options go with a check.
 | `--genre <genre>` | The genre for this run only; it wins over `chaff.yaml` |
 | `--show-baseline` | Shows the shelved findings too |
 | `--sarif <path>` | Writes the findings as SARIF, to show them on the lines of a GitHub PR |
+| `--include <glob>` | In a folder, checks the files matching the glob besides Markdown (`--include "*.yaml"`). See [Configuration](./configuration) |
 
 `tree` and `cite` are explained in [Structure and quotations](./structure), `--sarif` in [CI](./ci).
 

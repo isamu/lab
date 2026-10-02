@@ -319,6 +319,28 @@ by_path:
 The last match wins. Paths are matched from the folder that holds the settings file,
 so the result is the same wherever you run it.
 
+## Checking files other than Markdown
+
+Given a folder, chaff checks the Markdown in it (`.md`, `.markdown`, `.mdx`).
+`include` adds other files to that walk, by file-name glob. `--include` does the same for one run.
+
+```yaml
+include:
+  - "*.yaml"
+  - "*.txt"
+```
+
+```bash
+npx chaffjs tests/fixtures/ --include "*.yaml"
+```
+
+A YAML file (`.yaml`, `.yml`) is checked by its string values.
+Keys, quotes, comments, numbers and `true` are not prose, and each value is read on its own.
+A finding points at the line and column in the file, so a `custom_rules` pattern finds `TODO:` in a test fixture's expected output.
+A YAML file that cannot be parsed is read as plain text.
+Any other file, such as `.txt`, is read as plain text.
+A file named on the command line is checked whatever its extension.
+
 ## Checking that the settings took effect
 
 `chaff rules --json` shows the current settings.
