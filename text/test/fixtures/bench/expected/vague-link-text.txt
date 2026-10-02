@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  vague-link-ja  found
+ja/design  vague-link-ja  found
+ja/email  vague-link-ja  found
+ja/figures  vague-link-ja  found
+ja/itinerary  vague-link-ja  found
+ja/minutes  vague-link-ja  found
+ja/note  vague-link-ja  found
+ja/policy  vague-link-ja  found
+ja/press  vague-link-ja  found
+ja/proposal  vague-link-ja  found
+ja/quote  vague-link-ja  found
+ja/readme  vague-link-ja  found
+ja/requirements  vague-link-ja  found
+en/blog  vague-link-en  found
+en/design  vague-link-en  found
+en/email  vague-link-en  found
+en/figures  vague-link-en  found
+en/itinerary  vague-link-en  found
+en/minutes  vague-link-en  found
+en/note  vague-link-en  found
+en/policy  vague-link-en  found
+en/press  vague-link-en  found
+en/proposal  vague-link-en  found
+en/quote  vague-link-en  found
+en/readme  vague-link-en  found
+en/requirements  vague-link-en  found

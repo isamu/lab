@@ -1,0 +1,93 @@
+id: katakana-density
+layer: L3
+status: experimental
+how_to_find: katakana-density
+# Katakana runs are read from the characters, so the rule needs no morphology. chaff.yaml の names に並べた名前は数えない。
+languages: [ja]
+severity: info
+
+name:
+  ja: カタカナ語が多い
+  en: Too many katakana loanwords
+
+why:
+  ja: 「アジェンダ」「エビデンス」「コンセンサス」のようなカタカナ語が続くと、その言葉に慣れない読み手は意味を追えなくなります。書いた人には普段の言葉なので、多さに気づきにくいところです。
+  en: A run of katakana loanwords (アジェンダ, エビデンス, コンセンサス) loses readers who do not use those words every day. To the writer they are ordinary, so the density goes unnoticed.
+
+message:
+  ja: カタカナ語が 1000 字あたり {density} 語あります（{limit} 語まで）。多いのは「{words}」です
+  en: "{density} katakana loanwords per 1000 characters (limit {limit}); the most used: {words}"
+
+how_to_fix:
+  ja: 日本語で言える語から言い換えてください（アジェンダ→議題、エビデンス→根拠）。製品名や、読み手が使っている用語はそのままでかまいません。
+  en: Replace the ones that have a plain Japanese word (議題 for アジェンダ, 根拠 for エビデンス). Product names and terms the readers use themselves can stay.
+
+# 1000 字あたりの語の数。2022 年より前の Qiita の日本語記事（人が書いた技術記事）で測った分布の上の方に置く。
+# 測り方は PR に残した（数字はここに書かない）。
+levels: { strict: 45, normal: 55, relaxed: 65 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「アジェンダ」「エビデンス」のようなカタカナ語が、人の書いた技術記事より多い文書
+  en: A Japanese document with more katakana loanwords per 1000 characters than human-written technical articles
+example:
+  ja:
+    before: |
+      今回のアジェンダは、プロジェクトのスコープとスケジュールのレビューです。エビデンスをベースにコンセンサスを取り、ネクストアクションをアサインします。
+
+      クライアントのニーズをヒアリングし、ソリューションのコンセプトをブラッシュアップします。リソースのアロケーションはマネージャーがジャッジします。
+
+      タスクのプライオリティをアップデートし、マイルストーンのリスクをシェアします。フィードバックはチャットでリマインドします。
+
+      ステークホルダーとのミーティングでは、KPI のトレンドをダッシュボードでモニタリングします。ボトルネックはチームでブレインストーミングします。
+
+      ナレッジのドキュメントはテンプレートでフォーマットをアラインし、オンボーディングのマニュアルにマージします。
+
+      パートナーとのアライアンスでは、コストとベネフィットのバランスをシミュレーションします。
+
+      プロセスのボトルネックをアナリティクスでビジュアライズし、オペレーションのコンプライアンスをチェックします。
+
+      カスタマーサクセスのメンバーは、ユーザーのインサイトをインタビューでキャッチアップします。
+
+      セールスのパイプラインは、ウィークリーのレポートでマネジメントにエスカレーションします。
+    after: |
+      今回の議題は、計画の範囲と日程の見直しです。根拠をもとに合意を取り、次にすることの担当を決めます。
+
+      お客様の求めることを聞き取り、解決策の考え方を磨きます。人と予算の割り振りは課長が決めます。
+
+      仕事の優先順位を改め、節目ごとの危うさを伝え合います。意見は連絡用の画面で念を押します。
+
+      関係する部署との会議では、目標の数字の動きを一覧の画面で見守ります。つかえている所は皆で案を出し合います。
+
+      知っていることの記録は、決まった型で書き方を揃え、新しく来た人向けの手引きにまとめます。
+
+      取引先と手を組むときは、かかる費用と得られるものの釣り合いを試算します。
+
+      仕事の流れでつかえている所を数字で見えるようにし、決まりどおりに進んでいるかを確かめます。
+
+      お客様を支える係の人は、使う人の本音を聞き取りで拾い上げます。
+
+      営業の見込みの一覧は、毎週の報告で上の人に上げます。
+
+not_flagged:
+  ja: 短い文書は測りません。コードの中の語と、chaff.yaml の names に並べた名前は数えません。製品名も外来語と区別できないので数えますが、上限は人の書いた技術記事の多さに合わせてあり、普通の技術文書はたいてい収まります。
+  en: Short documents are not measured. Words in code and the names listed in chaff.yaml are not counted. Product names are counted, as they cannot be told apart, but the limit sits above most human-written technical articles.
+level_meaning:
+  ja: カタカナ語が 1000 字あたり {limit} 語まで
+  en: "katakana loanwords: up to {limit} per 1000 characters"
+rewrite:
+  ja:
+    direction: 多いと示されたカタカナ語から、日本語で言えるものを言い換えてください。読み手が毎日使う用語と製品名は残します。
+    pairs:
+      - before: 今回のアジェンダは、スケジュールのレビューです。
+        after: 今回の議題は、日程の見直しです。
+      - before: エビデンスをベースにコンセンサスを取ります。
+        after: 根拠をもとに合意を取ります。
+    keep:
+      - 製品名・サービス名・人名
+      - 読み手が使っている技術用語（サーバー、ブラウザ）
+    avoid:
+      - 日本語にすると意味がずれる語まで言い換える
+      - カタカナ語を漢語の硬い言葉に置き換えて、かえって読みにくくする
