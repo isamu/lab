@@ -230,7 +230,7 @@ chaff の決まりで、ルールは機械で決まるものだけです。意�
 | 書くもの | 場所 | 中身 |
 | --- | --- | --- |
 | ルールの定義 | `packages/chaff/rules/<id>.yaml` | 名前・理由・指摘の文・直し方・段階を日本語と英語で。読み手向けの `group` `summary` `example` `not_flagged` も書く。段階が数で変わるルールは `level_meaning` も。論文や規格に拠るルールは、[参考文献](./bibliography) の項目の印を `sources` に並べる。ルールのページから、その項目へリンクが張られる。書き直される箇所を指すルール（AIっぽさ、読みやすさ）は `rewrite` も書く。言語ごとに、直す方向（`direction`）、自分で書いた直す前と後の組を 2〜3 個（`pairs`）、変えてはいけないもの（`keep`）、書き直す人がやりがちな間違い（`avoid`） |
-| 見つける処理 | `packages/chaff/src/detectors/` | 文書を受け取って指摘を返す関数。`detectors/index.ts` に名前で登録する |
+| 見つける処理 | `packages/chaff/src/detectors/` | 文書を受け取って指摘を返す関数。登録は専用のファイル `detectors/registry/<how_to_find>.ts` で、関数を `detector` という名前で出す。検出器の共有の一覧は書き換えない |
 | 語の一覧 | `packages/lang-ja/lexicons/` と `packages/lang-en/lexicons/` | 語の一覧で見つけるルールだけ。言語ごとに書く |
 | テスト | `test/test_<id>.ts` | 指摘すべき例と、指摘してはいけない例の両方 |
 | 見本への仕込み | `scripts/bench-mutations*.ts` と `test/fixtures/bench/plants.yaml` | きれいな見本に誤りを一つ入れて、見つかるかを測る。仕込めないときは理由を書く |
