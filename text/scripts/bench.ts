@@ -3,23 +3,22 @@
 // A mistake is planted only where its rule runs: in the rule's languages, a genre in its use_for, and not off in the genre's
 // preset. The team's words (jargon, required_sections) are passed as chaff.yaml would pass them.
 // The corpus measures false positives; this measures misses. The summary is compared with
-// test/fixtures/bench/expected/ (scripts/bench-expected.ts), and --update rewrites it. A rule that test/fixtures/bench/plants.yaml says is
+// test/fixtures/bench/expected/ (scripts/bench-expected.ts), and --update rewrites it. A rule that test/fixtures/bench/plants/ says is
 // planted, but that this run planted in no sample of one of its languages, fails the run even with --update.
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { allFindings, type CorpusFinding } from "./corpus-findings.ts";
 import { MUTATIONS } from "./bench-mutations.ts";
 import type { Mutation } from "./bench-text.ts";
 import { cleanLine, falseAlarms, formatTable, outcomeLine, outcomeOf, ruleTable, summaryChanges, type Outcome } from "./bench-score.ts";
 import { BENCH, contextOf, runsOn, samplesOf, teamOf, type Sample } from "./bench-samples.ts";
-import { planOf, planProblems, unplanted } from "./bench-coverage.ts";
+import { planProblems, unplanted } from "./bench-coverage.ts";
+import { loadPlan } from "./bench-plants.ts";
 import { joinBenchSummary, splitBenchSummary } from "./bench-expected.ts";
 import { readExpectedDir, writeExpectedDir } from "./expected-dir.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { parse } from "yaml";
 
 const EXPECTED = join(BENCH, "expected");
-const PLAN = planOf(parse(readFileSync(join(BENCH, "plants.yaml"), "utf8")));
+const PLAN = loadPlan();
 const LANGUAGES: readonly string[] = ["ja", "en"];
 const verbose = process.argv.includes("--verbose");
 const update = process.argv.includes("--update");
@@ -73,7 +72,7 @@ misses.forEach((outcome) => console.log(`  ${outcomeLine(outcome)}`));
 const ruleIds = [...new Set(LANGUAGES.flatMap((language) => loadRules(language).map((rule) => rule.id)))];
 const coverage = [...planProblems(PLAN, ruleIds, MUTATIONS), ...unplanted(PLAN, outcomes)];
 if (coverage.length > 0) {
-  console.log("\nPlants missing (test/fixtures/bench/plants.yaml):");
+  console.log("\nPlants missing (test/fixtures/bench/plants/):");
   coverage.forEach((problem) => console.log(`  ${problem}`));
   process.exitCode = 1;
 }

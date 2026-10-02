@@ -49,6 +49,8 @@ export type Config = {
   readonly applied?: AppliedStyle | undefined;
   /** custom_rules as written: the team's own rules. custom/parse.ts reads and checks them. */
   readonly customRules?: unknown;
+  /** grade as written: the rubric `chaff grade` reads (grade/rubric.ts). */
+  readonly grade?: unknown;
   /** plugins as written: package names and paths. extension/plugin-load.ts reads and checks them. */
   readonly plugins?: unknown;
   /** The code chaff.yaml names, once loaded (extension/load.ts). Reading chaff.yaml does not load it. */
@@ -192,6 +194,7 @@ export const loadConfig = (path: string): Config => {
     unreadableOptions: options === undefined || options === null || isRecord(options) ? undefined : printed(options),
     style: raw["style"] === undefined || raw["style"] === null ? undefined : (str(raw["style"]) ?? printed(raw["style"])),
     customRules: raw["custom_rules"],
+    grade: raw["grade"],
     plugins: raw["plugins"],
   };
 };

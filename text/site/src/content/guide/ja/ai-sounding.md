@@ -954,3 +954,9 @@ i 書き方だけ変わった事実 3 件
 | --- | --- |
 | Kobak ほか「[Delving into LLM-assisted writing in biomedical publications through excess vocabulary](https://arxiv.org/abs/2406.07016)」（Science Advances, 2025） | 生成 AI が広まる前と後の文章で語の使われ方を比べ、増えた語を選ぶ方法。`ai-tell` の語もこの考え方で選びました |
 | 林・相澤「[LLM による日本語生成におけるモデル固有表現パターンの分析](https://www.anlp.jp/proceedings/annual_meeting/2026/pdf_dir/B9-17.pdf)」（言語処理学会 第32回年次大会, 2026） | 日本語でも、モデルごとに決まった言い回しや構成（結論の先出し、番号付きの構成、手順を予告する書き出し）が出ること |
+
+## 次に読むページ
+
+- `fix-plan`、`facts`、`outline`、`compare` のオプションは、[コマンド](./commands#直す計画を出す)にあります。
+- 同じルールでモデルの出力を評価するやり方は、[AI の評価（AI evals）に使う](./ai-evals)にあります。
+- AI らしさのルールごとの例と実際の出力は、[リファレンス](./reference)にあります。
