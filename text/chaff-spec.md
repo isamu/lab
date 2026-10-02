@@ -637,6 +637,7 @@ genres:
 | `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
+| `heading-numbering-mix` | 兄弟の見出しで番号の有無・書き方（1. / 1） / 第1章）が混ざる。少ないほうを指す。語彙表 heading-number-label と unnumbered-heading | 両方 | warning |
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |

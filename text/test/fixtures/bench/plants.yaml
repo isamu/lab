@@ -32,6 +32,7 @@ planted:
   heading-echo: [ja, en]
   hankaku-kana: [ja]
   heading-level-skip: [ja, en]
+  heading-numbering-mix: [ja, en]
   hiragana-fukushi: [ja]
   image-alt-text: [ja, en]
   internal-jargon: [ja, en]

@@ -39,6 +39,7 @@ import {
   totalMismatch,
 } from "./structure-tree.ts";
 import { headingLevelSkip } from "./heading-level-skip.ts";
+import { headingNumbering } from "./heading-numbering.ts";
 import { imageAltText } from "./image-alt-text.ts";
 import { brokenLink } from "./broken-link.ts";
 import { urlRunOn } from "./url-run-on.ts";
@@ -134,6 +135,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "date-range-reversed": dateRangeReversed,
   "percent-sum-mismatch": percentSumMismatch,
   "heading-level-skip": headingLevelSkip,
+  "heading-numbering": headingNumbering,
   "image-alt-text": imageAltText,
   "broken-link": brokenLink,
   "url-run-on": urlRunOn,
