@@ -1,5 +1,5 @@
 // Seeded keigo mistakes for `yarn bench`: a humble verb put on the reader's action. Pure and deterministic.
-import { isProse, rewriteFirst, type Mutation, type Plant } from "./bench-text.ts";
+import { isProse, rewriteFirst, type Mutation, type Plant } from "../bench-text.ts";
 
 type Swap = readonly [string, string];
 
@@ -21,4 +21,4 @@ const humbleForReader = (source: string): Plant | undefined =>
     (line) => swapFirst(line),
   );
 
-export const KEIGO_MUTATIONS: readonly Mutation[] = [{ id: "humble-for-reader", rule: "humble-for-others", languages: ["ja"], plant: humbleForReader }];
+export const MUTATIONS: readonly Mutation[] = [{ id: "humble-for-reader", rule: "humble-for-others", languages: ["ja"], plant: humbleForReader }];

@@ -56,40 +56,19 @@ describe("解析器を読むまで tokens は無い", () => {
     const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos") || rule.uses.includes("pos")).map((rule) => [rule.id, "off" as const]));
     assert.equal(neededBy(RULES, { ...off, "concrete-evidence-density": "normal" }, false, "business/report", "ja").pos, true);
     assert.equal(neededBy(RULES, { ...off, "latin-spacing": "normal" }, true, "technical/readme", "ja").pos, true);
-    assert.deepEqual(
-      RULES.filter((rule) => rule.uses.includes("pos"))
-        .map((rule) => rule.id)
-        .sort((left, right) => left.localeCompare(right)),
-      [
-        "ai-tell",
-        "announcing-opener",
-        "assistant-residue",
-        "baito-keigo",
-        "closing-cliche",
-        "concrete-evidence-density",
-        "contrast-framing",
-        "cushion-phrase-density",
-        "double-keigo",
-        "double-negative",
-        "empty-conclusion",
-        "empty-intensifier",
-        "excessive-hedging",
-        "heading-echo",
-        "hiragana-fukushi",
-        "humble-for-others",
-        "latin-spacing",
-        "max-kanji-continuous",
-        "ngram-repetition",
-        "padded-intro",
-        "repeated-conjunction",
-        "requirement-modal",
-        "requirement-smell",
-        "sasete-itadaku",
-        "stock-transition",
-        "undefined-acronym",
-        "unqualified-superlative",
-      ],
-    );
+  });
+
+  // rule ごとに確かめる。uses: [pos] の rule を足しても、このテストの一覧は書き換えない。
+  describe("uses: [pos] の rule は、それ一つだけ動いていても pos を読む（L4 は lint で動かないので読まない）", () => {
+    const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos") || rule.uses.includes("pos")).map((rule) => [rule.id, "off" as const]));
+    RULES.filter((rule) => rule.uses.includes("pos")).forEach((rule) => {
+      const genre = rule.use_for[0] ?? "";
+      const language = rule.languages?.[0] ?? "ja";
+      it(`${rule.id}（${genre}・${language}）`, () => {
+        assert.notEqual(genre, "", "use_for が空");
+        assert.equal(neededBy(RULES, { ...off, [rule.id]: "normal" }, true, genre, language).pos, rule.layer !== "L4");
+      });
+    });
   });
 
   it("stable な rule が要求していれば、既定でも読む", () => {
