@@ -66,6 +66,7 @@ const densityRule =
 
 const hedgingDensity = densityRule("excessive-hedging");
 export const cushionDensity = densityRule("cushion-phrase-density", "at-floor");
+export const vagueDensity = densityRule("vague-word-density");
 
 /** 書いたとおりの字。行の折り返しをまたいでいたら空白 1 つに。 */
 const writtenAt = (source: string, span: Span): string => source.slice(span.start, span.end).replace(/\s+/gu, " ").trim();
