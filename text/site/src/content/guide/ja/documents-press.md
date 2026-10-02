@@ -98,7 +98,7 @@ $ npx chaffjs release.md --genre business/press-release --compact
 release.md   business/press-release · 日本語   ジャンルは--genreから
 
 
-指摘 0 件、動いていない rule 64 件
+指摘 0 件、動いていない rule 95 件
 ```
 
 `--experimental` を付けて、試験中のルールも動かします。
@@ -120,7 +120,7 @@ release.md   business/press-release · 日本語   ジャンルは--genreから
   39:8    error   合計「36,000円」が、上の金額の和（35,000円）と合いません
                   total-mismatch
 
-指摘 5 件、動いていない rule 11 件
+指摘 5 件、動いていない rule 21 件
 ```
 
 `error` は、数が食い違っていて、どちらかが必ず間違っている所です。

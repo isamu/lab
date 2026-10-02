@@ -96,7 +96,7 @@ contract.md   blog/tech · English   genre from the default
    Looks like: Contract and terms. Try --genre legal/contract
 
 
-0 findings, 66 rules not run
+0 findings, 97 rules not run
 ```
 
 Add `--genre legal/contract`, as suggested, and run it again.
@@ -120,7 +120,7 @@ contract.md   legal/contract · English   genre from --genre
   31:20   warning "Services" is also defined on line 7
                   duplicate-definition
 
-6 findings, 69 rules not run
+6 findings, 96 rules not run
 ```
 
 `error` means the figures disagree, so one of them is certainly wrong.
@@ -164,7 +164,7 @@ contract.md   legal/contract · English   genre from --genre
   33:26   info    This heading's capitalisation differs from the rest (1 in this document)
                   title-case-consistency
 
-7 findings, 40 rules not run
+7 findings, 51 rules not run
 ```
 
 The heading "Article 7 (Good faith)" is in sentence case, and chaff reads the rest of the headings as Title Case.

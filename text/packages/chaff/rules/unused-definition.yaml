@@ -1,0 +1,75 @@
+id: unused-definition
+layer: L3
+status: experimental
+how_to_find: unused-definition
+requires: [structure]
+severity: warning
+
+name:
+  ja: 定義したのに使っていない語
+  en: Term defined but never used
+
+why:
+  ja: 定義した語が本文に一度も出てこなければ、その定義は読み手に覚えさせるだけで何も決めていません。多いのは、本文で別の語に言い換えたあと、定義だけが残った場合です。本文のほうが定義と違う語を使っていないかも確かめてください。
+  en: A term defined and then never used makes the reader learn it for nothing. Usually the body was reworded to another word and the definition stayed behind, so check whether the body now uses a different word for the same thing.
+
+message:
+  ja: 「{term}」を定義していますが、本文で使っていません
+  en: '"{term}" is defined but never used'
+
+how_to_fix:
+  ja: 本文で使っていないなら定義を消してください。本文が別の語で同じものを指しているなら、どちらかに揃えます。
+  en: Delete the definition if nothing uses it. If the body calls the same thing by another word, use one of the two throughout.
+
+# chaff explain と規則の一覧には指摘が無いので、{term} をこう読ませる。
+placeholders:
+  term:
+    ja: 〇〇
+    en: the term
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 定義した語が、本文のどこにも出てこない所
+  en: A term the document defines and then never uses
+example:
+  ja:
+    before: |
+      「本サービス」とは、当社が運営する予約のサイトをいう。利用者は、このサイトを無料で使える。
+    after: |
+      「本サービス」とは、当社が運営する予約のサイトをいう。利用者は、本サービスを無料で使える。
+  en:
+    before: |
+      "Service" means the booking website we run. Users may use the website free of charge.
+    after: |
+      "Service" means the booking website we run. Users may use the Service free of charge.
+
+not_flagged:
+  ja: 定義の書き方（「X」とは、以下「X」という）で書いた語だけを見ます。複数形と所有の形（Services、Seller's）は使用に数えます。同じ語の二つ目の定義は duplicate-definition が言います。
+  en: Only terms defined in a recognised form ("X" means, (the "X")) are checked. Plurals and possessives (Services, Seller's) count as uses. A second definition of the same term is duplicate-definition's to report.
+rewrite:
+  ja:
+    direction: 本文で使っていない定義を消してください。本文が同じものを別の語で呼んでいるなら、その語を定義した語に替えます。どちらかは書き手に聞きます。
+    pairs:
+      - before: 「本サービス」とは、当社が運営する予約のサイトをいう。利用者は、このサイトを無料で使える。
+        after: 「本サービス」とは、当社が運営する予約のサイトをいう。利用者は、本サービスを無料で使える。
+      - before: 「登録情報」とは、利用者が登録した氏名と住所をいう。利用者は、氏名と住所をいつでも変えられる。
+        after: 利用者は、登録した氏名と住所をいつでも変えられる。（本文が定義した語をどこでも使わないとき）
+    keep:
+      - 定義の中身
+    avoid:
+      - 定義を残したまま、本文に使い道を作る
+  en:
+    direction: Delete a definition nothing uses. If the body calls the same thing by another word, replace that word with the defined term; ask the writer which.
+    pairs:
+      - before: '"Service" means the booking website we run. Users may use the website free of charge.'
+        after: '"Service" means the booking website we run. Users may use the Service free of charge.'
+      - before: '"Account Data" means the name and address a user registers. Users may change their name and address at any time.'
+        after: Users may change the name and address they registered at any time. (when nothing else uses the term)
+    keep:
+      - what the definition says
+    avoid:
+      - inventing a use for the term to keep the definition

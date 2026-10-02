@@ -28,13 +28,14 @@ These are the main rules for this genre.
 | `date-weekday-mismatch` | A date whose weekday disagrees with the calendar | With `--experimental` |
 | `numbering-gap` | A skipped or repeated item number | With `--experimental` |
 | `announced-count-mismatch` | A count announced that differs from the list below it | With `--experimental` |
-| `agentless-passive` | A passive that never says who did it | With `--experimental` |
 
 What it does not do is decided too.
 
 - It does not check that the minutes are true. Whether the meeting really decided that is for the people who were there.
 - It does not check that every action has an owner. An empty cell in the table is for a person to fill.
 - It does not check the weekday of a date written without a year, so the due dates in the table are not checked.
+- It does not flag passives with nobody behind them ("it was decided"). Minutes record what the meeting did, so the meeting is the actor by the form.
+  The rule would fire on almost every set of minutes.
 
 ## Try it
 
@@ -96,7 +97,7 @@ minutes.md   business/meeting-notes · English   genre from --genre
   20:1    warning The first sentence repeats the heading "4. Launch date"
                   heading-echo
 
-3 findings, 67 rules not run
+3 findings, 98 rules not run
 ```
 
 Only `heading-echo` runs by default. The rules that help minutes most are experimental.
@@ -111,24 +112,16 @@ minutes.md   business/meeting-notes · English   genre from --genre
                   date-weekday-mismatch
   10:1    warning The first sentence repeats the heading "1. Actions from last week"
                   heading-echo
-  10:32   warning This sentence is passive ("done") but never says who did it
-                  agentless-passive
-  10:63   warning This sentence is passive ("fixed") but never says who did it
-                  agentless-passive
   14:1    warning The first sentence repeats the heading "2. Home page designs"
                   heading-echo
-  16:26   warning This sentence is passive ("decided used") but never says who did it
-                  agentless-passive
   18:1    error   "4" follows "2" (expected number 3)
                   numbering-gap
   20:1    warning The first sentence repeats the heading "4. Launch date"
                   heading-echo
-  20:49   warning This sentence is passive ("moved") but never says who did it
-                  agentless-passive
   24:23   warning "three points" is announced, but the number of items in the list below is 2
                   announced-count-mismatch
 
-10 findings, 18 rules not run
+6 findings, 32 rules not run
 ```
 
 ## What each finding means
@@ -137,12 +130,11 @@ minutes.md   business/meeting-notes · English   genre from --genre
 | --- | --- | --- | --- |
 | 3 | `date-weekday-mismatch` | October 7, 2026 is a Wednesday | Fix the weekday. If the meeting was on Tuesday, fix the date |
 | 10, 14, 20 | `heading-echo` | Each section's first sentence repeats its heading | Start with what is new: "The contact form bug was fixed on September 30." |
-| 10, 16, 20 | `agentless-passive` | "are done", "was fixed", "it was decided" and "may be moved" never say who | Name the person: "Yamada chose design B." |
 | 18 | `numbering-gap` | Item 2 is followed by item 4 | Renumber to 3, or add the missing item 3 |
 | 24 | `announced-count-mismatch` | It says "three points", but there are two | Add the missing decision, or say "two points" |
 
-In minutes, a passive with nobody behind it is the one to fix first: it is exactly what a later reader needs to know.
-The third row of the action table has no owner. chaff does not check that, so a person fills it in.
+"It was decided" and "may be moved" do not say who decided or who moves it. This genre leaves passives alone, so a person reads for them.
+The third row of the action table has no owner. chaff does not check that either, so a person fills it in.
 
 ## Checks that read meaning go to an AI
 
@@ -162,7 +154,6 @@ rules:
   date-weekday-mismatch: normal
   numbering-gap: normal
   announced-count-mismatch: normal
-  agentless-passive: normal
   required-sections: normal
 
 required_sections:

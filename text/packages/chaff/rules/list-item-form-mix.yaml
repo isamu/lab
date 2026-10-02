@@ -1,0 +1,134 @@
+id: list-item-form-mix
+layer: L2
+status: experimental
+how_to_find: list-item-form-mix
+requires: [pos]
+severity: info
+
+name:
+  ja: 箇条書きの項目の形がそろっていない
+  en: List items in mixed forms
+
+why:
+  ja: 一つの箇条書きの項目は、同じ形で並んでいると読み比べやすくなります。名詞で終わる項目（「申込書の提出」）の中に文で終わる項目（「期限を確認する」）が一つだけ混ざると、そこだけ別の種類のことに見えます。chaff はどちらの形が正しいかを決めず、一つの箇条書きの中で少ないほうの形の項目を指摘します。英語の文書では、動詞で始まる項目（Install …）と名詞で始まる項目（The server …）の混ざりも見ます。です・ます と だ・である の混ざりは no-mixed-desumasu が見るので、ここでは見ません。
+  en: Items in one list are easiest to compare when they share a form. When one item is a full sentence among noun phrases, or opens with a verb (Install …) among items that open with a noun (The server …), it reads as a different kind of thing. chaff does not decide which form is right; within one list it points at the items in the less common form.
+
+message:
+  ja: 「{written}」だけ、この箇条書きのほかの項目と形が違います（{of} 項目のうち {count} 項目）
+  en: '"{written}" is in a different form from the other items in this list ({count} of {of})'
+
+messages:
+  ending-phrase:
+    ja: 「{written}」は名詞で終わっています。この箇条書きのほかの項目は文で終わります（{of} 項目のうち {count} 項目）
+    en: '"{written}" is a phrase; the other items in this list are sentences ({count} of {of})'
+  ending-sentence:
+    ja: 「{written}」は文で終わっています。この箇条書きのほかの項目は名詞で終わります（{of} 項目のうち {count} 項目）
+    en: '"{written}" is a sentence; the other items in this list are phrases ({count} of {of})'
+  head-verb:
+    ja: 「{written}」は動詞で始まっています。この箇条書きのほかの項目は名詞で始まります（{of} 項目のうち {count} 項目）
+    en: '"{written}" opens with a verb; the other items in this list open with a noun phrase ({count} of {of})'
+  head-noun:
+    ja: 「{written}」は名詞で始まっています。この箇条書きのほかの項目は動詞で始まります（{of} 項目のうち {count} 項目）
+    en: '"{written}" opens with a noun phrase; the other items in this list open with a verb ({count} of {of})'
+
+how_to_fix:
+  ja: 少ないほうの項目を、ほかの項目と同じ形に書き直してください。中身が違う種類のことなら、別の箇条書きか段落に分けます。
+  en: Rewrite the odd item in the form the others use. If it really is a different kind of thing, move it to its own list or paragraph.
+
+# 少ないほうの形が、その箇条書きの判定できた項目の何パーセントまでなら「混ざっている」と見るか。これを超えたら使い分け。
+levels: { strict: 49, normal: 34, relaxed: 20 }
+
+use_for: [blog, business, technical, docs, academic, legal, literature, speech]
+
+group: consistency
+summary:
+  ja: 一つの箇条書きの中で、名詞で終わる項目と文で終わる項目（英語では動詞で始まる項目と名詞で始まる項目）が混ざっている所
+  en: One list mixing phrases with sentences, or items that open with a verb with items that open with a noun
+
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      準備するもの：
+
+      - 申込書の記入
+      - 本人確認書類の用意
+      - 手数料を払う
+    after: |
+      準備するもの：
+
+      - 申込書の記入
+      - 本人確認書類の用意
+      - 手数料の支払い
+  en:
+    config: { genre: blog/tech }
+    before: |
+      Before you start:
+
+      - Install the command-line tool
+      - Create an account on the website
+      - The configuration file in your home folder
+    after: |
+      Before you start:
+
+      - Install the command-line tool
+      - Create an account on the website
+      - Put the configuration file in your home folder
+
+not_flagged:
+  ja: 項目が三つに満たない箇条書き、少ないほうが三分の一を超える箇条書き（使い分けと見る）、一語だけの項目、「札：説明」の形の項目、コードやリンクを含む項目、読点や「;」で終わって一つの文を分けて並べた箇条書き、引用の中の箇条書きは見ません。項目の最後の括弧書き（「健康診断書（3か月以内のもの）」）は外して形を見ます。法務・文学・話し言葉・議事録のジャンルでは見ません。
+  en: 'Lists of fewer than three items, lists where the less common form is more than a third (used on purpose), one-word items, "Label: value" items, items holding code or a link, lists whose items end in a comma, a semicolon or "and" (one sentence split into items), and quoted lists are not checked. A capitalised name (Cover Letter) and a word that is also a verb (Design) are not judged by their first word. Legal, literary, speech and meeting-notes genres do not run this rule.'
+level_meaning:
+  ja: 少ないほうの形が、箇条書きの項目の {limit}% 以下のとき指摘
+  en: reported when the less common form is {limit}% of the list's items or less
+rewrite:
+  ja:
+    direction: 少ないほうの項目を、同じ箇条書きのほかの項目の形にそろえてください。名詞で終わる並びなら名詞で、文で終わる並びなら文で終えます。項目の中身は変えません。
+    pairs:
+      - before: |
+          - 申込書の記入
+          - 本人確認書類の用意
+          - 手数料を払う
+        after: |
+          - 申込書の記入
+          - 本人確認書類の用意
+          - 手数料の支払い
+      - before: |
+          - 毎朝ログを確認する
+          - 週に一度バックアップを取る
+          - 月末の請求書の発行
+        after: |
+          - 毎朝ログを確認する
+          - 週に一度バックアップを取る
+          - 月末に請求書を発行する
+    keep:
+      - 項目の順番と数
+      - 項目の中の語と数字
+    avoid:
+      - 形をそろえるために、項目に無かった中身を足す
+      - 多いほうの項目を少ないほうに合わせて書き換える
+  en:
+    direction: Rewrite the odd item in the form the rest of the list uses. If the others are phrases, make it a phrase; if they open with a verb, open it with a verb. Keep what the item says.
+    pairs:
+      - before: |
+          - Install the command-line tool
+          - Create an account on the website
+          - The configuration file in your home folder
+        after: |
+          - Install the command-line tool
+          - Create an account on the website
+          - Put the configuration file in your home folder
+      - before: |
+          - Faster downloads
+          - Smaller files
+          - The settings page has been redesigned.
+        after: |
+          - Faster downloads
+          - Smaller files
+          - A redesigned settings page
+    keep:
+      - the order and number of the items
+      - the words and figures in each item
+    avoid:
+      - adding to an item something it did not say, to make the form fit
+      - rewriting the many items to match the odd one

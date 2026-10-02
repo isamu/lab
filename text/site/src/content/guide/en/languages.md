@@ -14,7 +14,7 @@ $ npx chaffjs notes.md --compact
 notes.md   blog/tech · English   genre from the default
 
 
-0 findings, 39 rules not run
+0 findings, 47 rules not run
 ```
 
 A Japanese file says 日本語 in the same place, and its screen is in Japanese:
@@ -25,7 +25,7 @@ $ npx chaffjs memo.md --compact
 memo.md   blog/tech · 日本語   ジャンルは既定から
 
 
-指摘 0 件、動いていない rule 36 件
+指摘 0 件、動いていない rule 44 件
 ```
 
 When the language is wrong, fix it with `language: ja` or `language: en` in `chaff.yaml` ([Configuration](./configuration)).
@@ -33,6 +33,22 @@ When the language is wrong, fix it with `language: ja` or `language: en` in `cha
 The language is worked out from the body text. A list under a "References" or 「参考文献」 heading is not counted,
 because a reference list is written in the language of the works it cites. A Japanese paper that cites many English
 works is still read as Japanese.
+
+## The language of the screen
+
+The findings are shown in the document's language: Japanese for a Japanese document, English for any other.
+When several files are checked, the closing line uses their language if they share one, and the rule below if they do not.
+`chaff eval` reports in the language of the documents it measured, and does not measure documents of mixed languages together.
+
+`chaff test` works the same way. The headings of the machine and AI checks are in the document's language, and so are
+the AI's findings and the `--dry-run` preview. The closing lines (the totals, the notice when it could not run, the
+note about the key) use the shared language. When the files differ, they follow the rule below.
+
+Some output is tied to no document: `--help`, `genres`, `init`, `explain`, `relax`, `rules --json`, warnings about
+the settings and so on. It uses `language` in `chaff.yaml`, then the terminal's locale (`LC_ALL`, `LC_MESSAGES`,
+`LANG`), then English. Where the locale is `C`, as on CI, write `language: ja` in `chaff.yaml` to get Japanese.
+The numbers in `explain` and `rules --json` are counted the way that language counts (characters for Japanese, words
+for English).
 
 ## Documents that mix Japanese and English
 

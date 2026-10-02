@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  hedges-stacked  found
+ja/design  hedges-stacked  found
+ja/figures  hedges-stacked  found
+ja/itinerary  hedges-stacked  found
+ja/minutes  hedges-stacked  found
+ja/press  hedges-stacked  found
+ja/proposal  hedges-stacked  found
+ja/quote  hedges-stacked  found
+ja/readme  hedges-stacked  found
+ja/requirements  hedges-stacked  found
+en/blog  hedges-stacked  found
+en/design  hedges-stacked  found
+en/figures  hedges-stacked  found
+en/itinerary  hedges-stacked  found
+en/minutes  hedges-stacked  found
+en/press  hedges-stacked  found
+en/proposal  hedges-stacked  found
+en/quote  hedges-stacked  found
+en/readme  hedges-stacked  found
+en/requirements  hedges-stacked  found

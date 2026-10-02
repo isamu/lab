@@ -38,8 +38,10 @@ The finding is in Japanese because the document is. There are five styles for no
 | `jis-z8301-2019` | No すべきである and no closing できる in a provision; a numbered figure, table or clause is named by its number, not 上記の図 or 以下の箇条 | JIS Z 8301:2019, 7.3 to 7.5 and 10.6 |
 | `koyobun` | A Japanese sentence of at most 60 characters, no mixing of です・ます with である, and the final ー kept | 公用文作成の考え方 (Council for Cultural Affairs, 2022), III-3 a, III-1 b, I-3 d |
 
-Morae are counted as コ・ン・ピュ・ー・タ・ー. A small ャ, ュ or ョ joins the kana before it.
-Every one of these styles keeps the ー on two-mora words such as カー and キー.
+Morae are counted before the final ー, as コ・ン・ピュ・ー・タ (as JIS Z 8301:2011 Table G.3 counts). A small ャ, ュ or ョ joins the kana before it.
+Every one of these styles keeps the ー on words of two morae or fewer before it, such as カー, カバー and シャワー.
+`ieice` and `jis-z8301-2011` drop only a ー that stands for English -er, -or, -ar (after a kana of the ア row).
+Words ending in ュー, エー or イー (メニュー, グレー, コピー) are left alone.
 
 A plugin can ship styles too. A style from a plugin listed under `plugins:` is chosen with the plugin's name in front
 (`style: example/careful`). [Writing a plugin](./writing-plugins) shows how to make one.
@@ -158,7 +160,7 @@ plan.md   blog/tech · English   genre from the default
   5:19    warning Write "email", not "e-mail"
                   team-email
 
-3 findings, 40 rules not run
+3 findings, 48 rules not run
 ```
 
 chaff treats your rules like its own. `explain` shows the reason and the example you wrote.
@@ -205,4 +207,5 @@ Under `tokens`, `pos` takes everyday names (noun, verb, adjective, adverb, prepo
 For Japanese documents it also takes 名詞, 動詞, 助詞 and the like.
 `base` is the base form (make), and `surface` is the word as written (decision). One token may have any of the three.
 
-Rules written as a Node function (`type: module`) are not supported yet. chaff stops and says so.
+A rule that has to count or compare, which none of the forms here can say, can be a Node function (`type: module`, from 0.19.0).
+How to write one is in [Adding a rule](./adding-rules#a-node-function-rule-0190), and how to ship it as a package in [Writing a plugin](./writing-plugins).

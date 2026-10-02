@@ -5,6 +5,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { componentLines, templateSpans } from "../packages/chaff/src/template-syntax.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import { assertLinearGrowth } from "./growth.ts";
 
 // Template and MDX syntax in Markdown documentation is markup, not prose: it is blanked the way a code span is, keeping
 // every offset. Text a construct wraps (an alert's body, an admonition's body, the text between JSX tags) is prose.
@@ -87,10 +88,9 @@ describe("text that only looks like a tag", () => {
   });
 
   it("many unclosed openers on one line take linear time", () => {
-    const line = Array.from({ length: 40_000 }, () => "{{x {%y {#z {/*w").join(" ");
-    const started = performance.now();
-    templateSpans(line);
-    assert.ok(performance.now() - started < 1_000);
+    const lineOf = (openers: number): string => Array.from({ length: openers }, () => "{{x {%y {#z {/*w").join(" ");
+    assertLinearGrowth((openers) => assert.deepEqual(templateSpans(lineOf(openers)), []), 20_000);
+    const line = lineOf(40_000);
     assert.deepEqual(templateSpans(`${line} }}`), [{ start: 0, end: line.length + 3 }]);
   });
 

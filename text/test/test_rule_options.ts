@@ -155,13 +155,13 @@ describe("rule options", () => {
 
     it("lint checks against the option chaff.yaml sets", async () => {
       const run = await runCli({ "chaff.yaml": CONFIG, "a.md": "# 報告\n\nサーバーを使います。\n" }, ["a.md", "--compact"]);
-      assert.match(run.out, /「サーバー」は語末の「ー」を省いて「サーバ」と書きます（3 音以上の語）/u);
+      assert.match(run.out, /「サーバー」は語末の「ー」を省いて「サーバ」と書きます（2 音以上の語）/u);
     });
 
     it("explain shows each option's value and where it came from", async () => {
       const run = await runCli({ "chaff.yaml": CONFIG }, ["explain", "katakana-long-vowel"]);
       assert.match(run.out, /ending: drop {3}\(.*chaff\.yaml から\)/u);
-      assert.match(run.out, /min_morae: 3 {3}\(既定\)/u);
+      assert.match(run.out, /min_morae: 2 {3}\(既定\)/u);
       assert.match(run.out, /→ drop/u);
     });
 

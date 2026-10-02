@@ -1,0 +1,81 @@
+id: bold-label-list
+layer: L1
+status: experimental
+how_to_find: bold-label-list
+requires: [markdown]
+# English human writing (handbooks, minutes, policies, changelogs) labels list items in bold as a matter of course: the
+# committed English corpus already passes the limit in documents no model wrote. Japanese only until a limit separates them.
+languages: [ja]
+severity: info
+
+name:
+  ja: 太字の札で始まる箇条書きが多い
+  en: Too many list items led by a bold label
+
+why:
+  ja: 「- **速さ**：〜」のように、項目ごとに太字の札とコロンを置いて説明を続ける形です。札が並ぶと、どの項目も同じ重さの見出しに見え、項目どうしの繋がりは書かれません。生成文によく見られる形です。
+  en: 'An item that opens with a bold label and a colon ("- **Speed**: ..."), item after item. The labels make every item look like a heading of equal weight, and the links between the items go unwritten. A shape common in generated text.'
+
+message:
+  ja: 「{label}」など、太字の札で始まる項目が {count} 個あります（{limit} 個から）
+  en: '"{label}" and other bold labels open {count} list items ({limit} needed)'
+
+how_to_fix:
+  ja: 札を外して、項目を文にしてください。大事な項目が 1 つ 2 つなら、それを段落で書き、残りは消すか 1 文にまとめます。用語集のように、本当に札と説明の組を並べるものはそのままでかまいません。
+  en: Drop the labels and write the items as sentences. If only one or two items matter, give them a paragraph and cut or merge the rest. A real glossary, where each label is the term being defined, can stay.
+
+# 指摘に要る項目の数。長さで割らない：人の記事は長くても 1 つ 2 つで、生成文は短くても並べる。
+levels: { strict: 3, normal: 5, relaxed: 8 }
+
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
+sources: [zhang-2024]
+
+group: ai-tells
+summary:
+  ja: 「- **速さ**：〜」のように、太字の札とコロンで始まる項目が並び、説明が札の続きだけになっている所
+  en: 'List items that open with a bold label and a colon ("- **Speed**: ..."), one after another'
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      # 新しい在庫システム
+
+      - **速さ**：一覧が 1 秒で出ます。
+      - **正確さ**：数え間違いが減ります。
+      - **安さ**：月の費用が下がります。
+      - **使いやすさ**：画面が分かりやすくなりました。
+      - **安全**：権限を細かく分けられます。
+    after: |
+      # 新しい在庫システム
+
+      一覧は 1 秒で出るようになり、数え間違いも減りました。
+      月の費用は下がり、権限も細かく分けられます。
+
+not_flagged:
+  ja: 札がコードだけの項目（`--flag` の説明のような、設定や引数の一覧）は数えません。札の後ろにコロンが無い項目と、コロンの後ろに何も無い項目も数えません。仕様書（technical/spec）・法務・説明書・論文・文学のジャンルでは見ません。英語の文書は、人もよくこの形で書くので見ません。
+  en: An item whose label is only code (a list of options or fields) is not counted, nor is one without a colon after the label or without text after the colon. Specification (technical/spec), legal, documentation, academic and literary genres do not run this rule. Japanese documents only; English writers use this shape as a matter of course.
+level_meaning:
+  ja: 太字の札で始まる項目が {limit} 個あれば指摘
+  en: reported once {limit} list items open with a bold label
+rewrite:
+  ja:
+    direction: 太字の札を外し、項目を文に戻してください。札の語は文の中に入れ、項目どうしの関係（理由、順番、どちらが大事か）を書きます。用語集のように、札が定義される語そのものなら箇条書きのままにします。
+    pairs:
+      - before: |
+          - **速さ**：一覧が 1 秒で出ます。
+          - **正確さ**：数え間違いが減ります。
+        after: |
+          一覧は 1 秒で出るようになり、数え間違いも減りました。
+      - before: |
+          - **原因**：設定ファイルの読み込み順が変わった。
+          - **対策**：読み込み順を固定した。
+        after: |
+          設定ファイルの読み込み順が変わっていたので、順番を固定しました。
+    keep:
+      - 項目の中身と数字
+      - 手順の順番
+      - 用語集の語と定義の組
+    avoid:
+      - 札を消しただけで、同じ並びの短い箇条書きを残す
+      - 太字の札を、見出しのような一文に置き換える
+      - 項目の間に、書き手が書いていない因果を足す

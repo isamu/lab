@@ -1,0 +1,8 @@
+# 相対の期間と日付のあいだに書いてよい語（relative-date-mismatch）。空白と区切りの記号（、（）は書かなくてもよい。
+id: relative-link
+language: ja
+entries:
+  - pattern: "の"
+  - pattern: "に"
+  - pattern: "となる"
+  - pattern: "である"
