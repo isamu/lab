@@ -171,7 +171,7 @@ For these rules the four words set how a finding is marked. At `relaxed` the fin
 | Rules | `strict` | `normal` | `relaxed` |
 | --- | --- | --- | --- |
 | `numbering-gap` `dangling-reference` `date-weekday-mismatch` `total-mismatch` | (none) | error | warning |
-| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` | error | warning | note |
+| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` `unfilled-placeholder` | error | warning | note |
 
 chaff fails when any error is left, and passes when there are only warnings and notes.
 `explain` shows the marking in place of a number.
