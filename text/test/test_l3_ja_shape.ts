@@ -197,6 +197,38 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.equal(counted(humble(1), "strict"), undefined);
       assert.equal(counted(humble(2), "strict")?.values["count"], 2);
     });
+
+    it("数えるのは文ではなく出現。一文に二度あれば二回", () => {
+      assert.equal(counted("資料を配布させていただき、内容を説明させていただきます。", "strict")?.values["count"], 2);
+    });
+
+    it("可能と打ち消しの形（させていただける・させていただけない）も数える", () => {
+      assert.equal(counted("ご案内させていただけますか。今回は参加させていただけないそうです。", "strict")?.values["count"], 2);
+      assert.equal(counted("ご案内させて頂けますか。今回は参加させて戴けないそうです。", "strict")?.values["count"], 2);
+    });
+
+    it("指摘は書いた形の語を言う（させていただける を せていただける と言わない）", () => {
+      const matched = (source: string): unknown[] =>
+        runRules(buildDocument("t.md", source, ja), RULES, { "sasete-itadaku": "strict" }, true, "business/report")
+          .findings.filter((finding) => finding.rule === "sasete-itadaku")
+          .map((finding) => finding.values["matched"]);
+      assert.deepEqual(matched("ご案内させていただけますか。参加させて頂けますか。参加させて戴けますか。"), [
+        "させていただける",
+        "させて頂ける",
+        "させて戴ける",
+      ]);
+      assert.deepEqual(matched("読ませていただきました。休ませていただきます。"), ["せていただく", "せていただく"]);
+      assert.deepEqual(matched("読ませていただき、確認させていただきます。"), ["せていただく"]);
+    });
+
+    it("五段動詞の形（読ませていただく）も数え、「させていただく」と重なっても一回", () => {
+      assert.equal(counted("資料を読ませていただきました。明日は休ませていただきます。", "strict")?.values["count"], 2);
+      assert.equal(counted("確認させていただきます。", "strict"), undefined);
+    });
+
+    it("使役のない「いただく」「いただける」は数えない", () => {
+      assert.equal(counted("ご確認いただけますか。お知らせいただきました。日程を知らせていただきました。", "strict"), undefined);
+    });
   });
 
   describe("double-keigo", () => {
