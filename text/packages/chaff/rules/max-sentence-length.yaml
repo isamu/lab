@@ -97,3 +97,28 @@ not_flagged:
 level_meaning:
   ja: 一文 {limit} 字まで
   en: up to {limit} words in a sentence
+rewrite:
+  ja:
+    direction: 接続助詞（〜が、〜ので、〜し）か「、そして」の所で二文に割り、二文目にも主語を書いてください。
+    pairs:
+      - before: 申請書は総務部に提出しますが、期限を過ぎた場合は翌月の扱いになり、その場合は再申請が必要になります。
+        after: 申請書は総務部に提出します。期限を過ぎた申請は翌月の扱いになり、再申請が必要です。
+      - before: 新しい端末は来週届く予定なので、それまでは今の端末を使い、届いたら情報システム部が設定します。
+        after: 新しい端末は来週届く予定です。それまでは今の端末を使います。届いた端末は情報システム部が設定します。
+    keep:
+      - 条件と例外（「〜の場合」）と、それが掛かる先
+    avoid:
+      - 割るときに条件を別の文へ移して、掛かる先を変える
+      - 長い修飾を削って中身を落とす
+  en:
+    direction: Split the sentence at a conjunction (and, but, so, which) and give the second sentence its own subject.
+    pairs:
+      - before: Submit the form to the office, but if you miss the deadline it moves to the next month, in which case you have to apply again.
+        after: Submit the form to the office. A form that misses the deadline moves to the next month and has to be submitted again.
+      - before: The new laptops arrive next week, so keep using the old ones until then, and IT will set the new ones up when they come.
+        after: The new laptops arrive next week. Keep using the old ones until then. IT will set the new ones up when they come.
+    keep:
+      - conditions and exceptions ("if", "unless") and what they apply to
+    avoid:
+      - moving a condition into another sentence so that it applies to something else
+      - dropping content to make the sentence shorter

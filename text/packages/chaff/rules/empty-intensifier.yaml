@@ -47,3 +47,28 @@ not_flagged:
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
+rewrite:
+  ja:
+    direction: 強める語（「非常に」「言うまでもなく」）を消し、何がどう大事なのかが本文にあれば、それを主語と述語で書いてください。無ければ書き手に聞きます。
+    pairs:
+      - before: 言うまでもなく、バックアップは非常に重要で、消えたデータは戻りません。
+        after: バックアップが無いと、消えたデータは戻りません。
+      - before: この変更は極めて重要です。料金が月額から従量制に変わります。
+        after: この変更で、料金が月額から従量制に変わります。
+    keep:
+      - なぜ大事なのかを書いた部分
+    avoid:
+      - 強める語を別の強める語（「とても」「きわめて」）に替える
+      - 大事な理由を作る
+  en:
+    direction: Delete the intensifier ("extremely", "needless to say") and, if the text says why the thing matters, say that instead. If it does not, ask the writer.
+    pairs:
+      - before: Needless to say, backups are extremely important, because lost data cannot be recovered.
+        after: Without a backup, lost data cannot be recovered.
+      - before: This change is critically important. Billing moves from monthly to usage-based.
+        after: With this change, billing moves from monthly to usage-based.
+    keep:
+      - the part that says why it matters
+    avoid:
+      - swapping one intensifier for another ("very", "truly")
+      - inventing a reason it matters
