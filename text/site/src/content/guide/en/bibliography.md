@@ -286,7 +286,8 @@ Several of them also show how often human writing is mistaken for generated text
 - <a id="fibujrsl-2026"></a>**fibujrsl (2026)** [zenn.dev](https://zenn.dev/fibujrsl/articles/4958a844214709)
   - 生成AIっぽい文章の特徴をまとめる (The features of AI-sounding writing)
   - Appeared in: Zenn, 14 February 2026.
-  - Found: names left-over emphasis marks, lists dressed up with symbols and emoji, and words stressed again and again with brackets or symbols as signs of generated Japanese.
+  - Found: three signs of generated Japanese. They are left-over emphasis marks, lists dressed up with symbols and emoji,
+    and words stressed again and again with brackets or symbols.
     The fix it gives is to drop the decoration and let the position of the conclusion and its evidence carry the stress.
   - In chaff: the fix behind `bold-label-list` and `emoji-heading`.
 - <a id="writers-hub-2026"></a>**Writers-hub (2026)** [writers-hub.co.jp](https://writers-hub.co.jp/blog/qiita-generative-ai-article)

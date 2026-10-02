@@ -1,0 +1,89 @@
+id: vague-word-density
+layer: L2
+status: experimental
+how_to_find: vague-density
+word_list: vague-word
+uses: [pos]
+severity: info
+
+name:
+  ja: あいまいな語が多い
+  en: Too many vague words
+
+why:
+  ja: 「適宜」「適切に」「必要に応じて」「なるべく」は、どこまで・いつまで・何をしたら済むのかを読み手に決めさせます。一つ二つは普通の言い方ですが、重なると、文書の言っていることの多くを読み手が埋めることになり、人によって読み方が変わります。ISO/IEC/IEEE 29148 が要求の文で避ける語として挙げる言い方と同じ種類です。文書の長さに対して多いときだけ指します。語の一覧は言語ごとの語彙表にあります。
+  en: '"As appropriate", "as needed", "reasonable" and "in a timely manner" leave the reader to decide how far, how soon and what counts as done. One or two are ordinary; many leave much of the document to the reader, and two readers will fill it in differently. ISO/IEC/IEEE 29148 lists the same kind of word among those a requirement avoids. chaff speaks only when they are dense for the document''s length. The words are listed in each language''s lexicon.'
+
+message:
+  ja: 「{matched}」など、あいまいな語が 1000 字あたり {density} 個あります（{limit} 個まで）
+  en: '"{matched}" and other vague words: {density} per 1000 words (limit {limit})'
+
+how_to_fix:
+  ja: 大事なところから、何を・どこまで・いつまでを書いてください。「適宜報告する」は「毎週金曜に報告する」、「必要に応じて」は、どんなときに必要なのかを書きます。
+  en: 'Where it matters, say what, how far and by when: "report as needed" becomes "report every Friday", and "as appropriate" names the case.'
+
+placeholders:
+  matched:
+    ja: 見つけたあいまいな語の一つ
+    en: one of the vague words found
+
+# 日本語は 1000 字、英語は 1000 語あたり。英語の 1000 語は日本語の 1000 字よりずっと長い。
+levels:
+  ja: { strict: 1, normal: 2, relaxed: 4 }
+  en: { strict: 2, normal: 4, relaxed: 8 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「適宜」「適切に」「必要に応じて」のように、どこまで・いつまでを読み手に決めさせる語が、文書の長さに対して多い所
+  en: Vague words ("as appropriate", "as needed", "in a timely manner"), many for the document's length
+example:
+  ja:
+    pad: true
+    before: |
+      障害が起きたら適宜報告し、必要に応じて関係者に連絡してください。復旧後は適切に記録を残し、なるべく早めに再発防止策をまとめます。
+    after: |
+      障害が起きたら 30 分以内に報告し、影響のある部署に連絡してください。復旧後は障害票に記録を残し、翌営業日までに再発防止策をまとめます。
+  en:
+    pad: true
+    before: |
+      Report incidents as needed and notify the appropriate people in a timely manner. Keep adequate records and fix the cause where possible.
+    after: |
+      Report an incident within 30 minutes and notify the affected teams. Record it in the incident log and fix the cause by the next working day.
+
+not_flagged:
+  ja: 文書の長さに対して少ないものは指しません。短すぎる文書も測りません。要求の文の中の「可能な限り」「必要に応じて」は、要求の書き方として requirement-smell も見ます。
+  en: A few vague words for the document's length are not reported, and very short documents are not measured. Inside a requirement, requirement-smell also reads "where possible" and "as needed".
+level_meaning:
+  ja: 1000 字あたりあいまいな語 {limit} 個まで
+  en: up to {limit} vague words per 1000 words
+rewrite:
+  ja:
+    direction: あいまいな語を、何を・どこまで・いつまでに置き換えてください。決まっていないなら、決まっていないことと、誰が決めるのかを書きます。
+    pairs:
+      - before: 障害が起きたら適宜報告してください。
+        after: 障害が起きたら 30 分以内に報告してください。
+      - before: 必要に応じて関係者に連絡します。
+        after: 顧客に影響があるときは、営業部に連絡します。
+      - before: なるべく早めに対応します。
+        after: 今週中に対応します。
+    keep:
+      - 書き手が約束している範囲（約束していない期限を足さない）
+      - 依頼の相手と中身
+    avoid:
+      - 書き手の知らない数字や期限を作る
+      - あいまいな語を別のあいまいな語（随時、しかるべく）に替える
+  en:
+    direction: Replace each vague word with what, how far or by when. If it is not decided, say so and say who decides.
+    pairs:
+      - before: Report incidents as needed.
+        after: Report every incident within 30 minutes.
+      - before: Notify the appropriate people in a timely manner.
+        after: Notify the on-call engineer within an hour.
+    keep:
+      - what the writer actually commits to (do not invent a deadline)
+      - who is asked and what
+    avoid:
+      - making up numbers or deadlines the writer does not know
+      - swapping one vague word for another ("promptly", "as required")
