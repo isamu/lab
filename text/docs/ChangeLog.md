@@ -15,6 +15,15 @@ The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding te
   specifics: ask the writer, or mark the guess for them to confirm. `chaff compare` catches an added number or name but
   not added wording, so the last is the rewriter's to keep.
 
+### `agentless-passive` (ja) reads 「〜されることとなった」 as a predicate
+
+「本件は検討されることとなった。」 and 「見直しが実施されることになりました。」 were not reported: the こと after the
+passive looked like a noun the passive modifies (as in 「開催される BootCamp」). The new lang-ja word list
+`passive-predicate-frame` (ことになる, こととなる, with も or は inside, and with 事) names the frames whose noun is part of
+the predicate; the passive before one is judged like a passive at the end of a sentence. A content noun after the frame
+(「検討されることとなった案」) still makes it a modifier, a bound noun does not (「〜ことになったため」), a conditional after the
+frame (「〜こととなれば」, 「〜ことになると」) is not reported, and other uses of こと (「延期されることがある」) are unchanged.
+
 ### `sasete-itadaku` counts each use, and its potential and godan forms
 
 The rule counted sentences, so 「配布させていただき、説明させていただきます。」 was one use; it is now two. It also
