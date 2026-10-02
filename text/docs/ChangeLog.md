@@ -2,6 +2,15 @@
 
 Newest first.
 
+## Unreleased
+
+### New rule: `emoji-heading`, headings decorated with emoji (experimental)
+
+- Points at every heading with an emoji in it (「## 🚀 はじめに」, "## ✅ Summary") once a document has enough of them.
+  It counts headings, not a density. Only characters drawn as emoji count: an arrow or ™ is text. Documentation, legal,
+  academic and literary genres do not run it. In Qiita articles the shape is rare in 2016–2021 and clearly more
+  common in 2025–2026.
+
 ## 0.19.0 — 2026-10-02
 
 chaff now tells a writer, or an AI, how to fix what it finds. `chaff fix-plan` turns the findings into a rewrite plan.

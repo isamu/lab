@@ -830,6 +830,7 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `unfilled-placeholder` ✅ | 括弧の中が雛形の語（[Your Name]、【会社名】）の空欄 | 両方 | warning |
 | `announcing-opener` ✅ | 文頭の予告（重要なのは、Here's the thing）の数。密度ではなく数で見る | blog | info |
 | `colon-lead-in` ✅ | コロンで終わり、すぐ後ろに箇条書きが来る地の文の密度（ja のみ） | blog | info |
+| `emoji-heading` ✅ | 絵文字（既定で絵文字として描かれる字か、U+FE0F の付いた字）を含む見出しの数 | blog | info |
 | `bold-label-list` ✅ | 太字の札とコロンで始まる箇条書きの項目の数。札がコードだけなら数えない（ja のみ） | blog | info |
 | `padded-intro` | phrase-match（冒頭限定） | blog | warning |
 | `closing-cliche` | phrase-match（末尾限定） | blog | warning |

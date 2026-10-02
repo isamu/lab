@@ -51,6 +51,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      emoji-heading: off
       bold-label-list: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
@@ -84,6 +85,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      emoji-heading: off
       bold-label-list: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
@@ -106,6 +108,7 @@ groups:
       section-length-uniformity: off
       paragraph-length-variance: off
       stock-transition: off
+      emoji-heading: off
       bold-label-list: off
       requirement-smell: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
@@ -156,6 +159,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      emoji-heading: off
       bold-label-list: off
       nominalization: off
       dangling-reference: off
