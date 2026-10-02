@@ -178,6 +178,7 @@ groups:
       double-keigo: off
       no-em-dash: off
       emoji-density: off
+      elapsed-years-mismatch: off
       fact-conflict: off
       summary-fact-mismatch: off
       sentence-rhythm: off
@@ -207,6 +208,7 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      redundant-expression: off
       requirement-smell: off
       paragraph-restatement: off
       # A story or poem chooses its own opening and its own title.
