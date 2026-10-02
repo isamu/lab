@@ -14,6 +14,32 @@ postponed, brought forward, rescheduled …) anywhere in the same sentence, acro
 instead. "between … and" is not read as a period: it also names two dates to choose from. Japanese keeps reading
 から … まで with range-opener and range-closer.
 
+### `announced-count-mismatch` (en) knows more nouns that name what a list holds
+
+"The board made three decisions:" was not read as an announcement, though "three points:" was. The English word list
+`count-counter` now also has nouns such as decisions, findings, examples, objectives, priorities, outcomes, problems,
+concerns, constraints, assumptions, limitations, roles, values, sections, tools, policies, metrics
+and milestones. A plural before a colon is still not enough on its own: a plural that measures ("over the past three
+years:", "two hours:", "two levels:") or a verb ending in s ("Release 2 includes:", "Section 2 documents:") does not
+announce a list.
+
+### `agentless-passive` (ja) reads 「〜されることとなった」 as a predicate
+
+「本件は検討されることとなった。」 and 「見直しが実施されることになりました。」 were not reported: the こと after the
+passive looked like a noun the passive modifies (as in 「開催される BootCamp」). The new lang-ja word list
+`passive-predicate-frame` (ことになる, こととなる, with も or は inside, and with 事) names the frames whose noun is part of
+the predicate; the passive before one is judged like a passive at the end of a sentence. A content noun after the frame
+(「検討されることとなった案」) still makes it a modifier, a bound noun does not (「〜ことになったため」), a conditional after the
+frame (「〜こととなれば」, 「〜ことになると」) is not reported, and other uses of こと (「延期されることがある」) are unchanged.
+
+### `sasete-itadaku` counts each use, and its potential and godan forms
+
+The rule counted sentences, so 「配布させていただき、説明させていただきます。」 was one use; it is now two. It also
+counts the potential and negative forms (させていただけますか, させていただけない, させていただければ) and the godan form
+(入らせていただきます, 読ませていただく), which the analyser reads as other words. Two entries that cover the same
+words (させていただく and せていただく) count as one use. A one-step verb with させる (見させていただく) is still not counted:
+the analyser reads its させ as one word, which no entry in the word list can match.
+
 ### Docs: Writing a plugin
 
 - A new guide page, 「プラグインを作る」 / "Writing a plugin": the two forms (a `type: module` rule, a plugin package),
