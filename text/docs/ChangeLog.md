@@ -4,6 +4,15 @@ Newest first.
 
 ## Unreleased
 
+### `proper-noun-density` sets its English limit from human documents (#170)
+
+- English counts per 1000 words, and the limit was the Japanese one (per 1000 characters), so the rule fired on most
+  English documents in the corpus. Measured over every English corpus document and a sample of Project Gutenberg
+  novels and essays, `normal` now sits at about the 95th percentile of those human documents, `strict` near the 85th
+  and `relaxed` near the top. Japanese is unchanged. The measurement is in the PR.
+- The generated samples of `yarn bench:ai` name fewer things than their human versions, so the rule never told them
+  apart; it is a readability check, not an AI-shape one.
+
 ### `date-range-reversed` (en) reads "from … to …"
 
 "The agreement runs from 1 November 2026 to 31 October 2026" was not compared, though the same dates joined by

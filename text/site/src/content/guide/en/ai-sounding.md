@@ -285,10 +285,8 @@ $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 
 rewritten.md   blog/tech · English   genre from --genre
 
-  3:27    info    44 proper nouns per 1000 words (limit 40)
-                  proper-noun-density
 
-1 finding, 13 rules not run
+0 findings, 16 rules not run
 ```
 
 What changed, and why:
@@ -305,7 +303,7 @@ What changed, and why:
 | Dropped "I hope this helps! Let me know…" | Chat residue |
 
 Every number (once every 30 runs, three weeks, 12 minutes, two weeks), command and setting is kept.
-The `proper-noun-density` left after the rewrite counts the API and setting names, which a tech article needs.
+The API and setting names left after the rewrite, which a tech article needs, are well within `proper-noun-density`'s limit.
 
 Last, `chaff compare` checks that no fact was lost:
 
