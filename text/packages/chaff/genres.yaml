@@ -51,6 +51,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      emoji-heading: off
       bold-label-list: off
       ai-structure: off
       # Statutes and opinions write "not inconsistent with" on purpose.
@@ -85,6 +86,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      emoji-heading: off
       bold-label-list: off
       ai-structure: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
@@ -108,6 +110,7 @@ groups:
       section-length-uniformity: off
       paragraph-length-variance: off
       stock-transition: off
+      emoji-heading: off
       bold-label-list: off
       ai-structure: off
       requirement-smell: off
@@ -159,6 +162,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      emoji-heading: off
       bold-label-list: off
       nominalization: off
       dangling-reference: off
