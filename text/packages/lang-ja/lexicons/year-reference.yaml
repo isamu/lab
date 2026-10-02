@@ -1,0 +1,19 @@
+# 日付の直前で、年を語で言う言葉。date-without-year は、これが前にある年の無い日付を指さない。
+# 「同年12月28日」は年が決まっていて、「毎年4月1日」「その年の12月31日」はどの年にも当てはまる日付。
+id: year-reference
+language: ja
+entries:
+  - pattern: 同年
+  - pattern: 翌年
+  - pattern: 前年
+  - pattern: 昨年
+  - pattern: 本年
+  - pattern: 今年
+  - pattern: 来年
+  - pattern: 当年
+  - pattern: 毎年
+  - pattern: 例年
+  - pattern: 各年
+  - pattern: その年
+  - pattern: 年度の
+  - pattern: 年の
