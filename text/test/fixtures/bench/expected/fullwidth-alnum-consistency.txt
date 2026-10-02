@@ -1,0 +1,6 @@
+table  5  5  0  0
+ja/figures  number-fullwidth  found
+ja/minutes  number-fullwidth  found
+ja/press  number-fullwidth  found
+ja/proposal  number-fullwidth  found
+ja/quote  number-fullwidth  found

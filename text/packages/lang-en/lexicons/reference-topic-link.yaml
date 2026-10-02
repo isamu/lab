@@ -1,0 +1,5 @@
+# Words between a reference and its topic (reference-topic-missing): "see Section 2 for pricing".
+id: reference-topic-link
+language: en
+entries:
+  - pattern: "for"

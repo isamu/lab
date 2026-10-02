@@ -1,0 +1,24 @@
+# 時間（基準は秒）の単位（unit-mismatch）。weight は基準の単位への倍率。同じ単位を二度書けば倍率が二つで、どちらで合ってもよい。
+id: unit-time
+language: ja
+entries:
+  - pattern: "時間"
+    weight: 3600
+  - pattern: "分間"
+    weight: 60
+  - pattern: "分"
+    weight: 60
+  - pattern: "秒間"
+    weight: 1
+  - pattern: "秒"
+    weight: 1
+  - pattern: "ミリ秒"
+    weight: 0.001
+  - pattern: "h"
+    weight: 3600
+  - pattern: "min"
+    weight: 60
+  - pattern: "s"
+    weight: 1
+  - pattern: "ms"
+    weight: 0.001

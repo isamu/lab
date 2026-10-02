@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/design  gloss-dropped  found
+en/design  gloss-dropped  found

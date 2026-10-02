@@ -6,7 +6,7 @@ import { unknownFrontMatterGenre } from "./genre-check.ts";
 import { plainSource } from "./plain-source.ts";
 
 /** unread: a genre the front matter wrote that chaff does not know, when the front matter was looked at. */
-type ResolvedGenre = { readonly genre: string; readonly from: GenreSource; readonly unread?: string | undefined };
+export type ResolvedGenre = { readonly genre: string; readonly from: GenreSource; readonly unread?: string | undefined };
 
 export const resolveGenre = (path: string, text: string, config: Config, cliGenre?: string): ResolvedGenre => {
   // コマンドで指定したものが最優先。その実行だけの指定だから、設定より強い。

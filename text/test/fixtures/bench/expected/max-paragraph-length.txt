@@ -1,0 +1,10 @@
+table  9  9  0  0
+ja/blog  paragraphs-joined  found
+ja/press  paragraphs-joined  found
+ja/proposal  paragraphs-joined  found
+en/blog  paragraphs-joined  found
+en/design  paragraphs-joined  found
+en/email  paragraphs-joined  found
+en/press  paragraphs-joined  found
+en/proposal  paragraphs-joined  found
+en/requirements  paragraphs-joined  found

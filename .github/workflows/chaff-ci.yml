@@ -41,6 +41,10 @@ jobs:
       - name: lint
         run: yarn lint
 
+      # scoria が Code Scanning に上げる oxlint の correctness を、merge 前にここで止める。版は scoria と揃える。
+      - name: lint:oxlint
+        run: yarn lint:oxlint
+
       - name: typecheck
         run: yarn typecheck
 
