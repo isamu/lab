@@ -36,6 +36,7 @@ import {
   totalMismatch,
 } from "./structure-tree.ts";
 import { headingLevelSkip } from "./heading-level-skip.ts";
+import { factConflict, summaryFactMismatch } from "./fact-consistency.ts";
 import { imageAltText } from "./image-alt-text.ts";
 import { brokenLink } from "./broken-link.ts";
 import { urlRunOn } from "./url-run-on.ts";
@@ -137,4 +138,6 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "fullwidth-alnum": fullwidthAlnum,
   "spelling-variety": spellingVariety,
   "ra-nuki": raNuki,
+  "fact-conflict": factConflict,
+  "summary-fact-mismatch": summaryFactMismatch,
 };

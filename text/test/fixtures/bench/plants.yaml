@@ -77,6 +77,7 @@ not_planted:
   contrast-framing: a density over the whole document
   cushion-phrase-density: a density over the whole document
   empty-conclusion: L4, judged by chaff test and never run by lint
+  fact-conflict: needs one item written twice with a label and a value in one section; the samples state each item once
   nominalization: a density over the whole document
   paragraph-length-variance: the shape of the whole document, not one mistake
   proper-noun-density: a density over the whole document
@@ -86,6 +87,7 @@ not_planted:
   rule-of-three: the shape of the whole document, not one mistake
   section-length-uniformity: the shape of the whole document, not one mistake
   sentence-rhythm: the shape of the whole document, not one mistake
+  summary-fact-mismatch: needs an opening or summary that repeats a labelled body value; the samples have none
   spelling-consistency: the English samples use at most one word with a British or American spelling, so no single edit mixes them
   stock-transition: a density over the whole document
   taigen-dome-in-prose: a count over the whole document; reaching it would rewrite the sample's register

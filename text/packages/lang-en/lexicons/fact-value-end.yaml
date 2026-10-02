@@ -1,0 +1,8 @@
+# What may follow a value (fact-conflict, summary-fact-mismatch). A value followed by anything else ("$300 per person",
+# "May 3 at the latest") carries a condition and is not read. The end of a line or a table cell always ends it.
+id: fact-value-end
+language: en
+entries:
+  - pattern: "."
+  - pattern: ","
+  - pattern: ";"
