@@ -21,7 +21,7 @@ chaff は、たどれない見出し、行き先の無いリンク、説明の�
 
 ## chaff が見ること、見ないこと
 
-このジャンルで見る主なルールは、次のとおりです。どれも試験中で、`--experimental` を付けたときに動きます。
+このジャンルで見る主なルールは、次のとおりです。`image-alt-text` は既定で動きます。ほかは試験中で、`--experimental` を付けたときに動きます。
 
 | ルール | 見つけるもの |
 | --- | --- |
@@ -94,8 +94,10 @@ $ npx chaffjs manual.md --compact
 manual.md   blog/tech · 日本語   ジャンルは既定から
    マニュアル・手順書のようです。--genre docs/manual を試せます
 
+  9:1     warning 画像「![](images/settings.png)」に代替テキストがありません
+                  image-alt-text
 
-指摘 0 件、動いていない rule 63 件
+指摘 1 件、動いていない rule 65 件
 ```
 
 勧められたとおり、ジャンルを付けて、試験中のルールも動かします。

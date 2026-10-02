@@ -1890,6 +1890,10 @@ corpus の日本語業務文書では、決まり・文書の中身・状態を�
 `title-case-consistency` と `contraction-consistency` は 3 で止めている。eval が
 「どの閾値でも目標を満たさない」と言っている。
 
+`image-alt-text` は 3 つとも満たしたので既定で動かす。`examples/` で 1 件（`blog-en/mulmocast-vision-en.md` の
+`![](…)`）が出て、読んで正しい。段が重さを決める rule なので eval は掃引しないが、人の書いた文書では
+corpus では出ず、LLM 以前の Qiita 記事でも目標の 5% を下回る文書にしか出ない。読んだ指摘はどれも本当に代替テキストが無い。
+
 ## 22. Rule Status と CI
 
 ```text
