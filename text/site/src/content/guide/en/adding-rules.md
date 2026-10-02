@@ -158,6 +158,7 @@ custom_rules:
 
 `words` matches the words as written; for inflected words, use a morphology rule.
 Like a built-in rule, a team rule takes a level under `rules`, and `stet` silences one spot.
+Add `ignore_case: true` to a `pattern` rule to match regardless of case.
 A regular expression is checked before it runs, and shapes that can run away on a long line (`(a+)+`) are refused.
 
 ## A morphology rule (0.18.0)
@@ -231,11 +232,13 @@ chaff's own rule is that a rule decides by machine alone. Anything that needs th
 | What | Where | Contents |
 | --- | --- | --- |
 | The rule's definition | `packages/chaff/rules/<id>.yaml` | Name, reason, message, how to fix and levels, in Japanese and English. Also the reader's fields: `group`, `summary`, `example`, `not_flagged`, and `level_meaning` when its levels are numbers that change. A rule that rests on a paper or a standard lists it under `sources`, by its anchor in the [bibliography](./bibliography), and its page links there. A rule that flags spots people rewrite (signs of generated text, readability) also has `rewrite`: per language, a `direction`, two or three self-written before/after `pairs`, what to `keep`, and what to `avoid` (the mistakes a rewriter tends to make) |
-| What finds it | `packages/chaff/src/detectors/` | A function that takes the document and returns findings, registered by name in `detectors/index.ts` |
+| What finds it | `packages/chaff/src/detectors/` | A function that takes the document and returns findings. It is registered by a file of its own, `detectors/registry/<how_to_find>.ts`, that exports it as `detector`; no shared list of detectors is edited |
 | Word lists | `packages/lang-ja/lexicons/` and `packages/lang-en/lexicons/` | Only for a rule that finds words from a list. One per language |
 | Tests | `test/test_<id>.ts` | Examples it must report and examples it must not |
-| A planted mistake | `scripts/bench-mutations*.ts` and `test/fixtures/bench/plants.yaml` | One mistake put into a clean sample, to measure whether the rule finds it. When none can be planted, say why |
+| A planted mistake | `test/fixtures/bench/plants/<id>.yaml` and a module in `scripts/bench-plants/` | One mistake put into a clean sample, to measure whether the rule finds it. The YAML file holds `planted: [ja, en]` (the languages it is planted in) or `not_planted:` with why none can be planted; the module exports `MUTATIONS`, the mistakes it plants. Neither is a shared list |
 | ChangeLog | `Unreleased` in `docs/ChangeLog.md` | What chaff can now find |
+
+The guide's screens do not list the rules that did not run by hand: a screen writes `{not-run}` there, and the site fills the list in from chaff's output when it is built. A new rule edits no guide page for it.
 
 `yarn test` stops when a rule file lacks a reader's field that the rule needs.
 It also stops when an `example`'s `before` is not reported, or its `after` is.
@@ -246,9 +249,10 @@ Last, check the rule on real documents.
 ```bash
 yarn test     run every test
 yarn bench    measure whether the rules find the mistakes planted in the samples
-yarn corpus   run on the collected real documents and compare with corpus/expected.txt
+yarn corpus   run on the collected real documents and compare with corpus/expected/
 ```
 
 Read every new finding from `yarn corpus`. If one is wrong, add its shape to the tests as an example and fix it.
-When the new findings are confirmed right, `yarn corpus --update` updates `corpus/expected.txt`.
-The samples work the same way: `yarn bench --update` updates `test/fixtures/bench/expected.txt`.
+When the new findings are confirmed right, `yarn corpus --update` updates `corpus/expected/`.
+It holds one file per rule (`<id>.txt`, a count per document) and the list of documents (`_documents.txt`), so a new rule adds its own file and changes no line that another rule's PR changes.
+The samples work the same way: `yarn bench --update` updates `test/fixtures/bench/expected/`, one file per rule (its row of the table and its planted mistakes' results), so a new rule adds its own file there too.
