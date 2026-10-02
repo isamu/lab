@@ -24,7 +24,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs cite <source> <quotes.json>` | Checks that quoted passages are in the source |
 | `npx chaffjs compare <before> <after>` | Checks that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…) |
 | `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
-| `npx chaffjs outline <file> [<after>]` | Shows the outline and measures its shape (headings, average section length, text in lists, bold); two files side by side |
+| `npx chaffjs outline <file> [<after>]` | Shows the outline, measures its shape (headings, average section length, text in lists, bold) and scores its structure against human articles; two files side by side |
 | `npx chaffjs fix-plan <file>` | Prints a plan for whoever rewrites the file: the findings by rule, how to rewrite each, and the checks to run after |
 | `npx chaffjs skill` | Installs the Claude Code skill |
 | `npx chaffjs feedback <file> --rule <rule>` | Drafts a report of a wrong or missed finding |
@@ -62,7 +62,7 @@ sample.md   blog/tech · English   genre from the default
   142:1   warning The first sentence repeats the heading "agentFunctionInfo"
                   heading-echo
 
-3 findings, 45 rules not run
+3 findings, 53 rules not run
 ```
 
 The last line counts the findings and the rules that did not run.
@@ -132,8 +132,9 @@ $ npx chaffjs explain max-sentence-length
 ## Changing a rule with a command
 
 `relax`, `strict` and `off` change a rule's level without opening `chaff.yaml`.
-`relax` loosens it, `strict` tightens it, and `off` stops it.
-For a rule with nothing to count, such as a gap in the numbering, `relax` keeps the finding and marks it a step lower ([Rules with nothing to count](./configuration#rules-with-nothing-to-count)).
+`relax` loosens it, `strict` tightens it and `off` stops it.
+A rule with nothing to count, such as a gap in the numbering, keeps its finding under `relax`, marked a step lower.
+See [Rules with nothing to count](./configuration#rules-with-nothing-to-count).
 
 ```
 $ npx chaffjs relax bold-density --why "figure captions use a lot of bold"
@@ -241,7 +242,7 @@ $ npx chaffjs docs/ --compact
 docs/a.md   technical/readme · English   genre from the path   1 shelved
 
 
-0 findings, 30 rules not run
+0 findings, 59 rules not run
 ```
 
 To see the shelved ones too, add `--show-baseline`.
@@ -254,7 +255,7 @@ docs/a.md   technical/readme · English   genre from the path
   3:1     warning This sentence runs 43 words (limit 25)
                   max-sentence-length
 
-1 finding, 30 rules not run
+1 finding, 59 rules not run
 ```
 
 How to use it in CI is in [CI](./ci).
@@ -316,10 +317,12 @@ $ npx chaffjs feedback sample.md --rule heading-echo --line 142
 
 ## Checking that a rewrite kept its facts
 
-Sometimes you want text that sounds like an AI wrote it rewritten boldly, so it reads as a person's: sentences rebuilt, paragraphs moved, the throat-clearing cut.
-An AI can do the rewriting. But the bolder the rewrite, the harder it is for a person to notice that a number went missing, a date moved by a day, a URL fell out, or a figure appeared that was never in the original.
+Sometimes text that sounds like an AI wrote it needs a bold rewrite: sentences rebuilt, paragraphs moved, the throat-clearing cut.
+An AI can do the rewriting. But the bolder the rewrite, the harder it is for a person to notice what changed.
+A number goes missing, a date moves by a day, a URL falls out, or a figure appears that was never in the original.
 
-`compare` is the guardrail that catches it. It reads the facts out of the text before and after the rewrite the same way — numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes — and compares them.
+`compare` is the guardrail that catches it. It reads the facts out of the text before and after the rewrite, the same way for both, and compares them.
+The facts are numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes.
 Position does not matter, so a fact that moved with its paragraph is fine. No AI makes the call: the same two documents always give the same result. chaff only compares; it never rewrites.
 
 ```
@@ -393,10 +396,13 @@ After rewriting, npx chaffjs compare before.md <rewritten> checks that every fac
 
 A rewrite that smooths the sentences can leave the skeleton as it was: the same headings, the same lists, the same bold. `outline` shows the skeleton and measures it, so a restructure shows up as numbers, not as an impression.
 
-It lists each heading, indented by depth, with its line and the length of its own text. It measures four things: the number of headings, the average section length, the share of the text in list items, and the bold spans.
+It lists each heading, indented by depth, with its line and the length of its own text. It measures four things: the number of headings, the average section length, the share of the text in list items and the bold spans.
 Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the average.
 
-Given two files, it shows both and how each measure moved.
+Below the outline comes the structure block. Each structure measure (headings per 1000 words, sections of one or two paragraphs, section length variation, headings in a stock form, headings split into three, introduction and conclusion headings, a closing that restates the body, three-item lists, bold-label list items, emoji headings, paired pros and cons) is set against articles written before generated text was common: what share of them the value lies past, and, where it lies past 90% of them, the human median and that line, marked ✗.
+The structure score is the count of ✗, out of the measures compared; nothing is weighted or hidden. A measure the document is too small for is listed as not measured, with the reason. The human percentiles are data, in `structure-baseline.yaml`.
+
+Given two files, it shows both and how each measure moved, the structure score included.
 
 ```
 $ npx chaffjs outline before.md after.md
@@ -409,6 +415,15 @@ before.md outline: headings 6, average section 47 words, in lists 19%, bold 8
     ## Results  (before.md:39)  14 words
     ## Conclusion  (before.md:43)  40 words
 
+Structure score: 1 (measures past 90% of human articles, of 10 compared against 641 human articles)
+  · headings: 17.9 per 1000 words  higher than 75% of human articles
+  · sections of one or two paragraphs: 60% (mean 2.6 paragraphs)  higher than 55% of human articles
+  · section length variation: 50%  more uniform than 60% of human articles
+  · introduction / conclusion headings: 1 (closing)  higher than 65% of human articles
+  ✗ list items opening with a bold label: 3  higher than 95% of human articles (human median 0, 90th percentile 0)
+  · usual in human articles: headings in a stock form 0%, headings split into three 0, closing that restates the body 3% ("Conclusion"), headings with an emoji 0, pros / cons pairs 0
+  not measured: three-item lists (fewer than three lists)
+
 after.md outline: headings 5, average section 41 words, in lists 0%, bold 0
 
   # Our flaky test was a time zone problem  (after.md:1)  28 words
@@ -417,14 +432,32 @@ after.md outline: headings 5, average section 41 words, in lists 0%, bold 0
     ## The fix  (after.md:15)  49 words
     ## Results  (after.md:19)  38 words
 
+Structure score: 1 (measures past 90% of human articles, of 9 compared against 641 human articles)
+  · headings: 19.4 per 1000 words  higher than 80% of human articles
+  ✗ sections of one or two paragraphs: 100% (mean 1.3 paragraphs)  higher than 90% of human articles (human median 50, 90th percentile 95)
+  · section length variation: 39%  more uniform than 80% of human articles
+  · usual in human articles: headings in a stock form 0%, headings split into three 0, introduction / conclusion headings 0, list items opening with a bold label 0, headings with an emoji 0, pros / cons pairs 0
+  not measured: closing that restates the body (no closing section), three-item lists (fewer than three lists)
+
 How the shape changed (before.md → after.md)
   headings: 6 → 5
   average section: 47 words → 41 words
   in lists: 19% → 0%
   bold: 8 → 0
+  structure score: 1 → 1
+  headings: 17.9 per 1000 words → 19.4 per 1000 words
+  sections of one or two paragraphs: 60% (mean 2.6 paragraphs) → 100% (mean 1.3 paragraphs)
+  section length variation: 50% → 39%
+  headings in a stock form: 0% → 0%
+  headings split into three: 0 → 0
+  introduction / conclusion headings: 1 (closing) → 0
+  closing that restates the body: 3% ("Conclusion") → —
+  list items opening with a bold label: 3 → 0
+  headings with an emoji: 0 → 0
+  pros / cons pairs: 0 → 0
 ```
 
-In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, and `--json` gives the outline and the shape (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
+In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, then a line per file with the structure score and the measures past the line, and `--json` gives the outline, the shape and every structure measure with where it stands (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
 
 ## Planning a rewrite
 
@@ -437,7 +470,7 @@ npx chaffjs fix-plan article.md --experimental --json    # the same plan as JSON
 ```
 
 The plan is written in the document's language. It starts with the constraints every rewrite keeps: no fact changed or added, ask the writer instead of inventing, two passes at most.
-Next comes the recommended way to rewrite (Light, Bold or Full) and the document-level signals with the outline's numbers.
+Next comes the recommended way to rewrite (Light, Bold or Full), the document-level signals with the outline's numbers, and the structure targets: the structure score and a target for each measure past 90% of human articles. A score at its limit is itself a reason to recommend Full.
 
 For each rule that found something, the plan gives its direction, what to keep, what to avoid, one before-and-after example and the spots.
 It ends with the `chaff`, `compare` and `outline` commands to run on the rewrite.

@@ -1,0 +1,19 @@
+# 良い面と悪い面を並べる見出しの組。pattern が良い面、instead_of がそれと対になる悪い面。
+# 一方の見出しと他方の見出しが同じ文書にそろうと、メリットとデメリットを左右対称に並べた組み立てです。
+id: pro-con-heading
+language: ja
+entries:
+  - pattern: メリット
+    instead_of: デメリット
+  - pattern: 長所
+    instead_of: 短所
+  - pattern: 利点
+    instead_of: 欠点
+  - pattern: 良い点
+    instead_of: 悪い点
+  - pattern: よい点
+    instead_of: 悪い点
+  - pattern: 強み
+    instead_of: 弱み
+  - pattern: 良いところ
+    instead_of: 悪いところ

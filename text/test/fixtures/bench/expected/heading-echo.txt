@@ -1,0 +1,16 @@
+table  15  15  0  0
+ja/blog  heading-echoed  found
+ja/figures  heading-echoed  found
+ja/itinerary  heading-echoed  found
+ja/press  heading-echoed  found
+ja/proposal  heading-echoed  found
+ja/readme  heading-echoed  found
+en/blog  heading-echoed  found
+en/design  heading-echoed  found
+en/figures  heading-echoed  found
+en/itinerary  heading-echoed  found
+en/minutes  heading-echoed  found
+en/press  heading-echoed  found
+en/proposal  heading-echoed  found
+en/readme  heading-echoed  found
+en/requirements  heading-echoed  found

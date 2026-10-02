@@ -139,7 +139,7 @@ describe("chaff outline on the command line", () => {
     assert.match(run.out, /\nafter\.md の構成: 見出し 1、/u);
     assert.match(
       run.out,
-      /\n構成の変化（before\.md → after\.md）\n {2}見出し: 3 → 1\n {2}節の平均: \d+ 字 → \d+ 字\n {2}箇条書き: \d+% → 0%\n {2}太字: 3 → 0$/u,
+      /\n構成の変化（before\.md → after\.md）\n {2}見出し: 3 → 1\n {2}節の平均: \d+ 字 → \d+ 字\n {2}箇条書き: \d+% → 0%\n {2}太字: 3 → 0\n {2}構成の AI らしさ: 0 → 0\n/u,
     );
   });
 
@@ -152,7 +152,7 @@ describe("chaff outline on the command line", () => {
     assert.equal(run.code, 0, run.err);
     assert.match(
       run.out,
-      /^a\.md outline: headings 1, average section \d+ words, in lists 0%, bold 1\n\n {2}\(before the first heading\) {2}\(a\.md:1\) {2}5 words\n {4}## Notes {2}\(a\.md:3\) {2}5 words$/u,
+      /^a\.md outline: headings 1, average section \d+ words, in lists 0%, bold 1\n\n {2}\(before the first heading\) {2}\(a\.md:1\) {2}5 words\n {4}## Notes {2}\(a\.md:3\) {2}5 words\n\nStructure score: 0 \(/u,
     );
   });
 
@@ -162,8 +162,10 @@ describe("chaff outline on the command line", () => {
     const rows = run.out.split("\n");
     assert.equal(rows[0], "before.md:1: h1 在庫の棚卸し (0 chars)");
     assert.match(rows[1] ?? "", /^before\.md:3: h2 やること \(\d+ chars\)$/u);
-    assert.match(rows.at(-2) ?? "", /^before\.md の構成: /u);
-    assert.match(rows.at(-1) ?? "", /^after\.md の構成: /u);
+    assert.match(rows.at(-4) ?? "", /^before\.md の構成: /u);
+    assert.match(rows.at(-3) ?? "", /^after\.md の構成: /u);
+    assert.equal(rows.at(-2), "before.md: structure 0/5");
+    assert.match(rows.at(-1) ?? "", /^after\.md: structure 0\/\d+$/u);
   });
 
   it("--json gives one file as an object and two as before and after, and wins over --compact", async () => {
@@ -200,5 +202,99 @@ describe("chaff outline on the command line", () => {
     assert.equal(first.code, 1);
     assert.equal(first.err.split("\n").length, 1, first.err);
     assert.equal(first.out, "");
+  });
+});
+
+const SPLIT_IN_THREES = lines(
+  "# 勉強会を見直す",
+  "",
+  "## 課題",
+  "",
+  "### 人が減った",
+  "",
+  "来る人が減りました。",
+  "",
+  "### 話す人が偏った",
+  "",
+  "同じ人ばかりが話しました。",
+  "",
+  "### 題材が遠かった",
+  "",
+  "業務と関係のない話が多くなりました。",
+  "",
+  "## 対策",
+  "",
+  "### 題材を選ぶ",
+  "",
+  "題材を業務から選びました。",
+  "",
+  "### 短く話す",
+  "",
+  "発表を五分にしました。",
+  "",
+  "### 記録を残す",
+  "",
+  "話した内容を残しました。",
+  "",
+  "## 学んだこと",
+  "",
+  "- **仕組み**：意志だけでは続きません",
+  "- **小ささ**：短い発表なら誰でも話せます",
+);
+
+const FOLDED = lines(
+  "# 勉強会は、発表を短くしたら人が戻った",
+  "",
+  "来る人が減り、話す人も同じ顔ぶれに偏っていました。業務と関係のない題材が多かったからです。",
+  "",
+  "## 業務の題材を、短く話す",
+  "",
+  "そこで題材を業務から選び、発表を五分にして、話した内容を残しました。続けるには、意志より仕組みが要りました。",
+);
+
+type StructureJson = { readonly score: number; readonly compared: number; readonly features: readonly Record<string, unknown>[] };
+
+const isStructureJson = (value: unknown): value is StructureJson =>
+  isRecord(value) && typeof value["score"] === "number" && typeof value["compared"] === "number" && Array.isArray(value["features"]);
+
+describe("the structure block of chaff outline", () => {
+  const files = { "split.md": SPLIT_IN_THREES, "folded.md": FOLDED };
+
+  it("scores the measures past 90% of human articles, says where each stands, and why the rest were not measured", async () => {
+    const run = await runCli(files, ["outline", "split.md"], "en_US.UTF-8");
+    assert.equal(run.code, 0, run.err);
+    assert.match(run.out, /\n構成の AI らしさ: 2（人の記事の 9 割を超えた項目の数。比べた \d+ 項目、人の記事 \d+ 本と比べて）\n/u);
+    assert.match(run.out, /\n {2}✗ 3 つの小見出しに分けた見出し: 2 か所 {2}人の記事の \d+% より多い（人の中央 \d+、上から 1 割の境 \d+）\n/u);
+    assert.match(run.out, /\n {2}✗ 太字の見出しで始まる項目: 2 項目 {2}人の記事の \d+% より多い/u);
+    assert.match(run.out, /\n {2}測っていない: 見出しの多さ（文書が短い）、/u);
+  });
+
+  it("shows the score and each measure before and after a rewrite", async () => {
+    const run = await runCli(files, ["outline", "split.md", "folded.md"], "en_US.UTF-8");
+    assert.equal(run.code, 0, run.err);
+    assert.match(run.out, /\n {2}構成の AI らしさ: 2 → 0\n/u);
+    assert.match(run.out, /\n {2}3 つの小見出しに分けた見出し: 2 か所 → 0 か所\n/u);
+    assert.match(run.out, /\n {2}太字の見出しで始まる項目: 2 項目 → 0 項目\n/u);
+  });
+
+  it("--compact names the measures past the limit, and --json gives every measure with where it stands", async () => {
+    const compact = await runCli(files, ["outline", "split.md", "--compact"], "en_US.UTF-8");
+    assert.match(compact.out, /\nsplit\.md: structure 2\/\d+ three-subsections=2 bold-labels=2$/u);
+    const json: unknown = JSON.parse((await runCli(files, ["outline", "split.md", "--json"], "en_US.UTF-8")).out);
+    const structure = isRecord(json) ? json["structure"] : undefined;
+    assert.ok(isStructureJson(structure));
+    assert.equal(structure.score, 2);
+    const three = structure.features.find((feature) => feature["id"] === "three-subsections");
+    assert.deepEqual([three?.["value"], three?.["beyond"], three?.["direction"]], [2, true, "high"]);
+    const short = structure.features.find((feature) => feature["id"] === "heading-density");
+    assert.deepEqual([short?.["value"], short?.["notMeasured"], short?.["beyond"]], [null, "too-short", false]);
+  });
+
+  it("speaks English for an English document", async () => {
+    const english = lines("# Notes", "", "## One", "", "Text.", "", "## Two", "", "Text.", "", "- **Speed**: fast", "- **Cost**: low");
+    const run = await runCli({ "a.md": english }, ["outline", "a.md"], "ja_JP.UTF-8");
+    assert.equal(run.code, 0, run.err);
+    assert.match(run.out, /\nStructure score: \d+ \(measures past 90% of human articles, of \d+ compared against \d+ human articles\)\n/u);
+    assert.match(run.out, /\n {2}not measured: headings \(the document is short\)/u);
   });
 });

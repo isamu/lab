@@ -35,6 +35,8 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff compare <前> <後>                書き換えで事実（数・日付・URL・コード・名前・引用…）が落ちても足されてもいないかを確かめる
   chaff facts <file>                     compare が照合する事実を、書き直す前の控えとして一覧にする
   chaff outline <file> [<後>]            見出しの構成と形（見出しの数・節の平均の長さ・箇条書きの割合・太字）を測る。2 つなら前と後を並べる
+  chaff grade <items.jsonl> [--out <results.jsonl>] [--json]
+                                 AI の出力を JSONL でまとめて採点する（指摘の率・事実・引用・合否。何も送らない）
   chaff fix-plan <file> [--json]         指摘をルールごとにまとめ、直す方向と確かめのコマンドを、書き直す人や AI 向けの計画にする（何も送らない）
   chaff rules                    ルールの一覧を、グループごとに表で出す（いまの段階つき）
   chaff rules --json             いまの設定とルールの説明を JSON で出す（AI に渡す用）
@@ -75,6 +77,8 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff compare <before> <after>          check that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…)
   chaff facts <file>                      list the facts compare checks, as an inventory to keep before a rewrite
   chaff outline <file> [<after>]          measure the outline and its shape (headings, average section length, text in lists, bold); two files side by side
+  chaff grade <items.jsonl> [--out <results.jsonl>] [--json]
+                                 grade a JSONL file of model outputs (finding rates, facts, quotations, pass or fail; sends nothing)
   chaff fix-plan <file> [--json]          a plan for whoever rewrites the file, a person or an AI: findings by rule, how to rewrite each, the checks to run after (sends nothing)
   chaff rules                    the rules as a table, by group, with the level each runs at now
   chaff rules --json             the current settings and what each rule is, as JSON (to give to an AI)

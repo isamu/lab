@@ -1,6 +1,7 @@
 import type { Texts } from "../ui.ts";
 import type { LengthUnit } from "../plugin.ts";
 import { counted } from "../render/plural.ts";
+import { STRUCTURE_TEXT, type StructureText } from "./structure-text.ts";
 
 export type OutlineText = {
   readonly usage: string;
@@ -18,6 +19,8 @@ export type OutlineText = {
   readonly measure: (name: string, value: string) => string;
   /** The heading of the before/after block. */
   readonly changed: (before: string, after: string) => string;
+  /** The structure block: the score and each measure against human articles. */
+  readonly structure: StructureText;
 };
 
 export const OUTLINE_TEXT: Texts<OutlineText> = {
@@ -33,6 +36,7 @@ export const OUTLINE_TEXT: Texts<OutlineText> = {
     shapeOf: (path, measures) => `${path} の構成: ${measures}`,
     measure: (name, value) => `${name} ${value}`,
     changed: (before, after) => `構成の変化（${before} → ${after}）`,
+    structure: STRUCTURE_TEXT.ja,
   },
   en: {
     usage: "usage: chaff outline <file> [<rewritten>] [--compact | --json] [--language ja|en|…] [--genre <genre>]",
@@ -46,5 +50,6 @@ export const OUTLINE_TEXT: Texts<OutlineText> = {
     shapeOf: (path, measures) => `${path} outline: ${measures}`,
     measure: (name, value) => `${name} ${value}`,
     changed: (before, after) => `How the shape changed (${before} → ${after})`,
+    structure: STRUCTURE_TEXT.en,
   },
 };

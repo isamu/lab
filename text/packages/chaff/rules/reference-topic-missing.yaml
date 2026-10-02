@@ -1,0 +1,101 @@
+id: reference-topic-missing
+layer: L3
+status: experimental
+how_to_find: reference-topic-missing
+requires: [structure]
+severity: info
+
+name:
+  ja: 「第2章で述べた〇〇」の〇〇が、第2章に無い
+  en: A reference to a topic its target never mentions
+
+why:
+  ja: 「第2章で述べた料金体系」と書いたのに、第2章に料金体系の話が無いと、読み手は探しても見つけられません。章を入れ替えたり、話を別の章へ移したりしたときに起きます。参照のすぐ後ろの「で述べた」「で説明した」に続く語を、参照先の見出しと本文から探し、どこにも無ければ指します。
+  en: 'When the text says "see Section 2 for pricing" and Section 2 never mentions pricing, the reader looks and finds nothing. It happens when sections are reordered or a topic moves elsewhere. The words right after "for" (or 「で述べた」) are looked for in the target''s heading and text, and it is pointed out when they are not there.'
+
+message:
+  ja: "{label}（{heading}）に「{topic}」が見当たりません"
+  en: '"{topic}" does not appear in {label} ({heading})'
+
+how_to_fix:
+  ja: 話がどの章にあるかを確かめて、参照の番号を直してください。言い換えて書いているなら、同じ言葉に揃えると読み手が探せます。
+  en: Find the section that covers the topic and correct the number. If the section words it differently, using the same word lets the reader find it.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「第2章で述べた料金体系」のように参照先の話題を書いたのに、その章に話題の語が無い所
+  en: A reference that names a topic ("see Section 2 for pricing") its target never mentions
+example:
+  ja:
+    before: |
+      # 案内
+
+      ## 第1章 総則
+
+      第2章で述べた返金手続は改定されます。
+
+      ## 第2章 料金
+
+      料金体系は月額です。
+    after: |
+      # 案内
+
+      ## 第1章 総則
+
+      第2章で述べた料金体系は改定されます。
+
+      ## 第2章 料金
+
+      料金体系は月額です。
+  en:
+    before: |
+      # Guide
+
+      ## 1. Scope
+
+      See Section 2 for refunds.
+
+      ## 2. Pricing
+
+      The price is monthly.
+    after: |
+      # Guide
+
+      ## 1. Scope
+
+      See Section 2 for pricing.
+
+      ## 2. Pricing
+
+      The price is monthly.
+
+not_flagged:
+  ja: 「詳細」「内容」のようにどの章にも当てはまる語、参照先が見出しを持たないか一つに決まらない参照、他の文書の条は見ません。言い換え（料金と価格）は見つけられないので、語が違えば指します。
+  en: Words that fit any section ("details", "more information"), references whose target has no heading or cannot be told apart, and references to another document are left alone. A synonym (price and fee) is not recognised, so a different word is pointed out.
+rewrite:
+  ja:
+    direction: 話題がどの章にあるかを書き手に確かめ、参照の番号を直してください。参照先が別の言葉で書いているなら、どちらかの言葉に揃えます。
+    pairs:
+      - before: 第2章で述べた返金手続は改定されます。
+        after: 第3章で述べた返金手続は改定されます。
+      - before: 第2章で述べた価格表
+        after: 第2章で述べた料金表
+    keep:
+      - 参照している話題
+    avoid:
+      - 参照先に無い話を、参照先にあることにする
+  en:
+    direction: Ask the writer which section covers the topic and correct the number. If the target words it differently, use one wording in both places.
+    pairs:
+      - before: See Section 2 for refunds.
+        after: See Section 3 for refunds.
+      - before: See Section 2 for fees.
+        after: See Section 2 for pricing.
+    keep:
+      - the topic being referred to
+    avoid:
+      - claiming the target covers something it does not
