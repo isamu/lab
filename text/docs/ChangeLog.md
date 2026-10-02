@@ -18,6 +18,13 @@ Newest first.
   `long-vowel-distinct` list gains the pairs the corpus showed under `style: bunkacho` (タブ, ベタ, エコ, ヘビ, ドラマ,
   カフェ, キャリア) and カバ; the dictionary lists both forms as separate words and cannot tell a variant from another
   word.
+### `sasete-itadaku` counts each use, and its potential and godan forms
+
+The rule counted sentences, so 「配布させていただき、説明させていただきます。」 was one use; it is now two. It also
+counts the potential and negative forms (させていただけますか, させていただけない, させていただければ) and the godan form
+(入らせていただきます, 読ませていただく), which the analyser reads as other words. Two entries that cover the same
+words (させていただく and せていただく) count as one use. A one-step verb with させる (見させていただく) is still not counted:
+the analyser reads its させ as one word, which no entry in the word list can match.
 
 ### Docs: Writing a plugin
 
