@@ -17,11 +17,12 @@ AI の回答が引いた箇所が本当に原文にあるかも、同じ木で�
 
 契約書をかけると、次のように出ます。
 
+<!-- chaff-screen: full -->
 ```
 $ npx chaffjs tree contract.txt
 (doc :language "ja" :path "contract.txt" :line 1
-  (definition :term "甲" :line 3)
-  (definition :term "乙" :line 3)
+  (definition :placement "inline" :term "甲" :line 3)
+  (definition :placement "inline" :term "乙" :line 3)
   (article "1" :heading "目的" :label "第1条" :line 5
     (reference :label "第3条" :target "3" :unitWord "条" :line 6))
   (article "2" :heading "定義" :label "第2条" :line 8
@@ -167,12 +168,14 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
                   dangling-reference
   9:1     error   「二」の次が「四」です（3 番目のはず）
                   numbering-gap
-  11:1    warning この文は 131 文字あります（100 文字まで）
+  12:1    warning この文は 122 文字あります（100 文字まで）
                   max-sentence-length
   13:7    error   「第二十三条第一項」（番地 23.1）はこの文書にありません
                   dangling-reference
   15:2    warning この文は 101 文字あります（100 文字まで）
                   max-sentence-length
+  15:2    info    「は」で出した主題から述語まで 94 字あります（80 字まで）
+                  topic-predicate-distance
 
 {counts}
 ```
@@ -180,7 +183,7 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
 `error` の 3 件は、変えた 2 か所から出ています。9 行目は号の抜けで、6 行目は抜けた第三号を指す参照です。
 13 行目は、文書に無い条への参照です。
 
-`warning` は読みやすさの指摘で、法令の書き方としては長い文も普通です。
+`warning` と `info` は読みやすさの指摘で、法令の書き方としては長い文も普通です。
 法令の構造だけを確かめるときは、`error` の行を見ます。
 
 1 行目の下の行は、法令として見ることを勧めています。
@@ -197,10 +200,14 @@ fixed.txt   blog/tech · 日本語   ジャンルは既定から
 
   6:39    warning この文は 125 文字あります（100 文字まで）
                   max-sentence-length
-  12:1    warning この文は 131 文字あります（100 文字まで）
+  12:1    warning この段落は 6 文あります（5 文まで）
+                  max-paragraph-length
+  13:1    warning この文は 122 文字あります（100 文字まで）
                   max-sentence-length
   16:2    warning この文は 101 文字あります（100 文字まで）
                   max-sentence-length
+  16:2    info    「は」で出した主題から述語まで 94 字あります（80 字まで）
+                  topic-predicate-distance
 
 {counts}
 ```
@@ -231,6 +238,7 @@ npx chaffjs cite contract.txt claims.json
 上の契約書の第4条第2項が「検収後３０日以内に」と全角で書かれていても、一致と判定します。
 空白と改行は無視し、文字は NFKC で揃えて比べるためです（３０ = 30）。
 
+<!-- chaff-screen: cite-match -->
 ```
 $ npx chaffjs cite contract.txt claims.json
 ✓ 4.2「検収後30日以内に」: 一致
@@ -239,6 +247,7 @@ $ npx chaffjs cite contract.txt claims.json
 数字を変えた引用や、別の場所から引いた引用は、失敗になります。
 別の場所にあるときは、本当の番地を教えます。
 
+<!-- chaff-screen: cite-miss -->
 ```
 $ npx chaffjs cite contract.txt claims.json
 ✗ 4.2「検収後60日以内に」: 引用文が原文のどこにもありません

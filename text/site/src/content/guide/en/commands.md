@@ -154,6 +154,7 @@ Comments already in `chaff.yaml` are kept.
 Changing a rule that already has a reason needs a new one with `--why`.
 That way the old reason is never left standing next to a new value.
 
+<!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs off bold-density
 bold-density already has a reason:
@@ -235,6 +236,7 @@ $ npx chaffjs baseline docs/
 
 From then on the shelved findings are not reported. The first line counts them.
 
+<!-- chaff-screen: shelved -->
 ```
 $ npx chaffjs docs/ --compact
 
@@ -246,6 +248,7 @@ docs/a.md   technical/readme · English   genre from the path   1 shelved
 
 To see the shelved ones too, add `--show-baseline`.
 
+<!-- chaff-screen: shelved -->
 ```
 $ npx chaffjs docs/ --show-baseline --compact
 
@@ -264,6 +267,7 @@ How to use it in CI is in [CI](./ci).
 `suppressions` counts the findings silenced with `stet`.
 If you keep silencing the same rule, it is time to change the rule instead.
 
+<!-- chaff-screen: silenced -->
 ```
 $ npx chaffjs suppressions docs/
   Silenced findings: 7
@@ -403,6 +407,7 @@ The structure score is the count of ✗, out of the measures compared; nothing i
 
 Given two files, it shows both and how each measure moved, the structure score included.
 
+<!-- chaff-screen: rewrite -->
 ```
 $ npx chaffjs outline before.md after.md
 before.md outline: headings 6, average section 47 words, in lists 19%, bold 8

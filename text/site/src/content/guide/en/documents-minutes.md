@@ -42,7 +42,7 @@ What it does not do is decided too.
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The minutes below were saved as `minutes.md`.
 
-```markdown
+```markdown file=minutes.md
 # Website redesign weekly meeting: minutes
 
 - Date: Tuesday, October 7, 2026, 10:00 to 11:00

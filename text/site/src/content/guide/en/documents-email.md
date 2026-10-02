@@ -42,7 +42,7 @@ What it does not do is decided too.
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The email was pasted into a text editor and saved as `email.md`.
 
-```markdown
+```markdown file=email.md
 Subject: Meeting to discuss the website redesign
 
 Dear Ms Yamada,

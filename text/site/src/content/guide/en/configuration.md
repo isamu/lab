@@ -110,6 +110,7 @@ The choice is shown on the first line of `chaff tree`.
 ```
 $ npx chaffjs tree draft.txt
 (doc :language "ja" :path "draft.txt" :profile "statute" :line 1
+…
 ```
 
 When it is wrong, set `profile`. `none` stops it from being chosen from the content as well.
@@ -179,11 +180,12 @@ chaff fails when any error is left, and passes when there are only warnings and 
 
 ```
 $ npx chaffjs explain numbering-gap --genre legal/statute
-(…)
+…
   Levels (there is no limit to count to; a level sets how a finding is marked):
   → normal   error
     relaxed  warning
     off      not checked
+…
 ```
 
 When a rule needs no checking, turn it `off`.
@@ -385,10 +387,12 @@ rules:
   bold-density: loose
 ```
 
+<!-- chaff-screen: typo -->
 ```
 $ npx chaffjs article.md
 chaff: …/chaff.yaml: there is no rule named max-sentense-length (npx chaff rules --json lists them)
 chaff: …/chaff.yaml: cannot read "loose" as the level of bold-density (strict / normal / relaxed / off, or a positive number)
+…
 ```
 
 When you see a warning, fix the spelling or the value in `chaff.yaml`.

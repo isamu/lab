@@ -42,7 +42,7 @@ For an English paper, write the team's spellings under `prefer` instead (see the
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The abstract and part of a paper below were saved as `paper.md`. They were written for this page.
 
-```markdown
+```markdown file=paper.md
 # Assigning free rooms first to cut meeting room booking delays
 
 ## Abstract

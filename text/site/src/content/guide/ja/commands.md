@@ -157,6 +157,7 @@ rules:
 既に理由があるルールを変えるときは、`--why` で新しい理由が要ります。
 古い理由が新しい値に残ると、履歴が嘘になるためです。
 
+<!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs off bold-density
 bold-density には既に理由が書かれています:
@@ -241,6 +242,7 @@ $ npx chaffjs baseline docs/
 
 以後は、棚上げした指摘は出ません。画面の 1 行目に、棚上げした数が出ます。
 
+<!-- chaff-screen: shelved -->
 ```
 $ npx chaffjs docs/ --compact
 
@@ -252,6 +254,7 @@ docs/a.md   technical/readme · 日本語   ジャンルはパスから   棚上
 
 棚上げした分も見たいときは、`--show-baseline` を付けます。
 
+<!-- chaff-screen: shelved -->
 ```
 $ npx chaffjs docs/ --show-baseline --compact
 
@@ -270,6 +273,7 @@ CI に入れるときの使いかたは、[CI](./ci) で説明します。
 `stet` で黙らせた指摘は、`suppressions` で数えられます。
 同じルールを何度も黙らせているなら、ルールを変える道を選ぶ時期です。
 
+<!-- chaff-screen: silenced -->
 ```
 $ npx chaffjs suppressions docs/
 
@@ -399,6 +403,7 @@ URL 1 件
 構成の AI らしさは ✗ の数です。比べた項目の数と一緒に出し、重み付けも隠れた計算もしません。文書が小さくて測れない項目は、測っていない理由と一緒に挙げます。人の記事の分布は `structure-baseline.yaml` にデータとして置いています。
 ファイルを 2 つ渡すと、両方を出し、それぞれの値がどう動いたかを、構成の AI らしさも含めて並べます。
 
+<!-- chaff-screen: rewrite -->
 ```
 $ npx chaffjs outline before.md after.md
 before.md の構成: 見出し 6、節の平均 113 字、箇条書き 17%、太字 8

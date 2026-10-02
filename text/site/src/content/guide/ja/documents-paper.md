@@ -40,7 +40,7 @@ chaff は、表記の揺れ、無い図への参照、句読点の混ざりを�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 次の要旨と本文の一部を `ronbun.md` という名前で保存しました。このページのために書いたものです。
 
-```markdown
+```markdown file=ronbun.md
 # 会議室予約の待ち時間を減らす割り当て方式
 
 ## 要旨
@@ -95,6 +95,7 @@ style: ieice
 
 `genre` を書いたので、`--genre` は要らなくなります。かけ直します。
 
+<!-- chaff-screen: ieice -->
 ```
 $ npx chaffjs ronbun.md --experimental --compact
 

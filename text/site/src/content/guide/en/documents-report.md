@@ -257,6 +257,7 @@ Updating the FAQ page for billing enquiries is being considered. Adding staff is
 It is a Markdown comment, so nobody opening the document sees it.
 Run it again and the two passive findings on line 15 are gone, and the first line counts what was silenced.
 
+<!-- chaff-screen: stet -->
 ```
 $ npx chaffjs enquiries.md --genre business/report --experimental --compact
 

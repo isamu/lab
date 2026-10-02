@@ -1,0 +1,4 @@
+rules:
+  # Too much bold
+  # Bold marks what matters. Used everywhere, it marks nothing.
+  bold-density: relaxed # 2026-09-28 figure captions use a lot of bold / writer

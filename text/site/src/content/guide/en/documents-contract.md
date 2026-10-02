@@ -49,7 +49,7 @@ This page looks mainly at dates and amounts.
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The contract below was saved as `contract.md`. The companies are made up.
 
-```markdown
+```markdown file=contract.md
 # Website Maintenance Agreement
 
 This Agreement is made between Minato Trading Ltd. (the "Client") and Sasaki Studio LLC (the "Contractor").

@@ -164,6 +164,7 @@ $ npx chaffjs kitei.md
 
 kitei.md   blog/tech · 日本語   ジャンルは既定から
    法令・規程のようです。--genre legal/statute を試せます
+…
 ```
 
 このとき、条番号のルールは動いていません。指摘が出ないのはそのためです。
@@ -201,6 +202,7 @@ Markdown のコメントなので、文書を開いた人の画面には出ま�
 かけ直すと、番号の指摘が消え、1 行目に黙らせた件数が出ます。
 ここでは `--compact` を付け、1 件を 2 行にまとめて出しています。
 
+<!-- chaff-screen: stet -->
 ```
 $ npx chaffjs kitei.md --genre legal/statute --compact
 
@@ -243,6 +245,7 @@ numbering-gap を relaxed にしました（…/chaff.yaml）
 
 stet を書く前の `kitei.md` にかけ直すと、番号の指摘が `error` から `warning` に変わります。
 
+<!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs kitei.md --compact
 
@@ -274,7 +277,7 @@ npx chaffjs off numbering-gap --why "条番号は別の台帳で管理してい�
 
 番号を振り直し、台帳の条を足し、定義を第1条にまとめました。
 
-```markdown
+```markdown file=kitei-fixed.md
 # 備品管理規程
 
 ## 第1条（目的）
@@ -295,6 +298,7 @@ npx chaffjs off numbering-gap --why "条番号は別の台帳で管理してい�
 総務部は、備品の貸出と返却を記録する台帳を備える。
 ```
 
+<!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs kitei-fixed.md --genre legal/statute
 
@@ -310,6 +314,7 @@ kitei-fixed.md   legal/statute · 日本語   ジャンルは--genreから
   試験中の rule を 1 件、設定により有効にしています: numbering-gap
 
   試験中の rule を 6 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, total-mismatch
+…
 ```
 
 この下に並ぶ「動いていない」一覧は、直す前と同じです。

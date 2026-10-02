@@ -62,7 +62,7 @@ Polite endings are checked by `no-mixed-desumasu`.
 That rule does not decide which register is right; it points only at sentences that differ from the rest.
 A document written wholly in the plain register is not reported, and the team should know that.
 
-```yaml
+```yaml file=chaff.yaml
 language: ja
 genre: technical/spec
 
@@ -84,6 +84,8 @@ sample.md   technical/spec · 日本語   ジャンルはchaff.yamlから
                   max-sentence-length
   5:31    warning この文だけ他と文末の調子が違います（本文の中で 1 文）
                   no-mixed-desumasu
+
+{counts}
 ```
 
 Both requirements were reported, so the settings work.

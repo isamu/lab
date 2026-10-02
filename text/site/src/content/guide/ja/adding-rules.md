@@ -61,7 +61,7 @@ AI に渡すのは、JSON だけでも足ります。
 ただし、このルールは、どちらの調子が正しいかを決めず、混ざった文だけを指します。
 全部を だ・である で書いた文書は指しません。この違いは、チームに伝えておきます。
 
-```yaml
+```yaml file=chaff.yaml
 language: ja
 genre: technical/spec
 
@@ -83,6 +83,8 @@ sample.md   technical/spec · 日本語   ジャンルはchaff.yamlから
                   max-sentence-length
   5:31    warning この文だけ他と文末の調子が違います（本文の中で 1 文）
                   no-mixed-desumasu
+
+{counts}
 ```
 
 どちらの決まりも指摘されたので、設定が効いています。

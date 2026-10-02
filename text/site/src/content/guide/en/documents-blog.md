@@ -46,7 +46,7 @@ What it does not do is decided too.
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The article below was saved as `article.md`. It was written for this page.
 
-```markdown
+```markdown file=article.md
 # How We Made Our Docker Builds Faster — The Overlooked Key of Caching
 
 In today's fast-paced world, containers have become an essential part of modern development. In this article, we will delve into how our team cut our Docker build time.

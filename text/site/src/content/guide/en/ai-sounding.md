@@ -231,7 +231,7 @@ Both versions were written for this page.
 
 The post before the rewrite (`draft.md`):
 
-```markdown
+```markdown file=draft.md
 # Moving Our Builds to a Shared Cache
 
 In today's fast-paced world, build speed plays a crucial role in how a team ships. Let's delve into how we moved our builds to a shared cache.
@@ -416,7 +416,7 @@ The closing "In conclusion … I hope this helps!" was cut, since the body alrea
 
 The rewrite (`draft.rewritten.md`):
 
-```markdown
+```markdown file=draft.rewritten.md
 # Moving Our Builds to a Shared Cache
 
 Before the change, a full build took 14 minutes on every pull request. Now a typical build takes 3 minutes, because only the packages that changed are rebuilt.
@@ -434,13 +434,17 @@ draft.rewritten.md   blog/tech · English   genre from the default
 
 
 {counts}
+```
 
+```text
 $ npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
 draft.md → draft.rewritten.md
 
 Facts checked: 4 → 4: numbers 2→2, dates 1→1, times 0→0, URLs 0→0, code 0→0, names 0→0, quotations 0→0, headings 1→1, references 0→0, footnotes 0→0
 No fact dropped or added
+```
 
+```text
 $ npx chaffjs outline draft.md draft.rewritten.md
 draft.md outline: headings 1, average section 171 words, in lists 0%, bold 0
 
@@ -477,9 +481,9 @@ The passive sentences about the rollout name who did it ("We rolled it out"), be
 A tech article written in the style of generated text, rewritten with the bold rewrite.
 Both versions were written for this page.
 
-The article before:
+The article before (`ai.md`):
 
-```markdown
+```markdown file=ai.md
 # Solving Our Flaky Test Problem — The Hidden Trap of Time Zones
 
 In this article, we'll delve into how we tracked down a flaky test on CI, from identifying the root cause to implementing a robust fix.
@@ -558,9 +562,9 @@ ai.md   blog/tech · English   genre from --genre
 {counts}
 ```
 
-The article after:
+The article after (`rewritten.md`):
 
-```markdown
+```markdown file=rewritten.md
 # Our flaky test was a time zone problem
 
 One test in our inventory API failed on CI roughly once every 30 runs and never locally. This post describes how we found the cause and fixed it.
@@ -648,9 +652,9 @@ When the structure itself should change, use the full rewrite, as in the next ex
 A blog post written in the style of generated text, rewritten from scratch with the full rewrite.
 Both versions were written for this page.
 
-The post before:
+The post before (`demo.md`):
 
-```markdown
+```markdown file=demo.md
 # Unlocking the Power of Weekly Demos: Key Lessons From Six Months
 
 In this post, we'll dive into how our team started a weekly demo and what we learned along the way.
@@ -725,9 +729,9 @@ The new outline, shown before writing:
 | The Solution, The Results | "Bring what you are stuck on": the change, and what it did to attendance |
 | Conclusion | Cut: it restated the body |
 
-The post after:
+The post after (`demo-full.md`):
 
-```markdown
+```markdown file=demo-full.md
 # Our weekly demo came back when we shortened the slots
 
 We started a weekly demo in March 2026, every Friday from 4:00 to 4:30 p.m., for the 14 people on the product team. Three people showed their work for 10 minutes each. Within two months, 6 people were coming.
