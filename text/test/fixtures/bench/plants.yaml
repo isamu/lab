@@ -92,3 +92,4 @@ not_planted:
   taigen-dome-in-prose: a count over the whole document; reaching it would rewrite the sample's register
   unqualified-superlative: more than one unqualified superlative in a document is several mistakes, not one
   unsourced-number: L4, judged by chaff test and never run by lint
+  one-sentence-paragraph-run: one edit splits one paragraph, and a run over the limit needs several

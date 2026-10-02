@@ -50,6 +50,7 @@ import { emptySection } from "./empty-section.ts";
 import { fullwidthAlnum } from "./fullwidth-alnum.ts";
 import { spellingVariety } from "./spelling-variety.ts";
 import { raNuki } from "./ra-nuki.ts";
+import { oneSentenceParagraphRun } from "./paragraph-run.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
 import { boldLabelList } from "./bold-label.ts";
@@ -139,4 +140,5 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "spelling-variety": spellingVariety,
   "ra-nuki": raNuki,
   "bold-label-list": boldLabelList,
+  "one-sentence-paragraph-run": oneSentenceParagraphRun,
 };

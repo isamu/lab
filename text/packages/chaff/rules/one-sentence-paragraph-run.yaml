@@ -1,0 +1,95 @@
+id: one-sentence-paragraph-run
+layer: L3
+status: experimental
+how_to_find: one-sentence-paragraph-run
+severity: info
+
+name:
+  ja: 一文だけの段落が続いている
+  en: Run of one-sentence paragraphs
+
+why:
+  ja: 段落は、一つの話題にまとまった文の組です。一文ごとに段落を分けると、どの文とどの文が同じ話なのかが見えなくなり、読み手は文の関係を自分で組み立てることになります。一文の段落は強調として効きますが、続くと効かなくなります。見出し・箇条書き・表・コードを挟んだ所で数え直します。
+  en: A paragraph groups the sentences that belong to one point. Setting every sentence apart as its own paragraph hides which sentences go together, and leaves the reader to work out how they relate. A one-sentence paragraph works as emphasis; a run of them does not. A heading, a list, a table or code between paragraphs starts the count again.
+
+message:
+  ja: 一文だけの段落が {count} 個続いています（{limit} 個まで）
+  en: "{count} one-sentence paragraphs in a row (limit {limit})"
+
+how_to_fix:
+  ja: 同じ話の文を一つの段落にまとめてください。並べたい項目なら箇条書きにします。
+  en: Join the sentences that make one point into one paragraph. If they are items, make them a list.
+
+levels: { strict: 3, normal: 4, relaxed: 6 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 一文ごとに段落を分けた所が続き、どの文が同じ話なのかが見えない所
+  en: Paragraph after paragraph of a single sentence, so nothing is grouped
+example:
+  ja:
+    before: |
+      新しい会議室が来月から使えます。
+
+      予約は総務部の画面から入れてください。
+
+      一回の予約は二時間までです。
+
+      飲食はできません。
+
+      使い終わったら机を元に戻してください。
+    after: |
+      新しい会議室が来月から使えます。予約は総務部の画面から入れてください。一回の予約は二時間までです。
+
+      使うときは、飲食はしないでください。使い終わったら机を元に戻してください。
+  en:
+    before: |
+      The new meeting room opens next month.
+
+      Book it through the facilities page.
+
+      A booking can last two hours.
+
+      No food or drink is allowed.
+
+      Put the desks back when you leave.
+    after: |
+      The new meeting room opens next month. Book it through the facilities page; a booking can last two hours.
+
+      In the room, no food or drink is allowed. Put the desks back when you leave.
+
+not_flagged:
+  ja: 上限までの一文の段落、見出し・箇条書き・表・コードを挟んだ段落、改行一つでつないだ行は数えません。法務と文学のジャンルでは既定で止めています（条項や定義、台詞や詩の行は、一文ずつ立てるのが形のため）。
+  en: One-sentence paragraphs up to the limit, paragraphs separated by a heading, a list, a table or code, and lines joined by a single line break are not counted together. The legal and literature presets turn it off, since a clause, a definition, a line of dialogue or of verse stands alone by form.
+level_meaning:
+  ja: 一文だけの段落の連続 {limit} 個まで
+  en: up to {limit} one-sentence paragraphs in a row
+rewrite:
+  ja:
+    direction: 同じ話の文を一つの段落にまとめてください。並べた項目なら箇条書きにします。文の中身と順序は変えません。
+    pairs:
+      - before: "新しい会議室が来月から使えます。\n\n予約は総務部の画面から入れてください。\n\n一回の予約は二時間までです。"
+        after: 新しい会議室が来月から使えます。予約は総務部の画面から入れてください。一回の予約は二時間までです。
+      - before: "障害は直りました。\n\n原因は設定の誤りでした。\n\n同じ設定の機器も直しました。"
+        after: 障害は直りました。原因は設定の誤りで、同じ設定の機器も直しました。
+    keep:
+      - 文の中身と順序
+      - 強調のために一文で立てた段落（一つなら残す）
+    avoid:
+      - 話題の違う文を一つの段落に詰める
+      - 文を削る
+  en:
+    direction: Join the sentences that make one point into one paragraph; if they are items, make a list. Keep what each sentence says, in order.
+    pairs:
+      - before: "The new meeting room opens next month.\n\nBook it through the facilities page.\n\nA booking can last two hours."
+        after: The new meeting room opens next month. Book it through the facilities page; a booking can last two hours.
+      - before: "The outage is over.\n\nThe cause was a wrong setting.\n\nWe fixed the other servers with the same setting."
+        after: The outage is over. The cause was a wrong setting, and we fixed the other servers that had it.
+    keep:
+      - what each sentence says, in order
+      - a single one-sentence paragraph kept for emphasis
+    avoid:
+      - packing different points into one paragraph
+      - deleting sentences

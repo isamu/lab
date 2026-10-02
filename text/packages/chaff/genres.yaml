@@ -52,6 +52,8 @@ groups:
       announcing-opener: off
       colon-lead-in: off
       bold-label-list: off
+      # A clause, a definition or a claim is a paragraph of one sentence by form.
+      one-sentence-paragraph-run: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
       # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
@@ -173,6 +175,8 @@ groups:
       ra-nuki: off
       spelling-consistency: off
       requirement-smell: off
+      # Dialogue and verse set each line apart.
+      one-sentence-paragraph-run: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
