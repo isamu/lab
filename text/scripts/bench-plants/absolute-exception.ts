@@ -1,6 +1,6 @@
 // Seeded mistakes for `yarn bench`: a rule stated without exception, and a paragraph later an exception for the same act.
 // Pure and deterministic, like scripts/bench-mutations.ts. The sentences are self-written.
-import { isJapanese, isListItem, isProse, rewriteFirst, type Mutation, type Plant } from "./bench-text.ts";
+import { isJapanese, isListItem, isProse, rewriteFirst, type Mutation, type Plant } from "../bench-text.ts";
 
 const ABSOLUTE: Readonly<Record<string, string>> = {
   ja: "委託先は、記録を一切外部に共有してはならない。",
@@ -32,7 +32,7 @@ const contradictIn =
       : { source: `${planted.source.trimEnd()}\n\n${EXCEPTION[language] ?? ""}\n`, line: planted.line + ABSOLUTE_LINE_OFFSET };
   };
 
-export const ABSOLUTE_MUTATIONS: readonly Mutation[] = ["ja", "en"].map((language) => ({
+export const MUTATIONS: readonly Mutation[] = ["ja", "en"].map((language) => ({
   id: `absolute-exception-${language}`,
   rule: "absolute-exception",
   languages: [language],
