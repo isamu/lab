@@ -1,6 +1,5 @@
-import { readFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { parse } from "yaml";
+import { readYamlFile } from "./yaml-file.ts";
 import { isLevel } from "../levels.ts";
 import { defaultModel } from "../judge.ts";
 import { isBackend, type BackendName } from "../backends/types.ts";
@@ -165,7 +164,7 @@ const byPathOf = (raw: unknown): PathRule[] => (Array.isArray(raw) ? raw.map(toP
 
 /** 設定ファイルが無くても動く。あっても、既定から変えたものだけが書かれている。spec §18。 */
 export const loadConfig = (path: string): Config => {
-  const raw: unknown = parse(readFileSync(path, "utf8"));
+  const raw: unknown = readYamlFile(path);
   if (!isRecord(raw)) return { ...EMPTY, path };
   const declared: unknown = raw["ai_backend"];
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;

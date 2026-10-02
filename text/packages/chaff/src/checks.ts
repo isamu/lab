@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
-import { parse } from "yaml";
+import { existsSync } from "node:fs";
+import { readYamlFile } from "./config/yaml-file.ts";
 import type { Level, Severity } from "./plugin.ts";
 
 export const CHECKS_FILE = "checks.yaml";
@@ -61,7 +61,7 @@ const toCheck = (raw: unknown, index: number, source: string): UserCheck | undef
 
 export const loadChecks = (path: string): UserCheck[] => {
   if (!existsSync(path)) return [];
-  const raw: unknown = parse(readFileSync(path, "utf8"));
+  const raw: unknown = readYamlFile(path);
   if (!isRecord(raw) || !Array.isArray(raw["checks"])) return [];
   return raw["checks"].map((entry, index) => toCheck(entry, index, path)).filter((entry) => entry !== undefined);
 };
