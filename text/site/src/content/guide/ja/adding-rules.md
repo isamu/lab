@@ -245,9 +245,10 @@ chaff の決まりで、ルールは機械で決まるものだけです。意�
 ```bash
 yarn test     テストをすべて動かす
 yarn bench    見本に仕込んだ誤りを、ルールが見つけるかを測る
-yarn corpus   集めた実際の文書にかけて、corpus/expected.txt からの増減を見る
+yarn corpus   集めた実際の文書にかけて、corpus/expected/ からの増減を見る
 ```
 
 `yarn corpus` で増えた指摘は、一つずつ読みます。誤った指摘なら、その形を例にしてテストに足し、直します。
-増えた指摘が正しいと確かめたら、`yarn corpus --update` で `corpus/expected.txt` を更新します。
+増えた指摘が正しいと確かめたら、`yarn corpus --update` で `corpus/expected/` を更新します。
+ルールごとに 1 ファイル（`<id>.txt`、文書ごとの件数）と、文書の一覧（`_documents.txt`）に分けてあります。新しいルールは自分のファイルを足すだけで、ほかのルールの PR と同じ行を書き換えません。
 見本の結果も同じで、`yarn bench --update` で `test/fixtures/bench/expected.txt` を更新します。

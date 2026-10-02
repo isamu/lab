@@ -1,16 +1,17 @@
 // Runs chaff over the corpus. Statutes: the structure rules; a statute in force is internally consistent, so every
 // finding there is a candidate false positive to explain. Documents of other kinds: every rule (as with --experimental)
-// for the document's genre. Both are summarised per rule and compared with corpus/expected.txt.
-// --update rewrites that file; documents not fetched yet (yarn corpus:fetch) are skipped and keep their line.
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+// for the document's genre. Both are summarised per rule and compared with corpus/expected/ (scripts/corpus-expected.ts).
+// --update rewrites those files; documents not fetched yet (yarn corpus:fetch) are skipped and keep their counts.
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { allFindings, corpusLanguages, structureFindings, type CorpusFinding } from "./corpus-findings.ts";
 import { docEntries, docPath, parsedAs, summaryChanges, summaryLine, updatedSummary } from "./corpus-docs.ts";
+import { joinSummary, splitSummary } from "./corpus-expected.ts";
 
 const CORPUS = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus");
 const LAWS = join(CORPUS, "laws");
-const EXPECTED = join(CORPUS, "expected.txt");
+const EXPECTED = join(CORPUS, "expected");
 const manifest: unknown = JSON.parse(readFileSync(join(CORPUS, "manifest.json"), "utf8"));
 const languages = corpusLanguages(manifest);
 const verbose = process.argv.includes("--verbose");
@@ -20,7 +21,7 @@ const printFindings = (findings: readonly CorpusFinding[]): void => {
   if (verbose) findings.forEach((finding) => console.log(`  ${String(finding.line)}  ${finding.rule}  ${finding.message}`));
 };
 
-// 法令も、ほかの文書と同じく expected.txt と比べる。施行中の法令に構造の指摘が出れば、それは chaff の後退。
+// 法令も、ほかの文書と同じく corpus/expected/ と比べる。施行中の法令に構造の指摘が出れば、それは chaff の後退。
 const files = readdirSync(LAWS).filter((file) => file.endsWith(".txt"));
 const lawLines = await files.reduce<Promise<string[]>>(async (previous, file) => {
   const lines = await previous;
@@ -53,12 +54,34 @@ const docLines = await docEntries(manifest).reduce<Promise<string[]>>(async (pre
 
 const actual = [...lawLines, ...docLines];
 const known = new Set([...files, ...docEntries(manifest).map((doc) => doc.id)]);
-const expected = existsSync(EXPECTED)
-  ? readFileSync(EXPECTED, "utf8")
-      .split("\n")
-      .filter((line) => line !== "")
-  : [];
-if (update) writeFileSync(EXPECTED, `${updatedSummary(expected, actual, known).join("\n")}\n`);
+const linesIn = (file: string): string[] =>
+  readFileSync(join(EXPECTED, file), "utf8")
+    .split("\n")
+    .filter((line) => line !== "");
+
+const readExpected = (): string[] =>
+  existsSync(EXPECTED)
+    ? joinSummary(
+        new Map(
+          readdirSync(EXPECTED)
+            .filter((file) => file.endsWith(".txt"))
+            .map((file) => [file, linesIn(file)]),
+        ),
+      )
+    : [];
+
+/** Writes one file per rule and the document list, and removes the file of a rule no document has any more. */
+const writeExpected = (lines: readonly string[]): void => {
+  const files = splitSummary(lines);
+  mkdirSync(EXPECTED, { recursive: true });
+  readdirSync(EXPECTED)
+    .filter((file) => file.endsWith(".txt") && !files.has(file))
+    .forEach((file) => rmSync(join(EXPECTED, file)));
+  files.forEach((fileLines, file) => writeFileSync(join(EXPECTED, file), `${fileLines.join("\n")}\n`));
+};
+
+const expected = readExpected();
+if (update) writeExpected(updatedSummary(expected, actual, known));
 const changes = update ? [] : summaryChanges(expected, actual, known);
 if (changes.length > 0) {
   console.log("\nChanged from corpus/expected.txt (yarn corpus --update to accept):");

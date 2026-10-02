@@ -247,9 +247,10 @@ Last, check the rule on real documents.
 ```bash
 yarn test     run every test
 yarn bench    measure whether the rules find the mistakes planted in the samples
-yarn corpus   run on the collected real documents and compare with corpus/expected.txt
+yarn corpus   run on the collected real documents and compare with corpus/expected/
 ```
 
 Read every new finding from `yarn corpus`. If one is wrong, add its shape to the tests as an example and fix it.
-When the new findings are confirmed right, `yarn corpus --update` updates `corpus/expected.txt`.
+When the new findings are confirmed right, `yarn corpus --update` updates `corpus/expected/`.
+It holds one file per rule (`<id>.txt`, a count per document) and the list of documents (`_documents.txt`), so a new rule adds its own file and changes no line that another rule's PR changes.
 The samples work the same way: `yarn bench --update` updates `test/fixtures/bench/expected.txt`.
