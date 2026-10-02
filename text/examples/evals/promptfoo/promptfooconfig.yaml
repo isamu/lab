@@ -1,0 +1,18 @@
+# A promptfoo eval whose outputs chaff also grades. Install: npm i -D promptfoo chaffjs
+prompts:
+  - "Summarize this support report in two sentences, keeping every figure:\n\n{{reference}}"
+providers:
+  - openai:gpt-4.1-mini
+tests:
+  - vars:
+      reference: |
+        # Support report
+
+        The team answered 4,812 tickets this quarter.
+        The median first reply fell from 6 hours to 2.5 hours.
+    assert:
+      - type: javascript
+        value: file://chaff-assertion.cjs
+        # Optional: the chaff.yaml whose grade: rubric decides pass or fail.
+        config:
+          chaffConfig: chaff.yaml

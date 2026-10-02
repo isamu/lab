@@ -218,10 +218,11 @@ const scopedLocally = (before: string): boolean => THIS_PART.test(before) || NEA
 
 const definitions = (text: string): Mention[] =>
   DEFINITIONS.flatMap((pattern) =>
-    mentions(pattern, text, (groups, _whole, start) => {
+    mentions(pattern, text, (groups, whole, start) => {
       if (groups["term"] === undefined) return undefined;
       const local = scopedLocally(text.slice(Math.max(0, start - 30), start));
-      return { term: groups["term"], ...(local ? { scope: "local" } : {}) };
+      const inline = whole.startsWith("以下");
+      return { term: groups["term"], ...(local ? { scope: "local" } : {}), ...(inline ? { placement: "inline" } : {}) };
     }),
   );
 

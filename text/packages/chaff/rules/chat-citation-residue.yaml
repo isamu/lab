@@ -1,0 +1,77 @@
+id: chat-citation-residue
+layer: L2
+status: experimental
+how_to_find: chat-citation-residue
+word_list: chat-citation-marker
+severity: warning
+
+name:
+  ja: チャットの出典の名残
+  en: Chat citation residue
+
+why:
+  ja: 「?utm_source=chatgpt.com」の付いたリンクや「:contentReference[oaicite:0]」は、チャットの答えを貼ったときに残る印です。文体の好みではなく、貼った後に確かめていない印です。リンク先が本当にその記述の出典なのかも、確かめられていません。
+  en: 'A link ending in "?utm_source=chatgpt.com" and a ":contentReference[oaicite:0]" are marks a chat answer leaves when it is pasted. This is not a matter of style: it shows the paste was never checked, and that nobody has confirmed the link supports the sentence it sits on.'
+
+message:
+  ja: 「{matched}」はチャットの答えの名残です
+  en: '"{matched}" is left over from a chat answer'
+
+how_to_fix:
+  ja: リンクを開いて、その記述の出典になっているか確かめてください。出典なら、末尾の「?utm_source=…」を消してリンクを残します。出典の印（oaicite、contentReference）は消します。
+  en: Open the link and check it supports the sentence. If it does, keep the link and drop the "?utm_source=…" at its end. Delete citation marks (oaicite, contentReference).
+
+# 指摘に要る印の数。1 つで言う。
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「?utm_source=chatgpt.com」の付いたリンクや「oaicite」のように、チャットの答えを貼ったときに残る印
+  en: 'Marks a pasted chat answer leaves behind: links ending in "?utm_source=chatgpt.com", ":contentReference[oaicite:0]"'
+example:
+  ja:
+    before: |
+      手順は[公式の説明](https://example.com/setup?utm_source=chatgpt.com)のとおりです。
+    after: |
+      手順は[公式の説明](https://example.com/setup)のとおりです。
+  en:
+    before: |
+      The steps follow [the official guide](https://example.com/setup?utm_source=chatgpt.com).
+    after: |
+      The steps follow [the official guide](https://example.com/setup).
+
+not_flagged:
+  ja: コードの中（`?utm_source=chatgpt.com` と書いて説明している所）は数えません。utm_source でも、チャット以外の値（qiita、twitter）は数えません。
+  en: Code is not read (an article that explains the parameter in backticks). Other utm_source values (newsletter, twitter) are not counted.
+level_meaning:
+  ja: 名残の印が {limit} 個あれば指摘
+  en: reported once there are {limit}
+rewrite:
+  ja:
+    direction: リンク先を開いて、その文の出典になっているかを確かめてから、チャットの印だけを消してください。出典にならないリンクは消し、確かめた出典に替えます。
+    pairs:
+      - before: 手順は[公式の説明](https://example.com/setup?utm_source=chatgpt.com)のとおりです。
+        after: 手順は[公式の説明](https://example.com/setup)のとおりです。
+      - before: 料金は月 500 円です。:contentReference[oaicite:0]{index=0}
+        after: 料金は月 500 円です（[料金表](［確かめた出典の URL］)）。
+    keep:
+      - リンク先のページそのもの（印を消すだけで、別のページに替えない）
+      - 文の中身と数字
+    avoid:
+      - 確かめずに印だけを消す
+      - 出典の無い数字に、それらしい出典を足す
+  en:
+    direction: Open the link and check it supports the sentence, then remove only the chat marks. A link that does not support the sentence goes, replaced by a source you checked.
+    pairs:
+      - before: The steps follow [the official guide](https://example.com/setup?utm_source=chatgpt.com).
+        after: The steps follow [the official guide](https://example.com/setup).
+      - before: The plan costs $5 a month. :contentReference[oaicite:0]{index=0}
+        after: The plan costs $5 a month ([pricing]([URL of the source you checked])).
+    keep:
+      - the page the link points to (remove the mark, do not swap the page)
+      - what the sentence says, and its numbers
+    avoid:
+      - removing the mark without checking the source
+      - adding a plausible source to a number that had none

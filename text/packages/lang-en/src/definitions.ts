@@ -37,7 +37,9 @@ export const definitions = (text: string): Mention[] =>
       const term = match.groups?.["term"];
       if (term === undefined) return [];
       const end = match.index + match[0].length;
-      const namesAParty = match[0].startsWith("(") && APPLIES.test(text);
-      return [{ start: match.index, end, attrs: { term, ...(isPointer(text, end) || namesAParty ? { scope: "local" } : {}) } }];
+      const inline = match[0].startsWith("(");
+      const namesAParty = inline && APPLIES.test(text);
+      const scope = isPointer(text, end) || namesAParty ? { scope: "local" } : {};
+      return [{ start: match.index, end, attrs: { term, ...scope, ...(inline ? { placement: "inline" } : {}) } }];
     }),
   );

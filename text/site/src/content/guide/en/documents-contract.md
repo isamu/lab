@@ -96,7 +96,7 @@ contract.md   blog/tech · English   genre from the default
    Looks like: Contract and terms. Try --genre legal/contract
 
 
-0 findings, 66 rules not run
+0 findings, 68 rules not run
 ```
 
 Add `--genre legal/contract`, as suggested, and run it again.
@@ -120,7 +120,7 @@ contract.md   legal/contract · English   genre from --genre
   31:20   warning "Services" is also defined on line 7
                   duplicate-definition
 
-6 findings, 69 rules not run
+6 findings, 72 rules not run
 ```
 
 `error` means the figures disagree, so one of them is certainly wrong.
