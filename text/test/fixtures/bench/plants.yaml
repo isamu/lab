@@ -34,6 +34,7 @@ planted:
   hiragana-fukushi: [ja]
   image-alt-text: [ja, en]
   internal-jargon: [ja, en]
+  name-variant: [ja, en]
   invisible-character: [ja, en]
   katakana-long-vowel: [ja]
   kutoten-consistency: [ja]
