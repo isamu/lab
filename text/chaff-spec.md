@@ -2494,10 +2494,11 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 | 欄 | 中身 |
 | --- | --- |
 | `chaff` | chaffjs の版と、使った言語パッケージの版（`chaff --version` と同じ） |
-| `rules` | 使ったルールの定義の SHA-256。同梱の言語（ja・en）と入力が名指した言語ごとの、ルールの定義（`rules/*.yaml`、`custom_rules`、プラグインのルール）と語彙表、`genres.yaml` から作る |
-| `settings` | 実際に効いた設定の SHA-256。ルールごとの強さと数値の上限、ルールのオプション、`--experimental`、ジャンル、言語、文書の種類、ハウススタイル、チームの語（`jargon`・`prefer`・`required_sections`・`names`）、`by_path`、`grade:` から作る。キーを並べ替えてから作り、順番やコメントの違いでは変わらない。判定役の model や設定ファイルの場所は入れない |
+| `rules` | 使ったルールの定義の SHA-256。同梱の言語（ja・en）と入力が名指した言語ごとの、ルールの定義（`rules/*.yaml`、`custom_rules`、プラグインのルール）と語彙表、`genres.yaml`、文書の種類（`profiles/*.yaml`）から作る |
+| `settings` | 実際に効いた設定の SHA-256。ルールごとの強さと数値の上限、ルールのオプション、`--experimental`、ジャンル、言語、文書の種類、ハウススタイル（名前と、それが決めた段階・数値・オプション）、チームの語（`jargon`・`prefer`・`required_sections`・`names`）、`by_path`、`grade:` から作る。キーを並べ替えてから作り、順番やコメントの違いでは変わらない。判定役の model や設定ファイルの場所は入れない |
 
 比べるのは、`rules` と `settings` が同じ結果どうしだけにする。chaffjs の版が違っても、`rules` と `settings` が同じなら比べてよい。
+出力ごとの `language` と `genre` は入力の一部で、`settings` には入らず結果の行に残る。A/B はこの二つが違う組を比べない（§29.5）。
 検出のコード（TypeScript の detector やプラグインのコード）は `rules` に入らない。コードだけを直した版上げでは `rules` が変わらないので、版の違う結果を比べるときは `chaff` の欄も見る。
 画面の文言の直しのような、判定に関係しない版上げで過去の結果を捨てさせないためである。
 

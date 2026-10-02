@@ -2,6 +2,7 @@ import { loadAdapter } from "../adapter-load.ts";
 import type { Config } from "../config/load.ts";
 import { rulesOf } from "../custom/load.ts";
 import { loadGenres } from "../genre-load.ts";
+import { loadProfiles } from "../profile/load.ts";
 import { VERSION_LINES } from "../version.ts";
 import type { GradeSetup } from "./grade-item.ts";
 import { compareText } from "./order.ts";
@@ -22,6 +23,7 @@ const ruleSetOf = async (config: Config, languages: readonly string[]): Promise<
     rules: Object.fromEntries(read.map((entry) => [entry.language, entry.rules])),
     lexicons: Object.fromEntries(read.map((entry) => [entry.language, entry.lexicons])),
     genres: loadGenres(),
+    profiles: loadProfiles(),
   };
 };
 

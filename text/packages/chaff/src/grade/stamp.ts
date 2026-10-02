@@ -34,6 +34,7 @@ export const settingsOf = (settings: GradeSettings): Record<string, unknown> => 
     limits: config.limits,
     options: config.options ?? {},
     style: config.style ?? null,
+    styleApplied: config.applied ?? null,
     jargon: config.jargon,
     prefer: config.prefer,
     requiredSections: config.requiredSections,
@@ -42,11 +43,12 @@ export const settingsOf = (settings: GradeSettings): Record<string, unknown> => 
   };
 };
 
-/** What the rules are: each language's rule definitions and word lists, and the genres' presets. */
+/** What the rules are: each language's rule definitions and word lists, the genres' presets and the document profiles. */
 export type RuleSet = {
   readonly rules: Readonly<Record<string, unknown>>;
   readonly lexicons: Readonly<Record<string, unknown>>;
   readonly genres: unknown;
+  readonly profiles: unknown;
 };
 
 export const stampOf = (versionLines: readonly string[], ruleSet: RuleSet, settings: GradeSettings): Stamp => ({

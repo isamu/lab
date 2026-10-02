@@ -158,6 +158,9 @@ describe("the stamp", () => {
     assert.notEqual(digestOf(settingsOf({ ...base, experimental: true })), settings);
     assert.notEqual(digestOf(settingsOf({ ...base, config: { ...EMPTY, rules: { "ai-tell": "strict" } } })), settings);
     assert.notEqual(digestOf(settingsOf({ ...base, genre: "business/report" })), settings);
+    const styled = { ...EMPTY, style: "house", applied: { style: "house", levelsFrom: [], options: {}, limits: {} } };
+    const restyled = { ...styled, applied: { ...styled.applied, options: { "katakana-long-vowel": { ending: "omit" } } } };
+    assert.notEqual(digestOf(settingsOf({ ...base, config: styled })), digestOf(settingsOf({ ...base, config: restyled })));
     assert.notEqual(digestOf(["first", "second"]), digestOf(["second", "first"]));
     assert.equal(digestOf(settingsOf({ ...base, config: { ...EMPTY, aiModel: "another-model", baseDir: "/elsewhere" } })), settings);
   });
