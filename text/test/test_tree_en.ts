@@ -37,7 +37,7 @@ describe("an English contract as a tree", () => {
       lines(
         '  (article "1" :heading "DEFINITIONS" :label "Article I" :line 1',
         '    (definition :term "Products" :line 2)',
-        '    (definition :term "Fees" :line 3)',
+        '    (definition :placement "inline" :term "Fees" :line 3)',
         '    (reference :label "Section 4.2(a)" :numbering "section" :target "4.2.a" :line 3))',
         '  (article "2" :heading "PAYMENT" :label "Article II" :line 4',
         '    (article "4.2" :heading "Payment Terms" :label "Section 4.2" :line 5',

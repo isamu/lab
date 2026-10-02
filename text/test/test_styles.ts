@@ -63,7 +63,7 @@ describe("house styles", () => {
       };
       assert.equal(ending("ieice"), "drop/3");
       assert.equal(ending("jis-z8301-2011"), "drop/3");
-      assert.equal(ending("bunkacho"), "keep/3");
+      assert.equal(ending("bunkacho"), "keep/2");
     });
   });
 

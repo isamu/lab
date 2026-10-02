@@ -30,6 +30,7 @@ import { WORDING_MUTATIONS } from "./bench-mutations-wording.ts";
 import { MODAL_MUTATIONS } from "./bench-mutations-modal.ts";
 import { REQUIREMENT_MUTATIONS } from "./bench-mutations-requirements.ts";
 import { POINTER_MUTATIONS } from "./bench-mutations-pointers.ts";
+import { DEFINITION_MUTATIONS } from "./bench-mutations-definitions.ts";
 
 // --- date-weekday-mismatch ---
 
@@ -389,4 +390,5 @@ export const MUTATIONS: readonly Mutation[] = [
   ...MODAL_MUTATIONS,
   ...REQUIREMENT_MUTATIONS,
   ...POINTER_MUTATIONS,
+  ...DEFINITION_MUTATIONS,
 ];

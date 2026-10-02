@@ -4,6 +4,39 @@ Newest first.
 
 ## Unreleased
 
+### `proper-noun-density` sets its English limit from human documents (#170)
+
+- English counts per 1000 words, and the limit was the Japanese one (per 1000 characters), so the rule fired on most
+  English documents in the corpus. Measured over every English corpus document and a sample of Project Gutenberg
+  novels and essays, `normal` now sits at about the 95th percentile of those human documents, `strict` near the 85th
+  and `relaxed` near the top. Japanese is unchanged. The measurement is in the PR.
+- The generated samples of `yarn bench:ai` name fewer things than their human versions, so the rule never told them
+  apart; it is a readability check, not an AI-shape one.
+
+### `oxford-comma-consistency` reads "City, State," as one name (#170)
+
+- The comma between a place and its US state or country ("New London, Wisconsin, and a photo of …", "Lyon, France,")
+  is part of the name, not a list's comma. A NOAA release in the corpus was counted as writing an Oxford comma there.
+- The names are an English word list, `place-region` (the states, D.C., some territories, the countries and the
+  Canadian provinces). The comma counts as a name's only after a proper noun that is not itself on the list, and when
+  the name ends at punctuation: "Texas, Florida, and Ohio" and "Austin, Texas, Boston, Massachusetts, and Denver,
+  Colorado" are still lists. A name written only after a place (Washington, D.C.) is marked `position: after`.
+
+### `katakana-long-vowel` under styles: counts as JIS Z 8301 does, drops only -er/-or/-ar, leaves homographs (#170)
+
+- **Morae are counted before the final ー**, as JIS Z 8301:2011 Table G.3 counts: its own examples keep カバー (two
+  sounds) and シャワー (a 拗音 is not a sound of its own). chaff counted the ー too, so `style: ieice` and
+  `style: jis-z8301-2011` dropped the ー of カバー, エラー, カラー, レビュー and メニュー. `min_morae` now means the
+  morae before the ー; its default goes from 3 to 2, which checks the same words as before. A `chaff.yaml` that set
+  `min_morae` itself now reaches one mora further.
+- **drop reaches only a ー after a kana of the ア row**: JIS Z 8301:2011 G.6.2.2 and its note on 学術用語 speak of the
+  English endings -er, -or, -ar (ア列の長音). Words ending in ュー, エー or イー (メニュー, グレー, コピー, エネルギー)
+  are left alone. The kana are a lang-ja word list, `long-vowel-drop-after`; without it drop reaches every ー.
+- **keep leaves homographs**: タブ (tab) is not a dropped タブー (taboo), nor ベタ a dropped ベター. The
+  `long-vowel-distinct` list gains the pairs the corpus showed under `style: bunkacho` (タブ, ベタ, エコ, ヘビ, ドラマ,
+  カフェ, キャリア) and カバ; the dictionary lists both forms as separate words and cannot tell a variant from another
+  word.
+
 ### Bibliography: more works on what generated text looks like
 
 - The bibliography adds Juzek and Ward (COLING 2025) on why ChatGPT overuses some words, Sun et al. (ICML 2025) on
