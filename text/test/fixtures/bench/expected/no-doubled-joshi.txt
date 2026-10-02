@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/blog  no-nested  found
+ja/design  no-nested  found
+ja/email  no-nested  found
+ja/figures  no-nested  found
+ja/itinerary  no-nested  found
+ja/minutes  no-nested  found
+ja/note  no-nested  found
+ja/press  no-nested  found
+ja/proposal  no-nested  found
+ja/quote  no-nested  found
+ja/readme  no-nested  found
+ja/requirements  no-nested  found
