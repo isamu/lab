@@ -17,6 +17,7 @@ export type CustomProblem =
   | { readonly kind: "unknown-type"; readonly at: string; readonly written: string }
   | { readonly kind: "bad-module"; readonly at: string; readonly written: string; readonly refusal: ModulePathRefusal }
   | { readonly kind: "bad-requires"; readonly at: string; readonly written: string }
+  | { readonly kind: "bad-word-list"; readonly at: string; readonly written: string }
   | { readonly kind: "missing"; readonly at: string; readonly field: string }
   | { readonly kind: "unpaired-example"; readonly at: string }
   | { readonly kind: "bad-level"; readonly at: string; readonly written: string }
@@ -178,6 +179,22 @@ const requiresOf = (raw: unknown, type: string, at: string): Checked<readonly st
   return unknown === undefined ? ok([...new Set(written)]) : failed({ kind: "bad-requires", at, written: unknown });
 };
 
+/** A module's word list by name; its detector gets it as options.lexicon. The other types carry their words themselves. */
+const wordListOf = (raw: unknown, type: string, at: string): Checked<string | undefined> => {
+  if (raw === undefined || type !== "module") return ok(undefined);
+  return nonEmpty(raw) ? ok(raw.trim()) : failed({ kind: "bad-word-list", at, written: printed(raw) });
+};
+
+/** What a rule's detector needs besides the document: tokens from the adapter, and a word list. */
+type Needs = { readonly requires: readonly string[]; readonly wordList: string | undefined };
+
+const needsOf = (raw: Record<string, unknown>, type: string, at: string): Checked<Needs> => {
+  const requires = requiresOf(raw["requires"], type, at);
+  const wordList = wordListOf(raw["word_list"], type, at);
+  if (requires.value === undefined || wordList.problems.length > 0) return failed(...requires.problems, ...wordList.problems);
+  return ok({ requires: requires.value, wordList: wordList.value });
+};
+
 const languagesOf = (raw: unknown, at: string): Checked<readonly string[] | undefined> => {
   if (raw === undefined) return ok(undefined);
   const list = Array.isArray(raw) ? raw : [raw];
@@ -208,7 +225,7 @@ type Example = { readonly before: string; readonly after: string };
 
 type Parts = {
   readonly spec: CustomSpec;
-  readonly requires: readonly string[];
+  readonly needs: Needs;
   readonly severity: Severity;
   readonly texts: Texts;
   readonly languages: readonly string[] | undefined;
@@ -228,7 +245,7 @@ const examplesOf = (texts: Texts, languages: readonly string[] | undefined): Rec
 
 const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, useFor: readonly string[]): RuleDefinition => ({
   id,
-  layer: parts.requires.includes("pos") ? "L3" : "L2",
+  layer: parts.needs.requires.includes("pos") ? "L3" : "L2",
   status: "stable",
   name: parts.texts.name,
   why: parts.texts.why,
@@ -240,12 +257,12 @@ const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, us
   level_sets: "severity",
   by_genre: {},
   how_to_find: HOW_TO_FIND[parts.spec.type],
-  word_list: undefined,
+  word_list: parts.needs.wordList,
   extra_word_lists: [],
   what_to_check: undefined,
   where: undefined,
   full_sentence: undefined,
-  requires: parts.requires,
+  requires: parts.needs.requires,
   uses: [],
   from: [],
   languages: parts.languages,
@@ -277,17 +294,17 @@ const ruleOf = (raw: unknown, index: number, seen: ReadonlySet<string>, context:
   const at = id.value ?? (nonEmpty(raw["id"]) ? raw["id"] : `#${String(index + 1)}`);
   const type = typeOf(raw, at);
   const spec = type.value === undefined ? failed<CustomSpec>() : specOf(raw, type.value, at, context.baseDir);
-  const requires = requiresOf(raw["requires"], type.value ?? "", at);
+  const needs = needsOf(raw, type.value ?? "", at);
   const severity = severityOf(raw["level"], at);
   const texts = textsOf(raw, at);
   const languages = languagesOf(raw["languages"], at);
   const examples = texts.value === undefined ? {} : examplesOf(texts.value, languages.value);
   const unpaired: CustomProblem[] = texts.value !== undefined && Object.keys(examples).length === 0 ? [{ kind: "unpaired-example", at }] : [];
-  const problems = [...[id, type, spec, requires, severity, texts, languages].flatMap((checked) => checked.problems), ...unpaired];
+  const problems = [...[id, type, spec, needs, severity, texts, languages].flatMap((checked) => checked.problems), ...unpaired];
   if (problems.length > 0) return failed(...problems);
-  if (id.value === undefined || spec.value === undefined || requires.value === undefined || severity.value === undefined || texts.value === undefined)
+  if (id.value === undefined || spec.value === undefined || needs.value === undefined || severity.value === undefined || texts.value === undefined)
     return failed();
-  const parts = { spec: spec.value, requires: requires.value, severity: severity.value, texts: texts.value, languages: languages.value, examples };
+  const parts = { spec: spec.value, needs: needs.value, severity: severity.value, texts: texts.value, languages: languages.value, examples };
   return ok(definitionOf(id.value, raw, parts, context.useFor));
 };
 

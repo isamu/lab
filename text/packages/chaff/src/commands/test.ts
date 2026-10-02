@@ -91,7 +91,7 @@ const semanticDocument = async (path: string, config: Config, resolveGenre: Test
   const { genre } = resolveGenre(path, source, config);
   const rules = loadRules(language);
   await adapter.prepare?.(semanticNeeds(rules, config.rules, genre));
-  const doc = buildDocument(path, source, adapter, teamRules(config), profileFor(config, path, source, language, genre));
+  const doc = buildDocument(path, source, adapter, teamRules(config, language), profileFor(config, path, source, language, genre));
   return { doc, rules, language, genre };
 };
 
