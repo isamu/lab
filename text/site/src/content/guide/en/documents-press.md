@@ -98,7 +98,7 @@ $ npx chaffjs release.md --genre business/press-release --compact
 release.md   business/press-release · English   genre from --genre
 
 
-0 findings, 67 rules not run
+0 findings, 69 rules not run
 ```
 
 Add `--experimental` to run them.

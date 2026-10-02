@@ -1,0 +1,37 @@
+# Words that announce a set of names: the platforms a product runs on, the languages it comes in. outside-announced-list
+# reads the names right after (position: before) or right before (position: after) the words, and compares later
+# statements of the same group with the first list of two or more names. Words that also frame ordinary nouns are left out.
+# "version" and "edition" are a group of their own: a product's editions (Oracle Free, Oracle Express Edition) are not its platforms.
+id: enumeration-frame
+language: en
+entries:
+  - pattern: supported on
+    position: before
+    group: platform
+  - pattern: runs on
+    position: before
+    group: platform
+  - pattern: available on
+    position: before
+    group: platform
+  - pattern: available for
+    position: before
+    group: platform
+  - pattern: compatible with
+    position: before
+    group: platform
+  - pattern: works on
+    position: before
+    group: platform
+  - pattern: version
+    position: after
+    group: edition
+  - pattern: edition
+    position: after
+    group: edition
+  - pattern: available in
+    position: before
+    group: language
+  - pattern: translated into
+    position: before
+    group: language

@@ -98,7 +98,7 @@ $ npx chaffjs release.md --genre business/press-release --compact
 release.md   business/press-release · 日本語   ジャンルは--genreから
 
 
-指摘 0 件、動いていない rule 64 件
+指摘 0 件、動いていない rule 66 件
 ```
 
 `--experimental` を付けて、試験中のルールも動かします。

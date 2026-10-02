@@ -102,7 +102,7 @@ article.md   blog/tech · English   genre from --genre
   39:20   warning Closes with "happy coding"
                   closing-cliche
 
-3 findings, 66 rules not run
+3 findings, 68 rules not run
 ```
 
 That is the opening and the closing. The shapes of generated text are checked by experimental rules.
