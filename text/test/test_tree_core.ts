@@ -6,6 +6,7 @@ import { lineNumberAt, linesOf } from "../packages/chaff/src/structure/lines.ts"
 import { onLine, wrappedLine } from "../packages/chaff/src/structure/wrapped-tail.ts";
 import { inOrder, treeLanguage, treeTargets } from "../packages/chaff/src/commands/tree.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
+import { assertLinearGrowth } from "./growth.ts";
 import type { Mention, NumberedLine, StructureNode, StructurePatterns } from "../packages/chaff/src/plugin.ts";
 
 /**
@@ -203,28 +204,24 @@ describe("chaff tree の言語", () => {
 });
 
 describe("大きな文書", () => {
-  // 旧実装は行ごとに配列を作り直し、見出しごとに全行を探していたので、この大きさで数十秒かかった。
-  // 負荷のかかった CI でも落ちないよう、上限は線形の実装の何十倍も緩くしてある。
-  const GENEROUS_MS = 5000;
-
-  const timed = (build: () => StructureNode): { readonly ms: number; readonly tree: StructureNode } => {
-    const started = performance.now();
-    const tree = build();
-    return { ms: performance.now() - started, tree };
-  };
+  // 旧実装は行ごとに配列を作り直し、見出しごとに全行を探していたので、行数の二乗で遅くなった。
+  // 負荷のかかった機械でも落ちないよう、時間の上限ではなく、入力を大きくしたときの時間の伸び方を見る。
 
   it("何万行の .txt も線形で木にする", () => {
-    const source = Array.from({ length: 60_000 }, (_, index) => (index % 100 === 0 ? `§${String(index / 100 + 1)} part` : "- 1 text ->§1")).join("\n");
-    const { ms, tree } = timed(() => treeOf(source));
-    assert.equal(tree.children.length, 600);
-    assert.ok(ms < GENEROUS_MS, `${String(Math.round(ms))} ms`);
+    assertLinearGrowth((lines) => {
+      const source = Array.from({ length: lines }, (_, index) => (index % 100 === 0 ? `§${String(index / 100 + 1)} part` : "- 1 text ->§1")).join("\n");
+      assert.equal(treeOf(source).children.length, lines / 100);
+    }, 15_000);
   });
 
   it("見出しが何万ある Markdown も線形で木にする", () => {
-    const source = Array.from({ length: 30_000 }, (_, index) => `## Heading ${String(index)}`).join("\n");
-    const { ms, tree } = timed(() => treeOf(source, true));
-    assert.equal(tree.children.length, 30_000);
-    assert.ok(ms < GENEROUS_MS, `${String(Math.round(ms))} ms`);
+    // 見出しの間の空行は読むのが安いので、見出しごとに全行を探す遅さだけが伸びとして表に出る。
+    const LINE_BREAKS_BETWEEN_HEADINGS = 10;
+    const GAP = "\n".repeat(LINE_BREAKS_BETWEEN_HEADINGS);
+    assertLinearGrowth((headings) => {
+      const source = Array.from({ length: headings }, (_, index) => `## Heading ${String(index)}`).join(GAP);
+      assert.equal(treeOf(source, true).children.length, headings);
+    }, 3_000);
   });
 });
 

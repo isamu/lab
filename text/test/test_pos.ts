@@ -93,6 +93,19 @@ describe("解析器を読むまで tokens は無い", () => {
     );
   });
 
+  // rule ごとに確かめる。uses: [pos] の rule を足しても、このテストの一覧は書き換えない。
+  describe("uses: [pos] の rule は、それ一つだけ動いていても pos を読む（L4 は lint で動かないので読まない）", () => {
+    const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos") || rule.uses.includes("pos")).map((rule) => [rule.id, "off" as const]));
+    RULES.filter((rule) => rule.uses.includes("pos")).forEach((rule) => {
+      const genre = rule.use_for[0] ?? "";
+      const language = rule.languages?.[0] ?? "ja";
+      it(`${rule.id}（${genre}・${language}）`, () => {
+        assert.notEqual(genre, "", "use_for が空");
+        assert.equal(neededBy(RULES, { ...off, [rule.id]: "normal" }, true, genre, language).pos, rule.layer !== "L4");
+      });
+    });
+  });
+
   it("stable な rule が要求していれば、既定でも読む", () => {
     // taigen-dome-in-prose は stable なので、--experimental なしでも動く。
     assert.equal(neededBy(RULES, {}, false, "blog/tech", "ja").pos, true);

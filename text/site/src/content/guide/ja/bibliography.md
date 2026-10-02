@@ -135,9 +135,9 @@ chaff のルールが何を根拠にしているかを、論文と規格ごと�
     「上記の図」のような曖昧な参照を避け、略語は全体で同じにします。
     2011 年版は、3 音以上の外来語では語末の「ー」を省いていました。
   - chaff では：`undefined-acronym` と [`dangling-reference`](../../rules/dangling-reference/) の裏付けです。
-    [`vague-figure-reference`](../../rules/vague-figure-reference/) は、図や表に番号を付けた文書の「上記の図」を指します（10.6）。
+    [`vague-figure-reference`](../../rules/vague-figure-reference/) は、図や表に番号を付けた文書の「上記の図」と、条に番号を付けた文書の「以下の箇条」を指します（10.6）。
     `style: jis-z8301-2011` と書くと、2011 年版の書きかたで `katakana-long-vowel` が動きます。
-    `style: jis-z8301-2019` と書くと、[`requirement-modal`](../../rules/requirement-modal/) が文末の「すべきである」「できる」を指します（7.3〜7.5）。
+    `style: jis-z8301-2019` と書くと、[`requirement-modal`](../../rules/requirement-modal/) が文末の「すべきである」「できる」を指し（7.3〜7.5）、`vague-figure-reference` も動きます（10.6）。
 - <a id="kyodo-2022"></a>**共同通信社 編著（2022）** [kyodo.co.jp](https://www.kyodo.co.jp/publish/%E8%A8%98%E8%80%85%E3%83%8F%E3%83%B3%E3%83%89%E3%83%96%E3%83%83%E3%82%AF%E3%80%80%E6%96%B0%E8%81%9E%E7%94%A8%E5%AD%97%E7%94%A8%E8%AA%9E%E9%9B%86%E3%80%80%E7%AC%AC%EF%BC%91%EF%BC%94%E7%89%88/)
   - 『記者ハンドブック 新聞用字用語集 第 14 版』
   - 分かったこと：新聞の用字と用語の決まりを集めた本です。報道のほか、広報やウェブの書き手にも使われています。
@@ -260,6 +260,43 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
   - 載った所：言語処理学会 第 32 回年次大会、P9-11。
   - 分かったこと：詩、歌詞、俳句、短編のどれでも、生成された文章は文の長さのばらつきが小さく出ました。
   - chaff では：[`sentence-rhythm`](../../rules/sentence-rhythm/) の裏付けです。
+- <a id="juzek-ward-2025"></a>**Juzek, Ward（2025）** [aclanthology.org](https://aclanthology.org/2025.coling-main.426/)
+  - Why Does ChatGPT "Delve" So Much? Exploring the Sources of Lexical Overrepresentation in Large Language Models
+  - 載った所：COLING 2025、6397–6411 頁。
+  - 分かったこと：論文の要旨で急に増えた 21 語（delve、intricate、underscore など）が、ChatGPT の使いすぎる語と重なることを示しました。
+    学習データやモデルの作りでは説明できず、人の評価で調整する段階が関わっている可能性を挙げています。
+  - chaff では：[`ai-tell`](../../rules/ai-tell/) の語を、生成 AI の前と後の文章を比べて選ぶ理由です。
+- <a id="sun-2025"></a>**Sun ほか（2025）** [arxiv.org](https://arxiv.org/abs/2502.12150)
+  - Idiosyncrasies in Large Language Models
+  - 載った所：ICML 2025。
+  - 分かったこと：ChatGPT、Claude、Grok、Gemini、DeepSeek の文章は、どのモデルが書いたかを語の選びかただけで高い精度で当てられました。
+    別のモデルで書き直したり、訳したりしても、癖が残りました。
+  - chaff では：【背景】モデルを当てる分類器は使いません。癖が語の選びかたに出ることが、語彙表で見る理由です。
+- <a id="shaib-2025"></a>**Shaib ほか（2025）** [arxiv.org](https://arxiv.org/abs/2509.19163)
+  - Measuring AI "Slop" in Text
+  - 載った所：arXiv（査読前）。
+  - 分かったこと：専門家への聞き取りから、質の低い生成文を見る観点を、密度、関係の薄さ、事実、繰り返し、型どおりさ、語調、冗長さ、まとまりに分けました。
+    「質が低い」という判断は人によって揺れますが、こうした観点とは結び付いていました。
+  - chaff では：【背景】このうち型どおりさと繰り返しが、chaff が数えて見つけられる部分です。
+- <a id="wikipedia-signs-of-ai-writing"></a>**Wikipedia（WikiProject AI Cleanup）** [en.wikipedia.org](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
+  - Wikipedia:Signs of AI writing
+  - 載った所：英語版 Wikipedia の編集者向けの手引き。2026 年 10 月に読んだ版です。
+  - 分かったこと：生成された下書きに出やすい形を、実際の例とともに集めています。
+    太字の札で始まる箇条書き、見出しの絵文字、「?utm_source=chatgpt.com」の付いたリンクや oaicite のような引用の印などを挙げています。
+  - chaff では：`bold-label-list`、`emoji-heading`、
+    `chat-citation-residue` の裏付けです。
+- <a id="fibujrsl-2026"></a>**fibujrsl（2026）** [zenn.dev](https://zenn.dev/fibujrsl/articles/4958a844214709)
+  - 「生成AIっぽい文章の特徴をまとめる」
+  - 載った所：Zenn、2026 年 2 月 14 日。
+  - 分かったこと：強調の記号の残り、記号や絵文字で飾った箇条書き、括弧や記号で語を繰り返し強調する書きかたを、生成文らしさとして挙げています。
+    直しかたは、飾りを外し、強調は結論の位置と根拠で表すことです。
+  - chaff では：`bold-label-list` と `emoji-heading` の直しかたの裏付けです。
+- <a id="writers-hub-2026"></a>**Writers-hub（2026）** [writers-hub.co.jp](https://writers-hub.co.jp/blog/qiita-generative-ai-article)
+  - 「Qiitaで生成AI記事を書く｜評価される記事とAI臭さの消し方」
+  - 載った所：合同会社 Writers-hub のブログ、2026 年 7 月 26 日。
+  - 分かったこと：Qiita の生成 AI 記事の特徴として、箇条書きが本文の大半を占めること、コロンの多用、抽象的な体言止めを挙げています。
+    箇条書きに逃げた所を地の文へ戻す、と勧めています。
+  - chaff では：`bold-label-list` と [`colon-lead-in`](../../rules/colon-lead-in/) の裏付けです。
 
 ## 要件の書きかたと、矛盾の検出
 
