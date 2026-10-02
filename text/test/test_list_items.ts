@@ -157,7 +157,7 @@ const EXAMPLE: Lexicon = [
   { pattern: "untokenized" },
 ];
 
-const WORDS: ListWords = { participle: new Set(["meaning"]), example: EXAMPLE, pair: new Set(["between and", "both and", "either or", ", and"]) };
+const WORDS: ListWords = { participle: new Set(["meaning"]), example: EXAMPLE, pair: new Set(["between and", "both and", "either or", ", and"]), region: [] };
 
 type Case = { readonly tokens: readonly Token[]; readonly sentence: ListSentence };
 

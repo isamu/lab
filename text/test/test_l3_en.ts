@@ -130,6 +130,25 @@ describe("L3 英語", () => {
       assert.ok(!judgedAgainst(WITHOUT_COMMA, "We tested it, and the team shipped it."));
     });
 
+    it("valid: 地名に添えた州や国の名の読点は並びの読点ではない（City, State, and …）", () => {
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "The map shows the flooding in New London, Wisconsin, and a photo shows the streets."));
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "The map of the flooding in New London, Wisconsin, and a photo of the streets."));
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "The office in Lyon, France, and the team in Austin, Texas, met."));
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "We met the mayor of Portland, Oregon, and the governor."));
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "We met the mayor of Albany, New York, and the governor."));
+      assert.ok(!judgedAgainst(WITHOUT_COMMA, "We visited Washington, D.C., and a museum in Baltimore."));
+    });
+
+    it("invalid: 州や国そのものの並びと、地名に州を添えた項目の並びは、並び", () => {
+      assert.ok(judgedAgainst(WITHOUT_COMMA, "We visited Texas, Florida, and Ohio."));
+      assert.ok(judgedAgainst(WITHOUT_COMMA, "We visited Japan, France, and Germany."));
+      assert.ok(judgedAgainst(WITHOUT_COMMA, "We visited Austin, Texas, Boston, Massachusetts, and Denver, Colorado."));
+      assert.ok(judgedAgainst(WITHOUT_COMMA, "We hired Alice, Bob, and Carol."));
+      assert.ok(judgedAgainst(WITH_COMMA, "We visited Austin, Texas, Boston, Massachusetts and Denver."));
+      assert.ok(judgedAgainst(WITH_COMMA, "We hired Bob, Georgia and Lee."));
+      assert.ok(judgedAgainst(WITHOUT_COMMA, "We visited the lake, Texas, and Ohio."));
+    });
+
     it("valid: and の後ろが項目と違う形なら並列ではない", () => {
       assert.ok(!judgedAgainst(WITHOUT_COMMA, "We fixed the parser, the renderer, and then we rested."));
     });

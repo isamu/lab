@@ -4,6 +4,24 @@ Newest first.
 
 ## Unreleased
 
+### `proper-noun-density` sets its English limit from human documents (#170)
+
+- English counts per 1000 words, and the limit was the Japanese one (per 1000 characters), so the rule fired on most
+  English documents in the corpus. Measured over every English corpus document and a sample of Project Gutenberg
+  novels and essays, `normal` now sits at about the 95th percentile of those human documents, `strict` near the 85th
+  and `relaxed` near the top. Japanese is unchanged. The measurement is in the PR.
+- The generated samples of `yarn bench:ai` name fewer things than their human versions, so the rule never told them
+  apart; it is a readability check, not an AI-shape one.
+
+### `oxford-comma-consistency` reads "City, State," as one name (#170)
+
+- The comma between a place and its US state or country ("New London, Wisconsin, and a photo of …", "Lyon, France,")
+  is part of the name, not a list's comma. A NOAA release in the corpus was counted as writing an Oxford comma there.
+- The names are an English word list, `place-region` (the states, D.C., some territories, the countries and the
+  Canadian provinces). The comma counts as a name's only after a proper noun that is not itself on the list, and when
+  the name ends at punctuation: "Texas, Florida, and Ohio" and "Austin, Texas, Boston, Massachusetts, and Denver,
+  Colorado" are still lists. A name written only after a place (Washington, D.C.) is marked `position: after`.
+
 ### `katakana-long-vowel` under styles: counts as JIS Z 8301 does, drops only -er/-or/-ar, leaves homographs (#170)
 
 - **Morae are counted before the final ー**, as JIS Z 8301:2011 Table G.3 counts: its own examples keep カバー (two

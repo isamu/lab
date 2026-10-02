@@ -1,0 +1,77 @@
+id: use-before-definition
+layer: L3
+status: experimental
+how_to_find: use-before-definition
+requires: [structure]
+severity: warning
+
+name:
+  ja: 定義より前で使っている語
+  en: Term used before it is defined
+
+why:
+  ja: 文の途中で「（以下「甲」という。）」と定義した語を、その定義より前で使うと、読み手は意味の分からない語を先に読むことになります。前で使った箇所は、定義の前に書き足した文であることが多く、定義の位置が古いままです。
+  en: A term defined in passing, as in (the "Seller"), and used before that point makes the reader meet a word whose meaning has not been given yet. The earlier use is usually a sentence added later, in front of a definition that stayed where it was.
+
+message:
+  ja: 「{term}」を、{defined} 行目の定義より前で使っています
+  en: '"{term}" is used here, before it is defined on line {defined}'
+
+how_to_fix:
+  ja: 定義を最初に使う所へ移すか、前の箇所を定義した語を使わない書き方にしてください。
+  en: Move the definition to the first use, or reword the earlier sentence without the defined term.
+
+placeholders:
+  term:
+    ja: 〇〇
+    en: the term
+  defined:
+    ja: 〇
+    en: N
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 文の途中で括弧に入れて定義した語を、その定義より前で使っている所
+  en: A term defined in passing, as in (the "Seller"), that is used before that point
+example:
+  ja:
+    before: |
+      買主は、毎月末日に代金を支払う。株式会社みなと（以下「買主」という。）と株式会社やまと（以下「売主」という。）は、次のとおり契約する。
+    after: |
+      株式会社みなと（以下「買主」という。）と株式会社やまと（以下「売主」という。）は、次のとおり契約する。買主は、毎月末日に代金を支払う。
+  en:
+    before: |
+      The Seller ships within five days. This agreement is between Harbour Ltd (the "Seller") and Hill Ltd (the "Buyer").
+    after: |
+      This agreement is between Harbour Ltd (the "Seller") and Hill Ltd (the "Buyer"). The Seller ships within five days.
+
+not_flagged:
+  ja: 定義の条（「X」とは…をいう）で定義した語は、前で使っても言いません。定義の条は文書の頭にも終わりにも置く書き方があるためです。最初の一か所だけを指します。
+  en: Terms defined in a definitions clause ("X" means ...) are not checked, since a definitions clause may come first or last. Only the first early use is pointed at.
+rewrite:
+  ja:
+    direction: 定義を、その語を最初に使う文へ移してください。移せないなら、前の文を定義した語を使わない書き方にします。
+    pairs:
+      - before: 買主は、毎月末日に代金を支払う。株式会社みなと（以下「買主」という。）と株式会社やまと（以下「売主」という。）は、次のとおり契約する。
+        after: 株式会社みなと（以下「買主」という。）と株式会社やまと（以下「売主」という。）は、次のとおり契約する。買主は、毎月末日に代金を支払う。
+      - before: 本規約の改定は、利用者に通知する。当社は、予約の仕組み（以下「本サービス」という。）を提供する。本サービスは無料である。
+        after: 当社は、予約の仕組み（以下「本サービス」という。）を提供する。本規約の改定は、利用者に通知する。本サービスは無料である。（前の文が「本規約」を使わずに書けないとき）
+    keep:
+      - 定義の中身と、それぞれの文の中身
+    avoid:
+      - 定義を二か所に書く
+  en:
+    direction: Move the definition to the sentence that first uses the term. If it cannot move, reword the earlier sentence without the defined term.
+    pairs:
+      - before: The Seller ships within five days. This agreement is between Harbour Ltd (the "Seller") and Hill Ltd (the "Buyer").
+        after: This agreement is between Harbour Ltd (the "Seller") and Hill Ltd (the "Buyer"). The Seller ships within five days.
+      - before: The Licensee may cancel at any time. Hill Ltd (the "Licensee") licenses the software from us.
+        after: Hill Ltd may cancel at any time. Hill Ltd (the "Licensee") licenses the software from us.
+    keep:
+      - what each sentence says
+    avoid:
+      - defining the term twice
