@@ -15,11 +15,14 @@ const measuresOf = (text: OutlineText): readonly Measure[] => [
   { name: text.bold, value: (shape) => String(shape.bold) },
 ];
 
-const shapeLine = (document: DocumentOutline, text: OutlineText): string => {
-  const { shape, unit } = document.outline;
-  const measures = measuresOf(text).map((measure) => text.measure(measure.name, measure.value(shape, unit)));
-  return text.shapeOf(document.path, measures.join(text.separator));
-};
+/** The shape's measures on one line: 見出し 6、節の平均 120 字、… / headings 6, average section 80 words, … */
+export const shapeMeasures = (shape: Shape, unit: LengthUnit, text: OutlineText): string =>
+  measuresOf(text)
+    .map((measure) => text.measure(measure.name, measure.value(shape, unit)))
+    .join(text.separator);
+
+const shapeLine = (document: DocumentOutline, text: OutlineText): string =>
+  text.shapeOf(document.path, shapeMeasures(document.outline.shape, document.outline.unit, text));
 
 const headingOf = (entry: OutlineEntry, text: OutlineText): string => (entry.depth === 0 ? text.lead : `${"#".repeat(entry.depth)} ${entry.heading}`);
 

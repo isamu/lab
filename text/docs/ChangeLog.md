@@ -13,6 +13,31 @@ Newest first.
   the name ends at punctuation: "Texas, Florida, and Ohio" and "Austin, Texas, Boston, Massachusetts, and Denver,
   Colorado" are still lists. A name written only after a place (Washington, D.C.) is marked `position: after`.
 
+### Full rewrite: three principles, and `compare --distinct` in the check
+
+The skill and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human":
+
+- The Full mode's check runs `chaff compare <old> <new> --distinct --allow-dropped heading --allow-added heading`. A cut
+  まとめ restates facts the body still holds; `--distinct` counts a fact as kept when the new text states it once.
+- Three principles for writing, each with a before and after: undo personification (文化が醸成される becomes what
+  people do), turn noun endings and noun chains back into sentences with a verb (「〜の発生。」), and never invent
+  specifics: ask the writer, or mark the guess for them to confirm. `chaff compare` catches an added number or name but
+  not added wording, so the last is the rewriter's to keep.
+
+### `chaff fix-plan`: a plan for whoever rewrites the file
+
+- `npx chaffjs fix-plan <file> [--experimental] [--genre X] [--json]` prints an instruction document for a person or an
+  AI agent, in the document's language. It is deterministic and sends nothing anywhere.
+- The plan opens with the constraints every rewrite keeps: no fact changed or added, ask the writer instead of
+  inventing a specific, two passes at most. Then come the recommended mode (Light, Bold or Full) with its reason, and
+  the document-level signals with the outline's numbers.
+- For each rule that fired, it gives the rule's `rewrite` direction, what to keep, what to avoid, one before/after
+  pair, the `ai-tell` phrase hints and the spots. It ends with the `chaff`, `compare` and `outline` commands to run on
+  the rewrite.
+- The skill's AI-sounding section and the guide page 「AIっぽさを直す」 / "Making AI-sounding text sound human" now start
+  with `fix-plan`, and the page has a worked example in each language: a draft, its plan, the rewrite, and the checks
+  coming back clean.
+
 ### Rules say how to rewrite what they flag
 
 - A rule file may carry a `rewrite:` block per language: a `direction` (what to do with a flagged spot), two or three
