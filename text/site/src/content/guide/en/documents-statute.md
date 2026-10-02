@@ -215,7 +215,7 @@ rules.md   legal/statute · English   genre from --genre   1 stet
   16:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-2 findings, 46 rules not run
+2 findings, 49 rules not run
 ```
 
 ## Changing a rule for the whole team
@@ -259,7 +259,7 @@ rules.md   legal/statute · English   genre from chaff.yaml
   15:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-3 findings, 46 rules not run
+3 findings, 49 rules not run
 ```
 
 chaff fails when any error is left, and passes when there are only warnings, so a warning does not stop CI.
@@ -311,7 +311,9 @@ rules-fixed.md   legal/statute · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  7 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
+  1 experimental rule turned on in the settings: numbering-gap
+
+  6 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, total-mismatch
 ```
 
 The "did not run" list below this is the same as before.

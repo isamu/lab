@@ -634,6 +634,9 @@ genres:
 | `max-paragraph-length` ✅ | 段落あたり文数 | 両方 | warning |
 | `required-sections` ✅ | 必須見出しの有無 | business | error |
 | `preamble-length` ✅ | 本題前の段落数 | business | warning |
+| `paragraph-restatement` ✅ | 言い直しを告げる語（語彙表）で始まる段落の内容語のうち、すぐ前の段落にある語の割合 | 両方 | info |
+| `no-lead` ✅ | 題の直後の段落が題の trigram の半分以上を繰り返し、題に無い内容語をわずかしか足さない | 両方 | info |
+| `title-length` ✅ | 題と見出しの長さ（ja は文字、英字の語は二文字。en は語）。ジャンルで上限を変える | 両方 | info |
 | `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
