@@ -79,7 +79,7 @@ fr-2026-16371-nvd-rfi  agentless-passive 17, concrete-evidence-density 7, invisi
 ftc-phishing-scams  agentless-passive 1, concrete-evidence-density 3, contraction-consistency 1, max-sentence-length 3, no-em-dash 1, title-case-consistency 2
 gds-user-research-weeknotes-2014-07-04  concrete-evidence-density 3, max-sentence-length 2, title-case-consistency 1
 genai-web-api  latin-spacing 4
-genai-web-procedure  latin-spacing 9, max-sentence-length 1, undefined-acronym 3, url-run-on 1
+genai-web-procedure  katakana-density 1, latin-spacing 9, max-sentence-length 1, undefined-acronym 3, url-run-on 1
 ghdocs-basic-writing-and-formatting  contraction-consistency 3, max-sentence-length 15, oxford-comma-consistency 2, title-case-consistency 1
 github-general-privacy-statement  max-paragraph-length 1, max-sentence-length 1, undefined-acronym 4, use-before-definition 1
 github-terms-of-service  max-sentence-length 9
@@ -194,8 +194,8 @@ saikosai-h18-09-14-bengoshi-chokai  doubled-word 1, heading-level-skip 1, max-se
 saikosai-h26-09-02-nagano  empty-section 1, fullwidth-alnum-consistency 3, max-sentence-length 1, unbalanced-bracket 1
 saikosai-s57-09-28-shorai-kyufu  hiragana-fukushi 1, use-before-definition 1
 saitama-shokuiku-soboro-oyakodon  clean
-soumu-kokumin-cyber-glossary-a  max-sentence-length 2, undefined-acronym 3
-soumu-kokumin-cyber-malware  concrete-evidence-density 3, max-sentence-length 10, no-doubled-joshi 1
+soumu-kokumin-cyber-glossary-a  katakana-density 1, max-sentence-length 2, undefined-acronym 3
+soumu-kokumin-cyber-malware  concrete-evidence-density 3, katakana-density 1, max-sentence-length 10, no-doubled-joshi 1
 soumu-kokumin-cyber-phishing  concrete-evidence-density 3, katakana-long-vowel 1, latin-spacing 7, max-sentence-length 6
 soumu-wp-r06-ai-booms  agentless-passive 1, katakana-long-vowel 1, max-sentence-length 2, undefined-acronym 3
 soumu-wp-r06-ai-rules-japan  agentless-passive 2, latin-spacing 1, max-sentence-length 6, no-doubled-joshi 1
