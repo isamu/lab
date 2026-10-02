@@ -25,6 +25,8 @@ entries:
     group: marker
   - pattern: TBD
     group: marker
+  - pattern: TBC
+    group: marker
   - pattern: FIXME
     group: marker
   - pattern: 未定

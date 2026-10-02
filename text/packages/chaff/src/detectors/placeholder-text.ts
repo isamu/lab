@@ -64,6 +64,13 @@ const markerSpans = (text: string, markers: Lexicon): Span[] => {
   return [{ start, end: start + withoutClosers(rest).length }];
 };
 
+/** Each line of a sentence on its own: values a line apart ("TBD: owner" then "TBD: date") are two blanks, not one. */
+const lineMarkerSpans = (text: string, markers: Lexicon): Span[] =>
+  text.split("\n").flatMap((line, index, lines) => {
+    const offset = lines.slice(0, index).reduce((sum, previous) => sum + previous.length + 1, 0);
+    return markerSpans(line, markers).map((span) => ({ start: span.start + offset, end: span.end + offset }));
+  });
+
 /** 文の中の、埋め忘れた雛形の空欄（[Your Name]、【会社名】、（ここに会社名を書く）、TBD: …）の範囲。words は placeholder-word の語彙表。 */
 export const placeholderSpans = (text: string, words: Lexicon): Span[] => {
   const bracketWords = words.filter((word) => word.group === undefined);
@@ -72,6 +79,6 @@ export const placeholderSpans = (text: string, words: Lexicon): Span[] => {
   return [
     ...bracketedSpans(text, BRACKETED, (inner) => holdsWord(inner, bracketWords)),
     ...(instructions.length === 0 ? [] : bracketedSpans(text, PARENTHESIZED, (inner) => opensWith(inner, instructions))),
-    ...markerSpans(text, markers),
+    ...lineMarkerSpans(text, markers),
   ].toSorted((left, right) => left.start - right.start);
 };

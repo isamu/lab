@@ -45,6 +45,7 @@ describe("placeholderSpans: a value left as a marker", () => {
     ["「未定」", "未定"],
     ["TODO：議題を書く", "TODO：議題を書く"],
     ["要記入", "要記入"],
+    ["TBC：日程を書く", "TBC：日程を書く"],
     ["未記入。", "未記入"],
     ["「未定 」", "未定"],
   ];
@@ -70,6 +71,11 @@ describe("placeholderSpans: a value left as a marker", () => {
     it(`does not find ${label}`, () => {
       assert.deepEqual(matched(text, words), []);
     });
+  });
+
+  it("finds one blank per line when values run a line apart", () => {
+    assert.deepEqual(matched("TODO: add owner\nTBD: add date", enWords), ["TODO: add owner", "TBD: add date"]);
+    assert.deepEqual(matched("Owner: Kim\nTBD", enWords), ["TBD"]);
   });
 
   it("finds nothing without marker words", () => {
