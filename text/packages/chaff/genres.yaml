@@ -123,6 +123,8 @@ groups:
   - id: literature
     name: { ja: 文学, en: Literature }
     rules:
+      # A story's narrator and its characters each say 私 or 僕 in their own voice.
+      person-consistency: off
       max-sentence-length: off
       max-paragraph-length: off
       ngram-repetition: off
@@ -451,6 +453,8 @@ genres:
       en: { line: "^(?:Mr|Ms|Mrs|Dr)\\. [A-Z][A-Z-]{2,}(?: of [A-Z][a-z]+)?\\. ", min_lines: 3 }
     # A transcript records what was said: its sentences, repeats and register are the speaker's, not the writer's to fix.
     rules:
+      # Several people speak, each naming themselves their own way.
+      person-consistency: off
       max-sentence-length: off
       max-paragraph-length: off
       ngram-repetition: off
