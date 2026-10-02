@@ -70,6 +70,11 @@ groups:
       number-style-consistency: off
       # An enumeration of conditions mixes 〜こと and 〜とき by what each condition is.
       list-item-form-mix: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -126,6 +131,11 @@ groups:
       bold-label-list: off
       ai-structure: off
       requirement-smell: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
@@ -205,6 +215,11 @@ groups:
       list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -236,6 +251,11 @@ groups:
       # Spoken numbers are transcribed as heard.
       number-style-consistency: off
       list-item-form-mix: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
 
 genres:
   - id: technical/spec
@@ -380,6 +400,12 @@ genres:
     # Path only: step and procedure headings are as common in tech blogs and specifications as in manuals.
     suggest:
       paths: ["(^|/)(manuals?|guides?|how-?tos?|help|tutorials?|user-?guides?)(/|[-_.])"]
+    # A manual is followed command by command: its code blocks, prompts, command headings and steps are what the reader acts on.
+    rules:
+      code-fence-language-mix: normal
+      shell-prompt-mix: normal
+      heading-command-missing: normal
+      step-statement-mix: normal
   - id: docs/faq
     name: { ja: よくある質問, en: FAQ }
     summary:
