@@ -1,12 +1,13 @@
 import { globSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { join, relative, sep } from "node:path";
+import { join, matchesGlob, relative, sep } from "node:path";
 import { plainSource } from "./plain-source.ts";
 
 /** 検査する文書を読む。言語・ジャンル・stet も文書モデルと同じ本文（BOM と CRLF / CR をそろえたもの）で読むため、ここでそろえる。 */
 export const readDocumentFile = async (path: string): Promise<string> => plainSource(await readFile(path, "utf8"));
 
-const MARKDOWN = [".md", ".markdown", ".mdx"];
+/** What a directory walk finds without include: Markdown. */
+export const MARKDOWN = [".md", ".markdown", ".mdx"];
 
 /** 走査から外す。ここを通すと node_modules の README を延々と検査することになる。 */
 const SKIP: ReadonlySet<string> = new Set(["node_modules", "dist", "build", "coverage", ".git", ".chaff-cache"]);
@@ -15,12 +16,17 @@ const isMarkdown = (path: string): boolean => MARKDOWN.some((ext) => path.toLowe
 
 const isSkipped = (path: string): boolean => path.split(sep).some((part) => SKIP.has(part));
 
-const expand = (target: string): string[] => {
-  const stat = statSync(target, { throwIfNoEntry: false });
-  if (stat === undefined) return globSync(target).filter(isMarkdown);
-  if (stat.isFile()) return [target];
-  return globSync(join(target, "**", "*.{md,markdown,mdx}"));
-};
+/** include: file-name globs (*.yaml) a walk takes besides Markdown. A glob with a slash is matched below each folder walked. */
+const isIncluded = (path: string, include: readonly string[]): boolean => include.some((pattern) => matchesGlob(path, join("**", pattern)));
+
+const expand =
+  (include: readonly string[]) =>
+  (target: string): string[] => {
+    const stat = statSync(target, { throwIfNoEntry: false });
+    if (stat === undefined) return globSync(target).filter((path) => isMarkdown(path) || isIncluded(path, include));
+    if (stat.isFile()) return [target];
+    return [join(target, "**", "*.{md,markdown,mdx}"), ...include.map((pattern) => join(target, "**", pattern))].flatMap((pattern) => globSync(pattern));
+  };
 
 /**
  * 与えられたファイル・ディレクトリ・glob を、検査する Markdown の一覧にする。
@@ -33,7 +39,7 @@ const expand = (target: string): string[] => {
  */
 const byPath = (left: string, right: string): number => left.localeCompare(right, "en");
 
-export const collectTargets = (targets: readonly string[]): string[] => {
-  const found = targets.flatMap(expand).filter((path) => !isSkipped(path));
+export const collectTargets = (targets: readonly string[], include: readonly string[] = []): string[] => {
+  const found = targets.flatMap(expand(include)).filter((path) => !isSkipped(path));
   return [...new Set(found)].toSorted((left, right) => byPath(relative(".", left), relative(".", right)));
 };
