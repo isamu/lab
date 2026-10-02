@@ -1,14 +1,15 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { DETECTORS } from "../packages/chaff/src/detectors/index.ts";
+import { CROSS_DETECTORS, DETECTORS } from "../packages/chaff/src/detectors/index.ts";
 import { registryEntries } from "../packages/chaff/src/detectors/registry-files.ts";
 import { registrationsIn, registryFileText } from "../scripts/rule-registration.ts";
 
 // 検出器は detectors/registry/<how_to_find>.ts の 1 ファイルずつで登録する。rule を足す PR が共有の一覧を書き換えないため。
 
 const REGISTRY_DIR = join(import.meta.dirname, "..", "packages", "chaff", "src", "detectors", "registry");
+const CROSS_REGISTRY_DIR = join(import.meta.dirname, "..", "packages", "chaff", "src", "detectors", "cross-registry");
 const byName = (left: string, right: string): number => left.localeCompare(right, "en");
 const RULES_DIR = join(import.meta.dirname, "..", "packages", "chaff", "rules");
 
@@ -44,9 +45,15 @@ describe("DETECTORS", () => {
 
   it("同梱の rule が使う how_to_find は、検出器を持たないものを除いて引ける", () => {
     const used = readdirSync(RULES_DIR).flatMap((name) => /^how_to_find: (\S+)$/mu.exec(readFileSync(join(RULES_DIR, name), "utf8"))?.[1] ?? []);
-    const missing = used.filter((key) => DETECTORS[key] === undefined).toSorted(byName);
+    const missing = used.filter((key) => DETECTORS[key] === undefined && CROSS_DETECTORS[key] === undefined).toSorted(byName);
     // 合成・AI 判定の rule は検出器を持たない。ここに増えたなら registry/ のファイルが足りていない。
     assert.deepEqual([...new Set(missing)], ["composite", "empty-conclusion", "risk-disclosure", "unsourced-number"]);
+  });
+
+  it("文書どうしを比べる検出器は cross-registry/ のファイル 1 つにつき 1 つ（フォルダが無ければ 0）で、値はどれも関数", () => {
+    const files = existsSync(CROSS_REGISTRY_DIR) ? readdirSync(CROSS_REGISTRY_DIR).map((name) => name.replace(/\.ts$/u, "")) : [];
+    assert.deepEqual(Object.keys(CROSS_DETECTORS).toSorted(byName), files.toSorted(byName));
+    Object.entries(CROSS_DETECTORS).forEach(([key, detector]) => assert.equal(typeof detector, "function", key));
   });
 
   it("registry/ のファイルは migrate-rule-registration が書くのと同じ形をしている", () => {
