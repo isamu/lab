@@ -4,6 +4,17 @@ Newest first.
 
 ## Unreleased
 
+### `cushion-phrase-density` reads short emails
+
+A short work email with three softeners ("I hope this email finds you well. I just wanted to reach out … Sorry to
+bother you, but …") was never reported: density rules skip documents shorter than a floor, and softeners pile up in
+exactly those short emails and letters. The rule now measures a short document as if it were as long as a short letter,
+chosen so that at the default level the third softener is the first reported in either language (two, as in
+「お忙しいところ恐れ入りますが」, are ordinary), and a single softener is never reported at any level. The density in the
+message is still the document's own. `excessive-hedging` keeps skipping short documents (its stacked hedges are found in
+one sentence). The English word list gains "hope this email finds you well" (and the "message" and plain forms),
+"sorry to trouble", "just reaching out" and "just checking in".
+
 ### `date-range-reversed` (en) reads "from … to …"
 
 "The agreement runs from 1 November 2026 to 31 October 2026" was not compared, though the same dates joined by
