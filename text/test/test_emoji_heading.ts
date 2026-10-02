@@ -37,7 +37,22 @@ describe("hasEmoji: a character drawn as an emoji", () => {
     it(`reads ${JSON.stringify(text)}`, () => assert.ok(hasEmoji(text)));
   });
 
-  const plain = ["はじめに", "Product™", "© 2026", "→ 次へ", "✔ Done", "⚠ 注意", "1. 手順", "#1", "", "★ 重要", "■ 概要", "♥"];
+  const plain = [
+    "はじめに",
+    "Product™",
+    "© 2026",
+    "→ 次へ",
+    "✔ Done",
+    "⚠ 注意",
+    "1. 手順",
+    "#1",
+    "",
+    "★ 重要",
+    "■ 概要",
+    "♥",
+    "☕\uFE0E 休憩",
+    "⌚\uFE0E 時刻",
+  ];
   plain.forEach((text) => {
     it(`does not read ${JSON.stringify(text)}`, () => assert.ok(!hasEmoji(text)));
   });
@@ -63,6 +78,10 @@ describe("emoji-heading", () => {
 
   it("valid: text symbols in headings are not emoji", () => {
     assert.ok(!idsFor(withHeadings(["→ 準備", "★ 手順", "■ まとめ"]), ja).includes("emoji-heading"));
+  });
+
+  it("valid: emoji asked to be drawn as text (U+FE0E) are text", () => {
+    assert.ok(!idsFor(withHeadings(["☕\uFE0E 休憩", "⌚\uFE0E 時刻", "⚽\uFE0E 結果"]), ja).includes("emoji-heading"));
   });
 
   it("valid: a heading inside a code block is not a heading", () => {

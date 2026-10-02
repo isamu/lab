@@ -1,8 +1,8 @@
 import type { Detector, Finding, MarkupHeading, ProseDocument } from "../plugin.ts";
 import { findingAt, writtenHeadings } from "./markup-finding.ts";
 
-/** A character drawn as an emoji: one that is by default, a pictograph asking for it (U+FE0F), or a keycap (1️⃣). ™ and → alone are text. */
-const EMOJI = new RegExp(String.raw`\p{Emoji_Presentation}|\p{Extended_Pictographic}\u{FE0F}|[0-9#*]\u{FE0F}?\u{20E3}`, "u");
+/** A character drawn as an emoji: one that is by default, a pictograph asking for it (U+FE0F), or a keycap (1️⃣). ™, → and anything asking for text (U+FE0E) are text. */
+const EMOJI = new RegExp(String.raw`\p{Emoji_Presentation}(?!\u{FE0E})|\p{Extended_Pictographic}\u{FE0F}|[0-9#*]\u{FE0F}?\u{20E3}`, "u");
 
 export const hasEmoji = (text: string): boolean => EMOJI.test(text);
 
