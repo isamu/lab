@@ -47,6 +47,7 @@ no-em-dash                             10     10       0             0
 no-mixed-desumasu                      12     12       0             0
 no-nakaguro-parallel                    2      2       0             0
 numbering-gap                           6      6       0             0
+orthographic-variant                    1      1       0             0
 outside-announced-list                 26     26       0             0
 oxford-comma-consistency                2      2       0             0
 padded-intro                           10     10       0             0
@@ -274,6 +275,7 @@ ja/itinerary  heading-copied  found
 ja/itinerary  section-emptied  found
 ja/itinerary  hedge-double-negative-ja  found
 ja/itinerary  modal-opposite-ja  found
+ja/itinerary  kanji-once  found
 ja/itinerary  definition-unused-ja  found
 ja/itinerary  definition-late-ja  found
 ja/itinerary  acronym-two-ways-ja  found
