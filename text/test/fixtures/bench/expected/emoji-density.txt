@@ -1,0 +1,11 @@
+table  10  10  0  0
+ja/blog  emoji-decorated  found
+ja/email  emoji-decorated  found
+ja/figures  emoji-decorated  found
+ja/press  emoji-decorated  found
+ja/proposal  emoji-decorated  found
+en/blog  emoji-decorated  found
+en/email  emoji-decorated  found
+en/figures  emoji-decorated  found
+en/press  emoji-decorated  found
+en/proposal  emoji-decorated  found

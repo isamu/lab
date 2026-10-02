@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/figures  announced-item-dropped  found
+en/figures  announced-item-dropped  found
