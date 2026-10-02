@@ -43,6 +43,7 @@ import { urlRunOn } from "./url-run-on.ts";
 import { unbalancedBracket } from "./unbalanced-bracket.ts";
 import { doubledPunctuation } from "./doubled-punctuation.ts";
 import { kutotenConsistency } from "./kutoten-consistency.ts";
+import { personMix } from "./person-consistency.ts";
 import { hankakuKana } from "./hankaku-kana.ts";
 import { invisibleCharacter } from "./invisible-character.ts";
 import { spaceBeforePunctuation } from "./space-before-punctuation.ts";
@@ -145,4 +146,5 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "unused-definition": unusedDefinition,
   "use-before-definition": useBeforeDefinition,
   "acronym-expansion-conflict": acronymExpansionConflict,
+  "person-mix": personMix,
 };

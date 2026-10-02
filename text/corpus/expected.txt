@@ -5,7 +5,7 @@
 18f-handbook-one-on-ones  adverb-overuse 1, agentless-passive 6, excessive-hedging 2, expletive-construction 6, max-paragraph-length 1, max-sentence-length 43, preamble-length 1, title-case-consistency 2, undefined-acronym 3
 18f-handbook-projects-in-distress  agentless-passive 16, max-paragraph-length 1, max-sentence-length 28, undefined-acronym 6
 18f-handbook-travel  max-sentence-length 14, title-case-consistency 2, undefined-acronym 5
-18f-handbook-travel-faq  heading-level-skip 1, max-paragraph-length 1, max-sentence-length 65, requirement-smell 1, unbalanced-bracket 5, undefined-acronym 16
+18f-handbook-travel-faq  heading-level-skip 1, max-paragraph-length 1, max-sentence-length 65, person-consistency 3, requirement-smell 1, unbalanced-bracket 5, undefined-acronym 16
 abr-geocoder-abrg-readme-ja  clean
 acas-letter-disciplinary-hearing-warning  agentless-passive 3, max-sentence-length 2, unfilled-placeholder 3
 aoml-hurricane-faq  agreement-slip 2, doubled-word 2, empty-intensifier 1, excessive-hedging 1, max-paragraph-length 33, max-sentence-length 490, ngram-repetition 1, undefined-acronym 77
@@ -21,7 +21,7 @@ arxiv-astro-ph-new-2025-01-03  agreement-slip 1, heading-level-skip 1, max-parag
 asf-board-minutes-2025-01  concrete-evidence-density 36, expletive-construction 28, heading-echo 18, max-paragraph-length 5, max-sentence-length 233, ngram-repetition 1, preamble-length 1, space-before-punctuation 3, spelling-consistency 1, unbalanced-bracket 1, undefined-acronym 153
 automattic-offer-letter-us  agentless-passive 10, contraction-consistency 2, duplicate-definition 1, duplicate-heading 1, empty-section 1, heading-level-skip 2, max-paragraph-length 2, max-sentence-length 53
 automattic-privacy-policy  max-sentence-length 6, undefined-acronym 8
-bls-glossary  acronym-expansion-conflict 2, max-paragraph-length 6, max-sentence-length 69, unbalanced-bracket 2, undefined-acronym 6
+bls-glossary  acronym-expansion-conflict 2, max-paragraph-length 6, max-sentence-length 69, person-consistency 1, unbalanced-bracket 2, undefined-acronym 6
 bonterms-cloud-terms  max-sentence-length 11, undefined-acronym 3, unused-definition 4
 caa-mokebanashi-chuikanki  max-sentence-length 3
 cc-by-4-legalcode-ja  fullwidth-alnum-consistency 1, latin-spacing 2, max-sentence-length 1, no-nakaguro-parallel 1, stray-space 2, undefined-acronym 3
@@ -84,7 +84,7 @@ ghdocs-basic-writing-and-formatting  contraction-consistency 3, max-sentence-len
 github-general-privacy-statement  max-paragraph-length 1, max-sentence-length 1, undefined-acronym 4, use-before-definition 1
 github-terms-of-service  max-sentence-length 9
 gitlab-jd-instructional-designer  agentless-passive 10, concrete-evidence-density 4, heading-echo 5, max-sentence-length 7, oxford-comma-consistency 1
-gitlab-meetings  agentless-passive 54, double-negative 1, max-paragraph-length 2, max-sentence-length 41, spelling-consistency 4, title-case-consistency 1, undefined-acronym 10
+gitlab-meetings  agentless-passive 54, double-negative 1, max-paragraph-length 2, max-sentence-length 41, person-consistency 2, spelling-consistency 4, title-case-consistency 1, undefined-acronym 10
 gitlab-values  agentless-passive 83, bold-density 1, concrete-evidence-density 27, expletive-construction 12, heading-echo 9, heading-level-skip 8, max-paragraph-length 23, max-sentence-length 137, spelling-consistency 3, undefined-acronym 10, unqualified-superlative 10
 go-1-23-release-notes  heading-echo 1, max-sentence-length 22, title-case-consistency 1, undefined-acronym 9
 govuk-adr-0014-replace-terraform-cloud  max-sentence-length 1, undefined-acronym 3
@@ -189,7 +189,7 @@ rfc9457  max-sentence-length 54, requirement-smell 1, undefined-acronym 15
 rouki.txt  clean
 ruby-3-4-0-released-ja  doubled-punctuation 1, latin-spacing 21, max-sentence-length 1, ngram-repetition 1, no-doubled-joshi 1, undefined-acronym 6
 rust-lang-minutes-2022-11-22  agreement-slip 1, contraction-consistency 2, empty-section 1, max-sentence-length 3, spelling-consistency 1, undefined-acronym 3
-rust-rfc-2094-nll  doubled-punctuation 1, excessive-hedging 1, heading-echo 1, max-paragraph-length 11, max-sentence-length 120, undefined-acronym 19, use-before-definition 1
+rust-rfc-2094-nll  doubled-punctuation 1, excessive-hedging 1, heading-echo 1, max-paragraph-length 11, max-sentence-length 120, person-consistency 6, undefined-acronym 19, use-before-definition 1
 saikosai-h18-09-14-bengoshi-chokai  doubled-word 1, heading-level-skip 1, max-sentence-length 1
 saikosai-h26-09-02-nagano  empty-section 1, fullwidth-alnum-consistency 3, max-sentence-length 1, unbalanced-bracket 1
 saikosai-s57-09-28-shorai-kyufu  hiragana-fukushi 1, use-before-definition 1
@@ -225,7 +225,7 @@ wikipedia-en-markdown  adverb-overuse 1, agentless-passive 10, concrete-evidence
 wikipedia-ja-idobata-template-collapse  latin-spacing 1, stray-space 1
 wikipedia-ja-talk-oden  doubled-punctuation 1, fullwidth-alnum-consistency 1, latin-spacing 4, max-paragraph-length 3, max-sentence-length 6, no-doubled-joshi 3, stray-space 1, unbalanced-bracket 1
 wikisource-lincoln-letters-greeley  agentless-passive 4, invisible-character 4, max-paragraph-length 1, max-sentence-length 32
-wikivoyage-belgian-coast-tram  double-negative 1, expletive-construction 6, max-paragraph-length 22, max-sentence-length 37
+wikivoyage-belgian-coast-tram  double-negative 1, expletive-construction 6, max-paragraph-length 22, max-sentence-length 37, person-consistency 1
 wikivoyage-ja-shikoku-henro  empty-section 1, latin-spacing 1, max-kanji-continuous 1, stray-space 1
 wikivoyage-ja-shimoda  empty-section 6, latin-spacing 3
 wikivoyage-loop-art-tour  max-paragraph-length 7, max-sentence-length 7, title-case-consistency 1, unqualified-superlative 2

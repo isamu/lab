@@ -84,6 +84,7 @@ not_planted:
   empty-conclusion: L4, judged by chaff test and never run by lint
   nominalization: a density over the whole document
   paragraph-length-variance: the shape of the whole document, not one mistake
+  person-consistency: a swapped word is a mistake only against a habit of three or more places naming the party one way, which few samples have
   proper-noun-density: a density over the whole document
   repeated-sentence-head: a run of consecutive sentences sharing their opening words; forcing one changes what the samples say
   requirement-modal: checks nothing until options pick a house rule, and the bench runs with none
