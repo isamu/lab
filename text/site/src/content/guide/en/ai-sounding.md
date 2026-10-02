@@ -63,6 +63,11 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.
 
+The Japanese word list of `ai-tell` includes the metaphors of technical writing (静かに壊れる "fails silently",
+黙って無視される "is ignored without a word", 時間を溶かす "melts your time"). Which phrases go in was measured on
+technical articles written before generative AI and on the corpus; phrases people already wrote as often before
+(解像度を上げる, 腹落ち) are left out.
+
 ## Three ways to fix it
 
 | Way | What it changes | When to use it |
