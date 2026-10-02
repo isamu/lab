@@ -1,0 +1,5 @@
+# 期間の単位（duration-mismatch）。木の数量の単位がこれなら、始まりに足す期間として読む。
+id: duration-year
+language: ja
+entries:
+  - pattern: "年間"
