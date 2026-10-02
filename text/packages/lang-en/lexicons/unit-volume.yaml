@@ -1,0 +1,26 @@
+# Units of volume (base: litre) (unit-mismatch). weight is the factor to the base unit; a unit written twice has two factors, and either may match.
+id: unit-volume
+language: en
+entries:
+  - pattern: "L"
+    weight: 1
+  - pattern: "l"
+    weight: 1
+  - pattern: "mL"
+    weight: 0.001
+  - pattern: "ml"
+    weight: 0.001
+  - pattern: "liters"
+    weight: 1
+  - pattern: "litres"
+    weight: 1
+  - pattern: "gal"
+    weight: 3.785411784
+  - pattern: "gallons"
+    weight: 3.785411784
+  - pattern: "liter"
+    weight: 1
+  - pattern: "litre"
+    weight: 1
+  - pattern: "gallon"
+    weight: 3.785411784

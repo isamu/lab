@@ -1,0 +1,5 @@
+# Words for a year of birth (elapsed-years-mismatch), compared with an age in the same sentence.
+id: birth-origin
+language: en
+entries:
+  - pattern: "born"

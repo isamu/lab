@@ -31,6 +31,7 @@ export type {
   Stamp,
 } from "./grade/result.ts";
 export type { OutputSize } from "./grade/rates.ts";
+export { toScorer, type ChaffScore } from "./grade/scorer.ts";
 
 export type GradeOptions = {
   /** The result's id. "output" when left out. */

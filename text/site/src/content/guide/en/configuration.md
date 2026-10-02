@@ -94,6 +94,7 @@ When the genre is wrong, set `genre`.
 A genre that is not in this list stops chaff before it checks anything, and it says where the genre was written.
 A `genre:` in a file's front matter that is not in the list is not used; chaff says so and works the genre out as if it were not there.
 The language is also worked out per file; set `language` to `ja` or `en` to fix it.
+How the language is chosen, documents that mix both, and which rules run in which language are in [Languages](./languages).
 
 ## Choosing the kind of document
 
@@ -171,7 +172,7 @@ For these rules the four words set how a finding is marked. At `relaxed` the fin
 | Rules | `strict` | `normal` | `relaxed` |
 | --- | --- | --- | --- |
 | `numbering-gap` `dangling-reference` `date-weekday-mismatch` `total-mismatch` | (none) | error | warning |
-| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` | error | warning | note |
+| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` `unfilled-placeholder` | error | warning | note |
 
 chaff fails when any error is left, and passes when there are only warnings and notes.
 `explain` shows the marking in place of a number.
@@ -296,6 +297,28 @@ by_path:
 
 The last match wins. Paths are matched from the folder that holds the settings file,
 so the result is the same wherever you run it.
+
+## Checking files other than Markdown
+
+Given a folder, chaff checks the Markdown in it (`.md`, `.markdown`, `.mdx`).
+`include` adds other files to that walk, by file-name glob. `--include` does the same for one run.
+
+```yaml
+include:
+  - "*.yaml"
+  - "*.txt"
+```
+
+```bash
+npx chaffjs tests/fixtures/ --include "*.yaml"
+```
+
+A YAML file (`.yaml`, `.yml`) is checked by its string values.
+Keys, quotes, comments, numbers and `true` are not prose, and each value is read on its own.
+A finding points at the line and column in the file, so a `custom_rules` pattern finds `TODO:` in a test fixture's expected output.
+A YAML file that cannot be parsed is read as plain text.
+Any other file, such as `.txt`, is read as plain text.
+A file named on the command line is checked whatever its extension.
 
 ## Checking that the settings took effect
 

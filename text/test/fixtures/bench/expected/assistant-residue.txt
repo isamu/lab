@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  residue-left  found
+ja/design  residue-left  found
+ja/figures  residue-left  found
+ja/itinerary  residue-left  found
+ja/minutes  residue-left  found
+ja/press  residue-left  found
+ja/proposal  residue-left  found
+ja/quote  residue-left  found
+ja/readme  residue-left  found
+ja/requirements  residue-left  found
+en/blog  residue-left  found
+en/design  residue-left  found
+en/figures  residue-left  found
+en/itinerary  residue-left  found
+en/minutes  residue-left  found
+en/press  residue-left  found
+en/proposal  residue-left  found
+en/quote  residue-left  found
+en/readme  residue-left  found
+en/requirements  residue-left  found

@@ -1,0 +1,5 @@
+# 向きの語（後、前）が付くときだけ期間になる年の単位（relative-date-mismatch）。「1年前の2025年5月1日」。年だけでは年数か期間か決まらないので、duration-year には入れない。
+id: relative-year-unit
+language: ja
+entries:
+  - pattern: "年"

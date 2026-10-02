@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/figures  period-swapped  found
+en/figures  period-swapped  found

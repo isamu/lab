@@ -12,6 +12,7 @@
     "corpus": "node scripts/corpus-run.ts",
     "corpus:fetch": "node scripts/corpus-fetch.ts",
     "corpus:health": "node scripts/corpus-health.ts",
+    "rules:measure": "node scripts/rules-measure.ts",
     "bench": "node scripts/bench.ts",
     "bench:ai": "node scripts/ai-bench.ts",
     "build": "yarn workspace @chaffjs/lang-ja build && yarn workspace @chaffjs/lang-en build && yarn workspace chaffjs build",
@@ -22,6 +23,7 @@
     "format:check": "prettier --check .",
     "knip": "knip",
     "lint": "eslint .",
+    "lint:oxlint": "npx --yes oxlint@1.82.0 -D correctness packages/",
     "test": "node --test \"test/test_*.ts\" \"examples/chaff-plugin-example/test/test_*.mjs\"",
     "typecheck": "tsc --noEmit"
   },

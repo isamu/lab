@@ -1,0 +1,11 @@
+# Between a name and its value (fact-conflict, summary-fact-mismatch): "Fee: $300", "The deadline is May 3."
+# A separator in letters only counts after a space. The words from the start of the sentence to it are the name.
+id: fact-separator
+language: en
+entries:
+  - pattern: ":"
+  - pattern: is
+  - pattern: are
+  - pattern: was
+  - pattern: were
+  - pattern: will be

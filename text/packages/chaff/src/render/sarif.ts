@@ -37,6 +37,16 @@ type SarifResult = {
   }[];
 };
 
+/** A rule that did not run on one file, and why, in that file's language. */
+export type NotRunOnFile = { readonly path: string; readonly rule: string; readonly why: string };
+
+type SarifNotification = {
+  readonly level: "note";
+  readonly message: { readonly text: string };
+  readonly associatedRule: { readonly id: string };
+  readonly locations: readonly { readonly physicalLocation: { readonly artifactLocation: { readonly uri: string } } }[];
+};
+
 /** `chaff/<rule>` と名前空間を切る。同じ PR に上がる他のツールの rule id と衝突させない。 */
 const ruleIdOf = (rule: string): string => `chaff/${rule}`;
 
@@ -85,7 +95,26 @@ const usedRules = (located: readonly Located[]): SarifRule[] => {
   });
 };
 
-export const renderSarif = (located: readonly Located[], version: string): string => {
+/**
+ * The rules that did not run, one notification per rule and reason, with the files it holds for. Without them an upload
+ * with no results reads as "checked and fine" for rules that never looked.
+ */
+const notRunNotifications = (notRun: readonly NotRunOnFile[]): SarifNotification[] => {
+  const groups = new Map<string, { readonly rule: string; readonly why: string; readonly paths: readonly string[] }>();
+  notRun.forEach((entry) => {
+    const key = JSON.stringify([entry.rule, entry.why]);
+    const group = groups.get(key) ?? { rule: entry.rule, why: entry.why, paths: [] };
+    groups.set(key, { ...group, paths: [...group.paths, entry.path] });
+  });
+  return [...groups.values()].map((group) => ({
+    level: "note",
+    message: { text: `${group.rule}: ${group.why}` },
+    associatedRule: { id: ruleIdOf(group.rule) },
+    locations: group.paths.map((uri) => ({ physicalLocation: { artifactLocation: { uri } } })),
+  }));
+};
+
+export const renderSarif = (located: readonly Located[], version: string, notRun: readonly NotRunOnFile[] = []): string => {
   return `${JSON.stringify(
     {
       $schema: SCHEMA,
@@ -93,6 +122,7 @@ export const renderSarif = (located: readonly Located[], version: string): strin
       runs: [
         {
           tool: { driver: { name: "chaff", version, informationUri: INFORMATION_URI, rules: usedRules(located) } },
+          invocations: [{ executionSuccessful: true, toolConfigurationNotifications: notRunNotifications(notRun) }],
           results: located.map(resultOf),
         },
       ],

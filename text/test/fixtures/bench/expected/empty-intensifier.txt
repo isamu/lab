@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  intensified  found
+ja/design  intensified  found
+ja/figures  intensified  found
+ja/itinerary  intensified  found
+ja/minutes  intensified  found
+ja/press  intensified  found
+ja/proposal  intensified  found
+ja/quote  intensified  found
+ja/readme  intensified  found
+ja/requirements  intensified  found
+en/blog  intensified  found
+en/design  intensified  found
+en/figures  intensified  found
+en/itinerary  intensified  found
+en/minutes  intensified  found
+en/press  intensified  found
+en/proposal  intensified  found
+en/quote  intensified  found
+en/readme  intensified  found
+en/requirements  intensified  found

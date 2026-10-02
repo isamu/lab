@@ -1,0 +1,12 @@
+# 年数を数え始める語（elapsed-years-mismatch）。「2015年創業」の年から「創業10年」の年数を数える。
+id: elapsed-origin
+language: ja
+entries:
+  - pattern: "創業"
+  - pattern: "設立"
+  - pattern: "創立"
+  - pattern: "開業"
+  - pattern: "開設"
+  - pattern: "発足"
+  - pattern: "開園"
+  - pattern: "開校"

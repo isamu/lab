@@ -1,0 +1,11 @@
+table  10  10  0  0
+ja/figures  bold-heavy  found
+ja/press  bold-heavy  found
+ja/proposal  bold-heavy  found
+en/blog  bold-heavy  found
+en/figures  bold-heavy  found
+en/itinerary  bold-heavy  found
+en/minutes  bold-heavy  found
+en/press  bold-heavy  found
+en/proposal  bold-heavy  found
+en/readme  bold-heavy  found

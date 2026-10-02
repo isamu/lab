@@ -1,0 +1,9 @@
+# 表の見出しや欄の名前の後ろに付いても、名前が指すものを変えない字（担当 と 担当者、備考 と 備考欄、会社 と 会社名）。
+# これを外して同じになる二つの見出しは、同じ欄の二通りの書き方と読む。
+id: label-affix
+language: ja
+entries:
+  - pattern: 者
+  - pattern: 欄
+  - pattern: 名
+  - pattern: 等

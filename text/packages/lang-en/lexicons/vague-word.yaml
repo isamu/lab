@@ -1,0 +1,31 @@
+# Vague words: they leave the reader to decide how far, how soon or what counts as done. vague-word-density counts them
+# against the document's length. One or two are ordinary; many leave much of what the document says to the reader.
+id: vague-word
+language: en
+entries:
+  - pattern: as appropriate
+  - pattern: appropriate
+  - pattern: appropriately
+  - pattern: as needed
+  - pattern: as necessary
+  - pattern: as required
+  - pattern: where possible
+  - pattern: if possible
+  - pattern: where applicable
+  - pattern: if applicable
+  - pattern: to the extent possible
+  - pattern: as soon as possible
+  - pattern: in a timely manner
+  - pattern: timely
+  - pattern: reasonable
+  - pattern: reasonably
+  - pattern: adequate
+  - pattern: adequately
+  - pattern: sufficient
+  - pattern: sufficiently
+  - pattern: promptly
+  - pattern: periodically
+  - pattern: best effort
+  - pattern: best efforts
+  - pattern: to some extent
+  - pattern: from time to time
