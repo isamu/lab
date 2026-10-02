@@ -641,6 +641,11 @@ describe("日本語: 他の文書の条を指す参照は、この文書では�
     ["この点の別表", undefined],
     ["手数料の別表", undefined],
   ];
+  it("namedDocument: the longest note the name-note list allows (an alias, the number and 以下…という。)", () => {
+    const text = `使用薬剤の薬価(${"略".repeat(20)})(平成二十年厚生労働省告示第六十号。以下${"称".repeat(60)}という。)別表`;
+    assert.deepEqual(namedDocument(text, text.lastIndexOf("別表"), citationVocabulary(ja.lexicons)), { name: "薬価", self: false });
+  });
+
   named.forEach(([text, expected]) => {
     it(`namedDocument: ${text} → ${JSON.stringify(expected)}`, () =>
       assert.deepEqual(namedDocument(text, text.lastIndexOf("別表"), citationVocabulary(ja.lexicons)), expected));

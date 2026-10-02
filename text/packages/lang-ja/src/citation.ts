@@ -31,8 +31,8 @@ const TITLE_CHAR = /[\p{Script=Han}\p{Script=Katakana}\p{Script=Hiragana}ー・A
 /** 名前は長くても数十字。後ろ向きに読む長さを抑え、長い行で遅くならないようにする。 */
 const MAX_NAME_LENGTH = 30;
 
-/** 名前の後ろの括弧書きが収まる長さ。後ろ向きに読む長さを抑える。 */
-const MAX_NOTE_LENGTH = 100;
+/** 名前の後ろの括弧書きが収まる長さ。name-note の最も長い形（略称・公布の番号・「以下…という。」）が収まり、後ろ向きに読む長さを抑える。 */
+const MAX_NOTE_LENGTH = 130;
 
 const nameBefore = (text: string, at: number, char: RegExp): string => {
   let start = at;
