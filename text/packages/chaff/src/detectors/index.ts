@@ -36,6 +36,7 @@ import {
   totalMismatch,
 } from "./structure-tree.ts";
 import { headingLevelSkip } from "./heading-level-skip.ts";
+import { referenceTitleMismatch, referenceTopicMissing } from "./reference-text.ts";
 import { imageAltText } from "./image-alt-text.ts";
 import { brokenLink } from "./broken-link.ts";
 import { urlRunOn } from "./url-run-on.ts";
@@ -139,4 +140,6 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "spelling-variety": spellingVariety,
   "ra-nuki": raNuki,
   "bold-label-list": boldLabelList,
+  "reference-title-mismatch": referenceTitleMismatch,
+  "reference-topic-missing": referenceTopicMissing,
 };

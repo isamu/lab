@@ -81,6 +81,8 @@ not_planted:
   nominalization: a density over the whole document
   paragraph-length-variance: the shape of the whole document, not one mistake
   proper-noun-density: a density over the whole document
+  reference-title-mismatch: needs a reference with its target's name in brackets; the samples refer by number only
+  reference-topic-missing: needs a reference followed by its topic ("see Section 2 for pricing"); the samples have none
   repeated-sentence-head: a run of consecutive sentences sharing their opening words; forcing one changes what the samples say
   requirement-modal: checks nothing until options pick a house rule, and the bench runs with none
   risk-disclosure: L4, judged by chaff test and never run by lint
