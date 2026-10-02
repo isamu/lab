@@ -19,7 +19,20 @@ before(async () => {
 });
 
 describe("hasEmoji: a character drawn as an emoji", () => {
-  const drawn = ["🚀 はじめに", "まとめ ✅", "📝 Notes", "⚠️ 注意", "✔️ Done", "👍🏽 Thanks", "👨‍💻 Developers", "🇯🇵 日本"];
+  const drawn = [
+    "🚀 はじめに",
+    "まとめ ✅",
+    "📝 Notes",
+    "⚠️ 注意",
+    "✔️ Done",
+    "👍🏽 Thanks",
+    "👨‍💻 Developers",
+    "🇯🇵 日本",
+    "1️⃣ 準備",
+    "#️⃣ Tag",
+    "*️⃣ Note",
+    "2\u20E3 次",
+  ];
   drawn.forEach((text) => {
     it(`reads ${JSON.stringify(text)}`, () => assert.ok(hasEmoji(text)));
   });
