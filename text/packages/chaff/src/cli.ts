@@ -19,7 +19,7 @@ import { GENRES } from "./genre.ts";
 import { resolveGenre } from "./resolve-genre.ts";
 import { runInit } from "./init.ts";
 import { initGenre } from "./commands/init-ask.ts";
-import { targetsOf, withExperimental } from "./cli-args.ts";
+import { targetsOf, withExperimental, withIncludes } from "./cli-args.ts";
 import { rulesOf } from "./custom/load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
@@ -162,10 +162,10 @@ const summaryLanguage = (results: readonly Inspected[], config: Config): UiLangu
 };
 
 const lint = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
-  const paths = collectTargets(targets);
+  const paths = collectTargets(targets, config.include);
   if (paths.length === 0) {
     // 0 件を成功にすると「CI は通っているが何も検証していない」状態が続く。§14。
-    console.error(hostText(config).noMarkdown(targets.join(", ")));
+    console.error(hostText(config).noMarkdown(targets.join(", "), config.include ?? []));
     return 1;
   }
   const language = config.language ?? "ja";
@@ -189,10 +189,10 @@ const lint = async (targets: readonly string[], argv: readonly string[], config:
  * 差分だけを出す。workflow spec §11。
  */
 const runWatch = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
-  const paths = collectTargets(targets);
+  const paths = collectTargets(targets, config.include);
   const text = hostText(config);
   if (paths.length === 0) {
-    console.error(text.noMarkdown(targets.join(", ")));
+    console.error(text.noMarkdown(targets.join(", "), config.include ?? []));
     return 1;
   }
   warnRuleProblems(config, config.language ?? "ja");
@@ -238,9 +238,9 @@ const explain = (config: Config, ruleId: string | undefined, genreFlag: string |
 };
 
 const runBaseline = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
-  const paths = collectTargets(targets.length > 0 ? targets : ["."]);
+  const paths = collectTargets(targets.length > 0 ? targets : ["."], config.include);
   if (paths.length === 0) {
-    console.error(hostText(config).noMarkdownHere);
+    console.error(hostText(config).noMarkdownHere(config.include ?? []));
     return 1;
   }
   const results = await Promise.all(paths.map((path) => inspect(path, config, [...argv, "--show-baseline"])));
@@ -303,7 +303,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   "fix-plan": (argv, config) =>
     runFixPlan(fixPlanTargets(argv), argv, { ...treeContext(config), check: async (path) => (await inspectAll(config, argv)(path)).checked }),
   baseline: (argv, config) => runBaseline(positional(argv), argv, config),
-  suppressions: (argv, config) => runSuppressions(positional(argv), inspectAll(config, argv), hostLanguage(config.language, process.env)),
+  suppressions: (argv, config) => runSuppressions(positional(argv), inspectAll(config, argv), hostLanguage(config.language, process.env), config.include),
   relax: (argv, config) => changeSetting(config, "relaxed", argv[1], flag(argv, "--why")),
   strict: (argv, config) => changeSetting(config, "strict", argv[1], flag(argv, "--why")),
   off: (argv, config) => changeSetting(config, "off", argv[1], flag(argv, "--why")),
@@ -338,7 +338,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
     return 0;
   }
   // 知らないジャンルではどの rule も当たらず、知らない文書の種類では種類の知識が外れる。どちらも素通りに見えるので、何かする前に止める。
-  const config = await withExtensions(readConfig());
+  const config = withIncludes(await withExtensions(readConfig()), argv);
   const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config), hostLanguage(config.language, process.env));
   problems.forEach((problem) => console.error(problem));
   if (problems.length > 0) return 1;
