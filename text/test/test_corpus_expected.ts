@@ -1,9 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { summaryLine } from "../scripts/corpus-docs.ts";
 import { DOCUMENTS_FILE, joinSummary, splitSummary } from "../scripts/corpus-expected.ts";
+import { readExpectedDir } from "../scripts/expected-dir.ts";
 
 // corpus/expected/ は rule ごとのファイルに分けて持つ。rule を足す PR・直す PR が、ほかの rule の行と衝突しないため。
 
@@ -31,11 +31,6 @@ const summaryOf = (random: () => number): string[] =>
     const findings = Array.from({ length: pick(random, 6) }, () => RULES[pick(random, RULES.length)] ?? "a");
     return summaryLine(`doc-${String(pick(random, 1000))}-${String(index)}.txt`, findings);
   });
-
-const linesOfFile = (file: string): string[] =>
-  readFileSync(join(EXPECTED_DIR, file), "utf8")
-    .split("\n")
-    .filter((line) => line !== "");
 
 describe("splitSummary / joinSummary", () => {
   it(`分けてから戻すと、元の行に戻る（生成した ${String(CASES)} 通り、seed ${String(SEED)}）`, () => {
@@ -86,7 +81,7 @@ describe("splitSummary / joinSummary", () => {
 
 describe("corpus/expected/", () => {
   it("今のファイルは、戻して分け直すと同じファイルになる（手で書き崩していない）", () => {
-    const files = new Map(readdirSync(EXPECTED_DIR).map((file) => [file, linesOfFile(file)]));
+    const files = readExpectedDir(EXPECTED_DIR);
     assert.deepEqual(splitSummary(joinSummary(files)), files);
   });
 });

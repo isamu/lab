@@ -2,12 +2,13 @@
 // finding there is a candidate false positive to explain. Documents of other kinds: every rule (as with --experimental)
 // for the document's genre. Both are summarised per rule and compared with corpus/expected/ (scripts/corpus-expected.ts).
 // --update rewrites those files; documents not fetched yet (yarn corpus:fetch) are skipped and keep their counts.
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { allFindings, corpusLanguages, structureFindings, type CorpusFinding } from "./corpus-findings.ts";
 import { docEntries, docPath, parsedAs, summaryChanges, summaryLine, updatedSummary } from "./corpus-docs.ts";
 import { joinSummary, splitSummary } from "./corpus-expected.ts";
+import { readExpectedDir, writeExpectedDir } from "./expected-dir.ts";
 
 const CORPUS = join(dirname(fileURLToPath(import.meta.url)), "..", "corpus");
 const LAWS = join(CORPUS, "laws");
@@ -54,34 +55,8 @@ const docLines = await docEntries(manifest).reduce<Promise<string[]>>(async (pre
 
 const actual = [...lawLines, ...docLines];
 const known = new Set([...files, ...docEntries(manifest).map((doc) => doc.id)]);
-const linesIn = (file: string): string[] =>
-  readFileSync(join(EXPECTED, file), "utf8")
-    .split("\n")
-    .filter((line) => line !== "");
-
-const readExpected = (): string[] =>
-  existsSync(EXPECTED)
-    ? joinSummary(
-        new Map(
-          readdirSync(EXPECTED)
-            .filter((file) => file.endsWith(".txt"))
-            .map((file) => [file, linesIn(file)]),
-        ),
-      )
-    : [];
-
-/** Writes one file per rule and the document list, and removes the file of a rule no document has any more. */
-const writeExpected = (lines: readonly string[]): void => {
-  const files = splitSummary(lines);
-  mkdirSync(EXPECTED, { recursive: true });
-  readdirSync(EXPECTED)
-    .filter((file) => file.endsWith(".txt") && !files.has(file))
-    .forEach((file) => rmSync(join(EXPECTED, file)));
-  files.forEach((fileLines, file) => writeFileSync(join(EXPECTED, file), `${fileLines.join("\n")}\n`));
-};
-
-const expected = readExpected();
-if (update) writeExpected(updatedSummary(expected, actual, known));
+const expected = joinSummary(readExpectedDir(EXPECTED));
+if (update) writeExpectedDir(EXPECTED, splitSummary(updatedSummary(expected, actual, known)));
 const changes = update ? [] : summaryChanges(expected, actual, known);
 if (changes.length > 0) {
   console.log("\nChanged from corpus/expected.txt (yarn corpus --update to accept):");
