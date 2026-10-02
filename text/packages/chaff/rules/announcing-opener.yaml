@@ -49,3 +49,34 @@ not_flagged:
 level_meaning:
   ja: 予告で始まる文が {limit} 個あれば指摘
   en: reported once {limit} sentences open with an announcement
+rewrite:
+  ja:
+    direction: 「重要なのは、」「ポイントは、」のような予告を消し、その後ろの中身から文を始めてください。
+    pairs:
+      - before: 重要なのは、締め切りを先に決めることです。
+        after: 締め切りは先に決めます。
+      - before: 正直に言うと、この設定は分かりにくいです。
+        after: この設定は分かりにくいです。
+      - before: ポイントは、キャッシュを毎回消すことです。
+        after: キャッシュは毎回消します。
+    keep:
+      - 予告の後ろの中身
+      - 文書でいちばん大事な一つにだけ付けた予告
+    avoid:
+      - 予告を別の予告（「大切なのは」「注目すべきは」）に替える
+      - 予告を消したぶん、強める語（「必ず」「非常に」）を足す
+  en:
+    direction: Delete the announcement ("The key point is", "Here's the thing") and start the sentence with what came after it.
+    pairs:
+      - before: The key point is that deadlines come first.
+        after: Deadlines come first.
+      - before: Here's the thing, the setting is confusing.
+        after: The setting is confusing.
+      - before: Honestly, the cache should be cleared every time.
+        after: The cache should be cleared every time.
+    keep:
+      - what followed the announcement
+      - one announcement on the single point that matters most
+    avoid:
+      - swapping one announcement for another ("What matters is", "Notably")
+      - adding an intensifier ("always", "really") to make up for the deleted opener
