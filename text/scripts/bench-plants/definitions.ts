@@ -1,6 +1,6 @@
 // Seeded mistakes of definitions for `yarn bench`: a term defined and never used, a term used before its inline
 // definition, and an abbreviation spelled out two ways. Pure and deterministic, like scripts/bench-mutations.ts.
-import { isJapanese, isListItem, isProse, rewriteFirst, type Mutation, type Plant } from "./bench-text.ts";
+import { isJapanese, isListItem, isProse, rewriteFirst, type Mutation, type Plant } from "../bench-text.ts";
 
 type Sentences = Readonly<Record<string, string>>;
 
@@ -29,7 +29,7 @@ const TWO_WAYS: Sentences = {
 const both = (id: string, rule: string, added: Sentences): Mutation[] =>
   ["ja", "en"].map((language) => ({ id: `${id}-${language}`, rule, languages: [language], plant: appendTo(language, added) }));
 
-export const DEFINITION_MUTATIONS: readonly Mutation[] = [
+export const MUTATIONS: readonly Mutation[] = [
   ...both("definition-unused", "unused-definition", UNUSED),
   ...both("definition-late", "use-before-definition", EARLY),
   ...both("acronym-two-ways", "acronym-expansion-conflict", TWO_WAYS),
