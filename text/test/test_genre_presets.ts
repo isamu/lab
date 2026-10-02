@@ -239,6 +239,8 @@ describe("既定の段で動かす", () => {
         "dangling-reference",
         "date-range-reversed",
         "date-weekday-mismatch",
+        "defined-name-repeated",
+        "defined-term-form",
         "duplicate-definition",
         "numbering-gap",
         "total-mismatch",

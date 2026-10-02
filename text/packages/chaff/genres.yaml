@@ -101,6 +101,9 @@ groups:
       emoji-heading: off
       bold-label-list: off
       ai-structure: off
+      # Defined terms and short names are a contract's apparatus: the legal genres check them.
+      defined-term-form: off
+      defined-name-repeated: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
@@ -126,6 +129,9 @@ groups:
       bold-label-list: off
       ai-structure: off
       requirement-smell: off
+      # Defined terms and short names are a contract's apparatus: the legal genres check them.
+      defined-term-form: off
+      defined-name-repeated: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
@@ -205,6 +211,9 @@ groups:
       list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # Defined terms and short names are a contract's apparatus: the legal genres check them.
+      defined-term-form: off
+      defined-name-repeated: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -236,6 +245,9 @@ groups:
       # Spoken numbers are transcribed as heard.
       number-style-consistency: off
       list-item-form-mix: off
+      # Defined terms and short names are a contract's apparatus: the legal genres check them.
+      defined-term-form: off
+      defined-name-repeated: off
 
 genres:
   - id: technical/spec
@@ -327,6 +339,9 @@ genres:
       total-mismatch: normal
       dangling-figure-reference: normal
       date-range-reversed: normal
+      # A contract names each party and term once and uses that name: a term quoted again or a party written out in full is a slip.
+      defined-term-form: normal
+      defined-name-repeated: normal
   - id: legal/statute
     name: { ja: 法令・規程, en: Statute and regulation }
     summary:
@@ -350,6 +365,8 @@ genres:
       date-range-reversed: normal
       # A statute defines its 等 terms (以下「個人情報等」という) and uses them in its obligations.
       requirement-smell: off
+      # A regulation's guidelines and circulars quote a defined term to point at its definition (「個人情報」の定義).
+      defined-term-form: off
   - id: legal/judgment
     name: { ja: 判決, en: Court decision }
     summary:
