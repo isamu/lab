@@ -258,8 +258,10 @@ genres:
       en: Minutes and meeting notes
     # Minutes record what the meeting did (the meeting was held, 了承された): the actor is the meeting, by the form.
     # In the corpus the rule fires on nearly every set of minutes, English and Japanese.
+    # A header block of labelled fields (- **日時**：…, - **出席者**：…) is the form of minutes, not a list of captions.
     rules:
       agentless-passive: off
+      bold-label-list: off
   - id: legal/contract
     name: { ja: 契約書・規約, en: Contract and terms }
     summary:

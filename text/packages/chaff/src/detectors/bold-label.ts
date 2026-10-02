@@ -12,13 +12,18 @@ const TASK_BOX = /^\[[ xX]\][ \t]+/u;
 /** `**Label**: text` or `**Label:** text`. The label holds no delimiter, so `**a** and **b**: text` is not one label. */
 const BOLD_LABEL = new RegExp(String.raw`^(\*\*|__)(?!\s)((?:(?!\1)[^\n]){1,${MAX_LABEL_CHARS}}?)(?:\1[ \t]*[:：]|[:：]\1)[ \t]*\S`, "u");
 
-/** A label that is only code (`--flag`, `timeout_ms`), linked or not, names an option or a field: the way reference documentation lists them. */
-const CODE_ONLY = /^(?:`[^`]+`|\[`[^`]+`\]\([^)\s]*\))$/u;
+/** A label that is only code (`--flag`, `timeout_ms`) names an option or a field: the way reference documentation lists them. */
+const CODE_SPAN = /^`[^`]+`$/u;
+
+/** A link around the whole label: inline, reference, collapsed or shortcut. Its text is what the reader sees. */
+const WHOLE_LINK = /^\[([^\]\n]+)\](?:\([^)\s]*\)|\[[^\]\n]*\])?$/u;
+
+const isCodeOnly = (label: string): boolean => CODE_SPAN.test(label.replace(WHOLE_LINK, "$1"));
 
 /** The label a list item opens with in bold before a colon and more text, or undefined. `item` is the item as written, marker and all. */
 export const boldLabelOf = (item: string): string | undefined => {
   const label = BOLD_LABEL.exec(item.replace(ITEM_MARKER, "").replace(TASK_BOX, ""))?.[2]?.trim();
-  return label === undefined || CODE_ONLY.test(label) ? undefined : label;
+  return label === undefined || isCodeOnly(label) ? undefined : label;
 };
 
 /** The list items, in document order, that open with a bold label. */

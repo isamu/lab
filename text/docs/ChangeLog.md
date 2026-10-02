@@ -8,8 +8,8 @@ Newest first.
 
 - Points at a document where many list items open with a bold label and a colon (「- **速さ**：一覧が速く出ます」), the
   shape that turns an explanation into a row of equal-weight captions. It counts items, not a density, and reports once
-  the count reaches the level. A label that is only code (a list of options) is not counted. Blogs, business documents
-  and speech only. In Qiita articles from 2016–2021 the shape is rare; in articles from 2025–2026 it is common. English
+  the count reaches the level. A label that is only code, linked or not (a list of options), is not counted. Blogs,
+  business documents and speech only, and not meeting notes, whose header of labelled fields is their form. In Qiita articles from 2016–2021 the shape is rare; in articles from 2025–2026 it is common. English
   writers use it as a matter of course (handbooks, minutes, policies), so English documents are not checked.
 
 ### New rule: `nominalization`, verbs hidden in nouns (experimental)

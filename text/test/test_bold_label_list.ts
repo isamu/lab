@@ -49,6 +49,9 @@ describe("boldLabelOf: an item that opens with a bold label", () => {
     ["- **`--timeout`**: seconds to wait.", "a label that is only code"],
     ["- **`timeout_ms`**：待つ時間。", "a label that is only code (full-width colon)"],
     ["- **[`--timeout`](#timeout)**：待つ秒数です。", "a label that is only linked code"],
+    ["- **[`--timeout`][timeout]**：待つ秒数です。", "a label that is only code in a reference link"],
+    ["- **[`--timeout`][]**：待つ秒数です。", "a label that is only code in a collapsed reference link"],
+    ["- **[`--timeout`]**：待つ秒数です。", "a label that is only code in a shortcut reference link"],
     ["- **a** and **b**: both.", "two bold runs, the colon after the second"],
     ["- ** 速さ**：一覧が速く出ます。", "a space just inside the opening delimiter"],
     ["- **速さ*：一覧が速く出ます。", "an unclosed label"],
@@ -102,6 +105,11 @@ describe("bold-label-list", () => {
   it("valid: a list of options labelled in linked code is reference documentation", () => {
     const options = Array.from({ length: 8 }, (_unused, index) => `- **[\`--option-${index}\`](#option-${index})**：説明を書きます。`).join("\n");
     assert.ok(!idsFor(`# 記事\n\n${options}\n`, ja).includes("bold-label-list"));
+  });
+
+  it("valid: the labelled fields at the head of meeting notes are their form", () => {
+    const fields = ["日時", "場所", "出席者", "司会", "記録"].map((field) => `- **${field}**：未定です。`).join("\n");
+    assert.ok(!idsFor(`# 議事録\n\n${fields}\n`, ja, "business/meeting-notes").includes("bold-label-list"));
   });
 
   it("valid: a bold label in a code block is not a list item", () => {
