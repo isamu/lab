@@ -8,8 +8,8 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import type { Finding, LanguageAdapter, StructurePatterns } from "../packages/chaff/src/plugin.ts";
-import { citationVocabulary, citedDocument } from "../packages/lang-ja/src/citation.ts";
+import type { Finding, LanguageAdapter, NamedDocument, StructurePatterns } from "../packages/chaff/src/plugin.ts";
+import { citationVocabulary, citedDocument, namedDocument } from "../packages/lang-ja/src/citation.ts";
 import { citedDocumentAfter } from "../packages/lang-en/src/citation.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 
@@ -609,6 +609,10 @@ describe("日本語: 他の文書の条を指す参照は、この文書では�
     ["担当に関する基準(昭和五十八年厚生省告示第十四号)第2条", "基準"],
     ["担当に関する基準（昭和五十八年厚生省告示第十四号）第2条", "基準"],
     ["担当に関する基準第2条", undefined],
+    ["使用薬剤の薬価(薬価基準)(平成二十年厚生労働省告示第六十号)第2条", "薬価"],
+    ["使用薬剤の薬価(薬価基準)(平成二十年厚生労働省告示第六十号)の第2条", "薬価"],
+    ["この基準(薬価基準)(平成二十年厚生労働省告示第六十号)第2条", undefined],
+    ["使用薬剤の薬価(薬価基準)第2条", undefined],
     ["(昭和五十八年厚生省告示第十四号)第2条", undefined],
     ["この基準(昭和五十八年厚生省告示第十四号)第9条", undefined],
     ["この就業規則第9条", undefined],
@@ -625,6 +629,26 @@ describe("日本語: 他の文書の条を指す参照は、この文書では�
   names.forEach(([text, expected]) => {
     it(`citedDocument: ${text} → ${String(expected)}`, () =>
       assert.equal(citedDocument(text, text.lastIndexOf("第"), citationVocabulary(ja.lexicons)), expected));
+  });
+
+  const named: readonly (readonly [string, NamedDocument | undefined])[] = [
+    ["民法の別表", { name: "民法", self: false }],
+    ["この規則の別表", { name: "規則", self: true }],
+    ["本規則の別表", { name: "本規則", self: true }],
+    ["当規約別表", { name: "当規約", self: true }],
+    ["この基準(昭和五十八年厚生省告示第十四号)別表", { name: "基準", self: true }],
+    ["規則の別表", undefined],
+    ["この点の別表", undefined],
+    ["手数料の別表", undefined],
+  ];
+  it("namedDocument: the longest note the name-note list allows (an alias, the number and 以下…という。)", () => {
+    const text = `使用薬剤の薬価(${"略".repeat(20)})(平成二十年厚生労働省告示第六十号。以下${"称".repeat(60)}という。)別表`;
+    assert.deepEqual(namedDocument(text, text.lastIndexOf("別表"), citationVocabulary(ja.lexicons)), { name: "薬価", self: false });
+  });
+
+  named.forEach(([text, expected]) => {
+    it(`namedDocument: ${text} → ${JSON.stringify(expected)}`, () =>
+      assert.deepEqual(namedDocument(text, text.lastIndexOf("別表"), citationVocabulary(ja.lexicons)), expected));
   });
 
   it("文書の種類の語は、語彙表の並びによらず長いものから当てる。「法律」だけの名前は「法」の文書にしない", () => {
