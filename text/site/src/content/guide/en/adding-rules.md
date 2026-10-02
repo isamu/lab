@@ -240,7 +240,14 @@ chaff's own rule is that a rule decides by machine alone. Anything that needs th
 | A planted mistake | `test/fixtures/bench/plants/<id>.yaml` and a module in `scripts/bench-plants/` | One mistake put into a clean sample, to measure whether the rule finds it. The YAML file holds `planted: [ja, en]` (the languages it is planted in) or `not_planted:` with why none can be planted; the module exports `MUTATIONS`, the mistakes it plants. Neither is a shared list |
 | ChangeLog | `Unreleased` in `docs/ChangeLog.md` | What chaff can now find |
 
-The guide's screens do not list the rules that did not run by hand: a screen writes `{not-run}` there, and the site fills the list in from chaff's output when it is built. A new rule edits no guide page for it.
+The guide's screens do not copy out what changes with every new rule.
+A screen writes `{not-run}` where chaff lists the rules that did not run, and `{counts}` where `--compact` ends with its tally.
+The site fills both in from chaff's output when it is built.
+
+`yarn test` runs every screen on its documents and stops when one differs from what chaff prints.
+The documents are the page's `file=` blocks and the files in `site/src/screens/<lang>/<page>/`.
+`node scripts/guide-screens.ts --check en/<page>.md` shows the difference.
+When a new rule adds a finding to a screen, update that screen and what the page says about it.
 
 `yarn test` stops when a rule file lacks a reader's field that the rule needs.
 It also stops when an `example`'s `before` is not reported, or its `after` is.

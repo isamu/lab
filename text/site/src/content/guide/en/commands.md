@@ -61,7 +61,7 @@ sample.md   blog/tech · English   genre from the default
   142:1   warning The first sentence repeats the heading "agentFunctionInfo"
                   heading-echo
 
-{counts}
+3 findings, 53 rules not run
 ```
 
 The last line counts the findings and the rules that did not run.

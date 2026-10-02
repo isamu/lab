@@ -2,7 +2,8 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { argsOf, countsLine, fillsFor, missingFills, notRunBlock, screenMatches, screensIn } from "../scripts/guide-screens-parse.ts";
+import { argsOf, countsLine, fillsFor, hasFill, missingFills, notRunBlock, screenMatches, screensIn } from "../scripts/guide-screens-parse.ts";
+import { UNCHECKED } from "../scripts/guide-screens.ts";
 import { COUNTS_MARKER, NOT_RUN_MARKER, fillPage, withScreenFills } from "../site/src/lib/screenFills.ts";
 
 // 手引きの画面にある「動いていない rule」の一覧と、--compact の最後の集計の行は、ページに書き写さず、サイトを作るときに
@@ -204,9 +205,18 @@ describe("手引きのページ", () => {
     pages.forEach(({ language, file, text }) => assert.equal(notRunBlock(text), undefined, `${language}/${file}`));
   });
 
-  it("--compact の集計の行を書き写した画面が残っていない（印に置き換える）", () => {
-    pages.forEach(({ language, file, text }) =>
-      screensIn(text).screens.forEach(({ command, shown }) => assert.equal(countsLine(shown), undefined, `${language}/${file}: ${command}`)),
+  const screensOf = (checked: boolean) =>
+    pages.flatMap(({ language, file, text }) =>
+      screensIn(text)
+        .screens.filter(({ command }) => (UNCHECKED[`${language}/${file}`]?.[command] === undefined) === checked)
+        .map(({ command, shown }) => ({ where: `${language}/${file}: ${command}`, shown })),
     );
+
+  it("--compact の集計の行を書き写した画面が残っていない（印に置き換える）", () => {
+    screensOf(true).forEach(({ where, shown }) => assert.equal(countsLine(shown), undefined, where));
+  });
+
+  it("かけない画面は印を持たない（埋める実行が無いので、出力をそのまま書く）", () => {
+    screensOf(false).forEach(({ where, shown }) => assert.equal(hasFill(shown), false, where));
   });
 });
