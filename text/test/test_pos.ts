@@ -90,6 +90,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "undefined-acronym",
         "unit-mismatch",
         "unqualified-superlative",
+        "vague-word-density",
       ],
     );
   });
