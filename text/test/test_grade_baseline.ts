@@ -2,6 +2,8 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { compareRuns, stampCheck } from "../packages/chaff/src/grade/baseline.ts";
 import { parseResults } from "../packages/chaff/src/grade/results-read.ts";
+import { renderComparison } from "../packages/chaff/src/grade/render-baseline.ts";
+import { BASELINE_TEXT } from "../packages/chaff/src/grade/baseline-text.ts";
 import type { GradeFact, GradeResult, Stamp } from "../packages/chaff/src/grade/result.ts";
 import { runCli } from "./cli-run.ts";
 import { finding, isSummary, jsonl, resultsIn } from "./grade-run.ts";
@@ -136,6 +138,13 @@ describe("pairing and regressions", () => {
       comparison.items.map((change) => [change.id, change.dropped.map((fact) => fact.key)]),
       [["a", ["6"]]],
     );
+  });
+
+  it("writes one output's new facts and quotations on one line, in the language of the screen", () => {
+    const failed = { source: "policy", address: "2.2", quote: "q", status: "quote-not-found" as const };
+    const comparison = compareRuns([result("a")], [result("a", { dropped: [numberFact("6")] }, { citations: { checked: 1, failed: [failed] } })], new Set());
+    assert.match(renderComparison("a.results.jsonl", comparison, BASELINE_TEXT.ja), /^ {2}a: 落ちた number 6、足された なし、外れた引用 policy 2\.2$/mu);
+    assert.match(renderComparison("a.results.jsonl", comparison, BASELINE_TEXT.en), /^ {2}a: dropped number 6; added none; failed quotations policy 2\.2$/mu);
   });
 
   it("lists only the quotations newly failed", () => {
