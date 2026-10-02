@@ -4,6 +4,12 @@ Newest first.
 
 ## Unreleased
 
+### `ai-tell` knows more Japanese phrasing that grew after LLMs
+
+- `ai-tell` (ja) adds 浮き彫りになる, 最大限に引き出す, 真価を発揮する, 強力な武器, ステップバイステップ, 多角的な,
+  包括的な, シームレスに and 大幅に向上する, each at a low weight. Each is rare in Qiita articles from 2016–2021
+  and clearly more common in articles from 2025–2026. One of them alone still says nothing; they add to the score.
+
 ### `unqualified-superlative`: the rule text no longer uses 業界最速 as its example
 
 The summary and the example named 「業界最速」 as an unqualified superlative, but since #170 a noun joined to the
