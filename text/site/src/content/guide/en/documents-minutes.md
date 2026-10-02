@@ -96,7 +96,7 @@ minutes.md   business/meeting-notes · English   genre from --genre
   20:1    warning The first sentence repeats the heading "4. Launch date"
                   heading-echo
 
-3 findings, 69 rules not run
+3 findings, 98 rules not run
 ```
 
 Only `heading-echo` runs by default. The rules that help minutes most are experimental.
@@ -128,7 +128,7 @@ minutes.md   business/meeting-notes · English   genre from --genre
   24:23   warning "three points" is announced, but the number of items in the list below is 2
                   announced-count-mismatch
 
-10 findings, 18 rules not run
+10 findings, 27 rules not run
 ```
 
 ## What each finding means

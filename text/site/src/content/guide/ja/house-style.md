@@ -163,7 +163,7 @@ notice.md   blog/tech · 日本語   ジャンルは既定から
   5:32    warning 「下さい」は「ください」と書きます
                   team-kudasai
 
-指摘 5 件、動いていない rule 36 件
+指摘 5 件、動いていない rule 44 件
 ```
 
 この例の `chaff.yaml` は `style: ieice` も選んでいるので、1 件目はスタイルからの指摘です。

@@ -97,7 +97,7 @@ manual.md   blog/tech · English   genre from the default
   9:1     warning Image "![](images/settings.png)" has no alt text
                   image-alt-text
 
-1 finding, 68 rules not run
+1 finding, 97 rules not run
 ```
 
 Add the genre, as suggested, and the experimental rules too.
@@ -121,7 +121,7 @@ manual.md   docs/manual · English   genre from --genre
   27:1    warning The heading "Making a booking" repeats the one on line 11 under the same parent
                   duplicate-heading
 
-6 findings, 37 rules not run
+6 findings, 45 rules not run
 ```
 
 ## What each finding means

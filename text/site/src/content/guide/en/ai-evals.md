@@ -326,7 +326,7 @@ $ npx chaffjs prompt-a.md --experimental --compact
 prompt-a.md   blog/tech · English   genre from the default
 
 
-0 findings, 16 rules not run
+0 findings, 28 rules not run
 ```
 
 ```
@@ -347,11 +347,11 @@ prompt-b.md   blog/tech · English   genre from the default
   12:70   warning Closes with "hope this helps"
                   closing-cliche
 
-6 findings, 16 rules not run
+6 findings, 28 rules not run
 ```
 
 Across many tasks, compare the rates rather than single outputs. `chaff grade` gives each rule's rate, and `--baseline` puts two runs side by side.
-The 16 rules not run are the Japanese-only rules and one rule that reads meaning. Without `--compact`, each is listed with its reason.
+The 28 rules not run are the Japanese-only rules, the rules the blog/tech genre does not check, one rule that needs headings below the title, and one rule that reads meaning. Without `--compact`, each is listed with its reason.
 
 To feed the findings back into a regeneration step, have `fix-plan` turn them into instructions.
 This is an excerpt; the plan goes on with a direction, an example and the spots for each rule.
@@ -416,11 +416,11 @@ answer.md   blog/tech · English   genre from the default
   9:25    error   2026-10-06 is a Tuesday, not a Monday
                   date-weekday-mismatch
 
-2 findings, 16 rules not run
+2 findings, 28 rules not run
 ```
 
 These findings are errors, so the run ends with exit code 1, and `chaff grade` fails the output.
-The rules are experimental. Without `--experimental` they do not run, and the last line says so (`0 findings, 69 rules not run`).
+The rules are experimental. Without `--experimental` they do not run, and the last line says so (`0 findings, 97 rules not run`).
 
 ## Findings as SARIF
 
