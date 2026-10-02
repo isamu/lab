@@ -1,0 +1,18 @@
+# 参照のすぐ後ろの括弧に書いても、参照先の名前ではない語（reference-title-mismatch）。「第3条（前述）」の 前述。
+id: reference-aside
+language: ja
+entries:
+  - pattern: "参照"
+  - pattern: "前述"
+  - pattern: "後述"
+  - pattern: "上記"
+  - pattern: "下記"
+  - pattern: "前掲"
+  - pattern: "再掲"
+  - pattern: "抜粋"
+  - pattern: "改正"
+  - pattern: "削除"
+  - pattern: "以下"
+  - pattern: "同じ"
+  - pattern: "同様"
+  - pattern: "略"

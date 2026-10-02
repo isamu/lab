@@ -1,0 +1,11 @@
+# Words allowed between an origin word and a count of years (elapsed-years-mismatch): "10 years since its founding".
+id: elapsed-link
+language: en
+entries:
+  - pattern: "since"
+  - pattern: "since its"
+  - pattern: "since our"
+  - pattern: "since the"
+  - pattern: "since it was"
+  - pattern: "since we were"
+  - pattern: "since being"
