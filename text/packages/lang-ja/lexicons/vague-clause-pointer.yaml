@@ -1,0 +1,14 @@
+# 箇条を、番号ではなく置き場所で指す言い方（JIS Z 8301:2019 10.6 が避ける「以下の箇条」）。
+# instead_of は、メッセージで言う種類。文書が条か章に番号を付けているとき（構造の木に番号付きの条か章があるとき）だけ見る。
+id: vague-clause-pointer
+language: ja
+entries:
+  - { pattern: 以下の箇条, instead_of: 箇条 }
+  - { pattern: 以上の箇条, instead_of: 箇条 }
+  - { pattern: 上記の箇条, instead_of: 箇条 }
+  - { pattern: 下記の箇条, instead_of: 箇条 }
+  - { pattern: 上の箇条, instead_of: 箇条 }
+  - { pattern: 下の箇条, instead_of: 箇条 }
+  - { pattern: 前記の箇条, instead_of: 箇条 }
+  - { pattern: 前述の箇条, instead_of: 箇条 }
+  - { pattern: 後述の箇条, instead_of: 箇条 }
