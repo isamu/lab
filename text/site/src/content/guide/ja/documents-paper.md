@@ -76,7 +76,7 @@ ronbun.md   academic/paper · 日本語   ジャンルは--genreから
   15:35   warning 「図 3」を指していますが、この文書に図 3がありません
                   dangling-figure-reference
 
-指摘 3 件、動いていない rule 24 件
+指摘 3 件、動いていない rule 31 件
 ```
 
 執筆要項を決めないと、chaff は「サーバー」と「サーバ」のどちらが正しいかを決めません。
@@ -109,7 +109,7 @@ ronbun.md   academic/paper · 日本語   ジャンルはchaff.yamlから
   19:42   warning 「コンピューター」は語末の「ー」を省いて「コンピュータ」と書きます（3 音以上の語）
                   katakana-long-vowel
 
-指摘 4 件、動いていない rule 24 件
+指摘 4 件、動いていない rule 27 件
 ```
 
 今度は、決まりと違う「サーバー」と「コンピューター」を、それぞれ指摘します。
@@ -148,6 +148,7 @@ rules:
 ```
 
 この `chaff.yaml` を置くと、`npx chaffjs ronbun.md --compact` だけで、上の指摘がすべて出ます。
+`chaff.yaml` に書けることの全体は[設定](./configuration)にあります。
 学会ごとの細かい決まり（「下さい」ではなく「ください」など）は、`custom_rules:` で足せます。
 書き方は [チームの表記ルールを決める](./house-style) にあります。
 

@@ -1,0 +1,110 @@
+id: fact-conflict
+layer: L3
+status: experimental
+how_to_find: fact-conflict
+requires: [quantities]
+uses: [pos]
+severity: warning
+
+name:
+  ja: 同じ項目に違う値が書いてある
+  en: One item given two different values
+
+why:
+  ja: 同じ節の中で「締切：10月5日」と「締切：10月7日」のように、同じ項目に違う値を書くと、読み手はどちらを信じればよいか分かりません。日程や料金を直したときに、一か所だけ直し忘れると起きます。「項目：値」「項目は値です」と書いた所と表の升を読み、同じ節で同じ項目名（全角半角、大文字小文字は揃えて比べます）に、同じ単位で違う値があれば指します。
+  en: 'When one section says "Deadline: May 3" and later "Deadline: May 5", the reader cannot tell which to trust. It happens when a date or a price is changed in one place and not in the other. Values written as "Item: value" or "The item is value", and table cells, are read; the same item name (case and width aside) with two different values in the same unit within one section is pointed out.'
+
+message:
+  ja: 「{label}」が {value} と書かれていますが、同じ節の前の所では {other} です
+  en: '"{label}" is {value} here, but {other} earlier in the same section'
+
+how_to_fix:
+  ja: どちらの値が正しいかを確かめて、もう一方を直してください。別のもの（別の回、別の対象）の値なら、項目名にそれを書き分けてください（「第2回の締切」）。
+  en: Check which value is right and correct the other. If they are values of different things (another session, another group), say so in the item name ("Second session deadline").
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 同じ節の中で、同じ項目（締切、料金など）に違う値を書いた所
+  en: The same item (a deadline, a fee) given two different values in one section
+example:
+  ja:
+    before: |
+      締切：10月5日
+
+      - 参加費：3,000円
+      - 締切：10月7日
+    after: |
+      締切：10月5日
+
+      - 参加費：3,000円
+      - 締切：10月5日
+  en:
+    before: |
+      Deadline: May 3, 2026
+
+      - Fee: $300
+      - Deadline: May 5, 2026
+    after: |
+      Deadline: May 3, 2026
+
+      - Fee: $300
+      - Deadline: May 3, 2026
+
+not_flagged:
+  ja: 違う見出しの下、違う親の項目の下、太字だけの行や「第2回：」のような行の後ろの値は、別のものの値として比べません。値の後ろに条件が続くもの（「3,000円から」「10月5日に開催」）、読点のあとから始まる項目名（「大人は、参加費は」）、単位の違う値（単位の食い違いは別に見ます）も比べません。同じ項目に三通り以上の値があれば、一覧として何も言いません。
+  en: Values under different headings, under different parent list items, or after a bold-only line or a line like "Session 2:" are taken as values of different things. A value followed by a condition ("$300 per person", "May 3 at noon"), a name that starts after a comma ("For adults, the fee"), and values in different units are not compared. An item with three or more different values is read as a list and left alone.
+rewrite:
+  ja:
+    direction: 二つの値のどちらが正しいかを書き手に確かめ、もう一方を同じ値に直してください。どちらが正しいか文書から決まらないときは、推測で選ばずに書き手に聞いてください。
+    pairs:
+      - before: |
+          締切：10月5日
+          （中略）
+          締切：10月7日
+        after: |
+          締切：10月5日
+          （中略）
+          締切：10月5日
+      - before: |
+          参加費は3,000円です。
+          （中略）
+          参加費は3,500円です。
+        after: |
+          参加費は3,000円です。
+          （中略）
+          第2回の参加費は3,500円です。
+    keep:
+      - 正しいと確かめた値
+      - 項目名と単位
+    avoid:
+      - どちらが正しいかを推測で決める
+      - 片方の値を消して、項目ごと無くす
+  en:
+    direction: Ask the writer which of the two values is right and make the other match it. If the document does not settle it, ask rather than guess.
+    pairs:
+      - before: |
+          Deadline: May 3
+          (…)
+          Deadline: May 5
+        after: |
+          Deadline: May 3
+          (…)
+          Deadline: May 3
+      - before: |
+          The fee is $300.
+          (…)
+          The fee is $350.
+        after: |
+          The fee is $300.
+          (…)
+          The late fee is $350.
+    keep:
+      - the value confirmed as right
+      - the item name and the unit
+    avoid:
+      - guessing which value is right
+      - deleting one of them along with the item

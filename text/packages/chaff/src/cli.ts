@@ -1,15 +1,11 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { loadAdapter, packageFor } from "./adapter-load.ts";
+import { packageFor } from "./adapter-load.ts";
+import { checkSource } from "./check-source.ts";
 import { CONFIG_FILE, type Config } from "./config/load.ts";
-import { applyByPath } from "./config/by-path.ts";
-import { limitsFor } from "./config/style.ts";
 import { applyLevel } from "./config/write.ts";
-import { buildDocument, teamRules } from "./document.ts";
-import { guessLanguage } from "./detect.ts";
 import { collectTargets, readDocumentFile } from "./files.ts";
 import { BASELINE_FILE, fingerprints, readBaseline, splitByBaseline, writeBaseline } from "./baseline.ts";
-import { applySuppressions } from "./stet.ts";
 import type { PerFile } from "./render/suppressions.ts";
 import { runSuppressions } from "./commands/suppressions.ts";
 import { clock, describeChange, snapshotOf, watchPaths, type Snapshot } from "./watch.ts";
@@ -34,6 +30,7 @@ import { VERSION, VERSION_LINES } from "./version.ts";
 import type { TreeContext } from "./commands/tree.ts";
 import { DOCUMENT_COMMANDS } from "./commands/document-commands.ts";
 import { runSkill } from "./commands/skill.ts";
+import { GRADE_EXIT, runGrade } from "./commands/grade.ts";
 import { fixPlanTargets, runFixPlan } from "./commands/fix-plan.ts";
 import { runConditions, runFeedback, settingsOf, type Checked } from "./commands/feedback.ts";
 import { homedir } from "node:os";
@@ -41,11 +38,10 @@ import { settingWarnings } from "./config/warnings.ts";
 import { readConfigIn } from "./config/read.ts";
 import { optionLayersOf, settingSourcesOf } from "./config/option-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
-import { neededBy, runRulesWith } from "./run.ts";
+
 import type { Finding, Level, RuleDefinition } from "./plugin.ts";
 import { CLI_TEXT, type CliText, type GenreSource } from "./cli-text.ts";
 import { hostLanguage, sharedLanguage, uiLanguageOf, type UiLanguage } from "./ui.ts";
-import { profileFor } from "./profile/for-file.ts";
 import { notRunAmong } from "./not-run.ts";
 import { settingProblems } from "./setting-problems.ts";
 import { withExtensions } from "./extension/load.ts";
@@ -95,28 +91,10 @@ type Inspected = {
 
 const inspect = async (path: string, config: Config, argv: readonly string[]): Promise<Inspected> => {
   const source = await readDocumentFile(path);
-  const language = applyByPath(config.byPath, config.baseDir, path).language ?? config.language ?? guessLanguage(source).language;
-  const adapter = await loadAdapter(language);
-  const { genre, from, unread } = resolveGenre(path, source, config, flag(argv, "--genre"));
-  if (unread !== undefined) console.error(`chaff: ${CLI_TEXT[uiLanguageOf(language)].unreadFrontMatterGenre(path, unread, GENRES)}`);
-  const rules = rulesOf(language, config);
   const experimental = config.experimental || argv.includes("--experimental");
-  await adapter.prepare?.(neededBy(rules, config.rules, experimental, genre, language));
-  const doc = buildDocument(path, source, adapter, teamRules(config, language), profileFor(config, path, source, language, genre));
-  const raw = runRulesWith(doc, rules, {
-    settings: config.rules,
-    experimental,
-    genre,
-    limits: limitsFor(config, language),
-    optionLayers: optionLayersOf(config),
-    detectors: config.extensions?.detectors ?? {},
-  });
-  // 応答は 3 つ。stet で黙らせたものは、ここで落とす。
-  const applied = applySuppressions(
-    source,
-    raw.findings,
-    doc.sections.map((section) => section.span),
-  );
+  const { language, genre: resolved, rules, raw, applied } = await checkSource(path, source, config, { genre: flag(argv, "--genre"), experimental });
+  const { genre, from, unread } = resolved;
+  if (unread !== undefined) console.error(`chaff: ${CLI_TEXT[uiLanguageOf(language)].unreadFrontMatterGenre(path, unread, GENRES)}`);
   const baseline = argv.includes("--show-baseline") ? undefined : readBaseline(join(process.cwd(), BASELINE_FILE));
   const split = splitByBaseline(path, applied.kept, baseline);
   const result = { ...raw, findings: split.fresh };
@@ -146,8 +124,9 @@ const writeSarif = (results: readonly Inspected[], argv: readonly string[], conf
   const located = results.flatMap((result) =>
     result.outcome.findings.map((finding) => ({ path: result.outcome.path, finding, language: result.language, rules: result.rules })),
   );
+  const notRun = results.flatMap((result) => result.checked.skipped.map((entry) => ({ path: result.outcome.path, rule: entry.rule, why: entry.why })));
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, renderSarif(located, VERSION), "utf8");
+  writeFileSync(path, renderSarif(located, VERSION, notRun), "utf8");
   console.log(hostText(config).sarifWritten(path, located.length));
 };
 
@@ -321,6 +300,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
       }),
     });
   },
+  grade: (argv, config) => runGrade(argv, { config, flag, ui: hostLanguage(config.language, process.env) }),
   skill: (argv, config) => runSkill(argv, { cwd: process.cwd(), home: homedir(), ui: hostLanguage(config.language, process.env) }),
 };
 
@@ -341,7 +321,8 @@ export const main = async (argv: readonly string[]): Promise<number> => {
   const config = await withExtensions(readConfig());
   const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config), hostLanguage(config.language, process.env));
   problems.forEach((problem) => console.error(problem));
-  if (problems.length > 0) return 1;
+  // grade は設定の誤りを 2 で返す。CI の門で「出力が悪い」（1）と取り違えないため。
+  if (problems.length > 0) return first === "grade" ? GRADE_EXIT.unreadable : 1;
   const handler = HANDLERS[first];
   if (handler !== undefined) return handler(argv, config);
   const targets = targetsOf(first === "lint" ? argv.slice(1) : argv);

@@ -113,7 +113,7 @@ contract.txt   blog/tech · English   genre from the default
   11:66   error   "Section 9" (address 9) is not in this document
                   dangling-reference
 
-4 findings, 10 rules not run
+4 findings, 18 rules not run
 ```
 
 The line under the first one suggests checking it as a contract.
@@ -199,7 +199,7 @@ draft.txt   blog/tech · English   genre from the default
   25:1    warning This sentence runs 26 words (limit 25)
                   max-sentence-length
 
-13 findings, 10 rules not run
+13 findings, 18 rules not run
 ```
 
 The two `error` lines come from the two changes.
@@ -242,7 +242,7 @@ fixed.txt   blog/tech · English   genre from the default
   26:1    warning This sentence runs 26 words (limit 25)
                   max-sentence-length
 
-12 findings, 10 rules not run
+12 findings, 18 rules not run
 ```
 
 An Act in force should have no such breaks.
@@ -293,3 +293,9 @@ so an answer's quotations can be checked like a unit test.
 
 chaff only decides whether something is broken. It never rewrites the document.
 Reading the document and answering is the AI's side; chaff checks before and after.
+
+## What to read next
+
+- A worked example on internal rules, with the structural checks turned on, is in [Internal rules and regulations](./documents-statute).
+- Checking a RAG answer's quotations with `cite` inside an eval is in [Using chaff for AI evals](./ai-evals).
+- `tree` and `cite` are listed with the other commands in [Commands](./commands).

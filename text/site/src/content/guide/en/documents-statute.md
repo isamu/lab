@@ -45,7 +45,7 @@ Some things are left out on purpose.
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The rules below were saved as `rules.md`, with three slips put in.
 
-```markdown
+```markdown file=rules.md
 # Equipment Management Rules
 
 ## Article 1 (Purpose)
@@ -127,59 +127,7 @@ rules.md   legal/statute · English   genre from --genre
 
   7 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
-  52 rules did not run:
-      adverb-overuse (the legal/statute genre does not check it)
-      agentless-passive (the legal/statute genre does not check it)
-      agreement-slip (still experimental)
-      ai-generated-composite (the legal/statute genre does not check it)
-      ai-tell (the legal/statute genre does not check it)
-      announced-count-mismatch (still experimental)
-      announcing-opener (the legal/statute genre does not check it)
-      assistant-residue (still experimental)
-      closing-cliche (the legal/statute genre does not check it)
-      colon-lead-in (not a rule for en)
-      concrete-evidence-density (the legal/statute genre does not check it)
-      contraction-consistency (still experimental)
-      contrast-framing (the legal/statute genre does not check it)
-      cushion-phrase-density (the legal/statute genre does not check it)
-      date-order (still experimental)
-      double-keigo (not a rule for en)
-      doubled-word (still experimental)
-      emoji-density (still experimental)
-      excessive-hedging (the legal/statute genre does not check it)
-      expletive-construction (the legal/statute genre does not check it)
-      heading-echo (the legal/statute genre does not check it)
-      hiragana-fukushi (not a rule for en)
-      internal-jargon (still experimental)
-      latin-spacing (not a rule for en)
-      max-kanji-continuous (not a rule for en)
-      ngram-repetition (the legal/statute genre does not check it)
-      no-doubled-joshi (not a rule for en)
-      no-em-dash (still experimental)
-      no-mixed-desumasu (not a rule for en)
-      no-nakaguro-parallel (not a rule for en)
-      oxford-comma-consistency (still experimental)
-      padded-intro (the legal/statute genre does not check it)
-      paragraph-length-variance (the legal/statute genre does not check it)
-      percent-sum-mismatch (still experimental)
-      preamble-length (the legal/statute genre does not check it)
-      preferred-term (still experimental)
-      proper-noun-density (the legal/statute genre does not check it)
-      repeated-conjunction (still experimental)
-      repeated-sentence-head (the legal/statute genre does not check it)
-      required-sections (still experimental)
-      rule-of-three (the legal/statute genre does not check it)
-      sasete-itadaku (not a rule for en)
-      section-length-uniformity (the legal/statute genre does not check it)
-      sentence-initial-conjunction-run (still experimental)
-      sentence-rhythm (the legal/statute genre does not check it)
-      stock-transition (the legal/statute genre does not check it)
-      stray-space (not a rule for en)
-      taigen-dome-in-prose (not a rule for en)
-      title-case-consistency (still experimental)
-      undefined-acronym (still experimental)
-      unfilled-placeholder (still experimental)
-      unqualified-superlative (the legal/statute genre does not check it)
+  {not-run}
 ```
 
 ## What each finding means
@@ -267,7 +215,7 @@ rules.md   legal/statute · English   genre from --genre   1 stet
   16:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-2 findings, 46 rules not run
+2 findings, 49 rules not run
 ```
 
 ## Changing a rule for the whole team
@@ -311,7 +259,7 @@ rules.md   legal/statute · English   genre from chaff.yaml
   15:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-3 findings, 46 rules not run
+3 findings, 49 rules not run
 ```
 
 chaff fails when any error is left, and passes when there are only warnings, so a warning does not stop CI.

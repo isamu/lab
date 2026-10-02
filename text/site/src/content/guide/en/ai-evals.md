@@ -3,7 +3,7 @@
 chaff can grade a model's outputs next to your model-graded scores.
 The same output always gets the same result, every point names a line and a rule, and nothing is sent anywhere.
 It does not judge meaning. Whether an answer is right stays with a model judge or a person.
-This page shows what works today, step by step and with real output, and what is planned.
+This page shows how, step by step and with real output: grading a file of outputs, a rubric, comparing two runs, a library call and the eval frameworks it plugs into.
 
 ## What chaff can check in an output
 
@@ -13,9 +13,10 @@ This page shows what works today, step by step and with real output, and what is
 | Are a RAG answer's quotations really in the source? | `npx chaffjs cite <source> <quotes.json> --format json` | a quotation is not at its address |
 | Does the output contradict itself? | `npx chaffjs <output> --experimental` | a total is not the sum of its items, a date has the wrong weekday |
 | Does it read as generated, or hard to read? | `npx chaffjs <output> --experimental --sarif <path>` | only `error` findings fail; the rest are counted |
+| All of the above, for a file of outputs | `npx chaffjs grade <items.jsonl> --out <results.jsonl>` | an output failed (2 when the input cannot be read) |
 | What should a regeneration step fix? | `npx chaffjs fix-plan <output> --experimental --json` | never; it is a set of instructions |
 
-The plain check has no `--json`. Read its findings from SARIF, as shown under "Findings as SARIF" below.
+For many outputs, use `chaff grade`, below. The plain check has no `--json`; read its findings from SARIF, as shown under "Findings as SARIF".
 
 ## Before you start
 
@@ -24,111 +25,171 @@ For an eval you run again and again, add `chaffjs` to the project's dev dependen
 Then every run uses the same version, and the same output keeps the same result.
 A `chaff.yaml` in the folder you run from applies to every check, as in the [configuration guide](./configuration).
 
-## A first eval run, step by step
+## A first eval run with `chaff grade`
 
 1. **Put the outputs in a JSONL file,** one per line. `id` and `output` are required.
-   Add `reference` to check facts against a source, and `source` with `citations` to check quotations.
+   Add `reference` to check facts against the text the output was made from.
+   To check quotations, add `sources` (each source's name and text) and `citations`.
+   A citation without `source` quotes the only source.
 
    ```json
    {
      "id": "refund",
      "output": "You can ask for a refund within 30 days of delivery (2.1), and shipping is refunded too (2.2).",
-     "source": "# Refund policy\n\n## 2. Refunds\n\n2.1 A customer may ask …",
-     "citations": [{ "address": "2.1", "quote": "within 30 days of delivery" }]
+     "sources": { "policy": "# Refund policy\n\n## 1. Scope\n…" },
+     "citations": [
+       { "address": "2.1", "quote": "within 30 days of delivery" },
+       { "address": "2.2", "quote": "Shipping fees are refunded in full." }
+     ]
    }
    ```
 
-2. **Save the script below as `eval-chaff.mjs`.** It runs the commands above on each line and adds up the results.
-3. **Run it on one file, or on two to compare them.**
-   `prompt-a.jsonl` and `prompt-b.jsonl` hold two prompts' outputs for the same three tasks, from Examples 1 to 3 below.
+   chaff does not guess which sentences of an output are quotations. Ask the model to return them next to its answer.
+   `language` and `genre` may be set per output; otherwise they are found as for any file.
+
+2. **Grade the file.** `prompt-a.jsonl` and `prompt-b.jsonl` hold two prompts' outputs for the same three tasks, from Examples 1 to 3 below.
+   `--out` writes one result per output; the screen shows the summary.
 
    ```
-   $ node eval-chaff.mjs prompt-a.jsonl prompt-b.jsonl
-   {"run":"prompt-a.jsonl","id":"deploy","pass":true,"words":61,"findings":0,"dropped":[],"added":[],"unsupported":0}
-   {"run":"prompt-a.jsonl","id":"q3","pass":true,"words":39,"findings":0,"dropped":[],"added":[],"unsupported":0}
-   {"run":"prompt-a.jsonl","id":"refund","pass":true,"words":17,"findings":0,"dropped":[],"added":[],"unsupported":0}
-   {"run":"prompt-b.jsonl","id":"deploy","pass":true,"words":107,"findings":6,"dropped":[],"added":[],"unsupported":0}
-   {"run":"prompt-b.jsonl","id":"q3","pass":false,"words":33,"findings":0,"dropped":["6","2.5","July 14, 2026"],"added":["July 1, 2026"],"unsupported":0}
-   {"run":"prompt-b.jsonl","id":"refund","pass":false,"words":18,"findings":0,"dropped":[],"added":[],"unsupported":1}
-   rule (per 1000 words)	prompt-a.jsonl	prompt-b.jsonl
-   ai-generated-composite	0.0	6.3
-   ai-tell	0.0	6.3
-   closing-cliche	0.0	12.7
-   contraction-consistency	0.0	6.3
-   padded-intro	0.0	6.3
-   passed	3/3	1/3
+   $ npx chaffjs grade prompt-b.jsonl --experimental --out b.results.jsonl
+   Wrote one result per output: b.results.jsonl (3 lines)
+   prompt-b.jsonl: 3 outputs, 1 passed, 2 failed
+
+   Failed outputs
+     ✗ q3: facts.dropped 3 > 0, facts.added 1 > 0
+     ✗ refund: citations.failed 1 > 0
+
+   Rule rates (per 1,000 words, outputs with a finding)
+     ai-generated-composite   6.7   1 output
+     ai-tell                  6.7   1 output
+     closing-cliche           13.3  1 output
+     contraction-consistency  6.7   1 output
+     padded-intro             6.7   1 output
+
+   Facts: 3 dropped (date 1, number 2), 1 added (date 1)
+   Quotations: 2 checked, 1 failed
+
+   18 not run
+     cite                         2 outputs  no citations given (chaff does not guess quotations from the output)
+     colon-lead-in                3 outputs  not a rule for en
+     compare                      2 outputs  no reference given (facts are checked against a reference)
+     empty-conclusion             3 outputs  it reads meaning; npx chaff test runs it
+   …
+
+   Stamp: chaffjs 0.18.0, @chaffjs/lang-en 0.16.0, @chaffjs/lang-ja 0.17.0
+     rules sha256:3c19ebcf1dc64d8d6d3129a2489e4938fa14bfd6927e300c2b0919a39de0e26a
+     settings sha256:18f9e63d4e51a582d46a29f30359c872c912fc3f08dfe0545875636e94272347
    ```
 
-4. **Read the result.** Each JSON line is one output. `dropped` and `added` are facts from `compare`, and `unsupported` counts quotations `cite` could not find.
-   The table gives each rule's findings per 1000 words over the whole run, so long and short outputs are measured alike.
-5. **Decide pass or fail.** In this script an output fails on an `error` finding, a dropped or added fact, or an unsupported quotation.
-   Style findings do not fail an output. They are a rate to compare between prompts or models.
-   The script ends with exit code 1 when any output failed, so CI can stop on it. Change the `pass` line to fit your eval.
+3. **Read the result.** An output fails on an `error` finding, a fact dropped or added against `reference`, or a quotation not found.
+   Style findings never fail an output. They are a rate per 1,000 words (characters for Japanese), to compare prompts or models.
+   "Not run" says what was not checked and why, so that 0 findings is never read as "checked and fine".
+   `--compact` gives one line per output, for a CI log, and `--json` gives the summary as JSON.
 
-```js
-// node eval-chaff.mjs run-a.jsonl [run-b.jsonl ...]
-// Each line: {"id", "output", "reference"?, "source"?, "citations"?}
-import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+   ```
+   $ npx chaffjs grade prompt-b.jsonl --experimental --compact
+   q3	fail	facts.dropped 3 > 0, facts.added 1 > 0
+   refund	fail	citations.failed 1 > 0
+   deploy	pass
+   prompt-b.jsonl: 3 outputs, 1 passed, 2 failed
+   ```
 
-const dir = mkdtempSync(join(tmpdir(), "chaff-eval-"));
-const chaff = (...args) => spawnSync("npx", ["chaffjs", ...args], { encoding: "utf8" });
-const save = (name, text) => {
-  writeFileSync(join(dir, name), text);
-  return join(dir, name);
-};
-const words = (text) => text.split(/\s+/).filter(Boolean).length;
+4. **Use the exit code.** 0 when every output passed, 1 when one failed.
+   2 when the input or `chaff.yaml` cannot be read: a line that is not JSON, a missing or repeated `id`, an unknown language.
+   A gate that sees 2 knows the grader did not run, not that the outputs are bad.
 
-const lint = (id, file) => {
-  const sarif = join(dir, `${id}.sarif`);
-  chaff(file, "--experimental", "--sarif", sarif);
-  const results = JSON.parse(readFileSync(sarif, "utf8")).runs[0].results;
-  return results.map((result) => ({ rule: result.ruleId.replace("chaff/", ""), level: result.level }));
-};
+Each line of `b.results.jsonl` holds one output's findings, rates, rules not run, facts and quotations.
+It also holds pass or fail with the reasons, and the stamp. This is the start of the first line:
 
-const compare = (id, reference, file) => {
-  const facts = JSON.parse(chaff("compare", save(`${id}.ref.md`, reference), file, "--json").stdout);
-  return { dropped: facts.dropped.map((fact) => fact.text), added: facts.added.map((fact) => fact.text) };
-};
-
-const cite = (id, source, citations) => {
-  const args = ["cite", save(`${id}.src.md`, source), save(`${id}.quotes.json`, JSON.stringify(citations))];
-  return JSON.parse(chaff(...args, "--format", "json").stdout).filter((check) => check.status !== "ok").length;
-};
-
-const grade = (item) => {
-  const file = save(`${item.id}.md`, item.output);
-  const findings = lint(item.id, file);
-  const facts = item.reference ? compare(item.id, item.reference, file) : { dropped: [], added: [] };
-  const unsupported = item.source ? cite(item.id, item.source, item.citations) : 0;
-  const errors = findings.filter((finding) => finding.level === "error").length;
-  const pass = errors === 0 && facts.dropped.length + facts.added.length + unsupported === 0;
-  return { id: item.id, pass, words: words(item.output), findings, ...facts, unsupported };
-};
-
-const rates = (rows) => {
-  const total = rows.reduce((sum, row) => sum + row.words, 0);
-  const counts = rows.flatMap((row) => row.findings).reduce((acc, { rule }) => ({ ...acc, [rule]: (acc[rule] ?? 0) + 1 }), {});
-  return Object.fromEntries(Object.entries(counts).map(([rule, count]) => [rule, (count * 1000) / total]));
-};
-
-const runs = process.argv.slice(2).map((path) => {
-  const rows = readFileSync(path, "utf8").split("\n").filter(Boolean).map((line) => grade(JSON.parse(line)));
-  rows.forEach((row) => console.log(JSON.stringify({ run: path, ...row, findings: row.findings.length })));
-  return { path, passed: rows.filter((row) => row.pass).length, total: rows.length, rates: rates(rows) };
-});
-
-const rules = [...new Set(runs.flatMap((run) => Object.keys(run.rates)))].sort();
-console.log(["rule (per 1000 words)", ...runs.map((run) => run.path)].join("\t"));
-rules.forEach((rule) => console.log([rule, ...runs.map((run) => (run.rates[rule] ?? 0).toFixed(1))].join("\t")));
-console.log(["passed", ...runs.map((run) => `${run.passed}/${run.total}`)].join("\t"));
-process.exitCode = runs.every((run) => run.passed === run.total) ? 0 : 1;
+```json
+{"id":"q3","language":"en","genre":"blog/tech","size":{"unit":"word","value":30},"findings":[],"rates":{},"notRun":[…],
+ "facts":{"dropped":[{"kind":"number","key":"6 hours","text":"6","line":4,"allowed":false},…],"added":[…],"reformed":1},
+ "citations":null,"pass":false,"failedBecause":["facts.dropped 3 > 0","facts.added 1 > 0"],"stamp":{…}}
 ```
 
-The script reads the output files that chaff writes, so the same rules run as on the command line.
-It counts words by spaces, which suits English; for Japanese, count characters instead.
+The stamp holds the chaff version, a hash of the rules and a hash of the settings. Two runs are comparable when the two hashes match.
+
+## A rubric in chaff.yaml
+
+With a `grade:` section in `chaff.yaml`, only what it names decides pass or fail, and each output gets penalty points.
+
+```yaml
+grade:
+  rules:
+    total-mismatch: { max: 0 } # one finding fails the output
+    closing-cliche: { max: 0, weight: 3 } # fails, and costs 3 points each
+    ai-tell: { max_rate: 5, weight: 2 } # fails above 5 per 1,000 words (characters for Japanese)
+  facts: { dropped: 0, added: 0, allow_dropped: [heading] }
+  citations: { failed: 0, required: true } # required: an output with sources but no citations fails
+  penalty: 10 # fails when the points add up to more than this
+```
+
+```
+$ npx chaffjs grade prompt-b.jsonl --experimental --compact
+q3	fail	penalty 0	facts.dropped 3 > 0, facts.added 1 > 0
+refund	fail	penalty 0	citations.failed 1 > 0
+deploy	fail	penalty 8	rules.closing-cliche 2 > 0, rules.ai-tell.rate 9.804 > 5
+prompt-b.jsonl: 3 outputs, 0 passed, 3 failed
+```
+
+The score is a sum of penalty points, never a mark out of a maximum. Each point names its finding (`deploy`'s result line):
+
+```json
+"score": { "penalty": 8, "items": [
+  { "points": 2, "rule": "ai-tell", "line": 3 },
+  { "points": 3, "rule": "closing-cliche", "line": 12 },
+  { "points": 3, "rule": "closing-cliche", "line": 12 } ] }
+```
+
+Without `grade:` there is no score. A value chaff cannot read in `grade:` stops the run with exit 2 and names its place.
+A rule chaff does not know is reported, and listed as not run.
+
+## Comparing two runs: `--baseline`
+
+Grade the earlier prompt with `--out`, then grade the new one against it. Outputs are paired by `id`.
+
+```
+$ npx chaffjs grade prompt-a.jsonl --experimental --out a.results.jsonl
+$ npx chaffjs grade prompt-b.jsonl --experimental --baseline a.results.jsonl
+…the summary, as above…
+
+Compared with a.results.jsonl: 3 paired outputs
+
+Rule rates (per 1,000 words, before → after)
+  ai-generated-composite   0.0 → 6.7  (+6.7)  more in deploy
+  ai-tell                  0.0 → 6.7  (+6.7)  more in deploy
+  closing-cliche           0.0 → 13.3  (+13.3)  more in deploy
+  contraction-consistency  0.0 → 6.7  (+6.7)  more in deploy
+  padded-intro             0.0 → 6.7  (+6.7)  more in deploy
+
+Newly failed: q3, refund
+Newly passed: none
+
+New dropped or added facts, and new failed quotations
+  q3: dropped number 6, number 2.5, date July 14, 2026; added date July 1, 2026
+  refund: dropped none; added none; failed quotations policy 2.2
+
+2 regressions
+  ✗ q3: passed, now fails
+  ✗ refund: passed, now fails
+```
+
+A regression is any of these:
+- an output that passed and now fails;
+- a rule under `grade.rules` with more findings in some output;
+- a higher penalty total.
+
+With `--baseline`, the exit code is 1 on a regression and 0 without one, so CI can stop a prompt or model change.
+Rules outside the rubric are shown but never count as a regression.
+
+The two runs must have the same rules and settings. Otherwise chaff refuses, so that a change of settings is not read as a change of model:
+
+```
+$ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl
+Not compared with a.results.jsonl: the settings differ. A change of rules or settings would read as a change of prompt or model (--allow-stamp-mismatch compares anyway)
+```
+
+The run ends with exit code 2. Here the earlier run had `--experimental` and this one did not.
 
 ## Example 1: is a summary faithful?
 
@@ -265,7 +326,7 @@ $ npx chaffjs prompt-a.md --experimental --compact
 prompt-a.md   blog/tech · English   genre from the default
 
 
-0 findings, 16 rules not run
+0 findings, 28 rules not run
 ```
 
 ```
@@ -286,11 +347,11 @@ prompt-b.md   blog/tech · English   genre from the default
   12:70   warning Closes with "hope this helps"
                   closing-cliche
 
-6 findings, 16 rules not run
+6 findings, 28 rules not run
 ```
 
-Across many tasks, compare the rates rather than single outputs. The table from the script in step 3 puts them side by side.
-The 16 rules not run are the Japanese-only rules and one rule that reads meaning. Without `--compact`, each is listed with its reason.
+Across many tasks, compare the rates rather than single outputs. `chaff grade` gives each rule's rate, and `--baseline` puts two runs side by side.
+The 28 rules not run are the Japanese-only rules, the rules the blog/tech genre does not check, one rule that needs headings below the title, and one rule that reads meaning. Without `--compact`, each is listed with its reason.
 
 To feed the findings back into a regeneration step, have `fix-plan` turn them into instructions.
 This is an excerpt; the plan goes on with a direction, an example and the spots for each rule.
@@ -355,11 +416,11 @@ answer.md   blog/tech · English   genre from the default
   9:25    error   2026-10-06 is a Tuesday, not a Monday
                   date-weekday-mismatch
 
-2 findings, 16 rules not run
+2 findings, 28 rules not run
 ```
 
-These findings are errors, so the run ends with exit code 1 and the script fails the output.
-The rules are experimental. Without `--experimental` they do not run, and the last line says so (`0 findings, 69 rules not run`).
+These findings are errors, so the run ends with exit code 1, and `chaff grade` fails the output.
+The rules are experimental. Without `--experimental` they do not run, and the last line says so (`0 findings, 97 rules not run`).
 
 ## Findings as SARIF
 
@@ -403,70 +464,74 @@ Each finding is one entry in `runs[0].results`, with the rule, the level and the
 
 The levels are `error`, `warning` and `note` (chaff's `info`). The same file shows findings on a pull request, as in [CI](./ci).
 
-## Planned: `chaff grade` and the rest (#488)
+## In your harness: `grade()` and the scorer shape
 
-Nothing in this section works yet. It shows how the planned commands will be used, so that a harness written today can move to them.
-The design is in the specification, section 29, and the work is tracked in [#488](https://github.com/isamu/lab/issues/488).
-
-**`chaff grade`** will do what the script above does, in one command. Its input is the same kind of JSONL.
-`sources` will name several sources, and each citation will say which source it quotes.
-
-```bash
-npx chaffjs grade items.jsonl                       # pass or fail, and the rates, on screen
-npx chaffjs grade items.jsonl --out results.jsonl   # one result per output, as JSONL
-```
-
-Each result line will hold the findings, each rule's rate, the rules not run with the reason, and the dropped and added facts.
-It will also hold the failed quotations, pass or fail with the reasons, and a stamp.
-The exit code will be 0 when every output passes, 1 when one fails, and 2 when the input cannot be read.
-
-**A rubric in `chaff.yaml`** will say what fails an output and what each finding costs.
-The score will be a sum of penalty points, and each point will name the finding it came from.
-With no `grade:` section, there will be no score, only pass or fail and the rates.
-
-```yaml
-grade:
-  rules:
-    total-mismatch: { max: 0 } # one finding fails the output
-    closing-cliche: { max: 0, weight: 3 } # fails, and costs 3 points each
-    ai-tell: { max_rate: 5, weight: 2 } # fails above 5 per 1000 words
-    max-sentence-length: { weight: 1 } # never fails, costs 1 point each
-  required_sections: [Summary, Evidence]
-  facts: { dropped: 0, added: 0, allow_dropped: [heading] }
-  citations: { failed: 0, required: true }
-  penalty: 10 # fails when the points add up to more than this
-```
-
-**A/B and regressions.** `--baseline` will compare a run with an earlier run's results, output by output (matched by `id`).
-A regression will be an output that passed and now fails, a rubric rule with more findings, or a higher penalty total.
-The exit code will be 1 on a regression, so CI can stop a prompt or model change.
-When the rules or the settings differ between the two runs, it will refuse to compare, since the difference would not come from the model.
-
-```bash
-npx chaffjs grade prompt-a.jsonl --out a.results.jsonl
-npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl
-```
-
-**The stamp** on every result will hold the chaff version, a hash of the rule set and a hash of the settings.
-Only results with the same rule set and settings will be compared.
-
-**A library function** will let an in-process harness skip the shell. Where it is exported from is still open.
+`chaffjs/grade` grades one output in process and returns the same result as one line of `--out`.
+It reads `chaff.yaml` only when `config` names it, and never writes a file.
 
 ```js
-import { grade } from "chaffjs/api";
+import { grade, toScorer } from "chaffjs/grade";
 
-const result = await grade(output, { reference: source, language: "en" });
-if (!result.pass) console.log(result.failedBecause);
+const result = await grade(output, { id: "q3", reference, config: "chaff.yaml" });
+console.log(result.pass, result.failedBecause); // false [ 'facts.dropped 2 > 0' ]
+
+const scored = toScorer(result);
+console.log(scored.score, scored.reason); // 0 failed: facts.dropped 2 > 0 — no findings
 ```
 
-**Integrations** will call `grade()` or `chaff grade` and keep no framework code inside chaff.
+`toScorer()` gives the shape most eval frameworks take:
+- `name`;
+- `score`: 1 for pass, 0 for fail;
+- `pass`;
+- `reason`: the failed conditions, then the findings by rule, then the penalty;
+- `metadata`: the whole result.
 
-| Framework | How it will connect |
-| --- | --- |
-| promptfoo | A `javascript` assertion that calls `grade()` and returns `pass`, a score of 1 or 0, and the reasons |
-| Inspect AI | A scorer that runs `chaff grade` and turns a result line into a `Score` and its explanation |
-| OpenAI Evals, LangSmith | The JSONL above as the contract, and a result line as feedback |
-| GitHub Action | `chaff grade --baseline` in a workflow, failing the job on a regression |
+chaff has no full marks, so it never maps penalty points onto 0–1. A harness that wants a graded number reads `metadata.score.penalty`.
+Input `chaff grade` would refuse with exit 2 throws `GradeInputError`.
+
+## Integrations
+
+Each example calls `grade()` or `chaff grade` and keeps no framework code inside chaff.
+They are in [`examples/evals`](https://github.com/isamu/lab/tree/main/text/examples/evals).
+Install each framework in your own project; none is a dependency of chaff.
+
+| Framework | Example | How it connects |
+| --- | --- | --- |
+| promptfoo | `promptfoo/chaff-assertion.cjs` | a `javascript` assertion returning `pass`, `score` and `reason` |
+| autoevals, Braintrust | `autoevals/chaff-scorer.mjs` | a scorer `({ output, expected }) => { name, score, metadata }` |
+| evalite | `evalite/chaff.eval.ts` | a `createScorer` scorer |
+| Langfuse | `langfuse/push-score.mjs` | `langfuse.score.create()` on a trace |
+| DeepEval | `deepeval/chaff_metric.py` | a `BaseMetric` that runs the CLI |
+| Ragas | `ragas/chaff_with_faithfulness.py` | chaff's fact checks next to `Faithfulness` |
+| Inspect AI | `inspect/chaff_scorer.py` | a `@scorer` that runs the CLI |
+| OpenAI Evals | `openai-evals/` | `samples.jsonl` (`input`, `ideal`) and the completions turned into `chaff grade` items |
+| GitHub Actions | `README.md` | `chaff grade --baseline` in a workflow step |
+
+The promptfoo assertion, the autoevals scorer and the OpenAI Evals converter are tested in this repository.
+Those tests need no network and no API key.
+
+```yaml
+# promptfooconfig.yaml
+tests:
+  - vars:
+      reference: "The team answered 4,812 tickets this quarter."
+    assert:
+      - type: javascript
+        value: file://chaff-assertion.cjs
+```
+
+## Where chaff fits in an eval
+
+Model-graded metrics read meaning: whether an answer is correct, relevant or faithful.
+They can give the same output different scores on different runs, and a reason in prose.
+chaff gives the same output the same result every time, and every failure names a line and a rule.
+It answers only what a machine can decide:
+- facts kept against a reference;
+- quotations really in their sources;
+- totals and weekdays that agree;
+- house rules, and the rate of style findings.
+
+Run it next to a model judge or a person, not instead of them.
 
 ## What chaff will not do here
 
