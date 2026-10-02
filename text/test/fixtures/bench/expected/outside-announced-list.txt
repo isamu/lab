@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  list-grown-ja  found
+ja/design  list-grown-ja  found
+ja/email  list-grown-ja  found
+ja/figures  list-grown-ja  found
+ja/itinerary  list-grown-ja  found
+ja/minutes  list-grown-ja  found
+ja/note  list-grown-ja  found
+ja/policy  list-grown-ja  found
+ja/press  list-grown-ja  found
+ja/proposal  list-grown-ja  found
+ja/quote  list-grown-ja  found
+ja/readme  list-grown-ja  found
+ja/requirements  list-grown-ja  found
+en/blog  list-grown-en  found
+en/design  list-grown-en  found
+en/email  list-grown-en  found
+en/figures  list-grown-en  found
+en/itinerary  list-grown-en  found
+en/minutes  list-grown-en  found
+en/note  list-grown-en  found
+en/policy  list-grown-en  found
+en/press  list-grown-en  found
+en/proposal  list-grown-en  found
+en/quote  list-grown-en  found
+en/readme  list-grown-en  found
+en/requirements  list-grown-en  found

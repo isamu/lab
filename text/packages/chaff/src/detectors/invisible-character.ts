@@ -80,8 +80,8 @@ const CANCEL_TAG = String.fromCodePoint(0xe007f);
 
 /** タグ文字の並びをさかのぼった先が黒い旗で、並びが取り消しのタグ（U+E007F）で閉じていれば、地域の旗の中。 */
 const isInFlag = (source: string, at: number): boolean => {
-  const before = [...source.slice(Math.max(0, at - FLAG_REACH), at)];
-  const after = [...source.slice(at, at + FLAG_REACH)];
+  const before = Array.from(source.slice(Math.max(0, at - FLAG_REACH), at));
+  const after = Array.from(source.slice(at, at + FLAG_REACH));
   const closing = after.findIndex((char) => !TAG.test(char) || char === CANCEL_TAG);
   return before[before.findLastIndex((char) => !TAG.test(char))] === BLACK_FLAG && after[closing] === CANCEL_TAG;
 };
@@ -185,6 +185,6 @@ export const invisibleCharacter: Detector = (doc): Finding[] =>
     line: 0,
     column: 0,
     quote: visibleQuote(doc.source, run.span),
-    values: { code: run.codes.join(" "), count: [...doc.source.slice(run.span.start, run.span.end)].length, offset: run.span.start },
+    values: { code: run.codes.join(" "), count: Array.from(doc.source.slice(run.span.start, run.span.end)).length, offset: run.span.start },
     variant: run.kind,
   }));

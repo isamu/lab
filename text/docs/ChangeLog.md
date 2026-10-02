@@ -4,6 +4,75 @@ Newest first.
 
 ## Unreleased
 
+### New rule: `chat-citation-residue`, marks a pasted chat answer leaves (experimental)
+
+- Reports each link or piece of text that carries a mark a chat interface leaves when its answer is pasted: a link
+  ending in `?utm_source=chatgpt.com` (or `utm_source=openai`), and citation marks such as `oaicite`,
+  `contentReference[`, `†source】` and `citeturn`. One is enough, at `warning`: it shows the paste was never checked.
+  Code and other `utm_source` values are not read. The marks are a word list in each language package. In Qiita
+  articles none appear in 2016–2021, and they appear in a small share of 2025–2026 ones.
+
+### New rule: `emoji-heading`, headings decorated with emoji (experimental)
+
+- Points at every heading with an emoji in it (「## 🚀 はじめに」, "## ✅ Summary") once a document has enough of them.
+  It counts headings, not a density. Only characters drawn as emoji count: an arrow or ™ is text. Documentation, legal,
+  academic and literary genres do not run it. In Qiita articles the shape is rare in 2016–2021 and clearly more
+  common in 2025–2026.
+
+## 0.19.0 — 2026-10-02
+
+chaff now tells a writer, or an AI, how to fix what it finds. `chaff fix-plan` turns the findings into a rewrite plan.
+Each AI-shape and readability rule carries a `rewrite:` block with a direction, examples and what to keep.
+The Full rewrite mode, `chaff facts` and `chaff outline` support rewriting a whole document while keeping its facts.
+
+Teams can extend chaff with code. `custom_rules` take `type: module`, and `plugins:` load rules, word lists and styles
+from npm packages through `chaffjs/api`. New styles follow 公用文作成の考え方 (`koyobun`) and JIS Z 8301:2019.
+
+New experimental rules find contradictions inside a document. They catch a term defined but never used, or used
+before its definition. They also catch an act both required and forbidden, a name written two ways, and a later item
+outside an announced list. Rules backed by papers check requirement wording, vague figure pointers and nominalized
+verbs. `image-alt-text` now runs by default. The guide gains a page on using chaff for AI evals, and the README was
+rewritten with chaff's own Full mode. Many false reports from real documents are gone.
+
+📦 [`chaffjs@0.19.0`](https://www.npmjs.com/package/chaffjs/v/0.19.0) ·
+[`@chaffjs/lang-ja@0.18.0`](https://www.npmjs.com/package/@chaffjs/lang-ja/v/0.18.0) ·
+[`@chaffjs/lang-en@0.17.0`](https://www.npmjs.com/package/@chaffjs/lang-en/v/0.17.0)
+
+### Also in this release
+
+- docs: Full rewrite recommends compare --distinct and three writing principles (#473)
+- feat: style jis-z8301-2019 turns on vague-figure-reference, which reads clause pointers too (#475)
+- feat: bold-label-list, list items led by a bold label and a colon (experimental, Japanese) (#474)
+- docs: bibliography adds works on what generated text looks like, mapped to the rules they back (#481)
+- fix: katakana-long-vowel under styles counts as JIS Z 8301 does, drops only -er/-or/-ar, leaves homographs (#478)
+- fix: oxford-comma-consistency reads "City, State," as one name (#479)
+- fix: proper-noun-density sets its English limit from human documents (#482)
+- docs: chaff as an AI-eval grader (spec §29, AI evals guide page) (#492)
+- feat: image-alt-text runs by default (#487)
+- docs: rewrite chaff's README and npm README with chaff's Full mode (#499)
+- feat: unused-definition, use-before-definition, acronym-expansion-conflict — definitions read against the body (experimental) (#491)
+- feat: modal-conflict — the same act required or allowed in one sentence and forbidden in another (experimental) (#495)
+- feat: name-variant — one name written in slightly different forms (experimental) (#500)
+- feat: outside-announced-list — a later name outside the list announced earlier (experimental) (#503)
+
+### `proper-noun-density` sets its English limit from human documents (#170)
+
+- English counts per 1000 words, and the limit was the Japanese one (per 1000 characters), so the rule fired on most
+  English documents in the corpus. Measured over every English corpus document and a sample of Project Gutenberg
+  novels and essays, `normal` now sits at about the 95th percentile of those human documents, `strict` near the 85th
+  and `relaxed` near the top. Japanese is unchanged. The measurement is in the PR.
+- The generated samples of `yarn bench:ai` name fewer things than their human versions, so the rule never told them
+  apart; it is a readability check, not an AI-shape one.
+
+### `oxford-comma-consistency` reads "City, State," as one name (#170)
+
+- The comma between a place and its US state or country ("New London, Wisconsin, and a photo of …", "Lyon, France,")
+  is part of the name, not a list's comma. A NOAA release in the corpus was counted as writing an Oxford comma there.
+- The names are an English word list, `place-region` (the states, D.C., some territories, the countries and the
+  Canadian provinces). The comma counts as a name's only after a proper noun that is not itself on the list, and when
+  the name ends at punctuation: "Texas, Florida, and Ohio" and "Austin, Texas, Boston, Massachusetts, and Denver,
+  Colorado" are still lists. A name written only after a place (Washington, D.C.) is marked `position: after`.
+
 ### `katakana-long-vowel` under styles: counts as JIS Z 8301 does, drops only -er/-or/-ar, leaves homographs (#170)
 
 - **Morae are counted before the final ー**, as JIS Z 8301:2011 Table G.3 counts: its own examples keep カバー (two

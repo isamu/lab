@@ -6,6 +6,9 @@ import { recommendMode, type ModeInput } from "../packages/chaff/src/fix-plan/mo
 import { phraseHintsOf, rewrittenPathOf, shellPath } from "../packages/chaff/src/fix-plan/plan.ts";
 import type { Finding, Lexicon } from "../packages/chaff/src/plugin.ts";
 import { runCli } from "./cli-run.ts";
+import { structureTargetsOf } from "../packages/chaff/src/fix-plan/structure-targets.ts";
+import type { FeatureId } from "../packages/chaff/src/structure-shape/features.ts";
+import type { Placement, StructureScore } from "../packages/chaff/src/structure-shape/score.ts";
 
 const FIXTURES = join(import.meta.dirname, "fixtures", "fix-plan");
 const fixture = (name: string): string => readFileSync(join(FIXTURES, name), "utf8");
@@ -33,6 +36,18 @@ describe("fix-plan — the recommended mode", () => {
     assert.equal(modeOf("blog/essay", ["ai-tell"]), "full/genre");
     assert.equal(modeOf("literature/essay", ["ai-tell"]), "full/genre");
     assert.equal(modeOf("literature/fiction", ["ai-tell"]), "light/spots");
+  });
+
+  it("an outline past human articles on enough measures means a full rewrite, in any genre and with nothing fired", () => {
+    const withStructure = (genre: string, fired: readonly string[], score: number): string => {
+      const choice = recommendMode({ genre, firedRules: new Set(fired), signalRules: SIGNALS, structure: { score, limit: 3 } });
+      return `${choice.mode}/${choice.reason}`;
+    };
+    assert.equal(withStructure("business/report", [], 3), "full/structure");
+    assert.equal(withStructure("business/report", ["max-sentence-length"], 4), "full/structure");
+    assert.equal(withStructure("business/report", [], 2), "none/nothing-found");
+    assert.equal(withStructure("business/report", ["ai-tell", "closing-cliche"], 2), "bold/signals");
+    assert.equal(withStructure("docs/manual", ["ai-generated-composite"], 5), "full/composite");
   });
 
   it("two document-wide signals mean bold; one, or only spot rules, mean light", () => {
@@ -224,5 +239,120 @@ describe("fix-plan — the plan for a document", () => {
     const two = await runCli({ "a.md": "A.\n", "b.md": "B.\n" }, ["fix-plan", "a.md", "b.md"]);
     assert.equal(two.code, 1);
     assert.match(two.err, /fix-plan <file>/u);
+  });
+});
+
+/** Two headings split into three, bold-label items and an emoji heading: three structure measures past human articles. */
+const SPLIT_OUTLINE = [
+  "# 勉強会を見直す",
+  "",
+  "## 課題",
+  "",
+  "### 人が減った",
+  "",
+  "来る人が減りました。",
+  "",
+  "### 話す人が偏った",
+  "",
+  "同じ人ばかりが話しました。最初の八回のうち六回は、同じ二人の発表でした。",
+  "",
+  "### 題材が遠かった",
+  "",
+  "業務と関係のない話が多くなりました。",
+  "",
+  "## 対策",
+  "",
+  "### 題材を選ぶ",
+  "",
+  "題材を業務から選びました。",
+  "",
+  "### 短く話す",
+  "",
+  "発表を五分にしました。準備の負担が減り、発表した人は半年で九人になりました。",
+  "",
+  "### 記録を残す",
+  "",
+  "話した内容を残しました。",
+  "",
+  "## 🚀 学んだこと",
+  "",
+  "- **仕組み**：意志だけでは続きません",
+  "- **小ささ**：短い発表なら誰でも話せます",
+  "",
+].join("\n");
+
+type StructurePlanJson = {
+  readonly mode: { readonly mode: string; readonly reason: string };
+  readonly structure: { readonly score: number; readonly limit: number };
+  readonly targets: readonly { readonly id: string; readonly value: number; readonly limit: number }[];
+};
+
+const isStructurePlanJson = (value: unknown): value is StructurePlanJson =>
+  typeof value === "object" && value !== null && "structure" in value && "targets" in value && "mode" in value;
+
+describe("fix-plan — a structure target from a placement", () => {
+  const placement = (id: FeatureId, value: number | undefined, beyond: boolean): Placement => ({
+    feature: { id, value },
+    direction: "high",
+    pastShare: 95,
+    limit: 10,
+    median: 4,
+    beyond,
+  });
+  const score = (placements: readonly Placement[]): StructureScore => ({ placements, score: 0, compared: placements.length, articles: 100 });
+
+  it("turns the heading density into headings for this length: now, at most and usually", () => {
+    const [target] = structureTargetsOf(score([placement("heading-density", 15, true)]), 2000);
+    assert.deepEqual(target?.headings, { now: 30, most: 20, usual: 8 });
+    assert.deepEqual([target?.value, target?.limit, target?.median], [15, 10, 4]);
+  });
+
+  it("counts the headings the document has, not the rounded density times the length", () => {
+    const counted: Placement = { ...placement("heading-density", 10, true), feature: { id: "heading-density", value: 10, count: 1001 } };
+    assert.equal(structureTargetsOf(score([counted]), 100000)[0]?.headings?.now, 1001);
+  });
+
+  it("lists only the measures past the limit, and gives a budget to the heading density only", () => {
+    const targets = structureTargetsOf(
+      score([placement("bold-labels", 3, true), placement("bookends", 2, false), placement("emoji-headings", undefined, true)]),
+      2000,
+    );
+    assert.deepEqual(
+      targets.map((target) => [target.id, target.headings]),
+      [["bold-labels", undefined]],
+    );
+  });
+});
+
+describe("fix-plan — the structure targets", () => {
+  it("recommends a full rewrite for an outline past human articles, in a genre that would otherwise be light", async () => {
+    const run = await runCli({ "split.md": SPLIT_OUTLINE }, ["fix-plan", "split.md", "--genre", "business/report", "--json"]);
+    assert.equal(run.code, 0, run.err);
+    const plan: unknown = JSON.parse(run.out);
+    assert.ok(isStructurePlanJson(plan));
+    assert.equal(`${plan.mode.mode}/${plan.mode.reason}`, "full/structure");
+    assert.deepEqual([plan.structure.score, plan.structure.limit], [3, 3]);
+    assert.deepEqual(
+      plan.targets.map((target) => [target.id, target.value]),
+      [
+        ["three-subsections", 2],
+        ["bold-labels", 2],
+        ["emoji-headings", 1],
+      ],
+    );
+  });
+
+  it("writes each target from the human numbers, and when to stop, in the document's language", async () => {
+    const run = await runCli({ "split.md": SPLIT_OUTLINE }, ["fix-plan", "split.md", "--genre", "business/report"]);
+    assert.equal(run.code, 0, run.err);
+    assert.match(run.out, /\n## 構成の目標\n\n構成の AI らしさ: 3（/u);
+    assert.match(run.out, /\n- 3 つの小見出しに分けた見出しを、中身の数に合わせる: いま 2 か所（人の記事の 9 割は \d+ か所まで）。\n/u);
+    assert.match(run.out, /\n- 太字の札で始まる項目 2 個を文に戻す（人の記事の 9 割は \d+ 個まで）。\n/u);
+    assert.match(run.out, /構成の AI らしさが 3 未満になったら構成の書き直しを止めます。/u);
+  });
+
+  it("says every measure is within the human range when none is past it", async () => {
+    const run = await runCli({ "a.md": "# 題\n\n本文です。\n" }, ["fix-plan", "a.md"]);
+    assert.match(run.out, /\n## 構成の目標\n\n構成の AI らしさ: 0（[^\n]*\n\n構成の項目は、どれも人の記事の範囲にあります。\n/u);
   });
 });

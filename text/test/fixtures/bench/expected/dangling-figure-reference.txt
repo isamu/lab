@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/figures  figure-renumbered  found
+en/figures  figure-renumbered  found
