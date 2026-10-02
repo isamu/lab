@@ -14,8 +14,8 @@ name:
   en: The final ー of katakana words is inconsistent
 
 why:
-  ja: 「コンピューター」と「コンピュータ」のように、カタカナ語の語末の「ー」は付ける書き方と省く書き方があります。どちらも正しく、困るのは一つの文書の中で混ざることです。読み手は別のものかと迷い、検索でも片方を取りこぼします。設定が無ければ、同じ語が両方で書かれた所だけを指摘し、違う語どうし（サーバーとブラウザ）は比べません。options の ending を drop か keep にすると、決めた書き方に合わない語をすべて指摘します。音は「コ・ン・ピュ・ー・タ・ー」で 6 音と数えます（小さい「ャュョァィゥェォ」は前の字と合わせて 1 音、「ッ」「ン」「ー」は 1 音ずつ）。辞書が固有名詞と知っている語（ディズニー）と、chaff.yaml の names に並べた名前は見ません。
-  en: A katakana loanword can be written with or without its final long-vowel mark (コンピューター / コンピュータ). Both are right; what reads badly is mixing them in one document, which makes a reader wonder whether they differ and makes a search miss one. With no setting chaff points only at a word written both ways, and does not compare different words (サーバー and ブラウザ). Setting ending under options to drop or keep points at every word written the other way. Morae are counted as コ・ン・ピュ・ー・タ・ー, six (a small ャュョァィゥェォ joins the kana before it; ッ, ン and ー are one each). Words the dictionary knows as proper nouns (ディズニー) and the names under names in chaff.yaml are left alone.
+  ja: 「コンピューター」と「コンピュータ」のように、カタカナ語の語末の「ー」は付ける書き方と省く書き方があります。どちらも正しく、困るのは一つの文書の中で混ざることです。読み手は別のものかと迷い、検索でも片方を取りこぼします。設定が無ければ、同じ語が両方で書かれた所だけを指摘し、違う語どうし（サーバーとブラウザ）は比べません。options の ending を drop か keep にすると、決めた書き方に合わない語をすべて指摘します。音は語末の「ー」を除いて「コ・ン・ピュ・ー・タ」で 5 音と数えます（小さい「ャュョァィゥェォ」は前の字と合わせて 1 音、「ッ」「ン」と語中の「ー」は 1 音ずつ。JIS Z 8301:2011 表 G.3 の数え方）。辞書が固有名詞と知っている語（ディズニー）と、chaff.yaml の names に並べた名前は見ません。
+  en: A katakana loanword can be written with or without its final long-vowel mark (コンピューター / コンピュータ). Both are right; what reads badly is mixing them in one document, which makes a reader wonder whether they differ and makes a search miss one. With no setting chaff points only at a word written both ways, and does not compare different words (サーバー and ブラウザ). Setting ending under options to drop or keep points at every word written the other way. Morae are counted before the final ー, as コ・ン・ピュ・ー・タ, five (a small ャュョァィゥェォ joins the kana before it; ッ, ン and a ー inside the word are one each), as JIS Z 8301:2011 Table G.3 counts. Words the dictionary knows as proper nouns (ディズニー) and the names under names in chaff.yaml are left alone.
 
 message:
   ja: 「{matched}」は語末の「ー」がほかと違います（「{preferred}」）
@@ -59,17 +59,17 @@ options:
         ja: 決めない。文書の中でそろっているかだけを見る
         en: No side taken; only checks that the document is consistent
       drop:
-        ja: min_morae 音以上の語の語末の「ー」を省く（電子情報通信学会、JIS Z 8301:2011 まで）
-        en: Drop the final ー on words of min_morae morae or more (IEICE; JIS Z 8301 up to 2011)
+        ja: min_morae 音以上の語の、英語の -er、-or、-ar に当たる語末の「ー」（ア段の字の後ろ）を省く（電子情報通信学会、JIS Z 8301:2011 まで）
+        en: Drop the final ー that stands for English -er, -or, -ar (after a kana of the ア row) on words of min_morae morae or more (IEICE; JIS Z 8301 up to 2011)
       keep:
         ja: 語末の「ー」を付ける（文化庁「外来語の表記」、JIS Z 8301:2019）。「ー」の無い語は、辞書が「ー」付きで知っている語（メモリ）か、文書がほかで「ー」付きで書く語だけを見る
         en: Keep the final ー (the Agency for Cultural Affairs' 外来語の表記; JIS Z 8301:2019). A word without one is checked only when the dictionary knows it with one (メモリ) or the document writes it with one elsewhere
   min_morae:
     kind: count
-    default: 3
+    default: 2
     about:
-      ja: 何音以上の語を見るか。語末の「ー」も 1 音と数える（コンピューターは 6 音、カーは 2 音）
-      en: The shortest word checked, in morae, counting the final ー (コンピューター is six, カー two)
+      ja: 何音以上の語を見るか。語末の「ー」は数えない（コンピューターは 5 音、カバーは 2 音、カーは 1 音）
+      en: The shortest word checked, in morae before the final ー (コンピューター is five, カバー two, カー one)
   except:
     kind: words
     default: []
@@ -92,8 +92,8 @@ example:
       新しいコンピューターを買いました。古いコンピューターは来月捨てます。
 
 not_flagged:
-  ja: 違う語どうし（サーバーとブラウザ）は比べません。2 音の語（カー）、辞書が固有名詞と知っている語、chaff.yaml の names に並べた名前も見ません。「ー」を付けると別の語になる語（知ってるフリ／フリー、スキ／スキー）は、語彙表 long-vowel-distinct に並べたものを同じ語として比べません。
-  en: Different words (サーバー and ブラウザ) are not compared. Two-mora words (カー), words the dictionary knows as proper nouns and the names under names in chaff.yaml are left alone. A word that becomes another word with a final ー (フリ, 振り, and フリー, free) is not compared when it is in the long-vowel-distinct word list.
+  ja: 違う語どうし（サーバーとブラウザ）は比べません。「ー」の前が 1 音の語（カー）、辞書が固有名詞と知っている語、chaff.yaml の names に並べた名前も見ません。「ー」を付けると別の語になる語（知ってるフリ／フリー、タブ／タブー、ベタ／ベター）は、語彙表 long-vowel-distinct に並べたものを同じ語として比べず、keep でも「ー」を足させません。drop は ュー・エー・イーなどで終わる語（メニュー、グレー、コピー）を見ません。
+  en: Different words (サーバー and ブラウザ) are not compared. Words of one mora before the final ー (カー), words the dictionary knows as proper nouns and the names under names in chaff.yaml are left alone. A word that becomes another word with a final ー (フリ and フリー, タブ (tab) and タブー (taboo), ベタ and ベター) is not compared, nor asked for a ー by keep, when it is in the long-vowel-distinct word list. drop leaves words ending in ュー, エー, イー and the like alone (メニュー, グレー, コピー).
 level_meaning:
   ja: 違う書き方の語が {limit} 箇所あれば指摘
   en: reported once {limit} words go the other way

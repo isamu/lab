@@ -116,10 +116,10 @@ describe("modalLexiconNames — pure", () => {
 });
 
 describe("style: jis-z8301-2019", () => {
-  it("turns the rule on with JIS's forms, and decides nothing else", () => {
+  it("turns the rule on with JIS's forms, and vague-figure-reference for 10.6, and decides nothing else", () => {
     const style = loadStyles().find((entry) => entry.id === "jis-z8301-2019");
     assert.ok(style !== undefined);
-    assert.deepEqual(style.rules, { [RULE]: "normal" });
+    assert.deepEqual(style.rules, { [RULE]: "normal", "vague-figure-reference": "normal" });
     assert.deepEqual(style.options, { [RULE]: { standard: "jis-z8301-2019" } });
   });
 
@@ -129,5 +129,13 @@ describe("style: jis-z8301-2019", () => {
     assert.match(styled.out, /「べきである」は使わない形です。「することが望ましい」と書きます/u);
     const plain = await runCli({ "chaff.yaml": "language: ja\n", "a.md": source }, ["a.md", "--compact", "--experimental"]);
     assert.doesNotMatch(plain.out, /requirement-modal/u);
+  });
+
+  it("the command line reports 以下の箇条 in a numbered standard under the style, and not without it", async () => {
+    const source = "# 規格\n\n## 1 適用範囲\n\nこの規格は、以下の箇条で試験方法を定める。\n\n## 2 試験方法\n\n試料を乾燥させる。\n";
+    const styled = await runCli({ "chaff.yaml": "language: ja\nstyle: jis-z8301-2019\n", "a.md": source }, ["a.md", "--compact"]);
+    assert.match(styled.out, /「以下の箇条」ではなく、番号で指してください（この文書は箇条に番号を付けています）/u);
+    const plain = await runCli({ "chaff.yaml": "language: ja\n", "a.md": source }, ["a.md", "--compact"]);
+    assert.doesNotMatch(plain.out, /vague-figure-reference/u);
   });
 });
