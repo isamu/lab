@@ -634,6 +634,9 @@ genres:
 | `max-paragraph-length` ✅ | 段落あたり文数 | 両方 | warning |
 | `required-sections` ✅ | 必須見出しの有無 | business | error |
 | `preamble-length` ✅ | 本題前の段落数 | business | warning |
+| `paragraph-restatement` ✅ | 言い直しを告げる語（語彙表）で始まる段落の内容語のうち、すぐ前の段落にある語の割合 | 両方 | info |
+| `no-lead` ✅ | 題の直後の段落が題の trigram の半分以上を繰り返し、題に無い内容語をわずかしか足さない | 両方 | info |
+| `title-length` ✅ | 題と見出しの長さ（ja は文字、英字の語は二文字。en は語）。ジャンルで上限を変える | 両方 | info |
 | `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
@@ -931,6 +934,9 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
 | `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
+| `table-header-variant` ✅ | 表の見出し（と二列の表の項目名）の書き分け。幅・大小・空白・ハイフンをそろえ、語彙表の字（者・欄 / s・es）を外して同じなら同じ欄と見て、少ないほうを指摘 | - |
+| `number-style-consistency` ✅ | 数の書き方の混在。数え方の語の前の漢数字と算用数字、位取りのコンマ、百分率の単位、英語の数（語か数字か）ごとに少ないほうを指摘 | - |
+| `list-item-form-mix` ✅ | 一つの箇条書きの項目の形（名詞止めと文、en は動詞始まりと名詞始まり）。品詞で判定し、少ないほうを指摘 | - |
 | `fullwidth-alnum-consistency` ✅ | 英数字の全角と半角の混在。英字一字・語・数字一字・並びごとに少ないほうを指摘 | - |
 | `ra-nuki` ✅ | ら抜き言葉。lang-ja が一段・カ変動詞の未然形＋「れる」に `PotentialRa=Dropped` を付ける | pos |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
@@ -978,6 +984,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
 | `name-variant` | 同じ名前（固有名詞の続き）を少しだけ違う形で書く。書き方だけの違い（大小・幅・空白・記号）、読みが同じで一語だけ違う、英字の一字違い（多いほうが二度以上・少ないほうが一度）。日本語でも動く | pos |
+| `redundant-expression` | 重言（頭痛が痛い、一番最初、end result、each and every）。語彙表 redundant-expression の語ごとに重ねを外した形を持つ。日本語でも動く | pos |
 | `spelling-consistency` ✅ | イギリスとアメリカの綴りの一貫性。語彙表 spelling-variant と spelling-ize の組ごとに少ないほうを指摘 | - |
 | `space-before-punctuation` ✅ | 句読点の前の空白（"word ."）。コロン・空白で区切った点・数の後ろは除く | - |
 

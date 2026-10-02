@@ -1,0 +1,8 @@
+# 起点の語と年数のあいだに書いてよい語（elapsed-years-mismatch）。「設立から10年」。何も挟まない「創業10年」もよい。
+id: elapsed-link
+language: ja
+entries:
+  - pattern: "から"
+  - pattern: "以来"
+  - pattern: "より"
+  - pattern: "して"

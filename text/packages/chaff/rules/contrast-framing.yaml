@@ -29,7 +29,7 @@ levels:
   ja: { strict: 1, normal: 1.5, relaxed: 3 }
   en: { strict: 2, normal: 3, relaxed: 6 }
 
-use_for: [blog, business, legal, docs, academic, literature, speech]
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 
 group: ai-tells
 summary:

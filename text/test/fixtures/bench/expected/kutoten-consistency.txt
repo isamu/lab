@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  comma-western  found
+ja/design  comma-western  found
+ja/email  comma-western  found
+ja/figures  comma-western  found
+ja/itinerary  comma-western  found
+ja/minutes  comma-western  found
+ja/note  comma-western  found
+ja/policy  comma-western  found
+ja/press  comma-western  found
+ja/proposal  comma-western  found
+ja/quote  comma-western  found
+ja/readme  comma-western  found
+ja/requirements  comma-western  found
