@@ -1,26 +1,35 @@
-// Pure: the parts of a guide page that scripts/guide-screens.ts runs chaff for. A guide page shows chaff's screen in a
-// code block that starts with "$ npx chaffjs <file> <options>". Where that screen lists the rules that did not run, the
-// page writes the line "{not-run}" in place of the list, and the site fills it in from chaff's own output at build.
-// The document the command reads is a ```markdown file=<name> block on the same page.
+// Pure: the parts of a guide page that scripts/guide-screens.ts runs chaff for, and the comparison of a screen with what
+// chaff prints. A guide page shows chaff's screen in a code block that starts with "$ npx chaffjs <args>". Lines that
+// change with every new rule are not kept on the page: "{not-run}" stands for the list of rules that did not run, and
+// "{counts}" for the last line of --compact ("3 findings, 97 rules not run"). The site fills both in at build.
+// A screen's documents are the page's ```<lang> file=<name> blocks, then the files in site/src/screens/<lang>/<page>/;
+// a "<!-- chaff-screen: <name> -->" line just above the screen adds site/src/screens/<lang>/<page>--<name>/ over them.
 
-import { NOT_RUN_MARKER } from "../site/src/lib/notRunLists.ts";
+import { COUNTS_MARKER, NOT_RUN_MARKER, type ScreenFills } from "../site/src/lib/screenFills.ts";
 
 const PROMPT = "$ npx chaffjs ";
-const FENCE = /^```([^\n]*)\n([\s\S]*?)^```$/gmu;
+const FENCE = /^(?:<!-- chaff-screen: (\S+) -->\n)?```([^\n]*)\n([\s\S]*?)^```$/gmu;
 const FILE_META = /(?:^|\s)file=(\S+)/u;
 const NOT_RUN_HEADER = /^ *(?:\d+ rules? did not run:|\d+ 件の rule は動いていません:)$/u;
 const LIST_ENTRY = /^ {6}\S/u;
+const COUNTS_LINE = /^(?:\d+ findings?(?:, \d+ rules? not run)?|指摘 \d+ 件(?:、動いていない rule \d+ 件)?)$/u;
+/** A line of a screen that stands for any number of lines chaff printed, the page showing only part of the screen. */
+export const ELISION = "…";
 
-/** A screen to fill in: the command as the page writes it, and the arguments chaff gets. */
-export type Screen = { readonly command: string; readonly args: readonly string[] };
+/** A screen: the command as the page writes it, the arguments chaff gets, its extra files, and what the page shows. */
+export type Screen = { readonly command: string; readonly args: readonly string[]; readonly setup?: string; readonly shown: string };
 
 export type PageScreens = { readonly documents: Readonly<Record<string, string>>; readonly screens: readonly Screen[] };
 
-const isScreenWithMarker = (body: string): boolean => body.startsWith(PROMPT) && body.split("\n").some((line) => line.trim() === NOT_RUN_MARKER);
+const ARG = /"([^"]*)"|'([^']*)'|(\S+)/gu;
 
-/** The documents (```markdown file=<name>) and the screens with a "{not-run}" line in one guide page. */
+/** The arguments a shell would pass for the command: split at spaces, a quoted argument kept whole without its quotes. */
+export const argsOf = (command: string): string[] =>
+  [...command.slice(PROMPT.length).matchAll(ARG)].map(([, double, single, bare]) => double ?? single ?? bare ?? "");
+
+/** The documents (```<lang> file=<name>) and every screen ("$ npx chaffjs ...") of one guide page, in page order. */
 export const screensIn = (page: string): PageScreens => {
-  const blocks = [...page.matchAll(FENCE)].map(([, info = "", body = ""]) => ({ info, body }));
+  const blocks = [...page.matchAll(FENCE)].map(([, setup, info = "", body = ""]) => ({ setup, info, body }));
   const documents = Object.fromEntries(
     blocks.flatMap(({ info, body }) => {
       const name = FILE_META.exec(info)?.[1];
@@ -28,22 +37,18 @@ export const screensIn = (page: string): PageScreens => {
     }),
   );
   const screens = blocks
-    .filter(({ body }) => isScreenWithMarker(body))
-    .map(({ body }) => {
+    .filter(({ body }) => body.startsWith(PROMPT))
+    .map(({ setup, body }) => {
       const command = body.split("\n")[0] ?? "";
-      return {
-        command,
-        args: command
-          .slice(PROMPT.length)
-          .split(" ")
-          .filter((arg) => arg !== ""),
-      };
+      return { command, args: argsOf(command), ...(setup === undefined ? {} : { setup }), shown: body };
     });
   return { documents, screens };
 };
 
-/** The argument that names the screen's document: the first one a document exists for, wherever the options are. */
-export const documentArg = (args: readonly string[], hasDocument: (name: string) => boolean): string | undefined => args.find(hasDocument);
+const hasLine = (code: string, marker: string): boolean => code.split("\n").some((line) => line.trim() === marker);
+
+/** Whether the screen keeps a line for the site to fill in. */
+export const hasFill = (shown: string): boolean => hasLine(shown, NOT_RUN_MARKER) || hasLine(shown, COUNTS_MARKER);
 
 /** The "N rules did not run:" line and the rule lines under it, from chaff's screen; undefined when the screen has none. */
 export const notRunBlock = (output: string): string | undefined => {
@@ -54,3 +59,41 @@ export const notRunBlock = (output: string): string | undefined => {
   const end = rest.findIndex((line) => !LIST_ENTRY.test(line));
   return lines.slice(start, start + 1 + (end === -1 ? rest.length : end)).join("\n");
 };
+
+/** The last line of a --compact screen ("3 findings, 97 rules not run"); undefined when there is none. */
+export const countsLine = (output: string): string | undefined => output.split("\n").findLast((line) => COUNTS_LINE.test(line));
+
+/** The markers a screen keeps that the fills have nothing for. */
+export const missingFills = (shown: string, fills: ScreenFills): string[] => [
+  ...(hasLine(shown, NOT_RUN_MARKER) && fills.notRun === undefined ? [NOT_RUN_MARKER] : []),
+  ...(hasLine(shown, COUNTS_MARKER) && fills.counts === undefined ? [COUNTS_MARKER] : []),
+];
+
+/** What a screen's markers are filled with, from what chaff printed for it; only the markers the screen has. */
+export const fillsFor = (shown: string, output: string): ScreenFills => {
+  const notRun = hasLine(shown, NOT_RUN_MARKER) ? notRunBlock(output) : undefined;
+  const counts = hasLine(shown, COUNTS_MARKER) ? countsLine(output) : undefined;
+  return { ...(notRun === undefined ? {} : { notRun }), ...(counts === undefined ? {} : { counts }) };
+};
+
+/** What chaff prints for a command, as a page would show it: the prompt line, one blank line, then the output. */
+export const asScreen = (command: string, output: string): string => [command, "", output.replace(/^\n+/u, "")].join("\n");
+
+const linesOf = (text: string): string[] => {
+  const [prompt = "", ...output] = text.split("\n").map((line) => line.trimEnd());
+  const first = output.findIndex((line) => line !== "");
+  const last = output.findLastIndex((line) => line !== "");
+  return [prompt, ...(first === -1 ? [] : output.slice(first, last + 1))];
+};
+
+const matchFrom = (shown: readonly string[], actual: readonly string[], i: number, j: number): boolean => {
+  if (i === shown.length) return j === actual.length;
+  if (shown[i]?.trim() === ELISION) return Array.from({ length: actual.length - j + 1 }, (_, skip) => j + skip).some((k) => matchFrom(shown, actual, i + 1, k));
+  return j < actual.length && shown[i] === actual[j] && matchFrom(shown, actual, i + 1, j + 1);
+};
+
+/**
+ * Whether a screen as the page shows it (markers filled in) is what chaff printed: line for line, ignoring trailing
+ * spaces and the blank lines around the output, where a line holding only "…" stands for any number of chaff's lines.
+ */
+export const screenMatches = (shown: string, actual: string): boolean => matchFrom(linesOf(shown), linesOf(actual), 0, 0);

@@ -1,74 +1,157 @@
-// Runs chaff's command line for every guide-page screen that writes "{not-run}" in place of the list of rules that did
-// not run, and keeps that list as chaff prints it now. The site puts it in at build (site/src/lib/notRunLists.ts), so a
-// new rule changes no guide page. A screen reads the page's ```markdown file=<name> block, or else
-// site/src/screens/<lang>/<name> for a document the page does not show.
+// Runs chaff's command line for the guide pages' screens. With an output path, it runs every screen that keeps a
+// "{not-run}" or "{counts}" line and writes what chaff printed there, for the site to fill in at build
+// (site/src/lib/screenFills.ts), so a new rule changes no guide page. test/test_guide_screen_output.ts runs every screen
+// and compares it with the page. Where a screen's documents come from is in scripts/guide-screens-parse.ts.
 //   node scripts/guide-screens.ts <out.json>
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { documentArg, notRunBlock, screensIn, type Screen } from "./guide-screens-parse.ts";
+//   node scripts/guide-screens.ts --check en/commands.md ...   print each screen of these pages that differs from chaff
+import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, relative, resolve, sep } from "node:path";
+import { ELISION, asScreen, fillsFor, hasFill, missingFills, screenMatches, screensIn, type Screen } from "./guide-screens-parse.ts";
+import { withScreenFills, type PageFills, type ScreenFills } from "../site/src/lib/screenFills.ts";
 import { runCli } from "../test/cli-run.ts";
 
 const SITE = join(import.meta.dirname, "..", "site", "src");
 const GUIDE = join(SITE, "content", "guide");
-const SCREEN_DOCUMENTS = join(SITE, "screens");
+const SCREEN_FILES = join(SITE, "screens");
 const LOCALES: Readonly<Record<string, string>> = { ja: "ja_JP.UTF-8", en: "en_US.UTF-8" };
 
-/** page ("ja/getting-started.md") → command → the list as chaff prints it. */
-type GuideScreens = Record<string, Record<string, string>>;
+/** A guide page: its language and file name ("en", "commands.md"). */
+export type GuidePage = { readonly language: string; readonly file: string };
 
-const screenDocument = (language: string, name: string): string => join(SCREEN_DOCUMENTS, language, name);
+const filesUnder = (dir: string): Record<string, string> => {
+  if (!existsSync(dir)) return {};
+  const paths = readdirSync(dir, { recursive: true, encoding: "utf8" }).filter((path) => statSync(join(dir, path)).isFile());
+  return Object.fromEntries(paths.map((path) => [path.split(sep).join("/"), readFileSync(join(dir, path), "utf8")]));
+};
 
-const isFile = (path: string): boolean => existsSync(path) && statSync(path).isFile();
+export const pageName = ({ language, file }: GuidePage): string => `${language}/${file}`;
 
-/** Whether a screen's argument names a document: a block on the page, or a file in site/src/screens/<language>/. */
-export const hasDocumentIn =
-  (language: string, documents: Readonly<Record<string, string>>) =>
-  (name: string): boolean =>
-    documents[name] !== undefined || isFile(screenDocument(language, name));
+/** The folder of a page's screen files, and of one setup over them. */
+export const screenFolder = ({ language, file }: GuidePage, setup?: string): string => {
+  const stem = file.replace(/\.md$/u, "");
+  return join(SCREEN_FILES, language, setup === undefined ? stem : `${stem}--${setup}`);
+};
 
-const documentFor = (language: string, name: string, documents: Readonly<Record<string, string>>): string =>
-  documents[name] ?? readFileSync(screenDocument(language, name), "utf8");
+/** The files a screen runs in: the page's file= blocks, then its screen folder, then the screen's setup folder. */
+const filesFor = (page: GuidePage, documents: Readonly<Record<string, string>>, screen: Screen): Record<string, string> => ({
+  ...documents,
+  ...filesUnder(screenFolder(page)),
+  ...(screen.setup === undefined ? {} : filesUnder(screenFolder(page, screen.setup))),
+});
 
-const listFor = async (page: string, language: string, documents: Readonly<Record<string, string>>, screen: Screen): Promise<string> => {
-  const file = documentArg(screen.args, hasDocumentIn(language, documents));
-  if (file === undefined)
-    throw new Error(
-      `guide-screens: ${page}: "${screen.command}" names no \`\`\`markdown file=<name> block on the page, and no file in ${join(SCREEN_DOCUMENTS, language)}`,
-    );
-  const run = await runCli({ [file]: documentFor(language, file, documents) }, screen.args, LOCALES[language]);
+/** Chaff's output for one screen, as a page would show it, in a fresh folder holding the screen's files. */
+export const runScreen = async (page: GuidePage, documents: Readonly<Record<string, string>>, screen: Screen): Promise<string> => {
+  if (screen.setup !== undefined && !existsSync(screenFolder(page, screen.setup)))
+    throw new Error(`guide-screens: ${pageName(page)}: "${screen.command}": no folder ${relative(process.cwd(), screenFolder(page, screen.setup))}`);
+  const run = await runCli(filesFor(page, documents, screen), screen.args, LOCALES[page.language]);
+  const folders = [realpathSync(run.dir), run.dir];
   rmSync(run.dir, { recursive: true, force: true });
-  const block = notRunBlock(run.out);
-  if (block === undefined) throw new Error(`guide-screens: ${page}: "${screen.command}" printed no list of rules that did not run`);
-  return block;
-};
-
-const screensOfPage = async (language: string, file: string): Promise<[string, Record<string, string>]> => {
-  const page = `${language}/${file}`;
-  const { documents, screens } = screensIn(readFileSync(join(GUIDE, page), "utf8"));
-  // One at a time: the command line runs in the document's directory, and the working directory is the process's.
-  const lists = await screens.reduce<Promise<Record<string, string>>>(
-    async (done, screen) => ({ ...(await done), [screen.command]: await listFor(page, language, documents, screen) }),
-    Promise.resolve({}),
+  const printed = [run.out, run.err].filter((part) => part !== "").join("\n");
+  // The run's folder is a fresh temporary one; a page writes the folder a reader runs in as "…".
+  return asScreen(
+    screen.command,
+    folders.reduce((text, folder) => text.replaceAll(folder, ELISION), printed),
   );
-  return [page, lists];
 };
 
-const pagesOf = (language: string): string[] => readdirSync(join(GUIDE, language)).filter((file) => file.endsWith(".md") && file !== "STYLE.md");
+/** Every guide page, both languages. */
+export const guidePages = (): GuidePage[] =>
+  Object.keys(LOCALES).flatMap((language) =>
+    readdirSync(join(GUIDE, language))
+      .filter((file) => file.endsWith(".md") && file !== "STYLE.md")
+      .map((file) => ({ language, file })),
+  );
 
-/** Every guide page's screens, one command-line run per screen. */
-const guideScreens = async (): Promise<GuideScreens> => {
-  const pages = Object.keys(LOCALES).flatMap((language) => pagesOf(language).map((file) => ({ language, file })));
-  const entries = await pages.reduce<Promise<[string, Record<string, string>][]>>(
-    async (done, { language, file }) => [...(await done), await screensOfPage(language, file)],
+export const readGuidePage = (page: GuidePage): ReturnType<typeof screensIn> => screensIn(readFileSync(join(GUIDE, page.language, page.file), "utf8"));
+
+/** The lines for a screen's markers; a marker chaff printed nothing for stops here, naming the page and the command. */
+const madeFills = (page: GuidePage, screen: Screen, output: string): ScreenFills => {
+  const fills = fillsFor(screen.shown, output);
+  const missing = missingFills(screen.shown, fills);
+  if (missing.length > 0) throw new Error(`guide-screens: ${pageName(page)}: "${screen.command}" printed nothing for ${missing.join(", ")}`);
+  return fills;
+};
+
+const fillsOfPage = async (page: GuidePage): Promise<[string, PageFills]> => {
+  const { documents, screens } = readGuidePage(page);
+  // One at a time: the command line runs in the screen's folder, and the working directory is the process's.
+  const fills = await screens
+    .filter((screen) => hasFill(screen.shown))
+    .reduce<Promise<PageFills>>(
+      async (done, screen) => [...(await done), { command: screen.command, fills: madeFills(page, screen, await runScreen(page, documents, screen)) }],
+      Promise.resolve([]),
+    );
+  return [pageName(page), fills];
+};
+
+/** The lines to fill in for every guide page's marked screens, one command-line run per screen. */
+const guideScreenFills = async (): Promise<Record<string, PageFills>> => {
+  const entries = await guidePages().reduce<Promise<[string, PageFills][]>>(
+    async (done, page) => [...(await done), await fillsOfPage(page)],
     Promise.resolve([]),
   );
-  return Object.fromEntries(entries.filter(([, lists]) => Object.keys(lists).length > 0));
+  return Object.fromEntries(entries.filter(([, fills]) => fills.length > 0));
+};
+
+/** A screen compared with chaff: the page's screen with its markers filled in, what chaff printed, and whether they agree. */
+export type ScreenCheck = { readonly shown: string; readonly actual: string; readonly matches: boolean };
+
+const BACKSLASH = /\\/gu;
+// On Windows chaff prints paths with \; the pages write them with /.
+const asPosix = (output: string): string => (process.platform === "win32" ? output.replace(BACKSLASH, "/") : output);
+
+export const checkScreen = async (page: GuidePage, documents: Readonly<Record<string, string>>, screen: Screen): Promise<ScreenCheck> => {
+  const actual = asPosix(await runScreen(page, documents, screen));
+  const fills = fillsFor(screen.shown, actual);
+  if (missingFills(screen.shown, fills).length > 0) return { shown: screen.shown, actual, matches: false };
+  const shown = withScreenFills(screen.shown, fills, `${pageName(page)}: "${screen.command}"`);
+  return { shown, actual, matches: screenMatches(shown, actual) };
+};
+
+/**
+ * The screens no test runs, by page and command, with why. Anything else on a guide page is run and compared with
+ * chaff, so a screen that cannot be run is listed here rather than silently left out.
+ */
+export const UNCHECKED: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  "ja/commands.md": { "$ npx chaffjs article.md --watch": "--watch waits for the file to be saved, and its lines carry the time" },
+  "en/commands.md": { "$ npx chaffjs article.md --watch": "--watch waits for the file to be saved, and its lines carry the time" },
+};
+
+/** A page's screens that are run and compared with chaff: every one not listed in UNCHECKED. */
+export const checkedScreens = (page: GuidePage): { documents: Readonly<Record<string, string>>; screens: Screen[] } => {
+  const { documents, screens } = readGuidePage(page);
+  const unchecked = UNCHECKED[pageName(page)] ?? {};
+  return { documents, screens: screens.filter((screen) => unchecked[screen.command] === undefined) };
+};
+
+/** Each checked screen of a page that differs from chaff, with the check. */
+export const differingScreens = async (page: GuidePage): Promise<{ screen: Screen; check: ScreenCheck }[]> => {
+  const { documents, screens } = checkedScreens(page);
+  return screens.reduce<Promise<{ screen: Screen; check: ScreenCheck }[]>>(async (done, screen) => {
+    const found = await done;
+    const check = await checkScreen(page, documents, screen);
+    return check.matches ? found : [...found, { screen, check }];
+  }, Promise.resolve([]));
+};
+
+/** Prints each screen of the given pages ("en/commands.md"; all pages when none is given) that differs from chaff. */
+const printDiffering = async (names: readonly string[]): Promise<void> => {
+  const pages = guidePages().filter((page) => names.length === 0 || names.includes(pageName(page)));
+  await pages.reduce<Promise<void>>(async (done, page) => {
+    await done;
+    (await differingScreens(page)).forEach(({ check }) =>
+      console.log(`=== ${pageName(page)}\n--- the page shows\n${check.shown}\n--- chaff prints\n${check.actual}\n`),
+    );
+  }, Promise.resolve());
 };
 
 if (import.meta.main) {
-  const out = process.argv[2];
-  if (out === undefined) throw new Error("usage: node scripts/guide-screens.ts <out.json>");
-  const screens = await guideScreens();
-  mkdirSync(dirname(resolve(out)), { recursive: true });
-  writeFileSync(resolve(out), `${JSON.stringify(screens, null, 2)}\n`, "utf8");
+  const [first, ...rest] = process.argv.slice(2);
+  if (first === undefined) throw new Error("usage: node scripts/guide-screens.ts <out.json> | --check <lang>/<page>.md ...");
+  if (first === "--check") await printDiffering(rest);
+  else {
+    const fills = await guideScreenFills();
+    mkdirSync(dirname(resolve(first)), { recursive: true });
+    writeFileSync(resolve(first), `${JSON.stringify(fills, null, 2)}\n`, "utf8");
+  }
 }
