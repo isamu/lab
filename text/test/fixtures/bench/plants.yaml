@@ -95,6 +95,7 @@ not_planted:
   sentence-rhythm: the shape of the whole document, not one mistake
   spelling-consistency: the English samples use at most one word with a British or American spelling, so no single edit mixes them
   stock-transition: a density over the whole document
+  table-header-variant: the samples have at most one table, so no single edit writes a header two ways
   taigen-dome-in-prose: a count over the whole document; reaching it would rewrite the sample's register
   unqualified-superlative: more than one unqualified superlative in a document is several mistakes, not one
   unsourced-number: L4, judged by chaff test and never run by lint

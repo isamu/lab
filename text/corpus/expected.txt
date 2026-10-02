@@ -175,7 +175,7 @@ nttcom-onboarding-week1  agentless-passive 1, concrete-evidence-density 6, hirag
 nws-glossary-a  agreement-slip 1, doubled-word 1, max-paragraph-length 4, max-sentence-length 2, name-variant 1, spelling-consistency 2, undefined-acronym 33
 nws-heat-wave-safety  agentless-passive 4, concrete-evidence-density 4, contraction-consistency 4, heading-level-skip 3, max-paragraph-length 1, max-sentence-length 6, preamble-length 1
 oecd-global-drought-outlook-summary  adverb-overuse 1, agentless-passive 2, heading-level-skip 1, max-paragraph-length 2, max-sentence-length 12
-openapi-spec-3-1-0  contraction-consistency 1, duplicate-heading 1, heading-echo 4, heading-level-skip 2, max-sentence-length 40, ngram-repetition 1, oxford-comma-consistency 2, requirement-smell 1, title-case-consistency 1, undefined-acronym 4
+openapi-spec-3-1-0  contraction-consistency 1, duplicate-heading 1, heading-echo 4, heading-level-skip 2, max-sentence-length 40, ngram-repetition 1, oxford-comma-consistency 2, requirement-smell 1, table-header-variant 1, title-case-consistency 1, undefined-acronym 4
 pep-0020-zen-of-python  clean
 plainlanguage-use-tables  agentless-passive 2, contraction-consistency 1, dangling-reference 1, max-sentence-length 5, preamble-length 1
 ppc-guidelines-tsusoku  duplicate-definition 11, fullwidth-alnum-consistency 13, latin-spacing 3, max-sentence-length 9, repeated-conjunction 9, unbalanced-bracket 23, undefined-acronym 4, unused-definition 4, use-before-definition 10
