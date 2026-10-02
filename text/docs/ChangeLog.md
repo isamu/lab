@@ -4,6 +4,14 @@ Newest first.
 
 ## Unreleased
 
+### Bibliography: more works on what generated text looks like
+
+- The bibliography adds Juzek and Ward (COLING 2025) on why ChatGPT overuses some words, Sun et al. (ICML 2025) on
+  the habits that tell models apart, Shaib et al. (2025) on measuring low-quality generated text, the editors' guide
+  "Signs of AI writing" on the English Wikipedia, and two Japanese articles on AI-sounding writing (Zenn, Writers-hub).
+  `ai-tell` now cites Juzek and Ward. The entries name the rules they back: `bold-label-list`, `emoji-heading`,
+  `chat-citation-residue` and `colon-lead-in`.
+
 ### New rule: `bold-label-list`, list items led by a bold label (experimental, Japanese)
 
 - Points at a document where many list items open with a bold label and a colon (「- **速さ**：一覧が速く出ます」), the
