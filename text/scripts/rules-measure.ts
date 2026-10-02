@@ -129,6 +129,8 @@ const tableOf = (measurement: Measurement): string[] => {
 
 const measurement = await measure();
 const apply = process.argv.includes("--apply");
+// Applied first: a measurement that leaves a rule out throws before any file is written.
+const applied = apply ? applyMeasurement(withoutBaseline(measurement)) : [];
 if (apply || process.argv.includes("--write")) writeFileSync(MEASURE_FILE, `${JSON.stringify(withoutBaseline(measurement), null, 2)}\n`);
-if (apply) applyMeasurement(readMeasurement()).forEach((line) => console.log(line));
+if (apply) applied.forEach((line) => console.log(line));
 else console.log(process.argv.includes("--json") ? JSON.stringify(measurement, null, 2) : tableOf(measurement).join("\n"));

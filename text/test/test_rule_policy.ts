@@ -21,7 +21,7 @@ import {
   type RuleMeasure,
 } from "../scripts/rules-measure-score.ts";
 import { measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "../scripts/rules-apply.ts";
-import { policyProblems, readMeasurement } from "../scripts/rules-measure-files.ts";
+import { applyMeasurement, policyProblems, readMeasurement } from "../scripts/rules-measure-files.ts";
 import { parseGenres } from "../packages/chaff/src/genre-parse.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -285,5 +285,7 @@ describe("committed measurement", () => {
   it("a rule that landed after the measurement fails until it is measured, so no new rule stays experimental unnoticed", () => {
     const rest = Object.fromEntries(Object.entries(readMeasurement().rules).filter(([id]) => id !== "doubled-word"));
     assert.ok(policyProblems({ rules: rest }).includes("doubled-word: not measured yet (yarn rules:measure --apply)"));
+    // Throws before it writes anything, so an incomplete --from cannot place the rule.
+    assert.throws(() => applyMeasurement({ rules: rest }), /doubled-word: not measured yet/u);
   });
 });

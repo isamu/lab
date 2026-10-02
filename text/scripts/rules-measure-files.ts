@@ -95,6 +95,8 @@ const rewriteRule = (rule: RuleDefinition, standing: Standing): string | undefin
 export const applyMeasurement = (measurement: Measurement): string[] => {
   const text = readGenresText();
   const rules = allRules();
+  const missing = rules.flatMap((rule) => unmeasured(rule, measurement));
+  if (missing.length > 0) throw new Error(`the measurement leaves rules out; measure again without --from:\n${missing.join("\n")}`);
   const standings = standingsOf(measurement, rules, text);
   const changed = rules.flatMap((rule) => {
     const standing = standings.get(rule.id);
