@@ -51,6 +51,7 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
+| `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") (Japanese documents only) |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
@@ -554,10 +555,8 @@ $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 
 rewritten.md   blog/tech · English   genre from --genre
 
-  3:27    info    44 proper nouns per 1000 words (limit 40)
-                  proper-noun-density
 
-1 finding, 13 rules not run
+0 findings, 16 rules not run
 ```
 
 What changed, and why:
@@ -574,7 +573,7 @@ What changed, and why:
 | Dropped "I hope this helps! Let me know…" | Chat residue |
 
 Every number (once every 30 runs, three weeks, 12 minutes, two weeks), command and setting is kept.
-The `proper-noun-density` left after the rewrite counts the API and setting names, which a tech article needs.
+The API and setting names left after the rewrite, which a tech article needs, are well within `proper-noun-density`'s limit.
 
 Last, `chaff compare` checks that no fact was lost:
 
