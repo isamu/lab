@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  misspelt-ja  found
+ja/design  misspelt-ja  found
+ja/email  misspelt-ja  found
+ja/figures  misspelt-ja  found
+ja/itinerary  misspelt-ja  found
+ja/minutes  misspelt-ja  found
+ja/note  misspelt-ja  found
+ja/policy  misspelt-ja  found
+ja/press  misspelt-ja  found
+ja/proposal  misspelt-ja  found
+ja/quote  misspelt-ja  found
+ja/readme  misspelt-ja  found
+ja/requirements  misspelt-ja  found
+en/blog  misspelt-en  found
+en/design  misspelt-en  found
+en/email  misspelt-en  found
+en/figures  misspelt-en  found
+en/itinerary  misspelt-en  found
+en/minutes  misspelt-en  found
+en/note  misspelt-en  found
+en/policy  misspelt-en  found
+en/press  misspelt-en  found
+en/proposal  misspelt-en  found
+en/quote  misspelt-en  found
+en/readme  misspelt-en  found
+en/requirements  misspelt-en  found

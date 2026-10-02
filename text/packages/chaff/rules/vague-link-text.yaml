@@ -1,0 +1,77 @@
+id: vague-link-text
+layer: L1
+status: experimental
+how_to_find: vague-link-text
+word_list: vague-link-text
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 行き先を言わないリンクの言葉
+  en: Link text that does not say where it goes
+
+why:
+  ja: 「[こちら](…)」「[ここをクリック](…)」のように、リンクの言葉がそれだけでは行き先を言わないと、読み手はリンクの前後を読み直して行き先を推し量ることになります。画面読み上げはリンクだけを並べて読み上げるので、「こちら、こちら、こちら」と聞こえ、どれがどこへ行くのか分かりません（WCAG 2.4.4 リンクの目的）。言葉全体が語彙表の語（こちら、ここ、詳細、click here、read more）のときだけを指し、行き先を言っている言葉（「料金表はこちら」）は指しません。
+  en: Link text such as "click here" or "read more" says nothing about where the link goes, so the reader has to reread the sentence around it. A screen reader can list the links on their own, and then hears "here, here, here" with no way to tell them apart (WCAG 2.4.4, link purpose). Only link text that is wholly a word from the lexicon (here, click here, read more, こちら) is reported; text that names the target ("the pricing page") is not.
+
+message:
+  ja: リンクの言葉「{text}」は、行き先を言っていません
+  en: 'The link text "{text}" does not say where it goes'
+
+how_to_fix:
+  ja: 行き先の名前をリンクの言葉にしてください（「料金は[こちら](…)」→「[料金表](…)を見てください」）。
+  en: Make the name of the target the link text ("click [here](…) for pricing" → "see the [pricing page](…)").
+
+placeholders:
+  text:
+    ja: リンクの言葉
+    en: the link text
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「[こちら](…)」「[ここをクリック](…)」のように、言葉だけでは行き先の分からないリンク
+  en: A link whose whole text is "here", "click here" or "read more"
+example:
+  ja:
+    before: |
+      料金の一覧は[こちら](https://example.com/pricing)です。
+    after: |
+      料金は[料金表](https://example.com/pricing)にあります。
+  en:
+    before: |
+      For prices, click [here](https://example.com/pricing).
+    after: |
+      Prices are on the [pricing page](https://example.com/pricing).
+
+not_flagged:
+  ja: 言葉の一部に「こちら」を含むだけのリンク（「料金表はこちら」）、URL をそのまま書いたリンク、参照の形のリンク（[こちら][1]）は指しません。Markdown でない文書と、引用（>）とコードの中のリンクも見ません。
+  en: Link text that only contains such a word ("pricing here"), a bare or angle-bracket URL, and reference-style links ([here][1]) are not reported, nor are links in a quotation (>), in code, or in a document that is not Markdown.
+rewrite:
+  ja:
+    direction: リンクの言葉を、行き先の名前（ページの題、資料の名前）に変えてください。「こちら」「ここ」は文から外し、文は行き先の名前を言う形に組み直します。行き先の URL は変えません。
+    pairs:
+      - before: 料金の一覧は[こちら](https://example.com/pricing)です。
+        after: 料金は[料金表](https://example.com/pricing)にあります。
+      - before: 申請の手順は[ここをクリック](https://example.com/apply)してください。
+        after: 申請の手順は[申請の手引き](https://example.com/apply)にあります。
+    keep:
+      - リンクの行き先（URL）
+      - 文の言っていること
+    avoid:
+      - 行き先の名前を推し量って、URL の中身と違う名前を付ける
+  en:
+    direction: Make the name of the target (the page title or the document's name) the link text. Drop "here" and "click", and recast the sentence around the name. Keep the URL.
+    pairs:
+      - before: For prices, click [here](https://example.com/pricing).
+        after: Prices are on the [pricing page](https://example.com/pricing).
+      - before: To apply, [read more](https://example.com/apply).
+        after: To apply, follow the [application guide](https://example.com/apply).
+    keep:
+      - the link target (the URL)
+      - what the sentence says
+    avoid:
+      - guessing a name the target page does not have
