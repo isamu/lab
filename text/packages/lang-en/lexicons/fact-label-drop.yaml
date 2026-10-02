@@ -1,0 +1,13 @@
+# Words dropped from the start of a name (fact-conflict): "The fee" and "Our fee" are one name, "fee".
+id: fact-label-drop
+language: en
+entries:
+  - pattern: the
+  - pattern: a
+  - pattern: an
+  - pattern: our
+  - pattern: your
+  - pattern: its
+  - pattern: their
+  - pattern: this
+  - pattern: my

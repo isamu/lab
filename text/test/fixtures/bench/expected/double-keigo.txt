@@ -1,0 +1,4 @@
+table  3  3  0  0
+ja/email  keigo-doubled  found
+ja/press  keigo-doubled  found
+ja/proposal  keigo-doubled  found

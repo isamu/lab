@@ -1,5 +1,5 @@
 // Scoring for `yarn bench`: whether chaff found each planted mistake, the per-rule table, and the summary that is
-// compared with test/fixtures/bench/expected.txt. Pure; scripts/bench.ts runs chaff and reads and writes the files.
+// compared with test/fixtures/bench/expected/. Pure; scripts/bench.ts runs chaff and reads and writes the files.
 
 export type Located = { readonly rule: string; readonly line: number };
 

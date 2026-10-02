@@ -1,0 +1,4 @@
+table  3  3  0  0
+ja/email  humble-overused  found
+ja/press  humble-overused  found
+ja/proposal  humble-overused  found

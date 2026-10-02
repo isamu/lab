@@ -1,0 +1,44 @@
+# Units of length (base: metre) (unit-mismatch). weight is the factor to the base unit; a unit written twice has two factors, and either may match.
+id: unit-length
+language: en
+entries:
+  - pattern: "km"
+    weight: 1000
+  - pattern: "m"
+    weight: 1
+  - pattern: "cm"
+    weight: 0.01
+  - pattern: "mm"
+    weight: 0.001
+  - pattern: "mi"
+    weight: 1609.344
+  - pattern: "mile"
+    weight: 1609.344
+  - pattern: "miles"
+    weight: 1609.344
+  - pattern: "ft"
+    weight: 0.3048
+  - pattern: "feet"
+    weight: 0.3048
+  - pattern: "inches"
+    weight: 0.0254
+  - pattern: "kilometers"
+    weight: 1000
+  - pattern: "kilometres"
+    weight: 1000
+  - pattern: "meters"
+    weight: 1
+  - pattern: "metres"
+    weight: 1
+  - pattern: "meter"
+    weight: 1
+  - pattern: "metre"
+    weight: 1
+  - pattern: "kilometer"
+    weight: 1000
+  - pattern: "kilometre"
+    weight: 1000
+  - pattern: "foot"
+    weight: 0.3048
+  - pattern: "inch"
+    weight: 0.0254

@@ -1,0 +1,54 @@
+# A word right before a person-word that makes it something else: a determiner before "one" (no one can, the one we
+# chose), or a preposition that makes "one" the object of a phrase (devices connected to one can cause a shock).
+# instead_of is the form the word guards; "to you" is still the reader.
+id: person-not-after
+language: en
+entries:
+  - pattern: no
+    instead_of: one
+  - pattern: any
+    instead_of: one
+  - pattern: every
+    instead_of: one
+  - pattern: each
+    instead_of: one
+  - pattern: the
+    instead_of: one
+  - pattern: this
+    instead_of: one
+  - pattern: that
+    instead_of: one
+  - pattern: which
+    instead_of: one
+  - pattern: another
+    instead_of: one
+  - pattern: only
+    instead_of: one
+  - pattern: such
+    instead_of: one
+  - pattern: than
+    instead_of: one
+  - pattern: to
+    instead_of: one
+  - pattern: of
+    instead_of: one
+  - pattern: with
+    instead_of: one
+  - pattern: for
+    instead_of: one
+  - pattern: from
+    instead_of: one
+  - pattern: on
+    instead_of: one
+  - pattern: in
+    instead_of: one
+  - pattern: by
+    instead_of: one
+  - pattern: at
+    instead_of: one
+  - pattern: into
+    instead_of: one
+  - pattern: about
+    instead_of: one
+  - pattern: per
+    instead_of: one

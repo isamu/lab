@@ -1,0 +1,7 @@
+# Words allowed between a relative length and its date (relative-date-mismatch). Spaces and separators (, ( :) need no entry.
+id: relative-link
+language: en
+entries:
+  - pattern: "on"
+  - pattern: "that is"
+  - pattern: "i.e."

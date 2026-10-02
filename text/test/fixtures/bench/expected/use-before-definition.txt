@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  definition-late-ja  found
+ja/design  definition-late-ja  found
+ja/email  definition-late-ja  found
+ja/figures  definition-late-ja  found
+ja/itinerary  definition-late-ja  found
+ja/minutes  definition-late-ja  found
+ja/note  definition-late-ja  found
+ja/policy  definition-late-ja  found
+ja/press  definition-late-ja  found
+ja/proposal  definition-late-ja  found
+ja/quote  definition-late-ja  found
+ja/readme  definition-late-ja  found
+ja/requirements  definition-late-ja  found
+en/blog  definition-late-en  found
+en/design  definition-late-en  found
+en/email  definition-late-en  found
+en/figures  definition-late-en  found
+en/itinerary  definition-late-en  found
+en/minutes  definition-late-en  found
+en/note  definition-late-en  found
+en/policy  definition-late-en  found
+en/press  definition-late-en  found
+en/proposal  definition-late-en  found
+en/quote  definition-late-en  found
+en/readme  definition-late-en  found
+en/requirements  definition-late-en  found

@@ -1,0 +1,6 @@
+# Phrases naming an attribute (fact-conflict, summary-fact-mismatch), written before the value: "headquartered in Austin".
+id: fact-attribute
+language: en
+entries:
+  - pattern: headquartered in
+    position: before

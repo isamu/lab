@@ -1,0 +1,5 @@
+# 期間のすぐ後ろに書いて、基準より後を指す語（relative-date-mismatch）。「3日後の10月5日」。
+id: relative-after
+language: ja
+entries:
+  - pattern: "後"

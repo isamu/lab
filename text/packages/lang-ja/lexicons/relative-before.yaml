@@ -1,0 +1,5 @@
+# 期間のすぐ後ろに書いて、基準より前を指す語（relative-date-mismatch）。「3日前の10月2日」。
+id: relative-before
+language: ja
+entries:
+  - pattern: "前"
