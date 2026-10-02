@@ -1,0 +1,16 @@
+arxiv-2609-38219-abs-tamazight-speech  1
+ghdocs-basic-writing-and-formatting  2
+gitlab-jd-instructional-designer  1
+govuk-guidance-academy-senior-pay  1
+govuk-style-guide-a-to-z  2
+gsa-press-pif-2026  2
+k8s-overview-en  1
+kantei-unga81-general-debate-speech-en  2
+maff-kyodo-ryori-okaisan-en  1
+nasa-advisory-crew-13-coverage  1
+nasa-press-prima-new-mission-class  1
+noaa-press-flood-mapping  1
+openapi-spec-3-1-0  2
+readygov-power-outages  1
+tc39-agenda-2026-07  1
+w3c-secure-contexts  1
