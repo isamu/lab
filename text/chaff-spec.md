@@ -641,6 +641,7 @@ genres:
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
+| `vague-link-text` | 言葉全体が「こちら」「click here」のリンク（WCAG 2.4.4）。語彙表 vague-link-text、インラインのリンクだけ | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | `duplicate-heading` ✅ | 同じ親の下の同じ言葉の見出し（MD024 siblings_only） | 両方 | warning |

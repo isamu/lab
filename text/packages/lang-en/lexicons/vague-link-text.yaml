@@ -1,0 +1,20 @@
+# Link text that says nothing about where the link goes when it is the whole text. Read by vague-link-text.
+# Matched only against the whole link text ("the pricing page" names its target and is fine); emphasis marks, quotes
+# and closing punctuation are stripped first, and case is ignored.
+id: vague-link-text
+language: en
+entries:
+  - pattern: here
+  - pattern: click here
+  - pattern: click
+  - pattern: this
+  - pattern: this link
+  - pattern: link
+  - pattern: this page
+  - pattern: this article
+  - pattern: more
+  - pattern: read more
+  - pattern: learn more
+  - pattern: more info
+  - pattern: go
+  - pattern: see here
