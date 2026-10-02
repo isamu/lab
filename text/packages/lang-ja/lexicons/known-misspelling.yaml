@@ -1,0 +1,72 @@
+# よくある書き誤り。pattern が誤った形、instead_of が正しい形。known-misspelling が読む。
+# 載せるのは、それ自体が誤りで、ほかの語の書き方にならない形だけ。どちらも使われる書き方（コンピュータ／コンピューター、
+# エンターテイメント／エンターテインメント、ギブス／ギプス）は載せない。表記ゆれの rule が扱う。
+# 語は解析器で語に分けて照らすので、語の途中の同じ字の並び（「ですすべて」の「ですす」）には当たらない。
+id: known-misspelling
+language: ja
+entries:
+  # 耳で覚えたカタカナ語
+  - pattern: シュミレーション
+    instead_of: シミュレーション
+  - pattern: シュミレート
+    instead_of: シミュレート
+  - pattern: コミニュケーション
+    instead_of: コミュニケーション
+  - pattern: コミニケーション
+    instead_of: コミュニケーション
+  - pattern: シュチュエーション
+    instead_of: シチュエーション
+  - pattern: ディスクトップ
+    instead_of: デスクトップ
+  - pattern: バトミントン
+    instead_of: バドミントン
+  - pattern: アボガド
+    instead_of: アボカド
+  - pattern: ハンドバック
+    instead_of: ハンドバッグ
+  - pattern: キューピット
+    instead_of: キューピッド
+  - pattern: メンテナス
+    instead_of: メンテナンス
+  - pattern: インストロール
+    instead_of: インストール
+  # 耳で覚えた仮名
+  - pattern: ふいんき
+    instead_of: ふんいき
+  - pattern: こんにちわ
+    instead_of: こんにちは
+  - pattern: こんばんわ
+    instead_of: こんばんは
+  - pattern: とゆう
+    instead_of: という
+  - pattern: そうゆう
+    instead_of: そういう
+  - pattern: こうゆう
+    instead_of: こういう
+  - pattern: どうゆう
+    instead_of: どういう
+  - pattern: のとうり
+    instead_of: のとおり
+  - pattern: 読みずらい
+    instead_of: 読みづらい
+  - pattern: 分かりずらい
+    instead_of: 分かりづらい
+  - pattern: わかりずらい
+    instead_of: わかりづらい
+  - pattern: 使いずらい
+    instead_of: 使いづらい
+  - pattern: 見ずらい
+    instead_of: 見づらい
+  # 仮名の打ち重ね。文末の形が一字だけ重なったもの
+  - pattern: ですす
+    instead_of: です
+  - pattern: ますす
+    instead_of: ます
+  - pattern: ましたた
+    instead_of: ました
+  - pattern: でしたた
+    instead_of: でした
+  - pattern: ませんん
+    instead_of: ません
+  - pattern: くださいい
+    instead_of: ください
