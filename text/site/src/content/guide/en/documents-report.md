@@ -173,7 +173,7 @@ enquiries.md   business/report · English   genre from --genre
   15:93   warning This sentence is passive ("discussed") but never says who did it
                   agentless-passive
 
-7 findings, 14 rules not run
+7 findings, 29 rules not run
 ```
 
 The four new findings, in plain words:
@@ -273,7 +273,7 @@ enquiries.md   business/report · English   genre from --genre   2 stet
   9:66    warning This sentence runs 37 words (limit 25)
                   max-sentence-length
 
-5 findings, 14 rules not run
+5 findings, 21 rules not run
 ```
 
 ## Changing a rule for the whole team

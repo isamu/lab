@@ -1,0 +1,16 @@
+# 話題にならない語（reference-topic-missing）。どの節にも当てはまる。
+id: reference-topic-vague
+language: ja
+entries:
+  - pattern: "内容"
+  - pattern: "詳細"
+  - pattern: "事項"
+  - pattern: "規定"
+  - pattern: "方法"
+  - pattern: "手順"
+  - pattern: "概要"
+  - pattern: "例"
+  - pattern: "説明"
+  - pattern: "議論"
+  - pattern: "結果"
+  - pattern: "点"

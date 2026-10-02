@@ -1,0 +1,83 @@
+# Redundant pairs: two words that say the same thing. Read by redundant-expression; rewrite is the form without the
+# repeat. Only pairs with a plain shorter form and no common reason to repeat: "past experience", "period of time",
+# "whether or not" and "plan ahead" are idiomatic or sometimes needed, and are left out. A verb in its dictionary form
+# matches its inflections only when the tagger reads it as a verb, so the past forms are listed too ("reverted back").
+id: redundant-expression
+language: en
+entries:
+  - pattern: each and every
+    rewrite: each, or every
+  - pattern: end result
+    rewrite: result
+  - pattern: future plans
+    rewrite: plans
+  - pattern: past history
+    rewrite: history
+  - pattern: advance planning
+    rewrite: planning
+  - pattern: added bonus
+    rewrite: bonus
+  - pattern: basic fundamentals
+    rewrite: fundamentals
+  - pattern: close proximity
+    rewrite: proximity, or near
+  - pattern: final outcome
+    rewrite: outcome
+  - pattern: free gift
+    rewrite: gift
+  - pattern: joint collaboration
+    rewrite: collaboration
+  - pattern: new innovation
+    rewrite: innovation
+  - pattern: unexpected surprise
+    rewrite: surprise
+  - pattern: true fact
+    rewrite: fact
+  - pattern: revert back
+    rewrite: revert
+  - pattern: reverted back
+    rewrite: reverted
+  - pattern: return back
+    rewrite: return
+  - pattern: returned back
+    rewrite: returned
+  - pattern: repeat again
+    rewrite: repeat
+  - pattern: repeated again
+    rewrite: repeated
+  - pattern: merge together
+    rewrite: merge
+  - pattern: merged together
+    rewrite: merged
+  - pattern: combine together
+    rewrite: combine
+  - pattern: combined together
+    rewrite: combined
+  - pattern: collaborate together
+    rewrite: collaborate
+  - pattern: collaborated together
+    rewrite: collaborated
+  - pattern: refer back
+    rewrite: refer
+  - pattern: referred back
+    rewrite: referred
+  - pattern: ATM machine
+    rewrite: ATM
+  - pattern: PIN number
+    rewrite: PIN
+  - pattern: absolutely essential
+    rewrite: essential
+  - pattern: first began
+    rewrite: began
+  - pattern: consensus of opinion
+    rewrite: consensus
+  - pattern: general consensus
+    rewrite: consensus
+  - pattern: sum total
+    rewrite: total
+  - pattern: various different
+    rewrite: various
+  - pattern: mutual cooperation
+    rewrite: cooperation
+  - pattern: the reason is because
+    rewrite: the reason is that
