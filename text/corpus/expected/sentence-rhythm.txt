@@ -1,0 +1,1 @@
+vite-plugin-legacy-changelog  1

@@ -9,7 +9,8 @@
 #            paths (the file's path), then per language an opening (the body's first line, past front matter and
 #            headings) or a line with min_lines (how many lines must have that shape). A wrong suggestion misleads
 #            more than none, so a cue is added only where the corpus shows it does not fire on other kinds.
-# Which genres a rule applies to at all is the rule's use_for; the numbers behind a level are the rule's by_genre.
+# Which genres a rule applies to at all is the rule's use_for (a rule it leaves out is listed under "did not run" the same
+# way); the numbers behind a level are the rule's by_genre.
 
 groups:
   - id: technical
@@ -60,6 +61,15 @@ groups:
       double-negative: off
       # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
       nominalization: off
+      # すなわち and that is, open a definition that restates on purpose.
+      paragraph-restatement: off
+      # A statute or contract opens with its first article, and its titles are formal names.
+      no-lead: off
+      title-length: off
+      # Drafting writes a number twice on purpose: thirty (30) days.
+      number-style-consistency: off
+      # An enumeration of conditions mixes 〜こと and 〜とき by what each condition is.
+      list-item-form-mix: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -121,6 +131,8 @@ groups:
   - id: literature
     name: { ja: 文学, en: Literature }
     rules:
+      # A story's narrator and its characters each say 私 or 僕 in their own voice.
+      person-consistency: off
       max-sentence-length: off
       max-paragraph-length: off
       ngram-repetition: off
@@ -154,6 +166,7 @@ groups:
       double-keigo: off
       no-em-dash: off
       emoji-density: off
+      elapsed-years-mismatch: off
       fact-conflict: off
       summary-fact-mismatch: off
       sentence-rhythm: off
@@ -183,7 +196,15 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      redundant-expression: off
       requirement-smell: off
+      paragraph-restatement: off
+      # A story or poem chooses its own opening and its own title.
+      no-lead: off
+      title-length: off
+      # A narrator spells out numbers in dialogue and writes figures in a date.
+      number-style-consistency: off
+      list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
@@ -209,6 +230,14 @@ groups:
       double-negative: off
       ra-nuki: off
       requirement-smell: off
+      # A speaker says it again so the room hears it: 要するに, in other words.
+      paragraph-restatement: off
+      # An address or a transcript is titled by occasion (第221回国会における…演説) and opens as spoken.
+      no-lead: off
+      title-length: off
+      # Spoken numbers are transcribed as heard.
+      number-style-consistency: off
+      list-item-form-mix: off
 
 genres:
   - id: technical/spec
@@ -274,6 +303,8 @@ genres:
     # In the corpus the rule fires on nearly every set of minutes, English and Japanese.
     # A header block of labelled fields (- **日時**：…, - **出席者**：…) is the form of minutes, not a list of captions.
     rules:
+      # Minutes jot points down as they come: a noun, a remark, a decision, side by side.
+      list-item-form-mix: off
       agentless-passive: off
       bold-label-list: off
   - id: legal/contract
@@ -360,6 +391,9 @@ genres:
       paths: ["(^|[/_-])(faqs?|q-?and-?a)([/_.-]|$)"]
       ja: { line: "^(?:#{1,6}\\s*)?(?:[QＱ][0-9０-９]*[.．:：、\\s　]|問[0-9０-９]+[.．:：\\s　])|^#{1,6}\\s*(?:よくある(?:ご)?質問|Ｑ＆Ａ|Q&A)", min_lines: 2 }
       en: { line: "^(?:#{1,6}\\s*)?Q[0-9]*[.:)]\\s|^#{1,6}\\s*(?:FAQs?|Frequently asked questions)\\b", min_lines: 2 }
+    # A question is the heading: its length is the reader's question, not a name to shorten.
+    rules:
+      title-length: off
   - id: docs/glossary
     name: { ja: 用語集, en: Glossary }
     summary:
@@ -445,6 +479,8 @@ genres:
       en: { line: "^(?:Mr|Ms|Mrs|Dr)\\. [A-Z][A-Z-]{2,}(?: of [A-Z][a-z]+)?\\. ", min_lines: 3 }
     # A transcript records what was said: its sentences, repeats and register are the speaker's, not the writer's to fix.
     rules:
+      # Several people speak, each naming themselves their own way.
+      person-consistency: off
       max-sentence-length: off
       max-paragraph-length: off
       ngram-repetition: off

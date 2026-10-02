@@ -113,7 +113,7 @@ contract.txt   blog/tech · English   genre from the default
   11:66   error   "Section 9" (address 9) is not in this document
                   dangling-reference
 
-4 findings, 10 rules not run
+4 findings, 18 rules not run
 ```
 
 The line under the first one suggests checking it as a contract.
@@ -172,8 +172,6 @@ $ npx chaffjs draft.txt --experimental --compact
 
 draft.txt   blog/tech · English   genre from the default
 
-  1:1     info    Paragraph length varies by only 28% (want at least 30%)
-                  paragraph-length-variance
   2:1     warning This sentence runs 51 words (limit 25)
                   max-sentence-length
   9:1     warning This sentence runs 51 words (limit 25)
@@ -199,12 +197,12 @@ draft.txt   blog/tech · English   genre from the default
   25:1    warning This sentence runs 26 words (limit 25)
                   max-sentence-length
 
-13 findings, 10 rules not run
+12 findings, 36 rules not run
 ```
 
 The two `error` lines come from the two changes.
 Line 10 is the skipped subsection, and line 14 is the reference to a section that is not there.
-The `warning` and `info` lines are about readability; long sentences are normal in legislation.
+The `warning` lines are about readability; long sentences are normal in legislation.
 To check only the structure of an Act, read the `error` lines.
 
 Run it as a statute, with `--genre legal/statute`, and the limits are a statute's: only the two `error` lines are left.
@@ -242,7 +240,7 @@ fixed.txt   blog/tech · English   genre from the default
   26:1    warning This sentence runs 26 words (limit 25)
                   max-sentence-length
 
-12 findings, 10 rules not run
+12 findings, 18 rules not run
 ```
 
 An Act in force should have no such breaks.

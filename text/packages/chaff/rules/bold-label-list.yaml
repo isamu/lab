@@ -27,7 +27,7 @@ how_to_fix:
 # 指摘に要る項目の数。長さで割らない：人の記事は長くても 1 つ 2 つで、生成文は短くても並べる。
 levels: { strict: 3, normal: 5, relaxed: 8 }
 
-use_for: [blog, business, legal, docs, academic, literature, speech]
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 sources: [zhang-2024]
 
 group: ai-tells
@@ -52,8 +52,8 @@ example:
       月の費用は下がり、権限も細かく分けられます。
 
 not_flagged:
-  ja: 札がコードだけの項目（`--flag` の説明のような、設定や引数の一覧）は数えません。札の後ろにコロンが無い項目と、コロンの後ろに何も無い項目も数えません。技術文書・法務・説明書・論文・文学のジャンルでは見ません。英語の文書は、人もよくこの形で書くので見ません。
-  en: An item whose label is only code (a list of options or fields) is not counted, nor is one without a colon after the label or without text after the colon. Technical, legal, documentation, academic and literary genres do not run this rule. Japanese documents only; English writers use this shape as a matter of course.
+  ja: 札がコードだけの項目（`--flag` の説明のような、設定や引数の一覧）は数えません。札の後ろにコロンが無い項目と、コロンの後ろに何も無い項目も数えません。仕様書（technical/spec）・法務・説明書・論文・文学のジャンルでは見ません。英語の文書は、人もよくこの形で書くので見ません。
+  en: An item whose label is only code (a list of options or fields) is not counted, nor is one without a colon after the label or without text after the colon. Specification (technical/spec), legal, documentation, academic and literary genres do not run this rule. Japanese documents only; English writers use this shape as a matter of course.
 level_meaning:
   ja: 太字の札で始まる項目が {limit} 個あれば指摘
   en: reported once {limit} list items open with a bold label
