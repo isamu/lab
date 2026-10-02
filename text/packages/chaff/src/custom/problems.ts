@@ -27,23 +27,24 @@ const TEXT: Texts<Text> = {
       invalid: "正規表現として読めません",
     },
     problems: {
-      "not-a-list": "custom_rules はルールの並び（- id: …）で書いてください",
-      "not-a-map": "custom_rules の {at}: id や type を持つ項目として書いてください",
-      "bad-id": "custom_rules の {at}: id は英小文字で始まり、英小文字・数字・ハイフンだけで書きます（例: team-no-tbd）",
-      "duplicate-id": "custom_rules の {at}: 同じ id のルールがもう一つあります",
-      "built-in-id": "custom_rules の {at}: chaff のルールと同じ id です。別の id にしてください",
-      "unknown-type": "custom_rules の {at}: type: {written} は使えません（words / pattern / tokens / module）",
-      "bad-module": "custom_rules の {at}: module: {written} は使えません。{refusal}",
-      "bad-requires": "custom_rules の {at}: requires: {written} は求められません（求められるのは pos だけです）",
-      missing: "custom_rules の {at}: {field} がありません",
-      "unpaired-example": "custom_rules の {at}: example の before と after を、ルールが見る言語の同じ言語で書いてください",
-      "bad-level": "custom_rules の {at}: level: {written} は読めません（error / warning / info）",
-      "bad-languages": "custom_rules の {at}: languages は言語の並びで書いてください（[ja] や [ja, en]）",
-      "no-words": "custom_rules の {at}: words に語がありません（「使わない書き方: 使う書き方」か語の並び）",
-      "no-tokens": "custom_rules の {at}: tokens に語の条件がありません（- { pos: 名詞 } のように並べます）",
-      "bad-token": "custom_rules の {at}: tokens の {index} 番目に pos・base・surface のどれもありません",
-      "unknown-pos": "custom_rules の {at}: 品詞 {written} は知りません（{names}）",
-      "bad-pattern": "custom_rules の {at}: pattern を使えません。{refusal}",
+      "not-a-list": "{scope} はルールの並び（- id: …）で書いてください",
+      "not-a-map": "{scope} の {at}: id や type を持つ項目として書いてください",
+      "bad-id": "{scope} の {at}: id は英小文字で始まり、英小文字・数字・ハイフンだけで書きます（例: team-no-tbd）",
+      "duplicate-id": "{scope} の {at}: 同じ id のルールがもう一つあります",
+      "built-in-id": "{scope} の {at}: chaff のルールと同じ id です。別の id にしてください",
+      "unknown-type": "{scope} の {at}: type: {written} は使えません（words / pattern / tokens / module）",
+      "bad-module": "{scope} の {at}: module: {written} は使えません。{refusal}",
+      "bad-requires": "{scope} の {at}: requires: {written} は求められません（求められるのは pos だけです）",
+      "bad-word-list": "{scope} の {at}: word_list: {written} は語彙表の名前として読めません",
+      missing: "{scope} の {at}: {field} がありません",
+      "unpaired-example": "{scope} の {at}: example の before と after を、ルールが見る言語の同じ言語で書いてください",
+      "bad-level": "{scope} の {at}: level: {written} は読めません（error / warning / info）",
+      "bad-languages": "{scope} の {at}: languages は言語の並びで書いてください（[ja] や [ja, en]）",
+      "no-words": "{scope} の {at}: words に語がありません（「使わない書き方: 使う書き方」か語の並び）",
+      "no-tokens": "{scope} の {at}: tokens に語の条件がありません（- { pos: 名詞 } のように並べます）",
+      "bad-token": "{scope} の {at}: tokens の {index} 番目に pos・base・surface のどれもありません",
+      "unknown-pos": "{scope} の {at}: 品詞 {written} は知りません（{names}）",
+      "bad-pattern": "{scope} の {at}: pattern を使えません。{refusal}",
     },
   },
   en: {
@@ -59,28 +60,29 @@ const TEXT: Texts<Text> = {
       invalid: "it is not a regular expression",
     },
     problems: {
-      "not-a-list": "write custom_rules as a list of rules (- id: …)",
-      "not-a-map": "custom_rules {at}: write each rule as an entry with id and type",
-      "bad-id": "custom_rules {at}: an id starts with a lowercase letter and has only lowercase letters, digits and hyphens (team-no-tbd)",
-      "duplicate-id": "custom_rules {at}: another rule has the same id",
-      "built-in-id": "custom_rules {at}: chaff has a rule with this id; choose another",
-      "unknown-type": "custom_rules {at}: type: {written} is not a type (words / pattern / tokens / module)",
-      "bad-module": "custom_rules {at}: module: {written} cannot be used: {refusal}",
-      "bad-requires": "custom_rules {at}: requires: {written} cannot be asked for (only pos can)",
-      missing: "custom_rules {at}: {field} is missing",
-      "unpaired-example": "custom_rules {at}: write example's before and after in the same language, one the rule checks",
-      "bad-level": "custom_rules {at}: cannot read level: {written} (error / warning / info)",
-      "bad-languages": "custom_rules {at}: write languages as a list ([en] or [ja, en])",
-      "no-words": "custom_rules {at}: words has no words (avoid: use pairs, or a list)",
-      "no-tokens": "custom_rules {at}: tokens has no conditions (- { pos: noun } and so on)",
-      "bad-token": "custom_rules {at}: token {index} has none of pos, base and surface",
-      "unknown-pos": "custom_rules {at}: unknown part of speech {written} ({names})",
-      "bad-pattern": "custom_rules {at}: the pattern cannot be used: {refusal}",
+      "not-a-list": "write {scope} as a list of rules (- id: …)",
+      "not-a-map": "{scope} {at}: write each rule as an entry with id and type",
+      "bad-id": "{scope} {at}: an id starts with a lowercase letter and has only lowercase letters, digits and hyphens (team-no-tbd)",
+      "duplicate-id": "{scope} {at}: another rule has the same id",
+      "built-in-id": "{scope} {at}: chaff has a rule with this id; choose another",
+      "unknown-type": "{scope} {at}: type: {written} is not a type (words / pattern / tokens / module)",
+      "bad-module": "{scope} {at}: module: {written} cannot be used: {refusal}",
+      "bad-requires": "{scope} {at}: requires: {written} cannot be asked for (only pos can)",
+      "bad-word-list": "{scope} {at}: cannot read word_list: {written} as the name of a word list",
+      missing: "{scope} {at}: {field} is missing",
+      "unpaired-example": "{scope} {at}: write example's before and after in the same language, one the rule checks",
+      "bad-level": "{scope} {at}: cannot read level: {written} (error / warning / info)",
+      "bad-languages": "{scope} {at}: write languages as a list ([en] or [ja, en])",
+      "no-words": "{scope} {at}: words has no words (avoid: use pairs, or a list)",
+      "no-tokens": "{scope} {at}: tokens has no conditions (- { pos: noun } and so on)",
+      "bad-token": "{scope} {at}: token {index} has none of pos, base and surface",
+      "unknown-pos": "{scope} {at}: unknown part of speech {written} ({names})",
+      "bad-pattern": "{scope} {at}: the pattern cannot be used: {refusal}",
     },
   },
 };
 
-const PLACEHOLDER = /\{(at|written|field|index|refusal|names)\}/gu;
+const PLACEHOLDER = /\{(scope|at|written|field|index|refusal|names)\}/gu;
 
 const refusalOf = (problem: CustomProblem, text: Text): string => {
   if (problem.kind === "bad-pattern") return text.refusal[problem.refusal];
@@ -88,7 +90,8 @@ const refusalOf = (problem: CustomProblem, text: Text): string => {
 };
 
 /** The values a problem's sentence names. Each kind carries only some of them. */
-const valuesOf = (problem: CustomProblem, text: Text): Readonly<Record<string, string>> => ({
+const valuesOf = (problem: CustomProblem, text: Text, scope: string): Readonly<Record<string, string>> => ({
+  scope,
   at: "at" in problem ? problem.at : "",
   written: "written" in problem ? problem.written : "",
   field: "field" in problem ? problem.field : "",
@@ -97,11 +100,12 @@ const valuesOf = (problem: CustomProblem, text: Text): Readonly<Record<string, s
   names: POS_WRITTEN_NAMES.join(" / "),
 });
 
-const sentenceOf = (problem: CustomProblem, text: Text): string => {
-  const values = valuesOf(problem, text);
-  return text.problems[problem.kind].replace(PLACEHOLDER, (_whole, key: string) => values[key] ?? "");
+/** One problem as a sentence. scope names the list the rule is in: custom_rules, or a plugin's rules. */
+export const customProblemSentence = (problem: CustomProblem, ui: UiLanguage, scope = "custom_rules"): string => {
+  const values = valuesOf(problem, TEXT[ui], scope);
+  return TEXT[ui].problems[problem.kind].replace(PLACEHOLDER, (_whole, key: string) => values[key] ?? "");
 };
 
 /** What in custom_rules cannot run. Each stops the run: a team's rule that silently does not run looks like a clean document. */
 export const customRuleProblems = (config: Pick<Config, "customRules" | "path" | "baseDir">, ui: UiLanguage): string[] =>
-  customRulesOf(config).problems.map((problem) => `chaff: ${config.path ?? "chaff.yaml"}: ${sentenceOf(problem, TEXT[ui])}`);
+  customRulesOf(config).problems.map((problem) => `chaff: ${config.path ?? "chaff.yaml"}: ${customProblemSentence(problem, ui)}`);
