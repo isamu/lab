@@ -1,0 +1,12 @@
+table  11  11  0  0
+ja/blog  kana-halfwidth  found
+ja/design  kana-halfwidth  found
+ja/email  kana-halfwidth  found
+ja/itinerary  kana-halfwidth  found
+ja/minutes  kana-halfwidth  found
+ja/note  kana-halfwidth  found
+ja/policy  kana-halfwidth  found
+ja/press  kana-halfwidth  found
+ja/proposal  kana-halfwidth  found
+ja/readme  kana-halfwidth  found
+ja/requirements  kana-halfwidth  found

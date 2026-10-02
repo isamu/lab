@@ -250,4 +250,4 @@ yarn corpus   集めた実際の文書にかけて、corpus/expected.txt から�
 
 `yarn corpus` で増えた指摘は、一つずつ読みます。誤った指摘なら、その形を例にしてテストに足し、直します。
 増えた指摘が正しいと確かめたら、`yarn corpus --update` で `corpus/expected.txt` を更新します。
-見本の結果も同じで、`yarn bench --update` で `test/fixtures/bench/expected.txt` を更新します。
+見本の結果も同じで、`yarn bench --update` で `test/fixtures/bench/expected/` を更新します。ルールごとに 1 ファイル（表の行と、仕込んだ誤りの結果）なので、新しいルールはここでも自分のファイルを足すだけです。

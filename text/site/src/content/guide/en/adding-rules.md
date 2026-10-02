@@ -252,4 +252,4 @@ yarn corpus   run on the collected real documents and compare with corpus/expect
 
 Read every new finding from `yarn corpus`. If one is wrong, add its shape to the tests as an example and fix it.
 When the new findings are confirmed right, `yarn corpus --update` updates `corpus/expected.txt`.
-The samples work the same way: `yarn bench --update` updates `test/fixtures/bench/expected.txt`.
+The samples work the same way: `yarn bench --update` updates `test/fixtures/bench/expected/`, one file per rule (its row of the table and its planted mistakes' results), so a new rule adds its own file there too.

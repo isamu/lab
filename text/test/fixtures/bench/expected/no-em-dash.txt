@@ -1,0 +1,11 @@
+table  10  10  0  0
+ja/blog  commas-dashed  found
+ja/email  commas-dashed  found
+ja/figures  commas-dashed  found
+ja/press  commas-dashed  found
+ja/proposal  commas-dashed  found
+en/blog  commas-dashed  found
+en/email  commas-dashed  found
+en/figures  commas-dashed  found
+en/press  commas-dashed  found
+en/proposal  commas-dashed  found
