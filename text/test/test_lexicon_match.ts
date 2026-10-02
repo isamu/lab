@@ -1,7 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
-import { entryIn, entryOpens } from "../packages/chaff/src/detectors/lexicon-match.ts";
+import { entryEnds, entryIn, entryOpens } from "../packages/chaff/src/detectors/lexicon-match.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -24,6 +24,28 @@ const sentence = (text: string, tokens?: readonly Token[]): Sentence => ({
 const entry = (pattern: string, tokens?: readonly Token[]): LexiconEntry => ({ pattern, ...(tokens === undefined ? {} : { tokens }) });
 
 const ITADAKU = [token("さ", "VERB", "する"), token("せ", "VERB", "せる"), token("て", "SCONJ", "て"), token("いただく", "VERB", "いただく")];
+
+describe("entryEnds: 出現ごとの終わりの位置", () => {
+  it("品詞が無ければ、文字列の上で出現ごとに一つ", () => {
+    assert.deepEqual(entryEnds(sentence("確認させていただく。説明させていただく。"), entry("させていただく")), [9, 19]);
+  });
+
+  it("重なる二つの語は同じ位置で終わる", () => {
+    const text = "確認させていただく。";
+    assert.deepEqual(entryEnds(sentence(text), entry("せていただく")), entryEnds(sentence(text), entry("させていただく")));
+  });
+
+  it("無い語と空の語は位置を返さない", () => {
+    assert.deepEqual(entryEnds(sentence("確認します。"), entry("させていただく")), []);
+    assert.deepEqual(entryEnds(sentence("確認します。"), entry("")), []);
+  });
+
+  it("品詞があれば、当たった語の並びの最後の語の終わり", () => {
+    const at = (surface: string, pos: string, lemma: string, start: number): Token => ({ span: { start, end: start + surface.length }, surface, pos, lemma });
+    const written = [at("さ", "VERB", "する", 2), at("せ", "VERB", "せる", 3), at("て", "SCONJ", "て", 4), at("いただき", "VERB", "いただく", 5)];
+    assert.deepEqual(entryEnds(sentence("確認させていただき", written), entry("させていただく", ITADAKU)), [9]);
+  });
+});
 
 describe("entryIn: 語の並びで照らす", () => {
   it("原形で書いた語は、活用した形に当たる", () => {
