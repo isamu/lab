@@ -70,6 +70,7 @@ planted:
 not_planted:
   adverb-overuse: a density over the whole document
   ai-generated-composite: a composite of other signals, with no detector of its own
+  ai-structure: the outline of the whole document measured against human articles, not one mistake
   ai-tell: a density over the whole document
   announcing-opener: several announcing openers in one document; one is not a mistake
   bold-label-list: a count of labelled items over the whole document; one is not a mistake

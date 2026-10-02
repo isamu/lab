@@ -53,6 +53,7 @@ import { raNuki } from "./ra-nuki.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
 import { boldLabelList } from "./bold-label.ts";
+import { aiStructure } from "./ai-structure.ts";
 import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
 
 /** rule 定義の how_to_find がここを引く。rule 側は実装を知らない。 */
@@ -139,4 +140,5 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "spelling-variety": spellingVariety,
   "ra-nuki": raNuki,
   "bold-label-list": boldLabelList,
+  "ai-structure": aiStructure,
 };

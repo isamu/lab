@@ -1,0 +1,202 @@
+id: ai-structure
+layer: L1
+status: experimental
+how_to_find: ai-structure
+requires: [headings]
+severity: info
+
+name:
+  ja: 構成が人の記事から外れている
+  en: The outline is unlike human articles
+
+why:
+  ja: 生成した記事は、文より先に構成に形が出ます。一段落ごとの見出し、3 つに分けた小見出し、太字の札の箇条書き、同じ長さの節、本文を言い直すまとめです。どれも 1 つなら人の記事にもあります。chaff は見出しの多さや節の長さのばらつきなどの項目を、生成 AI が広まる前の人の記事と比べ、人の記事の 9 割を超えた項目がいくつそろったかを数えます。**これでも「AI が書いた」とは言えません。** 構成を見直す目印です。
+  en: Generated articles show their shape in the outline before the sentences, with a heading every paragraph, headings split into three, bold-label lists, sections of one size, and a closing that restates the body. Each of these turns up in human articles too. chaff compares measures such as heading density and section length variation with articles written before generated text was common, and counts how many lie past 90% of those articles. **Even then it does not say the text was generated.** It marks an outline to rethink.
+
+message:
+  ja: 構成の {count} 項目が、人の記事の 9 割を超えています（{limit} 項目から）。{word}
+  en: "{count} structure {count|measure lies|measures lie} past 90% of human articles ({limit} needed): {word}"
+
+how_to_fix:
+  ja: "`chaff outline` で項目ごとの値と人の記事の値を見て、構成から書き直してください。薄い節は合わせ、一段落だけの見出しは外し、3 つに揃えた小見出しは中身の数に合わせ、本文を言い直すだけのまとめは消します。"
+  en: Run `chaff outline` to see each measure against human articles, then rewrite from the outline. Merge thin sections, drop a heading over a single paragraph, split only as many ways as the content has, and cut a closing that only restates the body.
+
+# 人の記事の 9 割を超えた項目が何個そろったら出すか。人の記事で何個そろうかは scripts/structure-baseline.ts --values で数え直せる。
+levels: { strict: 2, normal: 3, relaxed: 4 }
+
+# 基準にした人の記事はブログ。ビジネス文書は見ない。法務・説明書・論文・話し言葉は見出しの立て方がもともと違うので、genres.yaml で止める。
+use_for: [blog, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 見出しの多さや節の揃い方など、構成の項目がいくつも人の記事から外れている文書
+  en: An outline that lies past human articles on several structure measures at once
+example:
+  ja:
+    config: { genre: blog/tech, rules: { ai-structure: strict } }
+    before: |
+      # 勉強会を見直す
+
+      ## 課題
+
+      ### 人が減った
+
+      来る人が減りました。
+
+      ### 話す人が偏った
+
+      同じ人ばかりが話しました。
+
+      ### 題材が遠かった
+
+      業務と関係のない話が多くなりました。
+
+      ## 対策
+
+      ### 題材を選ぶ
+
+      題材を業務から選びました。
+
+      ### 短く話す
+
+      発表を五分にしました。
+
+      ### 記録を残す
+
+      話した内容を残しました。
+
+      ## 学んだこと
+
+      - **仕組み**：意志だけでは続きません
+      - **小ささ**：短い発表なら誰でも話せます
+    after: |
+      # 勉強会は、発表を短くしたら人が戻った
+
+      来る人が減り、話す人も同じ顔ぶれに偏っていました。業務と関係のない題材が多かったからです。
+
+      ## 業務の題材を、短く話す
+
+      そこで題材を業務から選び、発表を五分にして、話した内容を残しました。続けるには、意志より仕組みが要りました。
+  en:
+    config: { genre: blog/tech, rules: { ai-structure: strict } }
+    before: |
+      # Rethinking our demo
+
+      ## Challenges
+
+      ### Fewer people came
+
+      Attendance dropped.
+
+      ### The same people presented
+
+      Two people gave most of the talks.
+
+      ### Topics were far from work
+
+      Most topics had nothing to do with our work.
+
+      ## Solutions
+
+      ### Pick topics from work
+
+      We chose topics from the week's work.
+
+      ### Keep it short
+
+      We cut each slot to five minutes.
+
+      ### Write it down
+
+      We kept notes of every talk.
+
+      ## Lessons learned
+
+      - **Systems**: willpower alone does not last
+      - **Small steps**: anyone can give a short talk
+    after: |
+      # Our demo came back when we shortened the slots
+
+      Attendance dropped, and the same two people gave most of the talks, mostly on topics far from our work.
+
+      ## Short talks on the week's work
+
+      So we chose topics from the week's work, cut each slot to five minutes and kept notes. What kept it going was the format, not willpower.
+
+not_flagged:
+  ja: 見出しの無い文書は見ません。項目ごとに、測るのに足りない文書（短い文書、節や箇条書きの少ない文書）はその項目を数えません。基準の人の記事がブログなので、ビジネス文書・法務・説明書・論文・話し言葉のジャンルでは見ません（`chaff outline` と `chaff fix-plan` は、どのジャンルでも構成を測ります）。
+  en: A document without headings is not checked. A measure the document is too small for (a short text, few sections or lists) is not counted. The baseline is blog articles, so business, legal, documentation, academic and speech genres do not run this rule (`chaff outline` and `chaff fix-plan` measure the structure in any genre).
+level_meaning:
+  ja: 人の記事の 9 割を超えた項目が {limit} 個そろえば指摘
+  en: reported once {limit} measures lie past 90% of human articles
+rewrite:
+  ja:
+    direction: 構成から書き直してください。`chaff outline` が人の記事の 9 割を超えたと言う項目を、人の記事の範囲に戻します。見出しは中身のまとまりごとに立て、一段落ごとに立てません。小見出しの数は中身の数に合わせ、3 つに揃えません。太字の札の箇条書きは文に戻し、本文を言い直すだけのまとめは消します。
+    pairs:
+      - before: |
+          ## 直面した課題
+
+          ### 参加者が減った
+
+          始めて 2 か月で、参加者は 5 人に減りました。
+
+          ### 話す人が偏った
+
+          最初の 8 回のうち 6 回は、同じ 2 人が発表していました。
+        after: |
+          ## 人が減ったのは、話が遠かったから
+
+          始めて 2 か月で、参加者は 5 人に減りました。最初の 8 回のうち 6 回は、同じ 2 人が発表していました。
+      - before: |
+          ## はじめに
+
+          本記事では、社内勉強会を半年続けた経験を紹介します。
+
+          ## 勉強会の概要
+
+          毎週木曜日に、開発チームの 12 人で始めました。
+        after: |
+          毎週木曜日に、開発チームの 12 人で社内勉強会を始めました。
+    keep:
+      - 事実、数、日付、名前
+      - 手順やコマンドの並び
+      - 書き手の経験と主張
+    avoid:
+      - 見出しの文言だけを変えて、同じ数の見出しを残す
+      - 見出しを消して、太字の一文に置き換える
+      - 節を合わせるために、書き手が書いていない繋がりを足す
+  en:
+    direction: Rewrite from the outline. Bring each measure that `chaff outline` puts past 90% of human articles back into their range. Give a heading to a unit of content, not to every paragraph. Split a section as many ways as its content has, not into three by habit. Turn bold-label lists back into sentences, and cut a closing that only restates the body.
+    pairs:
+      - before: |
+          ## Challenges
+
+          ### Fewer people came
+
+          Within two months, 6 people were coming.
+
+          ### The same people presented
+
+          Two people gave 7 of the first 10 demos.
+        after: |
+          ## Fewer people came because the demos felt far away
+
+          Within two months, 6 people were coming. Two people gave 7 of the first 10 demos.
+      - before: |
+          ## Introduction
+
+          In this post, we'll look at how our team started a weekly demo.
+
+          ## Overview
+
+          We met every Friday, 14 people from the product team.
+        after: |
+          We started a weekly demo, every Friday, for the 14 people on the product team.
+    keep:
+      - every fact, number, date and name
+      - the order of steps and commands
+      - the writer's own experience and claims
+    avoid:
+      - renaming the headings but keeping as many
+      - replacing a heading with a bold sentence
+      - adding links between sections that the writer did not make

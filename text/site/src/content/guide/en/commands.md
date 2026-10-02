@@ -24,7 +24,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs cite <source> <quotes.json>` | Checks that quoted passages are in the source |
 | `npx chaffjs compare <before> <after>` | Checks that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…) |
 | `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
-| `npx chaffjs outline <file> [<after>]` | Shows the outline and measures its shape (headings, average section length, text in lists, bold); two files side by side |
+| `npx chaffjs outline <file> [<after>]` | Shows the outline, measures its shape (headings, average section length, text in lists, bold) and scores its structure against human articles; two files side by side |
 | `npx chaffjs fix-plan <file>` | Prints a plan for whoever rewrites the file: the findings by rule, how to rewrite each, and the checks to run after |
 | `npx chaffjs skill` | Installs the Claude Code skill |
 | `npx chaffjs feedback <file> --rule <rule>` | Drafts a report of a wrong or missed finding |
@@ -387,7 +387,10 @@ A rewrite that smooths the sentences can leave the skeleton as it was: the same 
 It lists each heading, indented by depth, with its line and the length of its own text. It measures four things: the number of headings, the average section length, the share of the text in list items, and the bold spans.
 Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the average.
 
-Given two files, it shows both and how each measure moved.
+Below the outline comes the structure block. Each structure measure (headings per 1000 words, sections of one or two paragraphs, section length variation, headings in a stock form, headings split into three, introduction and conclusion headings, a closing that restates the body, three-item lists, bold-label list items, emoji headings, paired pros and cons) is set against articles written before generated text was common: what share of them the value lies past, and, where it lies past 90% of them, the human median and that line, marked ✗.
+The structure score is the count of ✗, out of the measures compared; nothing is weighted or hidden. A measure the document is too small for is listed as not measured, with the reason. The human percentiles are data, in `structure-baseline.yaml`.
+
+Given two files, it shows both and how each measure moved, the structure score included.
 
 ```
 $ npx chaffjs outline before.md after.md
@@ -400,6 +403,15 @@ before.md outline: headings 6, average section 47 words, in lists 19%, bold 8
     ## Results  (before.md:39)  14 words
     ## Conclusion  (before.md:43)  40 words
 
+Structure score: 1 (measures past 90% of human articles, of 10 compared against 641 human articles)
+  · headings: 17.9 per 1000 words  higher than 75% of human articles
+  · sections of one or two paragraphs: 60% (mean 2.6 paragraphs)  higher than 55% of human articles
+  · section length variation: 50%  more uniform than 60% of human articles
+  · introduction / conclusion headings: 1 (closing)  higher than 65% of human articles
+  ✗ list items opening with a bold label: 3  higher than 95% of human articles (human median 0, 90th percentile 0)
+  · usual in human articles: headings in a stock form 0%, headings split into three 0, closing that restates the body 3% ("Conclusion"), headings with an emoji 0, pros / cons pairs 0
+  not measured: three-item lists (fewer than three lists)
+
 after.md outline: headings 5, average section 41 words, in lists 0%, bold 0
 
   # Our flaky test was a time zone problem  (after.md:1)  28 words
@@ -408,14 +420,32 @@ after.md outline: headings 5, average section 41 words, in lists 0%, bold 0
     ## The fix  (after.md:15)  49 words
     ## Results  (after.md:19)  38 words
 
+Structure score: 1 (measures past 90% of human articles, of 9 compared against 641 human articles)
+  · headings: 19.4 per 1000 words  higher than 80% of human articles
+  ✗ sections of one or two paragraphs: 100% (mean 1.3 paragraphs)  higher than 90% of human articles (human median 50, 90th percentile 95)
+  · section length variation: 39%  more uniform than 80% of human articles
+  · usual in human articles: headings in a stock form 0%, headings split into three 0, introduction / conclusion headings 0, list items opening with a bold label 0, headings with an emoji 0, pros / cons pairs 0
+  not measured: closing that restates the body (no closing section), three-item lists (fewer than three lists)
+
 How the shape changed (before.md → after.md)
   headings: 6 → 5
   average section: 47 words → 41 words
   in lists: 19% → 0%
   bold: 8 → 0
+  structure score: 1 → 1
+  headings: 17.9 per 1000 words → 19.4 per 1000 words
+  sections of one or two paragraphs: 60% (mean 2.6 paragraphs) → 100% (mean 1.3 paragraphs)
+  section length variation: 50% → 39%
+  headings in a stock form: 0% → 0%
+  headings split into three: 0 → 0
+  introduction / conclusion headings: 1 (closing) → 0
+  closing that restates the body: 3% ("Conclusion") → —
+  list items opening with a bold label: 3 → 0
+  headings with an emoji: 0 → 0
+  pros / cons pairs: 0 → 0
 ```
 
-In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, and `--json` gives the outline and the shape (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
+In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, then a line per file with the structure score and the measures past the line, and `--json` gives the outline, the shape and every structure measure with where it stands (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
 
 ## Planning a rewrite
 
