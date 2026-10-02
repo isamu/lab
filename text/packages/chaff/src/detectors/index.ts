@@ -50,6 +50,7 @@ import { emptySection } from "./empty-section.ts";
 import { fullwidthAlnum } from "./fullwidth-alnum.ts";
 import { spellingVariety } from "./spelling-variety.ts";
 import { raNuki } from "./ra-nuki.ts";
+import { orthographicVariant } from "./orthographic-variant.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
 import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
@@ -137,4 +138,5 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "fullwidth-alnum": fullwidthAlnum,
   "spelling-variety": spellingVariety,
   "ra-nuki": raNuki,
+  "orthographic-variant": orthographicVariant,
 };

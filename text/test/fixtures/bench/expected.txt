@@ -43,6 +43,7 @@ no-em-dash                             10     10       0             0
 no-mixed-desumasu                      12     12       0             0
 no-nakaguro-parallel                    2      2       0             0
 numbering-gap                           6      6       0             0
+orthographic-variant                    1      1       0             0
 oxford-comma-consistency                2      2       0             0
 padded-intro                           10     10       0             0
 percent-sum-mismatch                    2      2       0             0
@@ -236,6 +237,7 @@ ja/itinerary  zero-width-pasted  found
 ja/itinerary  heading-copied  found
 ja/itinerary  section-emptied  found
 ja/itinerary  hedge-double-negative-ja  found
+ja/itinerary  kanji-once  found
 ja/minutes  weekday-shift  found
 ja/minutes  rows-swapped  found
 ja/minutes  polite-in-plain  found

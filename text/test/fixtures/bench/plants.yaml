@@ -36,6 +36,7 @@ planted:
   internal-jargon: [ja, en]
   invisible-character: [ja, en]
   katakana-long-vowel: [ja]
+  orthographic-variant: [ja]
   kutoten-consistency: [ja]
   latin-spacing: [ja]
   max-kanji-continuous: [ja]
