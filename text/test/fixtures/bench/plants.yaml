@@ -92,3 +92,6 @@ not_planted:
   taigen-dome-in-prose: a count over the whole document; reaching it would rewrite the sample's register
   unqualified-superlative: more than one unqualified superlative in a document is several mistakes, not one
   unsourced-number: L4, judged by chaff test and never run by lint
+  bracket-nesting: the samples nest brackets one deep at most, so no single edit nests them three deep
+  clause-chain: one edit adds one clause, and a sentence over the limit needs several
+  topic-predicate-distance: the wait is how a whole sentence is built, not one slip
