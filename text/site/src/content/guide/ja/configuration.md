@@ -172,7 +172,7 @@ $ npx chaffjs explain max-sentence-length
 | ルール | `strict` | `normal` | `relaxed` |
 | --- | --- | --- | --- |
 | `numbering-gap` `dangling-reference` `date-weekday-mismatch` `total-mismatch` | （無い） | エラー | 注意 |
-| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` | エラー | 注意 | 参考 |
+| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` `unfilled-placeholder` | エラー | 注意 | 参考 |
 
 エラーが 1 件でも残ると、chaff は失敗で終わります。注意と参考だけなら成功で終わります。
 `explain` でも、数字の代わりに重さが出ます。
@@ -297,6 +297,28 @@ by_path:
 
 後に書いたものが勝ちます。照合は設定ファイルのある場所からの相対です。
 どこで実行しても、結果が変わりません。
+
+## Markdown 以外のファイルも見る
+
+フォルダを渡すと、chaff はその中の Markdown（`.md` `.markdown` `.mdx`）を検査します。
+`include` に書いたファイル名の glob に合うファイルも、あわせて検査します。`--include` を付けると、その実行だけ同じことをします。
+
+```yaml
+include:
+  - "*.yaml"
+  - "*.txt"
+```
+
+```bash
+npx chaffjs tests/fixtures/ --include "*.yaml"
+```
+
+YAML（`.yaml` `.yml`）は、文字列の値だけを読みます。
+キー、引用符、コメント、数や `true` は文章ではありません。値は 1 つずつ別に読みます。
+指摘はファイルの行と桁を指すので、`custom_rules` の pattern でテストの期待値に残った `TODO:` も見つけられます。
+YAML として読めないファイルは、ただのテキストとして読みます。
+`.txt` のようなほかのファイルも、ただのテキストとして読みます。
+コマンドラインで名前を挙げたファイルは、拡張子にかかわらず検査します。
 
 ## 設定が効いているか確かめる
 

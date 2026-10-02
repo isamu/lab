@@ -357,7 +357,9 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 
 ## 動かなかったルール
 
+- `agentless-passive`: ジャンル blog/tech では見ないため
 - `ai-structure`: 表題より下の見出しが無いため
+- `cushion-phrase-density`: ジャンル blog/tech では見ないため
 
 ## 直したあとの確かめ
 
@@ -395,7 +397,7 @@ $ npx chaffjs draft.rewritten.md --experimental --compact
 draft.rewritten.md   blog/tech · 日本語   ジャンルは既定から
 
 
-指摘 0 件、動いていない rule 10 件
+指摘 0 件、動いていない rule 19 件
 
 $ npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
 draft.md → draft.rewritten.md
@@ -538,7 +540,7 @@ ai.md   blog/tech · 日本語   ジャンルは--genreから
   47:13   warning 「お役に立てれば幸いです」で締めています
                   closing-cliche
 
-指摘 12 件、動いていない rule 8 件
+指摘 12 件、動いていない rule 18 件
 ```
 
 書き直した後の記事です。
@@ -577,7 +579,7 @@ rewritten.md   blog/tech · 日本語   ジャンルは--genreから
   1:28    info    節の長さのばらつきが 32% しかありません（35% 以上ほしい）
                   section-length-uniformity
 
-指摘 1 件、動いていない rule 8 件
+指摘 1 件、動いていない rule 18 件
 ```
 
 変えたことと、その理由です。
@@ -740,7 +742,7 @@ study.md   blog/tech · 日本語   ジャンルは--genreから
   67:1    warning 「いかがでしたでしょうか」で締めています
                   closing-cliche
 
-指摘 13 件、動いていない rule 10 件
+指摘 13 件、動いていない rule 18 件
 ```
 
 控えを取ります。`npx chaffjs facts study.md` の一覧には、数 11 件、日付 1 件、時刻 2 件、固有名詞 2 件（Rust、Notion）、見出し 14 件が並びます。
@@ -826,7 +828,7 @@ $ npx chaffjs study-full.md --genre blog/tech --experimental --compact
 study-full.md   blog/tech · 日本語   ジャンルは--genreから
 
 
-指摘 0 件、動いていない rule 10 件
+指摘 0 件、動いていない rule 18 件
 ```
 
 構成の変わり方を `outline` で測った結果です。見出しが減って節が長くなり、箇条書きと太字は無くなりました。

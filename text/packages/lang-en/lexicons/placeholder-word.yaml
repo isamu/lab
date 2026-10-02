@@ -15,3 +15,13 @@ entries:
   - pattern: describe
   - pattern: specific
   - pattern: add
+  # group: marker — a value left as a note to fill it in later. It counts when it is the whole value ("TBD") or opens it
+  # before a colon ("TODO: add expected output pattern"), in any case. Only the start of a value counts: "a todo app" is not one.
+  - pattern: TODO
+    group: marker
+  - pattern: TBD
+    group: marker
+  - pattern: TBC
+    group: marker
+  - pattern: FIXME
+    group: marker

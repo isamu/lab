@@ -12,6 +12,7 @@
     "corpus": "node scripts/corpus-run.ts",
     "corpus:fetch": "node scripts/corpus-fetch.ts",
     "corpus:health": "node scripts/corpus-health.ts",
+    "rules:measure": "node scripts/rules-measure.ts",
     "bench": "node scripts/bench.ts",
     "bench:ai": "node scripts/ai-bench.ts",
     "build": "yarn workspace @chaffjs/lang-ja build && yarn workspace @chaffjs/lang-en build && yarn workspace chaffjs build",
