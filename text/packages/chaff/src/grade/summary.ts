@@ -6,9 +6,9 @@ import type { GradeFact, GradeResult, NotRunEntry, Stamp } from "./result.ts";
 // The summary of a run (spec §29.3), from the per-output results alone, so the same results always sum the same way.
 
 /** Per length unit: Japanese outputs are measured in characters and English ones in words, and the two never add up. */
-export type PerUnit = Partial<Record<LengthUnit, number>>;
+type PerUnit = Partial<Record<LengthUnit, number>>;
 
-export type RuleSummary = { readonly findings: number; readonly outputs: number; readonly rate: PerUnit };
+type RuleSummary = { readonly findings: number; readonly outputs: number; readonly rate: PerUnit };
 
 export type GradeSummary = {
   readonly total: number;

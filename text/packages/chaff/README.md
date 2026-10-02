@@ -93,6 +93,7 @@ npx chaffjs compare 前.md 後.md   書き換えで事実（数・日付・URL�
 npx chaffjs facts 前.md           compare が照合する事実を一覧にする（書き直す前の控え）
 npx chaffjs outline 前.md 後.md   見出しの構成と形（見出しの数・節の平均・箇条書きの割合・太字）を前と後で並べる
 npx chaffjs fix-plan 前.md       指摘をルールごとにまとめ、直す方向と確かめのコマンドを付けた「直す計画」を出す
+npx chaffjs grade items.jsonl     AI の出力を JSONL でまとめて採点する（指摘の率・事実・引用・合否。--baseline で前の回と比べる）
 npx chaffjs skill                 Claude Code の skill を入れる（--global でホームに）
 ```
 
@@ -103,6 +104,17 @@ npx chaffjs skill                 Claude Code の skill を入れる（--global 
 日本語と英語。言語は本文から自動で判定し、指摘の画面もその言語で出ます。アダプタ（`@chaffjs/lang-ja` / `@chaffjs/lang-en`）は同梱されているので、別に入れる必要はありません。
 
 新しい言語のアダプタは誰でも出せます。公式は `@chaffjs/lang-<言語>`、第三者は `chaff-lang-<言語>` と名乗ってください（`@typescript-eslint/*` と `eslint-plugin-*` の関係と同じです）。chaff は公式、第三者の順に探して読みます。
+
+## AI の評価に使う
+
+`chaff grade` と同じ採点を、評価の仕組みの中から関数で呼べます。結果は `chaff grade --out` の 1 行と同じ形です。
+
+```js
+import { grade } from "chaffjs/grade";
+
+const result = await grade(output, { reference: source, language: "en", config: "chaff.yaml" });
+if (!result.pass) console.log(result.failedBecause);
+```
 
 ## プラグイン
 

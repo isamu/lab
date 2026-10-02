@@ -6,7 +6,7 @@ import type { LengthUnit, ProseDocument } from "../plugin.ts";
 export type OutputSize = { readonly unit: LengthUnit; readonly value: number };
 
 /** Rates are findings per this many units, so a short and a long output are measured alike. */
-export const RATE_BASE = 1000;
+const RATE_BASE = 1000;
 
 const RATE_DECIMALS = 1;
 

@@ -24,7 +24,7 @@ export const GRADE_EXIT = { passed: 0, failed: 1, unreadable: 2 } as const;
 
 const VALUED: ReadonlySet<string> = new Set(["--out", "--genre", "--baseline"]);
 
-export const gradeTargets = (argv: readonly string[]): string[] =>
+const gradeTargets = (argv: readonly string[]): string[] =>
   argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.has(all[index - 1] ?? ""));
 
 export type GradeContext = {
