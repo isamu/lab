@@ -5,7 +5,7 @@ import type { GradeText } from "./text.ts";
 
 const UNITS: readonly LengthUnit[] = ["word", "char"];
 
-const block = (heading: string, lines: readonly string[]): string[] => (lines.length === 0 ? [] : ["", heading, ...lines]);
+export const block = (heading: string, lines: readonly string[]): string[] => (lines.length === 0 ? [] : ["", heading, ...lines]);
 
 const padded = (cells: readonly string[], widths: readonly number[]): string =>
   `  ${cells.map((cell, index) => cell.padEnd(widths[index] ?? 0)).join("  ")}`.trimEnd();

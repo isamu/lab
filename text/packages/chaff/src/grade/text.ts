@@ -88,7 +88,8 @@ const aside = (open: string, inner: string, close: string): string => (inner ===
 
 export const GRADE_TEXT: Texts<GradeText> = {
   ja: {
-    usage: "使い方: chaff grade <items.jsonl> [--out <results.jsonl>] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
+    usage:
+      "使い方: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
     noReference: "reference が無い（事実は reference と照らす）",
     noCitations: "citations が無い（chaff は出力から引用を推測しない）",
     unknownRule: "grade: に書かれているが、chaff の知らないルール",
@@ -112,7 +113,8 @@ export const GRADE_TEXT: Texts<GradeText> = {
     stamp: "再現の印",
   },
   en: {
-    usage: "usage: chaff grade <items.jsonl> [--out <results.jsonl>] [--json] [--compact] [--experimental] [--genre <genre>]",
+    usage:
+      "usage: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--json] [--compact] [--experimental] [--genre <genre>]",
     noReference: "no reference given (facts are checked against a reference)",
     noCitations: "no citations given (chaff does not guess quotations from the output)",
     unknownRule: "named under grade: but not a rule chaff knows",
