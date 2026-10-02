@@ -53,10 +53,14 @@ const lackingIn = (rewrite: RuleRewrite): string[] => [
   ...(rewrite.avoid.length === 0 ? ["avoid"] : []),
 ];
 
-/** The phrases the rule's own word lists flag in a language; an after that holds one teaches the habit it should cure. */
+/**
+ * The phrases the rule's own word lists flag in a language; an after that holds one teaches the habit it should cure.
+ * An entry that names its other way (instead_of) is one of two ways a consistency rule compares, and neither is flagged.
+ */
 const flaggedPhrases = (rule: RuleDefinition, language: string): string[] =>
   [rule.word_list, ...rule.extra_word_lists]
     .flatMap((name) => (name === undefined ? [] : (lexiconsByLanguage[language]?.[name] ?? [])))
+    .filter((entry) => entry.instead_of === undefined)
     .map((entry) => entry.pattern.toLowerCase());
 
 /** Each pair's after that still holds a phrase the rule flags, as "rule language: phrase in after". */

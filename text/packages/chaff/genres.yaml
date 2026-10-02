@@ -58,6 +58,8 @@ groups:
       ai-structure: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
+      # Contracts set disclaimers in capitals so they are conspicuous, as the law asks.
+      all-caps-shouting: off
       # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
       nominalization: off
       # Drafting writes a number twice on purpose: thirty (30) days.
@@ -195,6 +197,9 @@ groups:
       list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # Older printed texts set the dash as "--" and titles in capitals.
+      hyphen-as-dash: off
+      all-caps-shouting: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
