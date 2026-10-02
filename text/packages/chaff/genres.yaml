@@ -53,6 +53,7 @@ groups:
       colon-lead-in: off
       emoji-heading: off
       bold-label-list: off
+      ai-structure: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
       # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
@@ -87,6 +88,7 @@ groups:
       colon-lead-in: off
       emoji-heading: off
       bold-label-list: off
+      ai-structure: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
@@ -110,6 +112,7 @@ groups:
       stock-transition: off
       emoji-heading: off
       bold-label-list: off
+      ai-structure: off
       requirement-smell: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
@@ -195,6 +198,7 @@ groups:
       stock-transition: off
       announcing-opener: off
       colon-lead-in: off
+      ai-structure: off
       # A transcript keeps the speaker's words: hedges and ら dropped as spoken.
       double-negative: off
       ra-nuki: off

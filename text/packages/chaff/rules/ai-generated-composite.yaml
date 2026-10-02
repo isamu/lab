@@ -18,6 +18,7 @@ from:
   - assistant-residue
   - announcing-opener
   - colon-lead-in
+  - ai-structure
 
 name:
   ja: 生成文の特徴がそろっている

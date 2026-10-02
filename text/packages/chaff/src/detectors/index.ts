@@ -58,6 +58,7 @@ import { customPattern, customTokens, customWords } from "./custom.ts";
 import { chatCitationResidue } from "./chat-citation.ts";
 import { emojiHeading } from "./emoji-heading.ts";
 import { boldLabelList } from "./bold-label.ts";
+import { aiStructure } from "./ai-structure.ts";
 import { acronymExpansionConflict, unusedDefinition, useBeforeDefinition } from "./definition-use.ts";
 import { assistantResidue, colonLeadIn, contrastFraming, openerDensity, openerPile, unfilledPlaceholder } from "./ai-phrasing.ts";
 
@@ -150,6 +151,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "chat-citation-residue": chatCitationResidue,
   "emoji-heading": emojiHeading,
   "bold-label-list": boldLabelList,
+  "ai-structure": aiStructure,
   "unused-definition": unusedDefinition,
   "use-before-definition": useBeforeDefinition,
   "acronym-expansion-conflict": acronymExpansionConflict,
