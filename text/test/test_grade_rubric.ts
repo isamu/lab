@@ -88,7 +88,7 @@ describe("pass or fail under a rubric", () => {
     const rubric = rubricOf({ rules: { "ai-tell": { max_rate: 333.3 } } });
     const failed = reasons(rubric, { findings: [finding("info", "ai-tell")], size: { unit: "word", value: 3 } });
     assert.equal(failed.length, 1);
-    assert.equal(failed[0], `rules.ai-tell.rate ${String(1000 / 3)} > 333.3`);
+    assert.deepEqual(failed, ["rules.ai-tell.rate 333.333 > 333.3"]);
   });
 
   it("turns the default off with a bare grade:, so an error finding of an unnamed rule no longer fails", async () => {

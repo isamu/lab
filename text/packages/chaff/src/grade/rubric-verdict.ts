@@ -17,12 +17,17 @@ export type RubricInput = Graded & {
 
 const countOf = (input: RubricInput, rule: string): number => input.findings.filter((finding) => finding.rule === rule).length;
 
+/** A rate as a failure reason shows it: to three decimals, enough to tell it from a limit written to one. */
+const shownRate = (rate: number): string => String(Math.round(rate * RATE_SHOWN_SCALE) / RATE_SHOWN_SCALE);
+
+const RATE_SHOWN_SCALE = 1000;
+
 const ruleFailures = (input: RubricInput, rule: string, limit: RuleLimit): string[] => {
   const count = countOf(input, rule);
   const rate = exactRateOf(count, input.size.value);
   return [
     ...(limit.max === undefined ? [] : overLimit(`rules.${rule}`, count, limit.max)),
-    ...(limit.maxRate === undefined || rate === undefined ? [] : overLimit(`rules.${rule}.rate`, rate, limit.maxRate)),
+    ...(limit.maxRate === undefined || rate === undefined || rate <= limit.maxRate ? [] : [`rules.${rule}.rate ${shownRate(rate)} > ${String(limit.maxRate)}`]),
   ];
 };
 
