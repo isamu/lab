@@ -40,6 +40,17 @@ describe("announced-count-mismatch", () => {
     assert.deepEqual(found(doc("Check the following three items:", "- ID", "- Bank account", "- Address")), []);
   });
 
+  it("nouns that name what a list holds (decisions, findings, priorities) count; plurals that measure or verbs do not", () => {
+    assert.deepEqual(found(doc("The board made three decisions:", "- Approve the budget.", "- Hire an auditor.")), ["three decisions/2"]);
+    assert.deepEqual(found(doc("The review had two findings:", "- Logs", "- Backups", "- Access")), ["two findings/3"]);
+    assert.deepEqual(found(doc("Our four priorities:", "- Speed", "- Cost")), ["four priorities/2"]);
+    assert.deepEqual(found(doc("Over the past three years:", "- We grew.", "- We hired.")), []);
+    assert.deepEqual(found(doc("The meeting lasted two hours:", "- Budget", "- Audit", "- Hiring")), []);
+    assert.deepEqual(found(doc("Release 2 includes:", "- Search", "- Export", "- Import")), []);
+    assert.deepEqual(found(doc("Section 2 documents:", "- The approval trail.", "- The fallback owner.", "- The retention policy.")), []);
+    assert.deepEqual(found(doc("The severity rose two levels:", "- Paging started.", "- Support opened an incident.", "- The clock changed.")), []);
+  });
+
   it("the items at the top level are counted; nested items and wrapped lines are not", () => {
     const nested = doc("次の2点を守ってください。", "- 期限", "  - 10月5日まで", "  - 遅れたら連絡", "- 書式", "  PDFで出すこと");
     assert.deepEqual(found(nested, ja), []);

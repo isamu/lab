@@ -13,6 +13,25 @@ Newest first.
   the name ends at punctuation: "Texas, Florida, and Ohio" and "Austin, Texas, Boston, Massachusetts, and Denver,
   Colorado" are still lists. A name written only after a place (Washington, D.C.) is marked `position: after`.
 
+### `date-range-reversed` (en) reads "from … to …"
+
+"The agreement runs from 1 November 2026 to 31 October 2026" was not compared, though the same dates joined by
+"through" were. The day-first date was read fine; "to" was the gap, left out because "moved from March 10 to March 3"
+changes a date. Two new English word lists close it: `range-frame` ("from … to", "from … up to") makes a period of a
+lead word right before the first date and a joint word between the dates, and a word from `date-change-word` (moved,
+postponed, brought forward, rescheduled …) anywhere in the same sentence, across line wraps, makes it a change of date
+instead. "between … and" is not read as a period: it also names two dates to choose from. Japanese keeps reading
+から … まで with range-opener and range-closer.
+
+### `announced-count-mismatch` (en) knows more nouns that name what a list holds
+
+"The board made three decisions:" was not read as an announcement, though "three points:" was. The English word list
+`count-counter` now also has nouns such as decisions, findings, examples, objectives, priorities, outcomes, problems,
+concerns, constraints, assumptions, limitations, roles, values, sections, tools, policies, metrics
+and milestones. A plural before a colon is still not enough on its own: a plural that measures ("over the past three
+years:", "two hours:", "two levels:") or a verb ending in s ("Release 2 includes:", "Section 2 documents:") does not
+announce a list.
+
 ### `agentless-passive` (ja) reads 「〜されることとなった」 as a predicate
 
 「本件は検討されることとなった。」 and 「見直しが実施されることになりました。」 were not reported: the こと after the

@@ -6,6 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import { rangeFrameOf } from "../packages/chaff/src/structure/date-range.ts";
 
 // 期間の終わりが始まりより前（date-range-reversed）。「4月1日〜3月31日」のように、範囲の記号でつないだ二つの日付を比べる。
 
@@ -70,6 +71,40 @@ describe("date-range-reversed", () => {
 
   it("to may move a date rather than span a period, so it is not a range", () => {
     assert.deepEqual(found(doc("The review moved from March 10, 2026 to March 3, 2026.")), []);
+    assert.deepEqual(found(doc("The deadline was brought forward from 30 June 2026 to 15 June 2026.")), []);
+    assert.deepEqual(found(doc("We rescheduled the audit from 10 March 2026 to 3 March 2026.")), []);
+    assert.deepEqual(found(doc("The meeting from March 10, 2026 to March 3, 2026 was postponed.")), []);
+    assert.deepEqual(found(doc("The review was rescheduled", "from March 10, 2026 to March 3, 2026.")), []);
+    assert.deepEqual(found(doc("The launch was moved in Jan. from March 10, 2026 to March 3, 2026.")), []);
+  });
+
+  it("from … to and from … up to are a period, day first or month first", () => {
+    assert.deepEqual(found(doc("The agreement runs from 1 November 2026 to 31 October 2026.")), ["2026-11-01>2026-10-31"]);
+    assert.deepEqual(found(doc("It runs from November 1, 2026 to October 31, 2026.")), ["2026-11-01>2026-10-31"]);
+    assert.deepEqual(found(doc("The promotion runs from 1 November 2026 up to 31 October 2026.")), ["2026-11-01>2026-10-31"]);
+    assert.deepEqual(found(doc("The agreement runs from 1 November 2026 to 31 October 2027.")), []);
+  });
+
+  it("the frame needs its lead right before the first date, as a whole word, in the same sentence", () => {
+    assert.deepEqual(found(doc("Apart from 1 November 2026 to 31 October 2026 nothing changes.")), ["2026-11-01>2026-10-31"]);
+    assert.deepEqual(found(doc("Signed 1 November 2026 to 31 October 2026.")), []);
+    assert.deepEqual(found(doc("We flew from Tokyo on 1 November 2026 to 31 October 2026.")), []);
+    assert.deepEqual(found(doc("Therefrom 1 November 2026 to 31 October 2026.")), []);
+    assert.deepEqual(found(doc("It moved. From 1 November 2026 to 31 October 2026 the office is open.")), ["2026-11-01>2026-10-31"]);
+    assert.deepEqual(found(doc("It was removed from 1 November 2026 to 31 October 2026.")), ["2026-11-01>2026-10-31"]);
+  });
+
+  it("a lead with another joint is not a frame, and between … and names two dates to choose from", () => {
+    assert.deepEqual(found(doc("Sent from 1 November 2026 and 31 October 2026.")), []);
+    assert.deepEqual(found(doc("Choose between 1 May 2026 and 30 April 2026 for the workshop.")), []);
+  });
+
+  it("a change word in another sentence or paragraph does not stop the period", () => {
+    assert.deepEqual(found(doc("The office moved. It is open from 1 November 2026 to 31 October 2026.")), ["2026-11-01>2026-10-31"]);
+    assert.deepEqual(found(doc("It runs from 1 November 2026 to 31 October 2026. The date was then changed.")), ["2026-11-01>2026-10-31"]);
+    assert.deepEqual(found(["# Plan", "", "Office moved", "", "from 1 November 2026 to 31 October 2026 the desk is open.", ""].join("\n")), [
+      "2026-11-01>2026-10-31",
+    ]);
   });
 
   it("times inside a period are read past", () => {
@@ -79,5 +114,16 @@ describe("date-range-reversed", () => {
   it("two dates with words between them are not a period", () => {
     assert.deepEqual(found(doc("2026年4月1日、2026年3月1日の二回"), ja), []);
     assert.deepEqual(found(doc("Signed March 5, 2026 and March 3, 2026.")), []);
+  });
+});
+
+describe("rangeFrameOf", () => {
+  it("splits a lead and a joint at …", () => {
+    assert.deepEqual(rangeFrameOf("from … to"), { lead: "from", joint: "to" });
+    assert.deepEqual(rangeFrameOf("From…Up To"), { lead: "from", joint: "up to" });
+  });
+
+  it("is undefined without exactly two non-empty parts", () => {
+    ["to", "", "from …", "… to", "from … to … end"].forEach((pattern) => assert.equal(rangeFrameOf(pattern), undefined, pattern));
   });
 });
