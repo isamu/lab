@@ -630,6 +630,8 @@ npx chaffjs facts before.md --json     AI が控えとして持つ（--compact �
 npx chaffjs outline before.md after.md       見出しの数 6 → 3 のように、形がどう動いたかを並べる
 ```
 
+`compare`・`cite`・矛盾のルールは、model の出力を採点する AI の評価（eval）にも使えます。多数の出力を回して集める例は、手引きの「[AI の評価（AI evals）に使う](https://isamu.github.io/lab/ja/guide/ai-evals/)」にあります。
+
 ## Claude Code の skill
 
 ```bash
