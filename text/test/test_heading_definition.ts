@@ -107,6 +107,24 @@ describe("duplicate-definition と、1 つのページに載せた 2 つの文�
     assert.deepEqual(duplicates(ja, source), ["本規約", "市", "本アプリ"]);
   });
 
+  it("invalid: 見出しの中の見出しで番号をやり直しても（規程の中の附則）、同じ文書", () => {
+    const source = lines("# 規程", "", "第1条　「市」とは、甲市をいう。", "", "## 附則", "", "第1条　「市」とは、乙市をいう。");
+    assert.deepEqual(duplicates(ja, source), ["市"]);
+  });
+
+  it("invalid: 章ごとに番号をやり直しても、同じ文書", () => {
+    assert.deepEqual(duplicates(ja, lines("第1章　総則", "第1条　「市」とは、甲市をいう。", "第2章　手続", "第1条　「市」とは、乙市をいう。"), false), ["市"]);
+    const english = lines(
+      "Chapter 1 General",
+      "Section 1 Definitions",
+      "“User” means a person.",
+      "Chapter 2 Procedure",
+      "Section 1 Definitions",
+      "“User” means another person.",
+    );
+    assert.deepEqual(duplicates(en, english, false), ["User"]);
+  });
+
   it("invalid: 第1条から始まる見出しが 1 つだけなら文書は 1 つで、見出しの外の定義とも比べる", () => {
     const source = lines("# サービス利用規約", "", "「市」とは、この規約を定めた市をいう。", "", ...instrument("アプリ利用規約", 1));
     assert.deepEqual(duplicates(ja, source), ["市"]);

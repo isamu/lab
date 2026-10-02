@@ -89,14 +89,29 @@ type Definition = { readonly node: StructureNode; readonly article: string; read
 const firstArticleOf = (node: StructureNode): StructureNode | undefined => node.children.find((child) => child.kind === "article");
 
 /**
- * 条の番号を初めからやり直す節。1 つのページに 2 つの文書を載せたもの（利用規約のあとに個人情報保護方針、それぞれ第１条から）。
- * 節の最初の条が、文書の最初の条と同じ番号で始まる節を数え、2 つ以上あるときだけ、それぞれを別の文書とみなす。1 つなら文書は 1 つ。
+ * 見出しの節のうち、最初の条が文書の最初の条と同じ番号で始まるもの。そうした節の中の節は数えない（「# 規程」の中の「## 附則」の第1条は、
+ * 同じ文書の中で番号をやり直しただけ）。章（第1章）は見出しの節ではないので数えない。
+ */
+const restartingSections = (tree: StructureNode, firstAddress: string): StructureNode[] => {
+  const found: StructureNode[] = [];
+  const pending: StructureNode[] = [tree];
+  while (pending.length > 0) {
+    const node = pending.pop();
+    if (node === undefined) break;
+    if (node.kind === "section" && firstArticleOf(node)?.address === firstAddress) found.push(node);
+    else pending.push(...node.children);
+  }
+  return found;
+};
+
+/**
+ * 条の番号を初めからやり直す見出しの節。1 つのページに 2 つの文書を載せたもの（利用規約のあとに個人情報保護方針、それぞれ第１条から）。
+ * そうした節が 2 つ以上あるときだけ、それぞれを別の文書とみなす。1 つなら文書は 1 つ。
  */
 const instrumentsOf = (tree: StructureNode): ReadonlySet<StructureNode> => {
-  const nodes = inDocumentOrder(tree);
-  const first = nodes.find((node) => node.kind === "article");
+  const first = inDocumentOrder(tree).find((node) => node.kind === "article");
   if (first === undefined) return new Set();
-  const restarts = nodes.filter((node) => node.kind !== "article" && firstArticleOf(node)?.address === first.address);
+  const restarts = restartingSections(tree, first.address);
   return restarts.length >= 2 ? new Set(restarts) : new Set();
 };
 
