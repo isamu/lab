@@ -85,6 +85,7 @@ not_planted:
   cushion-phrase-density: a density over the whole document
   empty-conclusion: L4, judged by chaff test and never run by lint
   nominalization: a density over the whole document
+  paragraph-restatement: a restating paragraph is a paragraph written in, not one slip in a sample
   paragraph-length-variance: the shape of the whole document, not one mistake
   proper-noun-density: a density over the whole document
   repeated-sentence-head: a run of consecutive sentences sharing their opening words; forcing one changes what the samples say

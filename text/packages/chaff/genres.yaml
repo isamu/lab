@@ -56,6 +56,8 @@ groups:
       double-negative: off
       # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
       nominalization: off
+      # すなわち and that is, open a definition that restates on purpose.
+      paragraph-restatement: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -173,6 +175,7 @@ groups:
       ra-nuki: off
       spelling-consistency: off
       requirement-smell: off
+      paragraph-restatement: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -195,6 +198,8 @@ groups:
       double-negative: off
       ra-nuki: off
       requirement-smell: off
+      # A speaker says it again so the room hears it: 要するに, in other words.
+      paragraph-restatement: off
 
 genres:
   - id: technical/spec

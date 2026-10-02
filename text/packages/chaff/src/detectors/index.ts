@@ -54,6 +54,7 @@ import { fullwidthAlnum } from "./fullwidth-alnum.ts";
 import { spellingVariety } from "./spelling-variety.ts";
 import { raNuki } from "./ra-nuki.ts";
 import { katakanaLongVowel } from "./long-vowel.ts";
+import { paragraphRestatement } from "./paragraph-restatement.ts";
 import { customPattern, customTokens, customWords } from "./custom.ts";
 import { boldLabelList } from "./bold-label.ts";
 import { acronymExpansionConflict, unusedDefinition, useBeforeDefinition } from "./definition-use.ts";
@@ -142,6 +143,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "space-before-punctuation": spaceBeforePunctuation,
   "duplicate-heading": duplicateHeading,
   "empty-section": emptySection,
+  "paragraph-restatement": paragraphRestatement,
   "fullwidth-alnum": fullwidthAlnum,
   "spelling-variety": spellingVariety,
   "ra-nuki": raNuki,
