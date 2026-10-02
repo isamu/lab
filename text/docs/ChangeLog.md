@@ -13,6 +13,55 @@ Newest first.
   the name ends at punctuation: "Texas, Florida, and Ohio" and "Austin, Texas, Boston, Massachusetts, and Denver,
   Colorado" are still lists. A name written only after a place (Washington, D.C.) is marked `position: after`.
 
+### Rules say how to rewrite what they flag
+
+- A rule file may carry a `rewrite:` block per language: a `direction` (what to do with a flagged spot), two or three
+  self-written `pairs` (before and after), what to `keep` (facts, conditions, the writer's certainty) and what to
+  `avoid` (inventing an example, trading one stock phrase for another). chaff still never rewrites; this is data for
+  the AI or the person who does.
+- Filled in for the AI-shape rules and the common readability rules: `ai-tell`, `contrast-framing`,
+  `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`,
+  `bold-density`, `no-em-dash`, `rule-of-three`, `sentence-rhythm`, `max-sentence-length`, `taigen-dome-in-prose`,
+  `agentless-passive`, `excessive-hedging`, `empty-intensifier`, `cushion-phrase-density`, `nominalization`. A test requires it for these.
+- An `ai-tell` lexicon entry may carry its own `rewrite` hint: 「時間を溶かす」 → 「時間がかかった（何に、どれだけ）」,
+  「静かに壊れる」 → 「エラーを出さずに失敗する」, "delve into" → "look at, or explain".
+
+### `dangling-figure-reference` leaves another instrument's 別表 to that instrument (#170)
+
+- A 別表, 図 or 表 written right after another document's name or promulgation number is that document's
+  (「診療報酬の算定方法(平成二十年厚生労働省告示第五十九号)別表第一」, 「…規則の別表第三」), as `dangling-reference`
+  already reads 「民法第709条」. Later numbers of the same kind in the same sentence go with it (「別表第一から別表第三まで」,
+  「…の別表に収載されている医薬品(…別表第2に収載されている医薬品を除く。)」). A number in another sentence, before the
+  citation, of another kind, or after 「この規則の」 is still looked for in this document.
+- The language package reads the name (`StructurePatterns.namedDocument`; Japanese has it, English reads "of" after the
+  number as before). The Japanese `name-note` list also reads a short title in brackets before the promulgation
+  number (「使用薬剤の薬価(薬価基準)(平成二十年厚生労働省告示第六十号)」), for articles as well as tables.
+- Found by the corpus's 厚生労働省告示 (round 14); every finding there was another 告示's 別表.
+
+### `ai-tell` knows more Japanese phrasing that grew after LLMs
+
+- `ai-tell` (ja) adds 浮き彫りになる, 最大限に引き出す, 真価を発揮する, 強力な武器, ステップバイステップ, 多角的な,
+  包括的な, シームレスに and 大幅に向上する, each at a low weight. Each is rare in Qiita articles from 2016–2021
+  and clearly more common in articles from 2025–2026. One of them alone still says nothing; they add to the score.
+
+### `unqualified-superlative`: the rule text no longer uses 業界最速 as its example
+
+The summary and the example named 「業界最速」 as an unqualified superlative, but since #170 a noun joined to the
+superlative (国内最大, 業界最速) is read as its scope and is not reported, so a writer following the summary expected a
+finding that never came. The summary and the example now use 「最速」, and `not_flagged` says that a joined noun or a
+name with で is a scope. What the rule reports is unchanged.
+
+### `cushion-phrase-density` reads short emails
+
+A short work email with three softeners ("I hope this email finds you well. I just wanted to reach out … Sorry to
+bother you, but …") was never reported: density rules skip documents shorter than a floor, and softeners pile up in
+exactly those short emails and letters. The rule now measures a short document as if it were as long as a short letter,
+chosen so that at the default level the third softener is the first reported in either language (two, as in
+「お忙しいところ恐れ入りますが」, are ordinary), and a single softener is never reported at any level. The density in the
+message is still the document's own. `excessive-hedging` keeps skipping short documents (its stacked hedges are found in
+one sentence). The English word list gains "hope this email finds you well" (and the "message" and plain forms),
+"sorry to trouble", "just reaching out" and "just checking in".
+
 ### `date-range-reversed` (en) reads "from … to …"
 
 "The agreement runs from 1 November 2026 to 31 October 2026" was not compared, though the same dates joined by

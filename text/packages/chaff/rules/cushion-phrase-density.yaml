@@ -45,8 +45,35 @@ example:
       Could you check the quote by Friday? The total on page two changed.
 
 not_flagged:
-  ja: クッション言葉が一つだけなら礼儀なので指しません。短い文書は測りません。
-  en: One softener is courtesy and is not reported. Short documents are not measured.
+  ja: クッション言葉が一つだけなら礼儀なので指しません。短い文書（メールなど）は短い手紙ほどの長さの文書として測り、既定の水準では三つ目から指します。一つだけならどの水準でも指しません。
+  en: One softener is courtesy and is not reported. A short document, such as an email, is measured as if it were as long as a short letter, so at the default level the third softener is the first reported; one alone is never reported.
 level_meaning:
   ja: 1000 字あたりクッション言葉 {limit} 個まで
   en: up to {limit} softeners per 1000 words
+rewrite:
+  ja:
+    direction: クッション言葉は最初の一つだけ残し、あとは用件（何を、いつまでに）から書いてください。敬語の丁寧さは変えません。
+    pairs:
+      - before: 恐れ入りますが、念のため、お手数ですが、資料をご確認いただけますでしょうか。
+        after: 恐れ入りますが、資料をご確認いただけますか。
+      - before: 大変申し訳ないのですが、もし可能であれば、金曜までにご返信いただけると幸いです。
+        after: 申し訳ありませんが、金曜までにご返信いただけますか。
+    keep:
+      - 敬語の丁寧さと、相手との距離
+      - 依頼の中身、期限、宛先
+    avoid:
+      - クッション言葉を全部消して命令の口調にする
+      - 期限や条件を落とす
+  en:
+    direction: Keep the first softener and lead with the request (what, by when) after that. Keep the level of politeness.
+    pairs:
+      - before: Sorry to bother you, but I just wanted to check whether you might possibly be able to review the draft.
+        after: Sorry to bother you. Could you review the draft?
+      - before: Just a quick note to gently remind you, if you don't mind, that the report is due Friday.
+        after: A reminder that the report is due Friday.
+    keep:
+      - the level of politeness
+      - the request, its deadline and who it is for
+    avoid:
+      - deleting every softener until the request reads as an order
+      - dropping a deadline or a condition

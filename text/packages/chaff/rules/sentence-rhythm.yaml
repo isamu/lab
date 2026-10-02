@@ -54,3 +54,28 @@ not_flagged:
 level_meaning:
   ja: 文の長さのばらつきが {limit}% 未満なら指摘
   en: reported when sentence length varies by less than {limit}%
+rewrite:
+  ja:
+    direction: 長めの文のいくつかを、意味の切れ目で二つに割ってください。結論の文は短くします。言葉は足しません。
+    pairs:
+      - before: 設定は管理画面から変えられ、変えた内容はすぐに反映され、元に戻すこともできます。
+        after: 設定は管理画面から変えられ、すぐに反映されます。元にも戻せます。
+      - before: この方式は導入が簡単で費用も安いため、多くの部署で採用されています。
+        after: この方式は導入が簡単で、費用も安い方式です。多くの部署が採用しています。
+    keep:
+      - 文の中身と順番
+    avoid:
+      - 全部の文を短くして、別の単調さにする
+      - リズムのために言葉や例を足す
+  en:
+    direction: Split a few of the longer sentences at a break in the meaning. Make the sentence that carries the conclusion short. Add no words.
+    pairs:
+      - before: The setting can be changed from the admin page, the change applies at once, and it can be undone.
+        after: The setting can be changed from the admin page and applies at once. It can be undone.
+      - before: This method is easy to set up and cheap to run, which is why many departments have adopted it.
+        after: This method is easy to set up and cheap to run. Many departments have adopted it.
+    keep:
+      - what the sentences say, in the same order
+    avoid:
+      - cutting every sentence short, which is another monotone
+      - adding words or examples for the sake of rhythm
