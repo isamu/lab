@@ -5,9 +5,10 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { vaguePointers } from "../packages/chaff/src/detectors/vague-figure-pointer.ts";
 import { labelledKindsIn } from "../packages/chaff/src/figure-references.ts";
+import { numbersClauses } from "../packages/chaff/src/structure/numbered-clauses.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, StructureNode } from "../packages/chaff/src/plugin.ts";
 
 // vague-figure-reference: 「上記の図」「the table below」 in a document that numbers its figures or tables
 // (JIS Z 8301:2019 10.6). Self-written text only.
@@ -66,6 +67,75 @@ describe("vague-figure-reference (en)", () => {
 
   it("the tablet below is not the table below", () => {
     assert.deepEqual(found(en, "Put the tablet below the screen.", "", "Table 1: Costs"), []);
+  });
+});
+
+describe("vague-figure-reference: clauses (ja)", () => {
+  it("以下の箇条 and 上記の箇条, when the document numbers its clauses", () => {
+    assert.deepEqual(found(ja, "## 1 適用範囲", "", "この規格は、以下の箇条で定める。", "", "## 2 用語", "", "上記の箇条による。"), [
+      "5:以下の箇条",
+      "9:上記の箇条",
+    ]);
+  });
+
+  it("第1条 numbers clauses as well", () => {
+    assert.deepEqual(found(ja, "第1条（目的）", "本契約の条件は、後述の箇条による。", "", "第2条（期間）", "一年とする。"), ["4:後述の箇条"]);
+  });
+
+  it("nothing in a document that numbers no clause, or in a numbered list", () => {
+    assert.deepEqual(found(ja, "以下の箇条を読む。"), []);
+    assert.deepEqual(found(ja, "1. 電源を入れる。", "2. 以下の箇条を読む。"), []);
+  });
+
+  it("a pointer with its number, or inside a longer word, is not vague", () => {
+    assert.deepEqual(found(ja, "## 1 適用範囲", "", "以下の箇条 2 と、以下の箇条書きを読む。", "", "## 2 用語"), []);
+  });
+
+  it("numbered clauses do not make 上記の図 checkable without a numbered figure", () => {
+    assert.deepEqual(found(ja, "## 1 適用範囲", "", "上記の図のとおり。", "", "## 2 用語"), []);
+  });
+});
+
+describe("vague-figure-reference: clauses (en)", () => {
+  it("the clause below, in any case, when the document numbers its clauses", () => {
+    assert.deepEqual(found(en, "## 1 Scope", "", "The Clause Below sets the terms.", "", "## 2 Payment", "", "Payment is due in 30 days."), [
+      "5:The Clause Below",
+    ]);
+  });
+
+  it("nothing in a document that numbers no clause", () => {
+    assert.deepEqual(found(en, "The clause below sets the terms.", "", "## Payment", "", "Payment is due in 30 days."), []);
+  });
+
+  it("version headings in a changelog are not numbered clauses", () => {
+    assert.deepEqual(found(en, "## 0.18.0 Release", "", "The clause below explains the migration.", "", "## 1.0 Release", "", "First release."), []);
+  });
+});
+
+describe("numbersClauses — pure", () => {
+  const node = (kind: StructureNode["kind"], children: StructureNode[] = [], address = "1"): StructureNode => ({
+    kind,
+    address,
+    span: { start: 0, end: 0 },
+    line: 1,
+    attrs: {},
+    children,
+  });
+
+  it("a numbered article or chapter anywhere in the tree", () => {
+    assert.equal(numbersClauses(node("doc", [node("section", [node("article")])])), true);
+    assert.equal(numbersClauses(node("doc", [node("chapter")])), true);
+    assert.equal(numbersClauses(node("article")), true);
+  });
+
+  it("an article numbered only below the top level (a version, 0.18.0 or 1.0) is not a clause", () => {
+    assert.equal(numbersClauses(node("doc", [node("article", [], "0.18.0"), node("article", [], "1.0")])), false);
+    assert.equal(numbersClauses(node("doc", [node("article", [node("article", [], "2.1")], "2")])), true);
+  });
+
+  it("headings, items and leaves alone are not numbered clauses", () => {
+    assert.equal(numbersClauses(node("doc", [node("section", [node("item"), node("reference"), node("definition")])])), false);
+    assert.equal(numbersClauses(node("doc")), false);
   });
 });
 

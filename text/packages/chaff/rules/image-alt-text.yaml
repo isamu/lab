@@ -1,6 +1,6 @@
 id: image-alt-text
 layer: L1
-status: experimental
+status: stable
 how_to_find: image-alt-text
 requires: [markdown]
 severity: warning

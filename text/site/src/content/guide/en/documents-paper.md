@@ -73,7 +73,7 @@ paper.md   blog/tech · English   genre from the default
    Looks like: Academic paper. Try --genre academic/paper
 
 
-0 findings, 66 rules not run
+0 findings, 68 rules not run
 ```
 
 Add the genre, as suggested, and the experimental rules too.

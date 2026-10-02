@@ -135,9 +135,9 @@ The rules themselves are listed in the [Reference](./reference).
     It avoids vague pointers such as 「上記の図」 ("the figure above") and keeps an abbreviation the same throughout.
     The 2011 edition dropped the final ー of loanwords of three morae or more.
   - In chaff: `undefined-acronym` and [`dangling-reference`](../../rules/dangling-reference/) check the abbreviations and the pointers.
-    [`vague-figure-reference`](../../rules/vague-figure-reference/) points at 「上記の図」 in a document that numbers its figures and tables (10.6).
+    [`vague-figure-reference`](../../rules/vague-figure-reference/) points at 「上記の図」 in a document that numbers its figures and tables, and at 「以下の箇条」 in one that numbers its clauses (10.6).
     `style: jis-z8301-2011` runs `katakana-long-vowel` by the 2011 edition's rule.
-    `style: jis-z8301-2019` makes [`requirement-modal`](../../rules/requirement-modal/) point at a closing すべきである or できる (7.3 to 7.5).
+    `style: jis-z8301-2019` makes [`requirement-modal`](../../rules/requirement-modal/) point at a closing すべきである or できる (7.3 to 7.5), and turns on `vague-figure-reference` (10.6).
 - <a id="kyodo-2022"></a>**Kyodo News, ed. (2022)** [kyodo.co.jp](https://www.kyodo.co.jp/publish/%E8%A8%98%E8%80%85%E3%83%8F%E3%83%B3%E3%83%89%E3%83%96%E3%83%83%E3%82%AF%E3%80%80%E6%96%B0%E8%81%9E%E7%94%A8%E5%AD%97%E7%94%A8%E8%AA%9E%E9%9B%86%E3%80%80%E7%AC%AC%EF%BC%91%EF%BC%94%E7%89%88/)
   - 『記者ハンドブック 新聞用字用語集 第 14 版』 (the Kyodo reporters' handbook, 14th edition)
   - Found: A book of the spellings and word choices used in Japanese newspapers. Press officers and web writers use it as well as reporters.
@@ -258,6 +258,43 @@ Several of them also show how often human writing is mistaken for generated text
   - Appeared in: the 32nd annual meeting of the Association for Natural Language Processing (Japan), P9-11.
   - Found: In poems, lyrics, haiku and short stories alike, generated Japanese text varied less in sentence length.
   - In chaff: supports [`sentence-rhythm`](../../rules/sentence-rhythm/).
+- <a id="juzek-ward-2025"></a>**Juzek, Ward (2025)** [aclanthology.org](https://aclanthology.org/2025.coling-main.426/)
+  - Why Does ChatGPT "Delve" So Much? Exploring the Sources of Lexical Overrepresentation in Large Language Models
+  - Appeared in: COLING 2025, pp. 6397–6411.
+  - Found: 21 words that suddenly rose in scientific abstracts (delve, intricate, underscore and others) are the ones ChatGPT overuses.
+    Training data and model design did not explain it; the authors point to the stage that tunes models on human feedback as a likely part.
+  - In chaff: why [`ai-tell`](../../rules/ai-tell/) picks its words by comparing writing from before and after LLMs.
+- <a id="sun-2025"></a>**Sun et al. (2025)** [arxiv.org](https://arxiv.org/abs/2502.12150)
+  - Idiosyncrasies in Large Language Models
+  - Appeared in: ICML 2025.
+  - Found: which model wrote a text (ChatGPT, Claude, Grok, Gemini, DeepSeek) can be told with high accuracy from word choice alone.
+    The habits survive a rewrite, a translation or a summary by another model.
+  - In chaff: [background] chaff uses no classifier. That the habits sit in word choice is why a word list is a fair instrument.
+- <a id="shaib-2025"></a>**Shaib et al. (2025)** [arxiv.org](https://arxiv.org/abs/2509.19163)
+  - Measuring AI "Slop" in Text
+  - Appeared in: arXiv (preprint).
+  - Found: from interviews with experts, the paper splits low-quality generated text into density, relevance, factuality, repetition, templatedness, tone, verbosity and coherence.
+    Judging a text as "slop" varies between people, but the judgement tracks these dimensions.
+  - In chaff: [background] templatedness and repetition are the parts chaff can count.
+- <a id="wikipedia-signs-of-ai-writing"></a>**Wikipedia (WikiProject AI Cleanup)** [en.wikipedia.org](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
+  - Wikipedia:Signs of AI writing
+  - Appeared in: an editors' guide on the English Wikipedia; the version read in October 2026.
+  - Found: a field list, with real examples, of the shapes generated drafts leave.
+    Among them: list items led by a bold label, emoji in headings, and links ending in "?utm_source=chatgpt.com" or citation marks such as oaicite.
+  - In chaff: the basis of `bold-label-list`, `emoji-heading` and
+    `chat-citation-residue`.
+- <a id="fibujrsl-2026"></a>**fibujrsl (2026)** [zenn.dev](https://zenn.dev/fibujrsl/articles/4958a844214709)
+  - 生成AIっぽい文章の特徴をまとめる (The features of AI-sounding writing)
+  - Appeared in: Zenn, 14 February 2026.
+  - Found: names left-over emphasis marks, lists dressed up with symbols and emoji, and words stressed again and again with brackets or symbols as signs of generated Japanese.
+    The fix it gives is to drop the decoration and let the position of the conclusion and its evidence carry the stress.
+  - In chaff: the fix behind `bold-label-list` and `emoji-heading`.
+- <a id="writers-hub-2026"></a>**Writers-hub (2026)** [writers-hub.co.jp](https://writers-hub.co.jp/blog/qiita-generative-ai-article)
+  - Qiitaで生成AI記事を書く｜評価される記事とAI臭さの消し方 (Writing about generative AI on Qiita)
+  - Appeared in: the Writers-hub LLC blog, 26 July 2026.
+  - Found: in generated Qiita articles, lists take up most of the text, colons are overused, and paragraphs end in abstract noun phrases.
+    It advises turning the parts that retreated into lists back into prose.
+  - In chaff: the basis of `bold-label-list` and [`colon-lead-in`](../../rules/colon-lead-in/).
 
 ## Requirements and contradictions
 

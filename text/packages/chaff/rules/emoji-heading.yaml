@@ -1,0 +1,128 @@
+id: emoji-heading
+layer: L1
+status: experimental
+how_to_find: emoji-heading
+requires: [markdown]
+severity: info
+
+name:
+  ja: 絵文字の付いた見出しが続く
+  en: Headings decorated with emoji
+
+why:
+  ja: 「## 🚀 はじめに」「## ✅ まとめ」のように、見出しごとに絵文字を付ける形です。どの見出しにも付くと、絵文字は節の中身を何も伝えず、目次と画面読み上げには意味の無い記号が並びます。生成文によく見られる形です。
+  en: 'A heading with an emoji in it ("## 🚀 Getting started", "## ✅ Summary"), heading after heading. When every heading has one, the emoji says nothing about the section, and the table of contents and a screen reader get a row of meaningless symbols. A shape common in generated text.'
+
+message:
+  ja: 見出し「{heading}」に絵文字があります（絵文字の付いた見出しが {count} 個、{limit} 個から）
+  en: 'Heading "{heading}" has an emoji ({count} {count|heading|headings} with one, {limit} needed)'
+
+how_to_fix:
+  ja: 見出しから絵文字を外し、節の中身が分かる言葉にしてください。一つだけ目印にしたい見出しがあれば、それだけ残してもかまいません。
+  en: Take the emoji out of the headings and let the words say what the section holds. If one heading really needs a marker, keep that one.
+
+# 指摘に要る見出しの数。長さで割らない：見出しの数は文書の長さとは別に決まる。
+levels: { strict: 2, normal: 3, relaxed: 5 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+sources: [zhang-2024]
+
+group: ai-tells
+summary:
+  ja: 「## 🚀 はじめに」のように、見出しごとに絵文字が付いている所
+  en: 'Headings with an emoji in them ("## 🚀 Getting started"), one after another'
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      # 在庫の数え方
+
+      ## 🚀 はじめに
+
+      毎朝、倉庫の在庫を数えています。
+
+      ## 🛠️ 手順
+
+      棚ごとに数え、表に書きます。
+
+      ## ✅ まとめ
+
+      数え終えたら、表を共有します。
+    after: |
+      # 在庫の数え方
+
+      ## はじめに
+
+      毎朝、倉庫の在庫を数えています。
+
+      ## 手順
+
+      棚ごとに数え、表に書きます。
+
+      ## 数えた後
+
+      数え終えたら、表を共有します。
+  en:
+    config: { genre: blog/tech }
+    before: |
+      # Counting stock
+
+      ## 🚀 Getting started
+
+      We count the stock in the warehouse every morning.
+
+      ## 🛠️ Steps
+
+      Count shelf by shelf and write it in the sheet.
+
+      ## ✅ Summary
+
+      When the count is done, share the sheet.
+    after: |
+      # Counting stock
+
+      ## Getting started
+
+      We count the stock in the warehouse every morning.
+
+      ## Steps
+
+      Count shelf by shelf and write it in the sheet.
+
+      ## After the count
+
+      When the count is done, share the sheet.
+
+not_flagged:
+  ja: 指摘に要る数に届かない見出しと、矢印（→）や ™ のように絵文字として描かれない記号は数えません。説明書・法務・論文・文学のジャンルでは見ません。
+  en: Fewer headings than the level needs are not reported, nor symbols not drawn as emoji (→, ™). Documentation, legal, academic and literary genres do not run this rule.
+level_meaning:
+  ja: 絵文字の付いた見出しが {limit} 個あれば指摘
+  en: reported once {limit} headings carry an emoji
+rewrite:
+  ja:
+    direction: 見出しから絵文字を外し、節の中身が分かる言葉にしてください。絵文字が言っていたこと（注意、完了）が要るなら、本文の最初の文で言います。
+    pairs:
+      - before: "## 🚀 はじめに"
+        after: "## はじめに"
+      - before: "## ⚠️ 注意点"
+        after: "## 注意点"
+    keep:
+      - 見出しの順番と深さ
+      - 見出しへのリンク先の名前
+    avoid:
+      - 絵文字を「【】」や「■」のような別の飾りに置き換える
+      - 見出しを長い文にする
+  en:
+    direction: Take the emoji out of each heading and let the words say what the section holds. If the emoji carried a meaning (a warning, done), say it in the section's first sentence.
+    pairs:
+      - before: "## 🚀 Getting started"
+        after: "## Getting started"
+      - before: "## ⚠️ Gotchas"
+        after: "## Gotchas"
+    keep:
+      - the order and level of the headings
+      - the anchors other pages link to
+    avoid:
+      - trading the emoji for another decoration (■, ★, brackets)
+      - turning a heading into a sentence

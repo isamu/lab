@@ -35,6 +35,7 @@ planted:
   hiragana-fukushi: [ja]
   image-alt-text: [ja, en]
   internal-jargon: [ja, en]
+  name-variant: [ja, en]
   invisible-character: [ja, en]
   katakana-long-vowel: [ja]
   kutoten-consistency: [ja]
@@ -42,12 +43,14 @@ planted:
   max-kanji-continuous: [ja]
   max-paragraph-length: [ja, en]
   max-sentence-length: [ja, en]
+  modal-conflict: [ja, en]
   ngram-repetition: [ja, en]
   no-doubled-joshi: [ja]
   no-em-dash: [ja, en]
   no-mixed-desumasu: [ja]
   no-nakaguro-parallel: [ja]
   numbering-gap: [ja, en]
+  outside-announced-list: [ja, en]
   oxford-comma-consistency: [en]
   padded-intro: [ja, en]
   percent-sum-mismatch: [ja, en]
@@ -68,15 +71,20 @@ planted:
   unfilled-placeholder: [ja, en]
   url-run-on: [ja]
   vague-figure-reference: [ja, en]
+  unused-definition: [ja, en]
+  use-before-definition: [ja, en]
+  acronym-expansion-conflict: [ja, en]
 not_planted:
   adverb-overuse: a density over the whole document
   ai-generated-composite: a composite of other signals, with no detector of its own
   ai-tell: a density over the whole document
   announcing-opener: several announcing openers in one document; one is not a mistake
+  bold-label-list: a count of labelled items over the whole document; one is not a mistake
   colon-lead-in: a density over the whole document
   concrete-evidence-density: several sections with no number, code or link; the samples are written with figures
   contrast-framing: a density over the whole document
   cushion-phrase-density: a density over the whole document
+  emoji-heading: a count of decorated headings over the whole document; one is not a mistake
   empty-conclusion: L4, judged by chaff test and never run by lint
   nominalization: a density over the whole document
   paragraph-length-variance: the shape of the whole document, not one mistake

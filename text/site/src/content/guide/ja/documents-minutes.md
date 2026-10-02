@@ -92,7 +92,7 @@ $ npx chaffjs gijiroku.md --compact
 gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
 
 
-指摘 0 件、動いていない rule 64 件
+指摘 0 件、動いていない rule 66 件
 ```
 
 `--experimental` を付けて、試験中のルールも動かします。

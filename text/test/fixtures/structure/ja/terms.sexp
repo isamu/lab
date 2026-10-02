@@ -1,6 +1,6 @@
 (doc :language "ja" :path "ja/terms.md" :line 1
   (section "h1" :heading "利用規約" :line 1
-    (definition :term "本規約" :line 3)
+    (definition :placement "inline" :term "本規約" :line 3)
     (article "1" :heading "適用" :label "第1条" :line 5
       (obligation :marker "ものとする" :type "must" :line 7))
     (article "2" :heading "利用登録" :label "第2条" :line 9
