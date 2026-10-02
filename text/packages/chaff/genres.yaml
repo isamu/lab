@@ -56,6 +56,8 @@ groups:
       double-negative: off
       # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
       nominalization: off
+      # Drafting writes a number twice on purpose: thirty (30) days.
+      number-style-consistency: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -173,6 +175,8 @@ groups:
       ra-nuki: off
       spelling-consistency: off
       requirement-smell: off
+      # A narrator spells out numbers in dialogue and writes figures in a date.
+      number-style-consistency: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -195,6 +199,8 @@ groups:
       double-negative: off
       ra-nuki: off
       requirement-smell: off
+      # Spoken numbers are transcribed as heard.
+      number-style-consistency: off
 
 genres:
   - id: technical/spec

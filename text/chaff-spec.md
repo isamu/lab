@@ -929,6 +929,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
 | `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
+| `number-style-consistency` ✅ | 数の書き方の混在。数え方の語の前の漢数字と算用数字、位取りのコンマ、百分率の単位、英語の数（語か数字か）ごとに少ないほうを指摘 | - |
 | `fullwidth-alnum-consistency` ✅ | 英数字の全角と半角の混在。英字一字・語・数字一字・並びごとに少ないほうを指摘 | - |
 | `ra-nuki` ✅ | ら抜き言葉。lang-ja が一段・カ変動詞の未然形＋「れる」に `PotentialRa=Dropped` を付ける | pos |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
