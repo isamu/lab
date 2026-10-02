@@ -1,0 +1,11 @@
+# 例外を置く語。absolute-exception は、これを持つ文を、前に言い切った義務の文と突き合わせる。
+id: exception-marker
+language: ja
+entries:
+  - pattern: ただし
+  - pattern: 除き
+  - pattern: 除く
+  - pattern: 除いて
+  - pattern: 例外として
+  - pattern: この限りでない
+  - pattern: この限りではない
