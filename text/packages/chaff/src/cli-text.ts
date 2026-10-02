@@ -32,6 +32,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff baseline <dir>           いまある指摘を棚上げする（既存の repo に入れるとき）
   chaff suppressions <dir>       stet で黙らせている指摘を数える
   chaff relax|strict|off <rule> [--why "理由"]
+  chaff enable <rule> [--why "理由"]  試験中のルールを 1 つだけ動かす（chaff.yaml の rules に <rule>: normal と書く）
   chaff skill [--global]         Claude Code の skill を入れる（.claude/skills/chaff/、--global で ~/.claude/）
   chaff feedback <file> --rule <rule> [--line N] | --missed --line N
                                  誤った指摘・見逃しの報告の下書きを作る（何も送らない。--with-config で chaff.yaml 全体も載せる）
@@ -73,6 +74,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff baseline <dir>           shelve today's findings (when adding chaff to an existing repository)
   chaff suppressions <dir>       count the findings silenced with stet
   chaff relax|strict|off <rule> [--why "reason"]
+  chaff enable <rule> [--why "reason"]  turn on one experimental rule alone (writes <rule>: normal under rules in chaff.yaml)
   chaff skill [--global]         install the Claude Code skill (.claude/skills/chaff/; --global for ~/.claude/)
   chaff feedback <file> --rule <rule> [--line N] | --missed --line N
                                  draft a report of a wrong or missed finding (sends nothing; --with-config adds all of chaff.yaml)

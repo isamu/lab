@@ -72,7 +72,7 @@ const now = (rule: RuleDefinition, config: Config, limits: Limits, genre: string
   if (limit !== undefined) return { level: "normal", limit, set_as: "number" };
   if (explicit !== undefined) return { level: explicit, ...effectAt(rule, explicit, genre) };
   if (rule.status === "experimental" && !config.experimental) {
-    return { level: "off", why_off: text.offExperimental, turn_on_with: `npx chaff lint --experimental` };
+    return { level: "off", why_off: text.offExperimental, turn_on_with: `npx chaffjs enable ${rule.id}` };
   }
   return { level: "normal", ...effectAt(rule, "normal", genre) };
 };

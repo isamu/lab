@@ -285,6 +285,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
   relax: (argv, config) => changeSetting(config, "relaxed", argv[1], flag(argv, "--why")),
   strict: (argv, config) => changeSetting(config, "strict", argv[1], flag(argv, "--why")),
   off: (argv, config) => changeSetting(config, "off", argv[1], flag(argv, "--why")),
+  enable: (argv, config) => changeSetting(config, "normal", argv[1], flag(argv, "--why")),
   feedback: (argv, config) => {
     return runFeedback(positional(argv), argv, {
       cwd: process.cwd(),

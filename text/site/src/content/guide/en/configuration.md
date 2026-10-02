@@ -163,6 +163,27 @@ $ npx chaffjs explain max-sentence-length
 The same `normal` means a different number in a different genre.
 You write a word rather than a number so that chaff can pick the number that fits the genre.
 
+## Turning on one experimental rule
+
+An experimental rule does not run by default.
+Naming it under `rules` turns that rule on, and no other.
+`--experimental` turns on every experimental rule at once.
+
+```yaml
+rules:
+  announced-count-mismatch: normal
+```
+
+`enable` writes the same line, with a comment explaining the rule, as `relax` does.
+
+```
+$ npx chaffjs enable announced-count-mismatch
+Set announced-count-mismatch to normal (…/chaff.yaml)
+```
+
+The check then names it once: `1 experimental rule turned on in the settings: announced-count-mismatch`.
+`explain` on an experimental rule that is off shows the same command, and so does the list of rules that did not run.
+
 ## Rules with nothing to count
 
 A gap in the numbering, or a weekday that does not match its date, is either there or not. There is no limit to count to.
@@ -364,13 +385,13 @@ The output is long, so here is one entry, with `max-sentence-length: 260` set (t
 `now` is the value actually in effect.
 `level_sets` says what a level changes: `limit` is a limit to count to, `severity` is how a finding is marked.
 For a rule with nothing to count, `levels` and `now` hold a severity (`error` / `warning` / `info`) in place of a number.
-For an experimental rule, `now` says why it does not run and how to turn it on.
+For an experimental rule, `now` says why it does not run and how to turn it on alone. Here is `doubled-word`:
 
 ```json
     "now": {
       "level": "off",
       "why_off": "experimental rules do not run by default",
-      "turn_on_with": "npx chaff lint --experimental"
+      "turn_on_with": "npx chaffjs enable doubled-word"
     }
 ```
 
