@@ -87,7 +87,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  58 件の rule は動いていません:
+  65 件の rule は動いていません:
       adverb-overuse（ja 向けの rule ではないため）
       agreement-slip（ja 向けの rule ではないため）
       ai-generated-composite（まだ試験中のため）
@@ -118,14 +118,15 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       hankaku-kana（まだ試験中のため）
       heading-level-skip（まだ試験中のため）
       hiragana-fukushi（まだ試験中のため）
-      image-alt-text（まだ試験中のため）
       internal-jargon（まだ試験中のため）
       invisible-character（まだ試験中のため）
+      katakana-long-vowel（まだ試験中のため）
       kutoten-consistency（まだ試験中のため）
       latin-spacing（まだ試験中のため）
       max-kanji-continuous（まだ試験中のため）
       no-em-dash（まだ試験中のため）
       no-mixed-desumasu（まだ試験中のため）
+      nominalization（まだ試験中のため）
       numbering-gap（まだ試験中のため）
       oxford-comma-consistency（ja 向けの rule ではないため）
       paragraph-length-variance（まだ試験中のため）
@@ -135,6 +136,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       ra-nuki（まだ試験中のため）
       repeated-conjunction（まだ試験中のため）
       required-sections（まだ試験中のため）
+      requirement-modal（まだ試験中のため）
       rule-of-three（まだ試験中のため）
       sasete-itadaku（まだ試験中のため）
       section-length-uniformity（まだ試験中のため）
@@ -150,6 +152,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
       unfilled-placeholder（まだ試験中のため）
       unqualified-superlative（まだ試験中のため）
       url-run-on（まだ試験中のため）
+      vague-figure-reference（まだ試験中のため）
 ```
 
 指摘があるときは、1 件ずつ区切って出ます。次は実際の記事にかけた例です。

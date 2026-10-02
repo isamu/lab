@@ -1,0 +1,15 @@
+# Pairs of headings that set the good side against the bad: pattern is the good side, instead_of its counterpart.
+# With one heading of each in a document, the pros and cons are laid out symmetrically. Case is ignored.
+id: pro-con-heading
+language: en
+entries:
+  - pattern: pros
+    instead_of: cons
+  - pattern: advantages
+    instead_of: disadvantages
+  - pattern: benefits
+    instead_of: drawbacks
+  - pattern: strengths
+    instead_of: weaknesses
+  - pattern: upsides
+    instead_of: downsides

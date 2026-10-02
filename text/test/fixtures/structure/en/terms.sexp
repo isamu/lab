@@ -1,6 +1,6 @@
 (doc :language "en" :path "en/terms.md" :line 1
   (section "h1" :heading "Terms of Service" :line 1
-    (definition :term "Terms" :line 3)
+    (definition :placement "inline" :term "Terms" :line 3)
     (article "1" :heading "Acceptance" :label "1" :line 5)
     (article "2" :heading "Accounts" :label "2" :line 9
       (obligation :marker "must" :type "must" :line 11)

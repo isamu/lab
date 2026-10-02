@@ -4,7 +4,7 @@ import { buildDocument, type TeamRules } from "../packages/chaff/src/document.ts
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { neededBy, runRules, runRulesWith, type RunContext } from "../packages/chaff/src/run.ts";
 import { evaluate } from "../packages/chaff/src/eval.ts";
-import { longFormMorae, moraCount, oddLongVowels, type KanaWord } from "../packages/chaff/src/long-vowel.ts";
+import { moraCount, oddLongVowels, stemMorae, type KanaWord } from "../packages/chaff/src/long-vowel.ts";
 import type { OptionLayer } from "../packages/chaff/src/rule-options.ts";
 import { katakanaLongVowel } from "../packages/chaff/src/detectors/long-vowel.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
@@ -52,11 +52,14 @@ describe("katakana-long-vowel", () => {
       });
     });
 
-    it("counts the word with its final ー: カ and カー are both two", () => {
-      assert.equal(longFormMorae("カー"), 2);
-      assert.equal(longFormMorae("カ"), 2);
-      assert.equal(longFormMorae("コンピュータ"), 6);
-      assert.equal(longFormMorae("コンピューターー"), 6);
+    it("counts the word before its final ー, as JIS Z 8301:2011 Table G.3 does (カバー and シャワー are two)", () => {
+      assert.equal(stemMorae("カー"), 1);
+      assert.equal(stemMorae("カ"), 1);
+      assert.equal(stemMorae("カバー"), 2);
+      assert.equal(stemMorae("シャワー"), 2);
+      assert.equal(stemMorae("テーパー"), 3);
+      assert.equal(stemMorae("コンピュータ"), 5);
+      assert.equal(stemMorae("コンピューターー"), 5);
     });
   });
 
@@ -69,9 +72,35 @@ describe("katakana-long-vowel", () => {
       );
     });
 
-    it("drop with min_morae 2 reaches カー; with 7 reaches nothing", () => {
-      assert.equal(oddLongVowels([word("カー", 0)], "drop", 2).length, 1);
-      assert.equal(oddLongVowels([word("コンピューター", 0)], "drop", 7).length, 0);
+    it("drop with min_morae 1 reaches カー; with 6 reaches nothing", () => {
+      assert.equal(oddLongVowels([word("カー", 0)], "drop", 1).length, 1);
+      assert.equal(oddLongVowels([word("コンピューター", 0)], "drop", 5).length, 1);
+      assert.equal(oddLongVowels([word("コンピューター", 0)], "drop", 6).length, 0);
+    });
+
+    it("drop at three: two sounds before the ー keep it (カバー, シャワー, メニュー); three drop it (テーパー)", () => {
+      const words = [word("カバー", 0), word("シャワー", 5), word("メニュー", 10), word("テーパー", 15)];
+      assert.deepEqual(
+        oddLongVowels(words, "drop", 3).map((entry) => entry.word.surface),
+        ["テーパー"],
+      );
+    });
+
+    it("drop with the kana it drops after: only a ー after them (-er, -or, -ar); ュー, エー, イー stay", () => {
+      const after = new Set(["タ", "ザ", "ャ"]);
+      const words = [
+        word("コンピューター", 0),
+        word("ユーザー", 8),
+        word("マネージャー", 13),
+        word("インタビュー", 20),
+        word("サーベイー", 27),
+        word("ライブラリー", 33),
+      ];
+      assert.deepEqual(
+        oddLongVowels(words, "drop", 3, after).map((entry) => entry.word.surface),
+        ["コンピューター", "ユーザー", "マネージャー"],
+      );
+      assert.equal(oddLongVowels(words, "drop", 3).length, words.length);
     });
 
     it("keep: a short word the dictionary knows long, or the document writes long elsewhere", () => {
@@ -101,8 +130,8 @@ describe("katakana-long-vowel", () => {
     });
 
     it("consistent: a word shorter than min_morae written both ways is left alone", () => {
-      assert.deepEqual(oddLongVowels([word("カー", 0), word("カ", 5)], "consistent", 3), []);
-      assert.equal(oddLongVowels([word("カー", 0), word("カ", 5)], "consistent", 2).length, 1);
+      assert.deepEqual(oddLongVowels([word("カー", 0), word("カ", 5)], "consistent", 2), []);
+      assert.equal(oddLongVowels([word("カー", 0), word("カ", 5)], "consistent", 1).length, 1);
     });
 
     it("consistent: nothing when every word is one way", () => {
@@ -148,6 +177,37 @@ describe("katakana-long-vowel", () => {
 
     it("drop: an excepted word listed in its long form exempts it too", () => {
       assert.deepEqual(found("# 報告\n\nサーバーとプリンターを見ます。\n", { ending: "drop", except: ["サーバー"] }), ["プリンター→プリンタ:drop"]);
+    });
+
+    it("drop: ュー, エー and イー endings stay, and so do two sounds before the ー (the corpus's レビュー, メニュー, グレー)", () => {
+      const source =
+        "# 報告\n\nメニューのレビューとバリューを、グレーのカバーとコピーで示し、インタビューとエネルギーの後でサーバーとエレベーターとマネージャーを見ます。\n";
+      assert.deepEqual(found(source, { ending: "drop", min_morae: 3 }), [
+        "サーバー→サーバ:drop",
+        "エレベーター→エレベータ:drop",
+        "マネージャー→マネージャ:drop",
+      ]);
+    });
+
+    it("consistent and keep with no min_morae: two morae before the ー (パワ) are checked, one (カ) is not", () => {
+      assert.deepEqual(found("# 報告\n\nパワーとパワとカーとカを見ます。\n"), ["パワ→パワー:same-word"]);
+      assert.deepEqual(found("# 報告\n\nパワとカを見ます。\n", { ending: "keep" }), ["パワ→パワー:keep"]);
+    });
+
+    it("drop with no min_morae: two morae before the ー (パワー) are checked, one (カー) is not", () => {
+      assert.deepEqual(found("# 報告\n\nパワーとカーを見ます。\n", { ending: "drop" }), ["パワー→パワ:drop"]);
+      const doc = buildDocument("t.md", "# 報告\n\nパワーとカーを見ます。\n", ja);
+      const alone = katakanaLongVowel(doc, { limit: 1, settings: { ending: "drop" } });
+      assert.deepEqual(
+        alone.map((finding) => String(finding.values["matched"])),
+        ["パワー"],
+      );
+    });
+
+    it("keep: a word whose ー form is another word stays (タブ and タブー, ベタ and ベター); a dropped ー is still found", () => {
+      assert.deepEqual(found("# 報告\n\nタブを開き、ベタな例とエコな車とドラマとカバを見て、メモリを足します。\n", { ending: "keep" }), [
+        "メモリ→メモリー:keep",
+      ]);
     });
 
     it("keep: a short word whose long form the dictionary knows only as a name (ディズニー) is not a dropped ー", () => {

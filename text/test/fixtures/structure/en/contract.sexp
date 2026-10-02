@@ -1,7 +1,7 @@
 (doc :language "en" :path "en/contract.txt" :line 1
   (date :value "2024-04-01" :line 3)
-  (definition :term "Customer" :line 3)
-  (definition :term "Provider" :line 3)
+  (definition :placement "inline" :term "Customer" :line 3)
+  (definition :placement "inline" :term "Provider" :line 3)
   (article "1" :heading "DEFINITIONS" :label "Article I" :line 5
     (article "1.1" :heading "Definitions" :label "Section 1.1" :line 6
       (definition :term "Services" :line 7)
