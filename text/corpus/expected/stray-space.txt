@@ -1,0 +1,10 @@
+cc-by-4-legalcode-ja  2
+chrome-blog-pwa-origin-migration-ja  4
+kimino-oishi-kogen-traffic  1
+maff-kyodo-ryori-okaisan-ja  1
+mdn-using-fetch-ja  1
+mlit-press-planned-suspension  1
+nta-kids-mijika-na-zeikin  1
+wikipedia-ja-idobata-template-collapse  1
+wikipedia-ja-talk-oden  1
+wikivoyage-ja-shikoku-henro  1

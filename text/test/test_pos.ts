@@ -73,11 +73,13 @@ describe("解析器を読むまで tokens は無い", () => {
         "empty-conclusion",
         "empty-intensifier",
         "excessive-hedging",
+        "fact-conflict",
         "heading-echo",
         "hiragana-fukushi",
         "latin-spacing",
         "max-kanji-continuous",
         "ngram-repetition",
+        "number-style-consistency",
         "padded-intro",
         "redundant-expression",
         "repeated-conjunction",
@@ -85,10 +87,25 @@ describe("解析器を読むまで tokens は無い", () => {
         "requirement-smell",
         "sasete-itadaku",
         "stock-transition",
+        "summary-fact-mismatch",
         "undefined-acronym",
+        "unit-mismatch",
         "unqualified-superlative",
       ],
     );
+  });
+
+  // rule ごとに確かめる。uses: [pos] の rule を足しても、このテストの一覧は書き換えない。
+  describe("uses: [pos] の rule は、それ一つだけ動いていても pos を読む（L4 は lint で動かないので読まない）", () => {
+    const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos") || rule.uses.includes("pos")).map((rule) => [rule.id, "off" as const]));
+    RULES.filter((rule) => rule.uses.includes("pos")).forEach((rule) => {
+      const genre = rule.use_for[0] ?? "";
+      const language = rule.languages?.[0] ?? "ja";
+      it(`${rule.id}（${genre}・${language}）`, () => {
+        assert.notEqual(genre, "", "use_for が空");
+        assert.equal(neededBy(RULES, { ...off, [rule.id]: "normal" }, true, genre, language).pos, rule.layer !== "L4");
+      });
+    });
   });
 
   it("stable な rule が要求していれば、既定でも読む", () => {

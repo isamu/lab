@@ -1,0 +1,6 @@
+# 期間の単位（duration-mismatch）。木の数量の単位がこれなら、始まりに足す期間として読む。
+id: duration-week
+language: ja
+entries:
+  - pattern: "週"
+  - pattern: "週間"

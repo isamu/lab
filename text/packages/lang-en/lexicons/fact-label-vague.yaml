@@ -1,0 +1,16 @@
+# Words that are not a name (fact-conflict): a pronoun does not say what the value is of.
+id: fact-label-vague
+language: en
+entries:
+  - pattern: it
+  - pattern: this
+  - pattern: that
+  - pattern: there
+  - pattern: which
+  - pattern: what
+  - pattern: he
+  - pattern: she
+  - pattern: they
+  - pattern: we
+  - pattern: you
+  - pattern: i

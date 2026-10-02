@@ -1,0 +1,105 @@
+id: number-style-consistency
+layer: L2
+status: experimental
+how_to_find: number-style-consistency
+uses: [pos]
+severity: info
+
+name:
+  ja: 数の書き方が混ざっている
+  en: Numbers written two ways
+
+why:
+  ja: 数をどう書くか（3件か三件か、1,000 か 1000 か、10% か 10％ か 10パーセントか）は、どれでも読めます。困るのは一つの文書の中で混ざることで、読み手は違う書き方に違う意味があるのかと迷い、検索でも別の語になります。chaff はどれが正しいかを決めず、数え方の語の前の数（漢数字か算用数字か）、位取りのコンマ、百分率の書き方、英語の数（three か 3 か、10 未満と 10〜12 は別に）ごとに、文書の中で少ないほうを指摘します。
+  en: How a document writes numbers (1,000 or 1000; 10% or 10 percent; three files or 3 files) is a choice either way. What reads badly is mixing them in one document, which makes the reader wonder whether the difference means something. chaff does not decide which is right; for digit grouping, the percent unit and counts (below ten, and ten to twelve, separately, so that a style that spells out small numbers stays consistent) it points at whichever the document uses less.
+
+message:
+  ja: 「{written}」と書いています（この文書はふつう「{usual}」の書き方。{of} 箇所のうち {count} 箇所が違う）
+  en: '"{written}" here, where the document usually writes "{usual}" ({count} of {of})'
+
+messages:
+  count:
+    ja: 数え方の数を「{written}」と書いています（この文書はふつう「{usual}」の書き方。{of} 箇所のうち {count} 箇所が違う）
+    en: 'The count "{written}" here, where the document usually writes counts like "{usual}" ({count} of {of})'
+  grouping:
+    ja: 「{written}」と書いています（この文書は大きな数をふつう「{usual}」のように書きます。{of} 箇所のうち {count} 箇所が違う）
+    en: '"{written}" here, where the document usually writes large numbers like "{usual}" ({count} of {of})'
+  percent:
+    ja: 百分率を「{written}」と書いています（この文書はふつう「{usual}」の書き方。{of} 箇所のうち {count} 箇所が違う）
+    en: 'The percentage "{written}" here, where the document usually writes "{usual}" ({count} of {of})'
+  count-small:
+    ja: 数を「{written}」と書いています（この文書は 10 未満の数をふつう「{usual}」のように書きます。{of} 箇所のうち {count} 箇所が違う）
+    en: '"{written}" here, where the document usually writes numbers below ten like "{usual}" ({count} of {of})'
+  count-large:
+    ja: 数を「{written}」と書いています（この文書は 10 から 12 の数をふつう「{usual}」のように書きます。{of} 箇所のうち {count} 箇所が違う）
+    en: '"{written}" here, where the document usually writes ten to twelve like "{usual}" ({count} of {of})'
+
+how_to_fix:
+  ja: 文書の多いほうの書き方に合わせてください。チームで決めているなら、STYLE.md に書いておくと迷いません。
+  en: Match the way the rest of the document does it. If the team has decided, write it in the style guide.
+
+# 少ないほうが、その種類の数の何パーセントまでなら「混ざっている」と見るか。これを超えたら、文書が使い分けている。
+levels: { strict: 49, normal: 34, relaxed: 20 }
+
+use_for: [blog, business, technical, docs, academic, legal, literature, speech]
+
+group: consistency
+summary:
+  ja: 3件と三件、1,000 と 1000、10% と 10％ のように、一つの文書で数の書き方が混ざっている所
+  en: One document writing numbers two ways, such as 1,000 and 1000, 10% and 10 percent, or three files and 3 files
+
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      今月の問い合わせは 12件、先月は 9件、先々月は 7件でした。うち三件は同じ内容です。
+    after: |
+      今月の問い合わせは 12件、先月は 9件、先々月は 7件でした。うち 3件は同じ内容です。
+  en:
+    config: { genre: blog/tech }
+    before: |
+      We fixed three bugs, closed four issues and merged two pull requests. The release also adds 5 tests.
+    after: |
+      We fixed three bugs, closed four issues and merged two pull requests. The release also adds five tests.
+
+not_flagged:
+  ja: 鉤括弧や引用符の中の数、注や URL を含む文、日本語の中の英文は数えません。「一つ」「一人」のような一だけの漢数字と、「万人」「千人」のような位の字だけの漢数字、「第三回」「統一」のように漢字の後ろの数、日付の日・月・年は数えません。位取りは、通貨の記号か数え方の語・単位が付いた大きな数だけを見て、年に見える 4 桁の数（2019 年）、番号（H.R. 5376）、版や電話番号は見ません。全角と半角の違いは fullwidth-alnum-consistency が見ます。法務・文学・話し言葉のジャンルでは見ません。
+  en: 'Numbers inside quotation marks, sentences with a note mark or a URL, and text in another language are not counted. A number word that opens a sentence (spelt out by every style), "one", and a number before a unit of measure (6 months, 3 miles) are not counts. Grouping is checked only for large numbers with a currency sign or a word after them; a four-digit number that looks like a year, a label number (H.R. 5376, Form 1040), versions and phone numbers are left out. Legal, literary and speech genres do not run this rule.'
+level_meaning:
+  ja: 少ないほうの書き方が、その種類の数の {limit}% 以下のとき指摘
+  en: reported when the less common style is {limit}% of its kind or less
+rewrite:
+  ja:
+    direction: 少ないほうの書き方の数を、文書の多いほうの書き方に直してください。数そのものと単位は変えません。
+    pairs:
+      - before: |
+          今月の問い合わせは 12件、先月は 9件でした。うち三件は同じ内容です。
+        after: |
+          今月の問い合わせは 12件、先月は 9件でした。うち 3件は同じ内容です。
+      - before: |
+          参加費は 1,500円、資料代は 2,000円、懇親会は 3000円です。
+        after: |
+          参加費は 1,500円、資料代は 2,000円、懇親会は 3,000円です。
+    keep:
+      - 数の値と単位
+      - 引用した文の中の数
+    avoid:
+      - 多いほうの書き方を少ないほうに合わせる
+      - 数え方の語や単位を言い換える
+  en:
+    direction: Rewrite each number in the less common style the way the rest of the document writes that kind of number. Keep the value and the unit.
+    pairs:
+      - before: |
+          We fixed three bugs, closed four issues and merged two pull requests. The release also adds 5 tests.
+        after: |
+          We fixed three bugs, closed four issues and merged two pull requests. The release also adds five tests.
+      - before: |
+          Turnout rose 12% in March and 9% in April, and fell 3 percent in May.
+        after: |
+          Turnout rose 12% in March and 9% in April, and fell 3% in May.
+    keep:
+      - the value and the unit of every number
+      - numbers inside a quotation
+    avoid:
+      - changing the many numbers to match the odd one
+      - rewording the unit or the counted noun

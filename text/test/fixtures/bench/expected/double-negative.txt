@@ -1,0 +1,25 @@
+table  24  24  0  0
+ja/blog  hedge-double-negative-ja  found
+ja/design  hedge-double-negative-ja  found
+ja/email  hedge-double-negative-ja  found
+ja/figures  hedge-double-negative-ja  found
+ja/itinerary  hedge-double-negative-ja  found
+ja/minutes  hedge-double-negative-ja  found
+ja/note  hedge-double-negative-ja  found
+ja/press  hedge-double-negative-ja  found
+ja/proposal  hedge-double-negative-ja  found
+ja/quote  hedge-double-negative-ja  found
+ja/readme  hedge-double-negative-ja  found
+ja/requirements  hedge-double-negative-ja  found
+en/blog  hedge-double-negative-en  found
+en/design  hedge-double-negative-en  found
+en/email  hedge-double-negative-en  found
+en/figures  hedge-double-negative-en  found
+en/itinerary  hedge-double-negative-en  found
+en/minutes  hedge-double-negative-en  found
+en/note  hedge-double-negative-en  found
+en/press  hedge-double-negative-en  found
+en/proposal  hedge-double-negative-en  found
+en/quote  hedge-double-negative-en  found
+en/readme  hedge-double-negative-en  found
+en/requirements  hedge-double-negative-en  found

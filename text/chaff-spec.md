@@ -634,6 +634,9 @@ genres:
 | `max-paragraph-length` ✅ | 段落あたり文数 | 両方 | warning |
 | `required-sections` ✅ | 必須見出しの有無 | business | error |
 | `preamble-length` ✅ | 本題前の段落数 | business | warning |
+| `paragraph-restatement` ✅ | 言い直しを告げる語（語彙表）で始まる段落の内容語のうち、すぐ前の段落にある語の割合 | 両方 | info |
+| `no-lead` ✅ | 題の直後の段落が題の trigram の半分以上を繰り返し、題に無い内容語をわずかしか足さない | 両方 | info |
+| `title-length` ✅ | 題と見出しの長さ（ja は文字、英字の語は二文字。en は語）。ジャンルで上限を変える | 両方 | info |
 | `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
@@ -828,6 +831,7 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `stock-transition` ✅ | 文頭の決まった接ぎの密度 | blog | info |
 | `assistant-residue` ✅ | weighted phrase-match（会話の返事の名残。重み 1 は 1 つで、0.5 は 2 つで届く） | 両方 | warning |
 | `unfilled-placeholder` ✅ | 括弧の中が雛形の語（[Your Name]、【会社名】）の空欄 | 両方 | warning |
+| `chat-citation-residue` ✅ | 本文とリンク先に残ったチャットの印（utm_source=chatgpt.com、oaicite）。語彙表の文字列を書いたとおりに探す | 両方 | warning |
 | `announcing-opener` ✅ | 文頭の予告（重要なのは、Here's the thing）の数。密度ではなく数で見る | blog | info |
 | `colon-lead-in` ✅ | コロンで終わり、すぐ後ろに箇条書きが来る地の文の密度（ja のみ） | blog | info |
 | `emoji-heading` ✅ | 絵文字（既定で絵文字として描かれる字か、U+FE0F の付いた字）を含む見出しの数 | blog | info |
@@ -930,6 +934,9 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `hiragana-fukushi` ✅ | 副詞のひらがな化 | - |
 | `max-kanji-continuous` ✅ | 漢字の連続 | - |
 | `kutoten-consistency` ✅ | 読点（、，）と句点（。．）の書き方の混在。少ないほうを指摘 | - |
+| `table-header-variant` ✅ | 表の見出し（と二列の表の項目名）の書き分け。幅・大小・空白・ハイフンをそろえ、語彙表の字（者・欄 / s・es）を外して同じなら同じ欄と見て、少ないほうを指摘 | - |
+| `number-style-consistency` ✅ | 数の書き方の混在。数え方の語の前の漢数字と算用数字、位取りのコンマ、百分率の単位、英語の数（語か数字か）ごとに少ないほうを指摘 | - |
+| `list-item-form-mix` ✅ | 一つの箇条書きの項目の形（名詞止めと文、en は動詞始まりと名詞始まり）。品詞で判定し、少ないほうを指摘 | - |
 | `fullwidth-alnum-consistency` ✅ | 英数字の全角と半角の混在。英字一字・語・数字一字・並びごとに少ないほうを指摘 | - |
 | `ra-nuki` ✅ | ら抜き言葉。lang-ja が一段・カ変動詞の未然形＋「れる」に `PotentialRa=Dropped` を付ける | pos |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
@@ -2310,7 +2317,7 @@ npx chaffjs fix-plan before.md --experimental --json   # 同じものを JSON �
 
 ## 29. AI の評価に使う（eval の採点役）
 
-状態: 一部は今の版で使える。`chaff grade` から先は予定（#488）。
+状態: 使える。`chaff grade`（§29.3）、採点の基準（§29.4）、A/B と回帰（§29.5）、ライブラリの API と評価基盤への組み込み（§29.6）、再現の印（§29.7）。自作の比べる例は予定（#488）。
 
 LLM の評価（eval）では、出力を model に採点させることが多い。model の採点は意味を読めるが、同じ出力に毎回同じ点を付けるとは限らず、なぜその点かも検算できない。
 chaff の判定は同じ文書なら同じ結果になり、指摘ごとに行とルールと理由が付き、ルールの版も分かる。
@@ -2335,8 +2342,8 @@ chaff が見ないもの（主張が正しいか、質問に答えているか�
 
 ### 29.2 いま使えるもの
 
-次の 5 つは今の版で動く。どれも 1 回の呼び出しで 1 つの出力を見る。
-多数の出力を回して集めるのは呼び出す側のスクリプトで、手引き「AI の評価（AI evals）に使う」に例と実際の出力を置く。
+次の 5 つは 1 回の呼び出しで 1 つの出力を見る。多数の出力をまとめて採点するのは `chaff grade`（§29.3）で、中ではこれらと同じ処理を通る。
+手引き「AI の評価（AI evals）に使う」に、どちらも実際の出力付きで置く。
 
 | 見たいこと | コマンド | 機械が読む出力 | 終了コード |
 | --- | --- | --- | --- |
@@ -2350,13 +2357,16 @@ lint そのものには `--json` が無い。指摘を機械で読むときは S
 SARIF には動かなかったルールが入らないので、それが要るときは画面の最後の行（`N rules not run`）を読む。
 試験中のルールは `--experimental` を付けないと動かず、動かなかったルールに数えられる。
 
-### 29.3 `chaff grade`（予定）
+### 29.3 `chaff grade`
 
 ```bash
 npx chaffjs grade items.jsonl                          # 合否と率の要約を画面に
 npx chaffjs grade items.jsonl --out results.jsonl      # 出力ごとの結果を JSONL に
 npx chaffjs grade items.jsonl --json                   # 要約を JSON で
+npx chaffjs grade items.jsonl --compact                # 1 出力 1 行（id・合否・理由）と合計
 ```
+
+`--experimental` と `--genre` は lint と同じに効き、`stamp` の `settings` に入る。
 
 **入力。** 1 行に 1 つの出力を書いた JSONL。
 
@@ -2372,9 +2382,11 @@ npx chaffjs grade items.jsonl --json                   # 要約を JSON で
 
 #488 の案は `sources` だけを挙げていたが、`citations` を別の欄にした。
 どの文が引用かを本文から読み取るのは意味の判定になるので、chaff は出力から引用を推測しない。構造化した出力で引用を返させるのは、呼び出す側の仕事とする。
-`sources` があって `citations` が無ければ、引用の照合は「動かなかった（引用が渡されていない）」と書いて合否に数えない（§17.4）。
+`citations` が無ければ、引用の照合は「動かなかった（引用が渡されていない）」と書いて合否に数えない（§17.4）。
+`citations` があって `sources` が無い行は、照らす原文が無いので読めない入力（終了コード 2）とする。
+原文は名前が `.txt` で終われば番号で読むテキストの文書、それ以外は Markdown として読む（`chaff tree` がファイルの拡張子で決めるのと同じ）。
 
-**出力ごとの結果。** `--out` の 1 行。形は次のとおり（予定の形で、値は説明のためのもの。実際の出力ではない）。
+**出力ごとの結果。** `--out` の 1 行。形は次のとおり（値は説明のためのもの。実際の出力は手引きにある）。
 
 ```json
 {
@@ -2395,13 +2407,14 @@ npx chaffjs grade items.jsonl --json                   # 要約を JSON で
 ```
 
 - 率（`rates`）は 1,000 単位あたりの指摘の数。単位は日本語が字、英語が語で、lint の長さ（`lengthOf`）と同じ数え方をする。短い出力と長い出力を同じ物差しで並べるため。
-- `notRun` はその出力で動かなかったルールと理由。`reference` が無いときの事実の照合、`citations` が無いときの引用の照合もここに入る。
+- `notRun` はその出力で動かなかったルールと理由。`reference` が無いときの事実の照合（`compare`）、`citations` が無いときの引用の照合（`cite`）もここに入る。
 - `facts` は `compare` の結果をそのまま入れる。`reference` が無ければ `null`。
 - `score` は `grade:` があるときだけ入る（§29.4）。
 - `failedBecause` は、どの条件に何件引っかかって落ちたかを並べる。
 
 **要約。** 画面か `--json` に出す。出力の数、通った数、落ちた `id` の一覧を出す。
 ルールごとの率（全出力の指摘の和を全出力の長さの和で割る）と、その指摘があった出力の数も出す。
+率は単位ごとに分ける。日本語の出力（字）と英語の出力（語）が混ざったファイルでも、字と語を足さない。
 落ちた・足された事実の種類ごとの数、外れた引用の数、動かなかったルールの和集合、`stamp` を添える。
 
 **合否。** `grade:` が無いときは、次のどれか一つでも当たれば落ちる。今の版で手引きのスクリプトが使う条件と同じにする。
@@ -2418,11 +2431,12 @@ npx chaffjs grade items.jsonl --json                   # 要約を JSON で
 | --- | --- |
 | 0 | すべての出力が通った |
 | 1 | 落ちた出力がある |
-| 2 | 入力が読めない（JSON でない行、`id` の欠け・重複、`output` が文字列でない、`grade:` の書き誤り） |
+| 2 | 入力が読めない（ファイルが無い、JSON でない行、`id` の欠け・重複、`output` が文字列でない、知らない `language`・`genre`・`source`、出力が 1 行も無い、`chaff.yaml` の書き誤り） |
 
 他のコマンドは使い方の誤りも 1 で返すが、`grade` は 1 と 2 を分ける。CI の門で「出力が悪い」と「採点が動いていない」を取り違えないためである。
+読めない行は一つ目で止めず、すべての行を行番号付きで標準エラーに並べる。
 
-### 29.4 採点の基準（`chaff.yaml` の `grade:`、予定）
+### 29.4 採点の基準（`chaff.yaml` の `grade:`）
 
 ```yaml
 grade:
@@ -2446,11 +2460,18 @@ grade:
 - **一点ごとに指摘を指す。** `score.items` は `points`・`rule`・`line` を持ち、和が `penalty` に一致する。指摘に結び付かない点は作らない。
 - `max` は 1 出力あたりの件数の上限、`max_rate` は 1,000 単位あたりの上限、`weight` は 1 件あたりの点。どれも省ける。`grade.rules` に無いルールは率として出すだけで、合否にも点にも入れない。
 - `grade:` を書くと、§29.3 の既定の合否（`error` の指摘で落とす）は使わない。書いたものだけで決める。基準が二重になると、なぜ落ちたかを `grade:` から読み取れなくなる。
+  中身の無い `grade:` も書いたものとして扱い、既定の合否を止める（空の基準で、`required_sections` だけが効く）。
+- `max_rate` は丸める前の率と比べる。表示の率は小数 1 桁に丸めるが、上限をわずかに超えた出力を丸めで通さないため。
 - `required_sections` の照合は、最上位の `required_sections` と同じ部分一致（§10）。`grade:` に無ければ最上位のものを使う。
 - 無いルールの名前や、その言語で動かないルールを書いたときは、他の設定と同じく標準エラーに言う。そのルールは `notRun` に理由付きで出る。
+- `facts` と `citations` も、書いた上限だけで決める。`facts:` に `dropped` を書かなければ、落ちた事実は合否に入らない。`allow_dropped`・`allow_added` は `compare` の `--allow-dropped`・`--allow-added` と同じく、その種類の事実に `allowed: true` を付けて数えない。
+- `citations.required` が真のとき、`sources` があって `citations` が無い出力は `citations.required` で落ちる。
+- 読めない値（数でない上限、知らない事実の種類、知らないキー）が一つでもあれば、どの出力も採点せずに終了コード 2 で終わり、場所（`grade.rules.ai-tell.max_rte` のような道筋）を標準エラーに並べる。書き誤った上限が黙って効かないと、落とすはずの出力が通るため。
+- `failedBecause` は条件の名前と数で書く: `rules.<id> N > max`、`rules.<id>.rate R > max_rate`、`required_sections.missing N > 0: <見出し>`、`facts.dropped N > 上限`、`facts.added N > 上限`、`citations.failed N > 上限`、`citations.required: …`、`score.penalty P > penalty`。
+- 要約には全出力の点の和（`penalty`）が入る。画面では `--compact` の 1 行ごとにも点を出す。
 - 基準の中身（重みと上限）は `stamp` の `settings` に入る。基準を変えた前後の点は比べない（§29.5）。
 
-### 29.5 A/B と回帰（予定）
+### 29.5 A/B と回帰
 
 ```bash
 npx chaffjs grade prompt-a.jsonl --out a.results.jsonl
@@ -2461,7 +2482,13 @@ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl   # B を A と比�
 - 組は `id` で作る。片方にしか無い `id` は「比べられない」として並べ、回帰には数えない。
 - 画面には、ルールごとの率の前と後と差、指摘が増えた出力の `id`、通っていたのに落ちた出力を並べる。新しく落ちた・足された事実と、新しく外れた引用も並べる。
 - **回帰とは** 次のどれか。前に通った出力が落ちた。`grade.rules` に書いたルールの指摘が、どれかの出力で増えた。点の和が増えた。`grade.rules` に無いルールの増減は表に出すが、回帰にしない。
-- `stamp` の `rules` か `settings` が前の回と違えば、比べずに終了コード 2 で終わる。ルールや基準が変わった差を、prompt や model の差として読ませないため。`--allow-stamp-mismatch` を付ければ比べるが、そのことを画面の先頭に出す。
+- `stamp` の `rules` か `settings` が前の回と違えば、比べずに終了コード 2 で終わる。ルールや基準が変わった差を、prompt や model の差として読ませないため。`--allow-stamp-mismatch` を付ければ比べるが、そのことを画面の先頭（標準エラー）に出す。
+- 前の回の結果が読めない（`--out` の形でない行がある、同じ `id` が二度ある、1 行も無い）とき、結果ごとの `stamp`（chaffjs の版も含む）が混ざっているときも、採点を始める前に終了コード 2 で終わる。1 回分の結果でないものは `--allow-stamp-mismatch` でも比べない。
+- 組にした `id` でも、`language` か `genre` が前の回と違えば、同じ課題を同じ読み方で採点したことにならないので比べない（「言語かジャンルが違う」として並べる）。
+- 率は、組になった出力だけで単位ごとに求める（§29.3 の要約と同じ数え方）。
+- 新しく落ちた・足された事実は、種類と中身が同じ事実を前の回より多く落とした分だけを並べる。`allowed` の事実は並べない。
+- 回帰の理由は `<id>: passed, now fails`、`rules.<id>: more findings in <id>…`、`score.penalty 前 → 後` の形で並べる。
+- `--json` では要約に `baseline` の欄を足し、組の数・比べられなかった `id`・ルールごとの動き・新しく落ちた／通った `id`・出力ごとの新しい事実と引用・点の和の前後・回帰の理由を入れる。`--compact` では回帰を 1 行ずつ出す。
 - 終了コード: 回帰が無ければ 0、あれば 1、比べられなければ 2。prompt や model の変更を CI で止める門に使う。
 
 ```yaml
@@ -2469,43 +2496,71 @@ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl   # B を A と比�
 - run: npx chaffjs grade outputs.jsonl --baseline eval/baseline.results.jsonl
 ```
 
-### 29.6 ライブラリの API（予定）
+### 29.6 ライブラリの API（`chaffjs/grade`）
 
 ```ts
-import { grade } from "chaffjs/api";
+import { grade } from "chaffjs/grade";
 
 const result = await grade(output, { reference, sources, citations, language: "en", config: "chaff.yaml" });
 if (!result.pass) console.log(result.failedBecause);
 ```
 
-- 返すものは §29.3 の 1 行と同じ形。CLI とライブラリで結果がずれないように、`chaff grade` もこの関数を呼ぶ。
-- 引数は本文と、`reference`・`sources`・`citations`・`language`・`genre`・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。ファイルを読むのは `config` にパスを渡したときだけで、ファイルに書くことはない。
-- 非同期にする。言語パッケージと品詞の解析器を、初めて使うときに読み込むため（§17）。
-- 決めていないこと: `chaffjs/api` は今、プラグイン API（§6）の型と `defineRule` だけを出し、`API_VERSION` がその互換を守っている。
-  そこに採点の関数を足すと、プラグインの互換と採点の結果の互換が同じ番号で縛られる。#488 は `chaffjs/api` と書いているが、`chaffjs/grade` に分ける案と比べて、実装の前に決める。
+- 返すものは §29.3 の 1 行と同じ形。CLI とライブラリで結果がずれないように、`chaff grade` と `grade()` は同じ関数（1 出力を採点する `gradeItem`）を同じ設定と `stamp` で呼ぶ。同じ出力なら `--out` の 1 行と `grade()` の戻り値は一致する。
+- 引数は本文と、`id`（省けば `output`）・`reference`・`sources`・`citations`・`language`・`genre`・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。
+  ファイルを読むのは `config` にパスを渡したときだけで、作業場所の `chaff.yaml` を探しには行かない。ファイルに書くことはない。
+  パスを渡したときは、コマンドと同じくハウススタイルを当て、プラグインを読み込む。読んだ後の設定を渡したときも、設定の誤りはコマンドと同じに確かめる。
+- `experimental` を省くと `chaff.yaml` の `experimental` に従う。`genre` は出力ごとのジャンルで、`chaff grade --genre` のように実行全体のジャンルではない。
+- `chaff grade` が終了コード 2 で断る入力（読めない引用、知らない言語・ジャンル、書き誤った `grade:` や `chaff.yaml`、読み込めない言語パッケージ）では、`GradeInputError` を投げる。`problems` に理由を並べ、行番号は付けない。
+- 非同期にする。言語パッケージと品詞の解析器を、初めて使うときに読み込むため（§17）。同じ設定での 2 回目からは、言語パッケージの読み込みとルールのハッシュを使い回す。
+  使い回すのは同じ設定のオブジェクト、パスなら同じファイルの同じ更新時刻のときだけにする。中身が同じでも置き場所が違えば、読み込むプラグインのコードが違いうるため。
+- `chaff.yaml` の `language` と `by_path` の言語は、採点の前に読み込む。入っていない言語パッケージは、`chaff grade` では終了コード 2、`grade()` では `GradeInputError` になる。
+- 置き場所は `chaffjs/grade` とし、`chaffjs/api` には入れない。`chaffjs/api` はプラグイン API（§6）の型と `defineRule` を出し、`API_VERSION` がその互換を守っている。
+  そこに採点の関数を足すと、プラグインの互換と採点の結果の互換が同じ番号で縛られる。採点の結果の形は chaffjs の版（semver）で守る。
 
-**評価基盤への組み込み（予定）。** 例は手引きに置く。どれも `grade()` か `chaff grade` を呼ぶだけで、chaff の側に基盤ごとの処理は持たない。
+**採点役の形（`toScorer`）。** 評価基盤の多くは、採点役に「点・合否・理由・付帯情報」の形を求める。`chaffjs/grade` の `toScorer(result)` は、結果の 1 行をその形に写す。写しであって、元の結果の形は変えない。
+
+| 欄 | 中身 |
+| --- | --- |
+| `name` | `chaff` |
+| `score` | 通れば 1、落ちれば 0。`grade:` があっても点の和を 0〜1 に写さない（下の理由） |
+| `pass` | 結果の `pass` |
+| `reason` | `passed` か `failed: <failedBecause を ; でつなぐ>`、ルールごとの指摘の数、`grade:` があれば点の和を ` — ` でつなぐ |
+| `metadata` | `pass` を除いた結果の 1 行すべて（指摘、率、動かなかったもの、事実、引用、点の内訳、`stamp`） |
+
+CLI から使う基盤（Python の DeepEval・Inspect AI など）は、`--out` の 1 行から同じ写しを作る。手引きの例はその作り方を一つの関数にしてある。
+
+**評価基盤への組み込み。** 例は `examples/evals/` に置き、手引きから指す。どれも `grade()` か `chaff grade` を呼ぶだけで、chaff の側に基盤ごとの処理は持たない。基盤のパッケージはこのリポジトリに入れない。
 
 | 基盤 | 形 |
 | --- | --- |
-| promptfoo | `type: javascript` の assertion から `grade()` を呼ぶ。`pass` をそのまま返し、`score` は通れば 1、落ちれば 0、`reason` に `failedBecause` と点の和を入れる |
-| Inspect AI | scorer から `chaff grade` を呼び、結果の 1 行を `Score` の `value` と `explanation` にする |
-| OpenAI Evals / LangSmith | §29.3 の JSONL を受け渡しの形にし、結果の 1 行を feedback として載せる |
-| GitHub Action | `chaff grade --baseline` を走らせ、終了コードで止める |
+| promptfoo | `type: javascript` の assertion（`promptfoo/chaff-assertion.cjs`）から `grade()` を呼び、`toScorer` の `pass`・`score`・`reason` を返す |
+| autoevals・Braintrust | `({ output, expected }) => { name, score, metadata }` の採点役（`autoevals/chaff-scorer.mjs`）。`expected` を `reference` にする |
+| evalite | `createScorer` の採点役（`evalite/chaff.eval.ts`） |
+| Langfuse | trace に `langfuse.score.create()` で `score` と `reason` を付ける（`langfuse/push-score.mjs`、コードのみ） |
+| DeepEval | `chaff grade` を呼ぶ `BaseMetric`（`deepeval/chaff_metric.py`） |
+| Ragas | `Faithfulness` の横に `compare` の照合を置く（`ragas/chaff_with_faithfulness.py`、コードのみ） |
+| Inspect AI | `chaff grade` を呼ぶ `@scorer`。結果の 1 行を `Score` の `value`・`explanation`・`metadata` にする（`inspect/chaff_scorer.py`） |
+| OpenAI Evals | `samples.jsonl`（`input`・`ideal`）と生成した出力を §29.3 の JSONL に変え、`ideal` を `reference` にする（`openai-evals/`） |
+| GitHub Action | `chaff grade --baseline` を走らせ、終了コードで止める（`examples/evals/README.md`） |
+
+lm-evaluation-harness と Arize Phoenix には専用の例を置かない。出力を `grade()` か `chaff grade` で採点し、ほかの指標と同じに載せるだけで足りる。
+promptfoo の assertion、autoevals の採点役、OpenAI Evals の変換は、通信も API key も使わずに試験する。
 
 promptfoo の `score` に点の和を 0〜1 に写したものを使わないのは、写し方を chaff が決めると、それが満点のある尺度になるためである（§29.4）。
 
-### 29.7 再現の印（`stamp`、予定）
+### 29.7 再現の印（`stamp`）
 
 結果の 1 行と要約の両方に、次を入れる。
 
 | 欄 | 中身 |
 | --- | --- |
 | `chaff` | chaffjs の版と、使った言語パッケージの版（`chaff --version` と同じ） |
-| `rules` | 使ったルールの定義の SHA-256。ルールのファイル（`rules/*.yaml`）、語彙表、`genres.yaml`、読み込んだプラグインの名前と版から作る |
-| `settings` | 実際に効いた設定の SHA-256。ルールごとの強さ、`--experimental`、ジャンル、`grade:` から作る。キーを並べ替えてから作り、順番やコメントの違いでは変わらない |
+| `rules` | 使ったルールの定義の SHA-256。同梱の言語（ja・en）と入力が名指した言語ごとの、ルールの定義（`rules/*.yaml`、`custom_rules`、プラグインのルール）と語彙表、`genres.yaml`、文書の種類（`profiles/*.yaml`）から作る |
+| `settings` | 実際に効いた設定の SHA-256。ルールごとの強さと数値の上限、ルールのオプション、`--experimental`、ジャンル、言語、文書の種類、ハウススタイル（名前と、それが決めた段階・数値・オプション）、チームの語（`jargon`・`prefer`・`required_sections`・`names`）、`by_path`、`grade:` から作る。キーを並べ替えてから作り、順番やコメントの違いでは変わらない。判定役の model や設定ファイルの場所は入れない |
 
 比べるのは、`rules` と `settings` が同じ結果どうしだけにする。chaffjs の版が違っても、`rules` と `settings` が同じなら比べてよい。
+出力ごとの `language` と `genre` は入力の一部で、`settings` には入らず結果の行に残る。A/B はこの二つが違う組を比べない（§29.5）。
+検出のコード（TypeScript の detector やプラグインのコード）は `rules` に入らない。コードだけを直した版上げでは `rules` が変わらないので、版の違う結果を比べるときは `chaff` の欄も見る。
 画面の文言の直しのような、判定に関係しない版上げで過去の結果を捨てさせないためである。
 
 ### 29.8 やらないこと
@@ -2523,11 +2578,11 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 | --- | --- |
 | 出力ごとの指摘（SARIF）、`compare --json`、`cite --format json`、`fix-plan --json`、`outline --json` | 使える（§29.2） |
 | 矛盾を見るルール（`total-mismatch`、`percent-sum-mismatch`、`date-weekday-mismatch`、`announced-count-mismatch`） | 使える。試験中なので `--experimental` で動く。増やす作業は #484 |
-| 多数の出力を回して集めるスクリプト | 手引きに例を置いた。chaff の外のスクリプト |
-| `chaff grade`、入力の JSONL、出力ごとの結果、要約、終了コード | 予定（#488 の 1） |
-| `grade:` の基準 | 予定（#488 の 1） |
-| `--baseline` と回帰の終了コード | 予定（#488 の 2） |
-| `grade()` | 予定（#488 の 3）。置き場所は §29.6 で未決 |
-| `stamp` | 予定。`chaff grade` と同時に入れる |
-| promptfoo・Inspect AI・LangSmith・GitHub Action の例 | 予定（#488 の 4） |
+| 多数の出力を回して集める | `chaff grade` に置き換えた |
+| `chaff grade`、入力の JSONL、出力ごとの結果、要約、終了コード | 使える |
+| `grade:` の基準 | 使える |
+| `--baseline` と回帰の終了コード | 使える |
+| `grade()` | 使える（`chaffjs/grade`） |
+| `stamp` | 使える |
+| 評価基盤の例（promptfoo・autoevals・evalite・Langfuse・DeepEval・Ragas・Inspect AI・OpenAI Evals・GitHub Action）と `toScorer` | 使える（`examples/evals/`） |
 | 自作の比べる例 | 予定（#488 の 5） |

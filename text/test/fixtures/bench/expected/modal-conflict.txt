@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  modal-opposite-ja  found
+ja/design  modal-opposite-ja  found
+ja/email  modal-opposite-ja  found
+ja/figures  modal-opposite-ja  found
+ja/itinerary  modal-opposite-ja  found
+ja/minutes  modal-opposite-ja  found
+ja/note  modal-opposite-ja  found
+ja/policy  modal-opposite-ja  found
+ja/press  modal-opposite-ja  found
+ja/proposal  modal-opposite-ja  found
+ja/quote  modal-opposite-ja  found
+ja/readme  modal-opposite-ja  found
+ja/requirements  modal-opposite-ja  found
+en/blog  modal-opposite-en  found
+en/design  modal-opposite-en  found
+en/email  modal-opposite-en  found
+en/figures  modal-opposite-en  found
+en/itinerary  modal-opposite-en  found
+en/minutes  modal-opposite-en  found
+en/note  modal-opposite-en  found
+en/policy  modal-opposite-en  found
+en/press  modal-opposite-en  found
+en/proposal  modal-opposite-en  found
+en/quote  modal-opposite-en  found
+en/readme  modal-opposite-en  found
+en/requirements  modal-opposite-en  found

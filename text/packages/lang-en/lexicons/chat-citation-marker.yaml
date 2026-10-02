@@ -1,0 +1,11 @@
+# Marks a chat answer leaves when it is pasted: a tracking value on a link, and citation marks. Matched as written, case and all.
+# Other utm_source values (newsletter, twitter) are left out: people add those too.
+id: chat-citation-marker
+language: en
+entries:
+  - pattern: utm_source=chatgpt.com
+  - pattern: utm_source=openai
+  - pattern: oaicite
+  - pattern: contentReference[
+  - pattern: †source】
+  - pattern: citeturn
