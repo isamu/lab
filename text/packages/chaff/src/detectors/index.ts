@@ -18,6 +18,7 @@ import { concreteEvidence, dashDensity, emojiDensity, ngramRepetition, undefined
 import { aiTell, contractionMix, cushionDensity, hedging, repeatedConjunction, unqualifiedSuperlative } from "./lexicon.ts";
 import { internalJargon, properNounDensity, requiredSections } from "./team.ts";
 import { nameVariant } from "./name-variant.ts";
+import { unknownWord } from "./unknown-word.ts";
 import { latinSpacing, preferredTerm } from "./orthography.ts";
 import { straySpace } from "./stray-space.ts";
 import { announcedCount } from "./announced-count.ts";
@@ -110,6 +111,7 @@ export const DETECTORS: Readonly<Record<string, Detector>> = {
   "required-sections": requiredSections,
   "proper-noun-density": properNounDensity,
   "name-variant": nameVariant,
+  "unknown-word": unknownWord,
   "preferred-term": preferredTerm,
   "latin-spacing": latinSpacing,
   "stray-space": straySpace,

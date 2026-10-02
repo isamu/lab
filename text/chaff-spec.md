@@ -978,6 +978,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
 | `name-variant` | 同じ名前（固有名詞の続き）を少しだけ違う形で書く。書き方だけの違い（大小・幅・空白・記号）、読みが同じで一語だけ違う、英字の一字違い（多いほうが二度以上・少ないほうが一度）。日本語でも動く | pos |
+| `unknown-word` | 辞書に無く、一字違いの辞書の語がある英語の語（recieve → receive）。辞書は lang-en の lexicons/dictionary.txt（wink-lexicon と WordNet から scripts/en-dictionary.ts で作る）、語尾・接頭辞・足す語は語彙表 word-suffix・word-prefix・extra-word。大文字を含む語、二度以上使う語、言い直しの無い語は言わない | - |
 | `spelling-consistency` ✅ | イギリスとアメリカの綴りの一貫性。語彙表 spelling-variant と spelling-ize の組ごとに少ないほうを指摘 | - |
 | `space-before-punctuation` ✅ | 句読点の前の空白（"word ."）。コロン・空白で区切った点・数の後ろは除く | - |
 

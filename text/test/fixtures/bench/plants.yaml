@@ -71,6 +71,7 @@ planted:
   unfilled-placeholder: [ja, en]
   url-run-on: [ja]
   vague-figure-reference: [ja, en]
+  unknown-word: [en]
   unused-definition: [ja, en]
   use-before-definition: [ja, en]
   acronym-expansion-conflict: [ja, en]

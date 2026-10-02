@@ -179,6 +179,7 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      unknown-word: off
       requirement-smell: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech

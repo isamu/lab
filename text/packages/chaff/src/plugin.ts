@@ -109,6 +109,8 @@ export type LanguageAdapter = {
   readonly lexicons: Readonly<Record<string, Lexicon>>;
   /** 文書の構造を読む型。無い言語では `chaff tree` がそう言って止まる。 */
   readonly structure?: StructurePatterns;
+  /** 綴りを確かめる辞書（小文字の語の集まり）。大きいので、rule が呼んだときに読む。持たない言語では綴りの rule が動かない。 */
+  readonly dictionary?: () => ReadonlySet<string>;
 };
 
 // ───────── 文書の構造 ─────────
@@ -356,6 +358,8 @@ export type ProseDocument = {
   readonly replyQuotes?: readonly Span[] | undefined;
   /** 記法の手がかり（見出し・画像・リンク）。記法を読む rule だけが触れ、触れたときに作る。 */
   readonly markup?: Markup | undefined;
+  /** adapter の綴りの辞書。持たない言語では無い。 */
+  readonly dictionary?: (() => ReadonlySet<string>) | undefined;
 };
 
 /** 見出し 1 つ。text は属性（`{#id}`）を外した言葉。 */

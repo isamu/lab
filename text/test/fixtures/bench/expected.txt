@@ -66,6 +66,7 @@ total-mismatch                          8      8       0             0
 unbalanced-bracket                      9      9       0             0
 undefined-acronym                       2      2       0             0
 unfilled-placeholder                   20     20       0             0
+unknown-word                           13     13       0             0
 unused-definition                      26     26       0             0
 url-run-on                             13     13       0             0
 use-before-definition                  26     26       0             0
@@ -533,6 +534,7 @@ ja/requirements  definition-unused-ja  found
 ja/requirements  definition-late-ja  found
 ja/requirements  acronym-two-ways-ja  found
 en/blog  list-grown-en  found
+en/blog  typo-en  found
 en/blog  sentences-joined  found
 en/blog  paragraphs-joined  found
 en/blog  heading-echoed  found
@@ -566,6 +568,7 @@ en/blog  definition-unused-en  found
 en/blog  definition-late-en  found
 en/blog  acronym-two-ways-en  found
 en/design  list-grown-en  found
+en/design  typo-en  found
 en/design  reference-broken  found
 en/design  number-skipped  found
 en/design  defined-twice  found
@@ -602,6 +605,7 @@ en/design  acronym-two-ways-en  found
 en/email  weekday-shift  found
 en/email  rows-swapped  found
 en/email  list-grown-en  found
+en/email  typo-en  found
 en/email  sentences-joined  found
 en/email  paragraphs-joined  found
 en/email  emoji-decorated  found
@@ -627,6 +631,7 @@ en/figures  figure-renumbered  found
 en/figures  period-swapped  found
 en/figures  share-shifted  found
 en/figures  list-grown-en  found
+en/figures  typo-en  found
 en/figures  sentences-joined  found
 en/figures  heading-echoed  found
 en/figures  bold-heavy  found
@@ -665,6 +670,7 @@ en/itinerary  weekday-shift  found
 en/itinerary  rows-swapped  found
 en/itinerary  item-dropped  found
 en/itinerary  list-grown-en  found
+en/itinerary  typo-en  found
 en/itinerary  sentences-joined  found
 en/itinerary  heading-echoed  found
 en/itinerary  bold-heavy  found
@@ -696,6 +702,7 @@ en/itinerary  acronym-two-ways-en  found
 en/minutes  weekday-shift  found
 en/minutes  rows-swapped  found
 en/minutes  list-grown-en  found
+en/minutes  typo-en  found
 en/minutes  sentences-joined  found
 en/minutes  heading-echoed  found
 en/minutes  bold-heavy  found
@@ -722,6 +729,7 @@ en/minutes  definition-unused-en  found
 en/minutes  definition-late-en  found
 en/minutes  acronym-two-ways-en  found
 en/note  list-grown-en  found
+en/note  typo-en  found
 en/note  sentences-joined  found
 en/note  contracted  found
 en/note  article-doubled  found
@@ -737,6 +745,7 @@ en/note  definition-unused-en  found
 en/note  definition-late-en  found
 en/note  acronym-two-ways-en  found
 en/policy  list-grown-en  found
+en/policy  typo-en  found
 en/policy  reference-broken  found
 en/policy  number-skipped  found
 en/policy  defined-twice  found
@@ -753,6 +762,7 @@ en/policy  definition-late-en  found
 en/policy  acronym-two-ways-en  found
 en/press  weekday-shift  found
 en/press  list-grown-en  found
+en/press  typo-en  found
 en/press  sentences-joined  found
 en/press  paragraphs-joined  found
 en/press  heading-echoed  found
@@ -792,6 +802,7 @@ en/press  definition-late-en  found
 en/press  acronym-two-ways-en  found
 en/proposal  item-dropped  found
 en/proposal  list-grown-en  found
+en/proposal  typo-en  found
 en/proposal  sentences-joined  found
 en/proposal  paragraphs-joined  found
 en/proposal  heading-echoed  found
@@ -828,6 +839,7 @@ en/proposal  acronym-two-ways-en  found
 en/quote  weekday-shift  found
 en/quote  item-dropped  found
 en/quote  list-grown-en  found
+en/quote  typo-en  found
 en/quote  section-dropped  found
 en/quote  article-doubled  found
 en/quote  padded-opening  found
@@ -851,6 +863,7 @@ en/quote  definition-unused-en  found
 en/quote  definition-late-en  found
 en/quote  acronym-two-ways-en  found
 en/readme  list-grown-en  found
+en/readme  typo-en  found
 en/readme  contracted  found
 en/readme  heading-echoed  found
 en/readme  bold-heavy  found
@@ -877,6 +890,7 @@ en/readme  definition-unused-en  found
 en/readme  definition-late-en  found
 en/readme  acronym-two-ways-en  found
 en/requirements  list-grown-en  found
+en/requirements  typo-en  found
 en/requirements  reference-broken  found
 en/requirements  number-skipped  found
 en/requirements  paragraphs-joined  found
