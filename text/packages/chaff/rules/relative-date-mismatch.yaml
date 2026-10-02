@@ -1,0 +1,71 @@
+id: relative-date-mismatch
+layer: L3
+status: experimental
+how_to_find: relative-date-mismatch
+requires: [dates]
+severity: warning
+
+name:
+  ja: 「3日後の10月5日」の日付が、基準の日付から数えた日と合わない
+  en: A relative date that does not match its base date
+
+why:
+  ja: 「10月2日に申し込み、3日後の10月6日に通知」のように、相対の期間と日付を一緒に書くと、読み手はどちらが正しいのか分かりません。日程をずらしたときに、日付か期間の片方だけを直すと起きます。「3日後の」「1か月前の」のすぐ後ろの日付を、同じ文で前にある日付（文が「2週間後、」で始まるなら前の文の日付）に期間を足した（前なら引いた）日と比べます。
+  en: 'When a relative length and a date are written together ("Applications open on May 1, 2026. Two weeks later, on May 16, 2026, …"), the reader cannot tell which is right. It happens when a schedule moves and only the date or only the length is changed. The date right after "N days later" or "N weeks earlier" is compared with the nearest earlier date in the same sentence (or in the previous sentence when the sentence opens with the relative length), plus or minus the length.'
+
+message:
+  ja: "{base}の{relative}なら{expected}のはずですが、{target}と書かれています"
+  en: "{relative} from {base} is {expected}, but the date is given as {target}"
+
+how_to_fix:
+  ja: 基準の日付・期間・日付のどれが正しいかを確かめて、残りを合わせてください。
+  en: Check which is right, the base date, the length or the date, and make the rest agree.
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「3日後の10月6日」のように、相対で書いた日付が基準の日付から数えた日と合わない所
+  en: A date written with a relative length ("two weeks later, on May 16") that is not that far from its base date
+example:
+  ja:
+    before: |
+      10月2日に申し込みを締め切り、3日後の10月6日に結果を通知します。
+    after: |
+      10月2日に申し込みを締め切り、3日後の10月5日に結果を通知します。
+  en:
+    before: |
+      Applications close on May 1, 2026. Two weeks later, on May 16, 2026, results are sent.
+    after: |
+      Applications close on May 1, 2026. Two weeks later, on May 15, 2026, results are sent.
+
+not_flagged:
+  ja: 期間のすぐ後ろ（「の」や読点だけを挟む）に日付があるときだけ見ます。基準の日付が同じ文（文の頭の「2週間後、」なら前の文）に無いもの、「3営業日後」のように単位が日・週・月・年でないものは見ません。
+  en: Only a date right after the relative length (with "on" or punctuation between) is checked. A relative length with no date before it in the same sentence (or the previous one, when the sentence opens with it), and units other than days, weeks, months and years ("3 business days later"), are left alone.
+rewrite:
+  ja:
+    direction: 基準の日付・期間・日付のどれが正しいかを書き手に確かめ、残りを合わせてください。期間か日付のどちらかを消して、一つだけにしてもかまいません。
+    pairs:
+      - before: 10月2日に締め切り、3日後の10月6日に通知します。
+        after: 10月2日に締め切り、3日後の10月5日に通知します。
+      - before: 発売日の5月1日の1か月前の4月2日に予約を始めます。
+        after: 発売日の5月1日の1か月前の4月1日に予約を始めます。
+    keep:
+      - 基準の日付
+      - 「後」か「前」かの向き
+    avoid:
+      - どれが正しいかを推測で決める
+  en:
+    direction: Ask the writer which of the base date, the length and the date is right, and make the rest agree. Dropping either the length or the date also works.
+    pairs:
+      - before: Applications close on May 1, 2026. Two weeks later, on May 16, 2026, results are sent.
+        after: Applications close on May 1, 2026. Two weeks later, on May 15, 2026, results are sent.
+      - before: The launch is on June 1, 2026; one month earlier, on May 2, 2026, preorders open.
+        after: The launch is on June 1, 2026; one month earlier, on May 1, 2026, preorders open.
+    keep:
+      - the base date
+      - whether the date is later or earlier
+    avoid:
+      - guessing which value is right

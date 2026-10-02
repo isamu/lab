@@ -1,0 +1,7 @@
+# Endings that leave a table header's meaning alone (Owner and Owners, Address and Addresses). Two headers that come out
+# the same once one of these is dropped are read as one column written two ways.
+id: label-affix
+language: en
+entries:
+  - pattern: s
+  - pattern: es

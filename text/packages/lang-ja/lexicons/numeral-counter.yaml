@@ -1,0 +1,42 @@
+# 数のすぐ後ろに付けて数える語（3件、三件、5人、五人）。ここに付いた数だけを、漢数字と算用数字のどちらで書いたかの票にする。
+# 日付の日・月・年は入れない（「三日」は日にちとも日数とも読め、暦の書き方は別の決まり）。分も入れない（「十分」は足りるの意味が多い）。
+# 「つ」も入れない（三つ・五つのように和語で数えるときは漢数字で書くのが、算用数字で数える文書でも普通の書き方）。
+# 一つの字で語の頭になるもの（日本、人間）は、前に数が付いたときだけ読むので入れてよい。
+id: numeral-counter
+language: ja
+entries:
+  - pattern: 件
+  - pattern: 個
+  - pattern: 人
+  - pattern: 名
+  - pattern: 回
+  - pattern: 社
+  - pattern: 台
+  - pattern: 枚
+  - pattern: 本
+  - pattern: 冊
+  - pattern: 点
+  - pattern: 校
+  - pattern: 店舗
+  - pattern: か所
+  - pattern: カ所
+  - pattern: ヶ所
+  - pattern: 箇所
+  - pattern: 項目
+  - pattern: 種類
+  - pattern: 段階
+  - pattern: 通り
+  - pattern: か国
+  - pattern: カ国
+  - pattern: ヶ国
+  - pattern: か月
+  - pattern: カ月
+  - pattern: ヶ月
+  - pattern: 年間
+  - pattern: 週間
+  - pattern: 日間
+  - pattern: 時間
+  - pattern: 倍
+  - pattern: 割
+  - pattern: 歳
+  - pattern: 円

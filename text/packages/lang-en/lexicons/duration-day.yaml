@@ -1,0 +1,6 @@
+# Units of a length of time (duration-mismatch). A quantity in one of them is added to a start date.
+id: duration-day
+language: en
+entries:
+  - pattern: "day"
+  - pattern: "days"

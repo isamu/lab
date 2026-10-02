@@ -25,6 +25,7 @@ These are the main rules for this genre.
 | --- | --- | --- |
 | `max-sentence-length` | A sentence that runs too long (18 words for this genre) | Always |
 | `excessive-hedging` | Hedges stacked until nobody is saying anything | With `--experimental` |
+| `cushion-phrase-density` | Softeners ("just wanted to", "sorry to bother") too dense for the length | With `--experimental` |
 | `date-weekday-mismatch` | A date whose weekday disagrees with the calendar | With `--experimental` |
 | `unfilled-placeholder` | A template blank such as "[Your Name]" | With `--experimental` |
 | `risk-disclosure` | A text that gives only the upside and never what to watch for | When an AI reads it, with `npx chaffjs test` |
@@ -77,7 +78,7 @@ email.md   blog/tech · English   genre from the default
   17:74   warning Closes with "hope this helps"
                   closing-cliche
 
-2 findings, 68 rules not run
+2 findings, 97 rules not run
 ```
 
 Add the genre, as suggested, and the experimental rules too.
@@ -88,16 +89,24 @@ $ npx chaffjs email.md --genre business/email --experimental --compact
 
 email.md   business/email · English   genre from --genre
 
+  5:1     info    "hope this email finds you well" and other softeners: 26 per 1000 words (limit 5)
+                  cushion-phrase-density
+  7:1     info    "just wanted to" and other softeners: 26 per 1000 words (limit 5)
+                  cushion-phrase-density
+  7:1     info    "i was wondering if" and other softeners: 26 per 1000 words (limit 5)
+                  cushion-phrase-density
   7:1     warning This sentence runs 46 words (limit 18)
                   max-sentence-length
   7:58    warning This sentence stacks 2 hedges ("might, perhaps")
                   excessive-hedging
+  9:1     info    "sorry to bother" and other softeners: 26 per 1000 words (limit 5)
+                  cushion-phrase-density
   13:11   error   2026-10-10 is a Saturday, not a Friday
                   date-weekday-mismatch
   15:91   warning "[Your Name]" was never filled in
                   unfilled-placeholder
 
-4 findings, 19 rules not run
+8 findings, 31 rules not run
 ```
 
 Without `--experimental`, only the long sentence on line 7 appears.
@@ -107,6 +116,7 @@ The rest are experimental rules, still being checked for wrong findings, so they
 
 | Line | Finding | What it means | How to fix it |
 | --- | --- | --- | --- |
+| 5, 7, 9 | `cushion-phrase-density` | Four softeners in one short email; each pushes the request further back | Keep one courtesy at most, and ask plainly |
 | 7 | `max-sentence-length` | One sentence of 46 words; the request comes only at the very end | Lead with the request, and split the rest off: "Could we meet to go through the redesign proposal?" |
 | 7 | `excessive-hedging` | "might" and "perhaps" in one sentence | Keep one hedge at most, or ask plainly |
 | 13 | `date-weekday-mismatch` | October 10, 2026 is a Saturday | Fix the weekday, or the date. The other two times are right |
@@ -114,8 +124,6 @@ The rest are experimental rules, still being checked for wrong findings, so they
 
 Without a genre, chaff also flagged "I hope this helps!" as a stock closing.
 That rule is not used for business documents, so it does not run under the email genre.
-"I just wanted to reach out" and "Sorry to bother you" soften the request too. chaff does not flag them in this email.
-A machine does not find every habit.
 
 ## Checks that read meaning go to an AI
 
@@ -133,6 +141,7 @@ language: en
 
 rules:
   excessive-hedging: normal
+  cushion-phrase-density: normal
   date-weekday-mismatch: normal
   unfilled-placeholder: normal
 ```

@@ -1,0 +1,31 @@
+# Plural nouns of measure (time, age, money, distance, weight), after which the common styles write figures even below ten
+# (AP: 6 months, 3 miles), while they spell out a plain count (two doses). A number before one of these is not a vote on
+# how the document writes counts.
+id: figure-noun
+language: en
+entries:
+  - pattern: seconds
+  - pattern: minutes
+  - pattern: hours
+  - pattern: days
+  - pattern: weeks
+  - pattern: months
+  - pattern: years
+  - pattern: decades
+  - pattern: dollars
+  - pattern: cents
+  - pattern: euros
+  - pattern: pounds
+  - pattern: ounces
+  - pattern: grams
+  - pattern: kilograms
+  - pattern: miles
+  - pattern: feet
+  - pattern: inches
+  - pattern: meters
+  - pattern: metres
+  - pattern: kilometers
+  - pattern: kilometres
+  - pattern: degrees
+  - pattern: percent
+  - pattern: points

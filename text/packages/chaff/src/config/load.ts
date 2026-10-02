@@ -1,6 +1,5 @@
-import { readFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { parse } from "yaml";
+import { readYamlFile } from "./yaml-file.ts";
 import { isLevel } from "../levels.ts";
 import { defaultModel } from "../judge.ts";
 import { isBackend, type BackendName } from "../backends/types.ts";
@@ -36,6 +35,8 @@ export type Config = {
   readonly names: readonly string[];
   /** names に書かれていたが名前として読めなかった値。黙って捨てると、並べたつもりの名前が効いていないことに気づけない。 */
   readonly unreadableNames: readonly string[];
+  /** File-name globs (*.yaml) a directory walk checks besides Markdown. --include adds to them. */
+  readonly include?: readonly string[];
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
   readonly byPath: readonly PathRule[];
   readonly baseDir: string;
@@ -165,7 +166,7 @@ const byPathOf = (raw: unknown): PathRule[] => (Array.isArray(raw) ? raw.map(toP
 
 /** 設定ファイルが無くても動く。あっても、既定から変えたものだけが書かれている。spec §18。 */
 export const loadConfig = (path: string): Config => {
-  const raw: unknown = parse(readFileSync(path, "utf8"));
+  const raw: unknown = readYamlFile(path);
   if (!isRecord(raw)) return { ...EMPTY, path };
   const declared: unknown = raw["ai_backend"];
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;
@@ -188,6 +189,7 @@ export const loadConfig = (path: string): Config => {
     requiredSections: wordsOf(raw["required_sections"]),
     names: names.names,
     unreadableNames: names.unreadable,
+    include: globsOf(raw["include"]),
     byPath: byPathOf(raw["by_path"]),
     baseDir: dirname(path),
     options: isRecord(options) ? options : {},

@@ -102,7 +102,7 @@ article.md   blog/tech · English   genre from --genre
   39:20   warning Closes with "happy coding"
                   closing-cliche
 
-3 findings, 68 rules not run
+3 findings, 97 rules not run
 ```
 
 That is the opening and the closing. The shapes of generated text are checked by experimental rules.
@@ -144,7 +144,7 @@ article.md   blog/tech · English   genre from --genre
   39:20   warning Closes with "happy coding"
                   closing-cliche
 
-15 findings, 16 rules not run
+15 findings, 27 rules not run
 ```
 
 `3:1` at the start of a line means line 3, character 1.
