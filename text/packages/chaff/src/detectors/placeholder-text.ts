@@ -16,7 +16,7 @@ const FILLED_AFTER = /^[([:：\p{Script=Han}\p{Script=Katakana}\p{Script=Latin}\
 
 /** What may stand around a marker that is the whole value: quotes and brackets, a closing stop. */
 const OPENING = /^[\s"'“‘「『(（[［【]*/u;
-const CLOSERS: ReadonlySet<string> = new Set([..."\"'”’」』)）]］】.。!！"]);
+const CLOSERS: ReadonlySet<string> = new Set("\"'”’」』)）]］】.。!！");
 const COLON_NEXT = /^\s*[:：]/u;
 
 /** text without the quotes, brackets, stops and spaces that close it. */
