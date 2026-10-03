@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  nado-doubled  found
+ja/design  nado-doubled  found
+ja/email  nado-doubled  found
+ja/figures  nado-doubled  found
+ja/itinerary  nado-doubled  found
+ja/minutes  nado-doubled  found
+ja/note  nado-doubled  found
+ja/policy  nado-doubled  found
+ja/press  nado-doubled  found
+ja/proposal  nado-doubled  found
+ja/quote  nado-doubled  found
+ja/readme  nado-doubled  found
+ja/requirements  nado-doubled  found

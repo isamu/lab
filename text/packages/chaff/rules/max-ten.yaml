@@ -1,0 +1,59 @@
+id: max-ten
+layer: L3
+status: experimental
+how_to_find: sentence-comma-count
+word_list: ten-mark
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 一文の読点が多すぎる
+  en: Too many commas in one sentence
+
+why:
+  ja: 一文に読点（、）がいくつも入ると、文が細かく切れて、どこまでが一つのまとまりなのかを読み手が追えなくなります。読点が多いのは、たいてい一文に話を詰め込みすぎている印です。名詞を並べただけの読点（名前、会社名、連絡先）と、鉤括弧で引いたものの中は数えません。
+  en: In Japanese, a sentence cut by many commas (、) leaves the reader unable to tell which pieces belong together. Many commas usually mean the sentence carries too much. Commas that only separate listed nouns (名前、会社名、連絡先) and commas inside 「」 quotations are not counted.
+
+message:
+  ja: 一文に読点が {count} 個あります（{limit} 個まで）
+  en: "{count} commas in one sentence (limit {limit})"
+
+how_to_fix:
+  ja: 意味の切れ目で文を二つに分けてください。
+  en: Split the sentence in two where the meaning breaks.
+
+levels: { strict: 4, normal: 6, relaxed: 8 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 一文の中に読点（、）がいくつも入り、細かく切れている所
+  en: A Japanese sentence cut by many commas (、)
+example:
+  ja:
+    before: |
+      担当者が、会議室で、新人に、資料を、配布し、内容を、丁寧に、説明しました。
+    after: |
+      担当者が会議室で新人に資料を配布しました。続けて、内容を丁寧に説明しました。
+
+not_flagged:
+  ja: 数えるのは読点（、と，）だけです。名詞と名詞のあいだの読点（並べた項目）と、鉤括弧で引いたものの中は数えません。
+  en: Only 、 and ， are counted. Commas between two nouns (listed items) and commas inside 「」 quotations are not.
+level_meaning:
+  ja: 一文の読点 {limit} 個まで
+  en: up to {limit} commas in a sentence
+rewrite:
+  ja:
+    direction: 読点の多い文を、意味の切れ目で二つ以上の文に分けてください。読点を消すだけにはしません。
+    pairs:
+      - before: 担当者が、会議室で、新人に、資料を、配布し、内容を、丁寧に、説明しました。
+        after: 担当者が会議室で新人に資料を配布しました。続けて、内容を丁寧に説明しました。
+      - before: 申請が遅れた場合は、窓口に、電話で、理由を、伝え、指示を、受けてから、書類を、送ってください。
+        after: 申請が遅れた場合は、窓口に電話で理由を伝えてください。指示を受けてから書類を送ってください。
+    keep:
+      - 文が言っている事柄と、その順序
+    avoid:
+      - 読点を消すだけで、長い一文のまま残す
+      - 事柄を足したり落としたりする

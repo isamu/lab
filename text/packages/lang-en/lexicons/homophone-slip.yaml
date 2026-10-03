@@ -1,0 +1,37 @@
+# Homophones typed for each other, only in pairs where the next word settles which one was meant: "its" before
+# an article or "been" can only be "it's"; "it's own" can only be "its own"; "their" before "is" or "are" can only be
+# "there". Pairs the next word does not settle ("its time", "they're people") are left out. Read by homophone-slip;
+# rewrite is the intended form.
+id: homophone-slip
+language: en
+entries:
+  - pattern: it's own
+    rewrite: its own
+  - pattern: its a
+    rewrite: it's a
+  - pattern: its an
+    rewrite: it's an
+  - pattern: its been
+    rewrite: it's been
+  - pattern: their is
+    rewrite: there is
+  - pattern: their are
+    rewrite: there are
+  - pattern: their was
+    rewrite: there was
+  - pattern: their were
+    rewrite: there were
+  - pattern: there own
+    rewrite: their own
+  - pattern: they're own
+    rewrite: their own
+  - pattern: your welcome
+    rewrite: you're welcome
+  - pattern: you're own
+    rewrite: your own
+  - pattern: could of
+    rewrite: could have
+  - pattern: should of
+    rewrite: should have
+  - pattern: would of
+    rewrite: would have
