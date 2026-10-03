@@ -1,0 +1,60 @@
+id: idiom-misuse
+layer: L3
+status: experimental
+how_to_find: misuse-match
+word_list: idiom-misuse
+uses: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: 慣用句の誤用
+  en: Misused Japanese idiom
+
+why:
+  ja: 「的を得る」「汚名挽回」のように、二つの慣用句が混ざった形や、語を取り違えた形です。意味は通じても、読み手には言葉を知らない書き手に見え、文書全体が信用されにくくなります。
+  en: A Japanese idiom with a word swapped or two idioms blended (的を得る for 的を射る). The meaning comes through, but the reader takes the writer for careless, and trusts the rest less.
+
+message:
+  ja: 「{matched}」は誤用とされる形です。「{correct}」と書きます
+  en: '"{matched}" is the misused form; the idiom is "{correct}"'
+
+how_to_fix:
+  ja: 正しい形に直してください。「的を得た意見」は「的を射た意見」です。
+  en: Write the established form. 的を得た意見 becomes 的を射た意見.
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「的を得る」「汚名挽回」のように、取り違えたと決まっている慣用句
+  en: A Japanese idiom in a form dictionaries and style guides list as a mistake (的を得る for 的を射る)
+example:
+  ja:
+    before: 課長の指摘は的を得ていました。
+    after: 課長の指摘は的を射ていました。
+
+not_flagged:
+  ja: 一覧にある形だけを見ます。辞書によって認め方が分かれる形（「押しも押されもしない」）は載せていません。小説の台詞のように、わざと崩した言い方があるので、文学のジャンルでは見ません。
+  en: Only the forms on chaff's list are checked. Forms dictionaries disagree on are not listed. Literature does not run this rule, since dialogue may misuse an idiom on purpose.
+level_meaning:
+  ja: 当てはまる形が {limit} 箇所あれば指摘
+  en: reported once there are {limit}
+rewrite:
+  ja:
+    direction: 指摘された慣用句を、指摘が示す正しい形に置き換えてください。活用（得た→射た）と前後の語はそのまま残します。
+    pairs:
+      - before: 課長の指摘は的を得ていました。
+        after: 課長の指摘は的を射ていました。
+      - before: 次の大会で汚名挽回を狙います。
+        after: 次の大会で汚名返上を狙います。
+      - before: 油断して足元をすくわれた。
+        after: 油断して足をすくわれた。
+    keep:
+      - 文の意味と、慣用句の活用の形
+      - 引用の中の言葉（人の発言をそのまま写した所）
+    avoid:
+      - 慣用句を消して、平らな言い方に書き換える
+      - 正しい形の候補が二つあるとき（汚名返上と名誉挽回）、文の意味に合わないほうを選ぶ

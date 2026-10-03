@@ -19,6 +19,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs rules` | Every rule as a table, by group, with the level it runs at now |
 | `npx chaffjs rules --json` | The current settings and what each rule is, as JSON, to give to an AI |
 | `npx chaffjs relax\|strict\|off <rule>` | Changes a rule's level, with `--why "reason"` |
+| `npx chaffjs enable <rule>` | Turns on one experimental rule alone (writes `<rule>: normal` in `chaff.yaml`). See [Configuration](./configuration#turning-on-one-experimental-rule) |
 | `npx chaffjs baseline <dir>` | Shelves today's findings |
 | `npx chaffjs suppressions <dir>` | Counts the findings silenced with `stet` |
 | `npx chaffjs tree <file>` | Turns a document into a tree of addresses |
@@ -42,6 +43,7 @@ These options go with a check.
 | `--genre <genre>` | The genre for this run only; it wins over `chaff.yaml` |
 | `--show-baseline` | Shows the shelved findings too |
 | `--sarif <path>` | Writes the findings as SARIF, to show them on the lines of a GitHub PR |
+| `--include <glob>` | In a folder, checks the files matching the glob besides Markdown (`--include "*.yaml"`). See [Configuration](./configuration) |
 
 `tree` and `cite` are explained in [Structure and quotations](./structure), `--sarif` in [CI](./ci).
 

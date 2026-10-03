@@ -1,0 +1,83 @@
+# What sound a word starts with, for "a" and "an" (article-sound). By group:
+#   vowel-letter       the letters a word starting with which usually takes "an"
+#   letter-name-vowel  the letters whose name starts with a vowel sound, for a capital read letter by letter ("an MBA", "an X-ray")
+#   letter-name-either the letters whose name is said both ways ("an HTTP" and "a HTTP": aitch and haitch)
+#   consonant          word beginnings spelled with a vowel but said with a consonant ("a user", "a one-off", "a European")
+#   vowel              word beginnings said with a vowel against the two groups above ("an hour", "an onerous"); checked first
+#   word               capitals read as a word, not letter by letter ("a NASA probe"); the word's own sound decides.
+#                      Capitals of four letters or more with a vowel that are not listed may be words, and are not reported
+#   either             words and capitals said both ways, never reported ("a SQL" and "an SQL", "a historic" and "an historic")
+# Word beginnings match the start of the word, in lower case; capitals match whole.
+id: article-sound
+language: en
+entries:
+  - { pattern: a, group: vowel-letter }
+  - { pattern: e, group: vowel-letter }
+  - { pattern: i, group: vowel-letter }
+  - { pattern: o, group: vowel-letter }
+  - { pattern: u, group: vowel-letter }
+  - { pattern: A, group: letter-name-vowel }
+  - { pattern: E, group: letter-name-vowel }
+  - { pattern: F, group: letter-name-vowel }
+  - { pattern: I, group: letter-name-vowel }
+  - { pattern: L, group: letter-name-vowel }
+  - { pattern: M, group: letter-name-vowel }
+  - { pattern: N, group: letter-name-vowel }
+  - { pattern: O, group: letter-name-vowel }
+  - { pattern: R, group: letter-name-vowel }
+  - { pattern: S, group: letter-name-vowel }
+  - { pattern: X, group: letter-name-vowel }
+  - { pattern: H, group: letter-name-either }
+  - { pattern: one, group: consonant }
+  - { pattern: once, group: consonant }
+  - { pattern: eu, group: consonant }
+  - { pattern: ewe, group: consonant }
+  - { pattern: use, group: consonant }
+  - { pattern: usa, group: consonant }
+  - { pattern: usu, group: consonant }
+  - { pattern: uti, group: consonant }
+  - { pattern: unique, group: consonant }
+  - { pattern: unit, group: consonant }
+  - { pattern: univers, group: consonant }
+  - { pattern: uniform, group: consonant }
+  - { pattern: unif, group: consonant }
+  - { pattern: union, group: consonant }
+  - { pattern: unicorn, group: consonant }
+  - { pattern: unicode, group: consonant }
+  - { pattern: unilateral, group: consonant }
+  - { pattern: unison, group: consonant }
+  - { pattern: unix, group: consonant }
+  - { pattern: unanim, group: consonant }
+  - { pattern: uran, group: consonant }
+  - { pattern: urin, group: consonant }
+  - { pattern: utopia, group: consonant }
+  - { pattern: ubiq, group: consonant }
+  - { pattern: ukulele, group: consonant }
+  - { pattern: unesco, group: consonant }
+  - { pattern: unicef, group: consonant }
+  - { pattern: hour, group: vowel }
+  - { pattern: honest, group: vowel }
+  - { pattern: honor, group: vowel }
+  - { pattern: honour, group: vowel }
+  - { pattern: heir, group: vowel }
+  - { pattern: oner, group: vowel }
+  - { pattern: lval, group: vowel }
+  - { pattern: rval, group: vowel }
+  - { pattern: NASA, group: word }
+  - { pattern: NATO, group: word }
+  - { pattern: UNESCO, group: word }
+  - { pattern: UNICEF, group: word }
+  - { pattern: LAN, group: word }
+  - { pattern: SAML, group: word }
+  - { pattern: RAM, group: word }
+  - { pattern: ROM, group: word }
+  - { pattern: SIM, group: word }
+  - { pattern: MAC, group: word }
+  - { pattern: SQL, group: either }
+  - { pattern: FAQ, group: either }
+  - { pattern: URL, group: either }
+  - { pattern: herb, group: either }
+  - { pattern: histor, group: either }
+  - { pattern: hotel, group: either }
+  - { pattern: homage, group: either }
+  - { pattern: hypothe, group: either }

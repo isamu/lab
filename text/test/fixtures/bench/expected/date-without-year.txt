@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/itinerary  year-dropped  found
+ja/minutes  year-dropped  found

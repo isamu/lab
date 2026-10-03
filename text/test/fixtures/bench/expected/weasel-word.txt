@@ -1,0 +1,13 @@
+table  12  12  0  0
+en/blog  weasel-experts  found
+en/design  weasel-experts  found
+en/email  weasel-experts  found
+en/figures  weasel-experts  found
+en/itinerary  weasel-experts  found
+en/minutes  weasel-experts  found
+en/note  weasel-experts  found
+en/press  weasel-experts  found
+en/proposal  weasel-experts  found
+en/quote  weasel-experts  found
+en/readme  weasel-experts  found
+en/requirements  weasel-experts  found

@@ -66,6 +66,9 @@ const densityRule =
 
 const hedgingDensity = densityRule("excessive-hedging");
 export const cushionDensity = densityRule("cushion-phrase-density", "at-floor");
+/** 語彙表の語の密度だけを見る rule が共通で使う。rule の id は実行側が入れる。 */
+export const phraseDensity = densityRule("");
+export const vagueDensity = densityRule("vague-word-density");
 
 /** 書いたとおりの字。行の折り返しをまたいでいたら空白 1 つに。 */
 const writtenAt = (source: string, span: Span): string => source.slice(span.start, span.end).replace(/\s+/gu, " ").trim();

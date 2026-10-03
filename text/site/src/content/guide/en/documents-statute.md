@@ -128,6 +128,8 @@ rules.md   legal/statute · English   genre from --genre
   7 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
   {not-run}
+
+  Turn on one experimental rule alone by naming it: npx chaffjs enable absolute-exception (the same as rules: { absolute-exception: normal } in chaff.yaml). --experimental turns on all of them.
 ```
 
 ## What each finding means

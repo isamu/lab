@@ -19,6 +19,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs rules` | ルールの一覧を、グループごとに表で出します。いまの段階もわかります |
 | `npx chaffjs rules --json` | いまの設定とルールの説明を JSON で出します。AI に渡す用です |
 | `npx chaffjs relax\|strict\|off <rule>` | ルールの強さを変えます。`--why "理由"` を添えます |
+| `npx chaffjs enable <rule>` | 試験中のルールを 1 つだけ動かします（`chaff.yaml` に `<rule>: normal` と書きます）。[設定](./configuration#試験中のルールを-1-つだけ動かす) を見てください |
 | `npx chaffjs baseline <dir>` | いまある指摘を棚上げします |
 | `npx chaffjs suppressions <dir>` | `stet` で黙らせている指摘を数えます |
 | `npx chaffjs tree <file>` | 文書を番地の付いた木にします |
@@ -42,6 +43,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `--genre <ジャンル>` | この回だけジャンルを決めます。`chaff.yaml` より優先します |
 | `--show-baseline` | 棚上げした分も含めて全部見ます |
 | `--sarif <path>` | 指摘を SARIF で書き出します。GitHub の PR の行に出すためです |
+| `--include <glob>` | フォルダの中の Markdown のほかに、glob に合うファイルも検査します（`--include "*.yaml"`）。[設定](./configuration) を見てください |
 
 `tree` と `cite` は [構造と引用](./structure) で、`--sarif` は [CI](./ci) で詳しく説明します。
 

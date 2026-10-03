@@ -1,0 +1,58 @@
+id: adversative-ga-repeat
+layer: L3
+status: experimental
+how_to_find: sentence-conjunctive-count
+word_list: adversative-particle
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 一文に逆接の「が」が二度
+  en: Two contrastive が in one sentence
+
+why:
+  ja: 「〜だが、〜するが、〜」のように逆接の「が」を一文で二度使うと、話が二度ひっくり返り、書き手の言いたい向きが読み手に分からなくなります。数えるのは接続助詞の「が」だけで、「私が」のような格助詞の「が」は数えません。
+  en: In Japanese, a sentence that turns twice with the contrastive particle が (〜だが、〜するが、) leaves the reader unsure which way it finally points. Only the conjunctive が is counted, not the case particle (私が).
+
+message:
+  ja: 一文に逆接の「が」が {count} 個あります（{limit} 個まで）
+  en: "{count} contrastive が in one sentence (limit {limit})"
+
+how_to_fix:
+  ja: 一つ目の「が」の所で文を切り、次の文を「しかし」で始めるか、どちらかの逆接を順接に言い換えてください。
+  en: Split the sentence at the first が and open the next with しかし, or turn one of the two into a plain link.
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「〜だが、〜するが、」のように、一文の中で逆接の「が」を二度使った所
+  en: A Japanese sentence that turns twice on the contrastive particle が
+example:
+  ja:
+    before: |
+      予算は足りるが、人手が足りないが、納期は守ります。
+    after: |
+      予算は足ります。人手は足りませんが、納期は守ります。
+
+not_flagged:
+  ja: 接続助詞の「が」だけを数えます。格助詞の「が」（私が、会社が）と、鉤括弧で引いたものの中は数えません。「けれど」「けど」も数えません。
+  en: Only the conjunctive が, outside 「」. The case particle が (私が) and けれど / けど are not counted.
+level_meaning:
+  ja: 一文の逆接の「が」{limit} 個まで
+  en: up to {limit} contrastive が in a sentence
+rewrite:
+  ja:
+    direction: 一つ目の逆接の「が」の所で文を切ってください。次の文の頭に、前との関係を言う語（しかし、ただし）を置けます。
+    pairs:
+      - before: 予算は足りるが、人手が足りないが、納期は守ります。
+        after: 予算は足ります。人手は足りませんが、納期は守ります。
+      - before: 新機能は便利だが、設定が難しいが、慣れれば速い。
+        after: 新機能は便利です。ただし設定が難しく、慣れるまでは時間がかかります。
+    keep:
+      - 二つの逆接が言っている事柄
+    avoid:
+      - 「が」を「けれど」に替えるだけで、一文のまま残す

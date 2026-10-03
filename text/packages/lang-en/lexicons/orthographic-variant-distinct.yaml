@@ -1,0 +1,24 @@
+# Hyphenated words that are a different word from the same letters closed up: re-sign (sign again) is not resign (quit).
+# orthographic-variant does not compare a word written as one of these.
+id: orthographic-variant-distinct
+language: en
+entries:
+  - pattern: re-sign
+  - pattern: re-cover
+  - pattern: re-form
+  - pattern: re-creation
+  - pattern: re-press
+  - pattern: re-collect
+  - pattern: re-count
+  - pattern: re-mark
+  - pattern: re-serve
+  - pattern: re-sort
+  - pattern: re-treat
+  - pattern: re-act
+  - pattern: re-fuse
+  - pattern: re-lay
+  - pattern: re-place
+  - pattern: re-sent
+  - pattern: re-solve
+  - pattern: co-op
+  - pattern: un-ionized

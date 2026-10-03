@@ -189,6 +189,103 @@ a.results.jsonl とは比べません: 設定が違います。ルールか設�
 
 終了コード 2 で終わります。前の回は `--experimental` 付きで、今回は付いていません。
 
+## prompt や model を並べて比べる（variant）
+
+`--baseline` は、前の回と今回を比べます。同じ回の中で複数の prompt や model を比べるときは、すべての出力を 1 つのファイルに入れ、行ごとにどの variant かを書きます。
+同じ題の行には同じ `id` を付けます。variant の名前は `variant` の欄に書くか、`--variant-key` で別の欄を指します。
+
+```json
+{"id": "q3", "prompt": "prompt-a", "output": "# 要点\n\n問い合わせ 4,812 件に答え、最初の返信までの時間の中央値は 6 時間から 2.5 時間に縮みました。\n…", "reference": "# サポート窓口の四半期報告\n…"}
+{"id": "q3", "prompt": "prompt-b", "output": "# 要点\n\n問い合わせ 4,812 件に答え、最初の返信は大幅に速くなりました。\n…", "reference": "# サポート窓口の四半期報告\n…"}
+```
+
+`prompts-ja.jsonl` は、例 1〜3 の 3 つの題に 2 つの prompt で答えさせた出力です。どの行も `prompt` の欄に名前があります。
+`prompt-a` の返金の回答は、2 つめの引用を条文どおり「送料は返金しない。」と書いています。
+いつもの要約のあとに、variant を並べた表が出ます。
+
+```
+$ npx chaffjs grade prompts-ja.jsonl --experimental --variant-key prompt
+prompts-ja.jsonl: 6 件の出力、4 件が通り、2 件が落ちた
+
+落ちた出力
+  ✗ q3 (prompt-b): facts.dropped 3 > 0, facts.added 1 > 0
+  ✗ refund (prompt-b): citations.failed 1 > 0
+…
+
+2 つの variant を並べた: どの variant にもある id の出力 3 件
+                prompt-a     prompt-b
+  通った        3/3（100%）  1/3（33.3%）
+  落ちた事実    0            3
+  足された事実  0            1
+  外れた引用    0/2          1/2
+
+ルールごとの率（1,000 字あたり）
+                          prompt-a  prompt-b
+  ai-generated-composite  0.0       3.0
+  ai-tell                 0.0       3.0
+  closing-cliche          0.0       6.0
+  padded-intro            0.0       3.0
+
+合否が分かれた出力 2 件
+  ✗ q3: 通った prompt-a、落ちた prompt-b（facts.dropped 3 > 0, facts.added 1 > 0）
+  ✗ refund: 通った prompt-a、落ちた prompt-b（citations.failed 1 > 0）
+```
+
+読み方:
+- どの列も同じ題を数えます。比べるのは、すべての variant にあり、言語とジャンルが同じ `id` だけです。それ以外の `id` は「比べなかった id」に、無かった variant と並びます。
+- 「外れた引用」は、照らした数のうち外れた数です。事実は要約と同じに数え、`grade:` で許した種類は数えません。
+- 出力に `contexts` があれば、「一節に無い事実」の行が足されます。照らした事実のうち、検索で取ったどの一節にも無かった数です。
+- `chaff.yaml` に `grade:` があれば、「減点の和」の行が足されます。
+- 通った割合は出力の割合で、点ではありません。満点のある点は、ここでも出しません。
+
+`--variant-key` を渡すと、どの行にもその欄が要ります。`variant` の欄を使うときも、一行にでもあれば全行に要ります。
+名前の無い行や、同じ variant に同じ `id` が二度ある行があれば、終了コード 2 で止まります。
+終了コードはほかは variant が無いときと同じです。`--baseline` は、前の回の同じ `id` と同じ variant を組にします。
+
+CI のログには、`--compact` が合否の分かれた題を 1 行ずつ足します。
+
+```
+$ npx chaffjs grade prompts-ja.jsonl --experimental --variant-key prompt --compact
+…
+disagree	q3	pass prompt-a	fail prompt-b
+disagree	refund	pass prompt-a	fail prompt-b
+合否が分かれた出力 2 件
+```
+
+PR のコメントには、`--format markdown` が同じ表を Markdown で書きます。`--format json` は要約に `variants` の欄を足します。
+
+```
+$ npx chaffjs grade prompts-ja.jsonl --experimental --variant-key prompt --format markdown
+## chaff grade: prompts-ja.jsonl
+
+6 件の出力、4 件が通り、2 件が落ちた
+…
+### 2 つの variant を並べた: どの variant にもある id の出力 3 件
+
+|  | prompt-a | prompt-b |
+| --- | --- | --- |
+| 通った | 3/3（100%） | 1/3（33.3%） |
+| 落ちた事実 | 0 | 3 |
+| 足された事実 | 0 | 1 |
+| 外れた引用 | 0/2 | 1/2 |
+…
+```
+
+評価の仕組みの中からは、`grade()` に `variant` を渡し、結果を `compareVariants()` に渡します。返るのは、`--format json` が `variants` に入れるものと同じです。
+
+```js
+import { compareVariants, grade } from "chaffjs/grade";
+
+const results = [
+  await grade(answerA, { id: "q3", variant: "prompt-a", reference }),
+  await grade(answerB, { id: "q3", variant: "prompt-b", reference }),
+];
+const { columns, disagreements } = compareVariants(results);
+console.log(columns.map((column) => `${column.variant} ${column.passed}/${column.outputs}`)); // [ 'prompt-a 1/1', 'prompt-b 0/1' ]
+```
+
+`compareVariants({ "prompt-a": resultsA, "prompt-b": resultsB })` のように、variant ごとに分けた結果も渡せます。
+
 ## 例 1: 要約は元の事実を守っているか
 
 元の文書（`source.md`）は、短いサポートの報告です。2 つの model に要約させました。
@@ -282,6 +379,64 @@ $ npx chaffjs cite policy.md quotes.json
 
 終了コード 1 で終わります。`--format json` なら、引用ごとに `status`（一致は `ok`）と見つかった行が付きます。
 空白や全角・半角の違いは問いませんが、言葉が一つ違えば外れます。番地の読み方は [構造と引用](./structure) にあります。
+
+## RAG の回答は、検索で取った一節に拠っているか（`contexts`）
+
+`citations` は、回答が示した引用を照らします。回答が引用を示さないことも多く、手元にあるのは検索が model に渡した一節だけ、ということがあります。
+その一節を `contexts` に入れると、chaff は回答の事実を一節の中に探します。照らすのは数・日付・時刻・URL・コード・固有名詞・引用です。
+事実は `compare` と同じ読み方で取り出すので、1,200 円と１,２００円のように書き方が違っても同じ事実です。
+引用（「」の中）は、どれかの一節に一字一句あるときだけ支えられたとします。
+
+`rag-ja.jsonl` は、同じ 2 つの一節を渡して答えさせた 2 つの回答です。
+
+```json
+{"id": "料金", "output": "チームプランは 1 人あたり月 1,200 円で、100 GB の保存領域が付きます。サポートは 4 営業時間以内に返信します。", "contexts": ["# 料金\n\nチームプランは 1 人あたり月 1,200 円で、年払いです。\n1 人あたり 100 GB の保存領域が付きます。", "# サポート\n\nチームプランのサポートは 4 営業時間以内に返信します。\nヘルプセンターは 2026年3月3日に移りました。"]}
+{"id": "料金-誤り", "output": "チームプランは 1 人あたり月 1,500 円で、100 GB の保存領域が付きます。資料には「サポートは 1 時間以内に返信します」とあります。多くのチームに向いています。", "contexts": ["…同じ 2 つの一節…"]}
+```
+
+```
+$ npx chaffjs grade rag-ja.jsonl --out rag-ja.results.jsonl
+出力ごとの結果を書きました: rag-ja.results.jsonl（2 行）
+rag-ja.jsonl: 2 件の出力、1 件が通り、1 件が落ちた
+
+落ちた出力
+  ✗ 料金-誤り: contexts.unsupported 3 > 0
+
+事実: 落ちた 0、足された 0
+引用: 0 件を照らし、0 件が外れた
+contexts: 2 件の出力の事実 11 件を照らし、3 件がどの一節にも無かった（number 2, quote 1）
+…
+  contexts                          1 件の出力  数・日付・名前・引用の無い文 1 件は、contexts に支えられているかを照らしていない（意味を読む必要がある）
+…
+```
+
+`料金-誤り` の結果の行には、どの事実がどの一節（0 から数える）にあり、どれが無かったかが入ります。
+
+```json
+"contexts": {"passages":2,"checked":6,
+ "supported":[{"kind":"number","text":"1 人","line":1,"passage":0},{"kind":"number","text":"100","line":1,"passage":0},{"kind":"name","text":"GB","line":1,"passage":0}],
+ "unsupported":[{"kind":"number","key":"1500 円","text":"1,500 円","line":1,"allowed":false},
+                {"kind":"number","key":"1 時間","text":"1 時間","line":1,"allowed":false},
+                {"kind":"quote","key":"サポートは 1 時間以内に返信します","text":"「サポートは 1 時間以内に返信します」","line":1,"allowed":false}],
+ "uncheckedSentences":1}
+```
+
+- 1,500 円と 1 時間はどの一節にも無く、引用は一字一句の形でどの一節にもありません。`grade:` が無ければ、一つでもあれば落ちます。
+- `contexts` を空の配列 `[]` にすると「一節が取れなかった」で、照らした事実はすべて一節に無いことになります。`contexts` を書かないのとは違います。書かなければ照合は動かず、「動かなかったもの」にそう出ます。
+- 「多くのチームに向いています。」には、chaff が照らせる事実がありません。`uncheckedSentences` に数え、「動かなかったもの」に `contexts` として出します。一節に支えられているかは、読まないと分かりません。
+- 数が一節にあることは、主張が正しいことではありません。一節の数を別の物の数として書いた回答も、この照合は通ります。意味の照合は model か人に任せます。
+
+採点の基準では、`contexts` に上限を書きます。
+
+```yaml
+grade:
+  contexts:
+    unsupported: 0 # どの一節にも無くてよい事実の数
+    allow_unsupported: [name] # 数えない種類
+    required: true # contexts の無い出力を落とす
+```
+
+`grade()` にも `contexts` で一節を渡せます: `await grade(answer, { contexts: passages })`。
 
 ## 例 3: 2 つの prompt を文章の形で比べる
 

@@ -1,0 +1,12 @@
+# 例外を認めないと言い切る語。absolute-exception は、これを持つ義務の文（しなければならない・してはならない）を、
+# 後の別の条や段落で同じ行為に例外を書いた文と突き合わせる。
+id: absolute-word
+language: ja
+entries:
+  - pattern: すべて
+  - pattern: 全て
+  - pattern: 必ず
+  - pattern: 一切
+  - pattern: いかなる
+  - pattern: 常に
+  - pattern: 例外なく

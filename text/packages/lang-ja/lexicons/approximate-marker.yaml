@@ -1,0 +1,32 @@
+# 目安の数の印（duration-mismatch）。「約3か月」「3か月程度」は足し算に使わない。before は数の前、after は後ろ。
+id: approximate-marker
+language: ja
+entries:
+  - pattern: "約"
+    position: before
+  - pattern: "およそ"
+    position: before
+  - pattern: "概ね"
+    position: before
+  - pattern: "おおむね"
+    position: before
+  - pattern: "最大"
+    position: before
+  - pattern: "最長"
+    position: before
+  - pattern: "程度"
+    position: after
+  - pattern: "ほど"
+    position: after
+  - pattern: "前後"
+    position: after
+  - pattern: "余り"
+    position: after
+  - pattern: "以上"
+    position: after
+  - pattern: "以内"
+    position: after
+  - pattern: "弱"
+    position: after
+  - pattern: "強"
+    position: after

@@ -48,7 +48,7 @@ const runsWhenOf = (rule: RuleDefinition): RunsWhen => {
 };
 
 /** Columns line up in a terminal only if a wide (CJK) character counts as two. */
-const widthOf = (text: string): number => Array.from(text).reduce((sum, char) => sum + ((char.codePointAt(0) ?? 0) >= 0x2e80 ? 2 : 1), 0);
+export const widthOf = (text: string): number => Array.from(text).reduce((sum, char) => sum + ((char.codePointAt(0) ?? 0) >= 0x2e80 ? 2 : 1), 0);
 
 const pad = (text: string, width: number): string => `${text}${" ".repeat(Math.max(0, width - widthOf(text)))}`;
 

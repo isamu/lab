@@ -1,0 +1,6 @@
+# Intensifiers counted by very-adjective when an adjective follows ("very important"). Adverbs ("very well") and the
+# words in very-exception ("the very first") are not counted.
+id: very-intensifier
+language: en
+entries:
+  - pattern: very
