@@ -78,6 +78,7 @@ level_meaning:
   ja: 小文字の使用が {limit} 個以下で、大文字の使用より少ないとき指摘
   en: lower-case uses reported when they are {limit} or fewer and fewer than the capitalised ones
 rewrite:
+  depth: light
   ja:
     direction: 定義した語を定義の形に戻してください。かぎ括弧を外し、英語の語は定義のとおり大文字で始めます。ふつうの意味で使っているのが明らかなら、定義した語と紛れない別の言葉に替えます。どちらの意味か決められなければ、書き手に確かめます。
     pairs:
