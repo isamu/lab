@@ -13,7 +13,12 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { runCli } from "./cli-run.ts";
 
-const CONTEXT: CustomContext = { builtIn: new Set(["preferred-term"]), useFor: ["business", "blog"], baseDir: "/project" };
+const CONTEXT: CustomContext = {
+  builtIn: new Set(["preferred-term"]),
+  useFor: ["business", "blog"],
+  genres: ["business", "business/report", "blog", "blog/tech"],
+  baseDir: "/project",
+};
 const EXPLAINED = {
   name: { ja: "名前", en: "Name" },
   why: "理由",

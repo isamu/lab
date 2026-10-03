@@ -73,7 +73,7 @@ export const noTbdDates = (doc) =>
 ```
 
 3 つめに、`index.mjs` で `definePlugin` を `export default` します。
-ルールには、`custom_rules` と同じく名前・理由・直し方・例を書きます。
+ルールには、`custom_rules` と同じく名前・理由・直し方・例を書きます。chaff のルールが持つほかの欄（`levels`、`use_for`、`group`、`summary`、`rewrite`）も書けます（[ルールを足す](./adding-rules#チームのルールを-chaff-のルールと同じ形で書く)）。
 `name` はパッケージの名前から決まります（`chaff-plugin-example` なら `example`）。
 
 ```js

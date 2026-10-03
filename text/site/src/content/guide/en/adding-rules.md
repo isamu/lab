@@ -225,6 +225,47 @@ What the function is given and returns, how to test it and what a broken one pri
 [Writing a plugin](./writing-plugins).
 A file outside the folder `chaff.yaml` is in is read only when written as an absolute path, since loading it runs its code.
 
+## Writing a team rule the way chaff's own rules are written
+
+A rule under `custom_rules` (or in a plugin) may also write the fields chaff's own rule files have.
+Each is optional; leave it out and the rule reads as a team rule always has.
+
+```yaml
+custom_rules:
+  - id: no-tbd
+    type: words
+    words: [TBD]
+    name: { ja: TBD が残っている, en: TBD left in }
+    why: { ja: 読み手が動けません。, en: A reader cannot act on it. }
+    how_to_fix: { ja: 決めたことを書きます。, en: Write what was decided. }
+    levels: { strict: error, normal: warning, relaxed: info }
+    use_for: [business]
+    group: slips
+    summary: { ja: 決めずに残した TBD, en: A TBD nobody resolved }
+    example:
+      ja: { before: 期限は TBD。, after: 期限は 5 月 1 日。 }
+      en: { before: Due TBD., after: Due 1 May. }
+    rewrite:
+      depth: light
+      en:
+        direction: Replace TBD with the decision, or ask the writer.
+        pairs: [{ before: Due TBD., after: "Due [date]." }]
+        keep: [the rest of the sentence]
+        avoid: [inventing a date]
+```
+
+| Field | What it does | Without it |
+| --- | --- | --- |
+| `levels` | A severity for `strict`, `normal` and `relaxed`; `normal` is required. Use it or `level`, not both. A team rule reports places, so a number is refused | `level`, else `warning` |
+| `use_for` | The genres the rule is for, or their first part (`business`) | every genre |
+| `group` | Where the rule is listed among chaff's groups (`slips`, `wording`, …) | `team` |
+| `summary` | What the rule finds, in one line | the name |
+| `example` | `{ before, after }`, or one pair per language | required, in either form |
+| `rewrite` | What `chaff fix-plan` tells a rewriter, with its `depth` ([Making AI-sounding text sound human](./ai-sounding#setting-the-rewrite-depth)) | `how_to_fix` |
+
+chaff's own rules, a team's rules and a plugin's rules are checked in one place, so all three get the same message for the same mistake.
+A value chaff does not know (a `group` it has no group for, a `use_for` that names no genre, a depth that is not one) stops the run, and the message names the value.
+
 ## Adding a rule to chaff itself
 
 A rule that helps any team can go into chaff itself.

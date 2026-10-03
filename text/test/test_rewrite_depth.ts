@@ -130,7 +130,7 @@ describe("rewrite depth — on the rules", () => {
     assert.throws(() => loadRules("en", dir), /ai-tell\.yaml: rewrite\.depth: deep は書き直しの深さではありません.*light.*structure.*register/u);
   });
 
-  const context = { builtIn: new Set<string>(), useFor: ["business"], baseDir: "." };
+  const context = { builtIn: new Set<string>(), useFor: ["business"], genres: ["business"], baseDir: "." };
   const teamRule = (extra: Record<string, unknown>): Record<string, unknown> => ({
     id: "team-no-tbd",
     type: "words",

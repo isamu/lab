@@ -223,6 +223,47 @@ export default (doc) =>
 関数に渡るもの、返すもの、テストの書き方、壊れたときの出力は [プラグインを作る](./writing-plugins) にあります。
 `chaff.yaml` と同じフォルダより外にあるファイルは、絶対パスで書いたときだけ読みます。読み込むと、そのコードが動くためです。
 
+## チームのルールを chaff のルールと同じ形で書く
+
+`custom_rules` のルール（プラグインのルールも）は、chaff のルールのファイルが持つ欄も書けます。
+どれも省けます。省けば、これまでのチームのルールと同じに読みます。
+
+```yaml
+custom_rules:
+  - id: no-tbd
+    type: words
+    words: [TBD]
+    name: { ja: TBD が残っている, en: TBD left in }
+    why: { ja: 読み手が動けません。, en: A reader cannot act on it. }
+    how_to_fix: { ja: 決めたことを書きます。, en: Write what was decided. }
+    levels: { strict: error, normal: warning, relaxed: info }
+    use_for: [business]
+    group: slips
+    summary: { ja: 決めずに残した TBD, en: A TBD nobody resolved }
+    example:
+      ja: { before: 期限は TBD。, after: 期限は 5 月 1 日。 }
+      en: { before: Due TBD., after: Due 1 May. }
+    rewrite:
+      depth: light
+      ja:
+        direction: TBD を決めたことに置き換えます。決まっていなければ書き手に聞きます。
+        pairs: [{ before: 期限は TBD。, after: 期限は［日付］。 }]
+        keep: [文のほかの部分]
+        avoid: [日付を作る]
+```
+
+| 欄 | 決めること | 書かなければ |
+| --- | --- | --- |
+| `levels` | `strict`・`normal`・`relaxed` ごとの重さ。`normal` は必須です。`level` とどちらか一つにします。チームのルールは箇所を出すので、数は書けません | `level`、それも無ければ `warning` |
+| `use_for` | このルールを使うジャンル、またはその頭（`business`） | すべてのジャンル |
+| `group` | chaff の分類のどこに並べるか（`slips`、`wording` など） | `team` |
+| `summary` | 何を見つけるかを一行で | 名前 |
+| `example` | `{ before, after }` か、言語ごとの組 | どちらかの形で必須 |
+| `rewrite` | `chaff fix-plan` が直す人に渡す方向と、その深さ `depth`（[AIっぽさを直す](./ai-sounding#書き直しの深さを決める)） | `how_to_fix` |
+
+chaff のルール、チームのルール、プラグインのルールは一か所で確かめるので、同じ間違いには同じ文が出ます。
+chaff の知らない値（無い分類の `group`、どのジャンルでもない `use_for`、深さでない `depth`）は実行を止め、その値を名指しします。
+
 ## chaff 本体にルールを足す
 
 どのチームにも役立つルールは、chaff 本体に足せます。

@@ -1,9 +1,10 @@
-import type { CustomSpec, LevelTable, Localized, RuleDefinition, Severity, TokenCondition } from "../plugin.ts";
+import type { CustomSpec, Localized, RuleDefinition, TokenCondition } from "../plugin.ts";
 import { regexRefusal, type RegexRefusal } from "./regex-safety.ts";
 import { posTags } from "./token-pattern.ts";
 import { modulePathOf, type ModulePathRefusal } from "./module-path.ts";
-import { ruleGuideOf, type RuleGuide } from "../rule-guide.ts";
-import { depthOfRewrite } from "../rewrite-depth.ts";
+import type { FieldProblem } from "../rule-fields.ts";
+import { failed, ok, type Checked } from "./checked.ts";
+import { describedOf, exampleSides, levelsOf, type Described, type RuleLevels } from "./dsl-fields.ts";
 
 // custom_rules in chaff.yaml: a team's own deterministic rules, written without code. Each becomes a RuleDefinition like the
 // built-in ones, so findings, explain, rules --json, stet, the baseline and SARIF treat it the same. Pure: the YAML comes in parsed.
@@ -29,18 +30,24 @@ export type CustomProblem =
   | { readonly kind: "no-tokens"; readonly at: string }
   | { readonly kind: "bad-token"; readonly at: string; readonly index: number }
   | { readonly kind: "unknown-pos"; readonly at: string; readonly written: string }
-  | { readonly kind: "bad-depth"; readonly at: string; readonly written: string };
+  | { readonly kind: "level-and-levels"; readonly at: string }
+  | { readonly kind: "bad-levels"; readonly at: string; readonly written: string }
+  | (FieldProblem & { readonly at: string });
 
 export type CustomRules = { readonly rules: readonly RuleDefinition[]; readonly problems: readonly CustomProblem[] };
 
 /**
- * What parsing needs to know: the built-in rule ids (a team's rule may not take one), the genres a rule applies to, and
- * the folder a module's path is relative to (where chaff.yaml is).
+ * What parsing needs to know: the built-in rule ids (a team's rule may not take one), the genres a rule applies to when
+ * it does not say (useFor), every genre a use_for may name, and the folder a module's path is relative to (where chaff.yaml is).
  */
-export type CustomContext = { readonly builtIn: ReadonlySet<string>; readonly useFor: readonly string[]; readonly baseDir: string };
+export type CustomContext = {
+  readonly builtIn: ReadonlySet<string>;
+  readonly useFor: readonly string[];
+  readonly genres: readonly string[];
+  readonly baseDir: string;
+};
 
 const RULE_ID = /^[a-z][a-z0-9-]*$/u;
-const SEVERITIES: readonly Severity[] = ["info", "warning", "error"];
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -60,12 +67,6 @@ const localizedOf = (value: unknown): Localized | undefined => (nonEmpty(value) 
 const EVERY_LANGUAGE = "*";
 
 const exampleSideOf = (value: unknown): Localized | undefined => (nonEmpty(value) ? { [EVERY_LANGUAGE]: value.trim() } : byLanguageOf(value));
-
-/** One rule's own problems, with the rule's id (or its place in the list) as where. */
-type Checked<T> = { readonly value: T | undefined; readonly problems: readonly CustomProblem[] };
-
-const ok = <T>(value: T): Checked<T> => ({ value, problems: [] });
-const failed = <T>(...problems: CustomProblem[]): Checked<T> => ({ value: undefined, problems });
 
 type Pair = { readonly avoid: string; readonly use: string };
 
@@ -140,28 +141,16 @@ const typeOf = (raw: Record<string, unknown>, at: string): Checked<string> => {
   return CUSTOM_TYPES.some((known) => known === type) ? ok(type) : failed({ kind: "unknown-type", at, written: type });
 };
 
-const severityOf = (raw: unknown, at: string): Checked<Severity> => {
-  if (raw === undefined) return ok("warning");
-  const severity = SEVERITIES.find((entry) => entry === raw);
-  return severity === undefined ? failed({ kind: "bad-level", at, written: typeof raw === "string" ? raw : printed(raw) }) : ok(severity);
-};
-
-/** The four words as severities: normal is the rule's own level, relaxed one lower, strict one higher, where there is one. */
-const levelsFor = (severity: Severity): LevelTable => {
-  const rank = SEVERITIES.indexOf(severity) + 1;
-  return { ...(rank < SEVERITIES.length ? { strict: rank + 1 } : {}), normal: rank, ...(rank > 1 ? { relaxed: rank - 1 } : {}) };
-};
-
 type Texts = { readonly name: Localized; readonly why: Localized; readonly how_to_fix: Localized; readonly before: Localized; readonly after: Localized };
 
 const textsOf = (raw: Record<string, unknown>, at: string): Checked<Texts> => {
-  const example = isRecord(raw["example"]) ? raw["example"] : {};
+  const example = exampleSides(raw["example"]);
   const found = {
     name: localizedOf(raw["name"]),
     why: localizedOf(raw["why"]),
     how_to_fix: localizedOf(raw["how_to_fix"]),
-    before: exampleSideOf(example["before"]),
-    after: exampleSideOf(example["after"]),
+    before: exampleSideOf(example.before),
+    after: exampleSideOf(example.after),
   };
   const missing = Object.entries(found).flatMap(([field, text]) =>
     text === undefined ? [{ kind: "missing" as const, at, field: field === "before" || field === "after" ? `example.${field}` : field }] : [],
@@ -226,24 +215,14 @@ const HOW_TO_FIND: Readonly<Record<CustomSpec["type"], string>> = {
 
 type Example = { readonly before: string; readonly after: string };
 
-type Rewrite = Pick<RuleGuide, "rewrite" | "rewriteDepth">;
-
-/** The rewrite block, read the way a bundled rule's is: a direction by language, and how deep it goes. */
-const rewriteOf = (raw: unknown, at: string): Checked<Rewrite> => {
-  const depth = depthOfRewrite(raw);
-  if ("unknown" in depth) return failed({ kind: "bad-depth", at, written: depth.unknown });
-  const { rewrite, rewriteDepth } = ruleGuideOf({ rewrite: raw });
-  return ok({ rewrite, rewriteDepth });
-};
-
 type Parts = {
   readonly spec: CustomSpec;
   readonly needs: Needs;
-  readonly severity: Severity;
+  readonly levels: RuleLevels;
   readonly texts: Texts;
   readonly languages: readonly string[] | undefined;
   readonly examples: Readonly<Record<string, Example>>;
-  readonly rewrite: Rewrite;
+  readonly described: Described;
 };
 
 const READER_LANGUAGES: readonly string[] = ["ja", "en"];
@@ -267,7 +246,7 @@ const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, us
   message: localizedOf(raw["message"]) ?? defaultMessage(parts.spec, parts.texts.name),
   messages: {},
   placeholders: PLACEHOLDERS,
-  levels: levelsFor(parts.severity),
+  levels: parts.levels.table,
   level_sets: "severity",
   by_genre: {},
   how_to_find: HOW_TO_FIND[parts.spec.type],
@@ -280,18 +259,19 @@ const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, us
   uses: [],
   from: [],
   languages: parts.languages,
-  use_for: useFor,
-  severity: parts.severity,
+  use_for: parts.described.useFor ?? useFor,
+  severity: parts.levels.severity,
   custom: parts.spec,
   // The reference and explain read a rule's plain-language fields from guide; a team's rule is listed with the team's words.
   guide: {
-    group: "team",
-    summary: parts.texts.name,
+    group: parts.described.group,
+    summary: parts.described.summary ?? parts.texts.name,
     examples: parts.examples,
     notFlagged: {},
     levelMeaning: {},
     sources: [],
-    ...parts.rewrite,
+    rewrite: parts.described.rewrite,
+    rewriteDepth: parts.described.rewriteDepth,
   },
 });
 
@@ -308,19 +288,19 @@ type Checks = {
   readonly id: Checked<string>;
   readonly spec: Checked<CustomSpec>;
   readonly needs: Checked<Needs>;
-  readonly severity: Checked<Severity>;
+  readonly levels: Checked<RuleLevels>;
   readonly texts: Checked<Texts>;
   readonly languages: Checked<readonly string[] | undefined>;
-  readonly rewrite: Checked<Rewrite>;
+  readonly described: Checked<Described>;
 };
 
 /** The rule's parts once every check passed; undefined when one has no value. */
 const partsOf = (checks: Checks, examples: Readonly<Record<string, Example>>): { readonly id: string; readonly parts: Parts } | undefined => {
-  const { id, spec, needs, severity, texts, rewrite } = checks;
+  const { id, spec, needs, levels, texts, described } = checks;
   if (id.value === undefined || spec.value === undefined || needs.value === undefined) return undefined;
-  if (severity.value === undefined || texts.value === undefined || rewrite.value === undefined) return undefined;
-  const parts = { spec: spec.value, needs: needs.value, severity: severity.value, texts: texts.value, languages: checks.languages.value, examples };
-  return { id: id.value, parts: { ...parts, rewrite: rewrite.value } };
+  if (levels.value === undefined || texts.value === undefined || described.value === undefined) return undefined;
+  const parts = { spec: spec.value, needs: needs.value, levels: levels.value, texts: texts.value, languages: checks.languages.value, examples };
+  return { id: id.value, parts: { ...parts, described: described.value } };
 };
 
 const ruleOf = (raw: unknown, index: number, seen: ReadonlySet<string>, context: CustomContext): Checked<RuleDefinition> => {
@@ -332,15 +312,15 @@ const ruleOf = (raw: unknown, index: number, seen: ReadonlySet<string>, context:
     id,
     spec: type.value === undefined ? failed<CustomSpec>() : specOf(raw, type.value, at, context.baseDir),
     needs: needsOf(raw, type.value ?? "", at),
-    severity: severityOf(raw["level"], at),
+    levels: levelsOf(raw, at),
     texts: textsOf(raw, at),
     languages: languagesOf(raw["languages"], at),
-    rewrite: rewriteOf(raw["rewrite"], at),
+    described: describedOf(raw, at, context.genres),
   };
   const { texts, languages } = checks;
   const examples = texts.value === undefined ? {} : examplesOf(texts.value, languages.value);
   const unpaired: CustomProblem[] = texts.value !== undefined && Object.keys(examples).length === 0 ? [{ kind: "unpaired-example", at }] : [];
-  const ordered: Checked<unknown>[] = [id, type, checks.spec, checks.needs, checks.severity, texts, languages, checks.rewrite];
+  const ordered: Checked<unknown>[] = [id, type, checks.spec, checks.needs, checks.levels, texts, languages, checks.described];
   const problems = [...ordered.flatMap((checked) => checked.problems), ...unpaired];
   const ready = problems.length > 0 ? undefined : partsOf(checks, examples);
   return ready === undefined ? failed(...problems) : ok(definitionOf(ready.id, raw, ready.parts, context.useFor));
