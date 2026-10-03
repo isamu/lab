@@ -1,0 +1,18 @@
+# 点で終わる略語。見出しがこれで終わるなら、その点は言葉のうちで、終わりの記号ではない。heading-end-punctuation-mix は
+# その見出しを比べない。見出しの最後の語として、書いたとおりの大文字小文字で照らす。
+id: heading-end-word
+language: ja
+entries:
+  - pattern: etc.
+  - pattern: Inc.
+  - pattern: Ltd.
+  - pattern: Co.
+  - pattern: Corp.
+  - pattern: vs.
+  - pattern: e.g.
+  - pattern: i.e.
+  - pattern: No.
+  - pattern: U.S.
+  - pattern: U.K.
+  - pattern: a.m.
+  - pattern: p.m.
