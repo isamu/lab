@@ -6826,6 +6826,47 @@
         "falseAlarms": 0
       }
     },
+    "uncomparable-graded": {
+      "groups": {
+        "academic": {
+          "documents": 5,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 9,
+          "fired": 0
+        },
+        "business": {
+          "documents": 39,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 14,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 9,
+          "fired": 2
+        },
+        "speech": {
+          "documents": 3,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 26,
+          "fired": 0
+        }
+      },
+      "bench": {
+        "planted": 13,
+        "found": 13,
+        "falseAlarms": 0
+      }
+    },
     "undefined-acronym": {
       "groups": {
         "academic": {
