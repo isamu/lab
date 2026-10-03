@@ -212,6 +212,7 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      orthographic-variant: off
       translationese-density: off
       unknown-word: off
       redundant-expression: off

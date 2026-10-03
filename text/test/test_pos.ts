@@ -84,6 +84,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "misconversion",
         "ngram-repetition",
         "number-style-consistency",
+        "orthographic-variant",
         "padded-intro",
         "redundant-expression",
         "repeated-conjunction",
