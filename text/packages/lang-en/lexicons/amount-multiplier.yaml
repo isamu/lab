@@ -1,0 +1,8 @@
+# Words of magnitude written between an amount's number and its currency ($3 million, 2 billion yen). Matched as written.
+id: amount-multiplier
+language: en
+entries:
+  - pattern: thousand
+  - pattern: million
+  - pattern: billion
+  - pattern: trillion

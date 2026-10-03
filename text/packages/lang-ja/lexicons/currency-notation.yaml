@@ -1,0 +1,24 @@
+# 金額の通貨の書き方。group はどの通貨か、position は金額のどちら側に書くか（¥1,000 は前、1,000円 は後ろ）。
+# 同じ通貨をいくつもの書き方で書けるので、一つの文書の中で混ざっていないかを currency-notation-consistency が見る。字面どおりに照らす。
+id: currency-notation
+language: ja
+entries:
+  - { pattern: "¥", position: before, group: JPY }
+  - { pattern: "￥", position: before, group: JPY }
+  - { pattern: "円", position: after, group: JPY }
+  - { pattern: "JPY", position: before, group: JPY }
+  - { pattern: "JPY", position: after, group: JPY }
+  - { pattern: "$", position: before, group: USD }
+  - { pattern: "US$", position: before, group: USD }
+  - { pattern: "USD", position: before, group: USD }
+  - { pattern: "USD", position: after, group: USD }
+  - { pattern: "ドル", position: after, group: USD }
+  - { pattern: "米ドル", position: after, group: USD }
+  - { pattern: "€", position: before, group: EUR }
+  - { pattern: "EUR", position: before, group: EUR }
+  - { pattern: "EUR", position: after, group: EUR }
+  - { pattern: "ユーロ", position: after, group: EUR }
+  - { pattern: "£", position: before, group: GBP }
+  - { pattern: "GBP", position: before, group: GBP }
+  - { pattern: "GBP", position: after, group: GBP }
+  - { pattern: "ポンド", position: after, group: GBP }
