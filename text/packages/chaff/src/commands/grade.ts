@@ -5,7 +5,11 @@ import type { Config } from "../config/load.ts";
 import { readDocumentFile } from "../files.ts";
 import { GENRES } from "../genre.ts";
 import { gradeItem, type GradeSetup } from "../grade/grade-item.ts";
-import { parseItems, type GradeItem } from "../grade/item.ts";
+import { DEFAULT_VARIANT_FIELD, ITEM_FIELDS, parseItems, type GradeItem, type VariantField } from "../grade/item.ts";
+import { renderMarkdown } from "../grade/render-markdown.ts";
+import { renderVariants, renderVariantsCompact } from "../grade/render-variants.ts";
+import { variantsOfRun, type VariantComparison } from "../grade/variants.ts";
+import { VARIANT_TEXT } from "../grade/variants-text.ts";
 import { renderCompact, renderSummary } from "../grade/render.ts";
 import type { GradeResult } from "../grade/result.ts";
 import { gradeSetup } from "../grade/setup.ts";
@@ -22,7 +26,26 @@ import { chooseBaseline } from "./grade-baseline.ts";
 /** Exit codes (spec §29.3). 2 keeps "the grader did not run" apart from "an output is bad" at a CI gate. */
 export const GRADE_EXIT = { passed: 0, failed: 1, unreadable: 2 } as const;
 
-const VALUED: ReadonlySet<string> = new Set(["--out", "--genre", "--baseline"]);
+const VALUED: ReadonlySet<string> = new Set(["--out", "--genre", "--baseline", "--format", "--variant-key"]);
+
+const FORMATS = ["text", "json", "markdown"] as const;
+
+type Format = (typeof FORMATS)[number];
+
+const isFormat = (value: string): value is Format => FORMATS.some((format) => format === value);
+
+/** --format, with --json as its short form. Undefined for a format chaff does not write. */
+const formatOf = (argv: readonly string[], context: GradeContext): Format | undefined => {
+  const written = context.flag(argv, "--format") ?? (argv.includes("--json") ? "json" : "text");
+  return isFormat(written) ? written : undefined;
+};
+
+/** The field naming each output's variant. Given on the command line, every line must have it; a field an item already uses cannot be one. */
+const variantFieldOf = (argv: readonly string[], context: GradeContext): VariantField | undefined => {
+  const key = context.flag(argv, "--variant-key");
+  if (key === undefined) return DEFAULT_VARIANT_FIELD;
+  return key === "" || ITEM_FIELDS.includes(key) ? undefined : { key, required: true };
+};
 
 const gradeTargets = (argv: readonly string[]): string[] =>
   argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.has(all[index - 1] ?? ""));
@@ -33,9 +56,10 @@ export type GradeContext = {
   readonly ui: UiLanguage;
 };
 
-const readItems = async (path: string, text: GradeText): Promise<readonly GradeItem[] | undefined> => {
+const readItems = async (path: string, variantField: VariantField, text: GradeText): Promise<readonly GradeItem[] | undefined> => {
   try {
-    const parsed = parseItems(await readDocumentFile(path), { isLanguage: (language) => packageFor(language) !== undefined, genres: GENRES });
+    const vocabulary = { isLanguage: (language: string) => packageFor(language) !== undefined, genres: GENRES };
+    const parsed = parseItems(await readDocumentFile(path), vocabulary, variantField);
     if ("items" in parsed) return parsed.items;
     parsed.problems.forEach((problem) => console.error(`${path}: ${text.problem(problem)}`));
   } catch (error) {
@@ -92,18 +116,44 @@ const writeResults = (path: string | undefined, results: readonly GradeResult[],
 /** The baseline compared with, when there is one: where it was read from and how this run moved against it. */
 type Compared = { readonly path: string; readonly comparison: Comparison } | undefined;
 
-const printSummary = (path: string, results: readonly GradeResult[], argv: readonly string[], compared: Compared, ui: UiLanguage): void => {
+/** What the summary is printed with: the format, the comparisons made, and the language of the outputs. */
+type Printing = { readonly format: Format; readonly compact: boolean; readonly ui: UiLanguage };
+
+const printJson = (results: readonly GradeResult[], variants: VariantComparison | undefined, compared: Compared): void => {
   const summary = summaryOf(results);
-  const text = GRADE_TEXT[ui];
-  const baselineText = BASELINE_TEXT[ui];
-  if (argv.includes("--json")) {
-    console.log(JSON.stringify(compared === undefined ? summary : { ...summary, baseline: compared.comparison }, null, 2));
-    return;
-  }
-  const compact = argv.includes("--compact");
-  console.log(compact ? renderCompact(path, results, summary, text) : renderSummary(path, summary, text));
+  const withVariants = variants === undefined ? summary : { ...summary, variants };
+  console.log(JSON.stringify(compared === undefined ? withVariants : { ...withVariants, baseline: compared.comparison }, null, 2));
+};
+
+const printText = (path: string, results: readonly GradeResult[], variants: VariantComparison | undefined, compared: Compared, printing: Printing): void => {
+  const summary = summaryOf(results);
+  const { compact, ui } = printing;
+  console.log(compact ? renderCompact(path, results, summary, GRADE_TEXT[ui]) : renderSummary(path, summary, GRADE_TEXT[ui]));
+  if (variants !== undefined) console.log(compact ? renderVariantsCompact(variants, VARIANT_TEXT[ui]) : `\n${renderVariants(variants, VARIANT_TEXT[ui])}`);
   if (compared === undefined) return;
+  const baselineText = BASELINE_TEXT[ui];
   console.log(compact ? renderComparisonCompact(compared.comparison, baselineText) : `\n${renderComparison(compared.path, compared.comparison, baselineText)}`);
+};
+
+const printSummary = (path: string, results: readonly GradeResult[], compared: Compared, printing: Printing): void => {
+  const variants = variantsOfRun(results);
+  if (printing.format === "json") printJson(results, variants, compared);
+  else if (printing.format === "markdown") {
+    const texts = { grade: GRADE_TEXT[printing.ui], variants: VARIANT_TEXT[printing.ui] };
+    console.log(renderMarkdown(path, summaryOf(results), { variants, baseline: compared?.comparison }, texts));
+  } else printText(path, results, variants, compared, printing);
+};
+
+type RunOptions = { readonly path: string; readonly format: Format; readonly variantField: VariantField };
+
+/** The file to grade and how to read and print it, or undefined after printing the usage. */
+const runOptionsOf = (argv: readonly string[], context: GradeContext): RunOptions | undefined => {
+  const [path, ...extra] = gradeTargets(argv);
+  const format = formatOf(argv, context);
+  const variantField = variantFieldOf(argv, context);
+  if (path !== undefined && extra.length === 0 && format !== undefined && variantField !== undefined) return { path, format, variantField };
+  console.error(GRADE_TEXT[context.ui].usage);
+  return undefined;
 };
 
 /** With a baseline, the exit code says whether this run regressed (spec §29.5); without one, whether every output passed. */
@@ -118,13 +168,11 @@ const exitCodeOf = (results: readonly GradeResult[], compared: Compared): number
  */
 export const runGrade = async (argv: readonly string[], context: GradeContext): Promise<number> => {
   const host = GRADE_TEXT[context.ui];
-  const [path, ...extra] = gradeTargets(argv);
-  if (path === undefined || extra.length > 0) {
-    console.error(host.usage);
-    return GRADE_EXIT.unreadable;
-  }
+  const options = runOptionsOf(argv, context);
+  if (options === undefined) return GRADE_EXIT.unreadable;
+  const { path } = options;
   const rubric = readRubric(context.config, host);
-  const items = rubric === undefined ? undefined : await readItems(path, host);
+  const items = rubric === undefined ? undefined : await readItems(path, options.variantField, host);
   const setup = items === undefined || rubric === undefined ? undefined : await setupFor(items, rubric.rubric, argv, context, host);
   if (setup === undefined || items === undefined) return GRADE_EXIT.unreadable;
   const baseline = await chooseBaseline(context.flag(argv, "--baseline"), setup.stamp, argv.includes("--allow-stamp-mismatch"), context.ui);
@@ -138,6 +186,6 @@ export const runGrade = async (argv: readonly string[], context: GradeContext): 
     results.map((result) => result.language),
     context.ui,
   );
-  printSummary(path, results, argv, compared, ui);
+  printSummary(path, results, compared, { format: options.format, compact: argv.includes("--compact"), ui });
   return exitCodeOf(results, compared);
 };

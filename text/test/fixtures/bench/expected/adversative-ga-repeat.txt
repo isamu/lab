@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  ga-twice  found
+ja/design  ga-twice  found
+ja/email  ga-twice  found
+ja/figures  ga-twice  found
+ja/itinerary  ga-twice  found
+ja/minutes  ga-twice  found
+ja/note  ga-twice  found
+ja/policy  ga-twice  found
+ja/press  ga-twice  found
+ja/proposal  ga-twice  found
+ja/quote  ga-twice  found
+ja/readme  ga-twice  found
+ja/requirements  ga-twice  found

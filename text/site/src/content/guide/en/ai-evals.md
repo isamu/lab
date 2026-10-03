@@ -187,6 +187,104 @@ Not compared with a.results.jsonl: the settings differ. A change of rules or set
 
 The run ends with exit code 2. Here the earlier run had `--experimental` and this one did not.
 
+## Comparing prompts or models side by side: variants
+
+`--baseline` compares one run with an earlier one. To compare several prompts or models in one run, put all their outputs in one file and label each line with its variant.
+Give the lines of the same task the same `id`.
+
+```json
+{"id": "q3", "variant": "prompt-a", "output": "# In short\n\nThe team answered 4,812 tickets, and the median first reply fell from 6 hours to 2.5 hours.\n…", "reference": "# Support report, third quarter\n…"}
+{"id": "q3", "variant": "prompt-b", "output": "# In short\n\nThe team answered 4,812 tickets, and first replies got much faster.\n…", "reference": "# Support report, third quarter\n…"}
+```
+
+`variants.jsonl` holds the two prompts' outputs for the three tasks of Examples 1 to 3.
+In `prompt-a`'s refund answer, the second quotation is the clause as written, "Shipping fees are not refunded."
+chaff prints the usual summary, then the variants side by side:
+
+```
+$ npx chaffjs grade variants.jsonl --experimental
+variants.jsonl: 6 outputs, 4 passed, 2 failed
+
+Failed outputs
+  ✗ q3 (prompt-b): facts.dropped 3 > 0, facts.added 1 > 0
+  ✗ refund (prompt-b): citations.failed 1 > 0
+…
+
+2 variants side by side: 3 outputs with an id every variant has
+                     prompt-a    prompt-b
+  Passed             3/3 (100%)  1/3 (33.3%)
+  Facts dropped      0           3
+  Facts added        0           1
+  Quotations failed  0/2         1/2
+
+Rule rates (per 1,000 words)
+                           prompt-a  prompt-b
+  ai-generated-composite   0.0       6.7
+  ai-tell                  0.0       6.7
+  closing-cliche           0.0       13.3
+  contraction-consistency  0.0       6.7
+  padded-intro             0.0       6.7
+
+2 outputs where pass or fail differs
+  ✗ q3: passed in prompt-a; failed in prompt-b (facts.dropped 3 > 0, facts.added 1 > 0)
+  ✗ refund: passed in prompt-a; failed in prompt-b (citations.failed 1 > 0)
+```
+
+How to read it:
+- Every column counts the same tasks: only an `id` that every variant answered, in the same language and genre. Any other id is listed under "Ids not compared", with the variants it is missing from.
+- "Quotations failed" is failed out of checked. Facts are counted as in the summary, leaving out the kinds the rubric allows.
+- When outputs carry `contexts`, an "Unsupported facts" row gives the facts found in no retrieved passage out of those checked.
+- With a `grade:` rubric, a "Penalty points" row adds up each variant's points.
+- The pass rate is a share of outputs, not a score. chaff still gives no mark out of a maximum.
+
+When the label is in another field, name it: `--variant-key model` or `--variant-key prompt`. Then every line must have that field.
+A line without a label in a labelled file, or an `id` twice in one variant, ends the run with exit code 2.
+The exit code is otherwise the same as without variants, and `--baseline` pairs each output with the same `id` and variant of the earlier run.
+
+For a CI log, `--compact` adds one line per disagreement:
+
+```
+$ npx chaffjs grade variants.jsonl --experimental --compact
+…
+disagree	q3	pass prompt-a	fail prompt-b
+disagree	refund	pass prompt-a	fail prompt-b
+2 outputs where pass or fail differs
+```
+
+For a pull request comment, `--format markdown` writes the same tables in Markdown. `--format json` adds a `variants` field to the summary.
+
+```
+$ npx chaffjs grade variants.jsonl --experimental --format markdown
+## chaff grade: variants.jsonl
+
+6 outputs, 4 passed, 2 failed
+…
+### 2 variants side by side: 3 outputs with an id every variant has
+
+|  | prompt-a | prompt-b |
+| --- | --- | --- |
+| Passed | 3/3 (100%) | 1/3 (33.3%) |
+| Facts dropped | 0 | 3 |
+| Facts added | 0 | 1 |
+| Quotations failed | 0/2 | 1/2 |
+…
+```
+
+In a harness, pass `variant` to `grade()` and hand the results to `compareVariants()`, which returns what `--format json` puts under `variants`:
+
+```js
+import { compareVariants, grade } from "chaffjs/grade";
+
+const results = [
+  await grade(answerA, { id: "q3", variant: "prompt-a", reference }),
+  await grade(answerB, { id: "q3", variant: "prompt-b", reference }),
+];
+const { columns, disagreements } = compareVariants(results);
+console.log(columns.map((column) => `${column.variant} ${column.passed}/${column.outputs}`)); // [ 'prompt-a 1/1', 'prompt-b 0/1' ]
+```
+
+`compareVariants({ "prompt-a": resultsA, "prompt-b": resultsB })` takes the results grouped by variant instead.
+
 ## Example 1: is a summary faithful?
 
 The source, `source.md`, is a short support report. Two models summarized it.
@@ -283,6 +381,63 @@ $ npx chaffjs cite policy.md quotes.json
 
 The run ends with exit code 1. `--format json` gives each quotation a `status` (`ok`, or why it failed) and the line where it was found.
 Spaces and full-width characters do not matter, but a changed word does. How addresses are read is in [Structure and quotations](./structure).
+
+## Is a RAG answer supported by its retrieved passages? `contexts`
+
+`citations` checks the quotations an answer claims. Often the answer claims none, and what you have is the passages the retriever handed the model.
+Put them in `contexts`, and chaff looks for each checkable fact of the answer in them: numbers, dates, times, URLs, code, names and quotations.
+It reads the facts as `compare` does, so `$12` in the answer and `$12` in a passage are the same fact however they are written.
+A quotation counts as supported only when some passage has it word for word.
+
+`rag.jsonl` holds three answers about one product, with the same two passages for the first two and none found for the third:
+
+```json
+{"id": "pricing", "output": "The Team plan costs $12 per user per month and includes 100 GB of storage per user. Support answers within 4 business hours.", "contexts": ["# Plans\n\nThe Team plan costs $12 per user per month, billed yearly.\nIt includes 100 GB of storage per user.", "# Support\n\nSupport answers within 4 business hours on the Team plan.\nThe help center moved to help.example.com on March 3, 2026."]}
+{"id": "pricing-wrong", "output": "The Team plan costs $15 per user per month and includes 100 GB of storage. The docs say \"support answers within one hour\". The help center moved on March 3, 2026. It is a good choice for most teams.", "contexts": ["…the same two passages…"]}
+{"id": "nothing-found", "output": "The Enterprise plan costs $40 per user per month.", "contexts": []}
+```
+
+```
+$ npx chaffjs grade rag.jsonl --out rag.results.jsonl
+Wrote one result per output: rag.results.jsonl (3 lines)
+rag.jsonl: 3 outputs, 1 passed, 2 failed
+
+Failed outputs
+  ✗ pricing-wrong: contexts.unsupported 2 > 0
+  ✗ nothing-found: contexts.unsupported 2 > 0
+
+Facts: 0 dropped, 0 added
+Quotations: 0 checked, 0 failed
+Contexts: 13 facts checked in 3 outputs, 4 in no passage (name 1, number 2, quote 1)
+…
+```
+
+The result line of `pricing-wrong` says which facts were found, in which passage (counted from 0), and which were not:
+
+```json
+"contexts": {"passages":2,"checked":6,
+ "supported":[{"kind":"date","text":"March 3, 2026","line":1,"passage":1},{"kind":"number","text":"100","line":1,"passage":0},…],
+ "unsupported":[{"kind":"number","key":"15 $","text":"15","line":1,"allowed":false},
+                {"kind":"quote","key":"support answers within one hour","text":"\"support answers within one hour\"","line":1,"allowed":false}],
+ "uncheckedSentences":1}
+```
+
+- `$15` is in no passage, and the quotation is not in any passage word for word. Without a `grade:` rubric, either one fails the output.
+- An empty `contexts` means retrieval found nothing, so every checked fact of `nothing-found` is unsupported. Leaving `contexts` out is different: the check does not run, and "not run" says so.
+- "It is a good choice for most teams." states no fact chaff can check. `uncheckedSentences` counts it, and "not run" lists it under `contexts`: whether a passage supports it needs reading.
+- A matching number is not a correct claim. An answer that puts a passage's number on the wrong thing still passes this check. Keep a model judge or a person for meaning.
+
+In a rubric, `contexts` sets the limit:
+
+```yaml
+grade:
+  contexts:
+    unsupported: 0 # facts allowed in no passage
+    allow_unsupported: [name] # kinds not counted
+    required: true # an output without contexts fails
+```
+
+`grade()` takes the passages as `contexts` too: `await grade(answer, { contexts: passages })`.
 
 ## Example 3: comparing two prompts on style
 

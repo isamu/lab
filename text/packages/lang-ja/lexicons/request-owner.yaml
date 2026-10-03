@@ -1,0 +1,39 @@
+# 誰がするかを言う語（人の呼び名・役割・部署）。人の名前は品詞（固有名詞）で読む。
+id: request-owner
+language: ja
+entries:
+  - pattern: 様
+  - pattern: さま
+  - pattern: さん
+  - pattern: 氏
+  - pattern: 各位
+  - pattern: 皆様
+  - pattern: 皆さま
+  - pattern: 皆さん
+  - pattern: 担当
+  - pattern: 部長
+  - pattern: 課長
+  - pattern: 係長
+  - pattern: 社長
+  - pattern: 室長
+  - pattern: 所長
+  - pattern: 事務局
+  - pattern: 窓口
+  - pattern: 責任者
+  - pattern: チーム
+  - pattern: リーダー
+  - pattern: 委員
+  - pattern: 幹事
+  - pattern: 当番
+  - pattern: 宛
+  - pattern: 各自
+  - pattern: ご自身
+  - pattern: 御自身
+  - pattern: 本人
+  - pattern: 訪問者
+  - pattern: 応募者
+  - pattern: 申請者
+  - pattern: 利用者
+  - pattern: 参加者
+  - pattern: 受講者
+  - pattern: 学生

@@ -138,9 +138,10 @@ describe("cross-document pass: stet and baseline", () => {
   it("the baseline shelves a finding by its file", async () => {
     const [a] = crossChecked([await checkOf("a.md", "beta\n", crossRule()), await checkOf("b.md", "beta\n", crossRule())], { [RULE]: recording([]) });
     const kept = a?.applied.kept ?? [];
-    const baseline: Baseline = { version: 1, created: "2026-10-03", entries: fingerprints("a.md", kept) };
-    assert.equal(splitByBaseline("a.md", kept, baseline).fresh.length, 0);
-    assert.equal(splitByBaseline("b.md", kept, baseline).fresh.length, kept.length);
+    const folder = process.cwd();
+    const baseline: Baseline = { version: 1, created: "2026-10-03", entries: fingerprints("a.md", kept, folder) };
+    assert.equal(splitByBaseline("a.md", kept, baseline, folder).fresh.length, 0);
+    assert.equal(splitByBaseline("b.md", kept, baseline, folder).fresh.length, kept.length);
   });
 });
 
