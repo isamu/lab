@@ -1,0 +1,10 @@
+table  9  9  0  0
+ja/figures  table-cell-blanked  found
+ja/itinerary  table-cell-blanked  found
+ja/minutes  table-cell-blanked  found
+ja/proposal  table-cell-blanked  found
+ja/readme  table-cell-blanked  found
+en/figures  table-cell-blanked  found
+en/itinerary  table-cell-blanked  found
+en/proposal  table-cell-blanked  found
+en/readme  table-cell-blanked  found
