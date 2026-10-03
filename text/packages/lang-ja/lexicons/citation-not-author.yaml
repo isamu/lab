@@ -1,0 +1,15 @@
+# 後ろに年が付いても著者ではない語（「（令和元年度 2019）」の年度、「（調査 2020）」）。引用の一人目がこれなら著者年方式の引用と読まない。
+id: citation-not-author
+language: ja
+entries:
+  - pattern: 年度
+  - pattern: 調査
+  - pattern: 西暦
+  - pattern: 平成
+  - pattern: 令和
+  - pattern: 昭和
+  - pattern: 改訂
+  - pattern: 改定
+  - pattern: 初版
+  - pattern: 創業
+  - pattern: 設立

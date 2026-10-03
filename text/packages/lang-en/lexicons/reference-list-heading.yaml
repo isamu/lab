@@ -1,0 +1,11 @@
+# The headings of a reference list. The entries under one are compared with the citations in the text, and citations
+# are not looked for inside it. Compared without case.
+id: reference-list-heading
+language: en
+entries:
+  - pattern: References
+  - pattern: Reference
+  - pattern: Bibliography
+  - pattern: Works Cited
+  - pattern: Literature Cited
+  - pattern: Cited Literature
