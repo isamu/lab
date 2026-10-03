@@ -41,8 +41,6 @@ by_genre:
   technical: { strict: 1, normal: 2, relaxed: 4 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
-off_for:
-  technical: measured by yarn rules:measure
 sources: [koyobun-2022, jtf-style-guide]
 
 group: consistency
