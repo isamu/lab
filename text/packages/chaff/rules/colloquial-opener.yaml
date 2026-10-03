@@ -45,6 +45,7 @@ level_meaning:
   ja: 話し言葉の接続詞で始まる文が {limit} 個あれば指摘
   en: reported from {limit} sentences opening with a spoken conjunction
 rewrite:
+  depth: light
   ja:
     direction: 文頭の話し言葉の接続詞を、同じ働きの書き言葉に替えてください（なので → そのため、でも → しかし、だけど → しかし）。
     pairs:

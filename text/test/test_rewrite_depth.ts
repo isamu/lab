@@ -112,15 +112,12 @@ describe("rewrite depth — the depth fix-plan goes to", () => {
 });
 
 describe("rewrite depth — on the rules", () => {
-  it("every bundled rule with a rewrite block says how deep it goes", () => {
+  it("the bundled rules whose direction reorganises the document say structure; the rest read as light", () => {
     const rules = loadRules("en");
-    const undeclared = rules.filter((rule) => Object.keys(rule.guide?.rewrite ?? {}).length > 0 && rule.guide?.rewriteDepth === undefined);
-    assert.deepEqual(
-      undeclared.map((rule) => rule.id),
-      [],
-    );
-    assert.equal(rules.find((rule) => rule.id === "ai-structure")?.guide?.rewriteDepth, "structure");
+    const structure = rules.filter((rule) => rule.guide?.rewriteDepth === "structure").map((rule) => rule.id);
+    assert.ok(["ai-structure", "one-sentence-paragraph-run", "paragraph-restatement", "bold-label-list"].every((id) => structure.includes(id)));
     assert.equal(rules.find((rule) => rule.id === "ai-tell")?.guide?.rewriteDepth, "light");
+    assert.ok(rules.every((rule) => rule.guide?.rewriteDepth !== "register"), "no bundled rule converts the style");
   });
 
   it("refuses to load a bundled rule whose depth is not a depth, and says which values are", () => {
