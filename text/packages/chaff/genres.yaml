@@ -149,6 +149,9 @@ groups:
       email-greeting-closing: off
       email-subject-length: off
       attachment-not-attached: off
+      # Defined terms and short names are a contract's apparatus: the legal genres check them.
+      defined-term-form: off
+      defined-name-repeated: off
       max-sentence-length: off # measured
       quote-style-consistency: off # measured
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
@@ -186,6 +189,9 @@ groups:
       email-greeting-closing: off
       email-subject-length: off
       attachment-not-attached: off
+      # Defined terms and short names are a contract's apparatus: the legal genres check them.
+      defined-term-form: off
+      defined-name-repeated: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
@@ -303,6 +309,9 @@ groups:
       email-greeting-closing: off
       email-subject-length: off
       attachment-not-attached: off
+      # Defined terms and short names are a contract's apparatus: the legal genres check them.
+      defined-term-form: off
+      defined-name-repeated: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -356,6 +365,9 @@ groups:
       email-greeting-closing: off
       email-subject-length: off
       attachment-not-attached: off
+      # Defined terms and short names are a contract's apparatus: the legal genres check them.
+      defined-term-form: off
+      defined-name-repeated: off
 
 genres:
   - id: technical/spec
@@ -447,6 +459,9 @@ genres:
       total-mismatch: normal
       dangling-figure-reference: normal
       date-range-reversed: normal
+      # A contract names each party and term once and uses that name: a term quoted again or a party written out in full is a slip.
+      defined-term-form: normal
+      defined-name-repeated: normal
   - id: legal/statute
     name: { ja: 法令・規程, en: Statute and regulation }
     summary:
@@ -470,6 +485,8 @@ genres:
       date-range-reversed: normal
       # A statute defines its 等 terms (以下「個人情報等」という) and uses them in its obligations.
       requirement-smell: off
+      # A regulation's guidelines and circulars quote a defined term to point at its definition (「個人情報」の定義).
+      defined-term-form: off
   - id: legal/judgment
     name: { ja: 判決, en: Court decision }
     summary:

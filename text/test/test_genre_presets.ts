@@ -200,6 +200,8 @@ const STRUCTURE_PRESET = [
   "dangling-reference",
   "date-range-reversed",
   "date-weekday-mismatch",
+  "defined-name-repeated",
+  "defined-term-form",
   "duplicate-definition",
   "numbering-gap",
   "total-mismatch",

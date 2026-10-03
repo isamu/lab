@@ -43,7 +43,7 @@ const findingsIn = (results: readonly SarifResult[], rule: string, file: string)
     });
 
 /** The genre the reference says its examples run with. An example that needs another names it in its config. */
-const EXAMPLE_GENRE = "business/report";
+export const EXAMPLE_GENRE = "business/report";
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -106,7 +106,7 @@ const PADDING: Readonly<Record<string, string>> = {
     .replaceAll(" \n\n ", "\n\n"),
 };
 
-const withPadding = (text: string, example: RuleExample, language: string): string =>
+export const withPadding = (text: string, example: RuleExample, language: string): string =>
   example.pad === true ? `${text.trimEnd()}\n\n${PADDING[language] ?? ""}\n` : text;
 
 const runExample = async (rule: string, language: string, example: RuleExample): Promise<ExampleOutcome> => {
