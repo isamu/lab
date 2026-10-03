@@ -1,0 +1,21 @@
+table  20  20  0  0
+ja/blog  toc-stray-ja  found
+ja/design  toc-stray-ja  found
+ja/figures  toc-stray-ja  found
+ja/itinerary  toc-stray-ja  found
+ja/minutes  toc-stray-ja  found
+ja/press  toc-stray-ja  found
+ja/proposal  toc-stray-ja  found
+ja/quote  toc-stray-ja  found
+ja/readme  toc-stray-ja  found
+ja/requirements  toc-stray-ja  found
+en/blog  toc-stray-en  found
+en/design  toc-stray-en  found
+en/figures  toc-stray-en  found
+en/itinerary  toc-stray-en  found
+en/minutes  toc-stray-en  found
+en/press  toc-stray-en  found
+en/proposal  toc-stray-en  found
+en/quote  toc-stray-en  found
+en/readme  toc-stray-en  found
+en/requirements  toc-stray-en  found
