@@ -14,12 +14,14 @@ export type GradeItem = {
   readonly citations?: readonly GradeCitation[] | undefined;
   readonly language?: string | undefined;
   readonly genre?: string | undefined;
+  /** The retrieved passages the output was meant to rest on. Undefined when not given; empty when retrieval found none. */
+  readonly contexts?: readonly string[] | undefined;
   /** The prompt, model or setting that produced this output. Outputs of several variants are compared on the same ids. */
   readonly variant?: string | undefined;
 };
 
 /** The fields an item already has a meaning for: none of them can name a variant. */
-export const ITEM_FIELDS: readonly string[] = ["id", "output", "reference", "sources", "citations", "language", "genre"];
+export const ITEM_FIELDS: readonly string[] = ["id", "output", "reference", "sources", "citations", "contexts", "language", "genre"];
 
 /** Which field names an output's variant, and whether every line must have it (the key was given on the command line). */
 export type VariantField = { readonly key: string; readonly required: boolean };
@@ -35,6 +37,7 @@ export type ItemProblemKind =
   | "not-text-map"
   | "not-citations"
   | "citations-without-sources"
+  | "not-contexts"
   | "duplicate-id"
   | "no-variant"
   | "unknown-source"
@@ -89,6 +92,13 @@ const citationsOf = (raw: unknown, sources: Readonly<Record<string, string>>, li
   };
 };
 
+/** The retrieved passages: an array of strings. An empty array is a retrieval that found nothing, not a missing field. */
+const contextsOf = (raw: unknown, line: number): Parsed<readonly string[] | undefined> => {
+  if (raw === undefined) return { value: undefined };
+  const valid = Array.isArray(raw) && raw.every((passage) => typeof passage === "string");
+  return valid ? { value: raw.map(String) } : { problem: { kind: "not-contexts", line } };
+};
+
 const sourcesOf = (raw: unknown, line: number): Parsed<Readonly<Record<string, string>>> => {
   if (raw === undefined) return { value: {} };
   return isTextMap(raw) ? { value: raw } : { problem: { kind: "not-text-map", line, detail: "sources" } };
@@ -134,8 +144,11 @@ const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVoca
   if ("problem" in sources) return sources;
   const citations = citationsOf(raw["citations"], sources.value, line);
   if ("problem" in citations) return citations;
+  const contexts = contextsOf(raw["contexts"], line);
+  if ("problem" in contexts) return contexts;
+  const passages = contexts.value === undefined ? {} : { contexts: contexts.value };
   const labelled = variant.value === undefined ? {} : { variant: variant.value };
-  return { value: { id, output, ...fields.value, sources: sources.value, citations: citations.value, ...labelled } };
+  return { value: { id, output, ...fields.value, sources: sources.value, citations: citations.value, ...passages, ...labelled } };
 };
 
 /** One item from a value already parsed, as `grade()` receives it; `line` is 0 when it came from no file. */

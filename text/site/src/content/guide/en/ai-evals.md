@@ -233,6 +233,7 @@ Rule rates (per 1,000 words)
 How to read it:
 - Every column counts the same tasks: only an `id` that every variant answered, in the same language and genre. Any other id is listed under "Ids not compared", with the variants it is missing from.
 - "Quotations failed" is failed out of checked. Facts are counted as in the summary, leaving out the kinds the rubric allows.
+- When outputs carry `contexts`, an "Unsupported facts" row gives the facts found in no retrieved passage out of those checked.
 - With a `grade:` rubric, a "Penalty points" row adds up each variant's points.
 - The pass rate is a share of outputs, not a score. chaff still gives no mark out of a maximum.
 
@@ -380,6 +381,63 @@ $ npx chaffjs cite policy.md quotes.json
 
 The run ends with exit code 1. `--format json` gives each quotation a `status` (`ok`, or why it failed) and the line where it was found.
 Spaces and full-width characters do not matter, but a changed word does. How addresses are read is in [Structure and quotations](./structure).
+
+## Is a RAG answer supported by its retrieved passages? `contexts`
+
+`citations` checks the quotations an answer claims. Often the answer claims none, and what you have is the passages the retriever handed the model.
+Put them in `contexts`, and chaff looks for each checkable fact of the answer in them: numbers, dates, times, URLs, code, names and quotations.
+It reads the facts as `compare` does, so `$12` in the answer and `$12` in a passage are the same fact however they are written.
+A quotation counts as supported only when some passage has it word for word.
+
+`rag.jsonl` holds three answers about one product, with the same two passages for the first two and none found for the third:
+
+```json
+{"id": "pricing", "output": "The Team plan costs $12 per user per month and includes 100 GB of storage per user. Support answers within 4 business hours.", "contexts": ["# Plans\n\nThe Team plan costs $12 per user per month, billed yearly.\nIt includes 100 GB of storage per user.", "# Support\n\nSupport answers within 4 business hours on the Team plan.\nThe help center moved to help.example.com on March 3, 2026."]}
+{"id": "pricing-wrong", "output": "The Team plan costs $15 per user per month and includes 100 GB of storage. The docs say \"support answers within one hour\". The help center moved on March 3, 2026. It is a good choice for most teams.", "contexts": ["…the same two passages…"]}
+{"id": "nothing-found", "output": "The Enterprise plan costs $40 per user per month.", "contexts": []}
+```
+
+```
+$ npx chaffjs grade rag.jsonl --out rag.results.jsonl
+Wrote one result per output: rag.results.jsonl (3 lines)
+rag.jsonl: 3 outputs, 1 passed, 2 failed
+
+Failed outputs
+  ✗ pricing-wrong: contexts.unsupported 2 > 0
+  ✗ nothing-found: contexts.unsupported 2 > 0
+
+Facts: 0 dropped, 0 added
+Quotations: 0 checked, 0 failed
+Contexts: 13 facts checked in 3 outputs, 4 in no passage (name 1, number 2, quote 1)
+…
+```
+
+The result line of `pricing-wrong` says which facts were found, in which passage (counted from 0), and which were not:
+
+```json
+"contexts": {"passages":2,"checked":6,
+ "supported":[{"kind":"date","text":"March 3, 2026","line":1,"passage":1},{"kind":"number","text":"100","line":1,"passage":0},…],
+ "unsupported":[{"kind":"number","key":"15 $","text":"15","line":1,"allowed":false},
+                {"kind":"quote","key":"support answers within one hour","text":"\"support answers within one hour\"","line":1,"allowed":false}],
+ "uncheckedSentences":1}
+```
+
+- `$15` is in no passage, and the quotation is not in any passage word for word. Without a `grade:` rubric, either one fails the output.
+- An empty `contexts` means retrieval found nothing, so every checked fact of `nothing-found` is unsupported. Leaving `contexts` out is different: the check does not run, and "not run" says so.
+- "It is a good choice for most teams." states no fact chaff can check. `uncheckedSentences` counts it, and "not run" lists it under `contexts`: whether a passage supports it needs reading.
+- A matching number is not a correct claim. An answer that puts a passage's number on the wrong thing still passes this check. Keep a model judge or a person for meaning.
+
+In a rubric, `contexts` sets the limit:
+
+```yaml
+grade:
+  contexts:
+    unsupported: 0 # facts allowed in no passage
+    allow_unsupported: [name] # kinds not counted
+    required: true # an output without contexts fails
+```
+
+`grade()` takes the passages as `contexts` too: `await grade(answer, { contexts: passages })`.
 
 ## Example 3: comparing two prompts on style
 

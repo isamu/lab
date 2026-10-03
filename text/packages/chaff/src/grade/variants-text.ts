@@ -8,6 +8,7 @@ export type VariantText = {
   readonly factsAdded: string;
   readonly citationsFailed: string;
   readonly citationsCell: (failed: number, checked: number) => string;
+  readonly unsupportedFacts: string;
   readonly penalty: string;
   readonly ratesHeading: (unit: string) => string;
   readonly unit: Readonly<Record<"char" | "word", string>>;
@@ -37,6 +38,7 @@ export const VARIANT_TEXT: Texts<VariantText> = {
     factsAdded: "足された事実",
     citationsFailed: "外れた引用",
     citationsCell: (failed, checked) => `${String(failed)}/${String(checked)}`,
+    unsupportedFacts: "一節に無い事実",
     penalty: "減点の和",
     ratesHeading: (unit) => `ルールごとの率（1,000 ${unit}あたり）`,
     unit: { char: "字", word: "語" },
@@ -64,6 +66,7 @@ export const VARIANT_TEXT: Texts<VariantText> = {
     factsAdded: "Facts added",
     citationsFailed: "Quotations failed",
     citationsCell: (failed, checked) => `${String(failed)}/${String(checked)}`,
+    unsupportedFacts: "Unsupported facts",
     penalty: "Penalty points",
     ratesHeading: (unit) => `Rule rates (per 1,000 ${unit})`,
     unit: { char: "characters", word: "words" },

@@ -214,6 +214,7 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      orthographic-variant: off
       translationese-density: off
       unknown-word: off
       redundant-expression: off
@@ -232,6 +233,9 @@ groups:
       # Older printed texts set the dash as "--" and titles in capitals.
       hyphen-as-dash: off
       all-caps-shouting: off
+      # Dialect and old usage ("an hospital") are the work's voice, and dialogue leans on "very".
+      article-sound: off
+      very-adjective: off
       # A paper's citations, figures and abstract: only the academic paper genre turns these on.
       citation-style-mix: off
       citation-reference-mismatch: off
@@ -265,6 +269,8 @@ groups:
       double-negative: off
       ra-nuki: off
       requirement-smell: off
+      article-sound: off
+      very-adjective: off
       homophone-slip: off
       wordy-phrase: off
       weasel-word: off
