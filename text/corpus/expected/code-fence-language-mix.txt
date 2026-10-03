@@ -1,0 +1,5 @@
+genai-web-procedure  1
+kep-2214-indexed-job  1
+ruby-3-4-0-released-ja  1
+textlint-preset-ja-technical-writing-readme  1
+typescript-5-4-release-notes  1

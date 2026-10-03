@@ -1,0 +1,6 @@
+# "So," opening a sentence: a spoken filler carried into writing. Only with the comma: "So far", "So the board
+# decided" and "So that" open a sentence on their own terms and are not here. Read by sentence-initial-so.
+id: so-opener
+language: en
+entries:
+  - pattern: So,

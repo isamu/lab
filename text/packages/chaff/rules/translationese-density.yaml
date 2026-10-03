@@ -1,0 +1,62 @@
+id: translationese-density
+layer: L2
+status: experimental
+how_to_find: phrase-density
+word_list: translationese
+uses: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 翻訳調が多い
+  en: Too much translationese
+
+why:
+  ja: 「〜を可能にする」「重要な役割を果たす」「〜されることができる」「あなたは」のように英語の構文をそのまま写した言い回しは、一つなら読めますが、重なると文書全体が翻訳の文のように読め、読み手は英語に戻して意味を取ることになります。機械翻訳や英語で考えた下書き、生成した文章に多い形です。一つ一つは誤りではないので、文書の長さあたりの数で見ます。言い回しの一覧は語彙表 translationese にあり、語ごとに日本語として素直な言い方の例が付いています。
+  en: Phrases that copy English syntax into Japanese (を可能にする for "enable", 重要な役割を果たす for "play an important role", されることができる, あなたは for "you") read fine once, but stacked they make the whole document read like a translation, and the reader translates it back to get the meaning. They are common in machine translation, drafts thought out in English, and generated text. None of them is wrong alone, so the rule counts them per length of the document. The phrases are in the lexicon translationese, each with a plainer Japanese way to say it.
+
+message:
+  ja: 「{matched}」など、翻訳調の言い回しが 1000 字あたり {density} 個あります（{limit} 個まで）
+  en: '"{matched}" and other translated phrasings: {density} per 1000 characters (limit {limit})'
+
+how_to_fix:
+  ja: 日本語として素直な言い方に直してください（〜を可能にする → 〜ができる、あなたは → 主語を省く）。
+  en: Say it the way Japanese would (を可能にする → ができる; drop あなたは).
+
+# 人の書いた Qiita の日本語の記事では、1000 字あたり 1 個を超えるものがほとんど無い（測り方は PR に書いた）。
+levels: { strict: 0, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: ai-tells
+summary:
+  ja: 「〜を可能にする」「重要な役割を果たす」「あなたは」のような、英語の構文を写した言い回しが多い所
+  en: Japanese that copies English syntax (を可能にする, 重要な役割を果たす, あなたは) too often
+example:
+  ja:
+    pad: true
+    before: |
+      この機能は、あなたが設定を共有することを可能にします。キャッシュは速度において重要な役割を果たします。あなたは設定画面からいつでも変えることができます。
+    after: |
+      この機能を使うと、設定を共有できます。速度にはキャッシュが大きく効きます。設定は設定画面からいつでも変えられます。
+
+not_flagged:
+  ja: 一つ一つは誤りではないので、短い文書（500 字未満）は測りません。人の書いた技術記事でもふつうに使う言い回し（〜を提供する、〜に焦点を当てる、〜することができる）は数えません。文学のジャンルでは既定で止めています（人物を「彼女は」と呼ぶのは小説の書き方です）。
+  en: None of these is wrong alone, so documents shorter than 500 characters are not measured. Phrasings common in human technical writing (を提供する, に焦点を当てる, することができる) are not counted. The literature preset turns it off, since a novel calls its characters 彼女.
+level_meaning:
+  ja: 1000 字あたり翻訳調の言い回し {limit} 個まで
+  en: up to {limit} translated phrasings per 1000 characters
+rewrite:
+  ja:
+    direction: 英語の構文を写した言い回しを、日本語として素直な言い方に直してください。語彙表の語ごとの書き換え（〜を可能にする → 〜ができる）に従い、主語の「あなたは」「彼女は」は省くか名前で呼びます。書いてある事実は変えません。
+    pairs:
+      - before: この機能は、あなたが設定を共有することを可能にします。
+        after: この機能を使うと、設定を共有できます。
+      - before: キャッシュは速度において重要な役割を果たします。
+        after: 速度にはキャッシュが大きく効きます。
+    keep:
+      - 書いてある事実、数、条件
+      - 文書の丁寧さ（です・ます）
+    avoid:
+      - 素直にするついでに中身を削る
+      - 英語の語順のまま語だけを入れ替える

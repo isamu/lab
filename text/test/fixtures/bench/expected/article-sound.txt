@@ -1,0 +1,14 @@
+table  13  13  0  0
+en/blog  article-a-hour  found
+en/design  article-a-hour  found
+en/email  article-a-hour  found
+en/figures  article-a-hour  found
+en/itinerary  article-a-hour  found
+en/minutes  article-a-hour  found
+en/note  article-a-hour  found
+en/policy  article-a-hour  found
+en/press  article-a-hour  found
+en/proposal  article-a-hour  found
+en/quote  article-a-hour  found
+en/readme  article-a-hour  found
+en/requirements  article-a-hour  found

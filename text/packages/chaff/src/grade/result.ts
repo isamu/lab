@@ -30,6 +30,21 @@ export type FailedCitation = {
 
 export type GradeCitations = { readonly checked: number; readonly failed: readonly FailedCitation[] };
 
+/** A fact of the output that a retrieved passage states, and the first passage (0-based) that does. */
+export type SupportedFact = { readonly kind: AtomKind; readonly text: string; readonly line: number; readonly passage: number };
+
+/** The output's checkable facts against the item's retrieved passages (`contexts`). */
+export type GradeContexts = {
+  readonly passages: number;
+  /** Facts of the kinds checked against the passages: numbers, dates, times, URLs, code, names and quotations. */
+  readonly checked: number;
+  readonly supported: readonly SupportedFact[];
+  /** Facts no passage states; a quotation not found word for word in any passage. */
+  readonly unsupported: readonly GradeFact[];
+  /** Sentences that state no checkable fact: whether a passage supports them needs reading, which chaff does not do. */
+  readonly uncheckedSentences: number;
+};
+
 /** A rule, or a check (`compare`, `cite`), that did not run on this output, and why. */
 export type NotRunEntry = { readonly rule: string; readonly reason: string };
 
@@ -44,6 +59,8 @@ export type GradeScore = { readonly penalty: number; readonly items: readonly Sc
 
 export type GradeResult = {
   readonly id: string;
+  /** The item's variant label, when it had one. */
+  readonly variant?: string | undefined;
   readonly language: string;
   readonly genre: string;
   readonly size: OutputSize;
@@ -54,6 +71,8 @@ export type GradeResult = {
   readonly facts: GradeFacts | null;
   /** Null when the item gave no citations. */
   readonly citations: GradeCitations | null;
+  /** Only when the item gave contexts, so results of items without them keep their shape. */
+  readonly contexts?: GradeContexts | undefined;
   /** Only with a `grade:` rubric. */
   readonly score?: GradeScore | undefined;
   readonly pass: boolean;

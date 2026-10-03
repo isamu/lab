@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  ten-many  found
+ja/design  ten-many  found
+ja/email  ten-many  found
+ja/figures  ten-many  found
+ja/itinerary  ten-many  found
+ja/minutes  ten-many  found
+ja/note  ten-many  found
+ja/policy  ten-many  found
+ja/press  ten-many  found
+ja/proposal  ten-many  found
+ja/quote  ten-many  found
+ja/readme  ten-many  found
+ja/requirements  ten-many  found

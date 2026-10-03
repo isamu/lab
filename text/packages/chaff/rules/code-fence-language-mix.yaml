@@ -1,0 +1,170 @@
+id: code-fence-language-mix
+layer: L1
+status: experimental
+how_to_find: code-fence-language
+requires: [markdown]
+severity: info
+
+name:
+  ja: 言語名の無いコードブロックが混ざっている
+  en: Code blocks with and without a language
+
+why:
+  ja: コードブロックに言語名（```bash、```json）を付けると、読み手の画面で色が付き、何の言語かがひと目で分かります。ほとんどのブロックに付けているのに一部だけ無いと、そのブロックだけ色が付かず、付け忘れに見えます。どちらに揃えるかは決めず、少ないほうを指します（markdownlint の MD040 は、すべてのブロックに言語名を求めます）。
+  en: "A language on a code block (```bash, ```json) gives it highlighting on the reader's screen and says at a glance what it is. When most blocks name their language and a few do not, those few show plain and look forgotten. chaff does not decide which way to go; it points at the fewer (markdownlint's MD040 asks for a language on every block)."
+
+message:
+  ja: このコードブロックだけ言語名がありません（言語名のあるブロック {tagged} 個）
+  en: This code block names no language, unlike the others ({tagged} blocks name one)
+
+how_to_fix:
+  ja: 「```」の後ろに言語名を書いてください。出力や平文なら「text」と書きます。
+  en: Add the language after the opening ```. For output or plain text, write "text".
+
+levels: { strict: 3, normal: 2, relaxed: 1 }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: ほとんどのコードブロックに言語名があるのに、一部だけ無い所
+  en: A code block without a language among blocks that name theirs
+example:
+  ja:
+    config: { genre: docs/manual }
+    before: |
+      # 使い方
+
+      インストールします。
+
+      ```bash
+      npm install chaffjs
+      ```
+
+      設定を書きます。
+
+      ```yaml
+      genre: technical/readme
+      ```
+
+      確かめます。
+
+      ```
+      npx chaffjs README.md
+      ```
+    after: |
+      # 使い方
+
+      インストールします。
+
+      ```bash
+      npm install chaffjs
+      ```
+
+      設定を書きます。
+
+      ```yaml
+      genre: technical/readme
+      ```
+
+      確かめます。
+
+      ```bash
+      npx chaffjs README.md
+      ```
+  en:
+    config: { genre: docs/manual }
+    before: |
+      # Usage
+
+      Install it.
+
+      ```bash
+      npm install chaffjs
+      ```
+
+      Write the settings.
+
+      ```yaml
+      genre: technical/readme
+      ```
+
+      Check a file.
+
+      ```
+      npx chaffjs README.md
+      ```
+    after: |
+      # Usage
+
+      Install it.
+
+      ```bash
+      npm install chaffjs
+      ```
+
+      Write the settings.
+
+      ```yaml
+      genre: technical/readme
+      ```
+
+      Check a file.
+
+      ```bash
+      npx chaffjs README.md
+      ```
+
+not_flagged:
+  ja: 字下げだけのコードブロック、引用の中のブロックは見ません。言語名の無いブロックが {limit} 個を超えるとき、または言語名のあるブロックより多いときは、使い分けとみなして指しません。
+  en: Indented code blocks and blocks inside a quotation are not read. When more than {limit} blocks lack a language, or they are as many as those with one, it is taken as a choice and not reported.
+level_meaning:
+  ja: 言語名の無いブロックが {limit} 個以下で、ある方より少ないとき指摘
+  en: reported when {limit} or fewer blocks lack a language and they are fewer than those with one
+rewrite:
+  ja:
+    direction: 言語名の無いブロックに、中身の言語名を付けてください。コマンドなら bash、設定なら yaml や json、出力や平文なら text です。中身から言語が決められなければ text にします。コードは変えません。
+    pairs:
+      - before: |
+          ```
+          npx chaffjs README.md
+          ```
+        after: |
+          ```bash
+          npx chaffjs README.md
+          ```
+      - before: |
+          ```
+          3 findings
+          ```
+        after: |
+          ```text
+          3 findings
+          ```
+    keep:
+      - ブロックの中身
+    avoid:
+      - 中身と違う言語名を付ける
+  en:
+    direction: Give each block without a language the language of its content. Commands are bash, settings yaml or json, output or plain text text. If the content does not settle it, use text. Do not change the code.
+    pairs:
+      - before: |
+          ```
+          npx chaffjs README.md
+          ```
+        after: |
+          ```bash
+          npx chaffjs README.md
+          ```
+      - before: |
+          ```
+          3 findings
+          ```
+        after: |
+          ```text
+          3 findings
+          ```
+    keep:
+      - the block's content
+    avoid:
+      - naming a language the content is not in

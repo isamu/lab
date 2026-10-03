@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/site  one-page-long-vowel-ja  found
+en/site  one-page-hyphen-en  found

@@ -1,0 +1,59 @@
+id: teki-overuse
+layer: L3
+status: experimental
+how_to_find: sentence-word-count
+word_list: teki-suffix
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 「〜的」の多用
+  en: Too many 〜的 words in one sentence
+
+why:
+  ja: 「効果的」「具体的」「積極的」のような「〜的」は、何がどうなのかを言わずに性質だけを指します。一文にいくつも重なると、文がぼやけて中身が見えなくなります。「目的」「的確」のように一語になったものは数えません。
+  en: In Japanese, words made with the suffix 的 (効果的, 具体的) name a quality without saying what or how. Several in one sentence blur it. Words where 的 is part of the word (目的, 的確) are not counted.
+
+message:
+  ja: 一文に「〜的」が {count} 個あります（{limit} 個まで）
+  en: "{count} 〜的 words in one sentence (limit {limit})"
+
+how_to_fix:
+  ja: 「〜的」の所に、何がどうなのかを具体的な言葉で書いてください（効果的に → 半分の時間で）。
+  en: Say what the 〜的 word stands for (効果的に → in half the time).
+
+levels: { strict: 1, normal: 2, relaxed: 3 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 一文に「効果的」「具体的」「積極的」のような「〜的」がいくつも重なった所
+  en: A Japanese sentence stacking several 〜的 words (効果的, 具体的)
+example:
+  ja:
+    before: |
+      効果的かつ効率的な施策を、積極的に展開します。
+    after: |
+      問い合わせを半分に減らす施策を、四月から全店で始めます。
+
+not_flagged:
+  ja: 接尾の「的」だけを数えます。「目的」「的確」「標的」のように一語になったものと、鉤括弧で引いたものの中は数えません。
+  en: Only the suffix 的 is counted; words such as 目的 and 的確, and anything in 「」, are not.
+level_meaning:
+  ja: 一文の「〜的」{limit} 個まで
+  en: up to {limit} 〜的 words in a sentence
+rewrite:
+  ja:
+    direction: 「〜的」を、本文にある具体的な事柄（数、期間、対象、やり方）に置き換えてください。本文に無ければ作らず、「〜的」を一つ残すか、書き手に聞きます。
+    pairs:
+      - before: 効果的かつ効率的な施策を、積極的に展開します。
+        after: 問い合わせを半分に減らす施策を、四月から全店で始めます。
+      - before: 抜本的な見直しにより、根本的かつ継続的な改善を図ります。
+        after: 手順を一から見直し、毎月の点検で改善を続けます。
+    keep:
+      - 文が言っている目的と対象
+    avoid:
+      - 「〜的」を別の抽象語（効率のよい、前向きな）に替えるだけ
+      - 本文に無い数や期限を作る

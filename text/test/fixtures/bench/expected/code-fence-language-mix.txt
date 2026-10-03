@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/readme  fence-untagged-ja  found
+en/readme  fence-untagged-en  found

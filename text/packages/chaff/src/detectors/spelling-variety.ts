@@ -8,10 +8,10 @@ import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
  */
 const SPELLING_LISTS = "spelling-";
 
-type Spelling = { readonly family: string; readonly pattern: boolean; readonly other: string };
+export type Spelling = { readonly family: string; readonly pattern: boolean; readonly other: string };
 
 /** 語（小文字）から、その語がどの組のどちらの綴りか。 */
-const spellingsOf = (lexicons: ProseDocument["lexicons"]): ReadonlyMap<string, Spelling> =>
+export const spellingsOf = (lexicons: ProseDocument["lexicons"]): ReadonlyMap<string, Spelling> =>
   new Map(
     Object.entries(lexicons)
       .filter(([id]) => id.startsWith(SPELLING_LISTS))
