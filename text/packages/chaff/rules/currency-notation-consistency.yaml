@@ -1,0 +1,77 @@
+id: currency-notation-consistency
+layer: L2
+status: stable
+how_to_find: currency-notation
+severity: info
+
+name:
+  ja: 通貨の書き方が混ざっている
+  en: A currency written two ways
+
+why:
+  ja: 同じ通貨の金額を「1,000円」と「¥1,000」、「$20」と「USD 20」のように二通りに書くと、読み手は別の通貨か、別の扱いの金額かと迷います。見積もりや資料を寄せ集めたときに起きます。どの書き方が正しいかは決めず、通貨ごとに文書の中で少ないほうを指します。
+  en: When one currency is written two ways in one document ("$20" and "USD 20", "1,000円" and "¥1,000"), the reader wonders whether a different currency or a different kind of amount is meant. It happens when quotes and notes are pasted together. chaff does not decide which way is right; for each currency it points at the way the document uses less.
+
+message:
+  ja: 「{written}」と書いています（この文書はこの通貨をふつう「{usual}」のように書きます。{of} 箇所のうち {count} 箇所が違う）
+  en: '"{written}" here, where the document usually writes this currency like "{usual}" ({count} of {of})'
+
+how_to_fix:
+  ja: 文書の多いほうの書き方に合わせてください。チームで決めているなら、STYLE.md に書いておくと迷いません。
+  en: Match the way the rest of the document writes the currency. If the team has decided, write it in the style guide.
+
+# 少ないほうが、その通貨の金額の何パーセントまでなら「混ざっている」と見るか。これを超えたら、文書が使い分けている。
+levels: { strict: 49, normal: 34, relaxed: 20 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「1,000円」と「¥1,000」、「$20」と「USD 20」のように、一つの文書で同じ通貨の金額を二通りに書いている所
+  en: One currency written two ways in one document, such as "$20" and "USD 20", or "1,000円" and "¥1,000"
+example:
+  ja:
+    before: |
+      基本料金は 3,000円、追加料金は 500円、送料は 800円 です。割引は ¥200 です。
+    after: |
+      基本料金は 3,000円、追加料金は 500円、送料は 800円 です。割引は 200円 です。
+  en:
+    before: |
+      The base fee is $300, the add-on is $50 and shipping is $20. The discount is USD 10.
+    after: |
+      The base fee is $300, the add-on is $50 and shipping is $20. The discount is $10.
+
+not_flagged:
+  ja: 通貨ごとに比べるので、円とドルが並ぶのは混ざりではありません。少ないほうがその通貨の金額の三分の一を超える文書は、使い分けている（表は USD、本文は $）と読んで言いません。二つの書き方が同じ数のときも言いません。コードの中は読みません。
+  en: Each currency is compared with itself, so dollars beside yen is not a mix. When the less common way is over a third of that currency's amounts, the document is read as using both on purpose (USD in tables, $ in prose) and nothing is reported; nor when the two ways are equally common. Code is not read.
+level_meaning:
+  ja: 少ないほうの書き方が、その通貨の金額の {limit}% 以下のとき指摘
+  en: reported when the less common way is {limit}% of that currency's amounts or less
+
+rewrite:
+  ja:
+    direction: その通貨の金額を、文書で多いほうの書き方にそろえてください。数と桁はそのまま残します。
+    pairs:
+      - before: 送料は 800円 です。割引は ¥200 です。
+        after: 送料は 800円 です。割引は 200円 です。
+      - before: 月額 $20、年額 USD 200 です。
+        after: 月額 $20、年額 $200 です。
+    keep:
+      - 金額の数と桁
+      - どの通貨か
+    avoid:
+      - 別の通貨に換算してしまう
+      - 表の通貨の書き方まで本文に合わせて崩す
+  en:
+    direction: Write the currency's amounts the way the document mostly does. Keep the numbers as they are.
+    pairs:
+      - before: Shipping is $20. The discount is USD 10.
+        after: Shipping is $20. The discount is $10.
+      - before: The fee is 500 yen, or ¥450 if paid early.
+        after: The fee is 500 yen, or 450 yen if paid early.
+    keep:
+      - the numbers and their magnitude
+      - which currency each amount is in
+    avoid:
+      - converting an amount to another currency
+      - changing the way a table writes it to match the prose
