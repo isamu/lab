@@ -18,6 +18,8 @@ export type GradeSummary = {
   readonly rules: Readonly<Record<string, RuleSummary>>;
   readonly facts: { readonly dropped: Readonly<Record<string, number>>; readonly added: Readonly<Record<string, number>> };
   readonly citations: { readonly checked: number; readonly failed: number };
+  /** Only when some output had contexts: how many, their facts checked, and the facts no passage states by kind. */
+  readonly contexts?: { readonly outputs: number; readonly checked: number; readonly unsupported: Readonly<Record<string, number>> } | undefined;
   readonly notRun: readonly (NotRunEntry & { readonly outputs: number })[];
   /** The penalty points of every output, added up. Only with a `grade:` rubric. */
   readonly penalty?: number | undefined;
@@ -72,6 +74,18 @@ const penaltyOf = (results: readonly GradeResult[]): { readonly penalty?: number
   return scored.length === 0 ? {} : { penalty: scored.reduce((sum, points) => sum + points, 0) };
 };
 
+const contextsOf = (results: readonly GradeResult[]): Pick<GradeSummary, "contexts"> => {
+  const read = results.flatMap((result) => (result.contexts === undefined ? [] : [result.contexts]));
+  if (read.length === 0) return {};
+  return {
+    contexts: {
+      outputs: read.length,
+      checked: read.reduce((sum, contexts) => sum + contexts.checked, 0),
+      unsupported: kindsOf(read.flatMap((contexts) => contexts.unsupported)),
+    },
+  };
+};
+
 export const summaryOf = (results: readonly GradeResult[]): GradeSummary => {
   const sizes = sizesOf(results);
   return {
@@ -88,6 +102,7 @@ export const summaryOf = (results: readonly GradeResult[]): GradeSummary => {
       checked: results.reduce((sum, result) => sum + (result.citations?.checked ?? 0), 0),
       failed: results.reduce((sum, result) => sum + (result.citations?.failed.length ?? 0), 0),
     },
+    ...contextsOf(results),
     notRun: notRunOf(results),
     ...penaltyOf(results),
     stamp: results[0]?.stamp,

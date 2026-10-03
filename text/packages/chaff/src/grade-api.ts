@@ -21,6 +21,7 @@ import { loadStyles } from "./style-load.ts";
 export type {
   FailedCitation,
   GradeCitations,
+  GradeContexts,
   GradeFact,
   GradeFacts,
   GradeFinding,
@@ -29,6 +30,7 @@ export type {
   NotRunEntry,
   ScoreItem,
   Stamp,
+  SupportedFact,
 } from "./grade/result.ts";
 export type { OutputSize } from "./grade/rates.ts";
 export { toScorer, type ChaffScore } from "./grade/scorer.ts";
@@ -42,6 +44,8 @@ export type GradeOptions = {
   readonly sources?: Readonly<Record<string, string>>;
   /** What the output quoted. `source` may be left out when there is one source. */
   readonly citations?: readonly { readonly source?: string; readonly address: string; readonly quote: string }[];
+  /** The retrieved passages the output was meant to rest on: each fact of the output is looked for in them. */
+  readonly contexts?: readonly string[];
   readonly language?: string;
   readonly genre?: string;
   /** Run the experimental rules too, as --experimental does. chaff.yaml's `experimental` when left out. */
@@ -149,6 +153,7 @@ export const grade = async (output: string, options: GradeOptions = {}): Promise
     reference: options.reference,
     sources: options.sources,
     citations: options.citations,
+    contexts: options.contexts,
     language: options.language,
     genre: options.genre,
   };

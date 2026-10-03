@@ -36,6 +36,11 @@ const sum = (counts: Readonly<Record<string, number>>): number => Object.values(
 const factsLine = (summary: GradeSummary, text: GradeText): string =>
   text.facts(sum(summary.facts.dropped), sum(summary.facts.added), kindsLine(summary.facts.dropped), kindsLine(summary.facts.added));
 
+const contextsLine = (summary: GradeSummary, text: GradeText): string[] =>
+  summary.contexts === undefined
+    ? []
+    : [text.contexts(summary.contexts.outputs, summary.contexts.checked, sum(summary.contexts.unsupported), kindsLine(summary.contexts.unsupported))];
+
 const stampLines = (summary: GradeSummary, text: GradeText): string[] =>
   summary.stamp === undefined ? [] : ["", `${text.stamp}: ${summary.stamp.chaff}`, `  rules ${summary.stamp.rules}`, `  settings ${summary.stamp.settings}`];
 
@@ -51,6 +56,7 @@ export const renderSummary = (path: string, summary: GradeSummary, text: GradeTe
     "",
     factsLine(summary, text),
     text.citations(summary.citations.checked, summary.citations.failed),
+    ...contextsLine(summary, text),
     ...(summary.penalty === undefined ? [] : [text.penalty(summary.penalty)]),
     ...block(text.notRunHeading(summary.notRun.length), table(summary.notRun.map((entry) => [entry.rule, text.inOutputs(entry.outputs), entry.reason]))),
     ...stampLines(summary, text),
