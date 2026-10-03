@@ -39,7 +39,7 @@ const TEXT: Texts<{
       "決まりごとに、summary と level_meaning が合う rule を選ぶ。数の決まりは levels の数と比べ、合う段階を選ぶか数を直接書く。",
       "文書の種類が分かれば genre を決める。rules[].genres で、そのジャンルで動くか・止まるかを確かめる。",
       "表記の決まりは prefer、社内用語は jargon、必須の見出しは required_sections に書く。",
-      "既定と同じものは書かない。書いたら npx chaff explain <rule-id> と、決まりに沿った短い見本で確かめる。",
+      "既定と同じものは書かない。書いたら npx chaffjs explain <rule-id> と、決まりに沿った短い見本で確かめる。",
     ],
   },
   en: {
@@ -56,7 +56,7 @@ const TEXT: Texts<{
       "For each requirement, pick the rule whose summary and level_meaning match. For a number, compare it with the rule's levels and pick a level, or write the number itself.",
       "If the kind of document is known, set genre, and check rules[].genres for whether each rule runs or is off in it.",
       "Put spellings under prefer, in-house words under jargon, and required headings under required_sections.",
-      "Leave out anything at its default. Then check each rule with npx chaff explain <rule-id> and a short sample that follows the note.",
+      "Leave out anything at its default. Then check each rule with npx chaffjs explain <rule-id> and a short sample that follows the note.",
     ],
   },
 };
@@ -212,7 +212,7 @@ export const rulesJson = (
       })),
       how_to_write_settings_from_a_style_note: text.fromStyleNote,
       how_to_change: {
-        by_command: ["relax", "strict", "off"].map((command) => `npx chaff ${command} <rule-id> --why "${text.reason}"`),
+        by_command: ["relax", "strict", "off"].map((command) => `npx chaffjs ${command} <rule-id> --why "${text.reason}"`),
         by_file: text.byFile,
         options_by_file: text.optionsByFile,
       },

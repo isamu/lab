@@ -23,10 +23,10 @@ $ npx chaffjs init --genre legal/contract
   …/.gitignore  作成しました
 
 ジャンルは legal/contract にしました。違う場合は chaff.yaml の genre を直してください。
-  一覧: npx chaff genres
+  一覧: npx chaffjs genres
 
 次:
-  npx chaff .            この場所の Markdown を全部見る
+  npx chaffjs .            この場所の Markdown を全部見る
 ```
 
 画面のパスは短くしてあります。作られる `chaff.yaml` の中身は次のとおりです。
@@ -46,9 +46,9 @@ $ npx chaffjs init --genre legal/contract
 #
 # コマンドでも変更できます。理由がコメントとして自動で残ります。
 #
-#   npx chaff relax bold-density --why "図の説明で太字を多用するため"
-#   npx chaff explain bold-density        そのルールの意図を読む
-#   npx chaff rules --json                AI に設定を書かせるときに渡す
+#   npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
+#   npx chaffjs explain bold-density        そのルールの意図を読む
+#   npx chaffjs rules --json                AI に設定を書かせるときに渡す
 
 # この場所に置く文書の種類（契約書・利用規約・プライバシーポリシー）。ほかの種類: npx chaffjs genres
 genre: legal/contract
@@ -180,7 +180,7 @@ $ npx chaffjs explain max-sentence-length
 
   いまは normal です。
 
-  変える:  npx chaff relax max-sentence-length --why "理由"
+  変える:  npx chaffjs relax max-sentence-length --why "理由"
 ```
 
 同じ `normal` でも、ジャンルによって数字が違います。
@@ -448,7 +448,7 @@ rules:
 <!-- chaff-screen: typo -->
 ```
 $ npx chaffjs article.md
-chaff: …/chaff.yaml: max-sentense-length というルールはありません（npx chaff rules --json で一覧が出ます）
+chaff: …/chaff.yaml: max-sentense-length というルールはありません（npx chaffjs rules --json で一覧が出ます）
 chaff: …/chaff.yaml: bold-density の値 "loose" は読めません（strict / normal / relaxed / off か、正の数）
 …
 ```

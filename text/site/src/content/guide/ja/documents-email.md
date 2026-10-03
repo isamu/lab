@@ -98,7 +98,7 @@ mail.md   blog/tech · 日本語   ジャンルは既定から
 ```
 $ npx chaffjs mail.md --genre business/email --experimental --compact
 
-mail.md   business/email · 日本語   ジャンルは--genreから
+mail.md   business/email · 日本語   ジャンルは --genre から
 
   10:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
                   sasete-itadaku

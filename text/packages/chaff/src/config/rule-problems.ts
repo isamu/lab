@@ -9,7 +9,7 @@ const TEXT: Texts<{
   readonly numberOnSeverity: (where: string, id: string) => string;
 }> = {
   ja: {
-    unknown: (where, id) => `${where}: ${id} というルールはありません（npx chaff rules --json で一覧が出ます）`,
+    unknown: (where, id) => `${where}: ${id} というルールはありません（npx chaffjs rules --json で一覧が出ます）`,
     unreadable: (where, id, value) => `${where}: ${id} の値 ${value} は読めません（strict / normal / relaxed / off か、正の数）`,
     numberOnSemantic: (where, id) =>
       `${where}: ${id} は意味を読む検査なので数値の上限はありません。normal として動きます（strict / normal / relaxed / off で書いてください）`,
@@ -17,7 +17,7 @@ const TEXT: Texts<{
       `${where}: ${id} には数の上限がありません。normal として動きます（段階は指摘の重さを変えます。relaxed で一段軽く、off で止まります）`,
   },
   en: {
-    unknown: (where, id) => `${where}: there is no rule named ${id} (npx chaff rules --json lists them)`,
+    unknown: (where, id) => `${where}: there is no rule named ${id} (npx chaffjs rules --json lists them)`,
     unreadable: (where, id, value) => `${where}: cannot read ${value} as the level of ${id} (strict / normal / relaxed / off, or a positive number)`,
     numberOnSemantic: (where, id) => `${where}: ${id} reads meaning and has no numeric limit; it runs as normal (write strict / normal / relaxed / off)`,
     numberOnSeverity: (where, id) =>
