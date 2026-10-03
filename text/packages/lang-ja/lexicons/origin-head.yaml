@@ -1,0 +1,54 @@
+# 起点の「より」に続く語。yori-as-from が読む。
+# head: 始まる・送る・来ることを言う語（4月1日より開始、担当者よりご連絡、東京より参りました）。
+#   名詞の head は、object の語か「する・いたす」が続くときだけ当てる（受付を開始、開始します）。
+#   「昨年より販売が増えた」の「販売」は比べられている名詞なので当てない。
+# 「増える」「多い」のように比較に続く語は入れない。
+id: origin-head
+language: ja
+entries:
+  - pattern: 開始
+    group: head
+  - pattern: 始まる
+    group: head
+  - pattern: 始める
+    group: head
+  - pattern: 受付
+    group: head
+  - pattern: 実施
+    group: head
+  - pattern: 施行
+    group: head
+  - pattern: 適用
+    group: head
+  - pattern: 運用
+    group: head
+  - pattern: 販売
+    group: head
+  - pattern: 発売
+    group: head
+  - pattern: 提供
+    group: head
+  - pattern: 配信
+    group: head
+  - pattern: 公開
+    group: head
+  - pattern: 募集
+    group: head
+  - pattern: 発送
+    group: head
+  - pattern: 送付
+    group: head
+  - pattern: 連絡
+    group: head
+  - pattern: 案内
+    group: head
+  - pattern: 報告
+    group: head
+  - pattern: 参る
+    group: head
+  - pattern: 届く
+    group: head
+  - pattern: 出発
+    group: head
+  - pattern: を
+    group: object

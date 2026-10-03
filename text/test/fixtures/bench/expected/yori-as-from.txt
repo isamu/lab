@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/design  yori-origin  found
+ja/email  yori-origin  found
+ja/figures  yori-origin  found
+ja/itinerary  yori-origin  found
+ja/minutes  yori-origin  found
+ja/note  yori-origin  found
+ja/policy  yori-origin  found
+ja/press  yori-origin  found
+ja/proposal  yori-origin  found
+ja/quote  yori-origin  found
+ja/readme  yori-origin  found
+ja/requirements  yori-origin  found

@@ -38,6 +38,9 @@ const KEEPS_ONE: ReadonlySet<string> = new Set(["cushion-phrase-density", "exces
 /** Rules that count their word list's words in a sentence (読点, 的): an after keeps a few, under the limit. */
 const COUNTS_ITS_WORDS: ReadonlySet<string> = new Set(["max-ten", "teki-overuse", "adversative-ga-repeat", "demonstrative-opener-run"]);
 
+/** Rules whose word list names the context around a finding (する after 〜たり, 開始 after より), which an after keeps. */
+const LISTS_ITS_CONTEXT: ReadonlySet<string> = new Set(["tari-unpaired", "yori-as-from"]);
+
 const MIN_PAIRS = 2;
 const MAX_PAIRS = 3;
 const READER_LANGUAGES = ["ja", "en"];
@@ -107,7 +110,7 @@ describe("rule rewrite — the direction chaff fix-plan hands a rewriter", () =>
   });
 
   it("no pair's after holds a phrase the rule's own word list flags, unless the direction keeps one", () => {
-    const relapsed = rules.filter((rule) => !KEEPS_ONE.has(rule.id) && !COUNTS_ITS_WORDS.has(rule.id)).flatMap(relapsesOf);
+    const relapsed = rules.filter((rule) => !KEEPS_ONE.has(rule.id) && !COUNTS_ITS_WORDS.has(rule.id) && !LISTS_ITS_CONTEXT.has(rule.id)).flatMap(relapsesOf);
     assert.deepEqual(relapsed, []);
   });
 });

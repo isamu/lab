@@ -79,6 +79,8 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
+      # Articles end 〜する。〜する。 by form; the same ending in a row is the drafting style.
+      repeated-sentence-ending: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -241,6 +243,11 @@ groups:
       wordy-phrase: off
       weasel-word: off
       sentence-initial-so: off
+      # Spoken 全然大丈夫, なので and より in a character's voice; classical verse has a たり that does not list.
+      adverb-without-negation: off
+      colloquial-opener: off
+      yori-as-from: off
+      tari-unpaired: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -283,6 +290,10 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
+      # Spoken Japanese says 全然大丈夫, opens with なので and greets with より参りました.
+      adverb-without-negation: off
+      colloquial-opener: off
+      yori-as-from: off
 
 genres:
   - id: technical/spec
