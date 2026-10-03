@@ -24,13 +24,13 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs enable <rule>` | 試験中のルールを 1 つだけ動かします（`chaff.yaml` に `<rule>: normal` と書きます）。[設定](./configuration#試験中のルールを-1-つだけ動かす) を見てください |
 | `npx chaffjs baseline <dir>` | いまある指摘を棚上げします |
 | `npx chaffjs suppressions <dir>` | `stet` で黙らせている指摘を数えます |
-| `npx chaffjs tree <file>` | 文書を番地の付いた木にします |
+| `npx chaffjs tree <file>` | 文書を番地の付いた木にします。`--format sexp` か `--format json` で形を選びます |
 | `npx chaffjs cite <原文> <引用.json>` | 回答の引用が原文にあるかを確かめます |
 | `npx chaffjs compare <前> <後>` | 書き換えで事実（数・日付・URL・コード・名前・引用など）が落ちても足されてもいないかを確かめます |
 | `npx chaffjs facts <file>` | `compare` が照合する事実を、書き直す前の控えとして一覧にします |
 | `npx chaffjs outline <file> [<後>]` | 見出しの構成を出し、形（見出しの数・節の平均の長さ・箇条書きの割合・太字）を測り、構成を人の記事と比べます。2 つなら前と後を並べます |
-| `npx chaffjs fix-plan <file>` | 書き直す人や AI に渡す「直す計画」を出します。指摘をルールごとにまとめ、直す方向と、直したあとの確かめのコマンドを付けます |
-| `npx chaffjs grade <items.jsonl>` | model の出力を JSONL のまま採点します（指摘の率・事実・引用・合否）。何も送りません |
+| `npx chaffjs fix-plan <file>` | 書き直す人や AI に渡す「直す計画」を出します。指摘をルールごとにまとめ、直す方向と、直したあとの確かめのコマンドを付けます。`--json` で JSON に、`--depth` で書き直してよい深さを決めます |
+| `npx chaffjs grade <items.jsonl>` | model の出力を JSONL のまま採点します（指摘の率・事実・引用・合否）。何も送りません。`--out <results.jsonl>` で出力ごとの結果を書き、`--json` でまとめを JSON で出します |
 | `npx chaffjs skill` | Claude Code の skill を入れます。`--global` を付けると `~/.claude/` に入れます |
 | `npx chaffjs feedback <file> --rule <rule>` | 誤った指摘や見逃しの報告の下書きを作ります。何も送りません |
 | `npx chaffjs test <file\|dir>...` | 意味を読む検査も動かします。API key が要ります |
@@ -464,8 +464,8 @@ after.md の構成: 見出し 5、節の平均 101 字、箇条書き 0%、太�
 chaff は書き直しません。どう直すかを示すだけです。
 
 ```bash
-npx chaffjs fix-plan article.md --experimental           # 直す計画を Markdown で
-npx chaffjs fix-plan article.md --experimental --json    # 同じものを JSON で
+npx chaffjs fix-plan article.md           # 直す計画を Markdown で
+npx chaffjs fix-plan article.md --json    # 同じものを JSON で
 npx chaffjs fix-plan article.md --depth light            # 構成は残す計画
 ```
 
