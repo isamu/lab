@@ -22,6 +22,12 @@ export type Reasons = {
   readonly oneDocument: string;
 };
 
+/** A plugin's word list is named <plugin>/<list> (@scope/foo/list too); a language package's has no slash. */
+const pluginListOf = (list: string): { readonly plugin: string; readonly name: string } | undefined => {
+  const slash = list.lastIndexOf("/");
+  return slash === -1 ? undefined : { plugin: list.slice(0, slash), name: list.slice(slash + 1) };
+};
+
 const CAPABILITY_NAME: Texts<Readonly<Record<string, string>>> = {
   ja: { pos: "品詞解析", lemma: "原形" },
   en: { pos: "part-of-speech tagging", lemma: "lemmas" },
@@ -41,7 +47,10 @@ export const REASONS: Texts<Reasons> = {
     unreadStructure: (clauses, units) =>
       `条項の番号が本文に ${String(clauses)} 個あるのに、番号として読めたのは ${String(units)} 個のため（深い字下げや、行が本文につながった文書）`,
     noDetector: (name) => `検出器 ${name} がないため`,
-    noLexicon: (language, list) => `${language} の語彙表 ${list} が無いため`,
+    noLexicon: (language, list) => {
+      const owner = pluginListOf(list);
+      return owner === undefined ? `${language} の語彙表 ${list} が無いため` : `プラグイン ${owner.plugin} に ${language} の語彙表 ${owner.name} が無いため`;
+    },
     noHeadings: "表題より下の見出しが無いため",
     patternTimeout: (budgetMs) => `正規表現が ${String(budgetMs)} ms で終わらなかったため（chaff.yaml の pattern を単純にしてください）`,
     notMarkdown: "Markdown の文書ではないため",
@@ -60,7 +69,10 @@ export const REASONS: Texts<Reasons> = {
     unreadStructure: (clauses, units) =>
       `the text has ${String(clauses)} clause numbers but only ${String(units)} ${formFor(units, "was read as a numbered line", "were read as numbered lines")} (deep indents, or lines run into the text)`,
     noDetector: (name) => `no detector named ${name}`,
-    noLexicon: (language, list) => `the ${language} package has no word list ${list}`,
+    noLexicon: (language, list) => {
+      const owner = pluginListOf(list);
+      return owner === undefined ? `the ${language} package has no word list ${list}` : `the plugin ${owner.plugin} has no ${language} word list ${owner.name}`;
+    },
     noHeadings: "the document has no headings below its title",
     patternTimeout: (budgetMs) => `the pattern did not finish within ${String(budgetMs)} ms (simplify the pattern in chaff.yaml)`,
     notMarkdown: "the document is not Markdown",

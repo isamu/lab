@@ -1,0 +1,5 @@
+# Contractions and their formal forms (rewrite).
+- { pattern: "don't", rewrite: do not }
+- { pattern: "can't", rewrite: cannot }
+- { pattern: "won't", rewrite: will not }
+- { pattern: "it's", rewrite: it is }

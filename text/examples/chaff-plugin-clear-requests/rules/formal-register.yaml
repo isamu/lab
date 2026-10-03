@@ -1,0 +1,36 @@
+# Casual forms in a document the team writes formally. Fixing one is a word; fixing the document is converting its
+# register, so the rewrite reaches depth register: chaff fix-plan lists it apart unless --depth register is given.
+id: formal-register
+type: words
+word_list: casual-forms
+name: { ja: くだけた言い方, en: A casual form }
+why:
+  ja: 社外に出す文書は、改まった言い方で揃えるのがこのチームの決まりです。くだけた言い方が混ざると、誰に向けた文書かがぶれます。
+  en: This team writes outside documents formally. A casual form in one leaves the reader unsure who it addresses.
+how_to_fix: { ja: 改まった言い方に置き換えます。, en: Use the formal form. }
+message:
+  ja: 「{matched}」は「{preferred}」と書きます
+  en: 'Write "{preferred}", not "{matched}"'
+level: info
+use_for: [business]
+group: consistency
+summary: { ja: 改まった文書に混ざった、くだけた言い方, en: A casual form in a formal document }
+example:
+  ja: { before: その日は出席できないけど、資料は送ります。, after: その日は出席できませんが、資料は送ります。 }
+  en: { before: We don't ship on Fridays., after: We do not ship on Fridays. }
+rewrite:
+  depth: register
+  ja:
+    direction: 文書全体を改まった言い方に揃えます。指された語だけでなく、同じ調子の文も合わせて直します。
+    pairs:
+      - { before: 出席できないけど、資料は送ります。, after: 出席できませんが、資料は送ります。 }
+      - { before: これじゃない資料が届きました。, after: これではない資料が届きました。 }
+    keep: [事実と数, 書き手の確かさ]
+    avoid: [敬語を重ねる（「させていただきます」を足す）]
+  en:
+    direction: Bring the whole document to the formal register, not only the flagged word.
+    pairs:
+      - { before: "We don't ship on Fridays.", after: We do not ship on Fridays. }
+      - { before: "It's due on Monday.", after: It is due on Monday. }
+    keep: [facts and numbers, how sure the writer is]
+    avoid: [stiffening every sentence into the passive]
