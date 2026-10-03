@@ -1,0 +1,21 @@
+# シェルのコマンドを書くコードブロックの言語名（```bash、```console）。この言語のブロックどうしで、プロンプト（$ npm install）の有無を比べる。
+# 大文字と小文字は区別しない。
+id: shell-fence-language
+language: ja
+entries:
+  - pattern: sh
+  - pattern: bash
+  - pattern: shell
+  - pattern: zsh
+  - pattern: fish
+  - pattern: ksh
+  - pattern: console
+  - pattern: shell-session
+  - pattern: sh-session
+  - pattern: shellsession
+  - pattern: terminal
+  - pattern: powershell
+  - pattern: pwsh
+  - pattern: ps1
+  - pattern: cmd
+  - pattern: bat

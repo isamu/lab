@@ -1,0 +1,9 @@
+# The prompt a shell command is written after, followed by a space ($ npm install, PS> Get-Item). "#" is left out: in a
+# shell block it is far more often a comment than a root prompt.
+id: shell-prompt
+language: en
+entries:
+  - pattern: $
+  - pattern: "%"
+  - pattern: PS>
+  - pattern: ❯

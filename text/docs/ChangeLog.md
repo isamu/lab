@@ -2,7 +2,49 @@
 
 Newest first.
 
-## Unreleased
+## 0.20.0 — 2026-10-03
+
+chaff checks far more kinds of mistakes. Contradiction engines compare facts, totals, units, durations, relative dates,
+references and definitions inside one document, and a cross-document pass compares the files of one run. Rules for
+spelling, misconversion, idioms, redundancy, translationese, vague words and links, blanks, missing units and
+years, and many consistency checks (dates, numbers, headings, tables, person, orthography) were added. Genre checks
+cover academic papers. `yarn rules:measure` measures each rule on human documents; the default placement it drives
+lands in the next release.
+
+`chaff grade` grades model outputs deterministically for AI evals: a `grade:` rubric, `--baseline` regressions,
+variants (prompts or models) side by side, and an answer's facts checked against the retrieved passages. `chaffjs/grade`
+exposes the same to eval frameworks, with examples for promptfoo, autoevals, evalite, Langfuse, DeepEval, Ragas,
+Inspect AI and OpenAI Evals.
+
+### Commands and settings
+
+- `chaff grade`, the `grade:` rubric, `--baseline`, variants side by side and `contexts` (#504 #508 #514 #518 #522 #577 #578).
+- `chaff outline` structure block and the structure measures with a human baseline (#511 #512); `fix-plan` structure targets (#513).
+- `chaff enable <rule>` (#537); `include:` and `--include`, and YAML files checked by their string values (#533).
+- `compare --distinct` lists a cut heading (#486). A chaff.yaml that is not YAML names the file, line and column (#529).
+- A baseline shelves the same findings on every OS (#572).
+
+### Rules (experimental)
+
+- Contradictions: fact-conflict, summary-fact-mismatch, unit-mismatch, duration-mismatch, elapsed-years-mismatch,
+  relative-date-mismatch, reference-title-mismatch, reference-topic-missing, absolute-exception (#489 #493 #497 #501 #505 #524).
+- Across files: cross-doc-broken-link, cross-doc-term-variant (#558 #559 #560).
+- Sentences and paragraphs: bracket-nesting, clause-chain, topic-predicate-distance, one-sentence-paragraph-run,
+  paragraph-restatement, max-ten, teki-overuse, adversative-ga-repeat, demonstrative-opener-run (#502 #506 #525 #554).
+- Words: known-misspelling, misconversion, unknown-word, idiom-misuse, redundant-expression, translationese-density,
+  wordy-phrase, weasel-word, homophone-slip, sentence-initial-so, doubled-nado, vague-word-density, katakana-density,
+  article-sound, very-adjective, orthographic-variant (#490 #494 #530 #531 #532 #546 #547 #549 #553 #557).
+- Consistency: person-consistency, number-style-consistency, table-header-variant, date-format-consistency,
+  heading-numbering-mix, list-item-form-mix (#515 #520 #521 #523 #536 #544).
+- Shape and blanks: no-lead, title-length, empty-table-cell, empty-list-item, number-without-unit, date-without-year,
+  vague-link-text, unfilled-placeholder reads TODO-style values (#509 #534 #535 #550 #551).
+- Academic papers: citation-style-mix, citation-reference-mismatch, figure-reference-order, abstract-length (#563).
+- Earlier in this cycle: emoji-heading and chat-citation-residue, below.
+
+### Docs
+
+- The npm README explains chaff as a linter and unit tests for prose, and shows how to write your own preset (#527).
+- Every guide screen is checked against chaff's real output, and its count lines are generated (#564).
 
 ### New rule: `chat-citation-residue`, marks a pasted chat answer leaves (experimental)
 
