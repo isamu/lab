@@ -142,6 +142,7 @@ groups:
       figure-reference-order: off
       abstract-length: off
       max-sentence-length: off # measured
+      quote-style-consistency: off # measured
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }

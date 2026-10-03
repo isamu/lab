@@ -1,6 +1,6 @@
 id: quote-style-consistency
 layer: L1
-status: experimental
+status: stable
 how_to_find: mark-consistency
 word_list: quote-style
 languages: [en]
