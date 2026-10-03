@@ -11,6 +11,9 @@ import { runCli } from "../test/cli-run.ts";
 
 const BEFORE = "before.md";
 const AFTER = "after.md";
+/** The third file of a rule that compares documents: before and after are each compared with it (and with each other). Its name
+ * sorts first, so a message that names a file of the usual way names this one. */
+const OTHER = "a.md";
 const SARIF = "out.sarif";
 const ARGS = [BEFORE, AFTER, "--experimental", "--compact", "--sarif", SARIF];
 
@@ -101,8 +104,10 @@ const runExample = async (rule: string, language: string, example: RuleExample):
     "chaff.yaml": configOf(language, example),
     [BEFORE]: withPadding(example.before, example, language),
     [AFTER]: withPadding(example.after, example, language),
+    ...(example.other === undefined ? {} : { [OTHER]: example.other }),
   };
-  const run = await runCli(files, ARGS, language === "ja" ? "ja_JP.UTF-8" : "en_US.UTF-8");
+  const args = example.other === undefined ? ARGS : [OTHER, ...ARGS];
+  const run = await runCli(files, args, language === "ja" ? "ja_JP.UTF-8" : "en_US.UTF-8");
   const sarif: unknown = JSON.parse(readFileSync(join(run.dir, SARIF), "utf8"));
   rmSync(run.dir, { recursive: true, force: true });
   const results = resultsOf(sarif);

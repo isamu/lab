@@ -110,6 +110,7 @@ chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
 ```
 $ npx chaffjs tree draft.txt
 (doc :language "ja" :path "draft.txt" :profile "statute" :line 1
+…
 ```
 
 違うときは `profile` に書きます。`none` と書くと、内容からも選びません。
@@ -164,6 +165,27 @@ $ npx chaffjs explain max-sentence-length
 同じ `normal` でも、ジャンルによって数字が違います。
 数字ではなく言葉で書くのは、ジャンルに合った数字を chaff に選ばせるためです。
 
+## 試験中のルールを 1 つだけ動かす
+
+試験中のルールは、既定では動きません。
+`rules` に名前を書くと、そのルールだけが動きます。
+`--experimental` は、試験中のルールをすべて一度に動かします。
+
+```yaml
+rules:
+  announced-count-mismatch: normal
+```
+
+`enable` は、`relax` と同じように、ルールの説明のコメントを付けてこの行を書きます。
+
+```
+$ npx chaffjs enable announced-count-mismatch
+announced-count-mismatch を normal にしました（…/chaff.yaml）
+```
+
+検査は、動かしたルールを一度だけ言います（`試験中の rule を 1 件、設定により有効にしています: announced-count-mismatch`）。
+止まっている試験中のルールの `explain` と、動いていないルールの一覧にも、同じコマンドが出ます。
+
 ## 数えるもののないルール
 
 番号の抜けや、日付と曜日の食い違いは、あるか無いかだけです。数える上限がありません。
@@ -179,11 +201,12 @@ $ npx chaffjs explain max-sentence-length
 
 ```
 $ npx chaffjs explain numbering-gap --genre legal/statute
-（略）
+…
   設定できる値（数える上限は無く、指摘の重さが変わります）:
   → normal   エラー
     relaxed  注意
     off      見ない
+…
 ```
 
 見なくてよいときは `off` で止めます。
@@ -387,13 +410,13 @@ npx chaffjs rules --json         いまの設定を JSON で出す
 `now` が、いま実際に効いている値です。
 `level_sets` は、段階が何を変えるかです。`limit` は数える上限、`severity` は指摘の重さです。
 数えるもののないルールでは、`levels` と `now` に数の代わりに重さ（`error` / `warning` / `info`）が出ます。
-試験中のルールなら、`now` に動いていない理由と動かしかたが出ます。
+試験中のルールなら、`now` に動いていない理由と、そのルールだけを動かすコマンドが出ます。`doubled-word` なら次のとおりです。
 
 ```json
   "now": {
     "level": "off",
     "why_off": "experimental な rule は既定で動かさない",
-    "turn_on_with": "npx chaff lint --experimental"
+    "turn_on_with": "npx chaffjs enable doubled-word"
   }
 ```
 
@@ -407,10 +430,12 @@ rules:
   bold-density: loose
 ```
 
+<!-- chaff-screen: typo -->
 ```
 $ npx chaffjs article.md
 chaff: …/chaff.yaml: max-sentense-length というルールはありません（npx chaff rules --json で一覧が出ます）
 chaff: …/chaff.yaml: bold-density の値 "loose" は読めません（strict / normal / relaxed / off か、正の数）
+…
 ```
 
 警告が出たら、`chaff.yaml` の綴りと値を直します。

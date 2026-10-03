@@ -4,7 +4,8 @@ import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runCli } from "./cli-run.ts";
-import { allRulesRun } from "../scripts/corpus-findings.ts";
+import { allRulesRun, runResults } from "../scripts/corpus-findings.ts";
+import { siteOf } from "../scripts/bench-sites.ts";
 import { MUTATIONS } from "../scripts/bench-mutations.ts";
 import { contextOf, runsOn, samplesOf, teamOf, type Sample } from "../scripts/bench-samples.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -102,8 +103,31 @@ const benchRenderings = async (): Promise<BenchRun> => {
   return { rendered: runs.flatMap((run) => run.rendered), missed: runs.flatMap((run) => run.missed) };
 };
 
+/** Each seeded mistake of a rule that compares files, planted in the bench's site of each language it can go in. */
+const siteRenderings = async (): Promise<BenchRun> => {
+  const planted = MUTATIONS.flatMap((mutation) =>
+    LANGUAGES.filter((language) => mutation.languages.includes(language)).flatMap((language) => {
+      const site = siteOf(language);
+      const plant = site === undefined ? undefined : mutation.site?.(site.files);
+      return site === undefined || plant === undefined ? [] : [{ mutation, site, plant }];
+    }),
+  );
+  const runs = await Promise.all(
+    planted.map(async ({ mutation, site, plant }) => {
+      const { results, rules } = await runResults(plant.files, site.language, site.genre);
+      const result = results.get(plant.path);
+      const where = `${site.name} ${mutation.id}`;
+      const found = result?.findings.some((finding) => finding.rule === mutation.rule) ?? false;
+      return { rendered: result === undefined ? [] : renderedFor(result, rules, site.language, where), missed: found ? [] : [where] };
+    }),
+  );
+  return { rendered: runs.flatMap((run) => run.rendered), missed: runs.flatMap((run) => run.missed) };
+};
+
 describe("no rendered finding keeps a placeholder (the bench's seeded mistakes)", async () => {
-  const { rendered, missed } = await benchRenderings();
+  const runs = [await benchRenderings(), await siteRenderings()];
+  const rendered = runs.flatMap((run) => run.rendered);
+  const missed = runs.flatMap((run) => run.missed);
   const covered = new Set(rendered.map((entry) => entry.rule.id));
 
   it("covers every rule the bench plants a mistake for, and the rules whose how_to_fix has a placeholder", () => {

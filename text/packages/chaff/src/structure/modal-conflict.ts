@@ -10,7 +10,7 @@ export type ModalStatement = { readonly offset: number; readonly type: string; r
 
 export type ModalConflict = { readonly statement: ModalStatement; readonly earlier: ModalStatement };
 
-const CONTENT: ReadonlySet<string> = new Set(["NOUN", "PROPN", "VERB", "ADJ"]);
+export const CONTENT: ReadonlySet<string> = new Set(["NOUN", "PROPN", "VERB", "ADJ"]);
 
 /** 中身の語がこれより少ない文（"You must not."）は、何を決めているかが文の外にあるので比べない。 */
 const MIN_CONTENT_WORDS = 2;

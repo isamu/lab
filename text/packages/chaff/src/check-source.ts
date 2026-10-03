@@ -6,10 +6,12 @@ import { limitsFor } from "./config/style.ts";
 import { rulesOf } from "./custom/load.ts";
 import { guessLanguage } from "./detect.ts";
 import { buildDocument, teamRules } from "./document.ts";
-import type { ProseDocument, RuleDefinition } from "./plugin.ts";
+import type { CrossDetector, ProseDocument, RuleDefinition } from "./plugin.ts";
 import { profileFor } from "./profile/for-file.ts";
 import { resolveGenre, type ResolvedGenre } from "./resolve-genre.ts";
-import { neededBy, runRulesWith, type RunResult } from "./run.ts";
+import { neededBy, runRulesWith, type RunContext, type RunResult } from "./run.ts";
+import { runCrossRules } from "./cross-run.ts";
+import { CROSS_DETECTORS } from "./detectors/index.ts";
 import { applySuppressions, type Applied } from "./stet.ts";
 
 /** A document's language when nothing names one for this run: its by_path entry, chaff.yaml's language, then a guess from the text. */
@@ -25,6 +27,8 @@ export type SourceCheck = {
   readonly genre: ResolvedGenre;
   readonly rules: readonly RuleDefinition[];
   readonly doc: ProseDocument;
+  /** What the rules ran with. The pass over several documents runs with it too. */
+  readonly context: RunContext;
   readonly raw: RunResult;
   readonly applied: Applied;
 };
@@ -37,19 +41,35 @@ export const checkSource = async (path: string, source: string, config: Config, 
   const rules = rulesOf(language, config);
   await adapter.prepare?.(neededBy(rules, config.rules, choice.experimental, genre.genre, language));
   const doc = buildDocument(path, source, adapter, teamRules(config, language), profileFor(config, path, source, language, genre.genre));
-  const raw = runRulesWith(doc, rules, {
+  const context: RunContext = {
     settings: config.rules,
     experimental: choice.experimental,
     genre: genre.genre,
     limits: limitsFor(config, language),
     optionLayers: optionLayersOf(config),
     detectors: config.extensions?.detectors ?? {},
-  });
-  // stet で黙らせたものは、ここで落とす。
-  const applied = applySuppressions(
-    source,
+  };
+  const raw = runRulesWith(doc, rules, context);
+  return { language, genre, rules, doc, context, raw, applied: suppressedIn(source, doc, raw) };
+};
+
+/** stet で黙らせたものは、ここで落とす。stet は text（読んだままの本文）から読む。 */
+const suppressedIn = (text: string, doc: ProseDocument, raw: RunResult): Applied =>
+  applySuppressions(
+    text,
     raw.findings,
     doc.sections.map((section) => section.span),
   );
-  return { language, genre, rules, doc, raw, applied };
+
+/**
+ * The checks of one run's documents, with the rules that compare documents run over all of them (cross-run.ts), and
+ * stet applied to their findings in the file each lands in. A run of one document comes back as it is.
+ */
+export const crossChecked = (checks: readonly SourceCheck[], detectors: Readonly<Record<string, CrossDetector>> = CROSS_DETECTORS): SourceCheck[] => {
+  if (checks.length < 2) return [...checks];
+  const results = runCrossRules(checks, detectors);
+  return checks.map((check, index) => {
+    const raw = results[index] ?? check.raw;
+    return raw === check.raw ? check : { ...check, raw, applied: suppressedIn(check.doc.source, check.doc, raw) };
+  });
 };
