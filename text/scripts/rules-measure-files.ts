@@ -1,12 +1,13 @@
-// The files the rule policy reads and writes: corpus/rules-measure.json, the rule YAML files and genres.yaml.
+// The files the rule policy reads and writes: corpus/rules-measure.json, the rule YAML files (with their off_for) and genres.yaml.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { parseGenres, type GenreData } from "../packages/chaff/src/genre-parse.ts";
+import { parseGenres, withRuleOffs, type GenreData } from "../packages/chaff/src/genre-parse.ts";
+import { loadRuleOffs } from "../packages/chaff/src/rule-offs.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { severityAt } from "../packages/chaff/src/levels.ts";
-import { disagreements, handOffGroups, standingOf, type Standing } from "./rule-policy.ts";
+import { disagreements, handOffGroups, standingOf, type MeasuredOff, type Standing } from "./rule-policy.ts";
 import { measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "./rules-apply.ts";
 import { isMeasurement, type Measurement } from "./rules-measure-score.ts";
 
@@ -30,7 +31,13 @@ const bothLanguages = (): RuleDefinition[] => [...loadRules("ja"), ...loadRules(
 const reportsBelowInfo = (id: string): boolean => bothLanguages().some((rule) => rule.id === id && severityAt(rule, "normal") !== "info");
 
 export const readGenresText = (): string => readFileSync(GENRES_FILE, "utf8");
-export const genreDataOf = (text: string): GenreData => parseGenres(parse(text));
+export const genreDataOf = (text: string): GenreData => withRuleOffs(parseGenres(parse(text)), loadRuleOffs(RULES_DIR));
+
+const rulePath = (rule: string): string => join(RULES_DIR, `${rule}.yaml`);
+
+/** The offs `--apply` wrote into the rule files. */
+const measuredOffs = (rules: readonly RuleDefinition[]): MeasuredOff[] =>
+  rules.flatMap((rule) => measuredOffsOf(rule.id, readFileSync(rulePath(rule.id), "utf8")));
 
 /** Each rule's standing under the measurement, in rule id order. */
 export const standingsOf = (measurement: Measurement, rules: readonly RuleDefinition[], data: GenreData): Map<string, Standing> =>
@@ -42,10 +49,10 @@ export const standingsOf = (measurement: Measurement, rules: readonly RuleDefini
 
 /** Every disagreement between the rules as written and the measurement. */
 export const policyProblems = (measurement: Measurement): string[] => {
-  const text = readGenresText();
-  const data = genreDataOf(text);
-  const marks = measuredOffsOf(text);
-  const standings = standingsOf(measurement, allRules(), data);
+  const data = genreDataOf(readGenresText());
+  const rules = allRules();
+  const marks = measuredOffs(rules);
+  const standings = standingsOf(measurement, rules, data);
   // Each language's definition: a rule may write its severity per language.
   const problems = bothLanguages().flatMap((rule) => {
     const standing = standings.get(rule.id);
@@ -56,7 +63,7 @@ export const policyProblems = (measurement: Measurement): string[] => {
 
 const rewriteRule = (rule: RuleDefinition, standing: Standing): string | undefined => {
   if (standing.kind === "judge" || rule.status === "deprecated") return undefined;
-  const path = join(RULES_DIR, `${rule.id}.yaml`);
+  const path = rulePath(rule.id);
   const before = readFileSync(path, "utf8");
   const status = withStatus(before, standing.kind === "experimental" ? "experimental" : "stable");
   const after = standing.kind === "info" && reportsBelowInfo(rule.id) ? withInfoAtNormal(status) : status;
@@ -65,20 +72,26 @@ const rewriteRule = (rule: RuleDefinition, standing: Standing): string | undefin
   return `${rule.id}: ${standing.kind}`;
 };
 
-/** Rewrites the rule files and genres.yaml to agree with the measurement, and says what it changed. */
+const offGroupsOf = (standing: Standing): readonly string[] => (standing.kind === "normal" || standing.kind === "info" ? standing.off : []);
+
+/** The rule file's off_for with exactly these measured groups. */
+const rewriteOffs = (rule: string, groups: readonly string[]): void => {
+  const path = rulePath(rule);
+  const before = readFileSync(path, "utf8");
+  const after = withMeasuredOffs(before, groups);
+  if (after !== before) writeFileSync(path, after);
+};
+
+/** Rewrites the rule files to agree with the measurement, and says what it changed. */
 export const applyMeasurement = (measurement: Measurement): string[] => {
-  const text = readGenresText();
   const rules = allRules();
-  const standings = standingsOf(measurement, rules, genreDataOf(text));
+  const standings = standingsOf(measurement, rules, genreDataOf(readGenresText()));
   const changed = rules.flatMap((rule) => {
     const standing = standings.get(rule.id);
     const line = standing === undefined ? undefined : rewriteRule(rule, standing);
     return line === undefined ? [] : [line];
   });
-  const offs = [...standings.entries()].flatMap(([rule, standing]) =>
-    standing.kind === "normal" || standing.kind === "info" ? standing.off.map((group) => ({ group, rule })) : [],
-  );
-  const genres = withMeasuredOffs(text, offs);
-  if (genres !== text) writeFileSync(GENRES_FILE, genres);
+  const offs = [...standings.entries()].flatMap(([rule, standing]) => offGroupsOf(standing).map((group) => ({ group, rule })));
+  standings.forEach((standing, rule) => rewriteOffs(rule, offGroupsOf(standing)));
   return [...changed, ...offs.map((off) => `${off.rule}: off for ${off.group}`)];
 };

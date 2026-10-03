@@ -26,6 +26,13 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
 use_for: [business, legal, docs, academic, literature, speech]
+off_for:
+  legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
+  docs: "A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up."
+  academic: "Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
+  business/meeting-notes: "Minutes record what the meeting did (the meeting was held, 了承された): the actor is the meeting, by the form. In the corpus the rule fires on nearly every set of minutes, English and Japanese."
 sources: [yasashii-nihongo-2020, plain-2011]
 
 group: wording

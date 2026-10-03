@@ -39,7 +39,7 @@ const decidingShares = (measure: RuleMeasure): (readonly [string, number])[] =>
     .filter(([, share]) => share.documents >= MIN_DOCUMENTS)
     .map(([group, share]) => [group, shareOf(share)] as const);
 
-/** handOff: the groups whose own preset in genres.yaml already turns the rule off (a written reason, not a measurement). */
+/** handOff: the groups the rule's off_for already turns it off for (a written reason, not a measurement). */
 export const standingOf = (rule: RuleFacts, measure: RuleMeasure | undefined, handOff: ReadonlySet<string>): Standing => {
   if (rule.layer === "L4") return { kind: "judge" };
   const shares = measure === undefined ? [] : decidingShares(measure);
@@ -50,13 +50,13 @@ export const standingOf = (rule: RuleFacts, measure: RuleMeasure | undefined, ha
   return { kind: worst <= NORMAL_MAX_SHARE && benchPasses(measure) ? "normal" : "info", off };
 };
 
-/** The groups whose own rules in genres.yaml turn this rule off. */
+/** The groups whose preset turns this rule off (genres.yaml with the rule files' off_for). */
 export const handOffGroups = (data: GenreData, rule: string): Set<string> =>
   new Set(data.groups.filter((group) => group.rules[rule] === "off").map((group) => group.id));
 
 const genresOf = (data: GenreData, group: string): string[] => data.genres.map((genre) => genre.id).filter((genre) => genre.split("/")[0] === group);
 
-/** A group off line that `yarn rules:measure --apply` wrote: "<rule>: off # measured". */
+/** A group off that `yarn rules:measure --apply` wrote into a rule file's off_for ("<group>: measured by yarn rules:measure"). */
 export type MeasuredOff = { readonly group: string; readonly rule: string };
 
 const statusProblem = (rule: RuleFacts, standing: Standing): string[] => {
@@ -81,7 +81,7 @@ const unmeasuredOffs = (rule: RuleFacts, standing: Standing, marks: readonly Mea
   const off = standing.kind === "normal" || standing.kind === "info" ? standing.off : [];
   return marks
     .filter((mark) => mark.rule === rule.id && !off.includes(mark.group))
-    .map((mark) => `${rule.id}: genres.yaml turns it off for ${mark.group} as measured, the measurement no longer says so`);
+    .map((mark) => `${rule.id}: its off_for turns it off for ${mark.group} as measured, the measurement no longer says so`);
 };
 
 /** Where a rule's status, severity and genre offs disagree with its standing. Empty when they agree. */

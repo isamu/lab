@@ -25,6 +25,9 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  legal: "Contracts set disclaimers in capitals so they are conspicuous, as the law asks."
+  literature: 'Older printed texts set the dash as "--" and titles in capitals.'
 
 group: readability
 summary:

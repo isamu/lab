@@ -1,5 +1,5 @@
 // The edits `yarn rules:measure --apply` makes so the files say what the measurement decided: a rule's status, its
-// severity at normal (info), and the groups genres.yaml turns it off for. Pure text edits, so the comments and the
+// severity at normal (info), and the groups it is off for (its off_for). Pure text edits of the rule file, so the comments and the
 // layout of the YAML stay as written.
 import type { MeasuredOff } from "./rule-policy.ts";
 
@@ -52,78 +52,56 @@ export const withInfoAtNormal = (ruleYaml: string): string => {
   return withSeverity.replace(LEVELS_LINE, `levels: {${lowered(levels, SEVERITIES.indexOf(normal))}}`);
 };
 
-const MARK = "# measured";
-const MEASURED_LINE = /^ {6}([a-z0-9-]+): off # measured$/u;
-const GROUP_LINE = /^ {2}- id: (\S+)$/u;
-/** A line of the group's own block: its fields, its rules and their comments, all indented past the "- id:". */
-const IN_BLOCK = /^ {4}/u;
-const RULES_LINE = "    rules:";
-const RULE_INDENT = "      ";
+/** The reason `--apply` writes for an off it measured. An off with any other reason was written by hand. */
+export const MEASURED = "measured by yarn rules:measure";
+const OFF_FOR_LINE = "off_for:";
+const ENTRY = /^ {2}([a-z0-9/-]+): (.+)$/u;
+const USE_FOR_LINE = /^use_for: /u;
 
-/** genres.yaml's lines split where its genres start: only the groups above may hold a measured off. */
-const splitAtGenres = (genresYaml: string): [string[], string[]] => {
-  const lines = genresYaml.split("\n");
-  const end = lines.indexOf("genres:");
-  return end === -1 ? [lines, []] : [lines.slice(0, end), lines.slice(end)];
-};
-
-/** The "<rule>: off # measured" lines of genres.yaml's groups, with the group each sits in. */
-export const measuredOffsOf = (genresYaml: string): MeasuredOff[] =>
-  splitAtGenres(genresYaml)[0].reduce<{ group: string; found: MeasuredOff[] }>(
-    (state, line) => {
-      const group = GROUP_LINE.exec(line)?.[1];
-      if (group !== undefined) return { group, found: state.found };
-      const rule = MEASURED_LINE.exec(line)?.[1];
-      return rule === undefined ? state : { group: state.group, found: [...state.found, { group: state.group, rule }] };
-    },
-    { group: "", found: [] },
-  ).found;
-
-/** The group's block as [first line, line after its last]. */
-const blockOf = (lines: readonly string[], group: string): [number, number] | undefined => {
-  const start = lines.findIndex((line) => GROUP_LINE.exec(line)?.[1] === group);
+/** The rule file's off_for block as [its "off_for:" line, the line after its last entry], or undefined. */
+const offForBlock = (lines: readonly string[]): [number, number] | undefined => {
+  const start = lines.indexOf(OFF_FOR_LINE);
   if (start === -1) return undefined;
-  const next = lines.findIndex((line, index) => index > start && !IN_BLOCK.test(line));
-  return [start, next === -1 ? lines.length : next];
+  const after = lines.findIndex((line, index) => index > start && !line.startsWith("  "));
+  return [start, after === -1 ? lines.length : after];
 };
 
-const addToGroup = (lines: readonly string[], group: string, rules: readonly string[]): string[] => {
-  const block = blockOf(lines, group);
-  if (block === undefined) throw new Error(`genres.yaml has no group ${group}`);
-  const [start, end] = block;
-  const hasRules = lines.slice(start, end).includes(RULES_LINE);
-  const added = rules.map((rule) => `${RULE_INDENT}${rule}: off ${MARK}`);
-  return [...lines.slice(0, end), ...(hasRules ? [] : [RULES_LINE]), ...added, ...lines.slice(end)];
+const entriesOf = (lines: readonly string[]): { readonly target: string; readonly reason: string }[] => {
+  const block = offForBlock(lines);
+  if (block === undefined) return [];
+  return lines.slice(block[0] + 1, block[1]).flatMap((line) => {
+    const entry = ENTRY.exec(line);
+    return entry?.[1] === undefined || entry[2] === undefined ? [] : [{ target: entry[1], reason: entry[2] }];
+  });
 };
 
-/** A group's "rules:" left with nothing under it, once its measured lines are gone. */
-const withoutEmptyRules = (lines: readonly string[]): string[] =>
-  lines.filter((line, index) => line !== RULES_LINE || (lines[index + 1] ?? "").startsWith(RULE_INDENT));
+/** The offs `--apply` wrote into a rule file's off_for. */
+export const measuredOffsOf = (rule: string, ruleYaml: string): MeasuredOff[] =>
+  entriesOf(ruleYaml.split("\n"))
+    .filter((entry) => entry.reason === MEASURED)
+    .map((entry) => ({ group: entry.target, rule }));
 
-/** Whether the group's block already turns the rule off by hand. */
-const offByHand = (lines: readonly string[], group: string, rule: string): boolean => {
-  const block = blockOf(lines, group);
-  return block !== undefined && lines.slice(...block).some((line) => line.startsWith(`${RULE_INDENT}${rule}: off`));
+/** The lines with the off_for block replaced by these entry lines, or removed when there are none. */
+const withBlock = (lines: readonly string[], entries: readonly string[]): string[] => {
+  const block = offForBlock(lines);
+  const body = entries.length === 0 ? [] : [OFF_FOR_LINE, ...entries];
+  if (block !== undefined) return [...lines.slice(0, block[0]), ...body, ...lines.slice(block[1])];
+  const useFor = lines.findIndex((line) => USE_FOR_LINE.test(line));
+  if (useFor === -1) throw new Error("the rule has no use_for line");
+  return [...lines.slice(0, useFor + 1), ...body, ...lines.slice(useFor + 1)];
 };
 
 /**
- * genres.yaml with exactly these measured offs: the old "# measured" lines are dropped and the new ones appended to
- * their group's rules. A rule the group already turns off by hand keeps that line and gets no second one.
+ * The rule file with exactly these measured offs in its off_for: the old measured entries are dropped and the new ones
+ * appended. A group the file already turns off by hand keeps that entry and gets no second one.
  */
-export const withMeasuredOffs = (genresYaml: string, offs: readonly MeasuredOff[]): string => {
-  const [groups, genres] = splitAtGenres(genresYaml);
-  const kept = withoutEmptyRules(groups.filter((line) => !MEASURED_LINE.test(line)));
-  const byGroup = offs
-    .filter((off) => !offByHand(kept, off.group, off.rule))
-    .reduce((found, off) => found.set(off.group, [...(found.get(off.group) ?? []), off.rule]), new Map<string, string[]>());
-  const added = [...byGroup.entries()].reduce(
-    (lines, [group, rules]) =>
-      addToGroup(
-        lines,
-        group,
-        rules.toSorted((left, right) => left.localeCompare(right, "en")),
-      ),
-    kept,
-  );
-  return [...added, ...genres].join("\n");
+export const withMeasuredOffs = (ruleYaml: string, groups: readonly string[]): string => {
+  const lines = ruleYaml.split("\n");
+  const byHand = entriesOf(lines).filter((entry) => entry.reason !== MEASURED);
+  const added = groups
+    .filter((group) => !byHand.some((entry) => entry.target === group))
+    .toSorted((left, right) => left.localeCompare(right, "en"))
+    .map((group) => `  ${group}: ${MEASURED}`);
+  const kept = lines.slice(...(offForBlock(lines) ?? [0, 0])).filter((line) => line !== OFF_FOR_LINE && !line.endsWith(`: ${MEASURED}`));
+  return withBlock(lines, [...kept, ...added]).join("\n");
 };

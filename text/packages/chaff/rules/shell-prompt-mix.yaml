@@ -24,6 +24,11 @@ how_to_fix:
 levels: { strict: 3, normal: 2, relaxed: 1 }
 
 use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Code blocks, shell prompts, command headings and numbered steps belong to technical writing."
+  academic: "Code blocks, shell prompts, command headings and numbered steps belong to technical writing."
+  literature: "Code blocks, shell prompts, command headings and numbered steps belong to technical writing."
+  speech: "Code blocks, shell prompts, command headings and numbered steps belong to technical writing."
 
 group: consistency
 summary:

@@ -31,6 +31,12 @@ how_to_fix:
 levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business/email, legal, docs, academic, literature, speech]
+off_for:
+  legal: "An email's greeting, closing, subject and attachments: only the email and letter genre turns these on."
+  docs: "An email's greeting, closing, subject and attachments: only the email and letter genre turns these on."
+  academic: "An email's greeting, closing, subject and attachments: only the email and letter genre turns these on."
+  literature: "An email's greeting, closing, subject and attachments: only the email and letter genre turns these on."
+  speech: "An email's greeting, closing, subject and attachments: only the email and letter genre turns these on."
 
 group: structure
 summary:

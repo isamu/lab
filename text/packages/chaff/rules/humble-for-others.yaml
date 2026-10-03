@@ -26,6 +26,8 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
 use_for: [blog, business, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Dialogue keeps a character's keigo, mistakes and all."
 
 group: wording
 summary:

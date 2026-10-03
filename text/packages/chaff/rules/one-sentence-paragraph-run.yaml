@@ -23,6 +23,9 @@ how_to_fix:
 levels: { strict: 3, normal: 4, relaxed: 6 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  legal: "A clause, a definition or a claim is a paragraph of one sentence by form."
+  literature: "Dialogue and verse set each line apart."
 
 group: readability
 summary:

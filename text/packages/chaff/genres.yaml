@@ -1,9 +1,10 @@
 # The genres chaff knows, in the order `chaff genres` lists them.
 #
 # A genre is a preset: pick the kind of document and chaff checks it the way that kind is written.
-#   rules:   the level a rule runs at for this genre (strict / normal / relaxed / off), under chaff.yaml's rules.
+#   rules:   the level a rule runs at for this genre (strict / normal / relaxed), under chaff.yaml's rules.
 #            A group's rules apply to every genre in it; a genre's own rules win over its group's.
-#            A rule turned off here is listed under "did not run" with the genre as the reason.
+#            A rule a group or genre turns off says so in its own file (off_for, with why), not here; chaff reads it
+#            as an off in that group's or genre's rules. It is listed under "did not run" with the genre as the reason.
 #   profile: the document profile (profiles/*.yaml) this genre reads with, when chaff.yaml names none.
 #   suggest: when no genre is set, what makes a file look like this genre, strongest first:
 #            paths (the file's path), then per language an opening (the body's first line, past front matter and
@@ -23,321 +24,19 @@ groups:
   # (shall be deemed), and joins long noun compounds (個人情報取扱事業者). Those rules would only flag the form.
   - id: legal
     name: { ja: 法務, en: Legal }
-    rules:
-      # A request without a deadline is a business-mail habit; elsewhere a request is an instruction or a pointer.
-      request-without-deadline: off
-      agentless-passive: off
-      max-kanji-continuous: off
-      no-doubled-joshi: off
-      ngram-repetition: off
-      repeated-sentence-head: off
-      heading-echo: off
-      taigen-dome-in-prose: off
-      unqualified-superlative: off
-      excessive-hedging: off
-      proper-noun-density: off
-      expletive-construction: off
-      adverb-overuse: off
-      concrete-evidence-density: off
-      closing-cliche: off
-      padded-intro: off
-      preamble-length: off
-      cushion-phrase-density: off
-      sasete-itadaku: off
-      sentence-rhythm: off
-      rule-of-three: off
-      section-length-uniformity: off
-      paragraph-length-variance: off
-      ai-tell: off
-      ai-generated-composite: off
-      contrast-framing: off
-      stock-transition: off
-      announcing-opener: off
-      colon-lead-in: off
-      emoji-heading: off
-      bold-label-list: off
-      # A clause, a definition or a claim is a paragraph of one sentence by form.
-      one-sentence-paragraph-run: off
-      ai-structure: off
-      # Statutes and opinions write "not inconsistent with" on purpose.
-      double-negative: off
-      # Contracts set disclaimers in capitals so they are conspicuous, as the law asks.
-      all-caps-shouting: off
-      # Drafting writes "in the event that" and "for the purpose of" on purpose.
-      wordy-phrase: off
-      weasel-word: off
-      sentence-initial-so: off
-      # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
-      nominalization: off
-      # すなわち and that is, open a definition that restates on purpose.
-      paragraph-restatement: off
-      # A statute or contract opens with its first article, and its titles are formal names.
-      no-lead: off
-      title-length: off
-      # Drafting writes a number twice on purpose: thirty (30) days.
-      number-style-consistency: off
-      # An enumeration of conditions mixes 〜こと and 〜とき by what each condition is.
-      list-item-form-mix: off
-      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
-      code-fence-language-mix: off
-      shell-prompt-mix: off
-      heading-command-missing: off
-      step-statement-mix: off
-      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
-      citation-style-mix: off
-      citation-reference-mismatch: off
-      figure-reference-order: off
-      abstract-length: off
-      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
-      email-greeting-closing: off
-      email-subject-length: off
-      attachment-not-attached: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
-    rules:
-      request-without-deadline: off
-      heading-echo: off
-      agentless-passive: off
-      concrete-evidence-density: off
-      preamble-length: off
-      proper-noun-density: off
-      unqualified-superlative: off
-      expletive-construction: off
-      adverb-overuse: off
-      cushion-phrase-density: off
-      double-keigo: off
-      sasete-itadaku: off
-      sentence-initial-conjunction-run: off
-      closing-cliche: off
-      padded-intro: off
-      sentence-rhythm: off
-      rule-of-three: off
-      section-length-uniformity: off
-      paragraph-length-variance: off
-      ai-tell: off
-      ai-generated-composite: off
-      contrast-framing: off
-      stock-transition: off
-      announcing-opener: off
-      colon-lead-in: off
-      emoji-heading: off
-      bold-label-list: off
-      ai-structure: off
-      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
-      citation-style-mix: off
-      citation-reference-mismatch: off
-      figure-reference-order: off
-      abstract-length: off
-      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
-      email-greeting-closing: off
-      email-subject-length: off
-      attachment-not-attached: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
-    rules:
-      request-without-deadline: off
-      agentless-passive: off
-      excessive-hedging: off
-      expletive-construction: off
-      concrete-evidence-density: off
-      proper-noun-density: off
-      adverb-overuse: off
-      closing-cliche: off
-      padded-intro: off
-      preamble-length: off
-      cushion-phrase-density: off
-      sasete-itadaku: off
-      double-keigo: off
-      sentence-rhythm: off
-      rule-of-three: off
-      section-length-uniformity: off
-      paragraph-length-variance: off
-      stock-transition: off
-      emoji-heading: off
-      bold-label-list: off
-      ai-structure: off
-      requirement-smell: off
-      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
-      code-fence-language-mix: off
-      shell-prompt-mix: off
-      heading-command-missing: off
-      step-statement-mix: off
-      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
-      email-greeting-closing: off
-      email-subject-length: off
-      attachment-not-attached: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
     name: { ja: 文学, en: Literature }
-    rules:
-      request-without-deadline: off
-      # A character who says "never" and later makes an exception is the story, not a drafting slip.
-      absolute-exception: off
-      # A story's narrator and its characters each say 私 or 僕 in their own voice.
-      person-consistency: off
-      max-sentence-length: off
-      max-paragraph-length: off
-      ngram-repetition: off
-      repeated-sentence-head: off
-      heading-echo: off
-      empty-intensifier: off
-      no-doubled-joshi: off
-      no-nakaguro-parallel: off
-      taigen-dome-in-prose: off
-      max-kanji-continuous: off
-      hiragana-fukushi: off
-      no-mixed-desumasu: off
-      contraction-consistency: off
-      doubled-word: off
-      agreement-slip: off
-      agentless-passive: off
-      expletive-construction: off
-      excessive-hedging: off
-      unqualified-superlative: off
-      adverb-overuse: off
-      sentence-initial-conjunction-run: off
-      repeated-conjunction: off
-      undefined-acronym: off
-      proper-noun-density: off
-      concrete-evidence-density: off
-      closing-cliche: off
-      padded-intro: off
-      preamble-length: off
-      cushion-phrase-density: off
-      sasete-itadaku: off
-      double-keigo: off
-      no-em-dash: off
-      emoji-density: off
-      elapsed-years-mismatch: off
-      fact-conflict: off
-      summary-fact-mismatch: off
-      sentence-rhythm: off
-      rule-of-three: off
-      section-length-uniformity: off
-      paragraph-length-variance: off
-      ai-tell: off
-      ai-generated-composite: off
-      contrast-framing: off
-      stock-transition: off
-      announcing-opener: off
-      colon-lead-in: off
-      emoji-heading: off
-      bold-label-list: off
-      nominalization: off
-      dangling-reference: off
-      duplicate-definition: off
-      date-order: off
-      date-weekday-mismatch: off
-      total-mismatch: off
-      announced-count-mismatch: off
-      dangling-figure-reference: off
-      date-range-reversed: off
-      percent-sum-mismatch: off
-      vague-figure-reference: off
-      # A narrator may hedge, speak with ら dropped, and spell as the work's time and place did.
-      double-negative: off
-      ra-nuki: off
-      spelling-consistency: off
-      orthographic-variant: off
-      translationese-density: off
-      unknown-word: off
-      redundant-expression: off
-      requirement-smell: off
-      # Dialogue keeps a character's keigo, mistakes and all.
-      humble-for-others: off
-      baito-keigo: off
-      # Dialogue may misuse an idiom on purpose, to draw the speaker.
-      idiom-misuse: off
-      paragraph-restatement: off
-      # A story or poem chooses its own opening and its own title.
-      no-lead: off
-      title-length: off
-      # A narrator spells out numbers in dialogue and writes figures in a date.
-      number-style-consistency: off
-      list-item-form-mix: off
-      # Dialogue and verse set each line apart.
-      one-sentence-paragraph-run: off
-      # Older printed texts set the dash as "--" and titles in capitals.
-      hyphen-as-dash: off
-      all-caps-shouting: off
-      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
-      code-fence-language-mix: off
-      shell-prompt-mix: off
-      heading-command-missing: off
-      step-statement-mix: off
-      # Dialect and old usage ("an hospital") are the work's voice, and dialogue leans on "very".
-      article-sound: off
-      very-adjective: off
-      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
-      citation-style-mix: off
-      citation-reference-mismatch: off
-      figure-reference-order: off
-      abstract-length: off
-      # A narrator and a character speak as they speak: dialect ("would of"), "So," and hearsay are the voice.
-      homophone-slip: off
-      wordy-phrase: off
-      weasel-word: off
-      sentence-initial-so: off
-      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
-      email-greeting-closing: off
-      email-subject-length: off
-      attachment-not-attached: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
-    rules:
-      request-without-deadline: off
-      agentless-passive: off
-      preamble-length: off
-      padded-intro: off
-      closing-cliche: off
-      concrete-evidence-density: off
-      proper-noun-density: off
-      sentence-rhythm: off
-      rule-of-three: off
-      section-length-uniformity: off
-      paragraph-length-variance: off
-      contrast-framing: off
-      stock-transition: off
-      announcing-opener: off
-      colon-lead-in: off
-      ai-structure: off
-      # A transcript keeps the speaker's words: hedges and ら dropped as spoken.
-      double-negative: off
-      ra-nuki: off
-      requirement-smell: off
-      baito-keigo: off
-      article-sound: off
-      very-adjective: off
-      homophone-slip: off
-      wordy-phrase: off
-      weasel-word: off
-      sentence-initial-so: off
-      # A speaker says it again so the room hears it: 要するに, in other words.
-      paragraph-restatement: off
-      # An address or a transcript is titled by occasion (第221回国会における…演説) and opens as spoken.
-      no-lead: off
-      title-length: off
-      # Spoken numbers are transcribed as heard.
-      number-style-consistency: off
-      list-item-form-mix: off
-      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
-      code-fence-language-mix: off
-      shell-prompt-mix: off
-      heading-command-missing: off
-      step-statement-mix: off
-      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
-      citation-style-mix: off
-      citation-reference-mismatch: off
-      figure-reference-order: off
-      abstract-length: off
-      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
-      email-greeting-closing: off
-      email-subject-length: off
-      attachment-not-attached: off
 
 genres:
   - id: technical/spec
@@ -390,23 +89,11 @@ genres:
     summary:
       ja: プレスリリースと、お知らせ
       en: Press releases and public notices
-    # A release names the agency, the people quoted, the mission and the place: that is its news, not a crowd of
-    # names to thin out. Every English release in the corpus (GSA, NASA, NOAA) is over the limit.
-    rules:
-      proper-noun-density: off
   - id: business/meeting-notes
     name: { ja: 議事録, en: Meeting notes }
     summary:
       ja: 議事録・議事要旨
       en: Minutes and meeting notes
-    # Minutes record what the meeting did (the meeting was held, 了承された): the actor is the meeting, by the form.
-    # In the corpus the rule fires on nearly every set of minutes, English and Japanese.
-    # A header block of labelled fields (- **日時**：…, - **出席者**：…) is the form of minutes, not a list of captions.
-    rules:
-      # Minutes jot points down as they come: a noun, a remark, a decision, side by side.
-      list-item-form-mix: off
-      agentless-passive: off
-      bold-label-list: off
   - id: legal/contract
     name: { ja: 契約書・規約, en: Contract and terms }
     summary:
@@ -450,8 +137,6 @@ genres:
       total-mismatch: normal
       dangling-figure-reference: normal
       date-range-reversed: normal
-      # A statute defines its 等 terms (以下「個人情報等」という) and uses them in its obligations.
-      requirement-smell: off
   - id: legal/judgment
     name: { ja: 判決, en: Court decision }
     summary:
@@ -460,9 +145,6 @@ genres:
     suggest:
       ja: { line: "^(?:#{1,6}\\s*)?(?:主\\s*文|理\\s*由|判\\s*決)\\s*$", min_lines: 2 }
       en: { line: "delivered the opinion of the Court|^(?:Reversed|Affirmed)\\.?$", min_lines: 1 }
-    # requirement-smell is for the documents that state requirements: specifications, contracts and documentation.
-    rules:
-      requirement-smell: off
   - id: legal/patent
     name: { ja: 特許明細書, en: Patent }
     summary:
@@ -471,9 +153,6 @@ genres:
     suggest:
       ja: { line: "【(?:課題|解決手段|請求項[0-9０-９]+|選択図|技術分野|背景技術|発明の詳細な説明|特許請求の範囲)】", min_lines: 2 }
       en: { line: "^#{1,6}\\s*(?:BACKGROUND OF THE INVENTION|SUMMARY OF THE INVENTION|Claims\\b)|\\bof claim \\d+", min_lines: 3 }
-    # requirement-smell is for the documents that state requirements: specifications, contracts and documentation.
-    rules:
-      requirement-smell: off
   - id: docs/manual
     name: { ja: マニュアル・手順書, en: Manual and how-to }
     summary:
@@ -497,9 +176,6 @@ genres:
       paths: ["(^|[/_-])(faqs?|q-?and-?a)([/_.-]|$)"]
       ja: { line: "^(?:#{1,6}\\s*)?(?:[QＱ][0-9０-９]*[.．:：、\\s　]|問[0-9０-９]+[.．:：\\s　])|^#{1,6}\\s*(?:よくある(?:ご)?質問|Ｑ＆Ａ|Q&A)", min_lines: 2 }
       en: { line: "^(?:#{1,6}\\s*)?Q[0-9]*[.:)]\\s|^#{1,6}\\s*(?:FAQs?|Frequently asked questions)\\b", min_lines: 2 }
-    # A question is the heading: its length is the reader's question, not a name to shorten.
-    rules:
-      title-length: off
   - id: docs/glossary
     name: { ja: 用語集, en: Glossary }
     summary:
@@ -509,13 +185,6 @@ genres:
       paths: ["(^|/)(glossary|glossaries|yogo|用語集)(/|[-_.])"]
       ja: { line: "^#{1,6}\\s*用語集", min_lines: 1 }
       en: { line: "^#{1,6}\\s*Glossary\\b", min_lines: 1 }
-    # A reader looks up one entry and reads only that. A definition is a noun phrase (風の吹いてくる方向。), and sibling
-    # entries share one wording on purpose (Portion of labor productivity change attributed to …), which no reader sees twice.
-    rules:
-      taigen-dome-in-prose: off
-      ngram-repetition: off
-      # An entry that ends 〜すること or 〜のこと defines a word; it is no requirement.
-      requirement-smell: off
   - id: academic/paper
     name: { ja: 論文, en: Academic paper }
     summary:
@@ -590,37 +259,3 @@ genres:
       paths: ["(^|/)(transcripts?|kaigiroku)(/|[-_.])"]
       ja: { line: "^○[^　\\s]{1,30}　|^（(?:問|答)）|^【(?:記者|大臣|質問|回答)】", min_lines: 3 }
       en: { line: "^(?:Mr|Ms|Mrs|Dr)\\. [A-Z][A-Z-]{2,}(?: of [A-Z][a-z]+)?\\. ", min_lines: 3 }
-    # A transcript records what was said: its sentences, repeats and register are the speaker's, not the writer's to fix.
-    rules:
-      # Several people speak, each naming themselves their own way.
-      person-consistency: off
-      max-sentence-length: off
-      max-paragraph-length: off
-      ngram-repetition: off
-      repeated-sentence-head: off
-      heading-echo: off
-      empty-intensifier: off
-      no-doubled-joshi: off
-      no-nakaguro-parallel: off
-      taigen-dome-in-prose: off
-      max-kanji-continuous: off
-      hiragana-fukushi: off
-      no-mixed-desumasu: off
-      contraction-consistency: off
-      doubled-word: off
-      agreement-slip: off
-      sasete-itadaku: off
-      double-keigo: off
-      # Labelled speaker turns (- **記者**：…) are how a transcript is laid out.
-      bold-label-list: off
-      cushion-phrase-density: off
-      excessive-hedging: off
-      unqualified-superlative: off
-      expletive-construction: off
-      adverb-overuse: off
-      sentence-initial-conjunction-run: off
-      repeated-conjunction: off
-      undefined-acronym: off
-      ai-tell: off
-      ai-generated-composite: off
-      assistant-residue: off

@@ -27,6 +27,10 @@ how_to_fix:
 levels: { strict: 1, normal: 2, relaxed: 4 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  legal: 'Drafting writes "in the event that" and "for the purpose of" on purpose.'
+  literature: 'A narrator and a character speak as they speak: dialect ("would of"), "So," and hearsay are the voice.'
+  speech: "A transcript keeps the speaker's words: hedges and ら dropped as spoken."
 
 group: wording
 summary:

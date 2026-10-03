@@ -24,8 +24,13 @@ how_to_fix:
 # 人の記事の 9 割を超えた項目が何個そろったら出すか。人の記事で何個そろうかは scripts/structure-baseline.ts --values で数え直せる。
 levels: { strict: 2, normal: 3, relaxed: 4 }
 
-# 基準にした人の記事はブログ。ビジネス文書は見ない。法務・説明書・論文・話し言葉は見出しの立て方がもともと違うので、genres.yaml で止める。
+# 基準にした人の記事はブログ。ビジネス文書は見ない。法務・説明書・論文・話し言葉は見出しの立て方がもともと違うので、off_for で止める。
 use_for: [blog, legal, docs, academic, literature, speech]
+off_for:
+  legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
+  docs: "A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up."
+  academic: "Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence."
+  speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
 
 group: ai-tells
 summary:

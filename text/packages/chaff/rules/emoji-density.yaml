@@ -24,6 +24,8 @@ how_to_fix:
 levels: { strict: 3, normal: 8, relaxed: 20 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
 sources: [zhang-2024]
 
 group: readability
