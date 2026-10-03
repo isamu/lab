@@ -1,0 +1,11 @@
+# 打ち消しと組む副詞。adverb-without-negation が読む。後ろに negation-word の語が無い文を指す（全然大丈夫です）。
+# 「まったく」は入れない（「まったく同じ」は正しい）。「少しも」は「少し」と「も」に分かれるので入れない。
+id: negative-polarity-adverb
+language: ja
+entries:
+  - pattern: 全然
+  - pattern: 決して
+  - pattern: 到底
+  - pattern: ちっとも
+  - pattern: 一向に
+  - pattern: めったに

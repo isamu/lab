@@ -1,0 +1,9 @@
+cc-by-4-legalcode-ja  1
+denkiyagi-shugyo-kisoku  1
+entaku-rb-5  1
+kantei-unga81-general-debate-speech  1
+mdn-using-fetch-ja  1
+mhlw-norovirus-qa  2
+ruby-3-4-0-released-ja  1
+soumu-kokumin-cyber-glossary-a  3
+vue-docs-ja-reactivity-fundamentals  1

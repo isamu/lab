@@ -88,6 +88,8 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
+      # Articles end 〜する。〜する。 by form; the same ending in a row is the drafting style.
+      repeated-sentence-ending: off
       # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
       email-greeting-closing: off
       email-subject-length: off
@@ -287,6 +289,11 @@ groups:
       wordy-phrase: off
       weasel-word: off
       sentence-initial-so: off
+      # Spoken 全然大丈夫, なので and より in a character's voice; classical verse has a たり that does not list.
+      adverb-without-negation: off
+      colloquial-opener: off
+      yori-as-from: off
+      tari-unpaired: off
       # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
       email-greeting-closing: off
       email-subject-length: off
@@ -343,6 +350,10 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
+      # Spoken Japanese says 全然大丈夫, opens with なので and greets with より参りました.
+      adverb-without-negation: off
+      colloquial-opener: off
+      yori-as-from: off
       # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
       email-greeting-closing: off
       email-subject-length: off
