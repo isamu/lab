@@ -98,7 +98,6 @@ groups:
       email-greeting-closing: off
       email-subject-length: off
       attachment-not-attached: off
-      clause-chain: off # measured
       max-sentence-length: off # measured
       max-ten: off # measured
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
@@ -145,7 +144,6 @@ groups:
       # Defined terms and short names are a contract's apparatus: the legal genres check them.
       defined-term-form: off
       defined-name-repeated: off
-      max-sentence-length: off # measured
       quote-style-consistency: off # measured
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
