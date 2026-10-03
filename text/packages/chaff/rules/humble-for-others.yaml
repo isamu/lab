@@ -1,0 +1,60 @@
+id: humble-for-others
+layer: L3
+status: experimental
+how_to_find: phrase-match
+word_list: humble-for-others
+uses: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: 謙譲語を相手の動作に使っている
+  en: Humble form used for someone else's action
+
+why:
+  ja: 謙譲語（伺う・拝見する・申す・参る）は、自分の側の動作を低めて相手を立てる語です。「伺ってください」「拝見してください」のように読み手の動作に使ったり、「申される」のように尊敬の「れる」を付けたりすると、読み手を低めることになり、失礼に読まれます。
+  en: Japanese humble verbs (伺う, 拝見する, 申す) lower the speaker's own side. Used for the reader's action (伺ってください) or dressed with an honorific (申される), they lower the reader instead.
+
+message:
+  ja: 「{matched}」は謙譲語を相手の動作に使っています
+  en: '"{matched}" uses a humble verb for someone else''s action'
+
+how_to_fix:
+  ja: 尊敬語に直してください。「伺ってください」は「お越しください」、「拝見してください」は「ご覧ください」、「申されました」は「おっしゃいました」です。
+  en: Use the honorific form instead (お越しください, ご覧ください, おっしゃいました).
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「伺ってください」「拝見してください」「申される」のように、謙譲語を読み手や第三者の動作に使った所
+  en: A Japanese humble verb used for the reader's or a third party's action (伺ってください, 申される)
+example:
+  ja:
+    before: 資料は受付で拝見してください。
+    after: 資料は受付でご覧ください。
+
+not_flagged:
+  ja: 一覧にある形だけを見ます。「伺われる」は「窺われる（うかがえる）」と同じ字になるので見ません。「お伺いください」「ご持参ください」のように認める手引きがある形も見ません。小説の台詞にはわざと崩した敬語があるので、文学のジャンルでは見ません。
+  en: Only the forms on chaff's list are checked. 伺われる is not, as it is also 窺われる ("can be seen"). Forms some guides accept (お伺いください) are not listed. Literature does not run this rule.
+level_meaning:
+  ja: 当てはまる形が {limit} 箇所あれば指摘
+  en: reported once there are {limit}
+rewrite:
+  ja:
+    direction: 読み手や第三者の動作に使った謙譲語を、尊敬語に置き換えてください。頼む形は「お〜ください」「ご〜ください」にします。
+    pairs:
+      - before: 資料は受付で拝見してください。
+        after: 資料は受付でご覧ください。
+      - before: 部長が申されたとおりです。
+        after: 部長がおっしゃったとおりです。
+      - before: 内容をご確認してください。
+        after: 内容をご確認ください。
+    keep:
+      - 誰の動作か（主語）と、頼んでいる中身
+      - 自分の側の動作に使った謙譲語（「私が伺います」）
+    avoid:
+      - 自分の側の動作まで尊敬語にする
+      - 「ご覧になられる」のように、尊敬語を二重にする

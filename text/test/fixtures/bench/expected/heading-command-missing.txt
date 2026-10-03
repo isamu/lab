@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/readme  heading-command-renamed-ja  found
+en/readme  heading-command-renamed-en  found
