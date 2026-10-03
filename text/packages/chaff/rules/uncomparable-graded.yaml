@@ -1,0 +1,65 @@
+id: uncomparable-graded
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: uncomparable-graded
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: 比べられない形容詞に付けた程度
+  en: An uncomparable adjective given a degree
+
+why:
+  ja: 英語の「unique」「unanimous」「impossible」は、そうであるかないかの二つしかない状態を言います。「very unique」「more unanimous」と程度を付けても何も足されず、読み手は書き手が語の意味を確かめていないと受け取ります。語の一覧は言語ごとの語彙表にあります。
+  en: '"Unique", "unanimous" and "impossible" name a state that holds or does not. "Very unique" or "more unanimous" adds nothing, and tells the reader the writer did not weigh the word. The phrases are listed in the lexicon.'
+
+message:
+  ja: 「{matched}」は、程度の無い形容詞に程度を付けています
+  en: '"{matched}" grades an adjective that has no degrees'
+
+how_to_fix:
+  ja: 程度の語を外すか、本当に言いたい程度の言える語に替えてください（very unique → unique、または unusual）。
+  en: Drop the grade, or use a word that has degrees ("very unique" → "unique", or "unusual").
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: 'A narrator or a character may say "very unique"; the voice is the author''s choice.'
+
+group: wording
+summary:
+  ja: 英語で、「very unique」「more unanimous」のように、程度の無い形容詞に付けた程度
+  en: A degree given to an adjective that has none, such as "very unique" or "more unanimous"
+example:
+  en:
+    before: |
+      The design is very unique.
+    after: |
+      The design is unusual.
+
+not_flagged:
+  ja: 一覧にある組み合わせだけを見ます。「almost」「nearly」のように近さを言う語（almost unique、nearly impossible）は指しません。英語の文書だけで動き、文学のジャンルは対象にしません。
+  en: Only the pairs on chaff's list are checked. Words that say how close ("almost unique", "nearly impossible") are not reported. English documents only; literature is not checked.
+level_meaning:
+  ja: 当てはまる言い回しが {limit} 箇所あれば指摘
+  en: reported once there are {limit}
+sources: [proselint]
+rewrite:
+  depth: light
+  en:
+    direction: Drop the grade before the adjective, or swap the adjective for one that has degrees when a degree is meant. Change nothing else in the sentence.
+    pairs:
+      - before: The design is very unique.
+        after: The design is unusual.
+      - before: The vote was more unanimous than last year.
+        after: The vote was unanimous this year.
+      - before: A fix before Friday is extremely impossible.
+        after: A fix before Friday is impossible.
+    keep:
+      - the claim the sentence makes
+      - the rest of the sentence
+    avoid:
+      - adding a new grade ("truly unique") in place of the old one
