@@ -4,7 +4,7 @@ import { modalConflicts, modalStatements, type Obligation } from "../structure/m
 import { linesOf, lineNumberAt } from "../structure/lines.ts";
 import { quoteAt } from "./structure-tree.ts";
 
-const obligationsOf = (tree: StructureNode): Obligation[] =>
+export const obligationsOf = (tree: StructureNode): Obligation[] =>
   inDocumentOrder(tree).flatMap((node) =>
     node.kind === "obligation"
       ? [{ start: node.span.start, end: node.span.end, type: String(node.attrs["type"] ?? ""), marker: String(node.attrs["marker"] ?? "") }]
