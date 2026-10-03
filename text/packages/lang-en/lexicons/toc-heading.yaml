@@ -1,0 +1,8 @@
+# Headings of a table of contents. The list items under one are matched against the document's headings
+# (toc-heading-mismatch). Matched regardless of case.
+id: toc-heading
+language: en
+entries:
+  - pattern: Table of Contents
+  - pattern: Contents
+  - pattern: TOC

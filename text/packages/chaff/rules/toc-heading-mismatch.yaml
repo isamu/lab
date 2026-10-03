@@ -1,0 +1,136 @@
+id: toc-heading-mismatch
+layer: L3
+status: stable
+how_to_find: toc-heading
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 見出しの無い目次の項目
+  en: A table-of-contents entry with no heading
+
+why:
+  ja: 目次に「3.2 費用」とあるのに本文にその見出しが無ければ、読み手は目次から探しても行き着けません。見出しを書き換えたり節を消したりしたあとに、目次だけが古いまま残ると起きます。目次の項目と見出しの言葉を突き合わせれば、機械で言えます。
+  en: When the table of contents lists "3.2 Costs" and the text has no such heading, the reader cannot get there from the contents. It happens when a heading is renamed or a section removed and the contents are left as they were. Matching the entries against the headings is mechanical.
+
+message:
+  ja: 目次の「{entry}」に合う見出しがありません
+  en: 'No heading matches the contents entry "{entry}"'
+
+how_to_fix:
+  ja: 目次を見出しに合わせて直すか、消えた節の項目を目次から消してください。
+  en: Update the entry to match the heading, or remove the entry for a section that is gone.
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 目次（「目次」「Contents」の見出しの下の箇条書き）の項目のうち、文書のどの見出しとも合わないもの
+  en: An entry of the table of contents (the list under a "Contents" heading) that matches no heading of the document
+example:
+  ja:
+    before: |
+      ## 目次
+
+      - 1 概要
+      - 2 費用
+      - 3 日程
+
+      ## 1 概要
+
+      本書の概要です。
+
+      ## 2 料金
+
+      料金の説明です。
+
+      ## 3 日程
+
+      日程の説明です。
+    after: |
+      ## 目次
+
+      - 1 概要
+      - 2 料金
+      - 3 日程
+
+      ## 1 概要
+
+      本書の概要です。
+
+      ## 2 料金
+
+      料金の説明です。
+
+      ## 3 日程
+
+      日程の説明です。
+  en:
+    before: |
+      ## Contents
+
+      - 1 Overview
+      - 2 Costs
+      - 3 Schedule
+
+      ## 1 Overview
+
+      An overview.
+
+      ## 2 Fees
+
+      The fees.
+
+      ## 3 Schedule
+
+      The schedule.
+    after: |
+      ## Contents
+
+      - 1 Overview
+      - 2 Fees
+      - 3 Schedule
+
+      ## 1 Overview
+
+      An overview.
+
+      ## 2 Fees
+
+      The fees.
+
+      ## 3 Schedule
+
+      The schedule.
+
+not_flagged:
+  ja: 項目と見出しは、空白・記号・大文字小文字を無視して比べ、頭の番号（1.2、2-1）と、ページ番号（…… 12）を外しても比べます。リンクの項目は字の部分を比べます（リンクの行き先は broken-link が見ます）。目次の項目の半分より多くが見出しに合わない文書は、本文と別の章立ての目次と読んで言いません。Markdown の見出しのある文書だけを見ます。
+  en: Entries and headings are compared ignoring spaces, punctuation and case, and again without a leading number (1.2, 2-1) or a page number (.... 12). For a linked entry the link text is compared (broken-link checks where it points). When more than half of the entries match no heading, the contents are read as following another outline and nothing is reported. Only Markdown documents with headings are checked.
+
+rewrite:
+  ja:
+    direction: 目次の項目を、本文の見出しの言葉と番号に合わせてください。節を消したのなら、その項目を目次から消します。
+    pairs:
+      - before: 目次の「2 費用」（見出しは「2 料金」）
+        after: 目次の「2 料金」
+      - before: 目次の「4 付録」（本文に付録の節が無い）
+        after: 目次から「4 付録」を消す
+    keep:
+      - 本文の見出し
+      - 目次の並び順
+    avoid:
+      - 目次に合わせて本文の見出しを書き換える
+  en:
+    direction: Make each contents entry match the heading's words and number. If a section was removed, remove its entry.
+    pairs:
+      - before: The contents entry "2 Costs" (the heading is "2 Fees")
+        after: The contents entry "2 Fees"
+      - before: The contents entry "4 Appendix" (no appendix in the text)
+        after: The entry "4 Appendix" removed
+    keep:
+      - the headings in the text
+      - the order of the contents
+    avoid:
+      - renaming a heading in the text to match the contents

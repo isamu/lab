@@ -1,0 +1,9 @@
+# 目次の見出し。この見出しの下の箇条書きの項目を、文書の見出しと突き合わせる（toc-heading-mismatch）。
+# 英語の文書の見出しも読むので、英語の名前も並べる。大文字と小文字は区別しない。
+id: toc-heading
+language: ja
+entries:
+  - pattern: 目次
+  - pattern: もくじ
+  - pattern: Table of Contents
+  - pattern: Contents
