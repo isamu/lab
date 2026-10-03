@@ -1,0 +1,105 @@
+id: email-subject-length
+layer: L2
+status: experimental
+how_to_find: email-subject
+severity: warning
+
+name:
+  ja: 件名が空か長すぎる
+  en: Subject line empty or too long
+
+why:
+  ja: 受け手は件名を見て、開くか、いつ読むかを決めます。空の件名は用件が分からず、迷惑メールにも見えます。長い件名は一覧で途中から切れ、肝心の語が見えません。「件名：」「Subject:」の行があるメールだけを見て、その値の字数を数えます。返信や転送でメールソフトが足す「Re:」「Fwd:」は数えません。
+  en: 'Recipients decide from the subject whether to open a message and when. An empty subject says nothing and looks like spam; a long one is cut off in the inbox list before its key words. Only an email with a "Subject:" line is checked, and its value is counted in characters. The "Re:" and "Fwd:" a mail program adds are not counted.'
+
+message:
+  ja: 件名が {count} 字あります（{limit} 字まで）
+  en: The subject has {count} characters (up to {limit})
+
+messages:
+  empty:
+    ja: 件名が空です
+    en: The subject line is empty
+
+how_to_fix:
+  ja: 件名には、用件と、日付や案件名のような見分けの語だけを書いてください。説明は本文に移します。
+  en: Put only the request and a distinguishing word (a date, a project) in the subject, and move the explanation into the body.
+
+levels:
+  ja: { strict: 20, normal: 30, relaxed: 40 }
+  en: { strict: 50, normal: 70, relaxed: 90 }
+
+use_for: [business/email, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「件名：」の行がある仕事のメールで、件名が空か、字数の上限を超えるもの
+  en: A work email whose "Subject:" line is empty or longer than the limit
+example:
+  ja:
+    config: { genre: business/email }
+    before: |
+      件名: 来週の火曜日に予定している会議室の予約サービスの導入に向けた打ち合わせの日程について
+
+      いつもお世話になっております。打ち合わせの日程をお知らせします。
+
+      よろしくお願いいたします。
+    after: |
+      件名: 打ち合わせの日程（10月13日）
+
+      いつもお世話になっております。打ち合わせの日程をお知らせします。
+
+      よろしくお願いいたします。
+  en:
+    config: { genre: business/email }
+    before: |
+      Subject: Following up on our conversation last week about the meeting room booking service and a visit
+
+      Dear facilities team,
+
+      I would like to visit your office.
+
+      Best regards,
+      Ichiro
+    after: |
+      Subject: Visit for the room booking service
+
+      Dear facilities team,
+
+      I would like to visit your office.
+
+      Best regards,
+      Ichiro
+not_flagged:
+  ja: 「件名：」の行が無いメールや手紙、引用した返信の中の件名は見ません。メール・手紙のジャンルでだけ見ます。
+  en: 'An email or letter without a "Subject:" line, and subjects inside a quoted reply, are not checked. Only the email and letter genre runs this rule.'
+level_meaning:
+  ja: 件名 {limit} 字まで
+  en: up to {limit} characters in the subject
+rewrite:
+  ja:
+    direction: 件名を、用件と見分けの語（日付・案件名・期限）だけに縮めてください。経緯や理由は本文に移します。空の件名には、本文の用件を短く書きます。
+    pairs:
+      - before: 来週の火曜日に予定している会議室の予約サービスの導入に向けた打ち合わせの日程について
+        after: 打ち合わせの日程（10月13日）
+      - before: 先日お送りいただいた見積書の内容についての確認とご相談
+        after: 見積書の確認（10月分）
+    keep:
+      - 用件
+      - 日付・案件名・期限
+    avoid:
+      - 本文に無い用件を件名に書く
+      - 「至急」「重要」を足す
+  en:
+    direction: Cut the subject to the request and a distinguishing word (a date, a project, a deadline). Move the background into the body. For an empty subject, state the body's request briefly.
+    pairs:
+      - before: Following up on our conversation last week about the meeting room booking service and a visit
+        after: Visit for the room booking service
+      - before: Some questions about the quote you sent us and a few things we would like to discuss
+        after: Questions on the October quote
+    keep:
+      - the request
+      - dates, project names and deadlines
+    avoid:
+      - stating a request the body does not make
+      - adding "Urgent" or "Important"

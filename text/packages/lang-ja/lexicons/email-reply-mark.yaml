@@ -1,0 +1,11 @@
+# メールソフトが件名の頭に足す返信・転送の印（Re:、Fwd:、返信:）。件名の長さには数えない。
+id: email-reply-mark
+language: ja
+entries:
+  - pattern: Re
+  - pattern: RE
+  - pattern: Fwd
+  - pattern: Fw
+  - pattern: FW
+  - pattern: 返信
+  - pattern: 転送

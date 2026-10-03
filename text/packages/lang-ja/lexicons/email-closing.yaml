@@ -1,0 +1,23 @@
+# 仕事のメールや手紙の結びの言葉。本文の最後の数行（署名の名前や連絡先の行を含む）のどれかに、この語のどれかがあれば結びがあるとみなす。
+# 英語の語（Regards など）は行の頭にあるときだけ数える。
+id: email-closing
+language: ja
+entries:
+  - pattern: よろしくお願い
+  - pattern: 宜しくお願い
+  - pattern: よろしく御願い
+  - pattern: お願い申し上げます
+  - pattern: 敬具
+  - pattern: 謹白
+  - pattern: 草々
+  - pattern: 早々
+  - pattern: かしこ
+  - pattern: 以上
+  - pattern: 失礼いたします
+  - pattern: 失礼します
+  - pattern: ありがとうございました
+  - pattern: ありがとうございます
+  - pattern: お待ちしております
+  - pattern: Regards
+  - pattern: Best regards
+  - pattern: Sincerely

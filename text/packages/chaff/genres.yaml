@@ -100,6 +100,10 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
       clause-chain: off # measured
       max-sentence-length: off # measured
       max-ten: off # measured
@@ -141,6 +145,10 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
       max-sentence-length: off # measured
       quote-style-consistency: off # measured
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
@@ -174,6 +182,10 @@ groups:
       shell-prompt-mix: off
       heading-command-missing: off
       step-statement-mix: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
@@ -287,6 +299,10 @@ groups:
       wordy-phrase: off
       weasel-word: off
       sentence-initial-so: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -336,6 +352,10 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
 
 genres:
   - id: technical/spec

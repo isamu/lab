@@ -360,9 +360,12 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 - `abstract-length`: ジャンル blog/tech では見ないため
 - `agentless-passive`: ジャンル blog/tech では見ないため
 - `ai-structure`: 表題より下の見出しが無いため
+- `attachment-not-attached`: ジャンル blog/tech では見ないため
 - `citation-reference-mismatch`: ジャンル blog/tech では見ないため
 - `citation-style-mix`: ジャンル blog/tech では見ないため
 - `cushion-phrase-density`: ジャンル blog/tech では見ないため
+- `email-greeting-closing`: ジャンル blog/tech では見ないため
+- `email-subject-length`: ジャンル blog/tech では見ないため
 - `figure-reference-order`: ジャンル blog/tech では見ないため
 - `max-sentence-length`: ジャンル blog/tech では見ないため
 - `request-without-deadline`: ジャンル blog/tech では見ないため
