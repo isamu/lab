@@ -1,0 +1,117 @@
+# 仮名漢字変換の取り違え。pattern が誤った形、instead_of が正しい形。misconversion が読む。
+# 前後の語で誤りと決まる形だけを、前後の語ごと書く。「以外と」だけでは「日本以外と比べて」と区別できないので、
+# 後ろの語まで書いた「以外と簡単」だけを載せる。動詞は原形で書けば活用した形（会った・会います）にも当たる。
+# 形容詞は活用した形に当たらないので、要る形を並べる（多い・多く・多かっ）。
+# それ自体が誤りの四字熟語（絶対絶命）と、語にならない形（不可決）はそのまま載せる。
+# 「例え〜ても」は「たとえ」の当て字として辞書に載るので、誤りとしない。
+id: misconversion
+language: ja
+entries:
+  # 意外と・意外に
+  - pattern: 以外と簡単
+    instead_of: 意外と簡単
+  - pattern: 以外に簡単
+    instead_of: 意外に簡単
+  - pattern: 以外と多い
+    instead_of: 意外と多い
+  - pattern: 以外と多く
+    instead_of: 意外と多く
+  - pattern: 以外と多かっ
+    instead_of: 意外と多かっ
+  - pattern: 以外と少ない
+    instead_of: 意外と少ない
+  - pattern: 以外と少なかっ
+    instead_of: 意外と少なかっ
+  - pattern: 以外と難しい
+    instead_of: 意外と難しい
+  - pattern: 以外と難しかっ
+    instead_of: 意外と難しかっ
+  - pattern: 以外と知られていない
+    instead_of: 意外と知られていない
+  - pattern: 以外と早く
+    instead_of: 意外と早く
+  - pattern: 以外と安い
+    instead_of: 意外と安い
+  - pattern: 以外と安く
+    instead_of: 意外と安く
+  - pattern: 以外と大変
+    instead_of: 意外と大変
+  - pattern: 以外とすんなり
+    instead_of: 意外とすんなり
+  - pattern: 以外とあっさり
+    instead_of: 意外とあっさり
+  - pattern: 以外と便利
+    instead_of: 意外と便利
+  - pattern: 以外と時間がかか
+    instead_of: 意外と時間がかか
+  # 初めて（はじめて会う・知る・聞く・気づく・訪れる・経験する）
+  - pattern: 始めて会う
+    instead_of: 初めて会う
+  - pattern: 始めてお会い
+    instead_of: 初めてお会い
+  - pattern: 始めて知る
+    instead_of: 初めて知る
+  - pattern: 始めて聞く
+    instead_of: 初めて聞く
+  - pattern: 始めて気づく
+    instead_of: 初めて気づく
+  - pattern: 始めて気付く
+    instead_of: 初めて気付く
+  - pattern: 始めて訪れる
+    instead_of: 初めて訪れる
+  - pattern: 始めて経験
+    instead_of: 初めて経験
+  # 確率と確立
+  - pattern: 確立が高い
+    instead_of: 確率が高い
+  - pattern: 確立が低い
+    instead_of: 確率が低い
+  - pattern: 確立が高く
+    instead_of: 確率が高く
+  - pattern: 確立が高かっ
+    instead_of: 確率が高かっ
+  - pattern: 確立が低く
+    instead_of: 確率が低く
+  - pattern: 確立が低かっ
+    instead_of: 確率が低かっ
+  - pattern: 確立は高い
+    instead_of: 確率は高い
+  - pattern: 確立は低い
+    instead_of: 確率は低い
+  - pattern: 高い確立で
+    instead_of: 高い確率で
+  - pattern: 低い確立で
+    instead_of: 低い確率で
+  - pattern: 確率する
+    instead_of: 確立する
+  # それ自体が誤りの形
+  - pattern: 不可決
+    instead_of: 不可欠
+  - pattern: 絶対絶命
+    instead_of: 絶体絶命
+  - pattern: 危機一発
+    instead_of: 危機一髪
+  - pattern: 興味深々
+    instead_of: 興味津々
+  - pattern: 完壁
+    instead_of: 完璧
+  - pattern: 専問
+    instead_of: 専門
+  - pattern: 講議
+    instead_of: 講義
+  - pattern: 責任転化
+    instead_of: 責任転嫁
+  - pattern: 異和感
+    instead_of: 違和感
+  - pattern: 意気統合
+    instead_of: 意気投合
+  - pattern: 短刀直入
+    instead_of: 単刀直入
+  - pattern: 自我自賛
+    instead_of: 自画自賛
+  - pattern: 無我無中
+    instead_of: 無我夢中
+  - pattern: 温古知新
+    instead_of: 温故知新
+  - pattern: 厚顔無知
+    instead_of: 厚顔無恥
