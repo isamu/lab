@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  image-file-name-alt  found
+ja/design  image-file-name-alt  found
+ja/email  image-file-name-alt  found
+ja/figures  image-file-name-alt  found
+ja/itinerary  image-file-name-alt  found
+ja/minutes  image-file-name-alt  found
+ja/note  image-file-name-alt  found
+ja/policy  image-file-name-alt  found
+ja/press  image-file-name-alt  found
+ja/proposal  image-file-name-alt  found
+ja/quote  image-file-name-alt  found
+ja/readme  image-file-name-alt  found
+ja/requirements  image-file-name-alt  found
+en/blog  image-file-name-alt  found
+en/design  image-file-name-alt  found
+en/email  image-file-name-alt  found
+en/figures  image-file-name-alt  found
+en/itinerary  image-file-name-alt  found
+en/minutes  image-file-name-alt  found
+en/note  image-file-name-alt  found
+en/policy  image-file-name-alt  found
+en/press  image-file-name-alt  found
+en/proposal  image-file-name-alt  found
+en/quote  image-file-name-alt  found
+en/readme  image-file-name-alt  found
+en/requirements  image-file-name-alt  found

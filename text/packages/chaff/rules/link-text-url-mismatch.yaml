@@ -1,0 +1,71 @@
+id: link-text-url-mismatch
+layer: L1
+status: experimental
+how_to_find: link-text-url-mismatch
+requires: [markdown]
+severity: warning
+
+name:
+  ja: リンクの言葉の URL と行き先が違う
+  en: Link text shows one address, the link goes to another
+
+why:
+  ja: 「[https://example.com/guide](https://other.example/page)」のように、リンクの言葉が URL で、その URL と実際の行き先のサイトが違うリンクです。読み手は見えている URL に行くつもりで押し、別のサイトに着きます。URL を書き換えたときに片方だけ直した跡であることが多く、なりすましの手口と同じ形でもあります。サイト（ホスト）が同じなら、短く見せた URL として指しません。
+  en: A link whose text is an address ("[https://example.com/guide](https://other.example/page)") that names a different site from where the link goes. The reader clicks expecting the address they see and lands somewhere else. It is usually what is left when a URL was changed in one place only, and it is also the shape phishing uses. When the site (host) is the same, a shortened display is not reported.
+
+message:
+  ja: リンクの言葉は「{shown}」ですが、行き先は「{target}」です
+  en: 'The link text shows "{shown}" but the link goes to "{target}"'
+
+how_to_fix:
+  ja: 言葉と行き先のどちらが正しいかを確かめ、もう一方を合わせてください。行き先の名前を言葉にすると、この食い違いは起きません（[導入の手引き](https://…)）。
+  en: Check which of the two is right and make the other match. Naming the target in words ("[the setup guide](https://…)") avoids the mismatch altogether.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「[https://a.example](https://b.example)」のように、言葉に見える URL と行き先のサイトが違うリンク
+  en: A link whose text is a URL on one site and whose target is on another
+example:
+  ja:
+    before: |
+      新しい手引きは [https://docs.example.com/guide](https://old.example.net/guide) にあります。
+    after: |
+      新しい手引きは [https://docs.example.com/guide](https://docs.example.com/guide) にあります。
+  en:
+    before: |
+      The new guide is at [https://docs.example.com/guide](https://old.example.net/guide) now.
+    after: |
+      The new guide is at [https://docs.example.com/guide](https://docs.example.com/guide) now.
+
+not_flagged:
+  ja: 同じサイトの URL を短く見せたもの（[github.com/a](https://github.com/a/b)）、言葉が URL でないリンク、行き先が相対パスやページ内のリンク、参照の形のリンク（[言葉][1]）は指しません。www. の有無と大文字小文字は同じと読みます。
+  en: A shortened display of an address on the same site ("[github.com/a](https://github.com/a/b)"), link text that is not an address, relative or in-page targets, and reference-style links ("[text][1]") are not reported. "www." and letter case are ignored.
+rewrite:
+  ja:
+    direction: リンクの言葉と行き先のうち、正しいほうにもう一方を合わせてください。どちらが正しいか文から分からなければ、変えずに書き手に確かめます。
+    pairs:
+      - before: 手引きは [https://docs.example.com/guide](https://old.example.net/guide) にあります。
+        after: 手引きは [https://docs.example.com/guide](https://docs.example.com/guide) にあります。
+      - before: 申込は [www.example.jp/apply](https://example.org/apply) から。
+        after: 申込は [www.example.jp/apply](https://www.example.jp/apply) から。
+    keep:
+      - 文の言っていること
+      - 正しいほうの URL
+    avoid:
+      - どちらが正しいかを推し量って、両方を三つ目の URL に変える
+  en:
+    direction: Make the link text and the target agree, keeping whichever is right. If the text does not say which, leave it and ask the writer.
+    pairs:
+      - before: The guide is at [https://docs.example.com/guide](https://old.example.net/guide) now.
+        after: The guide is at [https://docs.example.com/guide](https://docs.example.com/guide) now.
+      - before: Apply at [www.example.com/apply](https://example.org/apply) today.
+        after: Apply at [www.example.com/apply](https://www.example.com/apply) today.
+    keep:
+      - what the sentence says
+      - the address that is right
+    avoid:
+      - guessing and changing both to a third address

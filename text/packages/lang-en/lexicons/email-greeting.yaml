@@ -1,0 +1,17 @@
+# The greeting a work email or letter opens with. One of the first lines of the body opening with one of these is a
+# greeting; case does not matter, and a word must not run on into another (Hi is not History).
+id: email-greeting
+language: en
+entries:
+  - pattern: Dear
+  - pattern: Hi
+  - pattern: Hello
+  - pattern: Hey
+  - pattern: Good morning
+  - pattern: Good afternoon
+  - pattern: Good evening
+  - pattern: Greetings
+  - pattern: To whom it may concern
+  - pattern: Ladies and gentlemen
+  - pattern: Sir
+  - pattern: Madam

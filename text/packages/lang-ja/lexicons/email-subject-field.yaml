@@ -1,0 +1,6 @@
+# 件名の欄の名前。「件名：…」の行の値を、件名として長さを測る。
+id: email-subject-field
+language: ja
+entries:
+  - pattern: 件名
+  - pattern: Subject

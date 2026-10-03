@@ -1,0 +1,9 @@
+# 本文が添付に触れる語。触れているのに、添付の欄・ファイル名・添付の注記が文書のどこにも無ければ、付け忘れを疑う。
+# 手紙の「同封」は入れない。手紙は同封物を本文の中でも書き出すので、欄が無くても付け忘れとは限らない。
+id: attachment-mention
+language: ja
+entries:
+  - pattern: 添付
+  - pattern: 別添
+  - pattern: attached
+  - pattern: attachment
