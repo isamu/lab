@@ -61,11 +61,14 @@ npx chaffjs article.md --experimental    # 試験中のルールも動かす
 | `no-em-dash` | ダッシュ（——）の多さ |
 | `sentence-rhythm` | 文の長さが揃いすぎている所 |
 | `rule-of-three` | 箇条書きがどれも 3 項目の所 |
+| `section-length-uniformity` | どの節もほぼ同じ長さに埋めてあり、ひな形を埋めたように見える所 |
+| `paragraph-length-variance` | どの段落もほぼ同じ長さで、型に流しこんだように見える所 |
 | `ai-structure` | 構成の項目（見出しの多さ、3 つに分けた小見出し、太字の札、節の長さの揃い方、本文を言い直すまとめなど）のいくつもが、人の記事の 9 割を超えた文書。ブログとエッセイだけで見ます |
 | `ai-generated-composite` | 次の特徴のうち 3 つ以上がそろった文書：`ai-tell`、`contrast-framing`、`stock-transition`、`announcing-opener`、`colon-lead-in`、`assistant-residue`、`closing-cliche`、`padded-intro`、`no-em-dash`、`sentence-rhythm`、`rule-of-three`、`section-length-uniformity`、`ai-structure`（`bold-density` は数えません） |
 
 どのルールも、それだけで「AI が書いた」とは言いません。人も書く形です。
 重なったときに、読み返す場所の目印になります。
+`no-lead` や `paragraph-restatement` のように、ほかにも書き直す箇所を指すルールがあり、`fix-plan` はその直し方も出します。全部は [リファレンス](./reference) にあります。
 
 `ai-tell` の語彙表には、技術文の比喩（「静かに壊れる」「黙って無視される」「時間を溶かす」）も入っています。
 どの語を入れるかは、生成 AI 以前の技術記事と corpus で測って決めました。
@@ -246,7 +249,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 いかがでしたか？夜間バッチの監視は地味に効く改善です。参考になれば幸いです。
 ```
 
-`chaff fix-plan` が出した計画です。
+`chaff fix-plan` が出した計画です。最初のルールより後は略しています。
 
 ````markdown
 $ npx chaffjs fix-plan draft.md --experimental
@@ -325,35 +328,7 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 - 3 行目: 「現代社会において、夜間バッチは業務を支える重要な役割を果たすと言えるでしょう。」
   「現代社会において、重要な役割を果たす、と言えるでしょう、深く掘り下げる、本記事では、地味に効く、時間を溶かす、静かに壊れる」が揃っています（点 47、18 まで）
 
-### `closing-cliche` 定型の結び
-
-**直す方向**: 決まり文句の結びを消してください。本文の結論がすでに最後にあれば、そこで終えます。無ければ、本文で分かったことのうち持ち帰ってほしい一つを一文で書きます。
-
-**変えないもの**
-
-- 本文の結論
-
-**やりがちな間違い**
-
-- 本文に無い結論や呼びかけを足す
-- 「いかがでしたか」を「ぜひ試してみてください」に替える
-
-**例**
-
-前:
-
-> 設定は管理画面の一か所で変えられます。いかがでしたか？参考になれば幸いです。
-
-後:
-
-> 設定は管理画面の一か所で変えられます。
-
-**見つけた箇所**
-
-- 11 行目: 「いかがでしたか？」
-  「いかがでしたか」で締めています
-- 11 行目: 「参考になれば幸いです。」
-  「参考になれば幸いです」で締めています
+…
 
 ## 動かなかったルール
 

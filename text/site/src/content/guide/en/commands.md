@@ -28,6 +28,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
 | `npx chaffjs outline <file> [<after>]` | Shows the outline, measures its shape (headings, average section length, text in lists, bold) and scores its structure against human articles; two files side by side |
 | `npx chaffjs fix-plan <file>` | Prints a plan for whoever rewrites the file: the findings by rule, how to rewrite each, and the checks to run after |
+| `npx chaffjs grade <items.jsonl>` | Grades a JSONL file of model outputs: finding rates, facts, quotations, pass or fail. Sends nothing |
 | `npx chaffjs skill` | Installs the Claude Code skill |
 | `npx chaffjs feedback <file> --rule <rule>` | Drafts a report of a wrong or missed finding |
 | `npx chaffjs test <file\|dir>...` | Also runs the checks that read meaning. Needs an API key |
@@ -43,9 +44,10 @@ These options go with a check.
 | `--genre <genre>` | The genre for this run only; it wins over `chaff.yaml` |
 | `--show-baseline` | Shows the shelved findings too |
 | `--sarif <path>` | Writes the findings as SARIF, to show them on the lines of a GitHub PR |
+| `--dry-run` | With `test`, shows what would be sent to an AI, without calling the API |
 | `--include <glob>` | In a folder, checks the files matching the glob besides Markdown (`--include "*.yaml"`). See [Configuration](./configuration) |
 
-`tree` and `cite` are explained in [Structure and quotations](./structure), `--sarif` in [CI](./ci).
+`tree` and `cite` are explained in [Structure and quotations](./structure), `--sarif` in [CI](./ci), and `grade` in [Using chaff for AI evals](./ai-evals).
 
 ## One short entry per finding
 
@@ -363,9 +365,14 @@ npx chaffjs compare before.md after.md --json                     # for an AI to
 
 The kinds are `number`, `date`, `time`, `url`, `code`, `name`, `quote`, `heading`, `reference` and `footnote`.
 `--json` lists every dropped and added fact with its line, so it can go straight back to the AI that did the rewrite.
-By default a fact is counted as often as it is stated, so cutting a summary that repeated the body reports each repeat as dropped. With `--distinct`, a fact counts as kept when the other document states it at least once; a fact stated nowhere in it is still dropped or added.
-This also means `--distinct` lets the rewrite state a fact more often than the original does, or less often: it checks only that each fact is there.
-A heading counts as stated when the other document has a heading at the same level with the same wording, so a cut heading is still listed when other headings of its level remain.
+
+By default a fact is counted as often as it is stated, so cutting a summary that repeated the body reports each repeat as dropped.
+With `--distinct`, a fact counts as kept when the other document states it at least once.
+A fact stated nowhere in it is still dropped or added.
+`--distinct` lets the rewrite state a fact more or less often than the original does; it checks only that each fact is there.
+
+A heading counts as stated when the other document has a heading at the same level with the same wording.
+So a cut heading is still listed when other headings of its level remain.
 
 ## Listing the facts before a rewrite
 
@@ -405,7 +412,14 @@ A rewrite that smooths the sentences can leave the skeleton as it was: the same 
 It lists each heading, indented by depth, with its line and the length of its own text. It measures four things: the number of headings, the average section length, the share of the text in list items and the bold spans.
 Lengths are characters for Japanese and words for English, and a section with no text of its own is left out of the average.
 
-Below the outline comes the structure block. Each structure measure (headings per 1000 words, sections of one or two paragraphs, section length variation, headings in a stock form, headings split into three, introduction and conclusion headings, a closing that restates the body, three-item lists, bold-label list items, emoji headings, paired pros and cons) is set against articles written before generated text was common: what share of them the value lies past, and, where it lies past 90% of them, the human median and that line, marked ✗.
+Below the outline comes the structure block.
+It sets each structure measure against articles written before generated text was common, and says what share of them the value lies past.
+Where a value lies past 90% of them, it also gives the human median and that line, marked ✗.
+
+The measures are headings per 1000 words, sections of one or two paragraphs, section length variation, and headings in a stock form.
+Then come headings split into three, introduction and conclusion headings, a closing that restates the body, and three-item lists.
+Last come bold-label list items, emoji headings, and paired pros and cons.
+
 The structure score is the count of ✗, out of the measures compared; nothing is weighted or hidden. A measure the document is too small for is listed as not measured, with the reason. The human percentiles are data, in `structure-baseline.yaml`.
 
 Given two files, it shows both and how each measure moved, the structure score included.
@@ -464,7 +478,8 @@ How the shape changed (before.md → after.md)
   pros / cons pairs: 0 → 0
 ```
 
-In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, then a line per file with the structure score and the measures past the line, and `--json` gives the outline, the shape and every structure measure with where it stands (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
+In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, then a line per file with the structure score and the measures past the line.
+`--json` gives the outline, the shape and every structure measure with where it stands (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
 
 ## Planning a rewrite
 
@@ -477,7 +492,8 @@ npx chaffjs fix-plan article.md --experimental --json    # the same plan as JSON
 ```
 
 The plan is written in the document's language. It starts with the constraints every rewrite keeps: no fact changed or added, ask the writer instead of inventing, two passes at most.
-Next comes the recommended way to rewrite (Light, Bold or Full), the document-level signals with the outline's numbers, and the structure targets: the structure score and a target for each measure past 90% of human articles. A score at its limit is itself a reason to recommend Full.
+Next comes the recommended way to rewrite (Light, Bold or Full) and the document-level signals with the outline's numbers.
+Then come the structure targets: the structure score, and a target for each measure past 90% of human articles. A score at its limit is itself a reason to recommend Full.
 
 For each rule that found something, the plan gives its direction, what to keep, what to avoid, one before-and-after example and the spots.
 It ends with the `chaff`, `compare` and `outline` commands to run on the rewrite.
