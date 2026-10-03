@@ -206,7 +206,7 @@ a.results.jsonl とは比べません: 設定が違います。ルールか設�
 いつもの要約のあとに、variant を並べた表が出ます。
 
 ```
-$ npx chaffjs grade prompts-ja.jsonl --experimental --variant-key prompt
+$ npx chaffjs grade prompts-ja.jsonl --variant-key prompt
 prompts-ja.jsonl: 6 件の出力、4 件が通り、2 件が落ちた
 
 落ちた出力
@@ -247,7 +247,7 @@ prompts-ja.jsonl: 6 件の出力、4 件が通り、2 件が落ちた
 CI のログには、`--compact` が合否の分かれた題を 1 行ずつ足します。
 
 ```
-$ npx chaffjs grade prompts-ja.jsonl --experimental --variant-key prompt --compact
+$ npx chaffjs grade prompts-ja.jsonl --variant-key prompt --compact
 …
 disagree	q3	pass prompt-a	fail prompt-b
 disagree	refund	pass prompt-a	fail prompt-b
@@ -257,7 +257,7 @@ disagree	refund	pass prompt-a	fail prompt-b
 PR のコメントには、`--format markdown` が同じ表を Markdown で書きます。`--format json` は要約に `variants` の欄を足します。
 
 ```
-$ npx chaffjs grade prompts-ja.jsonl --experimental --variant-key prompt --format markdown
+$ npx chaffjs grade prompts-ja.jsonl --variant-key prompt --format markdown
 ## chaff grade: prompts-ja.jsonl
 
 6 件の出力、4 件が通り、2 件が落ちた
