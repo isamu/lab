@@ -1,0 +1,107 @@
+id: unclosed-code-fence
+layer: L1
+status: stable
+how_to_find: unclosed-code-fence
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 閉じていないコードブロック
+  en: Unclosed code fence
+
+why:
+  ja: 「```」で始めたコードブロックを閉じ忘れると、Markdown は文書の終わり（リストの項目の中ならその項目の終わり）までをすべてコードとして表示します。後ろの見出しも本文も等幅の字の塊になり、読み手には文書が壊れて見えます。
+  en: A code block opened with "```" and never closed runs to the end of the document (or of the list item it is in), so Markdown shows everything after it as code. The headings and text that follow turn into one block of monospaced text, and the document looks broken.
+
+message:
+  ja: 「{fence}」で始めたコードブロックが閉じていません
+  en: 'The code block opened with "{fence}" is never closed'
+
+how_to_fix:
+  ja: コードの終わりに、始めと同じ記号を同じ数以上並べた行（「```」）を足してください。
+  en: Add a line after the code with the same character, at least as many ("```").
+
+placeholders:
+  fence:
+    ja: 記号
+    en: the fence
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「```」で始めたまま閉じていないコードブロック（後ろがすべてコードになる）
+  en: A code block opened with "```" and never closed (everything after it shows as code)
+example:
+  ja:
+    before: |
+      手順は次のとおりです。
+
+      ```sh
+      npm install
+
+      ## 確認
+
+      動くことを確かめます。
+    after: |
+      手順は次のとおりです。
+
+      ```sh
+      npm install
+      ```
+
+      ## 確認
+
+      動くことを確かめます。
+  en:
+    before: |
+      Install it first.
+
+      ```sh
+      npm install
+
+      ## Check
+
+      Make sure it runs.
+    after: |
+      Install it first.
+
+      ```sh
+      npm install
+      ```
+
+      ## Check
+
+      Make sure it runs.
+
+not_flagged:
+  ja: 閉じたコードブロック、字下げで書いたコードブロック、引用の中のコードブロックは指しません。
+  en: A closed code block, an indented code block, and a code block in a quotation are not reported.
+rewrite:
+  depth: light
+  ja:
+    direction: コードの終わりに閉じる行（「```」）を足してください。どこまでがコードかは、コマンドや出力の並びの終わりで決めます。コードの中身は変えません。
+    pairs:
+      - before: 「```sh」「npm install」「## 確認」
+        after: 「```sh」「npm install」「```」「## 確認」
+      - before: 「~~~」「SELECT 1;」のまま文書が終わる
+        after: 「~~~」「SELECT 1;」「~~~」
+    keep:
+      - コードの中身
+      - 始めの行の言語名
+    avoid:
+      - 後ろの本文までコードの中に入れる
+  en:
+    direction: Add a closing line ("```") where the code ends; the code ends where the commands or the output stop. Keep the code as it is.
+    pairs:
+      - before: '"```sh", "npm install", "## Check"'
+        after: '"```sh", "npm install", "```", "## Check"'
+      - before: 'the document ends after "~~~" and "SELECT 1;"'
+        after: '"~~~", "SELECT 1;", "~~~"'
+    keep:
+      - the code
+      - the language name on the opening line
+    avoid:
+      - putting the text after it inside the code block

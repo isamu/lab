@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/readme  code-fence-unclosed  found
+en/readme  code-fence-unclosed  found
