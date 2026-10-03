@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  footnote-missing-ja  found
+ja/design  footnote-missing-ja  found
+ja/email  footnote-missing-ja  found
+ja/figures  footnote-missing-ja  found
+ja/itinerary  footnote-missing-ja  found
+ja/minutes  footnote-missing-ja  found
+ja/note  footnote-missing-ja  found
+ja/policy  footnote-missing-ja  found
+ja/press  footnote-missing-ja  found
+ja/proposal  footnote-missing-ja  found
+ja/quote  footnote-missing-ja  found
+ja/readme  footnote-missing-ja  found
+ja/requirements  footnote-missing-ja  found
+en/blog  footnote-missing-en  found
+en/design  footnote-missing-en  found
+en/email  footnote-missing-en  found
+en/figures  footnote-missing-en  found
+en/itinerary  footnote-missing-en  found
+en/minutes  footnote-missing-en  found
+en/note  footnote-missing-en  found
+en/policy  footnote-missing-en  found
+en/press  footnote-missing-en  found
+en/proposal  footnote-missing-en  found
+en/quote  footnote-missing-en  found
+en/readme  footnote-missing-en  found
+en/requirements  footnote-missing-en  found
