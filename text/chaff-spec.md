@@ -943,6 +943,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `ra-nuki` ✅ | ら抜き言葉。lang-ja が一段・カ変動詞の未然形＋「れる」に `PotentialRa=Dropped` を付ける | pos |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
 | `hankaku-kana` ✅ | 半角の片仮名と半角の句読点。コード・リンク・引いた名前の中は除く | - |
+| `translationese-density` | 翻訳調（を可能にする、重要な役割を果たす、されることができる、あなたは）の密度。語彙表 translationese を共通の phrase-density で数える。上限は人の書いた Qiita の記事で決めた | pos |
 | `misconversion` | 仮名漢字変換の取り違え（以外と簡単、始めて会う、確立が高い、不可決）。前後の語まで語彙表 misconversion に書いた形だけ。detector は known-correction | pos |
 
 `katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。

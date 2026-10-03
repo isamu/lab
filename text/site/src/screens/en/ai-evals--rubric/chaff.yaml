@@ -1,0 +1,8 @@
+grade:
+  rules:
+    total-mismatch: { max: 0 } # one finding fails the output
+    closing-cliche: { max: 0, weight: 3 } # fails, and costs 3 points each
+    ai-tell: { max_rate: 5, weight: 2 } # fails above 5 per 1,000 words (characters for Japanese)
+  facts: { dropped: 0, added: 0, allow_dropped: [heading] }
+  citations: { failed: 0, required: true } # required: an output with sources but no citations fails
+  penalty: 10 # fails when the points add up to more than this

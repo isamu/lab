@@ -91,6 +91,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "sasete-itadaku",
         "stock-transition",
         "summary-fact-mismatch",
+        "translationese-density",
         "undefined-acronym",
         "unit-mismatch",
         "unqualified-superlative",
