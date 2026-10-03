@@ -100,6 +100,7 @@ level_meaning:
   ja: 絵文字の付いた見出しが {limit} 個あれば指摘
   en: reported once {limit} headings carry an emoji
 rewrite:
+  depth: light
   ja:
     direction: 見出しから絵文字を外し、節の中身が分かる言葉にしてください。絵文字が言っていたこと（注意、完了）が要るなら、本文の最初の文で言います。
     pairs:

@@ -56,6 +56,7 @@ level_meaning:
   ja: 1000 字あたり逃げの表現 {limit} 個まで（一文に重ねた逃げは、文書の長さによらず指摘）
   en: up to {limit} hedges per 1000 words (hedges stacked in one sentence are reported whatever the length)
 rewrite:
+  depth: light
   ja:
     direction: 重ねた逃げは一つだけ残すか、確かめたことなら全部外して言い切ってください。言い切れないなら、何が分かれば言い切れるかを書きます。
     pairs:

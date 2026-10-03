@@ -13,6 +13,7 @@ import { limitsFor, styleLevelSource } from "../config/style.ts";
 import { loadStyles } from "../style-load.ts";
 import type { OptionLayer } from "../rule-options.ts";
 import { CUSTOM_TYPES } from "../custom/parse.ts";
+import { DEFAULT_DEPTH, REWRITE_DEPTHS, depthMeaning } from "../rewrite-depth.ts";
 
 const TEXT: Texts<{
   readonly offBySetting: string;
@@ -146,10 +147,19 @@ const guideOf = (rule: RuleDefinition): Record<string, unknown> => ({
   example: rule.guide?.examples ?? {},
   not_flagged: rule.guide?.notFlagged ?? {},
   level_meaning: rule.guide?.levelMeaning ?? {},
+  // The depth chaff fix-plan files the rule's direction under; a rule that does not say is light.
+  rewrite_depth: rule.guide?.rewriteDepth ?? DEFAULT_DEPTH,
   languages: rule.languages ?? READER_LANGUAGES,
   requires: rule.requires,
   genres: genresOf(rule),
 });
+
+/** Each rewrite depth with what it means, shallowest first: the values of rules[].rewrite_depth and of fix_plan.depth. */
+const depthsOf = (): Record<string, unknown>[] =>
+  REWRITE_DEPTHS.map((depth) => ({
+    id: depth,
+    meaning: Object.fromEntries(READER_LANGUAGES.map((language) => [language, depthMeaning(depth, uiLanguageOf(language))])),
+  }));
 
 const groupsOf = (): Record<string, unknown>[] =>
   RULE_GROUPS.map((group) => ({
@@ -190,6 +200,7 @@ export const rulesJson = (
       values_you_can_use: ["strict", "normal", "relaxed", "off"],
       values_note: text.valuesNote,
       groups: groupsOf(),
+      rewrite_depths: depthsOf(),
       ...COMING,
       rules: rules.map((rule) => ({
         id: rule.id,

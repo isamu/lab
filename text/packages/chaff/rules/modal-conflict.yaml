@@ -80,6 +80,7 @@ not_flagged:
   ja: 中身の語（名詞・動詞・形容詞）がまったく同じ二つの文だけを比べます。様相の語を二つ以上持つ文と、中身の語が一つしか無い文は見ません。「しなければならない」と「することができる」は食い違いと見ません。
   en: Only two sentences with exactly the same content words (nouns, verbs, adjectives) are compared. A sentence with two or more modal markers, or with fewer than two content words, is not checked. "Must" and "may" are not counted as a conflict.
 rewrite:
+  depth: light
   ja:
     direction: どちらの文が正しいかを書き手に確かめてください。両方が正しいなら、それぞれの条件や例外を本文から書き足して範囲を分けます。本文に条件が無ければ作らず、書き手に聞きます。
     pairs:

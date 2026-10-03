@@ -1575,6 +1575,7 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 - `type: module` は、チームが書いた Node の関数（§18.8）。`module:` に `chaff.yaml` から見た相対パスを書く。
   そのフォルダの外へ出る相対パスは断り、外のファイルは絶対パスで書いたときだけ読む（読み込むとコードが動くため）。
   `requires: [pos]` で文に語が付き、`word_list:` で語彙表が関数に渡る。
+- `rewrite:` を書けば、同梱のルールと同じ形（`depth` と、言語ごとの `direction`・`pairs`・`keep`・`avoid`）で `chaff fix-plan` に直す方向を渡す（§28.8）。
 
 ### 18.8 コードで書くルールとプラグイン（`chaffjs/api`、`plugins:`）
 
@@ -2333,9 +2334,14 @@ chaff は書き直さない。計画を読む人か AI が書き直し、chaff �
 ```bash
 npx chaffjs fix-plan before.md --experimental          # 直す計画（Markdown）
 npx chaffjs fix-plan before.md --experimental --json   # 同じものを JSON で
+npx chaffjs fix-plan before.md --depth light           # 構成は残し、語と文だけを直す計画
 ```
 
 - 直す方向はルールのファイルの `rewrite:` に言語ごとに書く。`direction`（直し方を一、二文で）、`pairs`（自分で書いた直す前と後の組を 2〜3 個）、`keep`（変えてはいけないもの）、`avoid`（書き直す人がやりがちな間違い）。AI っぽさのルールとよく出る読みやすさのルールには必須で、試験が確かめる。`rewrite:` の無いルールは `how_to_fix` を直す方向に使う。
+- `rewrite.depth` は、その直す方向がどこまで深く書き直すかを書く。`light`（語と文を直す。構成と文体は残す）、`structure`（節・見出し・段落を組み替える）、`register`（文体を変える。です・ます → である、比べる言い方を外す、など）。深いほうは浅いほうを含む。同梱のルールは `rewrite:` を持てば `depth` も必須で、試験が確かめる。チームのルール（§18.7）とプラグインのルール（§18.8）は書かなければ `light`。知らない値は、同梱のルールなら読み込みで止まり、チームとプラグインのルールなら実行を止める。どちらも、書いた値と使える 3 つの値と意味を言う。
+- 深さは `--depth <深さ>` か chaff.yaml の `fix_plan: { depth: <深さ> }` で決める（`--depth` が勝つ）。決めると、指摘の出たルールのうち深さがそれより深いものは直す方向を出さず、「決めた深さより深いルール」に名前と箇所の数だけを並べる。黙らせると、直したように見えるため。決めなければ、指摘の出たルールをすべて出し、勧める直し方の深さを書く。
+- 直し方と深さの対応: 部分直し（Light）と節ごとの書き直し（Bold）は `light`、全面書き直し（Full）は `structure`、文体を変える（Register）は `register`。`--depth structure` は全面書き直し、`--depth register` は文体まで変える書き直しを選ぶ。`--depth light` では、chaff が全面書き直しを勧める文書でも構成を残し（理由 `depth-limit`）、文書全体の目印の数で Light か Bold を選ぶ。`register` は chaff からは勧めない（文体を変えたいかは書き手が決める）。
+- `chaff rules --json` は各ルールの `rewrite_depth` と、深さの一覧 `rewrite_depths`（意味を ja と en で）を出す。`chaff explain` は `rewrite:` を持つルールの深さを言う。
 - 語彙表の項目は、その言い回しだけの手がかりを `rewrite:` に持てる（`ai-tell` の「時間を溶かす」→「時間がかかった（何に、どれだけ）」）。計画には、`ai-tell` の指摘に名前の出た言い回しのものだけを出す。
 - 計画の中身は次のとおり。
   - 守ること（事実、数、条件、名前を変えない。無い事実を足さない。分からない具体は作らずに書き手に聞く。書き直しは 2 回まで）
@@ -2344,7 +2350,7 @@ npx chaffjs fix-plan before.md --experimental --json   # 同じものを JSON �
   - 指摘のあったルールごとの、直す方向、変えないもの、やりがちな間違い、例の 1 組、見つけた箇所
   - 動かなかったルールと、直したあとの確かめのコマンド
 - 勧める直し方: 指摘が無ければ「直すところなし」。`ai-generated-composite` が出ていれば全面書き直し。ジャンルが `blog/*` か `literature/essay` なら全面書き直し。文書全体の目印のルールが 2 つ以上出ていれば節ごとの書き直し。それ以外は部分直し。頼まれた内容が「全面的に」なら全面書き直しになることは、chaff には読めないので計画に言葉で書く。
-- 確かめのコマンドは、書き直したものを `<名前>.rewritten.<拡張子>` に置いたものとして出す。全面書き直しでは `compare` に `--distinct --allow-dropped heading --allow-added heading` を付ける。
+- 確かめのコマンドは、書き直したものを `<名前>.rewritten.<拡張子>` に置いたものとして出す。深さが `structure` 以上の書き直しでは `compare` に `--distinct --allow-dropped heading --allow-added heading` を付ける。
 - 決定的で、同じ文書なら同じ計画になる。どこにも送らない。ファイルは一つ。無い、二つ以上のときは終了コード 1。
 - 画面の言語は文書の言語に従う。
 

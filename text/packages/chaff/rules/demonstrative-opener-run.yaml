@@ -45,6 +45,7 @@ level_meaning:
   ja: 指示語で始まる文 {limit} 文の連続まで
   en: up to {limit} such sentences in a row
 rewrite:
+  depth: light
   ja:
     direction: 続いた指示語のうち、指すものが遠いものから、指している名詞に置き換えてください。一つ前の文を指す指示語は残してかまいません。
     pairs:

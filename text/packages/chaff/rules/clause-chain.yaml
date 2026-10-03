@@ -44,6 +44,7 @@ level_meaning:
   ja: 一文の節 {limit} つまで
   en: up to {limit} clauses in one sentence
 rewrite:
+  depth: light
   ja:
     direction: 節のつなぎ目（「〜が、」「〜ので、」「〜て、」）のどこかで文を切り、切った所の関係を次の文の頭で言い直してください。
     pairs:

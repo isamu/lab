@@ -77,6 +77,7 @@ not_flagged:
   ja: 参照先が見出しを持たないとき、参照先が一つに決まらないとき、他の文書の条（民法第709条）、括弧の中が数字を含むか「前述」「参照」のような語のときは見ません。
   en: References whose target has no heading or cannot be told apart, references to another document, and brackets holding a number or a word like "above" or "see" are left alone.
 rewrite:
+  depth: light
   ja:
     direction: 番号と名前のどちらが正しいかを書き手に確かめ、もう一方を直してください。名前を添える意味が無ければ、名前を消して番号だけにしてもかまいません。
     pairs:

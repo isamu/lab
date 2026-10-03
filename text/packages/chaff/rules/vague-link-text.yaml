@@ -51,6 +51,7 @@ not_flagged:
   ja: 言葉の一部に「こちら」を含むだけのリンク（「料金表はこちら」）、URL をそのまま書いたリンク、参照の形のリンク（[こちら][1]）は指しません。Markdown でない文書と、引用（>）とコードの中のリンクも見ません。
   en: Link text that only contains such a word ("pricing here"), a bare or angle-bracket URL, and reference-style links ([here][1]) are not reported, nor are links in a quotation (>), in code, or in a document that is not Markdown.
 rewrite:
+  depth: light
   ja:
     direction: リンクの言葉を、行き先の名前（ページの題、資料の名前）に変えてください。「こちら」「ここ」は文から外し、文は行き先の名前を言う形に組み直します。行き先の URL は変えません。
     pairs:

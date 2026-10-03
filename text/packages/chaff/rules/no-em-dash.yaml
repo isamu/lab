@@ -57,6 +57,7 @@ level_meaning:
   ja: 1000 字あたりダッシュ {limit} 個まで
   en: up to {limit} dashes per 1000 words
 rewrite:
+  depth: light
   ja:
     direction: 挟み込みのダッシュは括弧に、言い換えや補足のダッシュは読点に替えるか、二文に分けてください。
     pairs:

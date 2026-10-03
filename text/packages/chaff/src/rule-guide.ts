@@ -1,4 +1,5 @@
 import type { Localized } from "./plugin.ts";
+import { depthOfRewrite, type RewriteDepth } from "./rewrite-depth.ts";
 
 /** How the rule reference groups rules for a reader who is not an engineer, in the order it lists them. */
 export const RULE_GROUPS = ["readability", "wording", "slips", "consistency", "structure", "facts", "ai-tells", "team"] as const;
@@ -111,6 +112,8 @@ export type RuleGuide = {
   readonly sources: readonly string[];
   /** By language, optional per rule. */
   readonly rewrite: Readonly<Record<string, RuleRewrite>>;
+  /** rewrite.depth: how deep the block's direction reaches. None when not written or not a depth; the loaders report the latter. */
+  readonly rewriteDepth?: RewriteDepth | undefined;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -160,6 +163,11 @@ const rewritesOf = (value: unknown): Readonly<Record<string, RuleRewrite>> =>
     ? Object.fromEntries(Object.entries(value).flatMap(([language, entry]) => (isRecord(entry) ? [[language, rewriteOf(entry)] as const] : [])))
     : {};
 
+const rewriteDepthOf = (rewrite: unknown): RewriteDepth | undefined => {
+  const read = depthOfRewrite(rewrite);
+  return "depth" in read ? read.depth : undefined;
+};
+
 /** A field that is missing or malformed reads as empty; the test on rule files names what a rule lacks. */
 export const ruleGuideOf = (raw: Readonly<Record<string, unknown>>): RuleGuide => ({
   group: RULE_GROUPS.find((group) => group === raw["group"]),
@@ -169,6 +177,7 @@ export const ruleGuideOf = (raw: Readonly<Record<string, unknown>>): RuleGuide =
   levelMeaning: localizedOf(raw["level_meaning"]),
   sources: textsOf(raw["sources"]),
   rewrite: rewritesOf(raw["rewrite"]),
+  rewriteDepth: rewriteDepthOf(raw["rewrite"]),
 });
 
 /** The rules in each group, in the order the reference lists them. A rule with no group is in none, which the test on rule files reports. */

@@ -149,6 +149,8 @@ $ npx chaffjs explain max-sentence-length
 
   How to fix: Split it in two at the conjunction.
 
+  Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
+
   Levels:
     strict   up to 18 words in a sentence
   → normal   up to 25 words in a sentence
@@ -342,6 +344,22 @@ A finding points at the line and column in the file, so a `custom_rules` pattern
 A YAML file that cannot be parsed is read as plain text.
 Any other file, such as `.txt`, is read as plain text.
 A file named on the command line is checked whatever its extension.
+
+## Setting the depth of a fix plan
+
+A team can decide how deep the rewrites that `chaff fix-plan` plans may go.
+
+```yaml
+fix_plan:
+  depth: light # light / structure / register
+```
+
+`light` rewrites words and sentences only, `structure` goes as far as reorganising sections, headings and paragraphs, and `register` as far as converting the style. A deeper depth includes the shallower.
+Findings of a rule that reaches deeper than the depth are listed in the plan by name and spot count only.
+`--depth` on the command line wins for that run.
+Any other value stops `fix-plan` before it prints a plan, with the values it takes and what they mean.
+Each rule's depth is in `npx chaffjs explain <rule>` and in `rewrite_depth` of `npx chaffjs rules --json`.
+How the depths match the ways to rewrite is in [Making AI-sounding text sound human](./ai-sounding#setting-the-rewrite-depth).
 
 ## Checking that the settings took effect
 

@@ -5,6 +5,7 @@ import { customRulesOf } from "./load.ts";
 import { MAX_PATTERN_LENGTH, MAX_REPEATS, type RegexRefusal } from "./regex-safety.ts";
 import { POS_WRITTEN_NAMES } from "./token-pattern.ts";
 import type { ModulePathRefusal } from "./module-path.ts";
+import { unknownDepthSentence } from "../rewrite-depth.ts";
 
 /** Each problem's sentence, with {at}, {written}, {field}, {index}, {refusal} and {names} filled in from the problem. */
 type Text = {
@@ -45,6 +46,7 @@ const TEXT: Texts<Text> = {
       "bad-token": "{scope} の {at}: tokens の {index} 番目に pos・base・surface のどれもありません",
       "unknown-pos": "{scope} の {at}: 品詞 {written} は知りません（{names}）",
       "bad-pattern": "{scope} の {at}: pattern を使えません。{refusal}",
+      "bad-depth": `{scope} の {at}: ${unknownDepthSentence("rewrite.depth", "{written}", "ja")}`,
     },
   },
   en: {
@@ -78,6 +80,7 @@ const TEXT: Texts<Text> = {
       "bad-token": "{scope} {at}: token {index} has none of pos, base and surface",
       "unknown-pos": "{scope} {at}: unknown part of speech {written} ({names})",
       "bad-pattern": "{scope} {at}: the pattern cannot be used: {refusal}",
+      "bad-depth": `{scope} {at}: ${unknownDepthSentence("rewrite.depth", "{written}", "en")}`,
     },
   },
 };
