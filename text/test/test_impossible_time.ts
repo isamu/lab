@@ -40,6 +40,14 @@ describe("impossible-time: 時計に無い時刻", () => {
     assert.deepEqual(writtenIn("Genesis 24:67, Science, 12:75, a 1:75 scale model, a 50 pm bond"), []);
   });
 
+  it("全角の数字とコロンも読む", () => {
+    assert.deepEqual(writtenIn("１３ PM と 10：75 と １０:７５"), ["１３ PM:hour", "10：75:minute", "１０:７５:minute"]);
+  });
+
+  it("英字の語や番号の中の数は時刻と読まない", () => {
+    assert.deepEqual(writtenIn("abc10:75bar v10:75 10:75bar id13PM"), []);
+  });
+
   it("コードの中は読まない", () => {
     assert.deepEqual(findingsOf("例：`10:75` は不正な値です。\n"), []);
   });

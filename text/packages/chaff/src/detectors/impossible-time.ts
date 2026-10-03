@@ -13,6 +13,10 @@ export type ClockWords = { readonly before: readonly string[]; readonly after: r
 export type ImpossibleTime = { readonly offset: number; readonly written: string; readonly reason: "hour" | "minute" };
 
 const DIGIT = "[0-9０-９]";
+const COLON = "[:：]";
+/** 数の前後に来ない字。英字の語や番号の中（abc10:75、v10:75）は時刻ではない。日本語の字のすぐ後ろ（会議は10:75）は読む。 */
+const NOT_AFTER_CLOCK = "(?<![A-Za-z0-9０-９_:：.])";
+const NOT_BEFORE_CLOCK = "(?![A-Za-z0-9０-９_:：])";
 const HALF_DAY = 12;
 const MINUTES_IN_HOUR = 60;
 /** 午前・午後の付いた時で、時刻の書き損じと読む上限。50 pm（ピコメートル）のような量を時刻と読まない。 */
@@ -62,8 +66,8 @@ const isCitationBefore = (before: string): boolean => {
 /** 時を 2 以上か 0 埋め（09:75）で書いた、時と分だけの時刻。1:75 は縮尺や比。 */
 const bareClock = (groups: Groups, text: string, at: number): ImpossibleTime["reason"] | undefined => {
   const hourText = groups["h"] ?? "";
-  const hour = Number(hourText);
-  const looksLikeClock = hour <= HOURS_IN_DAY && (hour >= 2 || hourText.startsWith("0"));
+  const hour = Number(halfWidth(hourText));
+  const looksLikeClock = hour <= HOURS_IN_DAY && (hour >= 2 || /^[0０]/u.test(hourText));
   if (!looksLikeClock || isCitationBefore(text.slice(Math.max(0, at - HALF_DAY), at))) return undefined;
   return minutesOnly(groups);
 };
@@ -79,7 +83,12 @@ const meridiemShapes = (words: ClockWords): Shape[] => {
   return [
     ...(after === ""
       ? []
-      : [{ pattern: new RegExp(`(?<![\\d:.,])(?<h>\\d{1,2})(?::(?<m>\\d{2}))?\\s?(?:${after})(?![\\p{L}\\p{N}])`, "gu"), problem: withMeridiem }]),
+      : [
+          {
+            pattern: new RegExp(`${NOT_AFTER_CLOCK}(?<![,])(?<h>${DIGIT}{1,2})(?:${COLON}(?<m>${DIGIT}{2}))?\\s?(?:${after})(?![\\p{L}\\p{N}])`, "gu"),
+            problem: withMeridiem,
+          },
+        ]),
     ...(before === ""
       ? []
       : [{ pattern: new RegExp(`(?:${before})\\s?(?<h>${DIGIT}{1,2})(?:${unitTail}[:：](?<colonMinute>${DIGIT}{2}))`, "gu"), problem: withMeridiem }]),
@@ -96,8 +105,11 @@ const unitShapes = (words: ClockWords): Shape[] => {
 const shapesOf = (words: ClockWords): Shape[] => [
   ...meridiemShapes(words),
   ...unitShapes(words),
-  { pattern: /(?<![\d:.])(?<h>\d{1,3}):(?<m>\d{2}):(?<s>\d{2})(?![\d:])/gu, problem: minutesOnly },
-  { pattern: /(?<![\d:.,/])(?<h>\d{1,2}):(?<m>\d{2})(?![\d:])/gu, problem: bareClock },
+  {
+    pattern: new RegExp(`${NOT_AFTER_CLOCK}(?<h>${DIGIT}{1,3})${COLON}(?<m>${DIGIT}{2})${COLON}(?<s>${DIGIT}{2})${NOT_BEFORE_CLOCK}`, "gu"),
+    problem: minutesOnly,
+  },
+  { pattern: new RegExp(`${NOT_AFTER_CLOCK}(?<![,/])(?<h>${DIGIT}{1,2})${COLON}(?<m>${DIGIT}{2})${NOT_BEFORE_CLOCK}`, "gu"), problem: bareClock },
 ];
 
 const impossibleIn = (text: string, shape: Shape): ImpossibleTime[] =>

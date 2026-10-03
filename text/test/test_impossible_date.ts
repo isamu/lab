@@ -42,6 +42,10 @@ describe("impossible-date: 暦に無い日付", () => {
     assert.deepEqual(writtenIn("on 31 September, Sept. 31 and Feb 30, 2024"), ["31 September:day", "Sept. 31:day", "Feb 30, 2024:day"]);
   });
 
+  it("日時（T の後ろに時刻）の日付も読む", () => {
+    assert.deepEqual(writtenIn("2023-02-29T10:00 と 2024-02-29T10:00"), ["2023-02-29:leap"]);
+  });
+
   it("全角の数字も読む", () => {
     assert.deepEqual(writtenIn("２月３０日"), ["２月３０日:day"]);
   });

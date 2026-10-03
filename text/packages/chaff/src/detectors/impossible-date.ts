@@ -19,7 +19,8 @@ export type ImpossibleDate = {
 
 const DIGIT = "[0-9０-９]";
 const NOT_AFTER_NUMBER = "(?<![\\w/.\\-０-９])";
-const NOT_BEFORE_NUMBER = "(?![\\w/／\\-０-９]|\\.\\w)";
+/** 日付の後ろに来ない字。ただし日時（2023-02-29T10:00）の T は日付の終わり。 */
+const NOT_BEFORE_NUMBER = "(?:(?=T\\d)|(?![\\w/／\\-０-９]|\\.\\w))";
 const MONTHS_IN_YEAR = 12;
 const LONGEST_MONTH = 31;
 const FEBRUARY = 2;
