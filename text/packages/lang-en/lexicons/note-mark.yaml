@@ -1,0 +1,6 @@
+# Marks that attach a numbered note to a word in the text (※1 in Japanese). English writes notes as Markdown footnotes
+# ([^1]), which footnote-mismatch reads without a list, or as superscripts that plain text does not keep, so there are
+# none; the list exists so both languages name the same lists.
+id: note-mark
+language: en
+entries: []

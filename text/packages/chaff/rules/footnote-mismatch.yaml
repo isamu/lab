@@ -1,0 +1,91 @@
+id: footnote-mismatch
+layer: L3
+status: stable
+how_to_find: footnote-mismatch
+severity: warning
+
+name:
+  ja: 注の無い注の印と、印の無い注
+  en: A note mark with no note, or a note nothing points to
+
+why:
+  ja: 本文に「※3」や「[^3]」と書いたのに注3が無ければ、読み手は探しても見つからない注を探します。逆に、本文のどこも指さない注は、どの語の注か分かりません。注を消したり番号を振り直したりして、印と注の片方だけが残ったときに起きます。印と注の番号を突き合わせれば、機械で言えます。
+  en: When the text says "[^3]" or "※3" and there is no note 3, the reader looks for a note that is not there; a note nothing points to cannot be tied to any word. It happens when a note is deleted or the notes are renumbered and only one side is changed. Matching the marks against the notes' numbers is mechanical.
+
+message:
+  ja: 「{label}」の注がありません
+  en: 'There is no note for "{label}"'
+
+messages:
+  missing:
+    ja: 「{label}」の注がありません
+    en: 'There is no note for "{label}"'
+  unused:
+    ja: 注「{label}」を本文のどこも指していません
+    en: 'Nothing in the text points to the note "{label}"'
+
+how_to_fix:
+  ja: 注を足すか、印を消してください。注を振り直したなら、本文の印も同じ番号に直します。
+  en: Add the note or remove the mark. If the notes were renumbered, renumber the marks to match.
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 本文の「※3」「[^3]」に対応する注が無い所と、本文のどこも指さない注
+  en: A note mark ("[^3]", "※3") with no note, or a note that nothing in the text points to
+example:
+  ja:
+    before: |
+      営業運行※1を開始し、料金※2は無料です。
+
+      ※1 特定の走行環境条件での運行
+    after: |
+      営業運行※1を開始し、料金※2は無料です。
+
+      ※1 特定の走行環境条件での運行
+      ※2 実証期間中に限ります
+  en:
+    before: |
+      The pilot starts in May[^1] and is free[^2].
+
+      [^1]: On weekdays only.
+    after: |
+      The pilot starts in May[^1] and is free[^2].
+
+      [^1]: On weekdays only.
+      [^2]: During the trial period.
+
+not_flagged:
+  ja: Markdown の脚注（[^1] と行頭の [^1]:）と、※ に一桁か二桁の番号を付けた印（※1、（※2））を読みます。※ の注が文書に一つも無いときは、注を別の所（表や別紙）に置いた文書と読んで言いません。※ の後ろに数が続くもの（※2018年度）は注の番号ではありません。コードの中は読みません。
+  en: Markdown footnotes ([^1] and a line starting "[^1]:") and a ※ with a one- or two-digit number (※1, (※2)) are read. When a document has no ※ note at all, its notes are taken to be elsewhere (a table, an annex) and nothing is reported for ※. A ※ before a longer number ("※2018") is not a note mark. Code is not read.
+
+rewrite:
+  ja:
+    direction: 印と注の番号を突き合わせ、注の無い印には注を足すか印を消し、どこからも指されない注には印を足すか注を消してください。
+    pairs:
+      - before: 料金※2は無料です。（注は ※1 だけ）
+        after: 料金※2は無料です。（※2 実証期間中に限ります、を足す）
+      - before: 本文に ※3 が無いのに「※3 予約が必要です」の注がある
+        after: 予約の要る語に ※3 を付ける
+    keep:
+      - 注の中身
+      - ほかの注の番号
+    avoid:
+      - 書き手が知らない注の中身を作る
+      - 印だけを消して、注が要る内容を本文から落とす
+  en:
+    direction: Match the marks against the notes. Add the missing note or remove its mark; for a note nothing points to, add the mark where it belongs or remove the note.
+    pairs:
+      - before: The pilot is free[^2]. (only [^1] is defined)
+        after: 'The pilot is free[^2]. (adds "[^2]: During the trial period.")'
+      - before: '"[^3]: Booking required." with no [^3] in the text'
+        after: '"Booking is required[^3]." where the note belongs'
+    keep:
+      - what each note says
+      - the numbers of the other notes
+    avoid:
+      - inventing what a note says
+      - removing a mark and with it a qualification the text needs
