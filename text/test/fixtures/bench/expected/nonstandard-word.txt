@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  nonstandard-word-ja  found
+ja/design  nonstandard-word-ja  found
+ja/email  nonstandard-word-ja  found
+ja/figures  nonstandard-word-ja  found
+ja/itinerary  nonstandard-word-ja  found
+ja/minutes  nonstandard-word-ja  found
+ja/note  nonstandard-word-ja  found
+ja/policy  nonstandard-word-ja  found
+ja/press  nonstandard-word-ja  found
+ja/proposal  nonstandard-word-ja  found
+ja/quote  nonstandard-word-ja  found
+ja/readme  nonstandard-word-ja  found
+ja/requirements  nonstandard-word-ja  found
+en/blog  nonstandard-word-en  found
+en/design  nonstandard-word-en  found
+en/email  nonstandard-word-en  found
+en/figures  nonstandard-word-en  found
+en/itinerary  nonstandard-word-en  found
+en/minutes  nonstandard-word-en  found
+en/note  nonstandard-word-en  found
+en/policy  nonstandard-word-en  found
+en/press  nonstandard-word-en  found
+en/proposal  nonstandard-word-en  found
+en/quote  nonstandard-word-en  found
+en/readme  nonstandard-word-en  found
+en/requirements  nonstandard-word-en  found
