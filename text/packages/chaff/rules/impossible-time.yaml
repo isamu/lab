@@ -1,0 +1,75 @@
+id: impossible-time
+layer: L3
+status: experimental
+how_to_find: impossible-time
+severity: error
+
+name:
+  ja: 時計に無い時刻
+  en: A time the clock does not have
+
+why:
+  ja: 「午後13時」「13 PM」「10時75分」のような時刻は時計にありません。午後1時のつもりか13時のつもりか、分の書き違いか、読み手には分からず、集まる時刻を間違える人が出ます。24時間の書き方と午前・午後の書き方を混ぜたときや、打ち間違えたときに起きます。午前・午後を付けた時は12まで、分と秒は59までなので、機械で言えます。
+  en: A time such as "13 PM", "午後13時" or "10:75" is not on the clock. The reader cannot tell whether 1 PM or 13:00 was meant, or which minute, and someone turns up at the wrong time. It happens when the 24-hour clock and AM/PM are mixed, or a digit is mistyped. With AM or PM the hour runs to 12, and minutes and seconds to 59, so a machine can tell.
+
+message:
+  ja: 「{written}」は時計にありません（午前・午後を付けた時は12まで）
+  en: '"{written}" is not a time (with AM or PM, the hour runs to 12)'
+
+messages:
+  hour:
+    ja: 「{written}」は時計にありません（午前・午後を付けた時は12まで）
+    en: '"{written}" is not a time (with AM or PM, the hour runs to 12)'
+  minute:
+    ja: 「{written}」は時計にありません（分と秒は59まで）
+    en: '"{written}" is not a time (minutes and seconds run to 59)'
+
+how_to_fix:
+  ja: 意図した時刻を確かめて直してください。午後1時なら「午後1時」か「13時」のどちらかで書き、二つを混ぜません。
+  en: Check the time that was meant and correct it. For one in the afternoon write "1 PM" or "13:00", not both at once.
+
+levels: { normal: error, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「午後13時」「13 PM」「10時75分」のように、時計に無い時刻
+  en: A time the clock does not have, such as "13 PM", "午後13時" or "10:75"
+example:
+  ja:
+    before: 説明会は午後13時から始めます。
+    after: 説明会は午後1時から始めます。
+  en:
+    before: The briefing starts at 13 PM.
+    after: The briefing starts at 1 PM.
+
+not_flagged:
+  ja: 午前・午後を付けない「25:00」「26時」は、深夜の番組表のように24を超えて数える書き方があるので言いません。「Genesis 24:67」「Science, 12:75」のように頭が大文字の語や区切りの印の後ろの数、「1:75」のような縮尺や比、24を超える数に付いた pm（50 pm はピコメートル）は時刻と読みません。コードの中は読みません。
+  en: A time past 24 without AM or PM ("25:00") is not reported, since late-night schedules count on past midnight that way. Numbers right after a capitalised word or a punctuation mark ("Genesis 24:67", "Science, 12:75"), scales and ratios such as "1:75", and "pm" after a number above 24 (50 pm is picometres) are not read as times. Code is not read.
+
+rewrite:
+  ja:
+    direction: 書き手が意図した時刻を確かめて、時計にある時刻に直してください。午前・午後を付けるなら時は12までで、24時間で書くなら午前・午後を外します。
+    pairs:
+      - before: 説明会は午後13時から始めます。
+        after: 説明会は午後1時から始めます。
+      - before: 受付は9時75分までです。
+        after: 受付は9時45分までです。
+    keep:
+      - 意図した時刻と、前後の予定の順番
+    avoid:
+      - 午前・午後と24時間の書き方を一つの時刻に重ねる
+      - どの時刻が正しいか確かめずに数だけを変える
+  en:
+    direction: Find out which time was meant and write one the clock has. With AM or PM the hour runs to 12; on the 24-hour clock, drop AM and PM.
+    pairs:
+      - before: The briefing starts at 13 PM.
+        after: The briefing starts at 1 PM.
+      - before: Doors close at 10:75 sharp.
+        after: Doors close at 10:45 sharp.
+    keep:
+      - the time meant, and the order of the times around it
+    avoid:
+      - writing AM or PM on a 24-hour time
+      - changing the digits without checking which time was meant
