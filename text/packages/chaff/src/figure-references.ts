@@ -23,7 +23,7 @@ export type LabelWords = {
 
 export type DanglingFigure = { readonly offset: number; readonly label: string };
 
-type Mention = { readonly start: number; readonly end: number; readonly written: string; readonly key: string; readonly kind: string };
+export type Mention = { readonly start: number; readonly end: number; readonly written: string; readonly key: string; readonly kind: string };
 
 /** 語の前の字が漢字・カタカナ・英数字なら、長い語の一部（地図3、一覧表2、法別表第二、SubFigure）。 */
 const INSIDE_WORD = "(?<![\\p{Script=Han}\\p{Script=Katakana}\\p{N}A-Za-z])";
@@ -170,4 +170,23 @@ export const danglingFigures = (
   const named = dangling.length === 0 || citations === undefined ? [] : namedLabelsIn(prose, words.labels, citations.namedDocument);
   const elsewhere = named.length === 0 || citations === undefined ? () => false : citedElsewhere(named, citations.sentences);
   return dangling.filter((mention) => !elsewhere(mention)).map((mention) => ({ offset: mention.start, label: mention.written }));
+};
+
+/**
+ * The document's captions (a number at the start of a line) and its references in the text (every other mention that
+ * points at this document, outside a link), each in document order. Only the kinds the document labels somewhere.
+ */
+export const figureMentions = (
+  source: string,
+  prose: string,
+  words: LabelWords,
+  links: readonly Span[] = [],
+): { readonly captions: readonly Mention[]; readonly references: readonly Mention[] } => {
+  if (words.labels.length === 0) return { captions: [], references: [] };
+  const captions = labelledIn(source, words.labels);
+  const kinds = new Set(captions.map((mention) => mention.kind));
+  const references = mentionsIn(prose, words.labels)
+    .filter((mention) => kinds.has(mention.kind) && !isLabelled(source, mention))
+    .filter((mention) => pointsHere(prose, mention, words) && !links.some((link) => link.start <= mention.start && mention.end <= link.end));
+  return { captions, references };
 };

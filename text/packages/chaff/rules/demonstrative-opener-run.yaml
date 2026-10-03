@@ -1,0 +1,59 @@
+id: demonstrative-opener-run
+layer: L3
+status: experimental
+how_to_find: opener-run
+word_list: demonstrative-opener
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 指示語で始まる文の連続
+  en: Sentences in a row opening with a demonstrative
+
+why:
+  ja: 「これは」「その結果」「この方法は」のように指示語で始まる文が続くと、読み手は一文ごとに「どれのことか」を前に戻って確かめることになります。指すものが一つ前の文なのか、もっと前なのかも曖昧になります。数えるのは同じ段落の中の連続だけです。
+  en: In Japanese, sentence after sentence opening with a demonstrative (これは, その結果) sends the reader back each time to find what it points at, and blurs whether it means the last sentence or one before. Only runs within one paragraph are counted.
+
+message:
+  ja: 「{word}」など、指示語で始まる文が {count} 文続いています（{limit} 文まで）
+  en: '{count} sentences in a row open with a demonstrative such as "{word}" (limit {limit})'
+
+how_to_fix:
+  ja: 指示語のどれかを、指している名詞に置き換えてください（その結果 → 調査の結果）。
+  en: Replace one of the demonstratives with the noun it points at (その結果 → 調査の結果).
+
+levels: { strict: 1, normal: 2, relaxed: 3 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「これは」「その」「この」のような指示語で始まる文が、同じ段落の中で続く所
+  en: Japanese sentences in a row, within one paragraph, that open with a demonstrative (これ, その)
+example:
+  ja:
+    before: |
+      新しい手順を導入しました。これは作業を減らすためです。その結果、残業が減りました。この効果は来月も続く見込みです。
+    after: |
+      新しい手順を導入しました。作業を減らすためです。その結果、残業が減りました。残業の減少は来月も続く見込みです。
+
+not_flagged:
+  ja: 段落が変われば数え直します。「それぞれ」のように一語になったものと、接続詞の「そして」は数えません。
+  en: The count restarts at each paragraph. Words such as それぞれ and the conjunction そして are not counted.
+level_meaning:
+  ja: 指示語で始まる文 {limit} 文の連続まで
+  en: up to {limit} such sentences in a row
+rewrite:
+  ja:
+    direction: 続いた指示語のうち、指すものが遠いものから、指している名詞に置き換えてください。一つ前の文を指す指示語は残してかまいません。
+    pairs:
+      - before: 新しい手順を導入しました。これは作業を減らすためです。その結果、残業が減りました。この効果は来月も続く見込みです。
+        after: 新しい手順を導入しました。作業を減らすためです。その結果、残業が減りました。残業の減少は来月も続く見込みです。
+      - before: 監査で三件の不備が見つかりました。それらは手順書の古さが原因です。その手順書は二年前のものです。この点を来月までに直します。
+        after: 監査で三件の不備が見つかりました。原因は手順書の古さです。手順書は二年前のものです。来月までに手順書を改めます。
+    keep:
+      - 指しているものと、文の順序
+    avoid:
+      - 指しているものを取り違える
+      - 指示語を別の指示語（同様に、前述の）に替えるだけ
