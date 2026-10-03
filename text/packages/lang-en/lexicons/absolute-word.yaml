@@ -1,0 +1,14 @@
+# Words that allow no exception. absolute-exception reads an obligation (must, shall, must not) holding one against a
+# later sentence, in another article, list or paragraph, that makes an exception for the same act.
+#
+# "all" and "every" are not here: they count a set ("made by all or a majority of the arbitrators") more often than they
+# rule out exceptions, and on the corpus statutes they paired with unrelated provisos.
+id: absolute-word
+language: en
+entries:
+  - pattern: always
+  - pattern: never
+  - pattern: under no circumstances
+  - pattern: in all cases
+  - pattern: without exception
+  - pattern: at all times

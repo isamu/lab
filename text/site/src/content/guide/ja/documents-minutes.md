@@ -42,7 +42,7 @@ chaff は、日付と曜日の食い違い、議題の番号の抜け、予告�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 次の議事録を `gijiroku.md` という名前で保存しました。
 
-```markdown
+```markdown file=gijiroku.md
 # 第12回 サイト改修定例 議事録
 
 - 日時：2026年10月7日（火）10:00〜11:00
@@ -92,7 +92,7 @@ $ npx chaffjs gijiroku.md --compact
 gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
 
 
-指摘 0 件、動いていない rule 95 件
+{counts}
 ```
 
 `--experimental` を付けて、試験中のルールも動かします。
@@ -115,12 +115,16 @@ gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
                   no-mixed-desumasu
   18:1    error   「2」の次が「4」です（3 番目のはず）
                   numbering-gap
+  22:1    warning 見出し「決定事項」だけ番号がありません（兄弟の見出しは「1. 前回の宿題の確認」など 3 個が番号付き）
+                  heading-numbering-mix
   24:1    warning この文だけ他と文末の調子が違います（本文の中で 3 文）
                   no-mixed-desumasu
   24:9    warning 「3 点」と予告していますが、すぐ下の箇条書きは2項目です
                   announced-count-mismatch
+  29:1    warning 見出し「次回までの宿題」だけ番号がありません（兄弟の見出しは「1. 前回の宿題の確認」など 3 個が番号付き）
+                  heading-numbering-mix
 
-指摘 8 件、動いていない rule 23 件
+{counts}
 ```
 
 ## 指摘の意味と直しかた
@@ -131,6 +135,7 @@ gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
 | 4 | `latin-spacing` | ほかは「B 案」と空けているのに、「3階」「会議室B」だけ詰めています | 「3 階」「会議室 B」と空けて揃えます |
 | 10、24 | `no-mixed-desumasu` | 議事録の多くは「〜した。」なのに、この 3 文だけ「〜ました。」「〜です。」です | 「〜した。」「〜である。」に揃えます |
 | 18 | `numbering-gap` | 議題 2 の次が 4 です | 3 に振り直すか、抜けた議題 3 を足します |
+| 22、29 | `heading-numbering-mix` | 番号付きの議題と並んでいるのに、「決定事項」「次回までの宿題」だけ番号がありません | 番号を振るか、番号付きの議題とは見出しの階層を分けます |
 | 24 | `announced-count-mismatch` | 「3 点」と書いたのに、2 つしかありません | 抜けた決定事項を足すか、「2 点」に直します |
 
 議事録が「〜した。」と「〜しました。」のどちらで書くべきかを、chaff は決めません。
