@@ -1,0 +1,8 @@
+# The two words that open a restrictive relative clause ("the file which contains", "the file that contains"). Read by
+# which-that-consistency, which counts each group in a document and points at the fewer. Neither is wrong: American
+# usage guides prefer "that", British ones accept both.
+id: restrictive-relative
+language: en
+entries:
+  - { pattern: which, group: which }
+  - { pattern: that, group: that }
