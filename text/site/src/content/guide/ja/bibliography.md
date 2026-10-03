@@ -150,6 +150,31 @@ chaff のルールが何を根拠にしているかを、論文と規格ごと�
   - chaff では：`no-mixed-desumasu`、`katakana-long-vowel`、`latin-spacing` の 3 つが、この決まりに近い所を確かめます。
     空白を入れるかどうかは決めず、一つの文書の中で揃っているかだけを見ます。
 
+## ほかの文章チェッカー
+
+chaff がまだ見ていない種類の誤りを探すため、次のチェッカーが公開している確認項目の一覧と比べました。
+規則の文や語の一覧は写していません。chaff の一覧は chaff が自分で作ったものです。
+
+- <a id="textlint-ja-presets"></a>**textlint-ja** [github.com](https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing)
+  - textlint-rule-preset-ja-technical-writing と textlint-rule-preset-japanese（日本語の技術文書向けの規則集）
+  - 分かったこと：日本語の文に機械で掛けられる確認です。文の長さ、読点の数、文末の混在、ら抜き、助詞の重なり、見えない文字など。
+  - chaff では：ほとんどに対応する規則があります（`max-sentence-length`、`max-ten`、`no-mixed-desumasu`、`ra-nuki`、`no-doubled-joshi`、`invisible-character`）。
+- <a id="proselint"></a>**proselint** [github.com](https://github.com/amperser/proselint)
+  - 英語の文章のチェッカー。用法の手引きから確認項目を集めています。
+  - 分かったこと：語の一覧で見つけられる用法の誤りです。決まり文句、重言、程度の無い形容詞に付けた程度、出所を言わない言い回しなど。
+  - chaff では：[`uncomparable-graded`](../../rules/uncomparable-graded/) が、程度の無い形容詞の確認に倣っています。
+- <a id="write-good"></a>**write-good** [github.com](https://github.com/btford/write-good)
+  - 英語の文章のチェッカー。
+  - 分かったこと：受け身、there is で始まる文、文頭の So、出所を言わない言い回し、冗長な言い回し、決まり文句、語の繰り返しを見ます。
+  - chaff では：`agentless-passive`、`expletive-construction`、`sentence-initial-so`、`weasel-word`、`wordy-phrase`、`doubled-word` が見ます。
+- <a id="vale-styles"></a>**Vale の Microsoft と Google のスタイル** [github.com](https://github.com/errata-ai/Microsoft)
+  - Microsoft Writing Style Guide と、Google の開発者向け文書のスタイルガイドを、Vale というチェッカーの規則にしたもの（[Google](https://github.com/errata-ai/Google)）。
+  - 分かったこと：省略記号、単位、空白、ダッシュ、日付、範囲、短縮形、オックスフォード・コンマ、見出しの大文字など、書き方の確認です。
+  - chaff では：一つの会社が決めた書き方ではなく、文書の中で揃っているかを見ます（`contraction-consistency`、`oxford-comma-consistency`、`range-notation-consistency`）。
+- <a id="alex"></a>**alex** [github.com](https://github.com/get-alex/alex)
+  - 配慮に欠ける言葉を指すチェッカー。
+  - chaff では：【背景】どの言葉を避けるかはチームが決めることなので、chaff は一覧を持ちません。チームが自分の一覧を `chaff.yaml` の `prefer` に書きます。
+
 ## 文章の自動評価と、誤りの検出
 
 - <a id="attali-burstein-2006"></a>**Attali, Burstein（2006）** [ejournals.bc.edu](https://ejournals.bc.edu/index.php/jtla/article/view/1650)
