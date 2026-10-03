@@ -1,0 +1,3 @@
+table  2  2  0  0
+ja/readme  shell-prompt-added-ja  found
+en/readme  shell-prompt-added-en  found
