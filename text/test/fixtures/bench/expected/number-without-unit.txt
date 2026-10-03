@@ -1,0 +1,5 @@
+table  4  4  0  0
+ja/proposal  unit-dropped-ja  found
+ja/quote  unit-dropped-ja  found
+en/proposal  unit-dropped-en  found
+en/quote  unit-dropped-en  found

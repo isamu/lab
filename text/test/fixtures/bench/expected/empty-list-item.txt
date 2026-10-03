@@ -1,0 +1,8 @@
+table  7  7  0  0
+ja/email  list-value-dropped  found
+ja/figures  list-value-dropped  found
+ja/itinerary  list-value-dropped  found
+en/email  list-value-dropped  found
+en/figures  list-value-dropped  found
+en/itinerary  list-value-dropped  found
+en/minutes  list-value-dropped  found

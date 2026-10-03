@@ -1,0 +1,23 @@
+# リンクの言葉がこれだけのとき、行き先を言っていない。vague-link-text が読む。
+# 言葉全体がこの語のときだけ当たる（「料金表はこちら」は行き先を言っているので当たらない）。強調の印・鉤括弧・終わりの句読点は外して比べる。
+id: vague-link-text
+language: ja
+entries:
+  - pattern: こちら
+  - pattern: ここ
+  - pattern: コチラ
+  - pattern: こちらから
+  - pattern: ここから
+  - pattern: こちらをクリック
+  - pattern: ここをクリック
+  - pattern: こちらをご覧ください
+  - pattern: こちらを参照
+  - pattern: こちらのページ
+  - pattern: このページ
+  - pattern: このリンク
+  - pattern: リンク
+  - pattern: クリック
+  - pattern: 詳しくはこちら
+  - pattern: 詳細はこちら
+  - pattern: もっと見る
+  - pattern: 続きを読む

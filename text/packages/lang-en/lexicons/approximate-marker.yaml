@@ -1,0 +1,34 @@
+# Marks of a rough figure (duration-mismatch): "about 3 months" is not added to a date. before: written before the number.
+id: approximate-marker
+language: en
+entries:
+  - pattern: "about"
+    position: before
+  - pattern: "approximately"
+    position: before
+  - pattern: "around"
+    position: before
+  - pattern: "roughly"
+    position: before
+  - pattern: "nearly"
+    position: before
+  - pattern: "almost"
+    position: before
+  - pattern: "over"
+    position: before
+  - pattern: "under"
+    position: before
+  - pattern: "up to"
+    position: before
+  - pattern: "at least"
+    position: before
+  - pattern: "at most"
+    position: before
+  - pattern: "some"
+    position: before
+  - pattern: "or so"
+    position: after
+  - pattern: "or more"
+    position: after
+  - pattern: "or less"
+    position: after

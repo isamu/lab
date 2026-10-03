@@ -5,6 +5,7 @@ import { sentenceSpans } from "./sentence-split.ts";
 import { splitAtQuotedStops } from "./quoted-stop.ts";
 import { reattachClosingQuotes } from "./closing-quote.ts";
 import { structure } from "./structure.ts";
+import { dictionary } from "./dictionary.ts";
 import { isReady, prepare, tokenize } from "./pos.ts";
 import { isJapaneseRun } from "./japanese-run.ts";
 import type { AdapterNeeds, EmbeddedLanguage, LanguageAdapter, Segmentation, Sentence, Span } from "chaffjs/plugin";
@@ -62,6 +63,7 @@ export const adapter: LanguageAdapter = {
   },
   lexicons: LEXICONS,
   structure,
+  dictionary,
   segment: (text: string): Segmentation => {
     const quotedStops = sentenceSpans(unmarkNumberStops(unmarkLabelStops(text, LABEL_STOPS))).flatMap((span) => splitAtQuotedStops(text, span));
     const sentences: Sentence[] = reattachClosingQuotes(text, quotedStops).map((span) => withLanguage(text.slice(span.start, span.end), span));
