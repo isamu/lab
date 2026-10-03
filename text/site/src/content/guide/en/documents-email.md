@@ -105,6 +105,8 @@ email.md   business/email · English   genre from --genre
                   cushion-phrase-density
   13:11   error   2026-10-10 is a Saturday, not a Friday
                   date-weekday-mismatch
+  15:1    warning An attachment is mentioned, but no attachment line or file name is shown
+                  attachment-not-attached
   15:91   warning "[Your Name]" was never filled in
                   unfilled-placeholder
 

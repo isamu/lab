@@ -1,0 +1,59 @@
+id: repeated-sentence-ending
+layer: L3
+status: stable
+how_to_find: ending-run
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 同じ文末が続く
+  en: The same sentence ending in a row
+
+why:
+  ja: 「〜です。〜です。〜です。」「〜しました。〜しました。〜しました。」のように、同じ形で終わる文が続くと、読み手には同じ調子の繰り返しに聞こえ、どの文が要なのかが見えにくくなります。文末の助動詞と、その前の動詞を書いた形で比べます。名詞の後の「です」は名詞が違っても同じ文末と見ます（必要です、重要です）。
+  en: In Japanese, sentences that all end the same way ("…です。…です。…です。") read as one tone repeated, and the sentence that matters does not stand out. chaff compares the closing auxiliaries and the verb before them as written. After a noun only the auxiliaries count, so 必要です and 重要です end the same way.
+
+message:
+  ja: 「〜{word}」で終わる文が {count} 文続いています（{limit} 文まで）
+  en: '{count} sentences in a row end with "〜{word}" (limit {limit})'
+
+how_to_fix:
+  ja: 一つの文の終わり方を変えるか、二つの文を一つにまとめてください（〜です。〜です。→ 〜で、〜です。）。
+  en: Change how one sentence ends, or join two sentences into one.
+
+levels: { strict: 2, normal: 2, relaxed: 3 }
+
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 「〜です。〜です。〜です。」のように、同じ形で終わる文が続く所
+  en: Japanese sentences in a row that all end the same way ("…です。…です。…です。")
+example:
+  ja:
+    before: |
+      この機能は必要です。設定も簡単です。費用も無料です。
+    after: |
+      この機能は必要で、設定も簡単です。費用はかかりません。
+
+not_flagged:
+  ja: 段落をまたいだ文は続きと見ません。助動詞で終わらない文（体言止め、言い切りの動詞）は比べず、そこで続きが切れます。動詞が違えば（読みました、書きました）同じ文末とは見ません。
+  en: Sentences in different paragraphs are not a run. A sentence that does not end with an auxiliary (a noun, a bare verb) is not compared and breaks the run. Different verbs (読みました, 書きました) are different endings.
+level_meaning:
+  ja: 同じ文末の文が {limit} 文続くまで
+  en: up to {limit} sentences in a row with the same ending
+rewrite:
+  ja:
+    direction: 続いた文のうち一つか二つの文末を変えてください。二文を「〜で、」「〜し、」でつなぐか、言い方を変えます。言っている事柄は変えません。
+    pairs:
+      - before: この機能は必要です。設定も簡単です。費用も無料です。
+        after: この機能は必要で、設定も簡単です。費用はかかりません。
+      - before: 資料を確認しました。手順を修正しました。結果を報告しました。
+        after: 資料を確認して手順を直し、その結果を報告しました。
+    keep:
+      - それぞれの文が言っている事柄
+      - 文体（です・ます、だ・である）
+    avoid:
+      - 文末を変えるために「〜と言えます」「〜となっております」のような飾りを足す
+      - 文体を混ぜる（です・ますの中に、だ・である）

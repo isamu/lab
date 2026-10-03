@@ -1,0 +1,115 @@
+id: email-greeting-closing
+layer: L2
+status: stable
+how_to_find: email-frame
+severity: info
+
+name:
+  ja: メールの挨拶か結びが無い
+  en: Email without a greeting or a closing
+
+why:
+  ja: 仕事のメールは、挨拶で始まり結びで終わるのが読み手の期待です。挨拶が無いと用件だけを突きつけられたように読め、結びが無いと途中で切れたように見えます。下書きを貼り付けたときや、前のメールから本文だけを写したときに抜けます。本文の最初の数行に挨拶（お世話になっております、拝啓、Dear）が無いか、最後の数行（名前や連絡先の行を含む）に結び（よろしくお願いいたします、敬具、Best regards）が無いとき指します。語は語彙表から読みます。
+  en: 'A work email is expected to open with a greeting and end with a closing. Without the greeting it reads as a bare demand; without the closing it looks cut off. Both go missing when a draft is pasted in or the body is copied from an earlier email. chaff points out a body whose first lines hold no greeting ("Dear", "Hi", "Hello") or whose last lines, the name and contact lines included, hold no closing ("Best regards", "Sincerely", "Thanks"). The words come from a lexicon.'
+
+message:
+  ja: メールの挨拶か結びがありません
+  en: The email has no greeting or no closing
+
+messages:
+  greeting:
+    ja: 書き出しに挨拶がありません
+    en: The email does not open with a greeting
+  closing:
+    ja: 終わりに結びの言葉がありません
+    en: The email does not end with a closing
+
+how_to_fix:
+  ja: 書き出しに「いつもお世話になっております。」のような挨拶を、終わりに「よろしくお願いいたします。」のような結びを足してください。
+  en: Open with a greeting such as "Dear Ms Lee," and end with a closing such as "Best regards," before your name.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business/email, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 仕事のメールで、書き出しの挨拶か終わりの結びが無いもの
+  en: A work email that opens without a greeting or ends without a closing
+example:
+  ja:
+    config: { genre: business/email }
+    before: |
+      件名: 打ち合わせの日程
+
+      打ち合わせの日程をお知らせします。10月13日の14時からです。
+
+      よろしくお願いいたします。
+    after: |
+      件名: 打ち合わせの日程
+
+      いつもお世話になっております。打ち合わせの日程をお知らせします。10月13日の14時からです。
+
+      よろしくお願いいたします。
+  en:
+    config: { genre: business/email }
+    before: |
+      Subject: Meeting date
+
+      The meeting is on 13 October at 14:00.
+
+      Best regards,
+      Ichiro
+    after: |
+      Subject: Meeting date
+
+      Dear facilities team,
+
+      The meeting is on 13 October at 14:00.
+
+      Best regards,
+      Ichiro
+not_flagged:
+  ja: 引用した返信（「>」の行）と、ヘッダーと署名（「-- 」の後ろ）は見ません。挨拶と結びの言い方は決めず、語彙表のどれかがあれば足ります。メール・手紙のジャンルでだけ見ます。
+  en: 'Quoted replies (lines starting with ">"), the header and the signature after "-- " are not read. Which greeting or closing is used is not decided; any word in the lexicon will do. Only the email and letter genre runs this rule.'
+rewrite:
+  ja:
+    direction: 足りないほうだけを足してください。挨拶は本文の最初に一文、結びは名前の前に一文です。相手との関係が分からなければ「お世話になっております」「よろしくお願いいたします」を使います。用件の文は変えません。
+    pairs:
+      - before: 打ち合わせの日程をお知らせします。
+        after: いつもお世話になっております。打ち合わせの日程をお知らせします。
+      - before: |
+          ご都合をお知らせください。
+          佐藤
+        after: |
+          ご都合をお知らせください。
+          よろしくお願いいたします。
+          佐藤
+    keep:
+      - 用件の文
+      - 署名の名前と連絡先
+    avoid:
+      - 本文に無い用件や約束を足す
+      - 挨拶を何文も重ねる
+  en:
+    direction: Add only what is missing. The greeting is one line before the body, the closing one line before the name. If the relationship is unclear, use "Dear [name]," and "Best regards,". Leave the body as it is.
+    pairs:
+      - before: The meeting is on 13 October at 14:00.
+        after: |
+          Dear facilities team,
+
+          The meeting is on 13 October at 14:00.
+      - before: |
+          Let me know which time suits you.
+          Ichiro
+        after: |
+          Let me know which time suits you.
+
+          Best regards,
+          Ichiro
+    keep:
+      - the body's sentences
+      - the name and contact lines
+    avoid:
+      - adding a request or a promise the body does not make
+      - piling up several greetings

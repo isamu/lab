@@ -286,6 +286,26 @@ const numberedLine = (state: State, patterns: StructurePatterns, text: string, c
   unnumberedUnit(text, openUnits(state), state.profile?.unnumbered) ??
   universalNumber(patterns, text, context, state.plainText);
 
+/** A dotted number alone: what is left of 「### 29.3 `chaff grade`」 once its code is blanked and the line trimmed. */
+const NUMBER_ONLY = /^\d{1,3}(?:\.\d{1,3}){1,5}[.．]?$/u;
+
+/**
+ * A heading whose title is all inline code is numbered as written. Its rest is left empty: the code is not prose to read,
+ * and the blanked line has no place for it. A heading that is only a number as written (a changelog's 「## 46.3」) stays unnumbered.
+ */
+const codeTitledNumber = (
+  state: State,
+  patterns: StructurePatterns,
+  text: string,
+  heading: Heading | undefined,
+  context: NumberingContext,
+): NumberedLine | undefined => {
+  const written = heading?.text.trim() ?? "";
+  if (!NUMBER_ONLY.test(text) || written === text) return undefined;
+  const numbered = numberedLine(state, patterns, written, context);
+  return numbered === undefined ? undefined : { ...numbered, rest: "" };
+};
+
 /** 番号の後ろが見出しでなく本文か。前の行から見出しが付く前の、行そのもので決める。 */
 const carriesBody = (found: NumberedLine | undefined): boolean => found !== undefined && found.heading === "" && found.rest !== "";
 
@@ -302,7 +322,7 @@ const readLine = (state: State, patterns: StructurePatterns, line: Line, heading
   const text = heading === undefined ? line.text : headingLineText(line.text);
   const openNumbers = state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered]));
   const context = { open: openNumbers, isHeading: heading !== undefined };
-  const found = around.inTable ? undefined : numberedLine(state, patterns, text, context);
+  const found = around.inTable ? undefined : (numberedLine(state, patterns, text, context) ?? codeTitledNumber(state, patterns, text, heading, context));
   const numbered = withCaption(state, line, found);
   const caption = numbered === undefined && heading === undefined ? captionOf(state.profile, text) : undefined;
   if (caption !== undefined) state.captions.set(line.number, caption);

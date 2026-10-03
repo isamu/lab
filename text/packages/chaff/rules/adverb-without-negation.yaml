@@ -1,0 +1,56 @@
+id: adverb-without-negation
+layer: L3
+status: stable
+how_to_find: adverb-polarity
+word_list: negative-polarity-adverb
+extra_word_lists: [negation-word]
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 打ち消しを伴わない「全然」「決して」
+  en: 全然 or 決して with no negation
+
+why:
+  ja: 「全然」「決して」「到底」は、書き言葉では「全然足りない」「決して許されない」のように打ち消しと組む副詞です。「全然大丈夫です」のように打ち消し無しで使うのは話し言葉で、報告書や案内では砕けて読まれます。文の後ろに打ち消しの語（ない、ません、ず、違う、不〜、無〜）が一つも無いときだけ指します。
+  en: In written Japanese, adverbs such as 全然 and 決して pair with a negation (全然足りない, "not at all enough"). Without one (全然大丈夫です, "totally fine") they are spoken usage and read as casual in a report or a notice. chaff reports one only when no negating word (ない, ません, ず, 違う, a 不 or 無 prefix) follows it in the sentence.
+
+message:
+  ja: 「{word}」の後に打ち消しがありません
+  en: '"{word}" has no negation after it'
+
+how_to_fix:
+  ja: 打ち消しを伴わないなら、別の副詞に替えてください（全然大丈夫です → まったく問題ありません、十分に間に合います）。
+  en: Without a negation, use another adverb (全然大丈夫です → まったく問題ありません).
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「全然大丈夫です」のように、打ち消しと組む副詞を打ち消し無しで使った所
+  en: A Japanese adverb that pairs with a negation (全然, 決して) used without one
+example:
+  ja:
+    before: |
+      納期は全然大丈夫です。
+    after: |
+      納期には十分に間に合います。
+
+not_flagged:
+  ja: 後ろに打ち消しの語（ない、ません、ず、まい、違う、異なる、駄目）か、不・未・無・非で始まる語（不十分、無理）があれば指しません。「まったく」は「まったく同じ」が正しいので見ません。ブログ、文芸、話し言葉のジャンルでは動きません。
+  en: Not reported when a negating word (ない, ません, ず, 違う, 駄目) or a word opening with 不, 未, 無 or 非 follows. まったく is not checked, since まったく同じ is correct. Off for blogs, literature and speech.
+rewrite:
+  ja:
+    direction: 打ち消しの無い「全然」「決して」を、肯定と組む言い方に替えてください。打ち消しを言いたかったのなら、打ち消しの形にします。
+    pairs:
+      - before: 納期は全然大丈夫です。
+        after: 納期には十分に間に合います。
+      - before: 新しい手順は全然簡単です。
+        after: 新しい手順はとても簡単です。
+    keep:
+      - 文が言っている判断の向き（問題が無い、簡単だ）
+    avoid:
+      - 打ち消しを足して文の意味を逆にする

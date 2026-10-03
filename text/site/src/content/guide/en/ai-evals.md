@@ -3,7 +3,8 @@
 chaff can grade a model's outputs next to your model-graded scores.
 The same output always gets the same result, every point names a line and a rule, and nothing is sent anywhere.
 It does not judge meaning. Whether an answer is right stays with a model judge or a person.
-This page shows how, step by step and with real output: grading a file of outputs, a rubric, comparing two runs, a library call and the eval frameworks it plugs into.
+This page shows how, step by step and with real output.
+It covers grading a file of outputs, a rubric, comparing two runs, a library call and the eval frameworks it plugs into.
 
 ## What chaff can check in an output
 
@@ -502,7 +503,8 @@ prompt-b.md   blog/tech · English   genre from the default
 ```
 
 Across many tasks, compare the rates rather than single outputs. `chaff grade` gives each rule's rate, and `--baseline` puts two runs side by side.
-The rules not run are the Japanese-only rules, the rules the blog/tech genre does not check, one rule that needs headings below the title, and one rule that reads meaning. Without `--compact`, each is listed with its reason.
+The rules not run are the Japanese-only rules and the rules the blog/tech genre does not check.
+One more needs headings below the title, and one reads meaning. Without `--compact`, each is listed with its reason.
 
 To feed the findings back into a regeneration step, have `fix-plan` turn them into instructions.
 This is an excerpt; the plan goes on with a direction, an example and the spots for each rule.

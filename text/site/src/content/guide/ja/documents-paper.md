@@ -67,7 +67,7 @@ chaff は、表記の揺れ、無い図への参照、句読点の混ざりを�
 ```
 $ npx chaffjs ronbun.md --genre academic/paper --experimental --compact
 
-ronbun.md   academic/paper · 日本語   ジャンルは--genreから
+ronbun.md   academic/paper · 日本語   ジャンルは --genre から
 
   5:106   warning 「サーバ」と「サーバー」が混ざっています（この語は 2 回のうち 1 回が「サーバ」）
                   katakana-long-vowel
@@ -99,7 +99,7 @@ style: ieice
 ```
 $ npx chaffjs ronbun.md --experimental --compact
 
-ronbun.md   academic/paper · 日本語   ジャンルはchaff.yamlから
+ronbun.md   academic/paper · 日本語   ジャンルは chaff.yaml から
 
   5:46    warning 「サーバー」は語末の「ー」を省いて「サーバ」と書きます（3 音以上の語）
                   katakana-long-vowel

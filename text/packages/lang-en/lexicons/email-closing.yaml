@@ -1,0 +1,28 @@
+# The closing a work email or letter ends with, before the writer's name. One of the last lines of the body (the name,
+# title and contact lines included) opening with one of these is a closing; case does not matter.
+id: email-closing
+language: en
+entries:
+  - pattern: Regards
+  - pattern: Best regards
+  - pattern: Kind regards
+  - pattern: Warm regards
+  - pattern: Warmest regards
+  - pattern: With regards
+  - pattern: Sincerely
+  - pattern: Yours sincerely
+  - pattern: Yours faithfully
+  - pattern: Yours truly
+  - pattern: Yours
+  - pattern: Very truly yours
+  - pattern: Respectfully
+  - pattern: Best
+  - pattern: All the best
+  - pattern: Best wishes
+  - pattern: Many thanks
+  - pattern: Thanks
+  - pattern: Thank you
+  - pattern: Cheers
+  - pattern: Take care
+  - pattern: Looking forward
+  - pattern: I look forward

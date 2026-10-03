@@ -1,0 +1,4 @@
+github-terms-of-service  1
+tc39-agenda-2026-07  1
+textlint-preset-ja-technical-writing-readme  2
+vite-plugin-legacy-changelog  1

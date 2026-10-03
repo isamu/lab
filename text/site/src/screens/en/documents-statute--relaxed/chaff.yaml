@@ -12,9 +12,9 @@
 #
 # Commands change it too, and leave the reason as a comment.
 #
-#   npx chaff relax bold-density --why "figure captions use a lot of bold"
-#   npx chaff explain bold-density        read what the rule is for
-#   npx chaff rules --json                give this to an AI that writes the settings
+#   npx chaffjs relax bold-density --why "figure captions use a lot of bold"
+#   npx chaffjs explain bold-density        read what the rule is for
+#   npx chaffjs rules --json                give this to an AI that writes the settings
 
 # The kind of document kept here (Statutes, regulations and internal rules). The others: npx chaffjs genres
 genre: legal/statute

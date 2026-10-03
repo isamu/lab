@@ -1,0 +1,16 @@
+# 対で並べる「〜たり」。tari-unpaired が読む。
+# marker: 並べる印。一文に一つだけで、読点か別の述語が続けば、対の片方が抜けている（本を読んだり、映画を見る）。
+# closer: 一つでも閉じる語（遅れたりする）。comma: 新しい節を始める読点。
+id: paired-parallel
+language: ja
+entries:
+  - pattern: たり
+    group: marker
+  - pattern: だり
+    group: marker
+  - pattern: する
+    group: closer
+  - pattern: 、
+    group: comma
+  - pattern: ，
+    group: comma

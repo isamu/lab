@@ -1,0 +1,91 @@
+id: defined-name-repeated
+layer: L3
+status: stable
+how_to_find: defined-name-repeated
+requires: [structure, pos]
+severity: info
+
+name:
+  ja: 短い呼び名を定めた名前を、あとで正式の名前のまま書いている
+  en: A long name used again after its short name was defined
+
+why:
+  ja: 「株式会社みなと製作所（以下「甲」という。）」と定めたら、そのあとは「甲」と書くのが決まりです。途中で「株式会社みなと製作所」と書き戻すと、読み手は甲と同じ会社なのか、別の立場の同じ会社なのかを確かめることになります。文の途中で括弧に入れて短い呼び名を定めた所の、括弧のすぐ前の名前（名詞と固有名詞の並び）を正式の名前とし、定義より後でその名前が出てくる所を指します。署名欄のように、呼び名と並べて書いた行や名前だけの行は見ません。
+  en: 'Once a contract says "Harbour Works Ltd (the "Supplier")", it refers to the Supplier as "the Supplier". Writing "Harbour Works Ltd" again later makes the reader check whether it is the same party in the same role. chaff takes the name right before an inline definition''s bracket (a run of nouns and names) as the long name, and points at each later use of it. Lines that give the short name too, or little more than the name (a signature block), are not read.'
+
+message:
+  ja: 「{name}」は {line} 行目で「{term}」と呼ぶと定めた名前です
+  en: '"{name}" was given the short name "{term}" on line {line}'
+
+how_to_fix:
+  ja: 定めた呼び名で書いてください。正式の名前が要る所（署名欄、別の会社と並べる所）なら、そのままにします。
+  en: Use the short name the contract defined. Where the full name is needed (a signature block, a list beside other companies), leave it.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「株式会社みなと製作所（以下「甲」という。）」のあとで、甲を正式の名前のまま書いている所
+  en: A party or a thing given a short name ("the Supplier") and later written out in full again
+example:
+  ja:
+    config: { genre: legal/contract }
+    before: |
+      # 業務委託契約書
+
+      株式会社みなと製作所（以下「甲」という。）と北浜商事株式会社（以下「乙」という。）は、次のとおり契約を結ぶ。
+
+      第1条　乙は、株式会社みなと製作所の会議室の予約を代わりに行う。
+    after: |
+      # 業務委託契約書
+
+      株式会社みなと製作所（以下「甲」という。）と北浜商事株式会社（以下「乙」という。）は、次のとおり契約を結ぶ。
+
+      第1条　乙は、甲の会議室の予約を代わりに行う。
+  en:
+    config: { genre: legal/contract }
+    before: |
+      # Services Agreement
+
+      This agreement is between Harbour Works Ltd (the "Supplier") and North Trading Inc (the "Customer").
+
+      1. The Customer pays Harbour Works Ltd within thirty days of each invoice.
+    after: |
+      # Services Agreement
+
+      This agreement is between Harbour Works Ltd (the "Supplier") and North Trading Inc (the "Customer").
+
+      1. The Customer pays the Supplier within thirty days of each invoice.
+
+not_flagged:
+  ja: 短い呼び名を定める前の使用、呼び名と同じ行にある使用、名前だけの行（署名欄）、四字に満たない名前（「法律」）、一語の英語の名前、呼び名が名前を含むもの（「本サービス」）、前の語が絞り込む名前（「妊娠中の女性従業員」「本利用規約」）、それ自体が定義した語である名前、長い語の一部（「株式会社みなと製作所大阪支店」）は見ません。法務のジャンルで見ます。
+  en: 'Uses before the short name is defined, uses on a line that also gives the short name, lines holding little more than the name (a signature block), names shorter than four characters, one-word English names, short names that contain the long one, names narrowed by the word before them ("the Beta Preview"), names that are defined terms themselves, and a name inside a longer word are not reported. The legal genres run this rule.'
+rewrite:
+  ja:
+    direction: 正式の名前を、定めた呼び名に置き換えてください。署名欄や、ほかの会社と並べて正式の名前が要る所はそのままにします。どちらの立場の名前か分からなければ、書き手に確かめます。
+    pairs:
+      - before: 乙は、株式会社みなと製作所の会議室の予約を代わりに行う。
+        after: 乙は、甲の会議室の予約を代わりに行う。
+      - before: 個人情報の保護に関する法律に従って扱う。
+        after: 個人情報保護法に従って扱う。
+    keep:
+      - 条の番号と中身
+      - 署名欄の正式の名前
+    avoid:
+      - 甲と乙を取り違える
+      - 署名欄の名前を呼び名に変える
+  en:
+    direction: Replace the full name with the short name the contract defined. Leave it where the full name is needed, such as a signature block or a list beside other companies. If it is not clear which party is meant, ask the writer.
+    pairs:
+      - before: The Customer pays Harbour Works Ltd within thirty days.
+        after: The Customer pays the Supplier within thirty days.
+      - before: North Trading Inc may end this agreement on notice.
+        after: The Customer may end this agreement on notice.
+    keep:
+      - the clause numbers and their content
+      - the full names in the signature block
+    avoid:
+      - swapping the parties
+      - turning a signature block's name into the short name

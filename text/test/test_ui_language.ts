@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { hostLanguage, sharedLanguage, uiLanguageOf } from "../packages/chaff/src/ui.ts";
+import { CLI_TEXT, type GenreSource } from "../packages/chaff/src/cli-text.ts";
 import { runCli, type CliRun } from "./cli-run.ts";
 
 describe("どの言語で話すか", () => {
@@ -64,6 +65,20 @@ describe("画面の言語", () => {
     assert.match(result.out, /日本語 {3}ジャンルは既定から/u);
     assert.match(result.out, /行目/u);
     assert.match(result.out, /このルールをゆるめる/u);
+  });
+
+  it("日本語の枠では、ジャンルの出どころの英字の前後に半角の空白を入れる", () => {
+    const from = (source: GenreSource): string =>
+      CLI_TEXT.ja.header("a.md", "blog/tech", "日本語", CLI_TEXT.ja.genreSource[source], 0, 0).split("   ").at(-1) ?? "";
+    const sources: readonly GenreSource[] = ["--genre", "config", "by_path", "front-matter", "default", "path"];
+    assert.deepEqual(sources.map(from), [
+      "ジャンルは --genre から",
+      "ジャンルは chaff.yaml から",
+      "ジャンルは chaff.yaml の by_path から",
+      "ジャンルは front matter から",
+      "ジャンルは既定から",
+      "ジャンルはパスから",
+    ]);
   });
 
   it("まとめの行は、ファイルが同じ言語ならその言語、混ざっていれば端末の言語", async () => {
@@ -146,7 +161,7 @@ describe("画面の言語", () => {
       assert.match(english.err, /^Languages or genres are mixed: /u);
       assert.doesNotMatch(english.err, JAPANESE);
       const japanese = await runIn({ "a.md": EN, "b.md": JA }, ["eval", "."], "ja_JP.UTF-8");
-      assert.match(japanese.err, /^言語かジャンルが混ざっています: .+\n1 つに絞って測ってください（例: npx chaff eval examples\/blog-ja\/）。$/u);
+      assert.match(japanese.err, /^言語かジャンルが混ざっています: .+\n1 つに絞って測ってください（例: npx chaffjs eval examples\/blog-ja\/）。$/u);
     });
 
     it("無い rule の断りは端末の言語", async () => {

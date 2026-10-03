@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  link-text-other-host-ja  found
+ja/design  link-text-other-host-ja  found
+ja/email  link-text-other-host-ja  found
+ja/figures  link-text-other-host-ja  found
+ja/itinerary  link-text-other-host-ja  found
+ja/minutes  link-text-other-host-ja  found
+ja/note  link-text-other-host-ja  found
+ja/policy  link-text-other-host-ja  found
+ja/press  link-text-other-host-ja  found
+ja/proposal  link-text-other-host-ja  found
+ja/quote  link-text-other-host-ja  found
+ja/readme  link-text-other-host-ja  found
+ja/requirements  link-text-other-host-ja  found
+en/blog  link-text-other-host-en  found
+en/design  link-text-other-host-en  found
+en/email  link-text-other-host-en  found
+en/figures  link-text-other-host-en  found
+en/itinerary  link-text-other-host-en  found
+en/minutes  link-text-other-host-en  found
+en/note  link-text-other-host-en  found
+en/policy  link-text-other-host-en  found
+en/press  link-text-other-host-en  found
+en/proposal  link-text-other-host-en  found
+en/quote  link-text-other-host-en  found
+en/readme  link-text-other-host-en  found
+en/requirements  link-text-other-host-en  found

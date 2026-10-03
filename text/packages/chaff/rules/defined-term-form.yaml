@@ -1,0 +1,106 @@
+id: defined-term-form
+layer: L3
+status: stable
+how_to_find: defined-term-form
+requires: [structure, pos]
+severity: info
+
+name:
+  ja: 定義した語を、定義と違う形で使っている
+  en: A defined term used in another form
+
+why:
+  ja: 契約では、定義した語は定義した形のまま使うのが決まりです。「本サービス」と定義したあとで「「本サービス」」とかぎ括弧を付け直すと、新しく定義し直したのか、同じものなのかが読み手に分かりません。英語では "Services" と定義した語を "services" と小文字で書くと、定義した意味なのか、ふつうの意味なのかが分かれ、争いのもとになります。定義の後ろで、かぎ括弧や引用符に入れ直した語と、大文字で定義した語を小文字で書いた所（大文字の使用より少ないとき）を指します。
+  en: 'A contract uses each defined term exactly as defined. Quoting a term again after its definition ("the "Services"") leaves the reader asking whether it is being defined anew. Writing "services" where "Services" is defined splits the defined sense from the ordinary one, which is where disputes start. chaff points at a term set in quotes again after its definition, and at a capitalised term written in lower case (when the capitalised uses are more).'
+
+message:
+  ja: 定義した「{term}」と違う形で使っています
+  en: '"{term}" is used in another form than defined'
+
+messages:
+  quoted:
+    ja: 「{term}」は {line} 行目で定義した語です。定義のあとは、かぎ括弧を付けずに使います
+    en: '"{term}" is defined on line {line}; after that it is used without quotes'
+  case:
+    ja: 「{term}」は {line} 行目で大文字で定義した語ですが、ここは小文字です
+    en: '"{term}" is defined with a capital on line {line}, but written in lower case here'
+
+how_to_fix:
+  ja: 定義した語はかぎ括弧を付けずに使い、英語では定義のとおり大文字で始めてください。ふつうの意味で使うなら、別の言葉に替えます。
+  en: Use the defined term without quotes and, in English, with its capital as defined. If the ordinary sense is meant, use another word.
+
+levels: { strict: 3, normal: 2, relaxed: 1 }
+
+use_for: [legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 契約や規約で、定義した語を定義のあとでかぎ括弧に入れ直したり、大文字で定義した語を小文字で書いたりしている所
+  en: A defined term quoted again after its definition, or a capitalised defined term written in lower case
+example:
+  ja:
+    config: { genre: legal/contract }
+    before: |
+      # 利用規約
+
+      第1条　当社は、会議室の予約サービス（以下「本サービス」という。）を提供する。
+
+      第2条　利用者は、「本サービス」を業務の目的でだけ使う。
+    after: |
+      # 利用規約
+
+      第1条　当社は、会議室の予約サービス（以下「本サービス」という。）を提供する。
+
+      第2条　利用者は、本サービスを業務の目的でだけ使う。
+  en:
+    config: { genre: legal/contract }
+    before: |
+      # Terms
+
+      1. We provide a room booking service (the "Services").
+
+      2. You may use the Services for business only. The Services are provided as is.
+
+      3. You must not resell the services.
+    after: |
+      # Terms
+
+      1. We provide a room booking service (the "Services").
+
+      2. You may use the Services for business only. The Services are provided as is.
+
+      3. You must not resell the Services.
+
+not_flagged:
+  ja: 定義そのもの（以下「本サービス」という、「本サービス」とは）、定義より前の使用（use-before-definition が見ます）、文の頭の大文字、小文字の使用が {limit} 個を超えるか大文字の使用より多い語（ふつうの意味で使っているとみなす）は指しません。定義の文の中の使用（「顧客」とは、表紙に「顧客」と書いた者をいう）も見ません。法令・規程のジャンルは、定義を指すために語をかぎ括弧に入れるので見ません。
+  en: 'The definitions themselves ("Services" means, (the "Services")), uses before the definition (use-before-definition reads those), capitals at the start of a sentence, and terms written in lower case more than {limit} times or more often than capitalised (taken as the ordinary word used on purpose) are not reported, nor is a use inside the defining sentence ("Customer" means the party named "Customer"). Statutes and regulations quote a term to point at its definition, so that genre does not run this rule.'
+level_meaning:
+  ja: 小文字の使用が {limit} 個以下で、大文字の使用より少ないとき指摘
+  en: lower-case uses reported when they are {limit} or fewer and fewer than the capitalised ones
+rewrite:
+  ja:
+    direction: 定義した語を定義の形に戻してください。かぎ括弧を外し、英語の語は定義のとおり大文字で始めます。ふつうの意味で使っているのが明らかなら、定義した語と紛れない別の言葉に替えます。どちらの意味か決められなければ、書き手に確かめます。
+    pairs:
+      - before: 利用者は、「本サービス」を業務の目的でだけ使う。
+        after: 利用者は、本サービスを業務の目的でだけ使う。
+      - before: 乙は、「対象情報」を第三者に開示しない。
+        after: 乙は、対象情報を第三者に開示しない。
+    keep:
+      - 条の番号と中身
+      - 定義した語そのもの
+    avoid:
+      - 定義を書き換える
+      - 意味が分からない所を推測で大文字にする
+  en:
+    direction: Bring the term back to its defined form. Remove the quotes, and capitalise it as defined. If the ordinary sense is clearly meant, use a word that cannot be mistaken for the defined term. If it is not clear which sense is meant, ask the writer.
+    pairs:
+      - before: You must not resell the services.
+        after: You must not resell the Services.
+      - before: The "Customer" must pay within 30 days.
+        after: The Customer must pay within 30 days.
+    keep:
+      - the clause numbers and their content
+      - the defined term itself
+    avoid:
+      - changing the definition
+      - capitalising a word whose sense is unclear without asking

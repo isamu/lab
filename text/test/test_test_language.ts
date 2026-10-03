@@ -104,7 +104,7 @@ describe("chaff test の AI の判定の言語", () => {
     assert.match(result.out, / {12}確からしさ 0\.80/u);
     assert.match(
       result.out,
-      / {5}この指摘が違うと思ったら:\n {7}この箇所だけ黙らせる {4}<!-- stet: check:1 — 理由 -->\n {7}ルールごとゆるめる {6}npx chaff relax check:1/u,
+      / {5}この指摘が違うと思ったら:\n {7}この箇所だけ黙らせる {4}<!-- stet: check:1 — 理由 -->\n {7}ルールごとゆるめる {6}npx chaffjs relax check:1/u,
     );
     assert.match(result.out, /\n {2}機械 0 件 \/ AI \d+ 件\n {2}文章は書き換えていません。直すのは書いた人です。\n$/u);
   });
