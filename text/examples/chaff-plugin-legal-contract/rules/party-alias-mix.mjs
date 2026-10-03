@@ -3,7 +3,7 @@
 // 「甲」と「委託者」、「乙」と「受託者」、「開示者」と「受領者」など、文書内で表記ゆれが起きると、
 // 読み手は「甲 = 委託者」と逐一突き合わせることになる。契約書では当事者の表記は 1 つに固定するのが作法。
 
-/** @import { Detector, Sentence } from "chaffjs/api" */
+/** @import { Detector, RuleDocument, Sentence } from "chaffjs/api" */
 
 /** 契約書で現れがちな当事者ペア。片方の語が別の語で言い換えられていたら指摘する。 */
 const PARTY_ALIAS_PAIRS = [
@@ -31,7 +31,7 @@ const occurrencesIn = (sentence, pattern) => {
 
 /**
  * ドキュメント全体で、canonical と alias の両方が使われているペアを見つける。
- * @param {{ sentences: Sentence[] }} doc
+ * @param {RuleDocument} doc
  */
 const findMixedPairs = (doc) => {
   const findings = [];
