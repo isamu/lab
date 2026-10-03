@@ -1,0 +1,111 @@
+id: list-marker-mix
+layer: L1
+status: stable
+how_to_find: list-marker
+requires: [markdown]
+severity: info
+
+name:
+  ja: 箇条書きの記号が揃っていない
+  en: List bullets mixed
+
+why:
+  ja: 箇条書きの記号（「-」「*」「+」「・」）が混ざると、Markdown は書き手の思ったとおりに表示しません。一つのリストの途中で記号を変えると、そこでリストが二つに分かれて間が空きます。リストの項目の中で行頭に「・」を打つと、箇条書きにならず前の項目の行につながります。文書の中で一つのリストだけ記号が違うのは、別の文書から貼ったか、書き換えの途中のことが多い形です。どの記号が正しいかは決めず、同じ深さのリストのうち少ないほうを指します。
+  en: Mixed bullets ("-", "*", "+", "・") do not show the way the writer meant. Changing the bullet partway through a list makes Markdown start a new list there, with a gap. A line typed with "・" inside a list item is not a list item; Markdown joins it to the line above. A single list in a document written with another bullet is usually pasted from elsewhere or half rewritten. chaff does not pick a bullet; among lists of the same depth it points at the smaller side.
+
+message:
+  ja: 箇条書きの記号「{mark}」が、ほかのリスト（「{usual}」）と違います
+  en: 'The bullet "{mark}" differs from the other lists ("{usual}")'
+messages:
+  split:
+    ja: 箇条書きの記号が「{usual}」から「{mark}」に変わっています。Markdown はここでリストを二つに分けます
+    en: 'The bullet changes from "{usual}" to "{mark}"; Markdown starts a new list here'
+  folded:
+    ja: リストの項目の中の「・」の行は箇条書きにならず、前の行につながって表示されます
+    en: 'A line starting with "・" inside a list item is not a list item; Markdown joins it to the line above'
+  document:
+    ja: このリストだけ箇条書きの記号が「{mark}」です（同じ深さのリストは {count} 個が「{usual}」）
+    en: 'This list uses the bullet "{mark}", while {count} lists at the same depth use "{usual}"'
+
+how_to_fix:
+  ja: 箇条書きの記号を、文書の多くのリストと同じものに揃えてください。「・」で始めた行は、「- 」で始まる項目にします。
+  en: Use the bullet most of the document's lists use. Make a line typed with "・" an item starting with "- ".
+
+placeholders:
+  mark:
+    ja: 記号
+    en: the bullet
+  usual:
+    ja: ほかの記号
+    en: the other bullet
+  count:
+    ja: 〇
+    en: N
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 一つのリストや一つの文書の中で、「-」「*」「+」「・」の箇条書きの記号が混ざっている所
+  en: Bullets ("-", "*", "+", "・") mixed in one list or one document
+example:
+  ja:
+    before: |
+      持ち物は次のとおりです。
+
+      - 筆記用具
+      - 名札
+      * 昼食
+    after: |
+      持ち物は次のとおりです。
+
+      - 筆記用具
+      - 名札
+      - 昼食
+  en:
+    before: |
+      Bring the following.
+
+      - A pen
+      - Your badge
+      * Lunch
+    after: |
+      Bring the following.
+
+      - A pen
+      - Your badge
+      - Lunch
+
+not_flagged:
+  ja: 深さの違うリストどうし（上の段は「-」、入れ子は「*」）は比べません。同じ深さのリストが三つ未満の所、少ないほうが四分の一を超える所、番号付きのリスト、引用とコードの中のリストは指しません。「・」は、リストの項目の中の行か、二行以上続けて「・」で始めた段落だけを箇条書きと読みます。
+  en: Lists at different depths ("-" at the top, "*" nested) are not compared. Fewer than three lists at one depth, a smaller side above a quarter, numbered lists, and lists in quotations or code are not reported. "・" is read as a bullet only on a line inside a list item, or in a paragraph of two or more lines that start with it.
+rewrite:
+  depth: light
+  ja:
+    direction: 箇条書きの記号を、文書の多くのリストと同じものにしてください。記号だけを替え、項目の言葉と順番は変えません。「・」で始めた行は「- 」で始まる項目にします。
+    pairs:
+      - before: 「- 筆記用具」「- 名札」「* 昼食」
+        after: 「- 筆記用具」「- 名札」「- 昼食」
+      - before: 「- 準備」の下の行「・道具」
+        after: 「- 準備」の下の入れ子の項目「  - 道具」
+    keep:
+      - 項目の言葉と順番
+      - 入れ子の深さ
+    avoid:
+      - 少ないほうの記号に合わせて、ほかのリストをすべて書き換える
+      - 項目をつないで文にする
+  en:
+    direction: Use the bullet most of the document's lists use. Change only the bullet; keep each item's words and order. Make a line typed with "・" an item starting with "- ".
+    pairs:
+      - before: '"- A pen", "- Your badge", "* Lunch"'
+        after: '"- A pen", "- Your badge", "- Lunch"'
+      - before: 'a line "・Tools" under "- Preparation"'
+        after: 'a nested item "  - Tools" under "- Preparation"'
+    keep:
+      - each item's words and order
+      - the nesting depth
+    avoid:
+      - rewriting every other list to match the odd one
+      - joining the items into a sentence
