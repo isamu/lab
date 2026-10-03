@@ -1,0 +1,13 @@
+table  12  12  0  0
+en/blog  so-opener  found
+en/design  so-opener  found
+en/email  so-opener  found
+en/figures  so-opener  found
+en/itinerary  so-opener  found
+en/minutes  so-opener  found
+en/note  so-opener  found
+en/press  so-opener  found
+en/proposal  so-opener  found
+en/quote  so-opener  found
+en/readme  so-opener  found
+en/requirements  so-opener  found

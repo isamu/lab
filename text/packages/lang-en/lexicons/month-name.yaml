@@ -1,0 +1,29 @@
+# Month names and their abbreviations, for date-format-consistency to read "Oct 2, 2026" and "2 October 2026".
+# Matched as written (title case), so the modal "may" is never a month; the period after an abbreviation is optional.
+id: month-name
+language: en
+entries:
+  - pattern: January
+  - pattern: February
+  - pattern: March
+  - pattern: April
+  - pattern: May
+  - pattern: June
+  - pattern: July
+  - pattern: August
+  - pattern: September
+  - pattern: October
+  - pattern: November
+  - pattern: December
+  - pattern: Jan
+  - pattern: Feb
+  - pattern: Mar
+  - pattern: Apr
+  - pattern: Jun
+  - pattern: Jul
+  - pattern: Aug
+  - pattern: Sept
+  - pattern: Sep
+  - pattern: Oct
+  - pattern: Nov
+  - pattern: Dec
