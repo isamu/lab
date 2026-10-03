@@ -2,9 +2,10 @@
 // process's, so one process can run only one command line at a time; separate processes run them side by side.
 import { spawn } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { availableParallelism, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deal, undeal } from "./deal.ts";
+import { testWidth } from "./test-width.ts";
 
 const WORKER = join(import.meta.dirname, "child-worker.ts");
 
@@ -38,7 +39,7 @@ const runHand = async (dir: string, moduleUrl: string, exportName: string, hand:
  * exportName of moduleUrl, called with a hand of the jobs in each of up to `width` processes, which returns one result
  * per job. The results come back in the jobs' order. Jobs and results go through JSON.
  */
-export const mapInChildren = async (moduleUrl: string, exportName: string, jobs: readonly unknown[], width = availableParallelism()): Promise<unknown[]> => {
+export const mapInChildren = async (moduleUrl: string, exportName: string, jobs: readonly unknown[], width = testWidth()): Promise<unknown[]> => {
   if (jobs.length === 0) return [];
   const dir = mkdtempSync(join(tmpdir(), "chaff-children-"));
   try {

@@ -1,0 +1,85 @@
+id: step-reference-missing
+layer: L3
+status: stable
+how_to_find: step-reference
+severity: warning
+
+name:
+  ja: 無い手順を指す参照
+  en: A reference to a step that does not exist
+
+why:
+  ja: 「手順5を参照」と書いたのに手順が4つしか無ければ、読み手は手順5を探して手を止めます。手順を減らしたり並べ替えたりしたあとに、本文の参照だけが古い番号のまま残ると起きます。手順の番号と参照の番号を突き合わせれば、機械で言えます。
+  en: When the text says "see step 5" and there are only four steps, the reader stops to look for step 5. It happens when steps are removed or reordered and a reference keeps the old number. Matching the references against the steps' numbers is mechanical.
+
+message:
+  ja: 「{label}」を指していますが、手順は {last} までです
+  en: '"{label}" is referred to, but the steps end at {last}'
+
+how_to_fix:
+  ja: 指したい手順の番号を確かめて、参照を直してください。手順を消したのなら、参照の文も直します。
+  en: Check which step is meant and correct the reference. If the step was removed, rewrite the sentence that refers to it.
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「手順5を参照」のように、文書の手順の最後の番号を超える手順を指す参照
+  en: A reference such as "see step 5" past the last step the document has
+example:
+  ja:
+    before: |
+      1. アプリを開きます。
+      2. 設定を選びます。
+      3. 保存します。
+
+      うまくいかないときは、手順4からやり直してください。
+    after: |
+      1. アプリを開きます。
+      2. 設定を選びます。
+      3. 保存します。
+
+      うまくいかないときは、手順2からやり直してください。
+  en:
+    before: |
+      1. Open the app.
+      2. Choose Settings.
+      3. Save.
+
+      If it fails, start again from step 4.
+    after: |
+      1. Open the app.
+      2. Choose Settings.
+      3. Save.
+
+      If it fails, start again from step 2.
+
+not_flagged:
+  ja: 手順は、手順の語（手順、ステップ、Step）と番号で始まる見出しと、番号付きの箇条書きの項目です。手順が一つも無い文書の参照は、ほかの文書の手順かもしれないので言いません。番号付きの箇条書きがいくつかあれば、いちばん大きい番号を超える参照だけを言います。コードの中は読みません。
+  en: Steps are headings that start with a step word and a number (Step 3) and the items of numbered lists. In a document with no steps at all, a reference may be to another document's steps and is not reported. With several numbered lists, only a reference past the largest number is reported. Code is not read.
+
+rewrite:
+  ja:
+    direction: 指したい手順を確かめ、参照の番号を文書の手順の番号に合わせてください。手順を消したのなら、参照する文を直すか消します。
+    pairs:
+      - before: うまくいかないときは、手順4からやり直してください。（手順は3まで）
+        after: うまくいかないときは、手順2からやり直してください。
+      - before: 詳しくはステップ6を参照してください。（ステップは5まで）
+        after: 詳しくはステップ5を参照してください。
+    keep:
+      - 手順の中身と順番
+    avoid:
+      - どの手順を指すか確かめずに、最後の番号に直す
+  en:
+    direction: Find out which step is meant and correct the reference's number. If the step was removed, rewrite or remove the sentence that refers to it.
+    pairs:
+      - before: If it fails, start again from step 4. (three steps)
+        after: If it fails, start again from step 2.
+      - before: See Step 6 for the details. (five steps)
+        after: See Step 5 for the details.
+    keep:
+      - the steps and their order
+    avoid:
+      - changing the reference to the last step without checking which was meant
