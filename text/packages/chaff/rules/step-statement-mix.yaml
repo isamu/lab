@@ -1,0 +1,70 @@
+id: step-statement-mix
+layer: L3
+status: experimental
+how_to_find: step-statement
+languages: [en]
+requires: [pos]
+severity: info
+
+name:
+  ja: 手順の中に、指示でなく説明の文の手順がある
+  en: A step written as a statement among instructions
+
+why:
+  ja: 番号を振った手順は、読み手がそのとおりに手を動かす指示です。「Open the app.」「Run the installer.」の中に「The installer asks for a password.」のような説明の文が混ざると、読み手はそれも自分のすることかと迷います。英語の番号付きの箇条書きで、主語と動詞で始まる項目（The installer asks、You click）が、動詞で始まる指示の項目より少ないとき、少ないほうを指します。日本語の手順の文末（〜します／〜してください と それ以外）は no-mixed-desumasu と list-item-form-mix が見るので、この rule は英語だけです。
+  en: 'A numbered procedure is a list of things for the reader to do. When "The installer asks for a password." sits among "Open the app." and "Run the installer.", the reader wonders whether that is a step to take too. In an English numbered list, chaff points at the few items that open with a subject and a verb (The installer asks, You click) among items that open with the verb. Japanese step endings (〜します / 〜してください against the rest) are checked by no-mixed-desumasu and list-item-form-mix, so this rule is for English only.'
+
+message:
+  ja: この手順は、ほかの {count} 個の指示と違い、主語で始まる説明の文です
+  en: This step is a statement that opens with its subject, unlike the other {count} instructions
+
+how_to_fix:
+  ja: 読み手のすることを命令の形で書いてください。結果の説明なら、前の手順の後ろの文にするか、手順の外に出します。
+  en: Write what the reader does, as an instruction. If it describes a result, make it a second sentence of the step before, or move it out of the list.
+
+levels: { strict: 3, normal: 2, relaxed: 1 }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 英語の番号付きの手順で、命令の形の項目の中に、主語で始まる説明の項目が混ざっている所
+  en: A numbered procedure that mixes a statement (The installer asks) into instructions (Run the installer)
+example:
+  en:
+    config: { genre: docs/manual }
+    before: |
+      # Install
+
+      1. Open the terminal on your computer.
+      2. Run the installer from the downloads folder.
+      3. The installer asks for your password.
+      4. Restart the computer when it finishes.
+    after: |
+      # Install
+
+      1. Open the terminal on your computer.
+      2. Run the installer from the downloads folder.
+      3. Type your password when the installer asks for it.
+      4. Restart the computer when it finishes.
+
+not_flagged:
+  ja: "番号の無い箇条書き、三つに満たない手順、指示が半分に満たない番号付きの箇条書き（用語と説明の一覧など）、短い項目（「Setup」）、動詞の前に札や前置きのある項目（「Guests: …」「On the left bar, select …」）、主語で始まる項目が {limit} 個を超えるか指示より多い手順は見ません。項目の最初の行の最初の文だけを見ます。"
+  en: 'Bulleted lists, procedures of fewer than three steps, numbered lists where instructions are half or fewer (a list of terms, say), short items ("Setup"), items with a label or an opening phrase before the verb ("Guests: …", "On the left bar, select …"), and procedures where statements are more than {limit} or not fewer than the instructions are not reported. Only the first sentence on each item''s own line is read.'
+level_meaning:
+  ja: 説明の項目が {limit} 個以下で、指示の項目より少ないとき指摘
+  en: reported when {limit} or fewer steps are statements and they are fewer than the instructions
+rewrite:
+  en:
+    direction: Turn the statement into an instruction for the reader, with the verb first, or fold it into the step before as a second sentence. Keep what the step says happens; do not add steps.
+    pairs:
+      - before: 3. The installer asks for your password.
+        after: 3. Type your password when the installer asks for it.
+      - before: 2. You click Save to keep the file.
+        after: 2. Click Save to keep the file.
+    keep:
+      - the order of the steps
+      - the names of buttons, files and commands
+    avoid:
+      - adding a step the text does not have
+      - merging two steps the reader does separately
