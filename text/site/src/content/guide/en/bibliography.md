@@ -150,6 +150,31 @@ The rules themselves are listed in the [Reference](./reference).
   - In chaff: `no-mixed-desumasu`, `katakana-long-vowel` and `latin-spacing` check close to these rules.
     chaff does not decide whether to put the space. It checks only that one document is consistent.
 
+## Other prose linters
+
+chaff was compared with the public lists of checks of these linters, to find kinds of mistakes it did not yet look for.
+No rule text or word list was copied; chaff's lists are its own.
+
+- <a id="textlint-ja-presets"></a>**textlint-ja** [github.com](https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing)
+  - textlint-rule-preset-ja-technical-writing and textlint-rule-preset-japanese (rule sets for Japanese technical writing)
+  - Found: Checks a machine can run on Japanese text: sentence length, commas, mixed endings, ら dropped, doubled particles, invisible characters.
+  - In chaff: most have a chaff rule (`max-sentence-length`, `max-ten`, `no-mixed-desumasu`, `ra-nuki`, `no-doubled-joshi`, `invisible-character`).
+- <a id="proselint"></a>**proselint** [github.com](https://github.com/amperser/proselint)
+  - A linter for English prose, with checks drawn from usage guides.
+  - Found: Usage mistakes a word list can catch: clichés, redundancy, uncomparable adjectives given a degree, weasel words.
+  - In chaff: [`uncomparable-graded`](../../rules/uncomparable-graded/) follows its check of uncomparable adjectives.
+- <a id="write-good"></a>**write-good** [github.com](https://github.com/btford/write-good)
+  - A linter for English prose.
+  - Found: Passive voice, "there is" openers, a sentence-initial "So", weasel words, wordy phrases, clichés and repeated words.
+  - In chaff: `agentless-passive`, `expletive-construction`, `sentence-initial-so`, `weasel-word`, `wordy-phrase` and `doubled-word` cover these.
+- <a id="vale-styles"></a>**Vale Microsoft and Google styles** [github.com](https://github.com/errata-ai/Microsoft)
+  - Rules for the Vale linter that encode the Microsoft Writing Style Guide and the Google developer documentation style guide ([Google](https://github.com/errata-ai/Google)).
+  - Found: Checks of notation: ellipses, units, spacing, dashes, dates, ranges, contractions, the Oxford comma, heading case.
+  - In chaff: chaff checks that a document agrees with itself, not with one house's choice (`contraction-consistency`, `oxford-comma-consistency`, `range-notation-consistency`).
+- <a id="alex"></a>**alex** [github.com](https://github.com/get-alex/alex)
+  - A linter for insensitive or inconsiderate wording.
+  - In chaff: [background] which words to avoid is the team's call. chaff ships no such list; a team puts its own under `prefer` in `chaff.yaml`.
+
 ## Scoring writing and finding errors
 
 - <a id="attali-burstein-2006"></a>**Attali, Burstein (2006)** [ejournals.bc.edu](https://ejournals.bc.edu/index.php/jtla/article/view/1650)

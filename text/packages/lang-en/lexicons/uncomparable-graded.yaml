@@ -1,0 +1,126 @@
+# Uncomparable adjectives given a degree ("very unique", "more unanimous"). Read by uncomparable-graded.
+# An adjective here names a state that is there or not, so a grade says nothing more. "Almost", "nearly" and "truly" are
+# left out: "almost unique" and "nearly impossible" say how close, which is a real claim. rewrite is the form without the grade.
+id: uncomparable-graded
+language: en
+entries:
+  - pattern: very unique
+    rewrite: unique
+  - pattern: more unique
+    rewrite: unique
+  - pattern: most unique
+    rewrite: unique
+  - pattern: so unique
+    rewrite: unique
+  - pattern: rather unique
+    rewrite: unique
+  - pattern: somewhat unique
+    rewrite: unique
+  - pattern: extremely unique
+    rewrite: unique
+  - pattern: really unique
+    rewrite: unique
+  - pattern: fairly unique
+    rewrite: unique
+  - pattern: less unique
+    rewrite: unique
+  - pattern: very unanimous
+    rewrite: unanimous
+  - pattern: more unanimous
+    rewrite: unanimous
+  - pattern: most unanimous
+    rewrite: unanimous
+  - pattern: so unanimous
+    rewrite: unanimous
+  - pattern: rather unanimous
+    rewrite: unanimous
+  - pattern: somewhat unanimous
+    rewrite: unanimous
+  - pattern: extremely unanimous
+    rewrite: unanimous
+  - pattern: really unanimous
+    rewrite: unanimous
+  - pattern: fairly unanimous
+    rewrite: unanimous
+  - pattern: less unanimous
+    rewrite: unanimous
+  - pattern: very infinite
+    rewrite: infinite
+  - pattern: more infinite
+    rewrite: infinite
+  - pattern: most infinite
+    rewrite: infinite
+  - pattern: so infinite
+    rewrite: infinite
+  - pattern: rather infinite
+    rewrite: infinite
+  - pattern: somewhat infinite
+    rewrite: infinite
+  - pattern: extremely infinite
+    rewrite: infinite
+  - pattern: really infinite
+    rewrite: infinite
+  - pattern: fairly infinite
+    rewrite: infinite
+  - pattern: less infinite
+    rewrite: infinite
+  - pattern: very impossible
+    rewrite: impossible
+  - pattern: more impossible
+    rewrite: impossible
+  - pattern: most impossible
+    rewrite: impossible
+  - pattern: so impossible
+    rewrite: impossible
+  - pattern: rather impossible
+    rewrite: impossible
+  - pattern: somewhat impossible
+    rewrite: impossible
+  - pattern: extremely impossible
+    rewrite: impossible
+  - pattern: really impossible
+    rewrite: impossible
+  - pattern: fairly impossible
+    rewrite: impossible
+  - pattern: less impossible
+    rewrite: impossible
+  - pattern: very inevitable
+    rewrite: inevitable
+  - pattern: more inevitable
+    rewrite: inevitable
+  - pattern: most inevitable
+    rewrite: inevitable
+  - pattern: so inevitable
+    rewrite: inevitable
+  - pattern: rather inevitable
+    rewrite: inevitable
+  - pattern: somewhat inevitable
+    rewrite: inevitable
+  - pattern: extremely inevitable
+    rewrite: inevitable
+  - pattern: really inevitable
+    rewrite: inevitable
+  - pattern: fairly inevitable
+    rewrite: inevitable
+  - pattern: less inevitable
+    rewrite: inevitable
+  - pattern: very irrevocable
+    rewrite: irrevocable
+  - pattern: more irrevocable
+    rewrite: irrevocable
+  - pattern: most irrevocable
+    rewrite: irrevocable
+  - pattern: so irrevocable
+    rewrite: irrevocable
+  - pattern: rather irrevocable
+    rewrite: irrevocable
+  - pattern: somewhat irrevocable
+    rewrite: irrevocable
+  - pattern: extremely irrevocable
+    rewrite: irrevocable
+  - pattern: really irrevocable
+    rewrite: irrevocable
+  - pattern: fairly irrevocable
+    rewrite: irrevocable
+  - pattern: less irrevocable
+    rewrite: irrevocable
