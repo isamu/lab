@@ -5,7 +5,7 @@ import { parseResults } from "../packages/chaff/src/grade/results-read.ts";
 import { compareRuns } from "../packages/chaff/src/grade/baseline.ts";
 import { renderVariantsMarkdown } from "../packages/chaff/src/grade/render-variants.ts";
 import { VARIANT_TEXT } from "../packages/chaff/src/grade/variants-text.ts";
-import type { GradeResult } from "../packages/chaff/src/grade/result.ts";
+import type { GradeFact, GradeResult } from "../packages/chaff/src/grade/result.ts";
 import { compareVariants, grade, GradeInputError, type VariantInput } from "../packages/chaff/src/grade-api.ts";
 import { variantGroupsOf } from "../packages/chaff/src/grade/variants-input.ts";
 import { runCli } from "./cli-run.ts";
@@ -130,6 +130,25 @@ describe("comparing variants", () => {
       [3, 3],
     );
     assert.equal(compareVariants({ a: [result("q", undefined)] }).columns[0]?.penalty, undefined);
+  });
+
+  it("counts the facts no retrieved passage states only when some output had contexts, and shows them as a row", () => {
+    const unsupported: GradeFact = { kind: "number", key: "40", text: "40", line: 1, allowed: false };
+    const grounded = (count: number): Partial<GradeResult> => ({
+      contexts: { passages: 1, checked: 3, supported: [], unsupported: Array.from({ length: count }, () => unsupported), uncheckedSentences: 0 },
+    });
+    const compared = compareVariants({ a: [result("q", undefined, grounded(0))], b: [result("q", undefined, grounded(2))] });
+    assert.deepEqual(
+      compared.columns.map((column) => column.contexts),
+      [
+        { checked: 3, unsupported: 0 },
+        { checked: 3, unsupported: 2 },
+      ],
+    );
+    assert.match(renderVariantsMarkdown(compared, VARIANT_TEXT.en), /^\| Unsupported facts \| 0\/3 \| 2\/3 \|$/mu);
+    const ungrounded = compareVariants({ a: [result("q", undefined)], b: [result("q", undefined)] });
+    assert.equal(ungrounded.columns[0]?.contexts, undefined);
+    assert.doesNotMatch(renderVariantsMarkdown(ungrounded, VARIANT_TEXT.en), /Unsupported facts/u);
   });
 
   it("refuses a result without an id or a variant, an id twice in one variant, and no result at all", () => {

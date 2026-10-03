@@ -233,6 +233,7 @@ Rule rates (per 1,000 words)
 How to read it:
 - Every column counts the same tasks: only an `id` that every variant answered, in the same language and genre. Any other id is listed under "Ids not compared", with the variants it is missing from.
 - "Quotations failed" is failed out of checked. Facts are counted as in the summary, leaving out the kinds the rubric allows.
+- When outputs carry `contexts`, an "Unsupported facts" row gives the facts found in no retrieved passage out of those checked.
 - With a `grade:` rubric, a "Penalty points" row adds up each variant's points.
 - The pass rate is a share of outputs, not a score. chaff still gives no mark out of a maximum.
 
