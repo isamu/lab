@@ -17,7 +17,6 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
   });
 
   it("reports a typo with the nearest dictionary word", () => {
-    assert.deepEqual(unknown("We will recieve the signed contract on Friday."), ['"recieve" is not in the dictionary; did you mean "receive"?']);
     assert.deepEqual(unknown("The report is attched to this email."), ['"attched" is not in the dictionary; did you mean "attached"?']);
     assert.deepEqual(unknown("The thresholds were recalibrated and the pipline restarted."), ['"pipline" is not in the dictionary; did you mean "pipeline"?']);
   });
@@ -27,10 +26,14 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
   });
 
   it("names, code, URLs, words used twice, and words with no near dictionary word are not reported", () => {
-    assert.deepEqual(unknown("Ask Recieve Ltd. about it."), []);
-    assert.deepEqual(unknown("Run `recieve` now, or open https://example.com/recieve today."), []);
-    assert.deepEqual(unknown("The recieve step and the recieve list."), []);
+    assert.deepEqual(unknown("Ask Attched Ltd. about it."), []);
+    assert.deepEqual(unknown("Run `attched` now, or open https://example.com/attched today."), []);
+    assert.deepEqual(unknown("The attched step and the attched list."), []);
     assert.deepEqual(unknown("The xqzvwk value."), []);
+  });
+
+  it("leaves a misspelling known-misspelling lists to that rule", () => {
+    assert.deepEqual(unknown("We will recieve the signed contract on Friday."), []);
   });
 
   it("a team name is known", () => {
@@ -41,7 +44,7 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
   });
 
   it("does not run on Japanese", () => {
-    assert.deepEqual(namedRuleRun("unknown-word", "We will recieve it.\n", ja).findings, []);
+    assert.deepEqual(namedRuleRun("unknown-word", "We will attched it.\n", ja).findings, []);
   });
 });
 
