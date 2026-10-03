@@ -1,0 +1,35 @@
+# Read by dangling-participle: a sentence that opens with a participle phrase and whose subject is an empty "it" or
+# "there" ("Having reviewed the code, it is ready.").
+# group subject: the empty subjects after the comma.
+# group exempt: openings read as fixed phrases, not as an action someone did ("Given the data", "Based on", "Generally
+# speaking"). Matched word by word from the start of the sentence, without case.
+id: dangling-participle
+language: en
+entries:
+  - { pattern: it, group: subject }
+  - { pattern: there, group: subject }
+  - { pattern: given, group: exempt }
+  - { pattern: based, group: exempt }
+  - { pattern: considering, group: exempt }
+  - { pattern: assuming, group: exempt }
+  - { pattern: regarding, group: exempt }
+  - { pattern: concerning, group: exempt }
+  - { pattern: including, group: exempt }
+  - { pattern: excluding, group: exempt }
+  - { pattern: following, group: exempt }
+  - { pattern: according, group: exempt }
+  - { pattern: provided, group: exempt }
+  - { pattern: providing, group: exempt }
+  - { pattern: depending, group: exempt }
+  - { pattern: judging, group: exempt }
+  - { pattern: compared, group: exempt }
+  - { pattern: granted, group: exempt }
+  - { pattern: barring, group: exempt }
+  - { pattern: speaking, group: exempt }
+  - { pattern: having said that, group: exempt }
+  - { pattern: generally speaking, group: exempt }
+  - { pattern: strictly speaking, group: exempt }
+  - { pattern: broadly speaking, group: exempt }
+  - { pattern: that said, group: exempt }
+  - { pattern: seeing as, group: exempt }
+  - { pattern: seeing that, group: exempt }
