@@ -19,7 +19,7 @@ export type LoadedPlugins = { readonly plugins: readonly ParsedPlugin[]; readonl
 /** pack: the folder of a rule pack (YAML only), which is read rather than imported. */
 type Located = { readonly origin: PluginOrigin; readonly pack?: string } | { readonly problem: PluginProblem };
 
-const problemOf = (kind: Exclude<PluginProblem["kind"], "rule">, plugin: string, detail = ""): { problem: PluginProblem } => ({
+const problemOf = (kind: Exclude<PluginProblem["kind"], "rule" | "guide">, plugin: string, detail = ""): { problem: PluginProblem } => ({
   problem: { kind, plugin, detail },
 });
 
