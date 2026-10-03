@@ -1,3 +1,4 @@
+import { resultKey } from "./result-name.ts";
 import type { GradeResult } from "./result.ts";
 
 // An earlier run's results (`--out`), read back for `--baseline`. Pure. Only lines chaff grade wrote are accepted: a
@@ -42,10 +43,13 @@ const isNotRun = (value: unknown): boolean => isRecord(value) && isString(value[
 
 const isRates = (value: unknown): boolean => isRecord(value) && Object.values(value).every(isNumber);
 
+/** The id, and the variant when the output had one. */
+const isLabel = (value: Record<string, unknown>): boolean => isString(value["id"]) && (value["variant"] === undefined || isString(value["variant"]));
+
 /** A line `--out` writes, every field checked: a line that only looks like one would be compared as if it had been graded. */
-const isGradeResult = (value: unknown): value is GradeResult =>
+export const isGradeResult = (value: unknown): value is GradeResult =>
   isRecord(value) &&
-  isString(value["id"]) &&
+  isLabel(value) &&
   isString(value["language"]) &&
   isString(value["genre"]) &&
   isSize(value["size"]) &&
@@ -67,13 +71,13 @@ const parsedLine = (body: string): unknown => {
   }
 };
 
-/** The lines whose id an earlier line already has: one run never grades two outputs under one id. */
+/** The lines whose id an earlier line of the same variant already has: one run never grades two outputs under one id. */
 const repeatedIds = (read: readonly { readonly line: number; readonly value: unknown }[]): number[] => {
   const seen = new Set<string>();
   return read.flatMap(({ line, value }) => {
     if (!isGradeResult(value)) return [];
-    const repeated = seen.has(value.id);
-    seen.add(value.id);
+    const repeated = seen.has(resultKey(value));
+    seen.add(resultKey(value));
     return repeated ? [line] : [];
   });
 };

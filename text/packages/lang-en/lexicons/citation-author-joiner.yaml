@@ -1,0 +1,11 @@
+# The words between authors in an author-year citation: group pair joins two authors (Smith and Jones, 2020), and the
+# rest stand for further authors (Smith et al., 2020).
+id: citation-author-joiner
+language: en
+entries:
+  - pattern: and
+    group: pair
+  - pattern: "&"
+    group: pair
+  - pattern: et al.
+  - pattern: et al

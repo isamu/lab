@@ -29,7 +29,7 @@ const findingOf = (hit: Hit, values: Readonly<Record<string, number>>): Finding 
 });
 
 /** 1000 語（日本語は 1000 字）あたりの数が上限を超えたら、当たった文をすべて言う。短い文書は密度が暴れるので測らない。 */
-const densityFindings = (doc: ProseDocument, hits: readonly Hit[], limit: number): Finding[] => {
+export const densityFindings = (doc: ProseDocument, hits: readonly Hit[], limit: number): Finding[] => {
   const length = wordsOf(doc);
   if (hits.length < PILE || length < MIN_DOCUMENT_LENGTH[doc.lengthUnit]) return [];
   const density = Math.round((hits.length / length) * PER * TENTHS) / TENTHS;

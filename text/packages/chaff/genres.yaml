@@ -79,6 +79,11 @@ groups:
       shell-prompt-mix: off
       heading-command-missing: off
       step-statement-mix: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -110,6 +115,11 @@ groups:
       emoji-heading: off
       bold-label-list: off
       ai-structure: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
@@ -232,6 +242,14 @@ groups:
       shell-prompt-mix: off
       heading-command-missing: off
       step-statement-mix: off
+      # Dialect and old usage ("an hospital") are the work's voice, and dialogue leans on "very".
+      article-sound: off
+      very-adjective: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
       # A narrator and a character speak as they speak: dialect ("would of"), "So," and hearsay are the voice.
       homophone-slip: off
       wordy-phrase: off
@@ -260,6 +278,8 @@ groups:
       double-negative: off
       ra-nuki: off
       requirement-smell: off
+      article-sound: off
+      very-adjective: off
       homophone-slip: off
       wordy-phrase: off
       weasel-word: off
@@ -277,6 +297,11 @@ groups:
       shell-prompt-mix: off
       heading-command-missing: off
       step-statement-mix: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
 
 genres:
   - id: technical/spec
@@ -468,6 +493,13 @@ genres:
           line: "^(?:#{1,6}\\s*)?(?:\\d+\\.?\\s+)?(?:Abstract|Keywords|Methods?|Methodology|Results|Discussion|Conclusions?|Related [Ww]ork|Bibliography|References)\\s*$",
           min_lines: 4,
         }
+    # A paper is read against its own apparatus: one citation style, citations that match the reference list, figures
+    # numbered in the order they are referred to, and an abstract of a fixed length.
+    rules:
+      citation-style-mix: normal
+      citation-reference-mismatch: normal
+      figure-reference-order: normal
+      abstract-length: normal
   - id: literature/fiction
     name: { ja: 小説, en: Fiction }
     summary:

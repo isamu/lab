@@ -1,0 +1,18 @@
+# Headings that name a section of a research paper. A paper with two or more of them is expected to open with an abstract.
+# Compared without case, numbers or colons.
+id: paper-section-heading
+language: en
+entries:
+  - pattern: Introduction
+  - pattern: Background
+  - pattern: Related work
+  - pattern: Method
+  - pattern: Methods
+  - pattern: Methodology
+  - pattern: Materials and methods
+  - pattern: Experiments
+  - pattern: Results
+  - pattern: Discussion
+  - pattern: Conclusion
+  - pattern: Conclusions
+  - pattern: Limitations
