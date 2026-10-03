@@ -34,6 +34,16 @@ describe("ellipsis-consistency: 省略記号の書き方の混在", () => {
     assert.deepEqual(findingsOf("Loading… Saving… Run `npm install ...` now.", en), []);
   });
 
+  it("ranges, paths, addresses and table of contents leaders are not ellipses", () => {
+    const forms = ["…", "...", "・・・"];
+    assert.deepEqual(ellipsesIn("Use 1...10.", forms), []);
+    assert.deepEqual(ellipsesIn("See https://example.com/a...b now.", forms), []);
+    assert.deepEqual(ellipsesIn("Open docs/.../index.md now.", forms), []);
+    assert.deepEqual(ellipsesIn("Contents\nIntro ... 12\nUsage ... 14\n", forms), []);
+    assert.deepEqual(ellipsesIn("第1章・・・3", forms), []);
+    assert.deepEqual(findingsOf("Loading… Saving… Use 1...10 and see https://example.com/a...b.", en), []);
+  });
+
   it("reads each form whole, longest first, and skips longer runs of dots", () => {
     const forms = ["……", "…", "・・・", "..."];
     assert.deepEqual(
