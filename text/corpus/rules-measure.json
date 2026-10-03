@@ -2746,6 +2746,12 @@
           "documents": 48,
           "fired": 0
         }
+      },
+      "aiBench": {
+        "hits": 0,
+        "samples": 6,
+        "falseAlarms": 0,
+        "cleanSamples": 12
       }
     },
     "figure-reference-order": {
