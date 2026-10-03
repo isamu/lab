@@ -1,0 +1,10 @@
+# Latin abbreviations written with periods (pattern), and the house style that drops them all (instead_of, as GOV.UK
+# writes "eg"). latin-abbreviation-form reports a form with some of the periods dropped but not all ("e.g" and "eg.");
+# both full ways are fine.
+id: latin-abbreviation
+language: en
+entries:
+  - pattern: e.g.
+    instead_of: eg
+  - pattern: i.e.
+    instead_of: ie

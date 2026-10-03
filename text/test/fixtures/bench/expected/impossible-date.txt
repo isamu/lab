@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  impossible-date-ja  found
+ja/design  impossible-date-ja  found
+ja/email  impossible-date-ja  found
+ja/figures  impossible-date-ja  found
+ja/itinerary  impossible-date-ja  found
+ja/minutes  impossible-date-ja  found
+ja/note  impossible-date-ja  found
+ja/policy  impossible-date-ja  found
+ja/press  impossible-date-ja  found
+ja/proposal  impossible-date-ja  found
+ja/quote  impossible-date-ja  found
+ja/readme  impossible-date-ja  found
+ja/requirements  impossible-date-ja  found
+en/blog  impossible-date-en  found
+en/design  impossible-date-en  found
+en/email  impossible-date-en  found
+en/figures  impossible-date-en  found
+en/itinerary  impossible-date-en  found
+en/minutes  impossible-date-en  found
+en/note  impossible-date-en  found
+en/policy  impossible-date-en  found
+en/press  impossible-date-en  found
+en/proposal  impossible-date-en  found
+en/quote  impossible-date-en  found
+en/readme  impossible-date-en  found
+en/requirements  impossible-date-en  found
