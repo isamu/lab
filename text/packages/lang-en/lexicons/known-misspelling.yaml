@@ -1,0 +1,177 @@
+# Common misspellings. pattern is the misspelling, instead_of the spelling. Read by known-misspelling.
+# Only forms that are wrong in every variety of English: British and American spellings (colour, judgement, dependant)
+# are left to spelling-consistency. A form is matched as a whole word, never inside a longer one.
+# Self-compiled; not copied from any published list.
+id: known-misspelling
+language: en
+entries:
+  - pattern: definately
+    instead_of: definitely
+  - pattern: definatly
+    instead_of: definitely
+  - pattern: seperate
+    instead_of: separate
+  - pattern: seperately
+    instead_of: separately
+  - pattern: seperator
+    instead_of: separator
+  - pattern: recieve
+    instead_of: receive
+  - pattern: recieved
+    instead_of: received
+  - pattern: reciept
+    instead_of: receipt
+  - pattern: retreive
+    instead_of: retrieve
+  - pattern: occured
+    instead_of: occurred
+  - pattern: occuring
+    instead_of: occurring
+  - pattern: occurence
+    instead_of: occurrence
+  - pattern: occurance
+    instead_of: occurrence
+  - pattern: untill
+    instead_of: until
+  - pattern: accomodate
+    instead_of: accommodate
+  - pattern: acheive
+    instead_of: achieve
+  - pattern: arguement
+    instead_of: argument
+  - pattern: begining
+    instead_of: beginning
+  - pattern: beleive
+    instead_of: believe
+  - pattern: calender
+    instead_of: calendar
+  - pattern: commited
+    instead_of: committed
+  - pattern: concious
+    instead_of: conscious
+  - pattern: embarass
+    instead_of: embarrass
+  - pattern: enviroment
+    instead_of: environment
+  - pattern: existance
+    instead_of: existence
+  - pattern: goverment
+    instead_of: government
+  - pattern: grammer
+    instead_of: grammar
+  - pattern: independant
+    instead_of: independent
+  - pattern: maintainance
+    instead_of: maintenance
+  - pattern: millenium
+    instead_of: millennium
+  - pattern: neccessary
+    instead_of: necessary
+  - pattern: neccesary
+    instead_of: necessary
+  - pattern: noticable
+    instead_of: noticeable
+  - pattern: occassion
+    instead_of: occasion
+  - pattern: persistant
+    instead_of: persistent
+  - pattern: posession
+    instead_of: possession
+  - pattern: prefered
+    instead_of: preferred
+  - pattern: privelege
+    instead_of: privilege
+  - pattern: publically
+    instead_of: publicly
+  - pattern: recomend
+    instead_of: recommend
+  - pattern: refered
+    instead_of: referred
+  - pattern: relevent
+    instead_of: relevant
+  - pattern: responsability
+    instead_of: responsibility
+  - pattern: succesful
+    instead_of: successful
+  - pattern: sucessful
+    instead_of: successful
+  - pattern: sucess
+    instead_of: success
+  - pattern: supercede
+    instead_of: supersede
+  - pattern: tommorow
+    instead_of: tomorrow
+  - pattern: tommorrow
+    instead_of: tomorrow
+  - pattern: truely
+    instead_of: truly
+  - pattern: wierd
+    instead_of: weird
+  - pattern: thier
+    instead_of: their
+  - pattern: teh
+    instead_of: the
+  - pattern: alot
+    instead_of: a lot
+  - pattern: accross
+    instead_of: across
+  - pattern: agressive
+    instead_of: aggressive
+  - pattern: apparantly
+    instead_of: apparently
+  - pattern: basicly
+    instead_of: basically
+  - pattern: buisness
+    instead_of: business
+  - pattern: catagory
+    instead_of: category
+  - pattern: completly
+    instead_of: completely
+  - pattern: compatability
+    instead_of: compatibility
+  - pattern: dissapoint
+    instead_of: disappoint
+  - pattern: finaly
+    instead_of: finally
+  - pattern: fourty
+    instead_of: forty
+  - pattern: freind
+    instead_of: friend
+  - pattern: guage
+    instead_of: gauge
+  - pattern: harrass
+    instead_of: harass
+  - pattern: heirarchy
+    instead_of: hierarchy
+  - pattern: immediatly
+    instead_of: immediately
+  - pattern: knowlege
+    instead_of: knowledge
+  - pattern: lenght
+    instead_of: length
+  - pattern: libary
+    instead_of: library
+  - pattern: managment
+    instead_of: management
+  - pattern: paramter
+    instead_of: parameter
+  - pattern: perfomance
+    instead_of: performance
+  - pattern: simular
+    instead_of: similar
+  - pattern: threshhold
+    instead_of: threshold
+  - pattern: transfered
+    instead_of: transferred
+  - pattern: usefull
+    instead_of: useful
+  - pattern: writting
+    instead_of: writing
+  - pattern: defintion
+    instead_of: definition
+  - pattern: garantee
+    instead_of: guarantee
+  - pattern: reponse
+    instead_of: response
+  - pattern: accesible
+    instead_of: accessible
