@@ -1,0 +1,20 @@
+# Groups of people or things a percentage can be a share of ("62% of respondents"). A share of one of these cannot
+# pass 100%. Words that also take a growth or a ratio ("of last year", "of the budget") are left out.
+id: share-whole
+language: en
+entries:
+  - pattern: respondents
+  - pattern: participants
+  - pattern: employees
+  - pattern: users
+  - pattern: customers
+  - pattern: students
+  - pattern: households
+  - pattern: voters
+  - pattern: members
+  - pattern: patients
+  - pattern: adults
+  - pattern: children
+  - pattern: applicants
+  - pattern: companies
+  - pattern: population
