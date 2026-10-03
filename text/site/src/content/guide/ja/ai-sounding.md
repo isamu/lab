@@ -10,8 +10,8 @@ chaff はこの形を機械で見つけますが、文章は書き換えませ�
 直す前に、`chaff fix-plan` で「直す計画」を出します。
 
 ```bash
-npx chaffjs fix-plan article.md --experimental    # 直す計画を Markdown で出す
-npx chaffjs fix-plan article.md --experimental --json    # 同じものを JSON で（AI に渡すとき）
+npx chaffjs fix-plan article.md           # 直す計画を Markdown で出す
+npx chaffjs fix-plan article.md --json    # 同じものを JSON で（AI に渡すとき）
 ```
 
 chaff が見つけた箇所を、ルールごとに「どう直すか」の指示書にまとめたものです。
@@ -31,7 +31,7 @@ chaff が見つけた箇所を、ルールごとに「どう直すか」の指�
 直す方向と例は、ルールのファイル（`rewrite:`）に書いてあります。同じ指摘には、いつも同じ直し方が示されます。
 人が直すときも、AI に頼むときも、手順は同じです。
 
-1. `npx chaffjs fix-plan article.md --experimental` で計画を出します。
+1. `npx chaffjs fix-plan article.md` で計画を出します。
 2. 計画に沿って書き直し、計画の「直したあとの確かめ」にある名前で保存します。AI に頼むときは、計画をそのまま渡します。
 3. 確かめのコマンドを実行します。指摘が残っていないか、事実が落ちたり足されたりしていないか、構成がどう変わったかを見ます。
 
@@ -39,11 +39,8 @@ chaff が見つけた箇所を、ルールごとに「どう直すか」の指�
 
 ## chaff が見る AI っぽさ
 
-AI っぽさのルールの多くは試験中で、`--experimental` を付けると動きます。`bold-density`、`closing-cliche`、`padded-intro` は付けなくても動きます。
-
-```bash
-npx chaffjs article.md --experimental    # 試験中のルールも動かす
-```
+これらのルールは、技術記事、ブログ、ビジネス文書では既定で動きます。
+法務の文書、説明書、文学、発言録は書き方が違うので、多くは止まります。どのジャンルで止まるかは `npx chaffjs explain <ルール>` に出ます。
 
 | ルール | 見つけるもの |
 | --- | --- |
@@ -113,7 +110,7 @@ npx chaffjs fix-plan article.md --depth register     # 文体を変えるとこ�
 
 ## 部分直しの手順
 
-1. `npx chaffjs fix-plan article.md --experimental` で直す計画を出します。
+1. `npx chaffjs fix-plan article.md` で直す計画を出します。
 2. 計画の直す方向に沿って、指摘された所だけを書き直します。意味、数、条件、技術的な制約は残します。
 3. もう一度 chaff をかけます。書き直しは 2 回までにします。
 4. 書き直した文章と、何をなぜ変えたのかの短い一覧を残します。
@@ -125,7 +122,7 @@ npx chaffjs fix-plan article.md --depth register     # 文体を変えるとこ�
 
 節ごとの書き直しは、見出しの構成を残したまま、節ごとに文章の形を変えます。
 
-1. 書き直す前に `--experimental` で chaff をかけ、文書全体の特徴を控えます。
+1. 書き直す前に chaff をかけ、文書全体の特徴を控えます。
    控えるのは、`ai-generated-composite` に入る特徴、`bold-density`、`contrast-framing`、
    `stock-transition`、`sentence-rhythm` です。
 2. 節ごとに、次の形を減らしながら書き直します。
@@ -141,7 +138,7 @@ npx chaffjs fix-plan article.md --depth register     # 文体を変えるとこ�
 
 3. 段落には主張を一つ持たせ、接続の言葉で前の段落と繋ぎます。
    元の文章に書き手の経験や具体的な数があれば、それを段落の中心に置きます。
-4. もう一度 `--experimental` で chaff をかけ、1 で控えた特徴と比べます。
+4. もう一度 chaff をかけ、1 で控えた特徴と比べます。
    変わったことは、言葉ではなく chaff の結果で示します。
 5. `npx chaffjs compare <書き直す前> <書き直した後>` をかけ、落ちた事実と足された事実を確かめます。
    数、日付、時刻、URL、コード、固有名詞、引用、見出し、条項の参照、脚注を、前と後で突き合わせます。
@@ -201,8 +198,8 @@ npx chaffjs fix-plan article.md --depth register     # 文体を変えるとこ�
 5. 確かめます。
 
 ```bash
-npx chaffjs old.md --experimental                       # 書き直す前の AI っぽさの特徴
-npx chaffjs new.md --experimental                       # 書き直した後の特徴
+npx chaffjs old.md                       # 書き直す前の AI っぽさの特徴
+npx chaffjs new.md                       # 書き直した後の特徴
 npx chaffjs outline old.md new.md                       # 見出しの数・節の平均・箇条書き・太字と、構成の AI らしさを前と後で並べる
 npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-added heading   # 見出し以外の事実が落ちても足されてもいないか
 ```
@@ -274,7 +271,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 `chaff fix-plan` が出した計画です。最初のルールより後は略しています。
 
 ````markdown
-$ npx chaffjs fix-plan draft.md --experimental
+$ npx chaffjs fix-plan draft.md
 # 直す計画: draft.md
 
 言語 ja、ジャンル blog/tech
@@ -362,7 +359,7 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 書き直したものを draft.rewritten.md に保存して、次を実行します。
 
 ```bash
-npx chaffjs draft.rewritten.md --experimental
+npx chaffjs draft.rewritten.md
 npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
 npx chaffjs outline draft.md draft.rewritten.md
 ```
@@ -389,7 +386,7 @@ npx chaffjs outline draft.md draft.rewritten.md
 計画の確かめのコマンドを実行した結果です。
 
 ```text
-$ npx chaffjs draft.rewritten.md --experimental --compact
+$ npx chaffjs draft.rewritten.md --compact
 draft.rewritten.md   blog/tech · 日本語   ジャンルは既定から
 
 
@@ -511,7 +508,7 @@ draft.md → draft.rewritten.md
 書き直す前に chaff をかけた結果です。
 
 ```text
-$ npx chaffjs ai.md --genre blog/tech --experimental --compact
+$ npx chaffjs ai.md --genre blog/tech --compact
 
 ai.md   blog/tech · 日本語   ジャンルは --genre から
 
@@ -572,7 +569,7 @@ ai.md   blog/tech · 日本語   ジャンルは --genre から
 書き直した後に chaff をかけた結果です。
 
 ```text
-$ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
+$ npx chaffjs rewritten.md --genre blog/tech --compact
 
 rewritten.md   blog/tech · 日本語   ジャンルは --genre から
 
@@ -711,7 +708,7 @@ i 書き方だけ変わった事実 2 件
 書き直す前の chaff の結果です。`ai-generated-composite` が出ているので、全面書き直しを選びます。
 
 ```text
-$ npx chaffjs study.md --genre blog/tech --experimental --compact
+$ npx chaffjs study.md --genre blog/tech --compact
 
 study.md   blog/tech · 日本語   ジャンルは --genre から
 
@@ -823,7 +820,7 @@ study.md の構成: 見出し 14、節の平均 67 字、箇条書き 15%、太�
 書き直した後の結果です。
 
 ```text
-$ npx chaffjs study-full.md --genre blog/tech --experimental --compact
+$ npx chaffjs study-full.md --genre blog/tech --compact
 
 study-full.md   blog/tech · 日本語   ジャンルは --genre から
 
@@ -941,7 +938,7 @@ i 書き方だけ変わった事実 3 件
 
 | 測ったもの | 前 | 後 |
 | --- | --- | --- |
-| 指摘（`--experimental`） | 13 件 | 0 件 |
+| 指摘 | 13 件 | 0 件 |
 | `ai-generated-composite` | 5 種がそろう | 出ない |
 | 構成の AI らしさ（`chaff outline`） | 3（見出しの多さ、3 つに分けた小見出し、太字の札） | 0 |
 | 見出し | 14 | 3 |
