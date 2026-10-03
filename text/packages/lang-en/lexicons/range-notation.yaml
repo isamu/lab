@@ -1,0 +1,12 @@
+# Marks written between two numbers to make a range (10–20, 10-20). range-notation-consistency checks that one
+# document does not mix them. "to" and "through" are left out: prose writes them beside a table's dash on purpose,
+# and "from 10 to 20" also says a change. A hyphen (group: ambiguous) also joins
+# the parts of a number (section 2-3, NSF 13-542), so it makes a range only when a unit or a word follows (6-12 years,
+# 10-20%). Matched as written.
+id: range-notation
+language: en
+entries:
+  - pattern: –
+  - { pattern: "-", group: ambiguous }
+  - pattern: "~"
+  - pattern: 〜

@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  ranges-two-ways-ja  found
+ja/design  ranges-two-ways-ja  found
+ja/email  ranges-two-ways-ja  found
+ja/figures  ranges-two-ways-ja  found
+ja/itinerary  ranges-two-ways-ja  found
+ja/minutes  ranges-two-ways-ja  found
+ja/note  ranges-two-ways-ja  found
+ja/policy  ranges-two-ways-ja  found
+ja/press  ranges-two-ways-ja  found
+ja/proposal  ranges-two-ways-ja  found
+ja/quote  ranges-two-ways-ja  found
+ja/readme  ranges-two-ways-ja  found
+ja/requirements  ranges-two-ways-ja  found
+en/blog  ranges-two-ways-en  found
+en/design  ranges-two-ways-en  found
+en/email  ranges-two-ways-en  found
+en/figures  ranges-two-ways-en  found
+en/itinerary  ranges-two-ways-en  found
+en/minutes  ranges-two-ways-en  found
+en/note  ranges-two-ways-en  found
+en/policy  ranges-two-ways-en  found
+en/press  ranges-two-ways-en  found
+en/proposal  ranges-two-ways-en  found
+en/quote  ranges-two-ways-en  found
+en/readme  ranges-two-ways-en  found
+en/requirements  ranges-two-ways-en  found
