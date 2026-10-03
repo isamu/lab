@@ -60,7 +60,7 @@ const MAX_FENCE_INDENT = 3;
 const TAB_WIDTH = 4;
 
 const indentOf = (line: string): number =>
-  [...line.slice(0, line.length - line.trimStart().length)].reduce((width, char) => width + (char === "\t" ? TAB_WIDTH : 1), 0);
+  Array.from(line.slice(0, line.length - line.trimStart().length)).reduce((width, char) => width + (char === "\t" ? TAB_WIDTH : 1), 0);
 
 /** Whether a line closes a fence: not indented past the limit, the same character, at least as many, and nothing after but spaces. */
 const closes = (line: string, fence: string, maxIndent: number): boolean => {
