@@ -1,0 +1,103 @@
+id: heading-command-missing
+layer: L1
+status: experimental
+how_to_find: heading-command
+requires: [markdown]
+severity: info
+
+name:
+  ja: 見出しのコマンドやオプションが、その節のコードに無い
+  en: A heading names a command its section's code does not show
+
+why:
+  ja: 「## `--dry-run`」の節のコード例が「--dryrun」を使っていると、読み手はどちらが正しいか分かりません。コマンドやオプションの名前を変えたときに、見出しかコード例の片方だけを直すと起きます。見出しのコードの部分（`npm install`、`--force`、`init`）が、その節（次の同じ深さか浅い見出しまで）のコードブロックにもコードの部分にも無いとき指します。節にコードが一つも無ければ見ません。
+  en: 'When the section "## `--dry-run`" shows an example using "--dryrun", the reader cannot tell which is right. It happens when a command or an option is renamed and only the heading or only the example is updated. chaff points out a heading''s code part (`npm install`, `--force`, `init`) that appears in none of the code blocks or code spans of its section (up to the next heading of the same or a higher level). A section with no code at all is not checked.'
+
+message:
+  ja: 見出しの「{command}」が、この節のコードにありません
+  en: '"{command}" in this heading does not appear in the section''s code'
+
+how_to_fix:
+  ja: 見出しとコード例のどちらが今の名前かを確かめて、もう一方を直してください。
+  en: Check which of the heading and the example has the current name, and correct the other.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 見出しが名指すコマンドやオプションが、その節のコード例のどこにも無い所
+  en: A command or option named in a heading that the section's examples never use
+example:
+  ja:
+    config: { genre: docs/manual }
+    before: |
+      # 使い方
+
+      ## `--dry-run`
+
+      直さずに、直す所だけを見せます。
+
+      ```bash
+      npx chaffjs fix --dryrun README.md
+      ```
+    after: |
+      # 使い方
+
+      ## `--dry-run`
+
+      直さずに、直す所だけを見せます。
+
+      ```bash
+      npx chaffjs fix --dry-run README.md
+      ```
+  en:
+    config: { genre: docs/manual }
+    before: |
+      # Usage
+
+      ## `--dry-run`
+
+      Show what would change without changing it.
+
+      ```bash
+      npx chaffjs fix --dryrun README.md
+      ```
+    after: |
+      # Usage
+
+      ## `--dry-run`
+
+      Show what would change without changing it.
+
+      ```bash
+      npx chaffjs fix --dry-run README.md
+      ```
+
+not_flagged:
+  ja: コードの無い節、ファイル名や関数名（`config.yaml`、`useEffect`）を書いた見出し、コードの部分の無い見出しは見ません。`--force` は `--force-with-lease` の中にあっても、あったとは数えません。
+  en: "Sections with no code, headings naming a file or a function (`config.yaml`, `useEffect`), and headings with no code part are not checked. `--force` inside `--force-with-lease` does not count as shown."
+rewrite:
+  ja:
+    direction: 見出しとコード例のどちらが今のコマンドやオプションの名前かを書き手に確かめ、もう一方を直してください。分からなければ推測で書き換えず、確かめるよう伝えます。
+    pairs:
+      - before: npx chaffjs fix --dryrun README.md
+        after: npx chaffjs fix --dry-run README.md
+      - before: "## `chaff lint`"
+        after: "## `chaff check`"
+    keep:
+      - 節の説明の文
+    avoid:
+      - どちらの名前が正しいかを推測で決める
+  en:
+    direction: Ask the writer which of the heading and the example has the current name of the command or option, and correct the other. If it is not clear, do not guess; ask.
+    pairs:
+      - before: npx chaffjs fix --dryrun README.md
+        after: npx chaffjs fix --dry-run README.md
+      - before: "## `chaff lint`"
+        after: "## `chaff check`"
+    keep:
+      - the section's explanation
+    avoid:
+      - guessing which name is right

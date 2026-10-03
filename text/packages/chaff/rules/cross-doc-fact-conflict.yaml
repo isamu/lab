@@ -1,0 +1,64 @@
+id: cross-doc-fact-conflict
+layer: L3
+status: experimental
+how_to_find: cross-doc-fact-conflict
+# documents: compares the files of one run, so it runs only when chaff is given two or more files, or a folder.
+requires: [quantities, documents]
+uses: [pos]
+severity: warning
+
+name:
+  ja: ファイルによって違う値が書いてある項目
+  en: One item given different values in different files
+
+why:
+  ja: 説明書や文書の束では、料金・版・締切・問い合わせ先のような同じ項目を、いくつものページに書きます。値を直したときに一つのページだけ直し忘れると、ページによって値が食い違い、読み手はどれを信じればよいか分かりません。一度に渡したファイルどうしで、「項目：値」「項目は値です」と書いた所と表の升を読み、同じ項目名（全角半角、大文字小文字は揃えて比べます）に、同じ単位で違う値を書いたファイルを指します。メールアドレスと、三つ以上に区切った版（2.4.1、v3）も値として読みます。どちらが正しいかは決めず、その値を書いたファイルの少ないほうを指します。
+  en: 'A manual or a bundle of documents repeats the same items, such as a fee, a version, a deadline or a contact address, on page after page. When a value changes and one page is missed, the pages disagree and the reader cannot tell which to trust. Across the files given together, values written as "Item: value" or "The item is value", and table cells, are read; a file that gives the same item name (case and width aside) a different value in the same unit is pointed out. Email addresses and versions of three parts or more (2.4.1, v3) are read as values too. chaff does not decide which is right; it points at the value fewer files give.'
+
+message:
+  ja: 「{label}」が {value} と書かれていますが、一緒に見たほかの {count} ファイルでは {other} です（例：{example}）
+  en: '"{label}" is {value} here, but {other} in {count} other {count|file|files} checked with it (as in {example})'
+
+how_to_fix:
+  ja: どちらの値が正しいかを確かめて、違うほうを直してください。別のもの（別のプラン、別の版）の値なら、項目名にそれを書き分けてください（「プロプランの月額料金」）。
+  en: Check which value is right and correct the other. If they are values of different things (another plan, another release), say so in the item name ("Pro plan monthly fee").
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 同じ項目（料金、版、締切、問い合わせ先）に、ファイルによって違う値を書いた所
+  en: The same item (a fee, a version, a deadline, a contact address) given different values in different files
+example:
+  ja:
+    other: |
+      # 料金
+
+      月額料金：1,200円
+    before: |
+      # よくある質問
+
+      月額料金：1,500円
+    after: |
+      # よくある質問
+
+      月額料金：1,200円
+  en:
+    other: |
+      # Pricing
+
+      Monthly fee: $12
+    before: |
+      # Questions
+
+      Monthly fee: $15
+    after: |
+      # Questions
+
+      Monthly fee: $12
+
+not_flagged:
+  ja: 一つのファイルの中で同じ項目に二つ以上の値を書いたファイルは数えません（プランごとの料金のような一覧か、ファイルの中の食い違いで、そちらは fact-conflict が見ます）。ファイルどうしで値が三通り以上に分かれる項目も、一覧と読んで何も言いません。単位の違う値、記録の欄（同じ名前が行の頭に何度も出る欄）、値の後ろに条件が続くもの（「1,200円から」）も比べません。
+  en: A file that gives an item two or more values is not counted (it is a list, such as a fee per plan, or a conflict within the file, which fact-conflict reports). An item whose values split three or more ways across the files is read as a list and left alone. Values in different units, record fields (the same name at the start of many lines), and values followed by a condition ("$12 per seat") are not compared.
