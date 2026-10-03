@@ -988,6 +988,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
 | `name-variant` | 同じ名前（固有名詞の続き）を少しだけ違う形で書く。書き方だけの違い（大小・幅・空白・記号）、読みが同じで一語だけ違う、英字の一字違い（多いほうが二度以上・少ないほうが一度）。日本語でも動く | pos |
+| `unknown-word` | 辞書に無く、一字違いの辞書の語がある英語の語（attched → attached）。辞書は lang-en の lexicons/dictionary.txt（wink-lexicon と WordNet から scripts/en-dictionary.ts で作る）、語尾・接頭辞・足す語は語彙表 word-suffix・word-prefix・extra-word。大文字を含む語、二度以上使う語、言い直しの無い語は言わない | - |
 | `date-format-consistency` | 一つの文書で日付を二通りに書く（2026-10-02 / 2026年10月2日 / Oct 2, 2026 / 10/2/2026）。年月日のそろった日付だけ、少ないほうを指す。月の名前は語彙表 month-name、元号は calendar-era。日本語でも動く | - |
 | `known-misspelling` | よくある書き誤り（シュミレーション、ですす、seperate）。語彙表の組（誤った形→正しい形）を語の切れ目で照らし、正しい形を添える。日本語でも動く | pos |
 | `redundant-expression` | 重言（頭痛が痛い、一番最初、end result、each and every）。語彙表 redundant-expression の語ごとに重ねを外した形を持つ。日本語でも動く | pos |

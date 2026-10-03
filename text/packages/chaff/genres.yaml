@@ -199,6 +199,7 @@ groups:
       ra-nuki: off
       spelling-consistency: off
       translationese-density: off
+      unknown-word: off
       redundant-expression: off
       requirement-smell: off
       paragraph-restatement: off
