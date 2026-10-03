@@ -170,7 +170,7 @@ chaff がまだ見ていない種類の誤りを探すため、次のチェッ�
 - <a id="vale-styles"></a>**Vale の Microsoft と Google のスタイル** [github.com](https://github.com/errata-ai/Microsoft)
   - Microsoft Writing Style Guide と、Google の開発者向け文書のスタイルガイドを、Vale というチェッカーの規則にしたもの（[Google](https://github.com/errata-ai/Google)）。
   - 分かったこと：省略記号、単位、空白、ダッシュ、日付、範囲、短縮形、オックスフォード・コンマ、見出しの大文字など、書き方の確認です。
-  - chaff では：一つの会社が決めた書き方ではなく、文書の中で揃っているかを見ます（`contraction-consistency`、`oxford-comma-consistency`、`range-notation-consistency`）。
+  - chaff では：一つの会社が決めた書き方ではなく、文書の中で揃っているかを見ます（`contraction-consistency`、`oxford-comma-consistency`、`range-notation-consistency`）。[`ellipsis-consistency`](../../rules/ellipsis-consistency/) も、省略記号の確認を同じ考えかたで行います。
 - <a id="alex"></a>**alex** [github.com](https://github.com/get-alex/alex)
   - 配慮に欠ける言葉を指すチェッカー。
   - chaff では：【背景】どの言葉を避けるかはチームが決めることなので、chaff は一覧を持ちません。チームが自分の一覧を `chaff.yaml` の `prefer` に書きます。

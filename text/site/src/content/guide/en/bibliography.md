@@ -170,7 +170,7 @@ No rule text or word list was copied; chaff's lists are its own.
 - <a id="vale-styles"></a>**Vale Microsoft and Google styles** [github.com](https://github.com/errata-ai/Microsoft)
   - Rules for the Vale linter that encode the Microsoft Writing Style Guide and the Google developer documentation style guide ([Google](https://github.com/errata-ai/Google)).
   - Found: Checks of notation: ellipses, units, spacing, dashes, dates, ranges, contractions, the Oxford comma, heading case.
-  - In chaff: chaff checks that a document agrees with itself, not with one house's choice (`contraction-consistency`, `oxford-comma-consistency`, `range-notation-consistency`).
+  - In chaff: chaff checks that a document agrees with itself, not with one house's choice (`contraction-consistency`, `oxford-comma-consistency`, `range-notation-consistency`). [`ellipsis-consistency`](../../rules/ellipsis-consistency/) follows their check of ellipses the same way.
 - <a id="alex"></a>**alex** [github.com](https://github.com/get-alex/alex)
   - A linter for insensitive or inconsiderate wording.
   - In chaff: [background] which words to avoid is the team's call. chaff ships no such list; a team puts its own under `prefer` in `chaff.yaml`.
