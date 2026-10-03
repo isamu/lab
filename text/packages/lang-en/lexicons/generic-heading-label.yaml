@@ -1,5 +1,6 @@
 # Heading labels that say nothing about the section. numbered-generic-heading points at a heading that is only one of
-# these and a number ("Benefit 1", "Tip 2"). Step labels ("Step 1") are left out: in a procedure the order is the content.
+# these and a number ("Benefit 1", "Tip 2"). Step, lesson, reason and feature labels are left out: in a procedure, a course,
+# an argument or a specification the numbered unit is itself the content and is cited by its number.
 id: generic-heading-label
 language: en
 entries:
@@ -8,8 +9,5 @@ entries:
   - pattern: Disadvantage
   - pattern: Point
   - pattern: Key point
-  - pattern: Reason
   - pattern: Tip
-  - pattern: Feature
   - pattern: Takeaway
-  - pattern: Lesson

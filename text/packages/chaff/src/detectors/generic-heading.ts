@@ -8,7 +8,7 @@ import { findingAt, writtenHeadings } from "./markup-finding.ts";
  */
 
 /** 番号の書き方。数字、丸数字、漢数字。前に「その」や「#」、後ろに区切りの記号が付いてもよい。 */
-const NUMBER = String.raw`(?:その)?\s*#?\s*(?:[0-9０-９]+|[①-⑳]|[一二三四五六七八九十]+)\s*(?:つ目)?\s*[:：.．。)）]?`;
+const NUMBER = String.raw`(?:その)?\s*#?\s*[(（]?\s*(?:[0-9０-９]+|[①-⑳]|[一二三四五六七八九十]+)\s*(?:つ目)?\s*[:：.．。)）]?`;
 
 /** 札のどれかと番号だけで書いた見出しの形。札が無ければ undefined。 */
 export const bareLabelPattern = (labels: Lexicon): RegExp | undefined => {

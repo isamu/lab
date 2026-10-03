@@ -25,9 +25,20 @@ describe("numbered-generic-heading: 札と番号だけの見出し", () => {
   });
 
   it("番号の書き方", () => {
-    ["メリット1", "メリット 2", "メリット３", "メリット①", "メリットその1", "ポイント二", "ポイント1：", "Benefit #3", "benefit 4.", "Key point 2"].forEach(
-      (heading) => assert.equal(isBare(heading), true, heading),
-    );
+    [
+      "メリット1",
+      "メリット 2",
+      "メリット３",
+      "メリット①",
+      "メリットその1",
+      "ポイント二",
+      "ポイント1：",
+      "Benefit #3",
+      "benefit 4.",
+      "Key point 2",
+      "Benefit (2)",
+      "メリット（3）",
+    ].forEach((heading) => assert.equal(isBare(heading), true, heading));
   });
 
   it("題を足した見出し、手順、章の番号は言わない", () => {

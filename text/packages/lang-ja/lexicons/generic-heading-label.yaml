@@ -1,17 +1,15 @@
 # 中身を言わない見出しの札。番号だけを付けた見出し（メリット1、ポイント2）を numbered-generic-heading が指す。
-# 手順の札（ステップ1、手順2）は順番そのものが中身なので載せない。日本語の文書も英語の札を使うので、英語の語も置く。
+# 手順・理由・課題の札（ステップ1、理由2、課題3）は、番号で引かれる単位そのものが中身なので載せない。日本語の文書も英語の札を使うので、英語の語も置く。
 id: generic-heading-label
 language: ja
 entries:
   - pattern: メリット
   - pattern: デメリット
   - pattern: ポイント
-  - pattern: 理由
   - pattern: 特徴
   - pattern: コツ
   - pattern: 注意点
   - pattern: 利点
   - pattern: 欠点
-  - pattern: 課題
   - pattern: Point
   - pattern: Tip

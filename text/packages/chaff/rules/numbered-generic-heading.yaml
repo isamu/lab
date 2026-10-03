@@ -79,8 +79,8 @@ example:
       You can cancel a booking in one step.
 
 not_flagged:
-  ja: 札の後ろに題を足した見出し（メリット1：設定が要らない）、手順の見出し（ステップ1）、章や節の番号（第1章）は指しません。Markdown の見出しだけを読みます。
-  en: 'A heading with a title after the label ("Benefit 1: no setup"), step headings ("Step 1"), and chapter or section numbers ("Chapter 1") are not reported. Only Markdown headings are read.'
+  ja: 札の後ろに題を足した見出し（メリット1：設定が要らない）、手順・理由・課題の見出し（ステップ1、理由2、課題3）、章や節の番号（第1章）は、番号で引かれる単位なので指しません。Markdown の見出しだけを読みます。
+  en: 'A heading with a title after the label ("Benefit 1: no setup"), step, lesson, reason and feature headings ("Step 1", "Lesson 2", "Reason 3"), and chapter or section numbers ("Chapter 1") are not reported: each is a unit cited by its number. Only Markdown headings are read.'
 level_meaning:
   ja: 札と番号だけの見出しが {limit} 個から指摘
   en: reported from {limit} such headings
