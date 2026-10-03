@@ -35,3 +35,13 @@ entries:
   - pattern: ex
   - pattern: cf
   - pattern: al
+  - pattern: tbl
+  - pattern: tbls
+  - pattern: subsec
+  - pattern: subsecs
+  - pattern: sch
+  - pattern: reg
+  - pattern: regs
+  - pattern: cl
+  - pattern: exh
+  - pattern: supp

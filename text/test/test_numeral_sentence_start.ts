@@ -44,6 +44,7 @@ describe("numeral-sentence-start: 数字で始まる英語の文", () => {
     assert.equal(at("Filed as S. "), false);
     assert.deepEqual(findingsOf("Communications of the ACM, vol. 28 no. 10, pages 1-9.\n"), []);
     assert.deepEqual(findingsOf("Lane\n\n2 contains the intact product.\n"), []);
+    assert.deepEqual(findingsOf("See Tbl. 20 for the retention schedule. See Subsec. 2 applies.\n"), []);
   });
 
   it("箇条書き、見出し、表、コードは読まない", () => {

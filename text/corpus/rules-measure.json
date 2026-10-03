@@ -4418,6 +4418,47 @@
         "falseAlarms": 0
       }
     },
+    "numeral-sentence-start": {
+      "groups": {
+        "academic": {
+          "documents": 5,
+          "fired": 1
+        },
+        "blog": {
+          "documents": 9,
+          "fired": 1
+        },
+        "business": {
+          "documents": 39,
+          "fired": 1
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 14,
+          "fired": 1
+        },
+        "literature": {
+          "documents": 9,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 3,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 26,
+          "fired": 0
+        }
+      },
+      "bench": {
+        "planted": 13,
+        "found": 13,
+        "falseAlarms": 0
+      }
+    },
     "one-sentence-paragraph-run": {
       "groups": {
         "academic": {

@@ -3,7 +3,6 @@ layer: L2
 status: stable
 how_to_find: numeral-opener
 languages: [en]
-word_list: numeral-reference-label
 severity: info
 
 name:
