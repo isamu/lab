@@ -68,18 +68,6 @@ describe("a dotted number with its title right after the dot, in a heading", () 
 });
 
 describe("a dotted heading whose title is all inline code", () => {
-  it("「29.3」 left after the code is blanked is numbered on a heading only, and a bare 「2」 is not", () => {
-    assert.deepEqual(
-      ["29.3", "29.3 ", "4.2."].map((heading) => dottedNumber(heading, ON_HEADING)?.number),
-      ["29.3", "29.3", "4.2"],
-    );
-    assert.deepEqual(
-      ["2", "2."].map((heading) => dottedNumber(heading, ON_HEADING)),
-      [undefined, undefined],
-    );
-    assert.equal(dottedNumber("29.3", IN_BODY), undefined);
-  });
-
   it("English: 「### 1.3 `chaff grade`」 is between 1.2 and 1.4, with no gap", () => {
     const source = lines(
       "# Spec",
@@ -99,6 +87,11 @@ describe("a dotted heading whose title is all inline code", () => {
       "Body text.",
     );
     assert.deepEqual(gapsOf(en, source), []);
+  });
+
+  it("a changelog's headings that are only a version stay unnumbered: 46.3, 46.1 is no gap", () => {
+    const source = lines("# 更新履歴", "", "## 46.3", "", "不具合を直しました。", "", "## 46.1", "", "不具合を直しました。");
+    assert.deepEqual(gapsOf(ja, source), []);
   });
 });
 

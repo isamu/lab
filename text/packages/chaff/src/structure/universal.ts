@@ -23,17 +23,8 @@ const MAX_TITLE = 80;
 
 const isTopSection = (line: string, rest: string): boolean => TOP_SECTION.test(line) && rest.length <= MAX_TITLE && !SENTENCE_END.test(rest);
 
-/**
- * A Markdown heading whose title is all inline code (「### 29.3 `chaff grade`」): the code is blanked and the line trimmed, so
- * only the number is left. Dotted only: a bare 「## 2」 says nothing about being a number in a sequence.
- */
-const BLANKED_TITLE_HEADING = /^[ \t]{0,3}(?<number>\d{1,3}(?:\.\d{1,3}){1,5})(?<closing>[.．])?[ \t\u3000]*$/u;
-
-const headingGroups = (line: string): Readonly<Record<string, string | undefined>> | undefined =>
-  TIGHT_HEADING.exec(line)?.groups ?? BLANKED_TITLE_HEADING.exec(line)?.groups;
-
 const dottedGroups = (line: string, context: NumberingContext): Readonly<Record<string, string | undefined>> | undefined =>
-  DOTTED.exec(line)?.groups ?? (context.isHeading ? headingGroups(line) : undefined);
+  DOTTED.exec(line)?.groups ?? (context.isHeading ? TIGHT_HEADING.exec(line)?.groups : undefined);
 
 /** closedByDot: 番号を点で閉じたか（「5. 」）。「1.5 万人」の 1.5 は閉じていない。 */
 type DottedLine = NumberedLine & { readonly closedByDot: boolean };
