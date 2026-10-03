@@ -68,6 +68,7 @@ not_flagged:
   ja: ほかの値に二つ以上、同じ一つの単位が付いているときだけ指します。単位の無い値のほうが多い列、単位が混ざる列（分と時間）、数でない値（未定）は見ません。表の見出しの単位（「金額（円）」）は読みません。
   en: Reported only when at least two other values carry one and the same unit. A column where bare numbers are the majority, one that mixes units (minutes and hours), and values that are not numbers (TBD) are not checked. A unit written in the header ("Amount ($)") is not read.
 rewrite:
+  depth: light
   ja:
     direction: 指摘された数に、同じ列や同じ見出しの語のほかの値と同じ単位を付けてください。単位が違うはずなら、作らずに書き手に聞きます。
     pairs:

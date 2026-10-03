@@ -130,6 +130,7 @@ level_meaning:
   ja: 人の記事の 9 割を超えた項目が {limit} 個そろえば指摘
   en: reported once {limit} measures lie past 90% of human articles
 rewrite:
+  depth: structure
   ja:
     direction: 構成から書き直してください。`chaff outline` が人の記事の 9 割を超えたと言う項目を、人の記事の範囲に戻します。見出しは中身のまとまりごとに立て、一段落ごとに立てません。小見出しの数は中身の数に合わせ、3 つに揃えません。太字の札の箇条書きは文に戻し、本文を言い直すだけのまとめは消します。
     pairs:

@@ -57,6 +57,7 @@ not_flagged:
   ja: 確認・返信・提出のように、済んだかどうかが後で分かる動作を頼む文だけを見ます。「ご了承ください」のような心構えの依頼と、「ご不明な点があれば、ご連絡ください」のような条件付きの申し出は見ません。期限か担当が、その文か次の文にあれば指しません。ビジネスの文書でだけ動きます。
   en: Only requests for an action whose completion can be checked (review, reply, send) are read. Courtesy requests and conditional offers ("If you have questions, let me know") are not. A deadline or owner in the same or the next sentence is enough. Business documents only.
 rewrite:
+  depth: light
   ja:
     direction: 依頼の文に、本文に書かれている期限と担当を書き足してください。本文に無ければ作らず、［期限］［担当］と空けて書き手に聞きます。
     pairs:

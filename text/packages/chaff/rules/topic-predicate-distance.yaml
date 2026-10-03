@@ -44,6 +44,7 @@ level_meaning:
   ja: 主題から述語まで {limit} 字まで
   en: up to {limit} characters between the topic and the predicate
 rewrite:
+  depth: light
   ja:
     direction: 主題（〜は）を述語の近くに動かすか、主題と述語の間に挟んだ説明を前の文に出してください。
     pairs:

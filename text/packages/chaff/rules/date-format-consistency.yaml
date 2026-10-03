@@ -59,6 +59,7 @@ level_meaning:
   ja: 少ないほうの書き方の日付が全体の {limit}% 以下なら指摘
   en: reported while the minority style is {limit}% of the dates or less
 rewrite:
+  depth: light
   ja:
     direction: 指された日付を、文書の多いほうの書き方（指摘が例に引く日付の書き方）に書き直してください。日付そのもの（年・月・日）は変えません。
     pairs:

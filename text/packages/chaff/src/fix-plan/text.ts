@@ -13,6 +13,14 @@ export type FixPlanText = {
   readonly modeName: Readonly<Record<FixMode, string>>;
   readonly modeReason: Readonly<Record<ModeReason, string>>;
   readonly modeWays: readonly string[];
+  /** The depth the plan goes to, with what it means, and where it was chosen when it was. */
+  readonly depthLine: (depth: string, meaning: string, setBy: string) => string;
+  readonly depthSetBy: Readonly<Record<"flag" | "config", string>>;
+  /** A rule's own depth, shown when it reaches past light. */
+  readonly ruleDepth: string;
+  readonly deeperHeading: string;
+  readonly deeperNote: (chosen: string) => string;
+  readonly deeperLine: (depth: string, spots: number) => string;
   readonly signalsHeading: string;
   readonly noSignals: string;
   readonly outlineLine: (measures: string) => string;
@@ -35,7 +43,7 @@ export type FixPlanText = {
 
 export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
   ja: {
-    usage: "使い方: chaff fix-plan <file> [--experimental] [--genre <ジャンル>] [--json]",
+    usage: "使い方: chaff fix-plan <file> [--depth light|structure|register] [--experimental] [--genre <ジャンル>] [--json]",
     notFound: (path) => `${path} がありません。`,
     title: (path) => `直す計画: ${path}`,
     about: (language, genre) => `言語 ${language}、ジャンル ${genre}`,
@@ -49,9 +57,18 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
       "書き直しは 2 回まで。指摘を消すためだけに書き直しを繰り返さない。",
     ],
     modeHeading: "勧める直し方",
-    modeName: { none: "直すところなし", light: "軽く直す（Light）", bold: "大胆に直す（Bold）", full: "全面書き直し（Full）" },
+    modeName: {
+      none: "直すところなし",
+      light: "軽く直す（Light）",
+      bold: "大胆に直す（Bold）",
+      full: "全面書き直し（Full）",
+      register: "文体を変える（Register）",
+    },
     modeReason: {
+      chosen: "書き直しの深さが決めてあるので、その深さで直します。",
+      "depth-limit": "chaff だけなら構成から書き直すことを勧めますが、決めてある深さが light なので、構成は残します。",
       "nothing-found": "chaff は何も見つけませんでした。",
+      "all-deeper": "指摘はどれも、決めた深さより深く直すルールのものです。この深さで直すところはありません（下の「決めた深さより深いルール」）。",
       composite: "ai-generated-composite が出ています。文の言い回しを直しても、生成文の骨組みが残ります。",
       structure: "構成の項目のいくつもが、人の記事の 9 割を超えています（下の「構成の目標」）。文を直しても、見出しの立て方と節の形が残ります。",
       genre: "ブログやエッセイは、構成から書き直すほうが書き手の望みに合います。",
@@ -59,10 +76,18 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
       spots: "指摘は箇所ごとです。指摘された所だけを直します。",
     },
     modeWays: [
-      "軽く直す: 指摘された箇所だけ。",
-      "大胆に直す: 見出しの構成は残し、節ごとに文を書き直す。",
-      "全面書き直し: 事実と主張を控えてから、構成から書き直す。頼まれた内容が「全面的に」「一から」なら、これを選ぶ。",
+      "軽く直す（深さ light）: 指摘された箇所だけ。",
+      "大胆に直す（深さ light）: 見出しの構成は残し、節ごとに文を書き直す。",
+      "全面書き直し（深さ structure）: 事実と主張を控えてから、構成から書き直す。頼まれた内容が「全面的に」「一から」なら、これを選ぶ。",
+      "文体を変える（深さ register）: 全面書き直しに加えて、文体も変える（です・ます → である など）。chaff からは勧めません。--depth register で選びます。",
     ],
+    depthLine: (depth, meaning, setBy) => `書き直しの深さ: ${depth}（${meaning}）${setBy}。`,
+    depthSetBy: { flag: "。--depth で決めました", config: "。chaff.yaml の fix_plan.depth で決めました" },
+    ruleDepth: "深さ",
+    deeperHeading: "決めた深さより深いルール",
+    deeperNote: (chosen) =>
+      `次のルールも指摘を出しましたが、直す方向が深さ ${chosen} より深いので、この計画では直しません。直すときは、そのルールの深さを --depth に渡して計画を出し直してください。`,
+    deeperLine: (depth, spots) => `深さ ${depth}、${String(spots)} 箇所`,
     signalsHeading: "文書全体の目印",
     noSignals: "文書全体を測るルールは、何も言っていません。",
     outlineLine: (measures) => `構成: ${measures}`,
@@ -84,7 +109,7 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
       "1 つめは書き直した文書の指摘、2 つめは事実が落ちていないか・足されていないか、3 つめは構成の変化です。数は chaff の出力から取り、形容詞で言わないでください。",
   },
   en: {
-    usage: "usage: chaff fix-plan <file> [--experimental] [--genre <genre>] [--json]",
+    usage: "usage: chaff fix-plan <file> [--depth light|structure|register] [--experimental] [--genre <genre>] [--json]",
     notFound: (path) => `${path} does not exist.`,
     title: (path) => `Fix plan: ${path}`,
     about: (language, genre) => `language ${language}, genre ${genre}`,
@@ -98,9 +123,13 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
       "At most two passes. Do not rewrite again just to silence a finding.",
     ],
     modeHeading: "Recommended way",
-    modeName: { none: "Nothing to fix", light: "Light", bold: "Bold", full: "Full rewrite" },
+    modeName: { none: "Nothing to fix", light: "Light", bold: "Bold", full: "Full rewrite", register: "Register change" },
     modeReason: {
+      chosen: "A rewrite depth is set, so the plan goes to that depth.",
+      "depth-limit": "On its findings alone chaff would rewrite from the structure up, but the depth set is light, so the structure stays.",
       "nothing-found": "chaff found nothing.",
+      "all-deeper":
+        'Every finding comes from a rule that rewrites deeper than the depth set. There is nothing to fix at this depth (see "Rules deeper than the depth set" below).',
       composite: "ai-generated-composite fires. Fixing the wording would leave the skeleton of generated text.",
       structure:
         'Several structure measures lie past 90% of human articles (see "Structure targets" below). Fixing the sentences would leave the headings and the shape of the sections.',
@@ -109,10 +138,18 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
       spots: "The findings are single spots. Rewrite only those.",
     },
     modeWays: [
-      "Light: only the flagged spots.",
-      "Bold: keep the outline, rewrite the prose of each section.",
-      'Full: take an inventory of the facts and claims, then rewrite from the structure up. If the request says "from scratch", choose this.',
+      "Light (depth light): only the flagged spots.",
+      "Bold (depth light): keep the outline, rewrite the prose of each section.",
+      'Full (depth structure): take an inventory of the facts and claims, then rewrite from the structure up. If the request says "from scratch", choose this.',
+      "Register (depth register): a full rewrite that also converts the style (polite to plain endings, and so on). chaff never recommends it; choose it with --depth register.",
     ],
+    depthLine: (depth, meaning, setBy) => `Rewrite depth: ${depth} (${meaning})${setBy}.`,
+    depthSetBy: { flag: ", set by --depth", config: ", set by fix_plan.depth in chaff.yaml" },
+    ruleDepth: "Depth",
+    deeperHeading: "Rules deeper than the depth set",
+    deeperNote: (chosen) =>
+      `These rules fired too, but their direction goes deeper than ${chosen}, so this plan does not fix them. To fix them, give the rule's depth to --depth and print the plan again.`,
+    deeperLine: (depth, spots) => `depth ${depth}, ${String(spots)} ${spots === 1 ? "spot" : "spots"}`,
     signalsHeading: "Document-level signals",
     noSignals: "None of the rules that measure the whole document said anything.",
     outlineLine: (measures) => `Outline: ${measures}`,

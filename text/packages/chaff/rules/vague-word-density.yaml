@@ -59,6 +59,7 @@ level_meaning:
   ja: 1000 字あたりあいまいな語 {limit} 個まで
   en: up to {limit} vague words per 1000 words
 rewrite:
+  depth: light
   ja:
     direction: あいまいな語を、何を・どこまで・いつまでに置き換えてください。決まっていないなら、決まっていないことと、誰が決めるのかを書きます。
     pairs:

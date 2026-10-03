@@ -5,6 +5,7 @@ import { uiLanguageOf, type Texts } from "../ui.ts";
 import type { Level, RuleDefinition } from "../plugin.ts";
 import { optionLines } from "./options.ts";
 import type { OptionLayer } from "../rule-options.ts";
+import { depthMeaning } from "../rewrite-depth.ts";
 
 const TEXT: Texts<{
   readonly off: string;
@@ -13,6 +14,7 @@ const TEXT: Texts<{
   readonly experimental: string;
   readonly alone: (id: string) => string;
   readonly howToFix: string;
+  readonly depth: (depth: string, meaning: string) => string;
   readonly example: string;
   readonly definedIn: (plugin: string | undefined) => string;
   readonly values: string;
@@ -30,6 +32,8 @@ const TEXT: Texts<{
     experimental: "このルールはまだ試験中で、既定では動きません（--experimental で動きます）。",
     alone: (id) => `このルールだけを動かす:  npx chaffjs enable ${id}（chaff.yaml の rules に ${id}: normal と書くのと同じです）`,
     howToFix: "直しかた",
+    depth: (depth, meaning) =>
+      `書き直しの深さ: ${depth}（${meaning}）。chaff fix-plan --depth でこれより浅い深さを選ぶと、計画はこのルールを直さず、名前だけを挙げます。`,
     example: "例",
     definedIn: (plugin) =>
       plugin === undefined ? "このルールはチームが chaff.yaml の custom_rules で決めたものです。" : `このルールはプラグイン ${plugin} のものです。`,
@@ -48,6 +52,7 @@ const TEXT: Texts<{
     experimental: "This rule is still experimental and does not run by default (--experimental runs it).",
     alone: (id) => `Turn on this rule alone:  npx chaffjs enable ${id}  (the same as rules: { ${id}: normal } in chaff.yaml)`,
     howToFix: "How to fix",
+    depth: (depth, meaning) => `Rewrite depth: ${depth} (${meaning}). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.`,
     example: "Example",
     definedIn: (plugin) =>
       plugin === undefined ? "The team defined this rule under custom_rules in chaff.yaml." : `This rule comes from the plugin ${plugin}.`,
@@ -98,6 +103,12 @@ const exampleLines = (rule: RuleDefinition, language: string, text: (typeof TEXT
   return ["", `  ${text.example}:  ${example.before}`, `      →  ${example.after}`, "", `  ${text.definedIn(rule.plugin)}`];
 };
 
+/** How deep the rule's rewrite direction reaches, for a rule that has one: what chaff fix-plan --depth compares. */
+const depthLines = (rule: RuleDefinition, language: string, text: (typeof TEXT)["ja"]): string[] => {
+  const depth = rule.guide?.rewriteDepth;
+  return depth === undefined ? [] : ["", `  ${text.depth(depth, depthMeaning(depth, uiLanguageOf(language)))}`];
+};
+
 /** Where the rule's settings come from: the option layers, strongest first, and the source of its level when a style set it. */
 /** limit: a number chaff.yaml or its style set for the rule (rules: { id: 80 }, a style's limits), which a level does not show. */
 export type ExplainSettings = {
@@ -124,6 +135,7 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
     `  ${readableText(rule, rule.why, language)}`,
     "",
     `  ${text.howToFix}: ${readableText(rule, rule.how_to_fix, language)}`,
+    ...depthLines(rule, language, text),
     ...exampleLines(rule, language, text),
     "",
     `  ${rule.level_sets === "severity" ? text.severities : text.values}`,

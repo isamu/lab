@@ -6,6 +6,7 @@ import type { LanguageLevels, LevelSets, LevelTable, RuleDefinition, Severity } 
 import { rankOfSeverity, severityAt } from "./levels.ts";
 import { optionsOf } from "./rule-options.ts";
 import { ruleGuideOf } from "./rule-guide.ts";
+import { depthOfRewrite, unknownDepthSentence } from "./rewrite-depth.ts";
 
 const RULES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "rules");
 
@@ -148,6 +149,8 @@ const toRule = (raw: unknown, language: string, file: string): RuleDefinition =>
   const missing = missingFields(raw, levels);
   if (missing.length > 0) throw new Error(`${file}: 必須フィールドがありません: ${missing.join(", ")}`);
   if (levels === undefined) throw new Error(`${file}: levels を解決できません`);
+  const depth = depthOfRewrite(raw["rewrite"]);
+  if ("unknown" in depth) throw new Error(`${file}: ${unknownDepthSentence("rewrite.depth", depth.unknown, "ja")}`);
   return checkedSeverity(ruleOf(raw, levels, levelSetsOf(raw, language, file), language, file), file);
 };
 
