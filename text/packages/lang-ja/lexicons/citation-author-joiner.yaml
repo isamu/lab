@@ -1,0 +1,14 @@
+# 著者年方式の引用で著者の間に書く語。group が pair なら二人をつなぐ語（山田・佐藤, 2020）、ほかは三人目からを略す語（山田ら, 2020）。
+id: citation-author-joiner
+language: ja
+entries:
+  - pattern: ・
+    group: pair
+  - pattern: and
+    group: pair
+  - pattern: "&"
+    group: pair
+  - pattern: ら
+  - pattern: 他
+  - pattern: ほか
+  - pattern: et al.

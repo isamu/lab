@@ -1,0 +1,13 @@
+# 文献一覧の見出し。この下の項目を本文の引用と突き合わせ、引用はこの中では探さない。大文字と小文字は区別しない。
+id: reference-list-heading
+language: ja
+entries:
+  - pattern: 参考文献
+  - pattern: 引用文献
+  - pattern: 参照文献
+  - pattern: 文献
+  - pattern: 文献一覧
+  - pattern: 引用・参考文献
+  - pattern: 参考・引用文献
+  - pattern: References
+  - pattern: Bibliography
