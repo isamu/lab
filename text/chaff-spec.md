@@ -644,6 +644,7 @@ genres:
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
 | `vague-link-text` | 言葉全体が「こちら」「click here」のリンク（WCAG 2.4.4）。語彙表 vague-link-text、インラインのリンクだけ | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
+| `cross-doc-broken-link` ✅ | 一緒に見たほかのファイルへの相対リンクで、行き先のファイルか見出しが無いもの（ファイルが二つ以上のときだけ） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | `duplicate-heading` ✅ | 同じ親の下の同じ言葉の見出し（MD024 siblings_only） | 両方 | warning |
 | `empty-section` ✅ | 中身の無い節（すぐ後ろに同じ深さか浅い見出し） | 両方 | warning |
@@ -2396,21 +2397,25 @@ npx chaffjs grade items.jsonl                          # 合否と率の要約�
 npx chaffjs grade items.jsonl --out results.jsonl      # 出力ごとの結果を JSONL に
 npx chaffjs grade items.jsonl --json                   # 要約を JSON で
 npx chaffjs grade items.jsonl --compact                # 1 出力 1 行（id・合否・理由）と合計
+npx chaffjs grade items.jsonl --format markdown        # 要約を Markdown で（PR のコメント用）
+npx chaffjs grade items.jsonl --variant-key model      # model の欄で出力を分け、並べて比べる（§29.5）
 ```
 
 `--experimental` と `--genre` は lint と同じに効き、`stamp` の `settings` に入る。
+`--format` は `text`（既定）・`json`・`markdown` のどれか。`--json` は `--format json` と同じ。知らない値は終了コード 2。
 
 **入力。** 1 行に 1 つの出力を書いた JSONL。
 
 | 欄 | 必須 | 意味 |
 | --- | --- | --- |
-| `id` | 必須 | 出力の名前。ファイルの中で一意。A/B ではこれで組を作る |
+| `id` | 必須 | 出力の名前。ファイルの中で（`variant` があれば variant ごとに）一意。A/B ではこれで組を作る |
 | `output` | 必須 | 採点する出力の本文。Markdown として読む |
 | `reference` | 任意 | 事実の元になった文書（要約や書き換えの元）。あれば `compare` で照合する |
 | `sources` | 任意 | 原文の名前と本文の組 `{ "<名前>": "<本文>" }`。引用の照合に使う |
 | `citations` | 任意 | 出力が引いた箇所 `[{ "source", "address", "quote" }]`。`source` は `sources` の名前で、原文が一つなら省ける |
 | `language` | 任意 | `ja` / `en`。無ければ本文から推定する（§8） |
 | `genre` | 任意 | ジャンル。無ければ `chaff.yaml`、それも無ければ既定 |
+| `variant` | 任意 | どの prompt・model・設定の出力か（空でない文字列）。`--variant-key <欄>` で別の欄（`model`、`prompt` など）を使える。一行にでもあれば、どの行にも要る（§29.5） |
 
 #488 の案は `sources` だけを挙げていたが、`citations` を別の欄にした。
 どの文が引用かを本文から読み取るのは意味の判定になるので、chaff は出力から引用を推測しない。構造化した出力で引用を返させるのは、呼び出す側の仕事とする。
@@ -2528,6 +2533,26 @@ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl   # B を A と比�
 - run: npx chaffjs grade outputs.jsonl --baseline eval/baseline.results.jsonl
 ```
 
+**variant を並べる（同じ入力での横並び）。** `--baseline` は同じ課題を時間をおいて 2 回採点したものを比べる。
+同じ回の中で、複数の prompt や model の出力を同じ課題で並べるのが variant である（promptfoo の matrix と同じ使い方）。
+
+```bash
+npx chaffjs grade outputs.jsonl                        # 各行の variant の欄で分ける
+npx chaffjs grade outputs.jsonl --variant-key model    # model の欄で分ける
+```
+
+- 一行にでも `variant`（`--variant-key` を渡せばその欄）があれば、すべての行に要る。無い行は、どの列にも入らない出力になるので読めない入力（終了コード 2）とする。`--variant-key` を渡したときは、どの行にも要る。
+- `--variant-key` に入力の他の欄（`id`・`output`・`reference`・`sources`・`citations`・`language`・`genre`）は使えない（終了コード 2）。
+- `id` は variant ごとに一意であればよい。同じ `id` が同じ variant に二度あれば読めない入力（終了コード 2）。
+- 出力ごとの結果（`--out`）には `variant` が入る。`--baseline` は `id` と `variant` の組で前の回と組にする。
+- 比べるのは、すべての variant にある `id` だけにする。どれかの variant に無い `id` は「比べなかった」として、無かった variant と並べる。全員にあっても `language` か `genre` が違えば比べない。列ごとに違う課題を数えると、率や通った割合が課題の差を含んでしまうため。
+- variant ごとに、比べた出力の数・通った数と割合（百分率、小数 1 桁）・落ちた事実と足された事実の数（`allowed` を除く）・照らした引用と外れた引用の数・`grade:` があれば点の和を出す。どれも §29.3 の要約と同じ数え方で、比べた出力だけから求める。
+- ルールごとの率は単位ごとに variant を並べる。どの variant にも指摘の無いルールは出さない。
+- 合否が分かれた `id`（ある variant で通り、別の variant で落ちた）を、通った variant と、落ちた variant ごとの `failedBecause` とともに並べる。
+- 通った割合は点ではない。0〜1 の点や順位は出さない（§29.4、§29.8）。
+- 画面では要約の後に表を出す。`--compact` では合否が分かれた `id` を `disagree<TAB>id<TAB>pass …<TAB>fail …` の形で 1 行ずつ出す。`--format json` では要約に `variants` の欄（`variants`・`compared`・`missing`・`readOtherwise`・`columns`・`rules`・`disagreements`）を足す。`--format markdown` では同じ表を Markdown の表にする。
+- 終了コードは variant が無いときと同じ（すべて通れば 0）。`--baseline` があれば回帰で決まる。
+
 ### 29.6 ライブラリの API（`chaffjs/grade`）
 
 ```ts
@@ -2538,7 +2563,7 @@ if (!result.pass) console.log(result.failedBecause);
 ```
 
 - 返すものは §29.3 の 1 行と同じ形。CLI とライブラリで結果がずれないように、`chaff grade` と `grade()` は同じ関数（1 出力を採点する `gradeItem`）を同じ設定と `stamp` で呼ぶ。同じ出力なら `--out` の 1 行と `grade()` の戻り値は一致する。
-- 引数は本文と、`id`（省けば `output`）・`reference`・`sources`・`citations`・`language`・`genre`・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。
+- 引数は本文と、`id`（省けば `output`）・`reference`・`sources`・`citations`・`language`・`genre`・`variant`（結果にそのまま残す）・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。
   ファイルを読むのは `config` にパスを渡したときだけで、作業場所の `chaff.yaml` を探しには行かない。ファイルに書くことはない。
   パスを渡したときは、コマンドと同じくハウススタイルを当て、プラグインを読み込む。読んだ後の設定を渡したときも、設定の誤りはコマンドと同じに確かめる。
 - `experimental` を省くと `chaff.yaml` の `experimental` に従う。`genre` は出力ごとのジャンルで、`chaff grade --genre` のように実行全体のジャンルではない。
@@ -2548,6 +2573,19 @@ if (!result.pass) console.log(result.failedBecause);
 - `chaff.yaml` の `language` と `by_path` の言語は、採点の前に読み込む。入っていない言語パッケージは、`chaff grade` では終了コード 2、`grade()` では `GradeInputError` になる。
 - 置き場所は `chaffjs/grade` とし、`chaffjs/api` には入れない。`chaffjs/api` はプラグイン API（§6）の型と `defineRule` を出し、`API_VERSION` がその互換を守っている。
   そこに採点の関数を足すと、プラグインの互換と採点の結果の互換が同じ番号で縛られる。採点の結果の形は chaffjs の版（semver）で守る。
+
+**variant を並べる関数（`compareVariants`）。** `chaff grade` が variant のあるファイルに出す比べ方（§29.5）を、結果の並びから作って返す。返す形は `--format json` の `variants` の欄と同じ。
+
+```ts
+import { grade, compareVariants } from "chaffjs/grade";
+
+const results = [await grade(a, { id: "q3", variant: "prompt-a", reference }), await grade(b, { id: "q3", variant: "prompt-b", reference })];
+const table = compareVariants(results); // または compareVariants({ "prompt-a": resultsA, "prompt-b": resultsB })
+```
+
+- 渡すものは、`variant` の付いた結果の配列（`grade()` に `variant` を渡したもの、または `--out` の行）か、variant の名前ごとの結果の配列。後の形では名前が各結果の `variant` に優先する。
+- `id` の無い結果、`variant` の無い結果、同じ variant に同じ `id` が二度ある結果、結果が一つも無いときは、`GradeInputError` を投げる。コマンドが終了コード 2 で断る入力と同じ扱い。
+- ファイルを読まず、書かず、採点もしない。結果を並べるだけなので同期の関数にする。
 
 **採点役の形（`toScorer`）。** 評価基盤の多くは、採点役に「点・合否・理由・付帯情報」の形を求める。`chaffjs/grade` の `toScorer(result)` は、結果の 1 行をその形に写す。写しであって、元の結果の形は変えない。
 
@@ -2602,6 +2640,7 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 - 出力を書き換えない。直す指示は `fix-plan` が出し、書き直すのは呼び出す側。
 - 「AI が書いた」と判定しない。`ai-generated-composite` は疑いの目印で、率として出すだけ（§25）。
 - 既定の重みや満点を持たない（§29.1）。
+- 評価基盤の仕事を持たない。結果を見る画面、回ごとの結果をためる置き場、model の採点や 0〜1 の点、trace や span との連携、ベンチマークの課題の定義は、評価基盤の側に置く。chaff は `--out` の行と要約（JSON・Markdown）を渡すところまでにする。
 - 公開ベンチマークの点や順位を出さない。#488 の自作の例（二つの prompt や model の出力を同じ題で並べたもの）は使い方を示すためのもので、model の順位ではない。
 
 ### 29.9 いまの状態
@@ -2614,6 +2653,7 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 | `chaff grade`、入力の JSONL、出力ごとの結果、要約、終了コード | 使える |
 | `grade:` の基準 | 使える |
 | `--baseline` と回帰の終了コード | 使える |
+| variant を並べる（`--variant-key`、`--format markdown`、`compareVariants()`） | 使える |
 | `grade()` | 使える（`chaffjs/grade`） |
 | `stamp` | 使える |
 | 評価基盤の例（promptfoo・autoevals・evalite・Langfuse・DeepEval・Ragas・Inspect AI・OpenAI Evals・GitHub Action）と `toScorer` | 使える（`examples/evals/`） |
