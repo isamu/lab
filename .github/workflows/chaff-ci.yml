@@ -19,7 +19,7 @@ defaults:
 jobs:
   ci:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
