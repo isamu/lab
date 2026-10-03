@@ -92,7 +92,7 @@ List your team's rules under `custom_rules:`. There are three kinds.
 Every rule has a name, a reason, a way to fix it and an example.
 Whoever reads a finding should understand why to change it.
 
-```yaml
+```yaml file=chaff.yaml
 custom_rules:
   - id: team-email
     type: words
@@ -138,7 +138,7 @@ A `tokens` rule reads the words' base forms, so "made a decision" matches "make 
 
 Save this plan as `plan.md` and check it.
 
-```markdown
+```markdown file=plan.md
 # Launch plan
 
 We made a decision to move the launch. The new date is TBD.
@@ -146,11 +146,9 @@ We made a decision to move the launch. The new date is TBD.
 Send questions by e-mail.
 ```
 
-```bash
-npx chaffjs plan.md --compact     each finding on two lines
 ```
+$ npx chaffjs plan.md --compact
 
-```
 plan.md   blog/tech · English   genre from the default
 
   3:4     info    "made a decision" can be "decide"
@@ -160,7 +158,7 @@ plan.md   blog/tech · English   genre from the default
   5:19    warning Write "email", not "e-mail"
                   team-email
 
-3 findings, 48 rules not run
+{counts}
 ```
 
 chaff treats your rules like its own. `explain` shows the reason and the example you wrote.

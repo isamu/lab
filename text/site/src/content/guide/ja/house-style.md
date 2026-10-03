@@ -89,7 +89,7 @@ npx chaffjs explain katakana-long-vowel     このルールの設定と、決め
 
 どのルールにも、名前・理由・直し方・例を書きます。指摘を読む人が、なぜ直すのかを分かるようにするためです。
 
-```yaml
+```yaml file=chaff.yaml
 style: ieice
 
 custom_rules:
@@ -137,7 +137,7 @@ custom_rules:
 
 次の連絡文を `notice.md` に保存して、かけてみます。
 
-```markdown
+```markdown file=notice.md
 # 新サーバー導入の連絡
 
 来週、新しいサーバーの動作確認を行います。
@@ -145,11 +145,9 @@ custom_rules:
 公開日は TBD です。決まり次第お知らせ致しますので、ご確認下さい。
 ```
 
-```bash
-npx chaffjs notice.md --compact     指摘を 1 件 2 行で見る
 ```
+$ npx chaffjs notice.md --compact
 
-```
 notice.md   blog/tech · 日本語   ジャンルは既定から
 
   3:7     warning 「サーバー」は語末の「ー」を省いて「サーバ」と書きます（3 音以上の語）
@@ -163,7 +161,7 @@ notice.md   blog/tech · 日本語   ジャンルは既定から
   5:32    warning 「下さい」は「ください」と書きます
                   team-kudasai
 
-指摘 5 件、動いていない rule 44 件
+{counts}
 ```
 
 この例の `chaff.yaml` は `style: ieice` も選んでいるので、1 件目はスタイルからの指摘です。
