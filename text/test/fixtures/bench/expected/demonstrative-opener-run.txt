@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  demonstrative-run  found
+ja/design  demonstrative-run  found
+ja/email  demonstrative-run  found
+ja/figures  demonstrative-run  found
+ja/itinerary  demonstrative-run  found
+ja/minutes  demonstrative-run  found
+ja/note  demonstrative-run  found
+ja/policy  demonstrative-run  found
+ja/press  demonstrative-run  found
+ja/proposal  demonstrative-run  found
+ja/quote  demonstrative-run  found
+ja/readme  demonstrative-run  found
+ja/requirements  demonstrative-run  found
