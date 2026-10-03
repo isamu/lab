@@ -1,0 +1,63 @@
+id: exclamation-width-consistency
+layer: L1
+status: experimental
+how_to_find: mark-consistency
+word_list: exclamation-width
+languages: [ja]
+severity: info
+
+name:
+  ja: ！？ の全角と半角の混在
+  en: Full-width and half-width ! and ? mixed
+
+why:
+  ja: 日本語の文の中で、感嘆符と疑問符を全角（！？）と半角（!?）で混ぜて書くと、別々の所から貼り合わせた文書に見えます。どちらが正しいかは決めません。日本語の字に接するものだけを、感嘆符と疑問符それぞれで数え、少ないほうを指します。
+  en: In a Japanese document, ! and ? written both full-width (！？) and half-width (!?) make it look pasted together. chaff does not pick a side; it counts only marks touching Japanese text, each kind apart, and points at the less common way.
+
+message:
+  ja: 「{mark}」と書いています（この文書はふつう「{usual}」。{of} 箇所のうち {count} 箇所が違う）
+  en: '"{mark}" here, where the document usually writes "{usual}" ({count} of {of})'
+
+# 少ないほうが 5 箇所以上で、全体の 2 割を超えるとき。書き損じではなく書き方が二通りあるので、1 件にまとめて両方の数を言う。
+messages:
+  mixed:
+    ja: "「{mark}」の仲間を、全角で {spaced} 箇所、半角で {touching} 箇所書いています。この文書には書き方が二通りあります"
+    en: '"{mark}" is written two ways in this document ({spaced} full-width, {touching} half-width)'
+
+how_to_fix:
+  ja: 文書の多いほうの書き方に合わせてください。
+  en: Match the way the rest of the document writes it.
+
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 日本語の文の中で、！？ の全角と半角（!?）が混ざっている所
+  en: Full-width ！？ and half-width !? mixed in one Japanese document
+example:
+  ja:
+    before: |
+      本当ですか？ 来週ですか？ 今日ですか?
+    after: |
+      本当ですか？ 来週ですか？ 今日ですか？
+
+not_flagged:
+  ja: 日本語の字に接するものだけを数えます。URL やコードの中の「?」、英語の文の中のものは数えません。
+  en: Only marks touching Japanese text. A ? in a URL, in code or in English text is not counted.
+level_meaning:
+  ja: 少ないほうの書き方が {limit} 箇所あれば指摘
+  en: reported once the less common way appears {limit} times
+rewrite:
+  ja:
+    direction: 指された感嘆符・疑問符だけを、文書の多いほうの書き方（全角か半角）に替えてください。
+    pairs:
+      - before: 今日ですか?
+        after: 今日ですか？
+      - before: 完成しました!
+        after: 完成しました！
+    keep:
+      - 文の言葉
+    avoid:
+      - 感嘆符を増やしたり減らしたりする

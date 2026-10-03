@@ -1,0 +1,14 @@
+table  13  13  0  0
+en/blog  eg-half-dotted  found
+en/design  eg-half-dotted  found
+en/email  eg-half-dotted  found
+en/figures  eg-half-dotted  found
+en/itinerary  eg-half-dotted  found
+en/minutes  eg-half-dotted  found
+en/note  eg-half-dotted  found
+en/policy  eg-half-dotted  found
+en/press  eg-half-dotted  found
+en/proposal  eg-half-dotted  found
+en/quote  eg-half-dotted  found
+en/readme  eg-half-dotted  found
+en/requirements  eg-half-dotted  found

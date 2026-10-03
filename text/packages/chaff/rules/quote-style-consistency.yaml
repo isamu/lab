@@ -1,0 +1,63 @@
+id: quote-style-consistency
+layer: L1
+status: experimental
+how_to_find: mark-consistency
+word_list: quote-style
+languages: [en]
+severity: info
+
+name:
+  ja: 引用符の直と曲の混在
+  en: Straight and curly quotes mixed
+
+why:
+  ja: 英語の引用符とアポストロフィを、直の形（" '）と曲がった形（“ ” ’）で混ぜて書くと、別々の所から貼り合わせた文書に見え、検索や置換でも片方を取りこぼします。どちらが正しいかは決めません。文書の中で少ないほうを指します。
+  en: Straight quotes and apostrophes (" ') mixed with curly ones (“ ” ’) make a document look pasted together, and a search or replace finds only one kind. chaff does not pick a side; it points at the less common way in the document.
+
+message:
+  ja: 引用符を {mark} と書いています（この文書はふつう {usual}。{of} 箇所のうち {count} 箇所が違う）
+  en: The quote mark {mark} here, where the document usually writes {usual} ({count} of {of})
+
+# 少ないほうが 5 箇所以上で、全体の 2 割を超えるとき。書き損じではなく書き方が二通りあるので、1 件にまとめて両方の数を言う。
+messages:
+  mixed:
+    ja: "引用符を、曲がった形で {spaced} 箇所、直の形で {touching} 箇所書いています。この文書には書き方が二通りあります"
+    en: "Quote marks are written two ways in this document ({spaced} curly, {touching} straight)"
+
+how_to_fix:
+  ja: 文書の多いほうの形に合わせてください。
+  en: Match the form the rest of the document uses.
+
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 英語で、直の引用符（" '）と曲がった引用符（“ ” ’）が一つの文書の中で混ざっている所
+  en: Straight quotes (" ') and curly quotes (“ ” ’) mixed in one document
+example:
+  en:
+    before: |
+      The "draft" is ready. The "final" is due. The “review” is next.
+    after: |
+      The "draft" is ready. The "final" is due. The "review" is next.
+
+not_flagged:
+  ja: 英字に接する引用符だけを数えます。コードの中と、二重引用符と一重引用符（アポストロフィ）の間の違いは見ません（種類ごとに数えます）。
+  en: Only marks touching a letter are counted, and code is skipped. Double and single quotes (apostrophes) are counted as separate kinds.
+level_meaning:
+  ja: 少ないほうの書き方が {limit} 箇所あれば指摘
+  en: reported once the less common way appears {limit} times
+rewrite:
+  en:
+    direction: Change the marked quotes to the form the rest of the document uses. Change nothing else.
+    pairs:
+      - before: The “review” is next.
+        after: The "review" is next.
+      - before: The team’s plan holds.
+        after: The team's plan holds.
+    keep:
+      - the words inside the quotes
+    avoid:
+      - changing the quotes the document already writes the common way

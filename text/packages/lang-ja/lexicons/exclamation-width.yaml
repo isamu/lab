@@ -1,0 +1,11 @@
+# 感嘆符と疑問符の全角（pattern）と半角（instead_of）。exclamation-width-consistency が、日本語の字に接するものの
+# 書き方の少ないほうを、種類（group）ごとに指す。どちらが正しいかは決めない。
+id: exclamation-width
+language: ja
+entries:
+  - pattern: ！
+    instead_of: "!"
+    group: exclamation
+  - pattern: ？
+    instead_of: "?"
+    group: question

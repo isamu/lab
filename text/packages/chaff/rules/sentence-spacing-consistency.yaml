@@ -1,0 +1,62 @@
+id: sentence-spacing-consistency
+layer: L1
+status: experimental
+how_to_find: sentence-spacing
+languages: [en]
+severity: info
+
+name:
+  ja: 文と文のあいだの空白の数の混在
+  en: One and two spaces between sentences mixed
+
+why:
+  ja: 英語で、文と文のあいだを一つの空白で空ける所と二つで空ける所が混ざっていると、別々の所から貼り合わせた文書に見えます。どちらが正しいかは決めません。同じ行の中の文の切れ目だけを数え、文書の中で少ないほうを指します。
+  en: Sentences separated by one space in some places and two in others make a document look pasted together. chaff does not pick a side; it counts only breaks between sentences on one line and points at the less common way.
+
+message:
+  ja: 文のあいだに空白が {spaces} 個あります（この文書はふつう {usual} 個。{of} 箇所のうち {count} 箇所が違う）
+  en: "{spaces} {spaces|space|spaces} after this sentence, where the document usually leaves {usual} ({count} of {of})"
+
+# 少ないほうが 5 箇所以上で、全体の 2 割を超えるとき。書き損じではなく書き方が二通りあるので、1 件にまとめて両方の数を言う。
+messages:
+  mixed:
+    ja: "文のあいだを、空白二つで {spaced} 箇所、一つで {touching} 箇所空けています。この文書には空け方が二通りあります"
+    en: "Sentences are spaced two ways in this document ({spaced} with two spaces, {touching} with one)"
+
+how_to_fix:
+  ja: 文書の多いほうの数に合わせてください。
+  en: Match the spacing the rest of the document uses.
+
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 英語で、文と文のあいだの空白が一つの所と二つの所が混ざっている所
+  en: One space between sentences in some places and two in others
+example:
+  en:
+    before: |
+      We met. We talked. We agreed.  We left.
+    after: |
+      We met. We talked. We agreed. We left.
+
+not_flagged:
+  ja: ピリオド・疑問符・感嘆符で終わる文と、同じ行で続く次の文のあいだだけを見ます。行末の空白（Markdown の改行）は見ません。
+  en: Only the space after a sentence ending in a period, question or exclamation mark, before the next sentence on the same line. Spaces at the end of a line (a Markdown line break) are not counted.
+level_meaning:
+  ja: 少ないほうの空け方が {limit} 箇所あれば指摘
+  en: reported once the less common spacing appears {limit} times
+rewrite:
+  en:
+    direction: Change the marked gap between sentences to the number of spaces the rest of the document uses.
+    pairs:
+      - before: We agreed.  We left.
+        after: We agreed. We left.
+      - before: The plan holds.  The date moves.
+        after: The plan holds. The date moves.
+    keep:
+      - every word and mark
+    avoid:
+      - changing spaces inside sentences
