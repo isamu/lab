@@ -56,54 +56,6 @@ describe("解析器を読むまで tokens は無い", () => {
     const off = Object.fromEntries(RULES.filter((rule) => rule.requires.includes("pos") || rule.uses.includes("pos")).map((rule) => [rule.id, "off" as const]));
     assert.equal(neededBy(RULES, { ...off, "concrete-evidence-density": "normal" }, false, "business/report", "ja").pos, true);
     assert.equal(neededBy(RULES, { ...off, "latin-spacing": "normal" }, true, "technical/readme", "ja").pos, true);
-    assert.deepEqual(
-      RULES.filter((rule) => rule.uses.includes("pos"))
-        .map((rule) => rule.id)
-        .sort((left, right) => left.localeCompare(right)),
-      [
-        "ai-tell",
-        "announcing-opener",
-        "assistant-residue",
-        "baito-keigo",
-        "closing-cliche",
-        "concrete-evidence-density",
-        "contrast-framing",
-        "cross-doc-fact-conflict",
-        "cross-doc-term-variant",
-        "cushion-phrase-density",
-        "double-keigo",
-        "double-negative",
-        "empty-conclusion",
-        "empty-intensifier",
-        "excessive-hedging",
-        "fact-conflict",
-        "heading-echo",
-        "hiragana-fukushi",
-        "humble-for-others",
-        "idiom-misuse",
-        "known-misspelling",
-        "latin-spacing",
-        "max-kanji-continuous",
-        "misconversion",
-        "ngram-repetition",
-        "number-style-consistency",
-        "orthographic-variant",
-        "padded-intro",
-        "redundant-expression",
-        "repeated-conjunction",
-        "request-without-deadline",
-        "requirement-modal",
-        "requirement-smell",
-        "sasete-itadaku",
-        "stock-transition",
-        "summary-fact-mismatch",
-        "translationese-density",
-        "undefined-acronym",
-        "unit-mismatch",
-        "unqualified-superlative",
-        "vague-word-density",
-      ],
-    );
   });
 
   // rule ごとに確かめる。uses: [pos] の rule を足しても、このテストの一覧は書き換えない。

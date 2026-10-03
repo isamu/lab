@@ -42,7 +42,7 @@ const findingsIn = (results: readonly SarifResult[], rule: string, file: string)
     });
 
 /** The genre the reference says its examples run with. An example that needs another names it in its config. */
-const EXAMPLE_GENRE = "business/report";
+export const EXAMPLE_GENRE = "business/report";
 
 /** The example's chaff.yaml: the language pinned, plus what the example says it needs. */
 const configOf = (language: string, example: RuleExample): string => stringify({ language, genre: EXAMPLE_GENRE, ...example.config });
@@ -96,7 +96,7 @@ const PADDING: Readonly<Record<string, string>> = {
     .replaceAll(" \n\n ", "\n\n"),
 };
 
-const withPadding = (text: string, example: RuleExample, language: string): string =>
+export const withPadding = (text: string, example: RuleExample, language: string): string =>
   example.pad === true ? `${text.trimEnd()}\n\n${PADDING[language] ?? ""}\n` : text;
 
 const runExample = async (rule: string, language: string, example: RuleExample): Promise<ExampleOutcome> => {
