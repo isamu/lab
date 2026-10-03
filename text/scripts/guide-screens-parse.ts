@@ -56,6 +56,31 @@ export const screensIn = (page: string): PageScreens => {
   return { documents, screens };
 };
 
+const indented = (body: string, indent: string): string =>
+  indent === ""
+    ? body
+    : body
+        .split("\n")
+        .map((line) => (line === "" ? line : `${indent}${line}`))
+        .join("\n");
+
+/**
+ * The page with its screens' text replaced, in page order: `bodies[n]` for the n-th screen, which stays as it is where
+ * that is undefined. A screen's text is what `screensIn` gives as `shown`, and goes back under the fence's indent.
+ */
+export const replaceScreens = (page: string, bodies: readonly (string | undefined)[]): string => {
+  const seen = { screens: 0 };
+  return page.replace(FENCE, (whole: string, _setup: unknown, indent: string, _ticks: unknown, _info: unknown, body: string) => {
+    if (!dedent(body, indent).startsWith(PROMPT)) return whole;
+    const replacement = bodies[seen.screens];
+    seen.screens += 1;
+    if (replacement === undefined) return whole;
+    const closing = whole.slice(whole.lastIndexOf("\n") + 1);
+    const opening = whole.slice(0, whole.length - closing.length - body.length);
+    return `${opening}${indented(replacement, indent)}${closing}`;
+  });
+};
+
 const hasLine = (code: string, marker: string): boolean => code.split("\n").some((line) => line.trim() === marker);
 
 /** Whether the screen keeps a line for the site to fill in. */
