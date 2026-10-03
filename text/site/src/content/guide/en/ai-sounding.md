@@ -396,6 +396,7 @@ after:
 - `agentless-passive`: the blog/tech genre does not check it
 - `ai-structure`: the document has no headings below its title
 - `cushion-phrase-density`: the blog/tech genre does not check it
+- `max-sentence-length`: the blog/tech genre does not check it
 
 ## Check after rewriting
 

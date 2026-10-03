@@ -125,11 +125,7 @@ rules.md   legal/statute · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  7 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
-
   {not-run}
-
-  Turn on one experimental rule alone by naming it: npx chaffjs enable absolute-exception (the same as rules: { absolute-exception: normal } in chaff.yaml). --experimental turns on all of them.
 ```
 
 ## What each finding means
@@ -167,9 +163,51 @@ $ npx chaffjs rules.md
 
 rules.md   blog/tech · English   genre from the default
 
+─── line 10 ──────────────────────────────────────────────────
+
+    Article 9.
+
+  ✖  Reference to a missing provision
+
+     "Article 9" (address 9) is not in this document
+     A reference such as "as set out in Section 12" leaves the reader at a dead end when that section is not in the document. It usually happens when a provision is deleted or renumbered and the reference keeps the old number. chaff builds the document's tree of addresses (chaff tree) and checks that each reference's address is in it. A Japanese reference counted in 条 (法第2条) is not looked up in a document that numbers none of its provisions with 条, such as a guideline whose headings read "1 目的", because it points into another document.
+
+     → Fix the number or remove the reference. If it points into another document, name that document so the reader knows where to look.
+
+     Relax this rule:  npx chaff relax dangling-reference
+
+
+─── line 12 ──────────────────────────────────────────────────
+
+    ## Article 4 (Return)
+
+  ✖  Skipped or repeated number
+
+     "Article 4" follows "Article 2" (expected number 3)
+     Article 5 right after Article 3, (c) right after (a), two paragraphs numbered 2. A reader cannot tell whether something was removed, or which one a reference means. Only numbers side by side under the same parent are compared.
+
+     → Renumber. If a provision was removed on purpose, keep its number with a note such as "Section 4 [Deleted]".
+
+     Relax this rule:  npx chaff relax numbering-gap
+
+
+─── line 15 ──────────────────────────────────────────────────
+
+    "equipment" means devices worth 10,000 yen or more.
+
+  ⚠  Term defined twice
+
+     "equipment" is also defined on line 6
+     A term defined in two places makes the reader check whether the two definitions agree. In long contracts a definition added later often drifts from the first. Whether they conflict is not something a machine can decide, so chaff only points at the second one. A heading that names the term is not counted as a definition.
+
+     → Keep one definition and refer to it from the other place. If the meaning changes on purpose, use a different term.
+
+     Relax this rule:  npx chaff relax duplicate-definition
+
+
 ────────────────────────────────────────────────────────────
 
-  No findings   All judged by machine
+  2 errors, 1 warning   All judged by machine
 …
 ```
 
@@ -317,9 +355,9 @@ rules-fixed.md   legal/statute · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  1 experimental rule turned on in the settings: numbering-gap
-
-  6 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, total-mismatch
+  66 rules did not run:
+      adverb-overuse (the legal/statute genre does not check it)
+      agentless-passive (the legal/statute genre does not check it)
 …
 ```
 

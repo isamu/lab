@@ -360,6 +360,7 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 - `agentless-passive`: ジャンル blog/tech では見ないため
 - `ai-structure`: 表題より下の見出しが無いため
 - `cushion-phrase-density`: ジャンル blog/tech では見ないため
+- `max-sentence-length`: ジャンル blog/tech では見ないため
 
 ## 直したあとの確かめ
 

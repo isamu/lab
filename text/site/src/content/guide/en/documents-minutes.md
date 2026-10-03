@@ -90,12 +90,22 @@ $ npx chaffjs minutes.md --genre business/meeting-notes --compact
 
 minutes.md   business/meeting-notes · English   genre from --genre
 
-  10:1    warning The first sentence repeats the heading "1. Actions from last week"
+  3:18    error   2026-10-07 is a Wednesday, not a Tuesday
+                  date-weekday-mismatch
+  10:1    info    The first sentence repeats the heading "1. Actions from last week"
                   heading-echo
-  14:1    warning The first sentence repeats the heading "2. Home page designs"
+  14:1    info    The first sentence repeats the heading "2. Home page designs"
                   heading-echo
-  20:1    warning The first sentence repeats the heading "4. Launch date"
+  18:1    error   "4" follows "2" (expected number 3)
+                  numbering-gap
+  20:1    info    The first sentence repeats the heading "4. Launch date"
                   heading-echo
+  22:1    info    The heading "Decisions" has no number, while 3 of its siblings do ("1. Actions from last week")
+                  heading-numbering-mix
+  24:23   warning "three points" is announced, but the number of items in the list below is 2
+                  announced-count-mismatch
+  29:1    info    The heading "Actions" has no number, while 3 of its siblings do ("1. Actions from last week")
+                  heading-numbering-mix
 
 {counts}
 ```
@@ -110,19 +120,19 @@ minutes.md   business/meeting-notes · English   genre from --genre
 
   3:18    error   2026-10-07 is a Wednesday, not a Tuesday
                   date-weekday-mismatch
-  10:1    warning The first sentence repeats the heading "1. Actions from last week"
+  10:1    info    The first sentence repeats the heading "1. Actions from last week"
                   heading-echo
-  14:1    warning The first sentence repeats the heading "2. Home page designs"
+  14:1    info    The first sentence repeats the heading "2. Home page designs"
                   heading-echo
   18:1    error   "4" follows "2" (expected number 3)
                   numbering-gap
-  20:1    warning The first sentence repeats the heading "4. Launch date"
+  20:1    info    The first sentence repeats the heading "4. Launch date"
                   heading-echo
-  22:1    warning The heading "Decisions" has no number, while 3 of its siblings do ("1. Actions from last week")
+  22:1    info    The heading "Decisions" has no number, while 3 of its siblings do ("1. Actions from last week")
                   heading-numbering-mix
   24:23   warning "three points" is announced, but the number of items in the list below is 2
                   announced-count-mismatch
-  29:1    warning The heading "Actions" has no number, while 3 of its siblings do ("1. Actions from last week")
+  29:1    info    The heading "Actions" has no number, while 3 of its siblings do ("1. Actions from last week")
                   heading-numbering-mix
 
 {counts}

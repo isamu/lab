@@ -236,7 +236,7 @@ $ npx chaffjs baseline docs/
 
   1 ファイルを走査しました。
 
-  1 件の指摘を .chaff-baseline.json に記録しました。
+  0 件の指摘を .chaff-baseline.json に記録しました。
   以後、これらは報告されません。新しく増えたものだけが出ます。
 
   .chaff-baseline.json を commit してください。
@@ -248,7 +248,7 @@ $ npx chaffjs baseline docs/
 ```
 $ npx chaffjs docs/ --compact
 
-docs/a.md   technical/readme · 日本語   ジャンルはパスから   棚上げ 1 件
+docs/a.md   technical/readme · 日本語   ジャンルはパスから
 
 
 {counts}
@@ -262,8 +262,6 @@ $ npx chaffjs docs/ --show-baseline --compact
 
 docs/a.md   technical/readme · 日本語   ジャンルはパスから
 
-  3:1     warning この文は 108 文字あります（100 文字まで）
-                  max-sentence-length
 
 {counts}
 ```

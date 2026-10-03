@@ -162,18 +162,12 @@ $ npx chaffjs draft.txt --experimental --compact
 draft.txt   blog/tech · 日本語   ジャンルは既定から
    法令・規程のようです。--genre legal/statute を試せます
 
-  6:39    warning この文は 125 文字あります（100 文字まで）
-                  max-sentence-length
   6:82    error   「第三号」（番地 21.1.3）はこの文書にありません
                   dangling-reference
   9:1     error   「二」の次が「四」です（3 番目のはず）
                   numbering-gap
-  12:1    warning この文は 122 文字あります（100 文字まで）
-                  max-sentence-length
   13:7    error   「第二十三条第一項」（番地 23.1）はこの文書にありません
                   dangling-reference
-  15:2    warning この文は 101 文字あります（100 文字まで）
-                  max-sentence-length
   15:2    info    「は」で出した主題から述語まで 94 字あります（80 字まで）
                   topic-predicate-distance
 
@@ -198,14 +192,8 @@ $ npx chaffjs fixed.txt --experimental --compact
 fixed.txt   blog/tech · 日本語   ジャンルは既定から
    法令・規程のようです。--genre legal/statute を試せます
 
-  6:39    warning この文は 125 文字あります（100 文字まで）
-                  max-sentence-length
-  12:1    warning この段落は 6 文あります（5 文まで）
+  12:1    info    この段落は 6 文あります（5 文まで）
                   max-paragraph-length
-  13:1    warning この文は 122 文字あります（100 文字まで）
-                  max-sentence-length
-  16:2    warning この文は 101 文字あります（100 文字まで）
-                  max-sentence-length
   16:2    info    「は」で出した主題から述語まで 94 字あります（80 字まで）
                   topic-predicate-distance
 

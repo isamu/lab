@@ -97,6 +97,16 @@ $ npx chaffjs release.md --genre business/press-release --compact
 
 release.md   business/press-release · 日本語   ジャンルは--genreから
 
+  6:45    error   「2026-11-02」は月曜日です（火曜日と書いてあります）
+                  date-weekday-mismatch
+  14:19   warning 内訳の割合の和が 95% で、100% になりません
+                  percent-sum-mismatch
+  20:12   warning 「4 つ」と予告していますが、すぐ下の箇条書きは3項目です
+                  announced-count-mismatch
+  30:6    warning 期間「2026年10月26日〜2026年10月19日」の終わりが始まりより前です
+                  date-range-reversed
+  39:8    error   合計「36,000円」が、上の金額の和（35,000円）と合いません
+                  total-mismatch
 
 {counts}
 ```
