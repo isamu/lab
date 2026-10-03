@@ -222,6 +222,9 @@ groups:
       unknown-word: off
       redundant-expression: off
       requirement-smell: off
+      # Dialogue keeps a character's keigo, mistakes and all.
+      humble-for-others: off
+      baito-keigo: off
       # Dialogue may misuse an idiom on purpose, to draw the speaker.
       idiom-misuse: off
       paragraph-restatement: off
@@ -270,6 +273,7 @@ groups:
       double-negative: off
       ra-nuki: off
       requirement-smell: off
+      baito-keigo: off
       article-sound: off
       very-adjective: off
       homophone-slip: off
