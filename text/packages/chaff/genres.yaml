@@ -61,6 +61,8 @@ groups:
       ai-structure: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
+      # Contracts set disclaimers in capitals so they are conspicuous, as the law asks.
+      all-caps-shouting: off
       # Drafting writes "in the event that" and "for the purpose of" on purpose.
       wordy-phrase: off
       weasel-word: off
@@ -246,6 +248,9 @@ groups:
       list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # Older printed texts set the dash as "--" and titles in capitals.
+      hyphen-as-dash: off
+      all-caps-shouting: off
       # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
       code-fence-language-mix: off
       shell-prompt-mix: off

@@ -1,0 +1,63 @@
+id: bracket-width-consistency
+layer: L1
+status: experimental
+how_to_find: mark-consistency
+word_list: bracket-width
+languages: [ja]
+severity: info
+
+name:
+  ja: 丸括弧の全角と半角の混在
+  en: Full-width and half-width parentheses mixed
+
+why:
+  ja: 日本語の文の中で、丸括弧を全角（（））と半角（()）で混ぜて書くと、別々の所から貼り合わせた文書に見えます。どちらが正しいかは決めません。日本語の字に接する括弧だけを数え、文書の中で少ないほうを指します。
+  en: In a Japanese document, parentheses written both full-width （） and half-width () make it look pasted together. chaff does not pick a side; it counts only brackets touching Japanese text and points at the less common way.
+
+message:
+  ja: 括弧を「{mark}」と書いています（この文書はふつう「{usual}」。{of} 箇所のうち {count} 箇所が違う）
+  en: 'The parenthesis "{mark}" here, where the document usually writes "{usual}" ({count} of {of})'
+
+# 少ないほうが 5 箇所以上で、全体の 2 割を超えるとき。書き損じではなく書き方が二通りあるので、1 件にまとめて両方の数を言う。
+messages:
+  mixed:
+    ja: "丸括弧を、全角で {spaced} 箇所、半角で {touching} 箇所書いています。この文書には書き方が二通りあります"
+    en: "Parentheses are written two ways in this document ({spaced} full-width, {touching} half-width)"
+
+how_to_fix:
+  ja: 文書の多いほうの書き方に合わせてください。
+  en: Match the way the rest of the document writes it.
+
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 日本語の文の中で、丸括弧の全角（（））と半角（()）が混ざっている所
+  en: Full-width （） and half-width () parentheses mixed in one Japanese document
+example:
+  ja:
+    before: |
+      会議（定例）は月曜です。報告（月次）は金曜です。資料(最新版)を配ります。
+    after: |
+      会議（定例）は月曜です。報告（月次）は金曜です。資料（最新版）を配ります。
+
+not_flagged:
+  ja: 日本語の字に接する括弧だけを数えます。英語の中の括弧（f(x)、API(s)）、コード、鉤括弧で引いたものの中は数えません。
+  en: Only brackets touching Japanese text. Brackets in English text (f(x)), code, and 「」 quotations are not counted.
+level_meaning:
+  ja: 少ないほうの書き方が {limit} 箇所あれば指摘
+  en: reported once the less common way appears {limit} times
+rewrite:
+  ja:
+    direction: 指された括弧だけを、文書の多いほうの書き方（全角か半角）に替えてください。
+    pairs:
+      - before: 資料(最新版)を配ります。
+        after: 資料（最新版）を配ります。
+      - before: 期限（今週金曜)までに出します。
+        after: 期限（今週金曜）までに出します。
+    keep:
+      - 括弧の中の言葉
+    avoid:
+      - 英語やコードの中の括弧まで替える
