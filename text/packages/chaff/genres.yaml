@@ -201,6 +201,8 @@ groups:
       unknown-word: off
       redundant-expression: off
       requirement-smell: off
+      # Dialogue may misuse an idiom on purpose, to draw the speaker.
+      idiom-misuse: off
       paragraph-restatement: off
       # A story or poem chooses its own opening and its own title.
       no-lead: off
