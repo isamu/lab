@@ -1,0 +1,30 @@
+SERVICES AGREEMENT
+
+This Agreement is made between Acme Ltd ("the Client") and Beta Ltd ("the Supplier").
+
+Section 1 Purpose
+This Agreement covers the services described in Section 3.
+
+Section 2 Definitions
+"Deliverables" means the documents the Supplier produces under this Agreement.
+
+Section 3 Services
+The Supplier shall provide the following services:
+(a) market research;
+(b) a written report; and
+(c) any other work the Client asks for in writing.
+
+Section 4 Fees
+4.1 The Client shall pay a fee of $50,000.
+4.2 The Client shall pay within 30 days of accepting the Deliverables.
+4.3 A late payment bears interest of 3% a year.
+
+Section 5 Subcontracting
+The Supplier must not subcontract the services without the written consent of the Client.
+
+Section 6 Term
+This Agreement runs from April 1, 2024 to March 31, 2025.
+6.2 Either party may renew it for 1 year by giving 3 months' notice.
+
+Section 7 Termination
+The Client may terminate this Agreement if the Supplier breaches Section 4.2 or Section 5.

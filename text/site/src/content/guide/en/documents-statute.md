@@ -128,6 +128,8 @@ rules.md   legal/statute · English   genre from --genre
   7 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
   {not-run}
+
+  Turn on one experimental rule alone by naming it: npx chaffjs enable absolute-exception (the same as rules: { absolute-exception: normal } in chaff.yaml). --experimental turns on all of them.
 ```
 
 ## What each finding means
@@ -168,6 +170,7 @@ rules.md   blog/tech · English   genre from the default
 ────────────────────────────────────────────────────────────
 
   No findings   All judged by machine
+…
 ```
 
 When a document clearly looks like another kind, chaff says so under the first line and suggests a genre.
@@ -205,6 +208,7 @@ It is a Markdown comment, so nobody opening the document sees it.
 Run it again and the numbering finding is gone, and the first line counts what was silenced.
 Here `--compact` prints each finding on two lines.
 
+<!-- chaff-screen: stet -->
 ```
 $ npx chaffjs rules.md --genre legal/statute --compact
 
@@ -215,7 +219,7 @@ rules.md   legal/statute · English   genre from --genre   1 stet
   16:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-2 findings, 49 rules not run
+{counts}
 ```
 
 ## Changing a rule for the whole team
@@ -247,6 +251,7 @@ The rule is added to `chaff.yaml`, with the reason, the date and who typed it:
 
 Run it again on `rules.md` without the stet, and the numbering finding is a `warning` instead of an `error`.
 
+<!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs rules.md --compact
 
@@ -259,7 +264,7 @@ rules.md   legal/statute · English   genre from chaff.yaml
   15:19   warning "equipment" is also defined on line 6
                   duplicate-definition
 
-3 findings, 49 rules not run
+{counts}
 ```
 
 chaff fails when any error is left, and passes when there are only warnings, so a warning does not stop CI.
@@ -278,7 +283,7 @@ Either way the reason stays in the file, so whoever comes later can see why the 
 
 The articles were renumbered, the article about the register was added, and the definition was kept in Article 1 only.
 
-```markdown
+```markdown file=rules-fixed.md
 # Equipment Management Rules
 
 ## Article 1 (Purpose)
@@ -299,6 +304,7 @@ Borrowed equipment must be returned within 7 days of the day it was borrowed.
 The General Affairs Department keeps a register of the equipment lent and returned.
 ```
 
+<!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs rules-fixed.md --genre legal/statute
 
@@ -314,6 +320,7 @@ rules-fixed.md   legal/statute · English   genre from --genre
   1 experimental rule turned on in the settings: numbering-gap
 
   6 experimental rules turned on by the genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, total-mismatch
+…
 ```
 
 The "did not run" list below this is the same as before.

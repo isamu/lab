@@ -47,10 +47,10 @@ They are listed at the end of the screen under "rules not run", with the genre a
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The page below was saved as `manual.md`. The API and its URL are made up.
 
-````markdown
+````markdown file=manual.md
 # Using the booking API
 
-This page explains how to use the meeting room booking API.
+This page explains how to make, check and cancel a meeting room booking with the booking API.
 
 ## Before you start
 
@@ -97,7 +97,7 @@ manual.md   blog/tech · English   genre from the default
   9:1     warning Image "![](images/settings.png)" has no alt text
                   image-alt-text
 
-1 finding, 97 rules not run
+{counts}
 ```
 
 Add the genre, as suggested, and the experimental rules too.
@@ -121,7 +121,7 @@ manual.md   docs/manual · English   genre from --genre
   27:1    warning The heading "Making a booking" repeats the one on line 11 under the same parent
                   duplicate-heading
 
-6 findings, 45 rules not run
+{counts}
 ```
 
 ## What each finding means
