@@ -55,6 +55,7 @@ level_meaning:
   ja: 説明の項目が {limit} 個以下で、指示の項目より少ないとき指摘
   en: reported when {limit} or fewer steps are statements and they are fewer than the instructions
 rewrite:
+  depth: light
   en:
     direction: Turn the statement into an instruction for the reader, with the verb first, or fold it into the step before as a second sentence. Keep what the step says happens; do not add steps.
     pairs:

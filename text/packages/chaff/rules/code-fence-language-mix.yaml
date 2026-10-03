@@ -122,6 +122,7 @@ level_meaning:
   ja: 言語名の無いブロックが {limit} 個以下で、ある方より少ないとき指摘
   en: reported when {limit} or fewer blocks lack a language and they are fewer than those with one
 rewrite:
+  depth: light
   ja:
     direction: 言語名の無いブロックに、中身の言語名を付けてください。コマンドなら bash、設定なら yaml や json、出力や平文なら text です。中身から言語が決められなければ text にします。コードは変えません。
     pairs:
