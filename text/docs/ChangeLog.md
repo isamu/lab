@@ -2,6 +2,32 @@
 
 Newest first.
 
+## 0.22.0 — 2026-10-04
+
+Teams can ship rules without writing code. A rule pack is a folder or npm package of YAML rules, word lists and
+styles; `chaff init --plugin <name>` scaffolds one and `chaff plugin-test` checks each rule against its own examples.
+Many new rules check numbers, references and Markdown that does not render as written, and English usage.
+
+### Commands and settings
+
+- YAML-only rule packs (#593, shipped in 0.21.0 and announced here); `chaff init --plugin` and `chaff plugin-test`,
+  with two sample packs tried end to end (#596).
+- `CHAFF_TEST_JOBS` caps how many test processes run at once (#608).
+
+### Rules
+
+- Numbers and references: ordinal-suffix-mismatch, share-over-hundred (#595), currency-notation-consistency (#597),
+  range-notation-consistency (#601), footnote-mismatch (#602), step-reference-missing (#604), toc-heading-mismatch (#612).
+- Markdown and headings: heading-end-punctuation-mix (#598), list-marker-mix (#600), table-row-overflow,
+  unclosed-code-fence, unrendered-emphasis (#605).
+- English usage: less-for-fewer (#599), numeral-sentence-start (#603), nonstandard-word (#606),
+  uncomparable-graded (#607), which-that-consistency (#609), cliche (#610), dangling-participle (#611).
+
+### Docs
+
+- Guide pages no longer say rules need `--experimental`; the commands table covers every `--help` flag; adding-rules
+  explains placement by `yarn rules:measure` (#614 #615 #617 #618 #619).
+
 ## 0.21.0 — 2026-10-03
 
 Most rules now run by default. `yarn rules:measure` measures how often each rule fires on human documents of each
