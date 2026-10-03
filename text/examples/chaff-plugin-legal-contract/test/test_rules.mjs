@@ -47,7 +47,7 @@ describe("plugin shape", () => {
     assert.equal(plugin.name, "legal-contract");
   });
   it("ships 6 rules", () => {
-    assert.equal(plugin.rules.length, 6);
+    assert.equal(plugin.rules?.length, 6);
   });
   it("ships 4 styles (nda / outsourcing / tos / privacy)", () => {
     assert.equal(plugin.styles?.length, 4);

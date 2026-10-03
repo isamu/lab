@@ -117,9 +117,10 @@ describe("rewrite depth — on the rules", () => {
     const structure = rules.filter((rule) => rule.guide?.rewriteDepth === "structure").map((rule) => rule.id);
     assert.ok(["ai-structure", "one-sentence-paragraph-run", "paragraph-restatement", "bold-label-list"].every((id) => structure.includes(id)));
     assert.equal(rules.find((rule) => rule.id === "ai-tell")?.guide?.rewriteDepth, "light");
-    assert.ok(
-      rules.every((rule) => rule.guide?.rewriteDepth !== "register"),
-      "no bundled rule converts the style",
+    assert.deepEqual(
+      rules.filter((rule) => rule.guide?.rewriteDepth === "register").map((rule) => rule.id),
+      ["figurative-density"],
+      "only the decorative-figure rule converts the style",
     );
   });
 

@@ -1,0 +1,26 @@
+# Decorative figures: a mechanism or a step described as magic or a spell instead of said ("works like magic", "a
+# one-line incantation"). Read by figurative-density, per length of the document: one is style, a pile hides what happens.
+# "Game-changer" and "tapestry" are in ai-tell and not listed again.
+id: figurative-phrase
+language: en
+entries:
+  - pattern: like magic
+    rewrite: say what happens automatically
+  - pattern: as if by magic
+    rewrite: say what happens automatically
+  - pattern: magically
+    rewrite: say what does it
+  - pattern: magical
+    rewrite: say what it does
+  - pattern: incantation
+    rewrite: say what the command does
+  - pattern: like a charm
+    rewrite: say what worked and how you checked
+  - pattern: like clockwork
+    rewrite: give the schedule or the rate
+  - pattern: silver bullet
+    rewrite: say what it fixes and what it does not
+  - pattern: secret sauce
+    rewrite: name the method
+  - pattern: superpower
+    rewrite: name the capability
