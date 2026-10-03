@@ -828,6 +828,7 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `unsourced-number` | pattern-cooccurrence | business | warning |
 | `internal-jargon` ✅ | phrase-match（ユーザー辞書） | business | warning |
 | `preferred-term` | チームの表記（`prefer`） | 両方 | warning |
+| `cross-doc-term-variant` ✅ | ファイルによって違う書き方の語（語末の「ー」、英米の綴り、ハイフンの有無）。使うファイルの少ないほうを指摘（ファイルが二つ以上のときだけ） | 両方 | warning |
 | `repeated-conjunction` ✅ | 段落先頭の語彙照合 | 両方 | warning |
 | `ai-tell` ✅ | weighted phrase-match | blog | info |
 | `contrast-framing` ✅ | 対比の枠（frame の語、または打ち消しとそれを返す語）の密度 | blog | info |
