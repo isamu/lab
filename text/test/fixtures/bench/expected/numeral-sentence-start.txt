@@ -1,0 +1,14 @@
+table  13  13  0  0
+en/blog  numeral-sentence-start-en  found
+en/design  numeral-sentence-start-en  found
+en/email  numeral-sentence-start-en  found
+en/figures  numeral-sentence-start-en  found
+en/itinerary  numeral-sentence-start-en  found
+en/minutes  numeral-sentence-start-en  found
+en/note  numeral-sentence-start-en  found
+en/policy  numeral-sentence-start-en  found
+en/press  numeral-sentence-start-en  found
+en/proposal  numeral-sentence-start-en  found
+en/quote  numeral-sentence-start-en  found
+en/readme  numeral-sentence-start-en  found
+en/requirements  numeral-sentence-start-en  found

@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  strong-left-open  found
+ja/design  strong-left-open  found
+ja/email  strong-left-open  found
+ja/figures  strong-left-open  found
+ja/itinerary  strong-left-open  found
+ja/minutes  strong-left-open  found
+ja/note  strong-left-open  found
+ja/policy  strong-left-open  found
+ja/press  strong-left-open  found
+ja/proposal  strong-left-open  found
+ja/quote  strong-left-open  found
+ja/readme  strong-left-open  found
+ja/requirements  strong-left-open  found
+en/blog  strong-left-open  found
+en/design  strong-left-open  found
+en/email  strong-left-open  found
+en/figures  strong-left-open  found
+en/itinerary  strong-left-open  found
+en/minutes  strong-left-open  found
+en/note  strong-left-open  found
+en/policy  strong-left-open  found
+en/press  strong-left-open  found
+en/proposal  strong-left-open  found
+en/quote  strong-left-open  found
+en/readme  strong-left-open  found
+en/requirements  strong-left-open  found
