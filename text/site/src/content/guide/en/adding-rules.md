@@ -62,7 +62,7 @@ Polite endings are checked by `no-mixed-desumasu`.
 That rule does not decide which register is right; it points only at sentences that differ from the rest.
 A document written wholly in the plain register is not reported, and the team should know that.
 
-```yaml
+```yaml file=chaff.yaml
 language: ja
 genre: technical/spec
 
@@ -84,6 +84,8 @@ sample.md   technical/spec · 日本語   ジャンルはchaff.yamlから
                   max-sentence-length
   5:31    warning この文だけ他と文末の調子が違います（本文の中で 1 文）
                   no-mixed-desumasu
+
+{counts}
 ```
 
 Both requirements were reported, so the settings work.
@@ -245,7 +247,14 @@ chaff runs it only when it is given two or more files, or a folder; on one file 
 Each finding points at a line and column of its own file, so stet, the baseline and SARIF treat it like any other.
 Its `example` adds `other:`, a third file checked in the same run as `before` and `after`.
 
-The guide's screens do not list the rules that did not run by hand: a screen writes `{not-run}` there, and the site fills the list in from chaff's output when it is built. A new rule edits no guide page for it.
+The guide's screens do not copy out what changes with every new rule.
+A screen writes `{not-run}` where chaff lists the rules that did not run, and `{counts}` where `--compact` ends with its tally.
+The site fills both in from chaff's output when it is built.
+
+`yarn test` runs every screen on its documents and stops when one differs from what chaff prints.
+The documents are the page's `file=` blocks and the files in `site/src/screens/<lang>/<page>/`.
+`node scripts/guide-screens.ts --check en/<page>.md` shows the difference.
+When a new rule adds a finding to a screen, update that screen and what the page says about it.
 
 `yarn test` stops when a rule file lacks a reader's field that the rule needs.
 It also stops when an `example`'s `before` is not reported, or its `after` is.

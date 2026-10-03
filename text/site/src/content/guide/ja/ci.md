@@ -13,6 +13,7 @@ SARIF は、検査の結果を CI に渡すための決まった形式です。
 $ npx chaffjs . --sarif report/chaff.sarif
 
   SARIF を書きました: report/chaff.sarif（1 件）
+…
 ```
 
 この下に、いつもの画面の出力も続けて出ます。
