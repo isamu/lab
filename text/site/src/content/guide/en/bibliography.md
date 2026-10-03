@@ -166,7 +166,7 @@ No rule text or word list was copied; chaff's lists are its own.
 - <a id="write-good"></a>**write-good** [github.com](https://github.com/btford/write-good)
   - A linter for English prose.
   - Found: Passive voice, "there is" openers, a sentence-initial "So", weasel words, wordy phrases, clichés and repeated words.
-  - In chaff: `agentless-passive`, `expletive-construction`, `sentence-initial-so`, `weasel-word`, `wordy-phrase` and `doubled-word` cover these.
+  - In chaff: `agentless-passive`, `expletive-construction`, `sentence-initial-so`, `weasel-word`, `wordy-phrase` and `doubled-word` cover these, and [`cliche`](../../rules/cliche/) its check of clichés.
 - <a id="vale-styles"></a>**Vale Microsoft and Google styles** [github.com](https://github.com/errata-ai/Microsoft)
   - Rules for the Vale linter that encode the Microsoft Writing Style Guide and the Google developer documentation style guide ([Google](https://github.com/errata-ai/Google)).
   - Found: Checks of notation: ellipses, units, spacing, dashes, dates, ranges, contractions, the Oxford comma, heading case.
