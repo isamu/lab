@@ -1564,6 +1564,12 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
   `example.before`、`example.after`。文言は 1 つの文字列か `{ ja, en }`。`message` を書かなければ種類ごとの既定の文。
 - `level` は重さ（`error` / `warning` / `info`）。段階は重さの段（§18.1 の `level_sets: severity`）で、`relax` は一段軽く、
   `strict` は一段重くする。status は `stable`（チームが名指しで書いたものなので、既定で動く）。use_for は全ジャンル。
+- 同梱のルール（`rules/*.yaml`）と同じ欄も書ける。どれも省けて、省けば上の既定になる。
+  `levels`（`strict`・`normal`・`relaxed` ごとの重さ。`normal` は必須。`level` と両方は書けない。チームのルールは箇所を出すので数は書けない）、
+  `use_for`（ジャンルかその頭の並び）、`group`（規則の一覧の分類。既定は `team`）、`summary`（一行の説明。既定は `name`）、
+  `example` を言語ごとに（`{ ja: { before, after }, en: { before, after } }`）、`rewrite`（§28.8）。
+- 同梱・チーム・プラグインのルールの共通の欄（`group`、`summary`、`use_for`、言語ごとの `example`、`rewrite.depth`）は、
+  一か所（`rule-fields.ts`）で同じに確かめ、同じ文で断る。同梱のルールなら読み込みで止まり、チームとプラグインのルールなら実行を止める。
 - **読めないものは実行を止める。** チームのルールが黙って動かないと、きれいな文書に見える。
 - **正規表現は動かす前に確かめる。** 長さ 500 字まで。後方参照（`\1`、`\k<name>`）と、空文字列に当たるもの、
   上限の無い繰り返しの中に上限の無い繰り返しか選択肢を持つ群に、上限の無い繰り返しを付けた形（`(a+)+`、`(a|aa)*`、
@@ -1603,7 +1609,7 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 パッケージは `chaff.yaml` のあるフォルダから Node の `require.resolve` と同じに探す。
 
 - プラグインは `definePlugin` を `export default` する。`name` はパッケージの名前から決まり（`chaff-plugin-foo` は `foo`）、違えば断る。
-- ルールは `custom_rules` の項目と同じに読み（同じ欄、同じ確かめ）、コードのルールは `type: module` の代わりに `detect` を持つ。
+- ルールは `custom_rules` の項目と同じに読み（同じ欄、同じ確かめ。§18.7 の同梱のルールと同じ欄も書ける）、コードのルールは `type: module` の代わりに `detect` を持つ。
 - 出すもの全部に名前を前に付ける。ルール `foo/no-tbd`、語彙表 `foo/weasel`、スタイル `foo/house`。chaff のルールとも、ほかのプラグインとも重ならない。
 - プラグインのルールは指摘、`explain`、`rules --json`（`defined_in: plugin foo`）、`relax`、`stet`、baseline、SARIF で chaff のルールと同じに扱う。
 - 語彙表は言語ごとに持つ。文書の言語の語彙表が無ければ、そのルールは理由付きで動かない（§16）。

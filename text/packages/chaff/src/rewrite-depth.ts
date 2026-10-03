@@ -11,7 +11,7 @@ export type RewriteDepth = (typeof REWRITE_DEPTHS)[number];
 /** A rule without a depth of its own, or without a rewrite block, fixes words and sentences. */
 export const DEFAULT_DEPTH: RewriteDepth = "light";
 
-export const isRewriteDepth = (value: unknown): value is RewriteDepth => REWRITE_DEPTHS.some((depth) => depth === value);
+const isRewriteDepth = (value: unknown): value is RewriteDepth => REWRITE_DEPTHS.some((depth) => depth === value);
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -50,7 +50,7 @@ const MEANING: Texts<Readonly<Record<RewriteDepth, string>>> = {
 export const depthMeaning = (depth: RewriteDepth, ui: UiLanguage): string => MEANING[ui][depth];
 
 /** Every depth with its meaning, shallowest first: "light (…) / structure (…) / register (…)". */
-export const depthChoices = (ui: UiLanguage): string =>
+const depthChoices = (ui: UiLanguage): string =>
   REWRITE_DEPTHS.map((depth) => (ui === "ja" ? `${depth}（${MEANING.ja[depth]}）` : `${depth} (${MEANING.en[depth]})`)).join(" / ");
 
 /** Why a written depth cannot be read, with every depth chaff knows. where: what was written ("rewrite.depth", "--depth"). */

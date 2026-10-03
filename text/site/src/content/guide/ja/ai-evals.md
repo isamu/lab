@@ -70,9 +70,9 @@ Node.js 24 以上が要ります。`npx chaffjs` は、初めて使うときに 
    引用: 2 件を照らし、1 件が外れた
 
    …
-     cite                              2 件の出力  citations が無い（chaff は出力から引用を推測しない）
+     {not-run: cite}
    …
-     compare                           2 件の出力  reference が無い（事実は reference と照らす）
+     {not-run: compare}
    …
    ```
 
@@ -408,7 +408,7 @@ rag-ja.jsonl: 2 件の出力、1 件が通り、1 件が落ちた
 引用: 0 件を照らし、0 件が外れた
 contexts: 2 件の出力の事実 11 件を照らし、3 件がどの一節にも無かった（number 2, quote 1）
 …
-  contexts                          1 件の出力  数・日付・名前・引用の無い文 1 件は、contexts に支えられているかを照らしていない（意味を読む必要がある）
+  {not-run: contexts}
 …
 ```
 
