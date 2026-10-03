@@ -155,11 +155,11 @@ export const UNCHECKED: Readonly<Record<string, Readonly<Record<string, string>>
     "$ npx chaffjs feedback sample.md --rule heading-echo --line 142": REAL_ARTICLE,
   },
   "ja/ai-evals.md": {
-    "$ npx chaffjs grade prompt-a.jsonl --experimental --out a.results.jsonl": GRADE_BASELINE,
+    "$ npx chaffjs grade prompt-a.jsonl --out a.results.jsonl": GRADE_BASELINE,
     "$ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl": GRADE_BASELINE,
   },
   "en/ai-evals.md": {
-    "$ npx chaffjs grade prompt-a.jsonl --experimental --out a.results.jsonl": GRADE_BASELINE,
+    "$ npx chaffjs grade prompt-a.jsonl --out a.results.jsonl": GRADE_BASELINE,
     "$ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl": GRADE_BASELINE,
   },
 };

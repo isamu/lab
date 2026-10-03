@@ -62,7 +62,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
   3:1     info    一文に節が 8 つつながっています（5 つまで）
                   clause-chain
 
-{counts}
+指摘 1 件、動いていない rule 19 件
 ```
 
 最後の行は、指摘の数と、動かなかったルールの数です。
@@ -250,8 +250,6 @@ $ npx chaffjs docs/ --show-baseline --compact
 
 docs/a.md   technical/readme · 日本語   ジャンルはパスから
 
-  3:1     info    「は」で出した主題から述語まで 111 字あります（80 字まで）
-                  topic-predicate-distance
 
 {counts}
 ```

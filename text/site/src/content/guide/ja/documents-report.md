@@ -103,20 +103,6 @@ houkoku.md   business/report · 日本語   ジャンルは --genre から
      このルールをゆるめる:  npx chaffjs relax excessive-hedging
 
 
-─── 5 行目 ───────────────────────────────────────────────────
-
-    近年、お客様からの問い合わせはますます多様化しており、私たちサポートチームとしてもその変化にしっかりと対応していくことが求められているという状況であると考えられます。
-
-  ⚠  逃げの表現が多い
-
-     この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
-     断言を避けるほど、読み手は何が決まったのか分からなくなります。1 つなら慎重さですが、重なると誰も責任を取らない文書になります。chaff は 2 つの見方で探します。1 つの文に逃げを重ねたもの（「〜という状況であると考えられます」「〜かもしれないと思われます」）は、短い文書でも 1 文で指摘します。文書全体で逃げの表現が多すぎるものは、短い文書では測りません。重なりを数えるとき、鉤括弧や引用符で引いた発言の中の逃げは、話した人のものなので数えません。
-
-     → 言い切れるものは言い切ってください。言い切れないなら、何が分かれば言い切れるのかを書いてください。重ねた逃げは、1 つ残すか、全部外して言い切ってください。
-
-     このルールをゆるめる:  npx chaff relax excessive-hedging
-
-
 ────────────────────────────────────────────────────────────
 
   注意 2 件   すべて機械による判定です
@@ -125,6 +111,8 @@ houkoku.md   business/report · 日本語   ジャンルは --genre から
   文章は書き換えていません。直すのは書いた人です。
 
   {not-run}
+
+  試験中のルールを 1 つだけ動かすには、npx chaffjs enable cross-doc-broken-link のように名指しします（chaff.yaml の rules に cross-doc-broken-link: normal と書くのと同じです）。--experimental はすべてを動かします。
 ```
 
 指摘は 2 件で、どちらも 5 行目です。「近年、」は、どの報告書にも書ける書き出しです。
@@ -157,14 +145,12 @@ rules:
 ```
 $ npx chaffjs houkoku.md --genre business/report --compact
 
-houkoku.md   business/report · 日本語   ジャンルは--genreから
+houkoku.md   business/report · 日本語   ジャンルは --genre から
 
   5:1     warning 「近年」は、どの記事にも当てはまる書き出しです
                   padded-intro
   5:68    warning この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
                   excessive-hedging
-  15:35   warning この文は「れ」と受け身で書かれていますが、誰がしたのかがありません
-                  agentless-passive
 
 {counts}
 ```
@@ -324,6 +310,8 @@ houkoku-fixed.md   business/report · 日本語   ジャンルは --genre から
   文章は書き換えていません。直すのは書いた人です。
 
   {not-run}
+
+  試験中のルールを 1 つだけ動かすには、npx chaffjs enable cross-doc-broken-link のように名指しします（chaff.yaml の rules に cross-doc-broken-link: normal と書くのと同じです）。--experimental はすべてを動かします。
 ```
 
 指摘はありません。

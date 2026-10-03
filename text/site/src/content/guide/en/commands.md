@@ -62,7 +62,7 @@ sample.md   blog/tech · English   genre from the default
   3:1     info    This sentence runs 59 words (limit 40)
                   max-sentence-length
 
-{counts}
+1 finding, 28 rules not run
 ```
 
 The last line counts the findings and the rules that did not run.
@@ -248,7 +248,7 @@ $ npx chaffjs docs/ --show-baseline --compact
 
 docs/a.md   technical/readme · English   genre from the path
 
-  3:1     info    This sentence runs 51 words (limit 40)
+  3:1     info    This sentence runs 43 words (limit 40)
                   max-sentence-length
 
 {counts}

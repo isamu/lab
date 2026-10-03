@@ -87,7 +87,7 @@ enquiries.md   business/report · English   genre from --genre
 
      → Start from a concrete situation, or from the claim only this piece makes.
 
-     Relax this rule:  npx chaff relax padded-intro
+     Relax this rule:  npx chaffjs relax padded-intro
 
 
 ─── line 5 ───────────────────────────────────────────────────
@@ -101,21 +101,21 @@ enquiries.md   business/report · English   genre from --genre
 
      → Commit where you can. Where you cannot, say what you would need to know. Where hedges are stacked, keep one or drop them all and commit.
 
-     Relax this rule:  npx chaff relax excessive-hedging
+     Relax this rule:  npx chaffjs relax excessive-hedging
 
 
-─── line 5 ───────────────────────────────────────────────────
+─── line 9 ───────────────────────────────────────────────────
 
-    In today's fast-paced world, the enquiries we receive from customers are becoming more and more varied, and it could per…
+    In particular , enquiries about billing rose sharply ; most came from customers who had moved to the new price plan and …
 
   ·  Sentence too long
 
      This sentence runs 53 words (limit 45)
      In a long sentence the reader loses the subject before reaching the verb.
 
-     → Commit where you can. Where you cannot, say what you would need to know. Where hedges are stacked, keep one or drop them all and commit.
+     → Split it in two at the conjunction.
 
-     Relax this rule:  npx chaffjs relax excessive-hedging
+     Relax this rule:  npx chaffjs relax max-sentence-length
 
 
 ────────────────────────────────────────────────────────────
@@ -171,14 +171,8 @@ enquiries.md   business/report · English   genre from --genre
                   padded-intro
   5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
                   excessive-hedging
-  5:129   warning This sentence is passive ("argued") but never says who did it
-                  agentless-passive
   9:66    info    This sentence runs 53 words (limit 45)
                   max-sentence-length
-  15:54   warning This sentence is passive ("considered") but never says who did it
-                  agentless-passive
-  15:93   warning This sentence is passive ("discussed") but never says who did it
-                  agentless-passive
 
 {counts}
 ```
@@ -273,10 +267,6 @@ enquiries.md   business/report · English   genre from --genre
                   padded-intro
   5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
                   excessive-hedging
-  5:129   warning This sentence is passive ("argued") but never says who did it
-                  agentless-passive
-  9:66    info    This sentence runs 53 words (limit 45)
-                  max-sentence-length
 
 {counts}
 ```
@@ -341,6 +331,8 @@ enquiries-fixed.md   business/report · English   genre from --genre
   The text was not changed. Fixing it is the writer's job.
 
   {not-run}
+
+  Turn on one experimental rule alone by naming it: npx chaffjs enable cross-doc-broken-link (the same as rules: { cross-doc-broken-link: normal } in chaff.yaml). --experimental turns on all of them.
 ```
 
 No findings.
