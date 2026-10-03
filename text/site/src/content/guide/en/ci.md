@@ -11,7 +11,9 @@ SARIF is the standard format for handing check results to CI.
 
 ```
 $ npx chaffjs . --sarif report/chaff.sarif
+
   Wrote SARIF: report/chaff.sarif (1 finding)
+…
 ```
 
 The usual screen follows it.

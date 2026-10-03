@@ -110,6 +110,7 @@ chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
 ```
 $ npx chaffjs tree draft.txt
 (doc :language "ja" :path "draft.txt" :profile "statute" :line 1
+…
 ```
 
 違うときは `profile` に書きます。`none` と書くと、内容からも選びません。
@@ -200,11 +201,12 @@ announced-count-mismatch を normal にしました（…/chaff.yaml）
 
 ```
 $ npx chaffjs explain numbering-gap --genre legal/statute
-（略）
+…
   設定できる値（数える上限は無く、指摘の重さが変わります）:
   → normal   エラー
     relaxed  注意
     off      見ない
+…
 ```
 
 見なくてよいときは `off` で止めます。
@@ -428,10 +430,12 @@ rules:
   bold-density: loose
 ```
 
+<!-- chaff-screen: typo -->
 ```
 $ npx chaffjs article.md
 chaff: …/chaff.yaml: max-sentense-length というルールはありません（npx chaff rules --json で一覧が出ます）
 chaff: …/chaff.yaml: bold-density の値 "loose" は読めません（strict / normal / relaxed / off か、正の数）
+…
 ```
 
 警告が出たら、`chaff.yaml` の綴りと値を直します。

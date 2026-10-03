@@ -1,0 +1,70 @@
+id: date-without-year
+layer: L1
+status: experimental
+how_to_find: date-without-year
+requires: [dates]
+# The dates come from the language package's date reader. English does not read a date written without its year yet,
+# so the rule checks Japanese only until it does.
+languages: [ja]
+severity: warning
+
+name:
+  ja: 年の無い日付
+  en: Date without a year
+
+why:
+  ja: 文書のほかの日付には年があるのに、一つだけ年が無い日付は、読み手がどの年かを推し量ることになります。年をまたぐ日付が並ぶ文書（12月と1月）では、年の無い日付がどちらの年か決まりません。
+  en: When the document's other dates carry a year, a date without one leaves the reader to guess it. When the dates cross the turn of a year (December and January), a yearless date could be either year.
+
+message:
+  ja: 「{date}」には年がありません（この文書のほかの日付 {count} 個には年があります）
+  en: '"{date}" has no year (the document''s other {count} dates do)'
+messages:
+  boundary:
+    ja: 「{date}」には年がありません。年の変わり目をまたぐ日付が並んでいるので、どちらの年か決まりません
+    en: '"{date}" has no year, and the dates around it cross the turn of a year'
+
+how_to_fix:
+  ja: 年を書いてください（2027年1月15日）。
+  en: Write the year (January 15, 2027).
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: ほかの日付には年があるのに年の無い日付と、年の変わり目をまたいで並ぶ年の無い日付
+  en: A date without a year where the document's other dates carry one, or where the dates cross the turn of a year
+example:
+  ja:
+    before: |
+      # 日程
+
+      - 2026年10月14日（水）：説明会
+      - 2026年10月21日（水）：申込の締め切り
+      - 10月28日（水）：結果の連絡
+    after: |
+      # 日程
+
+      - 2026年10月14日（水）：説明会
+      - 2026年10月21日（水）：申込の締め切り
+      - 2026年10月28日（水）：結果の連絡
+
+not_flagged:
+  ja: 年を一度だけ書いて、あとの日付は月と日だけで書く文書（年の無い日付のほうが多い文書）は、書き方の選び方として指しません。ただしその場合も、年をまたぐ日付は指します。月だけ・年だけの日付は見ません。
+  en: A document that writes the year once and the rest as month and day (more yearless dates than dated ones) is a style, and not reported, except for a date across the turn of a year. Month-only and year-only dates are not checked.
+rewrite:
+  ja:
+    direction: 指摘された日付に年を書き足してください。年は本文のほかの日付と、曜日から確かめます。決められなければ、作らずに［年］と空けて書き手に聞きます。
+    pairs:
+      - before: 10月28日（水）：結果の連絡
+        after: 2026年10月28日（水）：結果の連絡
+      - before: 1月15日に次の会議を開きます。
+        after: 2027年1月15日に次の会議を開きます。
+    keep:
+      - 月・日・曜日
+      - ほかの日付の書き方
+    avoid:
+      - 曜日と合わない年を書く
+      - 本文から決まらない年を推して書く
