@@ -1,0 +1,81 @@
+# Endings that make an inflected or derived form of a dictionary word: unknown-word strips the ending (pattern) and
+# puts the replacement (instead_of, empty when nothing goes back) before looking the stem up. "carried" is "carry",
+# "stopped" is "stop" (a doubled last consonant is undone too), "baking" is "bake". The dictionary itself is
+# dictionary.txt; this list only saves listing every inflected form there.
+id: word-suffix
+language: en
+entries:
+  - pattern: s
+    instead_of: ""
+  - pattern: es
+    instead_of: ""
+  - pattern: ies
+    instead_of: "y"
+  - pattern: ied
+    instead_of: "y"
+  - pattern: ed
+    instead_of: ""
+  - pattern: ed
+    instead_of: "e"
+  - pattern: ing
+    instead_of: ""
+  - pattern: ing
+    instead_of: "e"
+  - pattern: er
+    instead_of: ""
+  - pattern: er
+    instead_of: "e"
+  - pattern: ers
+    instead_of: ""
+  - pattern: ers
+    instead_of: "e"
+  - pattern: ier
+    instead_of: "y"
+  - pattern: iest
+    instead_of: "y"
+  - pattern: est
+    instead_of: ""
+  - pattern: est
+    instead_of: "e"
+  - pattern: ly
+    instead_of: ""
+  - pattern: ily
+    instead_of: "y"
+  - pattern: ness
+    instead_of: ""
+  - pattern: iness
+    instead_of: "y"
+  - pattern: ment
+    instead_of: ""
+  - pattern: ments
+    instead_of: ""
+  - pattern: able
+    instead_of: ""
+  - pattern: able
+    instead_of: "e"
+  - pattern: ability
+    instead_of: "able"
+  - pattern: ity
+    instead_of: ""
+  - pattern: ful
+    instead_of: ""
+  - pattern: less
+    instead_of: ""
+  - pattern: ize
+    instead_of: ""
+  - pattern: ization
+    instead_of: "ize"
+  - pattern: ise
+    instead_of: ""
+  - pattern: isation
+    instead_of: "ise"
+  - pattern: ation
+    instead_of: "e"
+  - pattern: ation
+    instead_of: ""
+  - pattern: ably
+    instead_of: "able"
+  - pattern: ibly
+    instead_of: "ible"
+  - pattern: men
+    instead_of: "man"

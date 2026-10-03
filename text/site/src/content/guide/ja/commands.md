@@ -18,6 +18,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs rules` | ルールの一覧を、グループごとに表で出します。いまの段階もわかります |
 | `npx chaffjs rules --json` | いまの設定とルールの説明を JSON で出します。AI に渡す用です |
 | `npx chaffjs relax\|strict\|off <rule>` | ルールの強さを変えます。`--why "理由"` を添えます |
+| `npx chaffjs enable <rule>` | 試験中のルールを 1 つだけ動かします（`chaff.yaml` に `<rule>: normal` と書きます）。[設定](./configuration#試験中のルールを-1-つだけ動かす) を見てください |
 | `npx chaffjs baseline <dir>` | いまある指摘を棚上げします |
 | `npx chaffjs suppressions <dir>` | `stet` で黙らせている指摘を数えます |
 | `npx chaffjs tree <file>` | 文書を番地の付いた木にします |
@@ -41,6 +42,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `--genre <ジャンル>` | この回だけジャンルを決めます。`chaff.yaml` より優先します |
 | `--show-baseline` | 棚上げした分も含めて全部見ます |
 | `--sarif <path>` | 指摘を SARIF で書き出します。GitHub の PR の行に出すためです |
+| `--include <glob>` | フォルダの中の Markdown のほかに、glob に合うファイルも検査します（`--include "*.yaml"`）。[設定](./configuration) を見てください |
 
 `tree` と `cite` は [構造と引用](./structure) で、`--sarif` は [CI](./ci) で詳しく説明します。
 
@@ -157,6 +159,7 @@ rules:
 既に理由があるルールを変えるときは、`--why` で新しい理由が要ります。
 古い理由が新しい値に残ると、履歴が嘘になるためです。
 
+<!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs off bold-density
 bold-density には既に理由が書かれています:
@@ -233,7 +236,7 @@ $ npx chaffjs baseline docs/
 
   1 ファイルを走査しました。
 
-  1 件の指摘を .chaff-baseline.json に記録しました。
+  0 件の指摘を .chaff-baseline.json に記録しました。
   以後、これらは報告されません。新しく増えたものだけが出ます。
 
   .chaff-baseline.json を commit してください。
@@ -241,26 +244,26 @@ $ npx chaffjs baseline docs/
 
 以後は、棚上げした指摘は出ません。画面の 1 行目に、棚上げした数が出ます。
 
+<!-- chaff-screen: shelved -->
 ```
 $ npx chaffjs docs/ --compact
 
-docs/a.md   technical/readme · 日本語   ジャンルはパスから   棚上げ 1 件
+docs/a.md   technical/readme · 日本語   ジャンルはパスから
 
 
-指摘 0 件、動いていない rule 56 件
+{counts}
 ```
 
 棚上げした分も見たいときは、`--show-baseline` を付けます。
 
+<!-- chaff-screen: shelved -->
 ```
 $ npx chaffjs docs/ --show-baseline --compact
 
 docs/a.md   technical/readme · 日本語   ジャンルはパスから
 
-  3:1     warning この文は 108 文字あります（100 文字まで）
-                  max-sentence-length
 
-指摘 1 件、動いていない rule 56 件
+{counts}
 ```
 
 CI に入れるときの使いかたは、[CI](./ci) で説明します。
@@ -270,6 +273,7 @@ CI に入れるときの使いかたは、[CI](./ci) で説明します。
 `stet` で黙らせた指摘は、`suppressions` で数えられます。
 同じルールを何度も黙らせているなら、ルールを変える道を選ぶ時期です。
 
+<!-- chaff-screen: silenced -->
 ```
 $ npx chaffjs suppressions docs/
 
@@ -399,6 +403,7 @@ URL 1 件
 構成の AI らしさは ✗ の数です。比べた項目の数と一緒に出し、重み付けも隠れた計算もしません。文書が小さくて測れない項目は、測っていない理由と一緒に挙げます。人の記事の分布は `structure-baseline.yaml` にデータとして置いています。
 ファイルを 2 つ渡すと、両方を出し、それぞれの値がどう動いたかを、構成の AI らしさも含めて並べます。
 
+<!-- chaff-screen: rewrite -->
 ```
 $ npx chaffjs outline before.md after.md
 before.md の構成: 見出し 6、節の平均 113 字、箇条書き 17%、太字 8

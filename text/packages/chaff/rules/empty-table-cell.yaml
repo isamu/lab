@@ -1,0 +1,89 @@
+id: empty-table-cell
+layer: L1
+status: stable
+how_to_find: empty-table-cell
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 表の空欄
+  en: Blank table cell
+
+why:
+  ja: 表のほかの行がすべて埋めている列で、一つの行だけが空欄です。書き忘れたのか、該当しないのか、まだ決まっていないのかが読み手には分かりません。担当や期限の列なら、その行の仕事は誰もしないまま残ります。
+  en: Every other row fills this column, and one row leaves it blank. The reader cannot tell whether it was forgotten, does not apply, or is not decided yet. In an owner or due-date column, that row's task is left to no one.
+
+message:
+  ja: 表の「{name}」の列で、この行だけが空欄です
+  en: 'The "{name}" column is blank in this row only'
+
+how_to_fix:
+  ja: 中身を書いてください。該当しないなら「なし」「—」、まだ決まっていないなら「未定（いつ決めるか）」と書きます。
+  en: Fill it in. If it does not apply, write "none" or "—"; if it is not decided, write "TBD" and when it will be.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: ほかの行がすべて埋めている列で、一つの行だけが空いている表のセル
+  en: A table cell left blank in a column every other row fills
+example:
+  ja:
+    before: |
+      | 期限 | 担当 | 内容 |
+      | --- | --- | --- |
+      | 10月16日 | 伊藤 | 修正予定を共有する |
+      | 10月21日 |  | 手順書の案を配る |
+      | 10月28日 | 高橋 | 説明会の日程を決める |
+    after: |
+      | 期限 | 担当 | 内容 |
+      | --- | --- | --- |
+      | 10月16日 | 伊藤 | 修正予定を共有する |
+      | 10月21日 | 鈴木 | 手順書の案を配る |
+      | 10月28日 | 高橋 | 説明会の日程を決める |
+  en:
+    before: |
+      | Due | Owner | Task |
+      | --- | --- | --- |
+      | Oct 16 | Ito | Share the fix plan |
+      | Oct 21 |  | Send the draft manual |
+      | Oct 28 | Takahashi | Set the briefing date |
+    after: |
+      | Due | Owner | Task |
+      | --- | --- | --- |
+      | Oct 16 | Ito | Share the fix plan |
+      | Oct 21 | Suzuki | Send the draft manual |
+      | Oct 28 | Takahashi | Set the briefing date |
+
+not_flagged:
+  ja: 一番左の列は見ません（空欄で「上と同じ」を表す書き方があるため）。同じ列に空欄が二つ以上ある列、本文の行が三つより少ない表、「—」「なし」と書いたセルは指しません。Markdown の表でだけ動きます。
+  en: The first column is not checked, since a blank there often means "same as above". A column with two or more blanks, a table with fewer than three body rows, and a cell holding "—" or "none" are not reported. Markdown tables only.
+rewrite:
+  ja:
+    direction: 空欄に入るものを本文から探して書いてください。本文に無ければ作らず、「未定」と書いて、決める人か時期を書き手に聞きます。
+    pairs:
+      - before: "| 10月21日 |  | 手順書の案を配る |"
+        after: "| 10月21日 | 鈴木 | 手順書の案を配る |"
+      - before: "| 保守 |  | 月額 |"
+        after: "| 保守 | 未定（10月末に決定） | 月額 |"
+    keep:
+      - ほかの行とセルの中身
+      - 表の列の並び
+    avoid:
+      - 本文に無い名前や数を作って埋める
+      - 空欄の行を消す
+  en:
+    direction: Find what belongs in the blank cell in the text and write it. If the text does not say, do not invent it; write "TBD" and ask the writer who decides and when.
+    pairs:
+      - before: "| Oct 21 |  | Send the draft manual |"
+        after: "| Oct 21 | Suzuki | Send the draft manual |"
+      - before: "| Support |  | Monthly |"
+        after: "| Support | TBD (decided by Oct 31) | Monthly |"
+    keep:
+      - the other rows and cells
+      - the order of the columns
+    avoid:
+      - inventing a name or figure the text does not give
+      - deleting the row with the blank

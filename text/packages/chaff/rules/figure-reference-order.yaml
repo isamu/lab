@@ -1,0 +1,109 @@
+id: figure-reference-order
+layer: L3
+status: stable
+how_to_find: figure-order
+severity: info
+
+name:
+  ja: 図や表を参照する順番と位置
+  en: Figures and tables referred to out of order or out of place
+
+why:
+  ja: 論文の図と表は、本文で初めて参照した順に番号を振り、参照の近くに置くのが決まりです。図2を図1より先に参照していたり、図が載った節を過ぎてから初めて参照していたりすると、読み手は図と本文の間を行ったり来たりします。図を入れ替えたり節を動かしたりしたあとに起きます。三つを見ます。初めての参照が番号の順になっていない図、キャプションのある節を過ぎて見出しを越えてから初めて参照する図、同じ種類のほかの図は参照しているのに一度も参照しない図です。
+  en: In a paper, figures and tables are numbered in the order the text first refers to them, and placed near that reference. When Figure 2 is referred to before Figure 1, or a figure is first referred to only after the section it appears in, the reader goes back and forth between the figure and the text. It happens after figures are swapped or sections moved. Three things are checked. A figure whose first reference comes out of numeric order; a figure first referred to only past a heading after its caption; and a figure never referred to while others of its kind are.
+
+message:
+  ja: "{label}の参照が番号の順になっていません"
+  en: "{label} is not referred to in numeric order"
+
+messages:
+  order:
+    ja: "{label}を初めて参照するのが、{after}より後です"
+    en: "{label} is first referred to after {after}"
+  late:
+    ja: "{label}を初めて参照するのが、図や表を載せた節より後です"
+    en: "{label} is first referred to only after the section it appears in"
+  unreferenced:
+    ja: "{label}は本文で一度も参照していません"
+    en: "{label} is never referred to in the text"
+
+how_to_fix:
+  ja: 初めて参照する順に図と表の番号を振り直すか、参照の順を入れ替えてください。図は初めて参照する所の近くに置き、参照しない図は参照を足すか消してください。
+  en: Renumber the figures and tables in the order they are first referred to, or reorder the references. Place each figure near its first reference, and refer to every figure or remove it.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [academic, legal, docs, literature, speech]
+
+group: structure
+summary:
+  ja: 図2を図1より先に参照する、図を載せた節より後で初めて参照する、一度も参照しない図や表
+  en: A figure or table referred to before a lower-numbered one, first referred to only after its section, or never referred to
+example:
+  ja:
+    config: { genre: academic/paper }
+    before: |
+      # 昼寝と記憶
+
+      図2に時間ごとの再生率を示す。図1に研究の流れを示す。
+
+      図1　研究の流れ
+
+      図2　時間ごとの再生率
+    after: |
+      # 昼寝と記憶
+
+      図1に研究の流れを示す。図2に時間ごとの再生率を示す。
+
+      図1　研究の流れ
+
+      図2　時間ごとの再生率
+  en:
+    config: { genre: academic/paper }
+    before: |
+      # Naps and memory
+
+      Figure 2 shows recall by hour. Figure 1 shows the study design.
+
+      Figure 1: Study design
+
+      Figure 2: Recall by hour
+    after: |
+      # Naps and memory
+
+      Figure 1 shows the study design. Figure 2 shows recall by hour.
+
+      Figure 1: Study design
+
+      Figure 2: Recall by hour
+
+not_flagged:
+  ja: キャプション（行の頭の「図1　…」）を一つも書いていない種類の図、他の文書の図（「報告書の図5」）、リンクの字、番号が字や漢数字のもの（付録A、別表第一）は見ません。付録・別表・様式は文書の終わりに置くものなので、参照の順だけを見て、置き場所と参照の有無は見ません。見出しの無い文書では、節を越えたかどうかは見ません。論文のジャンルでだけ見ます。
+  en: 'A kind of figure the document never captions (a "Figure 1: …" line), figures of another document ("Figure 5 of the report"), link text, and numbers that are letters or numerals in words (Appendix A) are left alone. Appendices and annexes sit at the end, so only the order of their references is checked, not where they are or whether they are referred to. A document without headings is not checked for references past the section. Only the academic paper genre runs this rule.'
+rewrite:
+  ja:
+    direction: 初めて参照する順に番号が増えるよう、参照の順を入れ替えるか、図と表の番号を振り直してください。振り直すなら、キャプションとほかの参照も同じく直します。参照しない図には、本文に参照の文を足します。
+    pairs:
+      - before: 図2に時間ごとの再生率を示す。図1に研究の流れを示す。
+        after: 図1に研究の流れを示す。図2に時間ごとの再生率を示す。
+      - before: 結果を表2と表1にまとめた。
+        after: 結果を表1と表2にまとめた。
+    keep:
+      - 図と表の中身とキャプション
+      - 本文の主張
+    avoid:
+      - キャプションの番号だけを変えて本文の参照を残す
+      - 図の中身に無いことを参照の文に書く
+  en:
+    direction: Reorder the references, or renumber the figures and tables, so the numbers rise in the order of first reference. When renumbering, change the captions and every other reference to match. For a figure never referred to, add a sentence that refers to it.
+    pairs:
+      - before: Figure 2 shows recall by hour. Figure 1 shows the study design.
+        after: Figure 1 shows the study design. Figure 2 shows recall by hour.
+      - before: Table 2 and Table 1 summarise the results.
+        after: Table 1 and Table 2 summarise the results.
+    keep:
+      - what each figure and table shows, and its caption
+      - the claims of the text
+    avoid:
+      - changing a caption's number and leaving the references as they were
+      - describing in the reference what the figure does not show

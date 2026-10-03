@@ -1,0 +1,61 @@
+id: very-adjective
+layer: L2
+status: stable
+how_to_find: intensified-adjective
+word_list: very-intensifier
+extra_word_lists: [very-exception]
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: 「very + 形容詞」の多用
+  en: Too many "very" + adjective
+
+why:
+  ja: 英語の「very important」「very good」は、強い一語（critical、excellent）か、何がどうなのかを言えば要らない語です。一つ二つなら普通ですが、文書の長さのわりに多いと、どの「very」も効かなくなります。「the very first」「very few」のように意味の決まった言い方は語彙表で除いています。
+  en: '"Very important" and "very good" lean on "very" where a stronger word (critical, excellent), or saying what and how much, would do. One or two are ordinary; many for the length make every "very" weightless. Set phrases such as "the very first" and "very few" are excepted in the lexicon.'
+
+message:
+  ja: 「{matched}」など、very + 形容詞が 1000 語あたり {density} 個あります（{limit} 個まで）
+  en: '"{matched}" and other "very" + adjective: {density} per 1000 words (limit {limit})'
+
+how_to_fix:
+  ja: 強い一語に替えるか、何がどの程度なのかを書いてください（very important → critical、very fast → under a second）。
+  en: Use a stronger word, or say what and how much ("very important" → "critical", "very fast" → "under a second").
+
+levels: { strict: 1, normal: 2, relaxed: 4 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 英語で、「very important」「very good」のような very + 形容詞が、文書の長さのわりに多い所
+  en: '"Very" + adjective, such as "very important", dense for the document''s length'
+example:
+  en:
+    pad: true
+    before: |
+      The launch was very important. The team was very busy, and the plan was very good.
+    after: |
+      The launch was critical. The team was stretched, and the plan held.
+
+not_flagged:
+  ja: 「very」の後ろが形容詞のときだけ数えます（very well は数えない）。「the very first」「very few」「very much」は数えません。短い文書は密度を測りません。小説と話し言葉では既定で止めています（会話の言葉のため）。
+  en: Only "very" before an adjective ("very well" is not counted), and not "the very first", "very few" or "very much". Short documents are not measured. The fiction and speech presets turn it off, since dialogue speaks that way.
+level_meaning:
+  ja: very + 形容詞が 1000 語あたり {limit} 個まで
+  en: up to {limit} "very" + adjective per 1000 words
+rewrite:
+  en:
+    direction: Replace "very" + adjective with a stronger single word, or with what the text says about how much. If the text says nothing more, a plain adjective without "very" will do.
+    pairs:
+      - before: The launch was very important.
+        after: The launch was critical.
+      - before: The new build is very fast.
+        after: The new build starts in under a second.
+    keep:
+      - the claim each sentence makes
+    avoid:
+      - swapping "very" for another intensifier ("really", "extremely")
+      - inventing figures the text does not give

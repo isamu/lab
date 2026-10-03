@@ -17,6 +17,7 @@ import { loadPlan } from "./bench-plants.ts";
 import { joinBenchSummary, splitBenchSummary } from "./bench-expected.ts";
 import { readExpectedDir, writeExpectedDir } from "./expected-dir.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { siteFindings, siteOf, type Site } from "./bench-sites.ts";
 
 const EXPECTED = join(BENCH, "expected");
 const PLAN = loadPlan();
@@ -56,8 +57,36 @@ const measure = async (sample: Sample): Promise<Measured> => {
   return { outcomes: await outcomesOf(sample), clean, cleanLine: cleanLine(sample.name, clean, measured) };
 };
 
+/** One mistake planted in one file of a site, found when its rule reports it in that file. */
+const sitePlantedOutcome = async (site: Site, mutation: Mutation): Promise<Outcome | undefined> => {
+  const plant = mutation.site?.(site.files);
+  if (plant === undefined) return undefined;
+  const findings = (await siteFindings(site, plant.files)).get(plant.path) ?? [];
+  if (verbose)
+    findings
+      .filter((finding) => finding.rule === mutation.rule)
+      .forEach((finding) => console.log(`    ${plant.path}:${String(finding.line)}  ${finding.message}`));
+  return outcomeOf(site.name, mutation.id, { rule: mutation.rule, line: plant.line }, findings);
+};
+
+const measureSite = async (site: Site): Promise<Measured> => {
+  const clean = [...(await siteFindings(site)).values()].flat();
+  const outcomes = await MUTATIONS.filter((mutation) => mutation.languages.includes(site.language) && runsOn(site, mutation.rule)).reduce<Promise<Outcome[]>>(
+    async (previous, mutation) => {
+      const outcome = await sitePlantedOutcome(site, mutation);
+      return outcome === undefined ? previous : [...(await previous), outcome];
+    },
+    Promise.resolve([]),
+  );
+  return { outcomes, clean, cleanLine: cleanLine(site.name, clean, measured) };
+};
+
 const samples = LANGUAGES.flatMap(samplesOf);
-const results = await samples.reduce<Promise<Measured[]>>(async (previous, sample) => [...(await previous), await measure(sample)], Promise.resolve([]));
+const sites = LANGUAGES.flatMap((language) => siteOf(language) ?? []);
+const results = [
+  ...(await samples.reduce<Promise<Measured[]>>(async (previous, sample) => [...(await previous), await measure(sample)], Promise.resolve([]))),
+  ...(await sites.reduce<Promise<Measured[]>>(async (previous, site) => [...(await previous), await measureSite(site)], Promise.resolve([]))),
+];
 const outcomes = results.flatMap((result) => result.outcomes);
 const alarms = falseAlarms(
   results.flatMap((result) => result.clean),

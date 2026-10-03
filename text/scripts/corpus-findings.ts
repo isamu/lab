@@ -8,7 +8,9 @@ import type { RegisterCounts } from "./bench-text.ts";
 import { buildDocument, teamRules } from "../packages/chaff/src/document.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules, type RunResult, type Settings } from "../packages/chaff/src/run.ts";
+import { runRules, runRulesWith, type RunResult, type Settings } from "../packages/chaff/src/run.ts";
+import { runCrossRules } from "../packages/chaff/src/cross-run.ts";
+import { CROSS_DETECTORS } from "../packages/chaff/src/detectors/index.ts";
 import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
 
@@ -107,6 +109,41 @@ export const allFindings = async (
   team?: TeamWords,
   settings: Settings = {},
 ): Promise<CorpusFinding[]> => findingsWith(path, source, language, genre, { ...(team === undefined ? {} : { team }), settings });
+
+/**
+ * Every rule's run on the files of one run of the given genre, as if --experimental: each file's own rules, then the
+ * rules that compare the files (cross-run.ts). By path, with the rules that ran.
+ */
+export const runResults = async (
+  files: ReadonlyMap<string, string>,
+  language: string,
+  genre: string,
+): Promise<{ readonly results: ReadonlyMap<string, RunResult>; readonly rules: readonly RuleDefinition[] }> => {
+  await adapterOf(language).prepare?.({ pos: true });
+  const rules = loadRules(language);
+  const context = { settings: {}, experimental: true, genre };
+  const inputs = [...files].map(([path, source]) => {
+    const doc = documentOf(path, source, language, genre, EMPTY);
+    return { doc, rules, context, raw: runRulesWith(doc, rules, context) };
+  });
+  const results = runCrossRules(inputs, CROSS_DETECTORS);
+  return { results: new Map(inputs.map((input, index) => [input.doc.path, results[index] ?? input.raw])), rules };
+};
+
+/** Every rule's findings on the files of one run of the given genre (runResults), by path. */
+export const runFindings = async (files: ReadonlyMap<string, string>, language: string, genre: string): Promise<Map<string, CorpusFinding[]>> => {
+  const { results, rules } = await runResults(files, language, genre);
+  const byId = new Map(rules.map((rule) => [rule.id, rule]));
+  return new Map(
+    [...results].map(([path, result]) => [
+      path,
+      result.findings.flatMap((finding) => {
+        const rule = byId.get(finding.rule);
+        return rule === undefined ? [] : [{ rule: finding.rule, line: finding.line, message: messageOf(rule, finding, language) }];
+      }),
+    ]),
+  );
+};
 
 /** The manifest's language for each committed document, by file name. */
 export const corpusLanguages = (manifest: unknown): ReadonlyMap<string, string> => {

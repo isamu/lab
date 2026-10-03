@@ -67,6 +67,12 @@ const exampleBox = "mt-1 whitespace-pre-wrap rounded bg-zinc-100 p-3 font-mono t
             <div class={exampleBox}>{stringify(example.config).trimEnd()}</div>
           </>
         )}
+        {example.other !== undefined && (
+          <>
+            <div class="mt-2 text-xs text-zinc-500">{t(lang, "otherFileLabel")}</div>
+            <div class={exampleBox}>{example.other.trimEnd()}</div>
+          </>
+        )}
         {example.pad === true && <div class="mt-2 text-xs text-zinc-500">{t(lang, "paddedNote")}</div>}
       </div>
     ))}

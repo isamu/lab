@@ -1,0 +1,58 @@
+id: homophone-slip
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: homophone-slip
+requires: [pos]
+languages: [en]
+severity: warning
+
+name:
+  ja: 取り違えた同音語（its / it's、their / there）
+  en: Homophone typed for another (its / it's, their / there)
+
+why:
+  ja: 英語の「its」と「it's」、「their」と「there」と「they're」は音が同じで、打ち間違えても綴りの点検では見つかりません。chaff は、次の語で意味が一つに決まる組だけを見ます（「it's own」は「its own」しかなく、「their are」は「there are」しかない）。次の語で決まらない組（its time、they're people）は見ません。組は言語ごとの語彙表にあります。
+  en: '"Its" and "it''s", "their", "there" and "they''re" sound alike, and a spell checker passes either. chaff looks only at pairs where the next word settles which was meant: "it''s own" can only be "its own", "their are" can only be "there are". Pairs the next word does not settle ("its time", "they''re people") are not checked. The pairs are listed in the lexicon.'
+
+message:
+  ja: 「{matched}」は、取り違えた同音語です
+  en: '"{matched}" has one homophone typed for another'
+
+how_to_fix:
+  ja: 意図した語に直してください（it's own → its own、their are → there are、could of → could have）。
+  en: Use the word you meant ("it's own" → "its own", "their are" → "there are", "could of" → "could have").
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 英語で、「it's own」「their are」のように、次の語から見て取り違えたと決まる同音語
+  en: '"It''s own", "their are" and other homophones the next word shows were typed for another'
+example:
+  en:
+    before: |
+      The team kept it's own schedule. Their are two reviews left.
+    after: |
+      The team kept its own schedule. There are two reviews left.
+
+not_flagged:
+  ja: 一覧にある組だけを見ます。英語の文書だけで動きます。次の語で決まらない「its time」「they're people」は見ません。小説と話し言葉では使いません（方言や話しぶりをわざと綴るため）。
+  en: Only the pairs on chaff's list are checked, and only in English documents. Pairs the next word does not settle ("its time", "they're people") are not. Not used in fiction or speeches, which spell dialect on purpose.
+level_meaning:
+  ja: 取り違えが {limit} 箇所あれば指摘
+  en: reported once there are {limit}
+rewrite:
+  en:
+    direction: Correct only the confused word, to the form the lexicon gives.
+    pairs:
+      - before: The service restarts on it's own.
+        after: The service restarts on its own.
+      - before: Their are three open tickets.
+        after: There are three open tickets.
+    keep:
+      - every other word in the sentence
+    avoid:
+      - rewriting the sentence while correcting the word

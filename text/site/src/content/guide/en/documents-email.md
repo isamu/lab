@@ -42,7 +42,7 @@ What it does not do is decided too.
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The email was pasted into a text editor and saved as `email.md`.
 
-```markdown
+```markdown file=email.md
 Subject: Meeting to discuss the website redesign
 
 Dear Ms Yamada,
@@ -73,12 +73,16 @@ $ npx chaffjs email.md --compact
 email.md   blog/tech · English   genre from the default
    Looks like: Email and letter. Try --genre business/email
 
-  7:1     warning This sentence runs 46 words (limit 25)
-                  max-sentence-length
+  7:58    warning This sentence stacks 2 hedges ("might, perhaps")
+                  excessive-hedging
+  13:11   error   2026-10-10 is a Saturday, not a Friday
+                  date-weekday-mismatch
+  15:91   warning "[Your Name]" was never filled in
+                  unfilled-placeholder
   17:74   warning Closes with "hope this helps"
                   closing-cliche
 
-2 findings, 97 rules not run
+{counts}
 ```
 
 Add the genre, as suggested, and the experimental rules too.
@@ -95,8 +99,6 @@ email.md   business/email · English   genre from --genre
                   cushion-phrase-density
   7:1     info    "i was wondering if" and other softeners: 26 per 1000 words (limit 5)
                   cushion-phrase-density
-  7:1     warning This sentence runs 46 words (limit 18)
-                  max-sentence-length
   7:58    warning This sentence stacks 2 hedges ("might, perhaps")
                   excessive-hedging
   9:1     info    "sorry to bother" and other softeners: 26 per 1000 words (limit 5)
@@ -106,7 +108,7 @@ email.md   business/email · English   genre from --genre
   15:91   warning "[Your Name]" was never filled in
                   unfilled-placeholder
 
-8 findings, 31 rules not run
+{counts}
 ```
 
 Without `--experimental`, only the long sentence on line 7 appears.

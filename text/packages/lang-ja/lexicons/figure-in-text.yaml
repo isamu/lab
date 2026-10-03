@@ -1,0 +1,7 @@
+# figure-label のうち、本文の中で参照の近くに置く種類。図と表は初めて参照した後に置き、少なくとも一度は参照する。
+# 別表・別紙・付録・様式は文書の終わりに置き、参照しないこともある。
+id: figure-in-text
+language: ja
+entries:
+  - pattern: 図
+  - pattern: 表

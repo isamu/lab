@@ -1,0 +1,54 @@
+# 謙譲語を相手の動作に使った形。謙譲語は自分の側の動作を低める語なので、読み手や第三者の動作には使わない。
+#
+# 二つの形だけを載せる。一つは謙譲語に「てください」を付けて相手に頼む形（伺ってください）。
+# もう一つは謙譲語に尊敬の「れる・られる」を付けた形（申される）。
+# 「伺われる」は「窺われる（うかがえる）」と同じ字になるので載せない。「お伺いください」「ご持参ください」のように認める手引きがある形も載せない。
+id: humble-for-others
+language: ja
+entries:
+  - pattern: 伺ってください
+    rewrite: お越しください／お尋ねください
+  - pattern: 伺って下さい
+    rewrite: お越しください／お尋ねください
+  - pattern: 拝見してください
+    rewrite: ご覧ください
+  - pattern: 拝見して下さい
+    rewrite: ご覧ください
+  - pattern: 拝読してください
+    rewrite: お読みください
+  - pattern: 拝聴してください
+    rewrite: お聞きください
+  - pattern: 参ってください
+    rewrite: いらしてください
+  - pattern: 申してください
+    rewrite: おっしゃってください
+  - pattern: 申し上げてください
+    rewrite: おっしゃってください
+  - pattern: いたしてください
+    rewrite: なさってください
+  - pattern: 頂戴してください
+    rewrite: お受け取りください
+  - pattern: 承ってください
+    rewrite: お受けください
+  - pattern: ご確認してください
+    rewrite: ご確認ください
+  - pattern: ご利用してください
+    rewrite: ご利用ください
+  - pattern: ご連絡してください
+    rewrite: ご連絡ください
+  - pattern: ご記入してください
+    rewrite: ご記入ください
+  - pattern: ご注意してください
+    rewrite: ご注意ください
+  - pattern: ご参加してください
+    rewrite: ご参加ください
+  - pattern: お待ちしてください
+    rewrite: お待ちください
+  - pattern: 申される
+    rewrite: おっしゃる
+  - pattern: 参られる
+    rewrite: いらっしゃる
+  - pattern: 拝見される
+    rewrite: ご覧になる
+  - pattern: 拝読される
+    rewrite: お読みになる

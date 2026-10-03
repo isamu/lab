@@ -61,12 +61,14 @@ export const groupTextOf = (language: string, group: RuleGroup): GroupText => GR
 /**
  * A short text the rule flags and the same text fixed, with the chaff.yaml it needs (jargon, prefer, a level).
  * pad: the rule measures a whole document of some length (per 1000 words), so the example is tried after an ordinary passage.
+ * other: a rule that compares documents (requires: [documents]) is tried with this third file in the same run.
  */
 export type RuleExample = {
   readonly before: string;
   readonly after: string;
   readonly config?: Readonly<Record<string, unknown>>;
   readonly pad?: boolean;
+  readonly other?: string;
 };
 
 /** One finding of the rule itself on its example, as the command line reported it. */
@@ -126,6 +128,7 @@ const exampleOf = (value: unknown): RuleExample | undefined => {
     after: value["after"],
     ...(isRecord(config) ? { config } : {}),
     ...(value["pad"] === true ? { pad: true } : {}),
+    ...(isText(value["other"]) ? { other: value["other"] } : {}),
   };
 };
 

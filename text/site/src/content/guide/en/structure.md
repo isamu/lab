@@ -16,11 +16,12 @@ The same tree checks whether the passages an AI quotes are really in the source.
 
 On a contract it prints:
 
+<!-- chaff-screen: full -->
 ```
 $ npx chaffjs tree contract.txt
 (doc :language "en" :path "contract.txt" :line 1
-  (definition :term "the Client" :line 3)
-  (definition :term "the Supplier" :line 3)
+  (definition :placement "inline" :term "the Client" :line 3)
+  (definition :placement "inline" :term "the Supplier" :line 3)
   (article "1" :heading "Purpose" :label "Section 1" :line 5
     (reference :label "Section 3" :numbering "section" :target "3" :line 6))
   (article "2" :heading "Definitions" :label "Section 2" :line 8
@@ -113,7 +114,7 @@ contract.txt   blog/tech · English   genre from the default
   11:66   error   "Section 9" (address 9) is not in this document
                   dangling-reference
 
-4 findings, 18 rules not run
+{counts}
 ```
 
 The line under the first one suggests checking it as a contract.
@@ -172,32 +173,14 @@ $ npx chaffjs draft.txt --experimental --compact
 
 draft.txt   blog/tech · English   genre from the default
 
-  2:1     warning This sentence runs 51 words (limit 25)
-                  max-sentence-length
-  9:1     warning This sentence runs 51 words (limit 25)
-                  max-sentence-length
   10:1    error   "(3)" follows "(1)" (expected number 2)
                   numbering-gap
-  11:1    warning This sentence runs 48 words (limit 25)
-                  max-sentence-length
-  14:1    warning This sentence runs 33 words (limit 25)
-                  max-sentence-length
   14:136  error   "section 35" (address 35) is not in this document
                   dangling-reference
-  16:1    warning This paragraph runs 8 sentences (limit 5)
+  16:1    info    This paragraph runs 8 sentences (limit 5)
                   max-paragraph-length
-  17:1    warning This sentence runs 30 words (limit 25)
-                  max-sentence-length
-  18:1    warning This sentence runs 28 words (limit 25)
-                  max-sentence-length
-  19:1    warning This sentence runs 39 words (limit 25)
-                  max-sentence-length
-  23:1    warning This sentence runs 30 words (limit 25)
-                  max-sentence-length
-  25:1    warning This sentence runs 26 words (limit 25)
-                  max-sentence-length
 
-12 findings, 36 rules not run
+{counts}
 ```
 
 The two `error` lines come from the two changes.
@@ -215,32 +198,12 @@ $ npx chaffjs fixed.txt --experimental --compact
 
 fixed.txt   blog/tech · English   genre from the default
 
-  2:1     warning This sentence runs 51 words (limit 25)
-                  max-sentence-length
-  8:1     warning This paragraph runs 6 sentences (limit 5)
+  8:1     info    This paragraph runs 6 sentences (limit 5)
                   max-paragraph-length
-  9:1     warning This sentence runs 51 words (limit 25)
-                  max-sentence-length
-  10:1    warning This sentence runs 37 words (limit 25)
-                  max-sentence-length
-  12:1    warning This sentence runs 48 words (limit 25)
-                  max-sentence-length
-  15:1    warning This sentence runs 33 words (limit 25)
-                  max-sentence-length
-  17:1    warning This paragraph runs 8 sentences (limit 5)
+  17:1    info    This paragraph runs 8 sentences (limit 5)
                   max-paragraph-length
-  18:1    warning This sentence runs 30 words (limit 25)
-                  max-sentence-length
-  19:1    warning This sentence runs 28 words (limit 25)
-                  max-sentence-length
-  20:1    warning This sentence runs 39 words (limit 25)
-                  max-sentence-length
-  24:1    warning This sentence runs 30 words (limit 25)
-                  max-sentence-length
-  26:1    warning This sentence runs 26 words (limit 25)
-                  max-sentence-length
 
-12 findings, 18 rules not run
+{counts}
 ```
 
 An Act in force should have no such breaks.
@@ -270,6 +233,7 @@ The quotations are a JSON array of pairs: an address (`address`) and the quoted 
 Spaces and line breaks are ignored, and characters are compared after NFKC normalisation.
 So a quotation that differs only in spacing, or in full-width digits, still matches.
 
+<!-- chaff-screen: cite-match -->
 ```
 $ npx chaffjs cite contract.txt claims.json
 ✓ 4.2 "within 30 days of accepting": matches
@@ -278,6 +242,7 @@ $ npx chaffjs cite contract.txt claims.json
 A quotation with a changed number, or one taken from somewhere else, fails.
 When it is somewhere else, you are told the real address.
 
+<!-- chaff-screen: cite-miss -->
 ```
 $ npx chaffjs cite contract.txt claims.json
 ✗ 4.2 "within 60 days of accepting": the quotation is nowhere in the source

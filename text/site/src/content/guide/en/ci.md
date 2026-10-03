@@ -11,7 +11,9 @@ SARIF is the standard format for handing check results to CI.
 
 ```
 $ npx chaffjs . --sarif report/chaff.sarif
-  Wrote SARIF: report/chaff.sarif (1 finding)
+
+  Wrote SARIF: report/chaff.sarif (0 findings)
+…
 ```
 
 The usual screen follows it.
@@ -74,7 +76,7 @@ Fixing them all before starting is not possible, so `baseline` shelves today's f
 $ npx chaffjs baseline docs/
   Checked 1 file.
 
-  Recorded 1 finding in .chaff-baseline.json.
+  Recorded 0 findings in .chaff-baseline.json.
   They will not be reported again; only new ones will.
 
   Commit .chaff-baseline.json.

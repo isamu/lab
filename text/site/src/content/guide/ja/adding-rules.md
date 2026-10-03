@@ -61,7 +61,7 @@ AI に渡すのは、JSON だけでも足ります。
 ただし、このルールは、どちらの調子が正しいかを決めず、混ざった文だけを指します。
 全部を だ・である で書いた文書は指しません。この違いは、チームに伝えておきます。
 
-```yaml
+```yaml file=chaff.yaml
 language: ja
 genre: technical/spec
 
@@ -81,8 +81,10 @@ sample.md   technical/spec · 日本語   ジャンルはchaff.yamlから
 
   3:1     warning この文は 84 文字あります（80 文字まで）
                   max-sentence-length
-  5:31    warning この文だけ他と文末の調子が違います（本文の中で 1 文）
+  5:31    info    この文だけ他と文末の調子が違います（本文の中で 1 文）
                   no-mixed-desumasu
+
+{counts}
 ```
 
 どちらの決まりも指摘されたので、設定が効いています。
@@ -236,7 +238,25 @@ chaff の決まりで、ルールは機械で決まるものだけです。意�
 | 見本への仕込み | `test/fixtures/bench/plants/<id>.yaml` と `scripts/bench-plants/` のモジュール | きれいな見本に誤りを一つ入れて、見つかるかを測る。YAML には `planted: [ja, en]`（仕込む言語）か、仕込めない理由の `not_planted:` を書く。モジュールは仕込む誤りを `MUTATIONS` として出す。どちらも共有の一覧ではない |
 | ChangeLog | `docs/ChangeLog.md` の `Unreleased` | 何が見つかるようになったか |
 
-手引きの画面に、動いていないルールの一覧は書き写しません。画面には `{not-run}` と書き、サイトを作るときに chaff の出力から一覧を入れます。新しいルールのために手引きのページを書き換えることはありません。
+一度に渡した複数のファイルどうしを比べるルール（あるファイルだけ違う書き方の語など）は、別の種類の関数で書きます。
+関数は、その回の文書をすべて受け取り、指摘を、それがあるファイルのパスと一緒に返します（型は `CrossDetector`）。
+登録は `detectors/cross-registry/<how_to_find>.ts` で、ルールの定義には `requires: [documents]` を書きます。
+chaff は、ファイルを二つ以上かフォルダを渡したときだけこのルールを動かします。一つだけのときは、その理由を添えて「動いていないルール」に並べます。
+指摘はどれも自分のファイルの行と桁を指すので、stet、baseline、SARIF はほかの指摘と同じに扱います。
+`example` には、`before` と `after` と同じ回に渡す三つ目のファイル `other:` を書きます。
+
+手引きの画面に、ルールが増えるたびに変わる行は書き写しません。
+画面には、動いていないルールを並べる所に `{not-run}`、`--compact` が最後に出す集計の行に `{counts}` と書きます。
+サイトを作るときに、chaff の出力からどちらも入れます。
+
+`yarn test` は、どの画面もその文書にかけ直し、chaff の出力と違えば止まります。
+文書は、ページの `file=` の付いた塊と、`site/src/screens/<言語>/<ページ>/` のファイルです。
+違いは `node scripts/guide-screens.ts --check ja/<ページ>.md` で見られます。
+新しいルールが画面を変えたときは、`yarn screens:update` を走らせ、ページの差分を読みます。
+画面を chaff の今の出力に書き直し、「…」の行はできるだけ元の場所に残します。
+ページを指定すると、そのページだけを直します（`yarn screens:update ja/commands.md`）。
+`scripts/guide-screens.ts` の `UNCHECKED` に挙げた画面はかけられないので、そのまま残します。
+画面に指摘が増えたなら、ページの説明もあわせて直します。
 
 ルールの定義に、そのルールに要る読み手向けの欄が欠けていると、`yarn test` が止まります。
 `example` の `before` が指摘されないとき、`after` が指摘されるときも止まります。

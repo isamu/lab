@@ -1,0 +1,20 @@
+# 読みが同じでも、漢字とかなで言っていることが違う語。orthographic-variant はこれを比べない。
+# 「〜から成る」と「〜になる」、「彼が言う」と「AというB」、「所」（場所）と「ところ」は、書き分けが意味の書き分け。
+# pattern は辞書の形の読み（カタカナ）か、その書き方そのもの。
+# 書き方で挙げたもの: 「者」は人で、「もの」（物・こと）とは別の語（法令は「〜する者」と「〜するもの」を書き分ける）。
+# 「ヒト」は生き物の種の名前で、「人」と書き分ける。
+id: orthographic-variant-distinct
+language: ja
+entries:
+  - pattern: イウ
+  - pattern: ナル
+  - pattern: トコロ
+  - pattern: ヨル
+  - pattern: カタ
+  - pattern: ツク
+  - pattern: カケル
+  - pattern: トル
+  # 「〜そうだ」の「そう」は名詞と読まれ、「層」と同じ読みになる。
+  - pattern: ソウ
+  - pattern: 者
+  - pattern: ヒト

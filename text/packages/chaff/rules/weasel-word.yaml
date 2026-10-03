@@ -1,0 +1,60 @@
+id: weasel-word
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: weasel-word
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: 出所を言わない「多くの専門家」
+  en: Weasel words
+
+why:
+  ja: 英語の「many experts say」「it is widely believed」「studies show」は、主張を名前の無い大勢や、どれとも言わない研究に預けます。読み手は誰がそう言ったのかを確かめられず、書き手は主張に責任を持たずに済みます。言い回しは言語ごとの語彙表にあります。
+  en: '"Many experts say", "it is widely believed" and "studies show" lend a claim to an unnamed crowd or to research no one names. The reader cannot check who said it, and the writer need not stand behind it. The phrases are listed in the lexicon.'
+
+message:
+  ja: 「{matched}」は、誰が言ったのかを言っていません
+  en: '"{matched}" does not say who'
+
+how_to_fix:
+  ja: 誰が・どの研究がそう言ったのかを書いてください（名前、年、出典）。書けないなら、書き手自身の主張として書くか、その文を落としてください。
+  en: Name who said it or which study shows it (a name, a year, a source). If you cannot, state it as your own claim, or drop it.
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 英語で、「many experts say」「studies show」のように、主張を名前の無い誰かに預ける言い回し
+  en: Phrases such as "many experts say" and "studies show" that credit a claim to no one in particular
+example:
+  en:
+    before: |
+      Many experts say remote work raises output.
+    after: |
+      A 2023 Stanford study of 1,600 staff found remote work raised output by 4%.
+
+not_flagged:
+  ja: 一覧にある言い回しだけを見ます。英語の文書だけで動きます。すぐ後ろに出典が書いてあっても指摘します（文の中で研究の名前を言えるため）。
+  en: Only the phrases on chaff's list are checked, and only in English documents. A citation right after the phrase does not silence it, since the sentence can name the study itself.
+level_meaning:
+  ja: 当てはまる言い回しが {limit} 箇所あれば指摘
+  en: reported once there are {limit}
+rewrite:
+  en:
+    direction: Replace the unnamed crowd ("many experts", "studies") with the person or study the text or its sources name. If they name none, do not invent one; ask the writer, or state the claim as the writer's own.
+    pairs:
+      - before: Studies show that short meetings save time [3].
+        after: Smith (2021) found that 15-minute meetings saved each team two hours a week [3].
+      - before: It is widely believed that the old API is slower.
+        after: Our load test in May found the old API 30% slower.
+    keep:
+      - the citation number or link
+      - the claim itself
+    avoid:
+      - inventing a study or a name the text does not give
+      - swapping one unnamed crowd for another ("some researchers")

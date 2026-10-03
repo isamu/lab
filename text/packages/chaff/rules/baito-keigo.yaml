@@ -1,0 +1,60 @@
+id: baito-keigo
+layer: L3
+status: stable
+how_to_find: phrase-match
+word_list: baito-keigo
+uses: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: バイト敬語
+  en: Service-counter keigo
+
+why:
+  ja: 「〜でよろしかったでしょうか」「こちらになります」「1000円からお預かりします」のように、接客の場で広まった言い方です。過去形にする必要の無い「よろしかった」、「です」の代わりの「になります」、金額に付けた「から」は、敬語の誤りとして挙げられることが多く、改まった文書では幼く読まれます。
+  en: Phrases spread at Japanese service counters (でよろしかったでしょうか, こちらになります, 円からお預かり). Guides list them as keigo mistakes, and in a formal document they read as careless.
+
+message:
+  ja: 「{matched}」はバイト敬語と呼ばれる言い方です
+  en: '"{matched}" is service-counter keigo'
+
+how_to_fix:
+  ja: 「よろしかったでしょうか」は「よろしいでしょうか」、「こちらになります」は「こちらです」、「1000円からお預かりします」は「1000円をお預かりします」に直してください。
+  en: Write よろしいでしょうか, こちらです, 円をお預かりします.
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「〜でよろしかったでしょうか」「こちらになります」のように、接客の場で広まった誤りとされる敬語
+  en: Japanese service-counter keigo (でよろしかったでしょうか, こちらになります)
+example:
+  ja:
+    before: ご注文は以上でよろしかったでしょうか。
+    after: ご注文は以上でよろしいでしょうか。
+
+not_flagged:
+  ja: 一覧にある形だけを見ます。変化を言う「になります」（来月から有料になります）と、人から預かる「から」（お客様からお預かりした書類）は正しいので見ません。話し言葉と小説の台詞は話したとおりに書くので、文学と話し言葉のジャンルでは見ません。
+  en: Only the forms on chaff's list are checked. になります for a change and から for a person are correct and not reported. Literature and speech do not run this rule.
+level_meaning:
+  ja: 当てはまる形が {limit} 箇所あれば指摘
+  en: reported once there are {limit}
+rewrite:
+  ja:
+    direction: 指摘された言い方を、普通の丁寧語に置き換えてください。「よろしかった」は「よろしい」、「になります」は「です」、金額の後の「から」は「を」にします。
+    pairs:
+      - before: ご注文は以上でよろしかったでしょうか。
+        after: ご注文は以上でよろしいでしょうか。
+      - before: 会議の資料はこちらになります。
+        after: 会議の資料はこちらです。
+      - before: 1万円からお預かりします。
+        after: 1万円をお預かりします。
+    keep:
+      - 丁寧さの度合い（です・ます、ございます）
+      - 金額や数
+    avoid:
+      - 変化を言う「になります」（来月から有料になります）まで「です」にする
+      - 丁寧語をやめて、くだけた言い方にする

@@ -62,7 +62,7 @@ Polite endings are checked by `no-mixed-desumasu`.
 That rule does not decide which register is right; it points only at sentences that differ from the rest.
 A document written wholly in the plain register is not reported, and the team should know that.
 
-```yaml
+```yaml file=chaff.yaml
 language: ja
 genre: technical/spec
 
@@ -82,8 +82,10 @@ sample.md   technical/spec · 日本語   ジャンルはchaff.yamlから
 
   3:1     warning この文は 84 文字あります（80 文字まで）
                   max-sentence-length
-  5:31    warning この文だけ他と文末の調子が違います（本文の中で 1 文）
+  5:31    info    この文だけ他と文末の調子が違います（本文の中で 1 文）
                   no-mixed-desumasu
+
+{counts}
 ```
 
 Both requirements were reported, so the settings work.
@@ -238,7 +240,25 @@ chaff's own rule is that a rule decides by machine alone. Anything that needs th
 | A planted mistake | `test/fixtures/bench/plants/<id>.yaml` and a module in `scripts/bench-plants/` | One mistake put into a clean sample, to measure whether the rule finds it. The YAML file holds `planted: [ja, en]` (the languages it is planted in) or `not_planted:` with why none can be planted; the module exports `MUTATIONS`, the mistakes it plants. Neither is a shared list |
 | ChangeLog | `Unreleased` in `docs/ChangeLog.md` | What chaff can now find |
 
-The guide's screens do not list the rules that did not run by hand: a screen writes `{not-run}` there, and the site fills the list in from chaff's output when it is built. A new rule edits no guide page for it.
+A rule that compares the files of one run (a word spelled one way in one file and another way in the rest) has a detector of another kind.
+It takes every document of the run and returns findings, each with the path of the file it is in (the type `CrossDetector`).
+It is registered by `detectors/cross-registry/<how_to_find>.ts`, and its rule file says `requires: [documents]`.
+chaff runs it only when it is given two or more files, or a folder; on one file it is listed among the rules that did not run, with that reason.
+Each finding points at a line and column of its own file, so stet, the baseline and SARIF treat it like any other.
+Its `example` adds `other:`, a third file checked in the same run as `before` and `after`.
+
+The guide's screens do not copy out what changes with every new rule.
+A screen writes `{not-run}` where chaff lists the rules that did not run, and `{counts}` where `--compact` ends with its tally.
+The site fills both in from chaff's output when it is built.
+
+`yarn test` runs every screen on its documents and stops when one differs from what chaff prints.
+The documents are the page's `file=` blocks and the files in `site/src/screens/<lang>/<page>/`.
+`node scripts/guide-screens.ts --check en/<page>.md` shows the difference.
+When a new rule changes a guide screen, run `yarn screens:update` and read the diff.
+It rewrites each screen to what chaff prints now, and keeps the `…` lines where they stand as far as it can.
+Name pages to rewrite only those (`yarn screens:update en/commands.md`).
+A screen listed in `UNCHECKED` in `scripts/guide-screens.ts` is not run, so it is left as it is.
+When a screen gains a finding, also update what the page says about it.
 
 `yarn test` stops when a rule file lacks a reader's field that the rule needs.
 It also stops when an `example`'s `before` is not reported, or its `after` is.

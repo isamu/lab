@@ -110,6 +110,7 @@ The choice is shown on the first line of `chaff tree`.
 ```
 $ npx chaffjs tree draft.txt
 (doc :language "ja" :path "draft.txt" :profile "statute" :line 1
+…
 ```
 
 When it is wrong, set `profile`. `none` stops it from being chosen from the content as well.
@@ -185,6 +186,27 @@ $ npx chaffjs explain max-sentence-length
 The same `normal` means a different number in a different genre.
 You write a word rather than a number so that chaff can pick the number that fits the genre.
 
+## Turning on one experimental rule
+
+An experimental rule does not run by default.
+Naming it under `rules` turns that rule on, and no other.
+`--experimental` turns on every experimental rule at once.
+
+```yaml
+rules:
+  announced-count-mismatch: normal
+```
+
+`enable` writes the same line, with a comment explaining the rule, as `relax` does.
+
+```
+$ npx chaffjs enable announced-count-mismatch
+Set announced-count-mismatch to normal (…/chaff.yaml)
+```
+
+The check then names it once: `1 experimental rule turned on in the settings: announced-count-mismatch`.
+`explain` on an experimental rule that is off shows the same command, and so does the list of rules that did not run.
+
 ## Rules with nothing to count
 
 A gap in the numbering, or a weekday that does not match its date, is either there or not. There is no limit to count to.
@@ -200,11 +222,12 @@ chaff fails when any error is left, and passes when there are only warnings and 
 
 ```
 $ npx chaffjs explain numbering-gap --genre legal/statute
-(…)
+…
   Levels (there is no limit to count to; a level sets how a finding is marked):
   → normal   error
     relaxed  warning
     off      not checked
+…
 ```
 
 When a rule needs no checking, turn it `off`.
@@ -313,6 +336,28 @@ by_path:
 The last match wins. Paths are matched from the folder that holds the settings file,
 so the result is the same wherever you run it.
 
+## Checking files other than Markdown
+
+Given a folder, chaff checks the Markdown in it (`.md`, `.markdown`, `.mdx`).
+`include` adds other files to that walk, by file-name glob. `--include` does the same for one run.
+
+```yaml
+include:
+  - "*.yaml"
+  - "*.txt"
+```
+
+```bash
+npx chaffjs tests/fixtures/ --include "*.yaml"
+```
+
+A YAML file (`.yaml`, `.yml`) is checked by its string values.
+Keys, quotes, comments, numbers and `true` are not prose, and each value is read on its own.
+A finding points at the line and column in the file, so a `custom_rules` pattern finds `TODO:` in a test fixture's expected output.
+A YAML file that cannot be parsed is read as plain text.
+Any other file, such as `.txt`, is read as plain text.
+A file named on the command line is checked whatever its extension.
+
 ## Checking that the settings took effect
 
 `chaff rules --json` shows the current settings.
@@ -380,13 +425,13 @@ The output is long, so here is one entry, with `max-sentence-length: 260` set (t
 `now` is the value actually in effect.
 `level_sets` says what a level changes: `limit` is a limit to count to, `severity` is how a finding is marked.
 For a rule with nothing to count, `levels` and `now` hold a severity (`error` / `warning` / `info`) in place of a number.
-For an experimental rule (a new one not measured yet), `now` says why it does not run and how to turn it on.
+For an experimental rule (a new one not measured yet), `now` says why it does not run and the command that turns it on alone:
 
 ```json
     "now": {
       "level": "off",
       "why_off": "experimental rules do not run by default",
-      "turn_on_with": "npx chaff lint --experimental"
+      "turn_on_with": "npx chaffjs enable <rule>"
     }
 ```
 
@@ -400,10 +445,12 @@ rules:
   bold-density: loose
 ```
 
+<!-- chaff-screen: typo -->
 ```
 $ npx chaffjs article.md
 chaff: …/chaff.yaml: there is no rule named max-sentense-length (npx chaff rules --json lists them)
 chaff: …/chaff.yaml: cannot read "loose" as the level of bold-density (strict / normal / relaxed / off, or a positive number)
+…
 ```
 
 When you see a warning, fix the spelling or the value in `chaff.yaml`.

@@ -1,0 +1,85 @@
+id: request-without-deadline
+layer: L3
+status: stable
+how_to_find: request-without-deadline
+requires: [dates]
+# Who and when are read from the language's request-* lexicons, the document's dates, and proper nouns when parts of
+# speech are available.
+uses: [pos]
+languages: [ja, en]
+severity: info
+
+name:
+  ja: 期限も担当も無い依頼
+  en: Request with no deadline or owner
+
+why:
+  ja: 「資料をご確認ください」のような依頼に、いつまでに・誰がするかが書かれていないと、読んだ人は自分の仕事だと思わず、急ぐ理由も分からないまま後回しにします。依頼したほうは返事を待ち続けることになります。
+  en: A request ("Please review the draft.") with no deadline and no named person leaves every reader assuming someone else will do it, some day. The sender waits for an answer that has no date.
+
+message:
+  ja: この依頼には、いつまでに・誰がするかが書かれていません
+  en: This request says neither who should do it nor by when
+
+how_to_fix:
+  ja: 期限か担当（できれば両方）を書いてください。「10月20日（火）までに、山田さんがご確認ください」のように。
+  en: Add a deadline or an owner, ideally both ("Yamada, please review the draft by Tuesday, October 20.").
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「ご確認ください」「Please send …」のような依頼で、その文にも次の文にも期限と担当が無いもの
+  en: A request ("Please send …") with no deadline and no person or role in it or in the next sentence
+example:
+  ja:
+    before: |
+      添付の見積書をご確認ください。
+
+      ほかに質問はありません。
+    after: |
+      添付の見積書を、10月20日（火）までにご確認ください。
+
+      ほかに質問はありません。
+  en:
+    before: |
+      Please review the attached quote.
+
+      I have no other questions.
+    after: |
+      Please review the attached quote by Tuesday, October 20.
+
+      I have no other questions.
+
+not_flagged:
+  ja: 確認・返信・提出のように、済んだかどうかが後で分かる動作を頼む文だけを見ます。「ご了承ください」のような心構えの依頼と、「ご不明な点があれば、ご連絡ください」のような条件付きの申し出は見ません。期限か担当が、その文か次の文にあれば指しません。ビジネスの文書でだけ動きます。
+  en: Only requests for an action whose completion can be checked (review, reply, send) are read. Courtesy requests and conditional offers ("If you have questions, let me know") are not. A deadline or owner in the same or the next sentence is enough. Business documents only.
+rewrite:
+  ja:
+    direction: 依頼の文に、本文に書かれている期限と担当を書き足してください。本文に無ければ作らず、［期限］［担当］と空けて書き手に聞きます。
+    pairs:
+      - before: 添付の見積書をご確認ください。
+        after: 添付の見積書を、［期限］までにご確認ください。
+      - before: 議事録を共有してください。
+        after: 議事録を、10月16日（金）までに伊藤さんが共有してください。
+    keep:
+      - 頼む中身と、敬語の度合い
+      - 本文のほかの文
+    avoid:
+      - 本文に無い日付や名前を作る
+      - 依頼を命令の形に書き換える
+  en:
+    direction: Add the deadline and owner the text gives to the request. If the text gives none, do not invent them; leave [deadline] and [owner] for the writer.
+    pairs:
+      - before: Please review the attached quote.
+        after: Please review the attached quote by [deadline].
+      - before: Please share the minutes.
+        after: Ito, please share the minutes by Friday, October 16.
+    keep:
+      - what is asked, and how politely
+      - the other sentences
+    avoid:
+      - inventing a date or a name the text does not give
+      - turning the request into an order

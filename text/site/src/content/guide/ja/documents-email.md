@@ -41,7 +41,7 @@ chaff は、丁寧にしようとして増える言い回しや、送る前に�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 メールの本文をテキストエディタに貼り、`mail.md` という名前で保存しました。
 
-```markdown
+```markdown file=mail.md
 件名：打ち合わせ日程のご相談
 
 株式会社みなと商事
@@ -78,8 +78,18 @@ $ npx chaffjs mail.md --compact
 mail.md   blog/tech · 日本語   ジャンルは既定から
    メール・手紙のようです。--genre business/email を試せます
 
+  10:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
+                  sasete-itadaku
+  12:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
+                  sasete-itadaku
+  20:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
+                  sasete-itadaku
+  20:55   warning 「[担当者名]」が埋まっていません
+                  unfilled-placeholder
+  22:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
+                  sasete-itadaku
 
-指摘 0 件、動いていない rule 94 件
+{counts}
 ```
 
 勧められたとおり、ジャンルを付けて、試験中のルールも動かします。
@@ -90,8 +100,6 @@ $ npx chaffjs mail.md --genre business/email --experimental --compact
 
 mail.md   business/email · 日本語   ジャンルは--genreから
 
-  10:1    warning この文は 80 文字あります（70 文字まで）
-                  max-sentence-length
   10:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
                   sasete-itadaku
   12:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
@@ -105,7 +113,7 @@ mail.md   business/email · 日本語   ジャンルは--genreから
   22:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
                   sasete-itadaku
 
-指摘 7 件、動いていない rule 21 件
+{counts}
 ```
 
 `--experimental` を付けないと、出るのは 10 行目の長い一文だけです。

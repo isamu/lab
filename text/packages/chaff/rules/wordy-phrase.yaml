@@ -1,0 +1,61 @@
+id: wordy-phrase
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: wordy-phrase
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: 回りくどい言い回し
+  en: Wordy phrase
+
+why:
+  ja: 英語の「in order to」「due to the fact that」「at this point in time」は、「to」「because」「now」と同じことを何語もかけて言います。読み手は語を多く読むだけで、得るものは増えません。言い回しと短い形の組は言語ごとの語彙表にあります。契約や法令がわざと使う言い方（with regard to、prior to）は入れていません。
+  en: '"In order to", "due to the fact that" and "at this point in time" say in several words what "to", "because" and "now" say in one. The reader reads more and learns nothing more. The phrases and their short forms are listed in the lexicon. Phrases that contracts and statutes use on purpose ("with regard to", "prior to") are left out.'
+
+message:
+  ja: 「{matched}」は、もっと短く言えます
+  en: '"{matched}" can be said in fewer words'
+
+how_to_fix:
+  ja: 短い形に置き換えてください（in order to → to、due to the fact that → because、in the event that → if）。
+  en: Use the short form ("in order to" → "to", "due to the fact that" → "because", "in the event that" → "if").
+
+# 指摘に要る文の数。1 つなら書き手の癖とは言えないので、2 つから。
+levels: { strict: 1, normal: 2, relaxed: 4 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 英語で、「in order to」「due to the fact that」のように、一語で言えることを何語もかけて言う所
+  en: Phrases such as "in order to" and "due to the fact that" that take several words to say what one says
+example:
+  en:
+    before: |
+      In order to save time, we met online. Due to the fact that the room was booked, we stayed home.
+    after: |
+      To save time, we met online. Because the room was booked, we stayed home.
+
+not_flagged:
+  ja: 一覧にある言い回しだけを見ます。英語の文書だけで動きます。契約や法令がわざと使う言い方（with regard to、prior to、in accordance with）は一覧に入れていません。
+  en: Only the phrases on chaff's list are checked, and only in English documents. Phrases that contracts and statutes use on purpose ("with regard to", "prior to", "in accordance with") are not on it.
+level_meaning:
+  ja: 回りくどい言い回しを含む文が {limit} 文あれば指摘
+  en: reported once {limit} sentences hold one
+rewrite:
+  en:
+    direction: Replace the wordy phrase with its short form from the lexicon. Leave the rest of the sentence alone.
+    pairs:
+      - before: In order to ship on Friday, we froze the code on Monday.
+        after: To ship on Friday, we froze the code on Monday.
+      - before: The launch slipped due to the fact that the vendor was late.
+        after: The launch slipped because the vendor was late.
+      - before: In the event that the server fails, the job retries.
+        after: If the server fails, the job retries.
+    keep:
+      - the rest of the sentence and what it says
+    avoid:
+      - rewriting the rest of the sentence while shortening the phrase

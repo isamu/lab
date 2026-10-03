@@ -1,0 +1,85 @@
+id: empty-list-item
+layer: L1
+status: stable
+how_to_find: empty-list-item
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 中身の無い箇条書きの項目
+  en: Empty list item
+
+why:
+  ja: 「担当：」のように見出しの語だけを書いて値の無い項目や、記号だけの項目です。同じ箇条書きのほかの項目には値が書いてあるので、書き忘れか、まだ決まっていないことが読み手には分かりません。
+  en: An item holding only a label ("Owner:") while the other items of the list give theirs a value, or an item with nothing after its bullet. The reader cannot tell a gap from an undecided point.
+
+message:
+  ja: 「{name}」の後に値がありません（同じ箇条書きのほかの項目には書いてあります）
+  en: 'Nothing after "{name}" (the other items in this list give a value)'
+messages:
+  empty:
+    ja: 中身の無い箇条書きの項目です
+    en: This list item is empty
+
+how_to_fix:
+  ja: 値を書いてください。まだ決まっていないなら「未定（いつ決めるか）」と書きます。要らない項目なら消します。
+  en: Write the value. If it is not decided, write "TBD" and when it will be. If the item is not needed, remove it.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「担当：」のように見出しの語だけで値の無い項目と、記号だけの項目
+  en: A list item holding only a label ("Owner:") where its siblings give values, or an item with nothing in it
+example:
+  ja:
+    before: |
+      - 日時：10月14日 10時
+      - 場所：第2会議室
+      - 担当：
+    after: |
+      - 日時：10月14日 10時
+      - 場所：第2会議室
+      - 担当：山田
+  en:
+    before: |
+      - Date: October 14, 10:00
+      - Room: Meeting Room 2
+      - Owner:
+    after: |
+      - Date: October 14, 10:00
+      - Room: Meeting Room 2
+      - Owner: Yamada
+
+not_flagged:
+  ja: 見出しの語だけの項目は、同じ箇条書きのほかの項目に「見出し：値」の形が一つも無ければ指しません（記入用の書式）。下に入れ子の箇条書きや段落が続く項目（「手順：」の下に手順を並べたもの）も指しません。Markdown の箇条書きでだけ動きます。
+  en: 'A label-only item is not reported when no other item in its list has a "label: value" form (a blank form to fill in). An item followed by a nested list or paragraph (a lead-in) is not reported. Markdown lists only.'
+rewrite:
+  ja:
+    direction: 空の項目に入るものを本文から探して書いてください。本文に無ければ作らず、「未定」と書いて書き手に聞きます。中身の無い記号だけの項目は消します。
+    pairs:
+      - before: "- 担当："
+        after: "- 担当：山田"
+      - before: "- 期限："
+        after: "- 期限：未定（来週の定例で決める）"
+    keep:
+      - ほかの項目の中身と並び
+      - 見出しの語
+    avoid:
+      - 本文に無い名前や日付を作って埋める
+      - 値の無い項目を黙って消す（決めるべきことが消える）
+  en:
+    direction: Find what belongs after the label in the text and write it. If the text does not say, do not invent it; write "TBD" and ask the writer. Remove an item with nothing in it.
+    pairs:
+      - before: "- Owner:"
+        after: "- Owner: Yamada"
+      - before: "- Due:"
+        after: "- Due: TBD (set at next week's meeting)"
+    keep:
+      - the other items and their order
+      - the label
+    avoid:
+      - inventing a name or date the text does not give
+      - quietly removing a label-only item, which drops a decision still to be made

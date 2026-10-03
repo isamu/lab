@@ -80,20 +80,6 @@ enquiries.md   business/report · English   genre from --genre
 
     In today's fast-paced world, the enquiries we receive from customers are becoming more and more varied, and it could per…
 
-  ⚠  Sentence too long
-
-     This sentence runs 34 words (limit 25)
-     In a long sentence the reader loses the subject before reaching the verb.
-
-     → Split it in two at the conjunction.
-
-     Relax this rule:  npx chaff relax max-sentence-length
-
-
-─── line 5 ───────────────────────────────────────────────────
-
-    In today's fast-paced world, the enquiries we receive from customers are becoming more and more varied, and it could per…
-
   ⚠  Padded opening
 
      "in today's fast-paced world" is an opening that fits any article
@@ -104,28 +90,30 @@ enquiries.md   business/report · English   genre from --genre
      Relax this rule:  npx chaff relax padded-intro
 
 
-─── line 9 ───────────────────────────────────────────────────
+─── line 5 ───────────────────────────────────────────────────
 
-    In particular , enquiries about billing rose sharply ; most came from customers who had moved to the new price plan and …
+    In today's fast-paced world, the enquiries we receive from customers are becoming more and more varied, and it could per…
 
-  ⚠  Sentence too long
+  ⚠  Too much hedging
 
-     This sentence runs 37 words (limit 25)
-     In a long sentence the reader loses the subject before reaching the verb.
+     This sentence stacks 3 hedges ("could, perhaps, may")
+     The more the text avoids claiming, the less the reader can tell what was decided. One hedge is caution; many mean nobody is accountable. chaff looks two ways. A sentence that stacks hedges ("may possibly", "it could perhaps be argued") is reported on its own, even in a short document. Too many hedges across the whole document is measured only on longer documents. When counting hedges stacked in a sentence, a hedge inside a quotation is the speaker's, not the writer's, and is left out.
 
-     → Split it in two at the conjunction.
+     → Commit where you can. Where you cannot, say what you would need to know. Where hedges are stacked, keep one or drop them all and commit.
 
-     Relax this rule:  npx chaff relax max-sentence-length
+     Relax this rule:  npx chaff relax excessive-hedging
 
 
 ────────────────────────────────────────────────────────────
 
-  3 warnings   All judged by machine
+  2 warnings   All judged by machine
               (the same text gives the same result every time)
 
   The text was not changed. Fixing it is the writer's job.
 
   {not-run}
+
+  Turn on one experimental rule alone by naming it: npx chaffjs enable cross-doc-broken-link (the same as rules: { cross-doc-broken-link: normal } in chaff.yaml). --experimental turns on all of them.
 ```
 
 There are three findings.
@@ -158,22 +146,12 @@ $ npx chaffjs enquiries.md --genre business/report --experimental --compact
 
 enquiries.md   business/report · English   genre from --genre
 
-  5:1     warning This sentence runs 34 words (limit 25)
-                  max-sentence-length
   5:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
   5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
                   excessive-hedging
-  5:129   warning This sentence is passive ("argued") but never says who did it
-                  agentless-passive
-  9:66    warning This sentence runs 37 words (limit 25)
-                  max-sentence-length
-  15:54   warning This sentence is passive ("considered") but never says who did it
-                  agentless-passive
-  15:93   warning This sentence is passive ("discussed") but never says who did it
-                  agentless-passive
 
-7 findings, 29 rules not run
+{counts}
 ```
 
 The four new findings, in plain words:
@@ -257,23 +235,18 @@ Updating the FAQ page for billing enquiries is being considered. Adding staff is
 It is a Markdown comment, so nobody opening the document sees it.
 Run it again and the two passive findings on line 15 are gone, and the first line counts what was silenced.
 
+<!-- chaff-screen: stet -->
 ```
 $ npx chaffjs enquiries.md --genre business/report --experimental --compact
 
-enquiries.md   business/report · English   genre from --genre   2 stet
+enquiries.md   business/report · English   genre from --genre
 
-  5:1     warning This sentence runs 34 words (limit 25)
-                  max-sentence-length
   5:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
   5:112   warning This sentence stacks 3 hedges ("could, perhaps, may")
                   excessive-hedging
-  5:129   warning This sentence is passive ("argued") but never says who did it
-                  agentless-passive
-  9:66    warning This sentence runs 37 words (limit 25)
-                  max-sentence-length
 
-5 findings, 21 rules not run
+{counts}
 ```
 
 ## Changing a rule for the whole team

@@ -46,7 +46,7 @@ chaff は、読み手を待たせる書き出しや、生成文によく出る�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 次の記事を `kiji.md` という名前で保存しました。この記事は、このページのために書いたものです。
 
-```markdown
+```markdown file=kiji.md
 # Docker のビルドを速くした話——キャッシュという見落とされがちな鍵
 
 近年、開発の現場ではコンテナがますます当たり前になっています。本記事では、私たちのチームが Docker のビルド時間を短くした方法を詳しく解説していきます。
@@ -95,14 +95,40 @@ $ npx chaffjs kiji.md --genre blog/tech --compact
 
 kiji.md   blog/tech · 日本語   ジャンルは--genreから
 
+  1:39    info    節の長さのばらつきが 25% しかありません（35% 以上ほしい）
+                  section-length-uniformity
   3:1     warning 「近年」は、どの記事にも当てはまる書き出しです
                   padded-intro
+  9:1     info    「単なる」など、対比の枠が 1000 字あたり 3.8 個あります（1.5 個まで）
+                  contrast-framing
+  11:1    info    「正直に言うと」など、予告で始まる文が 3 個あります（3 個から）
+                  announcing-opener
+  11:1    warning 「section-length-uniformity、padded-intro、closing-cliche、contrast-framing、announcing-opener、colon-lead-in」が同じ文書にそろっています（6 種、3 種から）
+                  ai-generated-composite
+  15:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
+                  announcing-opener
+  17:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 3.8 個あります（2 個まで）
+                  colon-lead-in
+  20:12   info    日本語と後ろの数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
+                  latin-spacing
+  20:13   info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
+                  latin-spacing
+  23:1    info    「重要なのは」など、予告で始まる文が 3 個あります（3 個から）
+                  announcing-opener
+  27:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 3.8 個あります（2 個まで）
+                  colon-lead-in
+  27:11   warning 「2 つ」と予告していますが、すぐ下の箇条書きは3項目です
+                  announced-count-mismatch
+  33:46   warning リンク「[ビルド時間の記録](#ビルド時間の記録)」が指す「#ビルド時間の記録」の見出しがこの文書にありません
+                  broken-link
+  37:22   info    「だけでなく」など、対比の枠が 1000 字あたり 3.8 個あります（1.5 個まで）
+                  contrast-framing
   39:1    warning 「いかがでしたでしょうか」で締めています
                   closing-cliche
   39:13   warning 「お役に立てれば幸いです」で締めています
                   closing-cliche
 
-指摘 3 件、動いていない rule 94 件
+{counts}
 ```
 
 書き出しと結びの 3 件です。生成文の形は、試験中のルールが見ます。
@@ -127,9 +153,9 @@ kiji.md   blog/tech · 日本語   ジャンルは--genreから
                   announcing-opener
   17:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 3.8 個あります（2 個まで）
                   colon-lead-in
-  20:12   warning 日本語と後ろの数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
+  20:12   info    日本語と後ろの数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
                   latin-spacing
-  20:13   warning 日本語と前の数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
+  20:13   info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
                   latin-spacing
   23:1    info    「重要なのは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
@@ -146,7 +172,7 @@ kiji.md   blog/tech · 日本語   ジャンルは--genreから
   39:13   warning 「お役に立てれば幸いです」で締めています
                   closing-cliche
 
-指摘 16 件、動いていない rule 18 件
+{counts}
 ```
 
 行の頭の `3:1` は、3 行目の 1 字目という意味です。
