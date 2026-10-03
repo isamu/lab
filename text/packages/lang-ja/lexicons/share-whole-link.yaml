@@ -1,0 +1,8 @@
+# 百分率と、それが一部の割合を言う集まり（share-whole）のあいだの語と、集まりを百分率のどちら側に書くか。
+# 「回答者の62%」は前、「62%の回答者」は後ろ。
+id: share-whole-link
+language: ja
+entries:
+  - { pattern: "の", position: before }
+  - { pattern: "のうち", position: before }
+  - { pattern: "の", position: after }

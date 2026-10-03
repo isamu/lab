@@ -4331,6 +4331,47 @@
         }
       }
     },
+    "ordinal-suffix-mismatch": {
+      "groups": {
+        "academic": {
+          "documents": 6,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 78,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 20,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 48,
+          "fired": 0
+        }
+      },
+      "bench": {
+        "planted": 26,
+        "found": 26,
+        "falseAlarms": 0
+      }
+    },
     "orthographic-variant": {
       "groups": {
         "academic": {
@@ -5511,6 +5552,47 @@
       "bench": {
         "planted": 13,
         "found": 13,
+        "falseAlarms": 0
+      }
+    },
+    "share-over-hundred": {
+      "groups": {
+        "academic": {
+          "documents": 6,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 78,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 20,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 48,
+          "fired": 0
+        }
+      },
+      "bench": {
+        "planted": 26,
+        "found": 26,
         "falseAlarms": 0
       }
     },

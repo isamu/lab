@@ -1,0 +1,20 @@
+# 百分率がその一部の割合を言う、人や物の集まり（回答者の62%）。この集まりの一部の割合は 100% を超えない。
+# 伸びや比べる元にもなる語（前年の、予算の）は入れない。
+id: share-whole
+language: ja
+entries:
+  - pattern: 回答者
+  - pattern: 参加者
+  - pattern: 社員
+  - pattern: 従業員
+  - pattern: 職員
+  - pattern: 利用者
+  - pattern: 顧客
+  - pattern: 学生
+  - pattern: 生徒
+  - pattern: 世帯
+  - pattern: 有権者
+  - pattern: 会員
+  - pattern: 患者
+  - pattern: 応募者
+  - pattern: 全員

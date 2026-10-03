@@ -1,0 +1,13 @@
+# 英語の序数の数の後ろに書く字（1st、22nd、113th）と、それが付く数の終わり（group）。日本語の文書も英語の序数を書く（3rd party）。
+# 数の終わりのうち最も長く合うものが決める。11・12・13 は 1・2・3 で終わっても th、group が空のものはそれ以外の数。
+# 法律の引用の「2d」「3d」は序数として読まない。
+id: ordinal-suffix
+language: ja
+entries:
+  - { pattern: "st", group: "1" }
+  - { pattern: "nd", group: "2" }
+  - { pattern: "rd", group: "3" }
+  - { pattern: "th", group: "11" }
+  - { pattern: "th", group: "12" }
+  - { pattern: "th", group: "13" }
+  - { pattern: "th", group: "" }
