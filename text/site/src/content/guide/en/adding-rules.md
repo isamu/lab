@@ -285,6 +285,7 @@ A rule that compares the files of one run (a word spelled one way in one file an
 It takes every document of the run and returns findings, each with the path of the file it is in (the type `CrossDetector`).
 It is registered by `detectors/cross-registry/<how_to_find>.ts`, and its rule file says `requires: [documents]`.
 chaff runs it only when it is given two or more files, or a folder; on one file it is listed among the rules that did not run, with that reason.
+
 Each finding points at a line and column of its own file, so stet, the baseline and SARIF treat it like any other.
 Its `example` adds `other:`, a third file checked in the same run as `before` and `after`.
 
@@ -298,8 +299,12 @@ off_for:
 ```
 
 A rule turned off this way is listed under "did not run" with the genre as the reason.
-`genres.yaml` holds only what is about the genre itself (its name, summary, profile, how it is suggested, and the experimental rules it turns on); a new rule does not edit it.
-`yarn rules:measure --apply` writes a group it measured the rule off for into `off_for` as `measured by yarn rules:measure`.
+`genres.yaml` holds only what is about the genre itself (its name, summary, profile, how it is suggested, and the levels it sets); a new rule does not edit it.
+
+A new rule starts as `status: experimental`, so it runs only with `--experimental` until it is measured.
+`yarn rules:measure --apply` places it: it runs chaff over the corpus and sets the rule's `status` and `severity` from how often it reports on human documents.
+It also writes a group it measured the rule off for into `off_for` as `measured by yarn rules:measure`.
+`yarn test` stops when a rule's placement no longer matches the measurement in `corpus/rules-measure.json`.
 
 The guide's screens do not copy out what changes with every new rule.
 A screen writes `{not-run}` where chaff lists the rules that did not run (the hint under the list comes with it), and `{counts}` where `--compact` ends with its tally.
@@ -309,9 +314,11 @@ The site fills them all in from chaff's output when it is built.
 `yarn test` runs every screen on its documents and stops when one differs from what chaff prints.
 The documents are the page's `file=` blocks and the files in `site/src/screens/<lang>/<page>/`.
 `node scripts/guide-screens.ts --check en/<page>.md` shows the difference.
+
 When a new rule changes a guide screen, run `yarn screens:update` and read the diff.
 It rewrites each screen to what chaff prints now, and keeps the `…` lines where they stand as far as it can.
 Name pages to rewrite only those (`yarn screens:update en/commands.md`).
+
 A screen listed in `UNCHECKED` in `scripts/guide-screens.ts` is not run, so it is left as it is.
 When a screen gains a finding, also update what the page says about it.
 
