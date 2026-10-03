@@ -45,6 +45,7 @@ not_flagged:
   ja: 三通りの数え方（終わりを含める、含めない、初日を数えずに過ぎた日）のどれとも合わないときだけ指します。「約3か月」「3か月程度」のような目安の期間、日付が三つ以上か期間が二つ以上ある文、年を書いた日付と書かない日付の組は見ません。
   en: Only an end that matches none of the three ways of counting is pointed out. A rough length ("about 3 months"), a sentence with three or more dates or two or more lengths, and a pair of one date with a year and one without are left alone.
 rewrite:
+  depth: light
   ja:
     direction: 始まり・期間・終わりのうち、どれが正しいかを書き手に確かめ、残りを合わせてください。期間か終わりのどちらかを消して、一つだけにしてもかまいません。
     pairs:

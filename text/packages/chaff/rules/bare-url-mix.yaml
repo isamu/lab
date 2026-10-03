@@ -57,6 +57,7 @@ level_meaning:
   ja: 言葉のリンクが {limit} 個以上ある文書で指摘
   en: reported in a document with {limit} or more worded links
 rewrite:
+  depth: light
   ja:
     direction: そのまま書いた URL を、行き先の名前を言葉にしたリンクに変えてください。行き先の名前は、文がすでに言っている名前（窓口、手引き）を使います。URL は変えません。
     pairs:

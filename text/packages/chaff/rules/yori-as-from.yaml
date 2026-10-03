@@ -44,6 +44,7 @@ not_flagged:
   ja: 比べる「より」（昨年より増えた、これより大きい）と「により」「より一層」は指しません。名詞が続くときは、それが「を」か「する」「いたす」を伴う動作のときだけ指します（昨年より販売が増えた、は指しません）。鉤括弧で引いた中は見ません。
   en: Comparison (昨年より増えた, "more than last year"), により ("by") and より一層 are not reported. A following noun counts only when it is an action taking を or a light verb, so 昨年より販売が増えた is not reported. Nothing quoted in 「」 is checked.
 rewrite:
+  depth: light
   ja:
     direction: 起点を言う「より」を「から」に替えてください。替えるのはその一語だけです。
     pairs:

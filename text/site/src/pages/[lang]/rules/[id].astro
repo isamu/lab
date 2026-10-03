@@ -124,6 +124,11 @@ const heading = "mt-10 text-xl font-semibold";
 
   <h2 class={heading}>{t(lang, "howToFix")}</h2>
   <p class="mt-2 leading-relaxed">{rule.howToFix[lang]}</p>
+  {rule.rewriteDepth !== undefined && (
+    <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+      {t(lang, "rewriteDepth")}: <span class="font-mono">{rule.rewriteDepth.depth}</span> — {rule.rewriteDepth.meaning[lang]}
+    </p>
+  )}
 
   {sources.length > 0 && (
     <>

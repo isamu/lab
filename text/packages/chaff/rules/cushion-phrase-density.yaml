@@ -51,6 +51,7 @@ level_meaning:
   ja: 1000 字あたりクッション言葉 {limit} 個まで
   en: up to {limit} softeners per 1000 words
 rewrite:
+  depth: light
   ja:
     direction: クッション言葉は最初の一つだけ残し、あとは用件（何を、いつまでに）から書いてください。敬語の丁寧さは変えません。
     pairs:

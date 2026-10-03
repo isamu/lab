@@ -50,6 +50,7 @@ level_meaning:
   ja: 当てはまる書き出しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
 rewrite:
+  depth: light
   ja:
     direction: どの文書にも当てはまる書き出し（「近年、〜が注目されています」）を消し、この文書だけが扱う状況か主張から始めてください。それが本文に無ければ書き手に聞きます。
     pairs:

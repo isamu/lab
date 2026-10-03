@@ -77,11 +77,11 @@ Phrases people already wrote as often before (解像度を上げる, 腹落ち) 
 
 ## Three ways to fix it
 
-| Way | What it changes | When to use it |
-| --- | --- | --- |
-| Light | Only the spots chaff flagged | The content and structure are fine and only the wording grates |
-| Bold | The prose of each section; the outline stays | The outline is fixed: a report template, a manual, required sections |
-| Full | The whole document, from its structure up | The request says "from scratch" or "rewrite the whole thing"; a blog post or an essay; `ai-generated-composite` fires; the plan's structure score reaches its limit |
+| Way | Depth | What it changes | When to use it |
+| --- | --- | --- | --- |
+| Light | `light` | Only the spots chaff flagged | The content and structure are fine and only the wording grates |
+| Bold | `light` | The prose of each section; the outline stays | The outline is fixed: a report template, a manual, required sections |
+| Full | `structure` | The whole document, from its structure up | The request says "from scratch" or "rewrite the whole thing"; a blog post or an essay; `ai-generated-composite` fires; the plan's structure score reaches its limit |
 
 A light pass removes findings one at a time. It fixes typos and long sentences, but the shape of the document stays.
 A bold rewrite changes the sentences of each section, and the outline stays as it was.
@@ -89,6 +89,28 @@ A heading every few paragraphs, bold lead-ins and a closing summary that repeats
 
 For a blog post or an essay, choose the full rewrite. Do the same whenever `ai-generated-composite` fires.
 What the writer wants changed there is usually the structure, not the sentences.
+
+### Setting the rewrite depth
+
+When how deep the rewrite may go is decided beforehand, give the depth with `--depth`.
+
+```bash
+npx chaffjs fix-plan article.md --depth light        # keep the structure; words and sentences only
+npx chaffjs fix-plan article.md --depth structure    # up to reorganising sections, headings and paragraphs
+npx chaffjs fix-plan article.md --depth register     # up to converting the style (polite to plain endings, and so on)
+```
+
+| Depth | What it rewrites |
+| --- | --- |
+| `light` | Words and sentences. The structure and the voice stay |
+| `structure` | Sections, headings and paragraphs, reorganised. Includes `light` |
+| `register` | The style, converted (polite to plain endings, comparatives removed, and so on). Includes `structure` |
+
+Each rule's file says how deep its direction reaches, under `rewrite.depth`.
+With `--depth light`, a rule that reorganises paragraphs, such as `one-sentence-paragraph-run`, is listed under "Rules deeper than the depth set" with its spot count only.
+Dropping what the plan does not fix without a word would make it look fixed.
+To use the same depth every time, put it in chaff.yaml ([Configuration](./configuration#setting-the-depth-of-a-fix-plan)).
+Without a depth, chaff recommends one of the ways above and writes its depth in the plan. chaff never recommends a register change.
 
 ## The light pass
 
@@ -270,9 +292,12 @@ What chaff found by machine, and how to rewrite each kind of spot. chaff does no
 
 ai-generated-composite fires. Fixing the wording would leave the skeleton of generated text.
 
-- Light: only the flagged spots.
-- Bold: keep the outline, rewrite the prose of each section.
-- Full: take an inventory of the facts and claims, then rewrite from the structure up. If the request says "from scratch", choose this.
+Rewrite depth: structure (sections, headings and paragraphs are reorganised).
+
+- Light (depth light): only the flagged spots.
+- Bold (depth light): keep the outline, rewrite the prose of each section.
+- Full (depth structure): take an inventory of the facts and claims, then rewrite from the structure up. If the request says "from scratch", choose this.
+- Register (depth register): a full rewrite that also converts the style (polite to plain endings, and so on). chaff never recommends it; choose it with --depth register.
 
 ## Document-level signals
 

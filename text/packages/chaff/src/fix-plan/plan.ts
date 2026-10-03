@@ -7,6 +7,7 @@ import { splitWords } from "../detectors/word-list.ts";
 import { COMPOSITE_RULE, recommendMode, type ModeChoice } from "./mode.ts";
 import type { StructureScore } from "../structure-shape/score.ts";
 import { structureTargetsOf, type StructureTarget } from "./structure-targets.ts";
+import { DEFAULT_DEPTH, depthIncludes, type RewriteDepth } from "../rewrite-depth.ts";
 
 /** One flagged spot, where it is and what chaff said about it. */
 export type PlanSpot = { readonly line: number; readonly column: number; readonly quote: string; readonly message: string };
@@ -18,6 +19,8 @@ export type PhraseHint = { readonly phrase: string; readonly rewrite: string };
 export type RulePlan = {
   readonly rule: string;
   readonly name: string;
+  /** How deep the rule's direction reaches (rewrite.depth); light when the rule does not say. */
+  readonly depth: RewriteDepth;
   /** The rule's rewrite direction, or its how_to_fix when it has no rewrite block. */
   readonly direction: string;
   readonly keep: readonly string[];
@@ -31,6 +34,12 @@ export type RulePlan = {
 /** A rule that measures the whole document, with what it said. */
 type DocumentSignal = { readonly rule: string; readonly message: string };
 
+/** A rule that fired but reaches deeper than the chosen depth: named, not planned, so its silence is not read as fixed. */
+export type DeeperRule = { readonly rule: string; readonly name: string; readonly depth: RewriteDepth; readonly spots: number };
+
+/** The depth chosen for the plan, and where: --depth on the command line, or fix_plan.depth in chaff.yaml. */
+export type ChosenDepth = { readonly depth: RewriteDepth; readonly from: "flag" | "config" };
+
 export type FixPlan = {
   readonly path: string;
   /** Where the plan suggests saving the rewrite, so the check commands can be pasted as they are. */
@@ -39,6 +48,8 @@ export type FixPlan = {
   readonly genre: string;
   readonly experimental: boolean;
   readonly mode: ModeChoice;
+  /** None when chaff recommends the depth itself. */
+  readonly chosenDepth: ChosenDepth | undefined;
   readonly signals: readonly DocumentSignal[];
   readonly outline: { readonly unit: LengthUnit; readonly shape: Shape };
   /** The structure score, the count at which the plan rewrites from the outline, and how many measures were compared. */
@@ -46,6 +57,8 @@ export type FixPlan = {
   /** The structure measures past 90% of human articles, each with the human numbers to bring it back to. */
   readonly targets: readonly StructureTarget[];
   readonly rules: readonly RulePlan[];
+  /** The rules that fired but reach deeper than the chosen depth. Empty without a chosen depth. */
+  readonly deeper: readonly DeeperRule[];
   /** The rewrite and signal rules that did not run, and why: silence from them is not "checked and fine". */
   readonly notRun: readonly Skipped[];
   readonly checks: readonly string[];
@@ -66,6 +79,7 @@ export type PlanInput = {
   readonly structure: StructureScore;
   /** The ai-tell lexicon of the document's language, whose entries may carry their own hint. */
   readonly phrases: Lexicon;
+  readonly chosenDepth?: ChosenDepth | undefined;
 };
 
 const BOLD_DENSITY_RULE = "bold-density";
@@ -114,12 +128,25 @@ const rulePlanOf = (rule: RuleDefinition, findings: readonly Finding[], input: P
   return {
     rule: rule.id,
     name: localized(rule.name, input.language),
+    depth: depthOfRule(rule),
     direction: rewrite?.direction ?? localized(rule.how_to_fix, input.language),
     keep: rewrite?.keep ?? [],
     avoid: rewrite?.avoid ?? [],
     pair: rewrite?.pairs[0],
     hints,
     spots: findings.map((finding) => spotOf(finding, rule, input.language)),
+  };
+};
+
+const depthOfRule = (rule: RuleDefinition): RewriteDepth => rule.guide?.rewriteDepth ?? DEFAULT_DEPTH;
+
+/** Every rule that fired, planned; then the ones a chosen depth leaves out, set apart. */
+const byDepth = (plans: readonly RulePlan[], chosen: ChosenDepth | undefined): Pick<FixPlan, "rules" | "deeper"> => {
+  if (chosen === undefined) return { rules: plans, deeper: [] };
+  const within = (plan: RulePlan): boolean => depthIncludes(chosen.depth, plan.depth);
+  return {
+    rules: plans.filter(within),
+    deeper: plans.filter((plan) => !within(plan)).map((plan) => ({ rule: plan.rule, name: plan.name, depth: plan.depth, spots: plan.spots.length })),
   };
 };
 
@@ -159,12 +186,12 @@ const notRunOf = (input: PlanInput, signalRules: ReadonlySet<string>): Skipped[]
   return input.skipped.filter((skipped) => watched.has(skipped.rule));
 };
 
-/** The commands to run on the rewrite. A full rewrite cuts repeats and rebuilds headings, which compare is told. */
+/** The commands to run on the rewrite. A rewrite past light cuts repeats and rebuilds headings, which compare is told. */
 const checksOf = (input: PlanInput, choice: ModeChoice): string[] => {
   const original = shellPath(input.path);
   const rewritten = shellPath(rewrittenPathOf(input.path));
   const lintFlags = [...(input.experimental ? ["--experimental"] : []), ...(input.genreFlag === undefined ? [] : ["--genre", input.genreFlag])];
-  const compareFlags = choice.mode === "full" ? ["--distinct", "--allow-dropped heading", "--allow-added heading"] : [];
+  const compareFlags = choice.depth !== undefined && choice.depth !== "light" ? ["--distinct", "--allow-dropped heading", "--allow-added heading"] : [];
   return [
     ["npx chaffjs", rewritten, ...lintFlags].join(" "),
     ["npx chaffjs compare", original, rewritten, ...compareFlags].join(" "),
@@ -182,8 +209,12 @@ const documentLength = (outline: Outline): number => outline.entries.reduce((sum
 export const buildFixPlan = (input: PlanInput): FixPlan => {
   const signalRules = signalRulesOf(input.rules);
   const structure = { score: input.structure.score, limit: structureLimitOf(input.rules), compared: input.structure.compared };
-  const firedRules = new Set(input.findings.map((finding) => finding.rule));
-  const mode = recommendMode({ genre: input.genre, firedRules, signalRules, structure });
+  const planned = byDepth(rulePlansOf(input), input.chosenDepth);
+  // A rule the depth sets apart is not something this rewrite fixes, so it does not decide the way either.
+  const setApart = new Set(planned.deeper.map((rule) => rule.rule));
+  const firedRules = new Set(input.findings.map((finding) => finding.rule).filter((rule) => !setApart.has(rule)));
+  const chosen = input.chosenDepth?.depth;
+  const mode = recommendMode({ genre: input.genre, firedRules, signalRules, structure, chosen, setApart: setApart.size });
   return {
     path: input.path,
     rewrittenPath: rewrittenPathOf(input.path),
@@ -191,11 +222,12 @@ export const buildFixPlan = (input: PlanInput): FixPlan => {
     genre: input.genre,
     experimental: input.experimental,
     mode,
+    chosenDepth: input.chosenDepth,
     signals: signalsOf(input, signalRules),
     outline: { unit: input.outline.unit, shape: input.outline.shape },
     structure,
     targets: structureTargetsOf(input.structure, documentLength(input.outline)),
-    rules: rulePlansOf(input),
+    ...planned,
     notRun: notRunOf(input, signalRules),
     checks: checksOf(input, mode),
   };

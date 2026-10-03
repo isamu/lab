@@ -43,6 +43,7 @@ level_meaning:
   ja: "{limit} 箇所あれば指摘"
   en: reported once there are {limit}
 rewrite:
+  depth: light
   en:
     direction: Replace the spaced or doubled hyphen with a dash, or rewrite the sentence with a comma or a colon. Use the dash the document already uses, if any.
     pairs:

@@ -77,6 +77,7 @@ not_flagged:
   ja: 「詳細」「内容」のようにどの章にも当てはまる語、参照先が見出しを持たないか一つに決まらない参照、他の文書の条は見ません。言い換え（料金と価格）は見つけられないので、語が違えば指します。
   en: Words that fit any section ("details", "more information"), references whose target has no heading or cannot be told apart, and references to another document are left alone. A synonym (price and fee) is not recognised, so a different word is pointed out.
 rewrite:
+  depth: light
   ja:
     direction: 話題がどの章にあるかを書き手に確かめ、参照の番号を直してください。参照先が別の言葉で書いているなら、どちらかの言葉に揃えます。
     pairs:

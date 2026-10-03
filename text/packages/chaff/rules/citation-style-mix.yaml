@@ -81,6 +81,7 @@ level_meaning:
   ja: 少ないほうの書き方が {limit} 箇所以下のとき指摘
   en: reported when the minority style appears {limit} times or fewer
 rewrite:
+  depth: light
   ja:
     direction: 少数の書き方の引用を、論文で最も多い書き方に書き直してください。番号の方式なら、その文献の文献一覧での番号を使います。番号が分からなければ、書き手に確かめます。
     pairs:
