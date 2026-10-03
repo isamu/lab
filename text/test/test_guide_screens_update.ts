@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { fillsFor, replaceScreens, screenMatches, screensIn } from "../scripts/guide-screens-parse.ts";
 import { commonLines, mergedLines, stretchLines, updatedScreen } from "../scripts/guide-screens-update.ts";
-import { COUNTS_MARKER, NOT_RUN_MARKER, withScreenFills } from "../site/src/lib/screenFills.ts";
+import { COUNTS_MARKER, NOT_RUN_MARKER, notRunRowMarker, withScreenFills } from "../site/src/lib/screenFills.ts";
 
 // yarn screens:update は、手引きの画面を chaff の今の出力に書き直す。ページと chaff が共有する行は残し、
 // 「…」の行はできるだけ元の場所に残し、{not-run} と {counts} は印のまま残す。
@@ -65,6 +65,19 @@ describe("updatedScreen", () => {
     const actual = screen("  a.md", "    new", "", "  2 rules did not run:", "      x — why", "      y — why", "", "1 finding, 2 rules not run");
     const updated = updatedScreen(shown, actual);
     assert.equal(updated, screen("  a.md", "    new", "", `  ${NOT_RUN_MARKER}`, "", COUNTS_MARKER));
+    assert.ok(screenMatches(withScreenFills(updated, fillsFor(updated, actual), "test"), actual));
+  });
+
+  it("{not-run: <rule>} は、その rule の行の詰め方が変わっても印のまま残す", () => {
+    const shown = screen("54 not run", "…", `  ${notRunRowMarker("cite")}`, "…");
+    const actual = screen(
+      "55 not run",
+      "  a-much-longer-rule-id  3 outputs  why",
+      "  cite                   2 outputs  why",
+      "  z                      3 outputs  why",
+    );
+    const updated = updatedScreen(shown, actual);
+    assert.equal(updated, screen("55 not run", "…", `  ${notRunRowMarker("cite")}`, "…"));
     assert.ok(screenMatches(withScreenFills(updated, fillsFor(updated, actual), "test"), actual));
   });
 
