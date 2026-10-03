@@ -1,6 +1,6 @@
 id: unknown-word
 layer: L2
-status: experimental
+status: stable
 how_to_find: unknown-word
 languages: [en]
 severity: info

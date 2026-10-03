@@ -1,12 +1,12 @@
 id: date-without-year
 layer: L1
-status: experimental
+status: stable
 how_to_find: date-without-year
 requires: [dates]
 # The dates come from the language package's date reader. English does not read a date written without its year yet,
 # so the rule checks Japanese only until it does.
 languages: [ja]
-severity: warning
+severity: info
 
 name:
   ja: 年の無い日付
@@ -28,7 +28,7 @@ how_to_fix:
   ja: 年を書いてください（2027年1月15日）。
   en: Write the year (January 15, 2027).
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
