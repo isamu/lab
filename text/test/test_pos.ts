@@ -78,6 +78,7 @@ describe("解析器を読むまで tokens は無い", () => {
         "heading-echo",
         "hiragana-fukushi",
         "humble-for-others",
+        "idiom-misuse",
         "known-misspelling",
         "latin-spacing",
         "max-kanji-continuous",
