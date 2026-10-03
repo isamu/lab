@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  step-missing-ja  found
+ja/design  step-missing-ja  found
+ja/email  step-missing-ja  found
+ja/figures  step-missing-ja  found
+ja/itinerary  step-missing-ja  found
+ja/minutes  step-missing-ja  found
+ja/note  step-missing-ja  found
+ja/policy  step-missing-ja  found
+ja/press  step-missing-ja  found
+ja/proposal  step-missing-ja  found
+ja/quote  step-missing-ja  found
+ja/readme  step-missing-ja  found
+ja/requirements  step-missing-ja  found
+en/blog  step-missing-en  found
+en/design  step-missing-en  found
+en/email  step-missing-en  found
+en/figures  step-missing-en  found
+en/itinerary  step-missing-en  found
+en/minutes  step-missing-en  found
+en/note  step-missing-en  found
+en/policy  step-missing-en  found
+en/press  step-missing-en  found
+en/proposal  step-missing-en  found
+en/quote  step-missing-en  found
+en/readme  step-missing-en  found
+en/requirements  step-missing-en  found

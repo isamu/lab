@@ -1,0 +1,8 @@
+# Words written before a step's number (Step 3). A heading that starts with one and a number, or an item of a numbered
+# list, is a step; when the text says "see step 5" and no step has that number, step-reference-missing reports it.
+# Matched as written.
+id: step-word
+language: en
+entries:
+  - pattern: Step
+  - pattern: step
