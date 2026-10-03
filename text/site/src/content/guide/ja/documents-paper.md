@@ -20,13 +20,13 @@ chaff は、表記の揺れ、無い図への参照、句読点の混ざりを�
 
 ## chaff が見ること、見ないこと
 
-このジャンルで見る主なルールは、次のとおりです。
+このジャンルで見る主なルールは、次のとおりです。どれも既定で動きます。
 
-| ルール | 見つけるもの | 動く条件 |
-| --- | --- | --- |
-| `katakana-long-vowel` | 「サーバー」と「サーバ」の混ざり。`style:` を書くと、決まりと違う書き方 | `--experimental` を付けたとき。`style:` を書いたときはいつも |
-| `kutoten-consistency` | 「、。」と「，．」の混ざり | `--experimental` を付けたとき |
-| `dangling-figure-reference` | 文書に無い図・表を指す所 | `--experimental` を付けたとき |
+| ルール | 見つけるもの |
+| --- | --- |
+| `katakana-long-vowel` | 「サーバー」と「サーバ」の混ざり。`style:` を書くと、決まりと違う書き方 |
+| `kutoten-consistency` | 「、。」と「，．」の混ざり |
+| `dangling-figure-reference` | 文書に無い図・表を指す所 |
 
 見ないことも決めてあります。
 
@@ -65,7 +65,7 @@ chaff は、表記の揺れ、無い図への参照、句読点の混ざりを�
 まず、執筆要項を決めずにかけます。`--compact` は、1 件を 2 行にまとめて出す印です。
 
 ```
-$ npx chaffjs ronbun.md --genre academic/paper --experimental --compact
+$ npx chaffjs ronbun.md --genre academic/paper --compact
 
 ronbun.md   academic/paper · 日本語   ジャンルは --genre から
 
@@ -97,7 +97,7 @@ style: ieice
 
 <!-- chaff-screen: ieice -->
 ```
-$ npx chaffjs ronbun.md --experimental --compact
+$ npx chaffjs ronbun.md --compact
 
 ronbun.md   academic/paper · 日本語   ジャンルは chaff.yaml から
 
@@ -135,20 +135,7 @@ ronbun.md   academic/paper · 日本語   ジャンルは chaff.yaml から
 
 ## chaff.yaml の始め方
 
-論文を置くフォルダに、次の `chaff.yaml` を置きます。
-上の 3 行に、試験中の 2 つのルールを足したものです。
-
-```yaml
-genre: academic/paper
-language: ja
-style: ieice
-
-rules:
-  kutoten-consistency: normal
-  dangling-figure-reference: normal
-```
-
-この `chaff.yaml` を置くと、`npx chaffjs ronbun.md --compact` だけで、上の指摘がすべて出ます。
+論文を置くフォルダに、上の 3 行の `chaff.yaml` を置けば始められます。
 `chaff.yaml` に書けることの全体は[設定](./configuration)にあります。
 学会ごとの細かい決まり（「下さい」ではなく「ください」など）は、`custom_rules:` で足せます。
 書き方は [チームの表記ルールを決める](./house-style) にあります。

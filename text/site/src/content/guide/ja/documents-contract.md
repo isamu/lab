@@ -169,15 +169,11 @@ keiyaku.md   legal/contract · 日本語   ジャンルは --genre から
 ```yaml
 genre: legal/contract
 language: ja
-
-rules:
-  kutoten-consistency: normal
-  fullwidth-alnum-consistency: normal
 ```
 
 `genre` を書くと、毎回 `--genre` を付けなくて済みます。上と同じ指摘が、`npx chaffjs keiyaku.md --compact` だけで出ます。
-足した 2 つは試験中のルールで、句読点の「、」と「，」の混ざりと、全角と半角の英数字の混ざりを見ます。
-ひな形を貼り合わせて作る文書で、よく混ざるためです。この契約書には混ざりが無いので、指摘は増えません。
+句読点の「、」と「，」の混ざり（`kutoten-consistency`）と、全角と半角の英数字の混ざり（`fullwidth-alnum-consistency`）も、既定で見ます。
+ひな形を貼り合わせて作る文書で、よく混ざるためです。この契約書には混ざりが無いので、指摘は出ていません。
 
 ## 次に読むページ
 

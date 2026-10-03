@@ -21,7 +21,7 @@ The last one makes the link swallow the "。", so clicking it opens a page that 
 
 ## What chaff checks, and what it does not
 
-These are the main rules for this genre. `image-alt-text` runs by default; the others are experimental, and run with `--experimental`.
+These are the main rules for this genre. All of them run by default.
 
 | Rule | What it finds |
 | --- | --- |
@@ -110,11 +110,11 @@ manual.md   blog/tech · English   genre from the default
 {counts}
 ```
 
-Add the genre, as suggested, and the experimental rules too.
+Add the genre, as suggested.
 `--compact` prints each finding on two lines.
 
 ```
-$ npx chaffjs manual.md --genre docs/manual --experimental --compact
+$ npx chaffjs manual.md --genre docs/manual --compact
 
 manual.md   docs/manual · English   genre from --genre
 
@@ -160,17 +160,9 @@ Put this `chaff.yaml` in the folder that holds your manual.
 ```yaml
 genre: docs/manual
 language: en
-
-rules:
-  broken-link: normal
-  image-alt-text: normal
-  heading-level-skip: normal
-  empty-section: normal
-  duplicate-heading: normal
-  url-run-on: normal
 ```
 
-With this file in place, `npx chaffjs manual.md --compact` alone shows all the findings above.
+With this file in place, `npx chaffjs manual.md` reads the file as a manual without `--genre`.
 If the same folder also holds READMEs or specifications, give each path its own genre, as in [Configuration](./configuration) under "Changing settings per path".
 
 ## What to read next
