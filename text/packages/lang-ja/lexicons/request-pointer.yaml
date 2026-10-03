@@ -1,0 +1,19 @@
+# 読む場所を案内する依頼の語。「詳細は資料をご確認ください」は読む場所の案内で、期限の要る仕事の依頼ではない。
+id: request-pointer
+language: ja
+entries:
+  - pattern: 詳細
+  - pattern: 詳しく
+  - pattern: 概要
+  - pattern: こちら
+  - pattern: 下記
+  - pattern: 以下
+  - pattern: 別添
+  - pattern: 別紙
+  - pattern: ページ
+  - pattern: ホームページ
+  - pattern: サイト
+  - pattern: リンク
+  - pattern: マニュアル
+  - pattern: 案内
+  - pattern: お知らせ
