@@ -1,6 +1,7 @@
 # chaff（text/）のゲート。scoria-ci.yml と同じ形で、対象ディレクトリだけが違う。
 # paths で切っているので、coding/ だけを触る PR では走らない。
-# 静的な検査、テスト（3 OS × 部分）、実文書・corpus・bench を別の job にして並べて走らせる。
+# 静的な検査、テスト（3 OS × 部分）、実文書・corpus・bench:ai、bench を別の job にして並べて走らせる。
+# job の数はアカウントで同時に走らせられる数を取り合うので、増やしすぎない（macOS は特に少ない）。
 # Windows の広い実行（lint・typecheck・build と分けないテスト）は chaff-windows-daily.yml。
 name: chaff ci
 
@@ -21,7 +22,7 @@ concurrency:
 
 env:
   # test の matrix の part と揃える。matrix は env から作れない。
-  TEST_SHARD_COUNT: "5"
+  TEST_SHARD_COUNT: "4"
 
 defaults:
   run:
@@ -78,8 +79,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        part: [1, 2, 3, 4, 5]
-    name: test (${{ matrix.os }}, part ${{ matrix.part }}/5)
+        part: [1, 2, 3, 4]
+    name: test (${{ matrix.os }}, part ${{ matrix.part }}/4)
     steps:
       - uses: actions/checkout@v7
         with:
@@ -162,7 +163,7 @@ jobs:
   # URL だけの文書は取得先で中身が変わりうるので、手元で yarn corpus:fetch してから比べる。
   # 変化が意図どおりなら、yarn corpus --update / yarn bench --update で expected を書き換えて PR に含める。
   # 出力は文書と rule だけで決まり OS に依らないので、ubuntu だけで走らせる。
-  # checks に入れると checks が一番長い job になるので、bench と同じく別の job にして並べる。
+  # checks に入れると checks が一番長い job になるので、別の job にして並べる。bench:ai も短いのでここで続けて走らせる。
   documents:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -210,6 +211,10 @@ jobs:
       - name: corpus (committed documents)
         run: yarn corpus
 
+      # AI っぽさの rule が、生成文の見本に当たり、人の書きぶりの見本と corpus/docs に当たらないかの表。
+      - name: bench (AI-shape rules)
+        run: yarn bench:ai
+
   bench:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -238,33 +243,3 @@ jobs:
 
       - name: bench
         run: yarn bench
-
-  # AI っぽさの rule が、生成文の見本に当たり、人の書きぶりの見本と corpus/docs に当たらないかの表。
-  bench-ai:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - uses: actions/setup-node@v7
-        id: setup-node
-        with:
-          node-version: "24"
-
-      - uses: actions/cache/restore@v6
-        with:
-          path: |
-            text/node_modules
-            text/packages/*/node_modules
-          key: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('text/yarn.lock') }}
-          restore-keys: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-
-
-      - run: yarn install --frozen-lockfile
-
-      - name: build
-        run: yarn build
-
-      - name: bench (AI-shape rules)
-        run: yarn bench:ai
