@@ -6,6 +6,7 @@ import { severityAt } from "../../../packages/chaff/src/levels.ts";
 import type { RuleDefinition } from "../../../packages/chaff/src/plugin.ts";
 import { readableText, templateForReading } from "../../../packages/chaff/src/render/text.ts";
 import type { RuleExample, RuleGroup } from "../../../packages/chaff/src/rule-guide.ts";
+import { depthMeaning, type RewriteDepth } from "../../../packages/chaff/src/rewrite-depth.ts";
 import type { Lang } from "./i18n";
 
 export type Localized = Record<Lang, string>;
@@ -36,6 +37,8 @@ export type Rule = {
   readonly ownNumbers: readonly string[];
   /** The bibliography entries the rule rests on, by anchor. */
   readonly sources: readonly string[];
+  /** How deep the rule's rewrite direction reaches, with what that means; none for a rule without a rewrite block. */
+  readonly rewriteDepth: { readonly depth: string; readonly meaning: Localized } | undefined;
 };
 
 // astro build runs in text/site.
@@ -56,6 +59,9 @@ const text = (localized: Readonly<Record<string, string>>, lang: Lang): string =
 const readableTemplate = (message: Localized): Localized => ({ ja: templateForReading(message.ja), en: templateForReading(message.en) });
 
 const byLanguage: Record<Lang, readonly RuleDefinition[]> = { ja: loadRules("ja", RULES_DIR), en: loadRules("en", RULES_DIR) };
+
+const rewriteDepthOf = (depth: RewriteDepth | undefined): Rule["rewriteDepth"] =>
+  depth === undefined ? undefined : { depth, meaning: { ja: depthMeaning(depth, "ja"), en: depthMeaning(depth, "en") } };
 
 const ruleOf = (ja: RuleDefinition): Rule => {
   const en = byLanguage.en.find((candidate) => candidate.id === ja.id);
@@ -93,6 +99,7 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     levelMeaning: { ja: ja.guide?.levelMeaning["ja"] ?? "", en: ja.guide?.levelMeaning["en"] ?? "" },
     ownNumbers: Object.keys(ja.by_genre),
     sources: ja.guide?.sources ?? [],
+    rewriteDepth: rewriteDepthOf(ja.guide?.rewriteDepth),
   };
 };
 

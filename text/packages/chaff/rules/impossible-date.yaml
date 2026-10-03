@@ -52,6 +52,7 @@ not_flagged:
   en: For a year in a Japanese era, and for a date without a year, February 29 is not reported, since the leap year cannot be decided. A bare run of numbers such as 2026-13-45 may be an identifier or a version, so it is compared with the month's length only when the month is 1 to 12 and the day at most 31; a date with a month's name is likewise checked only up to the 31st. Code is not read.
 
 rewrite:
+  depth: light
   ja:
     direction: 書き手が意図した日を確かめて、暦にある日付に直してください。月末のつもりなら、その月の最後の日を書きます。曜日を添えているなら、曜日も合わせて確かめます。
     pairs:

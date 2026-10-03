@@ -2,6 +2,8 @@ import type { CustomSpec, LevelTable, Localized, RuleDefinition, Severity, Token
 import { regexRefusal, type RegexRefusal } from "./regex-safety.ts";
 import { posTags } from "./token-pattern.ts";
 import { modulePathOf, type ModulePathRefusal } from "./module-path.ts";
+import { ruleGuideOf, type RuleGuide } from "../rule-guide.ts";
+import { depthOfRewrite } from "../rewrite-depth.ts";
 
 // custom_rules in chaff.yaml: a team's own deterministic rules, written without code. Each becomes a RuleDefinition like the
 // built-in ones, so findings, explain, rules --json, stet, the baseline and SARIF treat it the same. Pure: the YAML comes in parsed.
@@ -26,7 +28,8 @@ export type CustomProblem =
   | { readonly kind: "bad-pattern"; readonly at: string; readonly refusal: RegexRefusal }
   | { readonly kind: "no-tokens"; readonly at: string }
   | { readonly kind: "bad-token"; readonly at: string; readonly index: number }
-  | { readonly kind: "unknown-pos"; readonly at: string; readonly written: string };
+  | { readonly kind: "unknown-pos"; readonly at: string; readonly written: string }
+  | { readonly kind: "bad-depth"; readonly at: string; readonly written: string };
 
 export type CustomRules = { readonly rules: readonly RuleDefinition[]; readonly problems: readonly CustomProblem[] };
 
@@ -223,6 +226,16 @@ const HOW_TO_FIND: Readonly<Record<CustomSpec["type"], string>> = {
 
 type Example = { readonly before: string; readonly after: string };
 
+type Rewrite = Pick<RuleGuide, "rewrite" | "rewriteDepth">;
+
+/** The rewrite block, read the way a bundled rule's is: a direction by language, and how deep it goes. */
+const rewriteOf = (raw: unknown, at: string): Checked<Rewrite> => {
+  const depth = depthOfRewrite(raw);
+  if ("unknown" in depth) return failed({ kind: "bad-depth", at, written: depth.unknown });
+  const { rewrite, rewriteDepth } = ruleGuideOf({ rewrite: raw });
+  return ok({ rewrite, rewriteDepth });
+};
+
 type Parts = {
   readonly spec: CustomSpec;
   readonly needs: Needs;
@@ -230,6 +243,7 @@ type Parts = {
   readonly texts: Texts;
   readonly languages: readonly string[] | undefined;
   readonly examples: Readonly<Record<string, Example>>;
+  readonly rewrite: Rewrite;
 };
 
 const READER_LANGUAGES: readonly string[] = ["ja", "en"];
@@ -277,7 +291,7 @@ const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, us
     notFlagged: {},
     levelMeaning: {},
     sources: [],
-    rewrite: {},
+    ...parts.rewrite,
   },
 });
 
@@ -289,24 +303,47 @@ const idOf = (raw: Record<string, unknown>, index: number, seen: ReadonlySet<str
   return seen.has(id) ? failed({ kind: "duplicate-id", at }) : ok(id);
 };
 
+/** Each field of one rule, checked. */
+type Checks = {
+  readonly id: Checked<string>;
+  readonly spec: Checked<CustomSpec>;
+  readonly needs: Checked<Needs>;
+  readonly severity: Checked<Severity>;
+  readonly texts: Checked<Texts>;
+  readonly languages: Checked<readonly string[] | undefined>;
+  readonly rewrite: Checked<Rewrite>;
+};
+
+/** The rule's parts once every check passed; undefined when one has no value. */
+const partsOf = (checks: Checks, examples: Readonly<Record<string, Example>>): { readonly id: string; readonly parts: Parts } | undefined => {
+  const { id, spec, needs, severity, texts, rewrite } = checks;
+  if (id.value === undefined || spec.value === undefined || needs.value === undefined) return undefined;
+  if (severity.value === undefined || texts.value === undefined || rewrite.value === undefined) return undefined;
+  const parts = { spec: spec.value, needs: needs.value, severity: severity.value, texts: texts.value, languages: checks.languages.value, examples };
+  return { id: id.value, parts: { ...parts, rewrite: rewrite.value } };
+};
+
 const ruleOf = (raw: unknown, index: number, seen: ReadonlySet<string>, context: CustomContext): Checked<RuleDefinition> => {
   if (!isRecord(raw)) return failed({ kind: "not-a-map", at: `#${String(index + 1)}` });
   const id = idOf(raw, index, seen, context.builtIn);
   const at = id.value ?? (nonEmpty(raw["id"]) ? raw["id"] : `#${String(index + 1)}`);
   const type = typeOf(raw, at);
-  const spec = type.value === undefined ? failed<CustomSpec>() : specOf(raw, type.value, at, context.baseDir);
-  const needs = needsOf(raw, type.value ?? "", at);
-  const severity = severityOf(raw["level"], at);
-  const texts = textsOf(raw, at);
-  const languages = languagesOf(raw["languages"], at);
+  const checks: Checks = {
+    id,
+    spec: type.value === undefined ? failed<CustomSpec>() : specOf(raw, type.value, at, context.baseDir),
+    needs: needsOf(raw, type.value ?? "", at),
+    severity: severityOf(raw["level"], at),
+    texts: textsOf(raw, at),
+    languages: languagesOf(raw["languages"], at),
+    rewrite: rewriteOf(raw["rewrite"], at),
+  };
+  const { texts, languages } = checks;
   const examples = texts.value === undefined ? {} : examplesOf(texts.value, languages.value);
   const unpaired: CustomProblem[] = texts.value !== undefined && Object.keys(examples).length === 0 ? [{ kind: "unpaired-example", at }] : [];
-  const problems = [...[id, type, spec, needs, severity, texts, languages].flatMap((checked) => checked.problems), ...unpaired];
-  if (problems.length > 0) return failed(...problems);
-  if (id.value === undefined || spec.value === undefined || needs.value === undefined || severity.value === undefined || texts.value === undefined)
-    return failed();
-  const parts = { spec: spec.value, needs: needs.value, severity: severity.value, texts: texts.value, languages: languages.value, examples };
-  return ok(definitionOf(id.value, raw, parts, context.useFor));
+  const ordered: Checked<unknown>[] = [id, type, checks.spec, checks.needs, checks.severity, texts, languages, checks.rewrite];
+  const problems = [...ordered.flatMap((checked) => checked.problems), ...unpaired];
+  const ready = problems.length > 0 ? undefined : partsOf(checks, examples);
+  return ready === undefined ? failed(...problems) : ok(definitionOf(ready.id, raw, ready.parts, context.useFor));
 };
 
 /** custom_rules as written. Every problem is reported; a rule with a problem is left out, and the run is stopped by the caller. */

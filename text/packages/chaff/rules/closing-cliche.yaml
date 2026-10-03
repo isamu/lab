@@ -63,6 +63,7 @@ level_meaning:
   ja: 当てはまる結びが {limit} 箇所あれば指摘
   en: reported once there are {limit}
 rewrite:
+  depth: light
   ja:
     direction: 決まり文句の結びを消してください。本文の結論がすでに最後にあれば、そこで終えます。無ければ、本文で分かったことのうち持ち帰ってほしい一つを一文で書きます。
     pairs:

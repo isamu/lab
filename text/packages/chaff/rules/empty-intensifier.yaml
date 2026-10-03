@@ -48,6 +48,7 @@ level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
 rewrite:
+  depth: light
   ja:
     direction: 強める語（「非常に」「言うまでもなく」）を消し、何がどう大事なのかが本文にあれば、それを主語と述語で書いてください。無ければ書き手に聞きます。
     pairs:

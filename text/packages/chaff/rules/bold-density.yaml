@@ -61,6 +61,7 @@ level_meaning:
   ja: 1000 字あたり太字 {limit} 箇所まで
   en: up to {limit} bold spans per 1000 characters
 rewrite:
+  depth: light
   ja:
     direction: 太字をいったん全部外し、見落とすと困る所（期限、禁止、金額）を 1〜2 か所だけ太字に戻してください。
     pairs:

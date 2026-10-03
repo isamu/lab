@@ -50,6 +50,7 @@ level_meaning:
   ja: 重言を含む文が {limit} 文あれば指摘
   en: reported once {limit} sentences hold one
 rewrite:
+  depth: light
   ja:
     direction: 重ねた語の一方を消して、一度だけ言ってください。語彙表の語ごとの書き換え（一番最初 → 最初）に従い、文のほかの所は変えません。
     pairs:
