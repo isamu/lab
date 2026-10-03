@@ -23,7 +23,6 @@ entries:
   - { pattern: previously, group: baseline }
   - { pattern: earlier, group: baseline }
   - { pattern: prior, group: baseline }
-  - { pattern: last, group: baseline }
   - { pattern: old, group: baseline }
   - { pattern: older, group: baseline }
   - { pattern: original, group: baseline }

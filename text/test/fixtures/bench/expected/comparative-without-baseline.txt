@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  comparative-without-baseline-ja  found
+ja/design  comparative-without-baseline-ja  found
+ja/email  comparative-without-baseline-ja  found
+ja/figures  comparative-without-baseline-ja  found
+ja/itinerary  comparative-without-baseline-ja  found
+ja/minutes  comparative-without-baseline-ja  found
+ja/note  comparative-without-baseline-ja  found
+ja/policy  comparative-without-baseline-ja  found
+ja/press  comparative-without-baseline-ja  found
+ja/proposal  comparative-without-baseline-ja  found
+ja/quote  comparative-without-baseline-ja  found
+ja/readme  comparative-without-baseline-ja  found
+ja/requirements  comparative-without-baseline-ja  found
+en/blog  comparative-without-baseline-en  found
+en/design  comparative-without-baseline-en  found
+en/email  comparative-without-baseline-en  found
+en/figures  comparative-without-baseline-en  found
+en/itinerary  comparative-without-baseline-en  found
+en/minutes  comparative-without-baseline-en  found
+en/note  comparative-without-baseline-en  found
+en/policy  comparative-without-baseline-en  found
+en/press  comparative-without-baseline-en  found
+en/proposal  comparative-without-baseline-en  found
+en/quote  comparative-without-baseline-en  found
+en/readme  comparative-without-baseline-en  found
+en/requirements  comparative-without-baseline-en  found
