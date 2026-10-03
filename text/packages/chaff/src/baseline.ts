@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { posix, relative, resolve, sep } from "node:path";
 import type { Finding } from "./plugin.ts";
 
 export const BASELINE_FILE = ".chaff-baseline.json";
@@ -13,16 +14,28 @@ export const fingerprint = (path: string, finding: Finding): string => {
   return createHash("sha256").update(body).digest("hex").slice(0, 16);
 };
 
+type PathRules = Pick<typeof posix, "relative" | "resolve" | "sep">;
+const NATIVE: PathRules = { relative, resolve, sep };
+
+/**
+ * baseline が覚えるパス。baseline のフォルダからの相対で、区切りはどの OS でも「/」。
+ * OS の区切りのまま覚えると、macOS で書いた baseline が Windows では何も棚上げしない。
+ */
+export const baselinePath = (path: string, folder: string, rules: PathRules = NATIVE): string =>
+  rules.relative(folder, rules.resolve(folder, path)).split(rules.sep).join("/");
+
 /**
  * findings の fingerprint を順に。一つの文から出た指摘は同じ文を引くので、文と rule の組ごとに一度だけ計算する。
  * 長い文に指摘が多いと、指摘ごとに文を読み直すのでは指摘数と文の長さの積になる。
+ * folder は baseline を置くフォルダ。パスはそこからの相対にしてから数える。
  */
-export const fingerprints = (path: string, findings: readonly Finding[]): string[] => {
+export const fingerprints = (path: string, findings: readonly Finding[], folder: string): string[] => {
+  const key = baselinePath(path, folder);
   const known = new Map<string, Map<string, string>>();
   return findings.map((finding) => {
     const byRule = known.get(finding.quote) ?? new Map<string, string>();
     known.set(finding.quote, byRule);
-    const found = byRule.get(finding.rule) ?? fingerprint(path, finding);
+    const found = byRule.get(finding.rule) ?? fingerprint(key, finding);
     byRule.set(finding.rule, found);
     return found;
   });
@@ -52,10 +65,10 @@ export const writeBaseline = (path: string, entries: readonly string[]): void =>
 export type Split = { readonly fresh: readonly Finding[]; readonly shelved: number };
 
 /** baseline にあるものは報告しない。新しく増えたものだけを出す。 */
-export const splitByBaseline = (path: string, findings: readonly Finding[], baseline: Baseline | undefined): Split => {
+export const splitByBaseline = (path: string, findings: readonly Finding[], baseline: Baseline | undefined, folder: string): Split => {
   if (baseline === undefined) return { fresh: findings, shelved: 0 };
   const known = new Set(baseline.entries);
-  const prints = fingerprints(path, findings);
+  const prints = fingerprints(path, findings, folder);
   const fresh = findings.filter((_, index) => !known.has(prints[index] ?? ""));
   return { fresh, shelved: findings.length - fresh.length };
 };

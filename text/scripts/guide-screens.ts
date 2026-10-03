@@ -160,13 +160,12 @@ export const UNCHECKED: Readonly<Record<string, Readonly<Record<string, string>>
   },
 };
 
-/** A page's screens that are run and compared with chaff: every one not listed in UNCHECKED. */
-const SHELF_PATHS = "chaff's baseline fingerprint holds the path with Windows' \\, so the baseline made elsewhere shelves nothing";
+const WINDOWS_PATH = "chaff prints a file's path as the OS spells it, docs\\a.md on Windows, where the screen shows docs/a.md";
 
 /** The screens no test runs on Windows only, by page and command, with why. */
 export const UNCHECKED_ON_WINDOWS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  "ja/commands.md": { "$ npx chaffjs docs/ --compact": SHELF_PATHS, "$ npx chaffjs docs/ --show-baseline --compact": SHELF_PATHS },
-  "en/commands.md": { "$ npx chaffjs docs/ --compact": SHELF_PATHS, "$ npx chaffjs docs/ --show-baseline --compact": SHELF_PATHS },
+  "ja/commands.md": { "$ npx chaffjs docs/ --compact": WINDOWS_PATH, "$ npx chaffjs docs/ --show-baseline --compact": WINDOWS_PATH },
+  "en/commands.md": { "$ npx chaffjs docs/ --compact": WINDOWS_PATH, "$ npx chaffjs docs/ --show-baseline --compact": WINDOWS_PATH },
 };
 
 /** A page's screens that are run and compared with chaff here: every one not listed for this platform. */
