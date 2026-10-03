@@ -1,0 +1,47 @@
+# Short words written with a full stop before a number they label (vol. 28, H.R. 5376, approx. 40). The sentence
+# splitter may end a sentence at that full stop, so the number after one of these does not open a sentence. Read by
+# numeral-sentence-start, compared without case and without the full stop.
+id: numeral-reference-label
+language: en
+entries:
+  - pattern: vol
+  - pattern: vols
+  - pattern: no
+  - pattern: nos
+  - pattern: pt
+  - pattern: pts
+  - pattern: ch
+  - pattern: chs
+  - pattern: fig
+  - pattern: figs
+  - pattern: p
+  - pattern: pp
+  - pattern: para
+  - pattern: paras
+  - pattern: sec
+  - pattern: sect
+  - pattern: art
+  - pattern: eq
+  - pattern: eqs
+  - pattern: approx
+  - pattern: ca
+  - pattern: est
+  - pattern: ref
+  - pattern: refs
+  - pattern: rev
+  - pattern: ver
+  - pattern: ed
+  - pattern: eds
+  - pattern: ex
+  - pattern: cf
+  - pattern: al
+  - pattern: tbl
+  - pattern: tbls
+  - pattern: subsec
+  - pattern: subsecs
+  - pattern: sch
+  - pattern: reg
+  - pattern: regs
+  - pattern: cl
+  - pattern: exh
+  - pattern: supp

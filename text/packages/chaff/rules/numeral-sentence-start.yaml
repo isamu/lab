@@ -1,0 +1,56 @@
+id: numeral-sentence-start
+layer: L2
+status: stable
+how_to_find: numeral-opener
+languages: [en]
+severity: info
+
+name:
+  ja: 数字で始まる英語の文
+  en: A sentence that opens with a numeral
+
+why:
+  ja: 英語の読み手は、大文字を目印に文の始まりを見つけます。「20 people came.」のように数字で始まる文は、前の文の終わりと区切りが見えにくく、前の文の数の続きにも読めます。多くの英語の書き方の手引きは、文頭の数を綴るか、数が文の途中に来るよう書き換えるように言います。年（2026 was a good year.）は綴れないので指しません。
+  en: 'English readers find the start of a sentence by its capital letter. A sentence that opens with a numeral ("20 people came.") hides that boundary, and the number can read as the end of the sentence before. Most English style guides ask for the number to be spelled out at the start of a sentence, or for the sentence to be recast. A year ("2026 was a good year.") cannot be spelled out and is not reported.'
+
+message:
+  ja: 文が数字「{numeral}」で始まっています
+  en: The sentence opens with the numeral "{numeral}"
+
+how_to_fix:
+  ja: 数を綴るか（Twenty people came.）、数が文の途中に来るよう書き換えてください（The meeting drew 20 people.）。
+  en: Spell the number out ("Twenty people came.") or recast the sentence so the number comes later ("The meeting drew 20 people.").
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  speech: "A transcript writes numbers as the transcriber heard them."
+
+group: wording
+summary:
+  ja: 英語で、「20 people came.」のように数字で始まる文
+  en: A sentence that opens with a numeral, such as "20 people came."
+
+example:
+  en:
+    before: The meeting ran long. 20 people stayed for the vote.
+    after: The meeting ran long. Twenty people stayed for the vote.
+
+not_flagged:
+  ja: 年（2026 was a good year.）、数字の後ろが大文字の語や記号のもの（1 Introduction、9:00 Opening remarks）、箇条書きの項目、見出しと表、言い終えていない行は指しません。前の文が句点で終わっていない数（Lane の行の次の「2 contains」）、番号に付ける略した語の後ろの数（vol. 28、H.R. 5376）も、文の頭と決められないので指しません。英語の文だけを読みます。
+  en: 'A year ("2026 was a good year."), a numeral followed by a capitalised word or a mark ("1 Introduction", "9:00 Opening remarks"), list items, headings and tables, and lines that do not end as a sentence are not reported. Nor is a number after text with no full stop ("Lane" on the line before "2 contains"), after a label written with a full stop ("vol. 28", "H.R. 5376"), since chaff cannot tell that a sentence starts there. Only English sentences are read.'
+
+rewrite:
+  depth: light
+  en:
+    direction: Spell out the number at the start of the sentence, or move the number later in the sentence. Keep the number's value.
+    pairs:
+      - before: 20 people stayed for the vote.
+        after: Twenty people stayed for the vote.
+      - before: 3,400 orders shipped in March.
+        after: In March, 3,400 orders shipped.
+    keep:
+      - the number's value and its unit
+    avoid:
+      - spelling out a large or exact figure that reads worse in words
