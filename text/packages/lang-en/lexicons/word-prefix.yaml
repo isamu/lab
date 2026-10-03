@@ -1,0 +1,31 @@
+# Prefixes that make a word from a dictionary word ("unshipped", "reupload", "multiline"). unknown-word strips one and
+# looks the rest up, with its endings. Only prefixes that attach freely in current English are listed.
+id: word-prefix
+language: en
+entries:
+  - pattern: un
+  - pattern: re
+  - pattern: non
+  - pattern: pre
+  - pattern: post
+  - pattern: over
+  - pattern: under
+  - pattern: sub
+  - pattern: super
+  - pattern: co
+  - pattern: multi
+  - pattern: inter
+  - pattern: de
+  - pattern: dis
+  - pattern: mis
+  - pattern: out
+  - pattern: auto
+  - pattern: anti
+  - pattern: semi
+  - pattern: micro
+  - pattern: mega
+  - pattern: cross
+  - pattern: self
+  - pattern: meta
+  - pattern: hyper
+  - pattern: mini

@@ -126,6 +126,8 @@ enquiries.md   business/report · English   genre from --genre
   The text was not changed. Fixing it is the writer's job.
 
   {not-run}
+
+  Turn on one experimental rule alone by naming it: npx chaffjs enable absolute-exception (the same as rules: { absolute-exception: normal } in chaff.yaml). --experimental turns on all of them.
 ```
 
 There are three findings.
@@ -173,7 +175,7 @@ enquiries.md   business/report · English   genre from --genre
   15:93   warning This sentence is passive ("discussed") but never says who did it
                   agentless-passive
 
-7 findings, 29 rules not run
+{counts}
 ```
 
 The four new findings, in plain words:
@@ -257,6 +259,7 @@ Updating the FAQ page for billing enquiries is being considered. Adding staff is
 It is a Markdown comment, so nobody opening the document sees it.
 Run it again and the two passive findings on line 15 are gone, and the first line counts what was silenced.
 
+<!-- chaff-screen: stet -->
 ```
 $ npx chaffjs enquiries.md --genre business/report --experimental --compact
 
@@ -273,7 +276,7 @@ enquiries.md   business/report · English   genre from --genre   2 stet
   9:66    warning This sentence runs 37 words (limit 25)
                   max-sentence-length
 
-5 findings, 21 rules not run
+{counts}
 ```
 
 ## Changing a rule for the whole team

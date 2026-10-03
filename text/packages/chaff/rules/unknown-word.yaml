@@ -1,0 +1,62 @@
+id: unknown-word
+layer: L2
+status: experimental
+how_to_find: unknown-word
+languages: [en]
+severity: info
+
+name:
+  ja: 辞書に無い語（綴りの誤りの候補）
+  en: Word not in the dictionary
+
+why:
+  ja: 英語の語のうち辞書に無く、一字違いの辞書の語があるもの（attched と attached）は、打ち間違いのことが多いです。chaff は英語のアダプタが持つ辞書（wink-lexicon と WordNet から作った語の一覧）で語を引き、語尾（-ed、-ing）と接頭辞（un-、re-）を外しても辞書に無い語だけを候補にします。大文字を含む語（固有名詞・略語）、コードと URL の中の語、文書で二度以上使う語（その文書の用語のことが多い）、一字違いの辞書の語が無い語は指しません。チームの言葉は chaff.yaml の names に足すと指さなくなります。
+  en: An English word that is not in the dictionary but is one letter away from a word that is ("attched" and "attached") is usually a typo. chaff looks words up in the English adapter's dictionary (a word list built from wink-lexicon and WordNet), after taking off endings (-ed, -ing) and prefixes (un-, re-). Words with a capital letter (names, acronyms), words in code and URLs, words used twice or more in the document (usually its own terms), and words with no dictionary word one letter away are not reported. Add a team's own words to names in chaff.yaml.
+
+message:
+  ja: 「{word}」は辞書にありません。「{suggestion}」の打ち間違いではありませんか
+  en: '"{word}" is not in the dictionary; did you mean "{suggestion}"?'
+
+how_to_fix:
+  ja: 打ち間違いなら直してください。正しい語なら、chaff.yaml の names に足してください。
+  en: If it is a typo, correct it. If the word is right, add it to names in chaff.yaml.
+
+placeholders:
+  word:
+    ja: 語
+    en: the word
+  suggestion:
+    ja: 辞書の語
+    en: a dictionary word
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  en: An English word that is not in the dictionary and is one letter away from one that is, such as "attched"
+  ja: 辞書に無く、一字違いの辞書の語がある英語の語（attched）
+example:
+  en:
+    before: |
+      The report is attched to this email.
+    after: |
+      The report is attached to this email.
+
+not_flagged:
+  ja: 大文字を含む語、四字より短い語、コード・URL・メールアドレスの中の語、文書で二度以上使う語、一字違いの辞書の語が無い語、chaff.yaml の names に並べた語、語彙表 known-misspelling が別に言う語は指しません。
+  en: Words with a capital letter, words shorter than four letters, words in code, URLs and email addresses, words used twice or more in the document, words with no dictionary word one letter away, words listed under names in chaff.yaml, and the misspellings known-misspelling reports are not reported.
+rewrite:
+  en:
+    direction: If the flagged word is a typo, replace it with the suggested dictionary word, or another word the sentence means. If it is a real word or a name, leave it and add it to names in chaff.yaml.
+    pairs:
+      - before: The thresholds were recalibrated and the pipline restarted.
+        after: The thresholds were recalibrated and the pipeline restarted.
+      - before: The report is attched to this email.
+        after: The report is attached to this email.
+    keep:
+      - the wording around the word
+      - names and terms that are spelled that way on purpose
+    avoid:
+      - replacing a correct technical term with the dictionary's nearest word
