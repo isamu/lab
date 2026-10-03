@@ -2,12 +2,14 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "yaml";
-import { parseGenres, presetLevelsOf } from "../../../packages/chaff/src/genre-parse.ts";
+import { parseGenres, presetLevelsOf, withRuleOffs } from "../../../packages/chaff/src/genre-parse.ts";
+import { loadRuleOffs } from "../../../packages/chaff/src/rule-offs.ts";
 import { standingIn, type GenreStanding } from "../../../packages/chaff/src/rule-genres.ts";
 import { rules, type Localized, type Rule } from "./rules";
 
 // astro build runs in text/site.
-const GENRES_FILE = resolve(process.cwd(), "..", "packages", "chaff", "genres.yaml");
+const PACKAGE = resolve(process.cwd(), "..", "packages", "chaff");
+const GENRES_FILE = resolve(PACKAGE, "genres.yaml");
 
 export type GenreEntry = {
   readonly id: string;
@@ -24,7 +26,7 @@ export type GenreGroupEntry = { readonly id: string; readonly name: Localized; r
 
 const both = (localized: Readonly<Record<string, string>>): Localized => ({ ja: localized["ja"] ?? "", en: localized["en"] ?? "" });
 
-const data = parseGenres(parse(readFileSync(GENRES_FILE, "utf8")));
+const data = withRuleOffs(parseGenres(parse(readFileSync(GENRES_FILE, "utf8"))), loadRuleOffs(resolve(PACKAGE, "rules")));
 const experimental = new Set(rules.filter((rule) => rule.status === "experimental").map((rule) => rule.id));
 const order = rules.map((rule) => rule.id);
 const inRuleOrder = (ids: readonly string[]): string[] => ids.toSorted((left, right) => order.indexOf(left) - order.indexOf(right));

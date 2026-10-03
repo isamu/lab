@@ -29,6 +29,8 @@ by_genre:
   legal: { strict: 160, normal: 200, relaxed: 260 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  legal: measured by yarn rules:measure
 
 group: readability
 summary:

@@ -4,8 +4,8 @@
 // corpus/.cache) with each document's genre. The bench columns come from the committed bench expectations.
 //   --json                 print the measurement as JSON instead of the table
 //   --write                write the corpus part to corpus/rules-measure.json, which test/test_rule_policy.ts holds the rules to
-//   --apply                measure, write corpus/rules-measure.json, and set each rule's status and severity, and genres.yaml's
-//                          measured offs, from it: the one step that places a rule that just landed (--from <json> skips the run)
+//   --apply                measure, write corpus/rules-measure.json, and set each rule's status and severity, and the groups each
+//                          is measured off for (off_for), from it: the one step that places a rule that just landed (--from <json> skips the run)
 //   --baseline <dir>       also run every .md in <dir> (never committed) and add a baseline column
 //   --baseline-genre <id>  the genre the baseline is read as (blog/tech when left out)
 //   --from <json>          read a measurement --json printed before instead of running chaff again
@@ -25,7 +25,7 @@ import {
   type RuleMeasure,
 } from "./rules-measure-score.ts";
 import { formatMeasureTable } from "./rules-measure-table.ts";
-import { allRules, applyMeasurement, MEASURE_FILE, readGenresText, readMeasurement, standingsOf } from "./rules-measure-files.ts";
+import { allRules, applyMeasurement, genreDataOf, MEASURE_FILE, readGenresText, readMeasurement, standingsOf } from "./rules-measure-files.ts";
 import { japaneseRatio } from "../packages/chaff/src/detect-language.ts";
 import { presetLevels } from "../packages/chaff/src/genre-load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -123,7 +123,7 @@ const measure = async (): Promise<Measurement> => {
 
 const tableOf = (measurement: Measurement): string[] => {
   const rules = allRules();
-  const standings = standingsOf(measurement, rules, readGenresText());
+  const standings = standingsOf(measurement, rules, genreDataOf(readGenresText()));
   return formatMeasureTable(measurement, standings, new Map(rules.map((rule) => [rule.id, rule.status])));
 };
 
