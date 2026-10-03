@@ -1,0 +1,57 @@
+id: latin-abbreviation-form
+layer: L1
+status: experimental
+how_to_find: latin-abbreviation
+word_list: latin-abbreviation
+languages: [en]
+severity: info
+
+name:
+  ja: e.g. と i.e. のピリオドの欠け
+  en: e.g. or i.e. missing a period
+
+why:
+  ja: 英語の「e.g.」「i.e.」は、ピリオドを全部付けるか（e.g.）、全部落とすか（eg、イギリスの官公庁の書き方）のどちらかです。一部だけ付けた「e.g」「eg.」は書き損じに見えます。略語は言語ごとの語彙表にあります。
+  en: '"e.g." and "i.e." take all their periods ("e.g.") or none ("eg", as GOV.UK writes it). With only some ("e.g", "eg.") they read as a slip. The abbreviations are listed in the lexicon.'
+
+message:
+  ja: 「{matched}」はピリオドが一部だけです
+  en: '"{matched}" has some of its periods but not all'
+
+how_to_fix:
+  ja: ピリオドを全部付けるか（e.g.）、全部落としてください（eg）。文書の中でほかに使っている形に合わせます。
+  en: Write all the periods ("e.g.") or none ("eg"), as the rest of the document does.
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 英語で、「e.g」「eg.」のように、e.g. と i.e. のピリオドが一部だけの所
+  en: '"e.g" or "eg." for "e.g.", and the same for "i.e."'
+example:
+  en:
+    before: |
+      Bring a document, e.g a passport.
+    after: |
+      Bring a document, e.g. a passport.
+
+not_flagged:
+  ja: ピリオドを全部落とした「eg」「ie」は、一つの書き方なので指しません。
+  en: '"eg" and "ie" with no periods are a house style and are not reported.'
+level_meaning:
+  ja: "{limit} 箇所あれば指摘"
+  en: reported once there are {limit}
+rewrite:
+  en:
+    direction: Write the abbreviation with all its periods, or with none if the rest of the document writes it that way.
+    pairs:
+      - before: Bring a document, e.g a passport.
+        after: Bring a document, e.g. a passport.
+      - before: Use the short form, ie. the one on the card.
+        after: Use the short form, i.e. the one on the card.
+    keep:
+      - the rest of the sentence
+    avoid:
+      - replacing the abbreviation with a phrase the sentence did not have

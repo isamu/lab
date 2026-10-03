@@ -1,0 +1,13 @@
+# 時刻が一日のどちらの半分かを言う語と、時刻のどちら側に書くか（午後3時、10:30 PM）。これが付けば時は 0〜12 なので、
+# 「午後13時」は時刻にならない。字面どおりに照らす。
+id: clock-meridiem
+language: ja
+entries:
+  - { pattern: "午前", position: before }
+  - { pattern: "午後", position: before }
+  - { pattern: "AM", position: after }
+  - { pattern: "PM", position: after }
+  - { pattern: "am", position: after }
+  - { pattern: "pm", position: after }
+  - { pattern: "a.m.", position: after }
+  - { pattern: "p.m.", position: after }

@@ -1,0 +1,17 @@
+# Curly quotation marks and apostrophes (pattern) and their straight forms (instead_of), by kind (group).
+# quote-style-consistency reports the less common way within each kind; neither way is called right.
+id: quote-style
+language: en
+entries:
+  - pattern: “
+    instead_of: '"'
+    group: double
+  - pattern: ”
+    instead_of: '"'
+    group: double
+  - pattern: ’
+    instead_of: "'"
+    group: single
+  - pattern: ‘
+    instead_of: "'"
+    group: single

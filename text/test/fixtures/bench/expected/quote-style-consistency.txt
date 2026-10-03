@@ -1,0 +1,14 @@
+table  13  13  0  0
+en/blog  quote-curly  found
+en/design  quote-curly  found
+en/email  quote-curly  found
+en/figures  quote-curly  found
+en/itinerary  quote-curly  found
+en/minutes  quote-curly  found
+en/note  quote-curly  found
+en/policy  quote-curly  found
+en/press  quote-curly  found
+en/proposal  quote-curly  found
+en/quote  quote-curly  found
+en/readme  quote-curly  found
+en/requirements  quote-curly  found
