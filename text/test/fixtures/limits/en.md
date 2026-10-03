@@ -56,6 +56,8 @@ The key point is the key. Here's the thing: the map matters. Honestly, time is s
 
 The board made a decision last week, and the team will conduct an analysis of the results.
 
+So, the plan holds. So, we ship.
+
 ## 🚀 Before
 
 Bring the key.
