@@ -194,6 +194,102 @@ a.results.jsonl とは比べません: 設定が違います。ルールか設�
 
 終了コード 2 で終わります。前の回は `--experimental` 付きで、今回は付いていません。
 
+## prompt や model を並べて比べる（variant）
+
+`--baseline` は、前の回と今回を比べます。同じ回の中で複数の prompt や model を比べるときは、すべての出力を 1 つのファイルに入れ、行ごとにどの variant かを書きます。
+同じ題の行には同じ `id` を付けます。variant の名前は `variant` の欄に書くか、`--variant-key` で別の欄を指します。
+
+```json
+{"id": "q3", "prompt": "prompt-a", "output": "# 要点\n\n問い合わせ 4,812 件に答え、最初の返信までの時間の中央値は 6 時間から 2.5 時間に縮みました。\n…", "reference": "# サポート窓口の四半期報告\n…"}
+{"id": "q3", "prompt": "prompt-b", "output": "# 要点\n\n問い合わせ 4,812 件に答え、最初の返信は大幅に速くなりました。\n…", "reference": "# サポート窓口の四半期報告\n…"}
+```
+
+`prompts-ja.jsonl` は、例 1〜3 の 3 つの題に 2 つの prompt で答えさせた出力です。どの行も `prompt` の欄に名前があります。
+`prompt-a` の返金の回答は、2 つめの引用を条文どおり「送料は返金しない。」と書いています。
+いつもの要約のあとに、variant を並べた表が出ます。
+
+```
+$ npx chaffjs grade prompts-ja.jsonl --experimental --variant-key prompt
+prompts-ja.jsonl: 6 件の出力、4 件が通り、2 件が落ちた
+
+落ちた出力
+  ✗ q3 (prompt-b): facts.dropped 3 > 0, facts.added 1 > 0
+  ✗ refund (prompt-b): citations.failed 1 > 0
+…
+
+2 つの variant を並べた: どの variant にもある id の出力 3 件
+                prompt-a     prompt-b
+  通った        3/3（100%）  1/3（33.3%）
+  落ちた事実    0            3
+  足された事実  0            1
+  外れた引用    0/2          1/2
+
+ルールごとの率（1,000 字あたり）
+                          prompt-a  prompt-b
+  ai-generated-composite  0.0       3.1
+  ai-tell                 0.0       3.1
+  closing-cliche          0.0       6.1
+  padded-intro            0.0       3.1
+
+合否が分かれた出力 2 件
+  ✗ q3: 通った prompt-a、落ちた prompt-b（facts.dropped 3 > 0, facts.added 1 > 0）
+  ✗ refund: 通った prompt-a、落ちた prompt-b（citations.failed 1 > 0）
+```
+
+読み方:
+- どの列も同じ題を数えます。比べるのは、すべての variant にあり、言語とジャンルが同じ `id` だけです。それ以外の `id` は「比べなかった id」に、無かった variant と並びます。
+- 「外れた引用」は、照らした数のうち外れた数です。事実は要約と同じに数え、`grade:` で許した種類は数えません。
+- `chaff.yaml` に `grade:` があれば、「減点の和」の行が足されます。
+- 通った割合は出力の割合で、点ではありません。満点のある点は、ここでも出しません。
+
+`--variant-key` を渡すと、どの行にもその欄が要ります。`variant` の欄を使うときも、一行にでもあれば全行に要ります。
+名前の無い行や、同じ variant に同じ `id` が二度ある行があれば、終了コード 2 で止まります。
+終了コードはほかは variant が無いときと同じです。`--baseline` は、前の回の同じ `id` と同じ variant を組にします。
+
+CI のログには、`--compact` が合否の分かれた題を 1 行ずつ足します。
+
+```
+$ npx chaffjs grade prompts-ja.jsonl --experimental --variant-key prompt --compact
+…
+disagree	q3	pass prompt-a	fail prompt-b
+disagree	refund	pass prompt-a	fail prompt-b
+合否が分かれた出力 2 件
+```
+
+PR のコメントには、`--format markdown` が同じ表を Markdown で書きます。`--format json` は要約に `variants` の欄を足します。
+
+```
+$ npx chaffjs grade prompts-ja.jsonl --experimental --variant-key prompt --format markdown
+## chaff grade: prompts-ja.jsonl
+
+6 件の出力、4 件が通り、2 件が落ちた
+…
+### 2 つの variant を並べた: どの variant にもある id の出力 3 件
+
+|  | prompt-a | prompt-b |
+| --- | --- | --- |
+| 通った | 3/3（100%） | 1/3（33.3%） |
+| 落ちた事実 | 0 | 3 |
+| 足された事実 | 0 | 1 |
+| 外れた引用 | 0/2 | 1/2 |
+…
+```
+
+評価の仕組みの中からは、`grade()` に `variant` を渡し、結果を `compareVariants()` に渡します。返るのは、`--format json` が `variants` に入れるものと同じです。
+
+```js
+import { compareVariants, grade } from "chaffjs/grade";
+
+const results = [
+  await grade(answerA, { id: "q3", variant: "prompt-a", reference }),
+  await grade(answerB, { id: "q3", variant: "prompt-b", reference }),
+];
+const { columns, disagreements } = compareVariants(results);
+console.log(columns.map((column) => `${column.variant} ${column.passed}/${column.outputs}`)); // [ 'prompt-a 1/1', 'prompt-b 0/1' ]
+```
+
+`compareVariants({ "prompt-a": resultsA, "prompt-b": resultsB })` のように、variant ごとに分けた結果も渡せます。
+
 ## 例 1: 要約は元の事実を守っているか
 
 元の文書（`source.md`）は、短いサポートの報告です。2 つの model に要約させました。
