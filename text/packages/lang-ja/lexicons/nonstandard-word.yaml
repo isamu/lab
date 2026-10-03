@@ -1,0 +1,16 @@
+# 書き言葉では標準的でないとされる形と、標準の形（instead_of）。nonstandard-word が読む。
+# 話し言葉では広く使われるが、文書では誤りと読まれる形だけを載せる。書き誤りは known-misspelling、ら抜きは ra-nuki が扱う。
+# 自作。公開された一覧から写したものではない。
+id: nonstandard-word
+language: ja
+entries:
+  - pattern: 違かった
+    instead_of: 違った
+  - pattern: 違くて
+    instead_of: 違って
+  - pattern: 違くない
+    instead_of: 違わない
+  - pattern: なにげに
+    instead_of: なにげなく
+  - pattern: すいません
+    instead_of: すみません
