@@ -994,6 +994,14 @@
         "cleanSamples": 12
       }
     },
+    "cross-doc-broken-link": {
+      "groups": {},
+      "bench": {
+        "planted": 4,
+        "found": 4,
+        "falseAlarms": 0
+      }
+    },
     "cushion-phrase-density": {
       "groups": {
         "academic": {
