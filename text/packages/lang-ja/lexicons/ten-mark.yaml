@@ -1,0 +1,6 @@
+# 読点。max-ten が一文の中の数を数える。カンマ（，）で書く文書もあるので両方。
+id: ten-mark
+language: ja
+entries:
+  - pattern: 、
+  - pattern: ，
