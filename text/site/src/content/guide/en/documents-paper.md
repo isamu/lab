@@ -18,7 +18,7 @@ These are the first things a reviewer notices. They cost the reader's trust befo
 
 ## What chaff checks, and what it does not
 
-These are the main rules for this genre. All are experimental, and run with `--experimental`.
+These are the main rules for this genre. All of them run by default.
 
 | Rule | What it finds |
 | --- | --- |
@@ -82,11 +82,11 @@ paper.md   blog/tech · English   genre from the default
 {counts}
 ```
 
-Add the genre, as suggested, and the experimental rules too.
+Add the genre, as suggested.
 `--compact` prints each finding on two lines.
 
 ```
-$ npx chaffjs paper.md --genre academic/paper --experimental --compact
+$ npx chaffjs paper.md --genre academic/paper --compact
 
 paper.md   academic/paper · English   genre from --genre
 
@@ -124,23 +124,15 @@ Put this `chaff.yaml` in the folder that holds your paper.
 ```yaml
 genre: academic/paper
 language: en
-
-rules:
-  spelling-consistency: normal
-  doubled-word: normal
-  dangling-figure-reference: normal
 ```
 
-With this file in place, `npx chaffjs paper.md --compact` alone shows all the findings above.
-When the journal sets a spelling, write each pair under `prefer` and turn on `preferred-term`:
+With this file in place, `npx chaffjs paper.md` reads the file as a paper without `--genre`.
+When the journal sets a spelling, write each pair under `prefer`; `preferred-term` then flags the other spelling:
 
 ```yaml
 prefer:
   behaviour: behavior
   organise: organize
-
-rules:
-  preferred-term: normal
 ```
 
 How `prefer` works is in [Configuration](./configuration), under "Making the team's spelling consistent".

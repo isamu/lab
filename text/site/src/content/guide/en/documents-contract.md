@@ -156,39 +156,10 @@ contract.md   legal/contract · English   genre from --genre
 | 25 | `numbering-gap` | Article 5 follows Article 3 | Renumber, and fix every reference to the renumbered articles |
 | 27 | `date-weekday-mismatch` | December 5, 2026 is a Saturday | Fix the weekday, or move the date to a Monday |
 | 31 | `duplicate-definition` | "Services" is defined in Article 1 and in Article 6 | Keep one definition. If they differ, the parties decide which is right |
+| 33 | `title-case-consistency` | The heading "Article 7 (Good faith)" is in sentence case, and the rest are in Title Case | Write the heading the way the rest are |
 
 Renumbering turns Article 5 into Article 4, and moves the reference to Article 9 too.
 After fixing, run chaff again to check that the references still match.
-
-## Experimental rules add little here
-
-With `--experimental`, one more finding appears.
-
-```
-$ npx chaffjs contract.md --genre legal/contract --experimental --compact
-
-contract.md   legal/contract · English   genre from --genre
-
-  11:26   warning The period "November 1, 2026 through October 31, 2026" ends before it starts
-                  date-range-reversed
-  21:12   error   The total $800 is not the sum of the amounts above it ($700)
-                  total-mismatch
-  23:111  error   "Article 9" (address 9) is not in this document
-                  dangling-reference
-  25:1    error   "Article 5" follows "Article 3" (expected number 4)
-                  numbering-gap
-  27:124  error   2026-12-05 is a Saturday, not a Monday
-                  date-weekday-mismatch
-  31:20   warning "Services" is also defined on line 7
-                  duplicate-definition
-  33:26   info    This heading's capitalisation differs from the rest (1 in this document)
-                  title-case-consistency
-
-{counts}
-```
-
-The heading "Article 7 (Good faith)" is in sentence case, and chaff reads the rest of the headings as Title Case.
-If your team writes headings one way, keep `title-case-consistency` on, as in the starter file below.
 
 ## No checks that read meaning
 
@@ -203,9 +174,6 @@ Put this `chaff.yaml` in the folder that holds your contracts.
 ```yaml
 genre: legal/contract
 language: en
-
-rules:
-  title-case-consistency: normal
 ```
 
 With the genre written down, you no longer type `--genre`. `npx chaffjs contract.md --compact` alone shows all the findings above.
