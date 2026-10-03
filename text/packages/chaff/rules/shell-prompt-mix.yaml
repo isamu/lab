@@ -1,0 +1,122 @@
+id: shell-prompt-mix
+layer: L1
+status: experimental
+how_to_find: shell-prompt
+requires: [markdown]
+severity: info
+
+name:
+  ja: シェルのコマンドにプロンプトを付けたり付けなかったりしている
+  en: Shell commands with and without a prompt
+
+why:
+  ja: 「$ npm install」と「npm install」が一つの文書に混ざっていると、読み手は「$」まで打つのか迷い、コピーしたコマンドが動かないこともあります。シェルのブロック（```bash、```console）のうち、全部の行にプロンプト（$）を付けたブロックと、一つも付けないブロックを比べ、少ないほうを指します。出力と一緒に書いたブロック（プロンプトのある行と無い行が混ざる）は見ません。どちらに揃えるかは決めません。
+  en: 'When "$ npm install" and "npm install" both appear in one document, the reader wonders whether to type the "$", and a copied command may fail. chaff compares shell blocks (```bash, ```console) whose every line has a prompt ($) with those where no line has one, and points at the fewer. A block that shows a command with its output (some lines prompted, some not) is not read. Which way is right is not decided.'
+
+message:
+  ja: このブロックだけ、コマンドへのプロンプト（$）の付け方がほかと違います（ほかの {majority} ブロック）
+  en: This block writes its commands with a prompt ($) differently from the other {majority} blocks
+
+how_to_fix:
+  ja: 多いほうに揃えてください。コピーして使うコマンドなら、プロンプトを付けないほうが打ち間違えません。
+  en: Match the majority. For commands meant to be copied, leaving the prompt out avoids pasting it.
+
+levels: { strict: 3, normal: 2, relaxed: 1 }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: シェルのブロックで、「$」のプロンプトを付けたコマンドと付けないコマンドが混ざっている所
+  en: Shell blocks that write commands with a "$" prompt in some places and without it in others
+example:
+  ja:
+    config: { genre: docs/manual }
+    before: |
+      # 使い方
+
+      ```bash
+      npm install chaffjs
+      ```
+
+      ```bash
+      npx chaffjs init
+      ```
+
+      ```bash
+      $ npx chaffjs README.md
+      ```
+    after: |
+      # 使い方
+
+      ```bash
+      npm install chaffjs
+      ```
+
+      ```bash
+      npx chaffjs init
+      ```
+
+      ```bash
+      npx chaffjs README.md
+      ```
+  en:
+    config: { genre: docs/manual }
+    before: |
+      # Usage
+
+      ```bash
+      npm install chaffjs
+      ```
+
+      ```bash
+      npx chaffjs init
+      ```
+
+      ```bash
+      $ npx chaffjs README.md
+      ```
+    after: |
+      # Usage
+
+      ```bash
+      npm install chaffjs
+      ```
+
+      ```bash
+      npx chaffjs init
+      ```
+
+      ```bash
+      npx chaffjs README.md
+      ```
+
+not_flagged:
+  ja: シェル以外の言語のブロック、言語名の無いブロック、コマンドと出力を一緒に書いたブロック、コメント（#）の行は見ません。少ないほうが {limit} ブロックを超えるときは使い分けとみなします。
+  en: Blocks in other languages or without a language, blocks that show a command with its output, and comment lines (#) are not read. When the fewer kind is more than {limit} blocks, it is taken as a choice.
+level_meaning:
+  ja: 少ないほうの書き方が {limit} ブロック以下のとき指摘
+  en: reported when the fewer style appears in {limit} blocks or fewer
+rewrite:
+  ja:
+    direction: 指されたブロックのプロンプトを、文書の多いほうに揃えてください。付けない側に揃えるなら行の頭の「$ 」を消し、付ける側なら足します。コマンドそのものは変えません。
+    pairs:
+      - before: "$ npx chaffjs README.md"
+        after: "npx chaffjs README.md"
+      - before: "npm test"
+        after: "$ npm test"
+    keep:
+      - コマンドと引数
+    avoid:
+      - 出力の行にプロンプトを付ける
+  en:
+    direction: Bring the block's prompts in line with the document's majority. Toward no prompt, remove the "$ " at the start of each line; toward a prompt, add it. Leave the commands themselves unchanged.
+    pairs:
+      - before: "$ npx chaffjs README.md"
+        after: "npx chaffjs README.md"
+      - before: "npm test"
+        after: "$ npm test"
+    keep:
+      - the commands and their arguments
+    avoid:
+      - putting a prompt before an output line
