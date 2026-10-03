@@ -1,0 +1,59 @@
+id: less-for-fewer
+layer: L3
+status: stable
+how_to_find: amount-for-count
+requires: [pos]
+languages: [en]
+extra_word_lists: [amount-quantifier, invariant-noun, finite-auxiliary]
+severity: info
+
+name:
+  ja: 数えられる名詞に less
+  en: '"Less" with a countable plural'
+
+why:
+  ja: 英語の書き言葉では、量には less、数には fewer を使います（less time、fewer errors）。「less errors」「less people」は話し言葉ではよく聞きますが、改まった文書では誤りと読まれます。直後の名詞が数えられる複数とはっきり読める所だけを指します。名詞や数の後ろの less は「引く」の意味（revenue less costs）なので指しません。
+  en: 'Written English uses "less" for an amount and "fewer" for a count ("less time", "fewer errors"). "Less errors" and "less people" are common in speech, but a formal reader takes them as a slip. Only a "less" directly before a noun that reads clearly as a countable plural is reported. "Less" after a noun or a number means "minus" ("revenue less costs") and is not reported.'
+
+message:
+  ja: 「{word}」は数を言うので「{suggestion}」と書きます
+  en: '"{word}" counts things; write "{suggestion}"'
+
+how_to_fix:
+  ja: 数えられる名詞の複数の前では fewer を使ってください（less errors → fewer errors）。量を言いたいなら、名詞を量の語に替えてください（less work）。
+  en: Use "fewer" before a countable plural ("less errors" becomes "fewer errors"). To speak of an amount, use a word for the amount ("less work").
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: 'A narrator and a character speak as they speak: "less people" in dialogue is the voice.'
+  speech: "A transcript keeps the speaker's words."
+
+group: slips
+summary:
+  ja: 英語で、「less errors」のように数えられる名詞の複数に less を付けた所
+  en: '"Less" before a countable plural, as in "less errors", where written English uses "fewer"'
+example:
+  en:
+    before: The new parser reports less errors on long files.
+    after: The new parser reports fewer errors on long files.
+
+not_flagged:
+  ja: 量の名詞（less time、less work）、形容詞に付く less（less experienced staff）、「引く」の less（revenue less costs、$500 less fees）、less than、単数と複数が同じ綴りの名詞（less data）は指しません。
+  en: 'Mass nouns ("less time", "less work"), "less" before an adjective ("less experienced staff"), "less" meaning minus ("revenue less costs", "$500 less fees"), "less than", and nouns spelled alike in both numbers ("less data") are not reported.'
+
+rewrite:
+  depth: light
+  en:
+    direction: Replace "less" with "fewer" before the countable plural. Change only that word.
+    pairs:
+      - before: The new parser reports less errors on long files.
+        after: The new parser reports fewer errors on long files.
+      - before: We hired less people in the spring.
+        after: We hired fewer people in the spring.
+    keep:
+      - the noun and the rest of the sentence
+      - '"less" before an amount ("less time") or meaning minus ("revenue less costs")'
+    avoid:
+      - turning every "less" into "fewer", including amounts
