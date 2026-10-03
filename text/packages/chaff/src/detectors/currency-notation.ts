@@ -1,5 +1,6 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
+import { formMinority } from "./form-minority.ts";
 import { quoteAround } from "./quote-around.ts";
 
 // 一つの文書で、同じ通貨の金額を二通りに書いた所（1,000円 と ¥1,000、$20 と 20 dollars）。どちらが正しいかは決めず、少ないほうを指す。
@@ -13,7 +14,6 @@ export type WrittenAmount = { readonly offset: number; readonly written: string;
 /** 少ないほうの書き方の金額と、多いほうの書き方の例、その通貨の金額の数。 */
 export type CurrencyMinority = { readonly odd: WrittenAmount; readonly usual: string; readonly count: number; readonly of: number };
 
-const PERCENT = 100;
 const AMOUNT = "[0-9０-９]+(?:[,，][0-9０-９]{3})*(?:[.．][0-9０-９]+)?";
 
 const alternation = (words: readonly string[]): string => words.map(escapeRegExp).join("|");
@@ -52,14 +52,9 @@ export const amountsIn = (text: string, forms: readonly CurrencyForm[], multipli
     .toSorted((left, right) => left.offset - right.offset);
 
 const minorityOf = (ofCurrency: readonly WrittenAmount[], limit: number): CurrencyMinority[] => {
-  const counts = new Map<string, number>();
-  ofCurrency.forEach((amount) => counts.set(amount.form, (counts.get(amount.form) ?? 0) + 1));
-  const [top, second] = [...counts].toSorted((left, right) => right[1] - left[1]);
-  if (top === undefined || second === undefined || top[1] === second[1]) return [];
-  const odd = ofCurrency.filter((amount) => amount.form !== top[0]);
-  const usual = ofCurrency.find((amount) => amount.form === top[0]);
-  if (usual === undefined || odd.length * PERCENT > ofCurrency.length * limit) return [];
-  return odd.map((amount) => ({ odd: amount, usual: usual.written, count: odd.length, of: ofCurrency.length }));
+  const minority = formMinority(ofCurrency, limit);
+  if (minority === undefined) return [];
+  return minority.odd.map((amount) => ({ odd: amount, usual: minority.usual.written, count: minority.odd.length, of: ofCurrency.length }));
 };
 
 /**

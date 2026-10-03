@@ -1,0 +1,73 @@
+id: range-notation-consistency
+layer: L2
+status: stable
+how_to_find: range-notation
+severity: info
+
+name:
+  ja: 範囲の記号が混ざっている
+  en: Ranges written with two marks
+
+why:
+  ja: 数の範囲を「10〜20」と「10-20」、「10–20」と「10-20」のように二通りの記号で書くと、読み手は記号の違いに意味があるのか（ハイフンは引き算や番号か）と迷います。資料を寄せ集めたときや、入力のしかたが人によって違うときに起きます。どの記号が正しいかは決めず、文書の中で少ないほうを指します。
+  en: When one document writes ranges with two marks ("10–20" and "10-20", "10〜20" and "10-20"), the reader wonders whether the difference means something, a hyphen being also a minus sign or part of a number. It happens when texts are pasted together or typed by different people. chaff does not decide which mark is right; it points at the one the document uses less.
+
+message:
+  ja: 範囲を「{written}」と書いています（この文書はふつう「{usual}」のように書きます。{of} 箇所のうち {count} 箇所が違う）
+  en: 'The range "{written}" here, where the document usually writes ranges like "{usual}" ({count} of {of})'
+
+how_to_fix:
+  ja: 文書の多いほうの記号に合わせてください。チームで決めているなら、STYLE.md に書いておくと迷いません。
+  en: Match the mark the rest of the document uses. If the team has decided, write it in the style guide.
+
+# 少ないほうが、範囲の何パーセントまでなら「混ざっている」と見るか。これを超えたら、文書が使い分けている。
+levels: { strict: 49, normal: 34, relaxed: 20 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「10〜20」と「10-20」のように、一つの文書で数の範囲を二通りの記号で書いている所
+  en: Ranges written with two marks in one document, such as "10–20" and "10-20"
+example:
+  ja:
+    before: |
+      定員は 10〜20 名、所要は 30〜40 分、費用は 500〜800 円です。対象は 6-12 歳です。
+    after: |
+      定員は 10〜20 名、所要は 30〜40 分、費用は 500〜800 円です。対象は 6〜12 歳です。
+  en:
+    before: |
+      Groups of 10–20 meet for 30–40 minutes, at 5–8 dollars each. Children aged 6-12 are welcome.
+    after: |
+      Groups of 10–20 meet for 30–40 minutes, at 5–8 dollars each. Children aged 6–12 are welcome.
+
+not_flagged:
+  ja: 前後にさらに数の続く並び（日付の 2026-10-02、電話番号、時刻の 10:00〜12:00、版）と、終わりが始まりより小さいもの（郵便番号の 100-0001、試合の 3-2）は範囲と読みません。「10から20」のような言葉の範囲は比べません。少ないほうが範囲の三分の一を超える文書と、二つの記号が同じ数の文書は、使い分けと読んで言いません。コードの中は読みません。
+  en: Runs with more numbers around them (the date 2026-10-02, phone numbers, times such as 10:00–12:00, versions) and pairs whose end is smaller than the start (a score of 3-2, a postcode such as 100-0001) are not read as ranges. Words ("10 to 20") are not compared. When the less common mark is over a third of the ranges, or the two are equally common, the document is read as using both on purpose. Code is not read.
+level_meaning:
+  ja: 少ないほうの記号が、範囲の {limit}% 以下のとき指摘
+  en: reported when the less common mark is {limit}% of the ranges or less
+
+rewrite:
+  ja:
+    direction: 範囲の記号を、文書で多いほうにそろえてください。数と単位はそのまま残します。
+    pairs:
+      - before: 定員は 10〜20 名、対象は 6-12 歳です。
+        after: 定員は 10〜20 名、対象は 6〜12 歳です。
+      - before: 所要は 30～40 分、費用は 500〜800 円です。
+        after: 所要は 30〜40 分、費用は 500〜800 円です。
+    keep:
+      - 範囲の数と単位
+    avoid:
+      - 日付や電話番号のハイフンまで範囲の記号に変える
+  en:
+    direction: Write every range with the mark the document mostly uses. Keep the numbers and units as they are.
+    pairs:
+      - before: Groups of 10–20 meet. Children aged 6-12 are welcome.
+        after: Groups of 10–20 meet. Children aged 6–12 are welcome.
+      - before: Sessions last 30–40 minutes and cost 5~8 dollars.
+        after: Sessions last 30–40 minutes and cost 5–8 dollars.
+    keep:
+      - the numbers and units of each range
+    avoid:
+      - changing the hyphens in dates, phone numbers or part numbers
