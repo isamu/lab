@@ -118,8 +118,12 @@ minutes.md   business/meeting-notes · English   genre from --genre
                   numbering-gap
   20:1    warning The first sentence repeats the heading "4. Launch date"
                   heading-echo
+  22:1    warning The heading "Decisions" has no number, while 3 of its siblings do ("1. Actions from last week")
+                  heading-numbering-mix
   24:23   warning "three points" is announced, but the number of items in the list below is 2
                   announced-count-mismatch
+  29:1    warning The heading "Actions" has no number, while 3 of its siblings do ("1. Actions from last week")
+                  heading-numbering-mix
 
 {counts}
 ```
@@ -131,6 +135,7 @@ minutes.md   business/meeting-notes · English   genre from --genre
 | 3 | `date-weekday-mismatch` | October 7, 2026 is a Wednesday | Fix the weekday. If the meeting was on Tuesday, fix the date |
 | 10, 14, 20 | `heading-echo` | Each section's first sentence repeats its heading | Start with what is new: "The contact form bug was fixed on September 30." |
 | 18 | `numbering-gap` | Item 2 is followed by item 4 | Renumber to 3, or add the missing item 3 |
+| 22, 29 | `heading-numbering-mix` | "Decisions" and "Actions" have no number, while the agenda headings beside them do | Number them too, or put them at a different heading level from the numbered agenda items |
 | 24 | `announced-count-mismatch` | It says "three points", but there are two | Add the missing decision, or say "two points" |
 
 "It was decided" and "may be moved" do not say who decided or who moves it. This genre leaves passives alone, so a person reads for them.
