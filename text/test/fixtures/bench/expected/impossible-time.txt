@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  impossible-time-ja  found
+ja/design  impossible-time-ja  found
+ja/email  impossible-time-ja  found
+ja/figures  impossible-time-ja  found
+ja/itinerary  impossible-time-ja  found
+ja/minutes  impossible-time-ja  found
+ja/note  impossible-time-ja  found
+ja/policy  impossible-time-ja  found
+ja/press  impossible-time-ja  found
+ja/proposal  impossible-time-ja  found
+ja/quote  impossible-time-ja  found
+ja/readme  impossible-time-ja  found
+ja/requirements  impossible-time-ja  found
+en/blog  impossible-time-en  found
+en/design  impossible-time-en  found
+en/email  impossible-time-en  found
+en/figures  impossible-time-en  found
+en/itinerary  impossible-time-en  found
+en/minutes  impossible-time-en  found
+en/note  impossible-time-en  found
+en/policy  impossible-time-en  found
+en/press  impossible-time-en  found
+en/proposal  impossible-time-en  found
+en/quote  impossible-time-en  found
+en/readme  impossible-time-en  found
+en/requirements  impossible-time-en  found

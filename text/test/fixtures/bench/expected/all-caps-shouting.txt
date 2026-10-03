@@ -1,0 +1,13 @@
+table  12  12  0  0
+en/blog  caps-shout  found
+en/design  caps-shout  found
+en/email  caps-shout  found
+en/figures  caps-shout  found
+en/itinerary  caps-shout  found
+en/minutes  caps-shout  found
+en/note  caps-shout  found
+en/press  caps-shout  found
+en/proposal  caps-shout  found
+en/quote  caps-shout  found
+en/readme  caps-shout  found
+en/requirements  caps-shout  found

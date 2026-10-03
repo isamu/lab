@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  question-halfwidth  found
+ja/design  question-halfwidth  found
+ja/email  question-halfwidth  found
+ja/figures  question-halfwidth  found
+ja/itinerary  question-halfwidth  found
+ja/minutes  question-halfwidth  found
+ja/note  question-halfwidth  found
+ja/policy  question-halfwidth  found
+ja/press  question-halfwidth  found
+ja/proposal  question-halfwidth  found
+ja/quote  question-halfwidth  found
+ja/readme  question-halfwidth  found
+ja/requirements  question-halfwidth  found
