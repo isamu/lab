@@ -103,7 +103,7 @@ const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
   const { genre, from, unread } = resolved;
   if (unread !== undefined) console.error(`chaff: ${CLI_TEXT[uiLanguageOf(language)].unreadFrontMatterGenre(path, unread, GENRES)}`);
   const baseline = argv.includes("--show-baseline") ? undefined : readBaseline(join(process.cwd(), BASELINE_FILE));
-  const split = splitByBaseline(path, applied.kept, baseline);
+  const split = splitByBaseline(path, applied.kept, baseline, process.cwd());
   const result = { ...raw, findings: split.fresh };
   const { header, notes } = fileHeader(path, source, language, { genre, from, unread }, { shelved: split.shelved, hushed: applied.suppressed.length });
   const notRun = notRunAmong(applied.named, raw.skipped);
@@ -237,7 +237,7 @@ const runBaseline = async (targets: readonly string[], argv: readonly string[], 
     return 1;
   }
   const results = await inspectRun(paths, config, [...argv, "--show-baseline"]);
-  const entries = results.flatMap((result) => fingerprints(result.outcome.path, result.kept));
+  const entries = results.flatMap((result) => fingerprints(result.outcome.path, result.kept, process.cwd()));
   const file = join(process.cwd(), BASELINE_FILE);
   writeBaseline(file, entries);
   console.log(hostText(config).baselineDone(paths.length, entries.length, BASELINE_FILE).join("\n"));

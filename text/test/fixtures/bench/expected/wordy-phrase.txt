@@ -1,0 +1,13 @@
+table  12  12  0  0
+en/blog  wordy-in-order-to  found
+en/design  wordy-in-order-to  found
+en/email  wordy-in-order-to  found
+en/figures  wordy-in-order-to  found
+en/itinerary  wordy-in-order-to  found
+en/minutes  wordy-in-order-to  found
+en/note  wordy-in-order-to  found
+en/press  wordy-in-order-to  found
+en/proposal  wordy-in-order-to  found
+en/quote  wordy-in-order-to  found
+en/readme  wordy-in-order-to  found
+en/requirements  wordy-in-order-to  found
