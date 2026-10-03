@@ -221,10 +221,10 @@ prompts-ja.jsonl: 6 件の出力、4 件が通り、2 件が落ちた
 
 ルールごとの率（1,000 字あたり）
                           prompt-a  prompt-b
-  ai-generated-composite  0.0       3.1
-  ai-tell                 0.0       3.1
-  closing-cliche          0.0       6.1
-  padded-intro            0.0       3.1
+  ai-generated-composite  0.0       3.0
+  ai-tell                 0.0       3.0
+  closing-cliche          0.0       6.0
+  padded-intro            0.0       3.0
 
 合否が分かれた出力 2 件
   ✗ q3: 通った prompt-a、落ちた prompt-b（facts.dropped 3 > 0, facts.added 1 > 0）
