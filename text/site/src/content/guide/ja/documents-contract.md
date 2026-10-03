@@ -49,7 +49,7 @@ chaff は、番号、参照、定義、日付、金額がかみ合っている�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 次の契約書を `keiyaku.md` という名前で保存しました。会社の名前は架空です。
 
-```markdown
+```markdown file=keiyaku.md
 # ウェブサイト保守業務委託契約書
 
 株式会社みなと商事（以下「甲」という。）と、合同会社ささき制作（以下「乙」という。）は、次のとおり契約を結ぶ。
@@ -96,7 +96,7 @@ keiyaku.md   blog/tech · 日本語   ジャンルは既定から
    契約書・規約のようです。--genre legal/contract を試せます
 
 
-指摘 0 件、動いていない rule 94 件
+{counts}
 ```
 
 勧められたとおり、`--genre legal/contract` を付けてかけ直します。
@@ -120,7 +120,7 @@ keiyaku.md   legal/contract · 日本語   ジャンルは--genreから
   31:9    warning 「本業務」は 7 行目でも定義されています
                   duplicate-definition
 
-指摘 6 件、動いていない rule 95 件
+{counts}
 ```
 
 `error` は、数や参照が食い違っていて、どちらかが必ず間違っている所です。
