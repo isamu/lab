@@ -1,0 +1,18 @@
+# 研究論文の節の見出し。二つ以上ある文書は、論文として要旨を持つはずと見る。番号やコロンの違いは問わない。
+id: paper-section-heading
+language: ja
+entries:
+  - pattern: はじめに
+  - pattern: 序論
+  - pattern: 緒言
+  - pattern: 背景
+  - pattern: 関連研究
+  - pattern: 方法
+  - pattern: 手法
+  - pattern: 研究方法
+  - pattern: 対象と方法
+  - pattern: 実験
+  - pattern: 結果
+  - pattern: 考察
+  - pattern: 結論
+  - pattern: おわりに

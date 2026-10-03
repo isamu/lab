@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  teki-many  found
+ja/design  teki-many  found
+ja/email  teki-many  found
+ja/figures  teki-many  found
+ja/itinerary  teki-many  found
+ja/minutes  teki-many  found
+ja/note  teki-many  found
+ja/policy  teki-many  found
+ja/press  teki-many  found
+ja/proposal  teki-many  found
+ja/quote  teki-many  found
+ja/readme  teki-many  found
+ja/requirements  teki-many  found
