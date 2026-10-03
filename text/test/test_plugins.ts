@@ -182,7 +182,7 @@ describe("plugins", () => {
     it("a word-list rule does not run where the plugin has no list for the language, and says so", async () => {
       const files = { ...project(WITH_FOO), "chaff.yaml": "language: ja\nplugins: [chaff-plugin-foo]\n", "a.md": "# 計画\n\n公開日は TBD です。\n" };
       const run = await runCli(files, ["a.md"], "ja_JP.UTF-8");
-      assert.match(run.out, /foo\/weasel（ja の語彙表 foo\/weasel が無いため）/u);
+      assert.match(run.out, /foo\/weasel（プラグイン foo に ja の語彙表 weasel が無いため）/u);
       assert.match(run.out, /A date left as TBD/u);
     });
 

@@ -1,0 +1,36 @@
+# A request whose deadline is a feeling ("soon", "近日中に"). The words are in lexicons/<language>/vague-deadline.yaml,
+# so a document in a language without that file is listed as not run, not passed.
+id: vague-deadline
+type: words
+word_list: vague-deadline
+name: { ja: 期限があいまいな依頼, en: A deadline that is not a date }
+why:
+  ja: 「近日中」や「なるべく早く」は、読む人ごとに違う日を指します。依頼した側と受けた側で、締め切りがずれます。
+  en: '"Soon" and "as soon as possible" mean a different day to each reader, so the one asking and the one asked end up with different deadlines.'
+how_to_fix: { ja: 日付か、何日以内かを書きます。, en: Write a date, or a number of days. }
+message:
+  ja: 「{matched}」は日付ではありません
+  en: '"{matched}" is not a date'
+levels: { strict: error, normal: warning, relaxed: info }
+use_for: [business, docs]
+group: wording
+summary: { ja: 日付の代わりに「近日中」と書いた依頼, en: A request that says "soon" where a date belongs }
+example:
+  ja: { before: 資料は近日中に送ってください。, after: 資料は 5 月 10 日までに送ってください。 }
+  en: { before: Please send the slides soon., after: Please send the slides by 10 May. }
+rewrite:
+  depth: light
+  ja:
+    direction: あいまいな期限を、本文にある日付か日数に置き換えます。本文に無ければ［日付］と空けて書き手に聞きます。
+    pairs:
+      - { before: 資料は近日中に送ってください。, after: 資料は［日付］までに送ってください。 }
+      - { before: なるべく早くご返信ください。, after: 5 月 10 日までにご返信ください。 }
+    keep: [依頼の中身, 依頼する相手]
+    avoid: [本文に無い日付を作る]
+  en:
+    direction: Replace the vague deadline with the date or number of days the text gives. If it gives none, leave [date] and ask the writer.
+    pairs:
+      - { before: Please send the slides soon., after: "Please send the slides by [date]." }
+      - { before: Reply as soon as possible., after: Reply by 10 May. }
+    keep: [what is asked, who is asked]
+    avoid: [inventing a date the text does not give]

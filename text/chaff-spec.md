@@ -123,7 +123,7 @@ chaff-lang-ko          第三者のアダプタは非 scope で名乗る
 
 | | 名前 | 誰が出すか |
 | --- | --- | --- |
-| 公式アダプタ | `@chaffjs/<言語>` | この repo |
+| 公式アダプタ | `@chaffjs/lang-<言語>` | この repo |
 | 第三者アダプタ | `chaff-lang-<言語>` | 誰でも |
 
 scope 側は名前を押さえられ、非 scope 側は誰でも参入できる。どちらか一方だけを
@@ -1609,14 +1609,16 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 パッケージは `chaff.yaml` のあるフォルダから Node の `require.resolve` と同じに探す。
 
 - プラグインは `definePlugin` を `export default` する。`name` はパッケージの名前から決まり（`chaff-plugin-foo` は `foo`）、違えば断る。
+- **YAML だけのプラグイン（ルールの束）も書ける。** フォルダに目印（`chaff-plugin.yaml`、または package.json の `chaff` 欄）を置き、`rules/*.yaml`（1 ファイルに 1 つのルールか、ルールの並び）、`lexicons/<言語>/<名前>.yaml`（語の並び。`{ pattern, rewrite }` で使う書き方も書ける）、`styles/*.yaml` を並べる。コードは要らず、何も実行しない。目印に `name` と `apiVersion` を書ける（書かなければ、名前はパッケージの名前から、版はいまの版）。
+- 束は、コードのプラグインの default export と同じ形に読んでから同じ確かめ（名前、版、前に付ける名前、ルール・語彙表・スタイル）を通す。読めない YAML はファイル名と一緒に言って止まる。`type: words` は `words` の代わりに `word_list` を書けば、文書の言語の語彙表から語を取る。その言語の語彙表が無ければ、そのルールは「プラグイン foo に en の語彙表 x が無いため」と動かなかった理由を出す。空の語彙表は読めないものとして止める（何も見つけないルールが動くと、きれいな文書に見える）。目印がキーと値の組（map）でなければ、コードに戻らずに止める。束の中のリンクが束の外を指すファイルは読まない。
 - ルールは `custom_rules` の項目と同じに読み（同じ欄、同じ確かめ。§18.7 の同梱のルールと同じ欄も書ける）、コードのルールは `type: module` の代わりに `detect` を持つ。
 - 出すもの全部に名前を前に付ける。ルール `foo/no-tbd`、語彙表 `foo/weasel`、スタイル `foo/house`。chaff のルールとも、ほかのプラグインとも重ならない。
 - プラグインのルールは指摘、`explain`、`rules --json`（`defined_in: plugin foo`）、`relax`、`stet`、baseline、SARIF で chaff のルールと同じに扱う。
 - 語彙表は言語ごとに持つ。文書の言語の語彙表が無ければ、そのルールは理由付きで動かない（§16）。
-- スタイルは §18.6 と同じ形で、`style: foo/house` で選ぶ。プリセットはスタイルだけ（ジャンルは genres.yaml の固定の一覧）。
+- スタイルは §18.6 と同じ形で、`style: foo/house` で選ぶ。プリセットはスタイルだけ。ジャンルと文書の種類（profile）はプラグインから足さない。ジャンルは `--genre` の値、ルールの `use_for`、規則の一覧のジャンルの表、手引きが共有する一つの一覧で、入れたプラグインで変わると、同じ `--genre` が環境ごとに違う意味になり、規則の一覧が実際と食い違うため。
 - 見つからない、読み込めない、版が違う、名前が合わない、同じ名前が二つ、ルール・語彙表・スタイルが読めない。どれも実行を止め、`chaff.yaml` に書いたとおりの名前で言う。
 
-例は `examples/chaff-plugin-example`（公開しない）。手引きは「プラグインを作る」。
+例は `examples/chaff-plugin-clear-requests`（YAML だけの束）と `examples/chaff-plugin-example`（コード。どちらも公開しない）。手引きは「プラグインを作る」。
 
 ---
 
@@ -2169,7 +2171,7 @@ IPADIC の癖を二つ、ここで吸収する。数の後ろの「月」を普�
 
 adapter が `structure` を持たない言語では、`chaff tree` はそう言って失敗する。0 件の木を返して黙らない（§17.4）。
 
-同梱していない言語は `@chaffjs/lang-<言語>` を探す。利用者が adapter を書いて入れれば、core を変えずにその言語で動く。
+同梱していない言語は、公式の `@chaffjs/lang-<言語>` を先に、無ければ第三者の `chaff-lang-<言語>` を探す（`adapter-load.ts` の順）。利用者が adapter を書いて `chaff-lang-<言語>` として入れれば、core を変えずにその言語で動く。
 
 ### 27.3 誤読しない
 

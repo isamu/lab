@@ -1,4 +1,4 @@
-import type { Detector, Finding, Sentence, Span } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, Sentence, Span } from "../plugin.ts";
 import { occurrencesOutside } from "../orthography.ts";
 import { tokenRuns } from "../custom/token-pattern.ts";
 import { joinedView, type JoinedView } from "../joined-view.ts";
@@ -43,13 +43,21 @@ const withoutBreaks = (source: string, start: number, end: number, breaks: reado
     .toReversed()
     .reduce((text, span) => `${text.slice(0, span.start - start)}${text.slice(span.end - start)}`, source.slice(start, end));
 
+/** A words rule's own words, or its word list's in the document's language: each entry's pattern, and its rewrite as the spelling to use. */
+const pairsOf = (
+  spec: { readonly words: readonly { readonly avoid: string; readonly use: string }[] },
+  options: DetectorOptions,
+): readonly { avoid: string; use: string }[] =>
+  spec.words.length > 0 ? spec.words : (options.lexicon ?? []).map((entry) => ({ avoid: entry.pattern, use: entry.rewrite ?? "" }));
+
 /** words: each spelling to avoid, outside the spelling to use (「ユーザ」 inside 「ユーザー」 is not reported). */
 export const customWords: Detector = (doc, options): Finding[] => {
   const spec = options.custom;
   if (spec?.type !== "words") return [];
+  const pairs = pairsOf(spec, options).filter((pair) => pair.avoid !== "" && pair.avoid !== pair.use);
   return doc.sentences.flatMap((sentence) => {
     const view = readAsWritten(sentence);
-    return spec.words.flatMap((pair) =>
+    return pairs.flatMap((pair) =>
       occurrencesOutside(view.text, pair.avoid, pair.use).map((start) => findingOf(hitAt(sentence, view, start, start + pair.avoid.length, pair.use))),
     );
   });

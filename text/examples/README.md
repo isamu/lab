@@ -21,6 +21,8 @@ cd text/examples && npx chaffjs .
 | `blog-ja/` | 技術記事 3 本 | [zenn.dev/singularity](https://zenn.dev/singularity) に公開したもの |
 | `blog-en/` | 英語の技術記事 11 本 | 同上 |
 | `business-ja/` | 会の文書 3 本 | [社団法人シンギュラリティ・ソサエティ](https://singularitysociety.org) のサイトに公開したもの |
+| `chaff-plugin-clear-requests/` | YAML だけで書いたルールの束（プラグイン）の例 | このリポジトリで書いたもの |
+| `chaff-plugin-example/` | コードで書いたプラグインの例 | このリポジトリで書いたもの |
 
 いずれも公開済みの文章です。`chaff.yaml` の `by_path` で、`business-ja/` だけ
 `business/report` として、`blog-en/` は英語として検査します。
