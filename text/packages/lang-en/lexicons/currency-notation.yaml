@@ -1,0 +1,22 @@
+# How an amount's currency is written. group says which currency, position on which side of the number ($20 before,
+# 20 dollars after). One currency can be written several ways, so currency-notation-consistency checks that one
+# document does not mix them. "pounds" is left out: it is also a weight. Matched as written.
+id: currency-notation
+language: en
+entries:
+  - { pattern: "$", position: before, group: USD }
+  - { pattern: "US$", position: before, group: USD }
+  - { pattern: "USD", position: before, group: USD }
+  - { pattern: "USD", position: after, group: USD }
+  - { pattern: "dollars", position: after, group: USD }
+  - { pattern: "¥", position: before, group: JPY }
+  - { pattern: "JPY", position: before, group: JPY }
+  - { pattern: "JPY", position: after, group: JPY }
+  - { pattern: "yen", position: after, group: JPY }
+  - { pattern: "€", position: before, group: EUR }
+  - { pattern: "EUR", position: before, group: EUR }
+  - { pattern: "EUR", position: after, group: EUR }
+  - { pattern: "euros", position: after, group: EUR }
+  - { pattern: "£", position: before, group: GBP }
+  - { pattern: "GBP", position: before, group: GBP }
+  - { pattern: "GBP", position: after, group: GBP }

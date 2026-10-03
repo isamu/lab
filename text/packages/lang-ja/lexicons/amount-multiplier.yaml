@@ -1,0 +1,10 @@
+# 金額の数と通貨の書き方のあいだに入る、桁の語（100万円、$3 million）。字面どおりに照らす。
+id: amount-multiplier
+language: ja
+entries:
+  - pattern: 千
+  - pattern: 万
+  - pattern: 億
+  - pattern: 兆
+  - pattern: million
+  - pattern: billion

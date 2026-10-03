@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  currency-two-ways-ja  found
+ja/design  currency-two-ways-ja  found
+ja/email  currency-two-ways-ja  found
+ja/figures  currency-two-ways-ja  found
+ja/itinerary  currency-two-ways-ja  found
+ja/minutes  currency-two-ways-ja  found
+ja/note  currency-two-ways-ja  found
+ja/policy  currency-two-ways-ja  found
+ja/press  currency-two-ways-ja  found
+ja/proposal  currency-two-ways-ja  found
+ja/quote  currency-two-ways-ja  found
+ja/readme  currency-two-ways-ja  found
+ja/requirements  currency-two-ways-ja  found
+en/blog  currency-two-ways-en  found
+en/design  currency-two-ways-en  found
+en/email  currency-two-ways-en  found
+en/figures  currency-two-ways-en  found
+en/itinerary  currency-two-ways-en  found
+en/minutes  currency-two-ways-en  found
+en/note  currency-two-ways-en  found
+en/policy  currency-two-ways-en  found
+en/press  currency-two-ways-en  found
+en/proposal  currency-two-ways-en  found
+en/quote  currency-two-ways-en  found
+en/readme  currency-two-ways-en  found
+en/requirements  currency-two-ways-en  found
