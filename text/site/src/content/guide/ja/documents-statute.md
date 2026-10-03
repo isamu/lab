@@ -74,7 +74,7 @@ npx chaffjs kitei.md --genre legal/statute    kitei.md を社内規程として�
 ```
 $ npx chaffjs kitei.md --genre legal/statute
 
-kitei.md   legal/statute · 日本語   ジャンルは--genreから
+kitei.md   legal/statute · 日本語   ジャンルは --genre から
 
 ─── 10 行目 ──────────────────────────────────────────────────
 
@@ -87,7 +87,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
      → 正しい番号に直すか、参照を消してください。他の文書を指しているなら、「民法第3条」のように文書名を添えると読み手に伝わります。
 
-     このルールをゆるめる:  npx chaff relax dangling-reference
+     このルールをゆるめる:  npx chaffjs relax dangling-reference
 
 
 ─── 12 行目 ──────────────────────────────────────────────────
@@ -101,7 +101,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
      → 番号を振り直してください。削った条を欠番として残すなら、「第4条（削除）」のように番号だけを残すと読み手に伝わります。
 
-     このルールをゆるめる:  npx chaff relax numbering-gap
+     このルールをゆるめる:  npx chaffjs relax numbering-gap
 
 
 ─── 15 行目 ──────────────────────────────────────────────────
@@ -115,7 +115,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
      → 定義を一か所にまとめ、もう一方は「第2条に定める備品」のように参照にしてください。意図して意味を変えているなら、別の語にします。
 
-     このルールをゆるめる:  npx chaff relax duplicate-definition
+     このルールをゆるめる:  npx chaffjs relax duplicate-definition
 
 
 ────────────────────────────────────────────────────────────
@@ -180,10 +180,10 @@ npx chaffjs init --genre legal/statute    この場所に chaff.yaml を作り�
 
 ```
 ジャンルは legal/statute にしました。違う場合は chaff.yaml の genre を直してください。
-  一覧: npx chaff genres
+  一覧: npx chaffjs genres
 
 次:
-  npx chaff .            この場所の Markdown を全部見る
+  npx chaffjs .            この場所の Markdown を全部見る
 ```
 
 これで、このフォルダでは `npx chaffjs kitei.md` だけで規程として見ます。
@@ -208,7 +208,7 @@ Markdown のコメントなので、文書を開いた人の画面には出ま�
 ```
 $ npx chaffjs kitei.md --genre legal/statute --compact
 
-kitei.md   legal/statute · 日本語   ジャンルは--genreから   stet 1 件
+kitei.md   legal/statute · 日本語   ジャンルは --genre から   stet 1 件
 
   10:5    error   「第9条」（番地 9）はこの文書にありません
                   dangling-reference
@@ -251,7 +251,7 @@ stet を書く前の `kitei.md` にかけ直すと、番号の指摘が `error` 
 ```
 $ npx chaffjs kitei.md --compact
 
-kitei.md   legal/statute · 日本語   ジャンルはchaff.yamlから
+kitei.md   legal/statute · 日本語   ジャンルは chaff.yaml から
 
   10:5    error   「第9条」（番地 9）はこの文書にありません
                   dangling-reference
@@ -304,7 +304,7 @@ npx chaffjs off numbering-gap --why "条番号は別の台帳で管理してい�
 ```
 $ npx chaffjs kitei-fixed.md --genre legal/statute
 
-kitei-fixed.md   legal/statute · 日本語   ジャンルは--genreから
+kitei-fixed.md   legal/statute · 日本語   ジャンルは --genre から
 
 ────────────────────────────────────────────────────────────
 

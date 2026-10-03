@@ -106,7 +106,7 @@ manual.md   blog/tech · 日本語   ジャンルは既定から
 ```
 $ npx chaffjs manual.md --genre docs/manual --experimental --compact
 
-manual.md   docs/manual · 日本語   ジャンルは--genreから
+manual.md   docs/manual · 日本語   ジャンルは --genre から
 
   7:34    warning リンク「[鍵の発行](#鍵を発行する)」が指す「#鍵を発行する」の見出しがこの文書にありません
                   broken-link

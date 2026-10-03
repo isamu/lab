@@ -12,9 +12,9 @@
 #
 # コマンドでも変更できます。理由がコメントとして自動で残ります。
 #
-#   npx chaff relax bold-density --why "図の説明で太字を多用するため"
-#   npx chaff explain bold-density        そのルールの意図を読む
-#   npx chaff rules --json                AI に設定を書かせるときに渡す
+#   npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
+#   npx chaffjs explain bold-density        そのルールの意図を読む
+#   npx chaffjs rules --json                AI に設定を書かせるときに渡す
 
 # この場所に置く文書の種類（法令・規則・社内規程・通達）。ほかの種類: npx chaffjs genres
 genre: legal/statute

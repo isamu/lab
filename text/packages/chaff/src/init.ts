@@ -30,9 +30,9 @@ const TEXT: Texts<{
 #
 # コマンドでも変更できます。理由がコメントとして自動で残ります。
 #
-#   npx chaff relax bold-density --why "図の説明で太字を多用するため"
-#   npx chaff explain bold-density        そのルールの意図を読む
-#   npx chaff rules --json                AI に設定を書かせるときに渡す
+#   npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
+#   npx chaffjs explain bold-density        そのルールの意図を読む
+#   npx chaffjs rules --json                AI に設定を書かせるときに渡す
 
 # この場所に置く文書の種類（${summary}）。ほかの種類: npx chaffjs genres
 genre: ${genre}
@@ -50,9 +50,9 @@ rules:
     exists: "chaff.yaml は既にあります。変更していません。",
     createdHeading: "作成しました:",
     genreChosen: (genre) => `ジャンルは ${genre} にしました。違う場合は chaff.yaml の genre を直してください。`,
-    genreList: "  一覧: npx chaff genres",
+    genreList: "  一覧: npx chaffjs genres",
     next: "次:",
-    nextCheck: "  npx chaff .            この場所の Markdown を全部見る",
+    nextCheck: "  npx chaffjs .            この場所の Markdown を全部見る",
   },
   en: {
     config: (genre, summary) => `# chaff.yaml — this team's writing rules
@@ -69,9 +69,9 @@ rules:
 #
 # Commands change it too, and leave the reason as a comment.
 #
-#   npx chaff relax bold-density --why "figure captions use a lot of bold"
-#   npx chaff explain bold-density        read what the rule is for
-#   npx chaff rules --json                give this to an AI that writes the settings
+#   npx chaffjs relax bold-density --why "figure captions use a lot of bold"
+#   npx chaffjs explain bold-density        read what the rule is for
+#   npx chaffjs rules --json                give this to an AI that writes the settings
 
 # The kind of document kept here (${summary}). The others: npx chaffjs genres
 genre: ${genre}
@@ -89,9 +89,9 @@ rules:
     exists: "chaff.yaml already exists. Nothing was changed.",
     createdHeading: "Created:",
     genreChosen: (genre) => `The genre is ${genre}. If that is wrong, change genre in chaff.yaml.`,
-    genreList: "  List: npx chaff genres",
+    genreList: "  List: npx chaffjs genres",
     next: "Next:",
-    nextCheck: "  npx chaff .            check every Markdown file here",
+    nextCheck: "  npx chaffjs .            check every Markdown file here",
   },
 };
 
