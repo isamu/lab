@@ -1,0 +1,79 @@
+id: elapsed-years-mismatch
+layer: L3
+status: experimental
+how_to_find: elapsed-years-mismatch
+requires: [dates]
+severity: warning
+
+name:
+  ja: 起点の年から数えた年数が、文書の日付と合わない
+  en: A count of years that does not match its starting year
+
+why:
+  ja: 「2015年創業」と書いた文書の「創業5年」や、「1980年生まれ（30歳）」は、どちらかが古いままです。去年の文書を写して日付だけ直したときによく起きます。文書の日付（日付だけの段落や「更新日：」の段落）の年から起点の年を引き、書いた年数と比べます。誕生日の前後や「10年目」の数え方があるので、一年までの違いは指しません。
+  en: 'A document that says "founded in 2015" and "5 years since its founding", or "born in 1980 (aged 30)", has kept one figure from an older version. It happens when last year''s document is copied and only the date is changed. The starting year is taken from the document''s own date (a paragraph holding only a date, or "Updated:") and compared with the count of years. A difference of one year is not pointed out, because of birthdays and of counting the tenth year as 10.'
+
+message:
+  ja: "{origin}から{reference}年までは{expected}年ですが、「{written}」と書かれています"
+  en: 'From {origin} to {reference} is {expected} years, but the text says "{written}"'
+
+how_to_fix:
+  ja: 年数と起点の年のどちらが正しいかを確かめて、もう一方を直してください。毎年変わる年数は、起点の年だけを書く手もあります。
+  en: Check whether the count or the starting year is right and correct the other. A count that changes every year can be replaced by the starting year alone.
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「2015年創業」と「創業5年」、「1980年生まれ」と「30歳」のように、文書の日付から計算した年数と合わない所
+  en: A count of years ("10 years since its founding", "aged 30") that does not match its starting year and the document's date
+example:
+  ja:
+    before: |
+      2026年4月1日
+
+      当社は2015年に創業し、今年で創業5年を迎えます。
+    after: |
+      2026年4月1日
+
+      当社は2015年に創業し、今年で創業11年を迎えます。
+  en:
+    before: |
+      April 1, 2026
+
+      Jane Doe (born in 1980, aged 30) leads the team.
+    after: |
+      April 1, 2026
+
+      Jane Doe (born in 1980, aged 46) leads the team.
+
+not_flagged:
+  ja: 文書に日付（日付だけの段落か「更新日：」の段落）が無ければ、比べる年が無いので見ません。一年までの違い、起点の語に直接付いていない年数（「創業後3年で上場」）、生まれた年と年齢が一つの文に一つずつでないものも見ません。
+  en: A document with no date of its own (a paragraph holding only a date, or "Updated:") has no year to count to and is not checked. A difference of one year, a count not attached to the origin word ("listed 3 years after its founding"), and a sentence without exactly one year of birth and one age are left alone.
+rewrite:
+  ja:
+    direction: 年数と起点の年のどちらが正しいかを書き手に確かめ、もう一方を直してください。毎年変わる年数は「2015年創業」のように起点の年だけにすると、古くなりません。
+    pairs:
+      - before: 2015年に創業し、今年で創業5年を迎えます。
+        after: 2015年に創業し、今年で創業11年を迎えます。
+      - before: 山田（1980年生まれ、30歳）
+        after: 山田（1980年生まれ）
+    keep:
+      - 起点の年
+      - 誰の年齢か、何の年数か
+    avoid:
+      - 年数を推測で計算し直して、確かめないまま書く
+  en:
+    direction: Ask the writer whether the count or the starting year is right and correct the other. A count that changes every year stays right if it is replaced by the starting year ("founded in 2015").
+    pairs:
+      - before: Acme, founded in 2015, marks 5 years since its founding.
+        after: Acme, founded in 2015, marks 11 years since its founding.
+      - before: Jane Doe (born in 1980, aged 30)
+        after: Jane Doe (born in 1980)
+    keep:
+      - the starting year
+      - whose age, or the age of what
+    avoid:
+      - recomputing the count by guess without confirming it

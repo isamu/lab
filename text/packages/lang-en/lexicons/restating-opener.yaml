@@ -1,0 +1,22 @@
+# Words that open a paragraph by announcing that it says again what came before. A paragraph opening with one that
+# repeats most of the previous paragraph's words is read as a restatement and nothing more. A word that also opens other
+# sentences (That is why, Again the drums, Overall the focus) is listed with its comma.
+id: restating-opener
+language: en
+entries:
+  - pattern: in other words
+  - pattern: in short
+  - pattern: put simply
+  - pattern: simply put
+  - pattern: to put it simply
+  - pattern: to sum up
+  - pattern: in summary
+  - pattern: to summarize
+  - pattern: to summarise
+  - pattern: "that is,"
+  - pattern: in essence
+  - pattern: essentially
+  - pattern: in a nutshell
+  - pattern: to reiterate
+  - pattern: "again,"
+  - pattern: "overall,"

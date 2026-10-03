@@ -1,6 +1,6 @@
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter, ProseDocument, RuleDefinition } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, Level, ProseDocument, RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { wordsOf } from "../packages/chaff/src/detectors/structure.ts";
 import { judgedSentences } from "../packages/chaff/src/detectors/sentence-ending.ts";
 import { lineNumberAt, linesOf } from "../packages/chaff/src/structure/lines.ts";
@@ -69,6 +69,19 @@ export const allRulesRun = async (
     result: runRules(documentOf(path, source, language, genre, team), rules, {}, true, genre),
     rules,
   };
+};
+
+/** Every rule's run on one document at the levels given, experimental rules included: what `yarn rules:measure` reads. */
+export const runAtLevels = async (
+  path: string,
+  source: string,
+  language: string,
+  genre: string,
+  levels: (rules: readonly RuleDefinition[]) => Readonly<Record<string, Level>>,
+): Promise<RunResult> => {
+  await adapterOf(language).prepare?.({ pos: true });
+  const rules = loadRules(language);
+  return runRules(documentOf(path, source, language, genre, EMPTY), rules, levels(rules), true, genre);
 };
 
 const findingsWith = async (

@@ -1,0 +1,23 @@
+# 呼び方（person-word の instead_of）と、それが指す相手。instead_of の同じ呼び方どうしが、一つの文書で揃っているかを見る。
+#   we: 書き手の側（会社・チーム）　i: 書き手ひとり
+id: person-form
+language: ja
+entries:
+  - pattern: 私たち
+    instead_of: we
+  - pattern: 私ども
+    instead_of: we
+  - pattern: 我々
+    instead_of: we
+  - pattern: 弊社
+    instead_of: we
+  - pattern: 当社
+    instead_of: we
+  - pattern: 本社
+    instead_of: we
+  - pattern: 私
+    instead_of: i
+  - pattern: 筆者
+    instead_of: i
+  - pattern: 僕
+    instead_of: i

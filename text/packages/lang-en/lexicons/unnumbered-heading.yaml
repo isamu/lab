@@ -1,0 +1,27 @@
+# Headings for the front and back matter, which are not numbered even when the body is (Contents, References).
+# heading-numbering-mix leaves them out of the siblings it compares. Matched against the whole heading, or its head
+# followed by a separator ("Appendix A", "Appendix: Terms"), ignoring case.
+# Headings that can be part of the numbered body (Introduction, Summary, Conclusion) are not listed.
+id: unnumbered-heading
+language: en
+entries:
+  - pattern: Contents
+  - pattern: Table of Contents
+  - pattern: Abstract
+  - pattern: References
+  - pattern: Bibliography
+  - pattern: Works Cited
+  - pattern: Acknowledgments
+  - pattern: Acknowledgements
+  - pattern: Appendix
+  - pattern: Appendices
+  - pattern: Index
+  - pattern: Notes
+  - pattern: Footnotes
+  - pattern: Glossary
+  - pattern: About the Author
+  - pattern: About the Authors
+  - pattern: Preface
+  - pattern: Foreword
+  - pattern: Changelog
+  - pattern: Revision History
