@@ -76,6 +76,11 @@ groups:
       number-style-consistency: off
       # An enumeration of conditions mixes 〜こと and 〜とき by what each condition is.
       list-item-form-mix: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
       # A paper's citations, figures and abstract: only the academic paper genre turns these on.
       citation-style-mix: off
       citation-reference-mismatch: off
@@ -152,6 +157,11 @@ groups:
       bold-label-list: off
       ai-structure: off
       requirement-smell: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
       # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
       email-greeting-closing: off
       email-subject-length: off
@@ -248,6 +258,11 @@ groups:
       list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
       # Dialect and old usage ("an hospital") are the work's voice, and dialogue leans on "very".
       article-sound: off
       very-adjective: off
@@ -304,6 +319,11 @@ groups:
       # Spoken numbers are transcribed as heard.
       number-style-consistency: off
       list-item-form-mix: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
       # A paper's citations, figures and abstract: only the academic paper genre turns these on.
       citation-style-mix: off
       citation-reference-mismatch: off
@@ -457,6 +477,12 @@ genres:
     # Path only: step and procedure headings are as common in tech blogs and specifications as in manuals.
     suggest:
       paths: ["(^|/)(manuals?|guides?|how-?tos?|help|tutorials?|user-?guides?)(/|[-_.])"]
+    # A manual is followed command by command: its code blocks, prompts, command headings and steps are what the reader acts on.
+    rules:
+      code-fence-language-mix: normal
+      shell-prompt-mix: normal
+      heading-command-missing: normal
+      step-statement-mix: normal
   - id: docs/faq
     name: { ja: よくある質問, en: FAQ }
     summary:
