@@ -58,6 +58,7 @@ not_flagged:
   ja: 名前の大文字小文字、ハイフン、終わりの複数の s の違いは同じ名前と見ます。英語の名前は、頭文字が略語と揃うときだけ展開と読みます。
   en: Differences of case, hyphens and a final plural s are not counted. An English name counts as an expansion only when its initials spell the abbreviation.
 rewrite:
+  depth: light
   ja:
     direction: 二つの展開のうち正しいほうを書き手に確かめ、もう一方を消すか正しい名前に替えてください。二度目以降は略語だけで書けます。
     pairs:

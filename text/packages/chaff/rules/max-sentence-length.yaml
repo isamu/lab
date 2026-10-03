@@ -106,6 +106,7 @@ level_meaning:
   ja: 一文 {limit} 字まで
   en: up to {limit} words in a sentence
 rewrite:
+  depth: light
   ja:
     direction: 接続助詞（〜が、〜ので、〜し）か「、そして」の所で二文に割り、二文目にも主語を書いてください。
     pairs:

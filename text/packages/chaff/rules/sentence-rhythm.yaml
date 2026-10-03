@@ -61,6 +61,7 @@ level_meaning:
   ja: 文の長さのばらつきが {limit}% 未満なら指摘
   en: reported when sentence length varies by less than {limit}%
 rewrite:
+  depth: light
   ja:
     direction: 長めの文のいくつかを、意味の切れ目で二つに割ってください。結論の文は短くします。言葉は足しません。
     pairs:

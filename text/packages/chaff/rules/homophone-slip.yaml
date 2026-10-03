@@ -48,6 +48,7 @@ level_meaning:
   ja: 取り違えが {limit} 箇所あれば指摘
   en: reported once there are {limit}
 rewrite:
+  depth: light
   en:
     direction: Correct only the confused word, to the form the lexicon gives.
     pairs:

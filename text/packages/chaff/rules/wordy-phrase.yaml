@@ -50,6 +50,7 @@ level_meaning:
   ja: 回りくどい言い回しを含む文が {limit} 文あれば指摘
   en: reported once {limit} sentences hold one
 rewrite:
+  depth: light
   en:
     direction: Replace the wordy phrase with its short form from the lexicon. Leave the rest of the sentence alone.
     pairs:

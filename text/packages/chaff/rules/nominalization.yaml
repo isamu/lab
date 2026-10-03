@@ -64,6 +64,7 @@ level_meaning:
   ja: 1000 字あたり「〜を実施する」のような名詞化した動詞 {limit} 個まで
   en: up to {limit} nominalized verbs ("make a decision") per 1000 words
 rewrite:
+  depth: light
   ja:
     direction: 「〜を実施する」「〜を行う」の名詞を動詞に戻し、運び役の動詞を消してください。誰がしたのかが書かれていれば、その人を主語に残します。
     pairs:

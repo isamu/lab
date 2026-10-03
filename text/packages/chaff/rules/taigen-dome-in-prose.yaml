@@ -50,6 +50,7 @@ level_meaning:
   ja: 本文の体言止め {limit} 文まで
   en: up to {limit} noun-ending sentences in the body
 rewrite:
+  depth: light
   ja:
     direction: 本文で名詞で止めた文に、文書の文体に合わせた述語（です・ます、または、だ・である）を足してください。見出し、箇条書き、表はそのままにします。
     pairs:

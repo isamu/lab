@@ -60,6 +60,7 @@ level_meaning:
   ja: 決まった接ぎで始まる文が 1000 字あたり {limit} 個まで
   en: up to {limit} sentences per 1000 words opening with a stock transition
 rewrite:
+  depth: light
   ja:
     direction: 文頭の接ぎの語を消して読み返してください。繋がりが分からなくなる所だけ、前の文との関係（理由、例外、順番）を言葉で書きます。
     pairs:

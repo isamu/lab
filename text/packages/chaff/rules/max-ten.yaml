@@ -47,6 +47,7 @@ level_meaning:
   ja: 一文の読点 {limit} 個まで
   en: up to {limit} commas in a sentence
 rewrite:
+  depth: light
   ja:
     direction: 読点の多い文を、意味の切れ目で二つ以上の文に分けてください。読点を消すだけにはしません。
     pairs:

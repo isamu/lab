@@ -72,6 +72,7 @@ not_flagged:
   ja: 本文に同じ項目の値が二通り以上あるとき（回ごと、対象ごとの値）は、要約がどれと合うべきか決まらないので言いません。単位の違う値、条件の付いた値（「3,000円から」）も比べません。
   en: When the body gives the item more than one value (per session, per group), which one the summary should match is not settled, so nothing is said. Values in different units and values with a condition ("from $300") are not compared.
 rewrite:
+  depth: light
   ja:
     direction: 要約と本文のどちらの値が正しいかを書き手に確かめ、もう一方を直してください。要約の値を本文から写すときは、単位と条件も一緒に写します。
     pairs:

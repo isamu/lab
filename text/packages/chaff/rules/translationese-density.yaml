@@ -49,6 +49,7 @@ level_meaning:
   ja: 1000 字あたり翻訳調の言い回し {limit} 個まで
   en: up to {limit} translated phrasings per 1000 characters
 rewrite:
+  depth: light
   ja:
     direction: 英語の構文を写した言い回しを、日本語として素直な言い方に直してください。語彙表の語ごとの書き換え（〜を可能にする → 〜ができる）に従い、主語の「あなたは」「彼女は」は省くか名前で呼びます。書いてある事実は変えません。
     pairs:

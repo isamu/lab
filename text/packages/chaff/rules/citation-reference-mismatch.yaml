@@ -87,6 +87,7 @@ not_flagged:
   ja: 「参考文献」「References」のような見出しの下に文献一覧が無い文書、番号も著者と年も読み取れない文献、文献が一つしか無い一覧は見ません。番号で引く引用と番号の文献、著者と年で引く引用と著者と年の文献は、それぞれの組の中だけで比べます。論文のジャンルでだけ見ます。
   en: 'A document without a list under a heading such as "References", entries that give neither a number nor an author and a year, and a list of one entry are left alone. Numbered citations are compared only with numbered entries, and author-year citations only with author-year entries. Only the academic paper genre runs this rule.'
 rewrite:
+  depth: light
   ja:
     direction: 引用と文献一覧のどちらがずれたのかを書き手に確かめ、ずれたほうを直してください。番号を推測で書き換えず、確かめられないときはその旨を書き手に伝えます。引かない文献は、消すか、引く所を書き手に尋ねます。
     pairs:

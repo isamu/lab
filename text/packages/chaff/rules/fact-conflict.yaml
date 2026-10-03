@@ -60,6 +60,7 @@ not_flagged:
   ja: 違う見出しの下、違う親の項目の下、太字だけの行や「第2回：」のような行の後ろの値は、別のものの値として比べません。値の後ろに条件が続くもの（「3,000円から」「10月5日に開催」）、読点のあとから始まる項目名（「大人は、参加費は」）、単位の違う値（単位の食い違いは別に見ます）も比べません。同じ項目に三通り以上の値があれば、一覧として何も言いません。
   en: Values under different headings, under different parent list items, or after a bold-only line or a line like "Session 2:" are taken as values of different things. A value followed by a condition ("$300 per person", "May 3 at noon"), a name that starts after a comma ("For adults, the fee"), and values in different units are not compared. An item with three or more different values is read as a list and left alone.
 rewrite:
+  depth: light
   ja:
     direction: 二つの値のどちらが正しいかを書き手に確かめ、もう一方を同じ値に直してください。どちらが正しいか文書から決まらないときは、推測で選ばずに書き手に聞いてください。
     pairs:

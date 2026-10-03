@@ -45,6 +45,7 @@ level_meaning:
   ja: 当てはまる形が {limit} 箇所あれば指摘
   en: reported once there are {limit}
 rewrite:
+  depth: light
   ja:
     direction: 指摘された慣用句を、指摘が示す正しい形に置き換えてください。活用（得た→射た）と前後の語はそのまま残します。
     pairs:

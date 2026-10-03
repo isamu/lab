@@ -61,6 +61,7 @@ level_meaning:
   ja: 1000 字あたり対比の枠 {limit} 個まで
   en: up to {limit} contrast frames per 1000 words
 rewrite:
+  depth: light
   ja:
     direction: 打ち消している側（X）を消し、言いたい側（Y）を普通の文で書いてください。X が誰かの実際の誤解なら、その誤解を書いたうえで一度だけ打ち消してください。
     pairs:

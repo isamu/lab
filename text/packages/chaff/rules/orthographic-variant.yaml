@@ -62,6 +62,7 @@ level_meaning:
   ja: 少ないほうが語の {limit}% 以下のとき指摘
   en: reported when the minority spelling is {limit}% of the word's uses or less
 rewrite:
+  depth: light
   ja:
     direction: 同じ語の書き方を、文書でいちばん多い書き方にそろえてください。意味の違う語に書き分けているなら、そのままにします。
     pairs:

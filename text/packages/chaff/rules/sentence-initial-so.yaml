@@ -49,6 +49,7 @@ level_meaning:
   ja: 「So,」で始まる文が {limit} 個あれば指摘
   en: reported once {limit} sentences open with "So,"
 rewrite:
+  depth: light
   en:
     direction: Delete the "So," at the head of the sentence. If the link to the last sentence is needed, use a word that says what it is.
     pairs:

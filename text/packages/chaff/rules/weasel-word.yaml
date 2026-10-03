@@ -49,6 +49,7 @@ level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
 rewrite:
+  depth: light
   en:
     direction: Replace the unnamed crowd ("many experts", "studies") with the person or study the text or its sources name. If they name none, do not invent one; ask the writer, or state the claim as the writer's own.
     pairs:

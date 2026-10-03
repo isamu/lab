@@ -79,6 +79,7 @@ not_flagged:
   ja: 引用した返信（「>」の行）と、ヘッダーと署名（「-- 」の後ろ）は見ません。挨拶と結びの言い方は決めず、語彙表のどれかがあれば足ります。メール・手紙のジャンルでだけ見ます。
   en: 'Quoted replies (lines starting with ">"), the header and the signature after "-- " are not read. Which greeting or closing is used is not decided; any word in the lexicon will do. Only the email and letter genre runs this rule.'
 rewrite:
+  depth: light
   ja:
     direction: 足りないほうだけを足してください。挨拶は本文の最初に一文、結びは名前の前に一文です。相手との関係が分からなければ「お世話になっております」「よろしくお願いいたします」を使います。用件の文は変えません。
     pairs:

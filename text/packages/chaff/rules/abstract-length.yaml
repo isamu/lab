@@ -107,6 +107,7 @@ level_meaning:
   ja: 要旨 {limit} 字まで
   en: up to {limit} words in the abstract
 rewrite:
+  depth: structure
   ja:
     direction: 要旨を、目的・方法・結果・結論をそれぞれ一、二文で言う形に縮めてください。背景の説明や先行研究の紹介は本文に移します。数字は、結論を支える一つか二つだけを残します。要旨が無ければ、本文から目的・方法・結果・結論を抜き出して要旨を書きます。
     pairs:

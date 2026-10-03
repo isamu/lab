@@ -128,6 +128,7 @@ level_meaning:
   ja: 3 項目の箇条書きの割合 {limit}% まで
   en: up to {limit}% of lists with exactly three items
 rewrite:
+  depth: light
   ja:
     direction: 三つ並んだ箇条書きのうち、ほかの項目と同じことを言っている項目を消すか、一つにまとめてください。本当に三つあるリストはそのままにします。
     pairs:

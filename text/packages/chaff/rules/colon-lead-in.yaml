@@ -63,6 +63,7 @@ level_meaning:
   ja: コロンで箇条書きへ渡す文が 1000 字あたり {limit} 個まで
   en: "colon lead-ins to lists: up to {limit} per 1000 characters"
 rewrite:
+  depth: structure
   ja:
     direction: コロンで箇条書きへ渡す所のうち、項目が二つか三つで互いに繋がっているものを文に戻してください。手順や部品の一覧は箇条書きのままにします。
     pairs:

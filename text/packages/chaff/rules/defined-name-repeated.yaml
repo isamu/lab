@@ -68,6 +68,7 @@ not_flagged:
   ja: 短い呼び名を定める前の使用、呼び名と同じ行にある使用、名前だけの行（署名欄）、四字に満たない名前（「法律」）、一語の英語の名前、呼び名が名前を含むもの（「本サービス」）、前の語が絞り込む名前（「妊娠中の女性従業員」「本利用規約」）、それ自体が定義した語である名前、長い語の一部（「株式会社みなと製作所大阪支店」）は見ません。法務のジャンルで見ます。
   en: 'Uses before the short name is defined, uses on a line that also gives the short name, lines holding little more than the name (a signature block), names shorter than four characters, one-word English names, short names that contain the long one, names narrowed by the word before them ("the Beta Preview"), names that are defined terms themselves, and a name inside a longer word are not reported. The legal genres run this rule.'
 rewrite:
+  depth: light
   ja:
     direction: 正式の名前を、定めた呼び名に置き換えてください。署名欄や、ほかの会社と並べて正式の名前が要る所はそのままにします。どちらの立場の名前か分からなければ、書き手に確かめます。
     pairs:

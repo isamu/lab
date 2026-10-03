@@ -63,6 +63,7 @@ level_meaning:
   ja: 題に無い内容語が {limit} 個より少ないとき指摘
   en: reported when the lead adds fewer than {limit} content words the title does not have
 rewrite:
+  depth: structure
   ja:
     direction: リードを、題だけでは分からないことから書き直してください。結論・数字・対象・時期のうち、本文にあるものを一つか二つ前に出します。題の語を繰り返して「〜について説明します」と予告する文は消します。
     pairs:

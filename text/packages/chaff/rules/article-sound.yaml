@@ -48,6 +48,7 @@ level_meaning:
   ja: "{limit} 箇所あれば指摘"
   en: reported once there are {limit}
 rewrite:
+  depth: light
   en:
     direction: Change only the article, to "an" before a vowel sound and "a" before a consonant sound.
     pairs:

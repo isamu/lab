@@ -44,6 +44,7 @@ not_flagged:
   ja: 一文に「〜たり」が二つ以上ある文と、一つでも「する」「もする」で閉じた文（遅れたりする）は指しません。「一日たりとも」の「たり」は並べる「たり」ではないので見ません。鉤括弧で引いた中は見ません。
   en: Sentences with two or more 〜たり, and a single 〜たり closed by する (遅れたりする), are not reported. Nor is the たり of 一日たりとも, which does not list, nor anything quoted in 「」.
 rewrite:
+  depth: light
   ja:
     direction: 抜けたもう一つの動作にも「〜たり」を付け、最後を「する」で閉じてください。並べるつもりが無ければ「〜たり」を外して「〜し、」でつなぎます。
     pairs:
