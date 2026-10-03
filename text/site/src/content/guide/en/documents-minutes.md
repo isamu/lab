@@ -20,14 +20,14 @@ The last one leaves a later reader unable to find out who decided.
 
 ## What chaff checks, and what it does not
 
-These are the main rules for this genre.
+These are the main rules for this genre. All of them run by default.
 
-| Rule | What it finds | When it runs |
-| --- | --- | --- |
-| `heading-echo` | A first sentence that only repeats its heading | Always |
-| `date-weekday-mismatch` | A date whose weekday disagrees with the calendar | With `--experimental` |
-| `numbering-gap` | A skipped or repeated item number | With `--experimental` |
-| `announced-count-mismatch` | A count announced that differs from the list below it | With `--experimental` |
+| Rule | What it finds |
+| --- | --- |
+| `date-weekday-mismatch` | A date whose weekday disagrees with the calendar |
+| `numbering-gap` | A skipped or repeated item number |
+| `announced-count-mismatch` | A count announced that differs from the list below it |
+| `heading-echo` | A first sentence that only repeats its heading |
 
 What it does not do is decided too.
 
@@ -110,34 +110,6 @@ minutes.md   business/meeting-notes · English   genre from --genre
 {counts}
 ```
 
-Only `heading-echo` runs by default. The rules that help minutes most are experimental.
-Add `--experimental` and run it again.
-
-```
-$ npx chaffjs minutes.md --genre business/meeting-notes --experimental --compact
-
-minutes.md   business/meeting-notes · English   genre from --genre
-
-  3:18    error   2026-10-07 is a Wednesday, not a Tuesday
-                  date-weekday-mismatch
-  10:1    info    The first sentence repeats the heading "1. Actions from last week"
-                  heading-echo
-  14:1    info    The first sentence repeats the heading "2. Home page designs"
-                  heading-echo
-  18:1    error   "4" follows "2" (expected number 3)
-                  numbering-gap
-  20:1    info    The first sentence repeats the heading "4. Launch date"
-                  heading-echo
-  22:1    info    The heading "Decisions" has no number, while 3 of its siblings do ("1. Actions from last week")
-                  heading-numbering-mix
-  24:23   warning "three points" is announced, but the number of items in the list below is 2
-                  announced-count-mismatch
-  29:1    info    The heading "Actions" has no number, while 3 of its siblings do ("1. Actions from last week")
-                  heading-numbering-mix
-
-{counts}
-```
-
 ## What each finding means
 
 | Line | Finding | What it means | How to fix it |
@@ -165,18 +137,12 @@ Put this `chaff.yaml` in the folder that holds your minutes.
 genre: business/meeting-notes
 language: en
 
-rules:
-  date-weekday-mismatch: normal
-  numbering-gap: normal
-  announced-count-mismatch: normal
-  required-sections: normal
-
 required_sections:
   - Decisions
   - Actions
 ```
 
-With this file in place, `npx chaffjs minutes.md --compact` alone shows all the findings above.
+With this file in place, `npx chaffjs minutes.md --compact` needs no `--genre`.
 `required_sections` lists the headings every set of minutes needs.
 Minutes without a "Decisions" or an "Actions" heading are flagged by `required-sections`.
 How to write it is in [Configuration](./configuration), under "Deciding the team's jargon and required headings".

@@ -20,7 +20,7 @@ chaff は、日付と曜日の食い違い、議題の番号の抜け、予告�
 
 ## chaff が見ること、見ないこと
 
-このジャンルで見る主なルールは、次のとおりです。どれも試験中で、`--experimental` を付けたときに動きます。
+このジャンルで見る主なルールは、次のとおりです。どれも既定で動きます。
 
 | ルール | 見つけるもの |
 | --- | --- |
@@ -84,42 +84,10 @@ chaff は、日付と曜日の食い違い、議題の番号の抜け、予告�
 
 `--genre` を付けなくても、chaff は「決定事項」の見出しを見て、議事録だと見分けます。
 画面の 1 行目の「ジャンルは内容から」が、その印です。
-何も付けずにかけると、指摘は出ません。議事録で役に立つルールは、どれも試験中だからです。
-
-```
-$ npx chaffjs gijiroku.md --compact
-
-gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
-
-  3:6     error   「2026-10-07」は水曜日です（火曜日と書いてあります）
-                  date-weekday-mismatch
-  4:10    info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。4 箇所のうち 1 箇所が違う）
-                  latin-spacing
-  4:15    info    日本語と英字のあいだを詰めています（この文書はふつう空ける。7 箇所のうち 1 箇所が違う）
-                  latin-spacing
-  10:1    info    この文だけ他と文末の調子が違います（本文の中で 3 文）
-                  no-mixed-desumasu
-  10:20   info    この文だけ他と文末の調子が違います（本文の中で 3 文）
-                  no-mixed-desumasu
-  18:1    error   「2」の次が「4」です（3 番目のはず）
-                  numbering-gap
-  22:1    info    見出し「決定事項」だけ番号がありません（兄弟の見出しは「1. 前回の宿題の確認」など 3 個が番号付き）
-                  heading-numbering-mix
-  24:1    info    この文だけ他と文末の調子が違います（本文の中で 3 文）
-                  no-mixed-desumasu
-  24:9    warning 「3 点」と予告していますが、すぐ下の箇条書きは2項目です
-                  announced-count-mismatch
-  29:1    info    見出し「次回までの宿題」だけ番号がありません（兄弟の見出しは「1. 前回の宿題の確認」など 3 個が番号付き）
-                  heading-numbering-mix
-
-{counts}
-```
-
-`--experimental` を付けて、試験中のルールも動かします。
 `--compact` は、1 件を 2 行にまとめて出す印です。
 
 ```
-$ npx chaffjs gijiroku.md --experimental --compact
+$ npx chaffjs gijiroku.md --compact
 
 gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
 
@@ -179,19 +147,11 @@ gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
 genre: business/meeting-notes
 language: ja
 
-rules:
-  date-weekday-mismatch: normal
-  numbering-gap: normal
-  announced-count-mismatch: normal
-  no-mixed-desumasu: normal
-  required-sections: normal
-
 required_sections:
   - 決定事項
   - 宿題
 ```
 
-この `chaff.yaml` を置くと、`npx chaffjs gijiroku.md --compact` だけで、`latin-spacing` 以外の指摘が出ます。
 `required_sections` には、議事録に必ず要る見出しを書きます。
 「決定事項」や「宿題」の見出しが無い議事録は、`required-sections` が指摘します。
 書き方は [設定](./configuration) の「社内用語と必須の見出しを決める」にあります。

@@ -1,0 +1,80 @@
+# Worn phrases (clichés) in English. Read by cliche. Each is a figure of speech worn down to filler: the reader has
+# seen it so often that it says nothing about this document. rewrite says what to write instead. Phrases another rule
+# already reads ("game-changer" in ai-tell, "needless to say" in empty-intensifier, "the bottom line is" in
+# announcing-opener) are left out, so one sentence gets one finding. "State-of-the-art", "cutting-edge" and "going forward"
+# are left out too: papers, notices and terms use them as plain terms (measured on the corpus).
+id: cliche
+language: en
+entries:
+  - pattern: at the end of the day
+    rewrite: say the conclusion itself
+  - pattern: think outside the box
+    rewrite: name the new approach
+  - pattern: low-hanging fruit
+    rewrite: name the easy tasks
+  - pattern: move the needle
+    rewrite: say what changes, by how much
+  - pattern: level playing field
+    rewrite: say what is made equal
+  - pattern: tip of the iceberg
+    rewrite: say what else there is
+  - pattern: in the same boat
+    rewrite: say what the two share
+  - pattern: back to the drawing board
+    rewrite: say what is redone
+  - pattern: perfect storm
+    rewrite: name the causes
+  - pattern: hit the ground running
+    rewrite: say what starts at once
+  - pattern: ballpark figure
+    rewrite: estimate
+  - pattern: push the envelope
+    rewrite: say which limit is passed
+  - pattern: best of both worlds
+    rewrite: name the two advantages
+  - pattern: few and far between
+    rewrite: rare
+  - pattern: only time will tell
+    rewrite: say when it will be known
+  - pattern: par for the course
+    rewrite: usual
+  - pattern: needle in a haystack
+    rewrite: say how hard it is to find
+  - pattern: when all is said and done
+    rewrite: say the conclusion itself
+  - pattern: last but not least
+    rewrite: finally
+  - pattern: it goes without saying
+    rewrite: drop it, or say it plainly
+  - pattern: first and foremost
+    rewrite: first
+  - pattern: elephant in the room
+    rewrite: name the problem
+  - pattern: raise the bar
+    rewrite: say what the new standard is
+  - pattern: on the same page
+    rewrite: agreed
+  - pattern: boil the ocean
+    rewrite: say what is too large to do
+  - pattern: take it to the next level
+    rewrite: say what improves
+  - pattern: in this day and age
+    rewrite: today
+  - pattern: whole new ball game
+    rewrite: say what changed
+  - pattern: writing on the wall
+    rewrite: name the sign
+  - pattern: touch base
+    rewrite: talk, meet or call
+  - pattern: circle back
+    rewrite: return to it, with a date
+  - pattern: paradigm shift
+    rewrite: name the change
+  - pattern: win-win
+    rewrite: say what each side gains
+  - pattern: think big picture
+    rewrite: name the wider goal
+  - pattern: hit the nail on the head
+    rewrite: say what was right
+  - pattern: the ball is in your court
+    rewrite: say what the reader must do next

@@ -1,0 +1,14 @@
+table  13  13  0  0
+en/blog  cliche-end-of-day  found
+en/design  cliche-end-of-day  found
+en/email  cliche-end-of-day  found
+en/figures  cliche-end-of-day  found
+en/itinerary  cliche-end-of-day  found
+en/minutes  cliche-end-of-day  found
+en/note  cliche-end-of-day  found
+en/policy  cliche-end-of-day  found
+en/press  cliche-end-of-day  found
+en/proposal  cliche-end-of-day  found
+en/quote  cliche-end-of-day  found
+en/readme  cliche-end-of-day  found
+en/requirements  cliche-end-of-day  found
