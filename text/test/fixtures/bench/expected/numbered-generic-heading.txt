@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  numbered-generic-heading-ja  found
+ja/design  numbered-generic-heading-ja  found
+ja/email  numbered-generic-heading-ja  found
+ja/figures  numbered-generic-heading-ja  found
+ja/itinerary  numbered-generic-heading-ja  found
+ja/minutes  numbered-generic-heading-ja  found
+ja/note  numbered-generic-heading-ja  found
+ja/policy  numbered-generic-heading-ja  found
+ja/press  numbered-generic-heading-ja  found
+ja/proposal  numbered-generic-heading-ja  found
+ja/quote  numbered-generic-heading-ja  found
+ja/readme  numbered-generic-heading-ja  found
+ja/requirements  numbered-generic-heading-ja  found
+en/blog  numbered-generic-heading-en  found
+en/design  numbered-generic-heading-en  found
+en/email  numbered-generic-heading-en  found
+en/figures  numbered-generic-heading-en  found
+en/itinerary  numbered-generic-heading-en  found
+en/minutes  numbered-generic-heading-en  found
+en/note  numbered-generic-heading-en  found
+en/policy  numbered-generic-heading-en  found
+en/press  numbered-generic-heading-en  found
+en/proposal  numbered-generic-heading-en  found
+en/quote  numbered-generic-heading-en  found
+en/readme  numbered-generic-heading-en  found
+en/requirements  numbered-generic-heading-en  found
