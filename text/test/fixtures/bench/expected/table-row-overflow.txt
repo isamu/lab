@@ -1,0 +1,12 @@
+table  11  11  0  0
+ja/figures  table-extra-cell  found
+ja/itinerary  table-extra-cell  found
+ja/minutes  table-extra-cell  found
+ja/proposal  table-extra-cell  found
+ja/quote  table-extra-cell  found
+ja/readme  table-extra-cell  found
+en/figures  table-extra-cell  found
+en/itinerary  table-extra-cell  found
+en/proposal  table-extra-cell  found
+en/quote  table-extra-cell  found
+en/readme  table-extra-cell  found

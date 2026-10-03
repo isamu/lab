@@ -1,0 +1,73 @@
+id: unrendered-emphasis
+layer: L1
+status: stable
+how_to_find: unrendered-emphasis
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 太字にならずに見える「**」
+  en: Unrendered emphasis marks
+
+why:
+  ja: 「**」や「__」は、Markdown が対にできたときだけ太字になり、対にできなければそのまま記号として表示されます。閉じ忘れ（「**重要」）のほか、日本語では「**「重要」**です」のように括弧や句読点の内側に記号を置き、外側に字が続くと、CommonMark の決まりで閉じられず、読み手には「**」が見えます。
+  en: '"**" and "__" turn into bold only when Markdown can pair them; otherwise they show as written. Besides one left open ("**important"), a mark with punctuation inside and a letter outside (Japanese "**「重要」**です") cannot close under CommonMark''s rules, and the reader sees the "**".'
+
+message:
+  ja: 「{mark}」が太字にならず、そのまま表示されます
+  en: '"{mark}" is not turned into bold and shows as written'
+
+how_to_fix:
+  ja: 閉じ忘れなら閉じる「**」を足してください。括弧や句読点の内側に置いた記号は、括弧の外に出すか（「**「重要」**」の外側に空白を置く）、括弧ごと太字にしないでください。
+  en: If it was left open, add the closing "**". If punctuation sits inside the mark, move the mark outside the punctuation, or put a space outside it.
+
+placeholders:
+  mark:
+    ja: 記号
+    en: the mark
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 対にならず、太字にならないまま記号として見える「**」「__」
+  en: '"**" or "__" that Markdown cannot pair and shows as written'
+example:
+  ja:
+    before: 締め切りは**金曜日です。遅れないようにしてください。
+    after: 締め切りは**金曜日**です。遅れないようにしてください。
+  en:
+    before: The deadline is **Friday. Do not be late.
+    after: The deadline is **Friday**. Do not be late.
+
+not_flagged:
+  ja: 語の中の記号（「2**10」「snake__case」）、前後が空白の記号、三つ以上並んだ記号（区切りや記入欄の「____」）、「__init__」のような名前、コードと引用の中の記号は指しません。
+  en: A mark inside a word ("2**10", "snake__case"), a mark with spaces on both sides, runs of three or more (dividers and blanks to fill, "____"), names such as "__init__", and marks in code or quotations are not reported.
+rewrite:
+  depth: light
+  ja:
+    direction: 太字にしたい範囲を「**」で正しく囲んでください。閉じ忘れは閉じる記号を足し、括弧の内側に置いた記号は括弧の外に出します。言葉は変えません。
+    pairs:
+      - before: 締め切りは**金曜日です。
+        after: 締め切りは**金曜日**です。
+      - before: これは**「重要」**です。
+        after: これは「**重要**」です。
+    keep:
+      - 文の言葉
+      - 太字にしたい範囲
+    avoid:
+      - 太字をやめて記号だけ消すのか、閉じるのかを、文から読み取らずに決める
+  en:
+    direction: Wrap the words meant to be bold in a matching pair of "**". Add the missing closing mark, or move a mark outside the punctuation it sits inside. Keep the words.
+    pairs:
+      - before: The deadline is **Friday.
+        after: The deadline is **Friday**.
+      - before: Mark the task **done when it ships.
+        after: Mark the task **done** when it ships.
+    keep:
+      - the words
+      - the span meant to be bold
+    avoid:
+      - deciding whether to close or drop the mark without reading the sentence
