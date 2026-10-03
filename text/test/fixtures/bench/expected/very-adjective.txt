@@ -1,0 +1,7 @@
+table  6  6  0  0
+en/blog  very-pile  found
+en/design  very-pile  found
+en/email  very-pile  found
+en/figures  very-pile  found
+en/press  very-pile  found
+en/proposal  very-pile  found
