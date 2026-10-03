@@ -640,7 +640,9 @@ genres:
 | `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
+| `heading-numbering-mix` | 兄弟の見出しで番号の有無・書き方（1. / 1） / 第1章）が混ざる。少ないほうを指す。語彙表 heading-number-label と unnumbered-heading | 両方 | warning |
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
+| `vague-link-text` | 言葉全体が「こちら」「click here」のリンク（WCAG 2.4.4）。語彙表 vague-link-text、インラインのリンクだけ | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | `duplicate-heading` ✅ | 同じ親の下の同じ言葉の見出し（MD024 siblings_only） | 両方 | warning |
@@ -942,6 +944,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
 | `hankaku-kana` ✅ | 半角の片仮名と半角の句読点。コード・リンク・引いた名前の中は除く | - |
 | `translationese-density` | 翻訳調（を可能にする、重要な役割を果たす、されることができる、あなたは）の密度。語彙表 translationese を共通の phrase-density で数える。上限は人の書いた Qiita の記事で決めた | pos |
+| `misconversion` | 仮名漢字変換の取り違え（以外と簡単、始めて会う、確立が高い、不可決）。前後の語まで語彙表 misconversion に書いた形だけ。detector は known-correction | pos |
 
 `katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。
 音は語末の「ー」を除いて「コ・ン・ピュ・ー・タ」と数える（カーは 1 音、カバーは 2 音。JIS Z 8301:2011 表 G.3 の数え方）。小さい「ャュョァィゥェォ」は前の字と
@@ -985,6 +988,8 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
 | `name-variant` | 同じ名前（固有名詞の続き）を少しだけ違う形で書く。書き方だけの違い（大小・幅・空白・記号）、読みが同じで一語だけ違う、英字の一字違い（多いほうが二度以上・少ないほうが一度）。日本語でも動く | pos |
+| `date-format-consistency` | 一つの文書で日付を二通りに書く（2026-10-02 / 2026年10月2日 / Oct 2, 2026 / 10/2/2026）。年月日のそろった日付だけ、少ないほうを指す。月の名前は語彙表 month-name、元号は calendar-era。日本語でも動く | - |
+| `known-misspelling` | よくある書き誤り（シュミレーション、ですす、seperate）。語彙表の組（誤った形→正しい形）を語の切れ目で照らし、正しい形を添える。日本語でも動く | pos |
 | `redundant-expression` | 重言（頭痛が痛い、一番最初、end result、each and every）。語彙表 redundant-expression の語ごとに重ねを外した形を持つ。日本語でも動く | pos |
 | `spelling-consistency` ✅ | イギリスとアメリカの綴りの一貫性。語彙表 spelling-variant と spelling-ize の組ごとに少ないほうを指摘 | - |
 | `space-before-punctuation` ✅ | 句読点の前の空白（"word ."）。コロン・空白で区切った点・数の後ろは除く | - |
