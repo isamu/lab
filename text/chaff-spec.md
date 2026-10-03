@@ -1618,6 +1618,9 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 - スタイルは §18.6 と同じ形で、`style: foo/house` で選ぶ。プリセットはスタイルだけ。ジャンルと文書の種類（profile）はプラグインから足さない。ジャンルは `--genre` の値、ルールの `use_for`、規則の一覧のジャンルの表、手引きが共有する一つの一覧で、入れたプラグインで変わると、同じ `--genre` が環境ごとに違う意味になり、規則の一覧が実際と食い違うため。
 - 見つからない、読み込めない、版が違う、名前が合わない、同じ名前が二つ、ルール・語彙表・スタイルが読めない。どれも実行を止め、`chaff.yaml` に書いたとおりの名前で言う。
 
+- `chaff init --plugin <名前>` は、ルール 1 つ・その日本語と英語の語彙表・確かめのコマンド（package.json の `test` に `chaffjs plugin-test .`）を持つ束のひな形を作る。同じ名前のフォルダがあれば何も書かずに止まる。
+- `chaff plugin-test [フォルダ]` は、プラグインを `chaff.yaml` と同じに読み込み、各ルールを、その `example` の言語ごとに before と after にかける。before に指摘が無い、after に指摘がある、その言語で動かない（理由を添える）のどれかなら失敗で、終了コード 1。読み込めないプラグインも 1。
+
 例は `examples/chaff-plugin-clear-requests`（YAML だけの束）と `examples/chaff-plugin-example`（コード。どちらも公開しない）。手引きは「プラグインを作る」。
 
 ---
@@ -1635,6 +1638,8 @@ npx chaffjs facts before.md              # compare が照合する事実の一�
 npx chaffjs outline before.md after.md   # 見出しの構成と形を前と後で測る（§28.6）
 npx chaffjs fix-plan before.md          # 指摘をルールごとの「直す計画」にする（§28.8）
 npx chaffjs init
+npx chaffjs init --plugin house          # YAML だけのルールの束 chaff-plugin-house/ のひな形（§18.8）
+npx chaffjs plugin-test ./chaff-plugin-house   # プラグインの各ルールを、その例にかける
 npx chaffjs setup ja                     # 品詞解析器の取得
 
 # 設定を変える（chaff.yaml を開かずに済む）

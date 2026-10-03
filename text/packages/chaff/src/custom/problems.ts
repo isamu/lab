@@ -5,7 +5,7 @@ import { customRulesOf } from "./load.ts";
 import { MAX_PATTERN_LENGTH, MAX_REPEATS, type RegexRefusal } from "./regex-safety.ts";
 import { POS_WRITTEN_NAMES } from "./token-pattern.ts";
 import type { ModulePathRefusal } from "./module-path.ts";
-import { fieldProblemSentence, type FieldKind, type FieldProblem } from "../rule-fields.ts";
+import { FIELD_KINDS, fieldProblemSentence, type FieldKind, type FieldProblem } from "../rule-fields.ts";
 
 /** Each problem's sentence, with {at}, {written}, {field}, {index}, {refusal} and {names} filled in from the problem. */
 type Text = {
@@ -110,8 +110,6 @@ const valuesOf = (problem: CustomProblem, text: Text, scope: string): Readonly<R
   refusal: refusalOf(problem, text),
   names: POS_WRITTEN_NAMES.join(" / "),
 });
-
-const FIELD_KINDS: ReadonlySet<string> = new Set<FieldKind>(["bad-depth", "bad-group", "bad-use-for", "bad-summary", "bad-example"]);
 
 const isFieldProblem = (problem: CustomProblem): problem is FieldProblem & { readonly at: string } => FIELD_KINDS.has(problem.kind);
 

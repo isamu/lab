@@ -5,7 +5,8 @@
   "description": "An example chaff rule pack written in YAML only: requests that say when, and one register throughout.",
   "files": [
     "rules",
-    "lexicons"
+    "lexicons",
+    "styles"
   ],
   "chaff": {
     "apiVersion": 1

@@ -11,9 +11,13 @@ export type FieldProblem =
   | { readonly kind: "bad-group"; readonly written: string }
   | { readonly kind: "bad-use-for"; readonly written: string }
   | { readonly kind: "bad-summary"; readonly written: string }
+  | { readonly kind: "bad-text"; readonly written: string }
   | { readonly kind: "bad-example"; readonly written: string };
 
 export type FieldKind = FieldProblem["kind"];
+
+/** Every kind, for a caller that reports these among problems of its own. */
+export const FIELD_KINDS: ReadonlySet<string> = new Set<FieldKind>(["bad-depth", "bad-group", "bad-use-for", "bad-summary", "bad-example", "bad-text"]);
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -40,6 +44,25 @@ const useForProblems = (useFor: unknown, genres: readonly string[]): FieldProble
 
 const summaryProblems = (summary: unknown): FieldProblem[] =>
   summary === undefined || isTextByLanguage(summary) ? [] : [{ kind: "bad-summary", written: printed(summary) }];
+
+/** A language as a key of a text by language: ja, en, pt-br. */
+const LANGUAGE_KEY = /^[a-z]{2,3}(?:-[a-z0-9]+)*$/iu;
+
+/** The texts a reader sees. Each may be one string or one per language. */
+const TEXT_FIELDS = ["name", "why", "how_to_fix", "message", "summary"] as const;
+
+/**
+ * A text by language whose key is not a language, or whose value is not a text. In YAML, { en: Write a date, or a
+ * number of days } is two entries, the second keyed " or a number of days": without this, the text is cut silently.
+ */
+const textProblems = (raw: Readonly<Record<string, unknown>>): FieldProblem[] =>
+  TEXT_FIELDS.flatMap((field) => {
+    const value = raw[field];
+    if (!isRecord(value)) return [];
+    return Object.entries(value)
+      .filter(([key, text]) => !LANGUAGE_KEY.test(key) || typeof text !== "string")
+      .map(([key]) => ({ kind: "bad-text" as const, written: `${field}: ${JSON.stringify(key)}` }));
+  });
 
 /** One example: before and after, each a text in every language or by language. */
 const isExamplePair = (value: unknown): boolean => isRecord(value) && isTextByLanguage(value["before"]) && isTextByLanguage(value["after"]);
@@ -68,6 +91,7 @@ export const fieldProblems = (raw: Readonly<Record<string, unknown>>, genres: re
   ...useForProblems(raw["use_for"], genres),
   ...exampleProblems(raw["example"]),
   ...depthProblems(raw["rewrite"]),
+  ...textProblems(raw),
 ];
 
 const TEXT: Texts<Readonly<Record<FieldKind, (written: string) => string>>> = {
@@ -77,6 +101,8 @@ const TEXT: Texts<Readonly<Record<FieldKind, (written: string) => string>>> = {
     "bad-use-for": (written) =>
       `use_for: ${written} はジャンルではありません。ジャンルかその頭（business、business/report）を並べます。一覧は npx chaffjs genres。`,
     "bad-summary": (written) => `summary: ${written} は読めません。一つの文字列か、言語ごとの文字列（{ ja: …, en: … }）で書きます。`,
+    "bad-text": (written) =>
+      `${written} は言語ではありません。{ } の中のカンマは項目の区切りになるので、カンマのある文は引用符で囲みます（en: "Write a date, or a number of days."）。`,
     "bad-example": (written) =>
       `example: ${written} の before と after が揃っていません。{ before, after } か、言語ごとに { ja: { before, after }, en: { before, after } } と書きます。`,
   },
@@ -86,6 +112,8 @@ const TEXT: Texts<Readonly<Record<FieldKind, (written: string) => string>>> = {
     "bad-use-for": (written) =>
       `use_for: ${written} is not a genre. List genres or their first part (business, business/report); npx chaffjs genres lists them.`,
     "bad-summary": (written) => `summary: cannot read ${written}. Write one string, or one per language ({ ja: …, en: … }).`,
+    "bad-text": (written) =>
+      `${written} is not a language. Inside { }, a comma separates entries, so quote a text that has one (en: "Write a date, or a number of days.").`,
     "bad-example": (written) =>
       `example: ${written} lacks a before or an after. Write { before, after }, or one per language: { ja: { before, after }, en: { before, after } }.`,
   },
