@@ -1,0 +1,25 @@
+# 飾りのたとえ。仕組みや手順を言う代わりに、魔法や夢にたとえる言い回し（まるで魔法のように動く、呪文のようなコマンド）。
+# figurative-density が文書の長さあたりの数で読む。一つ一つは誤りではないので、重なったときだけ言う。
+# 例を挙げる「〜のような」（A や B のような製品）は数えない。たとえだけに使う語を載せる。
+# 一つの文に二つの語が当たると二つと数えるので、ほかの語を含む長い形（魔法のよう）は載せない。
+id: figurative-phrase
+language: ja
+entries:
+  - pattern: まるで
+    rewrite: 何がどう動くかをそのまま書く
+  - pattern: あたかも
+    rewrite: 何がどう動くかをそのまま書く
+  - pattern: かのよう
+    rewrite: 実際にどうなるかを書く
+  - pattern: 魔法の
+    rewrite: 何を自動でするのかを書く
+  - pattern: 魔法みたい
+    rewrite: 何を自動でするのかを書く
+  - pattern: 呪文の
+    rewrite: コマンドが何をするのかを書く
+  - pattern: おまじない
+    rewrite: その行が何のためにあるのかを書く
+  - pattern: 夢のよう
+    rewrite: 何ができるのかを数や例で書く
+  - pattern: 奇跡のよう
+    rewrite: 何がどれだけ変わったのかを書く
