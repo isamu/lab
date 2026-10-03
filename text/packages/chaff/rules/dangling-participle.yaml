@@ -1,0 +1,58 @@
+id: dangling-participle
+layer: L3
+status: stable
+how_to_find: dangling-opener
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: 主語の無い分詞の句
+  en: Dangling participle
+
+why:
+  ja: 英語で分詞の句から始めた文（Having reviewed the code, …）は、句の動作をしたのが文の主語だと読まれます。主語が形だけの it や there だと（Having reviewed the code, it is ready.）、コードを見たのが誰なのか文に書かれていません。読み手は一瞬つまずき、意味を補って読むことになります。-ing の分詞の句の直後の主語が it か there で、be が続く形だけを指します。
+  en: 'A sentence that opens with a participle phrase ("Having reviewed the code, …") is read as if the subject did that action. When the subject is an empty "it" or "there" ("Having reviewed the code, it is ready."), the sentence never says who reviewed the code, and the reader has to supply it. Only an opening "-ing" phrase followed by "it" or "there" and a form of "be" is reported.'
+
+message:
+  ja: 「{opener}」の動作をしたのが誰か、文に書かれていません（主語が「{subject}」）
+  en: '"{opener}" has no one to attach to; the subject is an empty "{subject}"'
+
+how_to_fix:
+  ja: 動作をした人を主語にするか（Having reviewed the code, we think it is ready.）、句を節にしてください（After we reviewed the code, it was ready.）。
+  en: Make whoever did the action the subject ("Having reviewed the code, we consider it ready."), or turn the phrase into a clause ("After we reviewed the code, it was ready.").
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "A narrator and a character speak as they speak, and loose openings are part of a voice."
+  speech: "A transcript keeps the speaker's words."
+
+group: wording
+summary:
+  ja: 英語で、「Having reviewed the code, it is ready.」のように、分詞の句の後ろの主語が形だけの it や there の文
+  en: 'A participle phrase followed by an empty "it" or "there", as in "Having reviewed the code, it is ready."'
+
+example:
+  en:
+    before: Having reviewed the logs, it is clear that the job failed twice.
+    after: Having reviewed the logs, we found that the job failed twice.
+
+not_flagged:
+  ja: 主語が人や物の名詞の文（Having reviewed the code, the team approved it.）、過去分詞で始めた句（Configured with SSO, it is ready.。it そのものを言うことが多い）、決まった言い方として読む句（Given、Based on、Generally speaking、Having said that）、挿入句の it is（Testing it, it is worth noting, requires …）、分詞の句が長く読点の位置が当てにならない文は指しません。英語の文だけを読みます。
+  en: 'A sentence whose subject is a person or a thing ("Having reviewed the code, the team approved it."), an opening past participle ("Configured with SSO, it is ready.", which usually describes "it" itself), openings read as fixed phrases ("Given", "Based on", "Generally speaking", "Having said that"), a parenthetical "it is" ("Testing it, it is worth noting, requires …"), and long openings where the comma cannot be trusted are not reported. Only English sentences are read.'
+
+rewrite:
+  depth: light
+  en:
+    direction: Give the participle phrase a subject that did its action, or turn the phrase into a clause with its own subject. Keep what the sentence says.
+    pairs:
+      - before: Having reviewed the logs, it is clear that the job failed twice.
+        after: Having reviewed the logs, we found that the job failed twice.
+      - before: Looking at the totals, there is a gap of 40 hours.
+        after: Looking at the totals, we see a gap of 40 hours.
+    keep:
+      - what the sentence says and its figures
+    avoid:
+      - inventing who did the action when the document does not say
