@@ -238,6 +238,13 @@ chaff's own rule is that a rule decides by machine alone. Anything that needs th
 | A planted mistake | `test/fixtures/bench/plants/<id>.yaml` and a module in `scripts/bench-plants/` | One mistake put into a clean sample, to measure whether the rule finds it. The YAML file holds `planted: [ja, en]` (the languages it is planted in) or `not_planted:` with why none can be planted; the module exports `MUTATIONS`, the mistakes it plants. Neither is a shared list |
 | ChangeLog | `Unreleased` in `docs/ChangeLog.md` | What chaff can now find |
 
+A rule that compares the files of one run (a word spelled one way in one file and another way in the rest) has a detector of another kind.
+It takes every document of the run and returns findings, each with the path of the file it is in (the type `CrossDetector`).
+It is registered by `detectors/cross-registry/<how_to_find>.ts`, and its rule file says `requires: [documents]`.
+chaff runs it only when it is given two or more files, or a folder; on one file it is listed among the rules that did not run, with that reason.
+Each finding points at a line and column of its own file, so stet, the baseline and SARIF treat it like any other.
+Its `example` adds `other:`, a third file checked in the same run as `before` and `after`.
+
 The guide's screens do not list the rules that did not run by hand: a screen writes `{not-run}` there, and the site fills the list in from chaff's output when it is built. A new rule edits no guide page for it.
 
 `yarn test` stops when a rule file lacks a reader's field that the rule needs.
