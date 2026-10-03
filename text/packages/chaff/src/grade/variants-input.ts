@@ -1,4 +1,5 @@
 import type { GradeResult } from "./result.ts";
+import { isGradeResult } from "./results-read.ts";
 
 // The results `compareVariants()` is given, checked and grouped by variant. Pure. A harness builds this input by hand, so
 // a result without an id, without a variant or under an id its variant already has is said, not silently dropped.
@@ -24,7 +25,8 @@ const labelledOf = (input: unknown): Labelled[] | undefined => {
   );
 };
 
-const isResult = (value: unknown): value is GradeResult => isRecord(value) && typeof value["id"] === "string" && value["id"] !== "";
+/** A whole result line, as `--out` writes it, with an id to match by: a partial object would break the table, not be compared. */
+const isResult = (value: unknown): value is GradeResult => isGradeResult(value) && value.id !== "";
 
 /** Why one entry cannot be compared, or undefined when it can. */
 const problemOf = (entry: Labelled, groups: ReadonlyMap<string, ReadonlyMap<string, GradeResult>>): string | undefined => {

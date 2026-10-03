@@ -1,5 +1,6 @@
 // One line of `chaff grade`'s input: a model's output and what to check it against. Pure: reads text, returns items
 // or what is wrong with them, so a harness that writes the file can be told which line to fix.
+import { resultKey } from "./result-name.ts";
 
 export type GradeCitation = { readonly source: string; readonly address: string; readonly quote: string };
 
@@ -158,7 +159,7 @@ type ReadLine = { readonly item: GradeItem; readonly line: number };
 const duplicates = (items: readonly ReadLine[]): ItemProblem[] => {
   const firstLine = new Map<string, number>();
   return items.flatMap(({ item, line }) => {
-    const key = `${item.variant ?? ""}\n${item.id}`;
+    const key = resultKey(item);
     const first = firstLine.get(key);
     if (first === undefined) firstLine.set(key, line);
     const detail = item.variant === undefined ? item.id : `${item.id} (${item.variant})`;

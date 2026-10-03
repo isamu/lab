@@ -47,7 +47,7 @@ const isRates = (value: unknown): boolean => isRecord(value) && Object.values(va
 const isLabel = (value: Record<string, unknown>): boolean => isString(value["id"]) && (value["variant"] === undefined || isString(value["variant"]));
 
 /** A line `--out` writes, every field checked: a line that only looks like one would be compared as if it had been graded. */
-const isGradeResult = (value: unknown): value is GradeResult =>
+export const isGradeResult = (value: unknown): value is GradeResult =>
   isRecord(value) &&
   isLabel(value) &&
   isString(value["language"]) &&

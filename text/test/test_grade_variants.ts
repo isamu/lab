@@ -74,6 +74,10 @@ describe("variant labels in the input", () => {
     assert.deepEqual(problemsOf(jsonl({ output: "x", variant: "a" })), ["1:no-id"]);
   });
 
+  it("keeps an id and a label apart whatever characters they hold", () => {
+    assert.deepEqual(problemsOf(jsonl({ id: "b\nc", output: "x", variant: "a" }, { id: "c", output: "y", variant: "a\nb" })), []);
+  });
+
   it("reads a file without labels as before", () => {
     assert.deepEqual(problemsOf(jsonl({ id: "q", output: "x" }, { id: "r", output: "y" })), []);
   });
@@ -136,6 +140,7 @@ describe("comparing variants", () => {
     // What untyped JavaScript could pass: checked by the reader compareVariants() calls.
     assert.deepEqual(variantGroupsOf({ a: "not results" }), { problems: ["a: not a grade result with an id"] });
     assert.deepEqual(variantGroupsOf([{ variant: "a" }]), { problems: ["results[0]: not a grade result with an id"] });
+    assert.deepEqual(variantGroupsOf([{ id: "q", variant: "a" }]), { problems: ["results[0]: not a grade result with an id"] });
     assert.deepEqual(variantGroupsOf("results"), { problems: ["results must be an array of grade results, or { variant: results[] }"] });
   });
 
