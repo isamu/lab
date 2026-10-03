@@ -10,7 +10,7 @@ import { severityAt } from "../packages/chaff/src/levels.ts";
 import { loadGenres } from "../packages/chaff/src/genre-load.ts";
 import type { Settings } from "../packages/chaff/src/run.ts";
 import { disagreements, handOffGroups, standingOf, type MeasuredOff, type Standing } from "./rule-policy.ts";
-import { measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "./rules-apply.ts";
+import { MEASURED, measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "./rules-apply.ts";
 import { isMeasurement, type Measurement } from "./rules-measure-score.ts";
 
 const ROOT = join(import.meta.dirname, "..");
@@ -41,6 +41,14 @@ const rulePath = (rule: string): string => join(RULES_DIR, `${rule}.yaml`);
 const measuredOffs = (rules: readonly RuleDefinition[]): MeasuredOff[] =>
   rules.flatMap((rule) => measuredOffsOf(rule.id, readFileSync(rulePath(rule.id), "utf8")));
 
+const atStart: { offs?: readonly MeasuredOff[] } = {};
+
+/** The measured offs, read once: the bench and the tests ask for every sample, and only --apply rewrites the files. */
+const measuredOffsAtStart = (): readonly MeasuredOff[] =>
+  (atStart.offs ??= loadRuleOffs(RULES_DIR)
+    .filter((off) => off.reason === MEASURED)
+    .map((off) => ({ group: off.target, rule: off.rule })));
+
 /**
  * The rules a genre is off for only because the measurement says so, at normal. The bench and the detector tests turn
  * them back on: they read whether a detector finds a mistake, not whether it runs by default. A rule the genre turns off
@@ -50,7 +58,7 @@ export const measuredOffOn = (genre: string): Settings => {
   const own = loadGenres().genres.find((entry) => entry.id === genre)?.rules ?? {};
   const group = genre.split("/")[0];
   return Object.fromEntries(
-    measuredOffs(allRules())
+    measuredOffsAtStart()
       .filter((off) => off.group === group && own[off.rule] === undefined)
       .map((off) => [off.rule, "normal"] as const),
   );
