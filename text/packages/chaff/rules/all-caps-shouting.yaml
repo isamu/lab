@@ -1,0 +1,57 @@
+id: all-caps-shouting
+layer: L1
+status: experimental
+how_to_find: caps-shouting
+word_list: caps-convention
+languages: [en]
+severity: info
+
+name:
+  ja: 大文字だけの語の連なり（叫び）
+  en: Shouting in capitals
+
+why:
+  ja: 英語の本文で、「DO NOT DELETE THIS」のように普通の語を大文字だけで三つ以上続けると、叫んでいるように読め、大文字の語は読む速さも落ちます。略語の並び（AWS IAM SSO）と区別するため、半分以上の語が文書のほかの所で小文字でも書かれているときだけ指します。
+  en: Three or more ordinary words in capitals ("DO NOT DELETE THIS") read as shouting, and words in capitals are slower to read. To tell them from a run of acronyms (AWS IAM SSO), a run is reported only when at least half its words also appear in lower case elsewhere in the document.
+
+message:
+  ja: 「{matched}」を大文字だけで書いています
+  en: '"{matched}" is written in capitals'
+
+how_to_fix:
+  ja: 普通の大文字小文字で書き、強めたいなら太字にするか、なぜ大事なのかを書いてください。
+  en: Write it in ordinary case; to stress it, use bold or say why it matters.
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: readability
+summary:
+  ja: 英語で、「DO NOT DELETE THIS」のように普通の語を大文字だけで続けた所
+  en: Ordinary words run together in capitals, such as "DO NOT DELETE THIS"
+example:
+  en:
+    before: |
+      Do not delete the log. DO NOT DELETE THIS FILE before the audit.
+    after: |
+      Do not delete the log. Do not delete this file before the audit.
+
+not_flagged:
+  ja: 三語以上の連なりだけを見ます。略語の並び（文書のほかの所で小文字で書かれない語）とコードは見ません。仕様書の MUST や SHALL は慣習の大文字として数えません。法令と文学の文書では既定で止めています（大文字で目立たせる決まりや、題を大文字で組む慣習があるため）。
+  en: Only runs of three or more words. Runs of acronyms (words never written in lower case elsewhere) and code are not reported, and MUST or SHALL in a specification count as conventional capitals. The legal and literature presets turn it off, since contracts set disclaimers in capitals by rule and older texts set titles that way.
+level_meaning:
+  ja: "{limit} 箇所あれば指摘"
+  en: reported once there are {limit}
+rewrite:
+  en:
+    direction: Rewrite the capitals in ordinary sentence case. If the words carry a warning, keep the warning in words, not in capitals.
+    pairs:
+      - before: DO NOT DELETE THIS FILE before the audit.
+        after: Do not delete this file before the audit.
+      - before: The form is DUE BY FRIDAY.
+        after: The form is due by Friday.
+    keep:
+      - acronyms and names that are written in capitals
+    avoid:
+      - lowering acronyms (API, NASA) along with the shouted words

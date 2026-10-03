@@ -61,6 +61,8 @@ groups:
       ai-structure: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
+      # Contracts set disclaimers in capitals so they are conspicuous, as the law asks.
+      all-caps-shouting: off
       # Drafting writes "in the event that" and "for the purpose of" on purpose.
       wordy-phrase: off
       weasel-word: off
@@ -86,6 +88,10 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -123,6 +129,10 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
       # Defined terms and short names are a contract's apparatus: the legal genres check them.
       defined-term-form: off
       defined-name-repeated: off
@@ -157,6 +167,10 @@ groups:
       shell-prompt-mix: off
       heading-command-missing: off
       step-statement-mix: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
       # Defined terms and short names are a contract's apparatus: the legal genres check them.
       defined-term-form: off
       defined-name-repeated: off
@@ -252,6 +266,9 @@ groups:
       list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # Older printed texts set the dash as "--" and titles in capitals.
+      hyphen-as-dash: off
+      all-caps-shouting: off
       # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
       code-fence-language-mix: off
       shell-prompt-mix: off
@@ -270,6 +287,10 @@ groups:
       wordy-phrase: off
       weasel-word: off
       sentence-initial-so: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
       # Defined terms and short names are a contract's apparatus: the legal genres check them.
       defined-term-form: off
       defined-name-repeated: off
@@ -322,6 +343,10 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
+      # An email's greeting, closing, subject and attachments: only the email and letter genre turns these on.
+      email-greeting-closing: off
+      email-subject-length: off
+      attachment-not-attached: off
       # Defined terms and short names are a contract's apparatus: the legal genres check them.
       defined-term-form: off
       defined-name-repeated: off

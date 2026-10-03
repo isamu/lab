@@ -1,0 +1,12 @@
+# Words written in capitals by convention, not to shout: the requirement keywords of RFC 2119 and BCP 14.
+# all-caps-shouting counts them like acronyms, so "the client MUST NOT" is not a shouted run.
+id: caps-convention
+language: en
+entries:
+  - pattern: MUST
+  - pattern: SHALL
+  - pattern: SHOULD
+  - pattern: MAY
+  - pattern: REQUIRED
+  - pattern: RECOMMENDED
+  - pattern: OPTIONAL
