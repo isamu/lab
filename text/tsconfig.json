@@ -26,6 +26,7 @@
     "scripts/**/*.ts",
     "eslint.config.js",
     "examples/chaff-plugin-example/**/*.mjs",
+    "examples/chaff-plugin-legal-contract/**/*.mjs",
     "examples/evals/**/*.mjs",
     "examples/evals/**/*.cjs"
   ]

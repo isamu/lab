@@ -15,6 +15,7 @@ const PARTY_ALIAS_PAIRS = [
 
 /**
  * @param {Sentence} sentence
+ * @param {string} pattern
  */
 const occurrencesIn = (sentence, pattern) => {
   const spans = [];
@@ -64,7 +65,7 @@ export const PARTY_ALIAS_MIX = {
     en: "A contract that refers to the same party by two names (e.g. 甲 and 委託者) forces the reader to map them each time. Pick one and use it throughout.",
   },
   message: {
-    ja: '「{alias}」と書いていますが、文書内では「{canonical}」も使われています。どちらかに統一してください。',
+    ja: "「{alias}」と書いていますが、文書内では「{canonical}」も使われています。どちらかに統一してください。",
     en: 'Written as "{alias}" but the document also uses "{canonical}". Pick one.',
   },
   how_to_fix: {
