@@ -433,6 +433,15 @@ export type RuleOption = {
 
 export type Detector = (doc: ProseDocument, options: DetectorOptions) => Finding[];
 
+/** A finding of a rule that reads several documents at once, and the document (its path) it is located in. */
+export type DocumentFinding = { readonly path: string; readonly finding: Finding };
+
+/**
+ * A rule that compares the documents of one run (several files, or a folder): a word spelled one way in one file and
+ * another way in the rest. Each finding is located in one of the documents, by the offset in its values, as for a Detector.
+ */
+export type CrossDetector = (docs: readonly ProseDocument[], options: DetectorOptions) => DocumentFinding[];
+
 export type Localized = Readonly<Record<string, string>>;
 
 export type Level = "strict" | "normal" | "relaxed" | "off";
