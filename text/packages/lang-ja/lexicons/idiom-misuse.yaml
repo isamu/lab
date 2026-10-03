@@ -1,0 +1,69 @@
+# 慣用句の誤用。辞書や国語の手引きが誤りとして挙げる形と、その正しい形（rewrite）。
+#
+# 載せるのは、多くの辞書や手引きが誤りとする形だけ。両方が普通に使われる形（「押しも押されもしない」）は入れない。
+# 動詞は原形で書けば、活用した形（得た・すくわれた）にも当たる。
+id: idiom-misuse
+language: ja
+entries:
+  - pattern: 的を得る
+    rewrite: 的を射る
+  - pattern: 汚名挽回
+    rewrite: 汚名返上（または名誉挽回）
+  - pattern: 汚名を挽回
+    rewrite: 汚名を返上（または名誉を挽回）
+  - pattern: 足元をすくわれる
+    rewrite: 足をすくわれる
+  - pattern: 足もとをすくわれる
+    rewrite: 足をすくわれる
+  - pattern: 押しも押されぬ
+    rewrite: 押しも押されもせぬ
+  - pattern: 采配を振るう
+    rewrite: 采配を振る
+  - pattern: 怒り心頭に達する
+    rewrite: 怒り心頭に発する
+  - pattern: 取り付く暇もない
+    rewrite: 取り付く島もない
+  - pattern: 取りつく暇もない
+    rewrite: 取りつく島もない
+  - pattern: 舌の先の乾かぬうちに
+    rewrite: 舌の根の乾かぬうちに
+  - pattern: 熱にうなされる
+    rewrite: 熱に浮かされる
+  - pattern: 愛想を振りまく
+    rewrite: 愛嬌を振りまく
+  - pattern: 口先三寸
+    rewrite: 舌先三寸
+  - pattern: 二の舞を踏む
+    rewrite: 二の舞を演じる（または二の足を踏む）
+  - pattern: 寸暇を惜しまず
+    rewrite: 寸暇を惜しんで
+  - pattern: 雪辱を晴らす
+    rewrite: 雪辱を果たす（または屈辱を晴らす）
+  - pattern: 天地天命
+    rewrite: 天地神明
+  - pattern: 白羽の矢が当たる
+    rewrite: 白羽の矢が立つ
+  - pattern: 薄皮をはぐように
+    rewrite: 薄紙をはぐように
+  - pattern: 明るみになる
+    rewrite: 明るみに出る
+  - pattern: 論戦を張る
+    rewrite: 論陣を張る
+  - pattern: 恨み骨髄に達する
+    rewrite: 恨み骨髄に徹する
+  - pattern: 心血を傾ける
+    rewrite: 心血を注ぐ
+  - pattern: 照準を当てる
+    rewrite: 照準を合わせる
+  - pattern: 濡れ手で泡
+    rewrite: 濡れ手で粟
+  - pattern: 喧々諤々
+    rewrite: 喧々囂々（または侃々諤々）
+  - pattern: 古式豊かに
+    rewrite: 古式ゆかしく
+  - pattern: 合いの手を打つ
+    rewrite: 合いの手を入れる
+  - pattern: 眉をしかめる
+    rewrite: 眉をひそめる（または顔をしかめる）
+  - pattern: 上や下への大騒ぎ
+    rewrite: 上を下への大騒ぎ
