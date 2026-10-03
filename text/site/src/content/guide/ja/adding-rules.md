@@ -282,6 +282,7 @@ chaff の決まりで、ルールは機械で決まるものだけです。意�
 一度に渡した複数のファイルどうしを比べるルール（あるファイルだけ違う書き方の語など）は、別の種類の関数で書きます。
 関数は、その回の文書をすべて受け取り、指摘を、それがあるファイルのパスと一緒に返します（型は `CrossDetector`）。
 登録は `detectors/cross-registry/<how_to_find>.ts` で、ルールの定義には `requires: [documents]` を書きます。
+
 chaff は、ファイルを二つ以上かフォルダを渡したときだけこのルールを動かします。一つだけのときは、その理由を添えて「動いていないルール」に並べます。
 指摘はどれも自分のファイルの行と桁を指すので、stet、baseline、SARIF はほかの指摘と同じに扱います。
 `example` には、`before` と `after` と同じ回に渡す三つ目のファイル `other:` を書きます。
@@ -296,8 +297,12 @@ off_for:
 ```
 
 止めたルールは、そのジャンルを理由にして「動いていないルール」に並びます。
-`genres.yaml` には、ジャンルそのものについてのこと（名前、説明、文書の種類、見分け方、ジャンルが動かす試験中のルール）だけを書き、新しいルールのためには書き換えません。
-`yarn rules:measure --apply` が測って止めた group は、`off_for` に `measured by yarn rules:measure` と書かれます。
+`genres.yaml` には、ジャンルそのものについてのこと（名前、説明、文書の種類、見分け方、ジャンルが決める強さ）だけを書き、新しいルールのためには書き換えません。
+
+新しいルールは `status: experimental` で入ります。測るまでは、`--experimental` を付けたときだけ動きます。
+`yarn rules:measure --apply` が置き場所を決めます。corpus に chaff をかけ、人の文書にどれだけ指摘が出るかから、ルールの `status` と `severity` を書きます。
+測って止めた group は、`off_for` に `measured by yarn rules:measure` と書かれます。
+ルールの置き場所が `corpus/rules-measure.json` の測った結果と合わなくなると、`yarn test` が止まります。
 
 手引きの画面に、ルールが増えるたびに変わる行は書き写しません。
 画面には、動いていないルールを並べる所に `{not-run}`（一覧の下のヒントも含みます）、`--compact` が最後に出す集計の行に `{counts}` と書きます。
@@ -307,9 +312,11 @@ off_for:
 `yarn test` は、どの画面もその文書にかけ直し、chaff の出力と違えば止まります。
 文書は、ページの `file=` の付いた塊と、`site/src/screens/<言語>/<ページ>/` のファイルです。
 違いは `node scripts/guide-screens.ts --check ja/<ページ>.md` で見られます。
+
 新しいルールが画面を変えたときは、`yarn screens:update` を走らせ、ページの差分を読みます。
 画面を chaff の今の出力に書き直し、「…」の行はできるだけ元の場所に残します。
 ページを指定すると、そのページだけを直します（`yarn screens:update ja/commands.md`）。
+
 `scripts/guide-screens.ts` の `UNCHECKED` に挙げた画面はかけられないので、そのまま残します。
 画面に指摘が増えたなら、ページの説明もあわせて直します。
 
