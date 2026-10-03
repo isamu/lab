@@ -1,6 +1,6 @@
 id: katakana-density
 layer: L3
-status: experimental
+status: stable
 how_to_find: katakana-density
 # Katakana runs are read from the characters, so the rule needs no morphology. chaff.yaml の names に並べた名前は数えない。
 languages: [ja]
@@ -78,6 +78,7 @@ level_meaning:
   ja: カタカナ語が 1000 字あたり {limit} 語まで
   en: "katakana loanwords: up to {limit} per 1000 characters"
 rewrite:
+  depth: light
   ja:
     direction: 多いと示されたカタカナ語から、日本語で言えるものを言い換えてください。読み手が毎日使う用語と製品名は残します。
     pairs:

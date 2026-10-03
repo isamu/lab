@@ -12,6 +12,8 @@ import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { resolve } from "../packages/chaff/src/levels.ts";
 import { GENRES } from "../packages/chaff/src/genre.ts";
 import { presetLevels } from "../packages/chaff/src/genre-load.ts";
+import { measuredOffOn } from "./rules-measure-files.ts";
+import type { PresetLevels } from "../packages/chaff/src/genre-parse.ts";
 import { BENCH_GENRES, benchGenreOf, benchLevelOf, runsInBench } from "./bench-genres.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -21,6 +23,9 @@ export const BENCH = join(dirname(fileURLToPath(import.meta.url)), "..", "test",
 const LENGTH_UNITS: Readonly<Record<string, "char" | "word">> = { ja: ja.capabilities.lengthUnit, en: en.capabilities.lengthUnit };
 
 const RULES: ReadonlyMap<string, readonly RuleDefinition[]> = new Map(["ja", "en"].map((language) => [language, loadRules(language)]));
+
+/** The genre's levels with the rules measured off back at normal: the bench reads whether a detector finds a mistake, not whether it runs by default. */
+const benchPreset = (genre: string): PresetLevels => ({ ...presetLevels(genre), ...measuredOffOn(genre) });
 
 const rulesOf = (language: string): readonly RuleDefinition[] => RULES.get(language) ?? loadRules(language);
 
@@ -43,7 +48,7 @@ export const samplesOf = (language: string): Sample[] =>
 
 export const contextOf = (sample: Sample): PlantContext => ({
   limits: Object.fromEntries(
-    rulesOf(sample.language).map((rule) => [rule.id, resolve(rule, benchLevelOf(rule.id, presetLevels(sample.genre)), sample.genre).limit]),
+    rulesOf(sample.language).map((rule) => [rule.id, resolve(rule, benchLevelOf(rule.id, benchPreset(sample.genre)), sample.genre).limit]),
   ),
   lengthUnit: LENGTH_UNITS[sample.language],
   fullSentences: Object.fromEntries(rulesOf(sample.language).flatMap((rule) => (rule.full_sentence === undefined ? [] : [[rule.id, rule.full_sentence]]))),
@@ -53,6 +58,6 @@ export const contextOf = (sample: Sample): PlantContext => ({
 
 /** Whether chaff runs the rule on this sample at all: its languages, a genre in its use_for, and not off in the genre's preset. */
 export const runsOn = (sample: Pick<Sample, "language" | "genre">, id: string): boolean =>
-  rulesOf(sample.language).some((rule) => rule.id === id && runsInBench(rule, sample.genre, presetLevels(sample.genre)));
+  rulesOf(sample.language).some((rule) => rule.id === id && runsInBench(rule, sample.genre, benchPreset(sample.genre)));
 
 export const teamOf = (sample: Sample): TeamWords => ({ jargon: TEAM_JARGON, requiredSections: requiredSectionsOf(sample.source), prefer: TEAM_PREFER });

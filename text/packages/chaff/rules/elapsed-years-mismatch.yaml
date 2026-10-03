@@ -1,6 +1,6 @@
 id: elapsed-years-mismatch
 layer: L3
-status: experimental
+status: stable
 how_to_find: elapsed-years-mismatch
 requires: [dates]
 severity: warning
@@ -53,6 +53,7 @@ not_flagged:
   ja: 文書に日付（日付だけの段落か「更新日：」の段落）が無ければ、比べる年が無いので見ません。一年までの違い、起点の語に直接付いていない年数（「創業後3年で上場」）、生まれた年と年齢が一つの文に一つずつでないものも見ません。
   en: A document with no date of its own (a paragraph holding only a date, or "Updated:") has no year to count to and is not checked. A difference of one year, a count not attached to the origin word ("listed 3 years after its founding"), and a sentence without exactly one year of birth and one age are left alone.
 rewrite:
+  depth: light
   ja:
     direction: 年数と起点の年のどちらが正しいかを書き手に確かめ、もう一方を直してください。毎年変わる年数は「2015年創業」のように起点の年だけにすると、古くなりません。
     pairs:

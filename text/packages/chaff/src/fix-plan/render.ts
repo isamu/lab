@@ -5,6 +5,7 @@ import { uiLanguageOf } from "../ui.ts";
 import type { FixPlan, PhraseHint, PlanSpot, RulePlan } from "./plan.ts";
 import { FIX_PLAN_TEXT, type FixPlanText } from "./text.ts";
 import { STRUCTURE_TARGET_TEXT } from "./structure-target-text.ts";
+import { DEFAULT_DEPTH, depthMeaning } from "../rewrite-depth.ts";
 
 /** A phrase quoted the way the document's language quotes: 「…」 in Japanese, "…" otherwise. */
 const quoted = (text: string, language: string): string => (language === "ja" ? `「${text}」` : `"${text}"`);
@@ -34,6 +35,7 @@ const rulePlanLines = (rule: RulePlan, text: FixPlanText, language: string): str
   "",
   `### \`${rule.rule}\` ${rule.name}`,
   "",
+  ...(rule.depth === DEFAULT_DEPTH ? [] : [`**${text.ruleDepth}**: ${rule.depth}`, ""]),
   `**${text.direction}**: ${rule.direction}`,
   ...labelled(text.keep, bullets(rule.keep)),
   ...labelled(text.avoid, bullets(rule.avoid)),
@@ -48,14 +50,35 @@ const rulePlanLines = (rule: RulePlan, text: FixPlanText, language: string): str
   ),
 ];
 
+const depthLines = (plan: FixPlan, text: FixPlanText): string[] => {
+  const { depth } = plan.mode;
+  if (depth === undefined) return [];
+  const setBy = plan.chosenDepth === undefined ? "" : text.depthSetBy[plan.chosenDepth.from];
+  return [text.depthLine(depth, depthMeaning(depth, uiLanguageOf(plan.language)), setBy), ""];
+};
+
 const modeLines = (plan: FixPlan, text: FixPlanText): string[] => [
   "",
   `## ${text.modeHeading}: ${text.modeName[plan.mode.mode]}`,
   "",
   text.modeReason[plan.mode.reason],
   "",
+  ...depthLines(plan, text),
   ...bullets(text.modeWays),
 ];
+
+/** The rules a chosen depth leaves out, named with their depth, so their findings are not taken for fixed. */
+const deeperLines = (plan: FixPlan, text: FixPlanText): string[] => {
+  if (plan.deeper.length === 0 || plan.chosenDepth === undefined) return [];
+  return [
+    "",
+    `## ${text.deeperHeading}`,
+    "",
+    text.deeperNote(plan.chosenDepth.depth),
+    "",
+    ...bullets(plan.deeper.map((rule) => `\`${rule.rule}\` ${rule.name}: ${text.deeperLine(rule.depth, rule.spots)}`)),
+  ];
+};
 
 const signalLines = (plan: FixPlan, text: FixPlanText): string[] => {
   const outline = text.outlineLine(shapeMeasures(plan.outline.shape, plan.outline.unit, OUTLINE_TEXT[uiLanguageOf(plan.language)]));
@@ -126,6 +149,7 @@ export const renderFixPlanMarkdown = (plan: FixPlan): string => {
     ...structureLines(plan),
     ...(plan.rules.length === 0 ? [] : ["", `## ${text.rulesHeading}`]),
     ...plan.rules.flatMap((rule) => rulePlanLines(rule, text, plan.language)),
+    ...deeperLines(plan, text),
     ...notRunLines(plan, text),
     ...checkLines(plan, text),
   ].join("\n");

@@ -1,6 +1,6 @@
 id: email-subject-length
 layer: L2
-status: experimental
+status: stable
 how_to_find: email-subject
 severity: warning
 
@@ -77,6 +77,7 @@ level_meaning:
   ja: 件名 {limit} 字まで
   en: up to {limit} characters in the subject
 rewrite:
+  depth: light
   ja:
     direction: 件名を、用件と見分けの語（日付・案件名・期限）だけに縮めてください。経緯や理由は本文に移します。空の件名には、本文の用件を短く書きます。
     pairs:

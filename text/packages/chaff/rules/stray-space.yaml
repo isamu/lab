@@ -1,11 +1,11 @@
 id: stray-space
 layer: L3
-status: experimental
+status: stable
 how_to_find: stray-space
 # どの境目が一続きの語句の中かは、語の品詞で決める。品詞が無ければ動かない。
 requires: [pos]
 languages: [ja]
-severity: warning
+severity: info
 
 name:
   ja: 語句の途中に空白がある

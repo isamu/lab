@@ -1,6 +1,6 @@
 id: list-item-form-mix
 layer: L2
-status: experimental
+status: stable
 how_to_find: list-item-form-mix
 requires: [pos]
 severity: info
@@ -82,6 +82,7 @@ level_meaning:
   ja: 少ないほうの形が、箇条書きの項目の {limit}% 以下のとき指摘
   en: reported when the less common form is {limit}% of the list's items or less
 rewrite:
+  depth: light
   ja:
     direction: 少ないほうの項目を、同じ箇条書きのほかの項目の形にそろえてください。名詞で終わる並びなら名詞で、文で終わる並びなら文で終えます。項目の中身は変えません。
     pairs:

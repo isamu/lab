@@ -1,6 +1,6 @@
 id: quote-style-consistency
 layer: L1
-status: experimental
+status: stable
 how_to_find: mark-consistency
 word_list: quote-style
 languages: [en]
@@ -50,6 +50,7 @@ level_meaning:
   ja: 少ないほうの書き方が {limit} 箇所あれば指摘
   en: reported once the less common way appears {limit} times
 rewrite:
+  depth: light
   en:
     direction: Change the marked quotes to the form the rest of the document uses. Change nothing else.
     pairs:

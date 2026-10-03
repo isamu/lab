@@ -1,6 +1,6 @@
 id: figure-reference-order
 layer: L3
-status: experimental
+status: stable
 how_to_find: figure-order
 severity: info
 
@@ -81,6 +81,7 @@ not_flagged:
   ja: キャプション（行の頭の「図1　…」）を一つも書いていない種類の図、他の文書の図（「報告書の図5」）、リンクの字、番号が字や漢数字のもの（付録A、別表第一）は見ません。付録・別表・様式は文書の終わりに置くものなので、参照の順だけを見て、置き場所と参照の有無は見ません。見出しの無い文書では、節を越えたかどうかは見ません。論文のジャンルでだけ見ます。
   en: 'A kind of figure the document never captions (a "Figure 1: …" line), figures of another document ("Figure 5 of the report"), link text, and numbers that are letters or numerals in words (Appendix A) are left alone. Appendices and annexes sit at the end, so only the order of their references is checked, not where they are or whether they are referred to. A document without headings is not checked for references past the section. Only the academic paper genre runs this rule.'
 rewrite:
+  depth: structure
   ja:
     direction: 初めて参照する順に番号が増えるよう、参照の順を入れ替えるか、図と表の番号を振り直してください。振り直すなら、キャプションとほかの参照も同じく直します。参照しない図には、本文に参照の文を足します。
     pairs:

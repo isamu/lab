@@ -1,6 +1,6 @@
 id: agentless-passive
 layer: L3
-status: experimental
+status: stable
 how_to_find: agentless-passive
 word_list: agent-marker
 requires: [pos]
@@ -47,6 +47,7 @@ level_meaning:
   ja: 一文に受け身が {limit} 個あれば指摘
   en: reported when a sentence has {limit} passives with no actor
 rewrite:
+  depth: light
   ja:
     direction: 誰がしたのかを本文から探して主語にし、能動の文にしてください。本文のどこにも書かれていなければ、作らずに［誰が］と空けて書き手に聞きます。
     pairs:

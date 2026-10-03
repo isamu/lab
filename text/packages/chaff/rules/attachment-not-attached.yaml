@@ -1,6 +1,6 @@
 id: attachment-not-attached
 layer: L2
-status: experimental
+status: stable
 how_to_find: attachment-missing
 severity: warning
 
@@ -71,6 +71,7 @@ not_flagged:
   ja: 「添付なし」「添付はありません」のような、付けていないと言う書き方と、引用した返信の中の「添付」は数えません。メール・手紙のジャンルでだけ見ます。
   en: 'Phrases that say nothing is attached ("no attachment") or that use the word for something else ("attached to the wall"), and mentions inside a quoted reply, are not counted. Only the email and letter genre runs this rule.'
 rewrite:
+  depth: light
   ja:
     direction: 書き手に、ファイルを付けたかを確かめてください。付けたなら、添付したもののファイル名を「添付ファイル：」の行に書きます。付けないなら、添付に触れた文を消すか、資料の在りか（共有フォルダの場所など）を書きます。ファイル名を推測で書きません。
     pairs:

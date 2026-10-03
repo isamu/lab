@@ -1,6 +1,6 @@
 id: one-sentence-paragraph-run
 layer: L3
-status: experimental
+status: stable
 how_to_find: one-sentence-paragraph-run
 severity: info
 
@@ -67,6 +67,7 @@ level_meaning:
   ja: 一文だけの段落の連続 {limit} 個まで
   en: up to {limit} one-sentence paragraphs in a row
 rewrite:
+  depth: structure
   ja:
     direction: 同じ話の文を一つの段落にまとめてください。並べた項目なら箇条書きにします。文の中身と順序は変えません。
     pairs:

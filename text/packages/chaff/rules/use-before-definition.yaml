@@ -1,9 +1,9 @@
 id: use-before-definition
 layer: L3
-status: experimental
+status: stable
 how_to_find: use-before-definition
 requires: [structure]
-severity: warning
+severity: info
 
 name:
   ja: 定義より前で使っている語
@@ -29,7 +29,7 @@ placeholders:
     ja: 〇
     en: N
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
@@ -53,6 +53,7 @@ not_flagged:
   ja: 定義の条（「X」とは…をいう）で定義した語は、前で使っても言いません。定義の条は文書の頭にも終わりにも置く書き方があるためです。最初の一か所だけを指します。
   en: Terms defined in a definitions clause ("X" means ...) are not checked, since a definitions clause may come first or last. Only the first early use is pointed at.
 rewrite:
+  depth: structure
   ja:
     direction: 定義を、その語を最初に使う文へ移してください。移せないなら、前の文を定義した語を使わない書き方にします。
     pairs:

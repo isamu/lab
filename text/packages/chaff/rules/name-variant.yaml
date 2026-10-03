@@ -1,9 +1,9 @@
 id: name-variant
 layer: L3
-status: experimental
+status: stable
 how_to_find: name-variant
 requires: [pos]
-severity: warning
+severity: info
 
 name:
   ja: 同じ名前の書き分け
@@ -40,7 +40,7 @@ placeholders:
     ja: 別の形
     en: another form
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
@@ -64,6 +64,7 @@ not_flagged:
   ja: 品詞解析が固有名詞と読んだ語だけを見ます。大文字だけの名前（ACME INC、NASA）は見ません。一字違いの英字の名前は、6 字以上で、多いほうが二度以上、少ないほうが一度だけのときに限ります（Iran と Iraq は別の名前）。
   en: Only words the tagger reads as proper nouns are checked. Names in capitals only (ACME INC, NASA) are left out. Names one letter apart are reported only when six letters or longer, with the usual form used at least twice and the other once (Iran and Iraq are different names).
 rewrite:
+  depth: light
   ja:
     direction: 少ないほうの形を、多いほうの形に替えてください。どちらが正しいか本文から分からなければ、書き手に聞きます。別の人や会社なら替えません。
     pairs:

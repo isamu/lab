@@ -1,6 +1,6 @@
 id: adversative-ga-repeat
 layer: L3
-status: experimental
+status: stable
 how_to_find: sentence-conjunctive-count
 word_list: adversative-particle
 requires: [pos]
@@ -45,6 +45,7 @@ level_meaning:
   ja: 一文の逆接の「が」{limit} 個まで
   en: up to {limit} contrastive が in a sentence
 rewrite:
+  depth: light
   ja:
     direction: 一つ目の逆接の「が」の所で文を切ってください。次の文の頭に、前との関係を言う語（しかし、ただし）を置けます。
     pairs:

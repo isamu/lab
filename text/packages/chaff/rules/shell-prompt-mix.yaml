@@ -1,6 +1,6 @@
 id: shell-prompt-mix
 layer: L1
-status: experimental
+status: stable
 how_to_find: shell-prompt
 requires: [markdown]
 severity: info
@@ -98,6 +98,7 @@ level_meaning:
   ja: 少ないほうの書き方が {limit} ブロック以下のとき指摘
   en: reported when the fewer style appears in {limit} blocks or fewer
 rewrite:
+  depth: light
   ja:
     direction: 指されたブロックのプロンプトを、文書の多いほうに揃えてください。付けない側に揃えるなら行の頭の「$ 」を消し、付ける側なら足します。コマンドそのものは変えません。
     pairs:

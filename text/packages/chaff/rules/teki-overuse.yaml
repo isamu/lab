@@ -1,6 +1,6 @@
 id: teki-overuse
 layer: L3
-status: experimental
+status: stable
 how_to_find: sentence-word-count
 word_list: teki-suffix
 requires: [pos]
@@ -45,6 +45,7 @@ level_meaning:
   ja: 一文の「〜的」{limit} 個まで
   en: up to {limit} 〜的 words in a sentence
 rewrite:
+  depth: light
   ja:
     direction: 「〜的」を、本文にある具体的な事柄（数、期間、対象、やり方）に置き換えてください。本文に無ければ作らず、「〜的」を一つ残すか、書き手に聞きます。
     pairs:

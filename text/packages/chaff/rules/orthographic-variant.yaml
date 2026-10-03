@@ -1,6 +1,6 @@
 id: orthographic-variant
 layer: L3
-status: experimental
+status: stable
 how_to_find: orthographic-variant
 # 語の一覧は持たない。文書の中の語を、日本語は辞書の形の読み（出来る・できる はどちらもデキル）で、カタカナ語は小さい字と「ー」を
 # ならした形で、英字は大文字小文字とハイフンを外した形で束ね、同じ語の書き方が二つあれば少ないほうを指す。
@@ -60,6 +60,7 @@ level_meaning:
   ja: 少ないほうが語の {limit}% 以下のとき指摘
   en: reported when the minority spelling is {limit}% of the word's uses or less
 rewrite:
+  depth: light
   ja:
     direction: 同じ語の書き方を、文書でいちばん多い書き方にそろえてください。意味の違う語に書き分けているなら、そのままにします。
     pairs:

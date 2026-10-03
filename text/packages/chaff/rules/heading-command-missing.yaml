@@ -1,6 +1,6 @@
 id: heading-command-missing
 layer: L1
-status: experimental
+status: stable
 how_to_find: heading-command
 requires: [markdown]
 severity: info
@@ -79,6 +79,7 @@ not_flagged:
   ja: コードの無い節、ファイル名や関数名（`config.yaml`、`useEffect`）を書いた見出し、コードの部分の無い見出しは見ません。`--force` は `--force-with-lease` の中にあっても、あったとは数えません。
   en: "Sections with no code, headings naming a file or a function (`config.yaml`, `useEffect`), and headings with no code part are not checked. `--force` inside `--force-with-lease` does not count as shown."
 rewrite:
+  depth: light
   ja:
     direction: 見出しとコード例のどちらが今のコマンドやオプションの名前かを書き手に確かめ、もう一方を直してください。分からなければ推測で書き換えず、確かめるよう伝えます。
     pairs:

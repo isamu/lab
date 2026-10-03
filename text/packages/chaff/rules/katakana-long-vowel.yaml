@@ -1,6 +1,6 @@
 id: katakana-long-vowel
 layer: L3
-status: experimental
+status: stable
 how_to_find: katakana-long-vowel
 # 語は形態素解析で取る。複合語の中の「ユーザー」も一語として見る。品詞が無ければ動かない。
 requires: [pos]

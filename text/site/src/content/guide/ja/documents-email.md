@@ -78,6 +78,16 @@ $ npx chaffjs mail.md --compact
 mail.md   blog/tech · 日本語   ジャンルは既定から
    メール・手紙のようです。--genre business/email を試せます
 
+  10:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
+                  sasete-itadaku
+  12:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
+                  sasete-itadaku
+  20:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
+                  sasete-itadaku
+  20:55   warning 「[担当者名]」が埋まっていません
+                  unfilled-placeholder
+  22:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
+                  sasete-itadaku
 
 {counts}
 ```
@@ -90,8 +100,6 @@ $ npx chaffjs mail.md --genre business/email --experimental --compact
 
 mail.md   business/email · 日本語   ジャンルは --genre から
 
-  10:1    warning この文は 80 文字あります（70 文字まで）
-                  max-sentence-length
   10:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
                   sasete-itadaku
   12:1    info    「させていただく」が文書内に 4 回あります（3 回まで）

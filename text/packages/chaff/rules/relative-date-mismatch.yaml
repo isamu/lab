@@ -1,6 +1,6 @@
 id: relative-date-mismatch
 layer: L3
-status: experimental
+status: stable
 how_to_find: relative-date-mismatch
 requires: [dates]
 severity: warning
@@ -45,6 +45,7 @@ not_flagged:
   ja: 期間のすぐ後ろ（「の」や読点だけを挟む）に日付があるときだけ見ます。基準の日付が同じ文（文の頭の「2週間後、」なら前の文）に無いもの、「3営業日後」のように単位が日・週・月・年でないものは見ません。
   en: Only a date right after the relative length (with "on" or punctuation between) is checked. A relative length with no date before it in the same sentence (or the previous one, when the sentence opens with it), and units other than days, weeks, months and years ("3 business days later"), are left alone.
 rewrite:
+  depth: light
   ja:
     direction: 基準の日付・期間・日付のどれが正しいかを書き手に確かめ、残りを合わせてください。期間か日付のどちらかを消して、一つだけにしてもかまいません。
     pairs:

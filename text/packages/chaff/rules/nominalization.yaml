@@ -1,6 +1,6 @@
 id: nominalization
 layer: L3
-status: experimental
+status: stable
 how_to_find: nominalization
 # 動詞を名詞にして別の動詞に運ばせる言い方。英語は語の並び（nominalization-phrase）、日本語はサ変名詞（品詞の VerbForm=Vnoun）と、
 # その後ろの「を実施する」（nominalization-light-verb）で見る。片方しか持たない言語があるので word_list には書かない（書くと、無い言語で動かなくなる）。
@@ -61,6 +61,7 @@ level_meaning:
   ja: 1000 字あたり「〜を実施する」のような名詞化した動詞 {limit} 個まで
   en: up to {limit} nominalized verbs ("make a decision") per 1000 words
 rewrite:
+  depth: light
   ja:
     direction: 「〜を実施する」「〜を行う」の名詞を動詞に戻し、運び役の動詞を消してください。誰がしたのかが書かれていれば、その人を主語に残します。
     pairs:

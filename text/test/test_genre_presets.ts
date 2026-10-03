@@ -11,14 +11,16 @@ import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import { resolve } from "../packages/chaff/src/levels.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
-import { neededBy, runRules, type RunResult } from "../packages/chaff/src/run.ts";
+import { neededBy, runRules, wantsTags, type RunResult } from "../packages/chaff/src/run.ts";
 import { REASONS } from "../packages/chaff/src/reasons.ts";
 import { renderGenres } from "../packages/chaff/src/render/genres.ts";
 import { rulesJson } from "../packages/chaff/src/render/rules-json.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { firedRules, namedRuleRun } from "./rule-run.ts";
+import { asExperimental, firedRules, namedRuleRun } from "./rule-run.ts";
+import { withMeasuredOffs } from "../scripts/rules-apply.ts";
+import { parse } from "yaml";
 
 const localized = (text: string): { ja: string; en: string } => ({ ja: `${text}（ja）`, en: text });
 
@@ -132,13 +134,12 @@ describe("同梱の genres.yaml", () => {
 
   it("前からあるジャンルは、同じ名前と並びのまま先頭にある", () => assert.deepEqual(GENRES.slice(0, ORIGINAL.length), ORIGINAL));
 
-  // 段は試験中の rule を止めるだけなので、既定で出る指摘は変わらない。変わるのは「動いていない」一覧の理由だけ。
-  it("前からあるジャンルは profile を持たず、段は試験中の rule を止めることだけ（既定の指摘を変えない）", () => {
-    const experimental = new Set([...rules.ja, ...rules.en].filter((rule) => rule.status === "experimental").map((rule) => rule.id));
+  // 前からあるジャンルの段は、rule を止めることしかしない（手で止めたものと、測って止めたもの。spec §21.1）。
+  it("前からあるジャンルは profile を持たず、段は rule を止めることだけ", () => {
     ORIGINAL.forEach((genre) => {
       const levels = Object.entries(presetLevels(genre));
       assert.deepEqual(
-        levels.filter(([rule, level]) => level !== "off" || !experimental.has(rule)),
+        levels.filter(([, level]) => level !== "off"),
         [],
         genre,
       );
@@ -166,8 +167,10 @@ describe("同梱の genres.yaml", () => {
     assert.deepEqual(GENRES.flatMap(outsideUseFor), []);
   });
 
-  it("段を持つ群には、意味を読む検査を除くどの rule も当たる（止めるなら段で止め、一覧に出す）", () => {
-    const presetGroups = data.groups.filter((group) => Object.keys(group.rules).length > 0).map((group) => group.id);
+  it("手で段を書いた群には、意味を読む検査を除くどの rule も当たる（止めるなら段で止め、一覧に出す）", () => {
+    // 測って止めた行（# measured）は、use_for の決めごととは別のもの。
+    const handWritten = parseGenres(parse(withMeasuredOffs(readFileSync(new URL("../packages/chaff/genres.yaml", import.meta.url), "utf8"), [])));
+    const presetGroups = handWritten.groups.filter((group) => Object.keys(group.rules).length > 0).map((group) => group.id);
     const missing = rules.en
       .filter((rule) => rule.layer !== "L4")
       .flatMap((rule) => presetGroups.filter((group) => !rule.use_for.includes(group)).map((group) => `${rule.id}: ${group}`));
@@ -190,6 +193,24 @@ type Settings = Readonly<Record<string, "strict" | "normal" | "relaxed" | "off">
 
 const runJa = (source: string, genre: string, settings: Settings, experimental: boolean): RunResult =>
   runRules(buildDocument("t.md", source, ja), loadRules("ja"), settings, experimental, genre);
+
+/** The structure rules legal/contract and legal/statute name at normal. */
+const STRUCTURE_PRESET = [
+  "dangling-figure-reference",
+  "dangling-reference",
+  "date-range-reversed",
+  "date-weekday-mismatch",
+  "duplicate-definition",
+  "numbering-gap",
+  "total-mismatch",
+];
+
+/** A contract's preset adds the defined-term rules to the structure rules. */
+const CONTRACT_PRESET = [...STRUCTURE_PRESET, "defined-name-repeated", "defined-term-form"].toSorted((left, right) => left.localeCompare(right));
+
+/** As runJa, with the structure rules and latin-spacing marked experimental: how a genre's preset treats an experimental rule. */
+const runJaExperimental = (source: string, genre: string, settings: Settings): RunResult =>
+  runRules(buildDocument("t.md", source, ja), asExperimental(loadRules("ja"), [...CONTRACT_PRESET, "latin-spacing"]), settings, false, genre);
 
 const why = (result: RunResult, rule: string): string | undefined => result.skipped.find((entry) => entry.rule === rule)?.why;
 
@@ -230,55 +251,40 @@ describe("既定の段で動かす", () => {
   });
 
   it("ジャンルが試験中の rule を入れたら動かし、設定で入れたものとは別に知らせる", () => {
-    const result = runJa(JA_REPORT, "legal/contract", { "latin-spacing": "normal" }, false);
+    const result = runJaExperimental(JA_REPORT, "legal/contract", { "latin-spacing": "normal" });
     assert.equal(why(result, "numbering-gap"), undefined);
     assert.deepEqual(
       result.presetExperimental.toSorted((left, right) => left.localeCompare(right)),
-      [
-        "dangling-figure-reference",
-        "dangling-reference",
-        "date-range-reversed",
-        "date-weekday-mismatch",
-        "defined-name-repeated",
-        "defined-term-form",
-        "duplicate-definition",
-        "numbering-gap",
-        "total-mismatch",
-      ],
+      CONTRACT_PRESET,
     );
     assert.deepEqual(result.forcedExperimental, ["latin-spacing"]);
   });
 
   it("chaff.yaml で名指ししたものは、ジャンルが入れたものとして数えない", () => {
-    const result = runJa(JA_REPORT, "legal/contract", { "numbering-gap": "strict" }, false);
+    const result = runJaExperimental(JA_REPORT, "legal/contract", { "numbering-gap": "strict" });
     assert.ok(!result.presetExperimental.includes("numbering-gap"));
     assert.deepEqual(result.forcedExperimental, ["numbering-gap"]);
   });
 
-  it("ジャンルが品詞を使う rule をすべて止めたら、品詞解析を読み込まない", () => {
-    assert.equal(neededBy(loadRules("ja"), {}, false, "literature/fiction", "ja").pos, false);
+  it("品詞を使う rule がジャンルと設定ですべて止まれば、品詞解析を読み込まない", () => {
+    const literature = presetLevels("literature/fiction");
+    const posStillOn = loadRules("ja").filter((rule) => wantsTags(rule) && literature[rule.id] !== "off" && rule.id !== "taigen-dome-in-prose");
+    const rest: Settings = Object.fromEntries(posStillOn.map((rule) => [rule.id, "off"]));
+    assert.equal(neededBy(loadRules("ja"), rest, false, "literature/fiction", "ja").pos, false);
     assert.equal(neededBy(loadRules("ja"), {}, false, "blog/tech", "ja").pos, true);
-    assert.equal(neededBy(loadRules("ja"), { "taigen-dome-in-prose": "normal" }, false, "literature/fiction", "ja").pos, true);
+    assert.equal(neededBy(loadRules("ja"), { ...rest, "taigen-dome-in-prose": "normal" }, false, "literature/fiction", "ja").pos, true);
   });
 
   it("ジャンルが入れていない試験中の rule は、試験中を理由に止まる", () => {
-    const result = runJa(JA_REPORT, "business/report", {}, false);
+    const result = runJaExperimental(JA_REPORT, "business/report", {});
     assert.equal(why(result, "numbering-gap"), REASONS.ja.experimental);
     assert.deepEqual(result.presetExperimental, []);
   });
 
   it("法令・規程のジャンルは、契約書と同じ構造の rule を入れる", () => {
     assert.deepEqual(
-      runJa(JA_REPORT, "legal/statute", {}, false).presetExperimental.toSorted((left, right) => left.localeCompare(right)),
-      [
-        "dangling-figure-reference",
-        "dangling-reference",
-        "date-range-reversed",
-        "date-weekday-mismatch",
-        "duplicate-definition",
-        "numbering-gap",
-        "total-mismatch",
-      ],
+      runJaExperimental(JA_REPORT, "legal/statute", {}).presetExperimental.toSorted((left, right) => left.localeCompare(right)),
+      STRUCTURE_PRESET,
     );
   });
 
@@ -303,7 +309,11 @@ describe("既定の段で動かす", () => {
     const source = readFileSync(path, "utf8");
     const result = runRules(buildDocument("contract.txt", source, en), loadRules("en"), {}, false, "legal/contract");
     assert.ok(result.findings.some((finding) => finding.rule === "dangling-reference"));
-    const asReport = runRules(buildDocument("contract.txt", source, en), loadRules("en"), {}, false, "business/report");
+    // While the rule was experimental, the contract genre was what turned it on.
+    const experimental = asExperimental(loadRules("en"), ["dangling-reference"]);
+    const asContract = runRules(buildDocument("contract.txt", source, en), experimental, {}, false, "legal/contract");
+    assert.ok(asContract.findings.some((finding) => finding.rule === "dangling-reference"));
+    const asReport = runRules(buildDocument("contract.txt", source, en), experimental, {}, false, "business/report");
     assert.ok(!asReport.findings.some((finding) => finding.rule === "dangling-reference"));
   });
 });
@@ -393,7 +403,8 @@ describe("用語集のジャンル", () => {
     await en.prepare?.({ pos: true });
   });
 
-  const runEn = (source: string, genre: string): RunResult => runRules(buildDocument("t.md", source, en), loadRules("en"), {}, false, genre);
+  const runEn = (source: string, genre: string, settings: Settings = {}): RunResult =>
+    runRules(buildDocument("t.md", source, en), loadRules("en"), settings, false, genre);
   const flagged = (result: RunResult, rule: string): boolean => result.findings.some((finding) => finding.rule === rule);
 
   const JA_GLOSSARY = [
@@ -436,9 +447,10 @@ describe("用語集のジャンル", () => {
     `# Glossary\n\n- Pay\n\n${Array.from({ length: wordCount - 1 }, (_, index) => FILLER[index % FILLER.length]).join(" ")} working.\n`;
 
   it("英語の定義の一文は、ほかの説明書より長くてよい。それでも長すぎる一文は指す", () => {
-    assert.ok(!flagged(runEn(definitionOf(35), "docs/glossary"), "max-sentence-length"));
-    assert.ok(flagged(runEn(definitionOf(35), "docs/manual"), "max-sentence-length"));
-    assert.ok(flagged(runEn(definitionOf(45), "docs/glossary"), "max-sentence-length"));
+    const named: Settings = { "max-sentence-length": "normal" };
+    assert.ok(!flagged(runEn(definitionOf(35), "docs/glossary", named), "max-sentence-length"));
+    assert.ok(flagged(runEn(definitionOf(35), "docs/manual", named), "max-sentence-length"));
+    assert.ok(flagged(runEn(definitionOf(45), "docs/glossary", named), "max-sentence-length"));
   });
 
   it("日本語の用語集の文の長さは、説明書と同じ上限（測って変える理由が無かった）", () => {

@@ -72,6 +72,12 @@ $ npx chaffjs paper.md --compact
 paper.md   blog/tech · English   genre from the default
    Looks like: Academic paper. Try --genre academic/paper
 
+  9:111   warning "the the" doubles a word; one of the two is left over
+                  doubled-word
+  15:44   warning Figure 3 is referred to, but the document has no Figure 3
+                  dangling-figure-reference
+  19:142  info    "behaviour" here, where the document usually spells it "behavior" (1 of 3)
+                  spelling-consistency
 
 {counts}
 ```

@@ -2,7 +2,7 @@ id: max-paragraph-length
 layer: L1
 status: stable
 how_to_find: paragraph-length
-severity: warning
+severity: info
 
 name:
   ja: 段落が長すぎる

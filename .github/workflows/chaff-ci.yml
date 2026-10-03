@@ -1,5 +1,6 @@
 # chaff（text/）のゲート。scoria-ci.yml と同じ形で、対象ディレクトリだけが違う。
 # paths で切っているので、coding/ だけを触る PR では走らない。
+# 静的な検査、テスト（3 OS × 部分）、実文書・corpus・bench を別の job にして並べて走らせる。
 name: chaff ci
 
 on:
@@ -12,18 +13,20 @@ on:
 permissions:
   contents: read
 
+# PR に push し直したら、古いコミットの実行は止める。main への push は commit ごとに最後まで走らせる。
+concurrency:
+  group: chaff-ci-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 defaults:
   run:
     working-directory: text
 
 jobs:
-  ci:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 40
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+  # 文書にかけない検査。OS で結果が変わらないので ubuntu だけで走らせる。
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
         with:
@@ -32,6 +35,8 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
+          cache: yarn
+          cache-dependency-path: text/yarn.lock
 
       - run: yarn install --frozen-lockfile
 
@@ -51,20 +56,73 @@ jobs:
       - name: build
         run: yarn build
 
+  # 公開しているパッケージなので 3 OS で回す。テストファイルを scripts/test-parts.ts の部分に分け、部分ごとに別の job で走らせる。
+  # 部分 1 は全部の rule の例と手引きの画面を回す重いファイル、残りの部分はほかのファイルを分け合う。
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        part: [1, 2, 3, 4, 5]
+    name: test (${{ matrix.os }}, part ${{ matrix.part }}/5)
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: yarn
+          cache-dependency-path: text/yarn.lock
+
+      - run: yarn install --frozen-lockfile
+
+      - name: build
+        run: yarn build
+
       - name: test
-        run: yarn test
+        run: yarn test --part ${{ matrix.part }}/5
+        env:
+          # テストファイルはそれぞれ別の process で、同じ src を読み込む。コンパイルした結果を process の間で使い回す。
+          NODE_COMPILE_CACHE: ${{ runner.temp }}/node-compile-cache
 
       # 公開版ではなく、いま review 中のコミットから作った dist で走らせる。
       # 自分の仕様書を自分で読ませる。動かなくなったらここで落ちる。
       # .chaff-baseline.json は Code Scanning の prose scan 用。ここでは棚上げ分も含めて全部見る。
       - name: chaff on its own spec
+        if: matrix.part == 1
         run: node packages/chaff/bin/chaff.js chaff-spec.md --show-baseline
 
-      # 実際に公開した記事と社内文書にかける。作り物では通るのに実文書で壊れる、
-      # という状態に気づくため。指摘の数は文章の好みの問題なので落とさない。
-      # 最後まで動かなかったときだけ落とす。
+  # 実際に公開した記事と社内文書にかける。作り物では通るのに実文書で壊れる、
+  # という状態に気づくため。指摘の数は文章の好みの問題なので落とさない。
+  # 最後まで動かなかったときだけ落とす。
+  # 既存の文書で結果が変わったら落とす。リポジトリに入っている文書（法令と corpus/docs）だけを比べる。
+  # URL だけの文書は取得先で中身が変わりうるので、手元で yarn corpus:fetch してから比べる。
+  # 変化が意図どおりなら、yarn corpus --update / yarn bench --update で expected を書き換えて PR に含める。
+  # 出力は文書と rule だけで決まり OS に依らないので、ubuntu だけで走らせる。
+  documents:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: yarn
+          cache-dependency-path: text/yarn.lock
+
+      - run: yarn install --frozen-lockfile
+
+      - name: build
+        run: yarn build
+
       - name: chaff on real documents
-        if: runner.os == 'Linux'
         shell: bash
         run: |
           set -uo pipefail
@@ -82,18 +140,50 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # 既存の文書で結果が変わったら落とす。リポジトリに入っている文書（法令と corpus/docs）だけを比べる。
-      # URL だけの文書は取得先で中身が変わりうるので、手元で yarn corpus:fetch してから比べる。
-      # 変化が意図どおりなら、yarn corpus --update / yarn bench --update で expected を書き換えて PR に含める。
       - name: corpus (committed documents)
-        if: runner.os == 'Linux'
         run: yarn corpus
 
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: yarn
+          cache-dependency-path: text/yarn.lock
+
+      - run: yarn install --frozen-lockfile
+
+      - name: build
+        run: yarn build
+
       - name: bench
-        if: runner.os == 'Linux'
         run: yarn bench
 
-      # AI っぽさの rule が、生成文の見本に当たり、人の書きぶりの見本と corpus/docs に当たらないかの表。
+  # AI っぽさの rule が、生成文の見本に当たり、人の書きぶりの見本と corpus/docs に当たらないかの表。
+  bench-ai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: yarn
+          cache-dependency-path: text/yarn.lock
+
+      - run: yarn install --frozen-lockfile
+
+      - name: build
+        run: yarn build
+
       - name: bench (AI-shape rules)
-        if: runner.os == 'Linux'
         run: yarn bench:ai

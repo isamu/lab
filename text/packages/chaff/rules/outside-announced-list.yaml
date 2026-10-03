@@ -1,6 +1,6 @@
 id: outside-announced-list
 layer: L3
-status: experimental
+status: stable
 how_to_find: outside-announced-list
 requires: [pos]
 severity: warning
@@ -56,6 +56,7 @@ not_flagged:
   ja: 一覧を言う語（対応OSは、に対応、版）のすぐ隣に並べた固有名詞だけを読みます。最初に二つ以上の名前を挙げた文を一覧とし、それより前の文は見ません。組の違う語（対応する OS と、対応する言語）は比べません。
   en: Only proper nouns right next to a listing word (supported on, available in, version) are read. The first sentence naming two or more is the list, and earlier sentences are not checked. Words of different groups (platforms and languages) are not compared.
 rewrite:
+  depth: light
   ja:
     direction: 一覧と後の文のどちらが正しいかを書き手に確かめてください。後の文が正しければ一覧に名前を足し、一覧が正しければ後の文を直すか消します。
     pairs:

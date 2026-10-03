@@ -1,6 +1,6 @@
 id: chat-citation-residue
 layer: L2
-status: experimental
+status: stable
 how_to_find: chat-citation-residue
 word_list: chat-citation-marker
 severity: warning
@@ -49,6 +49,7 @@ level_meaning:
   ja: 名残の印が {limit} 個あれば指摘
   en: reported once there are {limit}
 rewrite:
+  depth: light
   ja:
     direction: リンク先を開いて、その文の出典になっているかを確かめてから、チャットの印だけを消してください。出典にならないリンクは消し、確かめた出典に替えます。
     pairs:

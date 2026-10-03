@@ -95,8 +95,32 @@ $ npx chaffjs article.md --genre blog/tech --compact
 
 article.md   blog/tech · English   genre from --genre
 
+  1:71    info    Section length varies by only 25% (want at least 35%)
+                  section-length-uniformity
+  3:1     info    "delve into, in today's fast-paced world, it's not just" appear together (score 25, limit 18)
+                  ai-tell
   3:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
+  3:1     warning "ai-tell, section-length-uniformity, padded-intro, closing-cliche, announcing-opener" occur together in this document (5 signals, 3 needed)
+                  ai-generated-composite
+  9:1     info    "isn't" is written differently from the rest of the document
+                  contraction-consistency
+  9:31    info    "it's" is written differently from the rest of the document
+                  contraction-consistency
+  11:1    info    "Honestly," and other announcing openers start 3 sentences (3 needed)
+                  announcing-opener
+  15:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
+                  announcing-opener
+  23:1    info    "What's important is" and other announcing openers start 3 sentences (3 needed)
+                  announcing-opener
+  25:17   info    This heading's capitalisation differs from the rest (1 in this document)
+                  title-case-consistency
+  27:23   warning "two changes" is announced, but the number of items in the list below is 3
+                  announced-count-mismatch
+  33:77   warning The link "[the build time log](#build-time-log)" points to "#build-time-log", which is not a heading on this page
+                  broken-link
+  37:42   info    "it's" is written differently from the rest of the document
+                  contraction-consistency
   39:1    warning Closes with "hope this helps"
                   closing-cliche
   39:20   warning Closes with "happy coding"

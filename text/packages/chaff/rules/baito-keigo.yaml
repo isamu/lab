@@ -1,6 +1,6 @@
 id: baito-keigo
 layer: L3
-status: experimental
+status: stable
 how_to_find: phrase-match
 word_list: baito-keigo
 uses: [pos]
@@ -43,6 +43,7 @@ level_meaning:
   ja: 当てはまる形が {limit} 箇所あれば指摘
   en: reported once there are {limit}
 rewrite:
+  depth: light
   ja:
     direction: 指摘された言い方を、普通の丁寧語に置き換えてください。「よろしかった」は「よろしい」、「になります」は「です」、金額の後の「から」は「を」にします。
     pairs:

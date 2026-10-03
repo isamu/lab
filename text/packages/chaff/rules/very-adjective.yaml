@@ -1,6 +1,6 @@
 id: very-adjective
 layer: L2
-status: experimental
+status: stable
 how_to_find: intensified-adjective
 word_list: very-intensifier
 extra_word_lists: [very-exception]
@@ -47,6 +47,7 @@ level_meaning:
   ja: very + 形容詞が 1000 語あたり {limit} 個まで
   en: up to {limit} "very" + adjective per 1000 words
 rewrite:
+  depth: light
   en:
     direction: Replace "very" + adjective with a stronger single word, or with what the text says about how much. If the text says nothing more, a plain adjective without "very" will do.
     pairs:

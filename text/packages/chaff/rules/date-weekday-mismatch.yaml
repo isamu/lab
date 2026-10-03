@@ -1,6 +1,6 @@
 id: date-weekday-mismatch
 layer: L3
-status: experimental
+status: stable
 how_to_find: date-weekday-mismatch
 requires: [dates]
 severity: error

@@ -6,9 +6,10 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
 const fires = (source: string, rule: string, adapter: LanguageAdapter, genre = "business/report"): boolean =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, true, genre).findings.some((finding) => finding.rule === rule);
+  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), measuredOffOn(genre), true, genre).findings.some((finding) => finding.rule === rule);
 
 const BULK_EN = " We continued the work and reported the numbers.".repeat(40);
 

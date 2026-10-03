@@ -125,8 +125,6 @@ kitei.md   legal/statute · 日本語   ジャンルは --genre から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
-
   {not-run}
 ```
 
@@ -311,9 +309,7 @@ kitei-fixed.md   legal/statute · 日本語   ジャンルは --genre から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  試験中の rule を 1 件、設定により有効にしています: numbering-gap
-
-  試験中の rule を 6 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, total-mismatch
+  {not-run}
 …
 ```
 

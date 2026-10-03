@@ -7,6 +7,7 @@
 // planted, but that this run planted in no sample of one of its languages, fails the run even with --update.
 import { join } from "node:path";
 import { allFindings, type CorpusFinding } from "./corpus-findings.ts";
+import { measuredOffOn } from "./rules-measure-files.ts";
 import { MUTATIONS } from "./bench-mutations.ts";
 import type { Mutation } from "./bench-text.ts";
 import { cleanLine, falseAlarms, formatTable, outcomeLine, outcomeOf, ruleTable, summaryChanges, type Outcome } from "./bench-score.ts";
@@ -25,7 +26,7 @@ const verbose = process.argv.includes("--verbose");
 const update = process.argv.includes("--update");
 
 const findingsOf = async (sample: Sample, source: string): Promise<CorpusFinding[]> =>
-  allFindings(sample.path, source, sample.language, sample.genre, teamOf(sample));
+  allFindings(sample.path, source, sample.language, sample.genre, teamOf(sample), measuredOffOn(sample.genre));
 
 const plantedOutcome = async (sample: Sample, mutation: Mutation): Promise<Outcome | undefined> => {
   const plant = mutation.plant(sample.source, contextOf(sample));

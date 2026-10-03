@@ -1,6 +1,6 @@
 id: bracket-nesting
 layer: L3
-status: experimental
+status: stable
 how_to_find: bracket-nesting
 severity: info
 
@@ -47,6 +47,7 @@ level_meaning:
   ja: 括弧の重なり {limit} 重まで
   en: brackets nested up to {limit} deep
 rewrite:
+  depth: light
   ja:
     direction: 一番内側の括弧を外して、別の文か注にしてください。括弧の中身は落とさずに残します。
     pairs:

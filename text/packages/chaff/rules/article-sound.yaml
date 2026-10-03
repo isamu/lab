@@ -1,11 +1,11 @@
 id: article-sound
 layer: L2
-status: experimental
+status: stable
 how_to_find: article-sound
 word_list: article-sound
 requires: [pos]
 languages: [en]
-severity: warning
+severity: info
 
 name:
   ja: a と an の取り違え
@@ -45,6 +45,7 @@ level_meaning:
   ja: "{limit} 箇所あれば指摘"
   en: reported once there are {limit}
 rewrite:
+  depth: light
   en:
     direction: Change only the article, to "an" before a vowel sound and "a" before a consonant sound.
     pairs:

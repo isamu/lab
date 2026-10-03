@@ -1,6 +1,6 @@
 id: repeated-conjunction
 layer: L2
-status: experimental
+status: stable
 how_to_find: repeated-conjunction
 word_list: paragraph-opener
 uses: [pos]

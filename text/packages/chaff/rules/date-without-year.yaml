@@ -1,12 +1,12 @@
 id: date-without-year
 layer: L1
-status: experimental
+status: stable
 how_to_find: date-without-year
 requires: [dates]
 # The dates come from the language package's date reader. English does not read a date written without its year yet,
 # so the rule checks Japanese only until it does.
 languages: [ja]
-severity: warning
+severity: info
 
 name:
   ja: 年の無い日付
@@ -28,7 +28,7 @@ how_to_fix:
   ja: 年を書いてください（2027年1月15日）。
   en: Write the year (January 15, 2027).
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
@@ -55,6 +55,7 @@ not_flagged:
   ja: 年を一度だけ書いて、あとの日付は月と日だけで書く文書（年の無い日付のほうが多い文書）は、書き方の選び方として指しません。ただしその場合も、年をまたぐ日付は指します。月だけ・年だけの日付は見ません。
   en: A document that writes the year once and the rest as month and day (more yearless dates than dated ones) is a style, and not reported, except for a date across the turn of a year. Month-only and year-only dates are not checked.
 rewrite:
+  depth: light
   ja:
     direction: 指摘された日付に年を書き足してください。年は本文のほかの日付と、曜日から確かめます。決められなければ、作らずに［年］と空けて書き手に聞きます。
     pairs:

@@ -1,6 +1,6 @@
 id: latin-abbreviation-form
 layer: L1
-status: experimental
+status: stable
 how_to_find: latin-abbreviation
 word_list: latin-abbreviation
 languages: [en]
@@ -44,6 +44,7 @@ level_meaning:
   ja: "{limit} 箇所あれば指摘"
   en: reported once there are {limit}
 rewrite:
+  depth: light
   en:
     direction: Write the abbreviation with all its periods, or with none if the rest of the document writes it that way.
     pairs:

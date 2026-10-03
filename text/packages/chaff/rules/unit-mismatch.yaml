@@ -1,6 +1,6 @@
 id: unit-mismatch
 layer: L3
-status: experimental
+status: stable
 how_to_find: unit-mismatch
 requires: [quantities]
 uses: [pos]
@@ -58,6 +58,7 @@ not_flagged:
   ja: 単位が同じ量（食い違いは fact-conflict が見ます）、種類の違う量（長さと重さ）、違う見出しや違う親の項目の下の量、2% までの差は見ません。GB や MB は 1000 倍でも 1024 倍でも合えば合うとみなします。
   en: Values in the same unit (fact-conflict looks at those), of different kinds (a length and a mass), under different headings or parent items, and differences within 2% are left alone. GB and MB agree when they match at either 1000 or 1024.
 rewrite:
+  depth: light
   ja:
     direction: 二つの量のどちらが正しいかを書き手に確かめ、もう一方を換算して直してください。どちらが正しいか文書から決まらないときは、推測で選ばずに書き手に聞いてください。
     pairs:

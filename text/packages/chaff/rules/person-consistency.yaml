@@ -1,6 +1,6 @@
 id: person-consistency
 layer: L2
-status: experimental
+status: stable
 how_to_find: person-mix
 word_list: person-word
 extra_word_lists: [person-form]

@@ -15,8 +15,8 @@ import { rules, type Rule } from "./rules";
 // astro build runs in text/site; `yarn examples` writes this file first.
 const OUTCOMES_FILE = resolve(process.cwd(), "src", "generated", "rule-examples.json");
 
-/** How a rule gets to run: on by default, experimental, only with a list in chaff.yaml, or through chaff test. */
-export type RunsWhen = "default" | "experimental" | "team" | "test";
+/** How a rule gets to run: on by default (its findings as information, for info), experimental, only with a list in chaff.yaml, or through chaff test. */
+export type RunsWhen = "default" | "info" | "experimental" | "team" | "test";
 
 export type CatalogEntry = {
   readonly rule: Rule;
@@ -55,10 +55,11 @@ const readOutcomes = (): readonly ExampleOutcome[] => {
 
 const outcomes = readOutcomes();
 
-const runsWhenOf = (rule: Rule): RunsWhen => {
+const runsWhenOf = (rule: Rule, lang: Lang): RunsWhen => {
   if (rule.layer === "L4") return "test";
   if (rule.group === "team") return "team";
-  return rule.status === "stable" ? "default" : "experimental";
+  if (rule.status !== "stable") return "experimental";
+  return rule.severity[lang] === "info" ? "info" : "default";
 };
 
 const exampleLangOf = (rule: Rule, lang: Lang): Lang => (rule.examples[lang] !== undefined ? lang : otherLang(lang));
@@ -77,7 +78,7 @@ export const entryOf = (rule: Rule, lang: Lang): CatalogEntry => {
   const exampleLang = exampleLangOf(rule, lang);
   const example = rule.examples[exampleLang];
   if (example === undefined) throw new Error(`${rule.id}: no example in its rule file`);
-  return { rule, runsWhen: runsWhenOf(rule), exampleLang, example, output: outputOf(rule, exampleLang) };
+  return { rule, runsWhen: runsWhenOf(rule, lang), exampleLang, example, output: outputOf(rule, exampleLang) };
 };
 
 /** Every rule, once, in its group. A rule missing from the groups stops the build rather than drop off the page. */

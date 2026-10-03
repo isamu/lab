@@ -1,6 +1,6 @@
 id: assistant-residue
 layer: L2
-status: experimental
+status: stable
 how_to_find: assistant-residue
 word_list: assistant-residue
 uses: [pos]
@@ -52,6 +52,7 @@ level_meaning:
   ja: 重みの合計が {limit} 点で指摘
   en: reported from a score of {limit}
 rewrite:
+  depth: light
   ja:
     direction: チャットの相手に向けた言葉（「お役に立てれば」「ご質問があれば」）を消してください。知識の期限を書いた文は、確かめた日付と出典に置き換えます。分からなければ［ ］で空けて書き手に聞きます。
     pairs:
