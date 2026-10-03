@@ -15,7 +15,7 @@ import { GENRES } from "./genre.ts";
 import { resolveGenre } from "./resolve-genre.ts";
 import { runInit } from "./init.ts";
 import { initGenre } from "./commands/init-ask.ts";
-import { targetsOf, withExperimental } from "./cli-args.ts";
+import { targetsOf, withExperimental, withIncludes } from "./cli-args.ts";
 import { rulesOf } from "./custom/load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
@@ -45,6 +45,9 @@ import { hostLanguage, sharedLanguage, uiLanguageOf, type UiLanguage } from "./u
 import { notRunAmong } from "./not-run.ts";
 import { settingProblems } from "./setting-problems.ts";
 import { withExtensions } from "./extension/load.ts";
+import { offOnlyAsExperimental } from "./experimental-alone.ts";
+import { DEFAULT_GENRE } from "./init-choice.ts";
+import { stoppingOnYamlFileError } from "./config/yaml-file.ts";
 
 /** Text for output that is not about one document. */
 const hostText = (config: Config): CliText => CLI_TEXT[hostLanguage(config.language, process.env)];
@@ -134,8 +137,9 @@ const writeSarif = (results: readonly Inspected[], argv: readonly string[], conf
   const located = results.flatMap((result) =>
     result.outcome.findings.map((finding) => ({ path: result.outcome.path, finding, language: result.language, rules: result.rules })),
   );
+  const notRun = results.flatMap((result) => result.checked.skipped.map((entry) => ({ path: result.outcome.path, rule: entry.rule, why: entry.why })));
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, renderSarif(located, VERSION), "utf8");
+  writeFileSync(path, renderSarif(located, VERSION, notRun), "utf8");
   console.log(hostText(config).sarifWritten(path, located.length));
 };
 
@@ -150,10 +154,10 @@ const summaryLanguage = (results: readonly Inspected[], config: Config): UiLangu
 };
 
 const lint = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
-  const paths = collectTargets(targets);
+  const paths = collectTargets(targets, config.include);
   if (paths.length === 0) {
     // 0 件を成功にすると「CI は通っているが何も検証していない」状態が続く。§14。
-    console.error(hostText(config).noMarkdown(targets.join(", ")));
+    console.error(hostText(config).noMarkdown(targets.join(", "), config.include ?? []));
     return 1;
   }
   const language = config.language ?? "ja";
@@ -177,10 +181,10 @@ const lint = async (targets: readonly string[], argv: readonly string[], config:
  * 差分だけを出す。workflow spec §11。
  */
 const runWatch = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
-  const paths = collectTargets(targets);
+  const paths = collectTargets(targets, config.include);
   const text = hostText(config);
   if (paths.length === 0) {
-    console.error(text.noMarkdown(targets.join(", ")));
+    console.error(text.noMarkdown(targets.join(", "), config.include ?? []));
     return 1;
   }
   warnRuleProblems(config, config.language ?? "ja");
@@ -221,14 +225,15 @@ const explain = (config: Config, ruleId: string | undefined, genreFlag: string |
   }
   const preset = genre === undefined ? {} : presetLevels(genre);
   const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
-  console.log(renderExplain(rule, current, language, genre, settingSourcesOf(config, rule.id, language)));
+  const alone = offOnlyAsExperimental(rule, config, genre ?? DEFAULT_GENRE, preset, language);
+  console.log(renderExplain(rule, current, language, genre, { ...settingSourcesOf(config, rule.id, language), offOnlyAsExperimental: alone }));
   return 0;
 };
 
 const runBaseline = async (targets: readonly string[], argv: readonly string[], config: Config): Promise<number> => {
-  const paths = collectTargets(targets.length > 0 ? targets : ["."]);
+  const paths = collectTargets(targets.length > 0 ? targets : ["."], config.include);
   if (paths.length === 0) {
-    console.error(hostText(config).noMarkdownHere);
+    console.error(hostText(config).noMarkdownHere(config.include ?? []));
     return 1;
   }
   const results = await inspectRun(paths, config, [...argv, "--show-baseline"]);
@@ -292,10 +297,16 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
     runFixPlan(fixPlanTargets(argv), argv, { ...treeContext(config), check: async (path) => (await inspectAll(config, argv)(path)).checked }),
   baseline: (argv, config) => runBaseline(positional(argv), argv, config),
   suppressions: (argv, config) =>
-    runSuppressions(positional(argv), (paths) => inspectRun(paths, config, [...argv, "--show-baseline"]), hostLanguage(config.language, process.env)),
+    runSuppressions(
+      positional(argv),
+      (paths) => inspectRun(paths, config, [...argv, "--show-baseline"]),
+      hostLanguage(config.language, process.env),
+      config.include,
+    ),
   relax: (argv, config) => changeSetting(config, "relaxed", argv[1], flag(argv, "--why")),
   strict: (argv, config) => changeSetting(config, "strict", argv[1], flag(argv, "--why")),
   off: (argv, config) => changeSetting(config, "off", argv[1], flag(argv, "--why")),
+  enable: (argv, config) => changeSetting(config, "normal", argv[1], flag(argv, "--why")),
   feedback: (argv, config) => {
     return runFeedback(positional(argv), argv, {
       cwd: process.cwd(),
@@ -317,7 +328,7 @@ const HANDLERS: Readonly<Record<string, Handler>> = {
 /** Every subcommand. Anything else on the command line is a file to check. */
 export const COMMANDS: readonly string[] = Object.keys(HANDLERS);
 
-export const main = async (argv: readonly string[]): Promise<number> => {
+const dispatch = async (argv: readonly string[]): Promise<number> => {
   const first = argv[0];
   if (first === undefined || first === "--help" || first === "-h") {
     console.log(hostText(readConfig()).usage);
@@ -328,7 +339,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
     return 0;
   }
   // 知らないジャンルではどの rule も当たらず、知らない文書の種類では種類の知識が外れる。どちらも素通りに見えるので、何かする前に止める。
-  const config = await withExtensions(readConfig());
+  const config = withIncludes(await withExtensions(readConfig()), argv);
   const problems = settingProblems(first, flag(argv, "--genre"), config, hostText(config), hostLanguage(config.language, process.env));
   problems.forEach((problem) => console.error(problem));
   // grade は設定の誤りを 2 で返す。CI の門で「出力が悪い」（1）と取り違えないため。
@@ -338,3 +349,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
   const targets = targetsOf(first === "lint" ? argv.slice(1) : argv);
   return argv.includes("--watch") ? runWatch(targets, argv, config) : lint(targets, argv, config);
 };
+
+/** A chaff.yaml or checks.yaml that is not YAML stops the run with its path and position, not a stack trace. */
+export const main = (argv: readonly string[]): Promise<number> =>
+  stoppingOnYamlFileError(() => dispatch(argv), process.cwd(), hostLanguage(undefined, process.env));
