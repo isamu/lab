@@ -1,0 +1,78 @@
+# chaff（text/）を Windows で広く回す。PR の chaff-ci.yml は Windows ではテストだけを部分に分けて走らせるので、
+# ここで lint・typecheck・build と、分けないテストを毎日と main への push ごとに走らせる。
+# 毎日の実行で落ちたら issue を立てる。落ちたまま誰も見ない job にしないため。
+name: chaff windows daily
+
+on:
+  schedule:
+    - cron: "0 18 * * *" # 03:00 JST
+  push:
+    branches: [main]
+    paths: ["text/**", ".github/workflows/chaff-windows-daily.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: text
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # package.json の engines（node >=24）の下限。
+        node: ["24"]
+    name: windows (node ${{ matrix.node }})
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: yarn install --frozen-lockfile
+
+      - name: format:check
+        run: yarn format:check
+
+      - name: lint
+        run: yarn lint
+
+      - name: typecheck
+        run: yarn typecheck
+
+      - name: build
+        run: yarn build
+
+      - name: test
+        run: yarn test
+
+      - name: chaff on its own spec
+        run: node packages/chaff/bin/chaff.js chaff-spec.md --show-baseline
+
+  # issue を立てる権限は、リポジトリのコードを動かさないこの job にだけ渡す。
+  report:
+    needs: windows
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: File an issue on failure
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: gh issue create --repo "$REPO" --title "chaff Windows daily failed (${GITHUB_SHA::7})" --body "$RUN_URL"
