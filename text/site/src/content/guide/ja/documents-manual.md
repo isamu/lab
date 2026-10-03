@@ -47,10 +47,10 @@ chaff は、たどれない見出し、行き先の無いリンク、説明の�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 次の説明書を `manual.md` という名前で保存しました。API の名前と URL は架空です。
 
-````markdown
+````markdown file=manual.md
 # 予約 API の使い方
 
-この文書では、会議室の予約 API の使い方を説明します。
+この文書では、会議室の予約 API で予約を作り、確かめ、取り消す手順を説明します。
 
 ## 準備
 
@@ -97,7 +97,7 @@ manual.md   blog/tech · 日本語   ジャンルは既定から
   9:1     warning 画像「![](images/settings.png)」に代替テキストがありません
                   image-alt-text
 
-指摘 1 件、動いていない rule 94 件
+{counts}
 ```
 
 勧められたとおり、ジャンルを付けて、試験中のルールも動かします。
@@ -121,7 +121,7 @@ manual.md   docs/manual · 日本語   ジャンルは--genreから
   27:1    warning 見出し「予約を作る」は、同じ親の下の 11 行目の見出しと同じです
                   duplicate-heading
 
-指摘 6 件、動いていない rule 36 件
+{counts}
 ```
 
 ## 指摘の意味と直しかた
