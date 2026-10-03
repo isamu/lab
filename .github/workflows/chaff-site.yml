@@ -3,13 +3,18 @@ name: chaff site
 
 on:
   pull_request:
-    paths: ["text/site/**", "text/packages/**", "text/scripts/rule-examples.ts", "text/scripts/guide-screens.ts", "text/scripts/guide-screens-parse.ts", "text/test/cli-run.ts", "text/scripts/docs-links.ts", "text/scripts/site-links.ts", "text/README.md", ".github/workflows/chaff-site.yml"]
+    paths: ["text/site/**", "text/packages/**", "text/scripts/rule-examples.ts", "text/scripts/guide-screens.ts", "text/scripts/guide-screens-parse.ts", "text/scripts/in-children.ts", "text/scripts/child-worker.ts", "text/scripts/deal.ts", "text/test/cli-run.ts", "text/scripts/docs-links.ts", "text/scripts/site-links.ts", "text/README.md", ".github/workflows/chaff-site.yml"]
   push:
     branches: [main]
-    paths: ["text/site/**", "text/packages/**", "text/scripts/rule-examples.ts", "text/scripts/guide-screens.ts", "text/scripts/guide-screens-parse.ts", "text/test/cli-run.ts", "text/scripts/docs-links.ts", "text/scripts/site-links.ts", "text/README.md", ".github/workflows/chaff-site.yml"]
+    paths: ["text/site/**", "text/packages/**", "text/scripts/rule-examples.ts", "text/scripts/guide-screens.ts", "text/scripts/guide-screens-parse.ts", "text/scripts/in-children.ts", "text/scripts/child-worker.ts", "text/scripts/deal.ts", "text/test/cli-run.ts", "text/scripts/docs-links.ts", "text/scripts/site-links.ts", "text/README.md", ".github/workflows/chaff-site.yml"]
 
 permissions:
   contents: read
+
+# PR に push し直したら、古いコミットの実行は止める。main への push は commit ごとに最後まで走らせる。
+concurrency:
+  group: chaff-site-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 defaults:
   run:
@@ -25,8 +30,19 @@ jobs:
           persist-credentials: false
 
       - uses: actions/setup-node@v7
+        id: setup-node
         with:
           node-version: "24"
+
+      # 組み上がった node_modules（chaff と site の両方）を使い回す。
+      - uses: actions/cache@v6
+        with:
+          path: |
+            text/node_modules
+            text/packages/*/node_modules
+            text/site/node_modules
+          key: chaff-site-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('text/yarn.lock', 'text/site/yarn.lock') }}
+          restore-keys: chaff-site-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-
 
       # The rule reference is read with chaff's own loader (packages/chaff/src/rule-load.ts), which needs chaff's dependencies.
       - name: install chaff
@@ -43,11 +59,15 @@ jobs:
       - name: format:check
         run: yarn format:check
 
+      # yarn typecheck と yarn build はどちらも先に yarn examples を走らせる。chaff を全部の例と画面にかけるので、ここで一度だけ作る。
+      - name: examples
+        run: yarn examples
+
       - name: typecheck
-        run: yarn typecheck
+        run: yarn astro check
 
       - name: build
-        run: yarn build
+        run: yarn astro build
 
       # Every link of the built site and the READMEs: no page or anchor missing, no guide page only the menu reaches,
       # and each guide page links to the same pages in Japanese and English.
