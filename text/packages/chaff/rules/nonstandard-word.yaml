@@ -1,0 +1,80 @@
+id: nonstandard-word
+layer: L2
+status: stable
+how_to_find: known-correction
+word_list: nonstandard-word
+uses: [pos]
+severity: info
+
+name:
+  ja: 標準的でない語
+  en: Nonstandard word
+
+why:
+  ja: 「違かった」「すいません」や、英語の「irregardless」「comprised of」は、話し言葉ではよく聞きますが、書き言葉では誤りと読まれます。読み手は語に引っかかり、文書の手入れが足りないと受け取ります。標準的でない形と標準の形の組は言語ごとの語彙表にあり、chaff は語彙表にある形だけを指します。
+  en: '"Irregardless", "comprised of" and "anyways" are common in speech, but a formal reader takes them as mistakes and starts to doubt the care taken over the rest. The pairs of nonstandard and standard form are in each language''s lexicon, and chaff reports only the forms listed there.'
+
+message:
+  ja: 「{matched}」は書き言葉では標準的でない形です。「{suggestion}」と書きます
+  en: '"{matched}" is nonstandard in formal writing; write "{suggestion}"'
+
+how_to_fix:
+  ja: 標準の形に直してください（違かった → 違った、すいません → すみません）。
+  en: Use the standard form ("irregardless" becomes "regardless", "is comprised of" becomes "comprises").
+
+placeholders:
+  matched:
+    ja: 書いた語
+    en: the word as written
+  suggestion:
+    ja: 標準の形
+    en: the standard form
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+off_for:
+  literature: "A narrator and a character speak as they speak: 違くて and \"anyways\" in dialogue are the voice."
+  speech: "A transcript keeps the speaker's words."
+  legal/patent: 'Patent claims use "comprised of" as a term of art, a transition that leaves the list open.'
+
+group: wording
+summary:
+  ja: 「違かった」「すいません」「irregardless」のように、書き言葉では標準的でない語
+  en: A word that formal writing treats as nonstandard, such as "irregardless" or "comprised of"
+example:
+  ja:
+    before: 昨日の数字は、先週の報告と違かった。
+    after: 昨日の数字は、先週の報告と違った。
+  en:
+    before: The team is comprised of five engineers.
+    after: The team comprises five engineers.
+
+not_flagged:
+  ja: 語彙表にない形は指しません。書き誤り（シュミレーション）は known-misspelling、ら抜き（見れる）は ra-nuki が扱います。
+  en: Forms not in the lexicon are not reported. Misspellings ("seperate") are left to known-misspelling and homophone slips ("could of") to homophone-slip.
+
+rewrite:
+  depth: light
+  ja:
+    direction: 指された語を語彙表の標準の形に直してください。直すのはその語だけです。
+    pairs:
+      - before: 昨日の数字は、先週の報告と違かった。
+        after: 昨日の数字は、先週の報告と違った。
+      - before: 返信が遅くなり、すいません。
+        after: 返信が遅くなり、すみません。
+    keep:
+      - 文の言い回しと語順
+    avoid:
+      - 指された語の近くの言い回しまで書き換える
+  en:
+    direction: Replace the flagged word with the standard form the lexicon gives. Change only those words.
+    pairs:
+      - before: The team is comprised of five engineers.
+        after: The team comprises five engineers.
+      - before: We will ship on Friday, irregardless of the forecast.
+        after: We will ship on Friday, regardless of the forecast.
+    keep:
+      - the wording around the word
+    avoid:
+      - rewording the sentence while fixing the word
