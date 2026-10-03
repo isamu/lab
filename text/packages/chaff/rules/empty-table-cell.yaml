@@ -1,6 +1,6 @@
 id: empty-table-cell
 layer: L1
-status: experimental
+status: stable
 how_to_find: empty-table-cell
 requires: [markdown]
 severity: warning
