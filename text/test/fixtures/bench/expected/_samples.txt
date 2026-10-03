@@ -24,3 +24,5 @@ en/proposal  clean sample  clean
 en/quote  clean sample  clean
 en/readme  clean sample  clean
 en/requirements  clean sample  clean
+ja/site  clean sample  clean
+en/site  clean sample  clean
