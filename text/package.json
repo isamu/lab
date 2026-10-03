@@ -25,7 +25,7 @@
     "lint": "eslint .",
     "screens:update": "node scripts/guide-screens.ts --update",
     "lint:oxlint": "npx --yes oxlint@1.82.0 -D correctness packages/",
-    "test": "node --test \"test/test_*.ts\" \"examples/chaff-plugin-example/test/test_*.mjs\"",
+    "test": "node scripts/test.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

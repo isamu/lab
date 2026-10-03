@@ -8,6 +8,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import type { ExampleFinding, ExampleOutcome, RuleExample } from "../packages/chaff/src/rule-guide.ts";
 import { runCli } from "../test/cli-run.ts";
+import { mapInChildren } from "./in-children.ts";
 import { measuredOffOn } from "./rules-measure-files.ts";
 
 const BEFORE = "before.md";
@@ -126,14 +127,46 @@ const runExample = async (rule: string, language: string, example: RuleExample):
 
 const examplesOf = (rule: RuleDefinition): [string, RuleExample][] => Object.entries(rule.guide?.examples ?? {});
 
-/** Every example of every rule, one command-line run per rule and language. */
-export const runAllExamples = async (rules: readonly RuleDefinition[]): Promise<ExampleOutcome[]> => {
-  const jobs = rules.flatMap((rule) => examplesOf(rule).map(([language, example]) => ({ rule: rule.id, language, example })));
-  // One at a time: the command line runs in the example's directory, and the working directory is the process's.
+/** One example to run: a rule of loadRules("en") and the language of its example. */
+type ExampleJob = { readonly rule: string; readonly language: string };
+
+const isExampleJob = (value: unknown): value is ExampleJob =>
+  typeof value === "object" && value !== null && "rule" in value && typeof value.rule === "string" && "language" in value && typeof value.language === "string";
+
+const exampleOf = (rules: readonly RuleDefinition[], job: ExampleJob): RuleExample => {
+  const example = rules.find((rule) => rule.id === job.rule)?.guide?.examples[job.language];
+  if (example === undefined) throw new Error(`rule-examples: no ${job.language} example for ${job.rule} in the rule files`);
+  return example;
+};
+
+/** Runs the given examples in this process, one at a time: the command line runs in the example's directory, and the working directory is the process's. */
+export const runExampleJobs = async (jobs: unknown): Promise<ExampleOutcome[]> => {
+  if (!Array.isArray(jobs) || !jobs.every(isExampleJob)) throw new Error("rule-examples: runExampleJobs takes a list of { rule, language }");
+  const rules = loadRules("en");
   return jobs.reduce<Promise<ExampleOutcome[]>>(
-    async (done, job) => [...(await done), await runExample(job.rule, job.language, job.example)],
+    async (done, job) => [...(await done), await runExample(job.rule, job.language, exampleOf(rules, job))],
     Promise.resolve([]),
   );
+};
+
+const isFinding = (value: unknown): value is ExampleFinding =>
+  typeof value === "object" && value !== null && "line" in value && "column" in value && "message" in value && typeof value.message === "string";
+
+const isOutcome = (value: unknown): value is ExampleOutcome =>
+  isExampleJob(value) &&
+  "before" in value &&
+  Array.isArray(value.before) &&
+  value.before.every(isFinding) &&
+  "after" in value &&
+  Array.isArray(value.after) &&
+  value.after.every(isFinding);
+
+/** Every example of every rule (rules of loadRules("en")), one command-line run per rule and language, several processes at once. */
+export const runAllExamples = async (rules: readonly RuleDefinition[]): Promise<ExampleOutcome[]> => {
+  const jobs: ExampleJob[] = rules.flatMap((rule) => examplesOf(rule).map(([language]) => ({ rule: rule.id, language })));
+  const outcomes = await mapInChildren(import.meta.url, "runExampleJobs", jobs);
+  if (!outcomes.every(isOutcome)) throw new Error("rule-examples: a worker returned something other than an example's outcome");
+  return outcomes;
 };
 
 if (import.meta.main) {
