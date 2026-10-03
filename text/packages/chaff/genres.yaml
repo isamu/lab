@@ -116,6 +116,9 @@ genres:
       total-mismatch: normal
       dangling-figure-reference: normal
       date-range-reversed: normal
+      # A contract names each party and term once and uses that name: a term quoted again or a party written out in full is a slip.
+      defined-term-form: normal
+      defined-name-repeated: normal
   - id: legal/statute
     name: { ja: 法令・規程, en: Statute and regulation }
     summary:

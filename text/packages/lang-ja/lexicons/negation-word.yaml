@@ -1,0 +1,27 @@
+# 打ち消しの語。adverb-without-negation が読む。書いた形か原形で照らす。
+# 「違う」「異なる」「駄目」は打ち消しと同じ向きの語で、「全然違う」は辞書も認める。
+# group: prefix は語の頭に付く打ち消し（不十分、未定、無理、非公開）。
+id: negation-word
+language: ja
+entries:
+  - pattern: ない
+  - pattern: 無い
+  - pattern: ぬ
+  - pattern: ん
+  - pattern: ず
+  - pattern: まい
+  - pattern: なし
+  - pattern: 無し
+  - pattern: 違う
+  - pattern: 異なる
+  - pattern: 駄目
+  - pattern: だめ
+  - pattern: ダメ
+  - pattern: 不
+    group: prefix
+  - pattern: 未
+    group: prefix
+  - pattern: 無
+    group: prefix
+  - pattern: 非
+    group: prefix

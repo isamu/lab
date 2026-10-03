@@ -333,16 +333,21 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 ## 動かなかったルール
 
 - `abstract-length`: ジャンル blog/tech では見ないため
+- `adverb-without-negation`: ジャンル blog/tech では見ないため
 - `agentless-passive`: ジャンル blog/tech では見ないため
 - `ai-structure`: 表題より下の見出しが無いため
 - `attachment-not-attached`: ジャンル blog/tech では見ないため
 - `citation-reference-mismatch`: ジャンル blog/tech では見ないため
 - `citation-style-mix`: ジャンル blog/tech では見ないため
+- `colloquial-opener`: ジャンル blog/tech では見ないため
 - `cushion-phrase-density`: ジャンル blog/tech では見ないため
+- `defined-name-repeated`: ジャンル blog/tech では見ないため
+- `defined-term-form`: ジャンル blog/tech では見ないため
 - `email-greeting-closing`: ジャンル blog/tech では見ないため
 - `email-subject-length`: ジャンル blog/tech では見ないため
 - `figure-reference-order`: ジャンル blog/tech では見ないため
 - `request-without-deadline`: ジャンル blog/tech では見ないため
+- `yori-as-from`: ジャンル blog/tech では見ないため
 
 ## 直したあとの確かめ
 

@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  tari-alone  found
+ja/design  tari-alone  found
+ja/email  tari-alone  found
+ja/figures  tari-alone  found
+ja/itinerary  tari-alone  found
+ja/minutes  tari-alone  found
+ja/note  tari-alone  found
+ja/policy  tari-alone  found
+ja/press  tari-alone  found
+ja/proposal  tari-alone  found
+ja/quote  tari-alone  found
+ja/readme  tari-alone  found
+ja/requirements  tari-alone  found

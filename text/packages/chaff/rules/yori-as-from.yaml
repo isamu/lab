@@ -1,0 +1,60 @@
+id: yori-as-from
+layer: L3
+status: experimental
+how_to_find: origin-particle
+word_list: origin-particle
+extra_word_lists: [origin-head]
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 起点を言う「より」
+  en: より used for "from"
+
+why:
+  ja: 公用文では、「より」は比べるときだけに使い、時や所の起点は「から」で書きます。「4月1日より開始」「担当者よりご連絡します」の「より」は起点です。比べる「より」（昨年より増えた）と同じ字なので、読み手は一瞬どちらかを考えます。「より」の後に始まり・送り・来ることを言う語（開始、連絡、参る）が続くときだけ指します。
+  en: Japanese official style uses より only for comparison ("more than") and から for a starting point ("from"). In 4月1日より開始 ("starting from 1 April") より marks a start, and the reader has to work out which より it is. chaff reports より only when a word for starting, sending or coming (開始, 連絡, 参る) follows it.
+
+message:
+  ja: 起点の「{word}」は「{suggestion}」と書けます
+  en: '"{word}" marks a starting point here; write "{suggestion}"'
+
+how_to_fix:
+  ja: 起点なら「から」にしてください（4月1日より開始 → 4月1日から開始）。
+  en: For a starting point, write から (4月1日より開始 → 4月1日から開始).
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Spoken 全然大丈夫, なので and より in a character's voice; classical verse has a たり that does not list."
+  speech: "Spoken Japanese says 全然大丈夫, opens with なので and greets with より参りました."
+sources: [koyobun-2022]
+
+group: wording
+summary:
+  ja: 「4月1日より開始」のように、起点を「から」でなく「より」で書いた所
+  en: より written for a starting point (4月1日より開始) where Japanese official style writes から
+example:
+  ja:
+    before: |
+      新しい窓口は4月1日より受付を開始します。
+    after: |
+      新しい窓口は4月1日から受付を開始します。
+
+not_flagged:
+  ja: 比べる「より」（昨年より増えた、これより大きい）と「により」「より一層」は指しません。名詞が続くときは、それが「を」か「する」「いたす」を伴う動作のときだけ指します（昨年より販売が増えた、は指しません）。鉤括弧で引いた中は見ません。
+  en: Comparison (昨年より増えた, "more than last year"), により ("by") and より一層 are not reported. A following noun counts only when it is an action taking を or a light verb, so 昨年より販売が増えた is not reported. Nothing quoted in 「」 is checked.
+rewrite:
+  ja:
+    direction: 起点を言う「より」を「から」に替えてください。替えるのはその一語だけです。
+    pairs:
+      - before: 新しい窓口は4月1日より受付を開始します。
+        after: 新しい窓口は4月1日から受付を開始します。
+      - before: 詳細は担当者よりご連絡いたします。
+        after: 詳細は担当者からご連絡いたします。
+    keep:
+      - 日付、名前、敬語の形
+    avoid:
+      - 比べる「より」まで替える
