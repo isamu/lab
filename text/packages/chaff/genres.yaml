@@ -76,6 +76,11 @@ groups:
       number-style-consistency: off
       # An enumeration of conditions mixes 〜こと and 〜とき by what each condition is.
       list-item-form-mix: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
       # A paper's citations, figures and abstract: only the academic paper genre turns these on.
       citation-style-mix: off
       citation-reference-mismatch: off
@@ -144,6 +149,11 @@ groups:
       bold-label-list: off
       ai-structure: off
       requirement-smell: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
@@ -222,6 +232,9 @@ groups:
       unknown-word: off
       redundant-expression: off
       requirement-smell: off
+      # Dialogue keeps a character's keigo, mistakes and all.
+      humble-for-others: off
+      baito-keigo: off
       # Dialogue may misuse an idiom on purpose, to draw the speaker.
       idiom-misuse: off
       paragraph-restatement: off
@@ -233,6 +246,11 @@ groups:
       list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
       # Dialect and old usage ("an hospital") are the work's voice, and dialogue leans on "very".
       article-sound: off
       very-adjective: off
@@ -270,6 +288,7 @@ groups:
       double-negative: off
       ra-nuki: off
       requirement-smell: off
+      baito-keigo: off
       article-sound: off
       very-adjective: off
       homophone-slip: off
@@ -284,6 +303,11 @@ groups:
       # Spoken numbers are transcribed as heard.
       number-style-consistency: off
       list-item-form-mix: off
+      # Code blocks, shell prompts, command headings and numbered steps belong to technical writing.
+      code-fence-language-mix: off
+      shell-prompt-mix: off
+      heading-command-missing: off
+      step-statement-mix: off
       # A paper's citations, figures and abstract: only the academic paper genre turns these on.
       citation-style-mix: off
       citation-reference-mismatch: off
@@ -433,6 +457,12 @@ genres:
     # Path only: step and procedure headings are as common in tech blogs and specifications as in manuals.
     suggest:
       paths: ["(^|/)(manuals?|guides?|how-?tos?|help|tutorials?|user-?guides?)(/|[-_.])"]
+    # A manual is followed command by command: its code blocks, prompts, command headings and steps are what the reader acts on.
+    rules:
+      code-fence-language-mix: normal
+      shell-prompt-mix: normal
+      heading-command-missing: normal
+      step-statement-mix: normal
   - id: docs/faq
     name: { ja: よくある質問, en: FAQ }
     summary:

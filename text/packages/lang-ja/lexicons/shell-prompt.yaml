@@ -1,0 +1,9 @@
+# シェルのコマンドの前に書くプロンプト。後ろに空白が続く（$ npm install、PS> Get-Item）。
+# 「#」は入れない。シェルのブロックでは、root のプロンプトよりコメントのほうがずっと多い。
+id: shell-prompt
+language: ja
+entries:
+  - pattern: $
+  - pattern: "%"
+  - pattern: PS>
+  - pattern: ❯
