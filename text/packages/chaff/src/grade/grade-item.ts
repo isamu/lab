@@ -91,6 +91,7 @@ export const gradeItem = async (item: GradeItem, setup: GradeSetup): Promise<Gra
   const { verdict, score } = judge(item, checked, setup);
   return {
     id: item.id,
+    ...(item.variant === undefined ? {} : { variant: item.variant }),
     language: checked.check.language,
     genre: checked.check.genre.genre,
     size: checked.size,
