@@ -47,6 +47,7 @@ not_flagged:
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
+sources: [write-good, proselint]
 rewrite:
   depth: light
   en:
