@@ -1,0 +1,15 @@
+# 「など」と「等」を重ねた言い方。どちらも「ほかにもある」と言う語で、二つ並べても意味は増えない。doubled-nado が読む。
+# rewrite は片方だけ残した形。「などなど」は話し言葉の強めで、意味が重なるのとは違うので入れない。
+id: doubled-nado
+language: ja
+entries:
+  - pattern: 等など
+    rewrite: など
+  - pattern: など等
+    rewrite: など
+  - pattern: 等々など
+    rewrite: など
+  - pattern: など等々
+    rewrite: など
+  - pattern: などの等
+    rewrite: など

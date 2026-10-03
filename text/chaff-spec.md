@@ -943,6 +943,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `ra-nuki` ✅ | ら抜き言葉。lang-ja が一段・カ変動詞の未然形＋「れる」に `PotentialRa=Dropped` を付ける | pos |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
 | `hankaku-kana` ✅ | 半角の片仮名と半角の句読点。コード・リンク・引いた名前の中は除く | - |
+| `translationese-density` | 翻訳調（を可能にする、重要な役割を果たす、されることができる、あなたは）の密度。語彙表 translationese を共通の phrase-density で数える。上限は人の書いた Qiita の記事で決めた | pos |
 | `misconversion` | 仮名漢字変換の取り違え（以外と簡単、始めて会う、確立が高い、不可決）。前後の語まで語彙表 misconversion に書いた形だけ。detector は known-correction | pos |
 
 `katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。
@@ -987,6 +988,7 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
 | `name-variant` | 同じ名前（固有名詞の続き）を少しだけ違う形で書く。書き方だけの違い（大小・幅・空白・記号）、読みが同じで一語だけ違う、英字の一字違い（多いほうが二度以上・少ないほうが一度）。日本語でも動く | pos |
+| `unknown-word` | 辞書に無く、一字違いの辞書の語がある英語の語（attched → attached）。辞書は lang-en の lexicons/dictionary.txt（wink-lexicon と WordNet から scripts/en-dictionary.ts で作る）、語尾・接頭辞・足す語は語彙表 word-suffix・word-prefix・extra-word。大文字を含む語、二度以上使う語、言い直しの無い語は言わない | - |
 | `date-format-consistency` | 一つの文書で日付を二通りに書く（2026-10-02 / 2026年10月2日 / Oct 2, 2026 / 10/2/2026）。年月日のそろった日付だけ、少ないほうを指す。月の名前は語彙表 month-name、元号は calendar-era。日本語でも動く | - |
 | `known-misspelling` | よくある書き誤り（シュミレーション、ですす、seperate）。語彙表の組（誤った形→正しい形）を語の切れ目で照らし、正しい形を添える。日本語でも動く | pos |
 | `redundant-expression` | 重言（頭痛が痛い、一番最初、end result、each and every）。語彙表 redundant-expression の語ごとに重ねを外した形を持つ。日本語でも動く | pos |

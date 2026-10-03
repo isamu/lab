@@ -69,16 +69,11 @@ A `chaff.yaml` in the folder you run from applies to every check, as in the [con
    Facts: 3 dropped (date 1, number 2), 1 added (date 1)
    Quotations: 2 checked, 1 failed
 
-   18 not run
-     cite                         2 outputs  no citations given (chaff does not guess quotations from the output)
-     colon-lead-in                3 outputs  not a rule for en
-     compare                      2 outputs  no reference given (facts are checked against a reference)
-     empty-conclusion             3 outputs  it reads meaning; npx chaff test runs it
    …
-
-   Stamp: chaffjs 0.18.0, @chaffjs/lang-en 0.16.0, @chaffjs/lang-ja 0.17.0
-     rules sha256:3c19ebcf1dc64d8d6d3129a2489e4938fa14bfd6927e300c2b0919a39de0e26a
-     settings sha256:18f9e63d4e51a582d46a29f30359c872c912fc3f08dfe0545875636e94272347
+     cite                         2 outputs  no citations given (chaff does not guess quotations from the output)
+   …
+     compare                      2 outputs  no reference given (facts are checked against a reference)
+   …
    ```
 
 3. **Read the result.** An output fails on an `error` finding, a fact dropped or added against `reference`, or a quotation not found.
@@ -124,6 +119,7 @@ grade:
   penalty: 10 # fails when the points add up to more than this
 ```
 
+<!-- chaff-screen: rubric -->
 ```
 $ npx chaffjs grade prompt-b.jsonl --experimental --compact
 q3	fail	penalty 0	facts.dropped 3 > 0, facts.added 1 > 0
@@ -292,7 +288,7 @@ console.log(columns.map((column) => `${column.variant} ${column.passed}/${column
 
 The source, `source.md`, is a short support report. Two models summarized it.
 
-```markdown
+```markdown file=source.md
 # Support report, third quarter
 
 The support team answered 4,812 tickets this quarter.
@@ -303,7 +299,7 @@ Two people joined in August, and the team now has 11 members.
 
 Model A (`model-a.md`) kept every figure. Model B (`model-b.md`) dropped the reply times and wrote the wrong date.
 
-```markdown
+```markdown file=model-b.md
 # In short
 
 The team answered 4,812 tickets, and first replies got much faster.
@@ -350,7 +346,7 @@ The full description is in the [command list](./commands) under `compare`.
 
 The source, `policy.md`, is a refund policy with numbered clauses.
 
-```markdown
+```markdown file=policy.md
 # Refund policy
 
 ## 1. Scope
@@ -369,7 +365,7 @@ This policy covers orders placed on the web store.
 The answer quoted two clauses. Ask the model to return its quotations as JSON next to the answer (`quotes.json`).
 chaff does not guess which sentences of an answer are quotations.
 
-```json
+```json file=quotes.json
 [
   { "address": "2.1", "quote": "within 30 days of delivery" },
   { "address": "2.2", "quote": "Shipping fees are refunded in full." }
@@ -446,7 +442,7 @@ grade:
 
 Two prompts answered the same task: explain why Tuesday's deploy failed. Prompt A gave this answer (`prompt-a.md`).
 
-```markdown
+```markdown file=prompt-a.md
 # Why the deploy failed
 
 The deploy on Tuesday stopped at the database step.
@@ -457,7 +453,7 @@ We will add the column without a default first, then fill it in batches.
 
 Prompt B gave this one (`prompt-b.md`).
 
-```markdown
+```markdown file=prompt-b.md
 # Why the deploy failed
 
 In today's fast-paced world of software delivery, every deploy plays a crucial role.
@@ -480,7 +476,7 @@ $ npx chaffjs prompt-a.md --experimental --compact
 prompt-a.md   blog/tech · English   genre from the default
 
 
-0 findings, 28 rules not run
+{counts}
 ```
 
 ```
@@ -501,7 +497,7 @@ prompt-b.md   blog/tech · English   genre from the default
   12:70   warning Closes with "hope this helps"
                   closing-cliche
 
-6 findings, 28 rules not run
+{counts}
 ```
 
 Across many tasks, compare the rates rather than single outputs. `chaff grade` gives each rule's rate, and `--baseline` puts two runs side by side.
@@ -548,7 +544,7 @@ How to rewrite from a plan is in [Making AI-sounding text sound human](./ai-soun
 
 A model wrote this quote (`answer.md`). Its total does not add up, and the weekday does not match the date.
 
-```markdown
+```markdown file=answer.md
 # Your quote
 
 | Item | Price |
@@ -570,11 +566,11 @@ answer.md   blog/tech · English   genre from the default
   9:25    error   2026-10-06 is a Tuesday, not a Monday
                   date-weekday-mismatch
 
-2 findings, 28 rules not run
+{counts}
 ```
 
 These findings are errors, so the run ends with exit code 1, and `chaff grade` fails the output.
-The rules are experimental. Without `--experimental` they do not run, and the last line says so (`0 findings, 97 rules not run`).
+The rules are experimental. Without `--experimental` they do not run: the run reports 0 findings, and its last line counts them among the rules not run.
 
 ## Findings as SARIF
 
