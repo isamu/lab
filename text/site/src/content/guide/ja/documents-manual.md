@@ -21,7 +21,7 @@ chaff は、たどれない見出し、行き先の無いリンク、説明の�
 
 ## chaff が見ること、見ないこと
 
-このジャンルで見る主なルールは、次のとおりです。`image-alt-text` は既定で動きます。ほかは試験中で、`--experimental` を付けたときに動きます。
+このジャンルで見る主なルールは、次のとおりです。どれも既定で動きます。
 
 | ルール | 見つけるもの |
 | --- | --- |
@@ -110,11 +110,11 @@ manual.md   blog/tech · 日本語   ジャンルは既定から
 {counts}
 ```
 
-勧められたとおり、ジャンルを付けて、試験中のルールも動かします。
+勧められたとおり、ジャンルを付けます。
 `--compact` は、1 件を 2 行にまとめて出す印です。
 
 ```
-$ npx chaffjs manual.md --genre docs/manual --experimental --compact
+$ npx chaffjs manual.md --genre docs/manual --compact
 
 manual.md   docs/manual · 日本語   ジャンルは --genre から
 
@@ -160,17 +160,9 @@ manual.md   docs/manual · 日本語   ジャンルは --genre から
 ```yaml
 genre: docs/manual
 language: ja
-
-rules:
-  broken-link: normal
-  image-alt-text: normal
-  heading-level-skip: normal
-  empty-section: normal
-  duplicate-heading: normal
-  url-run-on: normal
 ```
 
-この `chaff.yaml` を置くと、`npx chaffjs manual.md --compact` だけで、上の指摘がすべて出ます。
+この `chaff.yaml` を置くと、`--genre` を付けなくても説明書として見ます。
 説明書のフォルダに README や仕様書も置くなら、[設定](./configuration) の「パスごとに変える」で、パスごとにジャンルを分けます。
 
 ## 次に読むページ
