@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/design  zenzen-positive  found
+ja/email  zenzen-positive  found
+ja/figures  zenzen-positive  found
+ja/itinerary  zenzen-positive  found
+ja/minutes  zenzen-positive  found
+ja/note  zenzen-positive  found
+ja/policy  zenzen-positive  found
+ja/press  zenzen-positive  found
+ja/proposal  zenzen-positive  found
+ja/quote  zenzen-positive  found
+ja/readme  zenzen-positive  found
+ja/requirements  zenzen-positive  found

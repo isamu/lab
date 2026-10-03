@@ -1,0 +1,58 @@
+id: colloquial-opener
+layer: L2
+status: experimental
+how_to_find: opener-pile
+word_list: colloquial-opener
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 文頭の話し言葉の接続詞
+  en: A spoken conjunction opening a sentence
+
+why:
+  ja: 文の頭の「なので」「でも」「だけど」は話し言葉の接続詞です。報告書や案内の中にあると、そこだけ口調が砕けて聞こえます。書き言葉には同じ働きの語（そのため、したがって、しかし）があります。文の途中の「〜なので」は普通の書き方なので見ません。
+  en: In Japanese, なので, でも and だけど at the head of a sentence are spoken conjunctions. In a report or a notice they make that sentence sound casual. Written Japanese has words that do the same job (そのため, しかし). なので inside a sentence is ordinary and not checked.
+
+message:
+  ja: 「{matched}」で始まる文が {count} 個あります（{limit} 個から）
+  en: '{count} {count|sentence opens|sentences open} with "{matched}" ({limit} needed)'
+
+how_to_fix:
+  ja: 書き言葉の接続詞に替えてください（なので → そのため、でも → しかし）。
+  en: Use the written conjunction (なので → そのため, でも → しかし).
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「なので、」「でも、」のような話し言葉の接続詞で始まる文
+  en: A Japanese sentence opening with a spoken conjunction (なので, でも)
+example:
+  ja:
+    before: |
+      在庫が足りません。なので、出荷は来週になります。
+    after: |
+      在庫が足りません。そのため、出荷は来週になります。
+
+not_flagged:
+  ja: 文の途中の「〜なので」「〜でも」と、書き言葉の接続詞（そのため、しかし、したがって）は指しません。ブログ、文芸、話し言葉のジャンルでは動きません。
+  en: なので and でも inside a sentence, and written conjunctions (そのため, しかし), are not reported. Off for blogs, literature and speech.
+level_meaning:
+  ja: 話し言葉の接続詞で始まる文が {limit} 個あれば指摘
+  en: reported from {limit} sentences opening with a spoken conjunction
+rewrite:
+  ja:
+    direction: 文頭の話し言葉の接続詞を、同じ働きの書き言葉に替えてください（なので → そのため、でも → しかし、だけど → しかし）。
+    pairs:
+      - before: 在庫が足りません。なので、出荷は来週になります。
+        after: 在庫が足りません。そのため、出荷は来週になります。
+      - before: 費用は増えます。でも、作業は半分になります。
+        after: 費用は増えます。しかし、作業は半分になります。
+    keep:
+      - 前の文とのつながりの向き（理由、逆接）
+    avoid:
+      - 接続詞を消して、つながりの向きを読み手に推させる

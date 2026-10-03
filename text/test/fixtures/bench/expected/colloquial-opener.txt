@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/design  nanode-opener  found
+ja/email  nanode-opener  found
+ja/figures  nanode-opener  found
+ja/itinerary  nanode-opener  found
+ja/minutes  nanode-opener  found
+ja/note  nanode-opener  found
+ja/policy  nanode-opener  found
+ja/press  nanode-opener  found
+ja/proposal  nanode-opener  found
+ja/quote  nanode-opener  found
+ja/readme  nanode-opener  found
+ja/requirements  nanode-opener  found

@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/blog  ending-run  found
+ja/design  ending-run  found
+ja/email  ending-run  found
+ja/figures  ending-run  found
+ja/itinerary  ending-run  found
+ja/minutes  ending-run  found
+ja/note  ending-run  found
+ja/press  ending-run  found
+ja/proposal  ending-run  found
+ja/quote  ending-run  found
+ja/readme  ending-run  found
+ja/requirements  ending-run  found
