@@ -61,11 +61,14 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 | `no-em-dash` | Too many em dashes |
 | `sentence-rhythm` | Sentences that are all about the same length |
 | `rule-of-three` | Lists that almost all have three items |
+| `section-length-uniformity` | Every section filled to the same size, which is what a template does |
+| `paragraph-length-variance` | Paragraphs all of about the same length, as if poured into a mould |
 | `ai-structure` | An outline past 90% of human articles on several structure measures at once (heading density, headings split into three, bold labels, uniform sections, a closing that restates). Blog and essay genres only |
 | `ai-generated-composite` | Three or more of these in one document: `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure` (`bold-density` is not counted) |
 
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.
+`fix-plan` also gives a way to rewrite for other rules that flag such spots, such as `no-lead` and `paragraph-restatement`; the [reference](./reference) lists them all.
 
 The Japanese word list of `ai-tell` includes the metaphors of technical writing (静かに壊れる "fails silently",
 黙って無視される "is ignored without a word", 時間を溶かす "melts your time").
@@ -165,7 +168,8 @@ Leave the old sentences alone. Take an inventory of what the document says, and 
 | Move the experience | Put the writer's concrete experience where it carries the argument |
 | Open on the point | Start with the point or a concrete scene, not a generic opener |
 
-   Size the new outline by the plan's structure targets: no more headings than the target allows, no heading split into three unless the content has three parts, no bold-label lists and no closing that restates the body.
+   Size the new outline by the plan's structure targets: no more headings than the target allows.
+   Split no heading into three unless the content has three parts; use no bold-label lists and no closing that restates the body.
 
 3. Show the new outline first. Put the old outline (the headings from `chaff outline`) next to the new one, with one line per section on what it says.
    The writer can then see the structural change at a glance and decide. If the person asked for it to be done without asking, go straight on.
@@ -267,7 +271,7 @@ The migration was planned meticulously. It was rolled out over two weeks in Marc
 In conclusion, the shared cache is a testament to what careful engineering can achieve. I hope this helps!
 ```
 
-The plan `chaff fix-plan` printed:
+The plan `chaff fix-plan` printed, cut after the first rule:
 
 ````markdown
 $ npx chaffjs fix-plan draft.md --experimental
@@ -349,72 +353,7 @@ after:
 - line 3: "In today's fast-paced world, build speed plays a crucial role in how a team ships."
   "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 18)
 
-### `padded-intro` Padded opening
-
-**Direction**: Delete the opening that fits any document ("In recent years, X has gained attention") and start from the situation or the claim only this piece has. If the body has none, ask the writer.
-
-**Keep**
-
-- the situation and claim only this piece has
-
-**Avoid**
-
-- swapping the opening for another generality ("X is now essential")
-- inventing a scene or an anecdote that is not in the body
-
-**Example**
-
-before:
-
-> In recent years, generative AI has gained attention. This article shows how we use it internally.
-
-after:
-
-> This article shows how we use generative AI internally.
-
-**Spots**
-
-- line 3: "In today's fast-paced world, build speed plays a crucial role in how a team ships."
-  "in today's fast-paced world" is an opening that fits any article
-
-### `contraction-consistency` Contraction use is inconsistent
-
-**Direction**: Match the majority.
-
-**Spots**
-
-- line 5: "It's a change in how the whole team works."
-  "it's" is written differently from the rest of the document
-
-### `closing-cliche` Cliched closing
-
-**Direction**: Delete the stock closing. If the piece already ends on its conclusion, stop there; if not, state in one sentence the one thing from the body the reader should take away.
-
-**Keep**
-
-- the conclusion the body reached
-
-**Avoid**
-
-- adding a conclusion or a call to action that is not in the body
-- swapping "Hope this helps" for "Give it a try"
-
-**Example**
-
-before:
-
-> The setting lives in one place on the admin page. Hope this helps!
-
-after:
-
-> The setting lives in one place on the admin page.
-
-**Spots**
-
-- line 11: "In conclusion, the shared cache is a testament to what careful engineering can achieve."
-  Closes with "in conclusion"
-- line 11: "I hope this helps!"
-  Closes with "hope this helps"
+…
 
 ## Rules that did not run
 
@@ -752,7 +691,9 @@ The writer's claims and experience, one line each:
 - shorter slots, showing what you are stuck on, and a recording in Slack brought people back;
 - the demos turned into real conversations.
 
-The old outline has seven headings, and its "Conclusion" says the body again. Its structure score is 4: sections of one or two paragraphs, headings in a stock form, the introduction and conclusion headings, and bold labels lie past 90% of human articles, and the plan's structure targets name the same four.
+The old outline has seven headings, and its "Conclusion" says the body again. Its structure score is 4: four measures lie past 90% of human articles.
+They are sections of one or two paragraphs, headings in a stock form, the introduction and conclusion headings, and bold labels.
+The plan's structure targets name the same four.
 The new outline, shown before writing:
 
 | Old outline | New outline, and what each part says |

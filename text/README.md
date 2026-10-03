@@ -115,7 +115,7 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 ```bash
 npx chaffjs fix-plan article.md --experimental    直す計画を出す（--json で AI に渡す形）
 npx chaffjs facts article.md                      書き直す前に、数・日付・URL・名前などの事実を控える
-npx chaffjs outline article.md after.md           見出しの数、節の長さ、箇条書きの割合、太字を前と後で並べる
+npx chaffjs outline article.md after.md           見出しの数、節の長さ、箇条書きの割合、太字と、構成の AI らしさを前と後で並べる
 npx chaffjs compare article.md after.md           書き直しで事実が落ちていないか、足されていないかを確かめる
 ```
 
@@ -137,7 +137,7 @@ i 書き方だけ変わった事実 3 件
 ```
 
 この README も、この手順で全面的に書き直しました。手順と例は手引きの [AIっぽさを直す](https://isamu.github.io/lab/ja/guide/ai-sounding/) にあります。
-モデルの出力を `compare`、`cite`、chaff のルールで確かめる評価（AI evals）のやり方は、[AI の評価（AI evals）に使う](https://isamu.github.io/lab/ja/guide/ai-evals/) にあります。
+モデルの出力を JSONL のまま `npx chaffjs grade` で採点し、`compare`、`cite`、chaff のルールで確かめる評価（AI evals）のやり方は、[AI の評価（AI evals）に使う](https://isamu.github.io/lab/ja/guide/ai-evals/) にあります。
 
 ## 条文と引用を確かめる
 
@@ -310,4 +310,4 @@ document the screen is in English. Pick the kind of document with `--genre` (`le
 genres and the reference of every rule are at https://isamu.github.io/lab/en/.
 
 How to rewrite AI-sounding text is in [Making AI-sounding text sound human](https://isamu.github.io/lab/en/guide/ai-sounding/).
-How to check a model's output with `compare`, `cite` and the rules is in [Using chaff for AI evals](https://isamu.github.io/lab/en/guide/ai-evals/).
+`npx chaffjs grade` grades a JSONL file of a model's outputs with `compare`, `cite` and the rules; how is in [Using chaff for AI evals](https://isamu.github.io/lab/en/guide/ai-evals/).
