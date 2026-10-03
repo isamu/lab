@@ -1,0 +1,67 @@
+id: cliche
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: cliche
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: 使い古された決まり文句
+  en: Cliché
+
+why:
+  ja: 英語の「at the end of the day」「low-hanging fruit」「move the needle」のような決まり文句は、使われすぎて中身が抜けた比喩です。読み手は見慣れた形を読み飛ばし、この文書で何が言いたいのかが残りません。言い回しの一覧は言語ごとの語彙表にあり、それぞれに何を書けばよいかが付いています。
+  en: '"At the end of the day", "low-hanging fruit" and "move the needle" are figures of speech worn down to filler. The reader skims the familiar shape and learns nothing about this document. The phrases are listed in the lexicon, each with what to write instead.'
+
+message:
+  ja: 「{matched}」は使い古された決まり文句です
+  en: '"{matched}" is a cliché'
+
+how_to_fix:
+  ja: 決まり文句が指していた中身を、そのまま書いてください（low-hanging fruit → 簡単に済む作業の名前）。
+  en: Say what the phrase stood for ("low-hanging fruit" → name the easy tasks).
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "A narrator or a character may speak in clichés; the voice is the author's choice."
+  speech: "A transcript keeps the speaker's words."
+
+group: wording
+summary:
+  ja: 英語で、「at the end of the day」「low-hanging fruit」のような使い古された決まり文句
+  en: A worn phrase such as "at the end of the day" or "low-hanging fruit"
+example:
+  en:
+    before: |
+      At the end of the day, the new cache is faster.
+    after: |
+      The new cache cuts load time from 2 seconds to 0.5.
+
+not_flagged:
+  ja: 一覧にある言い回しだけを見ます。ほかの規則が見る言い回し（ai-tell の「game-changer」、empty-intensifier の「needless to say」）は入れていません。英語の文書だけで動き、文学と講演の書き起こしは対象にしません。
+  en: Only the phrases on chaff's list are checked. Phrases another rule reads ("game-changer" in ai-tell, "needless to say" in empty-intensifier) are not on it. English documents only; literature and speech transcripts are not checked.
+level_meaning:
+  ja: 当てはまる言い回しが {limit} 箇所あれば指摘
+  en: reported once there are {limit}
+sources: [write-good, proselint]
+rewrite:
+  depth: light
+  en:
+    direction: Replace the cliché with what it stood for in this document, following the lexicon's note for the phrase. If the text does not say what that is, ask the writer rather than invent it.
+    pairs:
+      - before: At the end of the day, the new cache is faster.
+        after: The new cache is faster.
+      - before: Fixing the login page is low-hanging fruit.
+        after: Fixing the login page takes an hour.
+      - before: Let's touch base next week.
+        after: Let's talk next week.
+    keep:
+      - the claim the sentence makes
+      - numbers, names and dates in the sentence
+    avoid:
+      - swapping one cliché for another
+      - inventing a figure or a date the text does not give

@@ -166,7 +166,7 @@ chaff がまだ見ていない種類の誤りを探すため、次のチェッ�
 - <a id="write-good"></a>**write-good** [github.com](https://github.com/btford/write-good)
   - 英語の文章のチェッカー。
   - 分かったこと：受け身、there is で始まる文、文頭の So、出所を言わない言い回し、冗長な言い回し、決まり文句、語の繰り返しを見ます。
-  - chaff では：`agentless-passive`、`expletive-construction`、`sentence-initial-so`、`weasel-word`、`wordy-phrase`、`doubled-word` が見ます。
+  - chaff では：`agentless-passive`、`expletive-construction`、`sentence-initial-so`、`weasel-word`、`wordy-phrase`、`doubled-word` が見ます。決まり文句は [`cliche`](../../rules/cliche/) が見ます。
 - <a id="vale-styles"></a>**Vale の Microsoft と Google のスタイル** [github.com](https://github.com/errata-ai/Microsoft)
   - Microsoft Writing Style Guide と、Google の開発者向け文書のスタイルガイドを、Vale というチェッカーの規則にしたもの（[Google](https://github.com/errata-ai/Google)）。
   - 分かったこと：省略記号、単位、空白、ダッシュ、日付、範囲、短縮形、オックスフォード・コンマ、見出しの大文字など、書き方の確認です。
