@@ -2415,6 +2415,7 @@ npx chaffjs grade items.jsonl --variant-key model      # model の欄で出力�
 | `citations` | 任意 | 出力が引いた箇所 `[{ "source", "address", "quote" }]`。`source` は `sources` の名前で、原文が一つなら省ける |
 | `language` | 任意 | `ja` / `en`。無ければ本文から推定する（§8） |
 | `genre` | 任意 | ジャンル。無ければ `chaff.yaml`、それも無ければ既定 |
+| `contexts` | 任意 | 回答が拠るはずだった、検索で取った一節の配列 `["…", "…"]`。回答の事実をこの中に探す（下の「contexts との照合」）。空の配列は「一節が取れなかった」で、欄が無いのとは違う |
 | `variant` | 任意 | どの prompt・model・設定の出力か（空でない文字列）。`--variant-key <欄>` で別の欄（`model`、`prompt` など）を使える。一行にでもあれば、どの行にも要る（§29.5） |
 
 #488 の案は `sources` だけを挙げていたが、`citations` を別の欄にした。
@@ -2446,6 +2447,7 @@ npx chaffjs grade items.jsonl --variant-key model      # model の欄で出力�
 - 率（`rates`）は 1,000 単位あたりの指摘の数。単位は日本語が字、英語が語で、lint の長さ（`lengthOf`）と同じ数え方をする。短い出力と長い出力を同じ物差しで並べるため。
 - `notRun` はその出力で動かなかったルールと理由。`reference` が無いときの事実の照合（`compare`）、`citations` が無いときの引用の照合（`cite`）もここに入る。
 - `facts` は `compare` の結果をそのまま入れる。`reference` が無ければ `null`。
+- `contexts` は、入力に `contexts` があるときだけ入る（無い出力の結果の形は変えない）。中身は下の「contexts との照合」。
 - `score` は `grade:` があるときだけ入る（§29.4）。
 - `failedBecause` は、どの条件に何件引っかかって落ちたかを並べる。
 
@@ -2453,14 +2455,26 @@ npx chaffjs grade items.jsonl --variant-key model      # model の欄で出力�
 ルールごとの率（全出力の指摘の和を全出力の長さの和で割る）と、その指摘があった出力の数も出す。
 率は単位ごとに分ける。日本語の出力（字）と英語の出力（語）が混ざったファイルでも、字と語を足さない。
 落ちた・足された事実の種類ごとの数、外れた引用の数、動かなかったルールの和集合、`stamp` を添える。
+`contexts` のある出力があれば、その数、照らした事実の数、どの一節にも無かった事実の種類ごとの数（`contexts`）も添える。
 
 **合否。** `grade:` が無いときは、次のどれか一つでも当たれば落ちる。今の版で手引きのスクリプトが使う条件と同じにする。
 
 - `error` の指摘がある（`total-mismatch` などの矛盾、`required-sections` など）
 - `reference` に対して事実が落ちた・足された
 - `citations` の引用が一つでも外れた
+- `contexts` のどの一節にも無い事実がある
 
 `warning` と `info` の指摘は合否に入れず、率として出す。言い回しの形は一つの出力の良し悪しを決めるものではなく、prompt や model を比べる量として使う。
+
+**contexts との照合（RAG の回答が、渡した一節に拠っているか）。** Ragas の faithfulness のうち、機械で決まる部分だけを受け持つ。
+
+- 回答から、`compare` と `facts` と同じ読み方で事実を取り出す。照らす種類は数・日付・時刻・URL・コード・固有名詞・引用。見出し・条項の参照・脚注は回答の形であって述べた事柄ではないので照らさない。
+- 引用以外の事実は、一節ごとに `compare --distinct` と同じに照らし、どれか一つの一節が述べていれば支えられた（`supported`）とする。支えた最初の一節の番号（0 から）を付ける。1,200 円と１,２００円のように書き方だけ違う事実は同じ事実とする。
+- 引用（「」や "" の中）は、どれかの一節に一字一句あるときだけ支えられたとする。幅の違いと空白の数は問わない（引用の鍵と同じ）。
+- どの一節にも無い事実を `unsupported` に並べる（形は `facts` の `dropped`・`added` と同じ）。`contexts` が空の配列なら、照らした事実はすべて `unsupported` になる。
+- 意味は読まない。事実を一つも含まない文が一節に支えられているかは分からないので、その数を `uncheckedSentences` に入れ、`notRun` に `contexts` として理由付きで出す。回答か一節で読み切れなかった種類（品詞が無くて名前を読めない、など）も同じに出す。`contexts` が無い出力では、`contexts` を「動かなかった」に入れる。
+- 結果の形: `{ "passages": 2, "checked": 6, "supported": [{ "kind", "text", "line", "passage" }], "unsupported": [{ "kind", "key", "text", "line", "allowed" }], "uncheckedSentences": 1 }`。
+- 「数があっている」は「正しい」ではない。一節にある数を別の物の数として書いた回答は、ここでは支えられたことになる。意味の照合は model か人が受け持つ。
 
 **終了コード。**
 
@@ -2490,6 +2504,10 @@ grade:
   citations:
     failed: 0
     required: true                         # sources があって citations が無い出力を落とす
+  contexts:
+    unsupported: 0                         # どの一節にも無くてよい事実の数
+    allow_unsupported: [name]              # 数えない種類
+    required: true                         # contexts が無い出力を落とす
   penalty: 10                              # 点の和がこれを超えたら落とす
 ```
 
@@ -2503,8 +2521,9 @@ grade:
 - 無いルールの名前や、その言語で動かないルールを書いたときは、他の設定と同じく標準エラーに言う。そのルールは `notRun` に理由付きで出る。
 - `facts` と `citations` も、書いた上限だけで決める。`facts:` に `dropped` を書かなければ、落ちた事実は合否に入らない。`allow_dropped`・`allow_added` は `compare` の `--allow-dropped`・`--allow-added` と同じく、その種類の事実に `allowed: true` を付けて数えない。
 - `citations.required` が真のとき、`sources` があって `citations` が無い出力は `citations.required` で落ちる。
+- `contexts` も書いた上限だけで決める。`unsupported` を書かなければ、一節に無い事実は合否に入らない。`allow_unsupported` の種類は `allowed: true` を付けて数えない。`required` が真なら、`contexts` の無い出力は `contexts.required` で落ちる。
 - 読めない値（数でない上限、知らない事実の種類、知らないキー）が一つでもあれば、どの出力も採点せずに終了コード 2 で終わり、場所（`grade.rules.ai-tell.max_rte` のような道筋）を標準エラーに並べる。書き誤った上限が黙って効かないと、落とすはずの出力が通るため。
-- `failedBecause` は条件の名前と数で書く: `rules.<id> N > max`、`rules.<id>.rate R > max_rate`、`required_sections.missing N > 0: <見出し>`、`facts.dropped N > 上限`、`facts.added N > 上限`、`citations.failed N > 上限`、`citations.required: …`、`score.penalty P > penalty`。
+- `failedBecause` は条件の名前と数で書く: `rules.<id> N > max`、`rules.<id>.rate R > max_rate`、`required_sections.missing N > 0: <見出し>`、`facts.dropped N > 上限`、`facts.added N > 上限`、`citations.failed N > 上限`、`citations.required: …`、`contexts.unsupported N > 上限`、`contexts.required: no contexts given`、`score.penalty P > penalty`。
 - 要約には全出力の点の和（`penalty`）が入る。画面では `--compact` の 1 行ごとにも点を出す。
 - 基準の中身（重みと上限）は `stamp` の `settings` に入る。基準を変えた前後の点は比べない（§29.5）。
 
@@ -2546,7 +2565,7 @@ npx chaffjs grade outputs.jsonl --variant-key model    # model の欄で分け�
 - `id` は variant ごとに一意であればよい。同じ `id` が同じ variant に二度あれば読めない入力（終了コード 2）。
 - 出力ごとの結果（`--out`）には `variant` が入る。`--baseline` は `id` と `variant` の組で前の回と組にする。
 - 比べるのは、すべての variant にある `id` だけにする。どれかの variant に無い `id` は「比べなかった」として、無かった variant と並べる。全員にあっても `language` か `genre` が違えば比べない。列ごとに違う課題を数えると、率や通った割合が課題の差を含んでしまうため。
-- variant ごとに、比べた出力の数・通った数と割合（百分率、小数 1 桁）・落ちた事実と足された事実の数（`allowed` を除く）・照らした引用と外れた引用の数・`grade:` があれば点の和を出す。どれも §29.3 の要約と同じ数え方で、比べた出力だけから求める。
+- variant ごとに、比べた出力の数・通った数と割合（百分率、小数 1 桁）・落ちた事実と足された事実の数（`allowed` を除く）・照らした引用と外れた引用の数・`contexts` のある出力があれば照らした事実とどの一節にも無かった事実の数・`grade:` があれば点の和を出す。どれも §29.3 の要約と同じ数え方で、比べた出力だけから求める。
 - ルールごとの率は単位ごとに variant を並べる。どの variant にも指摘の無いルールは出さない。
 - 合否が分かれた `id`（ある variant で通り、別の variant で落ちた）を、通った variant と、落ちた variant ごとの `failedBecause` とともに並べる。
 - 通った割合は点ではない。0〜1 の点や順位は出さない（§29.4、§29.8）。
@@ -2563,7 +2582,7 @@ if (!result.pass) console.log(result.failedBecause);
 ```
 
 - 返すものは §29.3 の 1 行と同じ形。CLI とライブラリで結果がずれないように、`chaff grade` と `grade()` は同じ関数（1 出力を採点する `gradeItem`）を同じ設定と `stamp` で呼ぶ。同じ出力なら `--out` の 1 行と `grade()` の戻り値は一致する。
-- 引数は本文と、`id`（省けば `output`）・`reference`・`sources`・`citations`・`language`・`genre`・`variant`（結果にそのまま残す）・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。
+- 引数は本文と、`id`（省けば `output`）・`reference`・`sources`・`citations`・`contexts`・`language`・`genre`・`variant`（結果にそのまま残す）・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。
   ファイルを読むのは `config` にパスを渡したときだけで、作業場所の `chaff.yaml` を探しには行かない。ファイルに書くことはない。
   パスを渡したときは、コマンドと同じくハウススタイルを当て、プラグインを読み込む。読んだ後の設定を渡したときも、設定の誤りはコマンドと同じに確かめる。
 - `experimental` を省くと `chaff.yaml` の `experimental` に従う。`genre` は出力ごとのジャンルで、`chaff grade --genre` のように実行全体のジャンルではない。
@@ -2653,6 +2672,7 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 | `chaff grade`、入力の JSONL、出力ごとの結果、要約、終了コード | 使える |
 | `grade:` の基準 | 使える |
 | `--baseline` と回帰の終了コード | 使える |
+| `contexts` との照合（`unsupported`、`grade.contexts`） | 使える |
 | variant を並べる（`--variant-key`、`--format markdown`、`compareVariants()`） | 使える |
 | `grade()` | 使える（`chaffjs/grade`） |
 | `stamp` | 使える |

@@ -31,6 +31,19 @@ const isFacts = (value: unknown): boolean => value === null || (isRecord(value) 
 const isCitations = (value: unknown): boolean =>
   value === null || (isRecord(value) && isNumber(value["checked"]) && isArrayOf(value["failed"], isFailedCitation));
 
+const isSupported = (value: unknown): boolean =>
+  isRecord(value) && isString(value["kind"]) && isString(value["text"]) && isNumber(value["line"]) && isNumber(value["passage"]);
+
+/** Absent when the item gave no contexts. */
+const isContexts = (value: unknown): boolean =>
+  value === undefined ||
+  (isRecord(value) &&
+    isNumber(value["passages"]) &&
+    isNumber(value["checked"]) &&
+    isArrayOf(value["supported"], isSupported) &&
+    isArrayOf(value["unsupported"], isFact) &&
+    isNumber(value["uncheckedSentences"]));
+
 const isStamp = (value: unknown): boolean => isRecord(value) && isString(value["chaff"]) && isString(value["rules"]) && isString(value["settings"]);
 
 const isSize = (value: unknown): boolean => isRecord(value) && (value["unit"] === "char" || value["unit"] === "word") && isNumber(value["value"]);
@@ -58,6 +71,7 @@ export const isGradeResult = (value: unknown): value is GradeResult =>
   isArrayOf(value["notRun"], isNotRun) &&
   isFacts(value["facts"]) &&
   isCitations(value["citations"]) &&
+  isContexts(value["contexts"]) &&
   isScore(value["score"]) &&
   typeof value["pass"] === "boolean" &&
   isArrayOf(value["failedBecause"], isString) &&
