@@ -148,10 +148,7 @@ That way "no findings" is never mistaken for "checked everything and found nothi
 | --- | --- |
 | the legal/statute genre does not check it | Rules are written that way on purpose, so this genre leaves it out |
 | not a rule for en | The rule is for Japanese documents only |
-| still experimental | The rule is still being checked for false alarms. `--experimental` turns it on |
-
-Above it, "7 experimental rules turned on by the genre" names seven rules that are still experimental elsewhere.
-They have been checked on rules and regulations, so this genre runs them.
+| still experimental | The rule is new and not yet measured on documents people wrote. `--experimental` turns it on |
 
 ## Not typing the genre every time
 
