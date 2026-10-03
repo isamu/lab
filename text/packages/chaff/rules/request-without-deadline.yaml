@@ -2,6 +2,7 @@ id: request-without-deadline
 layer: L3
 status: stable
 how_to_find: request-without-deadline
+requires: [dates]
 # Who and when are read from the language's request-* lexicons, the document's dates, and proper nouns when parts of
 # speech are available.
 uses: [pos]
