@@ -4,10 +4,12 @@
 // and compares it with the page. Where a screen's documents come from is in scripts/guide-screens-parse.ts.
 //   node scripts/guide-screens.ts <out.json>
 //   node scripts/guide-screens.ts --check en/commands.md ...   print each screen of these pages that differs from chaff
+//   node scripts/guide-screens.ts --update en/commands.md ...  rewrite those screens to what chaff prints (yarn screens:update)
 import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
-import { ELISION, asScreen, fillsFor, hasFill, missingFills, screenMatches, screensIn, type Screen } from "./guide-screens-parse.ts";
+import { ELISION, asScreen, fillsFor, hasFill, missingFills, replaceScreens, screenMatches, screensIn, type Screen } from "./guide-screens-parse.ts";
+import { updatedScreen } from "./guide-screens-update.ts";
 import { withScreenFills, type PageFills, type ScreenFills } from "../site/src/lib/screenFills.ts";
 import { runCli } from "../test/cli-run.ts";
 
@@ -86,7 +88,9 @@ export const guidePages = (): GuidePage[] =>
       .map((file) => ({ language, file })),
   );
 
-export const readGuidePage = (page: GuidePage): ReturnType<typeof screensIn> => screensIn(readFileSync(join(GUIDE, page.language, page.file), "utf8"));
+const guidePath = (page: GuidePage): string => join(GUIDE, page.language, page.file);
+
+export const readGuidePage = (page: GuidePage): ReturnType<typeof screensIn> => screensIn(readFileSync(guidePath(page), "utf8"));
 
 /** The lines for a screen's markers; a marker chaff printed nothing for stops here, naming the page and the command. */
 const madeFills = (page: GuidePage, screen: Screen, output: string): ScreenFills => {
@@ -168,10 +172,16 @@ export const UNCHECKED_ON_WINDOWS: Readonly<Record<string, Readonly<Record<strin
   "en/commands.md": { "$ npx chaffjs docs/ --compact": WINDOWS_PATH, "$ npx chaffjs docs/ --show-baseline --compact": WINDOWS_PATH },
 };
 
+/** The screens of a page that are not run on this platform, with why. */
+const uncheckedHere = (page: GuidePage): Readonly<Record<string, string>> => ({
+  ...UNCHECKED[pageName(page)],
+  ...(process.platform === "win32" ? UNCHECKED_ON_WINDOWS[pageName(page)] : {}),
+});
+
 /** A page's screens that are run and compared with chaff here: every one not listed for this platform. */
 export const checkedScreens = (page: GuidePage): { documents: Readonly<Record<string, string>>; screens: Screen[] } => {
   const { documents, screens } = readGuidePage(page);
-  const unchecked = { ...UNCHECKED[pageName(page)], ...(process.platform === "win32" ? UNCHECKED_ON_WINDOWS[pageName(page)] : {}) };
+  const unchecked = uncheckedHere(page);
   return { documents, screens: screens.filter((screen) => unchecked[screen.command] === undefined) };
 };
 
@@ -185,9 +195,43 @@ export const differingScreens = async (page: GuidePage): Promise<{ screen: Scree
   }, Promise.resolve([]));
 };
 
+/** The guide pages named ("en/commands.md"), or every page when none is named; a name that is no page stops here. */
+const namedPages = (names: readonly string[]): GuidePage[] => {
+  const pages = guidePages();
+  const unknown = names.filter((name) => !pages.some((page) => pageName(page) === name));
+  if (unknown.length > 0) throw new Error(`guide-screens: no guide page ${unknown.join(", ")}`);
+  return pages.filter((page) => names.length === 0 || names.includes(pageName(page)));
+};
+
+/**
+ * Rewrites each checked screen of a page that differs from chaff to what chaff prints, and says which. A screen in
+ * UNCHECKED is left as it is: it cannot be run here, so what chaff prints for it is not what the page means to show.
+ */
+const updatePage = async (page: GuidePage): Promise<void> => {
+  const { documents, screens } = readGuidePage(page);
+  const unchecked = uncheckedHere(page);
+  const bodies = await screens.reduce<Promise<(string | undefined)[]>>(async (done, screen) => {
+    const made = await done;
+    if (unchecked[screen.command] !== undefined) return [...made, undefined];
+    const check = await checkScreen(page, documents, screen);
+    return [...made, check.matches ? undefined : updatedScreen(screen.shown, check.actual)];
+  }, Promise.resolve([]));
+  if (bodies.every((body) => body === undefined)) return;
+  writeFileSync(guidePath(page), replaceScreens(readFileSync(guidePath(page), "utf8"), bodies), "utf8");
+  screens.forEach((screen, index) => {
+    if (bodies[index] !== undefined) console.log(`updated ${pageName(page)}: ${screen.command}`);
+  });
+};
+
+const updatePages = async (names: readonly string[]): Promise<void> =>
+  namedPages(names).reduce<Promise<void>>(async (done, page) => {
+    await done;
+    await updatePage(page);
+  }, Promise.resolve());
+
 /** Prints each screen of the given pages ("en/commands.md"; all pages when none is given) that differs from chaff. */
 const printDiffering = async (names: readonly string[]): Promise<void> => {
-  const pages = guidePages().filter((page) => names.length === 0 || names.includes(pageName(page)));
+  const pages = namedPages(names);
   await pages.reduce<Promise<void>>(async (done, page) => {
     await done;
     (await differingScreens(page)).forEach(({ check }) =>
@@ -198,8 +242,9 @@ const printDiffering = async (names: readonly string[]): Promise<void> => {
 
 if (import.meta.main) {
   const [first, ...rest] = process.argv.slice(2);
-  if (first === undefined) throw new Error("usage: node scripts/guide-screens.ts <out.json> | --check <lang>/<page>.md ...");
+  if (first === undefined) throw new Error("usage: node scripts/guide-screens.ts <out.json> | --check|--update [<lang>/<page>.md ...]");
   if (first === "--check") await printDiffering(rest);
+  else if (first === "--update") await updatePages(rest);
   else {
     const fills = await guideScreenFills();
     mkdirSync(dirname(resolve(first)), { recursive: true });
