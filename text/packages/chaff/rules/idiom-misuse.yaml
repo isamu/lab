@@ -1,6 +1,6 @@
 id: idiom-misuse
 layer: L3
-status: experimental
+status: stable
 how_to_find: misuse-match
 word_list: idiom-misuse
 uses: [pos]

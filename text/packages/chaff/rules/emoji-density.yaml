@@ -1,6 +1,6 @@
 id: emoji-density
 layer: L1
-status: experimental
+status: stable
 how_to_find: emoji-density
 severity: info
 

@@ -1,6 +1,6 @@
 id: katakana-density
 layer: L3
-status: experimental
+status: stable
 how_to_find: katakana-density
 # Katakana runs are read from the characters, so the rule needs no morphology. chaff.yaml の names に並べた名前は数えない。
 languages: [ja]

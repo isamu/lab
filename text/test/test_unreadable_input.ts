@@ -8,6 +8,7 @@ import { prepare, readWith, tokenize } from "../packages/lang-ja/src/pos.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
 // 制御文字・片割れのサロゲート・長い並びで、アダプタも run も止まらないこと。kuromoji は NUL で例外を投げた。
 
@@ -78,7 +79,13 @@ describe("品詞の取れない段落がある文書", () => {
 
   it("品詞の要る rule は「読めなかった」として動かさず、ほかの rule は動く", () => {
     const source = "一つ目の段落です。協力が求められます。\n\n二つ目の段落です。協力が求められます。\n";
-    const result = runRules(buildDocument("t.md", source, losingSecondParagraph(ja)), loadRules("ja"), {}, true, "business/report");
+    const result = runRules(
+      buildDocument("t.md", source, losingSecondParagraph(ja)),
+      loadRules("ja"),
+      measuredOffOn("business/report"),
+      true,
+      "business/report",
+    );
     assert.match(result.skipped.find((entry) => entry.rule === POS_RULE)?.why ?? "", /読めなかった/u);
     assert.equal(
       result.skipped.find((entry) => entry.rule === PLAIN_RULE),
@@ -88,7 +95,7 @@ describe("品詞の取れない段落がある文書", () => {
 
   it("NUL を含む文書を読み、品詞の要る rule も動かし、NUL そのものは見えない字として指す", () => {
     const source = "日本語の文です。\0ここに NUL があります。次の文です。\n";
-    const result = runRules(buildDocument("nul.md", source, ja), loadRules("ja"), {}, true, "business/report");
+    const result = runRules(buildDocument("nul.md", source, ja), loadRules("ja"), measuredOffOn("business/report"), true, "business/report");
     assert.equal(
       result.skipped.find((entry) => entry.rule === POS_RULE),
       undefined,

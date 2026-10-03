@@ -1,6 +1,6 @@
 id: duplicate-heading
 layer: L1
-status: experimental
+status: stable
 how_to_find: duplicate-heading
 requires: [markdown]
 severity: warning

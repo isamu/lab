@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { BENCH_MIN_PRECISION, MIN_DOCUMENTS, NORMAL_MAX_SHARE, OFF_MIN_SHARE, disagreements, standingOf, type Standing } from "../scripts/rule-policy.ts";
@@ -13,7 +12,7 @@ import {
   type RuleMeasure,
 } from "../scripts/rules-measure-score.ts";
 import { measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "../scripts/rules-apply.ts";
-import { MEASURE_FILE, policyProblems, readMeasurement } from "../scripts/rules-measure-files.ts";
+import { policyProblems, readMeasurement } from "../scripts/rules-measure-files.ts";
 import { parseGenres } from "../packages/chaff/src/genre-parse.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -254,8 +253,7 @@ describe("rules-apply", () => {
 });
 
 describe("committed measurement", () => {
-  const skip = existsSync(MEASURE_FILE) ? false : "no corpus/rules-measure.json yet (yarn rules:measure --write)";
-  it(`every rule's status, severity and genre offs agree with corpus/rules-measure.json (yarn rules:measure --apply)`, { skip }, () => {
+  it(`every rule's status, severity and genre offs agree with corpus/rules-measure.json (yarn rules:measure --apply)`, () => {
     assert.deepEqual(policyProblems(readMeasurement()), []);
   });
 });

@@ -1,6 +1,6 @@
 id: number-without-unit
 layer: L1
-status: experimental
+status: stable
 how_to_find: number-without-unit
 severity: warning
 

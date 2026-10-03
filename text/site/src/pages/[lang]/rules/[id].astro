@@ -22,7 +22,13 @@ const facts = [
   [t(lang, "languages"), rule.languages.length === 2 ? t(lang, "allLanguages") : rule.languages.join(", ")],
   [t(lang, "usedFor"), rule.useFor.join(", ")],
 ];
-const RUNS_WHEN: Record<RunsWhen, UiKey> = { default: "runsDefault", experimental: "runsExperimental", team: "runsTeam", test: "runsTest" };
+const RUNS_WHEN: Record<RunsWhen, UiKey> = {
+  default: "runsDefault",
+  info: "runsInfo",
+  experimental: "runsExperimental",
+  team: "runsTeam",
+  test: "runsTest",
+};
 const LANGUAGE: Record<string, UiKey> = { ja: "langJa", en: "langEn" };
 
 const meaning = rule.levelMeaning[lang];
@@ -66,7 +72,7 @@ const heading = "mt-10 text-xl font-semibold";
   <h1 class="mt-4 text-3xl font-bold">{rule.name[lang]}</h1>
   <p class="mt-2 flex flex-wrap items-center gap-2 font-mono text-sm text-zinc-600 dark:text-zinc-400">
     {rule.id}
-    <Badge tone={runsWhen === "default" ? "neutral" : "warn"}>{t(lang, RUNS_WHEN[runsWhen])}</Badge>
+    <Badge tone={runsWhen === "default" || runsWhen === "info" ? "neutral" : "warn"}>{t(lang, RUNS_WHEN[runsWhen])}</Badge>
     <Badge tone="neutral">{rule.languages.map((language) => t(lang, LANGUAGE[language] ?? "allLanguages")).join(" / ")}</Badge>
   </p>
 

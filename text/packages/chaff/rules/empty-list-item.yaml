@@ -1,6 +1,6 @@
 id: empty-list-item
 layer: L1
-status: experimental
+status: stable
 how_to_find: empty-list-item
 requires: [markdown]
 severity: warning

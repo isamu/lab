@@ -91,6 +91,26 @@ $ npx chaffjs gijiroku.md --compact
 
 gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
 
+  3:6     error   「2026-10-07」は水曜日です（火曜日と書いてあります）
+                  date-weekday-mismatch
+  4:10    info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。4 箇所のうち 1 箇所が違う）
+                  latin-spacing
+  4:15    info    日本語と英字のあいだを詰めています（この文書はふつう空ける。7 箇所のうち 1 箇所が違う）
+                  latin-spacing
+  10:1    info    この文だけ他と文末の調子が違います（本文の中で 3 文）
+                  no-mixed-desumasu
+  10:20   info    この文だけ他と文末の調子が違います（本文の中で 3 文）
+                  no-mixed-desumasu
+  18:1    error   「2」の次が「4」です（3 番目のはず）
+                  numbering-gap
+  22:1    info    見出し「決定事項」だけ番号がありません（兄弟の見出しは「1. 前回の宿題の確認」など 3 個が番号付き）
+                  heading-numbering-mix
+  24:1    info    この文だけ他と文末の調子が違います（本文の中で 3 文）
+                  no-mixed-desumasu
+  24:9    warning 「3 点」と予告していますが、すぐ下の箇条書きは2項目です
+                  announced-count-mismatch
+  29:1    info    見出し「次回までの宿題」だけ番号がありません（兄弟の見出しは「1. 前回の宿題の確認」など 3 個が番号付き）
+                  heading-numbering-mix
 
 {counts}
 ```
@@ -105,23 +125,23 @@ gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
 
   3:6     error   「2026-10-07」は水曜日です（火曜日と書いてあります）
                   date-weekday-mismatch
-  4:10    warning 日本語と前の数字のあいだを詰めています（この文書はふつう空ける。4 箇所のうち 1 箇所が違う）
+  4:10    info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。4 箇所のうち 1 箇所が違う）
                   latin-spacing
-  4:15    warning 日本語と英字のあいだを詰めています（この文書はふつう空ける。7 箇所のうち 1 箇所が違う）
+  4:15    info    日本語と英字のあいだを詰めています（この文書はふつう空ける。7 箇所のうち 1 箇所が違う）
                   latin-spacing
-  10:1    warning この文だけ他と文末の調子が違います（本文の中で 3 文）
+  10:1    info    この文だけ他と文末の調子が違います（本文の中で 3 文）
                   no-mixed-desumasu
-  10:20   warning この文だけ他と文末の調子が違います（本文の中で 3 文）
+  10:20   info    この文だけ他と文末の調子が違います（本文の中で 3 文）
                   no-mixed-desumasu
   18:1    error   「2」の次が「4」です（3 番目のはず）
                   numbering-gap
-  22:1    warning 見出し「決定事項」だけ番号がありません（兄弟の見出しは「1. 前回の宿題の確認」など 3 個が番号付き）
+  22:1    info    見出し「決定事項」だけ番号がありません（兄弟の見出しは「1. 前回の宿題の確認」など 3 個が番号付き）
                   heading-numbering-mix
-  24:1    warning この文だけ他と文末の調子が違います（本文の中で 3 文）
+  24:1    info    この文だけ他と文末の調子が違います（本文の中で 3 文）
                   no-mixed-desumasu
   24:9    warning 「3 点」と予告していますが、すぐ下の箇条書きは2項目です
                   announced-count-mismatch
-  29:1    warning 見出し「次回までの宿題」だけ番号がありません（兄弟の見出しは「1. 前回の宿題の確認」など 3 個が番号付き）
+  29:1    info    見出し「次回までの宿題」だけ番号がありません（兄弟の見出しは「1. 前回の宿題の確認」など 3 個が番号付き）
                   heading-numbering-mix
 
 {counts}

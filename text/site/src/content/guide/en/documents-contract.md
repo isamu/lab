@@ -95,6 +95,24 @@ $ npx chaffjs contract.md --compact
 contract.md   blog/tech · English   genre from the default
    Looks like: Contract and terms. Try --genre legal/contract
 
+  1:32    info    Section length varies by only 28% (want at least 35%)
+                  section-length-uniformity
+  3:1     info    Paragraph length varies by only 28% (want at least 30%)
+                  paragraph-length-variance
+  11:26   warning The period "November 1, 2026 through October 31, 2026" ends before it starts
+                  date-range-reversed
+  21:12   error   The total $800 is not the sum of the amounts above it ($700)
+                  total-mismatch
+  23:111  error   "Article 9" (address 9) is not in this document
+                  dangling-reference
+  25:1    error   "Article 5" follows "Article 3" (expected number 4)
+                  numbering-gap
+  27:124  error   2026-12-05 is a Saturday, not a Monday
+                  date-weekday-mismatch
+  31:20   warning "Services" is also defined on line 7
+                  duplicate-definition
+  33:26   info    This heading's capitalisation differs from the rest (1 in this document)
+                  title-case-consistency
 
 {counts}
 ```
@@ -119,6 +137,8 @@ contract.md   legal/contract · English   genre from --genre
                   date-weekday-mismatch
   31:20   warning "Services" is also defined on line 7
                   duplicate-definition
+  33:26   info    This heading's capitalisation differs from the rest (1 in this document)
+                  title-case-consistency
 
 {counts}
 ```

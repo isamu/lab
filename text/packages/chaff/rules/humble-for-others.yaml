@@ -1,6 +1,6 @@
 id: humble-for-others
 layer: L3
-status: experimental
+status: stable
 how_to_find: phrase-match
 word_list: humble-for-others
 uses: [pos]

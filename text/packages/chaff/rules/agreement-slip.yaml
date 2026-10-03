@@ -1,6 +1,6 @@
 id: agreement-slip
 layer: L3
-status: experimental
+status: stable
 how_to_find: agreement-slip
 requires: [pos]
 languages: [en]

@@ -1,6 +1,6 @@
 id: email-subject-length
 layer: L2
-status: experimental
+status: stable
 how_to_find: email-subject
 severity: warning
 

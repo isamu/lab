@@ -4,11 +4,12 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
 const RULES = loadRules("ja");
 
 const idsFor = (source: string, experimental = false): string[] =>
-  runRules(buildDocument("t.md", source, ja), RULES, {}, experimental, "blog/tech").findings.map((finding) => finding.rule);
+  runRules(buildDocument("t.md", source, ja), RULES, measuredOffOn("blog/tech"), experimental, "blog/tech").findings.map((finding) => finding.rule);
 
 const sentences = (count: number, size: number): string => Array.from({ length: count }, () => `${"あ".repeat(size)}。`).join("");
 
@@ -104,8 +105,8 @@ describe("repeated-sentence-head", () => {
 });
 
 describe("sentence-rhythm", () => {
-  it("既定では動かない（experimental）", () => {
-    assert.ok(!idsFor(sentences(12, 40)).includes("sentence-rhythm"));
+  it("既定で動く（測って既定で動かす rule。spec §21.1）", () => {
+    assert.ok(idsFor(sentences(12, 40)).includes("sentence-rhythm"));
   });
   it("invalid: --experimental で、長さが揃った文章を指摘する", () => {
     assert.ok(idsFor(sentences(12, 40), true).includes("sentence-rhythm"));

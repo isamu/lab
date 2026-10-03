@@ -1,6 +1,6 @@
 id: stock-transition
 layer: L2
-status: experimental
+status: stable
 how_to_find: stock-transition
 word_list: stock-transition
 uses: [pos]

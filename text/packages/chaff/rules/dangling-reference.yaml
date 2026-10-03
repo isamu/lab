@@ -1,6 +1,6 @@
 id: dangling-reference
 layer: L3
-status: experimental
+status: stable
 how_to_find: dangling-reference
 requires: [structure]
 severity: error

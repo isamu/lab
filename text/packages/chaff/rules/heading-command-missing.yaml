@@ -1,6 +1,6 @@
 id: heading-command-missing
 layer: L1
-status: experimental
+status: stable
 how_to_find: heading-command
 requires: [markdown]
 severity: info

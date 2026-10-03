@@ -1,6 +1,6 @@
 id: defined-name-repeated
 layer: L3
-status: experimental
+status: stable
 how_to_find: defined-name-repeated
 requires: [structure, pos]
 severity: info

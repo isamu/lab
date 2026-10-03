@@ -93,7 +93,9 @@ describe("agentless-passive（英語）: 状態を表す過去分詞", () => {
   const passivesIn = (source: string): string[] => tokensOf(source).flatMap((token) => (token.features?.["Voice"] === "Pass" ? [token.surface] : []));
 
   const reported = (source: string): boolean =>
-    runRules(buildDocument("t.md", source, en), loadRules("en"), {}, true, "business/report").findings.some((finding) => finding.rule === "agentless-passive");
+    runRules(buildDocument("t.md", source, en), loadRules("en"), { "agentless-passive": "normal" }, true, "business/report").findings.some(
+      (finding) => finding.rule === "agentless-passive",
+    );
 
   [
     "We are delighted to offer you the position.",

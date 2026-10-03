@@ -1,6 +1,6 @@
 id: all-caps-shouting
 layer: L1
-status: experimental
+status: stable
 how_to_find: caps-shouting
 word_list: caps-convention
 languages: [en]

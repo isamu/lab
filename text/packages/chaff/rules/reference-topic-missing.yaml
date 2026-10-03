@@ -1,6 +1,6 @@
 id: reference-topic-missing
 layer: L3
-status: experimental
+status: stable
 how_to_find: reference-topic-missing
 requires: [structure]
 severity: info

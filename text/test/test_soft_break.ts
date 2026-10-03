@@ -12,6 +12,7 @@ import { lineStarts, placeOf } from "../packages/chaff/src/position.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { Segmentation, Span, Token } from "../packages/chaff/src/plugin.ts";
+import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
 const joined = (text: string): string => withoutSpans(text, softBreaks(text));
 
@@ -226,7 +227,9 @@ describe("文書: 日本語の段落の中の改行", () => {
   });
 
   const findings = (path: string, source: string, rule: string) =>
-    runRules(buildDocument(path, source, ja), loadRules("ja"), {}, true, "business/report").findings.filter((finding) => finding.rule === rule);
+    runRules(buildDocument(path, source, ja), loadRules("ja"), measuredOffOn("business/report"), true, "business/report").findings.filter(
+      (finding) => finding.rule === rule,
+    );
 
   it("改行をまたぐ語を 1 語として解析し、位置は元の文字列のまま", () => {
     const source = "# 試験\n\n本件は、刑事裁判に関\nする法律の規定について争うものである。\n";

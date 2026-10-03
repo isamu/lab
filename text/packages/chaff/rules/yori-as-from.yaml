@@ -1,6 +1,6 @@
 id: yori-as-from
 layer: L3
-status: experimental
+status: stable
 how_to_find: origin-particle
 word_list: origin-particle
 extra_word_lists: [origin-head]

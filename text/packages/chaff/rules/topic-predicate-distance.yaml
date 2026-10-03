@@ -1,6 +1,6 @@
 id: topic-predicate-distance
 layer: L3
-status: experimental
+status: stable
 how_to_find: topic-predicate-distance
 requires: [pos]
 languages: [ja]

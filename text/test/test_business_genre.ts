@@ -6,6 +6,7 @@ import { runRules, type RunResult } from "../packages/chaff/src/run.ts";
 import { planSemantic, semanticNeeds } from "../packages/chaff/src/run-semantic.ts";
 import { REASONS } from "../packages/chaff/src/reasons.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { asExperimental } from "./rule-run.ts";
 
 /** 水増しの書き出し、逃げの表現、動作主の無い受け身、繰り返すだけのまとめを持つ報告書。書いた人が引用を許したもの。 */
 const PADDED_REPORT = `# 9月の問い合わせ対応についての報告
@@ -29,8 +30,8 @@ const PADDED_REPORT = `# 9月の問い合わせ対応についての報告
 以上のように、9月は問い合わせが増え、一次回答までの時間も目標を超えました。今後も引き続き改善に努めてまいります。
 `;
 
-const run = (source: string, genre: string, experimental = false): RunResult =>
-  runRules(buildDocument("report.md", source, ja), loadRules("ja"), {}, experimental, genre);
+const run = (source: string, genre: string, experimental = false, rules = loadRules("ja")): RunResult =>
+  runRules(buildDocument("report.md", source, ja), rules, {}, experimental, genre);
 
 const firedIn = (result: RunResult, rule: string): number[] => result.findings.filter((finding) => finding.rule === rule).map((finding) => finding.line);
 const whyNotRun = (result: RunResult, rule: string): string | undefined => result.skipped.find((entry) => entry.rule === rule)?.why;
@@ -57,9 +58,10 @@ describe("business/report で既定の検査が弱くならない", () => {
     });
   });
 
-  it("試験中の rule は、動いていない理由とともに一覧に残る", () => {
-    const result = run(PADDED_REPORT, "business/report");
-    ["agentless-passive", "excessive-hedging"].forEach((rule) => assert.equal(whyNotRun(result, rule), REASONS.ja.experimental, rule));
+  it("測ってビジネス文書では止めた rule と、試験中の rule は、動いていない理由とともに一覧に残る", () => {
+    assert.equal(whyNotRun(run(PADDED_REPORT, "business/report"), "agentless-passive"), REASONS.ja.presetOff("business/report"));
+    const result = run(PADDED_REPORT, "business/report", false, asExperimental(loadRules("ja"), ["excessive-hedging"]));
+    assert.equal(whyNotRun(result, "excessive-hedging"), REASONS.ja.experimental);
   });
 
   it("まとめの検査は、意味を読む検査として一覧に載る", () => {
@@ -72,8 +74,9 @@ describe("business/report で既定の検査が弱くならない", () => {
     assert.deepEqual(firedIn(run(PADDED_REPORT, "business/report", true), "excessive-hedging"), [5]);
   });
 
-  it("--experimental なら動作主の無い受け身も指摘する", () => {
-    assert.deepEqual(firedIn(run(PADDED_REPORT, "business/report", true), "agentless-passive"), [15]);
+  it("chaff.yaml で名指しすれば、動作主の無い受け身も指摘する", () => {
+    const named = runRules(buildDocument("report.md", PADDED_REPORT, ja), loadRules("ja"), { "agentless-passive": "normal" }, false, "business/report");
+    assert.deepEqual(firedIn(named, "agentless-passive"), [15]);
   });
 });
 

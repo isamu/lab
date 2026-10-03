@@ -1,6 +1,6 @@
 id: requirement-modal
 layer: L2
-status: experimental
+status: stable
 how_to_find: requirement-modal
 # 何を見るかは options で決める。決めなければ何も見ない。語は言語ごとの語彙表 requirement-modal-<standard> と requirement-modal-must にある。
 uses: [pos]

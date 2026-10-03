@@ -1,6 +1,6 @@
 id: orthographic-variant
 layer: L3
-status: experimental
+status: stable
 how_to_find: orthographic-variant
 # 語の一覧は持たない。文書の中の語を、日本語は辞書の形の読み（出来る・できる はどちらもデキル）で、カタカナ語は小さい字と「ー」を
 # ならした形で、英字は大文字小文字とハイフンを外した形で束ね、同じ語の書き方が二つあれば少ないほうを指す。

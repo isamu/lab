@@ -1,6 +1,6 @@
 id: summary-fact-mismatch
 layer: L3
-status: experimental
+status: stable
 how_to_find: summary-fact-mismatch
 requires: [quantities]
 uses: [pos]

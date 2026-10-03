@@ -1,6 +1,6 @@
 id: rule-of-three
 layer: L1
-status: experimental
+status: stable
 how_to_find: rule-of-three
 severity: info
 

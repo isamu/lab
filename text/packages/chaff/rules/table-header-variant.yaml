@@ -1,6 +1,6 @@
 id: table-header-variant
 layer: L2
-status: experimental
+status: stable
 how_to_find: table-header-variant
 requires: [markdown]
 severity: info

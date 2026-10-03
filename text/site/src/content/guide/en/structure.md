@@ -173,30 +173,12 @@ $ npx chaffjs draft.txt --experimental --compact
 
 draft.txt   blog/tech · English   genre from the default
 
-  2:1     warning This sentence runs 51 words (limit 25)
-                  max-sentence-length
-  9:1     warning This sentence runs 51 words (limit 25)
-                  max-sentence-length
   10:1    error   "(3)" follows "(1)" (expected number 2)
                   numbering-gap
-  11:1    warning This sentence runs 48 words (limit 25)
-                  max-sentence-length
-  14:1    warning This sentence runs 33 words (limit 25)
-                  max-sentence-length
   14:136  error   "section 35" (address 35) is not in this document
                   dangling-reference
-  16:1    warning This paragraph runs 8 sentences (limit 5)
+  16:1    info    This paragraph runs 8 sentences (limit 5)
                   max-paragraph-length
-  17:1    warning This sentence runs 30 words (limit 25)
-                  max-sentence-length
-  18:1    warning This sentence runs 28 words (limit 25)
-                  max-sentence-length
-  19:1    warning This sentence runs 39 words (limit 25)
-                  max-sentence-length
-  23:1    warning This sentence runs 30 words (limit 25)
-                  max-sentence-length
-  25:1    warning This sentence runs 26 words (limit 25)
-                  max-sentence-length
 
 {counts}
 ```
@@ -216,30 +198,10 @@ $ npx chaffjs fixed.txt --experimental --compact
 
 fixed.txt   blog/tech · English   genre from the default
 
-  2:1     warning This sentence runs 51 words (limit 25)
-                  max-sentence-length
-  8:1     warning This paragraph runs 6 sentences (limit 5)
+  8:1     info    This paragraph runs 6 sentences (limit 5)
                   max-paragraph-length
-  9:1     warning This sentence runs 51 words (limit 25)
-                  max-sentence-length
-  10:1    warning This sentence runs 37 words (limit 25)
-                  max-sentence-length
-  12:1    warning This sentence runs 48 words (limit 25)
-                  max-sentence-length
-  15:1    warning This sentence runs 33 words (limit 25)
-                  max-sentence-length
-  17:1    warning This paragraph runs 8 sentences (limit 5)
+  17:1    info    This paragraph runs 8 sentences (limit 5)
                   max-paragraph-length
-  18:1    warning This sentence runs 30 words (limit 25)
-                  max-sentence-length
-  19:1    warning This sentence runs 28 words (limit 25)
-                  max-sentence-length
-  20:1    warning This sentence runs 39 words (limit 25)
-                  max-sentence-length
-  24:1    warning This sentence runs 30 words (limit 25)
-                  max-sentence-length
-  26:1    warning This sentence runs 26 words (limit 25)
-                  max-sentence-length
 
 {counts}
 ```

@@ -1,6 +1,6 @@
 id: email-greeting-closing
 layer: L2
-status: experimental
+status: stable
 how_to_find: email-frame
 severity: info
 

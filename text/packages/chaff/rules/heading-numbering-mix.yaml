@@ -1,9 +1,9 @@
 id: heading-numbering-mix
 layer: L1
-status: experimental
+status: stable
 how_to_find: heading-numbering
 requires: [markdown]
-severity: warning
+severity: info
 
 name:
   ja: 見出しの番号の付け方が揃っていない
@@ -42,7 +42,7 @@ placeholders:
     ja: 〇
     en: N
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 

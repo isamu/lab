@@ -4,6 +4,8 @@
 #   rules:   the level a rule runs at for this genre (strict / normal / relaxed / off), under chaff.yaml's rules.
 #            A group's rules apply to every genre in it; a genre's own rules win over its group's.
 #            A rule turned off here is listed under "did not run" with the genre as the reason.
+#            A group's line marked "# measured" is written by `yarn rules:measure --apply`: the rule reports on most
+#            human documents of the group (chaff-spec.md §21.1). The measurement adds and removes these; edit it, not them.
 #   profile: the document profile (profiles/*.yaml) this genre reads with, when chaff.yaml names none.
 #   suggest: when no genre is set, what makes a file look like this genre, strongest first:
 #            paths (the file's path), then per language an opening (the body's first line, past front matter and
@@ -15,10 +17,20 @@
 groups:
   - id: technical
     name: { ja: 技術文書, en: Technical }
+    rules:
+      latin-spacing: off # measured
+      max-sentence-length: off # measured
+      undefined-acronym: off # measured
   - id: blog
     name: { ja: ブログ, en: Blog }
+    rules:
+      max-sentence-length: off # measured
   - id: business
     name: { ja: ビジネス文書, en: Business }
+    rules:
+      agentless-passive: off # measured
+      max-kanji-continuous: off # measured
+      max-sentence-length: off # measured
   # Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive
   # (shall be deemed), and joins long noun compounds (個人情報取扱事業者). Those rules would only flag the form.
   - id: legal
@@ -94,6 +106,10 @@ groups:
       email-greeting-closing: off
       email-subject-length: off
       attachment-not-attached: off
+      clause-chain: off # measured
+      max-sentence-length: off # measured
+      max-ten: off # measured
+      topic-predicate-distance: off # measured
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -138,6 +154,8 @@ groups:
       # Defined terms and short names are a contract's apparatus: the legal genres check them.
       defined-term-form: off
       defined-name-repeated: off
+      max-sentence-length: off # measured
+      quote-style-consistency: off # measured
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }

@@ -1,6 +1,6 @@
 id: excessive-hedging
 layer: L2
-status: experimental
+status: stable
 how_to_find: hedging
 word_list: excessive-hedging
 # 1 つの文の重なりを数えるときの、それだけでは逃げていない包む言い方（「という状況です」、may）と、

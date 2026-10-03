@@ -48,6 +48,12 @@ const outsideAt = (source: string): boolean => {
   return outsideTheReport(morphemes, passiveIndex(morphemes));
 };
 
+/** Whether agentless-passive reports the source, named in chaff.yaml: business documents leave it off by measurement (spec §21.1). */
+const reported = (source: string): boolean =>
+  runRules(buildDocument("t.md", source, ja), loadRules("ja"), { "agentless-passive": "normal" }, true, "business/report").findings.some(
+    (finding) => finding.rule === "agentless-passive",
+  );
+
 describe("readsAsPassive: 受動と読める「れる/られる」", () => {
   it("ふつうの動詞に付いた「れる/られる」は受動", () => {
     assert.equal(passiveAt("方針/名詞,一般 が/助詞,格助詞 決定/名詞,サ変接続 さ/動詞,自立,する れ/動詞,接尾,れる た/助動詞"), true);
@@ -188,9 +194,6 @@ describe("agentless-passive（日本語）: 受動でない「れる/られる�
   before(async () => {
     await ja.prepare?.({ pos: true });
   });
-
-  const reported = (source: string): boolean =>
-    runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, true, "business/report").findings.some((finding) => finding.rule === "agentless-passive");
 
   it("valid: 自発の「考えられる」「思われる」「解される」は指摘しない", () => {
     [
@@ -376,9 +379,6 @@ describe("agentless-passive（日本語）: 状態・決まり・文書の中身
   before(async () => {
     await ja.prepare?.({ pos: true });
   });
-
-  const reported = (source: string): boolean =>
-    runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, true, "business/report").findings.some((finding) => finding.rule === "agentless-passive");
 
   it("valid: 決まりや分類を言う受動は指摘しない", () => {
     [
