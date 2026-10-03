@@ -4,6 +4,7 @@ import type { Texts, UiLanguage } from "../ui.ts";
 import { customProblemSentence } from "../custom/problems.ts";
 import type { LoadProblem } from "./load.ts";
 import type { PluginProblem } from "./plugin-parse.ts";
+import { guideProblemText } from "../genre-guide/problem-text.ts";
 
 // What in the code chaff.yaml names could not be loaded, as sentences. Each names the rule or plugin and the file or
 // package, as chaff.yaml writes it.
@@ -11,7 +12,9 @@ import type { PluginProblem } from "./plugin-parse.ts";
 type ModuleText = Readonly<Record<LoadProblem["kind"], (rule: string, file: string, detail: string) => string>>;
 
 type PluginText = {
-  readonly problems: Readonly<Record<Exclude<PluginProblem["kind"], "rule">, (plugin: string, detail: string) => string>>;
+  readonly problems: Readonly<Record<Exclude<PluginProblem["kind"], "rule" | "guide">, (plugin: string, detail: string) => string>>;
+  /** Where a plugin's guide is, for a problem chaff.yaml's guide could have too. */
+  readonly guideScope: (plugin: string) => string;
   /** Where a plugin's rule is, for a problem a rule in custom_rules could have too. */
   readonly ruleScope: (plugin: string) => string;
 };
@@ -42,6 +45,7 @@ const MODULE_TEXT: Texts<ModuleText> = {
 const PLUGIN_TEXT: Texts<PluginText> = {
   ja: {
     ruleScope: (plugin) => `plugins の ${plugin} の rules`,
+    guideScope: (plugin) => `plugins の ${plugin}`,
     problems: {
       "not-a-list": (_plugin, detail) => `plugins はプラグインの並び（- chaff-plugin-foo や - ./local-plugin）で書いてください（${detail}）`,
       "bad-specifier": (plugin) =>
@@ -65,6 +69,7 @@ const PLUGIN_TEXT: Texts<PluginText> = {
   },
   en: {
     ruleScope: (plugin) => `plugins ${plugin} rules`,
+    guideScope: (plugin) => `plugins ${plugin}`,
     problems: {
       "not-a-list": (_plugin, detail) => `write plugins as a list (- chaff-plugin-foo or - ./local-plugin), not ${detail}`,
       "bad-specifier": (plugin) =>
@@ -90,6 +95,7 @@ const PLUGIN_TEXT: Texts<PluginText> = {
 const pluginSentence = (problem: PluginProblem, ui: UiLanguage): string => {
   const text = PLUGIN_TEXT[ui];
   if (problem.kind === "rule") return customProblemSentence(problem.problem, ui, text.ruleScope(problem.plugin));
+  if (problem.kind === "guide") return `${text.guideScope(problem.plugin)}: ${guideProblemText(problem.problem, ui)}`;
   return text.problems[problem.kind](problem.plugin, problem.detail);
 };
 

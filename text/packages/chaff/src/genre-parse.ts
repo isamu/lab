@@ -1,12 +1,13 @@
 import { isLevel } from "./levels.ts";
 import type { Level, Localized } from "./plugin.ts";
 import type { RuleOff } from "./rule-offs.ts";
+import { bundledGuideOf, type GuideLines } from "./genre-guide/lines.ts";
 
 /** A preset's rules: the level each named rule runs at, under whatever chaff.yaml's rules say. */
 export type PresetLevels = Readonly<Record<string, Level>>;
 
-/** A group of genres (legal, literature): its name, and the levels every genre in it shares. */
-export type GenreGroup = { readonly id: string; readonly name: Localized; readonly rules: PresetLevels };
+/** A group of genres (legal, literature): its name, the levels every genre in it shares, and the guide a genre without its own reads. */
+export type GenreGroup = { readonly id: string; readonly name: Localized; readonly rules: PresetLevels; readonly guide?: GuideLines | undefined };
 
 /** One genre of genres.yaml: what it is for, the levels it sets on top of its group's, and the profile it reads with. */
 export type GenreDefinition = {
@@ -16,6 +17,8 @@ export type GenreDefinition = {
   readonly rules: PresetLevels;
   readonly profile: string | undefined;
   readonly suggest: GenreSuggest;
+  /** What a good document of this genre does, as lines to check a draft against (genre-guide/). */
+  readonly guide?: GuideLines | undefined;
 };
 
 /** A line shape that marks the genre, and how many lines must have it. */
@@ -59,10 +62,16 @@ const idOf = (value: unknown, index: number): string => {
   return id;
 };
 
+/** guide: as a field only when written, so an entry without one reads as it did before guides. */
+const guideField = (raw: Record<string, unknown>, id: string): { guide?: GuideLines } => {
+  const guide = bundledGuideOf(raw["guide"], id);
+  return guide === undefined ? {} : { guide };
+};
+
 const groupOf = (value: unknown, index: number): GenreGroup => {
   const id = idOf(value, index);
   const raw = isRecord(value) ? value : {};
-  return { id, name: localizedOf(raw["name"], "name", id), rules: levelsOf(raw["rules"], id) };
+  return { id, name: localizedOf(raw["name"], "name", id), rules: levelsOf(raw["rules"], id), ...guideField(raw, id) };
 };
 
 const patternOf = (value: unknown, flags: string, where: string): RegExp => {
@@ -121,6 +130,7 @@ const genreOf = (value: unknown, index: number): GenreDefinition => {
     rules: levelsOf(raw["rules"], id),
     profile,
     suggest: suggestOf(raw["suggest"], id),
+    ...guideField(raw, id),
   };
 };
 

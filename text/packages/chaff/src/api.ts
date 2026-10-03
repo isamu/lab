@@ -138,6 +138,15 @@ export const defineRule = (spec: RuleSpec): Rule => ({ ...spec, apiVersion: API_
 /** A word list in each language it has words for: { ja: [...], en: [...] }. A string is an entry with only a pattern. */
 export type LexiconSpec = Readonly<Record<string, readonly (string | LexiconEntry)[]>>;
 
+/** Lines of a genre guide: one line or a list, the same in every language, or by language ({ ja: [...], en: [...] }). */
+export type GuideText = string | readonly string[] | Readonly<Record<string, string | readonly string[]>>;
+
+/**
+ * Changes to the genre guides chaff prints before the findings, by genre or group (blog/tech, legal): replace sets the
+ * lines, add puts lines after them, off leaves the genre with none.
+ */
+export type GuideSpec = Readonly<Record<string, "off" | { readonly replace?: GuideText; readonly add?: GuideText }>>;
+
 /** A house style a plugin ships: rule levels and options, and the guideline it follows. */
 export type StyleSpec = {
   readonly id: string;
@@ -146,6 +155,8 @@ export type StyleSpec = {
   readonly source: { readonly title: Text; readonly url: string };
   readonly rules?: Readonly<Record<string, "strict" | "normal" | "relaxed" | "off">>;
   readonly options?: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+  /** Its changes to the genre guides, while the style is chosen. */
+  readonly guide?: GuideSpec;
 };
 
 /**
@@ -158,6 +169,8 @@ export type PluginSpec = {
   readonly rules?: readonly (Rule | RuleSpec | Readonly<Record<string, unknown>>)[];
   readonly lexicons?: Readonly<Record<string, LexiconSpec>>;
   readonly styles?: readonly StyleSpec[];
+  /** Its changes to the genre guides, whenever the plugin is loaded. */
+  readonly guide?: GuideSpec;
 };
 
 export type Plugin = PluginSpec & { readonly apiVersion: number };

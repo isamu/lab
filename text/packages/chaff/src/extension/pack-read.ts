@@ -123,6 +123,7 @@ export const readPack = (dir: string, manifest: Readonly<Record<string, unknown>
       rules: rules.value,
       lexicons: lexicons.value,
       styles: styles.value,
+      ...(manifest["guide"] === undefined ? {} : { guide: manifest["guide"] }),
     },
   };
 };
