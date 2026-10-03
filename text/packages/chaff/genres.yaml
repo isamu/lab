@@ -24,6 +24,8 @@ groups:
   - id: legal
     name: { ja: 法務, en: Legal }
     rules:
+      # A request without a deadline is a business-mail habit; elsewhere a request is an instruction or a pointer.
+      request-without-deadline: off
       agentless-passive: off
       max-kanji-continuous: off
       no-doubled-joshi: off
@@ -83,6 +85,7 @@ groups:
   - id: docs
     name: { ja: 説明書, en: Documentation }
     rules:
+      request-without-deadline: off
       heading-echo: off
       agentless-passive: off
       concrete-evidence-density: off
@@ -119,6 +122,7 @@ groups:
   - id: academic
     name: { ja: 学術, en: Academic }
     rules:
+      request-without-deadline: off
       agentless-passive: off
       excessive-hedging: off
       expletive-construction: off
@@ -145,6 +149,7 @@ groups:
   - id: literature
     name: { ja: 文学, en: Literature }
     rules:
+      request-without-deadline: off
       # A character who says "never" and later makes an exception is the story, not a drafting slip.
       absolute-exception: off
       # A story's narrator and its characters each say 私 or 僕 in their own voice.
@@ -212,6 +217,7 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      orthographic-variant: off
       translationese-density: off
       unknown-word: off
       redundant-expression: off
@@ -244,6 +250,7 @@ groups:
   - id: speech
     name: { ja: 話し言葉, en: Speech }
     rules:
+      request-without-deadline: off
       agentless-passive: off
       preamble-length: off
       padded-intro: off
