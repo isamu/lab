@@ -105,7 +105,7 @@ describe("chaff rules — the same list as a table for a person", () => {
   it("shows the level in effect: chaff.yaml wins, a rule for another language is off", async () => {
     const run = await runCli({ "chaff.yaml": "language: en\nrules:\n  max-sentence-length: strict\n" }, ["rules"], "en_US.UTF-8");
     const lineFor = (id: string): string => run.out.split("\n").find((line) => line.startsWith(`  ${id} `)) ?? "";
-    assert.match(lineFor("max-sentence-length"), / strict \(18\) /u);
+    assert.match(lineFor("max-sentence-length"), / strict \(30\) /u);
     assert.match(lineFor("no-doubled-joshi"), / off \(ja\) /u);
   });
 

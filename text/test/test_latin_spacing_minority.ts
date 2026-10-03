@@ -12,7 +12,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
 await ja.prepare?.({ pos: true });
 
-const spacing = (source: string): string[] => latinSpacing(ja, source, "technical/readme");
+const spacing = (source: string): string[] => latinSpacing(ja, source, "business/report");
 
 /** spaced 箇所空けて、touching 箇所詰めた境目。並びは空けたほうが先。 */
 const boundaries = (spaced: number, touching: number): { readonly spaced: boolean }[] => [
@@ -85,7 +85,7 @@ describe("latin-spacing は書き方が二通りの文書を 1 件で言う", ()
   const messages = (source: string): string[] =>
     rule === undefined
       ? []
-      : runRules(buildDocument("a.md", source, ja), rules, { "latin-spacing": "normal" }, false, "technical/readme")
+      : runRules(buildDocument("a.md", source, ja), rules, { "latin-spacing": "normal" }, false, "business/report")
           .findings.filter((finding) => finding.rule === "latin-spacing")
           .map((finding) => messageOf(rule, finding, "ja"));
 

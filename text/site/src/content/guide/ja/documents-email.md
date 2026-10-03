@@ -100,6 +100,8 @@ $ npx chaffjs mail.md --genre business/email --experimental --compact
 
 mail.md   business/email · 日本語   ジャンルは --genre から
 
+  10:1    info    この文は 80 文字あります（70 文字まで）
+                  max-sentence-length
   10:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
                   sasete-itadaku
   12:1    info    「させていただく」が文書内に 4 回あります（3 回まで）

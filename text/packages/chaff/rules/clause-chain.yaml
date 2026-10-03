@@ -24,9 +24,11 @@ how_to_fix:
 
 levels: { strict: 4, normal: 5, relaxed: 7 }
 
+# 法令と契約は、要件を節でつないで一文に書く。既定の上限では group の文書の過半に出たので、測って上げた（spec §21.1）。
+by_genre:
+  legal: { strict: 7, normal: 8, relaxed: 10 }
+
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
-off_for:
-  legal: measured by yarn rules:measure
 
 group: readability
 summary:

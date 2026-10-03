@@ -116,8 +116,10 @@ describe("英文の中の和文", () => {
 });
 
 const RULE = "max-sentence-length";
+/** A genre with no limits of its own for the rule: these read how the rule counts, not where the measurement put a genre's limit. */
+const BASE_GENRE = "speech/address";
 const lengthFindings = (adapter: LanguageAdapter, source: string): Finding[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, false, "blog").findings.filter((finding) => finding.rule === RULE);
+  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, false, BASE_GENRE).findings.filter((finding) => finding.rule === RULE);
 
 const words = (count: number): string => [...Array.from({ length: count - 1 }, (_, index) => "word" + String(index)), "end."].join(" ");
 
@@ -141,7 +143,13 @@ describe("和文の中の英文の長さは、英語の語数と英語の上限�
   });
 
   it("段階を変えると、英文の上限も英語の段で変わる", () => {
-    const findings = runRules(buildDocument("t.md", `日本語の文です。\n\n${words(20)}\n`, ja), loadRules("ja"), { [RULE]: "strict" }, false, "blog").findings;
+    const findings = runRules(
+      buildDocument("t.md", `日本語の文です。\n\n${words(20)}\n`, ja),
+      loadRules("ja"),
+      { [RULE]: "strict" },
+      false,
+      BASE_GENRE,
+    ).findings;
     assert.deepEqual(
       findings.filter((finding) => finding.rule === RULE).map((finding) => finding.values["limit"]),
       [18],
@@ -150,7 +158,7 @@ describe("和文の中の英文の長さは、英語の語数と英語の上限�
 
   it("chaff.yaml の数の上限は文書の単位なので、英文には英語の段を使う", () => {
     const source = `${"あ".repeat(60)}。\n\n${words(30)}\n`;
-    const findings = runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, false, "blog", { [RULE]: 50 }).findings;
+    const findings = runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, false, BASE_GENRE, { [RULE]: 50 }).findings;
     assert.deepEqual(
       findings.filter((finding) => finding.rule === RULE).map((finding) => [finding.values["count"], finding.values["limit"]]),
       [
