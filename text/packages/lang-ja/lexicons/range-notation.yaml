@@ -1,0 +1,12 @@
+# 二つの数のあいだに置いて範囲を言う記号（10〜20、10-20）。一つの文書でいくつもの記号が混ざっていないかを
+# range-notation-consistency が見る。「から」は文の中の言い方で記号と使い分けるので入れない。ハイフン（group: ambiguous）は番号（2-3、NSF 13-542）にも使うので、
+# すぐ後ろに単位や語（6-12 歳、10-20%）が続くときだけ範囲と読む。字面どおりに照らす。
+id: range-notation
+language: ja
+entries:
+  - pattern: 〜
+  - pattern: ～
+  - pattern: "~"
+  - { pattern: "-", group: ambiguous }
+  - { pattern: "－", group: ambiguous }
+  - pattern: –
