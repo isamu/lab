@@ -20,7 +20,7 @@ chaff は、日付と曜日、期間、合計、割合、予告した数の食�
 
 ## chaff が見ること、見ないこと
 
-このジャンルで見る主なルールは、次のとおりです。どれも試験中で、`--experimental` を付けたときに動きます。
+このジャンルで見る主なルールは、次のとおりです。どれも、設定を書かなくても動きます。
 
 | ルール | 見つけるもの |
 | --- | --- |
@@ -89,33 +89,11 @@ chaff は、日付と曜日、期間、合計、割合、予告した数の食�
 株式会社みなと商事 広報部
 ```
 
-ジャンルを付けずにかけても、付けてかけても、指摘は出ません。
-プレスリリースで役に立つルールは、どれも試験中だからです。
-
-```
-$ npx chaffjs release.md --genre business/press-release --compact
-
-release.md   business/press-release · 日本語   ジャンルは --genre から
-
-  6:45    error   「2026-11-02」は月曜日です（火曜日と書いてあります）
-                  date-weekday-mismatch
-  14:19   warning 内訳の割合の和が 95% で、100% になりません
-                  percent-sum-mismatch
-  20:12   warning 「4 つ」と予告していますが、すぐ下の箇条書きは3項目です
-                  announced-count-mismatch
-  30:6    warning 期間「2026年10月26日〜2026年10月19日」の終わりが始まりより前です
-                  date-range-reversed
-  39:8    error   合計「36,000円」が、上の金額の和（35,000円）と合いません
-                  total-mismatch
-
-{counts}
-```
-
-`--experimental` を付けて、試験中のルールも動かします。
+ジャンルを付けてかけます。
 `--compact` は、1 件を 2 行にまとめて出す印です。
 
 ```
-$ npx chaffjs release.md --genre business/press-release --experimental --compact
+$ npx chaffjs release.md --genre business/press-release --compact
 
 release.md   business/press-release · 日本語   ジャンルは --genre から
 
@@ -165,14 +143,6 @@ release.md   business/press-release · 日本語   ジャンルは --genre か�
 ```yaml
 genre: business/press-release
 language: ja
-
-rules:
-  date-weekday-mismatch: normal
-  date-range-reversed: normal
-  total-mismatch: normal
-  percent-sum-mismatch: normal
-  announced-count-mismatch: normal
-  required-sections: normal
 
 required_sections:
   - お問い合わせ

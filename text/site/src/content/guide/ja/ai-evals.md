@@ -12,10 +12,10 @@ chaff は、model の出力の採点役として、model による採点の横�
 | --- | --- | --- |
 | 要約や書き換えで事実が落ちたか、作られたか | `npx chaffjs compare <元> <出力> --json` | 数・日付・URL・名前・引用などが落ちたか、足された |
 | RAG の回答の引用が、本当に原文にあるか | `npx chaffjs cite <原文> <引用.json> --format json` | 引用がその番地に無い |
-| 回答が自分と矛盾していないか | `npx chaffjs <出力> --experimental` | 合計が内訳の和と合わない、日付と曜日が合わない |
-| 生成文らしい形や、読みにくさ | `npx chaffjs <出力> --experimental --sarif <path>` | `error` の指摘だけ。ほかは数として数えます |
+| 回答が自分と矛盾していないか | `npx chaffjs <出力>` | 合計が内訳の和と合わない、日付と曜日が合わない |
+| 生成文らしい形や、読みにくさ | `npx chaffjs <出力> --sarif <path>` | `error` の指摘だけ。ほかは数として数えます |
 | 上のすべてを、たくさんの出力に | `npx chaffjs grade <items.jsonl> --out <results.jsonl>` | 落ちた出力がある（入力が読めなければ 2） |
-| 作り直しの段で何を直させるか | `npx chaffjs fix-plan <出力> --experimental --json` | なりません。直す指示を出すだけです |
+| 作り直しの段で何を直させるか | `npx chaffjs fix-plan <出力> --json` | なりません。直す指示を出すだけです |
 
 たくさんの出力には、下の `chaff grade` を使います。ふつうの検査には `--json` が無いので、指摘は SARIF で読みます（「指摘を SARIF で受け取る」）。
 
@@ -52,7 +52,7 @@ Node.js 24 以上が要ります。`npx chaffjs` は、初めて使うときに 
    `--out` は出力ごとの結果を書き出し、画面には要約が出ます。
 
    ```
-   $ npx chaffjs grade prompt-b.jsonl --experimental --out b.results.jsonl
+   $ npx chaffjs grade prompt-b.jsonl --out b.results.jsonl
    出力ごとの結果を書きました: b.results.jsonl（3 行）
    prompt-b.jsonl: 3 件の出力、1 件が通り、2 件が落ちた
 
@@ -86,7 +86,7 @@ Node.js 24 以上が要ります。`npx chaffjs` は、初めて使うときに 
    `--compact` は 1 出力 1 行で、CI のログ向けです。`--json` は要約を JSON で出します。
 
    ```
-   $ npx chaffjs grade prompt-b.jsonl --experimental --compact
+   $ npx chaffjs grade prompt-b.jsonl --compact
    q3	fail	facts.dropped 3 > 0, facts.added 1 > 0
    refund	fail	citations.failed 1 > 0
    deploy	pass
@@ -125,7 +125,7 @@ grade:
 
 <!-- chaff-screen: rubric -->
 ```
-$ npx chaffjs grade prompt-b.jsonl --experimental --compact
+$ npx chaffjs grade prompt-b.jsonl --compact
 q3	fail	penalty 0	facts.dropped 3 > 0, facts.added 1 > 0
 refund	fail	penalty 0	citations.failed 1 > 0
 deploy	fail	penalty 8	rules.closing-cliche 2 > 0
@@ -150,8 +150,8 @@ chaff の知らないルールの名前は、そう言ったうえで「動か�
 前の prompt の出力を `--out` 付きで採点し、新しい prompt の出力をそれと比べます。組は `id` で作ります。
 
 ```
-$ npx chaffjs grade prompt-a.jsonl --experimental --out a.results.jsonl
-$ npx chaffjs grade prompt-b.jsonl --experimental --baseline a.results.jsonl
+$ npx chaffjs grade prompt-a.jsonl --out a.results.jsonl
+$ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl
 …上と同じ要約…
 
 a.results.jsonl と比べた: 3 件の出力が組になった
@@ -189,7 +189,7 @@ $ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl
 a.results.jsonl とは比べません: 設定が違います。ルールか設定が変わった差を、prompt や model の差として読まないため（--allow-stamp-mismatch で比べる）
 ```
 
-終了コード 2 で終わります。前の回は `--experimental` 付きで、今回は付いていません。
+終了コード 2 で終わります。前の回のあとで `chaff.yaml` の `rules:` を書き換えたので、設定が違います。
 
 ## prompt や model を並べて比べる（variant）
 
@@ -470,10 +470,10 @@ prompt B の答え（`prompt-b.md`）です。
 いかがでしたか？参考になれば幸いです。
 ```
 
-生成文の特徴を見るルールは試験中なので、`--experimental` を付けてかけます。
+生成文の特徴を見るルールも、設定を書かなくても動きます。
 
 ```
-$ npx chaffjs prompt-a.md --experimental --compact
+$ npx chaffjs prompt-a.md --compact
 
 prompt-a.md   blog/tech · 日本語   ジャンルは既定から
 
@@ -482,7 +482,7 @@ prompt-a.md   blog/tech · 日本語   ジャンルは既定から
 ```
 
 ```
-$ npx chaffjs prompt-b.md --experimental --compact
+$ npx chaffjs prompt-b.md --compact
 
 prompt-b.md   blog/tech · 日本語   ジャンルは既定から
 
@@ -507,7 +507,7 @@ prompt-b.md   blog/tech · 日本語   ジャンルは既定から
 次は抜粋です。この後に、ルールごとの直す方向、例、見つけた箇所が続きます。
 
 ````
-$ npx chaffjs fix-plan prompt-b.md --experimental
+$ npx chaffjs fix-plan prompt-b.md
 # 直す計画: prompt-b.md
 
 言語 ja、ジャンル blog/tech
@@ -530,7 +530,7 @@ ai-generated-composite が出ています。文の言い回しを直しても、
 書き直したものを prompt-b.rewritten.md に保存して、次を実行します。
 
 ```bash
-npx chaffjs prompt-b.rewritten.md --experimental
+npx chaffjs prompt-b.rewritten.md
 npx chaffjs compare prompt-b.md prompt-b.rewritten.md --distinct --allow-dropped heading --allow-added heading
 npx chaffjs outline prompt-b.md prompt-b.rewritten.md
 ```
@@ -558,7 +558,7 @@ model が書いた見積もり（`answer.md`）です。合計が内訳の和と
 ```
 
 ```
-$ npx chaffjs answer.md --experimental --compact
+$ npx chaffjs answer.md --compact
 
 answer.md   blog/tech · 日本語   ジャンルは既定から
 
@@ -571,14 +571,13 @@ answer.md   blog/tech · 日本語   ジャンルは既定から
 ```
 
 どちらも `error` なので終了コード 1 で終わり、`chaff grade` もこの出力を落とします。
-これらのルールは試験中です。`--experimental` を付けないと動きません。指摘は 0 件になり、最後の行はこれらを動いていない rule に数えます。
 
 ## 指摘を SARIF で受け取る
 
 `--sarif` は、かけたファイルすべての指摘を 1 つの SARIF ファイルに書きます。画面の出力は変わりません。
 
 ```
-$ npx chaffjs prompt-b.md --experimental --compact --sarif out/prompt-b.sarif
+$ npx chaffjs prompt-b.md --compact --sarif out/prompt-b.sarif
   SARIF を書きました: out/prompt-b.sarif（5 件）
 
 prompt-b.md   blog/tech · 日本語   ジャンルは既定から
