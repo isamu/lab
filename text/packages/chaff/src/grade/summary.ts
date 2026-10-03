@@ -13,7 +13,7 @@ type RuleSummary = { readonly findings: number; readonly outputs: number; readon
 export type GradeSummary = {
   readonly total: number;
   readonly passed: number;
-  readonly failed: readonly { readonly id: string; readonly failedBecause: readonly string[] }[];
+  readonly failed: readonly { readonly id: string; readonly variant?: string | undefined; readonly failedBecause: readonly string[] }[];
   readonly size: PerUnit;
   readonly rules: Readonly<Record<string, RuleSummary>>;
   readonly facts: { readonly dropped: Readonly<Record<string, number>>; readonly added: Readonly<Record<string, number>> };
@@ -77,7 +77,9 @@ export const summaryOf = (results: readonly GradeResult[]): GradeSummary => {
   return {
     total: results.length,
     passed: results.filter((result) => result.pass).length,
-    failed: results.filter((result) => !result.pass).map((result) => ({ id: result.id, failedBecause: result.failedBecause })),
+    failed: results
+      .filter((result) => !result.pass)
+      .map((result) => ({ id: result.id, ...(result.variant === undefined ? {} : { variant: result.variant }), failedBecause: result.failedBecause })),
     size: sizes,
     rules: rulesOf(results, sizes),
     facts: {
