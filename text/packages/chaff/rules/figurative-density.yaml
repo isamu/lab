@@ -15,8 +15,8 @@ why:
   en: 'A figure such as "works like magic", "a one-line incantation" or "our secret sauce" adds colour once. Piled up, the document goes on without saying what actually happens, and a reader who wants the mechanism gets only the figure. None of them is wrong alone, so the rule counts them per length of the document. The figures are in the lexicon figurative-phrase, each with what to write instead.'
 
 message:
-  ja: 「{matched}」など、飾りのたとえが 1000 字あたり {density} 個あります（{limit} 個まで）
-  en: '"{matched}" and other decorative figures: {density} per 1000 words (limit {limit})'
+  ja: 「{matched}」など、飾りのたとえが 1000 字あたり {density} 個あります
+  en: '"{matched}" and other decorative figures: {density} per 1000 words'
 
 how_to_fix:
   ja: たとえの代わりに、何がどう動くのか、何ができるのかを書いてください（まるで魔法のように設定が済む → 設定ファイルを読んで自動で済ませる）。

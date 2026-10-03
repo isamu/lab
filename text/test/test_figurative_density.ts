@@ -28,7 +28,7 @@ describe("figurative-density: 飾りのたとえが多い", () => {
       ja,
     );
     assert.equal(jaFindings.length, 4);
-    assert.match(jaFindings[0] ?? "", /^「まるで」など、飾りのたとえが 1000 字あたり \d+ 個あります（2 個まで）$/u);
+    assert.match(jaFindings[0] ?? "", /^「まるで」など、飾りのたとえが 1000 字あたり \d+ 個あります$/u);
     const enFindings = findingsOf(padded(EN_FILLER, 20, "The installer works like magic. Our secret sauce is an incantation that magically fixes every path."));
     assert.equal(enFindings.length, 4);
   });
