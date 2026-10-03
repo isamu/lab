@@ -44,20 +44,23 @@ npx chaffjs off ngram-repetition --why "繰り返しは文体として許す"
 全部を動かして見るときは、`--experimental` を付けます。
 
 ```bash
-npx chaffjs --experimental 報告書.md   試験中のルールも動かして見る
+npx chaffjs --experimental docs/   試験中のルールも動かして見る
 ```
 
-一つだけ動かすときは、`chaff.yaml` の `rules` に強さを書きます。
+一つだけ動かすときは、`enable` で名指しします。`chaff.yaml` の `rules` に書き込みます。
 
-```yaml
-rules:
-  doubled-word: normal
+```bash
+npx chaffjs enable cross-doc-term-variant
 ```
+
+## 文書が 2 つ以上要るルール、Markdown だけのルール
+
+名前が `cross-doc-` で始まるルールは、一度にかけたファイルどうしを比べます。ある語を 1 つのファイルだけ別の書き方にしている所などです。
+ファイルを 2 つ以上か、フォルダを渡したときに動きます。ファイル 1 つでは、動いていないルールに並びます。
 
 Markdown の記法を見るルール（見出しの深さ、画像の代替テキスト、リンクの行き先など）は Markdown の文書でだけ動きます。
 `.txt` では「Markdown の文書ではないため」と出して止まります。
 
-ジャンルによっては、試験中のルールを既定で動かします。
 どのジャンルで何が動くかは、[ジャンルのページ](../../genres/)にあります。
 
 ## 意味を読む検査は chaff test で
