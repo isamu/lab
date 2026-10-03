@@ -19,10 +19,20 @@ const PAGE_NUMBER_LINE = /^\s*\p{N}+\s*(?:\n|$)/u;
 /** A word holding a scheme or a slash around the dots is an address (https://example.com/a...b). */
 const ADDRESS_WORD = /:\/\/|\//u;
 
+const SPACE = /\s/u;
+
+/** The run of non-space characters holding the dots. */
 const wordAround = (text: string, start: number, end: number): string => {
-  const from = text.slice(0, start).search(/\S*$/u);
-  const to = end + (text.slice(end).match(/^\S*/u)?.[0].length ?? 0);
-  return text.slice(from, to);
+  const from =
+    text
+      .slice(0, start)
+      .split("")
+      .findLastIndex((char) => SPACE.test(char)) + 1;
+  const after = text
+    .slice(end)
+    .split("")
+    .findIndex((char) => SPACE.test(char));
+  return text.slice(from, after === -1 ? text.length : end + after);
 };
 
 /** Dots that are not an ellipsis in running text: a range, a path or address, a table of contents leader. */
