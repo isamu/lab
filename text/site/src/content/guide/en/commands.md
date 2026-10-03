@@ -24,13 +24,13 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs enable <rule>` | Turns on one experimental rule alone (writes `<rule>: normal` in `chaff.yaml`). See [Configuration](./configuration#turning-on-one-experimental-rule) |
 | `npx chaffjs baseline <dir>` | Shelves today's findings |
 | `npx chaffjs suppressions <dir>` | Counts the findings silenced with `stet` |
-| `npx chaffjs tree <file>` | Turns a document into a tree of addresses |
+| `npx chaffjs tree <file>` | Turns a document into a tree of addresses. `--format sexp` or `--format json` chooses the form |
 | `npx chaffjs cite <source> <quotes.json>` | Checks that quoted passages are in the source |
 | `npx chaffjs compare <before> <after>` | Checks that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…) |
 | `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
 | `npx chaffjs outline <file> [<after>]` | Shows the outline, measures its shape (headings, average section length, text in lists, bold) and scores its structure against human articles; two files side by side |
-| `npx chaffjs fix-plan <file>` | Prints a plan for whoever rewrites the file: the findings by rule, how to rewrite each, and the checks to run after |
-| `npx chaffjs grade <items.jsonl>` | Grades a JSONL file of model outputs: finding rates, facts, quotations, pass or fail. Sends nothing |
+| `npx chaffjs fix-plan <file>` | Prints a plan for whoever rewrites the file: the findings by rule, how to rewrite each, and the checks to run after. `--json` gives it as JSON, `--depth` sets how deep the rewrite may go |
+| `npx chaffjs grade <items.jsonl>` | Grades a JSONL file of model outputs: finding rates, facts, quotations, pass or fail. Sends nothing. `--out <results.jsonl>` writes one result per output, `--json` prints the summary as JSON |
 | `npx chaffjs skill` | Installs the Claude Code skill |
 | `npx chaffjs feedback <file> --rule <rule>` | Drafts a report of a wrong or missed finding |
 | `npx chaffjs test <file\|dir>...` | Also runs the checks that read meaning. Needs an API key |
@@ -480,8 +480,8 @@ In this example the rewrite smoothed the sentences and dropped the lists and the
 chaff still does not rewrite; the plan says how.
 
 ```bash
-npx chaffjs fix-plan article.md --experimental           # the plan, as Markdown
-npx chaffjs fix-plan article.md --experimental --json    # the same plan as JSON
+npx chaffjs fix-plan article.md           # the plan, as Markdown
+npx chaffjs fix-plan article.md --json    # the same plan as JSON
 npx chaffjs fix-plan article.md --depth light            # a plan that keeps the structure
 ```
 
