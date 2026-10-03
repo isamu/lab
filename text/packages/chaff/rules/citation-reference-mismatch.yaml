@@ -1,0 +1,110 @@
+id: citation-reference-mismatch
+layer: L3
+status: experimental
+how_to_find: citation-entry
+severity: warning
+
+name:
+  ja: 引用と文献一覧が合っていない
+  en: Citations and reference list do not match
+
+why:
+  ja: 本文が [5] を引いているのに文献一覧に 5 番が無いと、読み手は根拠を確かめられません。文献一覧にあるのに本文で一度も引かない文献は、消し忘れか、引用を消してしまったかのどちらかです。文献を足したり消したりして番号を振り直したときに起きます。番号で引く論文は番号どうしを、著者と年で引く論文は著者の姓と年どうしを比べます。読み取れる引用が文献の半分に満たない文書（上付きの番号がコピーで消えた文書など）では、引かれていない文献を指しません。
+  en: When the text cites [5] and the reference list has no entry 5, the reader cannot check the source. An entry the text never cites was either left behind or lost its citation. It happens when references are added or removed and renumbered. A paper that cites by number is compared number by number; one that cites by author and year, by surname and year. When fewer than half of the entries are cited in a form chaff reads (superscript numbers lost in a copy, say), uncited entries are not reported.
+
+message:
+  ja: 引用と文献一覧が合っていません
+  en: A citation and the reference list do not match
+
+messages:
+  missing:
+    ja: 引用「{citation}」の {key} が、文献一覧にありません
+    en: 'The citation "{citation}" names {key}, which is not in the reference list'
+  uncited:
+    ja: この文献は、本文で一度も引いていません
+    en: This entry of the reference list is never cited in the text
+
+how_to_fix:
+  ja: 本文の番号がずれていないか確かめて、引用か文献一覧を直してください。引かない文献は消すか、引く所を足してください。
+  en: Check whether the numbers shifted, and correct the citation or the list. Remove an entry that is never cited, or cite it where it belongs.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [academic, legal, docs, literature, speech]
+
+group: facts
+summary:
+  ja: 文献一覧に無い文献を引く引用と、本文で一度も引かない文献
+  en: A citation with no entry in the reference list, or an entry the text never cites
+example:
+  ja:
+    config: { genre: academic/paper }
+    before: |
+      # 睡眠と記憶
+
+      睡眠は記憶の定着を助ける[1]。短い昼寝でも効果がある[3]。
+
+      ## 参考文献
+
+      - [1] 佐藤一郎. 睡眠の研究. 2019.
+      - [2] 鈴木花子. 昼寝の効果. 2021.
+    after: |
+      # 睡眠と記憶
+
+      睡眠は記憶の定着を助ける[1]。短い昼寝でも効果がある[2]。
+
+      ## 参考文献
+
+      - [1] 佐藤一郎. 睡眠の研究. 2019.
+      - [2] 鈴木花子. 昼寝の効果. 2021.
+  en:
+    config: { genre: academic/paper }
+    before: |
+      # Sleep and memory
+
+      Sleep helps memories settle [1]. A short nap helps too [3].
+
+      ## References
+
+      - [1] Smith, A. Sleep. 2019.
+      - [2] Jones, B. Naps. 2021.
+    after: |
+      # Sleep and memory
+
+      Sleep helps memories settle [1]. A short nap helps too [2].
+
+      ## References
+
+      - [1] Smith, A. Sleep. 2019.
+      - [2] Jones, B. Naps. 2021.
+
+not_flagged:
+  ja: 「参考文献」「References」のような見出しの下に文献一覧が無い文書、番号も著者と年も読み取れない文献、文献が一つしか無い一覧は見ません。番号で引く引用と番号の文献、著者と年で引く引用と著者と年の文献は、それぞれの組の中だけで比べます。論文のジャンルでだけ見ます。
+  en: 'A document without a list under a heading such as "References", entries that give neither a number nor an author and a year, and a list of one entry are left alone. Numbered citations are compared only with numbered entries, and author-year citations only with author-year entries. Only the academic paper genre runs this rule.'
+rewrite:
+  ja:
+    direction: 引用と文献一覧のどちらがずれたのかを書き手に確かめ、ずれたほうを直してください。番号を推測で書き換えず、確かめられないときはその旨を書き手に伝えます。引かない文献は、消すか、引く所を書き手に尋ねます。
+    pairs:
+      - before: 短い昼寝でも効果がある[3]。
+        after: 短い昼寝でも効果がある[2]。
+      - before: 先行研究（山田, 2019）でも同じ結果が出ている。
+        after: 先行研究（山田, 2020）でも同じ結果が出ている。
+    keep:
+      - どの文献を引いているか
+      - 文献一覧の書誌情報
+    avoid:
+      - 文献一覧に無い文献を作る
+      - どちらが正しいかを推測で決める
+  en:
+    direction: Ask the writer whether the citation or the list shifted, and correct the one that did. Do not guess a number; if it cannot be checked, say so. For an entry never cited, remove it or ask the writer where it is cited.
+    pairs:
+      - before: A short nap helps too [3].
+        after: A short nap helps too [2].
+      - before: Earlier work found the same (Smith, 2019).
+        after: Earlier work found the same (Smith, 2020).
+    keep:
+      - which work is cited
+      - the bibliographic details in the list
+    avoid:
+      - inventing an entry the list does not have
+      - guessing which side is right
