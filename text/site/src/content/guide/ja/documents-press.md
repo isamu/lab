@@ -95,7 +95,7 @@ chaff は、日付と曜日、期間、合計、割合、予告した数の食�
 ```
 $ npx chaffjs release.md --genre business/press-release --compact
 
-release.md   business/press-release · 日本語   ジャンルは--genreから
+release.md   business/press-release · 日本語   ジャンルは --genre から
 
 
 {counts}
@@ -107,7 +107,7 @@ release.md   business/press-release · 日本語   ジャンルは--genreから
 ```
 $ npx chaffjs release.md --genre business/press-release --experimental --compact
 
-release.md   business/press-release · 日本語   ジャンルは--genreから
+release.md   business/press-release · 日本語   ジャンルは --genre から
 
   6:45    error   「2026-11-02」は月曜日です（火曜日と書いてあります）
                   date-weekday-mismatch

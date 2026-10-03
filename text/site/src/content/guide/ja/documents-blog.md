@@ -93,7 +93,7 @@ CI でのビルドに、毎回**約 9 分**かかっていました。
 ```
 $ npx chaffjs kiji.md --genre blog/tech --compact
 
-kiji.md   blog/tech · 日本語   ジャンルは--genreから
+kiji.md   blog/tech · 日本語   ジャンルは --genre から
 
   3:1     warning 「近年」は、どの記事にも当てはまる書き出しです
                   padded-intro
@@ -111,7 +111,7 @@ kiji.md   blog/tech · 日本語   ジャンルは--genreから
 ```
 $ npx chaffjs kiji.md --genre blog/tech --experimental --compact
 
-kiji.md   blog/tech · 日本語   ジャンルは--genreから
+kiji.md   blog/tech · 日本語   ジャンルは --genre から
 
   1:39    info    節の長さのばらつきが 25% しかありません（35% 以上ほしい）
                   section-length-uniformity

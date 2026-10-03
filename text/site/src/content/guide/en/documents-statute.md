@@ -87,7 +87,7 @@ rules.md   legal/statute · English   genre from --genre
 
      → Fix the number or remove the reference. If it points into another document, name that document so the reader knows where to look.
 
-     Relax this rule:  npx chaff relax dangling-reference
+     Relax this rule:  npx chaffjs relax dangling-reference
 
 
 ─── line 12 ──────────────────────────────────────────────────
@@ -101,7 +101,7 @@ rules.md   legal/statute · English   genre from --genre
 
      → Renumber. If a provision was removed on purpose, keep its number with a note such as "Section 4 [Deleted]".
 
-     Relax this rule:  npx chaff relax numbering-gap
+     Relax this rule:  npx chaffjs relax numbering-gap
 
 
 ─── line 15 ──────────────────────────────────────────────────
@@ -115,7 +115,7 @@ rules.md   legal/statute · English   genre from --genre
 
      → Keep one definition and refer to it from the other place. If the meaning changes on purpose, use a different term.
 
-     Relax this rule:  npx chaff relax duplicate-definition
+     Relax this rule:  npx chaffjs relax duplicate-definition
 
 
 ────────────────────────────────────────────────────────────
@@ -184,10 +184,10 @@ After saying it created `chaff.yaml` (the settings file) and `.gitignore`, it sh
 
 ```
 The genre is legal/statute. If that is wrong, change genre in chaff.yaml.
-  List: npx chaff genres
+  List: npx chaffjs genres
 
 Next:
-  npx chaff .            check every Markdown file here
+  npx chaffjs .            check every Markdown file here
 ```
 
 From then on, `npx chaffjs rules.md` in this folder checks the file as internal rules.

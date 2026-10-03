@@ -39,7 +39,7 @@ const TEXT: Texts<{
     now: (level) => `いまは ${level} です。`,
     nowNumber: (limit) => `いまは段階ではなく数です: ${limit}。`,
     from: (source) => `（${source} で決めています）`,
-    change: (id) => `変える:  npx chaff relax ${id} --why "理由"`,
+    change: (id) => `変える:  npx chaffjs relax ${id} --why "理由"`,
   },
   en: {
     off: "not checked",
@@ -57,7 +57,7 @@ const TEXT: Texts<{
     now: (level) => `Now: ${level}.`,
     nowNumber: (limit) => `Now: ${limit}, set as a number rather than a level.`,
     from: (source) => ` (set by ${source})`,
-    change: (id) => `Change it:  npx chaff relax ${id} --why "reason"`,
+    change: (id) => `Change it:  npx chaffjs relax ${id} --why "reason"`,
   },
 };
 
