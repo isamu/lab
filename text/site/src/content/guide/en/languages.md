@@ -87,7 +87,6 @@ These read parts of speech:
 
 `stray-space` also accepts spacing every phrase (分かち書き) as a way of writing.
 It points at the spaces only when the document spaces less often than it does not.
-The rule is experimental, so turn it on in `chaff.yaml`.
 
 Loading the dictionary takes about two seconds, and it is skipped when none of these rules runs.
 For a language without part-of-speech tagging, such a rule does not pass silently.
@@ -106,7 +105,6 @@ These do not:
 
 `latin-spacing` accepts both styles.
 When one document mixes them, it points at the less common one.
-The rule is experimental, so turn it on in `chaff.yaml`.
 
 ## English-only rules
 
@@ -123,7 +121,7 @@ The rule is experimental, so turn it on in `chaff.yaml`.
 The rules ending in `-consistency` do not decide which style is right.
 They only check that one document is consistent, and point at the less common style.
 
-`agreement-slip` reads parts of speech. It is experimental, so turn it on in `chaff.yaml`.
+`agreement-slip` reads parts of speech.
 
 ## Language packages
 

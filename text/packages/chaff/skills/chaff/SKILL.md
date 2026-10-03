@@ -32,7 +32,7 @@ choice, not a gap; turn it back on (`rules:` in `chaff.yaml`) only when the pers
 ```sh
 npx chaffjs --genre <genre> <file|dir|glob>...   # human-readable, one block per finding (a folder or glob picks up .md / .markdown / .mdx; name a .txt file directly)
 npx chaffjs . --compact                          # two lines per finding: line:col severity message, then the rule id
-npx chaffjs <file> --experimental                # also the experimental rules
+npx chaffjs <file> --experimental                # also the experimental rules (new ones, not yet measured)
 ```
 
 A run exits 1 when a finding is an `error`. It also exits 1 when it could not check anything: no file to
@@ -106,10 +106,10 @@ Use this section when asked to make a text sound less generated: 「AIっぽさ�
 
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
 `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `assistant-residue`, and the signals
-`ai-generated-composite` reads). Most are experimental: run with `--experimental`. None of them says the text was
+`ai-generated-composite` reads). They run by default outside legal, manual, literary and spoken genres. None of them says the text was
 generated. chaff never rewrites; the rewriting is yours.
 
-**Start with the plan.** Run `npx chaffjs fix-plan <file> --experimental` (with the genre's `--genre`; `--json` to
+**Start with the plan.** Run `npx chaffjs fix-plan <file>` (with the genre's `--genre`; `--json` to
 read it as data). It prints, in the document's language:
 
 - the constraints: keep facts, numbers, conditions and names; add no fact; ask the writer instead of inventing a
@@ -140,7 +140,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
 
 **Light** (only the flagged spots):
 
-1. `npx chaffjs fix-plan <file> --experimental` (or with the genre's `--genre`).
+1. `npx chaffjs fix-plan <file>` (or with the genre's `--genre`).
 2. Rewrite only the flagged spots, each by its rule's direction in the plan. Keep the meaning, numbers, conditions and
    technical constraints.
 3. Run chaff again. At most two rewrite passes.
@@ -148,7 +148,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
 
 **Bold** (section by section, outline kept):
 
-1. Run chaff with `--experimental` and note the document-level signals: the `ai-generated-composite` inputs,
+1. Run chaff and note the document-level signals: the `ai-generated-composite` inputs,
    `bold-density`, `contrast-framing`, `stock-transition`, `sentence-rhythm`.
 2. Rewrite each section toward a human voice: less bold; one-line paragraphs and punchlines folded back into
    paragraphs; no "X ではありません。Y です" / "It's not X. It's Y" frames; lists turned back into sentences where the
@@ -204,7 +204,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
      `chaff compare` catches an added number or name, but not added wording such as 「朝会で冗談が出るようになり」, so
      this one is yours to keep.
 5. **Check.**
-   - `npx chaffjs <old> --experimental` and `npx chaffjs <new> --experimental`: the AI signals before and after.
+   - `npx chaffjs <old>` and `npx chaffjs <new>`: the AI signals before and after.
    - `npx chaffjs outline <old> <new>`: headings, average section length, text in lists, bold, and the structure score
      and each structure measure, before and after. A restructure shows up here, not only in rule counts.
    - `npx chaffjs compare <old> <new> --distinct --allow-dropped heading --allow-added heading`: the headings are the
@@ -249,7 +249,7 @@ output before and after.
 ## Structured documents
 
 - `npx chaffjs tree <file>` shows a contract or specification as a tree of addresses (`3.2` for 第3条第2項 or
-  Section 3.2). `--experimental` adds the structure rules: references to missing provisions, numbering gaps,
+  Section 3.2). A check reads the same tree to find references to missing provisions, numbering gaps and
   terms defined twice.
 - `npx chaffjs cite <source> <quotes.json>` checks that quotations (`[{ "address", "quote" }]`) are really in
   the source; exit 1 if any is not. Use it to back every quotation you put in an answer or a summary.

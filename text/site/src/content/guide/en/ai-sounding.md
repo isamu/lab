@@ -10,8 +10,8 @@ This page shows how to use what it finds to bring a document back to a human voi
 Before rewriting, have `chaff fix-plan` print a plan.
 
 ```bash
-npx chaffjs fix-plan article.md --experimental           # the plan, as Markdown
-npx chaffjs fix-plan article.md --experimental --json    # the same plan as JSON, to hand to an AI
+npx chaffjs fix-plan article.md           # the plan, as Markdown
+npx chaffjs fix-plan article.md --json    # the same plan as JSON, to hand to an AI
 ```
 
 The plan turns what chaff found into instructions, rule by rule: how to rewrite each kind of spot.
@@ -31,7 +31,7 @@ The plan has these parts.
 The directions and examples come from the rule files (`rewrite:`), so the same finding always gets the same direction.
 The steps are the same whether a person rewrites or an AI does.
 
-1. Run `npx chaffjs fix-plan article.md --experimental`.
+1. Run `npx chaffjs fix-plan article.md`.
 2. Rewrite following the plan, and save the result under the name its last part gives. To have an AI do it, hand it the plan as it is.
 3. Run the checks. They show whether findings remain, whether a fact was dropped or added, and how the outline moved.
 
@@ -39,11 +39,8 @@ The example "Example: from a fix plan to a clean check" further down this page g
 
 ## What chaff looks for
 
-Most of these rules are experimental and run with `--experimental`; `bold-density`, `closing-cliche` and `padded-intro` run without it.
-
-```bash
-npx chaffjs article.md --experimental    # also run the experimental rules
-```
+These rules run by default in tech articles, blogs and business documents.
+Legal documents, manuals, literature and transcripts are written differently, so most of them are off there; `npx chaffjs explain <rule>` names the genres.
 
 | Rule | What it finds |
 | --- | --- |
@@ -114,7 +111,7 @@ Without a depth, chaff recommends one of the ways above and writes its depth in 
 
 ## The light pass
 
-1. Run `npx chaffjs fix-plan article.md --experimental` for the plan.
+1. Run `npx chaffjs fix-plan article.md` for the plan.
 2. Rewrite only the flagged spots, following each rule's direction in the plan. Keep the meaning, the numbers, the conditions and the technical constraints.
 3. Run chaff again. Stop after two rewrites.
 4. Keep the rewritten text and a short list of what changed and why.
@@ -125,7 +122,7 @@ Do not repeat a pass just to silence a warning. If a word you chose trips anothe
 
 A bold rewrite keeps the outline and changes the prose of each section, rather than one finding at a time. Go section by section.
 
-1. Before rewriting, run chaff with `--experimental` and note the document-level signals:
+1. Before rewriting, run chaff and note the document-level signals:
    the inputs of `ai-generated-composite`, `bold-density`, `contrast-framing`, `stock-transition` and `sentence-rhythm`.
 2. Rewrite each section, reducing these shapes:
 
@@ -140,7 +137,7 @@ A bold rewrite keeps the outline and changes the prose of each section, rather t
 
 3. Give each paragraph one claim and link it to the one before with a connective.
    Where the original has the writer's own experience or concrete numbers, put them at the centre of the paragraph.
-4. Run chaff with `--experimental` again and compare with the signals from step 1.
+4. Run chaff again and compare with the signals from step 1.
    Show the change with chaff's output, not with adjectives.
 5. Run `npx chaffjs compare <before> <after>` and check every fact dropped or added.
    It matches numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes before and after.
@@ -201,8 +198,8 @@ Leave the old sentences alone. Take an inventory of what the document says, and 
 5. Check the result.
 
 ```bash
-npx chaffjs old.md --experimental                          # the AI signals before
-npx chaffjs new.md --experimental                          # and after
+npx chaffjs old.md                          # the AI signals before
+npx chaffjs new.md                          # and after
 npx chaffjs outline old.md new.md                          # headings, average section, lists, bold and the structure score, before and after
 npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-added heading  # no fact other than a heading dropped or added
 ```
@@ -274,7 +271,7 @@ In conclusion, the shared cache is a testament to what careful engineering can a
 The plan `chaff fix-plan` printed, cut after the first rule:
 
 ````markdown
-$ npx chaffjs fix-plan draft.md --experimental
+$ npx chaffjs fix-plan draft.md
 # Fix plan: draft.md
 
 language en, genre blog/tech
@@ -362,7 +359,7 @@ after:
 Save the rewrite as draft.rewritten.md and run:
 
 ```bash
-npx chaffjs draft.rewritten.md --experimental
+npx chaffjs draft.rewritten.md
 npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
 npx chaffjs outline draft.md draft.rewritten.md
 ```
@@ -389,7 +386,7 @@ We rolled it out over two weeks in March 2026, one repository at a time. We kept
 The checks from the plan:
 
 ```text
-$ npx chaffjs draft.rewritten.md --experimental --compact
+$ npx chaffjs draft.rewritten.md --compact
 draft.rewritten.md   blog/tech · English   genre from the default
 
 
@@ -496,7 +493,7 @@ I hope this helps! Let me know if you have any questions.
 chaff on the article before:
 
 ```text
-$ npx chaffjs ai.md --genre blog/tech --experimental --compact
+$ npx chaffjs ai.md --genre blog/tech --compact
 
 ai.md   blog/tech · English   genre from --genre
 
@@ -551,7 +548,7 @@ The test has not failed once in the two weeks since. A test that touches the clo
 chaff on the article after:
 
 ```text
-$ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
+$ npx chaffjs rewritten.md --genre blog/tech --compact
 
 rewritten.md   blog/tech · English   genre from --genre
 
@@ -653,7 +650,7 @@ Weekly demos aren't just about sharing work — they're about building a culture
 chaff on the post before. `ai-generated-composite` fires, so the full rewrite is the one to choose.
 
 ```text
-$ npx chaffjs demo.md --genre blog/tech --experimental --compact
+$ npx chaffjs demo.md --genre blog/tech --compact
 
 demo.md   blog/tech · English   genre from --genre
 
@@ -712,7 +709,7 @@ Attendance climbed back to 12, and the demos turned into real conversations.
 chaff on the post after:
 
 ```text
-$ npx chaffjs demo-full.md --genre blog/tech --experimental --compact
+$ npx chaffjs demo-full.md --genre blog/tech --compact
 
 demo-full.md   blog/tech · English   genre from --genre
 
@@ -809,7 +806,7 @@ The signals and the shape, before and after, from chaff's output:
 
 | Measure | Before | After |
 | --- | --- | --- |
-| Findings (`--experimental`) | 5 | 0 |
+| Findings | 5 | 0 |
 | `ai-generated-composite` | 4 signals | does not fire |
 | Structure score (`chaff outline`) | 4 (short sections, stock heading forms, introduction and conclusion, bold labels) | 0 |
 | Headings | 7 | 3 |

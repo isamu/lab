@@ -203,7 +203,7 @@ In `prompt-a`'s refund answer, the second quotation is the clause as written, "S
 chaff prints the usual summary, then the variants side by side:
 
 ```
-$ npx chaffjs grade variants.jsonl --experimental
+$ npx chaffjs grade variants.jsonl
 variants.jsonl: 6 outputs, 4 passed, 2 failed
 
 Failed outputs
@@ -245,7 +245,7 @@ The exit code is otherwise the same as without variants, and `--baseline` pairs 
 For a CI log, `--compact` adds one line per disagreement:
 
 ```
-$ npx chaffjs grade variants.jsonl --experimental --compact
+$ npx chaffjs grade variants.jsonl --compact
 …
 disagree	q3	pass prompt-a	fail prompt-b
 disagree	refund	pass prompt-a	fail prompt-b
@@ -255,7 +255,7 @@ disagree	refund	pass prompt-a	fail prompt-b
 For a pull request comment, `--format markdown` writes the same tables in Markdown. `--format json` adds a `variants` field to the summary.
 
 ```
-$ npx chaffjs grade variants.jsonl --experimental --format markdown
+$ npx chaffjs grade variants.jsonl --format markdown
 ## chaff grade: variants.jsonl
 
 6 outputs, 4 passed, 2 failed
