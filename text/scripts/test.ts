@@ -2,9 +2,9 @@
 // which CI runs side by side. Other options go to node before the files, where node --test reads them.
 import { spawnSync } from "node:child_process";
 import { readdirSync } from "node:fs";
-import { availableParallelism } from "node:os";
 import { join } from "node:path";
 import { parsePart, partFiles } from "./test-parts.ts";
+import { testWidth } from "./test-width.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 
@@ -18,7 +18,7 @@ const testFilesIn = (folder: string, extension: string): string[] =>
 const FILES = [...testFilesIn("test", ".ts"), ...testFilesIn("examples/chaff-plugin-example/test", ".mjs")];
 
 // node's default leaves one core idle; a test file spends part of its time starting up and reading files.
-const CONCURRENCY = availableParallelism();
+const CONCURRENCY = testWidth();
 
 const { part, parts, rest } = parsePart(process.argv.slice(2));
 const files = partFiles(FILES, part, parts);

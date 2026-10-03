@@ -1,0 +1,2 @@
+openapi-spec-3-1-0  1
+wikipedia-ja-talk-oden  1

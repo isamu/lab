@@ -1,0 +1,9 @@
+# 手順の番号の前に書く語（手順3、ステップ2、Step 4）。見出しの頭のこの語と番号、または番号付きの箇条書きの番号が手順で、
+# 本文の「手順5を参照」がそのどれにも無い番号を指せば step-reference-missing が言う。字面どおりに照らす。
+id: step-word
+language: ja
+entries:
+  - pattern: 手順
+  - pattern: ステップ
+  - pattern: Step
+  - pattern: step

@@ -1,0 +1,31 @@
+# Words and phrases that formal English treats as nonstandard, and the standard form (instead_of). Read by nonstandard-word.
+# Only forms that a usage guide rejects outright: "irregardless" is not a word in formal writing, "comprised of" mixes
+# "comprises" and "is composed of". Misspellings are in known-misspelling, homophone slips ("could of") in homophone-slip.
+# Self-compiled; not copied from any published list.
+id: nonstandard-word
+language: en
+entries:
+  - pattern: irregardless
+    instead_of: regardless
+  - pattern: is comprised of
+    instead_of: comprises
+  - pattern: are comprised of
+    instead_of: comprise
+  - pattern: be comprised of
+    instead_of: comprise
+  - pattern: comprises of
+    instead_of: comprises
+  - pattern: comprising of
+    instead_of: comprising
+  - pattern: anyways
+    instead_of: anyway
+  - pattern: supposably
+    instead_of: supposedly
+  - pattern: conversate
+    instead_of: converse
+  - pattern: on accident
+    instead_of: by accident
+  - pattern: heighth
+    instead_of: height
+  - pattern: could care less
+    instead_of: couldn't care less
