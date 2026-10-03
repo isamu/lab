@@ -7,8 +7,9 @@ export const runSuppressions = async (
   targets: readonly string[],
   inspectRun: (paths: readonly string[]) => Promise<readonly { readonly perFile: PerFile }[]>,
   ui: UiLanguage,
+  include: readonly string[] = [],
 ): Promise<number> => {
-  const inspected = await inspectRun(collectTargets(targets.length > 0 ? targets : ["."]));
+  const inspected = await inspectRun(collectTargets(targets.length > 0 ? targets : ["."], include));
   console.log(
     renderSuppressions(
       inspected.map((file) => file.perFile),

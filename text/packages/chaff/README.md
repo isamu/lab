@@ -1,16 +1,41 @@
 # chaff
 
-chaff は、文書の読みにくいところと、機械で確かめられる誤りを見つける道具です。日本語と英語の文書を読み、同じ文章なら何度かけても同じ結果を出します。
-文章は書き換えません。直すのは書いた人です。
-`lint` が布の繊維くずを名前にしているのと同じで、`chaff` は籾殻です。取り除くべきものの名を負っています。
+chaff は、プログラミングでよく使われている二つの仕組みを、ふつうの文章のために作り直した道具です。
 
+- **linter（リンター）**: プログラムが決まり（ルール）に沿って書かれているかを、機械で確かめる仕組み。
+- **unit test（ユニットテスト）**: プログラムを変えるたびに、想定どおりに動くかを確かめる仕組み。
+
+chaff は、契約書、ブログ、技術文書などを、この二つのやり方で確かめます。
+ルールに沿っているか（一文が長すぎないか、同じ語を二通りに書いていないか、書いてあることが食い違っていないか）は lint で見ます。
+書き直しても大事なことが崩れていないか（数字や日付が落ちていないか、引用が原文にあるか、チームの決まりを守っているか）は、
+`chaff compare`、`chaff cite`、`chaff test` で確かめます。どれも終了コードを返すので、CI に入れればプログラムと同じく変更のたびに回せます。
+
+日本語と英語の文書をそのまま読み、同じ文章なら何度かけても同じ結果を出します。文章は書き換えません。直すのは書いた人（または、その人が頼んだ AI）です。
 インストールも、AI の利用登録も、言語の指定も要りません。
+
+## 使ってみる
+
+たとえば、次の `article.md` があるとします。
+
+```markdown
+# キャッシュを使う
+
+## キャッシュの仕組み
+
+キャッシュの仕組みについて説明します。一度読んだデータを手元に置き、二度目からはそこから返します。
+```
+
+これに chaff をかけます。
 
 ```bash
 npx chaffjs article.md
 ```
 
-```
+画面には次のように出ます（実際の出力の前半です）。
+
+```text
+article.md   blog/tech · 日本語   ジャンルは既定から
+
 ─── 5 行目 ───────────────────────────────────────────────────
 
     キャッシュの仕組みについて説明します。
@@ -25,7 +50,18 @@ npx chaffjs article.md
      このルールをゆるめる:  npx chaff relax heading-echo
 ```
 
-指摘は 1 件につき 4 つ、引いた文、何が起きているか、なぜ読みにくいか、どう直すかの順に出ます。誤字脱字ではなく、文章の組み立てを見ます。たとえば次のようなところです。
+読み方は次のとおりです。
+
+1. 1 行目は、調べたファイル、文書の種類（ジャンル）、言語です。
+2. 「5 行目」の下に、指摘された文がそのまま引かれます。
+3. `⚠` の行が、何が起きているかです（ここでは、見出しを次の文が繰り返している）。
+4. その下が、なぜ読みにくいかです。
+5. `→` の行が、どう直すかです。
+6. 最後の行は、この指摘がチームの方針に合わないときに、ルールのほうをゆるめるコマンドです。
+
+出力の最後には、指摘の数と、今回動かなかったルールの一覧が理由付きで出ます。「指摘なし」を「全部見て問題なし」と取り違えないためです。
+
+見るのは誤字脱字より、文章の組み立てです。たとえば次のようなところです。
 
 - 一文が長すぎて、読んでいるうちに主語を見失う
 - 太字が多すぎて、どこも目立たなくなっている
@@ -56,6 +92,41 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 | 学術 | `academic/paper` |
 | 文学 | `literature/fiction` `literature/essay` `literature/poetry` `literature/play` |
 | 話し言葉 | `speech/address` `speech/transcript` |
+
+## 自分たちの決まり（プリセット）を作る
+
+ジャンルや `style:` は、同梱のプリセットです。チームの決まりは、リポジトリに置く `chaff.yaml` に書けば、それがそのままチームのプリセットになります。
+どのルールを、どの強さで動かすか、チームの言葉づかい、チーム独自のルールを、一つのファイルにまとめます。
+
+```yaml
+# chaff.yaml（リポジトリの一番上に置く）
+genre: blog/tech              # 土台にするジャンル
+style: koyobun                # 同梱の表記スタイル（公用文作成の考え方）を重ねる
+
+rules:                        # ルールごとの強さ: strict / normal / relaxed / off、または上限の数
+  max-sentence-length: 80
+  bold-density: off
+  ai-tell: normal              # 試験中のルールも、名指しすれば動く
+  preferred-term: normal
+
+prefer:                       # チームの表記（左を見つけたら右を勧める）
+  サーバ: サーバー
+  ユーザ: ユーザー
+
+custom_rules:                 # チーム独自のルール（コードは要らない）
+  - id: team-no-tbd
+    type: pattern
+    pattern: 'TBD|未定'
+    level: error
+    name: 未定のまま
+    why: 未定のまま出すと、読む人が決まったことと取り違えます。
+    how_to_fix: 決まっていることを書くか、決める人と期日を書いてください。
+    example: { before: 締切は TBD です。, after: 締切は 10 月 5 日です。 }
+```
+
+`npx chaffjs init` でひな形を作れます。いま効いている設定は `npx chaffjs rules` で一覧になり、`npx chaffjs explain <ルール>` で一つずつ確かめられます。
+いくつものリポジトリで同じプリセットを使いたいときは、ルールとスタイルをプラグインのパッケージにまとめ、`plugins:` と `style: <名前>/<スタイル>` で読み込みます（下の「ほかにできること」）。
+書き方の詳しい説明は手引きの「[設定](https://isamu.github.io/lab/ja/guide/configuration/)」と「[チームの表記ルール](https://isamu.github.io/lab/ja/guide/house-style/)」にあります。
 
 ## 指摘されたら
 
@@ -96,9 +167,16 @@ npx chaffjs skill                 Claude Code の skill を入れる（--global 
 
 ## In English
 
-chaff finds what makes writing hard to read, in Japanese and English, and never rewrites the text. On an English
-document it speaks English. Pick the kind of document (`--genre legal/contract`, `docs/manual`, `academic/paper`, …)
-and it checks it the way that kind is written. The guide, the genres and the reference of every rule are at
+chaff brings two habits from programming to ordinary writing. A linter checks that code follows rules; a unit test
+checks that a change did not break what must hold. chaff lints contracts, blog posts and technical documents for
+readability, consistency and contradictions. Its `compare`, `cite` and `test` commands check that a rewrite kept the
+facts, the quotations and the team's requirements.
+
+Every command returns an exit code, so it runs in CI on every change.
+It reads Japanese and English and never rewrites the text.
+
+Your own preset is a `chaff.yaml` in the repository: rules and
+their levels, a style, your preferred spellings and your own rules. The guide and the reference of every rule are at
 https://isamu.github.io/lab/en/
 
 MIT

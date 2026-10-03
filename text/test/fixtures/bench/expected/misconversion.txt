@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  misconverted-ja  found
+ja/design  misconverted-ja  found
+ja/email  misconverted-ja  found
+ja/figures  misconverted-ja  found
+ja/itinerary  misconverted-ja  found
+ja/minutes  misconverted-ja  found
+ja/note  misconverted-ja  found
+ja/policy  misconverted-ja  found
+ja/press  misconverted-ja  found
+ja/proposal  misconverted-ja  found
+ja/quote  misconverted-ja  found
+ja/readme  misconverted-ja  found
+ja/requirements  misconverted-ja  found

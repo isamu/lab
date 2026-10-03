@@ -1,0 +1,120 @@
+id: title-length
+layer: L1
+status: experimental
+how_to_find: title-length
+requires: [markdown]
+severity: info
+
+name:
+  ja: 題や見出しが長すぎる
+  en: Title or heading too long
+
+why:
+  ja: 題と見出しは、読者が目で拾って、読むかどうかを決める所です。長いと一目で読めず、目次や検索の結果では途中で切れます。日本語は文字で数え、英字の語は一語を二文字と数えます（「Generator」も「API」も同じ一語）。報告書・プレスリリース・議事録・仕様書・論文は正式な題が長くなるので、上限を上げています。
+  en: Readers scan titles and headings to decide what to read. A long one cannot be taken in at a glance, and tables of contents and search results cut it off. English is counted in words. Reports, press releases, minutes, specifications and papers carry long formal titles, so their limit is higher.
+
+message:
+  ja: 見出し「{heading}」は {count} 文字あります（{limit} 文字まで）
+  en: 'The heading "{heading}" runs {count} {count|word|words} (limit {limit})'
+
+messages:
+  title:
+    ja: 題「{heading}」は {count} 文字あります（{limit} 文字まで）
+    en: 'The title "{heading}" runs {count} {count|word|words} (limit {limit})'
+
+how_to_fix:
+  ja: 見出しには名前だけを残し、条件や説明は本文の最初の文へ移してください。括弧の補足（日付、対象、版）は副題か本文に書きます。
+  en: Keep only the name in the heading and move conditions and explanations into the first sentence below it. Put a bracketed aside (a date, an audience, a version) in a subtitle or the text.
+
+# 単位は adapter の lengthUnit。日本語は文字（英字の語は一語を二文字）、英語は語。
+levels:
+  ja: { strict: 30, normal: 40, relaxed: 50 }
+  en: { strict: 10, normal: 14, relaxed: 18 }
+
+# 正式な題が長くなる種類。corpus のその種類の題で、normal が最も長い一握りだけを指すように置いた。
+by_genre:
+  business/report:
+    ja: { strict: 40, normal: 50, relaxed: 60 }
+    en: { strict: 14, normal: 18, relaxed: 22 }
+  business/press-release:
+    ja: { strict: 40, normal: 50, relaxed: 60 }
+    en: { strict: 14, normal: 18, relaxed: 22 }
+  business/meeting-notes:
+    ja: { strict: 40, normal: 50, relaxed: 60 }
+    en: { strict: 14, normal: 18, relaxed: 22 }
+  technical/spec:
+    ja: { strict: 40, normal: 50, relaxed: 60 }
+    en: { strict: 14, normal: 18, relaxed: 22 }
+  academic:
+    ja: { strict: 40, normal: 50, relaxed: 60 }
+    en: { strict: 14, normal: 18, relaxed: 22 }
+
+use_for: [blog, business, technical, docs, academic, legal, literature, speech]
+
+group: readability
+summary:
+  ja: 一目で読めないほど長い題や見出し
+  en: A title or heading too long to take in at a glance
+example:
+  ja:
+    config: { genre: blog/tech }
+    before: |
+      ## 2025年度から始まる新しい在庫管理システムへの移行に伴う各店舗での作業手順と注意点について
+    after: |
+      ## 在庫システムの移行手順
+
+      2025年度の移行で各店舗が行う作業と、注意する点をまとめます。
+  en:
+    config: { genre: blog/tech }
+    before: |
+      ## What every store needs to do during the move to the new inventory system in the 2025 financial year
+    after: |
+      ## Moving to the new inventory system
+
+      What every store does during the move in the 2025 financial year.
+
+not_flagged:
+  ja: 見出しの頭の番号（「第2章」「1.」）は数えません。英字の語は一語を二文字と数えます。報告書・プレスリリース・議事録・仕様書・論文は上限が高く、法務・文学・話し言葉のジャンルと、見出しが質問の文になる FAQ では見ません。
+  en: A number label at the head of a heading (Chapter 2, 1.) is not counted. Reports, press releases, minutes, specifications and papers have a higher limit; legal, literary and speech genres, and FAQs (whose headings are questions), do not run this rule.
+level_meaning:
+  ja: 題や見出しが {limit} 文字を超えたら指摘
+  en: reported when a title or heading runs past {limit} words
+rewrite:
+  ja:
+    direction: 見出しを、その節が何かを言う名前だけに縮めてください。理由・条件・対象・日付は、見出しのすぐ下の最初の文に移します。
+    pairs:
+      - before: |
+          ## 2025年度から始まる新しい在庫管理システムへの移行に伴う各店舗での作業手順と注意点について
+        after: |
+          ## 在庫システムの移行手順
+
+          2025年度の移行で各店舗が行う作業と、注意する点をまとめます。
+      - before: |
+          ## 申込書をオンラインで提出する場合に必要となる書類と提出期限に関する説明
+        after: |
+          ## オンライン申込の書類と期限
+    keep:
+      - 見出しの順番と深さ
+      - 節の中身を指す固有の語
+    avoid:
+      - 縮めるために、節の中身と違う語を見出しにする
+      - 見出しから外した条件を捨てる
+  en:
+    direction: Cut the heading down to a name for what the section is. Move reasons, conditions, audiences and dates into the first sentence under it.
+    pairs:
+      - before: |
+          ## What every store needs to do during the move to the new inventory system in the 2025 financial year
+        after: |
+          ## Moving to the new inventory system
+
+          What every store does during the move in the 2025 financial year.
+      - before: |
+          ## Documents you need and deadlines that apply when you submit your application online through the portal
+        after: |
+          ## Online applications: documents and deadlines
+    keep:
+      - the order and depth of the headings
+      - the specific words that name the section's content
+    avoid:
+      - a shorter heading that names something other than what the section holds
+      - dropping the conditions taken out of the heading
