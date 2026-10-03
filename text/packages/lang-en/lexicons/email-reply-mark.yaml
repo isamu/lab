@@ -1,0 +1,8 @@
+# The marks a mail program puts before a subject (Re:, Fwd:). They are not counted in the subject's length.
+id: email-reply-mark
+language: en
+entries:
+  - pattern: Re
+  - pattern: Fwd
+  - pattern: Fw
+  - pattern: Aw

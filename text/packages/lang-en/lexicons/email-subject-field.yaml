@@ -1,0 +1,5 @@
+# The name of the subject field. The value of a "Subject: …" line is measured as the subject.
+id: email-subject-field
+language: en
+entries:
+  - pattern: Subject

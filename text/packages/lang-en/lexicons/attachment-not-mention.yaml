@@ -1,0 +1,12 @@
+# Phrases that hold an attachment word without pointing at an attachment: something fixed to something else, or no
+# attachment at all.
+id: attachment-not-mention
+language: en
+entries:
+  - pattern: attached to
+  - pattern: attachment to
+  - pattern: emotional attachment
+  - pattern: no attachment
+  - pattern: no attachments
+  - pattern: without attachment
+  - pattern: strings attached

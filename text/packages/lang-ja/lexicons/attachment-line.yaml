@@ -1,0 +1,13 @@
+# 添付したものを並べる欄の名前。行の頭にこの名前とコロン（添付ファイル：見積書.pdf）があれば、添付を示している。
+id: attachment-line
+language: ja
+entries:
+  - pattern: 添付
+  - pattern: 添付ファイル
+  - pattern: 添付資料
+  - pattern: 添付書類
+  - pattern: 別添
+  - pattern: 同封物
+  - pattern: 同封書類
+  - pattern: Attachment
+  - pattern: Attachments

@@ -1,0 +1,22 @@
+# File name extensions of what people attach. A file name with one (quote.pdf) anywhere in the document shows the attachment.
+id: attachment-file-extension
+language: en
+entries:
+  - pattern: pdf
+  - pattern: doc
+  - pattern: docx
+  - pattern: xls
+  - pattern: xlsx
+  - pattern: ppt
+  - pattern: pptx
+  - pattern: csv
+  - pattern: txt
+  - pattern: zip
+  - pattern: png
+  - pattern: jpg
+  - pattern: jpeg
+  - pattern: gif
+  - pattern: odt
+  - pattern: ods
+  - pattern: key
+  - pattern: pages
