@@ -1,0 +1,14 @@
+table  13  13  0  0
+en/blog  dangling-participle-en  found
+en/design  dangling-participle-en  found
+en/email  dangling-participle-en  found
+en/figures  dangling-participle-en  found
+en/itinerary  dangling-participle-en  found
+en/minutes  dangling-participle-en  found
+en/note  dangling-participle-en  found
+en/policy  dangling-participle-en  found
+en/press  dangling-participle-en  found
+en/proposal  dangling-participle-en  found
+en/quote  dangling-participle-en  found
+en/readme  dangling-participle-en  found
+en/requirements  dangling-participle-en  found
