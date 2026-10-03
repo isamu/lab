@@ -2,9 +2,9 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { argsOf, countsLine, fillsFor, hasFill, missingFills, notRunBlock, screenMatches, screensIn } from "../scripts/guide-screens-parse.ts";
+import { argsOf, countsLine, fillsFor, hasFill, missingFills, notRunBlock, notRunRow, screenMatches, screensIn } from "../scripts/guide-screens-parse.ts";
 import { UNCHECKED } from "../scripts/guide-screens.ts";
-import { COUNTS_MARKER, NOT_RUN_MARKER, fillPage, withScreenFills } from "../site/src/lib/screenFills.ts";
+import { COUNTS_MARKER, NOT_RUN_MARKER, fillPage, notRunRowMarker, withScreenFills } from "../site/src/lib/screenFills.ts";
 
 // 手引きの画面にある「動いていない rule」の一覧と、--compact の最後の集計の行は、ページに書き写さず、サイトを作るときに
 // chaff の出力から入れる。rule を足す PR が、手引きのページを書き換えなくて済むため。
@@ -107,6 +107,55 @@ describe("notRunBlock", () => {
     assert.equal(notRunBlock("  No findings\n"), undefined);
     assert.equal(notRunBlock(""), undefined);
   });
+
+  it("一覧の下のヒント（試験中の rule を一つ名指しする行）も一覧に含める。名指しする rule は rule が増えると変わる", () => {
+    const hint = "  Turn on one experimental rule alone by naming it: npx chaffjs enable a (the same as rules: { a: normal } in chaff.yaml).";
+    const en = ["  1 rule did not run:", "      a (still experimental)", "", hint, "", "next"].join("\n");
+    assert.equal(notRunBlock(en), ["  1 rule did not run:", "      a (still experimental)", "", hint].join("\n"));
+    const ja =
+      "  1 件の rule は動いていません:\n      a（まだ試験中のため）\n\n  試験中のルールを 1 つだけ動かすには、npx chaffjs enable a のように名指しします。";
+    assert.equal(notRunBlock(ja), ja);
+    assert.equal(notRunBlock("  1 rule did not run:\n      a (x)\n\n  Something else"), "  1 rule did not run:\n      a (x)");
+  });
+
+  it("fix-plan の「動かなかったルール」の節は、次の節の前の空行までを返す", () => {
+    const plan = ["## Spots", "", "- x", "", "## Rules that did not run", "", "- `a`: why", "- `b`: why", "", "## Check after rewriting", ""].join("\n");
+    assert.equal(notRunBlock(plan), "## Rules that did not run\n\n- `a`: why\n- `b`: why");
+    assert.equal(notRunBlock("## 動かなかったルール\n\n- `a`: 理由\n"), "## 動かなかったルール\n\n- `a`: 理由");
+    assert.equal(notRunBlock("## Rules that did not run (and more)\n- `a`: why"), undefined);
+  });
+});
+
+describe("notRunRow", () => {
+  const grade = [
+    "54 not run",
+    "  abstract-length                 3 outputs  the genre does not check it",
+    "  cite                            2 outputs  no citations given",
+    "",
+  ].join("\n");
+
+  it("名指しした rule の行を、chaff が詰めたとおりに返す", () => {
+    assert.equal(notRunRow(grade, "cite"), "  cite                            2 outputs  no citations given");
+  });
+
+  it("id の頭が同じだけの行、字下げの無い行、無い rule には何も返さない", () => {
+    assert.equal(notRunRow(grade, "abstract"), undefined);
+    assert.equal(notRunRow("cite 2 outputs", "cite"), undefined);
+    assert.equal(notRunRow(grade, "compare"), undefined);
+  });
+
+  it("{not-run: <rule>} の行を埋め、chaff が出さなければ足りない印として言う", () => {
+    const shown = `$ x\n  ${notRunRowMarker("cite")}\n  ${notRunRowMarker("compare")}`;
+    assert.ok(hasFill(shown));
+    const fills = fillsFor(shown, grade);
+    assert.deepEqual(fills, { rows: { cite: "  cite                            2 outputs  no citations given" } });
+    assert.deepEqual(missingFills(shown, fills), [notRunRowMarker("compare")]);
+    assert.equal(
+      withScreenFills(`$ x\n  ${notRunRowMarker("cite")}`, fills, "en/x.md"),
+      "$ x\n  cite                            2 outputs  no citations given",
+    );
+    assert.throws(() => withScreenFills(shown, fills, "en/x.md"), /en\/x\.md.*\{not-run: compare\}/u);
+  });
 });
 
 describe("countsLine", () => {
@@ -203,6 +252,20 @@ describe("手引きのページ", () => {
 
   it("一覧を書き写したページが残っていない（見出しの行があれば、印に置き換える）", () => {
     pages.forEach(({ language, file, text }) => assert.equal(notRunBlock(text), undefined, `${language}/${file}`));
+  });
+
+  // 一覧の下のヒントは、試験中の rule のうち名前が先頭のものを名指しする。grade の一覧の行は、いちばん長い id に合わせて詰める。
+  const ALONE_HINT = /^ *(?:Turn on one experimental rule alone by naming it:|試験中のルールを 1 つだけ動かすには、)/u;
+  const GRADE_ROW = /^\s+[a-z][a-z0-9-]*\s+\d+ (?:outputs?|件の出力) {2}/u;
+
+  it("一覧の下のヒントや、詰めた一覧の 1 行を書き写したページが残っていない（{not-run} と {not-run: <rule>} に置き換える）", () => {
+    const copied = pages.flatMap(({ language, file, text }) =>
+      text
+        .split("\n")
+        .filter((line) => ALONE_HINT.test(line) || GRADE_ROW.test(line))
+        .map((line) => `${language}/${file}: ${line.trim()}`),
+    );
+    assert.deepEqual(copied, []);
   });
 
   const screensOf = (checked: boolean) =>

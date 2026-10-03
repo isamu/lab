@@ -39,6 +39,11 @@ how_to_fix:
 levels: { strict: 49, normal: 34, relaxed: 20 }
 
 use_for: [blog, business, technical, docs, academic, legal, literature, speech]
+off_for:
+  legal: "An enumeration of conditions mixes 〜こと and 〜とき by what each condition is."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
+  business/meeting-notes: "Minutes jot points down as they come: a noun, a remark, a decision, side by side."
 
 group: consistency
 summary:

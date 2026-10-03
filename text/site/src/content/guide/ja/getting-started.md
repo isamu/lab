@@ -88,8 +88,6 @@ article.md   blog/tech · 日本語   ジャンルは既定から
   文章は書き換えていません。直すのは書いた人です。
 
   {not-run}
-
-  試験中のルールを 1 つだけ動かすには、npx chaffjs enable cross-doc-broken-link のように名指しします（chaff.yaml の rules に cross-doc-broken-link: normal と書くのと同じです）。--experimental はすべてを動かします。
 ```
 
 指摘があるときは、1 件ずつ区切って出ます。次は実際の記事にかけた例です。

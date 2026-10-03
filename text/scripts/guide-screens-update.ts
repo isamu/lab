@@ -1,8 +1,8 @@
 // Pure: a guide screen rewritten to what chaff prints now, for `yarn screens:update`. The lines the page and chaff share
-// stay; between them the page's "…" stays where it stood, and the other lines become chaff's. A "{not-run}" or
-// "{counts}" line stays a marker when chaff still prints what it stands for.
+// stay; between them the page's "…" stays where it stood, and the other lines become chaff's. A "{not-run}",
+// "{not-run: <rule>}" or "{counts}" line stays a marker when chaff still prints what it stands for.
 
-import { COUNTS_MARKER, NOT_RUN_MARKER, withScreenFills, type ScreenFills } from "../site/src/lib/screenFills.ts";
+import { COUNTS_MARKER, NOT_RUN_MARKER, notRunRowMarker, withScreenFills, type ScreenFills } from "../site/src/lib/screenFills.ts";
 import { ELISION, fillsFor, missingFills } from "./guide-screens-parse.ts";
 
 /** A pair of lines kept from the page: its index among the page's output lines, and among chaff's. */
@@ -83,7 +83,11 @@ export const updatedScreen = (shown: string, actual: string): string => {
   const page = outputOf(filledScreen(shown, fills));
   const merged = mergedLines(page.body, outputOf(actual).body);
   const withNotRun = withMarker(merged, fills.notRun, markerLine(shown, NOT_RUN_MARKER));
-  const output = withMarker(withNotRun, fills.counts, markerLine(shown, COUNTS_MARKER));
+  const withRows = Object.entries(fills.rows ?? {}).reduce(
+    (lines, [rule, row]) => withMarker(lines, row, markerLine(shown, notRunRowMarker(rule))),
+    withNotRun,
+  );
+  const output = withMarker(withRows, fills.counts, markerLine(shown, COUNTS_MARKER));
   const prompt = shown.split("\n")[0] ?? "";
   return [prompt, ...page.lead, ...output, ...page.trail].join("\n");
 };

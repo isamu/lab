@@ -355,22 +355,7 @@ after:
 
 …
 
-## Rules that did not run
-
-- `abstract-length`: the blog/tech genre does not check it
-- `agentless-passive`: the blog/tech genre does not check it
-- `ai-structure`: the document has no headings below its title
-- `attachment-not-attached`: the blog/tech genre does not check it
-- `citation-reference-mismatch`: the blog/tech genre does not check it
-- `citation-style-mix`: the blog/tech genre does not check it
-- `cushion-phrase-density`: the blog/tech genre does not check it
-- `defined-name-repeated`: the blog/tech genre does not check it
-- `defined-term-form`: the blog/tech genre does not check it
-- `email-greeting-closing`: the blog/tech genre does not check it
-- `email-subject-length`: the blog/tech genre does not check it
-- `figure-reference-order`: the blog/tech genre does not check it
-- `max-sentence-length`: the blog/tech genre does not check it
-- `request-without-deadline`: the blog/tech genre does not check it
+{not-run}
 
 ## Check after rewriting
 

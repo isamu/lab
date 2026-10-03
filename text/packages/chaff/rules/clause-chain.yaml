@@ -25,6 +25,8 @@ how_to_fix:
 levels: { strict: 4, normal: 5, relaxed: 7 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  legal: measured by yarn rules:measure
 
 group: readability
 summary:

@@ -4,7 +4,7 @@
 // corpus/.cache) with each document's genre. The bench columns come from the committed bench expectations.
 //   --json                 print the measurement as JSON instead of the table
 //   --write                write the corpus part to corpus/rules-measure.json, which test/test_rule_policy.ts holds the rules to
-//   --apply                set each rule's status and severity, and genres.yaml's measured offs, from corpus/rules-measure.json
+//   --apply                set each rule's status and severity, and the groups each is measured off for (off_for), from corpus/rules-measure.json
 //   --baseline <dir>       also run every .md in <dir> (never committed) and add a baseline column
 //   --baseline-genre <id>  the genre the baseline is read as (blog/tech when left out)
 //   --from <json>          read a measurement --json printed before instead of running chaff again

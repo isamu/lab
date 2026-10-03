@@ -1,5 +1,6 @@
 import { isLevel } from "./levels.ts";
 import type { Level, Localized } from "./plugin.ts";
+import type { RuleOff } from "./rule-offs.ts";
 
 /** A preset's rules: the level each named rule runs at, under whatever chaff.yaml's rules say. */
 export type PresetLevels = Readonly<Record<string, Level>>;
@@ -137,6 +138,24 @@ export const parseGenres = (raw: unknown): GenreData => {
   const orphan = genres.find((genre) => !groups.some((group) => genre.id.startsWith(`${group.id}/`)));
   if (orphan !== undefined) throw new Error(`${orphan.id}: no group matches the part before its /`);
   return { groups, genres };
+};
+
+const withOffsFor = <T extends { readonly id: string; readonly rules: PresetLevels }>(entry: T, offs: readonly RuleOff[]): T => {
+  const mine = offs.filter((off) => off.target === entry.id);
+  const both = mine.find((off) => entry.rules[off.rule] !== undefined);
+  if (both !== undefined) throw new Error(`${both.rule}: its off_for and genres.yaml both set its level for ${entry.id}`);
+  return mine.length === 0 ? entry : { ...entry, rules: { ...entry.rules, ...Object.fromEntries(mine.map((off) => [off.rule, "off" as const])) } };
+};
+
+/**
+ * genres.yaml's data with each rule file's off_for merged in. An off for a group joins the group's rules and an off for
+ * a genre the genre's own, so a genre's own level still wins over its group's. An off naming no group or genre stops here.
+ */
+export const withRuleOffs = (data: GenreData, offs: readonly RuleOff[]): GenreData => {
+  const known = new Set([...data.groups, ...data.genres].map((entry) => entry.id));
+  const unknown = offs.find((off) => !known.has(off.target));
+  if (unknown !== undefined) throw new Error(`${unknown.rule}: off_for names ${unknown.target}, which is no group or genre`);
+  return { groups: data.groups.map((group) => withOffsFor(group, offs)), genres: data.genres.map((genre) => withOffsFor(genre, offs)) };
 };
 
 /** The levels a genre's preset sets: its group's, then its own on top. Empty for a genre chaff does not know. */

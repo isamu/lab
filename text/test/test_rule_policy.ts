@@ -11,7 +11,7 @@ import {
   withoutBaseline,
   type RuleMeasure,
 } from "../scripts/rules-measure-score.ts";
-import { measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "../scripts/rules-apply.ts";
+import { MEASURED, measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "../scripts/rules-apply.ts";
 import { policyProblems, readMeasurement } from "../scripts/rules-measure-files.ts";
 import { parseGenres } from "../packages/chaff/src/genre-parse.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
@@ -105,7 +105,7 @@ describe("disagreements", () => {
     assert.match(disagreements(ruleOf("back-on", "stable", "warning"), { kind: "normal", off: ["legal"] }, GENRES, []).join("\n"), /runs in legal\/contract/u);
   });
 
-  it("測って止めた行（# measured）は、測った結果がもう止めないと言えば外させる。手で止めた行には言わない", () => {
+  it("測って止めた行（off_for の measured）は、測った結果がもう止めないと言えば外させる。手で止めた行には言わない", () => {
     const marks = [{ group: "legal", rule: "some-rule" }];
     assert.match(disagreements(ruleOf("some-rule", "stable", "warning"), { kind: "normal", off: [] }, GENRES, marks).join("\n"), /no longer says so/u);
     assert.deepEqual(disagreements(ruleOf("hand-off", "stable", "warning"), { kind: "normal", off: [] }, GENRES, marks), []);
@@ -186,69 +186,49 @@ describe("rules-apply", () => {
     assert.throws(() => withInfoAtNormal(levelsPerLanguage), /per language/u);
   });
 
-  const genres = [
-    "groups:",
-    "  - id: technical",
-    "    name: { ja: 技術文書, en: Technical }",
-    "  # comment of the next group",
-    "  - id: legal",
-    "    name: { ja: 法務, en: Legal }",
-    "    rules:",
-    "      hand-off: off",
-    "      # why",
-    "      old: off # measured",
-    "",
-    "genres:",
-    "  - id: legal/contract",
-    "    rules:",
-    "      fake: off # measured",
+  const ruleFile = [
+    "id: some-rule",
+    "use_for: [business, legal]",
+    "off_for:",
+    '  legal: "Drafting writes it on purpose."',
+    `  speech: ${MEASURED}`,
+    "sources: []",
     "",
   ].join("\n");
 
-  it("measured の行を group ごとに読む。genres: より下は group ではない", () => {
-    assert.deepEqual(measuredOffsOf(genres), [{ group: "legal", rule: "old" }]);
+  it("off_for の中で、--apply が測って書いた行だけを読む", () => {
+    assert.deepEqual(measuredOffsOf("some-rule", ruleFile), [{ group: "speech", rule: "some-rule" }]);
+    assert.deepEqual(measuredOffsOf("plain", "id: plain\nuse_for: [business]\n"), []);
   });
 
-  it("measured の行を入れ替える。rules: の無い group には作り、手で止めた rule には足さず、空になった rules: は消す", () => {
-    const updated = withMeasuredOffs(genres, [
-      { group: "technical", rule: "b-rule" },
-      { group: "technical", rule: "a-rule" },
-      { group: "legal", rule: "hand-off" },
-    ]);
+  it("measured の行を入れ替える。手で止めた group には足さず、並べて書く", () => {
+    const updated = withMeasuredOffs(ruleFile, ["literature", "legal", "blog"]);
     assert.equal(
       updated,
       [
-        "groups:",
-        "  - id: technical",
-        "    name: { ja: 技術文書, en: Technical }",
-        "    rules:",
-        "      a-rule: off # measured",
-        "      b-rule: off # measured",
-        "  # comment of the next group",
-        "  - id: legal",
-        "    name: { ja: 法務, en: Legal }",
-        "    rules:",
-        "      hand-off: off",
-        "      # why",
-        "",
-        "genres:",
-        "  - id: legal/contract",
-        "    rules:",
-        "      fake: off # measured",
+        "id: some-rule",
+        "use_for: [business, legal]",
+        "off_for:",
+        '  legal: "Drafting writes it on purpose."',
+        `  blog: ${MEASURED}`,
+        `  literature: ${MEASURED}`,
+        "sources: []",
         "",
       ].join("\n"),
     );
-    assert.deepEqual(measuredOffsOf(updated), [
-      { group: "technical", rule: "a-rule" },
-      { group: "technical", rule: "b-rule" },
+    assert.deepEqual(measuredOffsOf("some-rule", updated), [
+      { group: "blog", rule: "some-rule" },
+      { group: "literature", rule: "some-rule" },
     ]);
-    assert.equal(withMeasuredOffs(updated, measuredOffsOf(updated)), updated);
-    assert.throws(() => withMeasuredOffs(genres, [{ group: "nope", rule: "a" }]), /no group nope/u);
+    assert.equal(withMeasuredOffs(updated, ["blog", "literature"]), updated);
   });
 
-  it("measured の行がすべて消えた group の rules: は残さない", () => {
-    const only = ["groups:", "  - id: blog", "    name: { ja: ブログ, en: Blog }", "    rules:", "      x: off # measured", "", "genres:"].join("\n");
-    assert.equal(withMeasuredOffs(only, []), ["groups:", "  - id: blog", "    name: { ja: ブログ, en: Blog }", "", "genres:"].join("\n"));
+  it("off_for の無い rule には use_for の下に作り、measured の行がすべて消えた off_for は残さない", () => {
+    const plain = "id: plain\nuse_for: [business]\nsources: []\n";
+    const added = withMeasuredOffs(plain, ["blog"]);
+    assert.equal(added, `id: plain\nuse_for: [business]\noff_for:\n  blog: ${MEASURED}\nsources: []\n`);
+    assert.equal(withMeasuredOffs(added, []), plain);
+    assert.throws(() => withMeasuredOffs("id: x\n", ["blog"]), /no use_for/u);
   });
 });
 

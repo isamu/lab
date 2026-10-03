@@ -43,8 +43,16 @@ placeholders:
 levels: { strict: warning, normal: info, relaxed: info }
 
 # 要求を書く文書だけ。仕様書、契約書・規約、説明書（マニュアル・FAQ）。ほかの法務・説明書のジャンルと、学術・文学・話し言葉は
-# genres.yaml で止める（法令は「等」を定義して使う、用語集の「〜すること。」は語の説明）。
+# off_for で止める（法令は「等」を定義して使う、用語集の「〜すること。」は語の説明）。
 use_for: [technical/spec, legal, docs, academic, literature, speech]
+off_for:
+  academic: "Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A transcript keeps the speaker's words: hedges and ら dropped as spoken."
+  legal/statute: "A statute defines its 等 terms (以下「個人情報等」という) and uses them in its obligations."
+  legal/judgment: "requirement-smell is for the documents that state requirements: specifications, contracts and documentation."
+  legal/patent: "requirement-smell is for the documents that state requirements: specifications, contracts and documentation."
+  docs/glossary: "An entry that ends 〜すること or 〜のこと defines a word; it is no requirement."
 sources: [femmer-2017, berry-2003, iso-29148]
 
 group: wording
