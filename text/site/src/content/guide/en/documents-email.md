@@ -73,6 +73,8 @@ $ npx chaffjs email.md --compact
 email.md   blog/tech · English   genre from the default
    Looks like: Email and letter. Try --genre business/email
 
+  7:1     info    This sentence runs 46 words (limit 40)
+                  max-sentence-length
   7:58    warning This sentence stacks 2 hedges ("might, perhaps")
                   excessive-hedging
   13:11   error   2026-10-10 is a Saturday, not a Friday
@@ -99,6 +101,8 @@ email.md   business/email · English   genre from --genre
                   cushion-phrase-density
   7:1     info    "i was wondering if" and other softeners: 26 per 1000 words (limit 5)
                   cushion-phrase-density
+  7:1     info    This sentence runs 46 words (limit 18)
+                  max-sentence-length
   7:58    warning This sentence stacks 2 hedges ("might, perhaps")
                   excessive-hedging
   9:1     info    "sorry to bother" and other softeners: 26 per 1000 words (limit 5)

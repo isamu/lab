@@ -173,8 +173,14 @@ $ npx chaffjs draft.txt --experimental --compact
 
 draft.txt   blog/tech · English   genre from the default
 
+  2:1     info    This sentence runs 51 words (limit 40)
+                  max-sentence-length
+  9:1     info    This sentence runs 51 words (limit 40)
+                  max-sentence-length
   10:1    error   "(3)" follows "(1)" (expected number 2)
                   numbering-gap
+  11:1    info    This sentence runs 48 words (limit 40)
+                  max-sentence-length
   14:136  error   "section 35" (address 35) is not in this document
                   dangling-reference
   16:1    info    This paragraph runs 8 sentences (limit 5)
@@ -198,8 +204,14 @@ $ npx chaffjs fixed.txt --experimental --compact
 
 fixed.txt   blog/tech · English   genre from the default
 
+  2:1     info    This sentence runs 51 words (limit 40)
+                  max-sentence-length
   8:1     info    This paragraph runs 6 sentences (limit 5)
                   max-paragraph-length
+  9:1     info    This sentence runs 51 words (limit 40)
+                  max-sentence-length
+  12:1    info    This sentence runs 48 words (limit 40)
+                  max-sentence-length
   17:1    info    This paragraph runs 8 sentences (limit 5)
                   max-paragraph-length
 

@@ -176,7 +176,7 @@ $ npx chaffjs explain max-sentence-length
     relaxed  一文 140 字まで
     off      見ない
 
-  この数字は 既定 のものです。ほかに business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / legal/judgment / academic で別の数字を持っています。
+  この数字は 既定 のものです。ほかに technical / blog / blog/essay / business / business/email / docs / legal / legal/statute / legal/judgment / academic で別の数字を持っています。
 
   いまは normal です。
 

@@ -178,7 +178,7 @@ $ npx chaffjs explain max-sentence-length
     relaxed  up to 35 words in a sentence
     off      not checked
 
-  These numbers are for the default genre. business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / docs/glossary / academic have numbers of their own.
+  These numbers are for the default genre. technical / blog / blog/essay / business / business/email / docs / legal / legal/statute / docs/glossary / academic have numbers of their own.
 
   Now: normal.
 
