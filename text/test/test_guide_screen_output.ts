@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { UNCHECKED, UNCHECKED_ON_WINDOWS, differingScreens, guidePages, pageName, readGuidePage, type GuidePage } from "../scripts/guide-screens.ts";
+import { UNCHECKED, UNCHECKED_ON_WINDOWS, differingInChildren, guidePages, readGuidePage } from "../scripts/guide-screens.ts";
 
 // 手引きの画面は、その画面の文書に chaff を実際にかけた出力と同じでなければならない。古い画面は、読み手に今の chaff と
 // 違うものを見せる。画面の文書は、ページの file= の塊と site/src/screens/<言語>/<ページ>/ に置く。
@@ -15,9 +15,7 @@ const notOnPage = (page: string, commands: readonly string[]): string[] => {
 
 describe("手引きの画面", () => {
   it("どの画面も、その文書に chaff をかけた出力と同じ（「…」の行は何行でも、印の行はその実行から埋める）", async () => {
-    const differingOn = async (page: GuidePage): Promise<string[]> =>
-      (await differingScreens(page)).map(({ screen }) => `${pageName(page)}: ${screen.command}`);
-    const differing = await guidePages().reduce<Promise<string[]>>(async (done, page) => [...(await done), ...(await differingOn(page))], Promise.resolve([]));
+    const differing = await differingInChildren(guidePages());
     assert.deepEqual(
       differing,
       [],

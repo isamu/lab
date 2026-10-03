@@ -12,6 +12,7 @@ import { ELISION, asScreen, fillsFor, hasFill, missingFills, replaceScreens, scr
 import { updatedScreen } from "./guide-screens-update.ts";
 import { withScreenFills, type PageFills, type ScreenFills } from "../site/src/lib/screenFills.ts";
 import { runCli } from "../test/cli-run.ts";
+import { mapInChildren } from "./in-children.ts";
 
 const SITE = join(import.meta.dirname, "..", "site", "src");
 const GUIDE = join(SITE, "content", "guide");
@@ -193,6 +194,27 @@ export const differingScreens = async (page: GuidePage): Promise<{ screen: Scree
     const check = await checkScreen(page, documents, screen);
     return check.matches ? found : [...found, { screen, check }];
   }, Promise.resolve([]));
+};
+
+const isGuidePage = (value: unknown): value is GuidePage =>
+  typeof value === "object" && value !== null && "language" in value && typeof value.language === "string" && "file" in value && typeof value.file === "string";
+
+/** For each page, the commands of its checked screens that differ from chaff, run in this process one page at a time. */
+export const differingCommandsOf = async (pages: unknown): Promise<string[][]> => {
+  if (!Array.isArray(pages) || !pages.every(isGuidePage)) throw new Error("guide-screens: differingCommandsOf takes a list of { language, file }");
+  return pages.reduce<Promise<string[][]>>(
+    async (done, page) => [...(await done), (await differingScreens(page)).map(({ screen }) => screen.command)],
+    Promise.resolve([]),
+  );
+};
+
+const isStringList = (value: unknown): value is string[] => Array.isArray(value) && value.every((item) => typeof item === "string");
+
+/** Every checked screen of the given pages that differs from chaff, as "<lang>/<page>: <command>", the pages run in several processes at once. */
+export const differingInChildren = async (pages: readonly GuidePage[]): Promise<string[]> => {
+  const commands = await mapInChildren(import.meta.url, "differingCommandsOf", pages);
+  if (!commands.every(isStringList)) throw new Error("guide-screens: a worker returned something other than a list of commands");
+  return pages.flatMap((page, index) => (commands[index] ?? []).map((command) => `${pageName(page)}: ${command}`));
 };
 
 /** The guide pages named ("en/commands.md"), or every page when none is named; a name that is no page stops here. */
