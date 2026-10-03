@@ -1,0 +1,11 @@
+# 論文の要旨の札。見出し、一行だけの段落、段落の頭（「【要旨】本研究は…」「要旨：…」）のどれでも読む。
+# 番号・コロン・括弧・大文字小文字の違いは問わない。和文の論文に付く英文の Abstract も読み、英語の単位と上限で測る。
+id: abstract-heading
+language: ja
+entries:
+  - pattern: 要旨
+  - pattern: 抄録
+  - pattern: 要約
+  - pattern: 梗概
+  - pattern: 概要
+  - pattern: Abstract

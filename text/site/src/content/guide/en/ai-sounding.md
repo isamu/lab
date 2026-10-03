@@ -393,9 +393,13 @@ after:
 
 ## Rules that did not run
 
+- `abstract-length`: the blog/tech genre does not check it
 - `agentless-passive`: the blog/tech genre does not check it
 - `ai-structure`: the document has no headings below its title
+- `citation-reference-mismatch`: the blog/tech genre does not check it
+- `citation-style-mix`: the blog/tech genre does not check it
 - `cushion-phrase-density`: the blog/tech genre does not check it
+- `figure-reference-order`: the blog/tech genre does not check it
 
 ## Check after rewriting
 
