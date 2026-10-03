@@ -128,8 +128,6 @@ kitei.md   legal/statute · 日本語   ジャンルは --genre から
   試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
 
   {not-run}
-
-  試験中のルールを 1 つだけ動かすには、npx chaffjs enable absolute-exception のように名指しします（chaff.yaml の rules に absolute-exception: normal と書くのと同じです）。--experimental はすべてを動かします。
 ```
 
 ## 指摘の読み方

@@ -248,8 +248,9 @@ Each finding points at a line and column of its own file, so stet, the baseline 
 Its `example` adds `other:`, a third file checked in the same run as `before` and `after`.
 
 The guide's screens do not copy out what changes with every new rule.
-A screen writes `{not-run}` where chaff lists the rules that did not run, and `{counts}` where `--compact` ends with its tally.
-The site fills both in from chaff's output when it is built.
+A screen writes `{not-run}` where chaff lists the rules that did not run (the hint under the list comes with it), and `{counts}` where `--compact` ends with its tally.
+To show one rule's line of such a list, write `{not-run: <rule>}`: chaff pads the list to its longest id, so a copied line changes with every new rule.
+The site fills them all in from chaff's output when it is built.
 
 `yarn test` runs every screen on its documents and stops when one differs from what chaff prints.
 The documents are the page's `file=` blocks and the files in `site/src/screens/<lang>/<page>/`.
