@@ -1,0 +1,9 @@
+# The kinds of figure-label that sit in the text, near where they are referred to: a figure or a table is placed after
+# its first reference and is referred to at least once. An appendix or an annex sits at the end and may stand unreferenced.
+id: figure-in-text
+language: en
+entries:
+  - pattern: Figure
+  - pattern: Table
+  - pattern: Chart
+  - pattern: Exhibit
