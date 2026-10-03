@@ -42,6 +42,10 @@ how_to_fix:
 levels: { strict: 49, normal: 34, relaxed: 20 }
 
 use_for: [blog, business, technical, docs, academic, legal, literature, speech]
+off_for:
+  legal: "Drafting writes a number twice on purpose: thirty (30) days."
+  literature: "A narrator spells out numbers in dialogue and writes figures in a date."
+  speech: "Spoken numbers are transcribed as heard."
 
 group: consistency
 summary:

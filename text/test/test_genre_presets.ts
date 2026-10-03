@@ -1,7 +1,9 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parseGenres, presetLevelsOf, presetProfileOf, type GenreData } from "../packages/chaff/src/genre-parse.ts";
+import { fileURLToPath } from "node:url";
+import { parseGenres, presetLevelsOf, presetProfileOf, withRuleOffs, type GenreData } from "../packages/chaff/src/genre-parse.ts";
+import { loadRuleOffs } from "../packages/chaff/src/rule-offs.ts";
 import { loadGenres, presetLevels } from "../packages/chaff/src/genre-load.ts";
 import { GENRES } from "../packages/chaff/src/genre.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -19,7 +21,7 @@ import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { asExperimental, firedRules, namedRuleRun } from "./rule-run.ts";
-import { withMeasuredOffs } from "../scripts/rules-apply.ts";
+import { MEASURED } from "../scripts/rules-apply.ts";
 import { parse } from "yaml";
 
 const localized = (text: string): { ja: string; en: string } => ({ ja: `${text}（ja）`, en: text });
@@ -168,8 +170,9 @@ describe("同梱の genres.yaml", () => {
   });
 
   it("手で段を書いた群には、意味を読む検査を除くどの rule も当たる（止めるなら段で止め、一覧に出す）", () => {
-    // 測って止めた行（# measured）は、use_for の決めごととは別のもの。
-    const handWritten = parseGenres(parse(withMeasuredOffs(readFileSync(new URL("../packages/chaff/genres.yaml", import.meta.url), "utf8"), [])));
+    // 測って止めた off_for（measured by yarn rules:measure）は、use_for の決めごととは別のもの。
+    const handOffs = loadRuleOffs(fileURLToPath(new URL("../packages/chaff/rules", import.meta.url))).filter((off) => off.reason !== MEASURED);
+    const handWritten = withRuleOffs(parseGenres(parse(readFileSync(new URL("../packages/chaff/genres.yaml", import.meta.url), "utf8"))), handOffs);
     const presetGroups = handWritten.groups.filter((group) => Object.keys(group.rules).length > 0).map((group) => group.id);
     const missing = rules.en
       .filter((rule) => rule.layer !== "L4")

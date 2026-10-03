@@ -107,9 +107,21 @@ export type RuleSpec = {
   readonly name?: Text;
   readonly why?: Text;
   readonly how_to_fix?: Text;
-  readonly example?: { readonly before: Text; readonly after: Text };
+  /** { before, after }, or one pair per language as chaff's own rules write it: { ja: { before, after }, en: … }. */
+  readonly example?: { readonly before: Text; readonly after: Text } | Readonly<Record<string, { readonly before: string; readonly after: string }>>;
   readonly message?: Text;
+  /** One severity for normal; strict is one heavier and relaxed one lighter. Or levels, not both. */
   readonly level?: Severity;
+  /** A severity for each level, as chaff's rules with nothing to count write them. normal is required. */
+  readonly levels?: Readonly<Partial<Record<"strict" | "normal" | "relaxed", Severity>>>;
+  /** The genres the rule is for, or their first part (business, business/report). Without it, every genre. */
+  readonly use_for?: readonly string[];
+  /** Where the rule reference lists it (readability, wording, …). Without it, team. */
+  readonly group?: string;
+  /** What the rule finds, in one line. Without it, the name. */
+  readonly summary?: Text;
+  /** How chaff fix-plan rewrites what the rule flags: depth (light / structure / register) and, by language, direction, pairs, keep and avoid. */
+  readonly rewrite?: Readonly<Record<string, unknown>>;
   /** The languages the rule checks. Without it, every language. */
   readonly languages?: readonly string[];
   /** A word list by name; the detector gets it as options.lexicon. A plugin's own lists are named without the plugin's prefix. */

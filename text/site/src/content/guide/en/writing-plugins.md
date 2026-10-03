@@ -73,7 +73,7 @@ export const noTbdDates = (doc) =>
 ```
 
 Third, `export default` a `definePlugin` from `index.mjs`.
-Each rule has a name, a reason, a fix and an example, as in `custom_rules`.
+Each rule has a name, a reason, a fix and an example, as in `custom_rules`, and may write the other fields chaff's own rules have (`levels`, `use_for`, `group`, `summary`, `rewrite`; see [Adding a rule](./adding-rules#writing-a-team-rule-the-way-chaffs-own-rules-are-written)).
 `name` comes from the package's name: `chaff-plugin-example` is `example`.
 
 ```js

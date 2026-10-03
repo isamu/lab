@@ -75,7 +75,7 @@ describe("type: module custom rules", () => {
   });
 
   describe("parseCustomRules: a module rule", () => {
-    const CONTEXT = { builtIn: new Set<string>(), useFor: ["blog"], baseDir: PROJECT };
+    const CONTEXT = { builtIn: new Set<string>(), useFor: ["blog"], genres: ["blog"], baseDir: PROJECT };
     const EXPLAINED = { name: "N", why: "W", how_to_fix: "H", example: { before: "B", after: "A" } };
     const parsedRule = (raw: Record<string, unknown>): RuleDefinition | undefined => parseCustomRules([{ ...EXPLAINED, ...raw }], CONTEXT).rules[0];
 

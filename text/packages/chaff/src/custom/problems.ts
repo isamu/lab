@@ -5,11 +5,13 @@ import { customRulesOf } from "./load.ts";
 import { MAX_PATTERN_LENGTH, MAX_REPEATS, type RegexRefusal } from "./regex-safety.ts";
 import { POS_WRITTEN_NAMES } from "./token-pattern.ts";
 import type { ModulePathRefusal } from "./module-path.ts";
-import { unknownDepthSentence } from "../rewrite-depth.ts";
+import { fieldProblemSentence, type FieldKind, type FieldProblem } from "../rule-fields.ts";
 
 /** Each problem's sentence, with {at}, {written}, {field}, {index}, {refusal} and {names} filled in from the problem. */
 type Text = {
-  readonly problems: Readonly<Record<CustomProblem["kind"], string>>;
+  readonly problems: Readonly<Record<Exclude<CustomProblem["kind"], FieldKind>, string>>;
+  /** What comes before a shared field's own sentence (rule-fields.ts). */
+  readonly fieldAt: string;
   readonly refusal: Readonly<Record<RegexRefusal, string>>;
   readonly modulePath: Readonly<Record<ModulePathRefusal, string>>;
 };
@@ -46,8 +48,11 @@ const TEXT: Texts<Text> = {
       "bad-token": "{scope} の {at}: tokens の {index} 番目に pos・base・surface のどれもありません",
       "unknown-pos": "{scope} の {at}: 品詞 {written} は知りません（{names}）",
       "bad-pattern": "{scope} の {at}: pattern を使えません。{refusal}",
-      "bad-depth": `{scope} の {at}: ${unknownDepthSentence("rewrite.depth", "{written}", "ja")}`,
+      "level-and-levels": "{scope} の {at}: level と levels の両方があります。どちらか一つにしてください",
+      "bad-levels":
+        "{scope} の {at}: levels: {written} は読めません。strict・normal・relaxed に重さ（error / warning / info）を書き、normal は必ず書きます。チームのルールは箇所を出すので、数は書けません",
     },
+    fieldAt: "{scope} の {at}: ",
   },
   en: {
     modulePath: {
@@ -80,8 +85,11 @@ const TEXT: Texts<Text> = {
       "bad-token": "{scope} {at}: token {index} has none of pos, base and surface",
       "unknown-pos": "{scope} {at}: unknown part of speech {written} ({names})",
       "bad-pattern": "{scope} {at}: the pattern cannot be used: {refusal}",
-      "bad-depth": `{scope} {at}: ${unknownDepthSentence("rewrite.depth", "{written}", "en")}`,
+      "level-and-levels": "{scope} {at}: has both level and levels; keep one",
+      "bad-levels":
+        "{scope} {at}: cannot read levels: {written}. Give strict, normal and relaxed a severity (error / warning / info), normal always. A team's rule reports places, so a number has nothing to count",
     },
+    fieldAt: "{scope} {at}: ",
   },
 };
 
@@ -103,10 +111,15 @@ const valuesOf = (problem: CustomProblem, text: Text, scope: string): Readonly<R
   names: POS_WRITTEN_NAMES.join(" / "),
 });
 
+const FIELD_KINDS: ReadonlySet<string> = new Set<FieldKind>(["bad-depth", "bad-group", "bad-use-for", "bad-summary", "bad-example"]);
+
+const isFieldProblem = (problem: CustomProblem): problem is FieldProblem & { readonly at: string } => FIELD_KINDS.has(problem.kind);
+
 /** One problem as a sentence. scope names the list the rule is in: custom_rules, or a plugin's rules. */
 export const customProblemSentence = (problem: CustomProblem, ui: UiLanguage, scope = "custom_rules"): string => {
   const values = valuesOf(problem, TEXT[ui], scope);
-  return TEXT[ui].problems[problem.kind].replace(PLACEHOLDER, (_whole, key: string) => values[key] ?? "");
+  const fill = (template: string): string => template.replace(PLACEHOLDER, (_whole, key: string) => values[key] ?? "");
+  return isFieldProblem(problem) ? `${fill(TEXT[ui].fieldAt)}${fieldProblemSentence(problem, ui)}` : fill(TEXT[ui].problems[problem.kind]);
 };
 
 /** What in custom_rules cannot run. Each stops the run: a team's rule that silently does not run looks like a clean document. */

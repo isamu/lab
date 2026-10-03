@@ -223,6 +223,47 @@ export default (doc) =>
 関数に渡るもの、返すもの、テストの書き方、壊れたときの出力は [プラグインを作る](./writing-plugins) にあります。
 `chaff.yaml` と同じフォルダより外にあるファイルは、絶対パスで書いたときだけ読みます。読み込むと、そのコードが動くためです。
 
+## チームのルールを chaff のルールと同じ形で書く
+
+`custom_rules` のルール（プラグインのルールも）は、chaff のルールのファイルが持つ欄も書けます。
+どれも省けます。省けば、これまでのチームのルールと同じに読みます。
+
+```yaml
+custom_rules:
+  - id: no-tbd
+    type: words
+    words: [TBD]
+    name: { ja: TBD が残っている, en: TBD left in }
+    why: { ja: 読み手が動けません。, en: A reader cannot act on it. }
+    how_to_fix: { ja: 決めたことを書きます。, en: Write what was decided. }
+    levels: { strict: error, normal: warning, relaxed: info }
+    use_for: [business]
+    group: slips
+    summary: { ja: 決めずに残した TBD, en: A TBD nobody resolved }
+    example:
+      ja: { before: 期限は TBD。, after: 期限は 5 月 1 日。 }
+      en: { before: Due TBD., after: Due 1 May. }
+    rewrite:
+      depth: light
+      ja:
+        direction: TBD を決めたことに置き換えます。決まっていなければ書き手に聞きます。
+        pairs: [{ before: 期限は TBD。, after: 期限は［日付］。 }]
+        keep: [文のほかの部分]
+        avoid: [日付を作る]
+```
+
+| 欄 | 決めること | 書かなければ |
+| --- | --- | --- |
+| `levels` | `strict`・`normal`・`relaxed` ごとの重さ。`normal` は必須です。`level` とどちらか一つにします。チームのルールは箇所を出すので、数は書けません | `level`、それも無ければ `warning` |
+| `use_for` | このルールを使うジャンル、またはその頭（`business`） | すべてのジャンル |
+| `group` | chaff の分類のどこに並べるか（`slips`、`wording` など） | `team` |
+| `summary` | 何を見つけるかを一行で | 名前 |
+| `example` | `{ before, after }` か、言語ごとの組 | どちらかの形で必須 |
+| `rewrite` | `chaff fix-plan` が直す人に渡す方向と、その深さ `depth`（[AIっぽさを直す](./ai-sounding#書き直しの深さを決める)） | `how_to_fix` |
+
+chaff のルール、チームのルール、プラグインのルールは一か所で確かめるので、同じ間違いには同じ文が出ます。
+chaff の知らない値（無い分類の `group`、どのジャンルでもない `use_for`、深さでない `depth`）は実行を止め、その値を名指しします。
+
 ## chaff 本体にルールを足す
 
 どのチームにも役立つルールは、chaff 本体に足せます。
@@ -245,9 +286,23 @@ chaff は、ファイルを二つ以上かフォルダを渡したときだけ�
 指摘はどれも自分のファイルの行と桁を指すので、stet、baseline、SARIF はほかの指摘と同じに扱います。
 `example` には、`before` と `after` と同じ回に渡す三つ目のファイル `other:` を書きます。
 
+どのジャンルで動くかも、ルールの定義に書きます。`use_for` に、見る group とジャンルを並べます。
+わざとそう書くジャンル（法務の「〜を行う」など）でルールを止めるときは、`off_for` にその group かジャンルと、止める理由を書きます。
+
+```yaml
+use_for: [business, legal, docs]
+off_for:
+  legal: 'Drafting writes "in the event that" and "for the purpose of" on purpose.'
+```
+
+止めたルールは、そのジャンルを理由にして「動いていないルール」に並びます。
+`genres.yaml` には、ジャンルそのものについてのこと（名前、説明、文書の種類、見分け方、ジャンルが動かす試験中のルール）だけを書き、新しいルールのためには書き換えません。
+`yarn rules:measure --apply` が測って止めた group は、`off_for` に `measured by yarn rules:measure` と書かれます。
+
 手引きの画面に、ルールが増えるたびに変わる行は書き写しません。
-画面には、動いていないルールを並べる所に `{not-run}`、`--compact` が最後に出す集計の行に `{counts}` と書きます。
-サイトを作るときに、chaff の出力からどちらも入れます。
+画面には、動いていないルールを並べる所に `{not-run}`（一覧の下のヒントも含みます）、`--compact` が最後に出す集計の行に `{counts}` と書きます。
+一覧のうち一つのルールの行だけを見せるときは `{not-run: <rule>}` と書きます。一覧はいちばん長い id に合わせて詰めるので、書き写した行はルールが増えるたびに変わります。
+サイトを作るときに、chaff の出力からどれも入れます。
 
 `yarn test` は、どの画面もその文書にかけ直し、chaff の出力と違えば止まります。
 文書は、ページの `file=` の付いた塊と、`site/src/screens/<言語>/<ページ>/` のファイルです。

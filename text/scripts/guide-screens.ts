@@ -12,6 +12,7 @@ import { ELISION, asScreen, fillsFor, hasFill, missingFills, replaceScreens, scr
 import { updatedScreen } from "./guide-screens-update.ts";
 import { withScreenFills, type PageFills, type ScreenFills } from "../site/src/lib/screenFills.ts";
 import { runCli } from "../test/cli-run.ts";
+import { mapInChildren } from "./in-children.ts";
 
 const SITE = join(import.meta.dirname, "..", "site", "src");
 const GUIDE = join(SITE, "content", "guide");
@@ -112,15 +113,6 @@ const fillsOfPage = async (page: GuidePage): Promise<[string, PageFills]> => {
   return [pageName(page), fills];
 };
 
-/** The lines to fill in for every guide page's marked screens, one command-line run per screen. */
-const guideScreenFills = async (): Promise<Record<string, PageFills>> => {
-  const entries = await guidePages().reduce<Promise<[string, PageFills][]>>(
-    async (done, page) => [...(await done), await fillsOfPage(page)],
-    Promise.resolve([]),
-  );
-  return Object.fromEntries(entries.filter(([, fills]) => fills.length > 0));
-};
-
 /** A screen compared with chaff: the page's screen with its markers filled in, what chaff printed, and whether they agree. */
 export type ScreenCheck = { readonly shown: string; readonly actual: string; readonly matches: boolean };
 
@@ -193,6 +185,57 @@ export const differingScreens = async (page: GuidePage): Promise<{ screen: Scree
     const check = await checkScreen(page, documents, screen);
     return check.matches ? found : [...found, { screen, check }];
   }, Promise.resolve([]));
+};
+
+const isGuidePage = (value: unknown): value is GuidePage =>
+  typeof value === "object" && value !== null && "language" in value && typeof value.language === "string" && "file" in value && typeof value.file === "string";
+
+/** For each page, the commands of its checked screens that differ from chaff, run in this process one page at a time. */
+export const differingCommandsOf = async (pages: unknown): Promise<string[][]> => {
+  if (!Array.isArray(pages) || !pages.every(isGuidePage)) throw new Error("guide-screens: differingCommandsOf takes a list of { language, file }");
+  return pages.reduce<Promise<string[][]>>(
+    async (done, page) => [...(await done), (await differingScreens(page)).map(({ screen }) => screen.command)],
+    Promise.resolve([]),
+  );
+};
+
+const isStringList = (value: unknown): value is string[] => Array.isArray(value) && value.every((item) => typeof item === "string");
+
+/** Every checked screen of the given pages that differs from chaff, as "<lang>/<page>: <command>", the pages run in several processes at once. */
+export const differingInChildren = async (pages: readonly GuidePage[]): Promise<string[]> => {
+  const commands = await mapInChildren(import.meta.url, "differingCommandsOf", pages);
+  if (!commands.every(isStringList)) throw new Error("guide-screens: a worker returned something other than a list of commands");
+  return pages.flatMap((page, index) => (commands[index] ?? []).map((command) => `${pageName(page)}: ${command}`));
+};
+
+/** For each page, the fills of its marked screens, run in this process one page at a time. */
+export const fillsOfPages = async (pages: unknown): Promise<PageFills[]> => {
+  if (!Array.isArray(pages) || !pages.every(isGuidePage)) throw new Error("guide-screens: fillsOfPages takes a list of { language, file }");
+  return pages.reduce<Promise<PageFills[]>>(async (done, page) => [...(await done), (await fillsOfPage(page))[1]], Promise.resolve([]));
+};
+
+const isOptionalString = (value: unknown): boolean => value === undefined || typeof value === "string";
+
+const isScreenFills = (value: unknown): value is ScreenFills =>
+  typeof value === "object" &&
+  value !== null &&
+  (!("notRun" in value) || isOptionalString(value.notRun)) &&
+  (!("counts" in value) || isOptionalString(value.counts)) &&
+  (!("rows" in value) || (typeof value.rows === "object" && value.rows !== null && Object.values(value.rows).every((row) => typeof row === "string")));
+
+const isPageFills = (value: unknown): value is PageFills =>
+  Array.isArray(value) &&
+  value.every(
+    (entry: unknown) =>
+      typeof entry === "object" && entry !== null && "command" in entry && typeof entry.command === "string" && "fills" in entry && isScreenFills(entry.fills),
+  );
+
+/** The lines to fill in for every guide page's marked screens, one command-line run per screen, the pages run in several processes at once. */
+const guideScreenFills = async (): Promise<Record<string, PageFills>> => {
+  const pages = guidePages();
+  const fills = await mapInChildren(import.meta.url, "fillsOfPages", pages);
+  if (!fills.every(isPageFills)) throw new Error("guide-screens: a worker returned something other than a page's fills");
+  return Object.fromEntries(pages.map((page, index): [string, PageFills] => [pageName(page), fills[index] ?? []]).filter(([, made]) => made.length > 0));
 };
 
 /** The guide pages named ("en/commands.md"), or every page when none is named; a name that is no page stops here. */

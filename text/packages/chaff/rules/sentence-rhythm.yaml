@@ -28,6 +28,12 @@ levels:
   relaxed: 20
 
 use_for: [technical/readme, blog, legal, docs, academic, literature, speech]
+off_for:
+  legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
+  docs: "A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up."
+  academic: "Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
 sources: [iwamoto-2026]
 
 group: readability

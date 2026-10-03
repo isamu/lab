@@ -1,5 +1,8 @@
 # chaff（text/）のゲート。scoria-ci.yml と同じ形で、対象ディレクトリだけが違う。
 # paths で切っているので、coding/ だけを触る PR では走らない。
+# 静的な検査、テスト（3 OS × 部分）、実文書・corpus・bench:ai、bench を別の job にして並べて走らせる。
+# job の数はアカウントで同時に走らせられる数を取り合うので、増やしすぎない（macOS は特に少ない）。
+# Windows の広い実行（lint・typecheck・build と分けないテスト）は chaff-windows-daily.yml。
 name: chaff ci
 
 on:
@@ -12,26 +15,42 @@ on:
 permissions:
   contents: read
 
+# PR に push し直したら、古いコミットの実行は止める。main への push は commit ごとに最後まで走らせる。
+concurrency:
+  group: chaff-ci-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # test の matrix の part と揃える。matrix は env から作れない。
+  TEST_SHARD_COUNT: "4"
+
 defaults:
   run:
     working-directory: text
 
 jobs:
-  ci:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 40
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+  # 文書にかけない検査。OS で結果が変わらないので ubuntu だけで走らせる。
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - uses: actions/setup-node@v7
+        id: setup-node
         with:
           node-version: "24"
+
+      # 組み上がった node_modules を使い回す。保存は test の part 1 だけがする（同じ key を何 job もが上げに行かないように）。
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            text/node_modules
+            text/packages/*/node_modules
+          key: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('text/yarn.lock') }}
+          restore-keys: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-
 
       - run: yarn install --frozen-lockfile
 
@@ -51,20 +70,127 @@ jobs:
       - name: build
         run: yarn build
 
+  # 公開しているパッケージなので 3 OS で回す。テストファイルを scripts/test-parts.ts の部分に分け、部分ごとに別の job で走らせる。
+  # 部分 1 は全部の rule の例と手引きの画面を回す重いファイル、残りの部分はほかのファイルを分け合う。
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        part: [1, 2, 3, 4]
+    name: test (${{ matrix.os }}, part ${{ matrix.part }}/4)
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # 文書（docs/・plans/・text 直下の *.md）だけを変える PR では、ubuntu 以外のテストを飛ばす。
+      # テストは手引きのページ（site/ の *.md）も読むので、そこを変える PR は 3 OS とも走らせる。ubuntu はいつも全部走らせる。
+      # PR 以外のとき、変えたファイルを取れなかったときは、全部走らせる。
+      - name: scope
+        id: scope
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          code=true
+          if [ "$EVENT" = pull_request ] && files=$(gh api "repos/$REPO/pulls/$PR/files" --paginate --jq '.[].filename'); then
+            if [ -n "$files" ] && ! grep -qvE '^(plans|text/plans|text/docs)/|^(text/)?[^/]+\.md$' <<<"$files"; then
+              code=false
+            fi
+          fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "runs the tests here: $([ "$code" = true ] || [ "$RUNNER_OS" = Linux ] && echo yes || echo no, documents only)"
+
+      - uses: actions/setup-node@v7
+        id: setup-node
+        if: runner.os == 'Linux' || steps.scope.outputs.code == 'true'
+        with:
+          node-version: "24"
+
+      # Windows では workspace の link が junction で、tar に入れたときに link のまま残るかを確かめていない。
+      # 実体の写しで戻ると古い package を読むので、Windows は毎回 install する。
+      - name: cache node_modules (part 1 saves)
+        if: runner.os != 'Windows' && matrix.part == 1 && (runner.os == 'Linux' || steps.scope.outputs.code == 'true')
+        uses: actions/cache@v6
+        with:
+          path: |
+            text/node_modules
+            text/packages/*/node_modules
+          key: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('text/yarn.lock') }}
+          restore-keys: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-
+
+      - name: restore node_modules
+        if: runner.os != 'Windows' && matrix.part != 1 && (runner.os == 'Linux' || steps.scope.outputs.code == 'true')
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            text/node_modules
+            text/packages/*/node_modules
+          key: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('text/yarn.lock') }}
+          restore-keys: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-
+
+      - run: yarn install --frozen-lockfile
+        if: runner.os == 'Linux' || steps.scope.outputs.code == 'true'
+
+      - name: build
+        if: runner.os == 'Linux' || steps.scope.outputs.code == 'true'
+        run: yarn build
+
       - name: test
-        run: yarn test
+        if: runner.os == 'Linux' || steps.scope.outputs.code == 'true'
+        run: yarn test --part ${{ matrix.part }}/${{ env.TEST_SHARD_COUNT }}
+        env:
+          # テストファイルはそれぞれ別の process で、同じ src を読み込む。コンパイルした結果を process の間で使い回す。
+          NODE_COMPILE_CACHE: ${{ runner.temp }}/node-compile-cache
 
       # 公開版ではなく、いま review 中のコミットから作った dist で走らせる。
       # 自分の仕様書を自分で読ませる。動かなくなったらここで落ちる。
       # .chaff-baseline.json は Code Scanning の prose scan 用。ここでは棚上げ分も含めて全部見る。
       - name: chaff on its own spec
+        if: matrix.part == 1 && (runner.os == 'Linux' || steps.scope.outputs.code == 'true')
         run: node packages/chaff/bin/chaff.js chaff-spec.md --show-baseline
 
-      # 実際に公開した記事と社内文書にかける。作り物では通るのに実文書で壊れる、
-      # という状態に気づくため。指摘の数は文章の好みの問題なので落とさない。
-      # 最後まで動かなかったときだけ落とす。
+  # 実際に公開した記事と社内文書にかける。作り物では通るのに実文書で壊れる、
+  # という状態に気づくため。指摘の数は文章の好みの問題なので落とさない。
+  # 最後まで動かなかったときだけ落とす。
+  # 既存の文書で結果が変わったら落とす。リポジトリに入っている文書（法令と corpus/docs）だけを比べる。
+  # URL だけの文書は取得先で中身が変わりうるので、手元で yarn corpus:fetch してから比べる。
+  # 変化が意図どおりなら、yarn corpus --update / yarn bench --update で expected を書き換えて PR に含める。
+  # 出力は文書と rule だけで決まり OS に依らないので、ubuntu だけで走らせる。
+  # checks に入れると checks が一番長い job になるので、別の job にして並べる。bench:ai も短いのでここで続けて走らせる。
+  documents:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        id: setup-node
+        with:
+          node-version: "24"
+
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            text/node_modules
+            text/packages/*/node_modules
+          key: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('text/yarn.lock') }}
+          restore-keys: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-
+
+      - run: yarn install --frozen-lockfile
+
+      - name: build
+        run: yarn build
+
       - name: chaff on real documents
-        if: runner.os == 'Linux'
         shell: bash
         run: |
           set -uo pipefail
@@ -82,18 +208,38 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # 既存の文書で結果が変わったら落とす。リポジトリに入っている文書（法令と corpus/docs）だけを比べる。
-      # URL だけの文書は取得先で中身が変わりうるので、手元で yarn corpus:fetch してから比べる。
-      # 変化が意図どおりなら、yarn corpus --update / yarn bench --update で expected を書き換えて PR に含める。
       - name: corpus (committed documents)
-        if: runner.os == 'Linux'
         run: yarn corpus
-
-      - name: bench
-        if: runner.os == 'Linux'
-        run: yarn bench
 
       # AI っぽさの rule が、生成文の見本に当たり、人の書きぶりの見本と corpus/docs に当たらないかの表。
       - name: bench (AI-shape rules)
-        if: runner.os == 'Linux'
         run: yarn bench:ai
+
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        id: setup-node
+        with:
+          node-version: "24"
+
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            text/node_modules
+            text/packages/*/node_modules
+          key: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('text/yarn.lock') }}
+          restore-keys: chaff-node-modules-${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-
+
+      - run: yarn install --frozen-lockfile
+
+      - name: build
+        run: yarn build
+
+      - name: bench
+        run: yarn bench

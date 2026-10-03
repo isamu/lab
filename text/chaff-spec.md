@@ -1564,6 +1564,12 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
   `example.before`、`example.after`。文言は 1 つの文字列か `{ ja, en }`。`message` を書かなければ種類ごとの既定の文。
 - `level` は重さ（`error` / `warning` / `info`）。段階は重さの段（§18.1 の `level_sets: severity`）で、`relax` は一段軽く、
   `strict` は一段重くする。status は `stable`（チームが名指しで書いたものなので、既定で動く）。use_for は全ジャンル。
+- 同梱のルール（`rules/*.yaml`）と同じ欄も書ける。どれも省けて、省けば上の既定になる。
+  `levels`（`strict`・`normal`・`relaxed` ごとの重さ。`normal` は必須。`level` と両方は書けない。チームのルールは箇所を出すので数は書けない）、
+  `use_for`（ジャンルかその頭の並び）、`group`（規則の一覧の分類。既定は `team`）、`summary`（一行の説明。既定は `name`）、
+  `example` を言語ごとに（`{ ja: { before, after }, en: { before, after } }`）、`rewrite`（§28.8）。
+- 同梱・チーム・プラグインのルールの共通の欄（`group`、`summary`、`use_for`、言語ごとの `example`、`rewrite.depth`）は、
+  一か所（`rule-fields.ts`）で同じに確かめ、同じ文で断る。同梱のルールなら読み込みで止まり、チームとプラグインのルールなら実行を止める。
 - **読めないものは実行を止める。** チームのルールが黙って動かないと、きれいな文書に見える。
 - **正規表現は動かす前に確かめる。** 長さ 500 字まで。後方参照（`\1`、`\k<name>`）と、空文字列に当たるもの、
   上限の無い繰り返しの中に上限の無い繰り返しか選択肢を持つ群に、上限の無い繰り返しを付けた形（`(a+)+`、`(a|aa)*`、
@@ -1603,7 +1609,7 @@ chaff.yaml の rules / options  >  style  >  ジャンルの段（genres.yaml）
 パッケージは `chaff.yaml` のあるフォルダから Node の `require.resolve` と同じに探す。
 
 - プラグインは `definePlugin` を `export default` する。`name` はパッケージの名前から決まり（`chaff-plugin-foo` は `foo`）、違えば断る。
-- ルールは `custom_rules` の項目と同じに読み（同じ欄、同じ確かめ）、コードのルールは `type: module` の代わりに `detect` を持つ。
+- ルールは `custom_rules` の項目と同じに読み（同じ欄、同じ確かめ。§18.7 の同梱のルールと同じ欄も書ける）、コードのルールは `type: module` の代わりに `detect` を持つ。
 - 出すもの全部に名前を前に付ける。ルール `foo/no-tbd`、語彙表 `foo/weasel`、スタイル `foo/house`。chaff のルールとも、ほかのプラグインとも重ならない。
 - プラグインのルールは指摘、`explain`、`rules --json`（`defined_in: plugin foo`）、`relax`、`stet`、baseline、SARIF で chaff のルールと同じに扱う。
 - 語彙表は言語ごとに持つ。文書の言語の語彙表が無ければ、そのルールは理由付きで動かない（§16）。
@@ -1919,7 +1925,7 @@ rule を既定で動かすかどうかは、**人の書いた文書で測った�
 | --- | --- | --- |
 | 既定で動く | 動くどの group でも、出る文書が 10% 以下。bench の指摘がすべて正しく、見逃しも無い | `status: stable`、自分の段で |
 | 既定で info として動く | 上のどちらかを満たさない | `status: stable`、normal の重さが info |
-| ジャンルで止める | その group の文書の過半（50% を超える）に出る | `genres.yaml` の group に `off # measured` |
+| ジャンルで止める | その group の文書の過半（50% を超える）に出る | rule のファイルの `off_for` に `<group>: measured by yarn rules:measure` |
 | experimental のまま | 文書が 10 件以上ある group で一度も動いていない（新しい rule） | `--experimental` か chaff.yaml で動く |
 
 - **10% の理由。** 判断に使う group は文書が 10 件以上ある。10 件の group では、1 件に出るだけで 10% になる。
@@ -1930,8 +1936,8 @@ rule を既定で動かすかどうかは、**人の書いた文書で測った�
   黙らせたいときは `chaff off <rule>`（または chaff.yaml の `rules:` に `off`）。
 - **過半で止める理由。** 人の文書の大半に出る指摘は、そのジャンルの書き方を言っているのであって、誤りを言っていない。
   止めた rule は「動かなかった rule」に、ジャンルを理由として並ぶ（0 件を「確かめて問題なし」に見せない）。
-- `genres.yaml` に手で書いた `off`（理由をコメントに書いたもの）は、測った結果より強い。測って止めた行だけが
-  `# measured` を持ち、測った結果が変われば外れる。
+- rule のファイルの `off_for` に手で書いた止め（理由を書いたもの）は、測った結果より強い。測って止めた行だけが
+  理由に `measured by yarn rules:measure` を持ち、測った結果が変われば外れる。
 - 意味を読む L4 の rule は `chaff test` のもので、ここでは決めない。
 - `# measured` の行は、次に測るときの理由にしない。手で止めた group だけを除いて決める。そうしないと、前の
   `--apply` が書いた行が次の `--apply` の結果を決め、一度で落ち着かない。
