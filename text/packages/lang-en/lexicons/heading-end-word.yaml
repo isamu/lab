@@ -1,0 +1,25 @@
+# Words that end in a full stop of their own (abbreviations). A heading ending in one does not end with a mark, so
+# heading-end-punctuation-mix leaves it out of the comparison. Matched as the heading's last word, case as written.
+id: heading-end-word
+language: en
+entries:
+  - pattern: etc.
+  - pattern: Inc.
+  - pattern: Ltd.
+  - pattern: Co.
+  - pattern: Corp.
+  - pattern: vs.
+  - pattern: e.g.
+  - pattern: i.e.
+  - pattern: No.
+  - pattern: St.
+  - pattern: Dr.
+  - pattern: Jr.
+  - pattern: Sr.
+  - pattern: Mr.
+  - pattern: Ms.
+  - pattern: Mrs.
+  - pattern: U.S.
+  - pattern: U.K.
+  - pattern: a.m.
+  - pattern: p.m.

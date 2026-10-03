@@ -1,0 +1,158 @@
+id: heading-end-punctuation-mix
+layer: L1
+status: stable
+how_to_find: heading-end-punctuation
+word_list: heading-end-word
+requires: [markdown]
+severity: info
+
+name:
+  ja: 見出しの終わりの記号が揃っていない
+  en: Heading end punctuation mixed
+
+why:
+  ja: ほとんどの見出しが「手順」「注意点」のように記号なしで終わるのに、一つだけ「準備：」「確認。」と記号で終わっていたり、その逆だったりすると、読み手はその見出しだけ別の扱いなのかと迷い、目次でも浮いて見えます。直し忘れや、別の文書から貼った見出しによく出る形です。どちらの書き方が正しいかは決めず、同じ深さの見出しのうち少ないほうを指します。深さごとに比べるので、一段深い見出しをすべて「任意：」のような札にする書き方は指しません。
+  en: When most headings end bare ("Setup", "Notes") and one ends with a colon or a full stop ("Prerequisites:", "Checks."), or the other way round, the reader wonders whether that heading is meant to be different, and it stands out in the table of contents. It is usually a heading pasted from elsewhere or not yet tidied. chaff does not pick a style; it points at the smaller side among headings of the same depth. Depths are compared apart, so a depth whose headings are all labels ("Optional:") is not reported.
+
+message:
+  ja: 見出し「{heading}」の終わりの記号が、ほかの見出し（「{example}」など {count} 個）と違います
+  en: 'The heading "{heading}" ends differently from the other headings ("{example}" and {count} in all)'
+messages:
+  marked:
+    ja: 見出し「{heading}」だけ「{mark}」で終わっています（ほかの見出しは「{example}」など {count} 個が「：」「。」なしで終わる）
+    en: 'The heading "{heading}" ends with "{mark}", while {count} other headings end bare ("{example}")'
+  bare:
+    ja: 見出し「{heading}」だけ「：」「。」なしで終わっています（ほかの見出しは「{example}」など {count} 個が記号で終わる）
+    en: 'The heading "{heading}" ends bare, while {count} other headings end with a mark ("{example}")'
+
+how_to_fix:
+  ja: 見出しの終わりを、多いほうの書き方に揃えてください。記号なしの見出しが多ければ「：」や「。」を外します。
+  en: End the heading the way most headings end. If most end bare, drop the colon or the full stop.
+
+placeholders:
+  heading:
+    ja: 見出し
+    en: the heading
+  mark:
+    ja: 記号
+    en: the mark
+  example:
+    ja: ほかの見出し
+    en: another heading
+  count:
+    ja: 〇
+    en: N
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 記号なしの見出しの中に「準備：」「確認。」のように記号で終わる見出しが混ざっている所（またはその逆）
+  en: A heading ending with a colon or a full stop among headings that end bare, or the other way round
+example:
+  ja:
+    before: |
+      # 作業の手引き
+
+      ## 準備
+
+      道具をそろえます。
+
+      ## 手順
+
+      順に進めます。
+
+      ## 確認：
+
+      結果を見ます。
+
+      ## 片付け
+
+      元に戻します。
+    after: |
+      # 作業の手引き
+
+      ## 準備
+
+      道具をそろえます。
+
+      ## 手順
+
+      順に進めます。
+
+      ## 確認
+
+      結果を見ます。
+
+      ## 片付け
+
+      元に戻します。
+  en:
+    before: |
+      # Working guide
+
+      ## Preparation
+
+      Gather the tools.
+
+      ## Steps
+
+      Work through them in order.
+
+      ## Checks:
+
+      Look at the result.
+
+      ## Cleanup
+
+      Put everything back.
+    after: |
+      # Working guide
+
+      ## Preparation
+
+      Gather the tools.
+
+      ## Steps
+
+      Work through them in order.
+
+      ## Checks
+
+      Look at the result.
+
+      ## Cleanup
+
+      Put everything back.
+
+not_flagged:
+  ja: 文書の題（最初の一つだけの一番上の見出し）は比べません。同じ深さの見出しが四つ未満の所、記号で終わる見出しと終わらない見出しが同じくらいある文書（少ないほうが四分の一を超える）は指しません。疑問符・感嘆符で終わる見出しは、記号なしと数えます。「…」や「etc.」「Inc.」のように言葉の一部の点で終わる見出しは比べません（点で終わる略語は言語ごとの語彙表にあります）。
+  en: The page title (a single top-level heading that opens the document) is not compared. Fewer than four headings at one depth, or where both ways are common (the smaller side above a quarter), is not reported. A heading ending with a question mark or an exclamation mark counts as bare. A heading ending with a full stop that is part of the words ("…", "etc.", "Inc.") is left out of the comparison; the abbreviations are in each language's lexicon.
+rewrite:
+  depth: light
+  ja:
+    direction: 見出しの終わりを、文書の多くの見出しと同じ書き方にしてください。記号を足すか外すだけで、見出しの言葉は変えません。
+    pairs:
+      - before: 「## 準備」「## 手順」「## 確認：」
+        after: 「## 準備」「## 手順」「## 確認」
+      - before: 「## 背景。」「## 方針。」「## 課題」
+        after: 「## 背景。」「## 方針。」「## 課題。」
+    keep:
+      - 見出しの言葉と深さ
+    avoid:
+      - 少ないほうに合わせて、ほかの見出しをすべて書き換える
+      - 見出しを文に書き直す
+  en:
+    direction: End the heading the way most of the document's headings end. Only add or drop the mark; keep the heading's words.
+    pairs:
+      - before: '"## Preparation", "## Steps", "## Checks:"'
+        after: '"## Preparation", "## Steps", "## Checks"'
+      - before: '"## Background.", "## Plan.", "## Risks"'
+        after: '"## Background.", "## Plan.", "## Risks."'
+    keep:
+      - the heading's words and depth
+    avoid:
+      - rewriting every other heading to match the odd one
+      - turning the heading into a sentence

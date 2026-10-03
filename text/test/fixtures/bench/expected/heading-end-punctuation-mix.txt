@@ -1,0 +1,19 @@
+table  18  18  0  0
+ja/blog  heading-colon-one  found
+ja/design  heading-colon-one  found
+ja/figures  heading-colon-one  found
+ja/itinerary  heading-colon-one  found
+ja/minutes  heading-colon-one  found
+ja/press  heading-colon-one  found
+ja/proposal  heading-colon-one  found
+ja/readme  heading-colon-one  found
+ja/requirements  heading-colon-one  found
+en/blog  heading-colon-one  found
+en/design  heading-colon-one  found
+en/figures  heading-colon-one  found
+en/itinerary  heading-colon-one  found
+en/minutes  heading-colon-one  found
+en/press  heading-colon-one  found
+en/proposal  heading-colon-one  found
+en/readme  heading-colon-one  found
+en/requirements  heading-colon-one  found
