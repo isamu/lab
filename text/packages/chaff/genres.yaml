@@ -133,6 +133,8 @@ groups:
   - id: literature
     name: { ja: 文学, en: Literature }
     rules:
+      # A character who says "never" and later makes an exception is the story, not a drafting slip.
+      absolute-exception: off
       # A story's narrator and its characters each say 私 or 僕 in their own voice.
       person-consistency: off
       max-sentence-length: off
@@ -198,8 +200,11 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      unknown-word: off
       redundant-expression: off
       requirement-smell: off
+      # Dialogue may misuse an idiom on purpose, to draw the speaker.
+      idiom-misuse: off
       paragraph-restatement: off
       # A story or poem chooses its own opening and its own title.
       no-lead: off

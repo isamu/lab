@@ -11,6 +11,7 @@ const TEXT: Texts<{
   readonly defaultGenre: string;
   readonly genreNote: (genre: string, others: string) => string;
   readonly experimental: string;
+  readonly alone: (id: string) => string;
   readonly howToFix: string;
   readonly example: string;
   readonly definedIn: (plugin: string | undefined) => string;
@@ -27,6 +28,7 @@ const TEXT: Texts<{
     defaultGenre: "既定",
     genreNote: (genre, others) => `この数字は ${genre} のものです。ほかに ${others} で別の数字を持っています。`,
     experimental: "このルールはまだ試験中で、既定では動きません（--experimental で動きます）。",
+    alone: (id) => `このルールだけを動かす:  npx chaffjs enable ${id}（chaff.yaml の rules に ${id}: normal と書くのと同じです）`,
     howToFix: "直しかた",
     example: "例",
     definedIn: (plugin) =>
@@ -44,6 +46,7 @@ const TEXT: Texts<{
     defaultGenre: "the default genre",
     genreNote: (genre, others) => `These numbers are for ${genre}. ${others} have numbers of their own.`,
     experimental: "This rule is still experimental and does not run by default (--experimental runs it).",
+    alone: (id) => `Turn on this rule alone:  npx chaffjs enable ${id}  (the same as rules: { ${id}: normal } in chaff.yaml)`,
     howToFix: "How to fix",
     example: "Example",
     definedIn: (plugin) =>
@@ -101,6 +104,8 @@ export type ExplainSettings = {
   readonly optionLayers?: readonly OptionLayer[];
   readonly levelFrom?: string | undefined;
   readonly limit?: number | undefined;
+  /** The rule is off only because it is experimental, so naming it would run it: say how. */
+  readonly offOnlyAsExperimental?: boolean;
 };
 
 /** rule の意図と根拠を読む。指摘に納得できないときの入口。 */
@@ -110,7 +115,8 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
   const limit = rule.level_sets === "severity" ? undefined : settings.limit;
   const marked = limit === undefined ? current : undefined;
   const text = TEXT[uiLanguageOf(language)];
-  const experimental = rule.status === "experimental" ? [`  ${text.experimental}`] : [];
+  const experimental =
+    rule.status === "experimental" ? [`  ${text.experimental}`, ...(settings.offOnlyAsExperimental === true ? [`  ${text.alone(rule.id)}`] : [])] : [];
   return [
     "",
     `  ${readableText(rule, rule.name, language)}   (${rule.id})`,

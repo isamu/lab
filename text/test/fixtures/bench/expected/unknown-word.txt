@@ -1,0 +1,14 @@
+table  13  13  0  0
+en/blog  typo-en  found
+en/design  typo-en  found
+en/email  typo-en  found
+en/figures  typo-en  found
+en/itinerary  typo-en  found
+en/minutes  typo-en  found
+en/note  typo-en  found
+en/policy  typo-en  found
+en/press  typo-en  found
+en/proposal  typo-en  found
+en/quote  typo-en  found
+en/readme  typo-en  found
+en/requirements  typo-en  found
