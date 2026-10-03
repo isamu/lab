@@ -401,6 +401,7 @@ after:
 - `cushion-phrase-density`: the blog/tech genre does not check it
 - `figure-reference-order`: the blog/tech genre does not check it
 - `max-sentence-length`: the blog/tech genre does not check it
+- `request-without-deadline`: the blog/tech genre does not check it
 
 ## Check after rewriting
 

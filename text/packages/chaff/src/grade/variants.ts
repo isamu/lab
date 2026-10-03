@@ -17,6 +17,8 @@ export type VariantColumn = {
   /** Facts dropped and added against the reference, not counting the kinds the rubric allows. */
   readonly facts: { readonly dropped: number; readonly added: number };
   readonly citations: { readonly checked: number; readonly failed: number };
+  /** Facts checked against the retrieved passages, and those in no passage. Only when some output had contexts. */
+  readonly contexts?: { readonly checked: number; readonly unsupported: number } | undefined;
   /** Only with a `grade:` rubric. */
   readonly penalty?: number | undefined;
 };
@@ -62,6 +64,7 @@ const columnOf = (variant: string, results: readonly GradeResult[]): VariantColu
     passRate: percentOf(summary.passed, summary.total),
     facts: { dropped: sum(summary.facts.dropped), added: sum(summary.facts.added) },
     citations: summary.citations,
+    ...(summary.contexts === undefined ? {} : { contexts: { checked: summary.contexts.checked, unsupported: sum(summary.contexts.unsupported) } }),
     ...(summary.penalty === undefined ? {} : { penalty: summary.penalty }),
   };
 };

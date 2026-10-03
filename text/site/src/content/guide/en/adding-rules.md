@@ -254,7 +254,11 @@ The site fills both in from chaff's output when it is built.
 `yarn test` runs every screen on its documents and stops when one differs from what chaff prints.
 The documents are the page's `file=` blocks and the files in `site/src/screens/<lang>/<page>/`.
 `node scripts/guide-screens.ts --check en/<page>.md` shows the difference.
-When a new rule adds a finding to a screen, update that screen and what the page says about it.
+When a new rule changes a guide screen, run `yarn screens:update` and read the diff.
+It rewrites each screen to what chaff prints now, and keeps the `…` lines where they stand as far as it can.
+Name pages to rewrite only those (`yarn screens:update en/commands.md`).
+A screen listed in `UNCHECKED` in `scripts/guide-screens.ts` is not run, so it is left as it is.
+When a screen gains a finding, also update what the page says about it.
 
 `yarn test` stops when a rule file lacks a reader's field that the rule needs.
 It also stops when an `example`'s `before` is not reported, or its `after` is.

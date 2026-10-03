@@ -1,0 +1,15 @@
+# A conditional request is an offer, not a task with a deadline.
+id: request-condition
+language: en
+entries:
+  - pattern: if you
+  - pattern: if there
+  - pattern: if any
+  - pattern: in case
+  - pattern: should you
+  - pattern: when you need
+  - pattern: feel free
+  - pattern: hesitate
+  - pattern: as needed
+  - pattern: where needed
+  - pattern: if needed

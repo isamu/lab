@@ -365,6 +365,7 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 - `cushion-phrase-density`: ジャンル blog/tech では見ないため
 - `figure-reference-order`: ジャンル blog/tech では見ないため
 - `max-sentence-length`: ジャンル blog/tech では見ないため
+- `request-without-deadline`: ジャンル blog/tech では見ないため
 
 ## 直したあとの確かめ
 
