@@ -29,7 +29,7 @@ type: words
 word_list: vague-deadline
 name: { ja: 期限があいまいな依頼, en: A deadline that is not a date }
 why: { ja: 読む人ごとに違う日を指します。, en: '"Soon" means a different day to each reader.' }
-how_to_fix: { ja: 日付か、何日以内かを書きます。, en: Write a date, or a number of days. }
+how_to_fix: { ja: 日付か、何日以内かを書きます。, en: 'Write a date, or a number of days.' }
 example:
   ja: { before: 資料は近日中に送ってください。, after: 資料は 5 月 10 日までに送ってください。 }
   en: { before: Please send the slides soon., after: Please send the slides by 10 May. }
@@ -58,6 +58,18 @@ style: clear-requests/strict-requests # 束が持つプリセット
 束の出すものの名前には、束の名前が前に付きます（`clear-requests/vague-deadline`）。束の名前はパッケージの名前から決まります。
 プリセットはスタイルです（`styles/*.yaml`。[チームの表記ルールを決める](./house-style)と同じ形）。ジャンルは足せません。
 ジャンルは `--genre`、各ルールの `use_for`、規則の一覧が共有する一つの一覧で、プラグインで増えたり減ったりすると、同じ `--genre` が環境ごとに違う意味になるためです。
+
+### 作り始めて、確かめる
+
+```bash
+npx chaffjs init --plugin house          # chaff-plugin-house/: ルール 1 つと、その日本語と英語の語彙表
+cd chaff-plugin-house
+npx chaffjs plugin-test .                # ルールごとに、その例を言語ごとにかける
+```
+
+`plugin-test` は、フォルダを `chaff.yaml` と同じように読み込み、各ルールをその `example` にかけます。before には指摘が出て、after には出ないことを確かめます。
+ある言語で動かないルール（その言語の語彙表が無い）は、理由と一緒に失敗にします。
+作った束の package.json には `"test": "chaffjs plugin-test ."` があるので、`yarn test` でも同じ確かめが動きます。
 
 ## コードで書くルールの 2 つの形
 
@@ -182,6 +194,7 @@ styles: [{ id: "careful", name: "日付に厳しく", summary: "未定の日付�
 
 ## テストする
 
+`npx chaffjs plugin-test <フォルダ>` は、コードのプラグインでもルールの束でも、各ルールをその例にかけます。
 ルールの関数は文書を受け取るだけの関数なので、chaff を動かさずにテストできます。
 文書の、関数が読むところだけを作って渡し、返ったものを比べます。
 

@@ -13,6 +13,8 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs <file\|dir\|glob>...` | Checks. No settings and no API key needed |
 | `npx chaffjs .` | Checks every Markdown file here |
 | `npx chaffjs init` | Creates `chaff.yaml` (asks for the genre at a terminal; `--genre` chooses it) |
+| `npx chaffjs init --plugin <name>` | Creates a YAML rule pack to start from, `chaff-plugin-<name>/` ([Writing a plugin](./writing-plugins)) |
+| `npx chaffjs plugin-test [folder]` | Runs each rule of a plugin on the rule's own example: the before must be flagged, the after must not |
 | `npx chaffjs explain <rule>` | Shows what a rule is for, and why |
 | `npx chaffjs genres` | Lists the genres and what each is for |
 | `npx chaffjs --version` | Prints the version of chaffjs and of its bundled language packages |

@@ -13,8 +13,8 @@ import { runEval } from "./commands/eval.ts";
 import { runTest } from "./commands/test.ts";
 import { GENRES } from "./genre.ts";
 import { resolveGenre } from "./resolve-genre.ts";
-import { runInit } from "./init.ts";
-import { initGenre } from "./commands/init-ask.ts";
+import { runInitCommand } from "./commands/init-command.ts";
+import { runPluginTest } from "./commands/plugin-test.ts";
 import { targetsOf, withExperimental, withIncludes } from "./cli-args.ts";
 import { rulesOf } from "./custom/load.ts";
 import { renderCompact } from "./render/compact.ts";
@@ -282,19 +282,15 @@ const measureContext = (argv: readonly string[], config: Config): { config: Conf
 
 /** 分岐を数珠つなぎにせず表にする。足すときに main を太らせない。 */
 const HANDLERS: Readonly<Record<string, Handler>> = {
-  init: async (argv, config) => {
-    const ui = hostLanguage(config.language, process.env);
-    const chosen = await initGenre(flag(argv, "--genre"), ui, process.cwd());
-    if ("error" in chosen) console.error(chosen.error);
-    else runInit(process.cwd(), chosen.genre, ui).forEach((line) => console.log(line));
-    return "error" in chosen ? 1 : 0;
-  },
+  init: (argv, config) => runInitCommand((name) => flag(argv, name), argv.includes("--plugin"), hostLanguage(config.language, process.env), process.cwd()),
   genres: (_argv, config) => showGenres(config),
   rules: showRules,
   explain: (argv, config) => explain(config, argv[1], flag(argv, "--genre")),
   eval: (argv, config) => runEval(positional(argv), argv, { ...measureContext(argv, config), flag }),
   ...Object.fromEntries(Object.entries(DOCUMENT_COMMANDS).map(([name, run]): [string, Handler] => [name, (argv, config) => run(argv, treeContext(config))])),
   test: (argv, config) => runTest(positional(argv), argv, { ...measureContext(argv, config), inspect }),
+  "plugin-test": (argv, config) =>
+    runPluginTest(positional(argv)[0], { ui: hostLanguage(config.language, process.env), check: async (...args) => (await inspect(...args)).checked }),
   "fix-plan": (argv, config) =>
     runFixPlan(fixPlanTargets(argv), argv, { ...treeContext(config), check: async (path) => (await inspectAll(config, argv)(path)).checked }),
   baseline: (argv, config) => runBaseline(positional(argv), argv, config),

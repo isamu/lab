@@ -13,6 +13,8 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs <file\|dir\|glob>...` | 検査します。設定も API key も要りません |
 | `npx chaffjs .` | この場所の Markdown を全部見ます |
 | `npx chaffjs init` | `chaff.yaml` を作ります（端末ならジャンルを尋ねます。`--genre` でも決まります） |
+| `npx chaffjs init --plugin <名前>` | YAML だけのルールの束 `chaff-plugin-<名前>/` のひな形を作ります（[プラグインを作る](./writing-plugins)） |
+| `npx chaffjs plugin-test [フォルダ]` | プラグインの各ルールを、そのルールの例にかけます。before は指摘され、after は指摘されないことを確かめます |
 | `npx chaffjs explain <rule>` | そのルールの意図と根拠を読みます |
 | `npx chaffjs genres` | ジャンルの一覧を、何向けかと一緒に出します |
 | `npx chaffjs --version` | chaffjs と、同梱の言語パッケージの版を出します |
