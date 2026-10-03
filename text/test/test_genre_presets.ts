@@ -200,16 +200,17 @@ const STRUCTURE_PRESET = [
   "dangling-reference",
   "date-range-reversed",
   "date-weekday-mismatch",
-  "defined-name-repeated",
-  "defined-term-form",
   "duplicate-definition",
   "numbering-gap",
   "total-mismatch",
 ];
 
+/** A contract's preset adds the defined-term rules to the structure rules. */
+const CONTRACT_PRESET = [...STRUCTURE_PRESET, "defined-name-repeated", "defined-term-form"].toSorted((left, right) => left.localeCompare(right));
+
 /** As runJa, with the structure rules and latin-spacing marked experimental: how a genre's preset treats an experimental rule. */
 const runJaExperimental = (source: string, genre: string, settings: Settings): RunResult =>
-  runRules(buildDocument("t.md", source, ja), asExperimental(loadRules("ja"), [...STRUCTURE_PRESET, "latin-spacing"]), settings, false, genre);
+  runRules(buildDocument("t.md", source, ja), asExperimental(loadRules("ja"), [...CONTRACT_PRESET, "latin-spacing"]), settings, false, genre);
 
 const why = (result: RunResult, rule: string): string | undefined => result.skipped.find((entry) => entry.rule === rule)?.why;
 
@@ -254,7 +255,7 @@ describe("既定の段で動かす", () => {
     assert.equal(why(result, "numbering-gap"), undefined);
     assert.deepEqual(
       result.presetExperimental.toSorted((left, right) => left.localeCompare(right)),
-      STRUCTURE_PRESET,
+      CONTRACT_PRESET,
     );
     assert.deepEqual(result.forcedExperimental, ["latin-spacing"]);
   });
