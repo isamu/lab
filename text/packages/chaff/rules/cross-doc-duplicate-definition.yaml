@@ -1,0 +1,70 @@
+id: cross-doc-duplicate-definition
+layer: L3
+status: experimental
+how_to_find: cross-doc-duplicate-definition
+# documents: compares the files of one run, so it runs only when chaff is given two or more files, or a folder.
+requires: [structure, documents]
+# The words that make a sentence a definition (をいう, means), per language.
+extra_word_lists: [definition-statement]
+severity: warning
+
+name:
+  ja: ファイルによって違う定義
+  en: One term defined differently in different files
+
+why:
+  ja: 契約書の束や説明書では、同じ語をいくつものファイルで定義することがあります（本契約と別紙、用語集と各ページ）。後から一方だけを直すと、ファイルによって定義が食い違い、どちらの意味で読めばよいか分からなくなります。一度に渡したファイルどうしで、同じ語の定義（「『X』とは、…をいう」"X" means …）の、語の後ろの言葉を比べ、多くのファイルと違う言葉で定義したファイルを指します。全角半角、空白、両端の句読点の違いは問いません。言葉が違っても意味が同じかは機械では決まらないので、確かめる場所を示すだけです。
+  en: 'A bundle of contracts or a manual often defines the same term in several files (the agreement and its schedule, the glossary and the pages). When one is changed later and the other is not, the files disagree on what the term means. Across the files given together, the words after the term in each definition ("X" means …, 「X」とは、…をいう) are compared, and a file that defines the term in other words than most files do is pointed out. Width, spaces and the punctuation at either end do not count. Whether two wordings mean the same is not something a machine can decide, so chaff only shows where to look.'
+
+message:
+  ja: 「{term}」を、一緒に見たほかの {count} ファイルと違う言葉で定義しています（例：{example}）
+  en: '"{term}" is defined in other words than in {count} other {count|file|files} checked with it (as in {example})'
+
+how_to_fix:
+  ja: 定義を一か所（用語集や本契約）にまとめ、ほかのファイルからはそこを参照してください。意味を変えているなら、別の語にします。
+  en: Keep the definition in one place (the glossary, the main agreement) and refer to it from the other files. If the meaning is meant to differ, use a different term.
+
+placeholders:
+  term:
+    ja: 〇〇
+    en: the term
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 同じ語を、ファイルによって違う言葉で定義している所
+  en: The same term defined in other words in different files
+example:
+  ja:
+    other: |
+      # 用語集
+
+      「メンバー」とは、ワークスペースに招かれた人のことです。
+    before: |
+      # はじめに
+
+      「メンバー」とは、料金を払った人のことです。
+    after: |
+      # はじめに
+
+      「メンバー」とは、ワークスペースに招かれた人のことです。
+  en:
+    other: |
+      # Glossary
+
+      "Member" means a person invited to a workspace.
+    before: |
+      # Getting started
+
+      "Member" means a person who pays the fee.
+    after: |
+      # Getting started
+
+      "Member" means a person invited to a workspace.
+
+not_flagged:
+  ja: 範囲を限った定義（「この条において『X』とは」）と、語の後ろに意味を書かない定義（「以下『X』という。」）は比べません。一つのファイルの中で二度定義した語は、最初の定義で比べます（二度目は duplicate-definition が見ます）。全角半角、空白、両端の句読点だけが違う定義は同じとみなします。
+  en: Definitions limited to a part ("In this section, X means") and those that give the meaning before the term ('(the "Vendor")') are not compared. A file that defines a term twice is compared by its first definition (duplicate-definition reports the second). Definitions that differ only in width, spaces or the punctuation at either end are taken as the same.

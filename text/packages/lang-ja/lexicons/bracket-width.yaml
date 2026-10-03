@@ -1,0 +1,11 @@
+# 丸括弧の全角（pattern）と半角（instead_of）。bracket-width-consistency が、日本語の字に接する括弧の書き方の少ないほうを指す。
+# どちらが正しいかは決めない。group は開きと閉じを分けずに一つの種類として数えるための名前。
+id: bracket-width
+language: ja
+entries:
+  - pattern: （
+    instead_of: (
+    group: paren
+  - pattern: ）
+    instead_of: )
+    group: paren

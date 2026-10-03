@@ -71,9 +71,9 @@ A `chaff.yaml` in the folder you run from applies to every check, as in the [con
    Quotations: 2 checked, 1 failed
 
    …
-     cite                         2 outputs  no citations given (chaff does not guess quotations from the output)
+     cite                            2 outputs  no citations given (chaff does not guess quotations from the output)
    …
-     compare                      2 outputs  no reference given (facts are checked against a reference)
+     compare                         2 outputs  no reference given (facts are checked against a reference)
    …
    ```
 
