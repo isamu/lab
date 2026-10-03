@@ -1,0 +1,11 @@
+# The words between a percentage and the group it is a share of (share-whole), and on which side of the percentage
+# the group is written: "62% of all respondents" puts it after.
+id: share-whole-link
+language: en
+entries:
+  - { pattern: "of", position: after }
+  - { pattern: "of the", position: after }
+  - { pattern: "of all", position: after }
+  - { pattern: "of all the", position: after }
+  - { pattern: "of our", position: after }
+  - { pattern: "of its", position: after }

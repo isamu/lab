@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  ordinal-suffix-ja  found
+ja/design  ordinal-suffix-ja  found
+ja/email  ordinal-suffix-ja  found
+ja/figures  ordinal-suffix-ja  found
+ja/itinerary  ordinal-suffix-ja  found
+ja/minutes  ordinal-suffix-ja  found
+ja/note  ordinal-suffix-ja  found
+ja/policy  ordinal-suffix-ja  found
+ja/press  ordinal-suffix-ja  found
+ja/proposal  ordinal-suffix-ja  found
+ja/quote  ordinal-suffix-ja  found
+ja/readme  ordinal-suffix-ja  found
+ja/requirements  ordinal-suffix-ja  found
+en/blog  ordinal-suffix-en  found
+en/design  ordinal-suffix-en  found
+en/email  ordinal-suffix-en  found
+en/figures  ordinal-suffix-en  found
+en/itinerary  ordinal-suffix-en  found
+en/minutes  ordinal-suffix-en  found
+en/note  ordinal-suffix-en  found
+en/policy  ordinal-suffix-en  found
+en/press  ordinal-suffix-en  found
+en/proposal  ordinal-suffix-en  found
+en/quote  ordinal-suffix-en  found
+en/readme  ordinal-suffix-en  found
+en/requirements  ordinal-suffix-en  found

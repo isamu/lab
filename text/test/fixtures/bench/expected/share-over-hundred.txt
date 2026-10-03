@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  share-over-hundred-ja  found
+ja/design  share-over-hundred-ja  found
+ja/email  share-over-hundred-ja  found
+ja/figures  share-over-hundred-ja  found
+ja/itinerary  share-over-hundred-ja  found
+ja/minutes  share-over-hundred-ja  found
+ja/note  share-over-hundred-ja  found
+ja/policy  share-over-hundred-ja  found
+ja/press  share-over-hundred-ja  found
+ja/proposal  share-over-hundred-ja  found
+ja/quote  share-over-hundred-ja  found
+ja/readme  share-over-hundred-ja  found
+ja/requirements  share-over-hundred-ja  found
+en/blog  share-over-hundred-en  found
+en/design  share-over-hundred-en  found
+en/email  share-over-hundred-en  found
+en/figures  share-over-hundred-en  found
+en/itinerary  share-over-hundred-en  found
+en/minutes  share-over-hundred-en  found
+en/note  share-over-hundred-en  found
+en/policy  share-over-hundred-en  found
+en/press  share-over-hundred-en  found
+en/proposal  share-over-hundred-en  found
+en/quote  share-over-hundred-en  found
+en/readme  share-over-hundred-en  found
+en/requirements  share-over-hundred-en  found

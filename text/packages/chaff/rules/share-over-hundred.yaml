@@ -1,0 +1,65 @@
+id: share-over-hundred
+layer: L3
+status: stable
+how_to_find: share-over-hundred
+severity: error
+
+name:
+  ja: 100% を超える一部の割合
+  en: A share above 100%
+
+why:
+  ja: 「回答者の120%」「150% of respondents」のように、集まりの一部の割合が 100% を超えることはありません。小数点の打ち間違い（12.0%）、別の数（前年比）との取り違え、桁の書き損じのどれかで、読み手は数そのものを信じなくなります。一部は全体を超えないので、機械で言えます。
+  en: A share of a group, such as "120% of respondents", cannot pass 100%. It is a misplaced decimal point (12.0%), a mix-up with another figure (growth on last year), or a mistyped digit, and the reader stops trusting the number. A part never exceeds the whole, so a machine can tell.
+
+message:
+  ja: 「{written}」は{whole}の一部の割合なので、100% を超えません
+  en: '"{written}" is a share of {whole}, so it cannot pass 100%'
+
+how_to_fix:
+  ja: 元の数を確かめて直してください。前年比や伸びのつもりなら、そう書きます（前年の120%、20%増）。
+  en: Check the source figure and correct it. If growth or a comparison was meant, say so ("120% of last year's level", "up 20%").
+
+levels: { normal: error, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「回答者の120%」のように、集まりの一部の割合なのに 100% を超える百分率
+  en: A percentage that is a share of a group but passes 100%, such as "120% of respondents"
+example:
+  ja:
+    before: 調査では、回答者の120%が満足と答えました。
+    after: 調査では、回答者の12.0%が満足と答えました。
+  en:
+    before: In the survey, 120% of respondents said they were satisfied.
+    after: In the survey, 12.0% of respondents said they were satisfied.
+
+not_flagged:
+  ja: 語彙表 share-whole にある集まり（回答者、社員、利用者など）の一部と書いた百分率だけを見ます。伸びや比べる元（前年の120%、予算の110%）、集まりを書いていない百分率（120%の達成率）は言いません。コードの中は読みません。
+  en: Only percentages written as a share of a group in the share-whole word list (respondents, employees, users and so on) are read. Growth and comparisons ("120% of last year", "110% of the budget") and percentages with no group ("120% attainment") are not reported. Code is not read.
+
+rewrite:
+  ja:
+    direction: 元の数を確かめて、一部の割合なら 100% 以下に直してください。伸びや前年との比べなら、何と比べたかを書きます。
+    pairs:
+      - before: 回答者の120%が満足と答えました。
+        after: 回答者の12.0%が満足と答えました。
+      - before: 社員の150%が研修を受けました。
+        after: 研修を受けた社員は前年の1.5倍になりました。
+    keep:
+      - 元の調べで得た数
+    avoid:
+      - 元の数を確かめずに、100% に丸める
+  en:
+    direction: Check the source figure. A share of a group stays at or under 100%; if growth or a comparison was meant, say what it is compared with.
+    pairs:
+      - before: 120% of respondents said they were satisfied.
+        after: 12.0% of respondents said they were satisfied.
+      - before: 150% of employees took the training.
+        after: One and a half times as many employees took the training as last year.
+    keep:
+      - the figure the source gives
+    avoid:
+      - rounding the figure down to 100% without checking the source

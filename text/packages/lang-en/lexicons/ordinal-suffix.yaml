@@ -1,0 +1,13 @@
+# The letters written after a number to make it an ordinal (1st, 22nd, 113th), and the ending of the number each one
+# goes with (group). The longest ending that the number ends in decides: 11, 12 and 13 take "th" though they end in 1,
+# 2 and 3; an empty group is every other number. "2d" and "3d" (legal citations) are not ordinals read here.
+id: ordinal-suffix
+language: en
+entries:
+  - { pattern: "st", group: "1" }
+  - { pattern: "nd", group: "2" }
+  - { pattern: "rd", group: "3" }
+  - { pattern: "th", group: "11" }
+  - { pattern: "th", group: "12" }
+  - { pattern: "th", group: "13" }
+  - { pattern: "th", group: "" }
