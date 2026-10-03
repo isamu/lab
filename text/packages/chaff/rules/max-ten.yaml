@@ -1,6 +1,6 @@
 id: max-ten
 layer: L3
-status: experimental
+status: stable
 how_to_find: sentence-comma-count
 word_list: ten-mark
 requires: [pos]

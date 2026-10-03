@@ -1,6 +1,6 @@
 id: demonstrative-opener-run
 layer: L3
-status: experimental
+status: stable
 how_to_find: opener-run
 word_list: demonstrative-opener
 requires: [pos]
