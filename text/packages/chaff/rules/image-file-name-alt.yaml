@@ -54,6 +54,7 @@ not_flagged:
   ja: 画像の拡張子で終わらず、カメラや画面の撮影が付ける名前でもない代替テキスト（![構成図](diagram.png)）は指しません。名前の始まりは言語の語彙表 image-file-name が言います。引用（>）とコードの中の画像も見ません。
   en: Alt text that does not end in an image extension and does not start with a name a camera or screenshot tool gives ("![Architecture](diagram.png)") is not reported. The names are in the language's image-file-name lexicon. Images in quotations (>) and code are not read.
 rewrite:
+  depth: light
   ja:
     direction: 代替テキストを、画像が伝えることを言う短い言葉に変えてください。画像のファイル名（パス）は変えません。何が写っているかが文から分からなければ、推し量らずに書き手に確かめます。
     pairs:

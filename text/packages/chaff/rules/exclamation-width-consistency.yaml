@@ -50,6 +50,7 @@ level_meaning:
   ja: 少ないほうの書き方が {limit} 箇所あれば指摘
   en: reported once the less common way appears {limit} times
 rewrite:
+  depth: light
   ja:
     direction: 指された感嘆符・疑問符だけを、文書の多いほうの書き方（全角か半角）に替えてください。
     pairs:
