@@ -1,0 +1,90 @@
+id: table-row-overflow
+layer: L1
+status: stable
+how_to_find: table-row-overflow
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 表の行のセルが見出しの行より多い
+  en: Table row with more cells than the header
+
+why:
+  ja: Markdown の表（GFM）は、見出しの行にある列の数だけセルを表示し、それより多いセルは黙って捨てます。値の中に「|」を書いた、列を足したのに見出しを直していない、といったときに起き、書いたはずの値が読み手には見えません。
+  en: A Markdown table (GFM) shows only as many cells as its header row has, and silently drops the rest. It happens when a value holds a "|", or when a column was added to the rows but not to the header, and the reader never sees the value that was written.
+
+message:
+  ja: この行はセルが {cells} 個あり、見出しの行の {columns} 列を超えた分は表示されません
+  en: "This row has {cells} cells; past the header's {columns} columns they are not shown"
+
+how_to_fix:
+  ja: 見出しの行に列を足すか、行のセルを減らしてください。値の中の「|」は「\|」と書きます。
+  en: Add the column to the header row, or remove the extra cell. Write a "|" inside a value as "\|".
+
+placeholders:
+  cells:
+    ja: 〇
+    en: N
+  columns:
+    ja: 〇
+    en: N
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 見出しの行より多いセルを持つ表の行（多い分は表示されない）
+  en: A table row with more cells than the header row (the extra ones are not shown)
+example:
+  ja:
+    before: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 会場 | 5万円 |
+      | 飲食 | 3万円 | 予備費込み |
+    after: |
+      | 項目 | 金額 | 備考 |
+      | --- | --- | --- |
+      | 会場 | 5万円 | |
+      | 飲食 | 3万円 | 予備費込み |
+  en:
+    before: |
+      | Item | Cost |
+      | --- | --- |
+      | Venue | $500 |
+      | Food | $300 | includes reserve |
+    after: |
+      | Item | Cost | Note |
+      | --- | --- | --- |
+      | Venue | $500 | |
+      | Food | $300 | includes reserve |
+
+not_flagged:
+  ja: 見出しの行よりセルが少ない行（空のセルとして表示されます）、「\|」と書いた値、コードと引用の中の表は指しません。
+  en: A row with fewer cells than the header (shown as empty cells), a value written with "\|", and tables in code or quotations are not reported.
+rewrite:
+  depth: light
+  ja:
+    direction: 見出しの行と行のセルの数を揃えてください。多いセルが値なら見出しに列を足し、値の中の「|」なら「\|」にします。値は消しません。
+    pairs:
+      - before: 「| 飲食 | 3万円 | 予備費込み |」（見出しは 2 列）
+        after: 見出しに「備考」の列を足し、「| 飲食 | 3万円 | 予備費込み |」
+      - before: 「| 区切り | a | b |」（見出しは 2 列、値が「a | b」）
+        after: 「| 区切り | a \| b |」
+    keep:
+      - 行に書いた値
+    avoid:
+      - はみ出したセルの値を消す
+  en:
+    direction: Make the row and the header hold the same number of cells. If the extra cell is a value, add the column to the header; if it is a "|" inside a value, write it as "\|". Do not drop the value.
+    pairs:
+      - before: '"| Food | $300 | includes reserve |" (the header has 2 columns)'
+        after: 'a "Note" column added to the header, and "| Food | $300 | includes reserve |"'
+      - before: '"| Separator | a | b |" (the header has 2 columns; the value is "a | b")'
+        after: '"| Separator | a \| b |"'
+    keep:
+      - the values written in the row
+    avoid:
+      - deleting the value that spilled over
