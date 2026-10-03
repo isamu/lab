@@ -5,6 +5,7 @@ import { messageOf } from "../render/text.ts";
 import { uiLanguageOf, type UiLanguage } from "../ui.ts";
 import type { Finding } from "../plugin.ts";
 import { citationsAgainst, factsAgainst, OUTPUT_PATH, type CitationsRead, type ItemReading } from "./checks.ts";
+import { contextsAgainst, type ContextsRead } from "./contexts.ts";
 import type { GradeItem } from "./item.ts";
 import { ratesOf, sizeOf, type OutputSize } from "./rates.ts";
 import type { GradeCitations, GradeFacts, GradeFinding, GradeResult, GradeScore, NotRunEntry, Stamp } from "./result.ts";
@@ -42,6 +43,7 @@ type Checked = {
   readonly size: OutputSize;
   readonly facts: GradeFacts | null;
   readonly cited: CitationsRead | undefined;
+  readonly contexts: ContextsRead | undefined;
 };
 
 const checkItem = async (item: GradeItem, setup: GradeSetup): Promise<Checked> => {
@@ -57,7 +59,25 @@ const checkItem = async (item: GradeItem, setup: GradeSetup): Promise<Checked> =
     size: sizeOf(check.doc),
     facts: item.reference === undefined ? null : await factsAgainst(texts, reading, allowedBy(setup.rubric)),
     cited: item.citations === undefined ? undefined : await citationsAgainst(item, item.citations, reading, ui),
+    contexts: await contextsOf(item, check.language, reading, setup.rubric),
   };
+};
+
+const contextsOf = async (item: GradeItem, outputLanguage: string, reading: ItemReading, rubric: Rubric | undefined): Promise<ContextsRead | undefined> => {
+  if (item.contexts === undefined) return undefined;
+  const texts = { output: item.output, outputPath: OUTPUT_PATH, outputLanguage, contexts: item.contexts };
+  return contextsAgainst(texts, reading, new Set(rubric?.contexts?.allowUnsupported ?? []));
+};
+
+/** What the contexts check could not see: not given at all, kinds not fully read, and sentences with nothing to check. */
+const contextsNotRun = (checked: Checked): NotRunEntry[] => {
+  const text = GRADE_TEXT[checked.ui];
+  if (checked.contexts === undefined) return [{ rule: "contexts", reason: text.noContexts }];
+  const { contexts, unread } = checked.contexts;
+  return [
+    ...unread.map((entry) => ({ rule: "contexts", reason: text.contextsUnread(entry.kind, entry.reason) })),
+    ...(contexts.uncheckedSentences === 0 ? [] : [{ rule: "contexts", reason: text.uncheckedSentences(contexts.uncheckedSentences) }]),
+  ];
 };
 
 const citationsOf = (checked: Checked): GradeCitations | null => (checked.cited !== undefined && "citations" in checked.cited ? checked.cited.citations : null);
@@ -74,11 +94,12 @@ const notRunOf = (checked: Checked, rubric: Rubric | undefined): NotRunEntry[] =
   ...(checked.facts === null ? [{ rule: "compare", reason: GRADE_TEXT[checked.ui].noReference }] : []),
   ...(checked.cited === undefined ? [{ rule: "cite", reason: GRADE_TEXT[checked.ui].noCitations }] : []),
   ...(checked.cited !== undefined && "notRun" in checked.cited ? [checked.cited.notRun] : []),
+  ...contextsNotRun(checked),
 ];
 
 /** Pass or fail: by the rubric when chaff.yaml has `grade:`, with its penalty score; else by the default of spec §29.3. */
 const judge = (item: GradeItem, checked: Checked, setup: GradeSetup): { readonly verdict: Verdict; readonly score?: GradeScore } => {
-  const graded = { findings: checked.findings, facts: checked.facts, citations: citationsOf(checked) };
+  const graded = { findings: checked.findings, facts: checked.facts, citations: citationsOf(checked), contexts: checked.contexts?.contexts };
   if (setup.rubric === undefined) return { verdict: defaultVerdict(graded) };
   const wanted = setup.rubric.requiredSections ?? checked.check.doc.requiredSections;
   const uncited = Object.keys(item.sources).length > 0 && item.citations === undefined;
@@ -103,6 +124,7 @@ export const gradeItem = async (item: GradeItem, setup: GradeSetup): Promise<Gra
     notRun: notRunOf(checked, setup.rubric),
     facts: checked.facts,
     citations: citationsOf(checked),
+    ...(checked.contexts === undefined ? {} : { contexts: checked.contexts.contexts }),
     ...(score === undefined ? {} : { score }),
     pass: verdict.pass,
     failedBecause: verdict.failedBecause,

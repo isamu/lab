@@ -1,0 +1,73 @@
+id: cross-doc-term-variant
+layer: L3
+status: experimental
+how_to_find: cross-doc-term-variant
+# documents: compares the files of one run, so it runs only when chaff is given two or more files, or a folder.
+requires: [documents]
+# The katakana words come from the language package's split. Without parts of speech only the Latin and listed words are read.
+uses: [pos]
+severity: warning
+
+name:
+  ja: ファイルによって書き方が違う語
+  en: A word spelled differently in different files
+
+why:
+  ja: 説明書や文書の束では、一つのファイルの中ではそろっていても、ファイルどうしで書き方が分かれることがあります（あるページは「サーバ」、ほかのページは「サーバー」）。書いた人や書いた時期が違うと起きます。読み手は別のものかと迷い、サイトの検索でも片方を取りこぼします。一度に渡したファイルどうしを比べ、同じ語をファイルによって違う書き方で書いている所を指します。見る書き方は三つです。カタカナ語の語末の「ー」（サーバ／サーバー）、イギリスとアメリカの綴り（colour／color）、英字の語のハイフンの有無（e-mail／email）。どちらが正しいかは決めず、使うファイルの少ないほうを指します。
+  en: 'In a manual or a bundle of documents, each file can be consistent on its own while the files disagree with each other: one page writes "e-mail", the others "email". It happens when different people write at different times. A reader wonders whether they are different things, and a site search misses one. The files given together are compared, and a word written one way in some files and another way in the rest is pointed out. Three kinds of spelling are compared: the final ー of a katakana word (サーバ / サーバー), British and American spellings (colour / color), and a Latin word with and without a hyphen (e-mail / email). chaff does not pick a side; it points at the way fewer files use.'
+
+message:
+  ja: 「{matched}」と書いていますが、一緒に見たほかの {count} ファイルでは「{preferred}」です（例：{other}）
+  en: '"{matched}" here, but "{preferred}" in {count} other {count|file|files} checked with it (as in {other})'
+
+how_to_fix:
+  ja: 「{preferred}」に直してください。どちらに寄せるかをチームで決めているなら、chaff.yaml の prefer に書いておくと、どのファイルでも決めた書き方で見ます。
+  en: Change it to "{preferred}". If the team has decided which way, list the pair under prefer in chaff.yaml, and every file is checked against it.
+
+placeholders:
+  matched:
+    ja: 見つけた語
+    en: the word found
+  preferred:
+    ja: ほかのファイルの書き方
+    en: the other files' spelling
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 同じ語を、ファイルによって違う書き方で書いている所（サーバ／サーバー、e-mail／email）
+  en: The same word spelled one way in some files and another way in the rest (サーバ / サーバー, e-mail / email)
+example:
+  ja:
+    other: |
+      # 手順
+
+      サーバーを起動します。
+    before: |
+      # 案内
+
+      サーバに接続します。
+    after: |
+      # 案内
+
+      サーバーに接続します。
+  en:
+    other: |
+      # Steps
+
+      Send an email to the team.
+    before: |
+      # Guide
+
+      Reply to the e-mail by Friday.
+    after: |
+      # Guide
+
+      Reply to the email by Friday.
+
+not_flagged:
+  ja: 一つのファイルの中で両方の書き方を使っている語は、そのファイルを数えません（ファイルの中の揺れは katakana-long-vowel などが見ます）。違う語どうし（サーバーとブラウザ）は比べません。語末の「ー」の前が 1 音の語（カー）、辞書が固有名詞と知っている語、chaff.yaml の names に並べた名前、引用符の中の英語の綴り、文の途中で大文字で始まる英語の名前も見ません。ハイフンは、一緒に見たファイルのどれかがハイフンで書いた語だけを比べます。
+  en: A file that writes a word both ways is not counted for that word (the per-file rules, such as katakana-long-vowel, point at that). Different words are not compared (サーバー and ブラウザ). Katakana words of one mora before the final ー (カー), words the dictionary knows as proper nouns, the names under names in chaff.yaml, spellings inside quotation marks, and capitalized names in mid-sentence are left alone. For hyphens, only words that one of the files writes with a hyphen are compared.

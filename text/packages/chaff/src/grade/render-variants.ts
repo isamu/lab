@@ -18,12 +18,16 @@ const passedCell = (column: VariantColumn, text: VariantText): string =>
 const measureRows = (comparison: VariantComparison, text: VariantText): Rows => {
   const { columns } = comparison;
   const scored = columns.some((column) => column.penalty !== undefined);
+  const grounded = columns.some((column) => column.contexts !== undefined);
   return [
     ["", ...comparison.variants],
     [text.passed, ...columns.map((column) => passedCell(column, text))],
     [text.factsDropped, ...columns.map((column) => String(column.facts.dropped))],
     [text.factsAdded, ...columns.map((column) => String(column.facts.added))],
     [text.citationsFailed, ...columns.map((column) => text.citationsCell(column.citations.failed, column.citations.checked))],
+    ...(grounded
+      ? [[text.unsupportedFacts, ...columns.map((column) => text.citationsCell(column.contexts?.unsupported ?? 0, column.contexts?.checked ?? 0))]]
+      : []),
     ...(scored ? [[text.penalty, ...columns.map((column) => String(column.penalty ?? 0))]] : []),
   ];
 };
