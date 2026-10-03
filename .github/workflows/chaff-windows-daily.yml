@@ -14,6 +14,11 @@ on:
 permissions:
   contents: read
 
+# main への merge が続くと、push ごとの実行が Windows の runner を取り合い、PR の job を待たせる。新しい push が来たら古い実行は止める。
+concurrency:
+  group: chaff-windows-daily
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
 defaults:
   run:
     working-directory: text
