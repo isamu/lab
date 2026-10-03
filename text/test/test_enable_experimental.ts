@@ -26,6 +26,7 @@ const RULE = ALONE_EN[0];
 const OTHER = ALONE_EN[1];
 const OTHER_GENRE_ONLY = offAlone("en", "business/report").find((id) => !ALONE_EN.includes(id));
 const ENGLISH_ONLY = ALONE_EN.find((id) => !ALONE_JA.includes(id));
+const BOTH_LANGUAGES = ALONE_EN.find((id) => ALONE_JA.includes(id));
 const NONE_NOW = "no rule is experimental now (yarn rules:measure)";
 const skipUnless = (...needed: readonly (string | undefined)[]): false | string => (needed.every((id) => id !== undefined) ? false : NONE_NOW);
 /** The rule chaff enable writes in these tests: an experimental one when there is one, since that is what enable is for. */
@@ -70,14 +71,17 @@ describe("chaff enable", () => {
 });
 
 describe("explain on an experimental rule", () => {
-  it("shows how to turn it on alone while it is off, in English and Japanese", { skip: skipUnless(RULE) }, async () => {
-    const english = await runCli({}, ["explain", RULE ?? ""], "en_US.UTF-8");
+  it("shows how to turn it on alone while it is off, in English and Japanese", { skip: skipUnless(BOTH_LANGUAGES) }, async () => {
+    const english = await runCli({}, ["explain", BOTH_LANGUAGES ?? ""], "en_US.UTF-8");
     assert.match(
       english.out,
-      new RegExp(`Turn on this rule alone: {2}npx chaffjs enable ${RULE ?? ""} {2}\\(the same as rules: \\{ ${RULE ?? ""}: normal \\} in chaff\\.yaml\\)`, "u"),
+      new RegExp(
+        `Turn on this rule alone: {2}npx chaffjs enable ${BOTH_LANGUAGES ?? ""} {2}\\(the same as rules: \\{ ${BOTH_LANGUAGES ?? ""}: normal \\} in chaff\\.yaml\\)`,
+        "u",
+      ),
     );
-    const japanese = await runCli({}, ["explain", RULE ?? ""]);
-    assert.match(japanese.out, new RegExp(`このルールだけを動かす: {2}npx chaffjs enable ${RULE ?? ""}`, "u"));
+    const japanese = await runCli({}, ["explain", BOTH_LANGUAGES ?? ""]);
+    assert.match(japanese.out, new RegExp(`このルールだけを動かす: {2}npx chaffjs enable ${BOTH_LANGUAGES ?? ""}`, "u"));
   });
 
   it("does not show it once the rule is on, nor for a rule that is not experimental", async () => {
