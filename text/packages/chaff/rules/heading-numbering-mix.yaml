@@ -1,0 +1,140 @@
+id: heading-numbering-mix
+layer: L1
+status: experimental
+how_to_find: heading-numbering
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 見出しの番号の付け方が揃っていない
+  en: Heading numbering mixed
+
+why:
+  ja: 「1. 概要」「2. 手順」と番号を付けた見出しの隣に番号の無い「まとめ」があったり、「1.」「2.」の隣に「3）」や「第4章」があったりすると、読み手は番号の無い見出しが別の扱いなのか、番号が抜けたのか迷います。目次や参照（「3 章で述べた」）とも合わなくなります。どちらの付け方が正しいかは決めず、同じ親の下の同じ深さの見出し（兄弟）のうち少ないほうを指します。番号を持つ語（第1章、Chapter 1）と、番号を付けないのがふつうの前後の見出し（目次、参考文献）は言語ごとの語彙表にあります。
+  en: A numbered "1. Overview" and "2. Steps" next to an unnumbered "Summary", or "1." and "2." next to "3)" or "Chapter 4", leave the reader unsure whether the odd one is meant to be different or lost its number, and the numbers stop matching the table of contents and cross-references. chaff does not pick a style; among headings with the same parent and depth (siblings) it points at the minority. Words that carry a number (Chapter 1, 第1章) and front and back matter that is never numbered (Contents, References) are in each language's lexicon.
+
+message:
+  ja: 見出し「{heading}」の番号の付け方が、兄弟の見出し（「{example}」など {count} 個）と違います
+  en: 'The heading "{heading}" is numbered differently from its siblings ("{example}" and {count} in all)'
+messages:
+  unnumbered:
+    ja: 見出し「{heading}」だけ番号がありません（兄弟の見出しは「{example}」など {count} 個が番号付き）
+    en: 'The heading "{heading}" has no number, while {count} of its siblings do ("{example}")'
+  numbered:
+    ja: 見出し「{heading}」だけ番号があります（兄弟の見出しは「{example}」など {count} 個が番号なし）
+    en: 'The heading "{heading}" is numbered, while {count} of its siblings are not ("{example}")'
+  style:
+    ja: 見出し「{heading}」の番号の書き方が、兄弟の見出し（「{example}」など {count} 個）と違います
+    en: 'The heading "{heading}" writes its number differently from {count} of its siblings ("{example}")'
+
+how_to_fix:
+  ja: 兄弟の見出しで番号の付け方を揃えてください。番号の無い見出しを本文の外に置くつもりなら、親を分けてください。
+  en: Number sibling headings the same way. If the unnumbered one is meant to sit outside the numbered body, give it a different parent.
+
+placeholders:
+  heading:
+    ja: 見出し
+    en: the heading
+  example:
+    ja: 兄弟の見出し
+    en: a sibling
+  count:
+    ja: 〇
+    en: N
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「1. 概要」「2. 手順」「まとめ」や「1.」「2.」「3）」のように、兄弟の見出しで番号の付け方が混ざっている所
+  en: Sibling headings numbered in mixed ways, such as "1. Overview", "2. Steps", "Summary"
+example:
+  ja:
+    before: |
+      # 報告
+
+      ## 1. 概要
+
+      概要です。
+
+      ## 2. 手順
+
+      手順です。
+
+      ## まとめ
+
+      まとめです。
+    after: |
+      # 報告
+
+      ## 1. 概要
+
+      概要です。
+
+      ## 2. 手順
+
+      手順です。
+
+      ## 3. まとめ
+
+      まとめです。
+  en:
+    before: |
+      # Report
+
+      ## 1. Overview
+
+      The overview.
+
+      ## 2. Steps
+
+      The steps.
+
+      ## Summary
+
+      The summary.
+    after: |
+      # Report
+
+      ## 1. Overview
+
+      The overview.
+
+      ## 2. Steps
+
+      The steps.
+
+      ## 3. Summary
+
+      The summary.
+
+not_flagged:
+  ja: 兄弟が三つ未満の所、少ないほうと多いほうが同じ数の所、深さや親の違う見出しどうし（「1.」の下の「1.1」）は比べません。前後の見出し（目次、参考文献、付録）は兄弟に数えません。見出しの頭の数でも、区切りの記号の無い数（「2026年の計画」「3つの理由」）は番号と読みません。
+  en: Fewer than three siblings, a tie between the two sides, and headings at different depths or under different parents ("1." and "1.1") are not compared. Front and back matter (Contents, References, Appendix) is not counted among the siblings. A number at the head of a heading without a separator ("2026 roadmap", "3 reasons") is not read as a heading number.
+rewrite:
+  ja:
+    direction: 兄弟の見出しで、多いほうの番号の付け方に揃えてください。番号の無い見出しに番号を足すか、番号の書き方（1. と 1））を一つにします。見出しの言葉は変えません。
+    pairs:
+      - before: 「## 1. 概要」「## 2. 手順」「## まとめ」
+        after: 「## 1. 概要」「## 2. 手順」「## 3. まとめ」
+      - before: 「## 1. 背景」「## 2. 方針」「## 3）課題」
+        after: 「## 1. 背景」「## 2. 方針」「## 3. 課題」
+    keep:
+      - 見出しの言葉と順番
+      - 見出しの深さ
+    avoid:
+      - 番号を付けない見出しを本文の中に残したまま、ほかの見出しの番号を外す
+  en:
+    direction: Number the sibling headings the way most of them are numbered. Add the missing number, or write every number in one style ("1." or "1)"). Keep the heading text.
+    pairs:
+      - before: '"## 1. Overview", "## 2. Steps", "## Summary"'
+        after: '"## 1. Overview", "## 2. Steps", "## 3. Summary"'
+      - before: '"## 1. Background", "## 2. Plan", "## 3) Risks"'
+        after: '"## 1. Background", "## 2. Plan", "## 3. Risks"'
+    keep:
+      - the heading text and order
+      - the heading depth
+    avoid:
+      - stripping the numbers from the other headings to match the odd one
