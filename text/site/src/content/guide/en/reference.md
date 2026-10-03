@@ -44,20 +44,23 @@ Experimental rules are new rules that have not been measured on real documents y
 To run all of them, add `--experimental`.
 
 ```bash
-npx chaffjs --experimental report.md   also run the experimental rules
+npx chaffjs --experimental docs/   also run the experimental rules
 ```
 
-To turn on just one, give it a level under `rules` in `chaff.yaml`.
+To turn on just one, name it with `enable`. It writes the rule under `rules` in `chaff.yaml`.
 
-```yaml
-rules:
-  doubled-word: normal
+```bash
+npx chaffjs enable cross-doc-term-variant
 ```
+
+## Rules that need more than one document, or Markdown
+
+The rules whose names start with `cross-doc-` compare the files of one run, such as a term spelled one way in one file and another way in the rest.
+They run when chaff is given two or more files, or a folder. On one file they are listed among the rules that did not run.
 
 The rules that read Markdown syntax (heading depth, image alt text, link targets and so on) run on Markdown documents only.
 On a `.txt` file they stop with "the document is not Markdown".
 
-Some genres turn experimental rules on by default.
 The [genres page](../../genres/) shows which rules each genre runs.
 
 ## Checks that read meaning run with chaff test
