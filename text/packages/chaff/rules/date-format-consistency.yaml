@@ -1,0 +1,85 @@
+id: date-format-consistency
+layer: L1
+status: experimental
+how_to_find: date-format
+severity: warning
+
+name:
+  ja: 日付の書き方が揃っていない
+  en: Dates written two ways
+
+why:
+  ja: 一つの文書で「2026-10-02」と「2026年10月2日」、「Oct 2, 2026」と「10/2/2026」のように日付を二通りに書くと、読み手は同じ種類の日付なのかを確かめ、10/2 が十月二日なのか二月十日なのかも迷います。書き写した所や、あとから足した所に多い揺れです。どちらの書き方が正しいかは決めず、文書の中で少ないほうを指します。年・月・日のそろった日付だけを比べます。月の名前と元号は言語ごとの語彙表にあります。
+  en: One document writing "2026-10-02" in one place and "October 2, 2026" or "10/2/2026" in another makes the reader check whether the dates are the same kind, and 10/2 may be read as October 2 or 10 February. The mix usually comes from a pasted or later-added passage. chaff does not pick a style; it points at the minority. Only dates with a year, a month and a day are compared. Month names and eras are in each language's lexicon.
+
+message:
+  ja: 日付「{written}」の書き方が、この文書のほかの日付（「{example}」など {count} 箇所）と違います
+  en: 'The date "{written}" is written differently from {count} other dates in the document (such as "{example}")'
+
+how_to_fix:
+  ja: 文書の中の日付を一つの書き方に揃えてください。
+  en: Write every date in the document the same way.
+
+placeholders:
+  written:
+    ja: 日付
+    en: the date
+  example:
+    ja: ほかの日付
+    en: another date
+  count:
+    ja: 〇
+    en: N
+
+# 少ないほうの日付が全体のこの割合（パーセント）以下なら指す。それより多ければ、二つの書き方を使い分けている文書と読む。
+levels: { strict: 49, normal: 34, relaxed: 20 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「2026-10-02」と「2026年10月2日」のように、一つの文書で日付を二通りに書いている所
+  en: Dates written two ways in one document, such as "2026-10-02" and "October 2, 2026"
+example:
+  ja:
+    before: |
+      申込は2026年10月2日に始まり、2026年10月9日に締め切ります。結果は2026/10/16に通知します。
+    after: |
+      申込は2026年10月2日に始まり、2026年10月9日に締め切ります。結果は2026年10月16日に通知します。
+  en:
+    before: |
+      Registration opens on October 2, 2026 and closes on October 9, 2026. Results are sent on 10/16/2026.
+    after: |
+      Registration opens on October 2, 2026 and closes on October 9, 2026. Results are sent on October 16, 2026.
+
+not_flagged:
+  ja: 年だけ、月日だけの日付、URL や版の中の数（/2026/10/02/、1.2026.10）、コードの中の日付は比べません。少ないほうが全体の三分の一を超える文書は、二つの書き方を使い分けている（表は 2026-10-02、本文は 2026年10月2日）と読んで指しません。いちばん多い書き方が同じ数で並ぶときも指しません。
+  en: Year-only and month-day dates, numbers inside URLs and versions (/2026/10/02/, 1.2026.10), and dates in code are not compared. When the minority is more than a third of the dates, the document is taken to use two styles on purpose (ISO in tables, long dates in prose) and nothing is reported, nor when the two commonest styles are tied.
+level_meaning:
+  ja: 少ないほうの書き方の日付が全体の {limit}% 以下なら指摘
+  en: reported while the minority style is {limit}% of the dates or less
+rewrite:
+  ja:
+    direction: 指された日付を、文書の多いほうの書き方（指摘が例に引く日付の書き方）に書き直してください。日付そのもの（年・月・日）は変えません。
+    pairs:
+      - before: 結果は2026/10/16に通知します。（ほかは「2026年10月2日」）
+        after: 結果は2026年10月16日に通知します。
+      - before: 締切は2026-10-09です。（ほかは「2026年10月2日」）
+        after: 締切は2026年10月9日です。
+    keep:
+      - 年・月・日と曜日
+      - 文の言い回し
+    avoid:
+      - 月と日の順の分からない日付（10/2/2026）を、確かめずに書き換える
+  en:
+    direction: Rewrite the flagged date in the style most of the document uses (the one the finding quotes). Keep the date itself.
+    pairs:
+      - before: Results are sent on 10/16/2026. (other dates read "October 2, 2026")
+        after: Results are sent on October 16, 2026.
+      - before: The deadline is 2026-10-09. (other dates read "October 2, 2026")
+        after: The deadline is October 9, 2026.
+    keep:
+      - the year, month, day and weekday
+      - the wording around the date
+    avoid:
+      - rewriting an ambiguous date (10/2/2026) without checking which order was meant
