@@ -136,14 +136,19 @@ const rulesOf = (raw: unknown, context: RulesContext): Rules => {
 const lexiconEntryOf = (value: unknown): LexiconEntry | undefined => {
   if (typeof value === "string") return value.trim() === "" ? undefined : { pattern: value.trim() };
   if (!isRecord(value) || typeof value["pattern"] !== "string" || value["pattern"].trim() === "") return undefined;
-  const insteadOf = value["instead_of"];
-  return { pattern: value["pattern"].trim(), ...(typeof insteadOf === "string" && insteadOf.trim() !== "" ? { instead_of: insteadOf.trim() } : {}) };
+  const [insteadOf, rewrite] = [value["instead_of"], value["rewrite"]];
+  return {
+    pattern: value["pattern"].trim(),
+    ...(typeof insteadOf === "string" && insteadOf.trim() !== "" ? { instead_of: insteadOf.trim() } : {}),
+    ...(typeof rewrite === "string" && rewrite.trim() !== "" ? { rewrite: rewrite.trim() } : {}),
+  };
 };
 
 const lexiconOf = (words: unknown): Lexicon | undefined => {
   const entries = Array.isArray(words) ? words.map(lexiconEntryOf) : [undefined];
   const readable = entries.flatMap((entry) => (entry === undefined ? [] : [entry]));
-  return readable.length === entries.length ? readable : undefined;
+  // An empty list would leave its rules running and finding nothing, which reads as a clean document.
+  return readable.length === entries.length && readable.length > 0 ? readable : undefined;
 };
 
 type ListInLanguage = { readonly language: string; readonly list: string; readonly lexicon: Lexicon };

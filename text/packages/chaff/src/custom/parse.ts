@@ -129,7 +129,8 @@ const moduleOf = (raw: Record<string, unknown>, at: string, baseDir: string): Ch
 };
 
 const specOf = (raw: Record<string, unknown>, type: string, at: string, baseDir: string): Checked<CustomSpec> => {
-  if (type === "words") return wordsOf(raw["words"], at);
+  // A words rule may take its words from a word list instead, one per language (a rule pack's lexicons/<language>/).
+  if (type === "words") return takesWordList(raw, type) ? ok({ type: "words", words: [] }) : wordsOf(raw["words"], at);
   if (type === "pattern") return patternOf(raw, at);
   if (type === "module") return moduleOf(raw, at, baseDir);
   return tokensOf(raw["tokens"], at);
@@ -171,9 +172,13 @@ const requiresOf = (raw: unknown, type: string, at: string): Checked<readonly st
   return unknown === undefined ? ok([...new Set(written)]) : failed({ kind: "bad-requires", at, written: unknown });
 };
 
-/** A module's word list by name; its detector gets it as options.lexicon. The other types carry their words themselves. */
-const wordListOf = (raw: unknown, type: string, at: string): Checked<string | undefined> => {
-  if (raw === undefined || type !== "module") return ok(undefined);
+/** A module reads a word list; so does a words rule that writes word_list in place of words. The others carry their words. */
+const takesWordList = (raw: Record<string, unknown>, type: string): boolean =>
+  raw["word_list"] !== undefined && (type === "module" || (type === "words" && raw["words"] === undefined));
+
+/** The word list by name; the detector gets it, in the document's language, as options.lexicon. */
+const wordListOf = (raw: unknown, takesList: boolean, at: string): Checked<string | undefined> => {
+  if (raw === undefined || !takesList) return ok(undefined);
   return nonEmpty(raw) ? ok(raw.trim()) : failed({ kind: "bad-word-list", at, written: printed(raw) });
 };
 
@@ -182,7 +187,7 @@ type Needs = { readonly requires: readonly string[]; readonly wordList: string |
 
 const needsOf = (raw: Record<string, unknown>, type: string, at: string): Checked<Needs> => {
   const requires = requiresOf(raw["requires"], type, at);
-  const wordList = wordListOf(raw["word_list"], type, at);
+  const wordList = wordListOf(raw["word_list"], takesWordList(raw, type), at);
   if (requires.value === undefined || wordList.problems.length > 0) return failed(...requires.problems, ...wordList.problems);
   return ok({ requires: requires.value, wordList: wordList.value });
 };

@@ -2,6 +2,45 @@
 
 Newest first.
 
+## 0.21.0 — 2026-10-03
+
+Most rules now run by default. `yarn rules:measure` measures how often each rule fires on human documents of each
+genre group; a rule that fires rarely runs at its normal level, a useful but noisier one runs at `info`, and a rule
+that fires on most documents of a group is off there with the reason. `--experimental` is left only for rules not
+measured yet. Limits that were wrong for a genre were retuned instead of turning the rule off.
+
+Rules have one DSL. Bundled rules, `custom_rules` in chaff.yaml and plugin rules take the same YAML fields, and a
+rewrite carries a depth (`light`, `structure`, `register`) that `chaff fix-plan --depth` selects.
+
+### Commands and settings
+
+- Default placement by measurement, `yarn rules:measure --apply`, and per-genre limits (#574 #575).
+- One rule DSL for bundled rules, `custom_rules` and plugins (#591); `rewrite.depth` and `fix-plan --depth` (#583).
+- A rule's genre offs live in its own file as `off_for` (#587).
+- Every subcommand honours `--help`; hints say `npx chaffjs` (#571).
+
+### Rules
+
+- Dates and times the calendar or clock does not have: impossible-date, impossible-time (#581).
+- Links and images: bare-url-mix, link-text-url-mismatch, image-file-name-alt (#582).
+- Japanese clause shapes: repeated-sentence-ending, tari-unpaired, adverb-without-negation, yori-as-from,
+  colloquial-opener (#584).
+- Keigo: humble-for-others, baito-keigo (#548). Requests: request-without-deadline (#552).
+- Marks: quote, bracket and ！？ consistency, sentence spacing, hyphen as dash, e.g. form, all-caps shouting (#556).
+- Genres: email and letters (#565), technical documents (#568), contracts (#569).
+- Across files: cross-doc-fact-conflict, cross-doc-duplicate-definition (#561).
+
+### Fixes
+
+- `oxford-comma-consistency` declares that it reads tokens, so it no longer finds nothing when it runs alone (#585).
+- `empty-list-item` no longer overflows the stack on deep lists; `request-without-deadline` declares the dates it
+  reads (#574).
+
+### Docs and CI
+
+- Guide pages run the rules by default; screens and their not-run rows are generated (#570 #576 #588).
+- CI runs its jobs in parallel with the tests split into parts, and caches `node_modules` (#589 #590 #592).
+
 ## 0.20.0 — 2026-10-03
 
 chaff checks far more kinds of mistakes. Contradiction engines compare facts, totals, units, durations, relative dates,

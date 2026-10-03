@@ -1,0 +1,12 @@
+# A preset: style: clear-requests/strict-requests in chaff.yaml turns both rules up a level.
+id: strict-requests
+name: { ja: 依頼に厳しく, en: Strict about requests }
+summary:
+  ja: あいまいな期限を誤りとして、くだけた言い方を注意として出します
+  en: A vague deadline is an error, and a casual form a warning
+source:
+  title: chaff-plugin-clear-requests
+  url: https://github.com/isamu/lab/tree/main/text/examples/chaff-plugin-clear-requests
+rules:
+  clear-requests/vague-deadline: strict
+  clear-requests/formal-register: strict

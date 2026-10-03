@@ -1,0 +1,5 @@
+# くだけた言い方と、改まった言い方（rewrite）。
+- { pattern: ないけど, rewrite: ませんが }
+- { pattern: じゃない, rewrite: ではない }
+- { pattern: ちょっと, rewrite: 少し }
+- { pattern: すごく, rewrite: とても }

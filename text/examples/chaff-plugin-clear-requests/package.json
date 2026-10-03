@@ -1,0 +1,16 @@
+{
+  "name": "chaff-plugin-clear-requests",
+  "version": "0.0.0",
+  "private": true,
+  "description": "An example chaff rule pack written in YAML only: requests that say when, and one register throughout.",
+  "files": [
+    "rules",
+    "lexicons"
+  ],
+  "chaff": {
+    "apiVersion": 1
+  },
+  "peerDependencies": {
+    "chaffjs": ">=0.21.0"
+  }
+}

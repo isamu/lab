@@ -1,10 +1,66 @@
 # Writing a plugin
 
-How to write a chaff rule as a Node function, and how to pack rules into a package to share.
-A rule that words or a regular expression can say needs no code; see [Adding a rule](./adding-rules) first.
-Write code only for what those cannot say, such as counting or comparing.
+How to share chaff rules as a package. Start with a rule pack: rules, word lists and styles written in YAML, with no code.
+Write code only for what words, a regular expression or parts of speech cannot say, such as counting or comparing.
 
-## Two forms
+## A rule pack in YAML
+
+A rule pack is a folder that holds a manifest and YAML files.
+The rules are written exactly as under `custom_rules` ([Adding a rule](./adding-rules)), one file each.
+Nothing in a pack runs, so it can be read and reviewed like any settings file.
+The pack below is in [examples/chaff-plugin-clear-requests](https://github.com/isamu/lab/tree/main/text/examples/chaff-plugin-clear-requests).
+
+```text
+chaff-plugin-clear-requests/
+  package.json                      "chaff": { "apiVersion": 1 }  (or a chaff-plugin.yaml beside it)
+  rules/vague-deadline.yaml         a rule
+  rules/formal-register.yaml
+  lexicons/ja/vague-deadline.yaml   its words in Japanese
+  lexicons/en/vague-deadline.yaml   and in English
+  styles/strict-requests.yaml       a preset
+```
+
+A `words` rule may name a word list instead of listing its words:
+
+```yaml
+# rules/vague-deadline.yaml
+id: vague-deadline
+type: words
+word_list: vague-deadline
+name: { ja: 期限があいまいな依頼, en: A deadline that is not a date }
+why: { ja: 読む人ごとに違う日を指します。, en: '"Soon" means a different day to each reader.' }
+how_to_fix: { ja: 日付か、何日以内かを書きます。, en: Write a date, or a number of days. }
+example:
+  ja: { before: 資料は近日中に送ってください。, after: 資料は 5 月 10 日までに送ってください。 }
+  en: { before: Please send the slides soon., after: Please send the slides by 10 May. }
+rewrite:
+  depth: light
+```
+
+```yaml
+# lexicons/en/vague-deadline.yaml: one word or phrase per entry; { pattern, rewrite } also gives the form to use
+- as soon as possible
+- soon
+- { pattern: in due course, rewrite: by a date }
+```
+
+The words come from the word list in the document's language.
+A document in a language the pack has no list for does not pass silently: the rule is listed as not run, naming the list that is missing.
+
+```yaml
+# chaff.yaml
+plugins:
+  - chaff-plugin-clear-requests # an installed package
+  - ./chaff-rules # or a folder of your own
+style: clear-requests/strict-requests # a preset the pack ships
+```
+
+Every id the pack ships starts with its name (`clear-requests/vague-deadline`), which comes from the package's name.
+A preset is a style (`styles/*.yaml`, as in [Define your team's writing rules](./house-style)). A pack cannot add a genre: the genres are one list that
+`--genre`, every rule's `use_for` and the rule reference share, and a genre that came and went with a plugin would make the same
+`--genre` mean different things on different machines.
+
+## Rules in code: two forms
 
 | Form | When it fits | Where it goes |
 | --- | --- | --- |

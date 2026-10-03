@@ -1,10 +1,65 @@
 # プラグインを作る
 
-chaff のルールを Node の関数で書き、パッケージにまとめて配る方法です。
-語や正規表現で書けるルールなら、コードは要りません。先に [ルールを足す](./adding-rules) を見てください。
-コードを書くのは、数える・比べるなど、それでは書けないときだけです。
+chaff のルールをパッケージにして配る方法です。まずはルールの束から始めます。ルール・語彙表・スタイルを YAML だけで書き、コードは書きません。
+語・正規表現・品詞で言えないもの（数える、比べる）だけをコードで書きます。
 
-## 2 つの形
+## YAML だけのルールの束
+
+ルールの束は、目印のファイルと YAML を置いたフォルダです。
+ルールは `custom_rules` と同じ書き方（[ルールを足す](./adding-rules)）で、1 ファイルに 1 つ書きます。
+束の中は何も実行しないので、設定ファイルと同じように読んで確かめられます。
+下の束は [examples/chaff-plugin-clear-requests](https://github.com/isamu/lab/tree/main/text/examples/chaff-plugin-clear-requests) にあります。
+
+```text
+chaff-plugin-clear-requests/
+  package.json                      "chaff": { "apiVersion": 1 }（隣に chaff-plugin.yaml を置いてもよい）
+  rules/vague-deadline.yaml         ルール
+  rules/formal-register.yaml
+  lexicons/ja/vague-deadline.yaml   日本語の語
+  lexicons/en/vague-deadline.yaml   英語の語
+  styles/strict-requests.yaml       プリセット
+```
+
+`words` のルールは、語を並べる代わりに語彙表の名前を書けます。
+
+```yaml
+# rules/vague-deadline.yaml
+id: vague-deadline
+type: words
+word_list: vague-deadline
+name: { ja: 期限があいまいな依頼, en: A deadline that is not a date }
+why: { ja: 読む人ごとに違う日を指します。, en: '"Soon" means a different day to each reader.' }
+how_to_fix: { ja: 日付か、何日以内かを書きます。, en: Write a date, or a number of days. }
+example:
+  ja: { before: 資料は近日中に送ってください。, after: 資料は 5 月 10 日までに送ってください。 }
+  en: { before: Please send the slides soon., after: Please send the slides by 10 May. }
+rewrite:
+  depth: light
+```
+
+```yaml
+# lexicons/ja/vague-deadline.yaml: 1 項目に 1 つの語。{ pattern, rewrite } で使う書き方も書けます
+- 近日中
+- なるべく早く
+- { pattern: 追って, rewrite: 日付 }
+```
+
+語は、文書の言語の語彙表から取ります。
+束がその言語の語彙表を持たない文書は、黙って通しません。そのルールを、足りない語彙表の名前と一緒に「動かなかったルール」に出します。
+
+```yaml
+# chaff.yaml
+plugins:
+  - chaff-plugin-clear-requests # 入れたパッケージ
+  - ./chaff-rules # 手元のフォルダでもよい
+style: clear-requests/strict-requests # 束が持つプリセット
+```
+
+束の出すものの名前には、束の名前が前に付きます（`clear-requests/vague-deadline`）。束の名前はパッケージの名前から決まります。
+プリセットはスタイルです（`styles/*.yaml`。[チームの表記ルールを決める](./house-style)と同じ形）。ジャンルは足せません。
+ジャンルは `--genre`、各ルールの `use_for`、規則の一覧が共有する一つの一覧で、プラグインで増えたり減ったりすると、同じ `--genre` が環境ごとに違う意味になるためです。
+
+## コードで書くルールの 2 つの形
 
 | 形 | 向いているとき | 書く場所 |
 | --- | --- | --- |
