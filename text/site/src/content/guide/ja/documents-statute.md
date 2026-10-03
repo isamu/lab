@@ -309,9 +309,7 @@ kitei-fixed.md   legal/statute · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  58 件の rule は動いていません:
-      adverb-overuse（ja 向けの rule ではないため）
-      agentless-passive（ジャンル legal/statute では見ないため）
+  {not-run}
 …
 ```
 

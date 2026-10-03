@@ -355,9 +355,7 @@ rules-fixed.md   legal/statute · English   genre from --genre
 
   The text was not changed. Fixing it is the writer's job.
 
-  66 rules did not run:
-      adverb-overuse (the legal/statute genre does not check it)
-      agentless-passive (the legal/statute genre does not check it)
+  {not-run}
 …
 ```
 
