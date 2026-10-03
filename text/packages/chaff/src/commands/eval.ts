@@ -20,11 +20,11 @@ const TEXT: Texts<{
   readonly unknownRule: (id: string) => string;
 }> = {
   ja: {
-    mixed: (mixes) => `言語かジャンルが混ざっています: ${mixes}\n1 つに絞って測ってください（例: npx chaff eval examples/blog-ja/）。`,
+    mixed: (mixes) => `言語かジャンルが混ざっています: ${mixes}\n1 つに絞って測ってください（例: npx chaffjs eval examples/blog-ja/）。`,
     unknownRule: (id) => `${id} という rule はありません。`,
   },
   en: {
-    mixed: (mixes) => `Languages or genres are mixed: ${mixes}\nMeasure one at a time (for example npx chaff eval examples/blog-en/).`,
+    mixed: (mixes) => `Languages or genres are mixed: ${mixes}\nMeasure one at a time (for example npx chaffjs eval examples/blog-en/).`,
     unknownRule: (id) => `There is no rule named ${id}.`,
   },
 };
@@ -53,9 +53,9 @@ export type Context = {
  * 測った結果は文書の言語で出す（混ざっていれば測らないので、言語は 1 つ）。断りは ui の言語。
  */
 export const runEval = async (targets: readonly string[], argv: readonly string[], context: Context): Promise<number> => {
-  const paths = collectTargets(targets.length > 0 ? targets : ["."]);
+  const paths = collectTargets(targets.length > 0 ? targets : ["."], context.config.include);
   if (paths.length === 0) {
-    console.error(CLI_TEXT[context.ui].noMarkdown(targets.join(", ")));
+    console.error(CLI_TEXT[context.ui].noMarkdown(targets.join(", "), context.config.include ?? []));
     return 1;
   }
   const { config, resolveGenre, flag, ui } = context;

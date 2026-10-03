@@ -1,0 +1,19 @@
+# 文頭の指示語（こそあど）。demonstrative-opener-run が、同じ段落でこれらで始まる文の連続を数える。
+# 語として読むので「それぞれ」「このほか」の「それ」「この」も、語に分かれれば当たる。接続詞の「そして」「そうして」は入れない。
+id: demonstrative-opener
+language: ja
+entries:
+  - pattern: これ
+  - pattern: それ
+  - pattern: あれ
+  - pattern: この
+  - pattern: その
+  - pattern: あの
+  - pattern: こうした
+  - pattern: そうした
+  - pattern: こういった
+  - pattern: そういった
+  - pattern: こちら
+  - pattern: そちら
+  - pattern: ここ
+  - pattern: そこ

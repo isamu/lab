@@ -1,0 +1,10 @@
+# What a definition sentence says (cross-doc-duplicate-definition). A sentence that names a term without one of these
+# quotes the term and does not define it.
+id: definition-statement
+language: en
+entries:
+  - pattern: means
+  - pattern: mean
+  - pattern: refers to
+  - pattern: refer to
+  - pattern: has the meaning

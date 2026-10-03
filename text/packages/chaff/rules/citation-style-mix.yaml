@@ -1,0 +1,109 @@
+id: citation-style-mix
+layer: L3
+status: stable
+how_to_find: citation-style
+severity: info
+
+name:
+  ja: 引用の書き方が揃っていない
+  en: Citations written in more than one style
+
+why:
+  ja: 一つの論文の中で、引用を [1] と書いた所と（山田, 2020）と書いた所が混ざっていると、読み手は文献一覧をどちらの引き方で探せばよいか迷います。別の原稿から文を移したときや、共著者が自分の書き方で足したときに起きます。chaff は、番号の角括弧（[1]）、亀甲括弧（〔1〕）、文の後ろの番号と片括弧（…である1)。）、著者と年（(Smith, 2020)、山田（2020））、年を書いた脚注（[^1]）を見分け、最も多い書き方と違う少数の書き方を指します。どの書き方が正しいかは決めません。
+  en: When one paper cites as [1] in some places and as (Smith, 2020) in others, the reader cannot tell which way to look up the reference list. It happens when text is moved from another manuscript, or when a co-author adds citations in their own style. chaff tells apart numbers in square brackets ([1]), numbers in tortoise-shell brackets (〔1〕), a number with a closing parenthesis after Japanese text (…である1)。), author and year ((Smith, 2020), Smith et al. (2020)) and footnotes whose note gives a year ([^1]), and points at the few citations that differ from the most common style. Which style is right is not decided.
+
+message:
+  ja: 引用「{citation}」の書き方が、この論文のほかの引用（「{majority}」など {count} 箇所）と違います
+  en: 'The citation "{citation}" is written differently from the paper''s other citations ("{majority}" and others, {count} in all)'
+
+how_to_fix:
+  ja: 多いほうの書き方に揃えてください。番号に揃えるなら、文献一覧にも番号を付けます。
+  en: Rewrite it in the style most citations use. If that style is numbered, give the reference its number in the list too.
+
+levels: { strict: 3, normal: 2, relaxed: 1 }
+
+use_for: [academic, legal, docs, literature, speech]
+
+group: consistency
+summary:
+  ja: 一つの論文の中で、[1] の引用と（山田, 2020）の引用のように、引用の書き方が混ざっている所
+  en: A paper that cites as [1] in one place and as (Smith, 2020) in another
+example:
+  ja:
+    config: { genre: academic/paper }
+    before: |
+      # 睡眠と記憶
+
+      睡眠は記憶の定着を助ける[1]。短い昼寝でも効果がある[2]。夜に学んだあとで眠ると、翌朝によく思い出せる（山田, 2020）。
+
+      ## 参考文献
+
+      - [1] 佐藤一郎. 睡眠の研究. 2019.
+      - [2] 鈴木花子. 昼寝の効果. 2021.
+      - [3] 山田太郎. 夜の学習. 2020.
+    after: |
+      # 睡眠と記憶
+
+      睡眠は記憶の定着を助ける[1]。短い昼寝でも効果がある[2]。夜に学んだあとで眠ると、翌朝によく思い出せる[3]。
+
+      ## 参考文献
+
+      - [1] 佐藤一郎. 睡眠の研究. 2019.
+      - [2] 鈴木花子. 昼寝の効果. 2021.
+      - [3] 山田太郎. 夜の学習. 2020.
+  en:
+    config: { genre: academic/paper }
+    before: |
+      # Sleep and memory
+
+      Sleep helps memories settle [1]. A short nap helps too [2]. Sleeping after study in the evening improves recall the next morning (Young, 2020).
+
+      ## References
+
+      - [1] Smith, A. Sleep. 2019.
+      - [2] Jones, B. Naps. 2021.
+      - [3] Young, C. Evening study. 2020.
+    after: |
+      # Sleep and memory
+
+      Sleep helps memories settle [1]. A short nap helps too [2]. Sleeping after study in the evening improves recall the next morning [3].
+
+      ## References
+
+      - [1] Smith, A. Sleep. 2019.
+      - [2] Jones, B. Naps. 2021.
+      - [3] Young, C. Evening study. 2020.
+
+not_flagged:
+  ja: 文献一覧の中、コードの中、行の頭の番号（箇条書きの番号）、年を書いていない脚注、月や季節の後ろの年（（2020年3月）、(March 2020)）は引用として数えません。少数の書き方が {limit} 箇所を超えるときは、意図して使い分けているとみなして指しません。論文のジャンルでだけ見ます。
+  en: 'Citations inside the reference list or code, numbers at the start of a line (a numbered list), footnotes whose note gives no year, and a year after a month or a season ("(March 2020)") are not counted. When the minority style is used more than {limit} times, it is taken as a deliberate choice and not reported. Only the academic paper genre runs this rule.'
+level_meaning:
+  ja: 少ないほうの書き方が {limit} 箇所以下のとき指摘
+  en: reported when the minority style appears {limit} times or fewer
+rewrite:
+  ja:
+    direction: 少数の書き方の引用を、論文で最も多い書き方に書き直してください。番号の方式なら、その文献の文献一覧での番号を使います。番号が分からなければ、書き手に確かめます。
+    pairs:
+      - before: 翌朝によく思い出せる（山田, 2020）。
+        after: 翌朝によく思い出せる[3]。
+      - before: 昼寝の効果は小さい〔4〕。
+        after: 昼寝の効果は小さい[4]。
+    keep:
+      - 引いている文献
+      - 引用を置いた文の中の位置
+    avoid:
+      - 文献一覧に無い番号を作る
+      - 引用を消す
+  en:
+    direction: Rewrite each citation in the minority style in the style the paper uses most. For a numbered style, use the reference's number in the list; if it is not clear, ask the writer.
+    pairs:
+      - before: improves recall the next morning (Young, 2020).
+        after: improves recall the next morning [3].
+      - before: as Jones et al. (2021) showed,
+        after: as shown in [2],
+    keep:
+      - which work is cited
+      - where in the sentence the citation sits
+    avoid:
+      - inventing a number the reference list does not have
+      - dropping the citation

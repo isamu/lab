@@ -42,7 +42,7 @@ For an English paper, write the team's spellings under `prefer` instead (see the
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The abstract and part of a paper below were saved as `paper.md`. They were written for this page.
 
-```markdown
+```markdown file=paper.md
 # Assigning free rooms first to cut meeting room booking delays
 
 ## Abstract
@@ -72,8 +72,14 @@ $ npx chaffjs paper.md --compact
 paper.md   blog/tech · English   genre from the default
    Looks like: Academic paper. Try --genre academic/paper
 
+  9:111   warning "the the" doubles a word; one of the two is left over
+                  doubled-word
+  15:44   warning Figure 3 is referred to, but the document has no Figure 3
+                  dangling-figure-reference
+  19:142  info    "behaviour" here, where the document usually spells it "behavior" (1 of 3)
+                  spelling-consistency
 
-0 findings, 97 rules not run
+{counts}
 ```
 
 Add the genre, as suggested, and the experimental rules too.
@@ -91,7 +97,7 @@ paper.md   academic/paper · English   genre from --genre
   19:142  info    "behaviour" here, where the document usually spells it "behavior" (1 of 3)
                   spelling-consistency
 
-3 findings, 40 rules not run
+{counts}
 ```
 
 ## What each finding means

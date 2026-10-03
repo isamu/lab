@@ -7,7 +7,6 @@ import {
   defineTwice,
   dropGloss,
   dropItem,
-  joinSentences,
   nestNo,
   nextNumber,
   plainInPolite,
@@ -17,6 +16,7 @@ import {
   swapDatedRows,
 } from "../scripts/bench-mutations.ts";
 import { spaceLatin } from "../scripts/bench-mutations-orthography.ts";
+import { joinSentences } from "../scripts/bench-mutations-sentences.ts";
 import { isPoliteDocument, type Plant, type PlantContext } from "../scripts/bench-text.ts";
 
 // yarn bench の植える誤り。どの行に何を植えたかを、短い自作の文書で固定する。

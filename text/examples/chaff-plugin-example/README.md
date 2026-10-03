@@ -24,9 +24,9 @@ style: example/careful # optional
 ```
 
 ```sh
-npx chaff article.md
-npx chaff explain example/no-tbd-dates
-npx chaff relax example/weasel-words --why "quotes are attributed in the footnotes"
+npx chaffjs article.md
+npx chaffjs explain example/no-tbd-dates
+npx chaffjs relax example/weasel-words --why "quotes are attributed in the footnotes"
 ```
 
 ## Files

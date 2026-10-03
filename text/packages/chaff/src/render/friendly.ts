@@ -17,6 +17,7 @@ const TEXT: Texts<{
   readonly presetOn: (n: number, ids: string) => string;
   readonly notRun: (n: number) => string;
   readonly because: (why: string) => string;
+  readonly alone: (id: string) => string;
 }> = {
   ja: {
     line: (n) => `${n} 行目`,
@@ -28,6 +29,8 @@ const TEXT: Texts<{
     presetOn: (n, ids) => `試験中の rule を ${n} 件、ジャンルの既定で有効にしています: ${ids}`,
     notRun: (n) => `${n} 件の rule は動いていません:`,
     because: (why) => `（${why}）`,
+    alone: (id) =>
+      `試験中のルールを 1 つだけ動かすには、npx chaffjs enable ${id} のように名指しします（chaff.yaml の rules に ${id}: normal と書くのと同じです）。--experimental はすべてを動かします。`,
   },
   en: {
     line: (n) => `line ${n}`,
@@ -39,8 +42,16 @@ const TEXT: Texts<{
     presetOn: (n, ids) => `${counted(n, "experimental rule")} turned on by the genre: ${ids}`,
     notRun: (n) => `${counted(n, "rule")} did not run:`,
     because: (why) => ` (${why})`,
+    alone: (id) =>
+      `Turn on one experimental rule alone by naming it: npx chaffjs enable ${id} (the same as rules: { ${id}: normal } in chaff.yaml). --experimental turns on all of them.`,
   },
 };
+/** Said once under the list, naming the first rule that is off only because it is experimental: not once per line. */
+const aloneHint = (skipped: RunResult["skipped"], alone: (id: string) => string): string[] => {
+  const example = skipped.find((entry) => entry.offUntilExperimental === true);
+  return example === undefined ? [] : ["", `  ${alone(example.rule)}`];
+};
+
 const QUOTE_LIMIT = 120;
 
 const indent = (text: string, pad: string): string[] => text.split("\n").map((line) => `${pad}${line}`);
@@ -79,7 +90,7 @@ const block = (finding: Finding, rule: RuleDefinition, language: string, quoted:
   "",
   ...indent(`→ ${filledText(rule.how_to_fix, finding, language)}`, "     "),
   "",
-  `     ${TEXT[uiLanguageOf(language)].relax}:  npx chaff relax ${finding.rule}`,
+  `     ${TEXT[uiLanguageOf(language)].relax}:  npx chaffjs relax ${finding.rule}`,
   "",
 ];
 
@@ -113,7 +124,12 @@ export const renderFriendly = (
   ];
   const skipped =
     result.skipped.length > 0
-      ? ["", `  ${text.notRun(result.skipped.length)}`, ...result.skipped.map((entry) => `      ${entry.rule}${text.because(entry.why)}`)]
+      ? [
+          "",
+          `  ${text.notRun(result.skipped.length)}`,
+          ...result.skipped.map((entry) => `      ${entry.rule}${text.because(entry.why)}`),
+          ...aloneHint(result.skipped, text.alone),
+        ]
       : [];
   const after = notes.flatMap((note) => ["", note]);
   return ["", header, ...blocks, ...closing, ...forced, ...skipped, ...after, ""].join("\n");

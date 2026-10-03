@@ -2,20 +2,7 @@
 // Pure and deterministic: the same sample always gets the same mistake at the same place (the first or the largest
 // candidate, never a random one).
 
-import {
-  isJapanese,
-  isPoliteDocument,
-  isProse,
-  isRow,
-  linesOf,
-  lowerFirst,
-  replaceLine,
-  rewriteFirst,
-  splitSentences,
-  type Mutation,
-  type Plant,
-  type PlantContext,
-} from "./bench-text.ts";
+import { isPoliteDocument, isProse, isRow, linesOf, replaceLine, rewriteFirst, type Mutation, type Plant, type PlantContext } from "./bench-text.ts";
 import { boldSection, dashes, decorate, dropSection, echoHeading, jargon, joinParagraphs } from "./bench-mutations-layout.ts";
 import { doubleHonorific, doubleParticle, dotList, glueKanji, humbleForms, kanjiAdverb, passiveJa, strayParticleSpace } from "./bench-mutations-ja.ts";
 import { doubleArticle, expletives, flipFirstList, flipLastHeading, passiveEn, pluralAfterArticle } from "./bench-mutations-en.ts";
@@ -25,6 +12,7 @@ import { MARK_MUTATIONS } from "./bench-mutations-marks.ts";
 import { NAME_MUTATIONS } from "./bench-mutations-names.ts";
 import { FACT_MUTATIONS } from "./bench-mutations-facts.ts";
 import { LIST_MUTATIONS } from "./bench-mutations-lists.ts";
+import { REDUNDANCY_MUTATIONS } from "./bench-mutations-redundancy.ts";
 import { dropOneLongVowel, spaceLatin } from "./bench-mutations-orthography.ts";
 import { CHARACTER_MUTATIONS } from "./bench-mutations-characters.ts";
 import { OUTLINE_MUTATIONS } from "./bench-mutations-outline.ts";
@@ -33,6 +21,7 @@ import { MODAL_MUTATIONS } from "./bench-mutations-modal.ts";
 import { REQUIREMENT_MUTATIONS } from "./bench-mutations-requirements.ts";
 import { POINTER_MUTATIONS } from "./bench-mutations-pointers.ts";
 import { registeredMutations } from "./bench-plants.ts";
+import { joinSentences } from "./bench-mutations-sentences.ts";
 
 // --- date-weekday-mismatch ---
 
@@ -194,52 +183,6 @@ export const defineTwice = (source: string): Plant | undefined => {
   return { source: [...lines, "", definition, ""].join("\n"), line: lines.length + 2 };
 };
 
-// --- max-sentence-length ---
-
-/** Adjacent sentences of one line, from `at`, that pass the limit once joined: `count` of them, `length` long together. */
-type Run = { readonly index: number; readonly at: number; readonly count: number; readonly length: number; readonly sentences: readonly string[] };
-
-const sentenceLength = (sentence: string): number => (isJapanese(sentence) ? [...sentence.trim()].length : sentence.trim().split(/\s+/u).length);
-
-/** From `at`, the fewest sentences (two at least) whose joined length passes the limit, or undefined when the line runs out first. */
-const runFrom = (sentences: readonly string[], index: number, at: number, limit: number): Run | undefined => {
-  const lengths = sentences.slice(at).map(sentenceLength);
-  const totals = lengths.map((_, end) => lengths.slice(0, end + 1).reduce((sum, length) => sum + length, 0));
-  const last = totals.findIndex((total, end) => end >= 1 && total > limit);
-  return last === -1 ? undefined : { index, at, count: last + 1, length: totals[last] ?? 0, sentences };
-};
-
-const runsOf = (line: string, index: number, limit: number): Run[] => {
-  const sentences = splitSentences(line).filter((sentence) => sentence.trim() !== "");
-  return sentences.flatMap((_, at) => runFrom(sentences, index, at, limit) ?? []);
-};
-
-const joinTwo = (first: string, second: string): string =>
-  isJapanese(first) ? `${first.replace(/。$/u, "、")}${second}` : `${first.replace(/[.!?]$/u, ",")} and ${lowerFirst(second)}`;
-
-const joinedLine = (run: Run): string => {
-  const [first = "", ...rest] = run.sentences.slice(run.at, run.at + run.count);
-  const joined = rest.reduce(joinTwo, first);
-  return [...run.sentences.slice(0, run.at), joined, ...run.sentences.slice(run.at + run.count)].join(isJapanese(run.sentences.join("")) ? "" : " ");
-};
-
-/** Fewer sentences first (a pair over the limit beats three), then the longer one. */
-const isBetterRun = (run: Run, best: Run | undefined): boolean =>
-  best === undefined || run.count < best.count || (run.count === best.count && run.length > best.length);
-
-/**
- * 並んだ文をつないで、上限を超える一文にする。二文で超える組があれば、いちばん長くなる二文。無ければ三文、四文と増やす。
- * 一行の文を全部つないでも上限に届かなければ植えない。
- */
-export const joinSentences = (source: string, context: PlantContext): Plant | undefined => {
-  const lines = linesOf(source);
-  const limit = context.limits["max-sentence-length"];
-  if (limit === undefined) return undefined;
-  const runs = lines.flatMap((line, index) => (isProse(line) && !isRow(line) ? runsOf(line, index, limit) : []));
-  const chosen = runs.reduce<Run | undefined>((best, run) => (isBetterRun(run, best) ? run : best), undefined);
-  return chosen === undefined ? undefined : { source: replaceLine(lines, chosen.index, joinedLine(chosen)), line: chosen.index + 1 };
-};
-
 // --- no-mixed-desumasu ---
 
 // 語尾を替えてよいのは、漢字・カタカナ（訪問します、連携する）か「ように」に続くところだけ。
@@ -364,6 +307,7 @@ export const MUTATIONS: readonly Mutation[] = [
   { id: "item-dropped", rule: "total-mismatch", languages: ["ja", "en"], plant: dropItem },
   ...FACT_MUTATIONS,
   ...LIST_MUTATIONS,
+  ...REDUNDANCY_MUTATIONS,
   { id: "reference-broken", rule: "dangling-reference", languages: ["ja", "en"], plant: breakReference },
   { id: "number-skipped", rule: "numbering-gap", languages: ["ja", "en"], plant: skipLastNumber },
   { id: "defined-twice", rule: "duplicate-definition", languages: ["ja", "en"], plant: defineTwice },

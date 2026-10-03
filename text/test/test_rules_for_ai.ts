@@ -99,7 +99,7 @@ describe("chaff rules — the same list as a table for a person", () => {
     });
     const byName = (left: string, right: string): number => left.localeCompare(right, "en");
     assert.deepEqual(listed.toSorted(byName), RULE_IDS.toSorted(byName));
-    ["読みやすさ", "事実の食い違い", "AIっぽさ", "npx chaff rules --json"].forEach((text) => assert.ok(run.out.includes(text), text));
+    ["読みやすさ", "事実の食い違い", "AIっぽさ", "npx chaffjs rules --json"].forEach((text) => assert.ok(run.out.includes(text), text));
   });
 
   it("shows the level in effect: chaff.yaml wins, a rule for another language is off", async () => {

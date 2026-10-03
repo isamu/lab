@@ -1,0 +1,56 @@
+id: hyphen-as-dash
+layer: L1
+status: stable
+how_to_find: hyphen-dash
+languages: [en]
+severity: info
+
+name:
+  ja: ダッシュの代わりのハイフン
+  en: Hyphen used as a dash
+
+why:
+  ja: 英語で、空白で挟んだハイフン（late - very late）や二つ重ねたハイフン（late--very late）は、ダッシュ（— や –）の代わりです。ハイフンは語をつなぐ印なので、読み手は一瞬、語の一部かと迷います。
+  en: A spaced hyphen ("late - very late") or a double hyphen ("late--very late") stands in for a dash (— or –). A hyphen joins words, so the reader stops for a moment to see whether it is part of one.
+
+message:
+  ja: 「{matched}」をダッシュの代わりに使っています
+  en: '"{matched}" stands in for a dash'
+
+how_to_fix:
+  ja: ダッシュ（— か –）にするか、読点やコロンで書き直してください。
+  en: Use a dash (— or –), or rewrite with a comma or a colon.
+
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 英語で、ダッシュの代わりに、空白で挟んだハイフンや二重のハイフンを使った所
+  en: A spaced hyphen or a double hyphen standing in for a dash
+example:
+  en:
+    before: |
+      The release is late - very late.
+    after: |
+      The release is late — very late.
+
+not_flagged:
+  ja: 語と語のあいだのものだけを見ます。箇条書きの印の「- 」、数の範囲（1 - 2）、語の中のハイフン（well-known）、コードは見ません。文学の文書では既定で止めています（古い版がダッシュを「--」で組むため）。
+  en: Only between words. A list marker ("- "), a number range ("1 - 2"), a hyphen inside a word ("well-known") and code are not reported. The literature presets turn it off, since older printed texts set the dash as "--".
+level_meaning:
+  ja: "{limit} 箇所あれば指摘"
+  en: reported once there are {limit}
+rewrite:
+  en:
+    direction: Replace the spaced or doubled hyphen with a dash, or rewrite the sentence with a comma or a colon. Use the dash the document already uses, if any.
+    pairs:
+      - before: The release is late - very late.
+        after: The release is late — very late.
+      - before: Two teams--sales and support--will attend.
+        after: Two teams (sales and support) will attend.
+    keep:
+      - the words on both sides
+    avoid:
+      - adding more dashes than the sentence had hyphens

@@ -18,6 +18,8 @@ export type Reasons = {
   readonly noHeadings: string;
   readonly patternTimeout: (budgetMs: number) => string;
   readonly notMarkdown: string;
+  /** A rule that compares documents, in a run of one: it runs when chaff is given two or more files, or a folder. */
+  readonly oneDocument: string;
 };
 
 const CAPABILITY_NAME: Texts<Readonly<Record<string, string>>> = {
@@ -31,7 +33,7 @@ export const REASONS: Texts<Reasons> = {
     noCapability: (capability) => `この言語では${CAPABILITY_NAME.ja[capability] ?? capability}が使えないため`,
     noTags: "アダプタが品詞を返さなかったため",
     unreadTags: "言語のパッケージがこの文書を読めなかったため（品詞の取れない段落があります）",
-    semantic: "意味を読む検査のため（npx chaff test で動きます）",
+    semantic: "意味を読む検査のため（npx chaffjs test で動きます）",
     experimental: "まだ試験中のため",
     turnedOff: "設定で止めているため",
     presetOff: (genre) => `ジャンル ${genre} では見ないため`,
@@ -43,13 +45,14 @@ export const REASONS: Texts<Reasons> = {
     noHeadings: "表題より下の見出しが無いため",
     patternTimeout: (budgetMs) => `正規表現が ${String(budgetMs)} ms で終わらなかったため（chaff.yaml の pattern を単純にしてください）`,
     notMarkdown: "Markdown の文書ではないため",
+    oneDocument: "比べるほかの文書が無いため（ファイルを二つ以上かフォルダを渡すと動きます）",
   },
   en: {
     otherLanguage: (language) => `not a rule for ${language}`,
     noCapability: (capability) => `${CAPABILITY_NAME.en[capability] ?? capability} is not available for this language`,
     noTags: "the language package returned no parts of speech",
     unreadTags: "the language package could not read this document (some paragraphs have no parts of speech)",
-    semantic: "it reads meaning; npx chaff test runs it",
+    semantic: "it reads meaning; npx chaffjs test runs it",
     experimental: "still experimental",
     turnedOff: "turned off in the settings",
     presetOff: (genre) => `the ${genre} genre does not check it`,
@@ -61,5 +64,6 @@ export const REASONS: Texts<Reasons> = {
     noHeadings: "the document has no headings below its title",
     patternTimeout: (budgetMs) => `the pattern did not finish within ${String(budgetMs)} ms (simplify the pattern in chaff.yaml)`,
     notMarkdown: "the document is not Markdown",
+    oneDocument: "it compares documents, and there is only one to compare (it runs when chaff is given two or more files, or a folder)",
   },
 };

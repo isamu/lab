@@ -42,7 +42,7 @@ What it does not do is decided too.
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The email was pasted into a text editor and saved as `email.md`.
 
-```markdown
+```markdown file=email.md
 Subject: Meeting to discuss the website redesign
 
 Dear Ms Yamada,
@@ -85,7 +85,7 @@ email.md   blog/tech · English   genre from the default
   17:74   warning Closes with "hope this helps"
                   closing-cliche
 
-5 findings, 28 rules not run
+{counts}
 ```
 
 Read as a tech blog, the sentence limit is a blog's, and the softeners are not counted.
@@ -110,10 +110,12 @@ email.md   business/email · English   genre from --genre
                   cushion-phrase-density
   13:11   error   2026-10-10 is a Saturday, not a Friday
                   date-weekday-mismatch
+  15:1    warning An attachment is mentioned, but no attachment line or file name is shown
+                  attachment-not-attached
   15:91   warning "[Your Name]" was never filled in
                   unfilled-placeholder
 
-8 findings, 32 rules not run
+{counts}
 ```
 
 `info` is information you may skip; it never fails a run.

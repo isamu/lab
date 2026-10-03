@@ -1,0 +1,76 @@
+id: known-misspelling
+layer: L2
+status: stable
+how_to_find: known-correction
+word_list: known-misspelling
+uses: [pos]
+severity: warning
+
+name:
+  ja: よくある書き誤り
+  en: Common misspelling
+
+why:
+  ja: 「シュミレーション」「コミニュケーション」「ふいんき」「とゆう」のように、耳で覚えた形や打ち間違いのまま残りやすい語があります。読み手は誤りに気づくと、ほかの所の正しさまで疑います。誤った形と正しい形の組は言語ごとの語彙表にあり、chaff は語彙表にある形だけを指します。語の途中には当てません（「ですすべて」の「ですす」は指しません）。
+  en: Some words are easy to misspell by ear or by habit ("definately", "seperate", "recieve"). A reader who notices one starts to doubt the rest of the document. The pairs of misspelling and spelling are in each language's lexicon, and chaff reports only the forms listed there. A form inside a longer word is not reported ("teh" in "Tehran").
+
+message:
+  ja: 「{matched}」は「{suggestion}」の書き誤りです
+  en: '"{matched}" is a misspelling of "{suggestion}"'
+
+how_to_fix:
+  ja: 正しい形に直してください。固有名詞としてその字で書いているなら、chaff.yaml の names に足すと指さなくなります。
+  en: Correct the spelling. If the word is a name spelled that way on purpose, add it to names in chaff.yaml.
+
+placeholders:
+  matched:
+    ja: 書いた語
+    en: the word as written
+  suggestion:
+    ja: 正しい形
+    en: the spelling
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「シュミレーション」「コミニュケーション」「ふいんき」のような、よくある書き誤り
+  en: A common misspelling, such as "definately" or "seperate"
+example:
+  ja:
+    before: 来週、シュミレーションの結果を共有します。
+    after: 来週、シミュレーションの結果を共有します。
+  en:
+    before: The two reports are seperate documents.
+    after: The two reports are separate documents.
+
+not_flagged:
+  ja: 語彙表にない誤りは指しません。どちらも使われる書き方（コンピュータ／コンピューター、エンターテイメント／エンターテインメント）は誤りとせず、表記ゆれの rule に任せます。語の途中の同じ字の並び（「ですすべて」）と、チームが names に並べた語は指しません。
+  en: Misspellings not in the lexicon are not reported. Spellings that are both in use (British and American, judgement and judgment) are left to the consistency rules. A form inside a longer word ("teh" in "Tehran") and words listed under names in chaff.yaml are not reported.
+rewrite:
+  ja:
+    direction: 指された語を語彙表の正しい形に直してください。直すのはその語だけで、文の言い回しは変えません。
+    pairs:
+      - before: シュミレーションの結果を共有します。
+        after: シミュレーションの結果を共有します。
+      - before: 以下のとうり、手順を変えました。
+        after: 以下のとおり、手順を変えました。
+    keep:
+      - 文の言い回しと語順
+      - 固有名詞としてその字で書いた名前
+    avoid:
+      - 指された語の近くの言い回しまで書き換える
+  en:
+    direction: Replace the flagged word with the spelling the lexicon gives. Change only that word.
+    pairs:
+      - before: The two reports are seperate documents.
+        after: The two reports are separate documents.
+      - before: We will definately ship on Friday.
+        after: We will definitely ship on Friday.
+    keep:
+      - the wording around the word
+      - a name that is spelled that way on purpose
+    avoid:
+      - rewording the sentence while fixing the spelling

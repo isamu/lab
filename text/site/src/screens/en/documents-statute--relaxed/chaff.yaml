@@ -1,0 +1,30 @@
+# chaff.yaml — this team's writing rules
+#
+# Write only what differs from the defaults; anything left out uses the default.
+# chaff still runs if this file is deleted.
+#
+# A level is one of four words. No numbers needed.
+#
+#   strict    check closely
+#   normal    the default
+#   relaxed   check loosely
+#   off       do not check
+#
+# Commands change it too, and leave the reason as a comment.
+#
+#   npx chaffjs relax bold-density --why "figure captions use a lot of bold"
+#   npx chaffjs explain bold-density        read what the rule is for
+#   npx chaffjs rules --json                give this to an AI that writes the settings
+
+# The kind of document kept here (Statutes, regulations and internal rules). The others: npx chaffjs genres
+genre: legal/statute
+
+# The names your team writes (organisations, products). Each is read as one name, not as words to count.
+# names:
+#   - Bank of England
+
+# Only what differs from the defaults.
+rules:
+  # Skipped or repeated number
+  # Article 5 right after Article 3, (c) right after (a), two paragraphs numbered 2. A reader cannot tell whether something was removed, or which one a reference means. Only numbers side by side under the same parent are compared.
+  numbering-gap: relaxed # 2026-09-30 we keep the numbers of deleted articles / isamu

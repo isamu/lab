@@ -3,7 +3,8 @@
 chaff can grade a model's outputs next to your model-graded scores.
 The same output always gets the same result, every point names a line and a rule, and nothing is sent anywhere.
 It does not judge meaning. Whether an answer is right stays with a model judge or a person.
-This page shows how, step by step and with real output: grading a file of outputs, a rubric, comparing two runs, a library call and the eval frameworks it plugs into.
+This page shows how, step by step and with real output.
+It covers grading a file of outputs, a rubric, comparing two runs, a library call and the eval frameworks it plugs into.
 
 ## What chaff can check in an output
 
@@ -69,16 +70,11 @@ A `chaff.yaml` in the folder you run from applies to every check, as in the [con
    Facts: 3 dropped (date 1, number 2), 1 added (date 1)
    Quotations: 2 checked, 1 failed
 
-   18 not run
-     cite                         2 outputs  no citations given (chaff does not guess quotations from the output)
-     colon-lead-in                3 outputs  not a rule for en
-     compare                      2 outputs  no reference given (facts are checked against a reference)
-     empty-conclusion             3 outputs  it reads meaning; npx chaff test runs it
    …
-
-   Stamp: chaffjs 0.18.0, @chaffjs/lang-en 0.16.0, @chaffjs/lang-ja 0.17.0
-     rules sha256:3c19ebcf1dc64d8d6d3129a2489e4938fa14bfd6927e300c2b0919a39de0e26a
-     settings sha256:18f9e63d4e51a582d46a29f30359c872c912fc3f08dfe0545875636e94272347
+     cite                            2 outputs  no citations given (chaff does not guess quotations from the output)
+   …
+     compare                         2 outputs  no reference given (facts are checked against a reference)
+   …
    ```
 
 3. **Read the result.** An output fails on an `error` finding, a fact dropped or added against `reference`, or a quotation not found.
@@ -124,6 +120,7 @@ grade:
   penalty: 10 # fails when the points add up to more than this
 ```
 
+<!-- chaff-screen: rubric -->
 ```
 $ npx chaffjs grade prompt-b.jsonl --compact
 q3	fail	penalty 0	facts.dropped 3 > 0, facts.added 1 > 0
@@ -191,11 +188,109 @@ Not compared with a.results.jsonl: the settings differ. A change of rules or set
 
 The run ends with exit code 2. Here `rules:` in `chaff.yaml` was changed after the earlier run.
 
+## Comparing prompts or models side by side: variants
+
+`--baseline` compares one run with an earlier one. To compare several prompts or models in one run, put all their outputs in one file and label each line with its variant.
+Give the lines of the same task the same `id`.
+
+```json
+{"id": "q3", "variant": "prompt-a", "output": "# In short\n\nThe team answered 4,812 tickets, and the median first reply fell from 6 hours to 2.5 hours.\n…", "reference": "# Support report, third quarter\n…"}
+{"id": "q3", "variant": "prompt-b", "output": "# In short\n\nThe team answered 4,812 tickets, and first replies got much faster.\n…", "reference": "# Support report, third quarter\n…"}
+```
+
+`variants.jsonl` holds the two prompts' outputs for the three tasks of Examples 1 to 3.
+In `prompt-a`'s refund answer, the second quotation is the clause as written, "Shipping fees are not refunded."
+chaff prints the usual summary, then the variants side by side:
+
+```
+$ npx chaffjs grade variants.jsonl --experimental
+variants.jsonl: 6 outputs, 4 passed, 2 failed
+
+Failed outputs
+  ✗ q3 (prompt-b): facts.dropped 3 > 0, facts.added 1 > 0
+  ✗ refund (prompt-b): citations.failed 1 > 0
+…
+
+2 variants side by side: 3 outputs with an id every variant has
+                     prompt-a    prompt-b
+  Passed             3/3 (100%)  1/3 (33.3%)
+  Facts dropped      0           3
+  Facts added        0           1
+  Quotations failed  0/2         1/2
+
+Rule rates (per 1,000 words)
+                           prompt-a  prompt-b
+  ai-generated-composite   0.0       6.7
+  ai-tell                  0.0       6.7
+  closing-cliche           0.0       13.3
+  contraction-consistency  0.0       6.7
+  padded-intro             0.0       6.7
+
+2 outputs where pass or fail differs
+  ✗ q3: passed in prompt-a; failed in prompt-b (facts.dropped 3 > 0, facts.added 1 > 0)
+  ✗ refund: passed in prompt-a; failed in prompt-b (citations.failed 1 > 0)
+```
+
+How to read it:
+- Every column counts the same tasks: only an `id` that every variant answered, in the same language and genre. Any other id is listed under "Ids not compared", with the variants it is missing from.
+- "Quotations failed" is failed out of checked. Facts are counted as in the summary, leaving out the kinds the rubric allows.
+- When outputs carry `contexts`, an "Unsupported facts" row gives the facts found in no retrieved passage out of those checked.
+- With a `grade:` rubric, a "Penalty points" row adds up each variant's points.
+- The pass rate is a share of outputs, not a score. chaff still gives no mark out of a maximum.
+
+When the label is in another field, name it: `--variant-key model` or `--variant-key prompt`. Then every line must have that field.
+A line without a label in a labelled file, or an `id` twice in one variant, ends the run with exit code 2.
+The exit code is otherwise the same as without variants, and `--baseline` pairs each output with the same `id` and variant of the earlier run.
+
+For a CI log, `--compact` adds one line per disagreement:
+
+```
+$ npx chaffjs grade variants.jsonl --experimental --compact
+…
+disagree	q3	pass prompt-a	fail prompt-b
+disagree	refund	pass prompt-a	fail prompt-b
+2 outputs where pass or fail differs
+```
+
+For a pull request comment, `--format markdown` writes the same tables in Markdown. `--format json` adds a `variants` field to the summary.
+
+```
+$ npx chaffjs grade variants.jsonl --experimental --format markdown
+## chaff grade: variants.jsonl
+
+6 outputs, 4 passed, 2 failed
+…
+### 2 variants side by side: 3 outputs with an id every variant has
+
+|  | prompt-a | prompt-b |
+| --- | --- | --- |
+| Passed | 3/3 (100%) | 1/3 (33.3%) |
+| Facts dropped | 0 | 3 |
+| Facts added | 0 | 1 |
+| Quotations failed | 0/2 | 1/2 |
+…
+```
+
+In a harness, pass `variant` to `grade()` and hand the results to `compareVariants()`, which returns what `--format json` puts under `variants`:
+
+```js
+import { compareVariants, grade } from "chaffjs/grade";
+
+const results = [
+  await grade(answerA, { id: "q3", variant: "prompt-a", reference }),
+  await grade(answerB, { id: "q3", variant: "prompt-b", reference }),
+];
+const { columns, disagreements } = compareVariants(results);
+console.log(columns.map((column) => `${column.variant} ${column.passed}/${column.outputs}`)); // [ 'prompt-a 1/1', 'prompt-b 0/1' ]
+```
+
+`compareVariants({ "prompt-a": resultsA, "prompt-b": resultsB })` takes the results grouped by variant instead.
+
 ## Example 1: is a summary faithful?
 
 The source, `source.md`, is a short support report. Two models summarized it.
 
-```markdown
+```markdown file=source.md
 # Support report, third quarter
 
 The support team answered 4,812 tickets this quarter.
@@ -206,7 +301,7 @@ Two people joined in August, and the team now has 11 members.
 
 Model A (`model-a.md`) kept every figure. Model B (`model-b.md`) dropped the reply times and wrote the wrong date.
 
-```markdown
+```markdown file=model-b.md
 # In short
 
 The team answered 4,812 tickets, and first replies got much faster.
@@ -253,7 +348,7 @@ The full description is in the [command list](./commands) under `compare`.
 
 The source, `policy.md`, is a refund policy with numbered clauses.
 
-```markdown
+```markdown file=policy.md
 # Refund policy
 
 ## 1. Scope
@@ -272,7 +367,7 @@ This policy covers orders placed on the web store.
 The answer quoted two clauses. Ask the model to return its quotations as JSON next to the answer (`quotes.json`).
 chaff does not guess which sentences of an answer are quotations.
 
-```json
+```json file=quotes.json
 [
   { "address": "2.1", "quote": "within 30 days of delivery" },
   { "address": "2.2", "quote": "Shipping fees are refunded in full." }
@@ -288,11 +383,68 @@ $ npx chaffjs cite policy.md quotes.json
 The run ends with exit code 1. `--format json` gives each quotation a `status` (`ok`, or why it failed) and the line where it was found.
 Spaces and full-width characters do not matter, but a changed word does. How addresses are read is in [Structure and quotations](./structure).
 
+## Is a RAG answer supported by its retrieved passages? `contexts`
+
+`citations` checks the quotations an answer claims. Often the answer claims none, and what you have is the passages the retriever handed the model.
+Put them in `contexts`, and chaff looks for each checkable fact of the answer in them: numbers, dates, times, URLs, code, names and quotations.
+It reads the facts as `compare` does, so `$12` in the answer and `$12` in a passage are the same fact however they are written.
+A quotation counts as supported only when some passage has it word for word.
+
+`rag.jsonl` holds three answers about one product, with the same two passages for the first two and none found for the third:
+
+```json
+{"id": "pricing", "output": "The Team plan costs $12 per user per month and includes 100 GB of storage per user. Support answers within 4 business hours.", "contexts": ["# Plans\n\nThe Team plan costs $12 per user per month, billed yearly.\nIt includes 100 GB of storage per user.", "# Support\n\nSupport answers within 4 business hours on the Team plan.\nThe help center moved to help.example.com on March 3, 2026."]}
+{"id": "pricing-wrong", "output": "The Team plan costs $15 per user per month and includes 100 GB of storage. The docs say \"support answers within one hour\". The help center moved on March 3, 2026. It is a good choice for most teams.", "contexts": ["…the same two passages…"]}
+{"id": "nothing-found", "output": "The Enterprise plan costs $40 per user per month.", "contexts": []}
+```
+
+```
+$ npx chaffjs grade rag.jsonl --out rag.results.jsonl
+Wrote one result per output: rag.results.jsonl (3 lines)
+rag.jsonl: 3 outputs, 1 passed, 2 failed
+
+Failed outputs
+  ✗ pricing-wrong: contexts.unsupported 2 > 0
+  ✗ nothing-found: contexts.unsupported 2 > 0
+
+Facts: 0 dropped, 0 added
+Quotations: 0 checked, 0 failed
+Contexts: 13 facts checked in 3 outputs, 4 in no passage (name 1, number 2, quote 1)
+…
+```
+
+The result line of `pricing-wrong` says which facts were found, in which passage (counted from 0), and which were not:
+
+```json
+"contexts": {"passages":2,"checked":6,
+ "supported":[{"kind":"date","text":"March 3, 2026","line":1,"passage":1},{"kind":"number","text":"100","line":1,"passage":0},…],
+ "unsupported":[{"kind":"number","key":"15 $","text":"15","line":1,"allowed":false},
+                {"kind":"quote","key":"support answers within one hour","text":"\"support answers within one hour\"","line":1,"allowed":false}],
+ "uncheckedSentences":1}
+```
+
+- `$15` is in no passage, and the quotation is not in any passage word for word. Without a `grade:` rubric, either one fails the output.
+- An empty `contexts` means retrieval found nothing, so every checked fact of `nothing-found` is unsupported. Leaving `contexts` out is different: the check does not run, and "not run" says so.
+- "It is a good choice for most teams." states no fact chaff can check. `uncheckedSentences` counts it, and "not run" lists it under `contexts`: whether a passage supports it needs reading.
+- A matching number is not a correct claim. An answer that puts a passage's number on the wrong thing still passes this check. Keep a model judge or a person for meaning.
+
+In a rubric, `contexts` sets the limit:
+
+```yaml
+grade:
+  contexts:
+    unsupported: 0 # facts allowed in no passage
+    allow_unsupported: [name] # kinds not counted
+    required: true # an output without contexts fails
+```
+
+`grade()` takes the passages as `contexts` too: `await grade(answer, { contexts: passages })`.
+
 ## Example 3: comparing two prompts on style
 
 Two prompts answered the same task: explain why Tuesday's deploy failed. Prompt A gave this answer (`prompt-a.md`).
 
-```markdown
+```markdown file=prompt-a.md
 # Why the deploy failed
 
 The deploy on Tuesday stopped at the database step.
@@ -303,7 +455,7 @@ We will add the column without a default first, then fill it in batches.
 
 Prompt B gave this one (`prompt-b.md`).
 
-```markdown
+```markdown file=prompt-b.md
 # Why the deploy failed
 
 In today's fast-paced world of software delivery, every deploy plays a crucial role.
@@ -326,7 +478,7 @@ $ npx chaffjs prompt-a.md --compact
 prompt-a.md   blog/tech · English   genre from the default
 
 
-0 findings, 28 rules not run
+{counts}
 ```
 
 ```
@@ -347,11 +499,12 @@ prompt-b.md   blog/tech · English   genre from the default
   12:70   warning Closes with "hope this helps"
                   closing-cliche
 
-6 findings, 28 rules not run
+{counts}
 ```
 
 Across many tasks, compare the rates rather than single outputs. `chaff grade` gives each rule's rate, and `--baseline` puts two runs side by side.
-The rules not run are the Japanese-only rules, the rules the blog/tech genre does not check, one rule that needs headings below the title, and one rule that reads meaning. Without `--compact`, each is listed with its reason.
+The rules not run are the Japanese-only rules and the rules the blog/tech genre does not check.
+One more needs headings below the title, and one reads meaning. Without `--compact`, each is listed with its reason.
 
 To feed the findings back into a regeneration step, have `fix-plan` turn them into instructions.
 This is an excerpt; the plan goes on with a direction, an example and the spots for each rule.
@@ -394,7 +547,7 @@ How to rewrite from a plan is in [Making AI-sounding text sound human](./ai-soun
 
 A model wrote this quote (`answer.md`). Its total does not add up, and the weekday does not match the date.
 
-```markdown
+```markdown file=answer.md
 # Your quote
 
 | Item | Price |
@@ -416,7 +569,7 @@ answer.md   blog/tech · English   genre from the default
   9:25    error   2026-10-06 is a Tuesday, not a Monday
                   date-weekday-mismatch
 
-2 findings, 28 rules not run
+{counts}
 ```
 
 These findings are errors, so the run ends with exit code 1, and `chaff grade` fails the output.

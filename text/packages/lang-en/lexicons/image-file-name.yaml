@@ -1,0 +1,16 @@
+# The start of a name a camera, a phone or a screenshot tool gives a picture. An alt text that starts with one and holds a
+# number is the file's name, not a description. Read by image-file-name-alt; case is ignored.
+id: image-file-name
+language: en
+entries:
+  - pattern: IMG_
+  - pattern: IMG-
+  - pattern: DSC_
+  - pattern: DSC0
+  - pattern: DSCN
+  - pattern: PXL_
+  - pattern: MVIMG_
+  - pattern: Screenshot
+  - pattern: Screen Shot
+  - pattern: Screen Recording
+  - pattern: Untitled

@@ -1,0 +1,8 @@
+# Words the text mentions an attachment with. When one is used and the document shows no attachment (a field, a file
+# name, the archive's note), the attachment may have been forgotten. A letter's "enclosed" is left out: a letter lists its
+# enclosures in many ways, often in the text itself.
+id: attachment-mention
+language: en
+entries:
+  - pattern: attached
+  - pattern: attachment

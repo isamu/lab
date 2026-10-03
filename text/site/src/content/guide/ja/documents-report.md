@@ -73,7 +73,7 @@ npx chaffjs houkoku.md --genre business/report    houkoku.md を報告書とし�
 ```
 $ npx chaffjs houkoku.md --genre business/report
 
-houkoku.md   business/report · 日本語   ジャンルは--genreから
+houkoku.md   business/report · 日本語   ジャンルは --genre から
 
 ─── 5 行目 ───────────────────────────────────────────────────
 
@@ -86,7 +86,21 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
      → 具体的な状況か、この記事だけの主張から始めてください。
 
-     このルールをゆるめる:  npx chaff relax padded-intro
+     このルールをゆるめる:  npx chaffjs relax padded-intro
+
+
+─── 5 行目 ───────────────────────────────────────────────────
+
+    近年、お客様からの問い合わせはますます多様化しており、私たちサポートチームとしてもその変化にしっかりと対応していくことが求められているという状況であると考えられます。
+
+  ⚠  逃げの表現が多い
+
+     この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
+     断言を避けるほど、読み手は何が決まったのか分からなくなります。1 つなら慎重さですが、重なると誰も責任を取らない文書になります。chaff は 2 つの見方で探します。1 つの文に逃げを重ねたもの（「〜という状況であると考えられます」「〜かもしれないと思われます」）は、短い文書でも 1 文で指摘します。文書全体で逃げの表現が多すぎるものは、短い文書では測りません。重なりを数えるとき、鉤括弧や引用符で引いた発言の中の逃げは、話した人のものなので数えません。
+
+     → 言い切れるものは言い切ってください。言い切れないなら、何が分かれば言い切れるのかを書いてください。重ねた逃げは、1 つ残すか、全部外して言い切ってください。
+
+     このルールをゆるめる:  npx chaffjs relax excessive-hedging
 
 
 ─── 5 行目 ───────────────────────────────────────────────────
@@ -152,7 +166,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
   15:35   warning この文は「れ」と受け身で書かれていますが、誰がしたのかがありません
                   agentless-passive
 
-指摘 3 件、動いていない rule 19 件
+{counts}
 ```
 
 | 行 | 指摘 | 意味 | 直しかた |
@@ -214,10 +228,10 @@ npx chaffjs init --genre business/report    この場所に chaff.yaml を作り
 
 ```
 ジャンルは business/report にしました。違う場合は chaff.yaml の genre を直してください。
-  一覧: npx chaff genres
+  一覧: npx chaffjs genres
 
 次:
-  npx chaff .            この場所の Markdown を全部見る
+  npx chaffjs .            この場所の Markdown を全部見る
 ```
 
 これで、このフォルダでは `npx chaffjs houkoku.md` だけで報告書として見ます。
@@ -236,17 +250,18 @@ npx chaffjs init --genre business/report    この場所に chaff.yaml を作り
 Markdown のコメントなので、文書を開いた人の画面には出ません。
 かけ直すと、受け身の指摘が消え、1 行目に黙らせた件数が出ます。
 
+<!-- chaff-screen: stet -->
 ```
 $ npx chaffjs houkoku.md --genre business/report --compact
 
-houkoku.md   business/report · 日本語   ジャンルは--genreから   stet 1 件
+houkoku.md   business/report · 日本語   ジャンルは --genre から
 
   5:1     warning 「近年」は、どの記事にも当てはまる書き出しです
                   padded-intro
   5:68    warning この文は逃げの表現を 2 つ重ねています（「という状況である、と考えられます」）
                   excessive-hedging
 
-指摘 2 件、動いていない rule 19 件
+{counts}
 ```
 
 ## チームで決まりを変える
@@ -299,7 +314,7 @@ npx chaffjs relax padded-intro --why "背景の節は、決まった書き出し
 ```
 $ npx chaffjs houkoku-fixed.md --genre business/report
 
-houkoku-fixed.md   business/report · 日本語   ジャンルは--genreから
+houkoku-fixed.md   business/report · 日本語   ジャンルは --genre から
 
 ────────────────────────────────────────────────────────────
 

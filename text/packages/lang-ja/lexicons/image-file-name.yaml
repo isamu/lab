@@ -1,0 +1,18 @@
+# カメラ・スマートフォン・画面の撮影が画像に付ける名前の始まり。代替テキストがこれで始まり数字を含むなら、説明ではなくファイルの名前。
+# image-file-name-alt が読む。大文字小文字は区別しない。
+id: image-file-name
+language: ja
+entries:
+  - pattern: IMG_
+  - pattern: IMG-
+  - pattern: DSC_
+  - pattern: DSC0
+  - pattern: DSCN
+  - pattern: PXL_
+  - pattern: MVIMG_
+  - pattern: Screenshot
+  - pattern: Screen Shot
+  - pattern: スクリーンショット
+  - pattern: スクショ
+  - pattern: 画面収録
+  - pattern: 名称未設定

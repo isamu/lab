@@ -1,0 +1,13 @@
+# The marks that say which half of the day a clock time is in, and on which side of the hour they are written
+# (3 PM, 10:30 a.m.). With one, the hour runs from 1 to 12, so "13 PM" is not a time. Matched as written.
+id: clock-meridiem
+language: en
+entries:
+  - { pattern: "AM", position: after }
+  - { pattern: "PM", position: after }
+  - { pattern: "am", position: after }
+  - { pattern: "pm", position: after }
+  - { pattern: "a.m.", position: after }
+  - { pattern: "p.m.", position: after }
+  - { pattern: "A.M.", position: after }
+  - { pattern: "P.M.", position: after }

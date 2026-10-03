@@ -1,0 +1,5 @@
+table  4  4  0  0
+ja/email  email-greeting-dropped-ja  found
+ja/email  email-closing-dropped-ja  found
+en/email  email-greeting-dropped-en  found
+en/email  email-closing-dropped-en  found

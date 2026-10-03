@@ -65,7 +65,7 @@ describe("--genre で、この実行のジャンルを決める", () => {
     const result = await lintWith(["--genre", "business/novel"]);
     assert.equal(result.code, 1);
     assert.match(result.err, /business\/novel/u);
-    assert.match(result.err, /chaff genres/u);
+    assert.match(result.err, /npx chaffjs genres/u);
   });
 });
 

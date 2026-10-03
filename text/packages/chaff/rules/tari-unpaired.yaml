@@ -1,0 +1,55 @@
+id: tari-unpaired
+layer: L3
+status: stable
+how_to_find: unpaired-parallel
+word_list: paired-parallel
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 対にならない「〜たり」
+  en: A single 〜たり with no partner
+
+why:
+  ja: 「〜たり」は「〜たり〜たりする」と対で並べる言い方です。「本を読んだり、映画を見ます」のように一つで止めて次の述語へ続けると、並べたはずのもう一つが抜け、何と何を並べたのかが読み手に分かりません。一つだけで例を挙げる「遅れたりする」「遅れたりもする」は正しいので指しません。
+  en: In Japanese, 〜たり lists actions in pairs (〜たり〜たりする). Used once and followed by another clause ("本を読んだり、映画を見ます"), the second half of the pair is missing. A single 〜たり closed by する (遅れたりする), which gives one example, is correct and not reported.
+
+message:
+  ja: 「{word}」が一つだけで、対になる「〜たり」がありません
+  en: '"{word}" is used once, with no second 〜たり to pair with'
+
+how_to_fix:
+  ja: 後ろの述語にも「〜たり」を付けて「する」で閉じてください（読んだり、映画を見ます → 読んだり、映画を見たりします）。
+  en: Add 〜たり to the second verb as well and close with する.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [blog, business, technical, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「本を読んだり、映画を見ます」のように、「〜たり」が一つで止まって対になっていない所
+  en: A Japanese 〜たり used once and followed by another clause, so its pair is missing
+example:
+  ja:
+    before: |
+      休日は本を読んだり、映画を見ます。
+    after: |
+      休日は本を読んだり、映画を見たりします。
+
+not_flagged:
+  ja: 一文に「〜たり」が二つ以上ある文と、一つでも「する」「もする」で閉じた文（遅れたりする）は指しません。「一日たりとも」の「たり」は並べる「たり」ではないので見ません。鉤括弧で引いた中は見ません。
+  en: Sentences with two or more 〜たり, and a single 〜たり closed by する (遅れたりする), are not reported. Nor is the たり of 一日たりとも, which does not list, nor anything quoted in 「」.
+rewrite:
+  ja:
+    direction: 抜けたもう一つの動作にも「〜たり」を付け、最後を「する」で閉じてください。並べるつもりが無ければ「〜たり」を外して「〜し、」でつなぎます。
+    pairs:
+      - before: 休日は本を読んだり、映画を見ます。
+        after: 休日は本を読んだり、映画を見たりします。
+      - before: 会議では資料を配ったり、意見を聞きました。
+        after: 会議では資料を配り、意見を聞きました。
+    keep:
+      - 並べた動作と、その順
+    avoid:
+      - 並べる動作を本文に無いもので足す

@@ -13,6 +13,7 @@ SARIF は、検査の結果を CI に渡すための決まった形式です。
 $ npx chaffjs . --sarif report/chaff.sarif
 
   SARIF を書きました: report/chaff.sarif（1 件）
+…
 ```
 
 この下に、いつもの画面の出力も続けて出ます。
@@ -82,13 +83,7 @@ $ npx chaffjs baseline docs/
   .chaff-baseline.json を commit してください。
 ```
 
-以後は、棚上げしたものは報告されず、新しく増えたものだけが出ます。
 `.chaff-baseline.json` を commit すれば、チーム全員が同じ地点から始められます。
-
-## 棚上げが剥がれない理由
-
-棚上げは、行番号ではなく内容で見分けます。
-そのため、前後に段落を足しても棚上げは剥がれません。
-
+棚上げは、行番号ではなく内容で見分けます。そのため、前後に段落を足しても棚上げは剥がれません。
 棚上げした分も見たいときは、`--show-baseline` を付けます。
 出力の例は [コマンド](./commands) にあります。

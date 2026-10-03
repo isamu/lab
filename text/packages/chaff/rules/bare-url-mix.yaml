@@ -1,0 +1,85 @@
+id: bare-url-mix
+layer: L3
+status: stable
+how_to_find: bare-url-mix
+requires: [markdown]
+severity: info
+
+name:
+  ja: 言葉のリンクの中に URL がそのまま混ざっている
+  en: A bare URL among worded links
+
+why:
+  ja: 文書のリンクがほとんど「[導入の手引き](https://…)」のように言葉で書かれているのに、一部だけ「https://…」がそのまま本文に出ていると、そこだけ読み手は長い記号の列を読まされ、行き先が何かを URL から推し量ることになります。言葉のリンクに揃っていない所は、書き直し忘れのことが多い形です。どちらの書き方が正しいかは決めません。URL をそのまま書く文書（言葉のリンクが少ない文書、URL のほうが多い文書）は指しません。
+  en: When a document's links are mostly words ("[the setup guide](https://…)"), a URL left bare in the text ("https://…") makes the reader read a string of symbols there and guess the target from it. A spot that does not match the worded links is usually one that was not rewritten. Neither style is called right; a document that writes its URLs bare (few worded links, or more bare URLs than worded ones) is not reported.
+
+message:
+  ja: URL「{url}」がそのまま書かれています（言葉のリンクが {count} 個ある文書）
+  en: 'The URL "{url}" is written bare ({count} worded {count|link|links} in this document)'
+
+how_to_fix:
+  ja: 行き先の名前を言葉にしてリンクにしてください（[導入の手引き](https://…)）。URL そのものを見せたいときは、山括弧で囲んでリンクにします（<https://…>）。
+  en: Make the target's name the link text ("[the setup guide](https://…)"). If the URL itself should show, wrap it in angle brackets ("<https://…>").
+
+# 指摘に要る、言葉のリンクの数。少ないと、どちらが文書の書き方かが決まらない。
+levels: { strict: 2, normal: 3, relaxed: 5 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 言葉でリンクを書く文書の中に、「https://…」がそのまま書かれている所
+  en: A URL written bare in a document whose other links are words
+example:
+  ja:
+    before: |
+      導入は[導入の手引き](https://example.com/setup)に、設定は[設定の一覧](https://example.com/settings)にあります。
+
+      料金は[料金表](https://example.com/pricing)を見てください。問い合わせは https://example.com/contact から送れます。
+    after: |
+      導入は[導入の手引き](https://example.com/setup)に、設定は[設定の一覧](https://example.com/settings)にあります。
+
+      料金は[料金表](https://example.com/pricing)を見てください。問い合わせは[問い合わせの窓口](https://example.com/contact)から送れます。
+  en:
+    before: |
+      Setup is in [the setup guide](https://example.com/setup), and the options are in [the settings list](https://example.com/settings).
+
+      Prices are on [the pricing page](https://example.com/pricing). Send questions through https://example.com/contact today.
+    after: |
+      Setup is in [the setup guide](https://example.com/setup), and the options are in [the settings list](https://example.com/settings).
+
+      Prices are on [the pricing page](https://example.com/pricing). Send questions through [the contact form](https://example.com/contact) today.
+
+not_flagged:
+  ja: 山括弧で囲んだ URL（<https://…>）、言葉が URL のリンク、コードと引用の中の URL は指しません。参照の形のリンク（[言葉][1]）は言葉のリンクに数えません。言葉のリンクが指摘に要る数に届かない文書と、URL をそのまま書くほうが多い文書も指しません。
+  en: A URL in angle brackets ("<https://…>"), a link whose text is the URL, and URLs in code or quotations are not reported; reference-style links ("[text][1]") are not counted as worded links; nor is a document with fewer worded links than the level needs, or one where bare URLs are not the few.
+level_meaning:
+  ja: 言葉のリンクが {limit} 個以上ある文書で指摘
+  en: reported in a document with {limit} or more worded links
+rewrite:
+  ja:
+    direction: そのまま書いた URL を、行き先の名前を言葉にしたリンクに変えてください。行き先の名前は、文がすでに言っている名前（窓口、手引き）を使います。URL は変えません。
+    pairs:
+      - before: 問い合わせは https://example.com/contact から送れます。
+        after: 問い合わせは[問い合わせの窓口](https://example.com/contact)から送れます。
+      - before: 手順は https://example.com/guide にまとめました。
+        after: 手順は[作業の手引き](https://example.com/guide)にまとめました。
+    keep:
+      - リンクの行き先（URL）
+      - 文の言っていること
+    avoid:
+      - 行き先の名前を推し量って、URL の中身と違う名前を付ける
+      - 「こちら」「ここ」をリンクの言葉にする
+  en:
+    direction: Turn the bare URL into a link whose text names the target. Use a name the sentence already gives (the form, the guide). Keep the URL.
+    pairs:
+      - before: Send questions through https://example.com/contact today.
+        after: Send questions through [the contact form](https://example.com/contact) today.
+      - before: The steps are at https://example.com/guide for now.
+        after: The steps are in [the setup guide](https://example.com/guide) for now.
+    keep:
+      - the link target (the URL)
+      - what the sentence says
+    avoid:
+      - guessing a name the target page does not have
+      - making "here" or "click here" the link text

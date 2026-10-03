@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { hostLanguage, sharedLanguage, uiLanguageOf } from "../packages/chaff/src/ui.ts";
+import { CLI_TEXT, type GenreSource } from "../packages/chaff/src/cli-text.ts";
 import { runCli, type CliRun } from "./cli-run.ts";
 
 describe("どの言語で話すか", () => {
@@ -66,6 +67,20 @@ describe("画面の言語", () => {
     assert.match(result.out, /このルールをゆるめる/u);
   });
 
+  it("日本語の枠では、ジャンルの出どころの英字の前後に半角の空白を入れる", () => {
+    const from = (source: GenreSource): string =>
+      CLI_TEXT.ja.header("a.md", "blog/tech", "日本語", CLI_TEXT.ja.genreSource[source], 0, 0).split("   ").at(-1) ?? "";
+    const sources: readonly GenreSource[] = ["--genre", "config", "by_path", "front-matter", "default", "path"];
+    assert.deepEqual(sources.map(from), [
+      "ジャンルは --genre から",
+      "ジャンルは chaff.yaml から",
+      "ジャンルは chaff.yaml の by_path から",
+      "ジャンルは front matter から",
+      "ジャンルは既定から",
+      "ジャンルはパスから",
+    ]);
+  });
+
   it("まとめの行は、ファイルが同じ言語ならその言語、混ざっていれば端末の言語", async () => {
     const english = await runIn({ "a.md": EN, "b.md": EN }, ["."], "ja_JP.UTF-8");
     assert.match(english.out, /2 files checked/u);
@@ -99,9 +114,9 @@ describe("画面の言語", () => {
     assert.match(readFileSync(path, "utf8"), /this team's writing rules/u);
   });
 
-  it("baseline で Markdown が無いときの断りは、日本語では以前の文言のまま", async () => {
-    assert.match((await runIn({}, ["baseline"], "ja_JP.UTF-8")).err, /^Markdown が 1 つも見つかりませんでした。$/u);
-    assert.match((await runIn({}, ["baseline"], "en_US.UTF-8")).err, /^No Markdown files found\.$/u);
+  it("baseline で検査するファイルが無いときの断りは端末の言語で、探したものと足し方を言う", async () => {
+    assert.match((await runIn({}, ["baseline"], "ja_JP.UTF-8")).err, /^検査するファイルが 1 つも見つかりませんでした。\n {2}探したもの: Markdown/u);
+    assert.match((await runIn({}, ["baseline"], "en_US.UTF-8")).err, /^No files to check found\.\n {2}Looked for Markdown/u);
   });
 
   describe("eval", () => {
@@ -130,8 +145,14 @@ describe("画面の言語", () => {
     });
 
     it("Markdown が無いときの断りは端末の言語、日本語は以前の文言のまま", async () => {
-      assert.match((await runIn({}, ["eval", "nothing"], "en_US.UTF-8")).err, /^No Markdown files found: nothing$/u);
-      assert.match((await runIn({}, ["eval", "nothing"], "ja_JP.UTF-8")).err, /^Markdown が 1 つも見つかりませんでした: nothing$/u);
+      assert.match(
+        (await runIn({}, ["eval", "nothing"], "en_US.UTF-8")).err,
+        /^No files to check found: nothing\n {2}Looked for Markdown \(\.md, \.markdown, \.mdx\)\. To check other files too, add include: /u,
+      );
+      assert.match(
+        (await runIn({}, ["eval", "nothing"], "ja_JP.UTF-8")).err,
+        /^検査するファイルが 1 つも見つかりませんでした: nothing\n {2}探したもの: Markdown（\.md \.markdown \.mdx）。ほかのファイルも検査するには、chaff\.yaml に include: /u,
+      );
     });
 
     it("言語が混ざっているときの断りは端末の言語", async () => {
@@ -140,7 +161,7 @@ describe("画面の言語", () => {
       assert.match(english.err, /^Languages or genres are mixed: /u);
       assert.doesNotMatch(english.err, JAPANESE);
       const japanese = await runIn({ "a.md": EN, "b.md": JA }, ["eval", "."], "ja_JP.UTF-8");
-      assert.match(japanese.err, /^言語かジャンルが混ざっています: .+\n1 つに絞って測ってください（例: npx chaff eval examples\/blog-ja\/）。$/u);
+      assert.match(japanese.err, /^言語かジャンルが混ざっています: .+\n1 つに絞って測ってください（例: npx chaffjs eval examples\/blog-ja\/）。$/u);
     });
 
     it("無い rule の断りは端末の言語", async () => {
@@ -150,7 +171,10 @@ describe("画面の言語", () => {
 
     it("断りは chaff.yaml の language が端末より先", async () => {
       const result = await runIn({ "chaff.yaml": "language: en\n" }, ["eval", "nothing"], "ja_JP.UTF-8");
-      assert.match(result.err, /^No Markdown files found: nothing$/u);
+      assert.match(
+        result.err,
+        /^No files to check found: nothing\n {2}Looked for Markdown \(\.md, \.markdown, \.mdx\)\. To check other files too, add include: /u,
+      );
     });
   });
 
@@ -243,9 +267,18 @@ describe("画面の言語", () => {
     });
 
     it("Markdown が無いときの断りは端末の言語、日本語は以前の文言のまま", async () => {
-      assert.match((await runIn({}, ["test", "nothing"], "en_US.UTF-8")).err, /^No Markdown files found: nothing$/u);
-      assert.match((await runIn({}, ["test", "nothing"], "ja_JP.UTF-8")).err, /^Markdown が 1 つも見つかりませんでした: nothing$/u);
-      assert.match((await runIn({ "chaff.yaml": "language: en\n" }, ["test", "nothing"], "ja_JP.UTF-8")).err, /^No Markdown files found: nothing$/u);
+      assert.match(
+        (await runIn({}, ["test", "nothing"], "en_US.UTF-8")).err,
+        /^No files to check found: nothing\n {2}Looked for Markdown \(\.md, \.markdown, \.mdx\)\. To check other files too, add include: /u,
+      );
+      assert.match(
+        (await runIn({}, ["test", "nothing"], "ja_JP.UTF-8")).err,
+        /^検査するファイルが 1 つも見つかりませんでした: nothing\n {2}探したもの: Markdown（\.md \.markdown \.mdx）。ほかのファイルも検査するには、chaff\.yaml に include: /u,
+      );
+      assert.match(
+        (await runIn({ "chaff.yaml": "language: en\n" }, ["test", "nothing"], "ja_JP.UTF-8")).err,
+        /^No files to check found: nothing\n {2}Looked for Markdown \(\.md, \.markdown, \.mdx\)\. To check other files too, add include: /u,
+      );
     });
   });
 

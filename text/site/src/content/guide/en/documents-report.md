@@ -104,18 +104,18 @@ enquiries.md   business/report · English   genre from --genre
      Relax this rule:  npx chaff relax excessive-hedging
 
 
-─── line 9 ───────────────────────────────────────────────────
+─── line 5 ───────────────────────────────────────────────────
 
-    In particular , enquiries about billing rose sharply ; most came from customers who had moved to the new price plan and …
+    In today's fast-paced world, the enquiries we receive from customers are becoming more and more varied, and it could per…
 
   ·  Sentence too long
 
      This sentence runs 53 words (limit 45)
      In a long sentence the reader loses the subject before reaching the verb.
 
-     → Split it in two at the conjunction.
+     → Commit where you can. Where you cannot, say what you would need to know. Where hedges are stacked, keep one or drop them all and commit.
 
-     Relax this rule:  npx chaff relax max-sentence-length
+     Relax this rule:  npx chaffjs relax excessive-hedging
 
 
 ────────────────────────────────────────────────────────────
@@ -126,6 +126,8 @@ enquiries.md   business/report · English   genre from --genre
   The text was not changed. Fixing it is the writer's job.
 
   {not-run}
+
+  Turn on one experimental rule alone by naming it: npx chaffjs enable cross-doc-broken-link (the same as rules: { cross-doc-broken-link: normal } in chaff.yaml). --experimental turns on all of them.
 ```
 
 There are three findings.
@@ -146,7 +148,7 @@ That way "no findings" is never mistaken for "checked everything and found nothi
 | --- | --- |
 | the genre does not check it | The genre leaves the rule out, by a written reason or because the rule reports on most documents of its kind. `rules:` in `chaff.yaml` turns it on |
 | not a rule for en | The rule is for Japanese documents only |
-| it reads meaning; npx chaff test runs it | A machine alone cannot decide it. It runs when an AI reads the passage, with `npx chaffjs test` |
+| it reads meaning; npx chaffjs test runs it | A machine alone cannot decide it. It runs when an AI reads the passage, with `npx chaffjs test` |
 
 ## Turning on the passive check
 
@@ -178,7 +180,7 @@ enquiries.md   business/report · English   genre from --genre
   15:93   warning This sentence is passive ("discussed") but never says who did it
                   agentless-passive
 
-6 findings, 29 rules not run
+{counts}
 ```
 
 The three new findings, in plain words:
@@ -239,10 +241,10 @@ After saying it created `chaff.yaml` (the settings file) and `.gitignore`, it sh
 
 ```
 The genre is business/report. If that is wrong, change genre in chaff.yaml.
-  List: npx chaff genres
+  List: npx chaffjs genres
 
 Next:
-  npx chaff .            check every Markdown file here
+  npx chaffjs .            check every Markdown file here
 ```
 
 From then on, `npx chaffjs enquiries.md` in this folder checks the file as a report.
@@ -261,10 +263,11 @@ Updating the FAQ page for billing enquiries is being considered. Adding staff is
 It is a Markdown comment, so nobody opening the document sees it.
 Run it again and the two passive findings on line 15 are gone, and the first line counts what was silenced.
 
+<!-- chaff-screen: stet -->
 ```
 $ npx chaffjs enquiries.md --genre business/report --compact
 
-enquiries.md   business/report · English   genre from --genre   2 stet
+enquiries.md   business/report · English   genre from --genre
 
   5:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
@@ -275,7 +278,7 @@ enquiries.md   business/report · English   genre from --genre   2 stet
   9:66    info    This sentence runs 53 words (limit 45)
                   max-sentence-length
 
-4 findings, 29 rules not run
+{counts}
 ```
 
 ## Changing a rule for the whole team

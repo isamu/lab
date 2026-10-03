@@ -1,0 +1,11 @@
+# 添付の語を含むが、添付したものを指さない言い方。「添付なし」「添付はありません」は付けていないと言っている。
+id: attachment-not-mention
+language: ja
+entries:
+  - pattern: 添付なし
+  - pattern: 添付はありません
+  - pattern: 添付ファイルはありません
+  - pattern: 添付しておりません
+  - pattern: 添付していません
+  - pattern: 添付文書
+  - pattern: 添付書類の提出

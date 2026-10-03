@@ -41,7 +41,7 @@ chaff は、丁寧にしようとして増える言い回しや、送る前に�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 メールの本文をテキストエディタに貼り、`mail.md` という名前で保存しました。
 
-```markdown
+```markdown file=mail.md
 件名：打ち合わせ日程のご相談
 
 株式会社みなと商事
@@ -90,7 +90,7 @@ mail.md   blog/tech · 日本語   ジャンルは既定から
   22:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
                   sasete-itadaku
 
-指摘 5 件、動いていない rule 19 件
+{counts}
 ```
 
 技術ブログとして読んだので、メールの短い一文の上限と、二重の敬語はまだ見ていません。
@@ -99,7 +99,7 @@ mail.md   blog/tech · 日本語   ジャンルは既定から
 ```
 $ npx chaffjs mail.md --genre business/email --compact
 
-mail.md   business/email · 日本語   ジャンルは--genreから
+mail.md   business/email · 日本語   ジャンルは --genre から
 
   10:1    info    この文は 80 文字あります（70 文字まで）
                   max-sentence-length
@@ -116,7 +116,7 @@ mail.md   business/email · 日本語   ジャンルは--genreから
   22:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
                   sasete-itadaku
 
-指摘 7 件、動いていない rule 22 件
+{counts}
 ```
 
 `info` は、読み飛ばしてもよい情報です。実行を失敗にはしません。

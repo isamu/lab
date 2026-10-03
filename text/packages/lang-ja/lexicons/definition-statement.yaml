@@ -1,0 +1,11 @@
+# 定義の文に書く言い回し（cross-doc-duplicate-definition）。「『X』とは」で始まる文でも、これを含まない文（「『AI が書いた』とは言いません」）は
+# 語を引いただけで、定義ではない。
+id: definition-statement
+language: ja
+entries:
+  - pattern: をいう
+  - pattern: を言う
+  - pattern: のこと
+  - pattern: を指す
+  - pattern: を意味する
+  - pattern: とする

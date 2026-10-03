@@ -46,7 +46,7 @@ chaff は、読み手を待たせる書き出しや、生成文によく出る�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 次の記事を `kiji.md` という名前で保存しました。この記事は、このページのために書いたものです。
 
-```markdown
+```markdown file=kiji.md
 # Docker のビルドを速くした話——キャッシュという見落とされがちな鍵
 
 近年、開発の現場ではコンテナがますます当たり前になっています。本記事では、私たちのチームが Docker のビルド時間を短くした方法を詳しく解説していきます。
@@ -93,7 +93,7 @@ CI でのビルドに、毎回**約 9 分**かかっていました。
 ```
 $ npx chaffjs kiji.md --genre blog/tech --compact
 
-kiji.md   blog/tech · 日本語   ジャンルは--genreから
+kiji.md   blog/tech · 日本語   ジャンルは --genre から
 
   1:39    info    節の長さのばらつきが 25% しかありません（35% 以上ほしい）
                   section-length-uniformity
@@ -128,7 +128,7 @@ kiji.md   blog/tech · 日本語   ジャンルは--genreから
   39:13   warning 「お役に立てれば幸いです」で締めています
                   closing-cliche
 
-指摘 16 件、動いていない rule 18 件
+{counts}
 ```
 
 行の頭の `3:1` は、3 行目の 1 字目という意味です。

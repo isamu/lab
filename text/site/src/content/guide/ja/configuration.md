@@ -23,10 +23,10 @@ $ npx chaffjs init --genre legal/contract
   …/.gitignore  作成しました
 
 ジャンルは legal/contract にしました。違う場合は chaff.yaml の genre を直してください。
-  一覧: npx chaff genres
+  一覧: npx chaffjs genres
 
 次:
-  npx chaff .            この場所の Markdown を全部見る
+  npx chaffjs .            この場所の Markdown を全部見る
 ```
 
 画面のパスは短くしてあります。作られる `chaff.yaml` の中身は次のとおりです。
@@ -46,9 +46,9 @@ $ npx chaffjs init --genre legal/contract
 #
 # コマンドでも変更できます。理由がコメントとして自動で残ります。
 #
-#   npx chaff relax bold-density --why "図の説明で太字を多用するため"
-#   npx chaff explain bold-density        そのルールの意図を読む
-#   npx chaff rules --json                AI に設定を書かせるときに渡す
+#   npx chaffjs relax bold-density --why "図の説明で太字を多用するため"
+#   npx chaffjs explain bold-density        そのルールの意図を読む
+#   npx chaffjs rules --json                AI に設定を書かせるときに渡す
 
 # この場所に置く文書の種類（契約書・利用規約・プライバシーポリシー）。ほかの種類: npx chaffjs genres
 genre: legal/contract
@@ -110,6 +110,7 @@ chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
 ```
 $ npx chaffjs tree draft.txt
 (doc :language "ja" :path "draft.txt" :profile "statute" :line 1
+…
 ```
 
 違うときは `profile` に書きます。`none` と書くと、内容からも選びません。
@@ -175,15 +176,36 @@ $ npx chaffjs explain max-sentence-length
     relaxed  一文 140 字まで
     off      見ない
 
-  この数字は 既定 のものです。ほかに business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / legal/judgment / academic で別の数字を持っています。
+  この数字は 既定 のものです。ほかに technical / blog / blog/essay / business / business/email / docs / legal / legal/statute / legal/judgment / academic で別の数字を持っています。
 
   いまは normal です。
 
-  変える:  npx chaff relax max-sentence-length --why "理由"
+  変える:  npx chaffjs relax max-sentence-length --why "理由"
 ```
 
 同じ `normal` でも、ジャンルによって数字が違います。
 数字ではなく言葉で書くのは、ジャンルに合った数字を chaff に選ばせるためです。
+
+## 試験中のルールを 1 つだけ動かす
+
+試験中のルールは、既定では動きません。
+`rules` に名前を書くと、そのルールだけが動きます。
+`--experimental` は、試験中のルールをすべて一度に動かします。
+
+```yaml
+rules:
+  announced-count-mismatch: normal
+```
+
+`enable` は、`relax` と同じように、ルールの説明のコメントを付けてこの行を書きます。
+
+```
+$ npx chaffjs enable announced-count-mismatch
+announced-count-mismatch を normal にしました（…/chaff.yaml）
+```
+
+検査は、動かしたルールを一度だけ言います（`試験中の rule を 1 件、設定により有効にしています: announced-count-mismatch`）。
+止まっている試験中のルールの `explain` と、動いていないルールの一覧にも、同じコマンドが出ます。
 
 ## 数えるもののないルール
 
@@ -200,11 +222,12 @@ $ npx chaffjs explain max-sentence-length
 
 ```
 $ npx chaffjs explain numbering-gap --genre legal/statute
-（略）
+…
   設定できる値（数える上限は無く、指摘の重さが変わります）:
   → normal   エラー
     relaxed  注意
     off      見ない
+…
 ```
 
 見なくてよいときは `off` で止めます。
@@ -313,6 +336,28 @@ by_path:
 後に書いたものが勝ちます。照合は設定ファイルのある場所からの相対です。
 どこで実行しても、結果が変わりません。
 
+## Markdown 以外のファイルも見る
+
+フォルダを渡すと、chaff はその中の Markdown（`.md` `.markdown` `.mdx`）を検査します。
+`include` に書いたファイル名の glob に合うファイルも、あわせて検査します。`--include` を付けると、その実行だけ同じことをします。
+
+```yaml
+include:
+  - "*.yaml"
+  - "*.txt"
+```
+
+```bash
+npx chaffjs tests/fixtures/ --include "*.yaml"
+```
+
+YAML（`.yaml` `.yml`）は、文字列の値だけを読みます。
+キー、引用符、コメント、数や `true` は文章ではありません。値は 1 つずつ別に読みます。
+指摘はファイルの行と桁を指すので、`custom_rules` の pattern でテストの期待値に残った `TODO:` も見つけられます。
+YAML として読めないファイルは、ただのテキストとして読みます。
+`.txt` のようなほかのファイルも、ただのテキストとして読みます。
+コマンドラインで名前を挙げたファイルは、拡張子にかかわらず検査します。
+
 ## 設定が効いているか確かめる
 
 いまの設定は、`chaff rules --json` で確かめます。
@@ -380,13 +425,13 @@ npx chaffjs rules --json         いまの設定を JSON で出す
 `now` が、いま実際に効いている値です。
 `level_sets` は、段階が何を変えるかです。`limit` は数える上限、`severity` は指摘の重さです。
 数えるもののないルールでは、`levels` と `now` に数の代わりに重さ（`error` / `warning` / `info`）が出ます。
-試験中のルール（まだ測っていない新しいルール）なら、`now` に動いていない理由と動かしかたが出ます。
+試験中のルール（まだ測っていない新しいルール）なら、`now` に動いていない理由と、そのルールだけを動かすコマンドが出ます。
 
 ```json
   "now": {
     "level": "off",
     "why_off": "experimental な rule は既定で動かさない",
-    "turn_on_with": "npx chaff lint --experimental"
+    "turn_on_with": "npx chaffjs enable <rule>"
   }
 ```
 
@@ -400,10 +445,12 @@ rules:
   bold-density: loose
 ```
 
+<!-- chaff-screen: typo -->
 ```
 $ npx chaffjs article.md
-chaff: …/chaff.yaml: max-sentense-length というルールはありません（npx chaff rules --json で一覧が出ます）
+chaff: …/chaff.yaml: max-sentense-length というルールはありません（npx chaffjs rules --json で一覧が出ます）
 chaff: …/chaff.yaml: bold-density の値 "loose" は読めません（strict / normal / relaxed / off か、正の数）
+…
 ```
 
 警告が出たら、`chaff.yaml` の綴りと値を直します。

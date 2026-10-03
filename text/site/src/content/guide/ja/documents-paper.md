@@ -40,7 +40,7 @@ chaff は、表記の揺れ、無い図への参照、句読点の混ざりを�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 次の要旨と本文の一部を `ronbun.md` という名前で保存しました。このページのために書いたものです。
 
-```markdown
+```markdown file=ronbun.md
 # 会議室予約の待ち時間を減らす割り当て方式
 
 ## 要旨
@@ -67,7 +67,7 @@ chaff は、表記の揺れ、無い図への参照、句読点の混ざりを�
 ```
 $ npx chaffjs ronbun.md --genre academic/paper --experimental --compact
 
-ronbun.md   academic/paper · 日本語   ジャンルは--genreから
+ronbun.md   academic/paper · 日本語   ジャンルは --genre から
 
   5:106   warning 「サーバ」と「サーバー」が混ざっています（この語は 2 回のうち 1 回が「サーバ」）
                   katakana-long-vowel
@@ -76,7 +76,7 @@ ronbun.md   academic/paper · 日本語   ジャンルは--genreから
   15:35   warning 「図 3」を指していますが、この文書に図 3がありません
                   dangling-figure-reference
 
-指摘 3 件、動いていない rule 31 件
+{counts}
 ```
 
 執筆要項を決めないと、chaff は「サーバー」と「サーバ」のどちらが正しいかを決めません。
@@ -95,10 +95,11 @@ style: ieice
 
 `genre` を書いたので、`--genre` は要らなくなります。かけ直します。
 
+<!-- chaff-screen: ieice -->
 ```
 $ npx chaffjs ronbun.md --experimental --compact
 
-ronbun.md   academic/paper · 日本語   ジャンルはchaff.yamlから
+ronbun.md   academic/paper · 日本語   ジャンルは chaff.yaml から
 
   5:46    warning 「サーバー」は語末の「ー」を省いて「サーバ」と書きます（3 音以上の語）
                   katakana-long-vowel
@@ -109,7 +110,7 @@ ronbun.md   academic/paper · 日本語   ジャンルはchaff.yamlから
   19:42   warning 「コンピューター」は語末の「ー」を省いて「コンピュータ」と書きます（3 音以上の語）
                   katakana-long-vowel
 
-指摘 4 件、動いていない rule 27 件
+{counts}
 ```
 
 今度は、決まりと違う「サーバー」と「コンピューター」を、それぞれ指摘します。

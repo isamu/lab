@@ -1,0 +1,57 @@
+id: doubled-nado
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: doubled-nado
+requires: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: 「など」と「等」の重ね
+  en: など and 等 doubled
+
+why:
+  ja: 「書類等など」「申請など等」のように「など」と「等」を重ねても、どちらも「ほかにもある」と言うだけで、意味は増えません。読み手には書き損じに見えます。組は言語ごとの語彙表にあります。
+  en: In Japanese, など and 等 both mean "and so on"; writing them together (書類等など) adds nothing and reads as a slip. The pairs are listed in the lexicon.
+
+message:
+  ja: 「{matched}」は、「など」と「等」を重ねています
+  en: '"{matched}" doubles など and 等'
+
+how_to_fix:
+  ja: どちらか一つにしてください（書類等など → 書類など）。
+  en: Keep one of the two (書類等など → 書類など).
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「書類等など」のように、「など」と「等」を重ねた所
+  en: など and 等, both "and so on", written together in Japanese
+example:
+  ja:
+    before: |
+      申請書等などを提出してください。
+    after: |
+      申請書などを提出してください。
+not_flagged:
+  ja: 一覧にある組だけを見ます。「などなど」は話し言葉の強めなので数えません。
+  en: Only the pairs on chaff's list. などなど, a spoken intensifier, is not counted.
+level_meaning:
+  ja: 重ねた所が {limit} 箇所あれば指摘
+  en: reported once there are {limit}
+rewrite:
+  ja:
+    direction: 「など」か「等」のどちらか一つを消してください。文書の中でほかに多く使っている方を残します。
+    pairs:
+      - before: 申請書等などを提出してください。
+        after: 申請書などを提出してください。
+      - before: 交通費、宿泊費など等は会社が負担します。
+        after: 交通費、宿泊費などは会社が負担します。
+    keep:
+      - 並べた項目
+    avoid:
+      - 項目を足して「など」を言い換える

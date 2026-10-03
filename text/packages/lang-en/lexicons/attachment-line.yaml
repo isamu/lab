@@ -1,0 +1,14 @@
+# The names of the field that lists what is attached. A line opening with one and a colon (Attachment: quote.pdf, Encl.:)
+# shows the attachment.
+id: attachment-line
+language: en
+entries:
+  - pattern: Attachment
+  - pattern: Attachments
+  - pattern: Attached
+  - pattern: Enclosure
+  - pattern: Enclosures
+  - pattern: Encl
+  - pattern: Encl.
+  - pattern: Enc
+  - pattern: Enc.

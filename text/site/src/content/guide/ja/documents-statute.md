@@ -74,7 +74,7 @@ npx chaffjs kitei.md --genre legal/statute    kitei.md を社内規程として�
 ```
 $ npx chaffjs kitei.md --genre legal/statute
 
-kitei.md   legal/statute · 日本語   ジャンルは--genreから
+kitei.md   legal/statute · 日本語   ジャンルは --genre から
 
 ─── 10 行目 ──────────────────────────────────────────────────
 
@@ -87,7 +87,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
      → 正しい番号に直すか、参照を消してください。他の文書を指しているなら、「民法第3条」のように文書名を添えると読み手に伝わります。
 
-     このルールをゆるめる:  npx chaff relax dangling-reference
+     このルールをゆるめる:  npx chaffjs relax dangling-reference
 
 
 ─── 12 行目 ──────────────────────────────────────────────────
@@ -101,7 +101,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
      → 番号を振り直してください。削った条を欠番として残すなら、「第4条（削除）」のように番号だけを残すと読み手に伝わります。
 
-     このルールをゆるめる:  npx chaff relax numbering-gap
+     このルールをゆるめる:  npx chaffjs relax numbering-gap
 
 
 ─── 15 行目 ──────────────────────────────────────────────────
@@ -115,7 +115,7 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
      → 定義を一か所にまとめ、もう一方は「第2条に定める備品」のように参照にしてください。意図して意味を変えているなら、別の語にします。
 
-     このルールをゆるめる:  npx chaff relax duplicate-definition
+     このルールをゆるめる:  npx chaffjs relax duplicate-definition
 
 
 ────────────────────────────────────────────────────────────
@@ -125,9 +125,9 @@ kitei.md   legal/statute · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
-
   {not-run}
+
+  試験中のルールを 1 つだけ動かすには、npx chaffjs enable cross-doc-broken-link のように名指しします（chaff.yaml の rules に cross-doc-broken-link: normal と書くのと同じです）。--experimental はすべてを動かします。
 ```
 
 ## 指摘の読み方
@@ -164,6 +164,7 @@ $ npx chaffjs kitei.md
 
 kitei.md   blog/tech · 日本語   ジャンルは既定から
    法令・規程のようです。--genre legal/statute を試せます
+…
 ```
 
 このとき、条番号のルールは動いていません。指摘が出ないのはそのためです。
@@ -177,10 +178,10 @@ npx chaffjs init --genre legal/statute    この場所に chaff.yaml を作り�
 
 ```
 ジャンルは legal/statute にしました。違う場合は chaff.yaml の genre を直してください。
-  一覧: npx chaff genres
+  一覧: npx chaffjs genres
 
 次:
-  npx chaff .            この場所の Markdown を全部見る
+  npx chaffjs .            この場所の Markdown を全部見る
 ```
 
 これで、このフォルダでは `npx chaffjs kitei.md` だけで規程として見ます。
@@ -201,17 +202,18 @@ Markdown のコメントなので、文書を開いた人の画面には出ま�
 かけ直すと、番号の指摘が消え、1 行目に黙らせた件数が出ます。
 ここでは `--compact` を付け、1 件を 2 行にまとめて出しています。
 
+<!-- chaff-screen: stet -->
 ```
 $ npx chaffjs kitei.md --genre legal/statute --compact
 
-kitei.md   legal/statute · 日本語   ジャンルは--genreから   stet 1 件
+kitei.md   legal/statute · 日本語   ジャンルは --genre から   stet 1 件
 
   10:5    error   「第9条」（番地 9）はこの文書にありません
                   dangling-reference
   16:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 2 件、動いていない rule 48 件
+{counts}
 ```
 
 ## チームで決まりを変える
@@ -243,10 +245,11 @@ numbering-gap を relaxed にしました（…/chaff.yaml）
 
 stet を書く前の `kitei.md` にかけ直すと、番号の指摘が `error` から `warning` に変わります。
 
+<!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs kitei.md --compact
 
-kitei.md   legal/statute · 日本語   ジャンルはchaff.yamlから
+kitei.md   legal/statute · 日本語   ジャンルは chaff.yaml から
 
   10:5    error   「第9条」（番地 9）はこの文書にありません
                   dangling-reference
@@ -255,7 +258,7 @@ kitei.md   legal/statute · 日本語   ジャンルはchaff.yamlから
   15:11   warning 「備品」は 6 行目でも定義されています
                   duplicate-definition
 
-指摘 3 件、動いていない rule 48 件
+{counts}
 ```
 
 エラーが 1 件でも残ると、chaff は失敗で終わります。注意だけなら成功で終わるので、CI を止めません。
@@ -274,7 +277,7 @@ npx chaffjs off numbering-gap --why "条番号は別の台帳で管理してい�
 
 番号を振り直し、台帳の条を足し、定義を第1条にまとめました。
 
-```markdown
+```markdown file=kitei-fixed.md
 # 備品管理規程
 
 ## 第1条（目的）
@@ -295,10 +298,11 @@ npx chaffjs off numbering-gap --why "条番号は別の台帳で管理してい�
 総務部は、備品の貸出と返却を記録する台帳を備える。
 ```
 
+<!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs kitei-fixed.md --genre legal/statute
 
-kitei-fixed.md   legal/statute · 日本語   ジャンルは--genreから
+kitei-fixed.md   legal/statute · 日本語   ジャンルは --genre から
 
 ────────────────────────────────────────────────────────────
 
@@ -307,9 +311,8 @@ kitei-fixed.md   legal/statute · 日本語   ジャンルは--genreから
 
   文章は書き換えていません。直すのは書いた人です。
 
-  試験中の rule を 1 件、設定により有効にしています: numbering-gap
-
-  試験中の rule を 6 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, total-mismatch
+  {not-run}
+…
 ```
 
 この下に並ぶ「動いていない」一覧は、直す前と同じです。

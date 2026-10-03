@@ -43,7 +43,7 @@ chaff は、日付と曜日、期間、合計、割合、予告した数の食�
 準備がまだなら、先に[準備する](./documents#準備する)を済ませます。
 次のプレスリリースを `release.md` という名前で保存しました。会社とアプリの名前は架空です。
 
-```markdown
+```markdown file=release.md
 # 会議室予約アプリ「よやくん」を11月に提供開始
 
 2026年10月15日
@@ -95,7 +95,7 @@ chaff は、日付と曜日、期間、合計、割合、予告した数の食�
 ```
 $ npx chaffjs release.md --genre business/press-release --compact
 
-release.md   business/press-release · 日本語   ジャンルは--genreから
+release.md   business/press-release · 日本語   ジャンルは --genre から
 
   6:45    error   「2026-11-02」は月曜日です（火曜日と書いてあります）
                   date-weekday-mismatch
@@ -108,7 +108,7 @@ release.md   business/press-release · 日本語   ジャンルは--genreから
   39:8    error   合計「36,000円」が、上の金額の和（35,000円）と合いません
                   total-mismatch
 
-指摘 5 件、動いていない rule 22 件
+{counts}
 ```
 
 `error` は、数が食い違っていて、どちらかが必ず間違っている所です。

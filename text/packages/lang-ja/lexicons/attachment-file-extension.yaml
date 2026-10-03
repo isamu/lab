@@ -1,0 +1,19 @@
+# 添付するファイルの拡張子。この拡張子のファイル名（見積書.pdf）が文書のどこかにあれば、添付を示している。
+id: attachment-file-extension
+language: ja
+entries:
+  - pattern: pdf
+  - pattern: doc
+  - pattern: docx
+  - pattern: xls
+  - pattern: xlsx
+  - pattern: ppt
+  - pattern: pptx
+  - pattern: csv
+  - pattern: txt
+  - pattern: zip
+  - pattern: png
+  - pattern: jpg
+  - pattern: jpeg
+  - pattern: gif
+  - pattern: jtd

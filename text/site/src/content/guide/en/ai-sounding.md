@@ -61,11 +61,14 @@ npx chaffjs article.md --experimental    # also run the experimental rules
 | `no-em-dash` | Too many em dashes |
 | `sentence-rhythm` | Sentences that are all about the same length |
 | `rule-of-three` | Lists that almost all have three items |
+| `section-length-uniformity` | Every section filled to the same size, which is what a template does |
+| `paragraph-length-variance` | Paragraphs all of about the same length, as if poured into a mould |
 | `ai-structure` | An outline past 90% of human articles on several structure measures at once (heading density, headings split into three, bold labels, uniform sections, a closing that restates). Blog and essay genres only |
 | `ai-generated-composite` | Three or more of these in one document: `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure` (`bold-density` is not counted) |
 
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.
+`fix-plan` also gives a way to rewrite for other rules that flag such spots, such as `no-lead` and `paragraph-restatement`; the [reference](./reference) lists them all.
 
 The Japanese word list of `ai-tell` includes the metaphors of technical writing (静かに壊れる "fails silently",
 黙って無視される "is ignored without a word", 時間を溶かす "melts your time").
@@ -143,7 +146,8 @@ Leave the old sentences alone. Take an inventory of what the document says, and 
 | Move the experience | Put the writer's concrete experience where it carries the argument |
 | Open on the point | Start with the point or a concrete scene, not a generic opener |
 
-   Size the new outline by the plan's structure targets: no more headings than the target allows, no heading split into three unless the content has three parts, no bold-label lists and no closing that restates the body.
+   Size the new outline by the plan's structure targets: no more headings than the target allows.
+   Split no heading into three unless the content has three parts; use no bold-label lists and no closing that restates the body.
 
 3. Show the new outline first. Put the old outline (the headings from `chaff outline`) next to the new one, with one line per section on what it says.
    The writer can then see the structural change at a glance and decide. If the person asked for it to be done without asking, go straight on.
@@ -231,7 +235,7 @@ Both versions were written for this page.
 
 The post before the rewrite (`draft.md`):
 
-```markdown
+```markdown file=draft.md
 # Moving Our Builds to a Shared Cache
 
 In today's fast-paced world, build speed plays a crucial role in how a team ships. Let's delve into how we moved our builds to a shared cache.
@@ -245,7 +249,7 @@ The migration was planned meticulously. It was rolled out over two weeks in Marc
 In conclusion, the shared cache is a testament to what careful engineering can achieve. I hope this helps!
 ```
 
-The plan `chaff fix-plan` printed:
+The plan `chaff fix-plan` printed, cut after the first rule:
 
 ````markdown
 $ npx chaffjs fix-plan draft.md --experimental
@@ -324,7 +328,7 @@ after:
 - line 3: "In today's fast-paced world, build speed plays a crucial role in how a team ships."
   "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 18)
 
-### `padded-intro` Padded opening
+…
 
 **Direction**: Delete the opening that fits any document ("In recent years, X has gained attention") and start from the situation or the claim only this piece has. If the body has none, ask the writer.
 
@@ -393,9 +397,19 @@ after:
 
 ## Rules that did not run
 
+- `abstract-length`: the blog/tech genre does not check it
 - `agentless-passive`: the blog/tech genre does not check it
 - `ai-structure`: the document has no headings below its title
+- `attachment-not-attached`: the blog/tech genre does not check it
+- `citation-reference-mismatch`: the blog/tech genre does not check it
+- `citation-style-mix`: the blog/tech genre does not check it
 - `cushion-phrase-density`: the blog/tech genre does not check it
+- `defined-name-repeated`: the blog/tech genre does not check it
+- `defined-term-form`: the blog/tech genre does not check it
+- `email-greeting-closing`: the blog/tech genre does not check it
+- `email-subject-length`: the blog/tech genre does not check it
+- `figure-reference-order`: the blog/tech genre does not check it
+- `request-without-deadline`: the blog/tech genre does not check it
 
 ## Check after rewriting
 
@@ -416,7 +430,7 @@ The closing "In conclusion … I hope this helps!" was cut, since the body alrea
 
 The rewrite (`draft.rewritten.md`):
 
-```markdown
+```markdown file=draft.rewritten.md
 # Moving Our Builds to a Shared Cache
 
 Before the change, a full build took 14 minutes on every pull request. Now a typical build takes 3 minutes, because only the packages that changed are rebuilt.
@@ -433,14 +447,18 @@ $ npx chaffjs draft.rewritten.md --experimental --compact
 draft.rewritten.md   blog/tech · English   genre from the default
 
 
-0 findings, 28 rules not run
+{counts}
+```
 
+```text
 $ npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
 draft.md → draft.rewritten.md
 
 Facts checked: 4 → 4: numbers 2→2, dates 1→1, times 0→0, URLs 0→0, code 0→0, names 0→0, quotations 0→0, headings 1→1, references 0→0, footnotes 0→0
 No fact dropped or added
+```
 
+```text
 $ npx chaffjs outline draft.md draft.rewritten.md
 draft.md outline: headings 1, average section 171 words, in lists 0%, bold 0
 
@@ -477,9 +495,9 @@ The passive sentences about the rollout name who did it ("We rolled it out"), be
 A tech article written in the style of generated text, rewritten with the bold rewrite.
 Both versions were written for this page.
 
-The article before:
+The article before (`ai.md`):
 
-```markdown
+```markdown file=ai.md
 # Solving Our Flaky Test Problem — The Hidden Trap of Time Zones
 
 In this article, we'll delve into how we tracked down a flaky test on CI, from identifying the root cause to implementing a robust fix.
@@ -555,12 +573,12 @@ ai.md   blog/tech · English   genre from --genre
   47:1    warning Closes with "hope this helps"
                   closing-cliche
 
-9 findings, 27 rules not run
+{counts}
 ```
 
-The article after:
+The article after (`rewritten.md`):
 
-```markdown
+```markdown file=rewritten.md
 # Our flaky test was a time zone problem
 
 One test in our inventory API failed on CI roughly once every 30 runs and never locally. This post describes how we found the cause and fixed it.
@@ -592,7 +610,7 @@ $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 rewritten.md   blog/tech · English   genre from --genre
 
 
-0 findings, 27 rules not run
+{counts}
 ```
 
 What changed, and why:
@@ -648,9 +666,9 @@ When the structure itself should change, use the full rewrite, as in the next ex
 A blog post written in the style of generated text, rewritten from scratch with the full rewrite.
 Both versions were written for this page.
 
-The post before:
+The post before (`demo.md`):
 
-```markdown
+```markdown file=demo.md
 # Unlocking the Power of Weekly Demos: Key Lessons From Six Months
 
 In this post, we'll dive into how our team started a weekly demo and what we learned along the way.
@@ -704,7 +722,7 @@ demo.md   blog/tech · English   genre from --genre
   33:184  warning Closes with "hope this helps"
                   closing-cliche
 
-5 findings, 27 rules not run
+{counts}
 ```
 
 The inventory: `npx chaffjs facts demo.md` lists 5 numbers, a date, 2 times, 2 names (Friday, Slack) and 7 headings.
@@ -715,7 +733,9 @@ The writer's claims and experience, one line each:
 - shorter slots, showing what you are stuck on, and a recording in Slack brought people back;
 - the demos turned into real conversations.
 
-The old outline has seven headings, and its "Conclusion" says the body again. Its structure score is 4: sections of one or two paragraphs, headings in a stock form, the introduction and conclusion headings, and bold labels lie past 90% of human articles, and the plan's structure targets name the same four.
+The old outline has seven headings, and its "Conclusion" says the body again. Its structure score is 4: four measures lie past 90% of human articles.
+They are sections of one or two paragraphs, headings in a stock form, the introduction and conclusion headings, and bold labels.
+The plan's structure targets name the same four.
 The new outline, shown before writing:
 
 | Old outline | New outline, and what each part says |
@@ -725,9 +745,9 @@ The new outline, shown before writing:
 | The Solution, The Results | "Bring what you are stuck on": the change, and what it did to attendance |
 | Conclusion | Cut: it restated the body |
 
-The post after:
+The post after (`demo-full.md`):
 
-```markdown
+```markdown file=demo-full.md
 # Our weekly demo came back when we shortened the slots
 
 We started a weekly demo in March 2026, every Friday from 4:00 to 4:30 p.m., for the 14 people on the product team. Three people showed their work for 10 minutes each. Within two months, 6 people were coming.
@@ -751,7 +771,7 @@ $ npx chaffjs demo-full.md --genre blog/tech --experimental --compact
 demo-full.md   blog/tech · English   genre from --genre
 
 
-0 findings, 27 rules not run
+{counts}
 ```
 
 `outline` measures how the structure changed: fewer headings, longer sections, no list and no bold.

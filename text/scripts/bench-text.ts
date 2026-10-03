@@ -33,7 +33,15 @@ export type Mutation = {
   readonly reportsOn?: "document";
   /** undefined when the sample has nothing to plant this mistake in. */
   readonly plant: (source: string, context: PlantContext) => Plant | undefined;
+  /**
+   * For a rule that compares the files of one run: plants the mistake in a sample of several files (a toy docs site), by
+   * path. The files hold no mistake of this kind before. A mutation with it plants nothing in a single sample.
+   */
+  readonly site?: (files: ReadonlyMap<string, string>) => SitePlant | undefined;
 };
+
+/** A site with one planted mistake: every file, and the file and 1-based line the rule should report it on. */
+export type SitePlant = { readonly files: ReadonlyMap<string, string>; readonly path: string; readonly line: number };
 
 type Found = { readonly index: number; readonly line: string };
 

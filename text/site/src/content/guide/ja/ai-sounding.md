@@ -61,11 +61,14 @@ npx chaffjs article.md --experimental    # 試験中のルールも動かす
 | `no-em-dash` | ダッシュ（——）の多さ |
 | `sentence-rhythm` | 文の長さが揃いすぎている所 |
 | `rule-of-three` | 箇条書きがどれも 3 項目の所 |
+| `section-length-uniformity` | どの節もほぼ同じ長さに埋めてあり、ひな形を埋めたように見える所 |
+| `paragraph-length-variance` | どの段落もほぼ同じ長さで、型に流しこんだように見える所 |
 | `ai-structure` | 構成の項目（見出しの多さ、3 つに分けた小見出し、太字の札、節の長さの揃い方、本文を言い直すまとめなど）のいくつもが、人の記事の 9 割を超えた文書。ブログとエッセイだけで見ます |
 | `ai-generated-composite` | 次の特徴のうち 3 つ以上がそろった文書：`ai-tell`、`contrast-framing`、`stock-transition`、`announcing-opener`、`colon-lead-in`、`assistant-residue`、`closing-cliche`、`padded-intro`、`no-em-dash`、`sentence-rhythm`、`rule-of-three`、`section-length-uniformity`、`ai-structure`（`bold-density` は数えません） |
 
 どのルールも、それだけで「AI が書いた」とは言いません。人も書く形です。
 重なったときに、読み返す場所の目印になります。
+`no-lead` や `paragraph-restatement` のように、ほかにも書き直す箇所を指すルールがあり、`fix-plan` はその直し方も出します。全部は [リファレンス](./reference) にあります。
 
 `ai-tell` の語彙表には、技術文の比喩（「静かに壊れる」「黙って無視される」「時間を溶かす」）も入っています。
 どの語を入れるかは、生成 AI 以前の技術記事と corpus で測って決めました。
@@ -232,7 +235,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 
 書き直す前の記事です（`draft.md`）。
 
-```markdown
+```markdown file=draft.md
 # 夜間バッチの失敗を通知するまで
 
 現代社会において、夜間バッチは業務を支える重要な役割を果たすと言えるでしょう。本記事では、私たちのチームが夜間バッチの失敗に気づけるようにした取り組みについて、深く掘り下げていきます。
@@ -246,7 +249,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 いかがでしたか？夜間バッチの監視は地味に効く改善です。参考になれば幸いです。
 ```
 
-`chaff fix-plan` が出した計画です。
+`chaff fix-plan` が出した計画です。最初のルールより後は略しています。
 
 ````markdown
 $ npx chaffjs fix-plan draft.md --experimental
@@ -325,7 +328,7 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 - 3 行目: 「現代社会において、夜間バッチは業務を支える重要な役割を果たすと言えるでしょう。」
   「現代社会において、重要な役割を果たす、と言えるでしょう、深く掘り下げる、本記事では、地味に効く、時間を溶かす、静かに壊れる」が揃っています（点 47、18 まで）
 
-### `closing-cliche` 定型の結び
+…
 
 **直す方向**: 決まり文句の結びを消してください。本文の結論がすでに最後にあれば、そこで終えます。無ければ、本文で分かったことのうち持ち帰ってほしい一つを一文で書きます。
 
@@ -357,9 +360,22 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 
 ## 動かなかったルール
 
+- `abstract-length`: ジャンル blog/tech では見ないため
+- `adverb-without-negation`: ジャンル blog/tech では見ないため
 - `agentless-passive`: ジャンル blog/tech では見ないため
 - `ai-structure`: 表題より下の見出しが無いため
+- `attachment-not-attached`: ジャンル blog/tech では見ないため
+- `citation-reference-mismatch`: ジャンル blog/tech では見ないため
+- `citation-style-mix`: ジャンル blog/tech では見ないため
+- `colloquial-opener`: ジャンル blog/tech では見ないため
 - `cushion-phrase-density`: ジャンル blog/tech では見ないため
+- `defined-name-repeated`: ジャンル blog/tech では見ないため
+- `defined-term-form`: ジャンル blog/tech では見ないため
+- `email-greeting-closing`: ジャンル blog/tech では見ないため
+- `email-subject-length`: ジャンル blog/tech では見ないため
+- `figure-reference-order`: ジャンル blog/tech では見ないため
+- `request-without-deadline`: ジャンル blog/tech では見ないため
+- `yori-as-from`: ジャンル blog/tech では見ないため
 
 ## 直したあとの確かめ
 
@@ -380,7 +396,7 @@ npx chaffjs outline draft.md draft.rewritten.md
 
 書き直した記事です（`draft.rewritten.md`）。
 
-```markdown
+```markdown file=draft.rewritten.md
 # 夜間バッチの失敗を通知するまで
 
 以前の夜間バッチは、ディスクが一杯になるとエラーを出さずに失敗していました。朝になって売上の集計が空だと気づき、原因の調査に毎回半日ほどかかっていました。
@@ -397,14 +413,18 @@ $ npx chaffjs draft.rewritten.md --experimental --compact
 draft.rewritten.md   blog/tech · 日本語   ジャンルは既定から
 
 
-指摘 0 件、動いていない rule 19 件
+{counts}
+```
 
+```text
 $ npx chaffjs compare draft.md draft.rewritten.md --distinct --allow-dropped heading --allow-added heading
 draft.md → draft.rewritten.md
 
 照合した事実 12 件 → 12 件: 数 8→8、日付 1→1、時刻 0→0、URL 0→0、コード 0→0、固有名詞 2→2、引用 0→0、見出し 1→1、条項の参照 0→0、脚注 0→0
 落ちた事実も足された事実もありません
+```
 
+```text
 $ npx chaffjs outline draft.md draft.rewritten.md
 draft.md の構成: 見出し 1、節の平均 434 字、箇条書き 0%、太字 0
 
@@ -456,9 +476,9 @@ draft.md → draft.rewritten.md
 生成文の書きぶりで書いた技術記事を、節ごとの書き直しで直した例です。
 どちらの文書も、このページのために書いたものです。
 
-書き直す前の記事です。
+書き直す前の記事です（`ai.md`）。
 
-```markdown
+```markdown file=ai.md
 # CI のテストがたまに落ちる問題を解決した話——時差という見えない罠
 
 本記事では、CI でだけテストが不安定になる問題について、原因の特定から修正までを詳しく解説していきます。
@@ -513,7 +533,7 @@ draft.md → draft.rewritten.md
 ```text
 $ npx chaffjs ai.md --genre blog/tech --experimental --compact
 
-ai.md   blog/tech · 日本語   ジャンルは--genreから
+ai.md   blog/tech · 日本語   ジャンルは --genre から
 
   3:1     info    「詳しく解説していきます、鍵となる、本記事では、地味に効く、効いてくる、時間を溶かす、一つずつ潰す、静かに壊れる、黙って無視される」が揃っています（点 39、18 まで）
                   ai-tell
@@ -540,12 +560,12 @@ ai.md   blog/tech · 日本語   ジャンルは--genreから
   47:13   warning 「お役に立てれば幸いです」で締めています
                   closing-cliche
 
-指摘 12 件、動いていない rule 18 件
+{counts}
 ```
 
-書き直した後の記事です。
+書き直した後の記事です（`rewritten.md`）。
 
-```markdown
+```markdown file=rewritten.md
 # CI のテストがたまに落ちる問題は時差が原因だった
 
 社内の在庫管理 API のテストが、CI でだけ約 30 回に 1 回落ちていました。手元では再現しません。この記事では、原因を突き止めて直すまでを書きます。
@@ -574,12 +594,12 @@ ai.md   blog/tech · 日本語   ジャンルは--genreから
 ```text
 $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 
-rewritten.md   blog/tech · 日本語   ジャンルは--genreから
+rewritten.md   blog/tech · 日本語   ジャンルは --genre から
 
   1:28    info    節の長さのばらつきが 32% しかありません（35% 以上ほしい）
                   section-length-uniformity
 
-指摘 1 件、動いていない rule 18 件
+{counts}
 ```
 
 変えたことと、その理由です。
@@ -636,9 +656,9 @@ i 書き方だけ変わった事実 2 件
 生成文の書きぶりで書いたブログ記事を、全面書き直しで直した例です。
 どちらの文書も、このページのために書いたものです。
 
-書き直す前の記事です。
+書き直す前の記事です（`study.md`）。
 
-```markdown
+```markdown file=study.md
 # 社内勉強会を半年続けて見えてきた、本当に大切なこと——継続の秘訣とは
 
 本記事では、私たちのチームが半年間続けてきた社内勉強会について、その取り組みと学びを詳しく解説していきます。
@@ -713,7 +733,7 @@ i 書き方だけ変わった事実 2 件
 ```text
 $ npx chaffjs study.md --genre blog/tech --experimental --compact
 
-study.md   blog/tech · 日本語   ジャンルは--genreから
+study.md   blog/tech · 日本語   ジャンルは --genre から
 
   5:1     info    構成の 3 項目が、人の記事の 9 割を超えています（3 項目から）。見出しの多さ、3 つの小見出しに分けた見出し、太字の見出しで始まる項目
                   ai-structure
@@ -742,7 +762,7 @@ study.md   blog/tech · 日本語   ジャンルは--genreから
   67:1    warning 「いかがでしたでしょうか」で締めています
                   closing-cliche
 
-指摘 13 件、動いていない rule 18 件
+{counts}
 ```
 
 控えを取ります。`npx chaffjs facts study.md` の一覧には、数 11 件、日付 1 件、時刻 2 件、固有名詞 2 件（Rust、Notion）、見出し 14 件が並びます。
@@ -798,9 +818,9 @@ study.md の構成: 見出し 14、節の平均 67 字、箇条書き 15%、太�
 | 実施した改善策（3 つの小見出し）、結果 | 「その週に詰まったことを、短く話す」。題材、発表の長さ、記録を一続きの話にし、人が戻ったところまで書く |
 | 学んだこと、まとめ | 消す。言いたいことは前の節の最後の一段落に入れる |
 
-書き直した後の記事です。
+書き直した後の記事です（`study-full.md`）。
 
-```markdown
+```markdown file=study-full.md
 # 社内勉強会は、発表を短くしたら人が戻ってきた
 
 2025年10月に、開発チームで社内勉強会を始めました。毎週木曜日の 17:00 から 17:30 まで、1 人が 15 分話して、残りの時間で質疑をする形です。チームの 12 人で始めましたが、2 か月たつと、来るのは 5 人になっていました。
@@ -825,10 +845,10 @@ study.md の構成: 見出し 14、節の平均 67 字、箇条書き 15%、太�
 ```text
 $ npx chaffjs study-full.md --genre blog/tech --experimental --compact
 
-study-full.md   blog/tech · 日本語   ジャンルは--genreから
+study-full.md   blog/tech · 日本語   ジャンルは --genre から
 
 
-指摘 0 件、動いていない rule 18 件
+{counts}
 ```
 
 構成の変わり方を `outline` で測った結果です。見出しが減って節が長くなり、箇条書きと太字は無くなりました。

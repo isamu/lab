@@ -7,6 +7,7 @@ import { loadGenres, presetLevels } from "../genre-load.ts";
 import { presetLevelsOf, type PresetLevels } from "../genre-parse.ts";
 import { RULE_GROUPS, groupTextOf } from "../rule-guide.ts";
 import { standingIn } from "../rule-genres.ts";
+import { offOnlyAsExperimental } from "../experimental-alone.ts";
 import { optionsJson } from "./options.ts";
 import { limitsFor, styleLevelSource } from "../config/style.ts";
 import { loadStyles } from "../style-load.ts";
@@ -38,7 +39,7 @@ const TEXT: Texts<{
       "決まりごとに、summary と level_meaning が合う rule を選ぶ。数の決まりは levels の数と比べ、合う段階を選ぶか数を直接書く。",
       "文書の種類が分かれば genre を決める。rules[].genres で、そのジャンルで動くか・止まるかを確かめる。",
       "表記の決まりは prefer、社内用語は jargon、必須の見出しは required_sections に書く。",
-      "既定と同じものは書かない。書いたら npx chaff explain <rule-id> と、決まりに沿った短い見本で確かめる。",
+      "既定と同じものは書かない。書いたら npx chaffjs explain <rule-id> と、決まりに沿った短い見本で確かめる。",
     ],
   },
   en: {
@@ -55,14 +56,16 @@ const TEXT: Texts<{
       "For each requirement, pick the rule whose summary and level_meaning match. For a number, compare it with the rule's levels and pick a level, or write the number itself.",
       "If the kind of document is known, set genre, and check rules[].genres for whether each rule runs or is off in it.",
       "Put spellings under prefer, in-house words under jargon, and required headings under required_sections.",
-      "Leave out anything at its default. Then check each rule with npx chaff explain <rule-id> and a short sample that follows the note.",
+      "Leave out anything at its default. Then check each rule with npx chaffjs explain <rule-id> and a short sample that follows the note.",
     ],
   },
 };
 
 type Limits = Readonly<Record<string, number>>;
 
-const now = (rule: RuleDefinition, config: Config, limits: Limits, genre: string, text: (typeof TEXT)["ja"], preset: PresetLevels): Record<string, unknown> => {
+/** language: the documents', for a rule that reads only some languages. */
+const now = (rule: RuleDefinition, config: Config, limits: Limits, genre: string, preset: PresetLevels, language: string): Record<string, unknown> => {
+  const text = TEXT[uiLanguageOf(language)];
   // A run leaves out a rule whose use_for does not cover the genre before it reads any level.
   if (standingIn(rule, genre, {}).kind === "unsuited") return { level: "off", why_off: text.offUnsuited(genre) };
   const explicit = config.rules[rule.id] ?? preset[rule.id];
@@ -72,14 +75,15 @@ const now = (rule: RuleDefinition, config: Config, limits: Limits, genre: string
   if (limit !== undefined) return { level: "normal", limit, set_as: "number" };
   if (explicit !== undefined) return { level: explicit, ...effectAt(rule, explicit, genre) };
   if (rule.status === "experimental" && !config.experimental) {
-    return { level: "off", why_off: text.offExperimental, turn_on_with: `npx chaff lint --experimental` };
+    const alone = offOnlyAsExperimental(rule, config, genre, preset, language);
+    return { level: "off", why_off: text.offExperimental, ...(alone ? { turn_on_with: `npx chaffjs enable ${rule.id}` } : {}) };
   }
   return { level: "normal", ...effectAt(rule, "normal", genre) };
 };
 
 /** The level a rule runs at now, and why it is off when it is: what `chaff rules` shows in its table. */
 export const nowFor = (rule: RuleDefinition, config: Config, language: string, genre: string): Record<string, unknown> =>
-  now(rule, config, limitsFor(config, language), genre, TEXT[uiLanguageOf(language)], presetLevels(genre));
+  now(rule, config, limitsFor(config, language), genre, presetLevels(genre), language);
 
 /** What a level does to a rule: the limit it counts to, or, with nothing to count, the severity of its findings. */
 const effectAt = (rule: RuleDefinition, level: Exclude<Level, "off">, genre: string): Record<string, unknown> =>
@@ -199,7 +203,7 @@ export const rulesJson = (
         ...levelsOf(rule, genre),
         levels_you_can_set: definedLevels(rule),
         your_setting: yourSetting(rule, config, limits),
-        now: now(rule, config, limits, genre, text, preset),
+        now: now(rule, config, limits, genre, preset, language),
         ...(rule.options === undefined ? {} : { options: optionsJson(rule, optionLayers) }),
         ...(rule.custom === undefined
           ? {}
@@ -208,7 +212,7 @@ export const rulesJson = (
       })),
       how_to_write_settings_from_a_style_note: text.fromStyleNote,
       how_to_change: {
-        by_command: ["relax", "strict", "off"].map((command) => `npx chaff ${command} <rule-id> --why "${text.reason}"`),
+        by_command: ["relax", "strict", "off"].map((command) => `npx chaffjs ${command} <rule-id> --why "${text.reason}"`),
         by_file: text.byFile,
         options_by_file: text.optionsByFile,
       },

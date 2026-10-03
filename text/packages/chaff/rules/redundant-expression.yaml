@@ -1,0 +1,76 @@
+id: redundant-expression
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: redundant-expression
+uses: [pos]
+severity: info
+
+name:
+  ja: 重言
+  en: Redundant pair
+
+why:
+  ja: 「頭痛が痛い」「一番最初」「後で後悔する」のように同じ意味の語を重ねると、読み手は二度目の語に意味を探してつまずき、書き手が言葉を選んでいないように読めます。重ねを外しても意味は変わりません。言い回しの一覧は言語ごとの語彙表にあり、それぞれに重ねを外した形が付いています。辞書が一語として載せる慣用（排気ガス、射程距離）は数えません。
+  en: Two words that say the same thing ("end result", "each and every", "revert back") make the reader look for a meaning in the second word that is not there, and read as unedited. Dropping the repeat changes nothing. The pairs are listed in each language's lexicon, each with the form to use instead. Idioms that are sometimes needed ("whether or not", "period of time") are not counted.
+
+message:
+  ja: 「{matched}」は同じ意味の語を重ねています
+  en: '"{matched}" says the same thing twice'
+
+how_to_fix:
+  ja: 重ねた語の一方を消してください（一番最初 → 最初、後で後悔する → 後悔する）。
+  en: Drop the repeat ("end result" → "result", "revert back" → "revert").
+
+# 何回あれば指摘するか。1 は一つ目から。
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: wording
+summary:
+  ja: 「頭痛が痛い」「一番最初」「後で後悔」のような、同じ意味の語の重なり
+  en: Two words that say the same thing, such as "end result" or "each and every"
+example:
+  ja:
+    before: |
+      一番最初に、手順を確認してください。
+    after: |
+      最初に、手順を確認してください。
+  en:
+    before: |
+      The end result is a shorter build.
+    after: |
+      The result is a shorter build.
+
+not_flagged:
+  ja: 辞書が一語として載せる慣用（排気ガス、射程距離、製造メーカー）、重ねて強める書き方として定着したもの（犯罪を犯す、あらかじめ予約）は指しません。文学のジャンルでは既定で止めています。
+  en: Idioms that are sometimes needed ("whether or not", "period of time", "past experience", "plan ahead") are not reported. The literature preset turns it off.
+level_meaning:
+  ja: 重言を含む文が {limit} 文あれば指摘
+  en: reported once {limit} sentences hold one
+rewrite:
+  ja:
+    direction: 重ねた語の一方を消して、一度だけ言ってください。語彙表の語ごとの書き換え（一番最初 → 最初）に従い、文のほかの所は変えません。
+    pairs:
+      - before: 一番最初に、手順を確認してください。
+        after: 最初に、手順を確認してください。
+      - before: 返事を返すまでに三日かかりました。
+        after: 返事をするまでに三日かかりました。
+    keep:
+      - 文の意味と語順
+      - 重ねていない語
+    avoid:
+      - 重ねを外すついでに文を書き換える
+  en:
+    direction: Drop one of the two words that say the same thing, following the lexicon's replacement for the phrase ("end result" → "result"). Leave the rest of the sentence alone.
+    pairs:
+      - before: The end result is a shorter build.
+        after: The result is a shorter build.
+      - before: We reverted back to the old schema.
+        after: We reverted to the old schema.
+    keep:
+      - what the sentence says
+      - the words around the pair
+    avoid:
+      - rewriting the whole sentence while dropping the repeat

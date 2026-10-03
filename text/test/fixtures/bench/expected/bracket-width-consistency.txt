@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  bracket-halfwidth  found
+ja/design  bracket-halfwidth  found
+ja/email  bracket-halfwidth  found
+ja/figures  bracket-halfwidth  found
+ja/itinerary  bracket-halfwidth  found
+ja/minutes  bracket-halfwidth  found
+ja/note  bracket-halfwidth  found
+ja/policy  bracket-halfwidth  found
+ja/press  bracket-halfwidth  found
+ja/proposal  bracket-halfwidth  found
+ja/quote  bracket-halfwidth  found
+ja/readme  bracket-halfwidth  found
+ja/requirements  bracket-halfwidth  found

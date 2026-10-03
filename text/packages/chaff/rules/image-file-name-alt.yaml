@@ -1,0 +1,82 @@
+id: image-file-name-alt
+layer: L1
+status: stable
+how_to_find: image-file-name-alt
+word_list: image-file-name
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 画像の代替テキストがファイル名
+  en: Image alt text is a file name
+
+why:
+  ja: 「![IMG_1234.png](IMG_1234.png)」「![スクリーンショット 2026-04-01](a.png)」のように、代替テキストが画像のファイル名のままの所です。画像が読み込めないときと画面読み上げで読むときは代替テキストだけが画像の代わりに伝わりますが、ファイル名は何が写っているかを言いません。画像を貼った道具が名前を入れたまま残ったものがほとんどです。代替テキストが空の画像は image-alt-text が指します。
+  en: An image whose alt text is its file's name ("![IMG_1234.png](IMG_1234.png)", "![Screenshot 2026-04-01](a.png)"). When the image does not load, or a screen reader reads the page, the alt text is all that stands in for it, and a file name says nothing about what it shows. It is usually the name a tool put in when the image was pasted. An empty alt text is image-alt-text's.
+
+message:
+  ja: 画像の代替テキスト「{alt}」はファイルの名前です
+  en: 'The image alt text "{alt}" is a file name'
+
+how_to_fix:
+  ja: 画像が伝えることを一言で書いてください（![4月の売上の推移](IMG_1234.png)）。
+  en: Write what the image shows in a few words ("![Sales by month, April](IMG_1234.png)").
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 「![IMG_1234.png](…)」のように、代替テキストがファイル名のままの画像
+  en: An image whose alt text is a file name, as in "![IMG_1234.png](…)"
+example:
+  ja:
+    before: |
+      四月から六月の売上です。
+
+      ![IMG_2041.png](IMG_2041.png)
+    after: |
+      四月から六月の売上です。
+
+      ![四月から六月の売上の推移](IMG_2041.png)
+  en:
+    before: |
+      Sales from April to June.
+
+      ![IMG_2041.png](IMG_2041.png)
+    after: |
+      Sales from April to June.
+
+      ![Sales from April to June](IMG_2041.png)
+
+not_flagged:
+  ja: 画像の拡張子で終わらず、カメラや画面の撮影が付ける名前でもない代替テキスト（![構成図](diagram.png)）は指しません。名前の始まりは言語の語彙表 image-file-name が言います。引用（>）とコードの中の画像も見ません。
+  en: Alt text that does not end in an image extension and does not start with a name a camera or screenshot tool gives ("![Architecture](diagram.png)") is not reported. The names are in the language's image-file-name lexicon. Images in quotations (>) and code are not read.
+rewrite:
+  ja:
+    direction: 代替テキストを、画像が伝えることを言う短い言葉に変えてください。画像のファイル名（パス）は変えません。何が写っているかが文から分からなければ、推し量らずに書き手に確かめます。
+    pairs:
+      - before: "![IMG_2041.png](sales-q2.png)"
+        after: "![四月から六月の売上の推移](sales-q2.png)"
+      - before: "![スクリーンショット 2026-04-01 10.12.03](settings.png)"
+        after: "![設定画面の通知の欄](settings.png)"
+    keep:
+      - 画像のパス
+      - 前後の文
+    avoid:
+      - 「画像」「図」「スクリーンショット」だけの言葉にする
+      - 写っていないものを推し量って書く
+  en:
+    direction: Replace the alt text with a few words that say what the image shows. Keep the image's path. If the text does not say what it shows, ask the writer rather than guess.
+    pairs:
+      - before: "![IMG_2041.png](sales-q2.png)"
+        after: "![Sales from April to June](sales-q2.png)"
+      - before: "![Screenshot 2026-04-01 at 10.12.03](settings.png)"
+        after: "![The notification options on the settings screen](settings.png)"
+    keep:
+      - the image's path
+      - the sentences around it
+    avoid:
+      - '"image", "picture" or "screenshot" as the whole alt text'
+      - describing what the image may not show

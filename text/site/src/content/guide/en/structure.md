@@ -16,11 +16,12 @@ The same tree checks whether the passages an AI quotes are really in the source.
 
 On a contract it prints:
 
+<!-- chaff-screen: full -->
 ```
 $ npx chaffjs tree contract.txt
 (doc :language "en" :path "contract.txt" :line 1
-  (definition :term "the Client" :line 3)
-  (definition :term "the Supplier" :line 3)
+  (definition :placement "inline" :term "the Client" :line 3)
+  (definition :placement "inline" :term "the Supplier" :line 3)
   (article "1" :heading "Purpose" :label "Section 1" :line 5
     (reference :label "Section 3" :numbering "section" :target "3" :line 6))
   (article "2" :heading "Definitions" :label "Section 2" :line 8
@@ -113,7 +114,7 @@ contract.txt   blog/tech · English   genre from the default
   11:66   error   "Section 9" (address 9) is not in this document
                   dangling-reference
 
-4 findings, 36 rules not run
+{counts}
 ```
 
 The line under the first one suggests checking it as a contract.
@@ -185,7 +186,7 @@ draft.txt   blog/tech · English   genre from the default
   16:1    info    This paragraph runs 8 sentences (limit 5)
                   max-paragraph-length
 
-6 findings, 36 rules not run
+{counts}
 ```
 
 The two `error` lines come from the two changes.
@@ -213,7 +214,7 @@ fixed.txt   blog/tech · English   genre from the default
   17:1    info    This paragraph runs 8 sentences (limit 5)
                   max-paragraph-length
 
-5 findings, 36 rules not run
+{counts}
 ```
 
 An Act in force should have no such breaks.
@@ -243,6 +244,7 @@ The quotations are a JSON array of pairs: an address (`address`) and the quoted 
 Spaces and line breaks are ignored, and characters are compared after NFKC normalisation.
 So a quotation that differs only in spacing, or in full-width digits, still matches.
 
+<!-- chaff-screen: cite-match -->
 ```
 $ npx chaffjs cite contract.txt claims.json
 ✓ 4.2 "within 30 days of accepting": matches
@@ -251,6 +253,7 @@ $ npx chaffjs cite contract.txt claims.json
 A quotation with a changed number, or one taken from somewhere else, fails.
 When it is somewhere else, you are told the real address.
 
+<!-- chaff-screen: cite-miss -->
 ```
 $ npx chaffjs cite contract.txt claims.json
 ✗ 4.2 "within 60 days of accepting": the quotation is nowhere in the source

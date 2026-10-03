@@ -44,7 +44,7 @@ What it does not do is decided too.
 If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The release below was saved as `release.md`. The company and the app are made up.
 
-```markdown
+```markdown file=release.md
 # Minato Trading launches Yoyakun, a meeting room booking app, in November
 
 October 15, 2026
@@ -109,7 +109,7 @@ release.md   business/press-release · English   genre from --genre
   39:12   error   The total $360 is not the sum of the amounts above it ($350)
                   total-mismatch
 
-5 findings, 32 rules not run
+{counts}
 ```
 
 `error` means the figures disagree, so one of them is certainly wrong.

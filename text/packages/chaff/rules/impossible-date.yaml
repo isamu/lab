@@ -1,0 +1,78 @@
+id: impossible-date
+layer: L3
+status: stable
+how_to_find: impossible-date
+severity: error
+
+name:
+  ja: 暦に無い日付
+  en: A date the calendar does not have
+
+why:
+  ja: 「2月30日」「4月31日」「2023年2月29日」のような日付は暦にありません。読み手は前の日か次の日か、月の書き違いかを確かめに行くことになり、予定や期限なら誰かが間違った日に動きます。月末を「31日」と決め打ちしたときや、うるう年の予定を使い回したときに起きます。月の長さとうるう年は暦で決まるので、機械で言えます。
+  en: A date such as "February 30", "April 31" or "2023-02-29" is not on the calendar. The reader has to find out whether the day before, the day after or another month was meant, and for a deadline someone acts on the wrong day. It happens when the end of a month is taken to be the 31st, or a leap-year schedule is reused. Month lengths and leap years are fixed by the calendar, so a machine can tell.
+
+message:
+  ja: 「{written}」は暦にありません（{month}月は{days}日まで）
+  en: '"{written}" is not on the calendar (that month has {days} days)'
+
+messages:
+  day:
+    ja: 「{written}」は暦にありません（{month}月は{days}日まで）
+    en: '"{written}" is not on the calendar (that month has {days} days)'
+  leap:
+    ja: 「{written}」は暦にありません（その年はうるう年でなく、2月は{days}日まで）
+    en: '"{written}" is not on the calendar (that year is not a leap year, so February has {days} days)'
+  month:
+    ja: 「{written}」は暦にありません（月は1から12まで）
+    en: '"{written}" is not on the calendar (months run from 1 to 12)'
+
+how_to_fix:
+  ja: 正しい日付を確かめて直してください。月末のつもりなら、その月の最後の日（4月30日、2月28日）を書きます。
+  en: Check the date that was meant and correct it. For the end of a month, write that month's last day (30 April, 28 February).
+
+levels: { normal: error, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「2月30日」「4月31日」「2023年2月29日」のように、暦に無い日付
+  en: A date the calendar does not have, such as "February 30", "April 31" or "2023-02-29"
+example:
+  ja:
+    before: 申込みの締切は 4月31日 です。
+    after: 申込みの締切は 4月30日 です。
+  en:
+    before: Applications close on April 31.
+    after: Applications close on April 30.
+
+not_flagged:
+  ja: 元号の年（令和5年）と年を書いていない日付は、うるう年を決められないので 2月29日を言いません。2026-13-45 や 2026/10/45 のような数字だけの並びは、番号や版のこともあるので、月が 1〜12、日が 31 までのときだけ月の長さと比べます。英語の月の名前の日付も、日が 31 までのときだけ見ます。コードの中は読みません。
+  en: For a year in a Japanese era, and for a date without a year, February 29 is not reported, since the leap year cannot be decided. A bare run of numbers such as 2026-13-45 may be an identifier or a version, so it is compared with the month's length only when the month is 1 to 12 and the day at most 31; a date with a month's name is likewise checked only up to the 31st. Code is not read.
+
+rewrite:
+  ja:
+    direction: 書き手が意図した日を確かめて、暦にある日付に直してください。月末のつもりなら、その月の最後の日を書きます。曜日を添えているなら、曜日も合わせて確かめます。
+    pairs:
+      - before: 締切は 4月31日 です。
+        after: 締切は 4月30日 です。
+      - before: 2023年2月29日に開催します。
+        after: 2023年2月28日に開催します。
+    keep:
+      - 意図した月と、前後の予定の順番
+    avoid:
+      - どの日が正しいか確かめずに、月末の日へ機械的に寄せる
+      - 曜日や「何日後」の数を直さずに残す
+  en:
+    direction: Find out which day was meant and write a date the calendar has. For the end of a month, write that month's last day. When a weekday is written beside it, check that too.
+    pairs:
+      - before: Applications close on April 31.
+        after: Applications close on April 30.
+      - before: The audit runs on 2023-02-29.
+        after: The audit runs on 2023-02-28.
+    keep:
+      - the month meant, and the order of the dates around it
+    avoid:
+      - moving the date to the month's last day without checking which day was meant
+      - leaving a weekday or a "three days later" that no longer matches

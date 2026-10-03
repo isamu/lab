@@ -1,0 +1,58 @@
+id: article-sound
+layer: L2
+status: stable
+how_to_find: article-sound
+word_list: article-sound
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: a と an の取り違え
+  en: '"a" or "an" against the next sound'
+
+why:
+  ja: 英語の「a」と「an」は、次の語の綴りではなく音で決まります（a user、an hour、an MBA）。取り違えると、読み手はそこで引っかかります。綴りと音が食い違う語と、大文字を一字ずつ読むか語として読むか（an MBA、a NASA probe）、どちらでもよい語（a SQL / an SQL）は、言語ごとの語彙表にあります。
+  en: '"A" and "an" follow the sound of the next word, not its spelling ("a user", "an hour", "an MBA"). A slip trips the reader. Words whose spelling and sound disagree, capitals read letter by letter or as a word ("an MBA", "a NASA probe"), and words said both ways ("a SQL", "an SQL") are listed in the lexicon.'
+
+message:
+  ja: 「{matched}」は、次の語の音から「{article}」です
+  en: '"{matched}" takes "{article}" before that sound'
+
+how_to_fix:
+  ja: 次の語の頭の音に合わせて、a か an に直してください。
+  en: Use "an" before a vowel sound and "a" before a consonant sound.
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 英語で、「a apple」「an user」のように、次の語の音に合わない a / an
+  en: '"a" before a vowel sound or "an" before a consonant sound, such as "a apple" or "an user"'
+example:
+  en:
+    before: |
+      We waited a hour for an user to reply.
+    after: |
+      We waited an hour for a user to reply.
+
+not_flagged:
+  ja: 数字の前（a 8-hour day）と、語彙表でどちらでもよいとした語（SQL、historic など）は見ません。大文字の語は語彙表のとおりに読み、載っていなければ、三字までか母音の無いもの（MBA、NTSB）だけを一字ずつ読むものとして見ます。それより長く母音のあるもの（SALT）は語として読むかもしれないので見ません。小説と話し言葉では既定で止めています。
+  en: Not before digits ("a 8-hour day"), nor before words the lexicon says are said both ways (SQL, historic). Capitals are read as the lexicon says; unlisted ones are read letter by letter only when short or without a vowel (MBA, NTSB), since longer ones (SALT) may be said as a word. The fiction and speech presets turn it off.
+level_meaning:
+  ja: "{limit} 箇所あれば指摘"
+  en: reported once there are {limit}
+rewrite:
+  en:
+    direction: Change only the article, to "an" before a vowel sound and "a" before a consonant sound.
+    pairs:
+      - before: We waited a hour.
+        after: We waited an hour.
+      - before: Send it to an user in the team.
+        after: Send it to a user in the team.
+    keep:
+      - every other word
+    avoid:
+      - changing the noun to fit the article

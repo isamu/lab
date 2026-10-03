@@ -6,6 +6,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 ## コマンドの一覧
 
 `npx chaffjs --help` で出る一覧を、表にまとめました。
+`npx chaffjs init --help` のようにコマンドの後に `--help` を付けると、そのコマンドの行だけを出し、何も実行しません。
 
 | コマンド | 何が起きるか |
 | --- | --- |
@@ -18,6 +19,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs rules` | ルールの一覧を、グループごとに表で出します。いまの段階もわかります |
 | `npx chaffjs rules --json` | いまの設定とルールの説明を JSON で出します。AI に渡す用です |
 | `npx chaffjs relax\|strict\|off <rule>` | ルールの強さを変えます。`--why "理由"` を添えます |
+| `npx chaffjs enable <rule>` | 試験中のルールを 1 つだけ動かします（`chaff.yaml` に `<rule>: normal` と書きます）。[設定](./configuration#試験中のルールを-1-つだけ動かす) を見てください |
 | `npx chaffjs baseline <dir>` | いまある指摘を棚上げします |
 | `npx chaffjs suppressions <dir>` | `stet` で黙らせている指摘を数えます |
 | `npx chaffjs tree <file>` | 文書を番地の付いた木にします |
@@ -26,6 +28,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs facts <file>` | `compare` が照合する事実を、書き直す前の控えとして一覧にします |
 | `npx chaffjs outline <file> [<後>]` | 見出しの構成を出し、形（見出しの数・節の平均の長さ・箇条書きの割合・太字）を測り、構成を人の記事と比べます。2 つなら前と後を並べます |
 | `npx chaffjs fix-plan <file>` | 書き直す人や AI に渡す「直す計画」を出します。指摘をルールごとにまとめ、直す方向と、直したあとの確かめのコマンドを付けます |
+| `npx chaffjs grade <items.jsonl>` | model の出力を JSONL のまま採点します（指摘の率・事実・引用・合否）。何も送りません |
 | `npx chaffjs skill` | Claude Code の skill を入れます。`--global` を付けると `~/.claude/` に入れます |
 | `npx chaffjs feedback <file> --rule <rule>` | 誤った指摘や見逃しの報告の下書きを作ります。何も送りません |
 | `npx chaffjs test <file\|dir>...` | 意味を読む検査も動かします。API key が要ります |
@@ -41,8 +44,10 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `--genre <ジャンル>` | この回だけジャンルを決めます。`chaff.yaml` より優先します |
 | `--show-baseline` | 棚上げした分も含めて全部見ます |
 | `--sarif <path>` | 指摘を SARIF で書き出します。GitHub の PR の行に出すためです |
+| `--dry-run` | `test` と一緒に使い、AI に送るものを見せるだけにします。API は呼びません |
+| `--include <glob>` | フォルダの中の Markdown のほかに、glob に合うファイルも検査します（`--include "*.yaml"`）。[設定](./configuration) を見てください |
 
-`tree` と `cite` は [構造と引用](./structure) で、`--sarif` は [CI](./ci) で詳しく説明します。
+`tree` と `cite` は [構造と引用](./structure) で、`--sarif` は [CI](./ci) で、`grade` は [AI の評価（AI evals）に使う](./ai-evals) で詳しく説明します。
 
 ## 1 行ずつ短く見る
 
@@ -57,7 +62,7 @@ sample.md   blog/tech · 日本語   ジャンルは既定から
   3:1     info    一文に節が 8 つつながっています（5 つまで）
                   clause-chain
 
-指摘 1 件、動いていない rule 19 件
+{counts}
 ```
 
 最後の行は、指摘の数と、動かなかったルールの数です。
@@ -111,11 +116,11 @@ $ npx chaffjs explain max-sentence-length
     relaxed  一文 140 字まで
     off      見ない
 
-  この数字は 既定 のものです。ほかに business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / legal/judgment / academic で別の数字を持っています。
+  この数字は 既定 のものです。ほかに technical / blog / blog/essay / business / business/email / docs / legal / legal/statute / legal/judgment / academic で別の数字を持っています。
 
   いまは normal です。
 
-  変える:  npx chaff relax max-sentence-length --why "理由"
+  変える:  npx chaffjs relax max-sentence-length --why "理由"
 ```
 
 ## コマンドでルールを変える
@@ -142,6 +147,7 @@ rules:
 既に理由があるルールを変えるときは、`--why` で新しい理由が要ります。
 古い理由が新しい値に残ると、履歴が嘘になるためです。
 
+<!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs off bold-density
 bold-density には既に理由が書かれています:
@@ -218,7 +224,7 @@ $ npx chaffjs baseline docs/
 
   1 ファイルを走査しました。
 
-  1 件の指摘を .chaff-baseline.json に記録しました。
+  0 件の指摘を .chaff-baseline.json に記録しました。
   以後、これらは報告されません。新しく増えたものだけが出ます。
 
   .chaff-baseline.json を commit してください。
@@ -226,17 +232,19 @@ $ npx chaffjs baseline docs/
 
 以後は、棚上げした指摘は出ません。画面の 1 行目に、棚上げした数が出ます。
 
+<!-- chaff-screen: shelved -->
 ```
 $ npx chaffjs docs/ --compact
 
-docs/a.md   technical/readme · 日本語   ジャンルはパスから   棚上げ 1 件
+docs/a.md   technical/readme · 日本語   ジャンルはパスから
 
 
-指摘 0 件、動いていない rule 25 件
+{counts}
 ```
 
 棚上げした分も見たいときは、`--show-baseline` を付けます。
 
+<!-- chaff-screen: shelved -->
 ```
 $ npx chaffjs docs/ --show-baseline --compact
 
@@ -245,7 +253,7 @@ docs/a.md   technical/readme · 日本語   ジャンルはパスから
   3:1     info    「は」で出した主題から述語まで 111 字あります（80 字まで）
                   topic-predicate-distance
 
-指摘 1 件、動いていない rule 25 件
+{counts}
 ```
 
 CI に入れるときの使いかたは、[CI](./ci) で説明します。
@@ -255,6 +263,7 @@ CI に入れるときの使いかたは、[CI](./ci) で説明します。
 `stet` で黙らせた指摘は、`suppressions` で数えられます。
 同じルールを何度も黙らせているなら、ルールを変える道を選ぶ時期です。
 
+<!-- chaff-screen: silenced -->
 ```
 $ npx chaffjs suppressions docs/
 
@@ -263,7 +272,7 @@ $ npx chaffjs suppressions docs/
   bold-density                7 件  ← 設定の見直しを検討してください
       docs/g1.md, docs/g2.md, docs/g3.md ほか 4 ファイル
       理由: 用語集なので太字が多いのは意図的
-      ルールごとゆるめる: npx chaff relax bold-density --why "..."
+      ルールごとゆるめる: npx chaffjs relax bold-density --why "..."
 
   理由が書かれていない抑制: 1 件
       docs/x.md
@@ -380,10 +389,17 @@ URL 1 件
 
 文を滑らかにする書き直しでは、骨組みが元のまま残ることがあります。見出しも、箇条書きも、太字も同じです。`outline` は骨組みを出して測ります。構成を変えたかどうかが、印象ではなく数で分かります。
 見出しを深さで字下げして並べ、それぞれの行と、その節だけの本文の長さを出します。測るのは 4 つです。見出しの数、節の平均の長さ（日本語は字数、英語は語数。本文の無い節は数えません）、本文のうち箇条書きの中にある割合、太字の数です。
-構成の下には、構成の AI らしさを出します。構成の項目（1000 字あたりの見出しの数、1〜2 段落の節、節の長さのばらつき、決まった形の見出し、3 つの小見出しに分けた見出し、はじめに・まとめの見出し、まとめが本文を言い直す割合、3 項目の箇条書き、太字の札で始まる項目、絵文字の付いた見出し、メリットとデメリットの対）を、生成 AI が広まる前の人の記事と比べます。値が人の記事の何割より多い（揃っている）かを書き、9 割を超えた項目には ✗ を付けて、人の記事の中央の値と 9 割の境を添えます。
+構成の下には、構成の AI らしさを出します。構成の項目ごとに、生成 AI が広まる前の人の記事と比べます。
+値が人の記事の何割より多い（揃っている）かを書き、9 割を超えた項目には ✗ を付けて、人の記事での中央値と、9 割の境を添えます。
+
+項目は、1000 字あたりの見出しの数、1〜2 段落の節、節の長さのばらつき、決まった形の見出し、3 つの小見出しに分けた見出しです。
+続いて、はじめに・まとめの見出し、まとめが本文を言い直す割合、3 項目の箇条書きがあります。
+最後に、太字の札で始まる項目、絵文字の付いた見出し、メリットとデメリットの対を比べます。
+
 構成の AI らしさは ✗ の数です。比べた項目の数と一緒に出し、重み付けも隠れた計算もしません。文書が小さくて測れない項目は、測っていない理由と一緒に挙げます。人の記事の分布は `structure-baseline.yaml` にデータとして置いています。
 ファイルを 2 つ渡すと、両方を出し、それぞれの値がどう動いたかを、構成の AI らしさも含めて並べます。
 
+<!-- chaff-screen: rewrite -->
 ```
 $ npx chaffjs outline before.md after.md
 before.md の構成: 見出し 6、節の平均 113 字、箇条書き 17%、太字 8
@@ -453,7 +469,8 @@ npx chaffjs fix-plan article.md --experimental --json    # 同じものを JSON 
 計画は文書の言語で書かれます。最初に、どの書き直しでも守ることと、勧める直し方があります。
 守ることは、事実を変えない・足さない、分からない具体は作らずに書き手に聞く、書き直しは 2 回まで、です。
 直し方は、部分直し、節ごとの書き直し、全面書き直しの 3 つです。
-続いて文書全体の目印と構成の数、構成の目標（構成の AI らしさと、人の記事の 9 割を超えた項目ごとの目標。全面書き直しを勧める理由にもなります）、指摘のあったルールごとに、直す方向、変えないもの、やりがちな間違い、直す前と後の例、見つけた箇所が並びます。
+続いて、文書全体の目印と構成の数、構成の目標が並びます。構成の目標は、構成の AI らしさと、人の記事の 9 割を超えた項目ごとの目標です。全面書き直しを勧める理由にもなります。
+そのあとに、指摘のあったルールごとに、直す方向、変えないもの、やりがちな間違い、直す前と後の例、見つけた箇所が並びます。
 最後に、書き直した文書にかける `chaff`・`compare`・`outline` のコマンドがあります。
 同じ文書なら何度出しても同じ計画になり、どこにも送りません。計画から確かめまでの例は「[AIっぽさを直す](./ai-sounding)」にあります。
 
@@ -484,7 +501,7 @@ npx chaffjs test docs/
 
      この指摘が違うと思ったら:
        この箇所だけ黙らせる    <!-- stet: unsourced-number — 理由 -->
-       ルールごとゆるめる      npx chaff relax unsourced-number
+       ルールごとゆるめる      npx chaffjs relax unsourced-number
 ```
 
 文書全体を AI に渡すことはしません。機械で候補を絞ってから、その箇所だけを読ませます。
