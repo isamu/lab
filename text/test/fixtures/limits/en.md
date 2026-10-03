@@ -58,6 +58,8 @@ The board made a decision last week, and the team will conduct an analysis of th
 
 The plan was very good and very clear, and the team was very busy.
 
+So, the plan holds. So, we ship.
+
 ## 🚀 Before
 
 Bring the key.

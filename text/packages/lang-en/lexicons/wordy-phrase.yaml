@@ -1,0 +1,50 @@
+# Wordy phrases: several words where one or two say the same. Read by wordy-phrase; rewrite is the short form.
+# Only phrases whose short form says the same in every context. "with regard to", "prior to" and "in accordance with"
+# are left out: contracts and statutes use them on purpose. Matched as whole words, case aside.
+id: wordy-phrase
+language: en
+entries:
+  - pattern: in order to
+    rewrite: to
+  - pattern: in order for
+    rewrite: for
+  - pattern: due to the fact that
+    rewrite: because
+  - pattern: owing to the fact that
+    rewrite: because
+  - pattern: in view of the fact that
+    rewrite: because
+  - pattern: in spite of the fact that
+    rewrite: although
+  - pattern: despite the fact that
+    rewrite: although
+  - pattern: at this point in time
+    rewrite: now
+  - pattern: at the present time
+    rewrite: now
+  - pattern: at this moment in time
+    rewrite: now
+  - pattern: in the event that
+    rewrite: if
+  - pattern: in the near future
+    rewrite: soon
+  - pattern: for the purpose of
+    rewrite: to, or for
+  - pattern: on a daily basis
+    rewrite: daily
+  - pattern: on a weekly basis
+    rewrite: weekly
+  - pattern: on a monthly basis
+    rewrite: monthly
+  - pattern: on a regular basis
+    rewrite: regularly
+  - pattern: a large number of
+    rewrite: many
+  - pattern: has the ability to
+    rewrite: can
+  - pattern: have the ability to
+    rewrite: can
+  - pattern: is in a position to
+    rewrite: can
+  - pattern: until such time as
+    rewrite: until

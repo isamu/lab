@@ -59,6 +59,10 @@ groups:
       ai-structure: off
       # Statutes and opinions write "not inconsistent with" on purpose.
       double-negative: off
+      # Drafting writes "in the event that" and "for the purpose of" on purpose.
+      wordy-phrase: off
+      weasel-word: off
+      sentence-initial-so: off
       # Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.
       nominalization: off
       # すなわち and that is, open a definition that restates on purpose.
@@ -216,6 +220,11 @@ groups:
       # Dialect and old usage ("an hospital") are the work's voice, and dialogue leans on "very".
       article-sound: off
       very-adjective: off
+      # A narrator and a character speak as they speak: dialect ("would of"), "So," and hearsay are the voice.
+      homophone-slip: off
+      wordy-phrase: off
+      weasel-word: off
+      sentence-initial-so: off
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
@@ -241,6 +250,10 @@ groups:
       requirement-smell: off
       article-sound: off
       very-adjective: off
+      homophone-slip: off
+      wordy-phrase: off
+      weasel-word: off
+      sentence-initial-so: off
       # A speaker says it again so the room hears it: 要するに, in other words.
       paragraph-restatement: off
       # An address or a transcript is titled by occasion (第221回国会における…演説) and opens as spoken.
