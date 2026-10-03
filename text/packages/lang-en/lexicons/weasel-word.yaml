@@ -1,0 +1,30 @@
+# Weasel words: a claim credited to an unnamed crowd, or to research no one names. Read by weasel-word.
+# "studies show" followed by a citation is still reported: the sentence can name the study instead of leaning on it.
+id: weasel-word
+language: en
+entries:
+  - pattern: many experts say
+  - pattern: many experts believe
+  - pattern: experts agree
+  - pattern: experts say
+  - pattern: experts believe
+  - pattern: it is widely believed
+  - pattern: it is widely known
+  - pattern: it is widely accepted
+  - pattern: it is generally believed
+  - pattern: it is generally accepted
+  - pattern: it is commonly believed
+  - pattern: it is often said
+  - pattern: it is said that
+  - pattern: it has been said
+  - pattern: some people say
+  - pattern: some people believe
+  - pattern: many people believe
+  - pattern: many people say
+  - pattern: most people agree
+  - pattern: studies show
+  - pattern: studies have shown
+  - pattern: research shows
+  - pattern: research has shown
+  - pattern: critics say
+  - pattern: according to some

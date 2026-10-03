@@ -60,24 +60,18 @@ Node.js 24 以上が要ります。`npx chaffjs` は、初めて使うときに 
      ✗ refund: citations.failed 1 > 0
 
    ルールごとの率（1,000 字あたり、指摘のあった出力の数）
-     ai-generated-composite  3.1  1 件
-     ai-tell                 3.1  1 件
-     closing-cliche          6.1  1 件
-     padded-intro            3.1  1 件
+     ai-generated-composite  3.0  1 件
+     ai-tell                 3.0  1 件
+     closing-cliche          6.0  1 件
+     padded-intro            3.0  1 件
 
    事実: 落ちた 3（date 1, number 2）、足された 1（date 1）
    引用: 2 件を照らし、1 件が外れた
 
-   動かなかったもの 12 件
-     adverb-overuse                    3 件の出力  ja 向けの rule ではないため
+   …
      cite                              2 件の出力  citations が無い（chaff は出力から引用を推測しない）
      compare                           2 件の出力  reference が無い（事実は reference と照らす）
-     empty-conclusion                  3 件の出力  意味を読む検査のため（npx chaff test で動きます）
    …
-
-   再現の印: chaffjs 0.18.0, @chaffjs/lang-en 0.16.0, @chaffjs/lang-ja 0.17.0
-     rules sha256:3c19ebcf1dc64d8d6d3129a2489e4938fa14bfd6927e300c2b0919a39de0e26a
-     settings sha256:18f9e63d4e51a582d46a29f30359c872c912fc3f08dfe0545875636e94272347
    ```
 
 3. **結果を読みます。** 次のどれかがあれば、その出力は落ちます。
@@ -127,6 +121,7 @@ grade:
   penalty: 10 # 点の和がこれを超えたら落とす
 ```
 
+<!-- chaff-screen: rubric -->
 ```
 $ npx chaffjs grade prompt-b.jsonl --experimental --compact
 q3	fail	penalty 0	facts.dropped 3 > 0, facts.added 1 > 0
@@ -160,10 +155,10 @@ $ npx chaffjs grade prompt-b.jsonl --experimental --baseline a.results.jsonl
 a.results.jsonl と比べた: 3 件の出力が組になった
 
 ルールごとの率（1,000 字あたり、前 → 後）
-  ai-generated-composite  0.0 → 3.1  (+3.1)  増えた: deploy
-  ai-tell                 0.0 → 3.1  (+3.1)  増えた: deploy
-  closing-cliche          0.0 → 6.1  (+6.1)  増えた: deploy
-  padded-intro            0.0 → 3.1  (+3.1)  増えた: deploy
+  ai-generated-composite  0.0 → 3.0  (+3.0)  増えた: deploy
+  ai-tell                 0.0 → 3.0  (+3.0)  増えた: deploy
+  closing-cliche          0.0 → 6.0  (+6.0)  増えた: deploy
+  padded-intro            0.0 → 3.0  (+3.0)  増えた: deploy
 
 新しく落ちた: q3, refund
 新しく通った: なし
@@ -198,7 +193,7 @@ a.results.jsonl とは比べません: 設定が違います。ルールか設�
 
 元の文書（`source.md`）は、短いサポートの報告です。2 つの model に要約させました。
 
-```markdown
+```markdown file=source.md
 # サポート窓口の四半期報告
 
 今期、サポート窓口は 4,812 件の問い合わせに答えました。
@@ -210,7 +205,7 @@ a.results.jsonl とは比べません: 設定が違います。ルールか設�
 model A の要約（`model-a.md`）は、数をすべて残しました。
 model B の要約（`model-b.md`）は、返信の時間を落とし、日付を違えて書きました。
 
-```markdown
+```markdown file=model-b.md
 # 要点
 
 問い合わせ 4,812 件に答え、最初の返信は大幅に速くなりました。
@@ -257,7 +252,7 @@ i 書き方だけ変わった事実 1 件
 
 原文（`policy.md`）は、条と項のある返金の決まりです。
 
-```markdown
+```markdown file=policy.md
 # 返金の決まり
 
 第1条（対象）
@@ -272,7 +267,7 @@ i 書き方だけ変わった事実 1 件
 回答は 2 か所を引きました。引用は、回答と一緒に JSON で返すよう model に頼みます（`quotes.json`）。
 回答のどの文が引用なのかを、chaff は推測しません。
 
-```json
+```json file=quotes.json
 [
   { "address": "2.1", "quote": "商品が届いた日から 30 日以内" },
   { "address": "2.2", "quote": "送料も全額を返金する。" }
@@ -292,7 +287,7 @@ $ npx chaffjs cite policy.md quotes.json
 
 同じ題「火曜日のデプロイが止まった理由を説明して」に、2 つの prompt で答えさせました。prompt A の答え（`prompt-a.md`）です。
 
-```markdown
+```markdown file=prompt-a.md
 # デプロイが止まった理由
 
 火曜日のデプロイは、データベースの段で止まりました。
@@ -303,7 +298,7 @@ $ npx chaffjs cite policy.md quotes.json
 
 prompt B の答え（`prompt-b.md`）です。
 
-```markdown
+```markdown file=prompt-b.md
 # デプロイが止まった理由
 
 近年、ソフトウェアの世界でデプロイは重要な役割を果たすと言えるでしょう。
@@ -326,7 +321,7 @@ $ npx chaffjs prompt-a.md --experimental --compact
 prompt-a.md   blog/tech · 日本語   ジャンルは既定から
 
 
-指摘 0 件、動いていない rule 19 件
+{counts}
 ```
 
 ```
@@ -345,7 +340,7 @@ prompt-b.md   blog/tech · 日本語   ジャンルは既定から
   12:9    warning 「参考になれば幸いです」で締めています
                   closing-cliche
 
-指摘 5 件、動いていない rule 19 件
+{counts}
 ```
 
 たくさんの題で比べるときは、一つの出力ではなく率を比べます。`chaff grade` がルールごとの率を出し、`--baseline` が 2 つの回を並べます。
@@ -393,7 +388,7 @@ npx chaffjs outline prompt-b.md prompt-b.rewritten.md
 
 model が書いた見積もり（`answer.md`）です。合計が内訳の和と合わず、日付と曜日も合っていません。
 
-```markdown
+```markdown file=answer.md
 # お見積もり
 
 | 項目 | 金額 |
@@ -415,11 +410,11 @@ answer.md   blog/tech · 日本語   ジャンルは既定から
   9:5     error   「2026-10-06」は火曜日です（月曜日と書いてあります）
                   date-weekday-mismatch
 
-指摘 2 件、動いていない rule 19 件
+{counts}
 ```
 
 どちらも `error` なので終了コード 1 で終わり、`chaff grade` もこの出力を落とします。
-これらのルールは試験中です。`--experimental` を付けないと動かず、最後の行がそう言います（`指摘 0 件、動いていない rule 94 件`）。
+これらのルールは試験中です。`--experimental` を付けないと動きません。指摘は 0 件になり、最後の行はこれらを動いていない rule に数えます。
 
 ## 指摘を SARIF で受け取る
 
