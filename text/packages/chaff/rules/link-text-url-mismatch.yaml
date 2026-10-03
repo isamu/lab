@@ -1,6 +1,6 @@
 id: link-text-url-mismatch
 layer: L1
-status: experimental
+status: stable
 how_to_find: link-text-url-mismatch
 requires: [markdown]
 severity: warning
