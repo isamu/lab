@@ -157,13 +157,14 @@ describe("a run marks the finding at the level set", () => {
   });
 
   it("a counting rule keeps its severity at every level", () => {
-    const long = `${"あ".repeat(120)}。`;
+    const long = `${"あ".repeat(300)}。`;
+    const severity = RULES_JA.find((rule) => rule.id === "max-sentence-length")?.severity;
     const at = (level: Settings[string]): Severity[] =>
       runRules(buildDocument("a.md", `# T\n\n${long}\n`, ja), RULES_JA, { "max-sentence-length": level }, true, "business/report")
         .findings.filter((finding) => finding.rule === "max-sentence-length")
         .map((finding) => finding.severity);
-    assert.deepEqual(at("strict"), ["warning"]);
-    assert.deepEqual(at("normal"), ["warning"]);
+    assert.deepEqual(at("strict"), [severity]);
+    assert.deepEqual(at("normal"), [severity]);
   });
 });
 

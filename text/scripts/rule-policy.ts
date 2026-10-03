@@ -50,9 +50,14 @@ export const standingOf = (rule: RuleFacts, measure: RuleMeasure | undefined, ha
   return { kind: worst <= NORMAL_MAX_SHARE && benchPasses(measure) ? "normal" : "info", off };
 };
 
-/** The groups whose preset turns this rule off (genres.yaml with the rule files' off_for). */
-export const handOffGroups = (data: GenreData, rule: string): Set<string> =>
-  new Set(data.groups.filter((group) => group.rules[rule] === "off").map((group) => group.id));
+/**
+ * The groups whose preset turns this rule off by hand (genres.yaml with the rule files' off_for). A measured off is the
+ * measurement's own output, not a reason: counting it would let the previous --apply decide the next one.
+ */
+export const handOffGroups = (data: GenreData, rule: string, marks: readonly MeasuredOff[] = []): Set<string> =>
+  new Set(
+    data.groups.filter((group) => group.rules[rule] === "off" && !marks.some((mark) => mark.group === group.id && mark.rule === rule)).map((group) => group.id),
+  );
 
 const genresOf = (data: GenreData, group: string): string[] => data.genres.map((genre) => genre.id).filter((genre) => genre.split("/")[0] === group);
 

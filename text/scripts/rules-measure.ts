@@ -4,7 +4,8 @@
 // corpus/.cache) with each document's genre. The bench columns come from the committed bench expectations.
 //   --json                 print the measurement as JSON instead of the table
 //   --write                write the corpus part to corpus/rules-measure.json, which test/test_rule_policy.ts holds the rules to
-//   --apply                set each rule's status and severity, and the groups each is measured off for (off_for), from corpus/rules-measure.json
+//   --apply                measure, write corpus/rules-measure.json, and set each rule's status and severity, and the groups each
+//                          is measured off for (off_for), from it: the one step that places a rule that just landed (--from <json> skips the run)
 //   --baseline <dir>       also run every .md in <dir> (never committed) and add a baseline column
 //   --baseline-genre <id>  the genre the baseline is read as (blog/tech when left out)
 //   --from <json>          read a measurement --json printed before instead of running chaff again
@@ -126,10 +127,10 @@ const tableOf = (measurement: Measurement): string[] => {
   return formatMeasureTable(measurement, standings, new Map(rules.map((rule) => [rule.id, rule.status])));
 };
 
-if (process.argv.includes("--apply")) {
-  applyMeasurement(readMeasurement()).forEach((line) => console.log(line));
-} else {
-  const measurement = await measure();
-  if (process.argv.includes("--write")) writeFileSync(MEASURE_FILE, `${JSON.stringify(withoutBaseline(measurement), null, 2)}\n`);
-  console.log(process.argv.includes("--json") ? JSON.stringify(measurement, null, 2) : tableOf(measurement).join("\n"));
-}
+const measurement = await measure();
+const apply = process.argv.includes("--apply");
+// Applied first: a measurement that leaves a rule out throws before any file is written.
+const applied = apply ? applyMeasurement(withoutBaseline(measurement)) : [];
+if (apply || process.argv.includes("--write")) writeFileSync(MEASURE_FILE, `${JSON.stringify(withoutBaseline(measurement), null, 2)}\n`);
+if (apply) applied.forEach((line) => console.log(line));
+else console.log(process.argv.includes("--json") ? JSON.stringify(measurement, null, 2) : tableOf(measurement).join("\n"));

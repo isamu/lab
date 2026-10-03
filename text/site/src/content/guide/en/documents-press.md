@@ -21,7 +21,7 @@ Once a release is out, fixing it means publishing a correction.
 
 ## What chaff checks, and what it does not
 
-These are the main rules for this genre. All are experimental, and run with `--experimental`.
+These are the main rules for this genre. All but the last run with no settings.
 
 | Rule | What it finds |
 | --- | --- |
@@ -30,7 +30,7 @@ These are the main rules for this genre. All are experimental, and run with `--e
 | `total-mismatch` | A total that is not the sum of the amounts above it |
 | `percent-sum-mismatch` | Shares of a whole that do not add up to 100% |
 | `announced-count-mismatch` | A count announced that differs from the list below it |
-| `agentless-passive` | A passive that never says who did it |
+| `agentless-passive` | A passive that never says who did it (off for business documents: it reports on most of those people write; `agentless-passive: normal` in chaff.yaml turns it on) |
 
 What it does not do is decided too.
 
@@ -90,32 +90,11 @@ Before the launch, staff can try the app at a preview event.
 Minato Trading Ltd., Press Office
 ```
 
-With the genre and nothing else, there are no findings: the rules that help a release are all experimental.
-
-```
-$ npx chaffjs release.md --genre business/press-release --compact
-
-release.md   business/press-release · English   genre from --genre
-
-  6:106   error   2026-11-02 is a Monday, not a Tuesday
-                  date-weekday-mismatch
-  14:30   warning The shares add up to 95%, not 100%
-                  percent-sum-mismatch
-  20:13   warning "four features" is announced, but the number of items in the list below is 3
-                  announced-count-mismatch
-  30:10   warning The period "October 26, 2026 – October 19, 2026" ends before it starts
-                  date-range-reversed
-  39:12   error   The total $360 is not the sum of the amounts above it ($350)
-                  total-mismatch
-
-{counts}
-```
-
-Add `--experimental` to run them.
+Run it with the genre.
 `--compact` prints each finding on two lines.
 
 ```
-$ npx chaffjs release.md --genre business/press-release --experimental --compact
+$ npx chaffjs release.md --genre business/press-release --compact
 
 release.md   business/press-release · English   genre from --genre
 
@@ -141,13 +120,13 @@ release.md   business/press-release · English   genre from --genre
 | Line | Finding | What it means | How to fix it |
 | --- | --- | --- | --- |
 | 6 | `date-weekday-mismatch` | November 2, 2026 is a Monday | Fix the weekday. To launch on a Tuesday, make it November 3 |
-| 10 | `agentless-passive` | "how meeting rooms are booked" does not say who books them | Here the passive reads naturally; leave it, or say "how staff book meeting rooms" |
 | 14 | `percent-sum-mismatch` | 45%, 30% and 20% make 95% | Check the survey and fix the wrong figure |
 | 20 | `announced-count-mismatch` | It says "four features", but there are three | Add the missing feature, or say "three" |
 | 30 | `date-range-reversed` | The end date comes before the start date | "October 19, 2026 – October 26, 2026" |
 | 39 | `total-mismatch` | $300 and $50 make $350 | Fix the total, or the amount that is wrong |
 
 For line 6, chaff does not decide whether the date or the weekday is wrong. The writer decides.
+With `agentless-passive: normal` in chaff.yaml, chaff also points at line 10: "how meeting rooms are booked" does not say who books them. Here the passive reads naturally; leave it, or say "how staff book meeting rooms".
 Run chaff again before the release goes out, and check that the findings are gone.
 
 ## Checks that read meaning go to an AI
@@ -167,19 +146,11 @@ Put this `chaff.yaml` in the folder that holds your releases.
 genre: business/press-release
 language: en
 
-rules:
-  date-weekday-mismatch: normal
-  date-range-reversed: normal
-  total-mismatch: normal
-  percent-sum-mismatch: normal
-  announced-count-mismatch: normal
-  required-sections: normal
-
 required_sections:
   - Contact
 ```
 
-With this file in place, `npx chaffjs release.md --compact` alone shows the findings above, except `agentless-passive`.
+With this file in place, `npx chaffjs release.md --compact` alone shows the findings above.
 `required_sections` lists the headings every release needs.
 A release without a "Contact" heading is flagged by `required-sections`.
 

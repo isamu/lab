@@ -23,10 +23,10 @@ chaff は、丁寧にしようとして増える言い回しや、送る前に�
 
 | ルール | 見つけるもの | 動く条件 |
 | --- | --- | --- |
-| `max-sentence-length` | 長すぎる一文（このジャンルでは 70 字まで） | いつも |
-| `sasete-itadaku` | 「させていただく」を使った文の多さ | `--experimental` を付けたとき |
-| `double-keigo` | 二重の敬語 | `--experimental` を付けたとき |
-| `unfilled-placeholder` | 「[担当者名]」のような、埋めていない空欄 | `--experimental` を付けたとき |
+| `max-sentence-length` | 長すぎる一文（このジャンルでは 70 字まで） | いつも（info） |
+| `sasete-itadaku` | 「させていただく」を使った文の多さ | いつも（info） |
+| `double-keigo` | 二重の敬語 | いつも |
+| `unfilled-placeholder` | 「[担当者名]」のような、埋めていない空欄 | いつも |
 | `risk-disclosure` | よいことだけを書き、気をつけることを書いていない文書 | `npx chaffjs test` で AI に読ませたとき |
 
 見ないことも決めてあります。
@@ -71,6 +71,7 @@ chaff は、丁寧にしようとして増える言い回しや、送る前に�
 ```
 
 ジャンルを付けずにかけると、1 行目の「件名：」を見て、メールのジャンルを勧めます。
+`--compact` は、1 件を 2 行にまとめて出す印です。
 
 ```
 $ npx chaffjs mail.md --compact
@@ -92,14 +93,16 @@ mail.md   blog/tech · 日本語   ジャンルは既定から
 {counts}
 ```
 
-勧められたとおり、ジャンルを付けて、試験中のルールも動かします。
-`--compact` は、1 件を 2 行にまとめて出す印です。
+技術ブログとして読んだので、メールの短い一文の上限と、二重の敬語はまだ見ていません。
+勧められたとおり、ジャンルを付けてかけます。
 
 ```
-$ npx chaffjs mail.md --genre business/email --experimental --compact
+$ npx chaffjs mail.md --genre business/email --compact
 
 mail.md   business/email · 日本語   ジャンルは --genre から
 
+  10:1    info    この文は 80 文字あります（70 文字まで）
+                  max-sentence-length
   10:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
                   sasete-itadaku
   12:1    info    「させていただく」が文書内に 4 回あります（3 回まで）
@@ -116,8 +119,8 @@ mail.md   business/email · 日本語   ジャンルは --genre から
 {counts}
 ```
 
-`--experimental` を付けないと、出るのは 10 行目の長い一文だけです。
-残りは試験中のルールで、誤りが出ないかを確かめている最中なので、既定では動きません。
+`info` は、読み飛ばしてもよい情報です。実行を失敗にはしません。
+人の書いた文書にもよく出る指摘なので、この重さにしてあります。
 
 ## 指摘の意味と直しかた
 
@@ -144,15 +147,10 @@ chaff は、この言い回しを使った文を数えています。1 文に 2 
 ```yaml
 genre: business/email
 language: ja
-
-rules:
-  double-keigo: normal
-  sasete-itadaku: normal
-  unfilled-placeholder: normal
 ```
 
 この `chaff.yaml` を置くと、`npx chaffjs mail.md --compact` だけで、上の指摘がすべて出ます。
-メールで役に立つ試験中のルールを、いつも動かす設定です。
+`--genre` を毎回付けなくて済みます。
 
 ## 次に読むページ
 

@@ -64,24 +64,35 @@ export const measuredOffOn = (genre: string): Settings => {
   );
 };
 
-/** Each rule's standing under the measurement, in rule id order. */
-export const standingsOf = (measurement: Measurement, rules: readonly RuleDefinition[], data: GenreData): Map<string, Standing> =>
+/** Each rule's standing under the measurement, in rule id order. marks: the offs --apply wrote, which are not hand offs. */
+export const standingsOf = (
+  measurement: Measurement,
+  rules: readonly RuleDefinition[],
+  data: GenreData,
+  marks: readonly MeasuredOff[] = measuredOffs(rules),
+): Map<string, Standing> =>
   new Map(
     rules
       .toSorted((left, right) => left.id.localeCompare(right.id, "en"))
-      .map((rule) => [rule.id, standingOf(rule, measurement.rules[rule.id], handOffGroups(data, rule.id))] as const),
+      .map((rule) => [rule.id, standingOf(rule, measurement.rules[rule.id], handOffGroups(data, rule.id, marks))] as const),
   );
+
+/** A rule that landed after the last measurement: the policy cannot place it until `yarn rules:measure --apply` runs. */
+const unmeasured = (rule: RuleDefinition, measurement: Measurement): string[] =>
+  rule.layer === "L4" || rule.status === "deprecated" || Object.hasOwn(measurement.rules, rule.id)
+    ? []
+    : [`${rule.id}: not measured yet (yarn rules:measure --apply)`];
 
 /** Every disagreement between the rules as written and the measurement. */
 export const policyProblems = (measurement: Measurement): string[] => {
   const data = genreDataOf(readGenresText());
   const rules = allRules();
   const marks = measuredOffs(rules);
-  const standings = standingsOf(measurement, rules, data);
+  const standings = standingsOf(measurement, rules, data, marks);
   // Each language's definition: a rule may write its severity per language.
   const problems = bothLanguages().flatMap((rule) => {
     const standing = standings.get(rule.id);
-    return standing === undefined ? [] : disagreements(rule, standing, data, marks);
+    return [...unmeasured(rule, measurement), ...(standing === undefined ? [] : disagreements(rule, standing, data, marks))];
   });
   return [...new Set(problems)];
 };
@@ -110,6 +121,8 @@ const rewriteOffs = (rule: string, groups: readonly string[]): void => {
 /** Rewrites the rule files to agree with the measurement, and says what it changed. */
 export const applyMeasurement = (measurement: Measurement): string[] => {
   const rules = allRules();
+  const missing = rules.flatMap((rule) => unmeasured(rule, measurement));
+  if (missing.length > 0) throw new Error(`the measurement leaves rules out; measure again without --from:\n${missing.join("\n")}`);
   const standings = standingsOf(measurement, rules, genreDataOf(readGenresText()));
   const changed = rules.flatMap((rule) => {
     const standing = standings.get(rule.id);

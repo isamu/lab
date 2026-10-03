@@ -28,12 +28,15 @@ how_to_fix:
 
 levels: { strict: 6, normal: 8, relaxed: 12 }
 
+# ビジネス文書、特にお知らせは、組織名や制度名を漢字のまま並べる。既定の上限では group の文書の過半に出たので、測って上げた（spec §21.1）。
+by_genre:
+  business: { strict: 8, normal: 10, relaxed: 14 }
+
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 off_for:
   legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
   literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
   speech/transcript: "A transcript records what was said: its sentences, repeats and register are the speaker's, not the writer's to fix."
-  business: measured by yarn rules:measure
 sources: [shibasaki-tamaoka-2010, lee-2016]
 
 group: readability

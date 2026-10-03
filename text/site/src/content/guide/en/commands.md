@@ -59,14 +59,10 @@ $ npx chaffjs sample.md --compact
 
 sample.md   blog/tech · English   genre from the default
 
-  21:1    warning This sentence runs 31 words (limit 25)
+  3:1     info    This sentence runs 59 words (limit 40)
                   max-sentence-length
-  21:177  warning This sentence runs 27 words (limit 25)
-                  max-sentence-length
-  142:1   warning The first sentence repeats the heading "agentFunctionInfo"
-                  heading-echo
 
-3 findings, 53 rules not run
+1 finding, 28 rules not run
 ```
 
 The last line counts the findings and the rules that did not run.
@@ -90,21 +86,14 @@ The parentheses name the rules that came or went.
 
 ## Running the experimental rules too
 
-Experimental rules do not run by default. `--experimental` runs them too.
+Most rules run with nothing added. An experimental rule is a new one, not yet measured on documents people wrote.
+`--experimental` runs those too.
 
 ```bash
 npx chaffjs report.md --experimental
 ```
 
-An experimental rule joins the defaults only when all three hold:
-
-1. It fired on documents that were really published
-2. Reading its findings, they were judged right
-3. It meets the target of `npx chaffjs eval` (a false-positive rate under 5%)
-
-A rule that has never fired does not join the defaults.
-Working on made-up documents shows it is not broken,
-but that is not evidence it should run for everyone.
+An experimental rule joins the defaults once it is measured on documents people wrote; the numbers decide how it runs (see the [reference](./reference)).
 
 ## Reading what a rule does
 
@@ -128,7 +117,7 @@ $ npx chaffjs explain max-sentence-length
     relaxed  up to 35 words in a sentence
     off      not checked
 
-  These numbers are for the default genre. business/email / business/meeting-notes / business/proposal / business/press-release / blog/essay / blog/owned-media / legal / legal/statute / docs/glossary / academic have numbers of their own.
+  These numbers are for the default genre. technical / blog / blog/essay / business / business/email / docs / legal / legal/statute / docs/glossary / academic have numbers of their own.
 
   Now: normal.
 
@@ -235,7 +224,7 @@ Fixing them all before starting is not realistic, so `baseline` shelves today's 
 $ npx chaffjs baseline docs/
   Checked 1 file.
 
-  Recorded 0 findings in .chaff-baseline.json.
+  Recorded 1 finding in .chaff-baseline.json.
   They will not be reported again; only new ones will.
 
   Commit .chaff-baseline.json.
@@ -247,7 +236,7 @@ From then on the shelved findings are not reported. The first line counts them.
 ```
 $ npx chaffjs docs/ --compact
 
-docs/a.md   technical/readme · English   genre from the path
+docs/a.md   technical/readme · English   genre from the path   1 shelved
 
 
 {counts}
@@ -261,6 +250,8 @@ $ npx chaffjs docs/ --show-baseline --compact
 
 docs/a.md   technical/readme · English   genre from the path
 
+  3:1     info    This sentence runs 43 words (limit 40)
+                  max-sentence-length
 
 {counts}
 ```

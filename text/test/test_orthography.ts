@@ -189,7 +189,7 @@ describe("preferred-term", () => {
 });
 
 describe("latin-spacing", () => {
-  const spacing = (source: string, level: Settings[string] = "normal", adapter = ja): string[] => latinSpacing(adapter, source, "technical/readme", level);
+  const spacing = (source: string, level: Settings[string] = "normal", adapter = ja): string[] => latinSpacing(adapter, source, "business/report", level);
 
   it("says nothing when the document is consistent, either way", () => {
     assert.deepEqual(spacing("# 使い方\n\nAPI を呼び、JSON を受け取り、ID を返す。\n"), []);
@@ -257,7 +257,7 @@ describe("latin-spacing", () => {
 
   it("skips the space after an indented item number in plain text (the sentence starts at the number), and still counts the spaces in its item", () => {
     const spacingOf = (source: string): string[] =>
-      runRules(buildDocument("a.txt", source, ja), loadRules("ja"), { "latin-spacing": "normal" }, false, "technical/readme")
+      runRules(buildDocument("a.txt", source, ja), loadRules("ja"), { "latin-spacing": "normal" }, false, "business/report")
         .findings.filter((finding) => finding.rule === "latin-spacing")
         .map((finding) => `${String(finding.values["kind"])}:${String(finding.values["style"])}`);
     const indent = " ".repeat(2);

@@ -8,6 +8,9 @@ kantei-221-shisei-hoshin  1
 kokkai-217-sangiin-shohisha-7  53
 mext-heatstroke-after-holidays  2
 mhlw-norovirus-qa  1
+ppc-guidelines-tsusoku  2
+saikosai-h18-09-14-bengoshi-chokai  1
+saikosai-h26-09-02-nagano  2
 soumu-kokumin-cyber-phishing  1
 soumu-wp-r06-misinformation  2
 wikipedia-ja-talk-oden  3

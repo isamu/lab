@@ -25,13 +25,13 @@ chaff は、読み手を待たせる書き出しや、生成文によく出る�
 | --- | --- | --- |
 | `padded-intro` | どの記事にも当てはまる書き出し | いつも |
 | `closing-cliche` | 決まり文句の結び | いつも |
-| `announcing-opener` | 「ポイントは、」のような予告で始まる文の重なり | `--experimental` を付けたとき |
-| `contrast-framing` | 「単なる X ではなく」のような対比の重なり | `--experimental` を付けたとき |
-| `colon-lead-in` | コロンで箇条書きへ渡す文の多さ | `--experimental` を付けたとき |
-| `ai-generated-composite` | 生成文の形が、一つの記事に 3 種以上そろったこと | `--experimental` を付けたとき |
-| `announced-count-mismatch` | 予告した数と、箇条書きの数の食い違い | `--experimental` を付けたとき |
-| `broken-link` | 記事の中に無い見出しへのリンク | `--experimental` を付けたとき |
-| `latin-spacing` | 日本語と英数字の間の空白の、付け方の揺れ | `--experimental` を付けたとき |
+| `announcing-opener` | 「ポイントは、」のような予告で始まる文の重なり | いつも（info） |
+| `contrast-framing` | 「単なる X ではなく」のような対比の重なり | いつも（info） |
+| `colon-lead-in` | コロンで箇条書きへ渡す文の多さ | いつも（info） |
+| `ai-generated-composite` | 生成文の形が、一つの記事に 3 種以上そろったこと | いつも |
+| `announced-count-mismatch` | 予告した数と、箇条書きの数の食い違い | いつも |
+| `broken-link` | 記事の中に無い見出しへのリンク | いつも |
+| `latin-spacing` | 日本語と英数字の間の空白の、付け方の揺れ | いつも（info） |
 | `empty-conclusion` | 中身の無い結び | `npx chaffjs test` で AI に読ませたとき |
 
 見ないことも決めてあります。
@@ -88,7 +88,7 @@ CI でのビルドに、毎回**約 9 分**かかっていました。
 いかがでしたでしょうか。この記事が皆さんのお役に立てれば幸いです。
 ```
 
-まず、何も付けずにかけます。`--compact` は、1 件を 2 行にまとめて出す印です。
+ジャンルを付けてかけます。`--compact` は、1 件を 2 行にまとめて出す印です。
 
 ```
 $ npx chaffjs kiji.md --genre blog/tech --compact
@@ -131,52 +131,8 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
 {counts}
 ```
 
-書き出しと結びの 3 件です。生成文の形は、試験中のルールが見ます。
-`--experimental` を付けて、もう一度かけます。
-
-```
-$ npx chaffjs kiji.md --genre blog/tech --experimental --compact
-
-kiji.md   blog/tech · 日本語   ジャンルは --genre から
-
-  1:39    info    節の長さのばらつきが 25% しかありません（35% 以上ほしい）
-                  section-length-uniformity
-  3:1     warning 「近年」は、どの記事にも当てはまる書き出しです
-                  padded-intro
-  9:1     info    「単なる」など、対比の枠が 1000 字あたり 3.8 個あります（1.5 個まで）
-                  contrast-framing
-  11:1    info    「正直に言うと」など、予告で始まる文が 3 個あります（3 個から）
-                  announcing-opener
-  11:1    warning 「section-length-uniformity、padded-intro、closing-cliche、contrast-framing、announcing-opener、colon-lead-in」が同じ文書にそろっています（6 種、3 種から）
-                  ai-generated-composite
-  15:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
-                  announcing-opener
-  17:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 3.8 個あります（2 個まで）
-                  colon-lead-in
-  20:12   info    日本語と後ろの数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
-                  latin-spacing
-  20:13   info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
-                  latin-spacing
-  23:1    info    「重要なのは」など、予告で始まる文が 3 個あります（3 個から）
-                  announcing-opener
-  27:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 3.8 個あります（2 個まで）
-                  colon-lead-in
-  27:11   warning 「2 つ」と予告していますが、すぐ下の箇条書きは3項目です
-                  announced-count-mismatch
-  33:46   warning リンク「[ビルド時間の記録](#ビルド時間の記録)」が指す「#ビルド時間の記録」の見出しがこの文書にありません
-                  broken-link
-  37:22   info    「だけでなく」など、対比の枠が 1000 字あたり 3.8 個あります（1.5 個まで）
-                  contrast-framing
-  39:1    warning 「いかがでしたでしょうか」で締めています
-                  closing-cliche
-  39:13   warning 「お役に立てれば幸いです」で締めています
-                  closing-cliche
-
-{counts}
-```
-
 行の頭の `3:1` は、3 行目の 1 字目という意味です。
-`warning` は直したほうがよい所、`info` は読み返す目印です。
+`warning` は直したほうがよい所、`info` は読み返す目印です。`info` は実行を失敗にしません。
 
 ## 指摘の意味と直しかた
 
@@ -193,8 +149,6 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
 | 1 | `section-length-uniformity` | 節の長さが揃いすぎています | 中身の多い節を厚くします。長さを合わせるために文を足しません |
 | 11 | `ai-generated-composite` | 上の形が、一つの記事にいくつもそろいました | 部分直しで足りなければ、記事を書き直します（下の節） |
 
-`--experimental` を付けたときに出るのは、まだ試験中のルールです。
-誤りが出ないかを確かめている最中なので、既定では動きません。
 「一日に何十分も溶かしていました」「静かに遅くなっていました」のような比喩も生成文に多い形です。
 この記事では、chaff はこれを指摘していません。機械は、書き癖をすべて見つけるわけではありません。
 
@@ -247,24 +201,14 @@ kiji.md   全 24 文のうち 1 箇所を送ります（API は呼んでいま�
 ## chaff.yaml の始め方
 
 技術記事を置くフォルダに、次の `chaff.yaml` を置きます。
-上で `--experimental` を付けて出た試験中のルールのうち、技術記事で役に立つものを、いつも動かす設定です。
 
 ```yaml
 genre: blog/tech
 language: ja
-
-rules:
-  ai-generated-composite: normal
-  announcing-opener: normal
-  contrast-framing: normal
-  colon-lead-in: normal
-  announced-count-mismatch: normal
-  broken-link: normal
-  latin-spacing: normal
 ```
 
 この `chaff.yaml` を置くと、`npx chaffjs kiji.md --compact` だけで、上の指摘が出ます。
-`section-length-uniformity` だけは入れていないので出ず、`ai-generated-composite` が数える形からも外れます。
+読み返す目印（`info`）が要らないルールは、`rules:` に `off` と書いて止めます（`section-length-uniformity: off` など）。
 チームで書き方を決めたら、[チームの表記ルールを決める](./house-style) を読んで書き足します。
 
 ## 次に読むページ

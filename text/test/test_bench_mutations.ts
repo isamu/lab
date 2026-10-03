@@ -7,7 +7,6 @@ import {
   defineTwice,
   dropGloss,
   dropItem,
-  joinSentences,
   nestNo,
   nextNumber,
   plainInPolite,
@@ -17,6 +16,7 @@ import {
   swapDatedRows,
 } from "../scripts/bench-mutations.ts";
 import { spaceLatin } from "../scripts/bench-mutations-orthography.ts";
+import { joinSentences } from "../scripts/bench-mutations-sentences.ts";
 import { isPoliteDocument, type Plant, type PlantContext } from "../scripts/bench-text.ts";
 
 // yarn bench の植える誤り。どの行に何を植えたかを、短い自作の文書で固定する。
@@ -127,6 +127,20 @@ describe("joinSentences", () => {
   it("つないだ長さが上限ちょうどなら植えず、一語でも超えれば植える", () => {
     assert.equal(joinSentences(`${eleven} ${fifteen}`, { limits: { "max-sentence-length": 26 } }), undefined);
     assert.equal(joinSentences(`${eleven} ${fifteen}`, { limits: { "max-sentence-length": 25 } })?.line, 1);
+  });
+
+  it("二文では届かなければ三文、四文とつなぐ。二文で超える組があれば三文はつながない", () => {
+    const three = joinSentences(`${eleven} ${eleven} ${eleven}`, LIMITS);
+    assert.deepEqual(at(three), [
+      1,
+      `One two three four five six seven eight nine ten eleven, and one two three four five six seven eight nine ten eleven, and ${eleven.toLowerCase()}`,
+    ]);
+    const pair = joinSentences(`${eleven} ${eleven} ${eleven} ${fifteen}`, LIMITS);
+    assert.deepEqual(at(pair), [
+      1,
+      `${eleven} ${eleven} ${eleven.replace(/\.$/u, ",")} and the plan covers one two three four five six seven eight nine ten eleven twelve.`,
+    ]);
+    assert.equal(joinSentences(`${eleven} ${eleven}`, { limits: { "max-sentence-length": 40 } }), undefined);
   });
 
   it("つないでも上限に届かなければ植えない。見出しと表の行はつながない", () => {

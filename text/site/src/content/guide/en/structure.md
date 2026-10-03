@@ -82,7 +82,7 @@ These rules read the tree.
 | `numbering-gap` | A number skipped or repeated (Section 5 after Section 3, two subsections (2)) |
 | `duplicate-definition` | The same term defined twice |
 
-All three are experimental, so add `--experimental` or turn them on in `chaff.yaml`.
+All three run with no settings.
 This is a short contract, `contract.txt`, after some sections were deleted.
 
 ```
@@ -100,7 +100,7 @@ The Client may terminate this Agreement if the Supplier breaches Section 9.
 ```
 
 ```
-$ npx chaffjs contract.txt --experimental --compact
+$ npx chaffjs contract.txt --compact
 
 contract.txt   blog/tech · English   genre from the default
    Looks like: Contract and terms. Try --genre legal/contract
@@ -118,7 +118,7 @@ contract.txt   blog/tech · English   genre from the default
 ```
 
 The line under the first one suggests checking it as a contract.
-`legal/contract` turns these three rules on, so `npx chaffjs contract.txt --genre legal/contract` reports the same four without `--experimental`.
+`npx chaffjs contract.txt --genre legal/contract` reports the same four.
 
 A reference into another document, such as "section 9 of the Companies Act 2006", is not looked up here.
 Numbers are compared only among siblings under the same parent.
@@ -166,15 +166,21 @@ Section 32 Determination of preliminary point of jurisdiction.
 (6) The decision of the court on the question of jurisdiction shall be treated as a judgment of the court for the purposes of an appeal.
 ```
 
-The structure rules are experimental, so run with `--experimental`.
+Run it with nothing added.
 
 ```
-$ npx chaffjs draft.txt --experimental --compact
+$ npx chaffjs draft.txt --compact
 
 draft.txt   blog/tech · English   genre from the default
 
+  2:1     info    This sentence runs 51 words (limit 40)
+                  max-sentence-length
+  9:1     info    This sentence runs 51 words (limit 40)
+                  max-sentence-length
   10:1    error   "(3)" follows "(1)" (expected number 2)
                   numbering-gap
+  11:1    info    This sentence runs 48 words (limit 40)
+                  max-sentence-length
   14:136  error   "section 35" (address 35) is not in this document
                   dangling-reference
   16:1    info    This paragraph runs 8 sentences (limit 5)
@@ -185,21 +191,26 @@ draft.txt   blog/tech · English   genre from the default
 
 The two `error` lines come from the two changes.
 Line 10 is the skipped subsection, and line 14 is the reference to a section that is not there.
-The `warning` lines are about readability; long sentences are normal in legislation.
+The `info` lines mark places to reread for readability; long sentences are normal in legislation.
 To check only the structure of an Act, read the `error` lines.
 
 Run it as a statute, with `--genre legal/statute`, and the limits are a statute's: only the two `error` lines are left.
-`legal/statute` turns on the same structure rules as `legal/contract`, so `--experimental` is not needed.
 
 Undo the two changes and run `fixed.txt`: the `error` lines are gone.
 
 ```
-$ npx chaffjs fixed.txt --experimental --compact
+$ npx chaffjs fixed.txt --compact
 
 fixed.txt   blog/tech · English   genre from the default
 
+  2:1     info    This sentence runs 51 words (limit 40)
+                  max-sentence-length
   8:1     info    This paragraph runs 6 sentences (limit 5)
                   max-paragraph-length
+  9:1     info    This sentence runs 51 words (limit 40)
+                  max-sentence-length
+  12:1    info    This sentence runs 48 words (limit 40)
+                  max-sentence-length
   17:1    info    This paragraph runs 8 sentences (limit 5)
                   max-paragraph-length
 

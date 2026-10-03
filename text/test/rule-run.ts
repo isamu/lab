@@ -22,9 +22,9 @@ const rulesOf = (language: string): readonly RuleDefinition[] => {
 export const firedRules = (adapter: LanguageAdapter, source: string, genre = "business/report"): string[] =>
   runRules(buildDocument("t.md", source, adapter), rulesOf(adapter.id), measuredOffOn(genre), true, genre).findings.map((finding) => finding.rule);
 
-/** The words undefined-acronym reports in a Markdown source, with the rule at strict and experimental rules on. */
+/** The words undefined-acronym reports in a Markdown source, with a limit of one in every genre and experimental rules on. */
 export const reportedAcronyms = (adapter: LanguageAdapter, source: string, genre = "business/report"): string[] =>
-  runRules(buildDocument("t.md", source, adapter), rulesOf(adapter.id), { "undefined-acronym": "strict" }, true, genre)
+  runRules(buildDocument("t.md", source, adapter), rulesOf(adapter.id), { "undefined-acronym": "strict" }, true, genre, { "undefined-acronym": 1 })
     .findings.filter((finding) => finding.rule === "undefined-acronym")
     .map((finding) => String(finding.values["word"]));
 

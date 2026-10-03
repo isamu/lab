@@ -1939,14 +1939,22 @@ rule を既定で動かすかどうかは、**人の書いた文書で測った�
 - rule のファイルの `off_for` に手で書いた止め（理由を書いたもの）は、測った結果より強い。測って止めた行だけが
   理由に `measured by yarn rules:measure` を持ち、測った結果が変われば外れる。
 - 意味を読む L4 の rule は `chaff test` のもので、ここでは決めない。
+- `# measured` の行は、次に測るときの理由にしない。手で止めた group だけを除いて決める。そうしないと、前の
+  `--apply` が書いた行が次の `--apply` の結果を決め、一度で落ち着かない。
 
-**当てはめ方。** `yarn rules:measure --write` で測り直し、`yarn rules:measure --apply` で rule の `status` と重さ、
-`genres.yaml` の `# measured` の行を書き換える。`test/test_rule_policy.ts` は、どの rule も
-`corpus/rules-measure.json` の言うとおりになっているかを確かめ、食い違えば落ちる。新しい rule は、測るまでは
-`experimental` のままで、測って `--apply` すれば、人が rule ごとに書き換えなくても区分が決まる。
+**止める前に、上限を直す。** 過半に出るのは、多くの場合、その group の書き方に上限が合っていないから。
+数で測る rule（文の長さ、漢字の連なり、略語の数……）は、止める前に `by_genre` に group の上限を置く
+（§9.1。`technical:` のように group の id を書けば、その group のジャンルすべてに効く）。上限は、group の文書の
+過半を十分下回り、植えた誤りを bench がすべて見つける値にする。どの値でも過半を下回らない、または bench の
+誤りを見落とす rule だけを止める。単位を変えてしまう上限（一文に受け身一つを二つにする、など）は直さない。
 
-`chaff eval` は別の道具で、rule の閾値を掃引して、手元の文書に合う値を提案する。ここで決めるのは、
-閾値を変えずに既定で動かすかどうかだけ。
+**当てはめ方。** `yarn rules:measure --apply` 一つで、測り直して `corpus/rules-measure.json` を書き、rule の
+`status` と重さ、`genres.yaml` の `# measured` の行を書き換える（`--write` は書くだけ、`--from <json>` は測らずに
+その結果を使う）。`test/test_rule_policy.ts` は、どの rule も `corpus/rules-measure.json` の言うとおりになっているかを
+確かめ、食い違えば落ちる。まだ測っていない rule（測った後に入った rule）も落ちる。新しい rule は、入れる PR か
+入れた後に `yarn rules:measure --apply` と `yarn corpus --update` を走らせれば、人が rule ごとに書き換えなくても区分が決まる。
+
+`chaff eval` は別の道具で、rule の閾値を掃引して、手元の文書に合う値を提案する。
 
 ## 22. Rule Status と CI
 

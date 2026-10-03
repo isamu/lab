@@ -29,6 +29,9 @@ const REPORT = [
   "",
 ].join("\n");
 
+/** A fixed limit for the long sentence in REPORT: the genre's own limit moves with the measurement (spec §21.1). */
+const LONG_AT = { "max-sentence-length": 25 };
+
 const STATUTE = ["第一条　この法律は、第三条に定めるところによる。", "第二条　前条の規定は、第九条に準用する。", "第三条　同条の規定を適用する。", ""].join(
   "\n",
 );
@@ -83,7 +86,7 @@ describe("buildDocument reads a BOM and CRLF / CR line ends as the plain text", 
   it("the findings of a CRLF document fall on the same lines and columns as the plain text's", () => {
     const rules = loadRules("en");
     const run = (source: string) =>
-      runRules(documentOf("a.md", source, "en", "business/report"), rules, measuredOffOn("business/report"), false, "business/report").findings;
+      runRules(documentOf("a.md", source, "en", "business/report"), rules, measuredOffOn("business/report"), false, "business/report", LONG_AT).findings;
     const plain = run(REPORT);
     assert.ok(plain.length > 0);
     assert.deepEqual(run(crlf(REPORT)), plain);

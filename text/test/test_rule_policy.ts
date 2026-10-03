@@ -1,6 +1,15 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { BENCH_MIN_PRECISION, MIN_DOCUMENTS, NORMAL_MAX_SHARE, OFF_MIN_SHARE, disagreements, standingOf, type Standing } from "../scripts/rule-policy.ts";
+import {
+  BENCH_MIN_PRECISION,
+  MIN_DOCUMENTS,
+  NORMAL_MAX_SHARE,
+  OFF_MIN_SHARE,
+  disagreements,
+  handOffGroups,
+  standingOf,
+  type Standing,
+} from "../scripts/rule-policy.ts";
 import {
   aiBenchRows,
   benchPrecision,
@@ -12,7 +21,7 @@ import {
   type RuleMeasure,
 } from "../scripts/rules-measure-score.ts";
 import { MEASURED, measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "../scripts/rules-apply.ts";
-import { policyProblems, readMeasurement } from "../scripts/rules-measure-files.ts";
+import { applyMeasurement, policyProblems, readMeasurement } from "../scripts/rules-measure-files.ts";
 import { parseGenres } from "../packages/chaff/src/genre-parse.ts";
 import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -84,6 +93,22 @@ const ruleOf = (id: string, status: "experimental" | "stable", severity: "info" 
   if (base === undefined) throw new Error("doubled-word is missing");
   return { ...base, id, status, severity, level_sets: "limit", levels: { strict: 1, normal: 2, relaxed: 3 } };
 };
+
+describe("handOffGroups", () => {
+  it("手で止めた group だけを返す。測って止めた行（# measured）は、次に測るときの理由にしない", () => {
+    assert.deepEqual([...handOffGroups(GENRES, "some-rule")], ["legal"]);
+    assert.deepEqual([...handOffGroups(GENRES, "some-rule", [{ group: "legal", rule: "some-rule" }])], []);
+    assert.deepEqual([...handOffGroups(GENRES, "hand-off", [{ group: "legal", rule: "some-rule" }])], ["legal"]);
+    assert.deepEqual([...handOffGroups(GENRES, "unknown-rule")], []);
+  });
+
+  it("測って止めた group の割合が下がれば、その割合で info かどうかが決まる", () => {
+    const marks = [{ group: "legal", rule: "some-rule" }];
+    const share = measured({ legal: group(8), blog: group(0) });
+    assert.equal(standingOf(RULE, share, handOffGroups(GENRES, "some-rule")).kind, "normal");
+    assert.equal(standingOf(RULE, share, handOffGroups(GENRES, "some-rule", marks)).kind, "info");
+  });
+});
 
 describe("disagreements", () => {
   const info: Standing = { kind: "info", off: [] };
@@ -235,5 +260,12 @@ describe("rules-apply", () => {
 describe("committed measurement", () => {
   it(`every rule's status, severity and genre offs agree with corpus/rules-measure.json (yarn rules:measure --apply)`, () => {
     assert.deepEqual(policyProblems(readMeasurement()), []);
+  });
+
+  it("a rule that landed after the measurement fails until it is measured, so no new rule stays experimental unnoticed", () => {
+    const rest = Object.fromEntries(Object.entries(readMeasurement().rules).filter(([id]) => id !== "doubled-word"));
+    assert.ok(policyProblems({ rules: rest }).includes("doubled-word: not measured yet (yarn rules:measure --apply)"));
+    // Throws before it writes anything, so an incomplete --from cannot place the rule.
+    assert.throws(() => applyMeasurement({ rules: rest }), /doubled-word: not measured yet/u);
   });
 });

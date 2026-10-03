@@ -23,11 +23,11 @@ These are the main rules for this genre.
 
 | Rule | What it finds | When it runs |
 | --- | --- | --- |
-| `max-sentence-length` | A sentence that runs too long (18 words for this genre) | Always |
-| `excessive-hedging` | Hedges stacked until nobody is saying anything | With `--experimental` |
-| `cushion-phrase-density` | Softeners ("just wanted to", "sorry to bother") too dense for the length | With `--experimental` |
-| `date-weekday-mismatch` | A date whose weekday disagrees with the calendar | With `--experimental` |
-| `unfilled-placeholder` | A template blank such as "[Your Name]" | With `--experimental` |
+| `max-sentence-length` | A sentence that runs too long (18 words for this genre) | Always (info) |
+| `excessive-hedging` | Hedges stacked until nobody is saying anything | Always |
+| `cushion-phrase-density` | Softeners ("just wanted to", "sorry to bother") too dense for the length | Always (info) |
+| `date-weekday-mismatch` | A date whose weekday disagrees with the calendar | Always |
+| `unfilled-placeholder` | A template blank such as "[Your Name]" | Always |
 | `risk-disclosure` | A text that gives only the upside and never what to watch for | When an AI reads it, with `npx chaffjs test` |
 
 What it does not do is decided too.
@@ -66,6 +66,7 @@ Sasaki
 ```
 
 Run without a genre, chaff sees "Subject:" on the first line and suggests the email genre.
+`--compact` prints each finding on two lines.
 
 ```
 $ npx chaffjs email.md --compact
@@ -73,6 +74,8 @@ $ npx chaffjs email.md --compact
 email.md   blog/tech · English   genre from the default
    Looks like: Email and letter. Try --genre business/email
 
+  7:1     info    This sentence runs 46 words (limit 40)
+                  max-sentence-length
   7:58    warning This sentence stacks 2 hedges ("might, perhaps")
                   excessive-hedging
   13:11   error   2026-10-10 is a Saturday, not a Friday
@@ -85,11 +88,11 @@ email.md   blog/tech · English   genre from the default
 {counts}
 ```
 
-Add the genre, as suggested, and the experimental rules too.
-`--compact` prints each finding on two lines.
+Read as a tech blog, the sentence limit is a blog's, and the softeners are not counted.
+Add the genre, as suggested.
 
 ```
-$ npx chaffjs email.md --genre business/email --experimental --compact
+$ npx chaffjs email.md --genre business/email --compact
 
 email.md   business/email · English   genre from --genre
 
@@ -99,6 +102,8 @@ email.md   business/email · English   genre from --genre
                   cushion-phrase-density
   7:1     info    "i was wondering if" and other softeners: 26 per 1000 words (limit 5)
                   cushion-phrase-density
+  7:1     info    This sentence runs 46 words (limit 18)
+                  max-sentence-length
   7:58    warning This sentence stacks 2 hedges ("might, perhaps")
                   excessive-hedging
   9:1     info    "sorry to bother" and other softeners: 26 per 1000 words (limit 5)
@@ -113,8 +118,8 @@ email.md   business/email · English   genre from --genre
 {counts}
 ```
 
-Without `--experimental`, only the long sentence on line 7 appears.
-The rest are experimental rules, still being checked for wrong findings, so they do not run by default.
+`info` is information you may skip; it never fails a run.
+These rules report on many emails people write too, so they report at that level.
 
 ## What each finding means
 
@@ -142,16 +147,10 @@ Put this `chaff.yaml` in the folder where you draft emails.
 ```yaml
 genre: business/email
 language: en
-
-rules:
-  excessive-hedging: normal
-  cushion-phrase-density: normal
-  date-weekday-mismatch: normal
-  unfilled-placeholder: normal
 ```
 
-With this file in place, `npx chaffjs email.md --compact` alone shows all the findings above.
-It keeps on the experimental rules that help an email.
+With this file in place, `npx chaffjs email.md --compact` alone shows all the findings above,
+without `--genre` each time.
 
 ## What to read next
 

@@ -27,8 +27,10 @@ const findingsOf = (adapter: LanguageAdapter, source: string, rule: string, name
   ).findings.filter((finding) => finding.rule === rule);
 
 const KANJI = "max-kanji-continuous";
+/** The rule's own normal: business raises it by genre, and these read the detector, not the genre. */
+const KANJI_NORMAL = loadRules("ja").find((rule) => rule.id === KANJI)?.levels.normal;
 const kanjiWords = (source: string, names: readonly string[] = []): string[] =>
-  findingsOf(ja, `# 報告\n\n${source}\n`, KANJI, names).map((finding) => String(finding.values["word"]));
+  findingsOf(ja, `# 報告\n\n${source}\n`, KANJI, names, KANJI_NORMAL).map((finding) => String(finding.values["word"]));
 
 const tmpConfig = (body: string): string => {
   const path = join(mkdtempSync(join(tmpdir(), "chaff-names-")), "chaff.yaml");

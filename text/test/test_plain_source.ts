@@ -49,8 +49,8 @@ const LONG =
 const runIn = async (name: string, body: string, args: readonly string[]): Promise<string> => {
   const dir = mkdtempSync(join(tmpdir(), "chaff-plain-"));
   writeFileSync(join(dir, name), body);
-  // The long-sentence finding these tests place is off by default in every genre group with enough documents (spec §21.1).
-  writeFileSync(join(dir, "chaff.yaml"), "rules:\n  max-sentence-length: normal\n");
+  // A fixed limit: these read where the long-sentence finding lands, not the genre's limit, which the measurement moves (spec §21.1).
+  writeFileSync(join(dir, "chaff.yaml"), "rules:\n  max-sentence-length: 25\n");
   const out: string[] = [];
   const saved = { log: console.log, cwd: process.cwd(), lang: process.env["LANG"] };
   console.log = (...parts: unknown[]) => {
@@ -72,7 +72,7 @@ const runIn = async (name: string, body: string, args: readonly string[]): Promi
 describe("Windows と古い Mac の改行、BOM 付きのファイル", () => {
   it("CR だけの改行でも、指摘は本当の行を指す", async () => {
     const out = await runIn("a.md", `# Notes\r\r${LONG}\r`, ["FILE", "--compact"]);
-    assert.match(out, /^ {2}3:1 +warning/mu);
+    assert.match(out, /^ {2}3:1 +info/mu);
   });
 
   it("BOM 付きでも、引用が文の最後の文字まで届く", async () => {

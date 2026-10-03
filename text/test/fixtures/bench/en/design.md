@@ -11,11 +11,11 @@ The system takes a claim from the employee who paid, sends it to their manager, 
 
 ## 3. Structure
 
-The screens are a single-page application that sends JSON to the server. Claims are stored in a relational database, and receipt images go to object storage.
+The screens are a single-page application that sends JSON to the server. Claims are stored in a relational database, and receipt images are read by OCR and go to object storage.
 
 ### 3.1 Sign-in
 
-Employees log in through the company identity provider over SAML. The approver, the department, and the cost centre of each claimant come from the HR system.
+Employees log in by SSO through the company identity provider over SAML. The approver, the department, and the cost centre of each claimant come from the HR system.
 
 ### 3.2 Data
 

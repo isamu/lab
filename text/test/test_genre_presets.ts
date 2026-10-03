@@ -451,9 +451,9 @@ describe("用語集のジャンル", () => {
 
   it("英語の定義の一文は、ほかの説明書より長くてよい。それでも長すぎる一文は指す", () => {
     const named: Settings = { "max-sentence-length": "normal" };
-    assert.ok(!flagged(runEn(definitionOf(35), "docs/glossary", named), "max-sentence-length"));
-    assert.ok(flagged(runEn(definitionOf(35), "docs/manual", named), "max-sentence-length"));
-    assert.ok(flagged(runEn(definitionOf(45), "docs/glossary", named), "max-sentence-length"));
+    assert.ok(!flagged(runEn(definitionOf(45), "docs/glossary", named), "max-sentence-length"));
+    assert.ok(flagged(runEn(definitionOf(45), "docs/manual", named), "max-sentence-length"));
+    assert.ok(flagged(runEn(definitionOf(55), "docs/glossary", named), "max-sentence-length"));
   });
 
   it("日本語の用語集の文の長さは、説明書と同じ上限（測って変える理由が無かった）", () => {

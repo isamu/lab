@@ -32,7 +32,7 @@ describe("ジャンル別の閾値", () => {
   it("細かいジャンルが粗いジャンルに勝つ", () => {
     const rule = ruleFor("max-sentence-length");
     assert.equal(resolve(rule, "normal", "business/email").limit, 70);
-    assert.equal(resolve(rule, "normal", "business/report").limit, 100);
+    assert.equal(resolve(rule, "normal", "business/report").limit, 140);
   });
 
   it("ジャンルを知らなければ既定の表を使う", () => {
@@ -40,7 +40,7 @@ describe("ジャンル別の閾値", () => {
   });
 
   it("上書きの無いジャンルは既定の表に落ちる", () => {
-    assert.equal(resolve(ruleFor("max-sentence-length"), "normal", "technical/spec").limit, 100);
+    assert.equal(resolve(ruleFor("max-sentence-length"), "normal", "speech/address").limit, 100);
   });
 
   it("上書きを持たない rule はジャンルを渡しても変わらない", () => {
