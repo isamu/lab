@@ -8,7 +8,8 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import type { Finding, LanguageAdapter, NamedDocument, StructurePatterns } from "../packages/chaff/src/plugin.ts";
+import type { Finding, LanguageAdapter, Level, NamedDocument, StructurePatterns } from "../packages/chaff/src/plugin.ts";
+import { asExperimental } from "./rule-run.ts";
 import { citationVocabulary, citedDocument, namedDocument } from "../packages/lang-ja/src/citation.ts";
 import { citedDocumentAfter } from "../packages/lang-en/src/citation.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
@@ -499,8 +500,9 @@ describe("a language whose adapter cannot read structure", () => {
     assert.ok(skipped.every((entry) => entry.why.includes("cannot read a document's structure")));
   });
 
-  it("stays off unless experimental rules are on", () => {
-    const result = runRules(buildDocument("c.txt", "Section 1 Scope\nSee Section 9.", en), loadRules("en"), {}, false, "business/contract");
+  it("stays off while experimental, unless experimental rules are on", () => {
+    const rules = asExperimental(loadRules("en"), STRUCTURE_RULES);
+    const result = runRules(buildDocument("c.txt", "Section 1 Scope\nSee Section 9.", en), rules, {}, false, "business/contract");
     assert.deepEqual(
       result.findings.filter((finding) => STRUCTURE_RULES.includes(finding.rule)),
       [],
@@ -853,7 +855,12 @@ describe("the tree is built only when a structure rule reads it", () => {
 
   it("does not build it when the structure rules are off", () => {
     const { adapter, calls } = counting();
-    runRules(buildDocument("c.txt", "Section 1 Scope\nSee Section 9.", adapter), loadRules("en"), {}, false, "business/contract");
+    const off = Object.fromEntries(
+      loadRules("en")
+        .filter((rule) => rule.requires.some((need) => ["structure", "dates", "quantities"].includes(need)))
+        .map((rule): [string, Level] => [rule.id, "off"]),
+    );
+    runRules(buildDocument("c.txt", "Section 1 Scope\nSee Section 9.", adapter), loadRules("en"), off, false, "business/contract");
     assert.equal(calls(), 0);
   });
 

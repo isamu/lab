@@ -1,6 +1,6 @@
 id: empty-list-item
 layer: L1
-status: experimental
+status: stable
 how_to_find: empty-list-item
 requires: [markdown]
 severity: warning
@@ -57,6 +57,7 @@ not_flagged:
   ja: 見出しの語だけの項目は、同じ箇条書きのほかの項目に「見出し：値」の形が一つも無ければ指しません（記入用の書式）。下に入れ子の箇条書きや段落が続く項目（「手順：」の下に手順を並べたもの）も指しません。Markdown の箇条書きでだけ動きます。
   en: 'A label-only item is not reported when no other item in its list has a "label: value" form (a blank form to fill in). An item followed by a nested list or paragraph (a lead-in) is not reported. Markdown lists only.'
 rewrite:
+  depth: light
   ja:
     direction: 空の項目に入るものを本文から探して書いてください。本文に無ければ作らず、「未定」と書いて書き手に聞きます。中身の無い記号だけの項目は消します。
     pairs:

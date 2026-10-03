@@ -1,6 +1,6 @@
 id: no-em-dash
 layer: L1
-status: experimental
+status: stable
 how_to_find: dash-density
 
 # 記号の許容度は言語で違う。英語では正当な用法が多く、日本語の組版では扱いが難しい。spec §12.4。
@@ -57,6 +57,7 @@ level_meaning:
   ja: 1000 字あたりダッシュ {limit} 個まで
   en: up to {limit} dashes per 1000 words
 rewrite:
+  depth: light
   ja:
     direction: 挟み込みのダッシュは括弧に、言い換えや補足のダッシュは読点に替えるか、二文に分けてください。
     pairs:

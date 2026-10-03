@@ -87,7 +87,8 @@ describe("grade()", () => {
     const quote = "# Quote\n\n| Item | Price |\n| --- | --- |\n| Design | $400 |\n| Build | $1,200 |\n| Total | $1,500 |\n";
     const plain = await grade(quote);
     const experimental = await grade(quote, { experimental: true });
-    assert.deepEqual([plain.pass, experimental.pass], [true, false]);
+    // total-mismatch runs by default since it was measured (spec §21.1), so both fail; the stamp still tells them apart.
+    assert.deepEqual([plain.pass, experimental.pass], [false, false]);
     assert.deepEqual(experimental.failedBecause, ["findings.error 1 > 0"]);
     assert.notEqual(plain.stamp.settings, experimental.stamp.settings);
     const fromConfig = await grade(quote, { config: { ...EMPTY, experimental: true } });

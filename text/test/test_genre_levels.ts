@@ -19,7 +19,8 @@ const ruleFor = (id: string): RuleDefinition => {
 const SENTENCE =
   "先週の会議で決まった方針について、関係する各部署の担当者にあらためて共有しておきたいのですが、来週の定例までに確認をお願いできますでしょうか。";
 
-const idsFor = (genre: string): string[] => runRules(buildDocument("t.md", SENTENCE, ja), RULES, {}, false, genre).findings.map((finding) => finding.rule);
+const idsFor = (genre: string): string[] =>
+  runRules(buildDocument("t.md", SENTENCE, ja), RULES, { "max-sentence-length": "normal" }, false, genre).findings.map((finding) => finding.rule);
 
 describe("ジャンル別の閾値", () => {
   it("同じ文が、ジャンルによって長すぎたり長くなかったりする", () => {

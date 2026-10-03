@@ -1,6 +1,6 @@
 id: title-length
 layer: L1
-status: experimental
+status: stable
 how_to_find: title-length
 requires: [markdown]
 severity: info
@@ -80,6 +80,7 @@ level_meaning:
   ja: 題や見出しが {limit} 文字を超えたら指摘
   en: reported when a title or heading runs past {limit} words
 rewrite:
+  depth: light
   ja:
     direction: 見出しを、その節が何かを言う名前だけに縮めてください。理由・条件・対象・日付は、見出しのすぐ下の最初の文に移します。
     pairs:

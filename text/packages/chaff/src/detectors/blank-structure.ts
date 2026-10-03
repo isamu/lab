@@ -3,7 +3,7 @@
 import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
 import { readMarkdown } from "../markdown-read.ts";
 import { spanOf, type MarkdownNode } from "../markdown-node.ts";
-import { eachPreOrder } from "../tree-walk.ts";
+import { eachPreOrder, foldPostOrder } from "../tree-walk.ts";
 import { quoteAt } from "./structure-tree.ts";
 
 /** Fewer body rows than this, and one blank is as likely a choice as a gap. */
@@ -21,13 +21,21 @@ const EMPHASIS = /[*_]/gu;
 const COMMENT = /^<!--[\s\S]*-->$/u;
 const VISIBLE_LEAVES = new Set(["inlineCode", "image", "imageReference"]);
 
-/** Whether a node shows the reader anything: text that is not blank, code, an image, or HTML that is not a comment. */
-const shows = (node: MarkdownNode): boolean => {
+/** What a leaf shows on its own; undefined for a node whose children decide. */
+const leafShows = (node: MarkdownNode): boolean | undefined => {
   if (node.type === "text") return (node.value ?? "").replace(EMPHASIS, "").trim() !== "";
   if (node.type === "html") return !COMMENT.test((node.value ?? "").trim());
   if (VISIBLE_LEAVES.has(node.type)) return true;
-  return (node.children ?? []).some(shows);
+  return undefined;
 };
+
+/** Whether a node shows the reader anything: text that is not blank, code, an image, or HTML that is not a comment. */
+const shows = (node: MarkdownNode): boolean =>
+  foldPostOrder<MarkdownNode, boolean>(
+    node,
+    (each) => each.children ?? [],
+    (each, children) => leafShows(each) ?? children.some((child) => child),
+  );
 
 const sourceOf = (source: string, node: MarkdownNode | undefined): string => {
   const span = node === undefined ? undefined : spanOf(node);

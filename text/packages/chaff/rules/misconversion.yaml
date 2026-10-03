@@ -1,6 +1,6 @@
 id: misconversion
 layer: L2
-status: experimental
+status: stable
 how_to_find: known-correction
 word_list: misconversion
 uses: [pos]
@@ -48,6 +48,7 @@ not_flagged:
   ja: 前後の語で決まらない取り違えは指しません（「以外と」だけでは「日本以外と比べて」と区別できないので、「以外と簡単」「以外と多い」のように後ろの語まで語彙表に書いたものだけを探します）。語の途中には当てません。
   en: A swap the surrounding words do not settle is not reported (以外と alone also appears in 日本以外と比べて, so only listed phrases such as 以外と簡単 are looked for). A form inside a longer word is not reported.
 rewrite:
+  depth: light
   ja:
     direction: 指された語を正しい字に直してください。直すのは取り違えた語だけで、文の言い回しは変えません。
     pairs:

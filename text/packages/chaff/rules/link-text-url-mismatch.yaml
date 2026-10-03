@@ -1,6 +1,6 @@
 id: link-text-url-mismatch
 layer: L1
-status: experimental
+status: stable
 how_to_find: link-text-url-mismatch
 requires: [markdown]
 severity: warning
@@ -45,6 +45,7 @@ not_flagged:
   ja: 同じサイトの URL を短く見せたもの（[github.com/a](https://github.com/a/b)）、言葉が URL でないリンク、行き先が相対パスやページ内のリンク、参照の形のリンク（[言葉][1]）は指しません。www. の有無と大文字小文字は同じと読みます。
   en: A shortened display of an address on the same site ("[github.com/a](https://github.com/a/b)"), link text that is not an address, relative or in-page targets, and reference-style links ("[text][1]") are not reported. "www." and letter case are ignored.
 rewrite:
+  depth: light
   ja:
     direction: リンクの言葉と行き先のうち、正しいほうにもう一方を合わせてください。どちらが正しいか文から分からなければ、変えずに書き手に確かめます。
     pairs:

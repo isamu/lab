@@ -49,6 +49,8 @@ const LONG =
 const runIn = async (name: string, body: string, args: readonly string[]): Promise<string> => {
   const dir = mkdtempSync(join(tmpdir(), "chaff-plain-"));
   writeFileSync(join(dir, name), body);
+  // The long-sentence finding these tests place is off by default in every genre group with enough documents (spec §21.1).
+  writeFileSync(join(dir, "chaff.yaml"), "rules:\n  max-sentence-length: normal\n");
   const out: string[] = [];
   const saved = { log: console.log, cwd: process.cwd(), lang: process.env["LANG"] };
   console.log = (...parts: unknown[]) => {

@@ -52,6 +52,8 @@ export type Config = {
   readonly customRules?: unknown;
   /** grade as written: the rubric `chaff grade` reads (grade/rubric.ts). */
   readonly grade?: unknown;
+  /** fix_plan as written: the depth chaff fix-plan rewrites to (fix-plan/chosen-depth.ts reads and checks it). */
+  readonly fixPlan?: unknown;
   /** plugins as written: package names and paths. extension/plugin-load.ts reads and checks them. */
   readonly plugins?: unknown;
   /** The code chaff.yaml names, once loaded (extension/load.ts). Reading chaff.yaml does not load it. */
@@ -197,6 +199,7 @@ export const loadConfig = (path: string): Config => {
     style: raw["style"] === undefined || raw["style"] === null ? undefined : (str(raw["style"]) ?? printed(raw["style"])),
     customRules: raw["custom_rules"],
     grade: raw["grade"],
+    fixPlan: raw["fix_plan"],
     plugins: raw["plugins"],
   };
 };

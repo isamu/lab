@@ -1,6 +1,6 @@
 id: empty-table-cell
 layer: L1
-status: experimental
+status: stable
 how_to_find: empty-table-cell
 requires: [markdown]
 severity: warning
@@ -61,6 +61,7 @@ not_flagged:
   ja: 一番左の列は見ません（空欄で「上と同じ」を表す書き方があるため）。同じ列に空欄が二つ以上ある列、本文の行が三つより少ない表、「—」「なし」と書いたセルは指しません。Markdown の表でだけ動きます。
   en: The first column is not checked, since a blank there often means "same as above". A column with two or more blanks, a table with fewer than three body rows, and a cell holding "—" or "none" are not reported. Markdown tables only.
 rewrite:
+  depth: light
   ja:
     direction: 空欄に入るものを本文から探して書いてください。本文に無ければ作らず、「未定」と書いて、決める人か時期を書き手に聞きます。
     pairs:

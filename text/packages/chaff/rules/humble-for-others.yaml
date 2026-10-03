@@ -1,6 +1,6 @@
 id: humble-for-others
 layer: L3
-status: experimental
+status: stable
 how_to_find: phrase-match
 word_list: humble-for-others
 uses: [pos]
@@ -43,6 +43,7 @@ level_meaning:
   ja: 当てはまる形が {limit} 箇所あれば指摘
   en: reported once there are {limit}
 rewrite:
+  depth: light
   ja:
     direction: 読み手や第三者の動作に使った謙譲語を、尊敬語に置き換えてください。頼む形は「お〜ください」「ご〜ください」にします。
     pairs:

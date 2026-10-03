@@ -120,6 +120,8 @@ $ npx chaffjs explain max-sentence-length
 
   How to fix: Split it in two at the conjunction.
 
+  Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
+
   Levels:
     strict   up to 18 words in a sentence
   → normal   up to 25 words in a sentence
@@ -233,7 +235,7 @@ Fixing them all before starting is not realistic, so `baseline` shelves today's 
 $ npx chaffjs baseline docs/
   Checked 1 file.
 
-  Recorded 1 finding in .chaff-baseline.json.
+  Recorded 0 findings in .chaff-baseline.json.
   They will not be reported again; only new ones will.
 
   Commit .chaff-baseline.json.
@@ -245,7 +247,7 @@ From then on the shelved findings are not reported. The first line counts them.
 ```
 $ npx chaffjs docs/ --compact
 
-docs/a.md   technical/readme · English   genre from the path   1 shelved
+docs/a.md   technical/readme · English   genre from the path
 
 
 {counts}
@@ -259,8 +261,6 @@ $ npx chaffjs docs/ --show-baseline --compact
 
 docs/a.md   technical/readme · English   genre from the path
 
-  3:1     warning This sentence runs 43 words (limit 25)
-                  max-sentence-length
 
 {counts}
 ```
@@ -489,13 +489,15 @@ chaff still does not rewrite; the plan says how.
 ```bash
 npx chaffjs fix-plan article.md --experimental           # the plan, as Markdown
 npx chaffjs fix-plan article.md --experimental --json    # the same plan as JSON
+npx chaffjs fix-plan article.md --depth light            # a plan that keeps the structure
 ```
 
 The plan is written in the document's language. It starts with the constraints every rewrite keeps: no fact changed or added, ask the writer instead of inventing, two passes at most.
-Next comes the recommended way to rewrite (Light, Bold or Full) and the document-level signals with the outline's numbers.
+Next comes the recommended way to rewrite (Light, Bold or Full) with its depth, and the document-level signals with the outline's numbers.
 Then come the structure targets: the structure score, and a target for each measure past 90% of human articles. A score at its limit is itself a reason to recommend Full.
 
 For each rule that found something, the plan gives its direction, what to keep, what to avoid, one before-and-after example and the spots.
+`--depth light`, `structure` or `register` (or `fix_plan.depth` in chaff.yaml) sets how deep the rewrite may go; a rule whose direction reaches deeper is listed by name and spot count instead ([the depths](./ai-sounding#setting-the-rewrite-depth)).
 It ends with the `chaff`, `compare` and `outline` commands to run on the rewrite.
 The same file gives the same plan every time, and nothing is sent anywhere.
 The page [Making AI-sounding text sound human](./ai-sounding) has an example that goes from the plan to the checks.

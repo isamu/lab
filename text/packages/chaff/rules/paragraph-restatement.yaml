@@ -1,6 +1,6 @@
 id: paragraph-restatement
 layer: L2
-status: experimental
+status: stable
 how_to_find: paragraph-restatement
 requires: [pos]
 severity: info
@@ -60,6 +60,7 @@ level_meaning:
   ja: 内容語の {limit}% 以上が前の段落の繰り返しのとき指摘
   en: reported when {limit}% or more of the paragraph's content words repeat the paragraph before
 rewrite:
+  depth: structure
   ja:
     direction: 言い直しの段落を消すか、前の段落に無いことを書く段落に変えてください。結論・次にすること・数字のうち、本文にあるものを書きます。「つまり」「このように」で前の段落をなぞるだけの文は残しません。
     pairs:

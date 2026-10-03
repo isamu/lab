@@ -1,6 +1,6 @@
 id: expletive-construction
 layer: L3
-status: experimental
+status: stable
 how_to_find: expletive
 requires: [pos]
 languages: [en]

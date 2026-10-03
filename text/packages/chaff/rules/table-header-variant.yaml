@@ -1,6 +1,6 @@
 id: table-header-variant
 layer: L2
-status: experimental
+status: stable
 how_to_find: table-header-variant
 requires: [markdown]
 severity: info
@@ -76,6 +76,7 @@ level_meaning:
   ja: 少ないほうの書き方が、その見出しの {limit}% 以下のとき指摘
   en: reported when the less common spelling is {limit}% of the header's uses or less
 rewrite:
+  depth: light
   ja:
     direction: 同じ欄の見出しを、文書の中で多いほうの書き方にそろえてください。表の中身と並びは変えません。
     pairs:

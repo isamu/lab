@@ -1,6 +1,6 @@
 id: ra-nuki
 layer: L2
-status: experimental
+status: stable
 how_to_find: ra-nuki
 # 一段動詞かどうかは品詞解析で読む。品詞が無ければ動かない。
 requires: [pos]

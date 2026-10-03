@@ -1,6 +1,6 @@
 id: contraction-consistency
 layer: L2
-status: experimental
+status: stable
 how_to_find: contraction-mix
 word_list: contraction
 languages: [en]

@@ -8,7 +8,7 @@ import type { RegisterCounts } from "./bench-text.ts";
 import { buildDocument, teamRules } from "../packages/chaff/src/document.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules, runRulesWith, type RunResult } from "../packages/chaff/src/run.ts";
+import { runRules, runRulesWith, type RunResult, type Settings } from "../packages/chaff/src/run.ts";
 import { runCrossRules } from "../packages/chaff/src/cross-run.ts";
 import { CROSS_DETECTORS } from "../packages/chaff/src/detectors/index.ts";
 import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
@@ -54,19 +54,22 @@ export const registerCountsOf = (path: string, source: string, language: string,
   return { polite: peers.filter((entry) => entry.register === "polite").length, plain: peers.filter((entry) => entry.register === "plain").length };
 };
 
+/** What a corpus run is given besides the document: the team's words, which rules to run, and the levels chaff.yaml would set. */
+export type RunChoice = { readonly team?: TeamWords; readonly only?: (id: string) => boolean; readonly settings?: Settings };
+
 /** Every rule's run on one document of the given genre, as if --experimental, with the rules it ran. */
 export const allRulesRun = async (
   path: string,
   source: string,
   language: string,
   genre: string,
-  team: TeamWords = EMPTY,
-  only: (id: string) => boolean = () => true,
+  choice: RunChoice = {},
 ): Promise<{ readonly result: RunResult; readonly rules: readonly RuleDefinition[] }> => {
   await adapterOf(language).prepare?.({ pos: true });
+  const { team = EMPTY, only = () => true, settings = {} } = choice;
   const rules = loadRules(language).filter((rule) => only(rule.id));
   return {
-    result: runRules(documentOf(path, source, language, genre, team), rules, {}, true, genre),
+    result: runRules(documentOf(path, source, language, genre, team), rules, settings, true, genre),
     rules,
   };
 };
@@ -84,15 +87,8 @@ export const runAtLevels = async (
   return runRules(documentOf(path, source, language, genre, EMPTY), rules, levels(rules), true, genre);
 };
 
-const findingsWith = async (
-  path: string,
-  source: string,
-  language: string,
-  only: (id: string) => boolean,
-  genre: string,
-  team: TeamWords = EMPTY,
-): Promise<CorpusFinding[]> => {
-  const { result, rules } = await allRulesRun(path, source, language, genre, team, only);
+const findingsWith = async (path: string, source: string, language: string, genre: string, choice: RunChoice): Promise<CorpusFinding[]> => {
+  const { result, rules } = await allRulesRun(path, source, language, genre, choice);
   const byId = new Map(rules.map((rule) => [rule.id, rule]));
   return result.findings.flatMap((finding) => {
     const rule = byId.get(finding.rule);
@@ -102,11 +98,17 @@ const findingsWith = async (
 
 /** The structure rules' findings on one statute, turned on as if --experimental, read as the legal/statute genre (its statute profile). */
 export const structureFindings = async (path: string, source: string, language = "ja"): Promise<CorpusFinding[]> =>
-  findingsWith(path, source, language, (id) => STRUCTURE_RULES.includes(id), "legal/statute");
+  findingsWith(path, source, language, "legal/statute", { only: (id) => STRUCTURE_RULES.includes(id) });
 
-/** Every rule's findings on one document of the given genre, as if --experimental, with the team's words when given. */
-export const allFindings = async (path: string, source: string, language: string, genre: string, team?: TeamWords): Promise<CorpusFinding[]> =>
-  findingsWith(path, source, language, () => true, genre, team);
+/** Every rule's findings on one document of the given genre, as if --experimental, with the team's words and levels when given. */
+export const allFindings = async (
+  path: string,
+  source: string,
+  language: string,
+  genre: string,
+  team?: TeamWords,
+  settings: Settings = {},
+): Promise<CorpusFinding[]> => findingsWith(path, source, language, genre, { ...(team === undefined ? {} : { team }), settings });
 
 /**
  * Every rule's run on the files of one run of the given genre, as if --experimental: each file's own rules, then the

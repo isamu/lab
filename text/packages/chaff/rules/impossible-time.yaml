@@ -1,6 +1,6 @@
 id: impossible-time
 layer: L3
-status: experimental
+status: stable
 how_to_find: impossible-time
 severity: error
 
@@ -49,6 +49,7 @@ not_flagged:
   en: A time past 24 without AM or PM ("25:00") is not reported, since late-night schedules count on past midnight that way. Numbers right after a capitalised word or a punctuation mark ("Genesis 24:67", "Science, 12:75"), scales and ratios such as "1:75", and "pm" after a number above 24 (50 pm is picometres) are not read as times. Code is not read.
 
 rewrite:
+  depth: light
   ja:
     direction: 書き手が意図した時刻を確かめて、時計にある時刻に直してください。午前・午後を付けるなら時は12までで、24時間で書くなら午前・午後を外します。
     pairs:

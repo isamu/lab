@@ -9,6 +9,7 @@ import type { Skipped } from "../packages/chaff/src/run.ts";
 import { applySuppressions } from "../packages/chaff/src/stet.ts";
 import type { Finding } from "../packages/chaff/src/plugin.ts";
 import { runCli } from "./cli-run.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
 
 // #397: a command that looks up a rule's findings says so when the rule did not run, instead of "none".
 
@@ -81,12 +82,16 @@ describe("renderSuppressions: stets on rules that did not run", () => {
 
 describe("chaff feedback and suppressions on an experimental rule (#397)", () => {
   const DOC = "# 試し\n\nこれは最大の理由です。\n\nこれは最高の方法です。\n";
-  const STETTED = `# 試し\n\n<!-- stet: ${EXPERIMENTAL} — 理由 -->\nこれは最大の理由です。\n`;
+  // Most rules run by default since they were measured (spec §21.1); a rule is experimental only until it is.
+  const NOW_EXPERIMENTAL = loadRules("ja").find((rule) => rule.status === "experimental" && rule.layer !== "L4")?.id;
+  const skip = NOW_EXPERIMENTAL === undefined ? "no rule is experimental now (yarn rules:measure)" : false;
+  const stetted = (rule: string): string => `# 試し\n\n<!-- stet: ${rule} — 理由 -->\nこれは最大の理由です。\n`;
 
-  it("feedback without --experimental says the rule is experimental", async () => {
-    const run = await runCli({ "a.md": DOC }, ["feedback", "a.md", "--rule", EXPERIMENTAL, "--line", "3"], "en_US.UTF-8");
+  it("feedback without --experimental says the rule is experimental", { skip }, async () => {
+    const rule = NOW_EXPERIMENTAL ?? "";
+    const run = await runCli({ "a.md": DOC }, ["feedback", "a.md", "--rule", rule, "--line", "3"], "en_US.UTF-8");
     assert.equal(run.code, 1);
-    assert.match(run.err, /unqualified-superlative did not run in this check \(.+\)\.\nIt is experimental: run again with --experimental\./u);
+    assert.match(run.err, new RegExp(`${rule} did not run in this check \\(.+\\)\\.\\nIt is experimental: run again with --experimental\\.`, "u"));
   });
 
   it("feedback does not suggest --experimental for a rule chaff.yaml turned off", async () => {
@@ -109,10 +114,11 @@ describe("chaff feedback and suppressions on an experimental rule (#397)", () =>
     assert.match(readFileSync(join(run.dir, ".chaff-feedback.md"), "utf8"), /^- Run with: --experimental --genre business\/report$/mu);
   });
 
-  it("suppressions without --experimental lists the stet it could not count", async () => {
-    const run = await runCli({ "a.md": STETTED }, ["suppressions", "."], "en_US.UTF-8");
+  it("suppressions without --experimental lists the stet it could not count", { skip }, async () => {
+    const rule = NOW_EXPERIMENTAL ?? "";
+    const run = await runCli({ "a.md": stetted(rule) }, ["suppressions", "."], "en_US.UTF-8");
     assert.match(run.out, /No findings are silenced\./u);
-    const notRunLine = run.out.split("\n").find((line) => line.trimStart().startsWith("unqualified-superlative"));
+    const notRunLine = run.out.split("\n").find((line) => line.trimStart().startsWith(rule));
     assert.ok(notRunLine?.endsWith("   a.md"), notRunLine ?? "no line for the rule");
     assert.match(run.out, /^ {2}Experimental rules are counted with --experimental\.$/mu);
   });

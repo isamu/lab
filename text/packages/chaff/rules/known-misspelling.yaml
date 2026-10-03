@@ -1,6 +1,6 @@
 id: known-misspelling
 layer: L2
-status: experimental
+status: stable
 how_to_find: known-correction
 word_list: known-misspelling
 uses: [pos]
@@ -50,6 +50,7 @@ not_flagged:
   ja: 語彙表にない誤りは指しません。どちらも使われる書き方（コンピュータ／コンピューター、エンターテイメント／エンターテインメント）は誤りとせず、表記ゆれの rule に任せます。語の途中の同じ字の並び（「ですすべて」）と、チームが names に並べた語は指しません。
   en: Misspellings not in the lexicon are not reported. Spellings that are both in use (British and American, judgement and judgment) are left to the consistency rules. A form inside a longer word ("teh" in "Tehran") and words listed under names in chaff.yaml are not reported.
 rewrite:
+  depth: light
   ja:
     direction: 指された語を語彙表の正しい形に直してください。直すのはその語だけで、文の言い回しは変えません。
     pairs:

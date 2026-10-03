@@ -1,9 +1,9 @@
 id: heading-numbering-mix
 layer: L1
-status: experimental
+status: stable
 how_to_find: heading-numbering
 requires: [markdown]
-severity: warning
+severity: info
 
 name:
   ja: 見出しの番号の付け方が揃っていない
@@ -42,7 +42,7 @@ placeholders:
     ja: 〇
     en: N
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
@@ -114,6 +114,7 @@ not_flagged:
   ja: 兄弟が三つ未満の所、少ないほうと多いほうが同じ数の所、深さや親の違う見出しどうし（「1.」の下の「1.1」）は比べません。前後の見出し（目次、参考文献、付録）は兄弟に数えません。見出しの頭の数でも、区切りの記号の無い数（「2026年の計画」「3つの理由」）は番号と読みません。
   en: Fewer than three siblings, a tie between the two sides, and headings at different depths or under different parents ("1." and "1.1") are not compared. Front and back matter (Contents, References, Appendix) is not counted among the siblings. A number at the head of a heading without a separator ("2026 roadmap", "3 reasons") is not read as a heading number.
 rewrite:
+  depth: light
   ja:
     direction: 兄弟の見出しで、多いほうの番号の付け方に揃えてください。番号の無い見出しに番号を足すか、番号の書き方（1. と 1））を一つにします。見出しの言葉は変えません。
     pairs:

@@ -1,6 +1,6 @@
 id: unfilled-placeholder
 layer: L2
-status: experimental
+status: stable
 how_to_find: unfilled-placeholder
 word_list: placeholder-word
 severity: warning

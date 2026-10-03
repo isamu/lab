@@ -67,6 +67,34 @@ describe("a dotted number with its title right after the dot, in a heading", () 
   });
 });
 
+describe("a dotted heading whose title is all inline code", () => {
+  it("English: 「### 1.3 `chaff grade`」 is between 1.2 and 1.4, with no gap", () => {
+    const source = lines(
+      "# Spec",
+      "",
+      "## 1. Grading",
+      "",
+      "### 1.2 Usage",
+      "",
+      "Body text.",
+      "",
+      "### 1.3 `chaff grade`",
+      "",
+      "Body text.",
+      "",
+      "### 1.4 Criteria",
+      "",
+      "Body text.",
+    );
+    assert.deepEqual(gapsOf(en, source), []);
+  });
+
+  it("a changelog's headings that are only a version stay unnumbered: 46.3, 46.1 is no gap", () => {
+    const source = lines("# 更新履歴", "", "## 46.3", "", "不具合を直しました。", "", "## 46.1", "", "不具合を直しました。");
+    assert.deepEqual(gapsOf(ja, source), []);
+  });
+});
+
 describe("日本語: 見出しの「第7条委託」「第2章概要」", () => {
   const numbered = (line: string, context = ON_HEADING): string | undefined => patternsOf(ja).numbered(line, context)?.label;
 

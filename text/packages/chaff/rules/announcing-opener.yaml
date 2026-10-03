@@ -1,6 +1,6 @@
 id: announcing-opener
 layer: L2
-status: experimental
+status: stable
 how_to_find: opener-pile
 word_list: announcing-opener
 uses: [pos]
@@ -50,6 +50,7 @@ level_meaning:
   ja: 予告で始まる文が {limit} 個あれば指摘
   en: reported once {limit} sentences open with an announcement
 rewrite:
+  depth: light
   ja:
     direction: 「重要なのは、」「ポイントは、」のような予告を消し、その後ろの中身から文を始めてください。
     pairs:

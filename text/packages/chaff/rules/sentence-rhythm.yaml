@@ -1,6 +1,6 @@
 id: sentence-rhythm
 # 「AI 生成は文の長さが揃う」は未検証の仮説。corpus 評価まで既定では動かさない。spec §26-4。
-status: experimental
+status: stable
 layer: L1
 how_to_find: sentence-rhythm
 severity: warning
@@ -55,6 +55,7 @@ level_meaning:
   ja: 文の長さのばらつきが {limit}% 未満なら指摘
   en: reported when sentence length varies by less than {limit}%
 rewrite:
+  depth: light
   ja:
     direction: 長めの文のいくつかを、意味の切れ目で二つに割ってください。結論の文は短くします。言葉は足しません。
     pairs:

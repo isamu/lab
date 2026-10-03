@@ -1,6 +1,6 @@
 id: adverb-overuse
 layer: L3
-status: experimental
+status: stable
 how_to_find: adverb-density
 requires: [pos]
 languages: [en]

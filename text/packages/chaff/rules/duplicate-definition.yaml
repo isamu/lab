@@ -1,6 +1,6 @@
 id: duplicate-definition
 layer: L3
-status: experimental
+status: stable
 how_to_find: duplicate-definition
 requires: [structure]
 severity: warning

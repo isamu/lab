@@ -1,6 +1,6 @@
 id: number-style-consistency
 layer: L2
-status: experimental
+status: stable
 how_to_find: number-style-consistency
 uses: [pos]
 severity: info
@@ -69,6 +69,7 @@ level_meaning:
   ja: 少ないほうの書き方が、その種類の数の {limit}% 以下のとき指摘
   en: reported when the less common style is {limit}% of its kind or less
 rewrite:
+  depth: light
   ja:
     direction: 少ないほうの書き方の数を、文書の多いほうの書き方に直してください。数そのものと単位は変えません。
     pairs:

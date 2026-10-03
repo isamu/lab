@@ -125,11 +125,9 @@ kitei.md   legal/statute · 日本語   ジャンルは --genre から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  試験中の rule を 7 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, numbering-gap, total-mismatch
-
   {not-run}
 
-  試験中のルールを 1 つだけ動かすには、npx chaffjs enable absolute-exception のように名指しします（chaff.yaml の rules に absolute-exception: normal と書くのと同じです）。--experimental はすべてを動かします。
+  試験中のルールを 1 つだけ動かすには、npx chaffjs enable cross-doc-broken-link のように名指しします（chaff.yaml の rules に cross-doc-broken-link: normal と書くのと同じです）。--experimental はすべてを動かします。
 ```
 
 ## 指摘の読み方
@@ -313,9 +311,7 @@ kitei-fixed.md   legal/statute · 日本語   ジャンルは --genre から
 
   文章は書き換えていません。直すのは書いた人です。
 
-  試験中の rule を 1 件、設定により有効にしています: numbering-gap
-
-  試験中の rule を 6 件、ジャンルの既定で有効にしています: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, duplicate-definition, total-mismatch
+  {not-run}
 …
 ```
 

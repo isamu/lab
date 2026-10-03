@@ -1,6 +1,6 @@
 id: ai-generated-composite
 layer: L1
-status: experimental
+status: stable
 how_to_find: composite
 severity: warning
 

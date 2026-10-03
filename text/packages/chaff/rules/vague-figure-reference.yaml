@@ -1,6 +1,6 @@
 id: vague-figure-reference
 layer: L2
-status: experimental
+status: stable
 how_to_find: vague-figure-pointer
 # 置き場所で指す言い方と、その言い方が指す種類（図・表）。図・表に名前を付ける語は dangling-figure-reference と同じ figure-label。
 # 箇条を置き場所で指す言い方は vague-clause-pointer。文書の構造の木に番号付きの条か章があるときだけ見る。

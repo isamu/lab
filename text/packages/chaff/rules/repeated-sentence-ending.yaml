@@ -1,6 +1,6 @@
 id: repeated-sentence-ending
 layer: L3
-status: experimental
+status: stable
 how_to_find: ending-run
 requires: [pos]
 languages: [ja]
@@ -44,6 +44,7 @@ level_meaning:
   ja: 同じ文末の文が {limit} 文続くまで
   en: up to {limit} sentences in a row with the same ending
 rewrite:
+  depth: light
   ja:
     direction: 続いた文のうち一つか二つの文末を変えてください。二文を「〜で、」「〜し、」でつなぐか、言い方を変えます。言っている事柄は変えません。
     pairs:

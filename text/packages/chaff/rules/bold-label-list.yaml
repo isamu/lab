@@ -1,6 +1,6 @@
 id: bold-label-list
 layer: L1
-status: experimental
+status: stable
 how_to_find: bold-label-list
 requires: [markdown]
 # English human writing (handbooks, minutes, policies, changelogs) labels list items in bold as a matter of course: the
@@ -58,6 +58,7 @@ level_meaning:
   ja: 太字の札で始まる項目が {limit} 個あれば指摘
   en: reported once {limit} list items open with a bold label
 rewrite:
+  depth: structure
   ja:
     direction: 太字の札を外し、項目を文に戻してください。札の語は文の中に入れ、項目どうしの関係（理由、順番、どちらが大事か）を書きます。用語集のように、札が定義される語そのものなら箇条書きのままにします。
     pairs:

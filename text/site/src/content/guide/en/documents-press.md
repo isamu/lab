@@ -97,6 +97,16 @@ $ npx chaffjs release.md --genre business/press-release --compact
 
 release.md   business/press-release · English   genre from --genre
 
+  6:106   error   2026-11-02 is a Monday, not a Tuesday
+                  date-weekday-mismatch
+  14:30   warning The shares add up to 95%, not 100%
+                  percent-sum-mismatch
+  20:13   warning "four features" is announced, but the number of items in the list below is 3
+                  announced-count-mismatch
+  30:10   warning The period "October 26, 2026 – October 19, 2026" ends before it starts
+                  date-range-reversed
+  39:12   error   The total $360 is not the sum of the amounts above it ($350)
+                  total-mismatch
 
 {counts}
 ```
@@ -111,8 +121,6 @@ release.md   business/press-release · English   genre from --genre
 
   6:106   error   2026-11-02 is a Monday, not a Tuesday
                   date-weekday-mismatch
-  10:95   warning This sentence is passive ("booked") but never says who did it
-                  agentless-passive
   14:30   warning The shares add up to 95%, not 100%
                   percent-sum-mismatch
   20:13   warning "four features" is announced, but the number of items in the list below is 3

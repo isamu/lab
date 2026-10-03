@@ -70,7 +70,7 @@ The genre is the kind of document. It decides three things:
 
 | What | How |
 | --- | --- |
-| Which rules run | A genre turns off the rules that only flag its form (a contract repeats its defined terms on purpose) and may turn on experimental ones (`legal/contract` and `legal/statute` check references to clauses that are not there) |
+| Which rules run | A genre turns off the rules that only flag its form (a contract repeats its defined terms on purpose). A rule that reports on most human documents of that kind is turned off too, by measurement |
 | Where the limits are | The same `normal` means a longer sentence for a statute or a paper than for an email |
 | How the document is read | `legal/statute` reads with the knowledge of statutes (see below) |
 
@@ -123,6 +123,27 @@ A profile that is not bundled stops chaff before it checks anything, and it says
 profile: statute
 ```
 
+## The rules that run by default
+
+Most rules run with nothing in `chaff.yaml` and without `--experimental`.
+Which ones run is decided by measuring how often each rule reports on real documents people wrote (see "Which rules run by default" in the [Reference](./reference)).
+
+| Mark | How it runs |
+| --- | --- |
+| on by default | Seldom reports on human documents. It reports as it is |
+| on by default (info) | Often reports on human documents too. Its findings are `info` and never fail the run |
+| off for a genre | Reports on most documents of that genre. It is listed under "did not run", with the genre as the reason |
+| experimental | A new rule not measured yet. It runs with `--experimental`, or with a strength under `rules` |
+
+To hear less from an info rule, relax it or turn it off.
+
+```bash
+npx chaffjs relax ngram-repetition --why "we repeat phrases on purpose"
+npx chaffjs off ngram-repetition --why "not checked in this team"
+```
+
+To run a rule a genre turns off, give it a strength under `rules` (`max-sentence-length: normal`).
+
 ## Changing how strict a rule is
 
 Every rule you can set is listed, with examples, in the [Reference](./reference).
@@ -150,6 +171,8 @@ $ npx chaffjs explain max-sentence-length
   In a long sentence the reader loses the subject before reaching the verb.
 
   How to fix: Split it in two at the conjunction.
+
+  Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
     strict   up to 18 words in a sentence
@@ -234,14 +257,10 @@ List the spelling to avoid and the one to use under `prefer`.
 ```yaml
 prefer:
   e-mail: email
-
-rules:
-  preferred-term: normal
 ```
 
 When `preferred-term` finds the left-hand spelling, it asks for the right-hand one.
 With nothing under `prefer`, it says nothing.
-The rule is experimental, so give it a strength under `rules` to turn it on.
 
 ## Deciding the team's jargon and required headings
 
@@ -270,8 +289,6 @@ required_sections: # headings this kind of document must have
 | --- | --- |
 | `jargon` | As written, capital letters included; a single word also finds its other forms (`leverage` finds "leveraged") |
 | `required_sections` | Part of a heading: `Risks` is met by "Risks and mitigations" too |
-
-Both are experimental, so give `internal-jargon` and `required-sections` a strength under `rules` as well.
 
 `required_sections` is an `error` by default.
 It is not a matter of taste: the team decided on it and the document does not have it.
@@ -345,6 +362,22 @@ A YAML file that cannot be parsed is read as plain text.
 Any other file, such as `.txt`, is read as plain text.
 A file named on the command line is checked whatever its extension.
 
+## Setting the depth of a fix plan
+
+A team can decide how deep the rewrites that `chaff fix-plan` plans may go.
+
+```yaml
+fix_plan:
+  depth: light # light / structure / register
+```
+
+`light` rewrites words and sentences only, `structure` goes as far as reorganising sections, headings and paragraphs, and `register` as far as converting the style. A deeper depth includes the shallower.
+Findings of a rule that reaches deeper than the depth are listed in the plan by name and spot count only.
+`--depth` on the command line wins for that run.
+Any other value stops `fix-plan` before it prints a plan, with the values it takes and what they mean.
+Each rule's depth is in `npx chaffjs explain <rule>` and in `rewrite_depth` of `npx chaffjs rules --json`.
+How the depths match the ways to rewrite is in [Making AI-sounding text sound human](./ai-sounding#setting-the-rewrite-depth).
+
 ## Checking that the settings took effect
 
 `chaff rules --json` shows the current settings.
@@ -412,13 +445,13 @@ The output is long, so here is one entry, with `max-sentence-length: 260` set (t
 `now` is the value actually in effect.
 `level_sets` says what a level changes: `limit` is a limit to count to, `severity` is how a finding is marked.
 For a rule with nothing to count, `levels` and `now` hold a severity (`error` / `warning` / `info`) in place of a number.
-For an experimental rule, `now` says why it does not run and how to turn it on alone. Here is `doubled-word`:
+For an experimental rule (a new one not measured yet), `now` says why it does not run and the command that turns it on alone:
 
 ```json
     "now": {
       "level": "off",
       "why_off": "experimental rules do not run by default",
-      "turn_on_with": "npx chaffjs enable doubled-word"
+      "turn_on_with": "npx chaffjs enable <rule>"
     }
 ```
 

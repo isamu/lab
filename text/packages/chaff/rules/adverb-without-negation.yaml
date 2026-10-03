@@ -1,6 +1,6 @@
 id: adverb-without-negation
 layer: L3
-status: experimental
+status: stable
 how_to_find: adverb-polarity
 word_list: negative-polarity-adverb
 extra_word_lists: [negation-word]
@@ -43,6 +43,7 @@ not_flagged:
   ja: 後ろに打ち消しの語（ない、ません、ず、まい、違う、異なる、駄目）か、不・未・無・非で始まる語（不十分、無理）があれば指しません。「まったく」は「まったく同じ」が正しいので見ません。ブログ、文芸、話し言葉のジャンルでは動きません。
   en: Not reported when a negating word (ない, ません, ず, 違う, 駄目) or a word opening with 不, 未, 無 or 非 follows. まったく is not checked, since まったく同じ is correct. Off for blogs, literature and speech.
 rewrite:
+  depth: light
   ja:
     direction: 打ち消しの無い「全然」「決して」を、肯定と組む言い方に替えてください。打ち消しを言いたかったのなら、打ち消しの形にします。
     pairs:
