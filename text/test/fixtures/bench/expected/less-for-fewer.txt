@@ -1,0 +1,14 @@
+table  13  13  0  0
+en/blog  less-for-fewer-en  found
+en/design  less-for-fewer-en  found
+en/email  less-for-fewer-en  found
+en/figures  less-for-fewer-en  found
+en/itinerary  less-for-fewer-en  found
+en/minutes  less-for-fewer-en  found
+en/note  less-for-fewer-en  found
+en/policy  less-for-fewer-en  found
+en/press  less-for-fewer-en  found
+en/proposal  less-for-fewer-en  found
+en/quote  less-for-fewer-en  found
+en/readme  less-for-fewer-en  found
+en/requirements  less-for-fewer-en  found

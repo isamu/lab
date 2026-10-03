@@ -1,0 +1,20 @@
+# Read by less-for-fewer: "less errors" is "fewer errors". "Less" after a noun or a number means "minus" ("revenue less
+# costs") and is not read.
+# group quantifier: a word for an amount, and the word for a count that takes its place before a countable plural (rewrite).
+# group amount: plurals that name an amount of money rather than things to count ("less earnings", "less costs").
+id: amount-quantifier
+language: en
+entries:
+  - { pattern: less, rewrite: fewer, group: quantifier }
+  - { pattern: earnings, group: amount }
+  - { pattern: proceeds, group: amount }
+  - { pattern: revenues, group: amount }
+  - { pattern: profits, group: amount }
+  - { pattern: sales, group: amount }
+  - { pattern: wages, group: amount }
+  - { pattern: damages, group: amount }
+  - { pattern: funds, group: amount }
+  - { pattern: costs, group: amount }
+  - { pattern: expenses, group: amount }
+  - { pattern: taxes, group: amount }
+  - { pattern: fees, group: amount }

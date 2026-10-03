@@ -2814,6 +2814,47 @@
         "falseAlarms": 0
       }
     },
+    "heading-end-punctuation-mix": {
+      "groups": {
+        "academic": {
+          "documents": 6,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 77,
+          "fired": 2
+        },
+        "docs": {
+          "documents": 20,
+          "fired": 2
+        },
+        "legal": {
+          "documents": 28,
+          "fired": 1
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 45,
+          "fired": 1
+        }
+      },
+      "bench": {
+        "planted": 18,
+        "found": 18,
+        "falseAlarms": 0
+      }
+    },
     "heading-level-skip": {
       "groups": {
         "academic": {
@@ -3568,6 +3609,47 @@
       "bench": {
         "planted": 1,
         "found": 1,
+        "falseAlarms": 0
+      }
+    },
+    "less-for-fewer": {
+      "groups": {
+        "academic": {
+          "documents": 5,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 9,
+          "fired": 0
+        },
+        "business": {
+          "documents": 39,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 14,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 9,
+          "fired": 1
+        },
+        "speech": {
+          "documents": 3,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 26,
+          "fired": 1
+        }
+      },
+      "bench": {
+        "planted": 13,
+        "found": 13,
         "falseAlarms": 0
       }
     },
