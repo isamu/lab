@@ -1,0 +1,13 @@
+table  12  12  0  0
+ja/design  list-star-last  found
+ja/email  list-star-last  found
+ja/figures  list-star-last  found
+ja/itinerary  list-star-last  found
+ja/minutes  list-star-last  found
+ja/quote  list-star-last  found
+en/design  list-star-last  found
+en/email  list-star-last  found
+en/figures  list-star-last  found
+en/itinerary  list-star-last  found
+en/minutes  list-star-last  found
+en/quote  list-star-last  found
