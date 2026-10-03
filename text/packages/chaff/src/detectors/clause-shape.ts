@@ -170,8 +170,9 @@ const SENTENCE_STOP = "。";
 
 /**
  * The head names a start or a sending (開始, 参る, 連絡). A noun head must be the action itself: a compound whose last
- * noun is listed (新規受付を開始, 受付開始します), followed by an object marker, a light verb or the end of the sentence;
- * not a noun being compared (昨年より販売が増えた) or a compound named by another noun (昨年より受付件数を増やした).
+ * noun is listed (新規受付を開始, 受付開始します), followed by a light verb, the end of the sentence, or an object marker
+ * whose verb is listed too; not a noun being compared (昨年より販売が増えた, 昨年より新規受付を増やした) or a compound
+ * named by another noun (昨年より受付件数を増やした).
  */
 const isOriginHead = (tokens: readonly Token[], head: number, heads: ReadonlySet<string>, objectMarkers: ReadonlySet<string>): boolean => {
   const token = tokens[head];
@@ -180,7 +181,8 @@ const isOriginHead = (tokens: readonly Token[], head: number, heads: ReadonlySet
   const last = compoundEnd(tokens, head);
   if (!isListed(heads, tokens[last])) return false;
   const next = nextWord(tokens, last);
-  return next === undefined || next.surface === SENTENCE_STOP || objectMarkers.has(next.surface) || next.features?.["VerbType"] === "Light";
+  if (next === undefined || next.surface === SENTENCE_STOP || next.features?.["VerbType"] === "Light") return true;
+  return objectMarkers.has(next.surface) && isListed(heads, nextWord(tokens, tokens.indexOf(next)));
 };
 
 type ParticleWords = { readonly particles: ReadonlySet<string>; readonly heads: ReadonlySet<string>; readonly objectMarkers: ReadonlySet<string> };

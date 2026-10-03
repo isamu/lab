@@ -136,6 +136,8 @@ describe("yori-as-from", () => {
     assert.deepEqual(findingsOf(RULE, "昨年より案内の数が多い。\n"), []);
     assert.deepEqual(findingsOf(RULE, "昨年より販売台数が増えた。\n"), []);
     assert.deepEqual(findingsOf(RULE, "昨年より受付件数を増やした。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "昨年より新規受付を増やした。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "昨年より受付を増やした。\n"), []);
   });
 
   it("名詞を重ねた動作の語も起点として読む", () => {
