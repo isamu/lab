@@ -176,7 +176,7 @@ rules.md   blog/tech · English   genre from the default
 
      → Fix the number or remove the reference. If it points into another document, name that document so the reader knows where to look.
 
-     Relax this rule:  npx chaff relax dangling-reference
+     Relax this rule:  npx chaffjs relax dangling-reference
 
 
 ─── line 12 ──────────────────────────────────────────────────
@@ -190,7 +190,7 @@ rules.md   blog/tech · English   genre from the default
 
      → Renumber. If a provision was removed on purpose, keep its number with a note such as "Section 4 [Deleted]".
 
-     Relax this rule:  npx chaff relax numbering-gap
+     Relax this rule:  npx chaffjs relax numbering-gap
 
 
 ─── line 15 ──────────────────────────────────────────────────
@@ -204,7 +204,7 @@ rules.md   blog/tech · English   genre from the default
 
      → Keep one definition and refer to it from the other place. If the meaning changes on purpose, use a different term.
 
-     Relax this rule:  npx chaff relax duplicate-definition
+     Relax this rule:  npx chaffjs relax duplicate-definition
 
 
 ────────────────────────────────────────────────────────────
