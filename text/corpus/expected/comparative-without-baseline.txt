@@ -1,14 +1,11 @@
-18f-handbook-one-on-ones  1
 18f-handbook-projects-in-distress  1
 18f-handbook-travel-faq  1
-arxiv-2609-27842-genai-assessment  1
 asf-board-minutes-2025-01  1
 da-machine-readability-limitations  1
 da-service-design-guidelines-2  3
 dailymed-advil-otc-label  1
 etax-oshirase-mail-templates  1
-fr-2026-16371-nvd-rfi  1
-gitlab-values  4
+gitlab-values  3
 govuk-cddo-roadmap-2022-2025  2
 govuk-style-guide-a-to-z  2
 jsprimer-loop  2
@@ -20,6 +17,7 @@ react-ja-thinking  1
 rfc3693-geopriv-requirements  1
 ruby-3-4-0-released-ja  2
 rust-rfc-2094-nll  3
+soumu-kokumin-cyber-malware  1
 typescript-5-4-release-notes  1
 wikivoyage-belgian-coast-tram  1
 zenn-kaityo256-happy-presentation  2

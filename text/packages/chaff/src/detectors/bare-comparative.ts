@@ -4,7 +4,7 @@ import type { Detector, Finding, Lexicon, Sentence, Token } from "../plugin.ts";
  * 比べる相手の無い比較（より良い結果、さらに高速に、The new engine is faster.）。何より良いのか、何より速いのかが書かれていない。
  * 語は語彙表 comparative-baseline が言う。group marker は日本語の比べる副詞（より、さらに）、more は英語の比べる語、comparative は比べた形の語
  * （faster、better）、baseline は相手を言う語（従来、以前、than、previous）、exempt は比較でない決まった言い方（より多くの、より詳しく）。
- * 同じ文か直前の文に相手を言う語があれば、相手は書いてある。
+ * 同じ文か前の二文に相手を言う語があれば、相手は書いてある。
  */
 
 export type ComparativeLists = {
@@ -49,14 +49,30 @@ const markedAt = (tokens: readonly Token[], at: number, lists: ComparativeLists)
   return isGradable(tokens, at + 1) ? { first: marker, last: word } : undefined;
 };
 
+/** 比べた形の後ろで節が終わるか。読点の後ろに形容詞が続けば、名詞の前に並べた修飾語（better, more predictable results）。 */
+const closesClause = (tokens: readonly Token[], at: number): boolean => {
+  const next = tokens[at + 1];
+  if (next === undefined) return true;
+  if (!CLAUSE_END.has(next.surface)) return false;
+  const after = tokens[at + 2];
+  return next.surface !== "," || (after?.pos !== "ADJ" && after?.pos !== "ADV");
+};
+
+/** more と形容詞のあいだの副詞（more computationally efficient）を飛ばした、more の位置。無ければ -1。 */
+const moreBefore = (tokens: readonly Token[], at: number, more: ReadonlySet<string>): number => {
+  const before = tokens.slice(Math.max(0, at - 1 - MAX_ADVERBS), at).reverse();
+  const found = before.findIndex((token) => token.pos !== "ADV" || more.has(lower(token)));
+  return found !== -1 && more.has(lower(before[found])) ? at - 1 - found : -1;
+};
+
 /** 英語: 述語の後ろで節を閉じる比べた形（is faster.、runs faster,）か、more と形容詞。 */
 const predicateAt = (tokens: readonly Token[], at: number, lists: ComparativeLists): BareComparative | undefined => {
   const word = tokens[at];
-  if (word === undefined || !CLAUSE_END.has(tokens[at + 1]?.surface ?? ".")) return undefined;
-  const isMore = lists.more.has(lower(tokens[at - 1])) && word.pos === "ADJ";
-  if (!isMore && !lists.comparatives.has(lower(word))) return undefined;
-  const first = isMore ? (tokens[at - 1] ?? word) : word;
-  const start = tokens.indexOf(first);
+  if (word === undefined || !closesClause(tokens, at)) return undefined;
+  const moreAt = word.pos === "ADJ" ? moreBefore(tokens, at, lists.more) : -1;
+  if (moreAt === -1 && !lists.comparatives.has(lower(word))) return undefined;
+  const start = moreAt === -1 ? at : moreAt;
+  const first = tokens[start] ?? word;
   const adverbs = tokens.slice(Math.max(0, start - MAX_ADVERBS), start).reverse();
   const skipped = adverbs.findIndex((token) => token.pos !== "ADV");
   const head = tokens[start - 1 - (skipped === -1 ? adverbs.length : skipped)];
@@ -66,14 +82,20 @@ const predicateAt = (tokens: readonly Token[], at: number, lists: ComparativeLis
 export const bareComparativesIn = (tokens: readonly Token[], lists: ComparativeLists): BareComparative[] =>
   tokens.flatMap((_, at) => markedAt(tokens, at, lists) ?? predicateAt(tokens, at, lists) ?? []);
 
-/** 文の中に、比べる相手を言う語があるか。英語は語の切れ目で、日本語は字の並びで照らす。 */
-export const namesBaseline = (sentence: Sentence | undefined, baselines: readonly string[]): boolean => {
-  if (sentence === undefined) return false;
-  const tokens = sentence.tokens ?? [];
-  const words = new Set(tokens.map((token) => token.surface.toLowerCase()));
-  const comparesWithParticle = tokens.some((token) => token.surface === "より" && token.pos === "ADP");
-  return comparesWithParticle || baselines.some((baseline) => words.has(baseline) || (!/^[a-z]/u.test(baseline) && sentence.text.includes(baseline)));
+/**
+ * 語が比べる相手を言う語か。語の形か原形で照らし、一字の語（旧）は語の頭だけ（旧版は相手、復旧は相手でない）。
+ */
+const isBaselineWord = (token: Token, baselines: readonly string[]): boolean => {
+  const [surface, lemma] = [token.surface.toLowerCase(), token.lemma?.toLowerCase()];
+  return baselines.some((baseline) => surface === baseline || lemma === baseline || ([...baseline].length === 1 && surface.startsWith(baseline)));
 };
+
+/** 文の中に、比べる相手を言う語か、相手を受ける助詞の「より」（従来より）があるか。 */
+export const namesBaseline = (sentence: Sentence | undefined, baselines: readonly string[]): boolean =>
+  (sentence?.tokens ?? []).some((token) => (token.surface === "より" && token.pos === "ADP") || isBaselineWord(token, baselines));
+
+/** 比べる相手を探す、前の文の数。段落の中で相手を言ってから、一つ文を挟んで比べることがある。 */
+const BASELINE_REACH = 2;
 
 const groupOf = (lexicon: Lexicon, group: string): string[] => lexicon.filter((entry) => entry.group === group).map((entry) => entry.pattern.toLowerCase());
 
@@ -88,7 +110,8 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
 export const bareComparative: Detector = (doc): Finding[] => {
   const lists = listsOf(doc.lexicons["comparative-baseline"] ?? []);
   return doc.sentences.flatMap((sentence, at) => {
-    if (sentence.embeddedLanguage !== undefined || namesBaseline(sentence, lists.baselines) || namesBaseline(doc.sentences[at - 1], lists.baselines)) return [];
+    const nearby = doc.sentences.slice(Math.max(0, at - BASELINE_REACH), at + 1);
+    if (sentence.embeddedLanguage !== undefined || nearby.some((near) => namesBaseline(near, lists.baselines))) return [];
     return bareComparativesIn(sentence.tokens ?? [], lists).map((found) => ({
       rule: "",
       severity: "info",
