@@ -6,6 +6,9 @@ import assert from "node:assert/strict";
 import plugin from "../index.mjs";
 import { partyAliasMix } from "../rules/party-alias-mix.mjs";
 import { requiredClausesNda } from "../rules/required-clauses-nda.mjs";
+import { requiredClausesOutsourcing } from "../rules/required-clauses-outsourcing.mjs";
+import { requiredClausesTos } from "../rules/required-clauses-tos.mjs";
+import { requiredClausesPrivacy } from "../rules/required-clauses-privacy.mjs";
 import { monoToSuruFiller } from "../rules/mono-to-suru-filler.mjs";
 
 /** @import { RuleDocument } from "chaffjs/api" */
@@ -43,11 +46,11 @@ describe("plugin shape", () => {
   it("has name legal-contract", () => {
     assert.equal(plugin.name, "legal-contract");
   });
-  it("ships 3 rules", () => {
-    assert.equal(plugin.rules.length, 3);
+  it("ships 6 rules", () => {
+    assert.equal(plugin.rules.length, 6);
   });
-  it("ships 1 style", () => {
-    assert.equal(plugin.styles?.length, 1);
+  it("ships 4 styles (nda / outsourcing / tos / privacy)", () => {
+    assert.equal(plugin.styles?.length, 4);
   });
 });
 
@@ -94,6 +97,54 @@ describe("required-clauses-nda", () => {
     const doc = documentOf(fullNda);
     const findings = requiredClausesNda(doc, { lexicon: [] });
     assert.equal(findings.length, 0, "a full NDA should pass");
+  });
+});
+
+describe("required-clauses-outsourcing", () => {
+  it("flags all missing clauses on empty document", () => {
+    const doc = documentOf("業務委託契約書\n\n甲は乙に業務を委託する。");
+    const findings = requiredClausesOutsourcing(doc, { lexicon: [] });
+    assert.ok(findings.length >= 10, `should flag many missing clauses, got ${findings.length}`);
+  });
+
+  it("flags fewer when IP rights clause is present", () => {
+    const minimal = "業務委託契約書\n甲は乙に業務を委託する。業務の内容は別途定める。著作権は甲に帰属する。";
+    const doc = documentOf(minimal);
+    const findings = requiredClausesOutsourcing(doc, { lexicon: [] });
+    const ipMissing = findings.find((f) => f.values?.clauseId === "ip-rights");
+    assert.equal(ipMissing, undefined, "IP rights clause should be found");
+  });
+});
+
+describe("required-clauses-tos", () => {
+  it("flags all missing clauses on empty document", () => {
+    const doc = documentOf("利用規約\n\n当社のサービスを使ってください。");
+    const findings = requiredClausesTos(doc, { lexicon: [] });
+    assert.ok(findings.length >= 10, `should flag many missing clauses, got ${findings.length}`);
+  });
+
+  it("flags fewer when prohibited-acts clause is present", () => {
+    const minimal = "利用規約\n本サービスは当社が提供する。次の行為を禁止します。";
+    const doc = documentOf(minimal);
+    const findings = requiredClausesTos(doc, { lexicon: [] });
+    const prohibitedMissing = findings.find((f) => f.values?.clauseId === "prohibited-acts");
+    assert.equal(prohibitedMissing, undefined, "prohibited-acts clause should be found");
+  });
+});
+
+describe("required-clauses-privacy", () => {
+  it("flags all missing items on empty document", () => {
+    const doc = documentOf("プライバシーポリシー\n\n個人情報を大切に扱います。");
+    const findings = requiredClausesPrivacy(doc, { lexicon: [] });
+    assert.ok(findings.length >= 10, `should flag many missing items, got ${findings.length}`);
+  });
+
+  it("flags fewer when purposes-of-use is present", () => {
+    const minimal = "プライバシーポリシー\n当社は、個人情報を次の目的で利用します。";
+    const doc = documentOf(minimal);
+    const findings = requiredClausesPrivacy(doc, { lexicon: [] });
+    const purposeMissing = findings.find((f) => f.values?.clauseId === "purposes-of-use");
+    assert.equal(purposeMissing, undefined, "purposes-of-use should be found");
   });
 });
 

@@ -6,9 +6,10 @@
 
 次の契約書種別を対象にする。
 
-- **NDA（秘密保持契約）** — v0 で対応（本バージョン）
-- **業務委託契約書** — v1 で対応予定（準備中）
-- **利用規約・プライバシーポリシー** — v2 で対応予定（準備中）
+- **NDA（秘密保持契約）** — v0 で対応 ✅
+- **業務委託契約書** — v1 で対応 ✅
+- **利用規約** — v2 で対応 ✅
+- **プライバシーポリシー** — v2 で対応 ✅
 
 対象外:
 
@@ -30,13 +31,14 @@
 
 ### 契約書種別ごとに別ルール
 
-NDA の必須条項と、業務委託契約書の必須条項、利用規約の必須条項は異なる。それぞれ別のルール ID で分ける。
+NDA、業務委託契約書、利用規約、プライバシーポリシーの必須条項は、それぞれ別のルール ID で分ける。
 
 - `legal-contract/required-clauses-nda`
-- `legal-contract/required-clauses-outsourcing`（v1）
-- `legal-contract/required-clauses-tos`（v2）
+- `legal-contract/required-clauses-outsourcing`
+- `legal-contract/required-clauses-tos`
+- `legal-contract/required-clauses-privacy`
 
-ジャンル (`legal/contract`) で有効化のオン・オフを切り替える前提。
+同じ `legal/contract` ジャンルの中で、文書ごとに house style を切り替える前提。house style は `nda` / `outsourcing` / `tos` / `privacy` の 4 つを用意しており、使わないルールは `off`、該当するルールだけ `strict` に設定している。
 
 ### テンプレートは「chaff が読める構造」で書く
 
@@ -53,10 +55,10 @@ chaff は条・項・号の番地付き構造を読める。テンプレート�
 
 ## バージョニング
 
-- v0: NDA（本バージョン）
-- v1: + 業務委託契約書
-- v2: + 利用規約・プライバシーポリシー
-- v3: 業種別派生（SaaS 向け利用規約、個人情報取扱委託契約など）
+- v0: NDA ✅
+- v1: + 業務委託契約書 ✅
+- v2: + 利用規約・プライバシーポリシー ✅
+- v3: 業種別派生（SaaS 向け利用規約、個人情報取扱委託契約、SES 契約、ソフトウェア開発契約など、要望ベースで追加）
 
 ## 既知の限界
 
