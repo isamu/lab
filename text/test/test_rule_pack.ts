@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 import { runCli } from "./cli-run.ts";
 
 // A rule pack: a plugin written in YAML alone (rules/*.yaml, lexicons/<language>/*.yaml, styles/*.yaml and a manifest).
@@ -17,7 +17,7 @@ const EN = "# Slides for the review\n\nPlease send the slides for next week's re
 const packFiles = (folder: string): Record<string, string> => {
   const walk = (dir: string): string[] =>
     readdirSync(dir).flatMap((name) => (statSync(join(dir, name)).isDirectory() ? walk(join(dir, name)) : [join(dir, name)]));
-  return Object.fromEntries(walk(PACK).map((file) => [`${folder}/${relative(PACK, file)}`, readFileSync(file, "utf8")]));
+  return Object.fromEntries(walk(PACK).map((file) => [`${folder}/${relative(PACK, file).split(sep).join("/")}`, readFileSync(file, "utf8")]));
 };
 
 const config = (...plugins: readonly string[]): string => ["genre: business/email", "plugins:", ...plugins.map((plugin) => `  - ${plugin}`), ""].join("\n");
