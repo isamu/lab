@@ -1,6 +1,6 @@
 id: code-fence-language-mix
 layer: L1
-status: experimental
+status: stable
 how_to_find: code-fence-language
 requires: [markdown]
 severity: info

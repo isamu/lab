@@ -1,9 +1,9 @@
 id: heading-level-skip
 layer: L1
-status: experimental
+status: stable
 how_to_find: heading-level-skip
 requires: [markdown]
-severity: warning
+severity: info
 
 name:
   ja: 見出しの深さが飛んでいる
@@ -21,7 +21,7 @@ how_to_fix:
   ja: 一つ前の見出しより一段だけ深くしてください。文字の大きさを変えたいだけなら、深さではなく表示の設定で変えてください。
   en: Make the heading one level deeper than the one before it. If only the size on screen was the point, change the style instead of the level.
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 

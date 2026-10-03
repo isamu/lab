@@ -1,6 +1,6 @@
 id: no-lead
 layer: L1
-status: experimental
+status: stable
 how_to_find: no-lead
 requires: [pos]
 severity: info

@@ -102,12 +102,19 @@ describe("chaff rules — the same list as a table for a person", () => {
     ["読みやすさ", "事実の食い違い", "AIっぽさ", "npx chaffjs rules --json"].forEach((text) => assert.ok(run.out.includes(text), text));
   });
 
-  it("shows the level in effect: chaff.yaml wins, an experimental rule is off, a rule for another language is off", async () => {
+  it("shows the level in effect: chaff.yaml wins, a rule for another language is off", async () => {
     const run = await runCli({ "chaff.yaml": "language: en\nrules:\n  max-sentence-length: strict\n" }, ["rules"], "en_US.UTF-8");
     const lineFor = (id: string): string => run.out.split("\n").find((line) => line.startsWith(`  ${id} `)) ?? "";
     assert.match(lineFor("max-sentence-length"), / strict \(18\) /u);
-    assert.match(lineFor("doubled-word"), / off /u);
     assert.match(lineFor("no-doubled-joshi"), / off \(ja\) /u);
+  });
+
+  // Most rules run by default since they were measured (spec §21.1); a rule is experimental only until it is.
+  const experimental = loadRules("en").find((rule) => rule.status === "experimental" && rule.layer !== "L4")?.id;
+  it("shows an experimental rule as off", { skip: experimental === undefined ? "no rule is experimental now (yarn rules:measure)" : false }, async () => {
+    const run = await runCli({ "chaff.yaml": "language: en\n" }, ["rules"], "en_US.UTF-8");
+    const line = run.out.split("\n").find((entry) => entry.startsWith(`  ${experimental ?? ""} `)) ?? "";
+    assert.match(line, / off /u);
   });
 
   it("follows a run: a rule the genre is not suited to is off, and --experimental turns experimental rules on", async () => {

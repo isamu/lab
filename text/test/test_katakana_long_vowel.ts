@@ -247,14 +247,14 @@ describe("katakana-long-vowel", () => {
     });
 
     it("asks the adapter for the dictionary's long forms only while the rule runs", () => {
-      assert.deepEqual(neededBy(RULES_JA, {}, false, "business/report", "ja").features, []);
+      assert.deepEqual(neededBy(RULES_JA, { [RULE]: "off" }, false, "business/report", "ja").features, []);
       assert.deepEqual(neededBy(RULES_JA, { [RULE]: "normal" }, false, "business/report", "ja").features, ["LongVowelEnding"]);
       assert.deepEqual(neededBy(RULES_JA, { [RULE]: "off" }, true, "business/report", "ja").features, []);
     });
 
-    it("is off by default (experimental) and does not run on English", () => {
+    it("runs by default (measured, spec §21.1) and does not run on English", () => {
       const source = "# 報告\n\nコンピューターとコンピュータ。\n";
-      assert.ok(!runRules(buildDocument("t.md", source, ja), RULES_JA, {}, false, "business/report").findings.some((finding) => finding.rule === RULE));
+      assert.ok(runRules(buildDocument("t.md", source, ja), RULES_JA, {}, false, "business/report").findings.some((finding) => finding.rule === RULE));
       const english = runRules(buildDocument("t.md", "# Report\n\nThe computer works.\n", en), loadRules("en"), { [RULE]: "normal" }, false, "business/report");
       assert.ok(english.skipped.some((skip) => skip.rule === RULE));
     });

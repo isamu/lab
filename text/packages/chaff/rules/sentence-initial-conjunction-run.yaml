@@ -1,6 +1,6 @@
 id: sentence-initial-conjunction-run
 layer: L3
-status: experimental
+status: stable
 how_to_find: conjunction-run
 word_list: sentence-opener
 languages: [en]

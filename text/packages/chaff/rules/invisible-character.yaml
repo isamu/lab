@@ -1,6 +1,6 @@
 id: invisible-character
 layer: L1
-status: experimental
+status: stable
 how_to_find: invisible-character
 severity: warning
 

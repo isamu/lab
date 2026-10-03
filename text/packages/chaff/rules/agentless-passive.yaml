@@ -1,6 +1,6 @@
 id: agentless-passive
 layer: L3
-status: experimental
+status: stable
 how_to_find: agentless-passive
 word_list: agent-marker
 requires: [pos]
@@ -33,6 +33,7 @@ off_for:
   literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
   speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
   business/meeting-notes: "Minutes record what the meeting did (the meeting was held, 了承された): the actor is the meeting, by the form. In the corpus the rule fires on nearly every set of minutes, English and Japanese."
+  business: measured by yarn rules:measure
 sources: [yasashii-nihongo-2020, plain-2011]
 
 group: wording

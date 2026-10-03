@@ -1,6 +1,6 @@
 id: vague-word-density
 layer: L2
-status: experimental
+status: stable
 how_to_find: vague-density
 word_list: vague-word
 uses: [pos]

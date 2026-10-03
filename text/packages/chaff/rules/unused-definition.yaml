@@ -1,9 +1,9 @@
 id: unused-definition
 layer: L3
-status: experimental
+status: stable
 how_to_find: unused-definition
 requires: [structure]
-severity: warning
+severity: info
 
 name:
   ja: 定義したのに使っていない語
@@ -27,7 +27,7 @@ placeholders:
     ja: 〇〇
     en: the term
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 

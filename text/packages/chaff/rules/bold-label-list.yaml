@@ -1,6 +1,6 @@
 id: bold-label-list
 layer: L1
-status: experimental
+status: stable
 how_to_find: bold-label-list
 requires: [markdown]
 # English human writing (handbooks, minutes, policies, changelogs) labels list items in bold as a matter of course: the

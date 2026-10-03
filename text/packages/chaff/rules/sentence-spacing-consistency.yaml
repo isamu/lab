@@ -1,6 +1,6 @@
 id: sentence-spacing-consistency
 layer: L1
-status: experimental
+status: stable
 how_to_find: sentence-spacing
 languages: [en]
 severity: info

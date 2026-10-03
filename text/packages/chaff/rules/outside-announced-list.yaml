@@ -1,6 +1,6 @@
 id: outside-announced-list
 layer: L3
-status: experimental
+status: stable
 how_to_find: outside-announced-list
 requires: [pos]
 severity: warning

@@ -1,6 +1,6 @@
 id: cushion-phrase-density
 layer: L2
-status: experimental
+status: stable
 how_to_find: cushion-density
 word_list: cushion-phrase
 uses: [pos]

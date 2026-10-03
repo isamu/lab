@@ -1,6 +1,6 @@
 id: vague-link-text
 layer: L1
-status: experimental
+status: stable
 how_to_find: vague-link-text
 word_list: vague-link-text
 requires: [markdown]

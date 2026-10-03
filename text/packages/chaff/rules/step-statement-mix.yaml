@@ -1,6 +1,6 @@
 id: step-statement-mix
 layer: L3
-status: experimental
+status: stable
 how_to_find: step-statement
 languages: [en]
 requires: [pos]

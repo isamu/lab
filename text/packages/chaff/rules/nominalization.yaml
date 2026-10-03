@@ -1,6 +1,6 @@
 id: nominalization
 layer: L3
-status: experimental
+status: stable
 how_to_find: nominalization
 # 動詞を名詞にして別の動詞に運ばせる言い方。英語は語の並び（nominalization-phrase）、日本語はサ変名詞（品詞の VerbForm=Vnoun）と、
 # その後ろの「を実施する」（nominalization-light-verb）で見る。片方しか持たない言語があるので word_list には書かない（書くと、無い言語で動かなくなる）。

@@ -1,6 +1,6 @@
 id: assistant-residue
 layer: L2
-status: experimental
+status: stable
 how_to_find: assistant-residue
 word_list: assistant-residue
 uses: [pos]

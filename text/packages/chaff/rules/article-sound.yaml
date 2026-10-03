@@ -1,11 +1,11 @@
 id: article-sound
 layer: L2
-status: experimental
+status: stable
 how_to_find: article-sound
 word_list: article-sound
 requires: [pos]
 languages: [en]
-severity: warning
+severity: info
 
 name:
   ja: a と an の取り違え

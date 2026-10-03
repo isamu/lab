@@ -1,6 +1,6 @@
 id: unqualified-superlative
 layer: L2
-status: experimental
+status: stable
 how_to_find: unqualified-superlative
 word_list: superlative
 extra_word_lists: [comparison-marker, superlative-scope, quantity-noun]

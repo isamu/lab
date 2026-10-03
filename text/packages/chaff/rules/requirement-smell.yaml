@@ -1,12 +1,12 @@
 id: requirement-smell
 layer: L2
-status: experimental
+status: stable
 how_to_find: requirement-smell
 # 要求の文の目印と、三つの見つけ方の語。語はすべて言語ごとの語彙表にある。
 word_list: requirement-marker
 extra_word_lists: [requirement-loophole, requirement-open-end, requirement-either]
 uses: [pos]
-severity: warning
+severity: info
 
 name:
   ja: 要求の文に、決めきれない言い方がある
@@ -40,7 +40,7 @@ placeholders:
     ja: 見つけた語
     en: the phrase found
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 # 要求を書く文書だけ。仕様書、契約書・規約、説明書（マニュアル・FAQ）。ほかの法務・説明書のジャンルと、学術・文学・話し言葉は
 # off_for で止める（法令は「等」を定義して使う、用語集の「〜すること。」は語の説明）。

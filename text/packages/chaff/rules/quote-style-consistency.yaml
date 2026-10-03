@@ -1,6 +1,6 @@
 id: quote-style-consistency
 layer: L1
-status: experimental
+status: stable
 how_to_find: mark-consistency
 word_list: quote-style
 languages: [en]
@@ -31,6 +31,8 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 3 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  docs: measured by yarn rules:measure
 
 group: consistency
 summary:

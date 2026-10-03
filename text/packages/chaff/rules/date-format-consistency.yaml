@@ -1,8 +1,8 @@
 id: date-format-consistency
 layer: L1
-status: experimental
+status: stable
 how_to_find: date-format
-severity: warning
+severity: info
 
 name:
   ja: 日付の書き方が揃っていない

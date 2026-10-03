@@ -94,8 +94,18 @@ $ npx chaffjs manual.md --compact
 manual.md   blog/tech · English   genre from the default
    Looks like: Manual and how-to. Try --genre docs/manual
 
+  7:78    warning The link "[Creating a key](#create-a-key)" points to "#create-a-key", which is not a heading on this page
+                  broken-link
   9:1     warning Image "![](images/settings.png)" has no alt text
                   image-alt-text
+  13:1    info    Heading "Request" goes from level 2 to level 4 (expected 3)
+                  heading-level-skip
+  23:60   warning The URL "https://example.com/docs/bookings" is followed by "。" with no space; the link runs on into it
+                  url-run-on
+  25:1    warning Nothing under the heading "Cancelling a booking"
+                  empty-section
+  27:1    warning The heading "Making a booking" repeats the one on line 11 under the same parent
+                  duplicate-heading
 
 {counts}
 ```
@@ -112,7 +122,7 @@ manual.md   docs/manual · English   genre from --genre
                   broken-link
   9:1     warning Image "![](images/settings.png)" has no alt text
                   image-alt-text
-  13:1    warning Heading "Request" goes from level 2 to level 4 (expected 3)
+  13:1    info    Heading "Request" goes from level 2 to level 4 (expected 3)
                   heading-level-skip
   23:60   warning The URL "https://example.com/docs/bookings" is followed by "。" with no space; the link runs on into it
                   url-run-on

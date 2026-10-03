@@ -94,8 +94,18 @@ $ npx chaffjs manual.md --compact
 manual.md   blog/tech · 日本語   ジャンルは既定から
    マニュアル・手順書のようです。--genre docs/manual を試せます
 
+  7:34    warning リンク「[鍵の発行](#鍵を発行する)」が指す「#鍵を発行する」の見出しがこの文書にありません
+                  broken-link
   9:1     warning 画像「![](images/settings.png)」に代替テキストがありません
                   image-alt-text
+  13:1    info    見出し「リクエスト」の深さが 2 から 4 へ飛んでいます（3 のはず）
+                  heading-level-skip
+  23:22   warning URL「https://example.com/docs/reservations」の直後に「を」が続いています。リンクがそこまで伸びます
+                  url-run-on
+  25:1    warning 見出し「予約を取り消す」の下に中身がありません
+                  empty-section
+  27:1    warning 見出し「予約を作る」は、同じ親の下の 11 行目の見出しと同じです
+                  duplicate-heading
 
 {counts}
 ```
@@ -112,7 +122,7 @@ manual.md   docs/manual · 日本語   ジャンルは --genre から
                   broken-link
   9:1     warning 画像「![](images/settings.png)」に代替テキストがありません
                   image-alt-text
-  13:1    warning 見出し「リクエスト」の深さが 2 から 4 へ飛んでいます（3 のはず）
+  13:1    info    見出し「リクエスト」の深さが 2 から 4 へ飛んでいます（3 のはず）
                   heading-level-skip
   23:22   warning URL「https://example.com/docs/reservations」の直後に「を」が続いています。リンクがそこまで伸びます
                   url-run-on

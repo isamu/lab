@@ -1,6 +1,6 @@
 id: image-file-name-alt
 layer: L1
-status: experimental
+status: stable
 how_to_find: image-file-name-alt
 word_list: image-file-name
 requires: [markdown]

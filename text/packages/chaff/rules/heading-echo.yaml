@@ -3,7 +3,7 @@ layer: L1
 status: stable
 how_to_find: heading-echo
 uses: [pos]
-severity: warning
+severity: info
 
 name:
   ja: 見出しの繰り返し

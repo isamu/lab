@@ -233,7 +233,7 @@ Fixing them all before starting is not realistic, so `baseline` shelves today's 
 $ npx chaffjs baseline docs/
   Checked 1 file.
 
-  Recorded 1 finding in .chaff-baseline.json.
+  Recorded 0 findings in .chaff-baseline.json.
   They will not be reported again; only new ones will.
 
   Commit .chaff-baseline.json.
@@ -245,7 +245,7 @@ From then on the shelved findings are not reported. The first line counts them.
 ```
 $ npx chaffjs docs/ --compact
 
-docs/a.md   technical/readme · English   genre from the path   1 shelved
+docs/a.md   technical/readme · English   genre from the path
 
 
 {counts}
@@ -259,8 +259,6 @@ $ npx chaffjs docs/ --show-baseline --compact
 
 docs/a.md   technical/readme · English   genre from the path
 
-  3:1     warning This sentence runs 43 words (limit 25)
-                  max-sentence-length
 
 {counts}
 ```

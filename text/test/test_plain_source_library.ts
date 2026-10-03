@@ -9,6 +9,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { allFindings } from "../scripts/corpus-findings.ts";
 import { resolveGenre } from "../packages/chaff/src/resolve-genre.ts";
+import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
 // A library caller (and the corpus scripts) hands chaff the text as it is on disk: a BOM, CRLF or CR-only line ends.
 // chaff reads it as the same document as the plain text, and every offset refers to doc.source, the plain text.
@@ -81,7 +82,8 @@ describe("buildDocument reads a BOM and CRLF / CR line ends as the plain text", 
 
   it("the findings of a CRLF document fall on the same lines and columns as the plain text's", () => {
     const rules = loadRules("en");
-    const run = (source: string) => runRules(documentOf("a.md", source, "en", "business/report"), rules, {}, false, "business/report").findings;
+    const run = (source: string) =>
+      runRules(documentOf("a.md", source, "en", "business/report"), rules, measuredOffOn("business/report"), false, "business/report").findings;
     const plain = run(REPORT);
     assert.ok(plain.length > 0);
     assert.deepEqual(run(crlf(REPORT)), plain);

@@ -89,7 +89,7 @@ article.md   blog/tech · English   genre from the default
 
   {not-run}
 
-  Turn on one experimental rule alone by naming it: npx chaffjs enable absolute-exception (the same as rules: { absolute-exception: normal } in chaff.yaml). --experimental turns on all of them.
+  Turn on one experimental rule alone by naming it: npx chaffjs enable cross-doc-broken-link (the same as rules: { cross-doc-broken-link: normal } in chaff.yaml). --experimental turns on all of them.
 
 ```
 

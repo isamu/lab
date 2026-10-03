@@ -1,6 +1,6 @@
 id: wordy-phrase
 layer: L2
-status: experimental
+status: stable
 how_to_find: phrase-match
 word_list: wordy-phrase
 requires: [pos]

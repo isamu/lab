@@ -1,6 +1,6 @@
 id: bracket-width-consistency
 layer: L1
-status: experimental
+status: stable
 how_to_find: mark-consistency
 word_list: bracket-width
 languages: [ja]

@@ -1,6 +1,6 @@
 id: latin-abbreviation-form
 layer: L1
-status: experimental
+status: stable
 how_to_find: latin-abbreviation
 word_list: latin-abbreviation
 languages: [en]

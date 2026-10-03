@@ -1,6 +1,6 @@
 id: section-length-uniformity
 layer: L1
-status: experimental
+status: stable
 how_to_find: section-uniformity
 severity: info
 

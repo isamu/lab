@@ -1,6 +1,6 @@
 id: colon-lead-in
 layer: L1
-status: experimental
+status: stable
 how_to_find: colon-lead-in
 # English human writing hands off to a list after a colon as a matter of course: two in a short self-written English
 # document already passed any limit that the generated-style samples reached. Japanese only until a limit separates them.

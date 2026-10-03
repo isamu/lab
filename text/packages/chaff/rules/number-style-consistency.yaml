@@ -1,6 +1,6 @@
 id: number-style-consistency
 layer: L2
-status: experimental
+status: stable
 how_to_find: number-style-consistency
 uses: [pos]
 severity: info

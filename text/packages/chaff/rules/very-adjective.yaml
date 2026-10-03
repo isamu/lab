@@ -1,6 +1,6 @@
 id: very-adjective
 layer: L2
-status: experimental
+status: stable
 how_to_find: intensified-adjective
 word_list: very-intensifier
 extra_word_lists: [very-exception]

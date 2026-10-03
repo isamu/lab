@@ -95,8 +95,34 @@ $ npx chaffjs kiji.md --genre blog/tech --compact
 
 kiji.md   blog/tech · 日本語   ジャンルは --genre から
 
+  1:39    info    節の長さのばらつきが 25% しかありません（35% 以上ほしい）
+                  section-length-uniformity
   3:1     warning 「近年」は、どの記事にも当てはまる書き出しです
                   padded-intro
+  9:1     info    「単なる」など、対比の枠が 1000 字あたり 3.8 個あります（1.5 個まで）
+                  contrast-framing
+  11:1    info    「正直に言うと」など、予告で始まる文が 3 個あります（3 個から）
+                  announcing-opener
+  11:1    warning 「section-length-uniformity、padded-intro、closing-cliche、contrast-framing、announcing-opener、colon-lead-in」が同じ文書にそろっています（6 種、3 種から）
+                  ai-generated-composite
+  15:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
+                  announcing-opener
+  17:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 3.8 個あります（2 個まで）
+                  colon-lead-in
+  20:12   info    日本語と後ろの数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
+                  latin-spacing
+  20:13   info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
+                  latin-spacing
+  23:1    info    「重要なのは」など、予告で始まる文が 3 個あります（3 個から）
+                  announcing-opener
+  27:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 3.8 個あります（2 個まで）
+                  colon-lead-in
+  27:11   warning 「2 つ」と予告していますが、すぐ下の箇条書きは3項目です
+                  announced-count-mismatch
+  33:46   warning リンク「[ビルド時間の記録](#ビルド時間の記録)」が指す「#ビルド時間の記録」の見出しがこの文書にありません
+                  broken-link
+  37:22   info    「だけでなく」など、対比の枠が 1000 字あたり 3.8 個あります（1.5 個まで）
+                  contrast-framing
   39:1    warning 「いかがでしたでしょうか」で締めています
                   closing-cliche
   39:13   warning 「お役に立てれば幸いです」で締めています
@@ -127,9 +153,9 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
                   announcing-opener
   17:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 3.8 個あります（2 個まで）
                   colon-lead-in
-  20:12   warning 日本語と後ろの数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
+  20:12   info    日本語と後ろの数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
                   latin-spacing
-  20:13   warning 日本語と前の数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
+  20:13   info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
                   latin-spacing
   23:1    info    「重要なのは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener

@@ -1,6 +1,6 @@
 id: emoji-heading
 layer: L1
-status: experimental
+status: stable
 how_to_find: emoji-heading
 requires: [markdown]
 severity: info

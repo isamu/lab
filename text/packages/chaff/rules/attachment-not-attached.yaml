@@ -1,6 +1,6 @@
 id: attachment-not-attached
 layer: L2
-status: experimental
+status: stable
 how_to_find: attachment-missing
 severity: warning
 

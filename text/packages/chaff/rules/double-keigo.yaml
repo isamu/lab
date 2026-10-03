@@ -1,6 +1,6 @@
 id: double-keigo
 layer: L3
-status: experimental
+status: stable
 how_to_find: phrase-match
 word_list: double-keigo
 uses: [pos]

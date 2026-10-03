@@ -1,6 +1,6 @@
 id: max-ten
 layer: L3
-status: experimental
+status: stable
 how_to_find: sentence-comma-count
 word_list: ten-mark
 requires: [pos]
@@ -26,6 +26,8 @@ how_to_fix:
 levels: { strict: 4, normal: 6, relaxed: 8 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  legal: measured by yarn rules:measure
 
 group: readability
 summary:

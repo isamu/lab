@@ -1,6 +1,6 @@
 id: hyphen-as-dash
 layer: L1
-status: experimental
+status: stable
 how_to_find: hyphen-dash
 languages: [en]
 severity: info

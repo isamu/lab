@@ -1,6 +1,6 @@
 id: shell-prompt-mix
 layer: L1
-status: experimental
+status: stable
 how_to_find: shell-prompt
 requires: [markdown]
 severity: info

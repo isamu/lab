@@ -131,11 +131,11 @@ describe("style: jis-z8301-2019", () => {
     assert.doesNotMatch(plain.out, /requirement-modal/u);
   });
 
-  it("the command line reports 以下の箇条 in a numbered standard under the style, and not without it", async () => {
+  it("the command line reports 以下の箇条 in a numbered standard under the style, and without it since the rule was measured (spec §21.1)", async () => {
     const source = "# 規格\n\n## 1 適用範囲\n\nこの規格は、以下の箇条で試験方法を定める。\n\n## 2 試験方法\n\n試料を乾燥させる。\n";
     const styled = await runCli({ "chaff.yaml": "language: ja\nstyle: jis-z8301-2019\n", "a.md": source }, ["a.md", "--compact"]);
     assert.match(styled.out, /「以下の箇条」ではなく、番号で指してください（この文書は箇条に番号を付けています）/u);
     const plain = await runCli({ "chaff.yaml": "language: ja\n", "a.md": source }, ["a.md", "--compact"]);
-    assert.doesNotMatch(plain.out, /vague-figure-reference/u);
+    assert.match(plain.out, /vague-figure-reference/u);
   });
 });

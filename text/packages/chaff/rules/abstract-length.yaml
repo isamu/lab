@@ -1,6 +1,6 @@
 id: abstract-length
 layer: L3
-status: experimental
+status: stable
 how_to_find: abstract-length
 severity: info
 

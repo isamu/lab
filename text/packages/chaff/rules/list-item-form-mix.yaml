@@ -1,6 +1,6 @@
 id: list-item-form-mix
 layer: L2
-status: experimental
+status: stable
 how_to_find: list-item-form-mix
 requires: [pos]
 severity: info

@@ -1,6 +1,6 @@
 id: ai-tell
 layer: L2
-status: experimental
+status: stable
 how_to_find: ai-tell
 word_list: ai-tell
 uses: [pos]

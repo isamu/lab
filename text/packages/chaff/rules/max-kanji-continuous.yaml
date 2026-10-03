@@ -1,6 +1,6 @@
 id: max-kanji-continuous
 layer: L3
-status: experimental
+status: stable
 how_to_find: kanji-run
 # 品詞があれば、住所（地名と数だけでできた連なり）と 1 つの名前（辞書の固有名詞 1 語、人の姓と名）を数えない。無くても文字だけで動く。
 uses: [pos]
@@ -8,7 +8,7 @@ uses: [pos]
 # 住所の先頭にしか来ない単位（都道府県）。地名の後ろに付けば、割られた町名ではなく地名の並び。
 extra_word_lists: [prefecture-unit]
 languages: [ja]
-severity: warning
+severity: info
 
 name:
   ja: 漢字が続きすぎている
@@ -33,6 +33,7 @@ off_for:
   legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
   literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
   speech/transcript: "A transcript records what was said: its sentences, repeats and register are the speaker's, not the writer's to fix."
+  business: measured by yarn rules:measure
 sources: [shibasaki-tamaoka-2010, lee-2016]
 
 group: readability

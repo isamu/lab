@@ -1,6 +1,6 @@
 id: empty-section
 layer: L1
-status: experimental
+status: stable
 how_to_find: empty-section
 requires: [markdown]
 severity: warning

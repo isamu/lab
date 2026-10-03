@@ -1,6 +1,6 @@
 id: doubled-word
 layer: L3
-status: experimental
+status: stable
 how_to_find: doubled-word
 word_list: doubled-word
 requires: [pos]

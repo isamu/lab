@@ -1,9 +1,9 @@
 id: latin-spacing
 layer: L3
-status: experimental
+status: stable
 how_to_find: latin-spacing
 languages: [ja]
-severity: warning
+severity: info
 # 番号・識別子として書かれた数を見分けるのに、数の後ろの語の品詞を使う。無ければ全部数える。
 uses: [pos]
 # 番地（千代田区紀尾井町1-3）を、都道府県までの地名の後ろの範囲（東京都2-3 営業日）と分ける。
@@ -37,6 +37,8 @@ how_to_fix:
 levels: { strict: 1, normal: 1, relaxed: 3 }
 
 use_for: [business, blog, technical, legal, docs, academic, literature, speech]
+off_for:
+  technical: measured by yarn rules:measure
 sources: [koyobun-2022, jtf-style-guide]
 
 group: consistency

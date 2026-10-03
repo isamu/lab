@@ -1,6 +1,6 @@
 id: teki-overuse
 layer: L3
-status: experimental
+status: stable
 how_to_find: sentence-word-count
 word_list: teki-suffix
 requires: [pos]

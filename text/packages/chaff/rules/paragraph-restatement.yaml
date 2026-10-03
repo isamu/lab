@@ -1,6 +1,6 @@
 id: paragraph-restatement
 layer: L2
-status: experimental
+status: stable
 how_to_find: paragraph-restatement
 requires: [pos]
 severity: info

@@ -1,6 +1,6 @@
 id: preferred-term
 layer: L2
-status: experimental
+status: stable
 how_to_find: preferred-term
 word_list: preferred-term
 severity: warning

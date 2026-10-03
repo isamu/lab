@@ -5,6 +5,8 @@
 #            A group's rules apply to every genre in it; a genre's own rules win over its group's.
 #            A rule a group or genre turns off says so in its own file (off_for, with why), not here; chaff reads it
 #            as an off in that group's or genre's rules. It is listed under "did not run" with the genre as the reason.
+#            An off_for entry "<group>: measured by yarn rules:measure" is written by `yarn rules:measure --apply`: the
+#            rule reports on most human documents of the group (chaff-spec.md §21.1). Edit the measurement, not these.
 #   profile: the document profile (profiles/*.yaml) this genre reads with, when chaff.yaml names none.
 #   suggest: when no genre is set, what makes a file look like this genre, strongest first:
 #            paths (the file's path), then per language an opening (the body's first line, past front matter and

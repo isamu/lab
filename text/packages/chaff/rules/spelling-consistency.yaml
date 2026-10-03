@@ -1,6 +1,6 @@
 id: spelling-consistency
 layer: L3
-status: experimental
+status: stable
 how_to_find: spelling-variety
 word_list: spelling-variant
 extra_word_lists: [spelling-ize]

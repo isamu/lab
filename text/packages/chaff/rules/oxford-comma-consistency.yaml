@@ -1,6 +1,6 @@
 id: oxford-comma-consistency
 layer: L3
-status: experimental
+status: stable
 how_to_find: oxford-comma
 languages: [en]
 # The list, its items and its conjunction are read on tokens; without them there is nothing to judge.

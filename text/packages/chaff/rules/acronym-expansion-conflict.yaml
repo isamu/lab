@@ -1,6 +1,6 @@
 id: acronym-expansion-conflict
 layer: L3
-status: experimental
+status: stable
 how_to_find: acronym-expansion-conflict
 severity: warning
 
