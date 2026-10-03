@@ -258,7 +258,7 @@ yarn format        # prettier。*.md と samples/ は手で整形しているの
 yarn lint          # eslint
 yarn typecheck     # tsc --noEmit
 yarn build         # 各 package の dist
-yarn test          # node:test
+yarn test          # node:test（yarn test --part 2/5 で 5 つに分けた 2 つ目だけ。CI は部分ごとに別の job で並べて走らせる）
 yarn knip          # 未使用の export（落とさない）
 yarn duplication   # コピペ検出（落とさない）
 yarn corpus        # corpus にかけて corpus/expected/ と比べる（--verbose で指摘も出す、--update で書き換える）
