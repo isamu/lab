@@ -130,24 +130,28 @@ const negationsOf = (lexicon: Lexicon | undefined): Negations => ({
 const isNegation = (token: Token, negations: Negations): boolean =>
   isListed(negations.words, token) || negations.prefixes.some((prefix) => token.surface.length > prefix.length && token.surface.startsWith(prefix));
 
-const hasNegation = (tokens: readonly Token[], from: number, negations: Negations): boolean =>
-  tokens.slice(from + 1).some((token) => isNegation(token, negations));
+type Placed = { readonly token: Token; readonly at: number };
 
-/** The lexicon's adverb (全然, 決して) in a sentence with no word of the negation list after it. */
+/** A negation of the writer's own after the adverb; one inside a quotation does not answer it. */
+const hasNegation = (own: readonly Placed[], from: number, negations: Negations): boolean =>
+  own.some(({ token, at }) => at > from && isNegation(token, negations));
+
+/** Each of the lexicon's adverbs (全然, 決して) with no word of the negation list after it in its sentence. */
 export const adverbPolarity: Detector = (doc, options): Finding[] => {
   const adverbs = patternsOf(options.lexicon);
   const negations = negationsOf(doc.lexicons["negation-word"]);
   return doc.sentences.flatMap((sentence) => {
-    const tokens = sentence.tokens ?? [];
-    const adverb = ownTokens(sentence).find(({ token }) => adverbs.has(token.surface));
-    if (adverb === undefined || hasNegation(tokens, adverb.at, negations)) return [];
-    return [findingAt(sentence, adverb.token.span.start, { word: adverb.token.surface })];
+    const own = ownTokens(sentence);
+    return own
+      .filter(({ token, at }) => adverbs.has(token.surface) && !hasNegation(own, at, negations))
+      .map(({ token }) => findingAt(sentence, token.span.start, { word: token.surface }));
   });
 };
 
 // --- origin-particle: a comparison particle (より) used for "from" -------------------------------------------------
 
-const SKIPPED_POS: ReadonlySet<string> = new Set(["ADV"]);
+/** Adverbs (順次) and punctuation (本日より、発送) stand between the particle and its head. */
+const SKIPPED_POS: ReadonlySet<string> = new Set(["ADV", "PUNCT"]);
 const PARTICLE = "ADP";
 const NOMINAL_POS: ReadonlySet<string> = new Set(["NOUN", "PROPN"]);
 

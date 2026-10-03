@@ -102,6 +102,12 @@ describe("adverb-without-negation", () => {
     assert.deepEqual(findingsOf(RULE, "到底無理だ。\n"), []);
   });
 
+  it("副詞ごとに見て、鉤括弧の中の打ち消しは数えない", () => {
+    assert.deepEqual(findingsOf(RULE, "全然問題ありませんが、決して簡単です。\n"), ["「決して」の後に打ち消しがありません"]);
+    assert.deepEqual(findingsOf(RULE, "決して簡単ですが、全然問題ありません。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "全然「問題ありません」と言いました。\n"), ["「全然」の後に打ち消しがありません"]);
+  });
+
   it("鉤括弧の中と、ブログでは見ない", () => {
     assert.deepEqual(findingsOf(RULE, "彼は「全然大丈夫です」と言った。\n"), []);
     assert.deepEqual(findingsOf(RULE, "納期は全然大丈夫です。\n", "normal", "blog/tech"), []);
@@ -116,6 +122,7 @@ describe("yori-as-from", () => {
     assert.deepEqual(findingsOf(RULE, "詳細は担当者よりご連絡いたします。\n"), ["起点の「より」は「から」と書けます"]);
     assert.deepEqual(findingsOf(RULE, "本日より順次発送します。\n"), ["起点の「より」は「から」と書けます"]);
     assert.deepEqual(findingsOf(RULE, "東京より参りました。\n"), ["起点の「より」は「から」と書けます"]);
+    assert.deepEqual(findingsOf(RULE, "本日より、順次発送します。\n"), ["起点の「より」は「から」と書けます"]);
   });
 
   it("比べる「より」と「により」は指さない", () => {
