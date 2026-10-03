@@ -1,0 +1,16 @@
+# 条件付きの依頼。「ご不明な点があれば…ください」は申し出で、期限の要る依頼ではない。
+id: request-condition
+language: ja
+entries:
+  - pattern: あれば
+  - pattern: ありましたら
+  - pattern: ございましたら
+  - pattern: あった場合
+  - pattern: 場合は
+  - pattern: 場合には
+  - pattern: 際は
+  - pattern: 際には
+  - pattern: ときは
+  - pattern: 時は
+  - pattern: 必要に応じて
+  - pattern: よろしければ
