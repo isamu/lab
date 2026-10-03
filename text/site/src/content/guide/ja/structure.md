@@ -172,6 +172,8 @@ draft.txt   blog/tech · 日本語   ジャンルは既定から
                   max-sentence-length
   13:7    error   「第二十三条第一項」（番地 23.1）はこの文書にありません
                   dangling-reference
+  13:92   info    「ただし」と書いています（この文書はふつう「但し」と書く語です。3 箇所のうち 1 箇所が違う）
+                  orthographic-variant
   15:2    warning この文は 101 文字あります（100 文字まで）
                   max-sentence-length
   15:2    info    「は」で出した主題から述語まで 94 字あります（80 字まで）
@@ -204,6 +206,8 @@ fixed.txt   blog/tech · 日本語   ジャンルは既定から
                   max-paragraph-length
   13:1    warning この文は 122 文字あります（100 文字まで）
                   max-sentence-length
+  14:91   info    「ただし」と書いています（この文書はふつう「但し」と書く語です。3 箇所のうち 1 箇所が違う）
+                  orthographic-variant
   16:2    warning この文は 101 文字あります（100 文字まで）
                   max-sentence-length
   16:2    info    「は」で出した主題から述語まで 94 字あります（80 字まで）
