@@ -1,0 +1,84 @@
+id: figurative-density
+layer: L2
+status: stable
+how_to_find: phrase-density
+word_list: figurative-phrase
+uses: [pos]
+severity: info
+
+name:
+  ja: 飾りのたとえが多い
+  en: Too many decorative figures
+
+why:
+  ja: 「まるで魔法のように動く」「呪文のようなコマンド」「おまじないとして書く」のようなたとえは、一つなら文に色を付けますが、重なると何がどう動くのかが書かれないまま文書が進みます。読み手は仕組みを知りたいのに、たとえしか受け取れません。一つ一つは誤りではないので、文書の長さあたりの数で見ます。たとえの一覧は語彙表 figurative-phrase にあり、語ごとに代わりに書くことの例が付いています。
+  en: 'A figure such as "works like magic", "a one-line incantation" or "our secret sauce" adds colour once. Piled up, the document goes on without saying what actually happens, and a reader who wants the mechanism gets only the figure. None of them is wrong alone, so the rule counts them per length of the document. The figures are in the lexicon figurative-phrase, each with what to write instead.'
+
+message:
+  ja: 「{matched}」など、飾りのたとえが 1000 字あたり {density} 個あります（{limit} 個まで）
+  en: '"{matched}" and other decorative figures: {density} per 1000 words (limit {limit})'
+
+how_to_fix:
+  ja: たとえの代わりに、何がどう動くのか、何ができるのかを書いてください（まるで魔法のように設定が済む → 設定ファイルを読んで自動で済ませる）。
+  en: Replace the figure with what happens ("the config sets itself up like magic" becomes "the tool reads the config file and fills in the defaults").
+
+# 「まるで魔法のように」は一つのたとえに二語が当たるので、既定は 1000 字あたり 2 個まで。
+levels: { strict: 1, normal: 2, relaxed: 3 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Figures are the writer's material in literature."
+  speech: "A speaker's figures are part of the talk."
+
+group: ai-tells
+summary:
+  ja: 「まるで魔法のように」「呪文のような」「おまじない」のような、仕組みの代わりのたとえが多い所
+  en: Decorative figures such as "like magic", "incantation" and "secret sauce" piled up in place of the mechanism
+
+example:
+  ja:
+    pad: true
+    before: |
+      このツールを入れると、まるで魔法のように設定が終わります。最初の一行は呪文のようなものなので、おまじないとして書いておいてください。
+    after: |
+      このツールを入れると、設定ファイルを読んで既定の値を自動で埋めます。最初の一行は文字コードを指定する行なので、消さずに残してください。
+  en:
+    pad: true
+    before: |
+      The installer works like magic. Our secret sauce is a one-line incantation that magically fixes every path.
+    after: |
+      The installer reads your config file and fills in the defaults. The fix is one command that rewrites every path to an absolute one.
+
+not_flagged:
+  ja: 一つ一つは誤りではないので、短い文書は測りません。例を挙げる「〜のような」（A や B のような製品）は数えません。文学と講演のジャンルでは止めています。
+  en: None of these is wrong alone, so short documents are not measured. A plain comparison or example ("tools such as A and B") is not counted. The literature and speech genres turn it off.
+level_meaning:
+  ja: 1000 字あたり飾りのたとえ {limit} 個まで
+  en: up to {limit} decorative figures per 1000 words
+
+rewrite:
+  depth: register
+  ja:
+    direction: たとえを、何がどう動くのか、何ができるのかの説明に替えてください。語彙表の語ごとの書き換えの例に従い、文書に書かれていない仕組みは作りません。
+    pairs:
+      - before: このツールを入れると、まるで魔法のように設定が終わります。
+        after: このツールを入れると、設定ファイルを読んで既定の値を自動で埋めます。
+      - before: 最初の一行はおまじないとして書いておいてください。
+        after: 最初の一行は文字コードを指定する行なので、消さずに残してください。
+    keep:
+      - 書いてある事実と手順
+    avoid:
+      - 文書に書かれていない仕組みを作って書く
+      - たとえを別のたとえに替える
+  en:
+    direction: Replace each figure with what actually happens or what the thing does, following the lexicon's hint for the phrase. Do not invent a mechanism the document does not give.
+    pairs:
+      - before: The installer works like magic.
+        after: The installer reads your config file and fills in the defaults.
+      - before: Our secret sauce is a one-line incantation that fixes every path.
+        after: The fix is one command that rewrites every path to an absolute one.
+    keep:
+      - the facts and steps the document gives
+    avoid:
+      - inventing a mechanism the document does not describe
+      - swapping one figure for another
