@@ -134,6 +134,16 @@ describe("yori-as-from", () => {
 
   it("比べられている名詞は動作として読まない", () => {
     assert.deepEqual(findingsOf(RULE, "昨年より案内の数が多い。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "昨年より販売台数が増えた。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "昨年より受付件数を増やした。\n"), []);
+  });
+
+  it("名詞を重ねた動作の語も起点として読む", () => {
+    assert.deepEqual(findingsOf(RULE, "本日より受付を開始します。\n"), ["起点の「より」は「から」と書けます"]);
+    assert.deepEqual(findingsOf(RULE, "本日より新規受付を開始します。\n"), ["起点の「より」は「から」と書けます"]);
+    assert.deepEqual(findingsOf(RULE, "本日より受付開始します。\n"), ["起点の「より」は「から」と書けます"]);
+    assert.deepEqual(findingsOf(RULE, "4月より一般販売を開始します。\n"), ["起点の「より」は「から」と書けます"]);
+    assert.deepEqual(findingsOf(RULE, "本日より受付開始。\n"), ["起点の「より」は「から」と書けます"]);
   });
 });
 
