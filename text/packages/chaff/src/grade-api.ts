@@ -15,6 +15,8 @@ import type { GradeResult } from "./grade/result.ts";
 import { parseRubric, type Rubric } from "./grade/rubric.ts";
 import { gradeSetup } from "./grade/setup.ts";
 import { GRADE_TEXT } from "./grade/text.ts";
+import { compareVariantGroups, type VariantComparison } from "./grade/variants.ts";
+import { variantGroupsOf, type VariantInput } from "./grade/variants-input.ts";
 import { settingProblems } from "./setting-problems.ts";
 import { loadStyles } from "./style-load.ts";
 
@@ -32,6 +34,8 @@ export type {
 } from "./grade/result.ts";
 export type { OutputSize } from "./grade/rates.ts";
 export { toScorer, type ChaffScore } from "./grade/scorer.ts";
+export type { Disagreement, VariantColumn, VariantComparison, VariantRates } from "./grade/variants.ts";
+export type { VariantInput } from "./grade/variants-input.ts";
 
 export type GradeOptions = {
   /** The result's id. "output" when left out. */
@@ -44,6 +48,8 @@ export type GradeOptions = {
   readonly citations?: readonly { readonly source?: string; readonly address: string; readonly quote: string }[];
   readonly language?: string;
   readonly genre?: string;
+  /** The prompt, model or setting that produced the output, kept on the result for compareVariants(). */
+  readonly variant?: string;
   /** Run the experimental rules too, as --experimental does. chaff.yaml's `experimental` when left out. */
   readonly experimental?: boolean;
   /** chaff.yaml's path, or settings already read. Without it chaff's defaults apply and no file is read. */
@@ -151,9 +157,23 @@ export const grade = async (output: string, options: GradeOptions = {}): Promise
     citations: options.citations,
     language: options.language,
     genre: options.genre,
+    variant: options.variant,
   };
   const read = readItem(raw, { isLanguage: (language) => packageFor(language) !== undefined, genres: GENRES });
   if ("problem" in read) throw new GradeInputError([TEXT.problem(read.problem)]);
   const languages = read.item.language === undefined ? [] : [read.item.language];
   return gradeItem(read.item, await loadedSetup(config, options.experimental ?? config.experimental, languages));
+};
+
+/**
+ * Several variants' results side by side on the same inputs (spec §29.5), as `chaff grade` prints them for a file whose
+ * lines carry a variant: per variant the pass rate, each rule's rate, facts dropped and added, and failed quotations,
+ * over the ids every variant answered; and the ids where pass or fail differs. Takes results labelled by `variant`
+ * (grade() with `variant`, or `chaff grade --out`), or `{ [variant]: results }`. Throws GradeInputError for a result
+ * without an id or a variant, or an id given twice in one variant.
+ */
+export const compareVariants = (results: VariantInput): VariantComparison => {
+  const read = variantGroupsOf(results);
+  if ("problems" in read) throw new GradeInputError(read.problems);
+  return compareVariantGroups(read.groups);
 };

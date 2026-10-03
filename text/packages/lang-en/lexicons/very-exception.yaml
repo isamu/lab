@@ -1,0 +1,17 @@
+# Words after "very" that are not a weak adjective propped up: "the very first", "the very same", "very few", "its very
+# own". very-adjective does not count them.
+id: very-exception
+language: en
+entries:
+  - pattern: first
+  - pattern: last
+  - pattern: next
+  - pattern: same
+  - pattern: few
+  - pattern: many
+  - pattern: little
+  - pattern: much
+  - pattern: own
+  - pattern: best
+  - pattern: least
+  - pattern: most

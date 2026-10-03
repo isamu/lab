@@ -230,6 +230,9 @@ groups:
       list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # Dialect and old usage ("an hospital") are the work's voice, and dialogue leans on "very".
+      article-sound: off
+      very-adjective: off
       # A paper's citations, figures and abstract: only the academic paper genre turns these on.
       citation-style-mix: off
       citation-reference-mismatch: off
@@ -264,6 +267,8 @@ groups:
       ra-nuki: off
       requirement-smell: off
       baito-keigo: off
+      article-sound: off
+      very-adjective: off
       homophone-slip: off
       wordy-phrase: off
       weasel-word: off
