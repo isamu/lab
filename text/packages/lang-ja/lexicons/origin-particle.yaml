@@ -1,0 +1,7 @@
+# 比べる助詞で、時や所の起点にも使われるもの。yori-as-from が読む。rewrite は起点を言う助詞。
+# 公用文では「より」は比較だけに使い、起点は「から」で書く。
+id: origin-particle
+language: ja
+entries:
+  - pattern: より
+    rewrite: から

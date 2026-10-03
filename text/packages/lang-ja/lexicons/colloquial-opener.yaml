@@ -1,0 +1,19 @@
+# 話し言葉の文頭の接続詞。colloquial-opener が読む。rewrite は書き言葉の形。
+# 「しかし」「そのため」「したがって」は書き言葉なので入れない。
+id: colloquial-opener
+language: ja
+entries:
+  - pattern: なので
+    rewrite: そのため、したがって
+  - pattern: なんで
+    rewrite: そのため
+  - pattern: だから
+    rewrite: そのため、したがって
+  - pattern: でも
+    rewrite: しかし
+  - pattern: だけど
+    rewrite: しかし
+  - pattern: けど
+    rewrite: しかし
+  - pattern: じゃあ
+    rewrite: では
