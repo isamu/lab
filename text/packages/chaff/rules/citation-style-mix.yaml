@@ -23,6 +23,11 @@ how_to_fix:
 levels: { strict: 3, normal: 2, relaxed: 1 }
 
 use_for: [academic, legal, docs, literature, speech]
+off_for:
+  legal: "A paper's citations, figures and abstract: only the academic paper genre turns these on."
+  docs: "A paper's citations, figures and abstract: only the academic paper genre turns these on."
+  literature: "A paper's citations, figures and abstract: only the academic paper genre turns these on."
+  speech: "A paper's citations, figures and abstract: only the academic paper genre turns these on."
 
 group: consistency
 summary:

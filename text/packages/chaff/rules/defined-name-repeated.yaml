@@ -24,6 +24,11 @@ how_to_fix:
 levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [legal, docs, academic, literature, speech]
+off_for:
+  docs: "Defined terms and short names are a contract's apparatus: the legal genres check them."
+  academic: "Defined terms and short names are a contract's apparatus: the legal genres check them."
+  literature: "Defined terms and short names are a contract's apparatus: the legal genres check them."
+  speech: "Defined terms and short names are a contract's apparatus: the legal genres check them."
 
 group: consistency
 summary:

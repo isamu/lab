@@ -288,6 +288,19 @@ chaff runs it only when it is given two or more files, or a folder; on one file 
 Each finding points at a line and column of its own file, so stet, the baseline and SARIF treat it like any other.
 Its `example` adds `other:`, a third file checked in the same run as `before` and `after`.
 
+Which genres a rule runs in is written in its own file too. `use_for` names the groups and genres it is for.
+To turn it off for a genre that writes that way on purpose (legal drafting's "make a payment"), name the group or genre under `off_for`, with why.
+
+```yaml
+use_for: [business, legal, docs]
+off_for:
+  legal: 'Drafting writes "in the event that" and "for the purpose of" on purpose.'
+```
+
+A rule turned off this way is listed under "did not run" with the genre as the reason.
+`genres.yaml` holds only what is about the genre itself (its name, summary, profile, how it is suggested, and the experimental rules it turns on); a new rule does not edit it.
+`yarn rules:measure --apply` writes a group it measured the rule off for into `off_for` as `measured by yarn rules:measure`.
+
 The guide's screens do not copy out what changes with every new rule.
 A screen writes `{not-run}` where chaff lists the rules that did not run (the hint under the list comes with it), and `{counts}` where `--compact` ends with its tally.
 To show one rule's line of such a list, write `{not-run: <rule>}`: chaff pads the list to its longest id, so a copied line changes with every new rule.

@@ -1925,7 +1925,7 @@ rule を既定で動かすかどうかは、**人の書いた文書で測った�
 | --- | --- | --- |
 | 既定で動く | 動くどの group でも、出る文書が 10% 以下。bench の指摘がすべて正しく、見逃しも無い | `status: stable`、自分の段で |
 | 既定で info として動く | 上のどちらかを満たさない | `status: stable`、normal の重さが info |
-| ジャンルで止める | その group の文書の過半（50% を超える）に出る | `genres.yaml` の group に `off # measured` |
+| ジャンルで止める | その group の文書の過半（50% を超える）に出る | rule のファイルの `off_for` に `<group>: measured by yarn rules:measure` |
 | experimental のまま | 文書が 10 件以上ある group で一度も動いていない（新しい rule） | `--experimental` か chaff.yaml で動く |
 
 - **10% の理由。** 判断に使う group は文書が 10 件以上ある。10 件の group では、1 件に出るだけで 10% になる。
@@ -1936,8 +1936,8 @@ rule を既定で動かすかどうかは、**人の書いた文書で測った�
   黙らせたいときは `chaff off <rule>`（または chaff.yaml の `rules:` に `off`）。
 - **過半で止める理由。** 人の文書の大半に出る指摘は、そのジャンルの書き方を言っているのであって、誤りを言っていない。
   止めた rule は「動かなかった rule」に、ジャンルを理由として並ぶ（0 件を「確かめて問題なし」に見せない）。
-- `genres.yaml` に手で書いた `off`（理由をコメントに書いたもの）は、測った結果より強い。測って止めた行だけが
-  `# measured` を持ち、測った結果が変われば外れる。
+- rule のファイルの `off_for` に手で書いた止め（理由を書いたもの）は、測った結果より強い。測って止めた行だけが
+  理由に `measured by yarn rules:measure` を持ち、測った結果が変われば外れる。
 - 意味を読む L4 の rule は `chaff test` のもので、ここでは決めない。
 
 **当てはめ方。** `yarn rules:measure --write` で測り直し、`yarn rules:measure --apply` で rule の `status` と重さ、

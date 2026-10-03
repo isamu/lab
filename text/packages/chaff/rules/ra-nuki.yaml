@@ -26,6 +26,9 @@ how_to_fix:
 levels: { strict: error, normal: warning, relaxed: info }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "A narrator may hedge, speak with ら dropped, and spell as the work's time and place did."
+  speech: "A transcript keeps the speaker's words: hedges and ら dropped as spoken."
 
 group: wording
 summary:
