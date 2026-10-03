@@ -7,6 +7,9 @@ export type GradeText = {
   readonly usage: string;
   readonly noReference: string;
   readonly noCitations: string;
+  readonly noContexts: string;
+  readonly contextsUnread: (kind: string, reason: string) => string;
+  readonly uncheckedSentences: (count: number) => string;
   readonly unknownRule: string;
   readonly rubricProblem: (problem: RubricProblem) => string;
   readonly penalty: (total: number) => string;
@@ -22,6 +25,7 @@ export type GradeText = {
   readonly outputsWith: (count: number) => string;
   readonly facts: (dropped: number, added: number, droppedKinds: string, addedKinds: string) => string;
   readonly citations: (checked: number, failed: number) => string;
+  readonly contexts: (outputs: number, checked: number, unsupported: number, kinds: string) => string;
   readonly notRunHeading: (count: number) => string;
   readonly inOutputs: (count: number) => string;
   readonly stamp: string;
@@ -41,7 +45,10 @@ const PROBLEM_JA: Readonly<Record<ItemProblemKind, (problem: ItemProblem) => str
   "not-text-map": (problem) => `${lineJa(problem)}${problem.detail ?? ""} は { "名前": "本文" } の形で書いてください`,
   "not-citations": (problem) => `${lineJa(problem)}citations は [{ "source", "address", "quote" }] の配列で書いてください`,
   "citations-without-sources": (problem) => `${lineJa(problem)}citations があるのに sources がありません。引用を照らす原文を sources に入れてください`,
+  "not-contexts": (problem) => `${lineJa(problem)}contexts は文字列の配列（["検索で取った一節", …]）で書いてください`,
   "duplicate-id": (problem) => `${lineJa(problem)}id "${problem.detail ?? ""}" は ${String(problem.first ?? 0)} 行目と同じです`,
+  "no-variant": (problem) =>
+    `${lineJa(problem)}${problem.detail ?? ""}（どの prompt や model の出力かを示す名前）がありません。並べて比べるファイルでは、どの行にも書いてください`,
   "unknown-source": (problem) => `${lineJa(problem)}引用の source "${problem.detail ?? ""}" が sources にありません`,
   "which-source": (problem) => `${lineJa(problem)}番地 ${problem.detail ?? ""} の引用に source がありません。原文が二つ以上あるときは名前を書いてください`,
   "unknown-language": (problem) => `${lineJa(problem)}language "${problem.detail ?? ""}" は読めません`,
@@ -58,7 +65,9 @@ const PROBLEM_EN: typeof PROBLEM_JA = {
   "not-text-map": (problem) => `${lineEn(problem)}${problem.detail ?? ""} must be { "name": "text" }`,
   "not-citations": (problem) => `${lineEn(problem)}citations must be an array of { "source", "address", "quote" }`,
   "citations-without-sources": (problem) => `${lineEn(problem)}citations without sources; put the text they quote in sources`,
+  "not-contexts": (problem) => `${lineEn(problem)}contexts must be an array of strings (["a retrieved passage", …])`,
   "duplicate-id": (problem) => `${lineEn(problem)}id "${problem.detail ?? ""}" is already on line ${String(problem.first ?? 0)}`,
+  "no-variant": (problem) => `${lineEn(problem)}no ${problem.detail ?? ""} (the variant's name); when a file compares variants, every line needs one`,
   "unknown-source": (problem) => `${lineEn(problem)}the citation's source "${problem.detail ?? ""}" is not in sources`,
   "which-source": (problem) => `${lineEn(problem)}the citation of ${problem.detail ?? ""} names no source; with two or more sources, name one`,
   "unknown-language": (problem) => `${lineEn(problem)}language "${problem.detail ?? ""}" cannot be read`,
@@ -92,9 +101,12 @@ const aside = (open: string, inner: string, close: string): string => (inner ===
 export const GRADE_TEXT: Texts<GradeText> = {
   ja: {
     usage:
-      "使い方: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
+      "使い方: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--variant-key <欄の名前>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
     noReference: "reference が無い（事実は reference と照らす）",
     noCitations: "citations が無い（chaff は出力から引用を推測しない）",
+    noContexts: "contexts が無い（回答の事実は、検索で取った一節と照らす）",
+    contextsUnread: (kind, reason) => `contexts と照らすとき、${kind} を読み切れなかった（${reason}）。その種類の事実は、一節にあっても見つからないことがある`,
+    uncheckedSentences: (count) => `数・日付・名前・引用の無い文 ${String(count)} 件は、contexts に支えられているかを照らしていない（意味を読む必要がある）`,
     unknownRule: "grade: に書かれているが、chaff の知らないルール",
     rubricProblem: (problem) => `chaff.yaml の ${problem.path} は${EXPECTED_JA[problem.expected]}で書いてください（書かれていたのは ${problem.written}）`,
     penalty: (total) => `減点の和: ${String(total)}`,
@@ -111,15 +123,22 @@ export const GRADE_TEXT: Texts<GradeText> = {
     facts: (dropped, added, droppedKinds, addedKinds) =>
       `事実: 落ちた ${String(dropped)}${aside("（", droppedKinds, "）")}、足された ${String(added)}${aside("（", addedKinds, "）")}`,
     citations: (checked, failed) => `引用: ${String(checked)} 件を照らし、${String(failed)} 件が外れた`,
+    contexts: (outputs, checked, unsupported, kinds) =>
+      `contexts: ${String(outputs)} 件の出力の事実 ${String(checked)} 件を照らし、${String(unsupported)} 件がどの一節にも無かった${aside("（", kinds, "）")}`,
     notRunHeading: (count) => `動かなかったもの ${String(count)} 件`,
     inOutputs: (count) => `${String(count)} 件の出力`,
     stamp: "再現の印",
   },
   en: {
     usage:
-      "usage: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--json] [--compact] [--experimental] [--genre <genre>]",
+      "usage: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--variant-key <field>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <genre>]",
     noReference: "no reference given (facts are checked against a reference)",
     noCitations: "no citations given (chaff does not guess quotations from the output)",
+    noContexts: "no contexts given (the output's facts are checked against retrieved passages)",
+    contextsUnread: (kind, reason) =>
+      `against contexts, ${kind} could not be fully read (${reason}); a fact of that kind may be in a passage and still not be found`,
+    uncheckedSentences: (count) =>
+      `${String(count)} ${count === 1 ? "sentence states" : "sentences state"} no number, date, name or quotation, so their support by contexts is not checked (it needs reading)`,
     unknownRule: "named under grade: but not a rule chaff knows",
     rubricProblem: (problem) => `chaff.yaml: ${problem.path} must be ${EXPECTED_EN[problem.expected]} (found ${problem.written})`,
     penalty: (total) => `Penalty points: ${String(total)}`,
@@ -136,6 +155,8 @@ export const GRADE_TEXT: Texts<GradeText> = {
     facts: (dropped, added, droppedKinds, addedKinds) =>
       `Facts: ${String(dropped)} dropped${aside(" (", droppedKinds, ")")}, ${String(added)} added${aside(" (", addedKinds, ")")}`,
     citations: (checked, failed) => `Quotations: ${String(checked)} checked, ${String(failed)} failed`,
+    contexts: (outputs, checked, unsupported, kinds) =>
+      `Contexts: ${String(checked)} facts checked in ${String(outputs)} ${outputs === 1 ? "output" : "outputs"}, ${String(unsupported)} in no passage${aside(" (", kinds, ")")}`,
     notRunHeading: (count) => `${String(count)} not run`,
     inOutputs: (count) => `${String(count)} ${count === 1 ? "output" : "outputs"}`,
     stamp: "Stamp",

@@ -21,12 +21,15 @@ type FactLimits = {
 
 type CitationLimits = { readonly failed?: number | undefined; readonly required: boolean };
 
+type ContextLimits = { readonly unsupported?: number | undefined; readonly allowUnsupported: readonly AtomKind[]; readonly required: boolean };
+
 export type Rubric = {
   readonly rules: Readonly<Record<string, RuleLimit>>;
   /** Undefined when not written: chaff.yaml's top-level required_sections apply. */
   readonly requiredSections?: readonly string[] | undefined;
   readonly facts?: FactLimits | undefined;
   readonly citations?: CitationLimits | undefined;
+  readonly contexts?: ContextLimits | undefined;
   readonly penalty?: number | undefined;
 };
 
@@ -114,19 +117,43 @@ const factsOf = (raw: unknown): Read<FactLimits | undefined> => {
   };
 };
 
+/** `required: true|false` under `path`: false when not written. */
+const requiredOf = (raw: Record<string, unknown>, path: string): Read<boolean> => {
+  const required = raw["required"];
+  return required === undefined || typeof required === "boolean"
+    ? ok(required === true)
+    : { value: false, problems: [problem(`${path}.required`, "boolean", required)] };
+};
+
 const citationsOf = (raw: unknown): Read<CitationLimits | undefined> => {
   if (raw === undefined) return ok(undefined);
   if (!isRecord(raw)) return { value: undefined, problems: [problem("grade.citations", "map", raw)] };
   const failed = optional(raw, "failed", "grade.citations", "count");
-  const required = raw["required"];
-  const requiredProblems = required === undefined || typeof required === "boolean" ? [] : [problem("grade.citations.required", "boolean", required)];
+  const required = requiredOf(raw, "grade.citations");
   return {
-    value: { failed: failed.value, required: required === true },
-    problems: [...failed.problems, ...requiredProblems, ...unknownKeys(raw, ["failed", "required"], "grade.citations")],
+    value: { failed: failed.value, required: required.value },
+    problems: [...failed.problems, ...required.problems, ...unknownKeys(raw, ["failed", "required"], "grade.citations")],
   };
 };
 
-const RUBRIC_KEYS: readonly string[] = ["rules", "required_sections", "facts", "citations", "penalty"];
+const contextsOf = (raw: unknown): Read<ContextLimits | undefined> => {
+  if (raw === undefined) return ok(undefined);
+  if (!isRecord(raw)) return { value: undefined, problems: [problem("grade.contexts", "map", raw)] };
+  const unsupported = optional(raw, "unsupported", "grade.contexts", "count");
+  const allowUnsupported = kindsOf(raw["allow_unsupported"], "grade.contexts.allow_unsupported");
+  const required = requiredOf(raw, "grade.contexts");
+  return {
+    value: { unsupported: unsupported.value, allowUnsupported: allowUnsupported.value, required: required.value },
+    problems: [
+      ...unsupported.problems,
+      ...allowUnsupported.problems,
+      ...required.problems,
+      ...unknownKeys(raw, ["unsupported", "allow_unsupported", "required"], "grade.contexts"),
+    ],
+  };
+};
+
+const RUBRIC_KEYS: readonly string[] = ["rules", "required_sections", "facts", "citations", "contexts", "penalty"];
 
 /**
  * The rubric, or every problem in it. No `grade:` key is no rubric: the default pass or fail applies (spec §29.3). A bare
@@ -140,15 +167,26 @@ export const parseRubric = (raw: unknown): { readonly rubric: Rubric | undefined
   const sections = wordsOf(raw["required_sections"], "grade.required_sections");
   const facts = factsOf(raw["facts"]);
   const citations = citationsOf(raw["citations"]);
+  const contexts = contextsOf(raw["contexts"]);
   const penalty = optional(raw, "penalty", "grade", "number");
   const problems = [
     ...rules.problems,
     ...sections.problems,
     ...facts.problems,
     ...citations.problems,
+    ...contexts.problems,
     ...penalty.problems,
     ...unknownKeys(raw, RUBRIC_KEYS, "grade"),
   ];
   if (problems.length > 0) return { problems };
-  return { rubric: { rules: rules.value, requiredSections: sections.value, facts: facts.value, citations: citations.value, penalty: penalty.value } };
+  return {
+    rubric: {
+      rules: rules.value,
+      requiredSections: sections.value,
+      facts: facts.value,
+      citations: citations.value,
+      contexts: contexts.value,
+      penalty: penalty.value,
+    },
+  };
 };

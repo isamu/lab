@@ -1,0 +1,11 @@
+# Words that turn a sentence into a request.
+id: request-ending
+language: en
+entries:
+  - pattern: please
+  - pattern: kindly
+  - pattern: could you
+  - pattern: can you
+  - pattern: would you
+  - pattern: we need you to
+  - pattern: i need you to

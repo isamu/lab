@@ -18,7 +18,11 @@ describe("手引きの画面", () => {
     const differingOn = async (page: GuidePage): Promise<string[]> =>
       (await differingScreens(page)).map(({ screen }) => `${pageName(page)}: ${screen.command}`);
     const differing = await guidePages().reduce<Promise<string[]>>(async (done, page) => [...(await done), ...(await differingOn(page))], Promise.resolve([]));
-    assert.deepEqual(differing, [], "these screens differ from chaff; node scripts/guide-screens.ts --check <lang>/<page>.md shows how");
+    assert.deepEqual(
+      differing,
+      [],
+      "these screens differ from chaff; yarn screens:update rewrites them to what chaff prints (read the diff), and node scripts/guide-screens.ts --check <lang>/<page>.md shows how they differ",
+    );
   });
 
   it("かけない画面の一覧は、どれもページにある", () => {

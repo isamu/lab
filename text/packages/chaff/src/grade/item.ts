@@ -1,5 +1,6 @@
 // One line of `chaff grade`'s input: a model's output and what to check it against. Pure: reads text, returns items
 // or what is wrong with them, so a harness that writes the file can be told which line to fix.
+import { resultKey } from "./result-name.ts";
 
 export type GradeCitation = { readonly source: string; readonly address: string; readonly quote: string };
 
@@ -13,7 +14,19 @@ export type GradeItem = {
   readonly citations?: readonly GradeCitation[] | undefined;
   readonly language?: string | undefined;
   readonly genre?: string | undefined;
+  /** The retrieved passages the output was meant to rest on. Undefined when not given; empty when retrieval found none. */
+  readonly contexts?: readonly string[] | undefined;
+  /** The prompt, model or setting that produced this output. Outputs of several variants are compared on the same ids. */
+  readonly variant?: string | undefined;
 };
+
+/** The fields an item already has a meaning for: none of them can name a variant. */
+export const ITEM_FIELDS: readonly string[] = ["id", "output", "reference", "sources", "citations", "contexts", "language", "genre"];
+
+/** Which field names an output's variant, and whether every line must have it (the key was given on the command line). */
+export type VariantField = { readonly key: string; readonly required: boolean };
+
+export const DEFAULT_VARIANT_FIELD: VariantField = { key: "variant", required: false };
 
 export type ItemProblemKind =
   | "not-json"
@@ -24,7 +37,9 @@ export type ItemProblemKind =
   | "not-text-map"
   | "not-citations"
   | "citations-without-sources"
+  | "not-contexts"
   | "duplicate-id"
+  | "no-variant"
   | "unknown-source"
   | "which-source"
   | "unknown-language"
@@ -77,6 +92,13 @@ const citationsOf = (raw: unknown, sources: Readonly<Record<string, string>>, li
   };
 };
 
+/** The retrieved passages: an array of strings. An empty array is a retrieval that found nothing, not a missing field. */
+const contextsOf = (raw: unknown, line: number): Parsed<readonly string[] | undefined> => {
+  if (raw === undefined) return { value: undefined };
+  const valid = Array.isArray(raw) && raw.every((passage) => typeof passage === "string");
+  return valid ? { value: raw.map(String) } : { problem: { kind: "not-contexts", line } };
+};
+
 const sourcesOf = (raw: unknown, line: number): Parsed<Readonly<Record<string, string>>> => {
   if (raw === undefined) return { value: {} };
   return isTextMap(raw) ? { value: raw } : { problem: { kind: "not-text-map", line, detail: "sources" } };
@@ -100,7 +122,14 @@ const vocabularyProblem = (fields: { language?: string; genre?: string }, vocabu
   return undefined;
 };
 
-const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVocabulary): Parsed<GradeItem> => {
+/** The variant label: a non-empty string under the variant field, or none. */
+const variantOf = (raw: Record<string, unknown>, key: string, line: number): Parsed<string | undefined> => {
+  const value = raw[key];
+  if (value === undefined) return { value };
+  return typeof value === "string" && value !== "" ? { value } : { problem: { kind: "not-string", line, detail: key } };
+};
+
+const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVocabulary, variantKey: string): Parsed<GradeItem> => {
   const id = raw["id"];
   if (typeof id !== "string" || id === "") return { problem: { kind: "no-id", line } };
   const output = raw["output"];
@@ -109,47 +138,71 @@ const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVoca
   if ("problem" in fields) return fields;
   const unknown = vocabularyProblem(fields.value, vocabulary, line);
   if (unknown !== undefined) return { problem: unknown };
+  const variant = variantOf(raw, variantKey, line);
+  if ("problem" in variant) return variant;
   const sources = sourcesOf(raw["sources"], line);
   if ("problem" in sources) return sources;
   const citations = citationsOf(raw["citations"], sources.value, line);
   if ("problem" in citations) return citations;
-  return { value: { id, output, ...fields.value, sources: sources.value, citations: citations.value } };
+  const contexts = contextsOf(raw["contexts"], line);
+  if ("problem" in contexts) return contexts;
+  const passages = contexts.value === undefined ? {} : { contexts: contexts.value };
+  const labelled = variant.value === undefined ? {} : { variant: variant.value };
+  return { value: { id, output, ...fields.value, sources: sources.value, citations: citations.value, ...passages, ...labelled } };
 };
 
 /** One item from a value already parsed, as `grade()` receives it; `line` is 0 when it came from no file. */
 export const readItem = (raw: unknown, vocabulary: ItemVocabulary, line = 0): { readonly item: GradeItem } | { readonly problem: ItemProblem } => {
-  const read = isRecord(raw) ? itemOf(raw, line, vocabulary) : { problem: { kind: "not-object" as const, line } };
+  const read = isRecord(raw) ? itemOf(raw, line, vocabulary, DEFAULT_VARIANT_FIELD.key) : { problem: { kind: "not-object" as const, line } };
   return "value" in read ? { item: read.value } : read;
 };
 
-const parseLine = (text: string, line: number, vocabulary: ItemVocabulary): Parsed<GradeItem> => {
+const parseLine = (text: string, line: number, vocabulary: ItemVocabulary, variantKey: string): Parsed<GradeItem> => {
   try {
     const raw: unknown = JSON.parse(text);
-    return isRecord(raw) ? itemOf(raw, line, vocabulary) : { problem: { kind: "not-object", line } };
+    return isRecord(raw) ? itemOf(raw, line, vocabulary, variantKey) : { problem: { kind: "not-object", line } };
   } catch (error) {
     return { problem: { kind: "not-json", line, detail: error instanceof Error ? error.message : String(error) } };
   }
 };
 
-/** An id seen on an earlier line: two outputs under one id could not be paired in an A/B comparison. */
-const duplicates = (items: readonly { readonly item: GradeItem; readonly line: number }[]): ItemProblem[] => {
+type ReadLine = { readonly item: GradeItem; readonly line: number };
+
+/** An id seen on an earlier line of the same variant: two outputs under one id could not be paired in an A/B comparison. */
+const duplicates = (items: readonly ReadLine[]): ItemProblem[] => {
   const firstLine = new Map<string, number>();
   return items.flatMap(({ item, line }) => {
-    const first = firstLine.get(item.id);
-    if (first === undefined) firstLine.set(item.id, line);
-    return first === undefined ? [] : [{ kind: "duplicate-id", line, detail: item.id, first }];
+    const key = resultKey(item);
+    const first = firstLine.get(key);
+    if (first === undefined) firstLine.set(key, line);
+    const detail = item.variant === undefined ? item.id : `${item.id} (${item.variant})`;
+    return first === undefined ? [] : [{ kind: "duplicate-id", line, detail, first }];
   });
+};
+
+/** Lines without a variant in a file that compares variants: their output would belong to no column. */
+const unlabelled = (items: readonly ReadLine[], field: VariantField): ItemProblem[] => {
+  const labelled = field.required || items.some(({ item }) => item.variant !== undefined);
+  if (!labelled) return [];
+  return items.filter(({ item }) => item.variant === undefined).map(({ line }) => ({ kind: "no-variant", line, detail: field.key }));
 };
 
 /** Every item of a JSONL text, or every problem found. A blank line is skipped; no item at all is a problem, not a clean run. */
 export const parseItems = (
   text: string,
   vocabulary: ItemVocabulary,
+  variantField: VariantField = DEFAULT_VARIANT_FIELD,
 ): { readonly items: readonly GradeItem[] } | { readonly problems: readonly ItemProblem[] } => {
   const lines = text.split(/\r?\n/u).map((body, index) => ({ body, line: index + 1 }));
-  const parsed = lines.filter(({ body }) => body.trim() !== "").map(({ body, line }) => ({ line, parsed: parseLine(body, line, vocabulary) }));
+  const parsed = lines
+    .filter(({ body }) => body.trim() !== "")
+    .map(({ body, line }) => ({ line, parsed: parseLine(body, line, vocabulary, variantField.key) }));
   const read = parsed.flatMap(({ line, parsed: entry }) => ("value" in entry ? [{ item: entry.value, line }] : []));
-  const problems = [...parsed.flatMap(({ parsed: entry }) => ("problem" in entry ? [entry.problem] : [])), ...duplicates(read)];
+  const problems = [
+    ...parsed.flatMap(({ parsed: entry }) => ("problem" in entry ? [entry.problem] : [])),
+    ...duplicates(read),
+    ...unlabelled(read, variantField),
+  ];
   if (problems.length > 0) return { problems: problems.toSorted((left, right) => left.line - right.line) };
   return read.length === 0 ? { problems: [{ kind: "empty", line: 0 }] } : { items: read.map((entry) => entry.item) };
 };
