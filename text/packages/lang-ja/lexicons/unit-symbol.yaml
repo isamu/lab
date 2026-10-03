@@ -1,0 +1,31 @@
+# 数の後ろに書く単位記号（5 GB、5GB）。unit-spacing-consistency が、数と記号の間を空けるか詰めるかの、文書の中で少ないほうを
+# 指す。記号だけを入れる（語で書く単位は空白の話にならない）。一字の記号（m、s、g）、パーセント、温度（°C）は、空けない書き方が
+# 別に定着しているので入れない。大文字小文字も含めて字面どおりに照らす。
+id: unit-symbol
+language: ja
+entries:
+  - pattern: KB
+  - pattern: kB
+  - pattern: MB
+  - pattern: GB
+  - pattern: TB
+  - pattern: PB
+  - pattern: Kbps
+  - pattern: Mbps
+  - pattern: Gbps
+  - pattern: km
+  - pattern: cm
+  - pattern: mm
+  - pattern: kg
+  - pattern: mg
+  - pattern: ms
+  - pattern: Hz
+  - pattern: kHz
+  - pattern: MHz
+  - pattern: GHz
+  - pattern: kW
+  - pattern: kWh
+  - pattern: mL
+  - pattern: px
+  - pattern: dpi
+  - pattern: fps
