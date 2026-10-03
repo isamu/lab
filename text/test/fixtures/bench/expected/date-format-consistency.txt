@@ -1,0 +1,27 @@
+table  26  21  5  0
+ja/blog  dates-two-ways-ja  found
+ja/design  dates-two-ways-ja  found
+ja/email  dates-two-ways-ja  found
+ja/figures  dates-two-ways-ja  found
+ja/itinerary  dates-two-ways-ja  found
+ja/minutes  dates-two-ways-ja  found
+ja/note  dates-two-ways-ja  found
+ja/policy  dates-two-ways-ja  found
+ja/press  dates-two-ways-ja  found
+ja/proposal  dates-two-ways-ja  found
+ja/quote  dates-two-ways-ja  found
+ja/readme  dates-two-ways-ja  found
+ja/requirements  dates-two-ways-ja  found
+en/blog  dates-two-ways-en  found
+en/design  dates-two-ways-en  found
+en/email  dates-two-ways-en  missed
+en/figures  dates-two-ways-en  missed
+en/itinerary  dates-two-ways-en  found
+en/minutes  dates-two-ways-en  missed
+en/note  dates-two-ways-en  found
+en/policy  dates-two-ways-en  found
+en/press  dates-two-ways-en  missed
+en/proposal  dates-two-ways-en  found
+en/quote  dates-two-ways-en  missed
+en/readme  dates-two-ways-en  found
+en/requirements  dates-two-ways-en  found
