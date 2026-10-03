@@ -29,7 +29,7 @@ type: words
 word_list: vague-deadline
 name: { ja: 期限があいまいな依頼, en: A deadline that is not a date }
 why: { ja: 読む人ごとに違う日を指します。, en: '"Soon" means a different day to each reader.' }
-how_to_fix: { ja: 日付か、何日以内かを書きます。, en: Write a date, or a number of days. }
+how_to_fix: { ja: 日付か、何日以内かを書きます。, en: 'Write a date, or a number of days.' }
 example:
   ja: { before: 資料は近日中に送ってください。, after: 資料は 5 月 10 日までに送ってください。 }
   en: { before: Please send the slides soon., after: Please send the slides by 10 May. }
@@ -59,6 +59,18 @@ Every id the pack ships starts with its name (`clear-requests/vague-deadline`), 
 A preset is a style (`styles/*.yaml`, as in [Define your team's writing rules](./house-style)). A pack cannot add a genre: the genres are one list that
 `--genre`, every rule's `use_for` and the rule reference share, and a genre that came and went with a plugin would make the same
 `--genre` mean different things on different machines.
+
+### Starting one, and testing it
+
+```bash
+npx chaffjs init --plugin house          # chaff-plugin-house/: one rule, its word list in Japanese and English
+cd chaff-plugin-house
+npx chaffjs plugin-test .                # each rule on its own example, in each language
+```
+
+`plugin-test` loads the folder as `chaff.yaml` would, then runs every rule on its `example`: the before must give the rule a
+finding and the after must give it none. A rule that does not run in a language (no word list for it) fails, with the reason.
+The pack it makes has `"test": "chaffjs plugin-test ."` in package.json, so `yarn test` runs the same check.
 
 ## Rules in code: two forms
 
@@ -183,6 +195,7 @@ styles: [{ id: "careful", name: "Careful with dates", summary: "An undecided dat
 
 ## Testing a plugin
 
+`npx chaffjs plugin-test <folder>` runs each rule on its own example, for a code plugin as for a rule pack.
 A rule's function only takes a document, so it can be tested without running chaff.
 Build the part of the document the function reads, call it and compare what it returns.
 

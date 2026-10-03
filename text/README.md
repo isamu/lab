@@ -199,6 +199,7 @@ rules:
 4 つで足りなければ上限を数で書けます（`max-sentence-length: 260`）。
 社内用語、必須の見出し、チームの表記、固有名詞は chaff が中身を持たず、`chaff.yaml` に書いたものだけを見ます。
 学会や JIS、公用文の表記の決まりは `style:` で名前を選ぶだけで使え、チームだけのルールは語・正規表現・品詞の並び・Node の関数で足せます。
+いくつものチームで使うルールは、YAML だけのルールの束（プラグイン）にまとめられます。`npx chaffjs init --plugin <名前>` がひな形を作り、`npx chaffjs plugin-test` が各ルールをその例にかけて確かめます。
 AI に設定を書かせるときは、`npx chaffjs rules --json` の出力を渡します。いまの値、使える値、なぜいま `off` なのかが一つに入っています。
 
 それぞれの書き方は手引きの [設定](https://isamu.github.io/lab/ja/guide/configuration/)、

@@ -157,7 +157,8 @@ npx chaffjs skill                 Claude Code の skill を入れる（--global 
 新しい言語のアダプタは誰でも出せます。公式は `@chaffjs/lang-<言語>`、第三者は `chaff-lang-<言語>` と名乗ります。
 `@typescript-eslint/*` と `eslint-plugin-*` の関係と同じで、chaff は公式、第三者の順に探して読みます。
 
-ルールは Node の関数でも書けます。一つのチームのルールは `chaff.yaml` の `custom_rules` に `type: module` で、いくつものチームで使うものはプラグインのパッケージ `chaff-plugin-<名前>` にまとめます。
+いくつものチームで使うルールは、プラグインのパッケージ `chaff-plugin-<名前>` にまとめます。ルール・語彙表・スタイルを YAML だけで書く束なら、コードは要りません（`npx chaffjs init --plugin <名前>` でひな形、`npx chaffjs plugin-test` で確かめ）。
+ルールは Node の関数でも書けます。一つのチームのルールは `chaff.yaml` の `custom_rules` に `type: module` で、プラグインでは `detect` で書きます。
 型と `defineRule` / `definePlugin` は `chaffjs/api` から読み込みます。プラグインのルールは `<名前>/<ルール>` と呼ばれ、chaff のルールと同じに `explain`・`relax`・`stet`・SARIF で扱えます。
 読み込むとそのコードが動くので、信頼できるものだけを入れてください。作り方は手引きの「[プラグインを作る](https://isamu.github.io/lab/ja/guide/writing-plugins/)」にあります。
 
