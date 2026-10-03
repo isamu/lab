@@ -92,10 +92,8 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
-      clause-chain: off # measured
       max-sentence-length: off # measured
       max-ten: off # measured
-      topic-predicate-distance: off # measured
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -133,7 +131,6 @@ groups:
       citation-reference-mismatch: off
       figure-reference-order: off
       abstract-length: off
-      max-sentence-length: off # measured
       quote-style-consistency: off # measured
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
