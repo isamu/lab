@@ -1,0 +1,33 @@
+# Words comparative-without-baseline reads: a comparison that names nothing to compare with ("The new engine is faster.").
+# more: the word that makes a comparative of an adjective ("is more efficient.").
+# comparative: one-word comparatives read when they close a clause after a verb ("is faster.", "runs better,").
+# baseline: words that name what is compared with. One in the same sentence or the one before, and the comparison has
+# its baseline.
+id: comparative-baseline
+language: en
+entries:
+  - { pattern: more, group: more }
+  - { pattern: faster, group: comparative }
+  - { pattern: better, group: comparative }
+  - { pattern: quicker, group: comparative }
+  - { pattern: easier, group: comparative }
+  - { pattern: simpler, group: comparative }
+  - { pattern: cheaper, group: comparative }
+  - { pattern: safer, group: comparative }
+  - { pattern: smarter, group: comparative }
+  - { pattern: stronger, group: comparative }
+  - { pattern: smoother, group: comparative }
+  - { pattern: than, group: baseline }
+  - { pattern: before, group: baseline }
+  - { pattern: previous, group: baseline }
+  - { pattern: previously, group: baseline }
+  - { pattern: earlier, group: baseline }
+  - { pattern: prior, group: baseline }
+  - { pattern: last, group: baseline }
+  - { pattern: old, group: baseline }
+  - { pattern: older, group: baseline }
+  - { pattern: original, group: baseline }
+  - { pattern: existing, group: baseline }
+  - { pattern: compared, group: baseline }
+  - { pattern: versus, group: baseline }
+  - { pattern: vs, group: baseline }
