@@ -76,6 +76,11 @@ groups:
       number-style-consistency: off
       # An enumeration of conditions mixes 〜こと and 〜とき by what each condition is.
       list-item-form-mix: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
@@ -107,6 +112,11 @@ groups:
       emoji-heading: off
       bold-label-list: off
       ai-structure: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
@@ -222,6 +232,11 @@ groups:
       # Older printed texts set the dash as "--" and titles in capitals.
       hyphen-as-dash: off
       all-caps-shouting: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
       # A narrator and a character speak as they speak: dialect ("would of"), "So," and hearsay are the voice.
       homophone-slip: off
       wordy-phrase: off
@@ -262,6 +277,11 @@ groups:
       # Spoken numbers are transcribed as heard.
       number-style-consistency: off
       list-item-form-mix: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
 
 genres:
   - id: technical/spec
@@ -447,6 +467,13 @@ genres:
           line: "^(?:#{1,6}\\s*)?(?:\\d+\\.?\\s+)?(?:Abstract|Keywords|Methods?|Methodology|Results|Discussion|Conclusions?|Related [Ww]ork|Bibliography|References)\\s*$",
           min_lines: 4,
         }
+    # A paper is read against its own apparatus: one citation style, citations that match the reference list, figures
+    # numbered in the order they are referred to, and an abstract of a fixed length.
+    rules:
+      citation-style-mix: normal
+      citation-reference-mismatch: normal
+      figure-reference-order: normal
+      abstract-length: normal
   - id: literature/fiction
     name: { ja: 小説, en: Fiction }
     summary:
