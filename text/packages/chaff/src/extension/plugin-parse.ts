@@ -6,6 +6,7 @@ import { styleOf, type StyleDefinition } from "../style-parse.ts";
 import type { UntrustedDetector } from "./module-detector.ts";
 import { describeValue } from "./returned-findings.ts";
 import { isPluginName } from "./plugin-name.ts";
+import { knownGenres } from "../known-genres.ts";
 
 // What a plugin package exports (api.ts PluginSpec), read into what chaff runs: its rules with ids under the plugin's
 // name, their detectors, its word lists and its house styles. A rule is read exactly like a rule in custom_rules, with
@@ -109,6 +110,7 @@ const rulesOf = (raw: unknown, context: RulesContext): Rules => {
   const parsed = parseCustomRules(Array.isArray(raw) ? raw.map((entry: unknown) => asCustomRule(entry, origin.file)) : raw, {
     builtIn: new Set(),
     useFor: context.useFor,
+    genres: knownGenres(),
     baseDir: dirname(origin.file),
   });
   const detectors = detectorsByWrittenId(Array.isArray(raw) ? raw : []);

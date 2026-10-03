@@ -6,7 +6,8 @@ import type { LanguageLevels, LevelSets, LevelTable, RuleDefinition, Severity } 
 import { rankOfSeverity, severityAt } from "./levels.ts";
 import { optionsOf } from "./rule-options.ts";
 import { ruleGuideOf } from "./rule-guide.ts";
-import { depthOfRewrite, unknownDepthSentence } from "./rewrite-depth.ts";
+import { fieldProblemSentence, fieldProblems } from "./rule-fields.ts";
+import { genresBeside } from "./known-genres.ts";
 
 const RULES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "rules");
 
@@ -143,14 +144,14 @@ const checkedSeverity = (rule: RuleDefinition, file: string): RuleDefinition => 
   throw new Error(`${file}: severity ${rule.severity} が levels の normal（${severityAt(rule, "normal")}）と違います`);
 };
 
-const toRule = (raw: unknown, language: string, file: string): RuleDefinition => {
+const toRule = (raw: unknown, language: string, file: string, genres: readonly string[]): RuleDefinition => {
   if (!isRecord(raw)) throw new Error(`${file}: rule は object であること`);
   const levels = flattenLevels(raw["levels"], language);
   const missing = missingFields(raw, levels);
   if (missing.length > 0) throw new Error(`${file}: 必須フィールドがありません: ${missing.join(", ")}`);
   if (levels === undefined) throw new Error(`${file}: levels を解決できません`);
-  const depth = depthOfRewrite(raw["rewrite"]);
-  if ("unknown" in depth) throw new Error(`${file}: ${unknownDepthSentence("rewrite.depth", depth.unknown, "ja")}`);
+  const [problem] = fieldProblems(raw, genres);
+  if (problem !== undefined) throw new Error(`${file}: ${fieldProblemSentence(problem, "ja")}`);
   return checkedSeverity(ruleOf(raw, levels, levelSetsOf(raw, language, file), language, file), file);
 };
 
@@ -196,8 +197,10 @@ const parseRule = (dir: string, file: string): unknown => {
   }
 };
 
-export const loadRules = (language: string, dir: string = RULES_DIR): RuleDefinition[] =>
-  readdirSync(dir)
+export const loadRules = (language: string, dir: string = RULES_DIR): RuleDefinition[] => {
+  const genres = genresBeside(dir);
+  return readdirSync(dir)
     .filter((file) => file.endsWith(".yaml"))
     .toSorted((left, right) => left.localeCompare(right, "en"))
-    .map((file) => toRule(parseRule(dir, file), language, file));
+    .map((file) => toRule(parseRule(dir, file), language, file, genres));
+};
