@@ -1,0 +1,29 @@
+# 英語の月の名前。日本語の文書も英語の日付（Oct 2, 2026）を書くので、date-format-consistency がそれを読むのに使う。
+# 書いたとおり（頭が大文字）に照らす。略した名前の後ろの点は有っても無くてもよい。
+id: month-name
+language: ja
+entries:
+  - pattern: January
+  - pattern: February
+  - pattern: March
+  - pattern: April
+  - pattern: May
+  - pattern: June
+  - pattern: July
+  - pattern: August
+  - pattern: September
+  - pattern: October
+  - pattern: November
+  - pattern: December
+  - pattern: Jan
+  - pattern: Feb
+  - pattern: Mar
+  - pattern: Apr
+  - pattern: Jun
+  - pattern: Jul
+  - pattern: Aug
+  - pattern: Sept
+  - pattern: Sep
+  - pattern: Oct
+  - pattern: Nov
+  - pattern: Dec
