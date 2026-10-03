@@ -2,7 +2,6 @@ id: ellipsis-consistency
 layer: L2
 status: stable
 how_to_find: ellipsis-consistency
-word_list: ellipsis
 severity: info
 
 name:
