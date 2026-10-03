@@ -1,0 +1,6 @@
+# 逆接の接続助詞。adversative-ga-repeat が一文の中の数を数える。品詞が接続助詞のときだけ数えるので、
+# 格助詞の「が」（私が、）は当たらない。「けれど」「けど」は話し言葉寄りで、重ねても読み違えにくいので入れない。
+id: adversative-particle
+language: ja
+entries:
+  - pattern: が
