@@ -52,6 +52,17 @@ const citationFailures = (input: RubricInput, rubric: Rubric): string[] => {
   ];
 };
 
+const contextFailures = (input: RubricInput, rubric: Rubric): string[] => {
+  const limits = rubric.contexts;
+  if (limits === undefined) return [];
+  return [
+    ...(limits.unsupported === undefined || input.contexts === undefined
+      ? []
+      : overLimit("contexts.unsupported", counted(input.contexts.unsupported), limits.unsupported)),
+    ...(limits.required && input.contexts === undefined ? ["contexts.required: no contexts given"] : []),
+  ];
+};
+
 /** One item per finding of a weighted rule, so every point names the finding it came from; the penalty is their sum. */
 export const scoreOf = (input: Pick<RubricInput, "findings">, rubric: Rubric): GradeScore => {
   const items = input.findings.flatMap((finding) => {
@@ -68,6 +79,7 @@ export const rubricVerdict = (input: RubricInput, rubric: Rubric): { readonly ve
     ...sectionFailures(input),
     ...factFailures(input, rubric),
     ...citationFailures(input, rubric),
+    ...contextFailures(input, rubric),
     ...(rubric.penalty === undefined ? [] : overLimit("score.penalty", score.penalty, rubric.penalty)),
   ];
   return { verdict: verdictOf(failures), score };

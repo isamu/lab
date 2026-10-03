@@ -5,6 +5,17 @@ import { counted, formFor } from "./render/plural.ts";
 import type { GenreSetting } from "./genre-check.ts";
 import type { ProfileSetting } from "./profile/check.ts";
 
+/** What a folder walk looked for, and how to look for more. Markdown always; include adds file-name globs. */
+const lookedForJa = (include: readonly string[]): string => {
+  const also = include.length > 0 ? `と ${include.join(" ")}` : "";
+  return `  探したもの: Markdown（.md .markdown .mdx）${also}。ほかのファイルも検査するには、chaff.yaml に include: ["*.yaml"] と書くか、--include "*.yaml" を付けてください。`;
+};
+
+const lookedForEn = (include: readonly string[]): string => {
+  const also = include.length > 0 ? ` and ${include.join(", ")}` : "";
+  return `  Looked for Markdown (.md, .markdown, .mdx)${also}. To check other files too, add include: ["*.yaml"] to chaff.yaml, or pass --include "*.yaml".`;
+};
+
 /** Where a file's genre came from, as the header names it. */
 export type GenreSource = "--genre" | "by_path" | "config" | "default" | "front-matter" | "path" | "content";
 
@@ -32,6 +43,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff baseline <dir>           いまある指摘を棚上げする（既存の repo に入れるとき）
   chaff suppressions <dir>       stet で黙らせている指摘を数える
   chaff relax|strict|off <rule> [--why "理由"]
+  chaff enable <rule> [--why "理由"]  試験中のルールを 1 つだけ動かす（chaff.yaml の rules に <rule>: normal と書く）
   chaff skill [--global]         Claude Code の skill を入れる（.claude/skills/chaff/、--global で ~/.claude/）
   chaff feedback <file> --rule <rule> [--line N] | --missed --line N
                                  誤った指摘・見逃しの報告の下書きを作る（何も送らない。--with-config で chaff.yaml 全体も載せる）
@@ -43,6 +55,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   --watch           保存のたびに見直し、変わったところだけ出す
   --dry-run         test で、何を AI に送るかだけを見る（API を呼びません）
   --sarif <path>    指摘を SARIF で書き出す（GitHub の PR の行に出すため）
+  --include <glob>  フォルダを見るとき、Markdown のほかにこのファイルも検査する（--include "*.yaml"。chaff.yaml の include と同じ）
 
 この箇所だけ黙らせる:  <!-- stet: rule-id — 理由 -->
 
@@ -73,6 +86,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff baseline <dir>           shelve today's findings (when adding chaff to an existing repository)
   chaff suppressions <dir>       count the findings silenced with stet
   chaff relax|strict|off <rule> [--why "reason"]
+  chaff enable <rule> [--why "reason"]  turn on one experimental rule alone (writes <rule>: normal under rules in chaff.yaml)
   chaff skill [--global]         install the Claude Code skill (.claude/skills/chaff/; --global for ~/.claude/)
   chaff feedback <file> --rule <rule> [--line N] | --missed --line N
                                  draft a report of a wrong or missed finding (sends nothing; --with-config adds all of chaff.yaml)
@@ -84,6 +98,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   --watch           re-check on every save and print only what changed
   --dry-run         with test, show what would be sent to the AI (no API call)
   --sarif <path>    write the findings as SARIF (for comments on a GitHub PR)
+  --include <glob>  in a folder, check these files besides Markdown (--include "*.yaml"; as include in chaff.yaml)
 
 Silence one spot:  <!-- stet: rule-id — reason -->
 
@@ -97,8 +112,9 @@ export type CliText = {
   readonly header: (path: string, genre: string, language: string, from: string, shelved: number, hushed: number) => string;
   readonly suggested: (name: string, genre: string) => string;
   readonly suggestedNote: (name: string, genre: string, used: string) => string;
-  readonly noMarkdown: (targets: string) => string;
-  readonly noMarkdownHere: string;
+  /** Nothing to check among targets; include: the globs looked for besides Markdown. Says how to look for more. */
+  readonly noMarkdown: (targets: string, include: readonly string[]) => string;
+  readonly noMarkdownHere: (include: readonly string[]) => string;
   readonly noAdapter: (language: string) => string;
   readonly unknownGenre: (genre: string, where: string, known: readonly string[]) => string;
   readonly genreWhere: (where: GenreSetting, files: readonly string[]) => string;
@@ -136,8 +152,8 @@ export const CLI_TEXT: Texts<CliText> = {
     suggested: (name, genre) => `   ${name}のようです。--genre ${genre} を試せます`,
     suggestedNote: (name, genre, used) =>
       `  ジャンルを決めていないので、${used} として見ました。${name}なら、--genre ${genre} でその種類の書き方に合わせて見ます（npx chaffjs genres で一覧）。`,
-    noMarkdown: (targets) => `Markdown が 1 つも見つかりませんでした: ${targets}`,
-    noMarkdownHere: "Markdown が 1 つも見つかりませんでした。",
+    noMarkdown: (targets, include) => `検査するファイルが 1 つも見つかりませんでした: ${targets}\n${lookedForJa(include)}`,
+    noMarkdownHere: (include) => `検査するファイルが 1 つも見つかりませんでした。\n${lookedForJa(include)}`,
     noAdapter: (language) => `言語 "${language}" のアダプタがありません。`,
     unknownGenre: (genre, where, known) =>
       `ジャンル "${genre}" はありません（${where}）。使えるのは ${known.join("、")} です。npx chaff genres で一覧が出ます。`,
@@ -186,8 +202,8 @@ export const CLI_TEXT: Texts<CliText> = {
     suggested: (name, genre) => `   Looks like: ${name}. Try --genre ${genre}`,
     suggestedNote: (name, genre, used) =>
       `  No genre was set, so this was checked as ${used}. If it is ${name}, --genre ${genre} checks it the way that kind is written (npx chaffjs genres lists them).`,
-    noMarkdown: (targets) => `No Markdown files found: ${targets}`,
-    noMarkdownHere: "No Markdown files found.",
+    noMarkdown: (targets, include) => `No files to check found: ${targets}\n${lookedForEn(include)}`,
+    noMarkdownHere: (include) => `No files to check found.\n${lookedForEn(include)}`,
     noAdapter: (language) => `No language package for "${language}".`,
     unknownGenre: (genre, where, known) => `There is no genre "${genre}" (${where}). The genres are ${known.join(", ")}. npx chaff genres lists them.`,
     genreWhere: (where, files) => {

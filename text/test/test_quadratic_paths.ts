@@ -52,20 +52,20 @@ describe("fingerprints: one per finding, computed once per sentence and rule", (
     const shared = "the the  cat\n sat";
     const findings = [finding("a", shared), finding("b", shared), finding("a", ` ${shared} `.trim()), finding("a", "the the cat sat"), finding("a", "other")];
     assert.deepEqual(
-      fingerprints("x.md", findings),
+      fingerprints("x.md", findings, "."),
       findings.map((one) => fingerprint("x.md", one)),
     );
   });
 
   it("does not reuse a fingerprint across rules or across sentences", () => {
-    const [first, second, third] = fingerprints("x.md", [finding("a", "s"), finding("b", "s"), finding("a", "t")]);
+    const [first, second, third] = fingerprints("x.md", [finding("a", "s"), finding("b", "s"), finding("a", "t")], ".");
     assert.notEqual(first, second);
     assert.notEqual(first, third);
   });
 
   it("shelves by the same fingerprints as before", () => {
     const findings = [finding("a", "s"), finding("b", "s"), finding("a", "s")];
-    const split = splitByBaseline("x.md", findings, { version: 1, created: "2026-10-01", entries: [fingerprint("x.md", finding("a", "s"))] });
+    const split = splitByBaseline("x.md", findings, { version: 1, created: "2026-10-01", entries: [fingerprint("x.md", finding("a", "s"))] }, ".");
     assert.deepEqual(split, { fresh: [findings[1]], shelved: 2 });
   });
 

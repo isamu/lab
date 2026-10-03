@@ -1,0 +1,7 @@
+# The labels of a paper's abstract: a heading, a line of its own, or the head of the paragraph ("Abstract: We …").
+# Compared without case, numbers, colons or brackets.
+id: abstract-heading
+language: en
+entries:
+  - pattern: Abstract
+  - pattern: Summary

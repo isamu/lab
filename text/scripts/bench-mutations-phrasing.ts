@@ -258,7 +258,7 @@ const prefixFirstFitting = (phrase: string, line: string): string | undefined =>
 };
 
 /** chaff が繰り返しを数える長さか。短い文書では ngram-repetition は走らない。 */
-const isCounted = (source: string, context: PlantContext): boolean =>
+export const isCounted = (source: string, context: PlantContext): boolean =>
   context.lengthUnit !== undefined && context.documentLength !== undefined && context.documentLength(source) >= MIN_DOCUMENT_LENGTH[context.lengthUnit];
 
 /**

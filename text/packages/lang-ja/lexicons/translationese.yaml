@@ -1,0 +1,38 @@
+# 翻訳調。英語の構文をそのまま写した言い回し（enable X to → 〜を可能にする、play an important role in → 重要な役割を果たす）。
+# translationese-density が文書の長さあたりの数で読む。一つ一つは誤りではないので、重なったときだけ言う。
+# 人の書いた技術記事でもふつうに使う言い回し（〜を提供する、〜に焦点を当てる、〜することができる）は載せない。
+# 一つの文に二つの語が当たると二つと数えるので、ほかの語を含む長い形（することを可能にする）は載せない。
+# 動詞は原形で書けば活用した形（可能にします、果たしている）にも当たる。rewrite は日本語として素直な言い方の例。
+id: translationese
+language: ja
+entries:
+  - pattern: を可能にする
+    rewrite: 〜ができる、〜ができるようになる
+  - pattern: 重要な役割を果たす
+    rewrite: 大きく関わる、〜に欠かせない
+  - pattern: されることができる
+    rewrite: 〜できる、〜される
+  - pattern: を確実にする
+    rewrite: 必ず〜する、〜を確かめる
+  - pattern: であることに注意してください
+    rewrite: 〜です（注意が要る理由を書く）
+  - pattern: することを忘れないでください
+    rewrite: 必ず〜してください
+  - pattern: ように設計されている
+    rewrite: 〜のために作られている、〜できる
+  - pattern: という事実
+    rewrite: こと
+  - pattern: アクセスを持つ
+    rewrite: 使える、見られる
+  - pattern: という特徴を持つ
+    rewrite: 〜が特徴だ
+  - pattern: という利点を持つ
+    rewrite: 〜という利点がある
+  - pattern: あなたは
+    rewrite: 主語を省く、または「読者は」「利用者は」
+  - pattern: あなたの
+    rewrite: 主語を省く、または「自分の」
+  - pattern: 彼女は
+    rewrite: 名前で呼ぶ、または主語を省く
+  - pattern: 彼らは
+    rewrite: 名前で呼ぶ、または主語を省く

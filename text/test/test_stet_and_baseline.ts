@@ -2,9 +2,9 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, posix, win32 } from "node:path";
 import { applySuppressions, parseSuppressions } from "../packages/chaff/src/stet.ts";
-import { fingerprint, prune, readBaseline, splitByBaseline, writeBaseline } from "../packages/chaff/src/baseline.ts";
+import { baselinePath, fingerprint, fingerprints, prune, readBaseline, splitByBaseline, writeBaseline } from "../packages/chaff/src/baseline.ts";
 import type { Finding } from "../packages/chaff/src/plugin.ts";
 
 const finding = (rule: string, line: number, quote = "本文"): Finding => ({ rule, severity: "warning", line, column: 1, quote, values: {} });
@@ -68,12 +68,14 @@ describe("stet の適用", () => {
   });
 });
 
+const FOLDER = "/repo";
+
 describe("baseline", () => {
   const tmpFile = (): string => join(mkdtempSync(join(tmpdir(), "chaff-")), ".chaff-baseline.json");
 
   it("棚上げしたものは報告しない", () => {
     const one = finding("bold-density", 5, "ここが問題の文");
-    const split = splitByBaseline("a.md", [one], { version: 1, created: "2026-09-11", entries: [fingerprint("a.md", one)] });
+    const split = splitByBaseline("a.md", [one], { version: 1, created: "2026-09-11", entries: [fingerprint("a.md", one)] }, FOLDER);
     assert.equal(split.fresh.length, 0);
     assert.equal(split.shelved, 1);
   });
@@ -81,7 +83,7 @@ describe("baseline", () => {
   it("新しく増えたものは報告する", () => {
     const old = finding("bold-density", 5, "古い文");
     const fresh = finding("bold-density", 9, "新しい文");
-    const split = splitByBaseline("a.md", [old, fresh], { version: 1, created: "2026-09-11", entries: [fingerprint("a.md", old)] });
+    const split = splitByBaseline("a.md", [old, fresh], { version: 1, created: "2026-09-11", entries: [fingerprint("a.md", old)] }, FOLDER);
     assert.deepEqual(
       split.fresh.map((entry) => entry.quote),
       ["新しい文"],
@@ -103,8 +105,29 @@ describe("baseline", () => {
     assert.notEqual(fingerprint("a.md", finding("x", 1)), fingerprint("b.md", finding("x", 1)));
   });
 
+  it("Windows の区切りで渡したパスも、POSIX の区切りで渡したパスと同じ fingerprint になる", () => {
+    const one = finding("x", 1, "同じ文");
+    const onWindows = fingerprint(baselinePath("docs\\a.md", "C:\\repo", win32), one);
+    const onPosix = fingerprint(baselinePath("docs/a.md", "/repo", posix), one);
+    assert.equal(onWindows, onPosix);
+    assert.equal(fingerprint(baselinePath("C:\\repo\\docs\\a.md", "C:\\repo", win32), one), onPosix);
+    assert.equal(onPosix, fingerprint("docs/a.md", one), "macOS / Linux で書いた baseline はそのまま使える");
+  });
+
+  it("baseline のフォルダからの相対で覚える（./ や絶対パスで渡しても同じ）", () => {
+    assert.equal(baselinePath("./docs/a.md", "/repo", posix), "docs/a.md");
+    assert.equal(baselinePath("/repo/docs/a.md", "/repo", posix), "docs/a.md");
+    assert.equal(baselinePath(".\\docs\\a.md", "C:\\repo", win32), "docs/a.md");
+    assert.equal(baselinePath("../other/a.md", "/repo", posix), "../other/a.md");
+  });
+
+  it("この OS で数えた fingerprint も、区切りを「/」にしたパスで数える", () => {
+    const one = finding("x", 1, "同じ文");
+    assert.deepEqual(fingerprints(join("docs", "a.md"), [one], process.cwd()), [fingerprint("docs/a.md", one)]);
+  });
+
   it("baseline が無ければ全部を報告する", () => {
-    assert.equal(splitByBaseline("a.md", [finding("x", 1)], undefined).fresh.length, 1);
+    assert.equal(splitByBaseline("a.md", [finding("x", 1)], undefined, FOLDER).fresh.length, 1);
   });
 
   it("書き出して読み戻せる", () => {

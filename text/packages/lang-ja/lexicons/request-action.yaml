@@ -1,0 +1,31 @@
+# 依頼する動作のうち、済んだかどうかが後で分かるもの（返事・提出・確認）。「ご了承ください」「ご注意ください」のような心構えの依頼は入れない。
+id: request-action
+language: ja
+entries:
+  - pattern: 確認
+  - pattern: 返信
+  - pattern: 返事
+  - pattern: 回答
+  - pattern: 提出
+  - pattern: 送付
+  - pattern: 送って
+  - pattern: 送り
+  - pattern: 連絡
+  - pattern: 共有
+  - pattern: 対応
+  - pattern: 準備
+  - pattern: 用意
+  - pattern: 記入
+  - pattern: 検討
+  - pattern: 承認
+  - pattern: 修正
+  - pattern: 報告
+  - pattern: 手配
+  - pattern: 登録
+  - pattern: 申請
+  - pattern: 知らせ
+  - pattern: 教え
+  - pattern: 入力
+  - pattern: 更新
+  - pattern: 決めて
+  - pattern: 作成

@@ -52,7 +52,7 @@ export const contextOf = (sample: Sample): PlantContext => ({
 });
 
 /** Whether chaff runs the rule on this sample at all: its languages, a genre in its use_for, and not off in the genre's preset. */
-export const runsOn = (sample: Sample, id: string): boolean =>
+export const runsOn = (sample: Pick<Sample, "language" | "genre">, id: string): boolean =>
   rulesOf(sample.language).some((rule) => rule.id === id && runsInBench(rule, sample.genre, presetLevels(sample.genre)));
 
 export const teamOf = (sample: Sample): TeamWords => ({ jargon: TEAM_JARGON, requiredSections: requiredSectionsOf(sample.source), prefer: TEAM_PREFER });

@@ -1,0 +1,40 @@
+# いつまでかを言う語。日付と時刻は語彙表でなく、文書の日付と時刻の形で読む。
+id: request-deadline
+language: ja
+entries:
+  - pattern: まで
+  - pattern: 期限
+  - pattern: 締め切り
+  - pattern: 締切
+  - pattern: 本日中
+  - pattern: 今日中
+  - pattern: 明日
+  - pattern: 明朝
+  - pattern: 今週
+  - pattern: 来週
+  - pattern: 今月
+  - pattern: 来月
+  - pattern: 至急
+  - pattern: 早急
+  - pattern: 速やかに
+  - pattern: すみやかに
+  - pattern: 直ちに
+  - pattern: ただちに
+  - pattern: 次回
+  - pattern: 月曜
+  - pattern: 火曜
+  - pattern: 水曜
+  - pattern: 木曜
+  - pattern: 金曜
+  - pattern: 土曜
+  - pattern: 日曜
+  - pattern: 午前
+  - pattern: 午後
+  - pattern: 中旬
+  - pattern: 上旬
+  - pattern: 下旬
+  - pattern: 月末
+  - pattern: 週明け
+  - pattern: 期間内
+  - pattern: 期間中
+  - pattern: この期間

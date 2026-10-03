@@ -1,0 +1,14 @@
+# 依頼の文の終わり。相手に何かをしてもらう言い方。
+id: request-ending
+language: ja
+entries:
+  - pattern: ください
+  - pattern: 下さい
+  - pattern: お願いします
+  - pattern: お願いいたします
+  - pattern: お願い致します
+  - pattern: お願い申し上げます
+  - pattern: いただけますか
+  - pattern: いただけますでしょうか
+  - pattern: いただけないでしょうか
+  - pattern: 願います

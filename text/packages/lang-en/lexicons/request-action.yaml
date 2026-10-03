@@ -1,0 +1,32 @@
+# Actions whose completion can be checked later (send, submit, confirm). Courtesy requests (note that, be aware) are left out.
+id: request-action
+language: en
+entries:
+  - pattern: send
+  - pattern: review
+  - pattern: confirm
+  - pattern: reply
+  - pattern: respond
+  - pattern: submit
+  - pattern: share
+  - pattern: update
+  - pattern: prepare
+  - pattern: provide
+  - pattern: complete
+  - pattern: fill
+  - pattern: sign
+  - pattern: approve
+  - pattern: check
+  - pattern: let me know
+  - pattern: let us know
+  - pattern: get back
+  - pattern: return
+  - pattern: upload
+  - pattern: register
+  - pattern: forward
+  - pattern: fix
+  - pattern: finish
+  - pattern: book
+  - pattern: arrange
+  - pattern: decide
+  - pattern: write

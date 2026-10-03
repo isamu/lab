@@ -640,8 +640,11 @@ genres:
 | `undefined-acronym` ✅ | 略語の初出時の展開 | business | warning |
 | `emoji-density` ✅ | 絵文字・装飾記号の密度 | blog | info |
 | `heading-level-skip` ✅ | 見出しの深さの飛び（`##` の次の `####`） | 両方 | warning |
+| `heading-numbering-mix` | 兄弟の見出しで番号の有無・書き方（1. / 1） / 第1章）が混ざる。少ないほうを指す。語彙表 heading-number-label と unnumbered-heading | 両方 | warning |
 | `image-alt-text` ✅ | 代替テキストの無い画像 | 両方 | warning |
+| `vague-link-text` | 言葉全体が「こちら」「click here」のリンク（WCAG 2.4.4）。語彙表 vague-link-text、インラインのリンクだけ | 両方 | warning |
 | `broken-link` ✅ | 行き先の無いリンク（空・無い見出し・定義の無い参照） | 両方 | warning |
+| `cross-doc-broken-link` ✅ | 一緒に見たほかのファイルへの相対リンクで、行き先のファイルか見出しが無いもの（ファイルが二つ以上のときだけ） | 両方 | warning |
 | `url-run-on` ✅ | URL の直後に空白なしで続く ASCII でない字 | 両方 | warning |
 | `duplicate-heading` ✅ | 同じ親の下の同じ言葉の見出し（MD024 siblings_only） | 両方 | warning |
 | `empty-section` ✅ | 中身の無い節（すぐ後ろに同じ深さか浅い見出し） | 両方 | warning |
@@ -825,6 +828,7 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `unsourced-number` | pattern-cooccurrence | business | warning |
 | `internal-jargon` ✅ | phrase-match（ユーザー辞書） | business | warning |
 | `preferred-term` | チームの表記（`prefer`） | 両方 | warning |
+| `cross-doc-term-variant` ✅ | ファイルによって違う書き方の語（語末の「ー」、英米の綴り、ハイフンの有無）。使うファイルの少ないほうを指摘（ファイルが二つ以上のときだけ） | 両方 | warning |
 | `repeated-conjunction` ✅ | 段落先頭の語彙照合 | 両方 | warning |
 | `ai-tell` ✅ | weighted phrase-match | blog | info |
 | `contrast-framing` ✅ | 対比の枠（frame の語、または打ち消しとそれを返す語）の密度 | blog | info |
@@ -941,6 +945,8 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `ra-nuki` ✅ | ら抜き言葉。lang-ja が一段・カ変動詞の未然形＋「れる」に `PotentialRa=Dropped` を付ける | pos |
 | `katakana-long-vowel` ✅ | カタカナ語の語末の「ー」。既定は同じ語の混在だけ。options で省く・付けるを決める | pos |
 | `hankaku-kana` ✅ | 半角の片仮名と半角の句読点。コード・リンク・引いた名前の中は除く | - |
+| `translationese-density` | 翻訳調（を可能にする、重要な役割を果たす、されることができる、あなたは）の密度。語彙表 translationese を共通の phrase-density で数える。上限は人の書いた Qiita の記事で決めた | pos |
+| `misconversion` | 仮名漢字変換の取り違え（以外と簡単、始めて会う、確立が高い、不可決）。前後の語まで語彙表 misconversion に書いた形だけ。detector は known-correction | pos |
 
 `katakana-long-vowel` は語を形態素解析で取る。複合語の中の「ユーザー」（ユーザーインターフェース）も一語として見る。
 音は語末の「ー」を除いて「コ・ン・ピュ・ー・タ」と数える（カーは 1 音、カバーは 2 音。JIS Z 8301:2011 表 G.3 の数え方）。小さい「ャュョァィゥェォ」は前の字と
@@ -984,6 +990,10 @@ rule は `requires: [pos]` を宣言する。満たせない言語では理由�
 | `title-case-consistency` ✅ | 見出しの大文字化規則の一貫性 | - |
 | `contraction-consistency` ✅ | 短縮形の使用が文書内で一貫しているか | - |
 | `name-variant` | 同じ名前（固有名詞の続き）を少しだけ違う形で書く。書き方だけの違い（大小・幅・空白・記号）、読みが同じで一語だけ違う、英字の一字違い（多いほうが二度以上・少ないほうが一度）。日本語でも動く | pos |
+| `unknown-word` | 辞書に無く、一字違いの辞書の語がある英語の語（attched → attached）。辞書は lang-en の lexicons/dictionary.txt（wink-lexicon と WordNet から scripts/en-dictionary.ts で作る）、語尾・接頭辞・足す語は語彙表 word-suffix・word-prefix・extra-word。大文字を含む語、二度以上使う語、言い直しの無い語は言わない | - |
+| `date-format-consistency` | 一つの文書で日付を二通りに書く（2026-10-02 / 2026年10月2日 / Oct 2, 2026 / 10/2/2026）。年月日のそろった日付だけ、少ないほうを指す。月の名前は語彙表 month-name、元号は calendar-era。日本語でも動く | - |
+| `known-misspelling` | よくある書き誤り（シュミレーション、ですす、seperate）。語彙表の組（誤った形→正しい形）を語の切れ目で照らし、正しい形を添える。日本語でも動く | pos |
+| `redundant-expression` | 重言（頭痛が痛い、一番最初、end result、each and every）。語彙表 redundant-expression の語ごとに重ねを外した形を持つ。日本語でも動く | pos |
 | `spelling-consistency` ✅ | イギリスとアメリカの綴りの一貫性。語彙表 spelling-variant と spelling-ize の組ごとに少ないほうを指摘 | - |
 | `space-before-punctuation` ✅ | 句読点の前の空白（"word ."）。コロン・空白で区切った点・数の後ろは除く | - |
 
@@ -1884,34 +1894,58 @@ Precision / Recall
 
 ---
 
-### 21.1 昇格の条件
+### 21.1 既定で動かす条件（測って決める）
 
-`experimental` から `stable`（既定で動く）へ移す条件は 3 つ。**実文書で発火したこと**を要る。
+rule を既定で動かすかどうかは、**人の書いた文書で測った数で、機械的に決める**。rule ごとに人が読んで昇格させる
+やり方はやめた。読んで決めると、rule が増えるほど判断が追いつかず、ほとんどの rule が `experimental` のまま
+既定で動かない状態になっていた。いまは大半の rule が `--experimental` 無しで動く。
 
-1. `examples/` の実文書で発火した
-2. 出た指摘を読んで、正しいと判断できた
-3. `chaff eval` の目標（誤検知率 5% 未満）を満たしている
+**測るもの（`yarn rules:measure`）。** rule ごと、ジャンルの group（技術文書、ブログ、ビジネス文書、法務……）ごとに:
 
-**一度も発火していない rule は昇格させない。** 合成した文書で動くことは「壊れていない」証拠であって、
-「既定で出してよい」証拠ではない。0 件は、良い rule と壊れた rule を見分けない。
+1. **人の文書で出る割合。** corpus（`corpus/docs`、`corpus/laws`、取得した `corpus/.cache`）の各文書を、
+   その文書のジャンルの段で読む。ジャンルが止めている rule も normal で動かして測る（止めた rule も測り続けるため）。
+   分母は、その rule が実際に動いた文書（記法や見出しが無くて動けなかった文書は入れない）。
+2. **bench で指摘が正しかった割合。** 植えた誤りを見つけた数と、きれいな見本での誤報の数（`yarn bench`）、
+   AI の形の見本での当たりと、人の見本・書き直した見本での誤報（`yarn bench:ai`）。コミット済みの期待値から読む。
+3. **手元の基準の文書で出る割合（任意）。** `--baseline <dir>` に置いた文書（たとえば LLM 以前の Qiita 記事）。
+   再配布できない文書なので、コミットするものには入れない。参考の列で、判断には使わない。
 
-`agentless-passive` は 1 と 3 を満たすが 2 で止めている。実文書 5 件中 4 件が真で、
-残る 1 件は「れる・られる」の多義（§26-6）。**8 割は既定で出すには足りない。**
-corpus の日本語業務文書では、決まり・文書の中身・状態を言う受動と、仮定の節を外したあとも、
-残る指摘の大半は誰も隠していない一般的な動作（「使用されます」「行われます」）で、2 と 3 のどちらも満たさない（#290）。
+結果は表で出る。`--json` で JSON、`--write` で corpus の分だけを `corpus/rules-measure.json` に書く。
 
-`title-case-consistency` と `contraction-consistency` は 3 で止めている。eval が
-「どの閾値でも目標を満たさない」と言っている。
+**決め方。** 数は `scripts/rule-policy.ts` の定数が持つ。
 
-`image-alt-text` は 3 つとも満たしたので既定で動かす。`examples/` で 1 件（`blog-en/mulmocast-vision-en.md` の
-`![](…)`）が出て、読んで正しい。段が重さを決める rule なので eval は掃引しないが、人の書いた文書では
-corpus では出ず、LLM 以前の Qiita 記事でも目標の 5% を下回る文書にしか出ない。読んだ指摘はどれも本当に代替テキストが無い。
+| 区分 | 条件 | どうなるか |
+| --- | --- | --- |
+| 既定で動く | 動くどの group でも、出る文書が 10% 以下。bench の指摘がすべて正しく、見逃しも無い | `status: stable`、自分の段で |
+| 既定で info として動く | 上のどちらかを満たさない | `status: stable`、normal の重さが info |
+| ジャンルで止める | その group の文書の過半（50% を超える）に出る | `genres.yaml` の group に `off # measured` |
+| experimental のまま | 文書が 10 件以上ある group で一度も動いていない（新しい rule） | `--experimental` か chaff.yaml で動く |
+
+- **10% の理由。** 判断に使う group は文書が 10 件以上ある。10 件の group では、1 件に出るだけで 10% になる。
+  閾値をそれより下に置くと、たまたま 1 件に出た rule と、どの文書にも出る rule を区別できない。また、
+  測った分布でも、10% のすぐ上に rule の並ばない切れ目がある（`yarn rules:measure` の表）。以前の目標（5% 未満）は、10 件の group では 0 と見分けられない。
+- **info は「読み飛ばしてよい情報」。** 実行を失敗にしない（終了コードを決めるのは error だけ）。新しい区分は作らず、
+  rule が持つ重さで表す。数える rule は `severity: info`、重さを段に持つ rule は段を一つずつ下げて normal を info にする。
+  黙らせたいときは `chaff off <rule>`（または chaff.yaml の `rules:` に `off`）。
+- **過半で止める理由。** 人の文書の大半に出る指摘は、そのジャンルの書き方を言っているのであって、誤りを言っていない。
+  止めた rule は「動かなかった rule」に、ジャンルを理由として並ぶ（0 件を「確かめて問題なし」に見せない）。
+- `genres.yaml` に手で書いた `off`（理由をコメントに書いたもの）は、測った結果より強い。測って止めた行だけが
+  `# measured` を持ち、測った結果が変われば外れる。
+- 意味を読む L4 の rule は `chaff test` のもので、ここでは決めない。
+
+**当てはめ方。** `yarn rules:measure --write` で測り直し、`yarn rules:measure --apply` で rule の `status` と重さ、
+`genres.yaml` の `# measured` の行を書き換える。`test/test_rule_policy.ts` は、どの rule も
+`corpus/rules-measure.json` の言うとおりになっているかを確かめ、食い違えば落ちる。新しい rule は、測るまでは
+`experimental` のままで、測って `--apply` すれば、人が rule ごとに書き換えなくても区分が決まる。
+
+`chaff eval` は別の道具で、rule の閾値を掃引して、手元の文書に合う値を提案する。ここで決めるのは、
+閾値を変えずに既定で動かすかどうかだけ。
 
 ## 22. Rule Status と CI
 
 ```text
-experimental   corpus 評価前。既定で無効。--experimental で有効化
-stable         corpus 評価済み。FP 目標を満たす
+experimental   まだ測っていない（corpus で動いていない）。既定で無効。--experimental で有効化
+stable         測って既定で動く（重さは info のこともある。§21.1）
 deprecated     置き換え済み
 ```
 
@@ -2363,21 +2397,26 @@ npx chaffjs grade items.jsonl                          # 合否と率の要約�
 npx chaffjs grade items.jsonl --out results.jsonl      # 出力ごとの結果を JSONL に
 npx chaffjs grade items.jsonl --json                   # 要約を JSON で
 npx chaffjs grade items.jsonl --compact                # 1 出力 1 行（id・合否・理由）と合計
+npx chaffjs grade items.jsonl --format markdown        # 要約を Markdown で（PR のコメント用）
+npx chaffjs grade items.jsonl --variant-key model      # model の欄で出力を分け、並べて比べる（§29.5）
 ```
 
 `--experimental` と `--genre` は lint と同じに効き、`stamp` の `settings` に入る。
+`--format` は `text`（既定）・`json`・`markdown` のどれか。`--json` は `--format json` と同じ。知らない値は終了コード 2。
 
 **入力。** 1 行に 1 つの出力を書いた JSONL。
 
 | 欄 | 必須 | 意味 |
 | --- | --- | --- |
-| `id` | 必須 | 出力の名前。ファイルの中で一意。A/B ではこれで組を作る |
+| `id` | 必須 | 出力の名前。ファイルの中で（`variant` があれば variant ごとに）一意。A/B ではこれで組を作る |
 | `output` | 必須 | 採点する出力の本文。Markdown として読む |
 | `reference` | 任意 | 事実の元になった文書（要約や書き換えの元）。あれば `compare` で照合する |
 | `sources` | 任意 | 原文の名前と本文の組 `{ "<名前>": "<本文>" }`。引用の照合に使う |
 | `citations` | 任意 | 出力が引いた箇所 `[{ "source", "address", "quote" }]`。`source` は `sources` の名前で、原文が一つなら省ける |
 | `language` | 任意 | `ja` / `en`。無ければ本文から推定する（§8） |
 | `genre` | 任意 | ジャンル。無ければ `chaff.yaml`、それも無ければ既定 |
+| `contexts` | 任意 | 回答が拠るはずだった、検索で取った一節の配列 `["…", "…"]`。回答の事実をこの中に探す（下の「contexts との照合」）。空の配列は「一節が取れなかった」で、欄が無いのとは違う |
+| `variant` | 任意 | どの prompt・model・設定の出力か（空でない文字列）。`--variant-key <欄>` で別の欄（`model`、`prompt` など）を使える。一行にでもあれば、どの行にも要る（§29.5） |
 
 #488 の案は `sources` だけを挙げていたが、`citations` を別の欄にした。
 どの文が引用かを本文から読み取るのは意味の判定になるので、chaff は出力から引用を推測しない。構造化した出力で引用を返させるのは、呼び出す側の仕事とする。
@@ -2408,6 +2447,7 @@ npx chaffjs grade items.jsonl --compact                # 1 出力 1 行（id・�
 - 率（`rates`）は 1,000 単位あたりの指摘の数。単位は日本語が字、英語が語で、lint の長さ（`lengthOf`）と同じ数え方をする。短い出力と長い出力を同じ物差しで並べるため。
 - `notRun` はその出力で動かなかったルールと理由。`reference` が無いときの事実の照合（`compare`）、`citations` が無いときの引用の照合（`cite`）もここに入る。
 - `facts` は `compare` の結果をそのまま入れる。`reference` が無ければ `null`。
+- `contexts` は、入力に `contexts` があるときだけ入る（無い出力の結果の形は変えない）。中身は下の「contexts との照合」。
 - `score` は `grade:` があるときだけ入る（§29.4）。
 - `failedBecause` は、どの条件に何件引っかかって落ちたかを並べる。
 
@@ -2415,14 +2455,26 @@ npx chaffjs grade items.jsonl --compact                # 1 出力 1 行（id・�
 ルールごとの率（全出力の指摘の和を全出力の長さの和で割る）と、その指摘があった出力の数も出す。
 率は単位ごとに分ける。日本語の出力（字）と英語の出力（語）が混ざったファイルでも、字と語を足さない。
 落ちた・足された事実の種類ごとの数、外れた引用の数、動かなかったルールの和集合、`stamp` を添える。
+`contexts` のある出力があれば、その数、照らした事実の数、どの一節にも無かった事実の種類ごとの数（`contexts`）も添える。
 
 **合否。** `grade:` が無いときは、次のどれか一つでも当たれば落ちる。今の版で手引きのスクリプトが使う条件と同じにする。
 
 - `error` の指摘がある（`total-mismatch` などの矛盾、`required-sections` など）
 - `reference` に対して事実が落ちた・足された
 - `citations` の引用が一つでも外れた
+- `contexts` のどの一節にも無い事実がある
 
 `warning` と `info` の指摘は合否に入れず、率として出す。言い回しの形は一つの出力の良し悪しを決めるものではなく、prompt や model を比べる量として使う。
+
+**contexts との照合（RAG の回答が、渡した一節に拠っているか）。** Ragas の faithfulness のうち、機械で決まる部分だけを受け持つ。
+
+- 回答から、`compare` と `facts` と同じ読み方で事実を取り出す。照らす種類は数・日付・時刻・URL・コード・固有名詞・引用。見出し・条項の参照・脚注は回答の形であって述べた事柄ではないので照らさない。
+- 引用以外の事実は、一節ごとに `compare --distinct` と同じに照らし、どれか一つの一節が述べていれば支えられた（`supported`）とする。支えた最初の一節の番号（0 から）を付ける。1,200 円と１,２００円のように書き方だけ違う事実は同じ事実とする。
+- 引用（「」や "" の中）は、どれかの一節に一字一句あるときだけ支えられたとする。幅の違いと空白の数は問わない（引用の鍵と同じ）。
+- どの一節にも無い事実を `unsupported` に並べる（形は `facts` の `dropped`・`added` と同じ）。`contexts` が空の配列なら、照らした事実はすべて `unsupported` になる。
+- 意味は読まない。事実を一つも含まない文が一節に支えられているかは分からないので、その数を `uncheckedSentences` に入れ、`notRun` に `contexts` として理由付きで出す。回答か一節で読み切れなかった種類（品詞が無くて名前を読めない、など）も同じに出す。`contexts` が無い出力では、`contexts` を「動かなかった」に入れる。
+- 結果の形: `{ "passages": 2, "checked": 6, "supported": [{ "kind", "text", "line", "passage" }], "unsupported": [{ "kind", "key", "text", "line", "allowed" }], "uncheckedSentences": 1 }`。
+- 「数があっている」は「正しい」ではない。一節にある数を別の物の数として書いた回答は、ここでは支えられたことになる。意味の照合は model か人が受け持つ。
 
 **終了コード。**
 
@@ -2452,6 +2504,10 @@ grade:
   citations:
     failed: 0
     required: true                         # sources があって citations が無い出力を落とす
+  contexts:
+    unsupported: 0                         # どの一節にも無くてよい事実の数
+    allow_unsupported: [name]              # 数えない種類
+    required: true                         # contexts が無い出力を落とす
   penalty: 10                              # 点の和がこれを超えたら落とす
 ```
 
@@ -2465,8 +2521,9 @@ grade:
 - 無いルールの名前や、その言語で動かないルールを書いたときは、他の設定と同じく標準エラーに言う。そのルールは `notRun` に理由付きで出る。
 - `facts` と `citations` も、書いた上限だけで決める。`facts:` に `dropped` を書かなければ、落ちた事実は合否に入らない。`allow_dropped`・`allow_added` は `compare` の `--allow-dropped`・`--allow-added` と同じく、その種類の事実に `allowed: true` を付けて数えない。
 - `citations.required` が真のとき、`sources` があって `citations` が無い出力は `citations.required` で落ちる。
+- `contexts` も書いた上限だけで決める。`unsupported` を書かなければ、一節に無い事実は合否に入らない。`allow_unsupported` の種類は `allowed: true` を付けて数えない。`required` が真なら、`contexts` の無い出力は `contexts.required` で落ちる。
 - 読めない値（数でない上限、知らない事実の種類、知らないキー）が一つでもあれば、どの出力も採点せずに終了コード 2 で終わり、場所（`grade.rules.ai-tell.max_rte` のような道筋）を標準エラーに並べる。書き誤った上限が黙って効かないと、落とすはずの出力が通るため。
-- `failedBecause` は条件の名前と数で書く: `rules.<id> N > max`、`rules.<id>.rate R > max_rate`、`required_sections.missing N > 0: <見出し>`、`facts.dropped N > 上限`、`facts.added N > 上限`、`citations.failed N > 上限`、`citations.required: …`、`score.penalty P > penalty`。
+- `failedBecause` は条件の名前と数で書く: `rules.<id> N > max`、`rules.<id>.rate R > max_rate`、`required_sections.missing N > 0: <見出し>`、`facts.dropped N > 上限`、`facts.added N > 上限`、`citations.failed N > 上限`、`citations.required: …`、`contexts.unsupported N > 上限`、`contexts.required: no contexts given`、`score.penalty P > penalty`。
 - 要約には全出力の点の和（`penalty`）が入る。画面では `--compact` の 1 行ごとにも点を出す。
 - 基準の中身（重みと上限）は `stamp` の `settings` に入る。基準を変えた前後の点は比べない（§29.5）。
 
@@ -2495,6 +2552,26 @@ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl   # B を A と比�
 - run: npx chaffjs grade outputs.jsonl --baseline eval/baseline.results.jsonl
 ```
 
+**variant を並べる（同じ入力での横並び）。** `--baseline` は同じ課題を時間をおいて 2 回採点したものを比べる。
+同じ回の中で、複数の prompt や model の出力を同じ課題で並べるのが variant である（promptfoo の matrix と同じ使い方）。
+
+```bash
+npx chaffjs grade outputs.jsonl                        # 各行の variant の欄で分ける
+npx chaffjs grade outputs.jsonl --variant-key model    # model の欄で分ける
+```
+
+- 一行にでも `variant`（`--variant-key` を渡せばその欄）があれば、すべての行に要る。無い行は、どの列にも入らない出力になるので読めない入力（終了コード 2）とする。`--variant-key` を渡したときは、どの行にも要る。
+- `--variant-key` に入力の他の欄（`id`・`output`・`reference`・`sources`・`citations`・`language`・`genre`）は使えない（終了コード 2）。
+- `id` は variant ごとに一意であればよい。同じ `id` が同じ variant に二度あれば読めない入力（終了コード 2）。
+- 出力ごとの結果（`--out`）には `variant` が入る。`--baseline` は `id` と `variant` の組で前の回と組にする。
+- 比べるのは、すべての variant にある `id` だけにする。どれかの variant に無い `id` は「比べなかった」として、無かった variant と並べる。全員にあっても `language` か `genre` が違えば比べない。列ごとに違う課題を数えると、率や通った割合が課題の差を含んでしまうため。
+- variant ごとに、比べた出力の数・通った数と割合（百分率、小数 1 桁）・落ちた事実と足された事実の数（`allowed` を除く）・照らした引用と外れた引用の数・`contexts` のある出力があれば照らした事実とどの一節にも無かった事実の数・`grade:` があれば点の和を出す。どれも §29.3 の要約と同じ数え方で、比べた出力だけから求める。
+- ルールごとの率は単位ごとに variant を並べる。どの variant にも指摘の無いルールは出さない。
+- 合否が分かれた `id`（ある variant で通り、別の variant で落ちた）を、通った variant と、落ちた variant ごとの `failedBecause` とともに並べる。
+- 通った割合は点ではない。0〜1 の点や順位は出さない（§29.4、§29.8）。
+- 画面では要約の後に表を出す。`--compact` では合否が分かれた `id` を `disagree<TAB>id<TAB>pass …<TAB>fail …` の形で 1 行ずつ出す。`--format json` では要約に `variants` の欄（`variants`・`compared`・`missing`・`readOtherwise`・`columns`・`rules`・`disagreements`）を足す。`--format markdown` では同じ表を Markdown の表にする。
+- 終了コードは variant が無いときと同じ（すべて通れば 0）。`--baseline` があれば回帰で決まる。
+
 ### 29.6 ライブラリの API（`chaffjs/grade`）
 
 ```ts
@@ -2505,7 +2582,7 @@ if (!result.pass) console.log(result.failedBecause);
 ```
 
 - 返すものは §29.3 の 1 行と同じ形。CLI とライブラリで結果がずれないように、`chaff grade` と `grade()` は同じ関数（1 出力を採点する `gradeItem`）を同じ設定と `stamp` で呼ぶ。同じ出力なら `--out` の 1 行と `grade()` の戻り値は一致する。
-- 引数は本文と、`id`（省けば `output`）・`reference`・`sources`・`citations`・`language`・`genre`・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。
+- 引数は本文と、`id`（省けば `output`）・`reference`・`sources`・`citations`・`contexts`・`language`・`genre`・`variant`（結果にそのまま残す）・`experimental`・`config`（`chaff.yaml` のパスか、読んだ後の設定）。
   ファイルを読むのは `config` にパスを渡したときだけで、作業場所の `chaff.yaml` を探しには行かない。ファイルに書くことはない。
   パスを渡したときは、コマンドと同じくハウススタイルを当て、プラグインを読み込む。読んだ後の設定を渡したときも、設定の誤りはコマンドと同じに確かめる。
 - `experimental` を省くと `chaff.yaml` の `experimental` に従う。`genre` は出力ごとのジャンルで、`chaff grade --genre` のように実行全体のジャンルではない。
@@ -2515,6 +2592,19 @@ if (!result.pass) console.log(result.failedBecause);
 - `chaff.yaml` の `language` と `by_path` の言語は、採点の前に読み込む。入っていない言語パッケージは、`chaff grade` では終了コード 2、`grade()` では `GradeInputError` になる。
 - 置き場所は `chaffjs/grade` とし、`chaffjs/api` には入れない。`chaffjs/api` はプラグイン API（§6）の型と `defineRule` を出し、`API_VERSION` がその互換を守っている。
   そこに採点の関数を足すと、プラグインの互換と採点の結果の互換が同じ番号で縛られる。採点の結果の形は chaffjs の版（semver）で守る。
+
+**variant を並べる関数（`compareVariants`）。** `chaff grade` が variant のあるファイルに出す比べ方（§29.5）を、結果の並びから作って返す。返す形は `--format json` の `variants` の欄と同じ。
+
+```ts
+import { grade, compareVariants } from "chaffjs/grade";
+
+const results = [await grade(a, { id: "q3", variant: "prompt-a", reference }), await grade(b, { id: "q3", variant: "prompt-b", reference })];
+const table = compareVariants(results); // または compareVariants({ "prompt-a": resultsA, "prompt-b": resultsB })
+```
+
+- 渡すものは、`variant` の付いた結果の配列（`grade()` に `variant` を渡したもの、または `--out` の行）か、variant の名前ごとの結果の配列。後の形では名前が各結果の `variant` に優先する。
+- `id` の無い結果、`variant` の無い結果、同じ variant に同じ `id` が二度ある結果、結果が一つも無いときは、`GradeInputError` を投げる。コマンドが終了コード 2 で断る入力と同じ扱い。
+- ファイルを読まず、書かず、採点もしない。結果を並べるだけなので同期の関数にする。
 
 **採点役の形（`toScorer`）。** 評価基盤の多くは、採点役に「点・合否・理由・付帯情報」の形を求める。`chaffjs/grade` の `toScorer(result)` は、結果の 1 行をその形に写す。写しであって、元の結果の形は変えない。
 
@@ -2569,6 +2659,7 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 - 出力を書き換えない。直す指示は `fix-plan` が出し、書き直すのは呼び出す側。
 - 「AI が書いた」と判定しない。`ai-generated-composite` は疑いの目印で、率として出すだけ（§25）。
 - 既定の重みや満点を持たない（§29.1）。
+- 評価基盤の仕事を持たない。結果を見る画面、回ごとの結果をためる置き場、model の採点や 0〜1 の点、trace や span との連携、ベンチマークの課題の定義は、評価基盤の側に置く。chaff は `--out` の行と要約（JSON・Markdown）を渡すところまでにする。
 - 公開ベンチマークの点や順位を出さない。#488 の自作の例（二つの prompt や model の出力を同じ題で並べたもの）は使い方を示すためのもので、model の順位ではない。
 
 ### 29.9 いまの状態
@@ -2581,6 +2672,8 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 | `chaff grade`、入力の JSONL、出力ごとの結果、要約、終了コード | 使える |
 | `grade:` の基準 | 使える |
 | `--baseline` と回帰の終了コード | 使える |
+| `contexts` との照合（`unsupported`、`grade.contexts`） | 使える |
+| variant を並べる（`--variant-key`、`--format markdown`、`compareVariants()`） | 使える |
 | `grade()` | 使える（`chaffjs/grade`） |
 | `stamp` | 使える |
 | 評価基盤の例（promptfoo・autoevals・evalite・Langfuse・DeepEval・Ragas・Inspect AI・OpenAI Evals・GitHub Action）と `toScorer` | 使える（`examples/evals/`） |

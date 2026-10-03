@@ -1,0 +1,87 @@
+id: orthographic-variant
+layer: L3
+status: experimental
+how_to_find: orthographic-variant
+# 語の一覧は持たない。文書の中の語を、日本語は辞書の形の読み（出来る・できる はどちらもデキル）で、カタカナ語は小さい字と「ー」を
+# ならした形で、英字は大文字小文字とハイフンを外した形で束ね、同じ語の書き方が二つあれば少ないほうを指す。
+# 読みが同じで意味の違う語（成る・なる）は lang-ja の orthographic-variant-distinct に並べて外す。
+uses: [pos]
+severity: info
+
+name:
+  ja: 同じ語の書き方がゆれている
+  en: One word spelled two ways
+
+why:
+  ja: 「出来る」と「できる」、「引っ越し」と「引越し」、「ウィンドウ」と「ウインドウ」、「e-mail」と「email」のように、同じ語を一つの文書の中で二通りに書くと、検索で別の語になり、読み手は別のものを指しているのかと迷います。どちらが正しいかは決めません。chaff は語の一覧を持たず、文書の中の語を読み（日本語）やならした綴り（カタカナ語と英字）で束ね、文書の中で少ないほうを指摘します。補助動詞と形式名詞（見て下さい、その事）は、本来の使い方（資料を下さい）と別に比べるので、「補助動詞はかなで書く」と決めた文書はそろっていると見ます。漢字の違う同音の語（書く・描く、機会・機械）は別の語と見ます。少ないほうが三分の一を超える文書は、使い分けていると見て言いません。
+  en: Writing one word two ways in one document (e-mail and email, GitHub and Github) makes search treat them as different words and leaves the reader wondering whether two things are meant. chaff does not decide which way is right and keeps no list of words; it groups the document's own words, by reading in Japanese and by spelling without hyphens and case in English, and points at whichever way the document uses less. The case of the first letter is left out, since a sentence or a title gives it (Email, email), and so are words in capitals only. It says nothing when the minority is more than a third, since the document then uses both on purpose.
+
+message:
+  ja: 「{written}」と書いています（この文書はふつう「{other}」と書く語です。{of} 箇所のうち {count} 箇所が違う）
+  en: '"{written}" here, where the document usually writes "{other}" ({count} of {of})'
+
+how_to_fix:
+  ja: 文書の多いほうの書き方に合わせてください。チームで決めているなら、chaff.yaml の prefer に書くと、それからは preferred-term がその向きで見ます。
+  en: Match the way the rest of the document writes it. If the team has decided, list it under prefer in chaff.yaml, and preferred-term checks that direction from then on.
+
+placeholders:
+  written:
+    ja: この箇所の書き方（日本語は辞書の形）
+    en: the spelling here
+  other:
+    ja: 文書でいちばん多い書き方
+    en: the spelling the document uses most
+
+# 少ないほうが語の何パーセントまでなら「ゆれている」と見るか。これを超えたら、文書が使い分けている。
+levels: { strict: 49, normal: 34, relaxed: 20 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「出来る」と「できる」、「引っ越し」と「引越し」のように、同じ語を一つの文書の中で二通りに書いている所（語の一覧なしで見つけます）
+  en: One word written two ways in one document (e-mail and email, GitHub and Github), found without a word list
+example:
+  ja:
+    before: |
+      申請は窓口でできます。郵送でもできます。代理の人も申請出来ます。
+    after: |
+      申請は窓口でできます。郵送でもできます。代理の人も申請できます。
+  en:
+    before: |
+      Send the form by email. We answer every email within a day. Attach the receipt to the e-mail.
+    after: |
+      Send the form by email. We answer every email within a day. Attach the receipt to the email.
+
+not_flagged:
+  ja: 読みが同じでも漢字の違う語（書く・描く）、補助動詞・形式名詞と本来の使い方の書き分け（見て下さい・資料を下さい）、書き分けが意味の違いになる語（成る・なる、言う・いう）、語末の「ー」だけの違い（katakana-long-vowel が見ます）、鉤括弧や引用符の中、chaff.yaml の names に書いた名前は見ません。英字は、頭の字の大文字小文字（Email と email）と、大文字だけの語（強調や略語）を書き方の違いにしません。少ないほうが三分の一を超えるときも言いません。文学のジャンルでは既定で止めています（その時代の書き方のため）。
+  en: The case of a word's first letter (Email, email; Long-Term, long-term) is not a spelling, nor is a word in capitals only (emphasis or an acronym). Hyphenated words that are another word (re-sign, resign), part of an address (github.com), anything in quotation marks and the team's names are not compared. Nothing is reported when the minority is more than a third. The literature preset turns it off, since old spelling belongs to its time.
+level_meaning:
+  ja: 少ないほうが語の {limit}% 以下のとき指摘
+  en: reported when the minority spelling is {limit}% of the word's uses or less
+rewrite:
+  ja:
+    direction: 同じ語の書き方を、文書でいちばん多い書き方にそろえてください。意味の違う語に書き分けているなら、そのままにします。
+    pairs:
+      - before: 代理の人も申請出来ます。
+        after: 代理の人も申請できます。
+      - before: 引越しの日を決めてください。
+        after: 引っ越しの日を決めてください。
+    keep:
+      - 語の意味と、文の中の位置
+      - 意味の違いで書き分けている語（資料を下さい・見てください）
+    avoid:
+      - 少ないほうに合わせて、多いほうを書き換える
+      - 引用した文の書き方を変える
+  en:
+    direction: Write each word the way the rest of the document writes it. If two spellings mark two meanings, leave them.
+    pairs:
+      - before: Attach the receipt to the e-mail.
+        after: Attach the receipt to the email.
+      - before: The code is on Github.
+        after: The code is on GitHub.
+    keep:
+      - the meaning and the place of the word
+      - quoted text as quoted
+    avoid:
+      - changing the majority to match the minority
