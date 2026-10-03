@@ -1,7 +1,7 @@
 import type { GradeFact, GradeResult } from "./result.ts";
 
 /** What pass or fail is decided from. */
-export type Graded = Pick<GradeResult, "findings" | "facts" | "citations">;
+export type Graded = Pick<GradeResult, "findings" | "facts" | "citations" | "contexts">;
 
 export type Verdict = { readonly pass: boolean; readonly failedBecause: readonly string[] };
 
@@ -15,7 +15,7 @@ export const verdictOf = (failedBecause: readonly string[]): Verdict => ({ pass:
 
 /**
  * The pass or fail with no `grade:` in chaff.yaml (spec §29.3): an error finding, a fact dropped or added against the
- * reference, or a quotation not found fails the output. Warnings and info are rates to compare, not a verdict on one output.
+ * reference, a quotation not found, or a fact no retrieved passage states fails the output. Warnings and info are rates to compare, not a verdict on one output.
  */
 export const defaultVerdict = (graded: Graded): Verdict =>
   verdictOf([
@@ -23,4 +23,5 @@ export const defaultVerdict = (graded: Graded): Verdict =>
     ...overLimit("facts.dropped", counted(graded.facts?.dropped ?? []), 0),
     ...overLimit("facts.added", counted(graded.facts?.added ?? []), 0),
     ...overLimit("citations.failed", graded.citations?.failed.length ?? 0, 0),
+    ...overLimit("contexts.unsupported", counted(graded.contexts?.unsupported ?? []), 0),
   ]);

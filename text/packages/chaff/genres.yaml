@@ -24,6 +24,8 @@ groups:
   - id: legal
     name: { ja: 法務, en: Legal }
     rules:
+      # A request without a deadline is a business-mail habit; elsewhere a request is an instruction or a pointer.
+      request-without-deadline: off
       agentless-passive: off
       max-kanji-continuous: off
       no-doubled-joshi: off
@@ -74,10 +76,16 @@ groups:
       number-style-consistency: off
       # An enumeration of conditions mixes 〜こと and 〜とき by what each condition is.
       list-item-form-mix: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
     rules:
+      request-without-deadline: off
       heading-echo: off
       agentless-passive: off
       concrete-evidence-density: off
@@ -105,10 +113,16 @@ groups:
       emoji-heading: off
       bold-label-list: off
       ai-structure: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
     rules:
+      request-without-deadline: off
       agentless-passive: off
       excessive-hedging: off
       expletive-construction: off
@@ -135,6 +149,7 @@ groups:
   - id: literature
     name: { ja: 文学, en: Literature }
     rules:
+      request-without-deadline: off
       # A character who says "never" and later makes an exception is the story, not a drafting slip.
       absolute-exception: off
       # A story's narrator and its characters each say 私 or 僕 in their own voice.
@@ -202,6 +217,7 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      orthographic-variant: off
       translationese-density: off
       unknown-word: off
       redundant-expression: off
@@ -217,6 +233,14 @@ groups:
       list-item-form-mix: off
       # Dialogue and verse set each line apart.
       one-sentence-paragraph-run: off
+      # Dialect and old usage ("an hospital") are the work's voice, and dialogue leans on "very".
+      article-sound: off
+      very-adjective: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
       # A narrator and a character speak as they speak: dialect ("would of"), "So," and hearsay are the voice.
       homophone-slip: off
       wordy-phrase: off
@@ -226,6 +250,7 @@ groups:
   - id: speech
     name: { ja: 話し言葉, en: Speech }
     rules:
+      request-without-deadline: off
       agentless-passive: off
       preamble-length: off
       padded-intro: off
@@ -245,6 +270,8 @@ groups:
       double-negative: off
       ra-nuki: off
       requirement-smell: off
+      article-sound: off
+      very-adjective: off
       homophone-slip: off
       wordy-phrase: off
       weasel-word: off
@@ -257,6 +284,11 @@ groups:
       # Spoken numbers are transcribed as heard.
       number-style-consistency: off
       list-item-form-mix: off
+      # A paper's citations, figures and abstract: only the academic paper genre turns these on.
+      citation-style-mix: off
+      citation-reference-mismatch: off
+      figure-reference-order: off
+      abstract-length: off
 
 genres:
   - id: technical/spec
@@ -442,6 +474,13 @@ genres:
           line: "^(?:#{1,6}\\s*)?(?:\\d+\\.?\\s+)?(?:Abstract|Keywords|Methods?|Methodology|Results|Discussion|Conclusions?|Related [Ww]ork|Bibliography|References)\\s*$",
           min_lines: 4,
         }
+    # A paper is read against its own apparatus: one citation style, citations that match the reference list, figures
+    # numbered in the order they are referred to, and an abstract of a fixed length.
+    rules:
+      citation-style-mix: normal
+      citation-reference-mismatch: normal
+      figure-reference-order: normal
+      abstract-length: normal
   - id: literature/fiction
     name: { ja: 小説, en: Fiction }
     summary:

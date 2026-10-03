@@ -1,0 +1,13 @@
+# Words of a request that points to where to read more ("For details, please check the page"), not a task with a deadline.
+id: request-pointer
+language: en
+entries:
+  - pattern: for details
+  - pattern: for more
+  - pattern: more information
+  - pattern: see
+  - pattern: page
+  - pattern: website
+  - pattern: link
+  - pattern: manual
+  - pattern: below

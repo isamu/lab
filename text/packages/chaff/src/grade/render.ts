@@ -1,5 +1,6 @@
 import type { LengthUnit } from "../plugin.ts";
 import type { GradeResult } from "./result.ts";
+import { resultName } from "./result-name.ts";
 import type { GradeSummary } from "./summary.ts";
 import type { GradeText } from "./text.ts";
 
@@ -7,13 +8,19 @@ const UNITS: readonly LengthUnit[] = ["word", "char"];
 
 export const block = (heading: string, lines: readonly string[]): string[] => (lines.length === 0 ? [] : ["", heading, ...lines]);
 
-const padded = (cells: readonly string[], widths: readonly number[]): string =>
-  `  ${cells.map((cell, index) => cell.padEnd(widths[index] ?? 0)).join("  ")}`.trimEnd();
+type Measure = (cell: string) => number;
 
-/** Columns as wide as their widest cell. */
-const table = (rows: readonly (readonly string[])[]): string[] => {
-  const widths = rows.reduce<number[]>((max, row) => row.map((cell, index) => Math.max(max[index] ?? 0, cell.length)), []);
-  return rows.map((row) => padded(row, widths));
+const lengthOfCell: Measure = (cell) => cell.length;
+
+const padCell = (cell: string, width: number, measure: Measure): string => cell + " ".repeat(Math.max(0, width - measure(cell)));
+
+const padded = (cells: readonly string[], widths: readonly number[], measure: Measure): string =>
+  `  ${cells.map((cell, index) => padCell(cell, widths[index] ?? 0, measure)).join("  ")}`.trimEnd();
+
+/** Columns as wide as their widest cell, each cell measured by `measure`. */
+export const table = (rows: readonly (readonly string[])[], measure: Measure = lengthOfCell): string[] => {
+  const widths = rows.reduce<number[]>((max, row) => row.map((cell, index) => Math.max(max[index] ?? 0, measure(cell))), []);
+  return rows.map((row) => padded(row, widths, measure));
 };
 
 /** One table per unit: a rate per 1,000 characters and one per 1,000 words are not on one scale. */
@@ -33,8 +40,13 @@ const kindsLine = (counts: Readonly<Record<string, number>>): string =>
 
 const sum = (counts: Readonly<Record<string, number>>): number => Object.values(counts).reduce((total, count) => total + count, 0);
 
-const factsLine = (summary: GradeSummary, text: GradeText): string =>
+export const factsLine = (summary: GradeSummary, text: GradeText): string =>
   text.facts(sum(summary.facts.dropped), sum(summary.facts.added), kindsLine(summary.facts.dropped), kindsLine(summary.facts.added));
+
+const contextsLine = (summary: GradeSummary, text: GradeText): string[] =>
+  summary.contexts === undefined
+    ? []
+    : [text.contexts(summary.contexts.outputs, summary.contexts.checked, sum(summary.contexts.unsupported), kindsLine(summary.contexts.unsupported))];
 
 const stampLines = (summary: GradeSummary, text: GradeText): string[] =>
   summary.stamp === undefined ? [] : ["", `${text.stamp}: ${summary.stamp.chaff}`, `  rules ${summary.stamp.rules}`, `  settings ${summary.stamp.settings}`];
@@ -45,12 +57,13 @@ export const renderSummary = (path: string, summary: GradeSummary, text: GradeTe
     text.totals(path, summary.total, summary.passed),
     ...block(
       text.failedHeading,
-      summary.failed.map((entry) => `  ✗ ${entry.id}: ${entry.failedBecause.join(", ")}`),
+      summary.failed.map((entry) => `  ✗ ${resultName(entry)}: ${entry.failedBecause.join(", ")}`),
     ),
     ...rateBlocks(summary, text),
     "",
     factsLine(summary, text),
     text.citations(summary.citations.checked, summary.citations.failed),
+    ...contextsLine(summary, text),
     ...(summary.penalty === undefined ? [] : [text.penalty(summary.penalty)]),
     ...block(text.notRunHeading(summary.notRun.length), table(summary.notRun.map((entry) => [entry.rule, text.inOutputs(entry.outputs), entry.reason]))),
     ...stampLines(summary, text),
@@ -61,7 +74,7 @@ export const renderCompact = (path: string, results: readonly GradeResult[], sum
   [
     ...results.map((result) =>
       [
-        result.id,
+        resultName(result),
         result.pass ? "pass" : "fail",
         ...(result.score === undefined ? [] : [`penalty ${String(result.score.penalty)}`]),
         ...(result.pass ? [] : [result.failedBecause.join(", ")]),

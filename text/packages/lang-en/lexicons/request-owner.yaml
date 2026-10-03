@@ -1,0 +1,30 @@
+# Words that say who: people's titles, roles and teams. Names themselves are read from the parts of speech (proper nouns).
+id: request-owner
+language: en
+entries:
+  - pattern: team
+  - pattern: everyone
+  - pattern: everybody
+  - pattern: all of you
+  - pattern: each of you
+  - pattern: manager
+  - pattern: lead
+  - pattern: owner
+  - pattern: reviewer
+  - pattern: mr
+  - pattern: ms
+  - pattern: mrs
+  - pattern: dr
+  - pattern: committee
+  - pattern: department
+  - pattern: office
+  - pattern: desk
+  - pattern: coordinator
+  - pattern: assignee
+  - pattern: "@"
+  - pattern: applicants
+  - pattern: applicant
+  - pattern: customers
+  - pattern: participants
+  - pattern: students
+  - pattern: yourself

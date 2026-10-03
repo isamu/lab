@@ -10,17 +10,17 @@ const wordsOf = (value: OptionValue | undefined): readonly string[] =>
   Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
 
 /** The minimum when no setting gives one: two morae before the final ー, which leaves カー alone. */
-const DEFAULT_MIN_MORAE = 2;
+export const DEFAULT_MIN_MORAE = 2;
 
 /** A listed word is exempt written either way: listing コンピューター exempts コンピュータ too. */
-const exemptStems = (except: readonly string[]): ReadonlySet<string> => new Set(except.map((word) => stemOf(word.trim())));
+export const exemptStems = (except: readonly string[]): ReadonlySet<string> => new Set(except.map((word) => stemOf(word.trim())));
 
 /**
  * Words that become another word with a final ー (フリ, as in 振り, and フリー, free): the language's long-vowel-distinct word list.
  * Both are nouns to the tagger, so only the list tells them apart; they are left out as if listed under except.
  * The list is optional: without it the rule still runs and compares every word.
  */
-const distinctWordsOf = (doc: ProseDocument): string[] => (doc.lexicons["long-vowel-distinct"] ?? []).map((entry) => entry.pattern);
+export const distinctWordsOf = (doc: ProseDocument): string[] => (doc.lexicons["long-vowel-distinct"] ?? []).map((entry) => entry.pattern);
 
 /**
  * The kana a final ー follows where drop drops it: the language's long-vowel-drop-after list (ア段, the -er, -or, -ar of
@@ -35,7 +35,7 @@ const dropAfterOf = (doc: ProseDocument): ReadonlySet<string> | undefined => {
  * The katakana nouns of a sentence, as the language adapter split them: ユーザー inside ユーザーインターフェース is its own word.
  * Proper nouns (PROPN) and the team's names keep their own spelling (ディズニー).
  */
-const kanaWordsOf = (sentence: Sentence, names: readonly string[], exempt: ReadonlySet<string>): KanaWord[] => {
+export const kanaWordsOf = (sentence: Sentence, names: readonly string[], exempt: ReadonlySet<string>): KanaWord[] => {
   const named = nameSpans(sentence.text, names);
   return (sentence.tokens ?? [])
     .filter((token) => token.pos === "NOUN" && isKatakanaWord(token.surface) && !exempt.has(stemOf(token.surface)))
