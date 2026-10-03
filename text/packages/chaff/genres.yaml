@@ -198,6 +198,7 @@ groups:
       double-negative: off
       ra-nuki: off
       spelling-consistency: off
+      unknown-word: off
       redundant-expression: off
       requirement-smell: off
       paragraph-restatement: off

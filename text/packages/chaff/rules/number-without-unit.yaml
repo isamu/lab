@@ -1,0 +1,96 @@
+id: number-without-unit
+layer: L1
+status: experimental
+how_to_find: number-without-unit
+severity: warning
+
+name:
+  ja: 単位の無い数
+  en: Number without its unit
+
+why:
+  ja: 表の同じ列や、同じ見出しの語（「予算：」）のほかの値には単位があるのに、一つだけ数しか書いていない所です。円なのか千円なのか、分なのか時間なのかを、読み手が推し量ることになります。
+  en: Every other value in the same table column, or under the same label ("Budget:"), carries a unit, and this one is a bare number. The reader has to guess whether it is dollars or thousands, minutes or hours.
+
+message:
+  ja: 「{value}」に単位がありません（「{name}」のほかの値には「{unit}」が付いています）
+  en: '"{value}" has no unit (the other "{name}" values carry "{unit}")'
+
+how_to_fix:
+  ja: 単位を書いてください。列のすべての値が同じ単位なら、見出しに書いて（「金額（円）」）値から外す書き方もあります。
+  en: Write the unit. If every value in a column shares it, you can move it to the header ("Amount ($)") and drop it from the values.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: structure
+summary:
+  ja: 同じ列や同じ見出しの語のほかの値には単位があるのに、数だけを書いた値
+  en: A bare number where the other values of the same column or label all carry one unit
+example:
+  ja:
+    before: |
+      # 費用
+
+      | 品目 | 金額 |
+      | --- | --- |
+      | 設計 | 300,000円 |
+      | 開発 | 1,200,000 |
+      | 試験 | 250,000円 |
+    after: |
+      # 費用
+
+      | 品目 | 金額 |
+      | --- | --- |
+      | 設計 | 300,000円 |
+      | 開発 | 1,200,000円 |
+      | 試験 | 250,000円 |
+  en:
+    before: |
+      # Costs
+
+      | Item | Cost |
+      | --- | --- |
+      | Train | $600 |
+      | Hotel | 960 |
+      | Taxi | $100 |
+    after: |
+      # Costs
+
+      | Item | Cost |
+      | --- | --- |
+      | Train | $600 |
+      | Hotel | $960 |
+      | Taxi | $100 |
+
+not_flagged:
+  ja: ほかの値に二つ以上、同じ一つの単位が付いているときだけ指します。単位の無い値のほうが多い列、単位が混ざる列（分と時間）、数でない値（未定）は見ません。表の見出しの単位（「金額（円）」）は読みません。
+  en: Reported only when at least two other values carry one and the same unit. A column where bare numbers are the majority, one that mixes units (minutes and hours), and values that are not numbers (TBD) are not checked. A unit written in the header ("Amount ($)") is not read.
+rewrite:
+  ja:
+    direction: 指摘された数に、同じ列や同じ見出しの語のほかの値と同じ単位を付けてください。単位が違うはずなら、作らずに書き手に聞きます。
+    pairs:
+      - before: "| 開発 | 1,200,000 |"
+        after: "| 開発 | 1,200,000円 |"
+      - before: "- 所要時間：45"
+        after: "- 所要時間：45分"
+    keep:
+      - 数そのもの
+      - ほかの値と、列の並び
+    avoid:
+      - 単位に合わせて数を換算する
+      - 違う単位を推して書く（千円の列に円）
+  en:
+    direction: Give the bare number the unit the other values in its column or under its label carry. If it should be a different unit, do not guess; ask the writer.
+    pairs:
+      - before: "- Train: 120"
+        after: "- Train: $120"
+      - before: "| Build | 1,200,000 |"
+        after: "| Build | $1,200,000 |"
+    keep:
+      - the number itself
+      - the other values and the order of the columns
+    avoid:
+      - converting the number to match a unit
+      - guessing a different unit (thousands in a column of dollars)
