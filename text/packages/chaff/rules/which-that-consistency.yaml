@@ -1,0 +1,64 @@
+id: which-that-consistency
+layer: L3
+status: stable
+how_to_find: relative-pronoun-mix
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: 限定の関係節の which と that が揃っていない
+  en: Restrictive "which" and "that" mixed
+
+why:
+  ja: 英語の限定の関係節（the file that contains the keys）は、that で書く人と which で書く人がいます。米国の手引きは that を勧め、英国の手引きはどちらも認めます。どちらが正しいかは決めません。一つの文書で混ざっていると、読み手は which の節が補足（読点のある非限定の節）なのかと迷います。読点を挟まない「名詞 + which / that + 動詞」だけを数え、少ないほうを指します。
+  en: 'A restrictive relative clause ("the file that contains the keys") opens with "that" for some writers and "which" for others. American guides prefer "that"; British ones accept both. chaff does not pick a side. Mixed in one document, a reader wonders whether a "which" clause is meant as an aside (the non-restrictive kind, set off by a comma). Only "noun + which/that + verb" with no comma between is counted, and the fewer form is pointed at.'
+
+message:
+  ja: 限定の関係節を「{word}」で書いています（この文書はふつう「{usual}」）
+  en: 'This restrictive clause opens with "{word}"; the document mostly uses "{usual}"'
+
+how_to_fix:
+  ja: 文書の多いほうに揃えてください。補足の節にするなら、前に読点を置いて which で書きます。
+  en: Match the rest of the document. If the clause is meant as an aside, set it off with a comma and use "which".
+
+# 少ないほうが何箇所までなら「混在」と見るか。これを超えたら、文書が使い分けている。
+levels: { strict: 4, normal: 2, relaxed: 1 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A transcript keeps the speaker's words."
+
+group: consistency
+summary:
+  ja: 英語で、限定の関係節を which で書く所と that で書く所が混ざっている所
+  en: Restrictive clauses opened with "which" in some places and "that" in others
+
+example:
+  en:
+    before: |
+      The job that builds the site runs nightly. The script that checks links runs hourly. The task that sends mail runs daily. The file which stores the keys is encrypted.
+    after: |
+      The job that builds the site runs nightly. The script that checks links runs hourly. The task that sends mail runs daily. The file that stores the keys is encrypted.
+
+not_flagged:
+  ja: 読点のある非限定の節（the rule, which we added,）、前置詞の後ろの which（in which）、that の後ろに主語が来る節（the report that we wrote、the fact that it works）、多いほうが 3 箇所に満たない文書、少ないほうが水準の数を超える文書（使い分けている）は指しません。
+  en: 'A non-restrictive clause set off by a comma ("the rule, which we added,"), "which" after a preposition ("in which"), a "that" followed by its own subject ("the report that we wrote", "the fact that it works"), a document where the usual form appears fewer than 3 times, and one where the fewer form passes the level (used on purpose) are not reported.'
+level_meaning:
+  ja: 少ないほうの書き方が {limit} 箇所以下のとき指摘
+  en: reported when the fewer form appears {limit} times or fewer
+
+rewrite:
+  depth: light
+  en:
+    direction: Change the flagged "which" or "that" to the form the rest of the document uses. If the clause is an aside, add a comma before it and keep "which".
+    pairs:
+      - before: The file which stores the keys is encrypted.
+        after: The file that stores the keys is encrypted.
+      - before: The step which signs the build runs last.
+        after: The step that signs the build runs last.
+    keep:
+      - the clause itself and the rest of the sentence
+    avoid:
+      - changing a "which" clause set off by commas, which is an aside
