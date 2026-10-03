@@ -59,6 +59,8 @@ export type GradeScore = { readonly penalty: number; readonly items: readonly Sc
 
 export type GradeResult = {
   readonly id: string;
+  /** The item's variant label, when it had one. */
+  readonly variant?: string | undefined;
   readonly language: string;
   readonly genre: string;
   readonly size: OutputSize;

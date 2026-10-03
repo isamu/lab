@@ -47,6 +47,8 @@ const PROBLEM_JA: Readonly<Record<ItemProblemKind, (problem: ItemProblem) => str
   "citations-without-sources": (problem) => `${lineJa(problem)}citations があるのに sources がありません。引用を照らす原文を sources に入れてください`,
   "not-contexts": (problem) => `${lineJa(problem)}contexts は文字列の配列（["検索で取った一節", …]）で書いてください`,
   "duplicate-id": (problem) => `${lineJa(problem)}id "${problem.detail ?? ""}" は ${String(problem.first ?? 0)} 行目と同じです`,
+  "no-variant": (problem) =>
+    `${lineJa(problem)}${problem.detail ?? ""}（どの prompt や model の出力かを示す名前）がありません。並べて比べるファイルでは、どの行にも書いてください`,
   "unknown-source": (problem) => `${lineJa(problem)}引用の source "${problem.detail ?? ""}" が sources にありません`,
   "which-source": (problem) => `${lineJa(problem)}番地 ${problem.detail ?? ""} の引用に source がありません。原文が二つ以上あるときは名前を書いてください`,
   "unknown-language": (problem) => `${lineJa(problem)}language "${problem.detail ?? ""}" は読めません`,
@@ -65,6 +67,7 @@ const PROBLEM_EN: typeof PROBLEM_JA = {
   "citations-without-sources": (problem) => `${lineEn(problem)}citations without sources; put the text they quote in sources`,
   "not-contexts": (problem) => `${lineEn(problem)}contexts must be an array of strings (["a retrieved passage", …])`,
   "duplicate-id": (problem) => `${lineEn(problem)}id "${problem.detail ?? ""}" is already on line ${String(problem.first ?? 0)}`,
+  "no-variant": (problem) => `${lineEn(problem)}no ${problem.detail ?? ""} (the variant's name); when a file compares variants, every line needs one`,
   "unknown-source": (problem) => `${lineEn(problem)}the citation's source "${problem.detail ?? ""}" is not in sources`,
   "which-source": (problem) => `${lineEn(problem)}the citation of ${problem.detail ?? ""} names no source; with two or more sources, name one`,
   "unknown-language": (problem) => `${lineEn(problem)}language "${problem.detail ?? ""}" cannot be read`,
@@ -98,7 +101,7 @@ const aside = (open: string, inner: string, close: string): string => (inner ===
 export const GRADE_TEXT: Texts<GradeText> = {
   ja: {
     usage:
-      "使い方: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
+      "使い方: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--variant-key <欄の名前>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
     noReference: "reference が無い（事実は reference と照らす）",
     noCitations: "citations が無い（chaff は出力から引用を推測しない）",
     noContexts: "contexts が無い（回答の事実は、検索で取った一節と照らす）",
@@ -128,7 +131,7 @@ export const GRADE_TEXT: Texts<GradeText> = {
   },
   en: {
     usage:
-      "usage: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--json] [--compact] [--experimental] [--genre <genre>]",
+      "usage: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--variant-key <field>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <genre>]",
     noReference: "no reference given (facts are checked against a reference)",
     noCitations: "no citations given (chaff does not guess quotations from the output)",
     noContexts: "no contexts given (the output's facts are checked against retrieved passages)",

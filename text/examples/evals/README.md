@@ -40,6 +40,15 @@ word for word. This is the deterministic part of Ragas' faithfulness: it never j
 sentences that state no checkable fact as not checked. `grade.contexts` in chaff.yaml sets the limit
 (`unsupported: 0`).
 
+## Prompts or models side by side
+
+Label each line of the items file with the prompt or model that produced it (`variant`, or another field named with
+`--variant-key model`). `chaff grade` then prints, after the usual summary, a table of each variant's pass
+rate, facts dropped and added, failed quotations and rule rates, over the ids every variant answered, and the ids where
+pass or fail differs. `--format markdown` gives the same table for a pull request comment, and `compareVariants()` from
+`chaffjs/grade` gives it in a harness. This is the matrix view of promptfoo and similar tools, limited to what chaff
+checks by machine; the frameworks keep the viewer and the history of runs.
+
 ## In CI
 
 ```yaml
