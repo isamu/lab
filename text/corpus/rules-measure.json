@@ -138,6 +138,43 @@
         }
       }
     },
+    "adverb-without-negation": {
+      "groups": {
+        "academic": {
+          "documents": 1,
+          "fired": 0
+        },
+        "business": {
+          "documents": 39,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 21,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 1
+        },
+        "speech": {
+          "documents": 4,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 22,
+          "fired": 0
+        }
+      },
+      "bench": {
+        "planted": 12,
+        "found": 12,
+        "falseAlarms": 0
+      }
+    },
     "adversative-ga-repeat": {
       "groups": {
         "academic": {
@@ -1095,6 +1132,43 @@
       "bench": {
         "planted": 2,
         "found": 2,
+        "falseAlarms": 0
+      }
+    },
+    "colloquial-opener": {
+      "groups": {
+        "academic": {
+          "documents": 1,
+          "fired": 0
+        },
+        "business": {
+          "documents": 39,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 21,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 2
+        },
+        "speech": {
+          "documents": 4,
+          "fired": 1
+        },
+        "technical": {
+          "documents": 22,
+          "fired": 0
+        }
+      },
+      "bench": {
+        "planted": 12,
+        "found": 12,
         "falseAlarms": 0
       }
     },
@@ -4952,6 +5026,47 @@
         "falseAlarms": 0
       }
     },
+    "repeated-sentence-ending": {
+      "groups": {
+        "academic": {
+          "documents": 1,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 14,
+          "fired": 1
+        },
+        "business": {
+          "documents": 39,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 1
+        },
+        "legal": {
+          "documents": 21,
+          "fired": 6
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 1
+        },
+        "speech": {
+          "documents": 4,
+          "fired": 4
+        },
+        "technical": {
+          "documents": 22,
+          "fired": 3
+        }
+      },
+      "bench": {
+        "planted": 12,
+        "found": 12,
+        "falseAlarms": 0
+      }
+    },
     "repeated-sentence-head": {
       "groups": {
         "academic": {
@@ -5739,6 +5854,47 @@
           "documents": 22,
           "fired": 0
         }
+      }
+    },
+    "tari-unpaired": {
+      "groups": {
+        "academic": {
+          "documents": 1,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 14,
+          "fired": 0
+        },
+        "business": {
+          "documents": 39,
+          "fired": 1
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 2
+        },
+        "legal": {
+          "documents": 21,
+          "fired": 2
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 1
+        },
+        "speech": {
+          "documents": 4,
+          "fired": 1
+        },
+        "technical": {
+          "documents": 22,
+          "fired": 3
+        }
+      },
+      "bench": {
+        "planted": 13,
+        "found": 13,
+        "falseAlarms": 0
       }
     },
     "teki-overuse": {
@@ -6571,6 +6727,43 @@
         "technical": {
           "documents": 26,
           "fired": 5
+        }
+      },
+      "bench": {
+        "planted": 12,
+        "found": 12,
+        "falseAlarms": 0
+      }
+    },
+    "yori-as-from": {
+      "groups": {
+        "academic": {
+          "documents": 1,
+          "fired": 0
+        },
+        "business": {
+          "documents": 39,
+          "fired": 2
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 21,
+          "fired": 2
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 4,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 22,
+          "fired": 0
         }
       },
       "bench": {

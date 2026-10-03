@@ -1,6 +1,6 @@
 id: colloquial-opener
 layer: L2
-status: experimental
+status: stable
 how_to_find: opener-pile
 word_list: colloquial-opener
 requires: [pos]
