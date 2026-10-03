@@ -74,7 +74,7 @@ npx chaffjs houkoku.md --genre business/report    houkoku.md を報告書とし�
 ```
 $ npx chaffjs houkoku.md --genre business/report
 
-houkoku.md   business/report · 日本語   ジャンルは--genreから
+houkoku.md   business/report · 日本語   ジャンルは --genre から
 
 ─── 5 行目 ───────────────────────────────────────────────────
 
@@ -87,7 +87,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
      → 具体的な状況か、この記事だけの主張から始めてください。
 
-     このルールをゆるめる:  npx chaff relax padded-intro
+     このルールをゆるめる:  npx chaffjs relax padded-intro
 
 
 ────────────────────────────────────────────────────────────
@@ -123,7 +123,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 ```
 $ npx chaffjs houkoku.md --genre business/report --experimental
 
-houkoku.md   business/report · 日本語   ジャンルは--genreから
+houkoku.md   business/report · 日本語   ジャンルは --genre から
 
 ─── 5 行目 ───────────────────────────────────────────────────
 
@@ -136,7 +136,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
      → 具体的な状況か、この記事だけの主張から始めてください。
 
-     このルールをゆるめる:  npx chaff relax padded-intro
+     このルールをゆるめる:  npx chaffjs relax padded-intro
 
 
 ─── 5 行目 ───────────────────────────────────────────────────
@@ -150,7 +150,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
      → 言い切れるものは言い切ってください。言い切れないなら、何が分かれば言い切れるのかを書いてください。重ねた逃げは、1 つ残すか、全部外して言い切ってください。
 
-     このルールをゆるめる:  npx chaff relax excessive-hedging
+     このルールをゆるめる:  npx chaffjs relax excessive-hedging
 
 
 ─── 15 行目 ──────────────────────────────────────────────────
@@ -164,7 +164,7 @@ houkoku.md   business/report · 日本語   ジャンルは--genreから
 
      → 主語を立てて能動にしてください。「決定されました」を「運営チームが決定しました」に。誰かを名指せないなら、書けない理由のほうが問題かもしれません。
 
-     このルールをゆるめる:  npx chaff relax agentless-passive
+     このルールをゆるめる:  npx chaffjs relax agentless-passive
 
 
 ────────────────────────────────────────────────────────────
@@ -236,10 +236,10 @@ npx chaffjs init --genre business/report    この場所に chaff.yaml を作り
 
 ```
 ジャンルは business/report にしました。違う場合は chaff.yaml の genre を直してください。
-  一覧: npx chaff genres
+  一覧: npx chaffjs genres
 
 次:
-  npx chaff .            この場所の Markdown を全部見る
+  npx chaffjs .            この場所の Markdown を全部見る
 ```
 
 これで、このフォルダでは `npx chaffjs houkoku.md` だけで報告書として見ます。
@@ -263,7 +263,7 @@ Markdown のコメントなので、文書を開いた人の画面には出ま�
 ```
 $ npx chaffjs houkoku.md --genre business/report --experimental --compact
 
-houkoku.md   business/report · 日本語   ジャンルは--genreから   stet 1 件
+houkoku.md   business/report · 日本語   ジャンルは --genre から   stet 1 件
 
   5:1     warning 「近年」は、どの記事にも当てはまる書き出しです
                   padded-intro
@@ -323,7 +323,7 @@ npx chaffjs relax padded-intro --why "背景の節は、決まった書き出し
 ```
 $ npx chaffjs houkoku-fixed.md --genre business/report --experimental
 
-houkoku-fixed.md   business/report · 日本語   ジャンルは--genreから
+houkoku-fixed.md   business/report · 日本語   ジャンルは --genre から
 
 ────────────────────────────────────────────────────────────
 

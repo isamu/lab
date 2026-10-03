@@ -385,9 +385,12 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 - `abstract-length`: ジャンル blog/tech では見ないため
 - `agentless-passive`: ジャンル blog/tech では見ないため
 - `ai-structure`: 表題より下の見出しが無いため
+- `attachment-not-attached`: ジャンル blog/tech では見ないため
 - `citation-reference-mismatch`: ジャンル blog/tech では見ないため
 - `citation-style-mix`: ジャンル blog/tech では見ないため
 - `cushion-phrase-density`: ジャンル blog/tech では見ないため
+- `email-greeting-closing`: ジャンル blog/tech では見ないため
+- `email-subject-length`: ジャンル blog/tech では見ないため
 - `figure-reference-order`: ジャンル blog/tech では見ないため
 - `request-without-deadline`: ジャンル blog/tech では見ないため
 
@@ -547,7 +550,7 @@ draft.md → draft.rewritten.md
 ```text
 $ npx chaffjs ai.md --genre blog/tech --experimental --compact
 
-ai.md   blog/tech · 日本語   ジャンルは--genreから
+ai.md   blog/tech · 日本語   ジャンルは --genre から
 
   3:1     info    「詳しく解説していきます、鍵となる、本記事では、地味に効く、効いてくる、時間を溶かす、一つずつ潰す、静かに壊れる、黙って無視される」が揃っています（点 39、18 まで）
                   ai-tell
@@ -608,7 +611,7 @@ ai.md   blog/tech · 日本語   ジャンルは--genreから
 ```text
 $ npx chaffjs rewritten.md --genre blog/tech --experimental --compact
 
-rewritten.md   blog/tech · 日本語   ジャンルは--genreから
+rewritten.md   blog/tech · 日本語   ジャンルは --genre から
 
   1:28    info    節の長さのばらつきが 32% しかありません（35% 以上ほしい）
                   section-length-uniformity
@@ -747,7 +750,7 @@ i 書き方だけ変わった事実 2 件
 ```text
 $ npx chaffjs study.md --genre blog/tech --experimental --compact
 
-study.md   blog/tech · 日本語   ジャンルは--genreから
+study.md   blog/tech · 日本語   ジャンルは --genre から
 
   5:1     info    構成の 3 項目が、人の記事の 9 割を超えています（3 項目から）。見出しの多さ、3 つの小見出しに分けた見出し、太字の見出しで始まる項目
                   ai-structure
@@ -859,7 +862,7 @@ study.md の構成: 見出し 14、節の平均 67 字、箇条書き 15%、太�
 ```text
 $ npx chaffjs study-full.md --genre blog/tech --experimental --compact
 
-study-full.md   blog/tech · 日本語   ジャンルは--genreから
+study-full.md   blog/tech · 日本語   ジャンルは --genre から
 
 
 {counts}

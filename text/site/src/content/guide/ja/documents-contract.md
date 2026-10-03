@@ -105,7 +105,7 @@ keiyaku.md   blog/tech · 日本語   ジャンルは既定から
 ```
 $ npx chaffjs keiyaku.md --genre legal/contract --compact
 
-keiyaku.md   legal/contract · 日本語   ジャンルは--genreから
+keiyaku.md   legal/contract · 日本語   ジャンルは --genre から
 
   11:7    warning 期間「2026年11月1日から2026年10月31日」の終わりが始まりより前です
                   date-range-reversed

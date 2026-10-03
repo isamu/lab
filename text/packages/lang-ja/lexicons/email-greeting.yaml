@@ -1,0 +1,27 @@
+# 仕事のメールや手紙の書き出しの挨拶。本文の最初の数行のどれかに、この語のどれかがあれば挨拶があるとみなす。
+# 英語の語（Dear など）は行の頭にあるときだけ数える。
+id: email-greeting
+language: ja
+entries:
+  - pattern: お世話になっております
+  - pattern: お世話になっています
+  - pattern: お世話になります
+  - pattern: お世話になりました
+  - pattern: 拝啓
+  - pattern: 謹啓
+  - pattern: 前略
+  - pattern: はじめまして
+  - pattern: 初めまして
+  - pattern: 初めてご連絡
+  - pattern: 突然のご連絡
+  - pattern: 突然のメール
+  - pattern: ご無沙汰しております
+  - pattern: こんにちは
+  - pattern: お疲れ様です
+  - pattern: お疲れさまです
+  - pattern: おつかれさまです
+  - pattern: 平素より
+  - pattern: 平素は
+  - pattern: いつもありがとうございます
+  - pattern: Dear
+  - pattern: Hello

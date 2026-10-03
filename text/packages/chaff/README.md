@@ -47,7 +47,7 @@ article.md   blog/tech · 日本語   ジャンルは既定から
 
      → 見出しが約束したことの中身から書き始めてください。
 
-     このルールをゆるめる:  npx chaff relax heading-echo
+     このルールをゆるめる:  npx chaffjs relax heading-echo
 ```
 
 読み方は次のとおりです。

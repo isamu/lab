@@ -1,0 +1,105 @@
+id: attachment-not-attached
+layer: L2
+status: experimental
+how_to_find: attachment-missing
+severity: warning
+
+name:
+  ja: 添付に触れているのに、添付が見当たらない
+  en: Attachment mentioned but not shown
+
+why:
+  ja: 「資料を添付します」と書いて添付を忘れるのは、仕事のメールでいちばんよくある失敗の一つです。受け手は返信で頼み直すことになり、やり取りが一往復増えます。本文が「添付」「別添」「同封」に触れているのに、文書のどこにも添付の欄（添付ファイル：）、ファイル名（見積書.pdf）、メーリングリストの添付の注記が無いとき指します。chaff はメールに実際に何が付いているかは見られないので、本文に添付を書き出す運用のときに役立ちます。
+  en: 'Writing "please find attached" and forgetting the attachment is one of the most common mistakes in work email. The recipient has to ask again, and the exchange takes another round. chaff points out a text that mentions an attachment ("attached", "enclosed") when the document shows none: no attachment field ("Attachment:", "Encl.:"), no file name ("quote.pdf"), and no mailing-list note about a removed attachment. chaff cannot see what is really attached to a message, so this helps where the files are listed in the text.'
+
+message:
+  ja: 添付に触れていますが、添付の欄やファイル名がありません
+  en: An attachment is mentioned, but no attachment line or file name is shown
+
+how_to_fix:
+  ja: ファイルを付けたか確かめてください。付けたなら、署名の前に「添付ファイル：見積書.pdf」のように添付したものを書きます。
+  en: 'Check that the file is attached. If it is, list it before the signature, as in "Attachment: quote.pdf".'
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business/email, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 本文が「添付します」と書いているのに、添付の欄もファイル名も無いメール
+  en: An email that says something is attached but shows no attachment line or file name
+example:
+  ja:
+    config: { genre: business/email }
+    before: |
+      件名: 見積書の送付
+
+      いつもお世話になっております。見積書を添付しましたので、ご確認ください。
+
+      よろしくお願いいたします。
+    after: |
+      件名: 見積書の送付
+
+      いつもお世話になっております。見積書を添付しましたので、ご確認ください。
+
+      添付ファイル：見積書.pdf
+
+      よろしくお願いいたします。
+  en:
+    config: { genre: business/email }
+    before: |
+      Subject: Quote
+
+      Dear Ms Lee,
+
+      I have attached the quote for the panels.
+
+      Best regards,
+      Ichiro
+    after: |
+      Subject: Quote
+
+      Dear Ms Lee,
+
+      I have attached the quote for the panels.
+
+      Attachment: quote.pdf
+
+      Best regards,
+      Ichiro
+not_flagged:
+  ja: 「添付なし」「添付はありません」のような、付けていないと言う書き方と、引用した返信の中の「添付」は数えません。メール・手紙のジャンルでだけ見ます。
+  en: 'Phrases that say nothing is attached ("no attachment") or that use the word for something else ("attached to the wall"), and mentions inside a quoted reply, are not counted. Only the email and letter genre runs this rule.'
+rewrite:
+  ja:
+    direction: 書き手に、ファイルを付けたかを確かめてください。付けたなら、添付したもののファイル名を「添付ファイル：」の行に書きます。付けないなら、添付に触れた文を消すか、資料の在りか（共有フォルダの場所など）を書きます。ファイル名を推測で書きません。
+    pairs:
+      - before: 見積書を添付しましたので、ご確認ください。
+        after: |
+          見積書を添付しましたので、ご確認ください。
+
+          添付ファイル：見積書.pdf
+      - before: 資料を添付します。
+        after: 資料は共有フォルダの「2026年10月」に置きました。
+    keep:
+      - 用件の文
+      - 本文にあるファイルの名前
+    avoid:
+      - 本文に無いファイル名を作る
+      - 添付したと書き手に確かめずに書く
+  en:
+    direction: Ask the writer whether the file is attached. If it is, list its file name on an "Attachment:" line. If not, remove the sentence that mentions it, or say where the file is (a shared folder). Do not guess a file name.
+    pairs:
+      - before: I have attached the quote for the panels.
+        after: |
+          I have attached the quote for the panels.
+
+          Attachment: quote.pdf
+      - before: Please find the slides attached.
+        after: The slides are in the shared folder under "October 2026".
+    keep:
+      - the body's sentences
+      - file names the text already gives
+    avoid:
+      - inventing a file name
+      - saying the file is attached without asking the writer

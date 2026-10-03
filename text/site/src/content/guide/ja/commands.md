@@ -6,6 +6,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 ## コマンドの一覧
 
 `npx chaffjs --help` で出る一覧を、表にまとめました。
+`npx chaffjs init --help` のようにコマンドの後に `--help` を付けると、そのコマンドの行だけを出し、何も実行しません。
 
 | コマンド | 何が起きるか |
 | --- | --- |
@@ -134,7 +135,7 @@ $ npx chaffjs explain max-sentence-length
 
   いまは normal です。
 
-  変える:  npx chaff relax max-sentence-length --why "理由"
+  変える:  npx chaffjs relax max-sentence-length --why "理由"
 ```
 
 ## コマンドでルールを変える
@@ -286,7 +287,7 @@ $ npx chaffjs suppressions docs/
   bold-density                7 件  ← 設定の見直しを検討してください
       docs/g1.md, docs/g2.md, docs/g3.md ほか 4 ファイル
       理由: 用語集なので太字が多いのは意図的
-      ルールごとゆるめる: npx chaff relax bold-density --why "..."
+      ルールごとゆるめる: npx chaffjs relax bold-density --why "..."
 
   理由が書かれていない抑制: 1 件
       docs/x.md
@@ -510,7 +511,7 @@ npx chaffjs test docs/
 
      この指摘が違うと思ったら:
        この箇所だけ黙らせる    <!-- stet: unsourced-number — 理由 -->
-       ルールごとゆるめる      npx chaff relax unsourced-number
+       ルールごとゆるめる      npx chaffjs relax unsourced-number
 ```
 
 文書全体を AI に渡すことはしません。機械で候補を絞ってから、その箇所だけを読ませます。
