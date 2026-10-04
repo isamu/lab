@@ -18,6 +18,7 @@ extra_word_lists:
     name-title,
     date-time-unit,
     http-method,
+    reference-list-heading,
   ]
 uses: [pos]
 severity: info

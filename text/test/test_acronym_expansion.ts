@@ -142,6 +142,28 @@ describe("undefined-acronym: 定義の形で書いた略語は指摘しない", 
   });
 });
 
+describe("undefined-acronym: 文献一覧の誌名・会議名は数えない（#621）", () => {
+  it("英語: References の下の略語は外れ、本文の略語は残る", () => {
+    const source = [
+      "# Readability",
+      "",
+      "We ask the KPT team first.",
+      "",
+      "## References",
+      "",
+      "- Sato (2008). Automatic assessment of text readability. Appeared in: LREC 2008.",
+      "- Lee (2019). Measuring style. Appeared in: Proceedings of IEEE ICML.",
+      "",
+    ].join("\n");
+    assert.deepEqual(reportedAcronyms(en, source), ["KPT"]);
+  });
+
+  it("日本語: 参考文献の下の略語は外れる", () => {
+    const source = "# 読みやすさ\n\nKPT の手順で振り返ります。\n\n## 参考文献\n\n- 佐藤（2011）。テキスト難易度測定。IPSJ Journal 52(4)。\n";
+    assert.deepEqual(reportedAcronyms(ja, source), ["KPT"]);
+  });
+});
+
 describe("undefined-acronym: 読む語彙表がどれか 1 つ無い言語", () => {
   const source = '# Terms\n\nThe Service Level Agreement (hereinafter "SLA") applies at 3:30 PM.\n';
   const without = (list: string): LanguageAdapter => ({ ...en, lexicons: Object.fromEntries(Object.entries(en.lexicons).filter(([id]) => id !== list)) });
