@@ -1,0 +1,19 @@
+# 二段に重ねた並べ方で、外の段だけをつなぐ語と、内の段をつなぐ語。connective-hierarchy が読む。
+# rewrite のある語が外の段の語で、rewrite は一段の並べ方で使う語。instead_of のある語は、その外の段の語の下に立つ内の段の語。
+# 内の段の語は漢字と仮名の両方を入れる（「並びに」と「および」を組む文もある）。外の段の語は漢字だけ。
+# 仮名の「ならびに」「もしくは」は、普通の文で一段の並べ方にも使われるので入れない。
+id: connective-hierarchy
+language: ja
+entries:
+  - pattern: 並びに
+    rewrite: 及び
+  - pattern: 若しくは
+    rewrite: 又は
+  - pattern: 及び
+    instead_of: 並びに
+  - pattern: および
+    instead_of: 並びに
+  - pattern: 又は
+    instead_of: 若しくは
+  - pattern: または
+    instead_of: 若しくは
