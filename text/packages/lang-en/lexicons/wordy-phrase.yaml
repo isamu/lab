@@ -48,3 +48,43 @@ entries:
     rewrite: can
   - pattern: until such time as
     rewrite: until
+  - pattern: in light of the fact that
+    rewrite: because
+  - pattern: on account of the fact that
+    rewrite: because
+  - pattern: for the reason that
+    rewrite: because
+  - pattern: given the fact that
+    rewrite: given that, or because
+  - pattern: with the exception of
+    rewrite: except
+  - pattern: in the majority of cases
+    rewrite: usually
+  - pattern: a small number of
+    rewrite: a few
+  - pattern: at an early date
+    rewrite: soon
+  - pattern: by means of
+    rewrite: by
+  - pattern: in a manner similar to
+    rewrite: like
+  - pattern: in the vicinity of
+    rewrite: near
+  - pattern: in excess of
+    rewrite: more than
+  - pattern: at all times
+    rewrite: always
+  - pattern: has the capacity to
+    rewrite: can
+  - pattern: have the capacity to
+    rewrite: can
+  - pattern: in an effort to
+    rewrite: to
+  - pattern: with the result that
+    rewrite: so that
+  - pattern: during the course of
+    rewrite: during
+  - pattern: during the time that
+    rewrite: while
+  - pattern: take into consideration
+    rewrite: consider

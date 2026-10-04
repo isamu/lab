@@ -67,3 +67,37 @@ entries:
     rewrite: 眉をひそめる（または顔をしかめる）
   - pattern: 上や下への大騒ぎ
     rewrite: 上を下への大騒ぎ
+  - pattern: 足元をすくう
+    rewrite: 足をすくう
+  - pattern: 足もとをすくう
+    rewrite: 足をすくう
+  - pattern: 采配を奮う
+    rewrite: 采配を振る
+  - pattern: 新規巻き返し
+    rewrite: 新規蒔き直し
+  - pattern: 目鼻が利く
+    rewrite: 目端が利く
+  - pattern: 二の足を演じる
+    rewrite: 二の足を踏む（または二の舞を演じる）
+  - pattern: 当を射る
+    rewrite: 当を得る（または的を射る）
+  - pattern: 胸先三寸
+    rewrite: 胸三寸（または舌先三寸）
+  - pattern: 印籠を渡す
+    rewrite: 引導を渡す
+  - pattern: 食指が伸びる
+    rewrite: 食指が動く
+  - pattern: 触手が動く
+    rewrite: 食指が動く（または触手を伸ばす）
+  - pattern: 苦渋をなめる
+    rewrite: 苦汁をなめる
+  - pattern: 苦汁の決断
+    rewrite: 苦渋の決断
+  - pattern: 目からうろこが取れる
+    rewrite: 目からうろこが落ちる
+  - pattern: 二の句が告げない
+    rewrite: 二の句が継げない
+  - pattern: 口をつむる
+    rewrite: 口をつぐむ（または目をつむる）
+  - pattern: 目をつぐむ
+    rewrite: 目をつむる（または口をつぐむ）

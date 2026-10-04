@@ -65,3 +65,59 @@ entries:
     rewrite: 一日目、または第一日
   - pattern: 収入が入る
     rewrite: 収入がある
+  - pattern: まだ未定
+    rewrite: 未定
+  - pattern: まだ未完成
+    rewrite: 未完成
+  - pattern: まだ未解決
+    rewrite: 未解決
+  - pattern: いまだに未解決
+    rewrite: 未解決
+  - pattern: 成功裏のうちに
+    rewrite: 成功裏に、または成功のうちに
+  - pattern: 加工を加える
+    rewrite: 加工する、または手を加える
+  - pattern: 募金を募る
+    rewrite: 募金する、または寄付を募る
+  - pattern: 尽力を尽くす
+    rewrite: 尽力する、または力を尽くす
+  - pattern: 平均アベレージ
+    rewrite: 平均
+  - pattern: お互いに協力し合う
+    rewrite: 協力し合う、またはお互いに協力する
+  - pattern: 互いに協力し合う
+    rewrite: 協力し合う、または互いに協力する
+  - pattern: すべて一任
+    rewrite: 一任
+  - pattern: 全て一任
+    rewrite: 一任
+  - pattern: 外に外出
+    rewrite: 外出
+  - pattern: 今現在
+    rewrite: 現在、または今
+  - pattern: 新年明けましておめでとう
+    rewrite: 明けましておめでとう、または新年おめでとう
+  - pattern: 過信しすぎる
+    rewrite: 過信する
+  - pattern: 余分な贅肉
+    rewrite: 贅肉
+  - pattern: 第一回目
+    rewrite: 第一回、または一回目
+  - pattern: 第1回目
+    rewrite: 第1回、または1回目
+  - pattern: 第1日目
+    rewrite: 第1日、または1日目
+  - pattern: 二重にダブる
+    rewrite: ダブる、または二重になる
+  - pattern: 最も最良
+    rewrite: 最良
+  - pattern: 最も最善
+    rewrite: 最善
+  - pattern: 各々それぞれ
+    rewrite: それぞれ
+  - pattern: 突然卒倒
+    rewrite: 卒倒
+  - pattern: 値段を値上げ
+    rewrite: 値上げ
+  - pattern: 価格を値上げ
+    rewrite: 値上げ
