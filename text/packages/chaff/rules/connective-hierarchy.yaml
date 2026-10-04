@@ -1,0 +1,62 @@
+id: connective-hierarchy
+layer: L2
+status: stable
+how_to_find: connective-hierarchy
+word_list: connective-hierarchy
+extra_word_lists: [connective-lookalike]
+requires: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: 内の段の無い「並びに」「若しくは」
+  en: 並びに or 若しくは with no inner level
+
+why:
+  ja: 法令と公用文では、並べる語を段で使い分けます。一段の並べ方は「及び」「又は」で書き、二段に重ねたときだけ、外の段を「並びに」、内の段を「若しくは」で書きます（A及びB並びにC、A若しくはB又はC）。「及び」の無い文の「並びに」と、「又は」の無い文の「若しくは」は、段の無い並べ方に外の段の語を使っていて、読み手は内の段を探して止まります。
+  en: Japanese statutes and official writing join lists by level. A one-level list uses 及び (and) or 又は (or); only a two-level list uses 並びに for the outer "and" (A及びB並びにC) and 若しくは for the inner "or" (A若しくはB又はC). 並びに in a sentence with no 及び, or 若しくは in one with no 又は, uses the word for a level the sentence does not have, and the reader looks for the other level.
+
+message:
+  ja: 「{written}」の文に、段の組になる語がありません（一段なら「{usual}」）
+  en: '"{written}" with no other level of the list in the sentence (a one-level list uses "{usual}")'
+
+how_to_fix:
+  ja: 一段の並べ方なら「並びに」を「及び」に、「若しくは」を「又は」に替えてください。二段に重ねるつもりなら、内の段の語を書き足してください。
+  en: For a one-level list, write 及び for 並びに and 又は for 若しくは. If the list has two levels, write the other level's word too.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: Older prose uses 並びに and 若しくは as plain literary connectives, not by the official levels.
+  speech: Spoken Japanese, as in Diet and press transcripts, says 並びに and 若しくは for a single "and" and "or".
+
+group: wording
+summary:
+  ja: 「及び」の無い文の「並びに」、「又は」の無い文の「若しくは」
+  en: 並びに in a sentence with no 及び, or 若しくは in one with no 又は
+example:
+  ja:
+    before: |
+      申請書並びに添付書類を提出する。
+    after: |
+      申請書及び添付書類を提出する。
+
+not_flagged:
+  ja: 日本語の文書だけで動きます。仮名の「ならびに」「もしくは」は、普通の文で一段の並べ方にも使われるので見ません。「及び」「および」「又は」「または」が同じ文にあれば、段の組を作ったと読みます。「」『』の中は、引いた語句の片方だけなので見ません。名詞の後ろで名詞をつなぐときだけ見ます（文字の並びに、正しい並びに、縦並びには見ません）。
+  en: Only in Japanese documents. The kana forms ならびに and もしくは, which plain writing also uses for a one-level list, are not read. A sentence holding 及び, および, 又は or または is read as having the other level. A phrase inside 「」 or 『』 quotes half of a list and is not read. Only a word joining two nouns is read (文字の並びに, 正しい並びに and 縦並びに, the noun 並び with に, are not).
+sources: [koyobun-2022]
+rewrite:
+  depth: light
+  ja:
+    direction: 一段の並べ方なら、「並びに」を「及び」に、「若しくは」を「又は」に替えます。並べた語と順は変えません。
+    pairs:
+      - before: 申請書並びに添付書類を提出する。
+        after: 申請書及び添付書類を提出する。
+      - before: 書面若しくは電磁的方法により通知する。
+        after: 書面又は電磁的方法により通知する。
+    keep:
+      - 並べた語とその順
+    avoid:
+      - 文に無い内の段を書き足す
+      - 仮名の「および」「または」に書き換える

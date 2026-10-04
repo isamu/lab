@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  connective-hierarchy-ja  found
+ja/design  connective-hierarchy-ja  found
+ja/email  connective-hierarchy-ja  found
+ja/figures  connective-hierarchy-ja  found
+ja/itinerary  connective-hierarchy-ja  found
+ja/minutes  connective-hierarchy-ja  found
+ja/note  connective-hierarchy-ja  found
+ja/policy  connective-hierarchy-ja  found
+ja/press  connective-hierarchy-ja  found
+ja/proposal  connective-hierarchy-ja  found
+ja/quote  connective-hierarchy-ja  found
+ja/readme  connective-hierarchy-ja  found
+ja/requirements  connective-hierarchy-ja  found

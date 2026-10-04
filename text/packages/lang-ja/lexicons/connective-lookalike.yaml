@@ -1,0 +1,9 @@
+# 並べる語の字を含むが、並べる語ではない言い方。connective-hierarchy が読み、この中の「並びに」は見ない。
+# 「〜並び」は並んだ形を言う名詞で、品詞を読む辞書が一語にしないもの（縦並び、一列並び）をここに置く。
+id: connective-lookalike
+language: ja
+entries:
+  - pattern: 縦並びに
+  - pattern: 横並びに
+  - pattern: 列並びに
+  - pattern: 歯並びに
