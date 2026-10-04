@@ -50,7 +50,7 @@ npx chaffjs --experimental docs/   試験中のルールも動かして見る
 一つだけ動かすときは、`enable` で名指しします。`chaff.yaml` の `rules` に書き込みます。
 
 ```bash
-npx chaffjs enable cross-doc-term-variant
+npx chaffjs enable <rule>
 ```
 
 ## 文書が 2 つ以上要るルール、Markdown だけのルール

@@ -104,6 +104,6 @@ describe("cross-doc-term-variant: on the command line", () => {
     };
     const run = await runCli(files, ["a.md", "b.md", "c.md", "--experimental", "--compact"]);
     rmSync(run.dir, { recursive: true, force: true });
-    assert.match(run.out, /b\.md[\s\S]*3:1 +warning 「サーバ」と書いていますが、一緒に見たほかの 2 ファイルでは「サーバー」です（例：a\.md）/u);
+    assert.match(run.out, /b\.md[\s\S]*3:1 +info +「サーバ」と書いていますが、一緒に見たほかの 2 ファイルでは「サーバー」です（例：a\.md）/u);
   });
 });

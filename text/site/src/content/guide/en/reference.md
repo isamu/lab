@@ -50,7 +50,7 @@ npx chaffjs --experimental docs/   also run the experimental rules
 To turn on just one, name it with `enable`. It writes the rule under `rules` in `chaff.yaml`.
 
 ```bash
-npx chaffjs enable cross-doc-term-variant
+npx chaffjs enable <rule>
 ```
 
 ## Rules that need more than one document, or Markdown

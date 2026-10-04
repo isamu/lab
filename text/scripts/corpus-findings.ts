@@ -74,17 +74,28 @@ export const allRulesRun = async (
   };
 };
 
-/** Every rule's run on one document at the levels given, experimental rules included: what `yarn rules:measure` reads. */
-export const runAtLevels = async (
-  path: string,
-  source: string,
-  language: string,
-  genre: string,
-  levels: (rules: readonly RuleDefinition[]) => Readonly<Record<string, Level>>,
-): Promise<RunResult> => {
+/** One file of a set, with its genre and the levels its rules run at. */
+export type LevelledFile = {
+  readonly path: string;
+  readonly source: string;
+  readonly genre: string;
+  readonly levels: (rules: readonly RuleDefinition[]) => Readonly<Record<string, Level>>;
+};
+
+/**
+ * Every rule's run on each file of a set at its levels, experimental rules included, then the rules that compare the
+ * files (cross-run.ts): what `yarn rules:measure` reads. The results are in the files' order. A set of one file is
+ * the file's own run.
+ */
+export const runSetAtLevels = async (files: readonly LevelledFile[], language: string): Promise<RunResult[]> => {
   await adapterOf(language).prepare?.({ pos: true });
   const rules = loadRules(language);
-  return runRules(documentOf(path, source, language, genre, EMPTY), rules, levels(rules), true, genre);
+  const inputs = files.map((file) => {
+    const doc = documentOf(file.path, file.source, language, file.genre, EMPTY);
+    const context = { settings: file.levels(rules), experimental: true, genre: file.genre };
+    return { doc, rules, context, raw: runRulesWith(doc, rules, context) };
+  });
+  return runCrossRules(inputs, CROSS_DETECTORS);
 };
 
 const findingsWith = async (path: string, source: string, language: string, genre: string, choice: RunChoice): Promise<CorpusFinding[]> => {
