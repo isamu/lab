@@ -2,6 +2,29 @@
 
 Newest first.
 
+## 0.23.0 — 2026-10-04
+
+When a document's genre is set, chaff now prints the genre's guide before the findings: what a good document of that
+kind must achieve and what a reader checks first, with the rules that matter most for it. It is written as an
+instruction an AI can rewrite against, and `fix-plan` puts it first. The bundled text is the default; chaff.yaml,
+styles and rule packs can add to it, replace it or turn it off.
+
+### Commands and settings
+
+- Genre guides as data, customisable with `guide:` (add, replace, off) in chaff.yaml, styles and rule packs (#623).
+- The guide in the text report, JSON, SARIF, `fix-plan` and the skill; `--no-guide`; a commented example from
+  `chaff init` (#631).
+
+### Rules
+
+- figurative-density, decorative figures piled up (#613); ellipsis-consistency (#616).
+- Larger word lists for known-misspelling, misconversion, wordy-phrase, redundant-expression, idiom-misuse, cliche,
+  nonstandard-word, vague-word-density, weasel-word and translationese-density (#625–#630).
+
+### Docs
+
+- Configuration, documents-by-kind and AI pages show the guide and how to change it (#632).
+
 ## 0.22.0 — 2026-10-04
 
 Teams can ship rules without writing code. A rule pack is a folder or npm package of YAML rules, word lists and
