@@ -1255,6 +1255,47 @@
         "cleanSamples": 12
       }
     },
+    "comparative-without-baseline": {
+      "groups": {
+        "academic": {
+          "documents": 6,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 78,
+          "fired": 6
+        },
+        "docs": {
+          "documents": 20,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 5
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 1
+        },
+        "technical": {
+          "documents": 48,
+          "fired": 7
+        }
+      },
+      "bench": {
+        "planted": 26,
+        "found": 26,
+        "falseAlarms": 0
+      }
+    },
     "concrete-evidence-density": {
       "groups": {
         "academic": {
