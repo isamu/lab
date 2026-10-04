@@ -22,7 +22,7 @@ export const withStyle = (config: Config, styles: readonly StyleDefinition[]): C
   return {
     ...config,
     rules: { ...style.rules, ...config.rules },
-    applied: { style: style.id, levelsFrom: fromStyle, options: style.options, limits },
+    applied: { style: style.id, levelsFrom: fromStyle, options: style.options, limits, guide: style.guide },
   };
 };
 

@@ -8,6 +8,9 @@
 #            An off_for entry "<group>: measured by yarn rules:measure" is written by `yarn rules:measure --apply`: the
 #            rule reports on most human documents of the group (chaff-spec.md §21.1). Edit the measurement, not these.
 #   profile: the document profile (profiles/*.yaml) this genre reads with, when chaff.yaml names none.
+#   guide:   what a good document of this kind does, as lines a reader (or an AI rewriting it) checks a draft against, in
+#            ja and en: checks, not adjectives. A genre without one reads its group's. A team replaces or adds lines with
+#            guide: in chaff.yaml, a style or a rule pack.
 #   suggest: when no genre is set, what makes a file look like this genre, strongest first:
 #            paths (the file's path), then per language an opening (the body's first line, past front matter and
 #            headings) or a line with min_lines (how many lines must have that shape). A wrong suggestion misleads
@@ -18,27 +21,99 @@
 groups:
   - id: technical
     name: { ja: 技術文書, en: Technical }
+    guide:
+      ja:
+        - 書かれたとおりに実装・操作して、誰がやっても同じ結果になるか
+        - 用語・型・単位・既定値を一か所で定め、どこでも同じ名前で使っているか
+        - 必須と任意、前提条件、エラーのときの振る舞いを書き分けているか
+      en:
+        - Can a reader implement or run it exactly as written and get the same result?
+        - Is each term, type, unit and default defined once and named the same everywhere?
+        - Are required and optional, preconditions and error behaviour stated apart?
   - id: blog
     name: { ja: ブログ, en: Blog }
+    guide:
+      ja:
+        - 最初の段落で、何について何を言う記事かが分かるか
+        - 主張ごとに、具体例・数字・出典のどれかで裏付けているか
+        - 結びが本文の言い直しではなく、読者が次にすることを示しているか
+      en:
+        - Does the first paragraph say what the article is about and what it claims?
+        - Is each claim backed by an example, a number or a source?
+        - Does the ending tell the reader what to do next, rather than restate the body?
   - id: business
     name: { ja: ビジネス文書, en: Business }
+    guide:
+      ja:
+        - 冒頭で、結論と、読み手に求めること（判断・返事・期限）を述べているか
+        - 数字・日付・金額に出典か根拠があり、本文と表で一致しているか
+        - 誰が・何を・いつまでに、が文ごとに読み取れるか
+      en:
+        - Does the opening give the conclusion and what the reader must do (decide, reply, by when)?
+        - Do numbers, dates and amounts have a source, and agree between the text and the tables?
+        - Can each action be read as who does what by when?
   # Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive
   # (shall be deemed), and joins long noun compounds (個人情報取扱事業者). Those rules would only flag the form.
   - id: legal
     name: { ja: 法務, en: Legal }
+    guide:
+      ja:
+        - 定義した語を、定義どおりの形で使い通しているか
+        - 条・項・号の番号に抜けや重複がなく、参照先が実在するか
+        - 義務・権利・例外の主語と条件が、一通りにしか読めないか
+      en:
+        - Is each defined term used in exactly its defined form throughout?
+        - Are articles, sections and items numbered without gaps or repeats, and does every cross-reference point to one that exists?
+        - "Can each obligation, right and exception be read only one way: who, and under what condition?"
   # A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up.
   - id: docs
     name: { ja: 説明書, en: Documentation }
+    guide:
+      ja:
+        - 1 つの節が 1 つの用事（作業・問い・用語）に答えているか
+        - 前提条件と必要なものを、手順より前に書いているか
+        - 読み手が操作する語（ボタン名・コマンド・設定名）を、画面やコードと同じ綴りで書いているか
+      en:
+        - Does each section answer one need (one task, one question, one term)?
+        - Are prerequisites and what is needed stated before the steps?
+        - Are the words the reader acts on (button labels, commands, setting names) spelled exactly as on screen or in code?
   # Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence.
   - id: academic
     name: { ja: 学術, en: Academic }
+    guide:
+      ja:
+        - 要旨だけで、問い・方法・結果・結論が分かるか
+        - 引用が参考文献の一覧と一対一で対応し、引用の書き方が一つにそろっているか
+        - 図表が参照の順に番号付けされ、本文の数字と図表の数字が一致しているか
+      en:
+        - Does the abstract alone give the question, the method, the result and the conclusion?
+        - Does every citation match one entry in the reference list, in one citation style?
+        - Are figures and tables numbered in the order they are referred to, and do the numbers in the text match them?
   # Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles.
   # Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps.
   - id: literature
     name: { ja: 文学, en: Literature }
+    guide:
+      ja:
+        - 文体・リズム・繰り返しは作者の選択として読む。直すのは作品の中での食い違いだけ
+        - 人名・地名・表記・時系列が、作品を通して一貫しているか
+        - 章の番号と記号（ダッシュ・三点リーダー・括弧）の使い方が、通してそろっているか
+      en:
+        - Style, rhythm and repetition are the author's choices; fix only what the work contradicts in itself
+        - Are names, places, spellings and the timeline consistent through the work?
+        - Are chapter numbers and marks (dashes, ellipses, quotation marks) used the same way throughout?
   # A speech opens with greetings and closes with thanks: that is its form, not padding.
   - id: speech
     name: { ja: 話し言葉, en: Speech }
+    guide:
+      ja:
+        - 耳で一度聞いて分かる長さの文か（主語と述語が離れすぎていないか）
+        - 冒頭で何の話かを言い、最後に要点をもう一度言っているか
+        - 数字と固有名詞を、聞き取れる形（読み方・単位）で書いているか
+      en:
+        - Can each sentence be understood on one hearing (subject and verb close together)?
+        - Does it say what it is about at the start, and repeat the point at the end?
+        - Are numbers and names written the way they will be spoken (units, pronunciation)?
 
 genres:
   - id: technical/spec
@@ -46,41 +121,129 @@ genres:
     summary:
       ja: 仕様書・RFC・設計文書。読み手に間違えさせないための文書
       en: Specifications, RFCs and design documents, written so the reader cannot get it wrong
+    guide:
+      ja:
+        - 要件ごとに、必須（しなければならない）か任意（してもよい）かが一語で分かるか
+        - 曖昧な語（適切に・速やかに・など）を、数値か条件に置き換えているか
+        - 用語・型・単位・既定値を一か所で定義し、仕様全体で同じ名前で使っているか
+        - 正常な場合だけでなく、エラー・境界値・想定外の入力での振る舞いを書いているか
+      en:
+        - Does each requirement say in one word whether it is required (MUST) or optional (MAY)?
+        - Are vague words (appropriate, promptly, etc.) replaced by a number or a condition?
+        - Is each term, type, unit and default defined once and used under the same name across the spec?
+        - Is the behaviour stated for errors, boundaries and unexpected input, not only the normal case?
   - id: technical/readme
     name: { ja: README・技術文書, en: README and technical docs }
     summary:
       ja: README と開発者向けの説明
       en: READMEs and documentation for developers
+    guide:
+      ja:
+        - 最初の数行で、これが何で、誰のためのものかが分かるか
+        - インストールから最初に動かすまでの手順が、コピーしてそのまま動くか
+        - 対応するバージョン（言語・OS・依存するもの）を書いているか
+        - コード・コマンド・設定名が、実物と同じ綴りか
+      en:
+        - Do the first lines say what this is and who it is for?
+        - Do the steps from installing to the first run work when copied as they are?
+        - Are the supported versions (language, OS, dependencies) stated?
+        - Are code, commands and setting names spelled exactly as in the project?
   - id: blog/tech
     name: { ja: 技術ブログ, en: Tech blog }
     summary:
       ja: 技術記事。ジャンルを決めないときはこれで見ます
       en: Technical articles; the genre used when none is set
+    guide:
+      ja:
+        - 冒頭で、主張を 1 つに絞って言い切っているか（何が分かり、何ができるようになる記事か）
+        - 手順とコードが、書いてあるとおりに実行して同じ結果になるか
+        - 使ったバージョン（言語・ライブラリ・OS）と、試した日付を書いているか
+        - 試してうまくいかなかったこと、制約、前提を書いているか
+        - 結びが本文の言い直しではなく、次に読むもの・試すものを示しているか
+      en:
+        - Does the opening make one claim, plainly (what the reader will learn or be able to do)?
+        - Do the steps and code run as written and give the same result?
+        - Are the versions used (language, libraries, OS) and the date they were tried stated?
+        - Does it say what was tried and failed, the limits, and the assumptions?
+        - Does the ending point to what to read or try next, rather than restate the body?
   - id: blog/essay
     name: { ja: エッセイ（ブログ）, en: Blog essay }
     summary:
       ja: 自分の考えを書くブログのエッセイ
       en: Personal essays posted on a blog
+    guide:
+      ja:
+        - 何について考えた文章かを、最初の段落で示しているか
+        - 主張を、自分の体験か具体的な場面で裏付けているか
+        - 結びが、冒頭で立てた問いに答えているか
+      en:
+        - Does the first paragraph show what the essay is thinking about?
+        - Is each claim grounded in an experience or a concrete scene?
+        - Does the ending answer the question the opening raised?
   - id: blog/owned-media
     name: { ja: オウンドメディア, en: Owned media }
     summary:
       ja: 会社や団体が読者に向けて出す記事
       en: Articles an organisation publishes for its readers
+    guide:
+      ja:
+        - 冒頭で、想定する読者と、その読者が得るものを示しているか
+        - 数字・事例・引用に、出典と時点があるか
+        - 自社の宣伝と、読者に役立つ情報を見分けられるか
+        - 最後に、読者が次にとれる行動（問い合わせ・関連記事）を 1 つ示しているか
+      en:
+        - Does the opening name the intended reader and what they will get?
+        - Do numbers, cases and quotes have a source and a date?
+        - Can promotion be told apart from what is useful to the reader?
+        - Does it end with one action the reader can take next (get in touch, a related article)?
   - id: business/proposal
     name: { ja: 提案書・企画書, en: Proposal }
     summary:
       ja: 提案書・企画書・計画書
       en: Proposals, plans and pitches
+    guide:
+      ja:
+        - 冒頭で、何を・いくらで・いつまでに提案するかを言い切っているか
+        - 課題・提案・効果の数字に根拠があり、本文と表で一致しているか
+        - リスクと、それぞれへの手当てを書いているか
+        - 読み手に求める判断と、その期限を書いているか
+      en:
+        - Does the opening state what is proposed, at what cost, and by when?
+        - Do the figures for the problem, the proposal and the benefit have a basis, and agree between the text and the tables?
+        - Are the risks stated, each with what is done about it?
+        - Does it say what decision is asked of the reader, and by when?
   - id: business/report
     name: { ja: 報告書, en: Report }
     summary:
       ja: 報告書・白書・社内文書
       en: Reports, white papers and internal documents
+    guide:
+      ja:
+        - 冒頭で、結論（何が分かったか・何が起きたか）を述べているか
+        - 数字に出典と時点があり、合計と割合が合っているか
+        - 事実と、意見・推測を書き分けているか
+        - 次の行動を、担当と期限つきで書いているか
+      en:
+        - Does the opening give the finding (what was learned, or what happened)?
+        - Do the numbers have a source and a date, and do totals and percentages add up?
+        - Are facts kept apart from opinions and guesses?
+        - Are the next actions given with an owner and a deadline?
   - id: business/email
     name: { ja: メール・手紙, en: Email and letter }
     summary:
       ja: 仕事のメールと手紙
       en: Work email and letters
+    guide:
+      ja:
+        - 件名と最初の 2 行で、用件と、相手にしてほしいことが分かるか
+        - 依頼ごとに期限があるか（「近日中」ではなく日付で）
+        - 「添付します」と書いたものを、本当に添付しているか
+        - 宛名・挨拶・結び・署名がそろっているか
+      en:
+        - Do the subject and the first two lines give the purpose and what the reader should do?
+        - 'Does each request have a deadline (a date, not "soon")?'
+        - Is everything said to be attached actually attached?
+        - Are the greeting, the closing and the signature in place?
     # A letter is a letter even when it encloses an agreement (an offer letter), so it goes by how it opens.
     # Not by an addressee line (〇〇御中, To: ...): quotes and proposals open with one too.
     suggest:
@@ -91,16 +254,51 @@ genres:
     summary:
       ja: プレスリリースと、お知らせ
       en: Press releases and public notices
+    guide:
+      ja:
+        - 見出しと第 1 段落で、誰が・何を・いつ・どこで・なぜを言い切っているか
+        - 日付・価格・数字・固有名詞が正確で、本文の中で一致しているか
+        - 強い形容（画期的・業界初）に裏付けがあるか
+        - 問い合わせ先と、発表の日付を書いているか
+      en:
+        - Do the headline and the first paragraph state who, what, when, where and why?
+        - Are dates, prices, figures and names exact and consistent throughout?
+        - Is every superlative (groundbreaking, first in the industry) backed by evidence?
+        - Are the contact and the release date given?
   - id: business/meeting-notes
     name: { ja: 議事録, en: Meeting notes }
     summary:
       ja: 議事録・議事要旨
       en: Minutes and meeting notes
+    guide:
+      ja:
+        - 日時・出席者・議題が冒頭にあるか
+        - 決まったことと、話し合っただけのことを分けているか
+        - 宿題ごとに、担当と期限があるか
+        - 次回の日程と、持ち越した議題を書いているか
+      en:
+        - Are the date, the attendees and the agenda at the top?
+        - Are decisions kept apart from what was only discussed?
+        - Does each action item have an owner and a deadline?
+        - Are the next meeting and the items carried over recorded?
   - id: legal/contract
     name: { ja: 契約書・規約, en: Contract and terms }
     summary:
       ja: 契約書・利用規約・プライバシーポリシー
       en: Contracts, terms of service and privacy policies
+    guide:
+      ja:
+        - 当事者の呼び方（甲・乙、定義した名前）を、最後まで同じ形で使っているか
+        - 定義語を一度だけ定め、定義どおりの形で使っているか
+        - 義務ごとに、誰が・何を・いつまでにするかが読み取れるか
+        - 金額・日付・期間・条番号の参照が、条項どうしと別表とで一致しているか
+        - 解除・損害賠償・準拠法・紛争の解決を定めた条項があるか
+      en:
+        - Are the parties named the same way (as defined) from start to end?
+        - Is each defined term defined once and used in exactly its defined form?
+        - Can each obligation be read as who does what by when?
+        - Do amounts, dates, periods and clause references agree across the clauses and the schedules?
+        - Are termination, liability, governing law and dispute resolution covered?
     suggest:
       paths: ["(^|/)(contracts?|agreements?|terms|tos|nda|keiyaku|kiyaku)(/|[-_.])", "(^|/)privacy[-_]?policy[-_.]"]
       ja: { line: "本契約|本規約|本ポリシー|以下「(?:甲|乙|丙)」|^#{1,6}\\s*(?:プライバシーポリシー|個人情報保護方針|利用規約|契約書)", min_lines: 2 }
@@ -126,6 +324,17 @@ genres:
     summary:
       ja: 法令・規則・社内規程・通達
       en: Statutes, regulations and internal rules
+    guide:
+      ja:
+        - 定義規定で定めた語を、定義どおりの形で使っているか
+        - 条・項・号の番号に抜けや重複がなく、「第何条」の参照先が実在するか
+        - 義務（しなければならない）・禁止・権限（することができる）・努力義務を書き分けているか
+        - 適用の範囲・例外（ただし書）・施行の日が読み取れるか
+      en:
+        - Is every term from the definitions used in exactly its defined form?
+        - Are sections numbered without gaps or repeats, and does every cross-reference point to one that exists?
+        - Are duties (shall), prohibitions (shall not), powers (may) and best-effort duties written apart?
+        - Can the scope, the exceptions (provided that) and the date of effect be found?
     profile: statute
     # Also suggested when the content has the statute profile's shape.
     suggest:
@@ -147,6 +356,15 @@ genres:
     summary:
       ja: 判決文・決定
       en: Court judgments and opinions
+    guide:
+      ja:
+        - 主文（結論）と理由が分かれているか
+        - 当事者・証拠・条文の呼び方が、全体で一貫しているか
+        - 引用した条文と判例の番号・日付が正確か
+      en:
+        - Are the holding and the reasoning kept apart?
+        - Are the parties, the exhibits and the statutes referred to the same way throughout?
+        - Are the cited statutes and cases given with exact numbers and dates?
     suggest:
       ja: { line: "^(?:#{1,6}\\s*)?(?:主\\s*文|理\\s*由|判\\s*決)\\s*$", min_lines: 2 }
       en: { line: "delivered the opinion of the Court|^(?:Reversed|Affirmed)\\.?$", min_lines: 1 }
@@ -155,6 +373,17 @@ genres:
     summary:
       ja: 特許の明細書と請求項
       en: Patent specifications and claims
+    guide:
+      ja:
+        - 請求項の用語が、明細書で定義か説明されているか
+        - 従属する請求項（請求項 1 に記載の）の参照先が実在するか
+        - 本文の符号と、図面の符号が一致しているか
+        - 一つの構成要素を、最後まで同じ名前で呼んでいるか
+      en:
+        - Is every term in the claims defined or described in the specification?
+        - Does each dependent claim refer to a claim that exists (according to claim 1)?
+        - Do the reference numerals in the text match the drawings?
+        - Is each element called by the same name throughout?
     suggest:
       ja: { line: "【(?:課題|解決手段|請求項[0-9０-９]+|選択図|技術分野|背景技術|発明の詳細な説明|特許請求の範囲)】", min_lines: 2 }
       en: { line: "^#{1,6}\\s*(?:BACKGROUND OF THE INVENTION|SUMMARY OF THE INVENTION|Claims\\b)|\\bof claim \\d+", min_lines: 3 }
@@ -163,6 +392,19 @@ genres:
     summary:
       ja: 使い方の説明・手順書・ヘルプ
       en: User guides, how-to pages and help
+    guide:
+      ja:
+        - 1 つの節が 1 つの作業だけを扱い、見出しがその作業の名前になっているか
+        - 前提条件・必要な権限・準備を、手順より前に書いているか
+        - 手順は番号付きで、1 手順に 1 操作、命令の形で、行う順に並んでいるか
+        - 手順ごとに、うまくいったら何が見えるかを書いているか
+        - ボタン名・コマンド・設定名が、画面やコードと同じ綴りか
+      en:
+        - Does each section cover one task, with the task as its heading?
+        - Are prerequisites, permissions and preparation given before the steps?
+        - Are the steps numbered, one action each, in the imperative and in the order they are done?
+        - Does each step say what the reader should see when it worked?
+        - Are button labels, commands and setting names spelled exactly as on screen or in code?
     # Path only: step and procedure headings are as common in tech blogs and specifications as in manuals.
     suggest:
       paths: ["(^|/)(manuals?|guides?|how-?tos?|help|tutorials?|user-?guides?)(/|[-_.])"]
@@ -177,6 +419,15 @@ genres:
     summary:
       ja: 問いと答えを並べたページ
       en: Pages of questions and answers
+    guide:
+      ja:
+        - 問いごとに、最初の 1 文で答えているか
+        - 問いが、読み手が実際に使う言葉で書かれているか
+        - 長い説明は繰り返さず、本編へのリンクで済ませているか
+      en:
+        - Does each question get its answer in the first sentence?
+        - Is each question worded the way readers actually ask it?
+        - Are longer explanations linked to rather than repeated?
     suggest:
       paths: ["(^|[/_-])(faqs?|q-?and-?a)([/_.-]|$)"]
       ja: { line: "^(?:#{1,6}\\s*)?(?:[QＱ][0-9０-９]*[.．:：、\\s　]|問[0-9０-９]+[.．:：\\s　])|^#{1,6}\\s*(?:よくある(?:ご)?質問|Ｑ＆Ａ|Q&A)", min_lines: 2 }
@@ -186,6 +437,15 @@ genres:
     summary:
       ja: 用語と、その説明を並べたページ
       en: Lists of terms and what they mean
+    guide:
+      ja:
+        - 1 つの語を、1 か所でだけ定義しているか
+        - 説明が、まだ定義していない語に頼っていないか
+        - 並び順（五十音・アルファベット）が一貫しているか
+      en:
+        - Is each term defined in one place only?
+        - Do the definitions avoid relying on terms not yet defined?
+        - Is the order (alphabetical, or 五十音 for Japanese) consistent?
     suggest:
       paths: ["(^|/)(glossary|glossaries|yogo|用語集)(/|[-_.])"]
       ja: { line: "^#{1,6}\\s*用語集", min_lines: 1 }
@@ -195,6 +455,17 @@ genres:
     summary:
       ja: 論文と、その要旨
       en: Papers and abstracts
+    guide:
+      ja:
+        - 要旨だけで、問い・方法・結果・結論が分かり、決められた長さに収まっているか
+        - 引用が参考文献の一覧と一対一で対応し、引用の書き方が一つにそろっているか
+        - 図表が参照の順に番号付けされ、本文の数字と図表の数字が一致しているか
+        - 主張の強さが結果に見合っているか（示した・示唆する、を使い分けているか）
+      en:
+        - Does the abstract alone give the question, the method, the result and the conclusion, within its length?
+        - Does every citation match one entry in the reference list, in one citation style?
+        - Are figures and tables numbered in the order they are referred to, and do the numbers in the text match them?
+        - Does each claim go no further than the results (shows, or suggests)?
     suggest:
       paths: ["(^|/)(papers?|ronbun)(/|[-_.])"]
       ja: { line: "^(?:#{1,6}\\s*)?(?:要旨|抄録|参考文献|引用文献|謝辞)\\s*(?:[（(].*)?$", min_lines: 2 }
@@ -215,6 +486,17 @@ genres:
     summary:
       ja: 小説・物語
       en: Novels and stories
+    guide:
+      ja:
+        - 文体・リズム・会話の崩しは作者の選択として読む。直すのは作品の中での食い違いだけ
+        - 登場人物の名前・呼び方・設定が、最後まで一貫しているか
+        - 時の流れと場所の移り変わりに、矛盾がないか
+        - 会話の括弧・ダッシュ・三点リーダーの使い方が、通してそろっているか
+      en:
+        - Style, rhythm and broken speech are the author's choices; fix only what the work contradicts in itself
+        - Are the characters' names, forms of address and details consistent to the end?
+        - Do the timeline and the changes of place hold together?
+        - Are quotation marks, dashes and ellipses used the same way throughout?
     # A line that is a spoken line (「…」, or 「…」と云った): a sentence in quotes, not a term being defined
     # (「…」とは, 「…」という, 「…」とする, 「…」と定める, 「…」と称する, 「…」と呼ぶ).
     suggest:
@@ -225,11 +507,29 @@ genres:
     summary:
       ja: 文学としての随筆。ブログのエッセイは blog/essay
       en: Literary essays; a blog essay is blog/essay
+    guide:
+      ja:
+        - 文体は作者の選択として読む。直すのは作品の中での食い違いだけ
+        - 引用・固有名詞・年代が正確か
+        - 表記（漢字とかな、数字の書き方）が通してそろっているか
+      en:
+        - The style is the author's choice; fix only what the work contradicts in itself
+        - Are quotations, names and dates accurate?
+        - Are spellings and the way numbers are written consistent throughout?
   - id: literature/poetry
     name: { ja: 詩歌, en: Poetry }
     summary:
       ja: 詩・短歌・俳句
       en: Poems and verse
+    guide:
+      ja:
+        - 行分け・字余り・繰り返しは作者の選択。直すのは誤字と、作品の中での表記の揺れだけ
+        - 題と本文、連の番号と区切りの記号がそろっているか
+        - ルビ・旧字・歴史的仮名遣いを、作品の中で一貫して使っているか
+      en:
+        - Line breaks, metre and repetition are the poet's choices; fix only typos and spellings the work itself varies
+        - Are titles, stanza numbers and section marks consistent?
+        - Are archaic spellings and forms used consistently within the work?
     # Verse lines: short lines with no sentence punctuation (a tanka's three lines; a capitalised line of English verse).
     # A glossary or a list of names has short lines too, so it takes many of them.
     suggest:
@@ -241,6 +541,15 @@ genres:
     summary:
       ja: 戯曲・脚本
       en: Plays and scripts
+    guide:
+      ja:
+        - 話者の名前の書き方が、登場人物の一覧と台詞とで一致しているか
+        - ト書きと台詞を、形で見分けられるか
+        - 幕と場の番号に抜けがないか
+      en:
+        - Are the speakers' names written the same in the cast list and before their lines?
+        - Can stage directions be told from dialogue by their form?
+        - Are acts and scenes numbered without gaps?
     # A speaker's name before the line: 妻　　あたしは… (two ideographic spaces; a statute's 第一条　 has one), ALGERNON.
     suggest:
       paths: ["(^|/)(plays?|screenplays?|kyakuhon)(/|[-_.])"]
@@ -251,6 +560,17 @@ genres:
     summary:
       ja: 読み上げるために書いた演説・挨拶
       en: Speeches and addresses written to be read aloud
+    guide:
+      ja:
+        - 耳で一度聞いて分かる長さの文か（主語と述語が離れすぎていないか）
+        - 冒頭で何の話かを言い、最後に要点をもう一度言っているか
+        - 数字と固有名詞を、聞き取れる形（読み方・単位）で書いているか
+        - 読み上げて、与えられた時間に収まるか
+      en:
+        - Can each sentence be understood on one hearing (subject and verb close together)?
+        - Does it say what it is about at the start, and repeat the point at the end?
+        - Are numbers and names written the way they will be spoken (units, pronunciation)?
+        - Does it fit the time it is given when read aloud?
     suggest:
       paths: ["(^|/)(speech(es)?|addresses)(/|[-_.])"]
       ja: { line: "^(?:議長|御列席の皆様|ご列席の皆様|皆様|皆さん)、|ご清聴(?:いただき)?ありがとうございました", min_lines: 2 }
@@ -260,6 +580,15 @@ genres:
     summary:
       ja: 話したことを書き起こした記録（会見・国会の会議録）
       en: Verbatim records of what was said (press conferences, parliamentary debates)
+    guide:
+      ja:
+        - 発言は話した人のもの。言い直しや口癖は記録として残し、直すのは書き起こしの誤りだけ
+        - 話者の名前と肩書の書き方が、全体で一貫しているか
+        - 聞き取れなかった所と補った所を、決めた印（［不明］・〔　〕）で示しているか
+      en:
+        - What was said belongs to the speaker; keep restarts and habits as the record, and fix only transcription errors
+        - Are the speakers' names and titles written the same way throughout?
+        - Are inaudible and supplied passages marked the same way ([inaudible], [ ])?
     suggest:
       paths: ["(^|/)(transcripts?|kaigiroku)(/|[-_.])"]
       ja: { line: "^○[^　\\s]{1,30}　|^（(?:問|答)）|^【(?:記者|大臣|質問|回答)】", min_lines: 3 }

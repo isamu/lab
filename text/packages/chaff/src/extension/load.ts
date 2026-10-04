@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import type { Config } from "../config/load.ts";
 import type { Detector, Lexicon, RuleDefinition } from "../plugin.ts";
 import type { StyleDefinition } from "../style-parse.ts";
+import type { GuideLayer } from "../genre-guide/layer.ts";
 import { customRulesOf } from "../custom/load.ts";
 import { withStyle } from "../config/style.ts";
 import { moduleDetector } from "./module-detector.ts";
@@ -33,6 +34,8 @@ export type Extensions = {
   readonly lexicons: Readonly<Record<string, Readonly<Record<string, Lexicon>>>>;
   /** The plugins' house styles. */
   readonly styles: readonly StyleDefinition[];
+  /** The plugins' changes to the genre guides, in the order chaff.yaml lists the plugins. */
+  readonly guides?: readonly GuideLayer[];
   readonly problems: readonly LoadProblem[];
   readonly pluginProblems: readonly PluginProblem[];
 };
@@ -85,6 +88,7 @@ const loadExtensions = async (config: Config): Promise<Extensions> => {
     rules: plugins.flatMap((plugin) => plugin.rules),
     lexicons: lexiconsByLanguage(plugins),
     styles: plugins.flatMap((plugin) => plugin.styles),
+    guides: plugins.flatMap((plugin) => (plugin.guide === undefined ? [] : [plugin.guide])),
     problems: modules.flatMap((entry) => ("problem" in entry.loaded ? [entry.loaded.problem] : [])),
     pluginProblems,
   };

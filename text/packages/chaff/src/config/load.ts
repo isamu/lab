@@ -7,6 +7,7 @@ import type { Level } from "../plugin.ts";
 import type { PathRule } from "./by-path.ts";
 import type { Extensions } from "../extension/load.ts";
 import type { StyleLimits } from "../style-parse.ts";
+import type { GuideLayer } from "../genre-guide/layer.ts";
 
 export const CONFIG_FILE = "chaff.yaml";
 
@@ -46,7 +47,7 @@ export type Config = {
   readonly unreadableOptions?: string | undefined;
   /** The house style chaff.yaml names (styles/*.yaml), as written. A value that is not a name is kept printed, to be reported. */
   readonly style?: string | undefined;
-  /** The style once applied (config/style.ts): its id, the rules whose level it decided, and its options. */
+  /** The style once applied (config/style.ts): its id, the rules whose level it decided, its options and its guide. */
   readonly applied?: AppliedStyle | undefined;
   /** custom_rules as written: the team's own rules. custom/parse.ts reads and checks them. */
   readonly customRules?: unknown;
@@ -54,6 +55,8 @@ export type Config = {
   readonly grade?: unknown;
   /** fix_plan as written: the depth chaff fix-plan rewrites to (fix-plan/chosen-depth.ts reads and checks it). */
   readonly fixPlan?: unknown;
+  /** guide as written: the team's changes to the genre guides, or off (genre-guide/of-config.ts reads it). */
+  readonly guide?: unknown;
   /** plugins as written: package names and paths. extension/plugin-load.ts reads and checks them. */
   readonly plugins?: unknown;
   /** The code chaff.yaml names, once loaded (extension/load.ts). Reading chaff.yaml does not load it. */
@@ -66,6 +69,8 @@ export type AppliedStyle = {
   readonly options: Readonly<Record<string, unknown>>;
   /** The style's numbers, by rule and language, for the rules whose level it decided. */
   readonly limits: StyleLimits;
+  /** The style's changes to the genre guides, when it has any. */
+  readonly guide?: GuideLayer | undefined;
 };
 
 /** 判定の質が誤検知に直結するので、既定は最上位のモデル。cost は絞り込みで削る。spec §14。 */
@@ -200,6 +205,7 @@ export const loadConfig = (path: string): Config => {
     customRules: raw["custom_rules"],
     grade: raw["grade"],
     fixPlan: raw["fix_plan"],
+    guide: raw["guide"],
     plugins: raw["plugins"],
   };
 };

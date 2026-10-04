@@ -75,7 +75,7 @@ describe("house styles", () => {
       ["an http source", { ...VALID, source: { title: TEXT, url: "http://example.org" } }, /https/u],
       ["a level that is not one of the four", { ...VALID, rules: { [RULE]: "loud" } }, /use strict, normal, relaxed or off/u],
       ["options that are not a map", { ...VALID, options: { [RULE]: "drop" } }, /options\.katakana-long-vowel must be a map/u],
-      ["nothing set", { ...VALID, rules: {}, options: {} }, /must set rules or options/u],
+      ["nothing set", { ...VALID, rules: {}, options: {} }, /must set rules, options or guide/u],
       ["limits that are not a map", { ...VALID, limits: [60] }, /limits must be a map of rule ids/u],
       ["a limit with no language", { ...VALID, limits: { [RULE]: 60 } }, /limits\.katakana-long-vowel must be a map of languages/u],
       ["a limit of no languages", { ...VALID, limits: { [RULE]: {} } }, /limits\.katakana-long-vowel must be a map of languages/u],

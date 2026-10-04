@@ -7,6 +7,7 @@ import type { UntrustedDetector } from "./module-detector.ts";
 import { describeValue } from "./returned-findings.ts";
 import { isPluginName } from "./plugin-name.ts";
 import { knownGenres } from "../known-genres.ts";
+import { guideLayerOf, type GuideLayer, type GuideProblem } from "../genre-guide/layer.ts";
 
 // What a plugin package exports (api.ts PluginSpec), read into what chaff runs: its rules with ids under the plugin's
 // name, their detectors, its word lists and its house styles. A rule is read exactly like a rule in custom_rules, with
@@ -32,7 +33,8 @@ type PluginProblemKind =
 /** plugin: as chaff.yaml writes it. detail: what was there instead, the name expected, the rule, list or style at fault. */
 export type PluginProblem =
   | { readonly kind: PluginProblemKind; readonly plugin: string; readonly detail: string }
-  | { readonly kind: "rule"; readonly plugin: string; readonly problem: CustomProblem };
+  | { readonly kind: "rule"; readonly plugin: string; readonly problem: CustomProblem }
+  | { readonly kind: "guide"; readonly plugin: string; readonly problem: GuideProblem };
 
 /** Where a plugin came from: as chaff.yaml writes it, the file imported, and the name its package's name gives (none for a path). */
 export type PluginOrigin = { readonly written: string; readonly file: string; readonly expectedName: string | undefined };
@@ -47,11 +49,13 @@ export type ParsedPlugin = {
   /** Word lists by language, then by name with the plugin's prefix. */
   readonly lexicons: Readonly<Record<string, Readonly<Record<string, Lexicon>>>>;
   readonly styles: readonly StyleDefinition[];
+  /** Its changes to the genre guides, applied whenever the plugin is loaded: under a style's and chaff.yaml's. */
+  readonly guide?: GuideLayer | undefined;
 };
 
 export type PluginRead = { readonly plugin: ParsedPlugin | undefined; readonly problems: readonly PluginProblem[] };
 
-type Problem = (kind: Exclude<PluginProblem["kind"], "rule">, detail: string) => PluginProblem;
+type Problem = (kind: Exclude<PluginProblem["kind"], "rule" | "guide">, detail: string) => PluginProblem;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -215,6 +219,16 @@ const stylesOf = (raw: unknown, name: string, problem: Problem): Styles => {
   };
 };
 
+// ───────── guide ─────────
+
+type Guide = { readonly guide: GuideLayer | undefined; readonly problems: readonly PluginProblem[] };
+
+const guideOf = (raw: unknown, name: string, written: string): Guide => {
+  if (raw === undefined) return { guide: undefined, problems: [] };
+  const read = guideLayerOf(raw, `plugins: ${name}`, knownGenres());
+  return { guide: read.layer, problems: read.problems.map((problem) => ({ kind: "guide", plugin: written, problem })) };
+};
+
 // ───────── the plugin ─────────
 
 /** A plugin's default export, read. Every problem is reported; a plugin with any is left out whole, and the run is stopped. */
@@ -229,8 +243,17 @@ export const parsePlugin = (exported: unknown, origin: PluginOrigin, useFor: rea
   const lexicons = lexiconsOf(exported["lexicons"], name, problem);
   const rules = rulesOf(exported["rules"], { name, origin, useFor, lists: lexicons.lists });
   const styles = stylesOf(exported["styles"], name, problem);
-  const problems = [...rules.problems, ...lexicons.problems, ...styles.problems];
+  const guide = guideOf(exported["guide"], name, origin.written);
+  const problems = [...rules.problems, ...lexicons.problems, ...styles.problems, ...guide.problems];
   if (problems.length > 0) return { plugin: undefined, problems };
-  const plugin = { name, written: origin.written, rules: rules.rules, detectors: rules.detectors, lexicons: lexicons.lexicons, styles: styles.styles };
+  const plugin = {
+    name,
+    written: origin.written,
+    rules: rules.rules,
+    detectors: rules.detectors,
+    lexicons: lexicons.lexicons,
+    styles: styles.styles,
+    ...(guide.guide === undefined ? {} : { guide: guide.guide }),
+  };
   return { plugin, problems: [] };
 };
