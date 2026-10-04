@@ -1,0 +1,22 @@
+# Weekdays and months, which English always capitalises. Read by calendar-name-case, which points at one written in lower
+# case ("on monday"). May, March and August are left out, since "may", "march" and "august" are also ordinary words;
+# abbreviations (mon, jan) are left out, since they are also used as short keys in data.
+id: calendar-name
+language: en
+entries:
+  - pattern: Monday
+  - pattern: Tuesday
+  - pattern: Wednesday
+  - pattern: Thursday
+  - pattern: Friday
+  - pattern: Saturday
+  - pattern: Sunday
+  - pattern: January
+  - pattern: February
+  - pattern: April
+  - pattern: June
+  - pattern: July
+  - pattern: September
+  - pattern: October
+  - pattern: November
+  - pattern: December
