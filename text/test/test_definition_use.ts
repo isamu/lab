@@ -5,6 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { usesBeforeDefinition, unusedDefinitions, usesOf, type DefinedTerm } from "../packages/chaff/src/structure/definition-use.ts";
 import { comparableName, expansionConflicts, expansionsIn, nameBefore } from "../packages/chaff/src/acronym-expansions.ts";
+import { deniesSaying } from "../packages/lang-ja/src/denied-saying.ts";
 
 // 定義した語の使い方（unused-definition、use-before-definition）と、略語の展開の食い違い（acronym-expansion-conflict）。例文はすべて自作。
 
@@ -52,6 +53,28 @@ describe("unused-definition: 定義したのに使っていない語", () => {
     ]);
     assert.deepEqual(unused('Harbour Ltd (the "Seller") sells boats to Hill Ltd.\n'), ['"Seller" is defined but never used']);
     assert.deepEqual(unused('Harbour Ltd ("Seller") sells boats. Write "Seller" in the form.\n'), []);
+  });
+
+  it("「X」とは言いません は、言い方を打ち消していて定義ではない（#621）", () => {
+    assert.deepEqual(unused("# 方針\n\nどのルールも、それだけで「AI が書いた」とは言いません。人も書く形です。\n", ja), []);
+    assert.deepEqual(unused("# 名前\n\n「個人情報保護委員会」を「個人情報保護の委員会」とは書けません。\n", ja), []);
+    assert.deepEqual(unused("「本サービス」とは当社が運営する予約のサイトをいう。利用者は、このサイトを無料で使える。\n", ja), [
+      "「本サービス」を定義していますが、本文で使っていません",
+    ]);
+  });
+
+  it("deniesSaying: 読点の無い短い打ち消しの述語だけ", () => {
+    const after = (text: string): boolean => deniesSaying(text, 0);
+    ["言いません。", "書けません。", "限りません", "言えない。", "呼ばなかった。"].forEach((text) => assert.equal(after(text), true, text));
+    [
+      "、当社が運営するサイトをいう。",
+      "当社が運営する予約のサイトをいう。",
+      "、Xではない。",
+      "",
+      "言いません、しかし",
+      "営業日ではありません。",
+      "任意ではない。",
+    ].forEach((text) => assert.equal(after(text), false, text));
   });
 
   it("日本語の定義も見る", () => {

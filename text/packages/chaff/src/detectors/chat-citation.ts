@@ -1,5 +1,6 @@
 import type { Detector, Finding, Lexicon, ProseDocument, Span } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
+import { isQuotedAlone } from "../quoted-span.ts";
 import { findingAt, markupOf } from "./markup-finding.ts";
 
 /** One marker a chat interface leaves when its answer is pasted: where it is and what was written. */
@@ -54,10 +55,12 @@ const withoutSurrounding = (text: string): string => {
 };
 
 /**
- * Whether the marker stands as a word of its own (links ending in "?utm_source=chatgpt.com", marks such as oaicite.):
- * prose about the marks names them. What a chat answer leaves is always joined to a URL or a citation (oaicite:0).
+ * Whether the marker stands as a word of its own (links ending in "?utm_source=chatgpt.com", marks such as oaicite.), or
+ * alone in quotation marks, as Japanese writes it with no spaces (「?utm_source=chatgpt.com」の付いたリンク): prose
+ * about the marks names them. What a chat answer leaves is always joined to a URL or a citation (oaicite:0).
  */
 export const standsAlone = (source: string, span: Span): boolean => {
+  if (isQuotedAlone(source, span)) return true;
   const lineStart = source.lastIndexOf("\n", span.start - 1) + 1;
   const lineEnd = source.indexOf("\n", span.end);
   const before = source.slice(lineStart, span.start).split(SPACE).at(-1) ?? "";
