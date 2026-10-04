@@ -36,3 +36,19 @@ entries:
     rewrite: 名前で呼ぶ、または主語を省く
   - pattern: 彼らは
     rewrite: 名前で呼ぶ、または主語を省く
+  - pattern: に関して言えば
+    rewrite: 〜については、〜は
+  - pattern: に対して責任を持つ
+    rewrite: 〜を受け持つ、〜の担当だ
+  - pattern: 興味深いことに
+    rewrite: 省く、または何が意外なのかを書く
+  - pattern: 驚くべきことに
+    rewrite: 省く、または何が意外なのかを書く
+  - pattern: あなた自身
+    rewrite: 自分、または主語を省く
+  - pattern: 最後になりましたが
+    rewrite: 最後に
+  - pattern: について話しましょう
+    rewrite: 〜を説明します
+  - pattern: ために設計されている
+    rewrite: 〜のために作られている、〜に使う
