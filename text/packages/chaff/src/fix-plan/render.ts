@@ -129,6 +129,14 @@ const checkLines = (plan: FixPlan, text: FixPlanText): string[] => [
   text.checksNote,
 ];
 
+/** The genre's guide, first: the instruction the rewrite is held to. Nothing when the genre was not set or the guide is off. */
+const guideLines = (plan: FixPlan, text: FixPlanText): string[] => {
+  const { guide } = plan;
+  if (guide === null) return [];
+  const rules = guide.rules.length === 0 ? [] : ["", text.guideRules(guide.rules.map((rule) => `\`${rule}\``).join(", "))];
+  return [`## ${text.guideHeading(guide.name, guide.genre)}`, "", text.guideLead, "", ...bullets(guide.lines), ...rules, ""];
+};
+
 const textOf = (plan: FixPlan): FixPlanText => FIX_PLAN_TEXT[uiLanguageOf(plan.language)];
 
 /** The plan as Markdown, in the document's language: what an agent reads before rewriting. */
@@ -141,6 +149,7 @@ export const renderFixPlanMarkdown = (plan: FixPlan): string => {
     "",
     text.intro,
     "",
+    ...guideLines(plan, text),
     `## ${text.constraintsHeading}`,
     "",
     ...text.constraints.map((constraint, index) => `${String(index + 1)}. ${constraint}`),

@@ -8,6 +8,9 @@ import { chosenDepthOf } from "../fix-plan/chosen-depth.ts";
 import type { Checked } from "./feedback.ts";
 import { readDocument } from "./read-document.ts";
 import type { TreeContext } from "./tree.ts";
+import { genreWasSet, reportedGuide, type ReportedGuide } from "../genre-guide/report.ts";
+import { showsGuide } from "../cli-args.ts";
+import type { Config } from "../config/load.ts";
 
 /** Options whose value is the next argument. That value is not a file. */
 const VALUED: ReadonlySet<string> = new Set(["--language", "--genre", "--depth"]);
@@ -23,6 +26,10 @@ export type FixPlanContext = TreeContext & {
   /** The file's findings as lint finds them, shelved ones included. */
   readonly check: (path: string) => Promise<Omit<Checked, "conditions">>;
 };
+
+/** The genre's guide, the plan's first section; none when the genre was not set or the guide is off. */
+const guideOf = (checked: Omit<Checked, "conditions">, config: Config, argv: readonly string[]): ReportedGuide | undefined =>
+  genreWasSet(checked.genreFrom) && showsGuide(argv) ? reportedGuide(config, checked.genre, checked.language, checked.rules) : undefined;
 
 /**
  * An instruction document for whoever rewrites the file: the findings grouped by rule, each rule's rewrite direction,
@@ -61,6 +68,7 @@ export const runFixPlan = async (targets: readonly string[], argv: readonly stri
     structure: structureOf(prose.doc),
     phrases: prose.doc.lexicons["ai-tell"] ?? [],
     chosenDepth: depth.chosen,
+    guide: guideOf(checked, context.config, argv),
   });
   console.log(argv.includes("--json") ? renderFixPlanJson(plan) : renderFixPlanMarkdown(plan));
   return 0;

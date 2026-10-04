@@ -74,6 +74,20 @@ npx chaffjs kitei.md --genre legal/statute    kitei.md を社内規程として�
 ```
 $ npx chaffjs kitei.md --genre legal/statute
 
+指針: 法令・規程（legal/statute）
+
+  下の指摘より先に、原稿がこれを満たしているかを確かめてください。
+
+  - 定義規定で定めた語を、定義どおりの形で使っているか
+  - 条・項・号の番号に抜けや重複がなく、「第何条」の参照先が実在するか
+  - 義務（しなければならない）・禁止・権限（することができる）・努力義務を書き分けているか
+  - 適用の範囲・例外（ただし書）・施行の日が読み取れるか
+
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, duplicate-definition, numbering-gap, total-mismatch
+  chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
+
+════════════════════════════════════════════════════════════
+
 kitei.md   legal/statute · 日本語   ジャンルは --genre から
 
 ─── 10 行目 ──────────────────────────────────────────────────
@@ -296,6 +310,20 @@ npx chaffjs off numbering-gap --why "条番号は別の台帳で管理してい�
 <!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs kitei-fixed.md --genre legal/statute
+
+指針: 法令・規程（legal/statute）
+
+  下の指摘より先に、原稿がこれを満たしているかを確かめてください。
+
+  - 定義規定で定めた語を、定義どおりの形で使っているか
+  - 条・項・号の番号に抜けや重複がなく、「第何条」の参照先が実在するか
+  - 義務（しなければならない）・禁止・権限（することができる）・努力義務を書き分けているか
+  - 適用の範囲・例外（ただし書）・施行の日が読み取れるか
+
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, duplicate-definition, numbering-gap, total-mismatch
+  chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
+
+════════════════════════════════════════════════════════════
 
 kitei-fixed.md   legal/statute · 日本語   ジャンルは --genre から
 

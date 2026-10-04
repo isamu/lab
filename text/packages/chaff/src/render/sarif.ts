@@ -1,5 +1,6 @@
 import { messageOf, readableText } from "./text.ts";
 import type { Finding, RuleDefinition, Severity } from "../plugin.ts";
+import type { RunGuide } from "../genre-guide/report.ts";
 
 /**
  * 指摘を SARIF 2.1.0 で出す。GitHub の code scanning に上げるため。
@@ -114,7 +115,8 @@ const notRunNotifications = (notRun: readonly NotRunOnFile[]): SarifNotification
   }));
 };
 
-export const renderSarif = (located: readonly Located[], version: string, notRun: readonly NotRunOnFile[] = []): string => {
+/** guides: the guides of the genres this run set, each with its language; none adds no run properties. */
+export const renderSarif = (located: readonly Located[], version: string, notRun: readonly NotRunOnFile[] = [], guides: readonly RunGuide[] = []): string => {
   return `${JSON.stringify(
     {
       $schema: SCHEMA,
@@ -124,6 +126,7 @@ export const renderSarif = (located: readonly Located[], version: string, notRun
           tool: { driver: { name: "chaff", version, informationUri: INFORMATION_URI, rules: usedRules(located) } },
           invocations: [{ executionSuccessful: true, toolConfigurationNotifications: notRunNotifications(notRun) }],
           results: located.map(resultOf),
+          ...(guides.length === 0 ? {} : { properties: { guides: guides.map((entry) => ({ ...entry.guide, language: entry.language })) } }),
         },
       ],
     },

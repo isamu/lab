@@ -23,6 +23,10 @@ read. A contract checked as a blog post gets wrong findings, so choose the genre
    `npx chaffjs init --genre legal/contract` writes it into `chaff.yaml` (always pass `--genre`: without it,
    `init` asks at a terminal).
 4. The header's first line shows the genre used and where it came from. Check it before trusting the findings.
+5. With the genre set, the report opens with the genre's guide: what a good document of that kind does, and the
+   rules that matter most for it. Read it first, before any finding, and hold the draft (or your rewrite) to each
+   line; most of it is what no rule can check. The team may have changed it with `guide:` in `chaff.yaml`. A
+   guessed or default genre shows no guide.
 
 A rule the genre turns off is listed under "did not run" with the genre as the reason. That is the preset's
 choice, not a gap; turn it back on (`rules:` in `chaff.yaml`) only when the person asks.
@@ -112,6 +116,8 @@ generated. chaff never rewrites; the rewriting is yours.
 **Start with the plan.** Run `npx chaffjs fix-plan <file>` (with the genre's `--genre`; `--json` to
 read it as data). It prints, in the document's language:
 
+- the genre's guide first, when the genre is set: what a good document of the kind does, the lines your rewrite
+  is held to;
 - the constraints: keep facts, numbers, conditions and names; add no fact; ask the writer instead of inventing a
   specific; two passes at most;
 - the recommended mode and why, and the document-level signals with the outline's numbers;

@@ -14,6 +14,9 @@ export const withExperimental = <T extends { readonly experimental: boolean }>(c
   experimental: config.experimental || args.includes("--experimental"),
 });
 
+/** Whether this run shows the genre's guide: everywhere it would, unless --no-guide leaves it out. */
+export const showsGuide = (args: readonly string[]): boolean => !args.includes("--no-guide");
+
 /** The settings with each --include <glob> added to chaff.yaml's include: the command line widens a directory walk as chaff.yaml can. */
 export const withIncludes = <T extends { readonly include?: readonly string[] | undefined }>(config: T, args: readonly string[]): T => {
   const given = args.flatMap((arg, index) => (index > 0 && args[index - 1] === "--include" && !arg.startsWith("--") ? [arg] : []));

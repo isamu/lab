@@ -15,7 +15,10 @@ import { GENRES } from "./genre.ts";
 import { resolveGenre } from "./resolve-genre.ts";
 import { runInitCommand } from "./commands/init-command.ts";
 import { runPluginTest } from "./commands/plugin-test.ts";
-import { targetsOf, withExperimental, withIncludes } from "./cli-args.ts";
+import { targetsOf, withIncludes } from "./cli-args.ts";
+import { guidesOfRun, type RunGuide } from "./genre-guide/report.ts";
+import { showRules } from "./commands/rules.ts";
+import { renderGuideBlock } from "./genre-guide/render.ts";
 import { rulesOf } from "./custom/load.ts";
 import { renderCompact } from "./render/compact.ts";
 import { renderExplain } from "./render/explain.ts";
@@ -23,8 +26,6 @@ import { renderFriendly } from "./render/friendly.ts";
 import { renderGenres } from "./render/genres.ts";
 import { loadGenres, presetLevels } from "./genre-load.ts";
 import { fileHeader } from "./file-header.ts";
-import { rulesJson } from "./render/rules-json.ts";
-import { rulesTable } from "./render/rules-table.ts";
 import { renderSarif } from "./render/sarif.ts";
 import { VERSION, VERSION_LINES } from "./version.ts";
 import type { TreeContext } from "./commands/tree.ts";
@@ -38,7 +39,7 @@ import { runConditions, runFeedback, settingsOf, type Checked } from "./commands
 import { homedir } from "node:os";
 import { settingWarnings } from "./config/warnings.ts";
 import { readConfigIn } from "./config/read.ts";
-import { optionLayersOf, settingSourcesOf } from "./config/option-problems.ts";
+import { settingSourcesOf } from "./config/option-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
 
 import type { Finding, Level, RuleDefinition } from "./plugin.ts";
@@ -117,7 +118,7 @@ const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
     genre,
     outcome: { path, findings: split.fresh, notRun: raw.skipped.length },
     perFile: { path, suppressed: applied.suppressed, reasonless: applied.unusedReasonless, notRun },
-    checked: { findings: split.fresh, rules, language, genre, skipped: raw.skipped },
+    checked: { findings: split.fresh, rules, language, genre, genreFrom: from, skipped: raw.skipped },
     kept: applied.kept,
   };
 };
@@ -132,7 +133,7 @@ const inspectRun = async (paths: readonly string[], config: Config, argv: readon
  * 指摘を PR の変更行に出すための出口。--sarif <path> を書いたときだけ作る。
  * 端末の出力は変えない。CI で上げるためのファイルが増えるだけ。
  */
-const writeSarif = (results: readonly Inspected[], argv: readonly string[], config: Config): void => {
+const writeSarif = (results: readonly Inspected[], argv: readonly string[], config: Config, guides: readonly RunGuide[]): void => {
   const path = flag(argv, "--sarif");
   if (path === undefined) return;
   // 文言はファイルの言語で描く。by_path で 1 つの repo に 2 言語が混ざるため。
@@ -141,7 +142,7 @@ const writeSarif = (results: readonly Inspected[], argv: readonly string[], conf
   );
   const notRun = results.flatMap((result) => result.checked.skipped.map((entry) => ({ path: result.outcome.path, rule: entry.rule, why: entry.why })));
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, renderSarif(located, VERSION, notRun), "utf8");
+  writeFileSync(path, renderSarif(located, VERSION, notRun, guides), "utf8");
   console.log(hostText(config).sarifWritten(path, located.length));
 };
 
@@ -169,7 +170,13 @@ const lint = async (targets: readonly string[], argv: readonly string[], config:
   }
   warnRuleProblems(config, language);
   const results = await inspectRun(paths, config, argv);
-  writeSarif(results, argv, config);
+  const guides = guidesOfRun(
+    results.map((result) => result.checked),
+    config,
+    argv,
+  );
+  writeSarif(results, argv, config, guides);
+  if (!argv.includes("--compact")) guides.forEach((entry) => console.log(renderGuideBlock(entry.guide, entry.language).join("\n")));
   results.filter((result) => result.outcome.findings.length > 0 || paths.length === 1).forEach((result) => console.log(result.text));
   renderSummary(
     results.map((result) => result.outcome),
@@ -255,17 +262,6 @@ type Handler = (argv: readonly string[], config: Config) => number | Promise<num
 /** `--` で始まらない引数。対象のパス。 */
 const positional = (argv: readonly string[]): string[] => targetsOf(argv.slice(1));
 
-/** `rules --json` for an AI to read; `rules` alone, a table for a person. */
-const showRules = (argv: readonly string[], written: Config): number => {
-  const config = withExperimental(written, argv);
-  const language = config.language ?? hostLanguage(undefined, process.env);
-  warnRuleProblems(config, language);
-  const genre = flag(argv, "--genre") ?? config.genre ?? "blog/tech";
-  const rules = rulesOf(language, config);
-  console.log(argv.includes("--json") ? rulesJson(rules, config, language, genre, optionLayersOf(config)) : rulesTable(rules, config, language, genre));
-  return 0;
-};
-
 const showGenres = (config: Config): number => {
   console.log(renderGenres(loadGenres(), hostLanguage(config.language, process.env)));
   return 0;
@@ -284,7 +280,7 @@ const measureContext = (argv: readonly string[], config: Config): { config: Conf
 const HANDLERS: Readonly<Record<string, Handler>> = {
   init: (argv, config) => runInitCommand((name) => flag(argv, name), argv.includes("--plugin"), hostLanguage(config.language, process.env), process.cwd()),
   genres: (_argv, config) => showGenres(config),
-  rules: showRules,
+  rules: (argv, config) => showRules(argv, config, { flag, warn: warnRuleProblems }),
   explain: (argv, config) => explain(config, argv[1], flag(argv, "--genre")),
   eval: (argv, config) => runEval(positional(argv), argv, { ...measureContext(argv, config), flag }),
   ...Object.fromEntries(Object.entries(DOCUMENT_COMMANDS).map(([name, run]): [string, Handler] => [name, (argv, config) => run(argv, treeContext(config))])),

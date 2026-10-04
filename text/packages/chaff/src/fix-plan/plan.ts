@@ -8,6 +8,7 @@ import { COMPOSITE_RULE, recommendMode, type ModeChoice } from "./mode.ts";
 import type { StructureScore } from "../structure-shape/score.ts";
 import { structureTargetsOf, type StructureTarget } from "./structure-targets.ts";
 import { DEFAULT_DEPTH, depthIncludes, type RewriteDepth } from "../rewrite-depth.ts";
+import type { ReportedGuide } from "../genre-guide/report.ts";
 
 /** One flagged spot, where it is and what chaff said about it. */
 export type PlanSpot = { readonly line: number; readonly column: number; readonly quote: string; readonly message: string };
@@ -46,6 +47,8 @@ export type FixPlan = {
   readonly rewrittenPath: string;
   readonly language: string;
   readonly genre: string;
+  /** What a good document of the genre does, to rewrite against; null when the genre was not set or the guide is off. */
+  readonly guide: ReportedGuide | null;
   readonly experimental: boolean;
   readonly mode: ModeChoice;
   /** None when chaff recommends the depth itself. */
@@ -80,6 +83,7 @@ export type PlanInput = {
   /** The ai-tell lexicon of the document's language, whose entries may carry their own hint. */
   readonly phrases: Lexicon;
   readonly chosenDepth?: ChosenDepth | undefined;
+  readonly guide?: ReportedGuide | undefined;
 };
 
 const BOLD_DENSITY_RULE = "bold-density";
@@ -220,6 +224,7 @@ export const buildFixPlan = (input: PlanInput): FixPlan => {
     rewrittenPath: rewrittenPathOf(input.path),
     language: input.language,
     genre: input.genre,
+    guide: input.guide ?? null,
     experimental: input.experimental,
     mode,
     chosenDepth: input.chosenDepth,

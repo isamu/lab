@@ -74,6 +74,20 @@ The screen shows:
 ```
 $ npx chaffjs rules.md --genre legal/statute
 
+Guide: Statute and regulation (legal/statute)
+
+  Before the findings below, check the draft against these.
+
+  - Is every term from the definitions used in exactly its defined form?
+  - Are sections numbered without gaps or repeats, and does every cross-reference point to one that exists?
+  - Are duties (shall), prohibitions (shall not), powers (may) and best-effort duties written apart?
+  - Can the scope, the exceptions (provided that) and the date of effect be found?
+
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, duplicate-definition, numbering-gap, total-mismatch
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
+
 rules.md   legal/statute · English   genre from --genre
 
 ─── line 10 ──────────────────────────────────────────────────
@@ -342,6 +356,20 @@ The General Affairs Department keeps a register of the equipment lent and return
 <!-- chaff-screen: relaxed -->
 ```
 $ npx chaffjs rules-fixed.md --genre legal/statute
+
+Guide: Statute and regulation (legal/statute)
+
+  Before the findings below, check the draft against these.
+
+  - Is every term from the definitions used in exactly its defined form?
+  - Are sections numbered without gaps or repeats, and does every cross-reference point to one that exists?
+  - Are duties (shall), prohibitions (shall not), powers (may) and best-effort duties written apart?
+  - Can the scope, the exceptions (provided that) and the date of effect be found?
+
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, duplicate-definition, numbering-gap, total-mismatch
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
 
 rules-fixed.md   legal/statute · English   genre from --genre
 
