@@ -20,8 +20,8 @@ On a contract it prints:
 ```
 $ npx chaffjs tree contract.txt
 (doc :language "en" :path "contract.txt" :line 1
-  (definition :placement "inline" :term "the Client" :line 3)
-  (definition :placement "inline" :term "the Supplier" :line 3)
+  (definition :form "bare" :placement "inline" :term "the Client" :line 3)
+  (definition :form "bare" :placement "inline" :term "the Supplier" :line 3)
   (article "1" :heading "Purpose" :label "Section 1" :line 5
     (reference :label "Section 3" :numbering "section" :target "3" :line 6))
   (article "2" :heading "Definitions" :label "Section 2" :line 8

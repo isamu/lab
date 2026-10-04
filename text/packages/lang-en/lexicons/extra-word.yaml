@@ -52,6 +52,7 @@ entries:
   - pattern: emoji
   - pattern: enum
   - pattern: env
+  - pattern: eval
   - pattern: facto
   - pattern: favicon
   - pattern: fide
