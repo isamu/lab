@@ -11,6 +11,7 @@ import { evidenceSpans, hasNumeral, startsWithin } from "./concrete-evidence.ts"
 import { letteredIndexEntries } from "./lettered-index.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
+import { referenceListSpans } from "../reference-lists.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
 
 const PER = 1000;
@@ -250,9 +251,12 @@ const firstHits = (hits: readonly AcronymHit[]): Map<string, Hit> => {
   return seen;
 };
 
-/** 日付の中の月（SEP 01, 2022）は略語ではない。 */
-const outsideDates = (hits: readonly AcronymHit[], dates: readonly Span[]): AcronymHit[] =>
-  hits.filter(({ hit }) => !dates.some((span) => span.start <= hit.offset && hit.offset < span.end));
+/**
+ * 範囲の外の略語。日付の中の月（SEP 01, 2022）は略語ではない。文献一覧の誌名や会議名（Appeared in: LREC 2008.）は
+ * 引いた文献の書き方で、本文が説明する略語ではない。
+ */
+const outsideSpans = (hits: readonly AcronymHit[], spans: readonly Span[]): AcronymHit[] =>
+  hits.filter(({ hit }) => !spans.some((span) => span.start <= hit.offset && hit.offset < span.end));
 
 /**
  * どこか 1 か所で展開してあればよい。初出が節の見出し代わりの語（「5.3. DPA.」）で、
@@ -300,11 +304,11 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const headings = doc.sections.map((section) => section.heading);
   const explainedAlone = (word: string): boolean =>
     common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt) || headings.some((heading) => expandsInHeading(heading, word, expandedAt));
-  const hits = acronymsOf(doc, notationOf(doc));
+  const hits = outsideSpans(acronymsOf(doc, notationOf(doc)), referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")));
   const unexplained = new Set([...firstHits(hits).keys()].filter((acronym) => !isExplained(acronym, explainedAlone)));
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
   if (unexplained.size < options.limit) return [];
-  const bare = [...firstHits(outsideDates(hits, dateSpans(doc)))].filter(([acronym]) => unexplained.has(acronym));
+  const bare = [...firstHits(outsideSpans(hits, dateSpans(doc)))].filter(([acronym]) => unexplained.has(acronym));
   if (bare.length < options.limit) return [];
   return bare.map(([acronym, hit]) => ({
     rule: "undefined-acronym",
