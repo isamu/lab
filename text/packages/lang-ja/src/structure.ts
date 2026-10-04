@@ -5,6 +5,7 @@ import { loadLexicons } from "./lexicons.ts";
 import { countedAfter, dates, quantities } from "./quantities.ts";
 import { sectionReferences, sectionVocabulary } from "./section-reference.ts";
 import { startsWithParticle } from "./particle-after.ts";
+import { deniesSaying } from "./denied-saying.ts";
 
 // 契約書・規程・法令の番号の書き方。core は番号の書き方を知らず、ここで読んだものを入れ子にする。
 
@@ -219,7 +220,7 @@ const scopedLocally = (before: string): boolean => THIS_PART.test(before) || NEA
 const definitions = (text: string): Mention[] =>
   DEFINITIONS.flatMap((pattern) =>
     mentions(pattern, text, (groups, whole, start) => {
-      if (groups["term"] === undefined) return undefined;
+      if (groups["term"] === undefined || (whole.endsWith("とは") && deniesSaying(text, start + whole.length))) return undefined;
       const local = scopedLocally(text.slice(Math.max(0, start - 30), start));
       const inline = whole.startsWith("以下");
       return { term: groups["term"], ...(local ? { scope: "local" } : {}), ...(inline ? { placement: "inline" } : {}) };

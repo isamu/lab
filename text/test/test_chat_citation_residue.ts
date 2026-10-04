@@ -157,6 +157,12 @@ describe("chat-citation-residue", () => {
     assert.ok(!idsFor(`${prose}\n`, en).includes("chat-citation-residue"));
   });
 
+  it("valid: Japanese prose that names the marks in 「」 (#621)", () => {
+    const prose = "# 印\n\n「?utm_source=chatgpt.com」の付いたリンクや「oaicite」のような、チャットの答えを貼ったときに残る印です。\n";
+    assert.ok(!idsFor(prose, ja).includes("chat-citation-residue"));
+    assert.ok(idsFor("# 記事\n\n料金は月 500 円です。[oaicite:0]\n", ja).includes("chat-citation-residue"));
+  });
+
   it("standsAlone: a marker that is a whole word, with quotes and punctuation around it", () => {
     const at = (source: string, marker: string): boolean => standsAlone(source, { start: source.indexOf(marker), end: source.indexOf(marker) + marker.length });
     assert.ok(at('ending in "?utm_source=chatgpt.com", or', "utm_source=chatgpt.com"));
