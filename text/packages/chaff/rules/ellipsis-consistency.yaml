@@ -1,0 +1,73 @@
+id: ellipsis-consistency
+layer: L2
+status: stable
+how_to_find: ellipsis-consistency
+severity: info
+
+name:
+  ja: 省略記号の書き方が混ざっている
+  en: Ellipses written two ways
+
+why:
+  ja: 省略の記号を「……」と「・・・」、「…」と「...」のように二通りに書くと、読み手は違いに意味があるのかと迷い、別々の所から貼り合わせた文書に見えます。検索や置換でも片方を取りこぼします。どの書き方が正しいかは決めず、文書の中で少ないほうを指します。
+  en: 'An ellipsis written as "..." in some places and "…" in others makes the reader wonder whether the difference means something, and makes the document look pasted together; a search finds only one kind. chaff does not pick a side; it points at the way the document uses less.'
+
+message:
+  ja: 省略の記号を「{written}」と書いています（この文書はふつう「{usual}」。{of} 箇所のうち {count} 箇所が違う）
+  en: 'The ellipsis "{written}" here, where the document usually writes "{usual}" ({count} of {of})'
+
+how_to_fix:
+  ja: 文書の多いほうの書き方に合わせてください。
+  en: Match the way the rest of the document writes it.
+
+# 少ないほうが、省略記号の何パーセントまでなら「混ざっている」と見るか。これを超えたら、文書が使い分けている。
+levels: { strict: 49, normal: 34, relaxed: 20 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「……」と「・・・」、「…」と「...」のように、一つの文書で省略の記号を二通りに書いている所
+  en: An ellipsis written two ways in one document, such as "..." and "…"
+example:
+  ja:
+    before: |
+      準備中です……。確認中です……。少々お待ちください・・・。
+    after: |
+      準備中です……。確認中です……。少々お待ちください……。
+  en:
+    before: |
+      Loading… Saving… Please wait...
+    after: |
+      Loading… Saving… Please wait…
+not_flagged:
+  ja: コードの中は見ません。点がさらに続く所（....、…・）は、どの書き方か決められないので数えません。少ないほうが全体の 3 分の 1 を超える文書や、二通りが同じ数の文書は、使い分けていると読んで指しません。
+  en: Code is not read. A longer run of dots ("....") is not counted, since its form is unclear. When the less common way is over a third, or the two are equally common, the document is read as using both on purpose.
+level_meaning:
+  ja: 少ないほうが {limit}% までなら指摘
+  en: reported while the less common way is at most {limit}% of the ellipses
+sources: [vale-styles]
+rewrite:
+  depth: light
+  ja:
+    direction: 指した記号だけを、文書の多いほうの書き方に替えてください。ほかは変えません。
+    pairs:
+      - before: 少々お待ちください・・・。
+        after: 少々お待ちください……。
+      - before: 結果は...まだです。
+        after: 結果は……まだです。
+    keep:
+      - 記号の前後の文
+    avoid:
+      - 省略記号を消して文を書き換える
+  en:
+    direction: Change only the marked ellipsis to the form the rest of the document uses.
+    pairs:
+      - before: Please wait...
+        after: Please wait…
+      - before: The answer is . . . not yet known.
+        after: The answer is… not yet known.
+    keep:
+      - the words around the ellipsis
+    avoid:
+      - dropping the ellipsis or rewriting the sentence

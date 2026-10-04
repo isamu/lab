@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  ellipsis-mixed-ja  found
+ja/design  ellipsis-mixed-ja  found
+ja/email  ellipsis-mixed-ja  found
+ja/figures  ellipsis-mixed-ja  found
+ja/itinerary  ellipsis-mixed-ja  found
+ja/minutes  ellipsis-mixed-ja  found
+ja/note  ellipsis-mixed-ja  found
+ja/policy  ellipsis-mixed-ja  found
+ja/press  ellipsis-mixed-ja  found
+ja/proposal  ellipsis-mixed-ja  found
+ja/quote  ellipsis-mixed-ja  found
+ja/readme  ellipsis-mixed-ja  found
+ja/requirements  ellipsis-mixed-ja  found
+en/blog  ellipsis-mixed-en  found
+en/design  ellipsis-mixed-en  found
+en/email  ellipsis-mixed-en  found
+en/figures  ellipsis-mixed-en  found
+en/itinerary  ellipsis-mixed-en  found
+en/minutes  ellipsis-mixed-en  found
+en/note  ellipsis-mixed-en  found
+en/policy  ellipsis-mixed-en  found
+en/press  ellipsis-mixed-en  found
+en/proposal  ellipsis-mixed-en  found
+en/quote  ellipsis-mixed-en  found
+en/readme  ellipsis-mixed-en  found
+en/requirements  ellipsis-mixed-en  found

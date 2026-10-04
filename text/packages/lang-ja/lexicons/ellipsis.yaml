@@ -1,0 +1,10 @@
+# 省略の記号（三点リーダー）の書き方。ellipsis-consistency が、文書の中で少ないほうを指す。どれが正しいかは決めない。
+# 字面どおりに、長いものから照らす。ほかの点や中黒が続く所（…。、....）は、どの書き方か決められないので読まない。
+id: ellipsis
+language: ja
+entries:
+  - pattern: ……
+  - pattern: …
+  - pattern: ・・・
+  - pattern: "..."
+  - pattern: ‥‥
