@@ -121,6 +121,39 @@ email.md   business/email · English   genre from --genre
 `info` is information you may skip; it never fails a run.
 These rules report on many emails people write too, so they report at that level.
 
+## The guide that comes first
+
+With the genre set, chaff opens the report with the genre's guide: what a good business email does, as questions to check the draft against.
+Under them is a line naming the rules that matter most for this genre.
+Most of the questions are ones no rule can answer, so read them before the findings.
+An AI that rewrites the text works to the same lines ([Using the guide with an AI](./ai-sounding#give-the-ai-the-genres-guide)).
+
+```
+$ npx chaffjs email.md --genre business/email
+
+Guide: Email and letter (business/email)
+
+  Before the findings below, check the draft against these.
+
+  - Do the subject and the first two lines give the purpose and what the reader should do?
+  - Does each request have a deadline (a date, not "soon")?
+  - Is everything said to be attached actually attached?
+  - Are the greeting, the closing and the signature in place?
+
+  Rules that matter most for this genre: attachment-not-attached, cushion-phrase-density, email-greeting-closing, email-subject-length, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
+
+email.md   business/email · English   genre from --genre
+…
+```
+
+A genre that was guessed from the path or the content, or left at the default, prints no guide.
+A guide for the wrong kind of document would mislead.
+`--compact` and `--no-guide` leave it out.
+A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's guide](./configuration#changing-the-genres-guide)).
+
 ## What each finding means
 
 | Line | Finding | What it means | How to fix it |

@@ -99,6 +99,13 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 
 ジャンルを決めていない文書は、パスと内容から決めます。`README.md`、`*-spec.md`、`docs/` は技術文書として、どれでもなければ技術記事（`blog/tech`）として見ます。
 別の種類に見えるときは、1 行目の下に「契約書・規約のようです。--genre legal/contract を試せます」のように出しますが、勝手には切り替えません。
+
+ジャンルを決めると、結果の最初にそのジャンルの指針が出ます。その種類のよい文書が満たすことを、原稿を確かめる問いの形で並べ、特に効くルールを添えたものです。
+ルールでは確かめられないことが多いので、指摘より先に読みます。`fix-plan` も指針から始まり、AI はそれに沿って書き直します。
+
+指針は既定の文で、チームが `chaff.yaml` の `guide:` で置き換え・追加・停止できます（[ジャンルの指針を変える](https://isamu.github.io/lab/ja/guide/configuration/#ジャンルの指針を変える)）。
+推測したジャンルや既定のジャンルには出しません。
+
 ジャンルごとに何が変わるかは [ジャンルのページ](https://isamu.github.io/lab/ja/genres/) に、種類ごとの使い方は
 [文書の種類ごとにできること](https://isamu.github.io/lab/ja/guide/documents/) にあります。
 
@@ -309,6 +316,10 @@ text gives the same result every time, and chaff never rewrites it. Run `npx cha
 document the screen is in English. Pick the kind of document with `--genre` (`legal/contract`, `docs/manual`,
 `academic/paper`, `literature/fiction`, and so on) and chaff checks it the way that kind is written. The guide, the
 genres and the reference of every rule are at https://isamu.github.io/lab/en/.
+
+With a genre set, the report opens with that genre's guide: what a good document of the kind does, as questions to
+check the draft against, and the rules that matter most. `fix-plan` opens with it too, as the instruction an AI rewrites
+to. A team replaces, adds to or turns off the guide with `guide:` in `chaff.yaml`.
 
 How to rewrite AI-sounding text is in [Making AI-sounding text sound human](https://isamu.github.io/lab/en/guide/ai-sounding/).
 `npx chaffjs grade` grades a JSONL file of a model's outputs with `compare`, `cite` and the rules; how is in [Using chaff for AI evals](https://isamu.github.io/lab/en/guide/ai-evals/).

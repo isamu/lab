@@ -115,6 +115,41 @@ gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
 {counts}
 ```
 
+## 最初に出る指針
+
+ジャンルを決めると、chaff は結果の最初にそのジャンルの指針を出します。
+よい議事録が満たすことを、原稿を確かめる問いの形で並べたものです。
+その下に、このジャンルで特に効く rule の名前が 1 行で出ます。
+
+問いの多くはルールでは確かめられないので、指摘より先に読みます。
+AI に書き直させるときも、AI は同じ指針に沿って書きます（[AI にジャンルの指針を渡す](./ai-sounding#ai-にジャンルの指針を渡す)）。
+
+```
+$ npx chaffjs gijiroku.md --genre business/meeting-notes
+
+指針: 議事録（business/meeting-notes）
+
+  下の指摘より先に、原稿がこれを満たしているかを確かめてください。
+
+  - 日時・出席者・議題が冒頭にあるか
+  - 決まったことと、話し合っただけのことを分けているか
+  - 宿題ごとに、担当と期限があるか
+  - 次回の日程と、持ち越した議題を書いているか
+
+  このジャンルで特に効く rule: cushion-phrase-density, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
+
+════════════════════════════════════════════════════════════
+
+gijiroku.md   business/meeting-notes · 日本語   ジャンルは --genre から
+…
+```
+
+パスや内容から推測したジャンルと、既定のジャンルでは、指針を出しません。
+違う種類の文書の指針は、かえって読み手を迷わせるためです。
+`--compact` と `--no-guide` でも出しません。
+指針の文は、チームが `chaff.yaml` の `guide:` で書き換えられます（[ジャンルの指針を変える](./configuration#ジャンルの指針を変える)）。
+
 ## 指摘の意味と直しかた
 
 | 行 | 指摘 | 意味 | 直しかた |

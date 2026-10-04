@@ -115,6 +115,39 @@ release.md   business/press-release · English   genre from --genre
 `error` means the figures disagree, so one of them is certainly wrong.
 `warning` is worth fixing.
 
+## The guide that comes first
+
+With the genre set, chaff opens the report with the genre's guide: what a good press release does, as questions to check the draft against.
+Under them is a line naming the rules that matter most for this genre.
+Most of the questions are ones no rule can answer, so read them before the findings.
+An AI that rewrites the text works to the same lines ([Using the guide with an AI](./ai-sounding#give-the-ai-the-genres-guide)).
+
+```
+$ npx chaffjs release.md --genre business/press-release
+
+Guide: Press release and notice (business/press-release)
+
+  Before the findings below, check the draft against these.
+
+  - Do the headline and the first paragraph state who, what, when, where and why?
+  - Are dates, prices, figures and names exact and consistent throughout?
+  - Is every superlative (groundbreaking, first in the industry) backed by evidence?
+  - Are the contact and the release date given?
+
+  Rules that matter most for this genre: cushion-phrase-density, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
+
+release.md   business/press-release · English   genre from --genre
+…
+```
+
+A genre that was guessed from the path or the content, or left at the default, prints no guide.
+A guide for the wrong kind of document would mislead.
+`--compact` and `--no-guide` leave it out.
+A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's guide](./configuration#changing-the-genres-guide)).
+
 ## What each finding means
 
 | Line | Finding | What it means | How to fix it |

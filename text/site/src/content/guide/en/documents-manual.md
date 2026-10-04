@@ -134,6 +134,40 @@ manual.md   docs/manual · English   genre from --genre
 {counts}
 ```
 
+## The guide that comes first
+
+With the genre set, chaff opens the report with the genre's guide: what a good manual does, as questions to check the draft against.
+Under them is a line naming the rules that matter most for this genre.
+Most of the questions are ones no rule can answer, so read them before the findings.
+An AI that rewrites the text works to the same lines ([Using the guide with an AI](./ai-sounding#give-the-ai-the-genres-guide)).
+
+```
+$ npx chaffjs manual.md --genre docs/manual
+
+Guide: Manual and how-to (docs/manual)
+
+  Before the findings below, check the draft against these.
+
+  - Does each section cover one task, with the task as its heading?
+  - Are prerequisites, permissions and preparation given before the steps?
+  - Are the steps numbered, one action each, in the imperative and in the order they are done?
+  - Does each step say what the reader should see when it worked?
+  - Are button labels, commands and setting names spelled exactly as on screen or in code?
+
+  Rules that matter most for this genre: code-fence-language-mix, heading-command-missing, requirement-smell, shell-prompt-mix, step-statement-mix
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
+
+manual.md   docs/manual · English   genre from --genre
+…
+```
+
+A genre that was guessed from the path or the content, or left at the default, prints no guide.
+A guide for the wrong kind of document would mislead.
+`--compact` and `--no-guide` leave it out.
+A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's guide](./configuration#changing-the-genres-guide)).
+
 ## What each finding means
 
 | Line | Finding | What it means | How to fix it |

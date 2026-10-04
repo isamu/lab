@@ -613,6 +613,31 @@ genres:
   契約を論じる会議録は、「本契約」の行より発言者の行が多いので会議録になる。
 - `chaff init` は端末でだけ一覧を出して尋ねる。スクリプトと CI は尋ねず、既定を書く。
 
+### 9.4 ジャンルの指針（`guide:`）
+
+ジャンルごとに、その種類の良い文書が満たすことを、原稿を確かめる問いの形で持つ（ja / en）。
+ルールが拾う誤りの多くは形で、指針は形では確かめられない残りを読み手と AI に渡す。
+**決めたジャンルにだけ、結果の最初に一度出す。** 既定や見当のジャンルには出さない。
+違う種類の指針は、無いよりも読み手を迷わせる。
+
+- 置き場所は `genres.yaml` の `guide:`。ジャンルに無ければ群のものを使う。
+- 変えるのは `guide:`。キーはジャンルか群で、値は `replace:`（書いた言語の行を置き換える）、`add:`（後に足す）、`off`。
+  行は `ja:` / `en:` の下の並びか、言語を分けない 1 行・並び。`guide: off` はどの指針も止める。
+- 強さは chaff.yaml > `style:` のスタイル > ルールの束（manifest の `guide:`、コードのプラグインの `guide`）> `genres.yaml`。
+  弱いほうから重ね、1 つの場所の中では `guide: off`、群、ジャンルの順。強い場所は、弱い場所が止めた指針に行を足し戻せる。
+- 読めない書き方と知らないジャンル・群は標準エラーに出し、残りは効かせる。止めない。
+- 「決めた」ジャンルは `--genre`、`by_path`、chaff.yaml の `genre`、front matter の `genre` / `type`。既定（`blog/tech`）、パス、内容から決めたものは含めない。
+- 指針の下に、そのジャンルで特に効くルールを 1 行で挙げる。ジャンルの段が入れるルールと、動くジャンルが全体の 4 分の 1 以下のルール。
+  chaff.yaml の `rules` で `off` にしたものは挙げない。
+- 出す場所:
+  - 文章の結果: ファイルの結果より前に一度。ジャンルと言語ごとに 1 つ。変えたときは書いた場所（`genres.yaml → chaff.yaml`）も出す。
+  - `fix-plan`: Markdown の最初の節。`--json` では一番上の `guide`。
+  - `rules --json`: 一番上の `guide`（`--genre` か chaff.yaml の `genre` があるとき）。
+  - SARIF: `runs[0].properties.guides`。それぞれ `language` を持つ。
+  - JSON の形は `{ genre, name, lines, rules, from }`。出さないときは `null`。
+- 出さないのは `--compact`（文章の結果だけ）、`--no-guide`（どこにも）、`guide: off`。
+- `chaff init` は、選んだジャンルを書いた `guide:` の例をコメントで置く。skill は、指摘より先に指針を読むよう AI に言う。
+
 ---
 
 ## 10. Rule Catalog — L1 Universal
@@ -1727,6 +1752,7 @@ article.md  [ja · blog/tech]
 AI に設定を書かせるとき、これを渡せば推測せずに書ける。現在値、使える値、数値との対応、なぜ今 off なのか、変更コマンドまでが 1 つに入る。
 `custom_rule_types` は書ける `custom_rules` の種類（`status: available`、`types: [words, pattern, tokens, module]`）。
 チームとプラグインのルールは `defined_in`（`chaff.yaml custom_rules` か `plugin <名前>`）と `custom` を持つ。
+ジャンルを `--genre` か chaff.yaml で決めたときは、一番上の `guide` にそのジャンルの指針が入る（§9.4）。決めていなければ `null`。
 `level_sets` は段が何を変えるかを言う。`limit` は数える上限、`severity` は指摘の重さ（§18.1 の数えるもののない rule）。後者の `levels` と `now` には数ではなく重さが入る。
 
 ```json

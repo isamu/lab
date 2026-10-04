@@ -1,0 +1,9 @@
+genre: legal/contract
+
+guide:
+  legal/contract:
+    replace:
+      ja:
+        - 当事者を最後まで「甲」「乙」と書いているか
+        - 支払いの期限を、いつから数えて何日と書いているか
+        - 合意管轄を東京地方裁判所としているか

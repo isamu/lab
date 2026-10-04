@@ -132,6 +132,40 @@ article.md   blog/tech · English   genre from --genre
 `3:1` at the start of a line means line 3, character 1.
 `warning` is worth fixing; `info` marks a place to reread, and never fails a run.
 
+## The guide that comes first
+
+With the genre set, chaff opens the report with the genre's guide: what a good tech article does, as questions to check the draft against.
+Under them is a line naming the rules that matter most for this genre.
+Most of the questions are ones no rule can answer, so read them before the findings.
+An AI that rewrites the text works to the same lines ([Using the guide with an AI](./ai-sounding#give-the-ai-the-genres-guide)).
+
+```
+$ npx chaffjs article.md --genre blog/tech
+
+Guide: Tech blog (blog/tech)
+
+  Before the findings below, check the draft against these.
+
+  - Does the opening make one claim, plainly (what the reader will learn or be able to do)?
+  - Do the steps and code run as written and give the same result?
+  - Are the versions used (language, libraries, OS) and the date they were tried stated?
+  - Does it say what was tried and failed, the limits, and the assumptions?
+  - Does the ending point to what to read or try next, rather than restate the body?
+
+  Rules that matter most for this genre: closing-cliche, empty-conclusion, padded-intro, paragraph-length-variance, rule-of-three, section-length-uniformity, sentence-rhythm
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
+
+article.md   blog/tech · English   genre from --genre
+…
+```
+
+A genre that was guessed from the path or the content, or left at the default, prints no guide.
+A guide for the wrong kind of document would mislead.
+`--compact` and `--no-guide` leave it out.
+A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's guide](./configuration#changing-the-genres-guide)).
+
 ## What each finding means
 
 | Line | Finding | What it means | How to fix it |

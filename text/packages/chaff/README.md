@@ -93,6 +93,9 @@ npx chaffjs genres                              ジャンルの一覧と、そ�
 | 文学 | `literature/fiction` `literature/essay` `literature/poetry` `literature/play` |
 | 話し言葉 | `speech/address` `speech/transcript` |
 
+ジャンルを決めると、結果の最初にそのジャンルの指針（よい文書が満たすこと）と、特に効くルールが出ます。
+`fix-plan` も指針から始まり、AI はそれに沿って書き直します。チームは `chaff.yaml` の `guide:` で置き換え・追加・停止できます。
+
 ## 自分たちの決まり（プリセット）を作る
 
 ジャンルや `style:` は、同梱のプリセットです。チームの決まりは、リポジトリに置く `chaff.yaml` に書けば、それがそのままチームのプリセットになります。
@@ -177,8 +180,11 @@ facts, the quotations and the team's requirements. `grade` runs the same checks 
 Every command returns an exit code, so it runs in CI on every change.
 It reads Japanese and English and never rewrites the text.
 
+With a genre set, the report opens with that genre's guide: what a good document of the kind does, and the rules
+that matter most. `fix-plan` opens with it too, as the instruction an AI rewrites to.
+
 Your own preset is a `chaff.yaml` in the repository: rules and
-their levels, a style, your preferred spellings and your own rules. The guide and the reference of every rule are at
+their levels, a style, your preferred spellings, the genre's guide (`guide:`) and your own rules. The guide and the reference of every rule are at
 https://isamu.github.io/lab/en/
 
 MIT
