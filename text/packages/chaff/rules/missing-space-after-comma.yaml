@@ -1,0 +1,57 @@
+id: missing-space-after-comma
+layer: L1
+status: stable
+how_to_find: missing-space-after-comma
+languages: [en]
+severity: warning
+
+name:
+  ja: カンマの後ろに空白が無い
+  en: No space after a comma
+
+why:
+  ja: 英文では、語をつなぐカンマの後ろに空白を一つ置きます。「address,and」のように空白が無いと、二つの語が一語に見え、検索でも別の語として当たりません。急いで打ったときや、書き換えの途中で空白が落ちた跡です。どちらの書き方を選ぶかの話ではなく、英語の句読点の決まりです。
+  en: 'English puts one space after a comma between words. Without it ("address,and") the two words read as one, and a search does not find either. It is a space dropped while typing or editing, not a matter of style.'
+
+message:
+  ja: 「{written}」のカンマの後ろに空白がありません
+  en: 'No space after the comma in "{written}"'
+
+how_to_fix:
+  ja: カンマの後ろに空白を一つ入れてください。
+  en: Put one space after the comma.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: Older printed texts and poetry set commas tight on purpose, and a transcribed edition keeps the printer's spacing.
+
+group: slips
+summary:
+  ja: 英文の「address,and」のように、語をつなぐカンマの後ろに空白が無い所
+  en: A comma between two words with no space after it, as in "address,and"
+example:
+  en:
+    before: |
+      Send the form to the office address,and keep a copy.
+    after: |
+      Send the form to the office address, and keep a copy.
+
+not_flagged:
+  ja: 英語の文書だけで動きます。値を並べたもの（blue,black,brown のようにカンマが二つ以上）、数字や記号を含むもの（3,000、a,b=c、path/a,b、user@x,y、file_name,size）、引用符で囲んだ値（"true,false"）、二字以下の語（id,x）、コードと URL は見ません。
+  en: 'Only in English documents. A run of values (two or more commas, as in blue,black,brown), a run holding a digit or a mark (3,000, a,b=c, path/a,b, user@x,y, file_name,size), a quoted value ("true,false"), words of one or two letters (id,x), code and URLs are not read.'
+sources: [vale-styles]
+rewrite:
+  depth: light
+  en:
+    direction: Put one space after the marked comma. Change nothing else.
+    pairs:
+      - before: Send it to the office address,and keep a copy.
+        after: Send it to the office address, and keep a copy.
+      - before: If the box is damaged,call us first.
+        after: If the box is damaged, call us first.
+    keep:
+      - the words and their order
+    avoid:
+      - adding spaces inside lists of values or code

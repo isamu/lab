@@ -1,0 +1,14 @@
+table  13  13  0  0
+en/blog  missing-space-after-comma-en  found
+en/design  missing-space-after-comma-en  found
+en/email  missing-space-after-comma-en  found
+en/figures  missing-space-after-comma-en  found
+en/itinerary  missing-space-after-comma-en  found
+en/minutes  missing-space-after-comma-en  found
+en/note  missing-space-after-comma-en  found
+en/policy  missing-space-after-comma-en  found
+en/press  missing-space-after-comma-en  found
+en/proposal  missing-space-after-comma-en  found
+en/quote  missing-space-after-comma-en  found
+en/readme  missing-space-after-comma-en  found
+en/requirements  missing-space-after-comma-en  found
