@@ -43,18 +43,27 @@ const reachesReader = (doc: ProseDocument, span: Span): boolean => {
 };
 
 /** Quotation marks, parentheses and sentence punctuation at the ends of a word, which are not part of it. */
-const SURROUNDING = /^["'“”‘’(.,;:!?]+|["'“”‘’).,;:!?]+$/gu;
+const SURROUNDING = new Set(['"', "'", "“", "”", "‘", "’", "(", ")", ".", ",", ";", ":", "!", "?"]);
 const SPACE = /\s/u;
+
+/** What is left of a string after the surrounding marks at both of its ends. */
+const withoutSurrounding = (text: string): string => {
+  const chars = [...text];
+  const first = chars.findIndex((char) => !SURROUNDING.has(char));
+  return first === -1 ? "" : chars.slice(first, chars.findLastIndex((char) => !SURROUNDING.has(char)) + 1).join("");
+};
 
 /**
  * Whether the marker stands as a word of its own (links ending in "?utm_source=chatgpt.com", marks such as oaicite.):
  * prose about the marks names them. What a chat answer leaves is always joined to a URL or a citation (oaicite:0).
  */
 export const standsAlone = (source: string, span: Span): boolean => {
-  const before = source.slice(0, span.start).search(/\S*$/u);
-  const after = source.slice(span.end).search(SPACE);
-  const word = source.slice(before, after === -1 ? source.length : span.end + after);
-  return word.replace(SURROUNDING, "") === source.slice(span.start, span.end);
+  const lineStart = source.lastIndexOf("\n", span.start - 1) + 1;
+  const lineEnd = source.indexOf("\n", span.end);
+  const before = source.slice(lineStart, span.start).split(SPACE).at(-1) ?? "";
+  const after = source.slice(span.end, lineEnd === -1 ? source.length : lineEnd).split(SPACE)[0] ?? "";
+  const marker = source.slice(span.start, span.end);
+  return withoutSurrounding(`${before}${marker}${after}`) === marker;
 };
 
 /** Each marker is a leftover in its own right, so each is reported, from the first. */

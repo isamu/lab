@@ -212,8 +212,14 @@ export const repeatedConjunction: Detector = (doc, options): Finding[] => {
     });
 };
 
-/** 書き手が書いた語。引用符の中だけの語（words such as "delves" and "pivotal"）は、例に挙げたか人の言葉を引いたもの。 */
-const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean => entryIn(sentence, entry) && !onlyQuoted(sentence, entry);
+/**
+ * 書き手が書いた語。引用符の中だけの語（words such as "delves" and "pivotal"）は、例に挙げたか人の言葉を引いたもの。
+ * 品詞があれば当たった語の並びごとに見る（活用した形も原形で当たる）。無ければ字で照らす。
+ */
+const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean =>
+  sentence.tokens === undefined || entry.tokens === undefined || entry.tokens.length === 0
+    ? entryIn(sentence, entry) && !onlyQuoted(sentence, entry)
+    : entryRanges(sentence, entry).some((range) => !quotedRange(sentence, range));
 
 /**
  * AI 生成の signal。1 つでは何も言えないので、重みを足し合わせて文書の点にする。
