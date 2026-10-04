@@ -53,6 +53,12 @@ describe("weasel-word", () => {
   it("a named source is not", () => {
     assert.deepEqual(findingsOf(RULE, "Smith (2021) found that short meetings save time.\n"), []);
   });
+
+  it("more unnamed sources are reported, and a named one is not", () => {
+    assert.deepEqual(findingsOf(RULE, "Studies suggest that short meetings save time.\n"), ['"studies suggest" does not say who']);
+    assert.deepEqual(findingsOf(RULE, "Some argue that the old API is slower.\n"), ['"some argue" does not say who']);
+    assert.deepEqual(findingsOf(RULE, "The 2021 Smith study suggests that short meetings save time. Two reviewers argue that the old API is slower.\n"), []);
+  });
 });
 
 describe("homophone-slip", () => {
