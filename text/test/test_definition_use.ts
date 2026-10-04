@@ -66,9 +66,15 @@ describe("unused-definition: 定義したのに使っていない語", () => {
   it("deniesSaying: 読点の無い短い打ち消しの述語だけ", () => {
     const after = (text: string): boolean => deniesSaying(text, 0);
     ["言いません。", "書けません。", "限りません", "言えない。", "呼ばなかった。"].forEach((text) => assert.equal(after(text), true, text));
-    ["、当社が運営するサイトをいう。", "当社が運営する予約のサイトをいう。", "、Xではない。", "", "言いません、しかし"].forEach((text) =>
-      assert.equal(after(text), false, text),
-    );
+    [
+      "、当社が運営するサイトをいう。",
+      "当社が運営する予約のサイトをいう。",
+      "、Xではない。",
+      "",
+      "言いません、しかし",
+      "営業日ではありません。",
+      "任意ではない。",
+    ].forEach((text) => assert.equal(after(text), false, text));
   });
 
   it("日本語の定義も見る", () => {
