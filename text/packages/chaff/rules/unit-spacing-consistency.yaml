@@ -9,12 +9,12 @@ name:
   en: Units spaced two ways
 
 why:
-  ja: 一つの文書で「5 GB」と「5GB」のように、数と単位記号の間を空ける所と詰める所が混ざると、読み手は違いに意味があるのかと迷い、別々の所から貼り合わせた文書に見えます。検索でも片方を取りこぼします。どちらが正しいかは決めず、文書の中で少ないほうを指します。
-  en: 'A document writing "5 GB" in one place and "5GB" in another makes the reader wonder whether the difference means something, looks pasted together, and splits a search. chaff does not pick a side; it points at the way the document uses less.'
+  ja: 一つの文書で「5 GB」と「5GB」のように、数と単位記号の間を空ける所と詰める所が混ざると、読み手は違いに意味があるのかと迷い、別々の所から貼り合わせた文書に見えます。検索でも片方を取りこぼします。どちらが正しいかは決めず、単位ごとに、文書の中で少ないほうを指します。
+  en: 'A document writing "5 GB" in one place and "5GB" in another makes the reader wonder whether the difference means something, looks pasted together, and splits a search. chaff does not pick a side; unit by unit, it points at the way the document uses less.'
 
 message:
-  ja: 「{written}」と書いています（この文書はふつう「{usual}」のように書きます。{of} 箇所のうち {count} 箇所が違う）
-  en: '"{written}" here, where the document usually writes units like "{usual}" ({count} of {of})'
+  ja: 「{written}」と書いています（この文書はこの単位をふつう「{usual}」のように書きます。{of} 箇所のうち {count} 箇所が違う）
+  en: '"{written}" here, where the document usually writes this unit like "{usual}" ({count} of {of})'
 
 how_to_fix:
   ja: 文書の多いほうの書き方に合わせてください。
@@ -42,8 +42,8 @@ example:
       Storage is 5 GB, transfer is 10 GB and the cap is 20 GB.
 
 not_flagged:
-  ja: 単位記号の一覧にあるものだけを見ます。一字の記号（m、s、g）、パーセント、温度（°C）は、空けない書き方が別に定着しているので数えません。語で書いた単位（5 時間、5 hours）、コードの中、版や番地の中の数も見ません。少ないほうが 3 分の 1 を超える文書や、二通りが同じ数の文書は、使い分けていると読んで指しません。
-  en: Only the unit symbols on chaff's list are read. One-letter symbols (m, s, g), the percent sign and temperatures (°C) are left out, since many styles write them unspaced on purpose. Units written as words (5 hours), code, and numbers inside versions or addresses are not read. When the less common way is over a third, or the two are equally common, the document is read as using both on purpose.
+  ja: 単位記号の一覧にあるものだけを見ます。一字の記号（m、s、g）、パーセント、温度（°C）は、空けない書き方が別に定着しているので数えません。語で書いた単位（5 時間、5 hours）、コードの中、版や番地の中の数（1.2.3GB）も見ません。単位ごとに比べるので、「5 GB」と「500ms」が並んでも混在とは読みません。ノーブレークスペースも空白と数えます。少ないほうが 3 分の 1 を超える文書や、二通りが同じ数の文書は、使い分けていると読んで指しません。
+  en: Only the unit symbols on chaff's list are read. One-letter symbols (m, s, g), the percent sign and temperatures (°C) are left out, since many styles write them unspaced on purpose. Units written as words (5 hours), code, and numbers inside versions or addresses (1.2.3GB) are not read. Each unit is compared with itself, so "5 GB" next to "500ms" is not a mix. A no-break space counts as a space. When the less common way is over a third, or the two are equally common, the document is read as using both on purpose.
 level_meaning:
   ja: 少ないほうが {limit}% までなら指摘
   en: reported while the less common way is at most {limit}% of the units
