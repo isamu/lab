@@ -59,6 +59,7 @@ describe("comparative-without-baseline: 比べる相手の無い比較", () => {
     assert.deepEqual(findingsOf("これまでは手間がかかったが、手続きがさらに簡単になった。", ja), []);
     assert.deepEqual(findingsOf("単なる支障ではなく、より重い支障がある場合に限る。", ja), []);
     assert.deepEqual(findingsOf("state を共通の親のさらに上に置く。", ja), []);
+    assert.deepEqual(findingsOf("`COPY . .` を `RUN yarn install` より前に書いていた。", ja), []);
   });
 
   it("鉤括弧の中の比較は、題や語を挙げたもの", () => {

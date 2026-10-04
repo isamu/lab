@@ -29,6 +29,8 @@ entries:
   - { pattern: 下, group: exempt }
   - { pattern: 奥, group: exempt }
   - { pattern: 先, group: exempt }
+  - { pattern: 前, group: exempt }
+  - { pattern: 後, group: exempt }
   - { pattern: と, group: condition }
   - { pattern: ば, group: condition }
   - { pattern: たら, group: condition }
