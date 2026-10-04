@@ -7,6 +7,10 @@ export type FixPlanText = {
   readonly title: (path: string) => string;
   readonly about: (language: string, genre: string) => string;
   readonly intro: string;
+  /** The genre's guide, as the first section: what the rewrite is held to. */
+  readonly guideHeading: (name: string, genre: string) => string;
+  readonly guideLead: string;
+  readonly guideRules: (ids: string) => string;
   readonly constraintsHeading: string;
   readonly constraints: readonly string[];
   readonly modeHeading: string;
@@ -43,12 +47,15 @@ export type FixPlanText = {
 
 export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
   ja: {
-    usage: "使い方: chaff fix-plan <file> [--depth light|structure|register] [--experimental] [--genre <ジャンル>] [--json]",
+    usage: "使い方: chaff fix-plan <file> [--depth light|structure|register] [--experimental] [--genre <ジャンル>] [--no-guide] [--json]",
     notFound: (path) => `${path} がありません。`,
     title: (path) => `直す計画: ${path}`,
     about: (language, genre) => `言語 ${language}、ジャンル ${genre}`,
     intro:
       "chaff が機械で見つけた箇所と、それぞれの直す方向です。chaff は書き直しません。書き直すのは、この計画を読む人か AI です。直したら、最後の確かめのコマンドを実行してください。",
+    guideHeading: (name, genre) => `指針: ${name}（${genre}）`,
+    guideLead: "このジャンルのよい文書が満たすことです。書き直しはこれに沿わせ、書き終えたら一つずつ確かめてください。",
+    guideRules: (ids) => `このジャンルで特に効く rule: ${ids}`,
     constraintsHeading: "守ること",
     constraints: [
       "事実、数、日付、条件、名前を変えない。",
@@ -109,12 +116,15 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
       "1 つめは書き直した文書の指摘、2 つめは事実が落ちていないか・足されていないか、3 つめは構成の変化です。数は chaff の出力から取り、形容詞で言わないでください。",
   },
   en: {
-    usage: "usage: chaff fix-plan <file> [--depth light|structure|register] [--experimental] [--genre <genre>] [--json]",
+    usage: "usage: chaff fix-plan <file> [--depth light|structure|register] [--experimental] [--genre <genre>] [--no-guide] [--json]",
     notFound: (path) => `${path} does not exist.`,
     title: (path) => `Fix plan: ${path}`,
     about: (language, genre) => `language ${language}, genre ${genre}`,
     intro:
       "What chaff found by machine, and how to rewrite each kind of spot. chaff does not rewrite; whoever reads this plan does, a person or an AI. When done, run the checks at the end.",
+    guideHeading: (name, genre) => `Guide: ${name} (${genre})`,
+    guideLead: "What a good document of this genre does. Rewrite toward it, and check the result against each line when done.",
+    guideRules: (ids) => `Rules that matter most for this genre: ${ids}`,
     constraintsHeading: "Constraints",
     constraints: [
       "Keep every fact, number, date, condition and name.",

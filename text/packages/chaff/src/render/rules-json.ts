@@ -14,6 +14,7 @@ import { loadStyles } from "../style-load.ts";
 import type { OptionLayer } from "../rule-options.ts";
 import { CUSTOM_TYPES } from "../custom/parse.ts";
 import { DEFAULT_DEPTH, REWRITE_DEPTHS, depthMeaning } from "../rewrite-depth.ts";
+import type { ReportedGuide } from "../genre-guide/report.ts";
 
 const TEXT: Texts<{
   readonly offBySetting: string;
@@ -185,6 +186,7 @@ export const rulesJson = (
   language: string,
   genre: string,
   optionLayers: readonly OptionLayer[] = [],
+  guide?: ReportedGuide,
 ): string => {
   const text = TEXT[uiLanguageOf(language)];
   const preset = presetLevels(genre);
@@ -196,6 +198,8 @@ export const rulesJson = (
       schema_version: 2,
       config_file: "chaff.yaml",
       detected: { genre, language },
+      // What a good document of the genre does: null unless the genre was set (--genre, chaff.yaml) and its guide is on.
+      guide: guide ?? null,
       ...(config.applied === undefined ? {} : { style: styleOf(config) }),
       values_you_can_use: ["strict", "normal", "relaxed", "off"],
       values_note: text.valuesNote,

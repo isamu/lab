@@ -41,6 +41,13 @@ genre: ${genre}
 # names:
 #   - 個人情報保護委員会
 
+# このジャンルの指針（よい文書が満たすこと）。検査の結果より先に出て、AI が書き直すときの指示になる。
+# 既定は chaff に入っている文。replace で置き換え、add で足し、off で出さない。
+# guide:
+#   ${genre}:
+#     add:
+#       - 金額は税込みか税抜きかを書いているか
+
 # 既定から変えたものだけを書く。
 rules:
 `,
@@ -79,6 +86,13 @@ genre: ${genre}
 # The names your team writes (organisations, products). Each is read as one name, not as words to count.
 # names:
 #   - Bank of England
+
+# This genre's guide: what a good document of this kind does. It comes before the findings, and an AI
+# rewriting the text works to it. chaff ships one; replace it, add lines, or turn it off.
+# guide:
+#   ${genre}:
+#     add:
+#       - Does each amount say whether tax is included?
 
 # Only what differs from the defaults.
 rules:

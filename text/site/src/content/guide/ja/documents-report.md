@@ -73,6 +73,20 @@ npx chaffjs houkoku.md --genre business/report    houkoku.md を報告書とし�
 ```
 $ npx chaffjs houkoku.md --genre business/report
 
+指針: 報告書（business/report）
+
+  下の指摘より先に、原稿がこれを満たしているかを確かめてください。
+
+  - 冒頭で、結論（何が分かったか・何が起きたか）を述べているか
+  - 数字に出典と時点があり、合計と割合が合っているか
+  - 事実と、意見・推測を書き分けているか
+  - 次の行動を、担当と期限つきで書いているか
+
+  このジャンルで特に効く rule: cushion-phrase-density, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
+
+════════════════════════════════════════════════════════════
+
 houkoku.md   business/report · 日本語   ジャンルは --genre から
 
 ─── 5 行目 ───────────────────────────────────────────────────
@@ -297,6 +311,20 @@ npx chaffjs relax padded-intro --why "背景の節は、決まった書き出し
 
 ```
 $ npx chaffjs houkoku-fixed.md --genre business/report
+
+指針: 報告書（business/report）
+
+  下の指摘より先に、原稿がこれを満たしているかを確かめてください。
+
+  - 冒頭で、結論（何が分かったか・何が起きたか）を述べているか
+  - 数字に出典と時点があり、合計と割合が合っているか
+  - 事実と、意見・推測を書き分けているか
+  - 次の行動を、担当と期限つきで書いているか
+
+  このジャンルで特に効く rule: cushion-phrase-density, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
+
+════════════════════════════════════════════════════════════
 
 houkoku-fixed.md   business/report · 日本語   ジャンルは --genre から
 

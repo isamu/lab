@@ -9,6 +9,7 @@ import { excerptsAround } from "../feedback/excerpt.ts";
 import { feedbackDraft, type FeedbackDraft, type FeedbackKind, type ReportedFinding } from "../feedback/draft.ts";
 import { notRunAmong } from "../not-run.ts";
 import type { Skipped } from "../run.ts";
+import type { GenreSource } from "../cli-text.ts";
 
 export const FEEDBACK_FILE = ".chaff-feedback.md";
 const NEW_ISSUE = "https://github.com/isamu/lab/issues/new";
@@ -20,6 +21,8 @@ export type Checked = {
   readonly rules: readonly RuleDefinition[];
   readonly language: string;
   readonly genre: string;
+  /** Where the genre came from: set (--genre, chaff.yaml, by_path, front matter), guessed or defaulted. */
+  readonly genreFrom: GenreSource;
   /** The rules this check did not run, and why. */
   readonly skipped: readonly Skipped[];
   /** How the check was run, as the reader of a report would repeat it (runConditions). */

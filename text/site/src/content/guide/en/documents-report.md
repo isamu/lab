@@ -74,6 +74,20 @@ npx chaffjs enquiries.md --genre business/report    check enquiries.md as a repo
 ```
 $ npx chaffjs enquiries.md --genre business/report
 
+Guide: Report (business/report)
+
+  Before the findings below, check the draft against these.
+
+  - Does the opening give the finding (what was learned, or what happened)?
+  - Do the numbers have a source and a date, and do totals and percentages add up?
+  - Are facts kept apart from opinions and guesses?
+  - Are the next actions given with an owner and a deadline?
+
+  Rules that matter most for this genre: cushion-phrase-density, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
+
 enquiries.md   business/report · English   genre from --genre
 
 ─── line 5 ───────────────────────────────────────────────────
@@ -318,6 +332,20 @@ Whether the first reply in October was back within the 4-hour target.
 
 ```
 $ npx chaffjs enquiries-fixed.md --genre business/report
+
+Guide: Report (business/report)
+
+  Before the findings below, check the draft against these.
+
+  - Does the opening give the finding (what was learned, or what happened)?
+  - Do the numbers have a source and a date, and do totals and percentages add up?
+  - Are facts kept apart from opinions and guesses?
+  - Are the next actions given with an owner and a deadline?
+
+  Rules that matter most for this genre: cushion-phrase-density, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
 
 enquiries-fixed.md   business/report · English   genre from --genre
 

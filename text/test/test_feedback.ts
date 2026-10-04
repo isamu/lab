@@ -143,7 +143,7 @@ describe("chaff feedback", () => {
       out.push(parts.join(" "));
     };
     console.error = console.log;
-    const checked: Checked = { findings, rules, language: "ja", genre: "blog/tech", skipped, conditions: [] };
+    const checked: Checked = { findings, rules, language: "ja", genre: "blog/tech", genreFrom: "default", skipped, conditions: [] };
     const context: FeedbackContext = {
       cwd,
       ui: "en",
