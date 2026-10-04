@@ -1,0 +1,37 @@
+# 比べる相手の無い比較を comparative-without-baseline が読むための語。
+# marker: 程度を言う語の前に立つ比べる副詞（より良い、さらに高速）。助詞の「より」（従来より速い）は相手を言うので含まない。
+# baseline: 比べる相手を言う語。同じ文か直前の文にあれば、相手は書いてある。語に分かれて書かれていても読む（これ・まで）。
+# exempt: 比べる副詞の後ろで、比較でない決まった言い方を作る語（より多くの人に、より詳しくは、さらに詳しく）と、程度でなく位置を言う語（さらに上の階層）。
+# condition: 比較より前にあれば、比較を条件の下に置く語（入れるとより良くなる）。比べる相手は、その条件の無い場合。
+id: comparative-baseline
+language: ja
+entries:
+  - { pattern: より, group: marker }
+  - { pattern: さらに, group: marker }
+  - { pattern: 比べ, group: baseline }
+  - { pattern: 比較, group: baseline }
+  - { pattern: 従来, group: baseline }
+  - { pattern: 以前, group: baseline }
+  - { pattern: 前回, group: baseline }
+  - { pattern: 前年, group: baseline }
+  - { pattern: 昨年, group: baseline }
+  - { pattern: 旧, group: baseline }
+  - { pattern: これまで, group: baseline }
+  - { pattern: 今まで, group: baseline }
+  - { pattern: 他社, group: baseline }
+  - { pattern: 先ほど, group: baseline }
+  - { pattern: ではなく, group: baseline }
+  - { pattern: 多く, group: exempt }
+  - { pattern: 一層, group: exempt }
+  - { pattern: 詳しく, group: exempt }
+  - { pattern: 詳細, group: exempt }
+  - { pattern: 上, group: exempt }
+  - { pattern: 下, group: exempt }
+  - { pattern: 奥, group: exempt }
+  - { pattern: 先, group: exempt }
+  - { pattern: 前, group: exempt }
+  - { pattern: 後, group: exempt }
+  - { pattern: と, group: condition }
+  - { pattern: ば, group: condition }
+  - { pattern: たら, group: condition }
+  - { pattern: なら, group: condition }

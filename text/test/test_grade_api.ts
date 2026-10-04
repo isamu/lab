@@ -45,7 +45,7 @@ describe("grade()", () => {
     assert.deepEqual(result.failedBecause, ["facts.dropped 2 > 0"]);
     assert.deepEqual(
       result.findings.map((finding) => finding.rule),
-      ["closing-cliche"],
+      ["comparative-without-baseline", "closing-cliche"],
     );
     const run = await runCli(
       { "items.jsonl": jsonl({ id: "summary", output: EN_OUTPUT, reference: EN_SOURCE }) },

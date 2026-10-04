@@ -1,0 +1,71 @@
+id: comparative-without-baseline
+layer: L3
+status: stable
+how_to_find: bare-comparative
+requires: [pos]
+severity: info
+
+name:
+  ja: 比べる相手の無い比較
+  en: A comparison with nothing to compare with
+
+why:
+  ja: 「より良い結果」「さらに高速になりました」は、何より良いのか、何より速いのかが書かれていなければ、読み手は確かめようがありません。宣伝の文に多く、言い切ったように見えて何も約束していません。「より」「さらに」の直後に程度を言う語がある文で、同じ文にも直前の文にも比べる相手（従来、以前、前回、「〜より」）が無いものを指します。
+  en: '"Better results" and "the new engine is faster" leave the reader unable to check anything unless they say better or faster than what. Marketing copy is full of them: they sound like a claim and promise nothing. A comparative that closes a clause after a verb ("is faster.", "is more efficient.") is reported when neither its sentence nor the one before names what it is compared with ("than", "previous", "before").'
+
+message:
+  ja: 「{matched}」は、何と比べているかが書かれていません
+  en: '"{matched}" does not say what it is compared with'
+
+how_to_fix:
+  ja: 比べる相手を書いてください（さらに高速になりました → 前の版より 2 倍速くなりました）。相手が無いなら、比較をやめて事実を書きます（処理は 1 秒で終わります）。
+  en: Name what it is compared with ("is faster" becomes "is twice as fast as version 2"), or state the fact instead of comparing ("finishes in one second").
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, docs, academic, legal, literature, speech]
+off_for:
+  literature: "A narrator and a character compare as they speak."
+  speech: "A speaker's comparisons lean on what the audience already has in mind."
+
+group: wording
+summary:
+  ja: 「より良い」「さらに高速」のように、比べる相手が書かれていない比較
+  en: A comparative such as "is faster" or "is more efficient" with no "than" or other baseline nearby
+
+example:
+  ja:
+    before: 新しい版では、処理がさらに高速になりました。
+    after: 新しい版では、処理が前の版の 2 倍速くなりました。
+  en:
+    before: We rewrote the parser. The new engine is faster.
+    after: We rewrote the parser. The new engine is twice as fast as version 2.
+
+not_flagged:
+  ja: 同じ文か直前の文に比べる相手（従来、以前、前回、昨年、「〜より」「〜に比べて」）がある比較、「より多くの」「より詳しく」のような決まった言い方、程度を言う語が続かない「さらに」（さらに、〜します）、条件の下の比較（入れるとより良くなる）は指しません。
+  en: 'A comparison whose sentence or the one before names a baseline ("than", "previous", "before", "compared"), a comparative before a noun ("better results", read only in Japanese), a comparative that does not close its clause ("runs faster on large files"), and one under a condition or a hypothesis ("if it looks better", "would be easier") are not reported.'
+
+rewrite:
+  depth: light
+  ja:
+    direction: 比べる相手を文書から探して書き足すか、比較をやめて数や事実で言い直してください。相手が文書に無ければ、作らずに書き手に尋ねます。
+    pairs:
+      - before: 新しい版では、処理がさらに高速になりました。
+        after: 新しい版では、処理が前の版の 2 倍速くなりました。
+      - before: より良い結果を届けます。
+        after: 誤検出を前年の半分に減らします。
+    keep:
+      - 文書に書いてある数と事実
+    avoid:
+      - 文書に無い比べる相手や数を作る
+  en:
+    direction: Add what the comparison is against, taken from the document, or replace the comparison with the figure or fact. If the document gives no baseline, ask the writer instead of inventing one.
+    pairs:
+      - before: The new engine is faster.
+        after: The new engine is twice as fast as version 2.
+      - before: Setup is now easier.
+        after: Setup now takes one command instead of five.
+    keep:
+      - the figures and facts the document gives
+    avoid:
+      - inventing a baseline or a figure the document does not give

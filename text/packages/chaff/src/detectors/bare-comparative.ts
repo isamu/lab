@@ -1,0 +1,152 @@
+import type { Detector, Finding, Lexicon, Sentence, Span, Token } from "../plugin.ts";
+import { quotedIn } from "../quoted-span.ts";
+
+/**
+ * 比べる相手の無い比較（より良い結果、さらに高速に、The new engine is faster.）。何より良いのか、何より速いのかが書かれていない。
+ * 語は語彙表 comparative-baseline が言う。group marker は日本語の比べる副詞（より、さらに）、more は英語の比べる語、comparative は比べた形の語
+ * （faster、better）、baseline は相手を言う語（従来、以前、than、previous）、exempt は比較でない決まった言い方（より多くの、より詳しく）、
+ * condition は比較を条件や仮定の下に置く語（使うと、if、would）。条件を書いた比較は、その条件の無い場合と比べている。
+ * 同じ文か前の二文に相手を言う語があれば、相手は書いてある。
+ */
+
+export type ComparativeLists = {
+  readonly markers: ReadonlySet<string>;
+  readonly more: ReadonlySet<string>;
+  readonly comparatives: ReadonlySet<string>;
+  readonly baselines: readonly string[];
+  readonly exempt: ReadonlySet<string>;
+  readonly conditions: ReadonlySet<string>;
+};
+
+export type BareComparative = { readonly first: Token; readonly last: Token };
+
+/** 前に立てば、比べた形が述語として読める語の品詞（is faster、runs faster）。 */
+const PREDICATE_HEAD = new Set(["VERB", "AUX"]);
+/** 比べた形の後ろで節が終わる印。 */
+const CLAUSE_END = new Set([".", "!", "?", ",", ";", ":"]);
+/** 述語と比べた形のあいだに挟まってよい副詞の数（is now much faster）。 */
+const MAX_ADVERBS = 2;
+/** 日本語の形容動詞の語幹の後ろに来る語（高速な、高速に、高速です）。 */
+const ADJECTIVAL_TAIL = new Set(["な", "に", "だ", "です", "で"]);
+
+const lower = (token: Token | undefined): string => token?.surface.toLowerCase() ?? "";
+
+const isThirdPersonVerb = (token: Token): boolean => token.pos === "NOUN" && token.features?.["AlsoVerb"] === "Yes" && token.features["Number"] === "Plur";
+
+/** 比べる語の後ろの、程度を言える語（良い、高速な）。形容詞か、形容動詞の語幹。 */
+const isGradable = (tokens: readonly Token[], at: number): boolean => {
+  const word = tokens[at];
+  if (word?.pos === "ADJ") return true;
+  return word?.pos === "NOUN" && word.features?.["Bound"] !== "Yes" && ADJECTIVAL_TAIL.has(tokens[at + 1]?.surface ?? "");
+};
+
+/** 比べる副詞が語の頭に立つか。前が助詞・記号・接続の語か文の頭のときだけ（「学年だより等」の「より」は語の一部）。 */
+const OPENS_WORD = new Set(["ADP", "PUNCT", "SCONJ", "CCONJ", "ADV"]);
+
+/** 日本語: 副詞の「より」「さらに」の直後の、程度を言える語。比較の決まった言い方（より多くの）は除く。 */
+const markedAt = (tokens: readonly Token[], at: number, lists: ComparativeLists): BareComparative | undefined => {
+  const [marker, word] = [tokens[at], tokens[at + 1]];
+  if (marker?.pos !== "ADV" || !lists.markers.has(marker.surface) || word === undefined || lists.exempt.has(word.surface)) return undefined;
+  const previous = tokens[at - 1];
+  if (previous !== undefined && !OPENS_WORD.has(previous.pos)) return undefined;
+  return isGradable(tokens, at + 1) ? { first: marker, last: word } : undefined;
+};
+
+/** 比べた形の後ろで節が終わるか。読点の後ろに形容詞が続けば、名詞の前に並べた修飾語（better, more predictable results）。 */
+const closesClause = (tokens: readonly Token[], at: number): boolean => {
+  const next = tokens[at + 1];
+  if (next === undefined) return true;
+  if (!CLAUSE_END.has(next.surface)) return false;
+  const after = tokens[at + 2];
+  return next.surface !== "," || (after?.pos !== "ADJ" && after?.pos !== "ADV");
+};
+
+/** more と形容詞のあいだの副詞（more computationally efficient）を飛ばした、more の位置。無ければ -1。 */
+const moreBefore = (tokens: readonly Token[], at: number, more: ReadonlySet<string>): number => {
+  const before = tokens.slice(Math.max(0, at - 1 - MAX_ADVERBS), at).reverse();
+  const found = before.findIndex((token) => token.pos !== "ADV" || more.has(lower(token)));
+  return found !== -1 && more.has(lower(before[found])) ? at - 1 - found : -1;
+};
+
+/** 英語: 述語の後ろで節を閉じる比べた形（is faster.、runs faster,）か、more と形容詞。 */
+const predicateAt = (tokens: readonly Token[], at: number, lists: ComparativeLists): BareComparative | undefined => {
+  const word = tokens[at];
+  if (word === undefined || !closesClause(tokens, at)) return undefined;
+  const moreAt = word.pos === "ADJ" ? moreBefore(tokens, at, lists.more) : -1;
+  if (moreAt === -1 && !lists.comparatives.has(lower(word))) return undefined;
+  const start = moreAt === -1 ? at : moreAt;
+  const first = tokens[start] ?? word;
+  const adverbs = tokens.slice(Math.max(0, start - MAX_ADVERBS), start).reverse();
+  const skipped = adverbs.findIndex((token) => token.pos !== "ADV");
+  const head = tokens[start - 1 - (skipped === -1 ? adverbs.length : skipped)];
+  return head !== undefined && (PREDICATE_HEAD.has(head.pos) || isThirdPersonVerb(head)) ? { first, last: word } : undefined;
+};
+
+/** 比べた形より前に、条件か仮定を言う語があるか。並べる「と」（A と B）は条件でない。 */
+const isConditional = (tokens: readonly Token[], found: BareComparative, conditions: ReadonlySet<string>): boolean =>
+  tokens.some((token) => token.span.start < found.first.span.start && token.pos !== "CCONJ" && conditions.has(lower(token)));
+
+export const bareComparativesIn = (tokens: readonly Token[], lists: ComparativeLists): BareComparative[] =>
+  tokens
+    .flatMap((_, at) => markedAt(tokens, at, lists) ?? predicateAt(tokens, at, lists) ?? [])
+    .filter((found) => !isConditional(tokens, found, lists.conditions));
+
+/**
+ * 語が比べる相手を言う語か。語の形か原形で照らし、一字の語（旧）は語の頭だけ（旧版は相手、復旧は相手でない）。
+ */
+const isBaselineWord = (token: Token, baselines: readonly string[]): boolean => {
+  const [surface, lemma] = [token.surface.toLowerCase(), token.lemma?.toLowerCase()];
+  return baselines.some((baseline) => surface === baseline || lemma === baseline || ([...baseline].length === 1 && surface.startsWith(baseline)));
+};
+
+/** 相手を言う語が、続く語に分かれて書かれているか（これ・まで、で・は・なく）。 */
+const MAX_BASELINE_TOKENS = 3;
+const isSplitBaseline = (tokens: readonly Token[], at: number, baselines: readonly string[]): boolean => {
+  const joined = tokens
+    .slice(at, at + MAX_BASELINE_TOKENS)
+    .map((token) => token.surface.toLowerCase())
+    .reduce<string[]>((runs, surface) => [...runs, `${runs.at(-1) ?? ""}${surface}`], []);
+  return joined.slice(1).some((run) => baselines.includes(run));
+};
+
+/** 文の中に、比べる相手を言う語か、相手を受ける助詞の「より」（従来より）があるか。 */
+export const namesBaseline = (sentence: Sentence | undefined, baselines: readonly string[]): boolean =>
+  (sentence?.tokens ?? []).some(
+    (token, at, tokens) => (token.surface === "より" && token.pos === "ADP") || isBaselineWord(token, baselines) || isSplitBaseline(tokens, at, baselines),
+  );
+
+/** 比べる相手を探す、前の文の数。段落の中で相手を言ってから、一つ文を挟んで比べることがある。 */
+const BASELINE_REACH = 2;
+
+const groupOf = (lexicon: Lexicon, group: string): string[] => lexicon.filter((entry) => entry.group === group).map((entry) => entry.pattern.toLowerCase());
+
+export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
+  markers: new Set(groupOf(lexicon, "marker")),
+  more: new Set(groupOf(lexicon, "more")),
+  comparatives: new Set(groupOf(lexicon, "comparative")),
+  baselines: groupOf(lexicon, "baseline"),
+  exempt: new Set(groupOf(lexicon, "exempt")),
+  conditions: new Set(groupOf(lexicon, "condition")),
+});
+
+/** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */
+const insideSpan = (found: BareComparative, span: Span): boolean => found.first.span.start >= span.start && found.last.span.end <= span.end;
+
+export const bareComparative: Detector = (doc): Finding[] => {
+  const lists = listsOf(doc.lexicons["comparative-baseline"] ?? []);
+  return doc.sentences.flatMap((sentence, at) => {
+    const nearby = doc.sentences.slice(Math.max(0, at - BASELINE_REACH), at + 1);
+    if (sentence.embeddedLanguage !== undefined || nearby.some((near) => namesBaseline(near, lists.baselines))) return [];
+    const quoted = quotedIn(sentence);
+    return bareComparativesIn(sentence.tokens ?? [], lists)
+      .filter((found) => !quoted.some((span) => insideSpan(found, span)))
+      .map((found) => ({
+        rule: "",
+        severity: "info",
+        line: 0,
+        column: 0,
+        quote: sentence.text.trim(),
+        values: { matched: doc.source.slice(found.first.span.start, found.last.span.end), offset: found.first.span.start },
+      }));
+  });
+};
