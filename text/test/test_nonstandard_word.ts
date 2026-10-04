@@ -36,6 +36,16 @@ describe("nonstandard-word: 標準的でない語", () => {
     assert.deepEqual(findingsOf("この結果は間違いないと言えます。違いはありません。", ja), []);
   });
 
+  it("more nonstandard forms in both languages, and the standard ones are left alone", () => {
+    assert.deepEqual(findingsOf("For all intensive purposes, the work is done."), [
+      '"For all intensive" is nonstandard in formal writing; write "For all intents and"',
+    ]);
+    assert.deepEqual(findingsOf("The court applied the statue of limitations."), ['"statue" is nonstandard in formal writing; write "statute"']);
+    assert.deepEqual(findingsOf("For all intents and purposes, the work is done. The statue stands in the park."), []);
+    assert.deepEqual(findingsOf("今日の注文はすごい多い。", ja), ["「すごい」は書き言葉では標準的でない形です。「すごく」と書きます"]);
+    assert.deepEqual(findingsOf("今日の注文はすごく多い。すごい人が多い。", ja), []);
+  });
+
   it("コードの中は読まない", () => {
     assert.deepEqual(findingsOf("Set `irregardless = true` in the config."), []);
   });

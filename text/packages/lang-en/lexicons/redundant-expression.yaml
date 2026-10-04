@@ -81,3 +81,83 @@ entries:
     rewrite: cooperation
   - pattern: the reason is because
     rewrite: the reason is that
+  - pattern: advance warning
+    rewrite: warning
+  - pattern: completely eliminate
+    rewrite: eliminate
+  - pattern: completely eliminated
+    rewrite: eliminated
+  - pattern: exact same
+    rewrite: same
+  - pattern: final conclusion
+    rewrite: conclusion
+  - pattern: foreign imports
+    rewrite: imports
+  - pattern: over exaggerate
+    rewrite: exaggerate
+  - pattern: postpone until later
+    rewrite: postpone
+  - pattern: unintended mistake
+    rewrite: mistake
+  - pattern: unintentional mistake
+    rewrite: mistake
+  - pattern: usual custom
+    rewrite: custom
+  - pattern: cooperate together
+    rewrite: cooperate
+  - pattern: cooperated together
+    rewrite: cooperated
+  - pattern: connect together
+    rewrite: connect
+  - pattern: connected together
+    rewrite: connected
+  - pattern: integrate together
+    rewrite: integrate
+  - pattern: integrated together
+    rewrite: integrated
+  - pattern: attach together
+    rewrite: attach
+  - pattern: descend down
+    rewrite: descend
+  - pattern: ascend up
+    rewrite: ascend
+  - pattern: HIV virus
+    rewrite: HIV
+  - pattern: LCD display
+    rewrite: LCD
+  - pattern: ISBN number
+    rewrite: ISBN
+  - pattern: small in size
+    rewrite: small
+  - pattern: large in size
+    rewrite: large
+  - pattern: few in number
+    rewrite: few
+  - pattern: surrounded on all sides
+    rewrite: surrounded
+  - pattern: armed gunman
+    rewrite: gunman
+  - pattern: fellow colleague
+    rewrite: colleague
+  - pattern: frozen ice
+    rewrite: ice
+  - pattern: hollow tube
+    rewrite: tube
+  - pattern: important essentials
+    rewrite: essentials
+  - pattern: interdependent on each other
+    rewrite: interdependent
+  - pattern: old adage
+    rewrite: adage
+  - pattern: passing fad
+    rewrite: fad
+  - pattern: past memories
+    rewrite: memories
+  - pattern: regular routine
+    rewrite: routine
+  - pattern: same identical
+    rewrite: identical
+  - pattern: visible to the eye
+    rewrite: visible
+  - pattern: both alike
+    rewrite: alike

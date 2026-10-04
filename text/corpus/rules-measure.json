@@ -7482,7 +7482,7 @@
         },
         "blog": {
           "documents": 9,
-          "fired": 0
+          "fired": 1
         },
         "business": {
           "documents": 39,
@@ -7498,7 +7498,7 @@
         },
         "literature": {
           "documents": 9,
-          "fired": 1
+          "fired": 2
         },
         "speech": {
           "documents": 3,
@@ -7568,11 +7568,11 @@
         },
         "business": {
           "documents": 39,
-          "fired": 6
+          "fired": 7
         },
         "docs": {
           "documents": 10,
-          "fired": 2
+          "fired": 3
         },
         "legal": {
           "documents": 14,
@@ -7580,7 +7580,7 @@
         },
         "literature": {
           "documents": 9,
-          "fired": 3
+          "fired": 4
         },
         "speech": {
           "documents": 3,

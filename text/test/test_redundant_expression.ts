@@ -38,4 +38,13 @@ describe("redundant-expression: 重言", () => {
     assert.deepEqual(redundant("The result is a shorter build.", en), []);
     assert.deepEqual(redundant("Past experience helps.", en), []);
   });
+
+  it("more pairs in both languages, and the single word is left alone", () => {
+    assert.deepEqual(redundant("問題はまだ未解決のままだ。"), ["「まだ未解決」は同じ意味の語を重ねています"]);
+    assert.deepEqual(redundant("新年明けましておめでとうございます。"), ["「新年明けましておめでとう」は同じ意味の語を重ねています"]);
+    assert.deepEqual(redundant("問題は未解決のままだ。明けましておめでとうございます。今、現在の状況を報告します。"), []);
+    assert.deepEqual(redundant("We connect together the two services.", en), ['"connect together" says the same thing twice']);
+    assert.deepEqual(redundant("It is the exact same report.", en), ['"exact same" says the same thing twice']);
+    assert.deepEqual(redundant("We connected the two services. It is the same report. The exact figures are attached.", en), []);
+  });
 });

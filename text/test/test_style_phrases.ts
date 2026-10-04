@@ -30,6 +30,16 @@ describe("wordy-phrase", () => {
     assert.deepEqual(findingsOf(RULE, "The border order told us to wait. To save time, we met online.\n", en, "strict"), []);
     assert.deepEqual(findingsOf(RULE, "If the server fails, the job retries. Because it was late, we left.\n", en, "strict"), []);
   });
+
+  it("more wordy phrases are reported, and their short forms are not", () => {
+    const wordy = "With the exception of Friday, we met online. The office is in the vicinity of the station. In an effort to save time, we stayed.\n";
+    assert.deepEqual(findingsOf(RULE, wordy), [
+      '"with the exception of" can be said in fewer words',
+      '"in the vicinity of" can be said in fewer words',
+      '"in an effort to" can be said in fewer words',
+    ]);
+    assert.deepEqual(findingsOf(RULE, "Except on Friday, we met online. The office is near the station. To save time, we stayed.\n", en, "strict"), []);
+  });
 });
 
 describe("weasel-word", () => {
@@ -42,6 +52,12 @@ describe("weasel-word", () => {
 
   it("a named source is not", () => {
     assert.deepEqual(findingsOf(RULE, "Smith (2021) found that short meetings save time.\n"), []);
+  });
+
+  it("more unnamed sources are reported, and a named one is not", () => {
+    assert.deepEqual(findingsOf(RULE, "Studies suggest that short meetings save time.\n"), ['"studies suggest" does not say who']);
+    assert.deepEqual(findingsOf(RULE, "Some argue that the old API is slower.\n"), ['"some argue" does not say who']);
+    assert.deepEqual(findingsOf(RULE, "The 2021 Smith study suggests that short meetings save time. Two reviewers argue that the old API is slower.\n"), []);
   });
 });
 
