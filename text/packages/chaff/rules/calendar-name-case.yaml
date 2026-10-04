@@ -2,7 +2,6 @@ id: calendar-name-case
 layer: L1
 status: stable
 how_to_find: calendar-name-case
-word_list: calendar-name
 languages: [en]
 severity: warning
 

@@ -2,7 +2,7 @@ import type { Detector, Finding } from "../plugin.ts";
 import { quoteAround } from "./quote-around.ts";
 
 // A word English always capitalises (a weekday, a month) written in lower case ("on monday"). The words come from the rule's
-// lexicon; the pattern is the capitalised form.
+// lexicon "calendar-name"; the pattern is the capitalised form.
 
 export type LowercaseName = { readonly offset: number; readonly written: string; readonly usual: string };
 
@@ -17,11 +17,18 @@ const joinsAfter = (text: string, end: number): boolean =>
   SENTENCE_STOP.test(text.charAt(end)) ? WORD_CHAR.test(text.charAt(end + 1)) : NOT_PROSE_BESIDE.test(text.charAt(end));
 
 /** A value after a key or a field marker (day: monday, day = monday, "day": "monday", * * monday) is data, not prose. */
-const VALUE_MARK = /[:=*]$/u;
+const VALUE_MARK = /[:=*]/u;
 const STRAIGHT_QUOTE = /["']/u;
+const SPACE_OR_QUOTE = /[\s"']/u;
+/** How far back to look past spaces and quotes for the key's mark. */
+const VALUE_REACH = 8;
 
-const isValue = (text: string, start: number): boolean =>
-  STRAIGHT_QUOTE.test(text.charAt(start - 1)) || VALUE_MARK.test(text.slice(0, start).replace(/[\s"']+$/u, ""));
+const markBefore = (text: string, start: number): string =>
+  Array.from(text.slice(Math.max(0, start - VALUE_REACH), start))
+    .reverse()
+    .find((char) => !SPACE_OR_QUOTE.test(char)) ?? "";
+
+const isValue = (text: string, start: number): boolean => STRAIGHT_QUOTE.test(text.charAt(start - 1)) || VALUE_MARK.test(markBefore(text, start));
 
 const capitalOf = (word: string): string => `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
 
@@ -35,11 +42,11 @@ export const lowercaseNamesIn = (text: string, names: readonly string[]): Lowerc
   });
 };
 
-export const lowercaseName: Detector = (doc, options): Finding[] => {
+export const lowercaseName: Detector = (doc): Finding[] => {
   const text = doc.prose ?? doc.source;
   return lowercaseNamesIn(
     text,
-    (options.lexicon ?? []).map((entry) => entry.pattern),
+    (doc.lexicons["calendar-name"] ?? []).map((entry) => entry.pattern),
   ).map((name) => ({
     rule: "",
     severity: "warning",
