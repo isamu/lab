@@ -1,0 +1,55 @@
+id: ime-residue
+layer: L1
+status: stable
+how_to_find: ime-residue
+languages: [ja]
+severity: warning
+
+name:
+  ja: 変換し損ねた英字
+  en: A Latin letter left by the input method
+
+why:
+  ja: 「おもしrおい」「対応sた」のように、日本語の語の中に英字が一字だけ残るのは、ローマ字入力で押したキーが仮名にならなかった跡です。読み手はその語で止まり、検索にも当たりません。打ち間違いなので、どちらの書き方が正しいかの話ではありません。
+  en: "A single Latin letter inside a Japanese word (おもしrおい for おもしろい) is a key pressed in romaji input that never became kana. The reader stops at the word, and search does not find it. It is a typing slip, not a style."
+
+message:
+  ja: 日本語の語の中に英字「{letter}」が一字だけあります（変換し損ねた跡）
+  en: 'A lone Latin letter "{letter}" inside a Japanese word, left by the input method'
+
+how_to_fix:
+  ja: 英字を消して、語を打ち直してください（おもしrおい → おもしろい）。
+  en: Delete the letter and retype the word (おもしrおい → おもしろい).
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 「おもしrおい」「対応sた」のような、日本語の語の中に一字だけ残った英字
+  en: A single Latin letter left inside a Japanese word by the input method, as in おもしrおい
+example:
+  ja:
+    before: |
+      この資料はとてもおもしrおいです。
+    after: |
+      この資料はとてもおもしろいです。
+
+not_flagged:
+  ja: 大文字（A 社、B さん）、二字以上の英字（while 文、note）、コードの中は指しません。後ろに助詞が続く一字（変数 x が、まず x を、を x で）は変数の名と読み、一字の後ろが漢字のもの（の x 座標）も指しません。片仮名の後ろの一字（サイズ m、プラン b）は記号と読み、パスの中（/docs/…）も見ません。
+  en: Capitals (A社, Bさん), runs of two or more letters (while文, note) and code are not reported. A letter followed by a particle (変数xが, まずxを, をxで) is read as the name of a variable, and a letter followed by a kanji (のx座標) is not reported either. A letter after katakana (サイズm, プランb) is read as a label, and paths (/docs/…) are not read.
+sources: [textlint-ja-presets]
+rewrite:
+  depth: light
+  ja:
+    direction: 残った英字を消して、前後の仮名から語を打ち直してください。語が決められないときは書き手に尋ねます。
+    pairs:
+      - before: この資料はとてもおもしrおいです。
+        after: この資料はとてもおもしろいです。
+      - before: 申請に対応sたことを報告します。
+        after: 申請に対応したことを報告します。
+    keep:
+      - 文のほかの語
+    avoid:
+      - 前後の語まで書き換える
