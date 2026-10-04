@@ -46,15 +46,15 @@ const dayName = (doc: ProseDocument, day: unknown): string => {
 const datedSpans = (tree: NonNullable<ProseDocument["structure"]>): DatedSpan[] =>
   inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [{ offset: node.span.start, end: node.span.end, value: String(node.attrs["value"]) }] : []));
 
-/** 引用符の中で日付の横に残ってよいのは、曜日の一語と記号だけ（"Monday, December 5, 2026"、「2026年12月5日（月）」）。 */
-const WEEKDAY_ASIDE = /^[\s\p{P}]*\p{L}*[\s\p{P}]*$/u;
+/** 引用符の中で日付の横にあってよい語は、曜日の一語だけ（"Monday, December 5, 2026"、「2026年12月5日（月）」）。 */
+const WEEKDAY_WORDS = 1;
 
 /**
  * 引用符で日付だけを挙げたもの（"Monday, December 5, 2026" falls on a Saturday）は、誤りの例で、文書の日付ではない。
  * from から until の日付の終わりまでを見る。
  */
-const quotedDates = (doc: ProseDocument, from: DatedSpan | undefined, until: DatedSpan | undefined, aside?: RegExp): boolean =>
-  from !== undefined && until !== undefined && isQuotedAlone(doc.source, { start: from.offset, end: until.end }, aside);
+const quotedDates = (doc: ProseDocument, from: DatedSpan | undefined, until: DatedSpan | undefined, wordsBesides = 0): boolean =>
+  from !== undefined && until !== undefined && isQuotedAlone(doc.source, { start: from.offset, end: until.end }, wordsBesides);
 
 const dateAt = (dates: readonly DatedSpan[], offset: number): number => dates.findIndex((date) => date.offset === offset);
 
@@ -64,7 +64,7 @@ export const dateWeekdayMismatch: Detector = (doc): Finding[] => {
   return weekdayMismatches(doc.structure)
     .filter((issue) => {
       const date = dates[dateAt(dates, issue.offset)];
-      return !quotedDates(doc, date, date, WEEKDAY_ASIDE);
+      return !quotedDates(doc, date, date, WEEKDAY_WORDS);
     })
     .map((issue) => ({
       rule: "date-weekday-mismatch",

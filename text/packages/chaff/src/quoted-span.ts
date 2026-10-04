@@ -41,21 +41,28 @@ export const quotedSpans = (text: string, marks: Marks = KAGI_MARKS): Span[] => 
 export const quotedIn = (sentence: Sentence, marks: Marks = KAGI_MARKS): Span[] =>
   quotedSpans(sentence.text, marks).map((span) => ({ start: sentence.span.start + span.start - 1, end: sentence.span.start + span.end + 1 }));
 
-const ONLY_MARKS = /^[\s\p{P}]*$/u;
+const MARKS = /[\s\p{P}]+/u;
+const LETTERS = /^\p{L}+$/u;
+
+/** 記号と空白のあいだに残る語が、字だけの語で、多くとも allowed 個か。 */
+const holdsAtMost = (text: string, allowed: number): boolean => {
+  const words = text.split(MARKS).filter((word) => word !== "");
+  return words.length <= allowed && words.every((word) => LETTERS.test(word));
+};
 
 /**
  * span だけを引いた引用符（"delves"、"?utm_source=chatgpt.com"、"October 26, 2026 – October 19, 2026"）の中か。
  * 引用符が語だけを囲めば、その語は使ったのではなく例として挙げたもの。周りの記号と空白は語の一部に数えない。
- * aside は、span の前後に引用符の中で残ってよいもの（日付なら曜日の一語）。前と後ろを空白でつないで照らす。
+ * wordsBesides は、span のほかに引用符の中にあってよい語の数（日付なら曜日の一語）。
  * 話した言葉の引用（"We ship on Monday, October 26," she said.）は語のほかの字を持つので当たらない。引用は一行の中だけを見る。
  */
-export const isQuotedAlone = (text: string, span: Span, aside: RegExp = ONLY_MARKS): boolean => {
+export const isQuotedAlone = (text: string, span: Span, wordsBesides = 0): boolean => {
   const lineStart = text.lastIndexOf("\n", span.start - 1) + 1;
   const newline = text.indexOf("\n", span.end);
   const line = text.slice(lineStart, newline === -1 ? text.length : newline);
   const [start, end] = [span.start - lineStart, span.end - lineStart];
   return quotedSpans(line, QUOTATION_MARKS).some(
-    (quoted) => quoted.start <= start && end <= quoted.end && aside.test(`${line.slice(quoted.start, start)} ${line.slice(end, quoted.end)}`),
+    (quoted) => quoted.start <= start && end <= quoted.end && holdsAtMost(`${line.slice(quoted.start, start)} ${line.slice(end, quoted.end)}`, wordsBesides),
   );
 };
 
