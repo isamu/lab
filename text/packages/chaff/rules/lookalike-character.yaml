@@ -1,0 +1,82 @@
+id: lookalike-character
+layer: L1
+status: stable
+how_to_find: lookalike-character
+severity: warning
+
+name:
+  ja: 見た目が同じで別の字
+  en: Look-alike character
+
+why:
+  ja: 部首の字（⼈ U+2F08）や互換漢字は、ふつうの「人」と同じに見えて別の字です。濁点を別の字にした「か＋゛」（macOS のファイル名や、そこからコピーした文に多い）も、「が」と同じに見えて別の並びです。どれも検索、並べ替え、辞書引き、表記の照合から漏れ、読み手には直す所が見えません。PDF からのコピーや、入力の変換で入ります。コードの中も見ます。
+  en: "A Kangxi radical (⼈ U+2F08) looks like the ordinary 人 and is another character; so is a CJK compatibility ideograph. A letter written as a base and a separate combining mark (e + U+0301, common in macOS file names and text copied from them) looks like é and is another sequence. Search, sorting, dictionaries and spelling checks all miss them, and the reader cannot see what to fix. They come from PDF copies and input methods. Code is checked too."
+
+message:
+  ja: 「{written}」（{code}）は「{usual}」と同じに見える別の字です
+  en: '"{written}" ({code}) looks like "{usual}" but is another character'
+
+messages:
+  radical:
+    ja: 「{written}」（{code}）は部首の字です。ふつうの「{usual}」と書きます
+    en: '"{written}" ({code}) is a radical, not the ordinary "{usual}"'
+  compatibility:
+    ja: 「{written}」（{code}）は互換漢字です。ふつうの「{usual}」と書きます
+    en: '"{written}" ({code}) is a compatibility ideograph, not the ordinary "{usual}"'
+  decomposed:
+    ja: 「{written}」は字と記号が分かれています（{code}）。一字の「{usual}」と書きます
+    en: '"{written}" is a letter and a separate mark ({code}), not the single letter "{usual}"'
+  spacing-mark:
+    ja: 「{written}」は濁点・半濁点を別の字で書いています（{code}）。一字の「{usual}」と書きます
+    en: '"{written}" writes the voicing mark as a separate character ({code}), not the single letter "{usual}"'
+
+how_to_fix:
+  ja: その字を消して、ふつうの字を打ち直してください。文書全体を NFC に正規化しても直ります（部首の字は NFKC）。
+  en: Delete the character and type the ordinary one. Normalising the document to NFC also fixes it (NFKC for radicals).
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 部首の字（⼈）、互換漢字、字と分かれた濁点（か＋゛）のような、ふつうの字と同じに見える別の字
+  en: A character that looks like an ordinary one but is another, such as a Kangxi radical (⼈ for 人) or a letter and a separate combining mark
+example:
+  ja:
+    before: "申込書は総務課の⼭田さんへ送ってください。\n"
+    after: |
+      申込書は総務課の山田さんへ送ってください。
+  en:
+    before: "Send the form to the café office.\n"
+    after: |
+      Send the form to the café office.
+
+not_flagged:
+  ja: 一字にまとまる形の無い組み合わせ（字に付いた異体字の指定、合成済みの形の無いアクセント）と、Unicode が別の字として持つ互換漢字（﨑 など）は指しません。
+  en: Combinations with no single precomposed form (a variation selector after a character, an accent with no precomposed letter) and compatibility ideographs that Unicode keeps as their own characters (﨑) are not reported.
+sources: [textlint-ja-presets]
+rewrite:
+  depth: light
+  ja:
+    direction: 指した字だけを、同じに見えるふつうの字に打ち直してください。ほかの字は変えません。
+    pairs:
+      - before: "総務課の⼭田さんへ送ってください。"
+        after: 総務課の山田さんへ送ってください。
+      - before: "がいしゃに送ります。"
+        after: がいしゃに送ります。
+    keep:
+      - 字の並びと文の意味
+    avoid:
+      - 同じに見えるからと、指した字をそのまま残す
+  en:
+    direction: Retype only the marked character as the ordinary one it looks like. Change nothing else.
+    pairs:
+      - before: "Send it to the café office."
+        after: Send it to the café office.
+      - before: "The résumé is attached."
+        after: The résumé is attached.
+    keep:
+      - the words and their order
+    avoid:
+      - leaving the marked character because it looks right
