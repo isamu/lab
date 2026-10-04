@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  lookalike-ja  found
+ja/design  lookalike-ja  found
+ja/email  lookalike-ja  found
+ja/figures  lookalike-ja  found
+ja/itinerary  lookalike-ja  found
+ja/minutes  lookalike-ja  found
+ja/note  lookalike-ja  found
+ja/policy  lookalike-ja  found
+ja/press  lookalike-ja  found
+ja/proposal  lookalike-ja  found
+ja/quote  lookalike-ja  found
+ja/readme  lookalike-ja  found
+ja/requirements  lookalike-ja  found
+en/blog  lookalike-en  found
+en/design  lookalike-en  found
+en/email  lookalike-en  found
+en/figures  lookalike-en  found
+en/itinerary  lookalike-en  found
+en/minutes  lookalike-en  found
+en/note  lookalike-en  found
+en/policy  lookalike-en  found
+en/press  lookalike-en  found
+en/proposal  lookalike-en  found
+en/quote  lookalike-en  found
+en/readme  lookalike-en  found
+en/requirements  lookalike-en  found
