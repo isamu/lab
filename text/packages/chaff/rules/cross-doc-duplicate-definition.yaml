@@ -1,6 +1,6 @@
 id: cross-doc-duplicate-definition
 layer: L3
-status: experimental
+status: stable
 how_to_find: cross-doc-duplicate-definition
 # documents: compares the files of one run, so it runs only when chaff is given two or more files, or a folder.
 requires: [structure, documents]

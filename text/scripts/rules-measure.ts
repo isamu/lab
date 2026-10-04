@@ -1,8 +1,10 @@
 // `yarn rules:measure`: for every rule, on how many human documents of each genre group it reports, and how its
 // findings fared in the bench. Every rule runs at its genre's level (normal where the genre turns it off, so an off
 // rule is still measured), experimental ones included, on the corpus (corpus/docs, corpus/laws and the fetched
-// corpus/.cache) with each document's genre. The bench columns come from the committed bench expectations.
-//   --json                 print the measurement as JSON instead of the table
+// corpus/.cache) with each document's genre. A document runs with the others of its set (its publisher, or the statutes;
+// scripts/rules-measure-sets.ts), so the rules that compare documents are measured too. The bench columns come from the
+// committed bench expectations.
+//   --json                print the measurement as JSON instead of the table
 //   --write                write the corpus part to corpus/rules-measure.json, which test/test_rule_policy.ts holds the rules to
 //   --apply                measure, write corpus/rules-measure.json, and set each rule's status and severity, and the groups each
 //                          is measured off for (off_for), from it: the one step that places a rule that just landed (--from <json> skips the run)
@@ -11,7 +13,8 @@
 //   --from <json>          read a measurement --json printed before instead of running chaff again
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { corpusLanguages, runAtLevels } from "./corpus-findings.ts";
+import { corpusLanguages, runSetAtLevels } from "./corpus-findings.ts";
+import { documentSets, setOf } from "./rules-measure-sets.ts";
 import { docEntries, docPath, parsedAs } from "./corpus-docs.ts";
 import {
   aiBenchRows,
@@ -30,6 +33,7 @@ import { japaneseRatio } from "../packages/chaff/src/detect-language.ts";
 import { presetLevels } from "../packages/chaff/src/genre-load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import type { Level, RuleDefinition } from "../packages/chaff/src/plugin.ts";
+import type { RunResult } from "../packages/chaff/src/run.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 const CORPUS = join(ROOT, "corpus");
@@ -56,19 +60,30 @@ const measuredLevels =
     );
   };
 
-type Input = { readonly file: string; readonly readAs: string; readonly language: string; readonly genre: string };
+/** A document to measure. set: the documents it runs with (scripts/rules-measure-sets.ts), all of one language. */
+type Input = { readonly file: string; readonly readAs: string; readonly language: string; readonly genre: string; readonly set: string };
 
 const ruleIds = new Map(["ja", "en"].map((language) => [language, loadRules(language).map((rule) => rule.id)]));
 
-const runOf = async (input: Input): Promise<DocumentRun> => {
-  const result = await runAtLevels(input.readAs, readFileSync(input.file, "utf8"), input.language, input.genre, measuredLevels(input.genre));
+const documentRunOf = (input: Input, result: RunResult): DocumentRun => {
   const skipped = new Set(result.skipped.map((skip) => skip.rule));
   const ran = new Set((ruleIds.get(input.language) ?? []).filter((rule) => !skipped.has(rule)));
   return { group: input.genre.split("/")[0] ?? input.genre, ran, fired: new Set(result.findings.map((finding) => finding.rule)) };
 };
 
+const runSet = async (set: readonly Input[]): Promise<DocumentRun[]> => {
+  const [first] = set;
+  if (first === undefined) return [];
+  const files = set.map((input) => ({ path: input.readAs, source: readFileSync(input.file, "utf8"), genre: input.genre, levels: measuredLevels(input.genre) }));
+  const results = await runSetAtLevels(files, first.language);
+  return set.flatMap((input, index) => {
+    const result = results[index];
+    return result === undefined ? [] : [documentRunOf(input, result)];
+  });
+};
+
 const runAll = async (inputs: readonly Input[]): Promise<DocumentRun[]> =>
-  inputs.reduce<Promise<DocumentRun[]>>(async (previous, input) => [...(await previous), await runOf(input)], Promise.resolve([]));
+  documentSets(inputs).reduce<Promise<DocumentRun[]>>(async (previous, set) => [...(await previous), ...(await runSet(set))], Promise.resolve([]));
 
 const manifest: unknown = JSON.parse(readFileSync(join(CORPUS, "manifest.json"), "utf8"));
 
@@ -76,18 +91,29 @@ const corpusInputs = (): Input[] => {
   const languages = corpusLanguages(manifest);
   const laws = readdirSync(LAWS)
     .filter((file) => file.endsWith(".txt"))
-    .map((file) => ({ file: join(LAWS, file), readAs: file, language: languages.get(file) ?? "ja", genre: STATUTE_GENRE }));
-  const docs = docEntries(manifest).map((entry) => ({ file: docPath(CORPUS, entry), readAs: parsedAs(entry), language: entry.language, genre: entry.genre }));
+    .map((file) => {
+      const language = languages.get(file) ?? "ja";
+      return { file: join(LAWS, file), readAs: file, language, genre: STATUTE_GENRE, set: setOf(language, undefined, "laws") };
+    });
+  const docs = docEntries(manifest).map((entry) => ({
+    file: docPath(CORPUS, entry),
+    readAs: parsedAs(entry),
+    language: entry.language,
+    genre: entry.genre,
+    set: setOf(entry.language, entry.url, "docs"),
+  }));
   return [...laws, ...docs].filter((input) => existsSync(input.file));
 };
 
+/** The baseline folder is one set per language, as a team's folder is one run. */
 const baselineInputs = (dir: string, genre: string): Input[] =>
   readdirSync(dir)
     .filter((file) => file.endsWith(".md"))
     .toSorted((left, right) => left.localeCompare(right, "en"))
     .map((file) => {
       const path = join(dir, file);
-      return { file: path, readAs: file, language: japaneseRatio(readFileSync(path, "utf8")) >= JAPANESE_MIN_RATIO ? "ja" : "en", genre };
+      const language = japaneseRatio(readFileSync(path, "utf8")) >= JAPANESE_MIN_RATIO ? "ja" : "en";
+      return { file: path, readAs: file, language, genre, set: setOf(language, undefined, "baseline") };
     });
 
 const benchOf = (rule: string): RuleMeasure["bench"] => {

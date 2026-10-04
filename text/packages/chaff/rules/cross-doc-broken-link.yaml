@@ -1,6 +1,6 @@
 id: cross-doc-broken-link
 layer: L1
-status: experimental
+status: stable
 how_to_find: cross-doc-broken-link
 # documents: compares the files of one run, so it runs only when chaff is given two or more files, or a folder.
 requires: [markdown, documents]

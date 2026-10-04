@@ -1,6 +1,6 @@
 id: cross-doc-fact-conflict
 layer: L3
-status: experimental
+status: stable
 how_to_find: cross-doc-fact-conflict
 # documents: compares the files of one run, so it runs only when chaff is given two or more files, or a folder.
 requires: [quantities, documents]
