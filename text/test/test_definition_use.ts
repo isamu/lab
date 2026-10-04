@@ -42,8 +42,8 @@ describe("unused-definition: 定義したのに使っていない語", () => {
 
   it("bare parentheses that the document never uses quote examples, not definitions (#621)", () => {
     const examples = [
-      "| Verbs | Plain verbs for what happens, not metaphors (\"silently fails\") |",
-      "| Headings | A heading with no number (\"Installation\") |",
+      '| Verbs | Plain verbs for what happens, not metaphors ("silently fails") |',
+      '| Headings | A heading with no number ("Installation") |',
       'The passive sentences name who did it ("We rolled it out"), because the post says "we".',
     ].join("\n");
     assert.deepEqual(unused(`${examples}\n`), []);
@@ -82,7 +82,9 @@ describe("use-before-definition: 定義より前で使っている語", () => {
   it("a quotation of the term alone is a mention, not a use (#621)", () => {
     assert.deepEqual(early('Its sentences open with "The key point is", and lists follow.\n\n| Announcements ("The key point is") | Delete them |\n'), []);
     assert.deepEqual(early('The Seller ships. Harbour Ltd (the "Seller") agrees.\n'), ['"Seller" is used here, before it is defined on line 1']);
-    assert.deepEqual(early('He said "the Seller ships today". Harbour Ltd (the "Seller") agrees.\n'), ['"Seller" is used here, before it is defined on line 1']);
+    assert.deepEqual(early('He said "the Seller ships today". Harbour Ltd (the "Seller") agrees.\n'), [
+      '"Seller" is used here, before it is defined on line 1',
+    ]);
     assert.deepEqual(early('The "Seller" ships. Harbour Ltd (the "Seller") agrees.\n'), ['"Seller" is used here, before it is defined on line 1']);
     assert.deepEqual(early("「買主」は、毎月末日に代金を支払う。株式会社やまと（以下「買主」という。）と契約する。\n", ja), [
       "「買主」を、1 行目の定義より前で使っています",
