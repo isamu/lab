@@ -26,6 +26,13 @@ describe("cliche: a worn phrase", () => {
     assert.deepEqual(findingsOf("Each base station reports its load."), []);
   });
 
+  it("reports more worn phrases, and not the same words used literally", () => {
+    assert.deepEqual(findingsOf("Upgrading the cache is a no-brainer."), ['"no-brainer" is a cliché']);
+    assert.deepEqual(findingsOf("We should not reinvent the wheel here."), ['"reinvent the wheel" is a cliché']);
+    assert.deepEqual(findingsOf("The new normal is remote review."), ['"the new normal" is a cliché']);
+    assert.deepEqual(findingsOf("The front wheel was replaced. Normal reviews resume on Monday."), []);
+  });
+
   it("every lexicon phrase is found in a sentence", () => {
     const lexicon = en.lexicons[RULE] ?? [];
     assert.ok(lexicon.length > 0);
