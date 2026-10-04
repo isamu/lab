@@ -1,0 +1,74 @@
+id: unit-spacing-consistency
+layer: L2
+status: stable
+how_to_find: unit-spacing-consistency
+severity: info
+
+name:
+  ja: 数と単位の間の空白が混ざっている
+  en: Units spaced two ways
+
+why:
+  ja: 一つの文書で「5 GB」と「5GB」のように、数と単位記号の間を空ける所と詰める所が混ざると、読み手は違いに意味があるのかと迷い、別々の所から貼り合わせた文書に見えます。検索でも片方を取りこぼします。どちらが正しいかは決めず、文書の中で少ないほうを指します。
+  en: 'A document writing "5 GB" in one place and "5GB" in another makes the reader wonder whether the difference means something, looks pasted together, and splits a search. chaff does not pick a side; it points at the way the document uses less.'
+
+message:
+  ja: 「{written}」と書いています（この文書はふつう「{usual}」のように書きます。{of} 箇所のうち {count} 箇所が違う）
+  en: '"{written}" here, where the document usually writes units like "{usual}" ({count} of {of})'
+
+how_to_fix:
+  ja: 文書の多いほうの書き方に合わせてください。
+  en: Match the way the rest of the document writes units.
+
+# 少ないほうが、数と単位の組の何パーセントまでなら「混ざっている」と見るか。これを超えたら、文書が使い分けている。
+levels: { strict: 49, normal: 34, relaxed: 20 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「5 GB」と「5GB」のように、一つの文書で数と単位記号の間を空けたり詰めたりしている所
+  en: A number and a unit symbol spaced in some places and not in others, such as "5 GB" and "5GB"
+example:
+  ja:
+    before: |
+      容量は 5 GB、転送量は 10 GB、上限は 20GB です。
+    after: |
+      容量は 5 GB、転送量は 10 GB、上限は 20 GB です。
+  en:
+    before: |
+      Storage is 5 GB, transfer is 10 GB and the cap is 20GB.
+    after: |
+      Storage is 5 GB, transfer is 10 GB and the cap is 20 GB.
+
+not_flagged:
+  ja: 単位記号の一覧にあるものだけを見ます。一字の記号（m、s、g）、パーセント、温度（°C）は、空けない書き方が別に定着しているので数えません。語で書いた単位（5 時間、5 hours）、コードの中、版や番地の中の数も見ません。少ないほうが 3 分の 1 を超える文書や、二通りが同じ数の文書は、使い分けていると読んで指しません。
+  en: Only the unit symbols on chaff's list are read. One-letter symbols (m, s, g), the percent sign and temperatures (°C) are left out, since many styles write them unspaced on purpose. Units written as words (5 hours), code, and numbers inside versions or addresses are not read. When the less common way is over a third, or the two are equally common, the document is read as using both on purpose.
+level_meaning:
+  ja: 少ないほうが {limit}% までなら指摘
+  en: reported while the less common way is at most {limit}% of the units
+sources: [vale-styles]
+rewrite:
+  depth: light
+  ja:
+    direction: 指した所だけ、数と単位の間を文書の多いほうに合わせてください。ほかは変えません。
+    pairs:
+      - before: 上限は 20GB です。
+        after: 上限は 20 GB です。
+      - before: 間隔は 500 ms です。
+        after: 間隔は 500ms です。
+    keep:
+      - 数と単位そのもの
+    avoid:
+      - 単位を別の単位に換える
+  en:
+    direction: Add or remove the space between the number and the unit at the marked place only, to match the rest of the document.
+    pairs:
+      - before: The cap is 20GB.
+        after: The cap is 20 GB.
+      - before: The interval is 500 ms.
+        after: The interval is 500ms.
+    keep:
+      - the number and the unit
+    avoid:
+      - converting the unit

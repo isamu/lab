@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  unit-spacing-mixed-ja  found
+ja/design  unit-spacing-mixed-ja  found
+ja/email  unit-spacing-mixed-ja  found
+ja/figures  unit-spacing-mixed-ja  found
+ja/itinerary  unit-spacing-mixed-ja  found
+ja/minutes  unit-spacing-mixed-ja  found
+ja/note  unit-spacing-mixed-ja  found
+ja/policy  unit-spacing-mixed-ja  found
+ja/press  unit-spacing-mixed-ja  found
+ja/proposal  unit-spacing-mixed-ja  found
+ja/quote  unit-spacing-mixed-ja  found
+ja/readme  unit-spacing-mixed-ja  found
+ja/requirements  unit-spacing-mixed-ja  found
+en/blog  unit-spacing-mixed-en  found
+en/design  unit-spacing-mixed-en  found
+en/email  unit-spacing-mixed-en  found
+en/figures  unit-spacing-mixed-en  found
+en/itinerary  unit-spacing-mixed-en  found
+en/minutes  unit-spacing-mixed-en  found
+en/note  unit-spacing-mixed-en  found
+en/policy  unit-spacing-mixed-en  found
+en/press  unit-spacing-mixed-en  found
+en/proposal  unit-spacing-mixed-en  found
+en/quote  unit-spacing-mixed-en  found
+en/readme  unit-spacing-mixed-en  found
+en/requirements  unit-spacing-mixed-en  found

@@ -1,0 +1,32 @@
+# Unit symbols written after a number (5 GB, 5GB). unit-spacing-consistency points at the way a document uses less: with
+# a space between the number and the symbol, or without. Only symbols: a unit written as a word (5 hours) always takes a
+# space. One-letter symbols (m, s, g) are left out, since "5s" and "1990s" are also plurals and decades. The percent sign
+# is left out too: many styles that space units write 10% unspaced. Matched as written, case and all.
+id: unit-symbol
+language: en
+entries:
+  - pattern: KB
+  - pattern: kB
+  - pattern: MB
+  - pattern: GB
+  - pattern: TB
+  - pattern: PB
+  - pattern: Kbps
+  - pattern: Mbps
+  - pattern: Gbps
+  - pattern: km
+  - pattern: cm
+  - pattern: mm
+  - pattern: kg
+  - pattern: mg
+  - pattern: ms
+  - pattern: Hz
+  - pattern: kHz
+  - pattern: MHz
+  - pattern: GHz
+  - pattern: kW
+  - pattern: kWh
+  - pattern: mL
+  - pattern: px
+  - pattern: dpi
+  - pattern: fps
