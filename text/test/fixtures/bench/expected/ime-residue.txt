@@ -1,0 +1,14 @@
+table  13  13  0  0
+ja/blog  ime-residue-ja  found
+ja/design  ime-residue-ja  found
+ja/email  ime-residue-ja  found
+ja/figures  ime-residue-ja  found
+ja/itinerary  ime-residue-ja  found
+ja/minutes  ime-residue-ja  found
+ja/note  ime-residue-ja  found
+ja/policy  ime-residue-ja  found
+ja/press  ime-residue-ja  found
+ja/proposal  ime-residue-ja  found
+ja/quote  ime-residue-ja  found
+ja/readme  ime-residue-ja  found
+ja/requirements  ime-residue-ja  found

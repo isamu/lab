@@ -1,0 +1,18 @@
+# 名詞の後ろに付く助詞（格助詞・係助詞・副助詞の一部）。ime-residue が、漢字と助詞の間の一字の英字（変数xが、関数fを）や、
+# 助詞に挟まれた一字（をxで）を、変数の名として読むのに使う。字面どおりに、長いものから照らす。
+id: case-particle
+language: ja
+entries:
+  - pattern: から
+  - pattern: まで
+  - pattern: より
+  - pattern: が
+  - pattern: を
+  - pattern: は
+  - pattern: に
+  - pattern: の
+  - pattern: と
+  - pattern: で
+  - pattern: も
+  - pattern: へ
+  - pattern: や
