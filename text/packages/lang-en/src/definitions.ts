@@ -32,7 +32,7 @@ const POINTER = /^ has the meaning given (?:in|by)\b/u;
 const isPointer = (text: string, end: number): boolean => POINTER.test(text.slice(end - " has the meaning".length));
 
 /** ("Seller") has no word that says it defines: the same parentheses quote an example ("silently fails"). */
-const UNMARKED = /^\(["“]/u;
+const BARE = /^\(["“]/u;
 
 export const definitions = (text: string): Mention[] =>
   DEFINITIONS.flatMap((pattern) =>
@@ -43,7 +43,7 @@ export const definitions = (text: string): Mention[] =>
       const inline = match[0].startsWith("(");
       const namesAParty = inline && APPLIES.test(text);
       const scope = isPointer(text, end) || namesAParty ? { scope: "local" } : {};
-      const unmarked = UNMARKED.test(match[0]) ? { marker: "none" } : {};
-      return [{ start: match.index, end, attrs: { term, ...scope, ...(inline ? { placement: "inline" } : {}), ...unmarked } }];
+      const bare = BARE.test(match[0]) ? { form: "bare" } : {};
+      return [{ start: match.index, end, attrs: { term, ...scope, ...(inline ? { placement: "inline" } : {}), ...bare } }];
     }),
   );
