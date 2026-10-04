@@ -147,14 +147,16 @@ const isDistinctive = (term: string): boolean => CAPITAL_OR_NON_LATIN.test(term)
  * 文の途中で括弧に入れて定義した語（(the "Seller")、以下「甲」という）を、その定義の文より前で使っている所。最初の一つだけ。
  * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も数えない。
  * 定義の条（"Seller" means、「甲」とは）は条の並びの頭にも終わりにも置く書き方があるので、前で使っても言わない。
- * 引用符で例として挙げただけの現れ（Its sentences open with "The key point is"）は使用ではない。
+ * 定義の語の無い括弧の引用（("The key point is")）は例の引用と同じ形なので、その語を引用符で挙げただけの現れ
+ * （Its sentences open with "The key point is"）は使用ではない。定義の語のある定義（(the "Seller")、以下「買主」という）は、
+ * 引用符に入れた現れ（The "Seller" ships）も使用。
  */
 export const usesBeforeDefinition = (terms: readonly DefinedTerm[], texts: readonly BodyText[], mentioned: Mentioned = NEVER_MENTIONED): TermUse[] =>
   groupsOf(terms)
     .filter((group) => group.first.inline && isDistinctive(group.first.term))
     .flatMap(({ first: defined, spans }) => {
       const defining = sentenceAt(texts, defined.span.start)?.start ?? defined.span.start;
-      const uses = usesOf(defined.term, texts, spans, "exact", mentioned);
+      const uses = usesOf(defined.term, texts, spans, "exact", defined.unmarked === true ? mentioned : NEVER_MENTIONED);
       const first = uses.find((offset) => !isLabel(sentenceAt(texts, offset), defined.term));
       return first !== undefined && first < defining ? [{ term: defined, offset: first }] : [];
     });
