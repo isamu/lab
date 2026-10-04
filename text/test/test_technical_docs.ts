@@ -133,6 +133,18 @@ describe("heading-command-missing: a heading's command in its section's code", (
     assert.ok(showsCommand("npm   install lodash", "npm install"));
   });
 
+  it("finds a command whose program the code runs under its package name (#621)", () => {
+    assert.ok(showsCommand("$ npx chaffjs grade prompt-b.jsonl", "chaff grade"));
+    assert.ok(showsCommand("python3 -m venv .venv", "python -m venv"));
+    assert.ok(!showsCommand("npx chaffjs grade", "chaff fix"));
+    assert.ok(!showsCommand("npx xchaff grade", "chaff grade"));
+    assert.ok(!showsCommand("npx foo.chaffjs grade", "chaff grade"));
+    assert.ok(!showsCommand("npx chaffjs grader", "chaff grade"));
+    assert.ok(!showsCommand("chaffjs", "--grade"));
+    const source = doc("## A first run with `chaff grade`", "", "Grade the file.", "", fence("", "$ npx chaffjs grade prompt-b.jsonl --out b.results.jsonl"));
+    assert.deepEqual(findingsOf(en, "heading-command-missing", source), []);
+  });
+
   it("reports a heading whose option the section's code spells differently", () => {
     const source = doc("## `--dry-run`", "", "Show the changes.", "", fence("bash", "npx chaffjs fix --dryrun"));
     assert.deepEqual(
