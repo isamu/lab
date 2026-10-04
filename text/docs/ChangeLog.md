@@ -2,6 +2,28 @@
 
 Newest first.
 
+## 0.24.0 — 2026-10-05
+
+Fewer false alarms and more rules. Examples quoted in prose (a date, a definition, a chat mark, a word under
+discussion) are no longer read as mistakes, and the cross-document rules are now measured and run by default whenever
+chaff checks two or more files. New rules catch characters that only look ordinary, letters left inside Japanese words
+by the input method, numbers and units spaced two ways, and comparisons with nothing to compare against.
+
+### Rules
+
+- numbered-generic-heading (#643), comparative-without-baseline (#644), unit-spacing-consistency (#646),
+  lookalike-character (#647), ime-residue (#648), calendar-name-case (#649).
+- The cross-doc rules are measured on each publisher's documents as one set and run by default (#641).
+
+### Fixes
+
+- agreement-slip reads a noun-only -ing form as the subject (#634); heading-command-missing finds a command run under
+  its package name (#635); unknown-word knows "eval" (#636).
+- Definition rules read a quoted example as a mention (#637, #642); chat-citation-residue and ai-tell skip marks that
+  prose only names (#638, #642); undefined-acronym skips a reference list's venues (#639); date rules skip a date quoted
+  alone as an example (#640).
+- yori-as-from reads a compound action noun as the head (#645).
+
 ## 0.23.0 — 2026-10-04
 
 When a document's genre is set, chaff now prints the genre's guide before the findings: what a good document of that
