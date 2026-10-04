@@ -28,3 +28,29 @@ entries:
   - pattern: research has shown
   - pattern: critics say
   - pattern: according to some
+  - pattern: experts claim
+  - pattern: experts suggest
+  - pattern: scientists say
+  - pattern: scientists believe
+  - pattern: research suggests
+  - pattern: studies suggest
+  - pattern: studies have found
+  - pattern: research indicates
+  - pattern: it is believed that
+  - pattern: it is thought that
+  - pattern: it is reported that
+  - pattern: many believe
+  - pattern: some argue
+  - pattern: some say
+  - pattern: some would say
+  - pattern: critics argue
+  - pattern: observers say
+  - pattern: sources say
+  - pattern: many would argue
+  - pattern: it has been suggested
+  - pattern: it is often argued
+  - pattern: it is commonly known
+  - pattern: it is well known that
+  - pattern: everyone knows
+  - pattern: according to experts
+  - pattern: according to many

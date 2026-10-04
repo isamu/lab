@@ -38,6 +38,17 @@ describe("vague-word-density: あいまいな語が文書の長さに対して�
     assert.deepEqual(findingsOf(`${PLAIN_EN.repeat(30)}We update the slides as needed.\n`, en), []);
   });
 
+  it("足した語も数え、言い切った書き方は数えない", () => {
+    const vague = `${PLAIN_JA.repeat(15)}障害には臨機応変に対応し、概ね報告します。手順はしっかりと守り、近日中にまとめます。\n`;
+    assert.ok(findingsOf(vague).length >= 4, findingsOf(vague).join("\n"));
+    const plain = `${PLAIN_JA.repeat(15)}障害は発生から一時間以内に報告します。手順書の三章を守り、十月五日までにまとめます。\n`;
+    assert.deepEqual(findingsOf(plain), []);
+    const vagueEn = `${PLAIN_EN.repeat(13)}Report incidents as soon as practicable and escalate where necessary. Publish notes in due course and ship shortly.\n`;
+    assert.ok(findingsOf(vagueEn, en).length >= 4, findingsOf(vagueEn, en).join("\n"));
+    const plainEn = `${PLAIN_EN.repeat(13)}Report incidents within one hour and escalate to the on-call lead. Publish notes by Friday and ship on Monday.\n`;
+    assert.deepEqual(findingsOf(plainEn, en), []);
+  });
+
   it("あいまいな語が無ければ何も言わない", () => {
     assert.deepEqual(findingsOf(`${PLAIN_JA.repeat(10)}\n`), []);
   });
