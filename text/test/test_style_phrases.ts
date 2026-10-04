@@ -30,6 +30,16 @@ describe("wordy-phrase", () => {
     assert.deepEqual(findingsOf(RULE, "The border order told us to wait. To save time, we met online.\n", en, "strict"), []);
     assert.deepEqual(findingsOf(RULE, "If the server fails, the job retries. Because it was late, we left.\n", en, "strict"), []);
   });
+
+  it("more wordy phrases are reported, and their short forms are not", () => {
+    const wordy = "With the exception of Friday, we met online. The office is in the vicinity of the station. In an effort to save time, we stayed.\n";
+    assert.deepEqual(findingsOf(RULE, wordy), [
+      '"with the exception of" can be said in fewer words',
+      '"in the vicinity of" can be said in fewer words',
+      '"in an effort to" can be said in fewer words',
+    ]);
+    assert.deepEqual(findingsOf(RULE, "Except on Friday, we met online. The office is near the station. To save time, we stayed.\n", en, "strict"), []);
+  });
 });
 
 describe("weasel-word", () => {
