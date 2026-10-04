@@ -159,16 +159,30 @@ const NOMINAL_POS: ReadonlySet<string> = new Set(["NOUN", "PROPN"]);
 const headAfter = (tokens: readonly Token[], at: number): number =>
   tokens.findIndex((token, index) => index > at && !isSpace(token) && !SKIPPED_POS.has(token.pos) && token.features?.["Bound"] !== "Yes");
 
+/** The last noun of the compound that starts at head (新規受付, 受付開始): the compound is named by its last word. */
+const compoundEnd = (tokens: readonly Token[], head: number): number => {
+  const after = tokens.findIndex((token, index) => index > head && !isSpace(token) && !NOMINAL_POS.has(token.pos));
+  const end = after === -1 ? tokens.length : after;
+  return tokens.slice(head, end).reduce((last, token, offset) => (NOMINAL_POS.has(token.pos) ? head + offset : last), head);
+};
+
+const SENTENCE_STOP = "。";
+
 /**
- * The head names a start or a sending (開始, 参る, 連絡). A noun head must be the action itself: followed by an object
- * marker or a light verb (受付を開始, 開始します), not a noun being compared (昨年より販売が増えた).
+ * The head names a start or a sending (開始, 参る, 連絡). A noun head must be the action itself: a compound whose last
+ * noun is listed (新規受付を開始, 受付開始します), followed by a light verb, the end of the sentence, or an object marker
+ * whose verb is listed too; not a noun being compared (昨年より販売が増えた, 昨年より新規受付を増やした) or a compound
+ * named by another noun (昨年より受付件数を増やした).
  */
 const isOriginHead = (tokens: readonly Token[], head: number, heads: ReadonlySet<string>, objectMarkers: ReadonlySet<string>): boolean => {
   const token = tokens[head];
-  if (token === undefined || !isListed(heads, token)) return false;
-  if (!NOMINAL_POS.has(token.pos)) return true;
-  const next = nextWord(tokens, head);
-  return next !== undefined && (objectMarkers.has(next.surface) || next.features?.["VerbType"] === "Light");
+  if (token === undefined) return false;
+  if (!NOMINAL_POS.has(token.pos)) return isListed(heads, token);
+  const last = compoundEnd(tokens, head);
+  if (!isListed(heads, tokens[last])) return false;
+  const next = nextWord(tokens, last);
+  if (next === undefined || next.surface === SENTENCE_STOP || next.features?.["VerbType"] === "Light") return true;
+  return objectMarkers.has(next.surface) && isListed(heads, nextWord(tokens, tokens.indexOf(next)));
 };
 
 type ParticleWords = { readonly particles: ReadonlySet<string>; readonly heads: ReadonlySet<string>; readonly objectMarkers: ReadonlySet<string> };
