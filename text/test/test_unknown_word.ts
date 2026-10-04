@@ -25,6 +25,10 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     assert.deepEqual(unknown("We refactored the backend, reuploaded the datasets and stopped the unshipped orders whilst testing."), []);
   });
 
+  it("words of everyday AI evaluation are known (#621)", () => {
+    assert.deepEqual(unknown("Read the guide on running evals over a model's outputs."), []);
+  });
+
   it("names, code, URLs, words used twice, and words with no near dictionary word are not reported", () => {
     assert.deepEqual(unknown("Ask Attched Ltd. about it."), []);
     assert.deepEqual(unknown("Run `attched` now, or open https://example.com/attched today."), []);

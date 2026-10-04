@@ -130,6 +130,14 @@ describe("L2 の語彙表と密度", () => {
       assert.ok(!idsFor("# 記事\n\n現代社会において、この仕組みは動いています。", ja, "blog/tech").includes("ai-tell"));
     });
 
+    it("valid: 引用符の中だけの語は、例に挙げた語で数えない（#621）", () => {
+      const quoted =
+        '# Words\n\nAcross the abstracts, words such as "delves", "underscores", "showcasing" and "pivotal" jumped, as did "commendable", "meticulous" and "intricate".\n';
+      assert.ok(!idsFor(quoted, en, "blog/tech").includes("ai-tell"));
+      const written = "# Words\n\nThis report delves into a pivotal shift, underscores its intricate causes and showcases meticulous work.\n";
+      assert.ok(idsFor(written, en, "blog/tech").includes("ai-tell"));
+    });
+
     it("重みを足し合わせる。件数ではない", () => {
       const source = "# 記事\n\n現代社会において、この技術は重要な役割を果たしています。急速に変化する中で大きな可能性を秘めていると言えるでしょう。";
       const found = runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, true, "blog/tech").findings.find((finding) => finding.rule === "ai-tell");
