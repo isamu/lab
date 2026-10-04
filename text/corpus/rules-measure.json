@@ -7482,7 +7482,7 @@
         },
         "blog": {
           "documents": 9,
-          "fired": 0
+          "fired": 1
         },
         "business": {
           "documents": 39,
@@ -7498,7 +7498,7 @@
         },
         "literature": {
           "documents": 9,
-          "fired": 1
+          "fired": 2
         },
         "speech": {
           "documents": 3,
