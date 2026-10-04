@@ -44,17 +44,18 @@ export const quotedIn = (sentence: Sentence, marks: Marks = KAGI_MARKS): Span[] 
 const ONLY_MARKS = /^[\s\p{P}]*$/u;
 
 /**
- * span だけを引いた引用符（"delves"、"Monday, December 5, 2026"、"?utm_source=chatgpt.com"）の中か。
+ * span だけを引いた引用符（"delves"、"?utm_source=chatgpt.com"、"October 26, 2026 – October 19, 2026"）の中か。
  * 引用符が語だけを囲めば、その語は使ったのではなく例として挙げたもの。周りの記号と空白は語の一部に数えない。
+ * aside は、span の前後に引用符の中で残ってよいもの（日付なら曜日の一語）。前と後ろを空白でつないで照らす。
  * 話した言葉の引用（"We ship on Monday, October 26," she said.）は語のほかの字を持つので当たらない。引用は一行の中だけを見る。
  */
-export const isQuotedAlone = (text: string, span: Span): boolean => {
+export const isQuotedAlone = (text: string, span: Span, aside: RegExp = ONLY_MARKS): boolean => {
   const lineStart = text.lastIndexOf("\n", span.start - 1) + 1;
   const newline = text.indexOf("\n", span.end);
   const line = text.slice(lineStart, newline === -1 ? text.length : newline);
   const [start, end] = [span.start - lineStart, span.end - lineStart];
   return quotedSpans(line, QUOTATION_MARKS).some(
-    (quoted) => quoted.start <= start && end <= quoted.end && ONLY_MARKS.test(line.slice(quoted.start, start)) && ONLY_MARKS.test(line.slice(end, quoted.end)),
+    (quoted) => quoted.start <= start && end <= quoted.end && aside.test(`${line.slice(quoted.start, start)} ${line.slice(end, quoted.end)}`),
   );
 };
 

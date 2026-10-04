@@ -6,6 +6,7 @@ import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
+import { isQuotedAlone } from "../quoted-span.ts";
 
 const QUOTE_LENGTH = 80;
 
@@ -42,22 +43,43 @@ const dayName = (doc: ProseDocument, day: unknown): string => {
   return doc.lexicons["weekday"]?.[index]?.pattern ?? String(index);
 };
 
-export const dateWeekdayMismatch: Detector = (doc): Finding[] =>
-  doc.structure === undefined
-    ? []
-    : weekdayMismatches(doc.structure).map((issue) => ({
-        rule: "date-weekday-mismatch",
-        severity: "error",
-        line: 0,
-        column: 0,
-        quote: quoteAt(doc.source, issue.offset),
-        values: {
-          date: String(issue.values["date"]),
-          written: dayName(doc, issue.values["written"]),
-          actual: dayName(doc, issue.values["actual"]),
-          offset: issue.offset,
-        },
-      }));
+const datedSpans = (tree: NonNullable<ProseDocument["structure"]>): DatedSpan[] =>
+  inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [{ offset: node.span.start, end: node.span.end, value: String(node.attrs["value"]) }] : []));
+
+/** 引用符の中で日付の横に残ってよいのは、曜日の一語と記号だけ（"Monday, December 5, 2026"、「2026年12月5日（月）」）。 */
+const WEEKDAY_ASIDE = /^[\s\p{P}]*\p{L}*[\s\p{P}]*$/u;
+
+/**
+ * 引用符で日付だけを挙げたもの（"Monday, December 5, 2026" falls on a Saturday）は、誤りの例で、文書の日付ではない。
+ * from から until の日付の終わりまでを見る。
+ */
+const quotedDates = (doc: ProseDocument, from: DatedSpan | undefined, until: DatedSpan | undefined, aside?: RegExp): boolean =>
+  from !== undefined && until !== undefined && isQuotedAlone(doc.source, { start: from.offset, end: until.end }, aside);
+
+const dateAt = (dates: readonly DatedSpan[], offset: number): number => dates.findIndex((date) => date.offset === offset);
+
+export const dateWeekdayMismatch: Detector = (doc): Finding[] => {
+  if (doc.structure === undefined) return [];
+  const dates = datedSpans(doc.structure);
+  return weekdayMismatches(doc.structure)
+    .filter((issue) => {
+      const date = dates[dateAt(dates, issue.offset)];
+      return !quotedDates(doc, date, date, WEEKDAY_ASIDE);
+    })
+    .map((issue) => ({
+      rule: "date-weekday-mismatch",
+      severity: "error",
+      line: 0,
+      column: 0,
+      quote: quoteAt(doc.source, issue.offset),
+      values: {
+        date: String(issue.values["date"]),
+        written: dayName(doc, issue.values["written"]),
+        actual: dayName(doc, issue.values["actual"]),
+        offset: issue.offset,
+      },
+    }));
+};
 
 /** 木の日付を、原文の位置と一緒に並べる。 */
 const datedPoints = (tree: NonNullable<ProseDocument["structure"]>): { offset: number; value: string }[] =>
@@ -99,9 +121,6 @@ export const totalMismatch: Detector = (doc): Finding[] =>
         values: { ...issue.values, offset: issue.offset },
       }));
 
-const datedSpans = (tree: NonNullable<ProseDocument["structure"]>): DatedSpan[] =>
-  inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [{ offset: node.span.start, end: node.span.end, value: String(node.attrs["value"]) }] : []));
-
 const rangeWordsOf = (doc: ProseDocument): RangeWords => ({
   connectors: (doc.lexicons["range-connector"] ?? []).map((entry) => entry.pattern),
   openers: (doc.lexicons["range-opener"] ?? []).map((entry) => entry.pattern),
@@ -111,17 +130,23 @@ const rangeWordsOf = (doc: ProseDocument): RangeWords => ({
 });
 
 /** 期間の終わりが始まりより前。範囲の記号と語は言語パッケージの語彙表（range-connector、range-opener、range-closer）から取る。 */
-export const dateRangeReversed: Detector = (doc): Finding[] =>
-  doc.structure === undefined
-    ? []
-    : reversedRanges(doc.source, datedSpans(doc.structure), rangeWordsOf(doc)).map((issue) => ({
-        rule: "date-range-reversed",
-        severity: "warning",
-        line: 0,
-        column: 0,
-        quote: quoteAt(doc.source, issue.offset),
-        values: { ...issue.values, offset: issue.offset },
-      }));
+export const dateRangeReversed: Detector = (doc): Finding[] => {
+  if (doc.structure === undefined) return [];
+  const dates = datedSpans(doc.structure);
+  return reversedRanges(doc.source, dates, rangeWordsOf(doc))
+    .filter((issue) => {
+      const start = dateAt(dates, issue.offset);
+      return !quotedDates(doc, dates[start], dates[start + 1]);
+    })
+    .map((issue) => ({
+      rule: "date-range-reversed",
+      severity: "warning",
+      line: 0,
+      column: 0,
+      quote: quoteAt(doc.source, issue.offset),
+      values: { ...issue.values, offset: issue.offset },
+    }));
+};
 
 const shareWordsOf = (doc: ProseDocument): ShareWords => ({
   labels: (doc.lexicons["share-label"] ?? []).map((entry) => entry.pattern),
