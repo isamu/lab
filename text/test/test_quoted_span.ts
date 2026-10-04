@@ -84,6 +84,15 @@ describe("isQuotedAlone", () => {
     assert.equal(at("first line\n「上記の図」を避ける", "上記の図"), true);
   });
 
+  it("wordsBesides lets that many words of letters stand beside the span (a date's weekday)", () => {
+    const text = '| "Monday, December 5, 2026" falls on a Saturday | "Due on December 5, 2026" |';
+    const first = { start: text.indexOf("December"), end: text.indexOf("2026") + 4 };
+    assert.equal(isQuotedAlone(text, first), false);
+    assert.equal(isQuotedAlone(text, first, 1), true);
+    const second = { start: text.lastIndexOf("December"), end: text.lastIndexOf("2026") + 4 };
+    assert.equal(isQuotedAlone(text, second, 1), false);
+  });
+
   it("is false for words used in prose, inside a longer quotation, across lines, or with no quotation", () => {
     assert.equal(at("the model delves into it", "delves"), false);
     assert.equal(at('"We ship on Monday, October 26," she said.', "Monday, October 26"), false);

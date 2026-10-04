@@ -104,6 +104,13 @@ describe("English: the weekday beside a date", () => {
     assert.deepEqual(found("# Trip\n\nWe leave on Friday, 1 October.", en, "en"), []);
   });
 
+  it("a date quoted alone with its weekday is an example of the mistake, not a date of the document (#621)", () => {
+    assert.deepEqual(found('# Mistakes\n\n| A weekday that is wrong | "Monday, December 5, 2026" falls on a Saturday |\n', en, "en"), []);
+    assert.deepEqual(found("# 誤り\n\n「2026年12月5日（月）」は土曜日です。\n", ja, "ja"), []);
+    assert.deepEqual(found('# Trip\n\n"We leave on Friday, 1 October 2026," she said.\n', en, "en"), ["2026-10-01:Friday:Thursday"]);
+    assert.deepEqual(found("# Trip\n\nWe leave on Friday, 1 October 2026.", en, "en"), ["2026-10-01:Friday:Thursday"]);
+  });
+
   it("the sample itinerary: only the second day is wrong", () => {
     const source = readFileSync(new URL("fixtures/dates/itinerary-en.md", import.meta.url), "utf8");
     assert.deepEqual(found(source, en, "en"), ["2026-10-02:Saturday:Friday"]);

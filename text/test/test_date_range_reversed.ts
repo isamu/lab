@@ -69,6 +69,12 @@ describe("date-range-reversed", () => {
     assert.deepEqual(found(doc("Open 2 April 2026 through 5 April 2026.")), []);
   });
 
+  it("a period quoted alone is an example of the mistake, not a period of the document (#621)", () => {
+    assert.deepEqual(found(doc('| A period that runs backwards | "October 26, 2026 – October 19, 2026" |')), []);
+    assert.deepEqual(found(doc("「2026年4月1日〜2026年3月31日」のような逆の期間"), ja), []);
+    assert.deepEqual(found(doc('"The trip runs March 5, 2026 – March 3, 2026," she wrote.')), ["2026-03-05>2026-03-03"]);
+  });
+
   it("to may move a date rather than span a period, so it is not a range", () => {
     assert.deepEqual(found(doc("The review moved from March 10, 2026 to March 3, 2026.")), []);
     assert.deepEqual(found(doc("The deadline was brought forward from 30 June 2026 to 15 June 2026.")), []);
