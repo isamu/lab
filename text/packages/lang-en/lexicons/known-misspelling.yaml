@@ -175,3 +175,241 @@ entries:
     instead_of: response
   - pattern: accesible
     instead_of: accessible
+  - pattern: acommodate
+    instead_of: accommodate
+  - pattern: accomodation
+    instead_of: accommodation
+  - pattern: adress
+    instead_of: address
+  - pattern: apparant
+    instead_of: apparent
+  - pattern: aquire
+    instead_of: acquire
+  - pattern: aquired
+    instead_of: acquired
+  - pattern: availible
+    instead_of: available
+  - pattern: avaliable
+    instead_of: available
+  - pattern: beleived
+    instead_of: believed
+  - pattern: cemetary
+    instead_of: cemetery
+  - pattern: changable
+    instead_of: changeable
+  - pattern: collegue
+    instead_of: colleague
+  - pattern: comittee
+    instead_of: committee
+  - pattern: commitee
+    instead_of: committee
+  - pattern: comparision
+    instead_of: comparison
+  - pattern: concensus
+    instead_of: consensus
+  - pattern: consistant
+    instead_of: consistent
+  - pattern: convienient
+    instead_of: convenient
+  - pattern: convienence
+    instead_of: convenience
+  - pattern: critisism
+    instead_of: criticism
+  - pattern: definitly
+    instead_of: definitely
+  - pattern: desparate
+    instead_of: desperate
+  - pattern: developement
+    instead_of: development
+  - pattern: dilemna
+    instead_of: dilemma
+  - pattern: diffrent
+    instead_of: different
+  - pattern: dissapear
+    instead_of: disappear
+  - pattern: dissappear
+    instead_of: disappear
+  - pattern: efficent
+    instead_of: efficient
+  - pattern: embarassed
+    instead_of: embarrassed
+  - pattern: enviromental
+    instead_of: environmental
+  - pattern: equiptment
+    instead_of: equipment
+  - pattern: excellant
+    instead_of: excellent
+  - pattern: excercise
+    instead_of: exercise
+  - pattern: explaination
+    instead_of: explanation
+  - pattern: familar
+    instead_of: familiar
+  - pattern: feasable
+    instead_of: feasible
+  - pattern: flourescent
+    instead_of: fluorescent
+  - pattern: foriegn
+    instead_of: foreign
+  - pattern: fullfill
+    instead_of: fulfill
+  - pattern: furthur
+    instead_of: further
+  - pattern: guarentee
+    instead_of: guarantee
+  - pattern: happend
+    instead_of: happened
+  - pattern: hierachy
+    instead_of: hierarchy
+  - pattern: imediately
+    instead_of: immediately
+  - pattern: immediatley
+    instead_of: immediately
+  - pattern: implmentation
+    instead_of: implementation
+  - pattern: incidently
+    instead_of: incidentally
+  - pattern: independantly
+    instead_of: independently
+  - pattern: indispensible
+    instead_of: indispensable
+  - pattern: intial
+    instead_of: initial
+  - pattern: intresting
+    instead_of: interesting
+  - pattern: irrelevent
+    instead_of: irrelevant
+  - pattern: langauge
+    instead_of: language
+  - pattern: liason
+    instead_of: liaison
+  - pattern: maintenence
+    instead_of: maintenance
+  - pattern: mischievious
+    instead_of: mischievous
+  - pattern: neccessarily
+    instead_of: necessarily
+  - pattern: neice
+    instead_of: niece
+  - pattern: occassionally
+    instead_of: occasionally
+  - pattern: ocurred
+    instead_of: occurred
+  - pattern: occurrance
+    instead_of: occurrence
+  - pattern: oppurtunity
+    instead_of: opportunity
+  - pattern: oppertunity
+    instead_of: opportunity
+  - pattern: paralell
+    instead_of: parallel
+  - pattern: parrallel
+    instead_of: parallel
+  - pattern: parliment
+    instead_of: parliament
+  - pattern: particulary
+    instead_of: particularly
+  - pattern: peice
+    instead_of: piece
+  - pattern: percieve
+    instead_of: perceive
+  - pattern: permision
+    instead_of: permission
+  - pattern: persue
+    instead_of: pursue
+  - pattern: posess
+    instead_of: possess
+  - pattern: possesion
+    instead_of: possession
+  - pattern: possibilty
+    instead_of: possibility
+  - pattern: preceeding
+    instead_of: preceding
+  - pattern: priviledge
+    instead_of: privilege
+  - pattern: probaly
+    instead_of: probably
+  - pattern: proccess
+    instead_of: process
+  - pattern: pronounciation
+    instead_of: pronunciation
+  - pattern: questionaire
+    instead_of: questionnaire
+  - pattern: realy
+    instead_of: really
+  - pattern: recieves
+    instead_of: receives
+  - pattern: recieving
+    instead_of: receiving
+  - pattern: reccomend
+    instead_of: recommend
+  - pattern: reccommend
+    instead_of: recommend
+  - pattern: refrence
+    instead_of: reference
+  - pattern: religous
+    instead_of: religious
+  - pattern: remeber
+    instead_of: remember
+  - pattern: resistence
+    instead_of: resistance
+  - pattern: rythm
+    instead_of: rhythm
+  - pattern: seige
+    instead_of: siege
+  - pattern: seperation
+    instead_of: separation
+  - pattern: shedule
+    instead_of: schedule
+  - pattern: sieze
+    instead_of: seize
+  - pattern: similiar
+    instead_of: similar
+  - pattern: sincerly
+    instead_of: sincerely
+  - pattern: sofware
+    instead_of: software
+  - pattern: speach
+    instead_of: speech
+  - pattern: specificaly
+    instead_of: specifically
+  - pattern: strenght
+    instead_of: strength
+  - pattern: succesfully
+    instead_of: successfully
+  - pattern: sucessfully
+    instead_of: successfully
+  - pattern: successfull
+    instead_of: successful
+  - pattern: sufficent
+    instead_of: sufficient
+  - pattern: suprise
+    instead_of: surprise
+  - pattern: supress
+    instead_of: suppress
+  - pattern: temperture
+    instead_of: temperature
+  - pattern: tendancy
+    instead_of: tendency
+  - pattern: tounge
+    instead_of: tongue
+  - pattern: unecessary
+    instead_of: unnecessary
+  - pattern: unneccessary
+    instead_of: unnecessary
+  - pattern: unforseen
+    instead_of: unforeseen
+  - pattern: unfortunatly
+    instead_of: unfortunately
+  - pattern: usally
+    instead_of: usually
+  - pattern: vaccuum
+    instead_of: vacuum
+  - pattern: vehical
+    instead_of: vehicle
+  - pattern: visable
+    instead_of: visible
+  - pattern: wich
+    instead_of: which
+  - pattern: withold
+    instead_of: withhold
