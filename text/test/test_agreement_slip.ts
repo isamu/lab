@@ -257,6 +257,19 @@ describe("agreement-slip — 英語", () => {
     valid.forEach((text) => assert.deepEqual(findingsOf(text), [], text));
   });
 
+  it("valid: 名詞にもなる -ing 形の後ろの動詞は、主語と動詞（#621）", () => {
+    const valid = [
+      "A heading counts as stated when the other document has the same heading.",
+      "A finding points at the line and column in the file.",
+      "Dropping them would let you believe a setting works when it does not.",
+    ];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text), [], text));
+  });
+
+  it("invalid: 名詞にならない -ing 形は修飾語のまま（#621）", () => {
+    assert.deepEqual(findingsOf("We found a missing values in the table."), ["1:10 a missing values"]);
+  });
+
   it("文学と書き起こしでは、ジャンルが止めて理由を言う（台詞や話し言葉の形は書き手の選択）", () => {
     ["literature/fiction", "speech/transcript"].forEach((genre) => {
       const result = runRules(buildDocument("t.md", "Your can check the status.", en), RULES.en, {}, true, genre);
