@@ -78,3 +78,59 @@ entries:
     rewrite: say what was right
   - pattern: the ball is in your court
     rewrite: say what the reader must do next
+  - pattern: bang for the buck
+    rewrite: say what it costs and what it returns
+  - pattern: bang for your buck
+    rewrite: say what it costs and what it returns
+  - pattern: the new normal
+    rewrite: say what is now usual
+  - pattern: go the extra mile
+    rewrite: say what extra was done
+  - pattern: no-brainer
+    rewrite: say why the choice is clear
+  - pattern: double-edged sword
+    rewrite: name the gain and the cost
+  - pattern: at the drop of a hat
+    rewrite: at once
+  - pattern: in a nutshell
+    rewrite: in short, or give the summary
+  - pattern: a drop in the bucket
+    rewrite: say how small, against what
+  - pattern: get the ball rolling
+    rewrite: start, and say what starts
+  - pattern: on the back burner
+    rewrite: say it is postponed, and until when
+  - pattern: leverage synergies
+    rewrite: name the combined gain
+  - pattern: reinvent the wheel
+    rewrite: name what already exists
+  - pattern: the proof is in the pudding
+    rewrite: name the evidence
+  - pattern: stand the test of time
+    rewrite: say how long it has lasted
+  - pattern: in the grand scheme of things
+    rewrite: say what it is compared with
+  - pattern: avoid like the plague
+    rewrite: avoid
+  - pattern: since the dawn of time
+    rewrite: say since when
+  - pattern: easier said than done
+    rewrite: say what makes it hard
+  - pattern: silver lining
+    rewrite: name the benefit
+  - pattern: tried and true
+    rewrite: say how it was tested
+  - pattern: jump on the bandwagon
+    rewrite: say who followed and why
+  - pattern: nip it in the bud
+    rewrite: stop it early, and say how
+  - pattern: the lion's share
+    rewrite: most, or give the share
+  - pattern: a blessing in disguise
+    rewrite: name the benefit
+  - pattern: ahead of the curve
+    rewrite: say who is ahead, and by how much
+  - pattern: move the goalposts
+    rewrite: say what changed
+  - pattern: light at the end of the tunnel
+    rewrite: say when it ends

@@ -29,3 +29,33 @@ entries:
     instead_of: height
   - pattern: could care less
     instead_of: couldn't care less
+  - pattern: nucular
+    instead_of: nuclear
+  - pattern: excetera
+    instead_of: et cetera
+  - pattern: for all intensive purposes
+    instead_of: for all intents and purposes
+  - pattern: case and point
+    instead_of: case in point
+  - pattern: self-depreciating
+    instead_of: self-deprecating
+  - pattern: free reign
+    instead_of: free rein
+  - pattern: sneak peak
+    instead_of: sneak peek
+  - pattern: peaked my interest
+    instead_of: piqued my interest
+  - pattern: peaked your interest
+    instead_of: piqued your interest
+  - pattern: deep-seeded
+    instead_of: deep-seated
+  - pattern: baited breath
+    instead_of: bated breath
+  - pattern: statue of limitations
+    instead_of: statute of limitations
+  - pattern: doggy-dog world
+    instead_of: dog-eat-dog world
+  - pattern: all of the sudden
+    instead_of: all of a sudden
+  - pattern: between you and I
+    instead_of: between you and me
