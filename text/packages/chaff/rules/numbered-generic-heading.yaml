@@ -1,0 +1,111 @@
+id: numbered-generic-heading
+layer: L1
+status: stable
+how_to_find: generic-heading
+word_list: generic-heading-label
+requires: [markdown]
+severity: info
+
+name:
+  ja: 札と番号だけの見出し
+  en: Headings that are only a label and a number
+
+why:
+  ja: 「メリット1」「メリット2」「ポイント3」のように札と番号だけの見出しは、目次や見出しの一覧で読んでも、その節に何が書いてあるかが分かりません。読み手は節を開くまで中身を知れず、あとで探すこともできません。型をなぞって書いた文書に多い形です。札は語彙表 generic-heading-label にあり、手順の札（ステップ1）は順番そのものが中身なので入れていません。
+  en: 'Headings such as "Benefit 1", "Benefit 2" and "Tip 3" say nothing about their sections. A reader scanning the table of contents learns nothing until they open each one, and cannot find a section again later. Documents written to a template are full of them. The labels are in the lexicon generic-heading-label; step labels ("Step 1") are left out, since in a procedure the order is the content.'
+
+message:
+  ja: 見出し「{heading}」は札と番号だけで、節の中身が分かりません（そういう見出しが {count} 個）
+  en: 'The heading "{heading}" is only a label and a number and says nothing about the section ({count} such headings)'
+
+how_to_fix:
+  ja: 札の後ろに、その節で言うことを書いてください（メリット1 → メリット1：設定が要らない、または 設定が要らない）。
+  en: 'Say what the section says ("Benefit 1" becomes "Benefit 1: no setup" or simply "No setup needed").'
+
+levels: { strict: 1, normal: 2, relaxed: 3 }
+
+use_for: [blog, business, technical, docs, academic, legal, literature, speech]
+off_for:
+  literature: "A literary work names its parts as it likes."
+  speech: "A transcript has no headings of its own."
+
+group: structure
+summary:
+  ja: 「メリット1」「ポイント2」「Benefit 3」のように、札と番号だけで中身を言わない見出しが並ぶ所
+  en: Headings such as "Benefit 1" and "Tip 2" that are only a label and a number
+
+example:
+  ja:
+    before: |
+      # 新しい会議室予約の仕組み
+
+      ## メリット1
+
+      空き状況がすぐ分かります。
+
+      ## メリット2
+
+      予約の取り消しが一度で済みます。
+    after: |
+      # 新しい会議室予約の仕組み
+
+      ## 空き状況がすぐ分かる
+
+      空き状況がすぐ分かります。
+
+      ## 取り消しが一度で済む
+
+      予約の取り消しが一度で済みます。
+  en:
+    before: |
+      # The new room booking system
+
+      ## Benefit 1
+
+      You can see free rooms at once.
+
+      ## Benefit 2
+
+      You can cancel a booking in one step.
+    after: |
+      # The new room booking system
+
+      ## Free rooms at a glance
+
+      You can see free rooms at once.
+
+      ## One-step cancelling
+
+      You can cancel a booking in one step.
+
+not_flagged:
+  ja: 札の後ろに題を足した見出し（メリット1：設定が要らない）、手順・理由・課題の見出し（ステップ1、理由2、課題3）、章や節の番号（第1章）は、番号で引かれる単位なので指しません。Markdown の見出しだけを読みます。
+  en: 'A heading with a title after the label ("Benefit 1: no setup"), step, lesson, reason and feature headings ("Step 1", "Lesson 2", "Reason 3"), and chapter or section numbers ("Chapter 1") are not reported: each is a unit cited by its number. Only Markdown headings are read.'
+level_meaning:
+  ja: 札と番号だけの見出しが {limit} 個から指摘
+  en: reported from {limit} such headings
+
+rewrite:
+  depth: structure
+  ja:
+    direction: 札と番号だけの見出しに、その節で言うことを一言で書いてください。節の本文から言葉を取り、本文に無いことは足しません。
+    pairs:
+      - before: "## メリット1"
+        after: "## 空き状況がすぐ分かる"
+      - before: "## ポイント2"
+        after: "## 取り消しは前日まで"
+    keep:
+      - 節の順番と本文
+    avoid:
+      - 本文に書かれていない中身を見出しに書く
+  en:
+    direction: Give each label-and-number heading a few words that say what its section says, taken from the section itself.
+    pairs:
+      - before: "## Benefit 1"
+        after: "## Free rooms at a glance"
+      - before: "## Tip 2"
+        after: "## Cancel by the day before"
+    keep:
+      - the order of the sections and their text
+    avoid:
+      - putting a claim in a heading that the section does not make
