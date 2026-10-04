@@ -3590,6 +3590,47 @@
         "falseAlarms": 0
       }
     },
+    "ime-residue": {
+      "groups": {
+        "academic": {
+          "documents": 1,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 14,
+          "fired": 0
+        },
+        "business": {
+          "documents": 39,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 21,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 4,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 22,
+          "fired": 0
+        }
+      },
+      "bench": {
+        "planted": 13,
+        "found": 13,
+        "falseAlarms": 0
+      }
+    },
     "impossible-date": {
       "groups": {
         "academic": {
