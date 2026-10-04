@@ -84,6 +84,31 @@ entries:
     instead_of: 低い確率で
   - pattern: 確率する
     instead_of: 確立する
+  # 前後の語で決まる取り違え（異議を唱える、収拾がつかない、気が合う）
+  - pattern: 晴天の霹靂
+    instead_of: 青天の霹靂
+  - pattern: 意義を唱える
+    instead_of: 異議を唱える
+  - pattern: 責任を追求
+    instead_of: 責任を追及
+  - pattern: 事態を収集
+    instead_of: 事態を収拾
+  - pattern: 収集がつかない
+    instead_of: 収拾がつかない
+  - pattern: 確信をつく
+    instead_of: 核心をつく
+  - pattern: 確信を突く
+    instead_of: 核心を突く
+  - pattern: 気が会う
+    instead_of: 気が合う
+  - pattern: 話が会う
+    instead_of: 話が合う
+  - pattern: 便宜を計る
+    instead_of: 便宜を図る
+  - pattern: 以前として変わる
+    instead_of: 依然として変わる
+  - pattern: お侘び
+    instead_of: お詫び
   # それ自体が誤りの形
   - pattern: 不可決
     instead_of: 不可欠
@@ -115,3 +140,71 @@ entries:
     instead_of: 温故知新
   - pattern: 厚顔無知
     instead_of: 厚顔無恥
+  - pattern: 五里夢中
+    instead_of: 五里霧中
+  - pattern: 一心発起
+    instead_of: 一念発起
+  - pattern: 単純明解
+    instead_of: 単純明快
+  - pattern: 首尾一環
+    instead_of: 首尾一貫
+  - pattern: 意味深重
+    instead_of: 意味深長
+  - pattern: 異句同音
+    instead_of: 異口同音
+  - pattern: 言語道段
+    instead_of: 言語道断
+  - pattern: 心機一点
+    instead_of: 心機一転
+  - pattern: 天真爛慢
+    instead_of: 天真爛漫
+  - pattern: 有頂点
+    instead_of: 有頂天
+  - pattern: 二足三文
+    instead_of: 二束三文
+  - pattern: 疑心暗記
+    instead_of: 疑心暗鬼
+  - pattern: 一騎当選
+    instead_of: 一騎当千
+  - pattern: 意心伝心
+    instead_of: 以心伝心
+  - pattern: 臨気応変
+    instead_of: 臨機応変
+  - pattern: 適財適所
+    instead_of: 適材適所
+  - pattern: 自業自特
+    instead_of: 自業自得
+  - pattern: 起承転決
+    instead_of: 起承転結
+  - pattern: 優柔不段
+    instead_of: 優柔不断
+  - pattern: 前代未問
+    instead_of: 前代未聞
+  - pattern: 検討違い
+    instead_of: 見当違い
+  - pattern: 感違い
+    instead_of: 勘違い
+  - pattern: 既製事実
+    instead_of: 既成事実
+  - pattern: 議事緑
+    instead_of: 議事録
+  - pattern: 意義申し立て
+    instead_of: 異議申し立て
+  - pattern: 左右対象
+    instead_of: 左右対称
+  - pattern: 左右対照
+    instead_of: 左右対称
+  - pattern: 人事移動
+    instead_of: 人事異動
+  - pattern: 機会学習
+    instead_of: 機械学習
+  - pattern: 挙動不振
+    instead_of: 挙動不審
+  - pattern: 至上最高
+    instead_of: 史上最高
+  - pattern: 保険所
+    instead_of: 保健所
+  - pattern: 保健証
+    instead_of: 保険証
+  - pattern: 延長線場
+    instead_of: 延長線上
