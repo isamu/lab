@@ -1,9 +1,11 @@
-import type { Detector, Finding, Lexicon, Sentence, Token } from "../plugin.ts";
+import type { Detector, Finding, Lexicon, Sentence, Span, Token } from "../plugin.ts";
+import { quotedIn } from "../quoted-span.ts";
 
 /**
  * 比べる相手の無い比較（より良い結果、さらに高速に、The new engine is faster.）。何より良いのか、何より速いのかが書かれていない。
  * 語は語彙表 comparative-baseline が言う。group marker は日本語の比べる副詞（より、さらに）、more は英語の比べる語、comparative は比べた形の語
- * （faster、better）、baseline は相手を言う語（従来、以前、than、previous）、exempt は比較でない決まった言い方（より多くの、より詳しく）。
+ * （faster、better）、baseline は相手を言う語（従来、以前、than、previous）、exempt は比較でない決まった言い方（より多くの、より詳しく）、
+ * condition は比較を条件や仮定の下に置く語（使うと、if、would）。条件を書いた比較は、その条件の無い場合と比べている。
  * 同じ文か前の二文に相手を言う語があれば、相手は書いてある。
  */
 
@@ -13,6 +15,7 @@ export type ComparativeLists = {
   readonly comparatives: ReadonlySet<string>;
   readonly baselines: readonly string[];
   readonly exempt: ReadonlySet<string>;
+  readonly conditions: ReadonlySet<string>;
 };
 
 export type BareComparative = { readonly first: Token; readonly last: Token };
@@ -79,8 +82,14 @@ const predicateAt = (tokens: readonly Token[], at: number, lists: ComparativeLis
   return head !== undefined && (PREDICATE_HEAD.has(head.pos) || isThirdPersonVerb(head)) ? { first, last: word } : undefined;
 };
 
+/** 比べた形より前に、条件か仮定を言う語があるか。並べる「と」（A と B）は条件でない。 */
+const isConditional = (tokens: readonly Token[], found: BareComparative, conditions: ReadonlySet<string>): boolean =>
+  tokens.some((token) => token.span.start < found.first.span.start && token.pos !== "CCONJ" && conditions.has(lower(token)));
+
 export const bareComparativesIn = (tokens: readonly Token[], lists: ComparativeLists): BareComparative[] =>
-  tokens.flatMap((_, at) => markedAt(tokens, at, lists) ?? predicateAt(tokens, at, lists) ?? []);
+  tokens
+    .flatMap((_, at) => markedAt(tokens, at, lists) ?? predicateAt(tokens, at, lists) ?? [])
+    .filter((found) => !isConditional(tokens, found, lists.conditions));
 
 /**
  * 語が比べる相手を言う語か。語の形か原形で照らし、一字の語（旧）は語の頭だけ（旧版は相手、復旧は相手でない）。
@@ -90,9 +99,21 @@ const isBaselineWord = (token: Token, baselines: readonly string[]): boolean => 
   return baselines.some((baseline) => surface === baseline || lemma === baseline || ([...baseline].length === 1 && surface.startsWith(baseline)));
 };
 
+/** 相手を言う語が、続く語に分かれて書かれているか（これ・まで、で・は・なく）。 */
+const MAX_BASELINE_TOKENS = 3;
+const isSplitBaseline = (tokens: readonly Token[], at: number, baselines: readonly string[]): boolean => {
+  const joined = tokens
+    .slice(at, at + MAX_BASELINE_TOKENS)
+    .map((token) => token.surface.toLowerCase())
+    .reduce<string[]>((runs, surface) => [...runs, `${runs.at(-1) ?? ""}${surface}`], []);
+  return joined.slice(1).some((run) => baselines.includes(run));
+};
+
 /** 文の中に、比べる相手を言う語か、相手を受ける助詞の「より」（従来より）があるか。 */
 export const namesBaseline = (sentence: Sentence | undefined, baselines: readonly string[]): boolean =>
-  (sentence?.tokens ?? []).some((token) => (token.surface === "より" && token.pos === "ADP") || isBaselineWord(token, baselines));
+  (sentence?.tokens ?? []).some(
+    (token, at, tokens) => (token.surface === "より" && token.pos === "ADP") || isBaselineWord(token, baselines) || isSplitBaseline(tokens, at, baselines),
+  );
 
 /** 比べる相手を探す、前の文の数。段落の中で相手を言ってから、一つ文を挟んで比べることがある。 */
 const BASELINE_REACH = 2;
@@ -105,20 +126,27 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
   comparatives: new Set(groupOf(lexicon, "comparative")),
   baselines: groupOf(lexicon, "baseline"),
   exempt: new Set(groupOf(lexicon, "exempt")),
+  conditions: new Set(groupOf(lexicon, "condition")),
 });
+
+/** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */
+const insideSpan = (found: BareComparative, span: Span): boolean => found.first.span.start >= span.start && found.last.span.end <= span.end;
 
 export const bareComparative: Detector = (doc): Finding[] => {
   const lists = listsOf(doc.lexicons["comparative-baseline"] ?? []);
   return doc.sentences.flatMap((sentence, at) => {
     const nearby = doc.sentences.slice(Math.max(0, at - BASELINE_REACH), at + 1);
     if (sentence.embeddedLanguage !== undefined || nearby.some((near) => namesBaseline(near, lists.baselines))) return [];
-    return bareComparativesIn(sentence.tokens ?? [], lists).map((found) => ({
-      rule: "",
-      severity: "info",
-      line: 0,
-      column: 0,
-      quote: sentence.text.trim(),
-      values: { matched: doc.source.slice(found.first.span.start, found.last.span.end), offset: found.first.span.start },
-    }));
+    const quoted = quotedIn(sentence);
+    return bareComparativesIn(sentence.tokens ?? [], lists)
+      .filter((found) => !quoted.some((span) => insideSpan(found, span)))
+      .map((found) => ({
+        rule: "",
+        severity: "info",
+        line: 0,
+        column: 0,
+        quote: sentence.text.trim(),
+        values: { matched: doc.source.slice(found.first.span.start, found.last.span.end), offset: found.first.span.start },
+      }));
   });
 };

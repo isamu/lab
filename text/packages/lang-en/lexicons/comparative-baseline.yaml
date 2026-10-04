@@ -3,6 +3,8 @@
 # comparative: one-word comparatives read when they close a clause after a verb ("is faster.", "runs better,").
 # baseline: words that name what is compared with. One in the same sentence or the one before, and the comparison has
 # its baseline.
+# condition: a word before the comparative that puts it under a condition or a hypothesis ("if it looks better", "would be
+# easier"); the comparison is then with the case without it.
 id: comparative-baseline
 language: en
 entries:
@@ -30,3 +32,10 @@ entries:
   - { pattern: compared, group: baseline }
   - { pattern: versus, group: baseline }
   - { pattern: vs, group: baseline }
+  - { pattern: if, group: condition }
+  - { pattern: unless, group: condition }
+  - { pattern: would, group: condition }
+  - { pattern: "'d", group: condition }
+  - { pattern: could, group: condition }
+  - { pattern: might, group: condition }
+  - { pattern: may, group: condition }

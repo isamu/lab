@@ -48,6 +48,24 @@ describe("comparative-without-baseline: 比べる相手の無い比較", () => {
     assert.deepEqual(findingsOf("The model had better, more predictable results."), []);
   });
 
+  it("条件か仮定の下の比較は、その条件の無い場合と比べている", () => {
+    assert.deepEqual(findingsOf("視点をもう少し入れるとより良くなる。filter メソッドを使えばより簡潔に書けます。", ja), []);
+    assert.deepEqual(findingsOf("Lists can be written as a paragraph if it looks better. We share it even when hiding it would be easier."), []);
+    assert.deepEqual(findingsOf("Ending the partnership may be more appropriate."), []);
+    assert.deepEqual(findingsOf("AとBはさらに高速です。", ja), ["「さらに高速」は、何と比べているかが書かれていません"]);
+  });
+
+  it("語に分かれた相手の語（これ・まで、で・は・なく）と、位置を言う「さらに上」", () => {
+    assert.deepEqual(findingsOf("これまでは手間がかかったが、手続きがさらに簡単になった。", ja), []);
+    assert.deepEqual(findingsOf("単なる支障ではなく、より重い支障がある場合に限る。", ja), []);
+    assert.deepEqual(findingsOf("state を共通の親のさらに上に置く。", ja), []);
+  });
+
+  it("鉤括弧の中の比較は、題や語を挙げたもの", () => {
+    assert.deepEqual(findingsOf("詳しくは「申告がさらに簡単に！」のページを見てください。", ja), []);
+    assert.deepEqual(findingsOf("詳しくは、申告がさらに簡単になったことを見てください。", ja), ["「さらに簡単」は、何と比べているかが書かれていません"]);
+  });
+
   it("本日より（起点）と、語の一部の「より」は比較ではない", () => {
     assert.deepEqual(findingsOf("本日より受付を開始します。", ja), []);
     assert.deepEqual(findingsOf("学校・学年だより等で広く周知する。", ja), []);
