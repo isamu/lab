@@ -200,7 +200,7 @@ describe("chaff grade --baseline on the command line", () => {
     const run = await abRun(EN_A, EN_B, [], "en_US.UTF-8");
     assert.equal(run.code, 1);
     assert.match(run.out, /Compared with a\.results\.jsonl: 2 paired outputs/u);
-    assert.ok(run.out.includes("closing-cliche  0.0 → 38.5  (+38.5)  more in notes"), run.out);
+    assert.match(run.out, /closing-cliche +0\.0 → 38\.5 {2}\(\+38\.5\) {2}more in notes/u);
     assert.match(run.out, /summary: dropped number 6, number 2\.5; added none/u);
     assert.match(run.out, /✗ summary: passed, now fails/u);
   });
