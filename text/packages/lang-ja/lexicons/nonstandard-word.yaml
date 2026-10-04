@@ -14,3 +14,21 @@ entries:
     instead_of: なにげなく
   - pattern: すいません
     instead_of: すみません
+  - pattern: 違うくて
+    instead_of: 違って
+  - pattern: ちがかった
+    instead_of: ちがった
+  - pattern: ちがくて
+    instead_of: ちがって
+  - pattern: すごい多い
+    instead_of: すごく多い
+  - pattern: すごい大きい
+    instead_of: すごく大きい
+  - pattern: すごい良い
+    instead_of: すごく良い
+  - pattern: すごい速い
+    instead_of: すごく速い
+  - pattern: おっきい
+    instead_of: おおきい
+  - pattern: すんません
+    instead_of: すみません
