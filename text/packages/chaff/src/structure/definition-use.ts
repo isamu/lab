@@ -4,7 +4,13 @@ import { inDocumentOrder } from "./issues.ts";
 
 // 定義した語が本文で使われているか、定義より前に使われていないか。どちらも木の定義と、本文の文の字面だけで決まる。
 
-export type DefinedTerm = { readonly term: string; readonly span: Span; readonly line: number; readonly inline: boolean };
+/** unmarked は、定義の語（means・以下…という・the）の無い括弧の引用（("Seller")）。例を引く括弧と同じ形。 */
+export type DefinedTerm = { readonly term: string; readonly span: Span; readonly line: number; readonly inline: boolean; readonly unmarked?: boolean };
+
+/** 文書の位置 [start, end) の語が、使ったのではなく引用符で例として挙げただけか。 */
+export type Mentioned = (start: number, end: number) => boolean;
+
+const NEVER_MENTIONED: Mentioned = () => false;
 
 /** 本文の一続き（文）。start は文書の中の位置。 */
 export type BodyText = { readonly start: number; readonly text: string };
@@ -30,7 +36,8 @@ export const definedTerms = (tree: StructureNode): DefinedTerm[] =>
             .replaceAll(EMPHASIS_MARKS, "")
             .trim()
         : "";
-    return isTerm(term) ? [{ term, span: node.span, line: node.line, inline: node.attrs["placement"] === "inline" }] : [];
+    const unmarked = node.attrs["marker"] === "none" ? { unmarked: true } : {};
+    return isTerm(term) ? [{ term, span: node.span, line: node.line, inline: node.attrs["placement"] === "inline", ...unmarked }] : [];
   });
 
 const LATIN_EDGE = /^[\p{Script=Latin}\p{N}]|[\p{Script=Latin}\p{N}]$/u;
@@ -56,11 +63,23 @@ const termPattern = (term: string, caseMatch: CaseMatch): RegExp => {
 
 const inside = (offset: number, spans: readonly Span[]): boolean => spans.some((span) => span.start <= offset && offset < span.end);
 
-/** 語の現れ（文書の中の位置）を順に。定義そのもの（"Seller" means、(the "Seller")）の中の現れは使用に数えない。 */
-export const usesOf = (term: string, texts: readonly BodyText[], definitionSpans: readonly Span[], caseMatch: CaseMatch = "loose"): number[] => {
+/**
+ * 語の現れ（文書の中の位置）を順に。定義そのもの（"Seller" means、(the "Seller")）の中の現れは使用に数えない。
+ * mentioned が言う現れ（引用符で例として挙げただけ）も数えない。
+ */
+export const usesOf = (
+  term: string,
+  texts: readonly BodyText[],
+  definitionSpans: readonly Span[],
+  caseMatch: CaseMatch = "loose",
+  mentioned: Mentioned = NEVER_MENTIONED,
+): number[] => {
   const pattern = termPattern(term, caseMatch);
   return texts.flatMap((body) =>
-    [...body.text.matchAll(pattern)].map((match) => body.start + match.index).filter((offset) => !inside(offset, definitionSpans)),
+    [...body.text.matchAll(pattern)]
+      .filter((match) => !mentioned(body.start + match.index, body.start + match.index + match[0].length))
+      .map((match) => body.start + match.index)
+      .filter((offset) => !inside(offset, definitionSpans)),
   );
 };
 
@@ -78,10 +97,20 @@ const groupsOf = (terms: readonly DefinedTerm[]): TermGroup[] => {
 };
 
 /** 定義したのに、定義の外で一度も使っていない語。同じ語の定義が二つあれば、最初の一つだけを言う（二つ目は duplicate-definition）。 */
-export const unusedDefinitions = (terms: readonly DefinedTerm[], texts: readonly BodyText[]): DefinedTerm[] =>
-  groupsOf(terms)
-    .filter((group) => usesOf(group.first.term, texts, group.spans).length === 0)
+export const unusedDefinitions = (terms: readonly DefinedTerm[], texts: readonly BodyText[], mentioned: Mentioned = NEVER_MENTIONED): DefinedTerm[] => {
+  const groups = groupsOf(terms);
+  const examples = quotesExamples(groups, texts, mentioned);
+  return groups
+    .filter((group) => !(examples && group.first.unmarked === true) && usesOf(group.first.term, texts, group.spans).length === 0)
     .map((group) => group.first);
+};
+
+/**
+ * 定義の語の無い括弧の引用（("Seller")）を、文書が一つも本文で使っていなければ、それは定義ではなく例の引用
+ * （Plain verbs, not metaphors ("silently fails")）。引用符で挙げただけの現れは使用に数えない。
+ */
+const quotesExamples = (groups: readonly TermGroup[], texts: readonly BodyText[], mentioned: Mentioned): boolean =>
+  !groups.some((group) => group.first.unmarked === true && usesOf(group.first.term, texts, group.spans, "loose", mentioned).length > 0);
 
 /** offset を含む文。texts は start の昇順で、二分探索で引く。 */
 const sentenceAt = (texts: readonly BodyText[], offset: number): BodyText | undefined => {
@@ -118,13 +147,14 @@ const isDistinctive = (term: string): boolean => CAPITAL_OR_NON_LATIN.test(term)
  * 文の途中で括弧に入れて定義した語（(the "Seller")、以下「甲」という）を、その定義の文より前で使っている所。最初の一つだけ。
  * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も数えない。
  * 定義の条（"Seller" means、「甲」とは）は条の並びの頭にも終わりにも置く書き方があるので、前で使っても言わない。
+ * 引用符で例として挙げただけの現れ（Its sentences open with "The key point is"）は使用ではない。
  */
-export const usesBeforeDefinition = (terms: readonly DefinedTerm[], texts: readonly BodyText[]): TermUse[] =>
+export const usesBeforeDefinition = (terms: readonly DefinedTerm[], texts: readonly BodyText[], mentioned: Mentioned = NEVER_MENTIONED): TermUse[] =>
   groupsOf(terms)
     .filter((group) => group.first.inline && isDistinctive(group.first.term))
     .flatMap(({ first: defined, spans }) => {
       const defining = sentenceAt(texts, defined.span.start)?.start ?? defined.span.start;
-      const uses = usesOf(defined.term, texts, spans, "exact");
+      const uses = usesOf(defined.term, texts, spans, "exact", mentioned);
       const first = uses.find((offset) => !isLabel(sentenceAt(texts, offset), defined.term));
       return first !== undefined && first < defining ? [{ term: defined, offset: first }] : [];
     });
