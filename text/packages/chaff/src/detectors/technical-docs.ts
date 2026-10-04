@@ -4,6 +4,7 @@
 // shell-prompt lexicons.
 import { codeFences, codeSpans, type CodeFence } from "./code-fences.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { escapeRegExp } from "../orthography.ts";
 import type { Detector, Finding, ProseDocument, Span, Token } from "../plugin.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
@@ -112,10 +113,22 @@ export const commandsIn = (heading: string): string[] => {
 const collapse = (text: string): string => text.replace(/\s+/gu, " ");
 const OPTION_CHAR = /[A-Za-z0-9_-]/u;
 
+/**
+ * A command with arguments whose program the code runs under its package's name: chaff grade as npx chaffjs grade,
+ * python -m venv as python3 -m venv. The arguments must follow as written.
+ */
+const showsUnderPackageName = (text: string, wanted: string): boolean => {
+  const [program = "", ...rest] = wanted.split(" ");
+  if (rest.length === 0) return false;
+  const pattern = `(?<![A-Za-z0-9_.-])${escapeRegExp(program)}[A-Za-z0-9_.-]* ${rest.map(escapeRegExp).join(" ")}(?![A-Za-z0-9_-])`;
+  return new RegExp(pattern, "u").test(text);
+};
+
 /** Whether the code holds the command as a whole word: --force is not --force-with-lease, init is not initial. */
 export const showsCommand = (code: string, command: string): boolean => {
   const text = collapse(code);
   const wanted = collapse(command.trim());
+  if (showsUnderPackageName(text, wanted)) return true;
   const state = { at: text.indexOf(wanted) };
   while (state.at !== -1) {
     const before = text.charAt(state.at - 1);
