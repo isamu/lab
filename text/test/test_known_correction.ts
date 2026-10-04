@@ -39,6 +39,21 @@ describe("known-misspelling: よくある書き誤り", () => {
     assert.deepEqual(misspelt("We visited Tehran last year.", en), []);
     assert.deepEqual(misspelt("Run `seperate` from the shell.", en), []);
   });
+
+  it("English: more common misspellings, and the spelling itself is left alone", () => {
+    assert.deepEqual(misspelt("We plan to aquire the license.", en), ['"aquire" is a misspelling of "acquire"']);
+    assert.deepEqual(misspelt("The commitee meets on Monday.", en), ['"commitee" is a misspelling of "committee"']);
+    assert.deepEqual(misspelt("Wich option did you pick?", en), ['"Wich" is a misspelling of "Which"']);
+    assert.deepEqual(misspelt("We plan to acquire the license. The committee meets on Monday. Which option did you pick?", en), []);
+  });
+
+  it("ずらい・ずく・おえない の書き誤りを指し、正しい形と別の語は指さない", () => {
+    assert.deepEqual(misspelt("この書類は書きずらいです。"), ["「書きずらい」は「書きづらい」の書き誤りです"]);
+    assert.deepEqual(misspelt("会議はまだつずく。"), ["「つずく」は「つづく」の書き誤りです"]);
+    assert.deepEqual(misspelt("やむおえず中止しました。"), ["「やむおえず」は「やむをえず」の書き誤りです"]);
+    assert.deepEqual(misspelt("この書類は書きづらいです。会議はまだつづく。やむをえず中止しました。"), []);
+    assert.deepEqual(misspelt("ビックカメラで買ったバックパックを使う。"), []);
+  });
 });
 
 describe("misconversion: 変換の誤り", () => {
@@ -57,6 +72,20 @@ describe("misconversion: 変換の誤り", () => {
   it("それ自体が誤りの形", () => {
     assert.deepEqual(misconverted("この部品は不可決です。"), ["「不可決」は「不可欠」の変換の誤りです"]);
     assert.deepEqual(misconverted("まさに危機一発でした。"), ["「危機一発」は「危機一髪」の変換の誤りです"]);
+  });
+
+  it("前後の語で決まる取り違えと、それ自体が誤りの形をさらに指す", () => {
+    assert.deepEqual(misconverted("彼とは気が会うので、よく話す。"), ["「気が会う」は「気が合う」の変換の誤りです"]);
+    assert.deepEqual(misconverted("議論は収集がつかなくなった。"), ["「収集」は「収拾」の変換の誤りです"]);
+    assert.deepEqual(misconverted("機会学習のモデルを作る。"), ["「機会」は「機械」の変換の誤りです"]);
+    assert.deepEqual(misconverted("五里夢中で手探りした。"), ["「五里夢中」は「五里霧中」の変換の誤りです"]);
+  });
+
+  it("同じ字でも、前後で正しく読める並びは指さない", () => {
+    assert.deepEqual(misconverted("待っている間に会う約束をした。"), []);
+    assert.deepEqual(misconverted("情報を収集する。学習の機会が増える。"), []);
+    assert.deepEqual(misconverted("作業を始めまして、三日経つ。"), []);
+    assert.deepEqual(misconverted("不当な利益を追及する委員会。"), []);
   });
 
   it("前後で決まらない形と、正しい字は指さない", () => {

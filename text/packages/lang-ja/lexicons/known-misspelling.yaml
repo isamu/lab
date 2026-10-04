@@ -30,6 +30,34 @@ entries:
     instead_of: メンテナンス
   - pattern: インストロール
     instead_of: インストール
+  - pattern: シュミレーター
+    instead_of: シミュレーター
+  - pattern: コミニティ
+    instead_of: コミュニティ
+  - pattern: コミニュティ
+    instead_of: コミュニティ
+  - pattern: フィギア
+    instead_of: フィギュア
+  - pattern: ドッチボール
+    instead_of: ドッジボール
+  - pattern: ハイブリット
+    instead_of: ハイブリッド
+  - pattern: ベットタウン
+    instead_of: ベッドタウン
+  - pattern: グッツ
+    instead_of: グッズ
+  - pattern: エコバック
+    instead_of: エコバッグ
+  - pattern: トートバック
+    instead_of: トートバッグ
+  - pattern: ショルダーバック
+    instead_of: ショルダーバッグ
+  - pattern: ビックデータ
+    instead_of: ビッグデータ
+  - pattern: ドラックストア
+    instead_of: ドラッグストア
+  - pattern: コンセサンス
+    instead_of: コンセンサス
   # 耳で覚えた仮名
   - pattern: ふいんき
     instead_of: ふんいき
@@ -57,6 +85,50 @@ entries:
     instead_of: 使いづらい
   - pattern: 見ずらい
     instead_of: 見づらい
+  - pattern: 書きずらい
+    instead_of: 書きづらい
+  - pattern: 言いずらい
+    instead_of: 言いづらい
+  - pattern: 聞きずらい
+    instead_of: 聞きづらい
+  - pattern: 話しずらい
+    instead_of: 話しづらい
+  - pattern: やりずらい
+    instead_of: やりづらい
+  - pattern: 扱いずらい
+    instead_of: 扱いづらい
+  - pattern: いいずらい
+    instead_of: いいづらい
+  - pattern: つずく
+    instead_of: つづく
+  - pattern: つずき
+    instead_of: つづき
+  - pattern: かたずける
+    instead_of: かたづける
+  - pattern: かたずけ
+    instead_of: かたづけ
+  - pattern: ちかずく
+    instead_of: ちかづく
+  - pattern: おこずかい
+    instead_of: おこづかい
+  - pattern: てずくり
+    instead_of: てづくり
+  - pattern: こずつみ
+    instead_of: こづつみ
+  - pattern: いきずまる
+    instead_of: いきづまる
+  - pattern: おうきい
+    instead_of: おおきい
+  - pattern: おうきな
+    instead_of: おおきな
+  - pattern: ってゆう
+    instead_of: っていう
+  - pattern: やむおえない
+    instead_of: やむをえない
+  - pattern: やむおえず
+    instead_of: やむをえず
+  - pattern: うる覚え
+    instead_of: うろ覚え
   # 仮名の打ち重ね。文末の形が一字だけ重なったもの
   - pattern: ですす
     instead_of: です
