@@ -1,0 +1,8 @@
+# The ways of writing an ellipsis in English. ellipsis-consistency points at the one a document uses less; none is
+# called right. Matched as written, longest first, and only where no other dot or ellipsis character touches it.
+id: ellipsis
+language: en
+entries:
+  - pattern: …
+  - pattern: "..."
+  - pattern: ". . ."
