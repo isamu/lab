@@ -4,7 +4,7 @@ import { firedRules } from "./rule-run.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { destinationOf, markersIn, showsInProse } from "../packages/chaff/src/detectors/chat-citation.ts";
+import { destinationOf, markersIn, showsInProse, standsAlone } from "../packages/chaff/src/detectors/chat-citation.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter, Lexicon } from "../packages/chaff/src/plugin.ts";
@@ -106,7 +106,7 @@ describe("chat-citation-residue", () => {
     ];
     languages.forEach(([adapter, body]) => {
       (adapter.lexicons["chat-citation-marker"] ?? []).forEach((entry) => {
-        assert.ok(idsFor(`# Doc\n\n${body} ${entry.pattern}\n`, adapter).includes("chat-citation-residue"), `${adapter.id}: ${entry.pattern}`);
+        assert.ok(idsFor(`# Doc\n\n${body} [${entry.pattern}:0]\n`, adapter).includes("chat-citation-residue"), `${adapter.id}: ${entry.pattern}`);
       });
     });
   });
@@ -144,6 +144,27 @@ describe("chat-citation-residue", () => {
 
   it("valid: the parameter explained in inline code", () => {
     assert.ok(!idsFor("# 記事\n\nリンクの末尾の `?utm_source=chatgpt.com` は消してください。\n", ja).includes("chat-citation-residue"));
+  });
+
+  it("valid: prose that names the marks, quoted or not (#621)", () => {
+    const prose = [
+      "# Marks",
+      "",
+      '| `chat-citation-residue` | Marks a pasted chat answer leaves: links ending in "?utm_source=chatgpt.com", "oaicite" |',
+      "",
+      "Look for links ending in “?utm_source=chatgpt.com” or citation marks such as oaicite.",
+    ].join("\n");
+    assert.ok(!idsFor(`${prose}\n`, en).includes("chat-citation-residue"));
+  });
+
+  it("standsAlone: a marker that is a whole word, with quotes and punctuation around it", () => {
+    const at = (source: string, marker: string): boolean => standsAlone(source, { start: source.indexOf(marker), end: source.indexOf(marker) + marker.length });
+    assert.ok(at('ending in "?utm_source=chatgpt.com", or', "utm_source=chatgpt.com"));
+    assert.ok(at("such as oaicite.", "oaicite"));
+    assert.ok(at("oaicite", "oaicite"));
+    assert.ok(!at("See https://e.com/?utm_source=chatgpt.com now", "utm_source=chatgpt.com"));
+    assert.ok(!at("$5. :contentReference[oaicite:0]{index=0}", "oaicite"));
+    assert.ok(!at("🚀[oaicite:0]", "oaicite"));
   });
 
   it("valid: the parameter in a code block", () => {

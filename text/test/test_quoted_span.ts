@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../packages/chaff/src/quoted-span.ts";
+import { QUOTATION_MARKS, isQuotedAlone, isWithinAny, quotedSpans } from "../packages/chaff/src/quoted-span.ts";
 
 const contents = (text: string): string[] => quotedSpans(text).map((span) => text.slice(span.start, span.end));
 
@@ -68,5 +68,35 @@ describe("isWithinAny", () => {
     assert.equal(isWithinAny(spans, { start: 2, end: 4 }), false);
     assert.equal(isWithinAny(spans, { start: 5, end: 7 }), false);
     assert.equal(isWithinAny([], { start: 0, end: 0 }), false);
+  });
+});
+
+describe("isQuotedAlone", () => {
+  const at = (text: string, word: string): boolean => {
+    const start = text.indexOf(word);
+    return isQuotedAlone(text, { start, end: start + word.length });
+  };
+
+  it("is true when a quotation holds the words and nothing but marks around them", () => {
+    assert.equal(at('words such as "delves" and "pivotal" rose', "delves"), true);
+    assert.equal(at('links ending in "?utm_source=chatgpt.com" or', "utm_source=chatgpt.com"), true);
+    assert.equal(at("| “Monday, December 5, 2026” falls on a Saturday |", "Monday, December 5, 2026"), true);
+    assert.equal(at("first line\n「上記の図」を避ける", "上記の図"), true);
+  });
+
+  it("wordsBesides lets that many words of letters stand beside the span (a date's weekday)", () => {
+    const text = '| "Monday, December 5, 2026" falls on a Saturday | "Due on December 5, 2026" |';
+    const first = { start: text.indexOf("December"), end: text.indexOf("2026") + 4 };
+    assert.equal(isQuotedAlone(text, first), false);
+    assert.equal(isQuotedAlone(text, first, 1), true);
+    const second = { start: text.lastIndexOf("December"), end: text.lastIndexOf("2026") + 4 };
+    assert.equal(isQuotedAlone(text, second, 1), false);
+  });
+
+  it("is false for words used in prose, inside a longer quotation, across lines, or with no quotation", () => {
+    assert.equal(at("the model delves into it", "delves"), false);
+    assert.equal(at('"We ship on Monday, October 26," she said.', "Monday, October 26"), false);
+    assert.equal(at('an open "quote\nthe word" here', "the word"), false);
+    assert.equal(at("", ""), false);
   });
 });
