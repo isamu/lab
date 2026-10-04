@@ -6,6 +6,7 @@ import { blankLongRuns } from "./long-runs.ts";
 import { lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
 import { isEmphasisedAdverb } from "./emphasis.ts";
+import { gerundFeatures } from "./gerund.ts";
 
 const require = createRequire(import.meta.url);
 
@@ -206,7 +207,7 @@ const withOtherReading = (entry: Tagged, found: Features): Features => {
 const featuresOf = (tagged: readonly Tagged[], at: number): Features => {
   const entry = tagged[at];
   if (entry === undefined) return {};
-  if (entry.pos === "VBG") return { features: { VerbForm: "Ger" } };
+  if (entry.pos === "VBG") return { features: gerundFeatures(entry.value, state.vocabulary) };
   if (entry.pos !== "VBN") return withOtherReading(entry, nounOrDeterminerFeatures(entry));
   return { features: isPassive(tagged, at) ? { VerbForm: "Part", Voice: "Pass" } : { VerbForm: "Part" } };
 };
