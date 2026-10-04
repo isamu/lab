@@ -153,6 +153,16 @@ Under each line number, chaff shows the sentence from the point it is about.
 | 12 | Skipped or repeated number | Article 4 follows Article 2; there is no Article 3 | Renumber. To keep a gap on purpose, write "Article 3 (Deleted)" |
 | 15 | Term defined twice | "equipment" is also defined on line 6 | Keep one definition and drop the other |
 
+## The guide at the top
+
+The screen above opens with the genre's guide: what good internal rules do, as questions to check the draft against, and the rules that matter most for this genre.
+chaff prints it because the genre was set with `--genre`.
+Most of the questions are ones no rule can answer, so read them before the findings.
+An AI that rewrites the text works to the same lines ([Using the guide with an AI](./ai-sounding#give-the-ai-the-genres-guide)).
+
+A guessed or default genre prints no guide, and `--compact` and `--no-guide` leave it out.
+A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's guide](./configuration#changing-the-genres-guide)).
+
 ## Reading the "did not run" list
 
 At the end, the screen lists the rules it did not use this time, each with its reason.

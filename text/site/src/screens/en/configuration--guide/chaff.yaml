@@ -1,0 +1,8 @@
+genre: legal/contract
+
+guide:
+  legal/contract:
+    add:
+      en:
+        - Does each payment say when it is due, counted from what?
+  docs: off

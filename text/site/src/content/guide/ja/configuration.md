@@ -57,6 +57,13 @@ genre: legal/contract
 # names:
 #   - 個人情報保護委員会
 
+# このジャンルの指針（よい文書が満たすこと）。検査の結果より先に出て、AI が書き直すときの指示になる。
+# 既定は chaff に入っている文。replace で置き換え、add で足し、off で出さない。
+# guide:
+#   legal/contract:
+#     add:
+#       - 金額は税込みか税抜きかを書いているか
+
 # 既定から変えたものだけを書く。
 rules:
 ```
@@ -375,6 +382,110 @@ fix_plan:
 3 つ以外の値を書くと、`fix-plan` は計画を出さずに止まり、使える値とその意味を言います。
 それぞれのルールの深さは `npx chaffjs explain <ルール>` と `npx chaffjs rules --json` の `rewrite_depth` で見られます。
 直し方との関係は「[AIっぽさを直す](./ai-sounding#書き直しの深さを決める)」にあります。
+
+## ジャンルの指針を変える
+
+ジャンルにはそれぞれ指針があります。その種類のよい文書が満たすことを、原稿を確かめる問いの形で並べたものです。
+ジャンルを決めると、chaff は指摘より先に指針を出し、`fix-plan` も指針から始めます（[例](./documents-contract#最初に出る指針)）。
+
+chaff に入っている文は既定です。チームは `guide:` の下で変えられます。
+キーはジャンルか群で、群（`legal`）に書くと `legal/*` のどのジャンルにも効きます。
+
+| 書き方 | すること |
+| --- | --- |
+| `add:` | いまの行の後に足す |
+| `replace:` | 書いた言語の行を置き換える。書かなかった言語は元のまま |
+| `off` | そのジャンル（群なら群のどのジャンルも）の指針を出さない |
+
+行は `ja:` と `en:` の下に並べます。言語を分けずに 1 行か並びだけを書くと、両方の言語に効きます。
+`guide: off` と書くと、どの指針も出しません。
+次の `chaff.yaml` は、契約書の指針に 1 行足し、説明書（マニュアル・FAQ・用語集）の指針を止めます。
+
+```yaml
+genre: legal/contract
+
+guide:
+  legal/contract:
+    add:
+      ja:
+        - 支払いの期限を、いつから数えて何日と書いているか
+  docs: off
+```
+
+<!-- chaff-screen: guide -->
+```
+$ npx chaffjs keiyaku.md
+
+指針: 契約書・規約（legal/contract）
+
+  下の指摘より先に、原稿がこれを満たしているかを確かめてください。
+
+  - 当事者の呼び方（甲・乙、定義した名前）を、最後まで同じ形で使っているか
+  - 定義語を一度だけ定め、定義どおりの形で使っているか
+  - 義務ごとに、誰が・何を・いつまでにするかが読み取れるか
+  - 金額・日付・期間・条番号の参照が、条項どうしと別表とで一致しているか
+  - 解除・損害賠償・準拠法・紛争の解決を定めた条項があるか
+  - 支払いの期限を、いつから数えて何日と書いているか
+
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, requirement-smell, total-mismatch
+  書いたところ: genres.yaml → chaff.yaml
+  chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
+
+════════════════════════════════════════════════════════════
+
+keiyaku.md   legal/contract · 日本語   ジャンルは chaff.yaml から
+…
+```
+
+「書いたところ」の行は、指針を書いた場所です。チームの行と chaff の行を見分けられます。
+次は、契約書の指針をチームの確認項目に置き換える例です。
+
+```yaml
+genre: legal/contract
+
+guide:
+  legal/contract:
+    replace:
+      ja:
+        - 当事者を最後まで「甲」「乙」と書いているか
+        - 支払いの期限を、いつから数えて何日と書いているか
+        - 合意管轄を東京地方裁判所としているか
+```
+
+<!-- chaff-screen: guide-replace -->
+```
+$ npx chaffjs keiyaku.md
+
+指針: 契約書・規約（legal/contract）
+
+  下の指摘より先に、原稿がこれを満たしているかを確かめてください。
+
+  - 当事者を最後まで「甲」「乙」と書いているか
+  - 支払いの期限を、いつから数えて何日と書いているか
+  - 合意管轄を東京地方裁判所としているか
+
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, requirement-smell, total-mismatch
+  書いたところ: genres.yaml → chaff.yaml
+  chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
+
+════════════════════════════════════════════════════════════
+
+keiyaku.md   legal/contract · 日本語   ジャンルは chaff.yaml から
+…
+```
+
+指針を変えられる場所は 4 つあります。強い場所ほど後から重ねるので、弱い場所の行を置き換えたり足したりできます。
+
+| 場所 | 強さ |
+| --- | --- |
+| `chaff.yaml` の `guide:` | いちばん強い |
+| `style:` で選んだスタイルの `guide:` | |
+| ルールの束の manifest の `guide:`、コードのプラグインの `guide` | |
+| chaff に入っている `genres.yaml` | いちばん弱い |
+
+1 つの場所の中では、`guide: off`、群の書き方、ジャンルの書き方の順に重ねます。
+知らないジャンルや群、読めない書き方は標準エラーに出し、残りはそのまま効かせます。
+`npx chaffjs rules --json --genre legal/contract` の `guide` に、いま効いている指針が出ます。`from` は書いた場所の並びです。
 
 ## 設定が効いているか確かめる
 

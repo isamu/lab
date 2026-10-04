@@ -1,0 +1,9 @@
+genre: legal/contract
+
+guide:
+  legal/contract:
+    replace:
+      en:
+        - Are the parties written as "the Client" and "the Contractor" throughout?
+        - Does each payment say when it is due, counted from what?
+        - Is the governing law the law of England and Wales?

@@ -1,0 +1,8 @@
+genre: legal/contract
+
+guide:
+  legal/contract:
+    add:
+      ja:
+        - 支払いの期限を、いつから数えて何日と書いているか
+  docs: off

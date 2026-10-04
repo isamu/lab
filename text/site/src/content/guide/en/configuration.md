@@ -57,6 +57,13 @@ genre: legal/contract
 # names:
 #   - Bank of England
 
+# This genre's guide: what a good document of this kind does. It comes before the findings, and an AI
+# rewriting the text works to it. chaff ships one; replace it, add lines, or turn it off.
+# guide:
+#   legal/contract:
+#     add:
+#       - Does each amount say whether tax is included?
+
 # Only what differs from the defaults.
 rules:
 ```
@@ -377,6 +384,108 @@ Findings of a rule that reaches deeper than the depth are listed in the plan by 
 Any other value stops `fix-plan` before it prints a plan, with the values it takes and what they mean.
 Each rule's depth is in `npx chaffjs explain <rule>` and in `rewrite_depth` of `npx chaffjs rules --json`.
 How the depths match the ways to rewrite is in [Making AI-sounding text sound human](./ai-sounding#setting-the-rewrite-depth).
+
+## Changing the genre's guide
+
+Each genre comes with a guide: what a good document of that kind does, as questions to check a draft against.
+When the genre is set, chaff prints the guide before the findings, and `fix-plan` opens with it ([an example](./documents-contract#the-guide-that-comes-first)).
+The bundled text is the default. A team changes it under `guide:`, keyed by a genre or by a group (`legal` covers every `legal/*` genre).
+
+| Entry | What it does |
+| --- | --- |
+| `add:` | Puts lines after the current ones |
+| `replace:` | Replaces the lines, in the languages it gives; the other language keeps its own |
+| `off` | Leaves the genre, or every genre of the group, with no guide |
+
+Write the lines as a list under `ja:` and `en:`, or as one line or a list alone for both languages.
+`guide: off` turns every guide off.
+This `chaff.yaml` adds a line to the contract guide and turns the guide off for manuals, FAQs and glossaries:
+
+```yaml
+genre: legal/contract
+
+guide:
+  legal/contract:
+    add:
+      en:
+        - Does each payment say when it is due, counted from what?
+  docs: off
+```
+
+<!-- chaff-screen: guide -->
+```
+$ npx chaffjs contract.md
+
+Guide: Contract and terms (legal/contract)
+
+  Before the findings below, check the draft against these.
+
+  - Are the parties named the same way (as defined) from start to end?
+  - Is each defined term defined once and used in exactly its defined form?
+  - Can each obligation be read as who does what by when?
+  - Do amounts, dates, periods and clause references agree across the clauses and the schedules?
+  - Are termination, liability, governing law and dispute resolution covered?
+  - Does each payment say when it is due, counted from what?
+
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, requirement-smell, total-mismatch
+  Written in: genres.yaml → chaff.yaml
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
+
+contract.md   legal/contract · English   genre from chaff.yaml
+…
+```
+
+The "Written in" line names where the guide was written, so a reader can tell the team's lines from chaff's.
+This one replaces the contract guide with the team's own checklist:
+
+```yaml
+genre: legal/contract
+
+guide:
+  legal/contract:
+    replace:
+      en:
+        - Are the parties written as "the Client" and "the Contractor" throughout?
+        - Does each payment say when it is due, counted from what?
+        - Is the governing law the law of England and Wales?
+```
+
+<!-- chaff-screen: guide-replace -->
+```
+$ npx chaffjs contract.md
+
+Guide: Contract and terms (legal/contract)
+
+  Before the findings below, check the draft against these.
+
+  - Are the parties written as "the Client" and "the Contractor" throughout?
+  - Does each payment say when it is due, counted from what?
+  - Is the governing law the law of England and Wales?
+
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, requirement-smell, total-mismatch
+  Written in: genres.yaml → chaff.yaml
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
+
+contract.md   legal/contract · English   genre from chaff.yaml
+…
+```
+
+A guide can be changed in four places. A stronger place is applied later, so it can replace or add to what a weaker one wrote.
+
+| Place | Strength |
+| --- | --- |
+| `guide:` in `chaff.yaml` | Strongest |
+| `guide:` in the style chosen with `style:` | |
+| `guide:` in a rule pack's manifest, or the `guide` export of a code plugin | |
+| `genres.yaml`, bundled with chaff | Weakest |
+
+Within one place, `guide: off` comes first, then the group's entry, then the genre's.
+A genre or group chaff does not know, and an entry it cannot read, are reported on stderr; the rest still applies.
+`npx chaffjs rules --json --genre legal/contract` shows the guide in effect under `guide`, with `from` listing each place that wrote it.
 
 ## Checking that the settings took effect
 

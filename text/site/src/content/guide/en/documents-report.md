@@ -151,6 +151,16 @@ Under each line number, chaff shows the start of the sentence it is about.
 | 5 | Too much hedging | "could", "perhaps" and "may" in one sentence | Say it outright. If you cannot, say what you would need to know first |
 | 9 | Sentence too long | 53 words, over this genre's limit | Split at the semicolon and at "so" |
 
+## The guide at the top
+
+The screen above opens with the genre's guide: what a good report does, as questions to check the draft against, and the rules that matter most for this genre.
+chaff prints it because the genre was set with `--genre`.
+Most of the questions are ones no rule can answer, so read them before the findings.
+An AI that rewrites the text works to the same lines ([Using the guide with an AI](./ai-sounding#give-the-ai-the-genres-guide)).
+
+A guessed or default genre prints no guide, and `--compact` and `--no-guide` leave it out.
+A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's guide](./configuration#changing-the-genres-guide)).
+
 ## Reading the "did not run" list
 
 At the end, the screen lists the rules it did not use this time, each with its reason.

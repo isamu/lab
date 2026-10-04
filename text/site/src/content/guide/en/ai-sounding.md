@@ -21,6 +21,7 @@ The plan has these parts.
 
 | Part | What it says |
 | --- | --- |
+| Genre's guide | When the genre is set: what a good document of that kind does, the lines the rewrite is held to. See "Give the AI the genre's guide" below |
 | Constraints | Keep facts, numbers, conditions and names. Add no fact. Ask the writer instead of inventing a specific. At most two passes |
 | Recommended way | Light, Bold or Full, and why, decided the same way as in "Three ways to fix it" below |
 | Document-level signals | What `ai-generated-composite` and the density rules said, and the outline's numbers from `chaff outline` |
@@ -36,6 +37,81 @@ The steps are the same whether a person rewrites or an AI does.
 3. Run the checks. They show whether findings remain, whether a fact was dropped or added, and how the outline moved.
 
 The example "Example: from a fix plan to a clean check" further down this page goes from the plan to the checks.
+
+## Give the AI the genre's guide
+
+A fix plan says what to change at each spot chaff found. What the whole document should do is in the genre's guide.
+When the genre is set (`--genre`, `genre` or `by_path` in `chaff.yaml`, or front matter), the plan opens with the guide, before the constraints.
+
+An AI that rewrites to the plan reads it first, and checks the rewrite against each line when it is done.
+Most of the lines are what no rule can check, so they are the part of the instruction only reading can follow.
+
+```
+$ npx chaffjs fix-plan draft.md --genre blog/tech
+
+# Fix plan: draft.md
+
+language en, genre blog/tech
+
+What chaff found by machine, and how to rewrite each kind of spot. chaff does not rewrite; whoever reads this plan does, a person or an AI. When done, run the checks at the end.
+
+## Guide: Tech blog (blog/tech)
+
+What a good document of this genre does. Rewrite toward it, and check the result against each line when done.
+
+- Does the opening make one claim, plainly (what the reader will learn or be able to do)?
+- Do the steps and code run as written and give the same result?
+- Are the versions used (language, libraries, OS) and the date they were tried stated?
+- Does it say what was tried and failed, the limits, and the assumptions?
+- Does the ending point to what to read or try next, rather than restate the body?
+
+Rules that matter most for this genre: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `rule-of-three`, `section-length-uniformity`, `sentence-rhythm`
+
+…
+```
+
+The guide comes as data too, for an AI that reads JSON.
+
+| Output | Where the guide is |
+| --- | --- |
+| `fix-plan --json` | A top-level `guide`: `genre`, `name`, `lines`, `rules` (the rules that matter most) and `from` (where it was written). `null` when the genre was not set |
+| `rules --json` | A top-level `guide` of the same shape, for the genre of `--genre` or `chaff.yaml` |
+| `--sarif <path>` | `runs[0].properties.guides`: one per genre and language in the run, each with its `language` |
+
+```
+$ npx chaffjs rules --json --genre blog/tech
+
+…
+  "guide": {
+    "genre": "blog/tech",
+    "name": "Tech blog",
+    "lines": [
+      "Does the opening make one claim, plainly (what the reader will learn or be able to do)?",
+      "Do the steps and code run as written and give the same result?",
+      "Are the versions used (language, libraries, OS) and the date they were tried stated?",
+      "Does it say what was tried and failed, the limits, and the assumptions?",
+      "Does the ending point to what to read or try next, rather than restate the body?"
+    ],
+    "rules": [
+      "closing-cliche",
+      "empty-conclusion",
+      "padded-intro",
+      "paragraph-length-variance",
+      "rule-of-three",
+      "section-length-uniformity",
+      "sentence-rhythm"
+    ],
+    "from": [
+      "genres.yaml"
+    ]
+  },
+…
+```
+
+The Claude Code skill (`npx chaffjs skill`) tells Claude to read the guide before any finding.
+A guessed or default genre gives no guide, so set the genre before handing a plan to an AI.
+`--no-guide` leaves the guide out of all of these.
+A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's guide](./configuration#changing-the-genres-guide)).
 
 ## What chaff looks for
 

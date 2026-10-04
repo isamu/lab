@@ -122,6 +122,41 @@ mail.md   business/email · 日本語   ジャンルは --genre から
 `info` は、読み飛ばしてもよい情報です。実行を失敗にはしません。
 人の書いた文書にもよく出る指摘なので、この重さにしてあります。
 
+## 最初に出る指針
+
+ジャンルを決めると、chaff は結果の最初にそのジャンルの指針を出します。
+よいメールが満たすことを、原稿を確かめる問いの形で並べたものです。
+その下に、このジャンルで特に効く rule の名前が 1 行で出ます。
+
+問いの多くはルールでは確かめられないので、指摘より先に読みます。
+AI に書き直させるときも、AI は同じ指針に沿って書きます（[AI にジャンルの指針を渡す](./ai-sounding#ai-にジャンルの指針を渡す)）。
+
+```
+$ npx chaffjs mail.md --genre business/email
+
+指針: メール・手紙（business/email）
+
+  下の指摘より先に、原稿がこれを満たしているかを確かめてください。
+
+  - 件名と最初の 2 行で、用件と、相手にしてほしいことが分かるか
+  - 依頼ごとに期限があるか（「近日中」ではなく日付で）
+  - 「添付します」と書いたものを、本当に添付しているか
+  - 宛名・挨拶・結び・署名がそろっているか
+
+  このジャンルで特に効く rule: attachment-not-attached, cushion-phrase-density, email-greeting-closing, email-subject-length, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
+
+════════════════════════════════════════════════════════════
+
+mail.md   business/email · 日本語   ジャンルは --genre から
+…
+```
+
+パスや内容から推測したジャンルと、既定のジャンルでは、指針を出しません。
+違う種類の文書の指針は、かえって読み手を迷わせるためです。
+`--compact` と `--no-guide` でも出しません。
+指針の文は、チームが `chaff.yaml` の `guide:` で書き換えられます（[ジャンルの指針を変える](./configuration#ジャンルの指針を変える)）。
+
 ## 指摘の意味と直しかた
 
 | 行 | 指摘 | 意味 | 直しかた |

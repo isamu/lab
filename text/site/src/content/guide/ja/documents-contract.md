@@ -142,6 +142,42 @@ keiyaku.md   legal/contract · 日本語   ジャンルは --genre から
 `error` は、数や参照が食い違っていて、どちらかが必ず間違っている所です。
 `warning` は、直したほうがよい所です。
 
+## 最初に出る指針
+
+ジャンルを決めると、chaff は結果の最初にそのジャンルの指針を出します。
+よい契約書が満たすことを、原稿を確かめる問いの形で並べたものです。
+その下に、このジャンルで特に効く rule の名前が 1 行で出ます。
+
+問いの多くはルールでは確かめられないので、指摘より先に読みます。
+AI に書き直させるときも、AI は同じ指針に沿って書きます（[AI にジャンルの指針を渡す](./ai-sounding#ai-にジャンルの指針を渡す)）。
+
+```
+$ npx chaffjs keiyaku.md --genre legal/contract
+
+指針: 契約書・規約（legal/contract）
+
+  下の指摘より先に、原稿がこれを満たしているかを確かめてください。
+
+  - 当事者の呼び方（甲・乙、定義した名前）を、最後まで同じ形で使っているか
+  - 定義語を一度だけ定め、定義どおりの形で使っているか
+  - 義務ごとに、誰が・何を・いつまでにするかが読み取れるか
+  - 金額・日付・期間・条番号の参照が、条項どうしと別表とで一致しているか
+  - 解除・損害賠償・準拠法・紛争の解決を定めた条項があるか
+
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, requirement-smell, total-mismatch
+  chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
+
+════════════════════════════════════════════════════════════
+
+keiyaku.md   legal/contract · 日本語   ジャンルは --genre から
+…
+```
+
+パスや内容から推測したジャンルと、既定のジャンルでは、指針を出しません。
+違う種類の文書の指針は、かえって読み手を迷わせるためです。
+`--compact` と `--no-guide` でも出しません。
+指針の文は、チームが `chaff.yaml` の `guide:` で書き換えられます（[ジャンルの指針を変える](./configuration#ジャンルの指針を変える)）。
+
 ## 指摘の意味と直しかた
 
 | 行 | 指摘 | 意味 | 直しかた |

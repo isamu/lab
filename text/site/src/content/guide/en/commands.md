@@ -41,6 +41,7 @@ These options go with a check.
 | Option | What happens |
 | --- | --- |
 | `--compact` | One short entry per finding, for engineers |
+| `--no-guide` | Leaves out the genre's guide, which comes first when the genre is set ([Changing the genre's guide](./configuration#changing-the-genres-guide)) |
 | `--watch` | Re-checks on every save and prints only what changed |
 | `--experimental` | Runs the experimental rules too |
 | `--genre <genre>` | The genre for this run only; it wins over `chaff.yaml` |
@@ -292,7 +293,7 @@ Wrote the Claude Code skill: …/.claude/skills/chaff/SKILL.md
 Reopen Claude Code and it is available as /chaff.
 ```
 
-The skill covers how to run chaff, how to read a finding, when to fix, `stet` or `relax --why`, setting things up
+The skill covers how to run chaff, reading the genre's guide before the findings, how to read a finding, when to fix, `stet` or `relax --why`, setting things up
 with `rules --json`, and `tree` and `cite`. Running it again replaces the skill with the new version. A file whose
 contents differ may have been edited by hand, so it is replaced only with `--force`.
 
@@ -485,7 +486,9 @@ npx chaffjs fix-plan article.md --json    # the same plan as JSON
 npx chaffjs fix-plan article.md --depth light            # a plan that keeps the structure
 ```
 
-The plan is written in the document's language. It starts with the constraints every rewrite keeps: no fact changed or added, ask the writer instead of inventing, two passes at most.
+The plan is written in the document's language. When the genre is set, it opens with the genre's guide: what a good document of that kind does, the lines the rewrite is held to ([the guide](./ai-sounding#give-the-ai-the-genres-guide)).
+
+Then come the constraints every rewrite keeps: no fact changed or added, ask the writer instead of inventing, two passes at most.
 Next comes the recommended way to rewrite (Light, Bold or Full) with its depth, and the document-level signals with the outline's numbers.
 Then come the structure targets: the structure score, and a target for each measure past 90% of human articles. A score at its limit is itself a reason to recommend Full.
 

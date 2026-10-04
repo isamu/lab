@@ -146,6 +146,40 @@ contract.md   legal/contract · English   genre from --genre
 `error` means the figures disagree, so one of them is certainly wrong.
 `warning` is worth fixing.
 
+## The guide that comes first
+
+With the genre set, chaff opens the report with the genre's guide: what a good contract does, as questions to check the draft against.
+Under them is a line naming the rules that matter most for this genre.
+Most of the questions are ones no rule can answer, so read them before the findings.
+An AI that rewrites the text works to the same lines ([Using the guide with an AI](./ai-sounding#give-the-ai-the-genres-guide)).
+
+```
+$ npx chaffjs contract.md --genre legal/contract
+
+Guide: Contract and terms (legal/contract)
+
+  Before the findings below, check the draft against these.
+
+  - Are the parties named the same way (as defined) from start to end?
+  - Is each defined term defined once and used in exactly its defined form?
+  - Can each obligation be read as who does what by when?
+  - Do amounts, dates, periods and clause references agree across the clauses and the schedules?
+  - Are termination, liability, governing law and dispute resolution covered?
+
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, requirement-smell, total-mismatch
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
+
+contract.md   legal/contract · English   genre from --genre
+…
+```
+
+A genre that was guessed from the path or the content, or left at the default, prints no guide.
+A guide for the wrong kind of document would mislead.
+`--compact` and `--no-guide` leave it out.
+A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's guide](./configuration#changing-the-genres-guide)).
+
 ## What each finding means
 
 | Line | Finding | What it means | How to fix it |

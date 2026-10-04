@@ -100,6 +100,39 @@ paper.md   academic/paper · English   genre from --genre
 {counts}
 ```
 
+## The guide that comes first
+
+With the genre set, chaff opens the report with the genre's guide: what a good paper does, as questions to check the draft against.
+Under them is a line naming the rules that matter most for this genre.
+Most of the questions are ones no rule can answer, so read them before the findings.
+An AI that rewrites the text works to the same lines ([Using the guide with an AI](./ai-sounding#give-the-ai-the-genres-guide)).
+
+```
+$ npx chaffjs paper.md --genre academic/paper
+
+Guide: Academic paper (academic/paper)
+
+  Before the findings below, check the draft against these.
+
+  - Does the abstract alone give the question, the method, the result and the conclusion, within its length?
+  - Does every citation match one entry in the reference list, in one citation style?
+  - Are figures and tables numbered in the order they are referred to, and do the numbers in the text match them?
+  - Does each claim go no further than the results (shows, or suggests)?
+
+  Rules that matter most for this genre: abstract-length, citation-reference-mismatch, citation-style-mix, figure-reference-order
+  Change it with guide: in chaff.yaml; leave it out with --no-guide.
+
+════════════════════════════════════════════════════════════
+
+paper.md   academic/paper · English   genre from --genre
+…
+```
+
+A genre that was guessed from the path or the content, or left at the default, prints no guide.
+A guide for the wrong kind of document would mislead.
+`--compact` and `--no-guide` leave it out.
+A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's guide](./configuration#changing-the-genres-guide)).
+
 ## What each finding means
 
 | Line | Finding | What it means | How to fix it |
