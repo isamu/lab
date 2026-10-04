@@ -1,0 +1,55 @@
+id: calendar-name-case
+layer: L1
+status: stable
+how_to_find: calendar-name-case
+languages: [en]
+severity: warning
+
+name:
+  ja: 小文字で書いた曜日・月の名
+  en: Weekday or month in lower case
+
+why:
+  ja: 英語では曜日と月の名（Monday、January）は固有名として必ず大文字で始めます。「on monday」のような小文字は、急いで打った跡か、チャットから貼った文に見え、検索でも大文字の形と分かれます。どの書き方を選ぶかの話ではなく、英語の綴りの決まりです。
+  en: 'English always capitalises the names of the days and months (Monday, January). "On monday" reads as typed in a hurry or pasted from a chat, and splits a search from the capitalised form. It is a rule of English spelling, not a matter of style.'
+
+message:
+  ja: 「{written}」は大文字で始めて「{usual}」と書きます
+  en: 'Write "{written}" as "{usual}"'
+
+how_to_fix:
+  ja: 頭の字を大文字にしてください。
+  en: Capitalise the first letter.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 英語で、「on monday」のように小文字で書いた曜日や月の名
+  en: A weekday or month written in lower case, as in "on monday"
+example:
+  en:
+    before: |
+      The review is on monday, and the release follows in june.
+    after: |
+      The review is on Monday, and the release follows in June.
+
+not_flagged:
+  ja: '英語の文書だけで動きます。普通の語でもある may、march、august と、略した形（mon、jan）は見ません。コードの中と、パス・タグ・アドレスの一部（monday.md、/june/、#friday、@sunday）と、設定の値（day: monday、"monday"、cron の * * monday）も見ません。'
+  en: 'Only in English documents. "may", "march" and "august", which are also ordinary words, and abbreviations (mon, jan) are not read. Code, and names inside a path, a tag or an address (monday.md, /june/, #friday, @sunday), and values in settings (day: monday, "monday", a cron field) are not read either.'
+sources: [proselint]
+rewrite:
+  depth: light
+  en:
+    direction: Capitalise the marked weekday or month. Change nothing else.
+    pairs:
+      - before: The review is on monday.
+        after: The review is on Monday.
+      - before: We ship in june and again in december.
+        after: We ship in June and again in December.
+    keep:
+      - the words and their order
+    avoid:
+      - capitalising other words in the sentence
