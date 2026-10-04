@@ -42,9 +42,24 @@ const reachesReader = (doc: ProseDocument, span: Span): boolean => {
   return showsInProse(doc.prose, span) || within([...markup.texts, ...destinations], span);
 };
 
+/** Quotation marks, parentheses and sentence punctuation at the ends of a word, which are not part of it. */
+const SURROUNDING = /^["'“”‘’(.,;:!?]+|["'“”‘’).,;:!?]+$/gu;
+const SPACE = /\s/u;
+
+/**
+ * Whether the marker stands as a word of its own (links ending in "?utm_source=chatgpt.com", marks such as oaicite.):
+ * prose about the marks names them. What a chat answer leaves is always joined to a URL or a citation (oaicite:0).
+ */
+export const standsAlone = (source: string, span: Span): boolean => {
+  const before = source.slice(0, span.start).search(/\S*$/u);
+  const after = source.slice(span.end).search(SPACE);
+  const word = source.slice(before, after === -1 ? source.length : span.end + after);
+  return word.replace(SURROUNDING, "") === source.slice(span.start, span.end);
+};
+
 /** Each marker is a leftover in its own right, so each is reported, from the first. */
 export const chatCitationResidue: Detector = (doc, options): Finding[] => {
-  const markers = markersIn(doc.source, options.lexicon ?? []).filter((marker) => reachesReader(doc, marker.span));
+  const markers = markersIn(doc.source, options.lexicon ?? []).filter((marker) => reachesReader(doc, marker.span) && !standsAlone(doc.source, marker.span));
   if (markers.length === 0 || markers.length < options.limit) return [];
   return markers.map((marker) => findingAt(doc, marker.span, { matched: marker.matched, count: markers.length, limit: options.limit }));
 };
