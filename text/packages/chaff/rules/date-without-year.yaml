@@ -3,9 +3,8 @@ layer: L1
 status: stable
 how_to_find: date-without-year
 requires: [dates]
-# The dates come from the language package's date reader. English does not read a date written without its year yet,
-# so the rule checks Japanese only until it does.
-languages: [ja]
+# The dates come from the language package's date reader.
+languages: [ja, en]
 severity: info
 
 name:
@@ -50,6 +49,19 @@ example:
       - 2026年10月14日（水）：説明会
       - 2026年10月21日（水）：申込の締め切り
       - 2026年10月28日（水）：結果の連絡
+  en:
+    before: |
+      # Schedule
+
+      - October 14, 2026: briefing
+      - October 21, 2026: applications close
+      - October 28: results sent
+    after: |
+      # Schedule
+
+      - October 14, 2026: briefing
+      - October 21, 2026: applications close
+      - October 28, 2026: results sent
 
 not_flagged:
   ja: 年を一度だけ書いて、あとの日付は月と日だけで書く文書（年の無い日付のほうが多い文書）は、書き方の選び方として指しません。ただしその場合も、年をまたぐ日付は指します。月だけ・年だけの日付は見ません。
@@ -69,3 +81,16 @@ rewrite:
     avoid:
       - 曜日と合わない年を書く
       - 本文から決まらない年を推して書く
+  en:
+    direction: Add the year to the date that lacks one. Take it from the document's other dates and from the weekday, if one is written. Where the text does not settle it, leave "[year]" for the writer rather than inventing one.
+    pairs:
+      - before: "October 28: results sent"
+        after: "October 28, 2026: results sent"
+      - before: The next meeting is on January 15.
+        after: The next meeting is on January 15, 2027.
+    keep:
+      - the month, the day and the weekday
+      - how the other dates are written
+    avoid:
+      - a year that does not match the weekday
+      - guessing a year the text does not give

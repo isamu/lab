@@ -1,3 +1,4 @@
-table  2  2  0  0
+table  3  3  0  0
 ja/itinerary  year-dropped  found
 ja/minutes  year-dropped  found
+en/itinerary  year-dropped-en  found

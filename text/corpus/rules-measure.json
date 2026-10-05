@@ -2016,41 +2016,41 @@
     "date-without-year": {
       "groups": {
         "academic": {
-          "documents": 1,
-          "fired": 0
+          "documents": 6,
+          "fired": 1
         },
         "blog": {
-          "documents": 14,
-          "fired": 2
+          "documents": 23,
+          "fired": 3
         },
         "business": {
-          "documents": 39,
-          "fired": 7
+          "documents": 78,
+          "fired": 11
         },
         "docs": {
-          "documents": 10,
+          "documents": 20,
           "fired": 0
         },
         "legal": {
-          "documents": 21,
+          "documents": 35,
           "fired": 1
         },
         "literature": {
-          "documents": 4,
+          "documents": 13,
           "fired": 0
         },
         "speech": {
-          "documents": 4,
+          "documents": 7,
           "fired": 0
         },
         "technical": {
-          "documents": 22,
+          "documents": 48,
           "fired": 0
         }
       },
       "bench": {
-        "planted": 2,
-        "found": 2,
+        "planted": 3,
+        "found": 3,
         "falseAlarms": 0
       }
     },
