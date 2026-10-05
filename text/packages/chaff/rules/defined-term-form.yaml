@@ -10,8 +10,8 @@ name:
   en: A defined term used in another form
 
 why:
-  ja: 契約では、定義した語は定義した形のまま使うのが決まりです。「本サービス」と定義したあとで「「本サービス」」とかぎ括弧を付け直すと、新しく定義し直したのか、同じものなのかが読み手に分かりません。英語では "Services" と定義した語を "services" と小文字で書くと、定義した意味なのか、ふつうの意味なのかが分かれ、争いのもとになります。定義の後ろで、かぎ括弧や引用符に入れ直した語と、大文字で定義した語を小文字で書いた所（大文字の使用より少ないとき）を指します。
-  en: 'A contract uses each defined term exactly as defined. Quoting a term again after its definition ("the "Services"") leaves the reader asking whether it is being defined anew. Writing "services" where "Services" is defined splits the defined sense from the ordinary one, which is where disputes start. chaff points at a term set in quotes again after its definition, and at a capitalised term written in lower case (when the capitalised uses are more).'
+  ja: 契約では、定義した語は定義した形のまま使うのが決まりです。「本サービス」と定義したあとで「「本サービス」」とかぎ括弧を付け直すと、新しく定義し直したのか、同じものなのかが読み手に分かりません。英語では "Services" と定義した語を "services" と小文字で書くと、定義した意味なのか、ふつうの意味なのかが分かれ、争いのもとになります。「本業務」と定義して「本件業務」と書くと、別の業務を指すのかと読めます。定義の後ろで、かぎ括弧や引用符に入れ直した語、大文字で定義した語を小文字で書いた所（大文字の使用より少ないとき）、頭の「本」と「本件」を入れ替えた語（その形も定義した語なら除きます）を指します。
+  en: 'A contract uses each defined term exactly as defined. Quoting a term again after its definition ("the "Services"") leaves the reader asking whether it is being defined anew. Writing "services" where "Services" is defined splits the defined sense from the ordinary one, which is where disputes start. In Japanese, 本件業務 written where 本業務 is defined reads as another task. chaff points at a term set in quotes again after its definition, at a capitalised term written in lower case (when the capitalised uses are more), and at a Japanese term written with its other prefix (本 for 本件 or the other way round), unless that form is defined too.'
 
 message:
   ja: 定義した「{term}」と違う形で使っています
@@ -24,6 +24,9 @@ messages:
   case:
     ja: 「{term}」は {line} 行目で大文字で定義した語ですが、ここは小文字です
     en: '"{term}" is defined with a capital on line {line}, but written in lower case here'
+  prefix:
+    ja: 「{term}」は {line} 行目で定義した語ですが、ここは「{written}」と書いています
+    en: '"{term}" is defined on line {line}, but written "{written}" here'
 
 how_to_fix:
   ja: 定義した語はかぎ括弧を付けずに使い、英語では定義のとおり大文字で始めてください。ふつうの意味で使うなら、別の言葉に替えます。
@@ -41,8 +44,8 @@ off_for:
 
 group: consistency
 summary:
-  ja: 契約や規約で、定義した語を定義のあとでかぎ括弧に入れ直したり、大文字で定義した語を小文字で書いたりしている所
-  en: A defined term quoted again after its definition, or a capitalised defined term written in lower case
+  ja: 契約や規約で、定義した語を定義のあとでかぎ括弧に入れ直したり、大文字で定義した語を小文字で書いたり、「本業務」を「本件業務」と書いたりしている所
+  en: A defined term quoted again after its definition, a capitalised defined term written in lower case, or a Japanese term with its other prefix (本件業務 for 本業務)
 example:
   ja:
     config: { genre: legal/contract }
@@ -78,8 +81,8 @@ example:
       3. You must not resell the Services.
 
 not_flagged:
-  ja: 定義そのもの（以下「本サービス」という、「本サービス」とは）、定義より前の使用（use-before-definition が見ます）、文の頭の大文字、小文字の使用が {limit} 個を超えるか大文字の使用より多い語（ふつうの意味で使っているとみなす）は指しません。定義の文の中の使用（「顧客」とは、表紙に「顧客」と書いた者をいう）も見ません。法令・規程のジャンルは、定義を指すために語をかぎ括弧に入れるので見ません。
-  en: 'The definitions themselves ("Services" means, (the "Services")), uses before the definition (use-before-definition reads those), capitals at the start of a sentence, and terms written in lower case more than {limit} times or more often than capitalised (taken as the ordinary word used on purpose) are not reported, nor is a use inside the defining sentence ("Customer" means the party named "Customer"). Statutes and regulations quote a term to point at its definition, so that genre does not run this rule.'
+  ja: 定義そのもの（以下「本サービス」という、「本サービス」とは）、定義より前の使用（use-before-definition が見ます）、文の頭の大文字、小文字の使用が {limit} 個を超えるか大文字の使用より多い語（ふつうの意味で使っているとみなす）は指しません。定義の文の中の使用（「顧客」とは、表紙に「顧客」と書いた者をいう）も見ません。法令・規程のジャンルは、定義を指すために語をかぎ括弧に入れるので見ません。「本」と「本件」を入れ替えた形は、その形も定義した語であるとき、長い語の一部（見本物品）のときは見ません。
+  en: 'The definitions themselves ("Services" means, (the "Services")), uses before the definition (use-before-definition reads those), capitals at the start of a sentence, and terms written in lower case more than {limit} times or more often than capitalised (taken as the ordinary word used on purpose) are not reported, nor is a use inside the defining sentence ("Customer" means the party named "Customer"). Statutes and regulations quote a term to point at its definition, so that genre does not run this rule. A term with its other prefix (本件業務 for 本業務) is not reported when that form is defined too, or inside a longer word (見本物品).'
 level_meaning:
   ja: 小文字の使用が {limit} 個以下で、大文字の使用より少ないとき指摘
   en: lower-case uses reported when they are {limit} or fewer and fewer than the capitalised ones
