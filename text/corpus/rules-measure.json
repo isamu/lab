@@ -2105,41 +2105,41 @@
     "demonstrative-opener-run": {
       "groups": {
         "academic": {
-          "documents": 1,
+          "documents": 6,
           "fired": 0
         },
         "blog": {
-          "documents": 14,
+          "documents": 23,
           "fired": 1
         },
         "business": {
-          "documents": 39,
-          "fired": 0
+          "documents": 78,
+          "fired": 1
         },
         "docs": {
-          "documents": 10,
+          "documents": 20,
           "fired": 0
         },
         "legal": {
-          "documents": 21,
-          "fired": 0
+          "documents": 35,
+          "fired": 1
         },
         "literature": {
-          "documents": 4,
-          "fired": 0
+          "documents": 13,
+          "fired": 4
         },
         "speech": {
-          "documents": 4,
-          "fired": 2
+          "documents": 7,
+          "fired": 3
         },
         "technical": {
-          "documents": 22,
+          "documents": 48,
           "fired": 0
         }
       },
       "bench": {
-        "planted": 13,
-        "found": 13,
+        "planted": 26,
+        "found": 26,
         "falseAlarms": 0
       }
     },

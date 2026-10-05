@@ -73,12 +73,20 @@ export const sentenceConjunctiveCount: Detector = (doc, options): Finding[] => {
 
 type Opened = { readonly sentence: Sentence; readonly opener: string | undefined };
 
-const openerOf = (sentence: Sentence, lexicon: Lexicon): string | undefined => lexicon.find((entry) => entryOpens(sentence, entry))?.pattern;
+/**
+ * The lexicon's word the sentence opens with, unless it opens with one of `notOpeners`: "This Agreement" and "This section"
+ * point at the document itself, not back at the sentence before.
+ */
+const openerOf = (sentence: Sentence, lexicon: Lexicon, notOpeners: Lexicon): string | undefined =>
+  notOpeners.some((entry) => entryOpens(sentence, entry)) ? undefined : lexicon.find((entry) => entryOpens(sentence, entry))?.pattern;
+
+/** The phrases that open a sentence with a lexicon word but do not point back (this-document references). */
+export const NOT_OPENER_LEXICON = "demonstrative-not-opener";
 
 /** Runs of consecutive sentences in one paragraph that each open with a lexicon word. */
-export const openerRuns = (sentences: readonly Sentence[], lexicon: Lexicon): Opened[][] =>
+export const openerRuns = (sentences: readonly Sentence[], lexicon: Lexicon, notOpeners: Lexicon = []): Opened[][] =>
   sentences
-    .map((sentence) => ({ sentence, opener: openerOf(sentence, lexicon) }))
+    .map((sentence) => ({ sentence, opener: openerOf(sentence, lexicon, notOpeners) }))
     .reduce<Opened[][]>(
       (runs, opened) => {
         if (opened.opener === undefined) return [...runs, []];
@@ -104,8 +112,9 @@ const runFinding = (run: readonly Opened[], options: DetectorOptions): Finding =
 /** More than limit sentences in a row within one paragraph, each opening with a word from the lexicon (これ, その). */
 export const openerRun: Detector = (doc, options): Finding[] => {
   const lexicon = options.lexicon ?? [];
+  const notOpeners = doc.lexicons[NOT_OPENER_LEXICON] ?? [];
   return doc.paragraphs.flatMap((paragraph) =>
-    openerRuns(paragraph.sentences, lexicon)
+    openerRuns(paragraph.sentences, lexicon, notOpeners)
       .filter((run) => run.length > options.limit)
       .map((run) => runFinding(run, options)),
   );

@@ -1,0 +1,10 @@
+# Sentence-opening words that point back (This, That, These, Those, It). demonstrative-opener-run counts the sentences in
+# a row, in one paragraph, that open with one of these.
+id: demonstrative-opener
+language: en
+entries:
+  - pattern: This
+  - pattern: That
+  - pattern: These
+  - pattern: Those
+  - pattern: It

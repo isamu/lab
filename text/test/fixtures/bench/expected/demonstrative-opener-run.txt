@@ -1,4 +1,4 @@
-table  13  13  0  0
+table  26  26  0  0
 ja/blog  demonstrative-run  found
 ja/design  demonstrative-run  found
 ja/email  demonstrative-run  found
@@ -12,3 +12,16 @@ ja/proposal  demonstrative-run  found
 ja/quote  demonstrative-run  found
 ja/readme  demonstrative-run  found
 ja/requirements  demonstrative-run  found
+en/blog  demonstrative-run-en  found
+en/design  demonstrative-run-en  found
+en/email  demonstrative-run-en  found
+en/figures  demonstrative-run-en  found
+en/itinerary  demonstrative-run-en  found
+en/minutes  demonstrative-run-en  found
+en/note  demonstrative-run-en  found
+en/policy  demonstrative-run-en  found
+en/press  demonstrative-run-en  found
+en/proposal  demonstrative-run-en  found
+en/quote  demonstrative-run-en  found
+en/readme  demonstrative-run-en  found
+en/requirements  demonstrative-run-en  found
