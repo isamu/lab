@@ -30,47 +30,54 @@ const field = "mt-1 w-full rounded border border-zinc-300 bg-white p-2 dark:bord
   <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "playgroundLoads")}</p>
 
   <form id="playground" class="mt-6" data-words={JSON.stringify(words)} data-samples={JSON.stringify(samples)}>
-    <label class="block text-sm">
-      {t(lang, "playgroundSample")}
-      <select name="sample" class={field}>
-        {samples.map((sample) => (
-          <option value={sample.id}>{sample.name}</option>
-        ))}
-      </select>
-    </label>
-    <label for="playground-text" class="mt-3 block font-semibold">
-      {t(lang, "playgroundText")}
-    </label>
-    <textarea id="playground-text" name="text" rows="12" class={`${field} font-mono text-sm leading-relaxed`}>{first?.text ?? ""}</textarea>
-    <div class="mt-3 flex flex-wrap items-end gap-4">
+    <fieldset class="m-0 min-w-0 border-0 p-0">
       <label class="block text-sm">
-        {t(lang, "playgroundLanguage")}
-        <select name="language" class={field}>
-          <option value="">{t(lang, "playgroundAuto")}</option>
-          <option value="ja">{t(lang, "langJa")}</option>
-          <option value="en">{t(lang, "langEn")}</option>
-        </select>
-      </label>
-      <label class="block text-sm">
-        {t(lang, "playgroundGenre")}
-        <select name="genre" class={field}>
-          <option value="">{t(lang, "playgroundGenreDefault")}</option>
-          {genreGroups.map((group) => (
-            <optgroup label={group.name[lang]}>
-              {group.genres.map((genre) => (
-                <option value={genre.id} selected={genre.id === first?.genre}>{`${genre.name[lang]} (${genre.id})`}</option>
-              ))}
-            </optgroup>
+        {t(lang, "playgroundSample")}
+        <select name="sample" class={field}>
+          {samples.map((sample) => (
+            <option value={sample.id}>{sample.name}</option>
           ))}
         </select>
       </label>
-      <button
-        type="submit"
-        class="rounded bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-      >
-        {t(lang, "playgroundCheck")}
-      </button>
-    </div>
+      <label for="playground-text" class="mt-3 block font-semibold">
+        {t(lang, "playgroundText")}
+      </label>
+      <textarea
+        id="playground-text"
+        name="text"
+        rows="12"
+        class={`${field} font-mono text-sm leading-relaxed`}
+      >{first?.text ?? ""}</textarea>
+      <div class="mt-3 flex flex-wrap items-end gap-4">
+        <label class="block text-sm">
+          {t(lang, "playgroundLanguage")}
+          <select name="language" class={field}>
+            <option value="">{t(lang, "playgroundAuto")}</option>
+            <option value="ja">{t(lang, "langJa")}</option>
+            <option value="en">{t(lang, "langEn")}</option>
+          </select>
+        </label>
+        <label class="block text-sm">
+          {t(lang, "playgroundGenre")}
+          <select name="genre" class={field}>
+            <option value="">{t(lang, "playgroundGenreDefault")}</option>
+            {genreGroups.map((group) => (
+              <optgroup label={group.name[lang]}>
+                {group.genres.map((genre) => (
+                  <option value={genre.id} selected={genre.id === first?.genre}>{`${genre.name[lang]} (${genre.id})`}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </label>
+        <button
+          type="submit"
+          class="rounded bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        >
+          {t(lang, "playgroundCheck")}
+        </button>
+      </div>
+    </fieldset>
   </form>
 
   <section id="playground-score" class="mt-8 rounded border border-zinc-200 p-3 dark:border-zinc-800" hidden>
@@ -199,6 +206,13 @@ const field = "mt-1 w-full rounded border border-zinc-300 bg-white p-2 dark:bord
     if (score !== null) showScore(score, result);
   };
 
+  const clearResult = (shown: { findings: HTMLElement; notRun: HTMLElement }): void => {
+    shown.findings.replaceChildren();
+    shown.notRun.hidden = true;
+    const score = document.querySelector<HTMLElement>("#playground-score");
+    if (score !== null) score.hidden = true;
+  };
+
   const run = async (
     form: HTMLFormElement,
     words: Words,
@@ -206,15 +220,17 @@ const field = "mt-1 w-full rounded border border-zinc-300 bg-white p-2 dark:bord
   ): Promise<void> => {
     const data = new FormData(form);
     const text = String(data.get("text") ?? "");
-    const button = form.querySelector("button");
-    if (button !== null) button.disabled = true;
+    // The form stays as it was checked until the result is shown, and the last result goes, so no result stands beside another text.
+    const controls = form.querySelector("fieldset");
+    if (controls !== null) controls.disabled = true;
+    clearResult(shown);
     shown.status.textContent = words.checking;
     try {
       show(text, await checkText(text, String(data.get("language") ?? ""), String(data.get("genre") ?? "")), words, shown);
     } catch (error) {
       shown.status.textContent = filled(words.error, { message: error instanceof Error ? error.message : String(error) });
     } finally {
-      if (button !== null) button.disabled = false;
+      if (controls !== null) controls.disabled = false;
     }
   };
 
