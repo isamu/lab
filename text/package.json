@@ -14,6 +14,7 @@
     "corpus:health": "node scripts/corpus-health.ts",
     "rules:measure": "node scripts/rules-measure.ts",
     "bench": "node scripts/bench.ts",
+    "contracts": "node scripts/contracts.ts",
     "bench:ai": "node scripts/ai-bench.ts",
     "ai-score:corpus": "node scripts/ai-score-corpus.ts",
     "build": "yarn workspace @chaffjs/lang-ja build && yarn workspace @chaffjs/lang-en build && yarn workspace chaffjs build",

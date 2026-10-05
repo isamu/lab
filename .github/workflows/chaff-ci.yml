@@ -243,3 +243,8 @@ jobs:
 
       - name: bench
         run: yarn bench
+
+      # 契約書に植えた誤りを、種類ごとにどれだけ拾うか。記録（test/fixtures/contracts/expected.json）から動いたら落とす。
+      - name: contracts
+        if: ${{ !cancelled() }}
+        run: yarn contracts
