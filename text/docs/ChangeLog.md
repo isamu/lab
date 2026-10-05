@@ -2,6 +2,21 @@
 
 Newest first.
 
+## 0.25.0 — 2026-10-05
+
+Three more rules: Japanese conjunction levels in legal and official writing, a missing space after a comma in English,
+and a Japanese paragraph left without its final 。.
+
+### Rules
+
+- connective-hierarchy: 並びに with no 及び inside it, and 若しくは with no 又は (#651).
+- missing-space-after-comma: a comma joining two English words with no space (#653).
+- missing-final-period: a Japanese paragraph without 。 where the document's other paragraphs end with it (#655).
+
+### Docs
+
+- The skill no longer says `custom_rules` types are coming later, and shows a complete `words` rule (#654).
+
 ## 0.24.0 — 2026-10-05
 
 Fewer false alarms and more rules. Examples quoted in prose (a date, a definition, a chat mark, a word under
