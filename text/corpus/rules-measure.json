@@ -1136,8 +1136,8 @@
         }
       },
       "bench": {
-        "planted": 13,
-        "found": 13,
+        "planted": 26,
+        "found": 26,
         "falseAlarms": 0
       }
     },

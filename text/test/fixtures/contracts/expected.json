@@ -1,7 +1,7 @@
 {
   "recall": {
     "ja": {
-      "total-in-prose": "0/1",
+      "total-in-prose": "1/1",
       "party-role-name": "0/4",
       "party-full-name": "2/3",
       "vague-deadline": "0/4",
@@ -20,7 +20,7 @@
       "total-in-table": "1/1"
     },
     "en": {
-      "total-in-prose": "0/2",
+      "total-in-prose": "2/2",
       "dangling-clause-reference": "3/3",
       "reference-wrong-title": "2/3",
       "defined-term-variant": "1/3",

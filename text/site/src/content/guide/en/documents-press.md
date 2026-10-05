@@ -106,7 +106,7 @@ release.md   business/press-release · English   genre from --genre
                   announced-count-mismatch
   30:10   warning The period "October 26, 2026 – October 19, 2026" ends before it starts
                   date-range-reversed
-  39:12   error   The total $360 is not the sum of the amounts above it ($350)
+  39:12   error   The total $360 is not the sum of its items ($350)
                   total-mismatch
 
 {counts}

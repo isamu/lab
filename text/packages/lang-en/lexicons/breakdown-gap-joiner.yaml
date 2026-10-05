@@ -1,0 +1,8 @@
+# Words that, between an amount and a breakdown phrase (consisting of), show the amount belongs to another item and is not the total
+# the breakdown adds up to ("a $1,000 onboarding fee and a monthly subscription, consisting of ...").
+id: breakdown-gap-joiner
+language: en
+entries:
+  - pattern: " and "
+  - pattern: " or "
+  - pattern: ";"

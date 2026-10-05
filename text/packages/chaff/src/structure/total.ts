@@ -154,6 +154,10 @@ const shownAmounts = (source: string, total: Placed, sumCents: number): Record<s
   return { written, sum: `${sumSign}${sum}${written.endsWith(total.unit) ? total.unit : ""}` };
 };
 
+/** 文の中の合計の金額（符号の無い、単位付きの金額）と和を、合計の書き方で見せる。 */
+export const shownTotal = (source: string, total: Amount, sumCents: number): Record<string, string> =>
+  shownAmounts(source, { ...total, column: 0, cents: Math.round(total.value * CENTS) }, sumCents);
+
 /**
  * 数だけの列で、合計の行の数が項目のどれかより大きくなければ、和ではなく平均や率や年の列と読んで足さない。
  * 項目に負の数があれば、和が項目より小さいこともあるので足す。

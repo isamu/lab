@@ -1,0 +1,11 @@
+# Words a total amount follows directly in a sentence ("for a total of $9,000"). total-mismatch compares the amount with the
+# sum of the items listed before the words. A total at the start of a list or table line is total-label.
+id: total-phrase
+language: en
+entries:
+  - pattern: a total of
+  - pattern: total of
+  - pattern: totaling
+  - pattern: totalling
+  - pattern: "in total:"
+  - pattern: "total:"

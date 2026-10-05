@@ -574,7 +574,7 @@ $ npx chaffjs answer.md --compact
 
 answer.md   blog/tech · English   genre from the default
 
-  7:12    error   The total $1,500 is not the sum of the amounts above it ($1,600)
+  7:12    error   The total $1,500 is not the sum of its items ($1,600)
                   total-mismatch
   9:25    error   2026-10-06 is a Tuesday, not a Monday
                   date-weekday-mismatch

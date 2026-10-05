@@ -4,6 +4,7 @@ import { numberingBreaks } from "../structure/numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
+import { proseTotalMismatches } from "../structure/prose-total.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
@@ -104,15 +105,35 @@ const amountsOf = (tree: NonNullable<ProseDocument["structure"]>): Amount[] =>
     node.kind === "quantity" ? [{ offset: node.span.start, end: node.span.end, value: Number(node.attrs["value"]), unit: String(node.attrs["unit"]) }] : [],
   );
 
-/** 合計の行が、上の金額の和と合わない。合計の語は言語パッケージの語彙表（total-label）から取る。 */
+const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
+
+/** 合計の行と内訳の行、文の中の合計と内訳。同じ金額は一度だけ言う。 */
+const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["structure"]>): StructureIssue[] => {
+  const amounts = amountsOf(tree);
+  const lines = totalMismatches(doc.source, amounts, patternsOf(doc, "total-label"));
+  const words = {
+    totals: patternsOf(doc, "total-phrase"),
+    breakdowns: patternsOf(doc, "breakdown-phrase"),
+    discounts: patternsOf(doc, "discount-word"),
+    joiners: patternsOf(doc, "breakdown-gap-joiner"),
+  };
+  const prose = proseTotalMismatches(
+    doc.source,
+    doc.sentences.map((sentence) => sentence.span),
+    amounts,
+    words,
+  );
+  return [...lines, ...prose.filter((issue) => !lines.some((line) => line.offset === issue.offset))];
+};
+
+/**
+ * 合計が内訳の和と合わない。表と箇条書きの合計の行（合計の語は total-label）と、文の中の合計（total-phrase、breakdown-phrase）。
+ * 語は言語パッケージの語彙表から取る。
+ */
 export const totalMismatch: Detector = (doc): Finding[] =>
   doc.structure === undefined
     ? []
-    : totalMismatches(
-        doc.source,
-        amountsOf(doc.structure),
-        (doc.lexicons["total-label"] ?? []).map((entry) => entry.pattern),
-      ).map((issue) => ({
+    : totalIssues(doc, doc.structure).map((issue) => ({
         rule: "total-mismatch",
         severity: "error",
         line: 0,
