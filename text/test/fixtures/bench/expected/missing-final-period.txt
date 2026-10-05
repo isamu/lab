@@ -1,0 +1,14 @@
+table  13  12  1  0
+ja/blog  missing-final-period-ja  found
+ja/design  missing-final-period-ja  found
+ja/email  missing-final-period-ja  found
+ja/figures  missing-final-period-ja  found
+ja/itinerary  missing-final-period-ja  found
+ja/minutes  missing-final-period-ja  found
+ja/note  missing-final-period-ja  found
+ja/policy  missing-final-period-ja  found
+ja/press  missing-final-period-ja  found
+ja/proposal  missing-final-period-ja  found
+ja/quote  missing-final-period-ja  missed
+ja/readme  missing-final-period-ja  found
+ja/requirements  missing-final-period-ja  found
