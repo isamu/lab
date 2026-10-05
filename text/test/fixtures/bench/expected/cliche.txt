@@ -1,4 +1,17 @@
-table  13  13  0  0
+table  26  26  0  0
+ja/blog  cliche-tettei-kaisetsu  found
+ja/design  cliche-tettei-kaisetsu  found
+ja/email  cliche-tettei-kaisetsu  found
+ja/figures  cliche-tettei-kaisetsu  found
+ja/itinerary  cliche-tettei-kaisetsu  found
+ja/minutes  cliche-tettei-kaisetsu  found
+ja/note  cliche-tettei-kaisetsu  found
+ja/policy  cliche-tettei-kaisetsu  found
+ja/press  cliche-tettei-kaisetsu  found
+ja/proposal  cliche-tettei-kaisetsu  found
+ja/quote  cliche-tettei-kaisetsu  found
+ja/readme  cliche-tettei-kaisetsu  found
+ja/requirements  cliche-tettei-kaisetsu  found
 en/blog  cliche-end-of-day  found
 en/design  cliche-end-of-day  found
 en/email  cliche-end-of-day  found
