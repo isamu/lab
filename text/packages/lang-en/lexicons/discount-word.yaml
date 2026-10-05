@@ -1,0 +1,10 @@
+# Words just before an amount that take it off a total ("a discount of $10"). total-mismatch subtracts it when it adds the items of a total in a sentence.
+id: discount-word
+language: en
+entries:
+  - pattern: discount
+  - pattern: credit
+  - pattern: less
+  - pattern: minus
+  - pattern: deduction
+  - pattern: rebate

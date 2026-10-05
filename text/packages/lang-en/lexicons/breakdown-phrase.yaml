@@ -1,0 +1,11 @@
+# Words the items of a total follow directly in a sentence ("$8 per month, made up of a base fee of $6 and a storage fee of $2").
+# total-mismatch takes the amount just before them as the total. "Including" is left out: it names a part, not every part.
+id: breakdown-phrase
+language: en
+entries:
+  - pattern: made up of
+  - pattern: consisting of
+  - pattern: consists of
+  - pattern: comprising
+  - pattern: broken down as
+  - pattern: broken down into

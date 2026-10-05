@@ -1,0 +1,12 @@
+# 金額のすぐ前に書いて、その金額を合計から引くことを言う語（「値引き10,000円」）。total-mismatch が文の中の内訳を足すときに引く。
+id: discount-word
+language: ja
+entries:
+  - pattern: 値引き
+  - pattern: 値引
+  - pattern: 割引
+  - pattern: 控除
+  - pattern: 差し引
+  - pattern: 差引
+  - pattern: 減額
+  - pattern: マイナス

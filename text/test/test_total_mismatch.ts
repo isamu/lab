@@ -186,4 +186,43 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(fixture("invoice-en.md")), []);
     assert.deepEqual(found(fixture("invoice-en.md").replace("$10,260.00", () => "$10,160.00")), ["$10,160.00≠$10,260.00"]);
   });
+  describe("a total written in a sentence", () => {
+    const jaFound = (...lines: string[]): string[] => found(doc(...lines), ja, "ja");
+
+    it("the items, then the total phrase and the total: compared with the items in the sentence", () => {
+      assert.deepEqual(jaFound("委託料の内訳は、保守費60,000円、運用費30,000円とし、合計100,000円とする。"), ["100,000円≠90,000円"]);
+      assert.deepEqual(jaFound("委託料の内訳は、保守費60,000円、運用費40,000円とし、合計100,000円とする。"), []);
+      assert.deepEqual(found(doc("The fee consists of $6,000 for hosting and $2,000 for support, for a total of $9,000.")), ["$9,000≠$8,000"]);
+      assert.deepEqual(found(doc("The fee consists of $6,000 for hosting and $3,000 for support, for a total of $9,000.")), []);
+    });
+
+    it("the total, then a breakdown phrase and the items, up to the end of the brackets it is in", () => {
+      assert.deepEqual(jaFound("甲は、月額150,000円（内訳：保守費90,000円、運用費50,000円）を支払う。"), ["150,000円≠140,000円"]);
+      assert.deepEqual(jaFound("甲は、月額150,000円（内訳：保守費90,000円、運用費60,000円）を支払い、遅延したときは1日につき1,000円を加える。"), []);
+      assert.deepEqual(found(doc("The plan costs $8 per month, made up of a base fee of $5 and a storage fee of $2.")), ["$8≠$7"]);
+      assert.deepEqual(found(doc("The plan costs $8 per month, made up of a base fee of $6 and a storage fee of $2.")), []);
+    });
+
+    it("an amount away from the phrase, a discount, or a single item is not a reason to report", () => {
+      assert.deepEqual(jaFound("遅延損害金は1日につき1,000円とし、保守費60,000円及び運用費30,000円の合計90,000円を支払う。"), []);
+      assert.deepEqual(jaFound("本体価格100,000円から値引き10,000円を差し引き、合計90,000円とする。"), []);
+      assert.deepEqual(jaFound("単価1,000円の部品を10個、合計10,000円で購入する。"), []);
+      assert.deepEqual(jaFound("合計100,000円のうち、30,000円を前払いとする。"), []);
+      assert.deepEqual(found(doc("The fee consists of $100 for hosting and $20 for support, for a total of $80.")), ["$80≠$120"]);
+      assert.deepEqual(
+        found(doc("Customer shall pay a $1,000 onboarding fee and a monthly subscription, consisting of a base fee of $600 and a support fee of $300.")),
+        [],
+      );
+      assert.deepEqual(jaFound("保守費60,000円、運用費30,000円とし、合計は、100,000円とする。"), ["100,000円≠90,000円"]);
+      assert.deepEqual(jaFound("保守費60,000円、運用費30,000円とし、合計金100,000円とする。"), ["100,000円≠90,000円"]);
+      assert.deepEqual(found(doc("The fee is $9,000, including $1,000 for setup and $500 for training.")), []);
+      assert.deepEqual(found(doc("Item A is $100 and item B is $200, a subtotal of $300, plus tax of $30, for a total of $330.")), []);
+    });
+
+    it("items in another unit are not added, and a total in a list line is reported once", () => {
+      assert.deepEqual(jaFound("作業は3日、費用は60,000円と30,000円で、合計100,000円とする。"), ["100,000円≠90,000円"]);
+      assert.deepEqual(jaFound("費用は60,000円、作業は3日、合計5日とする。"), []);
+      assert.deepEqual(found(doc("- A: $1,200", "- B: $300", "- Total: $1,600")), ["$1,600≠$1,500"]);
+    });
+  });
 });

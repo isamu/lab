@@ -1,0 +1,11 @@
+# 金額と内訳の語（内訳は）のあいだにあれば、その金額は別の項目のもので、内訳の合計ではないと読む語。
+id: breakdown-gap-joiner
+language: ja
+entries:
+  - pattern: 及び
+  - pattern: 並びに
+  - pattern: 又は
+  - pattern: 若しくは
+  - pattern: および
+  - pattern: ならびに
+  - pattern: または

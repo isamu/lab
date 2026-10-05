@@ -101,7 +101,7 @@ contract.md   blog/tech · English   genre from the default
                   paragraph-length-variance
   11:26   warning The period "November 1, 2026 through October 31, 2026" ends before it starts
                   date-range-reversed
-  21:12   error   The total $800 is not the sum of the amounts above it ($700)
+  21:12   error   The total $800 is not the sum of its items ($700)
                   total-mismatch
   23:111  error   "Article 9" (address 9) is not in this document
                   dangling-reference
@@ -127,7 +127,7 @@ contract.md   legal/contract · English   genre from --genre
 
   11:26   warning The period "November 1, 2026 through October 31, 2026" ends before it starts
                   date-range-reversed
-  21:12   error   The total $800 is not the sum of the amounts above it ($700)
+  21:12   error   The total $800 is not the sum of its items ($700)
                   total-mismatch
   23:111  error   "Article 9" (address 9) is not in this document
                   dangling-reference

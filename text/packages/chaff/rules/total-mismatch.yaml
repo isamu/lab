@@ -10,12 +10,12 @@ name:
   en: A total that is not the sum of its items
 
 why:
-  ja: 見積や請求の「合計」が、上に並べた金額の和と合わないと、読み手はどちらが正しいのかを計算し直すことになります。行を足したり消したりしたあとに、合計だけ直し忘れると起きます。箇条書きか表で、合計の語（合計・小計）で始まる行を、同じ単位で同じ列の金額の和と比べます。小計のあとの総計のように、足し方が何通りかあるときは、どの足し方でも合わないときだけ指します。
-  en: When the total of a quote or an invoice is not the sum of the amounts listed above it, the reader has to add them up again to find out which is right. It happens when a line is added or removed and the total is not updated. In a list or a table, a line starting with a total word (Total, Subtotal) is compared with the sum of the amounts in the same unit and column above it. When there is more than one way to add them up, such as a grand total after a subtotal and tax, it is pointed out only when none of them matches.
+  ja: 見積や請求の「合計」が、上に並べた金額の和と合わないと、読み手はどちらが正しいのかを計算し直すことになります。行を足したり消したりしたあとに、合計だけ直し忘れると起きます。箇条書きか表で、合計の語（合計・小計）で始まる行を、同じ単位で同じ列の金額の和と比べます。契約書のように一つの文に書いた合計（「保守費60,000円、運用費30,000円とし、合計100,000円とする」「月額150,000円（内訳：…）」）も、その文に並べた同じ単位の金額の和と比べます。小計のあとの総計のように、足し方が何通りかあるときは、どの足し方でも合わないときだけ指します。
+  en: When the total of a quote or an invoice is not the sum of the amounts listed above it, the reader has to add them up again to find out which is right. It happens when a line is added or removed and the total is not updated. In a list or a table, a line starting with a total word (Total, Subtotal) is compared with the sum of the amounts in the same unit and column above it. A total written in a sentence, as contracts do ("$6,000 for hosting and $3,000 for support, for a total of $9,000", "$8 per month, made up of …"), is compared with the amounts in the same unit listed in that sentence. When there is more than one way to add them up, such as a grand total after a subtotal and tax, it is pointed out only when none of them matches.
 
 message:
-  ja: 合計「{written}」が、上の金額の和（{sum}）と合いません
-  en: "The total {written} is not the sum of the amounts above it ({sum})"
+  ja: 合計「{written}」が、内訳の金額の和（{sum}）と合いません
+  en: "The total {written} is not the sum of its items ({sum})"
 
 how_to_fix:
   ja: 内訳の金額と合計のどちらが正しいかを確かめて、片方を直してください。
@@ -30,8 +30,8 @@ sources: [de-marneffe-2008]
 
 group: facts
 summary:
-  ja: 見積もりや請求書で、合計が上に並べた金額の和と合わない所
-  en: A total in a quote or an invoice that is not the sum of the amounts above it
+  ja: 見積もりや請求書、契約書で、合計が内訳に並べた金額の和と合わない所
+  en: A total in a quote, an invoice or a contract that is not the sum of the amounts it is made up of
 example:
   ja:
     before: |
@@ -61,5 +61,5 @@ example:
       | Total | $8,000 |
 
 not_flagged:
-  ja: 単位や列の違う金額は足しません。足し方が何通りもあるとき（小計と税のあとの総計など）は、どれとも合わないときだけ指します。
-  en: Amounts in another unit or column are not added. Where there is more than one way to add them up, it is reported only when none matches.
+  ja: 単位や列の違う金額は足しません。足し方が何通りもあるとき（小計と税のあとの総計など）は、どれとも合わないときだけ指します。文の中では、合計の語（合計・総額）のすぐ後ろの金額か内訳の語（内訳は）のすぐ前の金額だけを合計と読み、内訳の金額が二つ以上あるときだけ比べます。並びの一部（単価や上限など、合計の語から離れた金額を除いた並び）の和か、一つを引いた額（値引き）と合えば指しません。
+  en: Amounts in another unit or column are not added. Where there is more than one way to add them up, it is reported only when none matches. In a sentence, only the amount right after a total phrase (a total of) or right before a breakdown phrase (made up of) is read as a total, and only when two or more items in its unit are listed. It is not reported when the items nearest the phrase add up to it, or when it matches with one item taken away (a discount).

@@ -105,7 +105,7 @@ release.md   business/press-release · 日本語   ジャンルは --genre か�
                   announced-count-mismatch
   30:6    warning 期間「2026年10月26日〜2026年10月19日」の終わりが始まりより前です
                   date-range-reversed
-  39:8    error   合計「36,000円」が、上の金額の和（35,000円）と合いません
+  39:8    error   合計「36,000円」が、内訳の金額の和（35,000円）と合いません
                   total-mismatch
 
 {counts}
